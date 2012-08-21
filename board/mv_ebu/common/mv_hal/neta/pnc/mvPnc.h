@@ -187,10 +187,12 @@ enum {
 #ifdef CONFIG_MV_ETH_PNC_L3_FLOW
 	/* Session Lookup for IPv4 and IPv6 */
 	TE_FLOW_L3,
-	TE_FLOW_L3_END = CONFIG_MV_PNC_TCAM_LINES - 4,
+	TE_FLOW_L3_END = TE_FLOW_L3 + CONFIG_MV_PNC_L3_FLOW_LINES - 1,
 	TE_FLOW_IP4_EOF,
 	TE_FLOW_IP6_A_EOF,
 	TE_FLOW_IP6_B_EOF,
+#else
+	TE_L4_EOF,
 #endif /* CONFIG_MV_ETH_PNC_L3_FLOW */
 
 #ifdef CONFIG_MV_ETH_PNC_WOL
@@ -209,6 +211,8 @@ enum {
 	TCAM_LU_FLOW_IP4,
 	TCAM_LU_FLOW_IP6_A,
 	TCAM_LU_FLOW_IP6_B,
+#else
+	TCAM_LU_L4,
 #endif /* CONFIG_MV_ETH_PNC_L3_FLOW */
 
 #ifdef CONFIG_MV_ETH_PNC_WOL
@@ -223,6 +227,7 @@ enum {
 #define FLOWID_EOF_LU_L2			0xFFF2
 #define FLOWID_EOF_LU_IP4			0xFFF4
 #define FLOWID_EOF_LU_IP6			0xFFF6
+#define FLOWID_EOF_LU_L4			0xFFF7
 #define FLOWID_EOF_LU_FLOW_IP4		0xFFF8
 #define FLOWID_EOF_LU_FLOW_IP6_A	0xFFFA
 #define FLOWID_EOF_LU_FLOW_IP6_B	0xFFFB
@@ -342,6 +347,14 @@ void    mvPncAgingCntrClear(int tid);
 void    mvPncAgingCntrGroupSet(int tid, int gr);
 void    mvPncAgingCounterClear(int tid, int gr);
 #endif /* MV_ETH_PNC_AGING */
+
+#ifdef MV_ETH_PNC_LB
+void    mvPncLbDump(void);
+int     mvPncLbRxqSet(int hash, int rxq);
+int		mvPncLbModeIp4(int mode);
+int		mvPncLbModeIp6(int mode);
+int		mvPncLbModeL4(int mode);
+#endif /* MV_ETH_PNC_LB */
 
 #endif /* CONFIG_MV_ETH_PNC */
 

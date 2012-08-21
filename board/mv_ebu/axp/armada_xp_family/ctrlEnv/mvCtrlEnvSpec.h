@@ -240,6 +240,8 @@ extern "C" {
 #define MV_ETH_WRR_NEW
 /* New PNC module - extra fields */
 #define MV_ETH_PNC_NEW
+/* PNC Load Balancing support */
+#define MV_ETH_PNC_LB
 #endif /* MV88F78X60_A0 */
 #define MV_78130_ETH_MAX_PORT			3
 #define MV_78460_ETH_MAX_PORT			4

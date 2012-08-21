@@ -291,6 +291,34 @@ void sram_sw_set_rinfo(struct tcam_entry *te, unsigned int rinfo, unsigned int m
 }
 
 #ifdef MV_ETH_PNC_NEW
+
+#ifdef MV_ETH_PNC_LB
+void sram_sw_set_load_balance(struct tcam_entry *te, unsigned int value)
+{
+	unsigned int word;
+
+	WARN_ON_OOR(value > LB_QUEUE_MASK);
+
+	word = LB_QUEUE_OFFS / DWORD_LEN;
+	te->sram.word[word] &= ~(LB_QUEUE_MASK << (LB_QUEUE_OFFS % DWORD_LEN));
+	te->sram.word[word] |= value << (LB_QUEUE_OFFS % DWORD_LEN);
+}
+
+static int sram_sw_dump_load_balance(struct tcam_entry *te, char *buf)
+{
+	unsigned int word, value;
+
+	word = LB_QUEUE_OFFS / DWORD_LEN;
+	value = te->sram.word[word] >> (LB_QUEUE_OFFS % DWORD_LEN);
+	value &= LB_QUEUE_MASK;
+
+	if (value)
+		return mvOsSPrintf(buf, " LB=%d", value);
+
+	return 0;
+}
+#endif /* MV_ETH_PNC_LB */
+
 void sram_sw_set_rinfo_extra(struct tcam_entry *te, unsigned int ri_extra)
 {
 	unsigned int word, value;
@@ -411,7 +439,7 @@ static int sram_sw_dump_rxq(struct tcam_entry *te, char *buf)
 	return 0;
 }
 
-/* index:98..96 */
+/* index */
 void sram_sw_set_next_lookup_shift(struct tcam_entry *te, unsigned int index)
 {
 	unsigned int word;
@@ -436,7 +464,7 @@ static int sram_sw_dump_next_lookup_shift(struct tcam_entry *te, char *buf)
 	return 0;
 }
 
-/* done:99 */
+/* done */
 void sram_sw_set_lookup_done(struct tcam_entry *te, unsigned int value)
 {
 	unsigned int word;
@@ -582,6 +610,11 @@ int tcam_sw_dump(struct tcam_entry *te, char *buf)
 	off += sram_sw_dump_ainfo(te, buf + off);
 	off += sram_sw_dump_shift_update(te, buf + off);
 	off += sram_sw_dump_rxq(te, buf + off);
+
+#ifdef MV_ETH_PNC_LB
+	off += sram_sw_dump_load_balance(te, buf + off);
+#endif /* MV_ETH_PNC_LB */
+
 	off += (te->ctrl.flags & TCAM_F_INV) ? mvOsSPrintf(buf + off, " [inv]") : 0;
 	off += mvOsSPrintf(buf + off, "\n       ");
 

@@ -763,13 +763,23 @@ void mvNetaHwfTxpRegs(int port, int p, int txp)
 }
 #endif /* CONFIG_MV_ETH_HWF */
 
-void mvNetaRxqCpuDump(int port, int cpu)
+void mvNetaCpuDump(int port, int cpu, int rxTx)
 {
 	MV_U32 regVal = MV_REG_READ(NETA_CPU_MAP_REG(port, cpu));
 	int j;
+       static const char  *qType[] = {"RXQ", "TXQ"};
+
+       if (rxTx > 1 || rxTx < 0) {
+               printk(KERN_ERR "%s: Error - invalid queue type %d , valid values are 0 for TXQ or 1 for RXQ\n", __func__, rxTx);
+               return;
+       }
+
+       if (rxTx == 1)
+               regVal >>= 8;
+
 	for (j = 0; j < CONFIG_MV_ETH_RXQ; j++) {
 		if (regVal & 1)
-			printk("RXQ-%d ", j);
+			mvOsPrintf("%s-%d ", qType[rxTx], j);
 		else
 			printk("       ");
 	regVal >>= 1;

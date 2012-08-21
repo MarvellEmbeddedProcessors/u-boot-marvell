@@ -100,6 +100,10 @@ int mvNetaPortCheck(int port)
 		mvOsPrintf("port %d is out of range\n", port);
 		return 1;
 	}
+	if (!(MV_BIT_CHECK(mvNetaHalData.portMask, port))) {
+		mvOsPrintf("port %d is not in portMask (%x)\n", port,  	mvNetaHalData.portMask);
+		return 1;
+	}
 
 	return 0;
 }
@@ -297,7 +301,7 @@ int mvNetaAccMode(void)
 *******************************************************************************/
 MV_STATUS mvNetaDefaultsSet(int port)
 {
-	int i;
+	int cpu;
 	int queue, txp;
 	MV_U32 regVal;
 	MV_NETA_PORT_CTRL *pPortCtrl = mvNetaPortHndlGet(port);
@@ -319,8 +323,9 @@ MV_STATUS mvNetaDefaultsSet(int port)
 
 	/* Set CPU queue access map - all CPUs have access to all RX queues and to all TX queues */
 
-	for (i = 0; i < mvNetaHalData.maxCPUs; i++)
-		MV_REG_WRITE(NETA_CPU_MAP_REG(port, i), (NETA_CPU_RXQ_ACCESS_ALL_MASK | NETA_CPU_TXQ_ACCESS_ALL_MASK));
+	for (cpu = 0; cpu < mvNetaHalData.maxCPUs; cpu++)
+		if (MV_BIT_CHECK(mvNetaHalData.cpuMask, cpu))
+			MV_REG_WRITE(NETA_CPU_MAP_REG(port, cpu), (NETA_CPU_RXQ_ACCESS_ALL_MASK | NETA_CPU_TXQ_ACCESS_ALL_MASK));
 
 	/* Reset RX and TX DMAs */
 	MV_REG_WRITE(NETA_PORT_RX_RESET_REG(port), NETA_PORT_RX_DMA_RESET_MASK);
@@ -404,23 +409,23 @@ MV_STATUS mvNetaDefaultsSet(int port)
 	regVal = 0;
 
 #ifdef CONFIG_MV_ETH_REDUCE_BURST_SIZE_WA
-        /* This is a WA for the IOCC HW BUG involve in using 128B burst size */
-        regVal |= ETH_TX_BURST_SIZE_MASK(ETH_BURST_SIZE_2_64BIT_VALUE);
-        regVal |= ETH_RX_BURST_SIZE_MASK(ETH_BURST_SIZE_2_64BIT_VALUE);
+	/* This is a WA for the IOCC HW BUG involve in using 128B burst size */
+	regVal |= ETH_TX_BURST_SIZE_MASK(ETH_BURST_SIZE_2_64BIT_VALUE);
+	regVal |= ETH_RX_BURST_SIZE_MASK(ETH_BURST_SIZE_2_64BIT_VALUE);
 #else
-        /* Default burst size */
-        regVal |= ETH_TX_BURST_SIZE_MASK(ETH_BURST_SIZE_16_64BIT_VALUE);
-        regVal |= ETH_RX_BURST_SIZE_MASK(ETH_BURST_SIZE_16_64BIT_VALUE);
+	/* Default burst size */
+	regVal |= ETH_TX_BURST_SIZE_MASK(ETH_BURST_SIZE_16_64BIT_VALUE);
+	regVal |= ETH_RX_BURST_SIZE_MASK(ETH_BURST_SIZE_16_64BIT_VALUE);
 #endif /* CONFIG_MV_ETH_REDUCE_BURST_SIZE_WA */
 
 #if defined(MV_CPU_BE) && !defined(CONFIG_MV_ETH_BE_WA)
     /* big endian */
-	regVal |= (ETH_RX_NO_DATA_SWAP_MASK | ETH_TX_NO_DATA_SWAP_MASK | ETH_DESC_SWAP_MASK);
+    regVal |= (ETH_RX_NO_DATA_SWAP_MASK | ETH_TX_NO_DATA_SWAP_MASK | ETH_DESC_SWAP_MASK);
 #else /* MV_CPU_LE */
     /* little endian */
-        regVal |= (ETH_RX_NO_DATA_SWAP_MASK | ETH_TX_NO_DATA_SWAP_MASK | ETH_NO_DESC_SWAP_MASK);
+	regVal |= (ETH_RX_NO_DATA_SWAP_MASK | ETH_TX_NO_DATA_SWAP_MASK | ETH_NO_DESC_SWAP_MASK);
 #endif /* MV_CPU_BE && !CONFIG_MV_ETH_BE_WA */
-	
+
 	/* Assign port SDMA configuration */
 	MV_REG_WRITE(ETH_SDMA_CONFIG_REG(port), regVal);
 
@@ -483,22 +488,34 @@ MV_STATUS mvNetaHalInit(MV_NETA_HAL_DATA *halData)
 }
 
 /* Update CPUs that can process packets incoming to specific RXQ */
-MV_STATUS	mvNetaRxqCpuMaskSet(int port, int rxq, int cpu_mask)
+MV_STATUS	mvNetaRxqCpuMaskSet(int port, int rxq_mask, int cpu)
 {
-	int		cpu;
 	MV_U32	regVal;
 
-	for (cpu = 0; cpu < mvNetaHalData.maxCPUs; cpu++) {
+	if (!(MV_BIT_CHECK(mvNetaHalData.cpuMask, cpu)))
+		return MV_ERROR;
 
-		regVal = MV_REG_READ(NETA_CPU_MAP_REG(port, cpu));
+	regVal = MV_REG_READ(NETA_CPU_MAP_REG(port, cpu));
+	regVal &= ~NETA_CPU_RXQ_ACCESS_ALL_MASK;
+	regVal |= (rxq_mask << NETA_CPU_RXQ_ACCESS_OFFS);
+	MV_REG_WRITE(NETA_CPU_MAP_REG(port, cpu), regVal);
 
-		if (cpu_mask & MV_BIT_MASK(cpu))
-			regVal |= NETA_CPU_RXQ_ACCESS_MASK(rxq);
-		else
-			regVal &= ~NETA_CPU_RXQ_ACCESS_MASK(rxq);
+	return MV_OK;
+}
 
-		MV_REG_WRITE(NETA_CPU_MAP_REG(port, cpu), regVal);
-	}
+/* Update specific CPU that can process packets outcoming to TXQs */
+MV_STATUS	mvNetaTxqCpuMaskSet(int port, int txq_mask, int cpu)
+{
+	MV_U32	regVal;
+
+	if (!(MV_BIT_CHECK(mvNetaHalData.cpuMask, cpu)))
+		return MV_ERROR;
+
+	regVal = MV_REG_READ(NETA_CPU_MAP_REG(port, cpu));
+	regVal &= ~NETA_CPU_TXQ_ACCESS_ALL_MASK;
+	regVal |= (txq_mask << NETA_CPU_TXQ_ACCESS_OFFS);
+	MV_REG_WRITE(NETA_CPU_MAP_REG(port, cpu), regVal);
+
 	return MV_OK;
 }
 
@@ -525,11 +542,11 @@ MV_STATUS       mvEthGmacRgmiiSet(int port, int enable)
 
 static void mvNetaPortSgmiiConfig(int port)
 {
-        MV_U32 regVal;
+	MV_U32 regVal;
 
-        regVal = MV_REG_READ(NETA_GMAC_CTRL_2_REG(port));
-        regVal |= (NETA_GMAC_PSC_ENABLE_MASK);
-        MV_REG_WRITE(NETA_GMAC_CTRL_2_REG(port), regVal);
+	regVal = MV_REG_READ(NETA_GMAC_CTRL_2_REG(port));
+	regVal |= (NETA_GMAC_PSC_ENABLE_MASK);
+	MV_REG_WRITE(NETA_GMAC_CTRL_2_REG(port), regVal);
 }
 
 
@@ -3516,4 +3533,3 @@ MV_STATUS   mvNetaPonRxMibGemPid(int mib, MV_U16 gemPid)
     return MV_OK;
 }
 #endif /* CONFIG_MV_PON && MV_PON_MIB_SUPPORT */
-

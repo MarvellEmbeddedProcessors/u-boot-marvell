@@ -76,6 +76,33 @@ extern "C" {
 #include "mvVideo.h"
 #endif
 
+/* The golden ration: an arbitrary value */
+#define MV_JHASH_GOLDEN_RATIO           0x9e3779b9
+
+#define MV_JHASH_MIX(a, b, c)        \
+{                                   \
+    a -= b; a -= c; a ^= (c>>13);   \
+    b -= c; b -= a; b ^= (a<<8);    \
+    c -= a; c -= b; c ^= (b>>13);   \
+    a -= b; a -= c; a ^= (c>>12);   \
+    b -= c; b -= a; b ^= (a<<16);   \
+    c -= a; c -= b; c ^= (b>>5);    \
+    a -= b; a -= c; a ^= (c>>3);    \
+    b -= c; b -= a; b ^= (a<<10);   \
+    c -= a; c -= b; c ^= (b>>15);   \
+}
+
+static inline MV_U32 mv_jhash_3words(MV_U32 a, MV_U32 b, MV_U32 c, MV_U32 initval)
+{
+	a += MV_JHASH_GOLDEN_RATIO;
+	b += MV_JHASH_GOLDEN_RATIO;
+	c += initval;
+	MV_JHASH_MIX(a, b, c);
+
+	return c;
+}
+
+
 /* Swap tool */
 
 /* 16bit nibble swap. For example 0x1234 -> 0x2143                          */

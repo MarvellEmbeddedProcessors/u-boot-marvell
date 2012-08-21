@@ -2614,83 +2614,86 @@ MV_STATUS mvNetaPortDown(int port)
 		/* Issue stop command for active channels only */
 		MV_REG_WRITE(ETH_RX_QUEUE_COMMAND_REG(port), (regData << ETH_RXQ_DISABLE_OFFSET));
 	}
-	/* Wait for all Rx activity to terminate. */
-	mDelay = 0;
-	do {
-		if (mDelay >= RX_DISABLE_TIMEOUT_MSEC) {
-			mvOsPrintf("ethPort_%d: TIMEOUT for RX stopped !!! rxQueueCmd - 0x08%x\n", port, regData);
-			break;
-		}
-		mvOsDelay(1);
-		mDelay++;
 
-		/* Check port RX Command register that all Rx queues are stopped */
-		regData = MV_REG_READ(ETH_RX_QUEUE_COMMAND_REG(port));
-	} while (regData & 0xFF);
-
-	/* Stop Tx port activity. Check port Tx activity. */
-	for (txp = 0; txp < pPortCtrl->txpNum; txp++) {
-		/* Issue stop command for active channels only */
-		regData = (MV_REG_READ(ETH_TX_QUEUE_COMMAND_REG(port, txp))) & ETH_TXQ_ENABLE_MASK;
-		if (regData != 0)
-			MV_REG_WRITE(ETH_TX_QUEUE_COMMAND_REG(port, txp), (regData << ETH_TXQ_DISABLE_OFFSET));
-
-		/* Wait for all Tx activity to terminate. */
+	if (!MV_PON_PORT(port)) {
+		/* Wait for all Rx activity to terminate. */
 		mDelay = 0;
 		do {
-			if (mDelay >= TX_DISABLE_TIMEOUT_MSEC) {
-				mvOsPrintf("port=%d, txp=%d: TIMEOUT for TX stopped !!! txQueueCmd - 0x%08x\n",
-					   port, txp, regData);
+			if (mDelay >= RX_DISABLE_TIMEOUT_MSEC) {
+				mvOsPrintf("ethPort_%d: TIMEOUT for RX stopped !!! rxQueueCmd - 0x08%x\n", port, regData);
 				break;
 			}
 			mvOsDelay(1);
 			mDelay++;
 
-			/* Check port TX Command register that all Tx queues are stopped */
-			regData = MV_REG_READ(ETH_TX_QUEUE_COMMAND_REG(port, txp));
+			/* Check port RX Command register that all Rx queues are stopped */
+			regData = MV_REG_READ(ETH_RX_QUEUE_COMMAND_REG(port));
 		} while (regData & 0xFF);
+	}
 
+	if (!MV_PON_PORT(port)) {
+		/* Stop Tx port activity. Check port Tx activity. */
+		for (txp = 0; txp < pPortCtrl->txpNum; txp++) {
+			/* Issue stop command for active channels only */
+			regData = (MV_REG_READ(ETH_TX_QUEUE_COMMAND_REG(port, txp))) & ETH_TXQ_ENABLE_MASK;
+			if (regData != 0)
+				MV_REG_WRITE(ETH_TX_QUEUE_COMMAND_REG(port, txp), (regData << ETH_TXQ_DISABLE_OFFSET));
+
+			/* Wait for all Tx activity to terminate. */
+			mDelay = 0;
+			do {
+				if (mDelay >= TX_DISABLE_TIMEOUT_MSEC) {
+					mvOsPrintf("port=%d, txp=%d: TIMEOUT for TX stopped !!! txQueueCmd - 0x%08x\n",
+						   port, txp, regData);
+					break;
+				}
+				mvOsDelay(1);
+				mDelay++;
+
+				/* Check port TX Command register that all Tx queues are stopped */
+				regData = MV_REG_READ(ETH_TX_QUEUE_COMMAND_REG(port, txp));
+			} while (regData & 0xFF);
 #ifdef MV_ETH_GMAC_NEW
-		txFifoEmptyMask |= ETH_TX_FIFO_EMPTY_MASK(txp);
-		txInProgMask    |= ETH_TX_IN_PROGRESS_MASK(txp);
+			txFifoEmptyMask |= ETH_TX_FIFO_EMPTY_MASK(txp);
+			txInProgMask    |= ETH_TX_IN_PROGRESS_MASK(txp);
 #else
-		if (MV_PON_PORT(port)) {
-			txFifoEmptyMask |= PON_TX_FIFO_EMPTY_MASK(txp);
-			txInProgMask |= PON_TX_IN_PROGRESS_MASK(txp);
-		} else {
-			txFifoEmptyMask = ETH_TX_FIFO_EMPTY_MASK;
-			txInProgMask = ETH_TX_IN_PROGRESS_MASK;
-		}
-#endif /* MV_ETH_GMAC_NEW */
-	}
-
-	/* Double check to Verify that TX FIFO is Empty */
-	mDelay = 0;
-	while (MV_TRUE) {
-		do {
-			if (mDelay >= TX_FIFO_EMPTY_TIMEOUT_MSEC) {
-				mvOsPrintf("\n port=%d, TX FIFO empty timeout. status=0x08%x, empty=0x%x, inProg=0x%x\n",
-					port, regData, txFifoEmptyMask, txInProgMask);
-				break;
+			if (MV_PON_PORT(port)) {
+				txFifoEmptyMask |= PON_TX_FIFO_EMPTY_MASK(txp);
+				txInProgMask |= PON_TX_IN_PROGRESS_MASK(txp);
+			} else {
+				txFifoEmptyMask = ETH_TX_FIFO_EMPTY_MASK;
+				txInProgMask = ETH_TX_IN_PROGRESS_MASK;
 			}
-			mvOsDelay(1);
-			mDelay++;
+#endif /* MV_ETH_GMAC_NEW */
+		}
 
+		/* Double check to Verify that TX FIFO is Empty */
+		mDelay = 0;
+		while (MV_TRUE) {
+			do {
+				if (mDelay >= TX_FIFO_EMPTY_TIMEOUT_MSEC) {
+					mvOsPrintf("\n port=%d, TX FIFO empty timeout. status=0x08%x, empty=0x%x, inProg=0x%x\n",
+						port, regData, txFifoEmptyMask, txInProgMask);
+					break;
+				}
+				mvOsDelay(1);
+				mDelay++;
+
+				regData = MV_REG_READ(ETH_PORT_STATUS_REG(port));
+			} while (((regData & txFifoEmptyMask) != txFifoEmptyMask) || ((regData & txInProgMask) != 0));
+
+			if (mDelay >= TX_FIFO_EMPTY_TIMEOUT_MSEC)
+				break;
+
+			/* Double check */
 			regData = MV_REG_READ(ETH_PORT_STATUS_REG(port));
-		} while (((regData & txFifoEmptyMask) != txFifoEmptyMask) || ((regData & txInProgMask) != 0));
-
-		if (mDelay >= TX_FIFO_EMPTY_TIMEOUT_MSEC)
-			break;
-
-		/* Double check */
-		regData = MV_REG_READ(ETH_PORT_STATUS_REG(port));
-		if (((regData & txFifoEmptyMask) == txFifoEmptyMask) && ((regData & txInProgMask) == 0)) {
-			break;
-		} else
-			mvOsPrintf("port=%d: TX FIFO Empty double check failed. %d msec, status=0x%x, empty=0x%x, inProg=0x%x\n",
-			     port, mDelay, regData, txFifoEmptyMask, txInProgMask);
+			if (((regData & txFifoEmptyMask) == txFifoEmptyMask) && ((regData & txInProgMask) == 0)) {
+				break;
+			} else
+				mvOsPrintf("port=%d: TX FIFO Empty double check failed. %d msec, status=0x%x, empty=0x%x, inProg=0x%x\n",
+					 port, mDelay, regData, txFifoEmptyMask, txInProgMask);
+		}
 	}
-
 	/* Wait about 200 usec */
 	mvOsUDelay(200);
 
@@ -2902,6 +2905,7 @@ MV_STATUS mvNetaTxqWrrPrioSet(int port, int txp, int txq, int weight)
 	if ((weight < mtu) || (weight > NETA_TXQ_WRR_WEIGHT_MAX)) {
 		mvOsPrintf("%s Error: weight=%d is out of range %d...%d\n",
 				__func__, weight, mtu, NETA_TXQ_WRR_WEIGHT_MAX);
+		return MV_FAIL;
 	}
 
 	regVal = MV_REG_READ(NETA_TXQ_WRR_ARBITER_REG(port, txp, txq));

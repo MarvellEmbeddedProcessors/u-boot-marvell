@@ -81,12 +81,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define TIMER_GLOBAL_BIT(timer)		((timer == MAX_GLOBAL_TIMER) ? (1<<31) : (1 << (timer * 8)))
 
-#ifdef MV88F78X60_Z1
+#if defined(MV88F78X60_Z1)
 #define CNTMR_EVENTS_STATUS_REG_PRIVATE(t)	(MV_CPUIF_REGS_OFFSET(TIMER_TO_CPU(t) + 0x68))
 #define TIMER_PRIVATE_BIT(timer)	(1 << ((CPU_TIMER(timer) * 8)))
-#elif MV88F78X60_A0
+#elif defined(MV88F78X60_A0)
 #define CNTMR_EVENTS_STATUS_REG_PRIVATE		(MV_CPUIF_LOCAL_REGS_OFFSET + 0x68)
-#define TIMER_PRIVATE_BIT(timer)	(1 << ((timer - FIRST_PRIVATE_TIMER) * 8)))
+#define TIMER_PRIVATE_BIT(timer)	(1 << ((timer - FIRST_PRIVATE_TIMER) * 8))
 #else
 #error "No device is defined!"
 #endif
@@ -429,12 +429,12 @@ MV_STATUS mvCntmrIntClear(MV_U32 cntmrNum)
 *******************************************************************************/
 MV_U32 mvCntmrFrqGet(MV_U32 cntmrNum)
 {
-#ifndef MV88F78X60_Z1
+/*#ifndef MV88F78X60_Z1
 	if (INVALID_CNTMR(cntmrNum))
 		return MV_ERROR;
 
-	if (cntmrCtrl & CTCR_ARM_TIMER_25MhzFRQ_MASK(countNum))
+	if (cntmrCtrl & CTCR_ARM_TIMER_25MhzFRQ_MASK(cntmrNum))
 		return MV_BOARD_REFCLK_25MHZ;
-#endif
+#endif*/
 	return mvCpuL2ClkGet();
 }

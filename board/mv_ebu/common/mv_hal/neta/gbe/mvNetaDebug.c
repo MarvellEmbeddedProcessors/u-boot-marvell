@@ -770,8 +770,8 @@ void mvNetaCpuDump(int port, int cpu, int rxTx)
        static const char  *qType[] = {"RXQ", "TXQ"};
 
        if (rxTx > 1 || rxTx < 0) {
-               printk(KERN_ERR "%s: Error - invalid queue type %d , valid values are 0 for TXQ or 1 for RXQ\n", __func__, rxTx);
-               return;
+		OsPrintf("Error - invalid queue type %d , valid values are 0 for TXQ or 1 for RXQ\n", rxTx);
+		return;
        }
 
        if (rxTx == 1)

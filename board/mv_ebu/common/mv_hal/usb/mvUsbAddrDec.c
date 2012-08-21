@@ -63,6 +63,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
 #include "mvCommon.h"
+#include "mvSysHwConfig.h"
 #include "mvOs.h"
 #include "ctrlEnv/mvCtrlEnvSpec.h"
 #include "mvUsbRegs.h"
@@ -125,13 +126,12 @@ static MV_STATUS usbWinOverlapDetect(MV_U32 dev, MV_U32 winNum, MV_ADDR_WIN *pAd
 
 	for (winNumIndex = 0; winNumIndex < MV_USB_MAX_ADDR_DECODE_WIN; winNumIndex++) {
 		/* Do not check window itself       */
-		if (winNumIndex == winNum) {
+		if (winNumIndex == winNum)
 			continue;
-		}
 
 		/* Get window parameters    */
 		if (MV_OK != mvUsbWinRead(dev, winNumIndex, &addrDecWin)) {
-			mvOsPrintf("%s: ERR. TargetWinGet failed\n", __FUNCTION__);
+			mvOsPrintf("%s: ERR. TargetWinGet failed\n", __func__);
 			return MV_ERROR;
 		}
 
@@ -174,13 +174,13 @@ MV_STATUS mvUsbWinWrite(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pDecWin)
 
 	/* Parameter checking   */
 	if (winNum >= MV_USB_MAX_ADDR_DECODE_WIN) {
-		mvOsPrintf("%s: ERR. Invalid win num %d\n", __FUNCTION__, winNum);
+		mvOsPrintf("%s: ERR. Invalid win num %d\n", __func__, winNum);
 		return MV_BAD_PARAM;
 	}
 
 	/* Check if the requested window overlapps with current windows         */
 	if (MV_TRUE == usbWinOverlapDetect(dev, winNum, &pDecWin->addrWin)) {
-		mvOsPrintf("%s: ERR. Window %d overlap\n", __FUNCTION__, winNum);
+		mvOsPrintf("%s: ERR. Window %d overlap\n", __func__, winNum);
 		return MV_ERROR;
 	}
 
@@ -208,11 +208,11 @@ MV_STATUS mvUsbWinWrite(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pDecWin)
 	/* If window is DRAM with HW cache coherency, make sure bit2 is set */
 	sizeReg &= ~MV_USB_WIN_BURST_WR_LIMIT_MASK;
 
-	if ((MV_TARGET_IS_DRAM(pDecWin->target)) && (pDecWin->addrWinAttr.cachePolicy != NO_COHERENCY)) {
+	if ((MV_TARGET_IS_DRAM(pDecWin->target)) && (pDecWin->addrWinAttr.cachePolicy != NO_COHERENCY))
 		sizeReg |= MV_USB_WIN_BURST_WR_32BIT_LIMIT;
-	} else {
+	else
 		sizeReg |= MV_USB_WIN_BURST_WR_NO_LIMIT;
-	}
+
 #endif /* MV645xx || MV646xx */
 
 	if (pDecWin->enable == MV_TRUE)
@@ -251,7 +251,7 @@ MV_STATUS mvUsbWinRead(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pDecWin)
 
 	/* Parameter checking   */
 	if (winNum >= MV_USB_MAX_ADDR_DECODE_WIN) {
-		mvOsPrintf("%s (dev=%d): ERR. Invalid winNum %d\n", __FUNCTION__, dev, winNum);
+		mvOsPrintf("%s (dev=%d): ERR. Invalid winNum %d\n", __func__, dev, winNum);
 		return MV_NOT_SUPPORTED;
 	}
 
@@ -293,9 +293,9 @@ MV_STATUS mvUsbWinInit(MV_U32 dev, MV_UNIT_WIN_INFO *addrWinMap)
 	MV_U32 winPrioIndex = 0;
 
 	/* First disable all address decode windows */
-	for (winNum = 0; winNum < MV_USB_MAX_ADDR_DECODE_WIN; winNum++) {
+	for (winNum = 0; winNum < MV_USB_MAX_ADDR_DECODE_WIN; winNum++)
 		MV_REG_BIT_RESET(MV_USB_WIN_CTRL_REG(dev, winNum), MV_USB_WIN_ENABLE_MASK);
-	}
+
 
 	/* Go through all windows in user table until table terminator          */
 	winNum = 0;

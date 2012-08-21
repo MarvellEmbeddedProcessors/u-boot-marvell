@@ -244,6 +244,7 @@ typedef enum _boardMacSpeed {
 typedef struct _boardMacInfo {
 	MV_BOARD_MAC_SPEED boardMacSpeed;
 	MV_U8 boardEthSmiAddr;
+	MV_U16 LinkCryptPortAddr;
 } MV_BOARD_MAC_INFO;
 
 typedef struct _boardMppInfo {
@@ -343,6 +344,7 @@ MV_STATUS mvBoardNameGet(char *pNameBuff);
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
+MV_32 mvBoardPhyLinkCryptPortAddrGet(MV_U32 ethPortNum);
 
 MV_BOOL mvBoardSpecInitGet(MV_U32 *regOff, MV_U32 *data);
 MV_U32 mvBoardTclkGet(MV_VOID);
@@ -391,8 +393,13 @@ MV_U8 mvBoardBootDevGet(MV_VOID);
 MV_STATUS mvBoardBootDevSet(MV_U8 val);
 MV_U8 mvBoardBootDevWidthGet(MV_VOID);
 MV_STATUS mvBoardBootDevWidthSet(MV_U8 val);
+#ifdef MV88F78X60_Z1
 MV_U8 mvBoardCpu0CoreModeGet(MV_VOID);
 MV_STATUS mvBoardCpu0CoreModeSet(MV_U8 val);
+#else
+MV_U8 mvBoardCpu0EndianessGet(MV_VOID);
+MV_STATUS mvBoardCpu0EndianessSet(MV_U8 val);
+#endif
 MV_U8 mvBoardL2SizeGet(MV_VOID);
 MV_STATUS mvBoardL2SizeSet(MV_U8 val);
 MV_U8 mvBoardCpuCoresNumGet(MV_VOID);
@@ -418,6 +425,7 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum);
 MV_VOID mvBoardSerdesZ1ASupport(void);
 MV_SERDES_CFG *mvBoardSerdesCfgGet(void);
 MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void);
+MV_STATUS mvBoardConfIdSet(MV_U16 conf);
 
 
 #ifdef __cplusplus

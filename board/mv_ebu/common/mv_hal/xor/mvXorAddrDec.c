@@ -61,6 +61,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "mvCommon.h"
+#include "mvSysHwConfig.h"
 #include "mvOs.h"
 #include "ctrlEnv/mvCtrlEnvSpec.h"
 #include "mvXorRegs.h"

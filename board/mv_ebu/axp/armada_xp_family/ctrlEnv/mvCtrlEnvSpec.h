@@ -85,7 +85,11 @@ extern "C" {
 #define MV_AURORA_L2_REGS_OFFSET		(0x8000)
 #define MV_RTC_REGS_OFFSET			(0x10300)
 #define MV_DEV_BUS_REGS_OFFSET			(0x10400)
-#define MV_SPI_REGS_OFFSET(unit)		(0x10600)
+#ifdef MV88F78X60_Z1
+#define MV_SPI_REGS_OFFSET(unit)               (0x10600)
+#else
+#define MV_SPI_REGS_OFFSET(unit)		(0x10600 + (unit * 0x80))
+#endif
 #define MV_TWSI_SLAVE_REGS_OFFSET(chanNum)	(0x11000 + (chanNum * 0x100))
 #define MV_UART_REGS_OFFSET(chanNum)		(0x12000 + (chanNum * 0x100))
 #define MV_RUNIT_PMU_REGS_OFFSET		(0x1C000)
@@ -123,7 +127,7 @@ extern "C" {
 
 #ifdef ARMADA_XP_ERRATA_SMI_1
 	#define MV_ETH_SMI_PORT   1
-#else  
+#else
     #define MV_ETH_SMI_PORT   0
 #endif
 
@@ -140,17 +144,26 @@ extern "C" {
 
 #define MV_GPP_MAX_PINS				68
 #define MV_GPP_MAX_GROUP    			3 /* group == configuration register? */
-#define MV_CNTMR_MAX_COUNTER 		17/* 4 global + 2 per CPU + 1 global WD + 4 CPU WD*/
-/* 	Global Counters 0-3  : 0-3
-	Global WD            : 4
-	CPU 0 Counter 0-1    : 5-6
-	CPU 0 WD             : 7
+#ifndef MV88F78X60_Z1
+#define MV_CNTMR_MAX_COUNTER 		8 /* 4 global + 1 global WD + 2 current private CPU + 1 private CPU WD*/
+#else
+#define MV_CNTMR_MAX_COUNTER 		17/* 4 global + 1 global WD + 2 per CPU + 4 CPU WD*/
+#endif
+/*
+	MV88F78X60_Z1								MV88F78X60_A0
+	-------------------------------             -------------------------------
+	Global Counters 0-3  : 0-3         		    Global Counters 0-3  		: 0-3
+	Global WD            : 4                    Global WD            		: 4
+
+	CPU 0 Counter 0-1    : 5-6					Private CPU Counter 0-1    : 5-6
+	CPU 0 WD             : 7                    Private CPU WD             : 7
 	CPU 1 Counter 0-1    : 8-9
 	CPU 1 WD             : 10
 	CPU 2 Counter 0-1    : 11-12
 	CPU 2 WD             : 13
 	CPU 3 Counter 0-1    : 14-15
-	CPU 3 WD             : 16 */
+	CPU 3 WD             : 16
+*/
 
 #define MV_UART_MAX_CHAN			4
 
@@ -176,13 +189,13 @@ extern "C" {
 #endif
 
 /* This define describes the maximum number of supported PEX Interfaces */
+#define MV_PEX_MAX_IF				10
+#define MV_PEX_MAX_UNIT				4
 #ifdef MV_INCLUDE_PEX
 #define MV_INCLUDE_PEX0
 #define MV_DISABLE_PEX_DEVICE_BAR
 
-#define MV_PEX_MAX_IF				10
 #define MV_PEX_START_IF				MV_PCI_MAX_IF
-#define MV_PEX_MAX_UNIT				4
  #define PEX_HOST_BUS_NUM(pciIf)		(pciIf)
  #define PEX_HOST_DEV_NUM(pciIf)		0
 #else
@@ -213,6 +226,7 @@ extern "C" {
 /* This define describes the maximum number of supported Ethernet ports */
 /* TODO - verify all these numbers */
 #define MV_ETH_VERSION 				4 /* for Legacy mode */
+#define MV_NETA_VERSION				1 /* for NETA mode */
 #define MV_ETH_MAX_PORTS			4
 #define MV_ETH_MAX_RXQ              		8
 #define MV_ETH_MAX_TXQ              		8
@@ -337,9 +351,9 @@ typedef enum _mvTarget {
 	BOOT_ROM_CS, /*38 BOOT_ROM_CS			*/
 	DEV_BOOCS,	/*39 DEV_BOOCS			*/
 	PMU_SCRATCHPAD,	/*40 PMU Scratchpad		*/
-	CRYPT0_ENG,	/* Crypto0 Engine		*/
-	CRYPT1_ENG,	/* Crypto1 Engine		*/
-	PNC_BM,		/* PNC + BM 		        */
+	CRYPT0_ENG,	/* 41 Crypto0 Engine		*/
+	CRYPT1_ENG,	/* 42 Crypto1 Engine		*/
+	PNC_BM,		/* 43 PNC + BM 		        */
 	MAX_TARGETS
 } MV_TARGET;
 

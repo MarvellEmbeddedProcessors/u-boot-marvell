@@ -278,7 +278,8 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 	boardId = mvBoardIdGet();
 
 	switch (boardId) {
-	case DB_88F78XX0_BP_ID:  // need to update since Gunit0 can be SGMII
+	case DB_88F78XX0_BP_REV2_ID:
+	case DB_88F78XX0_BP_ID:  /* need to update since Gunit0 can be SGMII */
 		if (ethPortNum > 1)
 			return MV_TRUE;
 		break;
@@ -351,6 +352,35 @@ MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum)
 
 	return BOARD_INFO(boardId)->pBoardMacInfo[ethPortNum].boardEthSmiAddr;
 }
+
+/*******************************************************************************
+* mvBoardPhyAddrGet - Get the phy address
+*
+* DESCRIPTION:
+*       This routine returns the Phy address of a given ethernet port.
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit describing Phy address, -1 if the port number is wrong.
+*
+*******************************************************************************/
+MV_32 mvBoardPhyLinkCryptPortAddrGet(MV_U32 ethPortNum)
+{
+	MV_U32 boardId = mvBoardIdGet();
+
+	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
+		mvOsPrintf("mvBoardPhyLinkCryptPortAddrGet: Board unknown.\n");
+		return MV_ERROR;
+	}
+
+	return BOARD_INFO(boardId)->pBoardMacInfo[ethPortNum].LinkCryptPortAddr;
+}
+
 
 /*******************************************************************************
 * mvBoardMacSpeedGet - Get the Mac speed
@@ -428,7 +458,6 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 		return MV_BOARD_TCLK_200MHZ;
 	else
 		return MV_BOARD_TCLK_250MHZ;
-	
 }
 
 /*******************************************************************************
@@ -595,7 +624,7 @@ MV_VOID mvBoardReset(MV_VOID)
 
 	/* Get gpp reset pin if define */
 	resetPin = mvBoardResetGpioPinGet();
-	MV_REG_BIT_RESET(GPP_DATA_OUT_REG((int)(resetPin/32)), (1 << (resetPin%32))); 
+	MV_REG_BIT_RESET(GPP_DATA_OUT_REG((int)(resetPin/32)), (1 << (resetPin % 32)));
 }
 
 /*******************************************************************************
@@ -1355,6 +1384,8 @@ MV_VOID mvBoardIdSet(MV_VOID)
 		gBoardId = RD_78460_SERVER_ID;
 #elif defined(DB_78X60_PCAC)
 		gBoardId = DB_78X60_PCAC_ID;
+#elif defined(DB_88F78X60_REV2)
+		gBoardId = DB_88F78XX0_BP_REV2_ID;
 #else
 		mvOsPrintf("mvBoardIdSet: Board ID must be defined!\n");
 		while (1) {
@@ -1675,28 +1706,43 @@ MV_STATUS mvBoardBootDevWidthSet(MV_U8 val)
 }
 
 /*******************************************************************************/
+#ifdef MV88F78X60_Z1
 MV_U8 mvBoardCpu0CoreModeGet(MV_VOID)
+#else
+MV_U8 mvBoardCpu0EndianessGet(MV_VOID)
+#endif
 {
 	MV_U8 sar;
 
 	sar = mvBoardTwsiSatRGet(3, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
-
+#ifdef MV88F78X60_Z1
 	return (sar & 0x18) >> 3;
+#else
+	return (sar & 0x08) >> 3;
+#endif
 }
 
 /*******************************************************************************/
+#ifdef MV88F78X60_Z1
 MV_STATUS mvBoardCpu0CoreModeSet(MV_U8 val)
+#else
+MV_STATUS mvBoardCpu0EndianessSet(MV_U8 val)
+#endif
 {
 	MV_U8 sar;
 
 	sar = mvBoardTwsiSatRGet(3, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
-
+#ifdef MV88F78X60_Z1
 	sar &= ~(0x3 << 3);
 	sar |= ((val & 0x3) << 3);
+#else
+	sar &= ~(0x1 << 3);
+	sar |= ((val & 0x1) << 3);
+#endif
 	if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar)) {
 		DB1(mvOsPrintf("Board: Write Cpu0CoreMode S@R fail\n"));
 		return MV_ERROR;
@@ -1808,8 +1854,21 @@ MV_STATUS mvBoardPexCapabilitySet(MV_U16 conf)
 MV_U16 mvBoardPexCapabilityGet(MV_VOID)
 {
 	MV_U8 sar;
+	MV_U32 boardId = mvBoardIdGet();
 
-	sar = mvBoardTwsiSatRGet(1, 1);
+	switch (boardId) {
+	case DB_78X60_PCAC_ID:
+		sar = 0x2; /* Gen2 */
+		break;
+	case DB_88F78XX0_BP_ID:
+	case RD_78460_SERVER_ID:
+	case FPGA_88F78XX0_ID:
+	case DB_88F78XX0_BP_REV2_ID:
+	default:
+		sar = mvBoardTwsiSatRGet(1, 1);
+		break;
+	}
+
 	return (sar & 0xFF);
 }
 
@@ -1882,7 +1941,7 @@ MV_STATUS mvBoardMppModulesScan(void)
 	MV_U32 boardId = mvBoardIdGet();
 
 	/* Perform scan only for DB board */
-	if (boardId == DB_88F78XX0_BP_ID) {
+	if ( (boardId == DB_88F78XX0_BP_ID) || (boardId == DB_88F78XX0_BP_REV2_ID) ) {
 		twsiSlave.slaveAddr.address = MV_BOARD_MPP_MODULE_ADDR;
 		twsiSlave.slaveAddr.type = MV_BOARD_MPP_MODULE_ADDR_TYPE;
 		twsiSlave.validOffset = MV_TRUE;
@@ -1946,7 +2005,7 @@ MV_STATUS mvBoardOtherModulesScan(void)
 	MV_U32 boardId = mvBoardIdGet();
 
 	/* Perform scan only for DB board */
-	if (boardId == DB_88F78XX0_BP_ID) {
+	if ( (boardId == DB_88F78XX0_BP_ID) || (boardId == DB_88F78XX0_BP_REV2_ID) ) {
 		/* reset modules flags */
 		BOARD_INFO(boardId)->pBoardModTypeValue->boardOtherMod |= MV_BOARD_NONE;
 
@@ -2003,7 +2062,7 @@ MV_BOOL mvBoardIsPexModuleConnected(void)
 {
 	MV_U32 boardId = mvBoardIdGet();
 
-	if (boardId != DB_88F78XX0_BP_ID)
+	if ( (boardId == DB_88F78XX0_BP_ID) || (boardId == DB_88F78XX0_BP_REV2_ID) )
 		DB(mvOsPrintf("mvBoardIsPexModuleConnected: Unsupported board!\n"));
 	else if (BOARD_INFO(boardId)->pBoardModTypeValue->boardOtherMod & MV_BOARD_PEX)
 		return MV_TRUE;
@@ -2031,7 +2090,7 @@ MV_BOOL mvBoardIsLvdsModuleConnected(void)
 {
 	MV_U32 boardId = mvBoardIdGet();
 
-	if (boardId != DB_88F78XX0_BP_ID)
+	if ( (boardId == DB_88F78XX0_BP_ID) || (boardId == DB_88F78XX0_BP_REV2_ID) )
 		DB(mvOsPrintf("mvBoardIsLvdsModuleConnected: Unsupported board!\n"));
 	else if (BOARD_INFO(boardId)->pBoardModTypeValue->boardOtherMod & MV_BOARD_LVDS)
 		return MV_TRUE;
@@ -2059,7 +2118,7 @@ MV_BOOL mvBoardIsLcdDviModuleConnected(void)
 {
 	MV_U32 boardId = mvBoardIdGet();
 
-	if (boardId != DB_88F78XX0_BP_ID)
+	if ( (boardId == DB_88F78XX0_BP_ID) || (boardId == DB_88F78XX0_BP_REV2_ID) )
 		DB(mvOsPrintf("mvBoardIsLcdDviModuleConnected: Unsupported board!\n"));
 	else if (BOARD_INFO(boardId)->pBoardModTypeValue->boardMppMod == MV_BOARD_LCD_DVI)
 		return MV_TRUE;
@@ -2069,10 +2128,10 @@ MV_BOOL mvBoardIsLcdDviModuleConnected(void)
 
 
 /*******************************************************************************
-* mvBoardIsLcdDviModuleConnected
+* mvBoardIsGMIIModuleConnected
 *
 * DESCRIPTION:
-*	Check if LVDS module is connected to the board.
+*	Check if GMII module is connected to the board.
 *
 * INPUT:
 *	None.
@@ -2088,7 +2147,7 @@ MV_BOOL mvBoardIsGMIIModuleConnected(void)
 {
 	MV_U32 boardId = mvBoardIdGet();
 
-	if (boardId != DB_88F78XX0_BP_ID)
+	if ( (boardId == DB_88F78XX0_BP_ID) || (boardId == DB_88F78XX0_BP_REV2_ID) )
 		DB(mvOsPrintf("mvBoardIsGMIIModuleConnected: Unsupported board!\n"));
 	else if (BOARD_INFO(boardId)->pBoardModTypeValue->boardMppMod == MV_BOARD_MII_GMII)
 		return MV_TRUE;
@@ -2232,6 +2291,9 @@ MV_SERDES_CFG *mvBoardSerdesCfgGet(void)
 	case DB_88F78XX0_BP_ID:
 		if (mvBoardIsPexModuleConnected())
 			serdesCfg = 1;
+		/* If backword compatability for Z1A is needed */
+		if (gSerdesZ1AMode)
+			serdesCfg += 2;
 		break;
 	case RD_78460_SERVER_ID:
 		if (mvBoardSledCpuNumGet() > 0)
@@ -2240,14 +2302,14 @@ MV_SERDES_CFG *mvBoardSerdesCfgGet(void)
 	case DB_78X60_PCAC_ID:
 			serdesCfg = 0;
 		break;
+	case DB_88F78XX0_BP_REV2_ID:
+		if (mvBoardIsPexModuleConnected())
+			serdesCfg = 1;
+		break;
 	default:
 		DB(mvOsPrintf("mvBoardSerdesCfgGet: Unsupported board!\n"));
 		return NULL;
 	}
-
-	/* If backword compatability for Z1A is needed */
-	if (gSerdesZ1AMode)
-		serdesCfg += 2;
 
 	return &BOARD_INFO(boardId)->pBoardSerdesConfigValue[serdesCfg];
 }
@@ -2276,6 +2338,7 @@ MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 	case RD_78460_SERVER_ID:
 	case DB_78X60_PCAC_ID:
 	case FPGA_88F78XX0_ID:
+	case DB_88F78XX0_BP_REV2_ID:
 		return &BOARD_INFO(boardId)->boardPexInfo;
 		break;
 	default:

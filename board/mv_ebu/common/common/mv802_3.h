@@ -74,12 +74,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* 802.3 types */
 #define MV_IP_TYPE                  0x0800
 #define MV_IP_ARP_TYPE              0x0806
-#define MV_IP6_TYPE                 0x86dd
+#define MV_IP6_TYPE					0x86dd
 #define MV_APPLE_TALK_ARP_TYPE      0x80F3
 #define MV_NOVELL_IPX_TYPE          0x8137
-#define MV_EAPOL_TYPE               0x888e
-#define MV_VLAN_TYPE                0x8100
-#define MV_PPPOE_TYPE               0x8864
+#define MV_EAPOL_TYPE				0x888e
+#define MV_VLAN_TYPE				0x8100
+#define MV_PPPOE_TYPE				0x8864
 
 /* PPPoE protocol type */
 #define MV_IP_PPP  0x0021

@@ -59,8 +59,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
 
-#ifndef __NS16550_H__
-#define __NS16550_H__
+#ifndef __INCmvUarth
+#define __INCmvUarth
 
 #ifdef __cplusplus
 extern "C" {
@@ -102,10 +102,10 @@ extern "C" {
 
 #if defined(MV_UART_OVER_PEX_WA) || defined(MV_UART_OVER_PCI_WA)
 #define mvUartBase(port)  \
-		((MV_UART_PORT *)(0xF2000000 + MV_UART_REGS_OFFSET(port)))
+                ((MV_UART_PORT *)(0xF2000000 + MV_UART_REGS_OFFSET(port)))
 #else
 #define mvUartBase(port)  \
-		((MV_UART_PORT *)(INTER_REGS_BASE + MV_UART_REGS_OFFSET(port)))
+                ((MV_UART_PORT *)(INTER_REGS_BASE + MV_UART_REGS_OFFSET(port)))
 #endif
 
 /* aliases - for registers which has the same offsets */
@@ -161,4 +161,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif
+#endif /* __INCmvUarth */

@@ -129,7 +129,7 @@ MV_STATUS mvSpiParamsSet(MV_U8 spiId, MV_U8 csId, MV_SPI_TYPE type)
 
 	if (currSpiInfo != (&(spiTypes[type]))) {
 		currSpiInfo = &(spiTypes[type]);
-		mvSpiBaudRateSet(0, currSpiInfo->baudRate);
+		mvSpiBaudRateSet(spiId, currSpiInfo->baudRate);
 	}
 
 	return MV_OK;

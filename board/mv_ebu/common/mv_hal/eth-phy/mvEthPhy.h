@@ -104,6 +104,7 @@ extern "C" {
 
 typedef struct {
 	MV_U32		phyAddr[MV_ETH_MAX_PORTS];
+	MV_U32		LinkCryptPortAddr[MV_ETH_MAX_PORTS];
 	MV_BOOL		boardSpecInit;		/* Special board phy init */
 	MV_U32		specRegOff;		/* Board specific register offset, Valid if boardSpecInit == TRUE */
 	MV_U32		specData;  		/* Board specific data to write, Valid if boardSpecInit == TRUE */

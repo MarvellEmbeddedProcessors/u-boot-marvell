@@ -111,18 +111,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 MV_U32 dummyFlavour = 0;
 MV_BIOS_MODE bios_modes[BIOS_MODES_NUM] = {
-/*	DB Conf		Conf ID		Plat Code	L2 size		CPU Freq	CpuFreqMode	Fabric Freq	FabricFreqMode
-		CPU1/2/3 Enable	CPU Mode v7UP/v6MP	*/
-/*										0x4d/[1:0]	0x4d/[4:2]	0x4e[0]		0x4e/[4:1]	0x4f[0]
-	0x4f/[2:1]		0x4f/[4:3]			*/
-	{"78130",	0x10,		0x7813, 	0x1, 		0x2, 		0x0,		0x5, 		0x0,		0x0,		0x1},
-	{"6710",	0x11,		0x6710, 	0x0, 		0x2, 		0x0,		0x5, 		0x0,		0x0,		0x1},
-	{"78160",	0x12,		0x7816, 	0x1, 		0x2, 		0x0,		0x5, 		0x0,		0x0,		0x1},
-	{"78230",	0x13,		0x7823, 	0x1, 		0x2, 		0x0,		0x5, 		0x0,		0x2,		0x2},
-	{"78260",	0x14,		0x7826, 	0x1, 		0x2, 		0x0,		0x5, 		0x0,		0x2,		0x2},
-	{"78460",	0x15,		0x7846, 	0x3, 		0x2, 		0x0,		0x5, 		0x0,		0x3,		0x2},
-	{"78480",	0x16,		0x7846, 	0x3, 		0x2, 		0x0,		0x5, 		0x0,		0x3,		0x2}
+#ifdef MV88F78X60_Z1
+/*	DBConf ConfID Code L2Size CPUFreq CpuFreqMode FabricFreq FabricFreqMode CPU1/2/3Enable cpuEndianess	*/
+/*	0x4d/[1:0] 0x4d/[4:2] 0x4e[0] 0x4e/[4:1] 0x4f[0] 0x4f/[2:1] 0x4f/[4:3]	*/
+       {"78130", 0x10, 0x7813, 0x1, 0x2, 0x0, 0x5, 0x0, 0x0, 0x1},
+       {"6710" , 0x11, 0x6710, 0x0, 0x2, 0x0, 0x5, 0x0, 0x0, 0x1},
+       {"78160", 0x12, 0x7816, 0x1, 0x2, 0x0, 0x5, 0x0, 0x0, 0x1},
+       {"78230", 0x13, 0x7823, 0x1, 0x2, 0x0, 0x5, 0x0, 0x2, 0x2},
+       {"78260", 0x14, 0x7826, 0x1, 0x2, 0x0, 0x5, 0x0, 0x2, 0x2},
+       {"78460", 0x15, 0x7846, 0x3, 0x2, 0x0, 0x5, 0x0, 0x3, 0x2},
+       {"78480", 0x16, 0x7846, 0x3, 0x2, 0x0, 0x5, 0x0, 0x3, 0x2}
 };
+#else
+/*	DBConf ConfID Code L2Size CPUFreq CpuFreqMode FabricFreq FabricFreqMode CPU1/2/3Enable cpuEndianess	*/
+/*	0x4d/[1:0] 0x4d/[4:2] 0x4e[0] 0x4e/[4:1] 0x4f[0] 0x4f/[2:1] 0x4f/[4:3]	*/
+	{"78130",0x10, 0x7813, 0x1, 0x2, 0x0, 0x5, 0x0, 0x0, 0x1},
+	{"6710" ,0x11, 0x6710, 0x0, 0x2, 0x0, 0x5, 0x0, 0x0, 0x1},
+	{"78160",0x12, 0x7816, 0x1, 0x2, 0x0, 0x5, 0x0, 0x0, 0x1},
+	{"78230",0x13, 0x7823, 0x1, 0x2, 0x0, 0x5, 0x0, 0x1, 0x0},
+	{"78260",0x14, 0x7826, 0x1, 0x2, 0x0, 0x5, 0x0, 0x1, 0x0},
+	{"78460",0x15, 0x7846, 0x3, 0x2, 0x0, 0x5, 0x0, 0x3, 0x0},
+	{"78480",0x16, 0x7846, 0x3, 0x2, 0x0, 0x5, 0x0, 0x3, 0x0}
+};
+#endif
 
 #if 0
 table below before moving all flavour to 1333/667 mode only
@@ -198,10 +209,13 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 	/* MV_U32 socFreq, tmpSocCores;		*/
 	/* MV_U32 socCores = 0;				*/
 	MV_U32 pmCtrl;
-#if defined(DB_88F78X60) || defined(RD_88F78460_SERVER)
+#if defined(DB_88F78X60) || defined(RD_88F78460_SERVER) || defined (DB_88F78X60_REV2)
 	MV_U32 devVendId;
 	int i;
+	int j;
 	MV_U16 confId;
+	MV_U32 tmp;
+	MV_U32 NewVal;
 #endif
 
 	/* if PEX0 clock is disabled - enable it for reading the device ID */
@@ -210,7 +224,7 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 		MV_REG_WRITE(POWER_MNG_CTRL_REG,
 			(pmCtrl & ~PMC_PEXSTOPCLOCK_MASK(0)) | PMC_PEXSTOPCLOCK_EN(0));
 	}
-#if defined(DB_88F78X60)
+#if defined(DB_88F78X60) || defined (DB_88F78X60_REV2)
 	devVendId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PEX_DEVICE_AND_VENDOR_ID));
 	/* socFreq   = MV_REG_READ(MPP_SAMPLE_AT_RESET(0)) & SAR0_DDR3_FREQ_MASK; */
 	/* tmpSocCores  = (MV_REG_READ(MPP_SAMPLE_AT_RESET(1)) & SAR1_CPU_CORE_MASK) >> SAR1_CPU_CORE_OFFSET; */
@@ -224,13 +238,21 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 /*	if ((socFreq == SAR_CPU_FAB_GET(bios_modes[i].cpuFreq, bios_modes[i].fabricFreq)) &&
 			(socCores == bios_modes[i].cpuEna)) {
 */
+	tmp = MV_REG_READ(SOC_CTRL_REG); /*Saving old value of 0x18204 to tmp*/
+	NewVal = tmp;
+	NewVal |=0x00000080; /* writing 1 to bit 7 */
+	MV_REG_WRITE(SOC_CTRL_REG, NewVal); /* writing '1' to bit 7 in order to get an access to PEX registers */
 	for (i = 0; i < BIOS_MODES_NUM; i++) {
 		if (bios_modes[i].confId == confId) {
 			devVendId &= 0x0000FFFF;
 			devVendId |= bios_modes[i].code << 16;
-			MV_REG_WRITE(MV_PEX_IF_REGS_OFFSET(0), devVendId);
+			for (j=0;j<mvCtrlPexMaxIfGet();j++){
+				MV_REG_WRITE(MV_PEX_IF_REGS_OFFSET(j), devVendId);
+			}
 		}
 	}
+	MV_REG_WRITE(SOC_CTRL_REG, tmp);/*returing 0x18204 to it's previous value. */
+
 #elif defined(RD_88F78460_SERVER)
 	devVendId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PEX_DEVICE_AND_VENDOR_ID));
 	devVendId &= 0x0000FFFF;
@@ -1914,12 +1936,12 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
 	MV_STATUS	status = MV_OK;
 	MV_U32		tmp;
-		
 
-	MV_U32	powermngmntctrlregmap=0x0;/* this is a mapping of the final power management clock gating control register value @ 0x18220.*/
-	MV_U32 ethport=0;
-	MV_U32 tmpcounter=0;
-	
+/* this is a mapping of the final power management clock gating control register value @ 0x18220.*/
+	MV_U32	powermngmntctrlregmap = 0x0;
+	MV_U32	ethport = 0;
+	MV_U32	tmpcounter = 0;
+
 	/* Check if no SERDESs available - FPGA */
 	if (maxSerdesLines == 0)
 		return MV_OK;
@@ -1989,7 +2011,7 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 				case 2:
 				case 3:
 					boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = PEX2_0x4 + (pexUnit - 2);
-					powermngmntctrlregmap = powermngmntctrlregmap | (0x1<<( pexUnit+24));
+					powermngmntctrlregmap = powermngmntctrlregmap | (0x1 << (pexUnit+24));
 					break;
 				}
 
@@ -2050,13 +2072,13 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 
 			MV_U8	sataPort;
 
-			if ((serdesLineNum == 4) || (serdesLineNum == 8)){
+			if ((serdesLineNum == 4) || (serdesLineNum == 8)) {
 				sataPort = 0;
 				powermngmntctrlregmap = powermngmntctrlregmap | PMC_SATASTOPCLOCK_MASK(sataPort);
-			}else if( (serdesLineNum == 5) || (serdesLineNum == 9) ){
+			} else if ((serdesLineNum == 5) || (serdesLineNum == 9)) {
 				sataPort = 1;
 				powermngmntctrlregmap = powermngmntctrlregmap | PMC_SATASTOPCLOCK_MASK(sataPort);
-			}else 
+			} else
 				goto err_cfg;
 
 			pRegAddr[0] = SATA_PWR_PLL_CTRL_REG(sataPort);
@@ -2082,22 +2104,24 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 
 		} else {
 
-			if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII0]){
+			if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII0]) {
 				sgmiiPort = 0;
 				powermngmntctrlregmap = powermngmntctrlregmap | PMC_GESTOPCLOCK_MASK(sgmiiPort);
-			}else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII1]){
+			} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII1]) {
 				sgmiiPort = 1;
 				powermngmntctrlregmap = powermngmntctrlregmap | PMC_GESTOPCLOCK_MASK(sgmiiPort);
-			}else if(serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII2]){
+			} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII2]) {
 				sgmiiPort = 2;
 				powermngmntctrlregmap = powermngmntctrlregmap | PMC_GESTOPCLOCK_MASK(sgmiiPort);
-			}else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII3]){
+			} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII3]) {
 				sgmiiPort = 3;
 				powermngmntctrlregmap = powermngmntctrlregmap | PMC_GESTOPCLOCK_MASK(sgmiiPort);
-			}else if(serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_QSGMII]){
+			} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_QSGMII]) {
 				sgmiiPort = 0;
-				powermngmntctrlregmap = powermngmntctrlregmap | PMC_GESTOPCLOCK_MASK(0) |PMC_GESTOPCLOCK_MASK(1)| PMC_GESTOPCLOCK_MASK(2)|PMC_GESTOPCLOCK_MASK(3);
-			}else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_UNCONNECTED])
+				powermngmntctrlregmap = powermngmntctrlregmap | \
+										PMC_GESTOPCLOCK_MASK(0) | PMC_GESTOPCLOCK_MASK(1) | \
+										PMC_GESTOPCLOCK_MASK(2) | PMC_GESTOPCLOCK_MASK(3);
+			} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_UNCONNECTED])
 				continue;
 
 			pRegAddr[0] = SGMII_PWR_PLL_CTRL_REG(sgmiiPort);
@@ -2128,17 +2152,19 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 	 * If clock gatting was done in U-boot then we don't want
 	 *to try to access  a HW block that is clock gated
 	 */
-	if((MV_REG_READ(POWER_MNG_CTRL_REG) == 0xFFFFFFFF)){
+	if ((MV_REG_READ(POWER_MNG_CTRL_REG) == 0xFFFFFFFF)) {
 		/* Step 0 - configure SERDES MUXes */
 		MV_REG_WRITE(SERDES_LINE_MUX_REG_0_7,  pSerdesInfo->serdesLine0_7);
 		MV_REG_WRITE(SERDES_LINE_MUX_REG_8_15, pSerdesInfo->serdesLine8_15);
-		DB(mvOsPrintf("\nStep[0].1 Addr[0x%08x] Value[0x%08x]\n", SERDES_LINE_MUX_REG_0_7, pSerdesInfo->serdesLine0_7));
-		DB(mvOsPrintf("Step[0].2 Addr[0x%08x] Value[0x%08x]\n\n", SERDES_LINE_MUX_REG_8_15, pSerdesInfo->serdesLine8_15));
-	
+		DB(mvOsPrintf("\nStep[0].1 Addr[0x%08x] Value[0x%08x]\n", \
+					  SERDES_LINE_MUX_REG_0_7, pSerdesInfo->serdesLine0_7));
+		DB(mvOsPrintf("Step[0].2 Addr[0x%08x] Value[0x%08x]\n\n", \
+					  SERDES_LINE_MUX_REG_8_15, pSerdesInfo->serdesLine8_15));
+
 		/* Step 1 [PEX-Only] PEX-Main configuration (X4 or X1): */
 		/* First disable all PEXs in SoC Control Reg */
 		MV_REG_WRITE(SOC_CTRL_REG, 0x0);
-	
+
 		for (pexUnit = 0; pexUnit < mvCtrlPexMaxUnitGet(); pexUnit++) {
 			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_DISABLED)
 				continue;
@@ -2150,19 +2176,19 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 				tmp = MV_REG_READ(SOC_CTRL_REG);
 				if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X1)
 					tmp |= SCR_PEX_4BY1_MASK(pexUnit);
-	
+
 				DB(mvOsPrintf("Step[1].1 Addr[0x%08x] pexUnit [%d] value [0x%x]\n", SOC_CTRL_REG, pexUnit, tmp));
 				MV_REG_WRITE(SOC_CTRL_REG, tmp);
 			}
 		}
-	
+
 		for (serdesLineNum = 0; serdesLineNum < maxSerdesLines; serdesLineNum++) {
-	
+
 			if (serdesLineNum < 8)
 				serdesLineCfg = (pSerdesInfo->serdesLine0_7 >> (serdesLineNum << 2)) & 0xF;
 			else
 				serdesLineCfg = (pSerdesInfo->serdesLine8_15 >> ((serdesLineNum - 8) << 2)) & 0xF;
-	
+
 			if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_PEX]) {
 				/* PCI Express Control
 					0xX1A00 [0]:
@@ -2176,39 +2202,39 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 					tmp |= (0x4 << 4);
 				MV_REG_WRITE(PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), tmp);
 				DB(mvOsPrintf("Step[1].2 Addr[0x%08x] serdesLine [%d] value [0x%x]\n",
-				PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), serdesLineNum, tmp));
+						  PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), serdesLineNum, tmp));
 				/* if pex is X4, no need to pass thru the other 3X1 serdes lines */
 				if (boardPexInfo->pexUnitCfg[serdesLineNum >> 2].pexCfg == PEX_BUS_MODE_X4)
 					serdesLineNum += 3;
 			}
 		}
 		DB(mvOsPrintf("\n"));
-	
-		/* Step 2 [PEX-X4 Only] To create PEX-Link that contain 4-lanes you need to config the
-		register SOC_Misc/General Purpose2 (Address= 182F8)*/
-		tmp = MV_REG_READ(GEN_PURP_RES_2_REG);
-
-		if (pSerdesInfo->pex0Mod == PEX_BUS_MODE_X4)
-		DB(mvOsPrintf("\n"));
 
 		/* Step 2 [PEX-X4 Only] To create PEX-Link that contain 4-lanes you need to config the
 		 register SOC_Misc/General Purpose2 (Address= 182F8)*/
-		tmp = MV_REG_READ(GEN_PURP_RES_2_REG);	tmp |= 0x0000000F;
-		/*	else
-			tmp &= 0xFFFFFFF0;
-		*/
+		tmp = MV_REG_READ(GEN_PURP_RES_2_REG);
+
+		if (pSerdesInfo->pex0Mod == PEX_BUS_MODE_X4)
+			DB(mvOsPrintf("\n"));
+
+		/* Step 2 [PEX-X4 Only] To create PEX-Link that contain 4-lanes you need to config the
+		 register SOC_Misc/General Purpose2 (Address= 182F8)*/
+		tmp = MV_REG_READ(GEN_PURP_RES_2_REG);  tmp |= 0x0000000F;
+/*	else
+		tmp &= 0xFFFFFFF0;
+*/
 		if (pSerdesInfo->pex1Mod == PEX_BUS_MODE_X4)
 			tmp |= 0x000000F0;
-		/*	else
-			tmp &= 0xFFFFFF0F; */
+/*	else
+		tmp &= 0xFFFFFF0F; */
 
 		if (pSerdesInfo->pex3Mod == PEX_BUS_MODE_X4)
 			tmp |= 0x0000FF00;
-		/*	else
-			tmp &= 0xFFFF00FF; */
+/*	else
+		tmp &= 0xFFFF00FF; */
 
 		DB(mvOsPrintf("Step[2] Addr[0x%08x] Value[0x%08x]\n\n", GEN_PURP_RES_2_REG, tmp));
-	
+
 		MV_REG_WRITE(GEN_PURP_RES_2_REG, tmp);
 
 		/* STEP 3 [PEX-Only] First phase of PEX-PIPE Configuration:*/
@@ -2217,18 +2243,32 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 				continue;
 			DB(mvOsPrintf("Step[3].1 Addr[0x%08x] Value[0x%08x]\n", PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0xA5));
 			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X4)
-				DB(mvOsPrintf("Step[3].2 Addr[0x%08x] Value[0x%08x]\n", PEX_PHY_ACCESS_REG(pexUnit), (0xC2 << 16) | 0x200));
+				DB(mvOsPrintf("Step[3].2 Addr[0x%08x] Value[0x%08x]\n", \
+							  PEX_PHY_ACCESS_REG(pexUnit), (0xC2 << 16) | 0x200));
 			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X1)
-				DB(mvOsPrintf("Step[3].3 Addr[0x%08x] Value[0x%08x]\n", PEX_PHY_ACCESS_REG(pexUnit), (0xC3 << 16) | 0x0F));
-	
-			DB(mvOsPrintf("Step[3].4 Addr[0x%08x] Value[0x%08x]\n", PEX_PHY_ACCESS_REG(pexUnit), (0xC8 << 16) | 0x05));
-			DB(mvOsPrintf("Step[3].5 Addr[0x%08x] Value[0x%08x]\n", PEX_PHY_ACCESS_REG(pexUnit), (0xD0 << 16) | 0x100));
-			DB(mvOsPrintf("Step[3].6 Addr[0x%08x] Value[0x%08x]\n", PEX_PHY_ACCESS_REG(pexUnit), (0xD1 << 16) | 0x3014));
-			DB(mvOsPrintf("Step[3].7 Addr[0x%08x] Value[0x%08x]\n", PEX_PHY_ACCESS_REG(pexUnit), (0xC5 << 16) | 0x11F));
-			DB(mvOsPrintf("Step[3].8 Addr[0x%08x] Value[0x%08x]\n", PEX_PHY_ACCESS_REG(pexUnit), (0x80 << 16) | 0x1000));
-			DB(mvOsPrintf("Step[3].9 Addr[0x%08x] Value[0x%08x]\n\n", PEX_PHY_ACCESS_REG(pexUnit), (0x81 << 16) | 0x11));
-	
-			MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0x25);
+				DB(mvOsPrintf("Step[3].3 Addr[0x%08x] Value[0x%08x]\n", \
+							  PEX_PHY_ACCESS_REG(pexUnit), (0xC3 << 16) | 0x0F));
+
+			DB(mvOsPrintf("Step[3].4 Addr[0x%08x] Value[0x%08x]\n", \
+						  PEX_PHY_ACCESS_REG(pexUnit), (0xC8 << 16) | 0x05));
+			DB(mvOsPrintf("Step[3].5 Addr[0x%08x] Value[0x%08x]\n", \
+						  PEX_PHY_ACCESS_REG(pexUnit), (0xD0 << 16) | 0x100));
+			DB(mvOsPrintf("Step[3].6 Addr[0x%08x] Value[0x%08x]\n", \
+						  PEX_PHY_ACCESS_REG(pexUnit), (0xD1 << 16) | 0x3014));
+			DB(mvOsPrintf("Step[3].7 Addr[0x%08x] Value[0x%08x]\n", \
+						  PEX_PHY_ACCESS_REG(pexUnit), (0xC5 << 16) | 0x11F));
+			DB(mvOsPrintf("Step[3].8 Addr[0x%08x] Value[0x%08x]\n", \
+						  PEX_PHY_ACCESS_REG(pexUnit), (0x80 << 16) | 0x1000));
+			DB(mvOsPrintf("Step[3].9 Addr[0x%08x] Value[0x%08x]\n\n",\
+						  PEX_PHY_ACCESS_REG(pexUnit), (0x81 << 16) | 0x11));
+
+
+
+			#ifdef MV88F78X60_Z1
+				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0xA5);
+			#else
+				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0x25);
+			#endif
 			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X4)
 				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC2 << 16) | 0x200);
 			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X1)
@@ -2246,8 +2286,9 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 		for (step = 0; step < 4; step++) {
 			for (serdesLineNum = 0; serdesLineNum < maxSerdesLines; serdesLineNum++) {
 				if (regAddr[serdesLineNum][step] != 0) {
-					DB(mvOsPrintf("Step[%d] Lane[%d] Addr[0x%08x] Value[0x%08x]\n",
-				BIT25		step + 4, serdesLineNum, regAddr[serdesLineNum][step], regVal[serdesLineNum][step]));
+					DB(mvOsPrintf("Step[%d] Lane[%d] Addr[0x%08x] Value[0x%08x]\n",	\
+								  step + 4, serdesLineNum, \
+								  regAddr[serdesLineNum][step], regVal[serdesLineNum][step]));
 					MV_REG_WRITE(regAddr[serdesLineNum][step], regVal[serdesLineNum][step]);
 				}
 			}
@@ -2258,19 +2299,25 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 		for (pexUnit = 0; pexUnit < mvCtrlPexMaxUnitGet(); pexUnit++) {
 			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_DISABLED)
 				continue;
-			DB(mvOsPrintf("Step[8].1 Addr[0x%08x] Value[0x%08x]\n", PEX_PHY_ACCESS_REG(pexUnit), (0x2 << 16) | 0x40));
-			DB(mvOsPrintf("Step[8].2 Addr[0x%08x] Value[0x%08x]\n\n", PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0xA4));
-	
+			DB(mvOsPrintf("Step[8].1 Addr[0x%08x] Value[0x%08x]\n", \
+						  PEX_PHY_ACCESS_REG(pexUnit), (0x2 << 16) | 0x40));
+			DB(mvOsPrintf("Step[8].2 Addr[0x%08x] Value[0x%08x]\n\n", \
+						  PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0xA4));
+
 			MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0x2 << 16) | 0x40);
-			MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0xA4);
+			#ifdef MV88F78X60_Z1
+				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0xA4);
+			#else
+				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0x24);
+			#endif
 		}
-	
+
 		/*Step 9 [SATA-Only] - Init additional SATA registers */
 		for (step = 0; step < 5; step++) {
 			for (serdesLineNum = 0; serdesLineNum < maxSerdesLines; serdesLineNum++) {
 				if (regAddr[serdesLineNum][step+5] != 0) { /* SATA */
 					DB(mvOsPrintf("Step[9].%d Lane[%d] Addr[0x%08x] Value[0x%08x]\n",
-					step, serdesLineNum, regAddr[serdesLineNum][step+5], regVal[serdesLineNum][step+5]));
+								  step, serdesLineNum, regAddr[serdesLineNum][step+5], regVal[serdesLineNum][step+5]));
 					MV_REG_WRITE(regAddr[serdesLineNum][step+5], regVal[serdesLineNum][step+5]);
 				}
 			}
@@ -2282,22 +2329,22 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 
 		/* Step 10 - check that PLL RX/TX is ready and RX init done */
 		for (serdesLineNum = 0; serdesLineNum < maxSerdesLines; serdesLineNum++) {
-			MV_U32	tmp;
+			MV_U32  tmp;
 			if (regAddr[serdesLineNum][4] != 0) { /* SATA, QSGMII, SGMII */
 				tmp = MV_REG_READ(regAddr[serdesLineNum][4]);
 				if ((tmp & 0x7) != regVal[serdesLineNum][4]) { /* check bits[2:0] */
 					DB(mvOsPrintf("%s: PHY on SERDES lane %d is not ready!\n",
-					__func__, serdesLineNum));
+								  __func__, serdesLineNum));
 					status = MV_ERROR;
 				}
 			} else if (regAddr[serdesLineNum][0] != 0) { /* PEX that is enabled and passed step1 */
 				/* First step writes into Power and PLL control register.
-				It's possible to read it back now for checking the PLL lock status */
+				   It's possible to read it back now for checking the PLL lock status */
 				MV_REG_WRITE(regAddr[serdesLineNum][0], (regVal[serdesLineNum][0] | BIT31) & 0xFFFF0000);
 				tmp = MV_REG_READ(regAddr[serdesLineNum][0]);
 				if ((tmp & BIT8) == 0) {
 					DB(mvOsPrintf("%s: PEX PHY PLL on SERDES lane %d is not locked!\n",
-						__func__, serdesLineNum));
+								  __func__, serdesLineNum));
 					status = MV_ERROR;
 				}
 			}
@@ -2306,52 +2353,59 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 	} /*if No clock gating */
 
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
-	/*check if GE0 / GE1 are not enabled via MPPs and not Serdes - if yes you have to enable the clock*/	
-	for(ethport=0;ethport<2;ethport++)
+	/*check if GE0 / GE1 are not enabled via MPPs and not Serdes - if yes you have to enable the clock*/
+	for (ethport = 0; ethport < 2; ethport++)
 		if (MV_TRUE ==  mvBoardIsGbEPortConnected(ethport))
 			powermngmntctrlregmap = powermngmntctrlregmap | PMC_GESTOPCLOCK_MASK(ethport);
-	
+
 	/* Hard core enable DDR, USB, SDIO, LCD, XOR, IDMA, CESA cause we don't support this at this momemt*/
-	powermngmntctrlregmap = powermngmntctrlregmap | (BIT0  |BIT13 | (0x1FF<<16) | BIT24 |BIT28|BIT31);
+	powermngmntctrlregmap = powermngmntctrlregmap | (BIT0  | BIT13 | (0x1FF<<16) | BIT24 | BIT28 | BIT31);
 	DB(mvOsPrintf("%s:Shutting down unused interfaces:\n", __func__));
 	/*now report everything to the screen*/
-	if(!(powermngmntctrlregmap & PMC_SATASTOPCLOCK_MASK(0))){
+	if (!(powermngmntctrlregmap & PMC_SATASTOPCLOCK_MASK(0))) {
 		DB(mvOsPrintf("%s:       SATA0\n", __func__));
 		mvCtrlPwrClckSet(SATA_UNIT_ID, 0, MV_FALSE);
 	}
-	if(!(powermngmntctrlregmap & PMC_SATASTOPCLOCK_MASK(1))){
+	if (!(powermngmntctrlregmap & PMC_SATASTOPCLOCK_MASK(1))) {
 		DB(mvOsPrintf("%s:       SATA1\n", __func__));
 		mvCtrlPwrClckSet(SATA_UNIT_ID, 1, MV_FALSE);
-	}	
-	for(tmpcounter=0;tmpcounter< 4; tmpcounter++){
-		if(! (powermngmntctrlregmap & (1<< (4 - tmpcounter)))){
+	}
+	for (tmpcounter = 0; tmpcounter < 4; tmpcounter++) {
+		if (!(powermngmntctrlregmap & (1 << (4 - tmpcounter)))) {
 			/*mvOsOutput("       GBE%d\n", tmpcounter );*/
-				DB(mvOsPrintf("%s:       GBE%d\n", __func__,tmpcounter));
+			DB(mvOsPrintf("%s:       GBE%d\n", __func__, tmpcounter));
 			mvCtrlPwrClckSet(ETH_GIG_UNIT_ID, tmpcounter, MV_FALSE);
 		}
 	}
-	for(tmpcounter=0;tmpcounter< 8; tmpcounter++){
-		if(! (powermngmntctrlregmap & (1<< (5 +tmpcounter)))) {
-			DB(mvOsPrintf("%s:       PEX%d.%d\n", __func__,tmpcounter>>2, tmpcounter % 4));
+	for (tmpcounter = 0; tmpcounter < 8; tmpcounter++) {
+		if (!(powermngmntctrlregmap & (1 << (5 + tmpcounter)))) {
+			DB(mvOsPrintf("%s:       PEX%d.%d\n", __func__, tmpcounter>>2, tmpcounter % 4));
 			mvCtrlPwrClckSet(PEX_UNIT_ID, tmpcounter, MV_FALSE);
 		}
 	}
-	if(!(powermngmntctrlregmap & BIT26)) {
-	DB(mvOsPrintf("%s:       PEX2\n", __func__));
+	if (!(powermngmntctrlregmap & BIT26)) {
+		DB(mvOsPrintf("%s:       PEX2\n", __func__));
 		mvCtrlPwrClckSet(PEX_UNIT_ID, 8, MV_FALSE);
 	}
-	if(!(powermngmntctrlregmap & BIT27)) {
+	if (!(powermngmntctrlregmap & BIT27)) {
 		DB(mvOsPrintf("%s:       PEX3\n", __func__));
 		mvCtrlPwrClckSet(PEX_UNIT_ID, 9, MV_FALSE);
 	}
-	
+
+#ifndef MV88F78X60_Z1
+/*this code is valid for all devices after Z1*/
+	if(!(powermngmntctrlregmap & BIT25)) {
+		DB(mvOsPrintf("%s:       TDM\n", __func__));
+		mvCtrlPwrClckSet(TDM_32CH_UNIT_ID, 0, MV_FALSE);
+	}
+#endif
 	/*apply clock gatting*/
-	MV_REG_WRITE(POWER_MNG_CTRL_REG,MV_REG_READ(POWER_MNG_CTRL_REG) & powermngmntctrlregmap);
+	MV_REG_WRITE(POWER_MNG_CTRL_REG, MV_REG_READ(POWER_MNG_CTRL_REG) & powermngmntctrlregmap);
 
 	/*the Sata driver doesn't support clock gating at this point so we enable the logic to the block*/
-	MV_REG_WRITE(POWER_MNG_CTRL_REG, MV_REG_READ(POWER_MNG_CTRL_REG) | (BIT15| BIT30) );
+	MV_REG_WRITE(POWER_MNG_CTRL_REG, MV_REG_READ(POWER_MNG_CTRL_REG) | (BIT15 | BIT30));
 #endif /* defined(MV_INCLUDE_CLK_PWR_CNTRL) */
-	
+
 	return status;
 err_cfg:
 	DB(mvOsPrintf("%s: Wrong CFG (%#x) for SERDES line %d.\n",

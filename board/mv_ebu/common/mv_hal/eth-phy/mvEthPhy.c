@@ -191,10 +191,10 @@ MV_STATUS mvEthPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	case MV_PHY_88E1240:
 	case MV_PHY_88E1149R:
 	case MV_PHY_88E1119R:
-            return MV_NO_SUCH;
+		return MV_NO_SUCH;
 	default:
-			mvOsPrintf("Unknown Device(%#x). Initialization failed\n", deviceId);
-			return MV_ERROR;
+		mvOsPrintf("Unknown Device(%#x). Initialization failed\n", deviceId);
+		return MV_ERROR;
 	}
 	return MV_OK;
 }
@@ -1235,7 +1235,7 @@ MV_VOID mvEth1540PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 {
 	MV_U16 reg;
 	MV_U16 i = ethphyHalData.phyAddr[ethPortNum];
-
+	MV_U16 LinkCryptPortAddr = ethphyHalData.LinkCryptPortAddr[ethPortNum];
 	/* Set page to 0. */
 	mvEthPhyRegWrite(i, 0x16, 0);
 
@@ -1664,6 +1664,21 @@ MV_VOID mvEth1540PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	/*  RW U1 P0 R22 H0000 */
 	mvEthPhyRegWrite(i, 0x16, 0x0000);
 
+	/* Change MRU to Max : Page 16 */
+	mvEthPhyRegWrite(i, 0x16, 0x0010);
+
+	/* Write LinkCrypt Address */
+	mvEthPhyRegWrite(i, 0x1, LinkCryptPortAddr+0x0040);
+
+	/* Write LinkCrypt Data Low */
+	mvEthPhyRegWrite(i, 0x2, 0xFFF9);
+
+	/* Write LinkCrypt Data High */
+	mvEthPhyRegWrite(i, 0x3, 0x1);
+
+	mvEthPhyRegWrite(i, 0x16, 0x0000);
+
+
 	/* Power up the phy */
 	mvEthPhyRegRead(i, ETH_PHY_CTRL_REG, &reg);
 	reg &= ~(ETH_PHY_CTRL_POWER_DOWN_MASK);
@@ -1704,7 +1719,7 @@ MV_VOID mvEth1340PhyBasicInit(void)
 
 		mvEthPhyRegRead(i, ETH_PHY_CTRL_REG, &reg);
 		reg &= ~(ETH_PHY_CTRL_POWER_DOWN_MASK);
-		reg |= 0x1<<9;// workaround - restart workaround - restart workaround - restart workaround - restart
+		reg |= 0x1<<9;	/* workaround - restart workaround - restart workaround - restart workaround - restart */
 		mvEthPhyRegWrite(i, ETH_PHY_CTRL_REG, reg);
 
 

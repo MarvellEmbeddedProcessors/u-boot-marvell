@@ -94,10 +94,10 @@ MV_BOARD_TWSI_INFO	db88f78XX0InfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO db88f78XX0InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x1},
-	{BOARD_MAC_SPEED_AUTO, 0x19},
-	{BOARD_MAC_SPEED_AUTO, 0x1B}
+	{BOARD_MAC_SPEED_AUTO, 0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x1,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x19,0x800},  /* Port 1 */
+	{BOARD_MAC_SPEED_AUTO, 0x1B,0x1800}  /* Port 3 */
 };
 
 MV_BOARD_MODULE_TYPE_INFO db88f78XX0InfoBoardModTypeInfo[] = {
@@ -255,6 +255,192 @@ MV_BOARD_INFO db88f78XX0Info = {
 	.norFlashWriteParams		= DB_88F78XX0_BOARD_NOR_WRITE_PARAMS
 };
 
+/***************************/
+/* ARMADA-XP DB REV2 BOARD */
+/***************************/
+#define DB_88F78XX0_REV2_BOARD_NAND_READ_PARAMS	0x000C0282
+#define DB_88F78XX0_REV2_BOARD_NAND_WRITE_PARAMS	0x00010305
+/*NAND care support for small page chips*/
+#define DB_88F78XX0_REV2_BOARD_NAND_CONTROL		0x01c00543
+
+#define DB_88F78XX0_REV2_BOARD_NOR_READ_PARAMS	0x403E07CF
+#define DB_88F78XX0_REV2_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
+
+MV_U8 mvDbDisableModuleDetection_rev2 = 0;
+
+MV_U8	db88f6781InfoBoardDebugLedIf_rev2[] = {26, 27, 48}; //Faraj ??
+
+MV_BOARD_TWSI_INFO	db88f78XX0rev2InfoBoardTwsiDev[] = { //Faraj: update from new board
+	/* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{BOARD_DEV_TWSI_SATR, 0x4C, ADDR7_BIT},
+	{BOARD_DEV_TWSI_SATR, 0x4D, ADDR7_BIT},
+	{BOARD_DEV_TWSI_SATR, 0x4E, ADDR7_BIT},
+	{BOARD_DEV_TWSI_SATR, 0x4F, ADDR7_BIT}
+};
+
+MV_BOARD_MAC_INFO db88f78XX0rev2InfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
+	{BOARD_MAC_SPEED_AUTO, 0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x1,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x19,0x800},  /* Port 1 */
+	{BOARD_MAC_SPEED_AUTO, 0x1B,0x1800}  /* Port 3 */
+};
+
+MV_BOARD_MODULE_TYPE_INFO db88f78XX0rev2InfoBoardModTypeInfo[] = { //Faraj ??
+	{
+		.boardMppMod		= MV_BOARD_AUTO,
+		.boardOtherMod		= MV_BOARD_NONE
+	}
+};
+
+MV_BOARD_GPP_INFO db88f78XX0rev2InfoBoardGppInfo[] = {
+	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
+	{BOARD_GPP_USB_VBUS,    24} /* from MPP map */
+	//{BOARD_GPP_RESET,       47},
+};
+
+MV_DEV_CS_INFO db88f78XX0rev2InfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
+#endif
+#if defined(MV_INCLUDE_NOR)
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16} /* NOR DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO db88f78XX0rev2InfoBoardMppConfigValue[] = {
+	{ {
+	DB_88F78XX0_REV2_MPP0_7,
+	DB_88F78XX0_REV2_MPP8_15,
+	DB_88F78XX0_REV2_MPP16_23,
+	DB_88F78XX0_REV2_MPP24_31,
+	DB_88F78XX0_REV2_MPP32_39,
+	DB_88F78XX0_REV2_MPP40_47,
+	DB_88F78XX0_REV2_MPP48_55,
+	DB_88F78XX0_REV2_MPP56_63,
+	DB_88F78XX0_REV2_MPP64_67,
+	} },
+	{ { /* MV_BOARD_TDM_32CH */
+		DB_88F78XX0_REV2_MPP0_7,
+		DB_88F78XX0_REV2_MPP8_15,
+		DB_88F78XX0_REV2_MPP16_23,
+		(DB_88F78XX0_REV2_MPP24_31 & 0x00000000) | 0x33333333,
+		(DB_88F78XX0_REV2_MPP32_39 & 0xFFFF0000) | 0x00003333,
+		(DB_88F78XX0_REV2_MPP40_47 & 0xFFFFF0FF) | 0x00000300,
+		DB_88F78XX0_REV2_MPP48_55,
+		DB_88F78XX0_REV2_MPP56_63,
+		DB_88F78XX0_REV2_MPP64_67,
+	} },
+	{ { /* MV_BOARD_LCD_DVI */
+		(DB_88F78XX0_REV2_MPP0_7   & 0x00000000) | 0x44444444,
+		(DB_88F78XX0_REV2_MPP8_15  & 0x00000000) | 0x44444444,
+		(DB_88F78XX0_REV2_MPP16_23 & 0x00000000) | 0x44444444,
+		(DB_88F78XX0_REV2_MPP24_31 & 0xFFFF0000) | 0x00004444,
+		DB_88F78XX0_REV2_MPP32_39,
+		(DB_88F78XX0_REV2_MPP40_47 & 0xFFFFFF00) | 0x00000044,
+		DB_88F78XX0_REV2_MPP48_55,
+		DB_88F78XX0_REV2_MPP56_63,
+		DB_88F78XX0_REV2_MPP64_67,
+	} },
+	{ { /* MV_BOARD_MII_GMII */
+		(DB_88F78XX0_REV2_MPP0_7 & 0x00000000) | 0x11111111,
+		(DB_88F78XX0_REV2_MPP8_15 & 0x00000000) | 0x11111111,
+		(DB_88F78XX0_REV2_MPP16_23 & 0x000000FF) | 0x11111100,
+		DB_88F78XX0_REV2_MPP24_31,
+		DB_88F78XX0_REV2_MPP32_39,
+		DB_88F78XX0_REV2_MPP40_47,
+		DB_88F78XX0_REV2_MPP48_55,
+		DB_88F78XX0_REV2_MPP56_63,
+		DB_88F78XX0_REV2_MPP64_67,
+	} },
+	{ { /* MV_BOARD_OTHER */
+		DB_88F78XX0_REV2_MPP0_7,
+		DB_88F78XX0_REV2_MPP8_15,
+		DB_88F78XX0_REV2_MPP16_23,
+		DB_88F78XX0_REV2_MPP24_31,
+		DB_88F78XX0_REV2_MPP32_39,
+		DB_88F78XX0_REV2_MPP40_47,
+		DB_88F78XX0_REV2_MPP48_55,
+		DB_88F78XX0_REV2_MPP56_63,
+		DB_88F78XX0_REV2_MPP64_67,
+	} },
+};
+
+MV_SERDES_CFG db88f78XX0rev2InfoBoardSerdesConfigValue[] = { //Faraj: change accordign to DB ==> stays the same
+	/* Z1B */
+	{0x32221111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
+	{0x31211111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, 0x00000030},	/* PEX module */
+	/* Z1A */
+	{0x32220000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000030},	/* Default - Z1A */
+	{0x31210000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, 0x00000030}	/* PEX module - Z1A */
+};
+
+MV_BOARD_TDM_INFO	db88f78XX0rev2Tdm880[]	= { {1}, {2} };
+MV_BOARD_TDM_INFO	db88f78XX0rev2Tdm792[]	= { {1}, {2}, {3}, {4}, {6}, {7} };
+MV_BOARD_TDM_INFO	db88f78XX0rev2Tdm3215[]	= { {1} };
+
+MV_BOARD_INFO db88f78XX0rev2Info = {
+	.boardName			= "DB-78460-BP rev 2.0",
+	.numBoardMppTypeValue		= ARRSZ(db88f78XX0rev2InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= db88f78XX0rev2InfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(db88f78XX0rev2InfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= db88f78XX0rev2InfoBoardMppConfigValue,
+	.numBoardSerdesConfigValue	= ARRSZ(db88f78XX0rev2InfoBoardSerdesConfigValue),
+	.pBoardSerdesConfigValue	= db88f78XX0rev2InfoBoardSerdesConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(db88f78XX0rev2InfoBoardDeCsInfo),
+	.pDevCsInfo			= db88f78XX0rev2InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(db88f78XX0rev2InfoBoardTwsiDev),
+	.pBoardTwsiDev			= db88f78XX0rev2InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(db88f78XX0rev2InfoBoardMacInfo),
+	.pBoardMacInfo			= db88f78XX0rev2InfoBoardMacInfo,
+	.numBoardGppInfo		= ARRSZ(db88f78XX0rev2InfoBoardGppInfo),
+	.pBoardGppInfo			= db88f78XX0rev2InfoBoardGppInfo,
+	.activeLedsNumber		= ARRSZ(db88f6781InfoBoardDebugLedIf),//Faraj???
+	.pLedGppPin			= db88f6781InfoBoardDebugLedIf, //Faraj ???
+	.ledsPolarity			= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow			= DB_88F78XX0_REV2_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= DB_88F78XX0_REV2_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= DB_88F78XX0_REV2_GPP_OUT_ENA_HIGH,
+	.gppOutValLow			= DB_88F78XX0_REV2_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= DB_88F78XX0_REV2_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= DB_88F78XX0_REV2_GPP_OUT_VAL_HIGH,
+	.gppPolarityValLow		= DB_88F78XX0_REV2_GPP_POL_LOW,
+	.gppPolarityValMid		= DB_88F78XX0_REV2_GPP_POL_MID,
+	.gppPolarityValHigh		= DB_88F78XX0_REV2_GPP_POL_HIGH,
+
+	/* TDM configuration */
+	/* We hold a different configuration array for each possible slic that
+	** can be connected to board.
+	** When modules are scanned, then we select the index of the relevant
+	** slic's information array.
+	** For RD and Customers boards we only need to initialize a single
+	** entry of the arrays below, and set the boardTdmInfoIndex to 0.
+	*/
+	.numBoardTdmInfo		= {2, 6, 1},
+	.pBoardTdmInt2CsInfo		= {db88f78XX0rev2Tdm880,
+					   db88f78XX0rev2Tdm792,
+					   db88f78XX0rev2Tdm3215},
+	.boardTdmInfoIndex		= -1,
+
+	/* NAND init params */
+	.nandFlashReadParams		= DB_88F78XX0_REV2_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_88F78XX0_REV2_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= DB_88F78XX0_REV2_BOARD_NAND_CONTROL,
+	/* NOR init params */
+	.norFlashReadParams		= DB_88F78XX0_REV2_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= DB_88F78XX0_REV2_BOARD_NOR_WRITE_PARAMS
+};
+
 /*****************************/
 /* ARMADA-XP RD SERVER BOARD */
 /*****************************/
@@ -265,10 +451,10 @@ MV_BOARD_INFO db88f78XX0Info = {
 
 MV_BOARD_MAC_INFO rd78460InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_1000M, 0x1},
-	{BOARD_MAC_SPEED_1000M, 0x2},
-	{BOARD_MAC_SPEED_AUTO, 0x0},
-	{BOARD_MAC_SPEED_1000M, 0x1B}
+	{BOARD_MAC_SPEED_1000M, 0x1,0x0},
+	{BOARD_MAC_SPEED_1000M, 0x2,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x0,0x0},
+	{BOARD_MAC_SPEED_1000M, 0x1B,0x0}
 };
 
 MV_BOARD_MODULE_TYPE_INFO rd78460InfoBoardModTypeInfo[] = {
@@ -377,10 +563,10 @@ MV_BOARD_TWSI_INFO	db78X60pcacInfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO db78X60pcacInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x1},
-	{BOARD_MAC_SPEED_AUTO, 0x3},
-	{BOARD_MAC_SPEED_AUTO, 0x2},
-	{BOARD_MAC_SPEED_AUTO, 0x0}		/* Dummy */
+	{BOARD_MAC_SPEED_AUTO, 0x1,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x3,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x2,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x0,0x0}		/* Dummy */
 };
 
 
@@ -418,8 +604,7 @@ MV_BOARD_MPP_INFO db78X60pcacInfoBoardMppConfigValue[] = {
 };
 
 MV_SERDES_CFG db78X60pcacInfoBoardSerdesConfigValue[] = {
-
-	 {0x22320001, 0x00000000, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010} /* Default */
+	 {0x22321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010} /* Default */
 };
 
 
@@ -500,10 +685,10 @@ MV_BOARD_TWSI_INFO	fpga88f78XX0InfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO fpga88f78XX0InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x1},
-	{BOARD_MAC_SPEED_AUTO, 0x2},
-	{BOARD_MAC_SPEED_AUTO, 0x3},
-	{BOARD_MAC_SPEED_AUTO, 0x4}
+	{BOARD_MAC_SPEED_AUTO, 0x1,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x2,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x3,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x4,0x0}
 };
 
 MV_BOARD_MODULE_TYPE_INFO fpga88f78XX0InfoBoardModTypeInfo[] = {
@@ -610,5 +795,6 @@ MV_BOARD_INFO *boardInfoTbl[] = {
 	&db88f78XX0Info,
 	&rd78460Info,
 	&db78X60pcacInfo,
-	&fpga88f78XX0Info
+	&fpga88f78XX0Info,
+	&db88f78XX0rev2Info
 };

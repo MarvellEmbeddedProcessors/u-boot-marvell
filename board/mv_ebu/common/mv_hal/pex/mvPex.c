@@ -85,7 +85,7 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 	MV_PEX_MODE pexMode;
 	MV_U32 regVal;
 	MV_U32 status;
-	MV_U16 ctrlModel, phyRegVal;
+	MV_U16 ctrlModel, phyRegVal = 0;
 
 	mvOsMemcpy(&pexHalData[pexIf], halData, sizeof(MV_PEX_HAL_DATA));
 
@@ -130,6 +130,26 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 		regVal |= 0x4;	/* Set the new value        */
 		regVal &= ~0x80000000;	/* Set "write" command      */
 		MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexIf), regVal);	/* Write the write command  */
+#ifndef MV88F78X60_Z1
+		/* in DSMP A0 we should enable the target link width */
+		/* Read current value of Dynamic width management register 0x1A30*/
+		regVal = MV_REG_READ(PEX_DYNMC_WIDTH_MNG_REG(pexIf));	/* Read the dynamic width management register */
+		regVal &= ~0x3;	/* Clear bits [1:0]         */
+		regVal |= 0x3;	/* Set the new value '11'   */
+		MV_REG_WRITE(PEX_DYNMC_WIDTH_MNG_REG(pexIf), regVal);	/* Write the new value */
+
+		/* Enabling the SSPL message */
+		regVal = MV_REG_READ(PEX_ROOT_CMPLX_SSPL_REG(pexIf));	/* Read the PEX root complex SSPL register */
+		regVal &= ~0x10000;	/* Clear bit [16]         */
+		regVal |= 0x10000;	/* Set the new value  '1' */
+		MV_REG_WRITE(PEX_ROOT_CMPLX_SSPL_REG(pexIf), regVal);	/* Write the new value */
+
+		/* Setting dynamic speed*/
+		regVal = MV_REG_READ(PEX_CTRL_REG(pexIf));	/* Read the PEX control register */
+		regVal &= ~0x400;	/* Clear bit [10]         */
+		regVal |= 0x400;	/* Set the new value '11'   */
+		MV_REG_WRITE(PEX_CTRL_REG(pexIf), regVal);	/* Write the new value */
+#endif
 	} else {
 		/* Implement 1.0V termination GL for 88F1281 device only */
 		/* BIT0 - Common mode feedback */

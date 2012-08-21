@@ -64,6 +64,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef mvsemaphore_h
 #define mvsemaphore_h
 
+#ifdef MV_VXWORKS
+#include "common/mvTypes.h"
+#include "config.h"
+#endif
+
 #define MV_SEMA_REG_BASE	(0x20500)
 #define MV_MAX_SEMA 	    	128
 #define MV_SEMA_SMI 		50
@@ -75,10 +80,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_SEMA_IRQ 		4
 #define MV_SEMA_CLOCK		5
 #define MV_SEMA_L2		6
-
-#define MV_SEMA_IPC_SNORT 	10
+#define MV_SEMA_TWSI		7
 
 #define MV_SEMA_BARRIER(cpu)	(50 + cpu)
+
 
 MV_BOOL mvSemaLock(MV_32 num);
 MV_BOOL mvSemaTryLock(MV_32 num);

@@ -2171,7 +2171,7 @@ MV_NETA_RXQ_CTRL *mvNetaRxqInit(int port, int queue, int descrNum)
 
 	/* Set Rx descriptors queue starting address */
 	MV_REG_WRITE(NETA_RXQ_BASE_ADDR_REG(pPortCtrl->portNo, queue),
-		     netaDescVirtToPhys(pQueueCtrl, pQueueCtrl->pFirst));
+		     netaDescVirtToPhys(pQueueCtrl, (MV_U8 *)pQueueCtrl->pFirst));
 	MV_REG_WRITE(NETA_RXQ_SIZE_REG(pPortCtrl->portNo, queue), descrNum);
 
 	return pRxqCtrl;
@@ -2232,7 +2232,7 @@ MV_NETA_TXQ_CTRL *mvNetaTxqInit(int port, int txp, int queue, int descrNum)
 #endif /* MV_ETH_WRR_NEW */
 
 	/* Set Tx descriptors queue starting address */
-	MV_REG_WRITE(NETA_TXQ_BASE_ADDR_REG(port, txp, queue), netaDescVirtToPhys(pQueueCtrl, pQueueCtrl->pFirst));
+	MV_REG_WRITE(NETA_TXQ_BASE_ADDR_REG(port, txp, queue), netaDescVirtToPhys(pQueueCtrl, (MV_U8 *)pQueueCtrl->pFirst));
 
 	MV_REG_WRITE(NETA_TXQ_SIZE_REG(port, txp, queue), NETA_TXQ_DESC_NUM_MASK(descrNum));
 

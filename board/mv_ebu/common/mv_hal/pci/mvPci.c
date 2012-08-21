@@ -63,6 +63,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 #include "pci/mvPci.h"
 #include "ctrlEnv/mvCtrlEnvLib.h"
+#include "ctrlEnv/mvCtrlEnvSpec.h"
 
 /* defines  */       
 #ifdef MV_DEBUG         

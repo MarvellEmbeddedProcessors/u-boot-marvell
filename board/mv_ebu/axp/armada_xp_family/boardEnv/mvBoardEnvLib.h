@@ -431,6 +431,8 @@ MV_STATUS  mvBoardSerdesConfigurationEnableSet(MV_BOOL enableSerdesconfig);
 MV_SERDES_CFG *mvBoardSerdesCfgGet(void);
 MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void);
 MV_STATUS mvBoardConfIdSet(MV_U16 conf);
+MV_U16 mvBoardPexModeGet(MV_VOID);
+MV_STATUS mvBoardPexModeSet(MV_U16 conf);
 
 
 #ifdef __cplusplus

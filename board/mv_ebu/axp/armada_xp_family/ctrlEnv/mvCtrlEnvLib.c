@@ -2193,17 +2193,17 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 
 
 			if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_QSGMII]) {
-				//pRegVal[1]  = 0x400;
-				//pRegVal[3]  = 0x667;
-				//pRegAddr[6] = QSGMII_GEN_1_SETTING_REG(sgmiiPort);
-				//pRegVal[6]  = 0xCD5C;
+				/* pRegVal[1]  = 0x400;									*/
+				/* pRegVal[3]  = 0x667;									*/
+				/* pRegAddr[6] = QSGMII_GEN_1_SETTING_REG(sgmiiPort);	*/
+				/* pRegVal[6]  = 0xCD5C;								*/
 
-				pRegAddr[0] = 0x72e04; //SGMII_PWR_PLL_CTRL_REG(sgmiiPort);
-				pRegAddr[1] = 0x72e8c; //SGMII_DIG_LP_ENA_REG(sgmiiPort);
-				pRegAddr[2] = 0x72f18; //SGMII_REF_CLK_SEL_REG(sgmiiPort);
-				pRegAddr[3] = 0x72f20; //SGMII_SERDES_CFG_REG(sgmiiPort);
-				pRegAddr[4] = 0x724a4; //SGMII_SERDES_STAT_REG(sgmiiPort);
-				pRegAddr[5] = 0x724a0; //SGMII_COMPHY_CTRL_REG(sgmiiPort);
+				pRegAddr[0] = 0x72e04; /* SGMII_PWR_PLL_CTRL_REG(sgmiiPort); */
+				pRegAddr[1] = 0x72e8c; /* SGMII_DIG_LP_ENA_REG(sgmiiPort);	*/
+				pRegAddr[2] = 0x72f18; /* SGMII_REF_CLK_SEL_REG(sgmiiPort);	*/
+				pRegAddr[3] = 0x72f20; /* SGMII_SERDES_CFG_REG(sgmiiPort);	*/
+				pRegAddr[4] = 0x724a4; /* SGMII_SERDES_STAT_REG(sgmiiPort);	*/
+				pRegAddr[5] = 0x724a0; /* SGMII_COMPHY_CTRL_REG(sgmiiPort);	*/
 				pRegAddr[6] = 0x72e34;
 				pRegAddr[7] = 0;
 				pRegAddr[8] = 0;
@@ -2211,7 +2211,7 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 				pRegVal[0]  = 0xF881;
 				pRegVal[1]  = 0x400;
 				pRegVal[2]  = 0x400;
-				pRegVal[3]  = 0x9080; //(pSerdesInfo->busSpeed & (1 << serdesLineNum)) != 0 ? 0x1547 : 0xCC7;
+				pRegVal[3]  = 0x9080; /*(pSerdesInfo->busSpeed & (1 << serdesLineNum)) != 0 ? 0x1547 : 0xCC7; */
 				pRegVal[4]  = 0x7;
 				pRegVal[5]  = 0x667;
 				pRegVal[6]  = 0xcd5c;

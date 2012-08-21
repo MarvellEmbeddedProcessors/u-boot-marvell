@@ -172,6 +172,7 @@ typedef struct _mvDecWinParams {
 /* mvCtrlEnvAddrDec API list */
 
 MV_STATUS mvCtrlAttribGet(MV_TARGET target, MV_TARGET_ATTRIB *targetAttrib);
+MV_STATUS mvCtrlAttribSet(MV_TARGET target, MV_TARGET_ATTRIB *targetAttrib);
 
 MV_TARGET mvCtrlTargetGet(MV_TARGET_ATTRIB *targetAttrib);
 MV_TARGET mvCtrlTargetByWinInfoGet(MV_UNIT_WIN_INFO *unitWinInfo);

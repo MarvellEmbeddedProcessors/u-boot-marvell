@@ -414,6 +414,11 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 		return MV_ERROR;
 	}
 
+	if (boardId == RD_78460_NAS_ID) {
+		if (mvBoardIsSwitchModuleConnected())
+			return BOARD_MAC_SPEED_1000M;
+	}
+
 	return BOARD_INFO(boardId)->pBoardMacInfo[ethPortNum].boardMacSpeed;
 }
 

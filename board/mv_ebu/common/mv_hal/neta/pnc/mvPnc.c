@@ -99,7 +99,7 @@ static int rxq_ip4_udp = CONFIG_MV_ETH_RXQ_DEF;
 static int rxq_arp 		= CONFIG_MV_ETH_RXQ_DEF;
 
 
-#ifdef MV_ETH_PNC_NEW
+#ifdef CONFIG_ARCH_FEROCEON_KW2
 int pnc_port_map(int pnc_port)
 {
 	switch (pnc_port) {
@@ -135,7 +135,7 @@ int pnc_eth_port_map(int eth_port)
 		return -1;
 	}
 }
-#else
+#else /* CONFIG_ARCH_ARMADA_XP */
 int pnc_port_map(int pnc_port)
 {
 	switch (pnc_port) {
@@ -702,7 +702,7 @@ static void pnc_ip4_flow_next_lookup_set(struct tcam_entry *te)
 #ifdef CONFIG_MV_ETH_PNC_L3_FLOW
 	sram_sw_set_next_lookup(te, TCAM_LU_FLOW_IP4);
 #else
-	sram_sw_set_lookup_done(te, 1);
+	sram_sw_set_next_lookup(te, TCAM_LU_L4);
 #endif /* CONFIG_MV_ETH_PNC_L3_FLOW */
 }
 
@@ -865,6 +865,7 @@ static void pnc_ip4_end(void)
 	sram_sw_set_rxq(te, rxq_ip4, 0);
 	sram_sw_set_lookup_done(te, 1);
 	sram_sw_set_flowid(te, FLOWID_EOF_LU_IP4, FLOWID_CTRL_LOW_HALF_MASK);
+
 	tcam_sw_text(te, "ipv4_eof");
 
 	tcam_hw_write(te, TE_IP4_EOF);
@@ -895,7 +896,7 @@ static void pnc_ip6_flow_next_lookup_set(struct tcam_entry *te)
 #ifdef CONFIG_MV_ETH_PNC_L3_FLOW
 	sram_sw_set_next_lookup(te, TCAM_LU_FLOW_IP6_A);
 #else
-	sram_sw_set_lookup_done(te, 1);
+	sram_sw_set_next_lookup(te, TCAM_LU_L4);
 #endif /* CONFIG_MV_ETH_PNC_L3_FLOW */
 }
 
@@ -1159,6 +1160,23 @@ int pnc_ipv4_5_tuples_add(unsigned int tid, unsigned int flow_id,
 
 	return 0;
 }
+#else
+int pnc_l4_end(void)
+{
+	struct tcam_entry *te;
+
+	PNC_DBG("%s\n", __func__);
+
+	te = tcam_sw_alloc(TCAM_LU_L4);
+	sram_sw_set_lookup_done(te, 1);
+	sram_sw_set_flowid(te, FLOWID_EOF_LU_L4, FLOWID_CTRL_LOW_HALF_MASK);
+
+	tcam_sw_text(te, "l4_eof");
+
+	tcam_hw_write(te, TE_L4_EOF);
+	tcam_sw_free(te);
+	return 0;
+}
 #endif /* CONFIG_MV_ETH_PNC_L3_FLOW */
 
 /******************************************************************************
@@ -1212,6 +1230,10 @@ int pnc_default_init(void)
 
 #ifdef CONFIG_MV_ETH_PNC_L3_FLOW
 	rc = pnc_flow_init();
+	if (rc)
+		goto out;
+#else
+	rc = pnc_l4_end();
 	if (rc)
 		goto out;
 #endif /* CONFIG_MV_ETH_PNC_L3_FLOW */

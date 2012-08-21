@@ -312,6 +312,10 @@ void mvNetaPncRegs(void)
 			mvEthRegPrint2(MV_PNC_AGING_LO_THRESH_REG(i), "PNC_AGING_LO_THRESH_REG", i);
 	}
 #endif /* MV_ETH_PNC_AGING */
+
+#ifdef MV_ETH_PNC_LB
+	mvEthRegPrint(MV_PNC_LB_CRC_INIT_REG, "PNC_LB_CRC_INIT_REG");
+#endif /* MV_ETH_PNC_LB */
 }
 #endif /* CONFIG_MV_ETH_PNC */
 

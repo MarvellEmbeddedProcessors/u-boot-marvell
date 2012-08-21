@@ -137,10 +137,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MV_PNC_AGING_LO_THRESH_REG(gr)      (MV_PNC_REG_BASE + 0x2C + ((gr) << 2))
 #define MV_PNC_AGING_HI_THRESH_REG          (MV_PNC_REG_BASE + 0x3C)
-
-#define MV_PNC_LB_TBL_ACCESS_REG            (MV_PNC_REG_BASE + 0x40)
 /*-------------------------------------------------------------------------------*/
 #endif /* MV_ETH_PNC_AGING */
+
+#ifdef MV_ETH_PNC_LB
+
+#define MV_PNC_LB_TBL_ACCESS_REG            (MV_PNC_REG_BASE + 0x40)
+
+#define MV_PNC_LB_TBL_ADDR_OFFS             0
+#define MV_PNC_LB_TBL_ADDR_MASK             (0x3F << MV_PNC_LB_TBL_ADDR_OFFS)
+
+#define MV_PNC_LB_TBL_DATA_OFFS             6
+#define MV_PNC_LB_TBL_DATA_MASK             (0xFFF << MV_PNC_LB_TBL_DATA_OFFS)
+
+#define MV_PNC_LB_TBL_WRITE_TRIG_BIT        18
+#define MV_PNC_LB_TBL_WRITE_TRIG_MASK       (1 << MV_PNC_LB_TBL_WRITE_TRIG_BIT)
+/*-------------------------------------------------------------------------------*/
+
+#define MV_PNC_LB_CRC_INIT_REG              (MV_PNC_REG_BASE + 0x44)
+#endif /* MV_ETH_PNC_LB */
+
 
 #define MV_PNC_TCAM_ARRAY_SIZE		256
 #define MV_PNC_TOTAL_DATA_SIZE		120
@@ -206,8 +222,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define RXQ_BITS				3
 #define RXQ_MASK				((1 << RXQ_BITS) - 1)
 
-#define FLOW_VALUE_OFFS 	0   /* 32 bits */
-#define FLOW_CTRL_OFFS		32  /* 8 bits */
+#define LB_QUEUE_BITS           2
+#define LB_QUEUE_MASK			((1 << LB_QUEUE_BITS) - 1)
+#define LB_DISABLE_VALUE		0
+#define LB_2_TUPLE_VALUE		1
+#define LB_4_TUPLE_VALUE		2
+
+#define FLOW_VALUE_OFFS 		0   /* 32 bits */
+#define FLOW_CTRL_OFFS			32  /* 8 bits */
 
 /* PNC SRAM Layout */
 #ifdef MV_ETH_PNC_NEW
@@ -302,6 +324,7 @@ struct tcam_entry {
  */
 #ifdef MV_ETH_PNC_NEW
 void sram_sw_set_rinfo_extra(struct tcam_entry *te, unsigned int ri_extra);
+void sram_sw_set_load_balance(struct tcam_entry *te, unsigned int value);
 #endif /* MV_ETH_PNC_NEW */
 
 struct tcam_entry *tcam_sw_alloc(unsigned int section);

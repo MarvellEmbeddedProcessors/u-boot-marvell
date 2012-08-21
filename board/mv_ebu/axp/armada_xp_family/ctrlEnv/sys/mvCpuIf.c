@@ -180,6 +180,11 @@ MV_STATUS mvCpuIfInitForCpu(MV_U32 cpu, MV_CPU_DEC_WIN *cpuAddrWinMap)
 		if ((MV_TARGET_IS_DRAM(target)) || (target == INTER_REGS))
 			continue;
 
+#ifdef CONFIG_MV_AMP_ENABLE
+		if(target == BOOT_ROM_CS)
+			continue;
+#endif
+
 #if defined(MV_MEM_OVER_PEX_WA) || defined(MV_UART_OVER_PEX_WA)
 		/* If the target PEX or PCI and memory is over PEX or PCI we don't touch this CPU windows */
 		if (MV_TARGET_IS_PEX(target))

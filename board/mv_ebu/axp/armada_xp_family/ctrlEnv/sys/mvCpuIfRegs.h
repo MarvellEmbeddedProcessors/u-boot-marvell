@@ -311,7 +311,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*******************************************/
 /* ARM Doorbell Registers Map		   */
 /*******************************************/
-
+#define CPU_SW_TRIG_IRQ						(MV_MBUS_REGS_OFFSET + 0xA04)
+#define CPU_DOORBELL_IN_REG					(MV_CPUIF_LOCAL_REGS_OFFSET + 0x78)
+#define CPU_DOORBELL_IN_MASK_REG			(MV_CPUIF_LOCAL_REGS_OFFSET + 0x7C)
 #define CPU_HOST_TO_ARM_DRBL_REG(cpu)		(MV_CPUIF_REGS_BASE(cpu) + 0x78)
 #define CPU_HOST_TO_ARM_MASK_REG(cpu)		(MV_CPUIF_REGS_BASE(cpu) + 0x7C)
 #define CPU_ARM_TO_HOST_DRBL_REG(cpu)		(MV_CPUIF_REGS_BASE(cpu) + 0x70)

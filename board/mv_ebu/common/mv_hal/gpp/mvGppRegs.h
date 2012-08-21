@@ -152,7 +152,10 @@ extern "C" {
 #define GPP_INT_CAUSE_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x14)
 #define GPP_INT_MASK_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x18)
 #define GPP_INT_LVL_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x1C)
-
+#define GPP_OUT_SET_REG(grp)			(0x18130 + ((grp) * 0x40))
+#define GPP_64_66_DATA_OUT_SET_REG		0x181A4
+#define GPP_OUT_CLEAR_REG(grp)			(0x18134 + ((grp) * 0x40))
+#define GPP_64_66_DATA_OUT_CLEAR_REG		0x181B0
 #define GPP_FUNC_SELECT_REG			(MV_GPP_REGS_BASE(0) + 0x40)
 
 /* Relevant for MV78XX0 */

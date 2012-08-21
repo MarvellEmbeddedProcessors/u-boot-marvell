@@ -120,6 +120,9 @@ extern "C" {
 	/* mvGppValueSet - Set a GPP Pin list value. */
 	MV_STATUS mvGppValueSet(MV_U32 group, MV_U32 mask, MV_U32 value);
 
+	MV_STATUS mvGppAtomicValueSet(MV_U32 gpionumber);
+
+	MV_STATUS mvGppAtomicValueClear(MV_U32 gpionumber);
 #ifdef __cplusplus
 }
 #endif

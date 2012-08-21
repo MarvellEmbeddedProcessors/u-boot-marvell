@@ -151,12 +151,13 @@ extern "C" {
 #define REG_SDRAM_CONFIG_ECC_OFFS                               18
 #define REG_STATIC_DRAM_DLB_CONTROL                             0x1700
 #define DLB_ENABLE 0x1
-#define DLB_WRITE_COALESING 0x4
-#define DLB_AXI_PREFETCH_EN 0x8
-#define DLB_BUS_Optimization_Weights_REG     0x1704
-#define DLB_Eviction_Timers_Register_REG     0x1710
+#define DLB_WRITE_COALESING (0x1 << 2)
+#define DLB_AXI_PREFETCH_EN (0x1 << 3)
+#define DLB_MBUS_PREFETCH_EN (0x1 << 4)
 #define PreFetchNLnSzTr (0x1 << 6)
 #define PF_RegretEn (0x1<<9)
+#define DLB_BUS_Optimization_Weights_REG     0x1704
+#define DLB_Eviction_Timers_Register_REG     0x1710
 #define SameBankOPageWeight (0x1 << 0)
 #define DiffBankOPageWeight (0x1 << 2)
 #define SameCmdWeight (0x1 << 6)

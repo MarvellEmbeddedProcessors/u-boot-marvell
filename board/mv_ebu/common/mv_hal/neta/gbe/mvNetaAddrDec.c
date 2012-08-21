@@ -170,19 +170,28 @@ MV_STATUS mvNetaWinWrite(MV_U32 port, MV_U32 winNum, MV_UNIT_WIN_INFO *pAddrDecW
 	MV_U32 size, alignment;
 	MV_U32 baseReg, sizeReg;
 
-	if (!MV_IS_POWER_OF_2(pAddrDecWin->addrWin.size)) {
-		/* try to get a good size */
-		pAddrDecWin->addrWin.size = 1 << (mvLog2(pAddrDecWin->addrWin.size) + 1);
-	}
 	/* Parameter checking   */
 	if (winNum >= ETH_MAX_DECODE_WIN) {
 		mvOsPrintf("mvNetaWinSet: ERR. Invalid win num %d\n", winNum);
 		return MV_BAD_PARAM;
 	}
 
+	size = pAddrDecWin->addrWin.size;
+	if (size == 0) {
+		mvOsPrintf("%s: ERR. Invalid window size %d\n",	__func__, size);
+		return MV_BAD_PARAM;
+	}
+	if (!MV_IS_POWER_OF_2(size)) {
+		/* try to get a good size */
+		pAddrDecWin->addrWin.size = 1 << (mvLog2(size) + 1);
+		mvOsPrintf("%s: WARN. Wrong window size %d, rounding to %d\n",
+			__func__, size, pAddrDecWin->addrWin.size);
+		size = pAddrDecWin->addrWin.size;
+	}
+
 	/* Check if the requested window overlapps with current windows     */
 	if (MV_TRUE == ethWinOverlapDetect(port, winNum, &pAddrDecWin->addrWin)) {
-		mvOsPrintf("mvNetaWinWrite: ERR. Window %d overlap\n", winNum);
+		mvOsPrintf("%s: ERR. Window %d overlap\n", __func__, winNum);
 		return MV_ERROR;
 	}
 
@@ -192,15 +201,6 @@ MV_STATUS mvNetaWinWrite(MV_U32 port, MV_U32 winNum, MV_UNIT_WIN_INFO *pAddrDecW
 			   "Address 0x%08x is unaligned to size 0x%x.\n",
 			   winNum, pAddrDecWin->addrWin.baseLow, pAddrDecWin->addrWin.size);
 		return MV_ERROR;
-	}
-
-	if (pAddrDecWin->addrWin.size != 0) {
-		size = pAddrDecWin->addrWin.size;
-		if (!MV_IS_POWER_OF_2(size)) {
-			mvOsPrintf("mvNetaWinWrite: Error setting AUDIO window %d. "
-				"Window size is not a power to 2.", winNum);
-			return MV_BAD_PARAM;
-		}
 	}
 
 	baseReg = (pAddrDecWin->addrWin.baseLow & ETH_WIN_BASE_MASK);

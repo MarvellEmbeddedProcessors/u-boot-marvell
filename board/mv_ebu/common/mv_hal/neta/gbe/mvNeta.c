@@ -407,12 +407,6 @@ MV_STATUS mvNetaDefaultsSet(int port)
         regVal |= ETH_TX_BURST_SIZE_MASK(ETH_BURST_SIZE_2_64BIT_VALUE);
         regVal |= ETH_RX_BURST_SIZE_MASK(ETH_BURST_SIZE_2_64BIT_VALUE);
 #else
-
-#ifdef CONFIG_MV_ETH_REDUCE_BURST_SIZE_WA
-        /* This is a WA for the IOCC HW BUG involve in using 128B burst size */
-        regVal |= ETH_TX_BURST_SIZE_MASK(ETH_BURST_SIZE_2_64BIT_VALUE);
-        regVal |= ETH_RX_BURST_SIZE_MASK(ETH_BURST_SIZE_2_64BIT_VALUE);
-#else
         /* Default burst size */
         regVal |= ETH_TX_BURST_SIZE_MASK(ETH_BURST_SIZE_16_64BIT_VALUE);
         regVal |= ETH_RX_BURST_SIZE_MASK(ETH_BURST_SIZE_16_64BIT_VALUE);
@@ -420,7 +414,7 @@ MV_STATUS mvNetaDefaultsSet(int port)
 
 #if defined(MV_CPU_BE) && !defined(CONFIG_MV_ETH_BE_WA)
     /* big endian */
-    regVal |= (ETH_RX_NO_DATA_SWAP_MASK | ETH_TX_NO_DATA_SWAP_MASK | ETH_DESC_SWAP_MASK);
+	regVal |= (ETH_RX_NO_DATA_SWAP_MASK | ETH_TX_NO_DATA_SWAP_MASK | ETH_DESC_SWAP_MASK);
 #else /* MV_CPU_LE */
     /* little endian */
         regVal |= (ETH_RX_NO_DATA_SWAP_MASK | ETH_TX_NO_DATA_SWAP_MASK | ETH_NO_DESC_SWAP_MASK);

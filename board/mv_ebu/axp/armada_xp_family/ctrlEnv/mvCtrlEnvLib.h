@@ -138,8 +138,8 @@ typedef struct _boardSerdesConf {
 	SGMII 	1.25 Gbps		3.125 Gbps	*/
 } MV_SERDES_CFG;
 /* Termal Sensor Registers */
-#define TSEN_STATUS_REG					0x182B0
-#define	TSEN_STATUS_TEMP_OUT_OFFSET		19
+#define TSEN_STATUS_REG				0x184C4
+#define	TSEN_STATUS_TEMP_OUT_OFFSET		1
 #define	TSEN_STATUS_TEMP_OUT_MASK		(0x1FF << TSEN_STATUS_TEMP_OUT_OFFSET)
 
 #define TSEN_CONF_REG					0x184D0

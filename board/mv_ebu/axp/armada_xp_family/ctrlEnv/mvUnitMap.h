@@ -64,6 +64,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef mvUnitMap_h
 #define mvUnitMap_h
 
+#ifdef MV_VXWORKS
+#include "common/mvTypes.h"
+#include "config.h"
+#endif
+
 typedef enum
 {
 	UART0=0,
@@ -127,24 +132,25 @@ typedef struct __MV_RES_MAP
 
 typedef char *(*STRSTR_FUNCPTR)(const char *s1, const char *s2);
 
+#ifdef CONFIG_MV_AMP_ENABLE
+
 MV_BOOL mvUnitMapIsMine(MV_SOC_UNIT unitIdx);
 MV_BOOL mvUnitMapIsPexMine(int pciIf);
 MV_VOID mvUnitMapSetMine(MV_SOC_UNIT unitIdx);
 MV_BOOL mvUnitMapSetup(char* p, STRSTR_FUNCPTR strstr_func);
 MV_VOID mvUnitMapSetAllMine(void);
-MV_VOID mvSocUnitMapPrint(void);
+MV_VOID mvUnitMapPrint(void);
 MV_BOOL mvUnitMapIsRsrcLimited(void);
 MV_VOID mvUnitMapSetRsrcLimited(MV_BOOL isLimited);
-
-#ifndef CONFIG_MV_AMP_ENABLE
+#else /* CONFIG_MV_AMP_ENABLE */
 #define mvUnitMapIsMine(rsrc) 		MV_TRUE
 #define mvUnitMapIsPexMine(pciIf) 	MV_TRUE
 #define mvUnitMapIsRsrcLimited 	  	MV_TRUE
 #define mvUnitMapSetRsrcLimited(limit)
 #define mvUnitMapSetMine(rsrc)
 #define mvUnitMapSetAllMine
-#define mvSocUnitMapPrint
+#define mvUnitMapPrint
 #define mvUnitMapSetup(str, strstr_func) MV_TRUE
-#endif //CONFIG_MV_AMP_ENABLE
+#endif /* CONFIG_MV_AMP_ENABLE */
 
-#endif //mvUnitMap_h
+#endif /* mvUnitMap_h */

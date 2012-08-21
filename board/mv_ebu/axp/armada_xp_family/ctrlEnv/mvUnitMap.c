@@ -102,7 +102,7 @@ static MV_RES_MAP mv_res_table[] = {
 	{-1, "last"}
 };
 
-MV_BOOL mvUnitMapIsRsrcLimited()
+MV_BOOL mvUnitMapIsRsrcLimited(void)
 {
 	return mv_rsrc_limited;
 }
@@ -120,20 +120,16 @@ MV_BOOL mvUnitMapIsMine(MV_SOC_UNIT unitIdx)
 MV_BOOL mvUnitMapIsPexMine(int pciIf)
 {
 	MV_SOC_UNIT unitIdx;
-	int maxLaneId[4]; //YY - GET A DEFINE HERE instead of 4
 
-	maxLaneId[0] = 		        + (3 * CONFIG_MV_PEX_0_4X1);
-	maxLaneId[1] = maxLaneId[0] + 1 + (3 * CONFIG_MV_PEX_1_4X1);
-	maxLaneId[2] = maxLaneId[1] + 1;
-	maxLaneId[3] = maxLaneId[2] + 1;
-
-	if(pciIf <= maxLaneId[0])
+	/* Map line Number to PEX unit number */
+	/* This is compatible to mvCtrlSerdesPhyConfig in BoardEnvLib.c */
+	if(pciIf < PEX1_0x4)
 		unitIdx = PEX0;
-	else if(pciIf <= maxLaneId[1])
+	else if(pciIf < PEX2_0x4)
 		unitIdx = PEX1;
-	else if(pciIf <= maxLaneId[2])
+	else if(pciIf < PEX3_0x4)
 		unitIdx = PEX2;
-	else if(pciIf <= maxLaneId[3])
+	else
 		unitIdx = PEX3;
 
 	return mv_res_table[unitIdx].isMine;
@@ -142,10 +138,8 @@ MV_BOOL mvUnitMapIsPexMine(int pciIf)
 MV_VOID mvUnitMapSetMine(MV_SOC_UNIT unitIdx)
 {
 	if (MV_TRUE == mv_res_table[unitIdx].isMine)
-	{
-		mvOsPrintf("Warning! Unit %s is already mapped\n", mv_res_table[unitIdx].unitName);
 		return;
-	}
+
 	mv_res_table[unitIdx].isMine = 1;
 }
 
@@ -153,7 +147,7 @@ MV_BOOL mvUnitMapSetup(char* cmdLine, STRSTR_FUNCPTR strstr_func)
 {
 	int unitIdx;
 	char* match;
-	const char *syntaxErr = "mvUnitMapSetup: syntax error (%s)\n";
+
 	for (unitIdx = 0; mv_res_table[unitIdx].isMine != (-1); unitIdx++) {
 		char *unitName = mv_res_table[unitIdx].unitName;
 		int len;
@@ -162,7 +156,6 @@ MV_BOOL mvUnitMapSetup(char* cmdLine, STRSTR_FUNCPTR strstr_func)
 		/*Look for start delimiter*/
 		if (match > cmdLine) {
 			if (match[-1] != ' ' && match[-1] != ':') {
-				mvOsPrintf(syntaxErr, mv_res_table[unitIdx].unitName);
 				continue;
 			}
 		}
@@ -171,7 +164,6 @@ MV_BOOL mvUnitMapSetup(char* cmdLine, STRSTR_FUNCPTR strstr_func)
 		len = unitName - mv_res_table[unitIdx].unitName - 1;
 		/*Look for end delimiter*/
 		if (match[len] != ' ' && match[len] != ':' && match[len] != '\0') {
-			mvOsPrintf(syntaxErr, mv_res_table[unitIdx].unitName);
 			continue;
 		}
 		mvUnitMapSetMine(unitIdx);
@@ -253,14 +245,13 @@ MV_U32 mvSocUnitMapFillFlagFormTable(void)
 }*/
 MV_VOID mvUnitMapSetAllMine()
 {
-	int unitIdx, count;
-	mvOsPrintf("AMP: No resource string: Allocating all resource to group:");
+	int unitIdx;
 	for (unitIdx = 0; mv_res_table[unitIdx].isMine != (-1); unitIdx++) {
 		mvUnitMapSetMine(unitIdx);
 	}
 }
 
-MV_VOID mvSocUnitMapPrint()
+MV_VOID mvUnitMapPrint()
 {
 	int unitIdx;
 	mvOsPrintf("  AMP: Resources ");

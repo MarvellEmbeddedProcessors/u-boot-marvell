@@ -2248,6 +2248,64 @@ MV_VOID mvBoardSerdesZ1ASupport(void)
 	gSerdesZ1AMode = 1;
 }
 /*******************************************************************************
+* mvBoardIsSerdesConfigurationEnabled
+*
+* DESCRIPTION:
+*       Check if Serdes configuration is enabled on this board.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_STATUS - MV_OK, MV_ERROR.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsSerdesConfigurationEnabled(void)
+{
+
+	 MV_U32 boardId = mvBoardIdGet();
+
+	 if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
+                mvOsPrintf("mvBoardIsSerdesConfigurationEnabled:Board unknown.\n");
+                return MV_ERROR;
+        }
+	return (BOARD_INFO(boardId)->pBoardSerdesConfigValue->enableSerdesConfiguration);
+}
+
+
+/*******************************************************************************
+* mvBoardSerdesConfigurationEnableSet
+*
+* DESCRIPTION:
+*	Check if Serdes configuration is enabled on this board.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_STATUS - MV_OK, MV_ERROR.
+*
+*******************************************************************************/
+MV_STATUS  mvBoardSerdesConfigurationEnableSet(MV_BOOL enableSerdesConfiguration)
+{
+
+	MV_U32 boardId = mvBoardIdGet();
+	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
+		mvOsPrintf("mvBoardIsSerdesConfigurationEnabled:Board unknown.\n");
+		return MV_ERROR;
+        }
+	BOARD_INFO(boardId)->pBoardSerdesConfigValue->enableSerdesConfiguration=enableSerdesConfiguration;
+	return MV_OK;
+}
+
+
+/*******************************************************************************
 * mvBoardSledCpuNumGet - Get board SERDES configuration
 *
 * DESCRIPTION:

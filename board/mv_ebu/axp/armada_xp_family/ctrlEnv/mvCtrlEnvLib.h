@@ -124,6 +124,7 @@ typedef enum {
 /* Configuration per SERDES line.
    Each nibble is MV_SERDES_LINE_TYPE */
 typedef struct _boardSerdesConf {
+	MV_U32 enableSerdesConfiguration; /*This will determine if mvCtrlSerdesPhyConfig will configure the serdes*/
 	MV_U32	serdesLine0_7;	/* Lines 0 to 7 SERDES MUX one nibble per line */
 	MV_U32	serdesLine8_15;	/* Lines 8 to 15 SERDES MUX one nibble per line */
 	MV_PEX_UNIT_CFG		pex0Mod;

@@ -127,7 +127,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NETA_PNC_PPPOE      (RI_PPPOE >> 9)
 #define NETA_PNC_RX_SPECIAL (RI_RX_SPECIAL >> 9)
 
-#define CONFIG_MV_PNC_L3_FLOW_LINES 20
 /*---------------------------------------------------------------------------*/
 
 MV_STATUS   mvPncInit(MV_U8 *pncVirtBase);
@@ -188,7 +187,7 @@ enum {
 #ifdef CONFIG_MV_ETH_PNC_L3_FLOW
 	/* Session Lookup for IPv4 and IPv6 */
 	TE_FLOW_L3,
-	TE_FLOW_L3_END = TE_FLOW_L3 + CONFIG_MV_PNC_L3_FLOW_LINES - 1,
+	TE_FLOW_L3_END = TE_FLOW_L3 + CONFIG_MV_ETH_PNC_L3_FLOW_LINES - 1,
 	TE_FLOW_IP4_EOF,
 	TE_FLOW_IP6_A_EOF,
 	TE_FLOW_IP6_B_EOF,

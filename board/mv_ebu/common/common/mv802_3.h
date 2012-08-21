@@ -74,13 +74,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* 802.3 types */
 #define MV_IP_TYPE                  0x0800
 #define MV_IP_ARP_TYPE              0x0806
-#define MV_IP6_TYPE					0x86dd
+#define MV_IP6_TYPE                 0x86dd
 #define MV_APPLE_TALK_ARP_TYPE      0x80F3
 #define MV_NOVELL_IPX_TYPE          0x8137
-#define MV_EAPOL_TYPE				0x888e
-#define MV_VLAN_TYPE				0x8100
-#define MV_PPPOE_TYPE				0x8864
+#define MV_EAPOL_TYPE               0x888e
+#define MV_VLAN_TYPE                0x8100
+#define MV_PPPOE_TYPE               0x8864
 
+/* PPPoE protocol type */
+#define MV_IP_PPP  0x0021
+#define MV_IP6_PPP 0x0057
 /* Encapsulation header for RFC1042 and Ethernet_tunnel */
 
 #define MV_RFC1042_SNAP_HEADER     {0xAA, 0xAA, 0x03, 0x00, 0x00, 0x00}
@@ -194,7 +197,10 @@ typedef struct {
 	int    ipOffset;
 	int    ipHdrLen;
 	MV_U16 ipLen;
+	MV_U8  ipProto;
+	MV_U8  reserved;
 	union {
+		char          *l3;
 		MV_IP_HEADER  *ip4;
 		MV_IP6_HEADER *ip6;
 	} ip_hdr;

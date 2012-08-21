@@ -68,17 +68,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Defines */
 
 /* The following is a list of Marvell status    */
-#define MV_ERROR	    (-1)
-#define MV_OK		    (0)		/* Operation succeeded                   */
-#define MV_FAIL		    (1)		/* Operation failed                      */
-#define MV_BAD_VALUE        (2)		/* Illegal value (general)               */
-#define MV_OUT_OF_RANGE     (3)		/* The value is out of range             */
-#define MV_BAD_PARAM        (4)		/* Illegal parameter in function called  */
-#define MV_BAD_PTR          (5)		/* Illegal pointer value                 */
-#define MV_BAD_SIZE         (6)		/* Illegal size                          */
-#define MV_BAD_STATE        (7)		/* Illegal state of state machine        */
-#define MV_SET_ERROR        (8)		/* Set operation failed                  */
-#define MV_GET_ERROR        (9)		/* Get operation failed                  */
+#define MV_ERROR		    (-1)
+#define MV_OK			    (0)	/* Operation succeeded                   */
+#define MV_FAIL			    (1)	/* Operation failed                      */
+#define MV_BAD_VALUE        (2)	/* Illegal value (general)               */
+#define MV_OUT_OF_RANGE     (3)	/* The value is out of range             */
+#define MV_BAD_PARAM        (4)	/* Illegal parameter in function called  */
+#define MV_BAD_PTR          (5)	/* Illegal pointer value                 */
+#define MV_BAD_SIZE         (6)	/* Illegal size                          */
+#define MV_BAD_STATE        (7)	/* Illegal state of state machine        */
+#define MV_SET_ERROR        (8)	/* Set operation failed                  */
+#define MV_GET_ERROR        (9)	/* Get operation failed                  */
 #define MV_CREATE_ERROR     (10)	/* Fail while creating an item           */
 #define MV_NOT_FOUND        (11)	/* Item not found                        */
 #define MV_NO_MORE          (12)	/* No more items found                   */
@@ -106,7 +106,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_WRITE_PROTECT    (34)	/* Write protected                       */
 #define MV_DROPPED          (35)	/* Packet dropped                        */
 #define MV_STOLEN           (36)	/* Packet stolen */
-#define MV_RETRY		    (37)	/* Operation failed need retry           */
+#define MV_CONTINUE         (37)        /* Continue */
+#define MV_RETRY		    (38)	/* Operation failed need retry           */
 
 #define MV_INVALID  (int)(-1)
 
@@ -144,7 +145,6 @@ typedef int MV_STATUS;
 typedef int MV_BOOL;
 typedef void MV_VOID;
 typedef float MV_FLOAT;
-/*typedef _Bool MV_STD_BOOL;*/
 
 typedef int (*MV_FUNCPTR) (void);	/* ptr to function returning int   */
 typedef void (*MV_VOIDFUNCPTR) (void);	/* ptr to function returning void  */

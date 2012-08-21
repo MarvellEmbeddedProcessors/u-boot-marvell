@@ -298,13 +298,10 @@ MV_STATUS mvBmPoolBufSizeSet(int pool, int buf_size)
 		mvOsPrintf("bmPoolId = %d is invalid \n", pool);
 		return MV_BAD_PARAM;
 	}
-
 	pBmPool = &mvBmPools[pool];
-	if ((buf_size != 0) && (pBmPool->bufSize != 0)) {
-		mvOsPrintf("bmPoolId = %d is busy for buf_size = %d \n", pool, pBmPool->bufSize);
-		return MV_BAD_PARAM;
-	}
+
 	pBmPool->bufSize = buf_size;
+
 	return MV_OK;
 }
 

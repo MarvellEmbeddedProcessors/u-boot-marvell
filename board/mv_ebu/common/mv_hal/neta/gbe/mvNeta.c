@@ -402,16 +402,30 @@ MV_STATUS mvNetaDefaultsSet(int port)
 	/* build PORT_SDMA_CONFIG_REG */
 	regVal = 0;
 
-	if (mvNetaHalData.iocc) {
-		regVal |= ETH_TX_BURST_SIZE_MASK(ETH_BURST_SIZE_2_64BIT_VALUE);
-		regVal |= ETH_RX_BURST_SIZE_MASK(ETH_BURST_SIZE_2_64BIT_VALUE);
-	} else {
-		regVal |= ETH_TX_BURST_SIZE_MASK(ETH_BURST_SIZE_16_64BIT_VALUE);
-		regVal |= ETH_RX_BURST_SIZE_MASK(ETH_BURST_SIZE_16_64BIT_VALUE);
-	}
+#ifdef CONFIG_MV_ETH_REDUCE_BURST_SIZE_WA
+        /* This is a WA for the IOCC HW BUG involve in using 128B burst size */
+        regVal |= ETH_TX_BURST_SIZE_MASK(ETH_BURST_SIZE_2_64BIT_VALUE);
+        regVal |= ETH_RX_BURST_SIZE_MASK(ETH_BURST_SIZE_2_64BIT_VALUE);
+#else
 
-	regVal |= (ETH_RX_NO_DATA_SWAP_MASK | ETH_TX_NO_DATA_SWAP_MASK | ETH_NO_DESC_SWAP_MASK);
+#ifdef CONFIG_MV_ETH_REDUCE_BURST_SIZE_WA
+        /* This is a WA for the IOCC HW BUG involve in using 128B burst size */
+        regVal |= ETH_TX_BURST_SIZE_MASK(ETH_BURST_SIZE_2_64BIT_VALUE);
+        regVal |= ETH_RX_BURST_SIZE_MASK(ETH_BURST_SIZE_2_64BIT_VALUE);
+#else
+        /* Default burst size */
+        regVal |= ETH_TX_BURST_SIZE_MASK(ETH_BURST_SIZE_16_64BIT_VALUE);
+        regVal |= ETH_RX_BURST_SIZE_MASK(ETH_BURST_SIZE_16_64BIT_VALUE);
+#endif /* CONFIG_MV_ETH_REDUCE_BURST_SIZE_WA */
 
+#if defined(MV_CPU_BE) && !defined(CONFIG_MV_ETH_BE_WA)
+    /* big endian */
+    regVal |= (ETH_RX_NO_DATA_SWAP_MASK | ETH_TX_NO_DATA_SWAP_MASK | ETH_DESC_SWAP_MASK);
+#else /* MV_CPU_LE */
+    /* little endian */
+        regVal |= (ETH_RX_NO_DATA_SWAP_MASK | ETH_TX_NO_DATA_SWAP_MASK | ETH_NO_DESC_SWAP_MASK);
+#endif /* MV_CPU_BE && !CONFIG_MV_ETH_BE_WA */
+	
 	/* Assign port SDMA configuration */
 	MV_REG_WRITE(ETH_SDMA_CONFIG_REG(port), regVal);
 
@@ -499,7 +513,7 @@ MV_STATUS	mvNetaRxqCpuMaskSet(int port, int rxq, int cpu_mask)
 
 #ifdef MV_ETH_GMAC_NEW
 
-MV_STATUS       mvEthGmacRgmiiSet(int port, int enable)
+static MV_STATUS       mvEthGmacRgmiiSet(int port, int enable)
 {
 	MV_U32  regVal;
 
@@ -519,7 +533,7 @@ static void mvNetaPortSgmiiConfig(int port)
 	/* FIXME */
 }
 
-void mvNetaPortPowerUp(int port, MV_BOOL isSgmii,MV_BOOL isGmii)
+void mvNetaPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii)
 {
 	MV_U32 regVal;
 
@@ -528,6 +542,8 @@ void mvNetaPortPowerUp(int port, MV_BOOL isSgmii,MV_BOOL isGmii)
 
 	if (isSgmii)
 		mvNetaPortSgmiiConfig(port);
+
+	mvEthGmacRgmiiSet(port, isRgmii);
 
 	/* Cancel Port Reset */
 	regVal = MV_REG_READ(NETA_GMAC_CTRL_2_REG(port));
@@ -978,7 +994,7 @@ static void mvNetaPortSgmiiConfig(int port)
 	MV_REG_WRITE(ETH_PORT_SERIAL_CTRL_1_REG(port), regVal);
 }
 
-void mvNetaPortPowerUp(int port, MV_BOOL isSgmii,MV_BOOL isGmii)
+void mvNetaPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii)
 {
 	MV_U32 regVal;
 
@@ -992,7 +1008,10 @@ void mvNetaPortPowerUp(int port, MV_BOOL isSgmii,MV_BOOL isGmii)
 	/* Cancel Port Reset */
 	regVal = MV_REG_READ(ETH_PORT_SERIAL_CTRL_1_REG(port));
 	regVal &= (~ETH_PORT_RESET_MASK);
-	if(isGmii)
+
+	if (isRgmii)
+		regVal |= ETH_RGMII_ENABLE_MASK;
+	else
 		regVal &= (~ETH_RGMII_ENABLE_MASK);
 
 	MV_REG_WRITE(ETH_PORT_SERIAL_CTRL_1_REG(port), regVal);

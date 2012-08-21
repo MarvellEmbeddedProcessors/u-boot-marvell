@@ -96,7 +96,6 @@ static int rxq_ip6 = CONFIG_MV_ETH_RXQ_DEF;
 static int rxq_ip4 = CONFIG_MV_ETH_RXQ_DEF;
 static int rxq_ip4_tcp = CONFIG_MV_ETH_RXQ_DEF;
 static int rxq_ip4_udp = CONFIG_MV_ETH_RXQ_DEF;
-static int rxq_ip4_igmp = CONFIG_MV_ETH_RXQ_DEF;
 static int rxq_arp 		= CONFIG_MV_ETH_RXQ_DEF;
 
 
@@ -517,92 +516,35 @@ static void pnc_match_etype(struct tcam_entry *te, unsigned short ethertype)
 	tcam_sw_set_byte(te, 1, ethertype & 0xFF);
 }
 
-/*
- * VLAN section: Add non-Ethertype II match rules
- */
-#ifdef CONFIG_MV_ETH_PNC_SNAP
-static int pnc_snap_llc(void)
+/* Set VLAN entry */
+int pnc_vlan_set(int prio, int rxq)
 {
 	struct tcam_entry *te;
-	int tid = TE_SNAP;
+	int tid;
 
 	PNC_DBG("%s\n", __func__);
 
-	/* 0x8870 SNAP */
-	te = tcam_sw_alloc(TCAM_LU_L2);
-	pnc_match_etype(te, 0x8870);
-	sram_sw_set_rinfo(te, RI_ETYPE_8023);
-	sram_sw_set_lookup_done(te, 1);
-	tcam_sw_text(te, "snap");
+	/* check validity */
+	if ((TE_VLAN + prio) > TE_VLAN_EOF)
+		return 1;
 
-	tcam_hw_write(te, tid++);
-	tcam_sw_free(te);
-
-	/* 1536 */
-	te = tcam_sw_alloc(TCAM_LU_L2);
-	pnc_match_etype(te, 0x0600);
-	sram_sw_set_rinfo(te, RI_ETYPE_8023);
-	sram_sw_set_lookup_done(te, 1);
-	tcam_sw_text(te, "802.3");
-
-	tcam_hw_write(te, tid++);
-	tcam_sw_free(te);
-
-	/* 1024-1535 with LLC/SNAP */
-	te = tcam_sw_alloc(TCAM_LU_L2);
-	tcam_sw_set_byte(te, 0, 0x04);
-	tcam_sw_set_mask(te, 0, 0xFE);
-	tcam_sw_set_byte(te, 2, 0xAA);
-	tcam_sw_set_byte(te, 3, 0xAA);
-	sram_sw_set_rinfo(te, RI_ETYPE_8023);
-	sram_sw_set_next_lookup(te, TCAM_LU_L2);
-	sram_sw_set_shift_update(te, 0, 2 + MV_LLC_HLEN);
-	tcam_sw_text(te, "llc");
-
-	tcam_hw_write(te, tid++);
-	tcam_sw_free(te);
-
-	/* 0-1023 with LLC/SNAP */
-	te = tcam_sw_alloc(TCAM_LU_L2);
-	tcam_sw_set_byte(te, 0, 0x00);
-	tcam_sw_set_mask(te, 0, 0xFC);
-	tcam_sw_set_byte(te, 2, 0xAA);
-	tcam_sw_set_byte(te, 3, 0xAA);
-	sram_sw_set_rinfo(te, RI_ETYPE_8023);
-	sram_sw_set_next_lookup(te, TCAM_LU_L2);
-	sram_sw_set_shift_update(te, 0, 2 + MV_LLC_HLEN);
-	tcam_sw_text(te, "llc");
-
-	tcam_hw_write(te, tid++);
-	tcam_sw_free(te);
-
-	ERR_ON_OOR(--tid > TE_SNAP_END);
-
-	return 0;
-}
-#endif /* CONFIG_MV_ETH_PNC_SNAP */
-
-/*
- * VLAN section - Add 802.1p priority rules
- */
-int pnc_vlan_prio(unsigned char prio, int rxq)
-{
-
-	return 0;
-}
-
-/* VLAN default entry */
-static int pnc_vlan_def(void)
-{
-	struct tcam_entry *te;
-	int tid = TE_VLAN_DEF;
-
-	PNC_DBG("%s\n", __func__);
+	if ((prio < 0) || (prio > 7))
+		return 1;
 
 	te = tcam_sw_alloc(TCAM_LU_L2);
 	pnc_match_etype(te, MV_VLAN_TYPE);
 
-	sram_sw_set_rxq(te, rxq_vlan, 0);
+	tcam_sw_set_byte(te, 2, prio << 5);
+	if (prio == 0) {
+		/* Set default VLAN entry */
+		tid = TE_VLAN_EOF;
+		tcam_sw_set_mask(te, 2, 0);
+	} else {
+		tid = TE_VLAN + prio - 1;
+		tcam_sw_set_mask(te, 2, 7 << 5);
+	}
+
+	sram_sw_set_rxq(te, rxq, 0);
 
 	sram_sw_set_rinfo(te, RI_VLAN);
 	sram_sw_set_next_lookup(te, TCAM_LU_L2);
@@ -617,13 +559,13 @@ static int pnc_vlan_def(void)
 
 int pnc_vlan_init(void)
 {
+	int prio;
+
 	PNC_DBG("%s\n", __func__);
 
-#ifdef CONFIG_MV_ETH_PNC_SNAP
-	pnc_snap_llc();
-#endif /* CONFIG_MV_ETH_PNC_SNAP */
-
-	pnc_vlan_def();
+	for (prio = 0; prio <= 7; prio++)
+		if (pnc_vlan_set(prio, rxq_vlan))
+			break;
 
 	return 0;
 }
@@ -634,10 +576,12 @@ int pnc_vlan_init(void)
  *
  ******************************************************************************
  */
-static void pnc_etype_arp(void)
+/* match arp */
+void pnc_etype_arp(int rxq)
 {
-	/* match arp */
 	struct tcam_entry *te;
+
+	rxq_arp = rxq;
 	te = tcam_sw_alloc(TCAM_LU_L2);
 	pnc_match_etype(te, MV_IP_ARP_TYPE);
 	sram_sw_set_lookup_done(te, 1);
@@ -648,10 +592,11 @@ static void pnc_etype_arp(void)
 	tcam_sw_free(te);
 }
 
+/* match ip4 */
 static void pnc_etype_ip4(void)
 {
-	/* match ip4 */
 	struct tcam_entry *te;
+
 	te = tcam_sw_alloc(TCAM_LU_L2);
 	pnc_match_etype(te, MV_IP_TYPE);
 	sram_sw_set_shift_update(te, 0, MV_ETH_TYPE_LEN);
@@ -662,10 +607,11 @@ static void pnc_etype_ip4(void)
 	tcam_sw_free(te);
 }
 
+/* match ip6 */
 static void pnc_etype_ip6(void)
 {
-	/* match ip6 */
 	struct tcam_entry *te;
+
 	te = tcam_sw_alloc(TCAM_LU_L2);
 	pnc_match_etype(te, MV_IP6_TYPE);
 	sram_sw_set_shift_update(te, 0, MV_ETH_TYPE_LEN);
@@ -676,9 +622,9 @@ static void pnc_etype_ip6(void)
 	tcam_sw_free(te);
 }
 
+/* match pppoe */
 static void pnc_etype_pppoe(void)
 {
-	/* match pppoe */
 	struct tcam_entry *te;
 
 	/* IPv4 over PPPoE */
@@ -721,7 +667,7 @@ static int pnc_etype_init(void)
 
 	PNC_DBG("%s\n", __func__);
 
-	pnc_etype_arp();
+	pnc_etype_arp(CONFIG_MV_ETH_RXQ_DEF);
 	pnc_etype_ip4();
 	pnc_etype_ip6();
 	pnc_etype_pppoe();
@@ -827,15 +773,14 @@ int pnc_ip4_dscp(unsigned char dscp, unsigned char mask, int rxq)
 #endif /* (CONFIG_MV_ETH_PNC_DSCP_PRIO > 0) */
 }
 
-/*
- * pnc_ip4_tcp - TCP/IP header parsing for fragmentation
- *                 and L4 offset.
- */
-static void pnc_ip4_tcp(void)
+
+/* IPv4/TCP header parsing for fragmentation and L4 offset.  */
+void pnc_ip4_tcp(int rxq)
 {
 	struct tcam_entry *te;
 
 	PNC_DBG("%s\n", __func__);
+	rxq_ip4_tcp = rxq;
 
 	/* TCP, FRAG=0 normal */
 	te = tcam_sw_alloc(TCAM_LU_IP4);
@@ -869,15 +814,13 @@ static void pnc_ip4_tcp(void)
 	tcam_sw_free(te);
 }
 
-/*
- * pnc_ip4_udp - UDP/UDP header parsing for fragmentation
- *                 and L4 offset.
- */
-static void pnc_ip4_udp(void)
+/* IPv4/UDP header parsing for fragmentation and L4 offset. */
+void pnc_ip4_udp(int rxq)
 {
 	struct tcam_entry *te;
 
 	PNC_DBG("%s\n", __func__);
+	rxq_ip4_udp = rxq;
 
 	/* UDP, FRAG=0 normal */
 	te = tcam_sw_alloc(TCAM_LU_IP4);
@@ -910,27 +853,6 @@ static void pnc_ip4_udp(void)
 	tcam_sw_free(te);
 }
 
-/*
- * IGMP
- */
-static void pnc_ip4_igmp(void)
-{
-	struct tcam_entry *te;
-
-	PNC_DBG("%s\n", __func__);
-
-	te = tcam_sw_alloc(TCAM_LU_IP4);
-	tcam_sw_set_byte(te, 9, MV_IP_PROTO_IGMP);
-	sram_sw_set_lookup_done(te, 1);
-
-	sram_sw_set_rinfo(te, RI_L3_IP4 | RI_L4_UN | RI_IGMP);
-	sram_sw_set_rxq(te, rxq_ip4_igmp, 0);
-	tcam_sw_text(te, "ipv4_igmp");
-
-	tcam_hw_write(te, TE_IP4_IGMP);
-	tcam_sw_free(te);
-}
-
 /* IPv4 - end of section  */
 static void pnc_ip4_end(void)
 {
@@ -953,9 +875,8 @@ int pnc_ip4_init(void)
 {
 	PNC_DBG("%s\n", __func__);
 
-	pnc_ip4_tcp();
-	pnc_ip4_udp();
-	pnc_ip4_igmp();
+	pnc_ip4_tcp(CONFIG_MV_ETH_RXQ_DEF);
+	pnc_ip4_udp(CONFIG_MV_ETH_RXQ_DEF);
 	/*pnc_ip4_esp();*/
 	pnc_ip4_end();
 
@@ -1050,10 +971,10 @@ int pnc_ip6_init(void)
 	return 0;
 }
 
-#ifdef CONFIG_MV_ETH_NFP_PNC
+#ifdef CONFIG_MV_ETH_PNC_L3_FLOW
 /******************************************************************************
  *
- * NFP Section
+ * L3 Flows Section
  *
  ******************************************************************************
  */
@@ -1152,12 +1073,12 @@ int pnc_ipv4_2_tuples_add(unsigned int tid, unsigned int flow_id, unsigned int s
 	struct tcam_entry *te;
 
 	PNC_DBG("%s [%d] flow=%d " MV_IPQUAD_FMT "->" MV_IPQUAD_FMT "\n",
-		__func__, tid, flow_id, MV_IPQUAD(sip), MV_IPQUAD(dip));
+		__func__, tid, flow_id, MV_IPQUAD(((MV_U8 *)&sip)), MV_IPQUAD(((MV_U8 *)&dip)));
 
-	if (tid < TE_FLOW_NFP)
+	if (tid < TE_FLOW_L3)
 		ERR_ON_OOR(1);
 
-	if (tid > TE_FLOW_NFP_END)
+	if (tid > TE_FLOW_L3_END)
 		ERR_ON_OOR(1);
 
 	te = tcam_sw_alloc(TCAM_LU_FLOW_IP4);
@@ -1175,7 +1096,7 @@ int pnc_ipv4_2_tuples_add(unsigned int tid, unsigned int flow_id, unsigned int s
 	sram_sw_set_lookup_done(te, 1);
 	sram_sw_set_flowid(te, flow_id, FLOWID_CTRL_FULL_MASK);
 	sram_sw_set_rxq(te, rxq, 0);
-	sram_sw_set_rinfo(te, RI_NFP_FLOW);
+	sram_sw_set_rinfo(te, RI_L3_FLOW);
 	tcam_sw_text(te, "ipv4_2t");
 
 	tcam_hw_write(te, tid);
@@ -1194,7 +1115,7 @@ int pnc_ipv4_5_tuples_add(unsigned int tid, unsigned int flow_id,
 	struct tcam_entry *te;
 
 	PNC_DBG("%s [%d] flow=%d " MV_IPQUAD_FMT "->" MV_IPQUAD_FMT ", ports=0x%x, proto=%d\n",
-		__func__, tid, flow_id, MV_IPQUAD(sip), MV_IPQUAD(dip), ports, proto);
+		__func__, tid, flow_id, MV_IPQUAD(((MV_U8 *)&sip)), MV_IPQUAD(((MV_U8 *)&dip)), ports, proto);
 
 	if (tid < TE_FLOW_NFP)
 		ERR_ON_OOR(1);
@@ -1373,44 +1294,5 @@ void pnc_mac_show(void)
 			tcam_sw_free(te);
 		}
 	}
-}
-
-/*
- * pnc_rxq - Set RxQ for protocol
- */
-int pnc_rxq_proto(unsigned int proto, unsigned int rxq)
-{
-	PNC_DBG("%s proto=%x rxq=%d\n", __func__, proto, rxq);
-
-	switch (proto) {
-
-	case MV_IP_ARP_TYPE:
-		rxq_arp = rxq;
-		if (pnc_inited)
-			pnc_etype_arp();
-		break;
-
-	case MV_IP_PROTO_TCP:
-		rxq_ip4_tcp = rxq;
-		if (pnc_inited)
-			pnc_ip4_tcp();
-		break;
-
-	case MV_IP_PROTO_UDP:
-		rxq_ip4_udp = rxq;
-		if (pnc_inited)
-			pnc_ip4_udp();
-		break;
-
-	case MV_IP_PROTO_IGMP:
-		rxq_ip4_igmp = rxq;
-		if (pnc_inited)
-			pnc_ip4_igmp();
-		break;
-	default:
-		return PNC_ERR_INV;
-	}
-
-	return 0;
 }
 

@@ -65,6 +65,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __INCmvCommonh
 #define __INCmvCommonh
 
+#ifdef __cplusplus
+extern "C" {
+#endif	/* __cplusplus */
+
 #include "mvTypes.h"
 #include "mvDeviceId.h"
 #ifndef MV_ASMLANGUAGE
@@ -72,9 +76,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvVideo.h"
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
 /* Swap tool */
 
 /* 16bit nibble swap. For example 0x1234 -> 0x2143                          */
@@ -93,10 +94,10 @@ extern "C" {
 					((X&0xf000000) << 4) | \
 					((X&0xf0000000) >> 4))
 
-/* 16bit byte swap. For example 0x1122 -> 0x2211                            */
+/* 16bit byte swap. For example 0x1234->0x3412                             */
 #define MV_BYTE_SWAP_16BIT(X) ((((X)&0xff)<<8) | (((X)&0xff00)>>8))
 
-/* 32bit byte swap. For example 0x11223344 -> 0x44332211                    */
+/* 32bit byte swap. For example 0x12345678->0x78563412                    */
 #define MV_BYTE_SWAP_32BIT(X)  ((((X)&0xff)<<24) |                       \
 				(((X)&0xff00)<<8) |                      \
 				(((X)&0xff0000)>>8) |                    \
@@ -320,10 +321,11 @@ extern "C" {
 	((unsigned char *)addr)[4], \
 	((unsigned char *)addr)[5]
 
-#define MV_IPQUAD_FMT "%u.%u.%u.%u"
-#define MV_IPQUAD(ip)	(ip&0xFF), ((ip>>8)&0xFF), ((ip>>16)&0xFF), ((ip>>24)&0xFF)
-#define MV_IP_QUAD(ipAddr)	(((ipAddr >> 24) & 0xFF), ((ipAddr >> 16) & 0xFF), \
-				((ipAddr >> 8) & 0xFF), ((ipAddr >> 0) & 0xFF))
+#define MV_IPQUAD_FMT         "%u.%u.%u.%u"
+#define MV_IPQUAD(ip)         ip[0], ip[1], ip[2], ip[3]
+
+#define MV_IP_QUAD(ipAddr)    ((ipAddr >> 24) & 0xFF), ((ipAddr >> 16) & 0xFF), \
+				((ipAddr >> 8) & 0xFF), ((ipAddr >> 0) & 0xFF)
 
 #define MV_IP6_FMT		"%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x"
 #define MV_IP6_ARG(L3)		L3[0], L3[1], L3[2], L3[3],	\
@@ -336,6 +338,8 @@ extern "C" {
 #define MV_GET_BIT(word, bitNum) (((word) & (1 << (bitNum))) >> (bitNum))
 
 #define MV_SET_BIT(word, bitNum, bitVal) (((word) & ~(1 << (bitNum))) | (bitVal << bitNum))
+
+#define MV_ARRAY_SIZE(a)                    ((sizeof(a)) / (sizeof(a[0])))
 
 #ifndef MV_ASMLANGUAGE
 /* mvCommon API list */
@@ -361,6 +365,6 @@ MV_STATUS mvWinWithinWinTest(MV_ADDR_WIN *pAddrWin1, MV_ADDR_WIN *pAddrWin2);
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif	/* __cplusplus */
 
 #endif /* __INCmvCommonh */

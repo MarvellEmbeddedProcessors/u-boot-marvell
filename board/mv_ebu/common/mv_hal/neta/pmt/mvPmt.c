@@ -62,7 +62,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include "mvCommon.h"		/* Should be included before mvSysHwConfig */
+#include "mvCommon.h"  /* Should be included before mvSysHwConfig */
 #include "mvTypes.h"
 #include "mvDebug.h"
 #include "mvOs.h"
@@ -71,156 +71,569 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mvPmt.h"
 
-/*#define PMT_DBG mvOsPrintf*/
+MV_NETA_PMT	**mvPmtBase = NULL;
+
+/* #define PMT_DBG mvOsPrintf */
 #define PMT_DBG(X...)
+
+static char mvPmtCmdNames[MV_ETH_PMT_SIZE][PMT_TEXT] = {
+
+	[MV_NETA_CMD_NONE]          = "NO_MOD",
+	[MV_NETA_CMD_ADD_2B]        = "ADD_2B",
+	[MV_NETA_CMD_CFG_VLAN]      = "CFG_VLAN",
+	[MV_NETA_CMD_ADD_VLAN]      = "ADD_VLAN",
+	[MV_NETA_CMD_CFG_DSA_1]     = "CFG_DSA_1",
+	[MV_NETA_CMD_CFG_DSA_2]     = "CFG_DSA_2",
+	[MV_NETA_CMD_ADD_DSA]       = "ADD_DSA",
+	[MV_NETA_CMD_DEL_BYTES]     = "DEL_BYTES",
+	[MV_NETA_CMD_REPLACE_2B]    = "REPLACE_2B",
+	[MV_NETA_CMD_REPLACE_LSB]   = "REPLACE_LSB",
+	[MV_NETA_CMD_REPLACE_MSB]   = "REPLACE_MSB",
+	[MV_NETA_CMD_REPLACE_VLAN]  = "REPLACE_VLAN",
+	[MV_NETA_CMD_DEC_LSB]       = "DEC_LSB",
+	[MV_NETA_CMD_DEC_MSB]       = "DEC_MSB",
+	[MV_NETA_CMD_ADD_CALC_LEN]  = "ADD_CALC_LEN",
+	[MV_NETA_CMD_REPLACE_LEN]   = "REPLACE_LEN",
+	[MV_NETA_CMD_IPV4_CSUM]     = "IPV4_CSUM",
+	[MV_NETA_CMD_L4_CSUM]       = "L4_CSUM",
+	[MV_NETA_CMD_SKIP]          = "SKIP",
+	[MV_NETA_CMD_JUMP]          = "JUMP",
+	[MV_NETA_CMD_JUMP_SKIP]     = "JUMP_SKIP",
+	[MV_NETA_CMD_JUMP_SUB]      = "JUMP_SUB",
+	[MV_NETA_CMD_PPPOE]         = "PPPOE",
+	[MV_NETA_CMD_STORE]         = "STORE",
+};
 
 /*******************************************************************************
 * mvNetaPmtWrite - Add entry to Packet Modification Table
-* DESCRIPTION:
 *
 * INPUT:
-*       int			port - NETA port number
+*       int			port    - NETA port number
+*       int			idx     - PMT entry index to write to
+*       MV_NETA_PMT	pEntry  - PMT entry
 *
 * RETURN:   MV_STATUS
 *               MV_OK - Success, Others - Failure
-*
-* NOTE:
 *******************************************************************************/
-MV_STATUS mvNetaPmtWrite(int port, int idx, MV_NETA_PMT *pEntry)
+MV_STATUS   mvNetaPmtWrite(int port, int idx, MV_NETA_PMT *pEntry)
 {
-	if (mvNetaPortCheck(port))
-		return MV_OUT_OF_RANGE;
+	MV_NETA_PMT	*pBase;
 
-	if (mvNetaMaxCheck(idx, NETA_TX_PMT_SIZE))
+	if ((port < 0) || (port >= mvNetaHalData.maxPort)) {
+		mvOsPrintf("%s: port %d is out of range\n", __func__, port);
 		return MV_OUT_OF_RANGE;
+	}
 
-	PMT_DBG("%s: 0x%08x <-- 0x%x\n", __func__, NETA_TX_PMT_REG(port), idx);
-	MV_REG_WRITE(NETA_TX_PMT_REG(port), (MV_U32) idx);
-	MV_REG_WRITE(NETA_TX_PMT_W0_REG(port), pEntry->mt_w0 & NETA_TX_PMT_W0_MASK);
-	MV_REG_WRITE(NETA_TX_PMT_W1_REG(port), pEntry->mt_w1 & NETA_TX_PMT_W1_MASK);
-	MV_REG_WRITE(NETA_TX_PMT_W2_REG(port), pEntry->mt_w2 & NETA_TX_PMT_W2_MASK);
+	if ((idx < 0) || (idx >= MV_ETH_PMT_SIZE)) {
+		mvOsPrintf("%s: entry %d is out of range\n", __func__, idx);
+		return MV_OUT_OF_RANGE;
+	}
+	if ((mvPmtBase == NULL) || (mvPmtBase[port] == NULL)) {
+		mvOsPrintf("%s: PMT for port #%d is not initialized\n", __func__, port);
+		return MV_INIT_ERROR;
+	}
+	pBase = mvPmtBase[port];
+	pBase[idx].word = pEntry->word;
 
 	return MV_OK;
 }
+
 /*******************************************************************************
 * mvNetaPmtRead - Read entry from Packet Modification Table
-* DESCRIPTION:
 *
 * INPUT:
 *       int			port - NETA port number
-*       int			inx - PMT entry index to read from
+*       int			idx  - PMT entry index to read from
 * OUTPUT:
 *       MV_NETA_PMT	pEntry - PMT entry
 *
 * RETURN:   MV_STATUS
 *               MV_OK - Success, Others - Failure
-*
-* NOTE:
 *******************************************************************************/
 MV_STATUS mvNetaPmtRead(int port, int idx, MV_NETA_PMT *pEntry)
 {
-	if (mvNetaPortCheck(port))
+	MV_NETA_PMT	*pBase;
+
+	if ((port < 0) || (port >= mvNetaHalData.maxPort)) {
+		mvOsPrintf("%s: port %d is out of range\n", __func__, port);
 		return MV_OUT_OF_RANGE;
+	}
 
-	if (mvNetaMaxCheck(idx, NETA_TX_PMT_SIZE))
+	if ((idx < 0) || (idx >= MV_ETH_PMT_SIZE)) {
+		mvOsPrintf("%s: entry %d is out of range\n", __func__, idx);
 		return MV_OUT_OF_RANGE;
-
-	PMT_DBG("%s: 0x%08x <-- 0x%x\n", __func__, NETA_TX_PMT_REG(port), idx);
-
-	MV_REG_WRITE(NETA_TX_PMT_REG(port), (MV_U32) idx);
-	pEntry->mt_w0 = MV_REG_READ(NETA_TX_PMT_W0_REG(port));
-	pEntry->mt_w1 = MV_REG_READ(NETA_TX_PMT_W1_REG(port));
-	pEntry->mt_w2 = MV_REG_READ(NETA_TX_PMT_W2_REG(port));
+	}
+	if ((mvPmtBase == NULL) || (mvPmtBase[port] == NULL)) {
+		mvOsPrintf("%s: PMT for port #%d is not initialized\n", __func__, port);
+		return MV_INIT_ERROR;
+	}
+	pBase = mvPmtBase[port];
+	pEntry->word = pBase[idx].word;
 
 	return MV_OK;
 }
 
 /*******************************************************************************
-* mvNetaPmtInit - Clear Packet Modification Table
-* DESCRIPTION:
+* mvNetaPmtClear - Clear Packet Modification Table
 *
 * INPUT:
 *       int			port - NETA port number
 *
 * RETURN:   MV_STATUS
 *               MV_OK - Success, Others - Failure
-*
-* NOTE:
 *******************************************************************************/
-MV_STATUS mvNetaPmtInit(int port)
+MV_STATUS   mvNetaPmtClear(int port)
 {
-	int idx;
+	int         idx;
 	MV_NETA_PMT entry;
 
-	if (mvNetaPortCheck(port))
+	if ((port < 0) || (port >= mvNetaHalData.maxPort)) {
+		mvOsPrintf("%s: port %d is out of range\n", __func__, port);
 		return MV_OUT_OF_RANGE;
+	}
 
-	memset(&entry, 0, sizeof(MV_NETA_PMT));
-
-	for (idx = 0; idx < NETA_TX_PMT_SIZE; idx++)
+	MV_NETA_PMT_INVALID_SET(&entry);
+	for (idx = 0; idx < MV_ETH_PMT_SIZE; idx++)
 		mvNetaPmtWrite(port, idx, &entry);
 
 	return MV_OK;
 }
 
 /*******************************************************************************
-* mvNetaPmtDump - Dump Packet Modification Table
-* DESCRIPTION:
+* mvNetaPmtInit - Init Packet Modification Table driver
 *
 * INPUT:
 *       int			port - NETA port number
 *
 * RETURN:   MV_STATUS
 *               MV_OK - Success, Others - Failure
-*
-* NOTE:
 *******************************************************************************/
-MV_STATUS mvNetaPmtDump(int port)
+MV_STATUS   mvNetaPmtInit(int port, MV_NETA_PMT *pBase)
 {
-	int idx, count = 0;
-	MV_NETA_PMT entry;
-
-	if (mvNetaPortCheck(port))
+	if ((port < 0) || (port >= mvNetaHalData.maxPort)) {
+		mvOsPrintf("%s: port %d is out of range\n", __func__, port);
 		return MV_OUT_OF_RANGE;
+	}
 
-	for (idx = 0; idx < NETA_TX_PMT_SIZE; idx++) {
-		mvNetaPmtRead(port, idx, &entry);
-		if (entry.mt_w0 || entry.mt_w1 || entry.mt_w2) {
-			count++;
-			mvOsPrintf("[%2x] 0x%08x 0x%08x 0x%08x\n", idx, entry.mt_w0, entry.mt_w1, entry.mt_w2);
+	if (mvPmtBase == NULL) {
+		mvPmtBase = mvOsMalloc(mvNetaHalData.maxPort * sizeof(MV_NETA_PMT *));
+		if (mvPmtBase == NULL) {
+			mvOsPrintf("%s: Allocation failed\n", __func__);
+			return MV_OUT_OF_CPU_MEM;
 		}
+		memset(mvPmtBase, 0, mvNetaHalData.maxPort * sizeof(MV_NETA_PMT *));
+	}
+	mvPmtBase[port] = pBase;
+
+	mvNetaPmtClear(port);
+
+	return MV_OK;
+}
+
+/*******************************************************************************
+* mvNetaPmtDestroy - Free PMT Base memory
+*
+* INPUT:
+*
+* RETURN:   void
+*******************************************************************************/
+MV_VOID   mvNetaPmtDestroy(MV_VOID)
+{
+	if (mvPmtBase)
+		mvOsFree(mvPmtBase);
+}
+
+/*******************************************************************************
+* mvNetaPmtEntryPrint - Print PMT entry
+*
+* INPUT:
+*       MV_NETA_PMT*    pEntry - PMT entry to be printed
+*
+* RETURN:   void
+*******************************************************************************/
+void    mvNetaPmtEntryPrint(MV_NETA_PMT *pEntry)
+{
+	mvOsPrintf("%04x %04x: %s",
+		MV_NETA_PMT_CTRL_GET(pEntry), MV_NETA_PMT_DATA_GET(pEntry),
+		mvPmtCmdNames[MV_NETA_PMT_CMD_GET(pEntry)]);
+
+	if (pEntry->word & MV_NETA_PMT_IP4_CSUM_MASK)
+		mvOsPrintf(", IPv4 csum");
+
+	if (pEntry->word & MV_NETA_PMT_L4_CSUM_MASK)
+		mvOsPrintf(", L4 csum");
+
+	if (pEntry->word & MV_NETA_PMT_LAST_MASK)
+		mvOsPrintf(", Last");
+
+	mvOsPrintf("\n");
+}
+
+/*******************************************************************************
+* mvNetaPmtDump - Dump Packet Modification Table
+*
+* INPUT:
+*       int			port    - NETA port number
+*       int         flags   -
+*
+* RETURN:   void
+*******************************************************************************/
+void   mvNetaPmtDump(int port, int flags)
+{
+	int             idx, count = 0;
+	MV_NETA_PMT 	entry;
+	MV_STATUS       status;
+
+	if ((port < 0) || (port >= mvNetaHalData.maxPort)) {
+		mvOsPrintf("%s: port %d is out of range\n", __func__, port);
+		return;
+	}
+
+	for (idx = 0; idx < MV_ETH_PMT_SIZE; idx++) {
+		status = mvNetaPmtRead(port, idx, &entry);
+		if (status != MV_OK) {
+			mvOsPrintf("%s failed: port=%d, idx=%d, status=%d\n",
+					__func__, port, idx, status);
+			return;
+		}
+		if ((flags & PMT_PRINT_VALID_FLAG) && !MV_NETA_PMT_IS_VALID(&entry))
+			continue;
+
+		count++;
+		mvOsPrintf("[%3d]: ", idx);
+		mvNetaPmtEntryPrint(&entry);
 	}
 
 	if (!count)
-		mvOsPrintf("PMT is empty, %d entries\n", NETA_TX_PMT_SIZE);
-
-	return MV_OK;
+		mvOsPrintf("PMT is empty, %d entries\n", MV_ETH_PMT_SIZE);
 }
 
-/* Set MH register */
-MV_STATUS mvNetaPmtMhRegSet(int port, int txp, int reg, MV_U16 val)
+/*******************************************************************************
+* mvNetaPmtAdd2Bytes - Set PMT entry with "add 2 bytes" command
+*
+* INPUT:
+*       MV_U16 data         - 2 bytes of data to be added
+*
+* OUTPUT:
+*       MV_NETA_PMT* pEntry - PMT entry to be set
+*
+* RETURN:   void
+*******************************************************************************/
+void    mvNetaPmtAdd2Bytes(MV_NETA_PMT *pEntry, MV_U16 data)
 {
-	if (mvNetaTxpCheck(port, txp))
-		return MV_OUT_OF_RANGE;
-
-	if (mvNetaMaxCheck(reg, NETA_TX_MAX_MH_REGS))
-		return MV_OUT_OF_RANGE;
-
-	MV_REG_WRITE(NETA_TX_MH_REG(port, txp, reg), val);
-
-	return MV_OK;
+	MV_NETA_PMT_CMD_SET(pEntry, MV_NETA_CMD_ADD_2B);
+	MV_NETA_PMT_DATA_SET(pEntry, data);
 }
 
-/* Set ETH_TYPE register */
-MV_STATUS mvNetaPmtEthTypeRegSet(int port, int txp, int reg, MV_U16 val)
+/*******************************************************************************
+* mvNetaPmtReplace2Bytes - Set PMT entry with "Replace 2 bytes" command
+*
+* INPUT:
+*       MV_U16 data         - 2 bytes of data to be replaced
+*
+* OUTPUT:
+*       MV_NETA_PMT* pEntry - PMT entry to be set
+*
+* RETURN:   void
+*******************************************************************************/
+void    mvNetaPmtReplace2Bytes(MV_NETA_PMT *pEntry, MV_U16 data)
 {
-	if (mvNetaTxpCheck(port, txp))
-		return MV_OUT_OF_RANGE;
+	MV_NETA_PMT_CMD_SET(pEntry, MV_NETA_CMD_REPLACE_2B);
+	MV_NETA_PMT_DATA_SET(pEntry, data);
+}
 
-	if (mvNetaMaxCheck(reg, NETA_TX_MAX_ETH_TYPE_REGS))
-		return MV_OUT_OF_RANGE;
+/*******************************************************************************
+* mvNetaPmtDelShorts - Set PMT entry with "Delete" command
+*
+* INPUT:
+*       MV_U8   toDelete    - number of shorts to be deleted
+*       MV_U8   skipBefore  - number of shorts to be skipped before delete
+*       MV_U8   skipAfter   - number of shorts to be skipped after delete
+*
+* OUTPUT:
+*       MV_NETA_PMT* pEntry - PMT entry to be set
+*
+* RETURN:   void
+*******************************************************************************/
+void    mvNetaPmtDelShorts(MV_NETA_PMT *pEntry, MV_U8 toDelete,
+				MV_U8 skipBefore, MV_U8 skipAfter)
+{
+	MV_U16  data;
 
-	MV_REG_WRITE(NETA_TX_ETH_TYPE_REG(port, txp, reg), val);
+	MV_NETA_PMT_CMD_SET(pEntry, MV_NETA_CMD_DEL_BYTES);
 
-	return MV_OK;
+	data = MV_NETA_PMT_DEL_SHORTS(toDelete) |
+		MV_NETA_PMT_DEL_SKIP_B(skipBefore) |
+		MV_NETA_PMT_DEL_SKIP_A(skipAfter);
+
+	MV_NETA_PMT_DATA_SET(pEntry, data);
+}
+
+/* Set update checksum flags to PMT entry */
+void    mvNetaPmtFlags(MV_NETA_PMT *pEntry, int last, int ipv4, int l4)
+{
+	if (last)
+		pEntry->word |= MV_NETA_PMT_LAST_MASK;
+
+	if (ipv4)
+		pEntry->word |= MV_NETA_PMT_IP4_CSUM_MASK;
+
+	if (l4)
+		pEntry->word |= MV_NETA_PMT_L4_CSUM_MASK;
+}
+
+/* Set Last flag to PMT entry */
+void    mvNetaPmtLastFlag(MV_NETA_PMT *pEntry, int last)
+{
+	if (last)
+		pEntry->word |= MV_NETA_PMT_LAST_MASK;
+	else
+		pEntry->word &= ~MV_NETA_PMT_LAST_MASK;
+}
+
+/*******************************************************************************
+* mvNetaPmtReplaceLSB - Set PMT entry with "Replace LSB" command
+*
+* INPUT:
+*       MV_U8 value    - value to be placed
+*       MV_U8 mask     - mask defines which bits to be replaced
+*
+* OUTPUT:
+*       MV_NETA_PMT* pEntry - PMT entry to be set
+*
+* RETURN:   void
+*******************************************************************************/
+void    mvNetaPmtReplaceLSB(MV_NETA_PMT *pEntry, MV_U8 value, MV_U8 mask)
+{
+	MV_U16  data;
+
+	MV_NETA_PMT_CMD_SET(pEntry, MV_NETA_CMD_REPLACE_LSB);
+
+	data = (value << 0) | (mask << 8);
+
+	MV_NETA_PMT_DATA_SET(pEntry, data);
+}
+
+/*******************************************************************************
+* mvNetaPmtReplaceMSB - Set PMT entry with "Replace MSB" command
+*
+* INPUT:
+*       MV_U8 value    - value to be placed
+*       MV_U8 mask     - mask defines which bits to be replaced
+*
+* OUTPUT:
+*       MV_NETA_PMT* pEntry - PMT entry to be set
+*
+* RETURN:   void
+*******************************************************************************/
+void    mvNetaPmtReplaceMSB(MV_NETA_PMT *pEntry, MV_U8 value, MV_U8 mask)
+{
+	MV_U16  data;
+
+	MV_NETA_PMT_CMD_SET(pEntry, MV_NETA_CMD_REPLACE_MSB);
+
+	data = (value << 0) | (mask << 8);
+
+	MV_NETA_PMT_DATA_SET(pEntry, data);
+}
+
+/*******************************************************************************
+* mvNetaPmtSkip - Set PMT entry with "Skip" command
+*
+* INPUT:
+*       MV_U16 shorts   - number of shorts to be skipped
+*
+* OUTPUT:
+*       MV_NETA_PMT* pEntry - PMT entry to be set
+*
+* RETURN:   void
+*******************************************************************************/
+void    mvNetaPmtSkip(MV_NETA_PMT *pEntry, MV_U16 shorts)
+{
+	MV_U16  data;
+
+	MV_NETA_PMT_CMD_SET(pEntry, MV_NETA_CMD_SKIP);
+
+	data = MV_NETA_PMT_CALC_LEN_DATA(shorts * 2);
+	data |= MV_NETA_PMT_CALC_LEN_0_ZERO;
+	data |= MV_NETA_PMT_CALC_LEN_1(MV_NETA_PMT_ZERO_ADD);
+	data |= MV_NETA_PMT_CALC_LEN_2(MV_NETA_PMT_ZERO_ADD);
+	data |= MV_NETA_PMT_CALC_LEN_3_ADD_MASK;
+
+	MV_NETA_PMT_DATA_SET(pEntry, data);
+}
+
+/*******************************************************************************
+* mvNetaPmtJump - Set PMT entry with "Jump" command
+*
+* INPUT:
+*       MV_U16 target   - PMT entry to jump to
+*
+* OUTPUT:
+*       MV_NETA_PMT* pEntry - PMT entry to be set
+*
+* RETURN:   void
+*******************************************************************************/
+void    mvNetaPmtJump(MV_NETA_PMT *pEntry, MV_U16 target, int type, int cond)
+{
+	MV_U16  data;
+
+	if (type == 0) {
+		MV_NETA_PMT_CMD_SET(pEntry, MV_NETA_CMD_JUMP);
+	} else if (type == 1) {
+		MV_NETA_PMT_CMD_SET(pEntry, MV_NETA_CMD_JUMP_SKIP);
+	} else if (type == 2) {
+		MV_NETA_PMT_CMD_SET(pEntry, MV_NETA_CMD_JUMP_SUB);
+	} else {
+		mvOsPrintf("%s - Unexpected type = %d\n", __func__, type);
+		return;
+	}
+
+	data = target;
+	if (cond == 1)
+		data |= MV_NETA_PMT_IP4_CSUM_MASK;
+	else if (cond == 2)
+		data |= MV_NETA_PMT_L4_CSUM_MASK;
+
+	MV_NETA_PMT_DATA_SET(pEntry, data);
+}
+
+
+/*******************************************************************************
+* mvNetaPmtDecLSB - Set PMT entry with "Decrement LSB" command
+*
+* INPUT:
+*       MV_U8   skipBefore  - number of shorts to be skipped before delete
+*       MV_U8   skipAfter   - number of shorts to be skipped after delete
+*
+* OUTPUT:
+*       MV_NETA_PMT* pEntry - PMT entry to be set
+*
+* RETURN:   void
+*******************************************************************************/
+void        mvNetaPmtDecLSB(MV_NETA_PMT *pEntry, MV_U8 skipBefore, MV_U8 skipAfter)
+{
+	MV_U16  data;
+
+	MV_NETA_PMT_CMD_SET(pEntry, MV_NETA_CMD_DEC_LSB);
+
+	data =  MV_NETA_PMT_DEL_SKIP_B(skipBefore) |
+		MV_NETA_PMT_DEL_SKIP_A(skipAfter);
+
+	MV_NETA_PMT_DATA_SET(pEntry, data);
+}
+
+/*******************************************************************************
+* mvNetaPmtDecMSB - Set PMT entry with "Decrement MSB" command
+*
+* INPUT:
+*       MV_U8   skipBefore  - number of shorts to be skipped before delete
+*       MV_U8   skipAfter   - number of shorts to be skipped after delete
+*
+* OUTPUT:
+*       MV_NETA_PMT* pEntry - PMT entry to be set
+*
+* RETURN:   void
+*******************************************************************************/
+void        mvNetaPmtDecMSB(MV_NETA_PMT *pEntry, MV_U8 skipBefore, MV_U8 skipAfter)
+{
+	MV_U16  data;
+
+	MV_NETA_PMT_CMD_SET(pEntry, MV_NETA_CMD_DEC_MSB);
+
+	data =  MV_NETA_PMT_DEL_SKIP_B(skipBefore) |
+		MV_NETA_PMT_DEL_SKIP_A(skipAfter);
+
+	MV_NETA_PMT_DATA_SET(pEntry, data);
+}
+
+/*******************************************************************************
+* mvNetaPmtReplaceIPv4csum - Set PMT entry with "Replace IP checksum" command
+*
+* INPUT:
+*       MV_U16   data
+*
+* OUTPUT:
+*       MV_NETA_PMT* pEntry - PMT entry to be set
+*
+* RETURN:   void
+*******************************************************************************/
+void        mvNetaPmtReplaceIPv4csum(MV_NETA_PMT *pEntry, MV_U16 data)
+{
+	MV_NETA_PMT_CMD_SET(pEntry, MV_NETA_CMD_IPV4_CSUM);
+	MV_NETA_PMT_DATA_SET(pEntry, data);
+}
+
+/*******************************************************************************
+* mvNetaPmtReplaceL4csum - Set PMT entry with "Replace TCP/UDP checksum" command
+*
+* INPUT:
+*       MV_U16   data
+*
+* OUTPUT:
+*       MV_NETA_PMT* pEntry - PMT entry to be set
+*
+* RETURN:   void
+*******************************************************************************/
+void        mvNetaPmtReplaceL4csum(MV_NETA_PMT *pEntry, MV_U16 data)
+{
+	MV_NETA_PMT_CMD_SET(pEntry, MV_NETA_CMD_L4_CSUM);
+	MV_NETA_PMT_DATA_SET(pEntry, data);
+}
+
+/**************************************************************/
+/* High level PMT configuration functions - multiple commands */
+/**************************************************************/
+
+/* Configure PMT to decrement TTL in IPv4 header - 2 entries */
+int     mvNetaPmtTtlDec(int port, int idx, int ip_offs, int isLast)
+{
+	MV_NETA_PMT     pmtEntry;
+
+	/* Skip to TTL and Decrement - Set flag for IP csum */
+	MV_NETA_PMT_CLEAR(&pmtEntry);
+	mvNetaPmtDecMSB(&pmtEntry, (ip_offs + 8)/2, 0);
+	mvNetaPmtFlags(&pmtEntry, 0, 1, 0);
+	mvNetaPmtWrite(port, idx, &pmtEntry);
+	idx++;
+
+	/* Update IP checksum */
+	MV_NETA_PMT_CLEAR(&pmtEntry);
+	mvNetaPmtReplaceIPv4csum(&pmtEntry, 0);
+	if (isLast)
+		mvNetaPmtLastFlag(&pmtEntry, 1);
+
+	mvNetaPmtWrite(port, idx, &pmtEntry);
+
+	return idx;
+}
+
+/* Configure PMT to replace bytes in the packet: minimum 2 bytes - 1 entry for each 2 bytes */
+int     mvNetaPmtDataReplace(int port, int idx, int offset,
+				 MV_U8 *data, int bytes, int isLast)
+{
+	int             i;
+	MV_U16          u16;
+	MV_NETA_PMT     pmtEntry;
+
+	if (offset > 0) {
+		/* Skip command first */
+		MV_NETA_PMT_CLEAR(&pmtEntry);
+		mvNetaPmtSkip(&pmtEntry, offset/2);
+		mvNetaPmtWrite(port, idx, &pmtEntry);
+		idx++;
+	}
+	for (i = 0; i < bytes; i += 2) {
+		/* Replace */
+		MV_NETA_PMT_CLEAR(&pmtEntry);
+		u16 = ((data[i] << 8) | data[i+1]);
+		mvNetaPmtReplace2Bytes(&pmtEntry, u16);
+		if (isLast && (i == bytes))
+			mvNetaPmtLastFlag(&pmtEntry, 1);
+
+		mvNetaPmtWrite(port, idx, &pmtEntry);
+		idx++;
+	}
+
+	return idx;
 }

@@ -65,6 +65,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __MV_PNC_H__
 #define __MV_PNC_H__
 
+
 #include "mvTcam.h"
 
 /*
@@ -81,40 +82,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PNC_ERR_INV			1			/* invalid parameter */
 
  /* Result info bits assigment */
-#define RI_DROP			    (BIT0)		/* drop */
+#define RI_DROP	            (BIT0)		/* drop */
 
-#define RI_L4_OFFS     		1
-#define RI_L4_MASK     		(3 << RI_L4_OFFS)
+#define RI_L4_OFFS     	    1
+#define RI_L4_MASK     	    (3 << RI_L4_OFFS)
 #define RI_L4_TCP           (0 << RI_L4_OFFS)
 #define RI_L4_UDP           (1 << RI_L4_OFFS)
 #define RI_L4_UN            (2 << RI_L4_OFFS)
 
-#define RI_L3_OFFS     		3
-#define RI_L3_MASK     		(7 << RI_L3_OFFS)
+#define RI_L3_OFFS     	    3
+#define RI_L3_MASK     	    (7 << RI_L3_OFFS)
 #define RI_L3_UN            (0 << RI_L3_OFFS)
 #define RI_L3_IP6           (1 << RI_L3_OFFS)
 #define RI_L3_IP4_FRAG      (2 << RI_L3_OFFS)
 #define RI_L3_IP4           (3 << RI_L3_OFFS)
 #define RI_L3_IP4_FRAG_F    (6 << RI_L3_OFFS)
 
-#define RI_MCAST_OFFS     	6
-#define RI_MCAST_MASK     	(3 << RI_MCAST_OFFS)
+#define RI_MCAST_OFFS       6
+#define RI_MCAST_MASK       (3 << RI_MCAST_OFFS)
 #define RI_MCAST_SPEC       (0 << RI_MCAST_OFFS)
 #define RI_MCAST_PNC_SPEC   (1 << RI_MCAST_OFFS)
 #define RI_MCAST_OTHER      (2 << RI_MCAST_OFFS)
 #define RI_MCAST_PNC_OTHER  (3 << RI_MCAST_OFFS)
 #define RI_MCAST_PNC_ONLY   (4 << RI_MCAST_OFFS)
 
-#define RI_DA_MC 		    (BIT10)	/* multicast */
-#define RI_DA_BC 		    (BIT11)	/* broadcast */
-#define RI_DA_ME		    (BIT12)	/* unicast */
-#define RI_IGMP			    (BIT13)	/* IGMP */
-#define RI_ETYPE_8023	    (BIT14)	/* 802.3/LLC/SNAP encapsulation */
-#define RI_VLAN			    (BIT15)	/* VLAN */
-#define RI_PPPOE            (BIT16)	/* PPPoE */
-
-#define RI_NFP_FLOW		    (BIT18)	/* NFP flowid is valid */
-#define RI_NFP_SWF_FLOW     (BIT19)	/* NFP_SWF flowid is valid */
+#define RI_VLAN             (BIT9)      /* VLAN */
+#define RI_DA_MC            (BIT10)	/* multicast */
+#define RI_DA_BC            (BIT11)	/* broadcast */
+#define RI_DA_ME            (BIT12)	/* unicast */
+#define RI_PPPOE            (BIT13)	/* PPPoE */
+/* BITS 14-17 are reserved for setting MH field in HWF packets (TXz_MH_reg_1-15) */
 #define RI_RX_SPECIAL       (BIT20) /* Packet for special RX processing */
 
  /* Additional info bits assigment */
@@ -122,21 +119,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define AI_DONE_MASK        (1 << AI_DONE_BIT)
 
 /* PnC result info */
+#define NETA_PNC_VLAN       (RI_VLAN  >> 9)
 #define NETA_PNC_DA_MC      (RI_DA_MC >> 9)
 #define NETA_PNC_DA_BC      (RI_DA_BC >> 9)
 #define NETA_PNC_DA_UC      (RI_DA_ME >> 9)
-#define NETA_PNC_IGMP       (RI_IGMP >> 9)
-#define NETA_PNC_SNAP       (RI_ETYPE_8023 >> 9)
-#define NETA_PNC_VLAN       (RI_VLAN >> 9)
 #define NETA_PNC_PPPOE      (RI_PPPOE >> 9)
-#define NETA_PNC_NFP        (RI_NFP_FLOW >> 9)
-#define NETA_PNC_SWF        (RI_NFP_SWF_FLOW >> 9)
 #define NETA_PNC_RX_SPECIAL (RI_RX_SPECIAL >> 9)
 /*---------------------------------------------------------------------------*/
 
 MV_STATUS   mvPncInit(MV_U8 *pncVirtBase);
 
-#ifdef CONFIG_MV_ETH_PNC_PARSER
+#ifdef CONFIG_MV_ETH_PNC
 /*
  * TCAM topology definition.
  * The TCAM is divided into sections per protocol encapsulation.
@@ -154,20 +147,13 @@ enum {
 	TE_MAC_ME_END = TE_MAC_ME + CONFIG_MV_ETH_PORTS_NUM - 1,
 	TE_MAC_EOF,
 
-	/* L2 Lookup */
-#ifdef CONFIG_MV_ETH_PNC_SNAP
-	/* SNAP/LLC Lookup */
-	TE_SNAP,
-	TE_SNAP_END = TE_SNAP + 4 - 1,
-#endif /* CONFIG_MV_ETH_PNC_SNAP */
-
     /* VLAN Lookup */
-#if (CONFIG_MV_ETH_PNC_VLAN_PRIO > 0)
-	TE_VLAN_PRI,
-	TE_VLAN_PRI_END = TE_VLAN_PRI + CONFIG_MV_ETH_PNC_VLAN_PRIO - 1,
+	TE_VLAN,
+#ifdef CONFIG_MV_ETH_PNC_VLAN_PRIO
+	TE_VLAN_EOF = TE_VLAN + 7,
+#else
+	TE_VLAN_EOF = TE_VLAN,
 #endif /* CONFIG_MV_ETH_PNC_VLAN_PRIO */
-
-	TE_VLAN_DEF,
 
     /* Ethertype Lookup */
 	TE_ETYPE_ARP,
@@ -197,15 +183,15 @@ enum {
 	TE_IP6_UDP,
 	TE_IP6_EOF,
 
-#ifdef CONFIG_MV_ETH_NFP_PNC
+#ifdef CONFIG_MV_ETH_PNC_L3_FLOW
 	/* Session Lookup for IPv4 and IPv6 */
 	/* NFP session use all rest entries */
-	TE_FLOW_NFP,
-	TE_FLOW_NFP_END = CONFIG_MV_PNC_TCAM_LINES - 4,
+	TE_FLOW_L3,
+	TE_FLOW_L3_END = CONFIG_MV_PNC_TCAM_LINES - 4,
 	TE_FLOW_IP4_EOF,
 	TE_FLOW_IP6_A_EOF,
 	TE_FLOW_IP6_B_EOF,
-#endif /* CONFIG_MV_ETH_NFP_PNC */
+#endif /* CONFIG_MV_ETH_PNC_L3_FLOW */
 
 #ifdef CONFIG_MV_ETH_PNC_WOL
 	TE_WOL,
@@ -299,6 +285,18 @@ int pnc_mac_me(unsigned int port, unsigned char *mac, int rxq);
 /* Set Multicast MAC address to be accepted on the port */
 int pnc_mcast_me(unsigned int port, unsigned char *mac);
 
+/* Set VLAN priority entry */
+int pnc_vlan_set(int prio, int rxq);
+
+/* match arp */
+void pnc_etype_arp(int rxq);
+
+/* TCP/IP header parsing for fragmentation and L4 offset.  */
+void pnc_ip4_tcp(int rxq);
+
+/* IPv4/UDP header parsing for fragmentation and L4 offset. */
+void pnc_ip4_udp(int rxq);
+
 /* Enable / Disable accept ALL Multicast */
 int pnc_mcast_all(unsigned int port, int en);
 
@@ -309,7 +307,6 @@ int     pnc_ip4_dscp(unsigned char dscp, unsigned char mask, int rxq);
 void    pnc_ipv4_dscp_show(void);
 
 
-#ifdef CONFIG_MV_ETH_NFP_PNC
 /* 2 tuple match */
 int pnc_ipv4_2_tuples_add(unsigned int tid, unsigned int flow_hi,
 			      unsigned int sip, unsigned int dip, unsigned int rxq);
@@ -321,7 +318,6 @@ int pnc_ipv6_2_tuples_add(unsigned int tid1, unsigned int tid2, unsigned int flo
 int pnc_ipv4_5_tuples_add(unsigned int tid, unsigned int flow_hi,
 				unsigned int sip, unsigned int dip,
 				unsigned int proto, unsigned int ports, unsigned int rxq);
-#endif /* CONFIG_MV_ETH_NFP_PNC */
 
 #ifdef CONFIG_MV_ETH_PNC_WOL
 void mv_pnc_wol_init(void);
@@ -336,8 +332,6 @@ int  mv_pnc_wol_rule_dump(int idx);
 void mv_pnc_wol_dump(void);
 #endif /* CONFIG_MV_ETH_PNC_WOL */
 
-#endif /* CONFIG_MV_ETH_PNC_PARSER */
-
 #ifdef MV_ETH_PNC_AGING
 MV_U32  mvPncAgingCntrRead(int tid);
 void    mvPncAgingCntrWrite(int tid, MV_U32 w32);
@@ -348,5 +342,7 @@ void    mvPncAgingCntrClear(int tid);
 void    mvPncAgingCntrGroupSet(int tid, int gr);
 void    mvPncAgingCounterClear(int tid, int gr);
 #endif /* MV_ETH_PNC_AGING */
+
+#endif /* CONFIG_MV_ETH_PNC */
 
 #endif /*__MV_PNC_H__ */

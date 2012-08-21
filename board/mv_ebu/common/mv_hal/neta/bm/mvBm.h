@@ -78,9 +78,7 @@ typedef struct {
 	int longPool;
 	int shortPool;
 	int longBufNum;
-	int longBufSize;
 	int shortBufNum;
-	int shortBufSize;
 
 } MV_BM_CONFIG;
 
@@ -129,6 +127,5 @@ void      mvBmRegs(void);
 void      mvBmStatus(void);
 void      mvBmPoolDump(int pool, int mode);
 void      mvBmPoolPrint(int pool);
-
 
 #endif /* __mvBm_h__ */

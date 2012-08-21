@@ -621,7 +621,7 @@ MV_STATUS	mvNetaSpeedDuplexSet(int portNo, MV_ETH_PORT_SPEED speed, MV_ETH_PORT_
 MV_STATUS 	mvNetaSpeedDuplexGet(int portNo, MV_ETH_PORT_SPEED *speed, MV_ETH_PORT_DUPLEX *duplex);
 
 MV_STATUS	mvNetaRxqCpuMaskSet(int port, int rxq, int cpu_mask);
-void	mvNetaRxqCpuDump(int port, int cpu);
+void		mvNetaRxqCpuDump(int port, int cpu);
 
 void		mvNetaSetOtherMcastTable(int portNo, int queue);
 void		mvNetaSetUcastTable(int port, int queue);

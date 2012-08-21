@@ -112,3 +112,38 @@ MV_BOOL mvSemaUnlock(MV_32 num)
 	MV_REG_BYTE_WRITE(MV_SEMA_REG_BASE+(num), 0xFF);
 	return MV_TRUE;
 }
+
+
+MV_VOID mvHwBarrier(MV_32 cpuCount)
+{
+	MV_U32 cpuId;
+	MV_U32 myCpuId = whoAmI();
+
+	/* Let all the rest know i arrived */
+	mvSemaLock(MV_SEMA_BARRIER(myCpuId));
+
+	cpuCount--;
+
+	/* Now try to find all the rest */
+	while(cpuCount > 0){
+		/* Scan all CPUs to see who arrived */
+		for(cpuId = 0; cpuId < NR_CPUS; cpuId++){
+			if(cpuId == myCpuId)
+				continue;
+
+			if(mvSemaTryLock(MV_SEMA_BARRIER(cpuId)) == MV_TRUE)
+				mvSemaUnlock(MV_SEMA_BARRIER(cpuId));
+			else
+				cpuCount--;
+		}
+
+		/* Wait some cycles before retry to avoid overloading bus */
+		if(cpuCount > 0)
+			udelay(1);
+	}
+
+	/* Release my semaphore so we can use it again */
+	/* wait a little before leaving to allow other to see you */
+	udelay(1);
+	mvSemaUnlock(MV_SEMA_BARRIER(myCpuId));
+}

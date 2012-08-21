@@ -74,11 +74,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_SEMA_BRIDGE 		3
 #define MV_SEMA_IRQ 		4
 #define MV_SEMA_CLOCK		5
+#define MV_SEMA_L2		6
 
 #define MV_SEMA_IPC_SNORT 	10
+
+#define MV_SEMA_BARRIER(cpu)	(50 + cpu)
 
 MV_BOOL mvSemaLock(MV_32 num);
 MV_BOOL mvSemaTryLock(MV_32 num);
 MV_BOOL mvSemaUnlock(MV_32 num);
+MV_VOID mvHwBarrier(MV_32 cpuCount);
 
-#endif
+/* Turn on HW semapores only if AMP is enabled */
+#ifndef CONFIG_MV_AMP_ENABLE
+#define mvSemaLock
+#define mvSemaTryLock
+#define mvSemaUnlock
+#define mvHwBarrier
+#endif /* CONFIG_MV_AMP_ENABLE */
+
+#endif /* mvsemaphore_h */

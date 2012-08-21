@@ -100,13 +100,9 @@ extern "C" {
 		MV_U8 pad8[3];
 	} MV_UART_PORT;
 
-#if defined(MV_UART_OVER_PEX_WA) || defined(MV_UART_OVER_PCI_WA)
-#define mvUartBase(port)  \
-                ((MV_UART_PORT *)(0xF2000000 + MV_UART_REGS_OFFSET(port)))
-#else
+
 #define mvUartBase(port)  \
                 ((MV_UART_PORT *)(INTER_REGS_BASE + MV_UART_REGS_OFFSET(port)))
-#endif
 
 /* aliases - for registers which has the same offsets */
 #define thr rbr

@@ -264,6 +264,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SCR_PEX1_4BY1_OFFS			8
 #define SCR_PEX1_4BY1_MASK			(1 << SCR_PEX1_4BY1_OFFS)
 
+#define PCIE1_CLK_OUT_EN_OFF                   5
+#define PCIE1_CLK_OUT_EN_MASK                  (1 << PCIE1_CLK_OUT_EN_OFF)
+
+#define PCIE0_CLK_OUT_EN_OFF                   4
+#define PCIE0_CLK_OUT_EN_MASK                  (1 << PCIE0_CLK_OUT_EN_OFF)
+
 /* LVDS_PADS_CTRL_REG fields */
 #define LVDS_PADS_CONF_PD_OFFS(idx)		(16 + idx)
 #define LVDS_PADS_CONF_PD_MASK(idx)		(1 << (16 + idx))

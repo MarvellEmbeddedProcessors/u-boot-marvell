@@ -625,7 +625,14 @@ MV_VOID mvBoardReset(MV_VOID)
 
 	/* Get gpp reset pin if define */
 	resetPin = mvBoardResetGpioPinGet();
-	MV_REG_BIT_RESET(GPP_DATA_OUT_REG((int)(resetPin/32)), (1 << (resetPin % 32)));
+	if (resetPin != MV_ERROR)
+		MV_REG_BIT_RESET(GPP_DATA_OUT_REG((int)(resetPin/32)), (1 << (resetPin % 32)));
+	else
+	{
+		/* No gpp reset pin was found, try to reset using system reset out */
+		MV_REG_BIT_SET( CPU_RSTOUTN_MASK_REG , BIT0);
+		MV_REG_BIT_SET( CPU_SYS_SOFT_RST_REG , BIT0);
+	}
 }
 
 /*******************************************************************************
@@ -1796,7 +1803,12 @@ MV_U8 mvBoardCpuCoresNumGet(MV_VOID)
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
 
-	return (sar & 0x6) >> 1;
+	sar = (sar & 0x6) >> 1;
+	if (sar == 1)
+		sar = 2;
+	else if (sar == 2)
+		sar =1;
+	return sar;
 }
 
 /*******************************************************************************/
@@ -1806,6 +1818,11 @@ MV_STATUS mvBoardCpuCoresNumSet(MV_U8 val)
 	sar = mvBoardTwsiSatRGet(3, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
+	/* MSB and LSB are swapped on DB board */
+	if (val == 1)
+		val = 2;
+	else if (val == 2)
+		val =1;
 
 	sar &= ~(0x3 << 1);
 	sar |= ((val & 0x3) << 1);
@@ -1844,7 +1861,15 @@ MV_U16 mvBoardConfIdGet(MV_VOID)
 /*******************************************************************************/
 MV_STATUS mvBoardPexCapabilitySet(MV_U16 conf)
 {
-	if (MV_OK != mvBoardTwsiSatRSet(1, 1, conf)) {
+	MV_U8 sar;
+	sar = mvBoardTwsiSatRGet(1, 1);
+	if ((MV_8)MV_ERROR == (MV_8)sar)
+		return MV_ERROR;
+
+	sar &= ~(0x1);
+	sar |= (conf & 0x1);
+
+	if (MV_OK != mvBoardTwsiSatRSet(1, 1, sar)) {
 		DB(mvOsPrintf("Board: Write confID S@R fail\n"));
 		return MV_ERROR;
 	}
@@ -1877,6 +1902,40 @@ MV_U16 mvBoardPexCapabilityGet(MV_VOID)
 }
 
 /*******************************************************************************/
+MV_STATUS mvBoardPexModeSet(MV_U16 conf)
+{
+	MV_U8 sar;
+	sar = mvBoardTwsiSatRGet(1, 1);
+	if ((MV_8)MV_ERROR == (MV_8)sar)
+		return MV_ERROR;
+
+	sar &= ~(0x3 << 1);
+	sar |= ((conf & 0x3) << 1);
+
+	if (MV_OK != mvBoardTwsiSatRSet(1, 1, sar)) {
+		DB(mvOsPrintf("Board: Write confID S@R fail\n"));
+		return MV_ERROR;
+	}
+
+	DB(mvOsPrintf("Board: Write confID S@R succeeded\n"));
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_U16 mvBoardPexModeGet(MV_VOID)
+{
+	MV_U8 sar;
+
+	sar = mvBoardTwsiSatRGet(1, 1);
+	if ((MV_8)MV_ERROR == (MV_8)sar)
+		return MV_ERROR;
+
+	return (sar & 0x6) >> 1;
+
+}
+
+/*******************************************************************************/
+
 MV_STATUS mvBoardDramEccSet(MV_U16 conf)
 {
 	if (MV_OK != mvBoardTwsiSatRSet(2, 1, conf)) {
@@ -2066,7 +2125,7 @@ MV_BOOL mvBoardIsPexModuleConnected(void)
 {
 	MV_U32 boardId = mvBoardIdGet();
 
-	if ( (boardId == DB_88F78XX0_BP_ID) || (boardId == DB_88F78XX0_BP_REV2_ID) )
+	if ( (boardId != DB_88F78XX0_BP_ID) && (boardId != DB_88F78XX0_BP_REV2_ID) )
 		DB(mvOsPrintf("mvBoardIsPexModuleConnected: Unsupported board!\n"));
 	else if (BOARD_INFO(boardId)->pBoardModTypeValue->boardOtherMod & MV_BOARD_PEX)
 		return MV_TRUE;
@@ -2094,7 +2153,7 @@ MV_BOOL mvBoardIsLvdsModuleConnected(void)
 {
 	MV_U32 boardId = mvBoardIdGet();
 
-	if ( (boardId == DB_88F78XX0_BP_ID) || (boardId == DB_88F78XX0_BP_REV2_ID) )
+	if ( (boardId != DB_88F78XX0_BP_ID) && (boardId != DB_88F78XX0_BP_REV2_ID) )
 		DB(mvOsPrintf("mvBoardIsLvdsModuleConnected: Unsupported board!\n"));
 	else if (BOARD_INFO(boardId)->pBoardModTypeValue->boardOtherMod & MV_BOARD_LVDS)
 		return MV_TRUE;
@@ -2122,7 +2181,7 @@ MV_BOOL mvBoardIsLcdDviModuleConnected(void)
 {
 	MV_U32 boardId = mvBoardIdGet();
 
-	if ( (boardId == DB_88F78XX0_BP_ID) || (boardId == DB_88F78XX0_BP_REV2_ID) )
+	if ( (boardId != DB_88F78XX0_BP_ID) && (boardId != DB_88F78XX0_BP_REV2_ID) )
 		DB(mvOsPrintf("mvBoardIsLcdDviModuleConnected: Unsupported board!\n"));
 	else if (BOARD_INFO(boardId)->pBoardModTypeValue->boardMppMod == MV_BOARD_LCD_DVI)
 		return MV_TRUE;
@@ -2151,7 +2210,7 @@ MV_BOOL mvBoardIsGMIIModuleConnected(void)
 {
 	MV_U32 boardId = mvBoardIdGet();
 
-	if ( (boardId == DB_88F78XX0_BP_ID) || (boardId == DB_88F78XX0_BP_REV2_ID) )
+	if ( (boardId != DB_88F78XX0_BP_ID) && (boardId != DB_88F78XX0_BP_REV2_ID) )
 		DB(mvOsPrintf("mvBoardIsGMIIModuleConnected: Unsupported board!\n"));
 	else if (BOARD_INFO(boardId)->pBoardModTypeValue->boardMppMod == MV_BOARD_MII_GMII)
 		return MV_TRUE;
@@ -2346,6 +2405,31 @@ MV_SERDES_CFG *mvBoardSerdesCfgGet(void)
 {
 	MV_U32 boardId;
 	MV_U32 serdesCfg = 0; /* default */
+	int pex0 = 1;
+	int pex1 = 1;
+
+	MV_BOOL moduleConnected = mvBoardIsPexModuleConnected();
+	MV_U16 pexMode = mvBoardPexModeGet();
+
+	switch (pexMode) {
+	case 0:
+		pex0 = 1;
+		pex1 = 1;
+		break;
+	case 1:
+		pex0 = 4;
+		pex1 = 1;
+		break;
+	case 2:
+		pex0 = 1;
+		pex1 = 4;
+		break;
+	case 3:
+		pex0 = 4;
+		pex1 = 4;
+		break;
+	}
+
 
 	boardId = mvBoardIdGet();
 
@@ -2361,19 +2445,20 @@ MV_SERDES_CFG *mvBoardSerdesCfgGet(void)
 		if (mvBoardSledCpuNumGet() > 0)
 			serdesCfg = 1;
 		break;
-	case DB_78X60_PCAC_ID:
-			serdesCfg = 0;
-		break;
-	case RD_78460_NAS_ID:
-			serdesCfg = 0;
-		break;
 	case DB_88F78XX0_BP_REV2_ID:
-		if (mvBoardIsPexModuleConnected())
+		if ( (!moduleConnected) && (pex0 == 1)) /*if the module is not connected the PEX1 mode is not relevant*/
+			serdesCfg = 0;
+		if ( (moduleConnected) && (pex0 == 1) && (pex1 == 1))
 			serdesCfg = 1;
+		if ( (!moduleConnected) && (pex0 == 4))  /*if the module is not connected the PEX1 mode is not relevant*/
+			serdesCfg = 2;
+		if ( (moduleConnected) && (pex0 == 4) && (pex1 == 1))
+			serdesCfg = 3;
+		if ( (moduleConnected) && (pex0 == 1) && (pex1 == 4))
+			serdesCfg = 4;
+		if ( (moduleConnected) && (pex0 == 4) && (pex1 == 4))
+			serdesCfg = 5;
 		break;
-	default:
-		DB(mvOsPrintf("mvBoardSerdesCfgGet: Unsupported board!\n"));
-		return NULL;
 	}
 
 	return &BOARD_INFO(boardId)->pBoardSerdesConfigValue[serdesCfg];

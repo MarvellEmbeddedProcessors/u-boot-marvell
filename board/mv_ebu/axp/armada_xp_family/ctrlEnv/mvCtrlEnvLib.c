@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
@@ -123,15 +130,16 @@ MV_BIOS_MODE bios_modes[BIOS_MODES_NUM] = {
        {"78480", 0x16, 0x7846, 0x3, 0x2, 0x0, 0x5, 0x0, 0x3, 0x2, 0x0}
 };
 #else
-/*	DBConf ConfID   Code 	L2Size	   CPUFreq    CpuFreqMode  FabricFreq	FabricFreqMode   CPU1/2/3Enable  cpuEndianess dramBusWidth */
+/*DBConf ConfID Code L2Size CPUFreq CpuFreqMode FabricFreq FabricFreqMode CPU1/2/3Enable cpuEndianess dramBusWidth BootSRC BootWidth */
 /*	                       0x4d/[1:0]  0x4d/[4:2]  0x4e[0]      0x4e/[4:1]  	0x4f[0]   0x4f/[2:1]      0x4f/[3]   	  */
-	{"78130",0x10, 0x7813,	0x1,	   0x3,		0x0,	      0x5,		0x0,		0x0,		0x1,		0x1},
+{"78130",0x10, 0x7813, 0x1,  0x3,      0x0,      0x5,		0x0,	     0x0,	    0x1,	0x1, 	     0x3,	0x1},
+{"78160",0x12, 0x7816, 0x1,  0x3,      0x0,	 0x5, 		0x0,	     0x0,	    0x1, 	0x0, 	     0x3,	0x1},
+{"78230",0x13, 0x7823, 0x1,  0x3,      0x0,	 0x5, 		0x0,	     0x1,	    0x0,	0x1, 	     0x3,	0x1},
+{"78260",0x14, 0x7826, 0x1,  0x3,      0x0,	 0x5,		0x0,	     0x1,	    0x0,	0x0, 	     0x3,	0x1},
+{"78460",0x15, 0x7846, 0x3,  0x3,      0x0,	 0x5, 		0x0,	     0x3,	    0x0,	0x0, 	     0x3,	0x1},
+{"78480",0x16, 0x7846, 0x3,  0x3,      0x0,	 0x5, 		0x0,	     0x3,	    0x0,	0x0, 	     0x3,	0x1}
+
 /*	{"6710" ,0x11, 0x6710,	0x0,	   0x3,		0x0,	      0x5, 		0x0,		0x0,		0x1,		0x0},     */
-	{"78160",0x12, 0x7816,	0x1,	   0x3,		0x0,	      0x5, 		0x0,		0x0,		0x1,	 	0x0},
-	{"78230",0x13, 0x7823,	0x1,	   0x3,		0x0,	      0x5, 		0x0,		0x1,		0x0,		0x1},
-	{"78260",0x14, 0x7826,	0x1,	   0x3,		0x0,	      0x5,		0x0,		0x1,		0x0,		0x0},
-	{"78460",0x15, 0x7846,	0x3,	   0x3,		0x0,	      0x5, 		0x0,		0x3,		0x0,		0x0},
-	{"78480",0x16, 0x7846,	0x3,	   0x3,		0x0,	      0x5, 		0x0,		0x3,		0x0,		0x0}
 };
 #endif
 
@@ -340,6 +348,13 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		else
 			MV_REG_BIT_RESET(SOC_CTRL_REG, SCR_PEX_ENA_MASK(pexUnit));
 	}
+
+	/* In case the sample at reset REG indicates a CLK 100MHZ is used for output we should enable the CLK through the SOC CTRL REG*/
+	if ( ((MV_REG_READ(MPP_SAMPLE_AT_RESET(0)) & PEX_CLK_100MHZ_MASK) >> PEX_CLK_100MHZ_OFFSET) == 0x1) {
+	        MV_REG_BIT_SET(SOC_CTRL_REG,PCIE0_CLK_OUT_EN_MASK);
+	        MV_REG_BIT_SET(SOC_CTRL_REG,PCIE1_CLK_OUT_EN_MASK);
+	}
+
 
 #ifndef MV88F78X60_Z1
 	MV_REG_BIT_SET(PUP_EN_REG,0x17); /* Enable GBE0, GBE1, LCD and NFC PUP */
@@ -1010,6 +1025,23 @@ MV_STATUS mvCtrlModelRevNameGet(char *pNameBuff)
 	case MV_78460_Z1_ID:
 		mvOsSPrintf(pNameBuff, "%s", MV_78460_Z1_NAME);
 		break;
+
+	 case MV_78130_A0_ID:
+               mvOsSPrintf(pNameBuff, "%s", MV_78130_A0_NAME);
+               break;
+
+       case MV_78230_A0_ID:
+               mvOsSPrintf(pNameBuff, "%s", MV_78230_A0_NAME);
+               break;
+       case MV_78160_A0_ID:
+               mvOsSPrintf(pNameBuff, "%s", MV_78160_A0_NAME);
+               break;
+       case MV_78260_A0_ID:
+               mvOsSPrintf(pNameBuff, "%s", MV_78260_A0_NAME);
+               break;
+       case MV_78460_A0_ID:
+              mvOsSPrintf(pNameBuff, "%s", MV_78460_A0_NAME);
+               break;
 	default:
 		mvCtrlNameGet(pNameBuff);
 		break;
@@ -2146,9 +2178,11 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 			pRegVal[4]  = 0x7;
 			pRegVal[5]  = 0x9080;
 
+
 			if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_QSGMII]) {
 				pRegVal[1]  = 0x400;
 				pRegVal[3]  = 0x667;
+
 			}
 		}
 
@@ -2173,6 +2207,9 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 		DB(mvOsPrintf("Step[0].2 Addr[0x%08x] Value[0x%08x]\n\n", \
 					  SERDES_LINE_MUX_REG_8_15, pSerdesInfo->serdesLine8_15));
 
+		/*Faraj:TODO update 0x182F8 according to lane configuration */
+		/*MV_REG_WRITE(0x182F8, 0xFFFFFFFF);*/
+
 		/* Step 1 [PEX-Only] PEX-Main configuration (X4 or X1): */
 		/* First disable all PEXs in SoC Control Reg */
 		MV_REG_WRITE(SOC_CTRL_REG, 0x0);
@@ -2188,6 +2225,8 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 				tmp = MV_REG_READ(SOC_CTRL_REG);
 				if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X1)
 					tmp |= SCR_PEX_4BY1_MASK(pexUnit);
+				else
+					tmp &= ~(SCR_PEX_4BY1_MASK(pexUnit));
 
 				DB(mvOsPrintf("Step[1].1 Addr[0x%08x] pexUnit [%d] value [0x%x]\n", SOC_CTRL_REG, pexUnit, tmp));
 				MV_REG_WRITE(SOC_CTRL_REG, tmp);
@@ -2212,6 +2251,7 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 					tmp |= (0x1 << 4);
 				if (boardPexInfo->pexUnitCfg[serdesLineNum >> 2].pexCfg == PEX_BUS_MODE_X4)
 					tmp |= (0x4 << 4);
+
 				MV_REG_WRITE(PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), tmp);
 				DB(mvOsPrintf("Step[1].2 Addr[0x%08x] serdesLine [%d] value [0x%x]\n",
 						  PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), serdesLineNum, tmp));
@@ -2251,7 +2291,6 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 
 		/* STEP 3 [PEX-Only] First phase of PEX-PIPE Configuration:*/
 		for (pexUnit = 0; pexUnit < mvCtrlPexMaxUnitGet(); pexUnit++) {
-			if (MV_REG_READ(PEX_STATUS_REG(pexUnit)) & PXSR_DL_DOWN) { /* If there is no link */
 			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_DISABLED)
 				continue;
 			DB(mvOsPrintf("Step[3].1 Addr[0x%08x] Value[0x%08x]\n", PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0xA5));
@@ -2284,8 +2323,11 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 			#endif
 			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X4)
 				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC2 << 16) | 0x200);
+
 			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X1)
 				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC3 << 16) | 0x0F);
+
+
 			MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC8 << 16) | 0x05);
 			/* MV_REG_WRITE(PEX_PHY_ACCESS_REG(0), (0xC2 << 16) | 0x200); */ /* BC was disabled per HW team request */
 			MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xD0 << 16) | 0x100);
@@ -2293,7 +2335,6 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 			MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC5 << 16) | 0x11F);
 			MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0x80 << 16) | 0x1000);
 			MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0x81 << 16) | 0x11);
-			}
 		}
 		/* Steps 4, 5, 6, 7 - use prepared REG addresses and values */
 		for (step = 0; step < 4; step++) {
@@ -2310,7 +2351,6 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 
 		/* Step 8 [PEX-Only] Last phase of PEX-PIPE Configuration */
 		for (pexUnit = 0; pexUnit < mvCtrlPexMaxUnitGet(); pexUnit++) {
-			if (MV_REG_READ(PEX_STATUS_REG(pexUnit)) & PXSR_DL_DOWN) { /* If there is no link */
 			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_DISABLED)
 				continue;
 			DB(mvOsPrintf("Step[8].1 Addr[0x%08x] Value[0x%08x]\n", \
@@ -2324,7 +2364,6 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 			#else
 				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0x24);
 			#endif
-			}
 		}
 
 		/*Step 9 - Init additional registers */

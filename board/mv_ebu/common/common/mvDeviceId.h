@@ -286,6 +286,23 @@ extern "C" {
 #define MV_78460_Z1_ID		((MV_78460_DEV_ID << 16) | MV_78XX0_Z1_REV)
 #define MV_78460_Z1_NAME	"MV78460 Z1"
 
+#define MV_78XX0_A0_REV		0x1
+
+#define MV_78130_A0_ID         ((MV_78130_DEV_ID << 16) | MV_78XX0_A0_REV)
+#define MV_78130_A0_NAME       "MV78130 A0"
+
+#define MV_78160_A0_ID         ((MV_78160_DEV_ID << 16) | MV_78XX0_A0_REV)
+#define MV_78160_A0_NAME       "MV78160 A0"
+
+#define MV_78230_A0_ID         ((MV_78230_DEV_ID << 16) | MV_78XX0_A0_REV)
+#define MV_78230_A0_NAME       "MV78230 A0"
+
+#define MV_78260_A0_ID         ((MV_78260_DEV_ID << 16) | MV_78XX0_A0_REV)
+#define MV_78260_A0_NAME       "MV78260 A0"
+
+#define MV_78460_A0_ID         ((MV_78460_DEV_ID << 16) | MV_78XX0_A0_REV)
+#define MV_78460_A0_NAME       "MV78460 A0"
+
 #ifdef __cplusplus
 }
 #endif	/* __cplusplus */

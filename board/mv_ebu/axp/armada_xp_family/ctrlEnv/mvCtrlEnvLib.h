@@ -161,6 +161,8 @@ typedef struct _boardSerdesConf {
 #define SAR0_BOOTWIDTH_OFFSET	3
 #define SAR0_CPU0CORE_MASK	0X80000000
 #define SAR0_CPU0CORE_OFFSET	31
+#define PEX_CLK_100MHZ_MASK    0x00000004
+#define PEX_CLK_100MHZ_OFFSET  2
 #define SAR1_CPU0CORE_MASK	0x1
 #define SAR1_CPU0CORE_OFFSET	0
 #define SAR1_CPU_CORE_MASK	0x00000018
@@ -194,6 +196,8 @@ typedef struct {
 	MV_U8 cpuEndianess;
 #endif
 	MV_U8 dramBusWidth;
+	MV_U8 bootSource;
+	MV_U8 bootWidth;
 } MV_BIOS_MODE;
 
 extern MV_BIOS_MODE bios_modes[];

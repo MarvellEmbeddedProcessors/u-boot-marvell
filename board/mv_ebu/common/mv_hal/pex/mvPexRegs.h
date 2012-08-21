@@ -173,7 +173,7 @@ extern "C" {
 /* PCI Express Control and Status Registers */
 /********************************************/
 #define PEX_CTRL_REG(pexIf)				((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A00)
-#define PEX_LINK_CAPABILITIES_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x6C)
+#define PEX_LINK_CAPABILITIES_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x6C)
 #define PEX_STATUS_REG(pexIf)				((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A04)
 #define PEX_COMPLT_TMEOUT_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A10)
 #define PEX_PWR_MNG_EXT_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A18)
@@ -184,6 +184,9 @@ extern "C" {
 #define PEX_TL_CTRL_REG(pexIf)				(MV_PEX_IF_REGS_BASE(pexIf) - (pexIf)*0x10000)
 #define PEX_RAM_PARITY_CTRL_REG(pexIf) 			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A50)
 #define PEX_DBG_CTRL_REG(pexIf) 			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A60)
+
+#define PEX_LINK_CTRL_STATUS_REG(pexIf) 		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x70)
+
 /* PCI Express Control Register */
 
 /* PEX_CTRL_REG (PXCR) */

@@ -268,9 +268,9 @@ MV_BOARD_INFO db88f78XX0Info = {
 
 MV_U8 mvDbDisableModuleDetection_rev2 = 0;
 
-MV_U8	db88f6781InfoBoardDebugLedIf_rev2[] = {26, 27, 48}; //Faraj ??
+MV_U8	db88f6781InfoBoardDebugLedIf_rev2[] = {26, 27, 48};
 
-MV_BOARD_TWSI_INFO	db88f78XX0rev2InfoBoardTwsiDev[] = { //Faraj: update from new board
+MV_BOARD_TWSI_INFO	db88f78XX0rev2InfoBoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
 	{BOARD_DEV_TWSI_SATR, 0x4C, ADDR7_BIT},
 	{BOARD_DEV_TWSI_SATR, 0x4D, ADDR7_BIT},
@@ -286,7 +286,7 @@ MV_BOARD_MAC_INFO db88f78XX0rev2InfoBoardMacInfo[] = {
 	{BOARD_MAC_SPEED_AUTO, 0x1B,0x1800}  /* Port 3 */
 };
 
-MV_BOARD_MODULE_TYPE_INFO db88f78XX0rev2InfoBoardModTypeInfo[] = { //Faraj ??
+MV_BOARD_MODULE_TYPE_INFO db88f78XX0rev2InfoBoardModTypeInfo[] = {
 	{
 		.boardMppMod		= MV_BOARD_AUTO,
 		.boardOtherMod		= MV_BOARD_NONE
@@ -367,13 +367,14 @@ MV_BOARD_MPP_INFO db88f78XX0rev2InfoBoardMppConfigValue[] = {
 	} },
 };
 
-MV_SERDES_CFG db88f78XX0rev2InfoBoardSerdesConfigValue[] = { //Faraj: change accordign to DB ==> stays the same
-	/* Z1B */
-	{MV_TRUE, 0x33221111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
-	{MV_TRUE, 0x31211111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, 0x00000030},	/* PEX module */
-	/* Z1A */
-	{MV_TRUE, 0x32220000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000030},	/* Default - Z1A */
-	{MV_TRUE, 0x31210000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, 0x00000030}	/* PEX module - Z1A */
+MV_SERDES_CFG db88f78XX0rev2InfoBoardSerdesConfigValue[] = {
+	/* A0 */
+	{MV_TRUE, 0x33221111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},/* Default: No Pex module, PEX0 x1, disabled*/
+	{MV_TRUE, 0x31211111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x1, PEX1 x1*/
+	{MV_TRUE, 0x33221111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},/* no Pex module, PEX0 x4, PEX1 disabled*/
+	{MV_TRUE, 0x31211111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x4, PEX1 x1*/
+	{MV_TRUE, 0x11111111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x1, PEX1 x4*/
+	{MV_TRUE, 0x11111111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x4, PEX1 x4*/
 };
 
 MV_BOARD_TDM_INFO	db88f78XX0rev2Tdm880[]	= { {1}, {2} };
@@ -399,8 +400,8 @@ MV_BOARD_INFO db88f78XX0rev2Info = {
 	.pBoardMacInfo			= db88f78XX0rev2InfoBoardMacInfo,
 	.numBoardGppInfo		= ARRSZ(db88f78XX0rev2InfoBoardGppInfo),
 	.pBoardGppInfo			= db88f78XX0rev2InfoBoardGppInfo,
-	.activeLedsNumber		= ARRSZ(db88f6781InfoBoardDebugLedIf),//Faraj???
-	.pLedGppPin			= db88f6781InfoBoardDebugLedIf, //Faraj ???
+	.activeLedsNumber		= ARRSZ(db88f6781InfoBoardDebugLedIf),
+	.pLedGppPin			= db88f6781InfoBoardDebugLedIf,
 	.ledsPolarity			= 0,
 
 	/* PMU Power */
@@ -497,7 +498,7 @@ MV_BOARD_MPP_INFO rd78460nasInfoBoardMppConfigValue[] = {
 	} }
 };
 
-MV_SERDES_CFG rd78460nasInfoBoardSerdesConfigValue[] = { //Faraj: change accordign to DB ==> stays the same
+MV_SERDES_CFG rd78460nasInfoBoardSerdesConfigValue[] = {
 	{MV_TRUE, 0x00226001, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
 	{MV_TRUE, 0x43320301, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},	/* Switch module */
 

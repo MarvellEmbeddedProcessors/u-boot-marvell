@@ -178,6 +178,17 @@ typedef struct {
 	int ct_vlan_prio;
 
 	MV_U16 mh;
+
+	int iif_prio;
+	int iif_vlan_prio;
+	int iif_dscp_prio;
+
+	int prio_dscp;
+	int prio_vprio;
+	MV_U8 prio_txp;
+	MV_U8 prio_txq;
+	MV_U16 prio_mh;
+
 } NFP_CLASSIFY_INFO;
 
 typedef struct {
@@ -191,7 +202,6 @@ typedef struct {
 	MV_U8  txp;
 	MV_U8  txq;
 	MV_IP_HEADER_INFO ipInfo;
-	NFP_CLASSIFY_INFO classifyInfo;
 } MV_NFP_RESULT;
 
 #define MV_NFP_RES_TXP_VALID       0x0001

@@ -654,6 +654,9 @@ MV_STATUS	mvNetaMacAddrGet(int portNo, unsigned char *pAddr);
 MV_STATUS	mvNetaTosToRxqSet(int port, int rxq, int tos);
 int			mvNetaTosToRxqGet(int port, int tos);
 
+MV_STATUS   mvNetaVprioToRxqSet(int port, int vprio, int rxq);
+int	    	mvNetaVprioToRxqGet(int port, int vprio);
+
 MV_STATUS	mvNetaTcpRxq(int port, int rxq);
 MV_STATUS	mvNetaUdpRxq(int port, int rxq);
 MV_STATUS	mvNetaArpRxq(int port, int rxq);

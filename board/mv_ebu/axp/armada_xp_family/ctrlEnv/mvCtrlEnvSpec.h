@@ -238,6 +238,8 @@ extern "C" {
 #define MV_ETH_GMAC_NEW
 /* New WRR/EJP module is used */
 #define MV_ETH_WRR_NEW
+/* IPv6 parsing support for Legacy parser */
+#define MV_ETH_LEGACY_PARSER_IPV6
 /* New PNC module - extra fields */
 #define MV_ETH_PNC_NEW
 /* PNC Load Balancing support */

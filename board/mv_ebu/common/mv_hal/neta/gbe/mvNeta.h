@@ -126,6 +126,22 @@ extern "C" {
 #define NETA_RX_IS_VLAN(rxd)           ((rxd)->status & ETH_RX_VLAN_TAGGED_FRAME_MASK)
 #define NETA_RX_SET_VLAN(rxd)          ((rxd)->status |= ETH_RX_VLAN_TAGGED_FRAME_MASK)
 
+#ifdef MV_ETH_LEGACY_PARSER_IPV6
+
+#define NETA_RX_L3_IS_IP4(status)      (((status) & NETA_RX_L3_MASK) == NETA_RX_L3_IP4)
+#define NETA_RX_L3_SET_IP4(rxd)        ((rxd)->status |= NETA_RX_L3_IP4)
+
+#define NETA_RX_L3_IS_IP4_ERR(status)  (((status) & NETA_RX_L3_MASK) == NETA_RX_L3_IP4_ERR)
+#define NETA_RX_L3_SET_IP4_ERR(rxd)    ((rxd)->status |= NETA_RX_L3_IP4_ERR)
+
+#define NETA_RX_L3_IS_IP6(status)      (((status) & NETA_RX_L3_MASK) == NETA_RX_L3_IP6)
+#define NETA_RX_L3_SET_IP6(rxd)        ((rxd)->status |= NETA_RX_L3_IP6)
+
+#define NETA_RX_L3_IS_UN(status)       (((status) & NETA_RX_L3_MASK) == NETA_RX_L3_UN)
+#define NETA_RX_L3_SET_UN(rxd)         ((rxd)->status |= NETA_RX_L3_UN)
+
+#else
+
 #define NETA_RX_L3_IS_IP4(status)      ((status) & ETH_RX_IP_HEADER_OK_MASK)
 #define NETA_RX_L3_SET_IP4(rxd)        ((rxd)->status |= (ETH_RX_IP_HEADER_OK_MASK | ETH_RX_IP_FRAME_TYPE_MASK))
 
@@ -141,6 +157,8 @@ extern "C" {
 
 #define NETA_RX_L3_IS_UN(status)       (((status) & ETH_RX_IP_FRAME_TYPE_MASK) == 0)
 #define NETA_RX_L3_SET_UN(rxd)         ((rxd)->status &= ~ETH_RX_IP_FRAME_TYPE_MASK)
+
+#endif /* MV_ETH_LEGACY_PARSER_IPV6 */
 
 #define NETA_RX_L4_IS_TCP(status)      (((status) & ETH_RX_L4_TYPE_MASK) == ETH_RX_L4_TCP_TYPE)
 #define NETA_RX_L4_SET_TCP(rxd)        ((rxd)->status |= ETH_RX_L4_TCP_TYPE)

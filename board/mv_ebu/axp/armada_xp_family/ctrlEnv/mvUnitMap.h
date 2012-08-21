@@ -98,6 +98,8 @@ typedef enum
 	LCD,
 	HWMON,
 	RTC,
+	GPIO,
+	MSTR,
 	MAX_UNITS
 } MV_SOC_UNIT;
 

@@ -99,6 +99,8 @@ static MV_RES_MAP mv_res_table[] = {
 	{0, "lcd"},
 	{0, "hwmon"},
 	{0, "rtc"},
+	{0, "gpio"},
+	{0, "mstr"},
 	{-1, "last"}
 };
 

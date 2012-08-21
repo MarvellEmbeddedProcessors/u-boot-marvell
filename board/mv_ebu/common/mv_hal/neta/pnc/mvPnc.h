@@ -106,13 +106,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define RI_MCAST_PNC_OTHER  (3 << RI_MCAST_OFFS)
 #define RI_MCAST_PNC_ONLY   (4 << RI_MCAST_OFFS)
 
-#define RI_VLAN             (BIT9)      /* VLAN */
 #define RI_DA_MC            (BIT10)	/* multicast */
 #define RI_DA_BC            (BIT11)	/* broadcast */
 #define RI_DA_ME            (BIT12)	/* unicast */
 #define RI_PPPOE            (BIT13)	/* PPPoE */
 /* BITS 14-17 are reserved for setting MH field in HWF packets (TXz_MH_reg_1-15) */
-#define RI_RX_SPECIAL       (BIT20) /* Packet for special RX processing */
+#define RI_L3_FLOW          (BIT18)     /* L3 flow is found */
+#define RI_VLAN             (BIT19)     /* VLAN */
+#define RI_RX_SPECIAL       (BIT20)     /* Packet for special RX processing */
 
  /* Additional info bits assigment */
 #define AI_DONE_BIT         0
@@ -185,7 +186,6 @@ enum {
 
 #ifdef CONFIG_MV_ETH_PNC_L3_FLOW
 	/* Session Lookup for IPv4 and IPv6 */
-	/* NFP session use all rest entries */
 	TE_FLOW_L3,
 	TE_FLOW_L3_END = CONFIG_MV_PNC_TCAM_LINES - 4,
 	TE_FLOW_IP4_EOF,
@@ -205,11 +205,11 @@ enum {
 	TCAM_LU_L2,
 	TCAM_LU_IP4,
 	TCAM_LU_IP6,
-#ifdef CONFIG_MV_ETH_NFP_PNC
+#ifdef CONFIG_MV_ETH_PNC_L3_FLOW
 	TCAM_LU_FLOW_IP4,
 	TCAM_LU_FLOW_IP6_A,
 	TCAM_LU_FLOW_IP6_B,
-#endif /* CONFIG_MV_ETH_NFP_PNC */
+#endif /* CONFIG_MV_ETH_PNC_L3_FLOW */
 
 #ifdef CONFIG_MV_ETH_PNC_WOL
 	TCAM_LU_WOL,

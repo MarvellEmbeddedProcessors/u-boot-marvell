@@ -185,8 +185,6 @@ extern "C" {
 #ifdef MV_INCLUDE_PCI
  #define MV_PCI_MAX_IF				1
  #define MV_PCI_START_IF			0
- #define PCI_HOST_BUS_NUM(pciIf)		(pciIf)
- #define PCI_HOST_DEV_NUM(pciIf)		0
 #else
  #define MV_PCI_MAX_IF				0
  #define MV_PCI_START_IF			0
@@ -200,8 +198,6 @@ extern "C" {
 #define MV_DISABLE_PEX_DEVICE_BAR
 
 #define MV_PEX_START_IF				MV_PCI_MAX_IF
- #define PEX_HOST_BUS_NUM(pciIf)		(pciIf)
- #define PEX_HOST_DEV_NUM(pciIf)		0
 #else
  #undef MV_INCLUDE_PEX0
 #endif

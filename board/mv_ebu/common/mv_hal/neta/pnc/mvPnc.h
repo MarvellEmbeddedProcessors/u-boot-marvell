@@ -126,6 +126,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NETA_PNC_DA_UC      (RI_DA_ME >> 9)
 #define NETA_PNC_PPPOE      (RI_PPPOE >> 9)
 #define NETA_PNC_RX_SPECIAL (RI_RX_SPECIAL >> 9)
+
+#define CONFIG_MV_PNC_L3_FLOW_LINES 20
 /*---------------------------------------------------------------------------*/
 
 MV_STATUS   mvPncInit(MV_U8 *pncVirtBase);
@@ -306,6 +308,13 @@ void pnc_ip4_udp(int rxq);
 int pnc_mcast_all(unsigned int port, int en);
 
 void    pnc_mac_show(void);
+
+#ifdef CONFIG_MV_ETH_PNC_L3_FLOW
+int pnc_ip4_2tuple_rxq(unsigned int eth_port, unsigned int sip, unsigned int dip, int rxq);
+int pnc_ip4_5tuple_rxq(unsigned int eth_port, unsigned int sip, unsigned int dip, unsigned int ports,
+						unsigned int proto, int rxq);
+int pnc_rxq_map_dump(void);
+#endif /* CONFIG_MV_ETH_PNC_L3_FLOW */
 
 /* Add TOS priority rule */
 int     pnc_ip4_dscp(int port, unsigned char dscp, unsigned char mask, int rxq);

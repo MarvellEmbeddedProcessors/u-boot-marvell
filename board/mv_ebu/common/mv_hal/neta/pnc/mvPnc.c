@@ -801,7 +801,7 @@ static void pnc_ip4_flow_next_lookup_set(struct tcam_entry *te)
 }
 
 /*
- * pnc_ip4_tos - Add TOS prioroty rules
+ * pnc_ip4_tos - Add TOS priority rules
  */
 int pnc_ip4_dscp(int port, unsigned char dscp, unsigned char mask, int rxq)
 {

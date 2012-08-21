@@ -379,3 +379,63 @@ static MV_VOID gppRegSet(MV_U32 group, MV_U32 regOffs, MV_U32 mask, MV_U32 value
 
 	MV_REG_WRITE(regOffs, gppData);
 }
+
+/*******************************************************************************
+* mvGppAtomicValueClear- Set a GPP Pin list value.
+*
+* DESCRIPTION:
+*       This function clear the pin matching bit in the Data output register using
+*       the clear register
+*       NOTE: the fucntion doesn't check if the pin is actually configured as
+*       output, it's the called responsibility.
+* INPUT:
+*       gpionumber - GPP number
+* OUTPUT:
+*       None.
+*
+* EXAMPLE:
+*       To clear the bit responsible for GPP8.
+*       mvGppAtomicValueClear(8);
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_STATUS mvGppAtomicValueClear(MV_U32 gpionumber)
+{
+	if(gpionumber < 64)
+		MV_REG_WRITE(GPP_OUT_CLEAR_REG((int)(gpionumber >> 5)) , 1 << (gpionumber%32));
+	else
+		MV_REG_WRITE(GPP_64_66_DATA_OUT_CLEAR_REG , 1 << (gpionumber%32));
+	return MV_OK;
+}
+
+/*******************************************************************************
+* mvGppAtomicValueSet - Set a GPP Pin list value.
+*
+* DESCRIPTION:
+*       This function set the pin matching bit in the Data output register using
+*	the set register
+*       NOTE: the fucntion doesn't check if the pin is actually configured as
+*	output, it's the called responsibility.
+* INPUT:
+*       gpionumber - GPP number
+* OUTPUT:
+*       None.
+*
+* EXAMPLE:
+*       To set the bit responsible for GPP8.
+*       mvGppAtomicValueSet(8);
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_STATUS mvGppAtomicValueSet(MV_U32 gpionumber)
+{
+	if(gpionumber < 64)
+                MV_REG_WRITE(GPP_OUT_SET_REG((int)(gpionumber >> 5)) , 1 << (gpionumber%32));
+        else
+                MV_REG_WRITE(GPP_64_66_DATA_OUT_SET_REG , 1 << (gpionumber%32));
+        return MV_OK;
+}

@@ -759,6 +759,20 @@ void mvNetaHwfTxpRegs(int port, int p, int txp)
 }
 #endif /* CONFIG_MV_ETH_HWF */
 
+void mvNetaRxqCpuDump(int port, int cpu)
+{
+	MV_U32 regVal = MV_REG_READ(NETA_CPU_MAP_REG(port, cpu));
+	int j;
+	for (j = 0; j < CONFIG_MV_ETH_RXQ; j++) {
+		if (regVal & 1)
+			printk("RXQ-%d ", j);
+		else
+			printk("       ");
+	regVal >>= 1;
+	}
+	printk(KERN_INFO "\n");
+}
+
 #ifdef CONFIG_MV_PON
 void mvNetaPonTxpRegs(int port, int txp)
 {

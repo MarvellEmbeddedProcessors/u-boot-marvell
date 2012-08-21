@@ -78,21 +78,48 @@ extern "C" {
 /* This enumerator describe counters\watchdog numbers       */
 	typedef enum _mvCntmrID {
 		TIMER0 = 0,		/* Global counter 0 */
-		TIMER1,         /* Global counter 1 */
-		TIMER2,         /* Global counter 2 */
-		TIMER3,         /* Global counter 3 */
-		TIMER4,         /* Global Watchdog 0*/
-		TIMER5,         /* CPU Timer 0  	*/
-		TIMER6,         /* CPU Timer 1  	*/
-		TIMER7          /* CPU Watchdog 	*/
+		TIMER1,			/* Global counter 1 */
+		TIMER2,			/* Global counter 2 */
+		TIMER3,			/* Global counter 3 */
+		TIMER4,			/* Global Watchdog 0*/
+		TIMER5,			/* CPU0 Timer 0   for A0 this is private CPU timer 0  */
+		TIMER6, 		/* CPU0 Timer 1   for A0 this is private CPU timer 1   */
+		TIMER7, 		/* CPU0 Watchdog  for A0 this is private CPU WD  */
+#ifdef MV88F78X60_Z1
+		TIMER8, 		/* CPU1 Timer 0     */
+		TIMER9, 		/* CPU1 Timer 1     */
+		TIMER10,		/* CPU1 Watchdog    */
+		TIMER11,		/* CPU2 Timer 0     */
+		TIMER12,		/* CPU2 Timer 1     */
+		TIMER13,		/* CPU2 Watchdog    */
+		TIMER14,		/* CPU73 Timer 0    */
+		TIMER15,		/* CPU73 Timer 1    */
+		TIMER16 		/* CPU73 Watchdog   */
+#endif
 	} MV_CNTMR_ID;
+
 #define MAX_GLOBAL_TIMER	TIMER4
 #define FIRST_PRIVATE_TIMER TIMER5
+
+	typedef enum _mvCntmrRatio {
+		MV_RATIO_1  = 0,  /*  0 = 1: Timer tic occurs every source clock        */
+		MV_RATIO_2,       /*  1 = 2: Timer tic occurs every 2 source clocks     */
+		MV_RATIO_4,       /*  2 = 4: Timer tic occurs every 4 source clocks     */
+		MV_RATIO_8,       /*  3 = 8: Timer tic occurs every 8 source clocks     */
+		MV_RATIO_16,      /*  4 = 16: Timer tic occurs every 16 source clocks   */
+		MV_RATIO_32,      /*  5 = 32: Timer tic occurs every 32 source clocks   */
+		MV_RATIO_64,      /*  6 = 64: Timer tic occurs every 64 source clocks   */
+		MV_RATIO_128      /*  7 = 128: Timer tic occurs every 128 source clocks */
+	} MV_CNTMR_RATIO_ID;
 
 /* Counter / Timer control structure */
 	typedef struct _mvCntmrCtrl {
 		MV_BOOL enable;	/* enable */
-		MV_BOOL autoEnable;	/* counter/Timer                    */
+		MV_BOOL autoEnable;	/* counter/Timer  */
+#ifndef MV88F78X60_Z1
+		MV_CNTMR_RATIO_ID	Ratio;
+		MV_BOOL enable_25Mhz;	/* enable timer count frequency is to 25Mhz*/
+#endif
 	} MV_CNTMR_CTRL;
 
 /* Functions */
@@ -123,6 +150,10 @@ extern "C" {
 
 /*	Clear an Counter/Timer interrupt (Ack) */
 	MV_STATUS mvCntmrIntClear(MV_U32 cntmrNum);
+
+/*	get Counter/Timer Frequency */
+	MV_U32 mvCntmrFrqGet(MV_U32 cntmrNum);
+
 
 #ifdef __cplusplus
 }

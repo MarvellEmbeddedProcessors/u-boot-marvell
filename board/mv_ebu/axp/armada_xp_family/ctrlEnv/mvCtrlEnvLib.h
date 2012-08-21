@@ -175,7 +175,11 @@ typedef struct {
 	MV_U8 fabricFreq;
 	MV_U8 fabricFreqMode;
 	MV_U8 cpuEna;
+#ifdef MV88F78X60_Z1
 	MV_U8 cpuMode;
+#else
+	MV_U8 cpuEndianess;
+#endif
 } MV_BIOS_MODE;
 
 extern MV_BIOS_MODE bios_modes[];

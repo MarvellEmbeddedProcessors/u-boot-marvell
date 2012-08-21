@@ -101,7 +101,7 @@ FLASH_STRUCT supFlashAry[] = {
 /*  flashVen       flashId              size #sec  secType #Frag pFragList HWprot HwWrBuff */
 	{INTEL_MANUF,	INTEL_FID_28F256P30B,	_32M,	259,	BOTTOM,	 4, IntelSecFrag, MV_TRUE, 64},
 	{INTEL_MANUF,	INTEL_FID_28F640J3A,	_8M,	64,	REGULAR, 0, NULL, 	MV_TRUE, 32},
-#if NOR_INTEL_FID_28F128J3A_65
+#ifdef NOR_INTEL_FID_28F128J3A_65
 	/* Application Note - 308038 */
 	{INTEL_MANUF,	INTEL_FID_28F128J3A,	_16M,	128,	REGULAR, 0, NULL,	MV_TRUE, 256},
 #else

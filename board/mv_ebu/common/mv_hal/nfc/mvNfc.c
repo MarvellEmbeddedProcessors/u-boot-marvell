@@ -442,25 +442,25 @@ MV_NFC_FLASH_INFO flashDeviceInfo[] = {
 	},
 	{			/* Micron 8Gb */
 	.tADL = 100,		/* tADL, Address to write data delay */
-        .tCH = 5,		/* tCH, Enable signal hold time */
-        .tCS = 25,		/* tCS, Enable signal setup time */
-        .tWH = 10,		/* tWH, ND_nWE high duration */
-        .tWP = 15,		/* tWP, ND_nWE pulse time */
-        .tRH = 10,		/* tRH, ND_nRE high duration */
-        .tRP = 15,		/* tRP, ND_nRE pulse width */
-        .tR = 25241,		/* tR = data transfer from cell to register tR = tR+tRR+tWB+1 */
-        .tWHR = 60,		/* tWHR, ND_nWE high to ND_nRE low delay for status read */
-        .tAR = 10,		/* tAR, ND_ALE low to ND_nRE low delay */
-        .tRHW = 100,		/* tRHW, ND_nRE high to ND_nWE low delay */
-        .pgPrBlk = 128,		/* Pages per block - detected */
-        .pgSz = 4096,		/* Page size */
-        .oobSz = 224,		/* Spare size */
-        .blkNum = 2048,		/* Number of blocks/sectors in the flash */
-        .id = 0x382C,		/* Device ID 0xDevice,Vendor */
-        .model = "Micron 8Gb 8bit",
-        .bb_page = 0,		/* Manufacturer Bad block marking page in block */
-        .flags = (NFC_CLOCK_UPSCALE_250M | NFC_FLAGS_ONFI_MODE_3_SET)
-        }
+	.tCH = 5,		/* tCH, Enable signal hold time */
+	.tCS = 25,		/* tCS, Enable signal setup time */
+	.tWH = 10,		/* tWH, ND_nWE high duration */
+	.tWP = 15,		/* tWP, ND_nWE pulse time */
+	.tRH = 10,		/* tRH, ND_nRE high duration */
+	.tRP = 15,		/* tRP, ND_nRE pulse width */
+	.tR = 25241,		/* tR = data transfer from cell to register tR = tR+tRR+tWB+1 */
+	.tWHR = 60,		/* tWHR, ND_nWE high to ND_nRE low delay for status read */
+	.tAR = 10,		/* tAR, ND_ALE low to ND_nRE low delay */
+	.tRHW = 100,		/* tRHW, ND_nRE high to ND_nWE low delay */
+	.pgPrBlk = 128,		/* Pages per block - detected */
+	.pgSz = 4096,		/* Page size */
+	.oobSz = 224,		/* Spare size */
+	.blkNum = 2048,		/* Number of blocks/sectors in the flash */
+	.id = 0x382C,		/* Device ID 0xDevice,Vendor */
+		.model = "Micron 8Gb 8bit",
+	.bb_page = 0,		/* Manufacturer Bad block marking page in block */
+	.flags = (NFC_CLOCK_UPSCALE_250M | NFC_FLAGS_ONFI_MODE_3_SET)
+	}
 };
 
 /* Defined Command set */
@@ -531,30 +531,32 @@ static MV_STATUS mvDfcWait4Complete(MV_U32 statMask, MV_U32 usec);
 static MV_STATUS mvNfcReadIdNative(MV_NFC_CHIP_SEL cs, MV_U16 *id);
 static MV_STATUS mvNfcTimingSet(MV_U32 tclk, MV_NFC_FLASH_INFO *flInfo);
 static MV_U32 mvNfcColBits(MV_U32 pg_size);
+/* #ifdef CONFIG_MTD_NAND_NFC_INIT_RESET */
 static MV_STATUS mvNfcReset(void);
+/* #endif */
 static MV_STATUS mvNfcDeviceFeatureSet(MV_NFC_CTRL *nfcCtrl, MV_U8 cmd, MV_U8 addr, MV_U32 data0, MV_U32 data1);
 static MV_STATUS mvNfcDeviceFeatureGet(MV_NFC_CTRL *nfcCtrl, MV_U8 cmd, MV_U8 addr, MV_U32 *data0, MV_U32 *data1);
 static MV_STATUS mvNfcDeviceModeSet(MV_NFC_CTRL *nfcCtrl, MV_NFC_ONFI_MODE mode);
 
 MV_VOID setNANDClock(MV_U32 nClock)
 {
-    //Set the division ratio of ECC Clock 0x00018748[13:8] (by default it's double of core clock)
+    /* Set the division ratio of ECC Clock 0x00018748[13:8] (by default it's double of core clock) */
     MV_U32 nVal = MV_REG_READ(0x18748);
     nVal = nVal & ~(BIT8|BIT9|BIT10|BIT11|BIT12|BIT13);
     nVal = nVal | (nClock<<8);
-    MV_REG_WRITE(0x18748,nVal);
+    MV_REG_WRITE(0x18748, nVal);
 
-    //Set reload force of ECC clock 0x00018740[7:0] to 0x2 (meaning you will force only the ECC clock)
+    /* Set reload force of ECC clock 0x00018740[7:0] to 0x2 (meaning you will force only the ECC clock) */
     nVal = MV_REG_READ(0x18740);
     nVal = nVal & ~(0xff);
     nVal = nVal | 0x2;
-    MV_REG_WRITE(0x18740,nVal);
+    MV_REG_WRITE(0x18740, nVal);
 
-    //Set reload ratio bit 0x00018740[8] to 1'b1
-    MV_REG_BIT_SET(0x18740,BIT8);
-    mvOsDelay(1); // msec
-    //Set reload ratio bit 0x00018740[8] to 1'b1
-    MV_REG_BIT_RESET(0x18740,BIT8);
+    /* Set reload ratio bit 0x00018740[8] to 1'b1 */
+    MV_REG_BIT_SET(0x18740, BIT8);
+    mvOsDelay(1); /*  msec */
+    /* Set reload ratio bit 0x00018740[8] to 1'b1 */
+    MV_REG_BIT_RESET(0x18740, BIT8);
 }
 
 /*******************************************************************************
@@ -590,8 +592,8 @@ MV_STATUS mvNfcInit(MV_NFC_INFO *nfcInfo, MV_NFC_CTRL *nfcCtrl)
 
 	/*
 	 Reduce NAND clock for supporting slower flashes for initialization
- 	 ECC engine clock = (2Ghz / divider)
- 	 NFC clock = ECC clock / 2
+	 ECC engine clock = (2Ghz / divider)
+	 NFC clock = ECC clock / 2
 	 */
 	setNANDClock(8); /* Go down to 125MHz */
 	nand_clock = 125000000;
@@ -634,10 +636,12 @@ MV_STATUS mvNfcInit(MV_NFC_INFO *nfcInfo, MV_NFC_CTRL *nfcCtrl)
 	/* Write registers before device detection */
 	MV_REG_WRITE(NFC_CONTROL_REG, ctrl_reg);
 
+/* #ifdef CONFIG_MTD_NAND_NFC_INIT_RESET */
 	/* reset the device */
 	ret = mvNfcReset();
 	if (ret != MV_OK)
 		return ret;
+/* #endif */
 
 	/* Read the device ID */
 	ret = mvNfcReadIdNative(nfcCtrl->currCs, &read_id);
@@ -655,14 +659,14 @@ MV_STATUS mvNfcInit(MV_NFC_INFO *nfcInfo, MV_NFC_CTRL *nfcCtrl)
 		nfcCtrl->flashIdx = i;
 
 	/* In case of ONFI Mode set needed */
-	if (flashDeviceInfo[i].flags &= NFC_FLAGS_ONFI_MODE_3_SET) {
+	if (flashDeviceInfo[i].flags & NFC_FLAGS_ONFI_MODE_3_SET) {
 		ret = mvNfcDeviceModeSet(nfcCtrl, MV_NFC_ONFI_MODE_3);
 		if (ret != MV_OK)
 			return ret;
 	}
 
 	/* Critical Initialization done. Raise NFC clock if needed */
-	if (flashDeviceInfo[i].flags &= NFC_CLOCK_UPSCALE_250M) {	
+	if (flashDeviceInfo[i].flags & NFC_CLOCK_UPSCALE_250M) {
 		setNANDClock(4);
 		nand_clock = 250000000;
 	}
@@ -676,7 +680,7 @@ MV_STATUS mvNfcInit(MV_NFC_INFO *nfcInfo, MV_NFC_CTRL *nfcCtrl)
 	/* calculate Timing parameters */
 	ret = mvNfcTimingSet(nand_clock, &flashDeviceInfo[i]);
 	if (ret != MV_OK)
- 		return ret;
+		return ret;
 
 	/* Configure the control register based on the device detected */
 	ctrl_reg = MV_REG_READ(NFC_CONTROL_REG);
@@ -2303,7 +2307,7 @@ static MV_STATUS mvNfcDeviceFeatureSet(MV_NFC_CTRL *nfcCtrl, MV_U8 cmd, MV_U8 ad
 	if (errCode != MV_OK)
 		return errCode;
 
-	udelay(100);
+	mvOsUDelay(100);
 
 	MV_REG_WRITE(NFC_DATA_BUFF_REG, data0);
 	MV_REG_WRITE(NFC_DATA_BUFF_REG, data1);
@@ -2449,20 +2453,19 @@ static MV_STATUS mvNfcDeviceModeSet(MV_NFC_CTRL *nfcCtrl, MV_NFC_ONFI_MODE mode)
 		ret = mvNfcDeviceFeatureSet(nfcCtrl, 0xEF, 0x01, 0x00000013, 0);
 		if (ret != MV_OK)
 			return ret;
-		
+
 		/* Verify mode setting */
 		mvNfcDeviceFeatureGet(nfcCtrl, 0xEE, 0x01, &d0, &d1);
-		if(d0 != 3)
+		if (d0 != 3)
 			return MV_BAD_VALUE;
-	}
-	else
+	} else
 		return MV_FAIL;
 
 	return MV_OK;
 }
 
 
-//#ifdef CONFIG_MTD_NAND_NFC_INIT_RESET
+/* #ifdef CONFIG_MTD_NAND_NFC_INIT_RESET */
 static MV_STATUS mvNfcReset(void)
 {
 	MV_U32 reg;
@@ -2506,7 +2509,7 @@ static MV_STATUS mvNfcReset(void)
 Error:
 	return errCode;
 }
-//#endif
+/* #endif */
 /*******************************************************************************
 * mvNfcReadIdNative
 *

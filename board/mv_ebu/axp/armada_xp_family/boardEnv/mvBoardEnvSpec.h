@@ -93,7 +93,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define RD_78460_SERVER_ID			(DB_88F78XX0_BP_ID + 1)
 #define DB_78X60_PCAC_ID			(RD_78460_SERVER_ID + 1)
 #define FPGA_88F78XX0_ID			(DB_78X60_PCAC_ID + 1)
-#define MV_MAX_BOARD_ID				(FPGA_88F78XX0_ID + 1)
+#define DB_88F78XX0_BP_REV2_ID			(FPGA_88F78XX0_ID + 1)
+#define MV_MAX_BOARD_ID				(DB_88F78XX0_BP_REV2_ID + 1)
 #define INVALID_BAORD_ID			0xFFFFFFFF
 
 /******************/
@@ -132,6 +133,44 @@ MPP#	NAME			IN/OUT
 #define DB_88F78XX0_GPP_POL_LOW			0x0
 #define DB_88F78XX0_GPP_POL_MID			0x0
 #define DB_88F78XX0_GPP_POL_HIGH		0x0
+
+/**********************/
+/* DB-88F78XX0-BP Rev2*/
+/**********************/
+#define DB_88F78XX0_REV2_MPP0_7			0x11111111
+#define DB_88F78XX0_REV2_MPP8_15		0x22221111
+#define DB_88F78XX0_REV2_MPP16_23		0x22222222
+/* TODO Kostap - change MPP29 (CPU0 Vdd) back to default value 5
+   when PM configuration changed to have it as active "high"
+   Otherwise setting it to default value will shut down CPU0 */
+#define DB_88F78XX0_REV2_MPP24_31		0x11040000 /* bits[27:24] = 0x5 to enable PMm for CPU0 */
+#define DB_88F78XX0_REV2_MPP32_39		0x11111111
+#define DB_88F78XX0_REV2_MPP40_47		0x04221130 /* bits[3:0] = 0x3 to enable PM for CPU1 */
+#define DB_88F78XX0_REV2_MPP48_55		0x11111110
+#define DB_88F78XX0_REV2_MPP56_63		0x11111101 /* bits[7:4] = 0x1 to enable PM for CPU2/3 */
+#define DB_88F78XX0_REV2_MPP64_67		0x00002111
+
+/* GPPs
+MPP#	NAME			IN/OUT
+----------------------------------------------
+24	UsbDevice_Vbus		IN
+25	Touch SG/ MII Int#	IN
+26	7seg bit0		OUT
+27	7seg bit1		OUT
+48	7seg bit2		OUT
+*/
+#define DB_88F78XX0_REV2_GPP_OUT_ENA_LOW	(~(BIT26 | BIT27))
+#define DB_88F78XX0_REV2_GPP_OUT_ENA_MID	(~(BIT16 | BIT15))
+#define DB_88F78XX0_REV2_GPP_OUT_ENA_HIGH	(~(0x0))
+
+#define DB_88F78XX0_REV2_GPP_OUT_VAL_LOW	0x0
+#define DB_88F78XX0_REV2_GPP_OUT_VAL_MID	BIT15
+#define DB_88F78XX0_REV2_GPP_OUT_VAL_HIGH	0x0
+
+#define DB_88F78XX0_REV2_GPP_POL_LOW		0x0
+#define DB_88F78XX0_REV2_GPP_POL_MID		0x0
+#define DB_88F78XX0_REV2_GPP_POL_HIGH		0x0
+
 
 /*******************/
 /* RD-78460-SERVER */

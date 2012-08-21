@@ -178,11 +178,11 @@ extern "C" {
 #define PEX_COMPLT_TMEOUT_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A10)
 #define PEX_PWR_MNG_EXT_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A18)
 #define PEX_FLOW_CTRL_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A20)
-#define PEX_ACK_TMR_4X_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A30)
+#define PEX_DYNMC_WIDTH_MNG_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A30)
+#define PEX_ROOT_CMPLX_SSPL_REG(pexif)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A0C)
 #define PEX_ACK_TMR_1X_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A40)
 #define PEX_TL_CTRL_REG(pexIf)				(MV_PEX_IF_REGS_BASE(pexIf) - (pexIf)*0x10000)
-
-#define PEX_RAM_PARITY_CTRL_REG(pexIf) 		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A50)
+#define PEX_RAM_PARITY_CTRL_REG(pexIf) 			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A50)
 #define PEX_DBG_CTRL_REG(pexIf) 			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A60)
 /* PCI Express Control Register */
 
@@ -634,7 +634,7 @@ extern "C" {
 #define PXLCR_MAX_LINK_SPD_OFFS		0	/* Maximum Link Speed */
 #define PXLCR_MAX_LINK_SPD_MASK		(0xf << PXLCR_MAX_LINK_SPD_OFFS)
 
-#define PXLCR_MAX_LNK_WDTH_OFFS 	3	/* Maximum Link Width */
+#define PXLCR_MAX_LNK_WDTH_OFFS 	4	/* Maximum Link Width */
 #define PXLCR_MAX_LNK_WDTH_MASK		(0x3f << PXLCR_MAX_LNK_WDTH_OFFS)
 
 #define PXLCR_ASPM_SUP_OFFS 		10	/* Active State Link PM Support */

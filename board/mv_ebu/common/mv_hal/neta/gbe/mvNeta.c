@@ -595,7 +595,7 @@ MV_STATUS mvNetaMaxRxSizeSet(int portNo, int maxRxSize)
 
 	if (!MV_PON_PORT(portNo)) {
 
-	    regVal =  MV_REG_READ(NETA_GMAC_CTRL_0_REG(portNo));
+		regVal =  MV_REG_READ(NETA_GMAC_CTRL_0_REG(portNo));
 		regVal &= ~NETA_GMAC_MAX_RX_SIZE_MASK;
 		regVal |= (((maxRxSize - MV_ETH_MH_SIZE) / 2) << NETA_GMAC_MAX_RX_SIZE_OFFS);
 		MV_REG_WRITE(NETA_GMAC_CTRL_0_REG(portNo), regVal);
@@ -2166,6 +2166,7 @@ static void mvNetaDescRingReset(MV_NETA_QUEUE_CTRL *pQueueCtrl)
 	pQueueCtrl->nextToProc = 0;
 }
 
+
 /* Reset all RXQs */
 void mvNetaRxReset(int port)
 {
@@ -2180,6 +2181,7 @@ void mvNetaRxReset(int port)
 	}
 	MV_REG_WRITE(NETA_PORT_RX_RESET_REG(port), 0);
 }
+
 
 /* Reset all TXQs */
 void mvNetaTxpReset(int port, int txp)
@@ -2238,13 +2240,24 @@ MV_NETA_RXQ_CTRL *mvNetaRxqInit(int port, int queue, int descrNum)
 
 	mvNetaDescRingReset(pQueueCtrl);
 
+	mvNetaRxqAddrSet(port, queue, descrNum);
+
+	return pRxqCtrl;
+}
+
+/* Set Rx descriptors queue starting address */
+void mvNetaRxqAddrSet(int port, int queue, int descrNum)
+{
+	MV_NETA_PORT_CTRL *pPortCtrl = mvNetaPortCtrl[port];
+	MV_NETA_RXQ_CTRL *pRxqCtrl = &pPortCtrl->pRxQueue[queue];
+	MV_NETA_QUEUE_CTRL *pQueueCtrl = &pRxqCtrl->queueCtrl;
+
 	/* Set Rx descriptors queue starting address */
 	MV_REG_WRITE(NETA_RXQ_BASE_ADDR_REG(pPortCtrl->portNo, queue),
 		     netaDescVirtToPhys(pQueueCtrl, (MV_U8 *)pQueueCtrl->pFirst));
 	MV_REG_WRITE(NETA_RXQ_SIZE_REG(pPortCtrl->portNo, queue), descrNum);
-
-	return pRxqCtrl;
 }
+
 
 /*******************************************************************************
 * mvNetaTxqInit - Allocate required memory and initialize TXQ descriptor ring.
@@ -2292,21 +2305,43 @@ MV_NETA_TXQ_CTRL *mvNetaTxqInit(int port, int txp, int queue, int descrNum)
 
 	mvNetaDescRingReset(pQueueCtrl);
 
-    /* Set maximum bandwidth for enabled TXQs */
+	mvNetaTxqBandwidthSet(port, txp, queue);
+
+	mvNetaTxqAddrSet(port, txp, queue, descrNum);
+
+	return pTxqCtrl;
+}
+
+
+/* Set Rx descriptors queue starting address */
+void mvNetaTxqAddrSet(int port, int txp, int queue, int descrNum)
+{
+	MV_NETA_TXQ_CTRL *pTxqCtrl;
+	MV_NETA_QUEUE_CTRL *pQueueCtrl;
+
+	pTxqCtrl = mvNetaTxqHndlGet(port, txp, queue);
+	pQueueCtrl = &pTxqCtrl->queueCtrl;
+
+
+	/* Set Tx descriptors queue starting address */
+	MV_REG_WRITE(NETA_TXQ_BASE_ADDR_REG(port, txp, queue), netaDescVirtToPhys(pQueueCtrl, (MV_U8 *)pQueueCtrl->pFirst));
+
+	MV_REG_WRITE(NETA_TXQ_SIZE_REG(port, txp, queue), NETA_TXQ_DESC_NUM_MASK(descrNum));
+}
+
+
+/* Set maximum bandwidth for enabled TXQs */
+void mvNetaTxqBandwidthSet(int port, int txp,  int queue)
+{
+
 #ifdef MV_ETH_WRR_NEW
     MV_REG_WRITE(NETA_TXQ_TOKEN_CNTR_REG(port, txp, queue), NETA_TXQ_TOKEN_CNTR_MAX);
 #else
 	MV_REG_WRITE(ETH_TXQ_TOKEN_CFG_REG(port, txp, queue), 0x03ffffff);
 	MV_REG_WRITE(ETH_TXQ_TOKEN_COUNT_REG(port, txp, queue), 0x3fffffff);
 #endif /* MV_ETH_WRR_NEW */
-
-	/* Set Tx descriptors queue starting address */
-	MV_REG_WRITE(NETA_TXQ_BASE_ADDR_REG(port, txp, queue), netaDescVirtToPhys(pQueueCtrl, (MV_U8 *)pQueueCtrl->pFirst));
-
-	MV_REG_WRITE(NETA_TXQ_SIZE_REG(port, txp, queue), NETA_TXQ_DESC_NUM_MASK(descrNum));
-
-	return pTxqCtrl;
 }
+
 
 /*******************************************************************************
 * mvNetaRxqDelete - Delete RXQ and free memory allocated for descriptors ring.

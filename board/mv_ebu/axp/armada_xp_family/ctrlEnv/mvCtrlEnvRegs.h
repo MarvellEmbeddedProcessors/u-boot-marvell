@@ -341,6 +341,7 @@ extern "C" {
 
 /* Sample at Reset */
 #define MPP_SAMPLE_AT_RESET(id)			(0x18230 + (id * 4))
+#define MPP_SAMPLE_AT_RESET_HIGH(id)		(0x18234 + (id * 4))
 
 /* SYSRSTn Length Counter */
 #define SYSRST_LENGTH_COUNTER_REG		0x18250

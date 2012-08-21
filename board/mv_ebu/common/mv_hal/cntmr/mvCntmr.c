@@ -429,12 +429,17 @@ MV_STATUS mvCntmrIntClear(MV_U32 cntmrNum)
 *******************************************************************************/
 MV_U32 mvCntmrFrqGet(MV_U32 cntmrNum)
 {
-/*#ifndef MV88F78X60_Z1
-	if (INVALID_CNTMR(cntmrNum))
-		return MV_ERROR;
+#ifndef MV88F78X60_Z1
+                if (INVALID_CNTMR(cntmrNum))
+                                return MV_ERROR;
+                {
+                                MV_U32 cntmrCtrl;
+                                cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(cntmrNum));
 
-	if (cntmrCtrl & CTCR_ARM_TIMER_25MhzFRQ_MASK(cntmrNum))
-		return MV_BOARD_REFCLK_25MHZ;
-#endif*/
-	return mvCpuL2ClkGet();
+
+                                if (cntmrCtrl & CTCR_ARM_TIMER_25MhzFRQ_MASK(cntmrNum))
+                                                return MV_BOARD_REFCLK_25MHZ;
+                }
+#endif
+                return mvCpuL2ClkGet();
 }

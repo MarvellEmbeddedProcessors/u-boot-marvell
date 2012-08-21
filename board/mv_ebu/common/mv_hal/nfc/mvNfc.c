@@ -97,9 +97,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* NAND special features bitmask definition.	*/
 #define NFC_FLAGS_NONE			0x0
-#define NFC_FLAGS_RESET_NEEDED		0x1
-#define NFC_FLAGS_ONFI_MODE_3_SET	0x2
-#define NFC_CLOCK_UPSCALE_250M		0x4
+#define NFC_FLAGS_ONFI_MODE_3_SET	0x1
+#define NFC_CLOCK_UPSCALE_250M		0x2
 
 /* End of NAND special features definitions.	*/
 
@@ -460,7 +459,7 @@ MV_NFC_FLASH_INFO flashDeviceInfo[] = {
         .id = 0x382C,		/* Device ID 0xDevice,Vendor */
         .model = "Micron 8Gb 8bit",
         .bb_page = 0,		/* Manufacturer Bad block marking page in block */
-        .flags = (NFC_CLOCK_UPSCALE_250M | NFC_FLAGS_ONFI_MODE_3_SET | NFC_FLAGS_RESET_NEEDED)
+        .flags = (NFC_CLOCK_UPSCALE_250M | NFC_FLAGS_ONFI_MODE_3_SET)
         }
 };
 
@@ -635,12 +634,10 @@ MV_STATUS mvNfcInit(MV_NFC_INFO *nfcInfo, MV_NFC_CTRL *nfcCtrl)
 	/* Write registers before device detection */
 	MV_REG_WRITE(NFC_CONTROL_REG, ctrl_reg);
 
-	if (flashDeviceInfo[i].flags &= NFC_FLAGS_RESET_NEEDED) {
-		/* reset the device */
-		ret = mvNfcReset();
-		if (ret != MV_OK)
-			return ret;
-	}
+	/* reset the device */
+	ret = mvNfcReset();
+	if (ret != MV_OK)
+		return ret;
 
 	/* Read the device ID */
 	ret = mvNfcReadIdNative(nfcCtrl->currCs, &read_id);

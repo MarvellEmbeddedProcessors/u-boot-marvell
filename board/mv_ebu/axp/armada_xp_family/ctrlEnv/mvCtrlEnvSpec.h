@@ -213,13 +213,20 @@ extern "C" {
 /* This define describes the maximum number of supported Ethernet ports */
 /* TODO - verify all these numbers */
 #define MV_ETH_VERSION 				4 /* for Legacy mode */
-#define MV_NETA_VERSION				1 /* for NETA mode */
 #define MV_ETH_MAX_PORTS			4
 #define MV_ETH_MAX_RXQ              		8
 #define MV_ETH_MAX_TXQ              		8
 #define MV_ETH_TX_CSUM_MAX_SIZE 		9800
 #define MV_PNC_TCAM_LINES			1024	/* TCAM num of entries */
 
+#if defined(CONFIG_ARMADA_XP_REV_A0)
+/* New GMAC module is used */
+#define MV_ETH_GMAC_NEW
+/* New WRR/EJP module is used */
+#define MV_ETH_WRR_NEW
+/* New PNC module - extra fields */
+#define MV_ETH_PNC_NEW
+#endif /* CONFIG_ARMADA_XP_REV_A0 */
 #define MV_78130_ETH_MAX_PORT			3
 #define MV_78460_ETH_MAX_PORT			4
 

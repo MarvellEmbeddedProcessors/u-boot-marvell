@@ -202,6 +202,7 @@ typedef struct {
 	MV_U8  txp;
 	MV_U8  txq;
 	MV_IP_HEADER_INFO ipInfo;
+	void   *privateData;
 } MV_NFP_RESULT;
 
 #define MV_NFP_RES_TXP_VALID       0x0001

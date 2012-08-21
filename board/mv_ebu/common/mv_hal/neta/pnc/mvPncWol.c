@@ -370,8 +370,8 @@ int mv_pnc_wol_rule_del_all(int port)
 	int i;
 	MV_PNC_WOL_RULE *pWolRule;
 
-        if (mvNetaPortCheck(port))
-                return -1;
+	if (mvNetaPortCheck(port))
+		return -1;
 
 	for (i = 0; i < MV_PNC_MAX_RULES; i++) {
 		pWolRule = mv_pnc_wol_tbl[i];
@@ -418,8 +418,8 @@ int mv_pnc_wol_rule_dump(int idx)
 	int	i;
 	MV_PNC_WOL_RULE *pWolRule;
 
-        if (mvNetaMaxCheck(idx, MV_PNC_MAX_RULES))
-                return -1;
+	if (mvNetaMaxCheck(idx, MV_PNC_MAX_RULES))
+		return -1;
 
 	pWolRule = mv_pnc_wol_tbl[idx];
 	if (pWolRule == NULL)

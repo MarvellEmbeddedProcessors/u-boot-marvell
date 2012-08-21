@@ -942,19 +942,37 @@ extern "C" {
 
 #define NETA_DESC_ALIGNED_SIZE	            32
 
-typedef struct neta_rx_desc {
-    MV_U32  status;
-    MV_U16  pncInfo;
-    MV_U16  dataSize;
-    MV_U32  bufPhysAddr;
-    MV_U32  pncFlowId;
-    MV_U32  bufCookie;
-    MV_U16  prefetchCmd;
-    MV_U16  csumL4;
-    MV_U32  pncExtra;
-    MV_U32  hw_cmd;
+#if defined(MV_CPU_BE) && !defined(CONFIG_MV_ETH_BE_WA)
 
+typedef struct neta_rx_desc {
+	MV_U16  dataSize;
+	MV_U16  pncInfo;
+	MV_U32  status;
+	MV_U32  pncFlowId;
+	MV_U32  bufPhysAddr;
+	MV_U16  csumL4;
+	MV_U16  prefetchCmd;
+	MV_U32  bufCookie;
+	MV_U32  hw_cmd;
+	MV_U32  pncExtra;
 } NETA_RX_DESC;
+
+#else
+
+typedef struct neta_rx_desc {
+	MV_U32  status;
+	MV_U16  pncInfo;
+	MV_U16  dataSize;
+	MV_U32  bufPhysAddr;
+	MV_U32  pncFlowId;
+	MV_U32  bufCookie;
+	MV_U16  prefetchCmd;
+	MV_U16  csumL4;
+	MV_U32  pncExtra;
+	MV_U32  hw_cmd;
+} NETA_RX_DESC;
+
+#endif /* MV_CPU_BE && !CONFIG_MV_ETH_BE_WA */
 
 /* "status" word fileds definition */
 #define NETA_RX_L3_OFFSET_OFFS              0
@@ -1067,15 +1085,29 @@ typedef struct neta_rx_desc {
 
 /******************** NETA TX EXTENDED DESCRIPTOR ********************************/
 
-typedef struct neta_tx_desc {
-    MV_U32  command;
-    MV_U16  csumL4;
-    MV_U16  dataSize;
-    MV_U32  bufPhysAddr;
-    MV_U32  hw_cmd;
-    MV_U32  reserved[4];
+#if defined(MV_CPU_BE) && !defined(CONFIG_MV_ETH_BE_WA)
 
+typedef struct neta_tx_desc {
+	MV_U16  dataSize;
+	MV_U16  csumL4;
+	MV_U32  command;
+	MV_U32  hw_cmd;
+	MV_U32  bufPhysAddr;
+	MV_U32  reserved[4];
 } NETA_TX_DESC;
+
+#else
+
+typedef struct neta_tx_desc {
+	MV_U32  command;
+	MV_U16  csumL4;
+	MV_U16  dataSize;
+	MV_U32  bufPhysAddr;
+	MV_U32  hw_cmd;
+	MV_U32  reserved[4];
+} NETA_TX_DESC;
+
+#endif /* MV_CPU_BE && !CONFIG_MV_ETH_BE_WA */
 
 /* "command" word fileds definition */
 #define NETA_TX_L3_OFFSET_OFFS              0
@@ -1119,8 +1151,9 @@ typedef struct neta_tx_desc {
 
 
 #define NETA_TX_PKT_OFFSET_OFFS             23
-#define NETA_TX_PKT_OFFSET_ALL_MASK         (0x7F << NETA_TX_PKT_OFFSET_OFFS)
-#define NETA_TX_PKT_OFFSET_MASK(offset)     ((offset) << NETA_TX_PKT_OFFSET_OFFS)
+#define NETA_TX_PKT_OFFSET_MAX				0x7F
+#define NETA_TX_PKT_OFFSET_ALL_MASK         (NETA_TX_PKT_OFFSET_MAX << NETA_TX_PKT_OFFSET_OFFS)
+#define NETA_TX_PKT_OFFSET_MASK(offset)     (((offset) << NETA_TX_PKT_OFFSET_OFFS) & NETA_TX_PKT_OFFSET_ALL_MASK)
 
 #define NETA_TX_L4_CSUM_BIT                 30
 #define NETA_TX_L4_CSUM_MASK                (3 << NETA_TX_L4_CSUM_BIT)

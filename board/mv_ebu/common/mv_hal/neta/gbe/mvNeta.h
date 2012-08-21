@@ -76,25 +76,82 @@ extern "C" {
 #include "mvNetaRegs.h"
 #include "mvEthRegs.h"
 
+#ifdef CONFIG_MV_ETH_PNC
+# include "pnc/mvPnc.h"
+#endif /* CONFIG_MV_ETH_PNC */
 
 #define NETA_RX_IP_IS_FRAG(status)     ((status) & NETA_RX_IP4_FRAG_MASK)
+#define NETA_RX_IP_SET_FRAG(rxd)       ((rxd)->status |= NETA_RX_IP4_FRAG_MASK)
+
 #define NETA_RX_L4_CSUM_IS_OK(status)  ((status) & NETA_RX_L4_CSUM_OK_MASK)
+#define	NETA_RX_L4_CSUM_SET_OK(rxd)    ((rxd)->status |= NETA_RX_L4_CSUM_OK_MASK)
+
+#define NETA_RX_IS_PPPOE(rxd)          ((rxd)->pncInfo & NETA_PNC_PPPOE)
+#define NETA_RX_SET_PPPOE(rxd)         ((rxd)->pncInfo |= NETA_PNC_PPPOE)
+
+#define NETA_RX_GET_IPHDR_OFFSET(rxd)       (((rxd)->status & NETA_RX_L3_OFFSET_MASK) >> NETA_RX_L3_OFFSET_OFFS)
+#define NETA_RX_SET_IPHDR_OFFSET(rxd, offs) ((rxd)->status |= ((offs) << NETA_RX_L3_OFFSET_OFFS) & NETA_RX_L3_OFFSET_MASK)
+
+#define NETA_RX_GET_IPHDR_HDRLEN(rxd)       (((rxd)->status & NETA_RX_IP_HLEN_MASK) >> NETA_RX_IP_HLEN_OFFS)
+#define NETA_RX_SET_IPHDR_HDRLEN(rxd, hlen) ((rxd)->status |= ((hlen) << NETA_RX_IP_HLEN_OFFS) & NETA_RX_IP_HLEN_MASK)
 
 #ifdef CONFIG_MV_ETH_PNC
-#define NETA_RX_L3_IS_IP4(status)      (((status) & NETA_RX_L3_MASK) == NETA_RX_L3_IP4)
-#define NETA_RX_L3_IS_IP4_ERR(status)  (((status) & NETA_RX_L3_MASK) == NETA_RX_L3_IP4_ERR)
-#define NETA_RX_L3_IS_IP6(status)      (((status) & NETA_RX_L3_MASK) == NETA_RX_L3_IP6)
-#define NETA_RX_L4_IS_TCP(status)      (((status) & NETA_RX_L4_MASK) == NETA_RX_L4_TCP)
-#define NETA_RX_L4_IS_UDP(status)      (((status) & NETA_RX_L4_MASK) == NETA_RX_L4_UDP)
-#else
-#define NETA_RX_L3_IS_IP4(status)      ((status) & ETH_RX_IP_HEADER_OK_MASK)
-#define NETA_RX_L3_IS_IP4_ERR(status)  (((status) & ETH_RX_IP_FRAME_TYPE_MASK) &&  \
-										!((status) & ETH_RX_IP_HEADER_OK_MASK))
-#define NETA_RX_L3_IS_IP6(status)      (MV_FALSE)
-#define NETA_RX_L4_IS_TCP(status)      (((status) & ETH_RX_L4_TYPE_MASK) == ETH_RX_L4_TCP_TYPE)
-#define NETA_RX_L4_IS_UDP(status)      (((status) & ETH_RX_L4_TYPE_MASK) == ETH_RX_L4_UDP_TYPE)
-#endif	/* CONFIG_MV_ETH_PNC */
 
+#define NETA_RX_IS_VLAN(rxd)           ((rxd)->pncInfo & NETA_PNC_VLAN)
+#define NETA_RX_SET_VLAN(rxd)          ((rxd)->pncInfo |= NETA_PNC_VLAN)
+
+#define NETA_RX_L3_IS_IP4(status)      (((status) & NETA_RX_L3_MASK) == NETA_RX_L3_IP4)
+#define NETA_RX_L3_SET_IP4(rxd)        ((rxd)->status |= NETA_RX_L3_IP4)
+
+#define NETA_RX_L3_IS_IP4_ERR(status)  (((status) & NETA_RX_L3_MASK) == NETA_RX_L3_IP4_ERR)
+#define NETA_RX_L3_SET_IP4_ERR(rxd)    ((rxd)->status |= NETA_RX_L3_IP4_ERR)
+
+#define NETA_RX_L3_IS_IP6(status)      (((status) & NETA_RX_L3_MASK) == NETA_RX_L3_IP6)
+#define NETA_RX_L3_SET_IP6(rxd)        ((rxd)->status |= NETA_RX_L3_IP6)
+
+#define NETA_RX_L3_IS_UN(status)       (((status) & NETA_RX_L3_MASK) == NETA_RX_L3_UN)
+#define NETA_RX_L3_SET_UN(rxd)         ((rxd)->status |= NETA_RX_L3_UN)
+
+#define NETA_RX_L4_IS_TCP(status)      (((status) & NETA_RX_L4_MASK) == NETA_RX_L4_TCP)
+#define NETA_RX_L4_SET_TCP(rxd)        ((rxd)->status |= NETA_RX_L4_TCP)
+
+#define NETA_RX_L4_IS_UDP(status)      (((status) & NETA_RX_L4_MASK) == NETA_RX_L4_UDP)
+#define NETA_RX_L4_SET_UDP(rxd)        ((rxd)->status |= NETA_RX_L4_UDP)
+
+#define NETA_RX_L4_IS_OTHER(status)    (((status) & NETA_RX_L4_MASK) == NETA_RX_L4_OTHER)
+#define NETA_RX_L4_SET_OTHER(rxd)      ((rxd)->status |= NETA_RX_L4_OTHER)
+
+#else /* LEGACY parser */
+
+#define NETA_RX_IS_VLAN(rxd)           ((rxd)->status & ETH_RX_VLAN_TAGGED_FRAME_MASK)
+#define NETA_RX_SET_VLAN(rxd)          ((rxd)->status |= ETH_RX_VLAN_TAGGED_FRAME_MASK)
+
+#define NETA_RX_L3_IS_IP4(status)      ((status) & ETH_RX_IP_HEADER_OK_MASK)
+#define NETA_RX_L3_SET_IP4(rxd)        ((rxd)->status |= (ETH_RX_IP_HEADER_OK_MASK | ETH_RX_IP_FRAME_TYPE_MASK))
+
+#define NETA_RX_L3_IS_IP4_ERR(status)  (((status) & ETH_RX_IP_FRAME_TYPE_MASK) &&	\
+					!((status) & ETH_RX_IP_HEADER_OK_MASK))
+
+#define NETA_RX_L3_SET_IP4_ERR(rxd)													\
+					((rxd)->status |= ETH_RX_IP_FRAME_TYPE_MASK);					\
+					((rxd)->status &= ~ETH_RX_IP_HEADER_OK_MASK);
+
+#define NETA_RX_L3_IS_IP6(status)      (MV_FALSE)
+#define NETA_RX_L3_SET_IP6(rxd)        NETA_RX_L3_SET_UN(rxd)
+
+#define NETA_RX_L3_IS_UN(status)       (((status) & ETH_RX_IP_FRAME_TYPE_MASK) == 0)
+#define NETA_RX_L3_SET_UN(rxd)         ((rxd)->status &= ~ETH_RX_IP_FRAME_TYPE_MASK)
+
+#define NETA_RX_L4_IS_TCP(status)      (((status) & ETH_RX_L4_TYPE_MASK) == ETH_RX_L4_TCP_TYPE)
+#define NETA_RX_L4_SET_TCP(rxd)        ((rxd)->status |= ETH_RX_L4_TCP_TYPE)
+
+#define NETA_RX_L4_IS_UDP(status)      (((status) & ETH_RX_L4_TYPE_MASK) == ETH_RX_L4_UDP_TYPE)
+#define NETA_RX_L4_SET_UDP(rxd)        ((rxd)->status |= ETH_RX_L4_UDP_TYPE)
+
+#define NETA_RX_L4_IS_OTHER(status)    (((status) & ETH_RX_L4_TYPE_MASK) == ETH_RX_L4_OTHER_TYPE)
+#define NETA_RX_L4_SET_OTHER(rxd)      ((rxd)->status |= ETH_RX_L4_OTHER_TYPE)
+
+#endif	/* CONFIG_MV_ETH_PNC */
 
 /* Default port configuration value */
 #define PORT_CONFIG_VALUE(rxQ)			\
@@ -193,12 +250,9 @@ typedef struct eth_pbuf {
 	MV_U8 *pBuf;
 	MV_U16 bytes;
 	MV_U16 offset;
-	MV_U32 tx_cmd;
-	void *dev;
-	MV_U8 pool;
-	MV_U8 tos;
-	MV_U16 reserved;
-	MV_U32 hw_cmd;
+	MV_U8  pool;
+	MV_U8  reserved;
+	MV_U16 vlanId;
 } MV_ETH_PKT;
 
 typedef struct {
@@ -267,7 +321,7 @@ static INLINE MV_NETA_TXQ_CTRL *mvNetaTxqHndlGet(int port, int txp, int txq)
 	return &pPortCtrl->pTxQueue[txp * pPortCtrl->txqNum + txq];
 }
 
-#if defined(MV_CPU_BE)
+#if defined(MV_CPU_BE) && defined(CONFIG_MV_ETH_BE_WA)
 /* Swap RX descriptor to be BE */
 static INLINE void mvNetaRxqDescSwap(NETA_RX_DESC *pRxDesc)
 {
@@ -292,7 +346,14 @@ static INLINE void mvNetaTxqDescSwap(NETA_TX_DESC *pTxDesc)
     pTxDesc->bufPhysAddr = MV_BYTE_SWAP_32BIT(pTxDesc->bufPhysAddr);
     pTxDesc->hw_cmd = MV_BYTE_SWAP_32BIT(pTxDesc->hw_cmd);
 }
-#endif /* MV_CPU_BE */
+#else
+static INLINE void mvNetaRxqDescSwap(NETA_RX_DESC *pRxDesc)
+{
+}
+static INLINE void mvNetaTxqDescSwap(NETA_TX_DESC *pTxDesc)
+{
+}
+#endif /* MV_CPU_BE &&  CONFIG_MV_ETH_BE_WA */
 
 /* Get number of RX descriptors occupied by received packets */
 static INLINE int mvNetaRxqBusyDescNumGet(int port, int rxq)
@@ -453,7 +514,11 @@ static INLINE void mvNetaRxDescFill(NETA_RX_DESC *pRxDesc, MV_U32 physAddr, MV_U
 {
 	pRxDesc->bufCookie = (MV_U32)cookie;
 
+#if defined(CONFIG_MV_ETH_BE_WA)
 	pRxDesc->bufPhysAddr = MV_32BIT_LE(physAddr);
+#else
+	pRxDesc->bufPhysAddr = physAddr;
+#endif /* CONFIG_MV_ETH_BE_WA */
 
 	mvOsCacheLineFlush(NULL, pRxDesc);
 }
@@ -578,7 +643,7 @@ void 		mvNetaPhyAddrSet(int port, int phyAddr);
 int 		mvNetaPhyAddrGet(int port);
 
 void 		mvNetaPortPowerDown(int port);
-void 		mvNetaPortPowerUp(int port, MV_BOOL isSgmii,MV_BOOL isGmii);
+void 		mvNetaPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii);
 
 /* Interrupt Coalesting functions */
 MV_STATUS mvNetaRxqTimeCoalSet(int port, int rxq, MV_U32 uSec);
@@ -639,7 +704,6 @@ MV_STATUS mvNetaFlowCtrlSet(int port, MV_ETH_PORT_FC flowControl);
 MV_STATUS mvNetaFlowCtrlGet(int port, MV_ETH_PORT_FC *flowControl);
 
 #ifdef MV_ETH_GMAC_NEW
-MV_STATUS       mvEthGmacRgmiiSet(int port, int enable);
 MV_STATUS	mvNetaGmacLpiSet(int port, int mode);
 void	mvNetaGmacRegs(int port);
 #endif /* MV_ETH_GMAC_NEW */

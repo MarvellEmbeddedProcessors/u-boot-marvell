@@ -63,11 +63,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
 /*******************************************************************************
-* mvNfp.h - Header File for Marvell NFP (Routing and NAT)
+* mvNfpDefs.h - Header File for Marvell NFP Configuration definitions
 *
 * DESCRIPTION:
-*       This header file contains macros, typedefs and function declarations
-* 	specific to the Marvell Network Fast Processing (Routing and NAT).
 *
 * DEPENDENCIES:
 *       None.
@@ -77,28 +75,129 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __mvNfpDefs_h__
 #define __mvNfpDefs_h__
 
+#include "mv802_3.h"
+#include "gbe/mvNetaRegs.h"
+#include "gbe/mvNeta.h"
+
 #ifdef CONFIG_MV_ETH_NFP
+
 #define ETH_NFP
 
-#ifdef CONFIG_MV_ETH_NFP_PNC
-#define NFP_PNC
+#ifdef CONFIG_MV_ETH_NFP_EXT
+# define NFP_EXT
+# define NFP_EXT_NUM 	CONFIG_MV_ETH_NFP_EXT_NUM
+#else
+# define NFP_EXT_NUM 	0
+#endif
+
+#define NFP_MAX_PORTS   (MV_ETH_MAX_PORTS + NFP_EXT_NUM)
+
+#if defined(CONFIG_MV_ETH_NFP_FIB_LEARN) || defined(CONFIG_MV_ETH_NFP_VLAN_LEARN) || defined(CONFIG_MV_ETH_NFP_BRIDGE_LEARN)||\
+		defined(CONFIG_MV_ETH_NFP_PPP_LEARN) || defined(CONFIG_MV_ETH_NFP_CT_LEARN)
+#define NFP_LEARN
 #endif
 
 #ifdef CONFIG_MV_ETH_NFP_FIB
 #define NFP_FIB
 #endif
 
+#ifdef CONFIG_MV_ETH_NFP_FIB_LEARN
+#define NFP_FIB_LEARN
+#endif
+
+#ifdef CONFIG_MV_ETH_NFP_VLAN
+#define NFP_VLAN
+#endif
+
+#ifdef CONFIG_MV_ETH_NFP_VLAN_LEARN
+#define NFP_VLAN_LEARN
+#endif
+
+#ifdef CONFIG_MV_ETH_NFP_PPP
+#define NFP_PPP
+#endif
+
+#ifdef CONFIG_MV_ETH_NFP_PPP_LEARN
+#define NFP_PPP_LEARN
+#endif
+
+#ifdef CONFIG_MV_ETH_NFP_CT
+#define NFP_CT
+#endif
+
+#ifdef CONFIG_MV_ETH_NFP_CT_LEARN
+#define NFP_CT_LEARN
+#endif
+
 #ifdef CONFIG_MV_ETH_NFP_NAT
 #define NFP_NAT
 #endif
 
-#ifdef CONFIG_MV_ETH_NFP_SWF
-#define NFP_SWF
+#ifdef CONFIG_MV_ETH_NFP_LIMIT
+#define NFP_LIMIT
+#endif
+
+#ifdef CONFIG_MV_ETH_NFP_CLASSIFY
+#define NFP_CLASSIFY
 #endif
 
 #ifdef CONFIG_MV_ETH_NFP_STATS
 #define NFP_STAT
 #endif
+
+#ifdef CONFIG_MV_ETH_NFP_BRIDGE
+#define NFP_BRIDGE
+#endif
+
+#ifdef CONFIG_MV_ETH_NFP_BRIDGE_LEARN
+#define NFP_BRIDGE_LEARN
+#endif
+
+#ifdef CONFIG_MV_ETH_SWITCH
+# define NFP_MAX_SWITCH_GROUPS  CONFIG_MV_ETH_SWITCH_NETDEV_NUM
+#else
+# define NFP_MAX_SWITCH_GROUPS  1
+#endif /* CONFIG_MV_ETH_SWITCH */
+
+typedef struct {
+	MV_U16 flags;
+
+	MV_U8  txp;
+	MV_U8  txq;
+
+	MV_U8 pkt_ecn;
+	MV_U8 pkt_dscp;
+	int   ct_dscp;
+
+	int pkt_vlan_prio;
+	int bridge_vlan_prio;
+	int ct_vlan_prio;
+
+	MV_U16 mh;
+} NFP_CLASSIFY_INFO;
+
+typedef struct {
+	void   *dev;
+	MV_U32 tx_cmd;
+	MV_U32 diffL4[2];
+	MV_U8  *pWrite;
+	MV_U16 flags;
+	MV_U16 mtu;
+	short  shift;
+	MV_U8  txp;
+	MV_U8  txq;
+	MV_IP_HEADER_INFO ipInfo;
+	NFP_CLASSIFY_INFO classifyInfo;
+} MV_NFP_RESULT;
+
+#define MV_NFP_RES_TXP_VALID       0x0001
+#define MV_NFP_RES_TXQ_VALID       0x0002
+#define MV_NFP_RES_IP_INFO_VALID   0x0004
+#define MV_NFP_RES_NETDEV_EXT      0x0010
+#define MV_NFP_RES_L4_CSUM_NEEDED  0x0020
+
+MV_STATUS mvNfpIfMapPortGet(int ifIdx, int *port);
+MV_STATUS mvNfpRx(MV_U32 inPort, NETA_RX_DESC *pRxDesc, MV_ETH_PKT *pPkt, MV_NFP_RESULT* pRes);
 
 #endif /* CONFIG_MV_ETH_NFP */
 

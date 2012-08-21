@@ -87,6 +87,50 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static MV_BOOL cpuTargetWinOverlap(MV_TARGET target, MV_ADDR_WIN *pAddrWin);
 
 MV_TARGET sampleAtResetTargetArray[] = BOOT_TARGETS_NAME_ARRAY;
+
+/*******************************************************************************
+* mvCpuIfVerify - Verify that the address decode registers matches the table
+*
+* INPUT:
+*       cpuAddrWinMap 	- Address decode table
+*
+* RETURN:
+*       MV_OK - pass MV_ERROR - fail
+*
+*******************************************************************************/
+MV_STATUS mvCpuIfVerify(MV_CPU_DEC_WIN *cpuAddrWinMap)
+{
+	MV_CPU_DEC_WIN win;
+	MV_U32 target;
+	MV_32 diff;
+
+	for (target = 0; target < MAX_TARGETS; target++) {
+		memset(&win, 0, sizeof(MV_CPU_DEC_WIN));
+
+		if(win.enable == cpuAddrWinMap->enable)
+		{
+			if(win.enable)
+			{
+				diff  = (win.addrWin.baseLow  - cpuAddrWinMap->addrWin.baseLow);
+				diff |= (win.addrWin.baseHigh - cpuAddrWinMap->addrWin.baseHigh);
+				diff |= (win.addrWin.size     - cpuAddrWinMap->addrWin.size);
+				/*TODO - Need to compare the window attributes as well */
+
+				if(diff)
+				{
+					mvOsOutput("mvCpuIfVerify: Mismatched window size in target %d\n", target);
+					return MV_ERROR;
+				}
+			}
+		}
+		else
+		{
+			mvOsOutput("mvCpuIfVerify: Mismatched enable field in target %d\n", target);
+			return MV_ERROR;
+		}
+	}
+	return MV_OK;
+}
 /*******************************************************************************
 * mvCpuIfInitForCpu - Initialize Controller CPU interface
 *

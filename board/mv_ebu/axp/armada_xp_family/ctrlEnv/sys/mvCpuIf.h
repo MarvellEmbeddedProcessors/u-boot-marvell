@@ -95,6 +95,7 @@ typedef struct _mvCpuIfDecWin {
 /* mvCpuIfLib.h API list */
 
 MV_STATUS mvCpuIfInit(MV_CPU_DEC_WIN *cpuAddrWinMap);
+MV_STATUS mvCpuIfVerify(MV_CPU_DEC_WIN *cpuAddrWinMap);
 MV_STATUS mvCpuIfDramInit(MV_VOID);
 MV_STATUS mvCpuIfTargetWinSet(MV_TARGET target, MV_CPU_DEC_WIN *pAddrDecWin);
 MV_STATUS mvCpuIfTargetWinGet(MV_TARGET target, MV_CPU_DEC_WIN *pAddrDecWin);

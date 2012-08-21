@@ -68,6 +68,7 @@ MV_STATUS mvListDestroy(MV_LIST_ELEMENT *head)
 
 	return MV_OK;
 }
+EXPORT_SYMBOL(mvListDestroy);
 
 /* Count the number of elements in the list (not including the head) */
 MV_LONG mvListElementsCount(MV_LIST_ELEMENT *head)

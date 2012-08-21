@@ -232,6 +232,8 @@ typedef struct {
 	MV_U32 tClk;
 	int	maxCPUs;
 	MV_BOOL	iocc;
+	MV_U16 ctrlModel;       /* Controller Model     */
+	MV_U8  ctrlRev;         /* Controller Revision  */
 
 #ifdef CONFIG_MV_ETH_BM
 	MV_ULONG bmPhysBase;
@@ -704,8 +706,9 @@ MV_STATUS mvNetaFlowCtrlSet(int port, MV_ETH_PORT_FC flowControl);
 MV_STATUS mvNetaFlowCtrlGet(int port, MV_ETH_PORT_FC *flowControl);
 
 #ifdef MV_ETH_GMAC_NEW
+MV_STATUS   mvEthGmacRgmiiSet(int port, int enable);
 MV_STATUS	mvNetaGmacLpiSet(int port, int mode);
-void	mvNetaGmacRegs(int port);
+void	    mvNetaGmacRegs(int port);
 #endif /* MV_ETH_GMAC_NEW */
 
 #ifdef CONFIG_MV_PON

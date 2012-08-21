@@ -513,7 +513,7 @@ MV_STATUS	mvNetaRxqCpuMaskSet(int port, int rxq, int cpu_mask)
 
 #ifdef MV_ETH_GMAC_NEW
 
-static MV_STATUS       mvEthGmacRgmiiSet(int port, int enable)
+MV_STATUS       mvEthGmacRgmiiSet(int port, int enable)
 {
 	MV_U32  regVal;
 

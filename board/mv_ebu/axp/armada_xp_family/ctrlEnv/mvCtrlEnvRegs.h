@@ -321,6 +321,7 @@ extern "C" {
 #define SATA_PWR_PLL_CTRL_REG(port)			(0xA2804 + (port)*0x2000)
 #define SATA_DIG_LP_ENA_REG(port)			(0xA288C + (port)*0x2000)
 #define SATA_REF_CLK_SEL_REG(port)			(0xA2918 + (port)*0x2000)
+#define SATA_COMPHY_CTRL_REG(port)			(0xA2920 + (port)*0x2000)
 #define SATA_LP_PHY_EXT_CTRL_REG(port)		(0xA2058 + (port)*0x2000)
 #define SATA_LP_PHY_EXT_STAT_REG(port)		(0xA205C + (port)*0x2000)
 
@@ -329,6 +330,7 @@ extern "C" {
 #define SGMII_REF_CLK_SEL_REG(port)		(0x72F18 + ((port)%2)*0x4000 - ((port)/2)*0x40000)
 #define SGMII_SERDES_CFG_REG(port)		(0x724A0 + ((port)%2)*0x4000 - ((port)/2)*0x40000)
 #define SGMII_SERDES_STAT_REG(port)		(0x724A4 + ((port)%2)*0x4000 - ((port)/2)*0x40000)
+#define SGMII_COMPHY_CTRL_REG(port)		(0x72F20 + ((port)%2)*0x4000 - ((port)/2)*0x40000)
 
 #define SERDES_LINE_MUX_REG_0_7			0x18270
 #define SERDES_LINE_MUX_REG_8_15		0x18274
@@ -372,6 +374,10 @@ extern "C" {
 #define MSAR_TCLK_OFFS				28
 #define MSAR_TCLK_MASK				(0x1 << MSAR_TCLK_OFFS)
 
+/*****************/
+/* PUP registers */
+/*****************/
+#define PUP_EN_REG				0x1864C
 
 /* Extract CPU, L2, DDR clocks SAR value from
 ** SAR bits 24-27
@@ -503,6 +509,27 @@ typedef enum {
 	Serdes 0-7 selectors		0x18270
 	and Serdes 8-15 selectors  	0x18274
 */
+#ifndef MV88F78X60_Z1
+#define SERDES_CFG {	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 0 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 1 */	\
+	{0, 1, -1 ,  2, -1, -1, -1, -1}, /* Lane 2 */	\
+	{0, 1, -1 , -1,  2, -1, -1,  3}, /* Lane 3 */	\
+	{0, 1,  2 , -1, -1,  3, -1, -1}, /* Lane 4 */	\
+	{0, 1,  2 , -1,  3, -1, -1,  4}, /* Lane 5 */	\
+	{0, 1,  2 ,  4, -1,  3, -1, -1}, /* Lane 6 */	\
+	{0, 1, -1 ,  2, -1, -1,  3, -1}, /* Lane 7*/	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 8 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 9 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 10 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 11 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 12 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 13 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 14 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}	 /* Lane 15 */	\
+}
+
+#else
 #define SERDES_CFG {	\
 	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 0 */	\
 	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 1 */	\
@@ -521,6 +548,7 @@ typedef enum {
 	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 14 */	\
 	{0, 1, -1 , -1, -1, -1, -1, -1}	 /* Lane 15 */	\
 }
+#endif
 
 /*
 	This enum should reflect the units numbers in register

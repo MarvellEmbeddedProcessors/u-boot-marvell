@@ -170,7 +170,12 @@ typedef struct _boardSerdesConf {
 #define SAR1_FABRIC_MODE_OFFSET	19
 
 #define SAR_CPU_FAB_GET(cpu, fab)	(((cpu & 0x7) << 21) | ((fab & 0xF) << 24))
+#ifdef MV88F78X60_Z1
 #define BIOS_MODES_NUM			7
+#else
+#define BIOS_MODES_NUM			6
+#endif
+
 
 typedef struct {
 	char *name;

@@ -168,13 +168,16 @@ MV_VOID mvCpuNameGet(char *pNameBuff)
 	case CPU_PART_ARM_V7UP:
 	case CPU_PART_MRVLPJ4B_UP:
 		if (archType == 0x1)
-			mvOsSPrintf(pNameBuff, "%s (Rev %d)", "Marvell PJ4B v7 UP", mvOsCpuRevGet());
+			mvOsSPrintf(pNameBuff, "%s (Rev %d)", "Marvell PJ4B (581) v7", mvOsCpuRevGet());
 		else
-			mvOsSPrintf(pNameBuff, "%s (Rev %d)", "Marvell PJ4B v6 UP", mvOsCpuRevGet());
+			mvOsSPrintf(pNameBuff, "%s (Rev %d)", "Marvell PJ4B (581) v6", mvOsCpuRevGet());
 		break;
 	case CPU_PART_MRVLPJ4B_MP:
 	case CPU_PART_ARM_V6MP:
-		mvOsSPrintf(pNameBuff, "%s (Rev %d)", "Marvell PJ4B v6 MP", mvOsCpuRevGet());
+			if (archType == 0x1)
+			mvOsSPrintf(pNameBuff, "%s (Rev %d)", "Marvell PJ4B (584) v7", mvOsCpuRevGet());
+		else
+			mvOsSPrintf(pNameBuff, "%s (Rev %d)", "Marvell PJ4B (584) v6", mvOsCpuRevGet());
 		break;
 	default:
 		mvOsSPrintf(pNameBuff, "??? (0x%04x) (Rev %d)", cpuModel, mvOsCpuRevGet());

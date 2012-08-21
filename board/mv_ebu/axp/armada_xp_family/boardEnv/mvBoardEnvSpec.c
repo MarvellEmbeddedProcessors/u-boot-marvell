@@ -369,7 +369,7 @@ MV_BOARD_MPP_INFO db88f78XX0rev2InfoBoardMppConfigValue[] = {
 
 MV_SERDES_CFG db88f78XX0rev2InfoBoardSerdesConfigValue[] = { //Faraj: change accordign to DB ==> stays the same
 	/* Z1B */
-	{0x32221111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
+	{0x33221111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
 	{0x31211111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, 0x00000030},	/* PEX module */
 	/* Z1A */
 	{0x32220000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000030},	/* Default - Z1A */
@@ -439,6 +439,127 @@ MV_BOARD_INFO db88f78XX0rev2Info = {
 	/* NOR init params */
 	.norFlashReadParams		= DB_88F78XX0_REV2_BOARD_NOR_READ_PARAMS,
 	.norFlashWriteParams		= DB_88F78XX0_REV2_BOARD_NOR_WRITE_PARAMS
+};
+
+/***************************/
+/* ARMADA-XP RD NAS  BOARD */
+/***************************/
+#define RD_78460_NAS_BOARD_NAND_READ_PARAMS	0x000C0282
+#define RD_78460_NAS_BOARD_NAND_WRITE_PARAMS	0x00010305
+/*NAND care support for small page chips*/
+#define RD_78460_NAS_BOARD_NAND_CONTROL		0x01c00543
+
+#define RD_78460_NAS_BOARD_NOR_READ_PARAMS	0x403E07CF
+#define RD_78460_NAS_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
+
+MV_BOARD_MAC_INFO rd78460nasInfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
+	{BOARD_MAC_SPEED_AUTO, 0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x1,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x19,0x800},  /* Port 1 */
+	{BOARD_MAC_SPEED_AUTO, 0x1B,0x1800}  /* Port 3 */
+};
+
+MV_BOARD_MODULE_TYPE_INFO rd78460nasInfoBoardModTypeInfo[] = {
+	{
+		.boardMppMod		= MV_BOARD_AUTO,
+		.boardOtherMod		= MV_BOARD_NONE
+	}
+};
+
+MV_BOARD_GPP_INFO rd78460nasInfoBoardGppInfo[] = {
+	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
+	{BOARD_GPP_USB_VBUS,    24} /* from MPP map */
+	//{BOARD_GPP_RESET,       47},
+};
+
+MV_DEV_CS_INFO rd78460nasInfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
+#endif
+#if defined(MV_INCLUDE_NOR)
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16} /* NOR DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO rd78460nasInfoBoardMppConfigValue[] = {
+	{ {
+	RD_78460_NAS_MPP0_7,
+	RD_78460_NAS_MPP8_15,
+	RD_78460_NAS_MPP16_23,
+	RD_78460_NAS_MPP24_31,
+	RD_78460_NAS_MPP32_39,
+	RD_78460_NAS_MPP40_47,
+	RD_78460_NAS_MPP48_55,
+	RD_78460_NAS_MPP56_63,
+	RD_78460_NAS_MPP64_67,
+	} }
+};
+
+MV_SERDES_CFG rd78460nasInfoBoardSerdesConfigValue[] = { //Faraj: change accordign to DB ==> stays the same
+	{0x00226001, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
+	{0x43320301, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},	/* Switch module */
+
+};
+
+MV_BOARD_INFO rd78460nasInfo = {
+	.boardName			= "RD-AXP-NAS rev 1.0",
+	.numBoardMppTypeValue		= ARRSZ(rd78460nasInfoBoardModTypeInfo),
+	.pBoardModTypeValue		= rd78460nasInfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(rd78460nasInfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= rd78460nasInfoBoardMppConfigValue,
+	.numBoardSerdesConfigValue	= ARRSZ(rd78460nasInfoBoardSerdesConfigValue),
+	.pBoardSerdesConfigValue	= rd78460nasInfoBoardSerdesConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(rd78460nasInfoBoardDeCsInfo),
+	.pDevCsInfo			= rd78460nasInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= 0,
+	.pBoardTwsiDev			= NULL,
+	.numBoardMacInfo		= ARRSZ(rd78460nasInfoBoardMacInfo),
+	.pBoardMacInfo			= rd78460nasInfoBoardMacInfo,
+	.numBoardGppInfo		= ARRSZ(rd78460nasInfoBoardGppInfo),
+	.pBoardGppInfo			= rd78460nasInfoBoardGppInfo,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow			= RD_78460_NAS_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= RD_78460_NAS_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= RD_78460_NAS_GPP_OUT_ENA_HIGH,
+	.gppOutValLow			= RD_78460_NAS_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= RD_78460_NAS_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= RD_78460_NAS_GPP_OUT_VAL_HIGH,
+	.gppPolarityValLow		= RD_78460_NAS_GPP_POL_LOW,
+	.gppPolarityValMid		= RD_78460_NAS_GPP_POL_MID,
+	.gppPolarityValHigh		= RD_78460_NAS_GPP_POL_HIGH,
+
+	/* TDM configuration */
+	/* We hold a different configuration array for each possible slic that
+	** can be connected to board.
+	** When modules are scanned, then we select the index of the relevant
+	** slic's information array.
+	** For RD and Customers boards we only need to initialize a single
+	** entry of the arrays below, and set the boardTdmInfoIndex to 0.
+	*/
+	.numBoardTdmInfo			= {},
+	.pBoardTdmInt2CsInfo			= {},
+	.boardTdmInfoIndex			= -1,
+
+	/* NAND init params */
+	.nandFlashReadParams		= RD_78460_NAS_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= RD_78460_NAS_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= RD_78460_NAS_BOARD_NAND_CONTROL,
+	/* NOR init params */
+	.norFlashReadParams		= RD_78460_NAS_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= RD_78460_NAS_BOARD_NOR_WRITE_PARAMS
 };
 
 /*****************************/
@@ -796,5 +917,6 @@ MV_BOARD_INFO *boardInfoTbl[] = {
 	&rd78460Info,
 	&db78X60pcacInfo,
 	&fpga88f78XX0Info,
-	&db88f78XX0rev2Info
+	&db88f78XX0rev2Info,
+	&rd78460nasInfo
 };

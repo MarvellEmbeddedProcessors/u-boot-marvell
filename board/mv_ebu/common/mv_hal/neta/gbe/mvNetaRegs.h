@@ -553,6 +553,9 @@ extern "C" {
 
 #define NETA_GMAC_CTRL_2_REG(p)             (NETA_REG_BASE(p) + 0x2C08)
 
+#define NETA_GMAC_PSC_ENABLE_BIT            3
+#define NETA_GMAC_PSC_ENABLE_MASK           (1 << NETA_GMAC_PSC_ENABLE_BIT)
+
 #define NETA_GMAC_PORT_RGMII_BIT            4
 #define NETA_GMAC_PORT_RGMII_MASK           (1 << NETA_GMAC_PORT_RGMII_BIT)
 

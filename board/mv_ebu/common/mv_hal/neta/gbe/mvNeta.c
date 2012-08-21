@@ -317,7 +317,8 @@ MV_STATUS mvNetaDefaultsSet(int port)
 	/* Enable MBUS Retry bit16 */
 	MV_REG_WRITE(NETA_MBUS_RETRY_REG(port), NETA_MBUS_RETRY_CYCLES(0x20));
 
-	/* Set CPU queue access map - default CPU_0 can access all RX and TX queues */
+	/* Set CPU queue access map - all CPUs have access to all RX queues and to all TX queues */
+
 	for (i = 0; i < mvNetaHalData.maxCPUs; i++)
 		MV_REG_WRITE(NETA_CPU_MAP_REG(port, i), (NETA_CPU_RXQ_ACCESS_ALL_MASK | NETA_CPU_TXQ_ACCESS_ALL_MASK));
 

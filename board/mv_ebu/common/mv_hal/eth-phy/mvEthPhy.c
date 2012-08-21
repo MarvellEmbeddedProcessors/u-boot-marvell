@@ -199,19 +199,6 @@ MV_STATUS mvEthPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	return MV_OK;
 }
 
-void    rdPhy(MV_U32 phyAddr, MV_U32 regOffs)
-{
-	MV_U16      data;
-	MV_STATUS   status;
-
-	status = mvEthPhyRegRead(phyAddr, regOffs, &data);
-	if (status == MV_OK)
-		mvOsPrintf("reg=%d: 0x%04x\n", regOffs, data);
-	else
-		mvOsPrintf("Read failed\n");
-}
-
-
 /*******************************************************************************
 * mvEthPhyRegRead - Read from ethernet phy register.
 *
@@ -284,6 +271,20 @@ MV_STATUS mvEthPhyRegRead(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 *data)
 	*data = (MV_U16)(MV_REG_READ(ethphyHalData.ethPhySmiReg) & ETH_PHY_SMI_DATA_MASK);
 
 	return MV_OK;
+}
+
+MV_STATUS mvEthPhyRegPrint(MV_U32 phyAddr, MV_U32 regOffs)
+{
+	MV_U16      data;
+	MV_STATUS   status;
+
+	status = mvEthPhyRegRead(phyAddr, regOffs, &data);
+	if (status == MV_OK)
+		mvOsPrintf("reg=%d: 0x%04x\n", regOffs, data);
+	else
+		mvOsPrintf("Read failed\n");
+
+	return status;
 }
 
 /*******************************************************************************
@@ -1923,7 +1924,12 @@ MV_VOID mvEthE1512PhyBasicInit(MV_U32 ethPortNum)
 		mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x14, 0x8001);
 	}
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x0000);
+}
 
+MV_U32 mvEthPhyAddGet(MV_U32 ethPortNum)
+{
+       /* TODO Port num validation */
+       return ethphyHalData.phyAddr[ethPortNum];
 }
 
 

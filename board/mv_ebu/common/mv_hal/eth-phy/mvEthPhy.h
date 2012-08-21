@@ -115,7 +115,9 @@ typedef struct {
 MV_STATUS 	mvEthPhyHalInit(MV_ETHPHY_HAL_DATA *halData);
 MV_STATUS	mvEthPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable);
 MV_STATUS	mvEthPhyRegRead(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 *data);
+MV_STATUS	mvEthPhyRegPrint(MV_U32 phyAddr, MV_U32 regOffs);
 MV_STATUS 	mvEthPhyRegWrite(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 data);
+MV_U32 		mvEthPhyAddGet(MV_U32 ethPortNum);
 MV_STATUS 	mvEthPhyReset(MV_U32 phyAddr, int timeout);
 MV_STATUS 	mvEthPhyRestartAN(MV_U32 phyAddr, int timeout);
 MV_STATUS 	mvEthPhyDisableAN(MV_U32 phyAddr, int speed, int duplex);
@@ -141,7 +143,10 @@ MV_VOID		mvEthInternalGEPhyBasicInit(MV_U32 ethPortNum);
 MV_VOID		mvEth1540PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable);
 MV_VOID		mvEth1340PhyBasicInit(void);
 MV_VOID		mvEthE1512PhyBasicInit(MV_U32 ethPortNum);
+
 /* MV_VOID		mvEthInternal3FEPhyBasicInit(MV_U32 port); */
+
+
 
 #ifdef __cplusplus
 }

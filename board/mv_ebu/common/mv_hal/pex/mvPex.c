@@ -301,7 +301,7 @@ MV_U32 mvPexModeGet(MV_U32 pexIf, MV_PEX_MODE *pexMode)
 		if ((MV_REG_READ(PEX_DBG_STATUS_REG(pexIf))) == 0x7e)
 			pexMode->pexLinkUp = MV_TRUE;
 		else {
-			printf("Link negotiation failed ");
+			mvOsPrintf("Link negotiation failed ");
 			pexMode->pexLinkUp = MV_FALSE;
 		}
 

@@ -1056,11 +1056,24 @@ typedef struct neta_rx_desc {
 #define ETH_RX_NOT_LLC_SNAP_FORMAT_BIT      23
 #define ETH_RX_NOT_LLC_SNAP_FORMAT_MASK     (1 << ETH_RX_NOT_LLC_SNAP_FORMAT_BIT)
 
+#ifdef MV_ETH_LEGACY_PARSER_IPV6
+
+#define NETA_RX_L3_OFFS                     24
+#define NETA_RX_L3_MASK                     (3 << NETA_RX_L3_OFFS)
+#define NETA_RX_L3_UN                       (0 << NETA_RX_L3_OFFS)
+#define NETA_RX_L3_IP6                      (2 << NETA_RX_L3_OFFS)
+#define NETA_RX_L3_IP4           	        (3 << NETA_RX_L3_OFFS)
+#define NETA_RX_L3_IP4_ERR            		(1 << NETA_RX_L3_OFFS)
+
+#else
+
 #define ETH_RX_IP_FRAME_TYPE_BIT            24
 #define ETH_RX_IP_FRAME_TYPE_MASK           (1 << ETH_RX_IP_FRAME_TYPE_BIT)
 
 #define ETH_RX_IP_HEADER_OK_BIT             25
 #define ETH_RX_IP_HEADER_OK_MASK            (1 << ETH_RX_IP_HEADER_OK_BIT)
+
+#endif /* MV_ETH_LEGACY_PARSER_IPV6 */
 
 #define ETH_RX_UNKNOWN_DA_BIT               28
 #define ETH_RX_UNKNOWN_DA_MASK              (1 << ETH_RX_UNKNOWN_DA_BIT)

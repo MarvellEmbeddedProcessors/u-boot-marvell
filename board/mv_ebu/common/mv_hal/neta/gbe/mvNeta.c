@@ -2002,16 +2002,16 @@ int     mvNetaTosToRxqGet(int port, int tos)
 }
 
 /*******************************************************************************
-* mvNetaTosToRxqSet - Map packets with special TOS value to special RX queue
+* mvNetaVprioToRxqSet - Map packets with special VLAN priority to special RX queue
 *
 * DESCRIPTION:
 *
 * INPUT:
-*		int     portNo		- Port number.
-*       int     vprio       - Vlan Priority value in packet header
-*       int     rxq         - RX Queue for packets with the configured TOS value
-*                           Negative value (-1) means no special processing for these packets,
-*                           so they will be processed as regular packets.
+*       int     portNo  - Port number.
+*       int     vprio   - Vlan Priority value in packet header
+*       int     rxq     - RX Queue for packets with the configured TOS value
+*                         Negative value (-1) means no special processing for these packets,
+*                         so they will be processed as regular packets.
 *
 * RETURN:   MV_STATUS
 *******************************************************************************/

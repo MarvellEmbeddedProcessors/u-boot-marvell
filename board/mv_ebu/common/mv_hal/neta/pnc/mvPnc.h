@@ -149,12 +149,11 @@ enum {
 	TE_MAC_EOF,
 
     /* VLAN Lookup */
-	TE_VLAN,
-#ifdef CONFIG_MV_ETH_PNC_VLAN_PRIO
-	TE_VLAN_EOF = TE_VLAN + 7,
-#else
-	TE_VLAN_EOF = TE_VLAN,
-#endif /* CONFIG_MV_ETH_PNC_VLAN_PRIO */
+#if (CONFIG_MV_ETH_PNC_VLAN_PRIO > 0)
+	TE_VLAN_PRIO,
+	TE_VLAN_PRIO_END = TE_VLAN_PRIO + CONFIG_MV_ETH_PNC_VLAN_PRIO,
+#endif /* (CONFIG_MV_ETH_PNC_VLAN_PRIO > 0) */
+	TE_VLAN_EOF,
 
     /* Ethertype Lookup */
 	TE_ETYPE_ARP,
@@ -291,7 +290,8 @@ int pnc_mac_me(unsigned int port, unsigned char *mac, int rxq);
 int pnc_mcast_me(unsigned int port, unsigned char *mac);
 
 /* Set VLAN priority entry */
-int pnc_vlan_set(int prio, int rxq);
+int pnc_vlan_prio_set(int port, int prio, int rxq);
+void pnc_vlan_prio_show(int port);
 
 /* match arp */
 void pnc_etype_arp(int rxq);
@@ -308,8 +308,8 @@ int pnc_mcast_all(unsigned int port, int en);
 void    pnc_mac_show(void);
 
 /* Add TOS priority rule */
-int     pnc_ip4_dscp(unsigned char dscp, unsigned char mask, int rxq);
-void    pnc_ipv4_dscp_show(void);
+int     pnc_ip4_dscp(int port, unsigned char dscp, unsigned char mask, int rxq);
+void    pnc_ipv4_dscp_show(int port);
 
 
 /* 2 tuple match */

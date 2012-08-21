@@ -190,6 +190,19 @@ int pnc_te_del(unsigned int tid)
 }
 
 /* pnc port setting: data: 0 for all bits, mask: 0 - for accepted ports, 1 - for rejected ports */
+int pnc_port_mask_check(unsigned int mask, int eth_port)
+{
+	int pnc_port = pnc_eth_port_map(eth_port);
+
+	if (pnc_port < 0)
+		return 0;
+
+	if (mask & (1 << pnc_port))
+		return 0;
+
+	return 1;
+}
+
 unsigned int pnc_port_mask_update(unsigned int mask, int eth_port, int add)
 {
 	int pnc_port = pnc_eth_port_map(eth_port);
@@ -217,6 +230,22 @@ unsigned int pnc_port_mask(int eth_port)
 	return mask;
 }
 
+/* Get TCAM entry if valid, NULL if invalid */
+struct tcam_entry *pnc_tcam_entry_get(int tid)
+{
+	struct tcam_entry *te;
+
+	te = tcam_sw_alloc(0);
+
+	tcam_hw_read(te, tid);
+
+	if (te->ctrl.flags & TCAM_F_INV) {
+		tcam_sw_free(te);
+		return NULL;
+	}
+	return te;
+}
+
 int pnc_tcam_port_update(int tid, int eth_port, int add)
 {
 	struct tcam_entry *te;
@@ -242,22 +271,6 @@ int pnc_tcam_port_update(int tid, int eth_port, int add)
  *
  ******************************************************************************
  */
-
-/* Get TCAM entry if valid, NULL if invalid */
-struct tcam_entry *pnc_tcam_entry_get(int tid)
-{
-	struct tcam_entry *te;
-
-	te = tcam_sw_alloc(0);
-
-	tcam_hw_read(te, tid);
-
-	if (te->ctrl.flags & TCAM_F_INV) {
-		tcam_sw_free(te);
-		return NULL;
-	}
-	return te;
-}
 
 /*
  * pnc_mac_fc_drop - Add Flow Control MAC address match rule to the MAC section
@@ -516,56 +529,137 @@ static void pnc_match_etype(struct tcam_entry *te, unsigned short ethertype)
 	tcam_sw_set_byte(te, 1, ethertype & 0xFF);
 }
 
-/* Set VLAN entry */
-int pnc_vlan_set(int prio, int rxq)
+/* Set VLAN priority entry */
+int pnc_vlan_prio_set(int port, int prio, int rxq)
+{
+#if (CONFIG_MV_ETH_PNC_VLAN_PRIO > 0)
+	struct tcam_entry *te;
+	unsigned int pdata, pmask;
+	int q, tid, empty = -1;
+
+	PNC_DBG("%s\n", __func__);
+
+	/* check validity */
+	if ((prio < 0) || (prio > 7))
+		return 1;
+
+	if ((rxq < -1) || (rxq > CONFIG_MV_ETH_RXQ))
+		return 1;
+
+	/* Find match TCAM entry */
+	for (tid = TE_VLAN_PRIO; tid <= TE_VLAN_PRIO_END; tid++) {
+		te = pnc_tcam_entry_get(tid);
+		/* Remember first Empty entry */
+		if (te == NULL) {
+			if (empty == -1)
+				empty = tid;
+			continue;
+		}
+		/* find VLAN entry with the same priority */
+		if (tcam_sw_cmp_byte(te, 2, ((unsigned char)prio << 5)) == 0) {
+			tcam_sw_get_port(te, &pdata, &pmask);
+			if (rxq == -1) {
+				if (!pnc_port_mask_check(pmask, port)) {
+					tcam_sw_free(te);
+					continue;
+				}
+				pmask = pnc_port_mask_update(pmask, port, 0);
+				if (pmask == PORT_MASK) {	/* No valid ports */
+					tcam_hw_inv(tid);
+				} else {
+					tcam_sw_set_port(te, pdata, pmask);
+					tcam_hw_write(te, tid);
+				}
+			} else {
+				q = sram_sw_get_rxq(te, NULL);
+				if (rxq == q) {
+					/* Add port to this entry */
+					pmask = pnc_port_mask_update(pmask, port, 1);
+					tcam_sw_set_port(te, pdata, pmask);
+					tcam_hw_write(te, tid);
+				} else {
+					/* Update RXQ */
+					pmask = pnc_port_mask_update(pmask, port, 0);
+					if (pmask == PORT_MASK) {
+						/* No valid ports - use the same entry */
+						pmask = pnc_port_mask_update(pmask, port, 1);
+						tcam_sw_set_port(te, pdata, pmask);
+						sram_sw_set_rxq(te, rxq, 0);
+						tcam_hw_write(te, tid);
+						tcam_sw_free(te);
+					} else {
+						tcam_sw_free(te);
+						continue;
+					}
+				}
+			}
+			tcam_sw_free(te);
+			return 0;
+		}
+		tcam_sw_free(te);
+	}
+	if (rxq == -1) {
+		mvOsPrintf("%s: Entry not found - vprio=%d, rxq=%d\n",
+					__func__, prio, rxq);
+		return 1;
+	}
+
+	/* Not found existing entry and no free TCAM entry - Failed */
+	if (empty == -1) {
+		mvOsPrintf("%s: No free place - vprio=%d, rxq=%d\n",
+					__func__, prio, rxq);
+		return 1;
+	}
+
+	/* Not found existing entry - add to free TCAM entry */
+	te = tcam_sw_alloc(TCAM_LU_L2);
+	pnc_match_etype(te, MV_VLAN_TYPE);
+	tcam_sw_set_byte(te, 2, prio << 5);
+	tcam_sw_set_mask(te, 2, 7 << 5);
+	tcam_sw_text(te, "vlan_prio");
+
+	sram_sw_set_rinfo(te, RI_VLAN, RI_VLAN);
+	sram_sw_set_next_lookup(te, TCAM_LU_L2);
+	sram_sw_set_shift_update(te, 0, MV_VLAN_HLEN);
+	sram_sw_set_rxq(te, rxq, 0);
+
+	/* single port mask */
+	pmask = pnc_port_mask(port);
+	tcam_sw_set_port(te, 0, pmask);
+
+	tcam_sw_text(te, "vlan_prio");
+
+	tcam_hw_write(te, empty);
+	tcam_sw_free(te);
+
+	return 0;
+#else
+	return -1;
+#endif /* CONFIG_MV_ETH_PNC_VLAN_PRIO > 0 */
+}
+
+int pnc_vlan_init(void)
 {
 	struct tcam_entry *te;
 	int tid;
 
 	PNC_DBG("%s\n", __func__);
 
-	/* check validity */
-	if ((TE_VLAN + prio) > TE_VLAN_EOF)
-		return 1;
-
-	if ((prio < 0) || (prio > 7))
-		return 1;
-
+	/* Set default VLAN entry */
+	tid = TE_VLAN_EOF;
 	te = tcam_sw_alloc(TCAM_LU_L2);
 	pnc_match_etype(te, MV_VLAN_TYPE);
+	tcam_sw_set_mask(te, 2, 0);
+	tcam_sw_text(te, "vlan_def");
 
-	tcam_sw_set_byte(te, 2, prio << 5);
-	if (prio == 0) {
-		/* Set default VLAN entry */
-		tid = TE_VLAN_EOF;
-		tcam_sw_set_mask(te, 2, 0);
-	} else {
-		tid = TE_VLAN + prio - 1;
-		tcam_sw_set_mask(te, 2, 7 << 5);
-	}
-
-	sram_sw_set_rxq(te, rxq, 0);
+	sram_sw_set_rxq(te, rxq_vlan, 0);
 
 	sram_sw_set_rinfo(te, RI_VLAN, RI_VLAN);
 	sram_sw_set_next_lookup(te, TCAM_LU_L2);
 	sram_sw_set_shift_update(te, 0, MV_VLAN_HLEN);
-	tcam_sw_text(te, "vlan");
 
 	tcam_hw_write(te, tid);
 	tcam_sw_free(te);
-
-	return 0;
-}
-
-int pnc_vlan_init(void)
-{
-	int prio;
-
-	PNC_DBG("%s\n", __func__);
-
-	for (prio = 0; prio <= 7; prio++)
-		if (pnc_vlan_set(prio, rxq_vlan))
-			break;
 
 	return 0;
 }
@@ -709,11 +803,15 @@ static void pnc_ip4_flow_next_lookup_set(struct tcam_entry *te)
 /*
  * pnc_ip4_tos - Add TOS prioroty rules
  */
-int pnc_ip4_dscp(unsigned char dscp, unsigned char mask, int rxq)
+int pnc_ip4_dscp(int port, unsigned char dscp, unsigned char mask, int rxq)
 {
 #if (CONFIG_MV_ETH_PNC_DSCP_PRIO > 0)
 	struct tcam_entry *te;
-	int tid, empty = -1;
+	unsigned int pdata, pmask;
+	int tid, q, empty = -1;
+
+	if ((rxq < -1) || (rxq > CONFIG_MV_ETH_RXQ))
+		return 1;
 
 	for (tid = TE_IP4_DSCP; tid <= TE_IP4_DSCP_END; tid++) {
 		PNC_DBG("%s: tid=%d, dscp=0x%02x, mask=0x%02x, rxq=%d\n", __func__, tid, dscp, mask, rxq);
@@ -723,19 +821,46 @@ int pnc_ip4_dscp(unsigned char dscp, unsigned char mask, int rxq)
 		if (te == NULL) {
 			if (empty == -1)
 				empty = tid;
-
 			continue;
 		}
 		/* Find existing entry for this TOS */
 		if (tcam_sw_cmp_bytes(te, 1, 1, &dscp) == 0) {
-			if (rxq == -1)
-				tcam_hw_inv(tid);
-			else {
-				/* Update RXQ */
-				sram_sw_set_rxq(te, rxq, 0);
-				tcam_hw_write(te, tid);
-				tcam_sw_free(te);
+			tcam_sw_get_port(te, &pdata, &pmask);
+			if (rxq == -1) {
+				if (!pnc_port_mask_check(pmask, port)) {
+					tcam_sw_free(te);
+					continue;
+				}
+				pmask = pnc_port_mask_update(pmask, port, 0);
+				if (pmask == PORT_MASK) {	/* No valid ports */
+					tcam_hw_inv(tid);
+				} else {
+					tcam_sw_set_port(te, pdata, pmask);
+					tcam_hw_write(te, tid);
+				}
+			} else {
+				q = sram_sw_get_rxq(te, NULL);
+				if (rxq == q) {
+					/* Add port to this entry */
+					pmask = pnc_port_mask_update(pmask, port, 1);
+					tcam_sw_set_port(te, pdata, pmask);
+					tcam_hw_write(te, tid);
+				} else {
+					/* Update RXQ */
+					pmask = pnc_port_mask_update(pmask, port, 0);
+					if (pmask == PORT_MASK) {
+						/* No valid ports - use the same entry */
+						pmask = pnc_port_mask_update(pmask, port, 1);
+						tcam_sw_set_port(te, pdata, pmask);
+						sram_sw_set_rxq(te, rxq, 0);
+						tcam_hw_write(te, tid);
+					} else {
+						tcam_sw_free(te);
+						continue;
+					}
+				}
 			}
+			tcam_sw_free(te);
 			return 0;
 		}
 		tcam_sw_free(te);
@@ -744,14 +869,14 @@ int pnc_ip4_dscp(unsigned char dscp, unsigned char mask, int rxq)
 	if (rxq == -1) {
 		mvOsPrintf("%s: Entry not found - tos=0x%x, rxq=%d\n",
 					__func__, dscp, rxq);
-		return 2;
+		return 1;
 	}
 
 	/* Not found existing entry and no free TCAM entry - Failed */
 	if (empty == -1) {
 		mvOsPrintf("%s: No free place - tos=0x%x, rxq=%d\n",
 					__func__, dscp, rxq);
-		return 2;
+		return 1;
 	}
 
 	/* Not found existing entry - add to free TCAM entry */
@@ -759,6 +884,8 @@ int pnc_ip4_dscp(unsigned char dscp, unsigned char mask, int rxq)
 	tcam_sw_set_byte(te, 1, (MV_U8) dscp);
 	tcam_sw_set_mask(te, 1, (MV_U8) mask);
 	sram_sw_set_rxq(te, rxq, 0);
+	pmask = pnc_port_mask(port);
+	tcam_sw_set_port(te, 0, pmask);
 	sram_sw_set_next_lookup(te, TCAM_LU_IP4);
 	tcam_sw_set_ainfo(te, 0, AI_DONE_MASK);
 	sram_sw_set_ainfo(te, AI_DONE_MASK, AI_DONE_MASK);
@@ -769,7 +896,7 @@ int pnc_ip4_dscp(unsigned char dscp, unsigned char mask, int rxq)
 	tcam_sw_free(te);
 	return 0;
 #else
-	return 1;
+	return -1;
 #endif /* (CONFIG_MV_ETH_PNC_DSCP_PRIO > 0) */
 }
 
@@ -1266,7 +1393,33 @@ static void pnc_port_sprintf(struct tcam_entry *te, char *buf)
 	}
 }
 
-void pnc_ipv4_dscp_show(void)
+void pnc_vlan_prio_show(int port)
+{
+#if (CONFIG_MV_ETH_PNC_VLAN_PRIO > 0)
+	struct tcam_entry *te;
+	int tid;
+	unsigned char prio;
+	char buf[16];
+
+	mvOsPrintf("Prio   Mask       Ports     RXQ    Name\n");
+	for (tid = TE_VLAN_PRIO; tid <= TE_VLAN_PRIO_END; tid++) {
+		te = pnc_tcam_entry_get(tid);
+		if (te) {
+			prio = *(te->data.u.byte + 2);
+			mvOsPrintf("0x%02x", prio >> 5);
+			prio = *(te->mask.u.byte + 2);
+			mvOsPrintf("   0x%02x", prio >> 5);
+			pnc_port_sprintf(te, buf);
+			mvOsPrintf(" %12s", buf);
+			mvOsPrintf("     %d", sram_sw_get_rxq(te, NULL));
+			mvOsPrintf("     %s\n", te->ctrl.text);
+			tcam_sw_free(te);
+		}
+	}
+#endif /* (CONFIG_MV_ETH_PNC_VLAN_PRIO > 0) */
+	return;
+}
+void pnc_ipv4_dscp_show(int port)
 {
 #if (CONFIG_MV_ETH_PNC_DSCP_PRIO > 0)
 	struct tcam_entry *te;

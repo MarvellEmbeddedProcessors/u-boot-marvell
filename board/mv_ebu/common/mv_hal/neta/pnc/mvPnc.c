@@ -279,7 +279,7 @@ static void pnc_mac_fc_drop(void)
 	tcam_sw_set_port(te, 0, 0);	/* all ports */
 
 	/* result info bit */
-	sram_sw_set_rinfo(te, RI_DROP);
+	sram_sw_set_rinfo(te, RI_DROP, RI_DROP);
 
 	tcam_sw_text(te, "flow control");
 	sram_sw_set_lookup_done(te, 1);
@@ -317,7 +317,7 @@ static struct tcam_entry *pnc_mac_da(unsigned char *da, unsigned int len,
 	tcam_sw_set_port(te, 0, port_mask);
 
 	/* result info bit */
-	sram_sw_set_rinfo(te, rinfo);
+	sram_sw_set_rinfo(te, rinfo, rinfo);
 
 	/* set rx queue */
 	sram_sw_set_rxq(te, rxq, 0);
@@ -490,7 +490,7 @@ static int pnc_mac_init(void)
 	sram_sw_set_flowid(te, FLOWID_EOF_LU_MAC, FLOWID_CTRL_LOW_HALF_MASK);
 
 	/* Non-promiscous mode - DROP unknown packets */
-	sram_sw_set_rinfo(te, RI_DROP);
+	sram_sw_set_rinfo(te, RI_DROP, RI_DROP);
 	sram_sw_set_lookup_done(te, 1);
 	tcam_sw_text(te, "mac_eof");
 
@@ -546,7 +546,7 @@ int pnc_vlan_set(int prio, int rxq)
 
 	sram_sw_set_rxq(te, rxq, 0);
 
-	sram_sw_set_rinfo(te, RI_VLAN);
+	sram_sw_set_rinfo(te, RI_VLAN, RI_VLAN);
 	sram_sw_set_next_lookup(te, TCAM_LU_L2);
 	sram_sw_set_shift_update(te, 0, MV_VLAN_HLEN);
 	tcam_sw_text(te, "vlan");
@@ -635,7 +635,7 @@ static void pnc_etype_pppoe(void)
 
 	sram_sw_set_shift_update(te, 0, MV_ETH_TYPE_LEN + MV_PPPOE_HDR_SIZE);
 	sram_sw_set_next_lookup(te, TCAM_LU_IP4);
-	sram_sw_set_rinfo(te, RI_PPPOE);
+	sram_sw_set_rinfo(te, RI_PPPOE, RI_PPPOE);
 	tcam_sw_text(te, "pppoe_ip4");
 
 	tcam_hw_write(te, TE_PPPOE_IP4);
@@ -650,7 +650,7 @@ static void pnc_etype_pppoe(void)
 
 	sram_sw_set_shift_update(te, 0, MV_ETH_TYPE_LEN + MV_PPPOE_HDR_SIZE);
 	sram_sw_set_next_lookup(te, TCAM_LU_IP6);
-	sram_sw_set_rinfo(te, RI_PPPOE);
+	sram_sw_set_rinfo(te, RI_PPPOE, RI_PPPOE);
 	tcam_sw_text(te, "pppoe_ip6");
 
 	tcam_hw_write(te, TE_PPPOE_IP6);
@@ -790,7 +790,7 @@ void pnc_ip4_tcp(int rxq)
 	tcam_sw_set_byte(te, 7, 0x00);
 	tcam_sw_set_mask(te, 7, 0xFF);
 	sram_sw_set_shift_update(te, 1, SHIFT_IP4_HLEN);
-	sram_sw_set_rinfo(te, RI_L3_IP4 | RI_L4_TCP);
+	sram_sw_set_rinfo(te, (RI_L3_IP4 | RI_L4_TCP), (RI_L3_IP4 | RI_L4_TCP));
 	sram_sw_set_rxq(te, rxq_ip4_tcp, 0);
 	sram_sw_set_ainfo(te, 0, AI_DONE_MASK);
 	pnc_ip4_flow_next_lookup_set(te);
@@ -804,7 +804,7 @@ void pnc_ip4_tcp(int rxq)
 	te = tcam_sw_alloc(TCAM_LU_IP4);
 	tcam_sw_set_byte(te, 9, MV_IP_PROTO_TCP);
 	sram_sw_set_shift_update(te, 1, SHIFT_IP4_HLEN);
-	sram_sw_set_rinfo(te, RI_L3_IP4_FRAG | RI_L4_TCP);
+	sram_sw_set_rinfo(te, (RI_L3_IP4_FRAG | RI_L4_TCP), (RI_L3_IP4_FRAG | RI_L4_TCP));
 	sram_sw_set_rxq(te, rxq_ip4_tcp, 0);
 	sram_sw_set_ainfo(te, 0, AI_DONE_MASK);
 	pnc_ip4_flow_next_lookup_set(te);
@@ -830,7 +830,7 @@ void pnc_ip4_udp(int rxq)
 	tcam_sw_set_byte(te, 7, 0x00);
 	tcam_sw_set_mask(te, 7, 0xFF);
 	sram_sw_set_shift_update(te, 1, SHIFT_IP4_HLEN);
-	sram_sw_set_rinfo(te, RI_L3_IP4 | RI_L4_UDP);
+	sram_sw_set_rinfo(te, (RI_L3_IP4 | RI_L4_UDP), (RI_L3_IP4 | RI_L4_UDP));
 	sram_sw_set_rxq(te, rxq_ip4_udp, 0);
 	sram_sw_set_ainfo(te, 0, AI_DONE_MASK);
 	pnc_ip4_flow_next_lookup_set(te);
@@ -843,7 +843,7 @@ void pnc_ip4_udp(int rxq)
 	te = tcam_sw_alloc(TCAM_LU_IP4);
 	tcam_sw_set_byte(te, 9, MV_IP_PROTO_UDP);
 	sram_sw_set_shift_update(te, 1, SHIFT_IP4_HLEN);
-	sram_sw_set_rinfo(te, RI_L3_IP4_FRAG | RI_L4_UDP);
+	sram_sw_set_rinfo(te, (RI_L3_IP4_FRAG | RI_L4_UDP), (RI_L3_IP4_FRAG | RI_L4_UDP));
 	sram_sw_set_rxq(te, rxq_ip4_udp, 0);
 	sram_sw_set_ainfo(te, 0, AI_DONE_MASK);
 	pnc_ip4_flow_next_lookup_set(te);
@@ -861,7 +861,7 @@ static void pnc_ip4_end(void)
 	PNC_DBG("%s\n", __func__);
 
 	te = tcam_sw_alloc(TCAM_LU_IP4);
-	sram_sw_set_rinfo(te, RI_L3_IP4 | RI_L4_UN);
+	sram_sw_set_rinfo(te, (RI_L3_IP4 | RI_L4_UN), (RI_L3_IP4 | RI_L4_UN));
 	sram_sw_set_rxq(te, rxq_ip4, 0);
 	sram_sw_set_lookup_done(te, 1);
 	sram_sw_set_flowid(te, FLOWID_EOF_LU_IP4, FLOWID_CTRL_LOW_HALF_MASK);
@@ -911,7 +911,7 @@ static void pnc_ip6_tcp(void)
 	tcam_sw_set_byte(te, 6, MV_IP_PROTO_TCP);
 	sram_sw_set_shift_update(te, 1, sizeof(MV_IP6_HEADER));
 	pnc_ip6_flow_next_lookup_set(te);
-	sram_sw_set_rinfo(te, RI_L3_IP6 | RI_L4_TCP);
+	sram_sw_set_rinfo(te, (RI_L3_IP6 | RI_L4_TCP), (RI_L3_IP6 | RI_L4_TCP));
 	sram_sw_set_rxq(te, rxq_ip6, 0);
 	tcam_sw_text(te, "ipv6_tcp");
 
@@ -932,7 +932,7 @@ static void pnc_ip6_udp(void)
 	sram_sw_set_shift_update(te, 1, sizeof(MV_IP6_HEADER));
 	pnc_ip6_flow_next_lookup_set(te);
 
-	sram_sw_set_rinfo(te, RI_L3_IP6 | RI_L4_UDP);
+	sram_sw_set_rinfo(te, (RI_L3_IP6 | RI_L4_UDP), (RI_L3_IP6 | RI_L4_UDP));
 	sram_sw_set_rxq(te, rxq_ip6, 0);
 	tcam_sw_text(te, "ipv6_udp");
 
@@ -949,7 +949,7 @@ static void pnc_ip6_end(void)
 
 	te = tcam_sw_alloc(TCAM_LU_IP6);
 	sram_sw_set_shift_update(te, 1, sizeof(MV_IP6_HEADER));
-	sram_sw_set_rinfo(te, RI_L3_IP6 | RI_L4_UN);
+	sram_sw_set_rinfo(te, (RI_L3_IP6 | RI_L4_UN), (RI_L3_IP6 | RI_L4_UN));
 	sram_sw_set_rxq(te, rxq_ip6, 0);
 	sram_sw_set_lookup_done(te, 1);
 	sram_sw_set_flowid(te, FLOWID_EOF_LU_IP6, FLOWID_CTRL_LOW_HALF_MASK);
@@ -1057,7 +1057,7 @@ int pnc_ipv6_2_tuples_add(unsigned int tid1, unsigned int tid2, unsigned int flo
 		sram_sw_set_rxq(te, rxq, 0);
 	}
 
-	sram_sw_set_rinfo(te, RI_L3_FLOW);
+	sram_sw_set_rinfo(te, RI_L3_FLOW, RI_L3_FLOW);
 
 	tcam_sw_set_ainfo(te, unique, AI_MASK);
 	tcam_sw_text(te, "ipv6_2t_B");
@@ -1096,7 +1096,7 @@ int pnc_ipv4_2_tuples_add(unsigned int tid, unsigned int flow_id, unsigned int s
 	sram_sw_set_lookup_done(te, 1);
 	sram_sw_set_flowid(te, flow_id, FLOWID_CTRL_FULL_MASK);
 	sram_sw_set_rxq(te, rxq, 0);
-	sram_sw_set_rinfo(te, RI_L3_FLOW);
+	sram_sw_set_rinfo(te, RI_L3_FLOW, RI_L3_FLOW);
 	tcam_sw_text(te, "ipv4_2t");
 
 	tcam_hw_write(te, tid);
@@ -1147,7 +1147,7 @@ int pnc_ipv4_5_tuples_add(unsigned int tid, unsigned int flow_id,
 	sram_sw_set_lookup_done(te, 1);
 	sram_sw_set_flowid(te, flow_id, FLOWID_CTRL_FULL_MASK);
 	sram_sw_set_rxq(te, rxq, 0);
-	sram_sw_set_rinfo(te, RI_L3_FLOW);
+	sram_sw_set_rinfo(te, RI_L3_FLOW, RI_L3_FLOW);
 	tcam_sw_text(te, "ipv4_5t");
 
 	tcam_hw_write(te, tid);

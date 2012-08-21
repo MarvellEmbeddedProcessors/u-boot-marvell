@@ -322,7 +322,7 @@ int  tcam_sw_cmp_byte(struct tcam_entry *te, unsigned int offset, unsigned char 
 int  tcam_sw_cmp_bytes(struct tcam_entry *te, unsigned int offset, unsigned int size, unsigned char *data);
 
 void tcam_sw_set_mask(struct tcam_entry *te, unsigned int offset, unsigned char mask);
-void sram_sw_set_rinfo(struct tcam_entry *te, unsigned int bit);
+void sram_sw_set_rinfo(struct tcam_entry *te, unsigned int rinfo, unsigned int mask);
 void sram_sw_set_shift_update(struct tcam_entry *te, unsigned int index, unsigned int value);
 void sram_sw_set_rxq(struct tcam_entry *te, unsigned int rxq, unsigned int force);
 

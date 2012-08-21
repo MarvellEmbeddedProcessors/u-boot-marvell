@@ -26,8 +26,6 @@ DISCLAIMED.  The GPL License provides additional details about this warranty
 disclaimer.
 *******************************************************************************/
 
-#ifdef MV_ETH_PNC_AGING
-
 #include "mvOs.h"
 #include "mvCommon.h"
 
@@ -35,6 +33,8 @@ disclaimer.
 
 #include "mvPnc.h"
 #include "mvTcam.h"
+
+#ifdef MV_ETH_PNC_AGING
 
 #define PNC_AGING_CNTRS_ADDR_MASK       (0 << 12)
 #define PNC_AGING_GROUPS_ADDR_MASK      (1 << 12)

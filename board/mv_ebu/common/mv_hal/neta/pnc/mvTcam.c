@@ -268,7 +268,7 @@ void sram_sw_set_flowid_partial(struct tcam_entry *te, unsigned int flowid,
 	te->sram.word[1] |= 1 << idx;
 }
 
-void sram_sw_set_rinfo(struct tcam_entry *te, unsigned int rinfo)
+void sram_sw_set_rinfo(struct tcam_entry *te, unsigned int rinfo, unsigned int mask)
 {
 	unsigned int word;
 	unsigned int i;
@@ -276,13 +276,16 @@ void sram_sw_set_rinfo(struct tcam_entry *te, unsigned int rinfo)
 	WARN_ON_OOR(rinfo > RI_MASK);
 
 	for (i = 0; i < RI_BITS; i++) {
-		if (rinfo & (1 << i)) {
+		if (mask & (1 << i)) {
 
 			word = (RI_VALUE_OFFS + i) / DWORD_LEN;
-			te->sram.word[word] |= 1 << ((i + RI_VALUE_OFFS) % DWORD_LEN);
+			if (rinfo & (1 << i))
+				te->sram.word[word] |= (1 << ((i + RI_VALUE_OFFS) % DWORD_LEN));
+			else
+				te->sram.word[word] &= ~(1 << ((i + RI_VALUE_OFFS) % DWORD_LEN));
 
 			word = (RI_MASK_OFFS + i) / DWORD_LEN;
-			te->sram.word[word] |= 1 << ((i + RI_MASK_OFFS) % DWORD_LEN);
+			te->sram.word[word] |= (1 << ((i + RI_MASK_OFFS) % DWORD_LEN));
 		}
 	}
 }

@@ -2000,6 +2000,58 @@ int     mvNetaTosToRxqGet(int port, int tos)
 
 	return rxq;
 }
+
+/*******************************************************************************
+* mvNetaTosToRxqSet - Map packets with special TOS value to special RX queue
+*
+* DESCRIPTION:
+*
+* INPUT:
+*		int     portNo		- Port number.
+*       int     vprio       - Vlan Priority value in packet header
+*       int     rxq         - RX Queue for packets with the configured TOS value
+*                           Negative value (-1) means no special processing for these packets,
+*                           so they will be processed as regular packets.
+*
+* RETURN:   MV_STATUS
+*******************************************************************************/
+MV_STATUS   mvNetaVprioToRxqSet(int port, int vprio, int rxq)
+{
+	MV_U32          regValue;
+
+	if ((rxq < 0) || (rxq >= MV_ETH_MAX_RXQ)) {
+		mvOsPrintf("eth_%d: RX queue #%d is out of range\n", port, rxq);
+		return MV_BAD_PARAM;
+	}
+	if (vprio > 0x7) {
+		mvOsPrintf("eth_%d: vprio=0x%x is out of range\n", port, vprio);
+		return MV_BAD_PARAM;
+	}
+
+	regValue = MV_REG_READ(ETH_VLAN_TAG_TO_PRIO_REG(port));
+	regValue &= ~(0x7 << (vprio * 3));
+	regValue |= (rxq << (vprio * 3));
+
+	MV_REG_WRITE(ETH_VLAN_TAG_TO_PRIO_REG(port), regValue);
+	return MV_OK;
+}
+
+int     mvNetaVprioToRxqGet(int port, int vprio)
+{
+	MV_U32          regValue;
+	int             rxq;
+
+	if (vprio > 0x7) {
+		mvOsPrintf("eth_%d: vprio=0x%x is out of range\n", port, vprio);
+		return -1;
+	}
+
+	regValue = MV_REG_READ(ETH_VLAN_TAG_TO_PRIO_REG(port));
+	rxq = (regValue >> (vprio * 3));
+	rxq &= 0x7;
+
+	return rxq;
+}
 #endif /* CONFIG_MV_ETH_LEGACY_PARSER */
 
 /******************************************************************************/

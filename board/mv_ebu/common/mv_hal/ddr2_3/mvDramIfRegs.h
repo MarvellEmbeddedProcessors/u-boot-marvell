@@ -153,6 +153,19 @@ extern "C" {
 #define DLB_ENABLE 0x1
 #define DLB_WRITE_COALESING 0x4
 #define DLB_AXI_PREFETCH_EN 0x8
+#define DLB_BUS_Optimization_Weights_REG     0x1704
+#define DLB_Eviction_Timers_Register_REG     0x1710
+#define PreFetchNLnSzTr (0x1 << 6)
+#define PF_RegretEn (0x1<<9)
+#define SameBankOPageWeight (0x1 << 0)
+#define DiffBankOPageWeight (0x1 << 2)
+#define SameCmdWeight (0x1 << 6)
+#define PfRspWeight (0x1 << 16)
+#define PfPrioSrc (0x1 << 19)
+#define EvictBlockWin (0x18B << 0)
+#define EvictBlockWin_MASK (0x3FF << 0)
+#define EvictBlockWinLow ( 0x1f << 10)
+#define EvictBlockWinLow_MASK ( 0x1F << 10)
 
 #ifdef __cplusplus
 }

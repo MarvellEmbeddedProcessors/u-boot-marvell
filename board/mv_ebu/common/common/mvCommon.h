@@ -74,7 +74,6 @@ extern "C" {
 #ifndef MV_ASMLANGUAGE
 #include "mv802_3.h"
 #include "mvVideo.h"
-#endif
 
 /* The golden ration: an arbitrary value */
 #define MV_JHASH_GOLDEN_RATIO           0x9e3779b9
@@ -101,6 +100,7 @@ static inline MV_U32 mv_jhash_3words(MV_U32 a, MV_U32 b, MV_U32 c, MV_U32 initva
 
 	return c;
 }
+#endif
 
 
 /* Swap tool */

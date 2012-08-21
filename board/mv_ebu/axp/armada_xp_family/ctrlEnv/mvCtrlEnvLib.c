@@ -123,12 +123,12 @@ MV_BIOS_MODE bios_modes[BIOS_MODES_NUM] = {
 #else
 /*DBConf ConfID Code L2Size CPUFreq CpuFreqMode FabricFreq FabricFreqMode CPU1/2/3Enable cpuEndianess dramBusWidth BootSRC BootWidth */
 /*	                       0x4d/[1:0]  0x4d/[4:2]  0x4e[0]      0x4e/[4:1]  	0x4f[0]   0x4f/[2:1]      0x4f/[3]   	  */
-{"78130",0x10, 0x7813, 0x1,  0x3,      0x0,      0x5,		0x0,	     0x0,	    0x1,	0x1, 	     0x3,	0x1},
-{"78160",0x12, 0x7816, 0x1,  0x3,      0x0,	 0x5, 		0x0,	     0x0,	    0x1, 	0x0, 	     0x3,	0x1},
-{"78230",0x13, 0x7823, 0x1,  0x3,      0x0,	 0x5, 		0x0,	     0x1,	    0x0,	0x1, 	     0x3,	0x1},
-{"78260",0x14, 0x7826, 0x1,  0x3,      0x0,	 0x5,		0x0,	     0x1,	    0x0,	0x0, 	     0x3,	0x1},
-{"78460",0x15, 0x7846, 0x3,  0x3,      0x0,	 0x5, 		0x0,	     0x3,	    0x0,	0x0, 	     0x3,	0x1},
-{"78480",0x16, 0x7846, 0x3,  0x3,      0x0,	 0x5, 		0x0,	     0x3,	    0x0,	0x0, 	     0x3,	0x1}
+{"78130",0x10, 0x7813, 0x1,  0x3,      0x0,      0xa,		0x5,		0x1,	     0x0,	    0x1,	0x1, 	     0x3,	0x1},
+{"78160",0x12, 0x7816, 0x1,  0x3,      0x0,	 0xa, 		0x5,		0x1,	     0x0,	    0x1, 	0x0, 	     0x3,	0x1},
+{"78230",0x13, 0x7823, 0x1,  0x3,      0x0,	 0xa, 		0x5,		0x1,	     0x1,	    0x0,	0x1, 	     0x3,	0x1},
+{"78260",0x14, 0x7826, 0x1,  0x3,      0x0,	 0xa,		0x5,		0x1,	     0x1,	    0x0,	0x0, 	     0x3,	0x1},
+{"78460",0x15, 0x7846, 0x3,  0x3,      0x0,	 0xa, 		0x5,		0x1,	     0x3,	    0x0,	0x0, 	     0x3,	0x1},
+{"78480",0x16, 0x7846, 0x3,  0x3,      0x0,	 0xa, 		0x5,		0x1,	     0x3,	    0x0,	0x0, 	     0x3,	0x1}
 
 /*	{"6710" ,0x11, 0x6710,	0x0,	   0x3,		0x0,	      0x5, 		0x0,		0x0,		0x1,		0x0},     */
 };
@@ -2012,10 +2012,7 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 				boardPexInfo->pexUnitCfg[pexUnit].pexCfg = pSerdesInfo->pex1Mod;
 				break;
 			case 2:
-				if (pSerdesInfo->pex3Mod == PEX_BUS_MODE_X4)
-					boardPexInfo->pexUnitCfg[pexUnit].pexCfg = PEX_BUS_MODE_X4;
-				else
-					boardPexInfo->pexUnitCfg[pexUnit].pexCfg = PEX_BUS_DISABLED;
+				boardPexInfo->pexUnitCfg[pexUnit].pexCfg = pSerdesInfo->pex2Mod;
 				break;
 			case 3:
 				boardPexInfo->pexUnitCfg[pexUnit].pexCfg = pSerdesInfo->pex3Mod;
@@ -2100,20 +2097,22 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 			/* Termination enable */
                         if ( (pSerdesInfo->pex0Mod == PEX_BUS_MODE_X4) && (pexLineNum == 0) )
                                 pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x1080; /* x4 */
-                        else if (pSerdesInfo->pex0Mod == PEX_BUS_MODE_X1)
+                        else if ((pSerdesInfo->pex0Mod == PEX_BUS_MODE_X1) && (pexLineNum == 0))
                                 pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x9080; /* x1 */
 
                         if ( (pSerdesInfo->pex1Mod == PEX_BUS_MODE_X4) && (pexLineNum == 1) )
                                 pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x1080; /* x4 */
-                        else if (pSerdesInfo->pex1Mod == PEX_BUS_MODE_X1)
+                        else if ( (pSerdesInfo->pex1Mod == PEX_BUS_MODE_X1) && (pexLineNum == 1) )
                                 pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x9080; /* x1 */
 
-                        if (pexLineNum == 2) /* PEX2 is always x4*/
+                        if ( (pSerdesInfo->pex2Mod == PEX_BUS_MODE_X4) && (pexLineNum == 2) )
                                 pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x1080; /* x4 */
+                        else if ( (pSerdesInfo->pex2Mod == PEX_BUS_MODE_X1) && (pexLineNum == 2) )
+                                pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x9080; /* x1 */
 
                         if ( (pSerdesInfo->pex3Mod == PEX_BUS_MODE_X4) && (pexLineNum == 3) )
                                 pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x1080; /* x4 */
-                        else if (pSerdesInfo->pex3Mod == PEX_BUS_MODE_X1)
+                        else if ( (pSerdesInfo->pex3Mod == PEX_BUS_MODE_X1) && (pexLineNum == 3) )
                                 pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x9080; /* x1 */
 
 		} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SATA]) {
@@ -2256,7 +2255,14 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 
 		/*Faraj:TODO update 0x182F8 according to lane configuration */
 		/*MV_REG_WRITE(0x182F8, 0xFFFFFFFF);*/
+#if 0
+TODO: change this section to be related to EP
+#ifdef DB_78X60_PCAC_REV2
+MV_REG_WRITE(PEX_CAPABILITY_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), 0x00120010);
 
+MV_REG_WRITE(0x41a60, 0x0F62F0C0);
+#endif
+#endif
 		/* Step 1 [PEX-Only] PEX-Main configuration (X4 or X1): */
 		/* First disable all PEXs in SoC Control Reg */
 		MV_REG_WRITE(SOC_CTRL_REG, 0x0);
@@ -2293,12 +2299,20 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 					0x0 X4-Link.
 					0x1 X1-Link */
 				tmp = MV_REG_READ(PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)));
-				tmp &= ~(0x3F0);
+				tmp &= ~(0x3FF);
 				if (boardPexInfo->pexUnitCfg[serdesLineNum >> 2].pexCfg == PEX_BUS_MODE_X1)
 					tmp |= (0x1 << 4);
 				if (boardPexInfo->pexUnitCfg[serdesLineNum >> 2].pexCfg == PEX_BUS_MODE_X4)
 					tmp |= (0x4 << 4);
-
+				switch (mvBoardPexCapabilityGet()) {
+					case 0x0:
+						tmp |= 0x1;
+						break;
+					case 0x1:
+					default:
+						tmp |= 0x2;
+						break;
+				}
 				MV_REG_WRITE(PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), tmp);
 				DB(mvOsPrintf("Step[1].2 Addr[0x%08x] serdesLine [%d] value [0x%x]\n",
 						  PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), serdesLineNum, tmp));
@@ -2319,17 +2333,22 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 
 		/* Step 2 [PEX-X4 Only] To create PEX-Link that contain 4-lanes you need to config the
 		 register SOC_Misc/General Purpose2 (Address= 182F8)*/
-		tmp = MV_REG_READ(GEN_PURP_RES_2_REG);  tmp |= 0x0000000F;
+		tmp = MV_REG_READ(GEN_PURP_RES_2_REG);
+		  tmp |= 0x0000000F;
 /*	else
 		tmp &= 0xFFFFFFF0;
 */
+		if (pSerdesInfo->pex0Mod == PEX_BUS_MODE_X4)
+                       tmp |= 0x0000000F;
 		if (pSerdesInfo->pex1Mod == PEX_BUS_MODE_X4)
 			tmp |= 0x000000F0;
 /*	else
 		tmp &= 0xFFFFFF0F; */
+		if (pSerdesInfo->pex2Mod == PEX_BUS_MODE_X4)
+			tmp |= 0x00000F00;
 
 		if (pSerdesInfo->pex3Mod == PEX_BUS_MODE_X4)
-			tmp |= 0x0000FF00;
+			tmp |= 0x0000F000;
 /*	else
 		tmp &= 0xFFFF00FF; */
 
@@ -2371,11 +2390,14 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 			#else
 				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0x25);
 			#endif
-			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X4)
+			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X4) {
 				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC2 << 16) | 0x200);
-
-			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X1)
+				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC3 << 16) | 0x01);
+			}
+			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X1) {
+				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC2 << 16) | 0x00);
 				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC3 << 16) | 0x0F);
+			}
 
 
 			MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC8 << 16) | 0x05);
@@ -2457,13 +2479,13 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 	} /*if No clock gating */
 
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
+	powermngmntctrlregmap = powermngmntctrlregmap | BIT4; /* Enabling port GE0 always since we need SMI 0 to access other PHYs*/
 	/*check if GE0 / GE1 are not enabled via MPPs and not Serdes - if yes you have to enable the clock*/
-	for (ethport = 0; ethport < 2; ethport++)
-		if (MV_TRUE ==  mvBoardIsGbEPortConnected(ethport))
-			powermngmntctrlregmap = powermngmntctrlregmap | PMC_GESTOPCLOCK_MASK(ethport);
+		if (MV_TRUE ==  mvBoardIsGbEPortConnected(1))
+			powermngmntctrlregmap = powermngmntctrlregmap | PMC_GESTOPCLOCK_MASK(1);
 
 	/* Hard core enable DDR, USB, SDIO, LCD, XOR, IDMA, CESA cause we don't support this at this momemt*/
-	powermngmntctrlregmap = powermngmntctrlregmap | (BIT0  | BIT13 | (0x1FF<<16) | BIT24 | BIT28 | BIT31);
+	powermngmntctrlregmap = powermngmntctrlregmap | (BIT0  | BIT13 | (0x1FF<<16) | BIT24 | BIT25 | BIT28 | BIT31);
 	DB(mvOsPrintf("%s:Shutting down unused interfaces:\n", __func__));
 	/*now report everything to the screen*/
 	if (!(powermngmntctrlregmap & PMC_SATASTOPCLOCK_MASK(0))) {

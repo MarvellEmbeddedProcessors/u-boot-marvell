@@ -262,6 +262,8 @@ typedef struct {
 	MV_ULONG pncPhysBase;
 	MV_U8 *pncVirtBase;
 #endif				/* CONFIG_MV_ETH_PNC */
+        MV_U32 portMask;
+        MV_U32 cpuMask;
 } MV_NETA_HAL_DATA;
 
 typedef struct eth_pbuf {
@@ -638,8 +640,11 @@ MV_STATUS	mvNetaForceLinkModeSet(int portNo, MV_BOOL force_link_pass, MV_BOOL fo
 MV_STATUS	mvNetaSpeedDuplexSet(int portNo, MV_ETH_PORT_SPEED speed, MV_ETH_PORT_DUPLEX duplex);
 MV_STATUS 	mvNetaSpeedDuplexGet(int portNo, MV_ETH_PORT_SPEED *speed, MV_ETH_PORT_DUPLEX *duplex);
 
-MV_STATUS	mvNetaRxqCpuMaskSet(int port, int rxq, int cpu_mask);
-void		mvNetaRxqCpuDump(int port, int cpu);
+
+void		mvNetaCpuDump(int port, int cpu, int RxTx);
+MV_STATUS	mvNetaTxqCpuMaskSet(int port, int txq_mask, int cpu);
+MV_STATUS	mvNetaRxqCpuMaskSet(int port, int rxq_mask, int cpu);
+
 
 void		mvNetaSetOtherMcastTable(int portNo, int queue);
 void		mvNetaSetUcastTable(int port, int queue);

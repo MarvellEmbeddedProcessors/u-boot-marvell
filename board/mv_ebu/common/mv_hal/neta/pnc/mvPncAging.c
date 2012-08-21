@@ -26,6 +26,8 @@ DISCLAIMED.  The GPL License provides additional details about this warranty
 disclaimer.
 *******************************************************************************/
 
+#ifdef MV_ETH_PNC_AGING
+
 #include "mvOs.h"
 #include "mvCommon.h"
 
@@ -277,3 +279,4 @@ void    mvPncAgingReset(void)
 	for (gr = 0; gr < MV_PNC_AGING_MAX_GROUP; gr++)
 		mvPncAgingGroupCntrClear(gr);
 }
+#endif /* MV_ETH_PNC_AGING */

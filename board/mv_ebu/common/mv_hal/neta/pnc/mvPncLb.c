@@ -64,7 +64,6 @@ int    mvPncLbRxqSet(int hash, int rxq)
 
 	entry = (hash / 4) & MV_PNC_LB_TBL_ADDR_MASK;
 	index = (hash & 3);
-	mvOsPrintf("%s: hash=%d rxq=%d, entry=%d, index=%d\n", __func__, hash, rxq, entry, index);
 
 	MV_REG_WRITE(MV_PNC_LB_TBL_ACCESS_REG, entry);
 	regVal = MV_REG_READ(MV_PNC_LB_TBL_ACCESS_REG);
@@ -75,7 +74,6 @@ int    mvPncLbRxqSet(int hash, int rxq)
 	regVal |= ((rxq << (index * 3)) << MV_PNC_LB_TBL_DATA_OFFS);
 	regVal |= MV_PNC_LB_TBL_WRITE_TRIG_MASK;
 	MV_REG_WRITE(MV_PNC_LB_TBL_ACCESS_REG, regVal);
-	mvOsPrintf("write regVal=0x%x\n", regVal);
 
 	return 0;
 }

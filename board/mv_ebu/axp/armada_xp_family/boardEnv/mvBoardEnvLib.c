@@ -288,6 +288,7 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 			return MV_TRUE;
 		break;
 	case DB_78X60_PCAC_ID:
+	case RD_78460_NAS_ID:
 		return MV_TRUE;
 		break;
 	default:
@@ -1386,6 +1387,8 @@ MV_VOID mvBoardIdSet(MV_VOID)
 		gBoardId = DB_78X60_PCAC_ID;
 #elif defined(DB_88F78X60_REV2)
 		gBoardId = DB_88F78XX0_BP_REV2_ID;
+#elif defined(RD_78460_NAS)
+		gBoardId = RD_78460_NAS_ID;
 #else
 		mvOsPrintf("mvBoardIdSet: Board ID must be defined!\n");
 		while (1) {
@@ -1858,6 +1861,7 @@ MV_U16 mvBoardPexCapabilityGet(MV_VOID)
 
 	switch (boardId) {
 	case DB_78X60_PCAC_ID:
+	case RD_78460_NAS_ID:
 		sar = 0x2; /* Gen2 */
 		break;
 	case DB_88F78XX0_BP_ID:
@@ -2302,6 +2306,9 @@ MV_SERDES_CFG *mvBoardSerdesCfgGet(void)
 	case DB_78X60_PCAC_ID:
 			serdesCfg = 0;
 		break;
+	case RD_78460_NAS_ID:
+			serdesCfg = 0;
+		break;
 	case DB_88F78XX0_BP_REV2_ID:
 		if (mvBoardIsPexModuleConnected())
 			serdesCfg = 1;
@@ -2339,6 +2346,7 @@ MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 	case DB_78X60_PCAC_ID:
 	case FPGA_88F78XX0_ID:
 	case DB_88F78XX0_BP_REV2_ID:
+	case RD_78460_NAS_ID:
 		return &BOARD_INFO(boardId)->boardPexInfo;
 		break;
 	default:

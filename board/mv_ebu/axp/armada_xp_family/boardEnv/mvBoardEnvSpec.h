@@ -94,7 +94,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DB_78X60_PCAC_ID			(RD_78460_SERVER_ID + 1)
 #define FPGA_88F78XX0_ID			(DB_78X60_PCAC_ID + 1)
 #define DB_88F78XX0_BP_REV2_ID			(FPGA_88F78XX0_ID + 1)
-#define MV_MAX_BOARD_ID				(DB_88F78XX0_BP_REV2_ID + 1)
+#define RD_78460_NAS_ID                         (DB_88F78XX0_BP_REV2_ID + 1)
+#define MV_MAX_BOARD_ID				(RD_78460_NAS_ID + 1)
 #define INVALID_BAORD_ID			0xFFFFFFFF
 
 /******************/
@@ -170,6 +171,45 @@ MPP#	NAME			IN/OUT
 #define DB_88F78XX0_REV2_GPP_POL_LOW		0x0
 #define DB_88F78XX0_REV2_GPP_POL_MID		0x0
 #define DB_88F78XX0_REV2_GPP_POL_HIGH		0x0
+
+/**********************/
+/* DB-AXP-NAS         */
+/**********************/
+
+#define RD_78460_NAS_MPP0_7             0x00000000
+#define RD_78460_NAS_MPP8_15		0x00000000
+#define RD_78460_NAS_MPP16_23		0x33000000
+#define RD_78460_NAS_MPP24_31		0x11000000 /* bits[27:24] = 0x5 to enable PMm for CPU0 */
+#define RD_78460_NAS_MPP32_39		0x11111111
+#define RD_78460_NAS_MPP40_47		0x00221100 /* bits[3:0] = 0x3 to enable PM for CPU1 */
+#define RD_78460_NAS_MPP48_55		0x00000000
+#define RD_78460_NAS_MPP56_63		0x00000000 /* bits[7:4] = 0x1 to enable PM for CPU2/3 */
+#define RD_78460_NAS_MPP64_67		0x00000000
+
+/* GPPs
+MPP#	NAME			IN/OUT
+----------------------------------------------
+21	SW_Reset_		OUT
+25      Phy_Int#                IN
+28      SDI_WP                  IN
+29      SDI_Status              IN
+54-61   On GPP Connector        ?
+62      Switch Interrupt        IN
+63-65   Reserved from SW Board  ?
+66      SW_BRD connected        IN
+
+*/
+#define RD_78460_NAS_GPP_OUT_ENA_LOW	(~(BIT21))
+#define RD_78460_NAS_GPP_OUT_ENA_MID	(~(0x0))
+#define RD_78460_NAS_GPP_OUT_ENA_HIGH	(~(0x0))
+
+#define RD_78460_NAS_GPP_OUT_VAL_LOW	0x0
+#define RD_78460_NAS_GPP_OUT_VAL_MID	0x0
+#define RD_78460_NAS_GPP_OUT_VAL_HIGH	0x0
+
+#define RD_78460_NAS_GPP_POL_LOW		0x0
+#define RD_78460_NAS_GPP_POL_MID		0x0
+#define RD_78460_NAS_GPP_POL_HIGH		0x0
 
 
 /*******************/

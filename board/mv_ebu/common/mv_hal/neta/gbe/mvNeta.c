@@ -524,8 +524,13 @@ MV_STATUS       mvEthGmacRgmiiSet(int port, int enable)
 
 static void mvNetaPortSgmiiConfig(int port)
 {
-	/* FIXME */
+        MV_U32 regVal;
+
+        regVal = MV_REG_READ(NETA_GMAC_CTRL_2_REG(port));
+        regVal |= (NETA_GMAC_PSC_ENABLE_MASK);
+        MV_REG_WRITE(NETA_GMAC_CTRL_2_REG(port), regVal);
 }
+
 
 void mvNetaPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii)
 {

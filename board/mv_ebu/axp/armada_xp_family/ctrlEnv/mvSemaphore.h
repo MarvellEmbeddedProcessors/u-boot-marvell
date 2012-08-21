@@ -69,6 +69,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config.h"
 #endif
 
+#define MV_AMP_GLOBAL_REG(x)	(0xC010 + (100*x))
+#define ADR_WIN_EN_REG			0
+
 #define MV_SEMA_REG_BASE	(0x20500)
 #define MV_MAX_SEMA 	    	128
 #define MV_SEMA_SMI 		50
@@ -81,6 +84,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_SEMA_CLOCK		5
 #define MV_SEMA_L2		6
 #define MV_SEMA_TWSI		7
+#define MV_SEMA_ADR_WIN		8
 
 #define MV_SEMA_BARRIER(cpu)	(50 + cpu)
 
@@ -88,7 +92,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 MV_BOOL mvSemaLock(MV_32 num);
 MV_BOOL mvSemaTryLock(MV_32 num);
 MV_BOOL mvSemaUnlock(MV_32 num);
-MV_VOID mvHwBarrier(MV_32 cpuCount);
+MV_32   mvReadAmpReg(int regId);
+MV_32 	mvWriteAmpReg(int regId, MV_32 value);
 
 /* Turn on HW semapores only if AMP is enabled */
 #ifndef CONFIG_MV_AMP_ENABLE

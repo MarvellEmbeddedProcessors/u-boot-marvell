@@ -112,3 +112,13 @@ MV_BOOL mvSemaUnlock(MV_32 num)
 	MV_REG_BYTE_WRITE(MV_SEMA_REG_BASE+(num), 0xFF);
 	return MV_TRUE;
 }
+
+MV_32 mvReadAmpReg(int regId)
+{
+	return MV_REG_READ(MV_AMP_GLOBAL_REG(regId));
+}
+
+MV_32 mvWriteAmpReg(int regId, MV_32 value)
+{
+	return MV_REG_WRITE(MV_AMP_GLOBAL_REG(regId), value);
+}

@@ -122,7 +122,6 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 			(ctrlModel != MV_78000_DEV_ID)) {
 		/* Read current value of TXAMP */
 		MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexIf), 0x80820000);	/* Write the read command   */
-
 		regVal = MV_REG_READ(PEX_PHY_ACCESS_REG(pexIf));	/* Extract the data         */
 
 		/* Prepare new data for write */
@@ -130,6 +129,7 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 		regVal |= 0x4;	/* Set the new value        */
 		regVal &= ~0x80000000;	/* Set "write" command      */
 		MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexIf), regVal);	/* Write the write command  */
+
 #ifndef MV88F78X60_Z1
 		/* in DSMP A0 we should enable the target link width */
 		/* Read current value of Dynamic width management register 0x1A30*/
@@ -160,7 +160,6 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 			regVal |= (BIT0 | BIT3);
 			regVal &= ~0x80000000;	/* Set "write" command      */
 			MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexIf), regVal);	/* Write the write command  */
-
 			MV_REG_WRITE(0x31b00, 0x80860000);	/* Write the read command   */
 			regVal = MV_REG_READ(0x31b00);	/* Extract the data         */
 			regVal |= (BIT0 | BIT3);
@@ -221,10 +220,13 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 		status = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_STATUS_AND_COMMAND));
 		status |= PXSAC_INT_DIS;
 		MV_REG_WRITE(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_STATUS_AND_COMMAND), status);
-	} else
+	} else {
 		/* TODO: added by NadavH 14/12/10 - requested by CV to support EP Compliance */
-		MV_REG_WRITE(PEX_DBG_CTRL_REG(pexIf), 0x0F62F0C0);
+		regVal = MV_REG_READ(PEX_DBG_CTRL_REG(pexIf));
+		regVal &= ~(BIT16 | BIT19);
+		MV_REG_WRITE(PEX_DBG_CTRL_REG(pexIf), regVal);
 
+	}
 	/* now wait 1ms to be sure the link is valid */
 	mvOsDelay(1);
 
@@ -998,6 +1000,7 @@ MV_VOID mvPexPhyRegWrite(MV_U32 pexIf, MV_U32 regOffset, MV_U16 value)
 	}
 	regAddr = (((regOffset & 0x3fff) << 16) | value);
 	MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexIf), regAddr);
+
 }
 
 /*******************************************************************************
@@ -1090,6 +1093,8 @@ MV_U32 mvPexForceX1(MV_U32 pexIf)
 *******************************************************************************/
 MV_VOID mvPexIfEnable(MV_U32 pexIf, MV_PEX_TYPE pexType)
 {
+	MV_U32 regVal;
+
 /* NOTE: this was asked by CV, bit is reserved in the spec, but causing problems, disabling for now. */
 	/* MV_REG_BIT_SET(PEX_CTRL_REG(pexIf), PXCR_AUTO_SPEED_CTRL_MASK); */
 
@@ -1099,7 +1104,17 @@ MV_VOID mvPexIfEnable(MV_U32 pexIf, MV_PEX_TYPE pexType)
 		/* Change pex mode in capability reg */
 		MV_REG_BIT_RESET(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_CAPABILITY_REG), BIT22);
 		MV_REG_BIT_SET(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_CAPABILITY_REG), BIT20);
+
+		regVal = MV_REG_READ(PEX_CAPABILITIES_REG(pexIf));
+		regVal |= 0x00F00000;
+		regVal &= ~(BIT23 | BIT22 | BIT21);
+		MV_REG_WRITE(PEX_CAPABILITIES_REG(pexIf), regVal);
 	} else {
+		regVal = MV_REG_READ(PEX_CAPABILITIES_REG(pexIf));
+		regVal |= 0x00F00000;
+		regVal &= ~(BIT23 | BIT21 | BIT20);
+		MV_REG_WRITE(PEX_CAPABILITIES_REG(pexIf), regVal);
+
 		MV_REG_BIT_SET(PEX_CTRL_REG(pexIf), PXCR_DEV_TYPE_CTRL_MASK);
 	}
 	return;

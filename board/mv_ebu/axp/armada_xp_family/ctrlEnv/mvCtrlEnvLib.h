@@ -129,6 +129,7 @@ typedef struct _boardSerdesConf {
 	MV_U32	serdesLine8_15;	/* Lines 8 to 15 SERDES MUX one nibble per line */
 	MV_PEX_UNIT_CFG		pex0Mod;
 	MV_PEX_UNIT_CFG		pex1Mod;
+	MV_PEX_UNIT_CFG		pex2Mod;
 	MV_PEX_UNIT_CFG		pex3Mod;
 	MV_U32	busSpeed;	/* Bus speed - one bit per SERDES line:
 	Low speed (0)		High speed (1)
@@ -188,6 +189,7 @@ typedef struct {
 	MV_U8 cpuFreq;
 	MV_U8 cpuFreqMode;
 	MV_U8 fabricFreq;
+	MV_U8 AltfabricFreq;
 	MV_U8 fabricFreqMode;
 	MV_U8 cpuEna;
 #ifdef MV88F78X60_Z1

@@ -293,6 +293,9 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 		break;
 	case DB_78X60_PCAC_ID:
 	case RD_78460_NAS_ID:
+	case DB_78X60_PCAC_REV2_ID:
+		return MV_TRUE;
+		break;
 
 	default:
 		DB(mvOsPrintf("mvBoardSerdesCfgGet: Unsupported board!\n"));
@@ -1405,6 +1408,8 @@ MV_VOID mvBoardIdSet(MV_VOID)
 		gBoardId = RD_78460_NAS_ID;
 #elif defined(DB_78X60_AMC)
 		gBoardId = DB_78X60_AMC_ID;
+#elif defined(DB_78X60_PCAC_REV2)
+		gBoardId = DB_78X60_PCAC_REV2_ID;
 #else
 		mvOsPrintf("mvBoardIdSet: Board ID must be defined!\n");
 		while (1) {
@@ -1539,12 +1544,16 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 MV_U8 mvBoardFabFreqGet(MV_VOID)
 {
 	MV_U8 sar0;
+	MV_U8 sar1;
 
 	sar0 = mvBoardTwsiSatRGet(2, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar0)
 		return MV_ERROR;
+	sar1 = mvBoardTwsiSatRGet(3, 0);
+	if ((MV_8)MV_ERROR == (MV_8)sar1)
+		return MV_ERROR;
 
-	return ((sar0 & 0x1E) >> 1);
+	return ( ((sar1 & 0x1) << 4) | ((sar0 & 0x1E) >> 1) );
 }
 
 /*******************************************************************************/
@@ -1562,7 +1571,16 @@ MV_STATUS mvBoardFabFreqSet(MV_U8 freqVal)
 		DB1(mvOsPrintf("Board: Write FreqOpt S@R fail\n"));
 		return MV_ERROR;
 	}
+	sar0 = mvBoardTwsiSatRGet(3, 0);
+	if ((MV_8)MV_ERROR == (MV_8)sar0)
+		return MV_ERROR;
 
+	sar0 &= ~(0x1);
+	sar0 |= ( (freqVal >> 4) & 0x1);
+	if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar0)) {
+		DB1(mvOsPrintf("Board: Write FreqOpt S@R fail\n"));
+		return MV_ERROR;
+	}
 	DB(mvOsPrintf("Board: Write FreqOpt S@R succeeded\n"));
 	return MV_OK;
 }
@@ -1632,12 +1650,16 @@ MV_STATUS mvBoardCpuFreqModeSet(MV_U8 freqVal)
 MV_U8 mvBoardCpuFreqGet(MV_VOID)
 {
 	MV_U8 sar;
+	MV_U8 sarMsb;
 
 	sar = mvBoardTwsiSatRGet(1, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
 
-	return ((sar & 0x1C) >> 2);
+	sarMsb = mvBoardTwsiSatRGet(2, 0);
+	if ((MV_8)MV_ERROR == (MV_8)sar)
+		return MV_ERROR;
+	return (  ((sarMsb & 0x1) << 3) | ((sar & 0x1C) >> 2));
 }
 
 /*******************************************************************************/
@@ -1652,6 +1674,15 @@ MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
 	sar &= ~(0x7 << 2);
 	sar |= (freqVal & 0x7) << 2;
 	if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar)) {
+		DB1(mvOsPrintf("Board: Write CpuFreq S@R fail\n"));
+		return MV_ERROR;
+	}
+	sar = mvBoardTwsiSatRGet(2, 0);
+	if ((MV_8)MV_ERROR == (MV_8)sar)
+		return MV_ERROR;
+	sar &= ~(0x1);
+	sar |= ( (freqVal >> 3) & 0x1);
+	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar)) {
 		DB1(mvOsPrintf("Board: Write CpuFreq S@R fail\n"));
 		return MV_ERROR;
 	}
@@ -1897,6 +1928,7 @@ MV_U16 mvBoardPexCapabilityGet(MV_VOID)
 	case DB_78X60_PCAC_ID:
 	case RD_78460_NAS_ID:
 	case DB_78X60_AMC_ID:
+	case DB_78X60_PCAC_REV2_ID:
 		sar = 0x1; /* Gen2 */
 		break;
 	case DB_88F78XX0_BP_ID:
@@ -1948,7 +1980,13 @@ MV_U16 mvBoardPexModeGet(MV_VOID)
 
 MV_STATUS mvBoardDramEccSet(MV_U16 conf)
 {
-	if (MV_OK != mvBoardTwsiSatRSet(2, 1, conf)) {
+	MV_U8 sar;
+	sar = mvBoardTwsiSatRGet(3, 1);
+	if ((MV_8)MV_ERROR == (MV_8)sar)
+		return MV_ERROR;
+	sar &= ~(0x2);
+	sar |= ((conf & 0x1) << 1);
+	if (MV_OK != mvBoardTwsiSatRSet(3, 1, sar)) {
 		DB(mvOsPrintf("Board: Write confID S@R fail\n"));
 		return MV_ERROR;
 	}
@@ -1962,14 +2000,20 @@ MV_U16 mvBoardDramEccGet(MV_VOID)
 {
 	MV_U8 sar;
 
-	sar = mvBoardTwsiSatRGet(2, 1);
-	return (sar & 0x1);
+	sar = mvBoardTwsiSatRGet(3, 1);
+	return ((sar & 0x2) >> 1);
 }
 
 /*******************************************************************************/
 MV_STATUS mvBoardDramBusWidthSet(MV_U16 conf)
 {
-	if (MV_OK != mvBoardTwsiSatRSet(3, 1, conf)) {
+	MV_U8 sar;
+	sar = mvBoardTwsiSatRGet(3, 1);
+	if ((MV_8)MV_ERROR == (MV_8)sar)
+		return MV_ERROR;
+	sar &= ~(0x1);
+	sar |= (conf & 0x1);
+	if (MV_OK != mvBoardTwsiSatRSet(3, 1, sar)) {
 		DB(mvOsPrintf("Board: Write confID S@R fail\n"));
 		return MV_ERROR;
 	}
@@ -1987,6 +2031,23 @@ MV_U16 mvBoardDramBusWidthGet(MV_VOID)
 	return (sar & 0x1);
 }
 
+MV_U8 mvBoardAltFabFreqGet(MV_VOID)
+{
+	MV_U8 sar0;
+	sar0 = mvBoardTwsiSatRGet(2, 1);
+	if ((MV_8)MV_ERROR == (MV_8)sar0)
+		return MV_ERROR;
+	return (sar0 & 0x1F);
+}
+MV_STATUS mvBoardAltFabFreqSet(MV_U8 freqVal)
+{
+	if (MV_OK != mvBoardTwsiSatRSet(2, 1, freqVal)) {
+		DB1(mvOsPrintf("Board: Write Alt FreqOpt S@R fail\n"));
+		return MV_ERROR;
+	}
+	DB(mvOsPrintf("Board: Write Alt FreqOpt S@R succeeded\n"));
+	return MV_OK;
+}
 /*******************************************************************************
 * End of SatR Configuration functions
 *******************************************************************************/
@@ -2536,6 +2597,7 @@ MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 	case DB_88F78XX0_BP_REV2_ID:
 	case RD_78460_NAS_ID:
 	case DB_78X60_AMC_ID:
+	case DB_78X60_PCAC_REV2_ID:
 		return &BOARD_INFO(boardId)->boardPexInfo;
 		break;
 	default:

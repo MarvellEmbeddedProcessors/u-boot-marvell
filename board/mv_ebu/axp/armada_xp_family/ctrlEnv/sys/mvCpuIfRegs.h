@@ -93,6 +93,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SOC_COHERENCY_FABRIC_CFG_REG		(MV_COHERENCY_FABRIC_REGS_BASE + 0x4)
 #define SOC_CIB_CTRL_CFG_REG			(MV_COHERENCY_FABRIC_REGS_BASE + 0x80)
 
+#define Fabric_Units_Priority_Control_REG	(MV_MBUS_REGS_OFFSET + 0x424)
+#define Fabric_Units_Prefetch_Control_REG	(MV_MBUS_REGS_OFFSET + 0x42c)
+#define CPUs_Data_PFen (0xf << 8)
+#define CPUs_Data_PFen_MASK (0xf << 8)
+#define CPU_PRIO_HIGH  0x2
+#define CPUs_PRIO_MASK 0xff
+#define CPU0_PRIO_HIGH (CPU_PRIO_HIGH << 0)
+#define CPU1_PRIO_HIGH (CPU_PRIO_HIGH << 2)
+#define CPU2_PRIO_HIGH (CPU_PRIO_HIGH << 4)
+#define CPU3_PRIO_HIGH (CPU_PRIO_HIGH << 6)
 /* ARM Configuration register */
 /* CPU_CONFIG_REG (CCR) */
 

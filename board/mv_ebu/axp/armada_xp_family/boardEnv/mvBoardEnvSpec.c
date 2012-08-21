@@ -183,11 +183,11 @@ MV_BOARD_MPP_INFO db88f78XX0InfoBoardMppConfigValue[] = {
 
 MV_SERDES_CFG db88f78XX0InfoBoardSerdesConfigValue[] = {
 	/* Z1B */
-	{MV_TRUE, 0x32221111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
-	{MV_TRUE, 0x31211111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, 0x00000030},	/* PEX module */
+	{MV_TRUE, 0x32221111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
+	{MV_TRUE, 0x31211111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* PEX module */
 	/* Z1A */
-	{MV_TRUE, 0x32220000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000030},	/* Default - Z1A */
-	{MV_TRUE, 0x31210000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, 0x00000030}	/* PEX module - Z1A */
+	{MV_TRUE, 0x32220000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000030},	/* Default - Z1A */
+	{MV_TRUE, 0x31210000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_MODE_X1,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000030}	/* PEX module - Z1A */
 };
 
 MV_BOARD_TDM_INFO	db88f78XX0Tdm880[]	= { {1}, {2} };
@@ -369,12 +369,12 @@ MV_BOARD_MPP_INFO db88f78XX0rev2InfoBoardMppConfigValue[] = {
 
 MV_SERDES_CFG db88f78XX0rev2InfoBoardSerdesConfigValue[] = {
 	/* A0 */
-	{MV_TRUE, 0x33221111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},/* Default: No Pex module, PEX0 x1, disabled*/
-	{MV_TRUE, 0x31211111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x1, PEX1 x1*/
-	{MV_TRUE, 0x33221111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},/* no Pex module, PEX0 x4, PEX1 disabled*/
-	{MV_TRUE, 0x31211111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x4, PEX1 x1*/
-	{MV_TRUE, 0x11111111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x1, PEX1 x4*/
-	{MV_TRUE, 0x11111111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x4, PEX1 x4*/
+	{MV_TRUE, 0x33221111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4,PEX_BUS_MODE_X4, 0x00000030},/* Default: No Pex module, PEX0 x1, disabled*/
+	{MV_TRUE, 0x31211111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4,PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x1, PEX1 x1*/
+	{MV_TRUE, 0x33221111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_MODE_X4,PEX_BUS_MODE_X4, 0x00000030},/* no Pex module, PEX0 x4, PEX1 disabled*/
+	{MV_TRUE, 0x31211111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_MODE_X1,PEX_BUS_MODE_X4,PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x4, PEX1 x1*/
+	{MV_TRUE, 0x11111111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4,PEX_BUS_MODE_X4,PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x1, PEX1 x4*/
+	{MV_TRUE, 0x11111111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4,PEX_BUS_MODE_X4,PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x4, PEX1 x4*/
 };
 
 MV_BOARD_TDM_INFO	db88f78XX0rev2Tdm880[]	= { {1}, {2} };
@@ -495,8 +495,8 @@ MV_BOARD_MPP_INFO rd78460nasInfoBoardMppConfigValue[] = {
 };
 
 MV_SERDES_CFG rd78460nasInfoBoardSerdesConfigValue[] = {
-	{MV_TRUE, 0x00223001, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
-	{MV_TRUE, 0x33320201, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030}	/* Switch module */
+	{MV_TRUE, 0x00223001, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
+	{MV_TRUE, 0x33320201, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Switch module */
 };
 
 MV_BOARD_INFO rd78460nasInfo = {
@@ -603,8 +603,8 @@ MV_BOARD_MPP_INFO rd78460InfoBoardMppConfigValue[] = {
 };
 
 MV_SERDES_CFG rd78460InfoBoardSerdesConfigValue[] = {
-	{MV_TRUE, 0x22321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010},	/* CPU0 */
-	{MV_TRUE, 0x00321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010}	/* CPU1-3 */
+	{MV_TRUE, 0x22321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010},	/* CPU0 */
+	{MV_TRUE, 0x00321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010}	/* CPU1-3 */
 };
 
 MV_BOARD_INFO rd78460Info = {
@@ -721,7 +721,7 @@ MV_BOARD_MPP_INFO db78X60pcacInfoBoardMppConfigValue[] = {
 };
 
 MV_SERDES_CFG db78X60pcacInfoBoardSerdesConfigValue[] = {
-	 {MV_TRUE, 0x22321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010} /* Default */
+	 {MV_TRUE, 0x22321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010} /* Default */
 };
 
 
@@ -784,6 +784,115 @@ MV_BOARD_INFO db78X60pcacInfo = {
 	.nandFlashControl		= DB_78X60_PCAC_BOARD_NAND_CONTROL
 };
 
+/********************************/
+/* ARMADA-XP DB PCAC REV2 BOARD */
+/********************************/
+#define DB_78X60_PCAC_REV2_BOARD_NAND_READ_PARAMS		0x000C0282
+#define DB_78X60_PCAC_REV2_BOARD_NAND_WRITE_PARAMS		0x00010305
+/*NAND care support for small page chips*/
+#define DB_78X60_PCAC_REV2_BOARD_NAND_CONTROL			0x01c00543
+
+MV_U8	db78X60pcacrev2InfoBoardDebugLedIf[] = {53, 54, 55, 56};
+
+MV_BOARD_MAC_INFO db78X60pcacrev2InfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
+	{BOARD_MAC_SPEED_AUTO, 0x1,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x3,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x2,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x0,0x0}		/* Dummy */
+};
+
+
+MV_BOARD_MODULE_TYPE_INFO db78X60pcacrev2InfoBoardModTypeInfo[] = {
+	{
+		.boardMppMod	= MV_BOARD_AUTO,
+		.boardOtherMod	= MV_BOARD_NONE
+	}
+};
+
+MV_BOARD_GPP_INFO db78X60pcacrev2InfoBoardGppInfo[] = {
+	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
+	{BOARD_GPP_USB_VBUS,    23} /* from MPP map */
+};
+
+MV_DEV_CS_INFO db78X60pcacrev2InfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth}*/
+#if defined(MV_INCLUDE_SPI)
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8} /* SPI DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO db78X60pcacrev2InfoBoardMppConfigValue[] = {
+	{ {
+		DB_78X60_PCAC_REV2_MPP0_7,
+		DB_78X60_PCAC_REV2_MPP8_15,
+		DB_78X60_PCAC_REV2_MPP16_23,
+		DB_78X60_PCAC_REV2_MPP24_31,
+		DB_78X60_PCAC_REV2_MPP32_39,
+		DB_78X60_PCAC_REV2_MPP40_47,
+		DB_78X60_PCAC_REV2_MPP48_55,
+		DB_78X60_PCAC_REV2_MPP56_63,
+		DB_78X60_PCAC_REV2_MPP64_67,
+	} }
+};
+
+MV_SERDES_CFG db78X60pcacrev2InfoBoardSerdesConfigValue[] = {
+	 {MV_TRUE, 0x23321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010} /* Default */
+};
+
+MV_BOARD_INFO db78X60pcacrev2Info = {
+	.boardName			= "DB-78460-PCAC-REV2",
+	.numBoardMppTypeValue		= ARRSZ(db78X60pcacrev2InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= db78X60pcacrev2InfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(db78X60pcacrev2InfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= db78X60pcacrev2InfoBoardMppConfigValue,
+	.numBoardSerdesConfigValue	= ARRSZ(db78X60pcacrev2InfoBoardSerdesConfigValue),
+	.pBoardSerdesConfigValue	= db78X60pcacrev2InfoBoardSerdesConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(db78X60pcacrev2InfoBoardDeCsInfo),
+	.pDevCsInfo			= db78X60pcacrev2InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= 0,
+	.pBoardTwsiDev			= NULL,
+	.numBoardMacInfo		= ARRSZ(db78X60pcacrev2InfoBoardMacInfo),
+	.pBoardMacInfo			= db78X60pcacrev2InfoBoardMacInfo,
+	.numBoardGppInfo		= ARRSZ(db78X60pcacrev2InfoBoardGppInfo),
+	.pBoardGppInfo			= db78X60pcacrev2InfoBoardGppInfo,
+	.activeLedsNumber		= ARRSZ(db78X60pcacrev2InfoBoardDebugLedIf),
+	.pLedGppPin			= db78X60pcacrev2InfoBoardDebugLedIf,
+	.ledsPolarity			= 0,
+
+	/* GPP values */
+	.gppOutEnValLow			= DB_78X60_PCAC_REV2_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= DB_78X60_PCAC_REV2_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= DB_78X60_PCAC_REV2_GPP_OUT_ENA_HIGH,
+	.gppOutValLow			= DB_78X60_PCAC_REV2_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= DB_78X60_PCAC_REV2_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= DB_78X60_PCAC_REV2_GPP_OUT_VAL_HIGH,
+	.gppPolarityValLow		= DB_78X60_PCAC_REV2_GPP_POL_LOW,
+	.gppPolarityValMid		= DB_78X60_PCAC_REV2_GPP_POL_MID,
+	.gppPolarityValHigh		= DB_78X60_PCAC_REV2_GPP_POL_HIGH,
+
+
+	/* TDM configuration */
+	/* We hold a different configuration array for each possible slic that
+	 ** can be connected to board.
+	 ** When modules are scanned, then we select the index of the relevant
+	 ** slic's information array.
+	 ** For RD and Customers boards we only need to initialize a single
+	 ** entry of the arrays below, and set the boardTdmInfoIndex to 0.
+	*/
+	.numBoardTdmInfo			= {},
+	.pBoardTdmInt2CsInfo			= {},
+	.boardTdmInfoIndex			= -1,
+
+	/* NAND init params */
+	.nandFlashReadParams		= DB_78X60_PCAC_REV2_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_78X60_PCAC_REV2_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= DB_78X60_PCAC_REV2_BOARD_NAND_CONTROL
+};
+
 /************************/
 /* ARMADA-XP FPGA BOARD */
 /************************/
@@ -842,7 +951,7 @@ MV_BOARD_MPP_INFO fpga88f78XX0InfoBoardMppConfigValue[] = {
 };
 
 MV_SERDES_CFG fpga88f78XX0InfoBoardSerdesConfigValue[] = {
-	{MV_TRUE, 0x00000000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000000} /* No PEX in FPGA */
+	{MV_TRUE, 0x00000000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000000} /* No PEX in FPGA */
 };
 
 MV_BOARD_TDM_INFO	fpga88f78XX0Tdm880[]	= { {1}, {2} };
@@ -962,7 +1071,7 @@ MV_BOARD_MPP_INFO db78X60amcInfoBoardMppConfigValue[] = {
 };
 
 MV_SERDES_CFG db78X60amcInfoBoardSerdesConfigValue[] = {
-	 {0x33111111, 0x00010001, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, 0x00000030} /* Default */
+	 {MV_TRUE, 0x33111111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030} /* Default */
 };
 
 
@@ -1030,5 +1139,6 @@ MV_BOARD_INFO *boardInfoTbl[] = {
 	&fpga88f78XX0Info,
 	&db88f78XX0rev2Info,
 	&rd78460nasInfo,
-	&db78X60amcInfo
+	&db78X60amcInfo,
+	&db78X60pcacrev2Info
 };

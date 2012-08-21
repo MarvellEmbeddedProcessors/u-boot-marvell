@@ -1709,9 +1709,10 @@ MV_VOID mvEth1540A0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	mvEthPhyRegWrite(i, 0x16, 0);
 
 	/* Power up the phy */
-	mvEthPhyRegRead(i, ETH_PHY_CTRL_REG, &reg);
-	reg &= ~(ETH_PHY_CTRL_POWER_DOWN_MASK);
-	mvEthPhyRegWrite(i, ETH_PHY_CTRL_REG, reg);
+	mvEthPhyRegRead(i, 0x4, &reg);
+	reg |= 0x1E0;
+	mvEthPhyRegWrite(i, 0x4, reg);
+       mvEthPhyRegWrite(i, 0x16, 1);
 
 	/* Disable Drop BadTag */
 	mvEthPhyRegWrite(i, 22, 0x0010);
@@ -1812,6 +1813,9 @@ MV_VOID mvEth1540A0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	mvEthPhyRegWrite(i, 22, 0x0000);
 	mvEthPhyRegWrite(i, 0, 0x9140);
 
+	mvEthPhyRegRead(i, ETH_PHY_CTRL_REG, &reg);
+	reg &= ~(ETH_PHY_CTRL_POWER_DOWN_MASK);
+	mvEthPhyRegWrite(i, ETH_PHY_CTRL_REG, reg);
 	mvOsDelay(100);
 	/*  Sleep 3000 */
 	/* mvOsDelay(300); */

@@ -699,11 +699,11 @@ static int pnc_etype_init(void)
 
 static void pnc_ip4_flow_next_lookup_set(struct tcam_entry *te)
 {
-#ifdef CONFIG_MV_ETH_NFP_PNC
+#ifdef CONFIG_MV_ETH_PNC_L3_FLOW
 	sram_sw_set_next_lookup(te, TCAM_LU_FLOW_IP4);
 #else
 	sram_sw_set_lookup_done(te, 1);
-#endif /* CONFIG_MV_ETH_NFP_PNC */
+#endif /* CONFIG_MV_ETH_PNC_L3_FLOW */
 }
 
 /*
@@ -892,11 +892,11 @@ int pnc_ip4_init(void)
 
 static void pnc_ip6_flow_next_lookup_set(struct tcam_entry *te)
 {
-#ifdef CONFIG_MV_ETH_NFP_PNC
+#ifdef CONFIG_MV_ETH_PNC_L3_FLOW
 	sram_sw_set_next_lookup(te, TCAM_LU_FLOW_IP6_A);
 #else
 	sram_sw_set_lookup_done(te, 1);
-#endif /* CONFIG_MV_ETH_NFP_PNC */
+#endif /* CONFIG_MV_ETH_PNC_L3_FLOW */
 }
 
 /* IPv6 - detect TCP */
@@ -1021,10 +1021,10 @@ int pnc_ipv6_2_tuples_add(unsigned int tid1, unsigned int tid2, unsigned int flo
 	struct tcam_entry   *te;
 	int                 i;
 
-	if ((tid1 < TE_FLOW_NFP) || (tid1 > TE_FLOW_NFP_END))
+	if ((tid1 < TE_FLOW_L3) || (tid1 > TE_FLOW_L3_END))
 		ERR_ON_OOR(1);
 
-	if ((tid2 < TE_FLOW_NFP) || (tid2 > TE_FLOW_NFP_END))
+	if ((tid2 < TE_FLOW_L3) || (tid2 > TE_FLOW_L3_END))
 		ERR_ON_OOR(2);
 
 	te = tcam_sw_alloc(TCAM_LU_FLOW_IP6_A);
@@ -1057,7 +1057,7 @@ int pnc_ipv6_2_tuples_add(unsigned int tid1, unsigned int tid2, unsigned int flo
 		sram_sw_set_rxq(te, rxq, 0);
 	}
 
-	sram_sw_set_rinfo(te, RI_NFP_FLOW);
+	sram_sw_set_rinfo(te, RI_L3_FLOW);
 
 	tcam_sw_set_ainfo(te, unique, AI_MASK);
 	tcam_sw_text(te, "ipv6_2t_B");
@@ -1117,10 +1117,10 @@ int pnc_ipv4_5_tuples_add(unsigned int tid, unsigned int flow_id,
 	PNC_DBG("%s [%d] flow=%d " MV_IPQUAD_FMT "->" MV_IPQUAD_FMT ", ports=0x%x, proto=%d\n",
 		__func__, tid, flow_id, MV_IPQUAD(((MV_U8 *)&sip)), MV_IPQUAD(((MV_U8 *)&dip)), ports, proto);
 
-	if (tid < TE_FLOW_NFP)
+	if (tid < TE_FLOW_L3)
 		ERR_ON_OOR(1);
 
-	if (tid > TE_FLOW_NFP_END)
+	if (tid > TE_FLOW_L3_END)
 		ERR_ON_OOR(1);
 
 	/* sanity check */
@@ -1147,7 +1147,7 @@ int pnc_ipv4_5_tuples_add(unsigned int tid, unsigned int flow_id,
 	sram_sw_set_lookup_done(te, 1);
 	sram_sw_set_flowid(te, flow_id, FLOWID_CTRL_FULL_MASK);
 	sram_sw_set_rxq(te, rxq, 0);
-	sram_sw_set_rinfo(te, RI_NFP_FLOW);
+	sram_sw_set_rinfo(te, RI_L3_FLOW);
 	tcam_sw_text(te, "ipv4_5t");
 
 	tcam_hw_write(te, tid);
@@ -1159,7 +1159,7 @@ int pnc_ipv4_5_tuples_add(unsigned int tid, unsigned int flow_id,
 
 	return 0;
 }
-#endif /* CONFIG_MV_ETH_NFP_PNC */
+#endif /* CONFIG_MV_ETH_PNC_L3_FLOW */
 
 /******************************************************************************
  *
@@ -1210,11 +1210,11 @@ int pnc_default_init(void)
 	if (rc)
 		goto out;
 
-#ifdef CONFIG_MV_ETH_NFP_PNC
+#ifdef CONFIG_MV_ETH_PNC_L3_FLOW
 	rc = pnc_flow_init();
 	if (rc)
 		goto out;
-#endif /* CONFIG_MV_ETH_NFP_PNC */
+#endif /* CONFIG_MV_ETH_PNC_L3_FLOW */
 
 #ifdef CONFIG_MV_ETH_PNC_WOL
 	mv_pnc_wol_init();

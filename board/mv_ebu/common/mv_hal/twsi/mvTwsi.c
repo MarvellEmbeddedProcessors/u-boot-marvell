@@ -152,7 +152,7 @@ MV_STATUS mvTwsiStartBitSet(MV_U8 chanNum)
 
 	/* check for timeout */
 	if (MV_TRUE == twsiTimeoutChk(timeout,
-				      (const MV_U8 *)"TWSI: mvTwsiStartBitSet ERROR - Start Clear bit TimeOut .\n"))
+				      (const MV_8 *)"TWSI: mvTwsiStartBitSet ERROR - Start Clear bit TimeOut .\n"))
 		return MV_TIMEOUT;
 
 	/* check that start bit went down */
@@ -210,7 +210,7 @@ MV_STATUS mvTwsiStopBitSet(MV_U8 chanNum)
 		;
 
 	/* check for timeout */
-	if (MV_TRUE == twsiTimeoutChk(timeout, (const MV_U8 *)"TWSI: mvTwsiStopBitSet ERROR - Stop bit TimeOut .\n"))
+	if (MV_TRUE == twsiTimeoutChk(timeout, (const MV_8 *)"TWSI: mvTwsiStopBitSet ERROR - Stop bit TimeOut .\n"))
 		return MV_TIMEOUT;
 
 	/* check that the stop bit went down */
@@ -556,7 +556,7 @@ static MV_STATUS twsiAddr10BitSet(MV_U8 chanNum, MV_U32 deviceAddress, MV_TWSI_C
 
 	/* check for timeout */
 	if (MV_TRUE ==
-	    twsiTimeoutChk(timeout, (const MV_U8 *)"TWSI: twsiAddr10BitSet ERROR - 1st addr (10Bit) Int TimeOut.\n"))
+	    twsiTimeoutChk(timeout, (const MV_8 *)"TWSI: twsiAddr10BitSet ERROR - 1st addr (10Bit) Int TimeOut.\n"))
 		return MV_TIMEOUT;
 
 	/* check the status */
@@ -585,7 +585,7 @@ static MV_STATUS twsiAddr10BitSet(MV_U8 chanNum, MV_U32 deviceAddress, MV_TWSI_C
 
 	/* check for timeout */
 	if (MV_TRUE ==
-	    twsiTimeoutChk(timeout, (const MV_U8 *)"TWSI: twsiAddr10BitSet ERROR - 2nd (10 Bit) Int TimOut.\n"))
+	    twsiTimeoutChk(timeout, (const MV_8 *)"TWSI: twsiAddr10BitSet ERROR - 2nd (10 Bit) Int TimOut.\n"))
 		return MV_TIMEOUT;
 
 	/* check the status */
@@ -647,7 +647,7 @@ static MV_STATUS twsiAddr7BitSet(MV_U8 chanNum, MV_U32 deviceAddress, MV_TWSI_CM
 
 	/* check for timeout */
 	if (MV_TRUE ==
-	    twsiTimeoutChk(timeout, (const MV_U8 *)"TWSI: twsiAddr7BitSet ERROR - Addr (7 Bit) int TimeOut.\n"))
+	    twsiTimeoutChk(timeout, (const MV_8 *)"TWSI: twsiAddr7BitSet ERROR - Addr (7 Bit) int TimeOut.\n"))
 		return MV_TIMEOUT;
 
 	/* check the status */
@@ -709,7 +709,7 @@ static MV_STATUS twsiDataTransmit(MV_U8 chanNum, MV_U8 *pBlock, MV_U32 blockSize
 
 	/* check for timeout */
 	if (MV_TRUE ==
-	    twsiTimeoutChk(timeout, (const MV_U8 *)"TWSI: twsiDataTransmit ERROR - Read Data Int TimeOut.\n"))
+	    twsiTimeoutChk(timeout, (const MV_8 *)"TWSI: twsiDataTransmit ERROR - Read Data Int TimeOut.\n"))
 		return MV_TIMEOUT;
 
 	while (blockSizeWr) {
@@ -728,7 +728,7 @@ static MV_STATUS twsiDataTransmit(MV_U8 chanNum, MV_U8 *pBlock, MV_U32 blockSize
 
 		/* check for timeout */
 		if (MV_TRUE ==
-		    twsiTimeoutChk(timeout, (const MV_U8 *)"TWSI: twsiDataTransmit ERROR - Read Data Int TimeOut.\n"))
+		    twsiTimeoutChk(timeout, (const MV_8 *)"TWSI: twsiDataTransmit ERROR - Read Data Int TimeOut.\n"))
 			return MV_TIMEOUT;
 
 		/* check the status */
@@ -789,7 +789,7 @@ static MV_STATUS twsiDataReceive(MV_U8 chanNum, MV_U8 *pBlock, MV_U32 blockSize)
 
 	/* check for timeout */
 	if (MV_TRUE ==
-	    twsiTimeoutChk(timeout, (const MV_U8 *)"TWSI: twsiDataReceive ERROR - Read Data int Time out .\n"))
+	    twsiTimeoutChk(timeout, (const MV_8 *)"TWSI: twsiDataReceive ERROR - Read Data int Time out .\n"))
 		return MV_TIMEOUT;
 
 	while (blockSizeRd) {
@@ -807,7 +807,7 @@ static MV_STATUS twsiDataReceive(MV_U8 chanNum, MV_U8 *pBlock, MV_U32 blockSize)
 
 		/* check for timeout */
 		if (MV_TRUE ==
-		    twsiTimeoutChk(timeout, (const MV_U8 *)"TWSI: twsiDataReceive ERROR - Read Data Int Time out .\n"))
+		    twsiTimeoutChk(timeout, (const MV_8 *)"TWSI: twsiDataReceive ERROR - Read Data Int Time out .\n"))
 			return MV_TIMEOUT;
 
 		/* check the status */
@@ -910,11 +910,11 @@ MV_STATUS mvTwsiRead(MV_U8 chanNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *pBlock, MV
 {
 	MV_STATUS rc;
 	MV_STATUS ret = MV_FAIL;
+	MV_U32 counter = 0;
 
 	if ((NULL == pBlock) || (NULL == pTwsiSlave))
 		return MV_BAD_PARAM;
 
-	MV_U32 counter = 0;
 	do	{
 		if (counter > 0) /* wait for 1 mili sec for the clear to take effect */
 			mvOsDelay(1);
@@ -1033,11 +1033,11 @@ MV_STATUS mvTwsiRead(MV_U8 chanNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *pBlock, MV
 *******************************************************************************/
 MV_STATUS mvTwsiWrite(MV_U8 chanNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *pBlock, MV_U32 blockSize)
 {
+	MV_STATUS ret = MV_FAIL;
+	MV_U32 counter = 0;
 	if ((NULL == pBlock) || (NULL == pTwsiSlave))
 		return MV_BAD_PARAM;
 
-	MV_STATUS ret = MV_FAIL;
-	MV_U32 counter = 0;
 	do	{
 		if (counter > 0) /* wait for 1 mili sec for the clear to take effect */
 			mvOsDelay(1);

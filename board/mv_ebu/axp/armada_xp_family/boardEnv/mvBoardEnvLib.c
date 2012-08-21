@@ -283,14 +283,17 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 		if (ethPortNum > 1)
 			return MV_TRUE;
 		break;
+	case DB_78X60_AMC_ID:
+		if (ethPortNum > 0)
+			return MV_TRUE;
+		break;
 	case RD_78460_SERVER_ID:
 		if (ethPortNum > 0)
 			return MV_TRUE;
 		break;
 	case DB_78X60_PCAC_ID:
 	case RD_78460_NAS_ID:
-		return MV_TRUE;
-		break;
+
 	default:
 		DB(mvOsPrintf("mvBoardSerdesCfgGet: Unsupported board!\n"));
 		return MV_FALSE;
@@ -957,6 +960,10 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 	if (mvBoardIsLcdDviModuleConnected())
 		mvOsOutput("       LCD DVI module.\n");
 
+	/* Switch Module */
+	if (mvBoardIsSwitchModuleConnected())
+		mvOsOutput("       Switch module.\n");
+
 	/* GMII Module */
 	if (mvBoardIsGMIIModuleConnected())
 		mvOsOutput("       GMII module.\n");
@@ -1396,6 +1403,8 @@ MV_VOID mvBoardIdSet(MV_VOID)
 		gBoardId = DB_88F78XX0_BP_REV2_ID;
 #elif defined(RD_78460_NAS)
 		gBoardId = RD_78460_NAS_ID;
+#elif defined(DB_78X60_AMC)
+		gBoardId = DB_78X60_AMC_ID;
 #else
 		mvOsPrintf("mvBoardIdSet: Board ID must be defined!\n");
 		while (1) {
@@ -1887,7 +1896,8 @@ MV_U16 mvBoardPexCapabilityGet(MV_VOID)
 	switch (boardId) {
 	case DB_78X60_PCAC_ID:
 	case RD_78460_NAS_ID:
-		sar = 0x2; /* Gen2 */
+	case DB_78X60_AMC_ID:
+		sar = 0x1; /* Gen2 */
 		break;
 	case DB_88F78XX0_BP_ID:
 	case RD_78460_SERVER_ID:
@@ -1898,7 +1908,7 @@ MV_U16 mvBoardPexCapabilityGet(MV_VOID)
 		break;
 	}
 
-	return (sar & 0xFF);
+	return (sar & 0x1);
 }
 
 /*******************************************************************************/
@@ -2100,6 +2110,11 @@ MV_STATUS mvBoardOtherModulesScan(void)
 				BOARD_INFO(boardId)->pBoardModTypeValue->boardOtherMod |= MV_BOARD_UNKNOWN;
 			}
 		}
+	} else if (boardId == RD_78460_NAS_ID) {
+		if ((MV_REG_READ(GPP_DATA_IN_REG(2)) & MV_GPP66) == 0x0) {
+			DB(mvOsPrintf("mvBoardOtherModulesScan: SWITCH module DETECTED!\n"));
+			BOARD_INFO(boardId)->pBoardModTypeValue->boardOtherMod |= MV_BOARD_SWITCH;
+		}
 	}
 
 	return MV_OK;
@@ -2128,6 +2143,33 @@ MV_BOOL mvBoardIsPexModuleConnected(void)
 	if ( (boardId != DB_88F78XX0_BP_ID) && (boardId != DB_88F78XX0_BP_REV2_ID) )
 		DB(mvOsPrintf("mvBoardIsPexModuleConnected: Unsupported board!\n"));
 	else if (BOARD_INFO(boardId)->pBoardModTypeValue->boardOtherMod & MV_BOARD_PEX)
+		return MV_TRUE;
+
+	return MV_FALSE;
+}
+/*******************************************************************************
+* mvBoardIsPexModuleConnected
+*
+* DESCRIPTION:
+*	Check if PEX module is connected to the board.
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*	None
+*
+* RETURN:
+*       MV_TRUE / MV_FALSE
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsSwitchModuleConnected(void)
+{
+	MV_U32 boardId = mvBoardIdGet();
+
+	if (boardId != RD_78460_NAS_ID)
+		DB(mvOsPrintf("mvBoardIsSwitchModuleConnected: Unsupported board!\n"));
+	else if (BOARD_INFO(boardId)->pBoardModTypeValue->boardOtherMod & MV_BOARD_SWITCH)
 		return MV_TRUE;
 
 	return MV_FALSE;
@@ -2430,7 +2472,6 @@ MV_SERDES_CFG *mvBoardSerdesCfgGet(void)
 		break;
 	}
 
-
 	boardId = mvBoardIdGet();
 
 	switch (boardId) {
@@ -2458,6 +2499,10 @@ MV_SERDES_CFG *mvBoardSerdesCfgGet(void)
 			serdesCfg = 4;
 		if ( (moduleConnected) && (pex0 == 4) && (pex1 == 4))
 			serdesCfg = 5;
+		break;
+	case RD_78460_NAS_ID:
+		if (mvBoardIsSwitchModuleConnected())
+			serdesCfg = 1;
 		break;
 	}
 
@@ -2490,6 +2535,7 @@ MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 	case FPGA_88F78XX0_ID:
 	case DB_88F78XX0_BP_REV2_ID:
 	case RD_78460_NAS_ID:
+	case DB_78X60_AMC_ID:
 		return &BOARD_INFO(boardId)->boardPexInfo;
 		break;
 	default:

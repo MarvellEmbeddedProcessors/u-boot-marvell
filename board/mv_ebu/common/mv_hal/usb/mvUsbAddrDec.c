@@ -172,6 +172,12 @@ MV_STATUS mvUsbWinWrite(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pDecWin)
 	MV_U32 sizeReg, baseReg;
 	MV_U32 size;
 
+	/* check if the size of the bar is illeggal */
+	if (!MV_IS_POWER_OF_2(pDecWin->addrWin.size)) {
+		/* try to get a good size */
+		pDecWin->addrWin.size = 1 << (mvLog2(pDecWin->addrWin.size) + 1);
+	}
+
 	/* Parameter checking   */
 	if (winNum >= MV_USB_MAX_ADDR_DECODE_WIN) {
 		mvOsPrintf("%s: ERR. Invalid win num %d\n", __func__, winNum);
@@ -192,9 +198,11 @@ MV_STATUS mvUsbWinWrite(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pDecWin)
 		return MV_ERROR;
 	}
 
-	if (!MV_IS_POWER_OF_2(pDecWin->addrWin.size)) {
-		mvOsPrintf("mvUsbWinWrite: Bad windows size.\n");
-		return MV_BAD_PARAM;
+	if (pDecWin->addrWin.size != 0) {
+		if (!MV_IS_POWER_OF_2(pDecWin->addrWin.size)) {
+			mvOsPrintf("mvUsbWinWrite: Bad windows size.\n");
+			return MV_BAD_PARAM;
+		}
 	}
 
 	size = pDecWin->addrWin.size / MV_USB_WIN_SIZE_ALIGN - 1;

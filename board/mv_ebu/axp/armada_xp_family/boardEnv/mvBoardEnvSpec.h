@@ -95,7 +95,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define FPGA_88F78XX0_ID			(DB_78X60_PCAC_ID + 1)
 #define DB_88F78XX0_BP_REV2_ID			(FPGA_88F78XX0_ID + 1)
 #define RD_78460_NAS_ID                         (DB_88F78XX0_BP_REV2_ID + 1)
-#define MV_MAX_BOARD_ID				(RD_78460_NAS_ID + 1)
+#define DB_78X60_AMC_ID				(RD_78460_NAS_ID + 1)
+#define MV_MAX_BOARD_ID				(DB_78X60_AMC_ID + 1)
 #define INVALID_BAORD_ID			0xFFFFFFFF
 
 /******************/
@@ -203,7 +204,7 @@ MPP#	NAME			IN/OUT
 #define RD_78460_NAS_GPP_OUT_ENA_MID	(~(0x0))
 #define RD_78460_NAS_GPP_OUT_ENA_HIGH	(~(0x0))
 
-#define RD_78460_NAS_GPP_OUT_VAL_LOW	0x0
+#define RD_78460_NAS_GPP_OUT_VAL_LOW	(BIT21)
 #define RD_78460_NAS_GPP_OUT_VAL_MID	0x0
 #define RD_78460_NAS_GPP_OUT_VAL_HIGH	0x0
 
@@ -338,5 +339,101 @@ MPP#	NAME			IN/OUT
 #define FPGA_88F78XX0_GPP_POL_LOW		0x0
 #define FPGA_88F78XX0_GPP_POL_MID		0x0
 #define FPGA_88F78XX0_GPP_POL_HIGH		0x0
+
+/********************/
+/* DB-78460-AMC     */
+/********************/
+
+#define DB_78X60_AMC_MPP0_7			0x11111111
+#define DB_78X60_AMC_MPP8_15			0x00001111
+#define DB_78X60_AMC_MPP16_23			0x00000000
+#define DB_78X60_AMC_MPP24_31			0x00000000
+#define DB_78X60_AMC_MPP32_39			0x11110000
+#define DB_78X60_AMC_MPP40_47			0x00004000
+#define DB_78X60_AMC_MPP48_55			0x00001111
+#define DB_78X60_AMC_MPP56_63			0x11111110
+#define DB_78X60_AMC_MPP64_67			0x00000111
+
+/* GPPs
+MPP#	NAME		IN/OUT
+----------------------------------------------
+16	MB_INT#		IN
+17	Phy1_INT#	IN
+18	Phy2_INT#	IN
+19	Brd_Led_0	OUT
+21	Brd_Led_1	OUT
+23	Brd_Led_2	OUT
+29	Brd_Led_3	OUT
+30	Brd_Led_4	OUT
+34	Dbg_JP0		IN
+35	Dbg_JP1		IN
+40	Dbg_JP2		IN
+41	Dbg_JP3		IN
+42	Dbg_JP4		IN
+53	7 Segment 0	OUT
+54	7 Segment 1	OUT
+55	7 Segment 2	OUT
+56	7 Segment 3	OUT
+*/
+
+#define DB_78X60_AMC_GPP_OUT_ENA_LOW		(~(BIT19 | BIT21 | BIT23 | BIT29 | BIT30))
+#define DB_78X60_AMC_GPP_OUT_ENA_MID		(~(BIT21 | BIT22 | BIT23 | BIT24))
+#define DB_78X60_AMC_GPP_OUT_ENA_HIGH		(~(0x0))
+
+#define DB_78X60_AMC_GPP_OUT_VAL_LOW		0x0
+#define DB_78X60_AMC_GPP_OUT_VAL_MID		0x0
+#define DB_78X60_AMC_GPP_OUT_VAL_HIGH		0x0
+
+#define DB_78X60_AMC_GPP_POL_LOW		0x0
+#define DB_78X60_AMC_GPP_POL_MID		0x0
+#define DB_78X60_AMC_GPP_POL_HIGH		0x0
+
+/********************/
+/* DB-78460-AMC     */
+/********************/
+
+#define DB_78X60_AMC_MPP0_7			0x11111111
+#define DB_78X60_AMC_MPP8_15			0x00001111
+#define DB_78X60_AMC_MPP16_23			0x00000000
+#define DB_78X60_AMC_MPP24_31			0x00000000
+#define DB_78X60_AMC_MPP32_39			0x11110000
+#define DB_78X60_AMC_MPP40_47			0x00004000
+#define DB_78X60_AMC_MPP48_55			0x00001111
+#define DB_78X60_AMC_MPP56_63			0x11111110
+#define DB_78X60_AMC_MPP64_67			0x00000111
+
+/* GPPs
+MPP#	NAME		IN/OUT
+----------------------------------------------
+16	MB_INT#		IN
+17	Phy1_INT#	IN
+18	Phy2_INT#	IN
+19	Brd_Led_0	OUT
+21	Brd_Led_1	OUT
+23	Brd_Led_2	OUT
+29	Brd_Led_3	OUT
+30	Brd_Led_4	OUT
+34	Dbg_JP0		IN
+35	Dbg_JP1		IN
+40	Dbg_JP2		IN
+41	Dbg_JP3		IN
+42	Dbg_JP4		IN
+53	7 Segment 0	OUT
+54	7 Segment 1	OUT
+55	7 Segment 2	OUT
+56	7 Segment 3	OUT
+*/
+
+#define DB_78X60_AMC_GPP_OUT_ENA_LOW		(~(BIT19 | BIT21 | BIT23 | BIT29 | BIT30))
+#define DB_78X60_AMC_GPP_OUT_ENA_MID		(~(BIT21 | BIT22 | BIT23 | BIT24))
+#define DB_78X60_AMC_GPP_OUT_ENA_HIGH		(~(0x0))
+
+#define DB_78X60_AMC_GPP_OUT_VAL_LOW		0x0
+#define DB_78X60_AMC_GPP_OUT_VAL_MID		0x0
+#define DB_78X60_AMC_GPP_OUT_VAL_HIGH		0x0
+
+#define DB_78X60_AMC_GPP_POL_LOW		0x0
+#define DB_78X60_AMC_GPP_POL_MID		0x0
+#define DB_78X60_AMC_GPP_POL_HIGH		0x0
 
 #endif /* __INCmvBoardEnvSpech */

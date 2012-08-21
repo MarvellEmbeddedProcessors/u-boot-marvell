@@ -296,12 +296,19 @@ MV_U32 mvPexModeGet(MV_U32 pexIf, MV_PEX_MODE *pexMode)
 
 		/* If there is no link, the auto negotiation data is worthless */
 		pexMode->pexWidth = MV_PEX_WITDH_INVALID;
-	} else {
-		pexMode->pexLinkUp = MV_TRUE;
+	}
+	else { /* We have Link negotiation started */
+		if ((MV_REG_READ(PEX_DBG_STATUS_REG(pexIf))) == 0x7e)
+			pexMode->pexLinkUp = MV_TRUE;
+		else {
+			printf("Link negotiation failed ");
+			pexMode->pexLinkUp = MV_FALSE;
+		}
 
 		/* We have link. The link width is now valid */
 		pexData = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_LINK_CTRL_STAT_REG));
 		pexMode->pexWidth = ((pexData & PXLCSR_NEG_LNK_WDTH_MASK) >> PXLCSR_NEG_LNK_WDTH_OFFS);
+		pexMode->pexGen = ((pexData & PXLCSR_NEG_LNK_GEN_MASK) >> PXLCSR_NEG_LNK_GEN_OFFS);
 	}
 
 	return MV_OK;

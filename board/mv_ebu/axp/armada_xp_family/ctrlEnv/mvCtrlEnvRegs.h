@@ -331,10 +331,11 @@ extern "C" {
 #define SGMII_SERDES_CFG_REG(port)		(0x724A0 + ((port)%2)*0x4000 - ((port)/2)*0x40000)
 #define SGMII_SERDES_STAT_REG(port)		(0x724A4 + ((port)%2)*0x4000 - ((port)/2)*0x40000)
 #define SGMII_COMPHY_CTRL_REG(port)		(0x72F20 + ((port)%2)*0x4000 - ((port)/2)*0x40000)
+#define QSGMII_GEN_1_SETTING_REG(port)		(0x72E38 + ((port)%2)*0x4000 - ((port)/2)*0x40000)
 
 #define SERDES_LINE_MUX_REG_0_7			0x18270
 #define SERDES_LINE_MUX_REG_8_15		0x18274
-
+#define QSGMII_CONTROL_1_REG                    0x18404
 /* Controler environment registers offsets */
 #define GEN_PURP_RES_1_REG			0x182F4
 #define GEN_PURP_RES_2_REG			0x182F8

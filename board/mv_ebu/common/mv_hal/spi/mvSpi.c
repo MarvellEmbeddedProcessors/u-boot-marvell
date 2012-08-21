@@ -82,12 +82,12 @@ static MV_SPI_TYPE_INFO spiTypes[] = {
 	{
 		.en16Bit = MV_TRUE,
 		.byteCsAsrt = MV_FALSE,
-		.baudRate = (20 << 20), /*  20M */
+		.baudRate = (20 << 20) /*  20M */
 	},
 	{
 		.en16Bit = MV_FALSE,
 		.byteCsAsrt = MV_TRUE,
-		.baudRate = _8M,
+		.baudRate = _8M
 	}
 };
 

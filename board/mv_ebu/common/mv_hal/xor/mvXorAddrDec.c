@@ -206,6 +206,10 @@ MV_STATUS mvXorTargetWinWrite(MV_U32 unit, MV_U32 winNum,
 	MV_U32 sizeReg, baseReg;
 	MV_U32 chan;
 
+	if (!MV_IS_POWER_OF_2(pAddrDecWin->addrWin.size)) {
+		/* try to get a good size */
+		pAddrDecWin->addrWin.size = 1 << (mvLog2(pAddrDecWin->addrWin.size) + 1);
+	}
 	/* Parameter checking */
 	if (winNum >= XOR_MAX_ADDR_DEC_WIN) {
 		DB(mvOsPrintf("%s: ERR. Invalid win num %d\n",  __func__, winNum));

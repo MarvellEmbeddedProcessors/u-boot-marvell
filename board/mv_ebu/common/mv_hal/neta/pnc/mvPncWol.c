@@ -177,7 +177,7 @@ void mv_pnc_wol_init(void)
 	/* Set default entires for each one of LU used for WoL */
 	te = tcam_sw_alloc(TCAM_LU_WOL);
 	tcam_sw_set_lookup_all(te);
-	sram_sw_set_rinfo(te, RI_DROP);
+	sram_sw_set_rinfo(te, RI_DROP, RI_DROP);
 	sram_sw_set_lookup_done(te, 1);
 	tcam_sw_text(te, "wol_eof");
 

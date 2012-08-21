@@ -532,7 +532,7 @@ static MV_STATUS mvNfcReadIdNative(MV_NFC_CHIP_SEL cs, MV_U16 *id);
 static MV_STATUS mvNfcTimingSet(MV_U32 tclk, MV_NFC_FLASH_INFO *flInfo);
 static MV_U32 mvNfcColBits(MV_U32 pg_size);
 /* #ifdef CONFIG_MTD_NAND_NFC_INIT_RESET */
-static MV_STATUS mvNfcReset(void);
+/*static MV_STATUS mvNfcReset(void);*/
 /* #endif */
 static MV_STATUS mvNfcDeviceFeatureSet(MV_NFC_CTRL *nfcCtrl, MV_U8 cmd, MV_U8 addr, MV_U32 data0, MV_U32 data1);
 static MV_STATUS mvNfcDeviceFeatureGet(MV_NFC_CTRL *nfcCtrl, MV_U8 cmd, MV_U8 addr, MV_U32 *data0, MV_U32 *data1);
@@ -2466,7 +2466,7 @@ static MV_STATUS mvNfcDeviceModeSet(MV_NFC_CTRL *nfcCtrl, MV_NFC_ONFI_MODE mode)
 
 
 /* #ifdef CONFIG_MTD_NAND_NFC_INIT_RESET */
-static MV_STATUS mvNfcReset(void)
+MV_STATUS mvNfcReset(void)
 {
 	MV_U32 reg;
 	MV_U32 errCode = MV_OK;

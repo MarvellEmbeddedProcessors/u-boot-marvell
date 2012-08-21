@@ -94,7 +94,11 @@ extern "C" {
 #define MV_UART_REGS_OFFSET(chanNum)		(0x12000 + (chanNum * 0x100))
 #define MV_RUNIT_PMU_REGS_OFFSET		(0x1C000)
 #define MV_MPP_REGS_OFFSET			(0x18000)
+#ifdef MV88F78X60_Z1
 #define MV_GPP_REGS_OFFSET(unit)		(0x18100 + ((unit) * 0x20))
+#else
+#define MV_GPP_REGS_OFFSET(unit)		(0x18100 + ((unit) * 0x40))
+#endif
 #define MV_MISC_REGS_OFFSET			(0x18200)
 #define MV_MBUS_REGS_OFFSET			(0x20000)
 #define MV_COHERENCY_FABRIC_OFFSET		(0x20200)

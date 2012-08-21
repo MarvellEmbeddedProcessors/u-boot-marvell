@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
@@ -79,10 +72,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "gpp/mvGppRegs.h"
 #include "mvSysEthConfig.h"
 
-#if defined(MV_INCLUDE_PEX)
 #include "pex/mvPex.h"
 #include "pex/mvPexRegs.h"
-#endif
 
 #if defined(MV_INCLUDE_GIG_ETH)
 #if defined(MV_ETH_LEGACY)
@@ -416,7 +407,6 @@ MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
 	case MV_6710_DEV_ID:
 	case MV_78230_DEV_ID:
 		return 7;
-/* TODO: alior fix PexMaxIfGet for KW40... */
 
 	case MV_78160_DEV_ID:
 	case MV_78260_DEV_ID:
@@ -428,6 +418,8 @@ MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
 		return 0;
 	}
 }
+#endif
+
 /*******************************************************************************
 * mvCtrlPexMaxUnitGet - Get Marvell controller number of PEX units.
 *
@@ -466,7 +458,6 @@ MV_U32 mvCtrlPexMaxUnitGet(MV_VOID)
 	}
 }
 
-#endif
 
 #if defined(MV_INCLUDE_PCI)
 /*******************************************************************************
@@ -1212,7 +1203,10 @@ static void mvUnitAddrDecShow(MV_U8 numUnits, MV_UNIT_ID unitId, const char *nam
 						   mvCtrlTargetNameGet(mvCtrlTargetByWinInfoGet(&win)),
 						   win.addrWin.baseLow);
 					mvOsOutput("....");
-					mvSizePrint(win.addrWin.size);
+					if (win.addrWin.size == 0)
+						mvOsOutput("size %3dGB ", 4);
+					else
+						mvSizePrint(win.addrWin.size);
 					mvOsOutput("\n");
 				} else
 					mvOsOutput("disable\n");
@@ -1971,6 +1965,7 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
 	MV_STATUS	status = MV_OK;
 	MV_U32		tmp;
+
 /* this is a mapping of the final power management clock gating control register value @ 0x18220.*/
 	MV_U32	powermngmntctrlregmap = 0x0;
 	MV_U32	ethport = 0;
@@ -2102,7 +2097,25 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 			pRegVal[4]  = 0;
 
 			/* Termination enable */
-			pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x9080;
+			/* Termination enable */
+                        if ( (pSerdesInfo->pex0Mod == PEX_BUS_MODE_X4) && (pexLineNum == 0) )
+                                pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x1080; /* x4 */
+                        else if (pSerdesInfo->pex0Mod == PEX_BUS_MODE_X1)
+                                pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x9080; /* x1 */
+
+                        if ( (pSerdesInfo->pex1Mod == PEX_BUS_MODE_X4) && (pexLineNum == 1) )
+                                pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x1080; /* x4 */
+                        else if (pSerdesInfo->pex1Mod == PEX_BUS_MODE_X1)
+                                pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x9080; /* x1 */
+
+                        if (pexLineNum == 2) /* PEX2 is always x4*/
+                                pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x1080; /* x4 */
+
+                        if ( (pSerdesInfo->pex3Mod == PEX_BUS_MODE_X4) && (pexLineNum == 3) )
+                                pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x1080; /* x4 */
+                        else if (pSerdesInfo->pex3Mod == PEX_BUS_MODE_X1)
+                                pRegVal[5]  = (0x48 << 16) | (pexLineNum << 24) | 0x9080; /* x1 */
+
 		} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SATA]) {
 
 			MV_U8	sataPort;
@@ -2180,13 +2193,47 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 
 
 			if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_QSGMII]) {
+				//pRegVal[1]  = 0x400;
+				//pRegVal[3]  = 0x667;
+				//pRegAddr[6] = QSGMII_GEN_1_SETTING_REG(sgmiiPort);
+				//pRegVal[6]  = 0xCD5C;
+
+				pRegAddr[0] = 0x72e04; //SGMII_PWR_PLL_CTRL_REG(sgmiiPort);
+				pRegAddr[1] = 0x72e8c; //SGMII_DIG_LP_ENA_REG(sgmiiPort);
+				pRegAddr[2] = 0x72f18; //SGMII_REF_CLK_SEL_REG(sgmiiPort);
+				pRegAddr[3] = 0x72f20; //SGMII_SERDES_CFG_REG(sgmiiPort);
+				pRegAddr[4] = 0x724a4; //SGMII_SERDES_STAT_REG(sgmiiPort);
+				pRegAddr[5] = 0x724a0; //SGMII_COMPHY_CTRL_REG(sgmiiPort);
+				pRegAddr[6] = 0x72e34;
+				pRegAddr[7] = 0;
+				pRegAddr[8] = 0;
+				pRegAddr[9] = 0;
+				pRegVal[0]  = 0xF881;
 				pRegVal[1]  = 0x400;
-				pRegVal[3]  = 0x667;
+				pRegVal[2]  = 0x400;
+				pRegVal[3]  = 0x9080; //(pSerdesInfo->busSpeed & (1 << serdesLineNum)) != 0 ? 0x1547 : 0xCC7;
+				pRegVal[4]  = 0x7;
+				pRegVal[5]  = 0x667;
+				pRegVal[6]  = 0xcd5c;
 
 			}
 		}
 
 	} /* for each serdes lane*/
+	/* QSGMII enable */
+	for (serdesLineNum = 0; serdesLineNum < maxSerdesLines; serdesLineNum++) {
+		if (serdesLineNum < 8)
+			serdesLineCfg = (pSerdesInfo->serdesLine0_7 >> (serdesLineNum << 2)) & 0xF;
+		else
+			serdesLineCfg = (pSerdesInfo->serdesLine8_15 >> ((serdesLineNum - 8) << 2)) & 0xF;
+
+		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_QSGMII]) {
+			/* QSGMII Active bit set to true */
+			tmp = MV_REG_READ(QSGMII_CONTROL_1_REG);
+			tmp |= BIT30;
+			MV_REG_WRITE(QSGMII_CONTROL_1_REG,  tmp);
+		}
+	}
 
 
 	if(mvBoardIsSerdesConfigurationEnabled() == MV_FALSE){
@@ -2266,8 +2313,9 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 		 register SOC_Misc/General Purpose2 (Address= 182F8)*/
 		tmp = MV_REG_READ(GEN_PURP_RES_2_REG);
 
-		if (pSerdesInfo->pex0Mod == PEX_BUS_MODE_X4)
+		if (pSerdesInfo->pex0Mod == PEX_BUS_MODE_X4) {
 			DB(mvOsPrintf("\n"));
+		}
 
 		/* Step 2 [PEX-X4 Only] To create PEX-Link that contain 4-lanes you need to config the
 		 register SOC_Misc/General Purpose2 (Address= 182F8)*/
@@ -2294,12 +2342,14 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_DISABLED)
 				continue;
 			DB(mvOsPrintf("Step[3].1 Addr[0x%08x] Value[0x%08x]\n", PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0xA5));
-			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X4)
+			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X4) {
 				DB(mvOsPrintf("Step[3].2 Addr[0x%08x] Value[0x%08x]\n", \
 							  PEX_PHY_ACCESS_REG(pexUnit), (0xC2 << 16) | 0x200));
-			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X1)
+			}
+			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X1) {
 				DB(mvOsPrintf("Step[3].3 Addr[0x%08x] Value[0x%08x]\n", \
 							  PEX_PHY_ACCESS_REG(pexUnit), (0xC3 << 16) | 0x0F));
+			}
 
 			DB(mvOsPrintf("Step[3].4 Addr[0x%08x] Value[0x%08x]\n", \
 						  PEX_PHY_ACCESS_REG(pexUnit), (0xC8 << 16) | 0x05));

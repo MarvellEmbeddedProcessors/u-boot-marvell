@@ -184,6 +184,7 @@ extern "C" {
 #define PEX_TL_CTRL_REG(pexIf)				(MV_PEX_IF_REGS_BASE(pexIf) - (pexIf)*0x10000)
 #define PEX_RAM_PARITY_CTRL_REG(pexIf) 			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A50)
 #define PEX_DBG_CTRL_REG(pexIf) 			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A60)
+#define PEX_DBG_STATUS_REG(pexIf) 			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A64)
 
 #define PEX_LINK_CTRL_STATUS_REG(pexIf) 		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x70)
 
@@ -336,6 +337,7 @@ extern "C" {
 #define PEX_DEV_CTRL_STAT_REG						0x68
 #define PEX_LINK_CAPABILITY_REG						0x6C
 #define PEX_LINK_CTRL_STAT_REG						0x70
+#define PEX_LINK_CTRL_STAT_2_REG					0x90
 
 #define PEX_ADV_ERR_RPRT_HDR_TRGT_REG					0x100
 #define PEX_UNCORRECT_ERR_STAT_REG					0x104
@@ -682,6 +684,11 @@ extern "C" {
 #define PXLCSR_NEG_LNK_WDTH_OFFS		20	/* Negotiated Link Width */
 #define PXLCSR_NEG_LNK_WDTH_MASK 		(0x3f << PXLCSR_NEG_LNK_WDTH_OFFS)
 #define PXLCSR_NEG_LNK_WDTH_X1			(0x1 << PXLCSR_NEG_LNK_WDTH_OFFS)
+
+#define PXLCSR_NEG_LNK_GEN_OFFS			16	/* Negotiated Link GEN */
+#define PXLCSR_NEG_LNK_GEN_MASK 		(0xf << PXLCSR_NEG_LNK_GEN_OFFS)
+#define PXLCSR_NEG_LNK_GEN_1_1			(0x1 << PXLCSR_NEG_LNK_GEN_OFFS)
+#define PXLCSR_NEG_LNK_GEN_2_0			(0x2 << PXLCSR_NEG_LNK_GEN_OFFS)
 
 #define PXLCSR_LNK_TRN 				BIT27	/* Link Training */
 

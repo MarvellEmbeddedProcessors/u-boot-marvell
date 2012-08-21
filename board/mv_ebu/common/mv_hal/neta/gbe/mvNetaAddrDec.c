@@ -170,6 +170,10 @@ MV_STATUS mvNetaWinWrite(MV_U32 port, MV_U32 winNum, MV_UNIT_WIN_INFO *pAddrDecW
 	MV_U32 size, alignment;
 	MV_U32 baseReg, sizeReg;
 
+	if (!MV_IS_POWER_OF_2(pAddrDecWin->addrWin.size)) {
+		/* try to get a good size */
+		pAddrDecWin->addrWin.size = 1 << (mvLog2(pAddrDecWin->addrWin.size) + 1);
+	}
 	/* Parameter checking   */
 	if (winNum >= ETH_MAX_DECODE_WIN) {
 		mvOsPrintf("mvNetaWinSet: ERR. Invalid win num %d\n", winNum);
@@ -190,11 +194,13 @@ MV_STATUS mvNetaWinWrite(MV_U32 port, MV_U32 winNum, MV_UNIT_WIN_INFO *pAddrDecW
 		return MV_ERROR;
 	}
 
-	size = pAddrDecWin->addrWin.size;
-	if (!MV_IS_POWER_OF_2(size)) {
-		mvOsPrintf("mvNetaWinWrite: Error setting AUDIO window %d. "
-			   "Window size is not a power to 2.", winNum);
-		return MV_BAD_PARAM;
+	if (pAddrDecWin->addrWin.size != 0) {
+		size = pAddrDecWin->addrWin.size;
+		if (!MV_IS_POWER_OF_2(size)) {
+			mvOsPrintf("mvNetaWinWrite: Error setting AUDIO window %d. "
+				"Window size is not a power to 2.", winNum);
+			return MV_BAD_PARAM;
+		}
 	}
 
 	baseReg = (pAddrDecWin->addrWin.baseLow & ETH_WIN_BASE_MASK);

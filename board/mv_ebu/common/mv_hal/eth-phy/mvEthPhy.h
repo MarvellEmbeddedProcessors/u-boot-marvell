@@ -109,6 +109,7 @@ typedef struct {
 	MV_U32		specRegOff;		/* Board specific register offset, Valid if boardSpecInit == TRUE */
 	MV_U32		specData;  		/* Board specific data to write, Valid if boardSpecInit == TRUE */
 	MV_U32		ethPhySmiReg;		/* Ethernet unit PHY SMI register offset */
+	MV_BOOL		isSgmii[MV_ETH_MAX_PORTS];
 } MV_ETHPHY_HAL_DATA;
 
 MV_STATUS 	mvEthPhyHalInit(MV_ETHPHY_HAL_DATA *halData);

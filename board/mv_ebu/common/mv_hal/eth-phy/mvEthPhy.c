@@ -1231,7 +1231,7 @@ MV_VOID mvEthInternalGEPhyBasicInit(MV_U32 ethPortNum)
 {
 }
 
-MV_VOID mvEth1540PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
+MV_VOID mvEth1540Y0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 {
 	MV_U16 reg;
 	MV_U16 i = ethphyHalData.phyAddr[ethPortNum];
@@ -1678,6 +1678,11 @@ MV_VOID mvEth1540PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 
 	mvEthPhyRegWrite(i, 0x16, 0x0000);
 
+	/* SGMII fix*/
+	mvEthPhyRegWrite(i, 0x16, 0x12);
+	mvEthPhyRegWrite(i, 0x1b, 0x0);
+	mvEthPhyRegWrite(i, 0x16, 0x0);
+
 
 	/* Power up the phy */
 	mvEthPhyRegRead(i, ETH_PHY_CTRL_REG, &reg);
@@ -1687,6 +1692,152 @@ MV_VOID mvEth1540PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	/* Sleep 3000 */
 	mvOsDelay(300);
 
+}
+
+MV_VOID mvEth1540A0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
+{
+	int i = ethphyHalData.phyAddr[ethPortNum];
+	MV_U16 reg;
+	int startAddr, endAddr;
+
+	/* Enable QSGMII AN */
+	/* Set page to 4. */
+	mvEthPhyRegWrite(i, 0x16, 4);
+	/* Enable AN */
+	mvEthPhyRegWrite(i, 0x0, 0x1140);
+	/* Set page to 0. */
+	mvEthPhyRegWrite(i, 0x16, 0);
+
+	/* Power up the phy */
+	mvEthPhyRegRead(i, ETH_PHY_CTRL_REG, &reg);
+	reg &= ~(ETH_PHY_CTRL_POWER_DOWN_MASK);
+	mvEthPhyRegWrite(i, ETH_PHY_CTRL_REG, reg);
+
+	/* Disable Drop BadTag */
+	mvEthPhyRegWrite(i, 22, 0x0010);
+	mvEthPhyRegWrite(i, 1, 0x000B);
+	mvEthPhyRegWrite(i, 2, 0x0000);
+	mvEthPhyRegWrite(i, 3, 0x0FB4);
+	mvEthPhyRegWrite(i, 1, 0x080B);
+	mvEthPhyRegWrite(i, 2, 0x0000);
+	mvEthPhyRegWrite(i, 3, 0x0FB4);
+	mvEthPhyRegWrite(i, 1, 0x100B);
+	mvEthPhyRegWrite(i, 2, 0x0000);
+	mvEthPhyRegWrite(i, 3, 0x0FB4);
+	mvEthPhyRegWrite(i, 1, 0x180B);
+	mvEthPhyRegWrite(i, 2, 0x0000);
+	mvEthPhyRegWrite(i, 3, 0x0FB4);
+	mvEthPhyRegWrite(i, 22, 0x0000);
+	mvEthPhyRegWrite(i, 22, 0x00FA);
+	mvEthPhyRegWrite(i, 8, 0x0010);
+
+	mvEthPhyRegWrite(i, 22, 0x00FB);
+	mvEthPhyRegWrite(i, 1, 0x4099);
+	mvEthPhyRegWrite(i, 3, 0x1120);
+	mvEthPhyRegWrite(i, 11, 0x113C);
+	mvEthPhyRegWrite(i, 14, 0x8100);
+	mvEthPhyRegWrite(i, 15, 0x112A);
+
+	mvEthPhyRegWrite(i, 22, 0x00FC);
+	mvEthPhyRegWrite(i, 1, 0x20B0);
+
+	mvEthPhyRegWrite(i, 22, 0x00FF);
+	mvEthPhyRegWrite(i, 17, 0x0000);
+	mvEthPhyRegWrite(i, 16, 0x2000);
+	mvEthPhyRegWrite(i, 17, 0x4444);
+	mvEthPhyRegWrite(i, 16, 0x2140);
+	mvEthPhyRegWrite(i, 17, 0x8064);
+	mvEthPhyRegWrite(i, 16, 0x2141);
+	mvEthPhyRegWrite(i, 17, 0x0108);
+	mvEthPhyRegWrite(i, 16, 0x2144);
+	mvEthPhyRegWrite(i, 17, 0x0F16);
+	mvEthPhyRegWrite(i, 16, 0x2146);
+	mvEthPhyRegWrite(i, 17, 0x8C44);
+	mvEthPhyRegWrite(i, 16, 0x214B);
+
+	mvEthPhyRegWrite(i, 17, 0x0F90);
+	mvEthPhyRegWrite(i, 16, 0x214C);
+	mvEthPhyRegWrite(i, 17, 0xBA33);
+	mvEthPhyRegWrite(i, 16, 0x214D);
+	mvEthPhyRegWrite(i, 17, 0x39AA);
+	mvEthPhyRegWrite(i, 16, 0x214F);
+	mvEthPhyRegWrite(i, 17, 0x8433);
+	mvEthPhyRegWrite(i, 16, 0x2151);
+	mvEthPhyRegWrite(i, 17, 0x2010);
+	mvEthPhyRegWrite(i, 16, 0x2152);
+	mvEthPhyRegWrite(i, 17, 0x99EB);
+	mvEthPhyRegWrite(i, 16, 0x2153);
+	mvEthPhyRegWrite(i, 17, 0x2F3B);
+	mvEthPhyRegWrite(i, 16, 0x2154);
+	mvEthPhyRegWrite(i, 17, 0x584E);
+	mvEthPhyRegWrite(i, 16, 0x2156);
+	mvEthPhyRegWrite(i, 17, 0x1223);
+	mvEthPhyRegWrite(i, 16, 0x2158);
+	mvEthPhyRegWrite(i, 22, 0x0000);
+
+	/* Enable EEE_Auto-neg for 1000BASE-T and 100BASE-TX */
+	mvEthPhyRegWrite(i, 22, 0x0000);
+	mvEthPhyRegWrite(i, 13, 0x0007);
+	mvEthPhyRegWrite(i, 14, 0x003C);
+	mvEthPhyRegWrite(i, 13, 0x4007);
+	mvEthPhyRegWrite(i, 14, 0x0006);
+
+	/* Enable MACSec (Reg 27_2.13 = '1') */
+	mvEthPhyRegWrite(i, 22, 0x0012);
+	mvEthPhyRegRead(i, 27, &reg);
+	reg |= (1 << 13);
+	mvEthPhyRegWrite(i, 27, reg);
+
+	if (eeeEnable == MV_TRUE) {
+		/* Enable EEE Master (Legacy) Mode */
+		mvEthPhyRegWrite(i, 22, 0x0010);
+		mvEthPhyRegWrite(i, 1, 0x03c1);
+		mvEthPhyRegWrite(i, 2, 0x0001);
+		mvEthPhyRegWrite(i, 3, 0x0000);
+		mvEthPhyRegWrite(i, 1, 0x0bc1);
+		mvEthPhyRegWrite(i, 2, 0x0001);
+		mvEthPhyRegWrite(i, 3, 0x0000);
+		mvEthPhyRegWrite(i, 1, 0x13c1);
+		mvEthPhyRegWrite(i, 2, 0x0001);
+		mvEthPhyRegWrite(i, 3, 0x0000);
+		mvEthPhyRegWrite(i, 1, 0x1bc1);
+		mvEthPhyRegWrite(i, 2, 0x0001);
+		mvEthPhyRegWrite(i, 3, 0x0000);
+		mvEthPhyRegWrite(i, 22, 0x0000);
+	}
+	/* Configure LED */
+	mvEthPhyRegWrite(i, 22, 3);
+	mvEthPhyRegWrite(i, 16, 0x1111);
+
+	mvEthPhyRegWrite(i, 22, 0x0000);
+	mvEthPhyRegWrite(i, 0, 0x9140);
+
+	mvOsDelay(100);
+	/*  Sleep 3000 */
+	/* mvOsDelay(300); */
+}
+
+MV_VOID mvEth1540PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
+{
+	MV_U16 reg;
+	int startAddr = ethphyHalData.phyAddr[ethPortNum];
+
+	/* Reads ID2 */
+	if (mvEthPhyRegRead(startAddr, 3, &reg) != MV_OK)
+		return;
+
+
+	/* Identify PHY Revision. */
+	mvEthPhyRegWrite(startAddr, 0x16, 0xFB);
+	mvEthPhyRegRead(startAddr, 0x1F, &reg);
+	mvEthPhyRegWrite(startAddr, 0x16, 0x0);
+
+	if (reg == 0x100)
+		mvEth1540Y0PhyBasicInit(ethPortNum, eeeEnable);
+	else
+		mvEth1540A0PhyBasicInit(ethPortNum, eeeEnable);
+
+	return;
 }
 
 MV_VOID mvEth1340PhyBasicInit(void)
@@ -1743,10 +1894,32 @@ MV_VOID mvEth1340PhyBasicInit(void)
 *******************************************************************************/
 MV_VOID mvEthE1512PhyBasicInit(MV_U32 ethPortNum)
 {
+/*
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x12);
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x14, 0x201);
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x14, 0x8201);
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0);
+*/
+	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x00FF);
+	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x11, 0x214B);
+	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x10, 0x2144);
+	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x11, 0x0C28);
+	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x10, 0x2146);
+	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x11, 0xB233);
+	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x10, 0x214D);
+	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x11, 0xCC0C);
+	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x10, 0x2159);
+	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x00FB);
+	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x07, 0xC00D);
+
+	if (ethphyHalData.isSgmii[ethPortNum]) {
+
+		mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x0012);
+		mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x14, 0x0001);
+		mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x14, 0x8001);
+	}
+	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x0000);
+
 }
 
 

@@ -296,7 +296,7 @@ MV_BOARD_MODULE_TYPE_INFO db88f78XX0rev2InfoBoardModTypeInfo[] = {
 MV_BOARD_GPP_INFO db88f78XX0rev2InfoBoardGppInfo[] = {
 	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
 	{BOARD_GPP_USB_VBUS,    24} /* from MPP map */
-	//{BOARD_GPP_RESET,       47},
+	/*{BOARD_GPP_RESET,       47},*/
 };
 
 MV_DEV_CS_INFO db88f78XX0rev2InfoBoardDeCsInfo[] = {
@@ -455,10 +455,10 @@ MV_BOARD_INFO db88f78XX0rev2Info = {
 
 MV_BOARD_MAC_INFO rd78460nasInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x0,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x1,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x19,0x800},  /* Port 1 */
-	{BOARD_MAC_SPEED_AUTO, 0x1B,0x1800}  /* Port 3 */
+	{BOARD_MAC_SPEED_AUTO, 0x10,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x11,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x12,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x13,0x0}
 };
 
 MV_BOARD_MODULE_TYPE_INFO rd78460nasInfoBoardModTypeInfo[] = {
@@ -470,17 +470,13 @@ MV_BOARD_MODULE_TYPE_INFO rd78460nasInfoBoardModTypeInfo[] = {
 
 MV_BOARD_GPP_INFO rd78460nasInfoBoardGppInfo[] = {
 	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
-	{BOARD_GPP_USB_VBUS,    24} /* from MPP map */
-	//{BOARD_GPP_RESET,       47},
+	{BOARD_GPP_RESET, 21}
 };
 
 MV_DEV_CS_INFO rd78460nasInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth }*/
 #if defined(MV_INCLUDE_SPI)
-	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
-#endif
-#if defined(MV_INCLUDE_NOR)
-	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16} /* NOR DEV */
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8} /* SPI DEV */
 #endif
 };
 
@@ -499,9 +495,8 @@ MV_BOARD_MPP_INFO rd78460nasInfoBoardMppConfigValue[] = {
 };
 
 MV_SERDES_CFG rd78460nasInfoBoardSerdesConfigValue[] = {
-	{MV_TRUE, 0x00226001, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
-	{MV_TRUE, 0x43320301, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},	/* Switch module */
-
+	{0x00223001, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
+	{0x33320201, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, 0x00000030},	/* Switch module */
 };
 
 MV_BOARD_INFO rd78460nasInfo = {
@@ -913,11 +908,127 @@ MV_BOARD_INFO fpga88f78XX0Info = {
 	.nandFlashControl		= FPGA_88F78XX0_BOARD_NAND_CONTROL
 };
 
+/***************************/
+/* ARMADA-XP AMC BOARD     */
+/***************************/
+#define DB_78X60_AMC_BOARD_NAND_READ_PARAMS		0x000C0282
+#define DB_78X60_AMC_BOARD_NAND_WRITE_PARAMS		0x00010305
+/*NAND care support for small page chips*/
+#define DB_78X60_AMC_BOARD_NAND_CONTROL			0x01c00543
+
+MV_U8	db78X60amcInfoBoardDebugLedIf[] = {53, 54, 55, 56}; /* 7 segment MPPs*/
+
+MV_BOARD_TWSI_INFO	db78X60amcInfoBoardTwsiDev[] = {
+	/* No TWSI devices on board*/
+};
+
+MV_BOARD_MAC_INFO db78X60amcInfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
+	{BOARD_MAC_SPEED_AUTO, 0x1,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0xF,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0xE,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x0,0x0}
+};
+
+
+MV_BOARD_MODULE_TYPE_INFO db78X60amcInfoBoardModTypeInfo[] = {
+	/* No Modules */
+};
+
+MV_BOARD_GPP_INFO db78X60amcInfoBoardGppInfo[] = {
+	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
+	{BOARD_GPP_USB_VBUS,    46} /* from MPP map */
+};
+
+MV_DEV_CS_INFO db78X60amcInfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth}*/
+#if defined(MV_INCLUDE_SPI)
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO db78X60amcInfoBoardMppConfigValue[] = {
+	{ {
+		DB_78X60_AMC_MPP0_7,
+		DB_78X60_AMC_MPP8_15,
+		DB_78X60_AMC_MPP16_23,
+		DB_78X60_AMC_MPP24_31,
+		DB_78X60_AMC_MPP32_39,
+		DB_78X60_AMC_MPP40_47,
+		DB_78X60_AMC_MPP48_55,
+		DB_78X60_AMC_MPP56_63,
+		DB_78X60_AMC_MPP64_67,
+	} }
+};
+
+MV_SERDES_CFG db78X60amcInfoBoardSerdesConfigValue[] = {
+	 {0x33111111, 0x00010001, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, 0x00000030} /* Default */
+};
+
+
+MV_BOARD_TDM_INFO	db78X60amcTdm880[]	= {};
+MV_BOARD_TDM_INFO	db78X60amcTdm792[]	= {};
+MV_BOARD_TDM_INFO	db78X60amcTdm3215[]	= {};
+
+MV_BOARD_INFO db78X60amcInfo = {
+	.boardName			= "DB-78460-AMC",
+	.numBoardMppTypeValue		= ARRSZ(db78X60amcInfoBoardModTypeInfo),
+	.pBoardModTypeValue		= db78X60amcInfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(db78X60amcInfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= db78X60amcInfoBoardMppConfigValue,
+	.numBoardSerdesConfigValue	= ARRSZ(db78X60amcInfoBoardSerdesConfigValue),
+	.pBoardSerdesConfigValue	= db78X60amcInfoBoardSerdesConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(db78X60amcInfoBoardDeCsInfo),
+	.pDevCsInfo			= db78X60amcInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(db78X60amcInfoBoardTwsiDev),
+	.pBoardTwsiDev			= db78X60amcInfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(db78X60amcInfoBoardMacInfo),
+	.pBoardMacInfo			= db78X60amcInfoBoardMacInfo,
+	.numBoardGppInfo		= ARRSZ(db78X60amcInfoBoardGppInfo),
+	.pBoardGppInfo			= db78X60amcInfoBoardGppInfo,
+	.activeLedsNumber		= ARRSZ(db78X60amcInfoBoardDebugLedIf),
+	.pLedGppPin			= db78X60amcInfoBoardDebugLedIf,
+	.ledsPolarity			= 0,
+
+	/* GPP values */
+	.gppOutEnValLow			= DB_78X60_AMC_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= DB_78X60_AMC_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= DB_78X60_AMC_GPP_OUT_ENA_HIGH,
+	.gppOutValLow			= DB_78X60_AMC_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= DB_78X60_AMC_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= DB_78X60_AMC_GPP_OUT_VAL_HIGH,
+	.gppPolarityValLow		= DB_78X60_AMC_GPP_POL_LOW,
+	.gppPolarityValMid		= DB_78X60_AMC_GPP_POL_MID,
+	.gppPolarityValHigh		= DB_78X60_AMC_GPP_POL_HIGH,
+
+
+	/* TDM configuration */
+	/* We hold a different configuration array for each possible slic that
+	 ** can be connected to board.
+	 ** When modules are scanned, then we select the index of the relevant
+	 ** slic's information array.
+	 ** For RD and Customers boards we only need to initialize a single
+	 ** entry of the arrays below, and set the boardTdmInfoIndex to 0.
+	*/
+	.numBoardTdmInfo		= {},
+	.pBoardTdmInt2CsInfo		= {},
+	.boardTdmInfoIndex		= -1,
+
+	/* NAND init params */
+	.nandFlashReadParams		= DB_78X60_AMC_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_78X60_AMC_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= DB_78X60_AMC_BOARD_NAND_CONTROL
+};
+
 MV_BOARD_INFO *boardInfoTbl[] = {
 	&db88f78XX0Info,
 	&rd78460Info,
 	&db78X60pcacInfo,
 	&fpga88f78XX0Info,
 	&db88f78XX0rev2Info,
-	&rd78460nasInfo
+	&rd78460nasInfo,
+	&db78X60amcInfo
 };

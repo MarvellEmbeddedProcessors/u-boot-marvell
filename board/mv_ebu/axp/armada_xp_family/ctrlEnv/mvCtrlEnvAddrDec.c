@@ -113,6 +113,14 @@ MV_STATUS mvCtrlAttribGet(MV_TARGET target, MV_TARGET_ATTRIB *targetAttrib)
 
 	return MV_OK;
 }
+/*******************************************************************************/
+MV_STATUS mvCtrlAttribSet(MV_TARGET target, MV_TARGET_ATTRIB *targetAttrib)
+{
+	mvTargetDefaultsArray[MV_CHANGE_BOOT_CS(target)].attrib  = targetAttrib->attrib;
+	mvTargetDefaultsArray[MV_CHANGE_BOOT_CS(target)].targetId= targetAttrib->targetId;
+
+	return MV_OK;
+}
 
 /*******************************************************************************
 * mvCtrlGetAttrib -

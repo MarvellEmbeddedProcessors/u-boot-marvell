@@ -144,11 +144,13 @@ typedef enum _devBoardMppTypeClass {
 } MV_BOARD_MPP_TYPE_CLASS;
 
 typedef enum _devBoardOtherTypeClass {
-	MV_BOARD_NONE = 0x00000000,
-	MV_BOARD_LVDS = 0x00000001,
-	MV_BOARD_PEX = 0x00000002,
+	MV_BOARD_NONE    = 0x00000000,
+	MV_BOARD_LVDS    = 0x00000001,
+	MV_BOARD_PEX     = 0x00000002,
+	MV_BOARD_SWITCH  = 0x00000004,
 	MV_BOARD_UNKNOWN = 0x80000000
 } MV_BOARD_OTHER_TYPE_CLASS;
+
 
 #define MV_BOARD_TDM	MV_BOARD_TDM_32CH
 
@@ -164,7 +166,7 @@ typedef enum _devBoardClass {
 	BOARD_DEV_FPGA,
 	BOARD_DEV_SRAM,
 	BOARD_DEV_SPI_FLASH,
-	BOARD_DEV_OTHER,
+	BOARD_DEV_OTHER
 } MV_BOARD_DEV_CLASS;
 
 typedef enum _devTwsiBoardClass {
@@ -238,7 +240,7 @@ typedef enum _boardMacSpeed {
 	BOARD_MAC_SPEED_10M,
 	BOARD_MAC_SPEED_100M,
 	BOARD_MAC_SPEED_1000M,
-	BOARD_MAC_SPEED_AUTO,
+	BOARD_MAC_SPEED_AUTO
 } MV_BOARD_MAC_SPEED;
 
 typedef struct _boardMacInfo {
@@ -416,6 +418,7 @@ MV_U16 mvBoardDramBusWidthGet(MV_VOID);
 MV_STATUS mvBoardMppModulesScan(void);
 MV_STATUS mvBoardOtherModulesScan(void);
 MV_BOOL mvBoardIsPexModuleConnected(void);
+MV_BOOL mvBoardIsSwitchModuleConnected(void);
 MV_BOOL mvBoardIsLvdsModuleConnected(void);
 MV_BOOL mvBoardIsLcdDviModuleConnected(void);
 MV_BOOL mvBoardIsGMIIModuleConnected(void);

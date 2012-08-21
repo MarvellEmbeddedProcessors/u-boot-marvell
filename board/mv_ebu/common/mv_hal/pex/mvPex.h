@@ -91,6 +91,11 @@ extern "C" {
 		MV_PEX_END_POINT	/* end point device */
 	} MV_PEX_TYPE;
 
+	typedef enum _mvPexGen {
+		MV_PEX_GEN1_1 = 1,
+		MV_PEX_GEN2_0
+	} MV_PEX_GEN;
+
 	typedef enum _mvPexWidth {
 		MV_PEX_WITDH_X1 = 1,
 		MV_PEX_WITDH_X2,
@@ -104,6 +109,7 @@ extern "C" {
 		MV_PEX_TYPE pexType;
 		MV_PEX_WIDTH pexWidth;
 		MV_BOOL pexLinkUp;
+		MV_PEX_GEN pexGen;
 	} MV_PEX_MODE;
 
 	/* PEX Bar attributes */

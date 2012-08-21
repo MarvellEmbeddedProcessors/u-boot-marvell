@@ -86,7 +86,7 @@ extern "C" {
 
 #elif defined(MV_VXWORKS)
 
-#include "mvOsSVxw.h"
+#include "VxWorks/mvOsSVxw.h"
 
 #elif defined(MV_NETBSD)
 

@@ -104,7 +104,44 @@ extern "C" {
 #define    MV_GPP30 BIT30
 #define    MV_GPP31 BIT31
 
-	/* registers offsets */
+#define    MV_GPP32  BIT0
+#define    MV_GPP33  BIT1
+#define    MV_GPP34  BIT2
+#define    MV_GPP35  BIT3
+#define    MV_GPP36  BIT4
+#define    MV_GPP37  BIT5
+#define    MV_GPP38  BIT6
+#define    MV_GPP39  BIT7
+#define    MV_GPP40  BIT8
+#define    MV_GPP41  BIT9
+#define    MV_GPP42 BIT10
+#define    MV_GPP43 BIT11
+#define    MV_GPP44 BIT12
+#define    MV_GPP45 BIT13
+#define    MV_GPP46 BIT14
+#define    MV_GPP47 BIT15
+#define    MV_GPP48 BIT16
+#define    MV_GPP49 BIT17
+#define    MV_GPP50 BIT18
+#define    MV_GPP51 BIT19
+#define    MV_GPP52 BIT20
+#define    MV_GPP53 BIT21
+#define    MV_GPP54 BIT22
+#define    MV_GPP55 BIT23
+#define    MV_GPP56 BIT24
+#define    MV_GPP57 BIT25
+#define    MV_GPP58 BIT26
+#define    MV_GPP59 BIT27
+#define    MV_GPP60 BIT28
+#define    MV_GPP61 BIT29
+#define    MV_GPP62 BIT30
+#define    MV_GPP63 BIT31
+
+#define    MV_GPP64  BIT0
+#define    MV_GPP65  BIT1
+#define    MV_GPP66  BIT2
+
+/* registers offsets */
 
 #define GPP_DATA_OUT_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x00)
 #define GPP_DATA_OUT_REG_0			(MV_GPP_REGS_BASE_0 + 0x00)	/* Used in .S files */
@@ -118,7 +155,7 @@ extern "C" {
 
 #define GPP_FUNC_SELECT_REG			(MV_GPP_REGS_BASE(0) + 0x40)
 
-	/* Relevant for MV78XX0 */
+/* Relevant for MV78XX0 */
 #define GPP_DATA_OUT_SET_REG			(MV_GPP_REGS_BASE(0) + 0x20)
 #define GPP_DATA_OUT_CLEAR_REG			(MV_GPP_REGS_BASE(0) + 0x24)
 

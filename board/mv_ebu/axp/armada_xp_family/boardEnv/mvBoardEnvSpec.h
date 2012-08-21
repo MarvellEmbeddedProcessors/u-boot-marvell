@@ -183,7 +183,7 @@ MPP#	NAME			IN/OUT
 #define RD_78460_NAS_MPP24_31		0x11000000 /* bits[27:24] = 0x5 to enable PMm for CPU0 */
 #define RD_78460_NAS_MPP32_39		0x11111111
 #define RD_78460_NAS_MPP40_47		0x00221100 /* bits[3:0] = 0x3 to enable PM for CPU1 */
-#define RD_78460_NAS_MPP48_55		0x00000000
+#define RD_78460_NAS_MPP48_55		0x00000003
 #define RD_78460_NAS_MPP56_63		0x00000000 /* bits[7:4] = 0x1 to enable PM for CPU2/3 */
 #define RD_78460_NAS_MPP64_67		0x00000000
 

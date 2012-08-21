@@ -416,6 +416,7 @@ MV_STATUS mvNfcFlashIdGet(MV_NFC_CTRL *nfcCtrl, MV_U32 *flashId);
 MV_STATUS mvNfcUnitStateStore(MV_U32 *stateData, MV_U32 *len);
 MV_NFC_ECC_MODE mvNfcEccModeSet(MV_NFC_CTRL *nfcCtrl, MV_NFC_ECC_MODE eccMode);
 MV_U32 	  mvNfcBadBlockPageNumber(MV_NFC_CTRL *nfcCtrl);
+MV_STATUS mvNfcReset(void);
 
 #ifdef __cplusplus
 }

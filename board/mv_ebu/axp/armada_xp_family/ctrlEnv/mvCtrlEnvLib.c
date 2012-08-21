@@ -1939,7 +1939,6 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
 	MV_STATUS	status = MV_OK;
 	MV_U32		tmp;
-
 /* this is a mapping of the final power management clock gating control register value @ 0x18220.*/
 	MV_U32	powermngmntctrlregmap = 0x0;
 	MV_U32	ethport = 0;
@@ -2154,6 +2153,12 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 		}
 
 	} /* for each serdes lane*/
+
+
+	if(mvBoardIsSerdesConfigurationEnabled() == MV_FALSE){
+		mvOsPrintf("skipping Serdes configuration phase, assume bootloader did this work already !!!\n");
+		return MV_OK;
+	}
 
 	/*
 	 * If clock gatting was done in U-boot then we don't want

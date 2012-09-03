@@ -158,6 +158,7 @@ MV_STATUS mvCpuIfInitForCpu(MV_U32 cpu, MV_CPU_DEC_WIN *cpuAddrWinMap)
 	MV_TARGET target;
 	MV_ADDR_WIN addrWin;
 	MV_U32 minBase = 0xFFFFFFFF;
+	MV_U32 minSize;
 
 	if (cpuAddrWinMap == NULL) {
 		DB(mvOsPrintf("mvCpuIfInit:ERR. cpuAddrWinMap == NULL\n"));
@@ -174,11 +175,17 @@ MV_STATUS mvCpuIfInitForCpu(MV_U32 cpu, MV_CPU_DEC_WIN *cpuAddrWinMap)
 			minBase = cpuAddrWinMap[target].addrWin.baseLow;
 	}
 	if (minBase != 0x0) {
+		minSize = 0xFFFFFFFF - minBase + 1;
+		if (!MV_IS_POWER_OF_2(minSize)) {
+			/* Round up to next power of 2. */
+			minSize = (1 << (mvLog2(minSize) + 1));
+			minBase = 0xFFFFFFFF - minSize + 1;
+		}
+
 		/* Now write the base and size */
 		MV_REG_WRITE(MBUS_BRIDGE_WIN_BASE_REG, minBase);
 		/* Align window size to 64KB */
-		regVal = ((0xFFFFFFFF - minBase) + SDRAMWBR_BASE_ALIGNMENT) & ~(SDRAMWBR_BASE_ALIGNMENT - 1);
-		regVal = (regVal / SDRAMWBR_BASE_ALIGNMENT) - 1;
+		regVal = (minSize / SDRAMWBR_BASE_ALIGNMENT) - 1;
 		regVal = (regVal << 16) | 0x1;
 		MV_REG_WRITE(MBUS_BRIDGE_WIN_CTRL_REG, regVal);
 	}

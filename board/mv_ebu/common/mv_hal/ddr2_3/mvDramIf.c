@@ -275,7 +275,7 @@ MV_STATUS mvDramIfWinGet(MV_TARGET target, MV_DRAM_DEC_WIN *pAddrDecWin)
 
 	sizeRegVal = (sizeReg & SDRAMWCR_SIZE_MASK) >> SDRAMWCR_SIZE_OFFS;
 
-	pAddrDecWin->addrWin.size = (MV_U64)((sizeRegVal + 1) * SDRAMWCR_SIZE_ALLIGNMENT);
+	pAddrDecWin->addrWin.size = (MV_U64)((MV_U64)(sizeRegVal + 1) * (MV_U64)SDRAMWCR_SIZE_ALLIGNMENT);
 
 	/* Check if ctrlRegToSize returned OK */
 	if (-1 == pAddrDecWin->addrWin.size) {

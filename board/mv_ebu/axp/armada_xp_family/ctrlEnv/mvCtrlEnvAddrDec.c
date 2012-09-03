@@ -204,6 +204,7 @@ MV_STATUS mvCtrlAddrWinMapBuild(MV_UNIT_WIN_INFO *pAddrWinMap, MV_U32 len)
 	MV_U32 i;
 	MV_TARGET_ATTRIB targetAttrib;
 	MV_STATUS status;
+	MV_U64 startAddr, endAddr;
 
 	/* Check size of CPU address win table */
 	if (len <= MAX_TARGETS) {
@@ -221,6 +222,20 @@ MV_STATUS mvCtrlAddrWinMapBuild(MV_UNIT_WIN_INFO *pAddrWinMap, MV_U32 len)
 			} else {
 				mvOsPrintf("mvCtrlAddrWinMapBuild() - mvCpuIfTargetWinGet() failed.\n");
 				return MV_ERROR;
+			}
+		}
+		if (MV_TARGET_IS_DRAM(i)) {
+			/* As all IO address decode windows support only 32-bit
+			** addresses, limit the DRAM base / size to 4GB max.
+			*/
+			startAddr = (MV_U64)((((MV_U64)cpuAddrDecWin.addrWin.baseHigh << 32ll)) +
+					(MV_U64)cpuAddrDecWin.addrWin.baseLow);
+			endAddr = (MV_U64)(startAddr + (MV_U64)cpuAddrDecWin.addrWin.size) - 1;
+			if (endAddr > 0xFFFFFFFFll) {
+				if (startAddr <= 0xFFFFFFFFll)
+					cpuAddrDecWin.addrWin.size = (0x100000000ll - cpuAddrDecWin.addrWin.baseLow);
+				else
+					cpuAddrDecWin.enable = MV_FALSE;	
 			}
 		}
 

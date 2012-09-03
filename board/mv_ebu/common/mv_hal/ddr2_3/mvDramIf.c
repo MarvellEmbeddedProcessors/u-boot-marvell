@@ -216,7 +216,7 @@ MV_STATUS mvDramIfWinSet(MV_TARGET target, MV_DRAM_DEC_WIN *pAddrDecWin)
 	/* check if address is aligned to the size */
 	if (MV_IS_NOT_ALIGN(pAddrDecWin->addrWin.baseLow, pAddrDecWin->addrWin.size)) {
 		mvOsPrintf("mvDramIfWinSet:Error setting DRAM interface window %d."
-			   "\nAddress 0x%08x is unaligned to size 0x%x.\n",
+			   "\nAddress 0x%08x is unaligned to size 0x%llx.\n",
 			   target, pAddrDecWin->addrWin.baseLow, pAddrDecWin->addrWin.size);
 		return MV_ERROR;
 	}
@@ -275,7 +275,7 @@ MV_STATUS mvDramIfWinGet(MV_TARGET target, MV_DRAM_DEC_WIN *pAddrDecWin)
 
 	sizeRegVal = (sizeReg & SDRAMWCR_SIZE_MASK) >> SDRAMWCR_SIZE_OFFS;
 
-	pAddrDecWin->addrWin.size = (sizeRegVal + 1) * SDRAMWCR_SIZE_ALLIGNMENT;
+	pAddrDecWin->addrWin.size = (MV_U64)((sizeRegVal + 1) * SDRAMWCR_SIZE_ALLIGNMENT);
 
 	/* Check if ctrlRegToSize returned OK */
 	if (-1 == pAddrDecWin->addrWin.size) {
@@ -286,7 +286,7 @@ MV_STATUS mvDramIfWinGet(MV_TARGET target, MV_DRAM_DEC_WIN *pAddrDecWin)
 	/* Extract base address                                         */
 	/* Base register [31:16] ==> baseLow[31:16]             */
 	pAddrDecWin->addrWin.baseLow = baseReg & SDRAMWBR_BASE_MASK;
-	pAddrDecWin->addrWin.baseHigh = 0;
+	pAddrDecWin->addrWin.baseHigh = baseReg & SDRAMWBR_BASE_EXT_MASK;
 
 	if (sizeReg & SDRAMWCR_ENABLE)
 		pAddrDecWin->enable = MV_TRUE;

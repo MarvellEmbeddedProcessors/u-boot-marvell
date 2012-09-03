@@ -661,7 +661,7 @@ MV_STATUS mvPexTargetWinRemap(MV_U32 pexIf, MV_U32 winNum, MV_PEX_REMAP_WIN *pAd
 
 	if (MV_IS_NOT_ALIGN(pAddrWin->addrWin.baseLow, PXWRR_REMAP_ALIGNMENT)) {
 		mvOsPrintf("mvPexTargetWinRemap: Error remap PEX interface %d win %d."
-			   "\nAddress 0x%08x is unaligned to size 0x%x.\n",
+			   "\nAddress 0x%08x is unaligned to size 0x%llx.\n",
 			   pexIf, winNum, pAddrWin->addrWin.baseLow, pAddrWin->addrWin.size);
 		return MV_ERROR;
 	}

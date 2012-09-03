@@ -200,7 +200,7 @@ MV_STATUS mvSdmmcWinWrite(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pAddrDecW
 	/* check if address is aligned to the size */
 	if (MV_IS_NOT_ALIGN(pAddrDecWin->addrWin.baseLow, pAddrDecWin->addrWin.size)) {
 		mvOsPrintf("mvSdmmcWinWrite:Error setting SDMMC window %d.\n"
-			   "Address 0x%08x is unaligned to size 0x%x.\n",
+			   "Address 0x%08x is unaligned to size 0x%llx.\n",
 			   winNum, pAddrDecWin->addrWin.baseLow, pAddrDecWin->addrWin.size);
 		return MV_ERROR;
 	}

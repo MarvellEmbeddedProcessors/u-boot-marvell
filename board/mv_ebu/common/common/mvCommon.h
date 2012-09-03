@@ -381,7 +381,7 @@ void mvBinToAscii(const MV_U8 *bin, char *asciiStr, int size);
 
 MV_STATUS mvMacStrToHex(const char *macStr, MV_U8 *macHex);
 MV_STATUS mvMacHexToStr(MV_U8 *macHex, char *macStr);
-void mvSizePrint(MV_U32);
+void mvSizePrint(MV_U64);
 
 MV_U32 mvLog2(MV_U32 num);
 

@@ -661,6 +661,106 @@ MV_BOARD_INFO rd78460Info = {
 };
 
 
+/*****************************/
+/* ARMADA-XP RD SERVER REV2 BOARD */
+/*****************************/
+#define RD_78460_SERVER_REV2_BOARD_NAND_READ_PARAMS		0x000C0282
+#define RD_78460_SERVER_REV2_BOARD_NAND_WRITE_PARAMS		0x00010305
+/*NAND care support for small page chips*/
+#define RD_78460_SERVER_REV2_BOARD_NAND_CONTROL			0x01c00543
+
+MV_BOARD_MAC_INFO rd78460ServerRev2InfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
+	{BOARD_MAC_SPEED_1000M, 0x1,0x0},
+	{BOARD_MAC_SPEED_1000M, 0x2,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x0,0x0},
+	{BOARD_MAC_SPEED_1000M, 0x1B,0x0}
+};
+
+MV_BOARD_MODULE_TYPE_INFO rd78460ServerRev2InfoBoardModTypeInfo[] = {
+	{
+		.boardMppMod		= MV_BOARD_AUTO,
+		.boardOtherMod		= MV_BOARD_NONE
+	}
+};
+
+MV_DEV_CS_INFO rd78460ServerRev2InfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth}*/
+#if defined(MV_INCLUDE_SPI)
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8} /* SPI DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO rd78460ServerRev2InfoBoardMppConfigValue[] = {
+	{ {
+		RD_78460_SERVER_REV2_MPP0_7,
+		RD_78460_SERVER_REV2_MPP8_15,
+		RD_78460_SERVER_REV2_MPP16_23,
+		RD_78460_SERVER_REV2_MPP24_31,
+		RD_78460_SERVER_REV2_MPP32_39,
+		RD_78460_SERVER_REV2_MPP40_47,
+		RD_78460_SERVER_REV2_MPP48_55,
+		RD_78460_SERVER_REV2_MPP56_63,
+		RD_78460_SERVER_REV2_MPP64_67,
+	} }
+};
+
+MV_SERDES_CFG rd78460ServerRev2InfoBoardSerdesConfigValue[] = {
+	{MV_TRUE, 0x00321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010},	/* CPU0 */
+	{MV_TRUE, 0x00321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010}	/* CPU1-3 */
+};
+
+MV_BOARD_INFO rd78460ServerRev2Info = {
+ .boardName				= "RD-78460-SERVER-REV2",
+ .numBoardMppTypeValue			= ARRSZ(rd78460ServerRev2InfoBoardModTypeInfo),
+ .pBoardModTypeValue			= rd78460ServerRev2InfoBoardModTypeInfo,
+ .numBoardMppConfigValue		= ARRSZ(rd78460ServerRev2InfoBoardMppConfigValue),
+ .pBoardMppConfigValue			= rd78460ServerRev2InfoBoardMppConfigValue,
+ .numBoardSerdesConfigValue		= ARRSZ(rd78460ServerRev2InfoBoardSerdesConfigValue),
+ .pBoardSerdesConfigValue		= rd78460ServerRev2InfoBoardSerdesConfigValue,
+ .intsGppMaskLow			= 0,
+ .intsGppMaskMid			= 0,
+ .intsGppMaskHigh			= 0,
+ .numBoardDeviceIf			= ARRSZ(rd78460ServerRev2InfoBoardDeCsInfo),
+ .pDevCsInfo				= rd78460ServerRev2InfoBoardDeCsInfo,
+ .numBoardTwsiDev			= 0,
+ .pBoardTwsiDev				= NULL,
+ .numBoardMacInfo			= ARRSZ(rd78460ServerRev2InfoBoardMacInfo),
+ .pBoardMacInfo				= rd78460ServerRev2InfoBoardMacInfo,
+ .numBoardGppInfo			= 0,
+ .pBoardGppInfo				= NULL,
+ .activeLedsNumber			= 0,
+ .pLedGppPin				= NULL,
+ .ledsPolarity				= 0,
+
+ /* GPP values */
+ .gppOutEnValLow			= RD_78460_SERVER_REV2_GPP_OUT_ENA_LOW,
+ .gppOutEnValMid			= RD_78460_SERVER_REV2_GPP_OUT_ENA_MID,
+ .gppOutEnValHigh			= RD_78460_SERVER_REV2_GPP_OUT_ENA_HIGH,
+ .gppOutValLow				= RD_78460_SERVER_REV2_GPP_OUT_VAL_LOW,
+ .gppOutValMid				= RD_78460_SERVER_REV2_GPP_OUT_VAL_MID,
+ .gppOutValHigh				= RD_78460_SERVER_REV2_GPP_OUT_VAL_HIGH,
+ .gppPolarityValLow			= RD_78460_SERVER_REV2_GPP_POL_LOW,
+ .gppPolarityValMid			= RD_78460_SERVER_REV2_GPP_POL_MID,
+ .gppPolarityValHigh			= RD_78460_SERVER_REV2_GPP_POL_HIGH,
+
+ /* TDM configuration */
+	/* We hold a different configuration array for each possible slic that
+ ** can be connected to board.
+ ** When modules are scanned, then we select the index of the relevant
+ ** slic's information array.
+ ** For RD and Customers boards we only need to initialize a single
+ ** entry of the arrays below, and set the boardTdmInfoIndex to 0.
+	*/
+ .numBoardTdmInfo			= {},
+ .pBoardTdmInt2CsInfo			= {},
+ .boardTdmInfoIndex			= -1,
+
+ /* NAND init params */
+ .nandFlashReadParams			= RD_78460_SERVER_REV2_BOARD_NAND_READ_PARAMS,
+ .nandFlashWriteParams			= RD_78460_SERVER_REV2_BOARD_NAND_WRITE_PARAMS,
+ .nandFlashControl			= RD_78460_SERVER_REV2_BOARD_NAND_CONTROL
+};
 /***************************/
 /* ARMADA-XP DB PCAC BOARD */
 /***************************/
@@ -1133,6 +1233,250 @@ MV_BOARD_INFO db78X60amcInfo = {
 	.nandFlashControl		= DB_78X60_AMC_BOARD_NAND_CONTROL
 };
 
+//////////////////////////////////////////////////////////////////////////////////
+
+/***************************/
+/* ARMADA-XP RD GP  BOARD */
+/***************************/
+#define RD_78460_GP_BOARD_NAND_READ_PARAMS		0x000C0282
+#define RD_78460_GP_BOARD_NAND_WRITE_PARAMS		0x00010305
+
+#define RD_78460_GP_BOARD_NAND_CONTROL			0x01c00543
+
+#define RD_78460_GP_BOARD_NOR_READ_PARAMS		0x403E07CF
+#define RD_78460_GP_BOARD_NOR_WRITE_PARAMS		0x000F0F0F
+
+
+MV_BOARD_TWSI_INFO   rd78460gpInfoBoardTwsiDev[] = {
+	/* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{BOARD_DEV_TWSI_SATR, 0x4C, ADDR7_BIT},
+	{BOARD_DEV_TWSI_SATR, 0x4D, ADDR7_BIT},
+	{BOARD_DEV_TWSI_SATR, 0x4E, ADDR7_BIT}
+};
+
+MV_BOARD_MAC_INFO rd78460gpInfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
+        /* speed will toggle to force link 1000 when SW module detected */
+	{BOARD_MAC_SPEED_AUTO, 0x10,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x11,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x12,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x13,0x0}
+};
+
+MV_BOARD_MODULE_TYPE_INFO rd78460gpInfoBoardModTypeInfo[] = {
+	{
+		.boardMppMod		= MV_BOARD_AUTO,
+		.boardOtherMod		= MV_BOARD_NONE
+	}
+};
+
+MV_BOARD_GPP_INFO rd78460gpInfoBoardGppInfo[] = {
+	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
+	{BOARD_GPP_RESET, 21}
+};
+
+MV_DEV_CS_INFO rd78460gpInfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8} /* SPI DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO rd78460gpInfoBoardMppConfigValue[] = {
+	{ {
+	RD_78460_GP_MPP0_7,
+	RD_78460_GP_MPP8_15,
+	RD_78460_GP_MPP16_23,
+	RD_78460_GP_MPP24_31,
+	RD_78460_GP_MPP32_39,
+	RD_78460_GP_MPP40_47,
+	RD_78460_GP_MPP48_55,
+	RD_78460_GP_MPP56_63,
+	RD_78460_GP_MPP64_67,
+	} }
+};
+
+MV_SERDES_CFG rd78460gpInfoBoardSerdesConfigValue[] = {
+	{MV_TRUE, 0x00223001, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
+};
+
+MV_BOARD_INFO rd78460gpInfo = {
+	.boardName			= "RD-AXP-GP rev 1.0",
+	.numBoardMppTypeValue		= ARRSZ(rd78460gpInfoBoardModTypeInfo),
+	.pBoardModTypeValue		= rd78460gpInfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(rd78460gpInfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= rd78460gpInfoBoardMppConfigValue,
+	.numBoardSerdesConfigValue	= ARRSZ(rd78460gpInfoBoardSerdesConfigValue),
+	.pBoardSerdesConfigValue	= rd78460gpInfoBoardSerdesConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(rd78460gpInfoBoardDeCsInfo),
+	.pDevCsInfo				= rd78460gpInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(rd78460gpInfoBoardTwsiDev),
+	.pBoardTwsiDev			= rd78460gpInfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(rd78460gpInfoBoardMacInfo),
+	.pBoardMacInfo			= rd78460gpInfoBoardMacInfo,
+	.numBoardGppInfo		= ARRSZ(rd78460gpInfoBoardGppInfo),
+	.pBoardGppInfo			= rd78460gpInfoBoardGppInfo,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow			= RD_78460_GP_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= RD_78460_GP_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= RD_78460_GP_GPP_OUT_ENA_HIGH,
+	.gppOutValLow			= RD_78460_GP_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= RD_78460_GP_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= RD_78460_GP_GPP_OUT_VAL_HIGH,
+	.gppPolarityValLow		= RD_78460_GP_GPP_POL_LOW,
+	.gppPolarityValMid		= RD_78460_GP_GPP_POL_MID,
+	.gppPolarityValHigh		= RD_78460_GP_GPP_POL_HIGH,
+
+	/* TDM configuration */
+	/* We hold a different configuration array for each possible slic that
+	** can be connected to board.
+	** When modules are scanned, then we select the index of the relevant
+	** slic's information array.
+	** For RD and Customers boards we only need to initialize a single
+	** entry of the arrays below, and set the boardTdmInfoIndex to 0.
+	*/
+	.numBoardTdmInfo			= {},
+	.pBoardTdmInt2CsInfo			= {},
+	.boardTdmInfoIndex			= -1,
+
+	/* NAND init params */
+	.nandFlashReadParams		= RD_78460_GP_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= RD_78460_GP_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= RD_78460_GP_BOARD_NAND_CONTROL,
+	/* NOR init params */
+	.norFlashReadParams		= RD_78460_GP_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= RD_78460_GP_BOARD_NOR_WRITE_PARAMS
+};
+
+/***************************/
+/* ARMADA-XP CUSTOMER BOARD */
+/***************************/
+#define RD_78460_CUSTOMER_BOARD_NAND_READ_PARAMS	0x000C0282
+#define RD_78460_CUSTOMER_BOARD_NAND_WRITE_PARAMS	0x00010305
+/*NAND care support for small page chips*/
+#define RD_78460_CUSTOMER_BOARD_NAND_CONTROL		0x01c00543
+
+#define RD_78460_CUSTOMER_BOARD_NOR_READ_PARAMS	0x403E07CF
+#define RD_78460_CUSTOMER_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
+
+MV_BOARD_MAC_INFO rd78460customerInfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
+	{BOARD_MAC_SPEED_AUTO, 0x10,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x11,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x12,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x13,0x0}
+};
+
+MV_BOARD_MODULE_TYPE_INFO rd78460customerInfoBoardModTypeInfo[] = {
+	{
+		.boardMppMod		= MV_BOARD_AUTO,
+		.boardOtherMod		= MV_BOARD_NONE
+	}
+};
+//////////////////////////////////////////////////////////////////////////////////
+
+MV_BOARD_GPP_INFO rd78460customerInfoBoardGppInfo[] = {
+	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
+	{BOARD_GPP_RESET, 21}
+};
+
+MV_DEV_CS_INFO rd78460customerInfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8} /* SPI DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO rd78460customerInfoBoardMppConfigValue[] = {
+	{ {
+	RD_78460_CUSTOMER_MPP0_7,
+	RD_78460_CUSTOMER_MPP8_15,
+	RD_78460_CUSTOMER_MPP16_23,
+	RD_78460_CUSTOMER_MPP24_31,
+	RD_78460_CUSTOMER_MPP32_39,
+	RD_78460_CUSTOMER_MPP40_47,
+	RD_78460_CUSTOMER_MPP48_55,
+	RD_78460_CUSTOMER_MPP56_63,
+	RD_78460_CUSTOMER_MPP64_67,
+	} }
+};
+
+MV_SERDES_CFG rd78460customerInfoBoardSerdesConfigValue[] = {
+	{MV_TRUE, 0x00223001, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
+	{MV_TRUE, 0x33320201, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Switch module */
+};
+
+MV_BOARD_INFO rd78460customerInfo = {
+	.boardName			= "RD-AXP-CUSTOMER",
+	.numBoardMppTypeValue		= ARRSZ(rd78460customerInfoBoardModTypeInfo),
+	.pBoardModTypeValue		= rd78460customerInfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(rd78460customerInfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= rd78460customerInfoBoardMppConfigValue,
+	.numBoardSerdesConfigValue	= ARRSZ(rd78460customerInfoBoardSerdesConfigValue),
+	.pBoardSerdesConfigValue	= rd78460customerInfoBoardSerdesConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(rd78460customerInfoBoardDeCsInfo),
+	.pDevCsInfo			= rd78460customerInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= 0,
+	.pBoardTwsiDev			= NULL,
+	.numBoardMacInfo		= ARRSZ(rd78460customerInfoBoardMacInfo),
+	.pBoardMacInfo			= rd78460customerInfoBoardMacInfo,
+	.numBoardGppInfo		= ARRSZ(rd78460customerInfoBoardGppInfo),
+	.pBoardGppInfo			= rd78460customerInfoBoardGppInfo,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow			= RD_78460_CUSTOMER_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= RD_78460_CUSTOMER_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= RD_78460_CUSTOMER_GPP_OUT_ENA_HIGH,
+	.gppOutValLow			= RD_78460_CUSTOMER_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= RD_78460_CUSTOMER_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= RD_78460_CUSTOMER_GPP_OUT_VAL_HIGH,
+	.gppPolarityValLow		= RD_78460_CUSTOMER_GPP_POL_LOW,
+	.gppPolarityValMid		= RD_78460_CUSTOMER_GPP_POL_MID,
+	.gppPolarityValHigh		= RD_78460_CUSTOMER_GPP_POL_HIGH,
+
+	/* TDM configuration */
+	/* We hold a different configuration array for each possible slic that
+	** can be connected to board.
+	** When modules are scanned, then we select the index of the relevant
+	** slic's information array.
+	** For RD and Customers boards we only need to initialize a single
+	** entry of the arrays below, and set the boardTdmInfoIndex to 0.
+	*/
+	.numBoardTdmInfo			= {},
+	.pBoardTdmInt2CsInfo			= {},
+	.boardTdmInfoIndex			= -1,
+
+	/* NAND init params */
+	.nandFlashReadParams		= RD_78460_CUSTOMER_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= RD_78460_CUSTOMER_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= RD_78460_CUSTOMER_BOARD_NAND_CONTROL,
+	/* NOR init params */
+	.norFlashReadParams		= RD_78460_CUSTOMER_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= RD_78460_CUSTOMER_BOARD_NOR_WRITE_PARAMS
+};
+//////////////////////////////////////////////////////////////////////////////////////
+
 MV_BOARD_INFO *boardInfoTbl[] = {
 	&db88f78XX0Info,
 	&rd78460Info,
@@ -1141,5 +1485,8 @@ MV_BOARD_INFO *boardInfoTbl[] = {
 	&db88f78XX0rev2Info,
 	&rd78460nasInfo,
 	&db78X60amcInfo,
-	&db78X60pcacrev2Info
+	&db78X60pcacrev2Info,
+	&rd78460ServerRev2Info,
+	&rd78460gpInfo,
+	&rd78460customerInfo
 };

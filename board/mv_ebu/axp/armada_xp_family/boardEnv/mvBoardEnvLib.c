@@ -281,6 +281,7 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 			return MV_TRUE;
 		break;
 	case DB_78X60_PCAC_ID:
+	case RD_78460_GP_ID:
 	case RD_78460_NAS_ID:
 	case RD_78460_CUSTOMER_ID:
 	case DB_78X60_PCAC_REV2_ID:
@@ -1407,6 +1408,8 @@ MV_VOID mvBoardIdSet(MV_VOID)
 		gBoardId = DB_78X60_AMC_ID;
 #elif defined(DB_78X60_PCAC_REV2)
 		gBoardId = DB_78X60_PCAC_REV2_ID;
+#elif defined(RD_78460_GP)
+		gBoardId = RD_78460_GP_ID;
 #elif defined(RD_78460_CUSTOMER)
 		gBoardId = RD_78460_CUSTOMER_ID;
 #else
@@ -1544,10 +1547,14 @@ MV_U8 mvBoardFabFreqGet(MV_VOID)
 {
 	MV_U8 sar0;
 	MV_U8 sar1;
+	MV_U32 boardId = mvBoardIdGet();
 
 	sar0 = mvBoardTwsiSatRGet(2, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar0)
 		return MV_ERROR;
+
+	if (RD_78460_GP_ID == boardId)
+		return (sar0 & 0x0f);
 
 	sar1 = mvBoardTwsiSatRGet(3, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar1)
@@ -1560,10 +1567,20 @@ MV_U8 mvBoardFabFreqGet(MV_VOID)
 MV_STATUS mvBoardFabFreqSet(MV_U8 freqVal)
 {
 	MV_U8 sar0;
+	MV_U32 boardId = mvBoardIdGet();
 
 	sar0 = mvBoardTwsiSatRGet(2, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar0)
 		return MV_ERROR;
+	if (RD_78460_GP_ID == boardId) {
+		sar0 &= ~(0x0F);
+		sar0 |= (freqVal & 0xF);
+		if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar0)) {
+			DB1(mvOsPrintf("Board: Write FreqOpt S@R fail\n"));
+			return MV_ERROR;
+		}
+		return MV_OK;
+	}
 
 	sar0 &= ~(0xF << 1);
 	sar0 |= (freqVal & 0xF) << 1;
@@ -1653,10 +1670,14 @@ MV_U8 mvBoardCpuFreqGet(MV_VOID)
 {
 	MV_U8 sar;
 	MV_U8 sarMsb;
+	MV_U32 boardId = mvBoardIdGet();
 
 	sar = mvBoardTwsiSatRGet(1, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
+	if (RD_78460_GP_ID == boardId) {
+		return (sar & 0x0f);
+	}
 
 	sarMsb = mvBoardTwsiSatRGet(2, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
@@ -1669,36 +1690,47 @@ MV_U8 mvBoardCpuFreqGet(MV_VOID)
 MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
 {
 	MV_U8 sar;
+	MV_U32 boardId = mvBoardIdGet();
 
 	sar = mvBoardTwsiSatRGet(1, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
 
-	sar &= ~(0x7 << 2);
-	sar |= (freqVal & 0x7) << 2;
-	if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar)) {
-		DB1(mvOsPrintf("Board: Write CpuFreq S@R fail\n"));
-		return MV_ERROR;
+	if (RD_78460_GP_ID == boardId) {
+		sar &= ~0x0f;
+		sar |= (freqVal & 0x0f);
+		if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar)) {
+			DB1(mvOsPrintf("Board: Write CpuFreq S@R fail\n"));
+			return MV_ERROR;
+		}
 	}
-	sar = mvBoardTwsiSatRGet(2, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
-	sar &= ~(0x1);
-	sar |= ( (freqVal >> 3) & 0x1);
-	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar)) {
-		DB1(mvOsPrintf("Board: Write CpuFreq S@R fail\n"));
-		return MV_ERROR;
-	}
+	else{
+		sar &= ~(0x7 << 2);
+		sar |= (freqVal & 0x7) << 2;
+		if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar)) {
+			DB1(mvOsPrintf("Board: Write CpuFreq S@R fail\n"));
+			return MV_ERROR;
+		}
+		sar = mvBoardTwsiSatRGet(2, 0);
+		if ((MV_8)MV_ERROR == (MV_8)sar)
+			return MV_ERROR;
+		sar &= ~(0x1);
+		sar |= ( (freqVal >> 3) & 0x1);
+		if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar)) {
+			DB1(mvOsPrintf("Board: Write CpuFreq S@R fail\n"));
+			return MV_ERROR;
+		}
 
-	sar = mvBoardTwsiSatRGet(2, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
+		sar = mvBoardTwsiSatRGet(2, 0);
+		if ((MV_8)MV_ERROR == (MV_8)sar)
+			return MV_ERROR;
 
-	sar &= ~(0x1);
-	sar |= ( (freqVal >> 3) & 0x1);
-	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar)) {
-		DB1(mvOsPrintf("Board: Write CpuFreq S@R fail\n"));
-		return MV_ERROR;
+		sar &= ~(0x1);
+		sar |= ( (freqVal >> 3) & 0x1);
+		if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar)) {
+			DB1(mvOsPrintf("Board: Write CpuFreq S@R fail\n"));
+			return MV_ERROR;
+		}
 	}
 
 	DB(mvOsPrintf("Board: Write CpuFreq S@R succeeded\n"));
@@ -1713,6 +1745,8 @@ MV_U8 mvBoardBootDevGet(MV_VOID)
 	sar = mvBoardTwsiSatRGet(0, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
+	if (RD_78460_GP_ID == mvBoardIdGet())
+		sar = (sar >> 1);
 
 	return (sar & 0x7);
 }
@@ -1720,13 +1754,20 @@ MV_U8 mvBoardBootDevGet(MV_VOID)
 MV_STATUS mvBoardBootDevSet(MV_U8 val)
 {
 	MV_U8 sar;
+	MV_U32 boardId = mvBoardIdGet();
 
 	sar = mvBoardTwsiSatRGet(0, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
 
-	sar &= ~(0x7);
-	sar |= (val & 0x7);
+	if (RD_78460_GP_ID == boardId) {
+		sar &= ~(0x7 << 1);
+		sar |= ((val & 0x7) << 1);
+	}
+	else {
+		sar &= ~(0x7);
+		sar |= (val & 0x7);
+	}
 	if (MV_OK != mvBoardTwsiSatRSet(0, 0, sar)) {
 		DB1(mvOsPrintf("Board: Write BootDev S@R fail\n"));
 		return MV_ERROR;
@@ -1739,10 +1780,13 @@ MV_STATUS mvBoardBootDevSet(MV_U8 val)
 MV_U8 mvBoardBootDevWidthGet(MV_VOID)
 {
 	MV_U8 sar;
+	MV_U32 boardId = mvBoardIdGet();
 
 	sar = mvBoardTwsiSatRGet(0, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
+	if (RD_78460_GP_ID == boardId)
+		return (sar & 1);
 
 	return (sar & 0x18) >> 3;
 }
@@ -1750,13 +1794,20 @@ MV_U8 mvBoardBootDevWidthGet(MV_VOID)
 MV_STATUS mvBoardBootDevWidthSet(MV_U8 val)
 {
 	MV_U8 sar;
+	MV_U32 boardId = mvBoardIdGet();
 
 	sar = mvBoardTwsiSatRGet(0, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
+	if (RD_78460_GP_ID == boardId) {
+		sar &= ~(1);
+		sar |= (val & 0x1);
+	}
+	else {
+		sar &= ~(0x3 << 3);
+		sar |= ((val & 0x3) << 3);
+	}
 
-	sar &= ~(0x3 << 3);
-	sar |= ((val & 0x3) << 3);
 	if (MV_OK != mvBoardTwsiSatRSet(0, 0, sar)) {
 		DB1(mvOsPrintf("Board: Write BootDevWidth S@R fail\n"));
 		return MV_ERROR;
@@ -1814,6 +1865,13 @@ MV_STATUS mvBoardCpu0EndianessSet(MV_U8 val)
 MV_U8 mvBoardL2SizeGet(MV_VOID)
 {
 	MV_U8 sar;
+	MV_U32 boardId = mvBoardIdGet();
+	if (RD_78460_GP_ID == boardId) {
+		sar = mvBoardTwsiSatRGet(0, 0);
+		if ((MV_8)MV_ERROR == (MV_8)sar)
+			return MV_ERROR;
+		return ((sar & 0x10)>>4);
+	}
 
 	sar = mvBoardTwsiSatRGet(1, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
@@ -1825,6 +1883,18 @@ MV_U8 mvBoardL2SizeGet(MV_VOID)
 MV_STATUS mvBoardL2SizeSet(MV_U8 val)
 {
 	MV_U8 sar;
+	if (RD_78460_GP_ID == mvBoardIdGet()) {
+		sar = mvBoardTwsiSatRGet(0, 0);
+		if ((MV_8)MV_ERROR == (MV_8)sar)
+			return MV_ERROR;
+		sar &= ~(0x1 << 4);
+		sar |= ((val & 0x1) << 4);
+		if (MV_OK != mvBoardTwsiSatRSet(0, 0, sar)) {
+			DB1(mvOsPrintf("Board: Write L2Size S@R fail\n"));
+			return MV_ERROR;
+		}
+		return MV_OK;
+	}
 
 	sar = mvBoardTwsiSatRGet(1, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
@@ -1935,6 +2005,7 @@ MV_U16 mvBoardPexCapabilityGet(MV_VOID)
 	switch (boardId) {
 	case DB_78X60_PCAC_ID:
 	case RD_78460_NAS_ID:
+	case RD_78460_GP_ID:
 	case RD_78460_CUSTOMER_ID:
 	case DB_78X60_AMC_ID:
 	case DB_78X60_PCAC_REV2_ID:
@@ -2662,6 +2733,7 @@ MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 	case FPGA_88F78XX0_ID:
 	case DB_88F78XX0_BP_REV2_ID:
 	case RD_78460_NAS_ID:
+	case RD_78460_GP_ID:
 	case RD_78460_CUSTOMER_ID:
 	case DB_78X60_AMC_ID:
 	case DB_78X60_PCAC_REV2_ID:

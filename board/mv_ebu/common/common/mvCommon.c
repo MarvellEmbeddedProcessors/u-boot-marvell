@@ -301,13 +301,15 @@ MV_U32 mvLog2(MV_U32 num)
 *******************************************************************************/
 MV_STATUS mvWinOverlapTest(MV_ADDR_WIN *pAddrWin1, MV_ADDR_WIN *pAddrWin2)
 {
-#ifdef ARM_LPAE_SUPPORT
-	/* Need to cancel overlap testing when in LPAE mode, because we use the
+	/* Need to cancel overlap testing, because we use the
 	** MBUS Bridge Windows to access IO windows, and thus there will be
 	** always an overlap between the IO & DRAM windows.
 	*/
 	return MV_FALSE;
-#else
+#if 0
+	/* this code can only be enabled if physical DRAM size is smaller
+	** or equal to 3GB for debug purposes.\
+	*/
 	MV_U32 winBase1, winBase2;
 	MV_U32 winTop1, winTop2;
 

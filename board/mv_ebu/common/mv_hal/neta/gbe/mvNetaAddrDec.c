@@ -167,7 +167,8 @@ MV_STATUS mvNetaWinInit(MV_U32 port, MV_UNIT_WIN_INFO *addrWinMap)
 *******************************************************************************/
 MV_STATUS mvNetaWinWrite(MV_U32 port, MV_U32 winNum, MV_UNIT_WIN_INFO *pAddrDecWin)
 {
-	MV_U32 size, alignment;
+	MV_U64 size;
+	MV_U32 alignment;
 	MV_U32 baseReg, sizeReg;
 
 	/* Parameter checking   */

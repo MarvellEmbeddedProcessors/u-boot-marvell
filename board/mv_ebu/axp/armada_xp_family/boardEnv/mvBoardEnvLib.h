@@ -106,6 +106,10 @@ extern "C" {
 #define MV_BOARD_LVDS_MODULE_ADDR_TYPE		ADDR7_BIT
 #define MV_BOARD_LVDS_MODULE_ID			0
 
+#define MV_BOARD_SETM_MODULE_ADDR		0x23
+#define MV_BOARD_SETM_MODULE_ADDR_TYPE		ADDR7_BIT
+#define MV_BOARD_SETM_MODULE_ID			1
+
 #define MV_BOARD_MPP_MODULE_ADDR		0x20
 #define MV_BOARD_MPP_MODULE_ADDR_TYPE		ADDR7_BIT
 #define MV_BOARD_LCD_DVI_MODULE_ID		0
@@ -148,6 +152,7 @@ typedef enum _devBoardOtherTypeClass {
 	MV_BOARD_LVDS    = 0x00000001,
 	MV_BOARD_PEX     = 0x00000002,
 	MV_BOARD_SWITCH  = 0x00000004,
+	MV_BOARD_SETM 	 = 0x00000008,
 	MV_BOARD_UNKNOWN = 0x80000000
 } MV_BOARD_OTHER_TYPE_CLASS;
 
@@ -414,10 +419,12 @@ MV_STATUS mvBoardDramEccSet(MV_U16 conf);
 MV_U16 mvBoardDramEccGet(MV_VOID);
 MV_STATUS mvBoardDramBusWidthSet(MV_U16 conf);
 MV_U16 mvBoardDramBusWidthGet(MV_VOID);
-
+MV_U8 mvBoardAltFabFreqGet(MV_VOID);
+MV_STATUS mvBoardAltFabFreqSet(MV_U8 freqVal);
 MV_STATUS mvBoardMppModulesScan(void);
 MV_STATUS mvBoardOtherModulesScan(void);
 MV_BOOL mvBoardIsPexModuleConnected(void);
+MV_BOOL mvBoardIsSetmModuleConnected(void);
 MV_BOOL mvBoardIsSwitchModuleConnected(void);
 MV_BOOL mvBoardIsLvdsModuleConnected(void);
 MV_BOOL mvBoardIsLcdDviModuleConnected(void);

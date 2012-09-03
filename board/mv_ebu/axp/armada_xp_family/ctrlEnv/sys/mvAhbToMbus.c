@@ -148,7 +148,7 @@ MV_STATUS mvAhbToMbusWinSet(MV_U32 winNum, MV_AHB_TO_MBUS_DEC_WIN *pAddrDecWin)
 	/* check if address is aligned to the size */
 	if (MV_IS_NOT_ALIGN(pAddrDecWin->addrWin.baseLow, pAddrDecWin->addrWin.size)) {
 		mvOsPrintf("mvAhbToMbusWinSet:Error setting AHB to MBUS window %d to "
-			   "target %s.\nAddress 0x%08x is unaligned to size 0x%x.\n",
+			   "target %s.\nAddress 0x%08x is unaligned to size 0x%llx.\n",
 			   winNum,
 			   mvCtrlTargetNameGet(pAddrDecWin->target),
 			   pAddrDecWin->addrWin.baseLow, pAddrDecWin->addrWin.size);

@@ -75,6 +75,8 @@ extern "C" {
 #define SDRAM_WIN_BASE_REG(winNum)		(MV_DDR_WIN_REGS_BASE + 0x180 + winNum * 0x8)
 #define SDRAMWBR_BASE_OFFS			24
 #define SDRAMWBR_BASE_MASK			(0xFF << SDRAMWBR_BASE_OFFS)
+#define SDRAMWBR_BASE_EXT_MASK			(0xF)
+
 #define SDRAMWBR_BASE_ALIGNMENT			0x10000
 
 #define SDRAM_WIN_CTRL_REG(winNum)		(MV_DDR_WIN_REGS_BASE + 0x184 + winNum * 0x8)

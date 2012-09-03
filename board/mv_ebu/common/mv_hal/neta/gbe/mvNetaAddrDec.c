@@ -184,7 +184,7 @@ MV_STATUS mvNetaWinWrite(MV_U32 port, MV_U32 winNum, MV_UNIT_WIN_INFO *pAddrDecW
 	if (!MV_IS_POWER_OF_2(size)) {
 		/* try to get a good size */
 		pAddrDecWin->addrWin.size = 1 << (mvLog2(size) + 1);
-		mvOsPrintf("%s: WARN. Wrong window size %d, rounding to %d\n",
+		mvOsPrintf("%s: WARN. Wrong window size %d, rounding to %lld\n",
 			__func__, size, pAddrDecWin->addrWin.size);
 		size = pAddrDecWin->addrWin.size;
 	}
@@ -198,7 +198,7 @@ MV_STATUS mvNetaWinWrite(MV_U32 port, MV_U32 winNum, MV_UNIT_WIN_INFO *pAddrDecW
 	/* check if address is aligned to the size */
 	if (MV_IS_NOT_ALIGN(pAddrDecWin->addrWin.baseLow, pAddrDecWin->addrWin.size)) {
 		mvOsPrintf("mvNetaWinSet: Error setting Ethernet window %d.\n"
-			   "Address 0x%08x is unaligned to size 0x%x.\n",
+			   "Address 0x%08x is unaligned to size 0x%llx.\n",
 			   winNum, pAddrDecWin->addrWin.baseLow, pAddrDecWin->addrWin.size);
 		return MV_ERROR;
 	}

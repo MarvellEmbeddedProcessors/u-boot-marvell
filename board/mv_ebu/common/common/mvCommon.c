@@ -164,30 +164,30 @@ MV_STATUS mvMacHexToStr(MV_U8 *macHex, char *macStr)
 *       None.
 *
 *******************************************************************************/
-MV_VOID mvSizePrint(MV_U32 size)
+MV_VOID mvSizePrint(MV_U64 size)
 {
 	mvOsOutput("size ");
 
 	if (size >= _1G) {
-		mvOsOutput("%3dGB ", size / _1G);
-		size %= _1G;
+		mvOsOutput("%3lldGB ", (MV_U64)(size >> 30));
+		size &= (MV_U64)(_1G - 1);
 		if (size)
 			mvOsOutput("+");
 	}
 	if (size >= _1M) {
-		mvOsOutput("%3dMB ", size / _1M);
+		mvOsOutput("%3lldMB ", size / _1M);
 		size %= _1M;
 		if (size)
 			mvOsOutput("+");
 	}
 	if (size >= _1K) {
-		mvOsOutput("%3dKB ", size / _1K);
+		mvOsOutput("%3lldKB ", size / _1K);
 		size %= _1K;
 		if (size)
 			mvOsOutput("+");
 	}
 	if (size > 0)
-		mvOsOutput("%3dB ", size);
+		mvOsOutput("%3lldB ", size);
 
 }
 
@@ -301,6 +301,13 @@ MV_U32 mvLog2(MV_U32 num)
 *******************************************************************************/
 MV_STATUS mvWinOverlapTest(MV_ADDR_WIN *pAddrWin1, MV_ADDR_WIN *pAddrWin2)
 {
+#ifdef ARM_LPAE_SUPPORT
+	/* Need to cancel overlap testing when in LPAE mode, because we use the
+	** MBUS Bridge Windows to access IO windows, and thus there will be
+	** always an overlap between the IO & DRAM windows.
+	*/
+	return MV_FALSE;
+#else
 	MV_U32 winBase1, winBase2;
 	MV_U32 winTop1, winTop2;
 
@@ -319,6 +326,7 @@ MV_STATUS mvWinOverlapTest(MV_ADDR_WIN *pAddrWin1, MV_ADDR_WIN *pAddrWin2)
 		return MV_TRUE;
 	else
 		return MV_FALSE;
+#endif
 }
 
 /*******************************************************************************
@@ -340,13 +348,13 @@ MV_STATUS mvWinOverlapTest(MV_ADDR_WIN *pAddrWin1, MV_ADDR_WIN *pAddrWin2)
 *******************************************************************************/
 MV_STATUS mvWinWithinWinTest(MV_ADDR_WIN *pAddrWin1, MV_ADDR_WIN *pAddrWin2)
 {
-	MV_U32 winBase1, winBase2;
-	MV_U32 winTop1, winTop2;
+	MV_U64 winBase1, winBase2;
+	MV_U64 winTop1, winTop2;
 
-	winBase1 = pAddrWin1->baseLow;
-	winBase2 = pAddrWin2->baseLow;
-	winTop1 = winBase1 + pAddrWin1->size - 1;
-	winTop2 = winBase2 + pAddrWin2->size - 1;
+	winBase1 = ((MV_U64)pAddrWin1->baseHigh << 32) + (MV_U32)pAddrWin1->baseLow;
+	winBase2 = ((MV_U64)pAddrWin2->baseHigh << 32) + (MV_U32)pAddrWin2->baseLow;
+	winTop1 = winBase1 + (MV_U64)pAddrWin1->size - 1;
+	winTop2 = winBase2 + (MV_U64)pAddrWin2->size - 1;
 
 	if (((winBase1 >= winBase2) && (winBase1 <= winTop2)) || ((winTop1 >= winBase2) && (winTop1 <= winTop2)))
 		return MV_TRUE;

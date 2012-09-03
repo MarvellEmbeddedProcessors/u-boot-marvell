@@ -157,10 +157,30 @@ MV_STATUS mvCpuIfInitForCpu(MV_U32 cpu, MV_CPU_DEC_WIN *cpuAddrWinMap)
 	MV_U32 regVal, i;
 	MV_TARGET target;
 	MV_ADDR_WIN addrWin;
+	MV_U32 minBase = 0xFFFFFFFF;
 
 	if (cpuAddrWinMap == NULL) {
 		DB(mvOsPrintf("mvCpuIfInit:ERR. cpuAddrWinMap == NULL\n"));
 		return MV_ERROR;
+	}
+
+	/* Set IO Bypass base address and size according to the cpuAddrWinMap */
+	for (target = 0; cpuAddrWinMap[target].enable != TBL_TERM; target++) {
+		if ((MV_TARGET_IS_DRAM(target)) || (DIS == cpuAddrWinMap[target].enable))
+			continue;
+		if (cpuAddrWinMap[target].addrWin.baseLow == 0)
+			continue;
+		if (cpuAddrWinMap[target].addrWin.baseLow < minBase)
+			minBase = cpuAddrWinMap[target].addrWin.baseLow;
+	}
+	if (minBase != 0x0) {
+		/* Now write the base and size */
+		MV_REG_WRITE(MBUS_BRIDGE_WIN_BASE_REG, minBase);
+		/* Align window size to 64KB */
+		regVal = ((0xFFFFFFFF - minBase) + SDRAMWBR_BASE_ALIGNMENT) & ~(SDRAMWBR_BASE_ALIGNMENT - 1);
+		regVal = (regVal / SDRAMWBR_BASE_ALIGNMENT) - 1;
+		regVal = (regVal << 16) | 0x1;
+		MV_REG_WRITE(MBUS_BRIDGE_WIN_CTRL_REG, regVal);
 	}
 
 	/* Set CPU Configuration register */
@@ -179,7 +199,6 @@ MV_STATUS mvCpuIfInitForCpu(MV_U32 cpu, MV_CPU_DEC_WIN *cpuAddrWinMap)
 	for (target = 0; cpuAddrWinMap[target].enable != TBL_TERM; target++) {
 		if ((MV_TARGET_IS_DRAM(target)) || (target == INTER_REGS))
 			continue;
-
 #ifdef CONFIG_MV_AMP_ENABLE
 		if(target == BOOT_ROM_CS)
 			continue;
@@ -298,28 +317,31 @@ MV_STATUS mvCpuIfInit(MV_CPU_DEC_WIN *cpuAddrWinMap)
 *******************************************************************************/
 MV_STATUS mvCpuIfDramInit()
 {
-	MV_U32 base = 0;
+	MV_U64 base = 0;
 	MV_U32 size, cs, temp;
 
 	for (cs = 0; cs < SDRAM_MAX_CS; cs++) {
 		size = MV_REG_READ(SDRAM_SIZE_REG(cs)) & SDRAM_ADDR_MASK;
-		if (size > 0 && base < SDRAM_MAX_ADDR) {
+//		if (size > 0 && base < SDRAM_MAX_ADDR) {
+		if (size != 0) {
 			size |= ~(SDRAM_ADDR_MASK);
 
 			/* Set Base Address */
-			MV_REG_WRITE(SDRAM_WIN_BASE_REG(cs), (base & SDRAM_ADDR_MASK));
+			temp = (base & 0xFF000000ll) | ((base >> 32) & 0xF);
+			MV_REG_WRITE(SDRAM_WIN_BASE_REG(cs), temp);
 
 			/* Check if out of max window size and resize the window */
+#if 0
 			if (base+size > SDRAM_MAX_ADDR) {
 				size = SDRAM_MAX_ADDR - base - 1;
 				MV_REG_WRITE(SDRAM_SIZE_REG(cs), 0);
 			}
-
+#endif
 			temp = (MV_REG_READ(SDRAM_WIN_CTRL_REG(cs)) & ~(SDRAM_ADDR_MASK)) | (1<<SDRAM_WIN_CTRL_WIN_ENA_OFFS);
 			temp |= (size & SDRAM_ADDR_MASK);
 
 			MV_REG_WRITE(SDRAM_WIN_CTRL_REG(cs), temp);
-			base += (size + 1);
+			base += ((MV_U64)size + 1);
 		}
 	}
 
@@ -452,7 +474,7 @@ MV_STATUS mvCpuIfTargetWinGet(MV_TARGET target, MV_CPU_DEC_WIN *pAddrDecWin)
 		/* copy relevant data to MV_CPU_DEC_WIN structure */
 		pAddrDecWin->addrWin.baseLow = addrDecWin.addrWin.baseLow;
 		pAddrDecWin->addrWin.baseHigh = addrDecWin.addrWin.baseHigh;
-		pAddrDecWin->addrWin.size = addrDecWin.addrWin.size;
+		pAddrDecWin->addrWin.size = (MV_U64)addrDecWin.addrWin.size;
 		pAddrDecWin->enable = addrDecWin.enable;
 		pAddrDecWin->winNum = target;
 	} else {
@@ -920,7 +942,7 @@ MV_VOID mvCpuIfAddDecShow(MV_VOID)
 
 		if (mvCpuIfTargetWinGet(target, &win) == MV_OK) {
 			if (win.enable) {
-				mvOsOutput("base %08x, ", win.addrWin.baseLow);
+				mvOsOutput("base %01x%08x, ", win.addrWin.baseHigh, win.addrWin.baseLow);
 				mvSizePrint(win.addrWin.size);
 				mvOsOutput("\n");
 			} else

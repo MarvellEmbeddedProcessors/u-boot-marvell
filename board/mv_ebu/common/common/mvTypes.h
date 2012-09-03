@@ -191,7 +191,7 @@ typedef enum {
 typedef struct _mvAddrWin {
 	MV_U32 baseLow;		/* 32bit base low       */
 	MV_U32 baseHigh;	/* 32bit base high      */
-	MV_U32 size;		/* 32bit size           */
+	MV_U64 size;		/* 64bit size           */
 } MV_ADDR_WIN;
 
 /* This binary enumerator describes protection attribute status             */

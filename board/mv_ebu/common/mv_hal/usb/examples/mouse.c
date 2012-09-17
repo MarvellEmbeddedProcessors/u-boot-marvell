@@ -1,16 +1,16 @@
 /*******************************************************************************
 
-This software file (the "File") is distributed by Marvell International Ltd. 
-or its affiliate(s) under the terms of the GNU General Public License Version 2, 
-June 1991 (the "License").  You may use, redistribute and/or modify this File 
-in accordance with the terms and conditions of the License, a copy of which 
-is available along with the File in the license.txt file or by writing to the 
-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+This software file (the "File") is distributed by Marvell International Ltd.
+or its affiliate(s) under the terms of the GNU General Public License Version 2,
+June 1991 (the "License").  You may use, redistribute and/or modify this File
+in accordance with the terms and conditions of the License, a copy of which
+is available along with the File in the license.txt file or by writing to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 or on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED 
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY 
-DISCLAIMED.  The GPL License provides additional details about this warranty 
+THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+DISCLAIMED.  The GPL License provides additional details about this warranty
 disclaimer.
 
 (C) Copyright 2004 - 2007 Marvell Semiconductor Israel Ltd. All Rights Reserved.
@@ -43,7 +43,7 @@ global variables and some defines for device.
 
 /**************************************************************************
 Include the OS and BSP dependent files that define IO functions and
-basic types. You may like to change these files for your board and RTOS 
+basic types. You may like to change these files for your board and RTOS
 **************************************************************************/
 
 int frame_interval = FRAME_INTERVAL;
@@ -70,55 +70,55 @@ static SETUP_STRUCT   local_setup_packet;
 
 
 /*************************************************************************
-Device descriptors are always 18 bytes 
+Device descriptors are always 18 bytes
 
-Offset|       Field        | Value |  Description  
+Offset|       Field        | Value |  Description
 ------|--------------------|-------|--------------------
-  0   |      bLength       |  0x12 |The size of this 
+  0   |      bLength       |  0x12 |The size of this
       |                    |       |descriptor is 18 bytes
 ------|--------------------|-------|--------------------
   1   |  bDescriptorType   |  0x01 |DEVICE Descriptor Type
 ------|--------------------|-------|--------------------
-  2   |       bcdUSB       | 0x0100|Device compliant to 
-      |                    |       |the USB 
-      |                    |       |specification 
-      |                    |       |version 1.00   
+  2   |       bcdUSB       | 0x0100|Device compliant to
+      |                    |       |the USB
+      |                    |       |specification
+      |                    |       |version 1.00
 ------|--------------------|-------|--------------------
-  4   |    bDeviceClass    |  0x00 |Each interface 
-      |                    |       |specifies its own 
+  4   |    bDeviceClass    |  0x00 |Each interface
+      |                    |       |specifies its own
       |                    |       |class information
 ------|--------------------|-------|--------------------
-  5   |  bDeviceSubClass   |  0x00 |Each interface 
-      |                    |       |specifies its own 
+  5   |  bDeviceSubClass   |  0x00 |Each interface
+      |                    |       |specifies its own
       |                    |       |subclass information
 ------|--------------------|-------|--------------------
-  6   |  bDeviceProtocol   |  0x00 |No protocols on the 
+  6   |  bDeviceProtocol   |  0x00 |No protocols on the
       |                    |       |device basis
 ------|--------------------|-------|--------------------
-  7   |  bMaxPacketSize0   |  0x08 |Maximum packet size 
+  7   |  bMaxPacketSize0   |  0x08 |Maximum packet size
       |                    |       |for endpoint zero is 8
 ------|--------------------|-------|--------------------
-  8   |      idVendor      | 0x0261|Vendor ID is 609: 
-      |                    |       
+  8   |      idVendor      | 0x0261|Vendor ID is 609:
+      |                    |
 ------|--------------------|-------|--------------------
   10  |     idProduct      | 0x4D03|The Product ID is 0x4D03
 ------|--------------------|-------|--------------------
-  12  |     bcdDevice      | 0x0441|The device release 
+  12  |     bcdDevice      | 0x0441|The device release
       |                    |       |number is 4.41
 ------|--------------------|-------|--------------------
-  14  |   iManufacturer    |  0x00 |The device doesn't 
-      |                    |       |have the string 
-      |                    |       |descriptor 
+  14  |   iManufacturer    |  0x00 |The device doesn't
+      |                    |       |have the string
+      |                    |       |descriptor
       |                    |       |describing the manufacturer
 ------|--------------------|-------|--------------------
-  15  |      iProduct      |  0x00 |The device doesn't 
-      |                    |       |have the string 
-      |                    |       |descriptor 
+  15  |      iProduct      |  0x00 |The device doesn't
+      |                    |       |have the string
+      |                    |       |descriptor
       |                    |       |describing the product
 ------|--------------------|-------|--------------------
-  16  |   iSerialNumber    |  0x00 | 
+  16  |   iSerialNumber    |  0x00 |
 ------|--------------------|-------|--------------------
-  17  | bNumConfigurations |  0x01 | 
+  17  | bNumConfigurations |  0x01 |
 ------|--------------------|-------|--------------------
 *************************************************************************/
 #define DEVICE_DESCRIPTOR_SIZE 18
@@ -128,7 +128,7 @@ static uint_8  DevDescData[DEVICE_DESCRIPTOR_SIZE] =
    DEVICE_DESCRIPTOR_SIZE,
    0x01,
    0x0,2,
-   
+
    0x00,
    0x00,
    0x00,
@@ -144,7 +144,7 @@ static uint_8  DevDescData[DEVICE_DESCRIPTOR_SIZE] =
    0x02,                      /* iProduct */
    0x00,                      /* iSerialNumber */
    0x01                       /* bNumConfigurations */
-   
+
 };
 
 /* USB 2.0 specific descriptor */
@@ -172,133 +172,133 @@ Data stage (34 bytes) :
 
        CONFIGURATION Descriptor
        ------------------------
-Offset|        Field        | Value |  Description  
+Offset|        Field        | Value |  Description
 ------|---------------------|-------|--------------------
-  0   |       bLength       |  0x09 |The size of this 
+  0   |       bLength       |  0x09 |The size of this
       |                     |       |descriptor is 9 bytes
 ------|---------------------|-------|--------------------
-  1   |   bDescriptorType   |  0x02 |CONFIGURATION 
+  1   |   bDescriptorType   |  0x02 |CONFIGURATION
       |                     |       |Descriptor Type
 ------|---------------------|-------|--------------------
-  2   |    wTotalLength     | 0x0022|The total length of 
-      |                     |       |data for this 
-      |                     |       |configuration is 34. 
-      |                     |       |This includes the 
-      |                     |       |combined length of 
+  2   |    wTotalLength     | 0x0022|The total length of
+      |                     |       |data for this
+      |                     |       |configuration is 34.
+      |                     |       |This includes the
+      |                     |       |combined length of
       |                     |       |all the descriptors returned
 ------|---------------------|-------|--------------------
-  4   |   bNumInterfaces    |  0x01 |This configuration 
+  4   |   bNumInterfaces    |  0x01 |This configuration
       |                     |       |supports 1 interfaces
 ------|---------------------|-------|--------------------
-  5   | bConfigurationValue |  0x01 |The value 1 should 
-      |                     |       |be used to select 
+  5   | bConfigurationValue |  0x01 |The value 1 should
+      |                     |       |be used to select
       |                     |       |this configuration
 ------|---------------------|-------|--------------------
-  6   |   iConfiguration    |  0x00 |The device doesn't 
-      |                     |       |have the string 
-      |                     |       |descriptor 
+  6   |   iConfiguration    |  0x00 |The device doesn't
+      |                     |       |have the string
+      |                     |       |descriptor
       |                     |       |describing this configuration
 ------|---------------------|-------|--------------------
   7   |    bmAttributes     |  0x80 |Configuration characteristics :
-      |                     |       |Bit 7: Reserved (set to one) 1 
-      |                     |       |Bit 6: Self-powered          0 
-      |                     |       |Bit 5: Remote Wakeup         1 
+      |                     |       |Bit 7: Reserved (set to one) 1
+      |                     |       |Bit 6: Self-powered          0
+      |                     |       |Bit 5: Remote Wakeup         1
 ------|---------------------|-------|--------------------
-  8   |      MaxPower       |  0x32 |Maximum power 
-      |                     |       |consumption of the 
-      |                     |       |device in this 
+  8   |      MaxPower       |  0x32 |Maximum power
+      |                     |       |consumption of the
+      |                     |       |device in this
       |                     |       |configuration is 100 mA
 ------|---------------------|-------|--------------------
 
        INTERFACE Descriptor
        --------------------
-Offset|       Field        | Value |  Description  
+Offset|       Field        | Value |  Description
 ------|--------------------|-------|--------------------
-  0   |      bLength       |  0x09 |The size of this 
+  0   |      bLength       |  0x09 |The size of this
       |                    |       |descriptor is 9 bytes
 ------|--------------------|-------|--------------------
   1   |  bDescriptorType   |  0x04 |INTERFACE Descriptor Type
 ------|--------------------|-------|--------------------
-  2   |  bInterfaceNumber  |  0x00 |The number of this 
+  2   |  bInterfaceNumber  |  0x00 |The number of this
       |                    |       |interface is 0
 ------|--------------------|-------|--------------------
-  3   | bAlternateSetting  |  0x00 |The value used to 
-      |                    |       |select alternate 
-      |                    |       |setting for this 
+  3   | bAlternateSetting  |  0x00 |The value used to
+      |                    |       |select alternate
+      |                    |       |setting for this
       |                    |       |interface is 0
 ------|--------------------|-------|--------------------
-  4   |   bNumEndpoints    |  0x01 |The number of 
-      |                    |       |endpoints used by 
-      |                    |       |this interface is 1 
+  4   |   bNumEndpoints    |  0x01 |The number of
+      |                    |       |endpoints used by
+      |                    |       |this interface is 1
       |                    |       |(excluding endpoint zero)
 ------|--------------------|-------|--------------------
-  5   |  bInterfaceClass   |  0x03 |The interface 
+  5   |  bInterfaceClass   |  0x03 |The interface
       |                    |       |implements HID class
 ------|--------------------|-------|--------------------
   6   | bInterfaceSubClass |  0x01 |The subclass code is 0x01
 ------|--------------------|-------|--------------------
   7   | bInterfaceProtocol |  0x02 |The protocol code is 0x02
 ------|--------------------|-------|--------------------
-  8   |     iInterface     |  0x00 |The device doesn't 
-      |                    |       |have the string 
-      |                    |       |descriptor 
+  8   |     iInterface     |  0x00 |The device doesn't
+      |                    |       |have the string
+      |                    |       |descriptor
       |                    |       |describing this interface
 ------|--------------------|-------|--------------------
 
        HID Descriptor
        --------------
-Offset|       Field       | Value |  Description  
+Offset|       Field       | Value |  Description
 ------|-------------------|-------|--------------------
-  0   |      bLength      |  0x09 |The size of this 
+  0   |      bLength      |  0x09 |The size of this
       |                   |       |descriptor is 9 bytes
 ------|-------------------|-------|--------------------
   1   |  bDescriptorType  |  0x21 |HID Descriptor Type
 ------|-------------------|-------|--------------------
-  2   |      bcdHID       | 0x0100|Device compliant to 
-      |                   |       |the HID 
-      |                   |       |specification 
-      |                   |       |version 1.00   
+  2   |      bcdHID       | 0x0100|Device compliant to
+      |                   |       |the HID
+      |                   |       |specification
+      |                   |       |version 1.00
 ------|-------------------|-------|--------------------
   4   |   bCountryCode    |  0x00 |The country code is 0x00
 ------|-------------------|-------|--------------------
-  5   |  bNumDescriptors  |  0x01 |The number of class 
+  5   |  bNumDescriptors  |  0x01 |The number of class
       |                   |       |descriptors is 1
 ------|-------------------|-------|--------------------
-  6   |  bDescriptorType  |  0x22 |The class descriptor 
+  6   |  bDescriptorType  |  0x22 |The class descriptor
       |                   |       |is Report descriptor
 ------|-------------------|-------|--------------------
-  7   | wDescriptorlength | 0x0034|The total size of 
-      |                   |       |the class descriptor 
+  7   | wDescriptorlength | 0x0034|The total size of
+      |                   |       |the class descriptor
       |                   |       |is 52
 ------|-------------------|-------|--------------------
 
        ENDPOINT Descriptor
        -------------------
-Offset|      Field       | Value |  Description  
+Offset|      Field       | Value |  Description
 ------|------------------|-------|--------------------
-  0   |     bLength      |  0x07 |The size of this 
+  0   |     bLength      |  0x07 |The size of this
       |                  |       |descriptor is 7 bytes
 ------|------------------|-------|--------------------
   1   | bDescriptorType  |  0x05 |ENDPOINT Descriptor Type
 ------|------------------|-------|--------------------
-  2   | bEndpointAddress |  0x81 |This is an IN 
-      |                  |       |endpoint with 
-      |                  |       |address (endpoint 
+  2   | bEndpointAddress |  0x81 |This is an IN
+      |                  |       |endpoint with
+      |                  |       |address (endpoint
       |                  |       |number) 1
 ------|------------------|-------|--------------------
-  3   |   bmAttributes   |  0x03 |Types - 
-      |                  |       |Transfer:INTERRUPT 
-      |                  |       |Sync:No Sync 
+  3   |   bmAttributes   |  0x03 |Types -
+      |                  |       |Transfer:INTERRUPT
+      |                  |       |Sync:No Sync
       |                  |       |Usage:Data EP
 ------|------------------|-------|--------------------
-  4   |  wMaxPacketSize  | 0x0004|Maximum packet size 
-      |                  |       |value for this 
-      |                  |       |endpoint is 0x4 
+  4   |  wMaxPacketSize  | 0x0004|Maximum packet size
+      |                  |       |value for this
+      |                  |       |endpoint is 0x4
       |                  |       |(Bits 12-11: Addtl. Transactions/frame)
 ------|------------------|-------|--------------------
-  6   |    bInterval     |  0x0A |bInterval:10. The 
-      |                  |       |polling interval 
-      |                  |       |value is bInterval 
+  6   |    bInterval     |  0x0A |bInterval:10. The
+      |                  |       |polling interval
+      |                  |       |value is bInterval
       |                  |       |or 2**(bInterval-1)
 ------|------------------|-------|--------------------
 
@@ -325,7 +325,7 @@ static uint_8 ConfigDescData[CONFIG_DESC_SIZE] =
    0x00,
    0xE0, /* 0x80, */
    0x0,
-   /* Interface Descriptor */	
+   /* Interface Descriptor */
    0x09,
    0x04,
    0x00,
@@ -346,13 +346,13 @@ static uint_8 ConfigDescData[CONFIG_DESC_SIZE] =
    0x22,
    USB_uint_16_low(0x0034),
    USB_uint_16_high(0x0034),
- 
+
    /*Endpoint descriptor */
    0x07,
    0x05,
    (0x80+INTERRUPT_EP),
    0x03,
-   USB_uint_16_low(INTERRUPT_MAX_PACKET_SIZE), 
+   USB_uint_16_low(INTERRUPT_MAX_PACKET_SIZE),
    USB_uint_16_high(INTERRUPT_MAX_PACKET_SIZE),
    FRAME_INTERVAL
 };
@@ -371,7 +371,7 @@ static uint_8  other_speed_config_data[CONFIG_DESC_SIZE] =
    0x00,
    0xE0, /* 0x80, */
    0x0,
-   /* Interface Descriptor */	
+   /* Interface Descriptor */
    0x09,
    0x04,
    0x00,
@@ -392,13 +392,13 @@ static uint_8  other_speed_config_data[CONFIG_DESC_SIZE] =
    0x22,
    USB_uint_16_low(0x0034),
    USB_uint_16_high(0x0034),
- 
+
    /*Endpoint descriptor */
    0x07,
    0x05,
    (0x80+INTERRUPT_EP),
    0x03,
-   USB_uint_16_low(INTERRUPT_MAX_PACKET_SIZE), 
+   USB_uint_16_low(INTERRUPT_MAX_PACKET_SIZE),
    USB_uint_16_high(INTERRUPT_MAX_PACKET_SIZE),
    FRAME_INTERVAL
 
@@ -409,33 +409,33 @@ HID Class Report Descriptor :
 
 Item						Value(Hex)
 ------------------------------------------------------------------------------------------------------------
-Usage Page (Generic Desktop Control)			05 01 
-Usage (Mouse)					09 02 
-Collection (Application)				A1 01 
-  Usage (Pointer)					09 01 
-  Collection (Physical)				A1 00 
-    Usage Page (Button)				05 09 
-    Usage Minimum (1)				19 01 
-    Usage Maximum (3)				29 03 
-    Logical Minimum (0)				15 00 
-    Logical Maximum (1)				25 01 
-    Report Count (3)					95 03 
-    Report Size (1)					75 01 
-    Input (Data, Variable, Absolute)			81 02 
-    Report Count (1)					95 01 
-    Report Size (5)					75 05 
-    Input (Constant)					81 01 
-    Usage Page (Generic Desktop Control)		05 01 
-    Usage (X)					09 30 
-    Usage (Y)					09 31 
-    Usage (Wheel)					09 38 
-    Logical Minimum (-127)				15 81 
-    Logical Maximum (127)				25 7F 
-    Report Size (8)					75 08 
-    Report Count (3)					95 03 
-    Input (Data, Variable, Relative)			81 06 
-  End Collection					C0 
-End Collection					C0 
+Usage Page (Generic Desktop Control)			05 01
+Usage (Mouse)					09 02
+Collection (Application)				A1 01
+  Usage (Pointer)					09 01
+  Collection (Physical)				A1 00
+    Usage Page (Button)				05 09
+    Usage Minimum (1)				19 01
+    Usage Maximum (3)				29 03
+    Logical Minimum (0)				15 00
+    Logical Maximum (1)				25 01
+    Report Count (3)					95 03
+    Report Size (1)					75 01
+    Input (Data, Variable, Absolute)			81 02
+    Report Count (1)					95 01
+    Report Size (5)					75 05
+    Input (Constant)					81 01
+    Usage Page (Generic Desktop Control)		05 01
+    Usage (X)					09 30
+    Usage (Y)					09 31
+    Usage (Wheel)					09 38
+    Logical Minimum (-127)				15 81
+    Logical Maximum (127)				25 7F
+    Report Size (8)					75 08
+    Report Count (3)					95 03
+    Input (Data, Variable, Relative)			81 06
+  End Collection					C0
+End Collection					C0
 
 
 ************************************************************************/
@@ -453,7 +453,7 @@ static uint_8 ReportDescData[REPORT_DESC_SIZE] =
    0x01,
    0x09,
    0x01,
-   
+
    0xA1,
    0x00,
    0x05,
@@ -462,7 +462,7 @@ static uint_8 ReportDescData[REPORT_DESC_SIZE] =
    0x01,
    0x29,
    0x03,
-   
+
    0x15,
    0x00,
    0x25,
@@ -471,7 +471,7 @@ static uint_8 ReportDescData[REPORT_DESC_SIZE] =
    0x03,
    0x75,
    0x01,
-   
+
    0x81,
    0x02,
    0x95,
@@ -480,7 +480,7 @@ static uint_8 ReportDescData[REPORT_DESC_SIZE] =
    0x05,
    0x81,
    0x01,
-   
+
    0x05,
    0x01,
    0x09,
@@ -489,7 +489,7 @@ static uint_8 ReportDescData[REPORT_DESC_SIZE] =
    0x31,
    0x09,
    0x38,
-   
+
    0x15,
    0x81,
    0x25,
@@ -498,11 +498,11 @@ static uint_8 ReportDescData[REPORT_DESC_SIZE] =
    0x08,
    0x95,
    0x03,
-   
+
    0x81,
    0x06,
    0xC0,
-   0xC0   
+   0xC0
 };
 
 /**************************************************************
@@ -513,7 +513,7 @@ The following lines should be changed,
 
 USB_uint_16_low(0x0038),  //   Changed from USB_uint_16_low(0x0034),
 USB_uint_16_high(0x0038), //   Changed from USB_uint_16_high(0x0034),
-  
+
 
 
 
@@ -523,34 +523,34 @@ uint_8  ReportDesc[56] = {
     0xa1, 0x01,                    		// COLLECTION (Application)
 
     0x09, 0x02,                    		//   USAGE (Vendor Usage 2)
-    0x15, 0x80,                    		//   LOGICAL_MINIMUM (-128)																			
-    0x25, 0x7f,                    		//   LOGICAL_MAXIMUM (127) 																			
-    0x95, 0x01,                    		//   REPORT_COUNT (1)      																			
-    0x75, 0x08,                    		//   REPORT_SIZE (8)       																			
-    0xb1, 0x02,                    		//   FEATURE (Data,Var,Abs)																			
-
-    0x09, 0x03,                    		//   USAGE (Vendor Usage 3)																			
-    0x15, 0x80,                    		//   LOGICAL_MINIMUM (-128)																			
-    0x25, 0x7f,                    		//   LOGICAL_MAXIMUM (127) 																			
-    0x95, 0x01,                    		//   REPORT_COUNT (1)      																			
+    0x15, 0x80,                    		//   LOGICAL_MINIMUM (-128)
+    0x25, 0x7f,                    		//   LOGICAL_MAXIMUM (127)
+    0x95, 0x01,                    		//   REPORT_COUNT (1)
     0x75, 0x08,                    		//   REPORT_SIZE (8)
-    0xb1, 0x02,                    		//   FEATURE (Data,Var,Abs)																			
+    0xb1, 0x02,                    		//   FEATURE (Data,Var,Abs)
 
-    0x09, 0x04,                    		//   USAGE (Vendor Usage 4)																			
-    0x15, 0x80,                    		//   LOGICAL_MINIMUM (-128)																			
-    0x25, 0x7f,                    		//   LOGICAL_MAXIMUM (127) 																			
-    0x95, 0x01,                    		//   REPORT_COUNT (1)      																			
+    0x09, 0x03,                    		//   USAGE (Vendor Usage 3)
+    0x15, 0x80,                    		//   LOGICAL_MINIMUM (-128)
+    0x25, 0x7f,                    		//   LOGICAL_MAXIMUM (127)
+    0x95, 0x01,                    		//   REPORT_COUNT (1)
     0x75, 0x08,                    		//   REPORT_SIZE (8)
-    0xb1, 0x02,                    		//   FEATURE (Data,Var,Abs)																			
+    0xb1, 0x02,                    		//   FEATURE (Data,Var,Abs)
 
-    0x09, 0x05,                    		//   USAGE (Vendor Usage 5)																			
-    0x15, 0x80,                    		//   LOGICAL_MINIMUM (-128)																			
-    0x25, 0x7f,                    		//   LOGICAL_MAXIMUM (127) 																			
-    0x95, 0x01,                    		//   REPORT_COUNT (1)      																			
+    0x09, 0x04,                    		//   USAGE (Vendor Usage 4)
+    0x15, 0x80,                    		//   LOGICAL_MINIMUM (-128)
+    0x25, 0x7f,                    		//   LOGICAL_MAXIMUM (127)
+    0x95, 0x01,                    		//   REPORT_COUNT (1)
     0x75, 0x08,                    		//   REPORT_SIZE (8)
-    0xb1, 0x02,                    		//   FEATURE (Data,Var,Abs)																			
-        
-    0xc0                           		// END_COLLECTION          																			
+    0xb1, 0x02,                    		//   FEATURE (Data,Var,Abs)
+
+    0x09, 0x05,                    		//   USAGE (Vendor Usage 5)
+    0x15, 0x80,                    		//   LOGICAL_MINIMUM (-128)
+    0x25, 0x7f,                    		//   LOGICAL_MAXIMUM (127)
+    0x95, 0x01,                    		//   REPORT_COUNT (1)
+    0x75, 0x08,                    		//   REPORT_SIZE (8)
+    0xb1, 0x02,                    		//   FEATURE (Data,Var,Abs)
+
+    0xc0                           		// END_COLLECTION
 };
 ***************************************************************/
 
@@ -573,13 +573,13 @@ static uint_8 USB_IF_ALT[4] = { 0, 0, 0, 0};
 static const uint_8 USB_STR_NUM  = 6;
 
 /*
-** if the number of strings changes, look for USB_STR_0 everywhere and make 
+** if the number of strings changes, look for USB_STR_0 everywhere and make
 ** the obvious changes.  It should be found in 3 places.
 */
 
 static const uint_16 USB_STR_0[ 2] = {0x0300 + sizeof(USB_STR_0),0x0409};
 static const uint_16 USB_STR_1[26] = {0x0300 + sizeof(USB_STR_1),
-      'M','a','r','v','e','l','l',' ','S','e','m','i','c','o','n','d','u','c','t','o','r',' ','L','t','d'};       
+      'M','a','r','v','e','l','l',' ','S','e','m','i','c','o','n','d','u','c','t','o','r',' ','L','t','d'};
 static const uint_16 USB_STR_2[28] = {0x0300 + sizeof(USB_STR_2),
       'M','A','R','V','E','L','L',' ','U','S','B',' ','h','i','d','m','o','u','s','e',' ',\
       'D','e','v','i','c','e'};
@@ -609,7 +609,7 @@ static const uint_8_ptr USB_STRING_DESC[USB_STRING_ARRAY_SIZE] =
 
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9GetDescription
 * Returned Value : None
 * Comments       :
@@ -619,16 +619,16 @@ static const uint_8_ptr USB_STRING_DESC[USB_STRING_ARRAY_SIZE] =
 *     requested descriptor.
 *     And then wait for the OUT which terminates the control transfer.
 *     See section 9.4.3 (page 189) of the USB 1.1 Specification.
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9GetDescription
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-            
+
       /* The setup packet pointer */
       SETUP_STRUCT_PTR setup_ptr
    )
@@ -647,7 +647,7 @@ static void ch9GetDescription
              *(ConfigDesc + 33) = frame_interval;
             _usb_device_send_data(handle, 0, ConfigDesc,
                MIN(setup_ptr->LENGTH, CONFIG_DESC_SIZE));
-                           
+
             break;
 
          case 0x2200:
@@ -657,9 +657,9 @@ static void ch9GetDescription
          /*send some data for the mouse in the interrupt pipe queue */
          _usb_device_send_data(handle, INTERRUPT_EP, (uint_8_ptr)((pointer)&mouse_data),
                                 sizeof(MOUSE_DATA_STRUCT));
-               
-            break;      
-   
+
+            break;
+
          case 0x0300:
             if ((setup_ptr->VALUE & 0x00FF) > USB_STR_NUM) {
                _usb_device_send_data(handle, 0, USB_STRING_DESC[USB_STR_NUM+1],
@@ -668,24 +668,24 @@ static void ch9GetDescription
                _usb_device_send_data(handle, 0,
                   USB_STRING_DESC[setup_ptr->VALUE & 0x00FF],
                   MIN(setup_ptr->LENGTH, USB_STRING_DESC[setup_ptr->VALUE & 0x00FF][0]));
-            } /* Endif */      
+            } /* Endif */
             break;
 
          case 0x600:
-            _usb_device_send_data(handle, 0, (uint_8_ptr)DevQualifierDesc, 
+            _usb_device_send_data(handle, 0, (uint_8_ptr)DevQualifierDesc,
                MIN(setup_ptr->LENGTH, DEVICE_QUALIFIER_DESCRIPTOR_SIZE));
             break;
-            
-         case 0x700:      
+
+         case 0x700:
             *(other_speed_config + 33) = frame_interval;
 
-            _usb_device_send_data(handle, 0, (uint_8_ptr)other_speed_config, 
+            _usb_device_send_data(handle, 0, (uint_8_ptr)other_speed_config,
                MIN(setup_ptr->LENGTH, OTHER_SPEED_CONFIG_DESC_SIZE));
             break;
-        
+
          default:
-            USB_printf("usbMouse_%d, %s: Unexpected VALUE=0x%04x\n", 
-                _usb_device_get_dev_num(handle), __FUNCTION__, setup_ptr->VALUE);                
+            USB_printf("usbMouse_%d, %s: Unexpected VALUE=0x%04x\n",
+                _usb_device_get_dev_num(handle), __FUNCTION__, setup_ptr->VALUE);
             _usb_device_stall_endpoint(handle, 0, 0);
             return;
       } /* Endswitch */
@@ -696,59 +696,59 @@ static void ch9GetDescription
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9SetDescription
 * Returned Value : None
 * Comments       :
 *     Chapter 9 SetDescription command
 *     See section 9.4.8 (page 193) of the USB 1.1 Specification.
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9SetDescription
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-            
+
       /* The setup packet pointer */
       SETUP_STRUCT_PTR setup_ptr
    )
 { /* Body */
-    USB_printf("usbMouse_%d, %s: setup=%d\n", 
+    USB_printf("usbMouse_%d, %s: setup=%d\n",
             _usb_device_get_dev_num(handle), __FUNCTION__, (int)setup);
    _usb_device_stall_endpoint(handle, 0, 0);
    return;
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9GetConfig
 * Returned Value : None
 * Comments       :
 *     Chapter 9 GetConfig command
 *     See section 9.4.2 (page 189) of the USB 1.1 Specification.
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9GetConfig
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-            
+
       /* The setup packet pointer */
       SETUP_STRUCT_PTR setup_ptr
    )
 { /* Body */
    uint_16 current_config;
    /* Return the currently selected configuration */
-   if (setup){ 
+   if (setup){
       _usb_device_get_status(handle, ARC_USB_STATUS_CURRENT_CONFIG,
          &current_config);
-      data_to_send = (uint_8)current_config;      
+      data_to_send = (uint_8)current_config;
       _usb_device_send_data(handle, 0, (pointer) &data_to_send, sizeof(data_to_send));
       /* status phase */
       _usb_device_recv_data(handle, 0, 0, 0);
@@ -757,55 +757,55 @@ static void ch9GetConfig
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9SetConfig
 * Returned Value : None
 * Comments       :
 *     Chapter 9 SetConfig command
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9SetConfig
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-            
+
       /* The setup packet pointer */
       SETUP_STRUCT_PTR setup_ptr
    )
 { /* Body */
     uint_16 usb_state;
-   
-    if (setup) 
+
+    if (setup)
     {
-        if ((setup_ptr->VALUE & 0x00FF) > 1) 
+        if ((setup_ptr->VALUE & 0x00FF) > 1)
         {
             /* generate stall */
-            USB_printf("usbMouse_%d, %s: Wrong VALUE=0x%04x\n", 
+            USB_printf("usbMouse_%d, %s: Wrong VALUE=0x%04x\n",
                     _usb_device_get_dev_num(handle), __FUNCTION__, setup_ptr->VALUE);
             _usb_device_stall_endpoint(handle, 0, 0);
             return;
         } /* Endif */
 
         /* 0 indicates return to unconfigured state */
-        if ((setup_ptr->VALUE & 0x00FF) == 0) 
+        if ((setup_ptr->VALUE & 0x00FF) == 0)
         {
             _usb_device_get_status(handle, ARC_USB_STATUS_DEVICE_STATE, &usb_state);
-            if ((usb_state == ARC_USB_STATE_CONFIG) || 
-                (usb_state == ARC_USB_STATE_ADDRESS)) 
+            if ((usb_state == ARC_USB_STATE_CONFIG) ||
+                (usb_state == ARC_USB_STATE_ADDRESS))
             {
                 /* clear the currently selected config value */
                 _usb_device_set_status(handle, ARC_USB_STATUS_CURRENT_CONFIG, 0);
                 _usb_device_set_status(handle, ARC_USB_STATUS_DEVICE_STATE,
                                                         ARC_USB_STATE_ADDRESS);
-                /* status phase */      
+                /* status phase */
                 _usb_device_send_data(handle, 0, 0, 0);
-            } 
-            else 
+            }
+            else
             {
-                USB_printf("usbMouse_%d, %s: Wrong usb_state=%d\n", 
+                USB_printf("usbMouse_%d, %s: Wrong usb_state=%d\n",
                         _usb_device_get_dev_num(handle), __FUNCTION__, usb_state);
 
                 _usb_device_stall_endpoint(handle, 0, 0);
@@ -819,14 +819,14 @@ static void ch9SetConfig
         ** reconfigured to match the new device configuration
         */
         _usb_device_get_status(handle, ARC_USB_STATUS_CURRENT_CONFIG, &usb_state);
-        ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SETUP, 
-                        "usbMouse: Set configuration: old=%d, new=%d\n", 
+        ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SETUP,
+                        "usbMouse: Set configuration: old=%d, new=%d\n",
                         usb_state, setup_ptr->VALUE & 0x00FF);
 
-        if (usb_state != (setup_ptr->VALUE & 0x00FF)) 
+        if (usb_state != (setup_ptr->VALUE & 0x00FF))
         {
             /* Reconfigure endpoints here */
-            switch (setup_ptr->VALUE & 0x00FF) 
+            switch (setup_ptr->VALUE & 0x00FF)
             {
                 default:
                 break;
@@ -835,8 +835,8 @@ static void ch9SetConfig
                                 setup_ptr->VALUE & 0x00FF);
         } /* Endif */
         /* Init Interrupt endpoint */
-        _usb_device_init_endpoint(handle,INTERRUPT_EP, INTERRUPT_MAX_PACKET_SIZE, 
-                                   ARC_USB_SEND, ARC_USB_INTERRUPT_ENDPOINT, 
+        _usb_device_init_endpoint(handle,INTERRUPT_EP, INTERRUPT_MAX_PACKET_SIZE,
+                                   ARC_USB_SEND, ARC_USB_INTERRUPT_ENDPOINT,
                                    ARC_USB_DEVICE_DONT_ZERO_TERMINATE);
 
         TEST_ENABLED = TRUE;
@@ -850,74 +850,74 @@ static void ch9SetConfig
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9GetInterface
 * Returned Value : None
 * Comments       :
 *     Chapter 9 GetInterface command
 *     See section 9.4.4 (page 190) of the USB 1.1 Specification.
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9GetInterface
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-            
+
       /* The setup packet pointer */
       SETUP_STRUCT_PTR setup_ptr
    )
 { /* Body */
     uint_16 usb_state;
-   
+
     _usb_device_get_status(handle, ARC_USB_STATUS_DEVICE_STATE, &usb_state);
-    if (usb_state != ARC_USB_STATE_CONFIG) 
+    if (usb_state != ARC_USB_STATE_CONFIG)
     {
-        USB_printf("usbMouse_%d, %s: Wrong usb_state=%d\n", 
+        USB_printf("usbMouse_%d, %s: Wrong usb_state=%d\n",
                     _usb_device_get_dev_num(handle), __FUNCTION__, usb_state);
         _usb_device_stall_endpoint(handle, 0, 0);
         return;
     } /* Endif */
 
-    if (setup) 
+    if (setup)
     {
         _usb_device_send_data(handle, 0, &USB_IF_ALT[setup_ptr->INDEX & 0x00FF],
                                 MIN(setup_ptr->LENGTH, sizeof(uint_8)));
-        /* status phase */      
+        /* status phase */
         _usb_device_recv_data(handle, 0, 0, 0);
     } /* Endif */
     return;
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9SetInterface
 * Returned Value : None
 * Comments       :
 *     Chapter 9 SetInterface command
 *     See section 9.4.10 (page 195) of the USB 1.1 Specification.
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9SetInterface
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-            
+
       /* The setup packet pointer */
       SETUP_STRUCT_PTR setup_ptr
    )
 { /* Body */
-    if (setup) 
+    if (setup)
     {
-        if (setup_ptr->REQUESTTYPE != 0x01) 
+        if (setup_ptr->REQUESTTYPE != 0x01)
         {
-            USB_printf("usbDisk_%d, %s: Wrong REQUESTTYPE=0x%02x\n", 
-                        _usb_device_get_dev_num(handle), __FUNCTION__, 
+            USB_printf("usbDisk_%d, %s: Wrong REQUESTTYPE=0x%02x\n",
+                        _usb_device_get_dev_num(handle), __FUNCTION__,
                         setup_ptr->REQUESTTYPE);
 
             _usb_device_stall_endpoint(handle, 0, 0);
@@ -934,7 +934,7 @@ static void ch9SetInterface
         {
             USB_IF_ALT[setup_ptr->INDEX & 0x00FF] = (setup_ptr->VALUE & 0x00FF);
             /* Reconfigure endpoints here. */
-         
+
         } /* Endif */
 
         /* status phase */
@@ -944,33 +944,33 @@ static void ch9SetInterface
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9SynchFrame
-* Returned Value : 
+* Returned Value :
 * Comments       :
 *     Chapter 9 SynchFrame command
 *     See section 9.4.11 (page 195) of the USB 1.1 Specification.
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9SynchFrame
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-            
+
       /* The setup packet pointer */
       SETUP_STRUCT_PTR setup_ptr
    )
 { /* Body */
-   
-    if (setup) 
+
+    if (setup)
     {
-        if (setup_ptr->REQUESTTYPE != 0x02) 
+        if (setup_ptr->REQUESTTYPE != 0x02)
         {
-            USB_printf("usbMouse_%d, %s: Wrong REQUESTTYPE=0x%02x\n", 
-                        _usb_device_get_dev_num(handle), __FUNCTION__, 
+            USB_printf("usbMouse_%d, %s: Wrong REQUESTTYPE=0x%02x\n",
+                        _usb_device_get_dev_num(handle), __FUNCTION__,
                         setup_ptr->REQUESTTYPE);
             _usb_device_stall_endpoint(handle, 0, 0);
             return;
@@ -979,7 +979,7 @@ static void ch9SynchFrame
         if ((setup_ptr->INDEX & 0x00FF) >=
                 ConfigDesc[CONFIG_DESC_NUM_INTERFACES])
         {
-            USB_printf("usbMouse_%d, %s: Wrong INDEX=0x%04x\n", 
+            USB_printf("usbMouse_%d, %s: Wrong INDEX=0x%04x\n",
                         _usb_device_get_dev_num(handle), __FUNCTION__, setup_ptr->INDEX);
             _usb_device_stall_endpoint(handle, 0, 0);
             return;
@@ -990,41 +990,41 @@ static void ch9SynchFrame
         sof_count = USB_16BIT_LE(sof_count);
         _usb_device_send_data(handle, 0, (uint_8_ptr)&sof_count,
                         MIN(setup_ptr->LENGTH, sizeof(sof_count)));
-        /* status phase */      
+        /* status phase */
         _usb_device_recv_data(handle, 0, 0, 0);
     } /* Endif */
     return;
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : get_report
-* Returned Value : 
+* Returned Value :
 * Comments       :
 *     Chapter 9 Class specific request
 *     See section 9.4.11 (page 195) of the USB 1.1 Specification.
-* 
+*
 *END*--------------------------------------------------------------------*/
 
 void get_report
 	(
 	/* USB handle */
 	_usb_device_handle handle,
-	
+
 	/* Is it a Setup phase? */
 	boolean     setup,
-   
+
    /* [IN] Direction of the transfer. (1 for USB IN token)*/
    uint_8      direction,
-	
+
 	/* The setup packet pointer */
 	SETUP_STRUCT_PTR setup_ptr
 
 	)
-{ 
+{
     int i;
-      
-   for(i=0;i<10;i++)	
+
+   for(i=0;i<10;i++)
 	{
 		hid_test_rep_data[i] = (uint_8) i;
 	}
@@ -1033,43 +1033,43 @@ void get_report
 	{
 		_usb_device_send_data(handle, 0, (uint_8_ptr)hid_test_rep_data, MIN(setup_ptr->LENGTH,4));
 	}
-         
+
    _usb_device_recv_data(handle, 0, 0, 0);
-         
+
 
 	return;
-} 
+}
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : set_report
-* Returned Value : 
+* Returned Value :
 * Comments       :
 *     Chapter 9 Class specific request
 *     See section 9.4.11 (page 195) of the USB 1.1 Specification.
-* 
+*
 *END*--------------------------------------------------------------------*/
 
 void set_report
 	(
 	/* USB handle */
 	_usb_device_handle handle,
-	
+
 	/* Is it a Setup phase? */
 	boolean setup,
-   
+
    /* [IN] Direction of the transfer. (1 for USB IN token)*/
    uint_8               direction,
 
-	
+
 	/* The setup packet pointer */
 	SETUP_STRUCT_PTR setup_ptr
 	)
-{ 
+{
 	if (setup)      /*on a SetUP packet*/
    {
 	  _usb_device_recv_data(handle, 0, (uint_8_ptr)hid_test_rep_data, MIN(setup_ptr->LENGTH,4));
- 
+
 	}
    else if(direction == ARC_USB_RECV)   /*on a OUT packet*/
    {
@@ -1078,60 +1078,60 @@ void set_report
    }
 
 	return;
-} 
+}
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : set_idle
-* Returned Value : 
+* Returned Value :
 * Comments       :
 *     Chapter 9 Class specific request
 *     See section 9.4.11 (page 195) of the USB 1.1 Specification.
-* 
+*
 *END*--------------------------------------------------------------------*/
 
 void set_idle
 	(
 	/* USB handle */
 	_usb_device_handle handle,
-	
+
 	/* Is it a Setup phase? */
 	boolean setup,
-   
+
    /* [IN] Direction of the transfer. (1 for USB IN token)*/
    uint_8               direction,
 
-	
+
 	/* The setup packet pointer */
 	SETUP_STRUCT_PTR setup_ptr
 	)
-{ 
+{
    /* SET_IDLE is a No data phase transaction from HID class. All it needs
    is a terminating IN token */
 	if (setup)      /*on a SetUP packet*/
    {
-	  _usb_device_send_data(handle, 0, 0, 0);  
+	  _usb_device_send_data(handle, 0, 0, 0);
 	}
 	return;
-} 
+}
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9Class
-* Returned Value : 
+* Returned Value :
 * Comments       :
 *     Chapter 9 Class specific request
 *     See section 9.4.11 (page 195) of the USB 1.1 Specification.
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9Class
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-      
+
       /* [IN] Direction of the transfer. (1 for USB IN token)*/
       uint_8               direction,
 
@@ -1139,14 +1139,14 @@ static void ch9Class
       SETUP_STRUCT_PTR setup_ptr
    )
 { /* Body */
-   
-   switch (setup_ptr->REQUEST) 
+
+   switch (setup_ptr->REQUEST)
    {
-   
+
       case 0x01:
          get_report(handle, setup, direction, setup_ptr);
          break;
-      
+
       case 0x09:
          set_report(handle, setup, direction, setup_ptr);
          break;
@@ -1154,9 +1154,9 @@ static void ch9Class
       case 0x0A:
          set_idle(handle, setup, direction, setup_ptr);
          break;
-     
+
       default:
-        USB_printf("usbMouse_%d, %s: Wrong REQUEST=0x%02x\n", 
+        USB_printf("usbMouse_%d, %s: Wrong REQUEST=0x%02x\n",
               _usb_device_get_dev_num(handle), __FUNCTION__, setup_ptr->REQUEST);
 
          _usb_device_stall_endpoint(handle, 0, 0);
@@ -1167,55 +1167,55 @@ static void ch9Class
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : service_ep0
 * Returned Value : None
 * Comments       :
 *     Called upon a completed endpoint 0 (USB 1.1 Chapter 9) transfer
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void service_ep0
    (
       /* [IN] Handle of the USB device */
       _usb_device_handle   handle,
-      
+
       /* [IN] request type as registered */
       uint_8               type,
 
       /* [IN] Is it a setup packet? */
       boolean              setup,
-      
+
       /* [IN] Direction of the transfer.  Is it transmit? */
       uint_8               direction,
-      
+
       /* [IN] Pointer to the data buffer */
       uint_8_ptr           buffer,
-      
+
       /* [IN] Length of the transfer */
       uint_32              length,
-      
+
       /* [IN] Error, if any */
       uint_8               error
-            
-            
+
+
    )
 { /* Body */
    boolean  class_request = FALSE;
-   
-   if (setup) 
+
+   if (setup)
    {
       _usb_device_read_setup_data(handle, 0, (uint_8_ptr)&local_setup_packet);
       local_setup_packet.VALUE = USB_16BIT_LE(local_setup_packet.VALUE);
       local_setup_packet.INDEX = USB_16BIT_LE(local_setup_packet.INDEX);
       local_setup_packet.LENGTH = USB_16BIT_LE(local_setup_packet.LENGTH);
-   } 
+   }
    else if (class_request) {
       class_request = FALSE;
       /* Finish your class or vendor request here */
-      
+
       return;
    } /* Endif */
-   
+
    switch (local_setup_packet.REQUESTTYPE & 0x60) {
 
       case 0x00:
@@ -1266,13 +1266,13 @@ static void service_ep0
                break;
 
             default:
-                USB_printf("usbMouse_%d, %s: Wrong REQUEST = 0x%02x\n", 
+                USB_printf("usbMouse_%d, %s: Wrong REQUEST = 0x%02x\n",
                         _usb_device_get_dev_num(handle), __FUNCTION__, local_setup_packet.REQUEST);
                _usb_device_stall_endpoint(handle, 0, 0);
                break;
 
          } /* Endswitch */
-         
+
          break;
 
       case 0x20:
@@ -1283,27 +1283,27 @@ static void service_ep0
       case 0x40:
          /* vendor specific request */
          break;
-      
+
       default:
-         USB_printf("usbMouse_%d, %s: Unexpected REQUESTTYPE = 0x%x\n", 
-                _usb_device_get_dev_num(handle), __FUNCTION__, 
+         USB_printf("usbMouse_%d, %s: Unexpected REQUESTTYPE = 0x%x\n",
+                _usb_device_get_dev_num(handle), __FUNCTION__,
                 local_setup_packet.REQUESTTYPE);
 
          _usb_device_stall_endpoint(handle, 0, 0);
          break;
-         
+
    } /* Endswitch */
-   
+
    return;
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : service_ep1
 * Returned Value : None
 * Comments       :
 *     Called upon a completed endpoint 1 (USB 1.1 Chapter 9) transfer
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void service_ep1
    (
@@ -1312,23 +1312,23 @@ static void service_ep1
 
       /* [IN] request type as registered */
       uint_8               type,
-      
+
       /* [IN] Is it a setup packet? */
       boolean              setup,
-      
+
       /* [IN] Direction of the transfer.  Is it transmit? */
       uint_8               direction,
-      
+
       /* [IN] Pointer to the data buffer */
       uint_8_ptr           buffer,
-      
+
       /* [IN] Length of the transfer */
       uint_32              length,
 
       /* [IN] Error, if any */
       uint_8               error
-            
-            
+
+
    )
 { /* Body */
 
@@ -1337,47 +1337,47 @@ static void service_ep1
    Comment this out if this behaviour is not desired.
 ********************************************************************/
 
-    static int       x = 0;  
+    static int       x = 0;
     static boolean   right = FALSE;
     static int       wait = 0;
 
     mouseCntr++;
     if(wait == 0)
     {
-        if (right == FALSE)  
+        if (right == FALSE)
         {
-            mouse_data.b = 1; 
+            mouse_data.b = 1;
             x++;
-            right = (x > 200) ? TRUE : FALSE;     
+            right = (x > 200) ? TRUE : FALSE;
         }
-   
-        if (right == TRUE)  
+
+        if (right == TRUE)
         {
-            mouse_data.b = -1; 
+            mouse_data.b = -1;
             x--;
-            right = (x < 0) ? FALSE : TRUE;     
+            right = (x < 0) ? FALSE : TRUE;
         }
         wait = mouseDelay;
     }
     else
     {
         wait--;
-        mouse_data.b = 0; 
+        mouse_data.b = 0;
     }
-   
+
    _usb_device_send_data(handle, INTERRUPT_EP, (uint_8_ptr)((pointer)&mouse_data),
                             sizeof(MOUSE_DATA_STRUCT));
- 
+
    return;
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : reset_ep0
 * Returned Value : None
 * Comments       :
 *     Called upon a bus reset event.  Initialises the control endpoint.
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void reset_ep0
    (
@@ -1386,23 +1386,23 @@ static void reset_ep0
 
       /* [IN] request type as registered */
       uint_8               type,
-      
+
       /* [IN] Unused */
       boolean              setup,
-   
+
       /* [IN] Unused */
       uint_8               direction,
-   
+
       /* [IN] Unused */
       uint_8_ptr           buffer,
-   
+
       /* [IN] Unused */
       uint_32              length,
 
       /* [IN] Error, if any */
       uint_8               error
-            
-            
+
+
    )
 { /* Body */
 
@@ -1418,74 +1418,74 @@ static void reset_ep0
    _usb_device_init_endpoint(handle, 0, DevDesc[DEV_DESC_MAX_PACKET_SIZE], 1,
       ARC_USB_CONTROL_ENDPOINT, 0);
 
-   if (TEST_ENABLED) 
+   if (TEST_ENABLED)
    {
       _usb_device_cancel_transfer(handle, INTERRUPT_EP, ARC_USB_SEND);
    } /* Endif */
-   
+
    TEST_ENABLED = FALSE;
    mouseCntr = 0;
-         
+
    return;
 } /* EndBody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : service_suspend
 * Returned Value : None
 * Comments       :
 *     Called when host suspend the USB port. Do remote wake up if desired.
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void service_suspend
    (
       /* [IN] Handle of the USB device */
       _usb_device_handle   handle,
-   
+
       /* [IN] request type as registered */
       uint_8               type,
 
       /* [IN] Unused */
       boolean              setup,
-   
+
       /* [IN] Unused */
       uint_8               direction,
-   
+
       /* [IN] Unused */
       uint_8_ptr           buffer,
-   
+
       /* [IN] Unused */
       uint_32              length,
 
       /* [IN] Error, if any */
-      uint_8               error                        
+      uint_8               error
    )
 { /* Body */
    uint_16      usb_status;
-   int          lockKey;            
-   
+   int          lockKey;
+
    _usb_device_get_status(handle, ARC_USB_STATUS_DEVICE, &usb_status);
-   if (usb_status & ARC_USB_REMOTE_WAKEUP) 
-   { 
+   if (usb_status & ARC_USB_REMOTE_WAKEUP)
+   {
        lockKey = USB_lock();
 
        USB_printf("Mouse Suspended: type=%d, usbStatus=0x%x\n", type, usb_status);
        USB_SUSPENDED = TRUE;
 
        USB_unlock(lockKey);
-   } 
-          
+   }
+
    return;
 } /* EndBody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : usbMouseLoad
 * Returned Value : None
 * Comments       :
 *     First function called.  Initialises the USB and registers Chapter 9
 *     callback functions.
-* 
+*
 *END*--------------------------------------------------------------------*/
 _usb_device_handle  usbMouseLoad(int devNo)
 { /* Body */
@@ -1513,48 +1513,48 @@ _usb_device_handle  usbMouseLoad(int devNo)
     }
 
    lockKey = USB_lock();
-   
+
     /* Initialize the USB interface */
-    error = _usb_device_init(devNo, &handle);   
-    if (error != USB_OK) 
+    error = _usb_device_init(devNo, &handle);
+    if (error != USB_OK)
     {
         USB_printf("\nUSB Initialization failed. Error: %x\n", error);
         return NULL;
     } /* Endif */
-   
+
     /* Self Power, Remote wakeup disable */
-    _usb_device_set_status(handle, ARC_USB_STATUS_DEVICE, (1 << DEVICE_SELF_POWERED));    
+    _usb_device_set_status(handle, ARC_USB_STATUS_DEVICE, (1 << DEVICE_SELF_POWERED));
 
     error = _usb_device_register_service(handle, ARC_USB_SERVICE_EP0, service_ep0);
-    if (error != USB_OK) 
+    if (error != USB_OK)
     {
         USB_printf("\nUSB EP0 Service Registration failed. Error: %x\n", error);
         return NULL;
     } /* Endif */
-   
+
     error = _usb_device_register_service(handle, ARC_USB_SERVICE_BUS_RESET, reset_ep0);
-    if (error != USB_OK) 
+    if (error != USB_OK)
     {
         USB_printf("\nUSB BUS_RESET Service Registration failed. Error: %x\n", error);
         return NULL;
     } /* Endif */
-   
-    error = _usb_device_register_service(handle, INTERRUPT_EP, service_ep1);   
-    if (error != USB_OK) 
+
+    error = _usb_device_register_service(handle, INTERRUPT_EP, service_ep1);
+    if (error != USB_OK)
     {
         USB_printf("\nUSB EP1 Service Registration failed. Error: %x\n", error);
         return NULL;
     } /* Endif */
 
     error = _usb_device_register_service(handle, ARC_USB_SERVICE_SUSPEND, service_suspend);
-    if (error != USB_OK) 
+    if (error != USB_OK)
     {
         USB_printf("\nUSB SUSPEND Service Registration failed. Error: %x\n", error);
         return NULL;
     } /* Endif */
 
     error = _usb_device_register_service(handle, ARC_USB_SERVICE_SLEEP, service_suspend);
-    if (error != USB_OK) 
+    if (error != USB_OK)
     {
         USB_printf("\nUSB SUSPEND Service Registration failed. Error: %x\n", error);
         return NULL;
@@ -1567,17 +1567,17 @@ _usb_device_handle  usbMouseLoad(int devNo)
     hid_test_rep_data_unaligned   = (uint_8_ptr) USB_memalloc((EP1_RECV_BUFFER_SIZE + PSP_CACHE_LINE_SIZE));
     if(hid_test_rep_data_unaligned == NULL)
     {
-        USB_printf("mouseLoad: Buffer allocation of %d bytes is failed\n", 
+        USB_printf("mouseLoad: Buffer allocation of %d bytes is failed\n",
                     (unsigned)EP1_RECV_BUFFER_SIZE + PSP_CACHE_LINE_SIZE);
         return NULL;
     }
 
     hid_test_rep_data = (uint_8_ptr) USB_CACHE_ALIGN((uint_32) hid_test_rep_data_unaligned);
-    
+
     /**************************************************************************
     Best way to handle the Data cache is to allocate a large buffer that is
     cache aligned and keep all data inside it. Flush the line of the cache
-    that you have changed. In this program, we have static data such as 
+    that you have changed. In this program, we have static data such as
     descriptors which never changes. Such data can be kept in this buffer
     and flushed only once. Note that you can reduce the size of this buffer
     by aligning the addresses in a different way.
@@ -1587,36 +1587,36 @@ _usb_device_handle  usbMouseLoad(int devNo)
                              (REPORT_DESC_SIZE + PSP_CACHE_LINE_SIZE) +
                              (DEVICE_QUALIFIER_DESCRIPTOR_SIZE + PSP_CACHE_LINE_SIZE) +
                              (OTHER_SPEED_CONFIG_DESC_SIZE + PSP_CACHE_LINE_SIZE);
-                               
+
     Send_Buffer_Unaligned   = (uint_8_ptr) USB_memalloc(send_data_buffer_size);
-    if (Send_Buffer_Unaligned == NULL) 
+    if (Send_Buffer_Unaligned == NULL)
     {
         USB_printf("\nMouse: %d bytes Buffer allocation failed\n", send_data_buffer_size);
         return NULL;
     }
-   
+
     Send_Buffer_aligned = (uint_8_ptr) USB_CACHE_ALIGN((uint_32) Send_Buffer_Unaligned);
     /* keep a temporary copy of the aligned address */
     temp = Send_Buffer_aligned;
-   
+
 
     /**************************************************************************
     Assign pointers to different descriptors from it and copy descriptors inside.
     ***************************************************************************/
     DevDesc =  (uint_8_ptr) Send_Buffer_aligned;
     USB_memcopy(DevDescData, DevDesc, DEVICE_DESCRIPTOR_SIZE);
-    Send_Buffer_aligned += ((DEVICE_DESCRIPTOR_SIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE; 
-   
+    Send_Buffer_aligned += ((DEVICE_DESCRIPTOR_SIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE;
+
     ConfigDesc =  (uint_8_ptr) Send_Buffer_aligned;
     USB_memcopy(ConfigDescData, ConfigDesc, CONFIG_DESC_SIZE);
 
-    Send_Buffer_aligned += ((CONFIG_DESC_SIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE; 
+    Send_Buffer_aligned += ((CONFIG_DESC_SIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE;
 
     ReportDesc =  (uint_8_ptr) Send_Buffer_aligned;
     USB_memcopy(ReportDescData, ReportDesc, REPORT_DESC_SIZE);
-    Send_Buffer_aligned += ((REPORT_DESC_SIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE; 
+    Send_Buffer_aligned += ((REPORT_DESC_SIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE;
 
-   
+
     DevQualifierDesc =  (uint_8_ptr) Send_Buffer_aligned;
     USB_memcopy(DevQualifierDescData, DevQualifierDesc, DEVICE_QUALIFIER_DESCRIPTOR_SIZE);
     Send_Buffer_aligned += ((DEVICE_QUALIFIER_DESCRIPTOR_SIZE/PSP_CACHE_LINE_SIZE) + \
@@ -1624,8 +1624,8 @@ _usb_device_handle  usbMouseLoad(int devNo)
 
     other_speed_config =  (uint_8_ptr) Send_Buffer_aligned;
     USB_memcopy(other_speed_config_data, other_speed_config, OTHER_SPEED_CONFIG_DESC_SIZE);
-    Send_Buffer_aligned += ((OTHER_SPEED_CONFIG_DESC_SIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE; 
-                           
+    Send_Buffer_aligned += ((OTHER_SPEED_CONFIG_DESC_SIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE;
+
     /**************************************************************************
     Flush the cache to ensure main memory is updated.
     ***************************************************************************/
@@ -1640,8 +1640,8 @@ _usb_device_handle  usbMouseLoad(int devNo)
     USB_unlock(lockKey);
 
     USB_printf("USB Mouse example is READY\n");
-   
-    return handle; 
+
+    return handle;
 } /* Endbody */
 
 void    usbMouseUnload(_usb_device_handle handle)
@@ -1653,7 +1653,7 @@ void    usbMouseUnload(_usb_device_handle handle)
 
     /*lock interrupts */
     lockKey = USB_lock();
-    
+
     /* ensure all transfers are cancelled */
     _usb_device_cancel_transfer(handle, INTERRUPT_EP,  ARC_USB_SEND);
 
@@ -1666,11 +1666,11 @@ void    usbMouseUnload(_usb_device_handle handle)
     _usb_device_stop(handle);
 
     /* Deregister all services */
-    _usb_device_unregister_service(handle, ARC_USB_SERVICE_EP0);   
-    _usb_device_unregister_service(handle, ARC_USB_SERVICE_BUS_RESET);   
+    _usb_device_unregister_service(handle, ARC_USB_SERVICE_EP0);
+    _usb_device_unregister_service(handle, ARC_USB_SERVICE_BUS_RESET);
     _usb_device_unregister_service(handle, ARC_USB_SERVICE_SUSPEND);
     _usb_device_unregister_service(handle, ARC_USB_SERVICE_SLEEP);
-    _usb_device_unregister_service(handle, INTERRUPT_EP);   
+    _usb_device_unregister_service(handle, INTERRUPT_EP);
 
     _usb_device_shutdown(handle);
 
@@ -1689,14 +1689,14 @@ void    usbMouseUnload(_usb_device_handle handle)
 
     /* Clear gloabal variables */
     TEST_ENABLED = FALSE;
-    USB_SUSPENDED = FALSE;    
-    
+    USB_SUSPENDED = FALSE;
+
     USB_unlock(lockKey);
 }
 
 void    usbMousePeriodicResume(_usb_device_handle handle)
 {
-    if (USB_SUSPENDED) 
+    if (USB_SUSPENDED)
     {
        /*
         * Send RESUME signal whenever host suspends the USB port. In real case, we should
@@ -1705,7 +1705,7 @@ void    usbMousePeriodicResume(_usb_device_handle handle)
         USB_printf("Mouse Resumed\n");
 
         _usb_device_assert_resume(handle);
-        USB_SUSPENDED = FALSE;     
+        USB_SUSPENDED = FALSE;
     } /* Endbody */
 }
 /* EOF */

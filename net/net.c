@@ -610,8 +610,16 @@ void NetStartAgain(void)
 	eth_try_another(!NetRestarted);
 #endif
 	eth_init(gd->bd);
+#if defined(CONFIG_CMD_STAGE_BOOT)
+	if(strcmp(getenv("boot_from_pxe"),"1")==0)
+		NetRestartWrap=1;
+#endif
 	if (NetRestartWrap) {
 		NetRestartWrap = 0;
+#if defined(CONFIG_CMD_STAGE_BOOT)
+		if(strcmp(getenv("boot_from_pxe"),"1")==0)
+			NetDevExists=0;
+#endif
 		if (NetDevExists) {
 			NetSetTimeout(10000UL, startAgainTimeout);
 			net_set_udp_handler(NULL);

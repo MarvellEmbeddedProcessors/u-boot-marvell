@@ -136,4 +136,3 @@ extern "C" {
 #endif
 
 #endif /* __INCmvSpiSpecH */
-

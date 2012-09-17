@@ -1,16 +1,16 @@
 /*******************************************************************************
 
-This software file (the "File") is distributed by Marvell International Ltd. 
-or its affiliate(s) under the terms of the GNU General Public License Version 2, 
-June 1991 (the "License").  You may use, redistribute and/or modify this File 
-in accordance with the terms and conditions of the License, a copy of which 
-is available along with the File in the license.txt file or by writing to the 
-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+This software file (the "File") is distributed by Marvell International Ltd.
+or its affiliate(s) under the terms of the GNU General Public License Version 2,
+June 1991 (the "License").  You may use, redistribute and/or modify this File
+in accordance with the terms and conditions of the License, a copy of which
+is available along with the File in the license.txt file or by writing to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 or on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED 
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY 
-DISCLAIMED.  The GPL License provides additional details about this warranty 
+THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+DISCLAIMED.  The GPL License provides additional details about this warranty
 disclaimer.
 
 (C) Copyright 2004 - 2007 Marvell Semiconductor Israel Ltd. All Rights Reserved.
@@ -66,8 +66,8 @@ typedef struct mass_storage_read_capacity {
 typedef struct mass_storage_device_info {
    uint_8   PERIPHERAL_DEVICE_TYPE;    /* Bits 0-4. All other bits reserved */
    uint_8   RMB;                       /* Bit 7. All other bits reserved */
-   uint_8   ANSI_ECMA_ISO_VERSION;     /* ANSI: bits 0-2, ECMA: bits 3-5, 
-                                       ** ISO: bits 6-7 
+   uint_8   ANSI_ECMA_ISO_VERSION;     /* ANSI: bits 0-2, ECMA: bits 3-5,
+                                       ** ISO: bits 6-7
                                        */
    uint_8   RESPONSE_DATA_FORMAT;      /* bits 0-3. All other bits reserved */
    uint_8   ADDITIONAL_LENGTH;         /* For UFI device: always set to 0x1F */

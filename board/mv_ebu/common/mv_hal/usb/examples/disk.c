@@ -1,16 +1,16 @@
 /*******************************************************************************
 
-This software file (the "File") is distributed by Marvell International Ltd. 
-or its affiliate(s) under the terms of the GNU General Public License Version 2, 
-June 1991 (the "License").  You may use, redistribute and/or modify this File 
-in accordance with the terms and conditions of the License, a copy of which 
-is available along with the File in the license.txt file or by writing to the 
-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+This software file (the "File") is distributed by Marvell International Ltd.
+or its affiliate(s) under the terms of the GNU General Public License Version 2,
+June 1991 (the "License").  You may use, redistribute and/or modify this File
+in accordance with the terms and conditions of the License, a copy of which
+is available along with the File in the license.txt file or by writing to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 or on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED 
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY 
-DISCLAIMED.  The GPL License provides additional details about this warranty 
+THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+DISCLAIMED.  The GPL License provides additional details about this warranty
 disclaimer.
 
 (C) Copyright 2004 - 2007 Marvell Semiconductor Israel Ltd. All Rights Reserved.
@@ -42,9 +42,9 @@ Include the USB stack and local header files.
 
 /**************************************************************************
 Include the OS and BSP dependent files that define IO functions and
-basic types. You may like to change these files for your board and RTOS 
+basic types. You may like to change these files for your board and RTOS
 **************************************************************************/
-   
+
 
 /**************************************************************************
 Global variables and some defines for device.
@@ -93,7 +93,7 @@ typedef struct
     SETUP_STRUCT        local_setup_packet;
 
     volatile boolean    TEST_ENABLED;
-    volatile boolean    ENTER_TEST_MODE; 
+    volatile boolean    ENTER_TEST_MODE;
     volatile uint_16    test_mode_index;
     volatile uint_8     speed;
     uint_16             logicalBlocks;
@@ -191,7 +191,7 @@ static const uint_8 ConfigDescData[CONFIG_DESC_SIZE] =
    /* "Configuration" type of descriptor */
    2,
    /* Total length of the Configuration descriptor */
-   USB_uint_16_low(CONFIG_DESC_SIZE), 
+   USB_uint_16_low(CONFIG_DESC_SIZE),
    USB_uint_16_high(CONFIG_DESC_SIZE),
    /* NumInterfaces */
    1,
@@ -233,7 +233,7 @@ static const uint_8 ConfigDescData[CONFIG_DESC_SIZE] =
    /* Attributes.  0=Control 1=Isochronous 2=Bulk 3=Interrupt */
    DISK_IN_EP_TYPE,
    /* Max Packet Size for this endpoint */
-   USB_uint_16_low(DISK_FS_MAX_PACKET_SIZE), 
+   USB_uint_16_low(DISK_FS_MAX_PACKET_SIZE),
    USB_uint_16_high(DISK_FS_MAX_PACKET_SIZE),
    /* Polling Interval (ms) */
    0,
@@ -249,7 +249,7 @@ static const uint_8 ConfigDescData[CONFIG_DESC_SIZE] =
    /* Attributes.  0=Control 1=Isochronous 2=Bulk 3=Interrupt */
    DISK_OUT_EP_TYPE,
    /* Max Packet Size for this endpoint */
-   USB_uint_16_low(DISK_FS_MAX_PACKET_SIZE), 
+   USB_uint_16_low(DISK_FS_MAX_PACKET_SIZE),
    USB_uint_16_high(DISK_FS_MAX_PACKET_SIZE),
    /* Polling Interval (ms) */
    0
@@ -260,7 +260,7 @@ static const uint_8  other_speed_config_data[CONFIG_DESC_SIZE] =
 {
    9,                         /* bLength Length of this descriptor */
    7,                         /* bDescType This is a Other speed config descr */
-   USB_uint_16_low(OTHER_SPEED_CONFIG_DESC_SIZE), 
+   USB_uint_16_low(OTHER_SPEED_CONFIG_DESC_SIZE),
    USB_uint_16_high(OTHER_SPEED_CONFIG_DESC_SIZE),
    1,
    1,
@@ -297,7 +297,7 @@ static const uint_8  other_speed_config_data[CONFIG_DESC_SIZE] =
    /* Attributes.  0=Control 1=Isochronous 2=Bulk 3=Interrupt */
    DISK_IN_EP_TYPE,
    /* Max Packet Size for this endpoint */
-   USB_uint_16_low(DISK_HS_MAX_PACKET_SIZE), 
+   USB_uint_16_low(DISK_HS_MAX_PACKET_SIZE),
    USB_uint_16_high(DISK_HS_MAX_PACKET_SIZE),
    /* Polling Interval (ms) */
    0,
@@ -314,7 +314,7 @@ static const uint_8  other_speed_config_data[CONFIG_DESC_SIZE] =
    /* Attributes.  0=Control 1=Isochronous 2=Bulk 3=Interrupt */
    DISK_OUT_EP_TYPE,
    /* Max Packet Size for this endpoint */
-   USB_uint_16_low(DISK_HS_MAX_PACKET_SIZE), 
+   USB_uint_16_low(DISK_HS_MAX_PACKET_SIZE),
    USB_uint_16_high(DISK_HS_MAX_PACKET_SIZE),
    /* Polling Interval (ms) */
    0
@@ -326,13 +326,13 @@ static uint_8 USB_IF_ALT[4] = { 0, 0, 0, 0};
 static const uint_8 USB_STR_NUM = 7;
 
 /*
-** if the number of strings changes, look for USB_STR_0 everywhere and make 
+** if the number of strings changes, look for USB_STR_0 everywhere and make
 ** the obvious changes.  It should be found in 3 places.
 */
 
 static uint_16 USB_STR_0[ 2] = {(0x300 + sizeof(USB_STR_0)),(0x0409)};
 static uint_16 USB_STR_1[26] = {(0x300 + sizeof(USB_STR_1)),
-      'M','a','r','v','e','l','l',' ','S','e','m','i','c','o','n','d','u','c','t','o','r',' ','L','t','d'};       
+      'M','a','r','v','e','l','l',' ','S','e','m','i','c','o','n','d','u','c','t','o','r',' ','L','t','d'};
 static uint_16 USB_STR_2[28] = {(0x300 + sizeof(USB_STR_2)),
       'M','A','R','V','E','L','L',' ','M','a','s','s',' ','S','t','o','r','a','g','e',' ',\
       'D','e','v','i','c','e'};
@@ -344,7 +344,7 @@ static uint_16 USB_STR_5[ 4] = {(0x300 + sizeof(USB_STR_5)),
       '_','A','1'};
       /* Serial number has to be at least 12 bytes */
 static uint_16 USB_STR_6[ 13] = {(0x300 + sizeof(USB_STR_6)),
-      '0','0','0','0','0','0','0','0','0','0','0','1'};     
+      '0','0','0','0','0','0','0','0','0','0','0','1'};
 static uint_16 USB_STR_7[15] = {(0x300 + sizeof(USB_STR_7)),
       'Y','o','u','r',' ','n','a','m','e',' ','h','e','r','e'};
 static uint_16 USB_STR_n[17] = {(0x300 + sizeof(USB_STR_n)),
@@ -368,129 +368,129 @@ static uint_8_ptr USB_STRING_DESC[USB_STRING_ARRAY_SIZE] =
 MASS STORAGE SPECIFIC GLOBALS
 *****************************************************************/
 
-static const DISK_DEVICE_INFO device_information_data = 
+static const DISK_DEVICE_INFO device_information_data =
 {
-   0, 0x80, 0, 0x01, 0x1F, 
+   0, 0x80, 0, 0x01, 0x1F,
    /* Reserved */
    {0, 0, 0},
    /* Vendor information: "MARVELL  " */
    {0x4D, 0x41, 0x52, 0x56, 0x45, 0x4C, 0x4C, 0x20,},
    /* Product information: "Disk            " */
    {0x44, 0x69, 0x73, 0x6B, 0x20, 0x20, 0x20, 0x20,
-   0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20}, 
+   0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20},
    /* Product Revision level: "Demo" */
    {0x44, 0x65, 0x6D, 0x6F}
-}; 
+};
 
-static const DISK_READ_CAPACITY read_capacity = 
+static const DISK_READ_CAPACITY read_capacity =
 {
    /* Data for the capacity */
    {
-      0x00, 0x00, USB_uint_16_high(TOTAL_LOGICAL_ADDRESS_BLOCKS-14), 
+      0x00, 0x00, USB_uint_16_high(TOTAL_LOGICAL_ADDRESS_BLOCKS-14),
       USB_uint_16_low(TOTAL_LOGICAL_ADDRESS_BLOCKS-14)
-   }, 
+   },
    {
-      0x00, 0x00, USB_uint_16_high(LENGTH_OF_EACH_LAB), 
+      0x00, 0x00, USB_uint_16_high(LENGTH_OF_EACH_LAB),
       USB_uint_16_low(LENGTH_OF_EACH_LAB)
    }
 };
 
-static const uint_8 BOOT_SECTOR_AREA[512] = 
+static const uint_8 BOOT_SECTOR_AREA[512] =
 {
    /* Block 0 is the boot sector. Following is the data in the boot sector */
    /* 80x86 "short: jump instruction, indicating that the disk is formatted */
-    0xEB, 
+    0xEB,
     /* 8-bit displacement */
-    0x3C, 
+    0x3C,
     /* NOP OPCode */
-    0x90, 
+    0x90,
     /* 8-bytes for OEM identification: "ARC 4.3 " */
-    0x41, 0x52, 0x43, 0x20, 0x34, 0x2E, 0x33, 0x20, 
+    0x41, 0x52, 0x43, 0x20, 0x34, 0x2E, 0x33, 0x20,
     /* bytes/sector: 512 bytes (0x0200) */
-    0x00, 0x02, 
+    0x00, 0x02,
     /* Sectors/allocation unit */
     0x01,
     /* Reserved sectors: 0x0001 */
-    0x01, 0x00, 
+    0x01, 0x00,
     /* Number of File Allocation Tables (FATs): 2 */
     0x02,
     /* Number of root directory entries */
-    0x00, 0x02, 
+    0x00, 0x02,
     /* Total Small sectors in logical volume */
-    USB_uint_16_low(TOTAL_LOGICAL_ADDRESS_BLOCKS), 
+    USB_uint_16_low(TOTAL_LOGICAL_ADDRESS_BLOCKS),
     USB_uint_16_high(TOTAL_LOGICAL_ADDRESS_BLOCKS),
     /* Media descriptor byte: 0xF8: Fixed disk */
     0xF8,
     /* Sectors/FAT: 3 (Each FAT starts at a new sector) */
-    0x80, 0x00, 
+    0x80, 0x00,
     /* Sectors/track: 9 */
-    0x09, 0x00, 
+    0x09, 0x00,
     /* Number of heads */
-    0x02, 0x00, 
+    0x02, 0x00,
     /* Number of hidden sectors: 0 */
-    0x00, 0x00, 0x00, 0x00, 
+    0x00, 0x00, 0x00, 0x00,
     /* Total Large sectors in logical volume */
-    0x00, 0x00, 0x00, 0x00, 
+    0x00, 0x00, 0x00, 0x00,
     /* Physical drive number */
-    0x00, 
+    0x00,
     /* Reserved */
-    0x00, 
+    0x00,
     /* Extended boot signature record: 0x29 */
     0x29,
     /* 32-bit binary volume ID */
-    0x01, 0x02, 0x03, 0x04, 
+    0x01, 0x02, 0x03, 0x04,
     /* Volume label */
-    0x53, 0x54, 0x55, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 
+    0x53, 0x54, 0x55, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
     /* Reserved FAT-16*/
     0x46, 0x41, 0x54, 0x31, 0x36, 0x00, 0x00, 0x00,
     /* Bootstrap */
-    0x33, 0xC0, 0x8E, 0xD0, 0xBC, 0x00, 0x7C, 0xFC, 0xE8, 0x45, 0x00, 
+    0x33, 0xC0, 0x8E, 0xD0, 0xBC, 0x00, 0x7C, 0xFC, 0xE8, 0x45, 0x00,
     /* String: \r\nNon-System disk\r\nPress any key to reboot\r\n" */
     0x0D, 0x0A, 0x4E, 0x6F, 0x6E, 0x2D, 0x53, 0x79, 0x73, 0x74, 0x65,
-    0x6D, 0x20, 0x64, 0x69, 0x73, 0x6B, 0x0D, 0x0A, 0x50, 0x72, 0x65, 
-    0x73, 0x73, 0x20, 0x61, 0x6E, 0x79, 0x20, 0x6B, 0x65, 0x79, 0x20, 
-    0x74, 0x6F, 0x20, 0x72, 0x65, 0x62, 0x6F, 0x6F, 0x74, 0x0D, 0x0A, 
-    0x5E, 0xEB, 0x02, 0xCD, 0x10, 0xB4, 0x0E, 0xBB, 0x07, 0x00, 0x2E, 
-    0xAC, 0x84, 0xC0, 0x75, 0xF3, 0x98, 0xCD, 0x16, 0xCD, 0x19, 0xEB, 
-    0xB1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+    0x6D, 0x20, 0x64, 0x69, 0x73, 0x6B, 0x0D, 0x0A, 0x50, 0x72, 0x65,
+    0x73, 0x73, 0x20, 0x61, 0x6E, 0x79, 0x20, 0x6B, 0x65, 0x79, 0x20,
+    0x74, 0x6F, 0x20, 0x72, 0x65, 0x62, 0x6F, 0x6F, 0x74, 0x0D, 0x0A,
+    0x5E, 0xEB, 0x02, 0xCD, 0x10, 0xB4, 0x0E, 0xBB, 0x07, 0x00, 0x2E,
+    0xAC, 0x84, 0xC0, 0x75, 0xF3, 0x98, 0xCD, 0x16, 0xCD, 0x19, 0xEB,
+    0xB1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     /* Partition descriptors */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x55, 0xAA
 };
 
 
-static const uint_8 FAT16_SPECIAL_BYTES[3] = 
+static const uint_8 FAT16_SPECIAL_BYTES[3] =
 {
    /* FAT ID: Same as Media descriptor */
    0xF8, 0xFF, 0xFF
@@ -498,7 +498,7 @@ static const uint_8 FAT16_SPECIAL_BYTES[3] =
 
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9GetDescription
 * Returned Value : None
 * Comments       :
@@ -507,16 +507,16 @@ static const uint_8 FAT16_SPECIAL_BYTES[3] =
 *     descriptors (via wValue). We then post an IN response to return the
 *     requested descriptor.
 *     And then wait for the OUT which terminates the control transfer.
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9GetDescription
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-            
+
       /* The setup packet pointer */
       SETUP_STRUCT_PTR setup_ptr
    )
@@ -525,13 +525,13 @@ static void ch9GetDescription
     USB_DISK_STRUCT*    pDiskCtrl = usbDisksPtr[devNo];
     uint_32             max_pkt_size;
 
-    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SETUP, "usbDisk %s: setup=%d, value=0x%x, length=%d\n", 
+    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SETUP, "usbDisk %s: setup=%d, value=0x%x, length=%d\n",
                 __FUNCTION__, (int)setup, setup_ptr->VALUE, setup_ptr->LENGTH);
 
-    if (setup) 
+    if (setup)
     {
         /* Load the appropriate string depending on the descriptor requested.*/
-        switch (setup_ptr->VALUE & 0xFF00) 
+        switch (setup_ptr->VALUE & 0xFF00)
         {
             case 0x0100:
                 _usb_device_send_data(handle, 0, pDiskCtrl->DevDesc,
@@ -540,27 +540,27 @@ static void ch9GetDescription
 
             case 0x0200:
                 /* Set the Max Packet Size in the config and other speed config */
-                if(pDiskCtrl->speed == ARC_USB_SPEED_HIGH) 
+                if(pDiskCtrl->speed == ARC_USB_SPEED_HIGH)
                 {
                     max_pkt_size = pDiskCtrl->hsMaxPktSize;
-                } 
-                else 
+                }
+                else
                 {
                     max_pkt_size = pDiskCtrl->fsMaxPktSize;
                 } /* Endif */
-        
+
                 *(pDiskCtrl->ConfigDesc + CFG_DESC_EP_IN_TYPE_OFFSET) = (uint_8)pDiskCtrl->inEpType;
 
-                *(pDiskCtrl->ConfigDesc + CFG_DESC_EP_IN_MAX_PACKET_SIZE_OFFSET) = 
+                *(pDiskCtrl->ConfigDesc + CFG_DESC_EP_IN_MAX_PACKET_SIZE_OFFSET) =
                                                 USB_uint_16_low(max_pkt_size);
-                *(pDiskCtrl->ConfigDesc + CFG_DESC_EP_IN_MAX_PACKET_SIZE_OFFSET+1) = 
+                *(pDiskCtrl->ConfigDesc + CFG_DESC_EP_IN_MAX_PACKET_SIZE_OFFSET+1) =
                                                 USB_uint_16_high(max_pkt_size);
 
                 *(pDiskCtrl->ConfigDesc + CFG_DESC_EP_OUT_TYPE_OFFSET) = (uint_8)pDiskCtrl->outEpType;
 
-                *(pDiskCtrl->ConfigDesc + CFG_DESC_EP_OUT_MAX_PACKET_SIZE_OFFSET) = 
+                *(pDiskCtrl->ConfigDesc + CFG_DESC_EP_OUT_MAX_PACKET_SIZE_OFFSET) =
                                                 USB_uint_16_low(max_pkt_size);
-                *(pDiskCtrl->ConfigDesc + CFG_DESC_EP_OUT_MAX_PACKET_SIZE_OFFSET+1) = 
+                *(pDiskCtrl->ConfigDesc + CFG_DESC_EP_OUT_MAX_PACKET_SIZE_OFFSET+1) =
                                                 USB_uint_16_high(max_pkt_size);
 
                 _usb_device_send_data(handle, 0, pDiskCtrl->ConfigDesc,
@@ -571,50 +571,50 @@ static void ch9GetDescription
                 if ((setup_ptr->VALUE & 0x00FF) > USB_STR_NUM) {
                     _usb_device_send_data(handle, 0, USB_STRING_DESC[USB_STR_NUM+1],
                             MIN(setup_ptr->LENGTH, USB_STRING_DESC[USB_STR_NUM+1][0]));
-                } 
-                else 
+                }
+                else
                 {
                     _usb_device_send_data(handle, 0, USB_STRING_DESC[setup_ptr->VALUE & 0x00FF],
                             MIN(setup_ptr->LENGTH, USB_STRING_DESC[setup_ptr->VALUE & 0x00FF][0]));
-                } /* Endif */      
+                } /* Endif */
                 break;
-            
+
             case 0x600:
-                _usb_device_send_data(handle, 0, (uint_8_ptr)pDiskCtrl->DevQualifierDesc, 
+                _usb_device_send_data(handle, 0, (uint_8_ptr)pDiskCtrl->DevQualifierDesc,
                         MIN(setup_ptr->LENGTH, DEVICE_QUALIFIER_DESCRIPTOR_SIZE));
                 break;
-            
+
             case 0x700:
-                if(pDiskCtrl->speed == ARC_USB_SPEED_HIGH) 
+                if(pDiskCtrl->speed == ARC_USB_SPEED_HIGH)
                 {
                     max_pkt_size = pDiskCtrl->fsMaxPktSize;
-                } 
-                else 
+                }
+                else
                 {
                     max_pkt_size = pDiskCtrl->hsMaxPktSize;
                 } /* Endif */
-            
+
                 *(pDiskCtrl->other_speed_config + CFG_DESC_EP_IN_TYPE_OFFSET) = (uint_8)pDiskCtrl->inEpType;
 
-                *(pDiskCtrl->other_speed_config + CFG_DESC_EP_IN_MAX_PACKET_SIZE_OFFSET) = 
+                *(pDiskCtrl->other_speed_config + CFG_DESC_EP_IN_MAX_PACKET_SIZE_OFFSET) =
                     USB_uint_16_low(max_pkt_size);
-                *(pDiskCtrl->other_speed_config + CFG_DESC_EP_IN_MAX_PACKET_SIZE_OFFSET+1) = 
+                *(pDiskCtrl->other_speed_config + CFG_DESC_EP_IN_MAX_PACKET_SIZE_OFFSET+1) =
                     USB_uint_16_high(max_pkt_size);
 
                 *(pDiskCtrl->other_speed_config + CFG_DESC_EP_OUT_TYPE_OFFSET) = (uint_8)pDiskCtrl->outEpType;
 
-                *(pDiskCtrl->other_speed_config + CFG_DESC_EP_OUT_MAX_PACKET_SIZE_OFFSET) = 
+                *(pDiskCtrl->other_speed_config + CFG_DESC_EP_OUT_MAX_PACKET_SIZE_OFFSET) =
                     USB_uint_16_low(max_pkt_size);
-                *(pDiskCtrl->other_speed_config + CFG_DESC_EP_OUT_MAX_PACKET_SIZE_OFFSET+1) = 
+                *(pDiskCtrl->other_speed_config + CFG_DESC_EP_OUT_MAX_PACKET_SIZE_OFFSET+1) =
                     USB_uint_16_high(max_pkt_size);
-            
-                _usb_device_send_data(handle, 0, (uint_8_ptr)pDiskCtrl->other_speed_config, 
+
+                _usb_device_send_data(handle, 0, (uint_8_ptr)pDiskCtrl->other_speed_config,
                             MIN(setup_ptr->LENGTH, OTHER_SPEED_CONFIG_DESC_SIZE));
-               
+
                 break;
 
             default:
-                USB_printf("usbDisk_%d, %s: Unexpected VALUE=0x%04x\n", 
+                USB_printf("usbDisk_%d, %s: Unexpected VALUE=0x%04x\n",
                         _usb_device_get_dev_num(handle), __FUNCTION__, setup_ptr->VALUE);
                 _usb_device_stall_endpoint(handle, 0, ARC_USB_RECV);
                 return;
@@ -626,26 +626,26 @@ static void ch9GetDescription
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9SetDescription
 * Returned Value : None
 * Comments       :
 *     Chapter 9 SetDescription command
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9SetDescription
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-            
+
       /* The setup packet pointer */
       SETUP_STRUCT_PTR setup_ptr
    )
 { /* Body */
-   USB_printf("usbDisk_%d, %s: setup=%d\n", 
+   USB_printf("usbDisk_%d, %s: setup=%d\n",
         _usb_device_get_dev_num(handle), __FUNCTION__, (int)setup);
    _usb_device_stall_endpoint(handle, 0, ARC_USB_RECV);
 
@@ -653,21 +653,21 @@ static void ch9SetDescription
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9GetConfig
 * Returned Value : None
 * Comments       :
 *     Chapter 9 GetConfig command
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9GetConfig
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-            
+
       /* The setup packet pointer */
       SETUP_STRUCT_PTR setup_ptr
    )
@@ -680,10 +680,10 @@ static void ch9GetConfig
 
     /* Return the currently selected configuration */
     if (setup)
-    { 
+    {
         _usb_device_get_status(handle, ARC_USB_STATUS_CURRENT_CONFIG,
                                 &current_config);
-        *pDiskCtrl->epTemp_buf = (current_config & 0xFF);      
+        *pDiskCtrl->epTemp_buf = (current_config & 0xFF);
         _usb_device_send_data(handle, 0, pDiskCtrl->epTemp_buf, sizeof(uint_8));
         /* status phase */
         _usb_device_recv_data(handle, 0, NULL, 0);
@@ -692,21 +692,21 @@ static void ch9GetConfig
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9SetConfig
 * Returned Value : None
 * Comments       :
 *     Chapter 9 SetConfig command
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9SetConfig
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-            
+
       /* The setup packet pointer */
       SETUP_STRUCT_PTR setup_ptr
    )
@@ -715,38 +715,38 @@ static void ch9SetConfig
     USB_DISK_STRUCT*    pDiskCtrl = usbDisksPtr[devNo];
     uint_16             usb_state;
     uint_32             max_pkt_size;
-   
-    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SETUP, "usbDisk %s: setup=%d, value=0x%x\n", 
+
+    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SETUP, "usbDisk %s: setup=%d, value=0x%x\n",
                     __FUNCTION__, (int)setup, setup_ptr->VALUE);
 
-    if (setup) 
+    if (setup)
     {
-        if ((setup_ptr->VALUE & 0x00FF) > 1) 
+        if ((setup_ptr->VALUE & 0x00FF) > 1)
         {
             /* generate stall */
-            USB_printf("usbDisk_%d, %s: Wrong VALUE=0x%04x\n", 
+            USB_printf("usbDisk_%d, %s: Wrong VALUE=0x%04x\n",
                     _usb_device_get_dev_num(handle), __FUNCTION__, setup_ptr->VALUE);
             _usb_device_stall_endpoint(handle, 0, ARC_USB_RECV);
             return;
         } /* Endif */
 
         /* 0 indicates return to unconfigured state */
-        if ((setup_ptr->VALUE & 0x00FF) == 0) 
+        if ((setup_ptr->VALUE & 0x00FF) == 0)
         {
             _usb_device_get_status(handle, ARC_USB_STATUS_DEVICE_STATE, &usb_state);
-            if( (usb_state == ARC_USB_STATE_CONFIG) || 
-                (usb_state == ARC_USB_STATE_ADDRESS) ) 
+            if( (usb_state == ARC_USB_STATE_CONFIG) ||
+                (usb_state == ARC_USB_STATE_ADDRESS) )
             {
                 /* clear the currently selected config value */
                 _usb_device_set_status(handle, ARC_USB_STATUS_CURRENT_CONFIG, 0);
                 _usb_device_set_status(handle, ARC_USB_STATUS_DEVICE_STATE,
                                                     ARC_USB_STATE_ADDRESS);
-                /* status phase */      
+                /* status phase */
                 _usb_device_send_data(handle, 0, 0, 0);
-            } 
-            else 
+            }
+            else
             {
-                USB_printf("usbDisk_%d, %s: Wrong usb_state=%d\n", 
+                USB_printf("usbDisk_%d, %s: Wrong usb_state=%d\n",
                     _usb_device_get_dev_num(handle), __FUNCTION__, usb_state);
                 _usb_device_stall_endpoint(handle, 0, ARC_USB_RECV);
             } /* Endif */
@@ -761,13 +761,13 @@ static void ch9SetConfig
         _usb_device_get_status(handle, ARC_USB_STATUS_CURRENT_CONFIG,
                                                         &usb_state);
 
-        ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SETUP, "usbDisk: Set configuration: old=%d, new=%d\n", 
+        ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SETUP, "usbDisk: Set configuration: old=%d, new=%d\n",
                     usb_state, setup_ptr->VALUE & 0x00FF);
 
-        if (usb_state != (setup_ptr->VALUE & 0x00FF)) 
+        if (usb_state != (setup_ptr->VALUE & 0x00FF))
         {
             /* Reconfigure endpoints here */
-            switch (setup_ptr->VALUE & 0x00FF) 
+            switch (setup_ptr->VALUE & 0x00FF)
             {
                 default:
                 break;
@@ -777,25 +777,25 @@ static void ch9SetConfig
                                     setup_ptr->VALUE & 0x00FF);
         } /* Endif */
 
-        if (pDiskCtrl->speed == ARC_USB_SPEED_HIGH) 
+        if (pDiskCtrl->speed == ARC_USB_SPEED_HIGH)
         {
             max_pkt_size = pDiskCtrl->hsMaxPktSize;
-        } 
-        else 
+        }
+        else
         {
             max_pkt_size = pDiskCtrl->fsMaxPktSize;
         } /* Endif */
-      
+
         _usb_device_init_endpoint(handle, pDiskCtrl->outEpNo, max_pkt_size,
                 ARC_USB_RECV, ARC_USB_BULK_ENDPOINT, ARC_USB_DEVICE_DONT_ZERO_TERMINATE);
         _usb_device_init_endpoint(handle, pDiskCtrl->inEpNo, max_pkt_size,
                 ARC_USB_SEND, ARC_USB_BULK_ENDPOINT, ARC_USB_DEVICE_DONT_ZERO_TERMINATE);
-    
-        if (_usb_device_get_transfer_status(handle, pDiskCtrl->outEpNo, ARC_USB_RECV) == USB_OK) 
+
+        if (_usb_device_get_transfer_status(handle, pDiskCtrl->outEpNo, ARC_USB_RECV) == USB_OK)
         {
             _usb_device_recv_data(handle, pDiskCtrl->outEpNo, pDiskCtrl->ep1_buf, 31);
-        } /* Endif */      
-      
+        } /* Endif */
+
         pDiskCtrl->TEST_ENABLED = TRUE;
 
         _usb_device_set_status(handle, ARC_USB_STATUS_DEVICE_STATE,
@@ -803,8 +803,8 @@ static void ch9SetConfig
         /* status phase */
         _usb_device_send_data(handle, 0, 0, 0);
 
-        USB_printf("USB %s speed disk: config = %d\n", 
-            (pDiskCtrl->speed == ARC_USB_SPEED_HIGH) ? "High" : "Full", 
+        USB_printf("USB %s speed disk: config = %d\n",
+            (pDiskCtrl->speed == ARC_USB_SPEED_HIGH) ? "High" : "Full",
             setup_ptr->VALUE & 0x00FF);
 
     } /* Endif */
@@ -812,76 +812,76 @@ static void ch9SetConfig
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9GetInterface
 * Returned Value : None
 * Comments       :
 *     Chapter 9 GetInterface command
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9GetInterface
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-            
+
       /* The setup packet pointer */
       SETUP_STRUCT_PTR setup_ptr
    )
 { /* Body */
     uint_16 usb_state;
-   
+
     ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SETUP, "usbDisk %s: setup=%d\n", __FUNCTION__, (int)setup);
 
     _usb_device_get_status(handle, ARC_USB_STATUS_DEVICE_STATE, &usb_state);
-    if (usb_state != ARC_USB_STATE_CONFIG) 
+    if (usb_state != ARC_USB_STATE_CONFIG)
     {
-        USB_printf("usbDisk_%d, %s: Wrong usb_state=%d\n", 
+        USB_printf("usbDisk_%d, %s: Wrong usb_state=%d\n",
                     _usb_device_get_dev_num(handle), __FUNCTION__, usb_state);
         _usb_device_stall_endpoint(handle, 0, ARC_USB_RECV);
         return;
     } /* Endif */
 
-    if (setup) 
+    if (setup)
     {
         _usb_device_send_data(handle, 0, &USB_IF_ALT[setup_ptr->INDEX & 0x00FF],
                             MIN(setup_ptr->LENGTH, sizeof(uint_8)));
-        /* status phase */      
+        /* status phase */
         _usb_device_recv_data(handle, 0, NULL, 0);
     } /* Endif */
     return;
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9SetInterface
 * Returned Value : None
 * Comments       :
 *     Chapter 9 SetInterface command
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9SetInterface
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-            
+
       /* The setup packet pointer */
       SETUP_STRUCT_PTR setup_ptr
    )
 { /* Body */
     ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SETUP, "usbDisk %s: setup=%d\n", __FUNCTION__, (int)setup);
 
-    if (setup) 
+    if (setup)
     {
-        if (setup_ptr->REQUESTTYPE != 0x01) 
+        if (setup_ptr->REQUESTTYPE != 0x01)
         {
-            USB_printf("usbDisk_%d, %s: Wrong REQUESTTYPE=0x%02x\n", 
-                        _usb_device_get_dev_num(handle), __FUNCTION__, 
+            USB_printf("usbDisk_%d, %s: Wrong REQUESTTYPE=0x%02x\n",
+                        _usb_device_get_dev_num(handle), __FUNCTION__,
                         setup_ptr->REQUESTTYPE);
             _usb_device_stall_endpoint(handle, 0, ARC_USB_RECV);
             return;
@@ -897,7 +897,7 @@ static void ch9SetInterface
         {
             USB_IF_ALT[setup_ptr->INDEX & 0x00FF] = (setup_ptr->VALUE & 0x00FF);
             /* Reconfigure endpoints here. */
-         
+
         } /* Endif */
 
         /* status phase */
@@ -907,21 +907,21 @@ static void ch9SetInterface
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9SynchFrame
-* Returned Value : 
+* Returned Value :
 * Comments       :
 *     Chapter 9 SynchFrame command
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9SynchFrame
    (
       /* USB handle */
       _usb_device_handle handle,
-      
+
       /* Is it a Setup phase? */
       boolean setup,
-            
+
       /* The setup packet pointer */
       SETUP_STRUCT_PTR setup_ptr
    )
@@ -931,15 +931,15 @@ static void ch9SynchFrame
     int                 devNo = _usb_device_get_dev_num(handle);
     USB_DISK_STRUCT*    pDiskCtrl = usbDisksPtr[devNo];
 
-    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SETUP, "usbDisk %s: setup=%d\n", 
+    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SETUP, "usbDisk %s: setup=%d\n",
                                         __FUNCTION__, (int)setup);
 
-    if (setup) 
+    if (setup)
     {
         if (setup_ptr->REQUESTTYPE != (REQ_RECIP_ENDPOINT | REQ_TYPE_STANDARD | REQ_DIR_OUT) )
         {
-            USB_printf("usbDisk_%d, %s: Wrong REQUESTTYPE=0x%02x\n", 
-                        _usb_device_get_dev_num(handle), __FUNCTION__, 
+            USB_printf("usbDisk_%d, %s: Wrong REQUESTTYPE=0x%02x\n",
+                        _usb_device_get_dev_num(handle), __FUNCTION__,
                         setup_ptr->REQUESTTYPE);
             _usb_device_stall_endpoint(handle, 0, ARC_USB_RECV);
             return;
@@ -948,7 +948,7 @@ static void ch9SynchFrame
         if ((setup_ptr->INDEX & 0x00FF) >=
             pDiskCtrl->ConfigDesc[CONFIG_DESC_NUM_INTERFACES])
         {
-            USB_printf("usbDisk_%d, %s: Wrong INDEX=0x%02x\n", 
+            USB_printf("usbDisk_%d, %s: Wrong INDEX=0x%02x\n",
                         _usb_device_get_dev_num(handle), __FUNCTION__, setup_ptr->INDEX);
             _usb_device_stall_endpoint(handle, 0, ARC_USB_RECV);
             return;
@@ -958,20 +958,20 @@ static void ch9SynchFrame
         pDiskCtrl->epTemp_buf[0] = USB_uint_16_low(usbStatus);
         pDiskCtrl->epTemp_buf[1] = USB_uint_16_high(usbStatus);
         _usb_device_send_data(handle, 0, pDiskCtrl->epTemp_buf, MIN(setup_ptr->LENGTH, sizeof(uint_16)));
-        /* status phase */      
+        /* status phase */
         _usb_device_recv_data(handle, 0, NULL, 0);
     } /* Endif */
     return;
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : ch9Class
-* Returned Value : 
+* Returned Value :
 * Comments       :
 *     Chapter 9 Class specific request
 *     See section 9.4.11 (page 195) of the USB 1.1 Specification.
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void ch9Class
    (
@@ -983,41 +983,41 @@ static void ch9Class
 { /* Body */
     int                 devNo = _usb_device_get_dev_num(handle);
     USB_DISK_STRUCT*    pDiskCtrl = usbDisksPtr[devNo];
-   
-    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_CLASS, 
-                "usbDisk %s: setup=%d, request=0x%x, value=%d, index=%d, size=%d\n", 
+
+    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_CLASS,
+                "usbDisk %s: setup=%d, request=0x%x, value=%d, index=%d, size=%d\n",
                 __FUNCTION__, (int)setup, setup_ptr->REQUEST,
                 setup_ptr->VALUE, setup_ptr->INDEX, setup_ptr->LENGTH);
 
-    if (setup) 
+    if (setup)
     {
-        switch (setup_ptr->REQUEST) 
+        switch (setup_ptr->REQUEST)
         {
             case 0xFF:
-                /* Bulk-Only Mass Storage Reset: Ready the device for the next 
-                ** CBW from the host 
+                /* Bulk-Only Mass Storage Reset: Ready the device for the next
+                ** CBW from the host
                 */
-                if ((setup_ptr->VALUE != 0) || 
+                if ((setup_ptr->VALUE != 0) ||
                     (setup_ptr->INDEX != MASS_STORAGE_INTERFACE) ||
-                    (setup_ptr->LENGTH != 0)) 
+                    (setup_ptr->LENGTH != 0))
                 {
-                    USB_printf("usbDisk_%d, %s: Wrong Setup: VALUE=%d, INDEX=%d, LENGTH=%d\n", 
-                        _usb_device_get_dev_num(handle), __FUNCTION__, setup_ptr->VALUE, 
+                    USB_printf("usbDisk_%d, %s: Wrong Setup: VALUE=%d, INDEX=%d, LENGTH=%d\n",
+                        _usb_device_get_dev_num(handle), __FUNCTION__, setup_ptr->VALUE,
                         setup_ptr->INDEX, setup_ptr->LENGTH);
 
                     _usb_device_stall_endpoint(handle, 0, 0);
-                } 
-                else 
+                }
+                else
                 { /* Body */
                     pDiskCtrl->CBW_PROCESSED = FALSE;
                     pDiskCtrl->ZERO_TERMINATE = FALSE;
                     _usb_device_cancel_transfer(handle, pDiskCtrl->outEpNo, ARC_USB_RECV);
                     _usb_device_cancel_transfer(handle, pDiskCtrl->inEpNo, ARC_USB_SEND);
-               
+
                     /* unstall bulk endpoint */
                     _usb_device_unstall_endpoint(handle, pDiskCtrl->outEpNo, ARC_USB_RECV);
                     _usb_device_unstall_endpoint(handle, pDiskCtrl->inEpNo, ARC_USB_SEND);
-               
+
                     _usb_device_recv_data(handle, pDiskCtrl->outEpNo, pDiskCtrl->ep1_buf, 31);
                     /* send zero packet to control pipe */
                     _usb_device_send_data(handle, 0, NULL, 0);
@@ -1026,53 +1026,53 @@ static void ch9Class
 
             case 0xFE:
                 /* For Get Max LUN use any of these responses*/
-                if (setup_ptr->LENGTH == 0) 
+                if (setup_ptr->LENGTH == 0)
                 { /* Body */
 
-                    USB_printf("usbDisk_%d, %s: Wrong Length: LENGTH=%d\n", 
+                    USB_printf("usbDisk_%d, %s: Wrong Length: LENGTH=%d\n",
                         _usb_device_get_dev_num(handle), __FUNCTION__, setup_ptr->LENGTH);
 
                     _usb_device_stall_endpoint(handle, 0, 0);
-                } 
+                }
                 else
                 {
                     if ((setup_ptr->VALUE != 0) ||
                         (setup_ptr->INDEX != MASS_STORAGE_INTERFACE) ||
-                        (setup_ptr->LENGTH != 1)) 
+                        (setup_ptr->LENGTH != 1))
                     { /* Body */
-                        USB_printf("usbDisk_%d, %s: Wrong Setup: VALUE=%d, INDEX=%d, LENGTH=%d\n", 
-                                    _usb_device_get_dev_num(handle), __FUNCTION__, setup_ptr->VALUE, 
+                        USB_printf("usbDisk_%d, %s: Wrong Setup: VALUE=%d, INDEX=%d, LENGTH=%d\n",
+                                    _usb_device_get_dev_num(handle), __FUNCTION__, setup_ptr->VALUE,
                                     setup_ptr->INDEX, setup_ptr->LENGTH);
                         _usb_device_stall_endpoint(handle, 0, 0);
-                    } 
-                    else 
+                    }
+                    else
                     { /* Body */
                         /* Send Max LUN = 0 to the the control pipe */
                         *pDiskCtrl->epTemp_buf = 0;
                         _usb_device_send_data(handle, 0, pDiskCtrl->epTemp_buf, 1);
                         /* status phase */
                         _usb_device_recv_data(handle, 0, 0, 0);
-                    } /* Endbody */     
+                    } /* Endbody */
                 }
                 break;
 
             default :
-                USB_printf("usbDisk_%d, %s: Wrong REQUEST=0x%02x\n", 
+                USB_printf("usbDisk_%d, %s: Wrong REQUEST=0x%02x\n",
                     _usb_device_get_dev_num(handle), __FUNCTION__, setup_ptr->REQUEST);
                 _usb_device_stall_endpoint(handle, 0, 0);
                 return;
         } /* EndSwitch */
-    } 
+    }
     return;
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : service_ep0
 * Returned Value : None
 * Comments       :
 *     Called upon a completed endpoint 0 (USB 1.1 Chapter 9) transfer
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void service_ep0
    (
@@ -1084,44 +1084,44 @@ static void service_ep0
 
       /* [IN] Is it a setup packet? */
       boolean              setup,
-      
+
       /* [IN] Direction of the transfer.  Is it transmit? */
       uint_8               direction,
-      
+
       /* [IN] Pointer to the data buffer */
       uint_8_ptr           buffer,
-      
+
       /* [IN] Length of the transfer */
       uint_32              length,
-      
+
       /* [IN] Error, if any */
       uint_8               error
-            
+
    )
 { /* Body */
     int                 devNo = _usb_device_get_dev_num(handle);
     USB_DISK_STRUCT*    pDiskCtrl = usbDisksPtr[devNo];
     SETUP_STRUCT*       pSetupPacket = &pDiskCtrl->local_setup_packet;
 
-   if (setup) 
+   if (setup)
    {
       _usb_device_read_setup_data(handle, 0, (uint_8_ptr)pSetupPacket);
         pSetupPacket->VALUE = USB_16BIT_LE(pSetupPacket->VALUE);
         pSetupPacket->INDEX = USB_16BIT_LE(pSetupPacket->INDEX);
         pSetupPacket->LENGTH = USB_16BIT_LE(pSetupPacket->LENGTH);
    }
-   
+
    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_EP0,
               "disk %s: setup=%s, dir=%s, pBuf=0x%x, length=%d, reqType=0x%x, req=0x%x\n",
-                    __FUNCTION__, (setup ? "YES" : "NO"), 
-                    (direction == ARC_USB_RECV) ? "RECV" : "SEND", 
-                    (unsigned)buffer, (int)length, pSetupPacket->REQUESTTYPE, 
+                    __FUNCTION__, (setup ? "YES" : "NO"),
+                    (direction == ARC_USB_RECV) ? "RECV" : "SEND",
+                    (unsigned)buffer, (int)length, pSetupPacket->REQUESTTYPE,
                     pSetupPacket->REQUEST);
 
-   switch (pSetupPacket->REQUESTTYPE & REQ_TYPE_MASK) 
+   switch (pSetupPacket->REQUESTTYPE & REQ_TYPE_MASK)
    {
       case REQ_TYPE_STANDARD:
-         switch (pSetupPacket->REQUEST) 
+         switch (pSetupPacket->REQUEST)
          {
             case REQ_GET_STATUS:
                mvUsbCh9GetStatus(handle, setup, pSetupPacket);
@@ -1168,13 +1168,13 @@ static void service_ep0
                break;
 
             default:
-                USB_printf("usbDisk_%d, %s: Wrong REQUEST = 0x%02x\n", 
+                USB_printf("usbDisk_%d, %s: Wrong REQUEST = 0x%02x\n",
                         _usb_device_get_dev_num(handle), __FUNCTION__, pSetupPacket->REQUEST);
                _usb_device_stall_endpoint(handle, 0, 0);
                break;
 
          } /* Endswitch */
-         
+
          break;
 
       case REQ_TYPE_CLASS:
@@ -1184,41 +1184,41 @@ static void service_ep0
 
       case REQ_TYPE_VENDOR:
          /* vendor specific request can be handled here*/
-         USB_printf("usbDisk_%d, %s: Vendor REQUESTTYPE (%d) not supported\n", 
+         USB_printf("usbDisk_%d, %s: Vendor REQUESTTYPE (%d) not supported\n",
                _usb_device_get_dev_num(handle), __FUNCTION__, REQ_TYPE_VENDOR);
-         
+
          _usb_device_stall_endpoint(handle, 0, 0);
          break;
-      
+
       default:
-         USB_printf("usbDisk_%d, %s: Unexpected REQUESTTYPE = 0x%x\n", 
-                _usb_device_get_dev_num(handle), __FUNCTION__, 
+         USB_printf("usbDisk_%d, %s: Unexpected REQUESTTYPE = 0x%x\n",
+                _usb_device_get_dev_num(handle), __FUNCTION__,
                 pSetupPacket->REQUESTTYPE);
-         
+
          _usb_device_stall_endpoint(handle, 0, 0);
          break;
-         
+
    } /* Endswitch */
-   
+
    return;
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : _process_inquiry_command
 * Returned Value : None
 * Comments       :
 *     Process a Mass storage class Inquiry command
-* 
+*
 *END*--------------------------------------------------------------------*/
 void _process_inquiry_command
    (
       /* [IN] Handle of the USB device */
       _usb_device_handle   handle,
-            
+
       /* [IN] Endpoint number */
       uint_8               ep_num,
-      
+
       /* [IN] Pointer to the data buffer */
       CBW_STRUCT_PTR       cbw_ptr
    )
@@ -1226,82 +1226,82 @@ void _process_inquiry_command
     int                 devNo = _usb_device_get_dev_num(handle);
     USB_DISK_STRUCT*    pDiskCtrl = usbDisksPtr[devNo];
 
-    if (cbw_ptr->DCBWDATALENGTH) 
+    if (cbw_ptr->DCBWDATALENGTH)
     {
-        if (cbw_ptr->BMCBWFLAGS & USB_CBW_DIRECTION_BIT) 
-        {      
+        if (cbw_ptr->BMCBWFLAGS & USB_CBW_DIRECTION_BIT)
+        {
             /* Send the device information */
             _usb_device_send_data(handle, pDiskCtrl->inEpNo, (uint_8_ptr)&device_information_data, 36);
         } /* Endif */
     } /* Endif */
-   
-    /* The actual length will never exceed the DCBWDATALENGTH */            
+
+    /* The actual length will never exceed the DCBWDATALENGTH */
     pDiskCtrl->pCSW->DCSWDATARESIDUE = USB_32BIT_LE(cbw_ptr->DCBWDATALENGTH - 36);
     pDiskCtrl->pCSW->BCSWSTATUS = 0;
-   
+
 } /* EndBody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : _process_unsupported_command
 * Returned Value : None
 * Comments       :
 *     Responds appropriately to unsupported commands
-* 
+*
 *END*--------------------------------------------------------------------*/
 void _process_unsupported_command
    (
       /* [IN] Handle of the USB device */
       _usb_device_handle   handle,
-            
+
       /* [IN] Endpoint number */
       uint_8               ep_num,
-      
+
       /* [IN] Pointer to the data buffer */
       CBW_STRUCT_PTR       cbw_ptr
    )
 { /* Body */
     int                 devNo = _usb_device_get_dev_num(handle);
     USB_DISK_STRUCT*    pDiskCtrl = usbDisksPtr[devNo];
-   
-    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK, 
+
+    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK,
                     "disk unsupported command: BMCBWFLAGS = 0x%02x\n", cbw_ptr->BMCBWFLAGS);
 
     /* The actual length will never exceed the DCBWDATALENGTH */
     pDiskCtrl->pCSW->DCSWDATARESIDUE = 0;
     pDiskCtrl->pCSW->BCSWSTATUS = 0;
 
-    if (cbw_ptr->BMCBWFLAGS & USB_CBW_DIRECTION_BIT) 
-    {      
+    if (cbw_ptr->BMCBWFLAGS & USB_CBW_DIRECTION_BIT)
+    {
         /* Send a zero-length packet */
         _usb_device_send_data(handle, pDiskCtrl->inEpNo, (uint_8_ptr)NULL, 0);
-    } 
-    else 
+    }
+    else
     {
         pDiskCtrl->CBW_PROCESSED = FALSE;
         /* Send the command status information */
         _usb_device_send_data(handle, pDiskCtrl->inEpNo, (uint_8_ptr)pDiskCtrl->pCSW, 13);
         _usb_device_recv_data(handle, pDiskCtrl->outEpNo, pDiskCtrl->ep1_buf, 31);
     } /* Endif */
-   
+
 } /* EndBody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : _process_report_capacity
 * Returned Value : None
 * Comments       :
 *     Reports the media capacity as a response to READ CAPACITY Command.
-* 
+*
 *END*--------------------------------------------------------------------*/
 void _process_report_capacity
    (
       /* [IN] Handle of the USB device */
       _usb_device_handle   handle,
-            
+
       /* [IN] Endpoint number */
       uint_8               ep_num,
-      
+
       /* [IN] Pointer to the data buffer */
       CBW_STRUCT_PTR       cbw_ptr
    )
@@ -1309,38 +1309,38 @@ void _process_report_capacity
     int                 devNo = _usb_device_get_dev_num(handle);
     USB_DISK_STRUCT*    pDiskCtrl = usbDisksPtr[devNo];
 
-    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK_CAP, 
+    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK_CAP,
                     "disk read_capacity: BMCBWFLAGS = 0x%02x\n", cbw_ptr->BMCBWFLAGS);
 
-    if (cbw_ptr->BMCBWFLAGS & USB_CBW_DIRECTION_BIT) 
-    {      
+    if (cbw_ptr->BMCBWFLAGS & USB_CBW_DIRECTION_BIT)
+    {
         /* Send a zero-length packet */
         _usb_device_send_data(handle, pDiskCtrl->inEpNo, (uint_8_ptr)pDiskCtrl->pReadCapacity, 8);
-      
+
     } /* Endif */
-   
-    /* The actual length will never exceed the DCBWDATALENGTH */            
+
+    /* The actual length will never exceed the DCBWDATALENGTH */
     pDiskCtrl->pCSW->DCSWDATARESIDUE = 0;
     pDiskCtrl->pCSW->BCSWSTATUS = 0;
-   
+
 } /* EndBody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : _process_read_command
 * Returned Value : None
 * Comments       :
 *     Sends data as a response to READ Command.
-* 
+*
 *END*--------------------------------------------------------------------*/
 void _process_read_command
    (
       /* [IN] Handle of the USB device */
       _usb_device_handle   handle,
-            
+
       /* [IN] Endpoint number */
       uint_8               ep_num,
-      
+
       /* [IN] Pointer to the data buffer */
       CBW_STRUCT_PTR       cbw_ptr
    )
@@ -1350,16 +1350,16 @@ void _process_read_command
     int                 devNo = _usb_device_get_dev_num(handle);
     USB_DISK_STRUCT*    pDiskCtrl = usbDisksPtr[devNo];
 
-    if (cbw_ptr->BMCBWFLAGS & USB_CBW_DIRECTION_BIT) 
-    {                
+    if (cbw_ptr->BMCBWFLAGS & USB_CBW_DIRECTION_BIT)
+    {
       /* Send a zero-length packet */
       index1  = ((uint_32)cbw_ptr->CBWCB[4] << 8);
       index1  |= cbw_ptr->CBWCB[5];
       index2 = ((uint_32)cbw_ptr->CBWCB[7] << 8);
       index2 |= (uint_32)cbw_ptr->CBWCB[8];
 
-      ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK_READ, 
-                    "disk read: FLAGS=0x%02x, LENGTH=0x%x, index1=0x%x, index2=0x%x\n", 
+      ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK_READ,
+                    "disk read: FLAGS=0x%02x, LENGTH=0x%x, index1=0x%x, index2=0x%x\n",
                     cbw_ptr->BMCBWFLAGS, cbw_ptr->DCBWDATALENGTH, index1, index2);
 
       if(cbw_ptr->CBWCB[0] != 0x3E)
@@ -1383,8 +1383,8 @@ void _process_read_command
           _usb_device_send_data(handle, pDiskCtrl->inEpNo, (uint_8_ptr)NULL, 0);
           return;
       }
- 
-      if (cbw_ptr->DCBWDATALENGTH == 0) 
+
+      if (cbw_ptr->DCBWDATALENGTH == 0)
       { /* Body */
          pDiskCtrl->pCSW->DCSWDATARESIDUE = 0;
          pDiskCtrl->pCSW->BCSWSTATUS = 2;
@@ -1393,49 +1393,49 @@ void _process_read_command
          _usb_device_send_data(handle, pDiskCtrl->inEpNo, (uint_8_ptr)pDiskCtrl->pCSW, 13);
          _usb_device_recv_data(handle, pDiskCtrl->outEpNo, pDiskCtrl->ep1_buf, 31);
          return;
-      } 
-      else 
+      }
+      else
       { /* Body */
          pDiskCtrl->pCSW->DCSWDATARESIDUE = 0;
-         pDiskCtrl->pCSW->BCSWSTATUS = 0;         
-         if (byteSize > cbw_ptr->DCBWDATALENGTH) 
+         pDiskCtrl->pCSW->BCSWSTATUS = 0;
+         if (byteSize > cbw_ptr->DCBWDATALENGTH)
          { /* Body */
             byteSize = cbw_ptr->DCBWDATALENGTH;
             pDiskCtrl->pCSW->DCSWDATARESIDUE = USB_32BIT_LE(cbw_ptr->DCBWDATALENGTH);
             pDiskCtrl->pCSW->BCSWSTATUS = 2;
-         } 
-         else 
+         }
+         else
          {
-            if (byteSize < cbw_ptr->DCBWDATALENGTH) 
+            if (byteSize < cbw_ptr->DCBWDATALENGTH)
             { /* Body */
                 pDiskCtrl->pCSW->DCSWDATARESIDUE = USB_32BIT_LE(cbw_ptr->DCBWDATALENGTH - index2);
-                if (byteSize > 0) 
+                if (byteSize > 0)
                 { /* Body */
-                    if (pDiskCtrl->speed == ARC_USB_SPEED_HIGH) 
+                    if (pDiskCtrl->speed == ARC_USB_SPEED_HIGH)
                     {
                         max_pkt_size = pDiskCtrl->hsMaxPktSize;
-                    } 
-                    else 
+                    }
+                    else
                     {
                         max_pkt_size = pDiskCtrl->fsMaxPktSize;
                     }
 
-                    if( (byteSize % max_pkt_size) == 0) 
+                    if( (byteSize % max_pkt_size) == 0)
                     { /* Body */
                         /* Need send a zero terminate packet to host */
                         pDiskCtrl->ZERO_TERMINATE = TRUE;
                     } /* Endbody */
-                } /* Endbody */  
+                } /* Endbody */
             } /* Endbody */
          }
 
-         _usb_device_send_data(handle, pDiskCtrl->inEpNo, 
+         _usb_device_send_data(handle, pDiskCtrl->inEpNo,
             pDiskCtrl->MASS_STORAGE_DISK + (index1*LENGTH_OF_EACH_LAB), byteSize);
       } /* Endbody */
-   } 
-   else 
+   }
+   else
    { /* Body */
-      USB_printf("disk read incorrect: FLAGS=0x%02x, LENGTH=0x%x\n", 
+      USB_printf("disk read incorrect: FLAGS=0x%02x, LENGTH=0x%x\n",
                     cbw_ptr->BMCBWFLAGS, cbw_ptr->DCBWDATALENGTH);
 
       /* Incorrect but valid CBW */
@@ -1446,26 +1446,26 @@ void _process_read_command
 
       pDiskCtrl->pCSW->DCSWDATARESIDUE = USB_32BIT_LE(cbw_ptr->DCBWDATALENGTH);
       pDiskCtrl->pCSW->BCSWSTATUS = 2;
-       _usb_device_recv_data(handle, pDiskCtrl->outEpNo, pDiskCtrl->ep1_buf, index2);   
-   } /* Endbody */     
+       _usb_device_recv_data(handle, pDiskCtrl->outEpNo, pDiskCtrl->ep1_buf, index2);
+   } /* Endbody */
 } /* EndBody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : _process_write_command
 * Returned Value : None
 * Comments       :
 *     Sends data as a response to WRITE Command.
-* 
+*
 *END*--------------------------------------------------------------------*/
 void _process_write_command
    (
       /* [IN] Handle of the USB device */
       _usb_device_handle   handle,
-            
+
       /* [IN] Endpoint number */
       uint_8               ep_num,
-      
+
       /* [IN] Pointer to the data buffer */
       CBW_STRUCT_PTR       cbw_ptr
    )
@@ -1475,17 +1475,17 @@ void _process_write_command
     int                 devNo = _usb_device_get_dev_num(handle);
     USB_DISK_STRUCT*    pDiskCtrl = usbDisksPtr[devNo];
 
-    if (!(cbw_ptr->BMCBWFLAGS & USB_CBW_DIRECTION_BIT)) 
+    if (!(cbw_ptr->BMCBWFLAGS & USB_CBW_DIRECTION_BIT))
     {
         index1  = ((uint_32)cbw_ptr->CBWCB[4] << 8);
         index1  |= cbw_ptr->CBWCB[5];
         index2 = ((uint_32)cbw_ptr->CBWCB[7] << 8);
         index2 |= (uint_32)cbw_ptr->CBWCB[8];
-        
-        ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK_WRITE, 
-                      "disk write: FLAGS=0x%02x, LENGTH=0x%x, index1=0x%x, index2=0x%x\n", 
+
+        ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK_WRITE,
+                      "disk write: FLAGS=0x%02x, LENGTH=0x%x, index1=0x%x, index2=0x%x\n",
                       cbw_ptr->BMCBWFLAGS, cbw_ptr->DCBWDATALENGTH, index1, index2);
-        
+
         if(cbw_ptr->CBWCB[0] != 0x3F)
         {
             byteSize = index2 * LENGTH_OF_EACH_LAB;
@@ -1495,7 +1495,7 @@ void _process_write_command
             byteSize = index2;
             index2 = (USB_MEM_ALIGN(byteSize, LENGTH_OF_EACH_LAB) / LENGTH_OF_EACH_LAB);
         }
-        
+
         /* Check index validities */
         if( (index1 + index2) >= pDiskCtrl->logicalBlocks)
         {
@@ -1510,49 +1510,49 @@ void _process_write_command
             return;
         }
 
-        if (cbw_ptr->DCBWDATALENGTH == 0) 
+        if (cbw_ptr->DCBWDATALENGTH == 0)
         { /* Body */
             /* Zero transfer length */
             pDiskCtrl->pCSW->DCSWDATARESIDUE = 0;
             pDiskCtrl->pCSW->BCSWSTATUS = 2;
             pDiskCtrl->CBW_PROCESSED = FALSE;
-            
+
             /* Send the command status information */
             _usb_device_send_data(handle, pDiskCtrl->inEpNo, (uint_8_ptr)pDiskCtrl->pCSW, 13);
-            
+
             _usb_device_recv_data(handle, pDiskCtrl->outEpNo, pDiskCtrl->ep1_buf, 31);
             return;
-        } 
-        else 
+        }
+        else
         { /* Body */
             pDiskCtrl->pCSW->DCSWDATARESIDUE = 0;
             pDiskCtrl->pCSW->BCSWSTATUS = 0;
-         
-            if (byteSize < cbw_ptr->DCBWDATALENGTH) 
+
+            if (byteSize < cbw_ptr->DCBWDATALENGTH)
             { /* Body */
                 /* The actual length will never exceed the DCBWDATALENGTH */
                 pDiskCtrl->pCSW->DCSWDATARESIDUE = USB_32BIT_LE(cbw_ptr->DCBWDATALENGTH - byteSize);
                 byteSize = cbw_ptr->DCBWDATALENGTH;
-            } 
-            else if (byteSize > cbw_ptr->DCBWDATALENGTH) 
+            }
+            else if (byteSize > cbw_ptr->DCBWDATALENGTH)
             { /* Body */
                 pDiskCtrl->pCSW->DCSWDATARESIDUE = USB_32BIT_LE(cbw_ptr->DCBWDATALENGTH);
                 pDiskCtrl->pCSW->BCSWSTATUS = 2;
                 byteSize = cbw_ptr->DCBWDATALENGTH;
             } /* Endbody */
-            
-            if (_usb_device_get_transfer_status(handle, pDiskCtrl->outEpNo, ARC_USB_RECV) != USB_OK) 
+
+            if (_usb_device_get_transfer_status(handle, pDiskCtrl->outEpNo, ARC_USB_RECV) != USB_OK)
             {
                 _usb_device_cancel_transfer(handle, ep_num, ARC_USB_RECV);
             } /* Endif */
 
-            _usb_device_recv_data(handle, pDiskCtrl->outEpNo, 
+            _usb_device_recv_data(handle, pDiskCtrl->outEpNo,
                     pDiskCtrl->MASS_STORAGE_DISK + (index1*LENGTH_OF_EACH_LAB), byteSize);
         }
-    } 
-    else 
+    }
+    else
     { /* Body */
-        USB_printf("disk write incorrect: FLAGS=0x%02x, LENGTH=0x%x\n", 
+        USB_printf("disk write incorrect: FLAGS=0x%02x, LENGTH=0x%x\n",
                     cbw_ptr->BMCBWFLAGS, cbw_ptr->DCBWDATALENGTH);
 
         /* Incorrect but valid CBW */
@@ -1561,25 +1561,25 @@ void _process_write_command
         _usb_device_send_data(handle, pDiskCtrl->inEpNo, 0, 0);
         return;
     } /* Endbody */
-   
+
 } /* EndBody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : _process_test_unit_ready
 * Returned Value : None
 * Comments       :
 *     Responds appropriately to unit ready query
-* 
+*
 *END*--------------------------------------------------------------------*/
 void _process_test_unit_ready
    (
       /* [IN] Handle of the USB device */
       _usb_device_handle   handle,
-            
+
       /* [IN] Endpoint number */
       uint_8               ep_num,
-      
+
       /* [IN] Pointer to the data buffer */
       CBW_STRUCT_PTR       cbw_ptr
    )
@@ -1587,21 +1587,21 @@ void _process_test_unit_ready
     uint_32             bufSize;
     int                 devNo = _usb_device_get_dev_num(handle);
     USB_DISK_STRUCT*    pDiskCtrl = usbDisksPtr[devNo];
-   
+
     if ((cbw_ptr->BMCBWFLAGS & USB_CBW_DIRECTION_BIT) ||
-        (cbw_ptr->DCBWDATALENGTH == 0)) 
+        (cbw_ptr->DCBWDATALENGTH == 0))
     {
         /* The actual length will never exceed the DCBWDATALENGTH */
         pDiskCtrl->pCSW->DCSWDATARESIDUE = 0;
         pDiskCtrl->pCSW->BCSWSTATUS = 0;
-   
+
         pDiskCtrl->CBW_PROCESSED = FALSE;
 
         /* Send the command status information */
         _usb_device_send_data(handle, pDiskCtrl->inEpNo, (uint_8_ptr)pDiskCtrl->pCSW, 13);
         _usb_device_recv_data(handle, pDiskCtrl->outEpNo, pDiskCtrl->ep1_buf, 31);
-    } 
-    else 
+    }
+    else
     { /* Body */
       /* Incorrect but valid CBW */
         if (cbw_ptr->DCBWDATALENGTH > BUFFERSIZE)
@@ -1613,25 +1613,25 @@ void _process_test_unit_ready
         pDiskCtrl->pCSW->BCSWSTATUS = 1;
         _usb_device_recv_data(handle, pDiskCtrl->outEpNo, pDiskCtrl->ep1_buf, bufSize);
     } /* Endbody */
-   
+
 } /* EndBody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : _process_prevent_allow_medium_removal
 * Returned Value : None
 * Comments       :
 *     Responds appropriately to unit ready query
-* 
+*
 *END*--------------------------------------------------------------------*/
 void _process_prevent_allow_medium_removal
    (
       /* [IN] Handle of the USB device */
       _usb_device_handle   handle,
-            
+
       /* [IN] Endpoint number */
       uint_8               ep_num,
-      
+
       /* [IN] Pointer to the data buffer */
       CBW_STRUCT_PTR       cbw_ptr
    )
@@ -1642,41 +1642,41 @@ void _process_prevent_allow_medium_removal
     /* The actual length will never exceed the DCBWDATALENGTH */
     pDiskCtrl->pCSW->DCSWDATARESIDUE = 0;
     pDiskCtrl->pCSW->BCSWSTATUS = 0;
-   
+
     pDiskCtrl->CBW_PROCESSED = FALSE;
 
     /* Send the command status information */
     _usb_device_send_data(handle, pDiskCtrl->inEpNo, (uint_8_ptr)pDiskCtrl->pCSW, 13);
     _usb_device_recv_data(handle, pDiskCtrl->outEpNo, pDiskCtrl->ep1_buf, 31);
-   
+
 } /* EndBody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : _process_mass_storage_command
 * Returned Value : None
 * Comments       :
 *     Process a Mass storage class command
-* 
+*
 *END*--------------------------------------------------------------------*/
 void _process_mass_storage_command
    (
       /* [IN] Handle of the USB device */
       _usb_device_handle   handle,
-            
+
       /* [IN] Endpoint number */
       uint_8               ep_num,
-      
+
       /* [IN] Pointer to the data buffer */
       CBW_STRUCT_PTR       cbw_ptr
    )
 { /* Body */
 
-    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK, 
-                    "disk command: CBWCB[0]=0x%02x, FLAGS=0x%02x, LENGTH=0x%x\n", 
+    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK,
+                    "disk command: CBWCB[0]=0x%02x, FLAGS=0x%02x, LENGTH=0x%x\n",
                     cbw_ptr->CBWCB[0], cbw_ptr->BMCBWFLAGS, cbw_ptr->DCBWDATALENGTH);
 
-   switch (cbw_ptr->CBWCB[0]) 
+   switch (cbw_ptr->CBWCB[0])
    {
       case 0x00: /* Request the device to report if it is ready */
          _process_test_unit_ready(handle, ep_num, cbw_ptr);
@@ -1694,8 +1694,8 @@ void _process_mass_storage_command
          _process_prevent_allow_medium_removal(handle, ep_num, cbw_ptr);
          break;
 
-      case 0x23: /* Read Format Capacities. Report current media capacity and 
-                 ** formattable capacities supported by media 
+      case 0x23: /* Read Format Capacities. Report current media capacity and
+                 ** formattable capacities supported by media
                   */
          /* We bahave like already installed medium. No need to send any data */
          _process_unsupported_command(handle, ep_num, cbw_ptr);
@@ -1718,20 +1718,20 @@ void _process_mass_storage_command
       case 0x01: /* Position a head of the drive to zero track */
       case 0x03: /* Transfer status sense data to the host */
       case 0x04: /* Format unformatted media */
-      case 0x1B: /* Request a request a removable-media device to load or 
-                 ** unload its media 
+      case 0x1B: /* Request a request a removable-media device to load or
+                 ** unload its media
                  */
       case 0x1D: /* Perform a hard reset and execute diagnostics */
       case 0x2B: /* Seek the device to a specified address */
-      case 0x2E: /* Transfer binary data from the host to the media and 
-                 ** verify data 
+      case 0x2E: /* Transfer binary data from the host to the media and
+                 ** verify data
                  */
       case 0x2F: /* Verify data on the media */
       case 0x55: /* Allow the host to set parameters in a peripheral */
       case 0x5A: /* Report parameters to the host */
       case 0xA8: /* Read (12) Transfer binary data from the media to the host */
-      case 0xAA: /* Write (12) Transfer binary data from the host to the 
-                 ** media 
+      case 0xAA: /* Write (12) Transfer binary data from the host to the
+                 ** media
                  */
       default:
          _process_unsupported_command(handle, ep_num, cbw_ptr);
@@ -1741,12 +1741,12 @@ void _process_mass_storage_command
 } /* EndBody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : service_ep1
 * Returned Value : None
 * Comments       :
 *     Called upon a completed endpoint 1 (USB 1.1 Chapter 9) transfer
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void service_ep1
    (
@@ -1755,35 +1755,35 @@ static void service_ep1
 
       /* [IN] Service type as registered */
       uint_8               type,
-      
+
       /* [IN] Is it a setup packet? */
       boolean              setup,
-      
+
       /* [IN] Direction of the transfer.  Is it transmit? */
       uint_8               direction,
-      
+
       /* [IN] Pointer to the data buffer */
       uint_8_ptr           buffer,
-      
+
       /* [IN] Length of the transfer */
       uint_32              length,
 
       /* [IN] Error, if any */
       uint_8               error
-            
+
    )
 { /* Body */
     int                 devNo = _usb_device_get_dev_num(handle);
     USB_DISK_STRUCT*    pDiskCtrl = usbDisksPtr[devNo];
-    CBW_STRUCT_PTR cbw_ptr = (CBW_STRUCT_PTR)((pointer)buffer);      
+    CBW_STRUCT_PTR cbw_ptr = (CBW_STRUCT_PTR)((pointer)buffer);
 
-    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_EP1, 
+    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_EP1,
                     "disk %s: ep=%d, dir=%s, pBuf=0x%x, length=%d, error=0x%x\n",
-                    __FUNCTION__, type, (direction == ARC_USB_RECV) ? "RECV" : "SEND", 
+                    __FUNCTION__, type, (direction == ARC_USB_RECV) ? "RECV" : "SEND",
                     (unsigned)buffer, (int)length, error);
 
-    if ((!direction) && (!pDiskCtrl->CBW_PROCESSED) && (length == 31) && 
-        (cbw_ptr->DCBWSIGNATURE == USB_32BIT_LE(USB_DCBWSIGNATURE))) 
+    if ((!direction) && (!pDiskCtrl->CBW_PROCESSED) && (length == 31) &&
+        (cbw_ptr->DCBWSIGNATURE == USB_32BIT_LE(USB_DCBWSIGNATURE)))
     {
         /* A valid CBW was received */
         pDiskCtrl->pCSW->DCSWSIGNATURE = USB_32BIT_LE(USB_DCSWSIGNATURE);
@@ -1795,20 +1795,20 @@ static void service_ep1
 
         /* Process the command */
         _process_mass_storage_command(handle, type, cbw_ptr);
-    } 
-    else 
+    }
+    else
     {
-        /* If a CBW was processed then send the status information and 
+        /* If a CBW was processed then send the status information and
         ** queue another cbw receive request, else just queue another CBW receive
-        ** request if we received an invalid CBW 
+        ** request if we received an invalid CBW
         */
-        if (pDiskCtrl->CBW_PROCESSED) 
+        if (pDiskCtrl->CBW_PROCESSED)
         {
             int     i;
 
-            ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK_DATA, 
+            ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK_DATA,
                     "disk %s: ep=%d, dir=%s, pBuf=0x%x, length=%d, error=0x%x\n",
-                    __FUNCTION__, type, (direction == ARC_USB_RECV) ? "RECV" : "SEND", 
+                    __FUNCTION__, type, (direction == ARC_USB_RECV) ? "RECV" : "SEND",
                     (unsigned)buffer, (int)length, error);
 
             for(i=0; i<64; i++)
@@ -1819,48 +1819,48 @@ static void service_ep1
                 }
                 ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK_DUMP, "%02x ", buffer[i]);
                 if( (i % 3) == 0)
-                    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK_DUMP, " ");                
+                    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_DISK_DUMP, " ");
             }
 
-            if (pDiskCtrl->ZERO_TERMINATE) 
+            if (pDiskCtrl->ZERO_TERMINATE)
             { /* Body */
                 pDiskCtrl->ZERO_TERMINATE = FALSE;
                 _usb_device_send_data(handle, pDiskCtrl->inEpNo, 0, 0);
-            } 
-            else 
+            }
+            else
             { /* Body */
                 pDiskCtrl->CBW_PROCESSED = FALSE;
 
                 /* Send the command status information */
-                _usb_device_send_data(handle, pDiskCtrl->inEpNo, (uint_8_ptr)pDiskCtrl->pCSW, 13);        
+                _usb_device_send_data(handle, pDiskCtrl->inEpNo, (uint_8_ptr)pDiskCtrl->pCSW, 13);
                 _usb_device_recv_data(handle, pDiskCtrl->outEpNo, pDiskCtrl->ep1_buf, 31);
             }
-        } 
+        }
         else
         {
-            if (!direction) 
+            if (!direction)
             {
-                USB_printf("usbDisk_%d, %s: Wrong direction = %d\n", 
+                USB_printf("usbDisk_%d, %s: Wrong direction = %d\n",
                     _usb_device_get_dev_num(handle), __FUNCTION__, direction);
                 _usb_device_stall_endpoint(handle, pDiskCtrl->outEpNo, ARC_USB_RECV);
                 _usb_device_stall_endpoint(handle, pDiskCtrl->inEpNo, ARC_USB_SEND);
 
                 /* Invalid CBW received. Queue another receive buffer */
-                _usb_device_recv_data(handle, pDiskCtrl->outEpNo, pDiskCtrl->ep1_buf, 31);  
+                _usb_device_recv_data(handle, pDiskCtrl->outEpNo, pDiskCtrl->ep1_buf, 31);
             }
         } /* Endif */
     } /* Endif */
-   
+
     return;
 } /* Endbody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : service_speed
 * Returned Value : None
 * Comments       :
 *     Called upon a speed detection event.
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void service_speed
    (
@@ -1872,24 +1872,24 @@ static void service_speed
 
       /* [IN] Unused */
       boolean              setup,
-   
+
       /* [IN] Unused */
       uint_8               direction,
-   
+
       /* [IN] Unused */
       uint_8_ptr           buffer,
-   
+
       /* [IN] Unused */
       uint_32              length,
 
       /* [IN] Error, if any */
       uint_8               error
-            
+
    )
 { /* EndBody */
     int                 devNo = _usb_device_get_dev_num(handle);
     USB_DISK_STRUCT*    pDiskCtrl = usbDisksPtr[devNo];
-    
+
     ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SPEED, "disk %s: speed = %d\n", __FUNCTION__, (unsigned)length);
 
     pDiskCtrl->speed = length;
@@ -1897,42 +1897,42 @@ static void service_speed
 } /* EndBody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : reset_ep0
 * Returned Value : None
 * Comments       :
 *     Called upon a bus reset event.  Initialises the control endpoint.
-* 
+*
 *END*--------------------------------------------------------------------*/
 static void reset_ep0
    (
       /* [IN] Handle of the USB device */
       _usb_device_handle   handle,
-   
+
       /* [IN] request type as registered */
       uint_8               type,
 
       /* [IN] Unused */
       boolean              setup,
-   
+
       /* [IN] Unused */
       uint_8               direction,
-   
+
       /* [IN] Unused */
       uint_8_ptr           buffer,
-   
+
       /* [IN] Unused */
       uint_32              length,
 
       /* [IN] Error, if any */
       uint_8               error
-            
+
    )
 { /* Body */
     int                 devNo = _usb_device_get_dev_num(handle);
     USB_DISK_STRUCT*    pDiskCtrl = usbDisksPtr[devNo];
-    
-    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_RESET, "disk-%d %s: pDiskCtrl=%p, handle=%p\n", 
+
+    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_RESET, "disk-%d %s: pDiskCtrl=%p, handle=%p\n",
                     devNo, __FUNCTION__, pDiskCtrl, handle);
 
     /* on a reset always ensure all transfers are cancelled on control EP*/
@@ -1941,29 +1941,29 @@ static void reset_ep0
 
     _usb_device_start(handle);
     /* Initialize the endpoint 0 in both directions */
-    _usb_device_init_endpoint(handle, 0, pDiskCtrl->DevDesc[DEV_DESC_MAX_PACKET_SIZE], 
+    _usb_device_init_endpoint(handle, 0, pDiskCtrl->DevDesc[DEV_DESC_MAX_PACKET_SIZE],
                                 ARC_USB_RECV, ARC_USB_CONTROL_ENDPOINT, 0);
-    _usb_device_init_endpoint(handle, 0, pDiskCtrl->DevDesc[DEV_DESC_MAX_PACKET_SIZE], 
+    _usb_device_init_endpoint(handle, 0, pDiskCtrl->DevDesc[DEV_DESC_MAX_PACKET_SIZE],
                                 ARC_USB_SEND, ARC_USB_CONTROL_ENDPOINT, 0);
 
 
-    if (pDiskCtrl->TEST_ENABLED) 
+    if (pDiskCtrl->TEST_ENABLED)
     {
         int out_ep_count=0, in_ep_count=0;
 
-        while(_usb_device_get_transfer_status(handle, pDiskCtrl->outEpNo, ARC_USB_RECV) != 
+        while(_usb_device_get_transfer_status(handle, pDiskCtrl->outEpNo, ARC_USB_RECV) !=
                                                     ARC_USB_STATUS_IDLE)
         {
             out_ep_count++;
             _usb_device_cancel_transfer(handle, pDiskCtrl->outEpNo, ARC_USB_RECV);
         }
-        while(_usb_device_get_transfer_status(handle, pDiskCtrl->inEpNo, ARC_USB_SEND) != 
+        while(_usb_device_get_transfer_status(handle, pDiskCtrl->inEpNo, ARC_USB_SEND) !=
                                                     ARC_USB_STATUS_IDLE)
         {
             in_ep_count++;
             _usb_device_cancel_transfer(handle, pDiskCtrl->inEpNo, ARC_USB_SEND);
         }
-        ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_RESET, "disk %s: out_ep_count=%d, in_ep_count=%d\n", 
+        ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_RESET, "disk %s: out_ep_count=%d, in_ep_count=%d\n",
                         __FUNCTION__, out_ep_count, in_ep_count);
     } /* Endif */
 
@@ -1973,15 +1973,15 @@ static void reset_ep0
 } /* EndBody */
 
 /*FUNCTION*----------------------------------------------------------------
-* 
+*
 * Function Name  : usbDiskLoad - main task
 * Inputs:
-*   int diskSize  - size of created disk in KBytes    
+*   int diskSize  - size of created disk in KBytes
 * Returned Value : None
 * Comments       :
 *     First function called.  Initialises the USB and registers Chapter 9
 *     callback functions.
-* 
+*
 *END*--------------------------------------------------------------------*/
 _usb_device_handle  usbDiskLoad(int devNo, int diskSize)
 { /* Body */
@@ -1994,7 +1994,7 @@ _usb_device_handle  usbDiskLoad(int devNo, int diskSize)
     int                 lockKey, i, j;
     static boolean      isFirst = TRUE;
 
-    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_INIT, "%s: devNo=%d, diskSize=%d\n", 
+    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_INIT, "%s: devNo=%d, diskSize=%d\n",
                         __FUNCTION__, devNo, diskSize);
 
     if(devNo >= MAX_USB_DEVICES)
@@ -2037,7 +2037,7 @@ _usb_device_handle  usbDiskLoad(int devNo, int diskSize)
     pDiskCtrl = USB_memalloc(sizeof(USB_DISK_STRUCT));
     if(pDiskCtrl == NULL)
     {
-        USB_printf("USB disk #%d: Can't allocate USB_DISK_STRUCT (%d bytes)\n", 
+        USB_printf("USB disk #%d: Can't allocate USB_DISK_STRUCT (%d bytes)\n",
                     devNo, sizeof(USB_DISK_STRUCT));
         USB_unlock(lockKey);
         return NULL;
@@ -2056,7 +2056,7 @@ _usb_device_handle  usbDiskLoad(int devNo, int diskSize)
         USB_unlock(lockKey);
         return NULL;
     }
-    
+
     pDiskCtrl->devNo = devNo;
     pDiskCtrl->hsMaxPktSize = diskHsMaxPktSize;
     pDiskCtrl->fsMaxPktSize = diskFsMaxPktSize;
@@ -2069,7 +2069,7 @@ _usb_device_handle  usbDiskLoad(int devNo, int diskSize)
 
     /* Initialize the USB interface */
     error = _usb_device_init(devNo, &handle);
-    if (error != USB_OK) 
+    if (error != USB_OK)
     {
         USB_unlock(lockKey);
         USB_printf("\nUSB Initialization failed. Error: %x", error);
@@ -2077,35 +2077,35 @@ _usb_device_handle  usbDiskLoad(int devNo, int diskSize)
     } /* Endif */
 
     /* Self Power, Remote wakeup disable */
-    _usb_device_set_status(handle, ARC_USB_STATUS_DEVICE, (1 << DEVICE_SELF_POWERED));    
+    _usb_device_set_status(handle, ARC_USB_STATUS_DEVICE, (1 << DEVICE_SELF_POWERED));
 
-    error = _usb_device_register_service(handle, ARC_USB_SERVICE_EP0, service_ep0);   
-    if (error != USB_OK) 
+    error = _usb_device_register_service(handle, ARC_USB_SERVICE_EP0, service_ep0);
+    if (error != USB_OK)
     {
         USB_unlock(lockKey);
         USB_printf("\nUSB Service Registration failed. Error: %x", error);
         return NULL;
     } /* Endif */
-   
-    error = _usb_device_register_service(handle, ARC_USB_SERVICE_BUS_RESET, reset_ep0);   
-    if (error != USB_OK) 
+
+    error = _usb_device_register_service(handle, ARC_USB_SERVICE_BUS_RESET, reset_ep0);
+    if (error != USB_OK)
     {
         USB_unlock(lockKey);
         USB_printf("\nUSB Service Registration failed. Error: %x", error);
         return NULL;
     } /* Endif */
-   
-    error = _usb_device_register_service(handle, ARC_USB_SERVICE_SPEED_DETECTION, 
+
+    error = _usb_device_register_service(handle, ARC_USB_SERVICE_SPEED_DETECTION,
                                                         service_speed);
-    if (error != USB_OK) 
+    if (error != USB_OK)
     {
         USB_unlock(lockKey);
         USB_printf("\nUSB Service Registration failed. Error: %x", error);
         return NULL;
     } /* Endif */
-         
-    error = _usb_device_register_service(handle, pDiskCtrl->outEpNo, service_ep1);   
-    if (error != USB_OK) 
+
+    error = _usb_device_register_service(handle, pDiskCtrl->outEpNo, service_ep1);
+    if (error != USB_OK)
     {
         USB_unlock(lockKey);
         USB_printf("\nUSB Service Registration failed. Error: %x", error);
@@ -2114,8 +2114,8 @@ _usb_device_handle  usbDiskLoad(int devNo, int diskSize)
 
     if(pDiskCtrl->outEpNo != pDiskCtrl->inEpNo)
     {
-        error = _usb_device_register_service(handle, pDiskCtrl->inEpNo, service_ep1);   
-        if (error != USB_OK) 
+        error = _usb_device_register_service(handle, pDiskCtrl->inEpNo, service_ep1);
+        if (error != USB_OK)
         {
             USB_unlock(lockKey);
             USB_printf("\nUSB Service Registration failed. Error: %x", error);
@@ -2126,98 +2126,98 @@ _usb_device_handle  usbDiskLoad(int devNo, int diskSize)
     /**************************************************************************
     Best way to handle the Data cache is to allocate a large buffer that is
     cache aligned and keep all data inside it. Flush the line of the cache
-    that you have changed. In this program, we have static data such as 
+    that you have changed. In this program, we have static data such as
     descriptors which never changes. Such data can be kept in this buffer
     and flushed only once. Note that you can reduce the size of this buffer
-    by aligning the addresses in a different way.   
+    by aligning the addresses in a different way.
     ***************************************************************************/
     send_data_buffer_size =  (DEVICE_DESCRIPTOR_SIZE +  PSP_CACHE_LINE_SIZE) +
                             (CONFIG_DESC_SIZE + PSP_CACHE_LINE_SIZE) +
                             (DEVICE_QUALIFIER_DESCRIPTOR_SIZE + PSP_CACHE_LINE_SIZE) +
                             (OTHER_SPEED_CONFIG_DESC_SIZE + PSP_CACHE_LINE_SIZE) +
                             (BUFFERSIZE + PSP_CACHE_LINE_SIZE) +
-                            (EP_TEMP_BUFFERSIZE + PSP_CACHE_LINE_SIZE) + 
+                            (EP_TEMP_BUFFERSIZE + PSP_CACHE_LINE_SIZE) +
                             (sizeof(DISK_READ_CAPACITY) + PSP_CACHE_LINE_SIZE) +
                             (sizeof(CSW_STRUCT) + PSP_CACHE_LINE_SIZE) +
                             (pDiskCtrl->logicalBlocks*LENGTH_OF_EACH_LAB + PSP_CACHE_LINE_SIZE);
 
     pDiskCtrl->Send_Buffer_Unaligned   = (uint_8_ptr) USB_memalloc(send_data_buffer_size);
-    if (pDiskCtrl->Send_Buffer_Unaligned == NULL) 
+    if (pDiskCtrl->Send_Buffer_Unaligned == NULL)
     {
         USB_unlock(lockKey);
-        USB_printf("diskLoad: Buffer allocation of %d bytes is failed\n", 
+        USB_printf("diskLoad: Buffer allocation of %d bytes is failed\n",
                     (unsigned)send_data_buffer_size);
         return NULL;
     }
-   
+
     Send_Buffer_aligned = (uint_8_ptr) USB_CACHE_ALIGN((uint_32)pDiskCtrl->Send_Buffer_Unaligned);
     /* keep a temporary copy of the aligned address */
     temp = Send_Buffer_aligned;
-   
+
     /**************************************************************************
     Assign pointers to different buffers from it and copy data inside.
     ***************************************************************************/
     pDiskCtrl->DevDesc =  (uint_8_ptr) Send_Buffer_aligned;
     USB_memcopy(DevDescData, pDiskCtrl->DevDesc, DEVICE_DESCRIPTOR_SIZE);
-    Send_Buffer_aligned += ((DEVICE_DESCRIPTOR_SIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE; 
-   
+    Send_Buffer_aligned += ((DEVICE_DESCRIPTOR_SIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE;
+
     pDiskCtrl->ConfigDesc =  (uint_8_ptr) Send_Buffer_aligned;
     USB_memcopy(ConfigDescData, pDiskCtrl->ConfigDesc, CONFIG_DESC_SIZE);
-    Send_Buffer_aligned += ((CONFIG_DESC_SIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE; 
-   
+    Send_Buffer_aligned += ((CONFIG_DESC_SIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE;
+
     pDiskCtrl->DevQualifierDesc =  (uint_8_ptr) Send_Buffer_aligned;
     USB_memcopy(DevQualifierDescData, pDiskCtrl->DevQualifierDesc, DEVICE_QUALIFIER_DESCRIPTOR_SIZE);
     Send_Buffer_aligned += ((DEVICE_QUALIFIER_DESCRIPTOR_SIZE/PSP_CACHE_LINE_SIZE) + 1) * PSP_CACHE_LINE_SIZE;
 
     pDiskCtrl->other_speed_config =  (uint_8_ptr) Send_Buffer_aligned;
     USB_memcopy(other_speed_config_data, pDiskCtrl->other_speed_config, OTHER_SPEED_CONFIG_DESC_SIZE);
-    Send_Buffer_aligned += ((OTHER_SPEED_CONFIG_DESC_SIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE; 
+    Send_Buffer_aligned += ((OTHER_SPEED_CONFIG_DESC_SIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE;
 
     /*buffer to receive data from Bulk OUT */
     pDiskCtrl->ep1_buf =  (uint_8_ptr) Send_Buffer_aligned;
     USB_memzero(pDiskCtrl->ep1_buf, BUFFERSIZE);
     Send_Buffer_aligned += ((BUFFERSIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE;
-   
+
     /*buffer for control endpoint to send data */
     pDiskCtrl->epTemp_buf =  (uint_8_ptr) Send_Buffer_aligned;
     USB_memzero(pDiskCtrl->epTemp_buf, EP_TEMP_BUFFERSIZE);
-    
-    Send_Buffer_aligned += ((EP_TEMP_BUFFERSIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE; 
+
+    Send_Buffer_aligned += ((EP_TEMP_BUFFERSIZE/PSP_CACHE_LINE_SIZE) + 1)* PSP_CACHE_LINE_SIZE;
 
     /* Buffer for read Capacity message */
     pDiskCtrl->pReadCapacity = (DISK_READ_CAPACITY*)Send_Buffer_aligned;
     USB_memcopy((void*)&read_capacity, pDiskCtrl->pReadCapacity, sizeof(DISK_READ_CAPACITY));
 
     /* Update read_capacity */
-    pDiskCtrl->pReadCapacity->LAST_LOGICAL_BLOCK_ADDRESS[2] = 
+    pDiskCtrl->pReadCapacity->LAST_LOGICAL_BLOCK_ADDRESS[2] =
                             USB_uint_16_high(pDiskCtrl->logicalBlocks-14);
-    pDiskCtrl->pReadCapacity->LAST_LOGICAL_BLOCK_ADDRESS[3] = 
+    pDiskCtrl->pReadCapacity->LAST_LOGICAL_BLOCK_ADDRESS[3] =
                             USB_uint_16_low(pDiskCtrl->logicalBlocks-14);
 
-    Send_Buffer_aligned += ((sizeof(DISK_READ_CAPACITY)/PSP_CACHE_LINE_SIZE) + 1) * PSP_CACHE_LINE_SIZE; 
+    Send_Buffer_aligned += ((sizeof(DISK_READ_CAPACITY)/PSP_CACHE_LINE_SIZE) + 1) * PSP_CACHE_LINE_SIZE;
 
     /* Buffer for CSW message */
     pDiskCtrl->pCSW = (CSW_STRUCT*)Send_Buffer_aligned;
     USB_memzero(pDiskCtrl->pCSW , sizeof(CSW_STRUCT));
-    
-    Send_Buffer_aligned += ((sizeof(CSW_STRUCT)/PSP_CACHE_LINE_SIZE) + 1) * PSP_CACHE_LINE_SIZE; 
+
+    Send_Buffer_aligned += ((sizeof(CSW_STRUCT)/PSP_CACHE_LINE_SIZE) + 1) * PSP_CACHE_LINE_SIZE;
 
     /*buffer for storage disk */
     pDiskCtrl->MASS_STORAGE_DISK = (uint_8_ptr)Send_Buffer_aligned;
-    
-    USB_printf("usbDisk-%d: pDiskCtrl=%p, %d bytes allocated addr=0x%x\n", 
-                 devNo, pDiskCtrl, (unsigned)send_data_buffer_size, 
+
+    USB_printf("usbDisk-%d: pDiskCtrl=%p, %d bytes allocated addr=0x%x\n",
+                 devNo, pDiskCtrl, (unsigned)send_data_buffer_size,
                  (unsigned)pDiskCtrl->Send_Buffer_Unaligned);
     USB_printf("usbDisk-%d: DevDesc=0x%x, ConfigDesc=0x%x, QualifierDesc=0x%x, otherSpeedDesc=0x%x\n",
-                 devNo, (unsigned)pDiskCtrl->DevDesc, (unsigned)pDiskCtrl->ConfigDesc, 
+                 devNo, (unsigned)pDiskCtrl->DevDesc, (unsigned)pDiskCtrl->ConfigDesc,
                  (unsigned)pDiskCtrl->DevQualifierDesc, (unsigned)pDiskCtrl->other_speed_config);
     USB_printf("usbDisk-%d: ep1_buf=0x%x, epTemp_buf=0x%x, MASS_STORAGE_DISK=0x%x\n",
-                 devNo, (unsigned)pDiskCtrl->ep1_buf, (unsigned)pDiskCtrl->epTemp_buf, 
+                 devNo, (unsigned)pDiskCtrl->ep1_buf, (unsigned)pDiskCtrl->epTemp_buf,
                  (unsigned)pDiskCtrl->MASS_STORAGE_DISK);
-    
+
     USB_memzero(pDiskCtrl->MASS_STORAGE_DISK, (pDiskCtrl->logicalBlocks*LENGTH_OF_EACH_LAB));
 
-    /* Format the "disk" */      
+    /* Format the "disk" */
     USB_memcopy(BOOT_SECTOR_AREA, pDiskCtrl->MASS_STORAGE_DISK, 512);
 
     /* Update BOOT Sector "Total Small sectors" field */
@@ -2226,7 +2226,7 @@ _usb_device_handle  usbDiskLoad(int devNo, int diskSize)
 
     USB_memcopy((void *)FAT16_SPECIAL_BYTES, pDiskCtrl->MASS_STORAGE_DISK + 512, 3);
     USB_memcopy((void *)FAT16_SPECIAL_BYTES, pDiskCtrl->MASS_STORAGE_DISK + 512*4, 3);
-                         
+
     /**************************************************************************
     Flush the cache to ensure main memory is updated.
     ***************************************************************************/
@@ -2256,7 +2256,7 @@ void    usbDiskUnload(_usb_device_handle handle)
     }
     /*lock interrupts */
     lockKey = USB_lock();
-    
+
     /* ensure all transfers are cancelled */
     _usb_device_cancel_transfer(handle, pDiskCtrl->outEpNo, ARC_USB_RECV);
     _usb_device_cancel_transfer(handle, pDiskCtrl->inEpNo,  ARC_USB_SEND);
@@ -2271,13 +2271,13 @@ void    usbDiskUnload(_usb_device_handle handle)
     _usb_device_stop(handle);
 
     /* Deregister all services */
-    _usb_device_unregister_service(handle, ARC_USB_SERVICE_EP0);   
-    _usb_device_unregister_service(handle, ARC_USB_SERVICE_BUS_RESET);   
+    _usb_device_unregister_service(handle, ARC_USB_SERVICE_EP0);
+    _usb_device_unregister_service(handle, ARC_USB_SERVICE_BUS_RESET);
     _usb_device_unregister_service(handle, ARC_USB_SERVICE_SPEED_DETECTION);
-    _usb_device_unregister_service(handle, pDiskCtrl->outEpNo);   
+    _usb_device_unregister_service(handle, pDiskCtrl->outEpNo);
     if(pDiskCtrl->outEpNo != pDiskCtrl->inEpNo)
     {
-        _usb_device_unregister_service(handle, pDiskCtrl->inEpNo);   
+        _usb_device_unregister_service(handle, pDiskCtrl->inEpNo);
     }
 
     _usb_device_shutdown(handle);

@@ -189,7 +189,9 @@ typedef struct {
 	MV_U8 cpuFreq;
 	MV_U8 cpuFreqMode;
 	MV_U8 fabricFreq;
+#ifndef MV88F78X60_Z1
 	MV_U8 AltfabricFreq;
+#endif
 	MV_U8 fabricFreqMode;
 	MV_U8 cpuEna;
 #ifdef MV88F78X60_Z1
@@ -203,11 +205,13 @@ typedef struct {
 } MV_BIOS_MODE;
 
 extern MV_BIOS_MODE bios_modes[];
+extern MV_BIOS_MODE bios_modes_b0[];
 
 /* mcspLib.h API list */
 MV_U32 mvCtrlGetCpuNum(MV_VOID);
 MV_U32 mvCtrlGetQuadNum(MV_VOID);
 MV_STATUS mvCtrlUpdatePexId(MV_VOID);
+MV_BOOL mvCtrlIsValidSatR(MV_VOID);
 
 MV_STATUS mvCtrlEnvInit(MV_VOID);
 MV_U32    mvCtrlMppRegGet(MV_U32 mppGroup);

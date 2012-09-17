@@ -389,6 +389,38 @@ int nand_unlock(struct mtd_info *mtd, loff_t start, size_t length,
 	return ret;
 }
 #endif
+/**
+ * get_len_incl_bad
+ *
+ * Check if length including bad blocks fits into device.
+ *
+ * @param nand NAND device
+ * @param offset offset in flash
+ * @param length image length
+ * @return image length including bad blocks
+ */
+uint64_t get_len_incl_bad (nand_info_t *nand, uint64_t offset,
+				const uint64_t length)
+{
+	uint64_t len_incl_bad = 0;
+	uint64_t len_excl_bad = 0;
+	uint64_t block_len;
+
+	while (len_excl_bad < length) {
+		block_len = nand->erasesize - (offset & (nand->erasesize - 1));
+
+		if (!nand_block_isbad (nand, offset & ~(nand->erasesize - 1)))
+			len_excl_bad += block_len;
+
+		len_incl_bad += block_len;
+		offset       += block_len;
+
+		if ((offset + len_incl_bad) >= nand->size)
+			break;
+	}
+
+	return len_incl_bad;
+}
 
 /**
  * check_skip_len

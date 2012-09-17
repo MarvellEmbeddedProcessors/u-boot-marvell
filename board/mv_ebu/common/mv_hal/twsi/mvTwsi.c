@@ -70,7 +70,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvTwsiSpec.h"
 #include "mvSysTwsiConfig.h"
 
-/*#define MV_DEBUG*/
+#undef MV_DEBUG
 #ifdef MV_DEBUG
 #define DB(x) x
 #define DB1(x) x
@@ -222,7 +222,7 @@ MV_STATUS mvTwsiStopBitSet(MV_U8 chanNum)
 	/* check the status */
 	temp = twsiStsGet(chanNum);
 	if ((TWSI_M_LOST_ARB_DUR_AD_OR_DATA_TRA == temp) || (TWSI_M_LOST_ARB_DUR_AD_TRA_GNL_CALL_AD_REC_ACK_TRA == temp)) {
-		DB(mvOsPrintf("TWSI: Lost Arb, status %x \n", val));
+		DB(mvOsPrintf("TWSI: Lost Arb, status %x \n", temp));
 		return MV_RETRY;
 	} else if (temp != TWSI_NO_REL_STS_INT_FLAG_IS_KEPT_0) {
 		mvOsPrintf("TWSI: mvTwsiStopBitSet ERROR - status %x after Stop Bit. \n", temp);

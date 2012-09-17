@@ -43,8 +43,10 @@
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 #include <linux/mtd/nand_ecc.h>
+#if defined(CONFIG_NAND_RS_ECC_SUPPORT)
+#include <linux/mtd/nand_ecc_rs.h>
+#endif
 #include <linux/mtd/nand_bch.h>
-
 #ifdef CONFIG_MTD_PARTITIONS
 #include <linux/mtd/partitions.h>
 #endif
@@ -81,6 +83,20 @@ static struct nand_ecclayout nand_oob_16 = {
 		{.offset = 8,
 		 . length = 8} }
 };
+#if defined(CONFIG_NAND_RS_ECC_SUPPORT)
+static struct nand_ecclayout nand_oob_64_rs = {
+	.eccbytes = 40,
+	.eccpos = {
+		24, 25, 26, 27, 28, 29, 30, 31,
+		32, 33, 34, 35, 36, 37, 38, 39,
+		40, 41, 42, 43, 44, 45, 46, 47,
+		48, 49, 50, 51, 52, 53, 54, 55,
+		56, 57, 58, 59, 60, 61, 62, 63},
+	.oobfree = {
+		{.offset = 2,
+		 . length = 22}}
+};
+#endif
 
 static struct nand_ecclayout nand_oob_64 = {
 	.eccbytes = 24,
@@ -96,8 +112,8 @@ static struct nand_ecclayout nand_oob_64 = {
 static struct nand_ecclayout nand_oob_128 = {
 	.eccbytes = 48,
 	.eccpos = {
-		   80, 81, 82, 83, 84, 85, 86, 87,
-		   88, 89, 90, 91, 92, 93, 94, 95,
+		    80,  81,  82,  83,  84,  85,  86,  87,
+		    88,  89,  90,  91,  92,  93,  94,  95,
 		   96, 97, 98, 99, 100, 101, 102, 103,
 		   104, 105, 106, 107, 108, 109, 110, 111,
 		   112, 113, 114, 115, 116, 117, 118, 119,
@@ -2606,6 +2622,9 @@ static const struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 	int i, maf_idx;
 	u8 id_data[8];
 	int ret;
+#ifdef CONFIG_MV_MTD_GANG_SUPPORT
+	struct nand_flash_dev *tmpType;
+#endif
 
 	/* Select the device */
 	chip->select_chip(mtd, 0);
@@ -2670,6 +2689,13 @@ static const struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 		mtd->name = type->name;
 
 	chip->chipsize = (uint64_t)type->chipsize << 20;
+#ifdef CONFIG_MV_MTD_GANG_SUPPORT
+	chip->chipsize *= chip->num_devs;
+	tmpType = (struct nand_flash_dev *)type;
+	if(chip->num_devs > 1)
+		tmpType->options |= NAND_BUSWIDTH_16;
+#endif
+
 
 	if (!type->pagesize && chip->init_size) {
 		/* set the pagesize, oobsize, erasesize by the driver*/
@@ -2695,6 +2721,9 @@ static const struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 				id_data[5] != 0x00) {
 			/* Calc pagesize */
 			mtd->writesize = 2048 << (extid & 0x03);
+		#ifdef CONFIG_MV_MTD_GANG_SUPPORT
+			mtd->writesize *= chip->num_devs;
+		#endif
 			extid >>= 2;
 			/* Calc oobsize */
 			switch (extid & 0x03) {
@@ -2715,10 +2744,20 @@ static const struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 			/* Calc blocksize */
 			mtd->erasesize = (128 * 1024) <<
 				(((extid >> 1) & 0x04) | (extid & 0x03));
+	#ifdef CONFIG_MV_MTD_GANG_SUPPORT
+		mtd->erasesize *= chip->num_devs;
+	#endif
 			busw = 0;
+	#ifdef CONFIG_MV_MTD_GANG_SUPPORT
+		if(chip->num_devs > 1)
+			busw = NAND_BUSWIDTH_16;
+	#endif
 		} else {
 			/* Calc pagesize */
 			mtd->writesize = 1024 << (extid & 0x03);
+		#ifdef CONFIG_MV_MTD_GANG_SUPPORT
+			mtd->writesize *= chip->num_devs;
+		#endif
 			extid >>= 2;
 			/* Calc oobsize */
 			mtd->oobsize = (8 << (extid & 0x01)) *
@@ -2726,6 +2765,9 @@ static const struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 			extid >>= 2;
 			/* Calc blocksize. Blocksize is multiples of 64KiB */
 			mtd->erasesize = (64 * 1024) << (extid & 0x03);
+	#ifdef CONFIG_MV_MTD_GANG_SUPPORT
+		mtd->erasesize *= chip->num_devs;
+	#endif
 			extid >>= 2;
 			/* Get buswidth information */
 			busw = (extid & 0x01) ? NAND_BUSWIDTH_16 : 0;
@@ -2737,7 +2779,16 @@ static const struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 		mtd->erasesize = type->erasesize;
 		mtd->writesize = type->pagesize;
 		mtd->oobsize = mtd->writesize / 32;
+	#ifdef CONFIG_MV_MTD_MLC_NAND_SUPPORT
+		/* New devices have non standard OOB size */
+		if (chip->oobsize_ovrd)
+			mtd->oobsize = chip->oobsize_ovrd;
+	#endif
 		busw = type->options & NAND_BUSWIDTH_16;
+	#ifdef CONFIG_MV_MTD_GANG_SUPPORT
+		mtd->erasesize *= chip->num_devs;
+		mtd->writesize *= chip->num_devs;
+	#endif
 
 		/*
 		 * Check for Spansion/AMD ID + repeating 5th, 6th byte since
@@ -2956,7 +3007,14 @@ int nand_scan_tail(struct mtd_info *mtd)
 			chip->ecc.layout = &nand_oob_16;
 			break;
 		case 64:
+#if defined(CONFIG_NAND_RS_ECC_SUPPORT)
+			if (chip->ecc.mode == NAND_ECC_RS_SOFT)
+				chip->ecc.layout = &nand_oob_64_rs;
+			else
+				chip->ecc.layout = &nand_oob_64;
+#else
 			chip->ecc.layout = &nand_oob_64;
+#endif
 			break;
 		case 128:
 			chip->ecc.layout = &nand_oob_128;
@@ -3082,6 +3140,19 @@ int nand_scan_tail(struct mtd_info *mtd)
 
 		break;
 
+#if defined(CONFIG_NAND_RS_ECC_SUPPORT)
+	case NAND_ECC_RS_SOFT:
+		chip->ecc.calculate = nand_calculate_ecc_rs;
+		chip->ecc.correct = nand_correct_data_rs;
+		chip->ecc.read_page = nand_read_page_swecc;
+		chip->ecc.read_subpage = nand_read_subpage;
+		chip->ecc.write_page = nand_write_page_swecc;
+		chip->ecc.read_oob = nand_read_oob_std;
+		chip->ecc.write_oob = nand_write_oob_std;
+		chip->ecc.size = 512;
+		chip->ecc.bytes = 10;
+		break;
+#endif
 	case NAND_ECC_NONE:
 		printk(KERN_WARNING "NAND_ECC_NONE selected by board driver. "
 		       "This is not recommended !!\n");

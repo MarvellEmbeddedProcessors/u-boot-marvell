@@ -83,6 +83,16 @@ typedef	struct	global_data {
 	unsigned long	post_log_res; /* success of POST test */
 	unsigned long	post_init_f_time; /* When post_init_f started */
 #endif
+#ifdef CONFIG_MARVELL
+	unsigned long  bus_clk;
+        unsigned int tclk;
+	unsigned int ddr_clk;
+	struct {			
+		u64 start;
+		u64 size;
+	} dram_hw_info[CONFIG_NR_DRAM_BANKS];
+#endif
+
 } gd_t;
 
 #include <asm-generic/global_data_flags.h>

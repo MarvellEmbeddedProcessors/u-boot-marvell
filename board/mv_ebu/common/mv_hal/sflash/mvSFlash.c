@@ -621,13 +621,7 @@ MV_STATUS mvSFlashSectorErase(MV_SFLASH_INFO *pFlinfo, MV_U32 secNumber)
     MV_STATUS ret;
     MV_U8 cmd[MV_SFLASH_SE_CMND_LENGTH];
     MV_U32 secAddr;
-#if 0
-    MV_U32 i;
-    MV_U32 *pW = (MV_U32 *) (secAddr + pFlinfo->baseAddr);
-    MV_U32 erasedWord = 0xFFFFFFFF;
-    MV_U32 wordsPerSector = (pFlinfo->sectorSize / sizeof(MV_U32));
-    MV_BOOL eraseNeeded = MV_FALSE;
-#endif
+
     /* check for NULL pointer */
     if (pFlinfo == NULL) {
 	mvOsPrintf("%s ERROR: Null pointer parameter!\n", __func__);
@@ -649,19 +643,6 @@ MV_STATUS mvSFlashSectorErase(MV_SFLASH_INFO *pFlinfo, MV_U32 secNumber)
 
     /* we don't want to access SPI in direct mode from in-direct API,
 	becasue of timing issue between CS asserts. */
-#if 0
-    /* First compare to FF and check if erase is needed */
-    for (i = 0; i < wordsPerSector; i++)  {
-	if (memcmp(pW, &erasedWord, sizeof(MV_U32)) != 0) {
-		eraseNeeded = MV_TRUE;
-		break;
-	}
-
-	++pW;
-    }
-    if (!eraseNeeded)
-	return MV_OK;
-#endif
 
     cmd[0] = sflash[pFlinfo->index].opcdSE;
 	cmd[1] = ((secAddr >> 16) & 0xFF);
@@ -1577,4 +1558,3 @@ const MV_8 *mvSFlashModelGet(MV_SFLASH_INFO *pFlinfo)
 
     return sflash[pFlinfo->index].deviceModel;
 }
-

@@ -103,6 +103,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CPU1_PRIO_HIGH (CPU_PRIO_HIGH << 2)
 #define CPU2_PRIO_HIGH (CPU_PRIO_HIGH << 4)
 #define CPU3_PRIO_HIGH (CPU_PRIO_HIGH << 6)
+/*   SoC Control Register bits  */
+#define PCIE0_QUADX1_EN				(1<<7)
+#define PCIE1_QUADX1_EN				(1<<8)
+
 /* ARM Configuration register */
 /* CPU_CONFIG_REG (CCR) */
 
@@ -264,7 +268,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CL2ACR_REP_STRGY_LFSR_MASK              (0x1 << CL2ACR_REP_STRGY_OFFS)
 #define CL2ACR_REP_STRGY_semiPLRU_MASK		(0x2 << CL2ACR_REP_STRGY_OFFS)
 #define CL2ACR_REP_STRGY_semiPLRU_WA_MASK          (0x3 << CL2ACR_REP_STRGY_OFFS)
-
+#define CL2_DUAL_EVICTION		(0x1 << 4)
+#define CL2_PARITY_ENABLE		(0x1 << 21)
+#define CL2_InvalEvicLineUCErr          (0x1 << 22)
 
 /* SOC_CTRL_REG fields */
 #define SCR_PEX_ENA_OFFS(pex)			((pex) & 0x3)

@@ -349,7 +349,7 @@ MV_NFC_FLASH_INFO flashDeviceInfo[] = {
 	 .flags = NFC_CLOCK_UPSCALE_200M
 	},
 
- 	{			/* Samsung 8Gb */
+	{			/* Samsung 8Gb */
 	.tADL = 100,		/* tADL, Address to write data delay */
 	.tCH = 5,		/* tCH, Enable signal hold time */
 	.tCS = 20,		/* tCS, Enable signal setup time */
@@ -373,7 +373,7 @@ MV_NFC_FLASH_INFO flashDeviceInfo[] = {
 	 .flags = NFC_CLOCK_UPSCALE_200M
 	},
 
- 	{			/* Samsung 4Gb */
+	{			/* Samsung 4Gb */
 	.tADL = 70,		/* tADL, Address to write data delay */
 	.tCH = 5,		/* tCH, Enable signal hold time */
 	.tCS = 20,		/* tCS, Enable signal setup time */
@@ -2315,7 +2315,7 @@ static MV_STATUS mvNfcDeviceFeatureSet(MV_NFC_CTRL *nfcCtrl, MV_U8 cmd, MV_U8 ad
 	/* Wait for Command WRITE request */
 	errCode = mvDfcWait4Complete(NFC_SR_WRCMDREQ_MASK, 1);
 	if (errCode != MV_OK)
-		goto Error;
+		goto Error_1;
 
 	reg = MV_REG_READ(NFC_STATUS_REG);
 	MV_REG_WRITE(NFC_STATUS_REG, reg);
@@ -2357,7 +2357,7 @@ static MV_STATUS mvNfcDeviceFeatureSet(MV_NFC_CTRL *nfcCtrl, MV_U8 cmd, MV_U8 ad
 	if (timeout == 0)
 		return MV_BAD_STATE;
 
-Error:
+Error_1:
 	return errCode;
 }
 
@@ -2398,7 +2398,7 @@ static MV_STATUS mvNfcDeviceFeatureGet(MV_NFC_CTRL *nfcCtrl, MV_U8 cmd, MV_U8 ad
 	/* Wait for Command WRITE request */
 	errCode = mvDfcWait4Complete(NFC_SR_WRCMDREQ_MASK, 1);
 	if (errCode != MV_OK)
-		goto Error;
+		goto Error_2;
 
 	reg = MV_REG_READ(NFC_STATUS_REG);
 	MV_REG_WRITE(NFC_STATUS_REG, reg);
@@ -2420,7 +2420,7 @@ static MV_STATUS mvNfcDeviceFeatureGet(MV_NFC_CTRL *nfcCtrl, MV_U8 cmd, MV_U8 ad
 	if (errCode != MV_OK)
 		return errCode;
 
-	udelay(100);
+	udelay(500);
 	/* Send Last-Naked Read Command */
 	reg = 0x0;
 	reg |= NFC_CB0_CMD_XTYPE_LAST_NAKED;
@@ -2450,7 +2450,7 @@ static MV_STATUS mvNfcDeviceFeatureGet(MV_NFC_CTRL *nfcCtrl, MV_U8 cmd, MV_U8 ad
 	}
 	if (timeout == 0)
 		return MV_BAD_STATE;
-Error:
+Error_2:
 	return errCode;
 }
 
@@ -2514,7 +2514,7 @@ MV_STATUS mvNfcReset(void)
 	/* Wait for Command WRITE request */
 	errCode = mvDfcWait4Complete(NFC_SR_WRCMDREQ_MASK, 1);
 	if (errCode != MV_OK)
-		goto Error;
+		goto Error_3;
 
 	/* Send Command */
 	MV_REG_WRITE(NFC_COMMAND_BUFF_0_REG, 0x00A000FF);	/* DFC_NDCB0_RESET */
@@ -2524,7 +2524,7 @@ MV_STATUS mvNfcReset(void)
 	/* Wait for Command completion */
 	errCode = mvDfcWait4Complete(NFC_SR_RDY0_MASK, 1000);
 	if (errCode != MV_OK)
-		goto Error;
+		goto Error_3;
 
 	/* Wait for ND_RUN bit to get cleared. */
 	while (timeout > 0) {
@@ -2536,7 +2536,7 @@ MV_STATUS mvNfcReset(void)
 	if (timeout == 0)
 		return MV_BAD_STATE;
 
-Error:
+Error_3:
 	return errCode;
 }
 #endif

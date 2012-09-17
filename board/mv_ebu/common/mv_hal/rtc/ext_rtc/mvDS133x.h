@@ -104,4 +104,3 @@ MV_VOID mvRtcDS133xAlarmSet(MV_RTC_TIME *time);
 
 
 #endif  /* __INCmvDS133xh */
-

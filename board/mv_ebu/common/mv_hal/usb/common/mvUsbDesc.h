@@ -1,16 +1,16 @@
 /*******************************************************************************
 
-This software file (the "File") is distributed by Marvell International Ltd. 
-or its affiliate(s) under the terms of the GNU General Public License Version 2, 
-June 1991 (the "License").  You may use, redistribute and/or modify this File 
-in accordance with the terms and conditions of the License, a copy of which 
-is available along with the File in the license.txt file or by writing to the 
-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+This software file (the "File") is distributed by Marvell International Ltd.
+or its affiliate(s) under the terms of the GNU General Public License Version 2,
+June 1991 (the "License").  You may use, redistribute and/or modify this File
+in accordance with the terms and conditions of the License, a copy of which
+is available along with the File in the license.txt file or by writing to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 or on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED 
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY 
-DISCLAIMED.  The GPL License provides additional details about this warranty 
+THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+DISCLAIMED.  The GPL License provides additional details about this warranty
 disclaimer.
 
 (C) Copyright 2004 - 2007 Marvell Semiconductor Israel Ltd. All Rights Reserved.
@@ -38,8 +38,8 @@ typedef struct usb_device_descriptor
    uint_8   iManufacturer;    /* Index to manufacturer string */
    uint_8   iProduct;         /* Index to product string */
    uint_8   iSerialNumber;    /* Index to serial number string */
-   uint_8   bNumConfigurations; /* Number of possible configurations */ 
-} DEVICE_DESCRIPTOR, _PTR_ DEVICE_DESCRIPTOR_PTR;  
+   uint_8   bNumConfigurations; /* Number of possible configurations */
+} DEVICE_DESCRIPTOR, _PTR_ DEVICE_DESCRIPTOR_PTR;
 
 typedef struct usb_configuration_descriptor
 {
@@ -47,14 +47,14 @@ typedef struct usb_configuration_descriptor
    uint_8   bDescriptorType;  /* CONFIGURATION type = 2 or 7 */
    uint_8   wTotalLength[2];  /* Length of concatenated descriptors */
    uint_8   bNumInterfaces;   /* Number of interfaces, this config. */
-   uint_8   bConfigurationValue;  /* Value to set this config. */ 
+   uint_8   bConfigurationValue;  /* Value to set this config. */
    uint_8   iConfig;          /* Index to configuration string */
    uint_8   bmAttributes;     /* Config. characteristics */
    #define  CONFIG_RES7       (0x80)  /* Reserved, always = 1 */
    #define  CONFIG_SELF_PWR   (0x40)  /* Self-powered device */
    #define  CONFIG_WAKEUP     (0x20)  /* Remote wakeup */
    uint_8   bMaxPower;        /* Max.power from bus, 2mA units */
-} CONFIGURATION_DESCRIPTOR, _PTR_ CONFIGURATION_DESCRIPTOR_PTR;  
+} CONFIGURATION_DESCRIPTOR, _PTR_ CONFIGURATION_DESCRIPTOR_PTR;
 
 typedef struct usb_interface_descriptor
 {
@@ -67,7 +67,7 @@ typedef struct usb_interface_descriptor
    uint_8   bInterfaceSubClass;  /* Sub-Class code, 0 if class = 0 */
    uint_8   bInterfaceProtocol;  /* Protocol, 0xFF = vendor */
    uint_8   iInterface;       /* Index to interface string */
-} INTERFACE_DESCRIPTOR, _PTR_ INTERFACE_DESCRIPTOR_PTR;  
+} INTERFACE_DESCRIPTOR, _PTR_ INTERFACE_DESCRIPTOR_PTR;
 
 typedef struct usb_endpoint_descriptor
 {
@@ -101,7 +101,7 @@ typedef struct usb_endpoint_descriptor
    #define  TWO_ADDITIONAL    (0x1000)   /* 3 / microframe */
    #define  ADDITIONAL_MASK   (ONE_ADDITIONAL | TWO_ADDITIONAL)
    uint_8   iInterval;        /* Polling interval in (micro) frames */
-} ENDPOINT_DESCRIPTOR, _PTR_ ENDPOINT_DESCRIPTOR_PTR;  
+} ENDPOINT_DESCRIPTOR, _PTR_ ENDPOINT_DESCRIPTOR_PTR;
 
 typedef struct usb_qualifier_descriptor
 {
@@ -113,8 +113,8 @@ typedef struct usb_qualifier_descriptor
    uint_8   bDeviceProtocol;  /* Protocol, if 0 see interface */
    uint_8   bMaxPacketSize;   /* Endpoint 0 max. size */
    uint_8   bNumConfigurations; /* Number of possible configurations */
-   uint_8   bReserved;        /* Reserved = 0 */ 
-} QUALIFIER_DESCRIPTOR, _PTR_ QUALIFIER_DESCRIPTOR_PTR;  
+   uint_8   bReserved;        /* Reserved = 0 */
+} QUALIFIER_DESCRIPTOR, _PTR_ QUALIFIER_DESCRIPTOR_PTR;
 
 /* Other-Config type 7 fields are identical to type 2 above */
 
@@ -127,7 +127,7 @@ typedef struct usb_otg_descriptor
    uint_8   bmAttributes;     /* OTG characteristics */
    #define  OTG_SRP_SUPPORT   (0x01)  /* Supports SRP */
    #define  OTG_HNP_SUPPORT   (0x02)  /* Supports HNP */
-} OTG_DESCRIPTOR, _PTR_ OTG_DESCRIPTOR_PTR;  
+} OTG_DESCRIPTOR, _PTR_ OTG_DESCRIPTOR_PTR;
 
 typedef union descriptor_union
 {
@@ -141,21 +141,21 @@ typedef union descriptor_union
    QUALIFIER_DESCRIPTOR_PTR      qual;
    OTG_DESCRIPTOR_PTR            otg;
 }  DESCRIPTOR_UNION, _PTR_ DESCRIPTOR_UNION_PTR;
-                           
+
 /* Prototypes */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern uint_32 usb_host_init(uint_8, uint_32, 
+extern uint_32 usb_host_init(uint_8, uint_32,
                   _usb_host_handle _PTR_);
-extern uint_32 _usb_host_open_pipe(_usb_host_handle, 
+extern uint_32 _usb_host_open_pipe(_usb_host_handle,
                   PIPE_INIT_PARAM_STRUCT_PTR, _usb_pipe_handle _PTR_ );
 
 #ifdef __cplusplus
 }
-#endif                         
+#endif
 
 #endif /* __mvUsbDesc_h__ */
 

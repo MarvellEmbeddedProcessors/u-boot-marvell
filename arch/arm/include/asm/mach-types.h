@@ -665,7 +665,7 @@ extern unsigned int __machine_arch_type;
 #define MACH_TYPE_AT91CAP7STK          3033
 #define MACH_TYPE_KT_SBC_SAM9_1        3034
 #define MACH_TYPE_ARMADA_XP_DB         3036
-#define MACH_TYPE_SPDM                 3037
+#define MACH_TYPE_ARMADA_XP_RDSRV      3037
 #define MACH_TYPE_GTIB                 3038
 #define MACH_TYPE_DGM3240              3039
 #define MACH_TYPE_HTCMEGA              3041
@@ -8942,6 +8942,18 @@ extern unsigned int __machine_arch_type;
 # define machine_is_armada_xp_db()	(machine_arch_type == MACH_TYPE_ARMADA_XP_DB)
 #else
 # define machine_is_armada_xp_db()	(0)
+#endif
+
+#ifdef CONFIG_MACH_ARMADA_XP_RDSRV
+# ifdef machine_arch_type
+#  undef machine_arch_type
+#  define machine_arch_type	__machine_arch_type
+# else
+#  define machine_arch_type	MACH_TYPE_ARMADA_XP_RDSRV
+# endif
+# define machine_is_armada_xp_rdsrv()	(machine_arch_type == MACH_TYPE_ARMADA_XP_RDSRV)
+#else
+# define machine_is_armada_xp_rdsrv()	(0)
 #endif
 
 #ifdef CONFIG_MACH_SPDM

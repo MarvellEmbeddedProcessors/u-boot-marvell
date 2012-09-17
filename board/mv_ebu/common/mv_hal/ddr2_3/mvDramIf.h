@@ -160,11 +160,14 @@ MV_STATUS mvDramIfWinGet(MV_TARGET target, MV_DRAM_DEC_WIN *pAddrDecWin);
 MV_STATUS mvDramIfWinEnable(MV_TARGET target, MV_BOOL enable);
 MV_VOID   mvDramIfBasicAsmInit(MV_VOID);
 MV_STATUS mvDramIfDetect(MV_U32 forcedCl, MV_BOOL eccDisable, MV_U32 sysClk);
-MV_VOID   _mvDramIfConfig(int entryNum);
+MV_VOID   mvDramIfConfig(int entryNum);
 
 MV_U32 mvDramIfBankSizeGet(MV_U32 bankNum);
 MV_U32 mvDramIfBankBaseGet(MV_U32 bankNum);
 MV_U32 mvDramIfSizeGet(MV_VOID);
+MV_U32 mvDramIfHwSizeGet(MV_VOID); 
+MV_U32 mvDramIfHwCsSizeGet(MV_U32 cs);
+
 MV_U32 mvDramIfCalGet(void);
 MV_STATUS mvDramIfSingleBitErrThresholdSet(MV_U32 threshold);
 MV_VOID mvDramIfSelfRefreshSet(void);

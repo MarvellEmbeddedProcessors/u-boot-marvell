@@ -770,7 +770,6 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 				 */
 				ehci_powerup_fixup(status_reg, &reg);
 
-				ehci_writel(status_reg, reg & ~EHCI_PS_PR);
 				/*
 				 * A host controller must terminate the reset
 				 * and stabilize the state of the port within

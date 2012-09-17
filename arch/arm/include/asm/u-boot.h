@@ -43,7 +43,7 @@ typedef struct bd_info {
 	unsigned long	bi_arm_freq; /* arm frequency */
 	unsigned long	bi_dsp_freq; /* dsp core frequency */
 	unsigned long	bi_ddr_freq; /* ddr frequency */
-    struct				/* RAM configuration */
+    struct				/* RAM configuration - Only the part visiblt by UBoot */
     {
 	ulong start;
 	ulong size;

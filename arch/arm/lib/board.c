@@ -283,6 +283,10 @@ void board_init_f(ulong bootflag)
 #ifdef CONFIG_PRAM
 	ulong reg;
 #endif
+#if defined(CONFIG_MARVELL) && defined(MV78200)
+	volatile unsigned int cpu;
+#endif
+
 	void *new_fdt = NULL;
 	size_t fdt_size = 0;
 

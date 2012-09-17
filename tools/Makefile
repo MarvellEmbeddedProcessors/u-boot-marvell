@@ -105,6 +105,11 @@ OBJ_FILES-$(CONFIG_SHA1_CHECK_UB_IMG) += ubsha1.o
 NOPED_OBJ_FILES-y += ublimage.o
 OBJ_FILES-$(CONFIG_KIRKWOOD) += kwboot.o
 
+ifeq ($(VENDOR),armadaxp)
+	TOOLSUBDIRS += doimage_armada_xp
+	TOOLSUBDIRS += bin_hdr_armada_xp
+endif
+
 # Don't build by default
 #ifeq ($(ARCH),ppc)
 #BIN_FILES-y += mpc86x_clk$(SFX)
@@ -261,6 +266,8 @@ else
 	    $(MAKE) \
 		HOSTOS=$(HOSTOS) \
 		HOSTARCH=$(HOSTARCH) \
+		HOSTCFLAGS="$(HOSTCFLAGS)" \
+		HOST_LDFLAGS="$(HOST_LDFLAGS)" \
 		-C $$dir || exit 1 ; \
 	done
 endif

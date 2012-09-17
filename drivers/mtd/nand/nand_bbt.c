@@ -436,7 +436,34 @@ static int read_abs_bbts(struct mtd_info *mtd, uint8_t *buf,
 	}
 	return 1;
 }
+#ifdef CONFIG_MV_MTD_MLC_NAND_SUPPORT
+/*
+ * Scan a given block in the custom location based on Naked symantics
+ */
+static int scan_block_custom(struct mtd_info *mtd, struct nand_bbt_descr *bd,
+			uint64_t offs, uint8_t *buf, int page, int pos)
+{	
+	int ret;
+	struct mtd_oob_ops ops;
 
+	ops.mode = MTD_OOB_RAW;
+	ops.ooboffs = 0;
+	ops.ooblen = mtd->oobsize;
+	ops.oobbuf = (buf + mtd->writesize);
+	ops.datbuf = buf;
+	ops.len = mtd->writesize;
+
+	ret = mtd->read_oob(mtd, (offs + (mtd->writesize * page)), &ops);
+	if (ret)
+		return ret;
+
+	/* Check 2 bytes to cover the ganaged case */
+	if ((buf[pos] != 0xFF) || (buf[pos+1] != 0xFF))
+		return 1;
+
+	return 0;
+}
+#endif
 /*
  * Scan a given block full
  */
@@ -555,6 +582,12 @@ static int create_bbt(struct mtd_info *mtd, uint8_t *buf,
 
 		BUG_ON(bd->options & NAND_BBT_NO_OOB);
 
+#ifdef CONFIG_MV_MTD_MLC_NAND_SUPPORT
+		if (bd->options & NAND_BBT_SCANMVCUSTOM)
+			ret = scan_block_custom(mtd, bd, from, buf,
+						this->bb_page, this->bb_location);
+		else
+#endif
 		if (bd->options & NAND_BBT_SCANALLPAGES)
 			ret = scan_block_full(mtd, bd, from, buf, readlen,
 					      scanlen, len);

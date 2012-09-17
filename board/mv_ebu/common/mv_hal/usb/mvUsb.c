@@ -193,12 +193,6 @@ static int mvUsbPhy40nmInit(int dev)
 	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 3), regVal);
 	/*-------------------------------------------------*/
 
-#if 0
-	/******* reset VCOCAL_START *******/
-	regVal = MV_REG_READ(MV_USB_PHY_PLL_REG(1));
-	regVal &= ~BIT21;
-	MV_REG_WRITE(MV_USB_PHY_PLL_REG(1), regVal);
-#endif
 	/******* Assert REG_RCAL_START in Channel REG 1 *******/
 	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 1));
 	regVal |= BIT12;
@@ -211,16 +205,7 @@ static int mvUsbPhy40nmInit(int dev)
 	regVal &= ~BIT12;
 	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 1), regVal);
 	/*-------------------------------------------------*/
-#if 0
-	/* Wait 400 usec */
-	mvOsUDelay(400);
 
-	/******* Check that PLL is ready *******/
-/*	regVal = MV_REG_READ(MV_USB_PHY_PLL_REG(1));
-	if (regVal & BIT23)
-		return 0;
-*/
-#endif
 	return 0;
 } /* End of mvUsbPhy40nmInit() */
 
@@ -334,101 +319,6 @@ static void mvUsbPhy65nmNewInit(int dev)
 
 	/* Nothing to change */
 }
-
-/* USB Phy init (change from defaults) specific for 55nm (6500-Z1 device) */
-#if 0
-static void mvUsbPhyKW6500Init(int dev)
-{
-	MV_U32 regVal;
-	/******* USB PHY PLL Control Register 0x410 *******/
-	regVal = MV_REG_READ(MV_USB_PHY_PLL_CTRL_REG(dev));
-
-	/* VCO recalibrate */
-	regVal |= (0x1 << 21);
-	MV_REG_WRITE(MV_USB_PHY_PLL_CTRL_REG(dev), regVal);
-	/* wait 500 usec */
-	mvOsUDelay(500);
-	regVal &= ~(0x1 << 21);
-	MV_REG_WRITE(MV_USB_PHY_PLL_CTRL_REG(dev), regVal);
-	/*-------------------------------------------------*/
-
-	/******* USB PHY Tx Control Register Register 0x420 *******/
-	regVal = MV_REG_READ(MV_USB_PHY_TX_CTRL_REG(dev));
-
-	/* bit[11]      (LOWVDD_EN)     = 1 */
-	regVal |= (0x1 << 11);
-
-	/* bit[12]      (REG_RCAL_START) = 1 */
-	regVal |= (0x1 << 12);
-
-	/* bits[16:14]  (IMPCAL_VTH[2:0] = 101) */
-	regVal &= ~(0x7 << 14);
-	regVal |= (0x5 << 14);
-
-	/* bit[21]      (TX_BLOCK_EN)   = 0 */
-	regVal &= ~(0x1 << 21);
-
-	/* bit[31]  (HS_STRESS_CTRL) = 0 */
-	regVal &= ~(0x1 << 31);
-
-	MV_REG_WRITE(MV_USB_PHY_TX_CTRL_REG(dev), regVal);
-
-	/* wait 500 usec */
-	mvOsUDelay(500);
-
-	/* Force impedance auto calibrate */
-	/* bit[12]      (REG_RCAL_START) = 0 */
-	regVal &= ~(0x1 << 12);
-	MV_REG_WRITE(MV_USB_PHY_TX_CTRL_REG(dev), regVal);
-
-	/*-------------------------------------------------*/
-
-	/******* USB PHY Rx Control Register 0x430 *******/
-	regVal = MV_REG_READ(MV_USB_PHY_RX_CTRL_REG(dev));
-
-	/* bits[3:2]    LPL_COEF        = 0x1 (1/8) */
-	regVal &= ~(0x3 << 2);
-	regVal |= (0x1 << 2);
-
-	/* bits[7:4]    SQ_THRESH       = 0xC */
-	regVal &= ~(0xf << 4);
-	regVal |= (0xC << 4);
-
-	/* bits[16:15]  REG_SQ_LENGTH   = 0x1 */
-	regVal &= ~(0x3 << 15);
-	regVal |= (0x1 << 15);
-
-	/* bit[21]      CDR_FASTLOCK_EN = 0x0 */
-	regVal &= ~(0x1 << 21);
-
-	/* bits[27:26]  EDGE_DET        = 0x0 (1 Tran) */
-	regVal &= ~(0x3 << 26);
-
-	MV_REG_WRITE(MV_USB_PHY_RX_CTRL_REG(dev), regVal);
-	/*-------------------------------------------------*/
-
-	/******* USB PHY IVREF Control Register 0x440 *******/
-	regVal = MV_REG_READ(MV_USB_PHY_IVREF_CTRL_REG(dev));
-
-	/* bits[9:8]    TXVDD12 = 0x3 */
-	regVal &= ~(0x3 << 8);
-	regVal |= (0x3 << 8);
-
-	MV_REG_WRITE(MV_USB_PHY_IVREF_CTRL_REG(dev), regVal);
-	/*-------------------------------------------------*/
-
-	/***** USB PHY TEST GROUP CONTROL Register: 0x450 *****/
-	regVal = MV_REG_READ(MV_USB_PHY_TEST_GROUP_CTRL_REG_0(dev));
-
-	/* bit[15]      REG_FIFO_SQ_RST = 0x0 */
-	regVal &= ~(0x1 << 15);
-
-	MV_REG_WRITE(MV_USB_PHY_TEST_GROUP_CTRL_REG_0(dev), regVal);
-	/*-------------------------------------------------*/
-
-	return;
-}
-#endif
 
 /* USB Phy init (change from defaults) specific for 65nm (78XX0 and 6281) */
 static void mvUsbPhy65nmInit(int dev)
@@ -873,10 +763,7 @@ MV_STATUS mvUsbHalInit(int dev, MV_BOOL isHost, MV_USB_HAL_DATA *halData)
 		(usbHalData.ctrlModel == MV_6560_DEV_ID)) {
 		/* Change value of new register 0x360 */
 		regVal = MV_REG_READ(MV_USB_BRIDGE_IPG_REG(dev));
-#if 0
-		/*  Change bits31 & bit30 from 1 to 0 */
-		regVal &= ~(0x3 << 30);
-#endif
+
 		/*  Change bits[14:8] - IPG for non Start of Frame Packets
 		 *  from 0x9(default) to 0xD
 		 */

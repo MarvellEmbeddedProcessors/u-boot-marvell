@@ -1,16 +1,16 @@
 /*******************************************************************************
 
-This software file (the "File") is distributed by Marvell International Ltd. 
-or its affiliate(s) under the terms of the GNU General Public License Version 2, 
-June 1991 (the "License").  You may use, redistribute and/or modify this File 
-in accordance with the terms and conditions of the License, a copy of which 
-is available along with the File in the license.txt file or by writing to the 
-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+This software file (the "File") is distributed by Marvell International Ltd.
+or its affiliate(s) under the terms of the GNU General Public License Version 2,
+June 1991 (the "License").  You may use, redistribute and/or modify this File
+in accordance with the terms and conditions of the License, a copy of which
+is available along with the File in the license.txt file or by writing to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 or on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED 
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY 
-DISCLAIMED.  The GPL License provides additional details about this warranty 
+THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+DISCLAIMED.  The GPL License provides additional details about this warranty
 disclaimer.
 
 (C) Copyright 2004 - 2007 Marvell Semiconductor Israel Ltd. All Rights Reserved.
@@ -46,68 +46,68 @@ uint_8 _usb_dci_vusb20_init
     uint_32                     temp;
     uint_8*                     pBuf;
     unsigned long               phyAddr;
-      
+
     usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
 
-    usb_dev_ptr->CAP_REGS_PTR = 
+    usb_dev_ptr->CAP_REGS_PTR =
        (VUSB20_REG_STRUCT_PTR)USB_get_cap_reg_addr(devnum);
-      
+
     /* Get the base address of the VUSB_HS registers */
-    usb_dev_ptr->DEV_PTR = 
-      (VUSB20_REG_STRUCT_PTR)(((uint_32)usb_dev_ptr->CAP_REGS_PTR) + 
-       (USB_32BIT_LE(usb_dev_ptr->CAP_REGS_PTR->REGISTERS.CAPABILITY_REGISTERS.CAPLENGTH_HCIVER) & 
+    usb_dev_ptr->DEV_PTR =
+      (VUSB20_REG_STRUCT_PTR)(((uint_32)usb_dev_ptr->CAP_REGS_PTR) +
+       (USB_32BIT_LE(usb_dev_ptr->CAP_REGS_PTR->REGISTERS.CAPABILITY_REGISTERS.CAPLENGTH_HCIVER) &
                                                                 EHCI_CAP_LEN_MASK));
 
     /* Get the maximum number of endpoints supported by this USB controller */
-    usb_dev_ptr->MAX_ENDPOINTS = 
-      (USB_32BIT_LE(usb_dev_ptr->CAP_REGS_PTR->REGISTERS.CAPABILITY_REGISTERS.DCC_PARAMS) & 
+    usb_dev_ptr->MAX_ENDPOINTS =
+      (USB_32BIT_LE(usb_dev_ptr->CAP_REGS_PTR->REGISTERS.CAPABILITY_REGISTERS.DCC_PARAMS) &
                                                 VUSB20_DCC_MAX_ENDPTS_SUPPORTED);
 
     USB_printf("USB init: CAP_REGS=0x%x, DEV_REGS=0x%x, MAX_EP=%d\n",
-                (unsigned)usb_dev_ptr->CAP_REGS_PTR, (unsigned)usb_dev_ptr->DEV_PTR, 
+                (unsigned)usb_dev_ptr->CAP_REGS_PTR, (unsigned)usb_dev_ptr->DEV_PTR,
                 usb_dev_ptr->MAX_ENDPOINTS);
 
     temp = (usb_dev_ptr->MAX_ENDPOINTS * 2);
-   
-    pBuf = (uint_8*)USB_uncached_memalloc(temp*sizeof(VUSB20_EP_QUEUE_HEAD_STRUCT), 
-                                          2048, &phyAddr);      
-    if (pBuf == NULL) 
+
+    pBuf = (uint_8*)USB_uncached_memalloc(temp*sizeof(VUSB20_EP_QUEUE_HEAD_STRUCT),
+                                          2048, &phyAddr);
+    if (pBuf == NULL)
     {
         USB_printf("_usb_dci_vusb20_init, malloc of %d bytes in Uncached area failed\n",
                         temp*sizeof(VUSB20_EP_QUEUE_HEAD_STRUCT));
         return USBERR_ALLOC;
     }
 
-    /****************************************************************   
+    /****************************************************************
       Assign QH base
-    ****************************************************************/   
+    ****************************************************************/
     usb_dev_ptr->EP_QUEUE_HEAD_BASE = pBuf;
     usb_dev_ptr->EP_QUEUE_HEAD_PHYS = (uint_32)phyAddr;
 
-    /* Align the endpoint queue head to 2K boundary */   
+    /* Align the endpoint queue head to 2K boundary */
     usb_dev_ptr->EP_QUEUE_HEAD_PTR = (VUSB20_EP_QUEUE_HEAD_STRUCT_PTR)
                 USB_MEM2048_ALIGN((uint_32)usb_dev_ptr->EP_QUEUE_HEAD_BASE);
 
     usb_dev_ptr->EP_QUEUE_HEAD_SIZE = temp*sizeof(VUSB20_EP_QUEUE_HEAD_STRUCT) +
-                                      ((uint_32)usb_dev_ptr->EP_QUEUE_HEAD_PTR - 
+                                      ((uint_32)usb_dev_ptr->EP_QUEUE_HEAD_PTR -
                                        (uint_32)usb_dev_ptr->EP_QUEUE_HEAD_BASE);
 
-    /****************************************************************   
+    /****************************************************************
       Zero out the memory allocated
-    ****************************************************************/   
-    USB_memzero( (void*)usb_dev_ptr->EP_QUEUE_HEAD_PTR, 
+    ****************************************************************/
+    USB_memzero( (void*)usb_dev_ptr->EP_QUEUE_HEAD_PTR,
                  temp*sizeof(VUSB20_EP_QUEUE_HEAD_STRUCT));
 
     USB_printf("USB EP_QH: Base=%p (0x%x), Aligned(%d)=%p, Size=%d\n",
                 usb_dev_ptr->EP_QUEUE_HEAD_BASE, usb_dev_ptr->EP_QUEUE_HEAD_PHYS,
                 2048, usb_dev_ptr->EP_QUEUE_HEAD_PTR, usb_dev_ptr->EP_QUEUE_HEAD_SIZE);
 
-    /****************************************************************   
+    /****************************************************************
       Assign DTD base
-    ****************************************************************/   
-    pBuf = (uint_8*)USB_uncached_memalloc(MAX_EP_TR_DESCRS*sizeof(VUSB20_EP_TR_STRUCT), 
-                                          32, &phyAddr);      
-    if (pBuf == NULL) 
+    ****************************************************************/
+    pBuf = (uint_8*)USB_uncached_memalloc(MAX_EP_TR_DESCRS*sizeof(VUSB20_EP_TR_STRUCT),
+                                          32, &phyAddr);
+    if (pBuf == NULL)
     {
         USB_printf("_usb_dci_vusb20_init, malloc of %d bytes in Uncached area failed\n",
                         MAX_EP_TR_DESCRS*sizeof(VUSB20_EP_TR_STRUCT));
@@ -116,34 +116,34 @@ uint_8 _usb_dci_vusb20_init
 
     usb_dev_ptr->DTD_BASE_PTR = pBuf;
     usb_dev_ptr->DTD_BASE_PHYS = (uint_32)phyAddr;
-    
-    /* Align the dTD base to 32 byte boundary */   
+
+    /* Align the dTD base to 32 byte boundary */
     usb_dev_ptr->DTD_ALIGNED_BASE_PTR = (VUSB20_EP_TR_STRUCT_PTR)
                         USB_MEM32_ALIGN((uint_32)usb_dev_ptr->DTD_BASE_PTR);
 
     usb_dev_ptr->DTD_SIZE = MAX_EP_TR_DESCRS*sizeof(VUSB20_EP_TR_STRUCT) +
-                                ((uint_32)usb_dev_ptr->EP_QUEUE_HEAD_PTR - 
+                                ((uint_32)usb_dev_ptr->EP_QUEUE_HEAD_PTR -
                                  (uint_32)usb_dev_ptr->EP_QUEUE_HEAD_BASE);
 
-    /****************************************************************   
+    /****************************************************************
       Zero out the memory allocated
-    ****************************************************************/   
-    USB_memzero((void*)usb_dev_ptr->DTD_ALIGNED_BASE_PTR, 
+    ****************************************************************/
+    USB_memzero((void*)usb_dev_ptr->DTD_ALIGNED_BASE_PTR,
                 MAX_EP_TR_DESCRS*sizeof(VUSB20_EP_TR_STRUCT));
 
-    /****************************************************************   
+    /****************************************************************
       Assign SCRATCH Structure base
-    ****************************************************************/   
-    /* Allocate memory for internal scratch structure */   
+    ****************************************************************/
+    /* Allocate memory for internal scratch structure */
     pBuf = USB_memalloc(MAX_EP_TR_DESCRS*sizeof(SCRATCH_STRUCT));
-    if (pBuf == NULL) 
+    if (pBuf == NULL)
     {
         USB_printf("_usb_dci_vusb20_init, malloc of %d bytes failed\n",
                         MAX_EP_TR_DESCRS*sizeof(SCRATCH_STRUCT));
         return USBERR_ALLOC;
     }
     usb_dev_ptr->SCRATCH_STRUCT_BASE = (SCRATCH_STRUCT_PTR)pBuf;
-    USB_memzero(usb_dev_ptr->SCRATCH_STRUCT_BASE, 
+    USB_memzero(usb_dev_ptr->SCRATCH_STRUCT_BASE,
             MAX_EP_TR_DESCRS*sizeof(SCRATCH_STRUCT));
 
     USB_printf("USB dTD(%d): Base=%p (0x%x), Aligned(%d)=%p, Size=%d, Scratch=%p\n",
@@ -153,22 +153,22 @@ uint_8 _usb_dci_vusb20_init
 
 #ifdef USB_UNDERRUN_WA
     usbSramBase = (uint_8*)USB_get_sram_addr(&usbSramSize);
-    if (usbSramBase == NULL) 
+    if (usbSramBase == NULL)
     {
-        USB_printf("_usb_dci_vusb20_init, SRAM is not available\n");                        
+        USB_printf("_usb_dci_vusb20_init, SRAM is not available\n");
         return USBERR_ALLOC;
     }
     USB_memzero(usbSramBase, usbSramSize);
-    USB_printf("USB WA_Queue: base=%p, size=%d, parts=%d\n", 
+    USB_printf("USB WA_Queue: base=%p, size=%d, parts=%d\n",
                     usbSramBase, usbSramSize, global_wa_sram_parts);
 #endif /* USB_UNDERRUN_WA */
 
     usb_dev_ptr->USB_STATE = ARC_USB_STATE_UNKNOWN;
 
-    /* Initialize the VUSB_HS controller */   
+    /* Initialize the VUSB_HS controller */
     _usb_dci_vusb20_chip_initialize((pointer)usb_dev_ptr);
 
-    return USB_OK;   
+    return USB_OK;
 } /* EndBody */
 
 /*FUNCTION*-------------------------------------------------------------
@@ -194,22 +194,22 @@ void _usb_dci_vusb20_chip_initialize
     volatile unsigned long           delay;
 
     ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_INIT, "chip_initialize\n");
-   
+
     usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
 
     dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
-   
+
     /* Stop the controller */
     dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD &= ~(USB_32BIT_LE(EHCI_CMD_RUN_STOP));
-      
+
     /* Reset the controller to get default values */
     dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD = USB_32BIT_LE(EHCI_CMD_CTRL_RESET);
 
     USB_printf("USB Init: Wait for RESET completed\n");
-   
+
     delay = 0x100000;
-    while (dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD & 
-                                    (USB_32BIT_LE(EHCI_CMD_CTRL_RESET))) 
+    while (dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD &
+                                    (USB_32BIT_LE(EHCI_CMD_CTRL_RESET)))
     {
         /* Wait for the controller reset to complete */
         delay--;
@@ -228,39 +228,39 @@ void _usb_dci_vusb20_chip_initialize
     /* Call BSP callback to complete reset process */
     USB_reset_complete(usb_dev_ptr->DEV_NUM);
 
-    /* Initialize the internal dTD head and tail to NULL */   
+    /* Initialize the internal dTD head and tail to NULL */
     usb_dev_ptr->DTD_HEAD = NULL;
     usb_dev_ptr->DTD_TAIL = NULL;
-    usb_dev_ptr->DTD_ENTRIES = 0; 
+    usb_dev_ptr->DTD_ENTRIES = 0;
     usb_dev_ptr->ERROR_STATE = 0;
 
    /* Make sure the 16 MSBs of this register are 0s */
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPT_SETUP_STAT = USB_32BIT_LE(0);
-   
+
    ep_queue_head_ptr = usb_dev_ptr->EP_QUEUE_HEAD_PTR;
 
    /* Initialize all device queue heads */
-   for (i=0; i<(usb_dev_ptr->MAX_ENDPOINTS*2); i++) 
+   for (i=0; i<(usb_dev_ptr->MAX_ENDPOINTS*2); i++)
    {
       /* Interrupt on Setup packet */
       (ep_queue_head_ptr + i)->MAX_PKT_LENGTH = (USB_32BIT_LE(
-          ((uint_32)USB_MAX_CTRL_PAYLOAD << VUSB_EP_QUEUE_HEAD_MAX_PKT_LEN_POS) | 
+          ((uint_32)USB_MAX_CTRL_PAYLOAD << VUSB_EP_QUEUE_HEAD_MAX_PKT_LEN_POS) |
             VUSB_EP_QUEUE_HEAD_IOS));
 
       (ep_queue_head_ptr + i)->NEXT_DTD_PTR = (USB_32BIT_LE(VUSB_EP_QUEUE_HEAD_NEXT_TERMINATE));
    } /* Endfor */
 
    /* Configure the Endpoint List Address */
-   dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.EP_LIST_ADDR = 
+   dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.EP_LIST_ADDR =
                             USB_32BIT_LE(USB_EP_QH_VIRT_TO_PHYS(usb_dev_ptr, ep_queue_head_ptr));
-      
+
    port_control = USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]);
-   if (usb_dev_ptr->CAP_REGS_PTR->REGISTERS.CAPABILITY_REGISTERS.HCS_PARAMS & 
-                                        USB_32BIT_LE(VUSB20_HCS_PARAMS_PORT_POWER_CONTROL_FLAG)) 
+   if (usb_dev_ptr->CAP_REGS_PTR->REGISTERS.CAPABILITY_REGISTERS.HCS_PARAMS &
+                                        USB_32BIT_LE(VUSB20_HCS_PARAMS_PORT_POWER_CONTROL_FLAG))
    {
       port_control &= (~EHCI_PORTSCX_W1C_BITS | ~EHCI_PORTSCX_PORT_POWER);
    } /* Endif */
-   
+
    if(usb_dev_ptr->FORCE_FS == TRUE)
    {
        port_control |= EHCI_PORTSCX_FORCE_FULL_SPEED_CONNECT;
@@ -275,8 +275,8 @@ void _usb_dci_vusb20_chip_initialize
 
    temp_scratch_ptr = usb_dev_ptr->SCRATCH_STRUCT_BASE;
 
-   /* Enqueue all the dTDs */   
-   for (i=0; i<MAX_EP_TR_DESCRS; i++) 
+   /* Enqueue all the dTDs */
+   for (i=0; i<MAX_EP_TR_DESCRS; i++)
    {
       dTD_ptr->SCRATCH_PTR = temp_scratch_ptr;
       dTD_ptr->SCRATCH_PTR->FREE = _usb_dci_vusb20_free_dTD;
@@ -346,7 +346,7 @@ uint_8 _usb_dci_vusb20_add_dTD
    (
       /* [IN] the USB_dev_initialize state structure */
       _usb_device_handle         handle,
-     
+
       /* [IN] The transfer descriptor address */
       XD_STRUCT_PTR              xd_ptr
    )
@@ -355,10 +355,10 @@ uint_8 _usb_dci_vusb20_add_dTD
    VUSB20_REG_STRUCT_PTR            dev_ptr;
    VUSB20_EP_TR_STRUCT_PTR          dTD_ptr, temp_dTD_ptr, first_dTD_ptr = NULL;
    VUSB20_EP_QUEUE_HEAD_STRUCT_PTR  ep_queue_head_ptr;
-   uint_32                          curr_pkt_len, remaining_len; 
+   uint_32                          curr_pkt_len, remaining_len;
    uint_32                          curr_offset, temp, bit_pos;
    volatile unsigned long           timeout;
-   
+
    /*********************************************************************
    For a optimal implementation, we need to detect the fact that
    we are adding DTD to an empty list. If list is empty, we can
@@ -367,41 +367,41 @@ uint_8 _usb_dci_vusb20_add_dTD
    in skipping some code here.
    *********************************************************************/
    boolean           list_empty = FALSE;
-   
+
    usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
    dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
 
    remaining_len = xd_ptr->WTOTALLENGTH;
-   
+
    curr_offset = 0;
    temp = (2*xd_ptr->EP_NUM + xd_ptr->BDIRECTION);
    bit_pos = (1 << (16 * xd_ptr->BDIRECTION + xd_ptr->EP_NUM));
-   
+
    ep_queue_head_ptr = (VUSB20_EP_QUEUE_HEAD_STRUCT_PTR)usb_dev_ptr->EP_QUEUE_HEAD_PTR + temp;
 
    /*********************************************************************
    This loops iterates through the length of the transfer and divides
    the data in to DTDs each handling the a max of 0x4000 bytes of data.
    The first DTD in the list is stored in a pointer called first_dTD_ptr.
-   This pointer is later linked in to QH for processing by the hardware.   
+   This pointer is later linked in to QH for processing by the hardware.
    *********************************************************************/
 
-    do 
+    do
     {
         /* Check if we need to split the transfer into multiple dTDs */
-        if (remaining_len > VUSB_EP_MAX_LENGTH_TRANSFER) 
+        if (remaining_len > VUSB_EP_MAX_LENGTH_TRANSFER)
         {
             curr_pkt_len = VUSB_EP_MAX_LENGTH_TRANSFER;
-        } 
-        else 
+        }
+        else
         {
             curr_pkt_len = remaining_len;
         } /* Endif */
-   
-        /* Get a dTD from the queue */   
+
+        /* Get a dTD from the queue */
         EHCI_DTD_QGET(usb_dev_ptr->DTD_HEAD, usb_dev_ptr->DTD_TAIL, dTD_ptr);
-   
-        if (!dTD_ptr) 
+
+        if (!dTD_ptr)
         {
             USB_printf("Error: Can't get dTD\n");
             return USBERR_TR_FAILED;
@@ -413,7 +413,7 @@ uint_8 _usb_dci_vusb20_add_dTD
 
         usb_dev_ptr->DTD_ENTRIES--;
 
-        if (curr_offset == 0) 
+        if (curr_offset == 0)
         {
             first_dTD_ptr = dTD_ptr;
         } /* Endif */
@@ -423,7 +423,7 @@ uint_8 _usb_dci_vusb20_add_dTD
 
         /* Initialize the dTD */
         dTD_ptr->SCRATCH_PTR->PRIVATE = handle;
-   
+
         /* Set the Terminate bit */
         dTD_ptr->NEXT_TR_ELEM_PTR = USB_32BIT_LE(VUSB_EP_QUEUE_HEAD_NEXT_TERMINATE);
 
@@ -432,22 +432,22 @@ uint_8 _usb_dci_vusb20_add_dTD
         we must initialize the multiplied field so that Host can issues
         multiple IN transactions on the endpoint. See the DTD data
         structure for MultiIO field.
-      
+
         S Garg 11/06/2003
         *************************************************************/
-      
+
         /* Fill in the transfer size */
-        if (!remaining_len) 
+        if (!remaining_len)
         {
-            dTD_ptr->SIZE_IOC_STS = USB_32BIT_LE((curr_pkt_len << 
+            dTD_ptr->SIZE_IOC_STS = USB_32BIT_LE((curr_pkt_len <<
                     VUSBHS_TD_LENGTH_BIT_POS) | (VUSBHS_TD_IOC) | (VUSBHS_TD_STATUS_ACTIVE));
-        } 
-        else 
+        }
+        else
         {
-            dTD_ptr->SIZE_IOC_STS = USB_32BIT_LE((curr_pkt_len << VUSBHS_TD_LENGTH_BIT_POS) 
+            dTD_ptr->SIZE_IOC_STS = USB_32BIT_LE((curr_pkt_len << VUSBHS_TD_LENGTH_BIT_POS)
                                                    | VUSBHS_TD_STATUS_ACTIVE);
         } /* Endif */
-   
+
         /* Set the reserved field to 0 */
         dTD_ptr->SIZE_IOC_STS &= ~USB_32BIT_LE(VUSBHS_TD_RESERVED_FIELDS);
 
@@ -457,7 +457,7 @@ uint_8 _usb_dci_vusb20_add_dTD
             uint_32 physAddr = USB_virt_to_phys((uint_8*)xd_ptr->WSTARTADDRESS + curr_offset);
 
             dTD_ptr->BUFF_PTR0 = USB_32BIT_LE(physAddr);
-            
+
             physAddr += 4096;
             dTD_ptr->BUFF_PTR1 = USB_32BIT_LE(physAddr);
 
@@ -477,10 +477,10 @@ uint_8 _usb_dci_vusb20_add_dTD
         }
         curr_offset += curr_pkt_len;
 
-      /* Maintain the first and last device transfer descriptor per 
-      ** endpoint and direction 
+      /* Maintain the first and last device transfer descriptor per
+      ** endpoint and direction
       */
-      if (!usb_dev_ptr->EP_DTD_HEADS[temp]) 
+      if (!usb_dev_ptr->EP_DTD_HEADS[temp])
       {
          usb_dev_ptr->EP_DTD_HEADS[temp] = dTD_ptr;
          /***********************************************
@@ -488,17 +488,17 @@ uint_8 _usb_dci_vusb20_add_dTD
          is empty. An empty condition is detected.
          ***********************************************/
          list_empty = TRUE;
-      } /* Endif */ 
-   
+      } /* Endif */
+
       /* Check if the transfer is to be queued at the end or beginning */
       temp_dTD_ptr = usb_dev_ptr->EP_DTD_TAILS[temp];
-      
+
       /* Remember which XD to use for this dTD */
       dTD_ptr->SCRATCH_PTR->XD_FOR_THIS_DTD = (pointer)xd_ptr;
-      
+
       /* New tail */
       usb_dev_ptr->EP_DTD_TAILS[temp] = dTD_ptr;
-      if (temp_dTD_ptr) 
+      if (temp_dTD_ptr)
       {
          /* Should not do |=. The Terminate bit should be zero */
          temp_dTD_ptr->NEXT_TR_ELEM_PTR = USB_32BIT_LE(USB_DTD_VIRT_TO_PHYS(usb_dev_ptr, dTD_ptr));
@@ -508,14 +508,14 @@ uint_8 _usb_dci_vusb20_add_dTD
 
    /**************************************************************
    In the loop above DTD has already been added to the list
-   However endpoint has not been primed yet. If list is not empty 
-   we need safter ways to add DTD to the existing list. 
+   However endpoint has not been primed yet. If list is not empty
+   we need safter ways to add DTD to the existing list.
    Else we just skip to adding DTD to QH safely.
    **************************************************************/
-   
+
     if(list_empty == FALSE)
     {
-        volatile boolean    read_safe = FALSE;                      
+        volatile boolean    read_safe = FALSE;
         uint_32             prime, temp_ep_stat=0;
 
         /*********************************************************
@@ -538,7 +538,7 @@ uint_8 _usb_dci_vusb20_add_dTD
         {
             timeout = 0x1000;
             while( dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME
-                    & USB_32BIT_LE(bit_pos) ) 
+                    & USB_32BIT_LE(bit_pos) )
             {
                /* Wait for the ENDPTPRIME to go to zero */
                 timeout--;
@@ -547,11 +547,11 @@ uint_8 _usb_dci_vusb20_add_dTD
                     USB_printf(
                         "timeout: CTRL=%x, PRIME=%x, STAT=%x, INTR=%x, ADDR=%x, PORTSC=%x, dTD=%p, temp_dTD=%p\n",
                         USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[0]),
-                        USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME), 
-                        USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTSTATUS), 
+                        USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME),
+                        USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTSTATUS),
                         USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_STS),
                         USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.DEVICE_ADDR),
-                        USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]), 
+                        USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]),
                         first_dTD_ptr, temp_dTD_ptr);
 
                     _usb_ep_status(handle, xd_ptr->EP_NUM, xd_ptr->BDIRECTION);
@@ -574,7 +574,7 @@ uint_8 _usb_dci_vusb20_add_dTD
             timeout--;
             if(timeout <= 0)
             {
-                USB_printf("%s: Timeout for ATDTW_TRIPWIRE reg = 0x%x\n", __FUNCTION__, 
+                USB_printf("%s: Timeout for ATDTW_TRIPWIRE reg = 0x%x\n", __FUNCTION__,
                     (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD));
                 return USBERR_TR_FAILED;
             }
@@ -582,14 +582,14 @@ uint_8 _usb_dci_vusb20_add_dTD
            /*********************************************************
            start with setting the semaphores
            *********************************************************/
-           dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD |= 
+           dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD |=
                                           USB_32BIT_LE(EHCI_CMD_ATDTW_TRIPWIRE_SET);
-               
+
            /*********************************************************
            Read the endpoint status
            *********************************************************/
-           temp_ep_stat = USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTSTATUS) 
-                                        & bit_pos; 
+           temp_ep_stat = USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTSTATUS)
+                                        & bit_pos;
 
            /*********************************************************
            Reread the ATDTW semaphore bit to check if it is cleared.
@@ -597,7 +597,7 @@ uint_8 _usb_dci_vusb20_add_dTD
            else we remain set to 1 and we can proceed with priming
            of endpoint if not already primed.
            *********************************************************/
-           if( dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD & 
+           if( dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD &
                                           USB_32BIT_LE(EHCI_CMD_ATDTW_TRIPWIRE_SET))
            {
                read_safe = TRUE;
@@ -608,11 +608,11 @@ uint_8 _usb_dci_vusb20_add_dTD
         /*********************************************************
         Clear the semaphore
         *********************************************************/
-        dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD &= 
+        dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD &=
                                        USB_32BIT_LE(EHCI_CMD_ATDTW_TRIPWIRE_CLEAR);
 
         /*********************************************************
-         * If endpoint is not active, we activate it now.               
+         * If endpoint is not active, we activate it now.
          *********************************************************/
          if(!temp_ep_stat)
          {
@@ -631,7 +631,7 @@ uint_8 _usb_dci_vusb20_add_dTD
          ep_queue_head_ptr->NEXT_DTD_PTR = USB_32BIT_LE(
                             USB_DTD_VIRT_TO_PHYS(usb_dev_ptr, first_dTD_ptr));
          ep_queue_head_ptr->SIZE_IOC_INT_STS = 0;
-   
+
          /* Prime the Endpoint */
          dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME = USB_32BIT_LE(bit_pos);
          /* delay */
@@ -648,11 +648,11 @@ done:
 
    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_TRANSFER,
                " add_%d: fri=0x%x, ep=%d%s, buf=%p, size=%d, xd=%p, dTD=%p %p, empty=%d\n",
-               usb_dev_ptr->STATS.usb_add_count & 0xFFFF, 
-               USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_FRINDEX), 
-               xd_ptr->EP_NUM, xd_ptr->BDIRECTION ? "in" : "out", 
-               xd_ptr->WSTARTADDRESS, (int)xd_ptr->WTOTALLENGTH, 
-               xd_ptr, (unsigned)first_dTD_ptr, 
+               usb_dev_ptr->STATS.usb_add_count & 0xFFFF,
+               USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_FRINDEX),
+               xd_ptr->EP_NUM, xd_ptr->BDIRECTION ? "in" : "out",
+               xd_ptr->WSTARTADDRESS, (int)xd_ptr->WTOTALLENGTH,
+               xd_ptr, (unsigned)first_dTD_ptr,
                usb_dev_ptr->EP_DTD_HEADS[temp], list_empty);
 
 
@@ -677,7 +677,7 @@ void _usb_dci_vusb20_process_tr_complete
 { /* Body */
    USB_DEV_STATE_STRUCT_PTR                     usb_dev_ptr;
    volatile VUSB20_REG_STRUCT_PTR               dev_ptr;
-   volatile VUSB20_EP_TR_STRUCT_PTR             dTD_ptr; 
+   volatile VUSB20_EP_TR_STRUCT_PTR             dTD_ptr;
    VUSB20_EP_TR_STRUCT_PTR                      temp_dTD_ptr;
    VUSB20_EP_QUEUE_HEAD_STRUCT_PTR              ep_queue_head_ptr;
    uint_32                                      temp, i, ep_num = 0, direction = 0, bit_pos;
@@ -688,49 +688,49 @@ void _usb_dci_vusb20_process_tr_complete
    XD_STRUCT_PTR                                temp_xd_ptr = NULL;
    uint_8_ptr                                   buff_start_address = NULL;
    boolean                                      endpoint_detected = FALSE;
-   
+
    usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
    dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
 
    ARC_DEBUG_CODE(ARC_DEBUG_FLAG_STATS, (usb_dev_ptr->STATS.usb_complete_isr_count++));
 
-   /* We use separate loops for ENDPTSETUPSTAT and ENDPTCOMPLETE because the 
-   ** setup packets are to be read ASAP 
+   /* We use separate loops for ENDPTSETUPSTAT and ENDPTCOMPLETE because the
+   ** setup packets are to be read ASAP
    */
-   
+
    /* Process all Setup packet received interrupts */
    bit_pos = USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPT_SETUP_STAT);
-   
-   if (bit_pos) 
+
+   if (bit_pos)
    {
       ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SETUP, "setup_isr: bit_pos=0x%x\n", (unsigned)bit_pos);
-      for(i=0; i<USB_MAX_CONTROL_ENDPOINTS; i++) 
+      for(i=0; i<USB_MAX_CONTROL_ENDPOINTS; i++)
       {
-         if (bit_pos & (1 << i)) 
+         if (bit_pos & (1 << i))
          {
             ARC_DEBUG_CODE(ARC_DEBUG_FLAG_STATS, (usb_dev_ptr->STATS.usb_setup_count++));
             _usb_device_call_service(handle, i, TRUE, 0, 0, 8, 0);
          } /* Endif */
       } /* Endfor */
    } /* Endif */
-   
-   /* Don't clear the endpoint setup status register here. It is cleared as a 
-   ** setup packet is read out of the buffer 
+
+   /* Don't clear the endpoint setup status register here. It is cleared as a
+   ** setup packet is read out of the buffer
    */
 
-   /* Process non-setup transaction complete interrupts */   
+   /* Process non-setup transaction complete interrupts */
    bit_pos = USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCOMPLETE);
 
    /* Clear the bits in the register */
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCOMPLETE = USB_32BIT_LE(bit_pos);
-   
-   if (bit_pos) 
+
+   if (bit_pos)
    {
         ARC_DEBUG_CODE(ARC_DEBUG_FLAG_STATS, (usb_dev_ptr->STATS.usb_complete_count++));
 
         /* Get the endpoint number and the direction of transfer */
         counter = 0;
-        for (i=0; i<(ARC_USB_MAX_ENDPOINTS*2); i++) 
+        for (i=0; i<(ARC_USB_MAX_ENDPOINTS*2); i++)
         {
             endpoint_detected = FALSE;
             if ((i < ARC_USB_MAX_ENDPOINTS) && (bit_pos & (1 << i)))
@@ -741,28 +741,28 @@ void _usb_dci_vusb20_process_tr_complete
             }
             else
             {
-                if( (i >= ARC_USB_MAX_ENDPOINTS) && 
+                if( (i >= ARC_USB_MAX_ENDPOINTS) &&
                     (bit_pos & (1 << (i+16-ARC_USB_MAX_ENDPOINTS))))
                 {
                     ep_num = (i - ARC_USB_MAX_ENDPOINTS);
                     direction = ARC_USB_SEND;
                     endpoint_detected = TRUE;
-                }            
+                }
             }
 
             if(endpoint_detected)
             {
                 temp = (2*ep_num + direction);
 
-                /* Get the first dTD */      
+                /* Get the first dTD */
                 dTD_ptr = usb_dev_ptr->EP_DTD_HEADS[temp];
-            
+
                 ep_queue_head_ptr = (VUSB20_EP_QUEUE_HEAD_STRUCT_PTR)usb_dev_ptr->EP_QUEUE_HEAD_PTR + temp;
 
                 /* Process all the dTDs for respective transfers */
-                while (dTD_ptr) 
-                {            
-                    if (USB_32BIT_LE(dTD_ptr->SIZE_IOC_STS) & VUSBHS_TD_STATUS_ACTIVE) 
+                while (dTD_ptr)
+                {
+                    if (USB_32BIT_LE(dTD_ptr->SIZE_IOC_STS) & VUSBHS_TD_STATUS_ACTIVE)
                     {
                         /* No more dTDs to process. Next one is owned by VUSB */
                         if(counter == 0)
@@ -774,83 +774,83 @@ void _usb_dci_vusb20_process_tr_complete
                         }
                         break;
                     } /* Endif */
-               
+
                     /* Get the correct internal transfer descriptor */
                     xd_ptr = (XD_STRUCT_PTR)dTD_ptr->SCRATCH_PTR->XD_FOR_THIS_DTD;
-                    if (xd_ptr) 
+                    if (xd_ptr)
                     {
                         buff_start_address = xd_ptr->WSTARTADDRESS;
                         actual_transfer_length = xd_ptr->WTOTALLENGTH;
                         temp_xd_ptr = xd_ptr;
                     } /* Endif */
-               
+
                     /* Get the address of the next dTD */
-                    temp_dTD_ptr = (VUSB20_EP_TR_STRUCT_PTR)USB_DTD_PHYS_TO_VIRT(usb_dev_ptr, 
+                    temp_dTD_ptr = (VUSB20_EP_TR_STRUCT_PTR)USB_DTD_PHYS_TO_VIRT(usb_dev_ptr,
                                 (uint_32)(USB_32BIT_LE(dTD_ptr->NEXT_TR_ELEM_PTR) & VUSBHS_TD_ADDR_MASK) );
-                  
+
                     /* Read the errors */
-                    errors = (USB_32BIT_LE(dTD_ptr->SIZE_IOC_STS) & VUSBHS_TD_ERROR_MASK);                  
-                    if (!errors) 
+                    errors = (USB_32BIT_LE(dTD_ptr->SIZE_IOC_STS) & VUSBHS_TD_ERROR_MASK);
+                    if (!errors)
                     {
                         /* No errors */
-                        /* Get the length of transfer from the current dTD */   
+                        /* Get the length of transfer from the current dTD */
                         remaining_length += ((USB_32BIT_LE(dTD_ptr->SIZE_IOC_STS) & VUSB_EP_TR_PACKET_SIZE) >> 16);
                         actual_transfer_length -= remaining_length;
-                    } 
-                    else 
+                    }
+                    else
                     {
-                        if (errors & VUSBHS_TD_STATUS_HALTED) 
+                        if (errors & VUSBHS_TD_STATUS_HALTED)
                         {
                             /* Clear the errors and Halt condition */
                             ep_queue_head_ptr->SIZE_IOC_INT_STS &= USB_32BIT_LE(~errors);
                         } /* Endif */
 
-                        ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_ERROR, 
-                            "complete_tr ERROR: ep=%d %s: STS=0x%x, dTD=%p, dTD_next=%p, xd=%p, qh->sts=0x%x\n", 
-                                    (unsigned)ep_num, direction ? "SEND" : "RECV", 
-                                    (unsigned)dTD_ptr->SIZE_IOC_STS, dTD_ptr, temp_dTD_ptr, 
+                        ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_ERROR,
+                            "complete_tr ERROR: ep=%d %s: STS=0x%x, dTD=%p, dTD_next=%p, xd=%p, qh->sts=0x%x\n",
+                                    (unsigned)ep_num, direction ? "SEND" : "RECV",
+                                    (unsigned)dTD_ptr->SIZE_IOC_STS, dTD_ptr, temp_dTD_ptr,
                                     xd_ptr, ep_queue_head_ptr->SIZE_IOC_INT_STS);
                     } /* Endif */
-               
+
                     /* Retire the processed dTD */
                     counter++;
                     _usb_dci_vusb20_cancel_transfer(handle, ep_num, direction);
-                    if( (temp_dTD_ptr == NULL) || 
-                        (temp_dTD_ptr->SCRATCH_PTR->XD_FOR_THIS_DTD != temp_xd_ptr) ) 
+                    if( (temp_dTD_ptr == NULL) ||
+                        (temp_dTD_ptr->SCRATCH_PTR->XD_FOR_THIS_DTD != temp_xd_ptr) )
                     {
                         /* Transfer complete. Call the register service function for the endpoint */
                         ARC_DEBUG_CODE(ARC_DEBUG_FLAG_STATS, (usb_dev_ptr->STATS.usb_complete_ep_count[temp]++));
 
 #if defined(USB_UNDERRUN_WA)
-                        if( (direction == ARC_USB_SEND) && 
+                        if( (direction == ARC_USB_SEND) &&
                             (((ep_queue_head_ptr->MAX_PKT_LENGTH >> 16) & 0x7FF) > global_wa_threshold) )
-                            usbSendComplete(handle, ep_num, FALSE, direction, 
+                            usbSendComplete(handle, ep_num, FALSE, direction,
                                    buff_start_address, actual_transfer_length, errors);
                         else
 #endif /* USB_UNDERRUN_WA */
-                            _usb_device_call_service(handle, ep_num, FALSE, direction, 
+                            _usb_device_call_service(handle, ep_num, FALSE, direction,
                                    buff_start_address, actual_transfer_length, errors);
                         remaining_length = 0;
 
                         ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_TRANSFER,
-                            "comp_%d: fri=0x%x, ep=%d%s, buf=%p, size=%d, xd=%p, dTD=%p %p %p, COMP=0x%x\n", 
-                            usb_dev_ptr->STATS.usb_complete_count & 0xFFFF, 
-                            USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_FRINDEX), 
-                            (unsigned)ep_num, direction ? "in" : "out", 
+                            "comp_%d: fri=0x%x, ep=%d%s, buf=%p, size=%d, xd=%p, dTD=%p %p %p, COMP=0x%x\n",
+                            usb_dev_ptr->STATS.usb_complete_count & 0xFFFF,
+                            USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_FRINDEX),
+                            (unsigned)ep_num, direction ? "in" : "out",
                             buff_start_address, actual_transfer_length,
                             temp_xd_ptr, dTD_ptr, temp_dTD_ptr, usb_dev_ptr->EP_DTD_HEADS[temp], (unsigned)bit_pos);
 
                     } /* Endif */
                     else
                     {
-                        ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_TRANSFER, "tr_complete not completed: ep=%d %s\n", 
+                        ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_TRANSFER, "tr_complete not completed: ep=%d %s\n",
                                 (unsigned)ep_num, direction ? "SEND" : "RECV");
                     }
                     if( (temp_dTD_ptr == NULL) && (usb_dev_ptr->EP_DTD_HEADS[temp] != NULL) )
                     {
 /*
                         USB_printf("tr_complete: ep=%d, temp_dTD=%p, dTD_ptr=%p (%p), DTD_HEADS=%p, remain=%d\n",
-                                    temp, temp_dTD_ptr, dTD_ptr, 
+                                    temp, temp_dTD_ptr, dTD_ptr,
                                     USB_DTD_PHYS_TO_VIRT(usb_dev_ptr, (uint_32)(USB_32BIT_LE(dTD_ptr->NEXT_TR_ELEM_PTR) & VUSBHS_TD_ADDR_MASK) ),
                                     usb_dev_ptr->EP_DTD_HEADS[temp], remaining_length);
 */
@@ -864,8 +864,8 @@ void _usb_dci_vusb20_process_tr_complete
                 } /* Endwhile */
             } /* Endif */
         } /* Endfor */
-        ARC_DEBUG_CODE(ARC_DEBUG_FLAG_STATS, 
-               ( {if(usb_dev_ptr->STATS.usb_complete_max_count < counter) 
+        ARC_DEBUG_CODE(ARC_DEBUG_FLAG_STATS,
+               ( {if(usb_dev_ptr->STATS.usb_complete_max_count < counter)
                             usb_dev_ptr->STATS.usb_complete_max_count = counter;}));
    } /* Endif */
 } /* EndBody */
@@ -894,26 +894,26 @@ void _usb_dci_vusb20_isr
    dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
 
    status = USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_STS);
-   
+
    status &= USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_INTR);
 
-   if(status == 0) 
+   if(status == 0)
    {
        ARC_DEBUG_CODE(ARC_DEBUG_FLAG_STATS, (usb_dev_ptr->STATS.usb_empty_isr_count++));
        return;
    } /* Endif */
 /*
-    USB_printf("USB_ISR: FRINDEX=0x%x, status=0x%x, PORTSC=0x%x, EP_SETUP=0x%x, EP_COMPLETE=0x%x\n", 
+    USB_printf("USB_ISR: FRINDEX=0x%x, status=0x%x, PORTSC=0x%x, EP_SETUP=0x%x, EP_COMPLETE=0x%x\n",
                     USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_FRINDEX),
-                    status, 
+                    status,
                     USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]),
                     USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPT_SETUP_STAT),
                     USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCOMPLETE) );
 */
    /* Clear all the interrupts occured */
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_STS = USB_32BIT_LE(status);
-   
-   if (status & EHCI_STS_ERR) 
+
+   if (status & EHCI_STS_ERR)
    {
         usb_dev_ptr->ERROR_STATE = (status & 0xFFFF);
 
@@ -925,27 +925,27 @@ void _usb_dci_vusb20_isr
         /*USB_printf("USB process error: status=0x%x\n", status);*/
    } /* Endif */
 
-   if (status & EHCI_STS_RESET) 
+   if (status & EHCI_STS_RESET)
    {
        _usb_dci_vusb20_process_reset((pointer)usb_dev_ptr);
    } /* Endif */
-   
-   if (status & EHCI_STS_PORT_CHANGE) 
+
+   if (status & EHCI_STS_PORT_CHANGE)
    {
       _usb_dci_vusb20_process_port_change((pointer)usb_dev_ptr);
    } /* Endif */
-      
-   if (status & EHCI_STS_SOF) 
+
+   if (status & EHCI_STS_SOF)
    {
       _usb_dci_vusb20_process_SOF((pointer)usb_dev_ptr);
    } /* Endif */
-   
-   if (status & EHCI_STS_INT) 
+
+   if (status & EHCI_STS_INT)
    {
       _usb_dci_vusb20_process_tr_complete((pointer)usb_dev_ptr);
    } /* Endif */
-   
-    if (status & EHCI_STS_SUSPEND) 
+
+    if (status & EHCI_STS_SUSPEND)
     {
         _usb_dci_vusb20_process_suspend((pointer)usb_dev_ptr);
     } /* Endif */
@@ -975,7 +975,7 @@ void _usb_dci_vusb20_process_reset
 
    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_ISR, "process_reset\n");
    ARC_DEBUG_CODE(ARC_DEBUG_FLAG_STATS, (usb_dev_ptr->STATS.usb_reset_count++));
-   
+
    dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
 
    /* Inform the application so that it can cancel all previously queued transfers */
@@ -984,42 +984,42 @@ void _usb_dci_vusb20_process_reset
 #if defined(USB_UNDERRUN_WA)
     _usb_reset_send_queue();
 #endif /* USB_UNDERRUN_WA */
-   
+
    /* The address bits are past bit 25-31. Set the address */
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.DEVICE_ADDR &= ~USB_32BIT_LE(0xFE000000);
-   
+
    /* Clear all the setup token semaphores */
    temp = USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPT_SETUP_STAT);
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPT_SETUP_STAT = USB_32BIT_LE(temp);
 
-   /* Clear all the endpoint complete status bits */   
+   /* Clear all the endpoint complete status bits */
    temp = USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCOMPLETE);
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCOMPLETE = USB_32BIT_LE(temp);
-   
+
     timeout = 0x10000;
-    while (USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME) & 0xFFFFFFFF) 
+    while (USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME) & 0xFFFFFFFF)
     {
         timeout--;
         if(timeout <= 0)
         {
-            USB_printf("%s: Timeout for ENDPTPRIME = 0x%x\n", __FUNCTION__, 
+            USB_printf("%s: Timeout for ENDPTPRIME = 0x%x\n", __FUNCTION__,
                 (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME));
             break;
         }
 
       /* Wait until all ENDPTPRIME bits cleared */
     } /* Endif */
-   
+
    /* Write 1s to the Flush register */
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTFLUSH = USB_32BIT_LE(0xFFFFFFFF);
-   
+
     if( (usb_dev_ptr->ERROR_STATE == 0x0) &&
-        (USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]) & 
+        (USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]) &
                                                 EHCI_PORTSCX_PORT_RESET) )
     {
         ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_RESET,
-                    "USB Bus Reset: fri=0x%x, dev_ptr=%p, STATE=%d, PORTSC=0x%x, CMD=0x%x, ENDPT[0]=0x%x\n", 
-                    USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_FRINDEX), 
+                    "USB Bus Reset: fri=0x%x, dev_ptr=%p, STATE=%d, PORTSC=0x%x, CMD=0x%x, ENDPT[0]=0x%x\n",
+                    USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_FRINDEX),
                     usb_dev_ptr, usb_dev_ptr->USB_STATE,
                     USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]),
                     USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD),
@@ -1027,17 +1027,17 @@ void _usb_dci_vusb20_process_reset
 
         usb_dev_ptr->BUS_RESETTING = TRUE;
         usb_dev_ptr->USB_STATE = ARC_USB_STATE_POWERED;
-    } 
-    else 
-    { 
-        USB_printf("USB Chip reinit: PORTSC=0x%x\n", 
+    }
+    else
+    {
+        USB_printf("USB Chip reinit: PORTSC=0x%x\n",
                 USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]));
 
-        /* re-initialize */      
+        /* re-initialize */
         _usb_dci_vusb20_chip_initialize((pointer)usb_dev_ptr);
         ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_INIT, "process_reset, Chip reinit hw\n");
     } /* Endif */
-   
+
     _usb_device_call_service(usb_dev_ptr, ARC_USB_SERVICE_BUS_RESET, 1, 0, 0, 0, 0);
 
 } /* EndBody */
@@ -1058,21 +1058,21 @@ void _usb_dci_vusb20_process_suspend
 { /* Body */
     USB_DEV_STATE_STRUCT_PTR     usb_dev_ptr;
     VUSB20_REG_STRUCT_PTR        dev_ptr;
-   
+
     usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
 
     dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
 
     ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_ISR, "process_suspend\n");
     ARC_DEBUG_CODE(ARC_DEBUG_FLAG_STATS, (usb_dev_ptr->STATS.usb_suspend_count++));
-   
+
     usb_dev_ptr->USB_DEV_STATE_B4_SUSPEND = usb_dev_ptr->USB_STATE;
-   
+
     usb_dev_ptr->USB_STATE = ARC_USB_STATE_SUSPEND;
 
     /* Inform the upper layers */
     _usb_device_call_service(usb_dev_ptr, ARC_USB_SERVICE_SLEEP, 0, 0, 0, 0, 0);
-   
+
 } /* EndBody */
 
 /*FUNCTION*-------------------------------------------------------------
@@ -1093,12 +1093,12 @@ void _usb_dci_vusb20_process_SOF
    VUSB20_REG_STRUCT_PTR                        dev_ptr;
 
    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_ISR, "process_SOF\n");
-   
+
    usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
    dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
 
-   /* Inform the upper layer */   
-   _usb_device_call_service(usb_dev_ptr, ARC_USB_SERVICE_SOF, 0, 0, 0, 
+   /* Inform the upper layer */
+   _usb_device_call_service(usb_dev_ptr, ARC_USB_SERVICE_SOF, 0, 0, 0,
       USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_FRINDEX), 0);
 
 } /* EndBody */
@@ -1128,41 +1128,41 @@ void _usb_dci_vusb20_process_port_change
 
     dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
 /*
-    USB_printf("port_change: PORTSC=0x%x, DTD_ENTRIES=%d, XD_ENTRIES=%d\n", 
+    USB_printf("port_change: PORTSC=0x%x, DTD_ENTRIES=%d, XD_ENTRIES=%d\n",
                 USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]),
                 usb_dev_ptr->DTD_ENTRIES, usb_dev_ptr->XD_ENTRIES);
 */
-    if (usb_dev_ptr->BUS_RESETTING) 
+    if (usb_dev_ptr->BUS_RESETTING)
     {
         /* Bus reset operation complete */
         usb_dev_ptr->BUS_RESETTING = FALSE;
     } /* Endif */
-   
-    if (!(USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]) & 
-                                                EHCI_PORTSCX_PORT_RESET)) 
+
+    if (!(USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]) &
+                                                EHCI_PORTSCX_PORT_RESET))
     {
         /* Get the speed */
-        if (USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]) & 
-                                            EHCI_PORTSCX_PORT_HIGH_SPEED) 
+        if (USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]) &
+                                            EHCI_PORTSCX_PORT_HIGH_SPEED)
         {
             usb_dev_ptr->SPEED = ARC_USB_SPEED_HIGH;
-        } 
-        else 
+        }
+        else
         {
             usb_dev_ptr->SPEED = ARC_USB_SPEED_FULL;
         } /* Endif */
 /*
-        USB_printf("USB %s speed device detected\n", 
+        USB_printf("USB %s speed device detected\n",
                 (usb_dev_ptr->SPEED == ARC_USB_SPEED_HIGH) ? "High" : "Full");
 */
-        /* Inform the upper layers of the speed of operation */      
-        _usb_device_call_service(usb_dev_ptr, ARC_USB_SERVICE_SPEED_DETECTION, 0, 0, 
+        /* Inform the upper layers of the speed of operation */
+        _usb_device_call_service(usb_dev_ptr, ARC_USB_SERVICE_SPEED_DETECTION, 0, 0,
                                 0, usb_dev_ptr->SPEED, 0);
     } /* Endif */
-      
-    if (USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]) & 
-                                                EHCI_PORTSCX_PORT_SUSPEND) 
-    {   
+
+    if (USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]) &
+                                                EHCI_PORTSCX_PORT_SUSPEND)
+    {
         usb_dev_ptr->USB_DEV_STATE_B4_SUSPEND = usb_dev_ptr->USB_STATE;
         usb_dev_ptr->USB_STATE = ARC_USB_STATE_SUSPEND;
 
@@ -1170,9 +1170,9 @@ void _usb_dci_vusb20_process_port_change
         USB_printf("USB suspend\n");
         _usb_device_call_service(usb_dev_ptr, ARC_USB_SERVICE_SUSPEND, 0, 0, 0, 0, 0);
     } /* Endif */
-   
-    if (!(USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]) & EHCI_PORTSCX_PORT_SUSPEND) 
-                    && (usb_dev_ptr->USB_STATE == ARC_USB_STATE_SUSPEND)) 
+
+    if (!(USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[0]) & EHCI_PORTSCX_PORT_SUSPEND)
+                    && (usb_dev_ptr->USB_STATE == ARC_USB_STATE_SUSPEND))
     {
         USB_printf("USB resume\n");
         usb_dev_ptr->USB_STATE = usb_dev_ptr->USB_DEV_STATE_B4_SUSPEND;
@@ -1182,9 +1182,9 @@ void _usb_dci_vusb20_process_port_change
         ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SUSPEND, "process_port_change, SUCCESSFUL, resumed\n");
         return;
     } /* Endif */
-   
+
     usb_dev_ptr->USB_STATE = ARC_USB_STATE_DEFAULT;
-      
+
 } /* EndBody */
 
 /*FUNCTION*-------------------------------------------------------------
@@ -1202,15 +1202,15 @@ void _usb_dci_vusb20_process_error
    )
 { /* Body */
    USB_DEV_STATE_STRUCT_PTR          usb_dev_ptr;
-   
+
    usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
-   
+
    /* Increment the error count */
    usb_dev_ptr->ERRORS++;
-   
-    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_ERROR, 
-                "process_error_%d: state=0x%x\n", 
-                    usb_dev_ptr->ERRORS, usb_dev_ptr->ERROR_STATE); 
+
+    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_ERROR,
+                "process_error_%d: state=0x%x\n",
+                    usb_dev_ptr->ERRORS, usb_dev_ptr->ERROR_STATE);
 } /* EndBody */
 
 /*FUNCTION*-------------------------------------------------------------
@@ -1225,7 +1225,7 @@ void _usb_dci_vusb20_set_speed_full
    (
       /* [IN] the USB_dev_initialize state structure */
       _usb_device_handle         handle,
-     
+
       /* The port number on the device */
       uint_8                     port_number
    )
@@ -1233,16 +1233,16 @@ void _usb_dci_vusb20_set_speed_full
    USB_DEV_STATE_STRUCT_PTR                     usb_dev_ptr;
    VUSB20_REG_STRUCT_PTR                        dev_ptr;
    uint_32                                      port_control;
-   
+
    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_ANY, "FORCE set_speed_full\n");
-   
+
    usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
    dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
 
-   port_control = USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[port_number]);   
+   port_control = USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[port_number]);
    port_control |= EHCI_PORTSCX_FORCE_FULL_SPEED_CONNECT;
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[port_number] = USB_32BIT_LE(port_control);
-  
+
 } /* EndBody */
 
 /*FUNCTION*-------------------------------------------------------------
@@ -1257,7 +1257,7 @@ void _usb_dci_vusb20_suspend_phy
    (
       /* [IN] the USB_dev_initialize state structure */
       _usb_device_handle         handle,
-     
+
       /* The port number on the device */
       uint_8                     port_number
    )
@@ -1265,16 +1265,16 @@ void _usb_dci_vusb20_suspend_phy
    USB_DEV_STATE_STRUCT_PTR                     usb_dev_ptr;
    VUSB20_REG_STRUCT_PTR                        dev_ptr;
    uint_32                                      port_control;
-      
+
    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_SUSPEND, "set_suspend_phy\n");
-   
+
    usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
    dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
 
-   port_control = USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[port_number]);   
+   port_control = USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[port_number]);
    port_control |= EHCI_PORTSCX_PHY_CLOCK_DISABLE;
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.PORTSCX[port_number] = USB_32BIT_LE(port_control);
-   
+
 } /* EndBody */
 
 
@@ -1290,7 +1290,7 @@ void _usb_dci_vusb20_set_address
    (
       /* [IN] the USB_dev_initialize state structure */
       _usb_device_handle         handle,
-     
+
       /* Address of the device assigned by the host */
       uint_8                     address
    )
@@ -1299,18 +1299,18 @@ void _usb_dci_vusb20_set_address
    VUSB20_REG_STRUCT_PTR             dev_ptr;
 
    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_ADDR, "set_address: address=%d\n",address);
-   
+
    usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
    dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
-   
-#ifdef SET_ADDRESS_HARDWARE_ASSISTANCE   
+
+#ifdef SET_ADDRESS_HARDWARE_ASSISTANCE
    /***********************************************************
    Hardware Rev 4.0 onwards have special assistance built in
    for handling the set_address command. As per the USB specs
    a device should be able to receive the response on a new
    address, within 2 msecs after status phase of set_address is
    completed. Since 2 mili second may be a very small time window
-   (on high interrupt latency systems) before software could 
+   (on high interrupt latency systems) before software could
    come to the code below and write the device register,
    this routine will be called in advance when status phase of
    set_address is still not finished. The following line in the
@@ -1319,22 +1319,22 @@ void _usb_dci_vusb20_set_address
    it will use it to decode the next USB token. Please look
    at hardware rev details for the implementation of this
    assistance.
-   
+
    Also note that writing bit 24 to 0x01 will not break
    any old hardware revs because it was an unused bit.
    ***********************************************************/
-   /* The address bits are past bit 25-31. Set the address 
+   /* The address bits are past bit 25-31. Set the address
    also set the bit 24 to 0x01 to start hardware assitance*/
-   dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.DEVICE_ADDR = 
-      USB_32BIT_LE((uint_32)address << VUSBHS_ADDRESS_BIT_SHIFT) | 
-      (0x01 << (VUSBHS_ADDRESS_BIT_SHIFT -1)); 
+   dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.DEVICE_ADDR =
+      USB_32BIT_LE((uint_32)address << VUSBHS_ADDRESS_BIT_SHIFT) |
+      (0x01 << (VUSBHS_ADDRESS_BIT_SHIFT -1));
 #else
-   dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.DEVICE_ADDR = 
-      USB_32BIT_LE((uint_32)address << VUSBHS_ADDRESS_BIT_SHIFT); 
+   dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.DEVICE_ADDR =
+      USB_32BIT_LE((uint_32)address << VUSBHS_ADDRESS_BIT_SHIFT);
 #endif /* SET_ADDRESS_HARDWARE_ASSISTANCE */
-   
+
    usb_dev_ptr->USB_STATE = ARC_USB_STATE_ADDRESS;
-      
+
 } /* EndBody */
 
 /*FUNCTION*-------------------------------------------------------------
@@ -1349,10 +1349,10 @@ void _usb_dci_vusb20_get_setup_data
    (
       /* [IN] the USB_dev_initialize state structure */
       _usb_device_handle         handle,
-            
+
       /* [IN] the Endpoint number */
       uint_8                     ep_num,
-            
+
       /* [OUT] address of the buffer to read the setup data into */
       uint_8_ptr                  buffer_ptr
    )
@@ -1360,24 +1360,24 @@ void _usb_dci_vusb20_get_setup_data
     USB_DEV_STATE_STRUCT_PTR                    usb_dev_ptr;
     volatile VUSB20_REG_STRUCT_PTR              dev_ptr;
     volatile VUSB20_EP_QUEUE_HEAD_STRUCT_PTR    ep_queue_head_ptr;
-    volatile boolean                            read_safe = FALSE;                      
+    volatile boolean                            read_safe = FALSE;
     volatile unsigned long                      timeout;
 
-   
+
    usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
    dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
 
    /* Get the endpoint queue head */
-   ep_queue_head_ptr = (VUSB20_EP_QUEUE_HEAD_STRUCT_PTR)usb_dev_ptr->EP_QUEUE_HEAD_PTR + 
+   ep_queue_head_ptr = (VUSB20_EP_QUEUE_HEAD_STRUCT_PTR)usb_dev_ptr->EP_QUEUE_HEAD_PTR +
                                                                 2*ep_num + ARC_USB_RECV;
 
    /********************************************************************
-   CR 1219. Hardware versions 2.3+ have a implementation of tripwire 
-   semaphore mechanism that requires that we read the contents of 
+   CR 1219. Hardware versions 2.3+ have a implementation of tripwire
+   semaphore mechanism that requires that we read the contents of
    QH safely by using the semaphore. Read the USBHS document to under
    stand how the code uses the semaphore mechanism. The following are
    the steps in brief
-   
+
    1. USBCMD Write ‘1’ to Setup Tripwire in register.
    2. Duplicate contents of dQH.StatusBuffer into local software byte
       array.
@@ -1386,8 +1386,8 @@ void _usb_dci_vusb20_get_setup_data
    4. Write '0' to clear Setup Tripwire in register.
    5. Process setup packet using local software byte array copy and
       execute status/handshake phases.
-   
-           
+
+
    ********************************************************************/
     timeout = 0x100000;
     while(!read_safe)
@@ -1396,7 +1396,7 @@ void _usb_dci_vusb20_get_setup_data
         start with setting the semaphores
         *********************************************************/
 
-        dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD |= 
+        dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD |=
                                                 USB_32BIT_LE(EHCI_CMD_SETUP_TRIPWIRE_SET);
 
         /* Copy the setup packet to private buffer */
@@ -1414,22 +1414,22 @@ void _usb_dci_vusb20_get_setup_data
         }
         if(timeout <= 0)
         {
-            USB_printf("%s: Timeout for SETUP_TRIPWIRE = 0x%x\n", __FUNCTION__, 
+            USB_printf("%s: Timeout for SETUP_TRIPWIRE = 0x%x\n", __FUNCTION__,
                         (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD));
             break;
         }
     }
     ARC_DEBUG_CODE(ARC_DEBUG_FLAG_STATS, (usb_dev_ptr->STATS.usb_read_setup_count++));
-  
+
    /*********************************************************
    Clear the semaphore bit now
    *********************************************************/
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD &=
-                                    USB_32BIT_LE(EHCI_CMD_SETUP_TRIPWIRE_CLEAR);                         
-   
+                                    USB_32BIT_LE(EHCI_CMD_SETUP_TRIPWIRE_CLEAR);
+
    /* Clear the bit in the ENDPTSETUPSTAT */
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPT_SETUP_STAT = USB_32BIT_LE(1 << ep_num);
-   
+
 } /* EndBody */
 
 /*FUNCTION*-------------------------------------------------------------
@@ -1444,7 +1444,7 @@ uint_8 _usb_dci_vusb20_init_endpoint
    (
       /* [IN] the USB_dev_initialize state structure */
       _usb_device_handle         handle,
-            
+
       /* [IN] the transaction descriptor address */
       XD_STRUCT_PTR              xd_ptr
    )
@@ -1453,97 +1453,97 @@ uint_8 _usb_dci_vusb20_init_endpoint
    VUSB20_REG_STRUCT_PTR                        dev_ptr;
    VUSB20_EP_QUEUE_HEAD_STRUCT _PTR_            ep_queue_head_ptr;
    uint_32                                      val, bit_pos;
-   
+
    usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
    dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
 
    /* Get the endpoint queue head address */
-   ep_queue_head_ptr = (VUSB20_EP_QUEUE_HEAD_STRUCT_PTR)usb_dev_ptr->EP_QUEUE_HEAD_PTR + 
+   ep_queue_head_ptr = (VUSB20_EP_QUEUE_HEAD_STRUCT_PTR)usb_dev_ptr->EP_QUEUE_HEAD_PTR +
                                                     2*xd_ptr->EP_NUM + xd_ptr->BDIRECTION;
-      
+
    bit_pos = (1 << (16 * xd_ptr->BDIRECTION + xd_ptr->EP_NUM));
 
    /* Check if the Endpoint is Primed */
-   if ((!(USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME) & bit_pos)) && 
-       (!(USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTSTATUS) & bit_pos))) 
-   { 
+   if ((!(USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME) & bit_pos)) &&
+       (!(USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTSTATUS) & bit_pos)))
+   {
       /* Set the max packet length, interrupt on Setup and Mult fields */
-      if (xd_ptr->EP_TYPE == ARC_USB_ISOCHRONOUS_ENDPOINT) 
+      if (xd_ptr->EP_TYPE == ARC_USB_ISOCHRONOUS_ENDPOINT)
       {
          /* Mult bit should be set for isochronous endpoints */
-         ep_queue_head_ptr->MAX_PKT_LENGTH = USB_32BIT_LE((xd_ptr->WMAXPACKETSIZE << 16) | 
-            ((xd_ptr->MAX_PKTS_PER_UFRAME ?  xd_ptr->MAX_PKTS_PER_UFRAME : 1) << 
+         ep_queue_head_ptr->MAX_PKT_LENGTH = USB_32BIT_LE((xd_ptr->WMAXPACKETSIZE << 16) |
+            ((xd_ptr->MAX_PKTS_PER_UFRAME ?  xd_ptr->MAX_PKTS_PER_UFRAME : 1) <<
             VUSB_EP_QUEUE_HEAD_MULT_POS));
-      } 
-      else 
+      }
+      else
       {
-         if (xd_ptr->EP_TYPE != ARC_USB_CONTROL_ENDPOINT) 
+         if (xd_ptr->EP_TYPE != ARC_USB_CONTROL_ENDPOINT)
          {
              /* BULK or INTERRUPT */
-            ep_queue_head_ptr->MAX_PKT_LENGTH = USB_32BIT_LE((xd_ptr->WMAXPACKETSIZE << 16) | 
+            ep_queue_head_ptr->MAX_PKT_LENGTH = USB_32BIT_LE((xd_ptr->WMAXPACKETSIZE << 16) |
                (xd_ptr->DONT_ZERO_TERMINATE ? VUSB_EP_QUEUE_HEAD_ZERO_LEN_TER_SEL : 0));
-         } 
-         else 
+         }
+         else
          {
              /* CONTROL */
-            ep_queue_head_ptr->MAX_PKT_LENGTH = USB_32BIT_LE((xd_ptr->WMAXPACKETSIZE << 16) | 
+            ep_queue_head_ptr->MAX_PKT_LENGTH = USB_32BIT_LE((xd_ptr->WMAXPACKETSIZE << 16) |
                                                     VUSB_EP_QUEUE_HEAD_IOS);
          } /* Endif */
       } /* Endif */
-      
+
       /* Enable the endpoint for Rx or Tx and set the endpoint type */
       val = dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[xd_ptr->EP_NUM];
       if(xd_ptr->BDIRECTION  == ARC_USB_SEND)
       {
           val &= ~(USB_32BIT_LE(EHCI_EPCTRL_TX_ALL_MASK));
-          val |= USB_32BIT_LE((EHCI_EPCTRL_TX_ENABLE | EHCI_EPCTRL_TX_DATA_TOGGLE_RST) | 
+          val |= USB_32BIT_LE((EHCI_EPCTRL_TX_ENABLE | EHCI_EPCTRL_TX_DATA_TOGGLE_RST) |
                           (xd_ptr->EP_TYPE << EHCI_EPCTRL_TX_EP_TYPE_SHIFT));
       }
       else
       {
           val &= ~(USB_32BIT_LE(EHCI_EPCTRL_RX_ALL_MASK));
-          val |= USB_32BIT_LE((EHCI_EPCTRL_RX_ENABLE | EHCI_EPCTRL_RX_DATA_TOGGLE_RST) | 
+          val |= USB_32BIT_LE((EHCI_EPCTRL_RX_ENABLE | EHCI_EPCTRL_RX_DATA_TOGGLE_RST) |
                           (xd_ptr->EP_TYPE << EHCI_EPCTRL_RX_EP_TYPE_SHIFT));
       }
       dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[xd_ptr->EP_NUM] = val;
-      
+
       /* Implement Guideline (GL# USB-7) The unused endpoint type must  */
       /* be programmed to bulk.                                         */
-      if( (dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[xd_ptr->EP_NUM] & 
+      if( (dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[xd_ptr->EP_NUM] &
             USB_32BIT_LE(EHCI_EPCTRL_RX_ENABLE)) == 0)
       {
-          dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[xd_ptr->EP_NUM] |= 
+          dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[xd_ptr->EP_NUM] |=
               USB_32BIT_LE(ARC_USB_BULK_ENDPOINT << EHCI_EPCTRL_RX_EP_TYPE_SHIFT);
       }
 
-      if( (dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[xd_ptr->EP_NUM] & 
+      if( (dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[xd_ptr->EP_NUM] &
             USB_32BIT_LE(EHCI_EPCTRL_TX_ENABLE)) == 0)
       {
-          dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[xd_ptr->EP_NUM] |= 
+          dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[xd_ptr->EP_NUM] |=
               USB_32BIT_LE(ARC_USB_BULK_ENDPOINT << EHCI_EPCTRL_TX_EP_TYPE_SHIFT);
       }
 
       ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_INIT,
-                    "init ep #%d %s: type=0x%x, EPCTRLX=0x%x, SETUP=0x%x, PRIME=0x%x, STATUS=0x%x, COMPL=0x%x\n", 
-                        xd_ptr->EP_NUM, xd_ptr->BDIRECTION ? "SEND" : "RECV", xd_ptr->EP_TYPE, 
+                    "init ep #%d %s: type=0x%x, EPCTRLX=0x%x, SETUP=0x%x, PRIME=0x%x, STATUS=0x%x, COMPL=0x%x\n",
+                        xd_ptr->EP_NUM, xd_ptr->BDIRECTION ? "SEND" : "RECV", xd_ptr->EP_TYPE,
                         (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[xd_ptr->EP_NUM]),
                         (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPT_SETUP_STAT),
                         (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME),
                         (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTSTATUS),
                         (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCOMPLETE) );
-   } 
-   else 
-   { 
+   }
+   else
+   {
       USB_printf("ep=%d %s: Init ERROR: ENDPTPRIME=0x%x, ENDPTSTATUS=0x%x, bit_pos=0x%x\n",
                 (unsigned)xd_ptr->EP_NUM, xd_ptr->BDIRECTION ? "SEND" : "RECV",
                 (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME),
-                (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTSTATUS), 
+                (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTSTATUS),
                 (unsigned)bit_pos);
         return USBERR_EP_INIT_FAILED;
    } /* Endif */
-      
+
    return USB_OK;
-   
+
 } /* EndBody */
 
 /*FUNCTION*-------------------------------------------------------------
@@ -1558,10 +1558,10 @@ uint_8 _usb_dci_vusb20_get_transfer_status
    (
       /* [IN] the USB_dev_initialize state structure */
       _usb_device_handle         handle,
-     
+
       /* [IN] the Endpoint number */
       uint_8                     ep_num,
-            
+
       /* [IN] direction */
       uint_8                     direction
    )
@@ -1570,23 +1570,23 @@ uint_8 _usb_dci_vusb20_get_transfer_status
    VUSB20_EP_TR_STRUCT_PTR                      dTD_ptr;
    XD_STRUCT_PTR                                xd_ptr;
    uint_8                                       status;
-   
+
    usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
-  
+
    /* Unlink the dTD */
    dTD_ptr = usb_dev_ptr->EP_DTD_HEADS[2*ep_num + direction];
 
-   if (dTD_ptr) 
+   if (dTD_ptr)
    {
       /* Get the transfer descriptor for the dTD */
       xd_ptr = (XD_STRUCT_PTR)dTD_ptr->SCRATCH_PTR->XD_FOR_THIS_DTD;
       status = xd_ptr->BSTATUS;
-   } 
-   else 
+   }
+   else
    {
       status = ARC_USB_STATUS_IDLE;
    } /* Endif */
-   
+
    return (status);
 
 } /* EndBody */
@@ -1602,10 +1602,10 @@ XD_STRUCT_PTR  _usb_dci_vusb20_get_transfer_details
    (
       /* [IN] the USB_dev_initialize state structure */
       _usb_device_handle         handle,
-     
+
       /* [IN] the Endpoint number */
       uint_8                     ep_num,
-            
+
       /* [IN] direction */
       uint_8                     direction
    )
@@ -1617,29 +1617,29 @@ XD_STRUCT_PTR  _usb_dci_vusb20_get_transfer_details
    uint_32                                      temp, remaining_bytes;
    VUSB20_EP_QUEUE_HEAD_STRUCT_PTR              ep_queue_head_ptr;
 
-   
+
    usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
    dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
    temp = (2*ep_num + direction);
 
-   /* get a pointer to QH for this endpoint */   
+   /* get a pointer to QH for this endpoint */
    ep_queue_head_ptr = (VUSB20_EP_QUEUE_HEAD_STRUCT_PTR)usb_dev_ptr->EP_QUEUE_HEAD_PTR + temp;
 
    ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_TRACE, "get_transfer_details\n");
-   
+
    /* Unlink the dTD */
    dTD_ptr = usb_dev_ptr->EP_DTD_HEADS[2*ep_num + direction];
 
-   if (dTD_ptr) 
-   {      
+   if (dTD_ptr)
+   {
       /* Get the transfer descriptor for the dTD */
       xd_ptr = (XD_STRUCT_PTR)dTD_ptr->SCRATCH_PTR->XD_FOR_THIS_DTD;
       if(!xd_ptr) return NULL;
-      
+
       /* Initialize the transfer length field */
       xd_ptr->WSOFAR =0;
       remaining_bytes =0;
-      
+
       /*if length of this transfer is greater than 20K
       we have multiple DTDs to count */
       if(xd_ptr->WTOTALLENGTH > VUSB_EP_MAX_LENGTH_TRANSFER)
@@ -1647,34 +1647,34 @@ XD_STRUCT_PTR  _usb_dci_vusb20_get_transfer_details
          /* it is a valid DTD. We should parse all DTDs for this XD
          and find the total bytes used so far */
          temp_dTD_ptr = dTD_ptr;
-      
+
          /*loop through the list of DTDS until an active DTD is found
          or list has finished */
-         while(!(USB_32BIT_LE(dTD_ptr->NEXT_TR_ELEM_PTR) & VUSBHS_TD_NEXT_TERMINATE))         
+         while(!(USB_32BIT_LE(dTD_ptr->NEXT_TR_ELEM_PTR) & VUSBHS_TD_NEXT_TERMINATE))
          {
-            
+
             /**********************************************************
-            If this DTD has been overlayed, we take the actual length 
+            If this DTD has been overlayed, we take the actual length
             from QH.
             **********************************************************/
 
             if ((uint_32)(USB_32BIT_LE(ep_queue_head_ptr->CURR_DTD_PTR) & VUSBHS_TD_ADDR_MASK) ==
                                      USB_DTD_VIRT_TO_PHYS(usb_dev_ptr, temp_dTD_ptr) )
             {
-                remaining_bytes += 
+                remaining_bytes +=
                   ((USB_32BIT_LE(ep_queue_head_ptr->SIZE_IOC_INT_STS) & VUSB_EP_TR_PACKET_SIZE) >> 16);
             }
             else
             {
                /* take the length from DTD itself */
-                remaining_bytes += 
+                remaining_bytes +=
                   ((USB_32BIT_LE(temp_dTD_ptr->SIZE_IOC_STS) & VUSB_EP_TR_PACKET_SIZE) >> 16);
             }
-   
+
             dTD_ptr = temp_dTD_ptr;
-             
+
             /* Get the address of the next dTD */
-            temp_dTD_ptr = (VUSB20_EP_TR_STRUCT_PTR)USB_DTD_PHYS_TO_VIRT(usb_dev_ptr, 
+            temp_dTD_ptr = (VUSB20_EP_TR_STRUCT_PTR)USB_DTD_PHYS_TO_VIRT(usb_dev_ptr,
                                 (uint_32)(USB_32BIT_LE(temp_dTD_ptr->NEXT_TR_ELEM_PTR) & VUSBHS_TD_ADDR_MASK) );
          }
          xd_ptr->WSOFAR = xd_ptr->WTOTALLENGTH - remaining_bytes;
@@ -1682,15 +1682,15 @@ XD_STRUCT_PTR  _usb_dci_vusb20_get_transfer_details
       else
       {
          /*look at actual length from QH*/
-         xd_ptr->WSOFAR = xd_ptr->WTOTALLENGTH - 
-            ((USB_32BIT_LE(ep_queue_head_ptr->SIZE_IOC_INT_STS) & VUSB_EP_TR_PACKET_SIZE) >> 16);         
-      }      
-   } 
-   else 
+         xd_ptr->WSOFAR = xd_ptr->WTOTALLENGTH -
+            ((USB_32BIT_LE(ep_queue_head_ptr->SIZE_IOC_INT_STS) & VUSB_EP_TR_PACKET_SIZE) >> 16);
+      }
+   }
+   else
    {
       xd_ptr = NULL;
    } /* Endif */
-   
+
    return (xd_ptr);
 
 } /* EndBody */
@@ -1707,10 +1707,10 @@ uint_8 _usb_dci_vusb20_deinit_endpoint
    (
       /* [IN] the USB_dev_initialize state structure */
       _usb_device_handle         handle,
-            
+
       /* [IN] the Endpoint number */
       uint_8                     ep_num,
-            
+
       /* [IN] direction */
       uint_8                     direction
    )
@@ -1720,45 +1720,45 @@ uint_8 _usb_dci_vusb20_deinit_endpoint
     VUSB20_EP_QUEUE_HEAD_STRUCT*    ep_queue_head_ptr;
     uint_32                         bit_pos;
     uint_8                          status = USB_OK;
-   
+
     usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
     dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
-   
+
     /* Get the endpoint queue head address */
     ep_queue_head_ptr = (VUSB20_EP_QUEUE_HEAD_STRUCT_PTR)usb_dev_ptr->EP_QUEUE_HEAD_PTR +
                                                                     (2*ep_num + direction);
-      
+
     bit_pos = (1 << (16 * direction + ep_num));
 
     ARC_DEBUG_TRACE(ARC_DEBUG_FLAG_INIT,
-               "deinit ep #%d-%s: bit_pos=0x%x, EPCTRLX=0x%x, SETUP=0x%x, PRIME=0x%x, STATUS=0x%x, COMPL=0x%x\n", 
+               "deinit ep #%d-%s: bit_pos=0x%x, EPCTRLX=0x%x, SETUP=0x%x, PRIME=0x%x, STATUS=0x%x, COMPL=0x%x\n",
                    ep_num, direction ? "SEND" : "RECV", bit_pos,
                    (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[ep_num]),
                    (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPT_SETUP_STAT),
                    (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME),
                    (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTSTATUS),
                    (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCOMPLETE) );
-      
+
     /* Check if the Endpoint is Primed */
-    if( ((USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME) & bit_pos)) || 
-        ((USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTSTATUS) & bit_pos)) ) 
-    { 
+    if( ((USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME) & bit_pos)) ||
+        ((USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTSTATUS) & bit_pos)) )
+    {
         USB_printf("ep=%d %s: Deinit ERROR: ENDPTPRIME=0x%x, ENDPTSTATUS=0x%x, bit_pos=0x%x\n",
                 (unsigned)ep_num, direction ? "SEND" : "RECV",
                 (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTPRIME),
-                (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTSTATUS), 
+                (unsigned)USB_32BIT_LE(dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTSTATUS),
                 (unsigned)bit_pos);
         status = USBERR_EP_DEINIT_FAILED;
     }
 
     /* Reset the max packet length and the interrupt on Setup */
     ep_queue_head_ptr->MAX_PKT_LENGTH = 0;
-      
+
     /* Disable the endpoint for Rx or Tx and reset the endpoint type */
-    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[ep_num] &= 
-         USB_32BIT_LE( ~((direction ? EHCI_EPCTRL_TX_ENABLE : EHCI_EPCTRL_RX_ENABLE) | 
+    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.ENDPTCTRLX[ep_num] &=
+         USB_32BIT_LE( ~((direction ? EHCI_EPCTRL_TX_ENABLE : EHCI_EPCTRL_RX_ENABLE) |
                         (direction ? EHCI_EPCTRL_TX_TYPE : EHCI_EPCTRL_RX_TYPE)));
-      
+
    return status;
 }
 
@@ -1779,21 +1779,21 @@ void _usb_dci_vusb20_shutdown
 { /* Body */
     USB_DEV_STATE_STRUCT_PTR                     usb_dev_ptr;
     VUSB20_REG_STRUCT_PTR                        dev_ptr;
-   
+
     usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
     dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
-   
+
     /* Disable interrupts */
-    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_INTR &= 
+    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_INTR &=
       ~(USB_32BIT_LE(EHCI_INTR_INT_EN | EHCI_INTR_ERR_INT_EN |
       EHCI_INTR_PORT_CHANGE_DETECT_EN | EHCI_INTR_RESET_EN));
-      
-    USB_uncached_memfree(usb_dev_ptr->EP_QUEUE_HEAD_BASE, 
-                        usb_dev_ptr->EP_QUEUE_HEAD_SIZE, 
+
+    USB_uncached_memfree(usb_dev_ptr->EP_QUEUE_HEAD_BASE,
+                        usb_dev_ptr->EP_QUEUE_HEAD_SIZE,
                         usb_dev_ptr->EP_QUEUE_HEAD_PHYS);
 
-    USB_uncached_memfree(usb_dev_ptr->DTD_BASE_PTR, 
-                        usb_dev_ptr->DTD_SIZE, 
+    USB_uncached_memfree(usb_dev_ptr->DTD_BASE_PTR,
+                        usb_dev_ptr->DTD_SIZE,
                         usb_dev_ptr->DTD_BASE_PHYS);
 
     USB_memfree(usb_dev_ptr->SCRATCH_STRUCT_BASE);
@@ -1802,10 +1802,10 @@ void _usb_dci_vusb20_shutdown
 
    /* Reset the Run the bit in the command register to stop VUSB */
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD &= ~USB_32BIT_LE(EHCI_CMD_RUN_STOP);
-   
+
    /* Reset the controller to get default values */
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD = USB_32BIT_LE(EHCI_CMD_CTRL_RESET);
-              
+
 } /* EndBody */
 /*FUNCTION*-------------------------------------------------------------
 *
@@ -1819,12 +1819,12 @@ void _usb_dci_vusb20_stop(_usb_device_handle handle)
 {
    USB_DEV_STATE_STRUCT_PTR     usb_dev_ptr;
    VUSB20_REG_STRUCT_PTR        dev_ptr;
-   
+
    usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
    dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
 
     /* Disable interrupts */
-   dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_INTR &= 
+   dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_INTR &=
             ~(USB_32BIT_LE(EHCI_INTR_INT_EN | EHCI_INTR_ERR_INT_EN |
                            EHCI_INTR_PORT_CHANGE_DETECT_EN | EHCI_INTR_RESET_EN));
 
@@ -1845,24 +1845,24 @@ void _usb_dci_vusb20_start(_usb_device_handle handle)
 {
    USB_DEV_STATE_STRUCT_PTR     usb_dev_ptr;
    VUSB20_REG_STRUCT_PTR        dev_ptr;
-   
+
    usb_dev_ptr = (USB_DEV_STATE_STRUCT_PTR)handle;
    dev_ptr = (VUSB20_REG_STRUCT_PTR)usb_dev_ptr->DEV_PTR;
 
       /* Enable interrupts */
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_INTR = USB_32BIT_LE(
                            EHCI_INTR_INT_EN
-                         | EHCI_INTR_ERR_INT_EN 
-                         | EHCI_INTR_PORT_CHANGE_DETECT_EN 
-                         | EHCI_INTR_RESET_EN 
+                         | EHCI_INTR_ERR_INT_EN
+                         | EHCI_INTR_PORT_CHANGE_DETECT_EN
+                         | EHCI_INTR_RESET_EN
                          | EHCI_INTR_DEVICE_SUSPEND
-                       /*  
-                         | EHCI_INTR_SOF_UFRAME_EN 
+                       /*
+                         | EHCI_INTR_SOF_UFRAME_EN
                         */
                          );
-   
+
    usb_dev_ptr->USB_STATE = ARC_USB_STATE_UNKNOWN;
-   
+
    /* Set the Run bit in the command register */
    dev_ptr->REGISTERS.OPERATIONAL_DEVICE_REGISTERS.USB_CMD = USB_32BIT_LE(EHCI_CMD_RUN_STOP);
 }

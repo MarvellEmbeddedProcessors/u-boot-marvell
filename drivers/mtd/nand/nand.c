@@ -20,7 +20,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
-
+#include <config.h>
 #include <common.h>
 #include <nand.h>
 #include <errno.h>
@@ -108,8 +108,11 @@ void nand_init(void)
 	for (i = 0; i < CONFIG_SYS_MAX_NAND_DEVICE; i++)
 		nand_init_chip(i);
 #endif
-
+#if defined(MV_NAND_GANG_MODE)
+	printf("%u MiB - Gang\n", total_nand_size / 1024);
+#else
 	printf("%lu MiB\n", total_nand_size / 1024);
+#endif
 
 #ifdef CONFIG_SYS_NAND_SELECT_DEVICE
 	/*
@@ -118,3 +121,52 @@ void nand_init(void)
 	board_nand_select_device(nand_info[nand_curr_device].priv, nand_curr_device);
 #endif
 }
+#if defined(CONFIG_ENV_IS_IN_NAND)
+int nand_get_env_offs(void) 
+{
+	size_t offset = 0;
+
+#if defined(CONFIG_SKIP_BAD_BLOCK)
+	int i = 0;
+	int sum = 0;
+	size_t blocksize;
+	blocksize = nand_info[0].erasesize;
+
+	/* Find U-Boot start */
+	while(i * blocksize < nand_info[0].size) {
+		if (!nand_block_isbad(&nand_info[0], (i * blocksize)))
+			sum += blocksize;
+		else {
+			sum = 0;
+			offset = (i + 1) * blocksize;
+		}
+		i++;
+		if (sum >= CONFIG_UBOOT_SIZE)
+			break;
+		
+	}
+
+	offset += CONFIG_UBOOT_SIZE;
+
+	/* Find Env start */
+	sum = 0;
+	while(i * blocksize < nand_info[0].size) {
+		if (!nand_block_isbad(&nand_info[0], (i * blocksize)))
+			sum += blocksize;
+		else {
+			sum = 0;
+			offset = (i + 1) * blocksize;
+		}
+		i++;
+		if (sum >= CONFIG_ENV_RANGE)
+			break;
+		
+	}
+#else
+	offset = CONFIG_UBOOT_SIZE;
+#endif
+
+	return offset;
+}
+#endif
+

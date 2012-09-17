@@ -116,8 +116,8 @@ extern "C" {
 	#define MV_ETH_BASE_ADDR		(0x70000)
 #endif
 #define MV_ETH_REGS_OFFSET(port)		(MV_ETH_BASE_ADDR - ((port) / 2) * 0x40000 + ((port) % 2) * 0x4000)
-#define MV_PEX_IF_REGS_OFFSET(pexIf)		(pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000)\
-							   : (0X42000 + ((pexIf) % 8) * 0x40000))
+#define MV_PEX_IF_REGS_OFFSET(pexIf)		(pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000) \
+											 : (0x42000 + ((pexIf) % 8) * 0x40000))
 #define MV_USB_REGS_OFFSET(dev)       		(0x50000 + (dev * 0x1000))
 #define MV_XOR_REGS_OFFSET(unit)		(unit ? 0xF0900 : 0x60900)
 #define MV_CESA_TDMA_REGS_OFFSET(chanNum)	(0x90000 + (chanNum * 0x2000))
@@ -129,16 +129,21 @@ extern "C" {
 #define MV_PNC_REGS_OFFSET			(0xC8000)
 #define MV_SDMMC_REGS_OFFSET			(0xD4000)
 
-#ifdef ARMADA_XP_ERRATA_SMI_1
-#define MV_ETH_SMI_PORT   1
+
+#ifdef CONFIG_ARMADA_XP_ERRATA_SMI_1
+	#define MV_ETH_SMI_PORT   1
 #else
-#define MV_ETH_SMI_PORT   0
+    #define MV_ETH_SMI_PORT   0
 #endif
 
 #define MV_SERDES_NUM_TO_PEX_NUM(sernum)	((sernum < 8) ? (sernum) : (8 + (sernum/12)))
 /*
  * Miscellanuous Controller Configurations
  */
+
+#define AVS_CONTROL2_REG			0x20868
+#define AVS_LOW_VDD_LIMIT			0x20860
+
 #define INTER_REGS_SIZE				_1M
 
 /* This define describes the TWSI interrupt bit and location */
@@ -237,7 +242,7 @@ extern "C" {
 #define MV_ETH_TX_CSUM_MAX_SIZE 		9800
 #define MV_PNC_TCAM_LINES			1024	/* TCAM num of entries */
 
-#if defined(MV88F78X60_A0) || defined(MV88F78X60_B0)
+#if defined(MV88F78X60) && !defined(MV88F78X60_Z1)
 /* New GMAC module is used */
 #define MV_ETH_GMAC_NEW
 /* New WRR/EJP module is used */
@@ -248,7 +253,8 @@ extern "C" {
 #define MV_ETH_PNC_NEW
 /* PNC Load Balancing support */
 #define MV_ETH_PNC_LB
-#endif /* MV88F78X60_A0, MV88F78X60_B0*/
+#endif /* MV88F78X60_A0/B0 */
+
 #define MV_78130_ETH_MAX_PORT			3
 #define MV_78460_ETH_MAX_PORT			4
 

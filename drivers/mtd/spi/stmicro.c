@@ -34,63 +34,110 @@
 #include "spi_flash_internal.h"
 
 /* M25Pxx-specific commands */
+#define CMD_M25PXX_WREN		0x06	/* Write Enable */
+#define CMD_M25PXX_WRDI		0x04	/* Write Disable */
+#define CMD_M25PXX_RDSR		0x05	/* Read Status Register */
+#define CMD_M25PXX_WRSR		0x01	/* Write Status Register */
+#define CMD_M25PXX_READ		0x03	/* Read Data Bytes */
+#define CMD_M25PXX_FAST_READ	0x0b	/* Read Data Bytes at Higher Speed */
+#define CMD_M25PXX_PP		0x02	/* Page Program */
+#define CMD_M25PXX_SE		0xd8	/* Sector Erase */
+#define CMD_M25PXX_BE		0xc7	/* Bulk Erase */
+#define CMD_M25PXX_DP		0xb9	/* Deep Power-down */
 #define CMD_M25PXX_RES		0xab	/* Release from DP, and Read Signature */
+
+#define STM_ID_M25P64		0x17
+#define STM_ID_M25P80		0x14
+#define STM_ID_M25Q128		0x18
+
+#define STMICRO_SR_WIP		(1 << 0)	/* Write-in-Progress */
+
+#define STM_PROTECT_ALL		0x5C
+#define STM_SRWD			0x80
 
 struct stmicro_spi_flash_params {
 	u16 id;
+	u8 protected;
+ 	u16 page_size;
 	u16 pages_per_sector;
 	u16 nr_sectors;
+	u8 addr_cycles;
 	const char *name;
 };
 
 static const struct stmicro_spi_flash_params stmicro_spi_flash_table[] = {
 	{
 		.id = 0x2011,
+		.protected = 1,
+ 		.page_size = 256,
 		.pages_per_sector = 128,
 		.nr_sectors = 4,
+		.addr_cycles = 3,
 		.name = "M25P10",
 	},
 	{
 		.id = 0x2015,
+		.protected = 1,
+ 		.page_size = 256,
 		.pages_per_sector = 256,
 		.nr_sectors = 32,
+		.addr_cycles = 3,
 		.name = "M25P16",
 	},
 	{
 		.id = 0x2012,
+		.protected = 1,
+ 		.page_size = 256,
 		.pages_per_sector = 256,
 		.nr_sectors = 4,
+		.addr_cycles = 3,
 		.name = "M25P20",
 	},
 	{
 		.id = 0x2016,
+		.protected = 1,
+ 		.page_size = 256,
 		.pages_per_sector = 256,
 		.nr_sectors = 64,
+		.addr_cycles = 3,
 		.name = "M25P32",
 	},
 	{
 		.id = 0x2013,
+		.protected = 1,
+ 		.page_size = 256,
 		.pages_per_sector = 256,
 		.nr_sectors = 8,
+		.addr_cycles = 3,
 		.name = "M25P40",
 	},
 	{
 		.id = 0x2017,
+		.protected = 1,
+ 		.page_size = 256,
 		.pages_per_sector = 256,
 		.nr_sectors = 128,
+		.addr_cycles = 3,
 		.name = "M25P64",
 	},
 	{
 		.id = 0x2014,
+		.protected = 1,
+ 		.page_size = 256,
 		.pages_per_sector = 256,
 		.nr_sectors = 16,
+		.addr_cycles = 3,
 		.name = "M25P80",
 	},
 	{
 		.id = 0x2018,
-		.pages_per_sector = 1024,
-		.nr_sectors = 64,
-		.name = "M25P128",
+		.protected = 1,
+ 		.page_size = 256,
+		.pages_per_sector = 256,
+		.nr_sectors = 256,
+		.addr_cycles = 3,
+		.name = "M25Q128",
+
 	},
 	{
 		.id = 0xba18,
@@ -112,6 +159,47 @@ static const struct stmicro_spi_flash_params stmicro_spi_flash_table[] = {
 	},
 };
 
+static int stmicro_protect(struct spi_flash *flash, int enable)
+{
+	int ret;
+	u8 cmd[2];
+
+	ret = spi_claim_bus(flash->spi);
+	if (ret) {
+		debug("SF: Unable to claim SPI bus\n");
+		return ret;
+	}
+
+	ret = 0;
+
+	cmd[0] = CMD_M25PXX_WRSR;
+	if (enable == 1)
+		cmd[1] = STM_SRWD | STM_PROTECT_ALL;
+	else
+		cmd[1] = STM_SRWD;
+
+	ret = spi_flash_cmd(flash->spi, CMD_M25PXX_WREN, NULL, 0);
+	if (ret < 0) {
+		debug("SF: Enabling Write failed\n");
+		return ret;
+	}
+
+	ret = spi_flash_cmd_write(flash->spi, cmd, 2, NULL, 0);
+	if (ret < 0) {
+		debug("SF: STMicro Write Status Register failed\n");
+		return ret;
+	}
+
+	ret = spi_flash_cmd_wait_ready(flash, SPI_FLASH_PROG_TIMEOUT);
+	if (ret < 0) {
+		debug("SF: STMicro page programming timed out\n");
+		return ret;
+	}
+
+	spi_release_bus(flash->spi);
+	return ret;
+}
+
 struct spi_flash *spi_flash_probe_stmicro(struct spi_slave *spi, u8 * idcode)
 {
 	const struct stmicro_spi_flash_params *params;
@@ -120,8 +208,7 @@ struct spi_flash *spi_flash_probe_stmicro(struct spi_slave *spi, u8 * idcode)
 	u16 id;
 
 	if (idcode[0] == 0xff) {
-		i = spi_flash_cmd(spi, CMD_M25PXX_RES,
-				  idcode, 4);
+		i = spi_flash_cmd(spi, CMD_M25PXX_RES, idcode, 4);
 		if (i)
 			return NULL;
 		if ((idcode[3] & 0xf0) == 0x10) {
@@ -161,6 +248,10 @@ struct spi_flash *spi_flash_probe_stmicro(struct spi_slave *spi, u8 * idcode)
 	flash->page_size = 256;
 	flash->sector_size = 256 * params->pages_per_sector;
 	flash->size = flash->sector_size * params->nr_sectors;
+
+	/* In first prove remove HW protection */
+	if(params->protected)
+		stmicro_protect(flash, 0);
 
 	return flash;
 }

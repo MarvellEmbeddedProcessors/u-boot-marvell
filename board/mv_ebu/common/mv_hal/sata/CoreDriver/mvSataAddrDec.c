@@ -282,58 +282,6 @@ MV_STATUS mvSataWinRead(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pAddrDecWin
 	return MV_OK;
 }
 
-#if 0
-/*******************************************************************************
-* mvSataAddrDecShow - Print the SATA address decode map.
-*
-* DESCRIPTION:
-*		This function print the SATA address decode map.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       None.
-*
-*******************************************************************************/
-MV_VOID mvSataAddrDecShow(MV_VOID)
-{
-	MV_SATA_DEC_WIN win;
-	int i, j;
-
-	for (j = 0; j < MV_SATA_MAX_CHAN; j++) {
-		if (MV_FALSE == mvCtrlPwrClckGet(SATA_UNIT_ID, j))
-			return;
-
-		mvOsOutput("\n");
-		mvOsOutput("SATA %d:\n", j);
-		mvOsOutput("----\n");
-
-		for (i = 0; i < MV_SATA_MAX_ADDR_DECODE_WIN; i++) {
-			memset(&win, 0, sizeof(MV_SATA_DEC_WIN));
-
-			mvOsOutput("win%d - ", i);
-
-			if (mvSataWinGet(j, i, &win) == MV_OK) {
-				if (win.enable) {
-					mvOsOutput("%s base %08x, ",
-						   mvCtrlTargetNameGet(win.target), win.addrWin.baseLow);
-					mvOsOutput("....");
-
-					mvSizePrint(win.addrWin.size);
-
-					mvOsOutput("\n");
-				} else
-					mvOsOutput("disable\n");
-			}
-		}
-	}
-}
-#endif
-
 /*******************************************************************************
 * mvSataWinInit - Initialize the integrated SATA target address window.
 *

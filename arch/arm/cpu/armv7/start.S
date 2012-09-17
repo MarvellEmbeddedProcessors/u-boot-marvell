@@ -124,6 +124,28 @@ IRQ_STACK_START_IN:
  */
 
 reset:
+#ifdef CONFIG_MARVELL
+/*
+@ Initial PJ4B configurations
+@ configure Marvell debug R1
+*/
+#if defined(__BE)
+#if defined(CPU_ARMARCH7)
+		SETEND BE /* Sets ENDIANSTATE to 1, for big-endian operation */
+#else
+	/* disable I-Cache */
+	.word 0x100f11ee /* mrc 	p15, 0, r0, c1, c0 */
+	.word 0x010ac0e3 /* bic     r0, r0, #4096   ; 0x1000 I-Cache Enable bit*/
+	.word 0x0700c0e3 /* bic     r0, r0, #7      ; 0x7 MMU disable + Alignment Fault Checking enabled + D-cache disabled*/
+	.word 0x020080e3 /* orr     r0, r0, #2      ; 0x2 */
+	.word 0x800080e3 /* orr 	r0, r0, #0x80 	; Endianness = big endians*/
+	.word 0x100f01ee /* mcr     15, 0, r0, cr1, cr0, {0} */
+#endif
+	nop;nop;nop;nop;
+	nop;nop;nop;nop;
+#endif
+#endif
+
 	bl	save_boot_params
 	/*
 	 * set the cpu to SVC32 mode
@@ -300,8 +322,15 @@ ENTRY(cpu_init_cp15)
 	 */
 	mrc	p15, 0, r0, c1, c0, 0
 	bic	r0, r0, #0x00002000	@ clear bits 13 (--V-)
+#if defined(CONFIG_MARVELL) && defined(__BE)
+	bic	r0, r0, #0x00000007	@ clear bits  2:0 (B--- -CAM)
+#else
+	bic	r0, r0, #0x00000087	@ clear bits 7, 2:0 (B--- -CAM)
+#endif
 	bic	r0, r0, #0x00000007	@ clear bits 2:0 (-CAM)
+#if !defined(CONFIG_MARVELL)
 	orr	r0, r0, #0x00000002	@ set bit 1 (--A-) Align
+#endif
 	orr	r0, r0, #0x00000800	@ set bit 11 (Z---) BTB
 #ifdef CONFIG_SYS_ICACHE_OFF
 	bic	r0, r0, #0x00001000	@ clear bit 12 (I) I-cache
@@ -522,3 +551,63 @@ fiq:
 
 #endif /* CONFIG_USE_IRQ */
 #endif /* CONFIG_SPL_BUILD */
+#ifndef MV88F78X60_Z1
+	.align 5	
+.global armv7_mmu_cache_flush
+armv7_mmu_cache_flush:
+		mrc	p15, 0, r10, c0, c1, 5	@ read ID_MMFR1
+		tst	r10, #0xf << 16		@ hierarchical cache (ARMv7)
+		mov	r10, #0
+		beq	hierarchical
+		mcr	p15, 0, r10, c7, c6, 0	@ clean+invalidate D
+		b	iflush
+hierarchical:
+		mcr	p15, 0, r10, c7, c10, 5	@ DMB
+		stmfd	sp!, {r0-r7, r9-r11}
+		mrc	p15, 1, r0, c0, c0, 1	@ read clidr
+		ands	r3, r0, #0x7000000	@ extract loc from clidr
+		mov	r3, r3, lsr #23		@ left align loc bit field
+		beq	finished		@ if loc is 0, then no need to clean
+		mov	r10, #0			@ start clean at cache level 0
+loop1:
+		add	r2, r10, r10, lsr #1	@ work out 3x current cache level
+		mov	r1, r0, lsr r2		@ extract cache type bits from clidr
+		and	r1, r1, #7		@ mask of the bits for current cache only
+		cmp	r1, #2			@ see what cache we have at this level
+		blt	skip			@ skip if no cache, or just i-cache
+		mcr	p15, 2, r10, c0, c0, 0	@ select current cache level in cssr
+		mcr	p15, 0, r10, c7, c5, 4	@ isb to sych the new cssr&csidr
+		mrc	p15, 1, r1, c0, c0, 0	@ read the new csidr
+		and	r2, r1, #7		@ extract the length of the cache lines
+		add	r2, r2, #4		@ add 4 (line length offset)
+		ldr	r4, =0x3ff
+		ands	r4, r4, r1, lsr #3	@ find maximum number on the way size
+		clz	r5, r4			@ find bit position of way size increment
+		ldr	r7, =0x7fff
+		ands	r7, r7, r1, lsr #13	@ extract max number of the index size
+loop2:
+		mov	r9, r4			@ create working copy of max way size
+loop3:
+		orr	r11, r10, r9, lsl r5	@ factor way and cache number into r11
+		orr	r11, r11, r7, lsl r2	@ factor index number into r11
+		mcr	p15, 0, r11, c7, c14, 2	@ clean & invalidate by set/way
+		subs	r9, r9, #1		@ decrement the way
+		bge	loop3
+		subs	r7, r7, #1		@ decrement the index
+		bge	loop2
+skip:
+		add	r10, r10, #2		@ increment cache number
+		cmp	r3, r10
+		bgt	loop1
+finished:
+		ldmfd	sp!, {r0-r7, r9-r11}
+		mov	r10, #0			@ swith back to cache level 0
+		mcr	p15, 2, r10, c0, c0, 0	@ select current cache level in cssr
+iflush:
+		mcr	p15, 0, r10, c7, c10, 4	@ DSB
+		mcr	p15, 0, r10, c7, c5, 0	@ invalidate I+BTB
+		mcr	p15, 0, r10, c7, c10, 4	@ DSB
+		mcr	p15, 0, r10, c7, c5, 4	@ ISB
+		mov	pc, lr
+#endif
+

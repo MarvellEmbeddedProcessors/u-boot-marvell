@@ -37,7 +37,7 @@ int find_dev_and_part(const char *id, struct mtd_device **dev,
 		      u8 *part_num, struct part_info **part);
 #endif
 
-static int nand_dump(nand_info_t *nand, ulong off, int only_oob, int repeat)
+static int nand_dump(nand_info_t *nand, loff_t off, int only_oob, int repeat)
 {
 	int i;
 	u_char *datbuf, *oobbuf, *p;
@@ -65,12 +65,12 @@ static int nand_dump(nand_info_t *nand, ulong off, int only_oob, int repeat)
 	ops.mode = MTD_OOB_RAW;
 	i = nand->read_oob(nand, addr, &ops);
 	if (i < 0) {
-		printf("Error (%d) reading page %08lx\n", i, off);
+		printf("Error (%d) reading page %08llx\n", i, off);
 		free(datbuf);
 		free(oobbuf);
 		return 1;
 	}
-	printf("Page %08lx dump:\n", off);
+	printf("Page %08llx dump:\n", off);
 	i = nand->writesize >> 4;
 	p = datbuf;
 
@@ -126,7 +126,7 @@ static inline int str2off(const char *p, loff_t *num)
 	char *endptr;
 
 	*num = simple_strtoull(p, &endptr, 16);
-	return *p != '\0' && *endptr == '\0';
+	return (*p != '\0' && *endptr == '\0') ? 1 : 0;
 }
 
 static inline int str2long(const char *p, ulong *num)
@@ -134,7 +134,7 @@ static inline int str2long(const char *p, ulong *num)
 	char *endptr;
 
 	*num = simple_strtoul(p, &endptr, 16);
-	return *p != '\0' && *endptr == '\0';
+	return (*p != '\0' && *endptr == '\0') ? 1 : 0;
 }
 
 static int get_part(const char *partname, int *idx, loff_t *off, loff_t *size)
@@ -229,7 +229,7 @@ print:
 }
 
 #ifdef CONFIG_CMD_NAND_LOCK_UNLOCK
-static void print_status(ulong start, ulong end, ulong erasesize, int status)
+static void print_status(uint64_t start, uint64_t end, uint64_t erasesize, int status)
 {
 	/*
 	 * Micron NAND flash (e.g. MT29F4G08ABADAH4) BLOCK LOCK READ STATUS is
@@ -237,7 +237,7 @@ static void print_status(ulong start, ulong end, ulong erasesize, int status)
 	 * #lock_tight. To make the driver support either format, ignore bit 1
 	 * and use only bit 0 and bit 2.
 	 */
-	printf("%08lx - %08lx: %08lx blocks %s%s%s\n",
+	printf("%08llx - %08llx: %08llx blocks %s%s%s\n",
 		start,
 		end - 1,
 		(end - start) / erasesize,
@@ -248,8 +248,8 @@ static void print_status(ulong start, ulong end, ulong erasesize, int status)
 
 static void do_nand_status(nand_info_t *nand)
 {
-	ulong block_start = 0;
-	ulong off;
+	uint64_t block_start = 0;
+	uint64_t off;
 	int last_status = -1;
 
 	struct nand_chip *nand_chip = nand->priv;
@@ -506,7 +506,7 @@ static int do_nand(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		printf("\nDevice %d bad blocks:\n", dev);
 		for (off = 0; off < nand->size; off += nand->erasesize)
 			if (nand_block_isbad(nand, off))
-				printf("  %08llx\n", (unsigned long long)off);
+				printf("  %12llx\n", (unsigned long long)off);
 		return 0;
 	}
 

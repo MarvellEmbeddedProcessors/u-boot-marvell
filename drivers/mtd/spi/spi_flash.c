@@ -14,6 +14,13 @@
 #include <watchdog.h>
 
 #include "spi_flash_internal.h"
+#define PRINT_DOT
+#ifdef PRINT_DOT
+#define DOT_ERASE_BLOCK 128*1024
+#define DOT_WRITE_BLOCK 32*1024
+size_t print1block=4096;
+int countDot=0;
+#endif
 
 static void spi_flash_addr(u32 addr, u8 *cmd)
 {
@@ -84,6 +91,7 @@ int spi_flash_cmd_write_multi(struct spi_flash *flash, u32 offset,
 	}
 
 	cmd[0] = CMD_PAGE_PROGRAM;
+
 	for (actual = 0; actual < len; actual += chunk_len) {
 		chunk_len = min(len - actual, page_size - byte_addr);
 
@@ -113,6 +121,20 @@ int spi_flash_cmd_write_multi(struct spi_flash *flash, u32 offset,
 
 		page_addr++;
 		byte_addr = 0;
+#ifdef PRINT_DOT
+	{
+		print1block += chunk_len;
+		if (print1block > DOT_WRITE_BLOCK) {
+			printf(".");
+			print1block -= DOT_WRITE_BLOCK;
+			countDot++;
+			if (countDot > 60) {
+				printf("\n");
+				countDot=0;
+			}
+		}
+	}
+#endif
 	}
 
 	debug("SF: program %s %zu bytes @ %#x\n",
@@ -195,16 +217,18 @@ int spi_flash_cmd_erase(struct spi_flash *flash, u32 offset, size_t len)
 	u32 start, end, erase_size;
 	int ret;
 	u8 cmd[4];
-
+#ifdef PRINT_DOT
+	int dor_erase_len = DOT_ERASE_BLOCK;
+#endif
 	erase_size = flash->sector_size;
 	if (offset % erase_size || len % erase_size) {
-		debug("SF: Erase offset/length not multiple of erase size\n");
+		printf("SF: Erase offset/length not multiple of erase size\n");
 		return -1;
 	}
 
 	ret = spi_claim_bus(flash->spi);
 	if (ret) {
-		debug("SF: Unable to claim SPI bus\n");
+		printf("SF: Unable to claim SPI bus\n");
 		return ret;
 	}
 
@@ -233,6 +257,20 @@ int spi_flash_cmd_erase(struct spi_flash *flash, u32 offset, size_t len)
 		ret = spi_flash_cmd_wait_ready(flash, SPI_FLASH_PAGE_ERASE_TIMEOUT);
 		if (ret)
 			goto out;
+#ifdef PRINT_DOT
+	{
+		dor_erase_len += erase_size;
+		if (dor_erase_len > DOT_ERASE_BLOCK) {
+			printf(".");
+			dor_erase_len -= DOT_ERASE_BLOCK;
+			countDot++;
+			if (countDot > 60) {
+				printf("\n");
+				countDot=0;
+			}
+		}
+	}
+#endif
 	}
 
 	debug("SF: Successfully erased %zu bytes @ %#x\n", len, start);

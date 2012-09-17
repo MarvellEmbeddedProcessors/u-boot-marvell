@@ -281,7 +281,7 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 			return MV_TRUE;
 		break;
 	case DB_78X60_PCAC_ID:
-	case RD_78460_GP_ID:
+	case DB_784MP_GP_ID:
 	case RD_78460_NAS_ID:
 	case RD_78460_CUSTOMER_ID:
 	case DB_78X60_PCAC_REV2_ID:
@@ -1408,8 +1408,8 @@ MV_VOID mvBoardIdSet(MV_VOID)
 		gBoardId = DB_78X60_AMC_ID;
 #elif defined(DB_78X60_PCAC_REV2)
 		gBoardId = DB_78X60_PCAC_REV2_ID;
-#elif defined(RD_78460_GP)
-		gBoardId = RD_78460_GP_ID;
+#elif defined(DB_784MP_GP)
+		gBoardId = DB_784MP_GP_ID;
 #elif defined(RD_78460_CUSTOMER)
 		gBoardId = RD_78460_CUSTOMER_ID;
 #else
@@ -1553,8 +1553,8 @@ MV_U8 mvBoardFabFreqGet(MV_VOID)
 	if ((MV_8)MV_ERROR == (MV_8)sar0)
 		return MV_ERROR;
 
-	if (RD_78460_GP_ID == boardId)
-		return (sar0 & 0x0f);
+	if (DB_784MP_GP_ID == boardId)
+		return (sar0 & 0x1f);
 
 	sar1 = mvBoardTwsiSatRGet(3, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar1)
@@ -1572,9 +1572,9 @@ MV_STATUS mvBoardFabFreqSet(MV_U8 freqVal)
 	sar0 = mvBoardTwsiSatRGet(2, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar0)
 		return MV_ERROR;
-	if (RD_78460_GP_ID == boardId) {
-		sar0 &= ~(0x0F);
-		sar0 |= (freqVal & 0xF);
+	if (DB_784MP_GP_ID == boardId) {
+		sar0 &= ~(0x1F);
+		sar0 |= (freqVal & 0x1F);
 		if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar0)) {
 			DB1(mvOsPrintf("Board: Write FreqOpt S@R fail\n"));
 			return MV_ERROR;
@@ -1604,68 +1604,6 @@ MV_STATUS mvBoardFabFreqSet(MV_U8 freqVal)
 	return MV_OK;
 }
 /*******************************************************************************/
-MV_U8 mvBoardFabFreqModeGet(MV_VOID)
-{
-	MV_U8 sar0;
-
-	sar0 = mvBoardTwsiSatRGet(3, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar0)
-		return MV_ERROR;
-
-	return (sar0 & 0x1);
-}
-
-/*******************************************************************************/
-MV_STATUS mvBoardFabFreqModeSet(MV_U8 freqVal)
-{
-	MV_U8 sar0;
-
-	sar0 = mvBoardTwsiSatRGet(3, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar0)
-		return MV_ERROR;
-
-	sar0 &= ~(0x1);
-	sar0 |= (freqVal & 0x1);
-	if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar0)) {
-		DB1(mvOsPrintf("Board: Write FreqOpt S@R fail\n"));
-		return MV_ERROR;
-	}
-
-	DB(mvOsPrintf("Board: Write FreqOpt S@R succeeded\n"));
-	return MV_OK;
-}
-/*******************************************************************************/
-MV_U8 mvBoardCpuFreqModeGet(MV_VOID)
-{
-	MV_U8 sar0;
-
-	sar0 = mvBoardTwsiSatRGet(2, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar0)
-		return MV_ERROR;
-
-	return (sar0 & 0x1);
-}
-
-/*******************************************************************************/
-MV_STATUS mvBoardCpuFreqModeSet(MV_U8 freqVal)
-{
-	MV_U8 sar0;
-
-	sar0 = mvBoardTwsiSatRGet(2, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar0)
-		return MV_ERROR;
-
-	sar0 &= ~(0x1);
-	sar0 |= (freqVal & 0x1);
-	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar0)) {
-		DB1(mvOsPrintf("Board: Write FreqOpt S@R fail\n"));
-		return MV_ERROR;
-	}
-
-	DB(mvOsPrintf("Board: Write FreqOpt S@R succeeded\n"));
-	return MV_OK;
-}
-/*******************************************************************************/
 MV_U8 mvBoardCpuFreqGet(MV_VOID)
 {
 	MV_U8 sar;
@@ -1675,7 +1613,7 @@ MV_U8 mvBoardCpuFreqGet(MV_VOID)
 	sar = mvBoardTwsiSatRGet(1, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
-	if (RD_78460_GP_ID == boardId) {
+	if (DB_784MP_GP_ID == boardId) {
 		return (sar & 0x0f);
 	}
 
@@ -1696,7 +1634,7 @@ MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
 
-	if (RD_78460_GP_ID == boardId) {
+	if (DB_784MP_GP_ID == boardId) {
 		sar &= ~0x0f;
 		sar |= (freqVal & 0x0f);
 		if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar)) {
@@ -1745,7 +1683,7 @@ MV_U8 mvBoardBootDevGet(MV_VOID)
 	sar = mvBoardTwsiSatRGet(0, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
-	if (RD_78460_GP_ID == mvBoardIdGet())
+	if (DB_784MP_GP_ID == mvBoardIdGet())
 		sar = (sar >> 1);
 
 	return (sar & 0x7);
@@ -1760,7 +1698,7 @@ MV_STATUS mvBoardBootDevSet(MV_U8 val)
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
 
-	if (RD_78460_GP_ID == boardId) {
+	if (DB_784MP_GP_ID == boardId) {
 		sar &= ~(0x7 << 1);
 		sar |= ((val & 0x7) << 1);
 	}
@@ -1785,7 +1723,7 @@ MV_U8 mvBoardBootDevWidthGet(MV_VOID)
 	sar = mvBoardTwsiSatRGet(0, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
-	if (RD_78460_GP_ID == boardId)
+	if (DB_784MP_GP_ID == boardId) 
 		return (sar & 1);
 
 	return (sar & 0x18) >> 3;
@@ -1799,7 +1737,7 @@ MV_STATUS mvBoardBootDevWidthSet(MV_U8 val)
 	sar = mvBoardTwsiSatRGet(0, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
-	if (RD_78460_GP_ID == boardId) {
+	if (DB_784MP_GP_ID == boardId) {
 		sar &= ~(1);
 		sar |= (val & 0x1);
 	}
@@ -1824,6 +1762,8 @@ MV_U8 mvBoardCpu0EndianessGet(MV_VOID)
 #endif
 {
 	MV_U8 sar;
+	if (DB_784MP_GP_ID == mvBoardIdGet())
+		return 3;
 
 	sar = mvBoardTwsiSatRGet(3, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
@@ -1842,6 +1782,8 @@ MV_STATUS mvBoardCpu0EndianessSet(MV_U8 val)
 #endif
 {
 	MV_U8 sar;
+	if (DB_784MP_GP_ID == mvBoardIdGet())
+		return MV_OK;
 
 	sar = mvBoardTwsiSatRGet(3, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
@@ -1866,11 +1808,11 @@ MV_U8 mvBoardL2SizeGet(MV_VOID)
 {
 	MV_U8 sar;
 	MV_U32 boardId = mvBoardIdGet();
-	if (RD_78460_GP_ID == boardId) {
+	if (DB_784MP_GP_ID == boardId) {
 		sar = mvBoardTwsiSatRGet(0, 0);
 		if ((MV_8)MV_ERROR == (MV_8)sar)
 			return MV_ERROR;
-		return ((sar & 0x10)>>4);
+		return (((sar & 0x10)>>3)+ 1);
 	}
 
 	sar = mvBoardTwsiSatRGet(1, 0);
@@ -1883,12 +1825,12 @@ MV_U8 mvBoardL2SizeGet(MV_VOID)
 MV_STATUS mvBoardL2SizeSet(MV_U8 val)
 {
 	MV_U8 sar;
-	if (RD_78460_GP_ID == mvBoardIdGet()) {
+	if (DB_784MP_GP_ID == mvBoardIdGet()) {
 		sar = mvBoardTwsiSatRGet(0, 0);
 		if ((MV_8)MV_ERROR == (MV_8)sar)
 			return MV_ERROR;
 		sar &= ~(0x1 << 4);
-		sar |= ((val & 0x1) << 4);
+		sar |= ((val & 0x2) << 3);
 		if (MV_OK != mvBoardTwsiSatRSet(0, 0, sar)) {
 			DB1(mvOsPrintf("Board: Write L2Size S@R fail\n"));
 			return MV_ERROR;
@@ -1915,6 +1857,13 @@ MV_U8 mvBoardCpuCoresNumGet(MV_VOID)
 {
 	MV_U8 sar;
 
+	if (DB_784MP_GP_ID == mvBoardIdGet()) {
+		sar = mvBoardTwsiSatRGet(1, 0);
+		if ((MV_8)MV_ERROR == (MV_8)sar)
+			return MV_ERROR;
+		sar &=0x10;
+		return (1+(sar >>3));
+	}
 	sar = mvBoardTwsiSatRGet(3, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
@@ -1930,6 +1879,20 @@ MV_U8 mvBoardCpuCoresNumGet(MV_VOID)
 MV_STATUS mvBoardCpuCoresNumSet(MV_U8 val)
 {
 	MV_U8 sar;
+	if (DB_784MP_GP_ID == mvBoardIdGet()) {
+		sar = mvBoardTwsiSatRGet(1, 0);
+		if ((MV_8)MV_ERROR == (MV_8)sar)
+			return MV_ERROR;
+		sar &=~0x10;
+		val &= 2;
+		sar |= (val<<3);
+		if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar)) {
+			DB1(mvOsPrintf("Board: Write CpuCoreNum S@R fail\n"));
+			return MV_ERROR;
+		}
+		DB(mvOsPrintf("Board: Write CpuCoreNum S@R succeeded\n"));
+		return MV_OK;
+	}
 	sar = mvBoardTwsiSatRGet(3, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
@@ -2005,7 +1968,6 @@ MV_U16 mvBoardPexCapabilityGet(MV_VOID)
 	switch (boardId) {
 	case DB_78X60_PCAC_ID:
 	case RD_78460_NAS_ID:
-	case RD_78460_GP_ID:
 	case RD_78460_CUSTOMER_ID:
 	case DB_78X60_AMC_ID:
 	case DB_78X60_PCAC_REV2_ID:
@@ -2013,6 +1975,7 @@ MV_U16 mvBoardPexCapabilityGet(MV_VOID)
 	case RD_78460_SERVER_REV2_ID:
 		sar = 0x1; /* Gen2 */
 		break;
+	case DB_784MP_GP_ID:
 	case DB_88F78XX0_BP_ID:
 	case FPGA_88F78XX0_ID:
 	case DB_88F78XX0_BP_REV2_ID:
@@ -2056,22 +2019,28 @@ MV_U16 mvBoardPexModeGet(MV_VOID)
 
 }
 /*******************************************************************************/
-MV_STATUS mvBoardDramEccSet(MV_U16 conf)
+MV_STATUS mvBoardDramEccSet(MV_U16 ecc)
 {
 	MV_U8 sar;
-	sar = mvBoardTwsiSatRGet(3, 1);
+	MV_U8 devNum;
+	if (DB_784MP_GP_ID == mvBoardIdGet())
+		devNum = 2;
+	else
+		devNum = 3;
+
+	sar = mvBoardTwsiSatRGet(devNum, 1);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
 
 	sar &= ~(0x2);
-	sar |= ((conf & 0x1) << 1);
+	sar |= ((ecc & 0x1) << 1);
 
-	if (MV_OK != mvBoardTwsiSatRSet(3, 1, sar)) {
-		DB(mvOsPrintf("Board: Write confID S@R fail\n"));
+	if (MV_OK != mvBoardTwsiSatRSet(devNum, 1, sar)) {
+		DB(mvOsPrintf("Board: Write eccID S@R fail\n"));
 		return MV_ERROR;
 	}
 
-	DB(mvOsPrintf("Board: Write confID S@R succeeded\n"));
+	DB(mvOsPrintf("Board: Write eccID S@R succeeded\n"));
 	return MV_OK;
 }
 
@@ -2079,28 +2048,39 @@ MV_STATUS mvBoardDramEccSet(MV_U16 conf)
 MV_U16 mvBoardDramEccGet(MV_VOID)
 {
 	MV_U8 sar;
+	MV_U8 devNum;
+	if (DB_784MP_GP_ID == mvBoardIdGet())
+		devNum = 2;
+	else
+		devNum = 3;
 
-	sar = mvBoardTwsiSatRGet(3, 1);
+	sar = mvBoardTwsiSatRGet(devNum, 1);
 	return ((sar & 0x2) >> 1);
 }
 
 /*******************************************************************************/
-MV_STATUS mvBoardDramBusWidthSet(MV_U16 conf)
+MV_STATUS mvBoardDramBusWidthSet(MV_U16 dramBusWidth)
 {
 	MV_U8 sar;
-	sar = mvBoardTwsiSatRGet(3, 1);
+	MV_U8 devNum;
+	if (DB_784MP_GP_ID == mvBoardIdGet())
+		devNum = 2;
+	else
+		devNum = 3;
+
+	sar = mvBoardTwsiSatRGet(devNum, 1);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
 
 	sar &= ~(0x1);
-	sar |= (conf & 0x1);
+	sar |= (dramBusWidth & 0x1);
 
-	if (MV_OK != mvBoardTwsiSatRSet(3, 1, sar)) {
-		DB(mvOsPrintf("Board: Write confID S@R fail\n"));
+	if (MV_OK != mvBoardTwsiSatRSet(devNum, 1, sar)) {
+		DB(mvOsPrintf("Board: Write dramBusWidthID S@R fail\n"));
 		return MV_ERROR;
 	}
 
-	DB(mvOsPrintf("Board: Write confID S@R succeeded\n"));
+	DB(mvOsPrintf("Board: Write dramBusWidthID S@R succeeded\n"));
 	return MV_OK;
 }
 
@@ -2109,7 +2089,13 @@ MV_U16 mvBoardDramBusWidthGet(MV_VOID)
 {
 	MV_U8 sar;
 
-	sar = mvBoardTwsiSatRGet(3, 1);
+	MV_U8 devNum;
+	if (DB_784MP_GP_ID == mvBoardIdGet())
+		devNum = 2;
+	else
+		devNum = 3;
+
+	sar = mvBoardTwsiSatRGet(devNum, 1);
 	return (sar & 0x1);
 }
 
@@ -2117,6 +2103,8 @@ MV_U16 mvBoardDramBusWidthGet(MV_VOID)
 MV_U8 mvBoardAltFabFreqGet(MV_VOID)
 {
 	MV_U8 sar0;
+	if (DB_784MP_GP_ID == mvBoardIdGet())
+		return 5;
 
 	sar0 = mvBoardTwsiSatRGet(2, 1);
 	if ((MV_8)MV_ERROR == (MV_8)sar0)
@@ -2127,6 +2115,9 @@ MV_U8 mvBoardAltFabFreqGet(MV_VOID)
 /*******************************************************************************/
 MV_STATUS mvBoardAltFabFreqSet(MV_U8 freqVal)
 {
+	if (DB_784MP_GP_ID == mvBoardIdGet())
+		return MV_OK;
+
 	if (MV_OK != mvBoardTwsiSatRSet(2, 1, freqVal)) {
 		DB1(mvOsPrintf("Board: Write Alt FreqOpt S@R fail\n"));
 		return MV_ERROR;
@@ -2733,7 +2724,7 @@ MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 	case FPGA_88F78XX0_ID:
 	case DB_88F78XX0_BP_REV2_ID:
 	case RD_78460_NAS_ID:
-	case RD_78460_GP_ID:
+	case DB_784MP_GP_ID:
 	case RD_78460_CUSTOMER_ID:
 	case DB_78X60_AMC_ID:
 	case DB_78X60_PCAC_REV2_ID:

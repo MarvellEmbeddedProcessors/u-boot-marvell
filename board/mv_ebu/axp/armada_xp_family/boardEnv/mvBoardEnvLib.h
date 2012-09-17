@@ -394,7 +394,6 @@ MV_U8 mvBoardCpuFreqGet(MV_VOID);
 MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal);
 MV_U8 mvBoardCpuFreqModeGet(MV_VOID);
 MV_STATUS mvBoardCpuFreqModeSet(MV_U8 freqVal);
-MV_U8 mvBoardFabFreqModeGet(MV_VOID);
 MV_STATUS mvBoardFabFreqModeSet(MV_U8 freqVal);
 MV_U8 mvBoardBootDevGet(MV_VOID);
 MV_STATUS mvBoardBootDevSet(MV_U8 val);

@@ -132,6 +132,9 @@ int do_bootelf(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 #if defined(CONFIG_INTEGRITY)
 static boot_os_fn do_bootm_integrity;
 #endif
+#ifdef CONFIG_AMP_SUPPORT
+extern int amp_enable;
+#endif
 
 static boot_os_fn *boot_os[] = {
 #ifdef CONFIG_BOOTM_LINUX
@@ -717,7 +720,13 @@ int do_bootm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #ifdef DEBUG
 	puts("\n## Control returned to monitor - resetting...\n");
 #endif
-	do_reset(cmdtp, flag, argc, argv);
+
+#ifndef CONFIG_AMP_SUPPORT
+	do_reset (cmdtp, flag, argc, argv);
+#else
+	if(!amp_enable) // in AMP we want to return control to user
+		do_reset (cmdtp, flag, argc, argv);
+#endif
 
 	return 1;
 }

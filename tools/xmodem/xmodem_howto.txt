@@ -1,0 +1,28 @@
+In order to boot the AXP using the xmodem interface when the board fails
+to boot and reaches the "trying uart" option in the BootROM, you need to
+follow the follwing steps:
+
+	- Start the minicom and make sure the you can see the BootROM printings
+	  that end with the line "BootROM: Trying UART"
+	- At this stage the board is ready to get a pattern that instructs it 
+	  what to do (either start Xmodem or go into a debug shell).
+	- To star the Xmodem simply send the "Xmodem_boot_pattern.bin" as ascii
+	  (Ctrl+A then s, then select ascii).
+	- After sending the file, you should start seeing strange characters on
+	  the screen printed once in a second. These are the Xmodem NACKs.
+	- This means that you are ready to send the new u-boot with Xmodem (which
+	  needs to be with checksum packets and not crc-16 that is used in default
+	  Xmodem in minicom).
+	- Compile the sx-at91.c file (or you can use my pre-built).
+	- Add this binary to the minicom transfer protocols (see instructions in
+	  the file sx-at-91.c header). The newly added file should look like:
+		| J  sx-at91    <path to sx-at91 file> <serial port> Y    U    N       N       N    |
+	  example:
+		| J  sx-at91    /home/tawfik/temp/x/sx-at91 /dev/ttyS1 Y    U    N       N       N    |
+	- Please note that you need to use the correct path and "tty" device. In my
+	  example I have the board connected to /dev/ttyS1.
+	- Start the Xmodem transfer through sending the uart boot file
+	 (u-boot-2009.08-2.3.2-uart.bin) and selecting the sx-at91 protocol (Ctrl+a
+	 then s, select ax-at91)
+	- When the transfer finishes, press any key to go back and the u-boot
+	  should be loaded.

@@ -34,6 +34,8 @@
 #include <asm/byteorder.h>
 #include <asm/io.h>
 
+#ifndef CONFIG_MARVELL
+
 #if defined(CONFIG_IDE_8xx_DIRECT) || defined(CONFIG_IDE_PCMCIA)
 # include <pcmcia.h>
 #endif
@@ -1568,3 +1570,4 @@ U_BOOT_CMD(ide, 5, 1, do_ide,
 
 U_BOOT_CMD(diskboot, 3, 1, do_diskboot,
 	   "boot from IDE device", "loadAddr dev:part");
+#endif

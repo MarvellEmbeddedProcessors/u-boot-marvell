@@ -32,7 +32,7 @@ extern uint32_t __div64_32(uint64_t *dividend, uint32_t divisor);
 		__rem = (uint32_t)(n) % __base;		\
 		(n) = (uint32_t)(n) / __base;		\
 	} else						\
-		__rem = __div64_32(&(n), __base);	\
+		__rem = __div64_32((uint64_t *)&(n), __base);	\
 	__rem;						\
  })
 

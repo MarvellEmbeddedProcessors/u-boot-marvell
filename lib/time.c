@@ -29,7 +29,6 @@
 #endif
 
 /* ------------------------------------------------------------------------- */
-
 void udelay(unsigned long usec)
 {
 	ulong kv;
@@ -41,7 +40,6 @@ void udelay(unsigned long usec)
 		usec -= kv;
 	} while(usec);
 }
-
 void mdelay(unsigned long msec)
 {
 	while (msec--)

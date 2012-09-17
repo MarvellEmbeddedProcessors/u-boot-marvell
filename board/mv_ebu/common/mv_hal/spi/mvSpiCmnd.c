@@ -253,4 +253,3 @@ MV_STATUS mvSpiWriteThenRead(MV_U8 spiId, MV_U8 *pCmndBuff, MV_U32 cmndSize, MV_
 
     return ret;
 }
-

@@ -49,6 +49,7 @@ COBJS-y += nand_ids.o
 COBJS-y += nand_util.o
 COBJS-y += nand_ecc.o
 COBJS-y += nand_base.o
+COBJS-$(CONFIG_NAND_RS_ECC_SUPPORT) += nand_ecc_rs.o
 
 endif # not spl
 

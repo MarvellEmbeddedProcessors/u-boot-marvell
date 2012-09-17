@@ -1279,11 +1279,9 @@ static void handleEdmaInterrupt(MV_SATA_ADAPTER *pAdapter, MV_U8 sataUnit,
 
 static void handleEdmaError(MV_SATA_ADAPTER *pAdapter, MV_U8 channelIndex)
 {
-	MV_SATA_CHANNEL *pSataChannel;
 	MV_U32 eDmaErrorCause = 0;
 	MV_BUS_ADDR_T ioBaseAddr = pAdapter->adapterIoBaseAddress;
 
-	pSataChannel = pAdapter->sataChannel[channelIndex];
 
 	eDmaErrorCause = MV_REG_READ_DWORD(ioBaseAddr,
 					   getEdmaRegOffset(channelIndex) + MV_EDMA_INTERRUPT_ERROR_CAUSE_REG_OFFSET);
@@ -1897,10 +1895,7 @@ static void handleDeviceInterrupt(MV_SATA_ADAPTER *pAdapter, MV_U8 sataUnit, MV_
 
 	mvOsSemTake(&pSataChannel->semaphore);
 	if (pSataChannel->ErrorHandlingInfo.state == MV_ERROR_HANDLING_STATE_WAIT_FOR_BUSY) {
-		MV_U8 ATAstatus;
 
-		ATAstatus = MV_REG_READ_BYTE(pAdapter->adapterIoBaseAddress,
-					     pSataChannel->eDmaRegsOffset + MV_ATA_DEVICE_STATUS_REG_OFFSET);
 		/* clear DevInterrupt */
 		MV_REG_WRITE_DWORD(pAdapter->adapterIoBaseAddress,
 				   MV_SATAHC_REGS_BASE_OFFSET(sataUnit) +
@@ -2148,17 +2143,6 @@ static void handlePIOInterrupt(MV_SATA_CHANNEL *pSataChannel, MV_QUEUED_COMMAND_
 				pCommandEntry->pCommandInfo->commandParams.packetCommand.transfered_data =
 				    pCommandEntry->pCommandInfo->commandParams.packetCommand.buffer_len;
 
-#if 0
-				/* chech if the BMDMA still active */
-				if (BMDMA_status & MV_BIT0) {
-					mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG,
-						 "Packet Interrupt: BMDMA not finished yet. "
-						 "status 0x%08x, ATA status 0x%02x\n", BMDMA_status, ATAstatus);
-					/* wait for BMDMA done interrrupt */
-					pSataChannel->waitForBMDMA = MV_TRUE;
-					return;
-				}
-#endif
 				/* if BMDMA finished, call _resetBmDma to clear the Done interrupt */
 				_resetBmDma(pSataChannel->mvSataAdapter, pSataChannel->channelNumber);
 				/* chech if the BMDMA completed with errors */
@@ -4935,26 +4919,7 @@ MV_BOOLEAN mvSataInitAdapter(MV_SATA_ADAPTER *pAdapter)
 			}
 		}
 	}
-#if 0
-	/* Fix for 88SX60x1 FEr SATA#8 */
-	for (channelIndex = 0; channelIndex < pAdapter->numberOfChannels; channelIndex++) {
-		if (pAdapter->sataAdapterGeneration >= MV_SATA_GEN_II) {
-			regVal = MV_REG_READ_DWORD(pAdapter->adapterIoBaseAddress,
-						   getEdmaRegOffset(channelIndex) + MV_SATA_II_SATA_CONFIG_REG_OFFSET);
-			/* Fix for 88SX60x1 FEr SATA#8 */
-			/* according to the spec, bits [31:12] must be set to 0x009B1 */
-			regVal &= 0x00000FFF;
-			/* regVal |= MV_BIT12; */
-			regVal |= 0x009B1000;
 
-			MV_REG_WRITE_DWORD(pAdapter->adapterIoBaseAddress,
-					   getEdmaRegOffset(channelIndex) + MV_SATA_II_SATA_CONFIG_REG_OFFSET, regVal);
-			/* _channelHardReset(pAdapter, channelIndex); */
-		}
-
-		_fixPhyParams(pAdapter, channelIndex);
-	}
-#endif
 	if (pAdapter->hostInterface == MV_HOST_IF_PCI) {
 
 		MV_REG_WRITE_DWORD(pAdapter->adapterIoBaseAddress,
@@ -5339,7 +5304,6 @@ static MV_BOOLEAN _checkSStatusAfterHReset(MV_SATA_ADAPTER *pAdapter, MV_U8 chan
 MV_BOOLEAN mvSataChannelHardReset(MV_SATA_ADAPTER *pAdapter, MV_U8 channelIndex)
 {
 	MV_SATA_CHANNEL *pSataChannel;
-	MV_BUS_ADDR_T ioBaseAddr;
 	MV_U32 count = 0;
 
 	if (pAdapter == NULL) {
@@ -5348,7 +5312,6 @@ MV_BOOLEAN mvSataChannelHardReset(MV_SATA_ADAPTER *pAdapter, MV_U8 channelIndex)
 		return MV_FALSE;
 	}
 	pSataChannel = pAdapter->sataChannel[channelIndex];
-	ioBaseAddr = pAdapter->adapterIoBaseAddress;
 	if (pSataChannel == NULL) {
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_FATAL_ERROR, " %d %d: "
 			 "mvSataChannelHardReset Failed, channel data structure not "
@@ -5661,14 +5624,12 @@ MV_BOOLEAN mvSataConfigEdmaMode(MV_SATA_ADAPTER *pAdapter, MV_U8 channelIndex,
 MV_BOOLEAN mvSataEnableChannelDma(MV_SATA_ADAPTER *pAdapter, MV_U8 channelIndex)
 {
 	MV_SATA_CHANNEL *pSataChannel;
-	MV_BUS_ADDR_T ioBaseAddr;
 
 	if (pAdapter == NULL) {
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_FATAL_ERROR, "    : mvSataEnableChannelDma"
 			 " Failed, Bad adapter data structure pointer\n");
 		return MV_FALSE;
 	}
-	ioBaseAddr = pAdapter->adapterIoBaseAddress;
 	pSataChannel = pAdapter->sataChannel[channelIndex];
 	if (pSataChannel == NULL) {
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_FATAL_ERROR, " %d %d: mvSataEnableChannelD"
@@ -5719,14 +5680,12 @@ MV_BOOLEAN mvSataEnableChannelDma(MV_SATA_ADAPTER *pAdapter, MV_U8 channelIndex)
 *******************************************************************************/
 MV_BOOLEAN mvSataDisableChannelDma(MV_SATA_ADAPTER *pAdapter, MV_U8 channelIndex)
 {
-	MV_BUS_ADDR_T ioBaseAddr;
 
 	if (pAdapter == NULL) {
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_FATAL_ERROR, "    : mvSataDisableChannelDma"
 			 " Failed, Bad adapter data structure pointer\n");
 		return MV_FALSE;
 	}
-	ioBaseAddr = pAdapter->adapterIoBaseAddress;
 	if (pAdapter->sataChannel[channelIndex] == NULL) {
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_FATAL_ERROR, " %d %d: mvSataDisableChannel"
 			 "Dma Failed, channel data structure is not allocated\n", pAdapter->adapterId, channelIndex);
@@ -6343,7 +6302,6 @@ MV_QUEUE_COMMAND_RESULT mvSataQueueCommand(MV_SATA_ADAPTER *pAdapter,
 {
 	MV_SATA_CHANNEL *pSataChannel = pAdapter->sataChannel[channelIndex];
 	MV_QUEUED_COMMAND_ENTRY *pCommandEntry;
-	MV_U32 eDmaRegsOffset;
 	MV_U8 hostTag;
 	MV_U8 deviceTag;
 
@@ -6372,7 +6330,6 @@ MV_QUEUE_COMMAND_RESULT mvSataQueueCommand(MV_SATA_ADAPTER *pAdapter,
 		return MV_QUEUE_COMMAND_RESULT_BAD_PARAMS;
 	}
 #endif
-	eDmaRegsOffset = pSataChannel->eDmaRegsOffset;
 	if (pSataChannel->queueCommandsEnabled == MV_FALSE) {
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_ERROR, " %d %d: queued commands mode"
 			 " is disabled\n", pAdapter->adapterId, channelIndex);
@@ -6942,7 +6899,6 @@ MV_BOOLEAN mvSataDisableStaggeredSpinUp(MV_SATA_ADAPTER *pAdapter, MV_U8 channel
 
 MV_BOOLEAN mvSataSetInterfaceSpeed(MV_SATA_ADAPTER *pAdapter, MV_U8 channelIndex, MV_SATA_IF_SPEED ifSpeed)
 {
-	MV_U32 SStatusOffset;
 	if (pAdapter == NULL) {
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_FATAL_ERROR, "    : "
 			 "mvSataSetInterfaceSpeed Failed, Bad adapter data structure" " pointer\n");
@@ -6969,7 +6925,6 @@ MV_BOOLEAN mvSataSetInterfaceSpeed(MV_SATA_ADAPTER *pAdapter, MV_U8 channelIndex
 			mvOsSemRelease(&pSataChannel->semaphore);
 		}
 
-		SStatusOffset = getEdmaRegOffset(channelIndex) + MV_SATA_II_S_STATUS_REG_OFFSET;
 
 		if (ifSpeed == MV_SATA_IF_SPEED_1_5_GBPS) {
 			pAdapter->limitInterfaceSpeed[channelIndex] = MV_TRUE;

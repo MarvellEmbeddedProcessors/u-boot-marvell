@@ -5,7 +5,9 @@
 #
 # Normal rules
 #
-
+omri.pl
+comri.pl
+.gitignore
 *.rej
 *.orig
 *.a
@@ -15,6 +17,10 @@
 *.swp
 *.patch
 *.bin
+*.dis
+*.elf
+*.srec
+*.elf
 
 # Build tree
 /build-*

@@ -103,10 +103,6 @@ MV_U32 pexDevBarPrioTable[] = {
 
 static MV_STATUS pexWinOverlapDetect(MV_U32 pexIf, MV_U32 winNum, MV_ADDR_WIN *pAddrWin);
 /* NOTE: PEX Overlap Detection is disabled to support Muli CS DRAM - Need to be fixed */
-#if 0
-static MV_STATUS pexBarIsValid(MV_U32 baseLow, MV_U32 size);
-static MV_BOOL pexBarOverlapDetect(MV_U32 pexIf, MV_U32 barNum, MV_ADDR_WIN *pAddrWin);
-#endif
 static MV_BOOL pexIsWinWithinBar(MV_U32 pexIf, MV_ADDR_WIN *pAddrWin);
 
 /*******************************************************************************
@@ -249,15 +245,7 @@ MV_STATUS mvPexWinInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_UNIT_WIN_INFO *addr
 	}
 
 /* NOTE: PEX Overlap Detection is disabled to support Muli CS DRAM - Need to be fixed */
-#if 0
-	/* check if the size and base are valid */
-	if (MV_TRUE == pexBarOverlapDetect(pexIf, bar, &pexBar.addrWin)) {
-		mvOsPrintf("mvPexInit:Warning :Bar %d size is illigal\n", bar);
-		mvOsPrintf("it will be disabled\n");
-		mvOsPrintf("please check Pex and CPU windows configuration\n");
-#endif
-	if (0) {
-	} else {
+	{
 		pexBar.enable = MV_TRUE;
 
 		/* configure the bar */
@@ -537,11 +525,6 @@ MV_STATUS mvPexTargetWinRead(MV_U32 pexIf, MV_U32 winNum, MV_PEX_DEC_WIN *pexWin
 	else
 		pAddrDecWin->enable = MV_FALSE;
 
-#if 0
-	if (-1 == pAddrDecWin->addrWin.size)
-		return MV_ERROR;
-#endif
-
 	/* get target bar */
 	if ((sizeReg & PXWCR_WIN_BAR_MAP_MASK) == PXWCR_WIN_BAR_MAP_BAR1)
 		pexWin->targetBar = 1;
@@ -605,14 +588,8 @@ MV_STATUS mvPexTargetWinEnable(MV_U32 pexIf, MV_U32 winNum, MV_BOOL enable)
 			mvOsPrintf("mvPexTargetWinEnable: mvPexTargetWinRead Failed\n");
 			return MV_ERROR;
 		}
-/* NOTE: PEX Overlap Detection is disabled to support Muli CS DRAM - Need to be fixed */
-#if 0
-		/* Check if the requested window overlaps with current windows  */
-		if (MV_TRUE == pexWinOverlapDetect(pexIf, winNum, &addrDecWin->addrWin)) {
-			mvOsPrintf("mvPexTargetWinEnable: ERR. Target %d overlap\n", winNum);
-			return MV_BAD_PARAM;
-		}
-#endif
+
+		/* NOTE: PEX Overlap Detection is disabled to support Muli CS DRAM - Need to be fixed */
 		if (MV_FALSE == pexIsWinWithinBar(pexIf, &addrDecWin->addrWin)) {
 			mvOsPrintf("mvPexTargetWinEnable: Win %d should be in bar boundries\n", winNum);
 			return MV_BAD_PARAM;
@@ -739,40 +716,12 @@ MV_STATUS mvPexBarSet(MV_U32 pexIf, MV_U32 barNum, MV_PEX_BAR *pAddrWin)
 		return MV_BAD_PARAM;
 	}
 
-/* NOTE: PEX Overlap Detection is disabled to support Muli CS DRAM - Need to be fixed */
-#if 0
-	if (pAddrWin->addrWin.size == 0) {
-		mvOsPrintf("mvPexBarSet: Size zero is illegal\n");
-		return MV_BAD_PARAM;
-	}
-
-	/* Check if the window complies with PEX spec                       */
-	if (MV_TRUE != pexBarIsValid(pAddrWin->addrWin.baseLow, pAddrWin->addrWin.size)) {
-		mvOsPrintf("mvPexBarSet: ERR. Target %d window invalid\n", barNum);
-		return MV_BAD_PARAM;
-	}
-
-	/* 2) Check if the requested bar overlaps with current bars         */
-	if (MV_TRUE == pexBarOverlapDetect(pexIf, barNum, &pAddrWin->addrWin)) {
-		mvOsPrintf("mvPexBarSet: ERR. Target %d overlap\n", barNum);
-		return MV_BAD_PARAM;
-	}
-#endif
 	/* Get size register value according to window size         */
 	sizeToReg = (pAddrWin->addrWin.size / PXBCR_BAR_SIZE_ALIGNMENT) - 1;
 
 	/* Read bar size */
 	if (PEX_INTER_REGS_BAR != barNum) {	/* internal registers have no size */
 		regSize = MV_REG_READ(PEX_BAR_CTRL_REG(pexIf, barNum));
-
-/* NOTE: PEX Bar Valid Size Detection is disabled to support Muli CS DRAM - Need to be fixed */
-#if 0
-		/* Size parameter validity check.                                   */
-		if (-1 == sizeToReg) {
-			mvOsPrintf("mvPexBarSet: ERR. Target BAR %d size invalid.\n", barNum);
-			return MV_BAD_PARAM;
-		}
-#endif
 		regSize &= ~PXBCR_BAR_SIZE_MASK;
 		regSize |= (sizeToReg << PXBCR_BAR_SIZE_OFFS);
 		MV_REG_WRITE(PEX_BAR_CTRL_REG(pexIf, barNum), regSize);
@@ -1014,88 +963,6 @@ static MV_BOOL pexIsWinWithinBar(MV_U32 pexIf, MV_ADDR_WIN *pAddrWin)
 }
 
 /*******************************************************************************
-* pexBarOverlapDetect - Detect address windows overlapping
-*
-* DESCRIPTION:
-*       This function detects address window overlapping of a given address
-*       window in PEX BARs.
-*
-* INPUT:
-*       pAddrWin - Address window to be checked.
-*       bar      - BAR to be accessed by slave.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE if the given address window overlap current address
-*       decode map, MV_FALSE otherwise.
-*
-*******************************************************************************/
-/* NOTE: PEX Overlap Detection is disabled to support Muli CS DRAM - Need to be fixed */
-#if 0
-static MV_BOOL pexBarOverlapDetect(MV_U32 pexIf, MV_U32 barNum, MV_ADDR_WIN *pAddrWin)
-{
-	MV_U32 bar;
-	MV_PEX_BAR barDecWin;
-
-	for (bar = 0; bar < PEX_MAX_BARS; bar++) {
-		/* don't check our target or illegal targets */
-		if (barNum == bar)
-			continue;
-
-		/* Get window parameters        */
-		if (MV_OK != mvPexBarGet(pexIf, bar, &barDecWin)) {
-			mvOsPrintf("pexBarOverlapDetect: ERR. TargetWinGet failed\n");
-			return MV_ERROR;
-		}
-
-		/* don't check disabled bars */
-		if (barDecWin.enable == MV_FALSE)
-			continue;
-
-		if (MV_TRUE == mvWinOverlapTest(pAddrWin, &barDecWin.addrWin)) {
-			mvOsPrintf("pexBarOverlapDetect: winNum %d overlap current %d\n", barNum, bar);
-			return MV_TRUE;
-		}
-	}
-	return MV_FALSE;
-}
-#endif
-
-/*******************************************************************************
-* pexBarIsValid - Check if the given address window is valid
-*
-* DESCRIPTION:
-*		PEX spec restrict BAR base to be aligned to BAR size.
-*		This function checks if the given address window is valid.
-*
-* INPUT:
-*       baseLow - 32bit low base address.
-*       size    - Window size.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE if the address window is valid, MV_FALSE otherwise.
-*
-*******************************************************************************/
-/* NOTE: PEX Overlap Detection is disabled to support Muli CS DRAM - Need to be fixed */
-#if 0
-static MV_STATUS pexBarIsValid(MV_U32 baseLow, MV_U32 size)
-{
-	/* PCI spec restrict BAR base to be aligned to BAR size         */
-	if (MV_IS_NOT_ALIGN(baseLow, size))
-		return MV_ERROR;
-	else
-		return MV_TRUE;
-
-	return MV_TRUE;
-}
-#endif
-
-/*******************************************************************************
 * pexBarRegInfoGet - Get BAR register information
 *
 * DESCRIPTION:
@@ -1174,91 +1041,3 @@ const MV_8 *pexBarNameGet(MV_U32 bar)
 		return "Bar unknown";
 	}
 }
-
-#if 0
-/*******************************************************************************
-* mvPexAddrDecShow - Print the PEX address decode map (BARs and windows).
-*
-* DESCRIPTION:
-*		This function print the PEX address decode map (BARs and windows).
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       None.
-*
-*******************************************************************************/
-MV_VOID mvPexAddrDecShow(MV_VOID)
-{
-	MV_PEX_BAR pexBar;
-	MV_PEX_DEC_WIN win;
-	MV_U32 pexIf;
-	MV_U32 bar, winNum;
-
-	for (pexIf = 0; pexIf < mvCtrlPexMaxIfGet(); pexIf++) {
-		if (MV_FALSE == mvCtrlPwrClckGet(PEX_UNIT_ID, pexIf))
-			continue;
-		mvOsOutput("\n");
-		mvOsOutput("PEX%d:\n", pexIf);
-		mvOsOutput("-----\n");
-
-		mvOsOutput("\nPex Bars \n\n");
-
-		for (bar = 0; bar < PEX_MAX_BARS; bar++) {
-			memset(&pexBar, 0, sizeof(MV_PEX_BAR));
-
-			mvOsOutput("%s ", pexBarNameGet(bar));
-
-			if (mvPexBarGet(pexIf, bar, &pexBar) == MV_OK) {
-				if (pexBar.enable) {
-					mvOsOutput("base %08x, ", pexBar.addrWin.baseLow);
-					mvSizePrint(pexBar.addrWin.size);
-					mvOsOutput("\n");
-				} else
-					mvOsOutput("disable\n");
-			}
-		}
-		mvOsOutput("\nPex Decode Windows\n\n");
-
-		for (winNum = 0; winNum < PEX_MAX_TARGET_WIN - 2; winNum++) {
-			memset(&win, 0, sizeof(MV_PEX_DEC_WIN));
-
-			mvOsOutput("win%d - ", winNum);
-
-			if (mvPexTargetWinGet(pexIf, winNum, &win) == MV_OK) {
-				if (win.enable) {
-					mvOsOutput("%s base %08x, ",
-						   mvCtrlTargetNameGet(win.target), win.addrWin.baseLow);
-					mvOsOutput("....");
-					mvSizePrint(win.addrWin.size);
-
-					mvOsOutput("\n");
-				} else
-					mvOsOutput("disable\n");
-			}
-		}
-
-		memset(&win, 0, sizeof(MV_PEX_DEC_WIN));
-
-		mvOsOutput("default win - ");
-
-		if (mvPexTargetWinGet(pexIf, MV_PEX_WIN_DEFAULT, &win) == MV_OK) {
-			mvOsOutput("%s ", mvCtrlTargetNameGet(win.target));
-			mvOsOutput("\n");
-		}
-		memset(&win, 0, sizeof(MV_PEX_DEC_WIN));
-
-		mvOsOutput("Expansion ROM - ");
-
-		if (mvPexTargetWinGet(pexIf, MV_PEX_WIN_EXP_ROM, &win) == MV_OK) {
-			mvOsOutput("%s ", mvCtrlTargetNameGet(win.target));
-			mvOsOutput("\n");
-		}
-	}
-}
-
-#endif

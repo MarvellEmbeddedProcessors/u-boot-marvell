@@ -42,8 +42,14 @@ DECLARE_GLOBAL_DATA_PTR;
 	defined(CONFIG_CMDLINE_TAG) || \
 	defined(CONFIG_INITRD_TAG) || \
 	defined(CONFIG_SERIAL_TAG) || \
+    defined (CONFIG_MARVELL_TAG) || \
 	defined(CONFIG_REVISION_TAG)
 static struct tag *params;
+#endif
+
+#if defined (CONFIG_MARVELL_TAG)
+extern void mvEgigaStrToMac( char *source , char *dest );
+static void setup_marvell_tag(void);
 #endif
 
 static ulong get_sp(void)
@@ -53,6 +59,13 @@ static ulong get_sp(void)
 	asm("mov %0, sp" : "=r"(ret) : );
 	return ret;
 }
+
+#ifdef CONFIG_AMP_SUPPORT
+extern int amp_enable;
+extern int amp_group_id;
+int  amp_boot(int mach_id, int load_addr, int param_addr);
+int  mv_amp_group_setup(int group_id, int load_addr);
+#endif
 
 void arch_lmb_reserve(struct lmb *lmb)
 {
@@ -75,6 +88,8 @@ void arch_lmb_reserve(struct lmb *lmb)
 	lmb_reserve(lmb, sp,
 		    gd->bd->bi_dram[0].start + gd->bd->bi_dram[0].size - sp);
 }
+
+
 
 #ifdef CONFIG_OF_LIBFDT
 static int fixup_memory_node(void *blob)
@@ -114,7 +129,8 @@ static void announce_and_cleanup(void)
 	defined(CONFIG_CMDLINE_TAG) || \
 	defined(CONFIG_INITRD_TAG) || \
 	defined(CONFIG_SERIAL_TAG) || \
-	defined(CONFIG_REVISION_TAG)
+    defined (CONFIG_REVISION_TAG) || \
+    defined (CONFIG_MARVELL_TAG)
 static void setup_start_tag (bd_t *bd)
 {
 	params = (struct tag *)bd->bi_boot_params;
@@ -134,13 +150,30 @@ static void setup_start_tag (bd_t *bd)
 static void setup_memory_tags(bd_t *bd)
 {
 	int i;
+	char *env = getenv("enaLPAE");
+	int lpae_en;
+
+	if (!env || (strcmp(env, "no") == 0) || (strcmp(env, "No") == 0))
+		lpae_en = 0;
+	else
+		lpae_en = 1;
 
 	for (i = 0; i < CONFIG_NR_DRAM_BANKS; i++) {
-		params->hdr.tag = ATAG_MEM;
-		params->hdr.size = tag_size (tag_mem32);
-
-		params->u.mem.start = bd->bi_dram[i].start;
-		params->u.mem.size = bd->bi_dram[i].size;
+		if (lpae_en) {
+			if (gd->dram_hw_info[i].size == 0ll)
+				continue;
+			params->hdr.tag = ATAG_MEM64;
+			params->hdr.size = tag_size (tag_mem64);
+			params->u.mem64.start = gd->dram_hw_info[i].start;
+			params->u.mem64.size = gd->dram_hw_info[i].size;
+		} else {
+			if (bd->bi_dram[i].size == 0)
+				continue;
+			params->hdr.tag = ATAG_MEM;
+			params->hdr.size = tag_size (tag_mem32);
+			params->u.mem.start = bd->bi_dram[i].start;
+			params->u.mem.size = bd->bi_dram[i].size;
+		}
 
 		params = tag_next (params);
 	}
@@ -185,6 +218,114 @@ static void setup_initrd_tag(bd_t *bd, ulong initrd_start, ulong initrd_end)
 
 	params->u.initrd.start = initrd_start;
 	params->u.initrd.size = initrd_end - initrd_start;
+
+	params = tag_next (params);
+}
+#endif
+
+#if defined(CONFIG_MARVELL_TAG)
+
+extern unsigned int mvBoardIdGet(void);	
+extern void mvBoardModuleConfigGet(u32 *modConfig);
+
+static void setup_marvell_tag (void)
+{
+	char *env;
+	char temp[20];
+	int i;
+	unsigned int boardId;
+	u32 modCfg;
+
+	params->hdr.tag = ATAG_MARVELL;
+	params->hdr.size = tag_size (tag_mv_uboot);
+
+	params->u.mv_uboot.uboot_version = VER_NUM;
+	if(strcmp(getenv("nandEcc"), "4bit") == 0)
+		params->u.mv_uboot.nand_ecc = 4;
+	else if(strcmp(getenv("nandEcc"), "1bit") == 0)
+		params->u.mv_uboot.nand_ecc = 1;
+
+	boardId = mvBoardIdGet();
+	params->u.mv_uboot.uboot_version |= boardId;
+	params->u.mv_uboot.tclk = CONFIG_SYS_TCLK;
+	params->u.mv_uboot.sysclk = CONFIG_SYS_BUS_CLK;
+	
+#if defined(MV78XX0)
+	/* Dual CPU Firmware load address */
+	env = getenv("fw_image_base");
+	if(env)
+		params->u.mv_uboot.fw_image_base = simple_strtoul(env, NULL, 16);
+	else
+		params->u.mv_uboot.fw_image_base = 0;
+
+	/* Dual CPU Firmware size */
+	env = getenv("fw_image_size");
+	if(env)
+		params->u.mv_uboot.fw_image_size = simple_strtoul(env, NULL, 16);
+	else
+		params->u.mv_uboot.fw_image_size = 0;
+#endif
+
+#if defined(MV_INCLUDE_USB)
+	extern unsigned int mvCtrlUsbMaxGet(void);
+
+	for (i = 0 ; i < mvCtrlUsbMaxGet(); i++)
+	{
+		sprintf( temp, "usb%dMode", i);
+		env = getenv(temp);
+		if((!env) || (strcmp(env,"Host") == 0 ) || (strcmp(env,"host") == 0) )
+			params->u.mv_uboot.isUsbHost |= (1 << i);
+		else
+			params->u.mv_uboot.isUsbHost &= ~(1 << i);	
+	}
+#endif /*#if defined(MV_INCLUDE_USB)*/
+#if defined(MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_UNM_ETH)
+	extern unsigned int mvCtrlEthMaxPortGet(void);
+	extern int mvMacStrToHex(const char* macStr, unsigned char* macHex);
+
+	for (i = 0 ;i < 4;i++)
+	{
+		memset(params->u.mv_uboot.macAddr[i], 0, sizeof(params->u.mv_uboot.macAddr[i]));
+		params->u.mv_uboot.mtu[i] = 0; 
+	}
+
+	for (i = 0 ;i < mvCtrlEthMaxPortGet();i++)
+	{
+/* only on RD-6281-A egiga0 defined as eth1 */
+#if defined (RD_88F6281A)
+		sprintf( temp,(i==0 ? "eth1addr" : "ethaddr"));
+#else
+		sprintf( temp,(i ? "eth%daddr" : "ethaddr"), i);
+# endif
+#if defined(MV_KW2)
+		if(i == 2)
+			sprintf(temp, "mv_pon_addr");
+#endif
+
+		env = getenv(temp);
+		if (env)
+			mvMacStrToHex(env, (unsigned char*)params->u.mv_uboot.macAddr[i]);
+
+/* only on RD-6281-A egiga0 defined as eth1 */
+#if defined (RD_88F6281A)
+		sprintf( temp,(i==0 ? "eth1mtu" : "ethmtu"));
+#else
+		sprintf( temp,(i ? "eth%dmtu" : "ethmtu"), i);
+# endif
+		env = getenv(temp);
+		if (env)
+			params->u.mv_uboot.mtu[i] = simple_strtoul(env, NULL, 10); 
+	}
+#endif /* (MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_UNM_ETH) */
+
+	/* Set Board modules configuration */
+
+#ifdef DB_88F6500
+	mvBoardModuleConfigGet(&modCfg);
+#else
+	modCfg = (u32)-1;
+#endif
+	params->u.mv_uboot.board_module_config = modCfg;
 
 	params = tag_next (params);
 }
@@ -314,6 +455,12 @@ static void boot_prep_linux(bootm_headers_t *images)
 			images->rd_end);
 #endif
 		setup_board_tags(&params);
+#if defined (CONFIG_MARVELL_TAG)
+        /* Linux open port doesn't support the Marvell TAG */
+	char *env = getenv("mainlineLinux");
+	if(!env || ((strcmp(env,"no") == 0) ||  (strcmp(env,"No") == 0)))
+	    setup_marvell_tag ();
+#endif
 		setup_end_tag(gd->bd);
 #else /* all tags */
 		printf("FDT and ATAGS support not compiled in - hanging\n");
@@ -341,6 +488,15 @@ static void boot_jump_linux(bootm_headers_t *images)
 	debug("## Transferring control to Linux (at address %08lx)" \
 		"...\n", (ulong) kernel_entry);
 	bootstage_mark(BOOTSTAGE_ID_RUN_OS);
+	
+#ifdef CONFIG_AMP_SUPPORT
+	if(amp_enable){
+		/* Boot AMP group. if boot completed (group_id > 0), return.*/
+		if(amp_boot(machid, (int)kernel_entry, gd->bd->bi_boot_params))
+			return;
+	}
+#endif
+	
 	announce_and_cleanup();
 
 #ifdef CONFIG_OF_LIBFDT

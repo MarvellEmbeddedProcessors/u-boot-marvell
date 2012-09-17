@@ -781,10 +781,10 @@ void mvNetaCpuDump(int port, int cpu, int rxTx)
 		if (regVal & 1)
 			mvOsPrintf("%s-%d ", qType[rxTx], j);
 		else
-			printk("       ");
+			mvOsPrintf("       ");
 	regVal >>= 1;
 	}
-	printk(KERN_INFO "\n");
+	mvOsPrintf("\n");
 }
 
 #ifdef CONFIG_MV_PON

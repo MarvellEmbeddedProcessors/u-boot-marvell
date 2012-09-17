@@ -100,4 +100,3 @@ MV_VOID mvRtcDS1339AlarmSet(MV_RTC_TIME *time);
 
 
 #endif  /* __INCmvDS1511h */
-

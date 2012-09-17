@@ -1117,45 +1117,8 @@ MV_VOID mvEth1145PhyBasicInit(MV_U32 port)
     mvEthPhyRegRead(ethphyHalData.phyAddr[port], 0x14, &value);
     mvEthPhyRegWrite(ethphyHalData.phyAddr[port], 0x14, (value | BIT1 | BIT7));
     mvOsDelay(10);
-#if 0 /* Fix by yotam */
-    if (boardId != RD_78XX0_AMC_ID &&
-	    boardId != RD_78XX0_H3C_ID) {
-	    /* Set port 2 - Phy addr 9 to RGMII */
-	if (port == 2) {
-		mvEthPhyRegWrite(ethphyHalData.phyAddr[port], 0x1b, 0x808b);
-		mvOsDelay(10);
-	}
 
-	/* Set port 1 - Phy addr a to SGMII */
-	if (port == 1) {
-	    mvEthPhyRegWrite(ethphyHalData.phyAddr[port], 0x1b, 0x8084);
-	    mvOsDelay(10);
-
-		/* Reset Phy */
-	    mvEthPhyRegRead(ethphyHalData.phyAddr[port], 0x00, &value);
-	    mvEthPhyRegWrite(ethphyHalData.phyAddr[port], 0x00, (value | BIT15));
-	    mvOsDelay(10);
-	#if defined(SGMII_OUTBAND_AN)
-		/* Set port 1 - Phy addr A Page 1 */
-		mvEthPhyRegWrite(ethphyHalData.phyAddr[port], 0x16, 0x1);
-		mvOsDelay(10);
-
-		/* Set port 1 - Phy addr A disable A.N. */
-		mvEthPhyRegWrite(ethphyHalData.phyAddr[port], 0x0, 0x140);
-		mvOsDelay(10);
-
-		/* Set port 1 - Phy addr A reset */
-		mvEthPhyRegWrite(ethphyHalData.phyAddr[port], 0x0, 0x8140);
-		mvOsDelay(10);
-
-		mvEthPhyRegWrite(ethphyHalData.phyAddr[port], 0x16, 0x0);
-		mvOsDelay(10);
-	#endif
-	}
-    }
-#endif
-
-	    /* Set Phy TPVL to 0 */
+    /* Set Phy TPVL to 0 */
     mvEthPhyRegWrite(ethphyHalData.phyAddr[port], 0x10, 0x60);
     mvOsDelay(10);
 
@@ -1247,14 +1210,6 @@ MV_VOID mvEth1540Y0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 
 	/* Set page to 1. */
 	mvEthPhyRegWrite(i, 0x16, 1);
-
-#if 0
-	/* Phy C_ANEG */
-	mvEthPhyRegRead(i, 0x4, &reg);
-	reg &= ~(0x60);
-	reg |= 0x20;
-	mvEthPhyRegWrite(i, 0x4, reg);
-#endif
 
 	/* Enable SGMII AN */
 	mvEthPhyRegWrite(i, 0x0, 0x1140);
@@ -1694,12 +1649,11 @@ MV_VOID mvEth1540Y0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	mvOsDelay(300);
 
 }
-
+static int initJumboPackets=0;
 MV_VOID mvEth1540A0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 {
 	int i = ethphyHalData.phyAddr[ethPortNum];
 	MV_U16 reg;
-	int startAddr, endAddr;
 
 	/* Enable QSGMII AN */
 	/* Set page to 4. */
@@ -1709,11 +1663,13 @@ MV_VOID mvEth1540A0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	/* Set page to 0. */
 	mvEthPhyRegWrite(i, 0x16, 0);
 
-	/* Power up the phy */
+	/* Phy C_ANEG */
 	mvEthPhyRegRead(i, 0x4, &reg);
 	reg |= 0x1E0;
 	mvEthPhyRegWrite(i, 0x4, reg);
-       mvEthPhyRegWrite(i, 0x16, 1);
+
+	/* Set page to 1. */
+	mvEthPhyRegWrite(i, 0x16, 1);
 
 	/* Disable Drop BadTag */
 	mvEthPhyRegWrite(i, 22, 0x0010);
@@ -1807,6 +1763,37 @@ MV_VOID mvEth1540A0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 		mvEthPhyRegWrite(i, 3, 0x0000);
 		mvEthPhyRegWrite(i, 22, 0x0000);
 	}
+/* Configuring the PHY for jumbo packets  */
+	mvEthPhyRegWrite(i, 0x16, 0x02);
+	mvEthPhyRegRead(i, 0x10, &reg);
+	reg |= (1<<14) | (1<<15);
+	mvEthPhyRegWrite(i, 0x10, reg);
+	mvEthPhyRegWrite(i, 0x16, 0x0);
+
+	if (0 == initJumboPackets) {
+		initJumboPackets = 1;
+
+		mvEthPhyRegWrite(0x18, 0x16, 0x10);
+		mvEthPhyRegWrite(0x18, 0x01, 0x40);
+		mvEthPhyRegWrite(0x18, 0x02, 0xFFF9);
+		mvEthPhyRegWrite(0x18, 0x03, 0x1);
+
+		mvEthPhyRegWrite(0x18, 0x01, 0x840);
+		mvEthPhyRegWrite(0x18, 0x02, 0xFFF9);
+		mvEthPhyRegWrite(0x18, 0x03, 0x1);
+                              
+		mvEthPhyRegWrite(0x18, 0x01, 0x1040);
+		mvEthPhyRegWrite(0x18, 0x02, 0xFFF9);
+		mvEthPhyRegWrite(0x18, 0x03, 0x1);
+                              
+		mvEthPhyRegWrite(0x18, 0x01, 0x1840);
+		mvEthPhyRegWrite(0x18, 0x02, 0xFFF9);
+		mvEthPhyRegWrite(0x18, 0x03, 0x1);
+
+		mvEthPhyRegWrite(0x18, 0x16, 0x0);
+	}
+
+
 	/* Configure LED */
 	mvEthPhyRegWrite(i, 22, 3);
 	mvEthPhyRegWrite(i, 16, 0x1111);
@@ -1814,12 +1801,12 @@ MV_VOID mvEth1540A0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	mvEthPhyRegWrite(i, 22, 0x0000);
 	mvEthPhyRegWrite(i, 0, 0x9140);
 
+	/* Power up the phy */
 	mvEthPhyRegRead(i, ETH_PHY_CTRL_REG, &reg);
 	reg &= ~(ETH_PHY_CTRL_POWER_DOWN_MASK);
 	mvEthPhyRegWrite(i, ETH_PHY_CTRL_REG, reg);
+
 	mvOsDelay(100);
-	/*  Sleep 3000 */
-	/* mvOsDelay(300); */
 }
 
 MV_VOID mvEth1540PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
@@ -1877,9 +1864,6 @@ MV_VOID mvEth1340PhyBasicInit(void)
 		reg &= ~(ETH_PHY_CTRL_POWER_DOWN_MASK);
 		reg |= 0x1<<9;	/* workaround - restart workaround - restart workaround - restart workaround - restart */
 		mvEthPhyRegWrite(i, ETH_PHY_CTRL_REG, reg);
-
-
-
 	}
 }
 /*******************************************************************************

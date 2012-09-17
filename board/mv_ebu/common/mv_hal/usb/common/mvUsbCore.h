@@ -1,16 +1,16 @@
 /*******************************************************************************
 
-This software file (the "File") is distributed by Marvell International Ltd. 
-or its affiliate(s) under the terms of the GNU General Public License Version 2, 
-June 1991 (the "License").  You may use, redistribute and/or modify this File 
-in accordance with the terms and conditions of the License, a copy of which 
-is available along with the File in the license.txt file or by writing to the 
-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+This software file (the "File") is distributed by Marvell International Ltd.
+or its affiliate(s) under the terms of the GNU General Public License Version 2,
+June 1991 (the "License").  You may use, redistribute and/or modify this File
+in accordance with the terms and conditions of the License, a copy of which
+is available along with the File in the license.txt file or by writing to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 or on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED 
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY 
-DISCLAIMED.  The GPL License provides additional details about this warranty 
+THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+DISCLAIMED.  The GPL License provides additional details about this warranty
 disclaimer.
 
 (C) Copyright 2004 - 2007 Marvell Semiconductor Israel Ltd. All Rights Reserved.
@@ -47,7 +47,7 @@ disclaimer.
 #define  EHCI_CMD_FRAME_SIZE_16                    (0x00008008) /* 110 */
 #define  EHCI_CMD_FRAME_SIZE_8                     (0x0000800C) /* 111 */
 
-/* Hardware Rev 4.0 related change */                                             
+/* Hardware Rev 4.0 related change */
 /* Mode Register Bit Masks */
 #define  VUSBHS_MODE_CTRL_MODE_IDLE                (0x00000000)
 #define  VUSBHS_MODE_CTRL_MODE_DEV                 (0x00000002)
@@ -55,7 +55,7 @@ disclaimer.
 #define  VUSBHS_MODE_BIG_ENDIAN                    (0x00000004)
 #define  VUSBHS_MODE_SETUP_LOCK_DISABLE            (0x00000008)
 #define  VUSBHS_MODE_STREAM_DISABLE                (0x00000010)
-    
+
 /* Interrupt Enable Register Bit Masks */
 #define  EHCI_INTR_INT_EN                          (0x00000001)
 #define  EHCI_INTR_ERR_INT_EN                      (0x00000002)
@@ -119,9 +119,9 @@ disclaimer.
 #define  EHCI_EPCTRL_RX_EP_TYPE_SHIFT              (2)
 
 /* set bit 24 (PFSC) in PORTSCX register */
-#define  EHCI_PORTSCX_FORCE_FULL_SPEED_CONNECT     (0x01000000) 
+#define  EHCI_PORTSCX_FORCE_FULL_SPEED_CONNECT     (0x01000000)
 /* set bit 23 (PHCD) in PORTSCX register */
-#define  EHCI_PORTSCX_PHY_CLOCK_DISABLE            (0x00800000) 
+#define  EHCI_PORTSCX_PHY_CLOCK_DISABLE            (0x00800000)
 
 #define  EHCI_PORTSCX_PORT_POWER                   (0x00001000)
 #define  EHCI_PORTSCX_LINE_STATUS_BITS             (0x00000C00)
@@ -151,8 +151,8 @@ disclaimer.
 #define  VUSBHS_ADDRESS_BIT_SHIFT                  (25)
 
 #define  VUSB20_DCC_MAX_ENDPTS_SUPPORTED           (0x1F)
-#define  VUSB20_DCC_HOST_MODE_MASK                 (1 << 8)               
-#define  VUSB20_DCC_DEVICE_MODE_MASK               (1 << 7)               
+#define  VUSB20_DCC_HOST_MODE_MASK                 (1 << 8)
+#define  VUSB20_DCC_DEVICE_MODE_MASK               (1 << 7)
 
 #define  EHCI_HCC_PARAMS_64_BIT_ADDR_CAP           (0x01)
 #define  EHCI_HCC_PARAMS_PGM_FRM_LIST_FLAG         (0x02)
@@ -242,7 +242,7 @@ Split transatcions specific defines
 #define  EHCI_ITD_BUFFER_POINTER                   (0xFFFFF000)
 #define  EHCI_ITD_MULTI_TRANSACTION_BITS           (0x00000003)
 
-          
+
 
 /* SITD position bits */
 #define  EHCI_SITD_DIRECTION_BIT_POS                (31)
@@ -374,7 +374,7 @@ Split transatcions specific defines
 hardware. Enable the following switch in config.mk to enable the
 changes. */
 
-    /* WEB20040409 below line changed from VUSBHS_OTGSC_B_HOST_EN to VUSBHS_OTGSC_IDPU 
+    /* WEB20040409 below line changed from VUSBHS_OTGSC_B_HOST_EN to VUSBHS_OTGSC_IDPU
        to reflect change in usbhs4.0  B_HOST_EN has not been used quite some time */
     #define  VUSBHS_OTGSC_IDPU                         (0x00000020)   /* ID pull enable */
 #else
@@ -383,12 +383,7 @@ changes. */
 
 #define  VUSBHS_OTGSC_DP                           (0x00000010)   /* Data-pulsing */
 #define  VUSBHS_OTGSC_OT                           (0x00000008)   /* OTG termination */
-#if 0
-    #define  VUSBHS_OTGSC_VO                       (0x00000004)   /* Vbus on */
-#endif
-
 #define  VUSBHS_OTGSC_HAAR                         (0x00000004)   /* Auto reset bit*/
-
 #define  VUSBHS_OTGSC_VC                           (0x00000002)   /* Vbus charge */
 #define  VUSBHS_OTGSC_VD                           (0x00000001)   /* Vbus discharge */
 
@@ -405,7 +400,7 @@ typedef struct {
          volatile USB_REGISTER   DCI_VERSION;      /* DC version number and reserved 16 bits */
          volatile USB_REGISTER   DCC_PARAMS;       /* DC Capability Parameters */
       } CAPABILITY_REGISTERS;
-      
+
       struct  {
          volatile USB_REGISTER   USB_CMD;                   /* Command register */
          volatile USB_REGISTER   USB_STS;                   /* Status register */
@@ -426,7 +421,7 @@ typedef struct {
          volatile USB_REGISTER   ENDPTCOMPLETE;             /* Endpoint Interrupt On Complete */
          volatile USB_REGISTER   ENDPTCTRLX[16];            /* Endpoint Control, where x = 0.. 15 */
       } OPERATIONAL_DEVICE_REGISTERS;
-      
+
       struct  {
          volatile USB_REGISTER   USB_CMD;                   /* Command register */
          volatile USB_REGISTER   USB_STS;                   /* Status register */
@@ -446,13 +441,13 @@ typedef struct {
 } VUSB20_REG_STRUCT, _PTR_ VUSB20_REG_STRUCT_PTR;
 
 typedef struct {
-   volatile uint_32   MAX_PKT_LENGTH;    /* Bits 16..26 Bit 15 is Interrupt 
-                                          ** On Setup 
+   volatile uint_32   MAX_PKT_LENGTH;    /* Bits 16..26 Bit 15 is Interrupt
+                                          ** On Setup
                                           */
    volatile uint_32   CURR_DTD_PTR;        /* Current dTD Pointer */
    volatile uint_32   NEXT_DTD_PTR;        /* Next dTD Pointer */
-   volatile uint_32   SIZE_IOC_INT_STS;    /* Total bytes (16..30), IOC (15), 
-                                          ** INT (8), STS (0-7) 
+   volatile uint_32   SIZE_IOC_INT_STS;    /* Total bytes (16..30), IOC (15),
+                                          ** INT (8), STS (0-7)
                                           */
    volatile uint_32   BUFF_PTR0;           /* Buffer pointer Page 0 (12-31) */
    volatile uint_32   BUFF_PTR1;           /* Buffer pointer Page 1 (12-31) */
@@ -460,8 +455,8 @@ typedef struct {
    volatile uint_32   BUFF_PTR3;           /* Buffer pointer Page 3 (12-31) */
    volatile uint_32   BUFF_PTR4;           /* Buffer pointer Page 4 (12-31) */
    volatile uint_32   RESERVED1;
-   volatile uint_8    SETUP_BUFFER[8];     /* 8 bytes of setup data that follows 
-                                            ** the Setup PID 
+   volatile uint_8    SETUP_BUFFER[8];     /* 8 bytes of setup data that follows
+                                            ** the Setup PID
                                             */
    volatile uint_32   RESERVED2[4];
 } VUSB20_EP_QUEUE_HEAD_STRUCT, _PTR_ VUSB20_EP_QUEUE_HEAD_STRUCT_PTR;
@@ -473,13 +468,13 @@ typedef struct {
 } SCRATCH_STRUCT, _PTR_ SCRATCH_STRUCT_PTR;
 
 typedef struct ep_tr_struct {
-   volatile uint_32      NEXT_TR_ELEM_PTR; /* Memory address of next 
+   volatile uint_32      NEXT_TR_ELEM_PTR; /* Memory address of next
                                           ** dTD to be processed (5-31)
-                                          ** and the T (bit 0) indicating 
+                                          ** and the T (bit 0) indicating
                                           ** pointer validity
                                           */
-   volatile uint_32      SIZE_IOC_STS;     /* total bytes (16-30), 
-                                          ** IOC (15), Status (0-7) 
+   volatile uint_32      SIZE_IOC_STS;     /* total bytes (16-30),
+                                          ** IOC (15), Status (0-7)
                                           */
    volatile uint_32      BUFF_PTR0;        /* Buffer pointer Page 0 */
    volatile uint_32      BUFF_PTR1;        /* Buffer pointer Page 1 */
@@ -490,10 +485,10 @@ typedef struct ep_tr_struct {
 } VUSB20_EP_TR_STRUCT, _PTR_ VUSB20_EP_TR_STRUCT_PTR;
 
 typedef struct {
-   uint_32      NEXT_LINK_PTR;    /* (5-31) Memory address of 
-                                          ** next schedule data structure 
-                                          ** item Type (1..2 ) and the 
-                                          ** T (bit 0) indicating pointer 
+   uint_32      NEXT_LINK_PTR;    /* (5-31) Memory address of
+                                          ** next schedule data structure
+                                          ** item Type (1..2 ) and the
+                                          ** T (bit 0) indicating pointer
                                           ** validity
                                           */
    uint_32      TR_STATUS_CTL_LIST[8];  /* bits 31-28: Status,
@@ -502,8 +497,8 @@ typedef struct {
                                                 ** bits 14-12: Page Select
                                                 ** bits 11-0: Tr X offset
                                                 */
-   uint_32      BUFFER_PAGE_PTR_LIST[7];  /* bits 31-12 4K aligned pointer 
-                                                ** to physical memory 
+   uint_32      BUFFER_PAGE_PTR_LIST[7];  /* bits 31-12 4K aligned pointer
+                                                ** to physical memory
                                                 ** bits 11-8 endpoint no.
                                                 ** bit 7: reserved
                                                 ** bits 6-0 device address*/
@@ -517,10 +512,10 @@ typedef struct {
 } EHCI_ITD_STRUCT, _PTR_ EHCI_ITD_STRUCT_PTR;
 
 typedef struct {
-   uint_32      NEXT_LINK_PTR;    /* (5-31) Memory address of 
-                                          ** next schedule data structure 
-                                          ** item Type (1..2 ) and the 
-                                          ** T (bit 0) indicating pointer 
+   uint_32      NEXT_LINK_PTR;    /* (5-31) Memory address of
+                                          ** next schedule data structure
+                                          ** item Type (1..2 ) and the
+                                          ** T (bit 0) indicating pointer
                                           ** validity
                                           */
    uint_32      EP_CAPAB_CHARAC;  /* bits 31: Direction (I/O),
@@ -532,30 +527,30 @@ typedef struct {
                                           ** bit 7: reserved
                                           ** bits 6-0: device address
                                           */
-   uint_32      UFRAME_SCHED_CTL; /* bits 31-16: reserved 
+   uint_32      UFRAME_SCHED_CTL; /* bits 31-16: reserved
                                           ** bits 15-8: Split completion mask
                                           ** bits 7-0: Split start mask
                                           */
    uint_32      TRANSFER_STATE;   /* bit 31: int on complete
                                           ** bit 30: Page Select
                                           ** bits 29-26: Reserved
-                                          ** bits 25-16: total bytes to 
+                                          ** bits 25-16: total bytes to
                                           ** transfer
-                                          ** bits 15-8: uframe 
+                                          ** bits 15-8: uframe
                                           ** complete-split progress mask
                                           ** bits 7-0: status
                                           */
-   uint_32      BUFFER_PTR_0;     /* bits 31-12: 4K aligned pointer 
-                                          ** to physical memory 
+   uint_32      BUFFER_PTR_0;     /* bits 31-12: 4K aligned pointer
+                                          ** to physical memory
                                           ** bits 11-0: Current offset
                                           */
-   uint_32      BUFFER_PTR_1;     /* bits 31-12: 4K aligned pointer 
-                                          ** to physical memory 
+   uint_32      BUFFER_PTR_1;     /* bits 31-12: 4K aligned pointer
+                                          ** to physical memory
                                           ** bits 11-5 reserved
                                           ** bits 4-3 tr position
                                           ** bits 2-0 tr count
                                           */
-   uint_32      BACK_LINK_PTR;    /* bits 31-5 back pointer points to sITD 
+   uint_32      BACK_LINK_PTR;    /* bits 31-5 back pointer points to sITD
                                           ** bits 4-1: reserved
                                           ** bit 0: terminate
                                           */
@@ -570,20 +565,20 @@ typedef struct {
 } EHCI_SITD_STRUCT, _PTR_ EHCI_SITD_STRUCT_PTR;
 
 typedef struct {
-   uint_32      NEXT_QTD_PTR;     /* (5-31) Memory address of 
+   uint_32      NEXT_QTD_PTR;     /* (5-31) Memory address of
                                           ** next qTD to be processed
-                                          ** (4..1) reserved 
-                                          ** T (bit 0) indicating pointer 
+                                          ** (4..1) reserved
+                                          ** T (bit 0) indicating pointer
                                           ** validity
                                           */
-   uint_32      ALT_NEXT_QTD_PTR; /* bits 31-5: alternate next 
-                                          ** qTD if the above one encounters 
+   uint_32      ALT_NEXT_QTD_PTR; /* bits 31-5: alternate next
+                                          ** qTD if the above one encounters
                                           ** a short packet
-                                          ** (4..1) reserved 
-                                          ** T (bit 0) indicating pointer 
+                                          ** (4..1) reserved
+                                          ** T (bit 0) indicating pointer
                                           ** validity
                                           */
-   uint_32      TOKEN;            /* bits 31: data toggle 
+   uint_32      TOKEN;            /* bits 31: data toggle
                                           ** bits 30-16: Total bytes to transfer
                                           ** bit 15: Interrupt on Complete
                                           ** bits 14-12: Current page
@@ -591,23 +586,23 @@ typedef struct {
                                           ** bits 9-8: PID code
                                           ** bits 7-0: status
                                           */
-   uint_32      BUFFER_PTR_0;     /* bit 31-12: 4K-page aligned 
+   uint_32      BUFFER_PTR_0;     /* bit 31-12: 4K-page aligned
                                           ** physical memory address
                                           ** bit 11-0: Current Offset
                                           */
-   uint_32      BUFFER_PTR_1;     /* bit 31-12: 4K-page aligned 
+   uint_32      BUFFER_PTR_1;     /* bit 31-12: 4K-page aligned
                                           ** physical memory address
                                           ** bit 11-0: reserved
                                           */
-   uint_32      BUFFER_PTR_2;     /* bit 31-12: 4K-page aligned 
+   uint_32      BUFFER_PTR_2;     /* bit 31-12: 4K-page aligned
                                           ** physical memory address
                                           ** bit 11-0: reserved
                                           */
-   uint_32      BUFFER_PTR_3;     /* bit 31-12: 4K-page aligned 
+   uint_32      BUFFER_PTR_3;     /* bit 31-12: 4K-page aligned
                                           ** physical memory address
                                           ** bit 11-0: reserved
                                           */
-   uint_32      BUFFER_PTR_4;     /* bit 31-12: 4K-page aligned 
+   uint_32      BUFFER_PTR_4;     /* bit 31-12: 4K-page aligned
                                           ** physical memory address
                                           ** bit 11-0: reserved
                                           */
@@ -618,17 +613,17 @@ typedef struct {
 } EHCI_QTD_STRUCT, _PTR_ EHCI_QTD_STRUCT_PTR;
 
 typedef struct {
-   uint_32      HORIZ_LINK_PTR;   /* (5-31) Memory address of 
+   uint_32      HORIZ_LINK_PTR;   /* (5-31) Memory address of
                                           ** next data object to be processed
-                                          ** (4..3) reserved 
+                                          ** (4..3) reserved
                                           ** (2..1) type of the item
-                                          ** T (bit 0) indicating pointer 
+                                          ** T (bit 0) indicating pointer
                                           ** validity
                                           */
    uint_32      EP_CAPAB_CHARAC1; /* bits 31-28: NAK count reload,
                                           ** bit 27: Control endpoint flag
                                           ** bit 26-16: Maximum packet length
-                                          ** bit 15: Head of reclamation 
+                                          ** bit 15: Head of reclamation
                                           ** list flag
                                           ** bit 14: data toggle control
                                           ** bits 13-12: endpoint speed
@@ -636,8 +631,8 @@ typedef struct {
                                           ** bits 7: Inactivate on next tr
                                           ** bits 6-0: Device address
                                           */
-   uint_32      EP_CAPAB_CHARAC2; /* bits 31-30: High-BW pipe 
-                                          ** Multiplier, 
+   uint_32      EP_CAPAB_CHARAC2; /* bits 31-30: High-BW pipe
+                                          ** Multiplier,
                                           ** bit 29-23: Port number
                                           ** bit 22-16: Hub address
                                           ** bit 15-8: Split completion mask
@@ -663,26 +658,26 @@ typedef struct {
                                           ** physical memory address
                                           ** bit 11-0: reserved
                                           */
-   uint_32      BUFFER_PTR_0;     /* bit 31-12: 4K-page aligned 
+   uint_32      BUFFER_PTR_0;     /* bit 31-12: 4K-page aligned
                                           ** physical memory address
                                           ** bit 11-0: reserved
                                           */
-   uint_32      BUFFER_PTR_1;     /* bit 31-12: 4K-page aligned 
+   uint_32      BUFFER_PTR_1;     /* bit 31-12: 4K-page aligned
                                           ** physical memory address
-                                          ** bit 7-0: Split-transaction, 
+                                          ** bit 7-0: Split-transaction,
                                           ** complete-split progress
                                           */
-   uint_32      BUFFER_PTR_2;     /* bits 31-12: 4K-page aligned 
+   uint_32      BUFFER_PTR_2;     /* bits 31-12: 4K-page aligned
                                           ** physical memory address
                                           ** bits 11-5: S-bytes
-                                          ** bits 4-0: Split-transaction 
+                                          ** bits 4-0: Split-transaction
                                           ** frame tag
                                           */
-   uint_32      BUFFER_PTR_3;     /* bit 31-12: 4K-page aligned 
+   uint_32      BUFFER_PTR_3;     /* bit 31-12: 4K-page aligned
                                           ** physical memory address
                                           ** bit 11-0: reserved
                                           */
-   uint_32      BUFFER_PTR_4;     /* bit 31-12: 4K-page aligned 
+   uint_32      BUFFER_PTR_4;     /* bit 31-12: 4K-page aligned
                                           ** physical memory address
                                           ** bit 11-0: reserved
                                           */
@@ -692,19 +687,19 @@ typedef struct {
 } EHCI_QH_STRUCT, _PTR_ EHCI_QH_STRUCT_PTR;
 
 typedef struct {
-   uint_32      NORMAL_PATH_LINK_PTR;   /* (5-31) Memory address of 
+   uint_32      NORMAL_PATH_LINK_PTR;   /* (5-31) Memory address of
                                                 ** next data object to be processed
                                                 ** in the periodic list
-                                                ** bits 4-3: reserved 
+                                                ** bits 4-3: reserved
                                                 ** (2..1) type of the item
-                                                ** T (bit 0) indicating pointer 
+                                                ** T (bit 0) indicating pointer
                                                 ** validity
                                                 */
-   uint_32      BACK_PATH_LINK_PTR;     /* bits 31-5: Memory address of 
+   uint_32      BACK_PATH_LINK_PTR;     /* bits 31-5: Memory address of
                                                 ** the queue head,
                                                 ** bit 4-3: reserved
                                                 ** (2..1) type of the item
-                                                ** T (bit 0) indicating pointer 
+                                                ** T (bit 0) indicating pointer
                                                 ** validity
                                                 */
    SCRATCH_STRUCT_PTR   SCRATCH_PTR;
@@ -716,5 +711,3 @@ typedef uint_32   EHCI_FRAME_LIST_ELEMENT_POINTER;
 
 #endif /* __mvUsbCore_h__ */
 /* EOF */
-
-

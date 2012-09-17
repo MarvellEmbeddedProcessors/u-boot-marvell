@@ -1,16 +1,16 @@
 /*******************************************************************************
 
-This software file (the "File") is distributed by Marvell International Ltd. 
-or its affiliate(s) under the terms of the GNU General Public License Version 2, 
-June 1991 (the "License").  You may use, redistribute and/or modify this File 
-in accordance with the terms and conditions of the License, a copy of which 
-is available along with the File in the license.txt file or by writing to the 
-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+This software file (the "File") is distributed by Marvell International Ltd.
+or its affiliate(s) under the terms of the GNU General Public License Version 2,
+June 1991 (the "License").  You may use, redistribute and/or modify this File
+in accordance with the terms and conditions of the License, a copy of which
+is available along with the File in the license.txt file or by writing to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 or on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED 
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY 
-DISCLAIMED.  The GPL License provides additional details about this warranty 
+THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+DISCLAIMED.  The GPL License provides additional details about this warranty
 disclaimer.
 
 (C) Copyright 2004 - 2007 Marvell Semiconductor Israel Ltd. All Rights Reserved.
@@ -78,7 +78,7 @@ if they are not you need to modify the tr_complete routine to handle that */
 #define  ARC_USB_SERVICE_STALL                (0x17)
 
 typedef pointer _usb_device_handle;
-typedef void (*USB_SERVICE_FUNC)(void* handle, uint_8, boolean, uint_8, 
+typedef void (*USB_SERVICE_FUNC)(void* handle, uint_8, boolean, uint_8,
                                                  uint_8_ptr, uint_32, uint_8);
 
 #ifdef __cplusplus
@@ -100,7 +100,7 @@ void    _usb_device_shutdown(void* handle);
 void    _usb_device_stop(void* handle);
 void    _usb_device_start(void* handle);
 
-uint_8  _usb_device_init_endpoint(void* handle, uint_8 ep_num, uint_16 max_pkt_size, 
+uint_8  _usb_device_init_endpoint(void* handle, uint_8 ep_num, uint_16 max_pkt_size,
                                   uint_8 direction, uint_8 type, uint_8 flag);
 uint_8  _usb_device_deinit_endpoint(void* handle, uint_8 ep_num, uint_8 direction);
 
@@ -123,24 +123,24 @@ uint_8  _usb_device_unregister_service(void* handle, uint_8 type);
 
 
 /* These functions that implement USB 2.0 standard Chapter 9 Setup requests */
-void    mvUsbCh9GetStatus(void* handle, boolean setup, 
+void    mvUsbCh9GetStatus(void* handle, boolean setup,
                                   SETUP_STRUCT* ctrl_req);
 
-void    mvUsbCh9ClearFeature(void* handle, boolean setup, 
+void    mvUsbCh9ClearFeature(void* handle, boolean setup,
                                    SETUP_STRUCT* setup_ptr);
 
-void    mvUsbCh9SetFeature(void* handle, boolean setup, 
+void    mvUsbCh9SetFeature(void* handle, boolean setup,
                                  SETUP_STRUCT* setup_ptr);
 
-void    mvUsbCh9SetAddress(void* handle, boolean setup, 
+void    mvUsbCh9SetAddress(void* handle, boolean setup,
                                    SETUP_STRUCT* setup_ptr);
 
 /* DEBUG Functions */
-void    _usb_dci_vusb20_set_test_mode(void* handle, uint_16 testMode);   
+void    _usb_dci_vusb20_set_test_mode(void* handle, uint_16 testMode);
 
-void    _usb_debug_set_flags(uint_32 flags);     
+void    _usb_debug_set_flags(uint_32 flags);
 uint_32 _usb_debug_get_flags(void);
-     
+
 void    _usb_debug_init_trace_log(void);
 void    _usb_debug_print_trace_log(void);
 
@@ -156,4 +156,3 @@ void    _usb_ep_status(void* usbHandle, int ep_num, int direction);
 
 #endif /* __mvUsbDevApi_h__ */
 /* EOF */
-

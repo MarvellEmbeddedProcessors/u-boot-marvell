@@ -105,6 +105,13 @@ struct tag_mem32 {
 	u32	start;	/* physical start address */
 };
 
+#define ATAG_MEM64	0x54420002
+
+struct tag_mem64 {
+	__u64	size;
+	__u64	start;	/* physical start address */
+};
+
 /* VGA text type displays */
 #define ATAG_VIDEOTEXT	0x54410003
 
@@ -205,11 +212,32 @@ struct tag_memclk {
 	u32 fmemclk;
 };
 
+#if defined (CONFIG_MARVELL_TAG)
+/* Marvell uboot parameters */
+#define ATAG_MV_UBOOT		0x41000403
+#define MV_UBOOT_MAX_PORTS	4
+struct tag_mv_uboot {
+	u32 uboot_version;
+	u32 tclk;
+	u32 sysclk;
+	u32 isUsbHost;
+	char macAddr[MV_UBOOT_MAX_PORTS][6];
+	u16 mtu[MV_UBOOT_MAX_PORTS];
+#if defined (MV78XX0)
+	u32 fw_image_base;
+	u32 fw_image_size;
+#endif
+	u32 nand_ecc;
+	u32 board_module_config;
+};
+#endif
+
 struct tag {
 	struct tag_header hdr;
 	union {
 		struct tag_core		core;
 		struct tag_mem32	mem;
+		struct tag_mem64	mem64;
 		struct tag_videotext	videotext;
 		struct tag_ramdisk	ramdisk;
 		struct tag_initrd	initrd;
@@ -227,6 +255,12 @@ struct tag {
 		 * DC21285 specific
 		 */
 		struct tag_memclk	memclk;
+#if defined (CONFIG_MARVELL_TAG)
+                /*
+                 * Marvell specific
+                 */
+                struct tag_mv_uboot     mv_uboot;
+#endif
 	} u;
 };
 

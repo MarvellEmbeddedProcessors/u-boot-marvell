@@ -87,17 +87,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static MV_BOOL cpuTargetWinOverlap(MV_TARGET target, MV_ADDR_WIN *pAddrWin);
 
 MV_TARGET sampleAtResetTargetArray[] = BOOT_TARGETS_NAME_ARRAY;
-
-/*******************************************************************************
-* mvCpuIfVerify - Verify that the address decode registers matches the table
-*
-* INPUT:
-*       cpuAddrWinMap 	- Address decode table
-*
-* RETURN:
-*       MV_OK - pass MV_ERROR - fail
-*
-*******************************************************************************/
 MV_STATUS mvCpuIfVerify(MV_CPU_DEC_WIN *cpuAddrWinMap)
 {
 	MV_CPU_DEC_WIN win;
@@ -262,21 +251,13 @@ MV_STATUS mvCpuIfInitForCpu(MV_U32 cpu, MV_CPU_DEC_WIN *cpuAddrWinMap)
 		if (MV_TARGET_IS_PEX(target))
 			continue;
 #endif
-		if ((0 == cpuAddrWinMap[target].addrWin.size) || (DIS == cpuAddrWinMap[target].enable)) {
-			#if 0 /* TODO: windows are already disabled above, we need to skip only*/
-			if (MV_OK != mvCpuIfTargetWinEnable(target, MV_FALSE)) {
-				DB(mvOsPrintf("mvCpuIfInit:ERR. mvCpuIfTargetWinEnable fail\n"));
-				return MV_ERROR;
-			}
-			#else
-			{continue; }
-			#endif
-		} else {
+		if ((0 == cpuAddrWinMap[target].addrWin.size) || (DIS == cpuAddrWinMap[target].enable))
+			continue;
+		else {
 			if (MV_OK != mvCpuIfTargetWinSet(target, &cpuAddrWinMap[target])) {
 				DB(mvOsPrintf("mvCpuIfInit:ERR. mvCpuIfTargetWinSet fail\n"));
 				return MV_ERROR;
 			}
-
 			addrWin.baseLow = cpuAddrWinMap[target].addrWin.baseLow;
 			addrWin.baseHigh = cpuAddrWinMap[target].addrWin.baseHigh;
 			if (0xffffffff == mvAhbToMbusWinRemap(cpuAddrWinMap[target].winNum, &addrWin)) {
@@ -285,16 +266,6 @@ MV_STATUS mvCpuIfInitForCpu(MV_U32 cpu, MV_CPU_DEC_WIN *cpuAddrWinMap)
 			}
 		}
 	}
-#if 0
-/* This is not needed anymore cause pex enabled is already at CtrlEnvInit */
-#ifdef MV_INCLUDE_PEX
-	if (cpu == 0) {		/* Not needed for all CPUs */
-		MV_U32 pexUnits = mvCtrlPexMaxUnitGet();
-		for (i = 0; i < pexUnits; i++)
-			mvCpuIfEnablePex(i);
-	}
-#endif
-#endif
 	return MV_OK;
 }
 

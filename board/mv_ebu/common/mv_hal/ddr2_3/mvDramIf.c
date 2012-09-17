@@ -135,6 +135,35 @@ MV_U32 mvDramIfSizeGet(MV_VOID)
 	DB(mvOsPrintf("Dram: mvDramIfSizeGet size is %x \n", size));
 	return size;
 }
+MV_U32 mvDramIfHwSizeGet(MV_VOID)
+{
+	MV_U32 base = 0;
+	MV_U32 size, cs, totalSize = 0;
+
+	for (cs = 0; cs < SDRAM_MAX_CS; cs++) {
+		size = MV_REG_READ(SDRAM_SIZE_REG(cs)) & SDRAM_ADDR_MASK;
+		if ((size > 0) && (base < SDRAM_MAX_ADDR)) {
+			size |= ~(SDRAM_ADDR_MASK);
+
+			/* Check if out of max window size and resize the window */
+			if (base+size > SDRAM_MAX_ADDR)
+				size = SDRAM_MAX_ADDR - base - 1;
+
+			base += (size + 1);
+			totalSize += size;
+		}
+	}
+	return totalSize;
+}
+MV_U32 mvDramIfHwCsSizeGet(MV_U32 cs)
+{
+	MV_U32 size;
+
+	size = MV_REG_READ(SDRAM_SIZE_REG(cs)) & SDRAM_ADDR_MASK;
+	if (size > 0) 
+		size |= ~(SDRAM_ADDR_MASK);
+	return size;
+}
 
 /*******************************************************************************
 * sdramIfWinOverlap - Check if an address window overlap an SDRAM address window

@@ -373,4 +373,3 @@ extern "C" {
 #endif
 
 #endif /* __INCmvDS1339Regh */
-

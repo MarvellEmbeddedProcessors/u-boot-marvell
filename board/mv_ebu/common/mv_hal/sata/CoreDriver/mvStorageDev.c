@@ -518,8 +518,6 @@ MV_BOOLEAN mvStorageDevATASoftResetDevice(MV_SATA_ADAPTER *pAdapter,
 					  MV_U8 PMPort, MV_STORAGE_DEVICE_REGISTERS *registerStruct)
 {
 	MV_SATA_CHANNEL *pSataChannel;
-	MV_BUS_ADDR_T ioBaseAddr;
-	MV_U32 eDmaRegsOffset;
 	MV_BOOLEAN result;
 
 	if (pAdapter == NULL) {
@@ -528,7 +526,6 @@ MV_BOOLEAN mvStorageDevATASoftResetDevice(MV_SATA_ADAPTER *pAdapter,
 		return MV_FALSE;
 	}
 	pSataChannel = pAdapter->sataChannel[channelIndex];
-	ioBaseAddr = pAdapter->adapterIoBaseAddress;
 	if (pSataChannel == NULL) {
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_FATAL_ERROR, " %d %d:  channel data structu"
 			 "re is not allocated\n", pAdapter->adapterId, channelIndex);
@@ -536,7 +533,6 @@ MV_BOOLEAN mvStorageDevATASoftResetDevice(MV_SATA_ADAPTER *pAdapter,
 	}
 
 	mvOsSemTake(&pSataChannel->semaphore);
-	eDmaRegsOffset = pSataChannel->eDmaRegsOffset;
 
 	if (pSataChannel->queueCommandsEnabled == MV_TRUE) {
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_ERROR, " %d %d:  mvStorageDevATASoft"
@@ -622,7 +618,6 @@ MV_BOOLEAN _isDeviceBsyBitOff(MV_SATA_CHANNEL *pSataChannel)
 MV_BOOLEAN mvStorageDevATAStartSoftResetDevice(MV_SATA_ADAPTER *pAdapter, MV_U8 channelIndex, MV_U8 PMPort)
 {
 	MV_SATA_CHANNEL *pSataChannel;
-	MV_BUS_ADDR_T ioBaseAddr;
 
 	if (pAdapter == NULL) {
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_FATAL_ERROR, "    :  mvStorageDevATASoftRes"
@@ -630,7 +625,6 @@ MV_BOOLEAN mvStorageDevATAStartSoftResetDevice(MV_SATA_ADAPTER *pAdapter, MV_U8 
 		return MV_FALSE;
 	}
 	pSataChannel = pAdapter->sataChannel[channelIndex];
-	ioBaseAddr = pAdapter->adapterIoBaseAddress;
 	if (pSataChannel == NULL) {
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_FATAL_ERROR, " %d %d:  channel data structu"
 			 "re is not allocated\n", pAdapter->adapterId, channelIndex);
@@ -677,7 +671,6 @@ MV_BOOLEAN mvStorageIsDeviceBsyBitOff(MV_SATA_ADAPTER *pAdapter,
 				      MV_U8 channelIndex, MV_STORAGE_DEVICE_REGISTERS *registerStruct)
 {
 	MV_SATA_CHANNEL *pSataChannel;
-	MV_BUS_ADDR_T ioBaseAddr;
 	MV_BOOLEAN result;
 
 	if (pAdapter == NULL) {
@@ -686,7 +679,6 @@ MV_BOOLEAN mvStorageIsDeviceBsyBitOff(MV_SATA_ADAPTER *pAdapter,
 		return MV_FALSE;
 	}
 	pSataChannel = pAdapter->sataChannel[channelIndex];
-	ioBaseAddr = pAdapter->adapterIoBaseAddress;
 	if (pSataChannel == NULL) {
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_FATAL_ERROR, " %d %d:  channel data structu"
 			 "re is not allocated\n", pAdapter->adapterId, channelIndex);
@@ -814,169 +806,6 @@ MV_BOOLEAN mvStorageDevATAExecuteNonUDMACommand(MV_SATA_ADAPTER *pAdapter,
 	return result;
 }
 
-#if 0
-MV_BOOLEAN executePacketCommand(MV_SATA_ADAPTER *pAdapter,
-				MV_U8 channelIndex,
-				MV_NON_UDMA_PROTOCOL protocolType,
-				MV_U8 PMPort, MV_U16_PTR cdb, MV_U8 cdb_len, MV_U16_PTR dataBufPtr)
-{
-	MV_SATA_CHANNEL *pSataChannel = pAdapter->sataChannel[channelIndex];
-	MV_BUS_ADDR_T ioBaseAddr = pAdapter->adapterIoBaseAddress;
-	MV_U32 eDmaRegsOffset;
-	MV_U32 i;
-	MV_U32 count;
-	MV_U8 ATAstatus;
-
-	mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG | MV_DEBUG_NON_UDMA_COMMAND, " %d %d send PACKET "
-		 " command: protocol(%d) cdb %p cdb len %p buffer %p \n", pAdapter->adapterId,
-		 channelIndex, protocolType, cdb, cdb_len, dataBufPtr);
-
-	eDmaRegsOffset = pSataChannel->eDmaRegsOffset;
-	if ((PMPort) && ((pSataChannel->PMSupported == MV_FALSE) ||
-			 (pSataChannel->deviceType != MV_SATA_DEVICE_TYPE_PM))) {
-		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_ERROR, " %d %d:  executePacketCommand"
-			 " failed PM not supported for this channel\n",
-			 pSataChannel->mvSataAdapter->adapterId, pSataChannel->channelNumber);
-		mvOsSemRelease(&pSataChannel->semaphore);
-		return MV_FALSE;
-	}
-	{
-		if (isStorageDevReadyForPIO(pSataChannel) == MV_FALSE) {
-			mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_ERROR,
-				 " %d %d : Error in Issue NON UDMA command:"
-				 " isStorageDevReadyForPIO failed\n", pAdapter->adapterId, channelIndex);
-
-			return MV_FALSE;
-		}
-	}
-	_setActivePMPort(pSataChannel, PMPort);
-	if (pSataChannel->queueCommandsEnabled == MV_TRUE) {
-		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_ERROR, " %d %d:  PIO command failed:"
-			 "EDMA is active\n", pSataChannel->mvSataAdapter->adapterId, pSataChannel->channelNumber);
-		return MV_FALSE;
-	}
-
-	if (pAdapter->sataAdapterGeneration == MV_SATA_GEN_I)
-		disableStorageDevInterrupt(pSataChannel);
-
-	MV_REG_WRITE_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_FEATURES_REG_OFFSET, 0);
-
-	MV_REG_WRITE_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_SECTOR_COUNT_REG_OFFSET, 0);
-
-	MV_REG_WRITE_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_LBA_LOW_REG_OFFSET, 0);
-
-	MV_REG_WRITE_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_LBA_MID_REG_OFFSET, 0);
-
-	MV_REG_WRITE_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_LBA_HIGH_REG_OFFSET, 0x20);
-
-	MV_REG_WRITE_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_HEAD_REG_OFFSET, 0);
-	MV_CPU_WRITE_BUFFER_FLUSH();
-
-	/* 88SX60X1 FEr SATA #16 */
-	if (pAdapter->sataAdapterGeneration >= MV_SATA_GEN_II)
-		enableStorageDevInterrupt(pSataChannel);
-
-	MV_REG_WRITE_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_COMMAND_REG_OFFSET, MV_ATA_COMMAND_PACKET);
-
-	/* Wait for PIO Setup or completion */
-	if (waitWhileStorageDevIsBusy(pAdapter, ioBaseAddr, eDmaRegsOffset, 3100, 10000) == MV_FALSE) {
-		enableStorageDevInterrupt(pSataChannel);
-		return MV_FALSE;
-	}
-	if (protocolType == MV_NON_UDMA_PROTOCOL_PACKET_PIO_NON_DATA) {
-		enableStorageDevInterrupt(pSataChannel);
-		pSataChannel->recoveredErrorsCounter = 0;
-		return MV_TRUE;
-	}
-
-	/* Check the status register on DATA request commands */
-	ATAstatus = MV_REG_READ_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_STATUS_REG_OFFSET);
-	if (pAdapter->sataAdapterGeneration == MV_SATA_GEN_I) {
-		if (!(ATAstatus & MV_ATA_DATA_REQUEST_STATUS)) {
-			mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_ERROR, " %d %d: DRQ bit in ATA STATUS"
-				 " register is not set\n", pAdapter->adapterId, channelIndex);
-			enableStorageDevInterrupt(pSataChannel);
-			return MV_FALSE;
-		}
-	}
-	if (pAdapter->sataAdapterGeneration >= MV_SATA_GEN_II) {
-
-		if (waitForDRQ(pAdapter, ioBaseAddr, eDmaRegsOffset, 500, 10000)
-		    == MV_FALSE) {
-			mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_ERROR, " %d %d: DRQ bit in ATA STATUS"
-				 " register is not set\n", pAdapter->adapterId, channelIndex);
-			enableStorageDevInterrupt(pSataChannel);
-			return MV_FALSE;
-		}
-	}
-	for (i = 0; i < cdb_len; i++) {
-		MV_REG_WRITE_WORD(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_PIO_DATA_REG_OFFSET, cdb[i]);
-		MV_CPU_WRITE_BUFFER_FLUSH();
-	}
-
-	if (waitForDRQ(pAdapter, ioBaseAddr, eDmaRegsOffset, 500, 10000)
-	    == MV_FALSE) {
-		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_ERROR, " %d %d: DRQ bit in ATA STATUS"
-			 " register is not set\n", pAdapter->adapterId, channelIndex);
-		enableStorageDevInterrupt(pSataChannel);
-		return MV_FALSE;
-	}
-
-	mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG, " Status: %x\n",
-		 MV_REG_READ_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_STATUS_REG_OFFSET));
-
-	mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG, " Sector Count: %x\n",
-		 MV_REG_READ_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_SECTOR_COUNT_REG_OFFSET));
-
-	mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG, " LBA Mid: %x\n",
-		 MV_REG_READ_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_LBA_MID_REG_OFFSET));
-
-	mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG, " LBA High: %x\n",
-		 MV_REG_READ_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_LBA_HIGH_REG_OFFSET));
-
-	count = MV_REG_READ_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_LBA_MID_REG_OFFSET) +
-	    (MV_REG_READ_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_LBA_HIGH_REG_OFFSET) << 8);
-	count >>= 1;
-	for (i = 0; i < count; i++) {
-		if (protocolType == MV_NON_UDMA_PROTOCOL_PACKET_PIO_DATA_IN) {
-			dataBufPtr[i] = MV_REG_READ_WORD(ioBaseAddr, eDmaRegsOffset +
-							 MV_ATA_DEVICE_PIO_DATA_REG_OFFSET);
-		} else {
-			MV_REG_WRITE_WORD(ioBaseAddr, eDmaRegsOffset +
-					  MV_ATA_DEVICE_PIO_DATA_REG_OFFSET, dataBufPtr[i]);
-
-		}
-	}
-
-	/* Wait for the storage device to be available */
-	mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG, " %d %d: on non-UDMA sequence - checking if"
-		 " device is has finished the command\n", pAdapter->adapterId, channelIndex);
-
-	if (waitWhileStorageDevIsBusy(pAdapter, ioBaseAddr, eDmaRegsOffset, 50000, 100) == MV_FALSE) {
-		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG, " Status: %x\n",
-			 MV_REG_READ_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_STATUS_REG_OFFSET));
-
-		enableStorageDevInterrupt(pSataChannel);
-		return MV_FALSE;
-	}
-
-	if (pAdapter->sataAdapterGeneration >= MV_SATA_GEN_II) {
-
-		if (waitForDRQToClear(pAdapter, ioBaseAddr, eDmaRegsOffset, 50000, 100)
-		    == MV_FALSE) {
-			enableStorageDevInterrupt(pSataChannel);
-			return MV_FALSE;
-		}
-	}
-
-	mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG, " %d %d: Finish NonUdma Command. Status=0x%02x"
-		 "\n", pAdapter->adapterId, channelIndex,
-		 MV_REG_READ_BYTE(ioBaseAddr, eDmaRegsOffset + MV_ATA_DEVICE_STATUS_REG_OFFSET));
-	enableStorageDevInterrupt(pSataChannel);
-	pSataChannel->recoveredErrorsCounter = 0;
-	return MV_TRUE;
-}
-#endif /* 0 */
 MV_BOOLEAN executeNonUDMACommand(MV_SATA_ADAPTER *pAdapter,
 				 MV_U8 channelIndex,
 				 MV_U8 PMPort,

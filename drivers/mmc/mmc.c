@@ -40,6 +40,10 @@
 static struct list_head mmc_devices;
 static int cur_dev_num = -1;
 
+/* buffer to SDIO/MMC DMA must be aligned to 128 */
+
+#define ALIGN_SIZE 128
+
 int __board_mmc_getcd(struct mmc *mmc) {
 	return -1;
 }
@@ -51,17 +55,39 @@ static int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 			struct mmc_data *data)
 {
 	struct mmc_data backup;
+	char *aligned_dest;
+	char *temp = NULL;
+	char *ptr  = NULL;
 	int ret;
 
 	memset(&backup, 0, sizeof(backup));
 
-#ifdef CONFIG_MMC_TRACE
-	int i;
-	u8 *ptr;
 
+	/* got a read commnand, alloc aligned buffer for the DMA to write to */
+	if ((data) && (data->flags & MMC_DATA_READ)) {
+		ptr = malloc((data->blocks * data->blocksize) + ALIGN_SIZE-1);
+		if (!ptr)
+			return 0;
+		
+		aligned_dest = (char *) (((uintptr_t)ptr + ALIGN_SIZE-1) & ~(ALIGN_SIZE-1));
+		temp = data->dest;
+		data->dest = aligned_dest;
+	}
+
+
+#ifdef CONFIG_MMC_TRACE
 	printf("CMD_SEND:%d\n", cmd->cmdidx);
 	printf("\t\tARG\t\t\t 0x%08X\n", cmd->cmdarg);
+	printf("\t\tdata\t\t\t 0x%x\n", data);
+#endif
 	ret = mmc->send_cmd(mmc, cmd, data);
+	/* copy back to original dest address */
+	if ((data) && (data->flags & MMC_DATA_READ)) {
+		memcpy(temp, data->dest, (data->blocks * data->blocksize));
+		data->dest = temp;
+		free(ptr);
+	}
+#ifdef CONFIG_MMC_TRACE
 	switch (cmd->resp_type) {
 		case MMC_RSP_NONE:
 			printf("\t\tMMC_RSP_NONE\n");
@@ -74,15 +100,13 @@ static int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 			printf("\t\tMMC_RSP_R1b\t\t 0x%08X \n",
 				cmd->response[0]);
 			break;
-		case MMC_RSP_R2:
-			printf("\t\tMMC_RSP_R2\t\t 0x%08X \n",
-				cmd->response[0]);
-			printf("\t\t          \t\t 0x%08X \n",
-				cmd->response[1]);
-			printf("\t\t          \t\t 0x%08X \n",
-				cmd->response[2]);
-			printf("\t\t          \t\t 0x%08X \n",
-				cmd->response[3]);
+	case MMC_RSP_R2:
+		{
+			int i;
+			printf("\t\tMMC_RSP_R2\t\t 0x%08X \n", cmd->response[0]);
+			printf("\t\t          \t\t 0x%08X \n", cmd->response[1]);
+			printf("\t\t          \t\t 0x%08X \n", cmd->response[2]);
+			printf("\t\t          \t\t 0x%08X \n", cmd->response[3]);
 			printf("\n");
 			printf("\t\t\t\t\tDUMPING DATA\n");
 			for (i = 0; i < 4; i++) {
@@ -94,17 +118,15 @@ static int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 					printf("%02X ", *ptr--);
 				printf("\n");
 			}
+		}
 			break;
 		case MMC_RSP_R3:
-			printf("\t\tMMC_RSP_R3,4\t\t 0x%08X \n",
-				cmd->response[0]);
+			printf("\t\tMMC_RSP_R3,4\t\t 0x%08X \n", cmd->response[0]);
 			break;
 		default:
 			printf("\t\tERROR MMC rsp not supported\n");
 			break;
 	}
-#else
-	ret = mmc->send_cmd(mmc, cmd, data);
 #endif
 	return ret;
 }
@@ -232,7 +254,7 @@ err_out:
 	return err;
 }
 
-static unsigned long
+static unsigned long 
 mmc_berase(int dev_num, unsigned long start, lbaint_t blkcnt)
 {
 	int err = 0;

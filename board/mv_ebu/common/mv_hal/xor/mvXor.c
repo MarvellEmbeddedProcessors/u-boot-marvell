@@ -278,13 +278,6 @@ MV_STATUS mvXorMemInit(MV_U32 chan, MV_U32 startPtr, MV_U32 blockSize, MV_U32 in
 			   __func__, XEXBSR_BLOCK_SIZE_MIN_VALUE, XEXBSR_BLOCK_SIZE_MAX_VALUE);
 		return MV_BAD_PARAM;
 	}
-#if 0
-/* tzachi - this is done purposely by u-boot */
-	if (0x0 == startPtr) {
-		mvOsPrintf("%s: ERR. startPtr is NULL pointer\n", __func__);
-		return MV_BAD_PARAM;
-	}
-#endif
 
 	/* set the operation mode to Memory Init */
 	temp = MV_REG_READ(XOR_CONFIG_REG(XOR_UNIT(chan), XOR_CHAN(chan)));
@@ -508,7 +501,7 @@ MV_STATUS mvXorCommandSet(MV_U32 chan, MV_COMMAND command)
 		return MV_OK;
 	}
 	/* command is paused and current state is active */
-	else if ((command == MV_PAUSED) && (state == MV_ACTIVE)) {
+	else if ((MV_PAUSED == command) && (MV_ACTIVE == state)) {
 		MV_REG_BIT_SET(XOR_ACTIVATION_REG(XOR_UNIT(chan), XOR_CHAN(chan)), XEXACTR_XEPAUSE_MASK);
 		return MV_OK;
 	}

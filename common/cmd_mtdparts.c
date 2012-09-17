@@ -412,8 +412,8 @@ static int part_validate(struct mtdids *id, struct part_info *part)
 		part->size = id->size - part->offset;
 
 	if (part->offset > id->size) {
-		printf("%s: offset %08x beyond flash size %08x\n",
-				id->mtd_id, part->offset, id->size);
+		printf("%s: offset %12llx beyond flash size %12llx\n",
+				id->mtd_id, (long long unsigned int)part->offset, (long long unsigned int)id->size);
 		return 1;
 	}
 
@@ -595,8 +595,8 @@ static int part_add(struct mtd_device *dev, struct part_info *part)
 static int part_parse(const char *const partdef, const char **ret, struct part_info **retpart)
 {
 	struct part_info *part;
-	unsigned long size;
-	unsigned long offset;
+	uint64_t size;
+	uint64_t offset;
 	const char *name;
 	int name_len;
 	unsigned int mask_flags;
@@ -615,7 +615,7 @@ static int part_parse(const char *const partdef, const char **ret, struct part_i
 	} else {
 		size = memsize_parse(p, &p);
 		if (size < MIN_PART_SIZE) {
-			printf("partition size too small (%lx)\n", size);
+			printf("partition size too small (%llx)\n", size);
 			return 1;
 		}
 	}
@@ -687,7 +687,7 @@ static int part_parse(const char *const partdef, const char **ret, struct part_i
 		part->auto_name = 0;
 	} else {
 		/* auto generated name in form of size@offset */
-		sprintf(part->name, "0x%08lx@0x%08lx", size, offset);
+		sprintf(part->name, "0x%012llx@0x%012llx", size, offset);
 		part->auto_name = 1;
 	}
 
@@ -710,7 +710,7 @@ static int part_parse(const char *const partdef, const char **ret, struct part_i
  * @param size a pointer to the size of the mtd device (output)
  * @return 0 if device is valid, 1 otherwise
  */
-static int mtd_device_validate(u8 type, u8 num, u32 *size)
+static int mtd_device_validate(u8 type, u8 num, uint64_t *size)
 {
 	struct mtd_info *mtd = NULL;
 
@@ -843,7 +843,7 @@ static int device_parse(const char *const mtd_dev, const char **ret, struct mtd_
 	LIST_HEAD(tmp_list);
 	struct list_head *entry, *n;
 	u16 num_parts;
-	u32 offset;
+	uint64_t offset;
 	int err = 1;
 
 	debug("===device_parse===\n");
@@ -1287,9 +1287,9 @@ static void print_partition_table(void)
 
 		list_for_each(pentry, &dev->parts) {
 			part = list_entry(pentry, struct part_info, link);
-			printf("%2d: %-20s0x%08x\t0x%08x\t%d\n",
-					part_num, part->name, part->size,
-					part->offset, part->mask_flags);
+			printf("%2d: %-20s0x%012llx\t\t0x%012llx\t\t%d\n",
+					part_num, part->name, (long long unsigned int)part->size,
+					(long long unsigned int)part->offset, part->mask_flags);
 #endif /* defined(CONFIG_CMD_MTDPARTS_SHOW_NET_SIZES) */
 			part_num++;
 		}
@@ -1314,10 +1314,10 @@ static void list_partitions(void)
 	if (current_mtd_dev) {
 		part = mtd_part_info(current_mtd_dev, current_mtd_partnum);
 		if (part) {
-			printf("\nactive partition: %s%d,%d - (%s) 0x%08x @ 0x%08x\n",
+			printf("\nactive partition: %s%d,%d - (%s) 0x%012llx @ 0x%012llx\n",
 					MTD_DEV_TYPE(current_mtd_dev->id->type),
 					current_mtd_dev->id->num, current_mtd_partnum,
-					part->name, part->size, part->offset);
+					part->name, (long long unsigned int)part->size, (long long unsigned int)part->offset);
 		} else {
 			printf("could not get current partition info\n\n");
 		}
@@ -1600,7 +1600,7 @@ static int parse_mtdids(const char *const ids)
 	struct list_head *entry, *n;
 	struct mtdids *id_tmp;
 	u8 type, num;
-	u32 size;
+	uint64_t size;
 	int ret = 1;
 
 	debug("\n---parse_mtdids---\nmtdids = %s\n\n", ids);

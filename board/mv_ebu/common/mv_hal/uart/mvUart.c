@@ -65,7 +65,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvUart.h"
 
 /* static variables */
-static volatile MV_UART_PORT * uartBase[MV_UART_MAX_CHAN];
+static volatile MV_UART_PORT * uartBase[MV_UART_MAX_CHAN]=
+{
+	mvUartBase(0),
+	mvUartBase(1),	
+	mvUartBase(2),
+	mvUartBase(3)
+};
+
 
 /*******************************************************************************
 * mvUartInit - Init a uart port.

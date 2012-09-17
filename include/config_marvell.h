@@ -1,0 +1,97 @@
+/*
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+ * MA 02111-1307 USA
+ */
+/*******************************************************************************
+Copyright (C) Marvell International Ltd. and its affiliates
+
+********************************************************************************
+Marvell GPL License Option
+
+If you received this File from Marvell, you may opt to use, redistribute and/or
+modify this File in accordance with the terms and conditions of the General
+Public License Version 2, June 1991 (the "GPL License"), a copy of which is
+available along with the File in the license.txt file or by writing to the Free
+Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
+on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
+
+THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+DISCLAIMED.  The GPL License provides additional details about this warranty
+disclaimer.
+*******************************************************************************/
+#ifndef __CONFIG_MARVELL_H
+#define __CONFIG_MARVELL_H
+
+
+/***********/
+/* General */
+/***********/
+#define MV88F78X60
+#define MV88F78X60_B0
+#define MV_DDR_64BIT
+#define MV_MEM_FASTPATH
+
+/**********************************/
+/* defines for DB-78x60-BP REV2   */
+/**********************************/
+#ifdef CONFIG_DB_78x60_BP_REV2
+
+	#define DB_88F78X60_REV2
+#elif defined(CONFIG_DB_78X60_PCAC_REV2)
+
+/**********************************/
+/* defines for DB-78x60-PCAC REV2   */
+/**********************************/
+	#define DB_78X60_PCAC_REV2
+
+#elif defined(CONFIG_RD_78460_NAS)
+
+/**********************************/
+/* defines for DB-78x60-NAS 	   */
+/**********************************/
+	#define RD_78460_NAS
+
+#elif defined(CONFIG_RD_78460_SERVER_REV2)
+
+/**********************************/
+/* defines for RD-78x60-SERVER    */
+/**********************************/
+
+	#define RD_78460_SERVER_REV2
+
+#elif defined(CONFIG_DB_784MP_GP)
+
+/**********************************/
+/* defines for DB-784MP-GP        */
+/**********************************/
+
+	#define DB_784MP_GP
+
+#elif defined(CONFIG_RD_78460_CUSTOMER)
+
+/**********************************/
+/* defines for DB-784MP-CUSTOMER  */
+/**********************************/
+
+	#define RD_78460_CUSTOMER
+
+#else
+#error "*** Error: Board type unspecified\n"
+
+#endif // CONFIG_RD_78460_GP
+
+#endif /* __CONFIG_MARVELL_H */
+

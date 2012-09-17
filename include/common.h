@@ -236,16 +236,21 @@ typedef void (interrupt_handler_t)(void *);
 		(__x < 0) ? -__x : __x;		\
 	})
 
+
+#if defined(MV_NAND_BOOT)
+#define	TOTAL_MALLOC_LEN	(CONFIG_SYS_MALLOC_LEN) /* we are doing this because CONFIG_ENV_ADDR is function */
+#else
 #if defined(CONFIG_ENV_IS_EMBEDDED)
 #define TOTAL_MALLOC_LEN	CONFIG_SYS_MALLOC_LEN
 #elif ( ((CONFIG_ENV_ADDR+CONFIG_ENV_SIZE) < CONFIG_SYS_MONITOR_BASE) || \
 	(CONFIG_ENV_ADDR >= (CONFIG_SYS_MONITOR_BASE + CONFIG_SYS_MONITOR_LEN)) ) || \
       defined(CONFIG_ENV_IS_IN_NVRAM)
 #define	TOTAL_MALLOC_LEN	(CONFIG_SYS_MALLOC_LEN + CONFIG_ENV_SIZE)
+
 #else
 #define	TOTAL_MALLOC_LEN	CONFIG_SYS_MALLOC_LEN
 #endif
-
+#endif
 /**
  * container_of - cast a member of a structure out to the containing structure
  * @ptr:	the pointer to the member.
@@ -334,8 +339,8 @@ extern ulong save_size;		/* Default Save Size */
 void	doc_probe(unsigned long physadr);
 
 /* common/cmd_net.c */
-int do_tftpb(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
-
+int do_tftpb (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int do_source (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 /* common/cmd_fat.c */
 int do_fat_fsload(cmd_tbl_t *, int, int, char * const []);
 

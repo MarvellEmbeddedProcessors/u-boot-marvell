@@ -1,5 +1,5 @@
-date:		6-September-2012
-release:	5.0.8
+date:		20-September-2012
+release:	5.1.2
 
 Release notes for Armada XP U-Boot
 ==================================
@@ -425,6 +425,35 @@ This U-Boot version supports the following boards:
 12. Changes from Previous Releases
 =================================
 
+	U-Boot 5.1.2 (20-Sep-2012).
+	===============================
+	1. DDR3 Training Sequence 2.18.0
+	2. Update GP board MPP(external HDD power ctrl and Fan Ctrl)
+	3. Fix Bug in stage boot command.
+
+	
+	U-Boot 5.1.1 (19-Sep-2012).
+	===============================
+	1. DDR3 Training Sequence 2.17.0
+	
+	U-Boot 5.1.0 (13-Sep-2012).
+	===============================
+	1. DDR3 Training Sequence 2.16.0
+	2. Update VANIR PEX driver. 
+	3. Update build script file for UART image.
+	4. Added example to customers porting guide
+	
+
+	U-Boot 5.0.9 (12-Sep-2012).
+	===============================
+	1. DDR3 Training Sequence 2.16.99
+	2. Update Vanir PEX driver
+	3. Update ETH phy 88E154X for jumbo packets
+	4. Update UART base register pointers.
+	5. Fixed BIOS mode table for B0
+	6. Fixed warning in stage boot code
+
+
 	U-Boot 5.0.8 (6-Sep-2012).
 	===============================
 	1. DDR3 Training Sequence 2.15.3
@@ -450,7 +479,7 @@ This U-Boot version supports the following boards:
 	6. Cancel windows overlap testing even for non-LPAE systems.
 	7. Update MPP for GP SATA interface.
 	8. Support pex scsi VANIR
-	9. Fixed-buildall-script
+	9. Fixed-buildall-
 
 
 
@@ -529,7 +558,6 @@ This U-Boot version supports the following boards:
 		No Link might be detected on several PEX slots when specific slots are populated. There is successful link on slot 0.0 and 0.2 when working with one slot only (SATA controller as EP). When trying to work with two controllers on slots above there is no link on any of them.
 	6. DSMP EP with DSMP RC fails T2 training stage after reset:
 		This issue was reported by a customer.  After issuing an EP reset from the RC (PCI Express Control Register 0x41a00[24] - hot reset); the RC does not reach link status and restarts TS1/TS2 sequence and ends up in compliance mode without link. This issue is consistently reproducible in Linux but NOT in UBOOT.
-
 
 
 14. Disclaimer

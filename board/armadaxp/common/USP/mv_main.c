@@ -535,7 +535,7 @@ void misc_init_r_env(void){
 	}
 	env = getenv("script_name");
 	if(!env){
-		setenv("script_name","uboot.scr");
+		setenv("script_name","boot.scr");
 	}
 	env = getenv("ide_path");
 		if(!env){
@@ -545,10 +545,24 @@ void misc_init_r_env(void){
 		if(!env){
 		setenv("script_addr_r","3000000");
 	}
+	env = getenv("bootargs_dflt");
+		if(!env){
+		setenv("bootargs_dflt","$console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
+ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params \
+clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
+	}
 #endif
 	env = getenv("pxe_files_load");
 		if(!env){
 		setenv("pxe_files_load",":default.arm-armadaxp-db:default.arm-armadaxp:default.arm");
+	}
+	env = getenv("pxefile_addr_r");
+		if(!env){
+		setenv("pxefile_addr_r","3100000");
+	}
+	env = getenv("initrd_name");
+		if(!env){
+		setenv("initrd_name","uInitrd");
 	}
 
 	/* netbsd boot arguments */
@@ -701,25 +715,40 @@ void misc_init_r_env(void){
 	env = getenv("bootcmd");
 	if(!env)
 #if defined(CONFIG_OF_LIBFDT)
+sdv
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
 ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000 - 0x1000000;");
+#elif defined(CONFIG_CMD_STAGE_BOOT)
+		setenv("bootcmd","stage_boot $boot_order");
 #elif defined(MV_INCLUDE_TDM) && defined(MV_INC_BOARD_QD_SWITCH)
+sdv
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
 ip=$ipaddr:$serverip$bootargs_end $mvNetConfig  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000; ");
 #elif defined(MV_INC_BOARD_QD_SWITCH)
+sd
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
 setenv bootargs $console  $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
 ip=$ipaddr:$serverip$bootargs_end $mvNetConfig  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000; ");
 #elif defined(MV_INCLUDE_TDM)
+sdv
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
 ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000; ");
-#else
+#else 
+sdv
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
 ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000; ");
+#endif
+#if defined(CONFIG_CMD_STAGE_BOOT)
+	env = getenv("bootcmd_auto");
+	if(!env)
+		setenv("bootcmd_auto","stage_boot $boot_order");
+	env = getenv("bootcmd_lgcy");
+	if(!env)
+		setenv("bootcmd_lgcy","tftpboot 0x2000000 $image_name; setenv bootargs $bootargs_dflt; bootm 0x2000000; ");
 #endif
 #endif /* (CONFIG_BOOTDELAY >= 0) */
 

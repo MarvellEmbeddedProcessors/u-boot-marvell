@@ -56,9 +56,16 @@ static char *from_env(char *envvar)
 static int format_mac_pxe(char *outbuf, size_t outbuf_len)
 {
 	size_t ethaddr_len;
-	char *p, *ethaddr;
-
-	ethaddr = from_env("ethaddr");
+	char *p, *ethaddr=0;
+	
+	if (strcmp(from_env("ethact"),"egiga0")==0)
+		ethaddr = from_env("ethaddr");
+	else if(strcmp(from_env("ethact"),"egiga1")==0)
+		ethaddr = from_env("eth1addr");
+	else if(strcmp(from_env("ethact"),"egiga2")==0)
+		ethaddr = from_env("eth2addr");
+	else if(strcmp(from_env("ethact"),"egiga3")==0)
+		ethaddr = from_env("eth3addr");
 
 	if (!ethaddr)
 		return -ENOENT;
@@ -204,9 +211,7 @@ static int get_relfile(char *file_path, void *file_addr)
 
 		return -ENAMETOOLONG;
 	}
-
 	strcat(relfile, file_path);
-
 	printf("Retrieving file: %s\n", relfile);
 
 	sprintf(addr_buf, "%p", file_addr);
@@ -270,7 +275,7 @@ static int get_pxelinux_path(char *file, void *pxefile_addr_r)
 	}
 
 	sprintf(path, PXELINUX_DIR "%s", file);
-
+	
 	return get_pxe_file(path, pxefile_addr_r);
 }
 
@@ -342,7 +347,7 @@ static int pxe_ipaddr_paths(void *pxefile_addr_r)
  */
 int pxe_env_files(void *pxefile_addr_r)
 {
-	int mask_pos, err;
+	int err;
 	char *temp, filename[20],file_enviroments[200];
 	
 	strcpy(file_enviroments,getenv("pxe_files_load"));

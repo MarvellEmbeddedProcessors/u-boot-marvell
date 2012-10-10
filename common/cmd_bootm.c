@@ -1085,6 +1085,7 @@ U_BOOT_CMD(
 /* bootd - boot default image */
 /*******************************************************************/
 #if defined(CONFIG_CMD_BOOTD)
+extern int marvell_recursive_parse;
 int do_bootd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	int rcode = 0;

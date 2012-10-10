@@ -419,7 +419,6 @@ disclaimer.
 /************/
 /* ETHERNET */
 /************/
-#define CONFIG_NET_DO_NOT_TRY_ANOTHER
 #define MV_ETH_NETA
 #define CONFIG_MV_ETH_NETA
 

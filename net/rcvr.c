@@ -81,10 +81,10 @@ BeaconSend (void)
  *	Send an Error Reply.
  */
 static void
-SendTftpError(ushort error, unsigned src, unsigned dst, uchar * errStr)
+SendTftpError(ushort error, unsigned src, unsigned dst, char * errStr)
 {
 	ushort * fld;
-	uchar *s;
+	char *s;
 
 	/* write first the opcode */
 	fld = (ushort*) (NetTxPacket + NetEthHdrSize() + IP_HDR_SIZE);
@@ -95,7 +95,7 @@ SendTftpError(ushort error, unsigned src, unsigned dst, uchar * errStr)
 	*fld = (((error & 0xFF) << 8) | ((error & 0xFF00) >> 8));
 
 	/* Add a string to explain */
-	s = (uchar*) ++fld;
+	s = (char *) ++fld;
 	sprintf(s, "%s", errStr);
 
 	/* Transmit the error message */
@@ -170,7 +170,7 @@ RecoveryHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 {
 	ushort opcode;
 	ushort * fld;
-	uchar * tftpfile = NULL;
+	char * tftpfile = NULL;
 	uchar * tftpmode = NULL;
     ushort rxPacketNumber;
 	unsigned dlen;
@@ -201,7 +201,7 @@ RecoveryHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 			debug_rcvr("New Peer Info (MAC %02x:%02x:%02x:%02x:%02x:%02x, IP %08x\n", NetServerEther[0], NetServerEther[1],
 				NetServerEther[2], NetServerEther[3], NetServerEther[4], NetServerEther[5], NetServerIP);
 
-			printf("Unsupported TFTP GET request received from %lu.%lu.%lu.%lu (MAC %02x:%02x:%02x:%02x:%02x:%02x)\n",
+			printf("Unsupported TFTP GET request received from %d.%d.%d.%d (MAC %02x:%02x:%02x:%02x:%02x:%02x)\n",
 				(NetServerIP & 0xFF), ((NetServerIP >> 8) & 0xFF), ((NetServerIP >> 16) & 0xFF), ((NetServerIP >> 24) & 0xFF),
 				NetServerEther[0], NetServerEther[1], NetServerEther[2], NetServerEther[3], NetServerEther[4],
 				NetServerEther[5]);
@@ -224,15 +224,15 @@ RecoveryHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 			debug_rcvr("New Peer Info (MAC %02x:%02x:%02x:%02x:%02x:%02x, IP %08x\n", NetServerEther[0], NetServerEther[1],
 				NetServerEther[2], NetServerEther[3], NetServerEther[4], NetServerEther[5], NetServerIP);
 
-			printf("New TFTP PUT request received from %lu.%lu.%lu.%lu (MAC %02x:%02x:%02x:%02x:%02x:%02x)\n",
+			printf("New TFTP PUT request received from %d.%d.%d.%d (MAC %02x:%02x:%02x:%02x:%02x:%02x)\n",
 				(NetServerIP & 0xFF), ((NetServerIP >> 8) & 0xFF), ((NetServerIP >> 16) & 0xFF), ((NetServerIP >> 24) & 0xFF),
 				NetServerEther[0], NetServerEther[1], NetServerEther[2], NetServerEther[3], NetServerEther[4],
 				NetServerEther[5]);
 
-			tftpfile = pkt +2;
+			tftpfile = (char *)pkt +2;
 			tftpmode = pkt + 3 + strlen (tftpfile);
-			debug_rcvr("TFTP WRQ received (Dest = %d, Src = %d, Len = %d, Opcode = %d, File = %s, Mode = %s, PeerTID = %d\n",
-								dest, src, len, opcode, tftpfile, tftpmode, src);
+			debug_rcvr("TFTP WRQ received (Dest = %d, Src = %d, Len = %d, Opcode = %d, File = %s, PeerTID = %d\n",
+								dest, src, len, opcode, tftpfile, src);
 
 			/* save the peer port # as the peerTID */
 			peerTID = src;
@@ -283,15 +283,15 @@ RecoveryHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 			debug_rcvr("New Peer Info (MAC %02x:%02x:%02x:%02x:%02x:%02x, IP %08x\n", NetServerEther[0], NetServerEther[1],
 				NetServerEther[2], NetServerEther[3], NetServerEther[4], NetServerEther[5], NetServerIP);
 
-			printf("TFTP PUT request received again from %lu.%lu.%lu.%lu (MAC %02x:%02x:%02x:%02x:%02x:%02x)\n",
+			printf("TFTP PUT request received again from %d.%d.%d.%d (MAC %02x:%02x:%02x:%02x:%02x:%02x)\n",
 				(NetServerIP & 0xFF), ((NetServerIP >> 8) & 0xFF), ((NetServerIP >> 16) & 0xFF), ((NetServerIP >> 24) & 0xFF),
 				NetServerEther[0], NetServerEther[1], NetServerEther[2], NetServerEther[3], NetServerEther[4],
 				NetServerEther[5]);
 
-			tftpfile = pkt +2;
+			tftpfile = (char *)pkt +2;
 			tftpmode = pkt + 3 + strlen (tftpfile);
-			debug_rcvr("TFTP WRQ received again (Dest = %d, Src = %d, Len = %d, Opcode = %d, File = %s, Mode = %s, PeerTID = %d\n",
-								dest, src, len, opcode, tftpfile, tftpmode, src);
+			debug_rcvr("TFTP WRQ received again (Dest = %d, Src = %d, Len = %d, Opcode = %d, File = %s, PeerTID = %d\n",
+								dest, src, len, opcode, tftpfile,  src);
 
 			/* save the peer port # as the peerTID */
 			peerTID = src;
@@ -438,7 +438,7 @@ void RecoverRequest(void)
 	if ((s = getenv("loadaddr")) != NULL)
 	{
 	imagePtr = (uchar *)simple_strtoul(s, NULL, 16);
-	printf("uImage load address 0x%08x\n", imagePtr);
+	printf("uImage load address 0x%08x\n", (unsigned int)imagePtr);
 	}
 	else
 	{

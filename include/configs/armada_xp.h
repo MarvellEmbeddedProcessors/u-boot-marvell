@@ -252,6 +252,8 @@ disclaimer.
 #define CONFIG_CMD_SCSI
 #define CONFIG_CMD_SAR
 #define CONFIG_CMD_STAGE_BOOT
+#define CONFIG_CMD_RCVR
+
 
 #if (defined(MV_INCLUDE_PEX) || defined(MV_INCLUDE_PCI))
 	#define CONFIG_PCI

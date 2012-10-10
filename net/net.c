@@ -105,6 +105,11 @@
 #endif
 #include "tftp.h"
 
+#if defined(CONFIG_CMD_RCVR)
+#include "rcvr.h"
+#endif
+
+
 DECLARE_GLOBAL_DATA_PTR;
 
 /** BOOTP EXTENTIONS **/
@@ -431,6 +436,11 @@ restart:
 #if defined(CONFIG_CMD_LINK_LOCAL)
 		case LINKLOCAL:
 			link_local_start();
+			break;
+#endif
+#if defined(CONFIG_CMD_RCVR)
+		case RCVR:
+			RecoverRequest();
 			break;
 #endif
 		default:
@@ -1258,6 +1268,9 @@ common:
 	case CDP:
 	case DHCP:
 	case LINKLOCAL:
+#if defined(CONFIG_CMD_RCVR)
+	case RCVR:
+#endif
 		if (memcmp(NetOurEther, "\0\0\0\0\0\0", 6) == 0) {
 			int num = eth_get_dev_index();
 

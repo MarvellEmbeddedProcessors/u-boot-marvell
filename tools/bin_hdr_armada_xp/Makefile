@@ -111,7 +111,7 @@ HOSTCPPFLAGS = $(CPPFLAGS)
 TGT = bin_hdr
 
 ASRC = ./src/bin_entry_axp.s
-CSRC =  ddr3_init.c mvHighSpeedEnvLib.c mvHighSpeedEnvSpec.c ./src/mvUart.c ./src/bin_hdr_twsi.c ./src/bin_sramcfg.c ./src/ddr3_spd.c ./src/utils.c
+CSRC =  ddr3_init.c mvHighSpeedEnvLib.c mvHighSpeedEnvSpec.c ./src/mvUart.c ./src/bin_hdr_twsi.c ./src/bin_sramcfg.c ./src/ddr3_spd.c ./src/utils.c ./src/suspendWakeup.c
 
 AOBJ = $(subst .s,.o,$(ASRC))
 COBJ = $(subst .c,.o,$(CSRC))

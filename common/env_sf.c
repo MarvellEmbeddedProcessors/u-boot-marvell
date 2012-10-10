@@ -315,8 +315,14 @@ int saveenv(void)
 
 void env_relocate_spec(void)
 {
-	char buf[CONFIG_ENV_SIZE];
+	char * buf;
 	int ret;
+	buf = (char *)malloc(CONFIG_ENV_SIZE);
+
+	if (!buf) {
+		set_default_env("!malloc() failed");
+		goto out;
+	}
 
 	env_flash = spi_flash_probe(CONFIG_ENV_SPI_BUS, CONFIG_ENV_SPI_CS,
 			CONFIG_ENV_SPI_MAX_HZ, CONFIG_ENV_SPI_MODE);

@@ -246,8 +246,8 @@ static int eepro100_send(struct eth_device *dev, void *packet, int length);
 static int eepro100_recv (struct eth_device *dev);
 static void eepro100_halt (struct eth_device *dev);
 
-#if defined(CONFIG_E500) || defined(CONFIG_DB64360) || defined(CONFIG_DB64460)
-#define bus_to_phys(a) (a)
+#if defined(CONFIG_E500) || (defined(CONFIG_MARVELL) && defined(__ARM__))
+#define bus_to_phys(a) pci_mem_to_phys((pci_dev_t)dev->priv, a)
 #define phys_to_bus(a) (a)
 #else
 #define bus_to_phys(a)	pci_mem_to_phys((pci_dev_t)dev->priv, a)

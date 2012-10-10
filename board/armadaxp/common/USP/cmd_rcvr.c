@@ -25,6 +25,11 @@ disclaimer.
 #include "gpp/mvGpp.h"
 #include "gpp/mvGppRegs.h"
 #include "boardEnv/mvBoardEnvLib.h"
+#ifdef CONFIG_USB_STORAGE
+#include "usb.h"
+extern int do_fat_fsload (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+extern int do_ext2load (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+#endif
 static u32 rcvrflag = 0;
 
 void recoveryDetection(void)
@@ -239,7 +244,7 @@ void recoveryCheck(void)
 		recoveryHandle();
 }
 
-int do_rcvr (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_rcvr (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	recoveryHandle();
 	return 1;

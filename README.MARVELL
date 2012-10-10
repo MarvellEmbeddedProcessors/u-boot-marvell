@@ -1,5 +1,5 @@
-date:		23-September-2012
-release:	5.1.3
+date:		03-October-2012
+release:	2012_Q4.0
 
 Release notes for Armada XP U-Boot
 ==================================
@@ -425,6 +425,14 @@ This U-Boot version supports the following boards:
 12. Changes from Previous Releases
 =================================
 
+	U-Boot 2012_Q4.0  (03-October-2012).
+	===============================
+	1. Change release name to 2012_Q4.0
+	2. DDR3 Training Sequence 3.0.0
+	3. Change customer board to armada_xp_rdcustomer
+	4 Update phy init(1540): support jumbo packes (GIGA2/3)
+	
+	
 	U-Boot 5.1.3 (23-Sep-2012).
 	===============================
 	1. DDR3 Training Sequence 2.20.0

@@ -104,14 +104,14 @@ void suspendWakeup(void)
 		/* Clear magic word to avoid succesive resumes */
 		(*boot_info++) =  0x0;
 
-		resumeFunc = *boot_info++;
+		resumeFunc = (void *)(*boot_info++);
 
 		DEBUG_INIT_S("Detected suspend to RAM. Returning to OS\n");
 
 		/* Restore registers */
 		reg_addr = (int *)(*boot_info++);
 		
-		while (reg_addr != REGISTER_LIST_END)
+		while (reg_addr != (int *)REGISTER_LIST_END)
 		{
 			reg_value = (*boot_info++);
 			*reg_addr = reg_value;

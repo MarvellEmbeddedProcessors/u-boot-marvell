@@ -501,7 +501,7 @@ MV_STATUS mvXorCommandSet(MV_U32 chan, MV_COMMAND command)
 		return MV_OK;
 	}
 	/* command is paused and current state is active */
-	else if ((MV_PAUSED == command) && (MV_ACTIVE == state)) {
+	else if ((MV_PAUSE == command) && (MV_ACTIVE == state)) {
 		MV_REG_BIT_SET(XOR_ACTIVATION_REG(XOR_UNIT(chan), XOR_CHAN(chan)), XEXACTR_XEPAUSE_MASK);
 		return MV_OK;
 	}

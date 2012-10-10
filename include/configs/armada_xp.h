@@ -44,7 +44,7 @@ disclaimer.
 /************/
 /* VERSIONS */
 /************/
-#define CONFIG_IDENT_STRING	" Marvell version: 5.1.0"
+#define CONFIG_IDENT_STRING	" Marvell version: 5.1.2"
 
 /* version number passing when loading Kernel */
 #define VER_NUM 0x11120000           /* 2011.12 */

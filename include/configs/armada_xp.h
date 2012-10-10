@@ -44,7 +44,7 @@ disclaimer.
 /************/
 /* VERSIONS */
 /************/
-#define CONFIG_IDENT_STRING	" Marvell version: 5.1.2"
+#define CONFIG_IDENT_STRING	" Marvell version: 5.1.3"
 
 /* version number passing when loading Kernel */
 #define VER_NUM 0x11120000           /* 2011.12 */
@@ -158,8 +158,8 @@ disclaimer.
 /*********/
 /* Debug */
 /*********/
-/* Faraj: TODO: define the right init address*/
 #define CONFIG_SYS_INIT_SP_ADDR		0x00FF0000  /* end of 16M scrubbed by training in bootrom*/
+
 #define	CONFIG_SYS_ATA_BASE_ADDR	0x20000000
 #define CONFIG_SYS_ATA_REG_OFFSET	0x0000	    /* Offset for normal register accesses*/
 #define CONFIG_SYS_ATA_DATA_OFFSET	0x0000	    /* Offset for data I/O */
@@ -704,6 +704,7 @@ disclaimer.
 #define MV_DFL_REGS		0xd0000000 	/* boot time MV_REGS */
 #define MV_REGS			INTER_REGS_BASE /* MV Registers will be mapped here */
 #define BOARD_LATE_INIT
+#define CONFIG_BOARD_LATE_INIT
 #undef CONFIG_USE_IRQ
 
 /* for running from L2 SRAM

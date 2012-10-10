@@ -8,6 +8,7 @@
 	stmfd	sp!, {r0 - r12, lr}	/* @ save registers on stack */
 	bl		mvCtrlHighSpeedSerdesPhyConfig
 	bl		ddr3Init
+	bl      suspendWakeup
 	mov	r0, #0x0				/* @ return value: 0x0 NO_ERR */
 	ldmfd	sp!, {r0 - r12, pc}	/* @ restore regs and return */
 	

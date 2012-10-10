@@ -7,7 +7,7 @@ sub HELP_MESSAGE
 	print "\n";
 	print "Options:\n";
 	print "\t-f    Boot device. Accepts spi, nor, nand\n";
-        print "\t-b    Board type. Accepts armada_xp_db, armada_xp_rdnas, armada_xp_pcac armada_xp_rdserver armada_xp_dbgp\n";
+        print "\t-b    Board type. Accepts armada_xp_db, armada_xp_rdnas, armada_xp_pcac armada_xp_rdserver armada_xp_dbgp armada_xp_rdcustomer\n";
 	print "\t-c    Clean build. calls make mrproper\n";
 	print "\t-o    Output dir/file. The image will be copied into this dir/file\n";
 	print "\t-e    Big Endian. If not specified Little endian is used\n";
@@ -86,7 +86,7 @@ if($opt_c eq 1)
            ($opt_b eq "armada_xp_pcac") or
            ($opt_b eq "armada_xp_rdserver") or
            ($opt_b eq "armada_xp_dbgp") or
-           ($opt_b eq "armada_xp_cust") )
+           ($opt_b eq "armada_xp_rdcustomer") )
 	{
 		$board = $opt_b;
 	}

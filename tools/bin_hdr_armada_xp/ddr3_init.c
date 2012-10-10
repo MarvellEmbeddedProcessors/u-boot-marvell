@@ -118,7 +118,6 @@ MV_U32 ddr3Init(void)
 	MV_U32	uiDdrWidth = BUS_WIDTH;
 
 	/* SoC/Board special Initializtions */
-
 	uiFabOpt = ddr3GetFabOpt();
 
 #ifdef SPD_SUPPORT
@@ -161,7 +160,7 @@ MV_U32 ddr3Init(void)
 	mvUartInit();
 	ddr3PrintVersion();
 	DEBUG_INIT_S("0 \n");
-	/* Lib version 2.17 */
+	/* Lib version 2.18 */
 
 	uiFabOpt = ddr3GetFabOpt();
 
@@ -369,6 +368,7 @@ MV_U32 ddr3GetCpuFreq(void)
 #elif defined(MV88F67XX)
 	uiCpuFreq = ((uiReg & REG_SAMPLE_RESET_CPU_FREQ_MASK) >> REG_SAMPLE_RESET_CPU_FREQ_OFFS);
 #endif
+
 	return uiCpuFreq;
 }
 

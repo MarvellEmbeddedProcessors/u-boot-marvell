@@ -4,12 +4,20 @@
 #include <net.h>
 #if defined(CONFIG_CMD_STAGE_BOOT)
 
+#ifdef CONFIG_SYS_HUSH_PARSER
+#include <hush.h>
+#endif
+
 #define LOAD_ADDR getenv("script_addr_r")
 #define SCRIPT_PATH getenv("ide_path")
 #define INTERFACE_HD "ide"
+#define FLAG_EXIT_FROM_LOOP 1
+#define FLAG_PARSE_SEMICOLON (1 << 1)	  /* symbol ';' is special for parser */
 	
 char enviroment[10][22];
 
+extern int marvell_recursive_parse;
+extern int parse_string_outer(const char *s, int flag);
 extern int do_pxe_boot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 extern int do_pxe_get(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 extern int do_dhcp (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
@@ -21,13 +29,20 @@ void restore_env(void);
 
 int do_stage_boot(cmd_tbl_t * cmdtb, int flag, int argc, char *argv[])
 {
-	char *path_to_image, *path_to_scr, *all_partions;
+	char *path_to_image, *path_to_scr, *path_to_initrd, *all_partions;
         ulong addr;
-	int j,i=1,step,len,index,device;
-	char * kernel_addr;
+	int j,i=1,step=0,len,index,device,initrd=0;
+	char * kernel_addr, *bootargs;
         char * args_to_func[5];
 	char device_prt[4];
 
+	if(argc < 2){
+		printf("No args, try help stage_boot\n");
+		return 0;
+	}
+	path_to_initrd = (char *)malloc((strlen(SCRIPT_PATH)+strlen(getenv("initrd_name")))*sizeof(char));
+	strcpy(path_to_initrd,SCRIPT_PATH);
+	strcat(path_to_initrd,getenv("initrd_name"));
 	path_to_image = (char *)malloc((strlen(SCRIPT_PATH)+strlen(getenv("image_name")))*sizeof(char));
 	strcpy(path_to_image,SCRIPT_PATH);
 	strcat(path_to_image,getenv("image_name"));
@@ -97,6 +112,18 @@ int do_stage_boot(cmd_tbl_t * cmdtb, int flag, int argc, char *argv[])
 				args_to_func[4]=path_to_image;
 				i = do_ext2load(cmdtb, 1, 5 , args_to_func);
 				addr = simple_strtoul(args_to_func[3], NULL, 16);
+				if( i==0 ){
+					int temp;
+					args_to_func[3]=getenv("ramdisk_addr_r");
+					args_to_func[4]=path_to_initrd;
+					temp = do_ext2load(cmdtb, 1, 5 , args_to_func);
+					if(temp == 0)
+					{
+						initrd = 1;
+						args_to_func[1] = getenv("kernel_addr_r");
+						args_to_func[2] = getenv("ramdisk_addr_r");
+					}
+				}
 			}
 		}
 		/* finish step 3 */
@@ -126,16 +153,44 @@ int do_stage_boot(cmd_tbl_t * cmdtb, int flag, int argc, char *argv[])
 		/* finish step 5 */
 	}
 	free(path_to_image);
-	free(path_to_scr);	
+	free(path_to_scr);
+	path_to_image = getenv("bootargs_dflt");
+	if(!path_to_image) {
+		printf("missing environment variable: bootargs_dflt\n");
+		return 0;
+	}
+	if (step == 3 && initrd ==1){
+		setenv("bootargs_dflt","console=ttyS0,115200 earlyprintk=ttyS0 root=/dev/sda2 ro pm_disable");
+	}
+	bootargs = (char *)malloc(sizeof(char)*(strlen(getenv("bootargs_dflt"))+17));
+	strcpy(bootargs,"setenv bootargs ");
+	#ifndef CONFIG_SYS_HUSH_PARSER
+		if (run_command(strcat(bootargs,getenv("bootargs_dflt")), flag) < 0) {
+			printf("missing environment variable: bootargs_dflt\n");
+			return 0;
+		}
+	#else
+		marvell_recursive_parse = 1;
+		if (parse_string_outer(strcat(bootargs,getenv("bootargs_dflt")),
+			FLAG_PARSE_SEMICOLON | FLAG_EXIT_FROM_LOOP) != 0){
+		printf("missing environment variable: bootargs_dflt\n");
+		marvell_recursive_parse = 0;
+		return 0;
+		}
+		marvell_recursive_parse = 0;
+	#endif		
 	if(i==0)
 	{	
 		if(step == 1 || step == 4) 
 			source(addr,NULL);
-		else if (step == 3 || step == 5)
+		else if ((step == 3 && initrd ==0 )|| step == 5)
 			do_bootm(cmdtb, 1,1,(char * const*)kernel_addr);
 		else if (step ==2)
-			 do_pxe_boot(cmdtb, 2, 1,(char * const *)NULL);
-
+			do_pxe_boot(cmdtb, 2, 1,(char * const *)NULL);
+		else if (step == 3 && initrd ==1){
+			do_bootm(cmdtb, 1,2,args_to_func);				
+		}
+			
 	}	        
 	else {
 		printf("Unable to load image/script\n");

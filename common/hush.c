@@ -293,6 +293,7 @@ static unsigned int last_return_code;
 #ifndef __U_BOOT__
 extern char **environ; /* This is in <unistd.h>, but protected with __USE_GNU */
 #endif
+int marvell_recursive_parse = 0;
 
 /* "globals" within this file */
 static uchar *ifs;
@@ -486,6 +487,7 @@ static int parse_string(o_string *dest, struct p_context *ctx, const char *src);
 static int parse_stream(o_string *dest, struct p_context *ctx, struct in_str *input0, int end_trigger);
 /*   setup: */
 static int parse_stream_outer(struct in_str *inp, int flag);
+int  recursive_parse_string_outer(struct in_str *inp, int flag);
 #ifndef __U_BOOT__
 static int parse_string_outer(const char *s, int flag);
 static int parse_file_outer(FILE *f);
@@ -1623,7 +1625,6 @@ static int run_pipe_real(struct pipe *pi)
 		}
 		if (child->sp) {
 			char * str = NULL;
-
 			str = make_string((child->argv + i));
 			parse_string_outer(str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
 			free(str);
@@ -3171,7 +3172,8 @@ static int parse_stream_outer(struct in_str *inp, int flag)
 		ctx.type = flag;
 		initialize_context(&ctx);
 		update_ifs_map();
-		if (!(flag & FLAG_PARSE_SEMICOLON) || (flag & FLAG_REPARSING)) mapset((uchar *)";$&|", 0);
+		if (marvell_recursive_parse == 0)
+			if (!(flag & FLAG_PARSE_SEMICOLON) || (flag & FLAG_REPARSING)) mapset((uchar *)";$&|", 0);
 		inp->promptmode=1;
 		rcode = parse_stream(&temp, &ctx, inp, '\n');
 #ifdef __U_BOOT__

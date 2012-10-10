@@ -1247,7 +1247,7 @@ int parse_line (char *line, char *argv[])
 /****************************************************************************/
 
 #ifndef CONFIG_SYS_HUSH_PARSER
-static void process_macros (const char *input, char *output)
+void process_macros (const char *input, char *output)
 {
 	char c, prev;
 	const char *varname_start = NULL;

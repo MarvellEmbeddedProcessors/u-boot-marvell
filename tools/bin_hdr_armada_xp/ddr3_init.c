@@ -161,7 +161,7 @@ MV_U32 ddr3Init(void)
 	mvUartInit();
 	ddr3PrintVersion();
 	DEBUG_INIT_S("0 \n");
-	/* Lib version 2.16 */
+	/* Lib version 2.17 */
 
 	uiFabOpt = ddr3GetFabOpt();
 
@@ -217,7 +217,7 @@ MV_U32 ddr3Init(void)
 #ifdef DQS_CLK_ALIGNED
 	bDQSCLKAligned = TRUE;
 #endif
-	
+
 	/* Check if DRAM is already initialized  */
 	if (MV_REG_READ(REG_BOOTROM_ROUTINE_ADDR) & (1 << REG_BOOTROM_ROUTINE_DRAM_INIT_OFFS)) {
 		DEBUG_INIT_S("DDR3 Training Sequence - 2nd boot - Skip \n");

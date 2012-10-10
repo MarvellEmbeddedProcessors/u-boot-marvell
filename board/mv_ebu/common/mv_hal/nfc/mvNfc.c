@@ -2634,7 +2634,7 @@ static MV_STATUS mvNfcTimingSet(MV_U32 tclk, MV_NFC_FLASH_INFO *flInfo)
 	MV_U32 tadl_nfc, tch_nfc, tcs_nfc, twh_nfc, twp_nfc, trh_nfc, trp_nfc;
 	MV_U32 tr_nfc, trhw_nfc, twhr_nfc, tar_nfc;
 	MV_U32 tr_pre_nfc = 0;
-	MV_U32 ret = MV_OK;
+/*	MV_U32 ret = MV_OK; */
 
 	switch (tclk) {
 	case 125000000:
@@ -2677,37 +2677,37 @@ static MV_STATUS mvNfcTimingSet(MV_U32 tclk, MV_NFC_FLASH_INFO *flInfo)
 	trp_nfc = (trp - 1);
 
 	if (check_limit(tadl_nfc, 5) != tadl_nfc) {
-		ret = MV_OUT_OF_RANGE;
+/*		ret = MV_OUT_OF_RANGE; */
 		tadl_nfc = check_limit(tadl_nfc, 5);
 	}
 
 	if (check_limit(tch_nfc, 3) != tch_nfc) {
-		ret = MV_OUT_OF_RANGE;
+/*		ret = MV_OUT_OF_RANGE; */
 		tch_nfc = check_limit(tch_nfc, 3);
 	}
 
 	if (check_limit(tcs_nfc, 3) != tcs_nfc) {
-		ret = MV_OUT_OF_RANGE;
+/*		ret = MV_OUT_OF_RANGE; */
 		tcs_nfc = check_limit(tcs_nfc, 3);
 	}
 
 	if (check_limit(twh_nfc, 3) != twh_nfc) {
-		ret = MV_OUT_OF_RANGE;
+/*		ret = MV_OUT_OF_RANGE; */
 		twh_nfc = check_limit(twh_nfc, 3);
 	}
 
 	if (check_limit(twp_nfc, 3) != twp_nfc) {
-		ret = MV_OUT_OF_RANGE;
+/*		ret = MV_OUT_OF_RANGE; */
 		twp_nfc = check_limit(twp_nfc, 3);
 	}
 
 	if (check_limit(trh_nfc, 3) != trh_nfc) {
-		ret = MV_OUT_OF_RANGE;
+/*		ret = MV_OUT_OF_RANGE; */
 		trh_nfc = check_limit(trh_nfc, 3);
 	}
 
 	if (check_limit(trp_nfc, 4) != trp_nfc) {
-		ret = MV_OUT_OF_RANGE;
+/*		ret = MV_OUT_OF_RANGE; */
 		trp_nfc = check_limit(trp_nfc, 4);
 	}
 
@@ -2741,7 +2741,7 @@ static MV_STATUS mvNfcTimingSet(MV_U32 tclk, MV_NFC_FLASH_INFO *flInfo)
 
 	if (twhr_nfc >= 16) {
 		twhr_nfc = 15; /* worst case - best we can do */
-		ret = MV_OUT_OF_RANGE;
+/*		ret = MV_OUT_OF_RANGE; */
 	}
 
 	tar_nfc = twhr_nfc; /* our initial assumption */
@@ -2758,22 +2758,22 @@ static MV_STATUS mvNfcTimingSet(MV_U32 tclk, MV_NFC_FLASH_INFO *flInfo)
 #endif
 
 	if (check_limit(tr_nfc, 16) != tr_nfc) {
-		ret = MV_OUT_OF_RANGE;
+/*		ret = MV_OUT_OF_RANGE; */
 		tr_nfc = check_limit(tr_nfc, 16);
 	}
 
 	if (check_limit(trhw_nfc, 2) != trhw_nfc) {
-		ret = MV_OUT_OF_RANGE;
+/*		ret = MV_OUT_OF_RANGE; */
 		trhw_nfc = check_limit(trhw_nfc, 2);
 	}
 
 	if (check_limit(twhr_nfc, 4) != twhr_nfc) {
-		ret = MV_OUT_OF_RANGE;
+/*		ret = MV_OUT_OF_RANGE; */
 		twhr_nfc = check_limit(twhr_nfc, 4);
 	}
 
 	if (check_limit(tar_nfc, 4) != tar_nfc) {
-		ret = MV_OUT_OF_RANGE;
+/*		ret = MV_OUT_OF_RANGE; */
 		tar_nfc = check_limit(tar_nfc, 5);
 	}
 

@@ -170,8 +170,8 @@ RecoveryHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 {
 	ushort opcode;
 	ushort * fld;
-	char * tftpfile = NULL;
-	uchar * tftpmode = NULL;
+//	char * tftpfile = NULL;
+//	uchar * tftpmode = NULL;
     ushort rxPacketNumber;
 	unsigned dlen;
 
@@ -229,8 +229,8 @@ RecoveryHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 				NetServerEther[0], NetServerEther[1], NetServerEther[2], NetServerEther[3], NetServerEther[4],
 				NetServerEther[5]);
 
-			tftpfile = (char *)pkt +2;
-			tftpmode = pkt + 3 + strlen (tftpfile);
+//			tftpfile = (char *)pkt +2;
+//			tftpmode = pkt + 3 + strlen (tftpfile);
 			debug_rcvr("TFTP WRQ received (Dest = %d, Src = %d, Len = %d, Opcode = %d, File = %s, PeerTID = %d\n",
 								dest, src, len, opcode, tftpfile, src);
 
@@ -288,8 +288,8 @@ RecoveryHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 				NetServerEther[0], NetServerEther[1], NetServerEther[2], NetServerEther[3], NetServerEther[4],
 				NetServerEther[5]);
 
-			tftpfile = (char *)pkt +2;
-			tftpmode = pkt + 3 + strlen (tftpfile);
+//			tftpfile = (char *)pkt +2;
+//			tftpmode = pkt + 3 + strlen (tftpfile);
 			debug_rcvr("TFTP WRQ received again (Dest = %d, Src = %d, Len = %d, Opcode = %d, File = %s, PeerTID = %d\n",
 								dest, src, len, opcode, tftpfile,  src);
 
@@ -435,9 +435,9 @@ void RecoverRequest(void)
 	uchar * s;
 
 	/* get the uImage locations */
-	if ((s = getenv("loadaddr")) != NULL)
+	if ((s = (uchar *)getenv("loadaddr")) != NULL)
 	{
-	imagePtr = (uchar *)simple_strtoul(s, NULL, 16);
+	imagePtr = (uchar *)simple_strtoul((char *)s, NULL, 16);
 	printf("uImage load address 0x%08x\n", (unsigned int)imagePtr);
 	}
 	else

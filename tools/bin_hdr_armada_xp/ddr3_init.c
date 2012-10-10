@@ -160,7 +160,7 @@ MV_U32 ddr3Init(void)
 	mvUartInit();
 	ddr3PrintVersion();
 	DEBUG_INIT_S("0 \n");
-	/* Lib version 2.18 */
+	/* Lib version 3.0 */
 
 	uiFabOpt = ddr3GetFabOpt();
 

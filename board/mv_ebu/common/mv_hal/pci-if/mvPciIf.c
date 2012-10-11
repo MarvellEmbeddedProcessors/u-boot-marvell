@@ -63,7 +63,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
 #include "mvPciIf.h"
-#include "mv_hal_if/mvSysPexApi.h"
+#include "mvSysPexApi.h"
 
 /* #if defined(MV_INCLUDE_PCI) */
 /* #include "ctrlEnv/sys/mvSysPci.h" */

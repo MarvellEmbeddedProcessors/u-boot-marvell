@@ -9,7 +9,7 @@ LD_ENDIAN   = -EB
 endif
 
 # Main directory structure
-SRC_PATH           = $(TOPDIR)/board/armadaxp
+SRC_PATH           = $(TOPDIR)/board/mv_ebu
 AXP_CMN_DIR		   = $(SRC_PATH)/common
 HAL_DIR            = $(AXP_CMN_DIR)/mv_hal
 COMMON_DIR         = $(AXP_CMN_DIR)/common
@@ -17,7 +17,7 @@ USP_DIR            = $(AXP_CMN_DIR)/USP
 SOC_DIR            = $(SRC_PATH)/axp_db
 HAL_IF_DIR	   = $(AXP_CMN_DIR)/mv_hal_if
 CONFIG_DIR         = $(AXP_CMN_DIR)/config
-FAM_DIR            = $(AXP_CMN_DIR)/armada_xp_family
+FAM_DIR            = $(SOC_DIR)/armada_xp_family
 SOC_ENV_DIR        = $(FAM_DIR)/ctrlEnv
 SOC_SYS_DIR        = $(FAM_DIR)/ctrlEnv/sys
 SOC_CPU_DIR        = $(FAM_DIR)/cpu

@@ -56,7 +56,11 @@ done:
 	ldr r4, =0x1fff0d01			/* Set DRAM CS[1] size in P-unit */
 	MV_REG_WRITE_ASM(r4, r1, 0x200e0)
 #endif
-
+#ifdef MV88F67XX
+	/* KW40 Model 2 and up should set 0x20228 [7, 6, 2, 1] */
+	ldr r4, =0x000000c6
+	MV_REG_WRITE_ASM(r4, r1, 0x20228)
+#endif
 	mov	lr, r2
 
 done_cpu1:

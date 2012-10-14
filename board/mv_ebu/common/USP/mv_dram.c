@@ -91,7 +91,9 @@ int dram_init (void)
 	mvDramMfgTrst();
 #endif
 
+#if defined(MV88F78X60)
 	mvDramScrubbing();
+#endif
 
 	return 0;
 }

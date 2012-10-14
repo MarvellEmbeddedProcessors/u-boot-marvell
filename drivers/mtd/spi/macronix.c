@@ -38,6 +38,7 @@
 struct macronix_spi_flash_params {
 	u16 idcode;
 	u16 nr_blocks;
+	u8  addr_cycles;
 	const char *name;
 };
 
@@ -45,36 +46,52 @@ static const struct macronix_spi_flash_params macronix_spi_flash_table[] = {
 	{
 		.idcode = 0x2013,
 		.nr_blocks = 8,
+		.addr_cycles = 3,
 		.name = "MX25L4005",
 	},
 	{
 		.idcode = 0x2014,
 		.nr_blocks = 16,
+		.addr_cycles = 3,
 		.name = "MX25L8005",
 	},
 	{
 		.idcode = 0x2015,
 		.nr_blocks = 32,
+		.addr_cycles = 3,
 		.name = "MX25L1605D",
 	},
 	{
 		.idcode = 0x2016,
 		.nr_blocks = 64,
+		.addr_cycles = 3,
 		.name = "MX25L3205D",
 	},
 	{
 		.idcode = 0x2017,
 		.nr_blocks = 128,
+		.addr_cycles = 3,
 		.name = "MX25L6405D",
 	},
 	{
 		.idcode = 0x2018,
 		.nr_blocks = 256,
+		.addr_cycles = 3,
 		.name = "MX25L12805D",
+	},
+	{
+		.idcode = 0x2019,
+		.page_size = 256,
+		.pages_per_sector = 16,
+		.sectors_per_block = 16,
+		.nr_blocks = 512,
+		.addr_cycles = 4,
+		.name = "MX25L25735E",
 	},
 	{
 		.idcode = 0x2618,
 		.nr_blocks = 256,
+		.addr_cycles = 3,
 		.name = "MX25L12855E",
 	},
 };
@@ -112,7 +129,7 @@ struct spi_flash *spi_flash_probe_macronix(struct spi_slave *spi, u8 *idcode)
 	flash->page_size = 256;
 	flash->sector_size = 256 * 16 * 16;
 	flash->size = flash->sector_size * params->nr_blocks;
-
+	flash->addr_cycles=params->addr_cycles;
 	/* Clear BP# bits for read-only flash */
 	spi_flash_cmd_write_status(flash, 0);
 

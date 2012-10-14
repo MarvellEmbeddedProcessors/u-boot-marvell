@@ -248,7 +248,7 @@ struct spi_flash *spi_flash_probe_stmicro(struct spi_slave *spi, u8 * idcode)
 	flash->page_size = 256;
 	flash->sector_size = 256 * params->pages_per_sector;
 	flash->size = flash->sector_size * params->nr_sectors;
-
+	flash->addr_cycles=params->addr_cycles;
 	/* In first prove remove HW protection */
 	if(params->protected)
 		stmicro_protect(flash, 0);

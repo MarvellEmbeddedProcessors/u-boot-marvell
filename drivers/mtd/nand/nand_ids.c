@@ -109,7 +109,8 @@ const struct nand_flash_dev nand_flash_ids[] = {
 	{"NAND 1GiB 3,3V 8-bit",	0xD3, 0, 1024, 0, LP_OPTIONS},
 	{"NAND 1GiB 1,8V 16-bit",	0xB3, 0, 1024, 0, LP_OPTIONS16},
 	{"NAND 1GiB 3,3V 16-bit",	0xC3, 0, 1024, 0, LP_OPTIONS16},
-	{"NAND 1GiB 3,3V 8-bit",	0x38, 0, 1024, 0, LP_OPTIONS},
+/* there are two NAND chips with the same ID : no autodetect - identify manually -  */
+	{"NAND 1GiB 3,3V 8-bit",	0x38, 4096, 1024, 524288, LP_OPTIONS},
 
 	/* 16 Gigabit */
 	{"NAND 2GiB 1,8V 8-bit",	0xA5, 0, 2048, 0, LP_OPTIONS},

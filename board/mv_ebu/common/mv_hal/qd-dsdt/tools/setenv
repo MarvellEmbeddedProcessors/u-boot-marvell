@@ -1,5 +1,13 @@
-declare -x USER_BASE=$HOME/DSDT_2.8a
-declare -x PROJ_NAME=qdDrv
-declare -x TOOL_DIR=$USER_BASE/tools
+declare -x DSDT_USER_BASE=/work/marvell/mvl_drivers/DSDT_3.0/switch
+declare -x DSDT_PROJ_NAME=qdDrv
+declare -x DSDT_TOOL_DIR=$DSDT_USER_BASE/tools
 declare -x RELEASE=YES
 declare -x OS_RUN=LINUX
+declare -x MAD_USER_BASE=$DSDT_USER_BASE/../phy
+declare -x MAD_PROJ_NAME=madDrv
+declare -x MAD_TOOL_DIR=$MAD_USER_BASE/tools
+declare -x USER_API_NAME=
+declare -x USER_NAME=
+declare -x DSP_VCT=FALSE
+declare -x VCT_PENDING=FALSE
+declare -x DSDT_USE_MAD=FALSE

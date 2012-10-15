@@ -27,6 +27,7 @@ extern "C" {
 /* This macro is used to calculate the register's SMI   */
 /* device address, according to the baseAddr            */
 /* field in the Switch configuration struct.            */
+extern GT_U8 portToSmiMapping(GT_QD_DEV *dev, GT_U8 portNum, GT_U32 accessType);
 #define CALC_SMI_DEV_ADDR(_dev, _portNum, _accessType)        \
             portToSmiMapping(_dev, _portNum, _accessType)
 
@@ -42,23 +43,24 @@ extern "C" {
 
 /* Start address of phy related register.               */
 #define PHY_REGS_START_ADDR     0x0
-#define PHY_REGS_START_ADDR_8PORT	0x0
+#define PHY_REGS_START_ADDR_8PORT    0x0
 
 /* Start address of ports related register.             */
-#define PORT_REGS_START_ADDR    	0x8
-#define PORT_REGS_START_ADDR_8PORT	0x10
+#define PORT_REGS_START_ADDR        0x8
+#define PORT_REGS_START_ADDR_8PORT    0x10
 
 /* Start address of global register.                    */
 #define GLOBAL_REGS_START_ADDR  0xF
 #define GLOBAL_REGS_START_ADDR_8PORT  0x1B
 
-#define PHY_ACCESS			1
-#define PORT_ACCESS			2
-#define GLOBAL_REG_ACCESS	3
-#define GLOBAL2_REG_ACCESS	4
+#define PHY_ACCESS            1
+#define PORT_ACCESS            2
+#define GLOBAL_REG_ACCESS    3
+#define GLOBAL2_REG_ACCESS    4
+#define GLOBAL3_REG_ACCESS    5
 
-#define QD_SMI_ACCESS_LOOP		1000
-#define QD_SMI_TIMEOUT			2
+#define QD_SMI_ACCESS_LOOP        1000
+#define QD_SMI_TIMEOUT            2
 
 
 /****************************************************************************/
@@ -205,8 +207,8 @@ GT_STATUS hwSetPhyRegField
 * INPUTS:
 *       portNum     - Port number to write the register for.
 *       u16Data     - data should be written into Phy control register.
-*					  if this value is 0xFF, normal operation occcurs (read, 
-*					  update, and write back.)
+*                      if this value is 0xFF, normal operation occcurs (read, 
+*                      update, and write back.)
 *
 * OUTPUTS:
 *       None.
@@ -222,7 +224,7 @@ GT_STATUS hwPhyReset
 (
     IN  GT_QD_DEV    *dev,
     IN  GT_U8     portNum,
-	IN	GT_U16		u16Data
+    IN    GT_U16        u16Data
 );
 
 
@@ -236,7 +238,7 @@ GT_STATUS hwPhyReset
 *       portNum - Port number to read the register for.
 *       pageNum - Page number of the register to be read.
 *       regAddr - The register's address.
-*		anyPage - register list(vector) that are common to all pages
+*        anyPage - register list(vector) that are common to all pages
 *
 * OUTPUTS:
 *       data    - The read register's data.
@@ -251,12 +253,12 @@ GT_STATUS hwPhyReset
 *******************************************************************************/
 GT_STATUS hwReadPagedPhyReg
 (
-	IN GT_QD_DEV *dev,
-	IN  GT_U8    portNum,
-	IN  GT_U8    pageNum,
-	IN  GT_U8    regAddr,
-	IN  GT_U32	 anyPage,
-	OUT GT_U16   *data
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    portNum,
+    IN  GT_U8    pageNum,
+    IN  GT_U8    regAddr,
+    IN  GT_U32     anyPage,
+    OUT GT_U16   *data
 );
 
 
@@ -270,7 +272,7 @@ GT_STATUS hwReadPagedPhyReg
 *       portNum - Port number to write the register for.
 *       pageNum - Page number of the register to be written.
 *       regAddr - The register's address.
-*		anyPage - Register list(vector) that are common to all pages
+*        anyPage - Register list(vector) that are common to all pages
 *       data    - The data to be written.
 *
 * OUTPUTS:
@@ -286,12 +288,12 @@ GT_STATUS hwReadPagedPhyReg
 *******************************************************************************/
 GT_STATUS hwWritePagedPhyReg
 (
-	IN GT_QD_DEV *dev,
-	IN  GT_U8    portNum,
-	IN  GT_U8    pageNum,
-	IN  GT_U8    regAddr,
-	IN  GT_U32	 anyPage,
-	IN  GT_U16   data
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    portNum,
+    IN  GT_U8    pageNum,
+    IN  GT_U8    regAddr,
+    IN  GT_U32     anyPage,
+    IN  GT_U16   data
 );
 
 /*******************************************************************************
@@ -299,15 +301,15 @@ GT_STATUS hwWritePagedPhyReg
 *
 * DESCRIPTION:
 *       This function reads a specified field from a switch's port phy register
-*		in page mode.
+*        in page mode.
 *
 * INPUTS:
 *       portNum     - Port number to read the register for.
-*       pageNum 	- Page number of the register to be read.
+*       pageNum     - Page number of the register to be read.
 *       regAddr     - The register's address.
 *       fieldOffset - The field start bit index. (0 - 15)
 *       fieldLength - Number of bits to read.
-*		anyPage - Register list(vector) that are common to all pages
+*        anyPage - Register list(vector) that are common to all pages
 *
 * OUTPUTS:
 *       data        - The read register field.
@@ -329,7 +331,7 @@ GT_STATUS hwGetPagedPhyRegField
     IN  GT_U8    regAddr,
     IN  GT_U8    fieldOffset,
     IN  GT_U8    fieldLength,
-	IN  GT_U32	 anyPage,
+    IN  GT_U32     anyPage,
     OUT GT_U16   *data
 );
 
@@ -338,15 +340,15 @@ GT_STATUS hwGetPagedPhyRegField
 *
 * DESCRIPTION:
 *       This function writes to specified field in a switch's port phy register
-*		in page mode
+*        in page mode
 *
 * INPUTS:
 *       portNum     - Port number to write the register for.
-*       pageNum 	- Page number of the register to be read.
+*       pageNum     - Page number of the register to be read.
 *       regAddr     - The register's address.
 *       fieldOffset - The field start bit index. (0 - 15)
 *       fieldLength - Number of bits to write.
-*		anyPage 	- Register list(vector) that are common to all pages
+*        anyPage     - Register list(vector) that are common to all pages
 *       data        - Data to be written.
 *
 * OUTPUTS:
@@ -369,7 +371,7 @@ GT_STATUS hwSetPagedPhyRegField
     IN  GT_U8    regAddr,
     IN  GT_U8    fieldOffset,
     IN  GT_U8    fieldLength,
-	IN  GT_U32	 anyPage,
+    IN  GT_U32     anyPage,
     IN  GT_U16   data
 );
 
@@ -518,7 +520,7 @@ GT_STATUS hwSetPortRegField
 * INPUTS:
 *       portNum     - Port number to write the register for.
 *       regAddr     - The register's address.
-*       mask 		- The bits to write.
+*       mask         - The bits to write.
 *       data        - Data to be written.
 *
 * OUTPUTS:
@@ -530,7 +532,7 @@ GT_STATUS hwSetPortRegField
 *
 * COMMENTS:
 *       1.  When Data is 0x1002 and mask is 0xF00F, 0001b is written to bit[31:24]
-*			and 0010b is written to bit[3:0]
+*            and 0010b is written to bit[3:0]
 *
 *******************************************************************************/
 GT_STATUS hwSetPortRegBits
@@ -803,7 +805,7 @@ GT_STATUS hwSetGlobal2RegField
 *
 * INPUTS:
 *       regAddr     - The register's address.
-*       mask 		- The bits to write.
+*       mask         - The bits to write.
 *       data        - Data to be written.
 *
 * OUTPUTS:
@@ -815,10 +817,166 @@ GT_STATUS hwSetGlobal2RegField
 *
 * COMMENTS:
 *       1.  When Data is 0x1002 and mask is 0xF00F, 0001b is written to bit[31:24]
-*			and 0010b is written to bit[3:0]
+*            and 0010b is written to bit[3:0]
 *
 *******************************************************************************/
 GT_STATUS hwSetGlobal2RegBits
+(
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    regAddr,
+    IN  GT_U16   mask,
+    IN  GT_U16   data
+);
+
+/****************************************************************************/
+/* Global 3 registers related functions.                                      */
+/****************************************************************************/
+
+/*******************************************************************************
+* hwReadGlobal3Reg
+*
+* DESCRIPTION:
+*       This function reads a switch's global 3 register.
+*
+* INPUTS:
+*       regAddr - The register's address.
+*
+* OUTPUTS:
+*       data    - The read register's data.
+*
+* RETURNS:
+*       GT_OK on success, or
+*       GT_FAIL otherwise.
+*
+* COMMENTS:
+*       None.
+*
+*******************************************************************************/
+GT_STATUS hwReadGlobal3Reg
+(
+    IN  GT_QD_DEV *dev,
+    IN  GT_U8     regAddr,
+    OUT GT_U16    *data
+);
+
+
+/*******************************************************************************
+* hwWriteGlobal3Reg
+*
+* DESCRIPTION:
+*       This function writes to a switch's global 3 register.
+*
+* INPUTS:
+*       regAddr - The register's address.
+*       data    - The data to be written.
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       GT_OK on success, or
+*       GT_FAIL otherwise.
+*
+* COMMENTS:
+*       None.
+*
+*******************************************************************************/
+GT_STATUS hwWriteGlobal3Reg
+(
+    IN  GT_QD_DEV *dev,
+    IN  GT_U8     regAddr,
+    IN  GT_U16    data
+);
+
+
+/*******************************************************************************
+* hwGetGlobal3RegField
+*
+* DESCRIPTION:
+*       This function reads a specified field from a switch's global 3 register.
+*
+* INPUTS:
+*       regAddr     - The register's address.
+*       fieldOffset - The field start bit index. (0 - 15)
+*       fieldLength - Number of bits to read.
+*
+* OUTPUTS:
+*       data        - The read register field.
+*
+* RETURNS:
+*       GT_OK on success, or
+*       GT_FAIL otherwise.
+*
+* COMMENTS:
+*       1.  The sum of fieldOffset & fieldLength parameters must be smaller-
+*           equal to 16.
+*
+*******************************************************************************/
+GT_STATUS hwGetGlobal3RegField
+(
+    IN  GT_QD_DEV *dev,
+    IN  GT_U8     regAddr,
+    IN  GT_U8     fieldOffset,
+    IN  GT_U8     fieldLength,
+    OUT GT_U16    *data
+);
+
+
+/*******************************************************************************
+* hwSetGlobal3RegField
+*
+* DESCRIPTION:
+*       This function writes to specified field in a switch's global 3 register.
+*
+* INPUTS:
+*       regAddr     - The register's address.
+*       fieldOffset - The field start bit index. (0 - 15)
+*       fieldLength - Number of bits to write.
+*       data        - Data to be written.
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       GT_OK on success, or
+*       GT_FAIL otherwise.
+*
+* COMMENTS:
+*
+*******************************************************************************/
+GT_STATUS hwSetGlobal3RegField
+(
+    IN  GT_QD_DEV *dev,
+    IN  GT_U8     regAddr,
+    IN  GT_U8     fieldOffset,
+    IN  GT_U8     fieldLength,
+    IN  GT_U16    data
+);
+
+/*******************************************************************************
+* hwSetGlobal3RegBits
+*
+* DESCRIPTION:
+*       This function writes to specified bits in a switch's global 3 register.
+*
+* INPUTS:
+*       regAddr     - The register's address.
+*       mask         - The bits to write.
+*       data        - Data to be written.
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       GT_OK on success, or
+*       GT_FAIL otherwise.
+*
+* COMMENTS:
+*       1.  When Data is 0x1002 and mask is 0xF00F, 0001b is written to bit[31:24]
+*            and 0010b is written to bit[3:0]
+*
+*******************************************************************************/
+GT_STATUS hwSetGlobal3RegBits
 (
     IN GT_QD_DEV *dev,
     IN  GT_U8    regAddr,
@@ -884,6 +1042,40 @@ GT_STATUS hwWriteMiiReg
     IN  GT_U8     regAddr,
     IN  GT_U16    data
 );
+
+#ifdef GT_RMGMT_ACCESS
+
+/*******************************************************************************
+* hwAccessMultiRegs
+*
+* DESCRIPTION:
+*       This function accesses switch's registers.
+*
+* INPUTS:
+*   regList     - list of HW_DEV_RW_REG.
+*     HW_DEV_RW_REG:
+*     cmd - HW_REG_READ, HW_REG_WRITE, HW_REG_WAIT_TILL_0 or HW_REG_WAIT_TILL_1 
+*     addr - SMI Address 
+*     reg  - Register offset 
+*     data - INPUT,OUTPUT:Value in the Register or Bit number
+*     
+* OUTPUTS:
+*   regList
+*
+* RETURNS:
+*       GT_OK on success, or
+*       GT_FAIL otherwise.
+*
+* COMMENTS:
+*       None.
+*
+*******************************************************************************/
+GT_STATUS hwAccessMultiRegs
+(
+    IN GT_QD_DEV *dev,
+    INOUT HW_DEV_REG_ACCESS *regList
+);
+#endif
 
 #ifdef __cplusplus
 }

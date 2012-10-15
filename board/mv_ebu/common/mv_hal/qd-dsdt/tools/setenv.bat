@@ -10,9 +10,10 @@ if "%REQ_OS%"=="WIN32"   set OS_RUN=WIN32
 if "%REQ_OS%"=="wince"   set OS_RUN=WIN32
 if "%REQ_OS%"=="WINCE"   set OS_RUN=WIN32
 
-set USER_BASE=C:\DSDT_2.8a
-set PROJ_NAME=qdDrv
-set TOOL_DIR=%USER_BASE%\tools
+set DSDT_USER_BASE=C:\DSDT_2.8pre_4
+set DSDT_PROJ_NAME=qdDrv
+set DSDT_USE_MAD=FALSE
+set DSDT_TOOL_DIR=%DSDT_USER_BASE%\tools
 set RELEASE=YES
 set TARGET_CPU=ARM
 rem set TARGET_CPU=MIPS
@@ -45,11 +46,11 @@ rem set TARGETCPU=x86
 set WCEROOT=C:\WINCE400
 
 set INCLUDE=%WCEROOT%\public\common\oak\inc;%WCEROOT%\public\common\sdk\inc;%WCEROOT%\public\common\ddk\inc;%INCLUDE%
-set PATH=%WCEROOT%\sdk\bin\i386;%WCEROOT%\public\common\oak\bin\i386;%USER_BASE%\tools;%path%
+set PATH=%WCEROOT%\sdk\bin\i386;%WCEROOT%\public\common\oak\bin\i386;%DSDT_USER_BASE%\tools;%path%
 
 echo Environment Variable for WinCE has been set.
 goto DONE
 
 :DONE
-cd %USER_BASE%\src
+cd %DSDT_USER_BASE%\src
 

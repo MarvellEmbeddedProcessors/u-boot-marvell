@@ -65,10 +65,10 @@ GT_U16 miiSmiIfInit
 *
 * INPUTS:
 *       baseAddr - either 0x0 or 0x10. Indicates whether to use the low device 
-*					register address or high device register address.
-*					The device register range is from 0x0 to 0xF or from 0x10 
-*					to 0x1F for 5 port switchs and from 0x0 to 0x1B for 8 port 
-*					switchs.
+*                    register address or high device register address.
+*                    The device register range is from 0x0 to 0xF or from 0x10 
+*                    to 0x1F for 5 port switchs and from 0x0 to 0x1B for 8 port 
+*                    switchs.
 *
 * OUTPUTS:
 *       None.
@@ -83,8 +83,8 @@ GT_U16 miiSmiIfInit
 *******************************************************************************/
 GT_U16 miiSmiManualIfInit
 (
-	IN  GT_QD_DEV   *dev,
-	IN  GT_U32		baseAddr
+    IN  GT_QD_DEV   *dev,
+    IN  GT_U32        baseAddr
 );
 
 /*******************************************************************************
@@ -148,6 +148,88 @@ GT_STATUS miiSmiIfWriteRegister
     IN  GT_U8     regAddr,
     IN  GT_U16    data
 );
+
+/*****************************************************************************
+* qdMultiAddrRead
+*
+* DESCRIPTION:
+*       This function reads data from a device in the secondary MII bus.
+*
+* INPUTS:
+*       phyAddr     - The PHY address to be read.
+*       regAddr     - The register address to read.
+*       value       - The storage where register date to be saved.
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       GT_TRUE   - on success
+*       GT_FALSE  - on error
+*
+* COMMENTS:
+*       None.
+*
+*******************************************************************************/
+GT_BOOL qdMultiAddrRead (GT_QD_DEV* dev, unsigned int phyAddr , unsigned int regAddr, unsigned int* value);
+
+/*****************************************************************************
+* qdMultiAddrWrite
+*
+* DESCRIPTION:
+*       This function writes data to the device in the secondary MII bus.
+*
+* INPUTS:
+*       phyAddr     - The PHY address to be read.
+*       regAddr     - The register address to read.
+*       value       - The data to be written into the register.
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       GT_TRUE   - on success
+*       GT_FALSE  - on error
+*
+* COMMENTS:
+*       None.
+*
+*******************************************************************************/
+GT_BOOL qdMultiAddrWrite (GT_QD_DEV* dev, unsigned int phyAddr , unsigned int regAddr, unsigned int value);
+
+#ifdef GT_RMGMT_ACCESS
+/*******************************************************************************
+* qdAccessRegs 
+*
+* DESCRIPTION:
+*       This function access registers through device interface by user, to be
+*       used by upper layers.
+*
+* INPUTS:
+*   regList     - list of HW_DEV_RW_REG.
+*     HW_DEV_RW_REG:
+*     cmd - HW_REG_READ, HW_REG_WRITE, HW_REG_WAIT_TILL_0 or HW_REG_WAIT_TILL_1 
+*     addr - SMI Address 
+*     reg  - Register offset 
+*     data - INPUT,OUTPUT:Value in the Register or Bit number
+*     
+* OUTPUTS:
+*   regList     - list of HW_DEV_RW_REG.
+*
+* RETURNS:
+*       GT_OK   - on success
+*       GT_FAIL - on error
+*
+* COMMENTS:
+*       None.
+*
+*******************************************************************************/
+GT_STATUS qdAccessRegs
+(
+    IN  GT_QD_DEV    *dev,
+    INOUT HW_DEV_REG_ACCESS *regList
+);
+#endif
 
 #ifdef __cplusplus
 }

@@ -12,11 +12,11 @@ WORK_TO_DO = $(DEMONAME).o
 exe : $(WORK_TO_DO)
 
 # Include common variable definitions
-include $(TOOL_DIR)\make.defs
+include $(DSDT_TOOL_DIR)\make.defs
 
 .PHONY : exe
 
-QDLIB = $(LIB_DIR)/$(PROJ_NAME).o
+QDLIB = $(LIB_DIR)/$(DSDT_PROJ_NAME).o
 
 OBJDIRS	= $(subst /,\,$(dir $(QDLIB)))
 

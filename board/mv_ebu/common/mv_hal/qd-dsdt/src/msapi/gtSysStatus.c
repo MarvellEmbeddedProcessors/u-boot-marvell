@@ -5,7 +5,7 @@
 *
 * DESCRIPTION:
 *       API definitions for system global status.
-* 	Added for fullsail
+*     Added for fullsail
 *
 * DEPENDENCIES:
 *
@@ -22,67 +22,67 @@
 * gsysGetPPUState
 *
 * DESCRIPTION:
-*		This routine get the PPU State. These two bits return 
-*		the current value of the PPU.
+*        This routine get the PPU State. These two bits return 
+*        the current value of the PPU.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		mode - GT_PPU_STATE
+*        mode - GT_PPU_STATE
 *
 * RETURNS:
-*		GT_OK           - on success
-*		GT_BAD_PARAM    - on bad parameter
-*		GT_FAIL         - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK           - on success
+*        GT_BAD_PARAM    - on bad parameter
+*        GT_FAIL         - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetPPUState
 (
-	IN  GT_QD_DEV   	*dev,
-	OUT GT_PPU_STATE	*mode
+    IN  GT_QD_DEV       *dev,
+    OUT GT_PPU_STATE    *mode
 )
 {
-	GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16          data;           /* The register's read data.    */
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* The register's read data.    */
 
-	DBG_INFO(("gsysGetPPUState Called.\n"));
+    DBG_INFO(("gsysGetPPUState Called.\n"));
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
-	{
-		DBG_INFO(("Not Supported.\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    if (!IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
+    {
+        DBG_INFO(("Not Supported.\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	if(mode == NULL)
-	{
-		DBG_INFO(("Failed.\n"));
-		return GT_BAD_PARAM;
-	}
+    if(mode == NULL)
+    {
+        DBG_INFO(("Failed.\n"));
+        return GT_BAD_PARAM;
+    }
 
-	/* get the bits from hardware */
-	retVal = hwGetGlobalRegField(dev,QD_REG_GLOBAL_STATUS,14,2,&data);
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-		return retVal;
-	}
+    /* get the bits from hardware */
+    retVal = hwGetGlobalRegField(dev,QD_REG_GLOBAL_STATUS,14,2,&data);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
 
-	if (IS_IN_DEV_GROUP(dev,DEV_PPU_READ_ONLY))
-	{
-		data |= 0x4000;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_PPU_READ_ONLY))
+    {
+        data |= 0x4000;
+    }
 
-	*mode = data;
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    *mode = data;
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 }
 
 /*******************************************************************************
@@ -121,11 +121,13 @@ GT_STATUS gsysGetSW_Mode
     DBG_INFO(("gsysGetSW_Mode Called.\n"));
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_QD_PLUS|DEV_ENHANCED_FE_SWITCH))
-	{
+    if (!((IS_IN_DEV_GROUP(dev,DEV_QD_PLUS)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_ENHANCED_FE_SWITCH)) ||
+		(IS_IN_DEV_GROUP(dev,DEV_FE_AVB_FAMILY))))
+    {
         DBG_INFO(("Not Supported.\n"));
-		return GT_NOT_SUPPORTED;
-	}
+        return GT_NOT_SUPPORTED;
+    }
 
     if(mode == NULL)
     {
@@ -183,11 +185,13 @@ GT_STATUS gsysGetInitReady
     DBG_INFO(("gsysGetInitReady Called.\n"));
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_QD_PLUS|DEV_ENHANCED_FE_SWITCH))
-	{
+    if (!((IS_IN_DEV_GROUP(dev,DEV_QD_PLUS)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_ENHANCED_FE_SWITCH)) ||
+		(IS_IN_DEV_GROUP(dev,DEV_FE_AVB_FAMILY))))
+    {
         DBG_INFO(("Not Supported.\n"));
-		return GT_NOT_SUPPORTED;
-	}
+        return GT_NOT_SUPPORTED;
+    }
 
     if(mode == NULL)
     {
@@ -213,7 +217,7 @@ GT_STATUS gsysGetInitReady
 *
 * DESCRIPTION:
 *       This routine gets Free Queue Counter. This counter reflects the 
-*		current number of unalllocated buffers available for all the ports.
+*        current number of unalllocated buffers available for all the ports.
 *
 * INPUTS:
 *       None.
@@ -224,7 +228,7 @@ GT_STATUS gsysGetInitReady
 * RETURNS:
 *       GT_OK            - on success
 *       GT_FAIL          - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
 *       None.
@@ -234,8 +238,8 @@ GT_STATUS gsysGetInitReady
 *******************************************************************************/
 GT_STATUS gsysGetFreeQSize
 (
-    IN  GT_QD_DEV	*dev,
-    OUT GT_U16 		*count
+    IN  GT_QD_DEV    *dev,
+    OUT GT_U16         *count
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -243,11 +247,11 @@ GT_STATUS gsysGetFreeQSize
     DBG_INFO(("gsysGetFreeQSize Called.\n"));
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_OUT_Q_SIZE))
-	{
+    if (!IS_IN_DEV_GROUP(dev,DEV_OUT_Q_SIZE))
+    {
         DBG_INFO(("Not Supported.\n"));
-		return GT_NOT_SUPPORTED;
-	}
+        return GT_NOT_SUPPORTED;
+    }
 
     /* get the counter */
     retVal = hwGetGlobalRegField(dev,QD_REG_TOTAL_FREE_COUNTER,0,9,count);

@@ -24,41 +24,42 @@ static GT_STATUS hwReadPPU(GT_QD_DEV *dev, GT_U16 *data);
 static GT_STATUS hwWritePPU(GT_QD_DEV *dev, GT_U16 data);
 static GT_STATUS coreReadPhyReg
 (
-	IN GT_QD_DEV *dev,
-	IN  GT_U8    portNum,
-	IN  GT_U8    regAddr,
-	OUT GT_U16   *data
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    portNum,
+    IN  GT_U8    regAddr,
+    OUT GT_U16   *data
 );
 static GT_STATUS coreWritePhyReg
 (
-	IN GT_QD_DEV *dev,
-	IN  GT_U8    portNum,
-	IN  GT_U8    regAddr,
-	IN  GT_U16   data
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    portNum,
+    IN  GT_U8    regAddr,
+    IN  GT_U16   data
 );
 static GT_STATUS coreReadPagedPhyReg
 (
-	IN GT_QD_DEV *dev,
-	IN  GT_U8    portNum,
-	IN  GT_U8    pageNum,
-	IN  GT_U8    regAddr,
-	IN  GT_U32	 anyPage,
-	OUT GT_U16   *data
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    portNum,
+    IN  GT_U8    pageNum,
+    IN  GT_U8    regAddr,
+    IN  GT_U32     anyPage,
+    OUT GT_U16   *data
 );
 static GT_STATUS coreWritePagedPhyReg
 (
-	IN GT_QD_DEV *dev,
-	IN  GT_U8    portNum,
-	IN  GT_U8    pageNum,
-	IN  GT_U8    regAddr,
-	IN  GT_U32	 anyPage,
-	IN  GT_U16   data
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    portNum,
+    IN  GT_U8    pageNum,
+    IN  GT_U8    regAddr,
+    IN  GT_U32     anyPage,
+    IN  GT_U16   data
 );
 
 static GT_STATUS phyRegReadPPUEn (GT_QD_DEV* dev, unsigned int phyAddr , unsigned int regAddr,
                         GT_U16* value);
 static GT_STATUS phyRegWritePPUEn (GT_QD_DEV* dev, unsigned int phyAddr , unsigned int regAddr,
                        GT_U16 value);
+#ifndef GT_RMGMT_ACCESS
 static GT_STATUS phyReadGlobal2Reg
 (
     IN GT_QD_DEV *dev,
@@ -71,6 +72,7 @@ static GT_STATUS phyWriteGlobal2Reg
     IN  GT_U8    regAddr,
     IN  GT_U16   data
 );
+#endif
 
 
 /*******************************************************************************
@@ -80,9 +82,9 @@ static GT_STATUS phyWriteGlobal2Reg
 *       This function mapps port to smi address
 *
 * INPUTS:
-*		dev - device context
+*        dev - device context
 *       portNum - Port number to read the register for.
-*		accessType - type of register (Phy, Port, or Global)
+*        accessType - type of register (Phy, Port, or Global)
 *
 * OUTPUTS:
 *       None.
@@ -94,62 +96,68 @@ static GT_STATUS phyWriteGlobal2Reg
 GT_U8 portToSmiMapping
 (
     IN GT_QD_DEV *dev,
-    IN GT_U8	portNum,
-	IN GT_U32	accessType
+    IN GT_U8    portNum,
+    IN GT_U32    accessType
 )
 {
-	GT_U8 smiAddr;
+    GT_U8 smiAddr;
 
-	if(IS_IN_DEV_GROUP(dev,DEV_8PORT_SWITCH))
-	{
-		switch(accessType)
-		{
-			case PHY_ACCESS:
-					if (dev->validPhyVec & (1<<portNum))
-						smiAddr = PHY_REGS_START_ADDR_8PORT + portNum;
-					else
-						smiAddr = 0xFF;
-					break;
-			case PORT_ACCESS:
-					if (dev->validPortVec & (1<<portNum))
-						smiAddr = PORT_REGS_START_ADDR_8PORT + portNum;
-					else
-						smiAddr = 0xFF;
-					break;
-			case GLOBAL_REG_ACCESS:
-					smiAddr = GLOBAL_REGS_START_ADDR_8PORT;
-					break;
-			default:
-					smiAddr = GLOBAL_REGS_START_ADDR_8PORT + 1;
-					break;
-		}
-	}
-	else
-	{
-		smiAddr = dev->baseRegAddr;
-		switch(accessType)
-		{
-			case PHY_ACCESS:
-					if (dev->validPhyVec & (1<<portNum))
-						smiAddr += PHY_REGS_START_ADDR + portNum;
-					else
-						smiAddr = 0xFF;
-					break;
-			case PORT_ACCESS:
-					if (dev->validPortVec & (1<<portNum))
-						smiAddr += PORT_REGS_START_ADDR + portNum;
-					else
-						smiAddr = 0xFF;
-					break;
-			case GLOBAL_REG_ACCESS:
-					smiAddr += GLOBAL_REGS_START_ADDR;
-					break;
-			default:
-					smiAddr += GLOBAL_REGS_START_ADDR - 1;
-					break;
-		}
-	}
-
+    if(IS_IN_DEV_GROUP(dev,DEV_8PORT_SWITCH))
+    {
+        switch(accessType)
+        {
+            case PHY_ACCESS:
+                    if (dev->validPhyVec & (1<<portNum))
+                        smiAddr = PHY_REGS_START_ADDR_8PORT + portNum;
+                    else
+                        smiAddr = 0xFF;
+                    break;
+            case PORT_ACCESS:
+                    if (dev->validPortVec & (1<<portNum))
+                        smiAddr = PORT_REGS_START_ADDR_8PORT + portNum;
+                    else
+                        smiAddr = 0xFF;
+                    break;
+            case GLOBAL_REG_ACCESS:
+                    smiAddr = GLOBAL_REGS_START_ADDR_8PORT;
+                    break;
+            case GLOBAL3_REG_ACCESS:
+                    smiAddr = GLOBAL_REGS_START_ADDR_8PORT + 2;
+                    break;
+            default:
+                    smiAddr = GLOBAL_REGS_START_ADDR_8PORT + 1;
+                    break;
+        }
+    }
+    else
+    {
+        smiAddr = dev->baseRegAddr;
+        switch(accessType)
+        {
+            case PHY_ACCESS:
+                    if (dev->validPhyVec & (1<<portNum))
+                        smiAddr += PHY_REGS_START_ADDR + portNum;
+                    else
+                        smiAddr = 0xFF;
+                    break;
+            case PORT_ACCESS:
+                    if (dev->validPortVec & (1<<portNum))
+                        smiAddr += PORT_REGS_START_ADDR + portNum;
+                    else
+                        smiAddr = 0xFF;
+                    break;
+            case GLOBAL_REG_ACCESS:
+                    smiAddr += GLOBAL_REGS_START_ADDR;
+                    break;
+            default:
+					/*  88EC0XX uses PORT_REGS_START_ADDR -1 */
+                    if(IS_IN_DEV_GROUP(dev,DEV_MELODY_SWITCH))
+                      smiAddr += PORT_REGS_START_ADDR - 1;
+        	        else
+                      smiAddr += GLOBAL_REGS_START_ADDR - 1;
+                    break;
+        }
+    }
     return smiAddr;
 }
 
@@ -181,21 +189,21 @@ GT_U8 portToSmiMapping
 *******************************************************************************/
 GT_STATUS hwReadPhyReg
 (
-	IN GT_QD_DEV *dev,
-	IN  GT_U8    portNum,
-	IN  GT_U8    regAddr,
-	OUT GT_U16   *data
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    portNum,
+    IN  GT_U8    regAddr,
+    OUT GT_U16   *data
 )
 {
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
-	retVal = coreReadPhyReg(dev, portNum, regAddr, data);
+    retVal = coreReadPhyReg(dev, portNum, regAddr, data);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
-	return retVal;
+    return retVal;
 }
 
 
@@ -223,21 +231,21 @@ GT_STATUS hwReadPhyReg
 *******************************************************************************/
 GT_STATUS hwWritePhyReg
 (
-	IN GT_QD_DEV *dev,
-	IN  GT_U8    portNum,
-	IN  GT_U8    regAddr,
-	IN  GT_U16   data
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    portNum,
+    IN  GT_U8    regAddr,
+    IN  GT_U16   data
 )
 {
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
-	retVal = coreWritePhyReg(dev, portNum, regAddr, data);
+    retVal = coreWritePhyReg(dev, portNum, regAddr, data);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
-	return retVal;
+    return retVal;
 }
 
 
@@ -277,16 +285,16 @@ GT_STATUS hwGetPhyRegField
 {
     GT_U16 mask;            /* Bits mask to be read */
     GT_U16 tmpData;
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
-	retVal = coreReadPhyReg(dev, portNum, regAddr, &tmpData);
+    retVal = coreReadPhyReg(dev, portNum, regAddr, &tmpData);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
-	if (retVal != GT_OK)
-		return retVal;
+    if (retVal != GT_OK)
+        return retVal;
 
     CALC_MASK(fieldOffset,fieldLength,mask);
 
@@ -297,7 +305,7 @@ GT_STATUS hwGetPhyRegField
               portNum,regAddr));
     DBG_INFO(("fOff %d, fLen %d, data 0x%x.\n",fieldOffset,fieldLength,*data));
 
-	return retVal;
+    return retVal;
 }
 
 
@@ -338,17 +346,17 @@ GT_STATUS hwSetPhyRegField
 {
     GT_U16 mask;
     GT_U16 tmpData;
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
-	retVal = coreReadPhyReg(dev, portNum, regAddr, &tmpData);
+    retVal = coreReadPhyReg(dev, portNum, regAddr, &tmpData);
 
     if(retVal != GT_OK)
-	{
-		gtSemGive(dev,dev->multiAddrSem);
+    {
+        gtSemGive(dev,dev->multiAddrSem);
         return retVal;
-	}
+    }
 
     CALC_MASK(fieldOffset,fieldLength,mask);
 
@@ -362,9 +370,9 @@ GT_STATUS hwSetPhyRegField
     DBG_INFO(("fieldOff %d, fieldLen %d, data 0x%x.\n",fieldOffset,
               fieldLength,data));
 
-	retVal = coreWritePhyReg(dev, portNum, regAddr, tmpData);
+    retVal = coreWritePhyReg(dev, portNum, regAddr, tmpData);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
     return retVal;
 }
 
@@ -379,7 +387,7 @@ GT_STATUS hwSetPhyRegField
 *       portNum - Port number to read the register for.
 *       pageNum - Page number of the register to be read.
 *       regAddr - The register's address.
-*		anyPage - Any Page register vector
+*        anyPage - Any Page register vector
 *
 * OUTPUTS:
 *       data    - The read register's data.
@@ -394,23 +402,23 @@ GT_STATUS hwSetPhyRegField
 *******************************************************************************/
 GT_STATUS hwReadPagedPhyReg
 (
-	IN GT_QD_DEV *dev,
-	IN  GT_U8    portNum,
-	IN  GT_U8    pageNum,
-	IN  GT_U8    regAddr,
-	IN  GT_U32	 anyPage,
-	OUT GT_U16   *data
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    portNum,
+    IN  GT_U8    pageNum,
+    IN  GT_U8    regAddr,
+    IN  GT_U32     anyPage,
+    OUT GT_U16   *data
 )
 {
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
-	retVal = coreReadPagedPhyReg(dev,portNum,pageNum,regAddr,anyPage,data);
+    retVal = coreReadPagedPhyReg(dev,portNum,pageNum,regAddr,anyPage,data);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
-	return retVal;
+    return retVal;
 }
 
 
@@ -424,7 +432,7 @@ GT_STATUS hwReadPagedPhyReg
 *       portNum - Port number to write the register for.
 *       pageNum - Page number of the register to be written.
 *       regAddr - The register's address.
-*		anyPage - Any Page register vector
+*        anyPage - Any Page register vector
 *       data    - The data to be written.
 *
 * OUTPUTS:
@@ -440,23 +448,23 @@ GT_STATUS hwReadPagedPhyReg
 *******************************************************************************/
 GT_STATUS hwWritePagedPhyReg
 (
-	IN GT_QD_DEV *dev,
-	IN  GT_U8    portNum,
-	IN  GT_U8    pageNum,
-	IN  GT_U8    regAddr,
-	IN  GT_U32	 anyPage,
-	IN  GT_U16   data
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    portNum,
+    IN  GT_U8    pageNum,
+    IN  GT_U8    regAddr,
+    IN  GT_U32     anyPage,
+    IN  GT_U16   data
 )
 {
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
-	retVal = coreWritePagedPhyReg(dev,portNum,pageNum,regAddr,anyPage,data);
+    retVal = coreWritePagedPhyReg(dev,portNum,pageNum,regAddr,anyPage,data);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
-	return retVal;
+    return retVal;
 }
 
 
@@ -465,15 +473,15 @@ GT_STATUS hwWritePagedPhyReg
 *
 * DESCRIPTION:
 *       This function reads a specified field from a switch's port phy register
-*		in page mode.
+*        in page mode.
 *
 * INPUTS:
 *       portNum     - Port number to read the register for.
-*       pageNum 	- Page number of the register to be read.
+*       pageNum     - Page number of the register to be read.
 *       regAddr     - The register's address.
 *       fieldOffset - The field start bit index. (0 - 15)
 *       fieldLength - Number of bits to read.
-*		anyPage 	- Any Page register vector
+*        anyPage     - Any Page register vector
 *
 * OUTPUTS:
 *       data        - The read register field.
@@ -495,24 +503,24 @@ GT_STATUS hwGetPagedPhyRegField
     IN  GT_U8    regAddr,
     IN  GT_U8    fieldOffset,
     IN  GT_U8    fieldLength,
-	IN  GT_U32	 anyPage,
+    IN  GT_U32     anyPage,
     OUT GT_U16   *data
 )
 {
     GT_U16 mask;            /* Bits mask to be read */
     GT_U16 tmpData;
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal = coreReadPagedPhyReg(dev,portNum,pageNum,regAddr,anyPage,&tmpData);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
-	if(retVal != GT_OK)
-	{
+    if(retVal != GT_OK)
+    {
         return retVal;
-	}
+    }
 
     CALC_MASK(fieldOffset,fieldLength,mask);
 
@@ -532,15 +540,15 @@ GT_STATUS hwGetPagedPhyRegField
 *
 * DESCRIPTION:
 *       This function writes to specified field in a switch's port phy register
-*		in page mode
+*        in page mode
 *
 * INPUTS:
 *       portNum     - Port number to write the register for.
-*       pageNum 	- Page number of the register to be read.
+*       pageNum     - Page number of the register to be read.
 *       regAddr     - The register's address.
 *       fieldOffset - The field start bit index. (0 - 15)
 *       fieldLength - Number of bits to write.
-*		anyPage 	- Any Page register vector
+*        anyPage     - Any Page register vector
 *       data        - Data to be written.
 *
 * OUTPUTS:
@@ -563,21 +571,21 @@ GT_STATUS hwSetPagedPhyRegField
     IN  GT_U8    regAddr,
     IN  GT_U8    fieldOffset,
     IN  GT_U8    fieldLength,
-	IN  GT_U32	 anyPage,
+    IN  GT_U32     anyPage,
     IN  GT_U16   data
 )
 {
     GT_U16 mask;
     GT_U16 tmpData;
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     if((retVal=coreReadPagedPhyReg(dev,portNum,pageNum,regAddr,anyPage,&tmpData)) != GT_OK)
-	{
-		gtSemGive(dev,dev->multiAddrSem);
+    {
+        gtSemGive(dev,dev->multiAddrSem);
         return retVal;
-	}
+    }
 
     CALC_MASK(fieldOffset,fieldLength,mask);
 
@@ -592,9 +600,9 @@ GT_STATUS hwSetPagedPhyRegField
               fieldLength,data));
     retVal = coreWritePagedPhyReg(dev,portNum,pageNum,regAddr,anyPage,tmpData);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
-	return retVal;	
+    return retVal;    
 }
 
 
@@ -607,8 +615,8 @@ GT_STATUS hwSetPagedPhyRegField
 * INPUTS:
 *       portNum     - Port number to write the register for.
 *       u16Data     - data should be written into Phy control register.
-*					  if this value is 0xFF, normal operation occcurs (read, 
-*					  update, and write back.)
+*                      if this value is 0xFF, normal operation occcurs (read, 
+*                      update, and write back.)
 *
 * OUTPUTS:
 *       None.
@@ -622,73 +630,73 @@ GT_STATUS hwSetPagedPhyRegField
 *******************************************************************************/
 GT_STATUS hwPhyReset
 (
-    IN  GT_QD_DEV	*dev,
-    IN  GT_U8		portNum,
-	IN	GT_U16		u16Data
+    IN  GT_QD_DEV    *dev,
+    IN  GT_U8        portNum,
+    IN    GT_U16        u16Data
 )
 {
     GT_U16 tmpData;
     GT_STATUS   retVal;
     GT_U32 retryCount;
-	GT_BOOL	pd = GT_FALSE;
+    GT_BOOL    pd = GT_FALSE;
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     if((retVal=coreReadPhyReg(dev,portNum,0,&tmpData)) 
-   	    != GT_OK)
+           != GT_OK)
     {
-   	    DBG_INFO(("Reading Register failed\n"));
-		gtSemGive(dev,dev->multiAddrSem);
-       	return retVal;
+           DBG_INFO(("Reading Register failed\n"));
+        gtSemGive(dev,dev->multiAddrSem);
+           return retVal;
     }
 
-	if (tmpData & 0x800)
-	{
-		pd = GT_TRUE;
-	}
+    if (tmpData & 0x800)
+    {
+        pd = GT_TRUE;
+    }
 
-	if (u16Data != 0xFF)
-	{
-		tmpData = u16Data;
-	}
+    if (u16Data != 0xFF)
+    {
+        tmpData = u16Data;
+    }
 
     /* Set the desired bits to 0. */
-	if (pd)
-	{
-	    tmpData |= 0x800;
-	}
-	else
-	{
-	    tmpData |= 0x8000;
-	}
+    if (pd)
+    {
+        tmpData |= 0x800;
+    }
+    else
+    {
+        tmpData |= 0x8000;
+    }
 
     if((retVal=coreWritePhyReg(dev,portNum,0,tmpData)) 
         != GT_OK)
     {
         DBG_INFO(("Writing to register failed\n"));
-		gtSemGive(dev,dev->multiAddrSem);
+        gtSemGive(dev,dev->multiAddrSem);
         return retVal;
     }
 
-	if (pd)
-	{
-		gtSemGive(dev,dev->multiAddrSem);
-	    return GT_OK;
-	}
+    if (pd)
+    {
+        gtSemGive(dev,dev->multiAddrSem);
+        return GT_OK;
+    }
 
     for (retryCount = 0x1000; retryCount > 0; retryCount--)
     {
         if((retVal=coreReadPhyReg(dev,portNum,0,&tmpData)) != GT_OK)
         {
             DBG_INFO(("Reading register failed\n"));
-			gtSemGive(dev,dev->multiAddrSem);
+            gtSemGive(dev,dev->multiAddrSem);
             return retVal;
         }
         if ((tmpData & 0x8000) == 0)
             break;
     }
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
     if (retryCount == 0)
     {
@@ -736,16 +744,16 @@ GT_STATUS hwReadPortReg
     GT_STATUS   retVal;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, portNum, PORT_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal =  miiSmiIfReadRegister(dev,phyAddr,regAddr,data);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
     DBG_INFO(("Read from port(%d) register: phyAddr 0x%x, regAddr 0x%x, ",
               portNum,phyAddr,regAddr));
@@ -788,22 +796,22 @@ GT_STATUS hwWritePortReg
     GT_STATUS   retVal;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, portNum, PORT_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
     DBG_INFO(("Write to port(%d) register: phyAddr 0x%x, regAddr 0x%x, ",
               portNum,phyAddr,regAddr));
     DBG_INFO(("data 0x%x.\n",data));
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,data);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
-	return retVal;
+    return retVal;
 }
 
 
@@ -843,24 +851,24 @@ GT_STATUS hwGetPortRegField
 {
     GT_U16 mask;            /* Bits mask to be read */
     GT_U16 tmpData;
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
     GT_U8       phyAddr;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, portNum, PORT_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal =  miiSmiIfReadRegister(dev,phyAddr,regAddr,&tmpData);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
-	if (retVal != GT_OK)
-		return retVal;
-		
+    if (retVal != GT_OK)
+        return retVal;
+        
     CALC_MASK(fieldOffset,fieldLength,mask);
 
     tmpData = (tmpData & mask) >> fieldOffset;
@@ -910,24 +918,24 @@ GT_STATUS hwSetPortRegField
 {
     GT_U16 mask;
     GT_U16 tmpData;
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
     GT_U8       phyAddr;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, portNum, PORT_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal =  miiSmiIfReadRegister(dev,phyAddr,regAddr,&tmpData);
 
     if(retVal != GT_OK)
-	{
-		gtSemGive(dev,dev->multiAddrSem);
+    {
+        gtSemGive(dev,dev->multiAddrSem);
         return retVal;
-	}
+    }
 
     CALC_MASK(fieldOffset,fieldLength,mask);
 
@@ -942,7 +950,7 @@ GT_STATUS hwSetPortRegField
 
     retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,tmpData);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
     return retVal;
 }
@@ -957,7 +965,7 @@ GT_STATUS hwSetPortRegField
 * INPUTS:
 *       portNum     - Port number to write the register for.
 *       regAddr     - The register's address.
-*       mask 		- The bits to write.
+*       mask         - The bits to write.
 *       data        - Data to be written.
 *
 * OUTPUTS:
@@ -969,7 +977,7 @@ GT_STATUS hwSetPortRegField
 *
 * COMMENTS:
 *       1.  When Data is 0x1002 and mask is 0xF00F, 0001b is written to bit[31:24]
-*			and 0010b is written to bit[3:0]
+*            and 0010b is written to bit[3:0]
 *
 *******************************************************************************/
 GT_STATUS hwSetPortRegBits
@@ -982,24 +990,24 @@ GT_STATUS hwSetPortRegBits
 )
 {
     GT_U16 tmpData;
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
     GT_U8       phyAddr;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, portNum, PORT_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal =  miiSmiIfReadRegister(dev,phyAddr,regAddr,&tmpData);
 
     if(retVal != GT_OK)
-	{
-		gtSemGive(dev,dev->multiAddrSem);
+    {
+        gtSemGive(dev,dev->multiAddrSem);
         return retVal;
-	}
+    }
 
     /* Set the desired bits to 0.                       */
     tmpData &= ~mask;
@@ -1011,7 +1019,7 @@ GT_STATUS hwSetPortRegBits
 
     retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,tmpData);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
     return retVal;
 }
@@ -1054,11 +1062,11 @@ GT_STATUS hwReadGlobalReg
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,data);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
     DBG_INFO(("read from global register: phyAddr 0x%x, regAddr 0x%x, ",
               phyAddr,regAddr));
@@ -1104,13 +1112,13 @@ GT_STATUS hwWriteGlobalReg
               phyAddr,regAddr));
     DBG_INFO(("data 0x%x.\n",data));
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,data);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
-	return retVal;
+    return retVal;
 }
 
 
@@ -1148,25 +1156,26 @@ GT_STATUS hwGetGlobalRegField
 {
     GT_U16 mask;            /* Bits mask to be read */
     GT_U16 tmpData;
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
     GT_U8       phyAddr;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
+
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,&tmpData);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
     if(retVal != GT_OK)
-	{
+    {
         return retVal;
-	}
+    }
 
     CALC_MASK(fieldOffset,fieldLength,mask);
     tmpData = (tmpData & mask) >> fieldOffset;
@@ -1214,24 +1223,24 @@ GT_STATUS hwSetGlobalRegField
 {
     GT_U16 mask;
     GT_U16 tmpData;
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
     GT_U8       phyAddr;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal =  miiSmiIfReadRegister(dev,phyAddr,regAddr,&tmpData);
 
     if(retVal != GT_OK)
-	{
-		gtSemGive(dev,dev->multiAddrSem);
+    {
+        gtSemGive(dev,dev->multiAddrSem);
         return retVal;
-	}
+    }
 
     CALC_MASK(fieldOffset,fieldLength,mask);
 
@@ -1247,7 +1256,7 @@ GT_STATUS hwSetGlobalRegField
 
     retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,tmpData);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
     return retVal;
 }
@@ -1283,19 +1292,18 @@ GT_STATUS hwReadGlobal2Reg
     GT_STATUS   retVal;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,data);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
-    DBG_INFO(("read from global 2 register: phyAddr 0x%x, regAddr 0x%x, ",
-              phyAddr,regAddr));
+    DBG_INFO(("read from global 2 register: phyAddr 0x%x, regAddr 0x%x, ", phyAddr,regAddr));
     DBG_INFO(("data 0x%x.\n",*data));
     return retVal;
 }
@@ -1333,20 +1341,19 @@ GT_STATUS hwWriteGlobal2Reg
     GT_STATUS   retVal;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
-    DBG_INFO(("Write to global 2 register: phyAddr 0x%x, regAddr 0x%x, ",
-              phyAddr,regAddr));
+    DBG_INFO(("Write to global 2 register: phyAddr 0x%x, regAddr 0x%x, ", phyAddr,regAddr));
     DBG_INFO(("data 0x%x.\n",data));
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,data);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
     return retVal;
 }
@@ -1386,20 +1393,20 @@ GT_STATUS hwGetGlobal2RegField
 {
     GT_U16 mask;            /* Bits mask to be read */
     GT_U16 tmpData;
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
     GT_U8       phyAddr;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,&tmpData);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
     if(retVal != GT_OK)
         return retVal;
@@ -1450,24 +1457,24 @@ GT_STATUS hwSetGlobal2RegField
 {
     GT_U16 mask;
     GT_U16 tmpData;
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
     GT_U8       phyAddr;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,&tmpData);
 
     if(retVal != GT_OK)
-	{
-		gtSemGive(dev,dev->multiAddrSem);
+    {
+        gtSemGive(dev,dev->multiAddrSem);
         return retVal;
-	}
+    }
 
     CALC_MASK(fieldOffset,fieldLength,mask);
 
@@ -1483,7 +1490,7 @@ GT_STATUS hwSetGlobal2RegField
 
     retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,tmpData);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
     return retVal;
 }
@@ -1496,7 +1503,7 @@ GT_STATUS hwSetGlobal2RegField
 *
 * INPUTS:
 *       regAddr     - The register's address.
-*       mask 		- The bits to write.
+*       mask         - The bits to write.
 *       data        - Data to be written.
 *
 * OUTPUTS:
@@ -1508,7 +1515,7 @@ GT_STATUS hwSetGlobal2RegField
 *
 * COMMENTS:
 *       1.  When Data is 0x1002 and mask is 0xF00F, 0001b is written to bit[31:24]
-*			and 0010b is written to bit[3:0]
+*            and 0010b is written to bit[3:0]
 *
 *******************************************************************************/
 GT_STATUS hwSetGlobal2RegBits
@@ -1520,24 +1527,24 @@ GT_STATUS hwSetGlobal2RegBits
 )
 {
     GT_U16 tmpData;
-	GT_STATUS   retVal;
+    GT_STATUS   retVal;
     GT_U8       phyAddr;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,&tmpData);
 
     if(retVal != GT_OK)
-	{
-		gtSemGive(dev,dev->multiAddrSem);
+    {
+        gtSemGive(dev,dev->multiAddrSem);
         return retVal;
-	}
+    }
 
     /* Set the desired bits to 0.                       */
     tmpData &= ~mask;
@@ -1550,11 +1557,315 @@ GT_STATUS hwSetGlobal2RegBits
 
     retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,tmpData);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
     return retVal;
 }
 
+
+/*******************************************************************************
+* hwReadGlobal3Reg
+*
+* DESCRIPTION:
+*       This function reads a switch's global 3 register.
+*
+* INPUTS:
+*       regAddr - The register's address.
+*
+* OUTPUTS:
+*       data    - The read register's data.
+*
+* RETURNS:
+*       GT_OK on success, or
+*       GT_FAIL otherwise.
+*
+* COMMENTS:
+*       None.
+*
+*******************************************************************************/
+GT_STATUS hwReadGlobal3Reg
+(
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    regAddr,
+    OUT GT_U16   *data
+)
+{
+    GT_U8       phyAddr;
+    GT_STATUS   retVal;
+
+    phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL3_REG_ACCESS);
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
+
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+
+    retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,data);
+
+    gtSemGive(dev,dev->multiAddrSem);
+
+    DBG_INFO(("read from global 3 register: phyAddr 0x%x, regAddr 0x%x, ", phyAddr,regAddr));
+    DBG_INFO(("data 0x%x.\n",*data));
+    return retVal;
+}
+
+
+/*******************************************************************************
+* hwWriteGlobal3Reg
+*
+* DESCRIPTION:
+*       This function writes to a switch's global 3 register.
+*
+* INPUTS:
+*       regAddr - The register's address.
+*       data    - The data to be written.
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       GT_OK on success, or
+*       GT_FAIL otherwise.
+*
+* COMMENTS:
+*       None.
+*
+*******************************************************************************/
+GT_STATUS hwWriteGlobal3Reg
+(
+    IN  GT_QD_DEV *dev,
+    IN  GT_U8    regAddr,
+    IN  GT_U16   data
+)
+{
+    GT_U8   phyAddr;
+    GT_STATUS   retVal;
+
+    phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL3_REG_ACCESS);
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
+
+    DBG_INFO(("Write to global 3 register: phyAddr 0x%x, regAddr 0x%x, ", phyAddr,regAddr));
+    DBG_INFO(("data 0x%x.\n",data));
+
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+
+    retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,data);
+
+    gtSemGive(dev,dev->multiAddrSem);
+
+    return retVal;
+}
+
+
+/*******************************************************************************
+* hwGetGlobal3RegField
+*
+* DESCRIPTION:
+*       This function reads a specified field from a switch's global 3 register.
+*
+* INPUTS:
+*       regAddr     - The register's address.
+*       fieldOffset - The field start bit index. (0 - 15)
+*       fieldLength - Number of bits to read.
+*
+* OUTPUTS:
+*       data        - The read register field.
+*
+* RETURNS:
+*       GT_OK on success, or
+*       GT_FAIL otherwise.
+*
+* COMMENTS:
+*       1.  The sum of fieldOffset & fieldLength parameters must be smaller-
+*           equal to 16.
+*
+*******************************************************************************/
+GT_STATUS hwGetGlobal3RegField
+(
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    regAddr,
+    IN  GT_U8    fieldOffset,
+    IN  GT_U8    fieldLength,
+    OUT GT_U16   *data
+)
+{
+    GT_U16 mask;            /* Bits mask to be read */
+    GT_U16 tmpData;
+    GT_STATUS   retVal;
+    GT_U8       phyAddr;
+
+    phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL3_REG_ACCESS);
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
+
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+
+    retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,&tmpData);
+
+    gtSemGive(dev,dev->multiAddrSem);
+
+    if(retVal != GT_OK)
+        return retVal;
+
+    CALC_MASK(fieldOffset,fieldLength,mask);
+    tmpData = (tmpData & mask) >> fieldOffset;
+    *data = tmpData;
+    DBG_INFO(("Read from global 3 register: regAddr 0x%x, ",
+              regAddr));
+    DBG_INFO(("fOff %d, fLen %d, data 0x%x.\n",fieldOffset,fieldLength,*data));
+
+    return GT_OK;
+}
+
+
+/*******************************************************************************
+* hwSetGlobal3RegField
+*
+* DESCRIPTION:
+*       This function writes to specified field in a switch's global 3 register.
+*
+* INPUTS:
+*       regAddr     - The register's address.
+*       fieldOffset - The field start bit index. (0 - 15)
+*       fieldLength - Number of bits to write.
+*       data        - Data to be written.
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       GT_OK on success, or
+*       GT_FAIL otherwise.
+*
+* COMMENTS:
+*       1.  The sum of fieldOffset & fieldLength parameters must be smaller-
+*           equal to 16.
+*
+*******************************************************************************/
+GT_STATUS hwSetGlobal3RegField
+(
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    regAddr,
+    IN  GT_U8    fieldOffset,
+    IN  GT_U8    fieldLength,
+    IN  GT_U16   data
+)
+{
+    GT_U16 mask;
+    GT_U16 tmpData;
+    GT_STATUS   retVal;
+    GT_U8       phyAddr;
+
+    phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL3_REG_ACCESS);
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
+
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+
+    retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,&tmpData);
+
+    if(retVal != GT_OK)
+    {
+        gtSemGive(dev,dev->multiAddrSem);
+        return retVal;
+    }
+
+    CALC_MASK(fieldOffset,fieldLength,mask);
+
+    /* Set the desired bits to 0.                       */
+    tmpData &= ~mask;
+    /* Set the given data into the above reset bits.    */
+    tmpData |= ((data << fieldOffset) & mask);
+
+    DBG_INFO(("Write to global 3 register: regAddr 0x%x, ",
+              regAddr));
+    DBG_INFO(("fieldOff %d, fieldLen %d, data 0x%x.\n",fieldOffset,
+              fieldLength,data));
+
+    retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,tmpData);
+
+    gtSemGive(dev,dev->multiAddrSem);
+
+    return retVal;
+}
+
+/*******************************************************************************
+* hwSetGlobal3RegBits
+*
+* DESCRIPTION:
+*       This function writes to specified bits in a switch's global 3 register.
+*
+* INPUTS:
+*       regAddr     - The register's address.
+*       mask         - The bits to write.
+*       data        - Data to be written.
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       GT_OK on success, or
+*       GT_FAIL otherwise.
+*
+* COMMENTS:
+*       1.  When Data is 0x1002 and mask is 0xF00F, 0001b is written to bit[31:24]
+*            and 0010b is written to bit[3:0]
+*
+*******************************************************************************/
+GT_STATUS hwSetGlobal3RegBits
+(
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    regAddr,
+    IN  GT_U16   mask,
+    IN  GT_U16   data
+)
+{
+    GT_U16 tmpData;
+    GT_STATUS   retVal;
+    GT_U8       phyAddr;
+
+    phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL3_REG_ACCESS);
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
+
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+
+    retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,&tmpData);
+
+    if(retVal != GT_OK)
+    {
+        gtSemGive(dev,dev->multiAddrSem);
+        return retVal;
+    }
+
+    /* Set the desired bits to 0.                       */
+    tmpData &= ~mask;
+    /* Set the given data into the above reset bits.    */
+    tmpData |= (data & mask);
+
+    DBG_INFO(("Write to global 3 register: regAddr 0x%x, ",
+              regAddr));
+    DBG_INFO(("mask %d, data 0x%x.\n",mask,data));
+
+    retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,tmpData);
+
+    gtSemGive(dev,dev->multiAddrSem);
+
+    return retVal;
+}
+
+
+/*********************************************************************************************/
 
 /*******************************************************************************
 * hwReadMiiReg
@@ -1587,11 +1898,11 @@ GT_STATUS hwReadMiiReg
 {
     GT_STATUS   retVal;
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,data);
 
- 	gtSemGive(dev,dev->multiAddrSem);
+     gtSemGive(dev,dev->multiAddrSem);
 
     DBG_INFO(("Read from phy(0x%x) register: regAddr 0x%x, data 0x%x.\n",
               phyAddr,regAddr,*data));
@@ -1631,11 +1942,11 @@ GT_STATUS hwWriteMiiReg
 {
     GT_STATUS   retVal;
 
-	gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->multiAddrSem,OS_WAIT_FOREVER);
 
     retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,data);
 
-	gtSemGive(dev,dev->multiAddrSem);
+    gtSemGive(dev,dev->multiAddrSem);
 
     DBG_INFO(("Write to phy(0x%x) register: regAddr 0x%x, data 0x%x.\n",
               phyAddr,regAddr,data));
@@ -1648,608 +1959,617 @@ GT_STATUS hwWriteMiiReg
 * hwReadPPU
 *
 * DESCRIPTION:
-*			This function reads PPU bit in Global Register
+*            This function reads PPU bit in Global Register
 *
 * INPUTS:
-*			None.
+*            None.
 *
 * OUTPUTS:
-*			data    - The read register's data.
+*            data    - The read register's data.
 *
 * RETURNS:
-*			GT_OK on success, or
-*			GT_FAIL otherwise.
+*            GT_OK on success, or
+*            GT_FAIL otherwise.
 *
 * COMMENTS:
-*			This function can be used to access PHY register connected to Gigabit
-*			Switch.
-*			Semaphore should be acquired before this function get called.
+*            This function can be used to access PHY register connected to Gigabit
+*            Switch.
+*            Semaphore should be acquired before this function get called.
 *
 *******************************************************************************/
 static GT_STATUS hwReadPPU
 (
-	IN  GT_QD_DEV *dev,
-	OUT GT_U16    *data
+    IN  GT_QD_DEV *dev,
+    OUT GT_U16    *data
 )
 {
-	GT_STATUS   retVal;
-	GT_U16		tmpData;
+    GT_STATUS   retVal;
+    GT_U16        tmpData;
     GT_U8       phyAddr;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
     retVal =  miiSmiIfReadRegister(dev,phyAddr,4,&tmpData);
 
     if(retVal != GT_OK)
-	{
+    {
         return retVal;
-	}
+    }
 
-	*data = (tmpData >> 14) & 0x1;
+    *data = (tmpData >> 14) & 0x1;
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 }
 
 /*******************************************************************************
 * hwWritePPU
 *
 * DESCRIPTION:
-*			This function writes PPU bit in Global Register
+*            This function writes PPU bit in Global Register
 *
 * INPUTS:
-*			data - The value to write into PPU bit
+*            data - The value to write into PPU bit
 *
 * OUTPUTS:
-*			None.
+*            None.
 *
 * RETURNS:
-*			GT_OK on success, or
-*			GT_FAIL otherwise.
+*            GT_OK on success, or
+*            GT_FAIL otherwise.
 *
 * COMMENTS:
-*			This function can be used to access PHY register connected to Gigabit
-*			Switch.
-*			Semaphore should be acquired before this function get called.
+*            This function can be used to access PHY register connected to Gigabit
+*            Switch.
+*            Semaphore should be acquired before this function get called.
 *
 *******************************************************************************/
 static GT_STATUS hwWritePPU
 (
-	IN  GT_QD_DEV *dev,
-	IN  GT_U16    data
+    IN  GT_QD_DEV *dev,
+    IN  GT_U16    data
 )
 {
-	GT_STATUS   retVal;
-	GT_U16		tmpData;
+    GT_STATUS   retVal;
+    GT_U16        tmpData;
     GT_U8       phyAddr;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
     retVal =  miiSmiIfReadRegister(dev,phyAddr,4,&tmpData);
 
     if(retVal != GT_OK)
-	{
+    {
         return retVal;
-	}
+    }
 
-	if (data)
-		tmpData |= (0x1 << 14);
-	else
-		tmpData &= ~(0x1 << 14);
+    if (data)
+        tmpData |= (0x1 << 14);
+    else
+        tmpData &= ~(0x1 << 14);
 
     retVal = miiSmiIfWriteRegister(dev,phyAddr,4,tmpData);
 
     if(retVal != GT_OK)
-	{
+    {
         return retVal;
-	}
+    }
 
-	/* busy wait - till PPU is actually disabled */
-	if (data == 0) /* disable PPU */
-	{
-		gtDelay(250);
-	}
+    /* busy wait - till PPU is actually disabled */
+    if (data == 0) /* disable PPU */
+    {
+        gtDelay(250);
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 }
 
 
 static GT_STATUS coreReadPhyReg
 (
-	IN GT_QD_DEV *dev,
-	IN  GT_U8    portNum,
-	IN  GT_U8    regAddr,
-	OUT GT_U16   *data
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    portNum,
+    IN  GT_U8    regAddr,
+    OUT GT_U16   *data
 )
 {
-	GT_U8       phyAddr;
-	GT_STATUS   retVal, retPPU;
-	GT_U16		orgPPU = 0;
-	GT_BOOL		usePPU = GT_FALSE;
+    GT_U8       phyAddr;
+    GT_STATUS   retVal, retPPU = 0;
+    GT_U16        orgPPU;
+    GT_BOOL        usePPU = GT_FALSE;
 
-	phyAddr = CALC_SMI_DEV_ADDR(dev, portNum, PHY_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    phyAddr = CALC_SMI_DEV_ADDR(dev, portNum, PHY_ACCESS);
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
-	if(IS_IN_DEV_GROUP(dev,DEV_PPU_READ_ONLY))
-	{
-		if((IS_IN_DEV_GROUP(dev,DEV_PPU_SERDES_ACCESS_RES)) && (dev->validSerdesVec && (1<<phyAddr)))
-		{
-			if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
-			{
-				return retPPU;
-			}
+    orgPPU = 0;
 
-			if(orgPPU)
-			{
-				/* Disable PPU so that External Phy can be accessible */
-				if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
-				{
-					return retPPU;
-				}
-			}
-		}
-		else
-			usePPU = GT_TRUE;
-	}
-	else if(IS_IN_DEV_GROUP(dev,DEV_EXTERNAL_PHY))
-	{
-		if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
-		{
-			return retPPU;
-		}
+    if(IS_IN_DEV_GROUP(dev,DEV_PPU_READ_ONLY))
+    {
+        if((IS_IN_DEV_GROUP(dev,DEV_PPU_SERDES_ACCESS_RES)) && (dev->validSerdesVec & (1<<phyAddr)))
+        {
+            if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
+            {
+                return retPPU;
+            }
 
-		if(orgPPU)
-		{
-			if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS))
-			{
-				if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS_RES))
-				{
-					if(dev->revision != 0)
-						usePPU = GT_TRUE;
-				}
-				else
-				{
-				 	usePPU = GT_TRUE;
-				}
-			}
+            if(orgPPU)
+            {
+                /* Disable PPU so that External Phy can be accessible */
+                if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
+                {
+                    return retPPU;
+                }
+            }
+        }
+        else
+        usePPU = GT_TRUE;
+    }
+    else if(IS_IN_DEV_GROUP(dev,DEV_EXTERNAL_PHY))
+    {
+        if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
+        {
+            return retPPU;
+        }
 
-			/* Disable PPU so that External Phy can be accessible */
-			if (!usePPU)
-			{
-				if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
-				{
-					return retPPU;
-				}
-			}
-		}
-	}
+        if(orgPPU)
+        {
+            if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS))
+            {
+                if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS_RES))
+                {
+                    if(dev->revision != 0)
+                        usePPU = GT_TRUE;
+                }
+                else
+                {
+                     usePPU = GT_TRUE;
+                }
+            }
 
-	if (usePPU)
-	{
-		retVal = phyRegReadPPUEn (dev,phyAddr,regAddr,data);
-	}
-	else
-	{
-		retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,data);
-	}
+            /* Disable PPU so that External Phy can be accessible */
+            if (!usePPU)
+            {
+                if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
+                {
+                    return retPPU;
+                }
+            }
+        }
+    }
+    else if(IS_IN_DEV_GROUP(dev,DEV_PHY_ACCESS_NO_DIRECTLY))
+    {
+      usePPU = GT_TRUE;
+    }
 
-	DBG_INFO(("Read from phy(%d) register: phyAddr 0x%x, regAddr 0x%x, ",
-				portNum,phyAddr,regAddr));
+    if (usePPU)
+    {
+        retVal = phyRegReadPPUEn (dev,phyAddr,regAddr,data);
+    }
+    else
+    {
+        retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,data);
+    }
 
-	if(orgPPU && (!usePPU))
-	{
-		if((retPPU=hwWritePPU(dev, orgPPU)) != GT_OK)
-		{
-			return retPPU;
-		}
-	}
+    DBG_INFO(("Read from phy(%d) register: phyAddr 0x%x, regAddr 0x%x, ", portNum,phyAddr,regAddr));
 
-	return retVal;
+    if(orgPPU && (!usePPU))
+    {
+      if((retPPU=hwWritePPU(dev, orgPPU)) != GT_OK)
+      {
+        return retPPU;
+      }
+    }
+
+    return retVal;
 }
 
 
 static GT_STATUS coreWritePhyReg
 (
-	IN GT_QD_DEV *dev,
-	IN  GT_U8    portNum,
-	IN  GT_U8    regAddr,
-	IN  GT_U16   data
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    portNum,
+    IN  GT_U8    regAddr,
+    IN  GT_U16   data
 )
 {
-	GT_U8   		phyAddr;
-	GT_STATUS   retVal, retPPU;
-	GT_U16		orgPPU = 0;
-	GT_BOOL		usePPU = GT_FALSE;
+    GT_U8           phyAddr;
+    GT_STATUS   retVal, retPPU;
+    GT_U16        orgPPU = 0;
+    GT_BOOL        usePPU = GT_FALSE;
 
-	phyAddr = CALC_SMI_DEV_ADDR(dev, portNum, PHY_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    phyAddr = CALC_SMI_DEV_ADDR(dev, portNum, PHY_ACCESS);
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
-	if(IS_IN_DEV_GROUP(dev,DEV_PPU_READ_ONLY))
-	{
-		if((IS_IN_DEV_GROUP(dev,DEV_PPU_SERDES_ACCESS_RES)) && (dev->validSerdesVec && (1<<phyAddr)))
-		{
-			if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
-			{
-				return retPPU;
-			}
+    if(IS_IN_DEV_GROUP(dev,DEV_PPU_READ_ONLY))
+    {
+        if((IS_IN_DEV_GROUP(dev,DEV_PPU_SERDES_ACCESS_RES)) && (dev->validSerdesVec & (1<<phyAddr)))
+        {
+            if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
+            {
+                return retPPU;
+            }
 
-			if(orgPPU)
-			{
-				/* Disable PPU so that External Phy can be accessible */
-				if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
-				{
-						return retPPU;
-				}
-			}
-		}
-		else
-			usePPU = GT_TRUE;
-	}
-	else if(IS_IN_DEV_GROUP(dev,DEV_EXTERNAL_PHY))
-	{
-		if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
-		{
-			return retPPU;
-		}
+            if(orgPPU)
+            {
+                /* Disable PPU so that External Phy can be accessible */
+                if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
+                {
+                        return retPPU;
+                }
+            }
+        }
+        else
+          usePPU = GT_TRUE;
+    }
+    else if(IS_IN_DEV_GROUP(dev,DEV_EXTERNAL_PHY))
+    {
+        if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
+        {
+            return retPPU;
+        }
 
-		if(orgPPU)
-		{
-			if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS))
-			{
-				if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS_RES))
-				{
-					if(dev->revision != 0)
-						usePPU = GT_TRUE;
-				}
-				else
-				{
-				 	usePPU = GT_TRUE;
-				}
-			}
+        if(orgPPU)
+        {
+            if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS))
+            {
+                if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS_RES))
+                {
+                    if(dev->revision != 0)
+                        usePPU = GT_TRUE;
+                }
+                else
+                {
+                     usePPU = GT_TRUE;
+                }
+            }
 
-			/* Disable PPU so that External Phy can be accessible */
-			if (!usePPU)
-			{
-				if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
-				{
-					return retPPU;
-				}
-			}
-		}
-	}
+            /* Disable PPU so that External Phy can be accessible */
+            if (!usePPU)
+            {
+                if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
+                {
+                    return retPPU;
+                }
+            }
+        }
+    }
+    else if(IS_IN_DEV_GROUP(dev,DEV_PHY_ACCESS_NO_DIRECTLY))
+    {
+      usePPU = GT_TRUE;
+    }
 
-	DBG_INFO(("Write to phy(%d) register: phyAddr 0x%x, regAddr 0x%x, ",
-				portNum,phyAddr,regAddr));
-	DBG_INFO(("data 0x%x.\n",data));
+    DBG_INFO(("Write to phy(%d) register: phyAddr 0x%x, regAddr 0x%x, ",
+                portNum,phyAddr,regAddr));
+    DBG_INFO(("data 0x%x.\n",data));
 
-	if (usePPU)
-	{
-		retVal = phyRegWritePPUEn (dev,phyAddr,regAddr,data);
-	}
-	else
-	{
-		retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,data);
-	}
+    if (usePPU)
+    {
+        retVal = phyRegWritePPUEn (dev,phyAddr,regAddr,data);
+    }
+    else
+    {
+        retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,data);
+    }
 
-	if(orgPPU && (!usePPU))
-	{
-		if((retPPU=hwWritePPU(dev, orgPPU)) != GT_OK)
-		{
-			return retPPU;
-		}
-	}
+        if(orgPPU && (!usePPU))
+        {
+            if((retPPU=hwWritePPU(dev, orgPPU)) != GT_OK)
+            {
+                return retPPU;
+            }
+        }
 
-	return retVal;
+    return retVal;
 }
 
 
 static GT_STATUS coreReadPagedPhyReg
 (
-	IN GT_QD_DEV *dev,
-	IN  GT_U8    portNum,
-	IN  GT_U8    pageNum,
-	IN  GT_U8    regAddr,
-	IN  GT_U32	 anyPage,
-	OUT GT_U16   *data
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    portNum,
+    IN  GT_U8    pageNum,
+    IN  GT_U8    regAddr,
+    IN  GT_U32     anyPage,
+    OUT GT_U16   *data
 )
 {
-	GT_U8       phyAddr,pageAddr;
-	GT_STATUS   retVal, retPPU;
-	GT_U16		orgPPU, tmpData, orgPage;
-	GT_BOOL		usePPU = GT_FALSE;
+    GT_U8       phyAddr,pageAddr;
+    GT_STATUS   retVal, retPPU;
+    GT_U16        orgPPU, tmpData, orgPage;
+    GT_BOOL        usePPU = GT_FALSE;
 
-	phyAddr = CALC_SMI_DEV_ADDR(dev, portNum, PHY_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    phyAddr = CALC_SMI_DEV_ADDR(dev, portNum, PHY_ACCESS);
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
-	orgPPU = 0;
+    orgPPU = 0;
 
-	if(IS_IN_DEV_GROUP(dev,DEV_PPU_READ_ONLY))
-	{
-		if((IS_IN_DEV_GROUP(dev,DEV_PPU_SERDES_ACCESS_RES)) && (dev->validSerdesVec && (1<<phyAddr)))
-		{
-			if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
-			{
-				return retPPU;
-			}
+    if(IS_IN_DEV_GROUP(dev,DEV_PPU_READ_ONLY))
+    {
+        if((IS_IN_DEV_GROUP(dev,DEV_PPU_SERDES_ACCESS_RES)) && (dev->validSerdesVec & (1<<phyAddr)))
+        {
+            if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
+            {
+                return retPPU;
+            }
 
-			if(orgPPU)
-			{
-				/* Disable PPU so that External Phy can be accessible */
-				if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
-				{
-					return retPPU;
-				}
-			}
-		}
-		else
-			usePPU = GT_TRUE;
-	}
-	else if(IS_IN_DEV_GROUP(dev,DEV_EXTERNAL_PHY))
-	{
-		if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
-		{
-			return retPPU;
-		}
+            if(orgPPU)
+            {
+                /* Disable PPU so that External Phy can be accessible */
+                if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
+                {
+                    return retPPU;
+                }
+            }
+        }
+        else
+             usePPU = GT_TRUE;
+    }
+    else if(IS_IN_DEV_GROUP(dev,DEV_EXTERNAL_PHY))
+    {
+        if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
+        {
+            return retPPU;
+        }
 
-		if(orgPPU)
-		{
-			if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS))
-			{
-				if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS_RES))
-				{
-					if(dev->revision != 0)
-						usePPU = GT_TRUE;
-				}
-				else
-				{
-				 	usePPU = GT_TRUE;
-				}
-			}
+        if(orgPPU)
+        {
+            if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS))
+            {
+                if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS_RES))
+                {
+                    if(dev->revision != 0)
+                        usePPU = GT_TRUE;
+                }
+                else
+                {
+                     usePPU = GT_TRUE;
+                }
+            }
 
-			/* Disable PPU so that External Phy can be accessible */
-			if (!usePPU)
-			{
-				if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
-				{
-					return retPPU;
-				}
-			}
-		}
-	}
+            /* Disable PPU so that External Phy can be accessible */
+            if (!usePPU)
+            {
+                if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
+                {
+                    return retPPU;
+                }
+            }
+        }
+    }
 
-	if(anyPage & (1 << regAddr))
-	{
-		if (usePPU)
-		{
-			retVal = phyRegReadPPUEn (dev,phyAddr,regAddr,data);
-		}
-		else
-		{
-			retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,data);
-		}
-		DBG_INFO(("Read from phy(%d) register: smiAddr 0x%x, pageNum 0x%x, regAddr 0x%x\n",
-					portNum,phyAddr,pageNum,regAddr));
-	}
-	else
-	{
-	    pageAddr = GT_GET_PAGE_ADDR(regAddr);
+    if(anyPage & (1 << regAddr))
+    {
+        if (usePPU)
+        {
+            retVal = phyRegReadPPUEn (dev,phyAddr,regAddr,data);
+        }
+        else
+        {
+            retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,data);
+        }
+        DBG_INFO(("Read from phy(%d) register: smiAddr 0x%x, pageNum 0x%x, regAddr 0x%x\n",
+                    portNum,phyAddr,pageNum,regAddr));
+    }
+    else
+    {
+        pageAddr = GT_GET_PAGE_ADDR(regAddr);
 
-		if (usePPU)
-		{
-			retVal = phyRegReadPPUEn (dev,phyAddr,regAddr,&orgPage);
-		}
-		else
-		{
-			retVal = miiSmiIfReadRegister(dev,phyAddr,pageAddr,&orgPage);
-		}
+        if (usePPU)
+        {
+            retVal = phyRegReadPPUEn (dev,phyAddr,regAddr,&orgPage);
+        }
+        else
+        {
+            retVal = miiSmiIfReadRegister(dev,phyAddr,pageAddr,&orgPage);
+        }
 
-		if (retVal != GT_OK)
-		{
-			DBG_INFO(("Reading page register failed\n"));
-			return retVal;
-		}
+        if (retVal != GT_OK)
+        {
+            DBG_INFO(("Reading page register failed\n"));
+            return retVal;
+        }
 
-		if(pageAddr == 22)
-			tmpData = orgPage & 0xFF00;
-		else
-			tmpData = orgPage & 0xFFC0;
-		tmpData |= pageNum;
+        if(pageAddr == 22)
+            tmpData = orgPage & 0xFF00;
+        else
+            tmpData = orgPage & 0xFFC0;
+        tmpData |= pageNum;
 
-		if (usePPU)
-		{
-			if((retVal = phyRegWritePPUEn(dev,phyAddr,pageAddr,tmpData)) == GT_OK)
-			{
-				retVal = phyRegReadPPUEn (dev,phyAddr,regAddr,data);
+        if (usePPU)
+        {
+            if((retVal = phyRegWritePPUEn(dev,phyAddr,pageAddr,tmpData)) == GT_OK)
+            {
+                retVal = phyRegReadPPUEn (dev,phyAddr,regAddr,data);
 
-				DBG_INFO(("Read from phy(%d) register: smiAddr 0x%x, pageNum 0x%x, regAddr 0x%x\n",
-							portNum,phyAddr,pageNum,regAddr));
-			}
-		}
-		else
-		{
-			if((retVal = miiSmiIfWriteRegister(dev,phyAddr,pageAddr,tmpData)) == GT_OK)
-			{
-				retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,data);
+                DBG_INFO(("Read from phy(%d) register: smiAddr 0x%x, pageNum 0x%x, regAddr 0x%x\n",
+                            portNum,phyAddr,pageNum,regAddr));
+            }
+        }
+        else
+        {
+            if((retVal = miiSmiIfWriteRegister(dev,phyAddr,pageAddr,tmpData)) == GT_OK)
+            {
+                retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,data);
 
-				DBG_INFO(("Read from phy(%d) register: smiAddr 0x%x, pageNum 0x%x, regAddr 0x%x\n",
-							portNum,phyAddr,pageNum,regAddr));
-			}
-		}
-	}
+                DBG_INFO(("Read from phy(%d) register: smiAddr 0x%x, pageNum 0x%x, regAddr 0x%x\n",
+                            portNum,phyAddr,pageNum,regAddr));
+            }
+        }
+    }
 
-	if(orgPPU && (!usePPU))
-	{
-		if((retPPU=hwWritePPU(dev, orgPPU)) != GT_OK)
-		{
-			return retPPU;
-		}
-	}
+        if(orgPPU && (!usePPU))
+        {
+            if((retPPU=hwWritePPU(dev, orgPPU)) != GT_OK)
+            {
+                return retPPU;
+            }
+        }
 
-	return retVal;
+    return retVal;
 
 }
 
 
 static GT_STATUS coreWritePagedPhyReg
 (
-	IN GT_QD_DEV *dev,
-	IN  GT_U8    portNum,
-	IN  GT_U8    pageNum,
-	IN  GT_U8    regAddr,
-	IN  GT_U32	 anyPage,
-	IN  GT_U16   data
+    IN GT_QD_DEV *dev,
+    IN  GT_U8    portNum,
+    IN  GT_U8    pageNum,
+    IN  GT_U8    regAddr,
+    IN  GT_U32     anyPage,
+    IN  GT_U16   data
 )
 {
-	GT_U8   		phyAddr,pageAddr;
-	GT_STATUS   retVal, retPPU;
-	GT_U16		orgPPU, tmpData, orgPage;
-	GT_BOOL		usePPU = GT_FALSE;
+    GT_U8           phyAddr,pageAddr;
+    GT_STATUS   retVal, retPPU;
+    GT_U16        orgPPU, tmpData, orgPage;
+    GT_BOOL        usePPU = GT_FALSE;
 
-	phyAddr = CALC_SMI_DEV_ADDR(dev, portNum, PHY_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    phyAddr = CALC_SMI_DEV_ADDR(dev, portNum, PHY_ACCESS);
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
-	orgPPU = 0;
+    orgPPU = 0;
 
-	if(IS_IN_DEV_GROUP(dev,DEV_PPU_READ_ONLY))
-	{
-		if((IS_IN_DEV_GROUP(dev,DEV_PPU_SERDES_ACCESS_RES)) && (dev->validSerdesVec && (1<<phyAddr)))
-		{
-			if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
-			{
-				return retPPU;
-			}
+    if(IS_IN_DEV_GROUP(dev,DEV_PPU_READ_ONLY))
+    {
+        if((IS_IN_DEV_GROUP(dev,DEV_PPU_SERDES_ACCESS_RES)) && (dev->validSerdesVec & (1<<phyAddr)))
+        {
+            if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
+            {
+                return retPPU;
+            }
 
-			if(orgPPU)
-			{
-				/* Disable PPU so that External Phy can be accessible */
-				if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
-				{
-					return retPPU;
-				}
-			}
-		}
-		else
-			usePPU = GT_TRUE;
-	}
-	else if(IS_IN_DEV_GROUP(dev,DEV_EXTERNAL_PHY))
-	{
-		if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
-		{
-			return retPPU;
-		}
+            if(orgPPU)
+            {
+                /* Disable PPU so that External Phy can be accessible */
+                if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
+                {
+                    return retPPU;
+                }
+            }
+        }
+        else
+             usePPU = GT_TRUE;
+    }
+    else if(IS_IN_DEV_GROUP(dev,DEV_EXTERNAL_PHY))
+    {
+        if((retPPU=hwReadPPU(dev, &orgPPU)) != GT_OK)
+        {
+            return retPPU;
+        }
 
-		if(orgPPU)
-		{
-			if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS))
-			{
-				if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS_RES))
-				{
-					if(dev->revision != 0)
-						usePPU = GT_TRUE;
-				}
-				else
-				{
-				 	usePPU = GT_TRUE;
-				}
-			}
+        if(orgPPU)
+        {
+            if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS))
+            {
+                if(IS_IN_DEV_GROUP(dev,DEV_PPU_PHY_ACCESS_RES))
+                {
+                    if(dev->revision != 0)
+                        usePPU = GT_TRUE;
+                }
+                else
+                {
+                     usePPU = GT_TRUE;
+                }
+            }
 
-			/* Disable PPU so that External Phy can be accessible */
-			if (!usePPU)
-			{
-				if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
-				{
-					return retPPU;
-				}
-			}
-		}
-	}
+            /* Disable PPU so that External Phy can be accessible */
+            if (!usePPU)
+            {
+                if((retPPU=hwWritePPU(dev, 0)) != GT_OK)
+                {
+                    return retPPU;
+                }
+            }
+        }
+    }
 
-	DBG_INFO(("Write to phy(%d) register: smiAddr 0x%x, pageNum 0x%x, regAddr 0x%x\n",
-				portNum,phyAddr,pageNum,regAddr));
-	DBG_INFO(("data 0x%x.\n",data));
+    DBG_INFO(("Write to phy(%d) register: smiAddr 0x%x, pageNum 0x%x, regAddr 0x%x\n",
+                portNum,phyAddr,pageNum,regAddr));
+    DBG_INFO(("data 0x%x.\n",data));
 
-	if(anyPage & (1 << regAddr))
-	{
-		if (usePPU)
-		{
-			retVal = phyRegWritePPUEn (dev,phyAddr,regAddr,data);
-		}
-		else
-		{
-			retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,data);
-		}
-	}
-	else
-	{
-	    pageAddr = GT_GET_PAGE_ADDR(regAddr);
+    if(anyPage & (1 << regAddr))
+    {
+        if (usePPU)
+        {
+            retVal = phyRegWritePPUEn (dev,phyAddr,regAddr,data);
+        }
+        else
+        {
+            retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,data);
+        }
+    }
+    else
+    {
+        pageAddr = GT_GET_PAGE_ADDR(regAddr);
 
-		if (usePPU)
-		{
-			retVal = phyRegReadPPUEn (dev,phyAddr,regAddr,&orgPage);
-		}
-		else
-		{
-			retVal = miiSmiIfReadRegister(dev,phyAddr,pageAddr,&orgPage);
-		}
+        if (usePPU)
+        {
+            retVal = phyRegReadPPUEn (dev,phyAddr,regAddr,&orgPage);
+        }
+        else
+        {
+            retVal = miiSmiIfReadRegister(dev,phyAddr,pageAddr,&orgPage);
+        }
 
-		if (retVal != GT_OK)
-		{
-			DBG_INFO(("Reading page register failed\n"));
-			return retVal;
-		}
+        if (retVal != GT_OK)
+        {
+            DBG_INFO(("Reading page register failed\n"));
+            return retVal;
+        }
 
-		if(pageAddr == 22)
-			tmpData = orgPage & 0xFF00;
-		else
-			tmpData = orgPage & 0xFFC0;
-		tmpData |= pageNum;
+        if(pageAddr == 22)
+            tmpData = orgPage & 0xFF00;
+        else
+            tmpData = orgPage & 0xFFC0;
+        tmpData |= pageNum;
 
-		if (usePPU)
-		{
-			if((retVal = phyRegWritePPUEn(dev,phyAddr,pageAddr,tmpData)) == GT_OK)
-			{
-				retVal = phyRegWritePPUEn(dev,phyAddr,regAddr,data);
-			}
-		}
-		else
-		{
-			if((retVal = miiSmiIfWriteRegister(dev,phyAddr,pageAddr,tmpData)) == GT_OK)
-			{
-				retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,data);
-			}
-		}
-	}
+        if (usePPU)
+        {
+            if((retVal = phyRegWritePPUEn(dev,phyAddr,pageAddr,tmpData)) == GT_OK)
+            {
+                retVal = phyRegWritePPUEn(dev,phyAddr,regAddr,data);
+            }
+        }
+        else
+        {
+            if((retVal = miiSmiIfWriteRegister(dev,phyAddr,pageAddr,tmpData)) == GT_OK)
+            {
+                retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,data);
+            }
+        }
+    }
 
-	if(orgPPU && (!usePPU))
-	{
-		if((retPPU=hwWritePPU(dev, orgPPU)) != GT_OK)
-		{
-			return retPPU;
-		}
-	}
+        if(orgPPU && (!usePPU))
+        {
+            if((retPPU=hwWritePPU(dev, orgPPU)) != GT_OK)
+            {
+                return retPPU;
+            }
+        }
 
-	return retVal;
+    return retVal;
 }
 
 
@@ -2277,17 +2597,58 @@ static GT_STATUS coreWritePagedPhyReg
 *******************************************************************************/
 static GT_STATUS phyRegReadPPUEn (GT_QD_DEV* dev, unsigned int phyAddr , unsigned int regAddr,
                         unsigned short* value)
+#ifdef GT_RMGMT_ACCESS
 {
-	volatile unsigned int timeOut; /* in 100MS units */
-	volatile int i;
-	GT_U16 smiReg;
+  GT_U16 smiReg;
+  GT_STATUS   retVal;
 
-	DBG_INFO(("Read Phy register while PPU Enabled\n"));
+  HW_DEV_REG_ACCESS regAccess;
 
-	/* first check that it is not busy */
+  DBG_INFO(("Read Phy register while PPU Enabled\n"));
+
+  regAccess.entries = 4;
+
+  regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+  regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+  regAccess.rw_reg_list[0].reg = QD_REG_SMI_PHY_CMD;
+  regAccess.rw_reg_list[0].data = 15;
+  smiReg =  QD_SMI_BUSY | (phyAddr << QD_SMI_DEV_ADDR_BIT) | (QD_SMI_READ << QD_SMI_OP_BIT) | (regAddr << QD_SMI_REG_ADDR_BIT) | (QD_SMI_CLAUSE22 << QD_SMI_MODE_BIT);
+
+  regAccess.rw_reg_list[1].cmd = HW_REG_WRITE;
+  regAccess.rw_reg_list[1].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+  regAccess.rw_reg_list[1].reg = QD_REG_SMI_PHY_CMD;
+  regAccess.rw_reg_list[1].data = smiReg;
+
+  regAccess.rw_reg_list[2].cmd = HW_REG_WAIT_TILL_0;
+  regAccess.rw_reg_list[2].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+  regAccess.rw_reg_list[2].reg = QD_REG_SMI_PHY_CMD;
+  regAccess.rw_reg_list[2].data = 15;
+
+  regAccess.rw_reg_list[3].cmd = HW_REG_READ;
+  regAccess.rw_reg_list[3].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+  regAccess.rw_reg_list[3].reg = QD_REG_SMI_PHY_DATA;
+  regAccess.rw_reg_list[3].data = 0;
+  retVal = hwAccessMultiRegs(dev, &regAccess);
+  if(retVal != GT_OK)
+  {
+    return retVal;
+  }
+  *value = (unsigned short)regAccess.rw_reg_list[3].data;
+    
+  return GT_OK;
+}
+#else
+{
+    volatile unsigned int timeOut; /* in 100MS units */
+    volatile int i;
+    GT_U16 smiReg;
+
+    DBG_INFO(("Read Phy register while PPU Enabled\n"));
+
+    /* first check that it is not busy */
     if(phyReadGlobal2Reg(dev,QD_REG_SMI_PHY_CMD, &smiReg) != GT_OK)
     {
-		DBG_INFO(("Reading Phy register Failed\n"));
+        DBG_INFO(("Reading Phy register Failed\n"));
         return GT_FAIL;
     }
     timeOut = QD_SMI_ACCESS_LOOP; /* initialize the loop count */
@@ -2299,19 +2660,19 @@ static GT_STATUS phyRegReadPPUEn (GT_QD_DEV* dev, unsigned int phyAddr , unsigne
         {
             if(timeOut-- < 1 ) 
             {
-				DBG_INFO(("Reading Phy register Timed Out\n"));
-    	        return GT_FAIL;
-    	    }
-		    if(phyReadGlobal2Reg(dev,QD_REG_SMI_PHY_CMD, &smiReg) != GT_OK)
-		    {
-				DBG_INFO(("Reading Phy register Failed\n"));
-		        return GT_FAIL;
-		    }
+                DBG_INFO(("Reading Phy register Timed Out\n"));
+                return GT_FAIL;
+            }
+            if(phyReadGlobal2Reg(dev,QD_REG_SMI_PHY_CMD, &smiReg) != GT_OK)
+            {
+                DBG_INFO(("Reading Phy register Failed\n"));
+                return GT_FAIL;
+            }
         } while (smiReg & QD_SMI_BUSY);
     }
 
     smiReg =  QD_SMI_BUSY | (phyAddr << QD_SMI_DEV_ADDR_BIT) | (QD_SMI_READ << QD_SMI_OP_BIT) | 
-    		(regAddr << QD_SMI_REG_ADDR_BIT) | (QD_SMI_CLAUSE22 << QD_SMI_MODE_BIT);
+            (regAddr << QD_SMI_REG_ADDR_BIT) | (QD_SMI_CLAUSE22 << QD_SMI_MODE_BIT);
 
     if(phyWriteGlobal2Reg(dev,QD_REG_SMI_PHY_CMD, smiReg) != GT_OK)
     {
@@ -2326,29 +2687,30 @@ static GT_STATUS phyRegReadPPUEn (GT_QD_DEV* dev, unsigned int phyAddr , unsigne
     if(smiReg & QD_SMI_BUSY) 
     {
         for(i = 0 ; i < QD_SMI_TIMEOUT ; i++);
-		do 
-		{
+        do 
+        {
             if(timeOut-- < 1 ) 
             {
-				DBG_INFO(("Reading Phy register Timed Out\n"));
-    	        return GT_FALSE;
-    	    }
-		    if(phyReadGlobal2Reg(dev,QD_REG_SMI_PHY_CMD, &smiReg) != GT_OK)
-		    {
-				DBG_INFO(("Reading Phy register Failed\n"));
-		        return GT_FAIL;
-		    }
+                DBG_INFO(("Reading Phy register Timed Out\n"));
+                return GT_FALSE;
+            }
+            if(phyReadGlobal2Reg(dev,QD_REG_SMI_PHY_CMD, &smiReg) != GT_OK)
+            {
+                DBG_INFO(("Reading Phy register Failed\n"));
+                return GT_FAIL;
+            }
         } while (smiReg & QD_SMI_BUSY);
-	}
+    }
     if(phyReadGlobal2Reg(dev,QD_REG_SMI_PHY_DATA, &smiReg) != GT_OK)
     {
-		DBG_INFO(("Reading Phy register Failed\n"));
+        DBG_INFO(("Reading Phy register Failed\n"));
         return GT_FAIL;
     }
-	*value = (unsigned short)smiReg;
+    *value = (unsigned short)smiReg;
     
-	return GT_OK;
+    return GT_OK;
 }
+#endif
 
 /*****************************************************************************
 * phyRegWritePPUEn
@@ -2375,17 +2737,54 @@ static GT_STATUS phyRegReadPPUEn (GT_QD_DEV* dev, unsigned int phyAddr , unsigne
 
 static GT_STATUS phyRegWritePPUEn (GT_QD_DEV* dev, unsigned int phyAddr , unsigned int regAddr,
                        unsigned short value)
+#ifdef GT_RMGMT_ACCESS
 {
-	volatile unsigned int timeOut; /* in 100MS units */
-	volatile int i;
-	GT_U16 smiReg;
+  GT_U16 smiReg;
+  GT_STATUS   retVal;
 
-	DBG_INFO(("Writing Phy register while PPU Enabled\n"));
+  HW_DEV_REG_ACCESS regAccess;
 
-	/* first check that it is not busy */
+  DBG_INFO(("Write Phy register while PPU Enabled\n"));
+
+  regAccess.entries = 3;
+
+  regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+  regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+  regAccess.rw_reg_list[0].reg = QD_REG_SMI_PHY_CMD;
+  regAccess.rw_reg_list[0].data = 15;
+
+  regAccess.rw_reg_list[1].cmd = HW_REG_WRITE;
+  regAccess.rw_reg_list[1].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+  regAccess.rw_reg_list[1].reg = QD_REG_SMI_PHY_DATA;
+  regAccess.rw_reg_list[1].data = value;
+
+  smiReg = QD_SMI_BUSY | (phyAddr << QD_SMI_DEV_ADDR_BIT) | (QD_SMI_WRITE << QD_SMI_OP_BIT) | (regAddr << QD_SMI_REG_ADDR_BIT) | (QD_SMI_CLAUSE22 << QD_SMI_MODE_BIT);
+
+  regAccess.rw_reg_list[2].cmd = HW_REG_WRITE;
+  regAccess.rw_reg_list[2].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+  regAccess.rw_reg_list[2].reg = QD_REG_SMI_PHY_CMD;
+  regAccess.rw_reg_list[2].data = smiReg;
+
+  retVal = hwAccessMultiRegs(dev, &regAccess);
+  if(retVal != GT_OK)
+  {
+    return retVal;
+  }
+    
+  return GT_OK;
+}
+#else
+{
+    volatile unsigned int timeOut; /* in 100MS units */
+    volatile int i;
+    GT_U16 smiReg;
+
+    DBG_INFO(("Writing Phy register while PPU Enabled\n"));
+
+    /* first check that it is not busy */
     if(phyReadGlobal2Reg(dev,QD_REG_SMI_PHY_CMD, &smiReg) != GT_OK)
     {
-		DBG_INFO(("Reading Phy register Failed\n"));
+        DBG_INFO(("Reading Phy register Failed\n"));
         return GT_FAIL;
     }
     timeOut = QD_SMI_ACCESS_LOOP; /* initialize the loop count */
@@ -2397,34 +2796,33 @@ static GT_STATUS phyRegWritePPUEn (GT_QD_DEV* dev, unsigned int phyAddr , unsign
         {
             if(timeOut-- < 1 ) 
             {
-				DBG_INFO(("Writing Phy register Timed Out\n"));
-    	        return GT_FALSE;
-    	    }
-		    if(phyReadGlobal2Reg(dev,QD_REG_SMI_PHY_CMD, &smiReg) != GT_OK)
-		    {
-				DBG_INFO(("Writing Phy register Failed\n"));
-		        return GT_FAIL;
-		    }
+                DBG_INFO(("Writing Phy register Timed Out\n"));
+                return GT_FALSE;
+            }
+            if(phyReadGlobal2Reg(dev,QD_REG_SMI_PHY_CMD, &smiReg) != GT_OK)
+            {
+                DBG_INFO(("Writing Phy register Failed\n"));
+                return GT_FAIL;
+            }
         } while (smiReg & QD_SMI_BUSY);
     }
 
     if(phyWriteGlobal2Reg(dev,QD_REG_SMI_PHY_DATA, value) != GT_OK)
     {
-		DBG_INFO(("Writing Phy Data register Failed\n"));
+        DBG_INFO(("Writing Phy Data register Failed\n"));
         return GT_FAIL;
     }
     smiReg = QD_SMI_BUSY | (phyAddr << QD_SMI_DEV_ADDR_BIT) | (QD_SMI_WRITE << QD_SMI_OP_BIT) | 
-			(regAddr << QD_SMI_REG_ADDR_BIT) | (QD_SMI_CLAUSE22 << QD_SMI_MODE_BIT);
+            (regAddr << QD_SMI_REG_ADDR_BIT) | (QD_SMI_CLAUSE22 << QD_SMI_MODE_BIT);
 
     if(phyWriteGlobal2Reg(dev,QD_REG_SMI_PHY_CMD, smiReg) != GT_OK)
     {
-		DBG_INFO(("Writing Phy Command register Failed\n"));
+        DBG_INFO(("Writing Phy Command register Failed\n"));
         return GT_FAIL;
     }
 
     return GT_OK;
 }
-
 
 static GT_STATUS phyReadGlobal2Reg
 (
@@ -2437,10 +2835,10 @@ static GT_STATUS phyReadGlobal2Reg
     GT_STATUS   retVal;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
     retVal = miiSmiIfReadRegister(dev,phyAddr,regAddr,data);
 
@@ -2462,13 +2860,57 @@ static GT_STATUS phyWriteGlobal2Reg
     GT_STATUS   retVal;
 
     phyAddr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
-	if (phyAddr == 0xFF)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (phyAddr == 0xFF)
+    {
+        return GT_BAD_PARAM;
+    }
 
     retVal = miiSmiIfWriteRegister(dev,phyAddr,regAddr,data);
 
     return retVal;
 }
+#endif
 
+#ifdef GT_RMGMT_ACCESS
+/*******************************************************************************
+* hwAccessMultiRegs
+*
+* DESCRIPTION:
+*       This function accesses switch's registers.
+*
+* INPUTS:
+*   regList     - list of HW_DEV_RW_REG.
+*     HW_DEV_RW_REG:
+*     cmd - HW_REG_READ, HW_REG_WRITE, HW_REG_WAIT_TILL_0 or HW_REG_WAIT_TILL_1 
+*     addr - SMI Address 
+*     reg  - Register offset 
+*     data - INPUT,OUTPUT:Value in the Register or Bit number
+*     
+* OUTPUTS:
+*   regList
+*
+* RETURNS:
+*       GT_OK on success, or
+*       GT_FAIL otherwise.
+*
+* COMMENTS:
+*       None.
+*
+*******************************************************************************/
+GT_STATUS hwAccessMultiRegs
+(
+    IN GT_QD_DEV *dev,
+    INOUT HW_DEV_REG_ACCESS *regList
+)
+{
+  GT_STATUS   retVal;
+
+  gtSemTake(dev,dev->hwAccessRegsSem,OS_WAIT_FOREVER);
+
+  retVal = qdAccessRegs(dev, regList);
+
+  gtSemGive(dev,dev->hwAccessRegsSem);
+
+  return retVal;
+}
+#endif

@@ -17,6 +17,9 @@
 #include <gtHwCntl.h>
 #include <gtDrvSwRegs.h>
 
+#ifdef __KERNELL__
+extern void printk(char* format, ...);
+#endif
 
 /****************************************************************************/
 /* Forward function declaration.                                            */
@@ -25,31 +28,31 @@ static GT_STATUS atuOperationPerform
 (
     IN      GT_QD_DEV           *dev,
     IN      GT_ATU_OPERATION    atuOp,
-	INOUT	GT_EXTRA_OP_DATA	*opData,
-    INOUT 	GT_ATU_ENTRY    	*atuEntry
+    INOUT    GT_EXTRA_OP_DATA    *opData,
+    INOUT     GT_ATU_ENTRY        *atuEntry
 );
 
 static GT_STATUS atuStateAppToDev
 (
-    IN  GT_QD_DEV	*dev,
-	IN  GT_BOOL		unicast,
-	IN  GT_U32		state,
-	OUT GT_U32		*newOne
+    IN  GT_QD_DEV    *dev,
+    IN  GT_BOOL        unicast,
+    IN  GT_U32        state,
+    OUT GT_U32        *newOne
 );
 
 static GT_STATUS atuStateDevToApp
 (
-    IN  GT_QD_DEV	*dev,
-	IN  GT_BOOL		unicast,
-	IN  GT_U32		state,
-	OUT GT_U32		*newOne
+    IN  GT_QD_DEV    *dev,
+    IN  GT_BOOL        unicast,
+    IN  GT_U32        state,
+    OUT GT_U32        *newOne
 );
 
 static GT_STATUS atuGetStats
 (
-    IN  GT_QD_DEV	*dev,
-	IN  GT_ATU_STAT	*atuStat,
-	OUT GT_U32		*count
+    IN  GT_QD_DEV    *dev,
+    IN  GT_ATU_STAT    *atuStat,
+    OUT GT_U32        *count
 );
 
 
@@ -58,33 +61,33 @@ static GT_STATUS atuGetStats
 *
 * DESCRIPTION:
 *       Port's auto learning limit. When the limit is non-zero value, the number
-*		of MAC addresses that can be learned on this port are limited to the value
-*		specified in this API. When the learn limit has been reached any frame 
-*		that ingresses this port with a source MAC address not already in the 
-*		address database that is associated with this port will be discarded. 
-*		Normal auto-learning will resume on the port as soon as the number of 
-*		active unicast MAC addresses associated to this port is less than the 
-*		learn limit.
-*		CPU directed ATU Load, Purge, or Move will not have any effect on the 
-*		learn limit.
-*		This feature is disabled when the limit is zero.
-*		The following care is needed when enabling this feature:
-*			1) dsable learning on the ports
-*			2) flush all non-static addresses in the ATU
-*			3) define the desired limit for the ports
-*			4) re-enable learing on the ports
+*        of MAC addresses that can be learned on this port are limited to the value
+*        specified in this API. When the learn limit has been reached any frame 
+*        that ingresses this port with a source MAC address not already in the 
+*        address database that is associated with this port will be discarded. 
+*        Normal auto-learning will resume on the port as soon as the number of 
+*        active unicast MAC addresses associated to this port is less than the 
+*        learn limit.
+*        CPU directed ATU Load, Purge, or Move will not have any effect on the 
+*        learn limit.
+*        This feature is disabled when the limit is zero.
+*        The following care is needed when enabling this feature:
+*            1) dsable learning on the ports
+*            2) flush all non-static addresses in the ATU
+*            3) define the desired limit for the ports
+*            4) re-enable learing on the ports
 *
 * INPUTS:
 *       port  - logical port number
 *       limit - auto learning limit ( 0 ~ 255 )
-*											  
+*                                              
 * OUTPUTS:
 *       None.
 *
 * RETURNS:
 *       GT_OK   - on success
 *       GT_FAIL - on error
-*		GT_BAD_PARAM - if limit > 0xFF
+*        GT_BAD_PARAM - if limit > 0xFF
 *       GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
@@ -95,49 +98,49 @@ static GT_STATUS atuGetStats
 *******************************************************************************/
 GT_STATUS gfdbSetPortAtuLearnLimit
 (
-	IN  GT_QD_DEV 	*dev,
-	IN  GT_LPORT  	port,
-	IN  GT_U32   	limit
+    IN  GT_QD_DEV     *dev,
+    IN  GT_LPORT      port,
+    IN  GT_U32       limit
 )
 {
-	GT_U16          data, mask;
-	GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U8           hwPort;         /* the physical port number     */
+    GT_U16          data, mask;
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U8           hwPort;         /* the physical port number     */
 
-	DBG_INFO(("gfdbSetPortAtuLearnLimit Called.\n"));
+    DBG_INFO(("gfdbSetPortAtuLearnLimit Called.\n"));
 
-	/* translate LPORT to hardware port */
-	hwPort = GT_LPORT_2_PORT(port);
+    /* translate LPORT to hardware port */
+    hwPort = GT_LPORT_2_PORT(port);
 
-	/* Check device if it has fixed ATU Size. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ATU_LIMIT))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    /* Check device if it has fixed ATU Size. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ATU_LIMIT))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
-	if (limit > 0xFF)
-	{
-		DBG_INFO(("Bad Parameter\n"));
-		return GT_BAD_PARAM;
-	}
+    if (limit > 0xFF)
+    {
+        DBG_INFO(("Bad Parameter\n"));
+        return GT_BAD_PARAM;
+    }
 
-	mask = 0x80FF;
+    mask = 0x80FF;
 
-	if (IS_IN_DEV_GROUP(dev,DEV_ATU_LIMIT_READ))
-		mask |= 0x1000;
+    if (IS_IN_DEV_GROUP(dev,DEV_ATU_LIMIT_READ))
+        mask |= 0x1000;
 
-	data = (GT_U16) limit;
+    data = (GT_U16) limit;
 
-	/* Set the learn limit bits.                  */
-	retVal = hwSetPortRegBits(dev,hwPort, QD_REG_PORT_ATU_CONTROL, mask, data);
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-		return retVal;
-	}
+    /* Set the learn limit bits.                  */
+    retVal = hwSetPortRegBits(dev,hwPort, QD_REG_PORT_ATU_CONTROL, mask, data);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 }
 
 
@@ -146,33 +149,33 @@ GT_STATUS gfdbSetPortAtuLearnLimit
 *
 * DESCRIPTION:
 *      Port's auto learning limit. When the limit is non-zero value, the number
-*		of MAC addresses that can be learned on this port are limited to the value
-*		specified in this API. When the learn limit has been reached any frame 
-*		that ingresses this port with a source MAC address not already in the 
-*		address database that is associated with this port will be discarded. 
-*		Normal auto-learning will resume on the port as soon as the number of 
-*		active unicast MAC addresses associated to this port is less than the 
-*		learn limit.
-*		CPU directed ATU Load, Purge, or Move will not have any effect on the 
-*		learn limit.
-*		This feature is disabled when the limit is zero.
-*		The following care is needed when enabling this feature:
-*			1) dsable learning on the ports
-*			2) flush all non-static addresses in the ATU
-*			3) define the desired limit for the ports
-*			4) re-enable learing on the ports
+*        of MAC addresses that can be learned on this port are limited to the value
+*        specified in this API. When the learn limit has been reached any frame 
+*        that ingresses this port with a source MAC address not already in the 
+*        address database that is associated with this port will be discarded. 
+*        Normal auto-learning will resume on the port as soon as the number of 
+*        active unicast MAC addresses associated to this port is less than the 
+*        learn limit.
+*        CPU directed ATU Load, Purge, or Move will not have any effect on the 
+*        learn limit.
+*        This feature is disabled when the limit is zero.
+*        The following care is needed when enabling this feature:
+*            1) dsable learning on the ports
+*            2) flush all non-static addresses in the ATU
+*            3) define the desired limit for the ports
+*            4) re-enable learing on the ports
 *
 * INPUTS:
-*		port  - logical port number
-*											  
+*        port  - logical port number
+*                                              
 * OUTPUTS:
-*		limit - auto learning limit ( 0 ~ 255 )
+*        limit - auto learning limit ( 0 ~ 255 )
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - if limit > 0xFF
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - if limit > 0xFF
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
 *       None.
@@ -180,49 +183,49 @@ GT_STATUS gfdbSetPortAtuLearnLimit
 *******************************************************************************/
 GT_STATUS gfdbGetPortAtuLearnLimit
 (
-	IN  GT_QD_DEV 	*dev,
-	IN  GT_LPORT  	port,
-	OUT GT_U32   	*limit
+    IN  GT_QD_DEV     *dev,
+    IN  GT_LPORT      port,
+    OUT GT_U32       *limit
 )
 {
-	GT_U16          data, mask;
-	GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U8           hwPort;         /* the physical port number     */
+    GT_U16          data, mask;
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U8           hwPort;         /* the physical port number     */
 
-	DBG_INFO(("gfdbGetPortAtuLearnLimit Called.\n"));
+    DBG_INFO(("gfdbGetPortAtuLearnLimit Called.\n"));
 
-	/* translate LPORT to hardware port */
-	hwPort = GT_LPORT_2_PORT(port);
+    /* translate LPORT to hardware port */
+    hwPort = GT_LPORT_2_PORT(port);
 
-	/* Check device if it has fixed ATU Size. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ATU_LIMIT_READ))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    /* Check device if it has fixed ATU Size. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ATU_LIMIT_READ))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
-	mask = 0x9000;
-	data = (GT_U16) 0x1000;
+    mask = 0x9000;
+    data = (GT_U16) 0x1000;
 
-	/* Set the learn limit bits.                  */
-	retVal = hwSetPortRegBits(dev,hwPort, QD_REG_PORT_ATU_CONTROL, mask, data);
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-		return retVal;
-	}
+    /* Set the learn limit bits.                  */
+    retVal = hwSetPortRegBits(dev,hwPort, QD_REG_PORT_ATU_CONTROL, mask, data);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
 
-	/* Get the ReadLearnLimit bit. */
-	retVal = hwGetPortRegField(dev,hwPort, QD_REG_PORT_ATU_CONTROL, 0, 8, &data);
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-		return retVal;
-	}
+    /* Get the ReadLearnLimit bit. */
+    retVal = hwGetPortRegField(dev,hwPort, QD_REG_PORT_ATU_CONTROL, 0, 8, &data);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
 
-	*limit = (GT_U32)data;
+    *limit = (GT_U32)data;
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 }
 
 
@@ -232,12 +235,12 @@ GT_STATUS gfdbGetPortAtuLearnLimit
 *
 * DESCRIPTION:
 *       Read the current number of active unicast MAC addresses associated with 
-*		the given port. This counter (LearnCnt) is held at zero if learn limit
-*		(gfdbSetPortAtuLearnLimit API) is set to zero.
+*        the given port. This counter (LearnCnt) is held at zero if learn limit
+*        (gfdbSetPortAtuLearnLimit API) is set to zero.
 *
 * INPUTS:
 *       port  - logical port number
-*											  
+*                                              
 * OUTPUTS:
 *       count - current auto learning count
 *
@@ -254,9 +257,9 @@ GT_STATUS gfdbGetPortAtuLearnLimit
 *******************************************************************************/
 GT_STATUS gfdbGetPortAtuLearnCnt
 (
-    IN  GT_QD_DEV 	*dev,
-    IN  GT_LPORT  	port,
-    IN  GT_U32   	*count
+    IN  GT_QD_DEV     *dev,
+    IN  GT_LPORT      port,
+    IN  GT_U32       *count
 )
 {
     GT_U16          data;
@@ -268,10 +271,10 @@ GT_STATUS gfdbGetPortAtuLearnCnt
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	/* Check device if this feature is supported. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ATU_LIMIT))
+    /* Check device if this feature is supported. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ATU_LIMIT))
     {
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the ReadLearnCnt bit. */
@@ -282,16 +285,16 @@ GT_STATUS gfdbGetPortAtuLearnCnt
         return retVal;
     }
 
-	if(data == 0)
-	{
-	    /* Set the ReadLearnCnt bit. */
-    	retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_ATU_CONTROL, 15, 1, 1);
-	    if(retVal != GT_OK)
-    	{
-        	DBG_INFO(("Failed.\n"));
-	        return retVal;
-    	}
-	}
+    if(data == 0)
+    {
+        /* Set the ReadLearnCnt bit. */
+        retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_ATU_CONTROL, 15, 1, 1);
+        if(retVal != GT_OK)
+        {
+            DBG_INFO(("Failed.\n"));
+            return retVal;
+        }
+    }
 
     /* Get the LearnCnt bits. */
     retVal = hwGetPortRegField(dev,hwPort, QD_REG_PORT_ATU_CONTROL, 0, 8, &data);
@@ -301,7 +304,7 @@ GT_STATUS gfdbGetPortAtuLearnCnt
         return retVal;
     }
 
-	*count = (GT_U32)data;
+    *count = (GT_U32)data;
 
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -331,67 +334,67 @@ GT_STATUS gfdbGetPortAtuLearnCnt
 *******************************************************************************/
 GT_STATUS gfdbGetAtuAllCount
 (
-    IN  GT_QD_DEV 	*dev,
-    OUT GT_U32 		*count
+    IN  GT_QD_DEV     *dev,
+    OUT GT_U32         *count
 )
 {
     GT_U32          dbNum, maxDbNum, numOfEntries;
     GT_STATUS       retVal;
     GT_ATU_ENTRY    entry;
-	GT_ATU_STAT		atuStat;
+    GT_ATU_STAT        atuStat;
 
     DBG_INFO(("gfdbGetAtuAllCount Called.\n"));
 
-	if(IS_IN_DEV_GROUP(dev,DEV_ATU_STATS))
-	{
-		atuStat.op = GT_ATU_STATS_ALL;
-		return atuGetStats(dev,&atuStat,count);
-	}
+    if(IS_IN_DEV_GROUP(dev,DEV_ATU_STATS))
+    {
+        atuStat.op = GT_ATU_STATS_ALL;
+        return atuGetStats(dev,&atuStat,count);
+    }
 
     numOfEntries = 0;
-	
-	if (IS_IN_DEV_GROUP(dev,DEV_DBNUM_FULL))
-		maxDbNum = 16;
-	else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_64))
-		maxDbNum = 64;
-	else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_256))
-		maxDbNum = 256;
-	else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_4096))
-		maxDbNum = 4096;
-	else
-		maxDbNum = 1;
+    
+    if (IS_IN_DEV_GROUP(dev,DEV_DBNUM_FULL))
+        maxDbNum = 16;
+    else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_64))
+        maxDbNum = 64;
+    else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_256))
+        maxDbNum = 256;
+    else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_4096))
+        maxDbNum = 4096;
+    else
+        maxDbNum = 1;
 
-	for(dbNum=0; dbNum<maxDbNum; dbNum++)
-	{
-		entry.DBNum = (GT_U16)dbNum;
+    for(dbNum=0; dbNum<maxDbNum; dbNum++)
+    {
+        entry.DBNum = (GT_U16)dbNum;
 
-		if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
-		    gtMemSet(entry.macAddr.arEther,0,sizeof(GT_ETHERADDR));
-		else
-    		gtMemSet(entry.macAddr.arEther,0xFF,sizeof(GT_ETHERADDR));
+        if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
+            gtMemSet(entry.macAddr.arEther,0,sizeof(GT_ETHERADDR));
+        else
+            gtMemSet(entry.macAddr.arEther,0xFF,sizeof(GT_ETHERADDR));
 
-	    while(1)
-    	{
-	        retVal = atuOperationPerform(dev,GET_NEXT_ENTRY,NULL,&entry);
-        	if(retVal != GT_OK)
-	        {
-    	        DBG_INFO(("Failed.\n"));
-        	    return retVal;
-	        }
+        while(1)
+        {
+            retVal = atuOperationPerform(dev,GET_NEXT_ENTRY,NULL,&entry);
+            if(retVal != GT_OK)
+            {
+                DBG_INFO(("Failed.\n"));
+                return retVal;
+            }
 
-    	    if(IS_BROADCAST_MAC(entry.macAddr))
-			{
-				if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
-					break;
-				else if(entry.entryState.ucEntryState == 0)
-					break;
-	        	numOfEntries++;
-				break;
-			}
+            if(IS_BROADCAST_MAC(entry.macAddr))
+            {
+                if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
+                    break;
+                else if(entry.entryState.ucEntryState == 0)
+                    break;
+                numOfEntries++;
+                break;
+            }
 
-        	numOfEntries++;
-	    }
-	}
+            numOfEntries++;
+        }
+    }
 
     *count = numOfEntries;
     DBG_INFO(("OK.\n"));
@@ -422,55 +425,55 @@ GT_STATUS gfdbGetAtuAllCount
 *******************************************************************************/
 GT_STATUS gfdbGetAtuAllCountInDBNum
 (
-    IN  GT_QD_DEV 	*dev,
-    IN  GT_U32 		dbNum,
-    OUT GT_U32 		*count
+    IN  GT_QD_DEV     *dev,
+    IN  GT_U32         dbNum,
+    OUT GT_U32         *count
 )
 {
     GT_U32          numOfEntries;
     GT_STATUS       retVal;
     GT_ATU_ENTRY    entry;
-	GT_ATU_STAT		atuStat;
+    GT_ATU_STAT        atuStat;
 
     DBG_INFO(("gfdbGetAtuAllCountInDBNum Called.\n"));
 
-	if(IS_IN_DEV_GROUP(dev,DEV_ATU_STATS))
-	{
-		atuStat.op = GT_ATU_STATS_ALL_FID;
-		atuStat.DBNum = dbNum;
-		return atuGetStats(dev,&atuStat,count);
-	}
+    if(IS_IN_DEV_GROUP(dev,DEV_ATU_STATS))
+    {
+        atuStat.op = GT_ATU_STATS_ALL_FID;
+        atuStat.DBNum = dbNum;
+        return atuGetStats(dev,&atuStat,count);
+    }
 
     numOfEntries = 0;
-	
-	entry.DBNum = (GT_U16)dbNum;
+    
+    entry.DBNum = (GT_U16)dbNum;
 
-	if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
-	    gtMemSet(entry.macAddr.arEther,0,sizeof(GT_ETHERADDR));
-	else
-    	gtMemSet(entry.macAddr.arEther,0xFF,sizeof(GT_ETHERADDR));
+    if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
+        gtMemSet(entry.macAddr.arEther,0,sizeof(GT_ETHERADDR));
+    else
+        gtMemSet(entry.macAddr.arEther,0xFF,sizeof(GT_ETHERADDR));
 
-	while(1)
+    while(1)
     {
-	    retVal = atuOperationPerform(dev,GET_NEXT_ENTRY,NULL,&entry);
-    	if(retVal != GT_OK)
-	    {
+        retVal = atuOperationPerform(dev,GET_NEXT_ENTRY,NULL,&entry);
+        if(retVal != GT_OK)
+        {
             DBG_INFO(("Failed.\n"));
-    	    return retVal;
-	    }
+            return retVal;
+        }
 
         if(IS_BROADCAST_MAC(entry.macAddr))
-		{
-			if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
-				break;
-			else if(entry.entryState.ucEntryState == 0)
-				break;
-	    	numOfEntries++;
-			break;
-		}
+        {
+            if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
+                break;
+            else if(entry.entryState.ucEntryState == 0)
+                break;
+            numOfEntries++;
+            break;
+        }
 
-    	numOfEntries++;
-	}
+        numOfEntries++;
+    }
 
     *count = numOfEntries;
     DBG_INFO(("OK.\n"));
@@ -501,60 +504,60 @@ GT_STATUS gfdbGetAtuAllCountInDBNum
 *******************************************************************************/
 GT_STATUS gfdbGetAtuDynamicCountInDBNum
 (
-    IN  GT_QD_DEV 	*dev,
-    IN  GT_U32 		dbNum,
-    OUT GT_U32 		*count
+    IN  GT_QD_DEV     *dev,
+    IN  GT_U32         dbNum,
+    OUT GT_U32         *count
 )
 {
     GT_U32          numOfEntries, tmpState;
     GT_STATUS       retVal;
     GT_ATU_ENTRY    entry;
-	GT_ATU_UC_STATE	state;
-	GT_ATU_STAT		atuStat;
+    GT_ATU_UC_STATE    state;
+    GT_ATU_STAT        atuStat;
 
     DBG_INFO(("gfdbGetAtuDynamicCountInDBNum Called.\n"));
 
-	if(IS_IN_DEV_GROUP(dev,DEV_ATU_STATS))
-	{
-		atuStat.op = GT_ATU_STATS_NON_STATIC_FID;
-		atuStat.DBNum = dbNum;
-		return atuGetStats(dev,&atuStat,count);
-	}
+    if(IS_IN_DEV_GROUP(dev,DEV_ATU_STATS))
+    {
+        atuStat.op = GT_ATU_STATS_NON_STATIC_FID;
+        atuStat.DBNum = dbNum;
+        return atuGetStats(dev,&atuStat,count);
+    }
 
     numOfEntries = 0;
-	
-	entry.DBNum = (GT_U16)dbNum;
+    
+    entry.DBNum = (GT_U16)dbNum;
 
-	if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
-	    gtMemSet(entry.macAddr.arEther,0,sizeof(GT_ETHERADDR));
-	else
-    	gtMemSet(entry.macAddr.arEther,0xFF,sizeof(GT_ETHERADDR));
+    if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
+        gtMemSet(entry.macAddr.arEther,0,sizeof(GT_ETHERADDR));
+    else
+        gtMemSet(entry.macAddr.arEther,0xFF,sizeof(GT_ETHERADDR));
 
-	while(1)
+    while(1)
     {
-	    retVal = atuOperationPerform(dev,GET_NEXT_ENTRY,NULL,&entry);
+        retVal = atuOperationPerform(dev,GET_NEXT_ENTRY,NULL,&entry);
         if(retVal != GT_OK)
-	    {
-    	    DBG_INFO(("Failed.\n"));
+        {
+            DBG_INFO(("Failed.\n"));
             return retVal;
-	    }
+        }
 
-    	if(IS_BROADCAST_MAC(entry.macAddr))
+        if(IS_BROADCAST_MAC(entry.macAddr))
             break;
 
-	    if(IS_MULTICAST_MAC(entry.macAddr))
-	    {
-	        continue;
-    	}
+        if(IS_MULTICAST_MAC(entry.macAddr))
+        {
+            continue;
+        }
 
-		atuStateDevToApp(dev,GT_TRUE,entry.entryState.ucEntryState,&tmpState);
-		state = (GT_ATU_UC_STATE)tmpState;
-		if (state == GT_UC_DYNAMIC)
-		{
-	    	numOfEntries++;
-		}
-	}
-	
+        atuStateDevToApp(dev,GT_TRUE,entry.entryState.ucEntryState,&tmpState);
+        state = (GT_ATU_UC_STATE)tmpState;
+        if (state == GT_UC_DYNAMIC)
+        {
+            numOfEntries++;
+        }
+    }
+    
     *count = numOfEntries;
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -595,37 +598,37 @@ GT_STATUS gfdbSetAtuSize
 
     DBG_INFO(("gfdbSetAtuSize Called.\n"));
 
-	switch(size)
-	{
-		case ATU_SIZE_256:
-			if (IS_IN_DEV_GROUP(dev,DEV_ATU_256_2048))
-				data = 0;
-			else
-				return GT_NOT_SUPPORTED;
-			break;
-    	case ATU_SIZE_512:
-    	case ATU_SIZE_1024:
-    	case ATU_SIZE_2048:
-			if (IS_IN_DEV_GROUP(dev,DEV_ATU_256_2048))
-				data = (GT_U16)size;
-			else
-				data = (GT_U16)size - 1;
-			break;
-
-    	case ATU_SIZE_4096:
-			if ((IS_IN_DEV_GROUP(dev,DEV_ATU_256_2048))||(IS_IN_DEV_GROUP(dev,DEV_ATU_562_2048)))
-				return GT_NOT_SUPPORTED;
-			else
-				data = 3;
-			break;
-		default:
-			return GT_NOT_SUPPORTED;
-	}
-	
-	/* Check device if it has fixed ATU Size. */
-	if (IS_IN_DEV_GROUP(dev,DEV_ATU_SIZE_FIXED))
+    switch(size)
     {
-		return GT_NOT_SUPPORTED;
+        case ATU_SIZE_256:
+            if (IS_IN_DEV_GROUP(dev,DEV_ATU_256_2048))
+                data = 0;
+            else
+                return GT_NOT_SUPPORTED;
+            break;
+        case ATU_SIZE_512:
+        case ATU_SIZE_1024:
+        case ATU_SIZE_2048:
+            if (IS_IN_DEV_GROUP(dev,DEV_ATU_256_2048))
+                data = (GT_U16)size;
+            else
+                data = (GT_U16)size - 1;
+            break;
+
+        case ATU_SIZE_4096:
+            if ((IS_IN_DEV_GROUP(dev,DEV_ATU_256_2048))||(IS_IN_DEV_GROUP(dev,DEV_ATU_562_2048)))
+                return GT_NOT_SUPPORTED;
+            else
+                data = 3;
+            break;
+        default:
+            return GT_NOT_SUPPORTED;
+    }
+    
+    /* Check device if it has fixed ATU Size. */
+    if (IS_IN_DEV_GROUP(dev,DEV_ATU_SIZE_FIXED))
+    {
+        return GT_NOT_SUPPORTED;
     }
 
     /* Set the Software reset bit.                  */
@@ -637,6 +640,27 @@ GT_STATUS gfdbSetAtuSize
     }
 
     /* Make sure the reset operation is completed.  */
+#ifdef GT_RMGMT_ACCESS 
+    /*    if (IS_IN_DEV_GROUP(dev,DEV_RMGMT)) */
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 1;
+  
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_1;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_GLOBAL_STATUS;
+      regAccess.rw_reg_list[0].data = 11;
+
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        gtSemGive(dev,dev->atuRegsSem);
+        return retVal;
+      }
+    }
+#else
+    {
     data = 0;
     while(data == 0)
     {
@@ -647,6 +671,8 @@ GT_STATUS gfdbSetAtuSize
             return retVal;
         }
     }
+    }
+#endif
 
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -691,16 +717,16 @@ GT_STATUS gfdbGetAgingTimeRange
         return GT_BAD_PARAM;
     }
 
-	if (IS_IN_DEV_GROUP(dev,DEV_ATU_15SEC_AGING))
-	{
-		*minTimeout = 15;
-		*maxTimeout = 3825;
-	}
-	else
-	{
-		*minTimeout = 16;
-		*maxTimeout = 4080;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_ATU_15SEC_AGING))
+    {
+        *minTimeout = 15;
+        *maxTimeout = 3825;
+    }
+    else
+    {
+        *minTimeout = 16;
+        *maxTimeout = 4080;
+    }
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
@@ -712,8 +738,8 @@ GT_STATUS gfdbGetAgingTimeRange
 * DESCRIPTION:
 *       Gets the timeout period in seconds for aging out dynamically learned
 *       forwarding information. The returned value may not be the same as the value
-*		programmed with <gfdbSetAgingTimeout>. Please refer to the description of
-*		<gfdbSetAgingTimeout>.
+*        programmed with <gfdbSetAgingTimeout>. Please refer to the description of
+*        <gfdbSetAgingTimeout>.
 *
 * INPUTS:
 *       None.
@@ -739,14 +765,14 @@ GT_STATUS gfdbGetAgingTimeout
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
-	GT_U16			timeBase;
+    GT_U16            timeBase;
 
     DBG_INFO(("gfdbGetAgingTimeout Called.\n"));
  
-	if (IS_IN_DEV_GROUP(dev,DEV_ATU_15SEC_AGING))
-		timeBase = 15;
-	else
-		timeBase = 16;
+    if (IS_IN_DEV_GROUP(dev,DEV_ATU_15SEC_AGING))
+        timeBase = 15;
+    else
+        timeBase = 16;
 
     /* Get the Time Out value.              */
     retVal = hwGetGlobalRegField(dev,QD_REG_ATU_CONTROL,4,8,&data);
@@ -756,7 +782,7 @@ GT_STATUS gfdbGetAgingTimeout
         return retVal;
     }
 
-	*timeout = data*timeBase;
+    *timeout = data*timeBase;
 
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -769,14 +795,14 @@ GT_STATUS gfdbGetAgingTimeout
 * DESCRIPTION:
 *       Sets the timeout period in seconds for aging out dynamically learned
 *       forwarding information. The standard recommends 300 sec.
-*		Supported aging timeout values are multiple of time-base, where time-base
-*		is either 15 or 16 seconds, depending on the Switch device. For example,
-*		88E6063 uses time-base 16, and so supported aging timeouts are 0,16,32,
-*		48,..., and 4080. If unsupported timeout value (bigger than 16) is used, 
-*		the value will be rounded to the nearest supported value smaller than the 
-*		given timeout. If the given timeout is less than 16, minimum timeout value
-*		16 will be used instead. E.g.) 35 becomes 32 and 5 becomes 16.
-*		<gfdbGetAgingTimeRange> function can be used to find the time-base.
+*        Supported aging timeout values are multiple of time-base, where time-base
+*        is either 15 or 16 seconds, depending on the Switch device. For example,
+*        88E6063 uses time-base 16, and so supported aging timeouts are 0,16,32,
+*        48,..., and 4080. If unsupported timeout value (bigger than 16) is used, 
+*        the value will be rounded to the nearest supported value smaller than the 
+*        given timeout. If the given timeout is less than 16, minimum timeout value
+*        16 will be used instead. E.g.) 35 becomes 32 and 5 becomes 16.
+*        <gfdbGetAgingTimeRange> function can be used to find the time-base.
 *
 * INPUTS:
 *       timeout - aging time in seconds.
@@ -802,25 +828,25 @@ GT_STATUS gfdbSetAgingTimeout
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
-	GT_U16			timeBase;
+    GT_U16            timeBase;
 
     DBG_INFO(("gfdbSetAgingTimeout Called.\n"));
  
-	if (IS_IN_DEV_GROUP(dev,DEV_ATU_15SEC_AGING))
-		timeBase = 15;
-	else
-		timeBase = 16;
+    if (IS_IN_DEV_GROUP(dev,DEV_ATU_15SEC_AGING))
+        timeBase = 15;
+    else
+        timeBase = 16;
 
-	if((timeout < timeBase) && (timeout != 0))
-	{	
- 	   data = 1;
-	}
-	else
-	{
- 	   data = (GT_U16)(timeout/timeBase);
-	   if (data & 0xFF00)
-			data = 0xFF;
-	}
+    if((timeout < timeBase) && (timeout != 0))
+    {    
+        data = 1;
+    }
+    else
+    {
+        data = (GT_U16)(timeout/timeBase);
+       if (data & 0xFF00)
+            data = 0xFF;
+    }
 
     /* Set the Time Out value.              */
     retVal = hwSetGlobalRegField(dev,QD_REG_ATU_CONTROL,4,8,data);
@@ -839,82 +865,84 @@ GT_STATUS gfdbSetAgingTimeout
 * gfdbGetLearn2All
 *
 * DESCRIPTION:
-*		When more than one Marvell device is used to form a single 'switch', it
-*		may be desirable for all devices in the 'switch' to learn any address this 
-*		device learns. When this bit is set to a one all other devices in the 
-*		'switch' learn the same addresses this device learns. When this bit is 
-*		cleared to a zero, only the devices that actually receive frames will learn
-*		from those frames. This mode typically supports more active MAC addresses 
-*		at one time as each device in the switch does not need to learn addresses 
-*		it may nerver use.
+*        When more than one Marvell device is used to form a single 'switch', it
+*        may be desirable for all devices in the 'switch' to learn any address this 
+*        device learns. When this bit is set to a one all other devices in the 
+*        'switch' learn the same addresses this device learns. When this bit is 
+*        cleared to a zero, only the devices that actually receive frames will learn
+*        from those frames. This mode typically supports more active MAC addresses 
+*        at one time as each device in the switch does not need to learn addresses 
+*        it may nerver use.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		mode  - GT_TRUE if Learn2All is enabled, GT_FALSE otherwise
+*        mode  - GT_TRUE if Learn2All is enabled, GT_FALSE otherwise
 *
 * RETURNS:
-*		GT_OK           - on success
-*		GT_FAIL         - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK           - on success
+*        GT_FAIL         - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *
 *******************************************************************************/
 GT_STATUS gfdbGetLearn2All
 (
-	IN  GT_QD_DEV    *dev,
-	OUT GT_BOOL 	*mode
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL     *mode
 )
 {
-	GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16          data;           /* to keep the read valve       */
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* to keep the read valve       */
 
-	DBG_INFO(("gprtGetLearn2All Called.\n"));
+    DBG_INFO(("gprtGetLearn2All Called.\n"));
 
-	/* check if the given Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* check if the given Switch supports this feature. */
+    if ((!IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_88EC000_FAMILY)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_88ESPANNAK_FAMILY)))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	/* Get the Learn2All. */
-	retVal = hwGetGlobalRegField(dev,QD_REG_ATU_CONTROL, 3, 1, &data);
+    /* Get the Learn2All. */
+    retVal = hwGetGlobalRegField(dev,QD_REG_ATU_CONTROL, 3, 1, &data);
 
-	BIT_2_BOOL(data, *mode);
+    BIT_2_BOOL(data, *mode);
 
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-	}
-	else
-	{
-		DBG_INFO(("OK.\n"));
-	}
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+    }
+    else
+    {
+        DBG_INFO(("OK.\n"));
+    }
 
-	return retVal;
+    return retVal;
 }
 
 /*******************************************************************************
 * gfdbSetLearn2All
 *
 * DESCRIPTION:
-*		Enable or disable Learn2All mode.
+*        Enable or disable Learn2All mode.
 *
 * INPUTS:
-*		mode - GT_TRUE to set Learn2All, GT_FALSE otherwise
+*        mode - GT_TRUE to set Learn2All, GT_FALSE otherwise
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -923,37 +951,39 @@ GT_STATUS gfdbGetLearn2All
 *******************************************************************************/
 GT_STATUS gfdbSetLearn2All
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		mode
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        mode
 )
 {
-	GT_U16          data;           /* Used to poll the SWReset bit */
-	GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* Used to poll the SWReset bit */
+    GT_STATUS       retVal;         /* Functions return value.      */
 
-	DBG_INFO(("gprtSetLearn2All Called.\n"));
+    DBG_INFO(("gprtSetLearn2All Called.\n"));
 
-	/* check if the given Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* check if the given Switch supports this feature. */
+    if ((!IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_88EC000_FAMILY)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_88ESPANNAK_FAMILY)))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	/* translate BOOL to binary */
-	BOOL_2_BIT(mode, data);
+    /* translate BOOL to binary */
+    BOOL_2_BIT(mode, data);
 
-	/* Set Learn2All. */
-	retVal = hwSetGlobalRegField(dev,QD_REG_ATU_CONTROL, 3, 1, data);
+    /* Set Learn2All. */
+    retVal = hwSetGlobalRegField(dev,QD_REG_ATU_CONTROL, 3, 1, data);
 
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-	}
-	else
-	{
-		DBG_INFO(("OK.\n"));
-	}
-	return retVal;
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+    }
+    else
+    {
+        DBG_INFO(("OK.\n"));
+    }
+    return retVal;
 }
 
 
@@ -961,150 +991,150 @@ GT_STATUS gfdbSetLearn2All
 * gfdbGetMacAvb
 *
 * DESCRIPTION:
-*		ATU MAC entry in AVB mode.
-*		When enabled, ATU entries operate in AVB mode:
+*        ATU MAC entry in AVB mode.
+*        When enabled, ATU entries operate in AVB mode:
 *
-*		GT_ATU_UC_STATE - support
-*			GT_UC_NO_PRI_STATIC_AVB_ENTRY, and 
-*			GT_UC_STATIC_AVB_ENTRY
+*        GT_ATU_UC_STATE - support
+*            GT_UC_NO_PRI_STATIC_AVB_ENTRY, and 
+*            GT_UC_STATIC_AVB_ENTRY
 *
-*		GT_ATU_MC_STATE - support
-*			GT_MC_STATIC_AVB_ENTRY, and
-*			GT_MC_PRIO_STATIC_AVB_ENTRY
+*        GT_ATU_MC_STATE - support
+*            GT_MC_STATIC_AVB_ENTRY, and
+*            GT_MC_PRIO_STATIC_AVB_ENTRY
 *
-*		When disabled, ATU entries operate in non-AVB mode:
+*        When disabled, ATU entries operate in non-AVB mode:
 *
-*		GT_ATU_UC_STATE - support
-*			GT_UC_NO_PRI_STATIC_NRL, and 
-*			GT_UC_STATIC_NRL
+*        GT_ATU_UC_STATE - support
+*            GT_UC_NO_PRI_STATIC_NRL, and 
+*            GT_UC_STATIC_NRL
 *
-*		GT_ATU_MC_STATE - support
-*			GT_MC_STATIC_UNLIMITED_RATE, and
-*			GT_MC_PRIO_STATIC_UNLIMITED_RATE
+*        GT_ATU_MC_STATE - support
+*            GT_MC_STATIC_UNLIMITED_RATE, and
+*            GT_MC_PRIO_STATIC_UNLIMITED_RATE
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		mode  - GT_TRUE if MacAvb is enabled, GT_FALSE otherwise
+*        mode  - GT_TRUE if MacAvb is enabled, GT_FALSE otherwise
 *
 * RETURNS:
-*		GT_OK           - on success
-*		GT_FAIL         - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK           - on success
+*        GT_FAIL         - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *
 *******************************************************************************/
 GT_STATUS gfdbGetMacAvb
 (
-	IN  GT_QD_DEV    *dev,
-	OUT GT_BOOL 	*mode
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL     *mode
 )
 {
-	GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16          data;           /* to keep the read valve       */
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* to keep the read valve       */
 
-	DBG_INFO(("gfdbGetMacAvb Called.\n"));
+    DBG_INFO(("gfdbGetMacAvb Called.\n"));
 
-	/* check if the given Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_MAC_AVB))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* check if the given Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_MAC_AVB))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	/* Get the bit. */
-	retVal = hwGetGlobalRegField(dev,QD_REG_ATU_CONTROL, 15, 1, &data);
+    /* Get the bit. */
+    retVal = hwGetGlobalRegField(dev,QD_REG_ATU_CONTROL, 15, 1, &data);
 
-	BIT_2_BOOL(data, *mode);
+    BIT_2_BOOL(data, *mode);
 
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-	}
-	else
-	{
-		DBG_INFO(("OK.\n"));
-	}
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+    }
+    else
+    {
+        DBG_INFO(("OK.\n"));
+    }
 
-	return retVal;
+    return retVal;
 }
 
 /*******************************************************************************
 * gfdbSetMacAvb
 *
 * DESCRIPTION:
-*		ATU MAC entry in AVB mode.
-*		When enabled, ATU entries operate in AVB mode:
+*        ATU MAC entry in AVB mode.
+*        When enabled, ATU entries operate in AVB mode:
 *
-*		GT_ATU_UC_STATE - support
-*			GT_UC_NO_PRI_STATIC_AVB_ENTRY, and 
-*			GT_UC_STATIC_AVB_ENTRY
+*        GT_ATU_UC_STATE - support
+*            GT_UC_NO_PRI_STATIC_AVB_ENTRY, and 
+*            GT_UC_STATIC_AVB_ENTRY
 *
-*		GT_ATU_MC_STATE - support
-*			GT_MC_STATIC_AVB_ENTRY, and
-*			GT_MC_PRIO_STATIC_AVB_ENTRY
+*        GT_ATU_MC_STATE - support
+*            GT_MC_STATIC_AVB_ENTRY, and
+*            GT_MC_PRIO_STATIC_AVB_ENTRY
 *
-*		When disabled, ATU entries operate in non-AVB mode:
+*        When disabled, ATU entries operate in non-AVB mode:
 *
-*		GT_ATU_UC_STATE - support
-*			GT_UC_NO_PRI_STATIC_NRL, and 
-*			GT_UC_STATIC_NRL
+*        GT_ATU_UC_STATE - support
+*            GT_UC_NO_PRI_STATIC_NRL, and 
+*            GT_UC_STATIC_NRL
 *
-*		GT_ATU_MC_STATE - support
-*			GT_MC_STATIC_UNLIMITED_RATE, and
-*			GT_MC_PRIO_STATIC_UNLIMITED_RATE
+*        GT_ATU_MC_STATE - support
+*            GT_MC_STATIC_UNLIMITED_RATE, and
+*            GT_MC_PRIO_STATIC_UNLIMITED_RATE
 *
 * INPUTS:
-*		mode - GT_TRUE to enable MacAvb, GT_FALSE otherwise
+*        mode - GT_TRUE to enable MacAvb, GT_FALSE otherwise
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
 *******************************************************************************/
 GT_STATUS gfdbSetMacAvb
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		mode
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        mode
 )
 {
-	GT_U16          data;           /* Used to poll the SWReset bit */
-	GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* Used to poll the SWReset bit */
+    GT_STATUS       retVal;         /* Functions return value.      */
 
-	DBG_INFO(("gprtSetMacAvb Called.\n"));
+    DBG_INFO(("gprtSetMacAvb Called.\n"));
 
-	/* check if the given Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_MAC_AVB))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* check if the given Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_MAC_AVB))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	/* translate BOOL to binary */
-	BOOL_2_BIT(mode, data);
+    /* translate BOOL to binary */
+    BOOL_2_BIT(mode, data);
 
-	/* Set the bit */
-	retVal = hwSetGlobalRegField(dev,QD_REG_ATU_CONTROL, 15, 1, data);
+    /* Set the bit */
+    retVal = hwSetGlobalRegField(dev,QD_REG_ATU_CONTROL, 15, 1, data);
 
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-	}
-	else
-	{
-		DBG_INFO(("OK.\n"));
-	}
-	return retVal;
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+    }
+    else
+    {
+        DBG_INFO(("OK.\n"));
+    }
+    return retVal;
 }
 
 
@@ -1134,71 +1164,71 @@ GT_STATUS gfdbSetMacAvb
 *******************************************************************************/
 GT_STATUS gfdbGetAtuDynamicCount
 (
-    IN  GT_QD_DEV 	*dev,
-    OUT GT_U32 		*numDynEntries
+    IN  GT_QD_DEV     *dev,
+    OUT GT_U32         *numDynEntries
 )
 {
     GT_U32          dbNum, maxDbNum, numOfEntries, tmpState;
     GT_STATUS       retVal;
     GT_ATU_ENTRY    entry;
-	GT_ATU_UC_STATE	state;
-	GT_ATU_STAT		atuStat;
+    GT_ATU_UC_STATE    state;
+    GT_ATU_STAT        atuStat;
 
     DBG_INFO(("gfdbGetAtuDynamicCount Called.\n"));
 
-	if(IS_IN_DEV_GROUP(dev,DEV_ATU_STATS))
-	{
-		atuStat.op = GT_ATU_STATS_NON_STATIC;
-		return atuGetStats(dev,&atuStat,numDynEntries);
-	}
+    if(IS_IN_DEV_GROUP(dev,DEV_ATU_STATS))
+    {
+        atuStat.op = GT_ATU_STATS_NON_STATIC;
+        return atuGetStats(dev,&atuStat,numDynEntries);
+    }
 
     numOfEntries = 0;
-	
-	if (IS_IN_DEV_GROUP(dev,DEV_DBNUM_FULL))
-		maxDbNum = 16;
-	else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_64))
-		maxDbNum = 64;
-	else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_256))
-		maxDbNum = 256;
-	else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_4096))
-		maxDbNum = 4096;
-	else
-		maxDbNum = 1;
+    
+    if (IS_IN_DEV_GROUP(dev,DEV_DBNUM_FULL))
+        maxDbNum = 16;
+    else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_64))
+        maxDbNum = 64;
+    else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_256))
+        maxDbNum = 256;
+    else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_4096))
+        maxDbNum = 4096;
+    else
+        maxDbNum = 1;
 
-	for(dbNum=0; dbNum<maxDbNum; dbNum++)
-	{
-		entry.DBNum = (GT_U16)dbNum;
+    for(dbNum=0; dbNum<maxDbNum; dbNum++)
+    {
+        entry.DBNum = (GT_U16)dbNum;
 
-		if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
-		    gtMemSet(entry.macAddr.arEther,0,sizeof(GT_ETHERADDR));
-		else
-    		gtMemSet(entry.macAddr.arEther,0xFF,sizeof(GT_ETHERADDR));
+        if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
+            gtMemSet(entry.macAddr.arEther,0,sizeof(GT_ETHERADDR));
+        else
+            gtMemSet(entry.macAddr.arEther,0xFF,sizeof(GT_ETHERADDR));
 
-	    while(1)
-    	{
-	        retVal = atuOperationPerform(dev,GET_NEXT_ENTRY,NULL,&entry);
-        	if(retVal != GT_OK)
-	        {
-    	        DBG_INFO(("Failed.\n"));
-        	    return retVal;
-	        }
+        while(1)
+        {
+            retVal = atuOperationPerform(dev,GET_NEXT_ENTRY,NULL,&entry);
+            if(retVal != GT_OK)
+            {
+                DBG_INFO(("Failed.\n"));
+                return retVal;
+            }
 
-    	    if(IS_BROADCAST_MAC(entry.macAddr))
-        	    break;
+            if(IS_BROADCAST_MAC(entry.macAddr))
+                break;
 
-	        if(IS_MULTICAST_MAC(entry.macAddr))
-	        {
-	            continue;
-    	    }
+            if(IS_MULTICAST_MAC(entry.macAddr))
+            {
+                continue;
+            }
 
-			atuStateDevToApp(dev,GT_TRUE,(GT_U32)entry.entryState.ucEntryState,&tmpState);
-			state = (GT_ATU_UC_STATE)tmpState;
-			if (state == GT_UC_DYNAMIC)
-			{
-	        	numOfEntries++;
-			}
-	    }
-	}
+            atuStateDevToApp(dev,GT_TRUE,(GT_U32)entry.entryState.ucEntryState,&tmpState);
+            state = (GT_ATU_UC_STATE)tmpState;
+            if (state == GT_UC_DYNAMIC)
+            {
+                numOfEntries++;
+            }
+        }
+    }
 
     *numDynEntries = numOfEntries;
     DBG_INFO(("OK.\n"));
@@ -1226,11 +1256,11 @@ GT_STATUS gfdbGetAtuDynamicCount
 * COMMENTS:
 *       Search starts from Mac[00:00:00:00:00:00]
 *
-*		DBNum in atuEntry - 
-*			ATU MAC Address Database number. If multiple address 
-*			databases are not being used, DBNum should be zero.
-*			If multiple address databases are being used, this value
-*			should be set to the desired address database number.
+*        DBNum in atuEntry - 
+*            ATU MAC Address Database number. If multiple address 
+*            databases are not being used, DBNum should be zero.
+*            If multiple address databases are being used, this value
+*            should be set to the desired address database number.
 *
 *******************************************************************************/
 GT_STATUS gfdbGetAtuEntryFirst
@@ -1244,12 +1274,12 @@ GT_STATUS gfdbGetAtuEntryFirst
 
     DBG_INFO(("gfdbGetAtuEntryFirst Called.\n"));
 
-	if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
-	    gtMemSet(entry.macAddr.arEther,0,sizeof(GT_ETHERADDR));
-	else
-    	gtMemSet(entry.macAddr.arEther,0xFF,sizeof(GT_ETHERADDR));
+    if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
+        gtMemSet(entry.macAddr.arEther,0,sizeof(GT_ETHERADDR));
+    else
+        gtMemSet(entry.macAddr.arEther,0xFF,sizeof(GT_ETHERADDR));
 
-	entry.DBNum = atuEntry->DBNum;
+    entry.DBNum = atuEntry->DBNum;
 
     DBG_INFO(("DBNum : %i\n",entry.DBNum));
 
@@ -1262,25 +1292,25 @@ GT_STATUS gfdbGetAtuEntryFirst
 
     if(IS_BROADCAST_MAC(entry.macAddr))
     {
-		if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
-		{
-	        DBG_INFO(("Failed (Invalid Mac).\n"));
-    	    return GT_NO_SUCH;
-		}
-		else if(entry.entryState.ucEntryState == 0)
-		{
-	        DBG_INFO(("Failed (Invalid Mac).\n"));
-    	    return GT_NO_SUCH;
-		}
+        if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
+        {
+            DBG_INFO(("Failed (Invalid Mac).\n"));
+            return GT_NO_SUCH;
+        }
+        else if(entry.entryState.ucEntryState == 0)
+        {
+            DBG_INFO(("Failed (Invalid Mac).\n"));
+            return GT_NO_SUCH;
+        }
     }
 
     gtMemCpy(atuEntry->macAddr.arEther,entry.macAddr.arEther,6);
     atuEntry->portVec   = GT_PORTVEC_2_LPORTVEC(entry.portVec);
     atuEntry->prio      = entry.prio;
     atuEntry->trunkMember = entry.trunkMember;
-	atuEntry->exPrio.useMacFPri = entry.exPrio.useMacFPri;
-	atuEntry->exPrio.macFPri = entry.exPrio.macFPri;
-	atuEntry->exPrio.macQPri = entry.exPrio.macQPri;
+    atuEntry->exPrio.useMacFPri = entry.exPrio.useMacFPri;
+    atuEntry->exPrio.macFPri = entry.exPrio.macFPri;
+    atuEntry->exPrio.macQPri = entry.exPrio.macQPri;
 
     if(IS_MULTICAST_MAC(entry.macAddr))
     {
@@ -1290,13 +1320,13 @@ GT_STATUS gfdbGetAtuEntryFirst
             return GT_FAIL;
         }
 
-		atuStateDevToApp(dev,GT_FALSE,(GT_U32)entry.entryState.ucEntryState,
-						(GT_U32*)&atuEntry->entryState.mcEntryState);
+        atuStateDevToApp(dev,GT_FALSE,(GT_U32)entry.entryState.ucEntryState,
+                        (GT_U32*)&atuEntry->entryState.mcEntryState);
     }
     else
     {
-		atuStateDevToApp(dev,GT_TRUE,(GT_U32)entry.entryState.ucEntryState,
-						(GT_U32*)&atuEntry->entryState.ucEntryState);
+        atuStateDevToApp(dev,GT_TRUE,(GT_U32)entry.entryState.ucEntryState,
+                        (GT_U32*)&atuEntry->entryState.ucEntryState);
     }
 
     DBG_INFO(("OK.\n"));
@@ -1326,11 +1356,11 @@ GT_STATUS gfdbGetAtuEntryFirst
 *       Search starts from atu.macAddr[xx:xx:xx:xx:xx:xx] specified by the
 *       user.
 *
-*		DBNum in atuEntry - 
-*			ATU MAC Address Database number. If multiple address 
-*			databases are not being used, DBNum should be zero.
-*			If multiple address databases are being used, this value
-*			should be set to the desired address database number.
+*        DBNum in atuEntry - 
+*            ATU MAC Address Database number. If multiple address 
+*            databases are not being used, DBNum should be zero.
+*            If multiple address databases are being used, this value
+*            should be set to the desired address database number.
 *
 *******************************************************************************/
 GT_STATUS gfdbGetAtuEntryNext
@@ -1346,12 +1376,12 @@ GT_STATUS gfdbGetAtuEntryNext
 
     if(IS_BROADCAST_MAC(atuEntry->macAddr))
     {
-   	    return GT_NO_SUCH;
+           return GT_NO_SUCH;
     }
 
     gtMemCpy(entry.macAddr.arEther,atuEntry->macAddr.arEther,6);
 
-	entry.DBNum = atuEntry->DBNum;
+    entry.DBNum = atuEntry->DBNum;
     DBG_INFO(("DBNum : %i\n",entry.DBNum));
 
     retVal = atuOperationPerform(dev,GET_NEXT_ENTRY,NULL,&entry);
@@ -1363,25 +1393,25 @@ GT_STATUS gfdbGetAtuEntryNext
 
     if(IS_BROADCAST_MAC(entry.macAddr))
     {
-		if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
-		{
-	        DBG_INFO(("Failed (Invalid Mac).\n"));
-    	    return GT_NO_SUCH;
-		}
-		else if(entry.entryState.ucEntryState == 0)
-		{
-	        DBG_INFO(("Failed (Invalid Mac).\n"));
-    	    return GT_NO_SUCH;
-		}
+        if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
+        {
+            DBG_INFO(("Failed (Invalid Mac).\n"));
+            return GT_NO_SUCH;
+        }
+        else if(entry.entryState.ucEntryState == 0)
+        {
+            DBG_INFO(("Failed (Invalid Mac).\n"));
+            return GT_NO_SUCH;
+        }
     }
 
     gtMemCpy(atuEntry->macAddr.arEther,entry.macAddr.arEther,6);
     atuEntry->portVec   = GT_PORTVEC_2_LPORTVEC(entry.portVec);
     atuEntry->prio      = entry.prio;
     atuEntry->trunkMember = entry.trunkMember;
-	atuEntry->exPrio.useMacFPri = entry.exPrio.useMacFPri;
-	atuEntry->exPrio.macFPri = entry.exPrio.macFPri;
-	atuEntry->exPrio.macQPri = entry.exPrio.macQPri;
+    atuEntry->exPrio.useMacFPri = entry.exPrio.useMacFPri;
+    atuEntry->exPrio.macFPri = entry.exPrio.macFPri;
+    atuEntry->exPrio.macQPri = entry.exPrio.macQPri;
 
     if(IS_MULTICAST_MAC(entry.macAddr))
     {
@@ -1391,13 +1421,13 @@ GT_STATUS gfdbGetAtuEntryNext
             return GT_FAIL;
         }
 
-		atuStateDevToApp(dev,GT_FALSE,(GT_U32)entry.entryState.ucEntryState,
-						(GT_U32*)&atuEntry->entryState.mcEntryState);
+        atuStateDevToApp(dev,GT_FALSE,(GT_U32)entry.entryState.ucEntryState,
+                        (GT_U32*)&atuEntry->entryState.mcEntryState);
     }
     else
     {
-		atuStateDevToApp(dev,GT_TRUE,(GT_U32)entry.entryState.ucEntryState,
-						(GT_U32*)&atuEntry->entryState.ucEntryState);
+        atuStateDevToApp(dev,GT_TRUE,(GT_U32)entry.entryState.ucEntryState,
+                        (GT_U32*)&atuEntry->entryState.ucEntryState);
     }
 
     DBG_INFO(("OK.\n"));
@@ -1426,11 +1456,11 @@ GT_STATUS gfdbGetAtuEntryNext
 *       GT_BAD_PARAM    - on bad parameter
 *
 * COMMENTS:
-*		DBNum in atuEntry - 
-*			ATU MAC Address Database number. If multiple address 
-*			databases are not being used, DBNum should be zero.
-*			If multiple address databases are being used, this value
-*			should be set to the desired address database number.
+*        DBNum in atuEntry - 
+*            ATU MAC Address Database number. If multiple address 
+*            databases are not being used, DBNum should be zero.
+*            If multiple address databases are being used, this value
+*            should be set to the desired address database number.
 *
 *******************************************************************************/
 GT_STATUS gfdbFindAtuMacEntry
@@ -1447,8 +1477,7 @@ GT_STATUS gfdbFindAtuMacEntry
     DBG_INFO(("gfdbFindAtuMacEntry Called.\n"));
     *found = GT_FALSE;
     gtMemCpy(entry.macAddr.arEther,atuEntry->macAddr.arEther,6);
-	entry.DBNum = atuEntry->DBNum;
-
+    entry.DBNum = atuEntry->DBNum;
     /* Decrement 1 from mac address.    */
     for(i=5; i >= 0; i--)
     {
@@ -1457,7 +1486,7 @@ GT_STATUS gfdbFindAtuMacEntry
             entry.macAddr.arEther[i] -= 1;
             break;
         }
-		else
+        else
             entry.macAddr.arEther[i] = 0xFF;
     }
 
@@ -1477,30 +1506,45 @@ GT_STATUS gfdbFindAtuMacEntry
 
     if(IS_BROADCAST_MAC(entry.macAddr))
     {
-		if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
-		{
-	        DBG_INFO(("Failed (Broadcast addr is not valid).\n"));
-    	    return GT_NO_SUCH;
-		}
-		else if(entry.entryState.ucEntryState == 0)
-		{
-	        DBG_INFO(("Failed (Invalid Mac).\n"));
-    	    return GT_NO_SUCH;
-		}
+        if(IS_IN_DEV_GROUP(dev,DEV_BROADCAST_INVALID))
+        {
+            DBG_INFO(("Failed (Broadcast addr is not valid).\n"));
+            return GT_NO_SUCH;
+        }
+        else if(entry.entryState.ucEntryState == 0)
+        {
+            DBG_INFO(("Failed (Invalid Mac).\n"));
+            return GT_NO_SUCH;
+        }
     }
-
-	if(gtMemCmp((char*)atuEntry->macAddr.arEther,(char*)entry.macAddr.arEther,ETHERNET_HEADER_SIZE))
-	{
+    if(gtMemCmp((char*)atuEntry->macAddr.arEther,(char*)entry.macAddr.arEther,ETHERNET_HEADER_SIZE))
+    {
+#ifdef __KERNELL__
+printk("@@@@@@@@@@@@@  error gfdbFindAtuMacEntry:check: %02x:%02x:%02x:%02x:%02x:%02x get: %02x:%02x:%02x:%02x:%02x:%02x\n",
+    atuEntry->macAddr.arEther[0], 
+    atuEntry->macAddr.arEther[1], 
+    atuEntry->macAddr.arEther[2], 
+    atuEntry->macAddr.arEther[3], 
+    atuEntry->macAddr.arEther[4], 
+    atuEntry->macAddr.arEther[5], 
+    entry.macAddr.arEther[0],
+    entry.macAddr.arEther[1],
+    entry.macAddr.arEther[2],
+    entry.macAddr.arEther[3],
+    entry.macAddr.arEther[4],
+    entry.macAddr.arEther[5]
+);
+#endif
         DBG_INFO(("Failed.\n"));
         return GT_NO_SUCH;
-	}
+    }
 
     atuEntry->portVec   = GT_PORTVEC_2_LPORTVEC(entry.portVec);
     atuEntry->prio      = entry.prio;
     atuEntry->trunkMember = entry.trunkMember;
-	atuEntry->exPrio.useMacFPri = entry.exPrio.useMacFPri;
-	atuEntry->exPrio.macFPri = entry.exPrio.macFPri;
-	atuEntry->exPrio.macQPri = entry.exPrio.macQPri;
+    atuEntry->exPrio.useMacFPri = entry.exPrio.useMacFPri;
+    atuEntry->exPrio.macFPri = entry.exPrio.macFPri;
+    atuEntry->exPrio.macQPri = entry.exPrio.macQPri;
 
     if(IS_MULTICAST_MAC(entry.macAddr))
     {
@@ -1510,13 +1554,13 @@ GT_STATUS gfdbFindAtuMacEntry
             return GT_FAIL;
         }
 
-		atuStateDevToApp(dev,GT_FALSE,(GT_U32)entry.entryState.ucEntryState,
-						(GT_U32*)&atuEntry->entryState.mcEntryState);
+        atuStateDevToApp(dev,GT_FALSE,(GT_U32)entry.entryState.ucEntryState,
+                        (GT_U32*)&atuEntry->entryState.mcEntryState);
     }
     else
     {
-		atuStateDevToApp(dev,GT_TRUE,(GT_U32)entry.entryState.ucEntryState,
-						(GT_U32*)&atuEntry->entryState.ucEntryState);
+        atuStateDevToApp(dev,GT_TRUE,(GT_U32)entry.entryState.ucEntryState,
+                        (GT_U32*)&atuEntry->entryState.ucEntryState);
     }
 
     *found = GT_TRUE;
@@ -1560,14 +1604,14 @@ GT_STATUS gfdbFlush
 
     DBG_INFO(("gfdbFlush Called.\n"));
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_STATIC_ADDR))
+    if (!IS_IN_DEV_GROUP(dev,DEV_STATIC_ADDR))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	entry.DBNum = 0;
-	entry.entryState.ucEntryState = 0;
+    entry.DBNum = 0;
+    entry.entryState.ucEntryState = 0;
 
     if(flushCmd == GT_FLUSH_ALL)
         retVal = atuOperationPerform(dev,FLUSH_ALL,NULL,&entry);
@@ -1591,11 +1635,11 @@ GT_STATUS gfdbFlush
 * DESCRIPTION:
 *       This routine flush all or unblocked addresses from the particular
 *       ATU Database (DBNum). If multiple address databases are being used, this
-*		API can be used to flush entries in a particular DBNum database.
+*        API can be used to flush entries in a particular DBNum database.
 *
 * INPUTS:
 *       flushCmd - the flush operation type.
-*		DBNum	 - ATU MAC Address Database Number. 
+*        DBNum     - ATU MAC Address Database Number. 
 *
 * OUTPUTS:
 *       None
@@ -1614,7 +1658,7 @@ GT_STATUS gfdbFlushInDB
 (
     IN GT_QD_DEV    *dev,
     IN GT_FLUSH_CMD flushCmd,
-	IN GT_U32 DBNum
+    IN GT_U32 DBNum
 )
 {
     GT_STATUS       retVal;
@@ -1624,17 +1668,17 @@ GT_STATUS gfdbFlushInDB
     DBG_INFO(("gfdbFush: dev=%x, dev->atuRegsSem=%d \n",dev, dev->atuRegsSem));
 
     /* check if device supports this feature */
-	if ((!IS_IN_DEV_GROUP(dev,DEV_DBNUM_FULL)) && 
-		(!IS_IN_DEV_GROUP(dev,DEV_DBNUM_64)) && 
-		(!IS_IN_DEV_GROUP(dev,DEV_DBNUM_4096)) && 
-		(!IS_IN_DEV_GROUP(dev,DEV_DBNUM_256)))
-	{
+    if ((!IS_IN_DEV_GROUP(dev,DEV_DBNUM_FULL)) && 
+        (!IS_IN_DEV_GROUP(dev,DEV_DBNUM_64)) && 
+        (!IS_IN_DEV_GROUP(dev,DEV_DBNUM_4096)) && 
+        (!IS_IN_DEV_GROUP(dev,DEV_DBNUM_256)))
+    {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+        return GT_NOT_SUPPORTED;
+    }
 
-	entry.DBNum = (GT_U16)DBNum;
-	entry.entryState.ucEntryState = 0;
+    entry.DBNum = (GT_U16)DBNum;
+    entry.entryState.ucEntryState = 0;
 
     if(flushCmd == GT_FLUSH_ALL)
         retVal = atuOperationPerform(dev,FLUSH_ALL_IN_DB,NULL,&entry);
@@ -1659,9 +1703,9 @@ GT_STATUS gfdbFlushInDB
 *       This routine moves all or unblocked addresses from a port to another.
 *
 * INPUTS:
-* 		moveCmd  - the move operation type.
-*		moveFrom - port where moving from
-*		moveTo   - port where moving to
+*         moveCmd  - the move operation type.
+*        moveFrom - port where moving from
+*        moveTo   - port where moving to
 *
 * OUTPUTS:
 *       None
@@ -1678,35 +1722,35 @@ GT_STATUS gfdbFlushInDB
 *******************************************************************************/
 GT_STATUS gfdbMove
 (
-	IN GT_QD_DEV    *dev,
-	IN GT_MOVE_CMD  moveCmd,
-	IN GT_LPORT		moveFrom,
-	IN GT_LPORT		moveTo
+    IN GT_QD_DEV    *dev,
+    IN GT_MOVE_CMD  moveCmd,
+    IN GT_LPORT        moveFrom,
+    IN GT_LPORT        moveTo
 )
 {
     GT_STATUS       retVal;
     GT_ATU_ENTRY    entry;
-	GT_EXTRA_OP_DATA	opData;
+    GT_EXTRA_OP_DATA    opData;
 
     DBG_INFO(("gfdbMove Called.\n"));
 
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_802_1W))
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_802_1W))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	entry.DBNum = 0;
-	entry.entryState.ucEntryState = 0xF;
-	if (moveTo == 0xF)
-		opData.moveTo = moveTo;
-	else
-		opData.moveTo = (GT_U32)GT_LPORT_2_PORT(moveTo);
-	opData.moveFrom = (GT_U32)GT_LPORT_2_PORT(moveFrom);
+    entry.DBNum = 0;
+    entry.entryState.ucEntryState = 0xF;
+    if (moveTo == 0xF)
+        opData.moveTo = moveTo;
+    else
+        opData.moveTo = (GT_U32)GT_LPORT_2_PORT(moveTo);
+    opData.moveFrom = (GT_U32)GT_LPORT_2_PORT(moveFrom);
 
-	if((opData.moveTo == 0xFF) || (opData.moveFrom == 0xFF))
-		return GT_BAD_PARAM;
+    if((opData.moveTo == 0xFF) || (opData.moveFrom == 0xFF))
+        return GT_BAD_PARAM;
 
     if(moveCmd == GT_MOVE_ALL)
         retVal = atuOperationPerform(dev,FLUSH_ALL,&opData,&entry);
@@ -1733,9 +1777,9 @@ GT_STATUS gfdbMove
 *
 * INPUTS:
 *       moveCmd  - the move operation type.
-*		DBNum	 - ATU MAC Address Database Number.
-*		moveFrom - port where moving from
-*		moveTo   - port where moving to
+*        DBNum     - ATU MAC Address Database Number.
+*        moveFrom - port where moving from
+*        moveTo   - port where moving to
 *
 * OUTPUTS:
 *       None
@@ -1753,36 +1797,36 @@ GT_STATUS gfdbMove
 GT_STATUS gfdbMoveInDB
 (
     IN GT_QD_DEV    *dev,
-    IN GT_MOVE_CMD 	moveCmd,
-	IN GT_U32 		DBNum,
-	IN GT_LPORT		moveFrom,
-	IN GT_LPORT		moveTo
+    IN GT_MOVE_CMD     moveCmd,
+    IN GT_U32         DBNum,
+    IN GT_LPORT        moveFrom,
+    IN GT_LPORT        moveTo
 )
 {
     GT_STATUS       retVal;
     GT_ATU_ENTRY    entry;
-	GT_EXTRA_OP_DATA	opData;
+    GT_EXTRA_OP_DATA    opData;
 
     DBG_INFO(("gfdbMoveInDB Called.\n"));
 
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_802_1W))
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_802_1W))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	entry.DBNum = (GT_U16)DBNum;
-	entry.entryState.ucEntryState = 0xF;
+    entry.DBNum = (GT_U16)DBNum;
+    entry.entryState.ucEntryState = 0xF;
 
-	if (moveTo == 0xF)
-		opData.moveTo = moveTo;
-	else
-		opData.moveTo = (GT_U32)GT_LPORT_2_PORT(moveTo);
-	opData.moveFrom = (GT_U32)GT_LPORT_2_PORT(moveFrom);
+    if (moveTo == 0xF)
+        opData.moveTo = moveTo;
+    else
+        opData.moveTo = (GT_U32)GT_LPORT_2_PORT(moveTo);
+    opData.moveFrom = (GT_U32)GT_LPORT_2_PORT(moveFrom);
 
-	if((opData.moveTo == 0xFF) || (opData.moveFrom == 0xFF))
-		return GT_BAD_PARAM;
+    if((opData.moveTo == 0xFF) || (opData.moveFrom == 0xFF))
+        return GT_BAD_PARAM;
 
     if(moveCmd == GT_MOVE_ALL)
         retVal = atuOperationPerform(dev,FLUSH_ALL_IN_DB,&opData,&entry);
@@ -1825,21 +1869,14 @@ GT_STATUS gfdbMoveInDB
 *******************************************************************************/
 GT_STATUS gfdbRemovePort
 (
-	IN GT_QD_DEV    *dev,
-    IN GT_MOVE_CMD 	moveCmd,
-    IN GT_LPORT		port
+    IN GT_QD_DEV    *dev,
+    IN GT_MOVE_CMD     moveCmd,
+    IN GT_LPORT        port
 )
 {
     DBG_INFO(("gfdbRemovePort Called.\n"));
 
-	/* Only 88E6093 Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ATU_RM_PORTS))
-    {
-        DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-    }
-
-	return gfdbMove(dev,moveCmd,port,(GT_LPORT)0xF);
+    return gfdbMove(dev,moveCmd,port,(GT_LPORT)0xF);
 }
 
 
@@ -1853,7 +1890,7 @@ GT_STATUS gfdbRemovePort
 * INPUTS:
 *       moveCmd  - the move operation type.
 *       port - the logical port number.
-*		DBNum	 - ATU MAC Address Database Number.
+*        DBNum     - ATU MAC Address Database Number.
 *
 * OUTPUTS:
 *       None
@@ -1870,21 +1907,15 @@ GT_STATUS gfdbRemovePort
 *******************************************************************************/
 GT_STATUS gfdbRemovePortInDB
 (
-	IN GT_QD_DEV    *dev,
-    IN GT_MOVE_CMD 	moveCmd,
-    IN GT_LPORT		port,
-	IN GT_U32 		DBNum
+    IN GT_QD_DEV    *dev,
+    IN GT_MOVE_CMD     moveCmd,
+    IN GT_LPORT        port,
+    IN GT_U32         DBNum
 )
 {
     DBG_INFO(("gfdbRemovePortInDB Called.\n"));
 
-	/* Only 88E6093 Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ATU_RM_PORTS))
-    {
-        DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-    }
-	return gfdbMoveInDB(dev,moveCmd,DBNum,port,(GT_LPORT)0xF);
+    return gfdbMoveInDB(dev,moveCmd,DBNum,port,(GT_LPORT)0xF);
 }
 
 
@@ -1906,11 +1937,11 @@ GT_STATUS gfdbRemovePortInDB
 *       GT_BAD_PARAM   - on invalid port vector
 *
 * COMMENTS:
-*		DBNum in atuEntry - 
-*			ATU MAC Address Database number. If multiple address 
-*			databases are not being used, DBNum should be zero.
-*			If multiple address databases are being used, this value
-*			should be set to the desired address database number.
+*        DBNum in atuEntry - 
+*            ATU MAC Address Database number. If multiple address 
+*            databases are not being used, DBNum should be zero.
+*            If multiple address databases are being used, this value
+*            should be set to the desired address database number.
 *
 * GalTis:
 *
@@ -1926,69 +1957,69 @@ GT_STATUS gfdbAddMacEntry
 
     DBG_INFO(("gfdbAddMacEntry Called.\n"));
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_STATIC_ADDR))
+    if (!IS_IN_DEV_GROUP(dev,DEV_STATIC_ADDR))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     gtMemCpy(entry.macAddr.arEther,macEntry->macAddr.arEther,6);
-	entry.DBNum		= macEntry->DBNum;
+    entry.DBNum        = macEntry->DBNum;
     entry.portVec     = GT_LPORTVEC_2_PORTVEC(macEntry->portVec);
-	if(entry.portVec == GT_INVALID_PORT_VEC)
-	{
-		return GT_BAD_PARAM;
-	}
+    if(entry.portVec == GT_INVALID_PORT_VEC)
+    {
+        return GT_BAD_PARAM;
+    }
 
-	if(IS_IN_DEV_GROUP(dev,DEV_ATU_EXT_PRI))
-	{
-		if(IS_IN_DEV_GROUP(dev,DEV_FQPRI_IN_TABLE))
-		{
-			entry.exPrio.useMacFPri = macEntry->exPrio.useMacFPri;
-			entry.exPrio.macFPri = macEntry->exPrio.macFPri;
-			entry.exPrio.macQPri = macEntry->exPrio.macQPri;
-		}
-		else
-		{
-			entry.exPrio.useMacFPri = 0;
-			entry.exPrio.macFPri = 0;
-			entry.exPrio.macQPri = macEntry->exPrio.macQPri;
-		}
-    	entry.prio	    = 0;
-	}
-	else
-	{
-		entry.exPrio.useMacFPri = 0;
-		entry.exPrio.macFPri = 0;
-		entry.exPrio.macQPri = 0;
-    	entry.prio	    = macEntry->prio;
-	}
+    if(IS_IN_DEV_GROUP(dev,DEV_ATU_EXT_PRI))
+    {
+        if(IS_IN_DEV_GROUP(dev,DEV_FQPRI_IN_TABLE))
+        {
+            entry.exPrio.useMacFPri = macEntry->exPrio.useMacFPri;
+            entry.exPrio.macFPri = macEntry->exPrio.macFPri;
+            entry.exPrio.macQPri = macEntry->exPrio.macQPri;
+        }
+        else
+        {
+            entry.exPrio.useMacFPri = 0;
+            entry.exPrio.macFPri = macEntry->exPrio.macQPri;
+            entry.exPrio.macQPri = macEntry->exPrio.macQPri;
+        }
+        entry.prio        = 0;
+    }
+    else
+    {
+        entry.exPrio.useMacFPri = 0;
+        entry.exPrio.macFPri = 0;
+        entry.exPrio.macQPri = 0;
+        entry.prio        = macEntry->prio;
+    }
 
-	if (IS_IN_DEV_GROUP(dev,DEV_TRUNK))
-	{
-	    entry.trunkMember = macEntry->trunkMember;
-	}
-	else
-	{
-	    entry.trunkMember = GT_FALSE;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_TRUNK))
+    {
+        entry.trunkMember = macEntry->trunkMember;
+    }
+    else
+    {
+        entry.trunkMember = GT_FALSE;
+    }
 
     if(IS_MULTICAST_MAC(entry.macAddr))
     {
-		atuStateAppToDev(dev,GT_FALSE,(GT_U32)macEntry->entryState.mcEntryState,
-							(GT_U32*)&entry.entryState.ucEntryState);
+        atuStateAppToDev(dev,GT_FALSE,(GT_U32)macEntry->entryState.mcEntryState,
+                            (GT_U32*)&entry.entryState.ucEntryState);
     }
     else
-	{
-		atuStateAppToDev(dev,GT_TRUE,(GT_U32)macEntry->entryState.ucEntryState,
-							(GT_U32*)&entry.entryState.ucEntryState);
-	}
+    {
+        atuStateAppToDev(dev,GT_TRUE,(GT_U32)macEntry->entryState.ucEntryState,
+                            (GT_U32*)&entry.entryState.ucEntryState);
+    }
 
-	if (entry.entryState.ucEntryState == 0)
-	{
+    if (entry.entryState.ucEntryState == 0)
+    {
         DBG_INFO(("Entry State should not be ZERO.\n"));
-		return GT_BAD_PARAM;
-	}
+        return GT_BAD_PARAM;
+    }
 
     retVal = atuOperationPerform(dev,LOAD_PURGE_ENTRY,NULL,&entry);
     if(retVal != GT_OK)
@@ -2006,7 +2037,7 @@ GT_STATUS gfdbAddMacEntry
 *
 * DESCRIPTION:
 *       Deletes MAC address entry. If DBNum or FID is used, gfdbDelAtuEntry API
-*		would be the better choice to delete an entry in ATU.
+*        would be the better choice to delete an entry in ATU.
 *
 * INPUTS:
 *       macAddress - mac address.
@@ -2034,21 +2065,21 @@ GT_STATUS gfdbDelMacEntry
 
     DBG_INFO(("gfdbDelMacEntry Called.\n"));
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_STATIC_ADDR))
+    if (!IS_IN_DEV_GROUP(dev,DEV_STATIC_ADDR))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     gtMemCpy(entry.macAddr.arEther,macAddress->arEther,6);
-	entry.DBNum = 0;
-	entry.prio = 0;
-	entry.portVec = 0;
-	entry.entryState.ucEntryState = 0;
-	entry.trunkMember = GT_FALSE;
-	entry.exPrio.useMacFPri = GT_FALSE;
-	entry.exPrio.macFPri = 0;
-	entry.exPrio.macQPri = 0;
+    entry.DBNum = 0;
+    entry.prio = 0;
+    entry.portVec = 0;
+    entry.entryState.ucEntryState = 0;
+    entry.trunkMember = GT_FALSE;
+    entry.exPrio.useMacFPri = GT_FALSE;
+    entry.exPrio.macFPri = 0;
+    entry.exPrio.macQPri = 0;
 
     retVal = atuOperationPerform(dev,LOAD_PURGE_ENTRY,NULL,&entry);
     if(retVal != GT_OK)
@@ -2080,11 +2111,11 @@ GT_STATUS gfdbDelMacEntry
 *       GT_NO_SUCH      - if specified address entry does not exist
 *
 * COMMENTS:
-*		DBNum in atuEntry - 
-*			ATU MAC Address Database number. If multiple address 
-*			databases are not being used, DBNum should be zero.
-*			If multiple address databases are being used, this value
-*			should be set to the desired address database number.
+*        DBNum in atuEntry - 
+*            ATU MAC Address Database number. If multiple address 
+*            databases are not being used, DBNum should be zero.
+*            If multiple address databases are being used, this value
+*            should be set to the desired address database number.
 *
 *******************************************************************************/
 GT_STATUS gfdbDelAtuEntry
@@ -2098,21 +2129,21 @@ GT_STATUS gfdbDelAtuEntry
 
     DBG_INFO(("gfdbDelMacEntry Called.\n"));
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_STATIC_ADDR))
+    if (!IS_IN_DEV_GROUP(dev,DEV_STATIC_ADDR))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     gtMemCpy(entry.macAddr.arEther,atuEntry->macAddr.arEther,6);
-	entry.DBNum = atuEntry->DBNum;
-	entry.prio = 0;
-	entry.portVec = 0;
+    entry.DBNum = atuEntry->DBNum;
+    entry.prio = 0;
+    entry.portVec = 0;
     entry.entryState.ucEntryState = 0;
     entry.trunkMember = GT_FALSE;
-	entry.exPrio.useMacFPri = GT_FALSE;
-	entry.exPrio.macFPri = 0;
-	entry.exPrio.macQPri = 0;
+    entry.exPrio.useMacFPri = GT_FALSE;
+    entry.exPrio.macFPri = 0;
+    entry.exPrio.macQPri = 0;
 
     retVal = atuOperationPerform(dev,LOAD_PURGE_ENTRY,NULL,&entry);
     if(retVal != GT_OK)
@@ -2155,37 +2186,37 @@ GT_STATUS gfdbLearnEnable
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* Data to be set into the      */
                                     /* register.                    */
-	GT_LPORT	port;
-	GT_BOOL		mode;
+    GT_LPORT    port;
+    GT_BOOL        mode;
 
     DBG_INFO(("gfdbLearnEnable Called.\n"));
     BOOL_2_BIT(en,data);
     data = 1 - data;
 
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
-	{
-		mode = (en)?GT_FALSE:GT_TRUE;
+    if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
+    {
+        mode = (en)?GT_FALSE:GT_TRUE;
 
-		for (port=0; port<dev->numOfPorts; port++)
-		{
-			retVal = gprtSetLearnDisable(dev,port,mode);
-		    if(retVal != GT_OK)
-    		{
-	    	    DBG_INFO(("Failed.\n"));
-    	    	return retVal;
-		    }
-		}
-	}
-	else
-	{
-	    /* Set the Learn Enable bit.            */
-    	retVal = hwSetGlobalRegField(dev,QD_REG_ATU_CONTROL,14,1,data);
-	    if(retVal != GT_OK)
-    	{
-	        DBG_INFO(("Failed.\n"));
-    	    return retVal;
-	    }
-	}	
+        for (port=0; port<dev->numOfPorts; port++)
+        {
+            retVal = gprtSetLearnDisable(dev,port,mode);
+            if(retVal != GT_OK)
+            {
+                DBG_INFO(("Failed.\n"));
+                return retVal;
+            }
+        }
+    }
+    else
+    {
+        /* Set the Learn Enable bit.            */
+        retVal = hwSetGlobalRegField(dev,QD_REG_ATU_CONTROL,14,1,data);
+        if(retVal != GT_OK)
+        {
+            DBG_INFO(("Failed.\n"));
+            return retVal;
+        }
+    }    
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
@@ -2206,7 +2237,7 @@ GT_STATUS gfdbLearnEnable
 * RETURNS:
 *       GT_OK   - on success
 *       GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
 *
@@ -2224,20 +2255,20 @@ GT_STATUS gfdbGetLearnEnable
                                     /* register.                    */
     DBG_INFO(("gfdbGetLearnEnable Called.\n"));
 
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
-	{
-		return GT_NOT_SUPPORTED;
-	}
-	else
-	{
-	    /* Get the Learn Enable bit.            */
-    	retVal = hwGetGlobalRegField(dev,QD_REG_ATU_CONTROL,14,1,&data);
-	    if(retVal != GT_OK)
-    	{
-	        DBG_INFO(("Failed.\n"));
-    	    return retVal;
-	    }
-	}	
+    if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
+    {
+        return GT_NOT_SUPPORTED;
+    }
+    else
+    {
+        /* Get the Learn Enable bit.            */
+        retVal = hwGetGlobalRegField(dev,QD_REG_ATU_CONTROL,14,1,&data);
+        if(retVal != GT_OK)
+        {
+            DBG_INFO(("Failed.\n"));
+            return retVal;
+        }
+    }    
 
     data = 1 - data;
     BOOL_2_BIT(data, *en);
@@ -2268,7 +2299,7 @@ GT_STATUS gfdbGetLearnEnable
 *       GT_NOT_SUPPORT  - if current device does not support this feature.
 *
 * COMMENTS:
-*		This is an internal function. No user should call this function.
+*        This is an internal function. No user should call this function.
 *
 * GalTis:
 *
@@ -2280,27 +2311,29 @@ GT_STATUS gatuGetViolation
 )
 {
     GT_U16              intCause;
-    GT_STATUS       	retVal;
-    GT_ATU_ENTRY    	entry;
-	GT_EXTRA_OP_DATA	opData;
-	GT_BOOL				found, ageInt;
+    GT_STATUS           retVal;
+    GT_ATU_ENTRY        entry;
+    GT_EXTRA_OP_DATA    opData;
+    GT_BOOL                found, ageInt;
 
     DBG_INFO(("gatuGetViolation Called.\n"));
 
-	/* check which Violation occurred */
+    /* check which Violation occurred */
     retVal = hwGetGlobalRegField(dev,QD_REG_GLOBAL_STATUS,3,1,&intCause);
     if(retVal != GT_OK)
     {
-	    DBG_INFO(("ERROR to read ATU OPERATION Register.\n"));
+        DBG_INFO(("ERROR to read ATU OPERATION Register.\n"));
         return retVal;
     }
 
-	if (!intCause)
-	{
-		/* No Violation occurred. */
-		atuIntStatus->atuIntCause = 0;
-		return GT_OK;
-	}
+    if (!intCause)
+    {
+        /* No Violation occurred. */
+        atuIntStatus->atuIntCause = 0;
+        return GT_OK;
+    }
+
+    entry.DBNum = 0;
 
     retVal = atuOperationPerform(dev,SERVICE_VIOLATIONS,&opData,&entry);
     if(retVal != GT_OK)
@@ -2311,33 +2344,34 @@ GT_STATUS gatuGetViolation
 
     gtMemCpy(atuIntStatus->macAddr.arEther,entry.macAddr.arEther,6);
 
-	atuIntStatus->atuIntCause = (GT_U16)opData.intCause;
-	atuIntStatus->spid = entry.entryState.ucEntryState;
+    atuIntStatus->atuIntCause = (GT_U16)opData.intCause;
+    atuIntStatus->spid = entry.entryState.ucEntryState;
+    atuIntStatus->dbNum = qdShort2Char(entry.DBNum);
 
-	if(atuIntStatus->spid != 0xF)
-		atuIntStatus->spid = (GT_U8)GT_PORT_2_LPORT(atuIntStatus->spid);
-			
-	if (IS_IN_DEV_GROUP(dev,DEV_AGE_OUT_INT))
-	{
-		if (opData.intCause == GT_AGE_VIOLATION)
-		{
-			atuIntStatus->atuIntCause = GT_AGE_OUT_VIOLATION;
-		}
-		else if (opData.intCause == GT_MISS_VIOLATION)
-		{
-			/* check if it's AGE Violation */
-			if((retVal = gsysGetAgeInt(dev, &ageInt)) != GT_OK)
-				return retVal;
+    if(atuIntStatus->spid != 0xF)
+        atuIntStatus->spid = (GT_U8)GT_PORT_2_LPORT(atuIntStatus->spid);
+            
+    if (IS_IN_DEV_GROUP(dev,DEV_AGE_OUT_INT))
+    {
+        if (opData.intCause == GT_AGE_VIOLATION)
+        {
+            atuIntStatus->atuIntCause = GT_AGE_OUT_VIOLATION;
+        }
+        else if (opData.intCause == GT_MISS_VIOLATION)
+        {
+            /* check if it's AGE Violation */
+            if((retVal = gsysGetAgeInt(dev, &ageInt)) != GT_OK)
+                return retVal;
 
-			if(ageInt)
-			{
-				gfdbFindAtuMacEntry(dev, &entry, &found);
-				if ((found) && (entry.entryState.ucEntryState <= 4))
-					atuIntStatus->atuIntCause = GT_AGE_VIOLATION;
-			}
-			
-		}
-	}
+            if(ageInt)
+            {
+                gfdbFindAtuMacEntry(dev, &entry, &found);
+                if ((found) && (entry.entryState.ucEntryState <= 4))
+                    atuIntStatus->atuIntCause = GT_AGE_VIOLATION;
+            }
+            
+        }
+    }
 
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -2378,8 +2412,8 @@ static GT_STATUS atuOperationPerform
 (
     IN      GT_QD_DEV           *dev,
     IN      GT_ATU_OPERATION    atuOp,
-	INOUT	GT_EXTRA_OP_DATA	*opData,
-    INOUT 	GT_ATU_ENTRY    	*entry
+    INOUT    GT_EXTRA_OP_DATA    *opData,
+    INOUT     GT_ATU_ENTRY        *entry
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -2388,13 +2422,31 @@ static GT_STATUS atuOperationPerform
     GT_U16          opcodeData;           /* Data to be set into the      */
                                     /* register.                    */
     GT_U8           i;
-    GT_U16			portMask;
+    GT_U16            portMask;
 
     gtSemTake(dev,dev->atuRegsSem,OS_WAIT_FOREVER);
 
-	portMask = (1 << dev->maxPorts) - 1;
+    portMask = (1 << dev->maxPorts) - 1;
 
     /* Wait until the ATU in ready. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 1;
+  
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_ATU_OPERATION;
+      regAccess.rw_reg_list[0].data = 15;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        gtSemGive(dev,dev->atuRegsSem);
+        return retVal;
+      }
+    }
+#else
     data = 1;
     while(data == 1)
     {
@@ -2405,121 +2457,158 @@ static GT_STATUS atuOperationPerform
             return retVal;
         }
     }
+#endif
 
-	opcodeData = 0;
+    opcodeData = 0;
 
-	switch (atuOp)
-	{
-		case LOAD_PURGE_ENTRY:
-				if (IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY) || 
-					IS_IN_DEV_GROUP(dev,DEV_TRUNK))
-				{
-					if (IS_IN_DEV_GROUP(dev,DEV_TRUNK) && entry->trunkMember)
-					{
-						/* portVec represents trunk ID */
-				        data = (GT_U16)( 0x8000 | (((entry->portVec) & 0xF) << 4) |
-        			         (((entry->entryState.ucEntryState) & 0xF)) );
-					}
-					else
-					{
-				        data = (GT_U16)( (((entry->portVec) & portMask) << 4) |
-        			         (((entry->entryState.ucEntryState) & 0xF)) );
-					}
-					opcodeData |= (entry->prio & 0x7) << 8;
-				}
-				else if(IS_IN_DEV_GROUP(dev,DEV_ATU_EXT_PRI))
-				{
-			        data = (GT_U16)( (((entry->portVec) & portMask) << 4) |
-        			         (((entry->entryState.ucEntryState) & 0xF)) |
-        			         (((entry->exPrio.macQPri) & 0x3) << 14) );
-					if(entry->exPrio.useMacFPri == GT_TRUE)
-						data |= ((1 << 13) | ((entry->exPrio.macFPri & 0x7) << 10));
-				}
-				else
-				{
-			        data = (GT_U16)( (((entry->prio) & 0x3) << 14) | 
-			        		(((entry->portVec) & portMask) << 4) |
-        					(((entry->entryState.ucEntryState) & 0xF)) );
-				}
-		        retVal = hwWriteGlobalReg(dev,QD_REG_ATU_DATA_REG,data);
-        		if(retVal != GT_OK)
-		        {
-        		    gtSemGive(dev,dev->atuRegsSem);
-		            return retVal;
-        		}
-				/* pass thru */
+    switch (atuOp)
+    {
+        case LOAD_PURGE_ENTRY:
+                if ((IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY) &&
+                    (!((IS_IN_DEV_GROUP(dev,DEV_88EC000_FAMILY))||
+                       (IS_IN_DEV_GROUP(dev,DEV_88ESPANNAK_FAMILY))))) ||
+                    IS_IN_DEV_GROUP(dev,DEV_TRUNK))
+                {
+                    if (IS_IN_DEV_GROUP(dev,DEV_TRUNK) && entry->trunkMember)
+                    {
+                        /* portVec represents trunk ID */
+                        data = (GT_U16)( 0x8000 | (((entry->portVec) & 0xF) << 4) |
+                             (((entry->entryState.ucEntryState) & 0xF)) );
+                    }
+                    else
+                    {
+                        data = (GT_U16)( (((entry->portVec) & portMask) << 4) |
+                             (((entry->entryState.ucEntryState) & 0xF)) );
+                    }
+                    opcodeData |= (entry->prio & 0x7) << 8;
+                }
+                else if(IS_IN_DEV_GROUP(dev,DEV_ATU_EXT_PRI))
+                {
+                  if(IS_IN_DEV_GROUP(dev,DEV_MACPRI_IN_TABLE))
+				  {
+                    data = (GT_U16)( (((entry->portVec) & portMask) << 4) |
+                             ((entry->entryState.ucEntryState) & 0xF) );
+                    data |= ((entry->prio & 0x7) << 13);
+				  }
+				  else
+				  {
+                    data = (GT_U16)( (((entry->portVec) & portMask) << 4) |
+                             (((entry->entryState.ucEntryState) & 0xF)) |
+                             (((entry->exPrio.macQPri) & 0x3) << 14) );
+                    if(entry->exPrio.useMacFPri == GT_TRUE)
+                        data |= ((1 << 13) | ((entry->exPrio.macFPri & 0x7) << 10));
+				  }
+                }
+                else
+                {
+                    data = (GT_U16)( (((entry->prio) & 0x3) << 14) | 
+                            (((entry->portVec) & portMask) << 4) |
+                            (((entry->entryState.ucEntryState) & 0xF)) );
+                }
+                retVal = hwWriteGlobalReg(dev,QD_REG_ATU_DATA_REG,data);
+                if(retVal != GT_OK)
+                {
+                    gtSemGive(dev,dev->atuRegsSem);
+                    return retVal;
+                }
+                /* pass thru */
 
-		case GET_NEXT_ENTRY:
-		        for(i = 0; i < 3; i++)
-        		{
-		            data=(entry->macAddr.arEther[2*i] << 8)|(entry->macAddr.arEther[1 + 2*i]);
-        		    retVal = hwWriteGlobalReg(dev,(GT_U8)(QD_REG_ATU_MAC_BASE+i),data);
-		            if(retVal != GT_OK)
-        		    {
-		                gtSemGive(dev,dev->atuRegsSem);
-        		        return retVal;
-		            }
-        		}
-				break;
+        case GET_NEXT_ENTRY:
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
 
-		case FLUSH_ALL:
-		case FLUSH_UNLOCKED:
-		case FLUSH_ALL_IN_DB:
-		case FLUSH_UNLOCKED_IN_DB:
-				if (entry->entryState.ucEntryState == 0xF)
-				{
-			        data = (GT_U16)(0xF | ((opData->moveFrom & 0xF) << 4) | ((opData->moveTo & 0xF) << 8));
-				}
-				else
-				{
-			        data = 0;
-				}
-		        retVal = hwWriteGlobalReg(dev,QD_REG_ATU_DATA_REG,data);
-       			if(retVal != GT_OK)
-	        	{
-       		    	gtSemGive(dev,dev->atuRegsSem);
-		            return retVal;
-   	    		}
-				break;
+      regAccess.entries = 3;
+  
+      for(i = 0; i < 3; i++)
+      {
+        data=(entry->macAddr.arEther[2*i] << 8)|(entry->macAddr.arEther[1 + 2*i]);
+        regAccess.rw_reg_list[i].cmd = HW_REG_WRITE;
+        regAccess.rw_reg_list[i].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+        regAccess.rw_reg_list[i].reg = QD_REG_ATU_MAC_BASE+i;
+        regAccess.rw_reg_list[i].data = data;
+      }
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        gtSemGive(dev,dev->atuRegsSem);
+        return retVal;
+      }
+    }
+#else
+                for(i = 0; i < 3; i++)
+                {
+                    data=(entry->macAddr.arEther[2*i] << 8)|(entry->macAddr.arEther[1 + 2*i]);
+                    retVal = hwWriteGlobalReg(dev,(GT_U8)(QD_REG_ATU_MAC_BASE+i),data);
+                    if(retVal != GT_OK)
+                    {
+                        gtSemGive(dev,dev->atuRegsSem);
+                        return retVal;
+                    }
+                }
+#endif
+                break;
 
-		case SERVICE_VIOLATIONS:
+        case FLUSH_ALL:
+        case FLUSH_UNLOCKED:
+        case FLUSH_ALL_IN_DB:
+        case FLUSH_UNLOCKED_IN_DB:
+                if (entry->entryState.ucEntryState == 0xF)
+                {
+                    data = (GT_U16)(0xF | ((opData->moveFrom & 0xF) << 4) | ((opData->moveTo & 0xF) << 8));
+                }
+                else
+                {
+                    data = 0;
+                }
+                retVal = hwWriteGlobalReg(dev,QD_REG_ATU_DATA_REG,data);
+                   if(retVal != GT_OK)
+                {
+                       gtSemGive(dev,dev->atuRegsSem);
+                    return retVal;
+                   }
+                break;
 
-				break;
+        case SERVICE_VIOLATIONS:
 
-		default :
-				return GT_FAIL;
-	}
+                break;
+
+        default :
+                return GT_FAIL;
+    }
 
     /* Set DBNum */
-	if(IS_IN_DEV_GROUP(dev,DEV_FID_REG))
-	{
-	    retVal = hwSetGlobalRegField(dev,QD_REG_ATU_FID_REG,0,12,(GT_U16)(entry->DBNum & 0xFFF));
-    	if(retVal != GT_OK)
-	    {
-    	    gtSemGive(dev,dev->atuRegsSem);
-        	return retVal;
-	    }
-	}
-	else if (IS_IN_DEV_GROUP(dev,DEV_DBNUM_256))
-	{
-	    retVal = hwSetGlobalRegField(dev,QD_REG_ATU_CONTROL,12,4,(GT_U16)((entry->DBNum & 0xF0) >> 4));
-    	if(retVal != GT_OK)
-	    {
-    	    gtSemGive(dev,dev->atuRegsSem);
-        	return retVal;
-	    }
-	}
-	else if (IS_IN_DEV_GROUP(dev,DEV_DBNUM_64))
-	{
-	    opcodeData |= ((entry->DBNum & 0x30) << 4);	/* Op Reg bit 9:8 */
-	}
+    if(IS_IN_DEV_GROUP(dev,DEV_FID_REG))
+    {
+        retVal = hwSetGlobalRegField(dev,QD_REG_ATU_FID_REG,0,12,(GT_U16)(entry->DBNum & 0xFFF));
+        if(retVal != GT_OK)
+        {
+            gtSemGive(dev,dev->atuRegsSem);
+            return retVal;
+        }
+    }
+    else if (IS_IN_DEV_GROUP(dev,DEV_DBNUM_256))
+    {
+        retVal = hwSetGlobalRegField(dev,QD_REG_ATU_CONTROL,12,4,(GT_U16)((entry->DBNum & 0xF0) >> 4));
+        if(retVal != GT_OK)
+        {
+            gtSemGive(dev,dev->atuRegsSem);
+            return retVal;
+        }
+    }
+    else if (IS_IN_DEV_GROUP(dev,DEV_DBNUM_64))
+    {
+        opcodeData |= ((entry->DBNum & 0x30) << 4);    /* Op Reg bit 9:8 */
+    }
 
     /* Set the ATU Operation register in addtion to DBNum setup  */
 
-	if(IS_IN_DEV_GROUP(dev,DEV_FID_REG))
-	    opcodeData |= ((1 << 15) | (atuOp << 12));
-	else
-	    opcodeData |= ((1 << 15) | (atuOp << 12) | (entry->DBNum & 0xF));
+    if(IS_IN_DEV_GROUP(dev,DEV_FID_REG))
+        opcodeData |= ((1 << 15) | (atuOp << 12));
+    else
+    {
+        opcodeData |= ((1 << 15) | (atuOp << 12) | (entry->DBNum & 0xF));
+    }
 
     retVal = hwWriteGlobalReg(dev,QD_REG_ATU_OPERATION,opcodeData);
     if(retVal != GT_OK)
@@ -2528,113 +2617,157 @@ static GT_STATUS atuOperationPerform
         return retVal;
     }
 
-	/* If the operation is to service violation operation wait for the response   */
-	if(atuOp == SERVICE_VIOLATIONS)
-	{
-		/* Wait until the VTU in ready. */
-		data = 1;
-		while(data == 1)
-		{
-			retVal = hwGetGlobalRegField(dev,QD_REG_ATU_OPERATION,15,1,&data);
-			if(retVal != GT_OK)
-			{
-				gtSemGive(dev,dev->atuRegsSem);
-				return retVal;
-			}
-		}
+    /* If the operation is to service violation operation wait for the response   */
+    if(atuOp == SERVICE_VIOLATIONS)
+    {
+        /* Wait until the VTU in ready. */
+#ifdef GT_RMGMT_ACCESS
+        {
+          HW_DEV_REG_ACCESS regAccess;
 
-		/* get the Interrupt Cause */
-		retVal = hwGetGlobalRegField(dev,QD_REG_ATU_OPERATION,4,4,&data);
-		if(retVal != GT_OK)
-		{
-			gtSemGive(dev,dev->atuRegsSem);
-			return retVal;
-		}
+          regAccess.entries = 1;
+  
+          regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+          regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+          regAccess.rw_reg_list[0].reg = QD_REG_ATU_OPERATION;
+          regAccess.rw_reg_list[0].data = 15;
+          retVal = hwAccessMultiRegs(dev, &regAccess);
+          if(retVal != GT_OK)
+          {
+            gtSemGive(dev,dev->atuRegsSem);
+          return retVal;
+          }
+        }
+#else
+        data = 1;
+        while(data == 1)
+        {
+            retVal = hwGetGlobalRegField(dev,QD_REG_ATU_OPERATION,15,1,&data);
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->atuRegsSem);
+                return retVal;
+            }
+        }
+#endif
 
-		if (!IS_IN_DEV_GROUP(dev,DEV_AGE_OUT_INT))
-		{
-			data &= 0x7;	/* only 3 bits are valid for non age_out_int group */
-		}
+        /* get the Interrupt Cause */
+        retVal = hwGetGlobalRegField(dev,QD_REG_ATU_OPERATION,4,4,&data);
+        if(retVal != GT_OK)
+        {
+            gtSemGive(dev,dev->atuRegsSem);
+            return retVal;
+        }
+        if (!IS_IN_DEV_GROUP(dev,DEV_AGE_OUT_INT))
+        {
+            data &= 0x7;    /* only 3 bits are valid for non age_out_int group */
+        }
+    
+        switch (data)
+        {
+            case 8:    /* Age Interrupt */
+                opData->intCause = GT_AGE_VIOLATION;
+                break;
+            case 4:    /* Member Violation */
+                opData->intCause = GT_MEMBER_VIOLATION;
+                break;
+            case 2:    /* Miss Violation */
+                opData->intCause = GT_MISS_VIOLATION;
+                break;
+            case 1:    /* Full Violation */
+                opData->intCause = GT_FULL_VIOLATION;
+                break;
+            default:
+                opData->intCause = 0;
+                gtSemGive(dev,dev->atuRegsSem);
+                return GT_OK;
+        }
 
-		switch (data)
-		{
-			case 8:	/* Age Interrupt */
-				opData->intCause = GT_AGE_VIOLATION;
-				break;
-			case 4:	/* Member Violation */
-				opData->intCause = GT_MEMBER_VIOLATION;
-				break;
-			case 2:	/* Miss Violation */
-				opData->intCause = GT_MISS_VIOLATION;
-				break;
-			case 1:	/* Full Violation */
-				opData->intCause = GT_FULL_VIOLATION;
-				break;
-			default:
-				opData->intCause = 0;
-				gtSemGive(dev,dev->atuRegsSem);
-				return GT_OK;
-		}
+        /* get the DBNum that was involved in the violation */
 
-		/* get the DBNum that was involved in the violation */
+        entry->DBNum = 0;
 
-		entry->DBNum = 0;
+        if(IS_IN_DEV_GROUP(dev,DEV_FID_REG))
+        {
+            retVal = hwGetGlobalRegField(dev,QD_REG_ATU_FID_REG,0,12,&data);
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->atuRegsSem);
+                return retVal;
+            }
+            entry->DBNum = (GT_U16)data;
+        }
+        else if (IS_IN_DEV_GROUP(dev,DEV_DBNUM_256))
+        {
+            retVal = hwGetGlobalRegField(dev,QD_REG_ATU_CONTROL,12,4,&data);
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->atuRegsSem);
+                return retVal;
+            }
+            entry->DBNum = (GT_U16)data << 4;
+        }
+        else if (IS_IN_DEV_GROUP(dev,DEV_DBNUM_64))
+        {
+            retVal = hwGetGlobalRegField(dev,QD_REG_ATU_OPERATION,8,2,&data);
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->atuRegsSem);
+                return retVal;
+            }
+            entry->DBNum = (GT_U16)data << 4;
+        }
 
-		if(IS_IN_DEV_GROUP(dev,DEV_FID_REG))
-		{
-		    retVal = hwGetGlobalRegField(dev,QD_REG_ATU_FID_REG,0,12,&data);
-    		if(retVal != GT_OK)
-	    	{
-	    	    gtSemGive(dev,dev->atuRegsSem);
-    	    	return retVal;
-	    	}
-			entry->DBNum = (GT_U16)data;
-		}
-		else if (IS_IN_DEV_GROUP(dev,DEV_DBNUM_256))
-		{
-		    retVal = hwGetGlobalRegField(dev,QD_REG_ATU_CONTROL,12,4,&data);
-    		if(retVal != GT_OK)
-	    	{
-	    	    gtSemGive(dev,dev->atuRegsSem);
-    	    	return retVal;
-	    	}
-			entry->DBNum = (GT_U16)data << 4;
-		}
-		else if (IS_IN_DEV_GROUP(dev,DEV_DBNUM_64))
-		{
-			retVal = hwGetGlobalRegField(dev,QD_REG_ATU_OPERATION,8,2,&data);
-			if(retVal != GT_OK)
-			{
-				gtSemGive(dev,dev->atuRegsSem);
-				return retVal;
-			}
-			entry->DBNum = (GT_U16)data << 4;
-		}
+        if(!IS_IN_DEV_GROUP(dev,DEV_FID_REG))
+        {
+            retVal = hwGetGlobalRegField(dev,QD_REG_ATU_OPERATION,0,4,&data);
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->atuRegsSem);
+                return retVal;
+            }
 
-		if(!IS_IN_DEV_GROUP(dev,DEV_FID_REG))
-		{
-			retVal = hwGetGlobalRegField(dev,QD_REG_ATU_OPERATION,0,4,&data);
-			if(retVal != GT_OK)
-			{
-				gtSemGive(dev,dev->atuRegsSem);
-				return retVal;
-			}
+            entry->DBNum |= (GT_U8)(data & 0xF);
+        }
 
-			entry->DBNum |= (GT_U8)(data & 0xF);
-		}
+        /* get the Source Port ID that was involved in the violation */
 
-		/* get the Source Port ID that was involved in the violation */
+        retVal = hwReadGlobalReg(dev,QD_REG_ATU_DATA_REG,&data);
+        if(retVal != GT_OK)
+        {
+            gtSemGive(dev,dev->atuRegsSem);
+            return retVal;
+        }
 
-		retVal = hwReadGlobalReg(dev,QD_REG_ATU_DATA_REG,&data);
-		if(retVal != GT_OK)
-		{
-			gtSemGive(dev,dev->atuRegsSem);
-			return retVal;
-		}
-
-		entry->entryState.ucEntryState = data & 0xF;
+        entry->entryState.ucEntryState = data & 0xF;
 
         /* Get the Mac address  */
+#ifdef GT_RMGMT_ACCESS
+        {
+          HW_DEV_REG_ACCESS regAccess;
+
+          regAccess.entries = 3;
+  
+          for(i = 0; i < 3; i++)
+          {
+            regAccess.rw_reg_list[i].cmd = HW_REG_READ;
+            regAccess.rw_reg_list[i].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+            regAccess.rw_reg_list[i].reg = QD_REG_ATU_MAC_BASE+i;
+            regAccess.rw_reg_list[i].data = 0;
+          }
+          retVal = hwAccessMultiRegs(dev, &regAccess);
+          if(retVal != GT_OK)
+          {
+            gtSemGive(dev,dev->atuRegsSem);
+            return retVal;
+          }
+          for(i = 0; i < 3; i++)
+          {
+            entry->macAddr.arEther[2*i] = qdLong2Char(regAccess.rw_reg_list[i].data >> 8);
+            entry->macAddr.arEther[1 + 2*i] = qdLong2Char(regAccess.rw_reg_list[i].data & 0xFF);
+          }
+        }
+#else
         for(i = 0; i < 3; i++)
         {
             retVal = hwReadGlobalReg(dev,(GT_U8)(QD_REG_ATU_MAC_BASE+i),&data);
@@ -2646,18 +2779,57 @@ static GT_STATUS atuOperationPerform
             entry->macAddr.arEther[2*i] = data >> 8;
             entry->macAddr.arEther[1 + 2*i] = data & 0xFF;
         }
+#endif
 
 
-	} /* end of service violations */
+    } /* end of service violations */
     /* If the operation is a gen next operation wait for the response   */
     if(atuOp == GET_NEXT_ENTRY)
     {
-		entry->trunkMember = GT_FALSE;
-		entry->exPrio.useMacFPri = GT_FALSE;
-		entry->exPrio.macFPri = 0;
+        entry->trunkMember = GT_FALSE;
+        entry->exPrio.useMacFPri = GT_FALSE;
+        entry->exPrio.macFPri = 0;
         entry->exPrio.macQPri = 0;
 
         /* Wait until the ATU in ready. */
+#ifdef GT_RMGMT_ACCESS
+        {
+          HW_DEV_REG_ACCESS regAccess;
+
+          regAccess.entries = 5;
+  
+          regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+          regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+          regAccess.rw_reg_list[0].reg = QD_REG_ATU_OPERATION;
+          regAccess.rw_reg_list[0].data = 15;
+  
+          for(i = 1; i < 4; i++)
+          {
+            regAccess.rw_reg_list[i].cmd = HW_REG_READ;
+            regAccess.rw_reg_list[i].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+            regAccess.rw_reg_list[i].reg = QD_REG_ATU_MAC_BASE+i-1;
+            regAccess.rw_reg_list[i].data = 0;
+          }
+
+          regAccess.rw_reg_list[4].cmd = HW_REG_READ;
+          regAccess.rw_reg_list[4].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+          regAccess.rw_reg_list[4].reg = QD_REG_ATU_DATA_REG;
+          regAccess.rw_reg_list[4].data = 0;
+
+          retVal = hwAccessMultiRegs(dev, &regAccess);
+          if(retVal != GT_OK)
+          {
+            gtSemGive(dev,dev->atuRegsSem);
+            return retVal;
+          }
+          for(i = 0; i < 3; i++)
+          {
+            entry->macAddr.arEther[2*i] = qdLong2Char(regAccess.rw_reg_list[i+1].data >> 8);
+            entry->macAddr.arEther[1 + 2*i] = qdLong2Char(regAccess.rw_reg_list[i+1].data & 0xFF);
+          }
+          data = qdLong2Short(regAccess.rw_reg_list[4].data);
+        }
+#else
         data = 1;
         while(data == 1)
         {
@@ -2688,40 +2860,57 @@ static GT_STATUS atuOperationPerform
             gtSemGive(dev,dev->atuRegsSem);
             return retVal;
         }
+#endif
 
         /* Get the Atu data register fields */
-		if(IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY|DEV_TRUNK))
-		{
-			if (IS_IN_DEV_GROUP(dev,DEV_TRUNK))
-			{
-				entry->trunkMember = (data & 0x8000)?GT_TRUE:GT_FALSE;
-			}
+        if ((IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY) &&
+            (!((IS_IN_DEV_GROUP(dev,DEV_88EC000_FAMILY))||
+               (IS_IN_DEV_GROUP(dev,DEV_88ESPANNAK_FAMILY))))) ||
+            IS_IN_DEV_GROUP(dev,DEV_TRUNK))
+        {
+            if (IS_IN_DEV_GROUP(dev,DEV_TRUNK))
+            {
+                entry->trunkMember = (data & 0x8000)?GT_TRUE:GT_FALSE;
+            }
 
-			entry->portVec = (data >> 4) & portMask;
-			entry->entryState.ucEntryState = data & 0xF;
-			retVal = hwGetGlobalRegField(dev,QD_REG_ATU_OPERATION,8,3,&data);
-			if(retVal != GT_OK)
-			{
-				gtSemGive(dev,dev->atuRegsSem);
-				return retVal;
-			}
-			entry->prio = (GT_U8)data;
-		}
-		else if(IS_IN_DEV_GROUP(dev,DEV_ATU_EXT_PRI))
-		{
-	        entry->prio = 0;
-    	    entry->portVec = (data >> 4) & portMask;
-        	entry->entryState.ucEntryState = data & 0xF;
-			entry->exPrio.useMacFPri = (data & 0x2000)?GT_TRUE:GT_FALSE;
-			entry->exPrio.macFPri = (data >> 10) & 0x7;
-	        entry->exPrio.macQPri = data >> 14;
-		}
-		else
-		{
-	        entry->prio = data >> 14;
-    	    entry->portVec = (data >> 4) & portMask;
-        	entry->entryState.ucEntryState = data & 0xF;
-		}
+            entry->portVec = (data >> 4) & portMask;
+            entry->entryState.ucEntryState = data & 0xF;
+            retVal = hwGetGlobalRegField(dev,QD_REG_ATU_OPERATION,8,3,&data);
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->atuRegsSem);
+                return retVal;
+            }
+            entry->prio = (GT_U8)data;
+        }
+        else if(IS_IN_DEV_GROUP(dev,DEV_ATU_EXT_PRI))
+        {
+          if(IS_IN_DEV_GROUP(dev,DEV_MACPRI_IN_TABLE))
+		  {
+            entry->portVec = (data >> 4) & portMask;
+            entry->entryState.ucEntryState = data & 0xF;
+            entry->prio = (data >> 13) & 0x7;
+            entry->exPrio.macFPri = entry->prio;
+            entry->exPrio.macQPri = entry->prio; 
+            entry->prio = 0;
+            entry->exPrio.useMacFPri = GT_FALSE; /* doesn't care */
+		  }
+		  else
+		  {
+            entry->prio = 0;
+            entry->portVec = (data >> 4) & portMask;
+            entry->entryState.ucEntryState = data & 0xF;
+            entry->exPrio.useMacFPri = (data & 0x2000)?GT_TRUE:GT_FALSE;
+            entry->exPrio.macFPri = (data >> 10) & 0x7;
+            entry->exPrio.macQPri = data >> 14;
+		  }
+        }
+        else
+        {
+            entry->prio = data >> 14;
+            entry->portVec = (data >> 4) & portMask;
+            entry->entryState.ucEntryState = data & 0xF;
+        }
     }
 
     gtSemGive(dev,dev->atuRegsSem);
@@ -2730,364 +2919,364 @@ static GT_STATUS atuOperationPerform
 
 static GT_STATUS atuStateAppToDev
 (
-    IN  GT_QD_DEV	*dev,
-	IN  GT_BOOL		unicast,
-	IN  GT_U32		state,
-	OUT GT_U32		*newOne
+    IN  GT_QD_DEV    *dev,
+    IN  GT_BOOL        unicast,
+    IN  GT_U32        state,
+    OUT GT_U32        *newOne
 )
 {
-	GT_U32	newState;
-	GT_STATUS	retVal = GT_OK;
+    GT_U32    newState;
+    GT_STATUS    retVal = GT_OK;
 
-	if(unicast)
-	{
-		switch ((GT_ATU_UC_STATE)state)
-		{
-			case GT_UC_INVALID:
-				newState = state;
-				break;
+    if(unicast)
+    {
+        switch ((GT_ATU_UC_STATE)state)
+        {
+            case GT_UC_INVALID:
+                newState = state;
+                break;
 
-			case GT_UC_DYNAMIC:
-				if (IS_IN_DEV_GROUP(dev,DEV_UC_7_DYNAMIC))
-				{
-					newState = 7;
-				}
-				else
-				{
-					newState = 0xE;
-				}
-				break;
+            case GT_UC_DYNAMIC:
+                if (IS_IN_DEV_GROUP(dev,DEV_UC_7_DYNAMIC))
+                {
+                    newState = 7;
+                }
+                else
+                {
+                    newState = 0xE;
+                }
+                break;
 
-			case GT_UC_NO_PRI_TO_CPU_STATIC_NRL:
-				if (IS_IN_DEV_GROUP(dev,DEV_UC_NO_PRI_TO_CPU_STATIC_NRL))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_UC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_UC_NO_PRI_TO_CPU_STATIC_NRL:
+                if (IS_IN_DEV_GROUP(dev,DEV_UC_NO_PRI_TO_CPU_STATIC_NRL))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_UC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			case GT_UC_TO_CPU_STATIC_NRL:
-				if (IS_IN_DEV_GROUP(dev,DEV_UC_TO_CPU_STATIC_NRL))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_UC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_UC_TO_CPU_STATIC_NRL:
+                if (IS_IN_DEV_GROUP(dev,DEV_UC_TO_CPU_STATIC_NRL))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_UC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			case GT_UC_NO_PRI_STATIC_NRL:
-				if (IS_IN_DEV_GROUP(dev,DEV_UC_NO_PRI_STATIC_NRL))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_UC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_UC_NO_PRI_STATIC_NRL:
+                if (IS_IN_DEV_GROUP(dev,DEV_UC_NO_PRI_STATIC_NRL))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_UC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			case GT_UC_STATIC_NRL:
-				if (IS_IN_DEV_GROUP(dev,DEV_UC_STATIC_NRL))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_UC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_UC_STATIC_NRL:
+                if (IS_IN_DEV_GROUP(dev,DEV_UC_STATIC_NRL))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_UC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			case GT_UC_NO_PRI_TO_CPU_STATIC:
-				if (IS_IN_DEV_GROUP(dev,DEV_UC_NO_PRI_TO_CPU_STATIC))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_UC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_UC_NO_PRI_TO_CPU_STATIC:
+                if (IS_IN_DEV_GROUP(dev,DEV_UC_NO_PRI_TO_CPU_STATIC))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_UC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			case GT_UC_TO_CPU_STATIC:
-				if (IS_IN_DEV_GROUP(dev,DEV_UC_TO_CPU_STATIC))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_UC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_UC_TO_CPU_STATIC:
+                if (IS_IN_DEV_GROUP(dev,DEV_UC_TO_CPU_STATIC))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_UC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			case GT_UC_NO_PRI_STATIC:
-				if (IS_IN_DEV_GROUP(dev,DEV_UC_NO_PRI_STATIC))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_UC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_UC_NO_PRI_STATIC:
+                if (IS_IN_DEV_GROUP(dev,DEV_UC_NO_PRI_STATIC))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_UC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			case GT_UC_STATIC:
-				if (IS_IN_DEV_GROUP(dev,DEV_UC_STATIC))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_UC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_UC_STATIC:
+                if (IS_IN_DEV_GROUP(dev,DEV_UC_STATIC))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_UC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			default:
-				if (IS_IN_DEV_GROUP(dev,DEV_UC_7_DYNAMIC))
-				{
-					newState = 7;
-				}
-				else
-				{
-					newState = 0xE;
-				}
-				retVal = GT_BAD_PARAM;
-				break;
+            default:
+                if (IS_IN_DEV_GROUP(dev,DEV_UC_7_DYNAMIC))
+                {
+                    newState = 7;
+                }
+                else
+                {
+                    newState = 0xE;
+                }
+                retVal = GT_BAD_PARAM;
+                break;
 
-		}
-	}
-	else
-	{
-		switch ((GT_ATU_UC_STATE)state)
-		{
-			case GT_MC_INVALID:
-				newState = state;
-				break;
+        }
+    }
+    else
+    {
+        switch ((GT_ATU_UC_STATE)state)
+        {
+            case GT_MC_INVALID:
+                newState = state;
+                break;
 
-			case GT_MC_MGM_STATIC_UNLIMITED_RATE:
-				if (IS_IN_DEV_GROUP(dev,DEV_MC_MGM_STATIC_UNLIMITED_RATE))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_MC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_MC_MGM_STATIC_UNLIMITED_RATE:
+                if (IS_IN_DEV_GROUP(dev,DEV_MC_MGM_STATIC_UNLIMITED_RATE))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_MC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			case GT_MC_STATIC_UNLIMITED_RATE:
-				if (IS_IN_DEV_GROUP(dev,DEV_MC_STATIC_UNLIMITED_RATE))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_MC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_MC_STATIC_UNLIMITED_RATE:
+                if (IS_IN_DEV_GROUP(dev,DEV_MC_STATIC_UNLIMITED_RATE))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_MC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			case GT_MC_MGM_STATIC:
-				if (IS_IN_DEV_GROUP(dev,DEV_MC_MGM_STATIC))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_MC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_MC_MGM_STATIC:
+                if (IS_IN_DEV_GROUP(dev,DEV_MC_MGM_STATIC))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_MC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			case GT_MC_STATIC:
-				if (IS_IN_DEV_GROUP(dev,DEV_MC_STATIC))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_MC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_MC_STATIC:
+                if (IS_IN_DEV_GROUP(dev,DEV_MC_STATIC))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_MC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			case GT_MC_PRIO_MGM_STATIC_UNLIMITED_RATE:
-				if (IS_IN_DEV_GROUP(dev,DEV_MC_PRIO_MGM_STATIC_UNLIMITED_RATE))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_MC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_MC_PRIO_MGM_STATIC_UNLIMITED_RATE:
+                if (IS_IN_DEV_GROUP(dev,DEV_MC_PRIO_MGM_STATIC_UNLIMITED_RATE))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_MC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			case GT_MC_PRIO_STATIC_UNLIMITED_RATE:
-				if (IS_IN_DEV_GROUP(dev,DEV_MC_PRIO_STATIC_UNLIMITED_RATE))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_MC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_MC_PRIO_STATIC_UNLIMITED_RATE:
+                if (IS_IN_DEV_GROUP(dev,DEV_MC_PRIO_STATIC_UNLIMITED_RATE))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_MC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			case GT_MC_PRIO_MGM_STATIC:
-				if (IS_IN_DEV_GROUP(dev,DEV_MC_PRIO_MGM_STATIC))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_MC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_MC_PRIO_MGM_STATIC:
+                if (IS_IN_DEV_GROUP(dev,DEV_MC_PRIO_MGM_STATIC))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_MC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			case GT_MC_PRIO_STATIC:
-				if (IS_IN_DEV_GROUP(dev,DEV_MC_PRIO_STATIC))
-				{
-					newState = state;
-				}
-				else
-				{
-					newState = (GT_U32)GT_MC_STATIC;
-					retVal = GT_BAD_PARAM;
-				}
-				break;
+            case GT_MC_PRIO_STATIC:
+                if (IS_IN_DEV_GROUP(dev,DEV_MC_PRIO_STATIC))
+                {
+                    newState = state;
+                }
+                else
+                {
+                    newState = (GT_U32)GT_MC_STATIC;
+                    retVal = GT_BAD_PARAM;
+                }
+                break;
 
-			default:
-				newState = (GT_U32)GT_MC_STATIC;
-				retVal = GT_BAD_PARAM;
-				break;
+            default:
+                newState = (GT_U32)GT_MC_STATIC;
+                retVal = GT_BAD_PARAM;
+                break;
 
-		}
-	}
-	
-	*newOne = newState;
-	return retVal;
+        }
+    }
+    
+    *newOne = newState;
+    return retVal;
 }
 
 static GT_STATUS atuStateDevToApp
 (
-    IN  GT_QD_DEV	*dev,
-	IN  GT_BOOL		unicast,
-	IN  GT_U32		state,
-	OUT GT_U32		*newOne
+    IN  GT_QD_DEV    *dev,
+    IN  GT_BOOL        unicast,
+    IN  GT_U32        state,
+    OUT GT_U32        *newOne
 )
 {
-	GT_U32	newState;
-	GT_STATUS	retVal = GT_OK;
+    GT_U32    newState;
+    GT_STATUS    retVal = GT_OK;
 
-	if(unicast)
-	{
-		if (state == 0)
-		{
-			newState = (GT_U32)GT_UC_INVALID;
-		}
-		else if (state <= 7)
-		{
-			newState = (GT_U32)GT_UC_DYNAMIC;
-		}
-		else if ((state <= 0xE) && (!IS_IN_DEV_GROUP(dev,DEV_UC_7_DYNAMIC)))
-		{
-			newState = (GT_U32)GT_UC_DYNAMIC;
-		}
-		else
-		{
-			newState = state;
-		}
-	}
-	else
-	{
-		newState = state;
-	}
+    if(unicast)
+    {
+        if (state == 0)
+        {
+            newState = (GT_U32)GT_UC_INVALID;
+        }
+        else if (state <= 7)
+        {
+            newState = (GT_U32)GT_UC_DYNAMIC;
+        }
+        else if ((state <= 0xE) && (!IS_IN_DEV_GROUP(dev,DEV_UC_7_DYNAMIC)))
+        {
+            newState = (GT_U32)GT_UC_DYNAMIC;
+        }
+        else
+        {
+            newState = state;
+        }
+    }
+    else
+    {
+        newState = state;
+    }
 
-	*newOne = newState;
-	return retVal;
+    *newOne = newState;
+    return retVal;
 }
 
 
 static GT_STATUS atuGetStats
 (
-    IN  GT_QD_DEV	*dev,
-	IN  GT_ATU_STAT	*atuStat,
-	OUT GT_U32		*count
+    IN  GT_QD_DEV    *dev,
+    IN  GT_ATU_STAT    *atuStat,
+    OUT GT_U32        *count
 )
 {
     GT_U32          numOfEntries, dbNum;
     GT_ATU_ENTRY    entry;
-	GT_U16			data,mode,bin;
+    GT_U16            data,mode,bin;
     GT_STATUS       retVal;
 
     DBG_INFO(("atuGetStats Called.\n"));
 
-	switch (atuStat->op)
-	{
-		case GT_ATU_STATS_ALL:
-		case GT_ATU_STATS_NON_STATIC:
-			dbNum = 0;
-			break;
-		case GT_ATU_STATS_ALL_FID:
-		case GT_ATU_STATS_NON_STATIC_FID:
-			dbNum = atuStat->DBNum;
-			break;
-		default:
-			return GT_FALSE;
-	}
+    switch (atuStat->op)
+    {
+        case GT_ATU_STATS_ALL:
+        case GT_ATU_STATS_NON_STATIC:
+            dbNum = 0;
+            break;
+        case GT_ATU_STATS_ALL_FID:
+        case GT_ATU_STATS_NON_STATIC_FID:
+            dbNum = atuStat->DBNum;
+            break;
+        default:
+            return GT_FALSE;
+    }
 
     numOfEntries = 0;
-	mode = atuStat->op;
+    mode = atuStat->op;
 
-	for(bin=0; bin<4; bin++)
-	{	
-		data = (bin << 14) | (mode << 12);
+    for(bin=0; bin<4; bin++)
+    {    
+        data = (bin << 14) | (mode << 12);
 
-	    retVal = hwWriteGlobal2Reg(dev, QD_REG_ATU_STATS, data);
-       	if(retVal != GT_OK)
+        retVal = hwWriteGlobal2Reg(dev, QD_REG_ATU_STATS, data);
+           if(retVal != GT_OK)
         {
-   	        DBG_INFO(("Failed.\n"));
-       	    return retVal;
+               DBG_INFO(("Failed.\n"));
+               return retVal;
         }
-		
-		entry.DBNum = (GT_U16)dbNum;
-	    gtMemSet(entry.macAddr.arEther,0,sizeof(GT_ETHERADDR));
+        
+        entry.DBNum = (GT_U16)dbNum;
+        gtMemSet(entry.macAddr.arEther,0,sizeof(GT_ETHERADDR));
 
         retVal = atuOperationPerform(dev,GET_NEXT_ENTRY,NULL,&entry);
-       	if(retVal == GT_FAIL)
+           if(retVal == GT_FAIL)
         {
-   	        DBG_INFO(("Failed.\n"));
-       	    return retVal;
+               DBG_INFO(("Failed.\n"));
+               return retVal;
         }
 
-	    retVal = hwReadGlobal2Reg(dev, QD_REG_ATU_STATS, &data);
-       	if(retVal != GT_OK)
+        retVal = hwReadGlobal2Reg(dev, QD_REG_ATU_STATS, &data);
+           if(retVal != GT_OK)
         {
-   	        DBG_INFO(("Failed.\n"));
-       	    return retVal;
+               DBG_INFO(("Failed.\n"));
+               return retVal;
         }
-		
-		numOfEntries += (data & 0xFFF);
-	}
+        
+        numOfEntries += (data & 0xFFF);
+    }
 
-	*count = numOfEntries;
+    *count = numOfEntries;
 
-	return GT_OK;
+    return GT_OK;
 }
 

@@ -28,10 +28,10 @@
 *       This function converts logical port number to physical port number
 *
 * INPUTS:
-*		portVec - physical port list in vector
-*		port    - logical port number
+*        portVec - physical port list in vector
+*        port    - logical port number
 * OUTPUTS:
-*		None.
+*        None.
 * RETURNS:
 *       physical port number
 *
@@ -41,29 +41,29 @@
 GT_U8 lport2port
 (
     IN GT_U16    portVec,
-	IN GT_LPORT	 port
+    IN GT_LPORT     port
 )
 {
-    GT_U8	hwPort, tmpPort;
+    GT_U8    hwPort, tmpPort;
 
-	tmpPort = hwPort = 0;
+    tmpPort = hwPort = 0;
 
-	while (portVec)
-	{
-		if(portVec & 0x1)
-		{
-			if((GT_LPORT)tmpPort == port)
-				break;
-			tmpPort++;
-		}
-		hwPort++;
-		portVec >>= 1;
-	}
+    while (portVec)
+    {
+        if(portVec & 0x1)
+        {
+            if((GT_LPORT)tmpPort == port)
+                break;
+            tmpPort++;
+        }
+        hwPort++;
+        portVec >>= 1;
+    }
 
-	if (!portVec)
-		hwPort = GT_INVALID_PORT;
+    if (!portVec)
+        hwPort = GT_INVALID_PORT;
 
-	return hwPort;
+    return hwPort;
 }
 
 /*******************************************************************************
@@ -73,10 +73,10 @@ GT_U8 lport2port
 *       This function converts physical port number to logical port number
 *
 * INPUTS:
-*		portVec - physical port list in vector
-*		port    - logical port number
+*        portVec - physical port list in vector
+*        port    - logical port number
 * OUTPUTS:
-*		None.
+*        None.
 * RETURNS:
 *       physical port number
 *
@@ -86,29 +86,29 @@ GT_U8 lport2port
 GT_LPORT port2lport
 (
     IN GT_U16    portVec,
-	IN GT_U8	 hwPort
+    IN GT_U8     hwPort
 )
 {
-    GT_U8		tmpPort,port;
+    GT_U8        tmpPort,port;
 
-	port = 0;
-	
-	if (hwPort == GT_INVALID_PORT)
-		return (GT_LPORT)hwPort;
+    port = 0;
+    
+    if (hwPort == GT_INVALID_PORT)
+        return (GT_LPORT)hwPort;
 
-	if (!GT_IS_PORT_SET(portVec, hwPort))
-		return (GT_LPORT)GT_INVALID_PORT;
+    if (!GT_IS_PORT_SET(portVec, hwPort))
+        return (GT_LPORT)GT_INVALID_PORT;
 
-	for (tmpPort = 0; tmpPort <= hwPort; tmpPort++)
-	{
-		if(portVec & 0x1)
-		{
-			port++;
-		}
-		portVec >>= 1;
-	}
+    for (tmpPort = 0; tmpPort <= hwPort; tmpPort++)
+    {
+        if(portVec & 0x1)
+        {
+            port++;
+        }
+        portVec >>= 1;
+    }
 
-	return (GT_LPORT)port-1;
+    return (GT_LPORT)port-1;
 }
 
 /*******************************************************************************
@@ -118,10 +118,10 @@ GT_LPORT port2lport
 *       This function converts logical port vector to physical port vector
 *
 * INPUTS:
-*		portVec - physical port list in vector
-*		lVec 	- logical port vector
+*        portVec - physical port list in vector
+*        lVec     - logical port vector
 * OUTPUTS:
-*		None.
+*        None.
 * RETURNS:
 *       physical port vector
 *
@@ -131,33 +131,33 @@ GT_LPORT port2lport
 GT_U32 lportvec2portvec
 (
     IN GT_U16    portVec,
-	IN GT_U32	 lVec
+    IN GT_U32     lVec
 )
 {
-    GT_U32	pVec, vec;
+    GT_U32    pVec, vec;
 
-	pVec = 0;
-	vec = 1;
+    pVec = 0;
+    vec = 1;
 
-	while (portVec)
-	{
-		if(portVec & 0x1)
-		{
-			if(lVec & 0x1)
-			{
-				pVec |= vec;
-			}
-			lVec >>= 1;
-		}
+    while (portVec)
+    {
+        if(portVec & 0x1)
+        {
+            if(lVec & 0x1)
+            {
+                pVec |= vec;
+            }
+            lVec >>= 1;
+        }
 
-		vec <<= 1;
-		portVec >>= 1;
-	}
+        vec <<= 1;
+        portVec >>= 1;
+    }
 
-	if(lVec)
-		return GT_INVALID_PORT_VEC;
+    if(lVec)
+        return GT_INVALID_PORT_VEC;
 
-	return pVec;
+    return pVec;
 }
 
 /*******************************************************************************
@@ -167,10 +167,10 @@ GT_U32 lportvec2portvec
 *       This function converts physical port vector to logical port vector
 *
 * INPUTS:
-*		portVec - physical port list in vector
-*		pVec 	- physical port vector
+*        portVec - physical port list in vector
+*        pVec     - physical port vector
 * OUTPUTS:
-*		None.
+*        None.
 * RETURNS:
 *       logical port vector
 *
@@ -180,30 +180,30 @@ GT_U32 lportvec2portvec
 GT_U32 portvec2lportvec
 (
     IN GT_U16    portVec,
-	IN GT_U32	 pVec
+    IN GT_U32     pVec
 )
 {
-    GT_U32	lVec, vec;
+    GT_U32    lVec, vec;
 
-	lVec = 0;
-	vec = 1;
+    lVec = 0;
+    vec = 1;
 
-	while (portVec)
-	{
-		if(portVec & 0x1)
-		{
-			if(pVec & 0x1)
-			{
-				lVec |= vec;
-			}
-			vec <<= 1;
-		}
+    while (portVec)
+    {
+        if(portVec & 0x1)
+        {
+            if(pVec & 0x1)
+            {
+                lVec |= vec;
+            }
+            vec <<= 1;
+        }
 
-		pVec >>= 1;
-		portVec >>= 1;
-	}
+        pVec >>= 1;
+        portVec >>= 1;
+    }
 
-	return lVec;
+    return lVec;
 }
 
 /*******************************************************************************
@@ -213,10 +213,10 @@ GT_U32 portvec2lportvec
 *       This function converts logical port number to physical phy number.
 *
 * INPUTS:
-*		portVec - physical port list in vector
-*		port    - logical port number
+*        portVec - physical port list in vector
+*        port    - logical port number
 * OUTPUTS:
-*		None.
+*        None.
 * RETURNS:
 *       physical port number
 *
@@ -226,22 +226,22 @@ GT_U32 portvec2lportvec
 GT_U8 lport2phy
 (
     IN GT_QD_DEV    *dev,
-	IN GT_LPORT	 port
+    IN GT_LPORT     port
 )
 {
-    GT_U8	hwPort;
+    GT_U8    hwPort;
 
-	/* check if it's for SERDES */
-	if(dev->validSerdesVec & (1<<port))
-	{
-		hwPort = (GT_U8)port;			
-	}
-	else
-	{
-		hwPort = GT_LPORT_2_PORT(port);
-	}
+    /* check if it's for SERDES */
+    if(dev->validSerdesVec & (1<<port))
+    {
+        hwPort = (GT_U8)port;            
+    }
+    else
+    {
+        hwPort = GT_LPORT_2_PORT(port);
+    }
 
-	return hwPort;
+    return hwPort;
 }
 
 
@@ -252,9 +252,9 @@ GT_U8 lport2phy
 *       This function initializes the driver level of the quarterDeck software.
 *
 * INPUTS:
-*		None.
+*        None.
 * OUTPUTS:
-*		None.
+*        None.
 * RETURNS:
 *       GT_OK               - on success, or
 *       GT_OUT_OF_CPU_MEM   - if failed to allocate CPU memory,
@@ -277,24 +277,24 @@ GT_STATUS driverConfig
 #endif    
     GT_BOOL         highSmiDevAddr;
 
-	if(dev->accessMode == SMI_AUTO_SCAN_MODE)
-	{	
-	    /* Initialize the MII / SMI interface, search for the device */
-    	if((deviceId = miiSmiIfInit(dev,&highSmiDevAddr)) == 0)
-	    {
-    	    return GT_FAIL;
-	    }
+    if(dev->accessMode == SMI_AUTO_SCAN_MODE)
+    {    
+        /* Initialize the MII / SMI interface, search for the device */
+        if((deviceId = miiSmiIfInit(dev,&highSmiDevAddr)) == 0)
+        {
+            return GT_FAIL;
+        }
 
-		dev->baseRegAddr = (highSmiDevAddr)?0x10:0;
-	}
-	else
-	{
-    	if((deviceId = miiSmiManualIfInit(dev,(GT_U32)dev->baseRegAddr)) == 0)
-	    {
-    	    return GT_FAIL;
-	    }
-	}
-	
+        dev->baseRegAddr = (highSmiDevAddr)?0x10:0;
+    }
+    else
+    {
+        if((deviceId = miiSmiManualIfInit(dev,(GT_U32)dev->baseRegAddr)) == 0)
+        {
+            return GT_FAIL;
+        }
+    }
+    
     /* Init the device's config struct.             */
     dev->deviceId       = deviceId >> 4;
     dev->revision       = (GT_U8)deviceId & 0xF; 
@@ -348,57 +348,57 @@ GT_STATUS driverConfig
 *******************************************************************************/
 GT_STATUS driverEnable
 (
-	IN GT_QD_DEV    *dev
+    IN GT_QD_DEV    *dev
 )
 {
-	GT_UNUSED_PARAM(dev);
+    GT_UNUSED_PARAM(dev);
     return GT_OK;
 }
 
 
 GT_STATUS driverGetSerdesPort(GT_QD_DEV *dev, GT_U8* hwPort)
 {
-	switch(dev->deviceId)
-	{
-		case GT_88E6122:
-			if ((*hwPort<3) || (*hwPort>6))
-			{
-				*hwPort = GT_INVALID_PORT;
-			}
-			else
-			{
-				*hwPort += 9;
-			}
-			break;
-		case GT_88E6131:
-		case GT_88E6108:
-			if ((*hwPort<4) || (*hwPort>7))
-			{
-				*hwPort = GT_INVALID_PORT;
-			}
-			else
-			{
-				*hwPort += 8;
-			}
-			break;
-		case GT_88E6123:
-		case GT_88E6140:
-		case GT_88E6161:
-		case GT_88E6165:
-			if ((*hwPort<4) || (*hwPort>5))
-			{
-				*hwPort = GT_INVALID_PORT;
-			}
-			else
-			{
-				*hwPort += 8;
-			}
-			break;
-		default:
-			*hwPort = GT_INVALID_PORT;
-			break;
-	}
-	return GT_OK;
+    switch(dev->deviceId)
+    {
+        case GT_88E6122:
+            if ((*hwPort<3) || (*hwPort>6))
+            {
+                *hwPort = GT_INVALID_PORT;
+            }
+            else
+            {
+                *hwPort += 9;
+            }
+            break;
+        case GT_88E6131:
+        case GT_88E6108:
+            if ((*hwPort<4) || (*hwPort>7))
+            {
+                *hwPort = GT_INVALID_PORT;
+            }
+            else
+            {
+                *hwPort += 8;
+            }
+            break;
+        case GT_88E6123:
+        case GT_88E6140:
+        case GT_88E6161:
+        case GT_88E6165:
+            if ((*hwPort<4) || (*hwPort>5))
+            {
+                *hwPort = GT_INVALID_PORT;
+            }
+            else
+            {
+                *hwPort += 8;
+            }
+            break;
+        default:
+            *hwPort = GT_INVALID_PORT;
+            break;
+    }
+    return GT_OK;
 }
 
 /*******************************************************************************
@@ -408,13 +408,13 @@ GT_STATUS driverGetSerdesPort(GT_QD_DEV *dev, GT_U8* hwPort)
 *       This function get Phy ID from Phy register 2 and 3.
 *
 * INPUTS:
-*       hwPort	- port number where the Phy is connected
+*       hwPort    - port number where the Phy is connected
 *
 * OUTPUTS:
-*       phyId	- Phy ID
+*       phyId    - Phy ID
 *
 * RETURNS:
-*       GT_OK 	- if found Marvell Phy,
+*       GT_OK     - if found Marvell Phy,
 *       GT_FAIL - othrwise.
 *
 * COMMENTS:
@@ -423,31 +423,31 @@ GT_STATUS driverGetSerdesPort(GT_QD_DEV *dev, GT_U8* hwPort)
 *******************************************************************************/
 static GT_STATUS driverFindPhyID
 (
-	IN  GT_QD_DEV    *dev,
-	IN	GT_U8		 hwPort,
-	OUT	GT_U32		 *phyID
+    IN  GT_QD_DEV    *dev,
+    IN    GT_U8         hwPort,
+    OUT    GT_U32         *phyID
 )
 {
-	GT_U16 ouiMsb, ouiLsb;
-	GT_STATUS status;
-	
-	if((status= hwReadPhyReg(dev,hwPort,2,&ouiMsb)) != GT_OK)
-	{
-	    DBG_INFO(("Not able to read Phy Register.\n"));
-		return status;
-	}
+    GT_U16 ouiMsb, ouiLsb;
+    GT_STATUS status;
+    
+    if((status= hwReadPhyReg(dev,hwPort,2,&ouiMsb)) != GT_OK)
+    {
+        DBG_INFO(("Not able to read Phy Register.\n"));
+        return status;
+    }
 
-	if((status= hwReadPhyReg(dev,hwPort,3,&ouiLsb)) != GT_OK)
-	{
-	    DBG_INFO(("Not able to read Phy Register.\n"));
-		return status;
-	}
+    if((status= hwReadPhyReg(dev,hwPort,3,&ouiLsb)) != GT_OK)
+    {
+        DBG_INFO(("Not able to read Phy Register.\n"));
+        return status;
+    }
 
-	if(ouiMsb != MARVELL_OUI_MSb)
-		return GT_FAIL;
+    if(ouiMsb != MARVELL_OUI_MSb)
+        return GT_FAIL;
 
-	*phyID = (GT_U32)ouiLsb;
-					
+    *phyID = (GT_U32)ouiLsb;
+                    
     return GT_OK;
 }
 
@@ -459,14 +459,14 @@ static GT_STATUS driverFindPhyID
 *       This function verifies Marvell Phy.
 *
 * INPUTS:
-*       hwPort	- port number where the Phy is connected
+*       hwPort    - port number where the Phy is connected
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
 *       1 - if Marvell Phy exists
-*		0 - otherwise
+*        0 - otherwise
 *
 * COMMENTS:
 *       None.
@@ -474,22 +474,22 @@ static GT_STATUS driverFindPhyID
 *******************************************************************************/
 GT_U32 driverIsPhyAttached
 (
-	IN  GT_QD_DEV    *dev,
-	IN	GT_U8		 hwPort
+    IN  GT_QD_DEV    *dev,
+    IN    GT_U8         hwPort
 )
 {
-	GT_U32		 phyId;
+    GT_U32         phyId;
 
-	if(hwPort > dev->maxPhyNum)
-		return 0;
+    if(hwPort > dev->maxPhyNum)
+        return 0;
 
-	if(driverFindPhyID(dev,hwPort,&phyId) != GT_OK)
-	{
-	    DBG_INFO(("cannot find Marvell Phy.\n"));
-		return 0;
-	}
+    if(driverFindPhyID(dev,hwPort,&phyId) != GT_OK)
+    {
+        DBG_INFO(("cannot find Marvell Phy.\n"));
+        return 0;
+    }
 
-	return 1;
+    return 1;
 }
 
 /*******************************************************************************
@@ -499,14 +499,14 @@ GT_U32 driverIsPhyAttached
 *       This function reads and returns Phy ID (register 3) of Marvell Phy.
 *
 * INPUTS:
-*       hwPort	- port number where the Phy is connected
+*       hwPort    - port number where the Phy is connected
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
 *       phyId - if Marvell Phy exists
-*		GT_INVALID_PORT	  - otherwise
+*        GT_INVALID_PORT      - otherwise
 *
 * COMMENTS:
 *       None.
@@ -514,22 +514,22 @@ GT_U32 driverIsPhyAttached
 *******************************************************************************/
 GT_U32 driverGetPhyID
 (
-	IN  GT_QD_DEV    *dev,
-	IN	GT_U8		 hwPort
+    IN  GT_QD_DEV    *dev,
+    IN    GT_U8         hwPort
 )
 {
-	GT_U32		 phyId;
+    GT_U32         phyId;
 
-	if(hwPort > dev->maxPhyNum)
-		return GT_INVALID_PHY;
+    if(hwPort > dev->maxPhyNum)
+        return GT_INVALID_PHY;
 
-	if(driverFindPhyID(dev,hwPort,&phyId) != GT_OK)
-	{
-	    DBG_INFO(("cannot find Marvell Phy.\n"));
-		return GT_INVALID_PHY;
-	}
+    if(driverFindPhyID(dev,hwPort,&phyId) != GT_OK)
+    {
+        DBG_INFO(("cannot find Marvell Phy.\n"));
+        return GT_INVALID_PHY;
+    }
 
-	return phyId;
+    return phyId;
 }
 
 /*******************************************************************************
@@ -539,15 +539,15 @@ GT_U32 driverGetPhyID
 *       This function stores page register and Auto Reg Selection mode if needed.
 *
 * INPUTS:
-*       hwPort	 - port number where the Phy is connected
-*		pageType - type of the page registers
+*       hwPort     - port number where the Phy is connected
+*        pageType - type of the page registers
 *
 * OUTPUTS:
-*       autoOn	- GT_TRUE if Auto Reg Selection enabled, GT_FALSE otherwise.
-*		pageReg - Page Register Data
+*       autoOn    - GT_TRUE if Auto Reg Selection enabled, GT_FALSE otherwise.
+*        pageReg - Page Register Data
 *
 * RETURNS:
-*       GT_OK 	- if success
+*       GT_OK     - if success
 *       GT_FAIL - othrwise.
 *
 * COMMENTS:
@@ -556,73 +556,73 @@ GT_U32 driverGetPhyID
 *******************************************************************************/
 GT_STATUS driverPagedAccessStart
 (
-	IN  GT_QD_DEV    *dev,
-	IN	GT_U8		 hwPort,
-	IN	GT_U8		 pageType,
-	OUT	GT_BOOL		 *autoOn,
-	OUT	GT_U16		 *pageReg
+    IN  GT_QD_DEV    *dev,
+    IN    GT_U8         hwPort,
+    IN    GT_U8         pageType,
+    OUT    GT_BOOL         *autoOn,
+    OUT    GT_U16         *pageReg
 )
 {
-	GT_U16 data;
-	GT_STATUS status;
+    GT_U16 data;
+    GT_STATUS status;
 
-	switch(pageType)
-	{
-		case GT_PHY_PAGE_WRITE_BACK:
-			break;
-		case GT_PHY_PAGE_DIS_AUTO1:	/* 88E1111 Type */
-			if((status= hwGetPhyRegField(dev,hwPort,27,9,1,&data)) != GT_OK)
-			{
-	    		DBG_INFO(("Not able to read Phy Register.\n"));
-				return status;
-			}
+    switch(pageType)
+    {
+        case GT_PHY_PAGE_WRITE_BACK:
+            break;
+        case GT_PHY_PAGE_DIS_AUTO1:    /* 88E1111 Type */
+            if((status= hwGetPhyRegField(dev,hwPort,27,9,1,&data)) != GT_OK)
+            {
+                DBG_INFO(("Not able to read Phy Register.\n"));
+                return status;
+            }
 
-			data ^= 0x1;	/* toggle bit 0 */
-		    BIT_2_BOOL(data, *autoOn);
+            data ^= 0x1;    /* toggle bit 0 */
+            BIT_2_BOOL(data, *autoOn);
 
-			if (*autoOn) /* Auto On */
-			{
-				if((status= hwSetPhyRegField(dev,hwPort,27,9,1,data)) != GT_OK)
-				{
-	    			DBG_INFO(("Not able to write Phy Register.\n"));
-					return status;
-				}
-			}
+            if (*autoOn) /* Auto On */
+            {
+                if((status= hwSetPhyRegField(dev,hwPort,27,9,1,data)) != GT_OK)
+                {
+                    DBG_INFO(("Not able to write Phy Register.\n"));
+                    return status;
+                }
+            }
 
-			break;	
-		case GT_PHY_PAGE_DIS_AUTO2:	/* 88E1112 Type */
-			if((status= hwGetPhyRegField(dev,hwPort,22,15,1,&data)) != GT_OK)
-			{
-	    		DBG_INFO(("Not able to read Phy Register.\n"));
-				return status;
-			}
+            break;    
+        case GT_PHY_PAGE_DIS_AUTO2:    /* 88E1112 Type */
+            if((status= hwGetPhyRegField(dev,hwPort,22,15,1,&data)) != GT_OK)
+            {
+                DBG_INFO(("Not able to read Phy Register.\n"));
+                return status;
+            }
 
-		    BIT_2_BOOL(data, *autoOn);
-			data ^= 0x1;	/* toggle bit 0 */
+            BIT_2_BOOL(data, *autoOn);
+            data ^= 0x1;    /* toggle bit 0 */
 
-			if (*autoOn) /* Auto On */
-			{
-				if((status= hwSetPhyRegField(dev,hwPort,22,15,1,data)) != GT_OK)
-				{
-	    			DBG_INFO(("Not able to write Phy Register.\n"));
-					return status;
-				}
-			}
+            if (*autoOn) /* Auto On */
+            {
+                if((status= hwSetPhyRegField(dev,hwPort,22,15,1,data)) != GT_OK)
+                {
+                    DBG_INFO(("Not able to write Phy Register.\n"));
+                    return status;
+                }
+            }
 
-			break;	
+            break;    
 
-		case GT_PHY_NO_PAGE:
-		default:
-			/* Nothing to do */
-			return GT_OK;
-	}
+        case GT_PHY_NO_PAGE:
+        default:
+            /* Nothing to do */
+            return GT_OK;
+    }
 
 
-	if((status= hwGetPhyRegField(dev,hwPort,22,0,8,pageReg)) != GT_OK)
-	{
-	    DBG_INFO(("Not able to read Phy Register.\n"));
-		return status;
-	}
+    if((status= hwGetPhyRegField(dev,hwPort,22,0,8,pageReg)) != GT_OK)
+    {
+        DBG_INFO(("Not able to read Phy Register.\n"));
+        return status;
+    }
 
     return GT_OK;
 }
@@ -635,16 +635,16 @@ GT_STATUS driverPagedAccessStart
 *       This function restores page register and Auto Reg Selection mode if needed.
 *
 * INPUTS:
-*       hwPort	 - port number where the Phy is connected
-*		pageType - type of the page registers
-*       autoOn	 - GT_TRUE if Auto Reg Selection enabled, GT_FALSE otherwise.
-*		pageReg  - Page Register Data
+*       hwPort     - port number where the Phy is connected
+*        pageType - type of the page registers
+*       autoOn     - GT_TRUE if Auto Reg Selection enabled, GT_FALSE otherwise.
+*        pageReg  - Page Register Data
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*       GT_OK 	- if success
+*       GT_OK     - if success
 *       GT_FAIL - othrwise.
 *
 * COMMENTS:
@@ -653,57 +653,57 @@ GT_STATUS driverPagedAccessStart
 *******************************************************************************/
 GT_STATUS driverPagedAccessStop
 (
-	IN  GT_QD_DEV    *dev,
-	IN	GT_U8		 hwPort,
-	IN	GT_U8		 pageType,
-	IN	GT_BOOL		 autoOn,
-	IN	GT_U16		 pageReg
+    IN  GT_QD_DEV    *dev,
+    IN    GT_U8         hwPort,
+    IN    GT_U8         pageType,
+    IN    GT_BOOL         autoOn,
+    IN    GT_U16         pageReg
 )
 {
-	GT_U16 data;
-	GT_STATUS status;
+    GT_U16 data;
+    GT_STATUS status;
 
-	switch(pageType)
-	{
-		case GT_PHY_PAGE_WRITE_BACK:
-			break;
-		case GT_PHY_PAGE_DIS_AUTO1:	/* 88E1111 Type */
-			if (autoOn) /* Auto On */
-			{
-				data = 0;
-				if((status= hwSetPhyRegField(dev,hwPort,27,9,1,data)) != GT_OK)
-				{
-	    			DBG_INFO(("Not able to write Phy Register.\n"));
-					return status;
-				}
-			}
+    switch(pageType)
+    {
+        case GT_PHY_PAGE_WRITE_BACK:
+            break;
+        case GT_PHY_PAGE_DIS_AUTO1:    /* 88E1111 Type */
+            if (autoOn) /* Auto On */
+            {
+                data = 0;
+                if((status= hwSetPhyRegField(dev,hwPort,27,9,1,data)) != GT_OK)
+                {
+                    DBG_INFO(("Not able to write Phy Register.\n"));
+                    return status;
+                }
+            }
 
-			break;	
-		case GT_PHY_PAGE_DIS_AUTO2:	/* 88E1112 Type */
-			if (autoOn) /* Auto On */
-			{
-				data = 1;
-				if((status= hwSetPhyRegField(dev,hwPort,22,15,1,data)) != GT_OK)
-				{
-	    			DBG_INFO(("Not able to write Phy Register.\n"));
-					return status;
-				}
-			}
+            break;    
+        case GT_PHY_PAGE_DIS_AUTO2:    /* 88E1112 Type */
+            if (autoOn) /* Auto On */
+            {
+                data = 1;
+                if((status= hwSetPhyRegField(dev,hwPort,22,15,1,data)) != GT_OK)
+                {
+                    DBG_INFO(("Not able to write Phy Register.\n"));
+                    return status;
+                }
+            }
 
-			break;	
+            break;    
 
-		case GT_PHY_NO_PAGE:
-		default:
-			/* Nothing to do */
-			return GT_OK;
-	}
+        case GT_PHY_NO_PAGE:
+        default:
+            /* Nothing to do */
+            return GT_OK;
+    }
 
 
-	if((status= hwSetPhyRegField(dev,hwPort,22,0,8,pageReg)) != GT_OK)
-	{
-	    DBG_INFO(("Not able to write Phy Register.\n"));
-		return status;
-	}
+    if((status= hwSetPhyRegField(dev,hwPort,22,0,8,pageReg)) != GT_OK)
+    {
+        DBG_INFO(("Not able to write Phy Register.\n"));
+        return status;
+    }
 
     return GT_OK;
 }
@@ -714,16 +714,16 @@ GT_STATUS driverPagedAccessStop
 *
 * DESCRIPTION:
 *       This function gets information of Phy connected to the given port.
-*		PhyInfo structure should have valid Phy ID.
+*        PhyInfo structure should have valid Phy ID.
 *
 * INPUTS:
-*       hwPort	- port number where the Phy is connected
+*       hwPort    - port number where the Phy is connected
 *
 * OUTPUTS:
-*       phyId	- Phy ID
+*       phyId    - Phy ID
 *
 * RETURNS:
-*       GT_OK 	- if found Marvell Phy,
+*       GT_OK     - if found Marvell Phy,
 *       GT_FAIL - othrwise.
 *
 * COMMENTS:
@@ -732,247 +732,247 @@ GT_STATUS driverPagedAccessStop
 *******************************************************************************/
 GT_STATUS driverFindPhyInformation
 (
-	IN  GT_QD_DEV    *dev,
-	IN	GT_U8		 hwPort,
-	OUT	GT_PHY_INFO	 *phyInfo
+    IN  GT_QD_DEV    *dev,
+    IN    GT_U8         hwPort,
+    OUT    GT_PHY_INFO     *phyInfo
 )
 {
-	GT_U32 phyId;
-	GT_U16 data;
+    GT_U32 phyId;
+    GT_U16 data;
 
-	phyId = phyInfo->phyId;
+    phyId = phyInfo->phyId;
 
-	switch (phyId & PHY_MODEL_MASK)
-	{
-		case DEV_E3082:
-				phyInfo->anyPage = 0xFFFFFFFF;
-				phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
-								GT_PHY_MAC_IF_LOOP|GT_PHY_EXTERNAL_LOOP|
-								GT_PHY_COPPER;
-				phyInfo->vctType = GT_PHY_VCT_TYPE1;
-				phyInfo->exStatusType = 0;
-				if ((phyId & PHY_REV_MASK) < 9)
-					phyInfo->dteType = GT_PHY_DTE_TYPE1;	/* need workaround */
-				else
-					phyInfo->dteType = GT_PHY_DTE_TYPE5;
+    switch (phyId & PHY_MODEL_MASK)
+    {
+        case DEV_E3082:
+        case DEV_MELODY:
+                phyInfo->anyPage = 0xFFFFFFFF;
+                phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
+                                GT_PHY_MAC_IF_LOOP|GT_PHY_EXTERNAL_LOOP|
+                                GT_PHY_COPPER;
+                phyInfo->vctType = GT_PHY_VCT_TYPE1;
+                phyInfo->exStatusType = 0;
+                if ((phyId & PHY_REV_MASK) < 9)
+                    phyInfo->dteType = GT_PHY_DTE_TYPE1;    /* need workaround */
+                else
+                    phyInfo->dteType = GT_PHY_DTE_TYPE5;
 
-				phyInfo->pktGenType = 0;
-				phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
-				phyInfo->lineLoopType = 0;
-				phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
-				phyInfo->pageType = GT_PHY_NO_PAGE;
-				break;
+                phyInfo->pktGenType = 0;
+                phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
+                phyInfo->lineLoopType = 0;
+                phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
+                phyInfo->pageType = GT_PHY_NO_PAGE;
+                break;
 
-	    case DEV_E104X:
-				phyInfo->anyPage = 0xFFFFFFFF;
-				phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_GIGABIT|
-								GT_PHY_MAC_IF_LOOP|GT_PHY_EXTERNAL_LOOP;
+        case DEV_E104X:
+                phyInfo->anyPage = 0xFFFFFFFF;
+                phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_GIGABIT|
+                                GT_PHY_MAC_IF_LOOP|GT_PHY_EXTERNAL_LOOP;
 
-				phyInfo->dteType = 0;
-				if ((phyId & PHY_REV_MASK) < 3)
-					phyInfo->flag &= ~GT_PHY_VCT_CAPABLE; /* VCT is not supported */
-				else if ((phyId & PHY_REV_MASK) == 3)
-					phyInfo->vctType = GT_PHY_VCT_TYPE3;	/* Need workaround */
-				else 
-					phyInfo->vctType = GT_PHY_VCT_TYPE2;
-				phyInfo->exStatusType = 0;
+                phyInfo->dteType = 0;
+                if ((phyId & PHY_REV_MASK) < 3)
+                    phyInfo->flag &= ~GT_PHY_VCT_CAPABLE; /* VCT is not supported */
+                else if ((phyId & PHY_REV_MASK) == 3)
+                    phyInfo->vctType = GT_PHY_VCT_TYPE3;    /* Need workaround */
+                else 
+                    phyInfo->vctType = GT_PHY_VCT_TYPE2;
+                phyInfo->exStatusType = 0;
 
-				phyInfo->pktGenType = 0;
-				phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
-				phyInfo->lineLoopType = 0;
-				phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
-				phyInfo->pageType = GT_PHY_NO_PAGE;
+                phyInfo->pktGenType = 0;
+                phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
+                phyInfo->lineLoopType = 0;
+                phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
+                phyInfo->pageType = GT_PHY_NO_PAGE;
 
-				break;
+                break;
 
-		case DEV_E1111:
-				phyInfo->anyPage = 0xFFF1FE0C;
-				phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
-								GT_PHY_EX_CABLE_STATUS|
-								GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
-								GT_PHY_GIGABIT|GT_PHY_RESTRICTED_PAGE;
+        case DEV_E1111:
+                phyInfo->anyPage = 0xFFF1FE0C;
+                phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
+                                GT_PHY_EX_CABLE_STATUS|
+                                GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
+                                GT_PHY_GIGABIT|GT_PHY_RESTRICTED_PAGE;
 
-				phyInfo->vctType = GT_PHY_VCT_TYPE2;
-				phyInfo->exStatusType = GT_PHY_EX_STATUS_TYPE1;
-				if ((phyId & PHY_REV_MASK) < 2)
-					phyInfo->dteType = GT_PHY_DTE_TYPE3;	/* Need workaround */
-				else
-					phyInfo->dteType = GT_PHY_DTE_TYPE2;
+                phyInfo->vctType = GT_PHY_VCT_TYPE2;
+                phyInfo->exStatusType = GT_PHY_EX_STATUS_TYPE1;
+                if ((phyId & PHY_REV_MASK) < 2)
+                    phyInfo->dteType = GT_PHY_DTE_TYPE3;    /* Need workaround */
+                else
+                    phyInfo->dteType = GT_PHY_DTE_TYPE2;
 
-				phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE1;
-				phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
-				phyInfo->lineLoopType = 0;
-				phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
-				phyInfo->pageType = GT_PHY_PAGE_DIS_AUTO1;
-				break;
+                phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE1;
+                phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
+                phyInfo->lineLoopType = 0;
+                phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
+                phyInfo->pageType = GT_PHY_PAGE_DIS_AUTO1;
+                break;
 
-		case DEV_E1112:
-				phyInfo->anyPage = 0x1BC0780C;
-				phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
-								GT_PHY_EX_CABLE_STATUS|
-								GT_PHY_GIGABIT|GT_PHY_RESTRICTED_PAGE|
-								GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
-								GT_PHY_PKT_GENERATOR;
+        case DEV_E1112:
+                phyInfo->anyPage = 0x1BC0780C;
+                phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
+                                GT_PHY_EX_CABLE_STATUS|
+                                GT_PHY_GIGABIT|GT_PHY_RESTRICTED_PAGE|
+                                GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
+                                GT_PHY_PKT_GENERATOR;
 
-				phyInfo->vctType = GT_PHY_VCT_TYPE4;
-				phyInfo->exStatusType = GT_PHY_EX_STATUS_TYPE2;
-				phyInfo->dteType = GT_PHY_DTE_TYPE4;
+                phyInfo->vctType = GT_PHY_VCT_TYPE4;
+                phyInfo->exStatusType = GT_PHY_EX_STATUS_TYPE2;
+                phyInfo->dteType = GT_PHY_DTE_TYPE4;
 
-				phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE2;
-				phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
-				phyInfo->lineLoopType = 0;
-				phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
-				phyInfo->pageType = GT_PHY_PAGE_DIS_AUTO2;
-				break;
+                phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE2;
+                phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
+                phyInfo->lineLoopType = 0;
+                phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
+                phyInfo->pageType = GT_PHY_PAGE_DIS_AUTO2;
+                break;
 
-		case DEV_E114X:
-				phyInfo->anyPage = 0x2FF1FE0C;
-				phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
-								GT_PHY_EX_CABLE_STATUS|
-								GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
-								GT_PHY_GIGABIT|GT_PHY_RESTRICTED_PAGE;
+        case DEV_E114X:
+                phyInfo->anyPage = 0x2FF1FE0C;
+                phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
+                                GT_PHY_EX_CABLE_STATUS|
+                                GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
+                                GT_PHY_GIGABIT|GT_PHY_RESTRICTED_PAGE;
 
-				phyInfo->vctType = GT_PHY_VCT_TYPE2;
-				phyInfo->exStatusType = GT_PHY_EX_STATUS_TYPE1;
-				if ((phyId & PHY_REV_MASK) < 4)
-					phyInfo->dteType = GT_PHY_DTE_TYPE3;	/* Need workaround */
-				else
-					phyInfo->dteType = GT_PHY_DTE_TYPE2;
+                phyInfo->vctType = GT_PHY_VCT_TYPE2;
+                phyInfo->exStatusType = GT_PHY_EX_STATUS_TYPE1;
+                if ((phyId & PHY_REV_MASK) < 4)
+                    phyInfo->dteType = GT_PHY_DTE_TYPE3;    /* Need workaround */
+                else
+                    phyInfo->dteType = GT_PHY_DTE_TYPE2;
 
-				phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE1;
-				phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
-				phyInfo->lineLoopType = 0;
-				phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
-				phyInfo->pageType = GT_PHY_PAGE_DIS_AUTO1;
+                phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE1;
+                phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
+                phyInfo->lineLoopType = 0;
+                phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
+                phyInfo->pageType = GT_PHY_PAGE_DIS_AUTO1;
 
-				break;
+                break;
 
-		case DEV_E1149:
-				phyInfo->anyPage = 0x2040FFFF;
-				phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
-								GT_PHY_EX_CABLE_STATUS|
-								GT_PHY_GIGABIT|
-								GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
-								GT_PHY_PKT_GENERATOR;
-				phyInfo->vctType = GT_PHY_VCT_TYPE4;
-				phyInfo->exStatusType = GT_PHY_EX_STATUS_TYPE3;
-				phyInfo->dteType = GT_PHY_DTE_TYPE4;
-				phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE2;
-				phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
-				phyInfo->lineLoopType = 0;
-				phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
-				phyInfo->pageType = GT_PHY_PAGE_WRITE_BACK;
-				break;
+        case DEV_E1149:
+                phyInfo->anyPage = 0x2040FFFF;
+                phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
+                                GT_PHY_EX_CABLE_STATUS|
+                                GT_PHY_GIGABIT|
+                                GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
+                                GT_PHY_PKT_GENERATOR;
+                phyInfo->vctType = GT_PHY_VCT_TYPE4;
+                phyInfo->exStatusType = GT_PHY_EX_STATUS_TYPE3;
+                phyInfo->dteType = GT_PHY_DTE_TYPE4;
+                phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE2;
+                phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
+                phyInfo->lineLoopType = 0;
+                phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
+                phyInfo->pageType = GT_PHY_PAGE_WRITE_BACK;
+                break;
 
-		case DEV_G15LV:
-				if (IS_IN_DEV_GROUP(dev,DEV_88E6108))
-				{
-					phyInfo->anyPage = 0x2040FFFF;
-					phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
-									GT_PHY_EX_CABLE_STATUS|
-									GT_PHY_GIGABIT|
-									GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
-									GT_PHY_PKT_GENERATOR;
-					phyInfo->vctType = GT_PHY_VCT_TYPE4;
-					phyInfo->exStatusType = GT_PHY_EX_STATUS_TYPE3;
-					phyInfo->dteType = GT_PHY_DTE_TYPE4;
-					phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE2;
-					phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
-					phyInfo->lineLoopType = 0;
-					phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
-					phyInfo->pageType = GT_PHY_PAGE_WRITE_BACK;
-				}
-				else /* 88E6165 family */
-				{
-					phyInfo->anyPage = 0x2040FFFF;
-					phyInfo->flag = GT_PHY_ADV_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
-									GT_PHY_EX_CABLE_STATUS|
-									GT_PHY_GIGABIT|
-									GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
-									GT_PHY_PKT_GENERATOR;
-					phyInfo->vctType = GT_PHY_ADV_VCT_TYPE2;
-					phyInfo->exStatusType = GT_PHY_EX_STATUS_TYPE6;
-					phyInfo->dteType = GT_PHY_DTE_TYPE4;
-					phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE2;
-					phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
-					phyInfo->lineLoopType = 0;
-					phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
-					phyInfo->pageType = GT_PHY_PAGE_WRITE_BACK;
-				}
-				break;
+        case DEV_G15LV:
+                if (dev->devName1 &DEV_88E6108)
+                {
+                    phyInfo->anyPage = 0x2040FFFF;
+                    phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
+                                    GT_PHY_EX_CABLE_STATUS|
+                                    GT_PHY_GIGABIT|
+                                    GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
+                                    GT_PHY_PKT_GENERATOR;
+                    phyInfo->vctType = GT_PHY_VCT_TYPE4;
+                    phyInfo->exStatusType = GT_PHY_EX_STATUS_TYPE3;
+                    phyInfo->dteType = GT_PHY_DTE_TYPE4;
+                    phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE2;
+                    phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
+                    phyInfo->lineLoopType = 0;
+                    phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
+                    phyInfo->pageType = GT_PHY_PAGE_WRITE_BACK;
+                }
+                else /* 88E6165 family */
+                {
+                    phyInfo->anyPage = 0x2040FFFF;
+                    phyInfo->flag = GT_PHY_ADV_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
+                                    GT_PHY_EX_CABLE_STATUS|
+                                    GT_PHY_GIGABIT|
+                                    GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
+                                    GT_PHY_PKT_GENERATOR;
+                    phyInfo->vctType = GT_PHY_ADV_VCT_TYPE2;
+                    phyInfo->exStatusType = GT_PHY_EX_STATUS_TYPE6;
+                    phyInfo->dteType = GT_PHY_DTE_TYPE4;
+                    phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE2;
+                    phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
+                    phyInfo->lineLoopType = 0;
+                    phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
+                    phyInfo->pageType = GT_PHY_PAGE_WRITE_BACK;
+                }
+                break;
 
-		case DEV_EC010:
-				phyInfo->anyPage = 0x2040780C;
-				phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
-								GT_PHY_EX_CABLE_STATUS|
-								GT_PHY_GIGABIT|GT_PHY_RESTRICTED_PAGE|
-								GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP;
-				phyInfo->vctType = GT_PHY_VCT_TYPE2;
-				phyInfo->exStatusType = 0;
-				phyInfo->dteType = GT_PHY_DTE_TYPE3;	/* Need workaround */
-				phyInfo->pktGenType = 0;
-				phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
-				phyInfo->lineLoopType = 0;
-				phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
-				phyInfo->pageType = GT_PHY_PAGE_WRITE_BACK;
-				break;
+        case DEV_EC010:
+                phyInfo->anyPage = 0x2040780C;
+                phyInfo->flag = GT_PHY_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
+                                GT_PHY_EX_CABLE_STATUS|
+                                GT_PHY_GIGABIT|GT_PHY_RESTRICTED_PAGE|
+                                GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP;
+                phyInfo->vctType = GT_PHY_VCT_TYPE2;
+                phyInfo->exStatusType = 0;
+                phyInfo->dteType = GT_PHY_DTE_TYPE3;    /* Need workaround */
+                phyInfo->pktGenType = 0;
+                phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
+                phyInfo->lineLoopType = 0;
+                phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
+                phyInfo->pageType = GT_PHY_PAGE_WRITE_BACK;
+                break;
 
-		case DEV_S15LV:
-				phyInfo->anyPage = 0xFFFFFFFF;
-				phyInfo->flag = GT_PHY_SERDES_CORE|GT_PHY_GIGABIT|
-								GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
-								GT_PHY_PKT_GENERATOR;
-				phyInfo->vctType = 0;
-				phyInfo->exStatusType = 0;
-				phyInfo->dteType = 0;
-				phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE3;
-				phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE3;
-				phyInfo->lineLoopType = GT_PHY_LINE_LB_TYPE4;
-				phyInfo->exLoopType = 0;
-				phyInfo->pageType = GT_PHY_NO_PAGE;
-				break;
+        case DEV_S15LV:
+                phyInfo->anyPage = 0xFFFFFFFF;
+                phyInfo->flag = GT_PHY_SERDES_CORE|GT_PHY_GIGABIT|
+                                GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
+                                GT_PHY_PKT_GENERATOR;
+                phyInfo->vctType = 0;
+                phyInfo->exStatusType = 0;
+                phyInfo->dteType = 0;
+                phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE3;
+                phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE3;
+                phyInfo->lineLoopType = GT_PHY_LINE_LB_TYPE4;
+                phyInfo->exLoopType = 0;
+                phyInfo->pageType = GT_PHY_NO_PAGE;
+                break;
 
-		case DEV_G65G:
-				phyInfo->anyPage = 0x2040FFFF;
-				phyInfo->flag = GT_PHY_ADV_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
-								GT_PHY_EX_CABLE_STATUS|
-								GT_PHY_GIGABIT|
-								GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
-								GT_PHY_PKT_GENERATOR;
-				phyInfo->vctType = GT_PHY_ADV_VCT_TYPE2;
-				phyInfo->exStatusType = GT_PHY_EX_STATUS_TYPE6;
-				phyInfo->dteType = GT_PHY_DTE_TYPE4;
-				phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE2;
-				phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
-				phyInfo->lineLoopType = 0;
-				phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
-				phyInfo->pageType = GT_PHY_PAGE_WRITE_BACK;
-				break;
+        case DEV_G65G:
+                phyInfo->anyPage = 0x2040FFFF;
+                phyInfo->flag = GT_PHY_ADV_VCT_CAPABLE|GT_PHY_DTE_CAPABLE|
+                                GT_PHY_EX_CABLE_STATUS|
+                                GT_PHY_GIGABIT|
+                                GT_PHY_MAC_IF_LOOP|GT_PHY_LINE_LOOP|GT_PHY_EXTERNAL_LOOP|
+                                GT_PHY_PKT_GENERATOR;
+                phyInfo->vctType = GT_PHY_ADV_VCT_TYPE2;
+                phyInfo->exStatusType = GT_PHY_EX_STATUS_TYPE6;
+                phyInfo->dteType = GT_PHY_DTE_TYPE4;
+                phyInfo->pktGenType = GT_PHY_PKTGEN_TYPE2;
+                phyInfo->macIfLoopType = GT_PHY_LOOPBACK_TYPE1;
+                phyInfo->lineLoopType = 0;
+                phyInfo->exLoopType = GT_PHY_EX_LB_TYPE0;
+                phyInfo->pageType = GT_PHY_PAGE_WRITE_BACK;
+                break;
+        default:
+            return GT_FAIL;
+    }
+                    
+    if (phyInfo->flag & GT_PHY_GIGABIT)
+    {
+        if(hwGetPhyRegField(dev,hwPort,15,12,4,&data) != GT_OK)
+        {
+            DBG_INFO(("Not able to read Phy Reg(port:%d,offset:%d).\n",hwPort,15));
+               return GT_FAIL;
+        }
 
-		default:
-			return GT_FAIL;
-	}
-					
-	if (phyInfo->flag & GT_PHY_GIGABIT)
-	{
-	    if(hwGetPhyRegField(dev,hwPort,15,12,4,&data) != GT_OK)
-		{
-        	DBG_INFO(("Not able to read Phy Reg(port:%d,offset:%d).\n",hwPort,15));
-	   	    return GT_FAIL;
-		}
+        if(data & QD_GIGPHY_1000X_CAP)
+            phyInfo->flag |= GT_PHY_FIBER;
 
-		if(data & QD_GIGPHY_1000X_CAP)
-			phyInfo->flag |= GT_PHY_FIBER;
-
-		if(data & QD_GIGPHY_1000T_CAP)
-		{
-			phyInfo->flag |= GT_PHY_COPPER;
-		}
-		else
-		{
-			phyInfo->flag &= ~(GT_PHY_VCT_CAPABLE|GT_PHY_EX_CABLE_STATUS|GT_PHY_DTE_CAPABLE|GT_PHY_ADV_VCT_CAPABLE);
-		}
-	}
+        if(data & QD_GIGPHY_1000T_CAP)
+        {
+            phyInfo->flag |= GT_PHY_COPPER;
+        }
+        else
+        {
+            phyInfo->flag &= ~(GT_PHY_VCT_CAPABLE|GT_PHY_EX_CABLE_STATUS|GT_PHY_DTE_CAPABLE|GT_PHY_ADV_VCT_CAPABLE);
+        }
+    }
 
     return GT_OK;
 }

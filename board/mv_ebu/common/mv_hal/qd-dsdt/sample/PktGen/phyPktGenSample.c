@@ -3,10 +3,10 @@
 * phyPktGenSample.c
 *
 * DESCRIPTION:
-*       Packet Generator setup sample (startPktGenerator and stopPktGenerator).
+*       Packet Generator setup sample (startQdPktGenerator and stopQdPktGenerator).
 *
 * DEPENDENCIES:
-*		Please check the phy device's spec. if the device supports this feature.
+*        Please check the phy device's spec. if the device supports this feature.
 *
 * FILE REVISION NUMBER:
 *
@@ -21,7 +21,7 @@
  *      length  - enum GT_PG_LENGTH  (GT_PG_LENGTH_64 or GT_PG_LENGTH_1514)
  *      tx      - enum GT_PG_TX      (GT_PG_TX_NORMAL or GT_PG_TX_ERROR)
 */
-GT_STATUS startPktGenerator
+GT_STATUS startQdPktGenerator
 (
     GT_QD_DEV      *dev,
     GT_LPORT       port,
@@ -46,7 +46,7 @@ GT_STATUS startPktGenerator
     pktInfo.tx = tx;           /* normal packet, error packet */
 
     /*
-     *	Start Packet Generator
+     *    Start Packet Generator
     */
     if((status = gprtSetPktGenEnable(dev,port,GT_TRUE,&pktInfo)) != GT_OK)
     {
@@ -61,7 +61,7 @@ GT_STATUS startPktGenerator
 /*
  * Stop Packet Generator.
  */
-GT_STATUS stopPktGenerator(GT_QD_DEV *dev,GT_LPORT port)
+GT_STATUS stopQdPktGenerator(GT_QD_DEV *dev,GT_LPORT port)
 {
     GT_STATUS status;
 
@@ -74,7 +74,7 @@ GT_STATUS stopPktGenerator(GT_QD_DEV *dev,GT_LPORT port)
     MSG_PRINT(("Stopping Packet Generator for port %i\n",(int)port));
 
     /*
-     *	Start Packet Generator
+     *    Start Packet Generator
     */
     if((status = gprtSetPktGenEnable(dev,port,GT_FALSE,NULL)) != GT_OK)
     {

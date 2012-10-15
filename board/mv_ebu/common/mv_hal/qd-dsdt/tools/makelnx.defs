@@ -6,17 +6,20 @@
 #
 SHELL=/bin/sh -e
 
-CC_ARCH_SPEC=  -march=i386 -mcpu=i686
+#CC_ARCH_SPEC=  -march=i386 -mcpu=i686
 
-SW_ROOT = $(USER_BASE)
+SW_ROOT = $(DSDT_USER_BASE)
 SRC_BASE_PATH = $(SW_ROOT)/src
 QD_INCLUDE_PATH = $(SW_ROOT)/Include/h
 
 LIB_DIR = $(SW_ROOT)/Library
-OBJDIR = obj
+OBJDIR = $(DSDT_PROJ_NAME)_obj
 
+ifeq ($(CC),)
 CC      =cc
 LD      =ld
+endif
+
 MAKE    =make
 CD      =pwd
 RM      =rm -f
@@ -24,7 +27,8 @@ ECHO    =echo
 
 DEPENDENCIES= makedeps
 
-CFLAGS = $(CFLAGS1) $(CFLAGS2) $(INCLUDE_PATH) $(CDEBUG_DEFINES)
+#CFLAGS = $(CFLAGS1) $(CFLAGS2) $(INCLUDE_PATH) $(CDEBUG_DEFINES)
+CFLAGS += $(CFLAGS1) $(CFLAGS2) $(INCLUDE_PATH) $(CDEBUG_DEFINES)
 
 CFLAGS1 = $(CC_ARCH_SPEC) $(DEBUG_TYPE)
 CFLAGS2 = $(CC_OPTIM) $(CC_COMPILER) $(CC_WARNINGS_ALL)
@@ -49,4 +53,11 @@ INCLUDE_PATH = -I. \
                -I$(QD_INCLUDE_PATH)/msApi \
                -I$(QD_INCLUDE_PATH)/platform \
                -I$(SW_ROOT)/Include
+ifeq ($(DSDT_USE_MAD),TRUE)
+MAD_INCLUDE_PATH = $(SW_ROOT)/../phy/Include
+INCLUDE_PATH += -I$(MAD_INCLUDE_PATH) 
+INCLUDE_PATH += -I$(MAD_INCLUDE_PATH)/h/driver 
+INCLUDE_PATH += -I$(MAD_INCLUDE_PATH)/h/madApi 
+INCLUDE_PATH += -I$(MAD_INCLUDE_PATH)/h/platform 
+endif
 

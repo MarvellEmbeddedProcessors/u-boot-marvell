@@ -1,16 +1,17 @@
 # Source files in this directory
+TARGET = 
 CSOURCES	= gtMiiSmiIf.c platformDeps.c gtSem.c gtDebug.c
 ASOURCES	=
 
 # Include common variable definitions
 ifeq ($(OS_RUN),VXWORKS)
-include $(TOOL_DIR)\make.defs
+include $(DSDT_TOOL_DIR)\make.defs
 endif
 ifeq ($(OS_RUN),WIN32)
-include $(TOOL_DIR)\makewce.defs
+include $(DSDT_TOOL_DIR)\makewce.defs
 endif
 ifeq ($(OS_RUN),LINUX)
-include $(TOOL_DIR)/makelnx.defs
+include $(DSDT_TOOL_DIR)/makelnx.defs
 endif
 
 # Add in extra stuffs
@@ -20,13 +21,13 @@ ADDED_CFLAGS	+=
 
 # Include common build rules
 ifeq ($(OS_RUN),VXWORKS)
-include $(TOOL_DIR)\make.rules
+include $(DSDT_TOOL_DIR)\make.rules
 endif
 ifeq ($(OS_RUN),WIN32)
-include $(TOOL_DIR)\makewce.rules
+include $(DSDT_TOOL_DIR)\makewce.rules
 endif
 ifeq ($(OS_RUN),LINUX)
-include $(TOOL_DIR)/makelnx.rules
+include $(DSDT_TOOL_DIR)/makelnx.rules
 endif
 
 # end of file

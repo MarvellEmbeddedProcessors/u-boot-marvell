@@ -35,7 +35,7 @@
 *
 * COMMENTS:
 *       Fast Ethernet switch family supports 2 bits (0 ~ 3) while Gigabit Switch
-*		family supports 3 bits (0 ~ 7)
+*        family supports 3 bits (0 ~ 7)
 *
 * GalTis:
 *
@@ -57,27 +57,29 @@ GT_STATUS gcosSetPortDefaultTc
     /* check if device supports this feature */
     if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_QoS)) != GT_OK ) 
       return retVal;
-	
-	/* Only Gigabit Switch supports this status. */
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH|DEV_ENHANCED_FE_SWITCH))
+    
+    /* Only Gigabit Switch supports this status. */
+    if ((IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_ENHANCED_FE_SWITCH)) ||
+		(IS_IN_DEV_GROUP(dev,DEV_FE_AVB_FAMILY)))
     {
-	    /* Set the default port pri.  */
-    	retVal = hwSetPortRegField(dev,hwPort,QD_REG_PVID,13,3,trafClass);
+        /* Set the default port pri.  */
+        retVal = hwSetPortRegField(dev,hwPort,QD_REG_PVID,13,3,trafClass);
     }
-	else
-	{
-	    /* Set the default port pri.  */
-    	retVal = hwSetPortRegField(dev,hwPort,QD_REG_PVID,14,2,trafClass);
-	}
+    else
+    {
+        /* Set the default port pri.  */
+        retVal = hwSetPortRegField(dev,hwPort,QD_REG_PVID,14,2,trafClass);
+    }
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
     return retVal;
 }
 
@@ -100,7 +102,7 @@ GT_STATUS gcosSetPortDefaultTc
 *
 * COMMENTS:
 *       Fast Ethernet switch family supports 2 bits (0 ~ 3) while Gigabit Switch
-*		family supports 3 bits (0 ~ 7)
+*        family supports 3 bits (0 ~ 7)
 *
 * GalTis:
 *
@@ -112,7 +114,7 @@ GT_STATUS gcosGetPortDefaultTc
     OUT GT_U8     *trafClass
 )
 {
-	GT_U16			data;
+    GT_U16            data;
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U8           hwPort;         /* the physical port number     */
 
@@ -123,29 +125,31 @@ GT_STATUS gcosGetPortDefaultTc
     /* check if device supports this feature */
     if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_QoS)) != GT_OK ) 
       return retVal;
-	
-	/* Only Gigabit Switch supports this status. */
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH|DEV_ENHANCED_FE_SWITCH))
+    
+    /* Only Gigabit Switch supports this status. */
+    if ((IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_ENHANCED_FE_SWITCH)) ||
+		(IS_IN_DEV_GROUP(dev,DEV_FE_AVB_FAMILY)))
     {
-	    /* Get the default port pri.  */
-	    retVal = hwGetPortRegField(dev,hwPort,QD_REG_PVID,13,3,&data);
+        /* Get the default port pri.  */
+        retVal = hwGetPortRegField(dev,hwPort,QD_REG_PVID,13,3,&data);
     }
-	else
-	{
-	    /* Get the default port pri.  */
-	    retVal = hwGetPortRegField(dev,hwPort,QD_REG_PVID,14,2,&data);
-	}
-
-	*trafClass = (GT_U8)data;
-	
-    if(retVal != GT_OK)
-	{
-        DBG_INFO(("Failed.\n"));
-	}
     else
-	{
+    {
+        /* Get the default port pri.  */
+        retVal = hwGetPortRegField(dev,hwPort,QD_REG_PVID,14,2,&data);
+    }
+
+    *trafClass = (GT_U8)data;
+    
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+    }
+    else
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
     return retVal;
 }
 
@@ -156,11 +160,11 @@ GT_STATUS gcosGetPortDefaultTc
 *
 * DESCRIPTION:
 *       This routine sets priority mapping rule.
-*		If the current frame is both IEEE 802.3ac tagged and an IPv4 or IPv6, 
-*		and UserPrioMap (for IEEE 802.3ac) and IPPrioMap (for IP frame) are 
-*		enabled, then priority selection is made based on this setup.
-*		If PrioMapRule is set to GT_TRUE, UserPrioMap is used.
-*		If PrioMapRule is reset to GT_FALSE, IPPrioMap is used.
+*        If the current frame is both IEEE 802.3ac tagged and an IPv4 or IPv6, 
+*        and UserPrioMap (for IEEE 802.3ac) and IPPrioMap (for IP frame) are 
+*        enabled, then priority selection is made based on this setup.
+*        If PrioMapRule is set to GT_TRUE, UserPrioMap is used.
+*        If PrioMapRule is reset to GT_FALSE, IPPrioMap is used.
 *
 * INPUTS:
 *       port - the logical port number.
@@ -199,17 +203,17 @@ GT_STATUS gqosSetPrioMapRule
     /* check if device supports this feature */
     if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_QoS)) != GT_OK ) 
       return retVal;
-	
+    
     /* Set the TagIfBoth.  */
     retVal = hwSetPortRegField(dev,hwPort,QD_REG_PORT_CONTROL,6,1,data);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
     return retVal;
 }
 
@@ -220,11 +224,11 @@ GT_STATUS gqosSetPrioMapRule
 *
 * DESCRIPTION:
 *       This routine gets priority mapping rule.
-*		If the current frame is both IEEE 802.3ac tagged and an IPv4 or IPv6, 
-*		and UserPrioMap (for IEEE 802.3ac) and IPPrioMap (for IP frame) are 
-*		enabled, then priority selection is made based on this setup.
-*		If PrioMapRule is set to GT_TRUE, UserPrioMap is used.
-*		If PrioMapRule is reset to GT_FALSE, IPPrioMap is used.
+*        If the current frame is both IEEE 802.3ac tagged and an IPv4 or IPv6, 
+*        and UserPrioMap (for IEEE 802.3ac) and IPPrioMap (for IP frame) are 
+*        enabled, then priority selection is made based on this setup.
+*        If PrioMapRule is set to GT_TRUE, UserPrioMap is used.
+*        If PrioMapRule is reset to GT_FALSE, IPPrioMap is used.
 *
 * INPUTS:
 *       port  - the logical port number.
@@ -260,19 +264,19 @@ GT_STATUS gqosGetPrioMapRule
     /* check if device supports this feature */
     if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_QoS)) != GT_OK ) 
       return retVal;
-	
+    
     /* get the TagIfBoth.  */
     retVal = hwGetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL,6,1,&data);
     /* translate bool to binary */
     BIT_2_BOOL(data, *mode);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     return retVal;
 }
@@ -322,17 +326,17 @@ GT_STATUS gqosIpPrioMapEn
     /* check if device supports this feature */
     if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_QoS)) != GT_OK ) 
       return retVal;
-	
+    
     /* Set the useIp.  */
     retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL,5,1,data);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     return retVal;
 }
@@ -380,19 +384,19 @@ GT_STATUS gqosGetIpPrioMapEn
     /* check if device supports this feature */
     if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_QoS)) != GT_OK ) 
       return retVal;
-	
+    
     /* Get the UseIp.  */
     retVal = hwGetPortRegField(dev,hwPort,QD_REG_PORT_CONTROL,5,1,&data);
     /* translate bool to binary */
     BIT_2_BOOL(data, *en);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     return retVal;
 }
@@ -443,17 +447,17 @@ GT_STATUS gqosUserPrioMapEn
     /* check if device supports this feature */
     if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_QoS)) != GT_OK ) 
       return retVal;
-	
+    
     /* Set the useTag.  */
     retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL,4,1,data);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     return retVal;
 }
@@ -501,19 +505,19 @@ GT_STATUS gqosGetUserPrioMapEn
     /* check if device supports this feature */
     if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_QoS)) != GT_OK ) 
       return retVal;
-	
+    
     /* Get the UseTag.  */
     retVal = hwGetPortRegField(dev,hwPort,QD_REG_PORT_CONTROL,4,1,&data);
     /* translate bool to binary */
     BIT_2_BOOL(data, *en);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     return retVal;
 }
@@ -556,21 +560,21 @@ GT_STATUS gcosGetUserPrio2Tc
 
     /* check if device supports this feature */
     if(!IS_IN_DEV_GROUP(dev,DEV_QoS))
-		return GT_NOT_SUPPORTED;
-	
+        return GT_NOT_SUPPORTED;
+    
     /* calc the bit offset */
     bitOffset = ((userPrior & 0x7) * 2);
     /* Get the traffic class for the VPT.  */
     retVal = hwGetGlobalRegField(dev,QD_REG_IEEE_PRI,bitOffset,2,&data);
     *trClass = (GT_U8)data;
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     return retVal;
 }
@@ -613,20 +617,20 @@ GT_STATUS gcosSetUserPrio2Tc
     DBG_INFO(("gcosSetUserPrio2Tc Called.\n"));
     /* check if device supports this feature */
     if(!IS_IN_DEV_GROUP(dev,DEV_QoS))
-		return GT_NOT_SUPPORTED;
-	
+        return GT_NOT_SUPPORTED;
+    
     /* calc the bit offset */
     bitOffset = ((userPrior & 0x7) * 2);
     /* Set the traffic class for the VPT.  */
     retVal = hwSetGlobalRegField(dev,QD_REG_IEEE_PRI, bitOffset,2,trClass);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     return retVal;
 }
@@ -671,8 +675,8 @@ GT_STATUS gcosGetDscp2Tc
     DBG_INFO(("gcosGetDscp2Tc Called.\n"));
     /* check if device supports this feature */
     if(!IS_IN_DEV_GROUP(dev,DEV_QoS))
-		return GT_NOT_SUPPORTED;
-	
+        return GT_NOT_SUPPORTED;
+    
     /* calc the bit offset */
     bitOffset = (((dscp & 0x3f) % 8) * 2);
     regOffset = ((dscp & 0x3f) / 8);
@@ -681,13 +685,13 @@ GT_STATUS gcosGetDscp2Tc
                                  bitOffset, 2, &data);
     *trClass = (GT_U8)data;
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     return retVal;
 }
@@ -732,8 +736,8 @@ GT_STATUS gcosSetDscp2Tc
     DBG_INFO(("gcosSetDscp2Tc Called.\n"));
     /* check if device supports this feature */
     if(!IS_IN_DEV_GROUP(dev,DEV_QoS))
-		return GT_NOT_SUPPORTED;
-	
+        return GT_NOT_SUPPORTED;
+    
     /* calc the bit offset */
     bitOffset = (((dscp & 0x3f) % 8) * 2);
     regOffset = ((dscp & 0x3f) / 8);
@@ -741,13 +745,13 @@ GT_STATUS gcosSetDscp2Tc
     retVal = hwSetGlobalRegField(dev,(GT_U8)(QD_REG_IP_PRI_BASE+regOffset),
                                  bitOffset, 2, trClass);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     return retVal;
 }
@@ -758,32 +762,32 @@ GT_STATUS gcosSetDscp2Tc
 * gqosGetTagRemap
 *
 * DESCRIPTION:
-*		Gets the remapped priority value for a specific 802.1p priority on a
-*		given port.
+*        Gets the remapped priority value for a specific 802.1p priority on a
+*        given port.
 *
 * INPUTS:
-*		port  - the logical port number.
-*		pri   - 802.1p priority
+*        port  - the logical port number.
+*        pri   - 802.1p priority
 *
 * OUTPUTS:
-*		remappedPri - remapped Priority
+*        remappedPri - remapped Priority
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
+*        GT_OK   - on success
+*        GT_FAIL - on error
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gqosGetTagRemap
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_LPORT 	port,
-	IN  GT_U8    	pri,
-	OUT GT_U8   	*remappedPri
+    IN  GT_QD_DEV    *dev,
+    IN  GT_LPORT     port,
+    IN  GT_U8        pri,
+    OUT GT_U8       *remappedPri
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -791,41 +795,41 @@ GT_STATUS gqosGetTagRemap
     GT_U8           phyPort;        /* Physical port.               */
     GT_U8           regAddr;        /* register address.            */
     GT_U8           bitOffset;      /* the bit offset in the reg    */
-	
+    
     DBG_INFO(("gqosGetTagRemap Called.\n"));
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_PRIORITY_REMAPPING))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    if (!IS_IN_DEV_GROUP(dev,DEV_PRIORITY_REMAPPING))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
     phyPort = GT_LPORT_2_PORT(port);
 
-	if (pri <= 3)
-	{
-		regAddr = QD_REG_IEEE_PRI_REMAP_3_0;
-	}
-	else
-	{
-		regAddr = QD_REG_IEEE_PRI_REMAP_7_4;
-	}
+    if (pri <= 3)
+    {
+        regAddr = QD_REG_IEEE_PRI_REMAP_3_0;
+    }
+    else
+    {
+        regAddr = QD_REG_IEEE_PRI_REMAP_7_4;
+    }
 
     /* calc the bit offset */
     bitOffset = 4 * (pri % 4);
-	
+    
     retVal = hwGetPortRegField(dev,phyPort,regAddr,bitOffset,3,&data );
 
     *remappedPri = (GT_U8)data;
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     return retVal;
 }
@@ -835,72 +839,72 @@ GT_STATUS gqosGetTagRemap
 * gqosSetTagRemap
 *
 * DESCRIPTION:
-*		Sets the remapped priority value for a specific 802.1p priority on a
-*		given port.
+*        Sets the remapped priority value for a specific 802.1p priority on a
+*        given port.
 *
 * INPUTS:
-*		port  - the logical port number.
-*		pri   - 802.1p priority
-*		remappedPri - remapped Priority
+*        port  - the logical port number.
+*        pri   - 802.1p priority
+*        remappedPri - remapped Priority
 *
 * OUTPUTS:
-*		None
+*        None
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
+*        GT_OK   - on success
+*        GT_FAIL - on error
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gqosSetTagRemap
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_LPORT 	port,
-	IN GT_U8    	pri,
-	IN GT_U8    	remappedPri
+    IN GT_QD_DEV    *dev,
+    IN GT_LPORT     port,
+    IN GT_U8        pri,
+    IN GT_U8        remappedPri
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U8           phyPort;        /* Physical port.               */
     GT_U8           regAddr;        /* register address.            */
     GT_U8           bitOffset;      /* the bit offset in the reg    */
-	
+    
     DBG_INFO(("gqosSetTagRemap Called.\n"));
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_PRIORITY_REMAPPING))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    if (!IS_IN_DEV_GROUP(dev,DEV_PRIORITY_REMAPPING))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
     phyPort = GT_LPORT_2_PORT(port);
 
-	if (pri <= 3)
-	{
-		regAddr = QD_REG_IEEE_PRI_REMAP_3_0;
-	}
-	else
-	{
-		regAddr = QD_REG_IEEE_PRI_REMAP_7_4;
-	}
+    if (pri <= 3)
+    {
+        regAddr = QD_REG_IEEE_PRI_REMAP_3_0;
+    }
+    else
+    {
+        regAddr = QD_REG_IEEE_PRI_REMAP_7_4;
+    }
 
     /* calc the bit offset */
     bitOffset = 4 * (pri % 4);
-	
+    
     retVal = hwSetPortRegField(dev,phyPort,regAddr,bitOffset,3,remappedPri);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     return retVal;
 }
@@ -911,10 +915,10 @@ GT_STATUS gqosSetTagRemap
 *
 * DESCRIPTION:
 *       This routine sets Queue priority value to used when forced.
-*		When ForceQPri is enabled (gqosSetForceQPri), all frames entering this port
-*		are mapped to the priority queue defined in this value, unless a VTU, SA,
-*		DA or ARP priority override occurs. The Frame's priority (FPri) is not
-*		effected by this value.
+*        When ForceQPri is enabled (gqosSetForceQPri), all frames entering this port
+*        are mapped to the priority queue defined in this value, unless a VTU, SA,
+*        DA or ARP priority override occurs. The Frame's priority (FPri) is not
+*        effected by this value.
 *
 * INPUTS:
 *       port - the logical port number.
@@ -926,7 +930,7 @@ GT_STATUS gqosSetTagRemap
 * RETURNS:
 *       GT_OK   - on success
 *       GT_FAIL - on error
-*		GT_BAD_PARAM - if pri > 3
+*        GT_BAD_PARAM - if pri > 3
 *       GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
@@ -948,26 +952,26 @@ GT_STATUS gqosSetQPriValue
     hwPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_QoS_FPRI_QPRI))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    if (!IS_IN_DEV_GROUP(dev,DEV_QoS_FPRI_QPRI))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
-	if (pri > 3)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (pri > 3)
+    {
+        return GT_BAD_PARAM;
+    }
 
     /* Set the QPriValue.  */
     retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_VLAN_MAP, 10, 2, (GT_U16)pri);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     return retVal;
 }
@@ -977,10 +981,10 @@ GT_STATUS gqosSetQPriValue
 *
 * DESCRIPTION:
 *       This routine gets Queue priority value to used when forced.
-*		When ForceQPri is enabled (gqosSetForceQPri), all frames entering this port
-*		are mapped to the priority queue defined in this value, unless a VTU, SA,
-*		DA or ARP priority override occurs. The Frame's priority (FPri) is not
-*		effected by this value.
+*        When ForceQPri is enabled (gqosSetForceQPri), all frames entering this port
+*        are mapped to the priority queue defined in this value, unless a VTU, SA,
+*        DA or ARP priority override occurs. The Frame's priority (FPri) is not
+*        effected by this value.
 *
 * INPUTS:
 *       port - the logical port number.
@@ -1005,7 +1009,7 @@ GT_STATUS gqosGetQPriValue
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U8           hwPort;         /* the physical port number     */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gqosGetQPriValue Called.\n"));
 
@@ -1013,23 +1017,23 @@ GT_STATUS gqosGetQPriValue
     hwPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_QoS_FPRI_QPRI))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    if (!IS_IN_DEV_GROUP(dev,DEV_QoS_FPRI_QPRI))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
     /* Get the QPriValue.  */
     retVal = hwGetPortRegField(dev,hwPort, QD_REG_PORT_VLAN_MAP, 10, 2, &data);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
-	*pri = (GT_U8)data;
+    *pri = (GT_U8)data;
 
     return retVal;
 }
@@ -1040,16 +1044,16 @@ GT_STATUS gqosGetQPriValue
 *
 * DESCRIPTION:
 *       This routine enables/disables forcing Queue priority.
-*		When ForceQPri is disabled, normal priority queue mapping is used on all 
-*		ingressing frames entering this port. When it's enabled, all frames
-*		entering this port are mapped to the QPriValue (gqosSetQPriValue), unless
-*		a VTU, SA, DA or ARP priority override occurs. The frame's priorty (FPri)
-*		is not effected by this feature.
+*        When ForceQPri is disabled, normal priority queue mapping is used on all 
+*        ingressing frames entering this port. When it's enabled, all frames
+*        entering this port are mapped to the QPriValue (gqosSetQPriValue), unless
+*        a VTU, SA, DA or ARP priority override occurs. The frame's priorty (FPri)
+*        is not effected by this feature.
 *
 * INPUTS:
 *       port - the logical port number.
 *       en   - GT_TRUE, to force Queue Priority,
-*			   GT_FALSE, otherwise.
+*               GT_FALSE, otherwise.
 *
 * OUTPUTS:
 *       None.
@@ -1082,21 +1086,21 @@ GT_STATUS gqosSetForceQPri
     BOOL_2_BIT(en, data);
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_QoS_FPRI_QPRI))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    if (!IS_IN_DEV_GROUP(dev,DEV_QoS_FPRI_QPRI))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
     /* Set the ForceQPri.  */
     retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_VLAN_MAP, 9, 1, data);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     return retVal;
 }
@@ -1106,18 +1110,18 @@ GT_STATUS gqosSetForceQPri
 *
 * DESCRIPTION:
 *       This routine checks if forcing Queue priority is enabled.
-*		When ForceQPri is disabled, normal priority queue mapping is used on all 
-*		ingressing frames entering this port. When it's enabled, all frames
-*		entering this port are mapped to the QPriValue (gqosSetQPriValue), unless
-*		a VTU, SA, DA or ARP priority override occurs. The frame's priorty (FPri)
-*		is not effected by this feature.
+*        When ForceQPri is disabled, normal priority queue mapping is used on all 
+*        ingressing frames entering this port. When it's enabled, all frames
+*        entering this port are mapped to the QPriValue (gqosSetQPriValue), unless
+*        a VTU, SA, DA or ARP priority override occurs. The frame's priorty (FPri)
+*        is not effected by this feature.
 *
 * INPUTS:
 *       port - the logical port number.
 *
 * OUTPUTS:
 *       en   - GT_TRUE, to force Queue Priority,
-*			   GT_FALSE, otherwise.
+*               GT_FALSE, otherwise.
 *
 * RETURNS:
 *       GT_OK   - on success
@@ -1144,21 +1148,21 @@ GT_STATUS gqosGetForceQPri
     hwPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_QoS_FPRI_QPRI))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    if (!IS_IN_DEV_GROUP(dev,DEV_QoS_FPRI_QPRI))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
     /* Get the ForceQPri.  */
     retVal = hwGetPortRegField(dev,hwPort, QD_REG_PORT_VLAN_MAP, 9, 1, &data);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     BIT_2_BOOL(data, *en);
 
@@ -1171,8 +1175,8 @@ GT_STATUS gqosGetForceQPri
 *
 * DESCRIPTION:
 *       This routine sets the default frame priority (0 ~ 7).
-*		This priority is used as the default frame priority (FPri) to use when 
-*		no other priority information is available.
+*        This priority is used as the default frame priority (FPri) to use when 
+*        no other priority information is available.
 *
 * INPUTS:
 *       port - the logical port number
@@ -1184,7 +1188,7 @@ GT_STATUS gqosGetForceQPri
 * RETURNS:
 *       GT_OK   - on success
 *       GT_FAIL - on error
-*		GT_BAD_PARAM - if pri > 7
+*        GT_BAD_PARAM - if pri > 7
 *       GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
@@ -1206,26 +1210,26 @@ GT_STATUS gqosSetDefFPri
     hwPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_QoS_FPRI_QPRI))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    if (!IS_IN_DEV_GROUP(dev,DEV_QoS_FPRI_QPRI))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
-	if (pri > 7)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (pri > 7)
+    {
+        return GT_BAD_PARAM;
+    }
 
     /* Set the DefFPri.  */
     retVal = hwSetPortRegField(dev,hwPort, QD_REG_PVID, 13, 3, (GT_U16)pri);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     return retVal;
 }
@@ -1236,8 +1240,8 @@ GT_STATUS gqosSetDefFPri
 *
 * DESCRIPTION:
 *       This routine gets the default frame priority (0 ~ 7).
-*		This priority is used as the default frame priority (FPri) to use when 
-*		no other priority information is available.
+*        This priority is used as the default frame priority (FPri) to use when 
+*        no other priority information is available.
 *
 * INPUTS:
 *       port - the logical port number
@@ -1262,7 +1266,7 @@ GT_STATUS gqosGetDefFPri
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U8           hwPort;         /* the physical port number     */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gqosGetDefFPri Called.\n"));
 
@@ -1270,23 +1274,23 @@ GT_STATUS gqosGetDefFPri
     hwPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_QoS_FPRI_QPRI))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    if (!IS_IN_DEV_GROUP(dev,DEV_QoS_FPRI_QPRI))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
     /* Get the DefFPri.  */
     retVal = hwGetPortRegField(dev,hwPort, QD_REG_PVID, 13, 3, &data);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
-	*pri = (GT_U8)data;
+    *pri = (GT_U8)data;
     return retVal;
 }
 
@@ -1295,28 +1299,28 @@ GT_STATUS gqosGetDefFPri
 * gqosSetVIDFPriOverride
 *
 * DESCRIPTION:
-*		This routine sets VID Frame Priority Override. When this feature is enabled,
-*		VID Frame priority overrides can occur on this port.
-*		VID Frame priority override occurs when the determined VID of a frame 
-*		results in a VTU entry whose useVIDFPri override field is set to GT_TRUE.
-*		When this occurs the VIDFPri value assigned to the frame's VID (in the 
-*		VTU Table) is used to overwrite the frame's previously determined frame 
-*		priority. If the frame egresses tagged the priority in the frame will be
-*		this new VIDFPri value. This function does not affect the egress queue
-*		priority (QPri) the frame is switched into.
+*        This routine sets VID Frame Priority Override. When this feature is enabled,
+*        VID Frame priority overrides can occur on this port.
+*        VID Frame priority override occurs when the determined VID of a frame 
+*        results in a VTU entry whose useVIDFPri override field is set to GT_TRUE.
+*        When this occurs the VIDFPri value assigned to the frame's VID (in the 
+*        VTU Table) is used to overwrite the frame's previously determined frame 
+*        priority. If the frame egresses tagged the priority in the frame will be
+*        this new VIDFPri value. This function does not affect the egress queue
+*        priority (QPri) the frame is switched into.
 *
 * INPUTS:
-*		port - the logical port number.
-*		mode - GT_TRUE for VID Frame Priority Override,
-*			   GT_FALSE otherwise
+*        port - the logical port number.
+*        mode - GT_TRUE for VID Frame Priority Override,
+*               GT_FALSE otherwise
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -1325,9 +1329,9 @@ GT_STATUS gqosGetDefFPri
 *******************************************************************************/
 GT_STATUS gqosSetVIDFPriOverride
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_LPORT		port,
-	IN GT_BOOL		mode
+    IN GT_QD_DEV    *dev,
+    IN GT_LPORT        port,
+    IN GT_BOOL        mode
 )
 {
     GT_U16          data;           
@@ -1339,26 +1343,26 @@ GT_STATUS gqosSetVIDFPriOverride
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* translate BOOL to binary */
     BOOL_2_BIT(mode, data);
 
     /* Set the VIDFPriOverride mode.            */
-   	retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,14,1,data);
+       retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,14,1,data);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
     return retVal;
 }
 
@@ -1367,27 +1371,27 @@ GT_STATUS gqosSetVIDFPriOverride
 * gqosGetVIDFPriOverride
 *
 * DESCRIPTION:
-*		This routine gets VID Frame Priority Override. When this feature is enabled,
-*		VID Frame priority overrides can occur on this port.
-*		VID Frame priority override occurs when the determined VID of a frame 
-*		results in a VTU entry whose useVIDFPri override field is set to GT_TRUE.
-*		When this occurs the VIDFPri value assigned to the frame's VID (in the 
-*		VTU Table) is used to overwrite the frame's previously determined frame 
-*		priority. If the frame egresses tagged the priority in the frame will be
-*		this new VIDFPri value. This function does not affect the egress queue
-*		priority (QPri) the frame is switched into.
+*        This routine gets VID Frame Priority Override. When this feature is enabled,
+*        VID Frame priority overrides can occur on this port.
+*        VID Frame priority override occurs when the determined VID of a frame 
+*        results in a VTU entry whose useVIDFPri override field is set to GT_TRUE.
+*        When this occurs the VIDFPri value assigned to the frame's VID (in the 
+*        VTU Table) is used to overwrite the frame's previously determined frame 
+*        priority. If the frame egresses tagged the priority in the frame will be
+*        this new VIDFPri value. This function does not affect the egress queue
+*        priority (QPri) the frame is switched into.
 *
 * INPUTS:
-*		port - the logical port number.
+*        port - the logical port number.
 *
 * OUTPUTS:
-*		mode - GT_TRUE for VID Frame Priority Override,
-*			   GT_FALSE otherwise
+*        mode - GT_TRUE for VID Frame Priority Override,
+*               GT_FALSE otherwise
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -1396,9 +1400,9 @@ GT_STATUS gqosSetVIDFPriOverride
 *******************************************************************************/
 GT_STATUS gqosGetVIDFPriOverride
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_LPORT	port,
-	OUT GT_BOOL		*mode
+    IN  GT_QD_DEV    *dev,
+    IN  GT_LPORT    port,
+    OUT GT_BOOL        *mode
 )
 {
     GT_U16          data;           
@@ -1410,23 +1414,23 @@ GT_STATUS gqosGetVIDFPriOverride
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the VIDFPriOverride mode.            */
     retVal = hwGetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,14,1,&data);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     BIT_2_BOOL(data, *mode);
 
@@ -1438,30 +1442,30 @@ GT_STATUS gqosGetVIDFPriOverride
 * gqosSetSAFPriOverride
 *
 * DESCRIPTION:
-*		This routine sets Source Address(SA) Frame Priority Override. 
-*		When this feature is enabled, SA Frame priority overrides can occur on 
-*		this port.
-*		SA ATU Frame priority override occurs when the determined source address
-*		of a frame results in an ATU hit where the SA's MAC address entry contains 
-*		the useATUFPri field set to GT_TRUE.
-*		When this occurs the ATUFPri value assigned to the frame's SA (in the 
-*		ATU Table) is used to overwrite the frame's previously determined frame 
-*		priority. If the frame egresses tagged the priority in the frame will be
-*		this new ATUFPri value. This function does not affect the egress queue
-*		priority (QPri) the frame is switched into.
+*        This routine sets Source Address(SA) Frame Priority Override. 
+*        When this feature is enabled, SA Frame priority overrides can occur on 
+*        this port.
+*        SA ATU Frame priority override occurs when the determined source address
+*        of a frame results in an ATU hit where the SA's MAC address entry contains 
+*        the useATUFPri field set to GT_TRUE.
+*        When this occurs the ATUFPri value assigned to the frame's SA (in the 
+*        ATU Table) is used to overwrite the frame's previously determined frame 
+*        priority. If the frame egresses tagged the priority in the frame will be
+*        this new ATUFPri value. This function does not affect the egress queue
+*        priority (QPri) the frame is switched into.
 *
 * INPUTS:
-*		port - the logical port number.
-*		mode - GT_TRUE for SA Frame Priority Override,
-*			   GT_FALSE otherwise
+*        port - the logical port number.
+*        mode - GT_TRUE for SA Frame Priority Override,
+*               GT_FALSE otherwise
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -1470,9 +1474,9 @@ GT_STATUS gqosGetVIDFPriOverride
 *******************************************************************************/
 GT_STATUS gqosSetSAFPriOverride
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_LPORT	port,
-	IN  GT_BOOL		mode
+    IN  GT_QD_DEV    *dev,
+    IN  GT_LPORT    port,
+    IN  GT_BOOL        mode
 )
 {
     GT_U16          data;           
@@ -1484,10 +1488,10 @@ GT_STATUS gqosSetSAFPriOverride
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* translate BOOL to binary */
@@ -1497,13 +1501,13 @@ GT_STATUS gqosSetSAFPriOverride
     retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,13,1,data);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
     return retVal;
 }
 
@@ -1511,29 +1515,29 @@ GT_STATUS gqosSetSAFPriOverride
 * gqosGetSAFPriOverride
 *
 * DESCRIPTION:
-*		This routine gets Source Address(SA) Frame Priority Override. 
-*		When this feature is enabled, SA Frame priority overrides can occur on 
-*		this port.
-*		SA ATU Frame priority override occurs when the determined source address
-*		of a frame results in an ATU hit where the SA's MAC address entry contains 
-*		the useATUFPri field set to GT_TRUE.
-*		When this occurs the ATUFPri value assigned to the frame's SA (in the 
-*		ATU Table) is used to overwrite the frame's previously determined frame 
-*		priority. If the frame egresses tagged the priority in the frame will be
-*		this new ATUFPri value. This function does not affect the egress queue
-*		priority (QPri) the frame is switched into.
+*        This routine gets Source Address(SA) Frame Priority Override. 
+*        When this feature is enabled, SA Frame priority overrides can occur on 
+*        this port.
+*        SA ATU Frame priority override occurs when the determined source address
+*        of a frame results in an ATU hit where the SA's MAC address entry contains 
+*        the useATUFPri field set to GT_TRUE.
+*        When this occurs the ATUFPri value assigned to the frame's SA (in the 
+*        ATU Table) is used to overwrite the frame's previously determined frame 
+*        priority. If the frame egresses tagged the priority in the frame will be
+*        this new ATUFPri value. This function does not affect the egress queue
+*        priority (QPri) the frame is switched into.
 *
 * INPUTS:
-*		port - the logical port number.
+*        port - the logical port number.
 *
 * OUTPUTS:
-*		mode - GT_TRUE for SA Frame Priority Override,
-*			   GT_FALSE otherwise
+*        mode - GT_TRUE for SA Frame Priority Override,
+*               GT_FALSE otherwise
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -1542,9 +1546,9 @@ GT_STATUS gqosSetSAFPriOverride
 *******************************************************************************/
 GT_STATUS gqosGetSAFPriOverride
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_LPORT	port,
-	OUT GT_BOOL		*mode
+    IN  GT_QD_DEV    *dev,
+    IN  GT_LPORT    port,
+    OUT GT_BOOL        *mode
 )
 {
     GT_U16          data;           
@@ -1556,23 +1560,23 @@ GT_STATUS gqosGetSAFPriOverride
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the SAFPriOverride mode.            */
     retVal = hwGetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,13,1,&data);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     BIT_2_BOOL(data, *mode);
 
@@ -1583,30 +1587,30 @@ GT_STATUS gqosGetSAFPriOverride
 * gqosSetDAFPriOverride
 *
 * DESCRIPTION:
-*		This routine sets Destination Address(DA) Frame Priority Override. 
-*		When this feature is enabled, DA Frame priority overrides can occur on 
-*		this port.
-*		DA ATU Frame priority override occurs when the determined destination address
-*		of a frame results in an ATU hit where the DA's MAC address entry contains 
-*		the useATUFPri field set to GT_TRUE.
-*		When this occurs the ATUFPri value assigned to the frame's DA (in the 
-*		ATU Table) is used to overwrite the frame's previously determined frame 
-*		priority. If the frame egresses tagged the priority in the frame will be
-*		this new ATUFPri value. This function does not affect the egress queue
-*		priority (QPri) the frame is switched into.
+*        This routine sets Destination Address(DA) Frame Priority Override. 
+*        When this feature is enabled, DA Frame priority overrides can occur on 
+*        this port.
+*        DA ATU Frame priority override occurs when the determined destination address
+*        of a frame results in an ATU hit where the DA's MAC address entry contains 
+*        the useATUFPri field set to GT_TRUE.
+*        When this occurs the ATUFPri value assigned to the frame's DA (in the 
+*        ATU Table) is used to overwrite the frame's previously determined frame 
+*        priority. If the frame egresses tagged the priority in the frame will be
+*        this new ATUFPri value. This function does not affect the egress queue
+*        priority (QPri) the frame is switched into.
 *
 * INPUTS:
-*		port - the logical port number.
-*		mode - GT_TRUE for DA Frame Priority Override,
-*			   GT_FALSE otherwise
+*        port - the logical port number.
+*        mode - GT_TRUE for DA Frame Priority Override,
+*               GT_FALSE otherwise
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -1615,9 +1619,9 @@ GT_STATUS gqosGetSAFPriOverride
 *******************************************************************************/
 GT_STATUS gqosSetDAFPriOverride
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_LPORT	port,
-	IN  GT_BOOL		mode
+    IN  GT_QD_DEV    *dev,
+    IN  GT_LPORT    port,
+    IN  GT_BOOL        mode
 )
 {
     GT_U16          data;           
@@ -1629,10 +1633,10 @@ GT_STATUS gqosSetDAFPriOverride
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* translate BOOL to binary */
@@ -1642,13 +1646,13 @@ GT_STATUS gqosSetDAFPriOverride
     retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,12,1,data);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
     return retVal;
 }
 
@@ -1656,29 +1660,29 @@ GT_STATUS gqosSetDAFPriOverride
 * gqosGetDAFPriOverride
 *
 * DESCRIPTION:
-*		This routine gets Destination Address(DA) Frame Priority Override. 
-*		When this feature is enabled, DA Frame priority overrides can occur on 
-*		this port.
-*		DA ATU Frame priority override occurs when the determined destination address
-*		of a frame results in an ATU hit where the DA's MAC address entry contains 
-*		the useATUFPri field set to GT_TRUE.
-*		When this occurs the ATUFPri value assigned to the frame's DA (in the 
-*		ATU Table) is used to overwrite the frame's previously determined frame 
-*		priority. If the frame egresses tagged the priority in the frame will be
-*		this new ATUFPri value. This function does not affect the egress queue
-*		priority (QPri) the frame is switched into.
+*        This routine gets Destination Address(DA) Frame Priority Override. 
+*        When this feature is enabled, DA Frame priority overrides can occur on 
+*        this port.
+*        DA ATU Frame priority override occurs when the determined destination address
+*        of a frame results in an ATU hit where the DA's MAC address entry contains 
+*        the useATUFPri field set to GT_TRUE.
+*        When this occurs the ATUFPri value assigned to the frame's DA (in the 
+*        ATU Table) is used to overwrite the frame's previously determined frame 
+*        priority. If the frame egresses tagged the priority in the frame will be
+*        this new ATUFPri value. This function does not affect the egress queue
+*        priority (QPri) the frame is switched into.
 *
 * INPUTS:
-*		port - the logical port number.
+*        port - the logical port number.
 *
 * OUTPUTS:
-*		mode - GT_TRUE for DA Frame Priority Override,
-*			   GT_FALSE otherwise
+*        mode - GT_TRUE for DA Frame Priority Override,
+*               GT_FALSE otherwise
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -1687,9 +1691,9 @@ GT_STATUS gqosSetDAFPriOverride
 *******************************************************************************/
 GT_STATUS gqosGetDAFPriOverride
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_LPORT	port,
-	OUT GT_BOOL		*mode
+    IN  GT_QD_DEV    *dev,
+    IN  GT_LPORT    port,
+    OUT GT_BOOL        *mode
 )
 {
     GT_U16          data;           
@@ -1701,23 +1705,23 @@ GT_STATUS gqosGetDAFPriOverride
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the DAFPriOverride mode.            */
     retVal = hwGetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,12,1,&data);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     BIT_2_BOOL(data, *mode);
 
@@ -1729,28 +1733,28 @@ GT_STATUS gqosGetDAFPriOverride
 * gqosSetVIDQPriOverride
 *
 * DESCRIPTION:
-*		This routine sets VID Queue Priority Override. When this feature is enabled,
-*		VID Queue priority overrides can occur on this port.
-*		VID Queue priority override occurs when the determined VID of a frame 
-*		results in a VTU entry whose useVIDQPri override field is set to GT_TRUE.
-*		When this occurs the VIDQPri value assigned to the frame's VID (in the 
-*		VTU Table) is used to overwrite the frame's previously determined queue 
-*		priority. If the frame egresses tagged the priority in the frame will not
-*		be modified by this new VIDQPri value. This function affects the egress
-*		queue priority (QPri) the frame is switched into.
+*        This routine sets VID Queue Priority Override. When this feature is enabled,
+*        VID Queue priority overrides can occur on this port.
+*        VID Queue priority override occurs when the determined VID of a frame 
+*        results in a VTU entry whose useVIDQPri override field is set to GT_TRUE.
+*        When this occurs the VIDQPri value assigned to the frame's VID (in the 
+*        VTU Table) is used to overwrite the frame's previously determined queue 
+*        priority. If the frame egresses tagged the priority in the frame will not
+*        be modified by this new VIDQPri value. This function affects the egress
+*        queue priority (QPri) the frame is switched into.
 *
 * INPUTS:
-*		port - the logical port number.
-*		mode - GT_TRUE for VID Queue Priority Override,
-*			   GT_FALSE otherwise
+*        port - the logical port number.
+*        mode - GT_TRUE for VID Queue Priority Override,
+*               GT_FALSE otherwise
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -1759,9 +1763,9 @@ GT_STATUS gqosGetDAFPriOverride
 *******************************************************************************/
 GT_STATUS gqosSetVIDQPriOverride
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_LPORT		port,
-	IN GT_BOOL		mode
+    IN GT_QD_DEV    *dev,
+    IN GT_LPORT        port,
+    IN GT_BOOL        mode
 )
 {
     GT_U16          data;           
@@ -1773,10 +1777,10 @@ GT_STATUS gqosSetVIDQPriOverride
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* translate BOOL to binary */
@@ -1786,13 +1790,13 @@ GT_STATUS gqosSetVIDQPriOverride
     retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,3,1,data);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
     return retVal;
 }
 
@@ -1801,27 +1805,27 @@ GT_STATUS gqosSetVIDQPriOverride
 * gqosGetVIDQPriOverride
 *
 * DESCRIPTION:
-*		This routine gets VID Queue Priority Override. When this feature is enabled,
-*		VID Queue priority overrides can occur on this port.
-*		VID Queue priority override occurs when the determined VID of a frame 
-*		results in a VTU entry whose useVIDQPri override field is set to GT_TRUE.
-*		When this occurs the VIDQPri value assigned to the frame's VID (in the 
-*		VTU Table) is used to overwrite the frame's previously determined queue 
-*		priority. If the frame egresses tagged the priority in the frame will not
-*		be modified by this new VIDQPri value. This function affects the egress
-*		queue priority (QPri) the frame is switched into.
+*        This routine gets VID Queue Priority Override. When this feature is enabled,
+*        VID Queue priority overrides can occur on this port.
+*        VID Queue priority override occurs when the determined VID of a frame 
+*        results in a VTU entry whose useVIDQPri override field is set to GT_TRUE.
+*        When this occurs the VIDQPri value assigned to the frame's VID (in the 
+*        VTU Table) is used to overwrite the frame's previously determined queue 
+*        priority. If the frame egresses tagged the priority in the frame will not
+*        be modified by this new VIDQPri value. This function affects the egress
+*        queue priority (QPri) the frame is switched into.
 *
 * INPUTS:
-*		port - the logical port number.
+*        port - the logical port number.
 *
 * OUTPUTS:
-*		mode - GT_TRUE for VID Queue Priority Override,
-*			   GT_FALSE otherwise
+*        mode - GT_TRUE for VID Queue Priority Override,
+*               GT_FALSE otherwise
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -1830,9 +1834,9 @@ GT_STATUS gqosSetVIDQPriOverride
 *******************************************************************************/
 GT_STATUS gqosGetVIDQPriOverride
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_LPORT	port,
-	OUT GT_BOOL		*mode
+    IN  GT_QD_DEV    *dev,
+    IN  GT_LPORT    port,
+    OUT GT_BOOL        *mode
 )
 {
     GT_U16          data;           
@@ -1844,23 +1848,23 @@ GT_STATUS gqosGetVIDQPriOverride
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the VIDQPriOverride mode.            */
     retVal = hwGetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,3,1,&data);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     BIT_2_BOOL(data, *mode);
 
@@ -1872,30 +1876,30 @@ GT_STATUS gqosGetVIDQPriOverride
 * gqosSetSAQPriOverride
 *
 * DESCRIPTION:
-*		This routine sets Source Address(SA) Queue Priority Override. 
-*		When this feature is enabled, SA Queue priority overrides can occur on 
-*		this port.
-*		SA ATU Queue priority override occurs when the determined source address
-*		of a frame results in an ATU hit where the SA's MAC address entry contains 
-*		the useATUQPri field set to GT_TRUE.
-*		When this occurs the ATUQPri value assigned to the frame's SA (in the 
-*		ATU Table) is used to overwrite the frame's previously determined queue 
-*		priority. If the frame egresses tagged the priority in the frame will not
-*		be modified by this new ATUQPri value. This function affects the egress
-*		queue priority (QPri) the frame is switched into.
+*        This routine sets Source Address(SA) Queue Priority Override. 
+*        When this feature is enabled, SA Queue priority overrides can occur on 
+*        this port.
+*        SA ATU Queue priority override occurs when the determined source address
+*        of a frame results in an ATU hit where the SA's MAC address entry contains 
+*        the useATUQPri field set to GT_TRUE.
+*        When this occurs the ATUQPri value assigned to the frame's SA (in the 
+*        ATU Table) is used to overwrite the frame's previously determined queue 
+*        priority. If the frame egresses tagged the priority in the frame will not
+*        be modified by this new ATUQPri value. This function affects the egress
+*        queue priority (QPri) the frame is switched into.
 *
 * INPUTS:
-*		port - the logical port number.
-*		mode - GT_TRUE for SA Queue Priority Override,
-*			   GT_FALSE otherwise
+*        port - the logical port number.
+*        mode - GT_TRUE for SA Queue Priority Override,
+*               GT_FALSE otherwise
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -1904,9 +1908,9 @@ GT_STATUS gqosGetVIDQPriOverride
 *******************************************************************************/
 GT_STATUS gqosSetSAQPriOverride
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_LPORT	port,
-	IN  GT_BOOL		mode
+    IN  GT_QD_DEV    *dev,
+    IN  GT_LPORT    port,
+    IN  GT_BOOL        mode
 )
 {
     GT_U16          data;           
@@ -1918,10 +1922,10 @@ GT_STATUS gqosSetSAQPriOverride
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* translate BOOL to binary */
@@ -1931,13 +1935,13 @@ GT_STATUS gqosSetSAQPriOverride
     retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,2,1,data);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
     return retVal;
 }
 
@@ -1945,29 +1949,29 @@ GT_STATUS gqosSetSAQPriOverride
 * gqosGetSAQPriOverride
 *
 * DESCRIPTION:
-*		This routine gets Source Address(SA) Queue Priority Override. 
-*		When this feature is enabled, SA Queue priority overrides can occur on 
-*		this port.
-*		SA ATU Queue priority override occurs when the determined source address
-*		of a frame results in an ATU hit where the SA's MAC address entry contains 
-*		the useATUQPri field set to GT_TRUE.
-*		When this occurs the ATUQPri value assigned to the frame's SA (in the 
-*		ATU Table) is used to overwrite the frame's previously determined queue 
-*		priority. If the frame egresses tagged the priority in the frame will not
-*		be modified by this new ATUQPri value. This function affects the egress
-*		queue priority (QPri) the frame is switched into.
+*        This routine gets Source Address(SA) Queue Priority Override. 
+*        When this feature is enabled, SA Queue priority overrides can occur on 
+*        this port.
+*        SA ATU Queue priority override occurs when the determined source address
+*        of a frame results in an ATU hit where the SA's MAC address entry contains 
+*        the useATUQPri field set to GT_TRUE.
+*        When this occurs the ATUQPri value assigned to the frame's SA (in the 
+*        ATU Table) is used to overwrite the frame's previously determined queue 
+*        priority. If the frame egresses tagged the priority in the frame will not
+*        be modified by this new ATUQPri value. This function affects the egress
+*        queue priority (QPri) the frame is switched into.
 *
 * INPUTS:
-*		port - the logical port number.
+*        port - the logical port number.
 *
 * OUTPUTS:
-*		mode - GT_TRUE for SA Queue Priority Override,
-*			   GT_FALSE otherwise
+*        mode - GT_TRUE for SA Queue Priority Override,
+*               GT_FALSE otherwise
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -1976,9 +1980,9 @@ GT_STATUS gqosSetSAQPriOverride
 *******************************************************************************/
 GT_STATUS gqosGetSAQPriOverride
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_LPORT	port,
-	OUT GT_BOOL		*mode
+    IN  GT_QD_DEV    *dev,
+    IN  GT_LPORT    port,
+    OUT GT_BOOL        *mode
 )
 {
     GT_U16          data;           
@@ -1990,23 +1994,23 @@ GT_STATUS gqosGetSAQPriOverride
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the SAQPriOverride mode.            */
     retVal = hwGetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,2,1,&data);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     BIT_2_BOOL(data, *mode);
 
@@ -2017,30 +2021,30 @@ GT_STATUS gqosGetSAQPriOverride
 * gqosSetDAQPriOverride
 *
 * DESCRIPTION:
-*		This routine sets Destination Address(DA) Queue Priority Override. 
-*		When this feature is enabled, DA Queue priority overrides can occur on 
-*		this port.
-*		DA ATU Queue priority override occurs when the determined destination address
-*		of a frame results in an ATU hit where the DA's MAC address entry contains 
-*		the useATUQPri field set to GT_TRUE.
-*		When this occurs the ATUQPri value assigned to the frame's DA (in the 
-*		ATU Table) is used to overwrite the frame's previously determined queue
-*		priority. If the frame egresses tagged the priority in the frame will not
-*		be modified by this new ATUQPri value. This function affects the egress
-*		queue priority (QPri) the frame is switched into.
+*        This routine sets Destination Address(DA) Queue Priority Override. 
+*        When this feature is enabled, DA Queue priority overrides can occur on 
+*        this port.
+*        DA ATU Queue priority override occurs when the determined destination address
+*        of a frame results in an ATU hit where the DA's MAC address entry contains 
+*        the useATUQPri field set to GT_TRUE.
+*        When this occurs the ATUQPri value assigned to the frame's DA (in the 
+*        ATU Table) is used to overwrite the frame's previously determined queue
+*        priority. If the frame egresses tagged the priority in the frame will not
+*        be modified by this new ATUQPri value. This function affects the egress
+*        queue priority (QPri) the frame is switched into.
 *
 * INPUTS:
-*		port - the logical port number.
-*		mode - GT_TRUE for DA Queue Priority Override,
-*			   GT_FALSE otherwise
+*        port - the logical port number.
+*        mode - GT_TRUE for DA Queue Priority Override,
+*               GT_FALSE otherwise
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -2049,9 +2053,9 @@ GT_STATUS gqosGetSAQPriOverride
 *******************************************************************************/
 GT_STATUS gqosSetDAQPriOverride
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_LPORT	port,
-	IN  GT_BOOL		mode
+    IN  GT_QD_DEV    *dev,
+    IN  GT_LPORT    port,
+    IN  GT_BOOL        mode
 )
 {
     GT_U16          data;           
@@ -2063,10 +2067,10 @@ GT_STATUS gqosSetDAQPriOverride
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* translate BOOL to binary */
@@ -2076,13 +2080,13 @@ GT_STATUS gqosSetDAQPriOverride
     retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,1,1,data);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
     return retVal;
 }
 
@@ -2090,29 +2094,29 @@ GT_STATUS gqosSetDAQPriOverride
 * gqosGetDAQPriOverride
 *
 * DESCRIPTION:
-*		This routine sets Destination Address(DA) Queue Priority Override. 
-*		When this feature is enabled, DA Queue priority overrides can occur on 
-*		this port.
-*		DA ATU Queue priority override occurs when the determined destination address
-*		of a frame results in an ATU hit where the DA's MAC address entry contains 
-*		the useATUQPri field set to GT_TRUE.
-*		When this occurs the ATUQPri value assigned to the frame's DA (in the 
-*		ATU Table) is used to overwrite the frame's previously determined queue
-*		priority. If the frame egresses tagged the priority in the frame will not
-*		be modified by this new ATUQPri value. This function affects the egress
-*		queue priority (QPri) the frame is switched into.
+*        This routine sets Destination Address(DA) Queue Priority Override. 
+*        When this feature is enabled, DA Queue priority overrides can occur on 
+*        this port.
+*        DA ATU Queue priority override occurs when the determined destination address
+*        of a frame results in an ATU hit where the DA's MAC address entry contains 
+*        the useATUQPri field set to GT_TRUE.
+*        When this occurs the ATUQPri value assigned to the frame's DA (in the 
+*        ATU Table) is used to overwrite the frame's previously determined queue
+*        priority. If the frame egresses tagged the priority in the frame will not
+*        be modified by this new ATUQPri value. This function affects the egress
+*        queue priority (QPri) the frame is switched into.
 *
 * INPUTS:
-*		port - the logical port number.
+*        port - the logical port number.
 *
 * OUTPUTS:
-*		mode - GT_TRUE for DA Queue Priority Override,
-*			   GT_FALSE otherwise
+*        mode - GT_TRUE for DA Queue Priority Override,
+*               GT_FALSE otherwise
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -2121,9 +2125,9 @@ GT_STATUS gqosSetDAQPriOverride
 *******************************************************************************/
 GT_STATUS gqosGetDAQPriOverride
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_LPORT	port,
-	OUT GT_BOOL		*mode
+    IN  GT_QD_DEV    *dev,
+    IN  GT_LPORT    port,
+    OUT GT_BOOL        *mode
 )
 {
     GT_U16          data;           
@@ -2135,23 +2139,23 @@ GT_STATUS gqosGetDAQPriOverride
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the DAQPriOverride mode.            */
     retVal = hwGetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,1,1,&data);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     BIT_2_BOOL(data, *mode);
 
@@ -2162,28 +2166,28 @@ GT_STATUS gqosGetDAQPriOverride
 * gqosSetARPQPriOverride
 *
 * DESCRIPTION:
-*		This routine sets ARP Queue Priority Override. 
-*		When this feature is enabled, ARP Queue priority overrides can occur on 
-*		this port.
-*		ARP Queue priority override occurs for all ARP frames.
-*		When this occurs, the frame's previously determined egress queue priority
-*		will be overwritten with ArpQPri.
-*		If the frame egresses tagged the priority in the frame will not
-*		be modified. When used, the two bits of the ArpQPri priority determine the
-*		egress queue the frame is switched into.
+*        This routine sets ARP Queue Priority Override. 
+*        When this feature is enabled, ARP Queue priority overrides can occur on 
+*        this port.
+*        ARP Queue priority override occurs for all ARP frames.
+*        When this occurs, the frame's previously determined egress queue priority
+*        will be overwritten with ArpQPri.
+*        If the frame egresses tagged the priority in the frame will not
+*        be modified. When used, the two bits of the ArpQPri priority determine the
+*        egress queue the frame is switched into.
 *
 * INPUTS:
-*		port - the logical port number.
-*		mode - GT_TRUE for ARP Queue Priority Override,
-*			   GT_FALSE otherwise
+*        port - the logical port number.
+*        mode - GT_TRUE for ARP Queue Priority Override,
+*               GT_FALSE otherwise
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -2192,9 +2196,9 @@ GT_STATUS gqosGetDAQPriOverride
 *******************************************************************************/
 GT_STATUS gqosSetARPQPriOverride
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_LPORT	port,
-	IN  GT_BOOL		mode
+    IN  GT_QD_DEV    *dev,
+    IN  GT_LPORT    port,
+    IN  GT_BOOL        mode
 )
 {
     GT_U16          data;           
@@ -2206,10 +2210,10 @@ GT_STATUS gqosSetARPQPriOverride
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* translate BOOL to binary */
@@ -2219,13 +2223,13 @@ GT_STATUS gqosSetARPQPriOverride
     retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,0,1,data);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
     return retVal;
 }
 
@@ -2233,27 +2237,27 @@ GT_STATUS gqosSetARPQPriOverride
 * gqosGetARPQPriOverride
 *
 * DESCRIPTION:
-*		This routine sets ARP Queue Priority Override. 
-*		When this feature is enabled, ARP Queue priority overrides can occur on 
-*		this port.
-*		ARP Queue priority override occurs for all ARP frames.
-*		When this occurs, the frame's previously determined egress queue priority
-*		will be overwritten with ArpQPri.
-*		If the frame egresses tagged the priority in the frame will not
-*		be modified. When used, the two bits of the ArpQPri priority determine the
-*		egress queue the frame is switched into.
+*        This routine sets ARP Queue Priority Override. 
+*        When this feature is enabled, ARP Queue priority overrides can occur on 
+*        this port.
+*        ARP Queue priority override occurs for all ARP frames.
+*        When this occurs, the frame's previously determined egress queue priority
+*        will be overwritten with ArpQPri.
+*        If the frame egresses tagged the priority in the frame will not
+*        be modified. When used, the two bits of the ArpQPri priority determine the
+*        egress queue the frame is switched into.
 *
 * INPUTS:
-*		port - the logical port number.
+*        port - the logical port number.
 *
 * OUTPUTS:
-*		mode - GT_TRUE for ARP Queue Priority Override,
-*			   GT_FALSE otherwise
+*        mode - GT_TRUE for ARP Queue Priority Override,
+*               GT_FALSE otherwise
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS: 
 *
@@ -2262,9 +2266,9 @@ GT_STATUS gqosSetARPQPriOverride
 *******************************************************************************/
 GT_STATUS gqosGetARPQPriOverride
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_LPORT	port,
-	OUT GT_BOOL		*mode
+    IN  GT_QD_DEV    *dev,
+    IN  GT_LPORT    port,
+    OUT GT_BOOL        *mode
 )
 {
     GT_U16          data;           
@@ -2276,23 +2280,23 @@ GT_STATUS gqosGetARPQPriOverride
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the ARPQPriOverride mode.            */
     retVal = hwGetPortRegField(dev,hwPort, QD_REG_PORT_CONTROL2,0,1,&data);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
     BIT_2_BOOL(data, *mode);
 
@@ -2305,9 +2309,9 @@ GT_STATUS gqosGetARPQPriOverride
 *
 * DESCRIPTION:
 *       This routine sets ARP queue Priority to use for ARP QPri Overridden 
-*		frames. When a ARP frame is received on a por tthat has its ARP 
-*		QPriOVerride is enabled, the QPri assigned to the frame comes from
-*		this value
+*        frames. When a ARP frame is received on a por tthat has its ARP 
+*        QPriOVerride is enabled, the QPri assigned to the frame comes from
+*        this value
 *
 * INPUTS:
 *       pri - ARP Queue Priority (0 ~ 3)
@@ -2318,8 +2322,8 @@ GT_STATUS gqosGetARPQPriOverride
 * RETURNS:
 *       GT_OK   - on success
 *       GT_FAIL - on error
-*		GT_BAD_PARAM - if pri > 3
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_BAD_PARAM - if pri > 3
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
 *       None.
@@ -2332,23 +2336,23 @@ GT_STATUS gqosSetArpQPri
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gqosSetArpQPri Called.\n"));
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	if (pri > 3)
-	{
-		DBG_INFO(("GT_BAD_PARAM\n"));
-		return GT_BAD_PARAM;
-	}
+    if (pri > 3)
+    {
+        DBG_INFO(("GT_BAD_PARAM\n"));
+        return GT_BAD_PARAM;
+    }
 
-	data = (GT_U16)pri;
+    data = (GT_U16)pri;
 
     /* Set the ArpQPri bit.            */
     retVal = hwSetGlobalRegField(dev,QD_REG_MANGEMENT_CONTROL,6,2,data);
@@ -2368,9 +2372,9 @@ GT_STATUS gqosSetArpQPri
 *
 * DESCRIPTION:
 *       This routine gets ARP queue Priority to use for ARP QPri Overridden 
-*		frames. When a ARP frame is received on a por tthat has its ARP 
-*		QPriOVerride is enabled, the QPri assigned to the frame comes from
-*		this value
+*        frames. When a ARP frame is received on a por tthat has its ARP 
+*        QPriOVerride is enabled, the QPri assigned to the frame comes from
+*        this value
 *
 * INPUTS:
 *       None.
@@ -2381,7 +2385,7 @@ GT_STATUS gqosSetArpQPri
 * RETURNS:
 *       GT_OK   - on success
 *       GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
 *       None.
@@ -2394,14 +2398,14 @@ GT_STATUS gqosGetArpQPri
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gqosGetArpQPri Called.\n"));
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_FQPRI_OVERRIDE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the ArpQPri bit.            */
@@ -2412,7 +2416,7 @@ GT_STATUS gqosGetArpQPri
         return retVal;
     }
 
-	*pri = (GT_U8)data;
+    *pri = (GT_U8)data;
 
     DBG_INFO(("OK.\n"));
     return GT_OK;

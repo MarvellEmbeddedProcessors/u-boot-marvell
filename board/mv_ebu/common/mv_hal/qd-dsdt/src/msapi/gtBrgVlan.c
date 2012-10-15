@@ -58,7 +58,7 @@ GT_STATUS gprtSetEgressMode
     /* check if device supports this feature */
     if((retVal = IS_VALID_API_CALL(dev,phyPort, DEV_TAGGING)) != GT_OK ) 
       return retVal;
-	
+    
     switch (mode)
     {
         case (GT_UNMODIFY_EGRESS):
@@ -74,11 +74,11 @@ GT_STATUS gprtSetEgressMode
             break;
 
         case (GT_ADD_TAG):
-			if(!IS_IN_DEV_GROUP(dev,DEV_EGRESS_DOUBLE_TAGGING))
-			{
-		        DBG_INFO(("GT_NOT_SUPPORTED\n"));
-				return GT_NOT_SUPPORTED;
-			}
+            if(!IS_IN_DEV_GROUP(dev,DEV_EGRESS_DOUBLE_TAGGING))
+            {
+                DBG_INFO(("GT_NOT_SUPPORTED\n"));
+                return GT_NOT_SUPPORTED;
+            }
             data = 3;
             break;
         default:
@@ -329,7 +329,7 @@ GT_STATUS gvlnSetPortVlanPorts
     phyPort = GT_LPORT_2_PORT(port);
     data = 0;
 
-	if(memPortsLen > dev->numOfPorts)
+    if(memPortsLen > dev->numOfPorts)
     {
         DBG_INFO(("Failed (PortsLen Too Big).\n"));
         return GT_BAD_PARAM;
@@ -408,8 +408,8 @@ GT_STATUS gvlnGetPortVlanPorts
     i = 0;
     for(phyPort = 0; phyPort < dev->maxPorts; phyPort++)
     {
-		if(!GT_IS_PORT_SET(dev->validPortVec, phyPort))
-			continue;
+        if(!GT_IS_PORT_SET(dev->validPortVec, phyPort))
+            continue;
 
         if(((1 << phyPort) & data) != 0)
         {
@@ -462,11 +462,13 @@ GT_STATUS gvlnSetPortUserPriLsb
 
     DBG_INFO(("gvlnSetPortUserPriLsb Called.\n"));
 
-	/* Gigabit Switch does not support this status. */
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH|DEV_ENHANCED_FE_SWITCH))
+    /* Gigabit Switch does not support this status. */
+    if ((IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_ENHANCED_FE_SWITCH)) ||
+		(IS_IN_DEV_GROUP(dev,DEV_FE_AVB_FAMILY)))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     phyPort = GT_LPORT_2_PORT(port);
@@ -519,11 +521,13 @@ GT_STATUS gvlnGetPortUserPriLsb
 
     DBG_INFO(("gvlnGetPortUserPriLsb Called.\n"));
 
-	/* Gigabit Switch does not support this status. */
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH|DEV_ENHANCED_FE_SWITCH))
+    /* Gigabit Switch does not support this status. */
+    if ((IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_ENHANCED_FE_SWITCH)) ||
+		(IS_IN_DEV_GROUP(dev,DEV_FE_AVB_FAMILY)))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     if(userPriLsb == NULL)
@@ -654,11 +658,11 @@ GT_STATUS gvlnGetPortVid
 *
 * DESCRIPTION:
 *       This routine sets the port's default VLAN database number (DBNum or 
-*		FID, Forwarding Information Database).
+*        FID, Forwarding Information Database).
 *
 * INPUTS:
-*       port	- logical port number to set.
-*       DBNum 	- database number for this port (or FID)
+*       port    - logical port number to set.
+*       DBNum     - database number for this port (or FID)
 *
 * OUTPUTS:
 *       None.
@@ -688,41 +692,41 @@ GT_STATUS gvlnSetPortVlanDBNum
 
     phyPort = GT_LPORT_2_PORT(port);
 
-	if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_4096))
-	{
-		if(DBNum > 4095)
-		{
-			return GT_BAD_PARAM;
-		}
-	    retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_CONTROL1,0,8,(GT_U16)((DBNum & 0xFF0) >> 4));
-	    retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4,(GT_U16)(DBNum & 0x000F));
-	}
-	else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_256))
-	{
-		if(DBNum > 255)
-		{
-			return GT_BAD_PARAM;
-		}
-	    retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_CONTROL1,0,4,(GT_U16)((DBNum & 0xF0) >> 4));
-	    retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4,(GT_U16)(DBNum & 0x0F));
-	}
-	else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_64))
-	{
-		if(DBNum > 63)
-		{
-			return GT_BAD_PARAM;
-		}
-	    retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,6,2,(GT_U16)((DBNum & 0x30) >> 4));
-	    retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4,(GT_U16)(DBNum & 0x0F));
-	}
-	else
-	{
-		if(DBNum > 15)
-		{
-			return GT_BAD_PARAM;
-		}
-	    retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4,(GT_U16)(DBNum & 0x0F));
-	}
+    if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_4096))
+    {
+        if(DBNum > 4095)
+        {
+            return GT_BAD_PARAM;
+        }
+        retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_CONTROL1,0,8,(GT_U16)((DBNum & 0xFF0) >> 4));
+        retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4,(GT_U16)(DBNum & 0x000F));
+    }
+    else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_256))
+    {
+        if(DBNum > 255)
+        {
+            return GT_BAD_PARAM;
+        }
+        retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_CONTROL1,0,4,(GT_U16)((DBNum & 0xF0) >> 4));
+        retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4,(GT_U16)(DBNum & 0x0F));
+    }
+    else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_64))
+    {
+        if(DBNum > 63)
+        {
+            return GT_BAD_PARAM;
+        }
+        retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,6,2,(GT_U16)((DBNum & 0x30) >> 4));
+        retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4,(GT_U16)(DBNum & 0x0F));
+    }
+    else
+    {
+        if(DBNum > 15)
+        {
+            return GT_BAD_PARAM;
+        }
+        retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4,(GT_U16)(DBNum & 0x0F));
+    }
 
     if(retVal != GT_OK)
     {
@@ -740,13 +744,13 @@ GT_STATUS gvlnSetPortVlanDBNum
 *
 * DESCRIPTION:
 *       This routine gets the port's default VLAN database number (DBNum or
-*		FID, Forwarding Information Database).
+*        FID, Forwarding Information Database).
 *
 * INPUTS:
-*       port 	- logical port number to get.
+*       port     - logical port number to get.
 *
 * OUTPUTS:
-*       DBNum 	- database number for this port (or FID)
+*       DBNum     - database number for this port (or FID)
 *
 * RETURNS:
 *       GT_OK               - on success
@@ -777,26 +781,26 @@ GT_STATUS gvlnGetPortVlanDBNum
 
     phyPort = GT_LPORT_2_PORT(port);
 
-	if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_4096))
-	{
-	    retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_CONTROL1,0,8, &dataH);
-	    retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4, &data);
-	}
-	else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_256))
-	{
-	    retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_CONTROL1,0,4, &dataH);
-	    retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4, &data);
-	}
-	else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_64))
-	{
-	    retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,6,2, &dataH);
-	    retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4, &data);
-	}
-	else
-	{
-		dataH = 0;
-	    retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4, &data);
-	}
+    if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_4096))
+    {
+        retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_CONTROL1,0,8, &dataH);
+        retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4, &data);
+    }
+    else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_256))
+    {
+        retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_CONTROL1,0,4, &dataH);
+        retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4, &data);
+    }
+    else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_64))
+    {
+        retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,6,2, &dataH);
+        retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4, &data);
+    }
+    else
+    {
+        dataH = 0;
+        retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,12,4, &data);
+    }
 
     if(retVal != GT_OK)
     {
@@ -816,8 +820,8 @@ GT_STATUS gvlnGetPortVlanDBNum
 *       This routine sets the IEEE 802.1q mode for this port (11:10) 
 *
 * INPUTS:
-*       port	- logical port number to set.
-*       mode 	- 802.1q mode for this port 
+*       port    - logical port number to set.
+*       mode     - 802.1q mode for this port 
 *
 * OUTPUTS:
 *       None.
@@ -835,8 +839,8 @@ GT_STATUS gvlnGetPortVlanDBNum
 GT_STATUS gvlnSetPortVlanDot1qMode
 (
     IN GT_QD_DEV        *dev,
-    IN GT_LPORT 	port,
-    IN GT_DOT1Q_MODE	mode
+    IN GT_LPORT     port,
+    IN GT_DOT1Q_MODE    mode
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -850,14 +854,16 @@ GT_STATUS gvlnSetPortVlanDot1qMode
     if((retVal = IS_VALID_API_CALL(dev,phyPort, DEV_802_1Q)) != GT_OK ) 
       return retVal;
 
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH|DEV_ENHANCED_FE_SWITCH))
-	{
-	    retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_CONTROL2,10,2,(GT_U16)mode );
-	}
-	else
-	{
-	    retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,10,2,(GT_U16)mode );
-	}
+    if ((IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_ENHANCED_FE_SWITCH)) ||
+		(IS_IN_DEV_GROUP(dev,DEV_FE_AVB_FAMILY)))
+    {
+        retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_CONTROL2,10,2,(GT_U16)mode );
+    }
+    else
+    {
+        retVal = hwSetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,10,2,(GT_U16)mode );
+    }
 
     if(retVal != GT_OK)
     {
@@ -875,10 +881,10 @@ GT_STATUS gvlnSetPortVlanDot1qMode
 *       This routine gets the IEEE 802.1q mode for this (bit 11:10).
 *
 * INPUTS:
-*       port 	- logical port number to get.
+*       port     - logical port number to get.
 *
 * OUTPUTS:
-*       mode 	- 802.1q mode for this port 
+*       mode     - 802.1q mode for this port 
 *
 * RETURNS:
 *       GT_OK               - on success
@@ -913,14 +919,16 @@ GT_STATUS gvlnGetPortVlanDot1qMode
         return GT_BAD_PARAM;
     }
 
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH|DEV_ENHANCED_FE_SWITCH))
-	{
-	    retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_CONTROL2,10,2, &data);
-	}
-	else
-	{
-	    retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,10,2, &data);
-	}
+    if ((IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_ENHANCED_FE_SWITCH)) ||
+		(IS_IN_DEV_GROUP(dev,DEV_FE_AVB_FAMILY)))
+    {
+        retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_CONTROL2,10,2, &data);
+    }
+    else
+    {
+        retVal = hwGetPortRegField(dev,phyPort,QD_REG_PORT_VLAN_MAP,10,2, &data);
+    }
 
     if(retVal != GT_OK)
     {
@@ -961,8 +969,8 @@ GT_STATUS gvlnGetPortVlanDot1qMode
 GT_STATUS gvlnSetPortVlanForceDefaultVID
 (
     IN GT_QD_DEV        *dev,
-    IN GT_LPORT 	port,
-    IN GT_BOOL  	mode
+    IN GT_LPORT     port,
+    IN GT_BOOL      mode
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -998,10 +1006,10 @@ GT_STATUS gvlnSetPortVlanForceDefaultVID
 *       This routine gets the port mode for ForceDefaultVID (bit 12).
 *
 * INPUTS:
-*       port 	- logical port number to get.
+*       port     - logical port number to get.
 *
 * OUTPUTS:
-*       mode 	- ForceDefaultVID mode for this port 
+*       mode     - ForceDefaultVID mode for this port 
 *
 * RETURNS:
 *       GT_OK               - on success
@@ -1016,8 +1024,8 @@ GT_STATUS gvlnSetPortVlanForceDefaultVID
 GT_STATUS gvlnGetPortVlanForceDefaultVID
 (
     IN GT_QD_DEV        *dev,
-    IN  GT_LPORT 	port,
-    OUT GT_BOOL    	*mode
+    IN  GT_LPORT     port,
+    OUT GT_BOOL        *mode
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -1057,9 +1065,9 @@ GT_STATUS gvlnGetPortVlanForceDefaultVID
 *
 * DESCRIPTION:
 *       This routine enables/disables Force Map feature.
-*		When Force Map feature is enabled, all received frames will be
-*		considered MGMT and they are mapped to the port or ports defined
-*		in the VLAN Table overriding the mapping from the address database.
+*        When Force Map feature is enabled, all received frames will be
+*        considered MGMT and they are mapped to the port or ports defined
+*        in the VLAN Table overriding the mapping from the address database.
 *
 * INPUTS:
 *       port    - logical port number to set.
@@ -1080,8 +1088,8 @@ GT_STATUS gvlnGetPortVlanForceDefaultVID
 GT_STATUS gvlnSetForceMap
 (
     IN  GT_QD_DEV   *dev,
-    IN  GT_LPORT 	port,
-    IN  GT_BOOL  	mode
+    IN  GT_LPORT     port,
+    IN  GT_BOOL      mode
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -1093,10 +1101,10 @@ GT_STATUS gvlnSetForceMap
     phyPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_FORCE_MAP))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    if (!IS_IN_DEV_GROUP(dev,DEV_FORCE_MAP))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
     BOOL_2_BIT(mode,data);
 
@@ -1118,9 +1126,9 @@ GT_STATUS gvlnSetForceMap
 *
 * DESCRIPTION:
 *       This routine checks if Force Map feature is enabled.
-*		When Force Map feature is enabled, all received frames will be
-*		considered MGMT and they are mapped to the port or ports defined
-*		in the VLAN Table overriding the mapping from the address database.
+*        When Force Map feature is enabled, all received frames will be
+*        considered MGMT and they are mapped to the port or ports defined
+*        in the VLAN Table overriding the mapping from the address database.
 *
 * INPUTS:
 *       port    - logical port number to set.
@@ -1140,8 +1148,8 @@ GT_STATUS gvlnSetForceMap
 GT_STATUS gvlnGetForceMap
 (
     IN  GT_QD_DEV   *dev,
-    IN  GT_LPORT 	port,
-    OUT GT_BOOL  	*mode
+    IN  GT_LPORT     port,
+    OUT GT_BOOL      *mode
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -1153,10 +1161,10 @@ GT_STATUS gvlnGetForceMap
     phyPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_FORCE_MAP))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    if (!IS_IN_DEV_GROUP(dev,DEV_FORCE_MAP))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
     retVal = hwGetPortRegField(dev,phyPort, QD_REG_PORT_VLAN_MAP, 8, 1, &data);
     if(retVal != GT_OK)
@@ -1177,31 +1185,31 @@ GT_STATUS gvlnGetForceMap
 * gvlnSetNoEgrPolicy
 *
 * DESCRIPTION:
-*		No Egress Policy. When this bit is set to a one Egress 802.1Q Secure and
-*		Check discards are not performed. This mode allowsa non-802.1Q enabled 
-*		port to send a frame to an 802.1Q enabled port that is configured in the
-*		Secure or Check 802.1Q mode. In this situation the frames will egress 
-*		even if the VID assigned to the frame is not found in the VTU.
+*        No Egress Policy. When this bit is set to a one Egress 802.1Q Secure and
+*        Check discards are not performed. This mode allowsa non-802.1Q enabled 
+*        port to send a frame to an 802.1Q enabled port that is configured in the
+*        Secure or Check 802.1Q mode. In this situation the frames will egress 
+*        even if the VID assigned to the frame is not found in the VTU.
 *
 * INPUTS:
-*		mode - no egress policy mode
+*        mode - no egress policy mode
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gvlnSetNoEgrPolicy
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		mode
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        mode
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -1209,11 +1217,11 @@ GT_STATUS gvlnSetNoEgrPolicy
 
     DBG_INFO(("gvlnSetNoEgrPolicy Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_NO_EGRESS_POLICY))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_NO_EGRESS_POLICY))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(mode,data);
@@ -1234,31 +1242,31 @@ GT_STATUS gvlnSetNoEgrPolicy
 * gvlnGetNoEgrPolicy
 *
 * DESCRIPTION:
-*		No Egress Policy. When this bit is set to a one Egress 802.1Q Secure and
-*		Check discards are not performed. This mode allowsa non-802.1Q enabled 
-*		port to send a frame to an 802.1Q enabled port that is configured in the
-*		Secure or Check 802.1Q mode. In this situation the frames will egress 
-*		even if the VID assigned to the frame is not found in the VTU.
+*        No Egress Policy. When this bit is set to a one Egress 802.1Q Secure and
+*        Check discards are not performed. This mode allowsa non-802.1Q enabled 
+*        port to send a frame to an 802.1Q enabled port that is configured in the
+*        Secure or Check 802.1Q mode. In this situation the frames will egress 
+*        even if the VID assigned to the frame is not found in the VTU.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		mode - no egress policy mode
+*        mode - no egress policy mode
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gvlnGetNoEgrPolicy
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL		*mode
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL        *mode
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -1266,11 +1274,11 @@ GT_STATUS gvlnGetNoEgrPolicy
 
     DBG_INFO(("gvlnGetNoEgrPolicy Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_NO_EGRESS_POLICY))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_NO_EGRESS_POLICY))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related register */

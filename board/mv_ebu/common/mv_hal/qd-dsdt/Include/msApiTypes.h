@@ -48,9 +48,9 @@ typedef unsigned long  GT_U32;
 typedef unsigned int   GT_UINT; 
 
 typedef union {
-	GT_U8	c[8];
-	GT_U16	s[4];
-	GT_U32	l[2];
+    GT_U8    c[8];
+    GT_U16    s[4];
+    GT_U32    l[2];
 } GT_U64;
 
 
@@ -65,13 +65,13 @@ typedef unsigned int  (*GT_INTFUNCPTR)  (void); /* ptr to function returning int
 
 /* module state */
 typedef enum {
-	GT_STATE_NONE = 0,	/* Uninitialized */
-	GT_STATE_IDLE,		/* Initialized, but not started (or stopped) */
-	GT_STATE_ACTIVE		/* Started */
+    GT_STATE_NONE = 0,    /* Uninitialized */
+    GT_STATE_IDLE,        /* Initialized, but not started (or stopped) */
+    GT_STATE_ACTIVE        /* Started */
 } GT_STATE;
 
 
-#define	GT_ETHERNET_HEADER_SIZE		(6)
+#define    GT_ETHERNET_HEADER_SIZE        (6)
 
 typedef struct
 {
@@ -89,9 +89,9 @@ typedef struct
 /* status / error codes */
 typedef int GT_STATUS;
 
-#define GT_ERROR		   (-1)
-#define GT_OK			   (0x00)	/* Operation succeeded                   */
-#define GT_FAIL			   (0x01)	/* Operation failed                      */
+#define GT_ERROR           (-1)
+#define GT_OK               (0x00)    /* Operation succeeded                   */
+#define GT_FAIL               (0x01)    /* Operation failed                      */
 #define GT_BAD_VALUE       (0x02)   /* Illegal value (general)               */
 #define GT_BAD_PARAM       (0x04)   /* Illegal parameter in function called  */
 #define GT_NOT_FOUND       (0x0B)   /* Item not found                        */
@@ -101,5 +101,9 @@ typedef int GT_STATUS;
 #define GT_NOT_SUPPORTED   (0x10)   /* This request is not support           */
 #define GT_ALREADY_EXIST   (0x1B)   /* Tried to create existing item         */
 #define GT_BAD_CPU_PORT    (0x20)   /* Input CPU Port is not valid physical port number */
+
+extern GT_U8 qdLong2Char(GT_U32 data);
+extern GT_U8 qdShort2Char(GT_U16 data);
+extern GT_U16 qdLong2Short(GT_U32 data);
 
 #endif /* MV_TYPES_H */

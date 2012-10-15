@@ -54,7 +54,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _msCopyright_h
 #define _msCopyright_h
 
-#define MSAPI_COPYRIGHT "Copyright 2000~2009, Marvell International Ltd."
-#define MSAPI_VERSION "2.8b"
+#define MSAPI_COPYRIGHT "Copyright 2000~2011, Marvell International Ltd."
+#define MSAPI_VERSION "3.0D"
 
 #endif /* _msCopyright_h */

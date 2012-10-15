@@ -138,7 +138,7 @@ MV_U32 mvDramIfSizeGet(MV_VOID)
 MV_U32 mvDramIfHwSizeGet(MV_VOID)
 {
 	MV_U32 base = 0;
-	MV_U32 size, cs, totalSize = 0;
+	MV_U32 size, cs, totalSize = 0, sizeRegVal;
 
 	for (cs = 0; cs < SDRAM_MAX_CS; cs++) {
 		size = MV_REG_READ(SDRAM_SIZE_REG(cs)) & SDRAM_ADDR_MASK;
@@ -153,6 +153,10 @@ MV_U32 mvDramIfHwSizeGet(MV_VOID)
 			totalSize += size;
 		}
 	}
+	/* Dram size alignment fix */
+	sizeRegVal = (totalSize & SDRAMWCR_SIZE_MASK) >> SDRAMWCR_SIZE_OFFS;   // sizeregVal = ( amount of 16mb chunks -1 )
+	totalSize = (sizeRegVal + 1) * SDRAMWCR_SIZE_ALLIGNMENT;    	     // size = alined size (num of 16mb chunks * 16mb)
+	/* Dram size alignment fix*/
 	return totalSize;
 }
 MV_U32 mvDramIfHwCsSizeGet(MV_U32 cs)

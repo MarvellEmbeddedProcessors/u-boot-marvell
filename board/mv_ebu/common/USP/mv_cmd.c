@@ -814,9 +814,9 @@ void mv_go(unsigned long addr,int argc, char * const argv[])
 
 		/* Flush invalidate D-cache */
 		cpu_dcache_flush_all();
-
-
     }
+	((ulong (*)(int, char *const[]))addr) (--argc, &argv[1]);
+
 	return;
 }
 

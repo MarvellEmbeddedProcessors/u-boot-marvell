@@ -17,6 +17,43 @@
 #include <gtDrvSwRegs.h>
 #include <gtSem.h>
 
+static GT_STATUS writeSwitchMacWolReg
+(
+    IN GT_QD_DEV    *dev,
+	IN GT_U8        baseid,
+    IN GT_ETHERADDR *mac
+);
+static GT_STATUS readSwitchMacWolReg
+(
+    IN  GT_QD_DEV    *dev,
+	IN GT_U8        baseid,
+    OUT GT_ETHERADDR *mac
+);
+static GT_STATUS writeDiffMACWoL
+(
+    IN GT_QD_DEV    *dev,
+	IN GT_U8        baseid,
+    IN GT_U16       diffAddr
+);
+static GT_STATUS readDiffMACWoL
+(
+    IN  GT_QD_DEV    *dev,
+	IN GT_U8        baseid,
+    OUT GT_U16        *diffAddr
+);
+static GT_STATUS writeSwMacWolWofReg
+(
+    IN GT_QD_DEV    *dev,
+    IN GT_U8        pointer,
+	IN GT_U8        data
+);
+static GT_STATUS readSwMacWolWofReg
+(
+    IN GT_QD_DEV    *dev,
+    IN GT_U8        pointer,
+	OUT GT_U8       *data
+);
+
 static GT_STATUS writeSwitchMacReg
 (
     IN GT_QD_DEV    *dev,
@@ -32,16 +69,14 @@ static GT_STATUS readSwitchMacReg
 static GT_STATUS writeDiffMAC
 (
     IN GT_QD_DEV    *dev,
-    IN GT_U16		diffAddr
+    IN GT_U16        diffAddr
 );
 
 static GT_STATUS readDiffMAC
 (
-    IN  GT_QD_DEV	*dev,
-    OUT GT_U16		*diffAddr
+    IN  GT_QD_DEV    *dev,
+    OUT GT_U16        *diffAddr
 );
-
-
 /*******************************************************************************
 * gsysSwReset
 *
@@ -69,21 +104,26 @@ GT_STATUS gsysSwReset
     IN  GT_QD_DEV *dev
 )
 {
+#ifndef GT_RMGMT_ACCESS
     GT_U16          data;           /* Used to poll the SWReset bit */
+#endif
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U8			regOffset;
+    GT_U8            regOffset;
 
     DBG_INFO(("gsysSwReset Called.\n"));
 
     /* Set the Software reset bit.                  */
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
-	{
-		regOffset = QD_REG_GLOBAL_CONTROL;
-	}
-	else
-	{
-		regOffset = QD_REG_ATU_CONTROL;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
+    {
+        regOffset = QD_REG_GLOBAL_CONTROL;
+    }
+    else
+    {
+      if (IS_IN_DEV_GROUP(dev,DEV_MELODY_SWITCH))
+        regOffset = QD_REG_GLOBAL_CONTROL;
+      else
+        regOffset = QD_REG_ATU_CONTROL;
+    }
 
     retVal = hwSetGlobalRegField(dev,regOffset,15,1,1);
     if(retVal != GT_OK)
@@ -92,11 +132,29 @@ GT_STATUS gsysSwReset
         return retVal;
     }
 
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 1;
+
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = regOffset;
+      regAccess.rw_reg_list[0].data = 15;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        gtSemGive(dev,dev->tblRegsSem);
+        return retVal;
+      }
+    }
+#else
     /* Make sure the reset operation is completed.  */
     data = 1;
     while(data != 0)
     {
-   	    retVal = hwGetGlobalRegField(dev,regOffset,15,1,&data);
+           retVal = hwGetGlobalRegField(dev,regOffset,15,1,&data);
 
         if(retVal != GT_OK)
         {
@@ -104,7 +162,8 @@ GT_STATUS gsysSwReset
             return retVal;
         }
     }
-	
+#endif
+    
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
@@ -113,128 +172,128 @@ GT_STATUS gsysSwReset
 * gsysSetPPUEn
 *
 * DESCRIPTION:
-*		This routine enables/disables Phy Polling Unit.
+*        This routine enables/disables Phy Polling Unit.
 *
 * INPUTS:
-*		en - GT_TRUE to enable PPU, GT_FALSE otherwise.
+*        en - GT_TRUE to enable PPU, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysSetPPUEn
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL 		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL         en
 )
 {
-	GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16          data;           /* Data to be set into the      */
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* Data to be set into the      */
                                 /* register.                    */
-	DBG_INFO(("gsysSetPPUEn Called.\n"));
+    DBG_INFO(("gsysSetPPUEn Called.\n"));
 
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	if (IS_IN_DEV_GROUP(dev,DEV_PPU_READ_ONLY))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_PPU_READ_ONLY))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	BOOL_2_BIT(en,data);
+    BOOL_2_BIT(en,data);
 
-	/* Set the PPUEn bit.                */
-	retVal = hwSetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL,14,1,data);
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-		return retVal;
-	}
-	
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    /* Set the PPUEn bit.                */
+    retVal = hwSetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL,14,1,data);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
+    
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 }
 
 /*******************************************************************************
 * gsysGetPPUEn
 *
 * DESCRIPTION:
-*		This routine get the PPU state.
+*        This routine get the PPU state.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE if PPU is enabled, GT_FALSE otherwise.
+*        en - GT_TRUE if PPU is enabled, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK           - on success
-*		GT_BAD_PARAM    - on bad parameter
-*		GT_FAIL         - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK           - on success
+*        GT_BAD_PARAM    - on bad parameter
+*        GT_FAIL         - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetPPUEn
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
-	GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16          data;           /* The register's read data.    */
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* The register's read data.    */
 
-	DBG_INFO(("gsysGetPPUEn Called.\n"));
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    DBG_INFO(("gsysGetPPUEn Called.\n"));
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	if (IS_IN_DEV_GROUP(dev,DEV_PPU_READ_ONLY))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_PPU_READ_ONLY))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	if(en == NULL)
-	{
-		DBG_INFO(("Failed.\n"));
-		return GT_BAD_PARAM;
-	}
+    if(en == NULL)
+    {
+        DBG_INFO(("Failed.\n"));
+        return GT_BAD_PARAM;
+    }
 
-	/* Get the GetPPUEn bit.                */
-	retVal = hwGetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL,14,1,&data);
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-		return retVal;
-	}
+    /* Get the GetPPUEn bit.                */
+    retVal = hwGetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL,14,1,&data);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
 
-	BIT_2_BOOL(data,*en);
-	DBG_INFO(("OK.\n"));
+    BIT_2_BOOL(data,*en);
+    DBG_INFO(("OK.\n"));
 
-	return GT_OK;
+    return GT_OK;
 }
 
 /*******************************************************************************
@@ -372,10 +431,10 @@ GT_STATUS gsysSetSchedulingMode
                                     /* register.                    */
     DBG_INFO(("gsysSetSchedulingMode Called.\n"));
 
-	if (IS_IN_DEV_GROUP(dev,DEV_PORT_MIXED_SCHEDULE))
+    if (IS_IN_DEV_GROUP(dev,DEV_PORT_MIXED_SCHEDULE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(mode,data);
@@ -428,11 +487,10 @@ GT_STATUS gsysGetSchedulingMode
     GT_U16          data;           /* The register's read data.    */
 
     DBG_INFO(("gsysGetSchedulingMode Called.\n"));
-
-	if (IS_IN_DEV_GROUP(dev, DEV_PORT_MIXED_SCHEDULE))
+    if (IS_IN_DEV_GROUP(dev, DEV_PORT_MIXED_SCHEDULE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     if(mode == NULL)
@@ -463,7 +521,7 @@ GT_STATUS gsysGetSchedulingMode
 *
 * INPUTS:
 *       mode - GT_TRUE max size 1522, 
-*			   GT_FALSE max size 1535, 1632, or 2048.
+*               GT_FALSE max size 1535, 1632, or 2048.
 *
 * OUTPUTS:
 *       None.
@@ -471,10 +529,10 @@ GT_STATUS gsysGetSchedulingMode
 * RETURNS:
 *       GT_OK   - on success
 *       GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		Please refer to the device spec. to get the max frame size.
+*        Please refer to the device spec. to get the max frame size.
 *       88E6095 device supports upto 1632. 
 *       88E6065/88E6061 devices support upto 2048. 
 *
@@ -490,11 +548,11 @@ GT_STATUS gsysSetMaxFrameSize
                                     /* register.                    */
     DBG_INFO(("gsysSetMaxFrameSize Called.\n"));
 
-	if (IS_IN_DEV_GROUP(dev,DEV_JUMBO_MODE))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_JUMBO_MODE))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
     BOOL_2_BIT(mode,data);
     data = 1 - data;
@@ -523,16 +581,16 @@ GT_STATUS gsysSetMaxFrameSize
 *
 * OUTPUTS:
 *       mode - GT_TRUE max size 1522, 
-*			   GT_FALSE max size 1535, 1632, or 2048.
+*               GT_FALSE max size 1535, 1632, or 2048.
 *
 * RETURNS:
 *       GT_OK           - on success
 *       GT_BAD_PARAM    - on bad parameter
 *       GT_FAIL         - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		Please refer to the device spec. to get the max frame size.
+*        Please refer to the device spec. to get the max frame size.
 *       88E6095 device supports upto 1632.
 *       88E6065/88E6061 devices support upto 2048. 
 *
@@ -553,11 +611,11 @@ GT_STATUS gsysGetMaxFrameSize
         return GT_BAD_PARAM;
     }
 
-	if (IS_IN_DEV_GROUP(dev,DEV_JUMBO_MODE))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_JUMBO_MODE))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
     /* Get the Max Frame Size bit.          */
     retVal = hwGetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL,10,1,&data);
@@ -653,11 +711,12 @@ GT_STATUS gsysSetWatchDog
                                     /* register.                    */
     DBG_INFO(("gsysSetWatchDog Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (IS_IN_DEV_GROUP(dev,DEV_ENHANCED_FE_SWITCH|DEV_WATCHDOG_EVENT))
+    /* Check if Switch supports this feature. */
+    if ((IS_IN_DEV_GROUP(dev,DEV_WATCHDOG_EVENT)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_ENHANCED_FE_SWITCH)))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -710,11 +769,11 @@ GT_STATUS gsysGetWatchDog
 
     DBG_INFO(("gsysGetWatchDog Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (IS_IN_DEV_GROUP(dev,DEV_ENHANCED_FE_SWITCH))
+    /* Check if Switch supports this feature. */
+    if (IS_IN_DEV_GROUP(dev,DEV_ENHANCED_FE_SWITCH))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     if(en == NULL)
@@ -742,9 +801,9 @@ GT_STATUS gsysGetWatchDog
 *
 * DESCRIPTION:
 *       This routine sets the full duplex pause src Mac Address.
-*		MAC address should be an Unicast address.
-*		For different MAC Addresses per port operation, 
-*		use gsysSetPerPortDuplexPauseMac API.
+*        MAC address should be an Unicast address.
+*        For different MAC Addresses per port operation, 
+*        use gsysSetPerPortDuplexPauseMac API.
 *
 * INPUTS:
 *       mac - The Mac address to be set.
@@ -777,12 +836,44 @@ GT_STATUS gsysSetDuplexPauseMac
         return GT_BAD_PARAM;
     }
 
-	/* if the device has Switch MAC Register, we need the special operation */
-	if (IS_IN_DEV_GROUP(dev,DEV_SWITCH_MAC_REG))
+    /* if the device has Switch MAC Register, we need the special operation */
+    if (IS_IN_DEV_GROUP(dev,DEV_SWITCH_MAC_REG))
     {
-		return writeSwitchMacReg(dev,mac);
+        return writeSwitchMacReg(dev,mac);
     }
 
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 3;
+
+      regAccess.rw_reg_list[0].cmd = HW_REG_WRITE;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_MACADDR_01;
+  /* Set the first Mac register with diffAddr bit reset.  */
+      data = (((*mac).arEther[0] & 0xFE) << 8) | (*mac).arEther[1];
+      regAccess.rw_reg_list[0].data = data;
+      regAccess.rw_reg_list[1].cmd = HW_REG_WRITE;
+      regAccess.rw_reg_list[1].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[1].reg = QD_REG_MACADDR_23;
+  /* Set the Mac23 address register.   */
+      data = ((*mac).arEther[2] << 8) | (*mac).arEther[3];
+      regAccess.rw_reg_list[1].data = data;
+      regAccess.rw_reg_list[2].cmd = HW_REG_WRITE;
+      regAccess.rw_reg_list[2].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[2].reg = QD_REG_MACADDR_45;
+  /* Set the Mac45 address register.   */
+      data = ((*mac).arEther[4] << 8) | (*mac).arEther[5];
+      regAccess.rw_reg_list[2].data = data;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        gtSemGive(dev,dev->tblRegsSem);
+        return retVal;
+      }
+    }
+#else
     /* Set the first Mac register with diffAddr bit reset.  */
     data = (((*mac).arEther[0] & 0xFE) << 8) | (*mac).arEther[1];
     retVal = hwWriteGlobalReg(dev,QD_REG_MACADDR_01,data);
@@ -809,6 +900,8 @@ GT_STATUS gsysSetDuplexPauseMac
         DBG_INFO(("Failed.\n"));
         return retVal;
     }
+#endif
+
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
@@ -819,8 +912,8 @@ GT_STATUS gsysSetDuplexPauseMac
 *
 * DESCRIPTION:
 *       This routine Gets the full duplex pause src Mac Address.
-*		For different MAC Addresses per port operation, 
-*		use gsysGetPerPortDuplexPauseMac API.
+*        For different MAC Addresses per port operation, 
+*        use gsysGetPerPortDuplexPauseMac API.
 *
 * INPUTS:
 *       None.
@@ -844,7 +937,9 @@ GT_STATUS gsysGetDuplexPauseMac
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
+#ifndef GT_RMGMT_ACCESS
     GT_U16          data;           /* Data to read from register.  */
+#endif
 
     DBG_INFO(("gsysGetDuplexPauseMac Called.\n"));
     if(mac == NULL)
@@ -853,12 +948,44 @@ GT_STATUS gsysGetDuplexPauseMac
         return GT_BAD_PARAM;
     }
 
-	/* if the device has Switch MAC Register, we need the special operation */
-	if (IS_IN_DEV_GROUP(dev,DEV_SWITCH_MAC_REG))
+    /* if the device has Switch MAC Register, we need the special operation */
+    if (IS_IN_DEV_GROUP(dev,DEV_SWITCH_MAC_REG))
     {
-		return readSwitchMacReg(dev,mac);
+        return readSwitchMacReg(dev,mac);
     }
 
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 3;
+
+      regAccess.rw_reg_list[0].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_MACADDR_01;
+      regAccess.rw_reg_list[0].data = 0;
+      regAccess.rw_reg_list[1].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[1].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[1].reg = QD_REG_MACADDR_23;
+      regAccess.rw_reg_list[1].data = 0;
+      regAccess.rw_reg_list[2].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[2].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[2].reg = QD_REG_MACADDR_45;
+      regAccess.rw_reg_list[2].data = 0;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        gtSemGive(dev,dev->tblRegsSem);
+        return retVal;
+      }
+      (*mac).arEther[0] = qdLong2Char((regAccess.rw_reg_list[0].data >> 8)) & ~0x01;
+      (*mac).arEther[1] = qdLong2Char(regAccess.rw_reg_list[0].data & 0xFF);
+      (*mac).arEther[2] = qdLong2Char(regAccess.rw_reg_list[1].data >> 8);
+      (*mac).arEther[3] = qdLong2Char(regAccess.rw_reg_list[1].data & 0xFF);
+      (*mac).arEther[4] = qdLong2Char(regAccess.rw_reg_list[2].data >> 8);
+      (*mac).arEther[5] = qdLong2Char(regAccess.rw_reg_list[2].data & 0xFF);
+    }
+#else
     /* Get the Mac01 register.      */
     retVal = hwReadGlobalReg(dev,QD_REG_MACADDR_01,&data);
     if(retVal != GT_OK)
@@ -866,14 +993,8 @@ GT_STATUS gsysGetDuplexPauseMac
         DBG_INFO(("Failed.\n"));
         return retVal;
     }
-#if 0	/* This should be always a unicast. */
-    /* The mac is allwasy a multicast mac   */
-    (*mac).arEther[0] = (data >> 8) | 0x01;
-    (*mac).arEther[1] = data & 0xFF;
-#else
     (*mac).arEther[0] = (data >> 8) & ~0x01;
     (*mac).arEther[1] = data & 0xFF;
-#endif
     /* Get the Mac23 register.      */
     retVal = hwReadGlobalReg(dev,QD_REG_MACADDR_23,&data);
     if(retVal != GT_OK)
@@ -893,6 +1014,8 @@ GT_STATUS gsysGetDuplexPauseMac
     }
     (*mac).arEther[4] = data >> 8;
     (*mac).arEther[5] = data & 0xFF;
+#endif
+
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
@@ -934,15 +1057,18 @@ GT_STATUS gsysSetPerPortDuplexPauseMac
     DBG_INFO(("gsysSetPerPortDuplexPauseMac Called.\n"));
     BOOL_2_BIT(en,data);
 
-	/* if the device has Switch MAC Register, we need the special operation */
-	if (IS_IN_DEV_GROUP(dev,DEV_SWITCH_MAC_REG))
+    /* if the device has Switch MAC Register, we need the special operation */
+    if (IS_IN_DEV_GROUP(dev,DEV_SWITCH_MAC_REG))
     {
-		retVal = writeDiffMAC(dev,data);
+        retVal = writeDiffMAC(dev,data);
     }
-	else
-	{
-    	retVal = hwSetGlobalRegField(dev,QD_REG_MACADDR_01,8,1,data);
-	}
+    else
+    {
+      if (IS_IN_DEV_GROUP(dev,DEV_MELODY_SWITCH))
+        retVal = writeDiffMAC(dev,data);
+      else
+        retVal = hwSetGlobalRegField(dev,QD_REG_MACADDR_01,8,1,data);
+    }
 
     if(retVal != GT_OK)
     {
@@ -952,8 +1078,6 @@ GT_STATUS gsysSetPerPortDuplexPauseMac
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
-
-
 
 /*******************************************************************************
 * gsysGetPerPortDuplexPauseMac
@@ -995,15 +1119,18 @@ GT_STATUS gsysGetPerPortDuplexPauseMac
         return GT_BAD_PARAM;
     }
 
-	/* if the device has Switch MAC Register, we need the special operation */
-	if (IS_IN_DEV_GROUP(dev,DEV_SWITCH_MAC_REG))
+    /* if the device has Switch MAC Register, we need the special operation */
+    if (IS_IN_DEV_GROUP(dev,DEV_SWITCH_MAC_REG))
     {
-		retVal = readDiffMAC(dev,&data);
+        retVal = readDiffMAC(dev,&data);
     }
-	else
-	{
-	    retVal = hwGetGlobalRegField(dev,QD_REG_MACADDR_01,8,1,&data);
-	}
+    else
+    {
+      if (IS_IN_DEV_GROUP(dev,DEV_MELODY_SWITCH))
+        retVal = readDiffMAC(dev,&data);
+      else
+        retVal = hwGetGlobalRegField(dev,QD_REG_MACADDR_01,8,1,&data);
+    }
 
     if(retVal != GT_OK)
     {
@@ -1017,12 +1144,470 @@ GT_STATUS gsysGetPerPortDuplexPauseMac
 }
 
 /*******************************************************************************
+* gsysSetPortWakeonFrameEn
+*
+* DESCRIPTION:
+*       This routine sets port interrupt for wake on frame.
+*
+* INPUTS:
+*       portVec - combine port interrupt enable=1 disable=0:
+*                 port 0: bit0, port 1: bit1, port 2: bit2, ...
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       GT_OK   - on success
+*       GT_FAIL - on error
+*
+* COMMENTS:
+*       None.
+*
+* GalTis:
+*
+*******************************************************************************/
+GT_STATUS gsysSetPortWakeonFrameEn
+(
+    IN GT_QD_DEV    *dev,
+    IN GT_U8        portVec
+)
+{
+    GT_STATUS       retVal;         /* Functions return value.      */
+
+    DBG_INFO(("gsysSetPortWakeonFrame Called.\n"));
+
+    if (!(IS_IN_DEV_GROUP(dev,DEV_SWITCH_MAC_REG)))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+    if (!(IS_IN_DEV_GROUP(dev,DEV_SWITCH_WOL_WOF_REG)))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+	retVal = writeSwMacWolWofReg(dev, 0x0e, portVec);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
+}
+
+/*******************************************************************************
+* gsysGetPortWakeonFrameEn
+*
+* DESCRIPTION:
+*       This routine gets port interrupt enable for wake on frame.
+*
+* INPUTS:
+*       None.
+*
+* OUTPUTS:
+*       portVec - combine port interrupt enable=1 disable=0:
+*                 port 0: bit0, port 1: bit1, port 2: bit2, ...
+*
+* RETURNS:
+*       GT_OK   - on success
+*       GT_FAIL - on error
+*
+* COMMENTS:
+*       None.
+*
+* GalTis:
+*
+*******************************************************************************/
+GT_STATUS gsysGetPortWakeonFrameEn
+(
+    IN GT_QD_DEV    *dev,
+    OUT GT_U8       *portVec
+)
+{
+    GT_STATUS       retVal;         /* Functions return value.      */
+
+    DBG_INFO(("gsysGetPortWakeonFrameEn Called.\n"));
+
+    if (!(IS_IN_DEV_GROUP(dev,DEV_SWITCH_MAC_REG)))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+    if (!(IS_IN_DEV_GROUP(dev,DEV_SWITCH_WOL_WOF_REG)))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+	retVal = readSwMacWolWofReg(dev, 0x0e, portVec);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
+}
+
+/*******************************************************************************
+* gsysGetPortWakeonFrameEnSt
+*
+* DESCRIPTION:
+*       This routine gets port interrupt status for wake on frame.
+*
+* INPUTS:
+*       None.
+*
+* OUTPUTS:
+*       portVec - combine port interrupt enable=1 disable=0:
+*                 port 0: bit0, port 1: bit1, port 2: bit2, ...
+*
+* RETURNS:
+*       GT_OK   - on success
+*       GT_FAIL - on error
+*
+* COMMENTS:
+*       None.
+*
+* GalTis:
+*
+*******************************************************************************/
+GT_STATUS gsysGetPortWakeonFrameEnSt
+(
+    IN GT_QD_DEV    *dev,
+    OUT GT_U8       *portVec
+)
+{
+    GT_STATUS       retVal;         /* Functions return value.      */
+
+    DBG_INFO(("gsysGetPortWakeonFrameEnSt Called.\n"));
+
+    if (!(IS_IN_DEV_GROUP(dev,DEV_SWITCH_MAC_REG)))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+    if (!(IS_IN_DEV_GROUP(dev,DEV_SWITCH_WOL_WOF_REG)))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+	retVal = readSwMacWolWofReg(dev, 0x0c, portVec);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
+}
+
+/*******************************************************************************
+* gsysSetWoLMac
+*
+* DESCRIPTION:
+*       This routine sets the Wake on Lan Mac Address.
+*        MAC address should be an Unicast address.
+*        For different MAC Addresses per port operation, 
+*        use gsysSetPerPortDuplexPauseMac API.
+*
+* INPUTS:
+*       mac - The Mac address to be set.
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       GT_OK           - on success
+*       GT_BAD_PARAM    - on bad parameter
+*       GT_FAIL         - on error
+*
+* COMMENTS:
+*       None.
+*
+*******************************************************************************/
+GT_STATUS gsysSetWoLMac
+(
+    IN GT_QD_DEV    *dev,
+    IN GT_ETHERADDR *mac
+)
+{
+    DBG_INFO(("gsysSetWoLMac Called.\n"));
+    if(mac == NULL)
+    {
+        DBG_INFO(("Failed.\n"));
+        return GT_BAD_PARAM;
+    }
+
+    /* if the device has Switch MAC Register, we need the special operation */
+    if (!IS_IN_DEV_GROUP(dev,DEV_SWITCH_WOL_WOF_REG))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+
+    return writeSwitchMacWolReg(dev, 0x10, mac);
+
+}
+
+/*******************************************************************************
+* gsysGetWoLMac
+*
+* DESCRIPTION:
+*       This routine Gets the Wake on Lan Mac Address.
+*        For different MAC Addresses per port operation, 
+*        use gsysGetPerPortDuplexPauseMac API.
+*
+* INPUTS:
+*       None.
+*
+* OUTPUTS:
+*       mac - the Mac address.
+*
+* RETURNS:
+*       GT_OK           - on success
+*       GT_BAD_PARAM    - on bad parameter
+*       GT_FAIL         - on error
+*
+* COMMENTS:
+*       None.
+*
+*******************************************************************************/
+GT_STATUS gsysGetWoLMac
+(
+    IN  GT_QD_DEV    *dev,
+    OUT GT_ETHERADDR *mac
+)
+{
+    DBG_INFO(("gsysGetWoLMac Called.\n"));
+    if(mac == NULL)
+    {
+        DBG_INFO(("Failed.\n"));
+        return GT_BAD_PARAM;
+    }
+
+    if (!IS_IN_DEV_GROUP(dev,DEV_SWITCH_WOL_WOF_REG))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+
+    return readSwitchMacWolReg(dev, 0x10, mac);
+}
+
+/*******************************************************************************
+* gsysSetPerPortWoLMac
+*
+* DESCRIPTION:
+*       This routine sets whether the Wake on Lan Mac Address is per
+*       port or per device.
+*
+* INPUTS:
+*       en - GT_TURE per port mac, GT_FALSE global mac.
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       GT_OK   - on success
+*       GT_FAIL - on error
+*
+* COMMENTS:
+*       None.
+*
+* GalTis:
+*
+*******************************************************************************/
+GT_STATUS gsysSetPerPortWoLMac
+(
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL      en
+)
+{
+    GT_U16          data;           /* Data to be set into the      */
+                                    /* register.                    */
+    DBG_INFO(("gsysSetPerPortWoLMac Called.\n"));
+    BOOL_2_BIT(en,data);
+
+    /* if the device has Switch MAC Register, we need the special operation */
+    if (!IS_IN_DEV_GROUP(dev,DEV_SWITCH_MAC_REG))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+
+    }
+    if (!IS_IN_DEV_GROUP(dev,DEV_SWITCH_WOL_WOF_REG))
+	{
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+	}
+     
+    return writeDiffMACWoL(dev, 0x10, data);
+}
+
+/*******************************************************************************
+* gsysGetPerPortWoLMac
+*
+* DESCRIPTION:
+*       This routine Gets whether the Wake on Lanc Mac Address is per
+*       port or per device.
+*
+* INPUTS:
+*       en - GT_TURE per port mac, GT_FALSE global mac.
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       GT_OK           - on success
+*       GT_BAD_PARAM    - on bad parameter
+*       GT_FAIL         - on error
+*
+* COMMENTS:
+*       None.
+*
+* GalTis:
+*
+*******************************************************************************/
+GT_STATUS gsysGetPerPortWoLMac
+(
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
+)
+{
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* The register's read data.    */
+
+    DBG_INFO(("gsysGetPerPortWoLMac Called.\n"));
+    if(en == NULL)
+    {
+        DBG_INFO(("Failed.\n"));
+        return GT_BAD_PARAM;
+    }
+
+    /* if the device has Switch MAC Register, we need the special operation */
+    if (!IS_IN_DEV_GROUP(dev,DEV_SWITCH_MAC_REG))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+
+    }
+    if (!IS_IN_DEV_GROUP(dev,DEV_SWITCH_WOL_WOF_REG))
+	{
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+	}
+     
+
+	retVal = readDiffMACWoL(dev, 0x10, &data);
+
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
+
+    BIT_2_BOOL(data,*en);
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
+}
+
+/*******************************************************************************
+* gsysSetWoLPass
+*
+* DESCRIPTION:
+*       This routine sets the Wake on Lan Password Mac Address.
+*
+* INPUTS:
+*       mac - The Mac address to be set.
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       GT_OK           - on success
+*       GT_BAD_PARAM    - on bad parameter
+*       GT_FAIL         - on error
+*
+* COMMENTS:
+*       None.
+*
+*******************************************************************************/
+GT_STATUS gsysSetWoLPass
+(
+    IN GT_QD_DEV    *dev,
+    IN GT_ETHERADDR *mac
+)
+{
+    DBG_INFO(("gsysSetWoLPass Called.\n"));
+    if(mac == NULL)
+    {
+        DBG_INFO(("Failed.\n"));
+        return GT_BAD_PARAM;
+    }
+
+    /* if the device has Switch MAC Register, we need the special operation */
+    if (!IS_IN_DEV_GROUP(dev,DEV_SWITCH_WOL_WOF_REG))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+
+    return writeSwitchMacWolReg(dev, 0x16, mac);
+
+}
+
+/*******************************************************************************
+* gsysGetWoLPass
+*
+* DESCRIPTION:
+*       This routine Gets the Wake on Lan password Mac Address.
+*
+* INPUTS:
+*       None.
+*
+* OUTPUTS:
+*       mac - the Mac address.
+*
+* RETURNS:
+*       GT_OK           - on success
+*       GT_BAD_PARAM    - on bad parameter
+*       GT_FAIL         - on error
+*
+* COMMENTS:
+*       None.
+*
+*******************************************************************************/
+GT_STATUS gsysGetWoLPass
+(
+    IN  GT_QD_DEV    *dev,
+    OUT GT_ETHERADDR *mac
+)
+{
+    DBG_INFO(("gsysGetWoLPass Called.\n"));
+    if(mac == NULL)
+    {
+        DBG_INFO(("Failed.\n"));
+        return GT_BAD_PARAM;
+    }
+
+    if (!IS_IN_DEV_GROUP(dev,DEV_SWITCH_WOL_WOF_REG))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+
+    return readSwitchMacWolReg(dev, 0x16, mac);
+}
+
+
+/*******************************************************************************
 * gsysReadMiiReg
 *
 * DESCRIPTION:
 *       This routine reads QuarterDeck Registers. Since this routine is only for
-*		Diagnostic Purpose, no error checking will be performed.
-*		User has to know which phy address(0 ~ 0x1F) will be read.		
+*        Diagnostic Purpose, no error checking will be performed.
+*        User has to know which phy address(0 ~ 0x1F) will be read.        
 *
 * INPUTS:
 *       phyAddr - Phy Address to read the register for.( 0 ~ 0x1F )
@@ -1044,9 +1629,9 @@ GT_STATUS gsysGetPerPortDuplexPauseMac
 GT_STATUS gsysReadMiiReg
 (
     IN  GT_QD_DEV    *dev,
-    IN  GT_U32	     phyAddr,
-    IN  GT_U32	     regAddr,
-    OUT GT_U32	     *data
+    IN  GT_U32         phyAddr,
+    IN  GT_U32         regAddr,
+    OUT GT_U32         *data
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -1062,7 +1647,7 @@ GT_STATUS gsysReadMiiReg
         return retVal;
     }
 
-	*data = (GT_U32)u16Data;
+    *data = (GT_U32)u16Data;
 
     return GT_OK;
 }
@@ -1072,8 +1657,8 @@ GT_STATUS gsysReadMiiReg
 *
 * DESCRIPTION:
 *       This routine writes QuarterDeck Registers. Since this routine is only for
-*		Diagnostic Purpose, no error checking will be performed.
-*		User has to know which phy address(0 ~ 0x1F) will be read.		
+*        Diagnostic Purpose, no error checking will be performed.
+*        User has to know which phy address(0 ~ 0x1F) will be read.        
 *
 * INPUTS:
 *       phyAddr - Phy Address to read the register for.( 0 ~ 0x1F )
@@ -1095,9 +1680,9 @@ GT_STATUS gsysReadMiiReg
 GT_STATUS gsysWriteMiiReg
 (
     IN  GT_QD_DEV    *dev,
-    IN  GT_U32	     phyAddr,
-    IN  GT_U32	     regAddr,
-    IN  GT_U16	     data
+    IN  GT_U32         phyAddr,
+    IN  GT_U32         regAddr,
+    IN  GT_U16         data
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -1112,9 +1697,55 @@ GT_STATUS gsysWriteMiiReg
         return retVal;
     }
 
-	return GT_OK;
+    return GT_OK;
 }
-
+#ifdef GT_RMGMT_ACCESS
+/*******************************************************************************
+* gsysAccessMultiRegs
+*
+* DESCRIPTION:
+*       This function accesses switch's registers.
+*
+* INPUTS:
+*   regList     - list of HW_DEV_RW_REG.
+*     HW_DEV_RW_REG:
+*     cmd - HW_REG_READ, HW_REG_WRITE, HW_REG_WAIT_TILL_0 or HW_REG_WAIT_TILL_1 
+*     addr - SMI Address 
+*     reg  - Register offset 
+*     data - INPUT,OUTPUT:Value in the Register or Bit number
+*     
+* OUTPUTS:
+*   regList
+*
+* RETURNS:
+*       GT_OK           - on success
+*       GT_FAIL         - on error
+*
+* COMMENTS:
+*       None.
+*
+* GalTis:
+*
+*******************************************************************************/
+GT_STATUS gsysAccessMultiRegs
+(
+    IN  GT_QD_DEV    *dev,
+    INOUT HW_DEV_REG_ACCESS *regList
+)
+{
+    GT_STATUS       retVal;         /* Functions return value.      */
+    
+    DBG_INFO(("gsysAccessMultiReg Called.\n"));
+    /* Set the register data */
+    retVal = hwAccessMultiRegs(dev,regList);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
+    return GT_OK;
+}
+#endif
 
 /*******************************************************************************
 * gsysSetRetransmitMode
@@ -1148,12 +1779,13 @@ GT_STATUS gsysSetRetransmitMode
     GT_U16          data;           /* Data to be set into the      */
                                     /* register.                    */
     DBG_INFO(("gsysSetRetransmitMode Called.\n"));
-	/* Only Gigabit Switch supports this status. */
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* Only Gigabit Switch supports this status. */
+    if ((IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_MELODY_SWITCH)))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
     BOOL_2_BIT(en,data);
 
     /* Set the Retransmit Mode bit.                */
@@ -1209,12 +1841,13 @@ GT_STATUS gsysGetRetransmitMode
         return GT_BAD_PARAM;
     }
 
-	/* Only Gigabit Switch supports this status. */
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* Only Gigabit Switch supports this status. */
+    if ((IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_MELODY_SWITCH)))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
     /* Get the bit.                */
     retVal = hwGetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL,15,1,&data);
     if(retVal != GT_OK)
@@ -1262,12 +1895,13 @@ GT_STATUS gsysSetLimitBackoff
     GT_U16          data;           /* Data to be set into the      */
                                     /* register.                    */
     DBG_INFO(("gsysSetLimitBackoff Called.\n"));
-	/* Only Gigabit Switch supports this status. */
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* Only Gigabit Switch supports this status. */
+    if ((IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_MELODY_SWITCH)))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
     BOOL_2_BIT(en,data);
 
     /* Set the bit.                */
@@ -1323,12 +1957,13 @@ GT_STATUS gsysGetLimitBackoff
         DBG_INFO(("Failed.\n"));
         return GT_BAD_PARAM;
     }
-	/* Only Gigabit Switch supports this status. */
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* Only Gigabit Switch supports this status. */
+    if ((IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_MELODY_SWITCH)))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
     /* Get the bit.                */
     retVal = hwGetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL,14,1,&data);
@@ -1377,12 +2012,12 @@ GT_STATUS gsysSetRsvReqPri
     GT_U16          data;           /* Data to be set into the      */
                                     /* register.                    */
     DBG_INFO(("gsysSetRsvReqPri Called.\n"));
-	/* Only Gigabit Switch supports this status. */
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* Only Gigabit Switch supports this status. */
+    if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
     BOOL_2_BIT(en,data);
 
     /* Set the bit.                */
@@ -1438,12 +2073,12 @@ GT_STATUS gsysGetRsvReqPri
         DBG_INFO(("Failed.\n"));
         return GT_BAD_PARAM;
     }
-	/* Only Gigabit Switch supports this status. */
-	if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* Only Gigabit Switch supports this status. */
+    if (IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
     /* Get the bit.                */
     retVal = hwGetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL,12,1,&data);
@@ -1462,55 +2097,55 @@ GT_STATUS gsysGetRsvReqPri
 * gsysSetCascadePort
 *
 * DESCRIPTION:
-*		This routine sets Cascade Port number.
-*		In multichip systems frames coming from a CPU need to know when they
-*		have reached their destination chip.
+*        This routine sets Cascade Port number.
+*        In multichip systems frames coming from a CPU need to know when they
+*        have reached their destination chip.
 *
-*		Use Cascade Port = 0xE to indicate this chip has no Cascade port.
-*		Use Cascade Port = 0xF to use Routing table (gsysGetDevRoutingTable).
+*        Use Cascade Port = 0xE to indicate this chip has no Cascade port.
+*        Use Cascade Port = 0xF to use Routing table (gsysGetDevRoutingTable).
 *
 * INPUTS:
-*		port - Cascade Port
+*        port - Cascade Port
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysSetCascadePort
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_LPORT 	port
+    IN GT_QD_DEV    *dev,
+    IN GT_LPORT     port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysSetCascadePort Called.\n"));
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_CASCADE_PORT))
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_CASCADE_PORT))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* translate LPORT to hardware port */
-	if((port == 0xE) || (port == 0xF))
-		data = (GT_U16)port;
-	else
-	{
-	    data = (GT_U16)(GT_LPORT_2_PORT(port));
-		if (data == GT_INVALID_PORT)
-			return GT_BAD_PARAM;
-	}
+    if((port == 0xE) || (port == 0xF))
+        data = (GT_U16)port;
+    else
+    {
+        data = (GT_U16)(GT_LPORT_2_PORT(port));
+        if (data == GT_INVALID_PORT)
+            return GT_BAD_PARAM;
+    }
 
     /* Set the Cascade port.                */
     retVal = hwSetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL2,12,4,data);
@@ -1528,44 +2163,44 @@ GT_STATUS gsysSetCascadePort
 * gsysGetCascadePort
 *
 * DESCRIPTION:
-*		This routine gets Cascade Port number.
-*		In multichip systems frames coming from a CPU need to know when they
-*		have reached their destination chip.
+*        This routine gets Cascade Port number.
+*        In multichip systems frames coming from a CPU need to know when they
+*        have reached their destination chip.
 *
-*		Use Cascade Port = 0xE to indicate this chip has no Cascade port.
-*		Use Cascade Port = 0xF to use Routing table (gsysGetDevRoutingTable).
+*        Use Cascade Port = 0xE to indicate this chip has no Cascade port.
+*        Use Cascade Port = 0xF to use Routing table (gsysGetDevRoutingTable).
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		port - Cascade Port
+*        port - Cascade Port
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetCascadePort
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_LPORT 	*port
+    IN  GT_QD_DEV    *dev,
+    OUT GT_LPORT     *port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysSetCascadePort Called.\n"));
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_CASCADE_PORT))
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_CASCADE_PORT))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the Cascade port.                */
@@ -1576,14 +2211,14 @@ GT_STATUS gsysGetCascadePort
         return retVal;
     }
 
-	if((data == 0xE) || (data == 0xF))
-	{
-		*port = (GT_LPORT)data;
-	}
-	else
-	{
-	    *port = GT_PORT_2_LPORT((GT_U8)data);
-	}
+    if((data == 0xE) || (data == 0xF))
+    {
+        *port = (GT_LPORT)data;
+    }
+    else
+    {
+        *port = GT_PORT_2_LPORT((GT_U8)data);
+    }
     
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -1593,44 +2228,44 @@ GT_STATUS gsysGetCascadePort
 * gsysSetDeviceNumber
 *
 * DESCRIPTION:
-*		This routine sets Device Number.
-*		In multichip systems frames coming from a CPU need to know when they
-*		have reached their destination chip. From CPU frames whose Dev_Num
-*		fieldmatches these bits have reachedtheir destination chip and are sent
-*		out this chip using the port number indicated in the frame's Trg_Port 
-*		field.
+*        This routine sets Device Number.
+*        In multichip systems frames coming from a CPU need to know when they
+*        have reached their destination chip. From CPU frames whose Dev_Num
+*        fieldmatches these bits have reachedtheir destination chip and are sent
+*        out this chip using the port number indicated in the frame's Trg_Port 
+*        field.
 *
 * INPUTS:
-*		devNum - Device Number (0 ~ 31)
+*        devNum - Device Number (0 ~ 31)
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysSetDeviceNumber
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_U32  		devNum
+    IN GT_QD_DEV    *dev,
+    IN GT_U32          devNum
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysSetDeviceNumber Called.\n"));
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     data = ((GT_U16)devNum) & 0x1F; /* only 5 bits are valid */
@@ -1651,39 +2286,39 @@ GT_STATUS gsysSetDeviceNumber
 * gsysGetDeviceNumber
 *
 * DESCRIPTION:
-*		This routine gets Device Number.
+*        This routine gets Device Number.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		devNum - Device Number (0 ~ 31)
+*        devNum - Device Number (0 ~ 31)
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetDeviceNumber
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_U32  	*devNum
+    IN  GT_QD_DEV    *dev,
+    OUT GT_U32      *devNum
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetDeviceNumber Called.\n"));
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the Device Number.                */
@@ -1703,43 +2338,43 @@ GT_STATUS gsysGetDeviceNumber
 * gsysSetCoreTagType
 *
 * DESCRIPTION:
-*		This routine sets Ether Core Tag Type.
-*		This Ether Type is added to frames that egress the switch as Double Tagged 
-*		frames. It is also the Ether Type expected during Ingress to determine if 
-*		a frame is Tagged or not on ports configured as UseCoreTag mode.
+*        This routine sets Ether Core Tag Type.
+*        This Ether Type is added to frames that egress the switch as Double Tagged 
+*        frames. It is also the Ether Type expected during Ingress to determine if 
+*        a frame is Tagged or not on ports configured as UseCoreTag mode.
 *
 * INPUTS:
-*		etherType - Core Tag Type (2 bytes)
+*        etherType - Core Tag Type (2 bytes)
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysSetCoreTagType
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_U16  		etherType
+    IN GT_QD_DEV    *dev,
+    IN GT_U16          etherType
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
 
     DBG_INFO(("gsysSetCoreTagType Called.\n"));
 
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_CORE_TAG))
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_CORE_TAG))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Set the Ether Type */
@@ -1758,40 +2393,40 @@ GT_STATUS gsysSetCoreTagType
 * gsysGetCoreTagType
 *
 * DESCRIPTION:
-*		This routine gets CoreTagType
+*        This routine gets CoreTagType
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		etherType - Core Tag Type (2 bytes)
+*        etherType - Core Tag Type (2 bytes)
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetCoreTagType
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_U16  	*etherType
+    IN  GT_QD_DEV    *dev,
+    OUT GT_U16      *etherType
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetCoreTagType Called.\n"));
 
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_CORE_TAG))
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_CORE_TAG))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the Device Number.                */
@@ -1811,38 +2446,38 @@ GT_STATUS gsysGetCoreTagType
 * gsysSetIngressMonitorDest
 *
 * DESCRIPTION:
-*		This routine sets Ingress Monitor Destination Port. Frames that are 
-*		targeted toward an Ingress Monitor Destination go out the port number 
-*		indicated in these bits. This includes frames received on a Marvell Tag port
-*		with the Ingress Monitor type, and frames received on a Network port that 
-*		is enabled to be the Ingress Monitor Source Port.
-*		If the Ingress Monitor Destination Port resides in this device these bits 
-*		should point to the Network port where these frames are to egress. If the 
-*		Ingress Monitor Destination Port resides in another device these bits 
-*		should point to the Marvell Tag port in this device that is used to get 
-*		to the device that contains the Ingress Monitor Destination Port.
+*        This routine sets Ingress Monitor Destination Port. Frames that are 
+*        targeted toward an Ingress Monitor Destination go out the port number 
+*        indicated in these bits. This includes frames received on a Marvell Tag port
+*        with the Ingress Monitor type, and frames received on a Network port that 
+*        is enabled to be the Ingress Monitor Source Port.
+*        If the Ingress Monitor Destination Port resides in this device these bits 
+*        should point to the Network port where these frames are to egress. If the 
+*        Ingress Monitor Destination Port resides in another device these bits 
+*        should point to the Marvell Tag port in this device that is used to get 
+*        to the device that contains the Ingress Monitor Destination Port.
 *
 * INPUTS:
-*		port  - the logical port number.
+*        port  - the logical port number.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysSetIngressMonitorDest
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_LPORT		port
+    IN GT_QD_DEV    *dev,
+    IN GT_LPORT        port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -1853,22 +2488,22 @@ GT_STATUS gsysSetIngressMonitorDest
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* translate LPORT to hardware port */
-	if(port == 0xF)
-		hwPort = (GT_U8)port;
-	else
-	{
-	    hwPort = (GT_U8)GT_LPORT_2_PORT(port);
-		if (hwPort == GT_INVALID_PORT)
-			return GT_BAD_PARAM;
-	}
+    if(port == 0xF)
+        hwPort = (GT_U8)port;
+    else
+    {
+        hwPort = (GT_U8)GT_LPORT_2_PORT(port);
+        if (hwPort == GT_INVALID_PORT)
+            return GT_BAD_PARAM;
+    }
 
     /* Set the Ether Type */
     retVal = hwSetGlobalRegField(dev,QD_REG_MONITOR_CONTROL, 12, 4, (GT_U16)hwPort);
@@ -1886,40 +2521,40 @@ GT_STATUS gsysSetIngressMonitorDest
 * gsysGetIngressMonitorDest
 *
 * DESCRIPTION:
-*		This routine gets Ingress Monitor Destination Port.
+*        This routine gets Ingress Monitor Destination Port.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		port  - the logical port number.
+*        port  - the logical port number.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetIngressMonitorDest
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_LPORT  	*port
+    IN  GT_QD_DEV    *dev,
+    OUT GT_LPORT      *port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetIngressMonitorDest Called.\n"));
 
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the IngressMonitorDest. */
@@ -1930,14 +2565,14 @@ GT_STATUS gsysGetIngressMonitorDest
         return retVal;
     }
 
-	if(data == 0xF)
-	{
-		*port = (GT_LPORT)data;
-	}
-	else
-	{
-	    *port = GT_PORT_2_LPORT((GT_U8)data);
-	}
+    if(data == 0xF)
+    {
+        *port = (GT_LPORT)data;
+    }
+    else
+    {
+        *port = GT_PORT_2_LPORT((GT_U8)data);
+    }
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
@@ -1946,38 +2581,38 @@ GT_STATUS gsysGetIngressMonitorDest
 * gsysSetEgressMonitorDest
 *
 * DESCRIPTION:
-*		This routine sets Egress Monitor Destination Port. Frames that are 
-*		targeted toward an Egress Monitor Destination go out the port number 
-*		indicated in these bits. This includes frames received on a Marvell Tag port
-*		with the Egress Monitor type, and frames transmitted on a Network port that 
-*		is enabled to be the Egress Monitor Source Port.
-*		If the Egress Monitor Destination Port resides in this device these bits 
-*		should point to the Network port where these frames are to egress. If the 
-*		Egress Monitor Destination Port resides in another device these bits 
-*		should point to the Marvell Tag port in this device that is used to get 
-*		to the device that contains the Egress Monitor Destination Port.
+*        This routine sets Egress Monitor Destination Port. Frames that are 
+*        targeted toward an Egress Monitor Destination go out the port number 
+*        indicated in these bits. This includes frames received on a Marvell Tag port
+*        with the Egress Monitor type, and frames transmitted on a Network port that 
+*        is enabled to be the Egress Monitor Source Port.
+*        If the Egress Monitor Destination Port resides in this device these bits 
+*        should point to the Network port where these frames are to egress. If the 
+*        Egress Monitor Destination Port resides in another device these bits 
+*        should point to the Marvell Tag port in this device that is used to get 
+*        to the device that contains the Egress Monitor Destination Port.
 *
 * INPUTS:
-*		port  - the logical port number.
+*        port  - the logical port number.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysSetEgressMonitorDest
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_LPORT		port
+    IN GT_QD_DEV    *dev,
+    IN GT_LPORT        port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -1988,21 +2623,21 @@ GT_STATUS gsysSetEgressMonitorDest
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	if(port == 0xF)
-		hwPort = (GT_U8)port;
-	else
-	{
-	    hwPort = (GT_U8)GT_LPORT_2_PORT(port);
-		if (hwPort == GT_INVALID_PORT)
-			return GT_BAD_PARAM;
-	}
+    if(port == 0xF)
+        hwPort = (GT_U8)port;
+    else
+    {
+        hwPort = (GT_U8)GT_LPORT_2_PORT(port);
+        if (hwPort == GT_INVALID_PORT)
+            return GT_BAD_PARAM;
+    }
 
     /* Set EgressMonitorDest */
     retVal = hwSetGlobalRegField(dev,QD_REG_MONITOR_CONTROL, 8, 4, (GT_U16)hwPort);
@@ -2020,40 +2655,40 @@ GT_STATUS gsysSetEgressMonitorDest
 * gsysGetEgressMonitorDest
 *
 * DESCRIPTION:
-*		This routine gets Egress Monitor Destination Port.
+*        This routine gets Egress Monitor Destination Port.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		port  - the logical port number.
+*        port  - the logical port number.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetEgressMonitorDest
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_LPORT  	*port
+    IN  GT_QD_DEV    *dev,
+    OUT GT_LPORT      *port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetEgressMonitorDest Called.\n"));
 
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the EgressMonitorDest. */
@@ -2064,14 +2699,14 @@ GT_STATUS gsysGetEgressMonitorDest
         return retVal;
     }
 
-	if(data == 0xF)
-	{
-		*port = (GT_LPORT)data;
-	}
-	else
-	{
-	    *port = GT_PORT_2_LPORT((GT_U8)data);
-	}
+    if(data == 0xF)
+    {
+        *port = (GT_LPORT)data;
+    }
+    else
+    {
+        *port = GT_PORT_2_LPORT((GT_U8)data);
+    }
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
@@ -2081,39 +2716,39 @@ GT_STATUS gsysGetEgressMonitorDest
 * gsysSetARPDest
 *
 * DESCRIPTION:
-*		This routine sets ARP Monitor Destination Port. Tagged or untagged 
-*		frames ingress Network ports that have the Broadcast Destination Address 
-*		with an Ethertype of 0x0806 are mirrored to this port. The ARPDest 
-*		should point to the port that directs these frames to the switch's CPU 
-*		that will process ARPs. This target port should be a Marvell Tag port so 
-*		that frames will egress with a To CPU Marvell Tag with a CPU Code of ARP.
-*		To CPU Marvell Tag frames with a CPU Code off ARP that ingress a Marvell 
-*		Tag port will be sent to the port number defineded in ARPDest.
+*        This routine sets ARP Monitor Destination Port. Tagged or untagged 
+*        frames ingress Network ports that have the Broadcast Destination Address 
+*        with an Ethertype of 0x0806 are mirrored to this port. The ARPDest 
+*        should point to the port that directs these frames to the switch's CPU 
+*        that will process ARPs. This target port should be a Marvell Tag port so 
+*        that frames will egress with a To CPU Marvell Tag with a CPU Code of ARP.
+*        To CPU Marvell Tag frames with a CPU Code off ARP that ingress a Marvell 
+*        Tag port will be sent to the port number defineded in ARPDest.
 *
-*		If ARPDest =  0xF, ARP Monitoring is disabled and ingressing To CPU ARP 
-*		frames will be discarded.
+*        If ARPDest =  0xF, ARP Monitoring is disabled and ingressing To CPU ARP 
+*        frames will be discarded.
 *
 * INPUTS:
-*		port  - the logical port number.
+*        port  - the logical port number.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysSetARPDest
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_LPORT		port
+    IN GT_QD_DEV    *dev,
+    IN GT_LPORT        port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -2124,22 +2759,22 @@ GT_STATUS gsysSetARPDest
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ARP_DEST_SUPPORT))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ARP_DEST_SUPPORT))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* translate LPORT to hardware port */
-	if(port == 0xF)
-		hwPort = (GT_U8)port;
-	else
-	{
-	    hwPort = (GT_U8)(GT_LPORT_2_PORT(port));
-		if (hwPort == GT_INVALID_PORT)
-			return GT_BAD_PARAM;
-	}
+    if(port == 0xF)
+        hwPort = (GT_U8)port;
+    else
+    {
+        hwPort = (GT_U8)(GT_LPORT_2_PORT(port));
+        if (hwPort == GT_INVALID_PORT)
+            return GT_BAD_PARAM;
+    }
 
     /* Set related bit */
     retVal = hwSetGlobalRegField(dev,QD_REG_MONITOR_CONTROL, 4, 4, (GT_U16)hwPort);
@@ -2157,50 +2792,50 @@ GT_STATUS gsysSetARPDest
 * gsysGetARPDest
 *
 * DESCRIPTION:
-*		This routine gets ARP Monitor Destination Port. Tagged or untagged 
-*		frames ingress Network ports that have the Broadcast Destination Address 
-*		with an Ethertype of 0x0806 are mirrored to this port. The ARPDest 
-*		should point to the port that directs these frames to the switch's CPU 
-*		that will process ARPs. This target port should be a Marvell Tag port so 
-*		that frames will egress with a To CPU Marvell Tag with a CPU Code of ARP.
-*		To CPU Marvell Tag frames with a CPU Code off ARP that ingress a Marvell 
-*		Tag port will be sent to the port number defineded in ARPDest.
+*        This routine gets ARP Monitor Destination Port. Tagged or untagged 
+*        frames ingress Network ports that have the Broadcast Destination Address 
+*        with an Ethertype of 0x0806 are mirrored to this port. The ARPDest 
+*        should point to the port that directs these frames to the switch's CPU 
+*        that will process ARPs. This target port should be a Marvell Tag port so 
+*        that frames will egress with a To CPU Marvell Tag with a CPU Code of ARP.
+*        To CPU Marvell Tag frames with a CPU Code off ARP that ingress a Marvell 
+*        Tag port will be sent to the port number defineded in ARPDest.
 *
-*		If ARPDest =  0xF, ARP Monitoring is disabled and ingressing To CPU ARP 
-*		frames will be discarded.
+*        If ARPDest =  0xF, ARP Monitoring is disabled and ingressing To CPU ARP 
+*        frames will be discarded.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		port  - the logical port number.
+*        port  - the logical port number.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetARPDest
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_LPORT  	*port
+    IN  GT_QD_DEV    *dev,
+    OUT GT_LPORT      *port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetARPDest Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ARP_DEST_SUPPORT))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ARP_DEST_SUPPORT))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -2211,14 +2846,14 @@ GT_STATUS gsysGetARPDest
         return retVal;
     }
 
-	if(data == 0xF)
-	{
-		*port = (GT_LPORT)data;
-	}
-	else
-	{
-	    *port = GT_PORT_2_LPORT((GT_U8)data);
-	}
+    if(data == 0xF)
+    {
+        *port = (GT_LPORT)data;
+    }
+    else
+    {
+        *port = GT_PORT_2_LPORT((GT_U8)data);
+    }
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
@@ -2228,46 +2863,46 @@ GT_STATUS gsysGetARPDest
 * gsysSetRsvd2CpuEnables
 *
 * DESCRIPTION:
-*		Reserved DA Enables. When the Rsvd2Cpu(gsysSetRsvd2Cpu) is set to a one, 
-*		the 16 reserved multicast DA addresses, whose bit in this register are 
-*		also set to a one, are treadted as MGMT frames. All the reserved DA's 
-*		take the form 01:80:C2:00:00:0x. When x = 0x0, bit 0 of this register is 
-*		tested. When x = 0x2, bit 2 of this field is tested and so on.
-*		If the tested bit in this register is cleared to a zero, the frame will 
-*		be treated as a normal (non-MGMT) frame.
+*        Reserved DA Enables. When the Rsvd2Cpu(gsysSetRsvd2Cpu) is set to a one, 
+*        the 16 reserved multicast DA addresses, whose bit in this register are 
+*        also set to a one, are treadted as MGMT frames. All the reserved DA's 
+*        take the form 01:80:C2:00:00:0x. When x = 0x0, bit 0 of this register is 
+*        tested. When x = 0x2, bit 2 of this field is tested and so on.
+*        If the tested bit in this register is cleared to a zero, the frame will 
+*        be treated as a normal (non-MGMT) frame.
 *
 * INPUTS:
-*		enBits - bit vector of enabled Reserved Multicast.
+*        enBits - bit vector of enabled Reserved Multicast.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysSetRsvd2CpuEnables
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_U16		enBits
+    IN GT_QD_DEV    *dev,
+    IN GT_U16        enBits
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
 
     DBG_INFO(("gsysSetRsvd2CpuEnables Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Set related register */
@@ -2286,46 +2921,46 @@ GT_STATUS gsysSetRsvd2CpuEnables
 * gsysGetRsvd2CpuEnables
 *
 * DESCRIPTION:
-*		Reserved DA Enables. When the Rsvd2Cpu(gsysSetRsvd2Cpu) is set to a one, 
-*		the 16 reserved multicast DA addresses, whose bit in this register are 
-*		also set to a one, are treadted as MGMT frames. All the reserved DA's 
-*		take the form 01:80:C2:00:00:0x. When x = 0x0, bit 0 of this register is 
-*		tested. When x = 0x2, bit 2 of this field is tested and so on.
-*		If the tested bit in this register is cleared to a zero, the frame will 
-*		be treated as a normal (non-MGMT) frame.
+*        Reserved DA Enables. When the Rsvd2Cpu(gsysSetRsvd2Cpu) is set to a one, 
+*        the 16 reserved multicast DA addresses, whose bit in this register are 
+*        also set to a one, are treadted as MGMT frames. All the reserved DA's 
+*        take the form 01:80:C2:00:00:0x. When x = 0x0, bit 0 of this register is 
+*        tested. When x = 0x2, bit 2 of this field is tested and so on.
+*        If the tested bit in this register is cleared to a zero, the frame will 
+*        be treated as a normal (non-MGMT) frame.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		enBits - bit vector of enabled Reserved Multicast.
+*        enBits - bit vector of enabled Reserved Multicast.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetRsvd2CpuEnables
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_U16  	*enBits
+    IN  GT_QD_DEV    *dev,
+    OUT GT_U16      *enBits
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
 
     DBG_INFO(("gsysGetRsvd2CpuEnables Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related register */
@@ -2345,59 +2980,60 @@ GT_STATUS gsysGetRsvd2CpuEnables
 * gsysSetRsvd2Cpu
 *
 * DESCRIPTION:
-*		When the Rsvd2Cpu is set to a one(GT_TRUE), frames with a Destination 
-*		Address in the range 01:80:C2:00:00:0x, regardless of their VLAN 
-*		membership, will be considered MGMT frames and sent to the CPU Port.
-*		If device supports Rsvd2CpuEnable (gsysSetRsvd2CpuEnable function),
-*		the frame will be considered MGMT frame when the associated Rsvd2CpuEnable
-*		bit for the frames's DA is also set to a one.
+*        When the Rsvd2Cpu is set to a one(GT_TRUE), frames with a Destination 
+*        Address in the range 01:80:C2:00:00:0x, regardless of their VLAN 
+*        membership, will be considered MGMT frames and sent to the CPU Port.
+*        If device supports Rsvd2CpuEnable (gsysSetRsvd2CpuEnable function),
+*        the frame will be considered MGMT frame when the associated Rsvd2CpuEnable
+*        bit for the frames's DA is also set to a one.
 *
 * INPUTS:
-*		en - GT_TRUE if Rsvd2Cpu is set. GT_FALSE, otherwise.
+*        en - GT_TRUE if Rsvd2Cpu is set. GT_FALSE, otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysSetRsvd2Cpu
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetRsvd2Cpu Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST|DEV_MULTICAST))
+    /* Check if Switch supports this status. */
+    if (!((IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_MULTICAST))))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
 
     /* Set related bit */
-	if (IS_IN_DEV_GROUP(dev,DEV_MULTICAST))
-	{
-	    retVal = hwSetGlobalRegField(dev,QD_REG_MANGEMENT_CONTROL,3,1, data);
-	}
-	else
-	{
-	    retVal = hwSetGlobal2RegField(dev,QD_REG_MANAGEMENT, 3, 1, data);
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_MULTICAST))
+    {
+        retVal = hwSetGlobalRegField(dev,QD_REG_MANGEMENT_CONTROL,3,1, data);
+    }
+    else
+    {
+        retVal = hwSetGlobal2RegField(dev,QD_REG_MANAGEMENT, 3, 1, data);
+    }
 
     if(retVal != GT_OK)
     {
@@ -2413,56 +3049,57 @@ GT_STATUS gsysSetRsvd2Cpu
 * gsysGetRsvd2Cpu
 *
 * DESCRIPTION:
-*		When the Rsvd2Cpu is set to a one(GT_TRUE), frames with a Destination 
-*		Address in the range 01:80:C2:00:00:0x, regardless of their VLAN 
-*		membership, will be considered MGMT frames and sent to the CPU Port.
-*		If device supports Rsvd2CpuEnable (gsysSetRsvd2CpuEnable function),
-*		the frame will be considered MGMT frame when the associated Rsvd2CpuEnable
-*		bit for the frames's DA is also set to a one.
+*        When the Rsvd2Cpu is set to a one(GT_TRUE), frames with a Destination 
+*        Address in the range 01:80:C2:00:00:0x, regardless of their VLAN 
+*        membership, will be considered MGMT frames and sent to the CPU Port.
+*        If device supports Rsvd2CpuEnable (gsysSetRsvd2CpuEnable function),
+*        the frame will be considered MGMT frame when the associated Rsvd2CpuEnable
+*        bit for the frames's DA is also set to a one.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE if Rsvd2Cpu is set. GT_FALSE, otherwise.
+*        en - GT_TRUE if Rsvd2Cpu is set. GT_FALSE, otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetRsvd2Cpu
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetRsvd2Cpu Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST|DEV_MULTICAST))
+    /* Check if Switch supports this status. */
+    if (!((IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_MULTICAST))))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
-	if (IS_IN_DEV_GROUP(dev,DEV_MULTICAST))
-	{
-	    retVal = hwGetGlobalRegField(dev,QD_REG_MANGEMENT_CONTROL,3,1,&data);
-	}
-	else
-	{
-	    retVal = hwGetGlobal2RegField(dev,QD_REG_MANAGEMENT,3,1,&data);
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_MULTICAST))
+    {
+        retVal = hwGetGlobalRegField(dev,QD_REG_MANGEMENT_CONTROL,3,1,&data);
+    }
+    else
+    {
+        retVal = hwGetGlobal2RegField(dev,QD_REG_MANAGEMENT,3,1,&data);
+    }
 
     if(retVal != GT_OK)
     {
@@ -2479,46 +3116,46 @@ GT_STATUS gsysGetRsvd2Cpu
 * gsysSetMGMTPri
 *
 * DESCRIPTION:
-*		These bits are used as the PRI[2:0] bits on Rsvd2CPU frames.
+*        These bits are used as the PRI[2:0] bits on Rsvd2CPU frames.
 *
 * INPUTS:
-*		pri - PRI[2:0] bits (should be less than 8)
+*        pri - PRI[2:0] bits (should be less than 8)
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - If pri is not less than 8.
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - If pri is not less than 8.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetMGMTPri
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_U16		pri
+    IN GT_QD_DEV    *dev,
+    IN GT_U16        pri
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
 
     DBG_INFO(("gsysSetMGMTPri Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	if (pri > 0x7)
-	{
+    if (pri > 0x7)
+    {
         DBG_INFO(("GT_BAD_PARAM\n"));
-		return GT_BAD_PARAM;
-	}
+        return GT_BAD_PARAM;
+    }
 
     /* Set related bit */
     retVal = hwSetGlobal2RegField(dev,QD_REG_MANAGEMENT, 0, 3, pri);
@@ -2536,39 +3173,39 @@ GT_STATUS gsysSetMGMTPri
 * gsysGetMGMTPri
 *
 * DESCRIPTION:
-*		These bits are used as the PRI[2:0] bits on Rsvd2CPU frames.
+*        These bits are used as the PRI[2:0] bits on Rsvd2CPU frames.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		pri - PRI[2:0] bits (should be less than 8)
+*        pri - PRI[2:0] bits (should be less than 8)
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetMGMTPri
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_U16  	*pri
+    IN  GT_QD_DEV    *dev,
+    OUT GT_U16      *pri
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     DBG_INFO(("gsysGetMGMTPri Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -2588,41 +3225,41 @@ GT_STATUS gsysGetMGMTPri
 * gsysSetUseDoubleTagData
 *
 * DESCRIPTION:
-*		This bit is used to determine if Double Tag data that is removed from a 
-*		Double Tag frame is used or ignored when making switching decisions on 
-*		the frame.
+*        This bit is used to determine if Double Tag data that is removed from a 
+*        Double Tag frame is used or ignored when making switching decisions on 
+*        the frame.
 *
 * INPUTS:
-*		en - GT_TRUE to use removed tag data, GT_FALSE otherwise.
+*        en - GT_TRUE to use removed tag data, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetUseDoubleTagData
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetUseDoubleTagData Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_LOOP_BLOCK))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_LOOP_BLOCK))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -2643,42 +3280,42 @@ GT_STATUS gsysSetUseDoubleTagData
 * gsysGetUseDoubleTagData
 *
 * DESCRIPTION:
-*		This bit is used to determine if Double Tag data that is removed from a 
-*		Double Tag frame is used or ignored when making switching decisions on 
-*		the frame.
+*        This bit is used to determine if Double Tag data that is removed from a 
+*        Double Tag frame is used or ignored when making switching decisions on 
+*        the frame.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE if removed tag data is used, GT_FALSE otherwise.
+*        en - GT_TRUE if removed tag data is used, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetUseDoubleTagData
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetUseDoubleTagData Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_LOOP_BLOCK))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_LOOP_BLOCK))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -2699,44 +3336,44 @@ GT_STATUS gsysGetUseDoubleTagData
 * gsysSetPreventLoops
 *
 * DESCRIPTION:
-*		When a Marvell Tag port receives a Forward Marvell Tag whose Src_Dev 
-*		field equals this device's Device Number, the following action will be 
-*		taken depending upon the value of this bit.
-*		GT_TRUE (1) - The frame will be discarded.
-*		GT_FALSE(0) - The frame will be prevented from going out its original 
-*						source port as defined by the frame's Src_Port field.
+*        When a Marvell Tag port receives a Forward Marvell Tag whose Src_Dev 
+*        field equals this device's Device Number, the following action will be 
+*        taken depending upon the value of this bit.
+*        GT_TRUE (1) - The frame will be discarded.
+*        GT_FALSE(0) - The frame will be prevented from going out its original 
+*                        source port as defined by the frame's Src_Port field.
 *
 * INPUTS:
-*		en - GT_TRUE to discard the frame as described above, GT_FALSE otherwise.
+*        en - GT_TRUE to discard the frame as described above, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetPreventLoops
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetPreventLoops Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_LOOP_BLOCK))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_LOOP_BLOCK))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -2757,45 +3394,45 @@ GT_STATUS gsysSetPreventLoops
 * gsysGetPreventLoops
 *
 * DESCRIPTION:
-*		When a Marvell Tag port receives a Forward Marvell Tag whose Src_Dev 
-*		field equals this device's Device Number, the following action will be 
-*		taken depending upon the value of this bit.
-*		GT_TRUE (1) - The frame will be discarded.
-*		GT_FALSE(0) - The frame will be prevented from going out its original 
-*						source port as defined by the frame's Src_Port field.
+*        When a Marvell Tag port receives a Forward Marvell Tag whose Src_Dev 
+*        field equals this device's Device Number, the following action will be 
+*        taken depending upon the value of this bit.
+*        GT_TRUE (1) - The frame will be discarded.
+*        GT_FALSE(0) - The frame will be prevented from going out its original 
+*                        source port as defined by the frame's Src_Port field.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE to discard the frame as described above, GT_FALSE otherwise.
+*        en - GT_TRUE to discard the frame as described above, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetPreventLoops
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetPreventLoops Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_LOOP_BLOCK))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_LOOP_BLOCK))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -2815,43 +3452,43 @@ GT_STATUS gsysGetPreventLoops
 * gsysSetFlowControlMessage
 *
 * DESCRIPTION:
-*		When this bit is set to one, Marvell Tag Flow Control messages will be 
-*		generated when an output queue becomes congested and received Marvell Tag 
-*		Flow Control messages will pause MACs inside this device. When this bit 
-*		is cleared to a zero Marvell Tag Flow Control messages will not be 
-*		generated and any received will be ignored at the target MAC.
+*        When this bit is set to one, Marvell Tag Flow Control messages will be 
+*        generated when an output queue becomes congested and received Marvell Tag 
+*        Flow Control messages will pause MACs inside this device. When this bit 
+*        is cleared to a zero Marvell Tag Flow Control messages will not be 
+*        generated and any received will be ignored at the target MAC.
 *
 * INPUTS:
-*		en - GT_TRUE to use Marvell Tag Flow Control message, GT_FALSE otherwise.
+*        en - GT_TRUE to use Marvell Tag Flow Control message, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetFlowControlMessage
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetFlowControlMessage Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_FLOW_CTRL))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_FLOW_CTRL))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -2872,44 +3509,44 @@ GT_STATUS gsysSetFlowControlMessage
 * gsysGetFlowControlMessage
 *
 * DESCRIPTION:
-*		When this bit is set to one, Marvell Tag Flow Control messages will be 
-*		generated when an output queue becomes congested and received Marvell Tag 
-*		Flow Control messages will pause MACs inside this device. When this bit 
-*		is cleared to a zero Marvell Tag Flow Control messages will not be 
-*		generated and any received will be ignored at the target MAC.
+*        When this bit is set to one, Marvell Tag Flow Control messages will be 
+*        generated when an output queue becomes congested and received Marvell Tag 
+*        Flow Control messages will pause MACs inside this device. When this bit 
+*        is cleared to a zero Marvell Tag Flow Control messages will not be 
+*        generated and any received will be ignored at the target MAC.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE to use Marvell Tag Flow Control message, GT_FALSE otherwise.
+*        en - GT_TRUE to use Marvell Tag Flow Control message, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetFlowControlMessage
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetFlowControlMessage Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_FLOW_CTRL))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_FLOW_CTRL))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -2929,45 +3566,45 @@ GT_STATUS gsysGetFlowControlMessage
 * gsysSetForceFlowControlPri
 *
 * DESCRIPTION:
-*		When this bit is set to a one the PRI[2:0] bits of generated Marvell Tag 
-*		Flow Control frames will be set to the value of the FC Pri bits (set by 
-*		gsysSetFCPri function call). When this bit is cleared to a zero generated 
-*		Marvell Tag Flow Control frames will retain the PRI[2:0] bits from the 
-*		frames that caused the congestion. This bit will have no effect if the 
-*		FlowControlMessage bit(gsysSetFlowControlMessage function call) is 
-*		cleared to a zero.
+*        When this bit is set to a one the PRI[2:0] bits of generated Marvell Tag 
+*        Flow Control frames will be set to the value of the FC Pri bits (set by 
+*        gsysSetFCPri function call). When this bit is cleared to a zero generated 
+*        Marvell Tag Flow Control frames will retain the PRI[2:0] bits from the 
+*        frames that caused the congestion. This bit will have no effect if the 
+*        FlowControlMessage bit(gsysSetFlowControlMessage function call) is 
+*        cleared to a zero.
 *
 * INPUTS:
-*		en - GT_TRUE to use defined PRI bits, GT_FALSE otherwise.
+*        en - GT_TRUE to use defined PRI bits, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetForceFlowControlPri
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetForceFlowControlPri Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_FLOW_CTRL))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_FLOW_CTRL))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -2988,46 +3625,46 @@ GT_STATUS gsysSetForceFlowControlPri
 * gsysGetForceFlowControlPri
 *
 * DESCRIPTION:
-*		When this bit is set to a one the PRI[2:0] bits of generated Marvell Tag 
-*		Flow Control frames will be set to the value of the FC Pri bits (set by 
-*		gsysSetFCPri function call). When this bit is cleared to a zero generated 
-*		Marvell Tag Flow Control frames will retain the PRI[2:0] bits from the 
-*		frames that caused the congestion. This bit will have no effect if the 
-*		FlowControlMessage bit(gsysSetFlowControlMessage function call) is 
-*		cleared to a zero.
+*        When this bit is set to a one the PRI[2:0] bits of generated Marvell Tag 
+*        Flow Control frames will be set to the value of the FC Pri bits (set by 
+*        gsysSetFCPri function call). When this bit is cleared to a zero generated 
+*        Marvell Tag Flow Control frames will retain the PRI[2:0] bits from the 
+*        frames that caused the congestion. This bit will have no effect if the 
+*        FlowControlMessage bit(gsysSetFlowControlMessage function call) is 
+*        cleared to a zero.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE to use defined PRI bits, GT_FALSE otherwise.
+*        en - GT_TRUE to use defined PRI bits, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetForceFlowControlPri
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetForceFlowControlPri Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_FLOW_CTRL))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_FLOW_CTRL))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -3047,48 +3684,48 @@ GT_STATUS gsysGetForceFlowControlPri
 * gsysSetFCPri
 *
 * DESCRIPTION:
-*		These bits are used as the PRI[2:0] bits on generated Marvell Tag Flow 
-*		Control frames if the ForceFlowControlPri bit(gsysSetForceFlowControlPri)
-*		is set to a one.
+*        These bits are used as the PRI[2:0] bits on generated Marvell Tag Flow 
+*        Control frames if the ForceFlowControlPri bit(gsysSetForceFlowControlPri)
+*        is set to a one.
 *
 * INPUTS:
-*		pri - PRI[2:0] bits (should be less than 8)
+*        pri - PRI[2:0] bits (should be less than 8)
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - If pri is not less than 8.
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - If pri is not less than 8.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetFCPri
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_U16		pri
+    IN GT_QD_DEV    *dev,
+    IN GT_U16        pri
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
 
     DBG_INFO(("gsysSetFCPri Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_FLOW_CTRL))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_FLOW_CTRL))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	if (pri > 0x7)
-	{
+    if (pri > 0x7)
+    {
         DBG_INFO(("GT_BAD_PARAM\n"));
-		return GT_BAD_PARAM;
-	}
+        return GT_BAD_PARAM;
+    }
 
     /* Set related bit */
     retVal = hwSetGlobal2RegField(dev,QD_REG_MANAGEMENT, 4, 3, pri);
@@ -3106,41 +3743,41 @@ GT_STATUS gsysSetFCPri
 * gsysGetFCPri
 *
 * DESCRIPTION:
-*		These bits are used as the PRI[2:0] bits on generated Marvell Tag Flow 
-*		Control frames if the ForceFlowControlPri bit(gsysSetForceFlowControlPri)
-*		is set to a one.
+*        These bits are used as the PRI[2:0] bits on generated Marvell Tag Flow 
+*        Control frames if the ForceFlowControlPri bit(gsysSetForceFlowControlPri)
+*        is set to a one.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		pri - PRI[2:0] bits (should be less than 8)
+*        pri - PRI[2:0] bits (should be less than 8)
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetFCPri
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_U16  	*pri
+    IN  GT_QD_DEV    *dev,
+    OUT GT_U16      *pri
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     DBG_INFO(("gsysGetFCPri Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_FLOW_CTRL))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_MARVELL_TAG_FLOW_CTRL))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -3160,90 +3797,109 @@ GT_STATUS gsysGetFCPri
 * gsysSetFlowCtrlDelay
 *
 * DESCRIPTION:
-*		This function sets Flow control delay time for 10Mbps, 100Mbps, and 
-*		1000Mbps. 
+*        This function sets Flow control delay time for 10Mbps, 100Mbps, and 
+*        1000Mbps. 
 *
 * INPUTS:
-*		sp - PORT_SPEED_10_MBPS, PORT_SPEED_100_MBPS, or PORT_SPEED_1000_MBPS
-*		delayTime - delay time.
+*        sp - PORT_SPEED_10_MBPS, PORT_SPEED_100_MBPS, or PORT_SPEED_1000_MBPS
+*        delayTime - delay time.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - if sp is not valid or delayTime is > 0x1FFF.
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - if sp is not valid or delayTime is > 0x1FFF.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*	Actual delay time will be delayTime x 2.048uS (or x 8.192uS) depending on 
-*	switch device. Please refer to the device datasheet for detailed information.
+*    Actual delay time will be delayTime x 2.048uS (or x 8.192uS) depending on 
+*    switch device. Please refer to the device datasheet for detailed information.
 *
 *******************************************************************************/
 GT_STATUS gsysSetFlowCtrlDelay
 (
-	IN GT_QD_DEV			*dev,
-	IN GT_PORT_SPEED_MODE	sp,
-	IN GT_U32				delayTime
+    IN GT_QD_DEV            *dev,
+    IN GT_PORT_SPEED_MODE    sp,
+    IN GT_U32                delayTime
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetFlowCtrlDelay Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_FLOW_CTRL_DELAY))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_FLOW_CTRL_DELAY))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
 
-	/* Check if the register can be accessed. */
-	do
-	{
-	    retVal = hwReadGlobal2Reg(dev,QD_REG_FLOWCTRL_DELAY,&data);
-    	if(retVal != GT_OK)
-	    {
-    	    DBG_INFO(("Failed.\n"));
-			gtSemGive(dev,dev->tblRegsSem);
-        	return retVal;
-	    }
-	} while (data & 0x8000);
+    /* Check if the register can be accessed. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
 
-	switch(sp)
-	{
-		case PORT_SPEED_10_MBPS:
-				data = 0;
-				break;
-		case PORT_SPEED_100_MBPS:
-				data = 1 << 13;
-				break;
-		case PORT_SPEED_1000_MBPS:
-				data = 2 << 13;
-				break;
-		default:
-		        DBG_INFO(("GT_BAD_PARAM (sp)\n"));
-				gtSemGive(dev,dev->tblRegsSem);
-				return GT_BAD_PARAM;
-	}
+      regAccess.entries = 1;
 
-	if (delayTime > 0x1FFF)
-	{
-		DBG_INFO(("GT_BAD_PARAM (delayTime)\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-		return GT_BAD_PARAM;
-	}
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_FLOWCTRL_DELAY;
+      regAccess.rw_reg_list[0].data = 15;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        gtSemGive(dev,dev->tblRegsSem);
+        return retVal;
+      }
+    }
+#else
+    do
+    {
+        retVal = hwReadGlobal2Reg(dev,QD_REG_FLOWCTRL_DELAY,&data);
+        if(retVal != GT_OK)
+        {
+            DBG_INFO(("Failed.\n"));
+            gtSemGive(dev,dev->tblRegsSem);
+            return retVal;
+        }
+    } while (data & 0x8000);
+#endif
 
-	data |= (GT_U16)(0x8000 | delayTime);
+    switch(sp)
+    {
+        case PORT_SPEED_10_MBPS:
+                data = 0;
+                break;
+        case PORT_SPEED_100_MBPS:
+                data = 1 << 13;
+                break;
+        case PORT_SPEED_1000_MBPS:
+                data = 2 << 13;
+                break;
+        default:
+                DBG_INFO(("GT_BAD_PARAM (sp)\n"));
+                gtSemGive(dev,dev->tblRegsSem);
+                return GT_BAD_PARAM;
+    }
+
+    if (delayTime > 0x1FFF)
+    {
+        DBG_INFO(("GT_BAD_PARAM (delayTime)\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return GT_BAD_PARAM;
+    }
+
+    data |= (GT_U16)(0x8000 | delayTime);
 
     /* Set related register */
     retVal = hwWriteGlobal2Reg(dev,QD_REG_FLOWCTRL_DELAY,data);
 
-	gtSemGive(dev,dev->tblRegsSem);
+    gtSemGive(dev,dev->tblRegsSem);
 
     if(retVal != GT_OK)
     {
@@ -3259,95 +3915,114 @@ GT_STATUS gsysSetFlowCtrlDelay
 * gsysGetFlowCtrlDelay
 *
 * DESCRIPTION:
-*		This function retrieves Flow control delay time for 10Mbps, 100Mbps, and
-*		1000Mbps. 
+*        This function retrieves Flow control delay time for 10Mbps, 100Mbps, and
+*        1000Mbps. 
 *
 * INPUTS:
-*		sp - PORT_SPEED_10_MBPS, PORT_SPEED_100_MBPS, or PORT_SPEED_1000_MBPS
+*        sp - PORT_SPEED_10_MBPS, PORT_SPEED_100_MBPS, or PORT_SPEED_1000_MBPS
 *
 * OUTPUTS:
-*		delayTime - delay time
+*        delayTime - delay time
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - if sp is not valid or delayTime is > 0x1FFF.
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - if sp is not valid or delayTime is > 0x1FFF.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*	Actual delay time will be delayTime x 2.048uS (or x 8.192uS) depending on 
-*	switch device. Please refer to the device datasheet for detailed information.
+*    Actual delay time will be delayTime x 2.048uS (or x 8.192uS) depending on 
+*    switch device. Please refer to the device datasheet for detailed information.
 *
 *******************************************************************************/
 GT_STATUS gsysGetFlowCtrlDelay
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_PORT_SPEED_MODE	sp,
-	OUT GT_U32		*delayTime
+    IN  GT_QD_DEV    *dev,
+    IN  GT_PORT_SPEED_MODE    sp,
+    OUT GT_U32        *delayTime
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetFlowCtrlDelay Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_FLOW_CTRL_DELAY))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_FLOW_CTRL_DELAY))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
 
-	/* Check if the register can be accessed. */
-	do
-	{
-	    retVal = hwReadGlobal2Reg(dev,QD_REG_FLOWCTRL_DELAY,&data);
-    	if(retVal != GT_OK)
-	    {
-    	    DBG_INFO(("Failed.\n"));
-			gtSemGive(dev,dev->tblRegsSem);
-        	return retVal;
-	    }
-	} while (data & 0x8000);
+    /* Check if the register can be accessed. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
 
-	switch(sp)
-	{
-		case PORT_SPEED_10_MBPS:
-				data = 0;
-				break;
-		case PORT_SPEED_100_MBPS:
-				data = 1 << 13;
-				break;
-		case PORT_SPEED_1000_MBPS:
-				data = 2 << 13;
-				break;
-		default:
-		        DBG_INFO(("GT_BAD_PARAM (sp)\n"));
-				gtSemGive(dev,dev->tblRegsSem);
-				return GT_BAD_PARAM;
-	}
+      regAccess.entries = 1;
+
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_FLOWCTRL_DELAY;
+      regAccess.rw_reg_list[0].data = 15;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        gtSemGive(dev,dev->tblRegsSem);
+        return retVal;
+      }
+    }
+#else
+    do
+    {
+        retVal = hwReadGlobal2Reg(dev,QD_REG_FLOWCTRL_DELAY,&data);
+        if(retVal != GT_OK)
+        {
+            DBG_INFO(("Failed.\n"));
+            gtSemGive(dev,dev->tblRegsSem);
+            return retVal;
+        }
+    } while (data & 0x8000);
+#endif
+
+    switch(sp)
+    {
+        case PORT_SPEED_10_MBPS:
+                data = 0;
+                break;
+        case PORT_SPEED_100_MBPS:
+                data = 1 << 13;
+                break;
+        case PORT_SPEED_1000_MBPS:
+                data = 2 << 13;
+                break;
+        default:
+                DBG_INFO(("GT_BAD_PARAM (sp)\n"));
+                gtSemGive(dev,dev->tblRegsSem);
+                return GT_BAD_PARAM;
+    }
 
     retVal = hwWriteGlobal2Reg(dev,QD_REG_FLOWCTRL_DELAY,data);
-   	if(retVal != GT_OK)
+       if(retVal != GT_OK)
     {
-   	    DBG_INFO(("Failed.\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-       	return retVal;
+           DBG_INFO(("Failed.\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+           return retVal;
     }
 
     retVal = hwReadGlobal2Reg(dev,QD_REG_FLOWCTRL_DELAY,&data);
 
-	gtSemGive(dev,dev->tblRegsSem);
+    gtSemGive(dev,dev->tblRegsSem);
 
-   	if(retVal != GT_OK)
+       if(retVal != GT_OK)
     {
-   	    DBG_INFO(("Failed.\n"));
-       	return retVal;
+           DBG_INFO(("Failed.\n"));
+           return retVal;
     }
 
-	*delayTime = (GT_U32)(data & 0x1FFF);
-		
+    *delayTime = (GT_U32)(data & 0x1FFF);
+        
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
@@ -3357,33 +4032,33 @@ GT_STATUS gsysGetFlowCtrlDelay
 * gsysSetDevRoutingTable
 *
 * DESCRIPTION:
-*		This function sets Device to Port mapping (which device is connected to 
-*		which port of this device). 
+*        This function sets Device to Port mapping (which device is connected to 
+*        which port of this device). 
 *
 * INPUTS:
-*		devNum - target device number.
-*		portNum - the logical port number.
+*        devNum - target device number.
+*        portNum - the logical port number.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - if sp is not valid or delayTime is > 0x1FFF.
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - if sp is not valid or delayTime is > 0x1FFF.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysSetDevRoutingTable
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_U32  		devNum,
-	IN GT_LPORT 	port
+    IN GT_QD_DEV    *dev,
+    IN GT_U32          devNum,
+    IN GT_LPORT     port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -3392,50 +4067,78 @@ GT_STATUS gsysSetDevRoutingTable
 
     DBG_INFO(("gsysSetDevRoutingTable Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_STACKING))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_STACKING))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
 
-	if(devNum > 0x1F)
-	{
-		DBG_INFO(("GT_BAD_PARAM (devNum)\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-		return GT_BAD_PARAM;
-	}
+    if(devNum > 0x1F)
+    {
+        DBG_INFO(("GT_BAD_PARAM (devNum)\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return GT_BAD_PARAM;
+    }
 
-	/* Check if the register can be accessed. */
-	do
-	{
-	    retVal = hwReadGlobal2Reg(dev,QD_REG_ROUTING_TBL,&data);
-    	if(retVal != GT_OK)
-	    {
-    	    DBG_INFO(("Failed.\n"));
-			gtSemGive(dev,dev->tblRegsSem);
-        	return retVal;
-	    }
-	} while (data & 0x8000);
+    /* Check if the register can be accessed. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 2;
+
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_ROUTING_TBL;
+      regAccess.rw_reg_list[0].data = 15;
+      regAccess.rw_reg_list[1].cmd = HW_REG_WRITE;
+      regAccess.rw_reg_list[1].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[1].reg = QD_REG_ROUTING_TBL;
+      /* translate LPORT to hardware port */
+      if(port >= dev->numOfPorts)
+      {
+        hwPort = 0xF;
+      }
+      else
+      {
+        hwPort = GT_LPORT_2_PORT(port);
+      }
+      data = (GT_U16)(0x8000 | (devNum << 8) | hwPort);
+      regAccess.rw_reg_list[1].data = data;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+    }
+#else
+    do
+    {
+        retVal = hwReadGlobal2Reg(dev,QD_REG_ROUTING_TBL,&data);
+        if(retVal != GT_OK)
+        {
+            DBG_INFO(("Failed.\n"));
+            gtSemGive(dev,dev->tblRegsSem);
+            return retVal;
+        }
+    } while (data & 0x8000);
 
     /* translate LPORT to hardware port */
-	if(port >= dev->numOfPorts)
-	{
-		hwPort = 0xF;
-	}
-	else
-	{
-	    hwPort = GT_LPORT_2_PORT(port);
-	}
+    if(port >= dev->numOfPorts)
+    {
+        hwPort = 0xF;
+    }
+    else
+    {
+        hwPort = GT_LPORT_2_PORT(port);
+    }
 
-	data = (GT_U16)(0x8000 | (devNum << 8) | hwPort);
+    data = (GT_U16)(0x8000 | (devNum << 8) | hwPort);
 
     /* Set related register */
     retVal = hwWriteGlobal2Reg(dev,QD_REG_ROUTING_TBL,data);
+#endif
 
-	gtSemGive(dev,dev->tblRegsSem);
+    gtSemGive(dev,dev->tblRegsSem);
 
     if(retVal != GT_OK)
     {
@@ -3451,32 +4154,32 @@ GT_STATUS gsysSetDevRoutingTable
 * gsysGetDevRoutingTable
 *
 * DESCRIPTION:
-*		This function gets Device to Port mapping (which device is connected to 
-*		which port of this device). 
+*        This function gets Device to Port mapping (which device is connected to 
+*        which port of this device). 
 *
 * INPUTS:
-*		devNum - target device number.
+*        devNum - target device number.
 *
 * OUTPUTS:
-*		portNum - the logical port number.
+*        portNum - the logical port number.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - if sp is not valid or delayTime is > 0x1FFF.
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - if sp is not valid or delayTime is > 0x1FFF.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetDevRoutingTable
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_U32 		devNum,
-	OUT GT_LPORT 	*port
+    IN  GT_QD_DEV    *dev,
+    IN  GT_U32         devNum,
+    OUT GT_LPORT     *port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -3484,59 +4187,89 @@ GT_STATUS gsysGetDevRoutingTable
 
     DBG_INFO(("gsysGetDevRoutingTable Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_STACKING))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_STACKING))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
 
-	if(devNum > 0x1F)
-	{
-		DBG_INFO(("GT_BAD_PARAM (devNum)\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-		return GT_BAD_PARAM;
-	}
+    if(devNum > 0x1F)
+    {
+        DBG_INFO(("GT_BAD_PARAM (devNum)\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return GT_BAD_PARAM;
+    }
 
-	/* Check if the register can be accessed. */
-	do
-	{
-	    retVal = hwReadGlobal2Reg(dev,QD_REG_ROUTING_TBL,&data);
-    	if(retVal != GT_OK)
-	    {
-    	    DBG_INFO(("Failed.\n"));
-			gtSemGive(dev,dev->tblRegsSem);
-        	return retVal;
-	    }
-	} while (data & 0x8000);
+    /* Check if the register can be accessed. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
 
-	data = (GT_U16)(devNum << 8);
+      regAccess.entries = 3;
+
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_ROUTING_TBL;
+      regAccess.rw_reg_list[0].data = 15;
+      regAccess.rw_reg_list[1].cmd = HW_REG_WRITE;
+      regAccess.rw_reg_list[1].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[1].reg = QD_REG_ROUTING_TBL;
+      data = (GT_U16)(devNum << 8);
+      regAccess.rw_reg_list[1].data = data;
+      regAccess.rw_reg_list[2].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[2].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[2].reg = QD_REG_ROUTING_TBL;
+      regAccess.rw_reg_list[2].data = 0;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        DBG_INFO(("Failed.\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return retVal;
+      }
+      data = qdLong2Short(regAccess.rw_reg_list[2].data);
+    }
+#else
+    do
+    {
+        retVal = hwReadGlobal2Reg(dev,QD_REG_ROUTING_TBL,&data);
+        if(retVal != GT_OK)
+        {
+            DBG_INFO(("Failed.\n"));
+            gtSemGive(dev,dev->tblRegsSem);
+            return retVal;
+        }
+    } while (data & 0x8000);
+
+    data = (GT_U16)(devNum << 8);
 
     retVal = hwWriteGlobal2Reg(dev,QD_REG_ROUTING_TBL,data);
-   	if(retVal != GT_OK)
+       if(retVal != GT_OK)
     {
-   	    DBG_INFO(("Failed.\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-       	return retVal;
+           DBG_INFO(("Failed.\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+           return retVal;
     }
 
     retVal = hwReadGlobal2Reg(dev,QD_REG_ROUTING_TBL,&data);
 
-	gtSemGive(dev,dev->tblRegsSem);
+#endif
+    gtSemGive(dev,dev->tblRegsSem);
 
-   	if(retVal != GT_OK)
+       if(retVal != GT_OK)
     {
-   	    DBG_INFO(("Failed.\n"));
-       	return retVal;
+           DBG_INFO(("Failed.\n"));
+           return retVal;
     }
 
-	*port = GT_PORT_2_LPORT((GT_U8)(data & 0xF));
-	if(*port == GT_INVALID_PORT)
-	{
-		*port = 0xF;
-	}	
+    *port = GT_PORT_2_LPORT((GT_U8)(data & 0xF));
+    if(*port == GT_INVALID_PORT)
+    {
+        *port = 0xF;
+    }    
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
@@ -3545,96 +4278,122 @@ GT_STATUS gsysGetDevRoutingTable
 * gsysSetTrunkMaskTable
 *
 * DESCRIPTION:
-*		This function sets Trunk Mask for the given Trunk Number.
+*        This function sets Trunk Mask for the given Trunk Number.
 *
 * INPUTS:
-*		trunkNum - Trunk Number.
-*		trunkMask - Trunk mask bits. Bit 0 controls trunk masking for port 0,
-*					bit 1 for port 1 , etc.
+*        trunkNum - Trunk Number.
+*        trunkMask - Trunk mask bits. Bit 0 controls trunk masking for port 0,
+*                    bit 1 for port 1 , etc.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - if trunkNum > 0x7 for 88E6095 and 88E6183 family and
-*					   if trunkNum > 0x3 for 88E6065 family.
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - if trunkNum > 0x7 for 88E6095 and 88E6183 family and
+*                       if trunkNum > 0x3 for 88E6065 family.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysSetTrunkMaskTable
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_U32  		trunkNum,
-	IN GT_U32		trunkMask
+    IN GT_QD_DEV    *dev,
+    IN GT_U32          trunkNum,
+    IN GT_U32        trunkMask
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
-	GT_U32			mask;
+    GT_U32            mask;
 
     DBG_INFO(("gsysSetTrunkMaskTable Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_TRUNK|DEV_REDUCED_TRUNK))
+    /* Check if Switch supports this status. */
+    if (!((IS_IN_DEV_GROUP(dev,DEV_TRUNK)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_REDUCED_TRUNK))))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
 
-	/* Check if the register can be accessed. */
-	do
-	{
-	    retVal = hwReadGlobal2Reg(dev,QD_REG_TRUNK_MASK_TBL,&data);
-    	if(retVal != GT_OK)
-	    {
-    	    DBG_INFO(("Failed.\n"));
-			gtSemGive(dev,dev->tblRegsSem);
-        	return retVal;
-	    }
-	} while (data & 0x8000);
+    /* Check if the register can be accessed. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
 
-	data &= 0x0800;
+      regAccess.entries = 2;
 
-	if(trunkNum > 0x7)
-	{
-		DBG_INFO(("GT_BAD_PARAM (trunkNum)\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-		return GT_BAD_PARAM;
-	}
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_TRUNK_MASK_TBL;
+      regAccess.rw_reg_list[0].data = 15;
+      regAccess.rw_reg_list[1].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[1].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[1].reg = QD_REG_TRUNK_MASK_TBL;
+      regAccess.rw_reg_list[1].data = 0;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+           DBG_INFO(("Failed.\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return retVal;
+      }
+      data = qdLong2Short(regAccess.rw_reg_list[1].data);
+    }
+#else
+    do
+    {
+        retVal = hwReadGlobal2Reg(dev,QD_REG_TRUNK_MASK_TBL,&data);
+        if(retVal != GT_OK)
+        {
+            DBG_INFO(("Failed.\n"));
+            gtSemGive(dev,dev->tblRegsSem);
+            return retVal;
+        }
+    } while (data & 0x8000);
+#endif
 
-	if((trunkNum > 0x3) && IS_IN_DEV_GROUP(dev,DEV_REDUCED_TRUNK))
-	{
-		DBG_INFO(("GT_BAD_PARAM (trunkNum)\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-		return GT_BAD_PARAM;
-	}
+    data &= 0x0800;
 
-	mask = (1 << dev->numOfPorts) - 1;
+    if(trunkNum > 0x7)
+    {
+        DBG_INFO(("GT_BAD_PARAM (trunkNum)\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return GT_BAD_PARAM;
+    }
 
-	if(trunkMask > mask)
-	{
-		DBG_INFO(("GT_BAD_PARAM (trunkMask)\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-		return GT_BAD_PARAM;
-	}
+    if((trunkNum > 0x3) && IS_IN_DEV_GROUP(dev,DEV_REDUCED_TRUNK))
+    {
+        DBG_INFO(("GT_BAD_PARAM (trunkNum)\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return GT_BAD_PARAM;
+    }
 
-	mask = GT_LPORTVEC_2_PORTVEC(trunkMask);
+    mask = (1 << dev->numOfPorts) - 1;
 
-	data = (GT_U16)(0x8000 | data | (trunkNum << 12) | mask);
+    if(trunkMask > mask)
+    {
+        DBG_INFO(("GT_BAD_PARAM (trunkMask)\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return GT_BAD_PARAM;
+    }
+
+    mask = GT_LPORTVEC_2_PORTVEC(trunkMask);
+
+    data = (GT_U16)(0x8000 | data | (trunkNum << 12) | mask);
 
     /* Set related register */
     retVal = hwWriteGlobal2Reg(dev,QD_REG_TRUNK_MASK_TBL,data);
 
-	gtSemGive(dev,dev->tblRegsSem);
+    gtSemGive(dev,dev->tblRegsSem);
 
     if(retVal != GT_OK)
     {
@@ -3650,102 +4409,127 @@ GT_STATUS gsysSetTrunkMaskTable
 * gsysGetTrunkMaskTable
 *
 * DESCRIPTION:
-*		This function gets Trunk Mask for the given Trunk Number.
+*        This function gets Trunk Mask for the given Trunk Number.
 *
 * INPUTS:
-*		trunkNum - Trunk Number.
+*        trunkNum - Trunk Number.
 *
 * OUTPUTS:
-*		trunkMask - Trunk mask bits. Bit 0 controls trunk masking for port 0,
-*					bit 1 for port 1 , etc.
+*        trunkMask - Trunk mask bits. Bit 0 controls trunk masking for port 0,
+*                    bit 1 for port 1 , etc.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - if trunkNum > 0x7 for 88E6095 and 88E6183 family and
-*					   if trunkNum > 0x3 for 88E6065 family.
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - if trunkNum > 0x7 for 88E6095 and 88E6183 family and
+*                       if trunkNum > 0x3 for 88E6065 family.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetTrunkMaskTable
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_U32 		trunkNum,
-	OUT GT_U32		*trunkMask
+    IN  GT_QD_DEV    *dev,
+    IN  GT_U32         trunkNum,
+    OUT GT_U32        *trunkMask
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
-	GT_U32			mask;
+    GT_U32            mask;
 
     DBG_INFO(("gsysGetTrunkMaskTable Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_TRUNK|DEV_REDUCED_TRUNK))
+    /* Check if Switch supports this status. */
+    if (!((IS_IN_DEV_GROUP(dev,DEV_TRUNK)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_REDUCED_TRUNK))))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
 
-	/* Check if the register can be accessed. */
-	do
-	{
-	    retVal = hwReadGlobal2Reg(dev,QD_REG_TRUNK_MASK_TBL,&data);
-    	if(retVal != GT_OK)
-	    {
-    	    DBG_INFO(("Failed.\n"));
-			gtSemGive(dev,dev->tblRegsSem);
-        	return retVal;
-	    }
-	} while (data & 0x8000);
+    /* Check if the register can be accessed. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
 
-	data &= 0x0800;
+      regAccess.entries = 2;
 
-	if(trunkNum > 0x7)
-	{
-		DBG_INFO(("GT_BAD_PARAM (trunkId)\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-		return GT_BAD_PARAM;
-	}
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_TRUNK_MASK_TBL;
+      regAccess.rw_reg_list[0].data = 15;
+      regAccess.rw_reg_list[1].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[1].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[1].reg = QD_REG_TRUNK_MASK_TBL;
+      regAccess.rw_reg_list[1].data = 0;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+           DBG_INFO(("Failed.\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return retVal;
+      }
+    }
+#else
+    do
+    {
+        retVal = hwReadGlobal2Reg(dev,QD_REG_TRUNK_MASK_TBL,&data);
+        if(retVal != GT_OK)
+        {
+            DBG_INFO(("Failed.\n"));
+            gtSemGive(dev,dev->tblRegsSem);
+            return retVal;
+        }
+    } while (data & 0x8000);
+#endif
 
-	if((trunkNum > 0x3) && IS_IN_DEV_GROUP(dev,DEV_REDUCED_TRUNK))
-	{
-		DBG_INFO(("GT_BAD_PARAM (trunkNum)\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-		return GT_BAD_PARAM;
-	}
+    data &= 0x0800;
 
-	data = (GT_U16)(data | (trunkNum << 12));
+    if(trunkNum > 0x7)
+    {
+        DBG_INFO(("GT_BAD_PARAM (trunkId)\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return GT_BAD_PARAM;
+    }
+
+    if((trunkNum > 0x3) && IS_IN_DEV_GROUP(dev,DEV_REDUCED_TRUNK))
+    {
+        DBG_INFO(("GT_BAD_PARAM (trunkNum)\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return GT_BAD_PARAM;
+    }
+
+    data = (GT_U16)(data | (trunkNum << 12));
 
     retVal = hwWriteGlobal2Reg(dev,QD_REG_TRUNK_MASK_TBL,data);
-   	if(retVal != GT_OK)
+       if(retVal != GT_OK)
     {
-   	    DBG_INFO(("Failed.\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-       	return retVal;
+           DBG_INFO(("Failed.\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+           return retVal;
     }
 
     retVal = hwReadGlobal2Reg(dev,QD_REG_TRUNK_MASK_TBL,&data);
 
-	gtSemGive(dev,dev->tblRegsSem);
+    gtSemGive(dev,dev->tblRegsSem);
 
-   	if(retVal != GT_OK)
+       if(retVal != GT_OK)
     {
-   	    DBG_INFO(("Failed.\n"));
-       	return retVal;
+           DBG_INFO(("Failed.\n"));
+           return retVal;
     }
 
-	mask = (1 << dev->maxPorts) - 1;
+    mask = (1 << dev->maxPorts) - 1;
 
-	*trunkMask = GT_PORTVEC_2_LPORTVEC(data & mask);
-			
+    *trunkMask = GT_PORTVEC_2_LPORTVEC(data & mask);
+            
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
@@ -3754,44 +4538,45 @@ GT_STATUS gsysGetTrunkMaskTable
 * gsysSetHashTrunk
 *
 * DESCRIPTION:
-*		Hash DA & SA for TrunkMask selection. Trunk load balancing is accomplished 
-*		by using the frame's DA and SA fields to access one of eight Trunk Masks. 
-*		When this bit is set to a one the hashed computed for address table 
-*		lookups is used for the TrunkMask selection. When this bit is cleared to 
-*		a zero the lower 3 bits of the frame's DA and SA are XOR'ed together to 
-*		select the TrunkMask to use.
+*        Hash DA & SA for TrunkMask selection. Trunk load balancing is accomplished 
+*        by using the frame's DA and SA fields to access one of eight Trunk Masks. 
+*        When this bit is set to a one the hashed computed for address table 
+*        lookups is used for the TrunkMask selection. When this bit is cleared to 
+*        a zero the lower 3 bits of the frame's DA and SA are XOR'ed together to 
+*        select the TrunkMask to use.
 *
 * INPUTS:
-*		en - GT_TRUE to use lookup table, GT_FALSE to use XOR.
+*        en - GT_TRUE to use lookup table, GT_FALSE to use XOR.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetHashTrunk
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetHashTrunk Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_TRUNK|DEV_REDUCED_TRUNK))
+    /* Check if Switch supports this feature. */
+    if (!((IS_IN_DEV_GROUP(dev,DEV_TRUNK)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_REDUCED_TRUNK))))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -3812,45 +4597,46 @@ GT_STATUS gsysSetHashTrunk
 * gsysGetHashTrunk
 *
 * DESCRIPTION:
-*		Hash DA & SA for TrunkMask selection. Trunk load balancing is accomplished 
-*		by using the frame's DA and SA fields to access one of eight Trunk Masks. 
-*		When this bit is set to a one the hashed computed for address table 
-*		lookups is used for the TrunkMask selection. When this bit is cleared to 
-*		a zero the lower 3 bits of the frame's DA and SA are XOR'ed together to 
-*		select the TrunkMask to use.
+*        Hash DA & SA for TrunkMask selection. Trunk load balancing is accomplished 
+*        by using the frame's DA and SA fields to access one of eight Trunk Masks. 
+*        When this bit is set to a one the hashed computed for address table 
+*        lookups is used for the TrunkMask selection. When this bit is cleared to 
+*        a zero the lower 3 bits of the frame's DA and SA are XOR'ed together to 
+*        select the TrunkMask to use.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE to use lookup table, GT_FALSE to use XOR.
+*        en - GT_TRUE to use lookup table, GT_FALSE to use XOR.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetHashTrunk
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetHashTrunk Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_TRUNK|DEV_REDUCED_TRUNK))
+    /* Check if Switch supports this feature. */
+    if (!((IS_IN_DEV_GROUP(dev,DEV_TRUNK)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_REDUCED_TRUNK))))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -3870,92 +4656,112 @@ GT_STATUS gsysGetHashTrunk
 * gsysSetTrunkRouting
 *
 * DESCRIPTION:
-*		This function sets routing information for the given Trunk ID.
+*        This function sets routing information for the given Trunk ID.
 *
 * INPUTS:
-*		trunkId - Trunk ID.
-*		trunkRoute - Trunk route bits. Bit 0 controls trunk routing for port 0,
-*					bit 1 for port 1 , etc.
+*        trunkId - Trunk ID.
+*        trunkRoute - Trunk route bits. Bit 0 controls trunk routing for port 0,
+*                    bit 1 for port 1 , etc.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - if trunkId > 0xF.
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - if trunkId > 0xF.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysSetTrunkRouting
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_U32  		trunkId,
-	IN GT_U32		trunkRoute
+    IN GT_QD_DEV    *dev,
+    IN GT_U32          trunkId,
+    IN GT_U32        trunkRoute
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
-	GT_U32			mask;
-	GT_U32			maxTrunk;
+    GT_U32            mask;
+    GT_U32            maxTrunk;
 
     DBG_INFO(("gsysSetTrunkRouting Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_TRUNK))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_TRUNK))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
 
-	/* Check if the register can be accessed. */
-	do
-	{
-	    retVal = hwReadGlobal2Reg(dev,QD_REG_TRUNK_ROUTING,&data);
-    	if(retVal != GT_OK)
-	    {
-    	    DBG_INFO(("Failed.\n"));
-			gtSemGive(dev,dev->tblRegsSem);
-        	return retVal;
-	    }
-	} while (data & 0x8000);
+    /* Check if the register can be accessed. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
 
-	if (IS_IN_DEV_GROUP(dev,DEV_8_TRUNKING))
-		maxTrunk = 8;
-	else
-		maxTrunk = 16;
+      regAccess.entries = 1;
 
-	if(trunkId >= maxTrunk)
-	{
-		DBG_INFO(("GT_BAD_PARAM (trunkId)\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-		return GT_BAD_PARAM;
-	}
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_TRUNK_ROUTING;
+      regAccess.rw_reg_list[0].data = 15;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+           DBG_INFO(("Failed.\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return retVal;
+      }
+    }
+#else
+    do
+    {
+        retVal = hwReadGlobal2Reg(dev,QD_REG_TRUNK_ROUTING,&data);
+        if(retVal != GT_OK)
+        {
+            DBG_INFO(("Failed.\n"));
+            gtSemGive(dev,dev->tblRegsSem);
+            return retVal;
+        }
+    } while (data & 0x8000);
+#endif
 
-	mask = (1 << dev->numOfPorts) - 1;
+    if (IS_IN_DEV_GROUP(dev,DEV_8_TRUNKING))
+        maxTrunk = 8;
+    else
+        maxTrunk = 16;
 
-	if(trunkRoute > mask)
-	{
-		DBG_INFO(("GT_BAD_PARAM (trunkRoute)\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-		return GT_BAD_PARAM;
-	}
+    if(trunkId >= maxTrunk)
+    {
+        DBG_INFO(("GT_BAD_PARAM (trunkId)\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return GT_BAD_PARAM;
+    }
 
-	mask = GT_LPORTVEC_2_PORTVEC(trunkRoute);
+    mask = (1 << dev->numOfPorts) - 1;
 
-	data = (GT_U16)(0x8000 | (trunkId << 11) | mask);
+    if(trunkRoute > mask)
+    {
+        DBG_INFO(("GT_BAD_PARAM (trunkRoute)\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return GT_BAD_PARAM;
+    }
+
+    mask = GT_LPORTVEC_2_PORTVEC(trunkRoute);
+
+    data = (GT_U16)(0x8000 | (trunkId << 11) | mask);
 
     /* Set related register */
     retVal = hwWriteGlobal2Reg(dev,QD_REG_TRUNK_ROUTING,data);
 
-	gtSemGive(dev,dev->tblRegsSem);
+    gtSemGive(dev,dev->tblRegsSem);
 
     if(retVal != GT_OK)
     {
@@ -3971,96 +4777,126 @@ GT_STATUS gsysSetTrunkRouting
 * gsysGetTrunkRouting
 *
 * DESCRIPTION:
-*		This function retrieves routing information for the given Trunk ID.
+*        This function retrieves routing information for the given Trunk ID.
 *
 * INPUTS:
-*		trunkId - Trunk ID.
+*        trunkId - Trunk ID.
 *
 * OUTPUTS:
-*		trunkRoute - Trunk route bits. Bit 0 controls trunk routing for port 0,
-*					bit 1 for port 1 , etc.
+*        trunkRoute - Trunk route bits. Bit 0 controls trunk routing for port 0,
+*                    bit 1 for port 1 , etc.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - if trunkId > 0xF.
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - if trunkId > 0xF.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetTrunkRouting
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_U32 		trunkId,
-	OUT GT_U32		*trunkRoute
+    IN  GT_QD_DEV    *dev,
+    IN  GT_U32         trunkId,
+    OUT GT_U32        *trunkRoute
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
-	GT_U32			mask;
-	GT_U32			maxTrunk;
+    GT_U32            mask;
+    GT_U32            maxTrunk;
 
     DBG_INFO(("gsysGetTrunkRouting Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_TRUNK))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_TRUNK))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
+    gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
 
-	/* Check if the register can be accessed. */
-	do
-	{
-	    retVal = hwReadGlobal2Reg(dev,QD_REG_TRUNK_ROUTING,&data);
-    	if(retVal != GT_OK)
-	    {
-    	    DBG_INFO(("Failed.\n"));
-			gtSemGive(dev,dev->tblRegsSem);
-        	return retVal;
-	    }
-	} while (data & 0x8000);
+    if (IS_IN_DEV_GROUP(dev,DEV_8_TRUNKING))
+        maxTrunk = 8;
+    else
+        maxTrunk = 16;
 
-	if (IS_IN_DEV_GROUP(dev,DEV_8_TRUNKING))
-		maxTrunk = 8;
-	else
-		maxTrunk = 16;
+    if(trunkId >= maxTrunk)
+    {
+        DBG_INFO(("GT_BAD_PARAM (trunkId)\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return GT_BAD_PARAM;
+    }
 
-	if(trunkId >= maxTrunk)
-	{
-		DBG_INFO(("GT_BAD_PARAM (trunkId)\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-		return GT_BAD_PARAM;
-	}
+    /* Check if the register can be accessed. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
 
-	data = (GT_U16)(trunkId << 11);
+      regAccess.entries = 3;
+
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_TRUNK_ROUTING;
+      regAccess.rw_reg_list[0].data = 15;
+      regAccess.rw_reg_list[1].cmd = HW_REG_WRITE;
+      regAccess.rw_reg_list[1].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[1].reg = QD_REG_TRUNK_ROUTING;
+      data = (GT_U16)(trunkId << 11);
+      regAccess.rw_reg_list[1].data = data;
+      regAccess.rw_reg_list[2].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[2].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[2].reg = QD_REG_TRUNK_ROUTING;
+      regAccess.rw_reg_list[2].data = 0;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+           DBG_INFO(("Failed.\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+        return retVal;
+      }
+      data = qdLong2Short(regAccess.rw_reg_list[2].data);
+    }
+#else
+    do
+    {
+        retVal = hwReadGlobal2Reg(dev,QD_REG_TRUNK_ROUTING,&data);
+        if(retVal != GT_OK)
+        {
+            DBG_INFO(("Failed.\n"));
+            gtSemGive(dev,dev->tblRegsSem);
+            return retVal;
+        }
+    } while (data & 0x8000);
+
+    data = (GT_U16)(trunkId << 11);
 
     retVal = hwWriteGlobal2Reg(dev,QD_REG_TRUNK_ROUTING,data);
-   	if(retVal != GT_OK)
+       if(retVal != GT_OK)
     {
-   	    DBG_INFO(("Failed.\n"));
-		gtSemGive(dev,dev->tblRegsSem);
-       	return retVal;
+           DBG_INFO(("Failed.\n"));
+        gtSemGive(dev,dev->tblRegsSem);
+           return retVal;
     }
 
     retVal = hwReadGlobal2Reg(dev,QD_REG_TRUNK_ROUTING,&data);
-	gtSemGive(dev,dev->tblRegsSem);
-   	if(retVal != GT_OK)
+#endif
+    gtSemGive(dev,dev->tblRegsSem);
+       if(retVal != GT_OK)
     {
-   	    DBG_INFO(("Failed.\n"));
-       	return retVal;
+           DBG_INFO(("Failed.\n"));
+           return retVal;
     }
 
-	mask = (1 << dev->maxPorts) - 1;
+    mask = (1 << dev->maxPorts) - 1;
 
-	*trunkRoute = GT_PORTVEC_2_LPORTVEC(data & mask);
-			
+    *trunkRoute = GT_PORTVEC_2_LPORTVEC(data & mask);
+            
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
@@ -4070,60 +4906,60 @@ GT_STATUS gsysGetTrunkRouting
 * gsysSetRateLimitMode
 *
 * DESCRIPTION:
-*		Ingress Rate Limiting can be either Priority based or Burst Size based.
-*		This routine sets which mode to use.
+*        Ingress Rate Limiting can be either Priority based or Burst Size based.
+*        This routine sets which mode to use.
 *
 * INPUTS:
-*		mode - either GT_RATE_PRI_BASE or GT_RATE_BURST_BASE
+*        mode - either GT_RATE_PRI_BASE or GT_RATE_BURST_BASE
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - if invalid mode is used.
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - if invalid mode is used.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetRateLimitMode
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_INGRESS_RATE_MODE mode
+    IN GT_QD_DEV    *dev,
+    IN GT_INGRESS_RATE_MODE mode
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
     GT_U8           hwPort;         /* the physical port number     */
 
     DBG_INFO(("gsysSetRateLimitMode Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_BURST_RATE))
-	{
-		if (!IS_IN_DEV_GROUP(dev,DEV_NEW_FEATURE_IN_REV) || 
-			((GT_DEVICE_REV)dev->revision < GT_REV_2))
-	    {
-    	    DBG_INFO(("GT_NOT_SUPPORTED\n"));
-			return GT_NOT_SUPPORTED;
-	    }
-	}
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_BURST_RATE))
+    {
+        if (!IS_IN_DEV_GROUP(dev,DEV_NEW_FEATURE_IN_REV) || 
+            ((GT_DEVICE_REV)dev->revision < GT_REV_2))
+        {
+            DBG_INFO(("GT_NOT_SUPPORTED\n"));
+            return GT_NOT_SUPPORTED;
+        }
+    }
 
-	switch (mode)
-	{
-		case GT_RATE_PRI_BASE:
-			data = 0;
-			break;
-		case GT_RATE_BURST_BASE:
-			data = 1;
-			break;
-		default:
-	        DBG_INFO(("Not supported mode %i\n",mode));
-			return GT_BAD_PARAM;
-	}
+    switch (mode)
+    {
+        case GT_RATE_PRI_BASE:
+            data = 0;
+            break;
+        case GT_RATE_BURST_BASE:
+            data = 1;
+            break;
+        default:
+            DBG_INFO(("Not supported mode %i\n",mode));
+            return GT_BAD_PARAM;
+    }
 
     hwPort = 7;
 
@@ -4143,49 +4979,49 @@ GT_STATUS gsysSetRateLimitMode
 * gsysGetRateLimitMode
 *
 * DESCRIPTION:
-*		Ingress Rate Limiting can be either Priority based or Burst Size based.
-*		This routine gets which mode is being used.
+*        Ingress Rate Limiting can be either Priority based or Burst Size based.
+*        This routine gets which mode is being used.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		mode - either GT_RATE_PRI_BASE or GT_RATE_BURST_BASE
+*        mode - either GT_RATE_PRI_BASE or GT_RATE_BURST_BASE
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetRateLimitMode
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_INGRESS_RATE_MODE *mode
+    IN  GT_QD_DEV    *dev,
+    OUT GT_INGRESS_RATE_MODE *mode
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
     GT_U8           hwPort;         /* the physical port number     */
 
     DBG_INFO(("gsysGetRateLimitMode Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_BURST_RATE))
-	{
-		if (!IS_IN_DEV_GROUP(dev,DEV_NEW_FEATURE_IN_REV) || 
-			((GT_DEVICE_REV)dev->revision < GT_REV_2))
-	    {
-    	    DBG_INFO(("GT_NOT_SUPPORTED\n"));
-			return GT_NOT_SUPPORTED;
-	    }
-	}
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_BURST_RATE))
+    {
+        if (!IS_IN_DEV_GROUP(dev,DEV_NEW_FEATURE_IN_REV) || 
+            ((GT_DEVICE_REV)dev->revision < GT_REV_2))
+        {
+            DBG_INFO(("GT_NOT_SUPPORTED\n"));
+            return GT_NOT_SUPPORTED;
+        }
+    }
 
     hwPort = 7;
-	data = 0;
+    data = 0;
 
     /* Get related bit */
     retVal = hwGetPortRegField(dev,hwPort, 0x1A, 15, 1, &data);
@@ -4195,10 +5031,10 @@ GT_STATUS gsysGetRateLimitMode
         return retVal;
     }
 
-	if (data == 0)
-		*mode = GT_RATE_PRI_BASE;
-	else
-		*mode = GT_RATE_BURST_BASE;
+    if (data == 0)
+        *mode = GT_RATE_PRI_BASE;
+    else
+        *mode = GT_RATE_BURST_BASE;
 
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -4209,73 +5045,73 @@ GT_STATUS gsysGetRateLimitMode
 * gsysSetAgeInt
 *
 * DESCRIPTION:
-*		Enable/Disable Age Refresh Interrupt. If CPU Directed Learning is being
-*		used (gprtSetLockedPort), it may be desirable to know when an address is
-*		still being used before it totally ages out of the switch. This can be 
-*		accomplished by enabling Age Refresh Interrupt (or ATU Age Violation Int).
-*		An ATU Age Violation looks identical to and reported the same as an ATU 
-*		Miss Violation. The only difference is when this reported. Normal ATU Miss
-*		Violation only occur if a new SA arrives at a LockedPort. The Age version 
-*		of the ATU Miss Violation occurs if an SA arrives at a LockedPort, where
-*		the address is contained in the ATU's database, but where its EntryState 
-*		is less than 0x4 (i.e., it has aged more than 1/2 way).
-*		GT_ATU_PROB Interrupt should be enabled for this interrupt to occur.
-*		Refer to eventSetActive routine to enable GT_ATU_PROB.
+*        Enable/Disable Age Refresh Interrupt. If CPU Directed Learning is being
+*        used (gprtSetLockedPort), it may be desirable to know when an address is
+*        still being used before it totally ages out of the switch. This can be 
+*        accomplished by enabling Age Refresh Interrupt (or ATU Age Violation Int).
+*        An ATU Age Violation looks identical to and reported the same as an ATU 
+*        Miss Violation. The only difference is when this reported. Normal ATU Miss
+*        Violation only occur if a new SA arrives at a LockedPort. The Age version 
+*        of the ATU Miss Violation occurs if an SA arrives at a LockedPort, where
+*        the address is contained in the ATU's database, but where its EntryState 
+*        is less than 0x4 (i.e., it has aged more than 1/2 way).
+*        GT_ATU_PROB Interrupt should be enabled for this interrupt to occur.
+*        Refer to eventSetActive routine to enable GT_ATU_PROB.
 *
-*		If the device supports Refresh Locked feature (gprtSetRefreshLocked API),
-*		the feature must not be enabled for this Miss Violation to occur.
+*        If the device supports Refresh Locked feature (gprtSetRefreshLocked API),
+*        the feature must not be enabled for this Miss Violation to occur.
 *
 * INPUTS:
-*		en - GT_TRUE, to enable,
-*			 GT_FALSE, otherwise.
+*        en - GT_TRUE, to enable,
+*             GT_FALSE, otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetAgeInt
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
     GT_U8           hwPort;         /* the physical port number     */
 
     DBG_INFO(("gsysSetAgeInt Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_AGE_INTERRUPT))
-	{
-		if (!IS_IN_DEV_GROUP(dev,DEV_NEW_FEATURE_IN_REV) || 
-			((GT_DEVICE_REV)dev->revision < GT_REV_2))
-	    {
-    	    DBG_INFO(("GT_NOT_SUPPORTED\n"));
-			return GT_NOT_SUPPORTED;
-	    }
-	}
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_AGE_INTERRUPT))
+    {
+        if (!IS_IN_DEV_GROUP(dev,DEV_NEW_FEATURE_IN_REV) || 
+            ((GT_DEVICE_REV)dev->revision < GT_REV_2))
+        {
+            DBG_INFO(("GT_NOT_SUPPORTED\n"));
+            return GT_NOT_SUPPORTED;
+        }
+    }
 
     BOOL_2_BIT(en, data);
 
-	if (IS_IN_DEV_GROUP(dev,DEV_AGE_INT_GLOBAL2))
-	{
-	    retVal = hwSetGlobal2RegField(dev,QD_REG_MANAGEMENT, 10, 1, data);
-	}
-	else
-	{
-	    hwPort = 7;
-	    /* Set related bit */
-    	retVal = hwSetPortRegField(dev,hwPort, 0x1A, 14, 1, data);
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_AGE_INT_GLOBAL2))
+    {
+        retVal = hwSetGlobal2RegField(dev,QD_REG_MANAGEMENT, 10, 1, data);
+    }
+    else
+    {
+        hwPort = 7;
+        /* Set related bit */
+        retVal = hwSetPortRegField(dev,hwPort, 0x1A, 14, 1, data);
+    }
 
     if(retVal != GT_OK)
     {
@@ -4291,73 +5127,73 @@ GT_STATUS gsysSetAgeInt
 * gsysGetAgeInt
 *
 * DESCRIPTION:
-*		Get state of Age Refresh Interrupt mode. If CPU Directed Learning is being
-*		used (gprtSetLockedPort), it may be desirable to know when an address is
-*		still being used before it totally ages out of the switch. This can be 
-*		accomplished by enabling Age Refresh Interrupt (or ATU Age Violation Int).
-*		An ATU Age Violation looks identical to and reported the same as an ATU 
-*		Miss Violation. The only difference is when this reported. Normal ATU Miss
-*		Violation only occur if a new SA arrives at a LockedPort. The Age version 
-*		of the ATU Miss Violation occurs if an SA arrives at a LockedPort, where
-*		the address is contained in the ATU's database, but where its EntryState 
-*		is less than 0x4 (i.e., it has aged more than 1/2 way).
-*		GT_ATU_PROB Interrupt should be enabled for this interrupt to occur.
-*		Refer to eventSetActive routine to enable GT_ATU_PROB.
+*        Get state of Age Refresh Interrupt mode. If CPU Directed Learning is being
+*        used (gprtSetLockedPort), it may be desirable to know when an address is
+*        still being used before it totally ages out of the switch. This can be 
+*        accomplished by enabling Age Refresh Interrupt (or ATU Age Violation Int).
+*        An ATU Age Violation looks identical to and reported the same as an ATU 
+*        Miss Violation. The only difference is when this reported. Normal ATU Miss
+*        Violation only occur if a new SA arrives at a LockedPort. The Age version 
+*        of the ATU Miss Violation occurs if an SA arrives at a LockedPort, where
+*        the address is contained in the ATU's database, but where its EntryState 
+*        is less than 0x4 (i.e., it has aged more than 1/2 way).
+*        GT_ATU_PROB Interrupt should be enabled for this interrupt to occur.
+*        Refer to eventSetActive routine to enable GT_ATU_PROB.
 *
-*		If the device supports Refresh Locked feature (gprtSetRefreshLocked API),
-*		the feature must not be enabled for this Miss Violation to occur.
+*        If the device supports Refresh Locked feature (gprtSetRefreshLocked API),
+*        the feature must not be enabled for this Miss Violation to occur.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE, if enabled,
-*			 GT_FALSE, otherwise.
+*        en - GT_TRUE, if enabled,
+*             GT_FALSE, otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetAgeInt
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL		*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL        *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
     GT_U8           hwPort;         /* the physical port number     */
 
     DBG_INFO(("gsysGetAgeInt Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_AGE_INTERRUPT))
-	{
-		if (!IS_IN_DEV_GROUP(dev,DEV_NEW_FEATURE_IN_REV) || 
-			((GT_DEVICE_REV)dev->revision < GT_REV_2))
-	    {
-    	    DBG_INFO(("GT_NOT_SUPPORTED\n"));
-			return GT_NOT_SUPPORTED;
-	    }
-	}
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_AGE_INTERRUPT))
+    {
+        if (!IS_IN_DEV_GROUP(dev,DEV_NEW_FEATURE_IN_REV) || 
+            ((GT_DEVICE_REV)dev->revision < GT_REV_2))
+        {
+            DBG_INFO(("GT_NOT_SUPPORTED\n"));
+            return GT_NOT_SUPPORTED;
+        }
+    }
 
-	data = 0;
+    data = 0;
 
-	if (IS_IN_DEV_GROUP(dev,DEV_AGE_INT_GLOBAL2))
-	{
-	    retVal = hwGetGlobal2RegField(dev,QD_REG_MANAGEMENT, 10, 1, &data);
-	}
-	else
-	{
- 	   hwPort = 7;
-    	/* Get related bit */
-	    retVal = hwGetPortRegField(dev,hwPort, 0x1A, 14, 1, &data);
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_AGE_INT_GLOBAL2))
+    {
+        retVal = hwGetGlobal2RegField(dev,QD_REG_MANAGEMENT, 10, 1, &data);
+    }
+    else
+    {
+        hwPort = 7;
+        /* Get related bit */
+        retVal = hwGetPortRegField(dev,hwPort, 0x1A, 14, 1, &data);
+    }
 
     if(retVal != GT_OK)
     {
@@ -4376,42 +5212,42 @@ GT_STATUS gsysGetAgeInt
 * gsysSetForceSnoopPri
 *
 * DESCRIPTION:
-*		Force Snooping Priority. The priority on IGMP or MLD Snoop frames are
-*		set to the SnoopPri value (gsysSetSnoopPri API) when Force Snooping
+*        Force Snooping Priority. The priority on IGMP or MLD Snoop frames are
+*        set to the SnoopPri value (gsysSetSnoopPri API) when Force Snooping
 *       Priority is enabled. When it's disabled, the priority on these frames
-*		is not modified.
+*        is not modified.
 *
 * INPUTS:
-*		en - GT_TRUE to use defined PRI bits, GT_FALSE otherwise.
+*        en - GT_TRUE to use defined PRI bits, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetForceSnoopPri
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetForceSnoopPri Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_SNOOP_PRI))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_SNOOP_PRI))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -4432,43 +5268,43 @@ GT_STATUS gsysSetForceSnoopPri
 * gsysGetForceSnoopPri
 *
 * DESCRIPTION:
-*		Force Snooping Priority. The priority on IGMP or MLD Snoop frames are
-*		set to the SnoopPri value (gsysSetSnoopPri API) when Force Snooping
+*        Force Snooping Priority. The priority on IGMP or MLD Snoop frames are
+*        set to the SnoopPri value (gsysSetSnoopPri API) when Force Snooping
 *       Priority is enabled. When it's disabled, the priority on these frames
-*		is not modified.
+*        is not modified.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE to use defined PRI bits, GT_FALSE otherwise.
+*        en - GT_TRUE to use defined PRI bits, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetForceSnoopPri
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetForceSnoopPri Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_SNOOP_PRI))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_SNOOP_PRI))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -4488,49 +5324,49 @@ GT_STATUS gsysGetForceSnoopPri
 * gsysSetSnoopPri
 *
 * DESCRIPTION:
-*		Snoop Priority. When ForceSnoopPri (gsysSetForceSnoopPri API) is enabled,
+*        Snoop Priority. When ForceSnoopPri (gsysSetForceSnoopPri API) is enabled,
 *       this priority is used as the egressing frame's PRI[2:0] bits on generated
 *       Marvell Tag To_CPU Snoop frames and higher 2 bits of the priority are
 *       used as the internal Queue Priority to use on IGMP/MLD snoop frames.
 *
 * INPUTS:
-*		pri - PRI[2:0] bits (should be less than 8)
+*        pri - PRI[2:0] bits (should be less than 8)
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - If pri is not less than 8.
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - If pri is not less than 8.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetSnoopPri
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_U16		pri
+    IN GT_QD_DEV    *dev,
+    IN GT_U16        pri
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
 
     DBG_INFO(("gsysSetSnoopPri Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_SNOOP_PRI))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_SNOOP_PRI))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	if (pri > 0x7)
-	{
+    if (pri > 0x7)
+    {
         DBG_INFO(("GT_BAD_PARAM\n"));
-		return GT_BAD_PARAM;
-	}
+        return GT_BAD_PARAM;
+    }
 
     /* Set related bit */
     retVal = hwSetGlobal2RegField(dev,QD_REG_PRIORITY_OVERRIDE, 4, 3, pri);
@@ -4548,42 +5384,42 @@ GT_STATUS gsysSetSnoopPri
 * gsysGetSnoopPri
 *
 * DESCRIPTION:
-*		Snoop Priority. When ForceSnoopPri (gsysSetForceSnoopPri API) is enabled,
+*        Snoop Priority. When ForceSnoopPri (gsysSetForceSnoopPri API) is enabled,
 *       this priority is used as the egressing frame's PRI[2:0] bits on generated
 *       Marvell Tag To_CPU Snoop frames and higher 2 bits of the priority are
 *       used as the internal Queue Priority to use on IGMP/MLD snoop frames.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		pri - PRI[2:0] bits (should be less than 8)
+*        pri - PRI[2:0] bits (should be less than 8)
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetSnoopPri
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_U16  	*pri
+    IN  GT_QD_DEV    *dev,
+    OUT GT_U16      *pri
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     DBG_INFO(("gsysGetSnoopPri Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_SNOOP_PRI))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_SNOOP_PRI))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -4603,41 +5439,41 @@ GT_STATUS gsysGetSnoopPri
 * gsysSetForceARPPri
 *
 * DESCRIPTION:
-*		Force ARP Priority. The priority on ARP frames are set to the ARPPri 
+*        Force ARP Priority. The priority on ARP frames are set to the ARPPri 
 *       value (gsysSetARPPri API) when Force ARP Priority is enabled. When it's 
 *       disabled, the priority on these frames is not modified.
 *
 * INPUTS:
-*		en - GT_TRUE to use defined PRI bits, GT_FALSE otherwise.
+*        en - GT_TRUE to use defined PRI bits, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetForceARPPri
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetForceARPPri Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ARP_PRI))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ARP_PRI))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -4658,42 +5494,42 @@ GT_STATUS gsysSetForceARPPri
 * gsysGetForceARPPri
 *
 * DESCRIPTION:
-*		Force ARP Priority. The priority on ARP frames are set to the ARPPri 
+*        Force ARP Priority. The priority on ARP frames are set to the ARPPri 
 *       value (gsysSetARPPri API) when Force ARP Priority is enabled. When it's 
 *       disabled, the priority on these frames is not modified.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE to use defined PRI bits, GT_FALSE otherwise.
+*        en - GT_TRUE to use defined PRI bits, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetForceARPPri
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetForceARPPri Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ARP_PRI))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ARP_PRI))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -4713,49 +5549,49 @@ GT_STATUS gsysGetForceARPPri
 * gsysSetARPPri
 *
 * DESCRIPTION:
-*		ARP Priority. When ForceARPPri (gsysSetForceARPPri API) is enabled,
+*        ARP Priority. When ForceARPPri (gsysSetForceARPPri API) is enabled,
 *       this priority is used as the egressing frame's PRI[2:0] bits on generated
 *       Marvell Tag To_CPU ARP frames and higher 2 bits of the priority are
 *       used as the internal Queue Priority to use on ARP frames.
 *
 * INPUTS:
-*		pri - PRI[2:0] bits (should be less than 8)
+*        pri - PRI[2:0] bits (should be less than 8)
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - If pri is not less than 8.
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - If pri is not less than 8.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetARPPri
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_U16		pri
+    IN GT_QD_DEV    *dev,
+    IN GT_U16        pri
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
 
     DBG_INFO(("gsysSetARPPri Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ARP_PRI))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ARP_PRI))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	if (pri > 0x7)
-	{
+    if (pri > 0x7)
+    {
         DBG_INFO(("GT_BAD_PARAM\n"));
-		return GT_BAD_PARAM;
-	}
+        return GT_BAD_PARAM;
+    }
 
     /* Set related bit */
     retVal = hwSetGlobal2RegField(dev,QD_REG_PRIORITY_OVERRIDE, 0, 3, pri);
@@ -4773,42 +5609,42 @@ GT_STATUS gsysSetARPPri
 * gsysGetARPPri
 *
 * DESCRIPTION:
-*		ARP Priority. When ForceARPPri (gsysSetForceARPPri API) is enabled,
+*        ARP Priority. When ForceARPPri (gsysSetForceARPPri API) is enabled,
 *       this priority is used as the egressing frame's PRI[2:0] bits on generated
 *       Marvell Tag To_CPU ARP frames and higher 2 bits of the priority are
 *       used as the internal Queue Priority to use on ARP frames.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		pri - PRI[2:0] bits (should be less than 8)
+*        pri - PRI[2:0] bits (should be less than 8)
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gsysGetARPPri
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_U16  	*pri
+    IN  GT_QD_DEV    *dev,
+    OUT GT_U16      *pri
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     DBG_INFO(("gsysGetARPPri Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ARP_PRI))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ARP_PRI))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -4832,7 +5668,7 @@ GT_STATUS gsysGetARPPri
 *
 * INPUTS:
 *       en - GT_TRUE enables per port scheduling, 
-*			 GT_FALSE disable.
+*             GT_FALSE disable.
 *
 * OUTPUTS:
 *       None.
@@ -4856,10 +5692,10 @@ GT_STATUS gsysSetUsePortSchedule
                                     /* register.                    */
     DBG_INFO(("gsysSetWatchDog Called.\n"));
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_PORT_SCHEDULE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_PORT_SCHEDULE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -4888,7 +5724,7 @@ GT_STATUS gsysSetUsePortSchedule
 *
 * OUTPUTS:
 *       en - GT_TRUE enables per port scheduling, 
-*			 GT_FALSE disable.
+*             GT_FALSE disable.
 *
 * RETURNS:
 *       GT_OK   - on success
@@ -4909,10 +5745,10 @@ GT_STATUS gsysGetUsePortSchedule
                                     /* register.                    */
     DBG_INFO(("gsysSetWatchDog Called.\n"));
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_PORT_SCHEDULE))
+    if (!IS_IN_DEV_GROUP(dev,DEV_PORT_SCHEDULE))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the UsePortSchedule bit.            */
@@ -4934,15 +5770,15 @@ GT_STATUS gsysGetUsePortSchedule
 *
 * DESCRIPTION:
 *       This routine sets Egress Old Header.
-*		When this feature is enabled and frames are egressed with a Marvell Header, 
-*		the format of the Header is slightly modified to be backwards compatible 
-*		with previous devices that used the original Header. Specifically, bit 3
-*		of the Header's 2nd octet is cleared to a zero such that only FPri[2:1]
-*		is available in the Header.
+*        When this feature is enabled and frames are egressed with a Marvell Header, 
+*        the format of the Header is slightly modified to be backwards compatible 
+*        with previous devices that used the original Header. Specifically, bit 3
+*        of the Header's 2nd octet is cleared to a zero such that only FPri[2:1]
+*        is available in the Header.
 *
 * INPUTS:
 *       en - GT_TRUE to enable Old Header Mode,
-*			 GT_FALSE to disable
+*             GT_FALSE to disable
 *
 * OUTPUTS:
 *       None.
@@ -4950,7 +5786,7 @@ GT_STATUS gsysGetUsePortSchedule
 * RETURNS:
 *       GT_OK   - on success
 *       GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
 *       None.
@@ -4963,14 +5799,14 @@ GT_STATUS gsysSetOldHader
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetArpQPri Called.\n"));
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_OLD_HEADER))
+    if (!IS_IN_DEV_GROUP(dev,DEV_OLD_HEADER))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -4993,23 +5829,23 @@ GT_STATUS gsysSetOldHader
 *
 * DESCRIPTION:
 *       This routine gets Egress Old Header.
-*		When this feature is enabled and frames are egressed with a Marvell Header, 
-*		the format of the Header is slightly modified to be backwards compatible 
-*		with previous devices that used the original Header. Specifically, bit 3
-*		of the Header's 2nd octet is cleared to a zero such that only FPri[2:1]
-*		is available in the Header.
+*        When this feature is enabled and frames are egressed with a Marvell Header, 
+*        the format of the Header is slightly modified to be backwards compatible 
+*        with previous devices that used the original Header. Specifically, bit 3
+*        of the Header's 2nd octet is cleared to a zero such that only FPri[2:1]
+*        is available in the Header.
 *
 * INPUTS:
 *       None.
 *
 * OUTPUTS:
 *       en - GT_TRUE to enable Old Header Mode,
-*			 GT_FALSE to disable
+*             GT_FALSE to disable
 *
 * RETURNS:
 *       GT_OK   - on success
 *       GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
 *       None.
@@ -5022,14 +5858,14 @@ GT_STATUS gsysGetOldHader
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysGetArpQPri Called.\n"));
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_OLD_HEADER))
+    if (!IS_IN_DEV_GROUP(dev,DEV_OLD_HEADER))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the OldHader bit.            */
@@ -5052,11 +5888,11 @@ GT_STATUS gsysGetOldHader
 *
 * DESCRIPTION:
 *       This routine determines if recursive tag stripping feature needs to be
-*		disabled.
+*        disabled.
 *
 * INPUTS:
 *       en - GT_TRUE to disable Recursive Tag Stripping,
-*			 GT_FALSE to enable
+*             GT_FALSE to enable
 *
 * OUTPUTS:
 *       None.
@@ -5064,7 +5900,7 @@ GT_STATUS gsysGetOldHader
 * RETURNS:
 *       GT_OK   - on success
 *       GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
 *       None.
@@ -5077,14 +5913,14 @@ GT_STATUS gsysSetRecursiveStrippingDisable
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetRecursiveStrippingDisable Called.\n"));
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_RECURSIVE_TAG_STRIP))
+    if (!IS_IN_DEV_GROUP(dev,DEV_RECURSIVE_TAG_STRIP))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -5113,12 +5949,12 @@ GT_STATUS gsysSetRecursiveStrippingDisable
 *
 * OUTPUTS:
 *       en - GT_TRUE, if Recursive Tag Stripping is disabled,
-*			 GT_FALSE, otherwise
+*             GT_FALSE, otherwise
 *
 * RETURNS:
 *       GT_OK   - on success
 *       GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
 *       None.
@@ -5131,14 +5967,14 @@ GT_STATUS gsysGetRecursiveStrippingDisable
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysGetRecursiveStrippingDisable Called.\n"));
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_RECURSIVE_TAG_STRIP))
+    if (!IS_IN_DEV_GROUP(dev,DEV_RECURSIVE_TAG_STRIP))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the RecursiveStrippingDisable bit.            */
@@ -5161,7 +5997,7 @@ GT_STATUS gsysGetRecursiveStrippingDisable
 *
 * DESCRIPTION:
 *       This routine sets CPU Port where Rsvd2Cpu frames and IGMP/MLD Snooped 
-*		frames are destined.
+*        frames are destined.
 *
 * INPUTS:
 *       cpuPort - CPU Port
@@ -5172,7 +6008,7 @@ GT_STATUS gsysGetRecursiveStrippingDisable
 * RETURNS:
 *       GT_OK   - on success
 *       GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
 *       None.
@@ -5192,16 +6028,16 @@ GT_STATUS gsysSetCPUPort
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(cpuPort);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_CPU_PORT))
+    if (!IS_IN_DEV_GROUP(dev,DEV_CPU_PORT))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	if (cpuPort >= dev->numOfPorts)
-	{
-		return GT_BAD_PARAM;
-	}
+    if (cpuPort >= dev->numOfPorts)
+    {
+        return GT_BAD_PARAM;
+    }
 
     /* Set the CPU Port.            */
     retVal = hwSetGlobalRegField(dev,QD_REG_MANGEMENT_CONTROL,0,3,(GT_U16)hwPort);
@@ -5220,7 +6056,7 @@ GT_STATUS gsysSetCPUPort
 *
 * DESCRIPTION:
 *       This routine gets CPU Port where Rsvd2Cpu frames and IGMP/MLD Snooped 
-*		frames are destined.
+*        frames are destined.
 *
 * INPUTS:
 *       cpuPort - CPU Port
@@ -5231,7 +6067,7 @@ GT_STATUS gsysSetCPUPort
 * RETURNS:
 *       GT_OK   - on success
 *       GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
 *       None.
@@ -5248,10 +6084,10 @@ GT_STATUS gsysGetCPUPort
 
     DBG_INFO(("gsysGetCPUPort Called.\n"));
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_CPU_PORT))
+    if (!IS_IN_DEV_GROUP(dev,DEV_CPU_PORT))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the CPU Port.            */
@@ -5274,49 +6110,49 @@ GT_STATUS gsysGetCPUPort
 * gsysSetCPUDest
 *
 * DESCRIPTION:
-*		This routine sets CPU Destination Port. CPU Destination port indicates the
-*		port number on this device where the CPU is connected (either directly or
-*		indirectly through another Marvell switch device).
+*        This routine sets CPU Destination Port. CPU Destination port indicates the
+*        port number on this device where the CPU is connected (either directly or
+*        indirectly through another Marvell switch device).
 *
-*		Many modes of frame processing need to know where the CPU is located.
-*		These modes are:
-*		1. When IGMP/MLD frame is received and Snooping is enabled
-*		2. When the port is configured as a DSA port and it receives a To_CPU frame
-*		3. When a Rsvd2CPU frame enters the port
-*		4. When the port's SA Filtering mode is Drop to CPU
-*		5. When any of the port's Policy Options trap the frame to the CPU
-*		6. When the ingressing frame is an ARP and ARP mirroring is enabled in the
-*		   device
+*        Many modes of frame processing need to know where the CPU is located.
+*        These modes are:
+*        1. When IGMP/MLD frame is received and Snooping is enabled
+*        2. When the port is configured as a DSA port and it receives a To_CPU frame
+*        3. When a Rsvd2CPU frame enters the port
+*        4. When the port's SA Filtering mode is Drop to CPU
+*        5. When any of the port's Policy Options trap the frame to the CPU
+*        6. When the ingressing frame is an ARP and ARP mirroring is enabled in the
+*           device
 *
-*		In all cases, except for ARP, the frames that meet the enabled criteria 
-*		are mapped to the CPU Destination port, overriding where the frame would 
-*		normally go. In the case of ARP, the frame will be mapped normally and it 
-*		will also get copied to this port.
-*		Frames that filtered or discarded will not be mapped to the CPU Destination 
-*		port with the exception of the Rsvd2CPU and DSA Tag cases.
+*        In all cases, except for ARP, the frames that meet the enabled criteria 
+*        are mapped to the CPU Destination port, overriding where the frame would 
+*        normally go. In the case of ARP, the frame will be mapped normally and it 
+*        will also get copied to this port.
+*        Frames that filtered or discarded will not be mapped to the CPU Destination 
+*        port with the exception of the Rsvd2CPU and DSA Tag cases.
 *
-*		If CPUDest = 0xF, the remapped frames will be discarded, no ARP mirroring 
-*		will occur and ingressing To_CPU frames will be discarded.
+*        If CPUDest = 0xF, the remapped frames will be discarded, no ARP mirroring 
+*        will occur and ingressing To_CPU frames will be discarded.
 *
 * INPUTS:
-*		port  - the logical port number.
+*        port  - the logical port number.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetCPUDest
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_LPORT		port
+    IN GT_QD_DEV    *dev,
+    IN GT_LPORT        port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -5327,22 +6163,22 @@ GT_STATUS gsysSetCPUDest
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_CPU_DEST))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_CPU_DEST))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* translate LPORT to hardware port */
-	if(port == 0xF)
-		hwPort = (GT_U8)port;
-	else
-	{
-	    hwPort = (GT_U8)(GT_LPORT_2_PORT(port));
-		if (hwPort == GT_INVALID_PORT)
-			return GT_BAD_PARAM;
-	}
+    if(port == 0xF)
+        hwPort = (GT_U8)port;
+    else
+    {
+        hwPort = (GT_U8)(GT_LPORT_2_PORT(port));
+        if (hwPort == GT_INVALID_PORT)
+            return GT_BAD_PARAM;
+    }
 
     /* Set related bit */
     retVal = hwSetGlobalRegField(dev,QD_REG_MONITOR_CONTROL, 4, 4, (GT_U16)hwPort);
@@ -5360,60 +6196,60 @@ GT_STATUS gsysSetCPUDest
 * gsysGetCPUDest
 *
 * DESCRIPTION:
-*		This routine gets CPU Destination Port. CPU Destination port indicates the
-*		port number on this device where the CPU is connected (either directly or
-*		indirectly through another Marvell switch device).
+*        This routine gets CPU Destination Port. CPU Destination port indicates the
+*        port number on this device where the CPU is connected (either directly or
+*        indirectly through another Marvell switch device).
 *
-*		Many modes of frame processing need to know where the CPU is located.
-*		These modes are:
-*		1. When IGMP/MLD frame is received and Snooping is enabled
-*		2. When the port is configured as a DSA port and it receives a To_CPU frame
-*		3. When a Rsvd2CPU frame enters the port
-*		4. When the port's SA Filtering mode is Drop to CPU
-*		5. When any of the port's Policy Options trap the frame to the CPU
-*		6. When the ingressing frame is an ARP and ARP mirroring is enabled in the
-*		   device
+*        Many modes of frame processing need to know where the CPU is located.
+*        These modes are:
+*        1. When IGMP/MLD frame is received and Snooping is enabled
+*        2. When the port is configured as a DSA port and it receives a To_CPU frame
+*        3. When a Rsvd2CPU frame enters the port
+*        4. When the port's SA Filtering mode is Drop to CPU
+*        5. When any of the port's Policy Options trap the frame to the CPU
+*        6. When the ingressing frame is an ARP and ARP mirroring is enabled in the
+*           device
 *
-*		In all cases, except for ARP, the frames that meet the enabled criteria 
-*		are mapped to the CPU Destination port, overriding where the frame would 
-*		normally go. In the case of ARP, the frame will be mapped normally and it 
-*		will also get copied to this port.
-*		Frames that filtered or discarded will not be mapped to the CPU Destination 
-*		port with the exception of the Rsvd2CPU and DSA Tag cases.
+*        In all cases, except for ARP, the frames that meet the enabled criteria 
+*        are mapped to the CPU Destination port, overriding where the frame would 
+*        normally go. In the case of ARP, the frame will be mapped normally and it 
+*        will also get copied to this port.
+*        Frames that filtered or discarded will not be mapped to the CPU Destination 
+*        port with the exception of the Rsvd2CPU and DSA Tag cases.
 *
-*		If CPUDest = 0xF, the remapped frames will be discarded, no ARP mirroring 
-*		will occur and ingressing To_CPU frames will be discarded.
+*        If CPUDest = 0xF, the remapped frames will be discarded, no ARP mirroring 
+*        will occur and ingressing To_CPU frames will be discarded.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		port  - the logical port number.
+*        port  - the logical port number.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetCPUDest
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_LPORT  	*port
+    IN  GT_QD_DEV    *dev,
+    OUT GT_LPORT      *port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetCPUDest Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_CPU_DEST))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_CPU_DEST))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -5424,14 +6260,14 @@ GT_STATUS gsysGetCPUDest
         return retVal;
     }
 
-	if(data == 0xF)
-	{
-		*port = (GT_LPORT)data;
-	}
-	else
-	{
-	    *port = GT_PORT_2_LPORT((GT_U8)data);
-	}
+    if(data == 0xF)
+    {
+        *port = (GT_LPORT)data;
+    }
+    else
+    {
+        *port = GT_PORT_2_LPORT((GT_U8)data);
+    }
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
@@ -5441,38 +6277,38 @@ GT_STATUS gsysGetCPUDest
 * gsysSetMirrorDest
 *
 * DESCRIPTION:
-*		This routine sets Mirror Destination Port. Frames that ingress a port 
-*		that trigger a policy mirror are mapped (copied) to this port as long as 
-*		the frame is not filtered or discarded. 
-*		The Mirror Destination port should point to the port that directs these 
-*		frames to the CPU that will process these frames. This target port should 
-*		be a DSA Tag port so the frames will egress with a To_CPU DSA Tag with a 
-*		CPU Code of Policy Mirror.
-*		To_CPU DSA Tag frames with a CPU Code of Policy Mirror that ingress a DSA 
-*		Tag port will be sent to the port number defined in MirrorDest.
+*        This routine sets Mirror Destination Port. Frames that ingress a port 
+*        that trigger a policy mirror are mapped (copied) to this port as long as 
+*        the frame is not filtered or discarded. 
+*        The Mirror Destination port should point to the port that directs these 
+*        frames to the CPU that will process these frames. This target port should 
+*        be a DSA Tag port so the frames will egress with a To_CPU DSA Tag with a 
+*        CPU Code of Policy Mirror.
+*        To_CPU DSA Tag frames with a CPU Code of Policy Mirror that ingress a DSA 
+*        Tag port will be sent to the port number defined in MirrorDest.
 *
-*		If MirrorDest = 0xF, Policy Mirroring is disabled and ingressing To_CPU 
-*		Policy Mirror frames will be discarded.
+*        If MirrorDest = 0xF, Policy Mirroring is disabled and ingressing To_CPU 
+*        Policy Mirror frames will be discarded.
 *
 * INPUTS:
-*		port  - the logical port number.
+*        port  - the logical port number.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetMirrorDest
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_LPORT		port
+    IN GT_QD_DEV    *dev,
+    IN GT_LPORT        port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -5483,22 +6319,22 @@ GT_STATUS gsysSetMirrorDest
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PORT(port);
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_MIRROR_DEST))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_MIRROR_DEST))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* translate LPORT to hardware port */
-	if(port == 0xF)
-		hwPort = (GT_U8)port;
-	else
-	{
-	    hwPort = (GT_U8)(GT_LPORT_2_PORT(port));
-		if (hwPort == GT_INVALID_PORT)
-			return GT_BAD_PARAM;
-	}
+    if(port == 0xF)
+        hwPort = (GT_U8)port;
+    else
+    {
+        hwPort = (GT_U8)(GT_LPORT_2_PORT(port));
+        if (hwPort == GT_INVALID_PORT)
+            return GT_BAD_PARAM;
+    }
 
     /* Set related bit */
     retVal = hwSetGlobalRegField(dev,QD_REG_MONITOR_CONTROL, 0, 4, (GT_U16)hwPort);
@@ -5516,49 +6352,49 @@ GT_STATUS gsysSetMirrorDest
 * gsysGetMirrorDest
 *
 * DESCRIPTION:
-*		This routine gets Mirror Destination Port. Frames that ingress a port 
-*		that trigger a policy mirror are mapped (copied) to this port as long as 
-*		the frame is not filtered or discarded. 
-*		The Mirror Destination port should point to the port that directs these 
-*		frames to the CPU that will process these frames. This target port should 
-*		be a DSA Tag port so the frames will egress with a To_CPU DSA Tag with a 
-*		CPU Code of Policy Mirror.
-*		To_CPU DSA Tag frames with a CPU Code of Policy Mirror that ingress a DSA 
-*		Tag port will be sent to the port number defined in MirrorDest.
+*        This routine gets Mirror Destination Port. Frames that ingress a port 
+*        that trigger a policy mirror are mapped (copied) to this port as long as 
+*        the frame is not filtered or discarded. 
+*        The Mirror Destination port should point to the port that directs these 
+*        frames to the CPU that will process these frames. This target port should 
+*        be a DSA Tag port so the frames will egress with a To_CPU DSA Tag with a 
+*        CPU Code of Policy Mirror.
+*        To_CPU DSA Tag frames with a CPU Code of Policy Mirror that ingress a DSA 
+*        Tag port will be sent to the port number defined in MirrorDest.
 *
-*		If MirrorDest = 0xF, Policy Mirroring is disabled and ingressing To_CPU 
-*		Policy Mirror frames will be discarded.
+*        If MirrorDest = 0xF, Policy Mirroring is disabled and ingressing To_CPU 
+*        Policy Mirror frames will be discarded.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		port  - the logical port number.
+*        port  - the logical port number.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetMirrorDest
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_LPORT  	*port
+    IN  GT_QD_DEV    *dev,
+    OUT GT_LPORT      *port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetMirrorDest Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_CPU_DEST))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_CPU_DEST))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -5569,14 +6405,14 @@ GT_STATUS gsysGetMirrorDest
         return retVal;
     }
 
-	if(data == 0xF)
-	{
-		*port = (GT_LPORT)data;
-	}
-	else
-	{
-	    *port = GT_PORT_2_LPORT((GT_U8)data);
-	}
+    if(data == 0xF)
+    {
+        *port = (GT_LPORT)data;
+    }
+    else
+    {
+        *port = GT_PORT_2_LPORT((GT_U8)data);
+    }
     DBG_INFO(("OK.\n"));
     return GT_OK;
 }
@@ -5585,32 +6421,32 @@ GT_STATUS gsysGetMirrorDest
 * gsysSetRMPort
 *
 * DESCRIPTION:
-*		Remote Management feature is enabled only on one port. Since not all ports
-*		can be enabled for Remote Management feature, please refer to the device
-*		datasheet for detailed information.
-*		For example, 88E6097 device allows logical port 9 or 10, and 88E6047 
-*		device allows logical port 4 and 5.
-*		
+*        Remote Management feature is enabled only on one port. Since not all ports
+*        can be enabled for Remote Management feature, please refer to the device
+*        datasheet for detailed information.
+*        For example, 88E6097 device allows logical port 9 or 10, and 88E6047 
+*        device allows logical port 4 and 5.
+*        
 * INPUTS:
-*		port - Remote Management Port
+*        port - Remote Management Port
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM     - on unallowable port
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM     - on unallowable port
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		Obsolete. Please uses gsysSetRMUMode API, instead.
+*        Obsolete. Please uses gsysSetRMUMode API, instead.
 *
 *******************************************************************************/
 GT_STATUS gsysSetRMPort
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_LPORT 	port
+    IN GT_QD_DEV    *dev,
+    IN GT_LPORT     port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -5618,26 +6454,31 @@ GT_STATUS gsysSetRMPort
 
     DBG_INFO(("gsysSetRMPort Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
+    }
+    if (IS_IN_DEV_GROUP(dev,DEV_RMU_MODE))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
     }
 
     /* translate LPORT to hardware port */
-	switch(GT_LPORT_2_PORT(port))
-	{
-		case 9:
-				data = 0;
-				break;
-		case 10:
-				data = 1;
-				break;
-		default:
-	    	    DBG_INFO(("Not Allowed Port.\n"));
-    	    	return GT_BAD_PARAM;
-	}
+    switch(GT_LPORT_2_PORT(port))
+    {
+        case 9:
+                data = 0;
+                break;
+        case 10:
+                data = 1;
+                break;
+        default:
+                DBG_INFO(("Not Allowed Port.\n"));
+                return GT_BAD_PARAM;
+    }
 
     /* Set the F2R port. */
     retVal = hwSetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL2,13,1,data);
@@ -5655,31 +6496,31 @@ GT_STATUS gsysSetRMPort
 * gsysGetRMPort
 *
 * DESCRIPTION:
-*		Remote Management feature is enabled only on one port. Since not all ports
-*		can be enabled for Remote Management feature, please refer to the device
-*		datasheet for detailed information.
-*		For example, 88E6097 device allows logical port 9 or 10, and 88E6047 
-*		device allows logical port 4 and 5.
+*        Remote Management feature is enabled only on one port. Since not all ports
+*        can be enabled for Remote Management feature, please refer to the device
+*        datasheet for detailed information.
+*        For example, 88E6097 device allows logical port 9 or 10, and 88E6047 
+*        device allows logical port 4 and 5.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		port - Remote Management Port
+*        port - Remote Management Port
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		Obsolete. Please uses gsysGetRMUMode API, instead.
+*        Obsolete. Please uses gsysGetRMUMode API, instead.
 *
 *******************************************************************************/
 GT_STATUS gsysGetRMPort
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_LPORT 	*port
+    IN  GT_QD_DEV    *dev,
+    OUT GT_LPORT     *port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -5687,11 +6528,16 @@ GT_STATUS gsysGetRMPort
 
     DBG_INFO(("gsysGetRMPort Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
+    }
+    if (IS_IN_DEV_GROUP(dev,DEV_RMU_MODE))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the F2R port.                */
@@ -5702,14 +6548,14 @@ GT_STATUS gsysGetRMPort
         return retVal;
     }
 
-	if(data == 1)
-	{
-		*port = GT_PORT_2_LPORT(10);
-	}
-	else
-	{
-	    *port = GT_PORT_2_LPORT(9);
-	}
+    if(data == 1)
+    {
+        *port = GT_PORT_2_LPORT(10);
+    }
+    else
+    {
+        *port = GT_PORT_2_LPORT(9);
+    }
     
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -5720,35 +6566,35 @@ GT_STATUS gsysGetRMPort
 * gsysSetRMDACheck
 *
 * DESCRIPTION:
-*		Check the DA on Remote Management frames. 
-*		When DA Check is enabled, the DA of Remote Management frames must be 
-*		contained in this device's address database (ATU) as a Static entry 
-*		(either unicast or multicast). If the DA of the frame is not contained 
-*		in this device's address database, the frame will be not be processed as 
-*		a Remote Management frame.
-*		When DA Check is disabled, the DA of Remote Management frames is not 
-*		validated before processing the frame.
-*		
+*        Check the DA on Remote Management frames. 
+*        When DA Check is enabled, the DA of Remote Management frames must be 
+*        contained in this device's address database (ATU) as a Static entry 
+*        (either unicast or multicast). If the DA of the frame is not contained 
+*        in this device's address database, the frame will be not be processed as 
+*        a Remote Management frame.
+*        When DA Check is disabled, the DA of Remote Management frames is not 
+*        validated before processing the frame.
+*        
 * INPUTS:
-*		en - GT_TRUE to enable DA Check, 
-*			 GT_FALSE otherwise.
+*        en - GT_TRUE to enable DA Check, 
+*             GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetRMDACheck
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL 		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL         en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -5756,17 +6602,31 @@ GT_STATUS gsysSetRMDACheck
 
     DBG_INFO(("gsysSetRMDACheck Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
+    }
+
+    if (!IS_IN_DEV_GROUP(dev,DEV_DA_CHECK))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
 
-    /* Set the DA Check bit. */
-    retVal = hwSetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL2,14,1,data);
+    if (IS_IN_DEV_GROUP(dev,DEV_DA_CHECK_1))
+    {
+      /* Set the DA Check bit. */
+      retVal = hwSetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL2,11,1,data);
+    }
+	else
+	{
+      /* Set the DA Check bit. */
+      retVal = hwSetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL2,14,1,data);
+	}
     if(retVal != GT_OK)
     {
         DBG_INFO(("Failed.\n"));
@@ -5781,35 +6641,35 @@ GT_STATUS gsysSetRMDACheck
 * gsysGetRMDACheck
 *
 * DESCRIPTION:
-*		Check the DA on Remote Management frames. 
-*		When DA Check is enabled, the DA of Remote Management frames must be 
-*		contained in this device's address database (ATU) as a Static entry 
-*		(either unicast or multicast). If the DA of the frame is not contained 
-*		in this device's address database, the frame will be not be processed as 
-*		a Frame-to-Regter frame.
-*		When DA Check is disabled, the DA of Remote Management frames is not 
-*		validated before processing the frame.
+*        Check the DA on Remote Management frames. 
+*        When DA Check is enabled, the DA of Remote Management frames must be 
+*        contained in this device's address database (ATU) as a Static entry 
+*        (either unicast or multicast). If the DA of the frame is not contained 
+*        in this device's address database, the frame will be not be processed as 
+*        a Frame-to-Regter frame.
+*        When DA Check is disabled, the DA of Remote Management frames is not 
+*        validated before processing the frame.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE if DA Check is enabled, 
-*			 GT_FALSE otherwise.
+*        en - GT_TRUE if DA Check is enabled, 
+*             GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetRMDACheck
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL 	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL     *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -5817,11 +6677,17 @@ GT_STATUS gsysGetRMDACheck
 
     DBG_INFO(("gsysGetRMDACheck Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
+    }
+
+    if (!IS_IN_DEV_GROUP(dev,DEV_DA_CHECK))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the DA Check bit.                */
@@ -5840,32 +6706,154 @@ GT_STATUS gsysGetRMDACheck
 
 
 /*******************************************************************************
+* gsysSetHeaderType
+*
+* DESCRIPTION:
+*   To set Header Type. These bits are used to configure the bits that are placed 
+*   into the Egress Header when it is enabled on a port (Port offset 0x04) 
+*   as follows:
+*     00 = Original Header – for backwards compatibility to UniMAC’s that look at
+*          Header byte 1 bits[4:2] and byte 2 bits [3:0]
+*     01 = Single chip MGMT Header – for compatibility to Marvell Fast Ethernet
+*          switches that support Spanning Tree without DSA Tags
+*     10 = Trunk Header – used together with the DSA Tags to perform Remote Switching
+*     11 = Reserved for future use.
+*        
+* INPUTS:
+*        hdType 
+*
+* OUTPUTS:
+*        None.
+*
+* RETURNS:
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
+*
+* COMMENTS:
+*        None.
+*
+*******************************************************************************/
+GT_STATUS gsysSetHeaderType
+(
+    IN GT_QD_DEV    *dev,
+    IN GT_U16       hdType
+)
+{
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* The register's read data.    */
+
+    DBG_INFO(("gsysSetHeaderType Called.\n"));
+
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_HEADER_TYPE))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+
+    data = hdType&0x3;
+    /* Set the DA Check bit. */
+    retVal = hwSetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL2,14,2,data);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
+
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
+}
+
+/*******************************************************************************
+* gsysGetHeaderType
+*
+* DESCRIPTION:
+*   To get Header Type. These bits are used to configure the bits that are placed 
+*   into the Egress Header when it is enabled on a port (Port offset 0x04) 
+*   as follows:
+*     00 = Original Header – for backwards compatibility to UniMAC’s that look at
+*          Header byte 1 bits[4:2] and byte 2 bits [3:0]
+*     01 = Single chip MGMT Header – for compatibility to Marvell Fast Ethernet
+*          switches that support Spanning Tree without DSA Tags
+*     10 = Trunk Header – used together with the DSA Tags to perform Remote Switching
+*     11 = Reserved for future use.
+*        
+* INPUTS:
+*        None.
+*
+* OUTPUTS:
+*        hdType 
+*
+* RETURNS:
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
+*
+* COMMENTS:
+*        None.
+*
+*******************************************************************************/
+GT_STATUS gsysGetHeaderType
+(
+    IN  GT_QD_DEV    *dev,
+    OUT GT_U16     *hdType
+)
+{
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* The register's read data.    */
+
+    DBG_INFO(("gsysGetHeaderType Called.\n"));
+
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_HEADER_TYPE))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+
+    /* Get the DA Check bit.                */
+    retVal = hwGetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL2,14,2,&data);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
+
+    *hdType = data;
+
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
+}
+
+
+/*******************************************************************************
 * gsysSetRMEnable
 *
 * DESCRIPTION:
-*		Enable or disable Remote Management feature. This feature can be enabled
-*		only on one port (see gsysSetRMPort API).
-*		
+*        Enable or disable Remote Management feature. This feature can be enabled
+*        only on one port (see gsysSetRMPort API).
+*        
 * INPUTS:
-*		en - GT_TRUE to enable Remote Management feature, 
-*			 GT_FALSE otherwise.
+*        en - GT_TRUE to enable Remote Management feature, 
+*             GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		Obsolete. Please uses gsysSetRMUMode API, instead.
+*        Obsolete. Please uses gsysSetRMUMode API, instead.
 *
 *******************************************************************************/
 GT_STATUS gsysSetRMEnable
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL 		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL         en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -5873,11 +6861,11 @@ GT_STATUS gsysSetRMEnable
 
     DBG_INFO(("gsysSetRMEnable Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -5898,29 +6886,29 @@ GT_STATUS gsysSetRMEnable
 * gsysGetRMEnable
 *
 * DESCRIPTION:
-*		Enable or disable Remote Management feature. This feature can be enabled
-*		only on one port (see gsysSetRMPort API).
+*        Enable or disable Remote Management feature. This feature can be enabled
+*        only on one port (see gsysSetRMPort API).
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE if Remote Management feature is enabled, 
-*			 GT_FALSE otherwise.
+*        en - GT_TRUE if Remote Management feature is enabled, 
+*             GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		Obsolete. Please uses gsysGetRMUMode API, instead.
+*        Obsolete. Please uses gsysGetRMUMode API, instead.
 *
 *******************************************************************************/
 GT_STATUS gsysGetRMEnable
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL 	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL     *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -5928,11 +6916,11 @@ GT_STATUS gsysGetRMEnable
 
     DBG_INFO(("gsysGetRMEnable Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the F2R En bit.                */
@@ -5954,37 +6942,37 @@ GT_STATUS gsysGetRMEnable
 * gsysSetRMUMode
 *
 * DESCRIPTION:
-*		Set Rmote Management Unit Mode: disable, enable on port 4 or 5, or enable
-*		on port 9 or 10. Devices, such as 88E6097, support RMU on port 9 and 10, 
-*		while other devices, such as 88E6165, support RMU on port 4 and 5. So,
-*		please refer to the device datasheet for detail.
-*		When RMU is enabled and this device receives a Remote Management Request
-*		frame directed to this device, the frame will be processed and a Remote 
-*		Management Response frame will be generated and sent out.
-*		
-*		Note: enabling RMU has no effect if the Remote Management port is in half
-*		duplex mode. The port's FrameMode must be DSA or EtherType DSA as well.
-*		
+*        Set Rmote Management Unit Mode: disable, enable on port 4, 5 or 6, or enable
+*        on port 9 or 10. Devices, such as 88E6097, support RMU on port 9 and 10, 
+*        while other devices, such as 88E6165, support RMU on port 4, 5 and 6. So,
+*        please refer to the device datasheet for detail.
+*        When RMU is enabled and this device receives a Remote Management Request
+*        frame directed to this device, the frame will be processed and a Remote 
+*        Management Response frame will be generated and sent out.
+*        
+*        Note: enabling RMU has no effect if the Remote Management port is in half
+*        duplex mode. The port's FrameMode must be DSA or EtherType DSA as well.
+*        
 * INPUTS:
-*		rmu - GT_RMU structure
+*        rmu - GT_RMU structure
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM     - on bad parameter
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM     - on bad parameter
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetRMUMode
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_RMU		*rmu
+    IN GT_QD_DEV    *dev,
+    IN GT_RMU        *rmu
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -5993,63 +6981,70 @@ GT_STATUS gsysSetRMUMode
 
     DBG_INFO(("gsysSetRMUMode Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	if (IS_IN_DEV_GROUP(dev,DEV_RMU_MODE))
-	{
-		if (rmu->rmuEn == GT_TRUE)
-		{
-			port = GT_LPORT_2_PORT(rmu->port);
-			if (port == GT_INVALID_PORT)
-				return GT_BAD_PARAM;
+    if (IS_IN_DEV_GROUP(dev,DEV_RMU_MODE))
+    {
+        if (rmu->rmuEn == GT_TRUE)
+        {
+            port = GT_LPORT_2_PORT(rmu->port);
+            if (port == GT_INVALID_PORT)
+                return GT_BAD_PARAM;
 
-			switch(port)
-			{
-				case 4:
-					data = 1;
-					break;
-				case 5:
-					data = 2;
-					break;
-				default:
-					return GT_BAD_PARAM;
-			}
-		}
-		else
-		{
-			data = 0;
-		}
-	}
-	else
-	{
-		if (rmu->rmuEn)
-		{
-			port = GT_LPORT_2_PORT(rmu->port);
-			if (port == GT_INVALID_PORT)
-				return GT_BAD_PARAM;
+            switch(port)
+            {
+                case 4:
+                    data = 1;
+                    break;
+                case 5:
+                    data = 2;
+                    break;
+                 case 6:
+                    if (IS_IN_DEV_GROUP(dev,DEV_88E6352_FAMILY))
+					{
+                      data = 3;
+                      break;
+					}
+                    return GT_BAD_PARAM;
+               default:
+                    return GT_BAD_PARAM;
+            }
+        }
+        else
+        {
+            data = 0;
+        }
+    }
+    else
+    {
+        if (rmu->rmuEn)
+        {
+            port = GT_LPORT_2_PORT(rmu->port);
+            if (port == GT_INVALID_PORT)
+                return GT_BAD_PARAM;
 
-			switch(port)
-			{
-				case 9:
-					data = 1;
-					break;
-				case 10:
-					data = 3;
-					break;
-				default:
-					return GT_BAD_PARAM;
-			}
-		}
-		else
-		{
-			data = 0;
-		}
-	}
+            switch(port)
+            {
+                case 9:
+                    data = 1;
+                    break;
+                case 10:
+                    data = 3;
+                    break;
+                default:
+                    return GT_BAD_PARAM;
+            }
+        }
+        else
+        {
+            data = 0;
+        }
+    }
 
     /* Set the RMUMode bit. */
     retVal = hwSetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL2,12,2,data);
@@ -6067,36 +7062,36 @@ GT_STATUS gsysSetRMUMode
 * gsysGetRMUMode
 *
 * DESCRIPTION:
-*		Get Rmote Management Unit Mode: disable, enable on port 4 or 5, or enable
-*		on port 9 or 10. Devices, such as 88E6097, support RMU on port 9 and 10, 
-*		while other devices, such as 88E6165, support RMU on port 4 and 5. So,
-*		please refer to the device datasheet for detail.
-*		When RMU is enabled and this device receives a Remote Management Request
-*		frame directed to this device, the frame will be processed and a Remote 
-*		Management Response frame will be generated and sent out.
-*		
-*		Note: enabling RMU has no effect if the Remote Management port is in half
-*		duplex mode. The port's FrameMode must be DSA or EtherType DSA as well.
-*		
+*        Get Rmote Management Unit Mode: disable, enable on port 4, 5 or 6, or enable
+*        on port 9 or 10. Devices, such as 88E6097, support RMU on port 9 and 10, 
+*        while other devices, such as 88E6165, support RMU on port 4, 5 and 6. So,
+*        please refer to the device datasheet for detail.
+*        When RMU is enabled and this device receives a Remote Management Request
+*        frame directed to this device, the frame will be processed and a Remote 
+*        Management Response frame will be generated and sent out.
+*        
+*        Note: enabling RMU has no effect if the Remote Management port is in half
+*        duplex mode. The port's FrameMode must be DSA or EtherType DSA as well.
+*        
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		rmu - GT_RMU structure
+*        rmu - GT_RMU structure
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetRMUMode
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_RMU		*rmu
+    IN  GT_QD_DEV    *dev,
+    OUT GT_RMU        *rmu
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -6104,11 +7099,11 @@ GT_STATUS gsysGetRMUMode
 
     DBG_INFO(("gsysGetRMUMode Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_FRAME_TO_REGISTER))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the RMUMode bit. */
@@ -6119,51 +7114,190 @@ GT_STATUS gsysGetRMUMode
         return retVal;
     }
 
-	if (IS_IN_DEV_GROUP(dev,DEV_RMU_MODE))
-	{
-		switch (data)
-		{
-			case 0:
-					rmu->rmuEn = GT_FALSE;
-					break;
+    if (IS_IN_DEV_GROUP(dev,DEV_RMU_MODE))
+    {
+        switch (data)
+        {
+            case 0:
+                    rmu->rmuEn = GT_FALSE;
+                    break;
 
-			case 1:
-					rmu->rmuEn = GT_TRUE;
-					rmu->port = GT_PORT_2_LPORT(4);
-					break;
+            case 1:
+                    rmu->rmuEn = GT_TRUE;
+                    rmu->port = GT_PORT_2_LPORT(4);
+                    break;
 
-			case 2:
-					rmu->rmuEn = GT_TRUE;
-					rmu->port = GT_PORT_2_LPORT(5);
-					break;
+            case 2:
+                    rmu->rmuEn = GT_TRUE;
+                    rmu->port = GT_PORT_2_LPORT(5);
+                    break;
+            case 3:
+                    if (IS_IN_DEV_GROUP(dev,DEV_88E6352_FAMILY))
+					{
+                      rmu->rmuEn = GT_TRUE;
+                      rmu->port = GT_PORT_2_LPORT(6);
+                      break;
+					}
+                    return GT_FAIL;
+            default:
+                    return GT_FAIL;
+        }
+    }
+    else
+    {
+        switch (data)
+        {
+            case 0:
+                    rmu->rmuEn = GT_FALSE;
+                    break;
 
-			default:
-					return GT_FAIL;
-		}
-	}
-	else
-	{
-		switch (data)
-		{
-			case 0:
-					rmu->rmuEn = GT_FALSE;
-					break;
+            case 1:
+                    rmu->rmuEn = GT_TRUE;
+                    rmu->port = GT_PORT_2_LPORT(9);
+                    break;
 
-			case 1:
-					rmu->rmuEn = GT_TRUE;
-					rmu->port = GT_PORT_2_LPORT(9);
-					break;
+            case 3:
+                    rmu->rmuEn = GT_TRUE;
+                    rmu->port = GT_PORT_2_LPORT(10);
+                    break;
 
-			case 3:
-					rmu->rmuEn = GT_TRUE;
-					rmu->port = GT_PORT_2_LPORT(10);
-					break;
+            default:
+                    rmu->rmuEn = GT_FALSE;
+                    break;
+        }
+    }
 
-			default:
-					rmu->rmuEn = GT_FALSE;
-					break;
-		}
-	}
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
+}
+
+/*******************************************************************************
+* gsysSetCtrMode
+*
+* DESCRIPTION:
+*        Set Counter Modes. These bits control the operating modes of the two of 
+*        the Port’s MIB counters.
+*        
+* INPUTS:
+*        ctrMode - Counter mode
+*
+* OUTPUTS:
+*        None.
+*
+* RETURNS:
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM     - on bad parameter
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
+*
+* COMMENTS:
+*        None.
+*
+*******************************************************************************/
+GT_STATUS gsysSetCtrMode
+(
+    IN GT_QD_DEV    *dev,
+    IN GT_U16       ctrMode
+)
+{
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* The register's read data.    */
+
+    DBG_INFO(("gsysSetCtrMode Called.\n"));
+
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_COUNTER_MODE))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+
+    if (IS_IN_DEV_GROUP(dev,DEV_88E6352_FAMILY))
+    {
+	  data = ctrMode&0x3;
+      /* Set the Counter Mode. */
+      retVal = hwSetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL2,5,2,data);
+    }
+    else
+    {
+	  data = ctrMode&0x1;
+      /* Set the Counter Mode. */
+      retVal = hwSetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL2,0,1,data);
+    }
+
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
+
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
+}
+
+/*******************************************************************************
+* gsysGetCtrMode
+*
+* DESCRIPTION:
+*        Get Counter Modes. These bits control the operating modes of the two of 
+*        the Port’s MIB counters.
+*        
+* INPUTS:
+*        None.
+*
+* OUTPUTS:
+*        ctrMode - Counter mode
+*
+* RETURNS:
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
+*
+* COMMENTS:
+*        None.
+*
+*******************************************************************************/
+GT_STATUS gsysGetCtrMode
+(
+    IN  GT_QD_DEV    *dev,
+    OUT GT_U16       *ctrMode
+)
+{
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* The register's read data.    */
+
+    DBG_INFO(("gsysGetCtrMode Called.\n"));
+
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_COUNTER_MODE))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_COUNTER_MODE))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
+
+    if (IS_IN_DEV_GROUP(dev,DEV_88E6352_FAMILY))
+    {
+      /* Set the Counter Mode. */
+      retVal = hwGetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL2,5,2, &data);
+    }
+    else
+    {
+      /* Set the Counter Mode. */
+      retVal = hwGetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL2,0,1, &data);
+    }
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
+
+	*ctrMode = data;
 
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -6174,45 +7308,45 @@ GT_STATUS gsysGetRMUMode
 * gsysSetRsvd2CpuEnables2X
 *
 * DESCRIPTION:
-*		Reserved DA Enables for the form of 01:80:C2:00:00:2x.
-*		When the Rsvd2Cpu(gsysSetRsvd2Cpu) is set to a one, the 16 reserved 
-*		multicast DA addresses, whose bit in this register are also set to a one, 
-*		are treadted as MGMT frames. All the reserved DA's take the form 
-*		01:80:C2:00:00:2x. When x = 0x0, bit 0 of this register is tested. 
-*		When x = 0x2, bit 2 of this field is tested and so on.
-*		If the tested bit in this register is cleared to a zero, the frame will 
-*		be treated as a normal (non-MGMT) frame.
+*        Reserved DA Enables for the form of 01:80:C2:00:00:2x.
+*        When the Rsvd2Cpu(gsysSetRsvd2Cpu) is set to a one, the 16 reserved 
+*        multicast DA addresses, whose bit in this register are also set to a one, 
+*        are treadted as MGMT frames. All the reserved DA's take the form 
+*        01:80:C2:00:00:2x. When x = 0x0, bit 0 of this register is tested. 
+*        When x = 0x2, bit 2 of this field is tested and so on.
+*        If the tested bit in this register is cleared to a zero, the frame will 
+*        be treated as a normal (non-MGMT) frame.
 *
 * INPUTS:
-*		enBits - bit vector of enabled Reserved Multicast.
+*        enBits - bit vector of enabled Reserved Multicast.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetRsvd2CpuEnables2X
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_U16		enBits
+    IN GT_QD_DEV    *dev,
+    IN GT_U16        enBits
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
 
     DBG_INFO(("gsysSetRsvd2CpuEnables2X Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST_2X))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST_2X))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Set related register */
@@ -6231,45 +7365,45 @@ GT_STATUS gsysSetRsvd2CpuEnables2X
 * gsysGetRsvd2CpuEnables2X
 *
 * DESCRIPTION:
-*		Reserved DA Enables for the form of 01:80:C2:00:00:2x.
-*		When the Rsvd2Cpu(gsysSetRsvd2Cpu) is set to a one, the 16 reserved 
-*		multicast DA addresses, whose bit in this register are also set to a one, 
-*		are treadted as MGMT frames. All the reserved DA's take the form 
-*		01:80:C2:00:00:2x. When x = 0x0, bit 0 of this register is tested. 
-*		When x = 0x2, bit 2 of this field is tested and so on.
-*		If the tested bit in this register is cleared to a zero, the frame will 
-*		be treated as a normal (non-MGMT) frame.
+*        Reserved DA Enables for the form of 01:80:C2:00:00:2x.
+*        When the Rsvd2Cpu(gsysSetRsvd2Cpu) is set to a one, the 16 reserved 
+*        multicast DA addresses, whose bit in this register are also set to a one, 
+*        are treadted as MGMT frames. All the reserved DA's take the form 
+*        01:80:C2:00:00:2x. When x = 0x0, bit 0 of this register is tested. 
+*        When x = 0x2, bit 2 of this field is tested and so on.
+*        If the tested bit in this register is cleared to a zero, the frame will 
+*        be treated as a normal (non-MGMT) frame.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		enBits - bit vector of enabled Reserved Multicast.
+*        enBits - bit vector of enabled Reserved Multicast.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetRsvd2CpuEnables2X
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_U16  	*enBits
+    IN  GT_QD_DEV    *dev,
+    OUT GT_U16      *enBits
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
 
     DBG_INFO(("gsysGetRsvd2CpuEnables2X Called.\n"));
 
-	/* Check if Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST_2X))
+    /* Check if Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ENHANCED_MULTICAST_2X))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related register */
@@ -6289,43 +7423,43 @@ GT_STATUS gsysGetRsvd2CpuEnables2X
 * gsysSetLoopbackFilter
 *
 * DESCRIPTION:
-*		Loopback Filter.
-*		When Loopback Filter is enabled,Forward DSA frames that ingress a DSA port
-*		that came from the same Src_Dev will be filtered to the same Src_Port,
-*		i.e., the frame will not be allowed to egress the source port on the 
-*		source device as indicated in the DSA Forward's Tag.
+*        Loopback Filter.
+*        When Loopback Filter is enabled,Forward DSA frames that ingress a DSA port
+*        that came from the same Src_Dev will be filtered to the same Src_Port,
+*        i.e., the frame will not be allowed to egress the source port on the 
+*        source device as indicated in the DSA Forward's Tag.
 *
 * INPUTS:
-*		en - GT_TRUE to enable LoopbackFilter, GT_FALSE otherwise.
+*        en - GT_TRUE to enable LoopbackFilter, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetLoopbackFilter
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetLoopbackFilter Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_LOOPBACK_FILTER))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_LOOPBACK_FILTER))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -6346,42 +7480,42 @@ GT_STATUS gsysSetLoopbackFilter
 * gsysGetLoopbackFilter
 *
 * DESCRIPTION:
-*		Loopback Filter.
-*		When Loopback Filter is enabled,Forward DSA frames that ingress a DSA port
-*		that came from the same Src_Dev will be filtered to the same Src_Port,
-*		i.e., the frame will not be allowed to egress the source port on the 
-*		source device as indicated in the DSA Forward's Tag.
+*        Loopback Filter.
+*        When Loopback Filter is enabled,Forward DSA frames that ingress a DSA port
+*        that came from the same Src_Dev will be filtered to the same Src_Port,
+*        i.e., the frame will not be allowed to egress the source port on the 
+*        source device as indicated in the DSA Forward's Tag.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE if LoopbackFilter is enabled, GT_FALSE otherwise.
+*        en - GT_TRUE if LoopbackFilter is enabled, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetLoopbackFilter
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetLoopbackFilter Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_LOOPBACK_FILTER))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_LOOPBACK_FILTER))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -6402,46 +7536,46 @@ GT_STATUS gsysGetLoopbackFilter
 * gsysSetFloodBC
 *
 * DESCRIPTION:
-*		Flood Broadcast.
-*		When Flood Broadcast is enabled, frames with the Broadcast destination 
-*		address will flood out all the ports regardless of the setting of the
-*		port's Egress Floods mode (see gprtSetEgressFlood API). VLAN rules and 
-*		other switch policy still applies to these Broadcast frames. 
-*		When this feature is disabled, frames with the Broadcast destination
-*		address are considered Multicast frames and will be affected by port's 
-*		Egress Floods mode.
+*        Flood Broadcast.
+*        When Flood Broadcast is enabled, frames with the Broadcast destination 
+*        address will flood out all the ports regardless of the setting of the
+*        port's Egress Floods mode (see gprtSetEgressFlood API). VLAN rules and 
+*        other switch policy still applies to these Broadcast frames. 
+*        When this feature is disabled, frames with the Broadcast destination
+*        address are considered Multicast frames and will be affected by port's 
+*        Egress Floods mode.
 *
 * INPUTS:
-*		en - GT_TRUE to enable Flood Broadcast, GT_FALSE otherwise.
+*        en - GT_TRUE to enable Flood Broadcast, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetFloodBC
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetFloodBC Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_FLOOD_BROADCAST))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_FLOOD_BROADCAST))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -6462,45 +7596,45 @@ GT_STATUS gsysSetFloodBC
 * gsysGetFloodBC
 *
 * DESCRIPTION:
-*		Flood Broadcast.
-*		When Flood Broadcast is enabled, frames with the Broadcast destination 
-*		address will flood out all the ports regardless of the setting of the
-*		port's Egress Floods mode (see gprtSetEgressFlood API). VLAN rules and 
-*		other switch policy still applies to these Broadcast frames. 
-*		When this feature is disabled, frames with the Broadcast destination
-*		address are considered Multicast frames and will be affected by port's 
-*		Egress Floods mode.
+*        Flood Broadcast.
+*        When Flood Broadcast is enabled, frames with the Broadcast destination 
+*        address will flood out all the ports regardless of the setting of the
+*        port's Egress Floods mode (see gprtSetEgressFlood API). VLAN rules and 
+*        other switch policy still applies to these Broadcast frames. 
+*        When this feature is disabled, frames with the Broadcast destination
+*        address are considered Multicast frames and will be affected by port's 
+*        Egress Floods mode.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE if Flood Broadcast is enabled, GT_FALSE otherwise.
+*        en - GT_TRUE if Flood Broadcast is enabled, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetFloodBC
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetFloodBC Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_FLOOD_BROADCAST))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_FLOOD_BROADCAST))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -6521,48 +7655,48 @@ GT_STATUS gsysGetFloodBC
 * gsysSetRemove1PTag
 *
 * DESCRIPTION:
-*		Remove One Provider Tag.
-*		When this feature is enabled and a port is configured as a Provider Port
-*		(see gprtSetFrameMode API), recursive Provider Tag stripping will NOT be 
-*		performed. Only the first Provider Tag found on the frame will be 
-*		extracted and removed. Its extracted data will be used for switching.
-*		When it's disabled and a port is configured as a Provider Port, recursive 
-*		Provider Tag stripping will be performed. The first Provider Tag's data 
-*		will be extracted and used for switching, and then all subsequent Provider 
-*		Tags found in the frame will also be removed. This will only occur if the 
-*		port's PortEType (see gprtSetPortEType API) is not 0x8100.
+*        Remove One Provider Tag.
+*        When this feature is enabled and a port is configured as a Provider Port
+*        (see gprtSetFrameMode API), recursive Provider Tag stripping will NOT be 
+*        performed. Only the first Provider Tag found on the frame will be 
+*        extracted and removed. Its extracted data will be used for switching.
+*        When it's disabled and a port is configured as a Provider Port, recursive 
+*        Provider Tag stripping will be performed. The first Provider Tag's data 
+*        will be extracted and used for switching, and then all subsequent Provider 
+*        Tags found in the frame will also be removed. This will only occur if the 
+*        port's PortEType (see gprtSetPortEType API) is not 0x8100.
 *
 * INPUTS:
-*		en - GT_TRUE to enable Remove One Provider Tag, GT_FALSE otherwise.
+*        en - GT_TRUE to enable Remove One Provider Tag, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetRemove1PTag
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetRemove1PTag Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_RM_ONE_PTAG))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_RM_ONE_PTAG))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -6584,48 +7718,48 @@ GT_STATUS gsysSetRemove1PTag
 * gsysGetRemove1PTag
 *
 * DESCRIPTION:
-*		Remove One Provider Tag.
-*		When this feature is enabled and a port is configured as a Provider Port
-*		(see gprtSetFrameMode API), recursive Provider Tag stripping will NOT be 
-*		performed. Only the first Provider Tag found on the frame will be 
-*		extracted and removed. Its extracted data will be used for switching.
-*		When it's disabled and a port is configured as a Provider Port, recursive 
-*		Provider Tag stripping will be performed. The first Provider Tag's data 
-*		will be extracted and used for switching, and then all subsequent Provider 
-*		Tags found in the frame will also be removed. This will only occur if the 
-*		port's PortEType (see gprtSetPortEType API) is not 0x8100.
+*        Remove One Provider Tag.
+*        When this feature is enabled and a port is configured as a Provider Port
+*        (see gprtSetFrameMode API), recursive Provider Tag stripping will NOT be 
+*        performed. Only the first Provider Tag found on the frame will be 
+*        extracted and removed. Its extracted data will be used for switching.
+*        When it's disabled and a port is configured as a Provider Port, recursive 
+*        Provider Tag stripping will be performed. The first Provider Tag's data 
+*        will be extracted and used for switching, and then all subsequent Provider 
+*        Tags found in the frame will also be removed. This will only occur if the 
+*        port's PortEType (see gprtSetPortEType API) is not 0x8100.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE if Remove One Provider Tag is enabled, GT_FALSE otherwise.
+*        en - GT_TRUE if Remove One Provider Tag is enabled, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetRemove1PTag
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL		*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL        *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysGetRemove1PTag Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_RM_ONE_PTAG))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_RM_ONE_PTAG))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -6647,49 +7781,49 @@ GT_STATUS gsysGetRemove1PTag
 * gsysSetTagFlowControl
 *
 * DESCRIPTION:
-*		Use and generate source port Flow Control status for Cross-Chip Flow 
-*		Control.
-*		When this feature is enabled, bit 17 of the DSA Tag Forward frames is 
-*		defined to be Src_FC and it is added to these frames when generated and 
-*		it is inspected on these frames when received. The QC will use the Src_FC 
-*		bit on DSA ports instead of the DSA port's Flow Control mode bit for the 
-*		QC Flow Control algorithm.
-*		When it is disabled, bit 17 of the DSA Tag Forward frames is defined to 
-*		be Reserved and it will be zero on these frames when generated and it 
-*		will not be used on these frames when received (this is a backwards 
-*		compatibility mode).
+*        Use and generate source port Flow Control status for Cross-Chip Flow 
+*        Control.
+*        When this feature is enabled, bit 17 of the DSA Tag Forward frames is 
+*        defined to be Src_FC and it is added to these frames when generated and 
+*        it is inspected on these frames when received. The QC will use the Src_FC 
+*        bit on DSA ports instead of the DSA port's Flow Control mode bit for the 
+*        QC Flow Control algorithm.
+*        When it is disabled, bit 17 of the DSA Tag Forward frames is defined to 
+*        be Reserved and it will be zero on these frames when generated and it 
+*        will not be used on these frames when received (this is a backwards 
+*        compatibility mode).
 *
 * INPUTS:
-*		en - GT_TRUE to enable Tag Flow Control, GT_FALSE otherwise.
+*        en - GT_TRUE to enable Tag Flow Control, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetTagFlowControl
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetTagFlowControl Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_TAG_FLOW_CONTROL))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_TAG_FLOW_CONTROL))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -6710,48 +7844,48 @@ GT_STATUS gsysSetTagFlowControl
 * gsysGetTagFlowControl
 *
 * DESCRIPTION:
-*		Use and generate source port Flow Control status for Cross-Chip Flow 
-*		Control.
-*		When this feature is enabled, bit 17 of the DSA Tag Forward frames is 
-*		defined to be Src_FC and it is added to these frames when generated and 
-*		it is inspected on these frames when received. The QC will use the Src_FC 
-*		bit on DSA ports instead of the DSA port's Flow Control mode bit for the 
-*		QC Flow Control algorithm.
-*		When it is disabled, bit 17 of the DSA Tag Forward frames is defined to 
-*		be Reserved and it will be zero on these frames when generated and it 
-*		will not be used on these frames when received (this is a backwards 
-*		compatibility mode).
+*        Use and generate source port Flow Control status for Cross-Chip Flow 
+*        Control.
+*        When this feature is enabled, bit 17 of the DSA Tag Forward frames is 
+*        defined to be Src_FC and it is added to these frames when generated and 
+*        it is inspected on these frames when received. The QC will use the Src_FC 
+*        bit on DSA ports instead of the DSA port's Flow Control mode bit for the 
+*        QC Flow Control algorithm.
+*        When it is disabled, bit 17 of the DSA Tag Forward frames is defined to 
+*        be Reserved and it will be zero on these frames when generated and it 
+*        will not be used on these frames when received (this is a backwards 
+*        compatibility mode).
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE if Tag Flow Control is enabled, GT_FALSE otherwise.
+*        en - GT_TRUE if Tag Flow Control is enabled, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetTagFlowControl
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetTagFlowControl Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_TAG_FLOW_CONTROL))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_TAG_FLOW_CONTROL))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -6772,43 +7906,43 @@ GT_STATUS gsysGetTagFlowControl
 * gsysSetAlwaysUseVTU
 *
 * DESCRIPTION:
-*		Always use VTU. 
-*		When this feature is enabled, VTU hit data will be used to map frames 
-*		even if 802.1Q is Disabled on the port. 
-*		When it's disabled, data will be ignored when mapping frames on ports 
-*		where 802.1Q is Disabled.
+*        Always use VTU. 
+*        When this feature is enabled, VTU hit data will be used to map frames 
+*        even if 802.1Q is Disabled on the port. 
+*        When it's disabled, data will be ignored when mapping frames on ports 
+*        where 802.1Q is Disabled.
 *
 * INPUTS:
-*		en - GT_TRUE to use VTU always, GT_FALSE otherwise.
+*        en - GT_TRUE to use VTU always, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetAlwaysUseVTU
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetAlwaysUseVTU Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ALWAYS_USE_VTU))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ALWAYS_USE_VTU))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -6829,42 +7963,42 @@ GT_STATUS gsysSetAlwaysUseVTU
 * gsysGetAlwaysUseVTU
 *
 * DESCRIPTION:
-*		Always use VTU. 
-*		When this feature is enabled, VTU hit data will be used to map frames 
-*		even if 802.1Q is Disabled on the port. 
-*		When it's disabled, data will be ignored when mapping frames on ports 
-*		where 802.1Q is Disabled.
+*        Always use VTU. 
+*        When this feature is enabled, VTU hit data will be used to map frames 
+*        even if 802.1Q is Disabled on the port. 
+*        When it's disabled, data will be ignored when mapping frames on ports 
+*        where 802.1Q is Disabled.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE if VTU is always used, GT_FALSE otherwise.
+*        en - GT_TRUE if VTU is always used, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetAlwaysUseVTU
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetAlwaysUseVTU Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_ALWAYS_USE_VTU))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_ALWAYS_USE_VTU))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -6885,49 +8019,49 @@ GT_STATUS gsysGetAlwaysUseVTU
 * gsysSetQVlansOnly
 *
 * DESCRIPTION:
-*		802.1Q VLANs Only.
-*		When this feature is disabled, the egress mapping of the frame is 
-*		limited by the frame's VID (using the MemberTag data found in the VTU) 
-*		together with the port based VLANs (using the source port's PortVLANTable, 
-*		gvlnSetPortVlanPorts API). The two methods are always used together in 
-*		this mode.
-*		When this feature is enabled, the egress mapping of the frame is limitied
-*		by the frame's VID only, if the VID was found in the VTU. If the frame's
-*		VID was not found in the VTU the egress mapping of the frame is limited
-*		by the source port's PortVLANTable only. The two methods are never
-*		used together in this mode.
+*        802.1Q VLANs Only.
+*        When this feature is disabled, the egress mapping of the frame is 
+*        limited by the frame's VID (using the MemberTag data found in the VTU) 
+*        together with the port based VLANs (using the source port's PortVLANTable, 
+*        gvlnSetPortVlanPorts API). The two methods are always used together in 
+*        this mode.
+*        When this feature is enabled, the egress mapping of the frame is limitied
+*        by the frame's VID only, if the VID was found in the VTU. If the frame's
+*        VID was not found in the VTU the egress mapping of the frame is limited
+*        by the source port's PortVLANTable only. The two methods are never
+*        used together in this mode.
 *
 * INPUTS:
-*		en - GT_TRUE to use 802.1Q Vlan Only feature, GT_FALSE otherwise.
+*        en - GT_TRUE to use 802.1Q Vlan Only feature, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetQVlansOnly
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_U16            data;
 
     DBG_INFO(("gsysSetQVlansOnly Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_QVLAN_ONLY))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_QVLAN_ONLY))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     BOOL_2_BIT(en,data);
@@ -6948,48 +8082,48 @@ GT_STATUS gsysSetQVlansOnly
 * gsysGetQVlansOnly
 *
 * DESCRIPTION:
-*		802.1Q VLANs Only.
-*		When this feature is disabled, the egress mapping of the frame is 
-*		limited by the frame's VID (using the MemberTag data found in the VTU) 
-*		together with the port based VLANs (using the source port's PortVLANTable, 
-*		gvlnSetPortVlanPorts API). The two methods are always used together in 
-*		this mode.
-*		When this feature is enabled, the egress mapping of the frame is limitied
-*		by the frame's VID only, if the VID was found in the VTU. If the frame's
-*		VID was not found in the VTU the egress mapping of the frame is limited
-*		by the source port's PortVLANTable only. The two methods are never
-*		used together in this mode.
+*        802.1Q VLANs Only.
+*        When this feature is disabled, the egress mapping of the frame is 
+*        limited by the frame's VID (using the MemberTag data found in the VTU) 
+*        together with the port based VLANs (using the source port's PortVLANTable, 
+*        gvlnSetPortVlanPorts API). The two methods are always used together in 
+*        this mode.
+*        When this feature is enabled, the egress mapping of the frame is limitied
+*        by the frame's VID only, if the VID was found in the VTU. If the frame's
+*        VID was not found in the VTU the egress mapping of the frame is limited
+*        by the source port's PortVLANTable only. The two methods are never
+*        used together in this mode.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE if 802.1Q Vlan Only feature is enabled, GT_FALSE otherwise.
+*        en - GT_TRUE if 802.1Q Vlan Only feature is enabled, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetQVlansOnly
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetQVlansOnly Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_QVLAN_ONLY))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_QVLAN_ONLY))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get related bit */
@@ -7010,118 +8144,118 @@ GT_STATUS gsysGetQVlansOnly
 * gsysSet5BitPort
 *
 * DESCRIPTION:
-*		Use 5 bits for Port data in the Port VLAN Table (PVT). 
-*		When this feature is enabled, the 9 bits used to access the PVT memory is:
-*			Addr[8:5] = Source Device[3:0] or Device Number[3:0]
-*			Addr[4:0] = Source Port/Trunk[4:0]
-*		When it's disabled, the 9 bits used to access the PVT memory is:
-*			Addr[8:4] = Source Device[4:0] or Device Number[4:0]
-*			Addr[3:0] = Source Port/Trunk[3:0]
+*        Use 5 bits for Port data in the Port VLAN Table (PVT). 
+*        When this feature is enabled, the 9 bits used to access the PVT memory is:
+*            Addr[8:5] = Source Device[3:0] or Device Number[3:0]
+*            Addr[4:0] = Source Port/Trunk[4:0]
+*        When it's disabled, the 9 bits used to access the PVT memory is:
+*            Addr[8:4] = Source Device[4:0] or Device Number[4:0]
+*            Addr[3:0] = Source Port/Trunk[3:0]
 *
 * INPUTS:
-*		en - GT_TRUE to use 5 bit as a Source port in PVT, GT_FALSE otherwise.
+*        en - GT_TRUE to use 5 bit as a Source port in PVT, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSet5BitPort
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
-	GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16            data;
 
-	DBG_INFO(("gsysSet5BitPort Called.\n"));
+    DBG_INFO(("gsysSet5BitPort Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_5BIT_PORT))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_5BIT_PORT))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	BOOL_2_BIT(en,data);
+    BOOL_2_BIT(en,data);
 
-	/* Set related bit */
-	retVal = hwSetGlobal2RegField(dev,QD_REG_SDET_POLARITY, 14, 1, data);
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-		return retVal;
-	}
+    /* Set related bit */
+    retVal = hwSetGlobal2RegField(dev,QD_REG_SDET_POLARITY, 14, 1, data);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 }
 
 /*******************************************************************************
 * gsysGet5BitPort
 *
 * DESCRIPTION:
-*		Use 5 bits for Port data in the Port VLAN Table (PVT). 
-*		When this feature is enabled, the 9 bits used to access the PVT memory is:
-*			Addr[8:5] = Source Device[3:0] or Device Number[3:0]
-*			Addr[4:0] = Source Port/Trunk[4:0]
-*		When it's disabled, the 9 bits used to access the PVT memory is:
-*			Addr[8:4] = Source Device[4:0] or Device Number[4:0]
-*			Addr[3:0] = Source Port/Trunk[3:0]
+*        Use 5 bits for Port data in the Port VLAN Table (PVT). 
+*        When this feature is enabled, the 9 bits used to access the PVT memory is:
+*            Addr[8:5] = Source Device[3:0] or Device Number[3:0]
+*            Addr[4:0] = Source Port/Trunk[4:0]
+*        When it's disabled, the 9 bits used to access the PVT memory is:
+*            Addr[8:4] = Source Device[4:0] or Device Number[4:0]
+*            Addr[3:0] = Source Port/Trunk[3:0]
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE if 5 bit is used as a Source Port in PVT, GT_FALSE otherwise.
+*        en - GT_TRUE if 5 bit is used as a Source Port in PVT, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGet5BitPort
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
-	GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16          data;           /* The register's read data.    */
-	
-	DBG_INFO(("gsysGet5BitPort Called.\n"));
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* The register's read data.    */
+    
+    DBG_INFO(("gsysGet5BitPort Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_5BIT_PORT))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_5BIT_PORT))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	/* Get related bit */
-	retVal = hwGetGlobal2RegField(dev,QD_REG_SDET_POLARITY,14,1,&data);
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-		return retVal;
-	}
+    /* Get related bit */
+    retVal = hwGetGlobal2RegField(dev,QD_REG_SDET_POLARITY,14,1,&data);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
 
-	BIT_2_BOOL(data,*en);
-	DBG_INFO(("OK.\n"));
+    BIT_2_BOOL(data,*en);
+    DBG_INFO(("OK.\n"));
 
-	return GT_OK;
+    return GT_OK;
 }
 
 
@@ -7129,37 +8263,37 @@ GT_STATUS gsysGet5BitPort
 * gsysSetSDETPolarity
 *
 * DESCRIPTION:
-*		SDET (Signal Detect) Polarity select bits for each port. 
-*		Bit 10 is for Port 10, bit 9 is for Port 9, etc. SDET is used to help 
-*		determine link on fiber ports. This bit affects the active level of a 
-*		port's SDET pins as follows:
-*			0 = SDET is active low. A low level on the port's SDET pin is 
-*				required for link to occur.
-*			1 = SDET is active high. A high level on the port’s SDET pin is 
-*				required for link to occur.
-*		SDET is used when the port is configured as a fiber port. In all other 
-*		port modes the SDET pins are ignored and these bits have no effect.
+*        SDET (Signal Detect) Polarity select bits for each port. 
+*        Bit 10 is for Port 10, bit 9 is for Port 9, etc. SDET is used to help 
+*        determine link on fiber ports. This bit affects the active level of a 
+*        port's SDET pins as follows:
+*            0 = SDET is active low. A low level on the port's SDET pin is 
+*                required for link to occur.
+*            1 = SDET is active high. A high level on the port’s SDET pin is 
+*                required for link to occur.
+*        SDET is used when the port is configured as a fiber port. In all other 
+*        port modes the SDET pins are ignored and these bits have no effect.
 *
 * INPUTS:
-*		sdetVec - SDET Polarity for each port in Vector format
+*        sdetVec - SDET Polarity for each port in Vector format
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_BAD_PARAM - if sdetVec is invalid
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_BAD_PARAM - if sdetVec is invalid
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetSDETPolarity
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_U32  		sdetVec
+    IN GT_QD_DEV    *dev,
+    IN GT_U32          sdetVec
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
@@ -7167,29 +8301,29 @@ GT_STATUS gsysSetSDETPolarity
 
     DBG_INFO(("gsysSetSDETPolarity Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_SDET_POLARITY))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_SDET_POLARITY))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     if ((GT_U16)sdetVec > ((1 << dev->numOfPorts) - 1))
-	{
-		DBG_INFO(("GT_BAD_PARAM \n"));
-		return GT_BAD_PARAM;
-	}
+    {
+        DBG_INFO(("GT_BAD_PARAM \n"));
+        return GT_BAD_PARAM;
+    }
 
-	data = (GT_U16)GT_LPORTVEC_2_PORTVEC(sdetVec);
+    data = (GT_U16)GT_LPORTVEC_2_PORTVEC(sdetVec);
 
-	if (IS_IN_DEV_GROUP(dev,DEV_LIMITED_SDET))
-	{
-		if (data & (~0x30))	/* only port 4 and 5 of this device support SDET */
-		{
-			DBG_INFO(("GT_BAD_PARAM \n"));
-			return GT_BAD_PARAM;
-		}
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_LIMITED_SDET))
+    {
+        if (data & (~0x30))    /* only port 4 and 5 of this device support SDET */
+        {
+            DBG_INFO(("GT_BAD_PARAM \n"));
+            return GT_BAD_PARAM;
+        }
+    }
 
     /* Set the related bits. */
     retVal = hwSetGlobal2RegField(dev,QD_REG_SDET_POLARITY,0,dev->maxPorts,data);
@@ -7207,47 +8341,47 @@ GT_STATUS gsysSetSDETPolarity
 * gsysGetSDETPolarity
 *
 * DESCRIPTION:
-*		SDET (Signal Detect) Polarity select bits for each port. 
-*		Bit 10 is for Port 10, bit 9 is for Port 9, etc. SDET is used to help 
-*		determine link on fiber ports. This bit affects the active level of a 
-*		port's SDET pins as follows:
-*			0 = SDET is active low. A low level on the port's SDET pin is 
-*				required for link to occur.
-*			1 = SDET is active high. A high level on the port’s SDET pin is 
-*				required for link to occur.
-*		SDET is used when the port is configured as a fiber port. In all other 
-*		port modes the SDET pins are ignored and these bits have no effect.
+*        SDET (Signal Detect) Polarity select bits for each port. 
+*        Bit 10 is for Port 10, bit 9 is for Port 9, etc. SDET is used to help 
+*        determine link on fiber ports. This bit affects the active level of a 
+*        port's SDET pins as follows:
+*            0 = SDET is active low. A low level on the port's SDET pin is 
+*                required for link to occur.
+*            1 = SDET is active high. A high level on the port’s SDET pin is 
+*                required for link to occur.
+*        SDET is used when the port is configured as a fiber port. In all other 
+*        port modes the SDET pins are ignored and these bits have no effect.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		sdetVec - SDET Polarity for each port in Vector format
+*        sdetVec - SDET Polarity for each port in Vector format
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetSDETPolarity
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_U32  	*sdetVec
+    IN  GT_QD_DEV    *dev,
+    OUT GT_U32      *sdetVec
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
     DBG_INFO(("gsysGetSDETPolarity Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_SDET_POLARITY))
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_SDET_POLARITY))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* Get the related bits. */
@@ -7258,12 +8392,12 @@ GT_STATUS gsysGetSDETPolarity
         return retVal;
     }
 
-	if (IS_IN_DEV_GROUP(dev,DEV_LIMITED_SDET))
-	{
-		data &= 0x30;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_LIMITED_SDET))
+    {
+        data &= 0x30;
+    }
 
-	*sdetVec = GT_PORTVEC_2_LPORTVEC(data);
+    *sdetVec = GT_PORTVEC_2_LPORTVEC(data);
 
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -7294,26 +8428,26 @@ GT_STATUS gsysGetSDETPolarity
 *******************************************************************************/
 GT_STATUS gsysSetARPwoBC
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_BOOL 	en
+    IN  GT_QD_DEV    *dev,
+    IN  GT_BOOL     en
 )
 {
-	GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16          data;           /* Data to be set into the      */
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* Data to be set into the      */
                                 /* register.                    */
-	DBG_INFO(("sysSetARPwoBC Called.\n"));
-	BOOL_2_BIT(en,data);
+    DBG_INFO(("sysSetARPwoBC Called.\n"));
+    BOOL_2_BIT(en,data);
 
-	/* Set the Discard Exissive bit.                */
-	retVal = hwSetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL,12,1,data);
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-		return retVal;
-	}
+    /* Set the Discard Exissive bit.                */
+    retVal = hwSetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL,12,1,data);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 }
 
 
@@ -7343,31 +8477,31 @@ GT_STATUS gsysSetARPwoBC
 *******************************************************************************/
 GT_STATUS gsysGetARPwoBC
 (
-	IN  GT_QD_DEV 	*dev,
-	IN  GT_BOOL		*en
+    IN  GT_QD_DEV     *dev,
+    IN  GT_BOOL        *en
 )
 {
-	GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16          data;           /* The register's read data.    */
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* The register's read data.    */
 
-	DBG_INFO(("gsysGetARPwoBC Called.\n"));
-	if(en == NULL)
-	{
-		DBG_INFO(("Failed.\n"));
-		return GT_BAD_PARAM;
-	}
+    DBG_INFO(("gsysGetARPwoBC Called.\n"));
+    if(en == NULL)
+    {
+        DBG_INFO(("Failed.\n"));
+        return GT_BAD_PARAM;
+    }
 
-	/* Get the bit. */
-	retVal = hwGetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL,12,1,&data);
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-		return retVal;
-	}
+    /* Get the bit. */
+    retVal = hwGetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL,12,1,&data);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
 
-	BIT_2_BOOL(data,*en);
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    BIT_2_BOOL(data,*en);
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 }
 
 
@@ -7375,112 +8509,112 @@ GT_STATUS gsysGetARPwoBC
 * gsysSetCLK125En
 *
 * DESCRIPTION:
-*		Clock 125MHz Enable.
-*		When this feature is enabled, the CLK125 pin has a free running 125 MHz
-*		clock output.
-*		When it's disabled, the CLK125 pin will be in tri-state.
+*        Clock 125MHz Enable.
+*        When this feature is enabled, the CLK125 pin has a free running 125 MHz
+*        clock output.
+*        When it's disabled, the CLK125 pin will be in tri-state.
 *
 * INPUTS:
-*		en - GT_TRUE to enable 125 MHz clock, GT_FALSE otherwise.
+*        en - GT_TRUE to enable 125 MHz clock, GT_FALSE otherwise.
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysSetCLK125En
 (
-	IN GT_QD_DEV	*dev,
-	IN GT_BOOL		en
+    IN GT_QD_DEV    *dev,
+    IN GT_BOOL        en
 )
 {
-	GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16			data;
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16            data;
 
-	DBG_INFO(("gsysSetCLK125En Called.\n"));
+    DBG_INFO(("gsysSetCLK125En Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_CLK_125))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_CLK_125))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	BOOL_2_BIT(en,data);
+    BOOL_2_BIT(en,data);
 
-	/* Set related bit */
-	retVal = hwSetGlobal2RegField(dev,QD_REG_SDET_POLARITY, 11, 1, data);
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-		return retVal;
-	}
+    /* Set related bit */
+    retVal = hwSetGlobal2RegField(dev,QD_REG_SDET_POLARITY, 11, 1, data);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 }
 
 /*******************************************************************************
 * gsysGetCLK125En
 *
 * DESCRIPTION:
-*		Clock 125MHz Enable.
-*		When this feature is enabled, the CLK125 pin has a free running 125 MHz
-*		clock output.
-*		When it's disabled, the CLK125 pin will be in tri-state.
+*        Clock 125MHz Enable.
+*        When this feature is enabled, the CLK125 pin has a free running 125 MHz
+*        clock output.
+*        When it's disabled, the CLK125 pin will be in tri-state.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		en - GT_TRUE if 125MHz clock is enabled, GT_FALSE otherwise.
+*        en - GT_TRUE if 125MHz clock is enabled, GT_FALSE otherwise.
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK   - on success
+*        GT_FAIL - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysGetCLK125En
 (
-	IN  GT_QD_DEV	*dev,
-	OUT GT_BOOL  	*en
+    IN  GT_QD_DEV    *dev,
+    OUT GT_BOOL      *en
 )
 {
-	GT_STATUS       retVal;         /* Functions return value.      */
-	GT_U16          data;           /* The register's read data.    */
-	
-	DBG_INFO(("gsysGetCLK125En Called.\n"));
+    GT_STATUS       retVal;         /* Functions return value.      */
+    GT_U16          data;           /* The register's read data.    */
+    
+    DBG_INFO(("gsysGetCLK125En Called.\n"));
 
-	/* Check if Switch supports this feature. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_CLK_125))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    /* Check if Switch supports this feature. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_CLK_125))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	/* Get related bit */
-	retVal = hwGetGlobal2RegField(dev,QD_REG_SDET_POLARITY,11,1,&data);
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed.\n"));
-		return retVal;
-	}
+    /* Get related bit */
+    retVal = hwGetGlobal2RegField(dev,QD_REG_SDET_POLARITY,11,1,&data);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed.\n"));
+        return retVal;
+    }
 
-	BIT_2_BOOL(data,*en);
-	DBG_INFO(("OK.\n"));
+    BIT_2_BOOL(data,*en);
+    DBG_INFO(("OK.\n"));
 
-	return GT_OK;
+    return GT_OK;
 }
 
 
@@ -7488,42 +8622,42 @@ GT_STATUS gsysGetCLK125En
 * gsysPort2Lport
 *
 * DESCRIPTION:
-*		This routine converts physical port number to logical port number.
+*        This routine converts physical port number to logical port number.
 *
 * INPUTS:
-*		port - physical port number
+*        port - physical port number
 *
 * OUTPUTS:
-*		lport - logical port number
+*        lport - logical port number
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
+*        GT_OK   - on success
+*        GT_FAIL - on error
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysPort2Lport
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_U32 		port,
-	OUT GT_LPORT	*lport
+    IN  GT_QD_DEV    *dev,
+    IN  GT_U32         port,
+    OUT GT_LPORT    *lport
 )
 {
     DBG_INFO(("gsysPort2Lport Called.\n"));
 
-	if (port > 0xFF)
-	{
-		return GT_FAIL;
-	}
+    if (port > 0xFF)
+    {
+        return GT_FAIL;
+    }
 
-	*lport = GT_PORT_2_LPORT((GT_U8)port);
+    *lport = GT_PORT_2_LPORT((GT_U8)port);
 
-	if (*lport == GT_INVALID_PORT)
-	{
-		return GT_FAIL;
-	}
+    if (*lport == GT_INVALID_PORT)
+    {
+        return GT_FAIL;
+    }
 
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -7533,37 +8667,37 @@ GT_STATUS gsysPort2Lport
 * gsysLport2Port
 *
 * DESCRIPTION:
-*		This routine converts logical port number to physical port number.
+*        This routine converts logical port number to physical port number.
 *
 * INPUTS:
-*		lport - logical port number
+*        lport - logical port number
 *
 * OUTPUTS:
-*		port - physical port number
+*        port - physical port number
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
+*        GT_OK   - on success
+*        GT_FAIL - on error
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysLport2Port
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_LPORT	lport,
-	OUT GT_U32 		*port
+    IN  GT_QD_DEV    *dev,
+    IN  GT_LPORT    lport,
+    OUT GT_U32         *port
 )
 {
     DBG_INFO(("gsysLport2Port Called.\n"));
 
-	*port = (GT_U32)GT_LPORT_2_PORT(lport);
+    *port = (GT_U32)GT_LPORT_2_PORT(lport);
 
-	if (*port == GT_INVALID_PORT)
-	{
-		return GT_FAIL;
-	}
+    if (*port == GT_INVALID_PORT)
+    {
+        return GT_FAIL;
+    }
 
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -7574,42 +8708,42 @@ GT_STATUS gsysLport2Port
 * gsysPortvec2Lportvec
 *
 * DESCRIPTION:
-*		This routine converts physical port vector to logical port vector.
+*        This routine converts physical port vector to logical port vector.
 *
 * INPUTS:
-*		portvec - physical port vector
+*        portvec - physical port vector
 *
 * OUTPUTS:
-*		lportvec - logical port vector
+*        lportvec - logical port vector
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
+*        GT_OK   - on success
+*        GT_FAIL - on error
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysPortvec2Lportvec
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_U32		portvec,
-	OUT GT_U32 		*lportvec
+    IN  GT_QD_DEV    *dev,
+    IN  GT_U32        portvec,
+    OUT GT_U32         *lportvec
 )
 {
     DBG_INFO(("gsysPortvec2Lportvec Called.\n"));
 
-	if (portvec & (~((GT_U32)dev->validPortVec)))
-	{
-		return GT_FAIL;
-	}
+    if (portvec & (~((GT_U32)dev->validPortVec)))
+    {
+        return GT_FAIL;
+    }
 
-	*lportvec = GT_PORTVEC_2_LPORTVEC(portvec);
+    *lportvec = GT_PORTVEC_2_LPORTVEC(portvec);
 
-	if (*lportvec == GT_INVALID_PORT_VEC)
-	{
-		return GT_FAIL;
-	}
+    if (*lportvec == GT_INVALID_PORT_VEC)
+    {
+        return GT_FAIL;
+    }
 
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -7619,37 +8753,37 @@ GT_STATUS gsysPortvec2Lportvec
 * gsysLportvec2Portvec
 *
 * DESCRIPTION:
-*		This routine converts logical port vector to physical port vector.
+*        This routine converts logical port vector to physical port vector.
 *
 * INPUTS:
-*		lportvec - logical port vector
+*        lportvec - logical port vector
 *
 * OUTPUTS:
-*		portvec - physical port vector
+*        portvec - physical port vector
 *
 * RETURNS:
-*		GT_OK   - on success
-*		GT_FAIL - on error
+*        GT_OK   - on success
+*        GT_FAIL - on error
 *
 * COMMENTS:
-*		None.
+*        None.
 *
 *******************************************************************************/
 GT_STATUS gsysLportvec2Portvec
 (
-	IN  GT_QD_DEV	*dev,
-	IN  GT_U32		lportvec,
-	OUT GT_U32 		*portvec
+    IN  GT_QD_DEV    *dev,
+    IN  GT_U32        lportvec,
+    OUT GT_U32         *portvec
 )
 {
     DBG_INFO(("gsysLportvec2Portvec Called.\n"));
 
-	*portvec = GT_LPORTVEC_2_PORTVEC(lportvec);
+    *portvec = GT_LPORTVEC_2_PORTVEC(lportvec);
 
-	if (*portvec == GT_INVALID_PORT_VEC)
-	{
-		return GT_FAIL;
-	}
+    if (*portvec == GT_INVALID_PORT_VEC)
+    {
+        return GT_FAIL;
+    }
 
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -7662,6 +8796,397 @@ GT_STATUS gsysLportvec2Portvec
 /****************************************************************************/
 
 /*
+ * Write to Switch MAC/Wol MAC Register
+ */
+static GT_STATUS writeSwitchMacWolReg
+(
+    IN GT_QD_DEV    *dev,
+	IN GT_U8        baseid,
+    IN GT_ETHERADDR *mac
+)
+{
+    GT_STATUS       retVal;    /* Functions return value */
+    GT_U16          data;     /* temporary Data storage */
+    GT_U16            i;
+
+    for (i=0; i<GT_ETHERNET_HEADER_SIZE; i++)
+    {
+        /* Wait until the device is ready. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 1;
+
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_SWITCH_MAC;
+      regAccess.rw_reg_list[0].data = 15;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        return retVal;
+      }
+    }
+#else
+        data = 1;
+        while(data == 1)
+        {
+            retVal = hwGetGlobal2RegField(dev,QD_REG_SWITCH_MAC,15,1,&data);
+            if(retVal != GT_OK)
+            {
+                return retVal;
+            }
+        }
+#endif
+
+        data = (1 << 15) | ((i+baseid) << 8) | mac->arEther[i];
+
+        retVal = hwWriteGlobal2Reg(dev,QD_REG_SWITCH_MAC,data);
+        if(retVal != GT_OK)
+           {
+               return retVal;
+        }
+    }
+
+    return GT_OK;
+}
+
+/*
+ * Read from Switch MAC/WoL MAC Register
+ */
+static GT_STATUS readSwitchMacWolReg
+(
+    IN  GT_QD_DEV    *dev,
+	IN GT_U8        baseid,
+    OUT GT_ETHERADDR *mac
+)
+{
+    GT_STATUS       retVal;    /* Functions return value */
+    GT_U16          data;     /* temporary Data storage */
+    GT_U16            i;
+
+    /* Wait until the device is ready. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 1;
+
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_SWITCH_MAC;
+      regAccess.rw_reg_list[0].data = 15;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        return retVal;
+      }
+    }
+#else
+    data = 1;
+       while(data == 1)
+    {
+           retVal = hwGetGlobal2RegField(dev,QD_REG_SWITCH_MAC,15,1,&data);
+           if(retVal != GT_OK)
+        {
+               return retVal;
+        }
+       }
+#endif
+
+    for (i=0; i<GT_ETHERNET_HEADER_SIZE; i++)
+    {
+        data = (i+baseid) << 8;
+
+        retVal = hwWriteGlobal2Reg(dev,QD_REG_SWITCH_MAC,data);
+        if(retVal != GT_OK)
+           {
+               return retVal;
+        }
+
+        retVal = hwReadGlobal2Reg(dev,QD_REG_SWITCH_MAC,&data);
+        if(retVal != GT_OK)
+           {
+               return retVal;
+        }
+
+        if ((baseid != 0x16) && (i == 0))  /* base id = 0x16 is Wol Password,and it has nor diffAddr */
+            mac->arEther[i] = data & 0xFE;    /* bit 0 is for diffAddr */
+        else
+            mac->arEther[i] = data & 0xFF;
+    }
+
+    return GT_OK;
+}
+
+
+/*
+ * Write to Different MAC Address per port bit in Switch MAC/WoL Register
+ */
+static GT_STATUS writeDiffMACWoL
+(
+    IN GT_QD_DEV    *dev,
+	IN GT_U8        baseid,
+    IN GT_U16       diffAddr
+)
+{
+    GT_STATUS       retVal;    /* Functions return value */
+    GT_U16          data;     /* temporary Data storage */
+
+    /* Wait until the device is ready. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 3;
+
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_SWITCH_MAC;
+      regAccess.rw_reg_list[0].data = 15;
+      regAccess.rw_reg_list[1].cmd = HW_REG_WRITE;
+      regAccess.rw_reg_list[1].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[1].reg = QD_REG_SWITCH_MAC;
+      data = baseid<<8;
+      regAccess.rw_reg_list[1].data = data;
+      regAccess.rw_reg_list[2].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[2].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[2].reg = QD_REG_SWITCH_MAC;
+      regAccess.rw_reg_list[2].data = 0;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        return retVal;
+      }
+      data = qdLong2Short(regAccess.rw_reg_list[2].data);
+    }
+#else
+    data = 1;
+    while(data == 1)
+    {
+       retVal = hwGetGlobal2RegField(dev,QD_REG_SWITCH_MAC,15,1,&data);
+          if(retVal != GT_OK)
+        {
+               return retVal;
+        }
+    }
+    data = baseid<<8;
+    retVal = hwWriteGlobal2Reg(dev,QD_REG_SWITCH_MAC,data);
+    if(retVal != GT_OK)
+    {
+        return retVal;
+    }
+
+    /* Read Swith MAC Reg */
+    retVal = hwReadGlobal2Reg(dev,QD_REG_SWITCH_MAC,&data);
+    if(retVal != GT_OK)
+    {
+        return retVal;
+    }
+#endif
+
+    data = (1 << 15) | (baseid<<8) | (data & 0xFE) | (diffAddr & 0x1);
+
+    /* Write back to Swith MAC Reg with updated diffAddr */
+    retVal = hwWriteGlobal2Reg(dev,QD_REG_SWITCH_MAC,data);
+    if(retVal != GT_OK)
+    {
+        return retVal;
+    }
+
+    return GT_OK;
+}
+
+/*
+ * Read Different MAC Address per port bit in Switch MAC/WoL Register
+ */
+static GT_STATUS readDiffMACWoL
+(
+    IN  GT_QD_DEV    *dev,
+	IN GT_U8        baseid,
+    OUT GT_U16        *diffAddr
+)
+{
+    GT_STATUS       retVal;    /* Functions return value */
+    GT_U16          data;     /* temporary Data storage */
+
+    /* Wait until the device is ready. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 3;
+
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_SWITCH_MAC;
+      regAccess.rw_reg_list[0].data = 15;
+      regAccess.rw_reg_list[1].cmd = HW_REG_WRITE;
+      regAccess.rw_reg_list[1].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[1].reg = QD_REG_SWITCH_MAC;
+      data = baseid<<8;
+      regAccess.rw_reg_list[1].data = data;
+      regAccess.rw_reg_list[2].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[2].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[2].reg = QD_REG_SWITCH_MAC;
+      regAccess.rw_reg_list[2].data = 0;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        return retVal;
+      }
+      data = qdLong2Short(regAccess.rw_reg_list[2].data);
+    }
+#else
+    data = 1;
+       while(data == 1)
+    {
+           retVal = hwGetGlobal2RegField(dev,QD_REG_SWITCH_MAC,15,1,&data);
+           if(retVal != GT_OK)
+        {
+               return retVal;
+        }
+       }
+
+    /* Write to Swith MAC Reg for reading operation */
+    data = baseid<<8;
+    retVal = hwWriteGlobal2Reg(dev,QD_REG_SWITCH_MAC,data);
+    if(retVal != GT_OK)
+    {
+        return retVal;
+    }
+
+    retVal = hwReadGlobal2Reg(dev,QD_REG_SWITCH_MAC,&data);
+    if(retVal != GT_OK)
+    {
+        return retVal;
+    }
+#endif
+    *diffAddr = data & 0x1;
+
+    return GT_OK;
+}
+
+/*
+ * Write to Switch MAC/WoL/WoF Register
+ */
+static GT_STATUS writeSwMacWolWofReg
+(
+    IN GT_QD_DEV    *dev,
+    IN GT_U8        pointer,
+	IN GT_U8        data
+)
+{
+    GT_STATUS       retVal;    /* Functions return value */
+    GT_U16          tmpData;     /* temporary Data storage */
+    {
+        /* Wait until the device is ready. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 1;
+
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_SWITCH_MAC;
+      regAccess.rw_reg_list[0].data = 15;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        return retVal;
+      }
+    }
+#else
+        tmpData = 1;
+        while(tmpData == 1)
+        {
+            retVal = hwGetGlobal2RegField(dev,QD_REG_SWITCH_MAC,15,1,&tmpData);
+            if(retVal != GT_OK)
+            {
+                return retVal;
+            }
+        }
+#endif
+
+        tmpData = (1 << 15) | (pointer << 8) | data;
+
+        retVal = hwWriteGlobal2Reg(dev,QD_REG_SWITCH_MAC, tmpData);
+        if(retVal != GT_OK)
+           {
+               return retVal;
+        }
+    }
+
+    return GT_OK;
+}
+
+/*
+ * Read from Switch MAC/WoL/WoF Register
+ */
+static GT_STATUS readSwMacWolWofReg
+(
+    IN GT_QD_DEV    *dev,
+    IN GT_U8        pointer,
+	OUT GT_U8       *data
+)
+{
+    GT_STATUS       retVal;    /* Functions return value */
+    GT_U16          tmpData;     /* temporary Data storage */
+
+    /* Wait until the device is ready. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 1;
+
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_SWITCH_MAC;
+      regAccess.rw_reg_list[0].data = 15;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        return retVal;
+      }
+    }
+#else
+    tmpData = 1;
+       while(tmpData == 1)
+    {
+           retVal = hwGetGlobal2RegField(dev,QD_REG_SWITCH_MAC,15,1,&tmpData);
+           if(retVal != GT_OK)
+        {
+               return retVal;
+        }
+       }
+#endif
+
+    {
+        tmpData = pointer << 8;
+
+        retVal = hwWriteGlobal2Reg(dev,QD_REG_SWITCH_MAC,tmpData);
+        if(retVal != GT_OK)
+           {
+               return retVal;
+        }
+
+        retVal = hwReadGlobal2Reg(dev,QD_REG_SWITCH_MAC,&tmpData);
+        if(retVal != GT_OK)
+           {
+               return retVal;
+        }
+
+        *data = tmpData & 0xFF;
+    }
+
+    return GT_OK;
+}
+
+
+/*
  * Write to Switch MAC Register
  */
 static GT_STATUS writeSwitchMacReg
@@ -7670,33 +9195,7 @@ static GT_STATUS writeSwitchMacReg
     IN GT_ETHERADDR *mac
 )
 {
-    GT_STATUS       retVal;	/* Functions return value */
-    GT_U16          data; 	/* temporary Data storage */
-	GT_U16			i;
-
-	for (i=0; i<GT_ETHERNET_HEADER_SIZE; i++)
-	{
-	    /* Wait until the device is ready. */
-	    data = 1;
-    	while(data == 1)
-	    {
-    	    retVal = hwGetGlobal2RegField(dev,QD_REG_SWITCH_MAC,15,1,&data);
-        	if(retVal != GT_OK)
-	        {
-        	    return retVal;
-	        }
-    	}
-
-		data = (1 << 15) | (i << 8) | mac->arEther[i];
-
-		retVal = hwWriteGlobal2Reg(dev,QD_REG_SWITCH_MAC,data);
-        if(retVal != GT_OK)
-   	    {
-           	return retVal;
-        }
-	}
-
-	return GT_OK;
+    return writeSwitchMacWolReg(dev, 0, mac);
 }
 
 /*
@@ -7708,44 +9207,7 @@ static GT_STATUS readSwitchMacReg
     OUT GT_ETHERADDR *mac
 )
 {
-    GT_STATUS       retVal;	/* Functions return value */
-    GT_U16          data; 	/* temporary Data storage */
-	GT_U16			i;
-
-    /* Wait until the device is ready. */
-    data = 1;
-   	while(data == 1)
-    {
-   	    retVal = hwGetGlobal2RegField(dev,QD_REG_SWITCH_MAC,15,1,&data);
-       	if(retVal != GT_OK)
-        {
-       	    return retVal;
-        }
-   	}
-
-	for (i=0; i<GT_ETHERNET_HEADER_SIZE; i++)
-	{
-		data = i << 8;
-
-		retVal = hwWriteGlobal2Reg(dev,QD_REG_SWITCH_MAC,data);
-        if(retVal != GT_OK)
-   	    {
-           	return retVal;
-        }
-
-		retVal = hwReadGlobal2Reg(dev,QD_REG_SWITCH_MAC,&data);
-        if(retVal != GT_OK)
-   	    {
-           	return retVal;
-        }
-
-		if (i == 0)
-			mac->arEther[i] = data & 0xFE;	/* bit 0 is for diffAddr */
-		else
-			mac->arEther[i] = data & 0xFF;
-	}
-
-	return GT_OK;
+    return readSwitchMacWolReg(dev, 0, mac);
 }
 
 
@@ -7755,48 +9217,10 @@ static GT_STATUS readSwitchMacReg
 static GT_STATUS writeDiffMAC
 (
     IN GT_QD_DEV    *dev,
-    IN GT_U16		diffAddr
+    IN GT_U16       diffAddr
 )
 {
-    GT_STATUS       retVal;	/* Functions return value */
-    GT_U16          data; 	/* temporary Data storage */
-
-    /* Wait until the device is ready. */
-    data = 1;
-   	while(data == 1)
-    {
-   	    retVal = hwGetGlobal2RegField(dev,QD_REG_SWITCH_MAC,15,1,&data);
-       	if(retVal != GT_OK)
-        {
-       	    return retVal;
-        }
-   	}
-
-    /* Write to Swith MAC Reg for reading operation */
-	data = 0;
-	retVal = hwWriteGlobal2Reg(dev,QD_REG_SWITCH_MAC,data);
-	if(retVal != GT_OK)
-	{
-		return retVal;
-	}
-
-    /* Read Swith MAC Reg */
-	retVal = hwReadGlobal2Reg(dev,QD_REG_SWITCH_MAC,&data);
-	if(retVal != GT_OK)
-	{
-		return retVal;
-	}
-
-	data = (1 << 15) | (data & 0xFE) | (diffAddr & 0x1);
-
-    /* Write back to Swith MAC Reg with updated diffAddr */
-	retVal = hwWriteGlobal2Reg(dev,QD_REG_SWITCH_MAC,data);
-	if(retVal != GT_OK)
-	{
-		return retVal;
-	}
-
-	return GT_OK;
+    return writeDiffMACWoL(dev, 0, diffAddr);
 }
 
 /*
@@ -7804,40 +9228,14 @@ static GT_STATUS writeDiffMAC
  */
 static GT_STATUS readDiffMAC
 (
-    IN  GT_QD_DEV	*dev,
-    OUT GT_U16		*diffAddr
+    IN  GT_QD_DEV    *dev,
+    OUT GT_U16        *diffAddr
 )
 {
-    GT_STATUS       retVal;	/* Functions return value */
-    GT_U16          data; 	/* temporary Data storage */
-
-    /* Wait until the device is ready. */
-    data = 1;
-   	while(data == 1)
-    {
-   	    retVal = hwGetGlobal2RegField(dev,QD_REG_SWITCH_MAC,15,1,&data);
-       	if(retVal != GT_OK)
-        {
-       	    return retVal;
-        }
-   	}
-
-    /* Write to Swith MAC Reg for reading operation */
-	data = 0;
-	retVal = hwWriteGlobal2Reg(dev,QD_REG_SWITCH_MAC,data);
-	if(retVal != GT_OK)
-	{
-		return retVal;
-	}
-
-	retVal = hwReadGlobal2Reg(dev,QD_REG_SWITCH_MAC,&data);
-	if(retVal != GT_OK)
-	{
-		return retVal;
-	}
-
-	*diffAddr = data & 0x1;
-
-	return GT_OK;
+    return readDiffMACWoL(dev, 0, diffAddr);
 }
+
+
+
+
 

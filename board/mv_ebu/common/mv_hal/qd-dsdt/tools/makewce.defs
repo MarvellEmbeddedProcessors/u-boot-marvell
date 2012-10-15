@@ -11,17 +11,17 @@ TARGET	= $(notdir $(subst \,/,$(shell cd)))
 endif
 default : $(TARGET).lib
 
-SW_ROOT = $(subst \,/,$(USER_BASE))
+SW_ROOT = $(subst \,/,$(DSDT_USER_BASE))
 SRC_BASE_PATH = $(SW_ROOT)/src
 #INCLUDE_PATH = $(subst ;, -I,$(INCLUDE))
 
 LIB_DIR = $(SW_ROOT)/library
 OBJDIR = obj
 
-QD_INCLUDE_PATH = -I$(USER_BASE)\Include\h\driver \
-                  -I$(USER_BASE)\Include\h\msApi \
-                  -I$(USER_BASE)\Include\h\platform \
-                  -I$(USER_BASE)\Include
+QD_INCLUDE_PATH = -I$(DSDT_USER_BASE)\Include\h\driver \
+                  -I$(DSDT_USER_BASE)\Include\h\msApi \
+                  -I$(DSDT_USER_BASE)\Include\h\platform \
+                  -I$(DSDT_USER_BASE)\Include
 
 MAKE    =make
 CD		=cd

@@ -17,6 +17,9 @@
 #include <gtHwCntl.h>
 #include <gtDrvSwRegs.h>
 #include <gtDrvConfig.h>
+#ifdef GT_USE_MAD
+#include <gtMad.h>
+#endif
 
 /*******************************************************************************
 * gprtPhyIntEnable
@@ -34,19 +37,19 @@
 * port -   The logical port number, unless SERDES device is accessed
 *          The physical address, if SERDES device is accessed
 * intType - the type of interrupt to enable/disable. any combination of 
-*			GT_SPEED_CHANGED,
-*			GT_DUPLEX_CHANGED,
-*			GT_PAGE_RECEIVED,
-*			GT_AUTO_NEG_COMPLETED,
-*			GT_LINK_STATUS_CHANGED,
-*			GT_SYMBOL_ERROR,
-*			GT_FALSE_CARRIER,
-*			GT_FIFO_FLOW,
-*			GT_CROSSOVER_CHANGED,	( Copper only )
-*			GT_DOWNSHIFT_DETECT,	( for 1000M Copper only )
-*			GT_ENERGY_DETECT,		( for 1000M Copper only )
-*			GT_POLARITY_CHANGED, and ( Copper only )
-*			GT_JABBER				(Copper only )
+*            GT_SPEED_CHANGED,
+*            GT_DUPLEX_CHANGED,
+*            GT_PAGE_RECEIVED,
+*            GT_AUTO_NEG_COMPLETED,
+*            GT_LINK_STATUS_CHANGED,
+*            GT_SYMBOL_ERROR,
+*            GT_FALSE_CARRIER,
+*            GT_FIFO_FLOW,
+*            GT_CROSSOVER_CHANGED,    ( Copper only )
+*            GT_DOWNSHIFT_DETECT,    ( for 1000M Copper only )
+*            GT_ENERGY_DETECT,        ( for 1000M Copper only )
+*            GT_POLARITY_CHANGED, and ( Copper only )
+*            GT_JABBER                (Copper only )
 *
 *
 * OUTPUTS:
@@ -68,47 +71,51 @@
 GT_STATUS gprtPhyIntEnable
 (
 IN GT_QD_DEV    *dev,
-IN GT_LPORT	port,
-IN GT_U16	intType
+IN GT_LPORT    port,
+IN GT_U16    intType
 )
 {
     GT_STATUS       retVal;      
     GT_U8           hwPort;         /* the physical port number     */
 
+#ifdef GT_USE_MAD
+	if (dev->use_mad==GT_TRUE)
+		return gprtPhyIntEnable_mad(dev, port, intType);
+#endif
     DBG_INFO(("gprtPhyIntEnable Called.\n"));
     
-	/* translate LPORT to hardware port */
-	hwPort = GT_LPORT_2_PHY(port);
+    /* translate LPORT to hardware port */
+    hwPort = GT_LPORT_2_PHY(port);
 
-	if((IS_IN_DEV_GROUP(dev,DEV_SERDES_CORE)) && (hwPort > 3))
-	{
-		if(!(dev->validSerdesVec & (1 << hwPort)))
-		{
-			if(!((IS_IN_DEV_GROUP(dev,DEV_88E6165_FAMILY)) && (hwPort == 4)))
-				GT_GET_SERDES_PORT(dev,&hwPort);
-		}
-		if(hwPort >= dev->maxPhyNum)
-		{
-			return GT_NOT_SUPPORTED;
-		}
-	}
+    if((IS_IN_DEV_GROUP(dev,DEV_SERDES_CORE)) && (hwPort > 3))
+    {
+        if(!(dev->validSerdesVec & (1 << hwPort)))
+        {
+            if(!((IS_IN_DEV_GROUP(dev,DEV_88E6165_FAMILY)) && (hwPort == 4)))
+                GT_GET_SERDES_PORT(dev,&hwPort);
+        }
+        if(hwPort >= dev->maxPhyNum)
+        {
+            return GT_NOT_SUPPORTED;
+        }
+    }
 
-	/* check if the port is configurable */
-	if(!IS_CONFIGURABLE_PHY(dev,hwPort))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    /* check if the port is configurable */
+    if(!IS_CONFIGURABLE_PHY(dev,hwPort))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
-	retVal = hwWritePhyReg(dev,hwPort, QD_PHY_INT_ENABLE_REG, intType);
+    retVal = hwWritePhyReg(dev,hwPort, QD_PHY_INT_ENABLE_REG, intType);
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
     
     return retVal;
 
@@ -124,20 +131,20 @@ IN GT_U16	intType
 * port -   The logical port number, unless SERDES device is accessed
 *          The physical address, if SERDES device is accessed
 * intType - the type of interrupt which causes an interrupt.
-*			any combination of 
-*			GT_SPEED_CHANGED,
-*			GT_DUPLEX_CHANGED,
-*			GT_PAGE_RECEIVED,
-*			GT_AUTO_NEG_COMPLETED,
-*			GT_LINK_STATUS_CHANGED,
-*			GT_SYMBOL_ERROR,
-*			GT_FALSE_CARRIER,
-*			GT_FIFO_FLOW,
-*			GT_CROSSOVER_CHANGED,	( Copper only )
-*			GT_DOWNSHIFT_DETECT,	( for 1000M Copper only )
-*			GT_ENERGY_DETECT,		( for 1000M Copper only )
-*			GT_POLARITY_CHANGED, and ( Copper only )
-*			GT_JABBER				(Copper only )
+*            any combination of 
+*            GT_SPEED_CHANGED,
+*            GT_DUPLEX_CHANGED,
+*            GT_PAGE_RECEIVED,
+*            GT_AUTO_NEG_COMPLETED,
+*            GT_LINK_STATUS_CHANGED,
+*            GT_SYMBOL_ERROR,
+*            GT_FALSE_CARRIER,
+*            GT_FIFO_FLOW,
+*            GT_CROSSOVER_CHANGED,    ( Copper only )
+*            GT_DOWNSHIFT_DETECT,    ( for 1000M Copper only )
+*            GT_ENERGY_DETECT,        ( for 1000M Copper only )
+*            GT_POLARITY_CHANGED, and ( Copper only )
+*            GT_JABBER                (Copper only )
 *
 * OUTPUTS:
 * None.
@@ -165,38 +172,43 @@ OUT  GT_U16*    intType
     GT_STATUS       retVal;      
     GT_U8           hwPort;         /* the physical port number     */
 
+#ifdef GT_USE_MAD
+	if (dev->use_mad==GT_TRUE)
+		return gprtGetPhyIntStatus_mad(dev, port, intType);
+#endif
+
     DBG_INFO(("gprtGetPhyIntStatus Called.\n"));
    
     /* translate LPORT to hardware port */
     hwPort = GT_LPORT_2_PHY(port);
-	if((IS_IN_DEV_GROUP(dev,DEV_SERDES_CORE)) && (hwPort > 3))
-	{
-		if(!(dev->validSerdesVec & (1 << hwPort)))
-		{
-			if(!((IS_IN_DEV_GROUP(dev,DEV_88E6165_FAMILY)) && (hwPort == 4)))
-				GT_GET_SERDES_PORT(dev,&hwPort);
-		}
-		if(hwPort >= dev->maxPhyNum)
-		{
-			return GT_NOT_SUPPORTED;
-		}
-	}
+    if((IS_IN_DEV_GROUP(dev,DEV_SERDES_CORE)) && (hwPort > 3))
+    {
+        if(!(dev->validSerdesVec & (1 << hwPort)))
+        {
+            if(!((IS_IN_DEV_GROUP(dev,DEV_88E6165_FAMILY)) && (hwPort == 4)))
+                GT_GET_SERDES_PORT(dev,&hwPort);
+        }
+        if(hwPort >= dev->maxPhyNum)
+        {
+            return GT_NOT_SUPPORTED;
+        }
+    }
 
-	/* check if the port is configurable */
-	if(!IS_CONFIGURABLE_PHY(dev,hwPort))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    /* check if the port is configurable */
+    if(!IS_CONFIGURABLE_PHY(dev,hwPort))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
-	retVal = hwReadPhyReg(dev,hwPort, QD_PHY_INT_STATUS_REG, intType);
+    retVal = hwReadPhyReg(dev,hwPort, QD_PHY_INT_STATUS_REG, intType);
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
     
     return retVal;
 }
@@ -236,7 +248,12 @@ OUT GT_U16     *intPortMask
 {
     GT_STATUS       retVal;      
     GT_U8           hwPort;         /* the physical port number     */
-	GT_U16			portVec;
+    GT_U16            portVec;
+
+#ifdef GT_USE_MAD
+	if (dev->use_mad==GT_TRUE)
+		return gprtGetPhyIntPortSummary_mad(dev, intPortMask);
+#endif
 
     DBG_INFO(("gprtGetPhyIntPortSummary Called.\n"));
    
@@ -245,35 +262,35 @@ OUT GT_U16     *intPortMask
 
     *intPortMask=0;
 
-	if (IS_IN_DEV_GROUP(dev,DEV_DEV_PHY_INTERRUPT))
-	{
-		return GT_NOT_SUPPORTED;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_DEV_PHY_INTERRUPT))
+    {
+        return GT_NOT_SUPPORTED;
+    }
 
-	if (IS_IN_DEV_GROUP(dev,DEV_INTERNAL_GPHY))
-	{
-	    /* get the interrupt port summary from global register */
-	    retVal = hwGetGlobal2RegField(dev,QD_REG_PHYINT_SOURCE,0,dev->maxPorts,&portVec);
-		GT_GIG_PHY_INT_MASK(dev,portVec);
-		*intPortMask = (GT_U16)GT_PORTVEC_2_LPORTVEC(portVec);
-	}
-	else
-	{
-	    /* get the interrupt port summary from phy */
-		retVal = hwReadPhyReg(dev,hwPort, QD_PHY_INT_PORT_SUMMARY_REG, &portVec);
-		*intPortMask = (GT_U16)GT_PORTVEC_2_LPORTVEC(portVec);
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_INTERNAL_GPHY))
+    {
+        /* get the interrupt port summary from global register */
+        retVal = hwGetGlobal2RegField(dev,QD_REG_PHYINT_SOURCE,0,dev->maxPorts,&portVec);
+        GT_GIG_PHY_INT_MASK(dev,portVec);
+        *intPortMask = (GT_U16)GT_PORTVEC_2_LPORTVEC(portVec);
+    }
+    else
+    {
+        /* get the interrupt port summary from phy */
+        retVal = hwReadPhyReg(dev,hwPort, QD_PHY_INT_PORT_SUMMARY_REG, &portVec);
+        *intPortMask = (GT_U16)GT_PORTVEC_2_LPORTVEC(portVec);
+    }
 
     if(retVal != GT_OK)
-	{
+    {
         DBG_INFO(("Failed.\n"));
-	}
+    }
     else
-	{
+    {
         DBG_INFO(("OK.\n"));
-	}
+    }
 
-	return retVal;
+    return retVal;
 
 }
 

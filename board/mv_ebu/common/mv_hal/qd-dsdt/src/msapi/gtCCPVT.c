@@ -21,9 +21,9 @@
 /****************************************************************************/
 static GT_STATUS pvtOperationPerform
 (
-    IN   GT_QD_DEV 			*dev,
-    IN   GT_PVT_OPERATION	pvtOp,
-    INOUT GT_PVT_OP_DATA	*opData
+    IN   GT_QD_DEV             *dev,
+    IN   GT_PVT_OPERATION    pvtOp,
+    INOUT GT_PVT_OP_DATA    *opData
 );
 
 
@@ -34,7 +34,7 @@ static GT_STATUS pvtOperationPerform
 *       This routine initializes the PVT Table to all one's (initial state)
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
 *       None.
@@ -50,32 +50,32 @@ static GT_STATUS pvtOperationPerform
 *******************************************************************************/
 GT_STATUS gpvtInitialize
 (
-	IN  GT_QD_DEV 	*dev
+    IN  GT_QD_DEV     *dev
 )
 {
-	GT_STATUS       	retVal;
-	GT_PVT_OPERATION	op;
+    GT_STATUS           retVal;
+    GT_PVT_OPERATION    op;
 
-	DBG_INFO(("gpvtInitialize Called.\n"));
+    DBG_INFO(("gpvtInitialize Called.\n"));
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_CROSS_CHIP_PORT_VLAN))
+    if (!IS_IN_DEV_GROUP(dev,DEV_CROSS_CHIP_PORT_VLAN))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	/* Program Tuning register */
-	op = PVT_INITIALIZE;
-	retVal = pvtOperationPerform(dev,op,NULL);
-	if(retVal != GT_OK)
-	{
-	    DBG_INFO(("Failed (pvtOperationPerform returned GT_FAIL).\n"));
-    	return retVal;
-	}
+    /* Program Tuning register */
+    op = PVT_INITIALIZE;
+    retVal = pvtOperationPerform(dev,op,NULL);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed (pvtOperationPerform returned GT_FAIL).\n"));
+        return retVal;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 
 }
 
@@ -85,35 +85,35 @@ GT_STATUS gpvtInitialize
 *
 * DESCRIPTION:
 *       This routine write Cross Chip Port Vlan Data.
-*		Cross chip Port VLAN Data used as a bit mask to limit where cross chip
-*		frames can egress (in chip Port VLANs are masked using gvlnSetPortVlanPorts
-*		API). Cross chip frames are Forward frames that ingress a DSA or Ether 
-*		Type DSA port (see gprtSetFrameMode API). Bit 0 is a mask for port 0, 
-*		bit 1 for port 1, etc. When a port's mask bit is one, frames are allowed 
-*		to egress that port on this device. When a port's mask bit is zero,
-*		frames are not allowed to egress that port on this device.
+*        Cross chip Port VLAN Data used as a bit mask to limit where cross chip
+*        frames can egress (in chip Port VLANs are masked using gvlnSetPortVlanPorts
+*        API). Cross chip frames are Forward frames that ingress a DSA or Ether 
+*        Type DSA port (see gprtSetFrameMode API). Bit 0 is a mask for port 0, 
+*        bit 1 for port 1, etc. When a port's mask bit is one, frames are allowed 
+*        to egress that port on this device. When a port's mask bit is zero,
+*        frames are not allowed to egress that port on this device.
 *
-*		The Cross Chip Port VLAN Table is accessed by ingressing frames based
-*		upon the original source port of the frame using the Forward frame's DSA tag
-*		fields Src_Dev, Src_Port/Src_Trunk and Src_Is_Trunk. The 1 entry of the 512
-*		that is accessed by the frame is:
-*			If 5 Bit Port (in Global 2, offset 0x1D) = 0:
-*				If Src_Is_Trunk = 0   Src_Dev[4:0], Src_Port[3:0]119
-*				If Src_Is_Trunk = 1   Device Number (global offset 0x1C), Src_Trunk[3:0]
-*			If 5 Bit Port (in Global 2, offset 0x1D) = 1:
-*				If Src_Is_Trunk = 0   Src_Dev[3:0], Src_Port[4:0]120
-*				If Src_Is_Trunk = 1   Device Number[3:0], Src_Trunk[4:0]
+*        The Cross Chip Port VLAN Table is accessed by ingressing frames based
+*        upon the original source port of the frame using the Forward frame's DSA tag
+*        fields Src_Dev, Src_Port/Src_Trunk and Src_Is_Trunk. The 1 entry of the 512
+*        that is accessed by the frame is:
+*            If 5 Bit Port (in Global 2, offset 0x1D) = 0:
+*                If Src_Is_Trunk = 0   Src_Dev[4:0], Src_Port[3:0]119
+*                If Src_Is_Trunk = 1   Device Number (global offset 0x1C), Src_Trunk[3:0]
+*            If 5 Bit Port (in Global 2, offset 0x1D) = 1:
+*                If Src_Is_Trunk = 0   Src_Dev[3:0], Src_Port[4:0]120
+*                If Src_Is_Trunk = 1   Device Number[3:0], Src_Trunk[4:0]
 *
-*		Cross chip port VLANs with Trunks are supported in the table where this
-*		device's entries would be stored (defined by this device's Device Number).
-*		This portion of the table is available for Trunk entries because this device's
-*		port VLAN mappings to ports inside this device are masked by the port's
-*		VLAN Table (see gvlnSetPortVlanPorts API).
+*        Cross chip port VLANs with Trunks are supported in the table where this
+*        device's entries would be stored (defined by this device's Device Number).
+*        This portion of the table is available for Trunk entries because this device's
+*        port VLAN mappings to ports inside this device are masked by the port's
+*        VLAN Table (see gvlnSetPortVlanPorts API).
 *
 *
 * INPUTS:
-*		pvtPointer - pointer to the desired entry of PVT (0 ~ 511)
-*		pvtData    - Cross Chip Port Vlan Data
+*        pvtPointer - pointer to the desired entry of PVT (0 ~ 511)
+*        pvtData    - Cross Chip Port Vlan Data
 *
 * OUTPUTS:
 *       None.
@@ -121,7 +121,7 @@ GT_STATUS gpvtInitialize
 * RETURNS:
 *       GT_OK      - on success
 *       GT_FAIL    - on error
-*		GT_BAD_PARAM - if invalid parameter is given
+*        GT_BAD_PARAM - if invalid parameter is given
 *       GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
@@ -130,58 +130,58 @@ GT_STATUS gpvtInitialize
 *******************************************************************************/
 GT_STATUS gpvtWritePVTData
 (
-	IN  GT_QD_DEV 	*dev,
-	IN  GT_U32		pvtPointer,
-	IN  GT_U32		pvtData
+    IN  GT_QD_DEV     *dev,
+    IN  GT_U32        pvtPointer,
+    IN  GT_U32        pvtData
 )
 {
-	GT_STATUS       	retVal;
-	GT_PVT_OPERATION	op;
-	GT_PVT_OP_DATA		opData;
+    GT_STATUS           retVal;
+    GT_PVT_OPERATION    op;
+    GT_PVT_OP_DATA        opData;
 
-	DBG_INFO(("gpvtWritePVTData Called.\n"));
+    DBG_INFO(("gpvtWritePVTData Called.\n"));
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_CROSS_CHIP_PORT_VLAN))
+    if (!IS_IN_DEV_GROUP(dev,DEV_CROSS_CHIP_PORT_VLAN))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* check if the given pointer is valid */
-	if (pvtPointer > 0x1FF)
+    if (pvtPointer > 0x1FF)
     {
         DBG_INFO(("GT_BAD_PARAM\n"));
-		return GT_BAD_PARAM;
+        return GT_BAD_PARAM;
     }
 
     /* check if the given pvtData is valid */
-	if (pvtData >= (GT_U32)(1 << dev->maxPorts))
+    if (pvtData >= (GT_U32)(1 << dev->maxPorts))
     {
         DBG_INFO(("GT_BAD_PARAM\n"));
-		return GT_BAD_PARAM;
+        return GT_BAD_PARAM;
     }
 
-	/* Program Tuning register */
-	op = PVT_WRITE;
-	opData.pvtAddr = pvtPointer;
+    /* Program Tuning register */
+    op = PVT_WRITE;
+    opData.pvtAddr = pvtPointer;
 
-	if((opData.pvtData = GT_LPORTVEC_2_PORTVEC(pvtData)) == GT_INVALID_PORT_VEC)
-	{
-		DBG_INFO(("GT_BAD_PARAM\n"));
-		return GT_BAD_PARAM;
-	}
+    if((opData.pvtData = GT_LPORTVEC_2_PORTVEC(pvtData)) == GT_INVALID_PORT_VEC)
+    {
+        DBG_INFO(("GT_BAD_PARAM\n"));
+        return GT_BAD_PARAM;
+    }
 
 
-	retVal = pvtOperationPerform(dev,op,&opData);
-	if(retVal != GT_OK)
-	{
-		DBG_INFO(("Failed (pvtOperationPerform returned GT_FAIL).\n"));
-		return retVal;
-	}
+    retVal = pvtOperationPerform(dev,op,&opData);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed (pvtOperationPerform returned GT_FAIL).\n"));
+        return retVal;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 
 }
 
@@ -191,42 +191,42 @@ GT_STATUS gpvtWritePVTData
 *
 * DESCRIPTION:
 *       This routine reads Cross Chip Port Vlan Data.
-*		Cross chip Port VLAN Data used as a bit mask to limit where cross chip
-*		frames can egress (in chip Port VLANs are masked using gvlnSetPortVlanPorts
-*		API). Cross chip frames are Forward frames that ingress a DSA or Ether 
-*		Type DSA port (see gprtSetFrameMode API). Bit 0 is a mask for port 0, 
-*		bit 1 for port 1, etc. When a port's mask bit is one, frames are allowed 
-*		to egress that port on this device. When a port's mask bit is zero,
-*		frames are not allowed to egress that port on this device.
+*        Cross chip Port VLAN Data used as a bit mask to limit where cross chip
+*        frames can egress (in chip Port VLANs are masked using gvlnSetPortVlanPorts
+*        API). Cross chip frames are Forward frames that ingress a DSA or Ether 
+*        Type DSA port (see gprtSetFrameMode API). Bit 0 is a mask for port 0, 
+*        bit 1 for port 1, etc. When a port's mask bit is one, frames are allowed 
+*        to egress that port on this device. When a port's mask bit is zero,
+*        frames are not allowed to egress that port on this device.
 *
-*		The Cross Chip Port VLAN Table is accessed by ingressing frames based
-*		upon the original source port of the frame using the Forward frame's DSA tag
-*		fields Src_Dev, Src_Port/Src_Trunk and Src_Is_Trunk. The 1 entry of the 512
-*		that is accessed by the frame is:
-*			If 5 Bit Port (in Global 2, offset 0x1D) = 0:
-*				If Src_Is_Trunk = 0   Src_Dev[4:0], Src_Port[3:0]119
-*				If Src_Is_Trunk = 1   Device Number (global offset 0x1C), Src_Trunk[3:0]
-*			If 5 Bit Port (in Global 2, offset 0x1D) = 1:
-*				If Src_Is_Trunk = 0   Src_Dev[3:0], Src_Port[4:0]120
-*				If Src_Is_Trunk = 1   Device Number[3:0], Src_Trunk[4:0]
+*        The Cross Chip Port VLAN Table is accessed by ingressing frames based
+*        upon the original source port of the frame using the Forward frame's DSA tag
+*        fields Src_Dev, Src_Port/Src_Trunk and Src_Is_Trunk. The 1 entry of the 512
+*        that is accessed by the frame is:
+*            If 5 Bit Port (in Global 2, offset 0x1D) = 0:
+*                If Src_Is_Trunk = 0   Src_Dev[4:0], Src_Port[3:0]119
+*                If Src_Is_Trunk = 1   Device Number (global offset 0x1C), Src_Trunk[3:0]
+*            If 5 Bit Port (in Global 2, offset 0x1D) = 1:
+*                If Src_Is_Trunk = 0   Src_Dev[3:0], Src_Port[4:0]120
+*                If Src_Is_Trunk = 1   Device Number[3:0], Src_Trunk[4:0]
 *
-*		Cross chip port VLANs with Trunks are supported in the table where this
-*		device's entries would be stored (defined by this device's Device Number).
-*		This portion of the table is available for Trunk entries because this device's
-*		port VLAN mappings to ports inside this device are masked by the port's
-*		VLAN Table (see gvlnSetPortVlanPorts API).
+*        Cross chip port VLANs with Trunks are supported in the table where this
+*        device's entries would be stored (defined by this device's Device Number).
+*        This portion of the table is available for Trunk entries because this device's
+*        port VLAN mappings to ports inside this device are masked by the port's
+*        VLAN Table (see gvlnSetPortVlanPorts API).
 *
 *
 * INPUTS:
-*		pvtPointer - pointer to the desired entry of PVT (0 ~ 511)
+*        pvtPointer - pointer to the desired entry of PVT (0 ~ 511)
 *
 * OUTPUTS:
-*		pvtData    - Cross Chip Port Vlan Data
+*        pvtData    - Cross Chip Port Vlan Data
 *
 * RETURNS:
 *       GT_OK      - on success
 *       GT_FAIL    - on error
-*		GT_BAD_PARAM - if invalid parameter is given
+*        GT_BAD_PARAM - if invalid parameter is given
 *       GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
@@ -235,46 +235,46 @@ GT_STATUS gpvtWritePVTData
 *******************************************************************************/
 GT_STATUS gpvtReadPVTData
 (
-	IN  GT_QD_DEV 	*dev,
-	IN  GT_U32		pvtPointer,
-	OUT GT_U32		*pvtData
+    IN  GT_QD_DEV     *dev,
+    IN  GT_U32        pvtPointer,
+    OUT GT_U32        *pvtData
 )
 {
-	GT_STATUS       	retVal;
-	GT_PVT_OPERATION	op;
-	GT_PVT_OP_DATA		opData;
+    GT_STATUS           retVal;
+    GT_PVT_OPERATION    op;
+    GT_PVT_OP_DATA        opData;
 
-	DBG_INFO(("gpvtReadPVTData Called.\n"));
+    DBG_INFO(("gpvtReadPVTData Called.\n"));
 
     /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_CROSS_CHIP_PORT_VLAN))
+    if (!IS_IN_DEV_GROUP(dev,DEV_CROSS_CHIP_PORT_VLAN))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     /* check if the given pointer is valid */
-	if (pvtPointer > 0x1FF)
+    if (pvtPointer > 0x1FF)
     {
         DBG_INFO(("GT_BAD_PARAM\n"));
-		return GT_BAD_PARAM;
+        return GT_BAD_PARAM;
     }
 
-	/* Program Tuning register */
-	op = PVT_READ;
-	opData.pvtAddr = pvtPointer;
-	retVal = pvtOperationPerform(dev,op,&opData);
-	if(retVal != GT_OK)
-	{
-	    DBG_INFO(("Failed (pvtOperationPerform returned GT_FAIL).\n"));
-    	return retVal;
-	}
+    /* Program Tuning register */
+    op = PVT_READ;
+    opData.pvtAddr = pvtPointer;
+    retVal = pvtOperationPerform(dev,op,&opData);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed (pvtOperationPerform returned GT_FAIL).\n"));
+        return retVal;
+    }
 
-	opData.pvtData &= (1 << dev->maxPorts) - 1;
-	*pvtData = GT_PORTVEC_2_LPORTVEC(opData.pvtData);
+    opData.pvtData &= (1 << dev->maxPorts) - 1;
+    *pvtData = GT_PORTVEC_2_LPORTVEC(opData.pvtData);
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 
 }
 
@@ -311,12 +311,30 @@ static GT_STATUS pvtOperationPerform
     INOUT GT_PVT_OP_DATA     *opData
 )
 {
-    GT_STATUS       retVal;	/* Functions return value */
-    GT_U16          data; 	/* temporary Data storage */
+    GT_STATUS       retVal;    /* Functions return value */
+    GT_U16          data;     /* temporary Data storage */
 
     gtSemTake(dev,dev->tblRegsSem,OS_WAIT_FOREVER);
 
     /* Wait until the pvt in ready. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 1;
+  
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_PVT_ADDR;
+      regAccess.rw_reg_list[0].data = 15;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        gtSemGive(dev,dev->tblRegsSem);
+        return retVal;
+      }
+    }
+#else
     data = 1;
     while(data == 1)
     {
@@ -327,73 +345,93 @@ static GT_STATUS pvtOperationPerform
             return retVal;
         }
     }
+#endif
 
     /* Set the PVT Operation register */
-	switch (pvtOp)
-	{
-		case PVT_INITIALIZE:
-			data = (1 << 15) | (pvtOp << 12);
-			retVal = hwWriteGlobal2Reg(dev,QD_REG_PVT_ADDR,data);
-	        if(retVal != GT_OK)
-    	    {
-        	    gtSemGive(dev,dev->tblRegsSem);
-            	return retVal;
-	        }
-			break;
+    switch (pvtOp)
+    {
+        case PVT_INITIALIZE:
+            data = (1 << 15) | (pvtOp << 12);
+            retVal = hwWriteGlobal2Reg(dev,QD_REG_PVT_ADDR,data);
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->tblRegsSem);
+                return retVal;
+            }
+            break;
 
-		case PVT_WRITE:
-			data = (GT_U16)opData->pvtData;
-			retVal = hwWriteGlobal2Reg(dev,QD_REG_PVT_DATA,data);
-	        if(retVal != GT_OK)
-    	    {
-        	    gtSemGive(dev,dev->tblRegsSem);
-            	return retVal;
-	        }
+        case PVT_WRITE:
+            data = (GT_U16)opData->pvtData;
+            retVal = hwWriteGlobal2Reg(dev,QD_REG_PVT_DATA,data);
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->tblRegsSem);
+                return retVal;
+            }
 
-			data = (GT_U16)((1 << 15) | (pvtOp << 12) | opData->pvtAddr);
-			retVal = hwWriteGlobal2Reg(dev,QD_REG_PVT_ADDR,data);
-	        if(retVal != GT_OK)
-    	    {
-        	    gtSemGive(dev,dev->tblRegsSem);
-            	return retVal;
-	        }
-			break;
+            data = (GT_U16)((1 << 15) | (pvtOp << 12) | opData->pvtAddr);
+            retVal = hwWriteGlobal2Reg(dev,QD_REG_PVT_ADDR,data);
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->tblRegsSem);
+                return retVal;
+            }
+            break;
 
-		case PVT_READ:
-			data = (GT_U16)((1 << 15) | (pvtOp << 12) | opData->pvtAddr);
-			retVal = hwWriteGlobal2Reg(dev,QD_REG_PVT_ADDR,data);
-	        if(retVal != GT_OK)
-    	    {
-        	    gtSemGive(dev,dev->tblRegsSem);
-            	return retVal;
-	        }
+        case PVT_READ:
+            data = (GT_U16)((1 << 15) | (pvtOp << 12) | opData->pvtAddr);
+            retVal = hwWriteGlobal2Reg(dev,QD_REG_PVT_ADDR,data);
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->tblRegsSem);
+                return retVal;
+            }
 
-		    data = 1;
-		    while(data == 1)
-		    {
-		        retVal = hwGetGlobal2RegField(dev,QD_REG_PVT_ADDR,15,1,&data);
-		        if(retVal != GT_OK)
-		        {
-		            gtSemGive(dev,dev->tblRegsSem);
-		            return retVal;
-        		}
-		    }
+#ifdef GT_RMGMT_ACCESS
+            {
+              HW_DEV_REG_ACCESS regAccess;
 
-			retVal = hwReadGlobal2Reg(dev,QD_REG_PVT_DATA,&data);
-			opData->pvtData = (GT_U32)data;
-	        if(retVal != GT_OK)
-    	    {
-        	    gtSemGive(dev,dev->tblRegsSem);
-            	return retVal;
-	        }
-	
-			break;
+              regAccess.entries = 1;
+  
+              regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+              regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL2_REG_ACCESS);
+              regAccess.rw_reg_list[0].reg = QD_REG_PVT_ADDR;
+              regAccess.rw_reg_list[0].data = 15;
+              retVal = hwAccessMultiRegs(dev, &regAccess);
+              if(retVal != GT_OK)
+              {
+                gtSemGive(dev,dev->tblRegsSem);
+                return retVal;
+              }
+            }
+#else
+            data = 1;
+            while(data == 1)
+            {
+                retVal = hwGetGlobal2RegField(dev,QD_REG_PVT_ADDR,15,1,&data);
+                if(retVal != GT_OK)
+                {
+                    gtSemGive(dev,dev->tblRegsSem);
+                    return retVal;
+                }
+            }
+#endif
 
-		default:
-			
-			gtSemGive(dev,dev->tblRegsSem);
-			return GT_FAIL;
-	}
+            retVal = hwReadGlobal2Reg(dev,QD_REG_PVT_DATA,&data);
+            opData->pvtData = (GT_U32)data;
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->tblRegsSem);
+                return retVal;
+            }
+    
+            break;
+
+        default:
+            
+            gtSemGive(dev,dev->tblRegsSem);
+            return GT_FAIL;
+    }
 
     gtSemGive(dev,dev->tblRegsSem);
     return retVal;

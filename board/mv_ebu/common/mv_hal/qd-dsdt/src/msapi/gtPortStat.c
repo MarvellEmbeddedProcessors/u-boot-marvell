@@ -48,11 +48,11 @@ GT_STATUS gprtSetCtrMode
 
     DBG_INFO(("gprtSetCtrMode Called.\n"));
 
-	if (IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
     retVal = hwSetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL,8,1,(GT_U16)mode);
     if(retVal != GT_OK)
@@ -99,11 +99,11 @@ GT_STATUS gprtClearAllCtr
 
     DBG_INFO(("gprtClearAllCtr Called.\n"));
 
-	if (IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
     /* get counter current mode  */
     if(hwGetGlobalRegField(dev,QD_REG_GLOBAL_CONTROL,8,1,&mode) != GT_OK)
@@ -160,11 +160,11 @@ GT_STATUS gprtGetPortCtr
 
     DBG_INFO(("gprtGetPortCtr Called.\n"));
 
-	if (IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
     if(ctr  == NULL)
     {
@@ -189,18 +189,19 @@ GT_STATUS gprtGetPortCtr
     }
     ctr->txCtr = count;
 
-	if (IS_IN_DEV_GROUP(dev,DEV_ENHANCED_FE_SWITCH))
-	{
-	    /* get dropped counter value  */
-    	if(hwReadPortReg(dev,hwPort, QD_REG_DROPPED_COUNTER, &count) != GT_OK)
-	    {
-    	    DBG_INFO(("Failed (Read Tx).\n"));
-        	return GT_FAIL;
-	    }
-		ctr->dropped = count;
-	}
-	else
-		ctr->dropped = 0;
+    if ((IS_IN_DEV_GROUP(dev,DEV_ENHANCED_FE_SWITCH)) ||
+		(IS_IN_DEV_GROUP(dev,DEV_FE_AVB_FAMILY)))
+    {
+        /* get dropped counter value  */
+        if(hwReadPortReg(dev,hwPort, QD_REG_DROPPED_COUNTER, &count) != GT_OK)
+        {
+            DBG_INFO(("Failed (Read Tx).\n"));
+            return GT_FAIL;
+        }
+        ctr->dropped = count;
+    }
+    else
+        ctr->dropped = 0;
 
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -236,16 +237,18 @@ GT_STATUS gprtGetPortCtr2
     OUT GT_PORT_STAT2   *ctr
 )
 {
+#ifndef GT_RMGMT_ACCESS
     GT_U16          count;          /* counters current value       */
+#endif
     GT_U8           hwPort;         /* physical port number         */
 
     DBG_INFO(("gprtGetPortCtr2 Called.\n"));
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
-	{
-		DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
-	}
+    if (!IS_IN_DEV_GROUP(dev,DEV_88E6093_FAMILY))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
     if(ctr  == NULL)
     {
@@ -256,6 +259,38 @@ GT_STATUS gprtGetPortCtr2
     /* translate logical port to physical port */
     hwPort = GT_LPORT_2_PORT(port);
 
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 4;
+  
+      regAccess.rw_reg_list[0].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, hwPort, PORT_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_INDISCARD_LO_COUNTER;
+      regAccess.rw_reg_list[0].data = 0;
+      regAccess.rw_reg_list[1].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[1].addr = CALC_SMI_DEV_ADDR(dev, hwPort, PORT_ACCESS);
+      regAccess.rw_reg_list[1].reg = QD_REG_INDISCARD_HI_COUNTER;
+      regAccess.rw_reg_list[1].data = 0;
+      regAccess.rw_reg_list[2].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[2].addr = CALC_SMI_DEV_ADDR(dev, hwPort, PORT_ACCESS);
+      regAccess.rw_reg_list[2].reg = QD_REG_INFILTERED_COUNTER;
+      regAccess.rw_reg_list[2].data = 0;
+      regAccess.rw_reg_list[3].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[3].addr = CALC_SMI_DEV_ADDR(dev, hwPort, PORT_ACCESS);
+      regAccess.rw_reg_list[3].reg = QD_REG_OUTFILTERED_COUNTER;
+      regAccess.rw_reg_list[3].data = 0;
+      if(hwAccessMultiRegs(dev, &regAccess) != GT_OK)
+      {
+        return GT_FAIL;
+      }
+        ctr->inDiscardLo = qdLong2Short(regAccess.rw_reg_list[0].data);
+        ctr->inDiscardHi = qdLong2Short(regAccess.rw_reg_list[1].data);
+        ctr->inFiltered = qdLong2Short(regAccess.rw_reg_list[2].data);
+        ctr->outFiltered = qdLong2Short(regAccess.rw_reg_list[3].data);
+    }
+#else
     /* get InDiscard Low counter value  */
     if(hwReadPortReg(dev,hwPort, QD_REG_INDISCARD_LO_COUNTER, &count) != GT_OK)
     {
@@ -286,6 +321,7 @@ GT_STATUS gprtGetPortCtr2
         return GT_FAIL;
     }
     ctr->outFiltered = count;
+#endif
 
     DBG_INFO(("OK.\n"));
     return GT_OK;

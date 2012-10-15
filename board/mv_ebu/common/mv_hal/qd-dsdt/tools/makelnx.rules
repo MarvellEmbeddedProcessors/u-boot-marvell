@@ -47,8 +47,9 @@ deps : $(CSOURCES)
 
 .PHONY: clean
 clean:
-	cd $(OBJDIR); $(RM) *.o
-	cd $(OBJDIR); $(RM) *.map
+#	cd $(OBJDIR); $(RM) *.o
+#	cd $(OBJDIR); $(RM) *.map
+	$(RM) -f -r $(OBJDIR)
 	$(RM) $(DEPENDENCIES)
 
 FORCE :

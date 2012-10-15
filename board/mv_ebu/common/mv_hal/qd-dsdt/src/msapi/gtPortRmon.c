@@ -36,17 +36,17 @@ static GT_STATUS statsCapture
 
 static GT_STATUS statsReadCounter
 (
-    IN   GT_QD_DEV		*dev,
-    IN   GT_U32			counter,
-    OUT  GT_U32			*statsData
+    IN   GT_QD_DEV        *dev,
+    IN   GT_U32            counter,
+    OUT  GT_U32            *statsData
 );
 
 static GT_STATUS statsReadRealtimeCounter
 (
     IN   GT_QD_DEV      *dev,
-    IN   GT_U8 		    port,
-    IN   GT_U32			counter,
-    OUT  GT_U32		    *statsData
+    IN   GT_U8             port,
+    IN   GT_U32            counter,
+    OUT  GT_U32            *statsData
 );
 
 
@@ -77,25 +77,25 @@ GT_STATUS gstatsFlushAll
         IN GT_QD_DEV  *dev
 )
 {
-	GT_STATUS       	retVal;
+    GT_STATUS           retVal;
 
-	DBG_INFO(("gstatsFlushAll Called.\n"));
+    DBG_INFO(("gstatsFlushAll Called.\n"));
 
     /* check if device supports this feature */
-	if((retVal = IS_VALID_API_CALL(dev,1, DEV_RMON)) != GT_OK)
-	{
-		return retVal;
-	}
+    if((retVal = IS_VALID_API_CALL(dev,1, DEV_RMON)) != GT_OK)
+    {
+        return retVal;
+    }
 
-	retVal = statsOperationPerform(dev,STATS_FLUSH_ALL,0,0,NULL);
-	if(retVal != GT_OK)
-	{
-	    DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
-    	return retVal;
-	}
+    retVal = statsOperationPerform(dev,STATS_FLUSH_ALL,0,0,NULL);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
+        return retVal;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 
 }
 
@@ -125,32 +125,32 @@ GT_STATUS gstatsFlushAll
 GT_STATUS gstatsFlushPort
 (
     IN GT_QD_DEV  *dev,
-    IN GT_LPORT	  port
+    IN GT_LPORT      port
 )
 {
-	GT_STATUS	retVal;
-    GT_U8		hwPort;         /* physical port number         */
+    GT_STATUS    retVal;
+    GT_U8        hwPort;         /* physical port number         */
 
-	DBG_INFO(("gstatsFlushPort Called.\n"));
+    DBG_INFO(("gstatsFlushPort Called.\n"));
 
     /* translate logical port to physical port */
     hwPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
-	{
-		return retVal;
-	}
+    if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
+    {
+        return retVal;
+    }
 
-	retVal = statsOperationPerform(dev,STATS_FLUSH_PORT,hwPort,0,NULL);
-	if(retVal != GT_OK)
-	{
-	    DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
-    	return retVal;
-	}
+    retVal = statsOperationPerform(dev,STATS_FLUSH_PORT,hwPort,0,NULL);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
+        return retVal;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 
 }
 
@@ -158,63 +158,63 @@ GT_STATUS gstatsFlushPort
 * gstatsGetPortCounter
 *
 * DESCRIPTION:
-*		This routine gets a specific counter of the given port
+*        This routine gets a specific counter of the given port
 *
 * INPUTS:
-*		port - the logical port number.
-*		counter - the counter which will be read
+*        port - the logical port number.
+*        counter - the counter which will be read
 *
 * OUTPUTS:
-*		statsData - points to 32bit data storage for the MIB counter
+*        statsData - points to 32bit data storage for the MIB counter
 *
 * RETURNS:
-*		GT_OK      - on success
-*		GT_FAIL    - on error
+*        GT_OK      - on success
+*        GT_FAIL    - on error
 *
 * COMMENTS:
-*		None
+*        None
 *
 * GalTis:
 *
 *******************************************************************************/
 GT_STATUS gstatsGetPortCounter
 (
-	IN  GT_QD_DEV		*dev,
-	IN  GT_LPORT		port,
-	IN  GT_STATS_COUNTERS	counter,
-	OUT GT_U32			*statsData
+    IN  GT_QD_DEV        *dev,
+    IN  GT_LPORT        port,
+    IN  GT_STATS_COUNTERS    counter,
+    OUT GT_U32            *statsData
 )
 {
-    GT_STATUS	retVal;
-    GT_U8		hwPort;         /* physical port number         */
+    GT_STATUS    retVal;
+    GT_U8        hwPort;         /* physical port number         */
 
-	DBG_INFO(("gstatsFlushPort Called.\n"));
+    DBG_INFO(("gstatsFlushPort Called.\n"));
 
     /* translate logical port to physical port */
     hwPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
-	{
-		return retVal;
-	}
-
-	/* Gigabit Switch does not support this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_RMON_TYPE_1))
+    if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
     {
-        DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return retVal;
     }
 
-	retVal = statsOperationPerform(dev,STATS_READ_COUNTER,hwPort,counter,(GT_VOID*)statsData);
-	if(retVal != GT_OK)
-	{
-	    DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
-    	return retVal;
-	}
+    /* Gigabit Switch does not support this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_RMON_TYPE_1))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    retVal = statsOperationPerform(dev,STATS_READ_COUNTER,hwPort,counter,(GT_VOID*)statsData);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
+        return retVal;
+    }
+
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 
 }
 
@@ -244,40 +244,40 @@ GT_STATUS gstatsGetPortCounter
 GT_STATUS gstatsGetPortAllCounters
 (
     IN  GT_QD_DEV               *dev,
-    IN  GT_LPORT		port,
-    OUT GT_STATS_COUNTER_SET	*statsCounterSet
+    IN  GT_LPORT        port,
+    OUT GT_STATS_COUNTER_SET    *statsCounterSet
 )
 {
-	GT_STATUS	retVal;
-    GT_U8		hwPort;         /* physical port number         */
+    GT_STATUS    retVal;
+    GT_U8        hwPort;         /* physical port number         */
 
-	DBG_INFO(("gstatsFlushPort Called.\n"));
+    DBG_INFO(("gstatsFlushPort Called.\n"));
 
     /* translate logical port to physical port */
     hwPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
-	{
-		return retVal;
-	}
-
-	/* Gigabit Switch does not support this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_RMON_TYPE_1))
+    if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
     {
-        DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return retVal;
     }
 
-	retVal = statsOperationPerform(dev,STATS_READ_ALL,hwPort,0,(GT_VOID*)statsCounterSet);
-	if(retVal != GT_OK)
-	{
-	    DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
-    	return retVal;
-	}
+    /* Gigabit Switch does not support this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_RMON_TYPE_1))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    retVal = statsOperationPerform(dev,STATS_READ_ALL,hwPort,0,(GT_VOID*)statsCounterSet);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
+        return retVal;
+    }
+
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 
 }
 
@@ -285,60 +285,60 @@ GT_STATUS gstatsGetPortAllCounters
 * gstatsGetPortCounter2
 *
 * DESCRIPTION:
-*		This routine gets a specific counter of the given port
+*        This routine gets a specific counter of the given port
 *
 * INPUTS:
-*		port - the logical port number.
-*		counter - the counter which will be read
+*        port - the logical port number.
+*        counter - the counter which will be read
 *
 * OUTPUTS:
-*		statsData - points to 32bit data storage for the MIB counter
+*        statsData - points to 32bit data storage for the MIB counter
 *
 * RETURNS:
-*		GT_OK      - on success
-*		GT_FAIL    - on error
+*        GT_OK      - on success
+*        GT_FAIL    - on error
 *
 * COMMENTS:
 *
 *******************************************************************************/
 GT_STATUS gstatsGetPortCounter2
 (
-	IN  GT_QD_DEV		*dev,
-	IN  GT_LPORT		port,
-	IN  GT_STATS_COUNTERS2	counter,
-	OUT GT_U32			*statsData
+    IN  GT_QD_DEV        *dev,
+    IN  GT_LPORT        port,
+    IN  GT_STATS_COUNTERS2    counter,
+    OUT GT_U32            *statsData
 )
 {
-    GT_STATUS	retVal;
-    GT_U8		hwPort;         /* physical port number         */
+    GT_STATUS    retVal;
+    GT_U8        hwPort;         /* physical port number         */
 
-	DBG_INFO(("gstatsGetPortCounters2 Called.\n"));
+    DBG_INFO(("gstatsGetPortCounters2 Called.\n"));
 
     /* translate logical port to physical port */
     hwPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
-	{
-		return retVal;
-	}
-
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_RMON_TYPE_2))
+    if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
     {
-        DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return retVal;
     }
 
-	retVal = statsOperationPerform(dev,STATS_READ_COUNTER,hwPort,counter,(GT_VOID*)statsData);
-	if(retVal != GT_OK)
-	{
-	    DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
-    	return retVal;
-	}
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_RMON_TYPE_2))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    retVal = statsOperationPerform(dev,STATS_READ_COUNTER,hwPort,counter,(GT_VOID*)statsData);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
+        return retVal;
+    }
+
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 
 }
 
@@ -347,58 +347,58 @@ GT_STATUS gstatsGetPortCounter2
 * gstatsGetPortAllCounters2
 *
 * DESCRIPTION:
-*		This routine gets all counters of the given port
+*        This routine gets all counters of the given port
 *
 * INPUTS:
-*		port - the logical port number.
+*        port - the logical port number.
 *
 * OUTPUTS:
-*		statsCounterSet - points to GT_STATS_COUNTER_SET for the MIB counters
+*        statsCounterSet - points to GT_STATS_COUNTER_SET for the MIB counters
 *
 * RETURNS:
-*		GT_OK      - on success
-*		GT_FAIL    - on error
+*        GT_OK      - on success
+*        GT_FAIL    - on error
 *
 * COMMENTS:
 *
 *******************************************************************************/
 GT_STATUS gstatsGetPortAllCounters2
 (
-	IN  GT_QD_DEV		*dev,
-	IN  GT_LPORT		port,
-	OUT GT_STATS_COUNTER_SET2	*statsCounterSet
+    IN  GT_QD_DEV        *dev,
+    IN  GT_LPORT        port,
+    OUT GT_STATS_COUNTER_SET2    *statsCounterSet
 )
 {
-	GT_STATUS	retVal;
-    GT_U8		hwPort;         /* physical port number         */
+    GT_STATUS    retVal;
+    GT_U8        hwPort;         /* physical port number         */
 
-	DBG_INFO(("gstatsGetPortAllCounters2 Called.\n"));
+    DBG_INFO(("gstatsGetPortAllCounters2 Called.\n"));
 
     /* translate logical port to physical port */
     hwPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
-	{
-		return retVal;
-	}
-
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_RMON_TYPE_2))
+    if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
     {
-        DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return retVal;
     }
 
-	retVal = statsOperationPerform(dev,STATS_READ_ALL,hwPort,0,(GT_VOID*)statsCounterSet);
-	if(retVal != GT_OK)
-	{
-	    DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
-    	return retVal;
-	}
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_RMON_TYPE_2))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    retVal = statsOperationPerform(dev,STATS_READ_ALL,hwPort,0,(GT_VOID*)statsCounterSet);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
+        return retVal;
+    }
+
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 
 }
 
@@ -406,61 +406,61 @@ GT_STATUS gstatsGetPortAllCounters2
 * gstatsGetPortCounter3
 *
 * DESCRIPTION:
-*		This routine gets a specific counter of the given port
+*        This routine gets a specific counter of the given port
 *
 * INPUTS:
-*		port - the logical port number.
-*		counter - the counter which will be read
+*        port - the logical port number.
+*        counter - the counter which will be read
 *
 * OUTPUTS:
-*		statsData - points to 32bit data storage for the MIB counter
+*        statsData - points to 32bit data storage for the MIB counter
 *
 * RETURNS:
-*		GT_OK      - on success
-*		GT_FAIL    - on error
+*        GT_OK      - on success
+*        GT_FAIL    - on error
 *
 * COMMENTS:
-*		This function supports Gigabit Switch and Spinnaker family
+*        This function supports Gigabit Switch and Spinnaker family
 *
 *******************************************************************************/
 GT_STATUS gstatsGetPortCounter3
 (
-	IN  GT_QD_DEV		*dev,
-	IN  GT_LPORT		port,
-	IN  GT_STATS_COUNTERS3	counter,
-	OUT GT_U32			*statsData
+    IN  GT_QD_DEV        *dev,
+    IN  GT_LPORT        port,
+    IN  GT_STATS_COUNTERS3    counter,
+    OUT GT_U32            *statsData
 )
 {
-    GT_STATUS	retVal;
-    GT_U8		hwPort;         /* physical port number         */
+    GT_STATUS    retVal;
+    GT_U8        hwPort;         /* physical port number         */
 
-	DBG_INFO(("gstatsGetPortCounters3 Called.\n"));
+    DBG_INFO(("gstatsGetPortCounters3 Called.\n"));
 
     /* translate logical port to physical port */
     hwPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
-	{
-		return retVal;
-	}
-
-	/* Only 88E6093 Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_RMON_TYPE_3))
+    if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
     {
-        DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return retVal;
     }
 
-	retVal = statsOperationPerform(dev,STATS_READ_COUNTER,hwPort,counter,(GT_VOID*)statsData);
-	if(retVal != GT_OK)
-	{
-	    DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
-    	return retVal;
-	}
+    /* Only 88E6093 Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_RMON_TYPE_3))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    retVal = statsOperationPerform(dev,STATS_READ_COUNTER,hwPort,counter,(GT_VOID*)statsData);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
+        return retVal;
+    }
+
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 
 }
 
@@ -469,59 +469,59 @@ GT_STATUS gstatsGetPortCounter3
 * gstatsGetPortAllCounters3
 *
 * DESCRIPTION:
-*		This routine gets all counters of the given port
+*        This routine gets all counters of the given port
 *
 * INPUTS:
-*		port - the logical port number.
+*        port - the logical port number.
 *
 * OUTPUTS:
-*		statsCounterSet - points to GT_STATS_COUNTER_SET for the MIB counters
+*        statsCounterSet - points to GT_STATS_COUNTER_SET for the MIB counters
 *
 * RETURNS:
-*		GT_OK      - on success
-*		GT_FAIL    - on error
+*        GT_OK      - on success
+*        GT_FAIL    - on error
 *
 * COMMENTS:
-*		This function supports Gigabit Switch and Spinnaker family
+*        This function supports Gigabit Switch and Spinnaker family
 *
 *******************************************************************************/
 GT_STATUS gstatsGetPortAllCounters3
 (
-	IN  GT_QD_DEV		*dev,
-	IN  GT_LPORT		port,
-	OUT GT_STATS_COUNTER_SET3	*statsCounterSet
+    IN  GT_QD_DEV        *dev,
+    IN  GT_LPORT        port,
+    OUT GT_STATS_COUNTER_SET3    *statsCounterSet
 )
 {
-	GT_STATUS	retVal;
-    GT_U8		hwPort;         /* physical port number         */
+    GT_STATUS    retVal;
+    GT_U8        hwPort;         /* physical port number         */
 
-	DBG_INFO(("gstatsGetPortAllCounters3 Called.\n"));
+    DBG_INFO(("gstatsGetPortAllCounters3 Called.\n"));
 
     /* translate logical port to physical port */
     hwPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
-	{
-		return retVal;
-	}
-
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_RMON_TYPE_3))
+    if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
     {
-        DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return retVal;
     }
 
-	retVal = statsOperationPerform(dev,STATS_READ_ALL,hwPort,0,(GT_VOID*)statsCounterSet);
-	if(retVal != GT_OK)
-	{
-	    DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
-    	return retVal;
-	}
+    /* Only Gigabit Switch supports this status. */
+    if (!IS_IN_DEV_GROUP(dev,DEV_RMON_TYPE_3))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    retVal = statsOperationPerform(dev,STATS_READ_ALL,hwPort,0,(GT_VOID*)statsCounterSet);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
+        return retVal;
+    }
+
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 
 }
 
@@ -529,39 +529,40 @@ GT_STATUS gstatsGetPortAllCounters3
 * gstatsGetHistogramMode
 *
 * DESCRIPTION:
-*		This routine gets the Histogram Counters Mode.
+*        This routine gets the Histogram Counters Mode.
 *
 * INPUTS:
-*		None.
+*        None.
 *
 * OUTPUTS:
-*		mode - Histogram Mode (GT_COUNT_RX_ONLY, GT_COUNT_TX_ONLY, 
-*					and GT_COUNT_RX_TX)
+*        mode - Histogram Mode (GT_COUNT_RX_ONLY, GT_COUNT_TX_ONLY, 
+*                    and GT_COUNT_RX_TX)
 *
 * RETURNS:
-*		GT_OK           - on success
-*		GT_BAD_PARAM    - on bad parameter
-*		GT_FAIL         - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK           - on success
+*        GT_BAD_PARAM    - on bad parameter
+*        GT_FAIL         - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
 *
 *******************************************************************************/
 GT_STATUS gstatsGetHistogramMode
 (
-	IN  GT_QD_DEV				*dev,
-	OUT GT_HISTOGRAM_MODE	*mode
+    IN  GT_QD_DEV                *dev,
+    OUT GT_HISTOGRAM_MODE    *mode
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
 
     DBG_INFO(("gstatsGetHistogramMode Called.\n"));
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_GIGABIT_MANAGED_SWITCH|DEV_RMON_REALTIME_SUPPORT))
+    /* Only Gigabit Switch supports this status. */
+    if (!((IS_IN_DEV_GROUP(dev,DEV_GIGABIT_MANAGED_SWITCH)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_RMON_REALTIME_SUPPORT))))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
     if(mode == NULL)
@@ -578,8 +579,8 @@ GT_STATUS gstatsGetHistogramMode
         return retVal;
     }
 
-	*mode = data - 1; /* Software definition starts from 0 ~ 2, 
-						while hardware supports the values from 1 to 3 */
+    *mode = data - 1; /* Software definition starts from 0 ~ 2, 
+                        while hardware supports the values from 1 to 3 */
 
     DBG_INFO(("OK.\n"));
     return GT_OK;
@@ -589,53 +590,54 @@ GT_STATUS gstatsGetHistogramMode
 * gstatsSetHistogramMode
 *
 * DESCRIPTION:
-*		This routine sets the Histogram Counters Mode.
+*        This routine sets the Histogram Counters Mode.
 *
 * INPUTS:
-*		mode - Histogram Mode (GT_COUNT_RX_ONLY, GT_COUNT_TX_ONLY, 
-*					and GT_COUNT_RX_TX)
+*        mode - Histogram Mode (GT_COUNT_RX_ONLY, GT_COUNT_TX_ONLY, 
+*                    and GT_COUNT_RX_TX)
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
-*		GT_OK           - on success
-*		GT_BAD_PARAM    - on bad parameter
-*		GT_FAIL         - on error
-*		GT_NOT_SUPPORTED - if current device does not support this feature.
+*        GT_OK           - on success
+*        GT_BAD_PARAM    - on bad parameter
+*        GT_FAIL         - on error
+*        GT_NOT_SUPPORTED - if current device does not support this feature.
 *
 * COMMENTS:
 *
 *******************************************************************************/
 GT_STATUS gstatsSetHistogramMode
 (
-	IN GT_QD_DEV 				*dev,
-	IN GT_HISTOGRAM_MODE		mode
+    IN GT_QD_DEV                 *dev,
+    IN GT_HISTOGRAM_MODE        mode
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data;           /* The register's read data.    */
 
     DBG_INFO(("gstatsSetHistogramMode Called.\n"));
-	/* Only Gigabit Switch supports this status. */
-	if (!IS_IN_DEV_GROUP(dev,DEV_GIGABIT_MANAGED_SWITCH|DEV_RMON_REALTIME_SUPPORT))
+    /* Only Gigabit Switch supports this status. */
+    if (!((IS_IN_DEV_GROUP(dev,DEV_GIGABIT_MANAGED_SWITCH)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_RMON_REALTIME_SUPPORT))))
     {
         DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return GT_NOT_SUPPORTED;
     }
 
-	switch (mode)
-	{
-		case GT_COUNT_RX_ONLY:
-		case GT_COUNT_TX_ONLY:
-		case GT_COUNT_RX_TX:
-			break;
-		default:
-	        DBG_INFO(("Failed.\n"));
-    	    return GT_BAD_PARAM;
+    switch (mode)
+    {
+        case GT_COUNT_RX_ONLY:
+        case GT_COUNT_TX_ONLY:
+        case GT_COUNT_RX_TX:
+            break;
+        default:
+            DBG_INFO(("Failed.\n"));
+            return GT_BAD_PARAM;
     }
 
-	data = (GT_U16)mode + 1;
+    data = (GT_U16)mode + 1;
 
     /* Set the Histogram mode bit.                */
     retVal = hwSetGlobalRegField(dev,QD_REG_STATS_OPERATION,10,2,data);
@@ -654,60 +656,60 @@ GT_STATUS gstatsSetHistogramMode
 * gstatsGetRealtimePortCounter
 *
 * DESCRIPTION:
-*		This routine gets a specific realtime counter of the given port
+*        This routine gets a specific realtime counter of the given port
 *
 * INPUTS:
-*		port - the logical port number.
-*		counter - the counter which will be read
+*        port - the logical port number.
+*        counter - the counter which will be read
 *
 * OUTPUTS:
-*		statsData - points to 32bit data storage for the MIB counter
+*        statsData - points to 32bit data storage for the MIB counter
 *
 * RETURNS:
-*		GT_OK      - on success
-*		GT_FAIL    - on error
+*        GT_OK      - on success
+*        GT_FAIL    - on error
 *
 * COMMENTS:
 *
 *******************************************************************************/
 GT_STATUS gstatsGetRealtimePortCounter
 (
-	IN  GT_QD_DEV		*dev,
-	IN  GT_LPORT		port,
-	IN  GT_STATS_COUNTERS3	counter,
-	OUT GT_U32			*statsData
+    IN  GT_QD_DEV        *dev,
+    IN  GT_LPORT        port,
+    IN  GT_STATS_COUNTERS3    counter,
+    OUT GT_U32            *statsData
 )
 {
-    GT_STATUS	retVal;
-    GT_U8		hwPort;         /* physical port number         */
+    GT_STATUS    retVal;
+    GT_U8        hwPort;         /* physical port number         */
 
-	DBG_INFO(("gstatsGetRealtimePortCounter Called.\n"));
+    DBG_INFO(("gstatsGetRealtimePortCounter Called.\n"));
 
     /* translate logical port to physical port */
     hwPort = GT_LPORT_2_PORT(port);
 
     /* check if device supports this feature */
-	if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
-	{
-		return retVal;
-	}
-
-    /* check if device supports this feature */
-	if (!IS_IN_DEV_GROUP(dev,DEV_RMON_REALTIME_SUPPORT))
+    if((retVal = IS_VALID_API_CALL(dev,hwPort, DEV_RMON)) != GT_OK)
     {
-        DBG_INFO(("GT_NOT_SUPPORTED\n"));
-		return GT_NOT_SUPPORTED;
+        return retVal;
     }
 
-	retVal = statsOperationPerform(dev,STATS_READ_REALTIME_COUNTER,hwPort,counter,(GT_VOID*)statsData);
-	if(retVal != GT_OK)
-	{
-	    DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
-    	return retVal;
-	}
+    /* check if device supports this feature */
+    if (!IS_IN_DEV_GROUP(dev,DEV_RMON_REALTIME_SUPPORT))
+    {
+        DBG_INFO(("GT_NOT_SUPPORTED\n"));
+        return GT_NOT_SUPPORTED;
+    }
 
-	DBG_INFO(("OK.\n"));
-	return GT_OK;
+    retVal = statsOperationPerform(dev,STATS_READ_REALTIME_COUNTER,hwPort,counter,(GT_VOID*)statsData);
+    if(retVal != GT_OK)
+    {
+        DBG_INFO(("Failed (statsOperationPerform returned GT_FAIL).\n"));
+        return retVal;
+    }
+
+    DBG_INFO(("OK.\n"));
+    return GT_OK;
 
 }
 
@@ -752,31 +754,58 @@ static GT_STATUS statsOperationPerform
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data,histoData; /* Data to be set into the      */
                                     /* register.                    */
-	GT_U32 statsCounter;
-	GT_U32 lastCounter;
-	GT_U16			portNum;
+    GT_U32 statsCounter;
+    GT_U32 lastCounter;
+    GT_U16            portNum;
 
     gtSemTake(dev,dev->statsRegsSem,OS_WAIT_FOREVER);
 
-	if (!IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH|DEV_RMON_REALTIME_SUPPORT))
+    if (!((IS_IN_DEV_GROUP(dev,DEV_GIGABIT_SWITCH)) ||
+        (IS_IN_DEV_GROUP(dev,DEV_RMON_REALTIME_SUPPORT))))
     {
-		lastCounter = (GT_U32)STATS_OutDiscards;
+      if (IS_IN_DEV_GROUP(dev,DEV_MELODY_SWITCH))
+        lastCounter = (GT_U32)STATS2_Late;
+      else
+        lastCounter = (GT_U32)STATS_OutDiscards;
     }
-	else
-	{
-		lastCounter = (GT_U32)STATS2_Late;
-	}
+    else
+    {
+        lastCounter = (GT_U32)STATS2_Late;
+    }
 
-	if (IS_IN_DEV_GROUP(dev,DEV_RMON_PORT_BITS))
-	{
-		portNum = (port + 1) << 5;
-	}
-	else
-	{
-		portNum = (GT_U16)port;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_RMON_PORT_BITS))
+    {
+        portNum = (port + 1) << 5;
+    }
+    else
+    {
+        portNum = (GT_U16)port;
+    }
 
     /* Wait until the stats in ready. */
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 2;
+  
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_STATS_OPERATION;
+      regAccess.rw_reg_list[0].data = 15;
+      regAccess.rw_reg_list[1].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[1].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[1].reg = QD_REG_STATS_OPERATION;
+      regAccess.rw_reg_list[1].data = 0;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        gtSemGive(dev,dev->statsRegsSem);
+        return retVal;
+      }
+      histoData = qdLong2Short(regAccess.rw_reg_list[1].data);
+    }
+#else
     data = 1;
     while(data == 1)
     {
@@ -789,80 +818,81 @@ static GT_STATUS statsOperationPerform
     }
 
     /* Get the Histogram mode bit.                */
-	retVal = hwReadGlobalReg(dev,QD_REG_STATS_OPERATION,&histoData);
+    retVal = hwReadGlobalReg(dev,QD_REG_STATS_OPERATION,&histoData);
     if(retVal != GT_OK)
     {
         gtSemGive(dev,dev->statsRegsSem);
         return retVal;
     }
-	
-	histoData &= 0xC00;
+    
+#endif
+    histoData &= 0xC00;
 
     /* Set the STAT Operation register */
-	switch (statsOp)
-	{
-		case STATS_FLUSH_ALL:
-			data = (1 << 15) | (GT_STATS_FLUSH_ALL << 12) | histoData;
-			retVal = hwWriteGlobalReg(dev,QD_REG_STATS_OPERATION,data);
-			gtSemGive(dev,dev->statsRegsSem);
-			return retVal;
+    switch (statsOp)
+    {
+        case STATS_FLUSH_ALL:
+            data = (1 << 15) | (GT_STATS_FLUSH_ALL << 12) | histoData;
+            retVal = hwWriteGlobalReg(dev,QD_REG_STATS_OPERATION,data);
+            gtSemGive(dev,dev->statsRegsSem);
+            return retVal;
 
-		case STATS_FLUSH_PORT:
-			data = (1 << 15) | (GT_STATS_FLUSH_PORT << 12) | portNum | histoData;
-			retVal = hwWriteGlobalReg(dev,QD_REG_STATS_OPERATION,data);
-			gtSemGive(dev,dev->statsRegsSem);
-			return retVal;
+        case STATS_FLUSH_PORT:
+            data = (1 << 15) | (GT_STATS_FLUSH_PORT << 12) | portNum | histoData;
+            retVal = hwWriteGlobalReg(dev,QD_REG_STATS_OPERATION,data);
+            gtSemGive(dev,dev->statsRegsSem);
+            return retVal;
 
-		case STATS_READ_COUNTER:
-			retVal = statsCapture(dev,port);
-			if(retVal != GT_OK)
-			{
-				gtSemGive(dev,dev->statsRegsSem);
-				return retVal;
-			}
+        case STATS_READ_COUNTER:
+            retVal = statsCapture(dev,port);
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->statsRegsSem);
+                return retVal;
+            }
 
-			retVal = statsReadCounter(dev,counter,(GT_U32*)statsData);
-			if(retVal != GT_OK)
-			{
-				gtSemGive(dev,dev->statsRegsSem);
-				return retVal;
-			}
-			break;
+            retVal = statsReadCounter(dev,counter,(GT_U32*)statsData);
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->statsRegsSem);
+                return retVal;
+            }
+            break;
 
-		case STATS_READ_REALTIME_COUNTER:
-			retVal = statsReadRealtimeCounter(dev,port,counter,(GT_U32*)statsData);
-			if(retVal != GT_OK)
-			{
-				gtSemGive(dev,dev->statsRegsSem);
-				return retVal;
-			}
+        case STATS_READ_REALTIME_COUNTER:
+            retVal = statsReadRealtimeCounter(dev,port,counter,(GT_U32*)statsData);
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->statsRegsSem);
+                return retVal;
+            }
 
-			break;
+            break;
 
-		case STATS_READ_ALL:
-			retVal = statsCapture(dev,port);
-			if(retVal != GT_OK)
-			{
-				gtSemGive(dev,dev->statsRegsSem);
-				return retVal;
-			}
+        case STATS_READ_ALL:
+            retVal = statsCapture(dev,port);
+            if(retVal != GT_OK)
+            {
+                gtSemGive(dev,dev->statsRegsSem);
+                return retVal;
+            }
 
-			for(statsCounter=0; statsCounter<=lastCounter; statsCounter++)
-			{
-				retVal = statsReadCounter(dev,statsCounter,((GT_U32*)statsData + statsCounter));
-				if(retVal != GT_OK)
-				{
-					gtSemGive(dev,dev->statsRegsSem);
-					return retVal;
-				}
-			}
-			break;
+            for(statsCounter=0; statsCounter<=lastCounter; statsCounter++)
+            {
+                retVal = statsReadCounter(dev,statsCounter,((GT_U32*)statsData + statsCounter));
+                if(retVal != GT_OK)
+                {
+                    gtSemGive(dev,dev->statsRegsSem);
+                    return retVal;
+                }
+            }
+            break;
 
-		default:
-			
-			gtSemGive(dev,dev->statsRegsSem);
-			return GT_FAIL;
-	}
+        default:
+            
+            gtSemGive(dev,dev->statsRegsSem);
+            return GT_FAIL;
+    }
 
     gtSemGive(dev,dev->statsRegsSem);
     return GT_OK;
@@ -879,62 +909,80 @@ static GT_STATUS statsOperationPerform
 *       port        - port number
 *
 * OUTPUTS:
-*		None.
+*        None.
 *
 * RETURNS:
 *       GT_OK on success,
 *       GT_FAIL otherwise.
 *
 * COMMENTS:
-*		If Semaphore is used, Semaphore should be acquired before this function call.
+*        If Semaphore is used, Semaphore should be acquired before this function call.
 *******************************************************************************/
 static GT_STATUS statsCapture
 (
     IN GT_QD_DEV            *dev,
-    IN GT_U8 		    port
+    IN GT_U8             port
 )
 {
     GT_STATUS       retVal;         /* Functions return value.      */
     GT_U16          data, histoData;/* Data to be set into the      */
                                     /* register.                    */
-	GT_U16			portNum;
+    GT_U16            portNum;
 
-	if (IS_IN_DEV_GROUP(dev,DEV_RMON_PORT_BITS))
-	{
-		portNum = (port + 1) << 5;
-	}
-	else
-	{
-		portNum = (GT_U16)port;
-	}
+    if (IS_IN_DEV_GROUP(dev,DEV_RMON_PORT_BITS))
+    {
+        portNum = (port + 1) << 5;
+    }
+    else
+    {
+        portNum = (GT_U16)port;
+    }
 
     /* Get the Histogram mode bit.                */
-	retVal = hwReadGlobalReg(dev,QD_REG_STATS_OPERATION,&histoData);
+    retVal = hwReadGlobalReg(dev,QD_REG_STATS_OPERATION,&histoData);
     if(retVal != GT_OK)
     {
         return retVal;
     }
-	
-	histoData &= 0xC00;
+    
+    histoData &= 0xC00;
 
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 1;
+  
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_STATS_OPERATION;
+      regAccess.rw_reg_list[0].data = 15;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        return retVal;
+      }
+    }
+#else
     data = 1;
-   	while(data == 1)
+       while(data == 1)
     {
         retVal = hwGetGlobalRegField(dev,QD_REG_STATS_OPERATION,15,1,&data);
         if(retVal != GT_OK)
-   	    {
-           	return retVal;
+           {
+               return retVal;
         }
-   	}
+       }
+#endif
 
-	data = (1 << 15) | (GT_STATS_CAPTURE_PORT << 12) | portNum | histoData;
-	retVal = hwWriteGlobalReg(dev,QD_REG_STATS_OPERATION,data);
-	if(retVal != GT_OK)
-	{
-		return retVal;
-	}
+    data = (1 << 15) | (GT_STATS_CAPTURE_PORT << 12) | portNum | histoData;
+    retVal = hwWriteGlobalReg(dev,QD_REG_STATS_OPERATION,data);
+    if(retVal != GT_OK)
+    {
+        return retVal;
+    }
 
-	return GT_OK;
+    return GT_OK;
 
 }
 
@@ -956,71 +1004,118 @@ static GT_STATUS statsCapture
 *       GT_FAIL otherwise.
 *
 * COMMENTS:
-*		If Semaphore is used, Semaphore should be acquired before this function call.
+*        If Semaphore is used, Semaphore should be acquired before this function call.
 *******************************************************************************/
 static GT_STATUS statsReadCounter
 (
     IN   GT_QD_DEV      *dev,
-    IN   GT_U32			counter,
-    OUT  GT_U32		    *statsData
+    IN   GT_U32            counter,
+    OUT  GT_U32            *statsData
 )
 {
     GT_STATUS   retVal;         /* Functions return value.            */
     GT_U16      data, histoData;/* Data to be set into the  register. */ 
-    GT_U16	counter3_2;     /* Counter Register Bytes 3 & 2       */
-    GT_U16	counter1_0;     /* Counter Register Bytes 1 & 0       */
+#ifndef GT_RMGMT_ACCESS
+    GT_U16    counter3_2;     /* Counter Register Bytes 3 & 2       */
+    GT_U16    counter1_0;     /* Counter Register Bytes 1 & 0       */
+#endif
 
     /* Get the Histogram mode bit.                */
-	retVal = hwReadGlobalReg(dev,QD_REG_STATS_OPERATION,&histoData);
+    retVal = hwReadGlobalReg(dev,QD_REG_STATS_OPERATION,&histoData);
     if(retVal != GT_OK)
     {
         return retVal;
     }
-	
-	histoData &= 0xC00;
+    
+    histoData &= 0xC00;
 
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 1;
+  
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_STATS_OPERATION;
+      regAccess.rw_reg_list[0].data = 15;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        return retVal;
+      }
+    }
+#else
     data = 1;
-   	while(data == 1)
+       while(data == 1)
     {
         retVal = hwGetGlobalRegField(dev,QD_REG_STATS_OPERATION,15,1,&data);
         if(retVal != GT_OK)
-   	    {
-           	return retVal;
+           {
+               return retVal;
         }
-   	}
+       }
+#endif
 
-	data = (GT_U16)((1 << 15) | (GT_STATS_READ_COUNTER << 12) | counter | histoData);
-	retVal = hwWriteGlobalReg(dev,QD_REG_STATS_OPERATION,data);
-	if(retVal != GT_OK)
-	{
-		return retVal;
-	}
-
-    data = 1;
-   	while(data == 1)
+    data = (GT_U16)((1 << 15) | (GT_STATS_READ_COUNTER << 12) | counter | histoData);
+    retVal = hwWriteGlobalReg(dev,QD_REG_STATS_OPERATION,data);
+    if(retVal != GT_OK)
     {
-   	 retVal = hwGetGlobalRegField(dev,QD_REG_STATS_OPERATION,15,1,&data);
+        return retVal;
+    }
+
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 3;
+  
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_STATS_OPERATION;
+      regAccess.rw_reg_list[0].data = 15;
+      regAccess.rw_reg_list[1].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[1].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[1].reg = QD_REG_STATS_COUNTER3_2;
+      regAccess.rw_reg_list[1].data = 0;
+      regAccess.rw_reg_list[2].cmd = HW_REG_READ;
+      regAccess.rw_reg_list[2].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[2].reg = QD_REG_STATS_COUNTER1_0;
+      regAccess.rw_reg_list[2].data = 0;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        return retVal;
+      }
+      *statsData = (regAccess.rw_reg_list[1].data << 16) | regAccess.rw_reg_list[2].data;
+    }
+#else
+    data = 1;
+       while(data == 1)
+    {
+        retVal = hwGetGlobalRegField(dev,QD_REG_STATS_OPERATION,15,1,&data);
         if(retVal != GT_OK)
-   	    {
-           	return retVal;
+           {
+               return retVal;
         }
-   	}
+       }
 
-	retVal = hwReadGlobalReg(dev,QD_REG_STATS_COUNTER3_2,&counter3_2);
-	if(retVal != GT_OK)
-	{
-		return retVal;
-	}
+    retVal = hwReadGlobalReg(dev,QD_REG_STATS_COUNTER3_2,&counter3_2);
+    if(retVal != GT_OK)
+    {
+        return retVal;
+    }
 
-	retVal = hwReadGlobalReg(dev,QD_REG_STATS_COUNTER1_0,&counter1_0);
-	if(retVal != GT_OK)
-	{
-		return retVal;
-	}
+    retVal = hwReadGlobalReg(dev,QD_REG_STATS_COUNTER1_0,&counter1_0);
+    if(retVal != GT_OK)
+    {
+        return retVal;
+    }
 
-	*statsData = (counter3_2 << 16) | counter1_0;
+    *statsData = (counter3_2 << 16) | counter1_0;
+#endif
 
-	return GT_OK;
+    return GT_OK;
 
 }
 
@@ -1043,71 +1138,107 @@ static GT_STATUS statsReadCounter
 *       GT_FAIL otherwise.
 *
 * COMMENTS:
-*		If Semaphore is used, Semaphore should be acquired before this function call.
+*        If Semaphore is used, Semaphore should be acquired before this function call.
 *******************************************************************************/
 static GT_STATUS statsReadRealtimeCounter
 (
     IN   GT_QD_DEV      *dev,
-    IN   GT_U8 		    port,
-    IN   GT_U32			counter,
-    OUT  GT_U32		    *statsData
+    IN   GT_U8             port,
+    IN   GT_U32            counter,
+    OUT  GT_U32            *statsData
 )
 {
     GT_STATUS   retVal;         /* Functions return value.            */
     GT_U16      data, histoData;/* Data to be set into the  register. */ 
-    GT_U16	counter3_2;     /* Counter Register Bytes 3 & 2       */
-    GT_U16	counter1_0;     /* Counter Register Bytes 1 & 0       */
+    GT_U16    counter3_2;     /* Counter Register Bytes 3 & 2       */
+    GT_U16    counter1_0;     /* Counter Register Bytes 1 & 0       */
 
     /* Get the Histogram mode bit.                */
-	retVal = hwReadGlobalReg(dev,QD_REG_STATS_OPERATION,&histoData);
+    retVal = hwReadGlobalReg(dev,QD_REG_STATS_OPERATION,&histoData);
     if(retVal != GT_OK)
     {
         return retVal;
     }
-	
-	histoData &= 0xC00;
+    
+    histoData &= 0xC00;
 
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 1;
+  
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_STATS_OPERATION;
+      regAccess.rw_reg_list[0].data = 15;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        return retVal;
+      }
+    }
+#else
     data = 1;
-   	while(data == 1)
+       while(data == 1)
     {
         retVal = hwGetGlobalRegField(dev,QD_REG_STATS_OPERATION,15,1,&data);
         if(retVal != GT_OK)
-   	    {
-           	return retVal;
+           {
+               return retVal;
         }
-   	}
+       }
+#endif
 
-	data = (GT_U16)((1 << 15) | (GT_STATS_READ_COUNTER << 12) | ((port+1) << 5) | counter | histoData);
-	retVal = hwWriteGlobalReg(dev,QD_REG_STATS_OPERATION,data);
-	if(retVal != GT_OK)
-	{
-		return retVal;
-	}
-
-    data = 1;
-   	while(data == 1)
+    data = (GT_U16)((1 << 15) | (GT_STATS_READ_COUNTER << 12) | ((port+1) << 5) | counter | histoData);
+    retVal = hwWriteGlobalReg(dev,QD_REG_STATS_OPERATION,data);
+    if(retVal != GT_OK)
     {
-   	 retVal = hwGetGlobalRegField(dev,QD_REG_STATS_OPERATION,15,1,&data);
+        return retVal;
+    }
+
+#ifdef GT_RMGMT_ACCESS
+    {
+      HW_DEV_REG_ACCESS regAccess;
+
+      regAccess.entries = 1;
+  
+      regAccess.rw_reg_list[0].cmd = HW_REG_WAIT_TILL_0;
+      regAccess.rw_reg_list[0].addr = CALC_SMI_DEV_ADDR(dev, 0, GLOBAL_REG_ACCESS);
+      regAccess.rw_reg_list[0].reg = QD_REG_STATS_OPERATION;
+      regAccess.rw_reg_list[0].data = 15;
+      retVal = hwAccessMultiRegs(dev, &regAccess);
+      if(retVal != GT_OK)
+      {
+        return retVal;
+      }
+    }
+#else
+    data = 1;
+       while(data == 1)
+    {
+        retVal = hwGetGlobalRegField(dev,QD_REG_STATS_OPERATION,15,1,&data);
         if(retVal != GT_OK)
-   	    {
-           	return retVal;
+           {
+               return retVal;
         }
-   	}
+       }
+#endif
 
-	retVal = hwReadGlobalReg(dev,QD_REG_STATS_COUNTER3_2,&counter3_2);
-	if(retVal != GT_OK)
-	{
-		return retVal;
-	}
+    retVal = hwReadGlobalReg(dev,QD_REG_STATS_COUNTER3_2,&counter3_2);
+    if(retVal != GT_OK)
+    {
+        return retVal;
+    }
 
-	retVal = hwReadGlobalReg(dev,QD_REG_STATS_COUNTER1_0,&counter1_0);
-	if(retVal != GT_OK)
-	{
-		return retVal;
-	}
+    retVal = hwReadGlobalReg(dev,QD_REG_STATS_COUNTER1_0,&counter1_0);
+    if(retVal != GT_OK)
+    {
+        return retVal;
+    }
 
-	*statsData = (counter3_2 << 16) | counter1_0;
+    *statsData = (counter3_2 << 16) | counter1_0;
 
-	return GT_OK;
+    return GT_OK;
 
 }

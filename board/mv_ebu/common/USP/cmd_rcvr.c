@@ -215,16 +215,16 @@ void recoveryHandle(void)
 #ifdef CONFIG_CMD_SF
 
 #endif
-	setenv("bootcmd","setenv bootargs $console ubi.mtd=3 root=ubi0:rootfs rootfstype=ubifs $mvNetConfig; nand read.e $loadaddr 0x200000 0x300000; bootm $loadaddr;");
+	setenv("bootcmd","setenv bootargs $console mtdparts=armada-nand:8m(boot),8m(linux),-(rootfs) ubi.mtd=2 root=ubi0:rootfs rootfstype=ubifs $mvNetConfig $mvPhoneConfig; nand read.e $loadaddr 0x800000 0x500000; bootm $loadaddr;");
 	setenv("console","console=ttyS0,115200");
-	setenv("mtdparts", "mtdparts=armada-nand:2m(boot),4m(linux),-(rootfs)");
+	setenv("mtdparts", "mtdparts=armada-nand:8m(boot),8m(linux),-(rootfs)");
 	saveenv();
 
 	printf("\nPermanent bootcmd: %s\n", getenv("bootcmd"));
 	printf("\nPermanent console: %s\n", getenv("console"));
 
 	/* This assignment to cmd should execute prior to the RD setenv and saveenv below*/
-	sprintf(cmd,"setenv bootargs $console mtdparts=armada-nand:2m(boot),4m(linux),-(rootfs) root=/dev/ram0 $mvNetConfig recovery=%s rcvrip=%s:%s%s  ethact=$ethact ethaddr=%s eth1addr=%s; bootm $loadaddr;", ip, getenv("rcvrip"), getenv("serverip"), getenv("bootargs_end"), getenv("ethaddr"), getenv("eth1addr"));
+	sprintf(cmd,"setenv bootargs $console mtdparts=armada-nand:8m(boot),8m(linux),-(rootfs) root=/dev/ram0 $mvNetConfig recovery=%s rcvrip=%s:%s%s  ethact=$ethact ethaddr=%s eth1addr=%s; bootm $loadaddr;", ip, getenv("rcvrip"), getenv("serverip"), getenv("bootargs_end"), getenv("ethaddr"), getenv("eth1addr"));
 	setenv("bootcmd", cmd);
 	printf("\nRecovery bootcmd: %s\n", cmd);
 

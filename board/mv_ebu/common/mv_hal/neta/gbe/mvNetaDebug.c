@@ -82,6 +82,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bm/mvBm.h"
 #include "pnc/mvTcam.h"
 
+#define KERN_INFO
+
 static void mvEthRegPrint(MV_U32 reg_addr, char *reg_name)
 {
 	mvOsPrintf("  %-32s: 0x%x = 0x%08x\n", reg_name, reg_addr, MV_REG_READ(reg_addr));
@@ -784,7 +786,7 @@ void mvNetaCpuDump(int port, int cpu, int rxTx)
 			mvOsPrintf("       ");
 	regVal >>= 1;
 	}
-	mvOsPrintf("\n");
+		mvOsPrintf(KERN_INFO "\n");
 }
 
 #ifdef CONFIG_MV_PON

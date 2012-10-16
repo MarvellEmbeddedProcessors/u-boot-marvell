@@ -81,12 +81,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 void mvBoardEgigaPhyInit(void)
 {
 	int	i;
+	unsigned int regData;
 
 	mvSysEthPhyInit();
-	/* TODO: fix init count (differant PHYs) mvCtrlEthMaxPortGet() */
-	for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
+#ifdef MV88F67XX
+	if (mvBoardIsSwitchConnected())
+		mvEthE6171SwitchBasicInit(1);
+
+	if (mvBoardIsSwitchConnected() || mvBoardIsGMIIConnected()) {
+		/* Init Only Phy 0 */
 		/* writing the PHY address before PHY init */
-		mvNetaPhyAddrSet(i, mvBoardPhyAddrGet(i));
-		mvEthPhyInit(i, MV_FALSE);
+		regData = MV_REG_READ(ETH_PHY_ADDR_REG(0));
+		regData &= ~ETH_PHY_ADDR_MASK;
+		regData |= mvBoardPhyAddrGet(0);
+		MV_REG_WRITE(ETH_PHY_ADDR_REG(0), regData);
+		mvEthPhyInit(0, MV_FALSE);
+	} else
+#endif
+	{
+		for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
+			/* writing the PHY address before PHY init */
+			mvNetaPhyAddrSet(i, mvBoardPhyAddrGet(i));
+			mvEthPhyInit(i, MV_FALSE);
+		}
 	}
 }

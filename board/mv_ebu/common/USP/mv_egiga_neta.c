@@ -236,6 +236,9 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 		/* update number of available descriptors */
 		mvNetaRxqNonOccupDescAdd(priv->port, EGIGA_DEF_RXQ, i);
 
+		/* Set  Phy & MAC addr */ /* Copy to AXP as is */
+		mvNetaPhyAddrSet(priv->port, mvBoardPhyAddrGet(priv->port));
+
 		/* set new addr in hw */
 		if (mvNetaMacAddrSet(priv->port,  dev->enetaddr, EGIGA_DEF_RXQ) != MV_OK) {
 				printf("%s: NetaSetMacAddr failed\n", dev->name);

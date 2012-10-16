@@ -109,14 +109,14 @@ void 	mvSysNetaInit(MV_U32 portMask, MV_U32 cpuMask)
 		}
 #endif
 	#ifdef DEBUG
-		mvOsPrintf("%d - Base 0x%08x , Size = 0x%08x.\n", i,
-                                addrWinMap[i].addrWin.baseLow,
-                                addrWinMap[i].addrWin.size);
+		mvOsPrintf("%d - Base 0x%08x , Size = 0x%08llx.\n", i,
+						addrWinMap[i].addrWin.baseLow, addrWinMap[i].addrWin.size);
 	#endif
+
 	}
+
 	halData.portMask = portMask;
 	halData.cpuMask  = cpuMask;
-
 	halData.maxPort = mvCtrlEthMaxPortGet();
 	halData.pClk = mvCpuPclkGet();
 	halData.tClk = mvBoardTclkGet();
@@ -137,6 +137,7 @@ void 	mvSysNetaInit(MV_U32 portMask, MV_U32 cpuMask)
 	for (port = 0; port < halData.maxPort; port++) {
 		if (!(MV_BIT_CHECK(portMask, port)))
 			continue;
+
 		if (mvCtrlPwrClckGet(ETH_GIG_UNIT_ID, port) == MV_FALSE)
 			continue;
 

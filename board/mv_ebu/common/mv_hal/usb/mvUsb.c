@@ -206,6 +206,14 @@ static int mvUsbPhy40nmInit(int dev)
 	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 1), regVal);
 	/*-------------------------------------------------*/
 
+/* BTS #231 - for KW40 only */
+	if ((usbHalData.ctrlModel == MV_6710_DEV_ID) ||
+	    (usbHalData.ctrlModel == MV_6W11_DEV_ID) ||
+		(usbHalData.ctrlModel == MV_6707_DEV_ID)) {
+		MV_REG_WRITE(0x50850, 0x20000131);
+		MV_REG_WRITE(0x50890, 0x20000131);
+	}
+	
 	return 0;
 } /* End of mvUsbPhy40nmInit() */
 

@@ -176,7 +176,9 @@ MV_BOOL scanPci(MV_U32 host)
 int sp_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U32 host = 0;
+#if defined(MV88F78X60)
 	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
+#endif
 	MV_U32 pexHWInf = 0;
 
 	if (argc > 1)
@@ -187,7 +189,12 @@ int sp_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 1;
 	}
 
+#if defined(MV88F78X60)
 	pexHWInf = boardPexInfo->pexMapping[host];
+#else
+	pexHWInf = host;
+#endif
+
 	printf("scanning pex number: %d\n", pexHWInf);
 	if( scanPci(pexHWInf) == MV_FALSE)
 		printf("PCI %d Scan - FAILED!!.\n",host);
@@ -231,7 +238,9 @@ U_BOOT_CMD(
 int se_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U32 host=0,dev = 0,bus=0;
+#if defined(MV88F78X60)
 	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
+#endif
 	MV_U32 pexHWInf = 0;
 
 
@@ -248,7 +257,13 @@ int se_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		printf("PCI %d doesn't exist\n",host);
 		return 1;
 	}
+	
+#if defined(MV88F78X60)
 	pexHWInf = boardPexInfo->pexMapping[host];
+#else
+	pexHWInf = host;
+#endif
+
 	if(mvPexSlaveEnable(pexHWInf,bus,dev,MV_TRUE) == MV_OK )
 			printf("PCI %d Bus %d Slave 0x%x enabled.\n",host,bus,dev);
 	else
@@ -272,7 +287,9 @@ int mapPci_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	MV_ADDR_WIN pciWin;
 	MV_TARGET target=0;
 	MV_U32 host=0,effectiveBaseAddress=0;
+#if defined(MV88F78X60)
 	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
+#endif
 	MV_U32 pexHWInf = 0;
 
 	pciWin.baseLow=0;
@@ -291,8 +308,12 @@ int mapPci_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 1;
 	}
 
+#if defined(MV88F78X60)
 	pexHWInf = boardPexInfo->pexMapping[host];
-
+#else
+	pexHWInf = host;
+#endif
+	
 	target = PCI0_MEM0 + (2 * pexHWInf);
 
 	printf("mapping pci %x to address 0x%x\n",host,pciWin.baseLow);
@@ -438,12 +459,20 @@ static void mv_pci_bus_mode_display(MV_U32 host)
 		return;
 	}
 	
+#if defined(MV88F78X60)
 	pexHWInf = boardPexInfo->pexMapping[host];
-
+#else
+	pexHWInf = host;
+#endif
+	
 	if (mvPexModeGet(pexHWInf, &pexMode) != MV_OK)
 		printf("mv_pci_bus_mode_display: mvPexModeGet failed\n");
 
+#if defined(MV88F78X60)
 	printf("PEX %d.%d(%d): ",(pexHWInf<8)?(pexHWInf/4):(pexHWInf-6) , (pexHWInf<8)?(pexHWInf%4):0, host);
+#else
+	printf("PEX %d: ",host);
+#endif
 
 	switch (pexMode.pexType)
 	{
@@ -562,7 +591,7 @@ void pci_init_board(void)
 	MV_U32 addr;
 	MV_U32 tempReg;
 	MV_U32 tempPexReg;
-#if defined(MV88F78X60)
+#if defined(MV88F78X60) || defined(MV88F67XX)
 	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
 	MV_U32 pexHWInf = 0;
 #endif
@@ -574,7 +603,7 @@ void pci_init_board(void)
 	if(env && ( (strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0) ) )
 		printf("Warning: skip configuration of Marvell devices!!!\n");
 
-#if defined(MV88F78X60)
+#if defined(MV88F78X60) || defined(MV88F67XX)
 	pexIfNum = boardPexInfo->boardPexIfNum;
 #endif
 
@@ -607,7 +636,7 @@ void pci_init_board(void)
 #if !defined(MV_88F6183) && !defined(MV_88F6183L) && !defined(MV_88F6082) && !defined(MV88F6281) && \
             !defined(MV88F6192) && !defined(MV88F6180)  && !defined(MV88F6190) && !defined(MV88F6282) && \
 	    !defined(MV88F6510) && !defined(MV88F6530) && !defined(MV88F6550) && !defined(MV88F6560) &&	\
-		!defined(MV88F78X60)
+		!defined(MV88F78X60) && !defined(MV88F67XX)
 		MV_PEX_MODE pexMode;
 		if (mvPexModeGet(pexHWInf,&pexMode) != MV_OK) {
 			printf("pci_init_board: mvPexModeGet failed\n");
@@ -627,7 +656,7 @@ void pci_init_board(void)
 #endif
 #endif
 
-#if defined(DB_78X60_PCAC) || defined(DB_78X60_PCAC_REV2)
+#if defined(DB_78X60_PCAC) || defined(DB_78X60_PCAC_REV2) || defined(DB_88F6710_PCAC)
 		pexIfMode = MV_PEX_END_POINT;
 #endif
 
@@ -686,7 +715,7 @@ void pci_init_board(void)
 					else if (j>10)
 						printf("GEN2 link established, retries num = %d.\n", j-10);
 				}
-#else	/* DSMP-A0 */
+#elif defined(MV88F78X60) /* DSMP-A0 */
 				/* Step 17: Speed change to target speed*/
 				tempPexReg = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CAPABILITY_REG));
 				tempPexReg &= (0xF);

@@ -61,7 +61,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "mvCommon.h"
-#include "mvSysHwConfig.h"
 #include "mvOs.h"
 #include "ctrlEnv/mvCtrlEnvSpec.h"
 #include "mvXorRegs.h"
@@ -78,6 +77,18 @@ static MV_STATUS xorWinOverlapDetect(MV_U32 unit, MV_U32 winNum,
 	MV_ADDR_WIN *pAddrWin);
 
 MV_TARGET xorAddrDecPrioTap[] = {
+#if defined(MV_INCLUDE_SDRAM_CS0)
+	SDRAM_CS0,
+#endif
+#if defined(MV_INCLUDE_SDRAM_CS1)
+	SDRAM_CS1,
+#endif
+#if defined(MV_INCLUDE_SDRAM_CS2)
+	SDRAM_CS2,
+#endif
+#if defined(MV_INCLUDE_SDRAM_CS3)
+	SDRAM_CS3,
+#endif
 #if defined(MV_INCLUDE_PEX)
 #if defined(PEX0_MEM_SIZE)
 	PEX0_MEM,
@@ -97,18 +108,6 @@ MV_TARGET xorAddrDecPrioTap[] = {
 #if defined(PEX9_MEM_BASE)
 	PEX9_MEM,
 #endif
-#endif
-#if defined(MV_INCLUDE_SDRAM_CS0)
-	SDRAM_CS0,
-#endif
-#if defined(MV_INCLUDE_SDRAM_CS1)
-	SDRAM_CS1,
-#endif
-#if defined(MV_INCLUDE_SDRAM_CS2)
-	SDRAM_CS2,
-#endif
-#if defined(MV_INCLUDE_SDRAM_CS3)
-	SDRAM_CS3,
 #endif
 #if defined(MV_INCLUDE_DEVICE_CS0)
 	DEVICE_CS0,

@@ -70,7 +70,6 @@ USP_OBJS =	$(USP_DIR)/mv_serial.o 			\
 			$(USP_DIR)/cmd_rcvr.o		\
 			$(USP_DIR)/mv_amp.o		\
 			$(USP_DIR)/mv_fdt.o		\
-			$(USP_DIR)/mv_main.o		\
 			$(USP_DIR)/mv_cmd.o		\
 			$(USP_DIR)/mv_dram.o		\
 			$(USP_DIR)/mvDramScrubbing.o	\

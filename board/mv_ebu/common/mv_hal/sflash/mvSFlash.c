@@ -101,7 +101,8 @@ static MV_SFLASH_DEVICE_PARAMS sflash[] = {
      MV_M25P32_DEVICE_ID,
      MV_M25P32_MAX_SPI_FREQ,
      MV_M25P32_MAX_FAST_SPI_FREQ,
-     MV_M25P32_FAST_READ_DUMMY_BYTES
+     MV_M25P32_FAST_READ_DUMMY_BYTES,
+     MV_M25P32_ADDR_CYC_CNT
     },
     /* ST M25P64 SPI flash, 8MB, 128 sectors of 64K each */
     {
@@ -125,7 +126,8 @@ static MV_SFLASH_DEVICE_PARAMS sflash[] = {
      MV_M25P64_DEVICE_ID,
      MV_M25P64_MAX_SPI_FREQ,
      MV_M25P64_MAX_FAST_SPI_FREQ,
-     MV_M25P64_FAST_READ_DUMMY_BYTES
+     MV_M25P64_FAST_READ_DUMMY_BYTES,
+     MV_M25P64_ADDR_CYC_CNT
     },
     /* ST M25PX64 SPI flash, 8MB, 128 sectors of 64K each */
     {
@@ -149,7 +151,8 @@ static MV_SFLASH_DEVICE_PARAMS sflash[] = {
      MV_M25PX64_DEVICE_ID,
      MV_M25PX64_MAX_SPI_FREQ,
      MV_M25PX64_MAX_FAST_SPI_FREQ,
-     MV_M25PX64_FAST_READ_DUMMY_BYTES
+     MV_M25PX64_FAST_READ_DUMMY_BYTES,
+     MV_M25PX64_ADDR_CYC_CNT
     },
 
     /* ST M25P128 SPI flash, 16MB, 64 sectors of 256K each */
@@ -174,7 +177,8 @@ static MV_SFLASH_DEVICE_PARAMS sflash[] = {
      MV_M25P128_DEVICE_ID,
      MV_M25P128_MAX_SPI_FREQ,
      MV_M25P128_MAX_FAST_SPI_FREQ,
-     MV_M25P128_FAST_READ_DUMMY_BYTES
+     MV_M25P128_FAST_READ_DUMMY_BYTES,
+     MV_M25P128_ADDR_CYC_CNT
     },
     /* Macronix MXIC MX25L6405 SPI flash, 8MB, 128 sectors of 64K each */
     {
@@ -198,7 +202,8 @@ static MV_SFLASH_DEVICE_PARAMS sflash[] = {
      MV_MX25L1605_DEVICE_ID,
      MV_MX25L1605_MAX_SPI_FREQ,
      MV_MX25L1605_MAX_FAST_SPI_FREQ,
-     MV_MX25L1605_FAST_READ_DUMMY_BYTES
+     MV_MX25L1605_FAST_READ_DUMMY_BYTES,
+     MV_MX25L1605_ADDR_CYC_CNT
     },
     /* Macronix MXIC MX25L3205 SPI flash, 4MB, 64 sectors of 64K each */
     {
@@ -222,7 +227,8 @@ static MV_SFLASH_DEVICE_PARAMS sflash[] = {
      MV_MX25L3205_DEVICE_ID,
      MV_MX25L3205_MAX_SPI_FREQ,
      MV_MX25L3205_MAX_FAST_SPI_FREQ,
-     MV_MX25L3205_FAST_READ_DUMMY_BYTES
+     MV_MX25L3205_FAST_READ_DUMMY_BYTES,
+     MV_MX25L3205_ADDR_CYC_CNT
     },
     /* Macronix MXIC MX25L6405 SPI flash, 8MB, 128 sectors of 64K each */
     {
@@ -246,7 +252,8 @@ static MV_SFLASH_DEVICE_PARAMS sflash[] = {
      MV_MX25L6405_DEVICE_ID,
      MV_MX25L6405_MAX_SPI_FREQ,
      MV_MX25L6405_MAX_FAST_SPI_FREQ,
-     MV_MX25L6405_FAST_READ_DUMMY_BYTES
+     MV_MX25L6405_FAST_READ_DUMMY_BYTES,
+     MV_MX25L6405_ADDR_CYC_CNT
     },
     /* SPANSION S25FL128P SPI flash, 16MB, 64 sectors of 256K each */
     {
@@ -270,7 +277,33 @@ static MV_SFLASH_DEVICE_PARAMS sflash[] = {
      MV_S25FL128_DEVICE_ID,
      MV_S25FL128_MAX_SPI_FREQ,
      MV_M25P128_MAX_FAST_SPI_FREQ,
-     MV_M25P128_FAST_READ_DUMMY_BYTES
+     MV_M25P128_FAST_READ_DUMMY_BYTES,
+     MV_M25P128_ADDR_CYC_CNT
+    },
+    /* MACRONIX MX25L25735E SPI Flash, 64MB */
+    {
+	    MV_MX25L_WREN_CMND_OPCD,
+	    MV_MX25L_WRDI_CMND_OPCD,
+	    MV_MX25L_RDID_CMND_OPCD,
+	    MV_MX25L_RDSR_CMND_OPCD,
+	    MV_MX25L_WRSR_CMND_OPCD,
+	    MV_MX25L_READ_CMND_OPCD,
+	    MV_MX25L_FAST_RD_CMND_OPCD,
+	    MV_MX25L_PP_CMND_OPCD,
+	    MV_MX25L_SE_CMND_OPCD,
+	    MV_MX25L_BE_CMND_OPCD,
+	    MV_MX25L_RES_CMND_OPCD,
+	    MV_MX25L_DP_CMND_OPCD,
+	    MV_MX25L257_SECTOR_SIZE,
+	    MV_MX25L257_SECTOR_NUMBER,
+	    MV_MXIC_PAGE_SIZE,
+	    "MACRONIX MX25L25735E",
+	    MV_MXIC_MANF_ID,
+	    MV_MX25L257_DEVICE_ID,
+	    MV_MX25L257_MAX_SPI_FREQ,
+	    MV_MX25L257_MAX_FAST_SPI_FREQ,
+	    MV_MX25L257_FAST_READ_DUMMY_BYTES,
+	    MV_MX25L257_ADDR_CYC_CNT
     }
 };
 
@@ -432,6 +465,7 @@ static MV_STATUS mvSFlashPageWr(MV_SFLASH_INFO *pFlinfo, MV_U32 offset,
 {
     MV_STATUS ret;
 	MV_U8 cmd[MV_SFLASH_PP_CMND_LENGTH];
+	MV_U32 i;
 
 	/* Protection - check if the model was detected */
 	if (pFlinfo->index >= MV_ARRAY_SIZE(sflash)) {
@@ -451,13 +485,12 @@ static MV_STATUS mvSFlashPageWr(MV_SFLASH_INFO *pFlinfo, MV_U32 offset,
 	if (ret != MV_OK)
 		return ret;
 
-    cmd[0] = sflash[pFlinfo->index].opcdPP;
-	cmd[1] = ((offset >> 16) & 0xFF);
-	cmd[2] = ((offset >> 8) & 0xFF);
-	cmd[3] = (offset & 0xFF);
+	cmd[0] = sflash[pFlinfo->index].opcdPP;
+	for (i = 1; i <= sflash[pFlinfo->index].addrCycCnt; i++)
+		cmd[i] = (offset >> ((sflash[pFlinfo->index].addrCycCnt - i) * 8)) & 0xFF;
 
 	/*  mvSpiWriteThenWrite(MV_SFLASH_PP_CMND_LENGTH, pPageBuff, buffSize) */
-	ret = mvSysSflashCommandSet(NULL, cmd, MV_SFLASH_PP_CMND_LENGTH, SYS_SFLASH_TRANS_START);
+	ret = mvSysSflashCommandSet(NULL, cmd, sflash[pFlinfo->index].addrCycCnt + 1, SYS_SFLASH_TRANS_START);
 	if (ret == MV_OK)
 		ret = mvSysSflashDataWrite(NULL, pPageBuff, buffSize, SYS_SFLASH_TRANS_END);
 	if (ret != MV_OK)
@@ -621,6 +654,7 @@ MV_STATUS mvSFlashSectorErase(MV_SFLASH_INFO *pFlinfo, MV_U32 secNumber)
     MV_STATUS ret;
     MV_U8 cmd[MV_SFLASH_SE_CMND_LENGTH];
     MV_U32 secAddr;
+    MV_U32 i;
 
     /* check for NULL pointer */
     if (pFlinfo == NULL) {
@@ -645,9 +679,8 @@ MV_STATUS mvSFlashSectorErase(MV_SFLASH_INFO *pFlinfo, MV_U32 secNumber)
 	becasue of timing issue between CS asserts. */
 
     cmd[0] = sflash[pFlinfo->index].opcdSE;
-	cmd[1] = ((secAddr >> 16) & 0xFF);
-	cmd[2] = ((secAddr >> 8) & 0xFF);
-	cmd[3] = (secAddr & 0xFF);
+	for (i = 1; i <= sflash[pFlinfo->index].addrCycCnt; i++)
+		cmd[i] = (secAddr >> ((sflash[pFlinfo->index].addrCycCnt - i) * 8)) & 0xFF;
 
 	/* Issue the Write enable command prior the sector erase command */
 	ret = mvWriteEnable(pFlinfo);
@@ -655,7 +688,7 @@ MV_STATUS mvSFlashSectorErase(MV_SFLASH_INFO *pFlinfo, MV_U32 secNumber)
 		return ret;
 
 	/*  mvSpiWriteThenWrite(MV_SFLASH_SE_CMND_LENGTH) */
-	ret = mvSysSflashCommandSet(NULL, cmd, MV_SFLASH_SE_CMND_LENGTH, SYS_SFLASH_TRANS_ATOMIC);
+	ret = mvSysSflashCommandSet(NULL, cmd, sflash[pFlinfo->index].addrCycCnt + 1, SYS_SFLASH_TRANS_ATOMIC);
 	if (ret != MV_OK)
 		return ret;
 	ret = mvWaitOnWipClear(pFlinfo);
@@ -743,6 +776,7 @@ MV_STATUS mvSFlashBlockRd(MV_SFLASH_INFO *pFlinfo, MV_U32 offset,
 {
 	MV_U8 cmd[MV_SFLASH_READ_CMND_LENGTH];
 	MV_STATUS status;
+	MV_U32 i;
 
     /* check for NULL pointer */
 	if ((pFlinfo == NULL) || (pReadBuff == NULL)) {
@@ -757,12 +791,11 @@ MV_STATUS mvSFlashBlockRd(MV_SFLASH_INFO *pFlinfo, MV_U32 offset,
 	}
 
 	cmd[0] = sflash[pFlinfo->index].opcdREAD;
-	cmd[1] = ((offset >> 16) & 0xFF);
-	cmd[2] = ((offset >> 8) & 0xFF);
-	cmd[3] = (offset & 0xFF);
+	for (i = 1; i <= sflash[pFlinfo->index].addrCycCnt; i++)
+		cmd[i] = (offset >> ((sflash[pFlinfo->index].addrCycCnt - i) * 8)) & 0xFF;
 
 	/*  mvSpiWriteThenRead(MV_SFLASH_READ_CMND_LENGTH, pReadBuff, buffSize) */
-	status = mvSysSflashCommandSet(NULL, cmd, MV_SFLASH_READ_CMND_LENGTH,
+	status = mvSysSflashCommandSet(NULL, cmd, sflash[pFlinfo->index].addrCycCnt + 1,
 			SYS_SFLASH_TRANS_START);
 	if (status == MV_OK)
 		status = mvSysSflashDataRead(NULL, pReadBuff, buffSize, 0,
@@ -795,6 +828,7 @@ MV_STATUS mvSFlashFastBlockRd(MV_SFLASH_INFO *pFlinfo, MV_U32 offset,
 {
     MV_U8 cmd[MV_SFLASH_READ_CMND_LENGTH];
     MV_STATUS ret, retCmd;
+    MV_U32 i;
 
     /* check for NULL pointer */
     if ((pFlinfo == NULL) || (pReadBuff == NULL)) {
@@ -809,14 +843,12 @@ MV_STATUS mvSFlashFastBlockRd(MV_SFLASH_INFO *pFlinfo, MV_U32 offset,
     }
 
     cmd[0] = sflash[pFlinfo->index].opcdFSTRD;
-    cmd[1] = ((offset >> 16) & 0xFF);
-    cmd[2] = ((offset >> 8) & 0xFF);
-    cmd[3] = (offset & 0xFF);
-
+    for (i = 1; i <= sflash[pFlinfo->index].addrCycCnt; i++)
+	cmd[i] = (offset >> ((sflash[pFlinfo->index].addrCycCnt - i) * 8)) & 0xFF;
 
     /*  mvSpiWriteThenRead(MV_SFLASH_READ_CMND_LENGTH, pReadBuff, buffSize,
 	sflash[pFlinfo->index].spiFastRdDummyBytes); */
-    retCmd = mvSysSflashCommandSet(NULL, cmd, MV_SFLASH_READ_CMND_LENGTH,
+    retCmd = mvSysSflashCommandSet(NULL, cmd, sflash[pFlinfo->index].addrCycCnt + 1,
 		    SYS_SFLASH_TRANS_START);
 
     /* Set the SPI frequency to the MAX allowed for fast-read operations */

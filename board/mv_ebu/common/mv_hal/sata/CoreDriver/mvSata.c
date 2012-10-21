@@ -4758,6 +4758,7 @@ MV_BOOLEAN mvSataInitAdapter(MV_SATA_ADAPTER *pAdapter)
 	case MV_SATA_DEVICE_ID_7813:
 	case MV_SATA_DEVICE_ID_7823:
 	case MV_SATA_DEVICE_ID_6710:
+	case MV_SATA_DEVICE_ID_6707:
 	case MV_SATA_DEVICE_ID_7888:
 		pAdapter->numberOfChannels = 2;
 		pAdapter->numberOfUnits = 1;
@@ -4769,7 +4770,17 @@ MV_BOOLEAN mvSataInitAdapter(MV_SATA_ADAPTER *pAdapter)
 		pAdapter->mainCauseOffset = 0x20020;
 		pAdapter->chipIs62X1Z0 = MV_TRUE;
 		break;
-
+	case MV_SATA_DEVICE_ID_6W11:
+		pAdapter->numberOfChannels = 1;
+		pAdapter->numberOfUnits = 1;
+		pAdapter->portsPerUnit = 1;
+		pAdapter->sataAdapterGeneration = MV_SATA_GEN_IIE;
+		/*The integrated sata core chip based on 60x1 C0 */
+		pAdapter->hostInterface = MV_HOST_IF_INTEGRATED;
+		pAdapter->mainMaskOffset = 0x20024;
+		pAdapter->mainCauseOffset = 0x20020;
+		pAdapter->chipIs62X1Z0 = MV_TRUE;
+		break;
 
 	default:
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_ERROR, " %d : Bad device ID"

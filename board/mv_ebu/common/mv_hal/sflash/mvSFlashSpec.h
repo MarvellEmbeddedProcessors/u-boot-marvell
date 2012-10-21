@@ -70,10 +70,10 @@ extern "C" {
 #endif
 
 /* Constants */
-#define		MV_SFLASH_READ_CMND_LENGTH		    4		/* 1B opcode + 3B address */
-#define		MV_SFLASH_SE_CMND_LENGTH		    4		/* 1B opcode + 3B address */
+#define		MV_SFLASH_READ_CMND_LENGTH		    5		/* 1B opcode + 3B address */
+#define		MV_SFLASH_SE_CMND_LENGTH		    5		/* 1B opcode + 3B address */
 #define		MV_SFLASH_BE_CMND_LENGTH		    1		/* 1B opcode */
-#define		MV_SFLASH_PP_CMND_LENGTH		    4		/* 1B opcode + 3B address */
+#define		MV_SFLASH_PP_CMND_LENGTH		    5		/* 1B opcode + 3B address */
 #define		MV_SFLASH_WREN_CMND_LENGTH		    1		/* 1B opcode */
 #define		MV_SFLASH_WRDI_CMND_LENGTH		    1		/* 1B opcode */
 #define		MV_SFLASH_RDID_CMND_LENGTH		    1		/* 1B opcode */
@@ -108,19 +108,23 @@ extern "C" {
 #define     MV_M25P32_MAX_SPI_FREQ              20000000    /* 20MHz */
 #define     MV_M25P32_MAX_FAST_SPI_FREQ         50000000    /* 50MHz */
 #define     MV_M25P32_FAST_READ_DUMMY_BYTES     1
+#define	    MV_M25P32_ADDR_CYC_CNT	        3
 #define     MV_M25P64_DEVICE_ID                 0x2017
 #define     MV_M25P64_MAX_SPI_FREQ              20000000    /* 20MHz */
 #define     MV_M25P64_MAX_FAST_SPI_FREQ         50000000    /* 50MHz */
 #define     MV_M25P64_FAST_READ_DUMMY_BYTES     1
+#define	    MV_M25P64_ADDR_CYC_CNT	        3
 #define     MV_M25P128_DEVICE_ID                0x2018
 #define     MV_M25P128_MAX_SPI_FREQ             20000000    /* 20MHz */
 #define     MV_M25P128_MAX_FAST_SPI_FREQ        50000000    /* 50MHz */
 #define     MV_M25P128_FAST_READ_DUMMY_BYTES    1
-
+#define	    MV_M25P128_ADDR_CYC_CNT	        3
 #define     MV_M25PX64_DEVICE_ID                 0x7117
 #define     MV_M25PX64_MAX_SPI_FREQ              20000000    /* 20MHz */
 #define     MV_M25PX64_MAX_FAST_SPI_FREQ         50000000    /* 50MHz */
 #define     MV_M25PX64_FAST_READ_DUMMY_BYTES     1
+#define	    MV_M25PX64_ADDR_CYC_CNT	         3
+
 
 /* Sector Sizes and population per device model*/
 #define     MV_M25P32_SECTOR_SIZE               0x10000 /* 64K */
@@ -142,6 +146,7 @@ extern "C" {
 #define		MV_M25P_SE_CMND_OPCD			    0xD8	/* Sector Erase */
 #define		MV_M25P_BE_CMND_OPCD			    0xC7	/* Bulk Erase */
 #define		MV_M25P_RES_CMND_OPCD			    0xAB	/* Read Electronic Signature */
+#define		MV_M25P_ADDR_CYC_CNT			3
 
 /* Status Register Write Protect Bit Masks - 3bits */
 #define		MV_M25P_STATUS_REG_WP_MASK	        (0x07 << MV_SFLASH_STATUS_REG_WP_OFFSET)
@@ -164,23 +169,33 @@ extern "C" {
 #define     MV_MX25L1605_MAX_SPI_FREQ           20000000    /* 20MHz */
 #define     MV_MX25L1605_MAX_FAST_SPI_FREQ      50000000    /* 50MHz */
 #define     MV_MX25L1605_FAST_READ_DUMMY_BYTES  1
+#define	MV_MX25L1605_ADDR_CYC_CNT	    3
 #define     MV_MX25L3205_DEVICE_ID              0x2016
 #define     MV_MX25L3205_MAX_SPI_FREQ           20000000    /* 20MHz */
 #define     MV_MX25L3205_MAX_FAST_SPI_FREQ      50000000    /* 50MHz */
 #define     MV_MX25L3205_FAST_READ_DUMMY_BYTES  1
+#define	MV_MX25L3205_ADDR_CYC_CNT	    3
 #define     MV_MX25L6405_DEVICE_ID              0x2017
 #define     MV_MX25L6405_MAX_SPI_FREQ           20000000    /* 20MHz */
 #define     MV_MX25L6405_MAX_FAST_SPI_FREQ      50000000    /* 50MHz */
 #define     MV_MX25L6405_FAST_READ_DUMMY_BYTES  1
+#define	MV_MX25L6405_ADDR_CYC_CNT	    3
+#define	MV_MX25L257_DEVICE_ID		    0x2019
+#define	MV_MX25L257_MAX_SPI_FREQ      	    20000000    /* 20MHz */
+#define	MV_MX25L257_MAX_FAST_SPI_FREQ       50000000    /* 104MHz */
+#define	MV_MX25L257_FAST_READ_DUMMY_BYTES   1
+#define	MV_MX25L257_ADDR_CYC_CNT	    4
 #define     MV_MXIC_DP_EXIT_DELAY               30          /* 30 ms */
 
 /* Sector Sizes and population per device model*/
 #define     MV_MX25L1605_SECTOR_SIZE            0x10000 /* 64K */
 #define     MV_MX25L3205_SECTOR_SIZE            0x10000 /* 64K */
 #define     MV_MX25L6405_SECTOR_SIZE            0x10000 /* 64K */
+#define	    MV_MX25L257_SECTOR_SIZE        	0x10000 /* 64K */
 #define     MV_MX25L1605_SECTOR_NUMBER          32
 #define     MV_MX25L3205_SECTOR_NUMBER          64
 #define     MV_MX25L6405_SECTOR_NUMBER          128
+#define     MV_MX25L257_SECTOR_NUMBER 		512
 #define		MV_MXIC_PAGE_SIZE			        0x100   /* 256 byte */
 
 #define		MV_MX25L_WREN_CMND_OPCD			    0x06	/* Write Enable */
@@ -218,6 +233,7 @@ extern "C" {
 #define     MV_S25FL128_MAX_SPI_FREQ           		33000000    /* 33MHz */
 #define     MV_S25FL128_MAX_FAST_SPI_FREQ        	104000000    /* 104MHz */
 #define     MV_S25FL128_FAST_READ_DUMMY_BYTES    	1
+#define	    MV_S25FL128_ADDR_CYC_CNT	        	3
 
 /* Sector Sizes and population per device model*/
 #define     MV_S25FL128_SECTOR_SIZE            			0x40000 /* 256K */

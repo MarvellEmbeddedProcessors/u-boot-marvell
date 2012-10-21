@@ -115,6 +115,7 @@ typedef struct {
     MV_U32  spiMaxFreq;     /* The MAX frequency that can be used with the device */
     MV_U32  spiMaxFastFreq; /* The MAX frequency that can be used with the device for fast reads */
     MV_U32  spiFastRdDummyBytes; /* Number of dumy bytes to read before real data when working in fast read mode. */
+    MV_U32  addrCycCnt;		/* Address cycles count */
 } MV_SFLASH_DEVICE_PARAMS;
 
 typedef struct {

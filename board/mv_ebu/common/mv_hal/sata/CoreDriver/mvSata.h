@@ -110,6 +110,8 @@ extern "C" {
 #define MV_SATA_DEVICE_ID_6550		       0x6550	/*88f6550 integrated sata */
 #define MV_SATA_DEVICE_ID_6560		       0x6560	/*88f6560 integrated sata */
 #define MV_SATA_DEVICE_ID_6710			0x6710 /* KW40 */
+#define MV_SATA_DEVICE_ID_6W11			0x6711 /* KW40 */
+#define MV_SATA_DEVICE_ID_6707			0x6707 /* KW40 */
 #define MV_SATA_DEVICE_ID_7816			0x7816 /* DSMP */
 #define MV_SATA_DEVICE_ID_7826			0x7826 /* DSMP */
 #define MV_SATA_DEVICE_ID_7846			0x7846 /* DSMP */

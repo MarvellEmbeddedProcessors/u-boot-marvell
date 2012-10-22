@@ -412,7 +412,7 @@ MV_U32 mvTwsiInit(MV_U8 chanNum, MV_HZ frequancy, MV_U32 Tclk, MV_TWSI_ADDR *pTw
 
 	/* unmask twsi int in Interrupt source control register */
 	val = (MV_REG_READ(CPU_INT_SOURCE_CONTROL_REG(CPU_MAIN_INT_CAUSE_TWSI(chanNum))) |
-							(1<<CPU_INT_SOURCE_CONTROL_ENA_OFFS));
+							(1<<CPU_INT_SOURCE_CONTROL_IRQ_OFFS));
 	MV_REG_WRITE(CPU_INT_SOURCE_CONTROL_REG(CPU_MAIN_INT_CAUSE_TWSI(chanNum)), val);
 
 	/* Add delay of 1ms */

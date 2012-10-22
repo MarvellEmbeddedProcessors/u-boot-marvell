@@ -37,7 +37,7 @@ disclaimer.
 #define __CONFIG_H
 
 #include <config.h>
-#include "../../board/mv_ebu/common/config/mvSysHwConfig.h"
+#include "../../board/mv_ebu/axp_db/mvSysHwConfig.h"
 
 #define MV_RT_DEBUG
 

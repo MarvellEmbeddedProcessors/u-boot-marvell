@@ -79,22 +79,22 @@ static MV_STATUS xorWinOverlapDetect(MV_U32 unit, MV_U32 winNum,
 
 MV_TARGET xorAddrDecPrioTap[] = {
 #if defined(MV_INCLUDE_PEX)
-#if PEX0_MEM_SIZE
+#if defined(PEX0_MEM_SIZE)
 	PEX0_MEM,
 #endif
-#if PEX1_MEM_SIZE
+#if defined(PEX1_MEM_SIZE)
 	PEX1_MEM,
 #endif
-#if PEX2_MEM_SIZE
+#if defined(PEX2_MEM_SIZE)
 	PEX2_MEM,
 #endif
-#if PEX3_MEM_SIZE
+#if defined(PEX3_MEM_SIZE)
 	PEX3_MEM,
 #endif
-#if PEX8_MEM_BASE
+#if defined(PEX8_MEM_BASE)
 	PEX8_MEM,
 #endif
-#if PEX9_MEM_BASE
+#if defined(PEX9_MEM_BASE)
 	PEX9_MEM,
 #endif
 #endif
@@ -117,7 +117,11 @@ MV_TARGET xorAddrDecPrioTap[] = {
 	DEV_CS1,
 #endif
 #if defined(MV_INCLUDE_CESA)
+#if defined(CONFIG_ARCH_ARMADA370)
+	CRYPT0_ENG,
+#else
 	CRYPT1_ENG,
+#endif
 #endif
 	TBL_TERM
 };

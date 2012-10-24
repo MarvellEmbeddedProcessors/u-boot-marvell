@@ -100,6 +100,7 @@ extern "C" {
 #define MV_GPP_REGS_OFFSET(unit)		(0x18100 + ((unit) * 0x40))
 #endif
 #define MV_MISC_REGS_OFFSET			(0x18200)
+#define MV_CLK_CMPLX_REGS_OFFSET	(0x18700)
 #define MV_MBUS_REGS_OFFSET			(0x20000)
 #define MV_COHERENCY_FABRIC_OFFSET		(0x20200)
 #define MV_CIB_CTRL_STATUS_OFFSET		(0x20280)

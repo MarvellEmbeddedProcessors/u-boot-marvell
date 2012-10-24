@@ -280,7 +280,7 @@ MV_STATUS mvEthPhyRegPrint(MV_U32 phyAddr, MV_U32 regOffs)
 
 	status = mvEthPhyRegRead(phyAddr, regOffs, &data);
 	if (status == MV_OK)
-		mvOsPrintf("reg=%d: 0x%04x\n", regOffs, data);
+		mvOsPrintf("phy=0x%x, reg=0x%x: 0x%04x\n", phyAddr, regOffs, data);
 	else
 		mvOsPrintf("Read failed\n");
 

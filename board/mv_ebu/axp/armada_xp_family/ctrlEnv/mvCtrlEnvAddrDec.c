@@ -287,6 +287,9 @@ MV_STATUS mvCtrlAddrWinMapBuild(MV_UNIT_WIN_INFO *pAddrWinMap, MV_U32 len)
 			j++;
 		}
 	}
+	
+	for (; j < 4; j++)
+		ioDdrWin[j].enable = MV_FALSE;
 
 	/* Fill in the pAddrWinMap fields       */
 	for (i = 0; i < MAX_TARGETS; i++) {

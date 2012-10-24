@@ -65,6 +65,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvCommon.h"
 #include "mvOs.h"
 #include "ctrlEnv/mvCtrlEnvSpec.h"
+#include "ctrlEnv/sys/mvCpuIfRegs.h"
 #include "cpu/mvCpu.h"
 #include "mvTwsi.h"
 #include "mvTwsiSpec.h"

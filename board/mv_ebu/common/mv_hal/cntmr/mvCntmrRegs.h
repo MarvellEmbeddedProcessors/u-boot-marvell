@@ -151,8 +151,14 @@ extern "C" {
 #define CTCR_ARM_TIMER_EN(cntr)		(1 << CTCR_ARM_TIMER_EN_OFFS(cntr))
 #define CTCR_ARM_TIMER_DIS(cntr)	(0 << CTCR_ARM_TIMER_EN_OFFS(cntr))
 
+#if defined (CONFIG_ARCH_ARMADA370)
+#define CTCR_ARM_TIMER_AUTO_OFFS(timer) ((timer <= MAX_GLOBAL_TIMER) ? (1 + (timer * 2)) : \
+										(1 + (timer-FIRST_PRIVATE_TIMER) * 2))
+#else
 #define CTCR_ARM_TIMER_AUTO_OFFS(timer)	((timer <= MAX_GLOBAL_TIMER) ? (1 + (timer * 2)) : \
 										(1 + ((CPU_TIMER(timer))) * 2))
+#endif
+
 #define CTCR_ARM_TIMER_AUTO_MASK(cntr)	(1 << CTCR_ARM_TIMER_EN_OFFS(cntr))
 #define CTCR_ARM_TIMER_AUTO_EN(cntr)	(1 << CTCR_ARM_TIMER_AUTO_OFFS(cntr))
 #define CTCR_ARM_TIMER_AUTO_DIS(cntr)	(0 << CTCR_ARM_TIMER_AUTO_OFFS(cntr))

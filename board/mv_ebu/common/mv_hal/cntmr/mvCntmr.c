@@ -67,7 +67,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrlEnv/mvCtrlEnvSpec.h"
 #include "mvSysCntmrConfig.h"
 #include "mvCntmrRegs.h"
-#include "cntmr/mvCntmr.h"
+#include "mvCntmr.h"
 #include "cpu/mvCpu.h"
 
 /* defines  */
@@ -79,7 +79,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define CNTMR_EVENTS_STATUS_REG_GLOBAL	(MV_CNTMR_REGS_OFFSET + 4)
 
+#if defined(CONFIG_ARCH_ARMADA370)
+#define TIMER_GLOBAL_BIT(timer)		(1 << (timer * 8 - ((timer == MAX_GLOBAL_TIMER) ? 1 : 0)))
+#else
 #define TIMER_GLOBAL_BIT(timer)		((timer == MAX_GLOBAL_TIMER) ? (1<<31) : (1 << (timer * 8)))
+#endif
 
 #if defined(MV88F78X60_Z1)
 #define CNTMR_EVENTS_STATUS_REG_PRIVATE(t)	(MV_CPUIF_REGS_OFFSET(TIMER_TO_CPU(t) + 0x68))
@@ -87,6 +91,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif defined(MV88F78X60) && !defined(MV88F78X60_Z1)
 #define CNTMR_EVENTS_STATUS_REG_PRIVATE		(MV_CPUIF_LOCAL_REGS_OFFSET + 0x68)
 #define TIMER_PRIVATE_BIT(timer)	(1 << ((timer - FIRST_PRIVATE_TIMER) * 8))
+#elif defined(CONFIG_ARCH_ARMADA370)
+#define CNTMR_EVENTS_STATUS_REG_PRIVATE (MV_CPUIF_REGS_OFFSET(0) + 0x68)
+#define TIMER_PRIVATE_BIT(timer)        (1 << ((timer - FIRST_PRIVATE_TIMER) * 8 + ((timer == TIMER7) ? 8 : 0)))
 #else
 #error "No device is defined!"
 #endif

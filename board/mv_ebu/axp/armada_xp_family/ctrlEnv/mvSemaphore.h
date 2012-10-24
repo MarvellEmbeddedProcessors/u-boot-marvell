@@ -69,7 +69,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config.h"
 #endif
 
-#define MV_AMP_GLOBAL_REG(x)	(0xC010 + (100*x))
+#define MV_AMP_GLOBAL_REG(x)	(0x20980 + (4*x))
 #define ADR_WIN_EN_REG			0
 
 #define MV_SEMA_REG_BASE	(0x20500)

@@ -109,6 +109,13 @@ disclaimer.
  *  System memory mapping
  */
 
+
+#define DRAM_IO_RESERVE_BASE	0xC0000000ll
+#ifdef DRAM_IO_RESERVE_BASE 
+#define MV_DRAM_IO_RESERVE_BASE        DRAM_IO_RESERVE_BASE
+#endif
+
+
 /* SDRAM: actual mapping is auto detected */
 #define SDRAM_CS0_BASE  0x00000000
 #define SDRAM_CS0_SIZE  _256M

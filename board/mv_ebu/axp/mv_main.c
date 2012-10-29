@@ -272,8 +272,6 @@ int board_init (void)
 	if (whoAmI() != 0)
 		return 0;
 
-	mvCtrlUpdatePexId();
-
 #if defined(MV_INCLUDE_TWSI)
 	MV_TWSI_ADDR slave;
 #endif
@@ -1059,6 +1057,7 @@ int print_cpuinfo (void)
 	char name[50];
 
 	mvBoardIdSet();
+	mvCtrlUpdatePexId();
 	mvBoardNameGet(name);
 	printf("Board: %s\n",  name);
 	mvCtrlModelRevNameGet(name);

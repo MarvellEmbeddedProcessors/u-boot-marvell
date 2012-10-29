@@ -25,6 +25,8 @@
 #include <command.h>
 #include <mmc.h>
 
+
+static int mmc_initiated = 0;
 static int curr_device = -1;
 #ifndef CONFIG_GENERIC_MMC
 int do_mmc (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -154,6 +156,15 @@ static int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (argc < 2)
 		return CMD_RET_USAGE;
 
+        if (mmc_initiated == 0)
+        {       /* 	If this is not a call to rescan !!!! */
+                if (!((argc==2)&&(strncmp(argv[1],"rescan",6) == 0)))
+                {
+                        puts ("\nWarning: Please run 'mmc rescan' before running other mmc commands \n\n");
+                        return 1;
+                }
+        }
+
 	if (curr_device < 0) {
 		if (get_mmc_num() > 0)
 			curr_device = 0;
@@ -164,6 +175,11 @@ static int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	}
 
 	if (strcmp(argv[1], "rescan") == 0) {
+		if (mmc_initiated==0)
+		{
+			mvSysSDmmcWinInit();
+			mmc_initiated=1;
+		}
 		struct mmc *mmc = find_mmc_device(curr_device);
 
 		if (!mmc) {

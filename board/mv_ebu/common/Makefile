@@ -13,7 +13,9 @@ HAL_IF_OBJS = $(HAL_IF_DIR)/mvSysDdr.o	  \
 			  $(HAL_IF_DIR)/mvSysSata.o	\
 			  $(HAL_IF_DIR)/mvSysSpi.o	\
 			  $(HAL_IF_DIR)/mvSysUsb.o 	\
-			  $(HAL_IF_DIR)/mvSysXor.o
+			  $(HAL_IF_DIR)/mvSysSdmmc.o 	\
+			  $(HAL_IF_DIR)/mvSysXor.o	
+
 
 
 ETH_OBJS =  $(HAL_IF_DIR)/mvSysNeta.o 	\
@@ -43,6 +45,7 @@ HAL_OBJS =      $(HAL_CNTMR_DIR)/mvCntmr.o 		\
 		$(HAL_XOR_DIR)/mvXorAddrDec.o 		\
 		$(HAL_PCIIF_DIR)/mvPciIf.o 		\
 		$(HAL_PCIIF_UTIL_DIR)/mvPciUtils.o 	\
+		$(HAL_MMC_DIR)/mvSdmmcAddrDec.o		\
 		$(HAL_NFC_DIR)/mvNfc.o
 #		$(HAL_SPD_DIR)/mvSpd.o 			\
 

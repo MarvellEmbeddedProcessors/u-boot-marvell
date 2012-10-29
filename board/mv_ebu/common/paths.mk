@@ -52,6 +52,7 @@ HAL_SPI_DIR        = $(HAL_DIR)/spi
 HAL_TS_DIR	       = $(HAL_DIR)/ts
 HAL_CESA_DIR	   = $(HAL_DIR)/cesa
 HAL_NFC_DIR	       = $(HAL_DIR)/nfc
+HAL_MMC_DIR	       = $(HAL_DIR)/sdmmc
 
 # Internal compile definitions
 MV_DEFINE = -DMV_UBOOT -DMV_CPU_$(ENDIAN) -DMV_$(CPU_ARCH)

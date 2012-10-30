@@ -1857,10 +1857,6 @@ MV_VOID mvEth1340PhyBasicInit(void)
 		mvEthPhyRegWrite(i, 0x0, 0x1140);
 		/* Set page to 0. */
 		mvEthPhyRegWrite(i, 0x16, 0);
-
-
-	    mvEthPhyRegWrite(i, 0x16, 0x0000);
-
 		mvEthPhyRegRead(i, ETH_PHY_CTRL_REG, &reg);
 		reg &= ~(ETH_PHY_CTRL_POWER_DOWN_MASK);
 		reg |= 0x1<<9;	/* workaround - restart workaround - restart workaround - restart workaround - restart */
@@ -1902,6 +1898,12 @@ MV_VOID mvEthE1512PhyBasicInit(MV_U32 ethPortNum)
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x00FB);
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x07, 0xC00D);
 
+	#ifdef RD_88F6710
+		/* Fix LED in front panel */
+		mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x0003);
+		mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x10, 0x1011);
+		mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x0000);
+	#endif
 	if (ethphyHalData.isSgmii[ethPortNum]) {
 
 		mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x0012);

@@ -285,34 +285,6 @@ extern "C" {
 #define MV_6707_A1_NAME         "MV6707 A1"
 
 
-#define MV_6710_A0_REV		0x0
-#define MV_6710_A0_ID		((MV_6710_DEV_ID << 16) | MV_6710_A0_REV)
-#define MV_6710_A0_NAME		"MV6710 A0"
-
-#define MV_6710_A1_REV		0x1
-#define MV_6710_A1_ID		((MV_6710_DEV_ID << 16) | MV_6710_A1_REV)
-#define MV_6710_A1_NAME		"MV6710 A1"
-
-#define MV_6W11_DEV_ID		0x6711
-
-#define MV_6W11_A0_REV		0x0
-#define MV_6W11_A0_ID		((MV_6W11_DEV_ID << 16) | MV_6W11_A0_REV)
-#define MV_6W11_A0_NAME		"MV6W11 A0"
-
-#define MV_6W11_A1_REV		0x1
-#define MV_6W11_A1_ID		((MV_6W11_DEV_ID << 16) | MV_6W11_A1_REV)
-#define MV_6W11_A1_NAME		"MV6W11 A1"
-
-#define MV_6707_DEV_ID		0x6707
-
-#define MV_6707_A0_REV		0x0
-#define MV_6707_A0_ID		((MV_6707_DEV_ID << 16) | MV_6707_A0_REV)
-#define MV_6707_A0_NAME		"MV6707 A0"
-
-#define MV_6707_A1_REV		0x1
-#define MV_6707_A1_ID		((MV_6707_DEV_ID << 16) | MV_6707_A1_REV)
-#define MV_6707_A1_NAME		"MV6707 A1"
-
 /* Armada XP Family */
 #define MV_78130_DEV_ID		0x7813
 #define MV_78160_DEV_ID		0x7816

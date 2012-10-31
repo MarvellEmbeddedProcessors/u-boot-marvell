@@ -116,11 +116,7 @@ MV_TARGET xorAddrDecPrioTap[] = {
 	DEV_CS1,
 #endif
 #if defined(MV_INCLUDE_CESA)
-#if defined(CONFIG_ARCH_ARMADA370)
 	CRYPT0_ENG,
-#else
-	CRYPT1_ENG,
-#endif
 #endif
 	TBL_TERM
 };

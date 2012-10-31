@@ -570,7 +570,7 @@ void pci_init_board(void)
 	/* removed PEX init from all other cores except 0 as asked from CV */
 	if (whoAmI() != 0)
 		return;
-
+	MV_U16 ctrlModel;
 	MV_U32 pexIfNum = mvCtrlPexMaxIfGet();
 	MV_U32 pexIf=0;
 	MV_U32 pexLane = 0;
@@ -657,6 +657,42 @@ void pci_init_board(void)
 #if defined(DB_78X60_AMC)
 		pexIfMode = MV_PEX_ROOT_COMPLEX;
 #endif
+
+		/* PEX capability */
+		ctrlModel=mvCtrlModelGet();
+		if ((ctrlModel == MV_6710_DEV_ID) ||
+			(ctrlModel == MV_6W11_DEV_ID) ||
+			(ctrlModel == MV_6707_DEV_ID)) {
+			tempPexReg = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CAPABILITY_REG));
+			tempPexReg &= ~(0xF);
+
+			#if defined(DB_88F6710)
+				switch (mvBoardPexCapabilityGet()) {
+					case 0x2:
+						tempPexReg |= 0x2;
+						break;
+					default:
+						tempPexReg |= 0x1;
+						break;
+				}
+		
+			#elif defined(DB_88F6710_PCAC)
+				if (mvGppValueGet(1, (1 << 25))) {
+					tempPexReg |= 0x1; 	/* Set pex GEN1 capability */
+					printf("PEX - GEN1 \n");
+				} else {
+					tempPexReg |= 0x2; 	/* Set pex GEN2 capability */
+					printf("PEX - GEN2 \n");
+				}
+			#elif defined(RD_88F6710_ID)
+				tempPexReg |= 0x2; 	/* Set pex GEN2 capability */
+			#else
+				tempPexReg |= 0x1; 	/* Set pex GEN1 capability */
+			#endif
+
+			MV_REG_WRITE(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CAPABILITY_REG), tempPexReg);
+		}
+
 
 
 		status = mvSysPexInit(pexHWInf, pexIfMode);
@@ -814,24 +850,36 @@ void pci_init_board(void)
 			pci_hose[pexIf].last_busno = pci_hose[pexIf].first_busno;
 		}
 	}
+	
+#if defined(MV88F78X60) 
+	if ((ctrlModel == MV_78130_DEV_ID) ||
+		(ctrlModel == MV_78160_DEV_ID) ||
+		(ctrlModel == MV_78230_DEV_ID) ||
+		(ctrlModel == MV_78260_DEV_ID) ||
+		(ctrlModel == MV_78460_DEV_ID) ||
+		(ctrlModel == MV_78000_DEV_ID)) {			
+
 	/* WA for AXP-A0 shuld be removed on B0 */
 	/* in case the maxLink width is greater than the Negotioated Link then the max link should be equal for the negotioated link */
-	for (pexUnit = 0; pexUnit < mvCtrlPexMaxUnitGet(); pexUnit++) {
-		if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg != PEX_BUS_DISABLED) {
-			if (pexUnit < 3) /* ports 0, 1, 2 */
-				pexLane = pexUnit*4;
-			else /*Port 3*/
-				pexLane = pexUnit*3;
-			maxLinkWidth = ((MV_REG_READ(PEX_LINK_CAPABILITIES_REG(pexLane)) >> 4) & 0x3F);
-			negLinkWidth = ((MV_REG_READ(PEX_LINK_CTRL_STATUS_REG(pexLane)) >> 20) & 0x3F);
-			if (maxLinkWidth >  negLinkWidth) {
-				tmp = MV_REG_READ(PEX_LINK_CAPABILITIES_REG(pexLane));
-				tmp &= ~(0x3F << 4);
-				tmp |= (negLinkWidth << 4);
-				MV_REG_WRITE(PEX_LINK_CAPABILITIES_REG(pexLane),tmp);
+		for (pexUnit = 0; pexUnit < mvCtrlPexMaxUnitGet(); pexUnit++) {
+			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg != PEX_BUS_DISABLED) {
+				if (pexUnit < 3) /* ports 0, 1, 2 */
+					pexLane = pexUnit*4;
+				else /*Port 3*/
+					pexLane = pexUnit*3;
+				maxLinkWidth = ((MV_REG_READ(PEX_LINK_CAPABILITIES_REG(pexLane)) >> 4) & 0x3F);
+				negLinkWidth = ((MV_REG_READ(PEX_LINK_CTRL_STATUS_REG(pexLane)) >> 20) & 0x3F);
+				if (maxLinkWidth >  negLinkWidth) {
+					tmp = MV_REG_READ(PEX_LINK_CAPABILITIES_REG(pexLane));
+					tmp &= ~(0x3F << 4);
+					tmp |= (negLinkWidth << 4);
+					MV_REG_WRITE(PEX_LINK_CAPABILITIES_REG(pexLane),tmp);
+				}
+
 			}
 		}
 	}
+#endif
 #ifdef DB_FPGA
 	MV_REG_BIT_RESET(PCI_BASE_ADDR_ENABLE_REG(0), BIT10);
 #endif

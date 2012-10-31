@@ -585,17 +585,11 @@ void pci_init_board(void)
 	MV_CPU_DEC_WIN  cpuAddrDecWin;
 	PCI_IF_MODE	pexIfMode = PCI_IF_MODE_HOST;
 	int pexIfStart = 0;
-#if defined(MV88F78X60_Z1)
-	int j=0;
-#endif
 	MV_U32 addr;
 	MV_U32 tempReg;
 	MV_U32 tempPexReg;
-#if defined(MV88F78X60) || defined(MV88F67XX)
 	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
 	MV_U32 pexHWInf = 0;
-#endif
-
     if(pexIfNum == 0)
         return;
 	env = getenv("disaMvPnp");
@@ -680,42 +674,7 @@ void pci_init_board(void)
 				if (mvPexLocalBusNumSet(pexHWInf,pci_hose[pexIf].first_busno) != MV_OK) {
 					printf("pci_init_board:Error calling mvPexLocalBusNumSet for pexIf %d\n",pexIf);
 				}
-#if defined(MV88F78X60_Z1)
-				/* 78XX0 Armada XP workaround to force GEN2 connection when client support it (Mark) */
-				tempPexReg = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CAPABILITY_REG));
-				tempPexReg &= (0xF);
-				if (tempPexReg == 0x2) {
-					j=0;
-					while (j<5) {
-						tempReg = (MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CTRL_STAT_REG)) & 0xF0000) >> 16;
-						/* check if the link established is GEN1 */
-						if (tempReg == 0x1) {
-							/* link is Gen1, check the EP capability */
-							DB(printf("0x34 = 0x%x -> ", mvPexConfigRead(pexHWInf, pci_hose[pexIf].first_busno, 1, 0, 0x34)));
-							addr = mvPexConfigRead(pexHWInf, pci_hose[pexIf].first_busno, 1, 0, 0x34) & 0xFF;
-							while (mvPexConfigRead(pexHWInf, pci_hose[pexIf].first_busno, 1, 0, addr) & 0xFF != 0x10) {
-								DB(printf("[0x%x] = 0x%x -> ", addr, mvPexConfigRead(pexHWInf, pci_hose[pexIf].first_busno, 1, 0, addr)));
-								addr = (mvPexConfigRead(pexHWInf, pci_hose[pexIf].first_busno, 1, 0, addr) & 0xFF00) >> 8;
-							}
-							DB(printf("[0x%x] = 0x%x -> ",addr +0xc, mvPexConfigRead(pexHWInf, pci_hose[pexIf].first_busno, 1, 0, addr + 0xC)));
-							if ((mvPexConfigRead(pexHWInf, pci_hose[pexIf].first_busno, 1, 0, addr + 0xC) & 0xF) == 0x2) {
-								MV_REG_BIT_SET(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CTRL_STAT_REG), BIT5);
-								DB(printf("Gen2 client!\n"));
-								j++;
-							} else {
-								DB(printf("GEN1 client!\n"));
-								j=10;
-							}
-							} else if (tempReg == 0x2) {
-								j+=10;
-							}
-					}
-					if (j < 10)
-						printf("Can't establish Gen2 link, retries num = %d.\n", j);
-					else if (j>10)
-						printf("GEN2 link established, retries num = %d.\n", j-10);
-				}
-#elif defined(MV88F78X60) /* DSMP-A0 */
+#if defined(MV88F78X60) /* DSMP-A0 */
 				/* Step 17: Speed change to target speed*/
 				tempPexReg = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CAPABILITY_REG));
 				tempPexReg &= (0xF);

@@ -269,21 +269,99 @@ MV_VOID		mvEthE6161SwitchBasicInit(MV_U32 ethPortNum)
     mvEthSwitchRegWrite (ethPortNum, MV_E6161_PORTS_OFFSET + MV_E6161_CPU_PORT, 1, 0x3e);
 }
 
-static void switchVlanInit(MV_U32 ethPortNum,
-						   MV_U32 switchCpuPort,
-					   MV_U32 switchMaxPortsNum,
-					   MV_U32 switchPortsOffset,
-					   MV_U32 switchEnabledPortsMask)
+MV_VOID	mvEthE6171SwitchBasicInit(MV_U32 ethPortNum)
+{
+
+	MV_U32 prt;
+	MV_U16 reg;
+	volatile MV_U32 timeout;
+	MV_32 cpuPort =  mvBoardSwitchCpuPortGet(0);
+	/* The 6171 needs a delay */
+	mvOsDelay(1000);
+
+	/* Init vlan of switch 1 and enable all ports */
+	switchVlanInit(ethPortNum, MV_E6171_CPU_PORT, MV_E6171_MAX_PORTS_NUM, MV_E6171_PORTS_OFFSET,
+				   MV_E6171_ENABLED_PORTS);
+
+	/* Enable RGMII delay on Tx and Rx for port 5 switch 1 */
+	mvEthSwitchRegRead(ethPortNum, MV_E6171_PORTS_OFFSET + cpuPort, MV_E6171_SWITCH_PHIYSICAL_CTRL_REG, &reg);
+	mvEthSwitchRegWrite(ethPortNum, MV_E6171_PORTS_OFFSET + cpuPort, MV_E6171_SWITCH_PHIYSICAL_CTRL_REG,
+						 (reg|0xC000));
+
+	/* Power up PHYs */
+	for(prt=0; prt < MV_E6171_MAX_PORTS_NUM - 2; prt++)	{
+		if (prt != MV_E6171_CPU_PORT) {
+			/*Enable Phy power up for switch 1*/
+			mvEthSwitchRegWrite(ethPortNum, MV_E6171_GLOBAL_2_REG_DEV_ADDR,
+								 MV_E6171_SMI_PHY_DATA, 0x3360);
+			mvEthSwitchRegWrite(ethPortNum, MV_E6171_GLOBAL_2_REG_DEV_ADDR, MV_E6171_SMI_PHY_COMMAND,
+								(0x9410 | (prt << 5)));
+			/*Make sure SMIBusy bit cleared before another SMI operation can take place*/
+			timeout = E6171_PHY_TIMEOUT;
+
+			do {
+				mvEthSwitchRegRead(ethPortNum, MV_E6171_GLOBAL_2_REG_DEV_ADDR, MV_E6171_SMI_PHY_COMMAND,&reg);
+				if(timeout-- == 0) {
+					mvOsPrintf("mvEthPhyRegRead: SMI busy timeout\n");
+					return;
+				}
+			} while (reg & E6171_PHY_SMI_BUSY_MASK); 
+ 
+			mvEthSwitchRegWrite(ethPortNum, MV_E6171_GLOBAL_2_REG_DEV_ADDR, MV_E6171_SMI_PHY_DATA,0x9140);
+			mvEthSwitchRegWrite(ethPortNum, MV_E6171_GLOBAL_2_REG_DEV_ADDR,
+								MV_E6171_SMI_PHY_COMMAND,(0x9400 | (prt << 5)));
+
+
+			/*Make sure SMIBusy bit cleared before another SMI operation can take place*/
+			timeout = E6171_PHY_TIMEOUT;
+
+			do {
+				mvEthSwitchRegRead(ethPortNum, MV_E6171_GLOBAL_2_REG_DEV_ADDR,
+								   MV_E6171_SMI_PHY_COMMAND,&reg);
+				if(timeout-- == 0) {
+					mvOsPrintf("mvEthPhyRegRead: SMI busy timeout\n");
+					return;
+				}
+			} while (reg & E6171_PHY_SMI_BUSY_MASK);
+		}
+	}
+
+	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET + cpuPort, 0x4, 0x7f);
+	
+	/* Init LEDs on RD-6282 */
+	/* Move all LEDs to special */
+	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET, 0x16, (BIT15|0x67));
+	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET, 0x16, (BIT15|BIT12|0x32));
+
+	/* Port 0 LED special activity link */
+	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET, 0x16, (BIT15|BIT14|BIT13|BIT12|BIT0));
+
+	/* Port 1 LED special activity link */
+	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET+1, 0x16, (BIT15|BIT14|BIT13|BIT12|BIT1));
+
+	/* Port 2 LED special activity link */
+	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET+2, 0x16, (BIT15|BIT14|BIT13|BIT12|BIT2));
+
+	/* Port 3 LED special activity link */
+	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET+3, 0x16, (BIT15|BIT14|BIT13|BIT12|BIT3));
+
+#ifdef RD_88F6710
+	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET, 0x16, 0xf00f);
+#endif
+
+}
+
+
+static void switchVlanInit(MV_U32 ethPortNum, MV_U32 switchCpuPort, MV_U32 switchMaxPortsNum,
+						   MV_U32 switchPortsOffset, MV_U32 switchEnabledPortsMask)
 {
 	MV_U32 prt;
 	MV_U16 reg;
 
-	/*enable only appropriate ports to forwarding mode - and disable the others*/
-	for(prt=0; prt < switchMaxPortsNum; prt++)
-	{
-		if ((1 << prt)& switchEnabledPortsMask)
-		{
-			mvEthSwitchRegRead (ethPortNum, MV_SWITCH_PORT_OFFSET(prt),
+    	/*enable only appropriate ports to forwarding mode - and disable the others*/
+    	for(prt=0; prt < switchMaxPortsNum; prt++) {
+        	if ((1 << prt)& switchEnabledPortsMask)	{
+			mvEthSwitchRegRead(ethPortNum, MV_SWITCH_PORT_OFFSET(prt),
 								  MV_SWITCH_PORT_CONTROL_REG,&reg);
 			reg |= 0x3;
 			mvEthSwitchRegWrite (ethPortNum, MV_SWITCH_PORT_OFFSET(prt),
@@ -308,8 +386,7 @@ void mvEthSwitchRegWrite(MV_U32 ethPortNum, MV_U32 phyAddr,
 	MV_U16 reg;
 
 	if(switchMultiChipMode == 0xdeadbeef) {
-		mvEthPhyRegRead(mvBoardPhyAddrGet(ethPortNum) ,0x2, &reg);
-		if(reg == 0xffff)
+		if (mvBoardSmiScanModeGet(0) == 2)
 			switchMultiChipMode = mvBoardPhyAddrGet(ethPortNum);
 		else
 			switchMultiChipMode = 0xffffffff;
@@ -317,8 +394,7 @@ void mvEthSwitchRegWrite(MV_U32 ethPortNum, MV_U32 phyAddr,
 
 	if(switchMultiChipMode == 0xffffffff)
 		mvEthPhyRegWrite(phyAddr, regOffs, data);
-	else //If Switch is in multichip mode, need to use indirect register access
-	{
+	else { /*If Switch is in multichip mode, need to use indirect register access */
 		do {
 			mvEthPhyRegRead(switchMultiChipMode, 0x0, &reg);
 		} while((reg & BIT15));    // Poll till SMIBusy bit is clear
@@ -333,11 +409,9 @@ void mvEthSwitchRegRead(MV_U32 ethPortNum, MV_U32 phyAddr,
 {
 	MV_U16 reg;
 
-	switchMultiChipMode = mvBoardPhyAddrGet(ethPortNum);
-
+/*	switchMultiChipMode = mvBoardPhyAddrGet(ethPortNum); */
 	if(switchMultiChipMode == 0xdeadbeef) {
-		mvEthPhyRegRead(mvBoardPhyAddrGet(ethPortNum),0x2, &reg);
-		if(reg == 0xffff)
+		if (mvBoardSmiScanModeGet(0) == 2)
 			switchMultiChipMode = mvBoardPhyAddrGet(ethPortNum);
 		else
 			switchMultiChipMode = 0xffffffff;
@@ -365,35 +439,30 @@ void mvEthSwitchPhyRegWrite(MV_U32 ethPortNum, MV_U16 prt,
 	volatile MV_U32 timeout;
 
 	/*Make sure SMIBusy bit cleared before another SMI operation can take place*/
-	timeout = KW2_SW_PHY_TIMEOUT;
+	timeout = MV_SW_PHY_TIMEOUT;
 	do {
-		mvEthSwitchRegRead(ethPortNum, MV_KW2_SW_GLOBAL_2_REG_DEV_ADDR,
-				MV_KW2_SW_SMI_PHY_COMMAND,&reg);
-		if(timeout-- == 0)
+		mvEthSwitchRegRead(ethPortNum, MV_SW_GLOBAL_2_REG_DEV_ADDR, MV_SW_SMI_PHY_COMMAND, &reg);
+		if (timeout-- == 0) 
 		{
 			mvOsPrintf("mvEthPhyRegRead: SMI busy timeout\n");
 			return;
 		}
-	}while (reg & KW2_SW_PHY_SMI_BUSY_MASK);
+	} while (reg & MV_SW_PHY_SMI_BUSY_MASK);
 
-	mvEthSwitchRegWrite (ethPortNum, MV_KW2_SW_GLOBAL_2_REG_DEV_ADDR,
-			MV_KW2_SW_SMI_PHY_DATA, data);
+	mvEthSwitchRegWrite(ethPortNum, MV_SW_GLOBAL_2_REG_DEV_ADDR, MV_SW_SMI_PHY_DATA, data);
 
-	mvEthSwitchRegWrite (ethPortNum, MV_KW2_SW_GLOBAL_2_REG_DEV_ADDR,
-			MV_KW2_SW_SMI_PHY_COMMAND,(0x9400 | (prt << 5) | regOffs));
+	mvEthSwitchRegWrite(ethPortNum, MV_SW_GLOBAL_2_REG_DEV_ADDR,
+			MV_SW_SMI_PHY_COMMAND,(0x9400 | (prt << 5) | regOffs));
 
 	/*Make sure SMIBusy bit cleared before another SMI operation can take place*/
-	timeout = KW2_SW_PHY_TIMEOUT;
+	timeout = MV_SW_PHY_TIMEOUT;
 	do {
-		mvEthSwitchRegRead(ethPortNum, MV_KW2_SW_GLOBAL_2_REG_DEV_ADDR,
-				MV_KW2_SW_SMI_PHY_COMMAND,&reg);
-		if(timeout-- == 0)
-		{
+		mvEthSwitchRegRead(ethPortNum, MV_SW_GLOBAL_2_REG_DEV_ADDR, MV_SW_SMI_PHY_COMMAND, &reg);
+		if(timeout-- == 0) {
 			mvOsPrintf("mvEthPhyRegRead: SMI busy timeout\n");
 			return;
 		}
-	}while (reg & KW2_SW_PHY_SMI_BUSY_MASK);
-
+	} while (reg & MV_SW_PHY_SMI_BUSY_MASK);
 }
 
 void mvEthSwitchPhyRegRead(MV_U32 ethPortNum, MV_U16 prt,
@@ -403,32 +472,29 @@ void mvEthSwitchPhyRegRead(MV_U32 ethPortNum, MV_U16 prt,
 	volatile MV_U32 timeout;
 
 	/*Make sure SMIBusy bit cleared before another SMI operation can take place*/
-	timeout = KW2_SW_PHY_TIMEOUT;
+	timeout = MV_SW_PHY_TIMEOUT;
 	do {
-		mvEthSwitchRegRead(ethPortNum, MV_KW2_SW_GLOBAL_2_REG_DEV_ADDR,
-				MV_KW2_SW_SMI_PHY_COMMAND,&reg);
-		if(timeout-- == 0)
+		mvEthSwitchRegRead(ethPortNum, MV_SW_GLOBAL_2_REG_DEV_ADDR, MV_SW_SMI_PHY_COMMAND, &reg);
+		if(timeout-- == 0) 
 		{
 			mvOsPrintf("mvEthPhyRegRead: SMI busy timeout\n");
 			return;
 		}
-	}while (reg & KW2_SW_PHY_SMI_BUSY_MASK);
+	} while (reg & MV_SW_PHY_SMI_BUSY_MASK);
 
-	mvEthSwitchRegWrite (ethPortNum, MV_KW2_SW_GLOBAL_2_REG_DEV_ADDR,
-			MV_KW2_SW_SMI_PHY_COMMAND,(0x9800 | (prt << 5) | regOffs));
+	mvEthSwitchRegWrite(ethPortNum, MV_SW_GLOBAL_2_REG_DEV_ADDR,
+			MV_SW_SMI_PHY_COMMAND,(0x9800 | (prt << 5) | regOffs));
 
 	/*Make sure SMIBusy bit cleared before another SMI operation can take place*/
-	timeout = KW2_SW_PHY_TIMEOUT;
+	timeout = MV_SW_PHY_TIMEOUT;
 	do {
-		mvEthSwitchRegRead(ethPortNum, MV_KW2_SW_GLOBAL_2_REG_DEV_ADDR,
-				MV_KW2_SW_SMI_PHY_COMMAND,&reg);
-		if(timeout-- == 0)
+		mvEthSwitchRegRead(ethPortNum, MV_SW_GLOBAL_2_REG_DEV_ADDR, MV_SW_SMI_PHY_COMMAND, &reg);
+		if(timeout-- == 0) 
 		{
 			mvOsPrintf("mvEthPhyRegRead: SMI busy timeout\n");
 			return;
 		}
-	}while (reg & KW2_SW_PHY_SMI_BUSY_MASK);
+	} while (reg & MV_SW_PHY_SMI_BUSY_MASK);
 
-	mvEthSwitchRegRead(ethPortNum, MV_KW2_SW_GLOBAL_2_REG_DEV_ADDR,
-				MV_KW2_SW_SMI_PHY_DATA, data);
+	mvEthSwitchRegRead(ethPortNum, MV_SW_GLOBAL_2_REG_DEV_ADDR, MV_SW_SMI_PHY_DATA, data);
 }

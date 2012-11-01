@@ -71,6 +71,10 @@ MV_VOID	mvEthE6063SwitchBasicInit(MV_U32 ethPortNum);
 MV_VOID	mvEthE6065_61SwitchBasicInit(MV_U32 ethPortNum);
 MV_VOID	mvEthE6131SwitchBasicInit(MV_U32 ethPortNum);
 MV_VOID	mvEthE6161SwitchBasicInit(MV_U32 ethPortNum);
-MV_VOID	mvEthKW2SwitchBasicInit(MV_U32 enabledPorts);
+MV_VOID mvEthE6171SwitchBasicInit(MV_U32 ethPortNum);
+void mvEthSwitchRegRead(MV_U32 ethPortNum, MV_U32 phyAddr, MV_U32 regOffs, MV_U16 *data);
+void mvEthSwitchRegWrite(MV_U32 ethPortNum, MV_U32 phyAddr, MV_U32 regOffs, MV_U16 data);
+void mvEthSwitchPhyRegRead(MV_U32 ethPortNum, MV_U16 prt, MV_U16 regOffs, MV_U16 *data);
+void mvEthSwitchPhyRegWrite(MV_U32 ethPortNum, MV_U16 prt, MV_U16 regOffs, MV_U16 data);
 
 #endif /* #ifndef __INCETHSWITCHH */

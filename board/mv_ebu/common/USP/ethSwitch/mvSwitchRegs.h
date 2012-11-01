@@ -105,6 +105,34 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define E6161_PHY_SMI_BUSY_BIT					15  /* Busy */
 #define E6161_PHY_SMI_BUSY_MASK					(1 << ETH_PHY_SMI_BUSY_BIT)
 
+/* E6171 related */
+#define MV_E6171_CPU_PORT						0x6
+#define MV_E6171_PORTS_OFFSET					0x10
+#define MV_E6171_SWITCH_PHIYSICAL_CTRL_REG		0x1
+#define MV_E6171_SWITCH_PORT_CTRL_REG		    0x4
+#define MV_E6171_SMI_PHY_COMMAND				0x18
+#define MV_E6171_SMI_PHY_DATA					0x19
+#define MV_E6171_GLOBAL_2_REG_DEV_ADDR			0x1C
+#define MV_E6171_MAX_PORTS_NUM					7
+#define MV_E6171_ENABLED_PORTS					((1 << 0)|(1 << 1)|(1 << 2)|(1 << 3)|(1 << 4)|(1 << 6))
+#define E6171_PHY_TIMEOUT					    10000
+#define E6171_PHY_SMI_BUSY_BIT		    		15  /* Busy */
+#define E6171_PHY_SMI_BUSY_MASK		    		(1 << ETH_PHY_SMI_BUSY_BIT)
+
+/* Armada 370 internal related */
+#define MV_SW_CPU_PORT							0x6
+#define MV_SW_PORTS_OFFSET						0x10
+#define MV_SW_SWITCH_PHIYSICAL_CTRL_REG			0x1
+#define MV_SW_SWITCH_PORT_CTRL_REG				0x4
+#define MV_SW_SMI_PHY_COMMAND					0x18
+#define MV_SW_SMI_PHY_DATA						0x19
+#define MV_SW_GLOBAL_2_REG_DEV_ADDR				0x1C
+#define MV_SW_MAX_PORTS_NUM						7
+#define MV_SW_ENABLED_PORTS						((1 << 0)|(1 << 1)|(1 << 2)|(1 << 3)|(1 << 4))
+#define MV_SW_PHY_TIMEOUT						10000
+#define MV_SW_PHY_SMI_BUSY_BIT					15  /* Busy */
+#define MV_SW_PHY_SMI_BUSY_MASK					(1 << ETH_PHY_SMI_BUSY_BIT)
+
 /* KW2 internal related */
 #define MV_KW2_SW_CPU_PORT						0x6
 #define MV_KW2_SW_PORTS_OFFSET					0x10

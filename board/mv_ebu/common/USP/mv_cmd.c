@@ -986,6 +986,123 @@ U_BOOT_CMD(
 	"\tWrite to the Phy register.\n"
 );
 
+#if defined(MV_INCLUDE_SWITCH)
+
+#include "ethSwitch/mvSwitch.h"
+
+int switch_read_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	MV_U16 phyReg;
+
+	mvEthSwitchRegRead(simple_strtoul( argv[1], NULL, 16 ),
+					   simple_strtoul( argv[2], NULL, 16), simple_strtoul( argv[3], NULL, 16 ), &phyReg);
+
+	printf ("0x%x\n", phyReg);
+
+	return 1;
+}
+
+U_BOOT_CMD(
+	switchRegRead,      4,     4,      switch_read_cmd,
+	"switchRegRead	- Read switch register\n",
+	" Port_number Phy_address Phy_offset. \n"
+	"\tRead the switch register. \n"
+);
+
+
+int switch_write_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	mvEthSwitchRegWrite(simple_strtoul( argv[1], NULL, 16 ),
+						simple_strtoul( argv[2], NULL, 16 ), simple_strtoul( argv[3], NULL, 16 ),
+										simple_strtoul( argv[4], NULL, 16 ));
+
+	return 1;
+}
+
+U_BOOT_CMD(
+	switchRegWrite,      5,     5,      switch_write_cmd,
+	"switchRegWrite	- Write switch register\n",
+	" Port_number Phy_address Phy_offset value.\n"
+	"\tWrite to the switch register.\n"
+);
+
+int switch_phy_read_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	MV_U16 phyReg;
+
+	mvEthSwitchPhyRegRead(simple_strtoul( argv[1], NULL, 16 ), simple_strtoul( argv[2], NULL, 16 ),
+						  simple_strtoul( argv[3], NULL, 16 ), &phyReg);
+
+	printf ("0x%x\n", phyReg);
+	return 1;
+}
+
+U_BOOT_CMD(
+	switchPhyRegRead,      4,     4,      switch_phy_read_cmd,
+	"- Read switch register\n",
+	" SW_on_port Port_number Phy_offset. \n"
+	"\tRead the switch register. \n"
+);
+
+int switch_phy_write_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	mvEthSwitchPhyRegWrite(simple_strtoul( argv[1], NULL, 16 ),
+						   simple_strtoul( argv[2], NULL, 16 ), simple_strtoul( argv[3], NULL, 16 ),
+										   simple_strtoul( argv[4], NULL, 16 ));
+
+	return 1;
+}
+
+U_BOOT_CMD(
+	switchPhyRegWrite,      5,     4,      switch_phy_write_cmd,
+	"- Write switch register\n",
+	" SW_on_port Port_number Phy_offset value.\n"
+	"\tWrite to the switch register.\n"
+);
+
+int switch_cntread_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	MV_U16 data;
+	MV_U32 port;
+	MV_U32 i;
+
+	port = simple_strtoul(argv[1], NULL, 16);
+	printf("Switch on port = %d.\n", port);
+	for(i = 0; i < 7; i++) {
+		/* Set egress counter */
+		mvEthSwitchRegWrite(port, 0x1B, 0x1D, 0xC400 | ((i + 1) << 5) | 0xE);
+		do {
+			mvEthSwitchRegRead(port, 0x1B, 0x1D, &data);
+		} while(data & 0x8000);
+		/* Read egress counter */
+		mvEthSwitchRegRead(port, 0x1B, 0x1F, &data);
+		printf("Port %d: Egress 0x%x, Ingress ", i, data);
+		/* Set ingress counter */
+		mvEthSwitchRegWrite(port, 0x1B, 0x1D, 0xC400 | ((i + 1) << 5) | 0x0);
+		do {
+			mvEthSwitchRegRead(port, 0x1B, 0x1D, &data);
+		} while(data & 0x8000);
+		/* Read egress counter */
+		mvEthSwitchRegRead(port, 0x1B, 0x1F, &data);
+		printf("0x%x.\n", data);
+	}
+
+	/* Clear all counters */
+	mvEthSwitchRegWrite(port, 0x1B, 0x1D, 0x94C0);
+	do {
+		mvEthSwitchRegRead(port, 0x1B, 0x1D, &data);
+	} while(data & 0x8000);
+
+	return 1;
+}
+
+U_BOOT_CMD(
+	switchCountersRead,      2,     2,      switch_cntread_cmd,
+	"switchCntPrint	- Read switch port counters.\n",
+	" MAC_Port. \n"
+	"\tRead the switch ports counters. \n"
+);
+#endif
 #endif /* #if defined(MV_INCLUDE_GIG_ETH) */
 
 /******************************************************************************

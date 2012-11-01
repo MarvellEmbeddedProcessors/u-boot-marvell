@@ -300,7 +300,7 @@ MV_STATUS mvCpuIfDramInit()
 
 	for (cs = 0; cs < SDRAM_MAX_CS; cs++) {
 		size = MV_REG_READ(SDRAM_SIZE_REG(cs)) & SDRAM_ADDR_MASK;
-//		if (size > 0 && base < SDRAM_MAX_ADDR) {
+/*		if (size > 0 && base < SDRAM_MAX_ADDR) { */
 		if (size != 0) {
 			size |= ~(SDRAM_ADDR_MASK);
 

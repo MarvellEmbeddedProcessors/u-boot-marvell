@@ -582,6 +582,70 @@ MV_U32 mvCtrlSataMaxPortGet(MV_VOID)
 }
 #endif
 
+#if defined(MV_INCLUDE_IDMA)
+/*******************************************************************************
+* mvCtrlIdmaMaxChanGet - Get Marvell controller number of IDMA channels.
+*
+* DESCRIPTION:
+*       This function returns Marvell controller number of IDMA channels.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Marvell controller number of IDMA channels.
+*
+*******************************************************************************/
+MV_U32 mvCtrlIdmaMaxChanGet(MV_VOID)
+{
+	MV_U32 devId;
+	MV_U32 res = 0;
+
+	devId = mvCtrlModelGet();
+
+	switch (devId) {
+	default:
+		res = MV_IDMA_MAX_CHAN;
+		break;
+	}
+	return res;
+}
+
+/*******************************************************************************
+* mvCtrlIdmaMaxUnitGet - Get Marvell controller number of IDMA units.
+*
+* DESCRIPTION:
+*       This function returns Marvell controller number of IDMA units.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Marvell controller number of IDMA units.
+*
+*******************************************************************************/
+MV_U32 mvCtrlIdmaMaxUnitGet(MV_VOID)
+{
+	MV_U32 devId;
+	MV_U32 res = 0;
+
+	devId = mvCtrlModelGet();
+
+	switch (devId) {
+	default:
+		res = MV_IDMA_MAX_UNIT;
+		break;
+	}
+	return res;
+}
+#endif /* MV_INCLUDE_IDMA */
+
 #if defined(MV_INCLUDE_XOR)
 /*******************************************************************************
 * mvCtrlXorMaxChanGet - Get Marvell controller number of XOR channels.

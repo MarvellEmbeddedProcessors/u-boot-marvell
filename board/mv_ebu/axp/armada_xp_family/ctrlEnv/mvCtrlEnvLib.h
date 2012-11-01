@@ -231,6 +231,10 @@ MV_U32	mvCtrlPciMaxIfGet(MV_VOID);
 
 MV_U32	  mvCtrlEthMaxPortGet(MV_VOID);
 MV_U8	  mvCtrlEthMaxCPUsGet(MV_VOID);
+#if defined(MV_INCLUDE_IDMA)
+MV_U32 mvCtrlIdmaMaxUnitGet(MV_VOID);
+MV_U32 mvCtrlIdmaMaxChanGet(MV_VOID);
+#endif
 #if defined(MV_INCLUDE_XOR)
 MV_U32 mvCtrlXorMaxChanGet(MV_VOID);
 MV_U32 mvCtrlXorMaxUnitGet(MV_VOID);

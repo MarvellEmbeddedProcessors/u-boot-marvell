@@ -121,6 +121,9 @@ extern "C" {
 											 : (0x42000 + ((pexIf) % 8) * 0x40000))
 #define MV_USB_REGS_OFFSET(dev)       		(0x50000 + (dev * 0x1000))
 #define MV_XOR_REGS_OFFSET(unit)		(unit ? 0xF0900 : 0x60900)
+#if defined(MV_INCLUDE_IDMA)
+#define MV_IDMA_REGS_OFFSET			(0x60800)
+#endif
 #define MV_CESA_TDMA_REGS_OFFSET(chanNum)	(0x90000 + (chanNum * 0x2000))
 #define MV_CESA_REGS_OFFSET(chanNum)		(0x9D000 + (chanNum * 0x2000))
 #define MV_SATA_REGS_OFFSET			(0xA0000)
@@ -180,6 +183,11 @@ extern "C" {
 #define MV_XOR_MAX_UNIT				2 /* XOR unit == XOR engine */
 #define MV_XOR_MAX_CHAN         		4 /* total channels for all units together*/
 #define MV_XOR_MAX_CHAN_PER_UNIT		2 /* channels for units */
+
+#if defined(MV_INCLUDE_IDMA)
+#define MV_IDMA_MAX_UNIT			1 /* IDMA unit == IDMA engine */
+#define MV_IDMA_MAX_CHAN			4 /* total channels for all units together */
+#endif
 
 #define MV_SATA_MAX_CHAN			2
 

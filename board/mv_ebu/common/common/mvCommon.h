@@ -91,7 +91,12 @@ extern "C" {
     c -= a; c -= b; c ^= (b>>15);   \
 }
 
+#ifdef MV_VXWORKS
+static __inline__ MV_U32 mv_jhash_3words(MV_U32 a, MV_U32 b, MV_U32 c, MV_U32 initval)
+#else
 static inline MV_U32 mv_jhash_3words(MV_U32 a, MV_U32 b, MV_U32 c, MV_U32 initval)
+
+#endif
 {
 	a += MV_JHASH_GOLDEN_RATIO;
 	b += MV_JHASH_GOLDEN_RATIO;

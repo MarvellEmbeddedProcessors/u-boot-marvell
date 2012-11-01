@@ -232,6 +232,10 @@ MV_BOARD_INFO db88f78XX0Info = {
 	.gppPolarityValMid		= DB_88F78XX0_GPP_POL_MID,
 	.gppPolarityValHigh		= DB_88F78XX0_GPP_POL_HIGH,
 
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+	
 	/* TDM configuration */
 	/* We hold a different configuration array for each possible slic that
 	** can be connected to board.
@@ -419,6 +423,10 @@ MV_BOARD_INFO db88f78XX0rev2Info = {
 	.gppPolarityValMid		= DB_88F78XX0_REV2_GPP_POL_MID,
 	.gppPolarityValHigh		= DB_88F78XX0_REV2_GPP_POL_HIGH,
 
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+	
 	/* TDM configuration */
 	/* We hold a different configuration array for each possible slic that
 	** can be connected to board.
@@ -538,6 +546,10 @@ MV_BOARD_INFO rd78460nasInfo = {
 	.gppPolarityValMid		= RD_78460_NAS_GPP_POL_MID,
 	.gppPolarityValHigh		= RD_78460_NAS_GPP_POL_HIGH,
 
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+	
 	/* TDM configuration */
 	/* We hold a different configuration array for each possible slic that
 	** can be connected to board.
@@ -642,6 +654,10 @@ MV_BOARD_INFO rd78460Info = {
  .gppPolarityValMid			= RD_78460_GPP_POL_MID,
  .gppPolarityValHigh			= RD_78460_GPP_POL_HIGH,
 
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+	
  /* TDM configuration */
 	/* We hold a different configuration array for each possible slic that
  ** can be connected to board.
@@ -744,6 +760,10 @@ MV_BOARD_INFO rd78460ServerRev2Info = {
  .gppPolarityValMid			= RD_78460_SERVER_REV2_GPP_POL_MID,
  .gppPolarityValHigh			= RD_78460_SERVER_REV2_GPP_POL_HIGH,
 
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+	
  /* TDM configuration */
 	/* We hold a different configuration array for each possible slic that
  ** can be connected to board.
@@ -864,7 +884,10 @@ MV_BOARD_INFO db78X60pcacInfo = {
 	.gppPolarityValMid		= DB_78X60_PCAC_GPP_POL_MID,
 	.gppPolarityValHigh		= DB_78X60_PCAC_GPP_POL_HIGH,
 
-
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+	
 	/* TDM configuration */
 	/* We hold a different configuration array for each possible slic that
 	 ** can be connected to board.
@@ -975,7 +998,10 @@ MV_BOARD_INFO db78X60pcacrev2Info = {
 	.gppPolarityValMid		= DB_78X60_PCAC_REV2_GPP_POL_MID,
 	.gppPolarityValHigh		= DB_78X60_PCAC_REV2_GPP_POL_HIGH,
 
-
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+	
 	/* TDM configuration */
 	/* We hold a different configuration array for each possible slic that
 	 ** can be connected to board.
@@ -1097,6 +1123,10 @@ MV_BOARD_INFO fpga88f78XX0Info = {
 	.gppPolarityValMid		= FPGA_88F78XX0_GPP_POL_MID,
 	.gppPolarityValHigh		= FPGA_88F78XX0_GPP_POL_HIGH,
 
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+	
 	/* TDM configuration */
 	/* We hold a different configuration array for each possible slic that
 	** can be connected to board.
@@ -1213,7 +1243,10 @@ MV_BOARD_INFO db78X60amcInfo = {
 	.gppPolarityValLow		= DB_78X60_AMC_GPP_POL_LOW,
 	.gppPolarityValMid		= DB_78X60_AMC_GPP_POL_MID,
 	.gppPolarityValHigh		= DB_78X60_AMC_GPP_POL_HIGH,
-
+	
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,	
 
 	/* TDM configuration */
 	/* We hold a different configuration array for each possible slic that
@@ -1338,6 +1371,10 @@ MV_BOARD_INFO rd78460gpInfo = {
 	.gppPolarityValMid		= RD_78460_GP_GPP_POL_MID,
 	.gppPolarityValHigh		= RD_78460_GP_GPP_POL_HIGH,
 
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+	
 	/* TDM configuration */
 	/* We hold a different configuration array for each possible slic that
 	** can be connected to board.
@@ -1454,6 +1491,11 @@ MV_BOARD_INFO rd78460customerInfo = {
 	.gppPolarityValLow		= RD_78460_CUSTOMER_GPP_POL_LOW,
 	.gppPolarityValMid		= RD_78460_CUSTOMER_GPP_POL_MID,
 	.gppPolarityValHigh		= RD_78460_CUSTOMER_GPP_POL_HIGH,
+
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+	
 
 	/* TDM configuration */
 	/* We hold a different configuration array for each possible slic that

@@ -321,6 +321,35 @@ MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum)
 		return MV_FALSE;
 }
 
+/*******************************************************************************
+* mvBoardSwitchCpuPortGet - Get the the Ethernet Switch CPU port
+*
+* DESCRIPTION:
+*       This routine returns the Switch CPU port.
+*
+* INPUT:
+*       switchIdx - index of the switch. Only 0 is supported.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       the Switch CPU port, -1 if the switch is not connected.
+*
+*******************************************************************************/
+MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
+{
+	MV_U32 boardId = mvBoardIdGet();
+
+	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
+		mvOsPrintf("mvBoardSwitchCpuPortGet: Board unknown.\n");
+		return -1;
+	}
+	if ((BOARD_INFO(boardId)->switchInfoNum == 0) || (switchIdx >= BOARD_INFO(boardId)->switchInfoNum))
+		return -1;
+
+	return BOARD_INFO(boardId)->pSwitchInfo[switchIdx].cpuPort;
+}
 
 /*******************************************************************************
 * mvBoardPhyAddrGet - Get the phy address
@@ -2535,6 +2564,34 @@ MV_VOID mvBoardSerdesZ1ASupport(void)
 {
 	gSerdesZ1AMode = 1;
 }
+/*******************************************************************************
+* mvBoardSmiScanModeGet - Get Switch SMI scan mode
+*
+* DESCRIPTION:
+*       This routine returns Switch SMI scan mode.
+*
+* INPUT:
+*       switchIdx - index of the switch. Only 0 is supported.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       1 for SMI_MANUAL_MODE, -1 if the port number is wrong or if not relevant.
+*
+*******************************************************************************/
+MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
+{
+	MV_U32 boardId = mvBoardIdGet();
+
+	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
+		mvOsPrintf("mvBoardSmiScanModeGet: Board unknown.\n");
+		return -1;
+	}
+
+	return BOARD_INFO(boardId)->pSwitchInfo[switchIdx].smiScanMode;
+}
+
 /*******************************************************************************
 * mvBoardIsSerdesConfigurationEnabled
 *

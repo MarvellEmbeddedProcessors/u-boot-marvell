@@ -89,6 +89,7 @@ extern "C" {
 /*
 #define BOARD_ETH_PORT_NUM		MV_ETH_MAX_PORTS
 */
+#define BOARD_ETH_SWITCH_PORT_NUM	5
 #define	MV_BOARD_MAX_USB_IF		3
 #define MV_BOARD_MAX_MPP		9	/* number of MPP conf registers */
 #define MV_BOARD_NAME_LEN  		0x20
@@ -224,6 +225,15 @@ typedef struct _devCsInfo {
 	MV_U8 busWidth;
 } MV_DEV_CS_INFO;
 
+typedef struct _boardSwitchInfo {
+	MV_32 switchIrq;
+	MV_32 switchPort[BOARD_ETH_SWITCH_PORT_NUM];
+	MV_32 cpuPort;
+	MV_32 connectedPort[MV_ETH_MAX_PORTS];
+	MV_32 smiScanMode;
+	MV_32 quadPhyAddr;
+	MV_U32 forceLinkMask; /* Bitmask of switch ports to have force link (1Gbps) */
+} MV_BOARD_SWITCH_INFO;
 typedef struct _boardLedInfo {
 	MV_U8 activeLedsNumber;
 	MV_U8 ledsPolarity;	/* '0' or '1' to turn on led */
@@ -317,6 +327,9 @@ typedef struct _boardInfo {
 	MV_U32 gppPolarityValMid;
 	MV_U32 gppPolarityValHigh;
 
+	/* External Switch Configuration */
+	MV_BOARD_SWITCH_INFO *pSwitchInfo;
+	MV_U32 switchInfoNum;
 	/* TDM configuration */
 	/* We hold a different configuration array for each possible slic that
 	 ** can be connected to board.

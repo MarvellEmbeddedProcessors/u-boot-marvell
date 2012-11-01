@@ -1266,7 +1266,7 @@ MV_BOARD_INFO db78X60amcInfo = {
 	.nandFlashControl		= DB_78X60_AMC_BOARD_NAND_CONTROL
 };
 
-//////////////////////////////////////////////////////////////////////////////////
+/*********************************************************************************/
 
 /***************************/
 /* ARMADA-XP RD GP  BOARD */
@@ -1421,7 +1421,8 @@ MV_BOARD_MODULE_TYPE_INFO rd78460customerInfoBoardModTypeInfo[] = {
 		.boardOtherMod		= MV_BOARD_NONE
 	}
 };
-//////////////////////////////////////////////////////////////////////////////////
+/*********************************************************************************/
+
 
 MV_BOARD_GPP_INFO rd78460customerInfoBoardGppInfo[] = {
 	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
@@ -1517,7 +1518,7 @@ MV_BOARD_INFO rd78460customerInfo = {
 	.norFlashReadParams		= RD_78460_CUSTOMER_BOARD_NOR_READ_PARAMS,
 	.norFlashWriteParams		= RD_78460_CUSTOMER_BOARD_NOR_WRITE_PARAMS
 };
-//////////////////////////////////////////////////////////////////////////////////////
+/*********************************************************************************/
 
 MV_BOARD_INFO *boardInfoTbl[] = {
 	&db88f78XX0Info,

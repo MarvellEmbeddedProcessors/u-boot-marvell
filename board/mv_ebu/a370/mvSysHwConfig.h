@@ -40,6 +40,7 @@ disclaimer.
 
 #define MV_INCLUDE_PEX
 #define MV_INCLUDE_GIG_ETH
+//#define MV_INCLUDE_CESA
 #define MV_INCLUDE_SWITCH
 #define OLD_CESA_HAL
 #define MV_INCLUDE_USB
@@ -50,7 +51,8 @@ disclaimer.
 #define MV_INCLUDE_TDM
 #define MV_INCLUDE_XOR
 #define MV_INCLUDE_SATA
-#define MV_INCLUDE_AUDIO
+//#define MV_INCLUDE_TS
+//#define MV_INCLUDE_AUDIO
 #define MV_INCLUDE_SDIO
 #define MV_INCLUDE_RTC
 #define MV_INCLUDE_INTEG_SATA

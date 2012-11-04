@@ -71,19 +71,26 @@ USP_OBJS =	$(USP_DIR)/mv_serial.o 			\
 			$(USP_DIR)/mv_usb.o 		\
 			$(USP_ETH_SWITCH_DIR)/mvSwitch.o	\
 			$(USP_DIR)/cmd_rcvr.o		\
-			$(USP_DIR)/mv_amp.o		\
-			$(USP_DIR)/mv_fdt.o		\
 			$(USP_DIR)/mv_cmd.o		\
 			$(USP_DIR)/mv_dram.o		\
-			$(USP_DIR)/mvDramScrubbing.o	\
 			$(USP_DIR)/mv_phy.o		\
 			$(USP_DIR)/cmd_bubt.o		\
 			$(USP_DIR)/cmd_resetenv.o	\
 			$(USP_DIR)/cmd_pcie.o		\
 			$(USP_DIR)/cmd_ddr.o
 
-SOBJS = $(USP_DIR)/mv_micro_loader.o	\
-	$(USP_DIR)/platform.o
+ifeq ($(BOARD),axp)	
+	USP_OBJS +=	$(USP_DIR)/mv_amp.o		\
+			$(USP_DIR)/mvDramScrubbing.o	\
+			$(USP_DIR)/mv_fdt.o		
+endif
+		
+
+SOBJS = $(USP_DIR)/platform.o
+
+ifeq ($(BOARD),axp)	
+	SOBJS +=	$(USP_DIR)/mv_micro_loader.o	
+endif
 
 COBJS = $(COMMON_OBJS)		\
 	$(OSSERVICES_OBJS)	\

@@ -14,10 +14,21 @@ AXP_CMN_DIR		   = $(SRC_PATH)/common
 HAL_DIR            = $(AXP_CMN_DIR)/mv_hal
 COMMON_DIR         = $(AXP_CMN_DIR)/common
 USP_DIR            = $(AXP_CMN_DIR)/USP
-SOC_DIR            = $(SRC_PATH)/axp
+
 HAL_IF_DIR	   = $(AXP_CMN_DIR)/mv_hal_if
 CONFIG_DIR         = $(AXP_CMN_DIR)/config
+
+ifeq ($(BOARD),a370)
+SOC_DIR            = $(SRC_PATH)/a370
+FAM_DIR            = $(SOC_DIR)/armada_370_family
+endif
+
+ifeq ($(BOARD),axp)	
+SOC_DIR            = $(SRC_PATH)/axp
 FAM_DIR            = $(SOC_DIR)/armada_xp_family
+		
+endif
+
 SOC_ENV_DIR        = $(FAM_DIR)/ctrlEnv
 SOC_SYS_DIR        = $(FAM_DIR)/ctrlEnv/sys
 SOC_CPU_DIR        = $(FAM_DIR)/cpu

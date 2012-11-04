@@ -1,0 +1,3 @@
+BIN tools/bin_hdr_armada_xp/bin_hdr_phy.uart.bin
+BIN tools/bin_hdr_armada_xp/bin_hdr_ddr.uart.bin
+

@@ -210,10 +210,10 @@ if(defined $opt_o)
 	system("cp u-boot $opt_o/$endian/$opt_f/u-boot-axp-$opt_v-$flash_name ");
 	system("cp u-boot.srec $opt_o/$endian/$opt_f/u-boot-axp-$opt_v-$flash_name.srec ");
         system("cp u-boot-axp-$opt_v-$flash_name-uart.bin $opt_o/$endian/$opt_f/");
-        system("cp tools/bin_hdr_armada_xp/bin_hdr.bin $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_xp/bin_hdr.elf $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_xp/bin_hdr.dis $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_xp/bin_hdr.srec $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada_axp/bin_hdr.bin $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada_axp/bin_hdr.elf $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada_axp/bin_hdr.dis $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada_axp/bin_hdr.srec $opt_o/bin_hdr/");
 }
 
 exit 0;

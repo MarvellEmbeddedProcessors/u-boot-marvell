@@ -61,94 +61,52 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
+#ifndef _INC_DDR_H
+#define _INC_DDR_H
 
-#ifndef _INC_AXP_TRAINING_STATIC_H
-#define _INC_AXP_TRAINING_STATIC_H
+#include "mv_os.h"
 
-/* STATIC_TRAINING - Set only if static parameters for training are set and required */
-/*#define STATIC_TRAINING */
+#include "config_marvell.h"  	/* Required to identify SOC and Board */
 
-typedef struct __mvDramTrainingInit {
-	MV_U32 reg_addr;
-	MV_U32 reg_value;
-} MV_DRAM_TRAINING_INIT;
+#ifdef MV88F78X60
+#include "ddr3_axp.h"
+#elif defined(MV88F67XX)
+#include "ddr3_a370.h"
+#endif
 
-/* DDR3 Training static parameters - relevant only if STATIC_TRAINING is defined */
-MV_DRAM_TRAINING_INIT ddr3_db_400[MV_MAX_DDR3_STATIC_SIZE] =
-{
-	/* Read Leveling */
-	/*PUP	RdSampleDly (+CL)	Phase	RL ADLL value */
-	/*0		2		3		1 */
-	{0x000016A0, 0xC0020015},
- /*1		2		2		6 */
- {0x000016A0, 0xC0420019},
-	
- /* Write Leveling */
- /*0 */
- {0x000016A0, 0xC0006C0E},
- /*1 */
- {0x000016A0, 0xC0409418},
-	
- /*center DQS on read cycle */
- {0x000016A0, 0xC803000F},
-	
- {0x00001538, 0x00000007}, 	/*Read Data Sample Delays Register */
- {0x0000153C, 0x00000009}, 	/*Read Data Ready Delay Register */
- /*init DRAM */
- {0x00001480, 0x00000001},
- {0x0, 0x0}
-};
 
-/* DDR3 Training static parameters - relevant only if STATIC_TRAINING is defined */
-MV_DRAM_TRAINING_INIT ddr3_db_600[MV_MAX_DDR3_STATIC_SIZE] =
-{
-	/* Read Leveling */
-	/*PUP	RdSampleDly (+CL)	Phase	RL ADLL value */
-	/*0		2		3		1 */
-	{0x000016A0, 0xC0020119},
- /*1		2		2		6 */
- {0x000016A0, 0xC042011E},
-		
- /* Write Leveling */
- /*0 */
- {0x000016A0, 0xC0005508},
- /*1 */
- {0x000016A0, 0xC0409117},
-		
- /*center DQS on read cycle */
- {0x000016A0, 0xC803000F},
-		
- {0x00001538, 0x0000000B}, 	/*Read Data Sample Delays Register */
- {0x0000153C, 0x0000000F}, 	/*Read Data Ready Delay Register */
- /*init DRAM */
- {0x00001480, 0x00000001},
- {0x0, 0x0}
-};
+typedef enum  _mvConfigType {
+	CONFIG_ECC,
+	CONFIG_MULTI_CS,
+	CONFIG_BUS_WIDTH
+} MV_CONFIG_TYPE;
 
-/* DDR3 Training static parameters - relevant only if STATIC_TRAINING is defined */
-MV_DRAM_TRAINING_INIT ddr3_pcac_600[MV_MAX_DDR3_STATIC_SIZE] =
-{
-	/* Read Leveling */
-	/*PUP	RdSampleDly (+CL)	Phase	RL ADLL value */
-	/*0		2		3		1 */
-	{0x000016A0, 0xC0020006},
- /*1		2		2		6 */
- 	{0x000016A0, 0xC0420009},
-		
- /* Write Leveling */
- /*0 */
- {0x000016A0, 0xC0005809},
- /*1 */
- {0x000016A0, 0xC040680D},
-		
- /*center DQS on read cycle */
- {0x000016A0, 0xC803000F},
-		
- {0x00001538, 0x0000000A}, 	/*Read Data Sample Delays Register */
- {0x0000153C, 0x0000000C}, 	/*Read Data Ready Delay Register */
- /*init DRAM */
- {0x00001480, 0x00000001},
- {0x0, 0x0}
-};
+MV_VOID 	sramConfig(void);
+MV_VOID		changeResetVecBase(MV_32 val);
+MV_VOID		setCPSR(MV_32 val);
 
-#endif /* _INC_AXP_TRAINING_STATIC_H */
+MV_STATUS	ddr3HwTraining(MV_U32 uiTargetFreq, MV_U32 uiDdrWidth,
+						MV_BOOL bXorBypass, MV_U32 uiScrubOffs, MV_U32 uiScrubSize,	MV_BOOL bDQSCLKAligned, 
+						MV_BOOL bDebugMode, MV_BOOL bRegDimmSkipWL);
+
+MV_VOID		ddr3PrintVersion(void);
+
+MV_VOID 	fixPLLValue(MV_U8 targetFabric);
+MV_U8 		ddr3GetEpromFabric(void);
+
+MV_VOID 	uDelay(MV_U32 uiDelay);
+
+MV_U32 		ddr3GetFabOpt(void);
+MV_U32 		ddr3GetCpuFreq(void);
+MV_U32 		ddr3GetVCOFreq(void);
+MV_BOOL		ddr3CheckConfig(MV_U32 twsiAddr, MV_CONFIG_TYPE configType);
+MV_U32 ddr3GetStaticMCValue(MV_U32 regAddr, MV_U32 offset1, MV_U32 mask1, MV_U32 offset2, MV_U32 mask2);
+
+MV_U32 ddr3CLtoValidCL(MV_U32 uiCL);
+MV_U32 ddr3ValidCLtoCL(MV_U32 uiValidCL);
+MV_U32 ddr3GetCSNumFromReg(void);
+MV_U32 ddr3GetCSEnaFromReg(void);
+MV_U8 mvCtrlRevGet(MV_VOID);
+
+
+#endif /* _INC_DDR_H */

@@ -100,10 +100,9 @@ NOPED_OBJ_FILES-y += os_support.o
 OBJ_FILES-$(CONFIG_SHA1_CHECK_UB_IMG) += ubsha1.o
 NOPED_OBJ_FILES-y += ublimage.o
 
-ifeq ($(VENDOR),mv_ebu)
-	TOOLSUBDIRS += doimage_armada_xp
-	TOOLSUBDIRS += bin_hdr_armada_xp
-endif
+	TOOLSUBDIRS += doimage_armada_$(BOARD)
+	TOOLSUBDIRS += bin_hdr_armada_$(BOARD)
+
 
 # Don't build by default
 #ifeq ($(ARCH),ppc)

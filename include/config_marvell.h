@@ -39,17 +39,26 @@ disclaimer.
 /***********/
 /* General */
 /***********/
-#define MV88F78X60
-#define MV88F78X60_B0
+
 #define MV_DDR_64BIT
 #define MV_MEM_FASTPATH
 
 /**********************************/
+/* defines for DB_88F6710   */
+/**********************************/
+#ifdef CONFIG_DB_88F6710_BP
+#define DB_88F6710
+#define MV88F6710
+#define MV88F67XX	
+
+/**********************************/
 /* defines for DB-78x60-BP REV2   */
 /**********************************/
-#ifdef CONFIG_DB_78x60_BP_REV2
+#elif defined(CONFIG_DB_78x60_BP_REV2)
+#define MV88F78X60
+#define MV88F78X60_B0
+#define DB_88F78X60_REV2
 
-	#define DB_88F78X60_REV2
 #elif defined(CONFIG_DB_78X60_PCAC_REV2)
 
 /**********************************/

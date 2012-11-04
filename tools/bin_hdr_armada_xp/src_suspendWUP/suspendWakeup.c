@@ -61,83 +61,69 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
-#ifndef _INC_AXP_CONFIG_H
-#define _INC_AXP_CONFIG_H
+#include "config_marvell.h"  	/* Required to identify SOC and Board */
+#include "bin_hdr_twsi.h"
+#include "mvUart.h"
 
-/* General Configurations */
-/* The following parameters are required for proper setup */
-/* DDR_TARGET_FABRIC - Set desiered fabric configuration (for sample@Reset fabfreq parameter) */
-/* DRAM_ECC - set ECC support TRUE/FALSE */
-/* BUS_WIDTH - 64/32 bit */
-/* SPD_SUPPORT - Enables auto detection of DIMMs and their timing values */
-/* DQS_CLK_ALIGNED - Set this if CLK and DQS signals are aligned on board */
-/* MIXED_DIMM_STATIC - Mixed DIMM + On board devices support (ODT registers values are taken statically) */
-/* DDR3_TRAINING_DEBUG - debug prints of internal code */
-#define DDR_TARGET_FABRIC						5
-#define DRAM_ECC								FALSE
-#define BUS_WIDTH								64
-#define SPD_SUPPORT
-#undef DQS_CLK_ALIGNED
-#undef MIXED_DIMM_STATIC
-#define DDR3_TRAINING_DEBUG						FALSE
-#define REG_DIMM_SKIP_WL						TRUE
+#include "bootstrap_os.h"
 
-/* Marvell boards specific configurations */
-#if defined(DB_78X60_PCAC)
-#undef SPD_SUPPORT
-#define STATIC_TRAINING
-#endif
-#if defined(DB_78X60_AMC)
-#undef SPD_SUPPORT
-#undef  DRAM_ECC
-#define DRAM_ECC								TRUE
-#endif
 
-#ifdef SPD_SUPPORT
-/* DIMM support parameters: */
-/* DRAM_2T - Set Desired 2T Mode - 0 - 1T, 0x1 - 2T, 0x2 - 3T */
-/* DIMM_CS_BITMAP - bitmap representing the optional CS in DIMMs (0xF=CS0+CS1+CS2+CS3, 0xC=CS2+CS3...) */
-#define DRAM_2T									0
-#define DIMM_CS_BITMAP							0xF
-#define DUNIT_SPD
-#endif
+/************************************************************************************
+* Name:		suspendWakeup - 
+* Desc:	 	Detectes suspend to RAM state, reads the return PC 
+* 		and performs registers write according to a list.
+* 		The data is stored in the following format
+* 		boot_info_addr + 0x0 = magic word
+* 		boot_info_addr + 0x4 = resume pc
+* 		boot_info_addr + 0x8 + 8*n = register addres (0xFFFFFFFF means end list)
+*		boot_info_addr + 0xC + 8*n = register value
+* Args:	 	None.
+* Notes:
+* Returns:	None.
+*/
 
-#ifdef DRAM_ECC
-/* ECC support parameters: */
-/* U_BOOT_START_ADDR, U_BOOT_SCRUB_SIZE - relevant when using ECC and need to configure the scrubbing area */
-#define U_BOOT_START_ADDR						0
-#define U_BOOT_SCRUB_SIZE						0x1000000
-#endif
+#define BOOT_INFO_ADDR 		(0x3000)
+#define SUSPEND_MAGIC_WORD 	(0xDEADB002)
+#define REGISTER_LIST_END 	(0xFFFFFFFF) 
 
-/* Registered DIMM Support - In case registered DIMM is attached, please supply the following values:
-(see JEDEC - JESD82-29A "Definition of the SSTE32882 Registering Clock Driver with Parity and Quad Chip
-Selects for DDR3/DDR3L/DDR3U RDIMM 1.5 V/1.35 V/1.25 V Applications") */
-/* RC0: Global Features Control Word */
-/* RC1: Clock Driver Enable Control Word */
-/* RC2: Timing Control Word */
-/* RC3-RC5 - taken from SPD */
-/* RC8: Additional IBT Setting Control Word */
-/* RC9: Power Saving Settings Control Word */
-/* RC10: Encoding for RDIMM Operating Speed */
-/* RC11: Operating Voltage VDD and VREFCA Control Word */
-#define RDIMM_RC0								0
-#define RDIMM_RC1								0
-#define RDIMM_RC2								0
-#define RDIMM_RC8								0
-#define RDIMM_RC9								0
-#define RDIMM_RC10								0x2
-#define RDIMM_RC11								0
+void suspendWakeup(void)
+{
+	int *boot_info = (int*)(BOOT_INFO_ADDR);
+	int  magic_word;
+	void (*resumeFunc)(void) = NULL;
+	int *reg_addr, reg_value;
 
-#if defined(MIXED_DIMM_STATIC) || !defined (SPD_SUPPORT)
-#define DUNIT_STATIC
-#endif
+	magic_word =  *(boot_info);
 
-#ifdef SPD_SUPPORT
-/* AUTO_DETECTION_SUPPORT - relevant ONLY for Marvell DB boards. enables I2C auto detection different options */
-#if defined(DB_88F78X60) || defined(DB_88F78X60_REV2) || defined(DB_784MP_GP)
-#define AUTO_DETECTION_SUPPORT
-#endif
-#endif
+	if(magic_word == SUSPEND_MAGIC_WORD)
+	{
+		/* Clear magic word to avoid succesive resumes */
+		(*boot_info++) =  0x0;
 
-#endif /* _INC_AXP_CONFIG_H */
+		resumeFunc = (void *)(*boot_info++);
+
+		DEBUG_INIT_S("Detected suspend to RAM. Returning to OS\n");
+
+		/* Restore registers */
+		reg_addr = (int *)(*boot_info++);
+		
+		while (reg_addr != (int *)REGISTER_LIST_END)
+		{
+			reg_value = (*boot_info++);
+			*reg_addr = reg_value;
+
+			reg_addr = (int *)(*boot_info++);
+		}
+
+		/* CLean after bootrom */
+
+		/* Jump back to OS */
+		resumeFunc();		
+	}
+	return;
+}
+

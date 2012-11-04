@@ -32,7 +32,7 @@
 #define __CONFIG_H
 
 #include <config.h>
-#include "../../board/mv_ebu/370_db/mvSysHwConfig.h"
+#include "../../board/mv_ebu/a370/mvSysHwConfig.h"
 
 #define MV_RT_DEBUG
 
@@ -54,9 +54,7 @@
 	#define DB_88F6710
 	#define MV88F6710
 	#define MV88F67XX
-	/* omri - temporary ! disabled I-Cache */
-//	 #define	CONFIG_SYS_ICACHE_OFF
-	/* omri - temporary ! disabled I-Cache */
+
 
 #ifdef MV_NAND
 		#define MV_NAND_PIO_MODE

@@ -42,12 +42,12 @@ are permitted provided that the following conditions are met:
 	    this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-		notice, this list of conditions and the following disclaimer in the
-		documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-		used to endorse or promote products derived from this software without
-		specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -62,34 +62,86 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _INC_A370_CONFIG_H
-#define _INC_A370_CONFIG_H
 
-/* General Configurations */
-/* The following parameters are required for proper setup */
-/* DRAM_ECC - Must be set to FALSE */
-/* DQS_CLK_ALIGNED - Set this if CLK and DQS signals are aligned on board */
-/* DDR3_TRAINING_DEBUG - debug prints of internal code */
-/* A370_A0 - must be defined if using Marvell DB board and A370 A0 device otherwise dont care */
-#define DUNIT_STATIC
-#define DRAM_ECC								FALSE
-#undef DQS_CLK_ALIGNED
-#define DDR3_TRAINING_DEBUG						FALSE
-#undef A370_A0
-#define REG_DIMM_SKIP_WL						TRUE
+#ifndef _MV_HIGHSPEED_ENV_SPEC_H
+#define _MV_HIGHSPEED_ENV_SPEC_H
+#include "bootstrap_os.h"
 
-/* Marvell boards specific configurations */
-#if defined(DB_88F6710_PCAC)
-#define STATIC_TRAINING
-#endif
 
-#if defined(DB_88F6710) && !defined(A370_A0)
-#define AUTO_DETECTION_SUPPORT
-#define SPD_SUPPORT
-#define DRAM_2T									0x0
-#define DIMM_CS_BITMAP							0xF
-#define DUNIT_SPD
-#undef DUNIT_STATIC
-#endif
+typedef enum {
+	SERDES_UNIT_UNCONNECTED	= 0x0,
+	SERDES_UNIT_PEX		= 0x1,
+	SERDES_UNIT_SATA	= 0x2,
+	SERDES_UNIT_SGMII0	= 0x3,
+	SERDES_UNIT_SGMII1	= 0x4,
+	SERDES_UNIT_SGMII2	= 0x5,
+	SERDES_UNIT_SGMII3	= 0x6,
+	SERDES_UNIT_QSGMII	= 0x7,
+	SERDES_UNIT_SETM        = 0x8,
+	SERDES_LAST_UNIT
+} MV_BIN_SERDES_UNIT_INDX;
 
-#endif /* _INC_A370_CONFIG_H */
+
+typedef enum {
+	PEX_BUS_DISABLED	= 0,
+	PEX_BUS_MODE_X1		= 1,
+	PEX_BUS_MODE_X4		= 2,
+	PEX_BUS_MODE_X8		= 3
+} MV_PEX_UNIT_CFG;
+
+
+typedef enum _mvPexType {
+          MV_PEX_ROOT_COMPLEX,    /* root complex device */
+          MV_PEX_END_POINT        /* end point device */
+} MV_PEX_TYPE;
+typedef struct _boardSerdesChangeMphy {
+	MV_BIN_SERDES_UNIT_INDX serdesType;
+	MV_U32	serdesRegLowSpeed;
+	MV_U32	serdesValueLowSpeed;
+	MV_U32	serdesRegHiSpeed;
+	MV_U32	serdesValueHiSpeed;
+} MV_SERDES_CHANGE_M_PHY;
+
+/* Configuration per SERDES line.
+   Each nibble is MV_SERDES_LINE_TYPE */
+typedef struct _boardSerdesConf {
+	MV_PEX_TYPE pexType; /* MV_PEX_ROOT_COMPLEX MV_PEX_END_POINT */
+	MV_U32	serdesLine0_7;	/* Lines 0 to 7 SERDES MUX one nibble per line */
+	MV_U32	serdesLine8_15;	/* Lines 8 to 15 SERDES MUX one nibble per line */
+
+	MV_PEX_UNIT_CFG		pexMod[4];
+	MV_U32	busSpeed;	/* Bus speed - one bit per SERDES line:
+	Low speed (0)		High speed (1)
+	PEX	2.5 G (10 bit)		5 G (20 bit)
+	SATA	1.5 G			3 G
+	SGMII 	1.25 Gbps		3.125 Gbps	*/
+	MV_SERDES_CHANGE_M_PHY * serdesMphyChange;
+} MV_BIN_SERDES_CFG;
+
+
+#define BIN_SERDES_CFG {	\
+	{0, 1, -1 , -1, -1, -1, -1, -1, -1}, /* Lane 0 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1,  2}, /* Lane 1 */	\
+	{0, 1, -1 ,  2, -1, -1, -1, -1,  3}, /* Lane 2 */	\
+	{0, 1, -1 , -1,  2, -1, -1,  3, -1}, /* Lane 3 */	\
+	{0, 1,  2 , -1, -1,  3, -1, -1,  4}, /* Lane 4 */	\
+	{0, 1,  2 , -1,  3, -1, -1,  4, -1}, /* Lane 5 */	\
+	{0, 1,  2 ,  4, -1,  3, -1, -1, -1}, /* Lane 6 */	\
+	{0, 1, -1 ,  2, -1, -1,  3, -1,  4}, /* Lane 7*/	\
+	{0, 1, -1 , -1, -1, -1, -1, -1, -1}, /* Lane 8 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1, -1}, /* Lane 9 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1, -1}, /* Lane 10 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1, -1}, /* Lane 11 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1, -1}, /* Lane 12 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1, -1}, /* Lane 13 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1, -1}, /* Lane 14 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1, -1}, /* Lane 15 */	\
+}
+
+typedef struct _boardTwsiInfo {
+	MV_U8 twsiDevAddr;
+	MV_U8 twsiDevAddrType;
+} MV_BOARD_BIN_TWSI_INFO;
+
+
+#endif /* _MV_HIGHSPEED_ENV_SPEC_H */

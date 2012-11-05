@@ -1,0 +1,4 @@
+# Param1 (Static Parameters 0-OFF, 1-ON)
+0x5B
+# Param2 (Static Parameters 0-OFF, 1-ON)
+0x68

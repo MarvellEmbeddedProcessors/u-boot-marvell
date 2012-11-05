@@ -243,7 +243,6 @@ extern "C" {
 #define MV_ETH_TX_CSUM_MAX_SIZE 		9800
 #define MV_PNC_TCAM_LINES			1024	/* TCAM num of entries */
 
-#if defined(MV88F78X60) && !defined(MV88F78X60_Z1)
 /* New GMAC module is used */
 #define MV_ETH_GMAC_NEW
 /* New WRR/EJP module is used */
@@ -254,7 +253,6 @@ extern "C" {
 #define MV_ETH_PNC_NEW
 /* PNC Load Balancing support */
 #define MV_ETH_PNC_LB
-#endif /* MV88F78X60_A0/B0 */
 
 #define MV_78130_ETH_MAX_PORT			3
 #define MV_78460_ETH_MAX_PORT			4

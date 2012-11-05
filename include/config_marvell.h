@@ -56,7 +56,6 @@ disclaimer.
 /**********************************/
 #elif defined(CONFIG_DB_78x60_BP_REV2)
 #define MV88F78X60
-#define MV88F78X60_B0
 #define DB_88F78X60_REV2
 
 #elif defined(CONFIG_DB_78X60_PCAC_REV2)
@@ -65,6 +64,7 @@ disclaimer.
 /* defines for DB-78x60-PCAC REV2   */
 /**********************************/
 	#define DB_78X60_PCAC_REV2
+	#define MV88F78X60
 
 #elif defined(CONFIG_RD_78460_NAS)
 
@@ -72,6 +72,7 @@ disclaimer.
 /* defines for DB-78x60-NAS 	   */
 /**********************************/
 	#define RD_78460_NAS
+	#define MV88F78X60
 
 #elif defined(CONFIG_RD_78460_SERVER_REV2)
 
@@ -80,6 +81,7 @@ disclaimer.
 /**********************************/
 
 	#define RD_78460_SERVER_REV2
+	#define MV88F78X60
 
 #elif defined(CONFIG_DB_784MP_GP)
 
@@ -87,7 +89,8 @@ disclaimer.
 /* defines for DB-784MP-GP        */
 /**********************************/
 
-	#define DB_784MP_GP
+	#define DB_784MP_GP	
+	#define MV88F78X60
 
 #elif defined(CONFIG_RD_78460_CUSTOMER)
 
@@ -96,6 +99,7 @@ disclaimer.
 /**********************************/
 
 	#define RD_78460_CUSTOMER
+	#define MV88F78X60
 
 #else
 #error "*** Error: Board type unspecified\n"

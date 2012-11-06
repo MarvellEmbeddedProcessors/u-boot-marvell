@@ -85,17 +85,6 @@ extern "C" {
 		TIMER5,			/* CPU0 Timer 0   for A0 this is private CPU timer 0  */
 		TIMER6, 		/* CPU0 Timer 1   for A0 this is private CPU timer 1   */
 		TIMER7, 		/* CPU0 Watchdog  for A0 this is private CPU WD  */
-#ifdef MV88F78X60_Z1
-		TIMER8, 		/* CPU1 Timer 0     */
-		TIMER9, 		/* CPU1 Timer 1     */
-		TIMER10,		/* CPU1 Watchdog    */
-		TIMER11,		/* CPU2 Timer 0     */
-		TIMER12,		/* CPU2 Timer 1     */
-		TIMER13,		/* CPU2 Watchdog    */
-		TIMER14,		/* CPU73 Timer 0    */
-		TIMER15,		/* CPU73 Timer 1    */
-		TIMER16 		/* CPU73 Watchdog   */
-#endif
 	} MV_CNTMR_ID;
 
 #define MAX_GLOBAL_TIMER	TIMER4
@@ -116,10 +105,10 @@ extern "C" {
 	typedef struct _mvCntmrCtrl {
 		MV_BOOL enable;	/* enable */
 		MV_BOOL autoEnable;	/* counter/Timer  */
-#ifndef MV88F78X60_Z1
+
 		MV_CNTMR_RATIO_ID	Ratio;
 		MV_BOOL enable_25Mhz;	/* enable timer count frequency is to 25Mhz*/
-#endif
+
 	} MV_CNTMR_CTRL;
 
 /* Functions */

@@ -148,6 +148,12 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 			MV_REG_WRITE(PEX_DBG_CTRL_REG(pexIf), regVal);
 		}
 	}
+	
+	if ((ctrlModel == MV_6710_DEV_ID) ||
+		(ctrlModel == MV_6W11_DEV_ID) ||
+		(ctrlModel == MV_6707_DEV_ID)) {
+		 mvCpuIfEnablePex(pexIf);
+	}
 	/* now wait 1ms to be sure the link is valid */
 	mvOsDelay(1);
 	/* Check if we have link */

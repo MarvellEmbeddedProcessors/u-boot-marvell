@@ -195,7 +195,7 @@ if($fail){
 
 $fail = system("./tools/doimage -T uart -D 0 -E 0 -G ./tools/bin_hdr_armada_xp/bin_hdr.uart.bin u-boot.bin u-boot-axp-$opt_v-$flash_name-uart.bin");
 if($fail){
-	print "\n *** Error: Doimage for uart image failed\n\n";
+	print "\n *** Error: Doimage failed\n\n";
 	exit;
 }
 
@@ -206,14 +206,16 @@ if(defined $opt_o)
 	print "\n**** [Copying Image]\tto ",$opt_o,"  *****\n\n";
 	system("mkdir -p $opt_o/$endian/$opt_f");
 	system("mkdir -p $opt_o/bin_hdr");
-	system("cp u-boot-axp-$opt_v-$flash_name.bin $opt_o/$endian/$opt_f/ ");
-	system("cp u-boot $opt_o/$endian/$opt_f/u-boot-axp-$opt_v-$flash_name ");
-	system("cp u-boot.srec $opt_o/$endian/$opt_f/u-boot-axp-$opt_v-$flash_name.srec ");
-        system("cp u-boot-axp-$opt_v-$flash_name-uart.bin $opt_o/$endian/$opt_f/");
-        system("cp tools/bin_hdr_armada_axp/bin_hdr.bin $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_axp/bin_hdr.elf $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_axp/bin_hdr.dis $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_axp/bin_hdr.srec $opt_o/bin_hdr/");
+	system("cp u-boot-$boardID-$opt_v-$flash_name.bin $opt_o.bin");
+	system("cp u-boot-$boardID-$opt_v-$flash_name.bin $opt_o/$endian/$opt_f/ ");
+	system("cp u-boot $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name ");
+	system("cp u-boot.srec $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name.srec ");
+        system("cp u-boot-$boardID-$opt_v-$flash_name-uart.bin $opt_o/$endian/$opt_f/");
+        system("cp tools/bin_hdr_armada_$boardID/bin_hdr.bin $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada_$boardID/bin_hdr.elf $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada_$boardID/bin_hdr.dis $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada_$boardID/bin_hdr.srec $opt_o/bin_hdr/");
+
 }
 
 exit 0;

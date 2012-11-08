@@ -154,8 +154,8 @@ MV_U32 mvDramIfHwSizeGet(MV_VOID)
 		}
 	}
 	/* Dram size alignment fix */
-	sizeRegVal = (totalSize & SDRAMWCR_SIZE_MASK) >> SDRAMWCR_SIZE_OFFS;   // sizeregVal = ( amount of 16mb chunks -1 )
-	totalSize = (sizeRegVal + 1) * SDRAMWCR_SIZE_ALLIGNMENT;    	     // size = alined size (num of 16mb chunks * 16mb)
+	sizeRegVal = (totalSize & SDRAMWCR_SIZE_MASK) >> SDRAMWCR_SIZE_OFFS;   /* sizeregVal = ( amount of 16mb chunks -1 ) */
+	totalSize = (sizeRegVal + 1) * SDRAMWCR_SIZE_ALLIGNMENT;    	     /* size = alined size (num of 16mb chunks * 16mb) */
 	/* Dram size alignment fix*/
 	return totalSize;
 }

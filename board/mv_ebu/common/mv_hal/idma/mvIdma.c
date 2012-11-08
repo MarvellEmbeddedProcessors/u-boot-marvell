@@ -333,10 +333,38 @@ MV_STATE mvDmaStateGet(MV_U32 chan)
 }
 
 /*******************************************************************************
+* mvDmaStopAll - Stop any IDMA activity.
+*
+* DESCRIPTION:
+*		This function stops any DMA activity.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_VOID mvDmaStopAll(MV_VOID)
+{
+	MV_U32      dmaChanNum;
+
+	for(dmaChanNum = 0; dmaChanNum < MV_IDMA_MAX_CHAN; dmaChanNum++)
+	{
+		mvDmaCommandSet(dmaChanNum, MV_STOP);
+	}
+    
+	return;
+}
+
+/*******************************************************************************
 * mvDmaCommandSet - Set command to DMA channel
 *
 * DESCRIPTION:
-*       DMA channel can be started, idel, paused and restarted.
+*       DMA channel can be started, idle, paused and restarted.
 *       Paused can be set only if channel is active.
 *       Start can be set only if channel is idle.
 *       Restart can be set only if channel is paused.

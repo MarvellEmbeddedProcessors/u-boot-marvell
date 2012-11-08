@@ -65,10 +65,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvSataSoc.h"
 #include "mvRegs.h"
 
-/* Calculate the base address of the registers for a SATA channel */
-static MV_U32 edmaRegOffst[8] = { 0x22000, 0x24000, 0x26000, 0x28000,
-	0x32000, 0x34000, 0x36000, 0x38000
-};
 
 #define getEdmaRegOffset(x) edmaRegOffst[(x)]
 

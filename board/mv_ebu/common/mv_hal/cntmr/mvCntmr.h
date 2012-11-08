@@ -119,6 +119,9 @@ extern "C" {
 /* Returns the value of the given Counter/Timer */
 	MV_U32 mvCntmrRead(MV_U32 countNum);
 
+/* Returns 0xffffffff minus the value of the given Counter/Timer */
+	MV_U32 mvCntmrReadDiff(MV_U32 countNum);
+
 /* Write a value of the given Counter/Timer */
 	void mvCntmrWrite(MV_U32 countNum, MV_U32 countVal);
 

@@ -137,6 +137,26 @@ MV_U32 mvCntmrRead(MV_U32 countNum)
 {
 	return MV_REG_READ(CNTMR_VAL_REG(countNum));
 }
+/*******************************************************************************
+* mvCntmrReadDiff -
+*
+* DESCRIPTION:
+*  	Returns the number of counts of the given Counter/Timer
+*
+* INPUT:
+*       countNum - counter number
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_U32 the number of counts of the given Counter/Timer 
+*******************************************************************************/
+MV_U32 mvCntmrReadDiff(MV_U32 countNum)
+{
+	/* counter counts down */
+	return TVR_ARM_TIMER_MAX - MV_REG_READ(CNTMR_VAL_REG(countNum));
+}
 
 /*******************************************************************************
 * mvCntmrWrite -

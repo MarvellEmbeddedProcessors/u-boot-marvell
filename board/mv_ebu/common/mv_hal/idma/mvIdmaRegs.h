@@ -62,29 +62,35 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
+#include "mvSysIdmaConfig.h"
+
 #ifndef __INCmvIdmaRegsh
 #define __INCmvIdmaRegsh
 
 
 /* defines */
 
+/* IDMA channel rgisters */
+#define IDMA_BYTE_COUNT_REG(chan)          	(MV_IDMA_REGS_BASE + 0x0 + ((chan) * 4))
+#define IDMA_SRC_ADDR_REG(chan)            	(MV_IDMA_REGS_BASE + 0x10 + ((chan) * 4))
+#define IDMA_DST_ADDR_REG(chan)            	(MV_IDMA_REGS_BASE + 0x20 + ((chan) * 4))
+#define IDMA_NEXT_DESC_PTR_REG(chan)       	(MV_IDMA_REGS_BASE + 0x30 + ((chan) * 4))
+#define IDMA_CURR_DESC_PTR_REG(chan)	   	(MV_IDMA_REGS_BASE + 0x70 + ((chan) * 4))
 
-/* IDMA channel rgisters       												*/
-#define IDMA_BYTE_COUNT_REG(chan)          	(IDMA_UNIT_BASE + 0x0 + ((chan) * 4))
-#define IDMA_SRC_ADDR_REG(chan)            	(IDMA_UNIT_BASE + 0x10 + ((chan) * 4))
-#define IDMA_DST_ADDR_REG(chan)            	(IDMA_UNIT_BASE + 0x20 + ((chan) * 4))
-#define IDMA_NEXT_DESC_PTR_REG(chan)       	(IDMA_UNIT_BASE + 0x30 + ((chan) * 4))
-#define IDMA_CURR_DESC_PTR_REG(chan)	   	(IDMA_UNIT_BASE + 0x70 + ((chan) * 4))
-
-/* IDMA Channel Control														*/
-#define IDMA_CTRL_LOW_REG(chan)			(IDMA_UNIT_BASE + 0x40 + ((chan) * 4))
-#define IDMA_CTRL_HIGH_REG(chan)		(IDMA_UNIT_BASE + 0x80 + ((chan) * 4))
+/* IDMA Channel Control	*/
+#define IDMA_CTRL_LOW_REG(chan)			(MV_IDMA_REGS_BASE + 0x40 + ((chan) * 4))
+#define IDMA_CTRL_HIGH_REG(chan)		(MV_IDMA_REGS_BASE + 0x80 + ((chan) * 4))
 
  /*  IDMA Interrupt Register  */
-#define IDMA_CAUSE_REG            		(IDMA_UNIT_BASE + 0xc0)
-#define IDMA_MASK_REG           		(IDMA_UNIT_BASE + 0xc4)
-#define IDMA_ERROR_ADDR_REG             (IDMA_UNIT_BASE + 0xc8)
-#define IDMA_ERROR_SELECT_REG           (IDMA_UNIT_BASE + 0xcc)
+#define IDMA_CAUSE_REG            		(MV_IDMA_REGS_BASE + 0xc0)
+#define IDMA_MASK_REG           		(MV_IDMA_REGS_BASE + 0xc4)
+#define IDMA_ERROR_ADDR_REG             (MV_IDMA_REGS_BASE + 0xc8)
+#define IDMA_ERROR_SELECT_REG           (MV_IDMA_REGS_BASE + 0xcc)
+
+/* IDMA Engine address decode registers.	*/
+
+#define IDMA_MAX_ADDR_DEC_WIN           8	/* Maximum address decode windows		*/
+#define IDMA_MAX_REMAP_WIN              4	/* Maximum address arbiter windows		*/
 
 
 /* DMA register fileds */

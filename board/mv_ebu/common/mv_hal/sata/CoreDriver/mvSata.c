@@ -115,7 +115,7 @@ extern void dumpAtaDeviceRegisters(MV_SATA_ADAPTER *pAdapter,
 
 extern MV_BOOLEAN _doSoftReset(MV_SATA_CHANNEL *pSataChannel);
 
-MV_BOOLEAN isStorageDevReadyForPIO(MV_SATA_CHANNEL *pSataChannel);
+static MV_BOOLEAN isStorageDevReadyForPIO(MV_SATA_CHANNEL *pSataChannel);
 
 extern MV_BOOLEAN executeNonUDMACommand(MV_SATA_ADAPTER *pAdapter,
 					MV_U8 channelIndex,
@@ -389,10 +389,6 @@ static void checkIogBit(MV_SATA_ADAPTER *pAdapter, MV_U8 bitOffset, MV_U8 value)
 static MV_BOOLEAN iogReset(MV_SATA_ADAPTER *pAdapter);
 #endif
 
-/* Calculate the base address of the registers for a SATA channel */
-MV_U32 edmaRegOffst[MV_SATA_CHANNELS_NUM] = { 0x22000, 0x24000, 0x26000, 0x28000,
-	0x32000, 0x34000, 0x36000, 0x38000
-};
 
 #define getEdmaRegOffset(x) edmaRegOffst[(x)]
 

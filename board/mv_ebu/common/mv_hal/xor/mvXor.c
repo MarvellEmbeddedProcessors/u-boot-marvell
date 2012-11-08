@@ -62,6 +62,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvCommon.h"
 #include "mvOs.h"
 #include "ctrlEnv/mvCtrlEnvSpec.h"
+#include "ctrlEnv/mvUnitMap.h"
 #include "mvSysXorConfig.h"
 #include "mvXorRegs.h"
 #include "mvXor.h"
@@ -91,6 +92,10 @@ MV_VOID mvXorHalInit(MV_U32 xorChanNum)
 	MV_U32 i;
 	/* Abort any XOR activity & set default configuration */
 	for (i = 0; i < xorChanNum; i++) {
+		
+		if(mvUnitMapIsMine(XOR0 + XOR_UNIT(i)) == FALSE)
+			continue;
+		
 		mvXorCommandSet(i, MV_STOP);
 		mvXorCtrlSet(i, (1 << XEXCR_REG_ACC_PROTECT_OFFS) |
 			     (4 << XEXCR_DST_BURST_LIMIT_OFFS) | (4 << XEXCR_SRC_BURST_LIMIT_OFFS)
@@ -577,3 +582,17 @@ MV_STATUS mvXorOverrideSet(MV_U32 chan, MV_XOR_OVERRIDE_TARGET target, MV_U32 wi
 	MV_REG_WRITE(XOR_OVERRIDE_CTRL_REG(chan), temp);
 	return MV_OK;
 }
+
+MV_VOID mvXorOverrideDisable(MV_U32 chan)
+{
+	MV_REG_WRITE(XOR_OVERRIDE_CTRL_REG(chan), 0);
+}
+
+MV_VOID xorSetSrcBurstLimit(MV_U32 chan, MV_XOR_BURST_LIMIT srcBurstLimit)
+{
+    MV_U32 temp = MV_REG_READ(XOR_CONFIG_REG(XOR_UNIT(chan), XOR_CHAN(chan)));
+    temp &= ~XEXCR_SRC_BURST_LIMIT_MASK;
+    temp |= srcBurstLimit << XEXCR_SRC_BURST_LIMIT_OFFS;
+    MV_REG_WRITE(XOR_CONFIG_REG(XOR_UNIT(chan),XOR_CHAN(chan)), temp);
+}
+

@@ -93,6 +93,12 @@ extern "C" {
 		MV_CRC32	/* XOR channel functions as CRC 32 calculator   */
 	} MV_XOR_TYPE;
 
+	typedef enum _mvXorBurstLinit {
+		MV_XOR_BURST_LIMIT_32_BYTES  = 0x2,
+		MV_XOR_BURST_LIMIT_64_BYTES  = 0x3,
+		MV_XOR_BURST_LIMIT_128_BYTES = 0x4
+	} MV_XOR_BURST_LIMIT;
+
 #if defined(MV_CPU_LE)
 	/* This structure describes XOR descriptor size 64bytes                     */
 	typedef struct _mvXorDesc {
@@ -161,6 +167,7 @@ extern "C" {
 
 #endif
 
+#define MV_XOR_DESC_ALIGNMENT       sizeof(MV_XOR_DESC)
 	typedef struct _mvXorEcc {
 		MV_U32 destPtr;	/* Target block pointer to ECC/MemInit operation */
 		MV_U32 blockSize;	/* Block size in bytes for ECC/MemInit operation */
@@ -191,6 +198,8 @@ extern "C" {
 	MV_STATE mvXorStateGet(MV_U32 chan);
 	MV_STATUS mvXorCommandSet(MV_U32 chan, MV_COMMAND command);
 	MV_STATUS mvXorOverrideSet(MV_U32 chan, MV_XOR_OVERRIDE_TARGET target, MV_U32 winNum, MV_BOOL enable);
+	MV_VOID xorSetSrcBurstLimit(MV_U32 chan, MV_XOR_BURST_LIMIT srcBurstLimit);
+	MV_VOID mvXorOverrideDisable(MV_U32 chan);
 
 	MV_STATUS mvXorWinInit(MV_UNIT_WIN_INFO *addrWinMap);
 	MV_STATUS mvXorTargetWinWrite(MV_U32 unit, MV_U32 winNum,

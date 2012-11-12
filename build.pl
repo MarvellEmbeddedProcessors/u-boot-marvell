@@ -152,7 +152,15 @@ if($opt_c eq 1)
 	{
 		@interfaces = split(':', $opt_i);
 
-                print " Support flash: ";
+		if (($boardID eq "a370") and
+			(grep{$_ eq 'nor'} @interfaces)  and
+			(grep{$_ eq 'nand'} @interfaces))
+		{
+			print"\n *** Error: Armada-370 does not Support nand and nor interfaces together\n";
+			exit;
+		}
+
+		print " Support flash: ";
 		foreach $if (@interfaces)
 		{
 			if   ($if eq "spi"){
@@ -184,18 +192,24 @@ if($fail){
 	exit;
 }
 
-#Create Image
+#Create Image and Uart Image
 print "\n**** [Creating Image]\t*****\n\n";
-$fail = system("./tools/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/bin_hdr_armada_xp/bin_hdr.bin u-boot.bin u-boot-axp-$opt_v-$flash_name.bin");
-
-if($fail){
-	print "\n *** Error: Doimage failed\n\n";
-	exit;
+if($boardID eq "axp") {
+#Uart image for AXP
+	$fail = system("./tools/doimage -T uart -D 0 -E 0  -C ./tools/bin_hdr_armada_$boardID/uart_header_list.txt u-boot.bin u-boot-$boardID-$opt_v-$flash_name-uart.bin");
+	if($fail){
+		print "\n *** Error: Doimage for uart image failed\n\n";
+		exit;
+	}
+	$fail = system("./tools/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -C ./tools/bin_hdr_armada_$boardID/header_list.txt u-boot.bin u-boot-$boardID-$opt_v-$flash_name.bin");
 }
+elsif($boardID eq "a370"){
+	+	$fail = system("./tools/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/bin_hdr_armada_$boardID/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name.bin");
 
-$fail = system("./tools/doimage -T uart -D 0 -E 0 -G ./tools/bin_hdr_armada_xp/bin_hdr.uart.bin u-boot.bin u-boot-axp-$opt_v-$flash_name-uart.bin");
+
+$fail = system("./tools/doimage -T uart -D 0 -E 0 -G ./tools/bin_hdr_armada_xp/bin_hdr.uart.bin u-boot.bin u-boot-axp-$opt_v-$flash_name-$targetBoard-uart.bin");
 if($fail){
-	print "\n *** Error: Doimage failed\n\n";
+	print "\n *** Error: Doimage for uart image failed\n\n";
 	exit;
 }
 

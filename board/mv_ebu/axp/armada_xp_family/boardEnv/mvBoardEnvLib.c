@@ -407,6 +407,10 @@ MV_32 mvBoardPhyLinkCryptPortAddrGet(MV_U32 ethPortNum)
 	return BOARD_INFO(boardId)->pBoardMacInfo[ethPortNum].LinkCryptPortAddr;
 }
 
+MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum)
+{
+	return !mvBoardIsPortInGmii(ethPortNum);
+}
 
 /*******************************************************************************
 * mvBoardMacSpeedGet - Get the Mac speed

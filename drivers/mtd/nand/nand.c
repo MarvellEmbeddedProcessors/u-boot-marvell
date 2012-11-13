@@ -148,11 +148,7 @@ int nand_get_env_offs(void)
 
 	offset += CONFIG_UBOOT_SIZE;
 
-	/* Env base offset should be at least CONFIG_ENV_BASE */
-	if (offset < CONFIG_ENV_BASE) {
-		offset = CONFIG_ENV_BASE;
-		i = (CONFIG_ENV_BASE / blocksize);
-	}
+
 	/* Find Env start */
         sum = 0;
         while(i * blocksize < nand_info[0].size) {

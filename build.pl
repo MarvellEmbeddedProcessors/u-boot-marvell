@@ -195,16 +195,12 @@ if($fail){
 #Create Image and Uart Image
 print "\n**** [Creating Image]\t*****\n\n";
 if($boardID eq "axp") {
-#Uart image for AXP
-	$fail = system("./tools/doimage -T uart -D 0 -E 0  -C ./tools/bin_hdr_armada_$boardID/uart_header_list.txt u-boot.bin u-boot-$boardID-$opt_v-$flash_name-uart.bin");
-	if($fail){
-		print "\n *** Error: Doimage for uart image failed\n\n";
-		exit;
-	}
+
+	$failUart = system("./tools/doimage -T uart -D 0 -E 0  -C ./tools/bin_hdr_armada_$boardID/uart_header_list.txt u-boot.bin u-boot-$boardID-$opt_v-$flash_name-uart.bin");
 	$fail = system("./tools/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -C ./tools/bin_hdr_armada_$boardID/header_list.txt u-boot.bin u-boot-$boardID-$opt_v-$flash_name.bin");
 }
 elsif($boardID eq "a370"){
-	+	$fail = system("./tools/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/bin_hdr_armada_$boardID/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name.bin");
+	$failUart=system("./tools/doimage -T uart -D 0 -E 0  -G ./tools/bin_hdr_armada_$boardID/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name-uart.bin");
 
 
 $fail = system("./tools/doimage -T uart -D 0 -E 0 -G ./tools/bin_hdr_armada_xp/bin_hdr.uart.bin u-boot.bin u-boot-axp-$opt_v-$flash_name-$targetBoard-uart.bin");
@@ -230,6 +226,10 @@ if(defined $opt_o)
         system("cp tools/bin_hdr_armada_$boardID/bin_hdr.dis $opt_o/bin_hdr/");
         system("cp tools/bin_hdr_armada_$boardID/bin_hdr.srec $opt_o/bin_hdr/");
 
+}
+if($failUart){
+	print "\n *** Error: Doimage for uart image failed\n\n";
+	exit;
 }
 
 exit 0;

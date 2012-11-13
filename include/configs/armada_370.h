@@ -54,7 +54,13 @@
 	#define DB_88F6710
 	#define MV88F6710
 	#define MV88F67XX
+#endif // CONFIG_DB_88f6710_BP
 
+#ifdef CONFIG_RD_88F6710
+	#define RD_88F6710
+	#define MV88F6710
+	#define MV88F67XX
+#endif //CONFIG_RD_88F6710_SERVER
 
 #ifdef MV_NAND
 		#define MV_NAND_PIO_MODE
@@ -62,7 +68,7 @@
 		#define MV_NAND_4BIT_MODE
 		#define MTD_NAND_NFC_INIT_RESET
 #endif // MV_NAND
-#endif // CONFIG_DB_88f6710_BP
+
 /***********/
 /* General */
 /***********/

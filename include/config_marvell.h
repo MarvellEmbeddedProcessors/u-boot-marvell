@@ -52,6 +52,15 @@ disclaimer.
 #define MV88F67XX	
 
 /**********************************/
+/* defines for DB-RD_88F6710	  */
+/**********************************/
+#elif defined(CONFIG_RD_88F6710)
+#define RD_88F6710
+#define MV88F6710
+#define MV88F67XX
+
+
+/**********************************/
 /* defines for DB-78x60-BP REV2   */
 /**********************************/
 #elif defined(CONFIG_DB_78x60_BP_REV2)

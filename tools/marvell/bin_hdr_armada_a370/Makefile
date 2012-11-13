@@ -97,14 +97,19 @@ endif
 ifeq "$(CONFIG_DB_88F6710_BP)"  "y"
   CFLAGS += -DCONFIG_DB_88F6710_BP
 endif
+ifeq "$(CONFIG_RD_88F6710)"  "y"
+  CFLAGS += -DCONFIG_RD_88F6710
+endif
 
 
 PARAMSFILE = params
 LDSCRIPT   = linker.scr
 DRAMREGS   = ./dramregs.txt
 
-INCLUDE     = -I. -I./inc/ -I../../include -I../../board/mv_sheeva/common  -I../../board/mv_sheeva/mv_armada_xp/config/ -I../../board/mv_sheeva/mv_armada_xp/armada_xp_family/  -I../../board/mv_sheeva/mv_armada_xp/armada_xp_family/ctrlEnv/ -I../../board/mv_sheeva/mv_hal -I../../board/mv_sheeva/mv_hal/gpp
+
+INCLUDE     = -I./ -I. -I./inc/ -I../../include
 INCLUDE    += -I/opt/armv7-marvell-linux-gnueabi-softfp_i686/arm-marvell-linux-gnueabi/libc/usr/include
+
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
 HOSTCFLAGS   = -Wall $(INCLUDE)

@@ -61,10 +61,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+
 
 #include "config_marvell.h"  	/* Required to identify SOC and Board */
 #include "ddr3_init.h"

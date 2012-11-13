@@ -65,6 +65,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __MV_UART_H__
 #define __MV_UART_H__
 
+#include "soc_spec.h"
+#include "bootstrap_os.h"
+#include "../ddr3_init.h"
 
 /* This structure describes the registers offsets for one UART port(channel) */
 typedef struct mvUartPort

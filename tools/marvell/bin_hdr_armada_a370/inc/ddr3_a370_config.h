@@ -83,7 +83,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define STATIC_TRAINING
 #endif
 
-#if defined(DB_88F6710) && !defined(A370_A0)
+#if (defined(DB_88F6710) || defined(RD_88F6710)) && !defined(A370_A0)
 #define AUTO_DETECTION_SUPPORT
 #define SPD_SUPPORT
 #define DRAM_2T									0x0

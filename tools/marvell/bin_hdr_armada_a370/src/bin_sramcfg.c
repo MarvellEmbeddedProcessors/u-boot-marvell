@@ -62,8 +62,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include <stdlib.h>
-#include <stdio.h>
+
 #include "../ddr3_init.h"
 
 MV_VOID sramConfig(void)

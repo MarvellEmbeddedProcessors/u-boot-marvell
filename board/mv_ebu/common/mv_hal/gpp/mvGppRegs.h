@@ -152,6 +152,7 @@ extern "C" {
 #define GPP_INT_CAUSE_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x14)
 #define GPP_INT_MASK_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x18)
 #define GPP_INT_LVL_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x1C)
+#define GPP_BLINK_SEL_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x20)
 
 #define GPP_OUT_SET_REG(grp)			(GPP_OUT_SET_REG_BASE + ( (grp) * 0x40 ) )
 #define GPP_64_66_DATA_OUT_SET_REG		(MV_GPP_REGS_BASE(0) + 0xA4)

@@ -82,13 +82,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_TDM_INT_COUNTER					2
 #define MV_TDM_MAX_SAMPLING_PERIOD				30	/* ms */
 #define MV_TDM_BASE_SAMPLING_PERIOD				10	/* ms */
+#define MV_TDM_TOTAL_CH_SAMPLES					80	/* samples */
 
 /* TDM IRQ types */
 #define MV_EMPTY_INT		0
 #define MV_RX_INT 		BIT0
 #define	MV_TX_INT 		BIT1
 #define	MV_PHONE_INT 		BIT2
-#define	MV_ERROR_INT 		BIT3
+#define	MV_RX_ERROR_INT 	BIT3
+#define	MV_TX_ERROR_INT 	BIT4
+#define MV_DMA_ERROR_INT	BIT5
+#define MV_ERROR_INT		(MV_RX_ERROR_INT | MV_TX_ERROR_INT | MV_DMA_ERROR_INT)
 
 /* PCM SLOT configuration */
 
@@ -154,7 +158,10 @@ typedef struct {
 
 typedef struct {
 	MV_U8 spiMode;
+	MV_U8 maxCs;
 	MV_U16 model;
+	MV_U16 ctrlRev;
+	MV_FRAME_TS frameTs;
 } MV_TDM_HAL_DATA;
 
 /* APIs */

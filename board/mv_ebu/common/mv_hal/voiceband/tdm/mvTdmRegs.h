@@ -1,7 +1,7 @@
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
-This software file (the "File") is owned and distributed by Marvell 
+This software file (the "File") is owned and distributed by Marvell
 International Ltd. and/or its affiliates ("Marvell") under the following
 alternative licensing terms.  Once you have made an election to distribute the
 File under one of the following license alternatives, please (i) delete this
@@ -19,45 +19,45 @@ to you under the terms of the applicable Commercial License.
 ********************************************************************************
 Marvell GPL License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or 
-modify this File in accordance with the terms and conditions of the General 
-Public License Version 2, June 1991 (the "GPL License"), a copy of which is 
-available along with the File in the license.txt file or by writing to the Free 
-Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or 
-on the worldwide web at http://www.gnu.org/licenses/gpl.txt. 
+If you received this File from Marvell, you may opt to use, redistribute and/or
+modify this File in accordance with the terms and conditions of the General
+Public License Version 2, June 1991 (the "GPL License"), a copy of which is
+available along with the File in the license.txt file or by writing to the Free
+Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
+on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED 
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY 
-DISCLAIMED.  The GPL License provides additional details about this warranty 
+THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+DISCLAIMED.  The GPL License provides additional details about this warranty
 disclaimer.
 ********************************************************************************
 Marvell BSD License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or 
-modify this File under the following licensing terms. 
-Redistribution and use in source and binary forms, with or without modification, 
+If you received this File from Marvell, you may opt to use, redistribute and/or
+modify this File under the following licensing terms.
+Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer. 
+	this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution. 
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
-    *   Neither the name of Marvell nor the names of its contributors may be 
-        used to endorse or promote products derived from this software without 
-        specific prior written permission. 
-    
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR 
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON 
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+    *   Neither the name of Marvell nor the names of its contributors may be
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
@@ -221,19 +221,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*********************************/
 /*        SPI Register Map       */
 /*********************************/
-#define SPI_CLK_PRESCALAR_REG	(MV_TDM_REGS_BASE +0x3100)
-#define SPI_GLOBAL_CTRL_REG	(MV_TDM_REGS_BASE +0x3104)
-#define SPI_CTRL_REG		(MV_TDM_REGS_BASE +0x3108)
-#define SPI_MICRO_WIRE_CTRL_REG	(MV_TDM_REGS_BASE +0x310c)
-#define SPI_TWSI_CTRL_REG	(MV_TDM_REGS_BASE +0x3110)
-#define SPI_MV_STATUS_REG	(MV_TDM_REGS_BASE +0x311c)
-#define SPI_INT_MASK_REG	(MV_TDM_REGS_BASE +0x3120)
-#define SPI_DATA_REG		(MV_TDM_REGS_BASE +0x3124)
-#define SPI_ADDR_REG		(MV_TDM_REGS_BASE +0x3128)
-#define SPI_CODEC_CMD_LO_REG	(MV_TDM_REGS_BASE +0x3130)
-#define SPI_CODEC_CMD_HI_REG	(MV_TDM_REGS_BASE +0x3134)
-#define SPI_CODEC_CTRL_REG	(MV_TDM_REGS_BASE +0x3138)
-#define SPI_CODEC_READ_DATA_REG	(MV_TDM_REGS_BASE +0x313c)
+#define SPI_CLK_PRESCALAR_REG	(MV_TDM_REGS_BASE + 0x3100)
+#define SPI_GLOBAL_CTRL_REG	(MV_TDM_REGS_BASE + 0x3104)
+#define SPI_CTRL_REG		(MV_TDM_REGS_BASE + 0x3108)
+#define SPI_MICRO_WIRE_CTRL_REG	(MV_TDM_REGS_BASE + 0x310c)
+#define SPI_TWSI_CTRL_REG	(MV_TDM_REGS_BASE + 0x3110)
+#define SPI_MV_STATUS_REG	(MV_TDM_REGS_BASE + 0x311c)
+#define SPI_INT_MASK_REG	(MV_TDM_REGS_BASE + 0x3120)
+#define SPI_DATA_REG		(MV_TDM_REGS_BASE + 0x3124)
+#define SPI_ADDR_REG		(MV_TDM_REGS_BASE + 0x3128)
+#define SPI_CODEC_CMD_LO_REG	(MV_TDM_REGS_BASE + 0x3130)
+#define SPI_CODEC_CMD_HI_REG	(MV_TDM_REGS_BASE + 0x3134)
+#define SPI_CODEC_CTRL_REG	(MV_TDM_REGS_BASE + 0x3138)
+#define SPI_CODEC_READ_DATA_REG	(MV_TDM_REGS_BASE + 0x313c)
 
 /* SPI CLK_PRESCALAR_REG bits */
 #define SPI_CLK_2MHZ	0x2A64  /* refers to tclk = 200MHz */
@@ -276,7 +276,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define TDM_MBUS_MAX_WIN	4
 #define TDM_WIN_CTRL_REG(win)	((MV_TDM_REGS_BASE + 0x4030) + (win<<4))
-#define TDM_WIN_BASE_REG(win)	((MV_TDM_REGS_BASE +0x4034) + (win<<4))
+#define TDM_WIN_BASE_REG(win)	((MV_TDM_REGS_BASE + 0x4034) + (win<<4))
 
 /* TDM_WIN_CTRL_REG bits */
 #define TDM_WIN_ENABLE_OFFS	0
@@ -297,4 +297,3 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #endif /*__INCmvTdmRegsh*/
-

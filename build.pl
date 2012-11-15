@@ -33,20 +33,13 @@ $cross_bh = $ENV{'CROSS_COMPILE_BH'};
 if(!defined $cross){
 	printf " *** Error: Please set environment variables CROSS_COMPILE\n";
 	HELP_MESSAGE();
-	exit;
+	exit 1;
 }
 if(!defined $cross_bh){
 	printf " *** Error: Please set environment variables CROSS_COMPILE_BH\n";
 	HELP_MESSAGE();
-	exit;
+	exit 1;
 }
-if("1$opt_v" eq "1")
-{
-   printf " *** Error: Please set version with -v\n";
-   HELP_MESSAGE();
-   exit;
-}
-
 # Validate flash type
 if($opt_f eq "spi")
 {
@@ -75,7 +68,7 @@ else
 		print "\n *** Error: Flash type unspecified\n\n";
 	}
 	HELP_MESSAGE();
-	exit;
+	exit 1;
 }
 
 # Handle clean build
@@ -101,7 +94,7 @@ if($opt_c eq 1)
 			print "\n *** Error: Board type unspecified\n\n";
 		}
 		HELP_MESSAGE();
-		exit;
+		exit 1;
 	}
 
 	# Configure Make
@@ -158,7 +151,7 @@ if($opt_c eq 1)
 			(grep{$_ eq 'nand'} @interfaces))
 		{
 			print"\n *** Error: Armada-370 does not Support nand and nor interfaces together\n";
-			exit;
+			exit 1;
 		}
 
 		print " Support flash: ";
@@ -190,7 +183,7 @@ $fail = system("make -j6 -s");
 
 if($fail){
 	print "\n *** Error: Build failed\n\n";
-	exit;
+	exit 1;
 }
 
 #Create Image and Uart Image
@@ -207,7 +200,7 @@ elsif($boardID eq "a370"){
 $fail = system("./tools/doimage -T uart -D 0 -E 0 -G ./tools/bin_hdr_armada_xp/bin_hdr.uart.bin u-boot.bin u-boot-axp-$opt_v-$flash_name-$targetBoard-uart.bin");
 if($fail){
 	print "\n *** Error: Doimage for uart image failed\n\n";
-	exit;
+	exit 1;
 }
 
 
@@ -221,16 +214,31 @@ if(defined $opt_o)
 	system("cp u-boot-$boardID-$opt_v-$flash_name.bin $opt_o/$endian/$opt_f/ ");
 	system("cp u-boot $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name ");
 	system("cp u-boot.srec $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name.srec ");
-        system("cp u-boot-$boardID-$opt_v-$flash_name-uart.bin $opt_o/$endian/$opt_f/");
+    system("cp u-boot-$boardID-$opt_v-$flash_name-uart.bin $opt_o/$endian/$opt_f/");
+
+
+	if ($boardID eq "a370")
+	{
         system("cp tools/bin_hdr_armada_$boardID/bin_hdr.bin $opt_o/bin_hdr/");
         system("cp tools/bin_hdr_armada_$boardID/bin_hdr.elf $opt_o/bin_hdr/");
         system("cp tools/bin_hdr_armada_$boardID/bin_hdr.dis $opt_o/bin_hdr/");
         system("cp tools/bin_hdr_armada_$boardID/bin_hdr.srec $opt_o/bin_hdr/");
-
+	}
+	elsif ($boardID eq "axp")
+	{
+	    system("cp tools/bin_hdr_armada_$boardID/bin_hdr_ddr.bin $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada_$boardID/bin_hdr_ddr.elf $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada_$boardID/bin_hdr_ddr.dis $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada_$boardID/bin_hdr_ddr.srec $opt_o/bin_hdr/");
+		system("cp tools/bin_hdr_armada_$boardID/bin_hdr_phy.bin $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada_$boardID/bin_hdr_phy.elf $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada_$boardID/bin_hdr_phy.dis $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada_$boardID/bin_hdr_phy.srec $opt_o/bin_hdr/");	
+	}
 }
 if($failUart){
 	print "\n *** Error: Doimage for uart image failed\n\n";
-	exit;
+	exit 1;
 }
 
 exit 0;

@@ -64,14 +64,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "voiceband/commUnit/mvCommUnit.h"
 
-#undef MV_COMM_UNIT_DEBUG
+#undef	MV_COMM_UNIT_DEBUG
+#define	MV_COMM_UNIT_RPT_SUPPORT /* Repeat mode must be set */
+#undef	MV_COMM_UNIT_TEST_SUPPORT
 
 /* defines */
 #define TOTAL_CHAINS		2
 #define CONFIG_RBSZ		16
 #define NEXT_BUFF(buff)		((buff + 1) % TOTAL_CHAINS)
 #define PREV_BUFF(buff)		(buff == 0 ? (TOTAL_CHAINS-1) : (buff-1))
-#define MAX_POLL_USEC		10000	/* 10ms */
+#define MAX_POLL_USEC		100000	/* 100ms */
+#define IS_KW2_A0(model, rev)	((((model & 0xff00) == 0x6500) && (rev > 1)) ? 1 : 0)
+#define COMM_UNIT_SW_RST	(1 << 5)
+#define OLD_INT_WA_BIT		(1 << 15)
 
 /* globals */
 static MV_STATUS tdmEnable;
@@ -88,21 +93,21 @@ static MV_TDM_MCDMA_RX_DESC *mcdmaRxDescPtr[TOTAL_CHAINS];
 static MV_TDM_MCDMA_TX_DESC *mcdmaTxDescPtr[TOTAL_CHAINS];
 static MV_ULONG mcdmaRxDescPhys[TOTAL_CHAINS], mcdmaTxDescPhys[TOTAL_CHAINS];
 static MV_TDM_DPRAM_ENTRY defDpramEntry = { 0, 0, 0x1, 0x1, 0, 0, 0x1, 0, 0, 0, 0 };
+static MV_U16 ctrlModel;
+static MV_U16 ctrlRev;
 
-#ifdef MV_COMM_UNIT_DEBUG
-static MV_U8 *iqcVirt;
-static MV_ULONG iqcPhys;
-#endif
-
-/* static APIs */
+/* Static APIs */
+static MV_VOID mvCommUnitDescChainBuild(MV_VOID);
+static MV_VOID mvCommUnitMcdmaMcscStart(MV_VOID);
+static MV_VOID mvCommUnitMcdmaStop(MV_VOID);
+static MV_VOID mvCommUnitMcdmaMcscAbort(MV_VOID);
 
 MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 {
-	MV_U8 index;
-	MV_U16 pcmSlot;
+	MV_U16 pcmSlot, index;
 	MV_U32 buffSize, chan;
-	MV_U32 totalRxDescSize, totalTxDescSize;
-	MV_U32 rxDescPhysAddr, txDescPhysAddr, maxPoll;
+	MV_U32 totalRxDescSize, totalTxDescSize, chMask;
+	MV_U32 maxPoll, clkSyncCtrlReg;
 	MV_TDM_DPRAM_ENTRY actDpramEntry, *pActDpramEntry;
 
 	MV_TRC_REC("->%s\n", __func__);
@@ -115,6 +120,8 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	totalChannels = tdmParams->totalChannels;
 	prevRxBuff = 0;
 	nextTxBuff = 0;
+	ctrlModel = halData->model;
+	ctrlRev = halData->ctrlRev;
 
 	/* Check parameters */
 	if ((tdmParams->totalChannels > MV_TDM_TOTAL_CHANNELS) ||
@@ -130,17 +137,6 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 
 	/* Calculate single Rx/Tx buffer size */
 	buffSize = (sampleSize * MV_TDM_TOTAL_CH_SAMPLES * samplingCoeff);
-
-#ifdef MV_COMM_UNIT_DEBUG
-#if 0
-	iqcVirt = (MV_U8 *) mvOsIoUncachedMalloc(NULL, 516, &iqcPhys, NULL);
-
-	if ((MV_U32) iqcVirt & 0x3f)
-		mvOsPrintf("Error, unaligned IQC buffer(0x%x)\n", (MV_U32) iqcVirt);
-
-	memset(iqcVirt, 0, 516);
-#endif
-#endif
 
 	/* Allocate cached data buffers for all channels */
 	TRC_REC("%s: allocate %dB for data buffers\n", __func__, (buffSize * totalChannels));
@@ -161,13 +157,17 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 		/* Clear buffers */
 		memset(rxBuffVirt[index], 0, (buffSize * totalChannels));
 		memset(txBuffVirt[index], 0, (buffSize * totalChannels));
-#if 0
+#ifdef MV_COMM_UNIT_TEST_SUPPORT
+	/* Fill Tx buffers with incremental pattern */
 		{
-			int i;
-			for (i = 0; i < 160; i += 2)
-				*(MV_U16 *) (txBuffVirt[index] + i) = (MV_U16) (0xca00 + ((i / 2) + (index * 80)));
+			int i, j;
+			for (j = 0; j < totalChannels; j++) {
+				for (i = 0; i < buffSize; i++)
+					*(MV_U8 *) (txBuffVirt[index]+i+(j*buffSize)) = (MV_U8)(i+1);
+			}
 		}
 #endif
+
 		/* Flush+Inv buffers */
 		mvOsCacheFlushInv(NULL, rxBuffVirt[index], (buffSize * totalChannels));
 		mvOsCacheFlushInv(NULL, txBuffVirt[index], (buffSize * totalChannels));
@@ -194,40 +194,6 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 		/* Clear descriptors */
 		memset(mcdmaRxDescPtr[index], 0, totalRxDescSize);
 		memset(mcdmaTxDescPtr[index], 0, totalTxDescSize);
-	}
-
-	/* Initialize descriptors fields */
-	for (chan = 0; chan < totalChannels; chan++) {
-		for (index = 0; index < TOTAL_CHAINS; index++) {
-			/* Associate data buffers to descriptors physBuffPtr */
-			((MV_TDM_MCDMA_RX_DESC *) (mcdmaRxDescPtr[index] + chan))->physBuffPtr =
-			    (MV_U32) (rxBuffPhys[index] + (chan * buffSize));
-			((MV_TDM_MCDMA_TX_DESC *) (mcdmaTxDescPtr[index] + chan))->physBuffPtr =
-			    (MV_U32) (txBuffPhys[index] + (chan * buffSize));
-
-			/* Build cyclic descriptors chain for each channel */
-			((MV_TDM_MCDMA_RX_DESC *) (mcdmaRxDescPtr[index] + chan))->physNextDescPtr =
-			    (MV_U32) (mcdmaRxDescPhys[((index + 1) % TOTAL_CHAINS)] +
-				      (chan * sizeof(MV_TDM_MCDMA_RX_DESC)));
-
-			((MV_TDM_MCDMA_TX_DESC *) (mcdmaTxDescPtr[index] + chan))->physNextDescPtr =
-			    (MV_U32) (mcdmaTxDescPhys[((index + 1) % TOTAL_CHAINS)] +
-				      (chan * sizeof(MV_TDM_MCDMA_TX_DESC)));
-
-			/* Set Byte_Count/Buffer_Size Rx descriptor fields */
-			((MV_TDM_MCDMA_RX_DESC *) (mcdmaRxDescPtr[index] + chan))->byteCnt = 0;
-			((MV_TDM_MCDMA_RX_DESC *) (mcdmaRxDescPtr[index] + chan))->buffSize = buffSize;
-
-			/* Set Shadow_Byte_Count/Byte_Count Tx descriptor fields */
-			((MV_TDM_MCDMA_TX_DESC *) (mcdmaTxDescPtr[index] + chan))->shadowByteCnt = buffSize;
-			((MV_TDM_MCDMA_TX_DESC *) (mcdmaTxDescPtr[index] + chan))->byteCnt = buffSize;
-
-			/* Set Command/Status Rx/Tx descriptor fields */
-			((MV_TDM_MCDMA_RX_DESC *) (mcdmaRxDescPtr[index] + chan))->cmdStatus =
-			    (CONFIG_MCDMA_DESC_CMD_STATUS);
-			((MV_TDM_MCDMA_TX_DESC *) (mcdmaTxDescPtr[index] + chan))->cmdStatus =
-			    (CONFIG_MCDMA_DESC_CMD_STATUS);
-		}
 	}
 
 	/* Poll MCDMA for reset completion */
@@ -279,6 +245,18 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	/**********************/
 	/* MCSC Configuration */
 	/**********************/
+
+	if (IS_KW2_A0(ctrlModel, ctrlRev)) {
+		/* Disable Rx/Tx channel balancing & Linear mode fix */
+		MV_REG_BIT_SET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_TCBD_MASK);
+#if 0
+		/* Unmask Rx/Tx channel balancing */
+		chMask = (0xffffffff & ~((MV_U32)((1 << totalChannels) - 1)));
+		MV_REG_WRITE(MCSC_RX_CHANNEL_BALANCING_MASK_REG, chMask);
+		MV_REG_WRITE(MCSC_TX_CHANNEL_BALANCING_MASK_REG, chMask);
+#endif
+	}
+
 	for (chan = 0; chan < totalChannels; chan++) {
 		MV_REG_WRITE(MCSC_CHx_RECEIVE_CONFIG_REG(chan), CONFIG_MRCRx);
 		MV_REG_WRITE(MCSC_CHx_TRANSMIT_CONFIG_REG(chan), CONFIG_MTCRx);
@@ -293,74 +271,117 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	/*************************************************/
 	/* Time Division Multiplexing(TDM) Configuration */
 	/*************************************************/
-	/* Reset all Rx/Tx DPRAM entries to default value */
 	pActDpramEntry = &actDpramEntry;
 	memcpy(&actDpramEntry, &defDpramEntry, sizeof(MV_TDM_DPRAM_ENTRY));
-	for (index = 0; index < MV_TDM_MAX_DPRAM_ENTRIES; index++) {
+	/* Set repeat mode bits for (sampleSize > 1) */
+	pActDpramEntry->rpt = ((sampleSize == MV_PCM_FORMAT_1BYTE) ? 0 : 1);
+
+	/* Reset all Rx/Tx DPRAM entries to default value */
+	for (index = 0; index < (2 * MV_TDM_MAX_HALF_DPRAM_ENTRIES); index++) {
 		MV_REG_WRITE(FLEX_TDM_RDPR_REG(index), *((MV_U32 *) pActDpramEntry));
 		MV_REG_WRITE(FLEX_TDM_TDPR_REG(index), *((MV_U32 *) pActDpramEntry));
 	}
 
-	/* Fill active Rx/Tx DPRAM entries */
-	pActDpramEntry->mask = 0xff;
+	/* Set active Rx/Tx DPRAM entries */
 	for (chan = 0; chan < totalChannels; chan++) {
+		/* Same time slot number for both Rx & Tx */
 		pcmSlot = tdmParams->pcmSlot[chan];
+
+		/* Verify time slot is within frame boundries */
+		if (pcmSlot >= halData->frameTs) {
+			mvOsPrintf("Error, time slot(%d) exceeded maximum(%d)\n", pcmSlot, halData->frameTs);
+			return MV_ERROR;
+		}
+
+		/* Verify time slot is aligned to sample size */
+		if ((sampleSize > MV_PCM_FORMAT_1BYTE) && (pcmSlot & 1)) {
+			mvOsPrintf("Error, time slot(%d) not aligned to Linear PCM sample size\n", pcmSlot);
+			return MV_ERROR;
+		}
+
+		/* Update relevant DPRAM fields */
 		pActDpramEntry->ch = chan;
-		for (index = 0; index < sampleSize; index++) {
-			MV_REG_WRITE(FLEX_TDM_RDPR_REG((pcmSlot + index)), *((MV_U32 *) pActDpramEntry));
-			MV_REG_WRITE(FLEX_TDM_TDPR_REG((pcmSlot + index)), *((MV_U32 *) pActDpramEntry));
+		pActDpramEntry->mask = 0xff;
+
+		/* Extract physical DPRAM entry id */
+		index = ((sampleSize == MV_PCM_FORMAT_1BYTE) ? pcmSlot : (pcmSlot / 2));
+
+		/* DPRAM low half */
+		MV_REG_WRITE(FLEX_TDM_RDPR_REG(index), *((MV_U32 *) pActDpramEntry));
+		MV_REG_WRITE(FLEX_TDM_TDPR_REG(index), *((MV_U32 *) pActDpramEntry));
+
+		/* DPRAM high half(mirroring DPRAM low half) */
+		pActDpramEntry->mask = 0;
+		MV_REG_WRITE(FLEX_TDM_RDPR_REG((MV_TDM_MAX_HALF_DPRAM_ENTRIES + index)), *((MV_U32 *) pActDpramEntry));
+		MV_REG_WRITE(FLEX_TDM_TDPR_REG((MV_TDM_MAX_HALF_DPRAM_ENTRIES + index)), *((MV_U32 *) pActDpramEntry));
+
+		/* WideBand mode */
+		if (sampleSize == MV_PCM_FORMAT_4BYTES) {
+			index = (index + (halData->frameTs / sampleSize));
+			/* DPRAM low half */
+			pActDpramEntry->mask = 0xff;
+			MV_REG_WRITE(FLEX_TDM_RDPR_REG(index), *((MV_U32 *) pActDpramEntry));
+			MV_REG_WRITE(FLEX_TDM_TDPR_REG(index), *((MV_U32 *) pActDpramEntry));
+
+			/* DPRAM high half(mirroring DPRAM low half) */
+			pActDpramEntry->mask = 0;
+			MV_REG_WRITE(FLEX_TDM_RDPR_REG((MV_TDM_MAX_HALF_DPRAM_ENTRIES + index)), *((MV_U32 *) pActDpramEntry));
+			MV_REG_WRITE(FLEX_TDM_TDPR_REG((MV_TDM_MAX_HALF_DPRAM_ENTRIES + index)), *((MV_U32 *) pActDpramEntry));
 		}
 	}
 
-	/* Fill non-active Rx/Tx DPRAM entries(except last) */
+	/* Fill last Tx/Rx DPRAM entry('LAST'=1) */
 	pActDpramEntry->mask = 0;
 	pActDpramEntry->ch = 0;
-
-	/* Fill last Tx DPRAM entry('LAST'=1) */
 	pActDpramEntry->last = 1;
-	MV_REG_WRITE(FLEX_TDM_TDPR_REG((MV_TDM_MAX_DPRAM_ENTRIES - 1)), *((MV_U32 *) pActDpramEntry));
-#if !defined(MV_COMM_UNIT_FSYNC_STRB_SUPPORT)
-	MV_REG_WRITE(FLEX_TDM_RDPR_REG((MV_TDM_MAX_DPRAM_ENTRIES - 1)), *((MV_U32 *) pActDpramEntry));
-#else
-	/* Spread last Rx byte on 8 entries in bit mode */
-	pActDpramEntry->last = 0;
-	pActDpramEntry->mask = 1;
-	pActDpramEntry->byte = 0;
-	pActDpramEntry->tbs = 0;
-	for (index = (MV_TDM_MAX_DPRAM_ENTRIES - 1); index < (MV_TDM_MAX_DPRAM_ENTRIES + 7); index++) {
-		if (index == (MV_TDM_MAX_DPRAM_ENTRIES + 6)) {
-			pActDpramEntry->last = 1;
-			pActDpramEntry->tbs = 1;
-			pActDpramEntry->strb = 3;
-		}
 
-		MV_REG_WRITE(FLEX_TDM_RDPR_REG(index), *((MV_U32 *) pActDpramEntry));
-	}
-#endif /* MV_COMM_UNIT_FSYNC_STRB_SUPPORT */
+	/* Index for last entry */
+	if (sampleSize == MV_PCM_FORMAT_1BYTE)
+		index = (halData->frameTs - 1);
+	else
+		index = ((halData->frameTs / 2) - 1);
+
+	/* Low half */
+	MV_REG_WRITE(FLEX_TDM_TDPR_REG(index), *((MV_U32 *) pActDpramEntry));
+	MV_REG_WRITE(FLEX_TDM_RDPR_REG(index), *((MV_U32 *) pActDpramEntry));
+	/* High half */
+	MV_REG_WRITE(FLEX_TDM_TDPR_REG((MV_TDM_MAX_HALF_DPRAM_ENTRIES + index)), *((MV_U32 *) pActDpramEntry));
+	MV_REG_WRITE(FLEX_TDM_RDPR_REG((MV_TDM_MAX_HALF_DPRAM_ENTRIES + index)), *((MV_U32 *) pActDpramEntry));
 
 	/* Set TDM_CLK_AND_SYNC_CONTROL register */
-	MV_REG_WRITE(TDM_CLK_AND_SYNC_CONTROL_REG, CONFIG_TDM_CLK_AND_SYNC_CONTROL);
+	clkSyncCtrlReg = MV_REG_READ(TDM_CLK_AND_SYNC_CONTROL_REG);
+	clkSyncCtrlReg &= ~(TDM_TX_FSYNC_OUT_ENABLE_MASK | TDM_RX_FSYNC_OUT_ENABLE_MASK |
+			TDM_TX_CLK_OUT_ENABLE_MASK | TDM_RX_CLK_OUT_ENABLE_MASK);
+	clkSyncCtrlReg |= CONFIG_TDM_CLK_AND_SYNC_CONTROL;
+	MV_REG_WRITE(TDM_CLK_AND_SYNC_CONTROL_REG, clkSyncCtrlReg);
 
 	/* Set TDM TCR register */
 	MV_REG_WRITE(FLEX_TDM_CONFIG_REG, (MV_REG_READ(FLEX_TDM_CONFIG_REG) | CONFIG_FLEX_TDM_CONFIG));
+
+#if 0
+	/* Set TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_OUT register */
+	MV_REG_WRITE(TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_OUT_REG, CONFIG_TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_OUT);
+
+	/* Set TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_IN register */
+	MV_REG_WRITE(TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_IN_REG, CONFIG_TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_IN);
+
+	/* Restart calculation */
+	MV_REG_BIT_SET(TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_OUT_REG,
+				(TX_SYNC_DELAY_OUT_RESTART_CALC_MASK | RX_SYNC_DELAY_OUT_RESTART_CALC_MASK));
+	MV_REG_BIT_SET(TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_IN_REG,
+				(TX_SYNC_DELAY_IN_RESTART_CALC_MASK | RX_SYNC_DELAY_IN_RESTART_CALC_MASK));
+	mvOsDelay(1);
+	MV_REG_BIT_RESET(TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_OUT_REG,
+				(TX_SYNC_DELAY_OUT_RESTART_CALC_MASK | RX_SYNC_DELAY_OUT_RESTART_CALC_MASK));
+	MV_REG_BIT_RESET(TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_IN_REG,
+				(TX_SYNC_DELAY_IN_RESTART_CALC_MASK | RX_SYNC_DELAY_IN_RESTART_CALC_MASK));
+#endif
 
 	/* Set TDM_CLK_DIVIDER_CONTROL register */
 	/*MV_REG_WRITE(TDM_CLK_DIVIDER_CONTROL_REG, TDM_RX_FIXED_DIV_ENABLE_MASK); */
 
 	/* Enable SLIC/s interrupt detection(before Rx/Tx are active) */
 	/*MV_REG_WRITE(TDM_MASK_REG, TDM_SLIC_INT); */
-
-	/* Errata(#1) */
-	MV_REG_BIT_RESET(0xb8ad0, BIT16);
-	MV_REG_BIT_RESET(0xb8ad4, BIT16);
-	MV_REG_BIT_RESET(0xb8ad8, BIT16);
-
-#ifdef MV_COMM_UNIT_DEBUG
-	/* Enable IQC */
-	/* MV_REG_WRITE(0xb2814, (MV_U32)iqcVirt);
-	   MV_REG_WRITE(0xb2818, (MV_U32)(iqcVirt+512));
-	   MV_REG_WRITE(0xb2824, 0xffffffff); */
-#endif
 
 	/**********************************************************************/
 	/* Time Division Multiplexing(TDM) Interrupt Controller Configuration */
@@ -377,60 +398,32 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	MV_REG_WRITE(MCSC_GLOBAL_INT_CAUSE_REG, MCSC_GLOBAL_INT_CAUSE_INIT_DONE_MASK);
 	MV_REG_WRITE(MCSC_EXTENDED_INT_CAUSE_REG, 0);
 
-	/* Set current Rx/Tx descriptors  */
-	for (chan = 0; chan < totalChannels; chan++) {
-		rxDescPhysAddr = mcdmaRxDescPhys[0] + (chan * sizeof(MV_TDM_MCDMA_RX_DESC));
-		txDescPhysAddr = mcdmaTxDescPhys[0] + (chan * sizeof(MV_TDM_MCDMA_TX_DESC));
-		MV_REG_WRITE(MCDMA_CURRENT_RECEIVE_DESC_PTR_REG(chan), rxDescPhysAddr);
-		MV_REG_WRITE(MCDMA_CURRENT_TRANSMIT_DESC_PTR_REG(chan), txDescPhysAddr);
-	}
+#ifdef MV_COMM_UNIT_DEBUG
+	mvCommUnitShow();
+#endif
 
-	/* Set Rx/Tx periodical interrupts */
-	MV_REG_WRITE(VOICE_PERIODICAL_INT_CONTROL_REG, CONFIG_VOICE_PERIODICAL_INT_CONTROL);
-
-	/* MCSC Global Tx Enable */
-	MV_REG_BIT_SET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_TXEN_MASK);
-
-	/* Enable MCSC-Tx & MCDMA-Rx */
-	for (chan = 0; chan < totalChannels; chan++) {
-		/* Enable Tx in TMCCx */
-		MV_REG_BIT_SET(MCSC_CHx_TRANSMIT_CONFIG_REG(chan), MTCRx_ET_MASK);
-
-		/* Enable Rx in: MCRDPx */
-		MV_REG_BIT_SET(MCDMA_RECEIVE_CONTROL_REG(chan), MCDMA_ERD_MASK);
-	}
-
-	/* MCSC Global Rx Enable */
-	MV_REG_BIT_SET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_RXEN_MASK);
-
-	/* Enable MCSC-Rx & MCDMA-Tx */
-	for (chan = 0; chan < totalChannels; chan++) {
-		/* Enable Rx in RMCCx */
-		MV_REG_BIT_SET(MCSC_CHx_RECEIVE_CONFIG_REG(chan), MRCRx_ER_MASK);
-
-		/* Enable Tx in MCTDPx */
-		MV_REG_BIT_SET(MCDMA_TRANSMIT_CONTROL_REG(chan), MCDMA_TXD_MASK);
-	}
-
-	/* Wait enough time until MCDMA FIFOs are loaded with data for all active channels */
-	mvOsDelay(100);
-
-	/* Enable TDM */
-	MV_REG_BIT_SET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
+	/* Enable PCM */
+	mvCommUnitPcmStart();
 
 	/* Mark TDM I/F as enabled */
 	tdmEnable = MV_TRUE;
 
-	/* MCSC Enter Hunt State */
-	for (chan = 0; chan < totalChannels; chan++)
-		MV_REG_BIT_SET(MCSC_CHx_RECEIVE_CONFIG_REG(chan), MRCRx_ENTER_HUNT_MASK);
+	/* Enable PCLK */
+	MV_REG_WRITE(TDM_DATA_DELAY_AND_CLK_CTRL_REG, (MV_REG_READ(TDM_DATA_DELAY_AND_CLK_CTRL_REG) |
+				CONFIG_TDM_DATA_DELAY_AND_CLK_CTRL));
 
+	/* Restore old periodic interrupt mechanism WA */
+	/* MV_REG_BIT_SET(TDM_DATA_DELAY_AND_CLK_CTRL_REG, OLD_INT_WA_BIT); */
 
+	/* Enable TDM */
+	MV_REG_BIT_SET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
+
+#if 0
 	/* Poll for Enter Hunt Execution Status */
 	for (chan = 0; chan < totalChannels; chan++) {
 		maxPoll = 0;
 		while ((maxPoll < MAX_POLL_USEC) &&
-		       !(MV_REG_READ(MCSC_CHx_COMM_EXEC_STAT_REG(chan)) & MCSC_EH_E_STAT_MASK)) {
+			!(MV_REG_READ(MCSC_CHx_COMM_EXEC_STAT_REG(chan)) & MCSC_EH_E_STAT_MASK)) {
 			mvOsUDelay(1);
 			maxPoll++;
 		}
@@ -442,111 +435,126 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 
 		MV_REG_BIT_RESET(MCSC_CHx_RECEIVE_CONFIG_REG(chan), MRCRx_ENTER_HUNT_MASK);
 	}
-
-#ifdef MV_COMM_UNIT_DEBUG
-	mvCommUnitShow();
 #endif
+
 	MV_TRC_REC("<-%s\n", __func__);
 	return MV_OK;
 }
 
 MV_VOID mvCommUnitRelease(MV_VOID)
 {
-	MV_U32 buffSize, totalRxDescSize, totalTxDescSize, index, chan;
-	MV_U32 maxPoll;
+	MV_U32 buffSize, totalRxDescSize, totalTxDescSize, index;
 
 	MV_TRC_REC("->%s\n", __func__);
 
-	/* Disable Rx/Tx periodical interrupts */
-	MV_REG_WRITE(VOICE_PERIODICAL_INT_CONTROL_REG, 0xffffffff);
+	if (tdmEnable == MV_TRUE) {
 
-	/**********************************/
-	/* Stop MCSC/Rx, MCDMA/Tx and TDM */
-	/**********************************/
-	/* MCSC Rx Abort */
-	for (chan = 0; chan < totalChannels; chan++)
-		MV_REG_BIT_SET(MCSC_CHx_RECEIVE_CONFIG_REG(chan), MRCRx_ABORT_MASK);
+		/* Mark TDM I/F as disabled */
+		tdmEnable = MV_FALSE;
 
+		mvCommUnitPcmStop();
+
+		mvCommUnitMcdmaMcscAbort();
+
+		if (IS_KW2_A0(ctrlModel, ctrlRev)) {
+			mvOsUDelay(10);
+			MV_REG_BIT_RESET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_MAI_MASK);
+		}
+
+		/* Disable TDM */
+		MV_REG_BIT_RESET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
+
+		/* Disable PCLK */
+		MV_REG_BIT_RESET(TDM_DATA_DELAY_AND_CLK_CTRL_REG, (TX_CLK_OUT_ENABLE_MASK | RX_CLK_OUT_ENABLE_MASK));
+
+		/* Reset CommUnit blocks to default settings */
+		MV_REG_BIT_RESET(0x18220, COMM_UNIT_SW_RST);
+		mvOsUDelay(1);
+		MV_REG_BIT_SET(0x18220, COMM_UNIT_SW_RST);
+		mvOsDelay(10);
+
+		/* Calculate total Rx/Tx buffer size */
+		buffSize = (sampleSize * MV_TDM_TOTAL_CH_SAMPLES * samplingCoeff * totalChannels)
+				+ CPU_D_CACHE_LINE_SIZE;
+
+		/* Calculate total MCDMA Rx/Tx descriptors chain size */
+		totalRxDescSize = totalChannels * sizeof(MV_TDM_MCDMA_RX_DESC);
+		totalTxDescSize = totalChannels * sizeof(MV_TDM_MCDMA_TX_DESC);
+
+		for (index = 0; index < TOTAL_CHAINS; index++) {
+			/* Release Rx/Tx data buffers */
+			mvOsIoCachedFree(NULL, buffSize, rxBuffPhys[index], rxBuffVirt[index], 0);
+			mvOsIoCachedFree(NULL, buffSize, txBuffPhys[index], txBuffVirt[index], 0);
+
+			/* Release MCDMA Rx/Tx descriptors */
+			mvOsIoUncachedFree(NULL, totalRxDescSize, mcdmaRxDescPhys[index], mcdmaRxDescPtr[index], 0);
+			mvOsIoUncachedFree(NULL, totalTxDescSize, mcdmaTxDescPhys[index], mcdmaTxDescPtr[index], 0);
+		}
+	}
+
+	MV_TRC_REC("<-%s\n", __func__);
+}
+
+static MV_VOID mvCommUnitMcdmaMcscStart(MV_VOID)
+{
+	MV_U32 chan, rxDescPhysAddr, txDescPhysAddr;
+
+	MV_TRC_REC("->%s\n", __func__);
+
+	mvCommUnitDescChainBuild();
+
+	/* Set current Rx/Tx descriptors  */
 	for (chan = 0; chan < totalChannels; chan++) {
-		maxPoll = 0;
-		while ((maxPoll < MAX_POLL_USEC)
-		       && !(MV_REG_READ(MCSC_CHx_COMM_EXEC_STAT_REG(chan)) & MCSC_ABR_E_STAT_MASK)) {
-			mvOsUDelay(1);
-			maxPoll++;
-		}
-
-		if (maxPoll >= MAX_POLL_USEC) {
-			mvOsPrintf("%s: Error, MCSC Rx abort timeout(ch%d)\n", __func__, chan);
-			return;
-		}
-
-		MV_REG_BIT_RESET(MCSC_CHx_RECEIVE_CONFIG_REG(chan), MRCRx_ABORT_MASK);
+		rxDescPhysAddr = mcdmaRxDescPhys[0] + (chan * sizeof(MV_TDM_MCDMA_RX_DESC));
+		txDescPhysAddr = mcdmaTxDescPhys[0] + (chan * sizeof(MV_TDM_MCDMA_TX_DESC));
+		MV_REG_WRITE(MCDMA_CURRENT_RECEIVE_DESC_PTR_REG(chan), rxDescPhysAddr);
+		MV_REG_WRITE(MCDMA_CURRENT_TRANSMIT_DESC_PTR_REG(chan), txDescPhysAddr);
 	}
 
-	/* MCDMA Tx Abort */
-	for (chan = 0; chan < totalChannels; chan++)
-		MV_REG_BIT_SET(MCDMA_TRANSMIT_CONTROL_REG(chan), MCDMA_AT_MASK);
-
+	/* Restore MCDMA Rx/Tx control registers */
 	for (chan = 0; chan < totalChannels; chan++) {
-		maxPoll = 0;
-		while ((maxPoll < MAX_POLL_USEC) && (MV_REG_READ(MCDMA_RECEIVE_CONTROL_REG(chan)) & MCDMA_ERD_MASK)) {
-			mvOsUDelay(1);
-			maxPoll++;
-		}
+		/* Set RMCCx */
+		MV_REG_WRITE(MCDMA_RECEIVE_CONTROL_REG(chan), CONFIG_RMCCx);
 
-		if (maxPoll >= MAX_POLL_USEC) {
-			mvOsPrintf("%s: Error, MCDMA Rx abort timeout(ch%d)\n", __func__, chan);
-			return;
-		}
-
-		maxPoll = 0;
-		while ((maxPoll < MAX_POLL_USEC) && (MV_REG_READ(MCDMA_TRANSMIT_CONTROL_REG(chan)) & MCDMA_AT_MASK)) {
-			mvOsUDelay(1);
-			maxPoll++;
-		}
-
-		if (maxPoll >= MAX_POLL_USEC) {
-			mvOsPrintf("%s: Error, MCDMA Tx abort timeout(ch%d)\n", __func__, chan);
-			return;
-		}
+		/* Set TMCCx */
+		MV_REG_WRITE(MCDMA_TRANSMIT_CONTROL_REG(chan), CONFIG_TMCCx);
 	}
 
-	/* Clear MCSC Rx/Tx channel enable */
+	/* Set Rx/Tx periodical interrupts */
+	MV_REG_WRITE(VOICE_PERIODICAL_INT_CONTROL_REG, CONFIG_VOICE_PERIODICAL_INT_CONTROL);
+
+	/* MCSC Global Tx Enable */
+	if (tdmEnable == MV_FALSE)
+		MV_REG_BIT_SET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_TXEN_MASK);
+
+	/* Enable MCSC-Tx & MCDMA-Rx */
 	for (chan = 0; chan < totalChannels; chan++) {
-		MV_REG_BIT_RESET(MCSC_CHx_RECEIVE_CONFIG_REG(chan), MRCRx_ER_MASK);
-		MV_REG_BIT_RESET(MCSC_CHx_TRANSMIT_CONFIG_REG(chan), MTCRx_ET_MASK);
-		/*MV_REG_BIT_RESET(MCDMA_RECEIVE_CONTROL_REG(chan), MCDMA_ERD_MASK);
-		MV_REG_BIT_RESET(MCDMA_TRANSMIT_CONTROL_REG(chan), MCDMA_TXD_MASK);*/
+		/* Enable Tx in TMCCx */
+		if (tdmEnable == MV_FALSE)
+			MV_REG_BIT_SET(MCSC_CHx_TRANSMIT_CONFIG_REG(chan), MTCRx_ET_MASK);
+
+		/* Enable Rx in: MCRDPx */
+		MV_REG_BIT_SET(MCDMA_RECEIVE_CONTROL_REG(chan), MCDMA_ERD_MASK);
 	}
 
-	/* MCSC Global Rx/Tx Disable */
-	MV_REG_BIT_RESET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_RXEN_MASK);
-	MV_REG_BIT_RESET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_TXEN_MASK);
+	/* MCSC Global Rx Enable */
+	if (tdmEnable == MV_FALSE)
+		MV_REG_BIT_SET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_RXEN_MASK);
 
-	/* Disable TDM */
-	MV_REG_BIT_RESET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
+	/* Enable MCSC-Rx & MCDMA-Tx */
+	for (chan = 0; chan < totalChannels; chan++) {
+		/* Enable Rx in RMCCx */
+		if (tdmEnable == MV_FALSE)
+			MV_REG_BIT_SET(MCSC_CHx_RECEIVE_CONFIG_REG(chan), MRCRx_ER_MASK);
 
-	/* Calculate total Rx/Tx buffer size */
-	buffSize = (sampleSize * MV_TDM_TOTAL_CH_SAMPLES * samplingCoeff * totalChannels)
-	    + CPU_D_CACHE_LINE_SIZE;
-
-	/* Calculate total MCDMA Rx/Tx descriptors chain size */
-	totalRxDescSize = totalChannels * sizeof(MV_TDM_MCDMA_RX_DESC);
-	totalTxDescSize = totalChannels * sizeof(MV_TDM_MCDMA_TX_DESC);
-
-	for (index = 0; index < TOTAL_CHAINS; index++) {
-		/* Release Rx/Tx data buffers */
-		mvOsIoCachedFree(NULL, buffSize, rxBuffPhys[index], rxBuffVirt[index], 0);
-		mvOsIoCachedFree(NULL, buffSize, txBuffPhys[index], txBuffVirt[index], 0);
-
-		/* Release MCDMA Rx/Tx descriptors */
-		mvOsIoUncachedFree(NULL, totalRxDescSize, mcdmaRxDescPhys[index], mcdmaRxDescPtr[index], 0);
-		mvOsIoUncachedFree(NULL, totalTxDescSize, mcdmaTxDescPhys[index], mcdmaTxDescPtr[index], 0);
+		/* Enable Tx in MCTDPx */
+		MV_REG_BIT_SET(MCDMA_TRANSMIT_CONTROL_REG(chan), MCDMA_TXD_MASK);
 	}
 
-#ifdef MV_COMM_UNIT_DEBUG
-	/*mvOsIoUncachedFree(NULL, 516, iqcPhys, iqcVirt, 0); */
-#endif
+	/* Disable Rx/Tx return to half */
+	MV_REG_BIT_RESET(FLEX_TDM_CONFIG_REG, (TDM_RR2HALF_MASK | TDM_TR2HALF_MASK));
+	/* Wait at least 1 frame */
+	mvOsUDelay(200);
 
 	MV_TRC_REC("<-%s\n", __func__);
 }
@@ -558,8 +566,11 @@ MV_VOID mvCommUnitPcmStart(MV_VOID)
 	MV_TRC_REC("->%s\n", __func__);
 
 	if (pcmEnable == MV_FALSE) {
+
 		/* Mark PCM I/F as enabled  */
 		pcmEnable = MV_TRUE;
+
+		mvCommUnitMcdmaMcscStart();
 
 		/* Clear TDM cause and mask registers */
 		MV_REG_WRITE(COMM_UNIT_TOP_MASK_REG, 0);
@@ -582,9 +593,172 @@ MV_VOID mvCommUnitPcmStart(MV_VOID)
 	MV_TRC_REC("<-%s\n", __func__);
 }
 
+static MV_VOID mvCommUnitMcdmaMcscAbort(MV_VOID)
+{
+	MV_U32 chan, maxPoll;
+
+	MV_TRC_REC("->%s\n", __func__);
+
+	/* Abort MCSC/MCDMA in case we got here from mvCommUnitRelease() */
+	if (tdmEnable == MV_FALSE) {
+
+#if 0
+		/* MCSC Rx Abort */
+		for (chan = 0; chan < totalChannels; chan++)
+			MV_REG_BIT_SET(MCSC_CHx_RECEIVE_CONFIG_REG(chan), MRCRx_ABORT_MASK);
+
+		for (chan = 0; chan < totalChannels; chan++) {
+			maxPoll = 0;
+			while ((maxPoll < MAX_POLL_USEC) &&
+				!(MV_REG_READ(MCSC_CHx_COMM_EXEC_STAT_REG(chan)) & MCSC_ABR_E_STAT_MASK)) {
+				mvOsUDelay(1);
+				maxPoll++;
+			}
+
+			if (maxPoll >= MAX_POLL_USEC) {
+				mvOsPrintf("%s: Error, MCSC Rx abort timeout(ch%d)\n", __func__, chan);
+				return;
+			}
+
+			MV_REG_BIT_RESET(MCSC_CHx_RECEIVE_CONFIG_REG(chan), MRCRx_ABORT_MASK);
+		}
+
+		/* MCDMA Tx Abort */
+		for (chan = 0; chan < totalChannels; chan++)
+			MV_REG_BIT_SET(MCDMA_TRANSMIT_CONTROL_REG(chan), MCDMA_AT_MASK);
+
+		for (chan = 0; chan < totalChannels; chan++) {
+			maxPoll = 0;
+			while ((maxPoll < MAX_POLL_USEC) &&
+				(MV_REG_READ(MCDMA_RECEIVE_CONTROL_REG(chan)) & MCDMA_ERD_MASK)) {
+				mvOsUDelay(1);
+				maxPoll++;
+			}
+
+			if (maxPoll >= MAX_POLL_USEC) {
+				mvOsPrintf("%s: Error, MCDMA Rx abort timeout(ch%d)\n", __func__, chan);
+				return;
+			}
+
+			maxPoll = 0;
+			while ((maxPoll < MAX_POLL_USEC) &&
+				(MV_REG_READ(MCDMA_TRANSMIT_CONTROL_REG(chan)) & MCDMA_AT_MASK)) {
+				mvOsUDelay(1);
+				maxPoll++;
+			}
+
+			if (maxPoll >= MAX_POLL_USEC) {
+				mvOsPrintf("%s: Error, MCDMA Tx abort timeout(ch%d)\n", __func__, chan);
+				return;
+			}
+		}
+#endif
+		/* Clear MCSC Rx/Tx channel enable */
+		for (chan = 0; chan < totalChannels; chan++) {
+			MV_REG_BIT_RESET(MCSC_CHx_RECEIVE_CONFIG_REG(chan), MRCRx_ER_MASK);
+			MV_REG_BIT_RESET(MCSC_CHx_TRANSMIT_CONFIG_REG(chan), MTCRx_ET_MASK);
+		}
+
+		/* MCSC Global Rx/Tx Disable */
+		MV_REG_BIT_RESET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_RXEN_MASK);
+		MV_REG_BIT_RESET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_TXEN_MASK);
+	}
+
+	MV_TRC_REC("<-%s\n", __func__);
+}
+
+static MV_VOID mvCommUnitMcdmaStop(MV_VOID)
+{
+	MV_U32 index, chan, maxPoll, currTxDesc;
+	MV_U32 currRxDesc, nextTxBuff = 0, nextRxBuff = 0;
+
+	MV_TRC_REC("->%s\n", __func__);
+
+	/***************************/
+	/*    Stop MCDMA - Rx/Tx   */
+	/***************************/
+	for (chan = 0; chan < totalChannels; chan++) {
+		currRxDesc = MV_REG_READ(MCDMA_CURRENT_RECEIVE_DESC_PTR_REG(chan));
+		for (index = 0; index < TOTAL_CHAINS; index++) {
+			if (currRxDesc == (mcdmaRxDescPhys[index] + (chan*(sizeof(MV_TDM_MCDMA_RX_DESC))))) {
+				nextRxBuff = NEXT_BUFF(index);
+				break;
+			}
+		}
+
+		if (index == TOTAL_CHAINS) {
+			mvOsPrintf("%s: ERROR, couldn't Rx descriptor match for chan(%d)\n", __func__, chan);
+			break;
+		}
+
+		((MV_TDM_MCDMA_RX_DESC *) (mcdmaRxDescPtr[nextRxBuff] + chan))->physNextDescPtr = 0;
+		((MV_TDM_MCDMA_RX_DESC *) (mcdmaRxDescPtr[nextRxBuff] + chan))->cmdStatus = (LAST_BIT | OWNER);
+	}
+
+	for (chan = 0; chan < totalChannels; chan++) {
+		currTxDesc = MV_REG_READ(MCDMA_CURRENT_TRANSMIT_DESC_PTR_REG(chan));
+		for (index = 0; index < TOTAL_CHAINS; index++) {
+			if (currTxDesc == (mcdmaTxDescPhys[index] + (chan*(sizeof(MV_TDM_MCDMA_TX_DESC))))) {
+				nextTxBuff = NEXT_BUFF(index);
+				break;
+			}
+		}
+
+		if (index == TOTAL_CHAINS) {
+			mvOsPrintf("%s: ERROR, couldn't Tx descriptor match for chan(%d)\n", __func__, chan);
+			return;
+		}
+
+		((MV_TDM_MCDMA_TX_DESC *) (mcdmaTxDescPtr[nextTxBuff] + chan))->physNextDescPtr = 0;
+		((MV_TDM_MCDMA_TX_DESC *) (mcdmaTxDescPtr[nextTxBuff] + chan))->cmdStatus = (LAST_BIT | OWNER);
+	}
+
+	for (chan = 0; chan < totalChannels; chan++) {
+		maxPoll = 0;
+		while ((maxPoll < MAX_POLL_USEC) &&
+			(MV_REG_READ(MCDMA_TRANSMIT_CONTROL_REG(chan)) & MCDMA_TXD_MASK)) {
+			mvOsUDelay(1);
+			maxPoll++;
+		}
+
+		if (maxPoll >= MAX_POLL_USEC) {
+			mvOsPrintf("%s: Error, MCDMA TXD polling timeout(ch%d)\n", __func__, chan);
+			return;
+		}
+
+		maxPoll = 0;
+		while ((maxPoll < MAX_POLL_USEC) &&
+			(MV_REG_READ(MCDMA_RECEIVE_CONTROL_REG(chan)) & MCDMA_ERD_MASK)) {
+			mvOsUDelay(1);
+			maxPoll++;
+		}
+
+		if (maxPoll >= MAX_POLL_USEC) {
+			mvOsPrintf("%s: Error, MCDMA ERD polling timeout(ch%d)\n", __func__, chan);
+			return;
+		}
+	}
+
+	/* Disable Rx/Tx periodical interrupts */
+	MV_REG_WRITE(VOICE_PERIODICAL_INT_CONTROL_REG, 0xffffffff);
+
+	/* Enable Rx/Tx return to half */
+	MV_REG_BIT_SET(FLEX_TDM_CONFIG_REG, (TDM_RR2HALF_MASK | TDM_TR2HALF_MASK));
+	/* Wait at least 1 frame */
+	mvOsUDelay(200);
+
+	if (IS_KW2_A0(ctrlModel, ctrlRev)) {
+		/* Manual reset to channel-balancing mechanism */
+		MV_REG_BIT_SET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_MAI_MASK);
+		mvOsUDelay(1);
+	}
+
+	MV_TRC_REC("<-%s\n", __func__);
+}
+
 MV_VOID mvCommUnitPcmStop(MV_VOID)
 {
-	MV_U32 index, buffSize;
+	MV_U32 buffSize, index;
 
 	MV_TRC_REC("->%s\n", __func__);
 
@@ -592,10 +766,6 @@ MV_VOID mvCommUnitPcmStop(MV_VOID)
 		/* Mark PCM I/F as disabled  */
 		pcmEnable = MV_FALSE;
 
-		/* Calculate total Rx/Tx buffer size */
-		buffSize = (sampleSize * MV_TDM_TOTAL_CH_SAMPLES * samplingCoeff * totalChannels);
-
-		/* CommUnit still active, only mask interrupts */
 		/* Clear TDM cause and mask registers */
 		MV_REG_WRITE(COMM_UNIT_TOP_MASK_REG, 0);
 		MV_REG_WRITE(TDM_MASK_REG, 0);
@@ -608,19 +778,19 @@ MV_VOID mvCommUnitPcmStop(MV_VOID)
 		MV_REG_WRITE(MCSC_GLOBAL_INT_CAUSE_REG, MCSC_GLOBAL_INT_CAUSE_INIT_DONE_MASK);
 		MV_REG_WRITE(MCSC_EXTENDED_INT_CAUSE_REG, 0);
 
-#if 0
-		/* Clear Rx/Tx buffers */
+		mvCommUnitMcdmaStop();
+
+		/* Calculate total Rx/Tx buffer size */
+		buffSize = (sampleSize * MV_TDM_TOTAL_CH_SAMPLES * samplingCoeff * totalChannels);
+
+		/* Clear Rx buffers */
 		for (index = 0; index < TOTAL_CHAINS; index++) {
 			memset(rxBuffVirt[index], 0, buffSize);
-			memset(txBuffVirt[index], 0, buffSize);
 
 			/* Flush+Inv buffers */
-			mvOsCacheFlushInv(NULL, rxBuffVirt[index], buffSize);
 			mvOsCacheFlushInv(NULL, txBuffVirt[index], buffSize);
 		}
-#endif
-		/* Enable SLIC/s interrupt detection */
-		/*MV_REG_WRITE(TDM_MASK_REG, TDM_SLIC_INT); */
+
 	}
 
 	MV_TRC_REC("<-%s\n", __func__);
@@ -628,15 +798,27 @@ MV_VOID mvCommUnitPcmStop(MV_VOID)
 
 MV_STATUS mvCommUnitTx(MV_U8 *pTdmTxBuff)
 {
-	MV_U32 buffSize;
+	MV_U32 buffSize, index;
+	MV_U8 tmp;
 
 	MV_TRC_REC("->%s\n", __func__);
 
 	/* Calculate total Tx buffer size */
 	buffSize = (sampleSize * MV_TDM_TOTAL_CH_SAMPLES * samplingCoeff * totalChannels);
 
+	if (sampleSize > MV_PCM_FORMAT_1BYTE) {
+		TRC_REC("Linear mode(Tx): swapping bytes\n");
+			for (index = 0; index < buffSize; index += 2) {
+				tmp = pTdmTxBuff[index];
+				pTdmTxBuff[index] = pTdmTxBuff[index+1];
+				pTdmTxBuff[index+1] = tmp;
+			}
+		TRC_REC("Linear mode(Tx): swapping bytes...done.\n");
+	}
+
 	/* Flush+Invalidate the next Tx buffer */
-	mvOsCacheFlushInv(NULL, pTdmTxBuff, buffSize);
+	mvOsCacheFlush(NULL, pTdmTxBuff, buffSize);
+	mvOsCacheInvalidate(NULL, pTdmTxBuff, buffSize);
 
 	MV_TRC_REC("<-%s\n", __func__);
 	return MV_OK;
@@ -644,7 +826,8 @@ MV_STATUS mvCommUnitTx(MV_U8 *pTdmTxBuff)
 
 MV_STATUS mvCommUnitRx(MV_U8 *pTdmRxBuff)
 {
-	MV_U32 buffSize;
+	MV_U32 buffSize, index;
+	MV_U8 tmp;
 
 	MV_TRC_REC("->%s\n", __func__);
 
@@ -654,6 +837,16 @@ MV_STATUS mvCommUnitRx(MV_U8 *pTdmRxBuff)
 	/* Invalidate current received buffer from cache */
 	mvOsCacheInvalidate(NULL, pTdmRxBuff, buffSize);
 
+	if (sampleSize > MV_PCM_FORMAT_1BYTE) {
+		TRC_REC("  -> Linear mode(Rx): swapping bytes\n");
+			for (index = 0; index < buffSize; index += 2) {
+				tmp = pTdmRxBuff[index];
+				pTdmRxBuff[index] = pTdmRxBuff[index+1];
+				pTdmRxBuff[index+1] = tmp;
+			}
+		TRC_REC("  <- Linear mode(Rx): swapping bytes...done.\n");
+	}
+
 	MV_TRC_REC("<-%s\n", __func__);
 	return MV_OK;
 }
@@ -662,8 +855,8 @@ MV_STATUS mvCommUnitRx(MV_U8 *pTdmRxBuff)
 MV_VOID mvCommUnitIntLow(MV_TDM_INT_INFO *pTdmIntInfo)
 {
 	MV_U32 causeReg, maskReg, causeAndMask;
-	MV_U32 slicInt = 0, intAckBits = 0, currRxDesc, currTxDesc;
-	MV_U8 cs, index;
+	MV_U32 intAckBits = 0, currDesc;
+	MV_U8 index;
 
 	MV_TRC_REC("->%s\n", __func__);
 
@@ -709,42 +902,42 @@ MV_VOID mvCommUnitIntLow(MV_TDM_INT_INFO *pTdmIntInfo)
 	/* Handle TDM Error/s */
 	if (causeAndMask & TDM_ERROR_INT) {
 		mvOsPrintf("TDM Error: TDM_CAUSE_REG = 0x%x\n", causeReg);
-		pTdmIntInfo->intType |= MV_ERROR_INT;
+		/*pTdmIntInfo->intType |= MV_ERROR_INT;*/
 		intAckBits |= (causeAndMask & TDM_ERROR_INT);
 	}
 
-	/* Handle Tx */
-	if (causeAndMask & TDM_TX_INT) {
-		currTxDesc = MV_REG_READ(MCDMA_CURRENT_TRANSMIT_DESC_PTR_REG(0));
-		MV_TRC_REC("currTxDesc = 0x%x\n", currTxDesc);
-		for (index = 0; index < TOTAL_CHAINS; index++) {
-			if (currTxDesc == mcdmaTxDescPhys[index]) {
-				nextTxBuff = NEXT_BUFF(index);
-				break;
-			}
-		}
-		MV_TRC_REC("Tx interrupt(nextTxBuff=%d)!!!\n", nextTxBuff);
-		pTdmIntInfo->tdmTxBuff = txBuffVirt[nextTxBuff];
-		pTdmIntInfo->intType |= MV_TX_INT;
-		intAckBits |= TDM_TX_INT;
-	}
+	if (causeAndMask & (TDM_TX_INT | TDM_RX_INT)) {
+		/* MCDMA current Tx desc. pointer is unreliable, thus, checking Rx desc. pointer only */
+		currDesc = MV_REG_READ(MCDMA_CURRENT_RECEIVE_DESC_PTR_REG(0));
+		MV_TRC_REC("currDesc = 0x%x\n", currDesc);
 
-	/* Handle Rx */
-	if (causeAndMask & TDM_RX_INT) {
-		currRxDesc = MV_REG_READ(MCDMA_CURRENT_RECEIVE_DESC_PTR_REG(0));
-		MV_TRC_REC("currRxDesc = 0x%x\n", currRxDesc);
-
-		for (index = 0; index < TOTAL_CHAINS; index++) {
-			if (currRxDesc == mcdmaRxDescPhys[index]) {
-				prevRxBuff = PREV_BUFF(index);
-				break;
+		/* Handle Tx */
+		if (causeAndMask & TDM_TX_INT) {
+			for (index = 0; index < TOTAL_CHAINS; index++) {
+				if (currDesc == mcdmaRxDescPhys[index]) {
+					nextTxBuff = NEXT_BUFF(index);
+					break;
+				}
 			}
+			MV_TRC_REC("Tx interrupt(nextTxBuff=%d)!!!\n", nextTxBuff);
+			pTdmIntInfo->tdmTxBuff = txBuffVirt[nextTxBuff];
+			pTdmIntInfo->intType |= MV_TX_INT;
+			intAckBits |= TDM_TX_INT;
 		}
 
-		MV_TRC_REC("Rx interrupt(prevRxBuff=%d)!!!\n", prevRxBuff);
-		pTdmIntInfo->tdmRxBuff = rxBuffVirt[prevRxBuff];
-		pTdmIntInfo->intType |= MV_RX_INT;
-		intAckBits |= TDM_RX_INT;
+		/* Handle Rx */
+		if (causeAndMask & TDM_RX_INT) {
+			for (index = 0; index < TOTAL_CHAINS; index++) {
+				if (currDesc == mcdmaRxDescPhys[index]) {
+					prevRxBuff = PREV_BUFF(index);
+					break;
+				}
+			}
+			MV_TRC_REC("Rx interrupt(prevRxBuff=%d)!!!\n", prevRxBuff);
+			pTdmIntInfo->tdmRxBuff = rxBuffVirt[prevRxBuff];
+			pTdmIntInfo->intType |= MV_RX_INT;
+			intAckBits |= TDM_RX_INT;
+		}
 	}
 
 	/* Clear TDM interrupts */
@@ -754,14 +947,61 @@ MV_VOID mvCommUnitIntLow(MV_TDM_INT_INFO *pTdmIntInfo)
 	return;
 }
 
+static MV_VOID mvCommUnitDescChainBuild(MV_VOID)
+{
+	MV_U32 chan, index, buffSize;
+
+	TRC_REC("->%s\n", __func__);
+
+	/* Calculate single Rx/Tx buffer size */
+	buffSize = (sampleSize * MV_TDM_TOTAL_CH_SAMPLES * samplingCoeff);
+
+	/* Initialize descriptors fields */
+	for (chan = 0; chan < totalChannels; chan++) {
+		for (index = 0; index < TOTAL_CHAINS; index++) {
+			/* Associate data buffers to descriptors physBuffPtr */
+			((MV_TDM_MCDMA_RX_DESC *) (mcdmaRxDescPtr[index] + chan))->physBuffPtr =
+			    (MV_U32) (rxBuffPhys[index] + (chan * buffSize));
+			((MV_TDM_MCDMA_TX_DESC *) (mcdmaTxDescPtr[index] + chan))->physBuffPtr =
+			    (MV_U32) (txBuffPhys[index] + (chan * buffSize));
+
+			/* Build cyclic descriptors chain for each channel */
+			((MV_TDM_MCDMA_RX_DESC *) (mcdmaRxDescPtr[index] + chan))->physNextDescPtr =
+			    (MV_U32) (mcdmaRxDescPhys[((index + 1) % TOTAL_CHAINS)] +
+				      (chan * sizeof(MV_TDM_MCDMA_RX_DESC)));
+
+			((MV_TDM_MCDMA_TX_DESC *) (mcdmaTxDescPtr[index] + chan))->physNextDescPtr =
+			    (MV_U32) (mcdmaTxDescPhys[((index + 1) % TOTAL_CHAINS)] +
+				      (chan * sizeof(MV_TDM_MCDMA_TX_DESC)));
+
+			/* Set Byte_Count/Buffer_Size Rx descriptor fields */
+			((MV_TDM_MCDMA_RX_DESC *) (mcdmaRxDescPtr[index] + chan))->byteCnt = 0;
+			((MV_TDM_MCDMA_RX_DESC *) (mcdmaRxDescPtr[index] + chan))->buffSize = buffSize;
+
+			/* Set Shadow_Byte_Count/Byte_Count Tx descriptor fields */
+			((MV_TDM_MCDMA_TX_DESC *) (mcdmaTxDescPtr[index] + chan))->shadowByteCnt = buffSize;
+			((MV_TDM_MCDMA_TX_DESC *) (mcdmaTxDescPtr[index] + chan))->byteCnt = buffSize;
+
+			/* Set Command/Status Rx/Tx descriptor fields */
+			((MV_TDM_MCDMA_RX_DESC *) (mcdmaRxDescPtr[index] + chan))->cmdStatus =
+			    (CONFIG_MCDMA_DESC_CMD_STATUS);
+			((MV_TDM_MCDMA_TX_DESC *) (mcdmaTxDescPtr[index] + chan))->cmdStatus =
+			    (CONFIG_MCDMA_DESC_CMD_STATUS);
+		}
+	}
+
+	TRC_REC("<-%s\n", __func__);
+	return;
+}
+
 MV_VOID mvCommUnitIntEnable(MV_U8 deviceId)
 {
-	MV_REG_BIT_SET(MV_GPP_IRQ_MASK_REG(0), BIT23);
+	/* MV_REG_BIT_SET(MV_GPP_IRQ_MASK_REG(0), BIT23); */
 }
 
 MV_VOID mvCommUnitIntDisable(MV_U8 deviceId)
 {
-	MV_REG_BIT_RESET(MV_GPP_IRQ_MASK_REG(0), BIT23);
+	/* MV_REG_BIT_RESET(MV_GPP_IRQ_MASK_REG(0), BIT23); */
 }
 
 MV_VOID mvCommUnitShow(MV_VOID)
@@ -774,12 +1014,9 @@ MV_VOID mvCommUnitShow(MV_VOID)
 			   (MV_U32) rxBuffPhys[index]);
 		mvOsPrintf("Tx Buff(%d): virt = 0x%x, phys = 0x%x\n", index, (MV_U32) txBuffVirt[index],
 			   (MV_U32) txBuffPhys[index]);
-
 		mvOsPrintf("Rx Desc(%d): virt = 0x%x, phys = 0x%x\n", index,
 			   (MV_U32) mcdmaRxDescPtr[index], (MV_U32) mcdmaRxDescPhys[index]);
-
 		mvOsPrintf("Tx Desc(%d): virt = 0x%x, phys = 0x%x\n", index,
 			   (MV_U32) mcdmaTxDescPtr[index], (MV_U32) mcdmaTxDescPhys[index]);
-
 	}
 }

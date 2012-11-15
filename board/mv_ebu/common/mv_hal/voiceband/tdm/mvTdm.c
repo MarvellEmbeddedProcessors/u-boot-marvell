@@ -109,8 +109,8 @@ static MV_TDM_CH_INFO *tdmChInfo[MV_TDM_TOTAL_CHANNELS] = { NULL, NULL };
 
 MV_STATUS mvTdmHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 {
-	MV_U8 ch, sample;
-	MV_U32 pcmCtrlReg, delay = 0, wbDelay = 0;
+	MV_U8 ch;
+	MV_U32 pcmCtrlReg, nbDelay = 0, wbDelay = 0;
 	MV_U32 chDelay[4] = { 0, 0, 0, 0 };
 
 	MV_TRC_REC("->%s\n", __func__);
@@ -130,14 +130,10 @@ MV_STATUS mvTdmHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 
 	/* Extract pcm format & band mode */
 	if (pcmFormat == MV_PCM_FORMAT_4BYTES) {
-		sample = MV_PCM_FORMAT_2BYTES;
+		pcmFormat = MV_PCM_FORMAT_2BYTES;
 		tdmBandMode = MV_WIDE_BAND;
 	} else {
 		tdmBandMode = MV_NARROW_BAND;
-		if (pcmFormat == MV_PCM_FORMAT_2BYTES)
-			sample = MV_PCM_FORMAT_2BYTES;
-		else
-			sample = MV_PCM_FORMAT_1BYTE;
 	}
 
 	/* Allocate aggregated buffers for data transport */
@@ -157,9 +153,9 @@ MV_STATUS mvTdmHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 
 	/* Calculate CH(0/1) Delay Control for narrow/wideband modes */
 	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
-		delay = ((tdmParams->pcmSlot[ch] * PCM_SLOT_PCLK) + 1);
-		wbDelay = (delay + (2 * PCM_SLOT_PCLK));
-		chDelay[ch] = ((delay << CH_RX_DELAY_OFFS) | (delay << CH_TX_DELAY_OFFS));
+		nbDelay = ((tdmParams->pcmSlot[ch] * PCM_SLOT_PCLK) + 1);
+		wbDelay = (nbDelay + ((halData->frameTs / 2) * PCM_SLOT_PCLK)); /* Offset required by ZARLINK VE880 SLIC */
+		chDelay[ch] = ((nbDelay << CH_RX_DELAY_OFFS) | (nbDelay << CH_TX_DELAY_OFFS));
 		chDelay[(ch + 2)] = ((wbDelay << CH_RX_DELAY_OFFS) | (wbDelay << CH_TX_DELAY_OFFS));
 	}
 
@@ -170,25 +166,23 @@ MV_STATUS mvTdmHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	MV_REG_WRITE(INT_EVENT_MASK_REG, 0x3ffff);	/* all interrupt bits latched in status */
 	MV_REG_WRITE(INT_STATUS_MASK_REG, 0);	/* disable interrupts */
 	MV_REG_WRITE(INT_STATUS_REG, 0);	/* clear int status register */
-	if ((halData->model & 0xff00) == MV_65XX_DEV_ID) {
-		/* Bypass clock divider */
-		MV_REG_WRITE(PCM_CLK_RATE_DIV_REG, PCM_DIV_PASS);	/* PCM PCLK freq */
-	} else {
-		MV_REG_WRITE(PCM_CLK_RATE_DIV_REG, PCM_8192KHZ);	/* PCM PCLK freq */
-	}
+
+	/* Bypass clock divider */
+	MV_REG_WRITE(PCM_CLK_RATE_DIV_REG, PCM_DIV_PASS);	/* PCM PCLK freq */
+
 	MV_REG_WRITE(DUMMY_RX_WRITE_DATA_REG, 0);	/* Padding on Rx completion */
 	MV_REG_BYTE_WRITE(SPI_GLOBAL_CTRL_REG, MV_REG_READ(SPI_GLOBAL_CTRL_REG) | SPI_GLOBAL_ENABLE);
 	MV_REG_BYTE_WRITE(SPI_CLK_PRESCALAR_REG, SPI_CLK_2MHZ);	/* SPI SCLK freq */
-	MV_REG_WRITE(FRAME_TIMESLOT_REG, TIMESLOTS128_8192KHZ);	/* Number of timeslots (PCLK) */
+	MV_REG_WRITE(FRAME_TIMESLOT_REG, (MV_U32)halData->frameTs); /* Number of timeslots (PCLK) */
 
 	if (tdmBandMode == MV_NARROW_BAND) {
-		pcmCtrlReg = (CONFIG_PCM_CRTL | ((sample - 1) << PCM_SAMPLE_SIZE_OFFS));
+		pcmCtrlReg = (CONFIG_PCM_CRTL | (((MV_U8)pcmFormat - 1) << PCM_SAMPLE_SIZE_OFFS));
 		MV_REG_WRITE(PCM_CTRL_REG, pcmCtrlReg);	/* PCM configuration */
 		MV_REG_WRITE(CH_DELAY_CTRL_REG(0), chDelay[0]);	/* CH0 delay control register */
 		MV_REG_WRITE(CH_DELAY_CTRL_REG(1), chDelay[1]);	/* CH1 delay control register */
 	} else {		/* MV_WIDE_BAND */
 
-		pcmCtrlReg = (CONFIG_WB_PCM_CRTL | ((sample - 1) << PCM_SAMPLE_SIZE_OFFS));
+		pcmCtrlReg = (CONFIG_WB_PCM_CRTL | (((MV_U8)pcmFormat - 1) << PCM_SAMPLE_SIZE_OFFS));
 		MV_REG_WRITE(PCM_CTRL_REG, pcmCtrlReg);	/* PCM configuration - WB support */
 		MV_REG_WRITE(CH_DELAY_CTRL_REG(0), chDelay[0]);	/* CH0 delay control register */
 		MV_REG_WRITE(CH_DELAY_CTRL_REG(1), chDelay[1]);	/* CH1 delay control register */
@@ -486,7 +480,7 @@ MV_VOID mvTdmIntLow(MV_TDM_INT_INFO *tdmIntInfo)
 
 	/* Read Status & mask registers */
 	statusReg = MV_REG_READ(INT_STATUS_REG);
-	maskReg = MV_REG_READ(INT_EVENT_MASK_REG);
+	maskReg = MV_REG_READ(INT_STATUS_MASK_REG);
 	MV_TRC_REC("CAUSE(0x%x), MASK(0x%x)\n", statusReg, maskReg);
 
 	/* Refer only to unmasked bits */
@@ -514,13 +508,13 @@ MV_VOID mvTdmIntLow(MV_TDM_INT_INFO *tdmIntInfo)
 	if (statusAndMask & DMA_ABORT_BIT) {
 		mvOsPrintf("DMA data abort. Address: 0x%08x, Info: 0x%08x\n",
 			   MV_REG_READ(DMA_ABORT_ADDR_REG), MV_REG_READ(DMA_ABORT_INFO_REG));
-		tdmIntInfo->intType |= MV_ERROR_INT;
+		tdmIntInfo->intType |= MV_DMA_ERROR_INT;
 	}
 
 	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
 		if (statusAndMask & TDM_INT_TX(ch)) {
 			/* Give next buff to TDM and set curr buff as empty */
-			if (statusAndMask & TX_BIT(ch)) {
+			if ((statusAndMask & TX_BIT(ch)) && tdmEnable) {
 				MV_TRC_REC("Tx interrupt(ch%d) !!!\n", ch);
 
 				/* MV_OK -> Tx is done for both channels */
@@ -532,23 +526,30 @@ MV_VOID mvTdmIntLow(MV_TDM_INT_INFO *tdmIntInfo)
 			}
 
 			if (statusAndMask & TX_UNDERFLOW_BIT(ch)) {
+				MV_TRC_REC("Tx underflow(ch%d) - checking for root cause...\n", ch);
 				if (tdmEnable) {
-					mvOsPrintf("Tx underflow on ch(%d) !!!\n", ch);
+					MV_TRC_REC("Tx underflow ERROR\n");
+					tdmIntInfo->intType |= MV_TX_ERROR_INT;
+					if (!(statusAndMask & TX_BIT(ch))) {
+						MV_TRC_REC("Trying to recover for ch(%d)\n", ch);
+						/* Set HW ownership */
+						MV_REG_BYTE_WRITE(CH_BUFF_OWN_REG(ch) + TX_OWN_BYTE_OFFS, OWN_BY_HW);
+						/* Enable Tx */
+						MV_REG_BYTE_WRITE(CH_ENABLE_REG(ch) + TX_ENABLE_BYTE_OFFS, CH_ENABLE);
+					}
 				} else {
+					MV_TRC_REC("Expected Tx underflow(not an error)\n");
 					MV_REG_WRITE(INT_STATUS_MASK_REG,
 						     MV_REG_READ(INT_STATUS_MASK_REG) & (~(TDM_INT_TX(ch))));
 				}
-
-				/*tdmIntInfo->intType |= MV_ERROR_INT;
-				   MV_REG_WRITE(INT_EVENT_MASK_REG, (maskReg & (~(TDM_INT_TX(ch))))); */
 			}
 		}
 
 		if (statusAndMask & TDM_INT_RX(ch)) {
-			if (statusAndMask & RX_BIT(ch)) {
+			if ((statusAndMask & RX_BIT(ch)) && tdmEnable) {
 				MV_TRC_REC("Rx interrupt(ch%d) !!!\n", ch);
 
-				/* MV_OK -> Tx is done for both channels */
+				/* MV_OK -> Rx is done for both channels */
 				if (mvTdmChRxLow(ch) == MV_OK) {
 					MV_TRC_REC("Assign Rx aggregate buffer for further processing\n");
 					tdmIntInfo->tdmRxBuff = rxAggrBuffVirt;
@@ -557,14 +558,22 @@ MV_VOID mvTdmIntLow(MV_TDM_INT_INFO *tdmIntInfo)
 			}
 
 			if (statusAndMask & RX_OVERFLOW_BIT(ch)) {
+				MV_TRC_REC("Rx overflow(ch%d) - checking for root cause...\n", ch);
 				if (tdmEnable) {
-					mvOsPrintf("Rx overflow on ch(%d) !!!\n", ch);
+					MV_TRC_REC("Rx overflow ERROR\n");
+					tdmIntInfo->intType |= MV_RX_ERROR_INT;
+					if (!(statusAndMask & RX_BIT(ch))) {
+						MV_TRC_REC("Trying to recover for ch(%d)\n", ch);
+						/* Set HW ownership */
+						MV_REG_BYTE_WRITE(CH_BUFF_OWN_REG(ch) + RX_OWN_BYTE_OFFS, OWN_BY_HW);
+						/* Enable Rx */
+						MV_REG_BYTE_WRITE(CH_ENABLE_REG(ch) + RX_ENABLE_BYTE_OFFS, CH_ENABLE);
+					}
 				} else {
+					MV_TRC_REC("Expected Rx overflow(not an error)\n");
 					MV_REG_WRITE(INT_STATUS_MASK_REG,
 						     MV_REG_READ(INT_STATUS_MASK_REG) & (~(TDM_INT_RX(ch))));
 				}
-				/*tdmIntInfo->intType |= MV_ERROR_INT;
-				   MV_REG_WRITE(INT_EVENT_MASK_REG, (maskReg & (~(TDM_INT_RX(ch))))); */
 			}
 		}
 	}

@@ -61,17 +61,10 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-
-#ifndef __INCvoicebandh
-#define __INCvoicebandh
+#ifndef __MV_SYS_TDM_SPI_H__
+#define __MV_SYS_TDM_SPI_H__
 
 #include "mvOs.h"
-
-/* Defines */
-#define ON_HOOK			(1 << MV_ON_HOOK)
-#define OFF_HOOK		(1 << MV_OFF_HOOK)
-#define LINE_NO_SUCH		0xFFFF
-#define MV_SLIC_MAX_EVENTS	64
 
 /* Enumerators */
 typedef enum {
@@ -80,37 +73,16 @@ typedef enum {
 } MV_BAND_MODE;
 
 typedef enum {
-	MV_LINE_FXO = 0,
-	MV_LINE_FXS
-} MV_LINE;
-
-typedef enum {
-	MV_ON_HOOK = 0,
-	MV_OFF_HOOK
-} MV_HOOK_STATE;
-
-typedef enum {
 	MV_PCM_FORMAT_1BYTE = 1,
 	MV_PCM_FORMAT_2BYTES = 2,
 	MV_PCM_FORMAT_4BYTES = 4
 } MV_PCM_FORMAT;
 
 typedef enum {
-	LINEFEED_OPEN = 0,
-	LINEFEED_FORWARD_ACTIVE,
-	LINEFEED_FORWARD_ON_HOOK_TRANSMISSION,
-	LINEFEED_TIP_OPEN,
-	LINEFEED_RINGING,
-	LINEFEED_REVERESE_ACTIVE,
-	LINEFEED_REVERSE_ON_HOOK_TRANSMISSION,
-	LINEFEED_RING_OPEN
-} MV_LINEFEED_STATE;
-
-typedef struct {
-	MV_U8 deviceId;
-	MV_U16 lineId;
-	MV_U8 event;
-} MV_SLIC_EVENT_INFO;
+	MV_FRAME_32TS = 32,
+	MV_FRAME_64TS = 64,
+	MV_FRAME_128TS = 128
+} MV_FRAME_TS;
 
 /* APIs */
 MV_VOID mvSysTdmSpiRead(MV_U16 lineId, MV_U8 *cmdBuff, MV_U8 cmdSize, MV_U8 *dataBuff, MV_U8 dataSize);
@@ -118,4 +90,4 @@ MV_VOID mvSysTdmSpiWrite(MV_U16 lineId, MV_U8 *cmdBuff, MV_U8 cmdSize, MV_U8 *da
 MV_VOID mvSysTdmIntEnable(MV_U8 deviceId);
 MV_VOID mvSysTdmIntDisable(MV_U8 deviceId);
 
-#endif /* __INCvoicbandh */
+#endif /* __MV_SYS_TDM_SPI_H__ */

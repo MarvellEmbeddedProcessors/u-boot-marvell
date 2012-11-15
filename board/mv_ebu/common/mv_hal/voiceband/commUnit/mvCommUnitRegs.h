@@ -1,7 +1,7 @@
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
-This software file (the "File") is owned and distributed by Marvell 
+This software file (the "File") is owned and distributed by Marvell
 International Ltd. and/or its affiliates ("Marvell") under the following
 alternative licensing terms.  Once you have made an election to distribute the
 File under one of the following license alternatives, please (i) delete this
@@ -19,45 +19,45 @@ to you under the terms of the applicable Commercial License.
 ********************************************************************************
 Marvell GPL License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or 
-modify this File in accordance with the terms and conditions of the General 
-Public License Version 2, June 1991 (the "GPL License"), a copy of which is 
-available along with the File in the license.txt file or by writing to the Free 
-Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or 
-on the worldwide web at http://www.gnu.org/licenses/gpl.txt. 
+If you received this File from Marvell, you may opt to use, redistribute and/or
+modify this File in accordance with the terms and conditions of the General
+Public License Version 2, June 1991 (the "GPL License"), a copy of which is
+available along with the File in the license.txt file or by writing to the Free
+Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
+on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED 
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY 
-DISCLAIMED.  The GPL License provides additional details about this warranty 
+THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+DISCLAIMED.  The GPL License provides additional details about this warranty
 disclaimer.
 ********************************************************************************
 Marvell BSD License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or 
-modify this File under the following licensing terms. 
-Redistribution and use in source and binary forms, with or without modification, 
+If you received this File from Marvell, you may opt to use, redistribute and/or
+modify this File under the following licensing terms.
+Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer. 
+	this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution. 
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
-    *   Neither the name of Marvell nor the names of its contributors may be 
-        used to endorse or promote products derived from this software without 
-        specific prior written permission. 
-    
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR 
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON 
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+    *   Neither the name of Marvell nor the names of its contributors may be
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
@@ -143,6 +143,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MCSC_EXTENDED_INT_CAUSE_REG		(MV_COMM_UNIT_REGS_BASE + 0x2808)
 #define MCSC_GLOBAL_INT_MASK_REG		(MV_COMM_UNIT_REGS_BASE + 0x280C)
 #define MCSC_EXTENDED_INT_MASK_REG		(MV_COMM_UNIT_REGS_BASE + 0x2810)
+#define MCSC_TX_CHANNEL_BALANCING_MASK_REG	(MV_COMM_UNIT_REGS_BASE + 0x284C)
+#define MCSC_RX_CHANNEL_BALANCING_MASK_REG	(MV_COMM_UNIT_REGS_BASE + 0x2850)
 
 /* MCSC_CHx_COMM_EXEC_STAT_REG bits */
 #define MCSC_ABR_E_STAT_OFFS			25
@@ -171,6 +173,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MTCRx_MODE_MASK				(1 << MTCRx_MODE_OFFS)
 
 /* MCSC_GLOBAL_CONFIG_REG bits */
+#define MCSC_GLOBAL_CONFIG_RCBD_OFFS		19
+#define MCSC_GLOBAL_CONFIG_RCBD_MASK		(1 << MCSC_GLOBAL_CONFIG_RCBD_OFFS)
+#define MCSC_GLOBAL_CONFIG_TCBD_OFFS		20
+#define MCSC_GLOBAL_CONFIG_TCBD_MASK		(1 << MCSC_GLOBAL_CONFIG_TCBD_OFFS)
+#define MCSC_GLOBAL_CONFIG_MAI_OFFS		21
+#define MCSC_GLOBAL_CONFIG_MAI_MASK		(1 << MCSC_GLOBAL_CONFIG_MAI_OFFS)
+#define MCSC_GLOBAL_CONFIG_LMD_OFFS		22
+#define MCSC_GLOBAL_CONFIG_LMD_MASK		(1 << MCSC_GLOBAL_CONFIG_LMD_OFFS)
 #define MCSC_GLOBAL_CONFIG_ARBM_OFFS		29
 #define MCSC_GLOBAL_CONFIG_ARBM_MASK		(1 << MCSC_GLOBAL_CONFIG_ARBM_OFFS)
 #define MCSC_GLOBAL_CONFIG_RXEN_OFFS		30
@@ -242,6 +252,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MCDMA_FSIZE_1BLK			0x1
 #define MCDMA_TBSZ_OFFS				8
 #define MCDMA_TBSZ_MASK				(0x3 << MCDMA_TBSZ_OFFS)
+#define MCDMA_TBSZ_8BYTE			(0x0 << MCDMA_TBSZ_OFFS)
 #define MCDMA_TBSZ_16BYTE			(0x1 << MCDMA_TBSZ_OFFS)
 #define MCDMA_TBSZ_32BYTE			(0x2 << MCDMA_TBSZ_OFFS)
 
@@ -271,6 +282,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TDM_CLK_AND_SYNC_CONTROL_REG		(MV_COMM_UNIT_REGS_BASE + 0x881C)
 #define TDM_CLK_DIVIDER_CONTROL_REG		(MV_COMM_UNIT_REGS_BASE + 0x8820)
 #define TDM_RESV_CLK_DIVIDER_CONTROL_REG	(MV_COMM_UNIT_REGS_BASE + 0x8824)
+#define TDM_DATA_DELAY_AND_CLK_CTRL_REG		(MV_COMM_UNIT_REGS_BASE + 0x8CD0)
+#define TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_OUT_REG	(MV_COMM_UNIT_REGS_BASE + 0x8CD4)
+#define TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_IN_REG	(MV_COMM_UNIT_REGS_BASE + 0x8CD8)
 
 /* TDM_CLK_AND_SYNC_CONTROL_REG bits */
 #define TDM_TX_FSYNC_OUT_ENABLE_OFFS		0
@@ -291,8 +305,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TDM_RX_REFCLK_DIVIDER_2MHZ		BIT15
 #define TDM_RX_REFCLK_DIVIDER_4MHZ		BIT16
 #define TDM_RX_REFCLK_DIVIDER_8MHZ		BIT17
+#define TDM_FSYNC_INVERT_OFFS			19
+#define TDM_FSYNC_INVERT_DISABLE		(0 << TDM_FSYNC_INVERT_OFFS)
+#define TDM_FSYNC_INVERT_ENABLE			(1 << TDM_FSYNC_INVERT_OFFS)
 #define TDM_REFCLK_DIVIDER_BYPASS_OFFS		20
 #define TDM_REFCLK_DIVIDER_BYPASS_MASK		(3 << TDM_REFCLK_DIVIDER_BYPASS_OFFS)
+#define TDM_OUT_CLK_SRC_CTRL_OFFS		24
+#define TDM_OUT_CLK_SRC_CTRL_BEFORE_DIV		(0 << TDM_OUT_CLK_SRC_CTRL_OFFS)
+#define TDM_OUT_CLK_SRC_CTRL_AFTER_DIV		(1 << TDM_OUT_CLK_SRC_CTRL_OFFS)
+#define TDM_PROG_TDM_SLIC_RESET_OFFS		31
+#define TDM_PROG_TDM_SLIC_RESET_MASK		(1 << TDM_PROG_TDM_SLIC_RESET_OFFS)
 
 /* TDM_RX_CLK_DIVIDER_CONTROL_REG bits */
 #define TDM_RX_FIXED_DIV_ENABLE_OFFS		31
@@ -303,6 +325,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TDM_TX_FIXED_DIV_ENABLE_MASK		(1 << TDM_TX_FIXED_DIV_ENABLE_OFFS)
 
 /* FLEX_TDM_CONFIG_REG bits */
+#define TDM_RR2HALF_OFFS			15
+#define TDM_RR2HALF_MASK			(1 << TDM_RR2HALF_OFFS)
+#define TDM_TR2HALF_OFFS			16
+#define TDM_TR2HALF_MASK			(1 << TDM_TR2HALF_OFFS)
 #define TDM_SE_OFFS				20
 #define TDM_SE_MASK				(1 << TDM_SE_OFFS)
 #define TDM_COMMON_RX_TX_OFFS			23
@@ -321,6 +347,54 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define RSD_3BIT_DELAY				(3 << RSD_OFFS)
 #define TDM_TEN_OFFS				31
 #define TDM_TEN_MASK				(1 << TDM_TEN_OFFS)
+
+/* TDM_DATA_DELAY_AND_CLK_CTRL_REG bits */
+#define TX_CLK_OUT_ENABLE_OFFS			0
+#define TX_CLK_OUT_ENABLE_MASK			(1 << TX_CLK_OUT_ENABLE_OFFS)
+#define RX_CLK_OUT_ENABLE_OFFS			1
+#define RX_CLK_OUT_ENABLE_MASK			(1 << RX_CLK_OUT_ENABLE_OFFS)
+#define FIXED_POINT_RX_SYNC_OFFS		2
+#define FIXED_POINT_RX_SYNC_MASK		(1 << FIXED_POINT_RX_SYNC_OFFS)
+#define TX_DELAY_HOTBIT_OFFS			4
+#define TX_NO_DELAY				(0 << TX_DELAY_HOTBIT_OFFS)
+#define TX_1BIT_DELAY				(1 << TX_DELAY_HOTBIT_OFFS)
+#define TX_2BIT_DELAY				(2 << TX_DELAY_HOTBIT_OFFS)
+#define TX_3BIT_DELAY				(4 << TX_DELAY_HOTBIT_OFFS)
+#define TX_4BIT_DELAY				(8 << TX_DELAY_HOTBIT_OFFS)
+#define RX_DELAY_HOTBIT_OFFS			8
+#define RX_NO_DELAY				(0 << RX_DELAY_HOTBIT_OFFS)
+#define RX_1BIT_DELAY				(1 << RX_DELAY_HOTBIT_OFFS)
+#define RX_2BIT_DELAY				(2 << RX_DELAY_HOTBIT_OFFS)
+#define RX_3BIT_DELAY				(4 << RX_DELAY_HOTBIT_OFFS)
+#define RX_4BIT_DELAY				(8 << RX_DELAY_HOTBIT_OFFS)
+
+/* TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_OUT_REG bits */
+#define TX_SYNC_DELAY_OUT_OFFS			0
+#define TX_SYNC_DELAY_OUT_PLUS_MINUS_OFFS	14
+#define TX_SYNC_DELAY_OUT_PLUS			(0 << TX_SYNC_DELAY_OUT_PLUS_MINUS_OFFS)
+#define TX_SYNC_DELAY_OUT_MINUS			(1 << TX_SYNC_DELAY_OUT_PLUS_MINUS_OFFS)
+#define TX_SYNC_DELAY_OUT_RESTART_CALC_OFFS	15
+#define TX_SYNC_DELAY_OUT_RESTART_CALC_MASK	(1 << TX_SYNC_DELAY_OUT_RESTART_CALC_OFFS)
+#define RX_SYNC_DELAY_OUT_OFFS			16
+#define RX_SYNC_DELAY_OUT_PLUS_MINUS_OFFS	30
+#define RX_SYNC_DELAY_OUT_PLUS			(0 << RX_SYNC_DELAY_OUT_PLUS_MINUS_OFFS)
+#define RX_SYNC_DELAY_OUT_MINUS			(1 << RX_SYNC_DELAY_OUT_PLUS_MINUS_OFFS)
+#define RX_SYNC_DELAY_OUT_RESTART_CALC_OFFS	31
+#define RX_SYNC_DELAY_OUT_RESTART_CALC_MASK	(1 << RX_SYNC_DELAY_OUT_RESTART_CALC_OFFS)
+
+/* TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_IN_REG bits */
+#define TX_SYNC_DELAY_IN_OFFS			0
+#define TX_SYNC_DELAY_IN_PLUS_MINUS_OFFS	14
+#define TX_SYNC_DELAY_IN_PLUS			(0 << TX_SYNC_DELAY_IN_PLUS_MINUS_OFFS)
+#define TX_SYNC_DELAY_IN_MINUS			(1 << TX_SYNC_DELAY_IN_PLUS_MINUS_OFFS)
+#define TX_SYNC_DELAY_IN_RESTART_CALC_OFFS	15
+#define TX_SYNC_DELAY_IN_RESTART_CALC_MASK	(1 << TX_SYNC_DELAY_IN_RESTART_CALC_OFFS)
+#define RX_SYNC_DELAY_IN_OFFS			16
+#define RX_SYNC_DELAY_IN_PLUS_MINUS_OFFS	30
+#define RX_SYNC_DELAY_IN_PLUS			(0 << RX_SYNC_DELAY_IN_PLUS_MINUS_OFFS)
+#define RX_SYNC_DELAY_IN_MINUS			(1 << RX_SYNC_DELAY_IN_PLUS_MINUS_OFFS)
+#define RX_SYNC_DELAY_IN_RESTART_CALC_OFFS	31
+#define RX_SYNC_DELAY_IN_RESTART_CALC_MASK	(1 << RX_SYNC_DELAY_IN_RESTART_CALC_OFFS)
 
 /************************************************/
 /*	Shared Bus to Crossbar Bridge		*/
@@ -371,4 +445,3 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_COMM_UNIT_WIN_SIZE_ALIGN	_64K
 
 #endif /*__INCmvCommUnitRegsh*/
-

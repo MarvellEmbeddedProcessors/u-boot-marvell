@@ -178,7 +178,7 @@ static MV_STATUS mvCesaTdmaWinWrite(MV_U8 chan, MV_U32 winNum, MV_UNIT_WIN_INFO 
 	/* check if address is aligned to the size */
 	if (MV_IS_NOT_ALIGN(pDecWin->addrWin.baseLow, pDecWin->addrWin.size)) {
 		mvOsPrintf("mvCesaTdmaWinSet: Error setting CESA TDMA window %d.\n"
-			   "Address 0x%08x is unaligned to size 0x%llx.\n",
+			   "Address 0x%08x is unaligned to size 0x%x.\n",
 			   winNum, pDecWin->addrWin.baseLow, pDecWin->addrWin.size);
 		return MV_ERROR;
 	}

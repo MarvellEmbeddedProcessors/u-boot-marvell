@@ -62,26 +62,55 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _mvSHA256_H
-#define _mvSHA256_H
+/*******************************************************************************
+* mvCesa.h - Header File for Cryptographic Engines and Security Accelerator
+*
+* DESCRIPTION:
+*       This header file contains macros typedefs and function declaration for
+*       the Marvell Cryptographic Engines and Security Accelerator.
+*
+*******************************************************************************/
+
+#ifndef __mvCesaIf_h__
+#define __mvCesaIf_h__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct {
-    MV_U32 total[2];
-    MV_U32 state[8];
-    MV_U8 buffer[64];
-}
-sha256_context;
+#include "ctrlEnv/mvCtrlEnvSpec.h"
+#include "mvSysCesaConfig.h"
+#include "mvCesa.h"
+#include "mvCesaRegs.h"
 
-MV_VOID mvSHA256Init(sha256_context *ctx);
-MV_VOID mvSHA256Update(sha256_context *ctx, MV_U8 *input, MV_U32 length);
-MV_VOID mvSHA256Finish(sha256_context *ctx, MV_U8 *digest);
-MV_VOID mvSHA256(MV_U8 const *buf, MV_U32 len, MV_U8 *digest);
+typedef enum {
+	CESA_NULL_POLICY = 0,
+	CESA_SINGLE_CHAN_POLICY,
+	CESA_WEIGHTED_CHAN_POLICY,
+	CESA_FLOW_ASSOC_CHAN_POLICY
+} MV_CESA_POLICY;
+
+typedef enum {
+	CESA_NULL_FLOW_TYPE = 0,
+	CESA_IPSEC_FLOW_TYPE,
+	CESA_SSL_FLOW_TYPE,
+	CESA_DISK_FLOW_TYPE,
+	CESA_NFPSEC_FLOW_TYPE
+} MV_CESA_FLOW_TYPE;
+
+	MV_STATUS mvCesaIfHalInit(int numOfSession, int queueDepth, void *osHandle, MV_CESA_HAL_DATA *halData);
+	MV_STATUS mvCesaIfTdmaWinInit(MV_U8 chan, MV_UNIT_WIN_INFO *addrWinMap);
+	MV_STATUS mvCesaIfFinish(void);
+	MV_STATUS mvCesaIfSessionOpen(MV_CESA_OPEN_SESSION *pSession, short *pSid);
+	MV_STATUS mvCesaIfSessionClose(short sid);
+	MV_STATUS mvCesaIfAction(MV_CESA_COMMAND *pCmd);
+	MV_STATUS mvCesaIfReadyGet(MV_U8 chan, MV_CESA_RESULT *pResult);
+	MV_STATUS mvCesaIfPolicySet(MV_CESA_POLICY cesaPolicy, MV_CESA_FLOW_TYPE flowType);
+	MV_STATUS mvCesaIfPolicyGet(MV_CESA_POLICY *pCesaPolicy);
+	MV_VOID mvCesaIfDebugMbuf(const char *str, MV_CESA_MBUF *pMbuf, int offset, int size);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* __mvSHA256_h__ */
+
+#endif /* __mvCesaIf_h__ */

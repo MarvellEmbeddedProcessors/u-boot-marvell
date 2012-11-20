@@ -412,13 +412,8 @@ MV_U8 mvBoardBootDevGet(MV_VOID);
 MV_STATUS mvBoardBootDevSet(MV_U8 val);
 MV_U8 mvBoardBootDevWidthGet(MV_VOID);
 MV_STATUS mvBoardBootDevWidthSet(MV_U8 val);
-#ifdef MV88F78X60_Z1
-MV_U8 mvBoardCpu0CoreModeGet(MV_VOID);
-MV_STATUS mvBoardCpu0CoreModeSet(MV_U8 val);
-#else
 MV_U8 mvBoardCpu0EndianessGet(MV_VOID);
 MV_STATUS mvBoardCpu0EndianessSet(MV_U8 val);
-#endif
 MV_U8 mvBoardL2SizeGet(MV_VOID);
 MV_STATUS mvBoardL2SizeSet(MV_U8 val);
 MV_U8 mvBoardCpuCoresNumGet(MV_VOID);

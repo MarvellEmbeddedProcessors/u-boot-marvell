@@ -1212,32 +1212,12 @@ void mv_cpu_init(void)
 		temp &= ~FPEXC_ENABLE;
 		fmxr(FPEXC, temp);
 	}
-#ifdef MV88F78X60_Z1
-	__asm__ __volatile__("mrc p15, 1, %0, c15, c1, 1" : "=r" (temp));
-	temp |= BIT16; /* Disable reac clean intv */
-	__asm__ __volatile__("mcr p15, 1, %0, c15, c1, 1\n" \
-			"mcr p15, 0, %0, c7, c5, 4": :"r" (temp)); /*imb*/
-#endif
 
 	__asm__ __volatile__("mrc p15, 1, %0, c15, c1, 2" : "=r" (temp));
 	temp |= (BIT25 | BIT27 | BIT29 | BIT30);
 	/* removed BIT23 in order to enable fast LDR bypass */
 	__asm__ __volatile__("mcr p15, 1, %0, c15, c1, 2\n" \
 			"mcr p15, 0, %0, c7, c5, 4": :"r" (temp)); /*imb*/
-
-#ifdef MV88F78X60_Z1
-	/* Enable speculative read miss from L1 to "line fill" L1 */
-	__asm__ __volatile__("mrc p15, 1, %0, c15, c2, 0" : "=r" (temp));
-	env = getenv("L1SpeculativeEn");
-	if( env && ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0)) )
-		temp |= BIT7;
-	else{
-		temp &= ~BIT7;
-	}
-
-	__asm__ __volatile__("mcr p15, 1, %0, c15, c2, 0\n" \
-			"mcr p15, 0, %0, c7, c5, 4": :"r" (temp)); /*imb*/
-#endif
 
 	/* Multi-CPU managment */
 	env = getenv("enaMP");
@@ -1301,7 +1281,7 @@ void mv_cpu_init(void)
 	}
 	/* Set L2 algorithm to semi_pLRU */
 	temp &= ~CL2ACR_REP_STRGY_MASK;
-#if defined(MV88F78X60) && !defined(MV88F78X60_Z1)
+
 	if(mvCtrlRevGet()==1)
 	{
 		temp |= CL2ACR_REP_STRGY_semiPLRU_MASK;
@@ -1313,13 +1293,8 @@ void mv_cpu_init(void)
 		temp |= CL2_PARITY_ENABLE;
 		temp |= CL2_InvalEvicLineUCErr;
 	}/* MV88F78X60_B0  */
-#else
-	/* MV88F78X60_Z1	*/
-	temp |= CL2ACR_REP_STRGY_semiPLRU_WA_MASK;
-	temp |= CL2_DUAL_EVICTION;
-	temp |= CL2_PARITY_ENABLE;
-	temp |= CL2_InvalEvicLineUCErr;
-#endif
+
+
 
 	MV_REG_WRITE(CPU_L2_AUX_CTRL_REG, temp);
 
@@ -1372,7 +1347,7 @@ void mv_cpu_init(void)
 
 		/* Set L2 algorithm to semi_pLRU */
 		temp &= ~CL2ACR_REP_STRGY_MASK;
-#if defined(MV88F78X60) && !defined(MV88F78X60_Z1)
+#if defined(MV88F78X60)
 		temp |= CL2ACR_REP_STRGY_semiPLRU_MASK;
 #else
 		temp |= CL2ACR_REP_STRGY_semiPLRU_WA_MASK;

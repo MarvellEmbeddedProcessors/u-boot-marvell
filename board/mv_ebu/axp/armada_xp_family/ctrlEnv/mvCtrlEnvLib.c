@@ -109,18 +109,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 MV_U32 dummyFlavour = 0;
 MV_BIOS_MODE bios_modes[BIOS_MODES_NUM] = {
-#ifdef MV88F78X60_Z1
-/*	DBConf ConfID Code L2Size CPUFreq CpuFreqMode FabricFreq FabricFreqMode CPU1/2/3Enable cpuMode dramBusWidth*/
-/*	0x4d/[1:0] 0x4d/[4:2] 0x4e[0] 0x4e/[4:1] 0x4f[0] 0x4f/[2:1] 0x4f/[4:3]	*/
-       {"78130", 0x10, 0x7813, 0x1, 0x2, 0x0, 0xC, 0x0, 0x0, 0x1, 0x1},
-       {"6710" , 0x11, 0x6710, 0x0, 0x2, 0x0, 0x5, 0x0, 0x0, 0x1, 0x0},
-       {"78160", 0x12, 0x7816, 0x1, 0x2, 0x0, 0x5, 0x0, 0x0, 0x1, 0x0},
-       {"78230", 0x13, 0x7823, 0x1, 0x2, 0x0, 0xC, 0x0, 0x2, 0x2, 0x1},
-       {"78260", 0x14, 0x7826, 0x1, 0x2, 0x0, 0x5, 0x0, 0x2, 0x2, 0x0},
-       {"78460", 0x15, 0x7846, 0x3, 0x2, 0x0, 0x5, 0x0, 0x3, 0x2, 0x0},
-       {"78480", 0x16, 0x7846, 0x3, 0x2, 0x0, 0x5, 0x0, 0x3, 0x2, 0x0}
-};
-#else
 /*DBConf ConfID Code L2Size CPUFreq CpuFreqMode FabricFreq  Altfabricfreq     FabricFreqMode CPU1/2/3Enable cpuEndianess dramBusWidth BootSRC BootWidth */
 /*	                       0x4d/[1:0]  0x4d/[4:2]  0x4e[0]      0x4e/[4:1]  	0x4f[0]   0x4f/[2:1]      0x4f/[3]   	  */
 {"78130",0x10, 0x7813, 0x1,  0x3,      0x0,  0x1a,		0x5,		0x1,	     0x0,	    0x1,	0x1, 	     0x3,	0x1},
@@ -132,7 +120,7 @@ MV_BIOS_MODE bios_modes[BIOS_MODES_NUM] = {
 
 /*	{"6710" ,0x11, 0x6710,	0x0,	   0x3,		0x0,	      0x5, 		0x0,		0x0,		0x1,		0x0},     */
 };
-#endif
+
 MV_BIOS_MODE bios_modes_b0[BIOS_MODES_NUM] = {
 /*DBConf ConfID Code L2Size CPUFreq CpuFreqMode FabricFreq  Altfabricfreq  FabricFreqMode CPUEna  cpuEndianess dramBusWidth BootSRC BootWidth */
 /*	                       0x4d/[1:0]  0x4d/[4:2]  0x4e[0]      0x4e/[4:1]  	0x4f[0]   0x4f/[2:1]      0x4f/[3]   	  */
@@ -330,9 +318,8 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	if (MV_OK != mvCtrlSerdesPhyConfig())
 		mvOsPrintf("mvCtrlEnvInit: Can't init some or all SERDES lanes\n");
 
-#ifndef MV88F78X60_Z1
 	MV_REG_BIT_SET(PUP_EN_REG,0x17); /* Enable GBE0, GBE1, LCD and NFC PUP */
-#endif
+
 	mvOsDelay(100);
 
 	return MV_OK;
@@ -2169,13 +2156,12 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 		mvCtrlPwrClckSet(PEX_UNIT_ID, 9, MV_FALSE);
 	}
 
-#ifndef MV88F78X60_Z1
+
 /*this code is valid for all devices after Z1*/
 	if(!(powermngmntctrlregmap & BIT25)) {
 		DB(mvOsPrintf("%s:       TDM\n", __func__));
 		mvCtrlPwrClckSet(TDM_32CH_UNIT_ID, 0, MV_FALSE);
 	}
-#endif
 	/*apply clock gatting*/
 	MV_REG_WRITE(POWER_MNG_CTRL_REG, MV_REG_READ(POWER_MNG_CTRL_REG) & powermngmntctrlregmap);
 	/*the Sata driver doesn't support clock gating at this point so we enable the logic to the block*/

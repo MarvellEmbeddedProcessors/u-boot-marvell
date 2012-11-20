@@ -1784,11 +1784,7 @@ MV_STATUS mvBoardBootDevWidthSet(MV_U8 val)
 	return MV_OK;
 }
 /*******************************************************************************/
-#ifdef MV88F78X60_Z1
-MV_U8 mvBoardCpu0CoreModeGet(MV_VOID)
-#else
 MV_U8 mvBoardCpu0EndianessGet(MV_VOID)
-#endif
 {
 	MV_U8 sar;
 	if (DB_784MP_GP_ID == mvBoardIdGet())
@@ -1797,18 +1793,10 @@ MV_U8 mvBoardCpu0EndianessGet(MV_VOID)
 	sar = mvBoardTwsiSatRGet(3, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
-#ifdef MV88F78X60_Z1
-	return (sar & 0x18) >> 3;
-#else
 	return (sar & 0x08) >> 3;
-#endif
 }
 /*******************************************************************************/
-#ifdef MV88F78X60_Z1
-MV_STATUS mvBoardCpu0CoreModeSet(MV_U8 val)
-#else
 MV_STATUS mvBoardCpu0EndianessSet(MV_U8 val)
-#endif
 {
 	MV_U8 sar;
 	if (DB_784MP_GP_ID == mvBoardIdGet())
@@ -1817,13 +1805,8 @@ MV_STATUS mvBoardCpu0EndianessSet(MV_U8 val)
 	sar = mvBoardTwsiSatRGet(3, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
-#ifdef MV88F78X60_Z1
-	sar &= ~(0x3 << 3);
-	sar |= ((val & 0x3) << 3);
-#else
 	sar &= ~(0x1 << 3);
 	sar |= ((val & 0x1) << 3);
-#endif
 	if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar)) {
 		DB1(mvOsPrintf("Board: Write Cpu0CoreMode S@R fail\n"));
 		return MV_ERROR;

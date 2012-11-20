@@ -174,12 +174,7 @@ typedef struct _boardSerdesConf {
 #define SAR1_FABRIC_MODE_OFFSET	19
 
 #define SAR_CPU_FAB_GET(cpu, fab)	(((cpu & 0x7) << 21) | ((fab & 0xF) << 24))
-#ifdef MV88F78X60_Z1
-#define BIOS_MODES_NUM			7
-#else
 #define BIOS_MODES_NUM			6
-#endif
-
 
 typedef struct {
 	char *name;
@@ -189,16 +184,10 @@ typedef struct {
 	MV_U8 cpuFreq;
 	MV_U8 cpuFreqMode;
 	MV_U8 fabricFreq;
-#ifndef MV88F78X60_Z1
 	MV_U8 AltfabricFreq;
-#endif
 	MV_U8 fabricFreqMode;
 	MV_U8 cpuEna;
-#ifdef MV88F78X60_Z1
-	MV_U8 cpuMode;
-#else
 	MV_U8 cpuEndianess;
-#endif
 	MV_U8 dramBusWidth;
 	MV_U8 bootSource;
 	MV_U8 bootWidth;

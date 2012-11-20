@@ -258,14 +258,6 @@ disclaimer.
 #define ETHER_DRAM_COHER    MV_UNCACHED
 #define INTEG_SRAM_COHER    MV_UNCACHED  /* Where integrated SRAM available */
 
-#ifdef MV88F78X60_Z1
-#define CONFIG_ARMADA_XP_ERRATA_SMI_1  /*  Using SMI port 1 instead of SMI port 0 prevents the \
-                                    link up/link down on a different port than the port on which \
-                                    an action such as changing speed or starting autonegotiation is done.\
-                                    (NetA BTS #313, DSMP LSP #42, ARMADA XP Z1).\
-                                */
-#endif
-
 #define ETH_DESCR_IN_SDRAM
 #undef  ETH_DESCR_IN_SRAM
 

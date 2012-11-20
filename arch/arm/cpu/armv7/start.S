@@ -551,7 +551,6 @@ fiq:
 
 #endif /* CONFIG_USE_IRQ */
 #endif /* CONFIG_SPL_BUILD */
-#ifndef MV88F78X60_Z1
 	.align 5	
 .global armv7_mmu_cache_flush
 armv7_mmu_cache_flush:
@@ -609,5 +608,3 @@ iflush:
 		mcr	p15, 0, r10, c7, c10, 4	@ DSB
 		mcr	p15, 0, r10, c7, c5, 4	@ ISB
 		mov	pc, lr
-#endif
-

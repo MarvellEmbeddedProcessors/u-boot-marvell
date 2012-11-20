@@ -76,10 +76,6 @@ int timer_init (void)
 	cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
 	cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
 	cntmrCtrl |= CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-/*	#if defined(MV88F78X60)
-	cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
-	#endif
-*/
 	cntmrCtrl |= CTCR_ARM_TIMER_FRQ_SEL(UBOOT_CNTR);	
 
 	MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);

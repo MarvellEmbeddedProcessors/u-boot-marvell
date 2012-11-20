@@ -85,20 +85,12 @@ extern "C" {
 #define MV_AURORA_L2_REGS_OFFSET		(0x8000)
 #define MV_RTC_REGS_OFFSET			(0x10300)
 #define MV_DEV_BUS_REGS_OFFSET			(0x10400)
-#ifdef MV88F78X60_Z1
-#define MV_SPI_REGS_OFFSET(unit)               (0x10600)
-#else
 #define MV_SPI_REGS_OFFSET(unit)		(0x10600 + (unit * 0x80))
-#endif
 #define MV_TWSI_SLAVE_REGS_OFFSET(chanNum)	(0x11000 + (chanNum * 0x100))
 #define MV_UART_REGS_OFFSET(chanNum)		(0x12000 + (chanNum * 0x100))
 #define MV_RUNIT_PMU_REGS_OFFSET		(0x1C000)
 #define MV_MPP_REGS_OFFSET			(0x18000)
-#ifdef MV88F78X60_Z1
-#define MV_GPP_REGS_OFFSET(unit)		(0x18100 + ((unit) * 0x20))
-#else
 #define MV_GPP_REGS_OFFSET(unit)		(0x18100 + ((unit) * 0x40))
-#endif
 #define MV_MISC_REGS_OFFSET			(0x18200)
 #define MV_CLK_CMPLX_REGS_OFFSET	(0x18700)
 #define MV_MBUS_REGS_OFFSET			(0x20000)
@@ -157,11 +149,8 @@ extern "C" {
 
 #define MV_GPP_MAX_PINS				68
 #define MV_GPP_MAX_GROUP    			3 /* group == configuration register? */
-#ifndef MV88F78X60_Z1
 #define MV_CNTMR_MAX_COUNTER 		8 /* 4 global + 1 global WD + 2 current private CPU + 1 private CPU WD*/
-#else
-#define MV_CNTMR_MAX_COUNTER 		17/* 4 global + 1 global WD + 2 per CPU + 4 CPU WD*/
-#endif
+
 /*
 	MV88F78X60_Z1								MV88F78X60_A0
 	-------------------------------             -------------------------------

@@ -24,37 +24,18 @@ disclaimer.
 #include "ctrlEnv/mvCtrlEnvLib.h"
 #include "boardEnv/mvBoardEnvLib.h"
 
-#ifdef MV88F78X60_Z1
-#define FREQ_MODES_NUM		7
-#else
 #define FREQ_MODES_NUM		20
-#endif
+
 typedef struct {
 	char *name;
 	MV_U8 cpuFreq;
-#ifdef MV88F78X60_Z1
-	MV_U8 cpuFreqMode;
-#endif
+
 	MV_U8 fabricFreq;
-#ifdef MV88F78X60_Z1
-	MV_U8 fabricFreqMode;
-#else
+
 	MV_U8 AltfabricFreq;
-#endif
+
 } MV_FREQ_MODE;
-#ifdef MV88F78X60_Z1
-MV_FREQ_MODE freq_modes[FREQ_MODES_NUM] = {
-/*	Freq Conf		CPU Freq	CPUFreqMode	Fabric Freq		FabricFreqMode	*/
-/*				0x4d/[4:2]	0x4e[0]		0x4e/[4:1]		0x4f[0]		*/
-	{"800 / 400 Mhz",	0x2,		0x1,		0x1,			0x0},
-	{"1066 / 533 Mhz",	0x1,		0x0,		0x1,			0x0},
-	{"1200 / 600 Mhz",	0x2,		0x0,		0x5,			0x0},
-	{"1333 / 667 Mhz",	0x3,		0x0,		0x5,			0x0},
-	{"667 / 667 Mhz",	0x1,		0x1,		0x3,			0x1},
-	{"1200 / 300 Mhz",	0x2,		0x0,		0xC,			0x0},
-	{"1333 / 333 Mhz",	0x3,		0x0,		0xC,			0x0},
-};
-#else
+
 MV_FREQ_MODE freq_modes[FREQ_MODES_NUM] = {
                 /*     Freq Conf             				CPU Freq	Fabric Freq	 AltFabric`    */
                 /*       									0x4d/[4:2]	0x4e/[4:1]	              */
@@ -105,7 +86,6 @@ MV_FREQ_MODE freq_modes_B0[FREQ_MODES_NUM] = {
 };
 
 
-#endif
 static int do_sar_list(int argc, char *const argv[])
 {
 	const char *cmd;
@@ -164,11 +144,7 @@ static int do_sar_list(int argc, char *const argv[])
 		printf("\t0x0 = 32bit\n");
 		printf("\t0x1 = 24bit\n");
 		printf("\t0x2-0x3 = Reserved\n");
-#ifdef MV88F78X60_Z1
-	} else if (strcmp(cmd, "cpu0core") == 0) {
-#else
 	} else if (strcmp(cmd, "cpu0Endianess") == 0) {
-#endif
 
 		printf("Determines the CPU core mode:\n");
 		if (DB_784MP_GP_ID != mvBoardIdGet()){
@@ -176,9 +152,7 @@ static int do_sar_list(int argc, char *const argv[])
 			printf("\t0x1 = ARMv7 UP\n");
 			printf("\t0x2 = ARMv6 MP\n");
 		}
-#ifndef MV88F78X60_Z1
 		printf("\t0x3 = ARMv7 MP\n");
-#endif
 	} else if (strcmp(cmd, "cpusnum") == 0) {
 
 		printf("Determines the number of CPU cores:\n");
@@ -316,13 +290,8 @@ static int do_sar_read(int argc, char *const argv[])
 	} else if (strcmp(cmd, "bootwidth") == 0) {
 
 		printf("bootwidth = %d\n", mvBoardBootDevWidthGet());
-#ifdef MV88F78X60_Z1
-	} else if (strcmp(cmd, "cpu0core") == 0) {
-		printf("cpu0core = %d\n", mvBoardCpu0CoreModeGet());
-#else
 	} else if (strcmp(cmd, "cpu0Endianess") == 0) {
 		printf("cpu0Endianess = %d\n", mvBoardCpu0EndianessGet());
-#endif
 	} else if (strcmp(cmd, "cpusnum") == 0) {
 
 		printf("cpusnum = %d\n", mvBoardCpuCoresNumGet());
@@ -470,18 +439,10 @@ static int do_sar_write(int argc, char *const argv[])
 		MV_U8 width = simple_strtoul(argv[1], NULL, 10);
 		if (mvBoardBootDevWidthSet(width) != MV_OK)
 			goto write_fail;
-#ifdef MV88F78X60_Z1
-	} else if (strcmp(cmd, "cpu0core") == 0) {
-#else
 	} else if (strcmp(cmd, "cpu0Endianess") == 0) {
-#endif
 
 		MV_U8 mode = simple_strtoul(argv[1], NULL, 10);
-#ifdef MV88F78X60_Z1
-		if (mvBoardCpu0CoreModeSet(mode) != MV_OK)
-#else
 		if (mvBoardCpu0EndianessSet(mode) != MV_OK)
-#endif
 			goto write_fail;
 
 	} else if (strcmp(cmd, "cpusnum") == 0) {
@@ -595,11 +556,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR list l2size	- prints the S@R modes list\n"
 	"SatR list bootsrc	- prints the S@R modes list\n"
 	"SatR list bootwidth	- prints the S@R modes list\n"
-#ifdef MV88F78X60_Z1
-	"SatR list cpu0core     - prints the S@R modes list\n"
-#else
 	"SatR list cpu0Endianess- prints the S@R modes list\n"
-#endif
 	"SatR list cpusnum	- prints the S@R modes list\n"
 	"SatR list freq		- prints the S@R modes list\n"
 	"SatR list pex		- prints the S@R modes list\n"
@@ -612,11 +569,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR read l2size	- read and print the L2 cache size S@R value\n"
 	"SatR read bootsrc	- read and print the Boot source S@R value\n"
 	"SatR read bootwidth	- read and print the Boot device width S@R value\n"
-#ifdef MV88F78X60_Z1
-	"SatR read cpu0core     - read and print the CPU0 core mode S@R value\n"
-#else
 	"SatR read cpu0Endianess- read and print the CPU0 core mode S@R value\n"
-#endif
 	"SatR read cpusnum	- read and print the number of CPU cores S@R value (reading the I2C device)\n"
 	"SatR read freq		- read and print the mode of cpu/ddr freq S@R value (reading the I2C device)\n"
 	"SatR read pex		- read and print the pex capability mode from S@R value (reading the I2C device)\n"
@@ -630,11 +583,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR write l2size <val>	- write the S@R with L2 cache size value\n"
 	"SatR write bootsrc <val>	- write the S@R with Boot source value\n"
 	"SatR write bootwidth <val>	- write the S@R with Boot device width value\n"
-#ifdef MV88F78X60_Z1
-	"SatR write cpu0core <val>      - write the S@R with CPU0 core mode value\n"
-#else
 	"SatR write cpu0Endianess <val>	- write the S@R with CPU0 cpu0Endianess value\n"
-#endif
 	"SatR write cpusnum <val>	- write the S@R with the number of CPU cores\n"
 	"SatR write freq <val>		- write the S@R with the cpu/ddr freq mode\n"
 	"SatR write pex <val>		- write the S@R with the pex capability mode\n"

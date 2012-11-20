@@ -597,9 +597,9 @@ void pci_init_board(void)
 	if(env && ( (strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0) ) )
 		printf("Warning: skip configuration of Marvell devices!!!\n");
 
-#if defined(MV88F78X60) || defined(MV88F67XX)
+
 	pexIfNum = boardPexInfo->boardPexIfNum;
-#endif
+
 
 	/* start pci scan */
 	for (pexIf = pexIfStart; pexIf < pexIfNum; pexIf++) {
@@ -618,36 +618,21 @@ void pci_init_board(void)
                   }
 
 		pci_hose[pexIf].config_table = mv_config_table;
-#if defined(MV88F78X60)
-
-#else
+#if !defined(MV88F78X60)
 		if (MV_FALSE == mvCtrlPwrClckGet(PEX_UNIT_ID, pexHWInf)) {
 			continue;
 		}
 #endif
 		/* device or host ? */
 #if defined(MV_INCLUDE_PEX)
-#if !defined(MV_88F6183) && !defined(MV_88F6183L) && !defined(MV_88F6082) && !defined(MV88F6281) && \
-            !defined(MV88F6192) && !defined(MV88F6180)  && !defined(MV88F6190) && !defined(MV88F6282) && \
-	    !defined(MV88F6510) && !defined(MV88F6530) && !defined(MV88F6550) && !defined(MV88F6560) &&	\
-		!defined(MV88F78X60) && !defined(MV88F67XX)
-		MV_PEX_MODE pexMode;
-		if (mvPexModeGet(pexHWInf,&pexMode) != MV_OK) {
-			printf("pci_init_board: mvPexModeGet failed\n");
-		}
-		if (MV_PEX_ROOT_COMPLEX == pexMode.pexType)
-		    pexIfMode = MV_PEX_ROOT_COMPLEX;
-		else
-		    pexIfMode = MV_PEX_END_POINT;
 
-#else
 		/* Set pex mode incase S@R not exist */
 		env = getenv("pexMode");
 		if (env && (((strcmp(env,"EP") == 0) || (strcmp(env,"ep") == 0) )))
 		    pexIfMode = MV_PEX_END_POINT;
 		else
 		    pexIfMode = MV_PEX_ROOT_COMPLEX;
-#endif
+
 #endif
 
 #if defined(DB_78X60_PCAC) || defined(DB_78X60_PCAC_REV2) || defined(DB_88F6710_PCAC)

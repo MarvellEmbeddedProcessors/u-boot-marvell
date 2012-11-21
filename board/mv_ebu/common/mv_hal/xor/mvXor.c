@@ -93,7 +93,7 @@ MV_VOID mvXorHalInit(MV_U32 xorChanNum)
 	/* Abort any XOR activity & set default configuration */
 	for (i = 0; i < xorChanNum; i++) {
 		
-		if(mvUnitMapIsMine(XOR0 + XOR_UNIT(i)) == FALSE)
+		if(mvUnitMapIsMine(XOR0 + XOR_UNIT(i)) == MV_FALSE)
 			continue;
 		
 		mvXorCommandSet(i, MV_STOP);

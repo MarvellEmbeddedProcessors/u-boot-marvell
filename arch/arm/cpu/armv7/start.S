@@ -125,6 +125,19 @@ IRQ_STACK_START_IN:
 
 reset:
 #ifdef CONFIG_MARVELL
+#ifdef MV88F78X60
+	/* Disable windows that overlap with 0xF1000000	*/
+	/* By default, window #12 overlaps with 0xF1000000 */
+	mov  r1, #0
+	ldr  r0, =0xD00200B0
+	str  r1, [r0]
+
+	/* Set Registers Base address. */
+	ldr  r1, =INTER_REGS_BASE
+	ldr  r0, =0xD0020080
+	str  r1, [r0]
+#endif
+
 /*
 @ Initial PJ4B configurations
 @ configure Marvell debug R1

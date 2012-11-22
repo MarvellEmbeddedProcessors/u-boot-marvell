@@ -181,7 +181,7 @@ disclaimer.
    NOR as BOOT_CS and NAND ad CS0 otherwise only NOR or NAND it posible */
 /* Internal registers: size is defined in Controllerenvironment */
 
-#define INTER_REGS_BASE	0xD0000000
+#define INTER_REGS_BASE	0xF1000000
 #define ARMADAXP_SB_REGS_PHYS_BASE INTER_REGS_BASE
 
 #define NFLASH_CS_BASE 0xfd000000 /* not relevant for the new controller */

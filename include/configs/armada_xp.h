@@ -480,7 +480,7 @@ disclaimer.
 #define CONFIG_CMD_MMC
 #define CONFIG_GENERIC_MMC
 #define CONFIG_MRVL_MMC
-#define CONFIG_SYS_MMC_BASE 		0xD00d4000
+#define CONFIG_SYS_MMC_BASE 		(INTER_REGS_BASE + 0xd4000)
 #define CONFIG_SYS_MMC_MAX_DEVICE 1
 
 
@@ -703,7 +703,7 @@ disclaimer.
 /*****************/
 /* others        */
 /*****************/
-#define MV_DFL_REGS		0xd0000000 	/* boot time MV_REGS */
+#define MV_DFL_REGS		INTER_REGS_BASE	/* boot time MV_REGS */
 #define MV_REGS			INTER_REGS_BASE /* MV Registers will be mapped here */
 #define BOARD_LATE_INIT
 #define CONFIG_BOARD_LATE_INIT

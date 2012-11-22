@@ -149,6 +149,6 @@ _image_load_addr: .word image_load_addr
 _amp_sync_boot: .word amp_sync_boot
 _amp_hw_lock_id: .word amp_hw_lock_id
 _amp_barrier: .word amp_barrier
-_mv_sema_reg_base: .word 0xD0020500
+_mv_sema_reg_base: .word 0xF1020500
 _mv_sema_release: .word 0xFF
 _mv_sema_wait: .word 0x400

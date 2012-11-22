@@ -159,23 +159,52 @@ static void setup_memory_tags(bd_t *bd)
 		lpae_en = 1;
 
 	for (i = 0; i < CONFIG_NR_DRAM_BANKS; i++) {
+
 		if (lpae_en) {
+			uint64_t start, size;
 			if (gd->dram_hw_info[i].size == 0ll)
 				continue;
 			params->hdr.tag = ATAG_MEM64;
 			params->hdr.size = tag_size (tag_mem64);
-			params->u.mem64.start = gd->dram_hw_info[i].start;
-			params->u.mem64.size = gd->dram_hw_info[i].size;
+			start = gd->dram_hw_info[i].start;
+			size = gd->dram_hw_info[i].size;
+			if ((start + size) == 0x100000000ll) {
+				params->u.mem64.start = start;
+				params->u.mem64.size = (0xF0000000ll - start);
+				size = 0;
+				params = tag_next (params);
+				params->hdr.tag = ATAG_MEM64;
+				params->hdr.size = tag_size (tag_mem64);
+			}
+			if (size) {
+				params->u.mem64.start = start;
+				params->u.mem64.size = size;
+				params = tag_next (params);
+			}
 		} else {
-			if (bd->bi_dram[i].size == 0)
+			u32 start, size;
+			if (gd->dram_hw_info[i].size == 0x0ll)
 				continue;
 			params->hdr.tag = ATAG_MEM;
 			params->hdr.size = tag_size (tag_mem32);
-			params->u.mem.start = bd->bi_dram[i].start;
-			params->u.mem.size = bd->bi_dram[i].size;
+			start = (u32)gd->dram_hw_info[i].start;
+			size = (u32)gd->dram_hw_info[i].size;
+			if ((start - 1 + size) == 0xFFFFFFFF) {
+				params->u.mem.start = start;
+				params->u.mem.size = (0xF0000000 - start);
+				size = 0;
+				params = tag_next (params);
+				params->hdr.tag = ATAG_MEM;
+				params->hdr.size = tag_size (tag_mem32);
+			}
+
+			if (size) {
+				params->u.mem.start = start;
+				params->u.mem.size = size;
+				params = tag_next (params);
+			}
 		}
 
-		params = tag_next (params);
 	}
 }
 #endif

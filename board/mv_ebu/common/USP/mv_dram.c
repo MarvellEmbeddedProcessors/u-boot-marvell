@@ -110,7 +110,7 @@ void dram_init_banksize(void)
 		gd->bd->bi_dram[cs].start = 0;
 		gd->bd->bi_dram[cs].size  = 0;
 	}
-#ifdef CONFIG_ARM_LPAE
+
 	for (cs = 0; cs < CONFIG_NR_DRAM_BANKS; cs++) {
 		MV_U64 memBase64 = 0;
 		MV_CPU_DEC_WIN addrDecWin;
@@ -123,19 +123,10 @@ void dram_init_banksize(void)
 			*/
 			memBase64 = (MV_U64)(addrDecWin.addrWin.baseLow |
 				(MV_U64)((MV_U64)addrDecWin.addrWin.baseHigh << 32));
-			/* Add a "hole" at the end of the first 4GB, as a place-holder for IO windows.
-			** Assume that we will not have a 1G, 2G, 2G dram config, and that
-			** the CS's are always oldered from large to small.
-			*/
-			if ((memBase64 < 0x100000000ll) && ((memBase64 + (MV_U64)addrDecWin.addrWin.size) >= 0x100000000ll))
-				addrDecWin.addrWin.size -= (MV_U64)CONFIG_IO_MEMORY_RESERVE;
-			if (addrDecWin.addrWin.size == 0ll)
-				continue;
 			gd->dram_hw_info[cs].start = memBase64;
 			gd->dram_hw_info[cs].size = (MV_U64)addrDecWin.addrWin.size;
 		}
 	}
-#endif
 }
 
 #if defined(MV_INC_BOARD_DDIM)

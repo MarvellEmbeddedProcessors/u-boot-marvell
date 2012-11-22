@@ -75,11 +75,6 @@ extern "C"			/*{ */
  MV_BOOL mvSataPhyShutdown(MV_U8 port);
 MV_BOOL mvSataPhyPowerOn(MV_U8 port);
 
-/* Calculate the base address of the registers for a SATA channel */
-MV_U32 edmaRegOffst[8] = { 0x22000, 0x24000, 0x26000, 0x28000,
-	0x32000, 0x34000, 0x36000, 0x38000
-};
-
 
 #ifdef __cplusplus
 

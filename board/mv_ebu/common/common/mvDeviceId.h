@@ -253,6 +253,7 @@ extern "C" {
 
 
 /* KW40 */
+#define MV_67XX				0x6700
 #define MV_6710_DEV_ID		0x6710
 
 #define MV_6710_Z1_REV		0x0
@@ -286,6 +287,7 @@ extern "C" {
 
 
 /* Armada XP Family */
+#define MV_78XX				0x7800
 #define MV_78130_DEV_ID		0x7813
 #define MV_78160_DEV_ID		0x7816
 #define MV_78230_DEV_ID		0x7823

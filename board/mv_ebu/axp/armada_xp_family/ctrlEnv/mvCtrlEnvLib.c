@@ -1070,6 +1070,45 @@ MV_STATUS mvCtrlModelRevNameGet(char *pNameBuff)
 	return MV_OK;
 }
 
+MV_U32 gDevId = -1;
+/*******************************************************************************
+* mvCtrlDevFamilyIdGet - Get Device ID
+*
+* DESCRIPTION:
+*       This function returns Device ID.
+*
+* INPUT:
+*       ctrlModel.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit board Device ID number, '-1' if Device ID is undefined.
+*
+*******************************************************************************/
+MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel)
+{
+	if (gDevId == -1)
+	{
+		switch (ctrlModel) {
+		case MV_78130_DEV_ID:
+		case MV_78160_DEV_ID:
+		case MV_78230_DEV_ID:
+		case MV_78260_DEV_ID:
+		case MV_78460_DEV_ID:
+		case MV_78000_DEV_ID:
+			gDevId=MV_78XX0;
+			return gDevId;
+			break;
+		default:
+			return MV_ERROR;
+		}
+	}
+	else
+		return gDevId;
+}
+
 static const char *cntrlName[] = TARGETS_NAME_ARRAY;
 
 /*******************************************************************************

@@ -570,7 +570,7 @@ void pci_init_board(void)
 	/* removed PEX init from all other cores except 0 as asked from CV */
 	if (whoAmI() != 0)
 		return;
-	MV_U16 ctrlModel;
+	MV_U16 ctrlModel=mvCtrlModelGet();
 	MV_U32 pexIfNum = mvCtrlPexMaxIfGet();
 	MV_U32 pexIf=0;
 	MV_U32 pexLane = 0;
@@ -644,13 +644,9 @@ void pci_init_board(void)
 #endif
 
 		/* PEX capability */
-		ctrlModel=mvCtrlModelGet();
-		if ((ctrlModel == MV_6710_DEV_ID) ||
-			(ctrlModel == MV_6W11_DEV_ID) ||
-			(ctrlModel == MV_6707_DEV_ID)) {
+		if (mvDeviceIdGet(ctrlModel)==MV_67XX) {
 			tempPexReg = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CAPABILITY_REG));
 			tempPexReg &= ~(0xF);
-
 			#if defined(DB_88F6710)
 				switch (mvBoardPexCapabilityGet()) {
 					case 0x2:
@@ -837,13 +833,7 @@ void pci_init_board(void)
 	}
 	
 #if defined(MV88F78X60) 
-	if ((ctrlModel == MV_78130_DEV_ID) ||
-		(ctrlModel == MV_78160_DEV_ID) ||
-		(ctrlModel == MV_78230_DEV_ID) ||
-		(ctrlModel == MV_78260_DEV_ID) ||
-		(ctrlModel == MV_78460_DEV_ID) ||
-		(ctrlModel == MV_78000_DEV_ID)) {			
-
+	if (mvDeviceIdGet(ctrlModel)==MV_78XX) {
 	/* WA for AXP-A0 shuld be removed on B0 */
 	/* in case the maxLink width is greater than the Negotioated Link then the max link should be equal for the negotioated link */
 		for (pexUnit = 0; pexUnit < mvCtrlPexMaxUnitGet(); pexUnit++) {

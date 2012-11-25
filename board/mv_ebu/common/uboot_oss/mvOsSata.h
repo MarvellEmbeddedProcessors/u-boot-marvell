@@ -107,8 +107,8 @@ void printHexSingle(char *fmt, unsigned short value_);
 #if defined(REG_DEBUG)
 #define MV_WRITE_CHAR(address, data)                                           \
         ((*((volatile unsigned char *)(address)))=             \
-        ((unsigned char)(data)));	\
-	reglog((address), (data));
+        ((unsigned char)(data)))+	\
+	reglog((address), (data))
 #else
 #define MV_WRITE_CHAR(address, data)                                           \
         ((*((volatile unsigned char *)(address)))=             \
@@ -118,8 +118,8 @@ void printHexSingle(char *fmt, unsigned short value_);
 #if defined(REG_DEBUG)
 #define MV_WRITE_SHORT(address, data)                                          \
         ((*((volatile unsigned short *)(address))) =           \
-        ((unsigned short)(data)));	\
-	reglog((address), (data));
+        ((unsigned short)(data)))+	\
+	reglog((address), (data))
 #else
 #define MV_WRITE_SHORT(address, data)                                          \
         ((*((volatile unsigned short *)(address))) =           \
@@ -129,8 +129,8 @@ void printHexSingle(char *fmt, unsigned short value_);
 #if defined(REG_DEBUG)
 #define MV_WRITE_WORD(address, data)                                           \
         ((*((volatile unsigned int *)(address))) =             \
-        ((unsigned int)(data)));	\
-	reglog((address), (data));
+        ((unsigned int)(data)))+	\
+	reglog((address), (data))
 #else
 #define MV_WRITE_WORD(address, data)                                           \
         ((*((volatile unsigned int *)(address))) =             \

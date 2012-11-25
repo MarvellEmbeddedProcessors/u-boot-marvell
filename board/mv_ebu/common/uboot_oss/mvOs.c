@@ -301,10 +301,11 @@ int mvOsStrCmp(const char *str1,const char *str2)
 #if defined(REG_DEBUG)
 extern int reg_arry[REG_ARRAY_SIZE][2];
 extern int reg_arry_index;
-void reglog(unsigned int offset, unsigned int data)
+int reglog(unsigned int offset, unsigned int data)
 {
 	reg_arry[reg_arry_index%REG_ARRAY_SIZE][0] = (offset);
 	reg_arry[reg_arry_index%REG_ARRAY_SIZE][1] = (data);
 	reg_arry_index++;
+	return 0;
 }
 #endif

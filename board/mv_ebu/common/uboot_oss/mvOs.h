@@ -88,6 +88,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef __cplusplus
 extern "C" {
 #endif
+#define REG_DEBUG
+
 
 /*************/
 /* Constants */
@@ -172,9 +174,9 @@ static __inline MV_U32 MV_MEMIO_LE32_READ(MV_U32 addr)
 extern int reg_arry[REG_ARRAY_SIZE][2];
 extern int reg_arry_index;
 
-void reglog(unsigned int offset, unsigned int data);
+int reglog(unsigned int offset, unsigned int data);
 #endif
-void reglog(unsigned int offset, unsigned int data);
+int reglog(unsigned int offset, unsigned int data);
 
 
 
@@ -186,8 +188,8 @@ void reglog(unsigned int offset, unsigned int data);
         (MV_MEMIO_LE32_READ(INTER_REGS_BASE | (offset)))
 #if defined(REG_DEBUG)
 #define MV_REG_WRITE(offset, val)    \
-        MV_MEMIO_LE32_WRITE((INTER_REGS_BASE | (offset)), (val)); \
-	reglog((INTER_REGS_BASE | (offset)), (val));
+	(MV_MEMIO_LE32_WRITE((INTER_REGS_BASE | (offset)), (val))+ \
+	reglog((INTER_REGS_BASE | (offset)), (val)))
 #else
 #define MV_REG_WRITE(offset, val)     \
         MV_MEMIO_LE32_WRITE((INTER_REGS_BASE | (offset)), (val))
@@ -195,8 +197,8 @@ void reglog(unsigned int offset, unsigned int data);
 
 #if defined(REG_DEBUG)
 #define MV_REG_WORD_WRITE(offset, val)  \
-        MV_MEMIO_LE16_WRITE((INTER_REGS_BASE | (offset)), (val)); \
-	reglog((INTER_REGS_BASE | (offset)), (val));
+(	MV_MEMIO_LE16_WRITE((INTER_REGS_BASE | (offset)), (val))+ \
+	reglog( (INTER_REGS_BASE | (offset) ), (val) )) 
 #else
 #define MV_REG_WORD_WRITE(offset, val)  \
         MV_MEMIO_LE16_WRITE((INTER_REGS_BASE | (offset)), (val))
@@ -210,8 +212,8 @@ void reglog(unsigned int offset, unsigned int data);
 
 #if defined(REG_DEBUG)
 #define MV_REG_BYTE_WRITE(offset, val)  \
-        MV_MEMIO8_WRITE((INTER_REGS_BASE | (offset)), (val)); \
-	reglog((INTER_REGS_BASE | (offset)), (val));
+	MV_MEMIO8_WRITE((INTER_REGS_BASE | (offset)), (val))+ \
+	reglog((INTER_REGS_BASE | (offset)), (val))
 #else
 #define MV_REG_BYTE_WRITE(offset, val)  \
         MV_MEMIO8_WRITE((INTER_REGS_BASE | (offset)), (val))
@@ -219,10 +221,10 @@ void reglog(unsigned int offset, unsigned int data);
 
 #if defined(REG_DEBUG)
 #define MV_REG_BIT_SET(offset, bitMask)                 \
-        (MV_MEMIO32_WRITE((INTER_REGS_BASE | (offset)), \
-         (MV_MEMIO32_READ(INTER_REGS_BASE | (offset)) | \
-          MV_32BIT_LE_FAST(bitMask)))); \
-	reglog((INTER_REGS_BASE | (offset)), (MV_MEMIO32_READ(INTER_REGS_BASE | (offset))));
+	(MV_MEMIO32_WRITE((INTER_REGS_BASE | (offset)), \
+        (MV_MEMIO32_READ(INTER_REGS_BASE | (offset)) | \
+          MV_32BIT_LE_FAST(bitMask))))+\  
+	reglog((INTER_REGS_BASE | (offset)), (MV_MEMIO32_READ(INTER_REGS_BASE | (offset))))
 #else
 #define MV_REG_BIT_SET(offset, bitMask)                 \
         (MV_MEMIO32_WRITE((INTER_REGS_BASE | (offset)), \
@@ -234,8 +236,8 @@ void reglog(unsigned int offset, unsigned int data);
 #define MV_REG_BIT_RESET(offset,bitMask)                \
         (MV_MEMIO32_WRITE((INTER_REGS_BASE | (offset)), \
          (MV_MEMIO32_READ(INTER_REGS_BASE | (offset)) & \
-          MV_32BIT_LE_FAST(~bitMask)))); \
-	reglog((INTER_REGS_BASE | (offset)), (MV_MEMIO32_READ(INTER_REGS_BASE | (offset))));
+          MV_32BIT_LE_FAST(~bitMask)))+ \
+	reglog((INTER_REGS_BASE | (offset)), (MV_MEMIO32_READ(INTER_REGS_BASE | (offset)))))
 #else
 #define MV_REG_BIT_RESET(offset,bitMask)                \
         (MV_MEMIO32_WRITE((INTER_REGS_BASE | (offset)), \

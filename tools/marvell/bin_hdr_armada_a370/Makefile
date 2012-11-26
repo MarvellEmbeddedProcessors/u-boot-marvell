@@ -106,9 +106,7 @@ PARAMSFILE = params
 LDSCRIPT   = linker.scr
 DRAMREGS   = ./dramregs.txt
 
-
-INCLUDE     = -I./ -I. -I./inc/ -I../../include
-INCLUDE    += -I/opt/armv7-marvell-linux-gnueabi-softfp_i686/arm-marvell-linux-gnueabi/libc/usr/include
+INCLUDE     = -I. -I./inc/ -I../../include -I../../board/mv_sheeva/common 
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
@@ -116,6 +114,7 @@ HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
 
 TGT = bin_hdr
+
 
 ASRC = ./src/bin_entry.s
 CSRC =  ddr3_init.c utils.c ./src/mvUart.c ./src/bin_hdr_twsi.c ./src/bin_sramcfg.c ./src/ddr3_spd.c

@@ -62,8 +62,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef __MV_UART_H__
-#define __MV_UART_H__
+#ifndef __NS16550_H__
+#define __NS16550_H__
 
 #include "soc_spec.h"
 #include "bootstrap_os.h"
@@ -152,44 +152,4 @@ MV_VOID mvUartInit(void);
 void putstring(char *str);
 void putdata (u32 dec_num,u32 length);
 
-#if defined(NOT_USE_UART)
-#undef MV_DEBUG_INIT
-#undef MV_DEBUG_INIT_FULL
-#else
-#define MV_DEBUG_INIT
 #endif
-
-
-/************
- * Debug
-*/
-
-#ifdef MV_DEBUG_INIT
-#define DEBUG_INIT_S(s)				putstring(s)
-#define DEBUG_INIT_D(d, l)			putdata(d, l)
-
-#else
-#define DEBUG_INIT_S(s)
-#define DEBUG_INIT_D(d, l)
-#endif
-
-#ifdef MV_DEBUG_INIT_FULL
-#define DEBUG_INIT_FULL_S(s)		putstring(s)
-#define DEBUG_INIT_FULL_D(d, l)		putdata(d, l)
-#define DEBUG_WR_REG(reg,val)       DEBUG_INIT_S("Write Reg: 0x"); DEBUG_INIT_D((reg), 8); DEBUG_INIT_S("= "); DEBUG_INIT_D((val), 8);DEBUG_INIT_S("\n");
-#define DEBUG_RD_REG(reg,val)       DEBUG_INIT_S("Read  Reg: 0x"); DEBUG_INIT_D((reg), 8); DEBUG_INIT_S("= "); DEBUG_INIT_D((val), 8);DEBUG_INIT_S("\n");
-#else
-#define DEBUG_INIT_FULL_S(s)
-#define DEBUG_INIT_FULL_D(d, l)
-#define DEBUG_WR_REG(reg,val)
-#define DEBUG_RD_REG(reg,val)
-#endif
-
-#define DEBUG_INIT_FULL_C(s, d, l)    DEBUG_INIT_FULL_S(s); DEBUG_INIT_FULL_D(d, l); DEBUG_INIT_FULL_S("\n")
-
-
-#define DEBUG_INIT_C(s, d, l)         DEBUG_INIT_S(s); DEBUG_INIT_D(d, l); DEBUG_INIT_S("\n")
-
-
-#endif /* __MV_UART_H__ */
-

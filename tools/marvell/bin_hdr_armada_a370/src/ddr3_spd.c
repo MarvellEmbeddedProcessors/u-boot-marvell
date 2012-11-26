@@ -68,7 +68,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_spd.h"
 #include "bin_hdr_twsi.h"
 #include "bootstrap_os.h"
-#include "mvUart.h"
 
 #if defined(MV88F78X60)
 #include "ddr3_axp_config.h"
@@ -181,7 +180,7 @@ MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr)
 	/* Number Of Row Addresses - 12/13/14/15/16 */
 	pDimmInfo->numOfRowAddr = ((ucData[SPD_ROW_NUM_BYTE] & SPD_ROW_NUM_MASK) >> SPD_ROW_NUM_OFF);
 	pDimmInfo->numOfRowAddr += SPD_ROW_NUM_MIN;
-	DEBUG_INIT_FULL_C("DRAM numOfRowAddr ",pDimmInfo->numOfRowAddr,2);
+	DEBUG_INIT_FULL_C("DRAM numOfRowAddr ",pDimmInfo->numOfRowAddr,1);
 
 	/* Number Of Column Addresses - 9/10/11/12 */
 	pDimmInfo->numOfColAddr = ((ucData[SPD_COL_NUM_BYTE] & SPD_COL_NUM_MASK) >> SPD_COL_NUM_OFF);
@@ -394,14 +393,15 @@ MV_STATUS ddr3SpdSumInit(MV_DIMM_INFO *pDimmInfo, MV_DIMM_INFO *pDimmSumInfo, MV
 * Notes:
 * Returns:
 */
-MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth)
+MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_BOOL *pBRegDimm, MV_U32 *pUiDdrWidth)
 {
-	MV_U32 uiReg, uiTemp, uiCWL;
+	MV_U32 uiReg, uiTemp, uiTemp2, uiTempCount;
 	MV_U32 uiDDRClkTime;
 	MV_DIMM_INFO dimmInfo[2];
 	MV_DIMM_INFO dimmSumInfo;
-	MV_U32 uiStaticVal, uiSpdVal;
-	MV_U32 uiCs, uiCL, uiCsNum, uiCsEna;
+	MV_U32 ddrMode, uiStaticVal, uiSpdVal;
+	MV_U32 uiCs, uiCL, uiCWL, uiCsNum, uiCsEna, uiDdrWidth;
+	MV_BOOL bRegDimm;
 	MV_U32 uiDimmNum = 0;
 #ifdef DUNIT_SPD
 	MV_U32 uiDimmCount, uiCsCount, uiDimm;
@@ -461,21 +461,13 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 #endif
 #ifdef DUNIT_SPD
 	uiDimm = 0;
-
 	if (uiDimmNum) {
-		for (uiCs = 0; uiCs < MAX_CS; uiCs+=2) {
-			if (((1 << uiCs) & DIMM_CS_BITMAP) && !(uiCsEna & (1 << uiCs))) {
-				if (dimmInfo[uiDimm].numOfModuleRanks == 1)
-					uiCsEna |= (0x1 << uiCs);
-				else if (dimmInfo[uiDimm].numOfModuleRanks == 2)
-					uiCsEna |= (0x3 << uiCs);
-				else if (dimmInfo[uiDimm].numOfModuleRanks == 3)
-					uiCsEna |= (0x7 << uiCs);
-				else if (dimmInfo[uiDimm].numOfModuleRanks == 4)
-					uiCsEna |= (0xF << uiCs);
-
+		for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
+			if ((1 << uiCs) & DIMM_CS_BITMAP) {
+				uiCsEna |= ((BIT0 | dimmInfo[uiDimm].numOfModuleRanks) << uiCs);
+				if (dimmInfo[uiDimm].numOfModuleRanks > 1)
+					uiCs++;
 				uiDimm++;
-				if (uiDimm == uiDimmNum)
 				break;
 			}
 		}
@@ -497,7 +489,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 #ifdef DUNIT_STATIC
 	/* Get target CL value from set register */
 	uiReg = (MV_REG_READ(REG_DDR3_MR0_ADDR) >> 2);
-	uiReg = ((((uiReg >> 1) & 0xE)) | (uiReg & 0x1)) & 0xF;
+	uiReg = (((uiReg & 0xE) >> 1) | (uiReg & 0x1)) & 0xF;
 
 	uiCL = ddr3GetMaxValue(ddr3DivFunc(dimmSumInfo.minCasLatTime, uiDDRClkTime, 0), uiDimmNum, ddr3ValidCLtoCL(uiReg));
 #else
@@ -532,15 +524,17 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 #ifdef DUNIT_STATIC
 	if (ddr3GetMinValue(dimmSumInfo.dataWidth, uiDimmNum, BUS_WIDTH) == 64)  {
 #else
-	if (*pUiDdrWidth == 64) {
+	if (dimmSumInfo.dataWidth == 64) {
 #endif
 		uiReg |= (1 << REG_SDRAM_CONFIG_WIDTH_OFFS);
+		uiDdrWidth = 64;
 		DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - Datawidth - 64Bits \n");
-	} else {
+	} else
+		uiDdrWidth = 32;
 		DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - Datawidth - 32Bits \n");
-	}
 #else
-	DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - Datawidth - 16Bits \n");
+		uiDdrWidth = 16;
+		DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - Datawidth - 16Bits \n");
 #endif
 	
 	uiStaticVal = ddr3GetStaticMCValue(REG_SDRAM_CONFIG_ADDR, 0, REG_SDRAM_CONFIG_RFRS_MASK, 0, 0);
@@ -621,11 +615,11 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 /*{0x0000140C}	-	DDR SDRAM Timing (High) Register */
 /*	uiReg = 0x38000C00; */
 	/* Add cycles to R2R W2W */
-	uiReg = 0x39F8FF80;
+	uiReg = 0x38D83F80;
 
 	/* tRFC - (0:6,16:18) */
 	uiSpdVal = ddr3DivFunc(dimmSumInfo.minRefreshRecovery, uiDDRClkTime, 1);
-	uiStaticVal = ddr3GetStaticMCValue(REG_SDRAM_TIMING_HIGH_ADDR, 0, 0x7F, 9, 0x380);
+	uiStaticVal = ddr3GetStaticMCValue(REG_SDRAM_TIMING_LOW_ADDR, 0, 0x7F, 9, 0x380);
 	uiTemp = ddr3GetMaxValue(uiSpdVal, uiDimmNum, uiStaticVal);
 	DEBUG_INIT_FULL_C("DDR3 - DUNIT-SET - tRFC-1 = ", uiTemp, 1);
 	uiReg |= (uiTemp & 0x7F);
@@ -695,6 +689,10 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 #endif
 	MV_REG_WRITE(REG_SDRAM_ADDRESS_CTRL_ADDR, uiReg);
 
+/*{0x00001414}	-	DDR SDRAM Open Pages Control Register */
+	uiReg = 0x0;
+	MV_REG_WRITE(REG_SDRAM_OPEN_PAGES_ADDR, uiReg);
+
 /*{0x00001418}	-	DDR SDRAM Operation Register */
 	uiReg = 0xF00;
 	for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
@@ -714,6 +712,13 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 	uiReg = 0x0100D1FF;
 #endif
 	MV_REG_WRITE(REG_DDR_CONT_HIGH_ADDR	, uiReg);
+
+/*{0x00001428}	-	DDR ODT Timing (Low) Register */
+	if (MV_REG_READ(REG_DDR_IO_ADDR) & (1<<REG_DDR_IO_CLK_RATIO_OFFS))
+		uiReg = 0x000F8830;
+	else
+		uiReg = 0x000D6720;
+	MV_REG_WRITE(REG_ODT_TIME_LOW_ADDR, uiReg);
 
 /*{0x0000142C}	-	DDR3 Timing Register */
 #if defined(MV88F78X60) && !defined(MV88F78X60_Z1)
@@ -752,12 +757,9 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 	uiReg = uiCsEna;
 	MV_REG_WRITE(REG_DUNIT_ODT_CTRL_ADDR, uiReg);
 
-/*{0x000014A0}	-	DDR Dunit ODT Control Register */
 #if defined(MV88F78X60) && !defined(MV88F78X60_Z1)	
-	if (mvCtrlRevGet() == MV_78XX0_A0_REV) {
-	uiReg = 0x000006A9;
+	uiReg = 0x000002A9;
 	MV_REG_WRITE(REG_DRAM_FIFO_CTRL_ADDR, uiReg);
-	}
 #endif
 
 /*{0x000014C0}	-	DRAM address and Control Driving Strenght */
@@ -766,7 +768,19 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 /*{0x000014C4}	-	DRAM Data and DQS Driving Strenght */
 	MV_REG_WRITE(REG_DRAM_DATA_DQS_DRIVE_STRENGTH_ADDR, 0xB2C35E9);
 
+	if (uiCsEna > 5) { /* 4 CS - 1GB,1GB,0.5GB,0.5GB */
+		for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
+			if (uiCsEna & (1<<uiCs)) {
+				if (uiCs < 2) 
+					MV_REG_WRITE(REG_CS_SIZE_SCRATCH_ADDR+(uiCs*0x8), 0x3FFFFFFF);
+				else
+					MV_REG_WRITE(REG_CS_SIZE_SCRATCH_ADDR+(uiCs*0x8), 0x1FFFFFFF);
+			} else
+				MV_REG_WRITE(REG_CS_SIZE_SCRATCH_ADDR+(uiCs*0x8), 0);
+		}
+	} 
 #ifdef DUNIT_SPD
+	else {
 		uiCsCount = 0;
 		uiDimmCount = 0;
 		for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
@@ -777,16 +791,15 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 						uiCsCount = 0;
 					}
 					uiCsCount++;
-					if (*pUiDdrWidth == 32)
-						MV_REG_WRITE(REG_CS_SIZE_SCRATCH_ADDR+(uiCs*0x8),
-							((dimmInfo[uiDimmCount].dimmRankCapacity >> 1)-1));
+					if (uiDdrWidth == 32)
+						MV_REG_WRITE(REG_CS_SIZE_SCRATCH_ADDR+(uiCs*0x8), ((dimmInfo[uiDimmCount].dimmRankCapacity >> 1)-1));
 					else
-						MV_REG_WRITE(REG_CS_SIZE_SCRATCH_ADDR+(uiCs*0x8),
-							(dimmInfo[uiDimmCount].dimmRankCapacity-1));
+						MV_REG_WRITE(REG_CS_SIZE_SCRATCH_ADDR+(uiCs*0x8), (dimmInfo[uiDimmCount].dimmRankCapacity-1));
 				} else
 					MV_REG_WRITE(REG_CS_SIZE_SCRATCH_ADDR+(uiCs*0x8), 0);
 			}
 		}
+	}
 #endif
 
 /*{0x00020184}	-	Close FastPath - 2G */
@@ -844,28 +857,28 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 		uiTemp = uiHClkTime;
 		
 		if (uiTemp >= 2500)
-			uiCWL = 5; /* CWL = 5 */
+			uiTemp2 = 5; /* CWL = 5 */
 		else if (uiTemp >= 1875 && uiTemp < 2500)
-			uiCWL = 6; /* CWL = 6 */
+			uiTemp2 = 6; /* CWL = 6 */
 		else if (uiTemp >= 1500 && uiTemp < 1875)
-			uiCWL = 7; /* CWL = 7 */
+			uiTemp2 = 7; /* CWL = 7 */
 		else if (uiTemp >= 1250 && uiTemp < 1500)
-			uiCWL = 8; /* CWL = 8 */
+			uiTemp2 = 8; /* CWL = 8 */
 		else if (uiTemp >= 1070 && uiTemp < 1250)
-			uiCWL = 9; /* CWL = 9 */
+			uiTemp2 = 9; /* CWL = 9 */
 		else if (uiTemp >= 935 && uiTemp < 1070)
-			uiCWL = 10; /* CWL = 10 */
+			uiTemp2 = 10; /* CWL = 10 */
 		else if (uiTemp >= 833 && uiTemp < 935)
-			uiCWL = 11; /* CWL = 11 */
+			uiTemp2 = 11; /* CWL = 11 */
 		else if (uiTemp >= 750 && uiTemp < 833)
-			uiCWL = 12; /* CWL = 12 */
+			uiTemp2 = 12; /* CWL = 12 */
 		
-		uiReg = ((uiCWL - 5) << REG_DDR3_MR2_CWL_OFFS);
+		uiCWL = uiTemp2;
+		uiReg = ((uiTemp2 - 5) << REG_DDR3_MR2_CWL_OFFS);
 
 #ifdef MULTI_CS_MRS_SUPPORT
 		for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
 			if (uiCsEna & (1<<uiCs)) {
-				uiReg &= REG_DDR3_MR2_ODT_MASK;
 				uiReg |= auiODTDynamic[uiCsEna][uiCs];
 				MV_REG_WRITE(REG_DDR3_MR2_CS_ADDR + (uiCs << MR_CS_ADDR_OFFS), uiReg);
 			}
@@ -883,15 +896,6 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 #else
 	MV_REG_WRITE(REG_DDR3_MR3_ADDR, uiReg);
 #endif
-
-/*{0x00001428}	-	DDR ODT Timing (Low) Register */
-	uiReg = 0;
-	uiReg |= (((uiCL - uiCWL + 1) & 0xF) << 4);
-	uiReg |= (((uiCL - uiCWL + 6) & 0xF) << 8);
-	uiReg |= ((((uiCL - uiCWL + 6) >> 4) & 0x1) << 21);
-	uiReg |= (((uiCL - 1) & 0xF) << 12);
-	uiReg |= (((uiCL + 6) & 0x1F) << 16);
-	MV_REG_WRITE(REG_ODT_TIME_LOW_ADDR, uiReg);
 
 #ifdef DUNIT_SPD
 /*{0x000015E0} - DDR3 Rank Control Register */
@@ -921,10 +925,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 
 /* {0x00015EC}	-	DDR PHY */
 #if defined(MV88F78X60) && !defined(MV88F78X60_Z1)
-	uiReg = 0xF800AAA5;
-	if (mvCtrlRevGet() == MV_78XX0_B0_REV) {
-		uiReg = 0xF800A225;
-	}
+	uiReg = 0xF800AA25;
 #else	
 	uiReg = 0xDE000025;
 #endif
@@ -935,72 +936,36 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 	/* Registered DIMM support - supported only in AXP A0 devices */
 	/* Currently supported for SPD detection only */
 	/* Flow is according to the Registered DIMM chapter in the Functional Spec */
-
 	if (dimmSumInfo.dimmTypeInfo == SPD_MODULE_TYPE_RDIMM) {
+		bRegDimm = TRUE;
 		DEBUG_INIT_S("DDR3 Training Sequence - Registered DIMM detected \n");
+			if (uiCsNum == 1) {
+			DEBUG_INIT_S("DDR3 Training Sequence - FAILED (Registered DIMM must use more than one CS) \n");
+			return MV_FAIL;
+		}
 		
-		/* Set commands parity completion */
-		uiReg = MV_REG_READ(REG_REGISTERED_DRAM_CTRL_ADDR);
-		uiReg &= ~REG_REGISTERED_DRAM_CTRL_PARITY_MASK;
-		uiReg |= 0x8;
-		MV_REG_WRITE(REG_REGISTERED_DRAM_CTRL_ADDR, uiReg);
-
 		MV_REG_WRITE(REG_SDRAM_INIT_CTRL_ADDR, 1 << REG_SDRAM_INIT_CKE_ASSERT_OFFS);	/* De-assert M_RESETn and assert M_CKE */
 		do {
 			uiReg = ((MV_REG_READ(REG_SDRAM_INIT_CTRL_ADDR)) & (1 << REG_SDRAM_INIT_CKE_ASSERT_OFFS));
 		} while (uiReg);
-
 		{
 			MV_U32 uiRC;
 			for (uiRC=0; uiRC<SPD_RDIMM_RC_NUM; uiRC++) {
-				if (uiRC != 6 && uiRC != 7) {
-#if 0
-					uiReg = (REG_SDRAM_OPERATION_CMD_CWA & ~(uiCsEna << REG_SDRAM_OPERATION_CS_OFFS)); /* Set CWA Command */
-#endif 
-					uiReg = (REG_SDRAM_OPERATION_CMD_CWA & ~(0xF << REG_SDRAM_OPERATION_CS_OFFS)); /* Set CWA Command */
-					uiReg |= ((dimmInfo[0].regDimmRC[uiRC] & REG_SDRAM_OPERATION_CWA_DATA_MASK) << REG_SDRAM_OPERATION_CWA_DATA_OFFS);
-					uiReg |= uiRC << REG_SDRAM_OPERATION_CWA_RC_OFFS;
-					/* Configure - Set Delay - tSTAB/tMRD */
-					if (uiRC == 2 || uiRC == 10)
-						uiReg |= (0x1 << REG_SDRAM_OPERATION_CWA_DELAY_SEL_OFFS);
-	
-					MV_REG_WRITE(REG_SDRAM_OPERATION_ADDR, uiReg);  	/* 0x1418 - SDRAM Operation Register */
-						/* Poll the "cmd" field in the SDRAM OP register for 0x0 */
-					do {
-						uiReg = (MV_REG_READ(REG_SDRAM_OPERATION_ADDR) & (REG_SDRAM_OPERATION_CMD_MASK));
-					} while (uiReg);
-				}
+				uiReg = (REG_SDRAM_OPERATION_CMD_CWA & ~(uiCsEna << REG_SDRAM_OPERATION_CS_OFFS)); /* Set CWA Command */
+				uiReg |= ((dimmInfo[0].regDimmRC[uiRC] & REG_SDRAM_OPERATION_CWA_DATA_MASK) << REG_SDRAM_OPERATION_CWA_DATA_OFFS);
+				uiReg |= uiRC << REG_SDRAM_OPERATION_CWA_RC_OFFS;
+				MV_REG_WRITE(REG_SDRAM_OPERATION_ADDR, uiReg);  	/* 0x1418 - SDRAM Operation Register */
+					/* Poll the "cmd" field in the SDRAM OP register for 0x0 */
+				do {
+					uiReg = (MV_REG_READ(REG_SDRAM_OPERATION_ADDR) & (REG_SDRAM_OPERATION_CMD_MASK));
+				} while (uiReg);
 			}
 		}
 	}
 #endif
 
-#if defined(MV88F78X60)
-	/* DLB Enable */
-#if defined(MV88F78X60_Z1)
-	MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
-#else 
-	if (mvCtrlRevGet() == MV_78XX0_B0_REV)
-		MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0xc19e);
-	else
-		MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
-
-#endif
-	MV_REG_WRITE(DLB_AGING_REGISTER , 0x0f7f007f);
-	MV_REG_WRITE(DLB_EVICTION_CONTROL_REG, 0x0);
-	MV_REG_WRITE(DLB_EVICTION_TIMERS_REGISTER_REG, 0x00FF3C1F);
-
-	MV_REG_WRITE(MBUS_UNITS_PRIORITY_CONTROL_REG, 0x55555555);
-	MV_REG_WRITE(FABRIC_UNITS_PRIORITY_CONTROL_REG , 0xAA);
-	MV_REG_WRITE(MBUS_UNITS_PREFETCH_CONTROL_REG, 0xffff);
-	MV_REG_WRITE(FABRIC_UNITS_PREFETCH_CONTROL_REG, 0xf0f);
-
-	if (mvCtrlRevGet() == MV_78XX0_B0_REV) {
-		uiReg = MV_REG_READ(REG_STATIC_DRAM_DLB_CONTROL);
-		uiReg |= DLB_ENABLE;
-		MV_REG_WRITE(REG_STATIC_DRAM_DLB_CONTROL, uiReg);
-	}
-#endif
+	*pBRegDimm = bRegDimm;
+	*pUiDdrWidth = uiDdrWidth;
 
 	return MV_OK;
 }

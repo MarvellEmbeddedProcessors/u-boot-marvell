@@ -74,6 +74,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_a370.h"
 #endif
 
+#define MV_DEBUG_INIT
+/*#define MV_DEBUG_INIT_FULL */
+
+/************
+ * Debug
+*/
+#define DEBUG_INIT_C(s, d, l)        	DEBUG_INIT_S(s); DEBUG_INIT_D(d, l); DEBUG_INIT_S("\n")
+#define DEBUG_INIT_FULL_C(s, d, l)    DEBUG_INIT_FULL_S(s); DEBUG_INIT_FULL_D(d, l); DEBUG_INIT_FULL_S("\n")
+
+#ifdef MV_DEBUG_INIT
+#define DEBUG_INIT_S(s)				putstring(s)
+#define DEBUG_INIT_D(d, l)			putdata(d, l)
+
+#else
+#define DEBUG_INIT_S(s)
+#define DEBUG_INIT_D(d, l)
+#endif
+
+#ifdef MV_DEBUG_INIT_FULL
+#define DEBUG_INIT_FULL_S(s)		putstring(s)
+#define DEBUG_INIT_FULL_D(d, l)		putdata(d, l)
+#else
+#define DEBUG_INIT_FULL_S(s)
+#define DEBUG_INIT_FULL_D(d, l)
+#endif
 
 typedef enum  _mvConfigType {
 	CONFIG_ECC,
@@ -85,11 +110,9 @@ MV_VOID 	sramConfig(void);
 MV_VOID		changeResetVecBase(MV_32 val);
 MV_VOID		setCPSR(MV_32 val);
 
-MV_STATUS	ddr3HwTraining(MV_U32 uiTargetFreq, MV_U32 uiDdrWidth,
+MV_STATUS ddr3HwTraining(MV_U32 uiTargetFreq, MV_U32 uiEccEna, MV_U32 uiDdrWidth,
 						MV_BOOL bXorBypass, MV_U32 uiScrubOffs, MV_U32 uiScrubSize,	MV_BOOL bDQSCLKAligned, 
-						MV_BOOL bDebugMode, MV_BOOL bRegDimmSkipWL);
-
-MV_VOID		ddr3PrintVersion(void);
+						MV_BOOL bRegDimm, MV_BOOL bIsA0, MV_BOOL bDebugMode);
 
 MV_VOID 	fixPLLValue(MV_U8 targetFabric);
 MV_U8 		ddr3GetEpromFabric(void);
@@ -100,13 +123,5 @@ MV_U32 		ddr3GetFabOpt(void);
 MV_U32 		ddr3GetCpuFreq(void);
 MV_U32 		ddr3GetVCOFreq(void);
 MV_BOOL		ddr3CheckConfig(MV_U32 twsiAddr, MV_CONFIG_TYPE configType);
-MV_U32 ddr3GetStaticMCValue(MV_U32 regAddr, MV_U32 offset1, MV_U32 mask1, MV_U32 offset2, MV_U32 mask2);
-
-MV_U32 ddr3CLtoValidCL(MV_U32 uiCL);
-MV_U32 ddr3ValidCLtoCL(MV_U32 uiValidCL);
-MV_U32 ddr3GetCSNumFromReg(void);
-MV_U32 ddr3GetCSEnaFromReg(void);
-MV_U8 mvCtrlRevGet(MV_VOID);
-
 
 #endif /* _INC_DDR_H */

@@ -17,9 +17,10 @@ Table of Contents
 	9. BIOS and SatR commands.
 	10. Limitation
 	11. Boot options
-	12. Changes from Previous Releases
-	13. Known Issues
-	14. Disclaimer
+	12. Using XDB
+	13. Changes from Previous Releases
+	14. Known Issues
+	15. Disclaimer
 
 
 1. Contents of Release
@@ -422,7 +423,56 @@ This U-Boot version supports the following boards:
     3. Send New U-boot using XMODEM.
 
 
-12. Changes from Previous Releases
+12. Using XDB
+==============
+    - This documentation refers to XDB scripts located under <u_boot dir>\debugger_scripts\ directory in the u-boot release.
+    - This documentation is relevant for Armada XP and Armada 370. 
+    - The <u_boot dir>\debugger_scripts\ includes the following files: 
+	*.xsf file. 
+	init_ddr.xdb file. 
+	A bin_hdr.elf file exist under <u_boot dir>\images\bin_hdr\ 
+    - Find XDB tool and full documentation can be downloaded from Marvell's extranet site.
+    - Please use XDB version 5.4.001 or later is installed and running. 
+    
+    XDB configuration steps to load U-Boot Image:
+    ==============================================
+	- Connect the Marvell JTAG POD to the target board. 
+	- To Launch the XDB startup menu , Double click on the *.xsf script under <u_boot dir>\debugger_scripts\ directory. 
+	- Make sure that "connection type" of the first core is set to "Reset SOC & stop", "connection type" is located under the left "CS-JTAG" tab in the settings window of the startup menu (appears when clicking settings from the startup menu).
+	- Click on the Start button from the startup menu, this will launch the XDB tool itself. 
+	- Wait for a connection to be established, the Command window in the tool appear by default and provide a feedback on the connection status: 
+	- If the connection was successful a "xdb>" prompt will appear at the bottom of the command window.  
+	- If "xdb_InReset>" / "xdb_nocomm>" prompt appears at the bottom of the command window, this is an indication that an error happened.
+	Note: If a reset is not desired when connecting to the platform, choose the "Try Hot Connect & Stop" option at step 3. This is assuming the the system has a valid running image. 
+
+    DRAM Initialization:
+    ====================
+    To initialize memory, do the following: 
+	1. Click on the file -> Batch. The "Execute Batch file" menu will appear,  browse to  <u_boot dir> debugger_scripts\ choose init_ddr.xdb. Hit the "OK" button. 
+	2. In the XDB command window the user will see a log starting with:  "BATCH "<path to the script>"" , and ending with the "xdb >" prompt. 
+	3. The user should see the following pattern on the terminal connected to the target:
+	"
+	DDR3 Training Sequence - Ver X.x.x
+	....
+	DDR3 Training Sequence - Ended Successfully
+	...
+	"
+	- This is an indication that the DRAM was initialized and it can be used to load the u-Boot. (if this steps not completed, stop the debugger "Ctrl + s" then run it "Ctrl +r") 
+    To load the u-Boot do the following: 
+	1. From the XDB tool main menu Click on the File -> Load. Click the "Symbols And Data" option. 
+	2. Click the Browse button, browse to the appropriate elf u-Boot image under the <u_boot dir> \Images directory. 
+	3. Check the "Download", and "initfile" options in the "Load" menu, and click "Ok". 
+	4. Wait until the download is completed. download progress is presented in percentage in the bottom right coroner (appears only when download in progress). 
+	5. The debugger will launch a browser window requesting the user to direct it to the source for start.s (the first file to run). This is located  root directory <u_boot root directory>\cpu\arm1136\start.s. 
+
+    Running / Recovering u-Boot:
+    ============================
+    To Recover/ burn a u-Boot image to the flash DRAM Initialization:
+	1. Press the Run icon ( the green light), or press "Ctrl +r"  this will run the selected u-Boot image from the memory. the u-boot will run, and a normal u-boot plot will appear on the Serial connection.
+	2. Use the "bubt" command to flash a u-boot image - refer to the "How to upgrade to a new version of U-Boot" in the u-boot release notes.
+
+
+13. Changes from Previous Releases
 =================================
 
 	U-Boot 2012_Q4.0  (03-October-2012).
@@ -557,7 +607,7 @@ This U-Boot version supports the following boards:
 	===============================
 	Initial release. base on uboot 2011.12 and Marvell U-Boot 2.1.1
 
-13. Known issues
+14. Known issues
 ================
 	1. The USB interface is not tested.
 	2. The MMC interface is not tested.
@@ -573,7 +623,7 @@ This U-Boot version supports the following boards:
 		This issue was reported by a customer.  After issuing an EP reset from the RC (PCI Express Control Register 0x41a00[24] - hot reset); the RC does not reach link status and restarts TS1/TS2 sequence and ends up in compliance mode without link. This issue is consistently reproducible in Linux but NOT in UBOOT.
 
 
-14. Disclaimer
+15. Disclaimer
 ==============
 This document provides preliminary information about the products described, and such information should not be used for
 purpose of final design. Visit the Marvell  web site at www.marvell.com for the latest information on Marvell products.

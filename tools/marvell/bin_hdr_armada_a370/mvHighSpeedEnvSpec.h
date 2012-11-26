@@ -65,7 +65,46 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef _MV_HIGHSPEED_ENV_SPEC_H
 #define _MV_HIGHSPEED_ENV_SPEC_H
-#include "bootstrap_os.h"
+
+#include "mvSysHwConfig.h"
+#include "mvCtrlEnvRegs.h"
+#include "mvCtrlEnvSpec.h"
+
+#include "mv_os.h"
+/* Board specific configuration */
+/* ============================ */
+
+#include "boardEnv/mvBoardEnvSpec.h"
+
+typedef enum {
+	PEX_BUS_DISABLED	= 0,
+	PEX_BUS_MODE_X1		= 1,
+	PEX_BUS_MODE_X4		= 2,
+	PEX_BUS_MODE_X8		= 3
+} MV_PEX_UNIT_CFG;
+
+
+typedef enum _mvPexType {
+          MV_PEX_ROOT_COMPLEX,    /* root complex device */
+          MV_PEX_END_POINT        /* end point device */
+} MV_PEX_TYPE;
+
+/* Configuration per SERDES line.
+   Each nibble is MV_SERDES_LINE_TYPE */
+typedef struct _boardSerdesConf {
+	MV_PEX_TYPE pexType; /* MV_PEX_ROOT_COMPLEX MV_PEX_END_POINT */
+	MV_U32	serdesLine0_7;	/* Lines 0 to 7 SERDES MUX one nibble per line */
+	MV_U32	serdesLine8_15;	/* Lines 8 to 15 SERDES MUX one nibble per line */
+	MV_PEX_UNIT_CFG		pex0Mod;
+	MV_PEX_UNIT_CFG		pex1Mod;
+	MV_PEX_UNIT_CFG		pex2Mod;
+	MV_PEX_UNIT_CFG		pex3Mod;
+	MV_U32	busSpeed;	/* Bus speed - one bit per SERDES line:
+	Low speed (0)		High speed (1)
+	PEX	2.5 G (10 bit)		5 G (20 bit)
+	SATA	1.5 G			3 G
+	SGMII 	1.25 Gbps		3.125 Gbps	*/
+} MV_BIN_SERDES_CFG;
 
 
 typedef enum {
@@ -80,43 +119,6 @@ typedef enum {
 	SERDES_UNIT_SETM        = 0x8,
 	SERDES_LAST_UNIT
 } MV_BIN_SERDES_UNIT_INDX;
-
-
-typedef enum {
-	PEX_BUS_DISABLED	= 0,
-	PEX_BUS_MODE_X1		= 1,
-	PEX_BUS_MODE_X4		= 2,
-	PEX_BUS_MODE_X8		= 3
-} MV_PEX_UNIT_CFG;
-
-
-typedef enum _mvPexType {
-          MV_PEX_ROOT_COMPLEX,    /* root complex device */
-          MV_PEX_END_POINT        /* end point device */
-} MV_PEX_TYPE;
-typedef struct _boardSerdesChangeMphy {
-	MV_BIN_SERDES_UNIT_INDX serdesType;
-	MV_U32	serdesRegLowSpeed;
-	MV_U32	serdesValueLowSpeed;
-	MV_U32	serdesRegHiSpeed;
-	MV_U32	serdesValueHiSpeed;
-} MV_SERDES_CHANGE_M_PHY;
-
-/* Configuration per SERDES line.
-   Each nibble is MV_SERDES_LINE_TYPE */
-typedef struct _boardSerdesConf {
-	MV_PEX_TYPE pexType; /* MV_PEX_ROOT_COMPLEX MV_PEX_END_POINT */
-	MV_U32	serdesLine0_7;	/* Lines 0 to 7 SERDES MUX one nibble per line */
-	MV_U32	serdesLine8_15;	/* Lines 8 to 15 SERDES MUX one nibble per line */
-
-	MV_PEX_UNIT_CFG		pexMod[4];
-	MV_U32	busSpeed;	/* Bus speed - one bit per SERDES line:
-	Low speed (0)		High speed (1)
-	PEX	2.5 G (10 bit)		5 G (20 bit)
-	SATA	1.5 G			3 G
-	SGMII 	1.25 Gbps		3.125 Gbps	*/
-	MV_SERDES_CHANGE_M_PHY * serdesMphyChange;
-} MV_BIN_SERDES_CFG;
 
 
 #define BIN_SERDES_CFG {	\

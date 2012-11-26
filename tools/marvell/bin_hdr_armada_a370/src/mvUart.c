@@ -62,9 +62,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include "soc_spec.h"
-#include "bootstrap_os.h"
-#include "ddr3_init.h"
 #include "mvUart.h"
 
 /*******************************************************************************
@@ -94,18 +91,12 @@ MV_VOID mvUartInit(void)
 	MV_U32 baudDivisor = 0;
 
 	uiReg = (MV_REG_READ(REG_SAMPLE_RESET_LOW_ADDR) & (1 << REG_SAMPLE_RESET_TCLK_OFFS));
-#ifdef MV88F78X60
 	if(uiReg)
 		tmpTClkRate = _200MHZ;	/* 200; */
 	else
 		tmpTClkRate = _250MHZ;	/* 250;	*/
-#else /* defined(MV88F67XX) */
-	if(uiReg)
-		tmpTClkRate = _200MHZ;	/* 200; */
-	else
-		tmpTClkRate = _166MHZ;	/* 166; */
-#endif
-
+	
+	
 	/*  UART Init */
 	switch (tmpTClkRate)
 	{
@@ -160,6 +151,7 @@ MV_VOID	mvUartPutc(MV_U8 c)
 	return;
 }
 
+#if !defined(MV_NO_PRINT)
 /*-----------------------------------------------------------------------------------		*/
 /* Name:            putstring 		*/
 /*		*/
@@ -171,7 +163,6 @@ MV_VOID	mvUartPutc(MV_U8 c)
 /*-----------------------------------------------------------------------------------		*/
 void putstring(char *str)
 {
-#if !defined(MV_NO_PRINT)
 /* For each character in the string...		*/
     while (*str != '\0')
     {
@@ -182,7 +173,7 @@ void putstring(char *str)
 
 		str++;
     }
-#endif
+
 }
 
 /*-----------------------------------------------------------------------------------	*/
@@ -197,7 +188,6 @@ void putstring(char *str)
 /*-----------------------------------------------------------------------------------	*/
 void putdata (u32 dec_num,u32 length)
 {
-#if !defined(MV_NO_PRINT)
     char str[11];
     u32 i, flag = 0, mod_val;/*, length = 8;*/
 
@@ -243,8 +233,9 @@ void putdata (u32 dec_num,u32 length)
 	str[length] = '\0';
     putstring(str);
 
-#endif
 }
+#endif
+#if !defined(MV_NO_INPUT)
 
 /*******************************************************************************
 * mvUartGetc - Read one character from the UART
@@ -264,13 +255,9 @@ void putdata (u32 dec_num,u32 length)
 *******************************************************************************/
 MV_U8	mvUartGetc()
 {
-#if !defined(MV_NO_INPUT)
 	volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + UART0_REG_OFFSET);
 	while ((pUartPort->lsr & LSR_DR) == 0) ;
 	return (pUartPort->rbr);
-#else
-	return 0xff;
-#endif
 }
 
 /*******************************************************************************
@@ -292,13 +279,10 @@ MV_U8	mvUartGetc()
 *******************************************************************************/
 MV_BOOL mvUartTstc()
 {
-#if !defined(MV_NO_INPUT)
 	volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + UART0_REG_OFFSET);
 	return ((pUartPort->lsr & LSR_DR) != 0);
-#else
-	return FALSE;
-#endif /* #if !defined(MV_NO_INPUT) */
 }
 
+#endif /* #if !defined(MV_NO_INPUT) */
 
 

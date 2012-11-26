@@ -63,30 +63,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 #include "mvHighSpeedEnvSpec.h"
 
-MV_SERDES_CHANGE_M_PHY db88f78XX0BoardSerdesChangeMphy[]={
-	/*  SERDES TYPE    Low REG OFFSET      Low REG VALUE,Hi REG OFS,      Hi REG VALUE      */
-	{SERDES_UNIT_PEX, 	   	   0x0, (0x0F << 16)| 0x2a21,       0x0, (0x0F << 16)| 0x2a21},   /* PEX: Change of Slew Rate port0   */ 
-	{SERDES_UNIT_PEX, 	   	   0x0, (0x4F << 16)| 0x6219,       0x0, (0x4F << 16)| 0x6219},   /* PEX: Change PLL BW port0    		*/ 
-	{SERDES_UNIT_SATA,	   0x0083C,				  0x8a31,   0x0083C, 			   0x8a31},   /* SATA: Slew rate change port 0 	*/ 
-	{SERDES_UNIT_SATA,	   0x00834,				  0xc928,   0x00834, 			   0xc928},   /* SATA: Slew rate change port 0 	*/ 
-	{SERDES_UNIT_SATA,	   0x00838,				  0x30f0,   0x00838,               0x30f0},   /* SATA: Slew rate change port 0 	*/ 
-	{SERDES_UNIT_SATA,	   0x00840,				  0x30f5,   0x00840,               0x30f5},   /* SATA: Slew rate change port 0 	*/ 
-	{SERDES_UNIT_SGMII0,   0x00E18, 			  0x989F,   0x00E18, 			   0x989F},   /* SGMII: FFE setting Port0         */ 
-	{SERDES_UNIT_SGMII0,   0x00E38, 			  0x10FA,   0x00E38, 			   0x10FA},   /* SGMII: SELMUP and SELMUF Port0   */ 
-	{SERDES_UNIT_SGMII0,   0x00E34, 			  0xC968,   0x00E34, 			   0xC66C},   /* SGMII: Amplitude new setting gen2 Port3 */
-	{SERDES_UNIT_QSGMII,   0x72E34, 			  0xaa58,   0x72E34, 			   0xaa58},   /* QSGMII: Amplitude and slew rate change  */ 
-	{SERDES_UNIT_QSGMII,   0x72e38, 			  0x10aF,   0x72e38, 			   0x10aF},   /* QSGMII: SELMUP and SELMUF               */
-	{SERDES_UNIT_QSGMII,   0x72e18, 			  0x98AC,   0x72e18, 			   0x98AC},   /* QSGMII: 0x72e18                         */
-	{SERDES_UNIT_UNCONNECTED, 0,0}		/* Null terminated */
-};
 
 MV_BIN_SERDES_CFG db88f78XX0InfoBoardSerdesConfigValue[] = {
         /* Z1B */
-        {MV_PEX_ROOT_COMPLEX, 0x32221111, 0x11111111, {PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4}, 0x0030, db88f78XX0BoardSerdesChangeMphy},      /* Default */
-        {MV_PEX_ROOT_COMPLEX, 0x31211111, 0x11111111, {PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4}, 0x0030, db88f78XX0BoardSerdesChangeMphy},       /* PEX module */
+        {MV_PEX_ROOT_COMPLEX, 0x32221111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x0030},      /* Default */
+        {MV_PEX_ROOT_COMPLEX, 0x31211111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x0030},       /* PEX module */
         /* Z1A */
-        {MV_PEX_ROOT_COMPLEX, 0x32220000, 0x00000000, {PEX_BUS_DISABLED, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED}, 0x0030, db88f78XX0BoardSerdesChangeMphy},   /* Default - Z1A */
-        {MV_PEX_ROOT_COMPLEX, 0x31210000, 0x00000000, {PEX_BUS_DISABLED, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_DISABLED}, 0x0030, db88f78XX0BoardSerdesChangeMphy}     /* PEX module - Z1A */
+        {MV_PEX_ROOT_COMPLEX, 0x32220000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x0030},   /* Default - Z1A */
+        {MV_PEX_ROOT_COMPLEX, 0x31210000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_MODE_X1,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x0030}     /* PEX module - Z1A */
 };
 
 /*----------------------------------------------*/
@@ -94,57 +78,50 @@ MV_BIN_SERDES_CFG db88f78XX0InfoBoardSerdesConfigValue[] = {
 
 MV_BIN_SERDES_CFG db88f78XX0rev2InfoBoardSerdesConfigValue[] = {
 	/* A0 */
-    {MV_PEX_ROOT_COMPLEX, 0x33221111, 0x11111111, {PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4,PEX_BUS_MODE_X4}, 0x0030, db88f78XX0BoardSerdesChangeMphy },/* Default: No Pex module, PEX0 x1, disabled*/
-	{MV_PEX_ROOT_COMPLEX, 0x33211111, 0x11111111, {PEX_BUS_MODE_X1, PEX_BUS_MODE_X1,  PEX_BUS_MODE_X4,PEX_BUS_MODE_X4}, 0x0030, db88f78XX0BoardSerdesChangeMphy },/* Pex module, PEX0 x1, PEX1 x1*/
-	{MV_PEX_ROOT_COMPLEX, 0x33221111, 0x11111111, {PEX_BUS_MODE_X4, PEX_BUS_DISABLED, PEX_BUS_MODE_X4,PEX_BUS_MODE_X4}, 0x0030, db88f78XX0BoardSerdesChangeMphy },/* no Pex module, PEX0 x4, PEX1 disabled*/
-	{MV_PEX_ROOT_COMPLEX, 0x33211111, 0x11111111, {PEX_BUS_MODE_X4, PEX_BUS_MODE_X1,  PEX_BUS_MODE_X4,PEX_BUS_MODE_X4}, 0x0030, db88f78XX0BoardSerdesChangeMphy },/* Pex module, PEX0 x4, PEX1 x1*/
-	{MV_PEX_ROOT_COMPLEX, 0x11111111, 0x11111111, {PEX_BUS_MODE_X1, PEX_BUS_MODE_X4,  PEX_BUS_MODE_X4,PEX_BUS_MODE_X4}, 0x0030, db88f78XX0BoardSerdesChangeMphy },/* Pex module, PEX0 x1, PEX1 x4*/
-	{MV_PEX_ROOT_COMPLEX, 0x11111111, 0x11111111, {PEX_BUS_MODE_X4, PEX_BUS_MODE_X4,  PEX_BUS_MODE_X4,PEX_BUS_MODE_X4}, 0x0030, db88f78XX0BoardSerdesChangeMphy },/* Pex module, PEX0 x4, PEX1 x4*/
+       {MV_PEX_ROOT_COMPLEX, 0x33221111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4,PEX_BUS_MODE_X4, 0x0030},/* Default: No Pex module, PEX0 x1, disabled*/
+	{MV_PEX_ROOT_COMPLEX, 0x31211111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4,PEX_BUS_MODE_X4, 0x0030},/* Pex module, PEX0 x1, PEX1 x1*/
+	{MV_PEX_ROOT_COMPLEX, 0x33221111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_MODE_X4,PEX_BUS_MODE_X4, 0x0030},/* no Pex module, PEX0 x4, PEX1 disabled*/
+	{MV_PEX_ROOT_COMPLEX, 0x31211111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_MODE_X1,PEX_BUS_MODE_X4,PEX_BUS_MODE_X4, 0x0030},/* Pex module, PEX0 x4, PEX1 x1*/
+	{MV_PEX_ROOT_COMPLEX, 0x11111111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4,PEX_BUS_MODE_X4,PEX_BUS_MODE_X4, 0x0030},/* Pex module, PEX0 x1, PEX1 x4*/
+	{MV_PEX_ROOT_COMPLEX, 0x11111111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4,PEX_BUS_MODE_X4,PEX_BUS_MODE_X4, 0x0030},/* Pex module, PEX0 x4, PEX1 x4*/
 };
 
 /*----------------------------------------------*/
 /*----------------------------------------------*/
 MV_BIN_SERDES_CFG rd78460nasInfoBoardSerdesConfigValue[] = {
-	{MV_PEX_ROOT_COMPLEX, 0x00223001, 0x11111111, {PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4}, 0x0030, db88f78XX0BoardSerdesChangeMphy},	/* Default */
-	{MV_PEX_ROOT_COMPLEX, 0x33320201, 0x11111111, {PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4}, 0x00f4, db88f78XX0BoardSerdesChangeMphy},	/* Switch module */
+	{MV_PEX_ROOT_COMPLEX, 0x00223001, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x0030},	/* Default */
+	{MV_PEX_ROOT_COMPLEX, 0x33320201, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00f4},	/* Switch module */
 };
 
 /*----------------------------------------------*/
 /*----------------------------------------------*/
 MV_BIN_SERDES_CFG rd78460InfoBoardSerdesConfigValue[] = {
-	{MV_PEX_ROOT_COMPLEX, 0x22321111, 0x00000000, {PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED}, 0x0010, db88f78XX0BoardSerdesChangeMphy},	/* CPU0 */
-	{MV_PEX_ROOT_COMPLEX, 0x00321111, 0x00000000, {PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED}, 0x0010, db88f78XX0BoardSerdesChangeMphy}	/* CPU1-3 */
-};
-
-/*----------------------------------------------*/
-/*----------------------------------------------*/
-MV_BIN_SERDES_CFG rd78460ServerRev2InfoBoardSerdesConfigValue[] = {
-	{MV_PEX_ROOT_COMPLEX, 0x00321111, 0x00000000, {PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED}, 0x0010, db88f78XX0BoardSerdesChangeMphy},	/* CPU0 */
-	{MV_PEX_ROOT_COMPLEX, 0x00321111, 0x00000000, {PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED}, 0x0010, db88f78XX0BoardSerdesChangeMphy}	/* CPU1-3 */
+	{MV_PEX_ROOT_COMPLEX, 0x22321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x0010},	/* CPU0 */
+	{MV_PEX_ROOT_COMPLEX, 0x00321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x0010}	/* CPU1-3 */
 };
 
 /*----------------------------------------------*/
 /*----------------------------------------------*/
 MV_BIN_SERDES_CFG db78X60pcacInfoBoardSerdesConfigValue[] = {
-	 {MV_PEX_END_POINT, 0x22321111, 0x00000000, {PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED}, 0x0010, db88f78XX0BoardSerdesChangeMphy} /* Default */
+	 {MV_PEX_END_POINT, 0x22321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x0010} /* Default */
 };
 
 /*----------------------------------------------*/
 /*----------------------------------------------*/
 MV_BIN_SERDES_CFG db78X60pcacrev2InfoBoardSerdesConfigValue[] = {
-	 {MV_PEX_END_POINT, 0x23321111, 0x00000000, {PEX_BUS_MODE_X4, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED}, 0x0010, db88f78XX0BoardSerdesChangeMphy} /* Default */
+	 {MV_PEX_END_POINT, 0x23321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x0010} /* Default */
 };
 
 /*----------------------------------------------*/
 /*----------------------------------------------*/
 MV_BIN_SERDES_CFG fpga88f78XX0InfoBoardSerdesConfigValue[] = {
-	{MV_PEX_ROOT_COMPLEX, 0x00000000, 0x00000000, {PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED}, 0x0000, db88f78XX0BoardSerdesChangeMphy} /* No PEX in FPGA */
+	{MV_PEX_ROOT_COMPLEX, 0x00000000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x0000} /* No PEX in FPGA */
 };
 
 /*----------------------------------------------*/
 /*----------------------------------------------*/
 MV_BIN_SERDES_CFG db78X60amcInfoBoardSerdesConfigValue[] = {
-	 {MV_PEX_ROOT_COMPLEX, 0x23111111, 0x11111111, {PEX_BUS_MODE_X4, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4}, 0x0030, db88f78XX0BoardSerdesChangeMphy} /* Default */
+	 {MV_PEX_ROOT_COMPLEX, 0x23111111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x0030} /* Default */
 };
 
 
@@ -153,29 +130,38 @@ MV_BIN_SERDES_CFG db78X60amcInfoBoardSerdesConfigValue[] = {
 /****************************/
 
 MV_BIN_SERDES_CFG rd78460customerInfoBoardSerdesConfigValue[] = {
-	{MV_PEX_ROOT_COMPLEX, 0x00223001, 0x11111111, {PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4}, 0x00000030, db88f78XX0BoardSerdesChangeMphy},	/* Default */
-	{MV_PEX_ROOT_COMPLEX, 0x33320201, 0x11111111, {PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4}, 0x00000030, db88f78XX0BoardSerdesChangeMphy},	/* Switch module */
+	{MV_PEX_ROOT_COMPLEX, 0x00223001, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
+	{MV_PEX_ROOT_COMPLEX, 0x33320201, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Switch module */
 };
-/*----------------------------------------------*/
 
-MV_BIN_SERDES_CFG rd78460AXP_GP_InfoBoardSerdesConfigValue[] = {
-	 {MV_PEX_ROOT_COMPLEX, 0x00223001, 0x11111111, {PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4}, 0x0030, db88f78XX0BoardSerdesChangeMphy} /* Default */
-};
 /*----------------------------------------------*/
 /*----------------------------------------------*/
 MV_BIN_SERDES_CFG* SerdesInfoTbl[] = {
-	db88f78XX0InfoBoardSerdesConfigValue,
-	rd78460InfoBoardSerdesConfigValue,
-	db78X60pcacInfoBoardSerdesConfigValue,
-	fpga88f78XX0InfoBoardSerdesConfigValue,
-	db88f78XX0rev2InfoBoardSerdesConfigValue,
-	rd78460nasInfoBoardSerdesConfigValue,
-	db78X60amcInfoBoardSerdesConfigValue,
-	db78X60pcacrev2InfoBoardSerdesConfigValue,
-	rd78460ServerRev2InfoBoardSerdesConfigValue,
-	rd78460AXP_GP_InfoBoardSerdesConfigValue,
-	rd78460customerInfoBoardSerdesConfigValue
+	&db88f78XX0InfoBoardSerdesConfigValue,
+	&rd78460InfoBoardSerdesConfigValue,
+	&db78X60pcacInfoBoardSerdesConfigValue,
+	&fpga88f78XX0InfoBoardSerdesConfigValue,
+	&db88f78XX0rev2InfoBoardSerdesConfigValue,
+	&rd78460nasInfoBoardSerdesConfigValue,
+	&db78X60amcInfoBoardSerdesConfigValue,
+	&db78X60pcacrev2InfoBoardSerdesConfigValue,
+	&rd78460customerInfoBoardSerdesConfigValue
 };
+#include "bin_hdr_twsi.h"
+
+MV_BOARD_BIN_TWSI_INFO SatInfoTbl[] = {
+	{1,0x4D, ADDR7_BIT},//db88f78XX0InfoBoardSatTWSIValue
+	{0,0,0},//rd78460InfoBoardSatTWSIValue,
+	{1,0x4D, ADDR7_BIT},//db78X60pcacInfoBoardSatTWSIValue,
+	{1,0x4D, ADDR7_BIT},//fpga88f78XX0InfoBoardSatTWSIValue,
+	{1,0x4D, ADDR7_BIT},//db88f78XX0rev2InfoBoardSatTWSIValue,
+	{0,0,0},//rd78460nasInfoBoardSatTWSIValue,
+	{0,0,0},//db78X60amcInfoBoardSatTWSIValue,
+	{0,0,0}//db78X60pcacrev2InfoBoardSatTWSIValue
+};
+
+
+
 
 
 

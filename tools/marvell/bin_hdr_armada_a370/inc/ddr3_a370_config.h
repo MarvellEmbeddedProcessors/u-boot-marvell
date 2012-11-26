@@ -76,14 +76,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #undef DQS_CLK_ALIGNED
 #define DDR3_TRAINING_DEBUG						FALSE
 #undef A370_A0
-#define REG_DIMM_SKIP_WL						TRUE
 
 /* Marvell boards specific configurations */
 #if defined(DB_88F6710_PCAC)
 #define STATIC_TRAINING
 #endif
 
-#if (defined(DB_88F6710) || defined(RD_88F6710)) && !defined(A370_A0)
+#if defined(DB_88F6710) && !defined(A370_A0)
 #define AUTO_DETECTION_SUPPORT
 #define SPD_SUPPORT
 #define DRAM_2T									0x0

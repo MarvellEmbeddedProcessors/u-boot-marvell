@@ -72,10 +72,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #define DEBUG_TWSI_C(s,d,l)        	DEBUG_TWSI_S(s); DEBUG_TWSI_D(d,l); DEBUG_TWSI_S("\n");
 
-#ifdef	NOT_USE_UART
-#undef 	MV_DEBUG_TWSI
-#endif
-
 #ifdef 	MV_DEBUG_TWSI
 #define DEBUG_TWSI_S(s)				putstring(s);
 #define DEBUG_TWSI_D(d,l)			putdata(d,l);
@@ -134,7 +130,7 @@ static MV_BOOL twsiTimeoutChk(MV_U32 timeout, const MV_8 *pString)
 MV_STATUS mvTwsiStartBitSet(MV_U8 chanNum)
 {
 	MV_BOOL isIntFlag = MV_FALSE;
-	MV_U32 timeout, temp;
+	MV_U32 timeout, temp, add;
 
 	/* DB(// mvOsPrintf("TWSI: mvTwsiStartBitSet \n"));	*/
 	/* check Int flag */
@@ -143,8 +139,8 @@ MV_STATUS mvTwsiStartBitSet(MV_U8 chanNum)
 	/* set start Bit */
 	temp = MV_REG_READ(TWSI_CONTROL_REG(chanNum));
 	
-//	add = TWSI_CONTROL_REG(chanNum);
-	MV_REG_WRITE(TWSI_CONTROL_REG(chanNum), temp | TWSI_CONTROL_START_BIT);
+	add = TWSI_CONTROL_REG(chanNum);
+	MV_REG_WRITE(add, temp | TWSI_CONTROL_START_BIT);
 
 	/* in case that the int flag was set before i.e. repeated start bit */
 	if (isIntFlag) {
@@ -199,12 +195,12 @@ MV_STATUS mvTwsiStartBitSet(MV_U8 chanNum)
 *******************************************************************************/
 MV_STATUS mvTwsiStopBitSet(MV_U8 chanNum)
 {
-	MV_U32 timeout, temp;
+	MV_U32 timeout, temp, add;
 
 	/* Generate stop bit */
 	temp = MV_REG_READ(TWSI_CONTROL_REG(chanNum));
 	
-//	add = TWSI_CONTROL_REG(chanNum);
+	add = TWSI_CONTROL_REG(chanNum);
 	MV_REG_WRITE(TWSI_CONTROL_REG(chanNum), temp | TWSI_CONTROL_STOP_BIT);
 
 	twsiIntFlgClr(chanNum);
@@ -352,7 +348,7 @@ static MV_VOID twsiAckBitSet(MV_U8 chanNum)
 MV_U32 mvTwsiInit(MV_U8 chanNum, MV_HZ frequancy, MV_U32 Tclk, MV_TWSI_ADDR *pTwsiAddr, MV_BOOL generalCallEnable)
 {
 	MV_U32 n, m, freq, margin, minMargin = 0xffffffff;
-	MV_U32 power;
+	MV_U32 power,add;
 	MV_U32 actualFreq = 0, actualN = 0, actualM = 0, val;
 
 #ifdef MV88F67XX
@@ -387,11 +383,11 @@ MV_U32 mvTwsiInit(MV_U8 chanNum, MV_HZ frequancy, MV_U32 Tclk, MV_TWSI_ADDR *pTw
 
 	/* Set the baud rate */
 	val = ((actualM << TWSI_BAUD_RATE_M_OFFS) | actualN << TWSI_BAUD_RATE_N_OFFS);
-//	add = TWSI_STATUS_BAUDE_RATE_REG(chanNum);
+	add = TWSI_STATUS_BAUDE_RATE_REG(chanNum);
 	MV_REG_WRITE(TWSI_STATUS_BAUDE_RATE_REG(chanNum), val);
 
 	/* Enable the TWSI and slave */
-//	add = TWSI_CONTROL_REG(chanNum);
+	add = TWSI_CONTROL_REG(chanNum);
 	MV_REG_WRITE(TWSI_CONTROL_REG(chanNum), TWSI_CONTROL_ENA | TWSI_CONTROL_ACK);
 
 	/* set the TWSI slave address */
@@ -404,20 +400,20 @@ MV_U32 mvTwsiInit(MV_U8 chanNum, MV_HZ frequancy, MV_U32 Tclk, MV_TWSI_ADDR *pTw
 		if (generalCallEnable)
 			val |= TWSI_SLAVE_ADDR_GCE_ENA;
 		/* write slave address */
-//		add = TWSI_SLAVE_ADDR_REG(chanNum);
+		add = TWSI_SLAVE_ADDR_REG(chanNum);
 		MV_REG_WRITE(TWSI_SLAVE_ADDR_REG(chanNum), val);
 
 		/* writing the 8 least significant bits of the 10 bit address */
 		val = (pTwsiAddr->address << TWSI_EXTENDED_SLAVE_OFFS) & TWSI_EXTENDED_SLAVE_MASK;
-//		add = TWSI_EXTENDED_SLAVE_ADDR_REG(chanNum);
+		add = TWSI_EXTENDED_SLAVE_ADDR_REG(chanNum);
 		MV_REG_WRITE(TWSI_EXTENDED_SLAVE_ADDR_REG(chanNum), val);
 	} else {		/*7 bit address */
 
 		/* set the 7 Bits address */
-//		add = TWSI_EXTENDED_SLAVE_ADDR_REG(chanNum);
+		add = TWSI_EXTENDED_SLAVE_ADDR_REG(chanNum);
 		MV_REG_WRITE(TWSI_EXTENDED_SLAVE_ADDR_REG(chanNum), 0x0);
 		val = (pTwsiAddr->address << TWSI_SLAVE_ADDR_7BIT_OFFS) & TWSI_SLAVE_ADDR_7BIT_MASK;
-//		add = TWSI_SLAVE_ADDR_REG(chanNum);
+		add = TWSI_SLAVE_ADDR_REG(chanNum);
 		MV_REG_WRITE(TWSI_SLAVE_ADDR_REG(chanNum), val);
 	}
 
@@ -476,8 +472,9 @@ static MV_U32 twsiStsGet(MV_U8 chanNum)
 *******************************************************************************/
 static MV_VOID twsiReset(MV_U8 chanNum)
 {
-
+	MV_U32 add;
 	/* Reset the TWSI logic */
+	add = TWSI_SOFT_RESET_REG(chanNum);
 	MV_REG_WRITE(TWSI_SOFT_RESET_REG(chanNum), 0);
 
 	/* wait for 2 mili sec */

@@ -81,7 +81,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #undef DQS_CLK_ALIGNED
 #undef MIXED_DIMM_STATIC
 #define DDR3_TRAINING_DEBUG						FALSE
-#define REG_DIMM_SKIP_WL						TRUE
 
 /* Marvell boards specific configurations */
 #if defined(DB_78X60_PCAC)
@@ -90,7 +89,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 #if defined(DB_78X60_AMC)
 #undef SPD_SUPPORT
-#undef  DRAM_ECC
 #define DRAM_ECC								TRUE
 #endif
 
@@ -110,32 +108,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define U_BOOT_SCRUB_SIZE						0x1000000
 #endif
 
-/* Registered DIMM Support - In case registered DIMM is attached, please supply the following values:
-(see JEDEC - JESD82-29A "Definition of the SSTE32882 Registering Clock Driver with Parity and Quad Chip
-Selects for DDR3/DDR3L/DDR3U RDIMM 1.5 V/1.35 V/1.25 V Applications") */
-/* RC0: Global Features Control Word */
-/* RC1: Clock Driver Enable Control Word */
-/* RC2: Timing Control Word */
-/* RC3-RC5 - taken from SPD */
-/* RC8: Additional IBT Setting Control Word */
-/* RC9: Power Saving Settings Control Word */
-/* RC10: Encoding for RDIMM Operating Speed */
-/* RC11: Operating Voltage VDD and VREFCA Control Word */
-#define RDIMM_RC0								0
-#define RDIMM_RC1								0
-#define RDIMM_RC2								0
-#define RDIMM_RC8								0
-#define RDIMM_RC9								0
-#define RDIMM_RC10								0x2
-#define RDIMM_RC11								0
-
 #if defined(MIXED_DIMM_STATIC) || !defined (SPD_SUPPORT)
 #define DUNIT_STATIC
 #endif
 
 #ifdef SPD_SUPPORT
 /* AUTO_DETECTION_SUPPORT - relevant ONLY for Marvell DB boards. enables I2C auto detection different options */
-#if defined(DB_88F78X60) || defined(DB_88F78X60_REV2) || defined(DB_784MP_GP)
+#if defined(DB_88F78X60) || defined(DB_88F78X60_REV2)
 #define AUTO_DETECTION_SUPPORT
 #endif
 #endif

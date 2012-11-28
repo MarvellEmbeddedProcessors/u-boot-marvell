@@ -207,9 +207,7 @@ static int mvUsbPhy40nmInit(int dev)
 	/*-------------------------------------------------*/
 
 /* BTS #231 - for KW40 only */
-	if ((usbHalData.ctrlModel == MV_6710_DEV_ID) ||
-	    (usbHalData.ctrlModel == MV_6W11_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_6707_DEV_ID)) {
+	if (mvCtrlDevFamilyIdGet(usbHalData.ctrlModel)==MV_67XX) {
 		MV_REG_WRITE(0x50850, 0x20000131);
 		MV_REG_WRITE(0x50890, 0x20000131);
 	}
@@ -825,13 +823,8 @@ MV_STATUS mvUsbHalInit(int dev, MV_BOOL isHost, MV_USB_HAL_DATA *halData)
 		mvUsbPhy65nmNewInit(dev);
 
 /* 	mvUsbPhyKW6500Init(dev); */
-	} else if ((usbHalData.ctrlModel == MV_78130_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_78160_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_6710_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_78230_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_78260_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_78460_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_78000_DEV_ID)) {
+	} else if ((mvCtrlDevFamilyIdGet(usbHalData.ctrlModel)==MV_67XX) ||
+		(mvCtrlDevFamilyIdGet(usbHalData.ctrlModel)==MV_78XX0)) {
 
 		if (mvUsbPhy40nmInit(dev))
 			status = MV_NOT_READY;

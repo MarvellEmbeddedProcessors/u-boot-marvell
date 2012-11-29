@@ -59,10 +59,6 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
 ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
 *******************************************************************************/
 
 #undef MV_DEBUG_INIT_FULL 
@@ -80,6 +76,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static const MV_U8 serdesCfg[][SERDES_LAST_UNIT] = BIN_SERDES_CFG;
 			   
 extern MV_BIN_SERDES_CFG *SerdesInfoTbl[];
+MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff);
+MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum);
 
 /***************************   defined ******************************/
 #define BOARD_INFO(boardId)	boardInfoTbl[boardId - BOARD_ID_BASE]
@@ -97,6 +95,8 @@ extern MV_BIN_SERDES_CFG *SerdesInfoTbl[];
 MV_BOOL PexModule = 0;
 MV_BOOL SwitchModule = 0;
 
+/****************************  Local function *****************************************/
+MV_U16 mvCtrlModelGet(MV_VOID);
 /*********************************************************************/
 MV_U32 mvBoardIdGet(MV_VOID)
 {
@@ -126,20 +126,11 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	}
 #endif
 }
-/*********************************************************************/
-MV_U32 mvBoardTclkGet(MV_VOID)
-{
-	if ((MV_REG_READ(MPP_SAMPLE_AT_RESET(0)) & MSAR_TCLK_MASK) != 0)
-		return MV_BOARD_TCLK_200MHZ;
-	else
-		return MV_BOARD_TCLK_250MHZ;
-}
 /*******************************************************************************
-* mvCtrlRevGet - Get Marvell controller device revision number
+* mvCtrlPexMaxIfGet - Get Marvell controller number of PEX interfaces.
 *
 * DESCRIPTION:
-*       This function returns 8bit describing the device revision as defined
-*       in PCI Express Class Code and Revision ID Register.
+*       This function returns Marvell controller number of PEX interfaces.
 *
 * INPUT:
 *       None.
@@ -148,14 +139,16 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 *       None.
 *
 * RETURN:
-*       8bit desscribing Marvell controller revision number
+*       Marvell controller number of PEX interfaces. If controller
+*		ID is undefined the function returns '0'.
 *
 *******************************************************************************/
-MV_U8 mvCtrlRevGet(MV_VOID)
+MV_U32 mvBoardTclkGet(MV_VOID)
 {
-	MV_U8 revNum;
-	revNum = (MV_U8) MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PCI_CLASS_CODE_AND_REVISION_ID));
-	return ((revNum & PCCRIR_REVID_MASK) >> PCCRIR_REVID_OFFS);
+	if ((MV_REG_READ(MPP_SAMPLE_AT_RESET(0)) & MSAR_TCLK_MASK) != 0)
+		return MV_BOARD_TCLK_200MHZ;
+	else
+		return MV_BOARD_TCLK_250MHZ;
 }
 /*********************************************************************/
 MV_U8 mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum)
@@ -377,6 +370,59 @@ MV_U8 mvBoardCpuFreqGet(MV_VOID)
 	sarMsb = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
 	return (((sarMsb & 0x100000) >> 17) | ((sar & 0xe00000) >> 21));
 }
+MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
+{
+	switch (mvCtrlModelGet()) {
+	case MV_78130_DEV_ID:
+	case MV_6710_DEV_ID:
+	case MV_78230_DEV_ID:
+		return 7;
+
+	case MV_78160_DEV_ID:
+	case MV_78260_DEV_ID:
+	case MV_78460_DEV_ID:
+	case MV_78000_DEV_ID:
+		return MV_PEX_MAX_IF;
+
+	default:
+		return 0;
+	}
+}
+/*******************************************************************************
+* mvCtrlRevGet - Get Marvell controller device revision number
+*
+* DESCRIPTION:
+*       This function returns 8bit describing the device revision as defined
+*       in PCI Express Class Code and Revision ID Register.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       8bit desscribing Marvell controller revision number
+*
+*******************************************************************************/
+MV_U8 mvCtrlRevGet(MV_VOID)
+{
+	MV_U8 revNum;
+#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
+	/* Check pex power state */
+	MV_U32 pexPower;
+	pexPower = mvCtrlPwrClckGet(PEX_UNIT_ID, 0);
+	if (pexPower == MV_FALSE)
+		mvCtrlPwrClckSet(PEX_UNIT_ID, 0, MV_TRUE);
+#endif
+	revNum = (MV_U8) MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PCI_CLASS_CODE_AND_REVISION_ID));
+#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
+	/* Return to power off state */
+	if (pexPower == MV_FALSE)
+		mvCtrlPwrClckSet(PEX_UNIT_ID, 0, MV_FALSE);
+#endif
+	return ((revNum & PCCRIR_REVID_MASK) >> PCCRIR_REVID_OFFS);
+}
 
 /*********************************************************************/
 MV_U32 get_serdesLineCfg(MV_U32 serdesLineNum,MV_BIN_SERDES_CFG *pSerdesInfo) 
@@ -413,6 +459,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	slave.type = ADDR7_BIT;
 	slave.address = 0;
 	mvTwsiInit(0, CONFIG_SYS_I2C_SPEED, CONFIG_SYS_TCLK, &slave, 0);
+
 	if (maxSerdesLines == 0)
 		return MV_OK;
 
@@ -458,10 +505,10 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	/* Check if DRAM is already initialized  */
 	if (MV_REG_READ(REG_BOOTROM_ROUTINE_ADDR) & (1 << REG_BOOTROM_ROUTINE_DRAM_INIT_OFFS)) {
-		DEBUG_INIT_S("High speed PHY - Ver 1.6.0 - 2nd boot - Skip \n");
+		DEBUG_INIT_S("High speed PHY - Ver 2.0.0 - 2nd boot - Skip \n");
 		return MV_OK;
 	}
-	DEBUG_INIT_S("High speed PHY - Ver 1.6.0 (COM-PHY-V20) \n");
+	DEBUG_INIT_S("High speed PHY - Ver 2.0.0 (COM-PHY-V20) \n");
 
 /**********************************************************************************/
 	/*   AVS :  disable AVS for frequency less than 1333*/
@@ -595,11 +642,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	/* Step 5: Activate the RX High Impedance Mode  */
 	DEBUG_INIT_FULL_S("Step 5: Activate the RX High Impedance Mode  \n");
-	if (device_rev == 2) /*   for B0 only */
-		rxHighImpedanceMode=0x8084;
-	else
-		rxHighImpedanceMode=0x8080;
-
+	rxHighImpedanceMode=0x8080;
 	for (serdesLineNum = 0; serdesLineNum < maxSerdesLines; serdesLineNum++) {
 		/* for each serdes lane*/
 		serdesLineCfg = get_serdesLineCfg(serdesLineNum,pSerdesInfo);
@@ -755,10 +798,6 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_PEX]) {
 			pexUnit    = serdesLineNum >> 2;
 			pexLineNum = serdesLineNum % 4;
-
-			/* Needed for PEX_PHY_ACCESS_REG macro */
-			if ((serdesLineNum > 7) && (pSerdesInfo->pexMod[3] == PEX_BUS_MODE_X8))
-				pexUnit = 3; /* lines 8 - 15 are belong to PEX3 in x8 mode */
 
 			if (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_DISABLED)
 				continue;
@@ -1044,6 +1083,8 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 			}
 		}
 	}
+
+
 	/* step 16 [PEX-Only] Training Enable */
 	/*----------------------------------------------*/
 	DEBUG_INIT_FULL_S("Steps 16: [PEX-Only] Training Enable");
@@ -1051,11 +1092,263 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	DEBUG_RD_REG(SOC_CTRL_REG, tmp );
 	tmp &= ~(0x0F);
 	for (pexUnit = 0; pexUnit < mvCtrlPexMaxUnitGet(); pexUnit++) {
+		MV_REG_WRITE(PEX_CAUSE_REG(pexUnit),0);
+		DEBUG_WR_REG(PEX_CAUSE_REG(pexUnit),0);
 		if (pSerdesInfo->pexMod[pexUnit] != PEX_BUS_DISABLED)
 			tmp |= (0x1<<pexUnit);
 	}
 	MV_REG_WRITE(SOC_CTRL_REG, tmp);
 	DEBUG_WR_REG(SOC_CTRL_REG, tmp);
+	/* Step 17: Speed change to target speed and width*/
+	{
+		MV_U32 pexIfNum = mvCtrlPexMaxIfGet();
+		MV_U32 tempReg, tempPexReg;
+		MV_U32 addr;
+		MV_U32 pexIf=0;
+		MV_U32 first_busno, next_busno;
+		MV_U32 maxLinkWidth = 0;
+		MV_U32 negLinkWidth = 0;
+
+		mvOsDelay(150);
+		DEBUG_INIT_FULL_C("step 17: max_if= %d.", pexIfNum,1);
+		next_busno = 0;
+		for (pexIf = 0; pexIf < pexIfNum; pexIf++) {
+
+			pexUnit    = (pexIf<9)? (pexIf >> 2) : 3;
+			DEBUG_INIT_FULL_C("step 17: pexUnit= ", pexUnit,1);
+
+			if (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_DISABLED) {
+				DEBUG_INIT_FULL_C("PEX disabled interface ", pexIf,1);
+				if (pexIf < 8)
+					pexIf += 3;
+				continue;
+			}
+			first_busno = next_busno;
+			if ((pSerdesInfo->pexType == MV_PEX_END_POINT) && (0 == pexIf))
+			{
+				if ((pexIf<8) && (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_MODE_X4))
+				   pexIf += 3;
+				continue;
+			}
+
+			tmp = MV_REG_READ(PEX_DBG_STATUS_REG(pexIf));
+			DEBUG_RD_REG(PEX_DBG_STATUS_REG(pexIf), tmp);
+			if ((tmp & 0x7f) == 0x7E) {
+				next_busno++;
+				tmp = maxLinkWidth = MV_REG_READ(PEX_LINK_CAPABILITIES_REG(pexIf));
+				DEBUG_RD_REG((PEX_LINK_CAPABILITIES_REG(pexIf)),tmp);
+				maxLinkWidth = ((maxLinkWidth >> 4) & 0x3F);
+				negLinkWidth = MV_REG_READ(PEX_LINK_CTRL_STATUS_REG(pexIf));
+				DEBUG_RD_REG((PEX_LINK_CTRL_STATUS_REG(pexIf)),negLinkWidth);
+				negLinkWidth =  ((negLinkWidth >> 20) & 0x3F);
+				if (maxLinkWidth >  negLinkWidth) {
+					tmp &= ~(0x3F << 4);
+					tmp |= (negLinkWidth << 4);
+					MV_REG_WRITE(PEX_LINK_CAPABILITIES_REG(pexIf),tmp);
+					DEBUG_WR_REG((PEX_LINK_CAPABILITIES_REG(pexIf)), tmp);
+					mvOsUDelay(1000);/* wait 1ms before reading  capability for speed */
+					DEBUG_INIT_S("PEX"); DEBUG_INIT_D(pexIf,1);
+					DEBUG_INIT_C(": change width to X", negLinkWidth,1);
+				}
+				tempPexReg = MV_REG_READ((PEX_CFG_DIRECT_ACCESS(pexIf, PEX_LINK_CAPABILITY_REG)));
+				DEBUG_RD_REG((PEX_CFG_DIRECT_ACCESS(pexIf, PEX_LINK_CAPABILITY_REG)),tempPexReg );
+				tempPexReg &= (0xF);
+				if (tempPexReg == 0x2) {
+					tempReg = (MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_LINK_CTRL_STAT_REG)) & 0xF0000) >> 16;
+					DEBUG_RD_REG(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_LINK_CTRL_STAT_REG),tempPexReg );
+					/* check if the link established is GEN1 */
+					if (tempReg == 0x1) {
+						mvPexLocalBusNumSet(pexIf, first_busno);
+
+						DEBUG_INIT_FULL_S("** Link is Gen1, check the EP capability \n");
+						/* link is Gen1, check the EP capability */
+						addr = mvPexConfigRead(pexIf, first_busno, 1, 0, 0x34) & 0xFF;
+						DEBUG_INIT_FULL_C("mvPexConfigRead: return addr=0x%x", addr,4);
+						if (addr == 0xff) {
+							DEBUG_INIT_FULL_C("mvPexConfigRead: return 0xff -->PEX (%d): Detected No Link.", pexIf,1);
+							continue;
+						}
+						while ((mvPexConfigRead(pexIf, first_busno, 1, 0, addr) & 0xFF) != 0x10) {
+							addr = (mvPexConfigRead(pexIf, first_busno, 1, 0, addr) & 0xFF00) >> 8;
+						}
+						if ((mvPexConfigRead(pexIf, first_busno, 1, 0, addr + 0xC) & 0xF) == 0x2) {
+							tmp = MV_REG_READ(PEX_LINK_CTRL_STATUS2_REG(pexIf));
+							DEBUG_RD_REG(PEX_LINK_CTRL_STATUS2_REG(pexIf),tmp );
+							tmp &=~(BIT0 | BIT1);
+							tmp |= BIT1;
+							MV_REG_WRITE(PEX_LINK_CTRL_STATUS2_REG(pexIf),tmp);
+							DEBUG_WR_REG(PEX_LINK_CTRL_STATUS2_REG(pexIf),tmp);
+
+							tmp = MV_REG_READ(PEX_CTRL_REG(pexIf));
+							DEBUG_RD_REG(PEX_CTRL_REG(pexIf), tmp );
+							tmp |= BIT10;
+							MV_REG_WRITE(PEX_CTRL_REG(pexIf),tmp);
+							DEBUG_WR_REG(PEX_CTRL_REG(pexIf),tmp);
+							mvOsUDelay(10000);/* We need to wait 10ms before reading the PEX_DBG_STATUS_REG in order not to read the status of the former state*/
+							DEBUG_INIT_FULL_S("Gen2 client!\n");
+							}else {
+								DEBUG_INIT_FULL_S("GEN1 client!\n");
+							}
+					}
+				}
+			}else{
+				DEBUG_INIT_S("PEX"); DEBUG_INIT_D(pexIf,1);
+				DEBUG_INIT_S(" : Detected No Link. Status Reg(0x");
+				DEBUG_INIT_D(PEX_DBG_STATUS_REG(pexIf),8);
+				DEBUG_INIT_C(") = 0x", tmp,8);
+			}
+			if ((pexIf<8) && (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_MODE_X4))
+			   pexIf += 3;
+		}
+	}
+	return MV_OK;
+}
+/* PEX configuration space read write */
+
+/*******************************************************************************
+* mvPexConfigRead - Read from configuration space
+*
+* DESCRIPTION:
+*       This function performs a 32 bit read from PEX configuration space.
+*       It supports both type 0 and type 1 of Configuration Transactions
+*       (local and over bridge). In order to read from local bus segment, use
+*       bus number retrieved from mvPexLocalBusNumGet(). Other bus numbers
+*       will result configuration transaction of type 1 (over bridge).
+*
+* INPUT:
+*       pexIf   - PEX interface number.
+*       bus     - PEX segment bus number.
+*       dev     - PEX device number.
+*       func    - Function number.
+*       regOffs - Register offset.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit register data, 0xffffffff on error
+*
+*******************************************************************************/
+MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff)
+{
+	MV_U32 pexData = 0;
+	MV_U32 localDev, localBus;
+	MV_U32 pexStatus;
+
+	if (pexIf >= MV_PEX_MAX_IF)
+		return 0xFFFFFFFF;
+
+	if (dev >= MAX_PEX_DEVICES) {
+		DEBUG_INIT_C("mvPexConfigRead: ERR. device number illigal %d", dev,1);
+		return 0xFFFFFFFF;
+	}
+
+	if (func >= MAX_PEX_FUNCS) {
+		DEBUG_INIT_C("mvPexConfigRead: ERR. function num illigal %d", func,1);
+		return 0xFFFFFFFF;
+	}
+
+	if (bus >= MAX_PEX_BUSSES) {
+		DEBUG_INIT_C("mvPexConfigRead: ERR. bus number illigal %d", bus,1);
+		return MV_ERROR;
+	}
+	pexStatus = MV_REG_READ(PEX_STATUS_REG(pexIf));
+
+	localDev = ((pexStatus & PXSR_PEX_DEV_NUM_MASK) >> PXSR_PEX_DEV_NUM_OFFS);
+	localBus = ((pexStatus & PXSR_PEX_BUS_NUM_MASK) >> PXSR_PEX_BUS_NUM_OFFS);
+
+	/* Speed up the process. In case on no link, return MV_ERROR */
+	if ((dev != localDev) || (bus != localBus)) {
+		pexData = MV_REG_READ(PEX_STATUS_REG(pexIf));
+
+		if ((pexData & PXSR_DL_DOWN))
+			return MV_ERROR;
+	}
+
+	/* in PCI Express we have only one device number */
+	/* and this number is the first number we encounter
+	   else that the localDev */
+	/* spec pex define return on config read/write on any device */
+	if (bus == localBus) {
+		if (localDev == 0) {
+			/* if local dev is 0 then the first number we encounter
+			   after 0 is 1 */
+			if ((dev != 1) && (dev != localDev))
+				return MV_ERROR;
+		} else {
+			/* if local dev is not 0 then the first number we encounter
+			   is 0 */
+
+			if ((dev != 0) && (dev != localDev))
+				return MV_ERROR;
+		}
+	}
+	/* Creating PEX address to be passed */
+	pexData = (bus << PXCAR_BUS_NUM_OFFS);
+	pexData |= (dev << PXCAR_DEVICE_NUM_OFFS);
+	pexData |= (func << PXCAR_FUNC_NUM_OFFS);
+	pexData |= (regOff & PXCAR_REG_NUM_MASK);	/* lgacy register space */
+	/* extended register space */
+	pexData |= (((regOff & PXCAR_REAL_EXT_REG_NUM_MASK) >>
+		     PXCAR_REAL_EXT_REG_NUM_OFFS) << PXCAR_EXT_REG_NUM_OFFS);
+
+	pexData |= PXCAR_CONFIG_EN;
+
+	/* Write the address to the PEX configuration address register */
+	MV_REG_WRITE(PEX_CFG_ADDR_REG(pexIf), pexData);
+
+	/* In order to let the PEX controller absorbed the address of the read  */
+	/* transaction we perform a validity check that the address was written */
+	if (pexData != MV_REG_READ(PEX_CFG_ADDR_REG(pexIf)))
+		return MV_ERROR;
+
+	/* cleaning Master Abort */
+	MV_REG_BIT_SET(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_STATUS_AND_COMMAND), PXSAC_MABORT);
+		/* Read the Data returned in the PEX Data register */
+	pexData = MV_REG_READ(PEX_CFG_DATA_REG(pexIf));
+
+	DEBUG_INIT_FULL_C("mvPexConfigRead: got : %x ", pexData,4);
+
+	return pexData;
+
+}
+
+/*******************************************************************************
+* mvPexLocalBusNumSet - Set PEX interface local bus number.
+*
+* DESCRIPTION:
+*       This function sets given PEX interface its local bus number.
+*       Note: In case the PEX interface is PEX-X, the information is read-only.
+*
+* INPUT:
+*       pexIf  - PEX interface number.
+*       busNum - Bus number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_NOT_ALLOWED in case PEX interface is PEX-X.
+*		MV_BAD_PARAM on bad parameters ,
+*       otherwise MV_OK
+*
+*******************************************************************************/
+MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum)
+{
+	MV_U32 pexStatus;
+
+	if (busNum >= MAX_PEX_BUSSES) {
+		DEBUG_INIT_C("mvPexLocalBusNumSet: ERR. bus number illigal %d\n", busNum,4);
+		return MV_ERROR;
+	}
+
+	pexStatus = MV_REG_READ(PEX_STATUS_REG(pexIf));
+
+	pexStatus &= ~PXSR_PEX_BUS_NUM_MASK;
+
+	pexStatus |= (busNum << PXSR_PEX_BUS_NUM_OFFS) & PXSR_PEX_BUS_NUM_MASK;
+
+	MV_REG_WRITE(PEX_STATUS_REG(pexIf), pexStatus);
 
 	return MV_OK;
 }

@@ -297,8 +297,6 @@ typedef struct _boardInfo {
 	MV_BOARD_MODULE_TYPE_INFO *pBoardModTypeValue;
 	MV_U8 numBoardMppConfigValue;
 	MV_BOARD_MPP_INFO *pBoardMppConfigValue;
-	MV_U8 numBoardSerdesConfigValue;
-	MV_SERDES_CFG *pBoardSerdesConfigValue;
 	MV_U32 intsGppMaskLow;
 	MV_U32 intsGppMaskMid;
 	MV_U32 intsGppMaskHigh;
@@ -441,9 +439,6 @@ MV_STATUS mvBoardTwsiMuxChannelSet(MV_U8 muxChNum);
 MV_STATUS mvBoardTwsiReadByteThruMux(MV_U8 muxChNum, MV_U8 chNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *data);
 MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum);
 MV_VOID mvBoardSerdesZ1ASupport(void);
-MV_BOOL mvBoardIsSerdesConfigurationEnabled(void);
-MV_STATUS  mvBoardSerdesConfigurationEnableSet(MV_BOOL enableSerdesconfig);
-MV_SERDES_CFG *mvBoardSerdesCfgGet(void);
 MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void);
 MV_STATUS mvBoardConfIdSet(MV_U16 conf);
 MV_U16 mvBoardPexModeGet(MV_VOID);

@@ -227,9 +227,46 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /********************************************/
 /* PCI Express Control and Status Registers */
 /********************************************/
+#define MAX_PEX_DEVICES         32
+#define MAX_PEX_FUNCS           8
+#define MAX_PEX_BUSSES          256
+
+#define PXSR_PEX_BUS_NUM_OFFS			8	/* Bus Number Indication */
+#define PXSR_PEX_BUS_NUM_MASK			(0xff << PXSR_PEX_BUS_NUM_OFFS)
+
+#define PXSR_PEX_DEV_NUM_OFFS			16	/* Device Number Indication */
+#define PXSR_PEX_DEV_NUM_MASK			(0x1f << PXSR_PEX_DEV_NUM_OFFS)
+
+#define PXSR_DL_DOWN				BIT0	/* DL_Down indication. */
+#define PXCAR_CONFIG_EN			BIT31
+#define PEX_STATUS_AND_COMMAND						0x004
+#define PXSAC_MABORT			BIT29	/* Recieved Master Abort        */
+
+/* PCI Express Configuration Address Register */
+/* PEX_CFG_ADDR_REG (PXCAR) */
+#define PXCAR_REG_NUM_OFFS		2
+#define PXCAR_REG_NUM_MAX		0x3F
+#define PXCAR_REG_NUM_MASK		(PXCAR_REG_NUM_MAX << PXCAR_REG_NUM_OFFS)
+#define PXCAR_FUNC_NUM_OFFS		8
+#define PXCAR_FUNC_NUM_MAX		0x7
+#define PXCAR_FUNC_NUM_MASK		(PXCAR_FUNC_NUM_MAX << PXCAR_FUNC_NUM_OFFS)
+#define PXCAR_DEVICE_NUM_OFFS		11
+#define PXCAR_DEVICE_NUM_MAX		0x1F
+#define PXCAR_DEVICE_NUM_MASK		(PXCAR_DEVICE_NUM_MAX << PXCAR_DEVICE_NUM_OFFS)
+#define PXCAR_BUS_NUM_OFFS		16
+#define PXCAR_BUS_NUM_MAX		0xFF
+#define PXCAR_BUS_NUM_MASK		(PXCAR_BUS_NUM_MAX << PXCAR_BUS_NUM_OFFS)
+#define PXCAR_EXT_REG_NUM_OFFS		24
+#define PXCAR_EXT_REG_NUM_MAX		0xF
+
+#define PXCAR_REAL_EXT_REG_NUM_OFFS     8
+#define PXCAR_REAL_EXT_REG_NUM_MASK     (0xF << PXCAR_REAL_EXT_REG_NUM_OFFS)
+
+
 #define PEX_CAPABILITIES_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x60)
 #define PEX_LINK_CAPABILITIES_REG(pexIf)	((MV_PEX_IF_REGS_BASE(pexIf)) + 0x6C)
 #define PEX_LINK_CTRL_STATUS_REG(pexIf) 	((MV_PEX_IF_REGS_BASE(pexIf)) + 0x70)
+#define PEX_LINK_CTRL_STATUS2_REG(pexIf) 	((MV_PEX_IF_REGS_BASE(pexIf)) + 0x90)
 #define PEX_CTRL_REG(pexIf)					((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A00)
 #define PEX_STATUS_REG(pexIf)				((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A04)
 #define PEX_COMPLT_TMEOUT_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A10)
@@ -245,5 +282,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PXLCSR_NEG_LNK_GEN_MASK 		(0xf << PXLCSR_NEG_LNK_GEN_OFFS)
 #define PXLCSR_NEG_LNK_GEN_1_1			(0x1 << PXLCSR_NEG_LNK_GEN_OFFS)
 #define PXLCSR_NEG_LNK_GEN_2_0			(0x2 << PXLCSR_NEG_LNK_GEN_OFFS)
+
+#define PEX_CFG_ADDR_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x18F8)
+#define PEX_CFG_DATA_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x18FC)
+#define PEX_CAUSE_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1900)
+
+
+
+#define PEX_CAPABILITY_REG						0x60
+#define PEX_DEV_CAPABILITY_REG						0x64
+#define PEX_DEV_CTRL_STAT_REG						0x68
+#define PEX_LINK_CAPABILITY_REG						0x6C
+#define PEX_LINK_CTRL_STAT_REG						0x70
+#define PEX_LINK_CTRL_STAT_2_REG					0x90
+
+
 #endif /* __INCmvBHboardEnvSpech */
 

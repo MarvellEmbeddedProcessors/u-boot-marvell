@@ -155,8 +155,8 @@ MV_U32 ddr3Init(void)
 
 	mvUartInit();
 	ddr3PrintVersion();
-	DEBUG_INIT_S("0 \n");
-	/* Lib version 3.0 */
+	DEBUG_INIT_S("0\n");
+	/* Lib version 3.3 */
 
 	uiFabOpt = ddr3GetFabOpt();
 
@@ -266,6 +266,28 @@ MV_U32 ddr3Init(void)
 		MV_REG_WRITE(REG_DRAM_AXI_CTRL_ADDR, 0x00000101); 	/* 0x14A8 - AXI Control Register */
 		MV_REG_WRITE(REG_CDI_CONFIG_ADDR, 0x00000007);
 	}
+
+#if defined(MV88F78X60)
+	/* DLB Enable */
+	if (mvCtrlRevGet() == MV_78XX0_B0_REV)
+		MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0xc19e);
+	else
+		MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
+	MV_REG_WRITE(DLB_AGING_REGISTER , 0x0f7f007f);
+	MV_REG_WRITE(DLB_EVICTION_CONTROL_REG, 0x0);
+	MV_REG_WRITE(DLB_EVICTION_TIMERS_REGISTER_REG, 0x00FF3C1F);
+
+	MV_REG_WRITE(MBUS_UNITS_PRIORITY_CONTROL_REG, 0x55555555);
+	MV_REG_WRITE(FABRIC_UNITS_PRIORITY_CONTROL_REG , 0xAA);
+	MV_REG_WRITE(MBUS_UNITS_PREFETCH_CONTROL_REG, 0xffff);
+	MV_REG_WRITE(FABRIC_UNITS_PREFETCH_CONTROL_REG, 0xf0f);
+
+	if (mvCtrlRevGet() == MV_78XX0_B0_REV) {
+		uiReg = MV_REG_READ(REG_STATIC_DRAM_DLB_CONTROL);
+		uiReg |= DLB_ENABLE;
+		MV_REG_WRITE(REG_STATIC_DRAM_DLB_CONTROL, uiReg);
+	}
+#endif
 
 	/************************************************************************************/
 	/* Stage 2 - Training Values Setup 													*/

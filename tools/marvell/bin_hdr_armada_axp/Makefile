@@ -99,7 +99,7 @@ endif
 PARAMSFILE = params
 LDSCRIPT_phy   = linker_phy.scr
 LDSCRIPT_ddr   = linker_ddr.scr
-LDSCRIPT_uart_ddr   = linker_uart_ddr.scr
+LDSCRIPT_uart_ddr = linker_uart_ddr.scr
 
 DRAMREGS   = ./dramregs.txt
 
@@ -202,4 +202,7 @@ $(LDSCRIPT_uart_ddr): setparams $(TGT_phy).uart.bin  $(LDSCRIPT_phy)
 .PHONY: clean
 
 clean:
-	$(RM) *.raw *.elf *.srec *.dis *.bin  *.uart.bin *.uart.elf ./src/*.o  $(LDSCRIPT) setparams
+	$(RM) *.raw *.elf *.srec *.dis *.bin *.scr *.uart.bin *.uart.elf $(LDSCRIPT) setparams ./src_util/*.o \
+	./src_ddr/*.elf ./src_ddr/*.srec ./src_ddr/*.dis ./src_ddr/*.bin ./src_ddr/*.scr ./src_ddr/*.uart.bin ./src_ddr/*.uart.elf ./src_ddr/*.o \
+	./src_phy/*.elf ./src_phy/*.srec ./src_phy/*.dis ./src_phy/*.bin ./src_phy/*.scr ./src_phy/*.uart.bin ./src_phy/*.uart.elf ./src_phy/*.o 
+

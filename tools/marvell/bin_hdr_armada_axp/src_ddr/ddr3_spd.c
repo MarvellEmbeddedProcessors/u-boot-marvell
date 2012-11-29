@@ -147,6 +147,7 @@ MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr)
 	MV_U32 uiTemp, uiRC;
 	MV_U32 uiTimeBase;
 	MV_TWSI_SLAVE twsiSlave;
+        MV_U8  ucVendorHigh, ucVendorLow;
 
 	if (uiDimmAddr != 0) {
 		memset(ucData, 0, SPD_SIZE*sizeof(MV_U8));
@@ -316,6 +317,10 @@ MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr)
 			pDimmInfo->regDimmRC[uiRC] = (ucData[SPD_RDIMM_RC_BYTE + uiRC/2] & SPD_RDIMM_RC_NIBBLE_MASK);
 			pDimmInfo->regDimmRC[uiRC + 1] = ((ucData[SPD_RDIMM_RC_BYTE + uiRC/2] >> 4) & SPD_RDIMM_RC_NIBBLE_MASK);
 		}
+                ucVendorLow = ucData[66];
+                ucVendorHigh = ucData[65];
+		pDimmInfo->vendor = (ucVendorHigh << 8) + ucVendorLow;
+		DEBUG_INIT_C("DDR3 Training Sequence - Registered DIMM vendor ID 0x", pDimmInfo->vendor, 4);
 
 		pDimmInfo->regDimmRC[0] = RDIMM_RC0;
 		pDimmInfo->regDimmRC[1] = RDIMM_RC1;
@@ -717,7 +722,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 
 /*{0x0000142C}	-	DDR3 Timing Register */
 #if defined(MV88F78X60) && !defined(MV88F78X60_Z1)
-	uiReg = 0x014C2F38;
+	uiReg = 0x1FEC2F38;
 #else
 	if (MV_REG_READ(REG_DDR_IO_ADDR) & (1<<REG_DDR_IO_CLK_RATIO_OFFS))	
 		uiReg = 0x214C2F38;
@@ -725,13 +730,6 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 		uiReg = 0x014C2F38;
 #endif
 	MV_REG_WRITE(0x142C, uiReg);
-
-/*{0x0000147C}	-	DDR ODT Timing (High) Register */
-	if (MV_REG_READ(REG_DDR_IO_ADDR) & (1<<REG_DDR_IO_CLK_RATIO_OFFS))
-		uiReg = 0x0000c671;
-	else
-		uiReg = 0x00006571;
-	MV_REG_WRITE(REG_ODT_TIME_HIGH_ADDR, uiReg);
 
 /*{0x00001484}	- MBus CPU Block Register */
 #ifdef MV88F67XX
@@ -765,6 +763,10 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 
 /*{0x000014C4}	-	DRAM Data and DQS Driving Strenght */
 	MV_REG_WRITE(REG_DRAM_DATA_DQS_DRIVE_STRENGTH_ADDR, 0xB2C35E9);
+
+/*{0x000014CC}	-	DRAM Main Pads Calibration Machine Control Register */
+	uiReg = MV_REG_READ(REG_DRAM_MAIN_PADS_CAL_ADDR);
+//	MV_REG_WRITE(REG_DRAM_MAIN_PADS_CAL_ADDR, uiReg | (1 << 0));
 
 #ifdef DUNIT_SPD
 		uiCsCount = 0;
@@ -893,6 +895,12 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 	uiReg |= (((uiCL + 6) & 0x1F) << 16);
 	MV_REG_WRITE(REG_ODT_TIME_LOW_ADDR, uiReg);
 
+/*{0x0000147C}	-	DDR ODT Timing (High) Register */
+	uiReg = 0x00000071;
+	uiReg |= ((uiCWL - 1) << 8);
+	uiReg |= ((uiCWL + 5) << 12);
+	MV_REG_WRITE(REG_ODT_TIME_HIGH_ADDR, uiReg);
+
 #ifdef DUNIT_SPD
 /*{0x000015E0} - DDR3 Rank Control Register */
 	uiReg = uiCsEna;
@@ -972,33 +980,6 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 				}
 			}
 		}
-	}
-#endif
-
-#if defined(MV88F78X60)
-	/* DLB Enable */
-#if defined(MV88F78X60_Z1)
-	MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
-#else 
-	if (mvCtrlRevGet() == MV_78XX0_B0_REV)
-		MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0xc19e);
-	else
-		MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
-
-#endif
-	MV_REG_WRITE(DLB_AGING_REGISTER , 0x0f7f007f);
-	MV_REG_WRITE(DLB_EVICTION_CONTROL_REG, 0x0);
-	MV_REG_WRITE(DLB_EVICTION_TIMERS_REGISTER_REG, 0x00FF3C1F);
-
-	MV_REG_WRITE(MBUS_UNITS_PRIORITY_CONTROL_REG, 0x55555555);
-	MV_REG_WRITE(FABRIC_UNITS_PRIORITY_CONTROL_REG , 0xAA);
-	MV_REG_WRITE(MBUS_UNITS_PREFETCH_CONTROL_REG, 0xffff);
-	MV_REG_WRITE(FABRIC_UNITS_PREFETCH_CONTROL_REG, 0xf0f);
-
-	if (mvCtrlRevGet() == MV_78XX0_B0_REV) {
-		uiReg = MV_REG_READ(REG_STATIC_DRAM_DLB_CONTROL);
-		uiReg |= DLB_ENABLE;
-		MV_REG_WRITE(REG_STATIC_DRAM_DLB_CONTROL, uiReg);
 	}
 #endif
 

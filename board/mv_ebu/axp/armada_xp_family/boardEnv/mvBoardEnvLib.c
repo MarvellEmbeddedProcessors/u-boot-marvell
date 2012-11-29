@@ -2556,6 +2556,7 @@ MV_VOID mvBoardSerdesZ1ASupport(void)
 {
 	gSerdesZ1AMode = 1;
 }
+
 /*******************************************************************************
 * mvBoardSmiScanModeGet - Get Switch SMI scan mode
 *
@@ -2583,65 +2584,6 @@ MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
 
 	return BOARD_INFO(boardId)->pSwitchInfo[switchIdx].smiScanMode;
 }
-
-/*******************************************************************************
-* mvBoardIsSerdesConfigurationEnabled
-*
-* DESCRIPTION:
-*       Check if Serdes configuration is enabled on this board.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_STATUS - MV_OK, MV_ERROR.
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsSerdesConfigurationEnabled(void)
-{
-
-	 MV_U32 boardId = mvBoardIdGet();
-
-	 if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-                mvOsPrintf("mvBoardIsSerdesConfigurationEnabled:Board unknown.\n");
-                return MV_ERROR;
-        }
-	return (BOARD_INFO(boardId)->pBoardSerdesConfigValue->enableSerdesConfiguration);
-}
-
-
-/*******************************************************************************
-* mvBoardSerdesConfigurationEnableSet
-*
-* DESCRIPTION:
-*	Check if Serdes configuration is enabled on this board.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_STATUS - MV_OK, MV_ERROR.
-*
-*******************************************************************************/
-MV_STATUS  mvBoardSerdesConfigurationEnableSet(MV_BOOL enableSerdesConfiguration)
-{
-
-	MV_U32 boardId = mvBoardIdGet();
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mvBoardIsSerdesConfigurationEnabled:Board unknown.\n");
-		return MV_ERROR;
-        }
-	BOARD_INFO(boardId)->pBoardSerdesConfigValue->enableSerdesConfiguration=enableSerdesConfiguration;
-	return MV_OK;
-}
-
-
 /*******************************************************************************
 * mvBoardSledCpuNumGet - Get board SERDES configuration
 *
@@ -2664,88 +2606,6 @@ MV_U32 mvBoardSledCpuNumGet(MV_VOID)
 
 	return ((reg & 0xF0000) >> 16);
 }
-
-/*******************************************************************************
-* mvBoardMppGet - Get board SERDES configuration
-*
-* DESCRIPTION:
-*
-* INPUT:
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       SERDES configuration structure or NULL on error
-*
-*******************************************************************************/
-MV_SERDES_CFG *mvBoardSerdesCfgGet(void)
-{
-	MV_U32 boardId;
-	MV_U32 serdesCfg = 0; /* default */
-	int pex0 = 1;
-	int pex1 = 1;
-
-	MV_BOOL moduleConnected = mvBoardIsPexModuleConnected();
-	MV_U16 pexMode = mvBoardPexModeGet();
-
-	switch (pexMode) {
-	case 0:
-		pex0 = 1;
-		pex1 = 1;
-		break;
-	case 1:
-		pex0 = 4;
-		pex1 = 1;
-		break;
-	case 2:
-		pex0 = 1;
-		pex1 = 4;
-		break;
-	case 3:
-		pex0 = 4;
-		pex1 = 4;
-		break;
-	}
-
-	boardId = mvBoardIdGet();
-
-	switch (boardId) {
-	case DB_88F78XX0_BP_ID:
-		if (moduleConnected)
-			serdesCfg = 1;
-		/* If backword compatability for Z1A is needed */
-		if (gSerdesZ1AMode)
-			serdesCfg += 2;
-		break;
-	case RD_78460_SERVER_ID:
-	case RD_78460_SERVER_REV2_ID:
-		if (mvBoardSledCpuNumGet() > 0)
-			serdesCfg = 1;
-		break;
-	case DB_88F78XX0_BP_REV2_ID:
-		if ( (!moduleConnected) && (pex0 == 1)) /*if the module is not connected the PEX1 mode is not relevant*/
-			serdesCfg = 0;
-		if ( (moduleConnected) && (pex0 == 1) && (pex1 == 1))
-			serdesCfg = 1;
-		if ( (!moduleConnected) && (pex0 == 4))  /*if the module is not connected the PEX1 mode is not relevant*/
-			serdesCfg = 2;
-		if ( (moduleConnected) && (pex0 == 4) && (pex1 == 1))
-			serdesCfg = 3;
-		if ( (moduleConnected) && (pex0 == 1) && (pex1 == 4))
-			serdesCfg = 4;
-		if ( (moduleConnected) && (pex0 == 4) && (pex1 == 4))
-			serdesCfg = 5;
-		break;
-	case RD_78460_NAS_ID:
-		if (mvBoardIsSwitchModuleConnected())
-			serdesCfg = 1;
-		break;
-	}
-
-	return &BOARD_INFO(boardId)->pBoardSerdesConfigValue[serdesCfg];
-}
-
 
 /*******************************************************************************
 * mvBoardPexInfoGet - Get board PEX Info

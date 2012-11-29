@@ -200,7 +200,10 @@ MV_U32 mvPexModeGet(MV_U32 pexIf, MV_PEX_MODE *pexMode)
 	}
 
 	/* Check if we have link */
-	if (MV_REG_READ(PEX_STATUS_REG(pexIf)) & PXSR_DL_DOWN) {
+/*	if (MV_REG_READ(PEX_STATUS_REG(pexIf)) & PXSR_DL_DOWN) { */
+
+	if ((MV_REG_READ(PEX_DBG_STATUS_REG(pexIf)) & 0x7f) != 0x7E) {
+
 		pexMode->pexLinkUp = MV_FALSE;
 
 		/* If there is no link, the auto negotiation data is worthless */

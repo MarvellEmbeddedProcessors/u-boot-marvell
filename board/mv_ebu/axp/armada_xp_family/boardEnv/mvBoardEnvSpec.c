@@ -181,15 +181,6 @@ MV_BOARD_MPP_INFO db88f78XX0InfoBoardMppConfigValue[] = {
 	} },
 };
 
-MV_SERDES_CFG db88f78XX0InfoBoardSerdesConfigValue[] = {
-	/* Z1B */
-	{MV_TRUE, 0x32221111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
-	{MV_TRUE, 0x31211111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* PEX module */
-	/* Z1A */
-	{MV_TRUE, 0x32220000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000030},	/* Default - Z1A */
-	{MV_TRUE, 0x31210000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_MODE_X1,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000030}	/* PEX module - Z1A */
-};
-
 MV_BOARD_TDM_INFO	db88f78XX0Tdm880[]	= { {1}, {2} };
 MV_BOARD_TDM_INFO	db88f78XX0Tdm792[]	= { {1}, {2}, {3}, {4}, {6}, {7} };
 MV_BOARD_TDM_INFO	db88f78XX0Tdm3215[]	= { {1} };
@@ -200,8 +191,6 @@ MV_BOARD_INFO db88f78XX0Info = {
 	.pBoardModTypeValue		= db88f78XX0InfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(db88f78XX0InfoBoardMppConfigValue),
 	.pBoardMppConfigValue		= db88f78XX0InfoBoardMppConfigValue,
-	.numBoardSerdesConfigValue	= ARRSZ(db88f78XX0InfoBoardSerdesConfigValue),
-	.pBoardSerdesConfigValue	= db88f78XX0InfoBoardSerdesConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
@@ -371,16 +360,6 @@ MV_BOARD_MPP_INFO db88f78XX0rev2InfoBoardMppConfigValue[] = {
 	} },
 };
 
-MV_SERDES_CFG db88f78XX0rev2InfoBoardSerdesConfigValue[] = {
-	/* A0 */
-	{MV_TRUE, 0x33221111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},/* Default: No Pex module, PEX0 x1, disabled*/
-	{MV_TRUE, 0x33211111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1,  PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x1, PEX1 x1*/
-	{MV_TRUE, 0x33221111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_DISABLED, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},/* no Pex module, PEX0 x4, PEX1 disabled*/
-	{MV_TRUE, 0x33211111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_MODE_X1,  PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x4, PEX1 x1*/
-	{MV_TRUE, 0x11111111, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4,  PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x1, PEX1 x4*/
-	{MV_TRUE, 0x11111111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4,  PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},/* Pex module, PEX0 x4, PEX1 x4*/
-};
-
 MV_BOARD_TDM_INFO	db88f78XX0rev2Tdm880[]	= { {1}, {2} };
 MV_BOARD_TDM_INFO	db88f78XX0rev2Tdm792[]	= { {1}, {2}, {3}, {4}, {6}, {7} };
 MV_BOARD_TDM_INFO	db88f78XX0rev2Tdm3215[]	= { {1} };
@@ -391,8 +370,6 @@ MV_BOARD_INFO db88f78XX0rev2Info = {
 	.pBoardModTypeValue		= db88f78XX0rev2InfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(db88f78XX0rev2InfoBoardMppConfigValue),
 	.pBoardMppConfigValue		= db88f78XX0rev2InfoBoardMppConfigValue,
-	.numBoardSerdesConfigValue	= ARRSZ(db88f78XX0rev2InfoBoardSerdesConfigValue),
-	.pBoardSerdesConfigValue	= db88f78XX0rev2InfoBoardSerdesConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
@@ -503,19 +480,12 @@ MV_BOARD_MPP_INFO rd78460nasInfoBoardMppConfigValue[] = {
 	} }
 };
 
-MV_SERDES_CFG rd78460nasInfoBoardSerdesConfigValue[] = {
-	{MV_TRUE, 0x00223001, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
-	{MV_TRUE, 0x33320201, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x000000f4},	/* Switch module */
-};
-
 MV_BOARD_INFO rd78460nasInfo = {
 	.boardName			= "RD-AXP-NAS rev 1.0",
 	.numBoardMppTypeValue		= ARRSZ(rd78460nasInfoBoardModTypeInfo),
 	.pBoardModTypeValue		= rd78460nasInfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(rd78460nasInfoBoardMppConfigValue),
 	.pBoardMppConfigValue		= rd78460nasInfoBoardMppConfigValue,
-	.numBoardSerdesConfigValue	= ARRSZ(rd78460nasInfoBoardSerdesConfigValue),
-	.pBoardSerdesConfigValue	= rd78460nasInfoBoardSerdesConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
@@ -615,19 +585,12 @@ MV_BOARD_MPP_INFO rd78460InfoBoardMppConfigValue[] = {
 	} }
 };
 
-MV_SERDES_CFG rd78460InfoBoardSerdesConfigValue[] = {
-	{MV_TRUE, 0x22321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010},	/* CPU0 */
-	{MV_TRUE, 0x00321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010}	/* CPU1-3 */
-};
-
 MV_BOARD_INFO rd78460Info = {
  .boardName				= "RD-78460-SERVER",
  .numBoardMppTypeValue			= ARRSZ(rd78460InfoBoardModTypeInfo),
  .pBoardModTypeValue			= rd78460InfoBoardModTypeInfo,
  .numBoardMppConfigValue		= ARRSZ(rd78460InfoBoardMppConfigValue),
  .pBoardMppConfigValue			= rd78460InfoBoardMppConfigValue,
- .numBoardSerdesConfigValue		= ARRSZ(rd78460InfoBoardSerdesConfigValue),
- .pBoardSerdesConfigValue		= rd78460InfoBoardSerdesConfigValue,
  .intsGppMaskLow			= 0,
  .intsGppMaskMid			= 0,
  .intsGppMaskHigh			= 0,
@@ -721,19 +684,12 @@ MV_BOARD_MPP_INFO rd78460ServerRev2InfoBoardMppConfigValue[] = {
 	} }
 };
 
-MV_SERDES_CFG rd78460ServerRev2InfoBoardSerdesConfigValue[] = {
-	{MV_TRUE, 0x00321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010},	/* CPU0 */
-	{MV_TRUE, 0x00321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010}	/* CPU1-3 */
-};
-
 MV_BOARD_INFO rd78460ServerRev2Info = {
  .boardName				= "RD-78460-SERVER-REV2",
  .numBoardMppTypeValue			= ARRSZ(rd78460ServerRev2InfoBoardModTypeInfo),
  .pBoardModTypeValue			= rd78460ServerRev2InfoBoardModTypeInfo,
  .numBoardMppConfigValue		= ARRSZ(rd78460ServerRev2InfoBoardMppConfigValue),
  .pBoardMppConfigValue			= rd78460ServerRev2InfoBoardMppConfigValue,
- .numBoardSerdesConfigValue		= ARRSZ(rd78460ServerRev2InfoBoardSerdesConfigValue),
- .pBoardSerdesConfigValue		= rd78460ServerRev2InfoBoardSerdesConfigValue,
  .intsGppMaskLow			= 0,
  .intsGppMaskMid			= 0,
  .intsGppMaskHigh			= 0,
@@ -841,11 +797,6 @@ MV_BOARD_MPP_INFO db78X60pcacInfoBoardMppConfigValue[] = {
 	} }
 };
 
-MV_SERDES_CFG db78X60pcacInfoBoardSerdesConfigValue[] = {
-	 {MV_TRUE, 0x22321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED,PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010} /* Default */
-};
-
-
 MV_BOARD_TDM_INFO	db78X60pcacTdm880[]		= { {1}, {2} };
 MV_BOARD_TDM_INFO	db78X60pcacTdm792[]		= { {1}, {2}, {3}, {4}, {6}, {7} };
 MV_BOARD_TDM_INFO	db78X60pcacTdm3215[]	= { {1} };
@@ -856,8 +807,6 @@ MV_BOARD_INFO db78X60pcacInfo = {
 	.pBoardModTypeValue		= db78X60pcacInfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(db78X60pcacInfoBoardMppConfigValue),
 	.pBoardMppConfigValue		= db78X60pcacInfoBoardMppConfigValue,
-	.numBoardSerdesConfigValue	= ARRSZ(db78X60pcacInfoBoardSerdesConfigValue),
-	.pBoardSerdesConfigValue	= db78X60pcacInfoBoardSerdesConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
@@ -960,18 +909,12 @@ MV_BOARD_MPP_INFO db78X60pcacrev2InfoBoardMppConfigValue[] = {
 	} }
 };
 
-MV_SERDES_CFG db78X60pcacrev2InfoBoardSerdesConfigValue[] = {
-	 {MV_TRUE, 0x23321111, 0x00000000, PEX_BUS_MODE_X4, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000010} /* Default */
-};
-
 MV_BOARD_INFO db78X60pcacrev2Info = {
 	.boardName			= "DB-78460-PCAC-REV2",
 	.numBoardMppTypeValue		= ARRSZ(db78X60pcacrev2InfoBoardModTypeInfo),
 	.pBoardModTypeValue		= db78X60pcacrev2InfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(db78X60pcacrev2InfoBoardMppConfigValue),
 	.pBoardMppConfigValue		= db78X60pcacrev2InfoBoardMppConfigValue,
-	.numBoardSerdesConfigValue	= ARRSZ(db78X60pcacrev2InfoBoardSerdesConfigValue),
-	.pBoardSerdesConfigValue	= db78X60pcacrev2InfoBoardSerdesConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
@@ -1038,10 +981,10 @@ MV_BOARD_TWSI_INFO	fpga88f78XX0InfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO fpga88f78XX0InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x1,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x2,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x3,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x4,0x0}
+	{BOARD_MAC_SPEED_AUTO, 0x1,0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x2,0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x3,0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x4,0x0,0x0}
 };
 
 MV_BOARD_MODULE_TYPE_INFO fpga88f78XX0InfoBoardModTypeInfo[] = {
@@ -1077,10 +1020,6 @@ MV_BOARD_MPP_INFO fpga88f78XX0InfoBoardMppConfigValue[] = {
 	} }
 };
 
-MV_SERDES_CFG fpga88f78XX0InfoBoardSerdesConfigValue[] = {
-	{MV_TRUE, 0x00000000, 0x00000000, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, PEX_BUS_DISABLED, 0x00000000} /* No PEX in FPGA */
-};
-
 MV_BOARD_TDM_INFO	fpga88f78XX0Tdm880[]	= { {1}, {2} };
 MV_BOARD_TDM_INFO	fpga88f78XX0Tdm792[]	= { {1}, {2}, {3}, {4}, {6}, {7} };
 MV_BOARD_TDM_INFO	fpga88f78XX0Tdm3215[]	= { {1} };
@@ -1091,8 +1030,6 @@ MV_BOARD_INFO fpga88f78XX0Info = {
 	.pBoardModTypeValue		= fpga88f78XX0InfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(fpga88f78XX0InfoBoardMppConfigValue),
 	.pBoardMppConfigValue		= fpga88f78XX0InfoBoardMppConfigValue,
-	.numBoardSerdesConfigValue	= ARRSZ(fpga88f78XX0InfoBoardSerdesConfigValue),
-	.pBoardSerdesConfigValue	= fpga88f78XX0InfoBoardSerdesConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
@@ -1201,11 +1138,6 @@ MV_BOARD_MPP_INFO db78X60amcInfoBoardMppConfigValue[] = {
 	} }
 };
 
-MV_SERDES_CFG db78X60amcInfoBoardSerdesConfigValue[] = {
-	 {MV_TRUE, 0x23111111, 0x11111111, PEX_BUS_MODE_X4, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030} /* Default */
-};
-
-
 MV_BOARD_TDM_INFO	db78X60amcTdm880[]	= {};
 MV_BOARD_TDM_INFO	db78X60amcTdm792[]	= {};
 MV_BOARD_TDM_INFO	db78X60amcTdm3215[]	= {};
@@ -1216,8 +1148,6 @@ MV_BOARD_INFO db78X60amcInfo = {
 	.pBoardModTypeValue		= db78X60amcInfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(db78X60amcInfoBoardMppConfigValue),
 	.pBoardMppConfigValue		= db78X60amcInfoBoardMppConfigValue,
-	.numBoardSerdesConfigValue	= ARRSZ(db78X60amcInfoBoardSerdesConfigValue),
-	.pBoardSerdesConfigValue	= db78X60amcInfoBoardSerdesConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
@@ -1329,18 +1259,12 @@ MV_BOARD_MPP_INFO rd78460gpInfoBoardMppConfigValue[] = {
 	} }
 };
 
-MV_SERDES_CFG rd78460gpInfoBoardSerdesConfigValue[] = {
-	{MV_TRUE, 0x00223001, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
-};
-
 MV_BOARD_INFO rd78460gpInfo = {
 	.boardName			= "RD-AXP-GP rev 1.0",
 	.numBoardMppTypeValue		= ARRSZ(rd78460gpInfoBoardModTypeInfo),
 	.pBoardModTypeValue		= rd78460gpInfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(rd78460gpInfoBoardMppConfigValue),
 	.pBoardMppConfigValue		= rd78460gpInfoBoardMppConfigValue,
-	.numBoardSerdesConfigValue	= ARRSZ(rd78460gpInfoBoardSerdesConfigValue),
-	.pBoardSerdesConfigValue	= rd78460gpInfoBoardSerdesConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
@@ -1450,19 +1374,12 @@ MV_BOARD_MPP_INFO rd78460customerInfoBoardMppConfigValue[] = {
 	} }
 };
 
-MV_SERDES_CFG rd78460customerInfoBoardSerdesConfigValue[] = {
-	{MV_TRUE, 0x00223001, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Default */
-	{MV_TRUE, 0x33320201, 0x11111111, PEX_BUS_MODE_X1, PEX_BUS_DISABLED,PEX_BUS_MODE_X4, PEX_BUS_MODE_X4, 0x00000030},	/* Switch module */
-};
-
 MV_BOARD_INFO rd78460customerInfo = {
 	.boardName			= "RD-AXP-CUSTOMER",
 	.numBoardMppTypeValue		= ARRSZ(rd78460customerInfoBoardModTypeInfo),
 	.pBoardModTypeValue		= rd78460customerInfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(rd78460customerInfoBoardMppConfigValue),
 	.pBoardMppConfigValue		= rd78460customerInfoBoardMppConfigValue,
-	.numBoardSerdesConfigValue	= ARRSZ(rd78460customerInfoBoardSerdesConfigValue),
-	.pBoardSerdesConfigValue	= rd78460customerInfoBoardSerdesConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,

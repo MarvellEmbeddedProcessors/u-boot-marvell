@@ -2023,13 +2023,15 @@ static const MV_U8 serdesCfg[][8] = SERDES_CFG;
 *******************************************************************************/
 MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 {
+	MV_U32		socCtrlReg, RegX4, serdesLine0_7;
 	MV_U32		serdesLineCfg;
 	MV_U8		serdesLineNum;
-	MV_U8		pexUnit, pexLineNum;
-	MV_U8		maxSerdesLines = mvCtrlSerdesMaxLinesGet();
-	MV_SERDES_CFG	*pSerdesInfo = mvBoardSerdesCfgGet();
-	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
+	MV_U8		pexIf;
+	MV_U8		pexUnit;
 	MV_STATUS	status = MV_OK;
+	MV_U32 		pexIfNum = mvCtrlPexMaxIfGet();
+	MV_U8		maxSerdesLines = mvCtrlSerdesMaxLinesGet();
+	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
 
 /* this is a mapping of the final power management clock gating control register value @ 0x18220.*/
 	MV_U32	powermngmntctrlregmap = 0x0;
@@ -2039,120 +2041,62 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 	if (maxSerdesLines == 0)
 		return MV_OK;
 
-	if (pSerdesInfo == NULL) {
-		DB(mvOsPrintf("%s: Error reading SERDES configuration!\n", __func__));
-		return MV_ERROR;
-	}
-
 	memset(boardPexInfo, 0, sizeof(MV_BOARD_PEX_INFO));
+	socCtrlReg = MV_REG_READ(SOC_CTRL_REG);
+	RegX4 = MV_REG_READ(GEN_PURP_RES_2_REG);
+	boardPexInfo->pexUnitCfg[0].pexCfg = ((RegX4 & 0x0F) == 0x0F) ? PEX_BUS_MODE_X4: PEX_BUS_MODE_X1;
+	boardPexInfo->pexUnitCfg[1].pexCfg = ((RegX4 & 0x0F0) == 0x0F0) ? PEX_BUS_MODE_X4: PEX_BUS_MODE_X1;
+	boardPexInfo->pexUnitCfg[2].pexCfg = ((RegX4 & 0x0F00) == 0x0F00) ? PEX_BUS_MODE_X4: PEX_BUS_MODE_X1;
+	boardPexInfo->pexUnitCfg[3].pexCfg = ((RegX4 & 0x0F000) == 0x0F000) ? PEX_BUS_MODE_X4: PEX_BUS_MODE_X1;
 
 	/* Prepare PHY parameters for each step according to  MUX selection */
-	for (serdesLineNum = 0; serdesLineNum < maxSerdesLines; serdesLineNum++) {
+	for (pexIf = 0; pexIf < pexIfNum; pexIf++) {
 		/* for each serdes lane*/
-		MV_U8	sgmiiPort = 0;
-		
-		if (serdesLineNum < 8)
-			serdesLineCfg = (pSerdesInfo->serdesLine0_7 >> (serdesLineNum << 2)) & 0xF;
-		else
-			serdesLineCfg = (pSerdesInfo->serdesLine8_15 >> ((serdesLineNum - 8) << 2)) & 0xF;
-
-		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_PEX]) {
-			pexUnit    = serdesLineNum >> 2;
-			pexLineNum = serdesLineNum % 4;
-
-			/* Map the PCI-E interfaces according to their HW mapping
-			   Map PCI-E virtual intrefaces in an array where we have information about
-			   every interface (e.g. HW mapping, x1,x4,x8 ( disabled) .. )
-			*/
-			switch (pexUnit) {
-			case 0:
-				boardPexInfo->pexUnitCfg[pexUnit].pexCfg = pSerdesInfo->pex0Mod;
-				break;
-			case 1:
-				boardPexInfo->pexUnitCfg[pexUnit].pexCfg = pSerdesInfo->pex1Mod;
-				break;
-			case 2:
-				boardPexInfo->pexUnitCfg[pexUnit].pexCfg = pSerdesInfo->pex2Mod;
-				break;
-			case 3:
-				boardPexInfo->pexUnitCfg[pexUnit].pexCfg = pSerdesInfo->pex3Mod;
-				break;
-			}
-			if ((pexUnit < 2) && (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X1)) {
-
-				boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = pexUnit * 4 + pexLineNum;
+		pexUnit    = (pexIf<9)? (pexIf >> 2) : 3;
+		if ((socCtrlReg & (1<< pexUnit)) == 0){
+			boardPexInfo->pexUnitCfg[pexUnit].pexCfg = PEX_BUS_DISABLED;
+		   continue;
+		   }
+		   boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = pexIf;
 				boardPexInfo->boardPexIfNum++;
-				boardPexInfo->pexUnitCfg[pexUnit].pexLaneStat[pexLineNum] = 0x1;
-				powermngmntctrlregmap = powermngmntctrlregmap | (0x1<<(serdesLineNum+5));
-			} else if ((pexUnit < 4) &&
-				(boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X4) &&
-				(pexLineNum == 0)) {
+		   boardPexInfo->pexUnitCfg[pexUnit].pexLaneStat[pexIf] = 0x1;
+		   powermngmntctrlregmap = powermngmntctrlregmap | (0x1<<(pexIf+5));
+		   if (pexIf < 8) {
+			   if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X4){
+				   powermngmntctrlregmap |= (0xf<<(pexIf+5));
+				   pexIf += 3;
+			   }
+			   else
+				   powermngmntctrlregmap |= (0x1<<(pexIf+5));
+		   }
+		   else 
+			   powermngmntctrlregmap |= (0x1<<(18+pexIf));
+	} 
+	serdesLine0_7 = MV_REG_READ(SERDES_LINE_MUX_REG_0_7);
 
-				switch (pexUnit) {
-				case 0:
-				case 1:
-					boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = pexUnit*4 + pexLineNum;
-					powermngmntctrlregmap = powermngmntctrlregmap | (0x1 << (serdesLineNum+5));
-					break;
-				case 2:
-				case 3:
-					boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = PEX2_0x4 + (pexUnit - 2);
-					powermngmntctrlregmap = powermngmntctrlregmap | (0x1 << (pexUnit+24));
-					break;
-				}
+	for (serdesLineNum = 0; serdesLineNum < 8; serdesLineNum++) {
+	
+		serdesLineCfg =(serdesLine0_7 >> (serdesLineNum << 2)) & 0xF;
+	
+		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SATA]) {
 
-				boardPexInfo->boardPexIfNum++;
-
-			} else if ((pexUnit == 3) &&
-				(pSerdesInfo->pex3Mod == PEX_BUS_MODE_X8) &&
-				(pexLineNum == 0)) {
-
-				boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = PEX3_0x4;
-				boardPexInfo->boardPexIfNum++;
-			}
-
-			/* Needed for PEX_PHY_ACCESS_REG macro */
-			if ((serdesLineNum > 7) && (pSerdesInfo->pex3Mod == PEX_BUS_MODE_X8))
-				pexUnit = 3; /* lines 8 - 15 are belong to PEX3 in x8 mode */
-
-		} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SATA]) {
-
-			MV_U8	sataPort;
-
-			if ((serdesLineNum == 4) || (serdesLineNum == 6)) {
-				sataPort = 0;
-				powermngmntctrlregmap = powermngmntctrlregmap | PMC_SATASTOPCLOCK_MASK(sataPort);
-			} else if (serdesLineNum == 5) {
-				sataPort = 1;
-				powermngmntctrlregmap = powermngmntctrlregmap | PMC_SATASTOPCLOCK_MASK(sataPort);
-			} else
+			if ((serdesLineNum == 4) || (serdesLineNum == 6))
+				powermngmntctrlregmap |= PMC_SATASTOPCLOCK_MASK(0);
+			else if (serdesLineNum == 5)
+				powermngmntctrlregmap |= PMC_SATASTOPCLOCK_MASK(1);
+			else
 				goto err_cfg;		
 
-		} else {
-
-			if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII0]) {
-				sgmiiPort = 0;
-				powermngmntctrlregmap = powermngmntctrlregmap | PMC_GESTOPCLOCK_MASK(sgmiiPort);
-			} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII1]) {
-				sgmiiPort = 1;
-				powermngmntctrlregmap = powermngmntctrlregmap | PMC_GESTOPCLOCK_MASK(sgmiiPort);
-			} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII2]) {
-				sgmiiPort = 2;
-				powermngmntctrlregmap = powermngmntctrlregmap | PMC_GESTOPCLOCK_MASK(sgmiiPort);
-			} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII3]) {
-				sgmiiPort = 3;
-				powermngmntctrlregmap = powermngmntctrlregmap | PMC_GESTOPCLOCK_MASK(sgmiiPort);
-			} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_QSGMII]) {
-				sgmiiPort = 0;
-				powermngmntctrlregmap = powermngmntctrlregmap | \
-										PMC_GESTOPCLOCK_MASK(0) | PMC_GESTOPCLOCK_MASK(1) | \
-										PMC_GESTOPCLOCK_MASK(2) | PMC_GESTOPCLOCK_MASK(3);
-			} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_UNCONNECTED])
-				continue;
-
-			
-		}
-
+		} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII0])
+				powermngmntctrlregmap |= PMC_GESTOPCLOCK_MASK(0);
+			else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII1])
+				powermngmntctrlregmap |=  PMC_GESTOPCLOCK_MASK(1);
+			else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII2])
+				powermngmntctrlregmap |= PMC_GESTOPCLOCK_MASK(2);
+			else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII3])
+				powermngmntctrlregmap |= PMC_GESTOPCLOCK_MASK(3);
+			else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_QSGMII])
+				powermngmntctrlregmap |= PMC_GESTOPCLOCK_MASK(0) | PMC_GESTOPCLOCK_MASK(1) | PMC_GESTOPCLOCK_MASK(2) | PMC_GESTOPCLOCK_MASK(3);
 	}
 
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)

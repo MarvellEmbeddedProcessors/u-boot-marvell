@@ -68,6 +68,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvSysEthPhyConfig.h"
 #include "mvEthPhyRegs.h"
 #include "mvEthPhy.h"
+#undef DEBUG
+#ifdef DEBUG
+#define DB(x) x
+#define DB2(x) x
+#else
+#define DB(x)
+#define DB2(x)
+#endif /* DEBUG */
 
 static 	MV_VOID	mvEthPhyPower(MV_U32 ethPortNum, MV_BOOL enable);
 
@@ -199,6 +207,19 @@ MV_STATUS mvEthPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	return MV_OK;
 }
 
+void    rdPhy(MV_U32 phyAddr, MV_U32 regOffs)
+{
+	MV_U16      data;
+	MV_STATUS   status;
+
+	status = mvEthPhyRegRead(phyAddr, regOffs, &data);
+	if (status == MV_OK)
+		mvOsPrintf("reg=%d: 0x%04x\n", regOffs, data);
+	else
+		mvOsPrintf("Read failed\n");
+}
+
+
 /*******************************************************************************
 * mvEthPhyRegRead - Read from ethernet phy register.
 *
@@ -313,11 +334,11 @@ MV_STATUS mvEthPhyRegWrite(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 data)
 
 	/* check parameters */
 	if ((phyAddr <<  ETH_PHY_SMI_DEV_ADDR_OFFS) & ~ETH_PHY_SMI_DEV_ADDR_MASK) {
-		mvOsPrintf("mvEthPhyRegWrite: Err. Illegal phy address \n");
+		mvOsPrintf("mvEthPhyRegWrite: Err. Illegal phy address 0x%x\n", phyAddr);
 		return MV_BAD_PARAM;
 	}
 	if ((regOffs <<  ETH_PHY_SMI_REG_ADDR_OFFS) & ~ETH_PHY_SMI_REG_ADDR_MASK) {
-		mvOsPrintf("mvEthPhyRegWrite: Err. Illegal register offset \n");
+		mvOsPrintf("mvEthPhyRegWrite: Err. Illegal register offset 0x%x\n", regOffs);
 		return MV_BAD_PARAM;
 	}
 
@@ -1650,10 +1671,119 @@ MV_VOID mvEth1540Y0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 
 }
 static int initJumboPackets=0;
+MV_VOID mvEth1540A1PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
+{
+	int i = ethphyHalData.phyAddr[ethPortNum];
+	MV_U16 reg;
+
+	/* Enable QSGMII AN */
+	/* Set page to 4. */
+	mvEthPhyRegWrite(i, 0x16, 4);
+	/* Enable AN */
+	mvEthPhyRegWrite(i, 0x0, 0x1140);
+		/* Set page to 0. */
+	mvEthPhyRegWrite(i, 0x16, 0);
+
+	/* Phy C_ANEG */
+	mvEthPhyRegRead(i, 0x4, &reg);
+	reg |= 0x1E0;
+	mvEthPhyRegWrite(i, 0x4, reg);
+
+	/*A1 drop bad tag*/
+	mvEthPhyRegWrite(i, 22, 0x0010);
+	mvEthPhyRegWrite(i, 1,(ethPortNum * 0x100)+0x000B);
+	mvEthPhyRegWrite(i, 2, 0x0000);
+	mvEthPhyRegWrite(i, 3, 0x0FB4);
+	mvEthPhyRegWrite(i, 22, 0x0000);
+
+	/* Enable EEE_Auto-neg for 1000BASE-T and 100BASE-TX */
+	mvEthPhyRegWrite(i, 22, 0x0000);
+	mvEthPhyRegWrite(i, 13, 0x0007);
+	mvEthPhyRegWrite(i, 14, 0x003C);
+	mvEthPhyRegWrite(i, 13, 0x4007);
+	mvEthPhyRegWrite(i, 14, 0x0006);
+
+	/* phy initialization */
+	mvEthPhyRegWrite(i, 22, 0x00FF);
+	mvEthPhyRegWrite(i, 17, 0x2148);
+	mvEthPhyRegWrite(i, 16, 0x2144);
+	mvEthPhyRegWrite(i, 17, 0xDC0C);
+	mvEthPhyRegWrite(i, 16, 0x2159);
+	mvEthPhyRegWrite(i, 22, 0x00FF);
+
+	/* Enable MACSec (Reg 27_2.13 = '1') */
+	mvEthPhyRegWrite(i, 22, 0x0012);
+	mvEthPhyRegRead(i, 27, &reg);
+	reg |= (1 << 13);
+	mvEthPhyRegWrite(i, 27, reg);
+
+	if (eeeEnable == MV_TRUE) {
+		/* Enable EEE Master (Legacy) Mode */
+		mvEthPhyRegWrite(i, 22, 0x0010);
+		mvEthPhyRegWrite(i, 1, 0x03c1);
+		mvEthPhyRegWrite(i, 2, 0x0001);
+		mvEthPhyRegWrite(i, 3, 0x0000);
+		mvEthPhyRegWrite(i, 1, 0x0bc1);
+		mvEthPhyRegWrite(i, 2, 0x0001);
+		mvEthPhyRegWrite(i, 3, 0x0000);
+		mvEthPhyRegWrite(i, 1, 0x13c1);
+		mvEthPhyRegWrite(i, 2, 0x0001);
+		mvEthPhyRegWrite(i, 3, 0x0000);
+		mvEthPhyRegWrite(i, 1, 0x1bc1);
+		mvEthPhyRegWrite(i, 2, 0x0001);
+		mvEthPhyRegWrite(i, 3, 0x0000);
+		mvEthPhyRegWrite(i, 22, 0x0000);
+	}
+/* Configuring the PHY for jumbo packets  */
+	mvEthPhyRegWrite(i, 0x16, 0x02);
+	mvEthPhyRegRead(i, 0x10, &reg);
+	reg |= (1<<14) | (1<<15);
+	mvEthPhyRegWrite(i, 0x10, reg);
+	mvEthPhyRegWrite(i, 0x16, 0x0);
+
+	if (0 == initJumboPackets) {
+		int j;
+		initJumboPackets = 1;
+
+		mvEthPhyRegWrite(i, 0x16, 0x10);
+		/* assume we want all ports to support jumbo*/
+		for(j = 0 ; j < MV_ETH_MAX_PORTS; j++)
+		{
+			mvEthPhyRegWrite(i, 0x01, ((0x800*j)+0x40)) ;
+			mvEthPhyRegWrite(i, 0x02, 0xFFF9);
+			mvEthPhyRegWrite(i, 0x03, 0x1);
+
+			mvEthPhyRegWrite(i, 0x01,  ((0x800*j)+0x50));
+			mvEthPhyRegWrite(i, 0x02, 0xFFF9);
+			mvEthPhyRegWrite(i, 0x03, 0x1);
+		}
+		mvEthPhyRegWrite(i, 0x16, 0x0);
+	}
+
+	/* Configure LED */
+	mvEthPhyRegWrite(i, 22, 3);
+	mvEthPhyRegWrite(i, 16, 0x1111);
+
+
+	/* Soft-Reset */
+	mvEthPhyRegWrite(i, 22, 0x0000);
+	mvEthPhyRegWrite(i, 0, 0x9140);
+
+	/* Power up the phy */
+	mvEthPhyRegRead(i, ETH_PHY_CTRL_REG, &reg);
+	reg &= ~(ETH_PHY_CTRL_POWER_DOWN_MASK);
+	mvEthPhyRegWrite(i, ETH_PHY_CTRL_REG, reg);
+
+	mvOsDelay(100);
+}
+
+
 MV_VOID mvEth1540A0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 {
 	int i = ethphyHalData.phyAddr[ethPortNum];
 	MV_U16 reg;
+	int port0 = ethphyHalData.QuadPhyPort0[ethPortNum];
+/*	int offs = ethphyHalData.LinkCryptPortAddr[ethPortNum]; */
 
 	/* Enable QSGMII AN */
 	/* Set page to 4. */
@@ -1686,6 +1816,7 @@ MV_VOID mvEth1540A0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	mvEthPhyRegWrite(i, 2, 0x0000);
 	mvEthPhyRegWrite(i, 3, 0x0FB4);
 	mvEthPhyRegWrite(i, 22, 0x0000);
+
 	mvEthPhyRegWrite(i, 22, 0x00FA);
 	mvEthPhyRegWrite(i, 8, 0x0010);
 
@@ -1771,30 +1902,23 @@ MV_VOID mvEth1540A0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	mvEthPhyRegWrite(i, 0x16, 0x0);
 
 	if (0 == initJumboPackets) {
+		int j;
 		initJumboPackets = 1;
 
-		mvEthPhyRegWrite(0x18, 0x16, 0x10);
+		mvEthPhyRegWrite(port0, 0x16, 0x10);
+		/* assume we want all ports to support jumbo*/
+		for(j = 0 ; j < MV_ETH_MAX_PORTS; j++)
+		{
+			mvEthPhyRegWrite(port0, 0x01, ((0x800*j)+0x40)) ;
+			mvEthPhyRegWrite(port0, 0x02, 0xFFF9);
+			mvEthPhyRegWrite(port0, 0x03, 0x1);
 
-		mvEthPhyRegWrite(0x18, 0x01, 0x840);
-		mvEthPhyRegWrite(0x18, 0x02, 0xFFF9);
-		mvEthPhyRegWrite(0x18, 0x03, 0x1);
-
-		mvEthPhyRegWrite(0x18, 0x01, 0x1840);
-		mvEthPhyRegWrite(0x18, 0x02, 0xFFF9);
-		mvEthPhyRegWrite(0x18, 0x03, 0x1);
-                              
-		mvEthPhyRegWrite(0x18, 0x01, 0x850);
-		mvEthPhyRegWrite(0x18, 0x02, 0xFFF9);
-		mvEthPhyRegWrite(0x18, 0x03, 0x1);
-                              
-		mvEthPhyRegWrite(0x18, 0x01, 0x1850);
-		mvEthPhyRegWrite(0x18, 0x02, 0xFFF9);
-		mvEthPhyRegWrite(0x18, 0x03, 0x1);
-
-		mvEthPhyRegWrite(0x18, 0x16, 0x0);
+			mvEthPhyRegWrite(port0, 0x01,  ((0x800*j)+0x50));
+			mvEthPhyRegWrite(port0, 0x02, 0xFFF9);
+			mvEthPhyRegWrite(port0, 0x03, 0x1);
+		}
+		mvEthPhyRegWrite(port0, 0x16, 0x0);
 	}
-
-
 	/* Configure LED */
 	mvEthPhyRegWrite(i, 22, 3);
 	mvEthPhyRegWrite(i, 16, 0x1111);
@@ -1827,9 +1951,18 @@ MV_VOID mvEth1540PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 
 	if (reg == 0x100)
 		mvEth1540Y0PhyBasicInit(ethPortNum, eeeEnable);
+	else if (reg == 0x200){
+		/*Phy Identifier Register 3.15:0 is:
+			A0:  0x0EB0
+			A1:  0x0EB1
+		*/
+		mvEthPhyRegRead(startAddr, 0x3, &reg);
+		mvEthPhyRegWrite(startAddr,0x16, 0x0);
+		if(reg == 0x0EB1 )
+			mvEth1540A1PhyBasicInit(ethPortNum, eeeEnable);
 	else
 		mvEth1540A0PhyBasicInit(ethPortNum, eeeEnable);
-
+	}
 	return;
 }
 

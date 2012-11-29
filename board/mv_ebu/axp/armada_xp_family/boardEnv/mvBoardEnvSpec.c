@@ -94,10 +94,10 @@ MV_BOARD_TWSI_INFO	db88f78XX0InfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO db88f78XX0InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x0,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x1,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x19,0x800},  /* Port 1 */
-	{BOARD_MAC_SPEED_AUTO, 0x1B,0x1800}  /* Port 3 */
+	{BOARD_MAC_SPEED_AUTO, 0x0,0x0, 0x0,},
+	{BOARD_MAC_SPEED_AUTO, 0x1,0x0, 0x1,},
+	{BOARD_MAC_SPEED_AUTO, 0x19,0x800 , 0x18},  /* Port 1 */
+	{BOARD_MAC_SPEED_AUTO, 0x1B,0x1800, 0x18}  /* Port 3 */
 };
 
 MV_BOARD_MODULE_TYPE_INFO db88f78XX0InfoBoardModTypeInfo[] = {
@@ -273,10 +273,10 @@ MV_BOARD_TWSI_INFO	db88f78XX0rev2InfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO db88f78XX0rev2InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x0,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x1,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x19,0x800},  /* Port 1 */
-	{BOARD_MAC_SPEED_AUTO, 0x1B,0x1800}  /* Port 3 */
+	{BOARD_MAC_SPEED_AUTO, 0x0,0x0 	  , 0x0 },
+	{BOARD_MAC_SPEED_AUTO, 0x1,0x0	  , 0x1 },
+	{BOARD_MAC_SPEED_AUTO, 0x19,0x800 , 0x18},  /* Port 1 */
+	{BOARD_MAC_SPEED_AUTO, 0x1B,0x1800, 0x18}  /* Port 3 */
 };
 
 MV_BOARD_MODULE_TYPE_INFO db88f78XX0rev2InfoBoardModTypeInfo[] = {
@@ -441,10 +441,10 @@ MV_BOARD_INFO db88f78XX0rev2Info = {
 MV_BOARD_MAC_INFO rd78460nasInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
         /* speed will toggle to force link 1000 when SW module detected */
-	{BOARD_MAC_SPEED_AUTO, 0x10,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x11,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x12,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x13,0x0}
+	{BOARD_MAC_SPEED_AUTO, 0x10,0x0, 0x10},
+	{BOARD_MAC_SPEED_AUTO, 0x11,0x0, 0x10},
+	{BOARD_MAC_SPEED_AUTO, 0x12,0x0, 0x10},
+	{BOARD_MAC_SPEED_AUTO, 0x13,0x0, 0x10}
 };
 
 MV_BOARD_MODULE_TYPE_INFO rd78460nasInfoBoardModTypeInfo[] = {
@@ -551,10 +551,10 @@ MV_BOARD_INFO rd78460nasInfo = {
 
 MV_BOARD_MAC_INFO rd78460InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_1000M, 0x1,0x0},
-	{BOARD_MAC_SPEED_1000M, 0x2,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x0,0x0},
-	{BOARD_MAC_SPEED_1000M, 0x1B,0x0}
+	{BOARD_MAC_SPEED_1000M, 0x1, 0x0, 0x1},
+	{BOARD_MAC_SPEED_1000M, 0x2, 0x0, 0x2},
+	{BOARD_MAC_SPEED_AUTO,  0x0, 0x0, 0x0},
+	{BOARD_MAC_SPEED_1000M, 0x1B,0x0,0x18}
 };
 
 MV_BOARD_MODULE_TYPE_INFO rd78460InfoBoardModTypeInfo[] = {
@@ -650,10 +650,10 @@ MV_BOARD_INFO rd78460Info = {
 
 MV_BOARD_MAC_INFO rd78460ServerRev2InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_1000M, 0x1,0x0},
-	{BOARD_MAC_SPEED_1000M, 0x2,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x0,0x0},
-	{BOARD_MAC_SPEED_1000M, 0x1B,0x0}
+	{BOARD_MAC_SPEED_1000M, 0x1,0x0, 0x1},
+	{BOARD_MAC_SPEED_1000M, 0x2,0x0, 0x1},
+	{BOARD_MAC_SPEED_AUTO,  0x0,0x0, 0x1},
+	{BOARD_MAC_SPEED_1000M, 0x1B,0x0,0x18}
 };
 
 MV_BOARD_MODULE_TYPE_INFO rd78460ServerRev2InfoBoardModTypeInfo[] = {
@@ -757,10 +757,10 @@ MV_BOARD_TWSI_INFO	db78X60pcacInfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO db78X60pcacInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x1,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x3,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x2,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x0,0x0}		/* Dummy */
+	{BOARD_MAC_SPEED_AUTO, 0x1,0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x3,0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x2,0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x0,0x0,0x0}		/* Dummy */
 };
 
 
@@ -869,10 +869,10 @@ MV_U8	db78X60pcacrev2InfoBoardDebugLedIf[] = {53, 54, 55, 56};
 
 MV_BOARD_MAC_INFO db78X60pcacrev2InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x1,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x3,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x2,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x0,0x0}		/* Dummy */
+	{BOARD_MAC_SPEED_AUTO, 0x1,0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x3,0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x2,0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x0,0x0,0x0}		/* Dummy */
 };
 
 
@@ -927,7 +927,7 @@ MV_BOARD_INFO db78X60pcacrev2Info = {
 	.numBoardGppInfo		= ARRSZ(db78X60pcacrev2InfoBoardGppInfo),
 	.pBoardGppInfo			= db78X60pcacrev2InfoBoardGppInfo,
 	.activeLedsNumber		= ARRSZ(db78X60pcacrev2InfoBoardDebugLedIf),
-	.pLedGppPin			= db78X60pcacrev2InfoBoardDebugLedIf,
+	.pLedGppPin				= db78X60pcacrev2InfoBoardDebugLedIf,
 	.ledsPolarity			= 0,
 
 	/* GPP values */
@@ -1101,10 +1101,10 @@ MV_BOARD_TWSI_INFO	db78X60amcInfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO db78X60amcInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x1,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0xF,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0xE,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x0,0x0}
+	{BOARD_MAC_SPEED_AUTO, 0x1,0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0xF,0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0xE,0x0,0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x0,0x0,0x0}
 };
 
 
@@ -1220,10 +1220,10 @@ MV_BOARD_TWSI_INFO   rd78460gpInfoBoardTwsiDev[] = {
 MV_BOARD_MAC_INFO rd78460gpInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
         /* speed will toggle to force link 1000 when SW module detected */
-	{BOARD_MAC_SPEED_AUTO, 0x10,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x11,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x12,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x13,0x0}
+	{BOARD_MAC_SPEED_AUTO, 0x10,0x0000, 0x10},
+	{BOARD_MAC_SPEED_AUTO, 0x11,0x0800, 0x10},
+	{BOARD_MAC_SPEED_AUTO, 0x12,0x1000, 0x10},
+	{BOARD_MAC_SPEED_AUTO, 0x13,0x1800, 0x10}
 };
 
 MV_BOARD_MODULE_TYPE_INFO rd78460gpInfoBoardModTypeInfo[] = {
@@ -1333,10 +1333,10 @@ MV_BOARD_INFO rd78460gpInfo = {
 
 MV_BOARD_MAC_INFO rd78460customerInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x10,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x11,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x12,0x0},
-	{BOARD_MAC_SPEED_AUTO, 0x13,0x0}
+	{BOARD_MAC_SPEED_AUTO, 0x10,0x0000, 0x10},
+	{BOARD_MAC_SPEED_AUTO, 0x11,0x0800, 0x10},
+	{BOARD_MAC_SPEED_AUTO, 0x12,0x1000, 0x10},
+	{BOARD_MAC_SPEED_AUTO, 0x13,0x1800, 0x10}
 };
 
 MV_BOARD_MODULE_TYPE_INFO rd78460customerInfoBoardModTypeInfo[] = {

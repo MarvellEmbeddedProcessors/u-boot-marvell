@@ -380,7 +380,35 @@ MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum)
 	return BOARD_INFO(boardId)->pBoardMacInfo[ethPortNum].boardEthSmiAddr;
 }
 /*******************************************************************************
-* mvBoardPhyAddrGet - Get the phy address
+* mvBoardQuadPhyAddr0Get - Get the phy address
+*
+* DESCRIPTION:
+*       This routine returns the Phy address of a given ethernet port.
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit describing Phy address, -1 if the port number is wrong.
+*
+*******************************************************************************/
+MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum)
+{
+	MV_U32 boardId = mvBoardIdGet();
+
+	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
+		mvOsPrintf("mvBoardQuadPhyAddr0Get: Board unknown.\n");
+		return MV_ERROR;
+	}
+
+	return BOARD_INFO(boardId)->pBoardMacInfo[ethPortNum].boardEthSmiAddr0;
+}
+
+/*******************************************************************************
+* mvBoardPhyLinkCryptPortAddrGet - Get the phy gbe address
 *
 * DESCRIPTION:
 *       This routine returns the Phy address of a given ethernet port.

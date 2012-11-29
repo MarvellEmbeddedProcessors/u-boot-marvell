@@ -423,7 +423,7 @@ MV_STATUS mvCntmrIntClear(MV_U32 cntmrNum)
 	} else {
 
 		MV_REG_WRITE(CNTMR_EVENTS_STATUS_REG_PRIVATE, ~(TIMER_PRIVATE_BIT(cntmrNum)));
-#
+
 	}
 	return MV_OK;
 }

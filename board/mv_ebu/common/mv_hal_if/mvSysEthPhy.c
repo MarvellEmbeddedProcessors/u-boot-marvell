@@ -98,8 +98,8 @@ MV_STATUS mvSysEthPhyInit(void)
 		halData.LinkCryptPortAddr[port] = mvBoardPhyLinkCryptPortAddrGet(port);
 		halData.boardSpecInit = MV_FALSE;
 		halData.isSgmii[port] = mvBoardIsPortInSgmii(port);
+		halData.QuadPhyPort0[port] = mvBoardQuadPhyAddr0Get(port);
 	}
-
 	halData.ethPhySmiReg = ETH_SMI_REG(MV_ETH_SMI_PORT);
 
 	return mvEthPhyHalInit(&halData);

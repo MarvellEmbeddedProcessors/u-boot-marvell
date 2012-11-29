@@ -81,7 +81,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 void mvBoardEgigaPhyInit(void)
 {
 	int	i;
-	unsigned int regData;
 
 	mvSysEthPhyInit();
 #ifdef MV88F67XX
@@ -91,6 +90,7 @@ void mvBoardEgigaPhyInit(void)
 	if (mvBoardIsSwitchConnected() || mvBoardIsGMIIConnected()) {
 		/* Init Only Phy 0 */
 		/* writing the PHY address before PHY init */
+		unsigned int regData;
 		regData = MV_REG_READ(ETH_PHY_ADDR_REG(0));
 		regData &= ~ETH_PHY_ADDR_MASK;
 		regData |= mvBoardPhyAddrGet(0);

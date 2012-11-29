@@ -98,8 +98,25 @@ if($opt_c eq 1)
 	}
 
 	# Configure Make
-	print "\n**** [Cleaning Make]\t*****\n\n";
 	system("make mrproper");
+	print "\n**** [Cleaning Make]\t*****\n\n";
+	print " clean tools/bin_hdr_armada_xp\n";
+        $fail = chdir ('./tools/bin_hdr_armada_$boardID');
+        if($fail){
+        	print "\n *** Error: change directory tools/bin_hdr_armada_$boardID \n\n";
+        	exit 1;
+        }
+        $fail = system("make clean");
+        if($fail){
+            print "\n *** Error: make clean\n\n";
+            exit 1;
+        }
+        $fail = chdir ('..\/..\/');
+        if($fail){
+           print "\n *** Error: change directory back to root \n\n";
+        	exit 1;
+        }
+		
 	print "\n**** [Configuring Make] version $opt_v\t*****\n\n";
 	system("make ${board}_config");
 

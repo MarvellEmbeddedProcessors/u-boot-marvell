@@ -111,8 +111,6 @@ MV_U32 dummyFlavour = 0;
 MV_BIOS_MODE bios_modes[BIOS_MODES_NUM] = {
 /*DBConf ConfID Code L2Size CPUFreq CpuFreqMode FabricFreq  Altfabricfreq     FabricFreqMode CPU1/2/3Enable cpuEndianess dramBusWidth BootSRC BootWidth */
 /*	                       0x4d/[1:0]  0x4d/[4:2]  0x4e[0]      0x4e/[4:1]  	0x4f[0]   0x4f/[2:1]      0x4f/[3]   	  */
-{"78130",0x10, 0x7813, 0x1,  0x3,      0x0,  0x1a,		0x5,		0x1,	     0x0,	    0x1,	0x1, 	     0x3,	0x1},
-{"78160",0x12, 0x7816, 0x1,  0x3,      0x0,	 0x1a, 		0x5,		0x1,	     0x0,	    0x1, 	0x0, 	     0x3,	0x1},
 {"78230",0x13, 0x7823, 0x1,  0x3,      0x0,	 0x1a, 		0x5,		0x1,	     0x1,	    0x0,	0x1, 	     0x3,	0x1},
 {"78260",0x14, 0x7826, 0x1,  0x3,      0x0,	 0x1a,		0x5,		0x1,	     0x1,	    0x0,	0x0, 	     0x3,	0x1},
 {"78460",0x15, 0x7846, 0x3,  0x3,      0x0,	 0x1a, 		0x5,		0x1,	     0x3,	    0x0,	0x0, 	     0x3,	0x1},
@@ -124,8 +122,6 @@ MV_BIOS_MODE bios_modes[BIOS_MODES_NUM] = {
 MV_BIOS_MODE bios_modes_b0[BIOS_MODES_NUM] = {
 /*DBConf ConfID Code L2Size CPUFreq CpuFreqMode FabricFreq  Altfabricfreq  FabricFreqMode CPUEna  cpuEndianess dramBusWidth BootSRC BootWidth */
 /*	                       0x4d/[1:0]  0x4d/[4:2]  0x4e[0]      0x4e/[4:1]  	0x4f[0]   0x4f/[2:1]      0x4f/[3]   	  */
-{"78130",0x10, 0x7813, 0x1,  0x3,      0x0,  		0x5,  	    0x5,        	0x1,	     0x0,	    0x1,		0x1, 	   0x3,		0x1},
-{"78160",0x12, 0x7816, 0x1,  0x3,      0x0,	 		0x5, 		0x5,			0x1,	     0x0,	    0x1, 		0x0, 	   0x3,		0x1},
 {"78230",0x13, 0x7823, 0x1,  0x3,      0x0,	 		0x5, 		0x5,			0x1,	     0x1,	    0x0,		0x1, 	   0x3,		0x1},
 {"78260",0x14, 0x7826, 0x1,  0x3,      0x0,	 		0x5,		0x5,			0x1,	     0x1,	    0x0,		0x0, 	   0x3,		0x1},
 {"78460",0x15, 0x7846, 0x3,  0x3,      0x0,	 		0x5, 		0x5,			0x1,	     0x3,	    0x1,		0x0, 	   0x3,		0x1},
@@ -152,8 +148,11 @@ MV_BOOL mvCtrlIsValidSatR(MV_VOID)
 	MV_U8 fabricFreqMode;
 	MV_BIOS_MODE * pBbiosModes;
 
+#if defined(RD_88F78460_SERVER) || defined(DB_78X60_AMC)
+	MV_U32 confId = 0x15;
+#else
 	MV_U32 confId = mvBoardConfIdGet();
-
+#endif
 	l2size = (MV_REG_READ(MPP_SAMPLE_AT_RESET(0)) & SAR0_L2_SIZE_MASK) >> SAR0_L2_SIZE_OFFSET;
 	cpuFreq = (MV_REG_READ(MPP_SAMPLE_AT_RESET(0)) & SAR0_CPU_FREQ_MASK) >> SAR0_CPU_FREQ_OFFSET;
 	fabricFreq = (MV_REG_READ(MPP_SAMPLE_AT_RESET(0)) & SAR0_FABRIC_FREQ_MASK) >> SAR0_FABRIC_FREQ_OFFSET;
@@ -196,12 +195,13 @@ MV_BOOL mvCtrlIsValidSatR(MV_VOID)
 MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 {
 	MV_U32 pmCtrl;
-#if defined(DB_88F78X60) || defined(RD_88F78460_SERVER) || defined (DB_88F78X60_REV2)
+#if defined(DB_88F78X60) || defined(RD_88F78460_SERVER) || defined (DB_88F78X60_REV2)|| defined(DB_784MP_GP) || defined(DB_78X60_AMC) 
 	MV_BIOS_MODE * pBbiosModes;
 	MV_U32 devVendId;
 	int i, j;
 	MV_U16 confId;
 	MV_U32 tmp;
+
 	if (mvCtrlRevGet() == 2)
 		pBbiosModes = bios_modes_b0;
 	else
@@ -214,7 +214,8 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 		MV_REG_WRITE(POWER_MNG_CTRL_REG,
 			(pmCtrl & ~PMC_PEXSTOPCLOCK_MASK(0)) | PMC_PEXSTOPCLOCK_EN(0));
 	}
-#if defined(DB_88F78X60) || defined (DB_88F78X60_REV2)
+#if defined(DB_88F78X60) || defined (DB_88F78X60_REV2) || defined(DB_784MP_GP)
+
 	devVendId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PEX_DEVICE_AND_VENDOR_ID));
 
 	confId = mvBoardConfIdGet();
@@ -234,7 +235,7 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 		pBbiosModes++;
 	}
 
-#elif defined(RD_88F78460_SERVER)
+#elif defined(RD_88F78460_SERVER) || defined(DB_78X60_AMC)
 	devVendId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PEX_DEVICE_AND_VENDOR_ID));
 	devVendId &= 0x0000FFFF;
 	devVendId |= 0x7846 << 16;

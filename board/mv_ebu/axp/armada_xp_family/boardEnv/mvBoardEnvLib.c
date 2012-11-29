@@ -321,6 +321,7 @@ MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum)
 		return MV_FALSE;
 }
 
+
 /*******************************************************************************
 * mvBoardSwitchCpuPortGet - Get the the Ethernet Switch CPU port
 *
@@ -378,7 +379,6 @@ MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum)
 
 	return BOARD_INFO(boardId)->pBoardMacInfo[ethPortNum].boardEthSmiAddr;
 }
-
 /*******************************************************************************
 * mvBoardPhyAddrGet - Get the phy address
 *
@@ -1503,20 +1503,23 @@ MV_U8 mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum)
 	MV_TWSI_ADDR slave;
 	MV_U8 data;
 
+	/* Read MPP module ID */
+	DB(mvOsPrintf("Board: Read S@R device read\n"));
+	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(BOARD_DEV_TWSI_SATR, devNum);
+	if (0xFF == twsiSlave.slaveAddr.address)
+		return MV_ERROR;
+	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(BOARD_DEV_TWSI_SATR, devNum);
+
+	/* Use offset as command */
+	twsiSlave.offset = regNum;
+	twsiSlave.moreThen256 = MV_FALSE;
+	twsiSlave.validOffset = MV_TRUE;
+
 	/* TWSI init */
 	slave.type = ADDR7_BIT;
 	slave.address = 0;
 	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
 
-	/* Read MPP module ID */
-	DB(mvOsPrintf("Board: Read S@R device read\n"));
-	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(BOARD_DEV_TWSI_SATR, devNum);
-	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(BOARD_DEV_TWSI_SATR, devNum);
-
-	twsiSlave.validOffset = MV_TRUE;
-	/* Use offset as command */
-	twsiSlave.offset = regNum;
-	twsiSlave.moreThen256 = MV_FALSE;
 
 	if (MV_OK != mvTwsiRead(0, &twsiSlave, &data, 1)) {
 		DB(mvOsPrintf("Board: Read S@R fail\n"));
@@ -1550,13 +1553,10 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 	MV_TWSI_SLAVE twsiSlave;
 	MV_TWSI_ADDR slave;
 
-	/* TWSI init */
-	slave.type = ADDR7_BIT;
-	slave.address = 0;
-	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
-
 	/* Read MPP module ID */
 	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(BOARD_DEV_TWSI_SATR, devNum);
+	if (0xFF == twsiSlave.slaveAddr.address)
+		return MV_ERROR;
 	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(BOARD_DEV_TWSI_SATR, devNum);
 	twsiSlave.validOffset = MV_TRUE;
 	DB(mvOsPrintf("Board: Write S@R device addr %x, type %x, data %x\n",
@@ -1564,6 +1564,11 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
 	twsiSlave.moreThen256 = MV_FALSE;
+	/* TWSI init */
+	slave.type = ADDR7_BIT;
+	slave.address = 0;
+	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
+
 	if (MV_OK != mvTwsiWrite(0, &twsiSlave, &regVal, 1)) {
 		DB1(mvOsPrintf("Board: Write S@R fail\n"));
 		return MV_ERROR;
@@ -1792,7 +1797,7 @@ MV_U8 mvBoardCpu0EndianessGet(MV_VOID)
 {
 	MV_U8 sar;
 	if (DB_784MP_GP_ID == mvBoardIdGet())
-		return 3;
+		return 0;
 
 	sar = mvBoardTwsiSatRGet(3, 0);
 	if ((MV_8)MV_ERROR == (MV_8)sar)

@@ -115,8 +115,6 @@ extern void dumpAtaDeviceRegisters(MV_SATA_ADAPTER *pAdapter,
 
 extern MV_BOOLEAN _doSoftReset(MV_SATA_CHANNEL *pSataChannel);
 
-static MV_BOOLEAN isStorageDevReadyForPIO(MV_SATA_CHANNEL *pSataChannel);
-
 extern MV_BOOLEAN executeNonUDMACommand(MV_SATA_ADAPTER *pAdapter,
 					MV_U8 channelIndex,
 					MV_U8 PMPort,

@@ -69,20 +69,23 @@ static int do_bios_read(void)
 
 	MV_U8 l2size = mvBoardL2SizeGet();
 	MV_U8 cpuEna = mvBoardCpuCoresNumGet();
-	MV_U8 cpuEndianess = mvBoardCpu0EndianessGet();
 	MV_U8 confId = mvBoardConfIdGet();
 	MV_U8 dramBusWidth = mvBoardDramBusWidthGet();
 	if (mvCtrlRevGet() == 2)
 		pBbiosModes = bios_modes_b0;
 	else
 		pBbiosModes = bios_modes;
-	
+/*	printf("ConfID=0x%x | L2Size=0x%x | CPUEna=0x%x |  dramBusWidth=0x%x \n",
+		   confId , l2size , cpuEna , dramBusWidth ); */
+
 	for (i=0; i < BIOS_MODES_NUM; i++) {
+/*		printf("TABLE= ConfID=0x%x | L2Size=0x%x | CPUEna=0x%x |   dramBusWidth=0x%x \n",
+			   pBbiosModes->confId, pBbiosModes->l2size, pBbiosModes->cpuEna, pBbiosModes->dramBusWidth); */
 		if ((pBbiosModes->l2size == l2size) &&
-			/*(pBbiosModes->cpuFreq == cpuFreq) &&*/
-			/*(pBbiosModes->fabricFreq == fabricFreq) &&*/
+			/* (pBbiosModes->cpuFreq == cpuFreq) &&*/
+			/* (pBbiosModes->fabricFreq == fabricFreq) &&*/
+			/* (pBbiosModes->cpuEndianess == cpuEndianess) && */
 			(pBbiosModes->cpuEna == cpuEna) &&
-			(pBbiosModes->cpuEndianess == cpuEndianess) &&
 			(pBbiosModes->confId == confId) &&
 			(pBbiosModes->dramBusWidth == dramBusWidth)) 
 		{
@@ -124,7 +127,7 @@ static int do_bios_write(int argc, char * const argv[])
 			mvBoardAltFabFreqSet(pBbiosModes->AltfabricFreq);
 			/*mvBoardFabFreqModeSet(pBbiosModes->fabricFreqMode);*/
 			mvBoardCpuCoresNumSet(pBbiosModes->cpuEna);
-			mvBoardCpu0EndianessSet(pBbiosModes->cpuEndianess);
+//			mvBoardCpu0EndianessSet(pBbiosModes->cpuEndianess);
 			mvBoardConfIdSet(pBbiosModes->confId);
 			mvBoardDramBusWidthSet(pBbiosModes->dramBusWidth);
 			mvBoardBootDevSet(pBbiosModes->bootSource);

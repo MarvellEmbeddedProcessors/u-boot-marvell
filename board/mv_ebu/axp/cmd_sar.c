@@ -61,28 +61,27 @@ MV_FREQ_MODE freq_modes[FREQ_MODES_NUM] = {
                 {"1333 / 667 / 333 / 667 Mhz (Fabric DFS)",  	0x3,   0x1a,   	    0x5}   /*  19 */ 
 };
 MV_FREQ_MODE freq_modes_B0[FREQ_MODES_NUM] = {
-                /*     Freq Conf             	  CPU Freq		Fabric Freq	 AltFabric    			*/
-                /* 		       					  0x4d/[4:2]	0x4e/[4:1]	           			*/
-				{" 800 / 400 / 200 / 400 Mhz",    0xA,          0x5,         0x5},          /*   0 */ 
-				{"1066 / 533 / 266 / 533 Mhz",    0x1,          0x5,         0x5},          /*   1 */ 
-				{"1200 / 600 / 300 / 600 Mhz",    0x2,          0x5,         0x5},          /*   2 */ 
-				{"1200 / 600 / 200 / 400 Mhz",    0x2,          0x9,         0x9},          /*   3 */ 
-				{"1333 / 667 / 333 / 667 Mhz",    0x3,          0x5,         0x5},          /*   4 */ 
-				{"1500 / 750 / 375 / 750 Mhz",    0x4,          0x5,         0x5},          /*   5 */ 
-				{"1500 / 750 / 250 / 500 Mhz",    0x4,          0x9,         0x9},          /*   6 */ 
-				{"1600 / 800 / 266 / 533 Mhz",    0xb,          0x9,         0x9},          /*   7 */ 
-				{"1600 / 800 / 400 / 800 Mhz",    0xb,          0x5,         0x5},          /*   9 */ 
-				{NULL,0,0,0},                                                               /*   9 */ 
-				{NULL,0,0,0},                                                               /*  10 */ 
-				{NULL,0,0,0},                                                               /*  11 */
-				{NULL,0,0,0},                                                               /*  12 */
-				{NULL,0,0,0},                                                               /*  13 */
-				{NULL,0,0,0},                                                               /*  14 */
-				{NULL,0,0,0},                                                               /*  15 */
-				{NULL,0,0,0},                                                               /*  16 */
-				{NULL,0,0,0},                                                               /*  17 */
-				{NULL,0,0,0},                                                               /*  18 */
-				{NULL,0,0,0}                                                                /*  19 */
+                /*     Freq Conf             	  CPU Freq		Fabric Freq	 AltFabric  	*/
+                /* 		       					  0x4d/[4:2]	0x4e/[4:1]	           		*/
+				{" 800 / 400 / 200 / 400 Mhz",    0xA,          5,         5},          /*   0 */ 
+				{"1066 / 533 / 266 / 533 Mhz",    0x1,          5,         5},          /*   1 */ 
+				{"1200 / 600 / 300 / 600 Mhz",    0x2,          5,         5},          /*   2 */ 
+				{"1200 / 600 / 200 / 400 Mhz",    0x2,          9,         9},          /*   3 */ 
+				{"1333 / 667 / 333 / 667 Mhz",    0x3,          5,         5},          /*   4 */ 
+				{"1500 / 750 / 375 / 750 Mhz",    0x4,          5,         5},          /*   5 */ 
+				{"1500 / 750 / 250 / 500 Mhz",    0x4,          9,         9},          /*   6 */ 
+				{"1600 / 800 / 266 / 533 Mhz",    0xb,          9,         9},          /*   7 */ 
+				{"1600 / 800 / 400 / 800 Mhz",    0xb,          5,         5},          /*   9 */ 
+				{"1600 / 640 / 320 / 640 Mhz",    0xb,         10,        10},          /*  10 */ 
+				{NULL,0,0,0},                                                           /*  11 */ 
+				{NULL,0,0,0},                                                           /*  12 */
+				{NULL,0,0,0},                                                           /*  13 */
+				{NULL,0,0,0},                                                           /*  14 */
+				{NULL,0,0,0},                                                           /*  15 */
+				{NULL,0,0,0},                                                           /*  16 */
+				{NULL,0,0,0},                                                           /*  17 */
+				{NULL,0,0,0},                                                           /*  18 */
+				{NULL,0,0,0}                                                            /*  19 */
 };
 
 
@@ -320,6 +319,7 @@ static int do_sar_read(int argc, char *const argv[])
 			bootwidth = (MV_REG_READ(MPP_SAMPLE_AT_RESET(0)) & SAR0_BOOTWIDTH_MASK) >> SAR0_BOOTWIDTH_OFFSET;
 			cpu0core = ((MV_REG_READ(MPP_SAMPLE_AT_RESET(0)) & SAR0_CPU0CORE_MASK) >> SAR0_CPU0CORE_OFFSET) |		   ((MV_REG_READ(MPP_SAMPLE_AT_RESET(1)) & SAR1_CPU0CORE_MASK) << (SAR1_CPU0CORE_OFFSET + 1));
 			cpusnum = (MV_REG_READ(MPP_SAMPLE_AT_RESET(1)) & SAR1_CPU_CORE_MASK) >> SAR1_CPU_CORE_OFFSET;
+			fabricFreq |= (MV_REG_READ(MPP_SAMPLE_AT_RESET(1)) & SAR1_CPU_MODE_MASK) >> (SAR1_CPU_MODE_OFFSET - 4);
 
 			printf("cpufreq = %d ==> %s\n", cpuFreq, cpuFreqArr[cpuFreq]);
 			printf("fabricFreq = %d\n", fabricFreq);

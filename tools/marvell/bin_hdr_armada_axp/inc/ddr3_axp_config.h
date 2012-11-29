@@ -81,7 +81,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #undef DQS_CLK_ALIGNED
 #undef MIXED_DIMM_STATIC
 #define DDR3_TRAINING_DEBUG						FALSE
-#define REG_DIMM_SKIP_WL						TRUE
+#define REG_DIMM_SKIP_WL						FALSE
 
 /* Marvell boards specific configurations */
 #if defined(DB_78X60_PCAC)
@@ -127,7 +127,7 @@ Selects for DDR3/DDR3L/DDR3U RDIMM 1.5 V/1.35 V/1.25 V Applications") */
 #define RDIMM_RC8								0
 #define RDIMM_RC9								0
 #define RDIMM_RC10								0x2
-#define RDIMM_RC11								0
+#define RDIMM_RC11								0x0
 
 #if defined(MIXED_DIMM_STATIC) || !defined (SPD_SUPPORT)
 #define DUNIT_STATIC

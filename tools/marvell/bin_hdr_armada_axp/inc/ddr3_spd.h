@@ -235,6 +235,9 @@ typedef struct _mvDimmInfo
 	MV_U32  minFourActiveWinDelay;
 	MV_U8	regDimmRC[SPD_RDIMM_RC_NUM];
 
+    /* DIMM vendor ID */
+    MV_U32  vendor;
+
 } MV_DIMM_INFO;
 
 MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth);

@@ -88,7 +88,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define REG_DEBUG
+#undef REG_DEBUG
 
 
 /*************/
@@ -223,7 +223,7 @@ int reglog(unsigned int offset, unsigned int data);
 #define MV_REG_BIT_SET(offset, bitMask)                 \
 	(MV_MEMIO32_WRITE((INTER_REGS_BASE | (offset)), \
         (MV_MEMIO32_READ(INTER_REGS_BASE | (offset)) | \
-          MV_32BIT_LE_FAST(bitMask))))+\  
+          MV_32BIT_LE_FAST(bitMask))))+\
 	reglog((INTER_REGS_BASE | (offset)), (MV_MEMIO32_READ(INTER_REGS_BASE | (offset))))
 #else
 #define MV_REG_BIT_SET(offset, bitMask)                 \

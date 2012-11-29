@@ -71,7 +71,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 MV_STATUS mvPexTargetWinGet(MV_U32 pexIf, MV_U32 winNum, MV_PEX_DEC_WIN *pAddrDecWin);
 
-
 /*******************************************************************************
 * mvSysPexInit - Initialize the Pex subsystem
 *
@@ -91,7 +90,11 @@ MV_STATUS mvSysPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType)
 	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
 	MV_STATUS status;
 
+	if (MV_FALSE == mvCtrlPwrClckGet(PEX_UNIT_ID, pexIf))
+		return MV_ERROR;
+
 	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
+
 	if (status == MV_OK)
 		status = mvPexWinInit(pexIf, pexType, addrWinMap);
 

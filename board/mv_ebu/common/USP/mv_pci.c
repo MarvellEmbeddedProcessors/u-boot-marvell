@@ -64,9 +64,11 @@ disclaimer.
 #ifdef DEBUG
 #define DB(x) x
 #define DB1(x) 
+#define DB2(x) x
 #else
 #define DB(x)
 #define DB1(x) 
+#define DB2(x)
 #endif /* DEBUG */
 
 /* global definetion */
@@ -538,7 +540,7 @@ struct pci_config_table mv_config_table[] = {
 
 /* Defines for more modularity of the pci_init_board function */
 
-struct pci_controller  pci_hose[8];
+struct pci_controller  pci_hose[MV_PEX_MAX_IF];
 
 
 //#if (MV_PEX_MAX_IF == 2)
@@ -675,7 +677,6 @@ void pci_init_board(void)
 		}
 
 
-
 		status = mvSysPexInit(pexHWInf, pexIfMode);
 		if (status == MV_ERROR) {
 			printf("pci_init_board:Error calling mvPexIfInit for PEX%d.%d(%d)\n",pexHWInf/4, pexHWInf%4, pexIf);
@@ -691,39 +692,6 @@ void pci_init_board(void)
 				if (mvPexLocalBusNumSet(pexHWInf,pci_hose[pexIf].first_busno) != MV_OK) {
 					printf("pci_init_board:Error calling mvPexLocalBusNumSet for pexIf %d\n",pexIf);
 				}
-#if defined(MV88F78X60) /* DSMP-A0 */
-				/* Step 17: Speed change to target speed*/
-				tempPexReg = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CAPABILITY_REG));
-				tempPexReg &= (0xF);
-				if (tempPexReg == 0x2) {
-					tempReg = (MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CTRL_STAT_REG)) & 0xF0000) >> 16;
-					/* check if the link established is GEN1 */
-					if (tempReg == 0x1) {
-						/* link is Gen1, check the EP capability */
-						DB(printf("0x34 = 0x%x -> ", mvPexConfigRead(pexHWInf, pci_hose[pexIf].first_busno, 1, 0, 0x34)));
-						addr = mvPexConfigRead(pexHWInf, pci_hose[pexIf].first_busno, 1, 0, 0x34) & 0xFF;
-						if (addr == 0xff) {
-							printf("PEX %d.%d(%d): Detected No Link.\n", (pexHWInf<8)?(pexHWInf/4):(pexHWInf-6) , (pexHWInf<8)?(pexHWInf%4):0, pexIf);
-							continue;
-						}
-						while ((mvPexConfigRead(pexHWInf, pci_hose[pexIf].first_busno, 1, 0, addr) & 0xFF) != 0x10) {
-							DB(printf("[0x%x] = 0x%x -> \n", addr, mvPexConfigRead(pexHWInf, pci_hose[pexIf].first_busno, 1, 0, addr)));
-							addr = (mvPexConfigRead(pexHWInf, pci_hose[pexIf].first_busno, 1, 0, addr) & 0xFF00) >> 8;
-						}
-						DB(printf("[0x%x] = 0x%x -> ",addr +0xc, mvPexConfigRead(pexHWInf, pci_hose[pexIf].first_busno, 1, 0, addr + 0xC)));
-						if ((mvPexConfigRead(pexHWInf, pci_hose[pexIf].first_busno, 1, 0, addr + 0xC) & 0xF) == 0x2) {
-							/*MV_REG_BIT_SET(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CTRL_STAT_REG), BIT5);*/
-							MV_REG_BIT_RESET(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CTRL_STAT_2_REG), (BIT0 | BIT1));
-							MV_REG_BIT_SET(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CTRL_STAT_2_REG), BIT1);
-							MV_REG_BIT_SET(PEX_CTRL_REG(pexHWInf), BIT10);
-							udelay(10000);/* We need to wait 10ms before reading the PEX_DBG_STATUS_REG in order not to read the status of the former state*/
-							DB(printf("Gen2 client!\n"));			
-						} else 
-							DB(printf("GEN1 client!\n"));
-					}
-				}
-
-#endif
 			} else {
 				/* Interface with no link */
 				printf("PEX %d.%d(%d): Detected No Link.\n", (pexHWInf<8)?(pexHWInf/4):(pexHWInf-6) , (pexHWInf<8)?(pexHWInf%4):0, pexIf);
@@ -832,29 +800,6 @@ void pci_init_board(void)
 		}
 	}
 	
-#if defined(MV88F78X60) 
-	if (mvDeviceIdGet(ctrlModel)==MV_78XX) {
-	/* WA for AXP-A0 shuld be removed on B0 */
-	/* in case the maxLink width is greater than the Negotioated Link then the max link should be equal for the negotioated link */
-		for (pexUnit = 0; pexUnit < mvCtrlPexMaxUnitGet(); pexUnit++) {
-			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg != PEX_BUS_DISABLED) {
-				if (pexUnit < 3) /* ports 0, 1, 2 */
-					pexLane = pexUnit*4;
-				else /*Port 3*/
-					pexLane = pexUnit*3;
-				maxLinkWidth = ((MV_REG_READ(PEX_LINK_CAPABILITIES_REG(pexLane)) >> 4) & 0x3F);
-				negLinkWidth = ((MV_REG_READ(PEX_LINK_CTRL_STATUS_REG(pexLane)) >> 20) & 0x3F);
-				if (maxLinkWidth >  negLinkWidth) {
-					tmp = MV_REG_READ(PEX_LINK_CAPABILITIES_REG(pexLane));
-					tmp &= ~(0x3F << 4);
-					tmp |= (negLinkWidth << 4);
-					MV_REG_WRITE(PEX_LINK_CAPABILITIES_REG(pexLane),tmp);
-				}
-
-			}
-		}
-	}
-#endif
 #ifdef DB_FPGA
 	MV_REG_BIT_RESET(PCI_BASE_ADDR_ENABLE_REG(0), BIT10);
 #endif

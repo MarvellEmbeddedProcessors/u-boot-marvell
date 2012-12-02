@@ -82,8 +82,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bm/mvBm.h"
 #include "pnc/mvTcam.h"
 
-#define KERN_INFO
-
 static void mvEthRegPrint(MV_U32 reg_addr, char *reg_name)
 {
 	mvOsPrintf("  %-32s: 0x%x = 0x%08x\n", reg_name, reg_addr, MV_REG_READ(reg_addr));
@@ -769,24 +767,25 @@ void mvNetaCpuDump(int port, int cpu, int rxTx)
 {
 	MV_U32 regVal = MV_REG_READ(NETA_CPU_MAP_REG(port, cpu));
 	int j;
-       static const char  *qType[] = {"RXQ", "TXQ"};
+	static const char  *qType[] = {"RXQ", "TXQ"};
 
-       if (rxTx > 1 || rxTx < 0) {
+	if (rxTx > 1 || rxTx < 0) {
 		mvOsPrintf("Error - invalid queue type %d , valid values are 0 for TXQ or 1 for RXQ\n", rxTx);
 		return;
-       }
+	}
 
-       if (rxTx == 1)
-               regVal >>= 8;
+	if (rxTx == 1)
+		regVal >>= 8;
 
 	for (j = 0; j < CONFIG_MV_ETH_RXQ; j++) {
 		if (regVal & 1)
 			mvOsPrintf("%s-%d ", qType[rxTx], j);
 		else
 			mvOsPrintf("       ");
-	regVal >>= 1;
+
+		regVal >>= 1;
 	}
-		mvOsPrintf(KERN_INFO "\n");
+	mvOsPrintf("\n");
 }
 
 #ifdef CONFIG_MV_PON

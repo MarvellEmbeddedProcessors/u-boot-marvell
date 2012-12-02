@@ -64,6 +64,7 @@ disclaimer.
 #include "rtc/ext_rtc/mvDS133x.h"
 #endif
 
+#include "mvSysCntmrApi.h"
 #if defined(MV_INCLUDE_XOR)
 #include "xor/mvXor.h"
 #include "mvSysXorApi.h"
@@ -223,6 +224,7 @@ void misc_init_r_dec_win(void)
 {
 	char *env, envname[10];
 	MV_U32 bitMaskConfig = 0;
+	mvSysCntmrInit();
 
 #if defined(MV_INCLUDE_USB)
 	{

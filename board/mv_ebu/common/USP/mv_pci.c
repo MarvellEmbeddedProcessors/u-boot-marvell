@@ -646,7 +646,7 @@ void pci_init_board(void)
 #endif
 
 		/* PEX capability */
-		if (mvDeviceIdGet(ctrlModel)==MV_67XX) {
+		if (mvCtrlDevFamilyIdGet(ctrlModel)==MV_67XX) {
 			tempPexReg = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CAPABILITY_REG));
 			tempPexReg &= ~(0xF);
 			#if defined(DB_88F6710)

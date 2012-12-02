@@ -14,6 +14,7 @@ HAL_IF_OBJS = $(HAL_IF_DIR)/mvSysDdr.o	  \
 			  $(HAL_IF_DIR)/mvSysSpi.o	\
 			  $(HAL_IF_DIR)/mvSysUsb.o 	\
 			  $(HAL_IF_DIR)/mvSysSdmmc.o 	\
+			  $(HAL_IF_DIR)/mvSysCntmr.o 	\
 			  $(HAL_IF_DIR)/mvSysXor.o	
 
 

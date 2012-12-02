@@ -39,7 +39,7 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	this list of conditions and the following disclaimer.
+	    this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
 	notice, this list of conditions and the following disclaimer in the
@@ -62,100 +62,34 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef __INCmvTmrWtdgh
-#define __INCmvTmrWtdgh
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* includes */
+#include "mvCommon.h"
 #include "mvOs.h"
-#include "cntmr/mvCntmrRegs.h"
-#include "ctrlEnv/mvCtrlEnvSpec.h"
-#include "mvSysCntmrConfig.h"
-
-typedef struct {
-	MV_U16		ctrlModel;
-	MV_U16		ctrlRev;
-	MV_U32		ctrlFamily;
-} MV_CNTMR_HAL_DATA;
-
-/* This enumerator describe counters\watchdog numbers       */
-	typedef enum _mvCntmrID {
-		TIMER0 = 0,		/* Global counter 0 */
-		TIMER1,			/* Global counter 1 */
-		TIMER2,			/* Global counter 2 */
-		TIMER3,			/* Global counter 3 */
-		TIMER4,			/* Global Watchdog 0*/
-		TIMER5,			/* CPU0 Timer 0   for A0 this is private CPU timer 0  */
-		TIMER6, 		/* CPU0 Timer 1   for A0 this is private CPU timer 1   */
-		TIMER7, 		/* CPU0 Watchdog  for A0 this is private CPU WD  */
-	} MV_CNTMR_ID;
-
-#define MAX_GLOBAL_TIMER	TIMER4
-#define FIRST_PRIVATE_TIMER TIMER5
-
-	typedef enum _mvCntmrRatio {
-		MV_RATIO_1  = 0,  /*  0 = 1: Timer tic occurs every source clock        */
-		MV_RATIO_2,       /*  1 = 2: Timer tic occurs every 2 source clocks     */
-		MV_RATIO_4,       /*  2 = 4: Timer tic occurs every 4 source clocks     */
-		MV_RATIO_8,       /*  3 = 8: Timer tic occurs every 8 source clocks     */
-		MV_RATIO_16,      /*  4 = 16: Timer tic occurs every 16 source clocks   */
-		MV_RATIO_32,      /*  5 = 32: Timer tic occurs every 32 source clocks   */
-		MV_RATIO_64,      /*  6 = 64: Timer tic occurs every 64 source clocks   */
-		MV_RATIO_128      /*  7 = 128: Timer tic occurs every 128 source clocks */
-	} MV_CNTMR_RATIO_ID;
-
-/* Counter / Timer control structure */
-	typedef struct _mvCntmrCtrl {
-		MV_BOOL enable;	/* enable */
-		MV_BOOL autoEnable;	/* counter/Timer  */
-
-		MV_CNTMR_RATIO_ID	Ratio;
-		MV_BOOL enable_25Mhz;	/* enable timer count frequency is to 25Mhz*/
-
-	} MV_CNTMR_CTRL;
-
-/* Functions */
-
-	MV_STATUS   mvCntmrHalInit(MV_CNTMR_HAL_DATA *halData);
-
-/* Load an init Value to a given counter/timer */
-	MV_STATUS mvCntmrLoad(MV_U32 countNum, MV_U32 value);
-
-/* Returns the value of the given Counter/Timer */
-	MV_U32 mvCntmrRead(MV_U32 countNum);
-
-/* Returns 0xffffffff minus the value of the given Counter/Timer */
-	MV_U32 mvCntmrReadDiff(MV_U32 countNum);
-
-/* Write a value of the given Counter/Timer */
-	void mvCntmrWrite(MV_U32 countNum, MV_U32 countVal);
-
-/* Set the Control to a given counter/timer */
-	MV_STATUS mvCntmrCtrlSet(MV_U32 countNum, MV_CNTMR_CTRL *pCtrl);
-
-/* Get the value of a given counter/timer */
-	MV_STATUS mvCntmrCtrlGet(MV_U32 countNum, MV_CNTMR_CTRL *pCtrl);
-
-/* Set the Enable-Bit to logic '1' ==> starting the counter. */
-	MV_STATUS mvCntmrEnable(MV_U32 countNum);
-
-/* Stop the counter/timer running, and returns its Value. */
-	MV_STATUS mvCntmrDisable(MV_U32 countNum);
-
-/* Combined all the sub-operations above to one function: Load,setMode,Enable */
-	MV_STATUS mvCntmrStart(MV_U32 countNum, MV_U32 value, MV_CNTMR_CTRL *pCtrl);
-
-/*	Clear an Counter/Timer interrupt (Ack) */
-	MV_STATUS mvCntmrIntClear(MV_U32 cntmrNum);
-
-/*	get Counter/Timer Frequency */
-	MV_U32 mvCntmrFrqGet(MV_U32 cntmrNum);
+#include "ctrlEnv/mvCtrlEnvLib.h"
+#include "boardEnv/mvBoardEnvLib.h"
+#include "cntmr/mvCntmr.h"
 
 
-#ifdef __cplusplus
+/*******************************************************************************
+* mvSysCntmrInit - Initialize the Cntmr subsystem
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None
+* OUTPUT:
+*		None
+* RETURN:
+*       None
+*
+*******************************************************************************/
+MV_STATUS   mvSysCntmrInit(void)
+{
+	MV_CNTMR_HAL_DATA halData;
+
+	halData.ctrlModel = mvCtrlModelGet();
+	halData.ctrlRev = mvCtrlRevGet();
+	halData.ctrlFamily=mvCtrlDevFamilyIdGet(halData.ctrlModel);
+	return mvCntmrHalInit(&halData);
 }
-#endif
-#endif				/* __INCmvTmrWtdgh */
+
+

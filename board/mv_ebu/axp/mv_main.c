@@ -63,6 +63,7 @@ disclaimer.
 #include "rtc/ext_rtc/mvDS133x.h"
 #endif
 
+#include "mvSysCntmrApi.h"
 #if defined(MV_INCLUDE_XOR)
 #include "xor/mvXor.h"
 #include "mvSysXorApi.h"
@@ -203,6 +204,7 @@ void enable_caches(void)
 void misc_init_r_dec_win(void)
 {
 	char *env;
+	mvSysCntmrInit();
 #if defined(DB_78X60_PCAC) || defined(DB_78X60_PCAC_REV2)
 	/* TODO: no support for usb on PCAC board for now. */
 #else

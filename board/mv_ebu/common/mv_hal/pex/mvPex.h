@@ -149,6 +149,7 @@ extern "C" {
 	typedef struct {
 		MV_U16 ctrlModel;
 		MV_U16 maxPexIf;
+		MV_U32 ctrlFamily;
 	} MV_PEX_HAL_DATA;
 
 	/* Global Functions prototypes */

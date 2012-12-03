@@ -101,6 +101,7 @@ MV_STATUS mvSysPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType)
 	if (status == MV_OK) {
 		halData.ctrlModel = mvCtrlModelGet();
 		halData.maxPexIf = mvCtrlPexMaxIfGet();
+		halData.ctrlFamily=mvCtrlDevFamilyIdGet(halData.ctrlModel);
 		status = mvPexInit(pexIf, pexType, &halData);
 	}
 

@@ -207,7 +207,7 @@ static int mvUsbPhy40nmInit(int dev)
 	/*-------------------------------------------------*/
 
 /* BTS #231 - for KW40 only */
-	if (mvCtrlDevFamilyIdGet(usbHalData.ctrlModel)==MV_67XX) {
+	if (usbHalData.ctrlFamily==MV_67XX) {
 		MV_REG_WRITE(0x50850, 0x20000131);
 		MV_REG_WRITE(0x50890, 0x20000131);
 	}
@@ -823,8 +823,8 @@ MV_STATUS mvUsbHalInit(int dev, MV_BOOL isHost, MV_USB_HAL_DATA *halData)
 		mvUsbPhy65nmNewInit(dev);
 
 /* 	mvUsbPhyKW6500Init(dev); */
-	} else if ((mvCtrlDevFamilyIdGet(usbHalData.ctrlModel)==MV_67XX) ||
-		(mvCtrlDevFamilyIdGet(usbHalData.ctrlModel)==MV_78XX0)) {
+	} else if ((usbHalData.ctrlFamily==MV_67XX) ||
+		(usbHalData.ctrlFamily==MV_78XX0)) {
 
 		if (mvUsbPhy40nmInit(dev))
 			status = MV_NOT_READY;

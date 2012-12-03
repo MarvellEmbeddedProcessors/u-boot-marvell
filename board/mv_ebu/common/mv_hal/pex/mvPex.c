@@ -87,9 +87,11 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 	MV_U32 regVal;
 	MV_U32 status;
 	MV_U16 ctrlModel;
+	MV_U32 ctrlFamily;
 
 	mvOsMemcpy(&pexHalData[pexIf], halData, sizeof(MV_PEX_HAL_DATA));
 	ctrlModel = pexHalData[pexIf].ctrlModel;
+	ctrlFamily=pexHalData[pexIf].ctrlFamily;
 
 	if (mvPexModeGet(pexIf, &pexMode) != MV_OK) {
 		mvOsPrintf("PEX init ERR. mvPexModeGet failed (pexType=%d)\n", pexMode.pexType);
@@ -117,7 +119,7 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 		status = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_STATUS_AND_COMMAND));
 		status |= PXSAC_INT_DIS;
 		MV_REG_WRITE(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_STATUS_AND_COMMAND), status);
-		if (mvCtrlDevFamilyIdGet(ctrlModel)==MV_67XX) {
+		if (ctrlFamily==MV_67XX) {
 			/* PEX capability */
 			regVal = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_LINK_CAPABILITY_REG)) & 0xF;
 			if (regVal == 0x2) {
@@ -128,7 +130,7 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 			} 
 		} 
 	} else { /* if (MV_PEX_ROOT_COMPLEX != pexType) */
-		if (mvCtrlDevFamilyIdGet(ctrlModel)==MV_67XX) {
+		if (ctrlFamily==MV_67XX) {
 			/* TODO: 14/12/10 - requested by CV to support EP Compliance */
 			MV_REG_WRITE(PEX_DBG_CTRL_REG(pexIf), 0x0F62F0C0);
 
@@ -146,7 +148,7 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 		}
 	}
 	
-	if (mvCtrlDevFamilyIdGet(ctrlModel)==MV_67XX) {
+	if (ctrlFamily==MV_67XX) {
 		 mvCpuIfEnablePex(pexIf);
 	}
 	/* now wait 1ms to be sure the link is valid */

@@ -97,6 +97,7 @@ MV_STATUS   mvSysUsbInit(MV_U32 dev, MV_BOOL isHost)
 	if (status == MV_OK) {
 		halData.ctrlModel = mvCtrlModelGet();
 		halData.ctrlRev = mvCtrlRevGet();
+		halData.ctrlFamily=mvCtrlDevFamilyIdGet(halData.ctrlModel);
 		status = mvUsbHalInit(dev, isHost, &halData);
 	}
 

@@ -75,6 +75,7 @@ extern "C" {
 typedef struct {
 	MV_U16		ctrlModel;
 	MV_U8		ctrlRev;
+	MV_U32		ctrlFamily;
 } MV_USB_HAL_DATA;
 
 /* Functions */

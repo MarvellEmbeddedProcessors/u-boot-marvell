@@ -62,7 +62,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvCommon.h"
 #include "mvOs.h"
 #include "ctrlEnv/mvCtrlEnvSpec.h"
-#include "ctrlEnv/mvUnitMap.h"
+/*#include "ctrlEnv/mvUnitMap.h"*/
 #include "mvSysXorConfig.h"
 #include "mvXorRegs.h"
 #include "mvXor.h"
@@ -93,8 +93,8 @@ MV_VOID mvXorHalInit(MV_U32 xorChanNum)
 	/* Abort any XOR activity & set default configuration */
 	for (i = 0; i < xorChanNum; i++) {
 		
-		if(mvUnitMapIsMine(XOR0 + XOR_UNIT(i)) == MV_FALSE)
-			continue;
+		/*if(mvUnitMapIsMine(XOR0 + XOR_UNIT(i)) == MV_FALSE)
+			continue;*/
 		
 		mvXorCommandSet(i, MV_STOP);
 		mvXorCtrlSet(i, (1 << XEXCR_REG_ACC_PROTECT_OFFS) |

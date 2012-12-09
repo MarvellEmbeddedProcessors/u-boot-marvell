@@ -367,7 +367,8 @@ MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
 
 MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum);
 MV_32 mvBoardPhyLinkCryptPortAddrGet(MV_U32 ethPortNum);
-
+MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx);
+MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
 MV_BOOL mvBoardSpecInitGet(MV_U32 *regOff, MV_U32 *data);
 MV_U32 mvBoardTclkGet(MV_VOID);
 MV_U32 mvBoardSysClkGet(MV_VOID);

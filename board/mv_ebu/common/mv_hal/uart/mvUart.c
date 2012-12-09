@@ -69,8 +69,10 @@ static volatile MV_UART_PORT * uartBase[MV_UART_MAX_CHAN]=
 {
 	mvUartBase(0),
 	mvUartBase(1),	
+#ifdef MV88F78X60
 	mvUartBase(2),
 	mvUartBase(3)
+#endif
 };
 
 

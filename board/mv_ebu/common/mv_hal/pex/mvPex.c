@@ -86,11 +86,9 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 	MV_PEX_MODE pexMode;
 	MV_U32 regVal;
 	MV_U32 status;
-	MV_U16 ctrlModel;
 	MV_U32 ctrlFamily;
 
 	mvOsMemcpy(&pexHalData[pexIf], halData, sizeof(MV_PEX_HAL_DATA));
-	ctrlModel = pexHalData[pexIf].ctrlModel;
 	ctrlFamily=pexHalData[pexIf].ctrlFamily;
 
 	if (mvPexModeGet(pexIf, &pexMode) != MV_OK) {

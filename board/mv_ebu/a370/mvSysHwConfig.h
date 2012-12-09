@@ -41,7 +41,7 @@ disclaimer.
 #define MV_INCLUDE_PEX
 #define MV_INCLUDE_GIG_ETH
 //#define MV_INCLUDE_CESA
-#define MV_INCLUDE_SWITCH
+//#define MV_INCLUDE_SWITCH
 #define OLD_CESA_HAL
 #define MV_INCLUDE_USB
 #define MV_INCLUDE_TWSI

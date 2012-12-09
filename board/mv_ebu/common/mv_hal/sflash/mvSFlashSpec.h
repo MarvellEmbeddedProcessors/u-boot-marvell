@@ -126,19 +126,24 @@ extern "C" {
 #define	    MV_M25PX64_ADDR_CYC_CNT	         3
 
 
-#define     MV_M25Q128_DEVICE_ID                 0xBA18
-#define     MV_M25Q128_MAX_SPI_FREQ              20000000    /* 20MHz */
-#define     MV_M25Q128_MAX_FAST_SPI_FREQ         50000000    /* 50MHz */
-#define     MV_M25Q128_FAST_READ_DUMMY_BYTES     1
+/* Manufacturer IDs and Device IDs for SFLASHs supported by the driver */
+#define     MV_M25Q128_DEVICE_ID                0xBA18
+#define     MV_M25Q128_MAX_SPI_FREQ             20000000    /* 20MHz */
+#define     MV_M25Q128_MAX_FAST_SPI_FREQ        50000000    /* 50MHz */
+#define     MV_M25Q128_FAST_READ_DUMMY_BYTES    1
+
 
 /* Sector Sizes and population per device model*/
 #define     MV_M25P32_SECTOR_SIZE               0x10000 /* 64K */
 #define     MV_M25P64_SECTOR_SIZE               0x10000 /* 64K */
 #define     MV_M25P128_SECTOR_SIZE              0x40000 /* 256K */
+#define     MV_M25Q128_SECTOR_SIZE              0x10000 /* 64K */
 #define     MV_M25P32_SECTOR_NUMBER             64
 #define     MV_M25P64_SECTOR_NUMBER             128
 #define     MV_M25P128_SECTOR_NUMBER            64
-#define		MV_M25P_PAGE_SIZE				    0x100   /* 256 byte */
+#define     MV_M25Q128_SECTOR_NUMBER            256
+#define	    MV_M25P_PAGE_SIZE			0x100   /* 256 byte */
+#define	    MV_M25Q_PAGE_SIZE			0x100   /* 256 byte */
 
 #define		MV_M25P_WREN_CMND_OPCD			    0x06	/* Write Enable */
 #define		MV_M25P_WRDI_CMND_OPCD			    0x04	/* Write Disable */

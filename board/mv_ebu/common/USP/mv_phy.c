@@ -73,6 +73,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "eth/gbe/mvEthRegs.h"
 #endif
 #include "mvSysEthPhyApi.h"
+#include "ethSwitch/mvSwitch.h"
 
 
 /***********************************************************

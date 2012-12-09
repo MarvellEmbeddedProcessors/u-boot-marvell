@@ -575,20 +575,12 @@ void pci_init_board(void)
 	MV_U16 ctrlModel=mvCtrlModelGet();
 	MV_U32 pexIfNum = mvCtrlPexMaxIfGet();
 	MV_U32 pexIf=0;
-	MV_U32 pexLane = 0;
-	MV_U32 pexUnit = 0;
-	MV_U32 maxLinkWidth = 0;
-	MV_U32 negLinkWidth = 0;
-	MV_U32 tmp = 0;
-
 	MV_ADDR_WIN rempWin;
 	char *env;
 	int status;
 	MV_CPU_DEC_WIN  cpuAddrDecWin;
 	PCI_IF_MODE	pexIfMode = PCI_IF_MODE_HOST;
 	int pexIfStart = 0;
-	MV_U32 addr;
-	MV_U32 tempReg;
 	MV_U32 tempPexReg;
 	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
 	MV_U32 pexHWInf = 0;

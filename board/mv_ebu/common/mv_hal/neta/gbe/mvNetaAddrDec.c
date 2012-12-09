@@ -179,13 +179,13 @@ MV_STATUS mvNetaWinWrite(MV_U32 port, MV_U32 winNum, MV_UNIT_WIN_INFO *pAddrDecW
 
 	size = pAddrDecWin->addrWin.size;
 	if (size == 0) {
-		mvOsPrintf("%s: ERR. Invalid window size %d\n",	__func__, size);
+		mvOsPrintf("%s: ERR. Invalid window size %lld\n",	__func__, size);
 		return MV_BAD_PARAM;
 	}
 	if (!MV_IS_POWER_OF_2(size)) {
 		/* try to get a good size */
 		pAddrDecWin->addrWin.size = 1 << (mvLog2(size) + 1);
-		mvOsPrintf("%s: WARN. Wrong window size %d, rounding to %lld\n",
+		mvOsPrintf("%s: WARN. Wrong window size %lld, rounding to %lld\n",
 			__func__, size, pAddrDecWin->addrWin.size);
 		size = pAddrDecWin->addrWin.size;
 	}

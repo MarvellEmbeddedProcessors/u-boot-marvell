@@ -2909,7 +2909,7 @@ MV_STATUS mvNetaTxpEjpSet(int port, int txp, int enable)
 	else
 		regVal = 0;
 
-	MV_REG_WRITE(NETA_TX_CMD_1_REG(port, txp), 0);
+	MV_REG_WRITE(NETA_TX_CMD_1_REG(port, txp), regVal);
 
 	return MV_OK;
 }

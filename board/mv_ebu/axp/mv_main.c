@@ -238,7 +238,7 @@ void misc_init_r_dec_win(void)
 
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
 	env = getenv("enaClockGating");
-	if((strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0))
+	if( env && ((strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0)) )
 		mv_set_power_scheme();
 #endif
 
@@ -350,8 +350,6 @@ void misc_init_r_env(void){
 	char *env;
 	char tmp_buf[10];
 	unsigned int malloc_len;
-
-
 
 	env = getenv("console");
 	if(!env) {
@@ -715,29 +713,28 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 	env = getenv("bootcmd");
 	if(!env)
 #if defined(CONFIG_OF_LIBFDT)
-sdv
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
 ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000 - 0x1000000;");
 #elif defined(CONFIG_CMD_STAGE_BOOT)
 		setenv("bootcmd","stage_boot $boot_order");
 #elif defined(MV_INCLUDE_TDM) && defined(MV_INC_BOARD_QD_SWITCH)
-sdv
+
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
 ip=$ipaddr:$serverip$bootargs_end $mvNetConfig  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000; ");
 #elif defined(MV_INC_BOARD_QD_SWITCH)
-sd
+
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
 setenv bootargs $console  $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
 ip=$ipaddr:$serverip$bootargs_end $mvNetConfig  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000; ");
 #elif defined(MV_INCLUDE_TDM)
-sdv
+
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
 ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000; ");
 #else 
-sdv
+
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
 ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000; ");
@@ -1111,6 +1108,8 @@ int misc_init_r (void)
 
 	/* init the units decode windows */
 	misc_init_r_dec_win();
+
+	/* Clear old kernel images which remained stored in memory */
 	memset ((void *)CONFIG_SYS_LOAD_ADDR, 0, CONFIG_SYS_MIN_HDR_DEL_SIZE);
 	mvBoardDebugLed(6);
 

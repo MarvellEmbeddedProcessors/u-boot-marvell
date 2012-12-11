@@ -227,11 +227,11 @@ if(defined $opt_o)
 	print "\n**** [Copying Image]\tto ",$opt_o,"  *****\n\n";
 	system("mkdir -p $opt_o/$endian/$opt_f");
 	system("mkdir -p $opt_o/bin_hdr");
-	system("cp u-boot-$boardID-$opt_v-$flash_name.bin $opt_o.bin");
+	system("cp u-boot-$boardID-$opt_v-$flash_name.bin $opt_o/u-boot.bin");
 	system("cp u-boot-$boardID-$opt_v-$flash_name.bin $opt_o/$endian/$opt_f/ ");
 	system("cp u-boot $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name ");
 	system("cp u-boot.srec $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name.srec ");
-    system("cp u-boot-$boardID-$opt_v-$flash_name-uart.bin $opt_o/$endian/$opt_f/");
+        system("cp u-boot-$boardID-$opt_v-$flash_name-uart.bin $opt_o/$endian/$opt_f/");
 
 
 	if ($boardID eq "a370")

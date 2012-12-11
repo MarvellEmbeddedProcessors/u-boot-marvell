@@ -31,7 +31,6 @@ THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
 WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
 DISCLAIMED.  The GPL License provides additional details about this warranty
 disclaimer.
-
 *******************************************************************************/
 
 #include <common.h>
@@ -77,6 +76,9 @@ disclaimer.
 #include "usb/mvUsb.h"
 #include "mvSysUsbApi.h"
 #endif
+#ifdef CONFIG_AMP_SUPPORT
+#include "mv_amp.h"
+#endif
 
 #include "cpu/mvCpu.h"
 #include "nand.h"
@@ -84,12 +86,9 @@ disclaimer.
 #ifdef CONFIG_PCI
 	#include <pci.h>
 #endif
-//#include "pci/mvPciRegs.h"
 
 #include <asm/arch-armv7/vfpinstr.h>
 #include <asm/arch-armv7/vfp.h>
-//#include <asm/arch/vfpinstr.h>
-//#include <asm/arch/vfp.h>
 
 #include <net.h>
 #include <netdev.h>
@@ -106,42 +105,26 @@ disclaimer.
 
 /* CPU address decode table. */
 MV_CPU_DEC_WIN mvCpuAddrWinMap[] = MV_CPU_IF_ADDR_WIN_MAP_TBL;
-/*extern MV_U32 dummyFlavour;*/
-#if 0
-static void mvHddPowerCtrl(void);
-#endif
 #if defined(CONFIG_CMD_RCVR)
 extern void recoveryDetection(void);
 #endif
 void mv_cpu_init(void);
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
-int mv_set_power_scheme(void);
+void mv_set_power_scheme(void);
 #endif
-
-
-
-#if defined(MV_INCLUDE_UNM_ETH) || defined(MV_INCLUDE_GIG_ETH)
-//extern MV_VOID mvBoardEgigaPhySwitchInit(void);
-#endif
-
-
 
 extern nand_info_t nand_info[];       /* info for NAND chips */
-
 extern struct spi_flash *flash;
 extern const char version_string[];
 #ifdef CONFIG_MRVL_MMC
 int mrvl_mmc_initialize(bd_t *bis);
 #endif
-
 #ifdef MV_NAND_BOOT
 extern MV_U32 nandEnvBase;
 #endif
 
-/* Define for SDK 2.0 */
-//int raise(void) {return 0;}
-
 DECLARE_GLOBAL_DATA_PTR;
+
 
 void mv_print_map(void)
 {
@@ -149,9 +132,10 @@ void mv_print_map(void)
 #ifdef DB_78X60_PCAC
 		return 0;
 #endif
+
 	printf("\nMap:   Code:\t\t0x%08x:0x%08x\n", (unsigned int)gd->reloc_off, (unsigned int)(gd->reloc_off + _bss_start_ofs));
 	printf("       BSS:\t\t0x%08x\n", (unsigned int)(gd->reloc_off + _bss_end_ofs));
-	printf("       Stack:\t\t0x%08x\n", (unsigned int)gd->start_addr_sp); 
+	printf("       Stack:\t\t0x%08x\n", (unsigned int)gd->start_addr_sp);
 #if defined(MV_INCLUDE_MONT_EXT)
 	if(!enaMonExt()) {
 		add = MV_PT_BASE(whoAmI());
@@ -178,19 +162,15 @@ void print_mvBanner(void)
 	printf("        | | | |___|  _ \\ / _ \\ / _ \\| __| \n");
 	printf("        | |_| |___| |_) | (_) | (_) | |_ \n");
 	printf("         \\___/    |____/ \\___/ \\___/ \\__| \n");
-//#if !defined(MV_NAND_BOOT)
+
 #if defined(MV_INCLUDE_MONT_EXT)
-    //mvMPPConfigToSPI();
 	if(!enaMonExt())
 		printf(" ** LOADER **\n");
 	else
 		printf(" ** MONITOR **\n");
-    //mvMPPConfigToDefault();
 #else
-
 	printf(" ** LOADER **\n");
 #endif /* MV_INCLUDE_MONT_EXT */
-//#endif
 	return;
 }
 
@@ -219,15 +199,18 @@ void enable_caches(void)
 {
 	return;
 }
+
 /* init for the Master*/
 void misc_init_r_dec_win(void)
 {
-	char *env, envname[10];
-	MV_U32 bitMaskConfig = 0;
+	char *env;
 	mvSysCntmrInit();
-
+#if defined(DB_78X60_PCAC) || defined(DB_78X60_PCAC_REV2)
+	/* TODO: no support for usb on PCAC board for now. */
+#else
 #if defined(MV_INCLUDE_USB)
 	{
+		char envname[10];
 		int  i;
 		for (i = 0; i < mvCtrlUsbMaxGet(); i++) {
 
@@ -247,8 +230,9 @@ void misc_init_r_dec_win(void)
 	}
 #endif/* #if defined(MV_INCLUDE_USB) */
 
-#if defined(MV_INCLUDE_SATA)
+#if defined(MV_INCLUDE_SATA) && defined (RD_88F6710)
 	{
+		MV_U32 bitMaskConfig = 0;
 		env = getenv("enaExtDisk");
 		if((!env) || (strcmp(env,"no") == 0))
 			bitMaskConfig &= ~(1 << 0);
@@ -259,9 +243,11 @@ void misc_init_r_dec_win(void)
 	}
 #endif /*#if defined(MV_INCLUDE_SATA)*/
 
+#endif /* #else */
 #if defined(MV_INCLUDE_XOR)
 	mvSysXorInit();
 #endif
+
 
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
 	mv_set_power_scheme();
@@ -270,9 +256,8 @@ void misc_init_r_dec_win(void)
     return;
 }
 
-
 /*
- * Miscellaneous platform dependent initialisations
+ * Miscellaneous platform dependent initializations
  */
 
 extern	MV_STATUS mvEthPhyRegRead(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 *data);
@@ -292,19 +277,13 @@ int board_init (void)
 	
 	mvCtrlModelSet();
 	boardId = mvBoardIdGet();
-	
-/* TODO : Should disable this code after we finish debugging - we added this code to enable printing before console init */
-#if 1
-	clock_divisor = (CONFIG_SYS_TCLK / 16)/115200;
 
+	clock_divisor = (CONFIG_SYS_TCLK / 16)/115200;
 	/* muti-core support, initiate each Uart to each cpu */
 	mvUartInit(whoAmI(), clock_divisor, mvUartBase(whoAmI()));
-#endif
+
 	if (whoAmI() != 0)
 		return 0;
-	/*omri*/
-	//mvCtrlUpdatePexId();
-	/*omri*/
 
 #if defined(MV_INCLUDE_TWSI)
 	MV_TWSI_ADDR slave;
@@ -336,11 +315,9 @@ int board_init (void)
 	/* Init the Controller CPU interface */
 	mvCpuIfDramInit();
 	mvCpuIfInit(mvCpuAddrWinMap);
-		/*omri*/
 	#if defined(MV_NOR_BOOT)
 	env_init();
 	#endif
-		/*omri*/
 	/* Init the GPIO sub-system */
 	gppHalData.ctrlRev = mvCtrlRevGet();
 	mvGppInit(&gppHalData);
@@ -366,9 +343,8 @@ int board_init (void)
 
 	mvBoardDebugLed(4);
 
-		/*omri*/
 	mv_print_map();
-		/*omri*/
+
 	return 0;
 }
 
@@ -376,7 +352,6 @@ void misc_init_r_env(void){
 	char *env;
 	char tmp_buf[10];
 	unsigned int malloc_len;
-	char buff[256];
 
 	env = getenv("console");
 	if(!env) {
@@ -396,7 +371,7 @@ void misc_init_r_env(void){
 #endif
 	}
 
-	/* Monitor extension */
+        /* Monitor extension */
 #ifdef MV_INCLUDE_MONT_EXT
 	env = getenv("enaMonExt");
 	if(/* !env || */ ( (strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0) ) )
@@ -454,18 +429,17 @@ void misc_init_r_env(void){
 		setenv("sata_dma_mode","no");
 	else
 		setenv("sata_dma_mode","yes");
-	
+
 	env = getenv("sata_delay_reset");
 	if (!env)
 		setenv("sata_delay_reset","0");
 
-	env = getenv("enaExtDisk");
-	if(!env)
-		setenv("enaExtDisk","no");
-
 	/* Malloc length */
 	env = getenv("MALLOC_len");
-	malloc_len =  simple_strtoul(env, NULL, 10) << 20;
+	if(env)
+		malloc_len =  simple_strtoul(env, NULL, 10) << 20;
+	else
+		malloc_len	= 0;
 	if(malloc_len == 0){
 		sprintf(tmp_buf,"%d",CONFIG_SYS_MALLOC_LEN>>20);
 		setenv("MALLOC_len",tmp_buf);
@@ -474,11 +448,10 @@ void misc_init_r_env(void){
 	/* primary network interface */
 	env = getenv("ethprime");
 	if(!env) {
-//	if(mvBoardIdGet() == RD_88F6281A_ID)
-//		setenv("ethprime","egiga1");
-//	else
 		setenv("ethprime",ENV_ETH_PRIME);
 	}
+	
+	/* image/script addr */
 
 	/* netbsd boot arguments */
 	env = getenv("netbsd_en");
@@ -584,8 +557,6 @@ void misc_init_r_env(void){
 	if(!env)
 		setenv("image_name","uImage");
 
-
-/* omri  -  no real device tree - empty setenv*/
 #if CONFIG_OF_LIBFDT
 	env = getenv("fdtaddr");
 		if(!env)
@@ -595,7 +566,37 @@ void misc_init_r_env(void){
 		if(!env)
 			setenv("fdtfile","armada_xp_db.dtb");
 #endif
-/* omri  -  no real device tree - empty setenv*/
+
+
+#if CONFIG_AMP_SUPPORT
+	env = getenv("amp_enable");
+	if(!env || ( ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) ))){
+		setenv("amp_enable","no");
+	}
+	else{
+		env = getenv("amp_groups");
+		if(!env)
+			setenv("amp_groups","0");
+
+		env = getenv("amp_shared_mem");
+		if(!env)
+			setenv("amp_shared_mem","0x80000000:0x100000");
+
+		setenv("bootcmd", "amp_boot");
+
+		env = getenv("amp_verify_boot");
+		if(!env)
+			setenv("amp_verify_boot","yes");
+
+	}
+#endif
+
+#ifdef CONFIG_ARM_LPAE
+	/* LPAE support */
+	env = getenv("enaLPAE");
+	if(!env)
+		setenv("enaLPAE", "no");
+#endif
 	env = getenv("load_addr");
 	if(!env)
 		setenv("load_addr",RCVR_LOAD_ADDR);
@@ -603,13 +604,12 @@ void misc_init_r_env(void){
 #if (CONFIG_BOOTDELAY >= 0)
 	env = getenv("bootcmd");
 	if(!env)
-	/* omri  -  no real device tree - empty setenv*/
-	#if defined(CONFIG_OF_LIBFDT)
+#if defined(CONFIG_OF_LIBFDT)
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
 ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000 - 0x1000000;");
 	
-	/* omri  -  no real device tree - empty setenv*/
+
 #elif defined(MV_INCLUDE_TDM) && defined(MV_INC_BOARD_QD_SWITCH)
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
@@ -711,9 +711,7 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	/* Set mvNetConfig env parameter */
 	env = getenv("mvNetConfig");
 	if(!env ) {
-
 				setenv("mvNetConfig","mv_net_config1=1,(00:50:43:11:11:11,0:1:2:3:4),mtu=1500");
-			
 	}
 #endif /*  (MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_UNM_ETH) */
 
@@ -725,17 +723,16 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	env = getenv("usb1Mode");
 	if(!env)
 		setenv("usb1Mode",ENV_USB1_MODE);
-		/* omri */
+
 	env = getenv("usb2Mode");
 	if(!env)
 		setenv("usb2Mode",ENV_USB2_MODE);
-		/* omri */
+
 	env = getenv("usbActive");
 	if(!env)
 		setenv("usbActive",ENV_USB_ACTIVE);
 
 #endif  /* (MV_INCLUDE_USB) */
-
 
 #if defined(YUK_ETHADDR)
 	env = getenv("yuk_ethaddr");
@@ -760,11 +757,6 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	if(!env) {
 		setenv("nandEcc", "1bit");
 	}
-#endif
-#if 0
-#if defined(RD_88F6281A) || defined(RD_88F6192A) || defined(RD_88F6190A)
-	mvHddPowerCtrl();
-#endif
 #endif
 #if defined(CONFIG_CMD_RCVR)
 	env = getenv("netretry");
@@ -832,17 +824,15 @@ int board_eth_init(bd_t *bis)
 #endif
 	return 0;
 }
-
 #ifdef CONFIG_MMC
-	int board_mmc_init(bd_t *bis)
-	{
+int board_mmc_init(bd_t *bis)
+{
 #ifdef CONFIG_MRVL_MMC
-		mrvl_mmc_initialize(bis);
+	mrvl_mmc_initialize(bis);
 #endif
-		return 0;
-	}
+	return 0;
+}
 #endif
-			
 int print_cpuinfo (void)
 {
 	char name[50];
@@ -852,10 +842,6 @@ int print_cpuinfo (void)
 	printf("Board: %s\n",  name);
 	mvCtrlModelRevNameGet(name);
 	printf("SoC:   %s\n", name);
-#if 0
-	if (!mvCtrlIsValidSatR())
-		printf("       Custom configuration\n");
-#endif
 	mvCpuNameGet(name);
 	printf("CPU:   %s",  name);
 #ifdef MV_CPU_LE
@@ -863,7 +849,7 @@ int print_cpuinfo (void)
 #else
 	printf(" BE\n");
 #endif
-printf("       CPU    @ %d [MHz]\n",  mvCpuPclkGet()/1000000);
+	printf("       CPU    @ %d [MHz]\n",  mvCpuPclkGet()/1000000);
 	printf("       L2     @ %d [MHz]\n", mvCpuL2ClkGet()/1000000);
 	printf("       TClock @ %d [MHz]\n", mvTclkGet()/1000000);
 	printf("       DDR    @ %d [MHz]\n", CONFIG_SYS_BUS_CLK/1000000);
@@ -880,6 +866,9 @@ int misc_init_r (void)
 
 	/* init special env variables */
 	misc_init_r_env();
+#ifdef CONFIG_AMP_SUPPORT
+	amp_init();
+#endif
 
 	mv_cpu_init();
 
@@ -894,14 +883,7 @@ int misc_init_r (void)
 	misc_init_r_dec_win();
 
 	/* Clear old kernel images which remained stored in memory */
-	memset (CONFIG_SYS_LOAD_ADDR, 0, CONFIG_SYS_MIN_HDR_DEL_SIZE);
-#if 0
-#ifdef CONFIG_PCI
-#if !defined(MV_MEM_OVER_PCI_WA) && !defined(MV_MEM_OVER_PEX_WA)
-	pci_init();
-#endif
-#endif
-#endif
+	memset ((void *)CONFIG_SYS_LOAD_ADDR, 0, CONFIG_SYS_MIN_HDR_DEL_SIZE);
 	mvBoardDebugLed(6);
 	
 	/* Prints the modules detected */
@@ -909,7 +891,15 @@ int misc_init_r (void)
 	mvBoardOtherModuleTypePrint();
 	
 	mvBoardDebugLed(7);
-
+#ifdef DB_78X60_AMC
+	MV_U32 tmpOut;
+	/* Set GPP19 & 22 Out value to '0' */
+	MV_REG_READ(GPP_DATA_OUT_REG(0));
+	tmpOut = tmpOut & 0xFFB7FFFF;
+	MV_REG_WRITE(GPP_DATA_OUT_REG(0), tmpOut);
+      	/* Set GPP19 & 22 Out Enable */
+	mvGppTypeSet(0, 0x480000, 0x0);
+#endif
 	/* pcie fine tunning */
 	env = getenv("pcieTune");
 	if(env && ((strcmp(env,"yes") == 0) || (strcmp(env,"yes") == 0)))
@@ -962,7 +952,6 @@ void reset_cpu (ulong addr)
 	mvBoardReset();
 }
 
-
 void mv_cpu_init(void)
 {
 	char *env;
@@ -973,7 +962,7 @@ void mv_cpu_init(void)
 	__asm__ __volatile__("mcr p15, 0, %0, c1, c0, 2" :: "r" (temp));
 
 	env = getenv("enaFPU");
-	if((strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0)){
+	if(env && ((strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0))){
 		/* init and Enable FPU to Run Fast Mode */
 		printf("FPU initialized to Run Fast Mode.\n");
 		/* Enable */
@@ -1046,18 +1035,18 @@ void mv_cpu_init(void)
 
 		/* Set "Force write policy" field */
 		env = getenv("L2forceWrPolicy");
-		if( (strcmp(env,"WB") == 0) || (strcmp(env,"wb") == 0) )
+		if( env && ((strcmp(env,"WB") == 0) || (strcmp(env,"wb") == 0)) )
 			temp |= CL2ACR_WB_WT_ATTR_WB;
-		else if( (strcmp(env,"WT") == 0) || (strcmp(env,"wt") == 0) )
+		else if( env && ((strcmp(env,"WT") == 0) || (strcmp(env,"wt") == 0)) )
 			temp |= CL2ACR_WB_WT_ATTR_WT;
 		else
 			temp |= CL2ACR_WB_WT_ATTR_PAGE;
 
 		/* Set "Force Write Allocate" field */
 		env = getenv("L2forceWrAlloc");
-		if( (strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) )
+		if( env && ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0)) )
 			temp |= CL2ACR_FORCE_NO_WA;
-		else if( (strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0) )
+		else if( env && ((strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0)) )
 			temp |= CL2ACR_FORCE_WA;
 		else
 			temp |= CL2ACR_FORCE_WA_DISABLE;
@@ -1080,7 +1069,7 @@ void mv_cpu_init(void)
 		MV_REG_WRITE(CPU_L2_AUX_CTRL_REG, temp);
 
 		env = getenv("L2SpeculativeRdEn");
-		if((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) )
+		if(env && ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0)) )
 			MV_REG_BIT_SET(0x20228, ((0x1 << 5)));
 		else
 			MV_REG_BIT_RESET(0x20228, ((0x1 << 5)));
@@ -1114,7 +1103,7 @@ void mv_cpu_init(void)
 
 /* Set unit in power off mode acording to the detection of MPP/SERDES */
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
-int mv_set_power_scheme(void)
+void mv_set_power_scheme(void)
 {
 	MV_U32 boardId = mvBoardIdGet();
 	MV_U32 mppGrp1 = mvBoardMppModulesCfgGet(1);
@@ -1123,7 +1112,7 @@ int mv_set_power_scheme(void)
 
 	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
 		mvOsPrintf("mv_set_power_scheme: Board unknown.\n");
-		return -1;
+		return;
 	}
 
 	mvOsOutput("Shutting down unused interfaces:\n");
@@ -1180,71 +1169,3 @@ int mv_set_power_scheme(void)
 	}
 }
 #endif /* defined(MV_INCLUDE_CLK_PWR_CNTRL) */
-
-#if 0
-/*******************************************************************************
-* mvHddPowerCtrl -
-*
-* DESCRIPTION:
-*       This function set HDD power on/off acording to env or wait for button push
-* INPUT:
-*	None
-* OUTPUT:
-*	None
-* RETURN:
-*       None
-*
-*******************************************************************************/
-static void mvHddPowerCtrl(void)
-{
-	MV_32 hddPowerBit;
-	MV_32 fanPowerBit;
-	MV_32 hddHigh = 0;
-	MV_32 fanHigh = 0;
-	char* env;
-
-	if(RD_88F6281A_ID == mvBoardIdGet())
-	{
-		hddPowerBit = mvBoarGpioPinNumGet(BOARD_GPP_HDD_POWER, 0);
-		fanPowerBit = mvBoarGpioPinNumGet(BOARD_GPP_FAN_POWER, 0);
-		if (hddPowerBit > 31)
-		{
-			hddPowerBit = hddPowerBit % 32;
-			hddHigh = 1;
-		}
-		if (fanPowerBit > 31)
-		{
-			fanPowerBit = fanPowerBit % 32;
-			fanHigh = 1;
-		}
-	}
-
-	if ((RD_88F6281A_ID == mvBoardIdGet()) || (RD_88F6192A_ID == mvBoardIdGet()) ||
-        (RD_88F6190A_ID == mvBoardIdGet()))
-	{
-		env = getenv("hddPowerCtrl");
-		if(!env || ( (strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) ) )
-			setenv("hddPowerCtrl","no");
-		else
-			setenv("hddPowerCtrl","yes");
-
-		if(RD_88F6281A_ID == mvBoardIdGet())
-		{
-			mvBoardFanPowerControl(MV_TRUE);
-			mvBoardHDDPowerControl(MV_TRUE);
-		}
-		else
-		{
-			/* FAN power on */
-			MV_REG_BIT_SET(GPP_DATA_OUT_REG(fanHigh),(1<<fanPowerBit));
-			MV_REG_BIT_RESET(GPP_DATA_OUT_EN_REG(fanHigh),(1<<fanPowerBit));
-			/* HDD power on */
-			MV_REG_BIT_SET(GPP_DATA_OUT_REG(hddHigh),(1<<hddPowerBit));
-			MV_REG_BIT_RESET(GPP_DATA_OUT_EN_REG(hddHigh),(1<<hddPowerBit));
-		}
-	}
-}
-
-#endif
-
-

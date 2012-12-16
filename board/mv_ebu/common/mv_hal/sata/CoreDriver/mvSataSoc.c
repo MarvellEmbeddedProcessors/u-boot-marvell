@@ -79,12 +79,13 @@ MV_BOOL mvSataPhyShutdown(MV_U8 port)
 	MV_U32 adapterIoBaseAddress = MV_SATA_REGS_OFFSET - 0x20000;
 
 	regVal = MV_REG_READ(adapterIoBaseAddress + getEdmaRegOffsetSataSoc(port) + MV_SATA_II_SATA_CONFIG_REG_OFFSET);
+#ifdef SATA_ERRATA_88SX60X1_8
 	/* Fix for 88SX60x1 FEr SATA#8 */
 	/* according to the spec, bits [31:12] must be set to 0x009B1 */
 	regVal &= 0x00000FFF;
 	/* regVal |= MV_BIT12; */
 	regVal |= 0x009B1000;
-
+#endif
 	regVal |= BIT9;
 	MV_REG_WRITE(adapterIoBaseAddress + getEdmaRegOffsetSataSoc(port) + MV_SATA_II_SATA_CONFIG_REG_OFFSET, regVal);
 	return MV_TRUE;
@@ -95,12 +96,13 @@ MV_BOOL mvSataPhyPowerOn(MV_U8 port)
 	MV_U32 adapterIoBaseAddress = MV_SATA_REGS_OFFSET - 0x20000;
 
 	MV_U32 regVal = MV_REG_READ(adapterIoBaseAddress + getEdmaRegOffsetSataSoc(port) + MV_SATA_II_SATA_CONFIG_REG_OFFSET);
+#ifdef SATA_ERRATA_88SX60X1_8
 	/* Fix for 88SX60x1 FEr SATA#8 */
 	/* according to the spec, bits [31:12] must be set to 0x009B1 */
 	regVal &= 0x00000FFF;
 	/* regVal |= MV_BIT12; */
 	regVal |= 0x009B1000;
-
+#endif
 	regVal &= ~(BIT9);
 	MV_REG_WRITE(adapterIoBaseAddress + getEdmaRegOffsetSataSoc(port) + MV_SATA_II_SATA_CONFIG_REG_OFFSET, regVal);
 	return MV_TRUE;

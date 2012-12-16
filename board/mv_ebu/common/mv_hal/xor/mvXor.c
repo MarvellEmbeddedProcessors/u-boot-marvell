@@ -62,7 +62,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvCommon.h"
 #include "mvOs.h"
 #include "ctrlEnv/mvCtrlEnvSpec.h"
-/*#include "ctrlEnv/mvUnitMap.h"*/
+
 #include "mvSysXorConfig.h"
 #include "mvXorRegs.h"
 #include "mvXor.h"
@@ -87,15 +87,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * RETURN:
 *       MV_BAD_PARAM if parameters to function invalid, MV_OK otherwise.
 *******************************************************************************/
-MV_VOID mvXorHalInit(MV_U32 xorChanNum)
+MV_VOID mvXorHalInit(MV_U32 unit)
 {
 	MV_U32 i;
+	MV_U32 maxChan;
+
 	/* Abort any XOR activity & set default configuration */
-	for (i = 0; i < xorChanNum; i++) {
-		
-		/*if(mvUnitMapIsMine(XOR0 + XOR_UNIT(i)) == MV_FALSE)
-			continue;*/
-		
+	/* loop over unit channels */
+	maxChan = (MV_XOR_MAX_CHAN_PER_UNIT * unit) + MV_XOR_MAX_CHAN_PER_UNIT;
+	for (i = (MV_XOR_MAX_CHAN_PER_UNIT * unit); i < maxChan; i++) {
 		mvXorCommandSet(i, MV_STOP);
 		mvXorCtrlSet(i, (1 << XEXCR_REG_ACC_PROTECT_OFFS) |
 			     (4 << XEXCR_DST_BURST_LIMIT_OFFS) | (4 << XEXCR_SRC_BURST_LIMIT_OFFS)
@@ -595,4 +595,3 @@ MV_VOID xorSetSrcBurstLimit(MV_U32 chan, MV_XOR_BURST_LIMIT srcBurstLimit)
     temp |= srcBurstLimit << XEXCR_SRC_BURST_LIMIT_OFFS;
     MV_REG_WRITE(XOR_CONFIG_REG(XOR_UNIT(chan),XOR_CHAN(chan)), temp);
 }
-

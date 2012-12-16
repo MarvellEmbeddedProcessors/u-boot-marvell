@@ -189,7 +189,7 @@ extern "C" {
 		XOR_NEXT_DESC	/* Next Descriptor Address Control */
 	} MV_XOR_OVERRIDE_TARGET;
 
-	MV_VOID mvXorHalInit(MV_U32 xorChanNum);
+	MV_VOID mvXorHalInit(MV_U32 unit);
 	MV_STATUS mvXorCtrlSet(MV_U32 chan, MV_U32 xorCtrl);
 	MV_STATUS mvXorEccClean(MV_U32 chan, MV_XOR_ECC *pXorEccConfig);
 	MV_U32 mvXorEccCurrTimerGet(MV_U32 chan, MV_U32 tClk);

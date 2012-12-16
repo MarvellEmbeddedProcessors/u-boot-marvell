@@ -160,12 +160,12 @@ MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr)
 		twsiSlave.moreThen256 = MV_FALSE;
 	
 		if (MV_OK != mvTwsiRead(0, &twsiSlave, ucData, SPD_SIZE))
-			return MV_FAIL;
-	}
-	
+            return MV_DDR3_TRAINING_ERR_TWSI_FAIL;
+    }
+
 	/* Check if DDR3 */
 	if (ucData[SPD_DEV_TYPE_BYTE] != SPD_MEM_TYPE_DDR3)
-		return MV_FAIL;
+        return MV_DDR3_TRAINING_ERR_TWSI_BAD_TYPE;
 
 	/* Error Check Type */
 	/* No byte for error check in DDR3 SPD, use DDR2 convention */
@@ -174,9 +174,21 @@ MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr)
 	if ((ucData[SPD_BUS_WIDTH_BYTE] & 0x18) >> 3)
 		pDimmInfo->errorCheckType = 1;
 	DEBUG_INIT_FULL_C("DRAM errorCheckType ", pDimmInfo->errorCheckType,1);
-
 	pDimmInfo->dimmTypeInfo = (ucData[SPD_MODULE_TYPE_BYTE]);
-
+#if 0
+    if (pDimmInfo->dimmTypeInfo == SPD_MODULE_TYPE_RDIMM) {
+    /* print out value of all SPD registers */
+        putstring("\nRegistered DIMM registers :: ");
+        for (ui = 0; (ui < 77); ui++)
+        {
+            putstring("\nRegister [");
+            putdata(ui, 2);
+            putstring("] = ");
+            putdata(ucData[ui], 4);
+        }
+        putstring("\n");
+    }
+#endif
 /* Size Calculations: */
 
 	/* Number Of Row Addresses - 12/13/14/15/16 */
@@ -312,7 +324,7 @@ MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr)
 #if defined(MV88F78X60)
 	/* Registered DIMM support */
 	if (pDimmInfo->dimmTypeInfo == SPD_MODULE_TYPE_RDIMM) {
-		for (uiRC=3; uiRC<6; uiRC+=2) {
+        for (uiRC=2; uiRC<6; uiRC+=2) {
 			uiTemp = ucData[SPD_RDIMM_RC_BYTE + uiRC/2];
 			pDimmInfo->regDimmRC[uiRC] = (ucData[SPD_RDIMM_RC_BYTE + uiRC/2] & SPD_RDIMM_RC_NIBBLE_MASK);
 			pDimmInfo->regDimmRC[uiRC + 1] = ((ucData[SPD_RDIMM_RC_BYTE + uiRC/2] >> 4) & SPD_RDIMM_RC_NIBBLE_MASK);
@@ -351,16 +363,16 @@ MV_STATUS ddr3SpdSumInit(MV_DIMM_INFO *pDimmInfo, MV_DIMM_INFO *pDimmSumInfo, MV
 	}
 	if (pDimmSumInfo->dimmTypeInfo != pDimmInfo->dimmTypeInfo) {
 		DEBUG_INIT_S("DDR3 Dimm Compare - DIMM type does not match - FAIL \n");
-		return MV_FAIL;
-	}
+        return MV_DDR3_TRAINING_ERR_DIMM_TYPE_NO_MATCH;
+    }
 	if (pDimmSumInfo->errorCheckType > pDimmInfo->errorCheckType) {
 		pDimmSumInfo->errorCheckType = pDimmInfo->errorCheckType;
 		DEBUG_INIT_S("DDR3 Dimm Compare - ECC does not match. ECC is disabled \n");
 	}
 	if (pDimmSumInfo->dataWidth != pDimmInfo->dataWidth) {
 		DEBUG_INIT_S("DDR3 Dimm Compare - DRAM bus width does not match - FAIL \n");
-		return MV_FAIL;
-	}
+        return MV_DDR3_TRAINING_ERR_BUS_WIDTH_NOT_MATCH;
+    }
 	if (pDimmSumInfo->minCycleTime < pDimmInfo->minCycleTime)
 		pDimmSumInfo->minCycleTime = pDimmInfo->minCycleTime;
 	if (pDimmSumInfo->refreshInterval < pDimmInfo->refreshInterval)
@@ -412,17 +424,23 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 	MV_U32 uiDimmCount, uiCsCount, uiDimm;
 	MV_U32 auiDimmAddr[2] = {0, 0};
 #endif
+    MV_STATUS status;
 
 #if defined(DB_88F6710) || defined(DB_88F6710_PCAC) || defined(RD_88F6710)
 	/* Armada 370 - SPD is not available on DIMM */
 	/* Set MC registers according to Static SPD values Values - must be set manually */
 	/* We only have one optional DIMM for the DB and we already got the SPD matching values */
-	ddr3SpdInit(&dimmInfo[0], 0);
+    status = ddr3SpdInit(&dimmInfo[0], 0);
+    if( MV_OK != status )
+        return status;
+
 	uiDimmNum = 1;
 	/* Use JP8 to enable multiCS support for Armada 370 DB */
 	if(!ddr3CheckConfig(EEPROM_MODULE_ADDR, CONFIG_MULTI_CS))
 		dimmInfo[0].numOfModuleRanks = 1;
-	ddr3SpdSumInit(&dimmInfo[0], &dimmSumInfo, 0);
+    status = ddr3SpdSumInit(&dimmInfo[0], &dimmSumInfo, 0);
+    if( MV_OK != status )
+        return status;
 #else	
 	/* Dynamic D-Unit Setup - Read SPD values */
 #ifdef DUNIT_SPD
@@ -432,16 +450,20 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 		DEBUG_INIT_S("DDR3 Training Sequence - No DIMMs detected \n");
 #else	
 		DEBUG_INIT_S("DDR3 Training Sequence - FAILED (Wrong DIMMs Setup) \n");
-		return MV_FAIL;
+        return MV_DDR3_TRAINING_ERR_BAD_DIMM_SETUP;
 #endif
 	} else {
 		DEBUG_INIT_C("DDR3 Training Sequence - Number of DIMMs detected: ", uiDimmNum, 1);	
 	}
 
 	for (uiDimm = 0; uiDimm < uiDimmNum; uiDimm++) {
-		ddr3SpdInit(&dimmInfo[uiDimm], auiDimmAddr[uiDimm]);
-		ddr3SpdSumInit(&dimmInfo[uiDimm], &dimmSumInfo, uiDimm);
-	}
+        status = ddr3SpdInit(&dimmInfo[uiDimm], auiDimmAddr[uiDimm]);
+        if( MV_OK != status )
+            return status;
+        status = ddr3SpdSumInit(&dimmInfo[uiDimm], &dimmSumInfo, uiDimm);
+        if( MV_OK != status )
+            return status;
+    }
 #endif
 #endif
 
@@ -456,8 +478,8 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 #endif
 	if (uiCsNum > MAX_CS) {
 		DEBUG_INIT_C("DDR3 Training Sequence - Number of CS exceed limit -  ", MAX_CS, 1);
-		return MV_FAIL;
-	}
+        return MV_DDR3_TRAINING_ERR_MAX_CS_LIMIT;
+    }
 
 	/* Set bitmap of enabled CS */
 	uiCsEna = 0;
@@ -488,9 +510,9 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 #endif
 	if (uiCsEna > 0xF) {
 		DEBUG_INIT_C("DDR3 Training Sequence - Number of enabled CS exceed limit -  ", MAX_CS, 1);
-		return MV_FAIL;
-	}
-	
+        return MV_DDR3_TRAINING_ERR_MAX_ENA_CS_LIMIT;
+    }
+
 	DEBUG_INIT_FULL_C("DDR3 - DUNIT-SET - Number of CS = ", uiCsNum, 1);
 
 /* Check Ratio - '1' - 2:1, '0' - 1:1 */
@@ -526,7 +548,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 	if (dimmSumInfo.dimmTypeInfo == SPD_MODULE_TYPE_RDIMM) {
 #ifdef DUNIT_STATIC
 		DEBUG_INIT_S("DDR3 Training Sequence - FAIL - Illegal R-DIMM setup \n");
-		return MV_FAIL;
+        return MV_DDR3_TRAINING_ERR_BAD_R_DIMM_SETUP;
 #endif
 		uiReg |= (1 << REG_SDRAM_CONFIG_REGDIMM_OFFS);
 		DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - R-DIMM \n");
@@ -766,7 +788,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 
 /*{0x000014CC}	-	DRAM Main Pads Calibration Machine Control Register */
 	uiReg = MV_REG_READ(REG_DRAM_MAIN_PADS_CAL_ADDR);
-//	MV_REG_WRITE(REG_DRAM_MAIN_PADS_CAL_ADDR, uiReg | (1 << 0));
+  MV_REG_WRITE(REG_DRAM_MAIN_PADS_CAL_ADDR, uiReg | (1 << 0));
 
 #ifdef DUNIT_SPD
 		uiCsCount = 0;
@@ -960,6 +982,10 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 
 		{
 			MV_U32 uiRC;
+#if 0
+            putstring("\nSPD_RDIMM:");
+            putstring("\n");
+#endif
 			for (uiRC=0; uiRC<SPD_RDIMM_RC_NUM; uiRC++) {
 				if (uiRC != 6 && uiRC != 7) {
 #if 0
@@ -971,8 +997,12 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 					/* Configure - Set Delay - tSTAB/tMRD */
 					if (uiRC == 2 || uiRC == 10)
 						uiReg |= (0x1 << REG_SDRAM_OPERATION_CWA_DELAY_SEL_OFFS);
-	
+#if 0
+                    putdata(uiReg, 8);
+                    putstring("\n");
+#endif
 					MV_REG_WRITE(REG_SDRAM_OPERATION_ADDR, uiReg);  	/* 0x1418 - SDRAM Operation Register */
+
 						/* Poll the "cmd" field in the SDRAM OP register for 0x0 */
 					do {
 						uiReg = (MV_REG_READ(REG_SDRAM_OPERATION_ADDR) & (REG_SDRAM_OPERATION_CMD_MASK));

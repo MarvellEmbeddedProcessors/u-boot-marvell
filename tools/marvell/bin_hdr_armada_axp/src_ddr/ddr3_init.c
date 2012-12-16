@@ -95,6 +95,72 @@ static MV_VOID ddr3StaticMCInit(void);
 static MV_U32 ddr3GetStaticDdrMode(void);
 #endif
 
+
+
+static MV_U32 gLogLevel = 0;
+/************************************************************************************
+* Name:     setDdr3Log_Level
+* Desc:     This routine initialize the gLogLevel acording to nLogLevel which getting from user
+* Args:     nLogLevel
+* Notes:
+* Returns:  None.
+*/
+MV_VOID ddr3SetLogLevel(MV_U32 nLogLevel)
+{
+    gLogLevel = nLogLevel;
+}
+/************************************************************************************
+* Name:     ddr3GetLogLevel
+* Desc:     This routine returns the log level
+* Args:     none
+* Notes:
+* Returns:  log level.
+*/
+MV_U32 ddr3GetLogLevel()
+{
+    return gLogLevel;
+}
+/************************************************************************************
+* Name:     levelLogPrintS
+* Desc:     This routine printing string "str" if gLogLevel>=eLogLevel
+* Args:     char *str,MV_LOG_LEVEL eLogLevel
+* Notes:
+* Returns:  None.
+*/
+MV_VOID levelLogPrintS(char *str,MV_LOG_LEVEL eLogLevel)
+{
+    if (gLogLevel>=eLogLevel){
+        putstring(str);
+    }
+}
+/************************************************************************************
+* Name:     levelLogPrintD
+* Desc:     This routine printing data in hex-decimal if gLogLevel>=eLogLevel
+* Args:     char *str,MV_LOG_LEVEL eLogLevel
+* Notes:
+* Returns:  None.
+*/
+MV_VOID levelLogPrintD(MV_U32 dec_num, MV_U32 length, MV_LOG_LEVEL eLogLevel)
+{
+    if (gLogLevel >= eLogLevel) {
+        putdata(dec_num, length);
+    }
+}
+/************************************************************************************
+* Name:     levelLogPrintDD
+* Desc:     This routine printing data in decimal if gLogLevel>=eLogLevel
+* Args:     char *str,MV_LOG_LEVEL eLogLevel
+* Notes:
+* Returns:  None.
+*/
+MV_VOID levelLogPrintDD(MV_U32 dec_num, MV_U32 length, MV_LOG_LEVEL eLogLevel)
+{
+    if (gLogLevel >= eLogLevel) {
+        putdataDec(dec_num, length);
+    }
+}
+
+
 /************************************************************************************
 * Name:		ddr3Init - Main DDR3 Init function
 * Desc:	 	This routine initialize the DDR3 MC and runs HW training.
@@ -102,8 +168,42 @@ static MV_U32 ddr3GetStaticDdrMode(void);
 * Notes:
 * Returns:	None.
 */
-
+MV_U32 ddr3Init_(void);
 MV_U32 ddr3Init(void)
+{
+    unsigned int status = ddr3Init_();
+    DEBUG_INIT_S("Status = ");
+    if( status == MV_DDR3_TRAINING_ERR_BAD_SAR)
+        DEBUG_INIT_S("DDR3 Training Error: Bad sample at reset");
+    if( status == MV_DDR3_TRAINING_ERR_BAD_DIMM_SETUP)
+        DEBUG_INIT_S("DDR3 Training Error: Bad DIMM setup");
+    if( status == MV_DDR3_TRAINING_ERR_MAX_CS_LIMIT)
+        DEBUG_INIT_S("DDR3 Training Error: Max CS limit");
+    if( status == MV_DDR3_TRAINING_ERR_MAX_ENA_CS_LIMIT)
+        DEBUG_INIT_S("DDR3 Training Error: Max enable CS limit");
+    if( status == MV_DDR3_TRAINING_ERR_BAD_R_DIMM_SETUP)
+        DEBUG_INIT_S("DDR3 Training Error: Bad R-DIMM setup");
+    if( status == MV_DDR3_TRAINING_ERR_TWSI_FAIL)
+        DEBUG_INIT_S("DDR3 Training Error: TWSI failure");
+    if( status == MV_DDR3_TRAINING_ERR_DIMM_TYPE_NO_MATCH)
+        DEBUG_INIT_S("DDR3 Training Error: DIMM type no match");
+    if( status == MV_DDR3_TRAINING_ERR_TWSI_BAD_TYPE)
+        DEBUG_INIT_S("DDR3 Training Error: TWSI bad type");
+    if( status == MV_DDR3_TRAINING_ERR_BUS_WIDTH_NOT_MATCH)
+        DEBUG_INIT_S("DDR3 Training Error: bus width no match");
+
+    if( status > MV_DDR3_TRAINING_ERR_HW_FAIL_BASE)
+    {
+        DEBUG_INIT_C("DDR3 Training Error: HW Failure 0x",status,8);
+    }
+
+
+    if( status == MV_OK) DEBUG_INIT_S("MV_OK");
+    DEBUG_INIT_S("\n");
+    return status;
+}
+
+MV_U32 ddr3Init_(void)
 {
 	MV_U32 uiTargetFreq, uiEcc;
 	MV_U32 uiReg = 0;
@@ -112,6 +212,7 @@ MV_U32 ddr3Init(void)
 	MV_BOOL bDQSCLKAligned = FALSE;
 	MV_BOOL bPLLWAPatch = FALSE;
 	MV_U32	uiDdrWidth = BUS_WIDTH;
+    MV_STATUS status;
 
 	/* SoC/Board special Initializtions */
 	uiFabOpt = ddr3GetFabOpt();
@@ -156,7 +257,7 @@ MV_U32 ddr3Init(void)
 	mvUartInit();
 	ddr3PrintVersion();
 	DEBUG_INIT_S("0\n");
-	/* Lib version 3.3 */
+    /* Lib version 3.5 */
 
 	uiFabOpt = ddr3GetFabOpt();
 
@@ -194,8 +295,8 @@ MV_U32 ddr3Init(void)
 	uiHClkTimePs = s_auiCpuFabClkToHClk[uiFabOpt][uiCpuFreq];
 	if ((uiTargetFreq == 0) || (uiHClkTimePs == 0)) {
 		DEBUG_INIT_S("DDR3 Training Sequence - FAILED - Wrong Sample at Reset Configurations \n"); 
-		return MV_FAIL;
-	}
+        return MV_DDR3_TRAINING_ERR_BAD_SAR;
+    }
 
 #if defined(ECC_SUPPORT)
 	uiScrubOffs = U_BOOT_START_ADDR;
@@ -249,10 +350,28 @@ MV_U32 ddr3Init(void)
 #endif
 
 #ifdef DUNIT_SPD
-	if (MV_OK != ddr3DunitSetup(uiEcc, uiHClkTimePs, &uiDdrWidth)) {
+    status = ddr3DunitSetup(uiEcc, uiHClkTimePs, &uiDdrWidth);
+    if (MV_OK != status) {
 		DEBUG_INIT_S("DDR3 Training Sequence - FAILED (ddr3 Dunit Setup) \n");
-		return MV_FAIL;
-	}
+        return status;
+    }
+#endif
+#if defined(MV88F78X60)
+    /* RL WA for B0 */
+    if (mvCtrlRevGet() == MV_78XX0_B0_REV) {
+        uiReg = MV_REG_READ(REG_TRAINING_DEBUG_3_ADDR);
+        uiReg &= ~(REG_TRAINING_DEBUG_3_MASK);
+        uiReg |= 0x4;                                       /* Phase 0 */
+        uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << REG_TRAINING_DEBUG_3_OFFS);
+        uiReg |= (0x4 << (1 * REG_TRAINING_DEBUG_3_OFFS));      /* Phase 1 */
+        //uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << (3 * REG_TRAINING_DEBUG_3_OFFS));
+        //uiReg |= (0x6 << (3 * REG_TRAINING_DEBUG_3_OFFS));  /* Phase 3 */
+        uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << (4 * REG_TRAINING_DEBUG_3_OFFS));
+        uiReg |= (0x6 << (4 * REG_TRAINING_DEBUG_3_OFFS));
+        uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << (5 * REG_TRAINING_DEBUG_3_OFFS));
+        uiReg |= (0x6 << (5 * REG_TRAINING_DEBUG_3_OFFS));
+        MV_REG_WRITE(REG_TRAINING_DEBUG_3_ADDR, uiReg);
+    }
 #endif
 
 	/* Set X-BAR windows for the training sequence */
@@ -269,10 +388,15 @@ MV_U32 ddr3Init(void)
 
 #if defined(MV88F78X60)
 	/* DLB Enable */
+#if defined(MV88F78X60_Z1)
+	MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
+#else 
 	if (mvCtrlRevGet() == MV_78XX0_B0_REV)
 		MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0xc19e);
 	else
 		MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
+
+#endif
 	MV_REG_WRITE(DLB_AGING_REGISTER , 0x0f7f007f);
 	MV_REG_WRITE(DLB_EVICTION_CONTROL_REG, 0x0);
 	MV_REG_WRITE(DLB_EVICTION_TIMERS_REGISTER_REG, 0x00FF3C1F);
@@ -289,6 +413,11 @@ MV_U32 ddr3Init(void)
 	}
 #endif
 
+    if(ddr3GetLogLevel() >= MV_LOG_LEVEL_1)
+    {
+        printDunitSetup();
+    }
+
 	/************************************************************************************/
 	/* Stage 2 - Training Values Setup 													*/
 	/************************************************************************************/
@@ -299,11 +428,12 @@ MV_U32 ddr3Init(void)
 
 	/* if ECC is enabled, need to scrub the U-Boot area memory region - Run training function with Xor bypass
 	just to scrub the memory */
-	if (MV_OK != ddr3HwTraining(uiTargetFreq, uiDdrWidth,
-		MV_TRUE, uiScrubOffs, uiScrubSize, bDQSCLKAligned, DDR3_TRAINING_DEBUG, REG_DIMM_SKIP_WL)) {
+    status = ddr3HwTraining(uiTargetFreq, uiDdrWidth,
+        MV_TRUE, uiScrubOffs, uiScrubSize, bDQSCLKAligned, DDR3_TRAINING_DEBUG, REG_DIMM_SKIP_WL);
+    if (MV_OK != status) {
 		DEBUG_INIT_FULL_S("DDR3 Training Sequence - FAILED  \n");
-		return MV_FAIL;
-	}
+        return status;
+    }
 #else
 	/* Run DDR3 Training Sequence */
 	/* DRAM Init */
@@ -318,11 +448,12 @@ MV_U32 ddr3Init(void)
 #endif
 	/* ddr3 init using DDR3 HW training procedure */
 	DEBUG_INIT_FULL_S("DDR3 Training Sequence - HW Training Procedure \n");
-	if (MV_OK != ddr3HwTraining(uiTargetFreq, uiDdrWidth,
-		MV_FALSE, uiScrubOffs, uiScrubSize, bDQSCLKAligned, DDR3_TRAINING_DEBUG, REG_DIMM_SKIP_WL)) {
+    status = ddr3HwTraining(uiTargetFreq, uiDdrWidth,
+        MV_FALSE, uiScrubOffs, uiScrubSize, bDQSCLKAligned, DDR3_TRAINING_DEBUG, REG_DIMM_SKIP_WL);
+    if (MV_OK != status) {
 		DEBUG_INIT_FULL_S("DDR3 Training Sequence - FAILED  \n");
-		return MV_FAIL;
-	}
+        return status;
+    }
 #endif
 
 	/************************************************************************************/
@@ -920,4 +1051,58 @@ static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 
 	MV_REG_WRITE(REG_FASTPATH_WIN_0_CTRL_ADDR, uiReg);	/*Open fast path Window to - 0.5G */
 }
+
+
+MV_VOID     printDunitSetup(MV_VOID)
+{
+MV_32 uiReg;
+#define DEBUG_DUNIT_REG(reg)    uiReg= MV_REG_READ(reg); putstring("0x"); putdata(reg, 8);putstring(" = 0x"); putdata(uiReg, 8); putstring("\n")
+
+    putstring("\n########### LOG LEVEL 1 (D-UNIT SETUP)###########\n");
+
+#ifdef DUNIT_STATIC
+    putstring("\nStatic D-UNIT Setup:\n");
+#endif
+#ifdef DUNIT_SPD
+    putstring("\nDynamic(using SPD) D-UNIT Setup:\n");
+#endif
+    DEBUG_DUNIT_REG(REG_SDRAM_CONFIG_ADDR);
+    DEBUG_DUNIT_REG(REG_DUNIT_CTRL_LOW_ADDR);
+    DEBUG_DUNIT_REG(REG_SDRAM_TIMING_HIGH_ADDR);
+    DEBUG_DUNIT_REG(REG_SDRAM_ADDRESS_CTRL_ADDR);
+    DEBUG_DUNIT_REG(REG_SDRAM_OPEN_PAGES_ADDR);
+    DEBUG_DUNIT_REG(REG_SDRAM_OPERATION_ADDR);
+    DEBUG_DUNIT_REG(REG_SDRAM_MODE_ADDR);
+    DEBUG_DUNIT_REG(REG_SDRAM_EXT_MODE_ADDR);
+    DEBUG_DUNIT_REG(REG_SDRAM_CONFIG_ADDR);
+    DEBUG_DUNIT_REG(REG_DDR_CONT_HIGH_ADDR);
+    DEBUG_DUNIT_REG(REG_ODT_TIME_LOW_ADDR);
+    DEBUG_DUNIT_REG(REG_OUDDR3_TIMING_ADDR);
+    DEBUG_DUNIT_REG(REG_ODT_TIME_HIGH_ADDR);
+    DEBUG_DUNIT_REG(REG_SDRAM_ODT_CTRL_LOW_ADDR);
+    DEBUG_DUNIT_REG(REG_SDRAM_ODT_CTRL_HIGH_ADDR);
+    DEBUG_DUNIT_REG(REG_DUNIT_ODT_CTRL_ADDR);
+    DEBUG_DUNIT_REG(REG_DRAM_FIFO_CTRL_ADDR);
+    DEBUG_DUNIT_REG(REG_DRAM_AXI_CTRL_ADDR);
+    DEBUG_DUNIT_REG(REG_DRAM_ADDR_CTRL_DRIVE_STRENGTH_ADDR);
+    DEBUG_DUNIT_REG(REG_DRAM_DATA_DQS_DRIVE_STRENGTH_ADDR);
+    DEBUG_DUNIT_REG(REG_CS_SIZE_SCRATCH_ADDR);
+    DEBUG_DUNIT_REG(REG_READ_DATA_SAMPLE_DELAYS_ADDR);
+    DEBUG_DUNIT_REG(REG_READ_DATA_READY_DELAYS_ADDR);
+    DEBUG_DUNIT_REG(REG_DDR3_MR0_ADDR);
+    DEBUG_DUNIT_REG(REG_DDR3_MR1_ADDR);
+    DEBUG_DUNIT_REG(REG_DDR3_MR2_ADDR);
+    DEBUG_DUNIT_REG(REG_DDR3_MR3_ADDR);
+    DEBUG_DUNIT_REG(REG_DDR3_RANK_CTRL_ADDR);
+    DEBUG_DUNIT_REG(REG_DRAM_PHY_CONFIG_ADDR);
+    DEBUG_DUNIT_REG(REG_DRAM_PHY_CONFIG_ADDR);
+    DEBUG_DUNIT_REG(REG_STATIC_DRAM_DLB_CONTROL);
+    DEBUG_DUNIT_REG(DLB_BUS_OPTIMIZATION_WEIGHTS_REG);
+    DEBUG_DUNIT_REG(DLB_AGING_REGISTER);
+    DEBUG_DUNIT_REG(DLB_EVICTION_CONTROL_REG);
+    DEBUG_DUNIT_REG(DLB_EVICTION_TIMERS_REGISTER_REG);
+    DEBUG_DUNIT_REG(REG_FASTPATH_WIN_0_CTRL_ADDR);
+    DEBUG_DUNIT_REG(REG_CDI_CONFIG_ADDR);
+}
+
 

@@ -148,6 +148,7 @@ MV_VOID mvUartInit(void);
 
 void putstring(char *str);
 void putdata (u32 dec_num,u32 length);
+void putdataDec (u32 dec_num,u32 length);
 
 #if defined(NOT_USE_UART)
 #undef MV_DEBUG_INIT

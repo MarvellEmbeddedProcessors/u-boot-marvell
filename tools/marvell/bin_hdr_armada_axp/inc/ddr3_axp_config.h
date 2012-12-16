@@ -62,8 +62,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _INC_AXP_CONFIG_H
-#define _INC_AXP_CONFIG_H
+#ifndef _DDR3_AXP_CONFIG_H
+#define _DDR3_AXP_CONFIG_H
+
+/*DDR3_LOG_LEVEL Information
+Level 0: Provides an error code in a case of failure, RL, WL errors and other algorithm failure
+Level 1: Provides the D-Unit setup (SPD/Static configuration) 
+Level 2: Provides the windows margin as a results of DQS centeralization 
+Level 3: Provides the windows margin of each DQ as a results of DQS centeralization */
+
 
 /* General Configurations */
 /* The following parameters are required for proper setup */
@@ -140,4 +147,4 @@ Selects for DDR3/DDR3L/DDR3U RDIMM 1.5 V/1.35 V/1.25 V Applications") */
 #endif
 #endif
 
-#endif /* _INC_AXP_CONFIG_H */
+#endif /* DDR3_AXP_CONFIG_H */

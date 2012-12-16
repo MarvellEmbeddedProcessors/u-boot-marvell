@@ -246,7 +246,29 @@ void putdata (u32 dec_num,u32 length)
 
 #endif
 }
+/*-----------------------------------------------------------------------------------	*/
+/* Name:            putdataDec	*/
+/*																						*/
+/* Description:     This function prints a decimal number into character string 	*/
+/*		    and put this string into the serial port. 	*/
+/*	                                                                                    */
+/* Input value:     unit16 dec_num     	*/
+/*	                                                                                    */
+/* Return Value:    none    	*/
+/*-----------------------------------------------------------------------------------	*/
+void putdataDec (u32 dec_num,u32 length)
+{
+    char str[11];
+    u32 i;/*, length = 8;*/
 
+    for (i=length; i > 0; i--)
+    {
+		str[i-1] = (dec_num % 10) + '0';
+		dec_num = dec_num / 10;
+    }
+	str[length] = '\0';
+    putstring(str);
+}
 /*******************************************************************************
 * mvUartGetc - Read one character from the UART
 *

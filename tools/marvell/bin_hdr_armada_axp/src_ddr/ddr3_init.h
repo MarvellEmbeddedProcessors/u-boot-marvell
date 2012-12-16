@@ -74,12 +74,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_a370.h"
 #endif
 
+/*DRR training Error codes*/
+/*Stage 0 errors*/
+#define MV_DDR3_TRAINING_ERR_BAD_SAR            0xDD300001
+/*Stage 1 errors*/
+#define MV_DDR3_TRAINING_ERR_TWSI_FAIL              0xDD301001
+#define MV_DDR3_TRAINING_ERR_DIMM_TYPE_NO_MATCH     0xDD301001
+#define MV_DDR3_TRAINING_ERR_TWSI_BAD_TYPE          0xDD301003
+#define MV_DDR3_TRAINING_ERR_BUS_WIDTH_NOT_MATCH    0xDD301004
+#define MV_DDR3_TRAINING_ERR_BAD_DIMM_SETUP         0xDD301005
+#define MV_DDR3_TRAINING_ERR_MAX_CS_LIMIT           0xDD301006
+#define MV_DDR3_TRAINING_ERR_MAX_ENA_CS_LIMIT       0xDD301007
+#define MV_DDR3_TRAINING_ERR_BAD_R_DIMM_SETUP       0xDD301008
+/*Stage 2 errors*/
+#define MV_DDR3_TRAINING_ERR_HW_FAIL_BASE           0xDD302000
 
 typedef enum  _mvConfigType {
 	CONFIG_ECC,
 	CONFIG_MULTI_CS,
 	CONFIG_BUS_WIDTH
 } MV_CONFIG_TYPE;
+
+typedef enum  {
+	MV_LOG_LEVEL_0,
+	MV_LOG_LEVEL_1,
+	MV_LOG_LEVEL_2,
+	MV_LOG_LEVEL_3
+} MV_LOG_LEVEL;
 
 MV_VOID 	sramConfig(void);
 MV_VOID		changeResetVecBase(MV_32 val);
@@ -107,6 +128,10 @@ MV_U32 ddr3ValidCLtoCL(MV_U32 uiValidCL);
 MV_U32 ddr3GetCSNumFromReg(void);
 MV_U32 ddr3GetCSEnaFromReg(void);
 MV_U8 mvCtrlRevGet(MV_VOID);
-
-
+MV_VOID     levelLogPrintS(char *str,MV_LOG_LEVEL eLogLevel);
+MV_VOID 	levelLogPrintD(MV_U32 dec_num,MV_U32 length,MV_LOG_LEVEL eLogLevel);
+MV_VOID 	levelLogPrintDD(MV_U32 dec_num,MV_U32 length,MV_LOG_LEVEL eLogLevel);
+MV_VOID     printDunitSetup(void);
+MV_VOID ddr3SetDqsResultsPrintStatus(MV_U32 status);
+MV_U32      ddr3GetLogLevel(void);
 #endif /* _INC_DDR_H */

@@ -65,8 +65,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mv_os.h"
 #include "config_marvell.h"  	/* Required to identify SOC and Board */
-#include "mvHighSpeedEnvSpec.h"
 #include "ddr3_axp.h"
+#include "mvHighSpeedEnvSpec.h"
 #include "mvBHboardEnvSpec.h"
 
 #include "bin_hdr_twsi.h"
@@ -1192,10 +1192,9 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 					}
 				}
 			}else{
-				DEBUG_INIT_S("PEX"); DEBUG_INIT_D(pexIf,1);
-				DEBUG_INIT_S(" : Detected No Link. Status Reg(0x");
-				DEBUG_INIT_D(PEX_DBG_STATUS_REG(pexIf),8);
-				DEBUG_INIT_C(") = 0x", tmp,8);
+				DEBUG_INIT_FULL_S("PEX"); DEBUG_INIT_FULL_D(pexIf,1);
+				DEBUG_INIT_FULL_S(" : Detected No Link. Status Reg(0x"); DEBUG_INIT_FULL_D(PEX_DBG_STATUS_REG(pexIf),8);
+				DEBUG_INIT_FULL_C(") = 0x", tmp,8);
 			}
 			if ((pexIf<8) && (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_MODE_X4))
 			   pexIf += 3;

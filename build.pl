@@ -6,15 +6,17 @@ sub HELP_MESSAGE
 	print "Example: build -f nor -b pcac -c\n";
 	print "\n";
 	print "Options:\n";
-	print "\t-f    Boot device. Accepts spi, nor, nand\n";
-    print "\t-b    Board type. Accepts armada_xp_db, armada_xp_rdnas, armada_xp_pcac armada_xp_rdserver armada_xp_dbgp armada_xp_rdcustomer, armada_370_db\n";
-	print "\t-c    Clean build. calls make mrproper\n";
-	print "\t-o    Output dir/file. The image will be copied into this dir/file\n";
-	print "\t-e    Big Endian. If not specified Little endian is used\n";
-	print "\t-i    Supported interfaces. A \":\" seperated list of\n";
-	print "\t-v    SW version (add to binary file name u-boot--axp-X.X.X-spi.bin)\n";
-	print "\t      interfaces. Supports spi, nor, nand. the boot \n";
-	print "\t      interface will always be suppored\n";
+	print "\t-f\tBoot device. Accepts spi, nor, nand\n";
+        print "\t-b\tBoard type. Accepts:\n";
+        print "\t\tarmada_xp_db, armada_xp_rdnas, armada_xp_pcac armada_xp_rdserver armada_xp_dbgp armada_xp_rdcustomer\n";
+        print "\t\tarmada_370_db armada_370_rd\n";
+	print "\t-c\tClean build. calls make mrproper\n";
+	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
+	print "\t-e\tBig Endian. If not specified Little endian is used\n";
+	print "\t-i\tSupported interfaces. A \":\" seperated list of\n";
+	print "\t-v\tSW version (add to binary file name u-boot--axp-X.X.X-spi.bin)\n";
+	print "\t\tinterfaces. Supports spi, nor, nand. the boot \n";
+	print "\t\tinterface will always be suppored\n";
 	print "\n";
 	print "Environment Variables:\n";
 	print "\tCROSS_COMPILE     Cross compiler to build U-BOOT\n";
@@ -77,6 +79,7 @@ if($opt_c eq 1)
 	if(($opt_b eq "armada_xp_db") or
            ($opt_b eq "armada_xp_rdnas") or
            ($opt_b eq "armada_xp_pcac") or
+           ($opt_b eq "armada_xp_amc") or
            ($opt_b eq "armada_xp_rdserver") or
            ($opt_b eq "armada_xp_dbgp") or
 		   ($opt_b eq "armada_370_db") or
@@ -227,11 +230,11 @@ if(defined $opt_o)
 	print "\n**** [Copying Image]\tto ",$opt_o,"  *****\n\n";
 	system("mkdir -p $opt_o/$endian/$opt_f");
 	system("mkdir -p $opt_o/bin_hdr");
-	system("cp u-boot-$boardID-$opt_v-$flash_name.bin $opt_o/u-boot.bin");
-	system("cp u-boot-$boardID-$opt_v-$flash_name.bin $opt_o/$endian/$opt_f/ ");
-	system("cp u-boot $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name ");
-	system("cp u-boot.srec $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name.srec ");
-        system("cp u-boot-$boardID-$opt_v-$flash_name-uart.bin $opt_o/$endian/$opt_f/");
+	system("cp u-boot-$boardID-$opt_v-$flash_name-$targetBoard.bin $opt_o/u-boot.bin");
+	system("cp u-boot-$boardID-$opt_v-$flash_name-$targetBoard.bin $opt_o/$endian/$opt_f/ ");
+	system("cp u-boot $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name-$targetBoard");
+	system("cp u-boot.srec $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name-$targetBoard.srec");
+	system("cp u-boot-$boardID-$opt_v-$flash_name-$targetBoard-uart.bin $opt_o/$endian/$opt_f/");
 
 
 	if ($boardID eq "a370")

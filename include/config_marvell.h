@@ -74,6 +74,13 @@ disclaimer.
 /**********************************/
 	#define DB_78X60_PCAC_REV2
 	#define MV88F78X60
+#elif defined(CONFIG_DB_78X60_AMC)
+
+/**********************************/
+/* defines for DB-78x60-AMC   */
+/**********************************/
+	#define DB_78X60_AMC
+	#define MV88F78X60
 
 #elif defined(CONFIG_RD_78460_NAS)
 

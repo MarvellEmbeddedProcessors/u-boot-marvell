@@ -12,10 +12,10 @@ if($fail){
 	exit;
 }
 
-$fail = system("cp u-boot-axp-$opt_v-spi.bin /tftpboot/u-boot.bin");
+$fail = system("cp u-boot-axp-$opt_v-spi-dbgp.bin /tftpboot/u-boot.bin");
 if($fail){
 	print  "\n *** Error: Build u-boot bot from SPI failed\n\n";
 	exit;
 }
-	print  "====> copied cp u-boot-axp-$opt_v-spi.bin /tftpboot/u-boot.bin \n\n";
+	print  "====> copied cp u-boot-axp-$opt_v-spi-dbgp.bin /tftpboot/u-boot.bin \n\n";
 

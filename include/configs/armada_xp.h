@@ -363,6 +363,7 @@ disclaimer.
 /********/
 #define CONFIG_SYS_DRAM_BANKS		4
 #define CONFIG_NR_DRAM_BANKS 		4
+#define CONFIG_ECC_SUPPORT
 
 /* this defines whether we want to use the lowest CAL or the highest CAL available,*/
 /* we also check for the env parameter CASset.					  */

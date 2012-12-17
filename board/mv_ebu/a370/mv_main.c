@@ -33,12 +33,12 @@ DISCLAIMED.  The GPL License provides additional details about this warranty
 disclaimer.
 *******************************************************************************/
 
+#include <linux/ctype.h>
 #include <common.h>
 #include "mvTypes.h"
 #include "mvBoardEnvLib.h"
 #include "mvCpuIf.h"
 #include "mvCtrlEnvLib.h"
-#include "mv_mon_init.h"
 #include "mvDebug.h"
 #include "device/mvDevice.h"
 #include "twsi/mvTwsi.h"
@@ -52,7 +52,6 @@ disclaimer.
 #include "pex/mvPex.h"
 #include "gpp/mvGpp.h"
 #include "gpp/mvGppRegs.h"
-#include "mvSysHwConfig.h"
 #include "mv_phy.h"
 #include "ddr2_3/mvDramIfRegs.h"
 #include "mv_egiga_neta.h"
@@ -62,7 +61,6 @@ disclaimer.
 #elif CONFIG_RTC_DS1338_DS1339
 #include "rtc/ext_rtc/mvDS133x.h"
 #endif
-
 #include "mvSysCntmrApi.h"
 #if defined(MV_INCLUDE_XOR)
 #include "xor/mvXor.h"
@@ -79,17 +77,14 @@ disclaimer.
 #ifdef CONFIG_AMP_SUPPORT
 #include "mv_amp.h"
 #endif
-
 #include "cpu/mvCpu.h"
 #include "nand.h"
 #include "spi_flash.h"
 #ifdef CONFIG_PCI
-	#include <pci.h>
+#include <pci.h>
 #endif
-
 #include <asm/arch-armv7/vfpinstr.h>
 #include <asm/arch-armv7/vfp.h>
-
 #include <net.h>
 #include <netdev.h>
 #include <command.h>
@@ -112,7 +107,6 @@ void mv_cpu_init(void);
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
 void mv_set_power_scheme(void);
 #endif
-
 extern nand_info_t nand_info[];       /* info for NAND chips */
 extern struct spi_flash *flash;
 extern const char version_string[];
@@ -122,26 +116,20 @@ int mrvl_mmc_initialize(bd_t *bis);
 #ifdef MV_NAND_BOOT
 extern MV_U32 nandEnvBase;
 #endif
-
+char* strToLower(char * st);
+void envVerifyAndSet(char* envName, char* value1, char* value2, int defaultValue);
+void envSetDefault(char* envName, char* defaultValue);
+int mv_get_arch_number(void);
 DECLARE_GLOBAL_DATA_PTR;
-
 
 void mv_print_map(void)
 {
-	int add;
 #ifdef DB_78X60_PCAC
 		return 0;
 #endif
-
 	printf("\nMap:   Code:\t\t0x%08x:0x%08x\n", (unsigned int)gd->reloc_off, (unsigned int)(gd->reloc_off + _bss_start_ofs));
 	printf("       BSS:\t\t0x%08x\n", (unsigned int)(gd->reloc_off + _bss_end_ofs));
 	printf("       Stack:\t\t0x%08x\n", (unsigned int)gd->start_addr_sp);
-#if defined(MV_INCLUDE_MONT_EXT)
-	if(!enaMonExt()) {
-		add = MV_PT_BASE(whoAmI());
-		printf("       PageTable:\t0x%08x\n", add);
-	}
-#endif
 	printf("       Heap:\t\t0x%08x:0x%08x\n\n",(unsigned int)(gd->relocaddr - TOTAL_MALLOC_LEN), (unsigned int)gd->relocaddr);
 }
 
@@ -162,15 +150,7 @@ void print_mvBanner(void)
 	printf("        | | | |___|  _ \\ / _ \\ / _ \\| __| \n");
 	printf("        | |_| |___| |_) | (_) | (_) | |_ \n");
 	printf("         \\___/    |____/ \\___/ \\___/ \\__| \n");
-
-#if defined(MV_INCLUDE_MONT_EXT)
-	if(!enaMonExt())
-		printf(" ** LOADER **\n");
-	else
-		printf(" ** MONITOR **\n");
-#else
 	printf(" ** LOADER **\n");
-#endif /* MV_INCLUDE_MONT_EXT */
 	return;
 }
 
@@ -250,7 +230,11 @@ void misc_init_r_dec_win(void)
 
 
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
-	mv_set_power_scheme();
+#if defined(MV88F78X60)
+	env = getenv("enaClockGating");
+	if( env && ((strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0)) )
+#endif
+		mv_set_power_scheme();
 #endif
 
     return;
@@ -272,26 +256,19 @@ extern void i2c_init(int speed, int slaveaddr);
 int board_init (void)
 {
 	DECLARE_GLOBAL_DATA_PTR;
-	MV_U32 boardId;
 	int clock_divisor;
-	
-	mvCtrlModelSet();
-	boardId = mvBoardIdGet();
-
+	unsigned int i;
+	MV_GPP_HAL_DATA gppHalData;
 	clock_divisor = (CONFIG_SYS_TCLK / 16)/115200;
+
 	/* muti-core support, initiate each Uart to each cpu */
 	mvUartInit(whoAmI(), clock_divisor, mvUartBase(whoAmI()));
-
 	if (whoAmI() != 0)
 		return 0;
 
 #if defined(MV_INCLUDE_TWSI)
 	MV_TWSI_ADDR slave;
 #endif
-	MV_GPP_HAL_DATA gppHalData;
-
-	unsigned int i;
-
 	maskAllInt();
 
 	/* must initialize the int in order for udelay to work */
@@ -309,42 +286,32 @@ int board_init (void)
 
 	/* Init the Controlloer environment module (MPP init) */
 	mvCtrlEnvInit();
-
 	mvBoardDebugLed(2);
 
 	/* Init the Controller CPU interface */
 	mvCpuIfDramInit();
 	mvCpuIfInit(mvCpuAddrWinMap);
-	#if defined(MV_NOR_BOOT)
+#if defined(MV_NOR_BOOT)
 	env_init();
-	#endif
+#endif
+
 	/* Init the GPIO sub-system */
 	gppHalData.ctrlRev = mvCtrlRevGet();
 	mvGppInit(&gppHalData);
-
+	
 	/* arch number of Integrator Board */
-	switch (boardId) {
-		case DB_88F6710_BP_ID:
-			gd->bd->bi_arch_number = 3038;
-			break;
-		default:
-			gd->bd->bi_arch_number = 3038;
-			break;
-	}
-
+	gd->bd->bi_arch_number=mv_get_arch_number();
+	
 	/* adress of boot parameters */
 	gd->bd->bi_boot_params = 0x00000100;
-
+	
 	/* relocate the exception vectors */
 	/* U-Boot is running from DRAM at this stage */
 	for(i = 0; i < 0x100; i+=4) {
 		*(unsigned int *)(0x0 + i) = *(unsigned int*)(CONFIG_SYS_TEXT_BASE + i);
 	}
-
 	mvBoardDebugLed(4);
-
 	mv_print_map();
-
 	return 0;
 }
 
@@ -352,87 +319,71 @@ void misc_init_r_env(void){
 	char *env;
 	char tmp_buf[10];
 	unsigned int malloc_len;
+	int i;
 
-	env = getenv("console");
-	if(!env) {
-		setenv("console","console=ttyS0,115200");
-	}
+	envSetDefault("console", "console=ttyS0,115200");
 
-	env = getenv("mtdids");
-	if(!env) {
 #if defined(MV_NAND)
-		setenv("mtdids","nand0=armada-nand");
+	envSetDefault("mtdids", "nand0=armada-nand");
+	envSetDefault("mtdparts", "mtdparts=armada-nand:4m(boot),-(rootfs)");
+	envSetDefault("nandEcc", "1bit");
 #endif
-	}
-	env = getenv("mtdparts");
-	if(!env) {
-#if defined(MV_NAND)
-		setenv("mtdparts", "mtdparts=armada-nand:4m(boot),-(rootfs)");
+	
+	/* update the CASset env parameter */
+#ifdef MV_MIN_CAL
+	envSetDefault("CASset", "min");
+#else	
+	envSetDefault("CASset", "max");
 #endif
-	}
-
-        /* Monitor extension */
-#ifdef MV_INCLUDE_MONT_EXT
-	env = getenv("enaMonExt");
-	if(/* !env || */ ( (strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0) ) )
-		setenv("enaMonExt","yes");
-	else
-#endif
-	setenv("enaMonExt","no");
 
 #if defined (MV_INC_BOARD_NOR_FLASH)
-	env = getenv("enaFlashBuf");
-	if( ( (strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) ) )
-		setenv("enaFlashBuf","no");
-	else
-		setenv("enaFlashBuf","yes");
+	envVerifyAndSet("enaFlashBuf", "no", "yes",2);
 #endif
 
-	if (enaMonExt()){
-		/* Write allocation */
-		env = getenv("enaWrAllo");
-		if( !env || ( ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) )))
-			setenv("enaWrAllo","no");
-		else
-			setenv("enaWrAllo","yes");
-		
-		env = getenv("disL2Cache");
-		if(!env || ( (strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0) ) )
-			setenv("disL2Cache","yes");
-		else
-			setenv("disL2Cache","no");
-		
-		/* Make address 0x80000000-0x8fffffff shared (set 'S' in pgd) */
-		env = getenv("cacheShare");
-		if( !env || ( ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) )))
-			setenv("cacheShare","no");
-		else
-			setenv("cacheShare","yes");
+#if defined(MV88F78X60)
+	envSetDefault("mvNetConfig", "mv_net_config=4,(00:50:43:11:11:11,0:1:2:3),mtu=1500");
+	envSetDefault("lcd0_enable", "0");
+	envSetDefault("lcd0_params", "640x480-16@60");
+	envSetDefault("lcd_panel", "0");
+	envSetDefault("pxe_files_load", ":default.arm-armadaxp-db:default.arm-armadaxp:default.arm"); 
+	envSetDefault("pxefile_addr_r", "3100000"); 
+	envSetDefault("initrd_name", "uInitrd"); 
+	/* CPU streaming */	
+	envVerifyAndSet("enaCpuStream", "no", "yes",1);
+#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
+	/* Clock Gating */
+	envVerifyAndSet("enaClockGating", "no", "yes",1);
+#endif
+	/* Write allocation */
+	envVerifyAndSet("enaWrAllo", "no", "yes",1);
+	envVerifyAndSet("disL2Cache", "yes", "no",1);
+	envVerifyAndSet("MPmode", "SMP", "AMP",1);
+	/* Make address 0x80000000-0x8fffffff shared (set 'S' in pgd) */
 
+	env = getenv("disL2Prefetch");
+	if(!env || ( (strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0) ) )
+	{
+		setenv("disL2Prefetch","yes");
+		/* ICache Prefetch */
+		envVerifyAndSet("enaICPref", "no", "yes",2);
+		/* DCache Prefetch */
+		envVerifyAndSet("enaDCPref", "no", "yes",2);
+	} else {
+		setenv("disL2Prefetch","no");
+		setenv("enaICPref","no");
+		setenv("enaDCPref","no");
 	}
+	envVerifyAndSet("enaFPU", "no", "yes",2);
+#endif /* #if defined(MV88F78X60) */
 
-	/* Pex mode */
-	env = getenv("pexMode");
-	if( env && ( ((strcmp(env,"EP") == 0) || (strcmp(env,"ep") == 0) )))
-		setenv("pexMode","EP");
-	else
-		setenv("pexMode","RC");
-
-	env = getenv("setL2CacheWT");
-	if(!env || ( (strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) ) )
-		setenv("setL2CacheWT","no");
-	else
-		setenv("setL2CacheWT","yes");
-
-	env = getenv("sata_dma_mode");
-	if( env && ((strcmp(env,"No") == 0) || (strcmp(env,"no") == 0) ) )
-		setenv("sata_dma_mode","no");
-	else
-		setenv("sata_dma_mode","yes");
-
-	env = getenv("sata_delay_reset");
-	if (!env)
-		setenv("sata_delay_reset","0");
+	envVerifyAndSet("cacheShare", "no", "yes",1);
+	envVerifyAndSet("pexMode", "EP", "RC",2);
+	
+#if defined(MV88F67XX)
+	envSetDefault("mvNetConfig", "mv_net_config=1,(00:50:43:11:11:11,0:1:2:3:4),mtu=1500");
+#endif /*#if defined(MV88F67XX) */
+	envVerifyAndSet("sata_dma_mode", "no", "yes",2);
+	envSetDefault("sata_delay_reset", "0");
 
 	/* Malloc length */
 	env = getenv("MALLOC_len");
@@ -446,12 +397,24 @@ void misc_init_r_env(void){
 	}
 
 	/* primary network interface */
-	env = getenv("ethprime");
-	if(!env) {
-		setenv("ethprime",ENV_ETH_PRIME);
-	}
+	envSetDefault("ethprime", ENV_ETH_PRIME);
 	
 	/* image/script addr */
+#if defined (CONFIG_CMD_STAGE_BOOT)
+	envSetDefault("fdt_addr", "2040000");
+	envSetDefault("kernel_addr_r", "2080000"); 
+	envSetDefault("ramdisk_addr_r", "2880000");
+	envSetDefault("device_partition", "0:1");
+	envSetDefault("boot_order", "hd_scr hd_img pxe net_img net_scr");
+	envSetDefault("script_name", "boot.scr");
+	envSetDefault("ide_path", "/");
+	envSetDefault("script_addr_r", "3000000");
+	envSetDefault("bootargs_dflt", "$console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
+ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params \
+clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
+	envSetDefault("bootcmd_auto", "stage_boot $boot_order");
+	envSetDefault("bootcmd_lgcy", "tftpboot 0x2000000 $image_name; setenv bootargs $bootargs_dflt; bootm 0x2000000; ");
+#endif /* #if defined (CONFIG_CMD_STAGE_BOOT) */
 
 	/* netbsd boot arguments */
 	env = getenv("netbsd_en");
@@ -459,57 +422,22 @@ void misc_init_r_env(void){
 		setenv("netbsd_en","no");
 	} else {
 		setenv("netbsd_en","yes");
-		env = getenv("netbsd_gw");
-		if(!env)
-			setenv("netbsd_gw","192.168.0.254");
-		env = getenv("netbsd_mask");
-		if(!env)
-			setenv("netbsd_mask","255.255.255.0");
-
-		env = getenv("netbsd_fs");
-		if(!env)
-			setenv("netbsd_fs","nfs");
-
-		env = getenv("netbsd_server");
-		if(!env)
-			setenv("netbsd_server","192.168.0.1");
-
-		env = getenv("netbsd_ip");
-		if(!env) {
-			env = getenv("ipaddr");
-			setenv("netbsd_ip",env);
-		}
-
-		env = getenv("netbsd_rootdev");
-		if(!env)
-			setenv("netbsd_rootdev","mgi0");
-
-		env = getenv("netbsd_add");
-		if(!env)
-			setenv("netbsd_add","0x800000");
-
-		env = getenv("netbsd_get");
-	    if(!env)
-			setenv("netbsd_get","tftpboot $netbsd_add $image_name");
-
+		envSetDefault("netbsd_gw", "192.168.0.254");
+		envSetDefault("netbsd_mask", "255.255.255.0");
+		envSetDefault("netbsd_fs", "nfs");
+		envSetDefault("netbsd_server", "192.168.0.1");
+		envSetDefault("netbsd_ip", getenv("ipaddr"));
+		envSetDefault("netbsd_rootdev", "mgi0");
+		envSetDefault("netbsd_add", "0x800000");
+		envSetDefault("netbsd_get", "tftpboot $netbsd_add $image_name");
 #if defined(MV_INC_BOARD_QD_SWITCH)
-		env = getenv("netbsd_netconfig");
-		if(!env)
-			setenv("netbsd_netconfig","mv_net_config=<((mgi0,00:00:11:22:33:44,0)(mgi1,00:00:11:22:33:55,1:2:3:4)),mtu=1500>");
+		envSetDefault("netbsd_netconfig", "mv_net_config=<((mgi0,00:00:11:22:33:44,0)(mgi1,00:00:11:22:33:55,1:2:3:4)),mtu=1500>");
 #endif
-		env = getenv("netbsd_set_args");
-		if(!env)
-			setenv("netbsd_set_args","setenv bootargs nfsroot=$netbsd_server:$rootpath fs=$netbsd_fs \
+		envSetDefault("netbsd_set_args", "setenv bootargs nfsroot=$netbsd_server:$rootpath fs=$netbsd_fs \
                     ip=$netbsd_ip serverip=$netbsd_server mask=$netbsd_mask gw=$netbsd_gw rootdev=$netbsd_rootdev \
                     ethaddr=$ethaddr eth1addr=$eth1addr ethmtu=$ethmtu eth1mtu=$eth1mtu $netbsd_netconfig");
-
-		env = getenv("netbsd_boot");
-		if(!env)
-			setenv("netbsd_boot","bootm $netbsd_add $bootargs");
-
-		env = getenv("netbsd_bootcmd");
-		if(!env)
-			setenv("netbsd_bootcmd","run netbsd_get ; run netbsd_set_args ; run netbsd_boot");
+		envSetDefault("netbsd_boot", "bootm $netbsd_add $bootargs");
+		envSetDefault("netbsd_bootcmd", "run netbsd_get ; run netbsd_set_args ; run netbsd_boot");
 	}
 
 	/* vxWorks boot arguments */
@@ -519,7 +447,6 @@ void misc_init_r_env(void){
 	else {
 		char* buff = (char *)0x1100;
 		setenv("vxworks_en","yes");
-
 		sprintf(buff,"mgi(0,0) host:vxWorks.st");
 		env = getenv("serverip");
 		strcat(buff, " h=");
@@ -528,45 +455,30 @@ void misc_init_r_env(void){
 		strcat(buff, " e=");
 		strcat(buff,env);
 		strcat(buff, ":ffff0000 u=anonymous pw=target ");
-
 		setenv("vxWorks_bootargs",buff);
+		setenv("bootaddr", "0x1100");
 	}
 
 	/* linux boot arguments */
-	env = getenv("bootargs_root");
-	if(!env)
-		setenv("bootargs_root","root=/dev/nfs rw");
+	envSetDefault("bootargs_root", "root=/dev/nfs rw");
 
 	/* For open Linux we set boot args differently */
 	env = getenv("mainlineLinux");
-	if(env && ((strcmp(env,"yes") == 0) ||  (strcmp(env,"Yes") == 0))) {
-		env = getenv("bootargs_end");
-		if(!env)
-			setenv("bootargs_end",":::orion:eth0:none");
-	} else {
-		env = getenv("bootargs_end");
-		if(!env)
+	if(env && ((strcmp(env,"yes") == 0) ||  (strcmp(env,"Yes") == 0)))
+		envSetDefault("bootargs_end", ":::orion:eth0:none");
+	else {
 #if defined(MV_INC_BOARD_QD_SWITCH)
-			setenv("bootargs_end",MV_BOOTARGS_END_SWITCH);
+		envSetDefault("bootargs_end", MV_BOOTARGS_END_SWITCH);
 #else
-			setenv("bootargs_end",MV_BOOTARGS_END);
+		envSetDefault("bootargs_end", MV_BOOTARGS_END);
 #endif
 	}
-
-	env = getenv("image_name");
-	if(!env)
-		setenv("image_name","uImage");
+	envSetDefault("image_name", "uImage");
 
 #if CONFIG_OF_LIBFDT
-	env = getenv("fdtaddr");
-		if(!env)
-			setenv("fdtaddr","0x1000000");
-
-	env = getenv("fdtfile");
-		if(!env)
-			setenv("fdtfile","armada_xp_db.dtb");
+	envSetDefault("fdtaddr", "0x1000000");
+	envSetDefault("fdtfile", "armada_xp_db.dtb");
 #endif
-
 
 #if CONFIG_AMP_SUPPORT
 	env = getenv("amp_enable");
@@ -574,32 +486,17 @@ void misc_init_r_env(void){
 		setenv("amp_enable","no");
 	}
 	else{
-		env = getenv("amp_groups");
-		if(!env)
-			setenv("amp_groups","0");
-
-		env = getenv("amp_shared_mem");
-		if(!env)
-			setenv("amp_shared_mem","0x80000000:0x100000");
-
+		envSetDefault("amp_groups", "0");
+		envSetDefault("amp_shared_mem", "0x80000000:0x100000");
 		setenv("bootcmd", "amp_boot");
-
-		env = getenv("amp_verify_boot");
-		if(!env)
-			setenv("amp_verify_boot","yes");
-
+		envSetDefault("amp_verify_boot", "yes");
 	}
 #endif
 
 #ifdef CONFIG_ARM_LPAE
 	/* LPAE support */
-	env = getenv("enaLPAE");
-	if(!env)
-		setenv("enaLPAE", "no");
+	envSetDefault("enaLPAE", "no");;
 #endif
-	env = getenv("load_addr");
-	if(!env)
-		setenv("load_addr",RCVR_LOAD_ADDR);
 
 #if (CONFIG_BOOTDELAY >= 0)
 	env = getenv("bootcmd");
@@ -608,137 +505,81 @@ void misc_init_r_env(void){
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
 ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000 - 0x1000000;");
-	
-
-#elif defined(MV_INCLUDE_TDM) && defined(MV_INC_BOARD_QD_SWITCH)
+#elif defined(CONFIG_CMD_STAGE_BOOT)
+		setenv("bootcmd","stage_boot $boot_order");
+#elif defined(MV_INCLUDE_TDM) || defined(MV_INC_BOARD_QD_SWITCH)
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$(lcd0_params) clcd.lcd0_enable=$(lcd0_enable) clcd.lcd_panel=$(lcd_panel);  bootm $load_addr; ");
-#elif defined(MV_INC_BOARD_QD_SWITCH)
-		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
-setenv bootargs $console  $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig  video=dovefb:lcd0:$(lcd0_params) clcd.lcd0_enable=$(lcd0_enable) clcd.lcd_panel=$(lcd_panel);  bootm $load_addr; ");
-#elif defined(MV_INCLUDE_TDM)
-		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$(lcd0_params) clcd.lcd0_enable=$(lcd0_enable) clcd.lcd_panel=$(lcd_panel);  bootm $load_addr; ");
+ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$(lcd0_enable) clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
 #else
-
 		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$(lcd0_params) clcd.lcd0_enable=$(lcd0_enable) clcd.lcd_panel=$(lcd_panel);  bootm $load_addr; ");
+ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
 #endif
 #endif /* (CONFIG_BOOTDELAY >= 0) */
 
-	env = getenv("standalone");
-	if(!env)
-#if defined(MV_INCLUDE_TDM) && defined(MV_INC_BOARD_QD_SWITCH)
-		setenv("standalone","fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
+#if defined(MV_INC_BOARD_QD_SWITCH)	
+	envSetDefault("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
 ip=$ipaddr:$serverip$bootargs_end $mvNetConfig; bootm 0x2000000;");
-#elif defined(MV_INC_BOARD_QD_SWITCH)
-	setenv("standalone","fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig; bootm 0x2000000;");
-#elif defined(MV_INCLUDE_TDM)
-	setenv("standalone","fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
-ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 #else
-	setenv("standalone","fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
+	envSetDefault("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
 ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 #endif
 
-	/* Set boodelay to 3 sec, if Monitor extension are disabled */
-	if(!enaMonExt()) {
-		setenv("disaMvPnp","no");
-	}
-
 	/* Disable PNP config of Marvell memory controller devices. */
-	env = getenv("disaMvPnp");
-	if(!env)
-		setenv("disaMvPnp","no");
-
-	env = getenv("bootdelay");
-	if(!env)
-		setenv("bootdelay","3");
+	envSetDefault("disaMvPnp", "no");
+	envSetDefault("bootdelay", "3");
 
 #if (defined(MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_UNM_ETH))
 	/* Generate random ip and mac address */
 	/* Read RTC to create pseudo-random data for enc */
 	struct rtc_time tm;
-	unsigned int xi, xj, xk, xl;
-	char ethaddr_0[30];
-	char ethaddr_1[30];
-	char pon_addr[30];
-
+	unsigned int rand[4];
+	char* addr_env="ethaddr" , *mtu_env="ethmtu";
+	char ethaddr_all[30];
 	rtc_get(&tm);
-	xi = ((tm.tm_yday + tm.tm_sec)% 254);
+	
+	rand[0] = ((tm.tm_yday + tm.tm_sec)% 254);
 	/* No valid ip with one of the fileds has the value 0 */
-	if (xi == 0)
-		xi+=2;
-
-	xj = ((tm.tm_yday + tm.tm_min)%254);
+	if (rand[0] == 0)
+		rand[0]+=2;
+	rand[1] = ((tm.tm_yday + tm.tm_min)%254);
 	/* No valid ip with one of the fileds has the value 0 */
-	if (xj == 0)
-		xj+=2;
-
+	if (rand[1] == 0)
+		rand[1]+=2;
 	/* Check if the ip address is the same as the server ip */
-	if ((xj == 1) && (xi == 11))
-		xi+=2;
+	if ((rand[1] == 1) && (rand[0] == 11))
+		rand[0]+=2;
 
-	xk = (tm.tm_min * tm.tm_sec)%254;
-	xl = (tm.tm_hour * tm.tm_sec)%254;
-
-	sprintf(ethaddr_0,"00:50:43:%02x:%02x:%02x",xk,xi,xj);
-	sprintf(ethaddr_1,"00:50:43:%02x:%02x:%02x",xl,xi,xj);
-	sprintf(pon_addr,"00:50:43:%02x:%02x:%02x",xj,xk,xl);
-
-	/* MAC addresses */
-	env = getenv("ethaddr");
-	if(!env)
-		setenv("ethaddr",ethaddr_0);
-
-	env = getenv("eth1addr");
-	if(!env)
-		setenv("eth1addr",ethaddr_1);
-
-	env = getenv("ethmtu");
-	if(!env)
-		setenv("ethmtu","1500");
-
-	env = getenv("eth1mtu");
-	if(!env)
-		setenv("eth1mtu","1500");
+	rand[2] = (tm.tm_min * tm.tm_sec)%254;
+	rand[3] = (tm.tm_hour * tm.tm_sec)%254;
+	/* MAC addresses */	
+	for (i=0; i<MV_ETH_MAX_PORTS ; i++)
+	{
+		sprintf(ethaddr_all,"00:50:43:%02x:%02x:%02x",rand[(0+i)%4],rand[(1+i)%4],rand[(2+i)%4]);
+		envSetDefault(addr_env,ethaddr_all);
+		envSetDefault(mtu_env,"1500");
+		sprintf(addr_env,"eth%daddr",i+1);
+		sprintf(mtu_env,"eth%dmtu",i+1);
+	}
+	sprintf(ethaddr_all,"00:50:43:%02x:%02x:%02x",rand[3],rand[2],rand[0]);
+	envSetDefault("mv_pon_addr", ethaddr_all);
 
 	/* Set mvNetConfig env parameter */
-	env = getenv("mvNetConfig");
-	if(!env ) {
-				setenv("mvNetConfig","mv_net_config1=1,(00:50:43:11:11:11,0:1:2:3:4),mtu=1500");
-	}
+
 #endif /*  (MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_UNM_ETH) */
 
 #if defined(MV_INCLUDE_USB)
 	/* USB Host */
-	env = getenv("usb0Mode");
-	if(!env)
-		setenv("usb0Mode",ENV_USB0_MODE);
-	env = getenv("usb1Mode");
-	if(!env)
-		setenv("usb1Mode",ENV_USB1_MODE);
-
-	env = getenv("usb2Mode");
-	if(!env)
-		setenv("usb2Mode",ENV_USB2_MODE);
-
-	env = getenv("usbActive");
-	if(!env)
-		setenv("usbActive",ENV_USB_ACTIVE);
+	envSetDefault("usb0Mode", ENV_USB0_MODE);
+	envSetDefault("usb1Mode", ENV_USB1_MODE);
+	envSetDefault("usb2Mode", ENV_USB2_MODE);
+	envSetDefault("usbActive", ENV_USB_ACTIVE);
 
 #endif  /* (MV_INCLUDE_USB) */
 
 #if defined(YUK_ETHADDR)
-	env = getenv("yuk_ethaddr");
-	if(!env)
-		setenv("yuk_ethaddr",YUK_ETHADDR);
-
+	envSetDefault("yuk_ethaddr", YUK_ETHADDR);
 	{
 		int i;
 		char *tmp = getenv ("yuk_ethaddr");
@@ -752,46 +593,27 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	}
 #endif /* defined(YUK_ETHADDR) */
 
-#if defined(MV_NAND)
-	env = getenv("nandEcc");
-	if(!env) {
-		setenv("nandEcc", "1bit");
-	}
-#endif
 #if defined(CONFIG_CMD_RCVR)
-	env = getenv("netretry");
-	if (!env)
-		setenv("netretry","no");
-
-	env = getenv("rcvrip");
-	if (!env)
-		setenv("rcvrip",RCVR_IP_ADDR);
-
-	env = getenv("loadaddr");
-	if (!env)
-		setenv("loadaddr",RCVR_LOAD_ADDR);
-
-	env = getenv("autoload");
-	if (!env)
-		setenv("autoload","no");
-
+	envSetDefault("netretry", "no");
+	envSetDefault("rcvrip", RCVR_IP_ADDR);
+	envSetDefault("loadaddr", RCVR_LOAD_ADDR);
+	envSetDefault("autoload", "no");
 	/* Check the recovery trigger */
 	recoveryDetection();
 #endif
-	env = getenv("eeeEnable");
-	if (!env)
-		setenv("eeeEnable","no");
-
+	envSetDefault("eeeEnable", "no");
 	return;
 }
-#define MV_CPU_SW_RESET_CONTROL(cpu)	(0x20800 + ((cpu) * 0x8))
 
 
 #ifdef BOARD_LATE_INIT
 int board_late_init (void)
 {
-	/* Check if to use the LED's for debug or to use single led for init and Linux heartbeat */
-
+/* Check if to use the LED's for debug or to use single led for init and Linux heartbeat */
+#if defined (RD_88F78460_SERVER)
+	if (mvBoardSledCpuNumGet() == 0) 
+		MV_REG_BIT_SET(GPP_DATA_OUT_REG(0), BIT28 | BIT29 | BIT30 | BIT31);
+#endif
 	mvBoardDebugLed(0);
 	return 0;
 }
@@ -803,7 +625,6 @@ void pcie_tune(void)
 	MV_REG_WRITE(0xF1041A20, 0x78000801);
 	MV_REG_WRITE(0xF1041A00, 0x4014022F);
 	MV_REG_WRITE(0xF1040070, 0x18110008);
-
 	return;
 }
 
@@ -824,6 +645,7 @@ int board_eth_init(bd_t *bis)
 #endif
 	return 0;
 }
+
 #ifdef CONFIG_MMC
 int board_mmc_init(bd_t *bis)
 {
@@ -833,15 +655,26 @@ int board_mmc_init(bd_t *bis)
 	return 0;
 }
 #endif
+
 int print_cpuinfo (void)
 {
 	char name[50];
-
-	
+	mvBoardIdSet();
+#if defined(MV88F67XX)
+/* with KW40 only: the model must be writen first */
+	mvCtrlModelSet();
+#else
+/* update Pex - Armada-Xp */
+	mvCtrlUpdatePexId();
+#endif
 	mvBoardNameGet(name);
 	printf("Board: %s\n",  name);
 	mvCtrlModelRevNameGet(name);
 	printf("SoC:   %s\n", name);
+	if (mvCtrlGetCpuNum())
+		printf("       running %d CPUs\n", mvCtrlGetCpuNum()+1);
+	if (!mvCtrlIsValidSatR())
+		printf("       Custom configuration\n");
 	mvCpuNameGet(name);
 	printf("CPU:   %s",  name);
 #ifdef MV_CPU_LE
@@ -849,19 +682,22 @@ int print_cpuinfo (void)
 #else
 	printf(" BE\n");
 #endif
+if (mvCtrlGetCpuNum())
+	printf("       CPU %d\n",  whoAmI());
+
 	printf("       CPU    @ %d [MHz]\n",  mvCpuPclkGet()/1000000);
 	printf("       L2     @ %d [MHz]\n", mvCpuL2ClkGet()/1000000);
 	printf("       TClock @ %d [MHz]\n", mvTclkGet()/1000000);
 	printf("       DDR    @ %d [MHz]\n", CONFIG_SYS_BUS_CLK/1000000);
 	printf("       DDR %dBit Width, %s Memory Access\n", mvCtrlDDRBudWidth(), mvCtrlDDRThruXbar()?"XBAR":"FastPath");
-
-
+#if defined(CONFIG_ECC_SUPPORT)
+	printf("       DDR ECC %s\n", mvCtrlDDRECC()?"Enabled":"Disabled");
+#endif
 	return 0;
 }
 int misc_init_r (void)
 {
 	char *env;
-
 	mvBoardDebugLed(5);
 
 	/* init special env variables */
@@ -872,24 +708,19 @@ int misc_init_r (void)
 
 	mv_cpu_init();
 
-#if defined(MV_INCLUDE_MONT_EXT)
-	if(enaMonExt()) {
-		printf("Marvell monitor extension:\n");
-		mon_extension_after_relloc();
-	}
-#endif /* MV_INCLUDE_MONT_EXT */
-
 	/* init the units decode windows */
 	misc_init_r_dec_win();
 
 	/* Clear old kernel images which remained stored in memory */
 	memset ((void *)CONFIG_SYS_LOAD_ADDR, 0, CONFIG_SYS_MIN_HDR_DEL_SIZE);
 	mvBoardDebugLed(6);
-	
-	/* Prints the modules detected */
-	mvBoardMppModuleTypePrint();
-	mvBoardOtherModuleTypePrint();
-	
+
+#if !defined(RD_78460_SERVER_REV2)
+		/* Prints the modules detected */
+		mvBoardMppModuleTypePrint();
+		mvBoardOtherModuleTypePrint();
+#endif /* #if !defined(RD_78460_SERVER_REV2) */
+
 	mvBoardDebugLed(7);
 #ifdef DB_78X60_AMC
 	MV_U32 tmpOut;
@@ -908,8 +739,10 @@ int misc_init_r (void)
 		setenv("pcieTune","no");
 
 #if defined(MV_INCLUDE_UNM_ETH) || defined(MV_INCLUDE_GIG_ETH)
-	/* Init the PHY or Switch of the board */
-	mvBoardEgigaPhyInit();
+#if !defined(RD_78460_SERVER_REV2)
+		/* Init the PHY or Switch of the board */
+		mvBoardEgigaPhyInit();
+#endif /* #if !defined(RD_78460_SERVER_REV2) */
 #endif /* #if defined(MV_INCLUDE_UNM_ETH) || defined(MV_INCLUDE_GIG_ETH) */
 
 	return 0;
@@ -980,6 +813,7 @@ void mv_cpu_init(void)
 		fmxr(FPEXC, temp);
 	}
 
+#if defined(MV88F67XX)
 	__asm__ __volatile__("mrc p15, 1, %0, c15, c1, 1" : "=r" (temp));
 	temp |= BIT16; /* Disable reac clean intv */
 	__asm__ __volatile__("mcr p15, 1, %0, c15, c1, 1\n" \
@@ -990,7 +824,6 @@ void mv_cpu_init(void)
 	/* removed BIT23 in order to enable fast LDR bypass */
 	__asm__ __volatile__("mcr p15, 1, %0, c15, c1, 2\n" \
 			"mcr p15, 0, %0, c7, c5, 4": :"r" (temp)); /*imb*/
-
 	/* Enable speculative read miss from L1 to "line fill" L1 */
 	__asm__ __volatile__("mrc p15, 1, %0, c15, c2, 0" : "=r" (temp));
 
@@ -1003,22 +836,50 @@ void mv_cpu_init(void)
 
 	__asm__ __volatile__("mcr p15, 1, %0, c15, c2, 0\n" \
 			"mcr p15, 0, %0, c7, c5, 4": :"r" (temp)); /*imb*/
+#else /* AXP */
+	__asm__ __volatile__("mrc p15, 1, %0, c15, c1, 2" : "=r" (temp));
+	temp |= (BIT25 | BIT27 | BIT29 | BIT30);
+	/* removed BIT23 in order to enable fast LDR bypass */
+	__asm__ __volatile__("mcr p15, 1, %0, c15, c1, 2\n" \
+			"mcr p15, 0, %0, c7, c5, 4": :"r" (temp)); /*imb*/
+#endif /*#if defined(MV88F67XX) */
 
-#if 1
 	/* Set L2C WT mode */
 	temp = MV_REG_READ(CPU_L2_AUX_CTRL_REG) & ~CL2ACR_WB_WT_ATTR_MASK;
 	env = getenv("setL2CacheWT");
 	if(!env || ((strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0))) {
 		temp |= CL2ACR_WB_WT_ATTR_WT;
 	}
+#if defined(MV88F78X60)
+	/* Set L2 algorithm to semi_pLRU */
+	temp &= ~CL2ACR_REP_STRGY_MASK;
+
+	if(mvCtrlRevGet()==1)
+	{
+		temp |= CL2ACR_REP_STRGY_semiPLRU_MASK;
+	}
+	else
+	{ 
+		temp |= CL2ACR_REP_STRGY_semiPLRU_WA_MASK;
+		temp |= CL2_DUAL_EVICTION;
+		temp |= CL2_PARITY_ENABLE;
+		temp |= CL2_InvalEvicLineUCErr;
+	}/* MV88F78X60_B0  */
+#endif /* #if defined(MV88F78X60) */
+
+
+
 	MV_REG_WRITE(CPU_L2_AUX_CTRL_REG, temp);
-#endif
 
 	/* enable L2C */
 	temp = MV_REG_READ(CPU_L2_CTRL_REG);
 
 	env = getenv("disL2Cache");
-	if(((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0)) && enaMonExt())
+#if defined(MV88F67XX)
+	if((!env || (strcmp(env,"no") == 0) || (strcmp(env,"No") == 0)) && enaMonExt())
+#else /* AXP */
+	if(!env || ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0)))
+#endif /*# if defined(MV88F67XX) */
 		temp |= CL2CR_L2_EN_MASK;
 	else
 		temp &= ~CL2CR_L2_EN_MASK;
@@ -1063,8 +924,12 @@ void mv_cpu_init(void)
 
 		/* Set L2 algorithm to semi_pLRU */
 		temp &= ~CL2ACR_REP_STRGY_MASK;
+#if defined(MV88F78X60)
+		temp |= CL2ACR_REP_STRGY_semiPLRU_MASK;
+#else
 		temp |= CL2ACR_REP_STRGY_PLRU_MASK;
-		
+#endif
+
 		/* Write to L2 Auxilary control register */
 		MV_REG_WRITE(CPU_L2_AUX_CTRL_REG, temp);
 
@@ -1086,7 +951,7 @@ void mv_cpu_init(void)
 
 	/* Disable MBUS Err Prop - inorder to avoid data aborts */
 	MV_REG_BIT_RESET(SOC_COHERENCY_FABRIC_CTRL_REG, BIT8);
-	
+#if defined(MV88F67XX)
 	/* Enable IOCC */
 	env = getenv("cacheShare");
 	if(((strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0)) && enaMonExt()) {
@@ -1098,74 +963,42 @@ void mv_cpu_init(void)
 
 		MV_REG_BIT_SET(SOC_COHERENCY_FABRIC_CTRL_REG, BIT24);
 	}
-
+#endif /* #if defined(MV88F67XX) */
 }
 
-/* Set unit in power off mode acording to the detection of MPP/SERDES */
-#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
-void mv_set_power_scheme(void)
-{
-	MV_U32 boardId = mvBoardIdGet();
-	MV_U32 mppGrp1 = mvBoardMppModulesCfgGet(1);
-	MV_U32 mppGrp2 = mvBoardMppModulesCfgGet(2);
-	MV_U32 srdsCfg = mvBoardSerdesModeGet();
 
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mv_set_power_scheme: Board unknown.\n");
+void envSetDefault(char* envName, char* defaultValue) 
+{
+	char *env;
+	env = getenv(envName);
+	if (!env)
+		setenv(envName,defaultValue);
+}
+
+void envVerifyAndSet(char* envName, char* value1, char* value2, int defaultValue) 
+{
+	char *val1=strToLower(value1), *val2=strToLower(value2);
+	char *env=strToLower(getenv(envName));
+	if(!env) {
+		if(defaultValue==1) 
+			setenv(envName,val1);
+		else
+			setenv(envName,value2);
 		return;
 	}
-
-	mvOsOutput("Shutting down unused interfaces:\n");
-
-	/* PCI-E */
-	if (!(srdsCfg & SRDS_MOD_PCIE0_LANE0)) {
-		mvCtrlPwrClckSet(PEX_UNIT_ID, 0, MV_FALSE);
-		mvOsOutput("       PEX0\n");
-	}
-	if (!(srdsCfg & SRDS_MOD_PCIE1_LANE1)) {
-		mvCtrlPwrClckSet(PEX_UNIT_ID, 1, MV_FALSE);
-		mvOsOutput("       PEX1\n");
-	}
-
-	/* SATA */
-	/* Disable SATA 0 only if SATA 1 is not required as well */
-	if (!(srdsCfg & SRDS_MOD_SATA1_LANE3) || (mvCtrlSataMaxPortGet() < 2)) {
-		mvCtrlPwrClckSet(SATA_UNIT_ID, 1, MV_FALSE);
-		if (mvCtrlSataMaxPortGet() == 2)
-			mvOsOutput("       SATA1\n");
-
-		if (!(srdsCfg & (SRDS_MOD_SATA0_LANE0 | SRDS_MOD_SATA0_LANE2))) {
-			mvCtrlPwrClckSet(SATA_UNIT_ID, 0, MV_FALSE);
-			mvOsOutput("       SATA0\n");
-		}
-	}
-
-	/* GBE - SMI Bus is connected to EGIGA0 so we only shut down EGIGA1 if needed */
-	if (!(srdsCfg & SRDS_MOD_SGMII1_LANE3)) {
-		if (!(mppGrp1 & (MV_BOARD_GMII0 | MV_BOARD_RGMII1))) {
-			mvCtrlPwrClckSet(ETH_GIG_UNIT_ID, 1, MV_FALSE);
-			mvOsOutput("       GBE1\n");
-		}
-	}
-
-	/* SDIO */
-	if (!(mppGrp1 & MV_BOARD_SDIO)) {
-		mvCtrlPwrClckSet(SDIO_UNIT_ID, 0, MV_FALSE);
-		mvOsOutput("       SDIO\n");
-	}
-
-	/* Audio */
-	if (!((mppGrp1 & MV_BOARD_I2S) || (mppGrp2 & MV_BOARD_I2S))) {
-		mvCtrlPwrClckSet(AUDIO_UNIT_ID, 0, MV_FALSE);
-		if (mvCtrlAudioSupport())
-			mvOsOutput("       AUDIO\n");
-	}
-	
-	/* TDM */
-	if(!((mppGrp1 & MV_BOARD_TDM) || (mppGrp2 & MV_BOARD_TDM)) || !(mvCtrlTdmSupport())) {
-		mvCtrlPwrClckSet(TDM_2CH_UNIT_ID, 0, MV_FALSE);
-		if (mvCtrlTdmSupport())
-			mvOsOutput("       TDM\n");
-	}
+		
+	if(strcmp(env,val1) == 0) 
+		setenv(envName,val1);
+	else
+		setenv(envName,val2);
 }
-#endif /* defined(MV_INCLUDE_CLK_PWR_CNTRL) */
+
+char* strToLower(char * st)
+{
+	int i;
+	for (i= 0; st[i]!='\0'; i++)
+		st[i] = tolower(st[i]);
+	return st;
+}
+
+

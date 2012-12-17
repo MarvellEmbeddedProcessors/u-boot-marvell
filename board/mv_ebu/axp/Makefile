@@ -5,6 +5,7 @@ include ../common/paths.mk
 
 COBJS = cmd_bios.o \
 	cmd_sar.o \
+	mv_main_axp.o \
 	mv_main.o \
 	cmd_stage_boot.o
 

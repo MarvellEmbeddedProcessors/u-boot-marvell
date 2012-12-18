@@ -83,8 +83,6 @@ disclaimer.
 #ifdef CONFIG_PCI
 #include <pci.h>
 #endif
-#include <asm/arch-armv7/vfpinstr.h>
-#include <asm/arch-armv7/vfp.h>
 #include <net.h>
 #include <netdev.h>
 #include <command.h>
@@ -120,6 +118,7 @@ char* strToLower(char * st);
 void envVerifyAndSet(char* envName, char* value1, char* value2, int defaultValue);
 void envSetDefault(char* envName, char* defaultValue);
 int mv_get_arch_number(void);
+void setBoardEnv(void);
 DECLARE_GLOBAL_DATA_PTR;
 
 void mv_print_map(void)
@@ -230,10 +229,8 @@ void misc_init_r_dec_win(void)
 
 
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
-#if defined(MV88F78X60)
 	env = getenv("enaClockGating");
 	if( env && ((strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0)) )
-#endif
 		mv_set_power_scheme();
 #endif
 
@@ -340,48 +337,18 @@ void misc_init_r_env(void){
 	envVerifyAndSet("enaFlashBuf", "no", "yes",2);
 #endif
 
-#if defined(MV88F78X60)
-	envSetDefault("mvNetConfig", "mv_net_config=4,(00:50:43:11:11:11,0:1:2:3),mtu=1500");
-	envSetDefault("lcd0_enable", "0");
-	envSetDefault("lcd0_params", "640x480-16@60");
-	envSetDefault("lcd_panel", "0");
-	envSetDefault("pxe_files_load", ":default.arm-armadaxp-db:default.arm-armadaxp:default.arm"); 
-	envSetDefault("pxefile_addr_r", "3100000"); 
-	envSetDefault("initrd_name", "uInitrd"); 
-	/* CPU streaming */	
-	envVerifyAndSet("enaCpuStream", "no", "yes",1);
+	setBoardEnv();
+
+	envVerifyAndSet("cacheShare", "no", "yes",1);
+	envVerifyAndSet("pexMode", "EP", "RC",2);
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
 	/* Clock Gating */
 	envVerifyAndSet("enaClockGating", "no", "yes",1);
 #endif
-	/* Write allocation */
-	envVerifyAndSet("enaWrAllo", "no", "yes",1);
-	envVerifyAndSet("disL2Cache", "yes", "no",1);
-	envVerifyAndSet("MPmode", "SMP", "AMP",1);
-	/* Make address 0x80000000-0x8fffffff shared (set 'S' in pgd) */
-
-	env = getenv("disL2Prefetch");
-	if(!env || ( (strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0) ) )
-	{
-		setenv("disL2Prefetch","yes");
-		/* ICache Prefetch */
-		envVerifyAndSet("enaICPref", "no", "yes",2);
-		/* DCache Prefetch */
-		envVerifyAndSet("enaDCPref", "no", "yes",2);
-	} else {
-		setenv("disL2Prefetch","no");
-		setenv("enaICPref","no");
-		setenv("enaDCPref","no");
-	}
-	envVerifyAndSet("enaFPU", "no", "yes",2);
-#endif /* #if defined(MV88F78X60) */
-
-	envVerifyAndSet("cacheShare", "no", "yes",1);
-	envVerifyAndSet("pexMode", "EP", "RC",2);
+	envSetDefault("pxefile_addr_r", "3100000"); 
+	envSetDefault("initrd_name", "uInitrd"); 
 	
-#if defined(MV88F67XX)
-	envSetDefault("mvNetConfig", "mv_net_config=1,(00:50:43:11:11:11,0:1:2:3:4),mtu=1500");
-#endif /*#if defined(MV88F67XX) */
+
 	envVerifyAndSet("sata_dma_mode", "no", "yes",2);
 	envSetDefault("sata_delay_reset", "0");
 
@@ -660,13 +627,8 @@ int print_cpuinfo (void)
 {
 	char name[50];
 	mvBoardIdSet();
-#if defined(MV88F67XX)
-/* with KW40 only: the model must be writen first */
-	mvCtrlModelSet();
-#else
-/* update Pex - Armada-Xp */
+/* update Pex - Write Model ID */
 	mvCtrlUpdatePexId();
-#endif
 	mvBoardNameGet(name);
 	printf("Board: %s\n",  name);
 	mvCtrlModelRevNameGet(name);
@@ -785,188 +747,6 @@ void reset_cpu (ulong addr)
 	mvBoardReset();
 }
 
-void mv_cpu_init(void)
-{
-	char *env;
-	volatile unsigned int temp;
-
-	/* enable access to CP10 and CP11 */
-	temp = 0x00f00000;
-	__asm__ __volatile__("mcr p15, 0, %0, c1, c0, 2" :: "r" (temp));
-
-	env = getenv("enaFPU");
-	if(env && ((strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0))){
-		/* init and Enable FPU to Run Fast Mode */
-		printf("FPU initialized to Run Fast Mode.\n");
-		/* Enable */
-		temp = FPEXC_ENABLE;
-		fmxr(FPEXC, temp);
-		/* Run Fast Mode */
-		temp = fmrx(FPSCR);
-		temp |= (FPSCR_DEFAULT_NAN | FPSCR_FLUSHTOZERO);
-		fmxr(FPSCR, temp);
-	}else{
-		printf("FPU not initialized\n");
-		/* Disable */
-		temp = fmrx(FPEXC);
-		temp &= ~FPEXC_ENABLE;
-		fmxr(FPEXC, temp);
-	}
-
-#if defined(MV88F67XX)
-	__asm__ __volatile__("mrc p15, 1, %0, c15, c1, 1" : "=r" (temp));
-	temp |= BIT16; /* Disable reac clean intv */
-	__asm__ __volatile__("mcr p15, 1, %0, c15, c1, 1\n" \
-			"mcr p15, 0, %0, c7, c5, 4": :"r" (temp)); /*imb*/
-
-	__asm__ __volatile__("mrc p15, 1, %0, c15, c1, 2" : "=r" (temp));
-	temp |= (BIT25 | BIT27 | BIT29 | BIT30);
-	/* removed BIT23 in order to enable fast LDR bypass */
-	__asm__ __volatile__("mcr p15, 1, %0, c15, c1, 2\n" \
-			"mcr p15, 0, %0, c7, c5, 4": :"r" (temp)); /*imb*/
-	/* Enable speculative read miss from L1 to "line fill" L1 */
-	__asm__ __volatile__("mrc p15, 1, %0, c15, c2, 0" : "=r" (temp));
-
-	env = getenv("L1SpeculativeEn");
-	if( (strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) )
-		temp |= BIT7;
-	else{
-		temp &= ~BIT7;
-	}
-
-	__asm__ __volatile__("mcr p15, 1, %0, c15, c2, 0\n" \
-			"mcr p15, 0, %0, c7, c5, 4": :"r" (temp)); /*imb*/
-#else /* AXP */
-	__asm__ __volatile__("mrc p15, 1, %0, c15, c1, 2" : "=r" (temp));
-	temp |= (BIT25 | BIT27 | BIT29 | BIT30);
-	/* removed BIT23 in order to enable fast LDR bypass */
-	__asm__ __volatile__("mcr p15, 1, %0, c15, c1, 2\n" \
-			"mcr p15, 0, %0, c7, c5, 4": :"r" (temp)); /*imb*/
-#endif /*#if defined(MV88F67XX) */
-
-	/* Set L2C WT mode */
-	temp = MV_REG_READ(CPU_L2_AUX_CTRL_REG) & ~CL2ACR_WB_WT_ATTR_MASK;
-	env = getenv("setL2CacheWT");
-	if(!env || ((strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0))) {
-		temp |= CL2ACR_WB_WT_ATTR_WT;
-	}
-#if defined(MV88F78X60)
-	/* Set L2 algorithm to semi_pLRU */
-	temp &= ~CL2ACR_REP_STRGY_MASK;
-
-	if(mvCtrlRevGet()==1)
-	{
-		temp |= CL2ACR_REP_STRGY_semiPLRU_MASK;
-	}
-	else
-	{ 
-		temp |= CL2ACR_REP_STRGY_semiPLRU_WA_MASK;
-		temp |= CL2_DUAL_EVICTION;
-		temp |= CL2_PARITY_ENABLE;
-		temp |= CL2_InvalEvicLineUCErr;
-	}/* MV88F78X60_B0  */
-#endif /* #if defined(MV88F78X60) */
-
-
-
-	MV_REG_WRITE(CPU_L2_AUX_CTRL_REG, temp);
-
-	/* enable L2C */
-	temp = MV_REG_READ(CPU_L2_CTRL_REG);
-
-	env = getenv("disL2Cache");
-#if defined(MV88F67XX)
-	if((!env || (strcmp(env,"no") == 0) || (strcmp(env,"No") == 0)) && enaMonExt())
-#else /* AXP */
-	if(!env || ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0)))
-#endif /*# if defined(MV88F67XX) */
-		temp |= CL2CR_L2_EN_MASK;
-	else
-		temp &= ~CL2CR_L2_EN_MASK;
-
-	MV_REG_WRITE(CPU_L2_CTRL_REG, temp);
-
-	/* Configure L2 options if L2 exists */
-	if (MV_REG_READ(CPU_L2_CTRL_REG) & CL2CR_L2_EN_MASK) {
-
-		/* Read L2 Auxilary control register */
-		temp = MV_REG_READ(CPU_L2_AUX_CTRL_REG);
-		/* Clear fields */
-		temp &= ~(CL2ACR_WB_WT_ATTR_MASK | CL2ACR_FORCE_WA_MASK);
-
-		/* Set "Force write policy" field */
-		env = getenv("L2forceWrPolicy");
-		if( env && ((strcmp(env,"WB") == 0) || (strcmp(env,"wb") == 0)) )
-			temp |= CL2ACR_WB_WT_ATTR_WB;
-		else if( env && ((strcmp(env,"WT") == 0) || (strcmp(env,"wt") == 0)) )
-			temp |= CL2ACR_WB_WT_ATTR_WT;
-		else
-			temp |= CL2ACR_WB_WT_ATTR_PAGE;
-
-		/* Set "Force Write Allocate" field */
-		env = getenv("L2forceWrAlloc");
-		if( env && ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0)) )
-			temp |= CL2ACR_FORCE_NO_WA;
-		else if( env && ((strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0)) )
-			temp |= CL2ACR_FORCE_WA;
-		else
-			temp |= CL2ACR_FORCE_WA_DISABLE;
-
-		/* Set "ECC" */
-		env = getenv("L2EccEnable");
-		if(!env || ( (strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) ) )
-			temp &= ~CL2ACR_ECC_EN;
-		else
-			temp |= CL2ACR_ECC_EN;
-
-		/* Set other L2 configurations */
-		temp |= (CL2ACR_PARITY_EN | CL2ACR_INVAL_UCE_EN);
-
-		/* Set L2 algorithm to semi_pLRU */
-		temp &= ~CL2ACR_REP_STRGY_MASK;
-#if defined(MV88F78X60)
-		temp |= CL2ACR_REP_STRGY_semiPLRU_MASK;
-#else
-		temp |= CL2ACR_REP_STRGY_PLRU_MASK;
-#endif
-
-		/* Write to L2 Auxilary control register */
-		MV_REG_WRITE(CPU_L2_AUX_CTRL_REG, temp);
-
-		env = getenv("L2SpeculativeRdEn");
-		if(env && ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0)) )
-			MV_REG_BIT_SET(0x20228, ((0x1 << 5)));
-		else
-			MV_REG_BIT_RESET(0x20228, ((0x1 << 5)));
-
-	}
-
-	/* Enable i cache */
-	asm ("mrc p15, 0, %0, c1, c0, 0":"=r" (temp));
-	temp |= BIT12;
-	/* Change reset vector to address 0x0 */
-	temp &= ~BIT13;
-	asm ("mcr p15, 0, %0, c1, c0, 0\n" \
-		"mcr p15, 0, %0, c7, c5, 4": :"r" (temp)); /* imb */
-
-	/* Disable MBUS Err Prop - inorder to avoid data aborts */
-	MV_REG_BIT_RESET(SOC_COHERENCY_FABRIC_CTRL_REG, BIT8);
-#if defined(MV88F67XX)
-	/* Enable IOCC */
-	env = getenv("cacheShare");
-	if(((strcmp(env,"yes") == 0) || (strcmp(env,"Yes") == 0)) && enaMonExt()) {
-
-		__asm__ __volatile__("mrc p15, 1, %0, c15, c1, 1" : "=r" (temp));
-		temp |= BIT7; /* @ v7 IO coherency support (Single core) */
-		__asm__ __volatile__("mcr p15, 1, %0, c15, c1, 1\n" \
-				"mcr p15, 0, %0, c7, c5, 4": :"r" (temp)); /*imb*/
-
-		MV_REG_BIT_SET(SOC_COHERENCY_FABRIC_CTRL_REG, BIT24);
-	}
-#endif /* #if defined(MV88F67XX) */
-}
-
-
 void envSetDefault(char* envName, char* defaultValue) 
 {
 	char *env;
@@ -983,7 +763,7 @@ void envVerifyAndSet(char* envName, char* value1, char* value2, int defaultValue
 		if(defaultValue==1) 
 			setenv(envName,val1);
 		else
-			setenv(envName,value2);
+			setenv(envName,val2);
 		return;
 	}
 		

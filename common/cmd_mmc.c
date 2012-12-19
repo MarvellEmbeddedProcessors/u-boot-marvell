@@ -24,7 +24,7 @@
 #include <common.h>
 #include <command.h>
 #include <mmc.h>
-
+extern void mvSysSDmmcWinInit(void);
 
 static int mmc_initiated = 0;
 static int curr_device = -1;

@@ -106,7 +106,7 @@ PARAMSFILE = params
 LDSCRIPT   = linker.scr
 DRAMREGS   = ./dramregs.txt
 
-INCLUDE     = -I. -I./inc/ -I../../include -I../../board/mv_sheeva/common 
+INCLUDE     = -I. -I./inc/ -I../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
@@ -135,8 +135,8 @@ $(AOBJ): $(ASRC)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
-	
-%.elf: $(AOBJ) $(COBJ) $(TLIB)  
+
+%.elf: $(AOBJ) $(COBJ) $(TLIB) $(LDSCRIPT)
 	$(CC) $(LDFLAGSBIN) $(AOBJ) $(COBJ) libgcc.lib $(TLIB)  -o $@
 
 %.bin: %.elf

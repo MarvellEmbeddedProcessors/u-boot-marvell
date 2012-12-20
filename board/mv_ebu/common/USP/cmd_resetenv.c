@@ -51,36 +51,34 @@ int resetenv_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #if defined(CONFIG_ENV_IS_IN_FLASH )
         ulong stop_addr;
 	ulong start_addr;
+
 #endif
 
 #if defined(CONFIG_ENV_IS_IN_NAND)
-	nand_erase_options_t nand_erase_options;
 	size_t offset = 0;
-
+	nand_info_t *nand = &nand_info[0];
+	int sum = 0;
 
 #if defined(CONFIG_SKIP_BAD_BLOCK)
 	int i = 0;
 	size_t blocksize;
 	blocksize = nand_info[0].erasesize;
 	while(i * blocksize < nand_info[0].size) {
-		if (!nand_block_isbad(&nand_info[0], offset))
-			offset += blocksize;
-		if (offset >= CONFIG_ENV_OFFSET)
+		if (!nand_block_isbad(&nand_info[0], (i * blocksize)))
+			sum += blocksize;
+		else {
+			sum = 0;
+			offset = (i + 1) * blocksize;
+		}
+		if (sum >= CONFIG_UBOOT_SIZE)
 			break;
 		i++;
 	}
 #else
 	offset = CONFIG_ENV_OFFSET;
 #endif
-	nand_erase_options.length = CONFIG_ENV_RANGE;
-	nand_erase_options.quiet = 0;
-	nand_erase_options.jffs2 = 0;
-	nand_erase_options.scrub = 0;
-	nand_erase_options.offset = offset;
-
-	puts ("Erasing Nand:\n");
-	if (nand_erase_opts(&nand_info[0], &nand_erase_options))
-		return 1;
+	printf("Erasing 0x%x - 0x%x:",CONFIG_UBOOT_SIZE + offset, CONFIG_ENV_RANGE);
+	nand_erase(nand, CONFIG_UBOOT_SIZE + offset, CONFIG_ENV_RANGE);
 	puts ("[Done]\n");
 #elif defined(CONFIG_ENV_IS_IN_SPI_FLASH)
 	u32 sector = 1;

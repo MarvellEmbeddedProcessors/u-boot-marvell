@@ -20,9 +20,7 @@
 #include <elf.h>
 #include <vxworks.h>
 
-#if defined(CONFIG_WALNUT) || defined(CONFIG_SYS_VXWORKS_MAC_PTR)
 DECLARE_GLOBAL_DATA_PTR;
-#endif
 
 static unsigned long load_elf_image_phdr(unsigned long addr);
 static unsigned long load_elf_image_shdr(unsigned long addr);
@@ -149,6 +147,8 @@ int do_bootvx(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	char *bootline;			/* Text of the bootline        */
 	char *tmp;			/* Temporary char pointer      */
 	char build_buf[128];		/* Buffer for building the bootline */
+        bd_t	*bd = gd->bd;
+        int	machid = bd->bi_arch_number;
 
 	/* ---------------------------------------------------
 	 *
@@ -263,7 +263,8 @@ int do_bootvx(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	printf("## Starting vxWorks at 0x%08lx ...\n", addr);
 
 	dcache_disable();
-	((void (*)(int)) addr) (0);
+    /* send machine id as second parameter to vxWorks */
+	((void (*)(int,int)) addr) (0,machid);
 
 	puts("## vxWorks terminated\n");
 	return 1;

@@ -569,6 +569,12 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	recoveryDetection();
 #endif
 	envSetDefault("eeeEnable", "no");
+
+
+#if defined(CONFIG_MV_SCATTERED_SPINUP)
+	envSetDefault("spinup_config", "0,0");
+#endif /* CONFIG_MV_SCATTERED_SPINUP */
+
 	return;
 }
 
@@ -780,5 +786,4 @@ char* strToLower(char * st)
 		st[i] = tolower(st[i]);
 	return st;
 }
-
 

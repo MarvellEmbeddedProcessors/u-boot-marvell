@@ -678,6 +678,44 @@ static MV_BOOLEAN StartChannel(HW_ADAPTER_DESCRIPTION *sataAdapter,
 	return MV_TRUE;
 }
 
+#if defined(CONFIG_MV_SCATTERED_SPINUP)
+static MV_BOOLEAN SpinupGetEnv(MV_U8 *disks, MV_U8 *timeout)
+{
+	char *env = getenv("spinup_config");
+	if (!env)
+		return MV_FALSE;
+
+	*disks = env[0] - '0';
+	*timeout = env[2] - '0';
+
+	if (env[1] != ',' || *disks == 0 || *disks > 8 || *timeout == 0 || *timeout > 6)
+		return MV_FALSE;
+
+	return MV_TRUE;
+}
+
+static MV_BOOLEAN DoStaggeredSpinUp(void)
+{
+	static MV_U32 modulo = 0;
+	MV_U8 disks, timeout;
+
+	/* If SpinupGetEnv() fail don't stagger spin-up */
+	if (SpinupGetEnv(&disks, &timeout) == MV_FALSE)
+		return MV_FALSE;
+
+	if (modulo % disks == 0) {
+		/* Delay disk spin-up */
+		printf("\nWaiting for %d second(s) to spin-up %d disk(s)... ", timeout, disks);
+		udelay(1000000 * timeout);
+		printf("done\n\n");
+	}
+
+	modulo++;
+
+	return MV_TRUE;
+}
+#endif /* CONFIG_MV_SCATTERED_SPINUP */
+
 static MV_BOOLEAN initDisk(MV_SATA_ADAPTER *pSataAdapter, MV_U8 channelIndex,
 			   MV_U8 port, block_dev_desc_t *dev_desc)
 {
@@ -713,6 +751,55 @@ static MV_BOOLEAN initDisk(MV_SATA_ADAPTER *pSataAdapter, MV_U8 channelIndex,
 		(unsigned short *)identifyBuffer) == MV_FALSE) {
 		printf("[%d %d %d]: failed to perform ATA Identify command\n", pSataAdapter->adapterId, channelIndex, port);
 		return MV_FALSE;
+	}
+ 
+#if defined(CONFIG_MV_SCATTERED_SPINUP)
+
+	/* Call routine that will delay the start of hard drives */
+	if (DoStaggeredSpinUp() == MV_FALSE)
+		printf("\nStaggered Spin-up feature disabled\n\n");
+
+#endif /* CONFIG_MV_SCATTERED_SPINUP */
+
+	/*
+	 * Device requires SET FEATURES subcommand to spin-up after power-up
+	 * and IDENTIFY DEVICE response is incomplete
+	 */
+	if (iden[IDEN_UNIQUE_CONFIG] == IDEN_UNIQUE_INCOMPLETE) {
+		if (mvStorageDevATASetFeatures(pSataAdapter, channelIndex, port,
+					       MV_ATA_SET_FEATURES_SPIN_UP, 0, 0, 0, 0) == MV_FALSE) {
+			printf("[%d %d %d]: failed to perform ATA device spin-up command\n", pSataAdapter->adapterId, channelIndex, port);
+			return MV_FALSE;
+		}
+
+		/*
+		 * Wait 10ms after issue Set Features command -
+		 * MV_ATA_SET_FEATURES_SPIN_UP in this case
+		 */
+		udelay(10000);
+
+		/* Identify device once again */
+		if (mvStorageDevATAIdentifyDevice(pSataAdapter, channelIndex, port,
+						  (unsigned short *)identifyBuffer) == MV_FALSE) {
+			printf("[%d %d %d]: failed to perform ATA Identify command\n", pSataAdapter->adapterId, channelIndex, port);
+			return MV_FALSE;
+		}
+		/*
+		 * Device requires SET FEATURES subcommand to spin-up after
+		 * power-up and IDENTIFY DEVICE response is complete
+		 */
+	} else if (iden[IDEN_UNIQUE_CONFIG] == IDEN_UNIQUE_COMPLETE) {
+		if (mvStorageDevATASetFeatures(pSataAdapter, channelIndex, port,
+					       MV_ATA_SET_FEATURES_SPIN_UP, 0, 0, 0, 0) == MV_FALSE) {
+			printf("[%d %d %d]: failed to perform ATA device spin-up command\n", pSataAdapter->adapterId, channelIndex, port);
+			return MV_FALSE;
+		}
+
+		/*
+		 * Wait 10ms after issue Set Features command -
+		 * MV_ATA_SET_FEATURES_SPIN_UP in this case
+		 */
+		udelay(10000);
 	}
 
 	/* Check if read look ahead is supported. If so enable it */

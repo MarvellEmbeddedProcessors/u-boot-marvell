@@ -330,6 +330,25 @@ disclaimer.
 	#define CONFIG_SYS_SCSI_MAX_DEVICE 	(CONFIG_SYS_SCSI_MAX_SCSI_ID * CONFIG_SYS_SCSI_MAX_LUN)
 #endif /* CONFIG_SCSI_AHCI */
 
+/*
+ * Staggered Spin-up support for SATA disks
+ * ----------------------------------------
+ * Set the following U-Boot environment variable:
+ * setenv spinup_config <spinup_max>,<spinup_timeout>
+ * For example: spinup_config=2,6 will config the module for 2 maximum disks spinning-up with 6 seconds timeout.
+ * Parameters explanation:
+ * 1. <spinup_max> - The maximum spinning-up disks(can be between 1 and 8) ֲ will be like this:
+ *   a. 0 = feature off.
+ *   b. 1 ג€“ 8 = number of disks
+ *   c. <0,>8 = invalid parameter (will behave like feature off)
+ * 2. <spinup_timeout> - The spin-up timeout (can be between 1 and 6) will be like this:
+ *   a. 0 = feature off.
+ *   b. 1 ג€“ 6 = in seconds
+ *   c. <0,>6 = invalid parameter (will behave like feature off)
+ * Any parsing error will cause an invalid parameters print and will behave as feature off.
+ */
+#undef CONFIG_MV_SCATTERED_SPINUP 
+
 
 /* which initialization functions to call for this board */
 #define CONFIG_MISC_INIT_R      	/* after relloc initialization*/

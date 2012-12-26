@@ -161,6 +161,7 @@ extern "C" {
 
 #define MV_ATA_SET_FEATURES_ENABLE_WCACHE       0x02	/* Enable write cache */
 #define MV_ATA_SET_FEATURES_TRANSFER            0x03	/* Set transfer mode  */
+#define MV_ATA_SET_FEATURES_SPIN_UP             0x07    /* Wake up drive and spin-it up from POWERUP_TO_STANDBY mode */
 #define MV_ATA_TRANSFER_UDMA_0                  0x40
 #define MV_ATA_TRANSFER_UDMA_1                  0x41
 #define MV_ATA_TRANSFER_UDMA_2                  0x42
@@ -219,6 +220,7 @@ extern "C" {
 
 /* Defines for parsing the IDENTIFY command results*/
 #define IDEN_ID_CONFIG                          0
+#define IDEN_UNIQUE_CONFIG                      2
 #define IDEN_SERIAL_NUM_OFFSET                  10
 #define IDEN_SERIAL_NUM_SIZE                    (20 - 10)
 #define IDEN_FIRMWARE_OFFSET                    23
@@ -242,6 +244,14 @@ extern "C" {
 #define IDEN_ENABLED_COMMANDS2                  86
 #define IDEN_UDMA_MODE                          88
 #define IDEN_CFA_MODES                          163
+
+/*
+ * Reference:
+ * Proposal for Power-up in Standby Feature Set
+ * T13/D97150R2
+ */
+#define IDEN_UNIQUE_INCOMPLETE                  0x37C8
+#define IDEN_UNIQUE_COMPLETE                    0x738C
 
 /* Typedefs    */
 

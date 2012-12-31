@@ -207,7 +207,6 @@ U_BOOT_CMD(
 	sp,      2,     1,      sp_cmd,
 	"sp	- Scan PCI Interface [bus].\n",
 	"\tScan and detect all devices on mvPCI Interface \n"
-	"\t(This command can be used only if enaMonExt is set!)\n"
 );
 
 int me_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])

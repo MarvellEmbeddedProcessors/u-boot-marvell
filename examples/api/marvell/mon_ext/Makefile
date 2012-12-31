@@ -20,26 +20,22 @@
 # MA 02111-1307 USA
 #
 
-ifeq ($(ARCH),powerpc)
-LOAD_ADDR = 0x40000
-endif
-ifeq ($(ARCH),arm)
-LOAD_ADDR = 0x2000000
-endif
-
 include $(TOPDIR)/config.mk
 include $(TOPDIR)/board/mv_ebu/common/paths.mk
 
 # Resulting ELF and binary exectuables will be named demo and demo.bin
-OUTPUT-$(CONFIG_API) = $(obj)demo
+OUTPUT-$(CONFIG_API) = $(obj)monext
 OUTPUT = $(OUTPUT-y)
 
 # Source files located in the examples/api directory
-SOBJ_FILES-$(CONFIG_API) += crt0.o
-COBJ_FILES-$(CONFIG_API) += glue.o
-COBJ_FILES-$(CONFIG_API) += demo.o
-COBJ_FILES-$(CONFIG_API) += libgenwrap.o
-
+SOBJ_FILES-$(CONFIG_API) += ../../crt0.o
+COBJ_FILES-$(CONFIG_API) += ../../glue.o
+COBJ_FILES-$(CONFIG_API) += ../../libgenwrap.o
+COBJ_FILES-$(CONFIG_API) += ../mvOs.o
+COBJ_FILES-$(CONFIG_API) += mv_mon_init.o
+COBJ_FILES-$(CONFIG_API) += mv_pageTable.o
+COBJ_FILES-$(CONFIG_API) += mv_protectionUnit.o
+SOBJ_FILES-$(CONFIG_API) += platform.o
 
 # Source files which exist outside the examples/api directory
 EXT_COBJ_FILES-$(CONFIG_API) += lib/crc32.o
@@ -55,8 +51,8 @@ endif
 # Create a list of source files so their dependencies can be auto-generated
 SRCS	+= $(addprefix $(SRCTREE)/,$(EXT_COBJ_FILES-y:.o=.c))
 SRCS	+= $(addprefix $(SRCTREE)/,$(EXT_SOBJ_FILES-y:.o=.S))
-SRCS	+= $(addprefix $(SRCTREE)/examples/api/,$(COBJ_FILES-y:.o=.c))
-SRCS	+= $(addprefix $(SRCTREE)/examples/api/,$(SOBJ_FILES-y:.o=.S))
+SRCS	+= $(addprefix $(SRCTREE)/examples/api/marvell/mon_ext/,$(COBJ_FILES-y:.o=.c))
+SRCS	+= $(addprefix $(SRCTREE)/examples/api/marvell/mon_ext/,$(SOBJ_FILES-y:.o=.S))
 
 # Create a list of object files to be compiled
 OBJS	+= $(addprefix $(obj),$(SOBJ_FILES-y))
@@ -71,7 +67,7 @@ all:	$(obj).depend $(OUTPUT)
 #########################################################################
 
 $(OUTPUT):	$(OBJS) $(SUBDIRS)
-		$(LD) -Ttext $(LOAD_ADDR) -o $@ $^ $(PLATFORM_LIBS)
+		$(LD) -T linker.scr -o $@ $^ $(PLATFORM_LIBS)
 		$(OBJCOPY) -O binary $@ $(OUTPUT).bin 2>/dev/null
 
 # Rule to build generic library C files

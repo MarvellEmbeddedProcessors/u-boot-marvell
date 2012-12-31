@@ -433,3 +433,48 @@ void ub_display_clear(void)
 {
 	syscall(API_DISPLAY_CLEAR, NULL);
 }
+
+/****************************************
+ *
+ * commands
+ *
+ ****************************************/
+
+int ub_add_command(cmd_tbl_t* newcmd)
+{
+	int err = 0;
+
+	if (!syscall(API_ADDCMD, &err,(uint32_t) newcmd))
+		return API_ESYSC;
+
+	return err;
+}
+
+int ub_run_command(char *str)
+{
+	int err = 0;
+
+	if (!syscall(API_RUNCMD, &err,(uint32_t) str))
+		return API_ESYSC;
+
+	return err;
+}
+
+int ub_auto_complete(char *prompt, char *buf, int *np, int *colp)
+{
+	int err = 0;
+	
+	if(!syscall(API_AUTOC, &err, (uint32_t) prompt, (uint32_t) buf, (uint32_t) np, (uint32_t) colp))
+		return API_ESYSC;
+
+	return err;
+}
+
+unsigned long ub_dram_size(void)
+{
+	int err = 0;
+	if(!syscall(API_DRAM,&err))
+		return API_ESYSC;
+	return err;
+}
+

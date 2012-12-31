@@ -59,13 +59,10 @@ SOC_OBJS = 	$(SOC_ENV_DIR)/mvCtrlEnvAddrDec.o 		\
 
 USP_OBJS =	$(USP_DIR)/mv_serial.o 			\
 			$(USP_DIR)/nand_nfc.o		\
-			$(USP_DIR)/mv_pageTable.o 	\
 			$(USP_DIR)/mv_rtc.o		\
-			$(USP_DIR)/mv_mon_init.o	\
 			$(USP_DIR)/mv_pci.o 		\
 			$(USP_DIR)/mv_flash.o		\
 			$(USP_DIR)/mv_ide.o		\
-			$(USP_DIR)/mv_protectionUnit.o	\
 			$(USP_DIR)/mv_i2c.o		\
 			$(USP_DIR)/mv_tsc2005.o		\
 			$(USP_DIR)/mv_spi.o		\

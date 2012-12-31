@@ -597,6 +597,64 @@ static int API_display_clear(va_list ap)
 	return 0;
 }
 
+#define MONITOR_CMD 4
+static int API_add_command(va_list ap)
+{
+	cmd_tbl_t *oldcmd, *newcmd;
+	int cmdNum=0;
+	char buffer[9];
+	newcmd = (cmd_tbl_t*)va_arg(ap, u_int32_t);
+	sprintf(buffer, "tempCmd%d", cmdNum);
+	oldcmd = find_cmd(buffer);
+	while(oldcmd==NULL)
+	{
+		cmdNum++;
+		if(cmdNum==MONITOR_CMD)
+			return 1;
+		sprintf(buffer, "tempCmd%d", cmdNum);
+		oldcmd = find_cmd(buffer);
+	}
+	oldcmd->name = (char*)malloc(sizeof(char)*strlen(newcmd->name));
+	strcpy(oldcmd->name, newcmd->name);
+	oldcmd->maxargs = newcmd->maxargs;
+	oldcmd->repeatable = newcmd->repeatable;
+	oldcmd->cmd = newcmd->cmd;
+	oldcmd->usage = (char*)malloc(sizeof(char)*strlen(newcmd->usage));
+	strcpy(oldcmd->usage, newcmd->usage);
+	oldcmd->help = (char*)malloc(sizeof(char)*strlen(newcmd->help));
+	strcpy(oldcmd->help, newcmd->help);
+	printf("Added command to monitor named %s\n", oldcmd->name);
+	return 0;
+}
+
+static int API_run_command(va_list ap)
+{
+	char * str;
+	str = (char*)va_arg(ap, u_int32_t);
+	run_command(str,0);
+	return 0;
+}
+
+static int API_auto_complete(va_list ap)
+{
+	char *prompt;
+	char *buf;
+	int *np, *colp;
+	
+	prompt=(char *)va_arg(ap, u_int32_t);
+	buf=(char *)va_arg(ap, u_int32_t);
+	np=(int *)va_arg(ap, u_int32_t);
+	colp=(int *)va_arg(ap, u_int32_t);
+
+	cmd_auto_complete(prompt, buf, np, colp);
+	return 0;
+}
+
+DECLARE_GLOBAL_DATA_PTR;
+static unsigned long API_dram_size(va_list ap)
+{
+	return gd->ram_size;
+}
 static cfp_t calls_table[API_MAXCALL] = { NULL, };
 
 /*
@@ -663,6 +721,10 @@ void api_init(void)
 	calls_table[API_DISPLAY_GET_INFO] = &API_display_get_info;
 	calls_table[API_DISPLAY_DRAW_BITMAP] = &API_display_draw_bitmap;
 	calls_table[API_DISPLAY_CLEAR] = &API_display_clear;
+	calls_table[API_ADDCMD] = &API_add_command;
+	calls_table[API_RUNCMD] = &API_run_command;
+	calls_table[API_AUTOC] = &API_auto_complete;
+	calls_table[API_DRAM] = &API_dram_size;
 	calls_no = API_MAXCALL;
 
 	debugf("API initialized with %d calls\n", calls_no);

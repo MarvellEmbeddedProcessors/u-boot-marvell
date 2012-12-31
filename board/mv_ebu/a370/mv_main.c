@@ -338,7 +338,9 @@ void misc_init_r_env(void){
 #endif
 
 	setBoardEnv();
-
+	/* Write allocation */
+	envVerifyAndSet("enaWrAllo", "no", "yes",1);
+	envVerifyAndSet("disL2Cache", "yes", "no",1);
 	envVerifyAndSet("cacheShare", "no", "yes",1);
 	envVerifyAndSet("pexMode", "EP", "RC",2);
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
@@ -570,7 +572,6 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 #endif
 	envSetDefault("eeeEnable", "no");
 
-
 #if defined(CONFIG_MV_SCATTERED_SPINUP)
 	envSetDefault("spinup_config", "0,0");
 #endif /* CONFIG_MV_SCATTERED_SPINUP */
@@ -786,4 +787,5 @@ char* strToLower(char * st)
 		st[i] = tolower(st[i]);
 	return st;
 }
+
 

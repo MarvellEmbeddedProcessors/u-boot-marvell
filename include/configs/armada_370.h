@@ -135,6 +135,7 @@ extern unsigned int mvTclkGet(void);
 
 #define CONFIG_SYS_64BIT_VSPRINTF
 #define CONFIG_SYS_64BIT_STRTOUL
+#define CONFIG_API
 
 /* commands */
 #define CONFIG_BOOTP_MASK	(CONFIG_BOOTP_DEFAULT | CONFIG_BOOTP_BOOTFILESIZE)

@@ -158,7 +158,7 @@ unexport CDPATH
 # The "examples" conditionally depend on U-Boot (say, when USE_PRIVATE_LIBGCC
 # is "yes"), so compile examples after U-Boot is compiled.
 SUBDIR_TOOLS = tools
-SUBDIR_EXAMPLES = examples/standalone examples/api
+SUBDIR_EXAMPLES = examples/standalone examples/api examples/api/marvell/mon_ext
 SUBDIRS = $(SUBDIR_TOOLS)
 
 .PHONY : $(SUBDIRS) $(VERSION_FILE) $(TIMESTAMP_FILE)

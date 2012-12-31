@@ -66,7 +66,7 @@ OBJS	+= $(addprefix $(obj),$(notdir $(EXT_SOBJ_FILES-y)))
 
 CPPFLAGS += -I..
 
-all:	$(obj).depend $(OUTPUT)
+all:	$(obj).depend $(OUTPUT) marvell/monext.bin
 
 #########################################################################
 
@@ -82,6 +82,10 @@ $(obj)%.o: $(SRCTREE)/lib/%.c
 $(obj)%.o: $(SRCTREE)/arch/$(ARCH)/lib/%.S
 	$(CC) -g $(CFLAGS) -c -o $@ $<
 
+#########################################################################
+marvell/monext.bin:
+	$(MAKE) all HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)" -C ./marvell/mon_ext
+	
 #########################################################################
 
 # defines $(obj).depend target

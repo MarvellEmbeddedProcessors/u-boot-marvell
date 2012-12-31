@@ -75,6 +75,7 @@ USP_OBJS =	$(USP_DIR)/mv_serial.o 			\
 			$(USP_DIR)/cmd_bubt.o		\
 			$(USP_DIR)/cmd_resetenv.o	\
 			$(USP_DIR)/cmd_pcie.o		\
+			$(USP_DIR)/mv_main.o		\
 			$(USP_DIR)/cmd_ddr.o
 
 ifeq ($(BOARD),axp)	

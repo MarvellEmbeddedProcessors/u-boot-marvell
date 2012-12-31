@@ -82,4 +82,10 @@ int ub_display_get_info(int type, struct display_info *di);
 int ub_display_draw_bitmap(ulong bitmap, int x, int y);
 void ub_display_clear(void);
 
+/* command */
+int ub_add_command(cmd_tbl_t*);
+int ub_run_command(char *);
+int ub_auto_complete(char *prompt, char *buf, int *np, int *colp);
+unsigned long ub_dram_size(void);
+
 #endif /* _API_GLUE_H_ */

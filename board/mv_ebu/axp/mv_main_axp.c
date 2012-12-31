@@ -73,9 +73,6 @@ void setBoardEnv(void)
 	envSetDefault("lcd_panel", "0");
 	/* CPU streaming */
 	envVerifyAndSet("enaCpuStream", "no", "yes",1);
-	/* Write allocation */
-	envVerifyAndSet("enaWrAllo", "no", "yes",1);
-	envVerifyAndSet("disL2Cache", "yes", "no",1);
 	envVerifyAndSet("MPmode", "SMP", "AMP",1);
 	/* Make address 0x80000000-0x8fffffff shared (set 'S' in pgd) */
 

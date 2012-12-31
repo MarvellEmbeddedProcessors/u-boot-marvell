@@ -712,6 +712,39 @@ U_BOOT_CMD(
 );
 
 
+/******************************************************************************
+* Category     - MonExt
+*****************************************************************************/
+int printTempMsg(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	printf("This command allocated for monitor extintion\n");
+	return 1;
+}
+
+U_BOOT_CMD(
+	tempCmd0,      1,     1,      printTempMsg,
+	"tempCmd - This command allocated for monitor extintion\n",
+	" "
+);
+
+U_BOOT_CMD(
+	tempCmd1,      1,     1,      printTempMsg,
+	"tempCmd - This command allocated for monitor extintion\n",
+	" "
+);
+
+U_BOOT_CMD(
+	tempCmd2,      1,     1,      printTempMsg,
+	"tempCmd - This command allocated for monitor extintion\n",
+	" "
+);
+
+U_BOOT_CMD(
+	tempCmd3,      1,     1,      printTempMsg,
+	"tempCmd - This command allocated for monitor extintion\n",
+	" "
+);
+
 
 #if defined(MV_INC_BOARD_DDIM)
 
@@ -772,179 +805,6 @@ U_BOOT_CMD(
 );
 #endif /* #if defined(MV_INC_BOARD_DDIM) */
 
-/******************************************************************************
-* Functionality- Go to an address and execute the code there and return,
-*    defualt address is 0x40004
-*****************************************************************************/
-extern void cpu_dcache_flush_all(void);
-extern void cpu_icache_flush_invalidate_all(void);
-
-void mv_go(unsigned long addr,int argc, char * const argv[])
-{
-	addr = MV_CACHEABLE(addr);
-	char* envCacheMode = getenv("cacheMode");
-
-	/*
-	 * pass address parameter as argv[0] (aka command name),
-	 * and all remaining args
-	 */
-
-    if(envCacheMode && (strcmp(envCacheMode,"write-through") == 0))
-	{
-		int i=0;
-
-		/* Flush Invalidate I-Cache */
-		cpu_icache_flush_invalidate_all();
-
-		/* Drain write buffer */
-		asm ("mcr p15, 0, %0, c7, c10, 4": :"r" (i));
-
-
-	}
-	else /*"write-back"*/
-	{
-		int i=0;
-
-		/* Flush Invalidate I-Cache */
-		cpu_icache_flush_invalidate_all();
-
-		/* Drain write buffer */
-		asm ("mcr p15, 0, %0, c7, c10, 4": :"r" (i));
-
-
-		/* Flush invalidate D-cache */
-		cpu_dcache_flush_all();
-    }
-	((ulong (*)(int, char *const[]))addr) (--argc, &argv[1]);
-
-	return;
-}
-
-int g_cmd (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
-{
-        ulong   addr;
-
-	if(!enaMonExt()){
-		printf("This command can be used only if enaMonExt is set!\n");
-		return 0;
-	}
-
-	addr = 0x40000;
-
-        if (argc > 1) {
-		addr = simple_strtoul(argv[1], NULL, 16);
-        }
-	mv_go(addr,argc, argv);
-	return 1;
-}
-
-U_BOOT_CMD(
-	g,      CONFIG_SYS_MAXARGS,     1,      g_cmd,
-        "g	- start application at cached address 'addr'(default addr 0x40000)\n",
-        " addr [arg ...] \n"
-	"\tStart application at address 'addr' cachable!!!(default addr 0x40004/0x240004)\n"
-	"\tpassing 'arg' as arguments\n"
-	"\t(This command can be used only if enaMonExt is set!)\n"
-);
-
-/******************************************************************************
-* Functionality- Searches for a value
-*****************************************************************************/
-int fi_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
-{
-    MV_U32 s_address,e_address,value,i,tempData;
-    MV_BOOL  error = MV_FALSE;
-
-    if(!enaMonExt()){
-	printf("This command can be used only if enaMonExt is set!\n");
-	return 0;}
-
-    if(argc == 4){
-	value = simple_strtoul(argv[1], NULL, 16);
-	s_address = simple_strtoul(argv[2], NULL, 16);
-	e_address = simple_strtoul(argv[3], NULL, 16);
-    }else{ printf ("Usage:\n%s\n", cmdtp->usage);
-	return 0;
-    }
-
-    if(s_address == 0xffffffff || e_address == 0xffffffff) error = MV_TRUE;
-    if(s_address%4 != 0 || e_address%4 != 0) error = MV_TRUE;
-    if(s_address > e_address) error = MV_TRUE;
-    if(error)
-    {
-	printf ("Usage:\n%s\n", cmdtp->usage);
-        return 0;
-    }
-    for(i = s_address; i < e_address ; i+=4)
-    {
-        tempData = (*((volatile unsigned int *)i));
-        if(tempData == value)
-        {
-            printf("Value: %x found at ",value);
-            printf("address: %x\n",i);
-            return 1;
-        }
-    }
-    printf("Value not found!!\n");
-    return 1;
-}
-
-U_BOOT_CMD(
-	fi,      4,     1,      fi_cmd,
-	"fi	- Find value in the memory.\n",
-	" value start_address end_address\n"
-	"\tSearch for a value 'value' in the memory from address 'start_address to\n"
-	"\taddress 'end_address'.\n"
-	"\t(This command can be used only if enaMonExt is set!)\n"
-);
-
-/******************************************************************************
-* Functionality- Compare the memory with Value.
-*****************************************************************************/
-int cmpm_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
-{
-    MV_U32 s_address,e_address,value,i,tempData;
-    MV_BOOL  error = MV_FALSE;
-
-    if(!enaMonExt()){
-	printf("This command can be used only if enaMonExt is set!\n");
-	return 0;}
-
-    if(argc == 4){
-	value = simple_strtoul(argv[1], NULL, 16);
-	s_address = simple_strtoul(argv[2], NULL, 16);
-	e_address = simple_strtoul(argv[3], NULL, 16);
-    }else{ printf ("Usage:\n%s\n", cmdtp->usage);
-	return 0;
-    }
-
-    if(s_address == 0xffffffff || e_address == 0xffffffff) error = MV_TRUE;
-    if(s_address%4 != 0 || e_address%4 != 0) error = MV_TRUE;
-    if(s_address > e_address) error = MV_TRUE;
-    if(error)
-    {
-	printf ("Usage:\n%s\n", cmdtp->usage);
-        return 0;
-    }
-    for(i = s_address; i < e_address ; i+=4)
-    {
-        tempData = (*((volatile unsigned int *)i));
-        if(tempData != value)
-        {
-            printf("Value: %x found at address: %x\n",tempData,i);
-        }
-    }
-    return 1;
-}
-
-U_BOOT_CMD(
-	cmpm,      4,     1,      cmpm_cmd,
-	"cmpm	- Compare Memory\n",
-	" value start_address end_address.\n"
-	"\tCompare the memory from address 'start_address to address 'end_address'.\n"
-	"\twith value 'value'\n"
-	"\t(This command can be used only if enaMonExt is set!)\n"
-);
 
 #if defined(MV_INCLUDE_GIG_ETH)
 

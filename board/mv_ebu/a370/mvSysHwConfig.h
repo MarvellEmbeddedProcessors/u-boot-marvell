@@ -76,20 +76,6 @@ disclaimer.
 #define PCI1_IF_PTP		0		/* no Bridge on pciIf1*/
 
 /************************************************/
-/* U-Boot Specific				*/
-/************************************************/
-#define MV_INCLUDE_MONT_EXT
-
-#if defined(MV_INCLUDE_MONT_EXT)
-#define MV_INCLUDE_MONT_MMU
-#define MV_INCLUDE_MONT_MPU
-#if defined(MV_INC_BOARD_NOR_FLASH)
-#define MV_INCLUDE_MONT_FFS
-#endif
-#endif
-
-
-/************************************************/
 /* RD boards specifics 				*/
 /************************************************/
 

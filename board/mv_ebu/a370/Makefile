@@ -4,8 +4,7 @@ include ../common/paths.mk
 #### Objects list #####
 
 COBJS = cmd_sar.o \
-	mv_main_a370.o \
-	mv_main.o
+	mv_main_a370.o
 
 
 LIB	= $(obj)lib$(BOARD).o

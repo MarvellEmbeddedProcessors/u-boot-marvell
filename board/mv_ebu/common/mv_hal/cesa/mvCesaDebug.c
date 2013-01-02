@@ -221,6 +221,12 @@ void mvCesaDebugRegs(void)
 
 		mvOsPrintf("MV_CESA_ISR_MASK_REG                : 0x%X = 0x%08x\n",
 			MV_CESA_ISR_MASK_REG(chan), MV_REG_READ(MV_CESA_ISR_MASK_REG(chan)));
+#ifdef MV_CESA_INT_COALESCING_SUPPORT
+		mvOsPrintf("MV_CESA_INT_COAL_TH_REG             : 0x%X = 0x%08x\n",
+			MV_CESA_INT_COAL_TH_REG(chan), MV_REG_READ(MV_CESA_INT_COAL_TH_REG(chan)));
+		mvOsPrintf("MV_CESA_INT_TIME_TH_REG             : 0x%X = 0x%08x\n",
+			MV_CESA_INT_TIME_TH_REG(chan), MV_REG_READ(MV_CESA_INT_TIME_TH_REG(chan)));
+#endif
 #if (MV_CESA_VERSION >= 2)
 		mvOsPrintf("MV_CESA_TDMA_CTRL_REG               : 0x%X = 0x%08x\n",
 			MV_CESA_TDMA_CTRL_REG(chan), MV_REG_READ(MV_CESA_TDMA_CTRL_REG(chan)));
@@ -309,9 +315,10 @@ void mvCesaDebugQueue(int mode)
 
 			for (count = 0; count < cesaQueueDepth[chan]; count++) {
 				/* Print out requsts */
-				mvOsPrintf("%02d. pReq=%p, state=%s, frag=0x%x, pCmd=%p, pDma=%p, pDesc=%p\n",
+				mvOsPrintf("%02d. pReq=%p, state=%s, frag=0x%x, pCmd=%p, pDma=%p, pDesc=%p, reqId=%u, use=%u\n",
 					count, pReq, mvCesaDebugStateStr(pReq->state),
-					pReq->fragMode, pReq->pCmd, pReq->dma[0].pDmaFirst, &pReq->pCesaDesc[0]);
+					pReq->fragMode, pReq->pCmd, pReq->dma[0].pDmaFirst, &pReq->pCesaDesc[0],
+					pReq->pCmd->reqId, pReq->use);
 				if (pReq->fragMode != MV_CESA_FRAG_NONE) {
 					int frag;
 

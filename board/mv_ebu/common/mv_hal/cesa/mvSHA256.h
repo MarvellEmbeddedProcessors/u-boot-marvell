@@ -79,7 +79,7 @@ sha256_context;
 MV_VOID mvSHA256Init(sha256_context *ctx);
 MV_VOID mvSHA256Update(sha256_context *ctx, MV_U8 *input, MV_U32 length);
 MV_VOID mvSHA256Finish(sha256_context *ctx, MV_U8 *digest);
-MV_VOID mvSHA256(MV_U8 const *buf, MV_U32 len, MV_U8 *digest);
+MV_VOID mvSHA256(MV_U8 *buf, MV_U32 len, MV_U8 *digest);
 
 #ifdef __cplusplus
 }

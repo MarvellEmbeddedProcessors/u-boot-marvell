@@ -298,7 +298,7 @@ MV_VOID mvSHA256Finish(sha256_context *ctx, MV_U8 *digest)
 	PUT_UINT32(ctx->state[7], digest, 28);
 }
 
-MV_VOID mvSHA256(MV_U8 const *buf, MV_U32 len, MV_U8 * digest)
+MV_VOID mvSHA256(MV_U8 *buf, MV_U32 len, MV_U8 * digest)
 {
 	sha256_context ctx;
 

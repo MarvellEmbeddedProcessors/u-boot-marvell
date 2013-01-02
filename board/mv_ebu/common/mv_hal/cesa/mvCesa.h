@@ -88,6 +88,22 @@ typedef enum {
 	MV_CESA_SPLIT_SECOND = 2
 } MV_CESA_SPLIT;
 
+typedef enum {
+	CESA_NULL_POLICY = 0,
+	CESA_SINGLE_CHAN_POLICY,
+	CESA_DUAL_CHAN_BALANCED_POLICY,
+	CESA_WEIGHTED_CHAN_POLICY,
+	CESA_FLOW_ASSOC_CHAN_POLICY
+} MV_CESA_POLICY;
+
+typedef enum {
+	CESA_NULL_FLOW_TYPE = 0,
+	CESA_IPSEC_FLOW_TYPE,
+	CESA_SSL_FLOW_TYPE,
+	CESA_DISK_FLOW_TYPE,
+	CESA_NFPSEC_FLOW_TYPE
+} MV_CESA_FLOW_TYPE;
+
 typedef struct {
 	MV_ULONG sramPhysBase[MV_CESA_CHANNELS];
 	MV_U8 *sramVirtBase[MV_CESA_CHANNELS];
@@ -157,6 +173,7 @@ typedef struct {
 	MV_16 sessionId;
 	MV_U16 mbufSize;
 	MV_U32 reqId;	/* Driver internal */
+	MV_U32 chanId;
 } MV_CESA_RESULT;
 
 typedef void (*MV_CESA_CALLBACK) (MV_CESA_RESULT *pResult);
@@ -177,6 +194,7 @@ typedef struct {
 	MV_BOOL skipFlush;
 	MV_CESA_SPLIT split;
 	MV_U32 reqId;	/* Driver internal */
+	MV_CESA_FLOW_TYPE flowType;
 } MV_CESA_COMMAND;
 
 MV_STATUS mvCesaHalInit(int numOfSession, int queueDepth, void *osHandle, MV_CESA_HAL_DATA *halData);
@@ -286,6 +304,7 @@ typedef struct {
 	MV_BUF_INFO cesaDescBuf;
 	MV_CESA_DESC *pCesaDesc;
 	MV_CESA_FRAGS frags;
+	MV_32 use;
 } MV_CESA_REQ;
 
 /* SRAM map */

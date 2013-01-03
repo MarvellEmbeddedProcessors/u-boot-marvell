@@ -80,14 +80,49 @@ extern "C" {
 # include "pnc/mvPnc.h"
 #endif /* CONFIG_MV_ETH_PNC */
 
+#ifdef CONFIG_MV_ETH_NFP
+
+#ifdef CONFIG_MV_ETH_NFP_EXT
+# define NFP_EXT_NUM 	CONFIG_MV_ETH_NFP_EXT_NUM
+#else
+# define NFP_EXT_NUM 	0
+#endif
+
+#define NFP_MAX_PORTS   (MV_ETH_MAX_PORTS + NFP_EXT_NUM)
+
+#ifdef CONFIG_MV_ETH_SWITCH
+# define NFP_MAX_SWITCH_GROUPS  CONFIG_MV_ETH_SWITCH_NETDEV_NUM
+#else
+# define NFP_MAX_SWITCH_GROUPS  1
+#endif /* CONFIG_MV_ETH_SWITCH */
+
+typedef struct {
+	void   *dev;
+	MV_U32 tx_cmd;
+	MV_U32 diffL4[2];
+	MV_U8  *pWrite;
+	MV_U16 flags;
+	MV_U16 mtu;
+	short  shift;
+	MV_U8  txp;
+	MV_U8  txq;
+	MV_IP_HEADER_INFO ipInfo;
+	void   *privateData;
+} MV_NFP_RESULT;
+
+#define MV_NFP_RES_TXP_VALID       0x0001
+#define MV_NFP_RES_TXQ_VALID       0x0002
+#define MV_NFP_RES_IP_INFO_VALID   0x0004
+#define MV_NFP_RES_NETDEV_EXT      0x0010
+#define MV_NFP_RES_L4_CSUM_NEEDED  0x0020
+
+#endif /* CONFIG_MV_ETH_NFP */
+
 #define NETA_RX_IP_IS_FRAG(status)     ((status) & NETA_RX_IP4_FRAG_MASK)
 #define NETA_RX_IP_SET_FRAG(rxd)       ((rxd)->status |= NETA_RX_IP4_FRAG_MASK)
 
 #define NETA_RX_L4_CSUM_IS_OK(status)  ((status) & NETA_RX_L4_CSUM_OK_MASK)
 #define	NETA_RX_L4_CSUM_SET_OK(rxd)    ((rxd)->status |= NETA_RX_L4_CSUM_OK_MASK)
-
-#define NETA_RX_IS_PPPOE(rxd)          ((rxd)->pncInfo & NETA_PNC_PPPOE)
-#define NETA_RX_SET_PPPOE(rxd)         ((rxd)->pncInfo |= NETA_PNC_PPPOE)
 
 #define NETA_RX_GET_IPHDR_OFFSET(rxd)       (((rxd)->status & NETA_RX_L3_OFFSET_MASK) >> NETA_RX_L3_OFFSET_OFFS)
 #define NETA_RX_SET_IPHDR_OFFSET(rxd, offs) ((rxd)->status |= ((offs) << NETA_RX_L3_OFFSET_OFFS) & NETA_RX_L3_OFFSET_MASK)
@@ -96,6 +131,9 @@ extern "C" {
 #define NETA_RX_SET_IPHDR_HDRLEN(rxd, hlen) ((rxd)->status |= ((hlen) << NETA_RX_IP_HLEN_OFFS) & NETA_RX_IP_HLEN_MASK)
 
 #ifdef CONFIG_MV_ETH_PNC
+
+#define NETA_RX_IS_PPPOE(rxd)          ((rxd)->pncInfo & NETA_PNC_PPPOE)
+#define NETA_RX_SET_PPPOE(rxd)         ((rxd)->pncInfo |= NETA_PNC_PPPOE)
 
 #define NETA_RX_IS_VLAN(rxd)           ((rxd)->pncInfo & NETA_PNC_VLAN)
 #define NETA_RX_SET_VLAN(rxd)          ((rxd)->pncInfo |= NETA_PNC_VLAN)
@@ -122,6 +160,9 @@ extern "C" {
 #define NETA_RX_L4_SET_OTHER(rxd)      ((rxd)->status |= NETA_RX_L4_OTHER)
 
 #else /* LEGACY parser */
+
+#define NETA_RX_IS_PPPOE(rxd)          (MV_FALSE)
+#define NETA_RX_SET_PPPOE(rxd)
 
 #define NETA_RX_IS_VLAN(rxd)           ((rxd)->status & ETH_RX_VLAN_TAGGED_FRAME_MASK)
 #define NETA_RX_SET_VLAN(rxd)          ((rxd)->status |= ETH_RX_VLAN_TAGGED_FRAME_MASK)
@@ -256,14 +297,15 @@ typedef struct {
 #ifdef CONFIG_MV_ETH_BM
 	MV_ULONG bmPhysBase;
 	MV_U8 *bmVirtBase;
-#endif				/* CONFIG_MV_ETH_BM */
+#endif /* CONFIG_MV_ETH_BM */
 
 #ifdef CONFIG_MV_ETH_PNC
 	MV_ULONG pncPhysBase;
 	MV_U8 *pncVirtBase;
-#endif				/* CONFIG_MV_ETH_PNC */
-        MV_U32 portMask;
-        MV_U32 cpuMask;
+#endif /* CONFIG_MV_ETH_PNC */
+
+	MV_U32 portMask;
+	MV_U32 cpuMask;
 } MV_NETA_HAL_DATA;
 
 typedef struct eth_pbuf {

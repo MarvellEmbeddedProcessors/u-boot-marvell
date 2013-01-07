@@ -1675,6 +1675,7 @@ MV_VOID mvEth1540A1PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 {
 	int i = ethphyHalData.phyAddr[ethPortNum];
 	MV_U16 reg;
+	int port0 = ethphyHalData.QuadPhyPort0[ethPortNum];
 
 	/* Enable QSGMII AN */
 	/* Set page to 4. */
@@ -1741,23 +1742,24 @@ MV_VOID mvEth1540A1PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	mvEthPhyRegWrite(i, 0x10, reg);
 	mvEthPhyRegWrite(i, 0x16, 0x0);
 
+	DB2(printf("%s: configure jumbo QuadPhyPort=0x%x offset = 0x%x\n",__FUNCTION__,port0, offs));
 	if (0 == initJumboPackets) {
 		int j;
 		initJumboPackets = 1;
 
-		mvEthPhyRegWrite(i, 0x16, 0x10);
+		mvEthPhyRegWrite(port0, 0x16, 0x10);
 		/* assume we want all ports to support jumbo*/
 		for(j = 0 ; j < MV_ETH_MAX_PORTS; j++)
 		{
-			mvEthPhyRegWrite(i, 0x01, ((0x800*j)+0x40)) ;
-			mvEthPhyRegWrite(i, 0x02, 0xFFF9);
-			mvEthPhyRegWrite(i, 0x03, 0x1);
+			mvEthPhyRegWrite(port0, 0x01, ((0x800*j)+0x40)) ;
+			mvEthPhyRegWrite(port0, 0x02, 0xFFF9);
+			mvEthPhyRegWrite(port0, 0x03, 0x1);
 
-			mvEthPhyRegWrite(i, 0x01,  ((0x800*j)+0x50));
-			mvEthPhyRegWrite(i, 0x02, 0xFFF9);
-			mvEthPhyRegWrite(i, 0x03, 0x1);
+			mvEthPhyRegWrite(port0, 0x01,  ((0x800*j)+0x50));
+			mvEthPhyRegWrite(port0, 0x02, 0xFFF9);
+			mvEthPhyRegWrite(port0, 0x03, 0x1);
 		}
-		mvEthPhyRegWrite(i, 0x16, 0x0);
+		mvEthPhyRegWrite(port0, 0x16, 0x0);
 	}
 
 	/* Configure LED */
@@ -1901,6 +1903,7 @@ MV_VOID mvEth1540A0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	mvEthPhyRegWrite(i, 0x10, reg);
 	mvEthPhyRegWrite(i, 0x16, 0x0);
 
+	DB2(printf("%s: configure jumbo QuadPhyPort=0x%x offset = 0x%x\n",__FUNCTION__,port0, offs));
 	if (0 == initJumboPackets) {
 		int j;
 		initJumboPackets = 1;
@@ -1919,6 +1922,7 @@ MV_VOID mvEth1540A0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 		}
 		mvEthPhyRegWrite(port0, 0x16, 0x0);
 	}
+
 	/* Configure LED */
 	mvEthPhyRegWrite(i, 22, 3);
 	mvEthPhyRegWrite(i, 16, 0x1111);

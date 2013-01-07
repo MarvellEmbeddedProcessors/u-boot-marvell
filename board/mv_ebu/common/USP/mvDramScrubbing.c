@@ -137,7 +137,7 @@ MV_VOID mvSysXorFinish2(void)
 MV_VOID mvDramScrubbing(void)
 {
 	int cs;
-	MV_U32 size;
+	MV_U32 size, temp;
 	MV_U32 totalMem;
 	MV_U64 total;
 	MV_U32 start_addr;
@@ -150,6 +150,11 @@ MV_VOID mvDramScrubbing(void)
 	printf("Dram Scrubbing starting (use XOR chanel %d)\n",SCRB_XOR_CHAN);
 	totalMem = 0;
 	/* DDR training scrub DDR till 0x1000000 */
+
+	temp = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
+	 temp |= (1 << REG_SDRAM_CONFIG_IERR);
+	 MV_REG_WRITE(REG_SDRAM_CONFIG_ADDR, temp);
+
 	for (cs=0; cs < CONFIG_NR_DRAM_BANKS; cs++) {
 		size = mvDramIfHwCsSizeGet(cs);
 		if (size == 0)
@@ -173,6 +178,10 @@ MV_VOID mvDramScrubbing(void)
 		while (mvXorStateGet(SCRB_XOR_CHAN) != MV_IDLE);
 		mvSysXorFinish2();
 	}
+	temp = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
+	temp &= ~(1 << REG_SDRAM_CONFIG_IERR);
+	MV_REG_WRITE(REG_SDRAM_CONFIG_ADDR, temp);
+
 	printf("       Total physical DRAM size = %d GB\n\n", (int)totalMem);
 }
 

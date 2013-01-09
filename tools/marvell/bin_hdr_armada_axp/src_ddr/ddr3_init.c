@@ -61,6 +61,12 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
+#ifdef MV88F78X60
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#endif
 
 #include "ddr3_init.h"
 #include "ddr3_spd.h"
@@ -96,8 +102,21 @@ static MV_U32 ddr3GetStaticDdrMode(void);
 #endif
 
 
-
+MV_VOID ddr3SetLogLevel(MV_U32 nLogLevel);
 static MV_U32 gLogLevel = 0;
+
+/************************************************************************************
+* Name:     ddr3LogLevelInit
+* Desc:     This routine initialize the gLogLevel as defined in dd3_axp_config
+* Args:     None
+* Notes:
+* Returns:  None.
+*/
+MV_VOID ddr3LogLevelInit(MV_VOID)
+{
+    ddr3SetLogLevel(DDR3_LOG_LEVEL);
+}
+
 /************************************************************************************
 * Name:     setDdr3Log_Level
 * Desc:     This routine initialize the gLogLevel acording to nLogLevel which getting from user
@@ -120,6 +139,7 @@ MV_U32 ddr3GetLogLevel()
 {
     return gLogLevel;
 }
+
 /************************************************************************************
 * Name:     levelLogPrintS
 * Desc:     This routine printing string "str" if gLogLevel>=eLogLevel
@@ -171,7 +191,11 @@ MV_VOID levelLogPrintDD(MV_U32 dec_num, MV_U32 length, MV_LOG_LEVEL eLogLevel)
 MV_U32 ddr3Init_(void);
 MV_U32 ddr3Init(void)
 {
-    unsigned int status = ddr3Init_();
+    unsigned int status;
+
+    ddr3LogLevelInit();
+
+    status = ddr3Init_();
     DEBUG_INIT_S("Status = ");
     if( status == MV_DDR3_TRAINING_ERR_BAD_SAR)
         DEBUG_INIT_S("DDR3 Training Error: Bad sample at reset");
@@ -301,6 +325,9 @@ MV_U32 ddr3Init_(void)
 #if defined(ECC_SUPPORT)
 	uiScrubOffs = U_BOOT_START_ADDR;
 	uiScrubSize = U_BOOT_SCRUB_SIZE;
+#else
+	uiScrubOffs = 0;
+	uiScrubSize = 0;
 #endif
 	uiEcc = DRAM_ECC;
 
@@ -1082,6 +1109,7 @@ MV_32 uiReg;
     DEBUG_DUNIT_REG(REG_SDRAM_ODT_CTRL_LOW_ADDR);
     DEBUG_DUNIT_REG(REG_SDRAM_ODT_CTRL_HIGH_ADDR);
     DEBUG_DUNIT_REG(REG_DUNIT_ODT_CTRL_ADDR);
+#ifndef MV88F67XX
     DEBUG_DUNIT_REG(REG_DRAM_FIFO_CTRL_ADDR);
     DEBUG_DUNIT_REG(REG_DRAM_AXI_CTRL_ADDR);
     DEBUG_DUNIT_REG(REG_DRAM_ADDR_CTRL_DRIVE_STRENGTH_ADDR);
@@ -1103,6 +1131,7 @@ MV_32 uiReg;
     DEBUG_DUNIT_REG(DLB_EVICTION_TIMERS_REGISTER_REG);
     DEBUG_DUNIT_REG(REG_FASTPATH_WIN_0_CTRL_ADDR);
     DEBUG_DUNIT_REG(REG_CDI_CONFIG_ADDR);
+#endif
 }
 
 

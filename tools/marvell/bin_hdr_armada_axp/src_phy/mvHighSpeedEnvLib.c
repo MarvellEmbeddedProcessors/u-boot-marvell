@@ -65,7 +65,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mv_os.h"
 #include "config_marvell.h"  	/* Required to identify SOC and Board */
+#if defined(MV88F78X60)
 #include "ddr3_axp.h"
+#elif defined(MV88F6710)
+#include "ddr3_a370.h"
+#else
+#error "No SOC define for uart in binary header."
+#endif
 #include "mvHighSpeedEnvSpec.h"
 #include "mvBHboardEnvSpec.h"
 
@@ -73,6 +79,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvUart.h"
 #include "util.h"
 
+
+#define	SERDES_VERION	"2.0.0"
+#define ENDED_OK "High speed PHY - Ended Successfully\n"
 static const MV_U8 serdesCfg[][SERDES_LAST_UNIT] = BIN_SERDES_CFG;
 			   
 extern MV_BIN_SERDES_CFG *SerdesInfoTbl[];
@@ -326,7 +335,6 @@ MV_U32 mvCtrlSerdesMaxLinesGet(MV_VOID)
 {        
       switch (mvCtrlModelGet()) {
         case MV_78130_DEV_ID:
-        case MV_6710_DEV_ID:
         case MV_78230_DEV_ID:
                 return 7;
         case MV_78160_DEV_ID:
@@ -336,6 +344,9 @@ MV_U32 mvCtrlSerdesMaxLinesGet(MV_VOID)
         case MV_78460_DEV_ID:
         case MV_78000_DEV_ID:
                 return 16;
+	  case MV_6710_DEV_ID:
+		  return 4;
+
         default:
                 return 0;
 	}
@@ -374,9 +385,10 @@ MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
 {
 	switch (mvCtrlModelGet()) {
 	case MV_78130_DEV_ID:
-	case MV_6710_DEV_ID:
 	case MV_78230_DEV_ID:
 		return 7;
+	case MV_6710_DEV_ID:
+		return MV_PEX_MAX_IF;
 
 	case MV_78160_DEV_ID:
 	case MV_78260_DEV_ID:
@@ -405,6 +417,7 @@ MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
 *       8bit desscribing Marvell controller revision number
 *
 *******************************************************************************/
+#if DUAL_BIN_HEADER
 MV_U8 mvCtrlRevGet(MV_VOID)
 {
 	MV_U8 revNum;
@@ -423,7 +436,9 @@ MV_U8 mvCtrlRevGet(MV_VOID)
 #endif
 	return ((revNum & PCCRIR_REVID_MASK) >> PCCRIR_REVID_OFFS);
 }
-
+#else
+MV_U8 mvCtrlRevGet(MV_VOID);
+#endif
 /*********************************************************************/
 MV_U32 get_serdesLineCfg(MV_U32 serdesLineNum,MV_BIN_SERDES_CFG *pSerdesInfo) 
 {
@@ -505,10 +520,14 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	/* Check if DRAM is already initialized  */
 	if (MV_REG_READ(REG_BOOTROM_ROUTINE_ADDR) & (1 << REG_BOOTROM_ROUTINE_DRAM_INIT_OFFS)) {
-		DEBUG_INIT_S("High speed PHY - Ver 2.0.0 - 2nd boot - Skip \n");
+		DEBUG_INIT_S("High speed PHY - Version: ");
+		DEBUG_INIT_S(SERDES_VERION);
+		DEBUG_INIT_S(" - 2nd boot - Skip \n");
 		return MV_OK;
 	}
-	DEBUG_INIT_S("High speed PHY - Ver 2.0.0 (COM-PHY-V20) \n");
+	DEBUG_INIT_S("High speed PHY - Version: ");
+	DEBUG_INIT_S(SERDES_VERION);
+	DEBUG_INIT_S(" (COM-PHY-V20) \n");
 
 /**********************************************************************************/
 	/*   AVS :  disable AVS for frequency less than 1333*/
@@ -1110,12 +1129,13 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 		MV_U32 negLinkWidth = 0;
 
 		mvOsDelay(150);
-		DEBUG_INIT_FULL_C("step 17: max_if= %d.", pexIfNum,1);
+		DEBUG_INIT_FULL_C("step 17: max_if= 0x", pexIfNum,1);
 		next_busno = 0;
 		for (pexIf = 0; pexIf < pexIfNum; pexIf++) {
 
 			pexUnit    = (pexIf<9)? (pexIf >> 2) : 3;
-			DEBUG_INIT_FULL_C("step 17: pexUnit= ", pexUnit,1);
+			DEBUG_INIT_FULL_S("step 17:  PEX"); DEBUG_INIT_FULL_D(pexIf,1);
+			DEBUG_INIT_FULL_C("  pexUnit= ", pexUnit,1);
 
 			if (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_DISABLED) {
 				DEBUG_INIT_FULL_C("PEX disabled interface ", pexIf,1);
@@ -1200,8 +1220,10 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 			   pexIf += 3;
 		}
 	}
+	DEBUG_INIT_S(ENDED_OK);
 	return MV_OK;
 }
+
 /* PEX configuration space read write */
 
 /*******************************************************************************
@@ -1238,17 +1260,17 @@ MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32
 		return 0xFFFFFFFF;
 
 	if (dev >= MAX_PEX_DEVICES) {
-		DEBUG_INIT_C("mvPexConfigRead: ERR. device number illigal %d", dev,1);
+		DEBUG_INIT_C("mvPexConfigRead: ERR. device number illigal ", dev,1);
 		return 0xFFFFFFFF;
 	}
 
 	if (func >= MAX_PEX_FUNCS) {
-		DEBUG_INIT_C("mvPexConfigRead: ERR. function num illigal %d", func,1);
+		DEBUG_INIT_C("mvPexConfigRead: ERR. function num illigal ", func,1);
 		return 0xFFFFFFFF;
 	}
 
 	if (bus >= MAX_PEX_BUSSES) {
-		DEBUG_INIT_C("mvPexConfigRead: ERR. bus number illigal %d", bus,1);
+		DEBUG_INIT_C("mvPexConfigRead: ERR. bus number illigal ", bus,1);
 		return MV_ERROR;
 	}
 	pexStatus = MV_REG_READ(PEX_STATUS_REG(pexIf));
@@ -1306,12 +1328,12 @@ MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32
 		/* Read the Data returned in the PEX Data register */
 	pexData = MV_REG_READ(PEX_CFG_DATA_REG(pexIf));
 
-	DEBUG_INIT_FULL_C("mvPexConfigRead: got : %x ", pexData,4);
+
+	DEBUG_INIT_FULL_C(" --> ", pexData,4);
 
 	return pexData;
 
 }
-
 /*******************************************************************************
 * mvPexLocalBusNumSet - Set PEX interface local bus number.
 *

@@ -1,3 +1,1 @@
-BIN tools/bin_hdr_armada_axp/bin_hdr_phy.bin
-BIN tools/bin_hdr_armada_axp/bin_hdr_ddr.bin
-
+BIN tools/bin_hdr_armada_axp/bin_hdr.bin

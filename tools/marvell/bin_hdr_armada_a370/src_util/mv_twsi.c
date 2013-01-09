@@ -63,24 +63,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
 
+#include "config_marvell.h"  	/* Required to identify SOC and Board */
 #include "mv_os.h"
 #include "soc_spec.h"
-#include "bin_hdr_twsi.h"
-
-/*
-* Debug
-*/
-#define DEBUG_TWSI_C(s,d,l)        	DEBUG_TWSI_S(s); DEBUG_TWSI_D(d,l); DEBUG_TWSI_S("\n");
-
-#ifdef 	MV_DEBUG_TWSI
-#define DEBUG_TWSI_S(s)				putstring(s);
-#define DEBUG_TWSI_D(d,l)			putdata(d,l);
-	
+#if defined(MV88F78X60)
+#include "ddr3_axp.h"
+#elif defined(MV88F6710)
+#include "ddr3_a370.h"
 #else
-#define DEBUG_TWSI_S(s)		
-#define DEBUG_TWSI_D(d,l)	
-	
+#error "No SOC define for uart in binary header."
 #endif
+#include "bin_hdr_twsi.h"
 
 static MV_VOID twsiIntFlgClr(MV_U8 chanNum);
 static MV_BOOL twsiMainIntGet(MV_U8 chanNum);
@@ -93,16 +86,15 @@ static MV_STATUS twsiDataTransmit(MV_U8 chanNum, MV_U8 *pBlock, MV_U32 blockSize
 static MV_STATUS twsiDataReceive(MV_U8 chanNum, MV_U8 *pBlock, MV_U32 blockSize);
 static MV_STATUS twsiTargetOffsSet(MV_U8 chanNum, MV_U32 offset, MV_BOOL moreThen256);
 static MV_VOID mvTwsiDelay(MV_U32 uiDelay);
+
+/*******************************************************************************/
 static MV_BOOL twsiTimeoutChk(MV_U32 timeout, const MV_8 *pString)
 {
-	if (timeout >= TWSI_TIMEOUT_VALUE) {
-		/* DB(// mvOsPrintf("%s", pString));	*/
+	if (timeout >= TWSI_TIMEOUT_VALUE)
 		return MV_TRUE;
-	}
+
 	return MV_FALSE;
-
 }
-
 /*******************************************************************************
 * mvTwsiStartBitSet - Set start bit on the bus
 *
@@ -130,23 +122,20 @@ static MV_BOOL twsiTimeoutChk(MV_U32 timeout, const MV_8 *pString)
 MV_STATUS mvTwsiStartBitSet(MV_U8 chanNum)
 {
 	MV_BOOL isIntFlag = MV_FALSE;
-	MV_U32 timeout, temp, add;
+	MV_U32 timeout, temp;
 
-	/* DB(// mvOsPrintf("TWSI: mvTwsiStartBitSet \n"));	*/
 	/* check Int flag */
 	if (twsiMainIntGet(chanNum))
 		isIntFlag = MV_TRUE;
 	/* set start Bit */
 	temp = MV_REG_READ(TWSI_CONTROL_REG(chanNum));
 	
-	add = TWSI_CONTROL_REG(chanNum);
-	MV_REG_WRITE(add, temp | TWSI_CONTROL_START_BIT);
+/*	add = TWSI_CONTROL_REG(chanNum); */
+	MV_REG_WRITE(TWSI_CONTROL_REG(chanNum), temp | TWSI_CONTROL_START_BIT);
 
 	/* in case that the int flag was set before i.e. repeated start bit */
-	if (isIntFlag) {
-		/* DB(// mvOsPrintf("TWSI: mvTwsiStartBitSet repeated start Bit\n"));	*/
+	if (isIntFlag)
 		twsiIntFlgClr(chanNum);
-	}
 
 	/* wait for interrupt */
 	timeout = 0;
@@ -154,22 +143,17 @@ MV_STATUS mvTwsiStartBitSet(MV_U8 chanNum)
 		;
 
 	/* check for timeout */
-	if (MV_TRUE == twsiTimeoutChk(timeout,
-		"TWSI: mvTwsiStartBitSet ERROR - Start Clear bit TimeOut .\n"))
+	if (MV_TRUE == twsiTimeoutChk(timeout, "TWSI: mvTwsiStartBitSet ERROR - Start Clear bit TimeOut .\n"))
 		return MV_TIMEOUT;
 
 	/* check that start bit went down */
-	if ((MV_REG_READ(TWSI_CONTROL_REG(chanNum)) & TWSI_CONTROL_START_BIT) != 0) {
-		/* mvOsPrintf("TWSI: mvTwsiStartBitSet ERROR - start bit didn't went down\n");	*/
+	if ((MV_REG_READ(TWSI_CONTROL_REG(chanNum)) & TWSI_CONTROL_START_BIT) != 0)
 		return MV_FAIL;
-	}
 
 	/* check the status */
 	temp = twsiStsGet(chanNum);
-	if ((temp != TWSI_START_CON_TRA) && (temp != TWSI_REPEATED_START_CON_TRA)) {
-		/* mvOsPrintf("TWSI: mvTwsiStartBitSet ERROR - status %x after Set Start Bit. \n", temp);	*/
+	if ((temp != TWSI_START_CON_TRA) && (temp != TWSI_REPEATED_START_CON_TRA))
 		return MV_FAIL;
-	}
 
 	return MV_OK;
 
@@ -195,12 +179,12 @@ MV_STATUS mvTwsiStartBitSet(MV_U8 chanNum)
 *******************************************************************************/
 MV_STATUS mvTwsiStopBitSet(MV_U8 chanNum)
 {
-	MV_U32 timeout, temp, add;
+	MV_U32 timeout, temp;
 
 	/* Generate stop bit */
 	temp = MV_REG_READ(TWSI_CONTROL_REG(chanNum));
 	
-	add = TWSI_CONTROL_REG(chanNum);
+/*	add = TWSI_CONTROL_REG(chanNum); */
 	MV_REG_WRITE(TWSI_CONTROL_REG(chanNum), temp | TWSI_CONTROL_STOP_BIT);
 
 	twsiIntFlgClr(chanNum);
@@ -216,17 +200,13 @@ MV_STATUS mvTwsiStopBitSet(MV_U8 chanNum)
 		return MV_TIMEOUT;
 
 	/* check that the stop bit went down */
-	if ((MV_REG_READ(TWSI_CONTROL_REG(chanNum)) & TWSI_CONTROL_STOP_BIT) != 0) {
-		/* mvOsPrintf("TWSI: mvTwsiStopBitSet ERROR - stop bit didn't went down. \n");	*/
+	if ((MV_REG_READ(TWSI_CONTROL_REG(chanNum)) & TWSI_CONTROL_STOP_BIT) != 0)
 		return MV_FAIL;
-	}
 
 	/* check the status */
 	temp = twsiStsGet(chanNum);
-	if (temp != TWSI_NO_REL_STS_INT_FLAG_IS_KEPT_0) {
-		/* mvOsPrintf("TWSI: mvTwsiStopBitSet ERROR - status %x after Stop Bit. \n", temp);	*/
+	if (temp != TWSI_NO_REL_STS_INT_FLAG_IS_KEPT_0)
 		return MV_FAIL;
-	}
 
 	return MV_OK;
 }
@@ -348,7 +328,7 @@ static MV_VOID twsiAckBitSet(MV_U8 chanNum)
 MV_U32 mvTwsiInit(MV_U8 chanNum, MV_HZ frequancy, MV_U32 Tclk, MV_TWSI_ADDR *pTwsiAddr, MV_BOOL generalCallEnable)
 {
 	MV_U32 n, m, freq, margin, minMargin = 0xffffffff;
-	MV_U32 power,add;
+	MV_U32 power;
 	MV_U32 actualFreq = 0, actualN = 0, actualM = 0, val;
 
 #ifdef MV88F67XX
@@ -357,11 +337,6 @@ MV_U32 mvTwsiInit(MV_U8 chanNum, MV_HZ frequancy, MV_U32 Tclk, MV_TWSI_ADDR *pTw
 	MV_REG_WRITE(REG_MPP_CONTROL_ADDR, val);
 #endif
 
-	if (frequancy > 100000) {
-		/* mvOsPrintf("Warning TWSI frequancy is too high, please use up tp 100Khz. \n");	*/
-	}
-
-	/* DB(// mvOsPrintf("TWSI: mvTwsiInit - Tclk = %d freq = %d\n", Tclk, frequancy));	*/
 	/* Calucalte N and M for the TWSI clock baud rate */
 	for (n = 0; n < 8; n++) {
 		for (m = 0; m < 16; m++) {
@@ -377,17 +352,16 @@ MV_U32 mvTwsiInit(MV_U8 chanNum, MV_HZ frequancy, MV_U32 Tclk, MV_TWSI_ADDR *pTw
 			}
 		}
 	}
-	/* DB(// mvOsPrintf("TWSI: mvTwsiInit - actN %d actM %d actFreq %d\n", actualN, actualM, actualFreq));	*/
 	/* Reset the TWSI logic */
 	twsiReset(chanNum);
 
 	/* Set the baud rate */
 	val = ((actualM << TWSI_BAUD_RATE_M_OFFS) | actualN << TWSI_BAUD_RATE_N_OFFS);
-	add = TWSI_STATUS_BAUDE_RATE_REG(chanNum);
+/*	add = TWSI_STATUS_BAUDE_RATE_REG(chanNum); */
 	MV_REG_WRITE(TWSI_STATUS_BAUDE_RATE_REG(chanNum), val);
 
 	/* Enable the TWSI and slave */
-	add = TWSI_CONTROL_REG(chanNum);
+/*	add = TWSI_CONTROL_REG(chanNum); */
 	MV_REG_WRITE(TWSI_CONTROL_REG(chanNum), TWSI_CONTROL_ENA | TWSI_CONTROL_ACK);
 
 	/* set the TWSI slave address */
@@ -400,20 +374,20 @@ MV_U32 mvTwsiInit(MV_U8 chanNum, MV_HZ frequancy, MV_U32 Tclk, MV_TWSI_ADDR *pTw
 		if (generalCallEnable)
 			val |= TWSI_SLAVE_ADDR_GCE_ENA;
 		/* write slave address */
-		add = TWSI_SLAVE_ADDR_REG(chanNum);
+/*		add = TWSI_SLAVE_ADDR_REG(chanNum); */
 		MV_REG_WRITE(TWSI_SLAVE_ADDR_REG(chanNum), val);
 
 		/* writing the 8 least significant bits of the 10 bit address */
 		val = (pTwsiAddr->address << TWSI_EXTENDED_SLAVE_OFFS) & TWSI_EXTENDED_SLAVE_MASK;
-		add = TWSI_EXTENDED_SLAVE_ADDR_REG(chanNum);
+/*		add = TWSI_EXTENDED_SLAVE_ADDR_REG(chanNum); */
 		MV_REG_WRITE(TWSI_EXTENDED_SLAVE_ADDR_REG(chanNum), val);
 	} else {		/*7 bit address */
 
 		/* set the 7 Bits address */
-		add = TWSI_EXTENDED_SLAVE_ADDR_REG(chanNum);
+/*		add = TWSI_EXTENDED_SLAVE_ADDR_REG(chanNum); */
 		MV_REG_WRITE(TWSI_EXTENDED_SLAVE_ADDR_REG(chanNum), 0x0);
 		val = (pTwsiAddr->address << TWSI_SLAVE_ADDR_7BIT_OFFS) & TWSI_SLAVE_ADDR_7BIT_MASK;
-		add = TWSI_SLAVE_ADDR_REG(chanNum);
+/*		add = TWSI_SLAVE_ADDR_REG(chanNum); */
 		MV_REG_WRITE(TWSI_SLAVE_ADDR_REG(chanNum), val);
 	}
 
@@ -472,9 +446,8 @@ static MV_U32 twsiStsGet(MV_U8 chanNum)
 *******************************************************************************/
 static MV_VOID twsiReset(MV_U8 chanNum)
 {
-	MV_U32 add;
+
 	/* Reset the TWSI logic */
-	add = TWSI_SOFT_RESET_REG(chanNum);
 	MV_REG_WRITE(TWSI_SOFT_RESET_REG(chanNum), 0);
 
 	/* wait for 2 mili sec */
@@ -506,7 +479,6 @@ static MV_VOID twsiReset(MV_U8 chanNum)
 *******************************************************************************/
 MV_STATUS mvTwsiAddrSet(MV_U8 chanNum, MV_TWSI_ADDR *pTwsiAddr, MV_TWSI_CMD command)
 {
-	/* DB(// mvOsPrintf("TWSI: mvTwsiAddr7BitSet addr %x , type %d, cmd is %s\n", pTwsiAddr->address,	*/
 /*	   pTwsiAddr->type, ((command == MV_TWSI_WRITE) ? "Write" : "Read")));	*/
 	/* 10 Bit address */
 	if (pTwsiAddr->type == ADDR10_BIT) {
@@ -665,9 +637,6 @@ static MV_STATUS twsiAddr7BitSet(MV_U8 chanNum, MV_U32 deviceAddress, MV_TWSI_CM
 			 ((val != TWSI_AD_PLS_WR_BIT_TRA_ACK_REC) && (command == MV_TWSI_WRITE))) {
 		/* only in debug, since in boot we try to read the SPD of both DRAM, and we don't
 		want error messeges in case DIMM doesn't exist. */
-		/* DB(// mvOsPrintf	*/
-			/*	("TWSI: twsiAddr7BitSet ERROR - status %x addr (7 Bit) in %s mode.\n", val,	*/
-			/*	 ((command == MV_TWSI_WRITE) ? "Write" : "Read")));	*/
 		return MV_FAIL;
 			 }
 
@@ -721,7 +690,6 @@ static MV_STATUS twsiDataTransmit(MV_U8 chanNum, MV_U8 *pBlock, MV_U32 blockSize
 	while (blockSizeWr) {
 		/* write the data */
 		MV_REG_WRITE(TWSI_DATA_REG(chanNum), (MV_U32) *pBlock);
-		/* DB(// mvOsPrintf("TWSI: twsiDataTransmit place = %d write %x \n", blockSize - blockSizeWr, *pBlock));	*/
 		pBlock++;
 		blockSizeWr--;
 
@@ -824,7 +792,6 @@ static MV_STATUS twsiDataReceive(MV_U8 chanNum, MV_U8 *pBlock, MV_U32 blockSize)
 
 		/* read the data */
 		*pBlock = (MV_U8) MV_REG_READ(TWSI_DATA_REG(chanNum));
-		/* DB(// mvOsPrintf("TWSI: twsiDataReceive  place %d read %x \n", blockSize - blockSizeRd, *pBlock));	*/
 		pBlock++;
 		blockSizeRd--;
 	}
@@ -870,8 +837,6 @@ static MV_STATUS twsiTargetOffsSet(MV_U8 chanNum, MV_U32 offset, MV_BOOL moreThe
 		offBlock[0] = offset & 0xff;
 		offSize = 1;
 	}
-	/* DB(// mvOsPrintf("TWSI: twsiTargetOffsSet offSize = %x addr1 = %x addr2 = %x\n",	*/
-/*	   offSize, offBlock[0], offBlock[1]));	*/
 	return twsiDataTransmit(chanNum, offBlock, offSize);
 
 }
@@ -913,7 +878,6 @@ MV_STATUS mvTwsiRead(MV_U8 chanNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *pBlock, MV
 		return MV_FAIL;
 	}
 
-	/* DB(// mvOsPrintf("TWSI: mvTwsiEepromRead after mvTwsiStartBitSet\n"));	*/
 
 	/* in case offset exsist (i.e. eeprom ) */
 	if (MV_TRUE == pTwsiSlave->validOffset) {
@@ -921,28 +885,23 @@ MV_STATUS mvTwsiRead(MV_U8 chanNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *pBlock, MV
 			mvTwsiStopBitSet(chanNum);
 			return MV_FAIL;
 		}
-		/* DB(// mvOsPrintf("TWSI: mvTwsiEepromRead after mvTwsiAddrSet\n"));	*/
 		if (MV_OK != twsiTargetOffsSet(chanNum, pTwsiSlave->offset, pTwsiSlave->moreThen256)) {
 			mvTwsiStopBitSet(chanNum);
 			return MV_FAIL;
 		}
-		/* DB(// mvOsPrintf("TWSI: mvTwsiEepromRead after twsiTargetOffsSet\n"));	*/
 		if (MV_OK != mvTwsiStartBitSet(chanNum)) {
 			mvTwsiStopBitSet(chanNum);
 			return MV_FAIL;
 		}
-		/* DB(// mvOsPrintf("TWSI: mvTwsiEepromRead after mvTwsiStartBitSet\n"));	*/
 	}
 	if (MV_OK != mvTwsiAddrSet(chanNum, &(pTwsiSlave->slaveAddr), MV_TWSI_READ)) {
 		mvTwsiStopBitSet(chanNum);
 		return MV_FAIL;
 	}
-	/* DB(// mvOsPrintf("TWSI: mvTwsiEepromRead after mvTwsiAddrSet\n"));	*/
 	if (MV_OK != twsiDataReceive(chanNum, pBlock, blockSize)) {
 		mvTwsiStopBitSet(chanNum);
 		return MV_FAIL;
 	}
-	/* DB(// mvOsPrintf("TWSI: mvTwsiEepromRead after twsiDataReceive\n"));	*/
 
 	if (MV_OK != mvTwsiStopBitSet(chanNum)) {
 		return MV_FAIL;
@@ -950,7 +909,6 @@ MV_STATUS mvTwsiRead(MV_U8 chanNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *pBlock, MV
 
 	twsiAckBitSet(chanNum);
 
-	/* DB(// mvOsPrintf("TWSI: mvTwsiEepromRead after mvTwsiStopBitSet\n"));	*/
 
 	return MV_OK;
 }
@@ -994,12 +952,10 @@ MV_STATUS mvTwsiWrite(MV_U8 chanNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *pBlock, M
 		return MV_FAIL;
 	}
 
-	/* DB(// mvOsPrintf("TWSI: mvTwsiEepromWrite after mvTwsiStartBitSet\n"));	*/
 	if (MV_OK != mvTwsiAddrSet(chanNum, &(pTwsiSlave->slaveAddr), MV_TWSI_WRITE)) {
 		mvTwsiStopBitSet(chanNum);
 		return MV_FAIL;
 	}
-	/* DB(// mvOsPrintf("TWSI :mvTwsiEepromWrite after mvTwsiAddrSet\n"));	*/
 
 	/* in case offset exsist (i.e. eeprom ) */
 	if (MV_TRUE == pTwsiSlave->validOffset) {
@@ -1007,17 +963,14 @@ MV_STATUS mvTwsiWrite(MV_U8 chanNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *pBlock, M
 			mvTwsiStopBitSet(chanNum);
 			return MV_FAIL;
 		}
-		/* DB(// mvOsPrintf("TWSI: mvTwsiEepromWrite after twsiTargetOffsSet\n"));	*/
 	}
 	if (MV_OK != twsiDataTransmit(chanNum, pBlock, blockSize)) {
 		mvTwsiStopBitSet(chanNum);
 		return MV_FAIL;
 	}
-	/* DB(// mvOsPrintf("TWSI: mvTwsiEepromWrite after twsiDataTransmit\n"));	*/
 	if (MV_OK != mvTwsiStopBitSet(chanNum)) {
 		return MV_FAIL;
 	}
-	/* DB(// mvOsPrintf("TWSI: mvTwsiEepromWrite after mvTwsiStopBitSet\n"));	*/
 
 	return MV_OK;
 }

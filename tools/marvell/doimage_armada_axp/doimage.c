@@ -770,7 +770,7 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 			}
 			/* 16 bytes at tail - IV, followed by 4 bytes of CHKSUM */
 //			chsum32 = checksum32((MV_U32)(opt->image_buf), opt->image_sz - 20, 0);
-			chsum32 = checksum32((void*)(opt->image_buf), opt->image_sz - 20, 0);
+			chsum32 = checksum32((MV_U32)(opt->image_buf), opt->image_sz - 20, 0);
 			fprintf(stdout, "The image (plain img. CHKSUM = %08X) is encrypted using AES-128.\n", chsum32);
 
 			if ((opt->image_sz - 4) % 16) {
@@ -837,8 +837,7 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 	/* Now the headers block checksum should be calculated and wrote in the header */
 	/* This checksum value should be valid for both secure and unsecure boot modes */
 	/* This value will be checked first before RSA key and signature verification */
-//	hdr->checkSum = checksum8((MV_U32)hdr, MAIN_HDR_GET_LEN(hdr), 0);
-	hdr->checkSum = checksum8((void*)hdr, MAIN_HDR_GET_LEN(hdr), 0);
+	hdr->checkSum = checksum8((MV_U32)hdr, MAIN_HDR_GET_LEN(hdr), 0);
 
 	/* Write to file(s) */
 	if (opt->header_mode == HDR_IMG_TWO_FILES) {
@@ -1238,8 +1237,7 @@ int build_regular_img (USER_OPTIONS	*opt, char *buf_in)
 	}
 
 	/* Calculate checksum and copy it to the image tail */
-//	chsum32 = checksum32((MV_U32)opt->image_buf, opt->image_sz - 4, 0);
-	chsum32 = checksum32((void*)opt->image_buf, opt->image_sz - 4, 0);
+	chsum32 = checksum32((MV_U32)opt->image_buf, opt->image_sz - 4, 0);
 	memcpy(opt->image_buf + opt->image_sz - 4, &chsum32, 4);
 
 	/* copy input image to output image */
@@ -1568,8 +1566,7 @@ void print_usage(void)
 *    RETURN:
 *          8-bit buffer checksum
 *******************************************************************************/
-//MV_U8 checksum8(MV_U32 start, MV_U32 len, MV_U8 csum)
-MV_U8 checksum8(void* start, MV_U32 len, MV_U8 csum)
+MV_U8 checksum8(MV_U32 start, MV_U32 len, MV_U8 csum)
 {
 	register MV_U8 sum = csum;
 	volatile MV_U8* startp = (volatile MV_U8*)start;
@@ -1596,8 +1593,7 @@ MV_U8 checksum8(void* start, MV_U32 len, MV_U8 csum)
 *    RETURN:
 *          32-bit buffer checksum
 *******************************************************************************/
-//MV_U32 checksum32(MV_U32 start, MV_U32 len, MV_U32 csum)
-MV_U32 checksum32(void* start, MV_U32 len, MV_U32 csum)
+MV_U32 checksum32(MV_U32 start, MV_U32 len, MV_U32 csum)
 {
 	register MV_U32 sum = csum;
 	volatile MV_U32* startp = (volatile MV_U32*)start;

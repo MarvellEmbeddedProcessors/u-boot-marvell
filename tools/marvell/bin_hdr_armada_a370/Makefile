@@ -82,18 +82,19 @@ endif
 ifeq "$(CONFIG_DB_78X60_PCAC_REV2)"  "y"
   CFLAGS += -DCONFIG_DB_78X60_PCAC_REV2
 endif
-ifeq "$(CONFIG_RD_78460_NAS)"  "y"
-  CFLAGS += -DCONFIG_RD_78460_NAS
-endif
 ifeq "$(CONFIG_RD_78460_SERVER_REV2)"  "y"
   CFLAGS += -DCONFIG_RD_78460_SERVER_REV2
 endif
 ifeq "$(CONFIG_DB_784MP_GP)"  "y"
   CFLAGS += -DCONFIG_DB_784MP_GP
 endif
+ifeq "$(CONFIG_DB_78X60_AMC)"  "y"
+  CFLAGS += -DCONFIG_DB_78X60_AMC
+endif
 ifeq "$(CONFIG_RD_78460_CUSTOMER)"  "y"
   CFLAGS += -DCONFIG_RD_78460_CUSTOMER
 endif
+
 ifeq "$(CONFIG_DB_88F6710_BP)"  "y"
   CFLAGS += -DCONFIG_DB_88F6710_BP
 endif
@@ -101,12 +102,13 @@ ifeq "$(CONFIG_RD_88F6710)"  "y"
   CFLAGS += -DCONFIG_RD_88F6710
 endif
 
-
+SETPARAMS  = setparams
 PARAMSFILE = params
 LDSCRIPT   = linker.scr
 DRAMREGS   = ./dramregs.txt
 
-INCLUDE     = -I. -I./inc/ -I../../include
+INCLUDE     = -I./  -I./src_phy/ -I./src_ddr/  -I./inc/ -I../../include
+
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
@@ -115,16 +117,19 @@ HOSTCPPFLAGS = $(CPPFLAGS)
 
 TGT = bin_hdr
 
-
-ASRC = ./src/bin_entry.s
-CSRC =  ddr3_init.c utils.c ./src/mvUart.c ./src/bin_hdr_twsi.c ./src/bin_sramcfg.c ./src/ddr3_spd.c
+ASRC = bin_entry.s
+CSRC =  ./src_ddr/ddr3_init.c ./src_ddr/bin_sramcfg.c ./src_ddr/ddr3_spd.c 
 
 AOBJ = $(subst .s,.o,$(ASRC))
 COBJ = $(subst .c,.o,$(CSRC))
+CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
 
-TLIB = ddr3_training.lib
+TLIB = ./src_ddr/ddr3_training.lib
 
-all:   $(LDSCRIPT) $(TGT).elf $(TGT).bin $(TGT).dis $(TGT).srec
+ULIB = utils.lib
+UART_ULIB = uart_utils.lib
+#all:   $(LDSCRIPT) $(TGT).uart.elf $(TGT).uart.bin  $(TGT).elf $(TGT).bin $(TGT).dis $(TGT).srec
+all:   $(ULIB) $(SETPARAM) $(LDSCRIPT) $(TGT).uart.elf $(TGT).uart.bin  $(TGT).elf $(TGT).bin $(TGT).dis $(TGT).srec
 
 rtl: clean all
 fpga: clean all
@@ -136,13 +141,27 @@ $(AOBJ): $(ASRC)
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-%.elf: $(AOBJ) $(COBJ) $(TLIB) $(LDSCRIPT)
-	$(CC) $(LDFLAGSBIN) $(AOBJ) $(COBJ) libgcc.lib $(TLIB)  -o $@
+%.uart.o: %.c
+	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) -c -o  $@ $<
+
+
+%.elf: $(AOBJ) $(COBJ) $(TLIB) $(ULIB)
+	$(CC) $(LDFLAGSBIN) $(AOBJ) $(COBJ) $(TLIB) $(ULIB) libgcc.lib -o $@
+
+%.uart.elf: $(AOBJ) $(CUART_OBJ) $(TLIB) $(UART_ULIB)
+	$(CC) $(LDFLAGSBIN) $(AOBJ) $(CUART_OBJ) $(TLIB) $(UART_ULIB) libgcc.lib -o $@
+
+
+%.uart.bin: %.uart_elf
+	$(OBJCOPY) -S -O binary $< $(addsuffix .tmp, $@)
+	$(CAT) $(PARAMSFILE).raw $(addsuffix .tmp, $@) > $@
+	$(RM) $(addsuffix .tmp, $@)
 
 %.bin: %.elf
 	$(OBJCOPY) -S -O binary $< $(addsuffix .tmp, $@)
 	$(CAT) $(PARAMSFILE).raw $(addsuffix .tmp, $@) > $@
 	$(RM) $(addsuffix .tmp, $@)
+
 
 %.srec: %.elf
 	$(OBJCOPY) -O srec $< $@
@@ -150,11 +169,20 @@ $(AOBJ): $(ASRC)
 %.dis:  %.elf
 	$(OBJDUMP) -lhaD -S $<  > $@
 
-setparams: $(PARAMSFILE).txt
-	$(HOSTCC) $(HOSTCFLAGS) $(HOSTCPPFLAGS) -o $@  $(addsuffix .c, $@)
+./src_util/$(SETPARAMS): 
+	$(MAKE) $(SETPARAMS) HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)" -C ./src_util
 
-$(LDSCRIPT): setparams
-	./$< -P $(PARAMSFILE).txt -R $(DRAMREGS) $(PARAMSFILE).raw $@
+$(UART_ULIB):  
+	$(MAKE) $(UART_ULIB) HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)" -C ./src_util
+
+$(ULIB):
+	$(MAKE) all HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)" -C ./src_util
+
+
+$(LDSCRIPT): ./src_util/$(SETPARAMS) $(ULIB)
+	./src_util/$(SETPARAMS) -P $(PARAMSFILE).txt -R $(DRAMREGS) $(PARAMSFILE).raw $@
 
 clean:
-	$(RM) *.raw *.elf *.srec *.dis *.bin ./src/*.o  $(LDSCRIPT) setparams
+	$(RM) *.raw *.elf *.srec *.dis *.bin  *.uart.bin *.uart.elf ./src/*.o  $(LDSCRIPT) $(SETPARAMS) $(ULIB) $(UART_ULIB)
+	$(MAKE) clean -C ./src_util 
+

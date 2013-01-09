@@ -67,26 +67,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mv_os.h"
 
-/* Registered DIMM Support - In case registered DIMM is attached, please supply the following values:
-(see JEDEC - JESD82-29A "Definition of the SSTE32882 Registering Clock Driver with Parity and Quad Chip
-Selects for DDR3/DDR3L/DDR3U RDIMM 1.5 V/1.35 V/1.25 V Applications") */
-/* RC0: Global Features Control Word */
-/* RC1: Clock Driver Enable Control Word */
-/* RC2: Timing Control Word */
-/* RC3-RC5 - taken from SPD */
-/* RC8: Additional IBT Setting Control Word */
-/* RC9: Power Saving Settings Control Word */
-/* RC10: Encoding for RDIMM Operating Speed */
-/* RC11: Operating Voltage VDD and VREFCA Control Word */
-#define RDIMM_RC0								0
-#define RDIMM_RC1								0
-#define RDIMM_RC2								0
-#define RDIMM_RC8								0
-#define RDIMM_RC9								0
-#define RDIMM_RC10								0
-#define RDIMM_RC11								0
-
-
 #define MAX_DIMM_NUM 									2
 #define SPD_SIZE										128
 
@@ -222,7 +202,7 @@ typedef struct _mvDimmInfo
     MV_U32  numOfModuleRanks;
     MV_U32  dataWidth;
 	MV_U32 	dimmRankCapacity;
-	MV_U32  dimmSize;               /* 16,64,128,256 or 512 MByte in MB units */
+    /* MV_U32  dimmSize;  */              /* 16,64,128,256 or 512 MByte in MB units */
 	MV_U32  numberOfDevices;
 	
 	MV_U32 	sdramWidth;
@@ -255,8 +235,11 @@ typedef struct _mvDimmInfo
 	MV_U32  minFourActiveWinDelay;
 	MV_U8	regDimmRC[SPD_RDIMM_RC_NUM];
 
+    /* DIMM vendor ID */
+    MV_U32  vendor;
+
 } MV_DIMM_INFO;
 
-MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_BOOL *pBRegDimm, MV_U32 *pUiDdrWidth);
+MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth);
 
 #endif /* __INCmvDram */

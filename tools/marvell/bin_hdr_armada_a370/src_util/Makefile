@@ -61,31 +61,89 @@
 #;SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #;
 #;*******************************************************************************/
-CROSS    = $(CROSS_COMPILE_BH)
-LD       = $(CROSS)ld
-CC       = $(CROSS)gcc
-AS       = $(CROSS)as
-OBJCOPY  = $(CROSS)objcopy
-OBJDUMP  = $(CROSS)objdump
-HOSTCC   = gcc
+#.SECONDARY:
 
-RM       = @rm -rf
-CP       = @cp
-MKDIR    = @mkdir -p
-CD       = @cd
-MV       = @mv
-CAT      = @cat
-PWD      = @pwd
-ECHO     = @echo
+include ../base.mk
+sinclude ../../../include/autoconf.mk
 
-MVFLAGS = MV_CPU_LE=1
-ifeq ($(ARMARCH),7)
-CFLAGS += -mno-tune-ldrd -nostdlib -mabi=aapcs
+
+ifeq "$(MAKECMDGOALS)" "rtl"
+  MVFLAGS += MV_RTL_PLATFORM=1 MV_NO_PRINT=1
+endif
+ifeq "$(MAKECMDGOALS)" "test"
+  MVFLAGS += MV_TEST_PLATFORM=1 MV_NO_REAL_HW=1
+endif
+ifeq "$(MAKECMDGOALS)" "fpga"
+  MVFLAGS += MV_FPGA_HW=1 MV_NO_REAL_HW=1
 endif
 
-CPUOPTS  = -mthumb -mthumb-interwork -march=armv7 -mlittle-endian
+ifeq "$(CONFIG_DB_78x60_BP_REV2)"  "y"
+  CFLAGS += -DCONFIG_DB_78x60_BP_REV2
+endif
+ifeq "$(CONFIG_DB_78X60_PCAC_REV2)"  "y"
+  CFLAGS += -DCONFIG_DB_78X60_PCAC_REV2
+endif
+ifeq "$(CONFIG_RD_78460_SERVER_REV2)"  "y"
+  CFLAGS += -DCONFIG_RD_78460_SERVER_REV2
+endif
+ifeq "$(CONFIG_DB_784MP_GP)"  "y"
+  CFLAGS += -DCONFIG_DB_784MP_GP
+endif
+ifeq "$(CONFIG_DB_78X60_AMC)"  "y"
+  CFLAGS += -DCONFIG_DB_78X60_AMC
+endif
+ifeq "$(CONFIG_RD_78460_CUSTOMER)"  "y"
+  CFLAGS += -DCONFIG_RD_78460_CUSTOMER
+endif
 
-CFLAGS   = -Wall $(INCLUDE) -g -O0 $(CPUOPTS) -msoft-float -fPIE -fno-zero-initialized-in-bss -fno-unwind-tables  -mabi=aapcs
-CPPFLAGS = $(foreach FLAG, $(MVFLAGS), $(addprefix -D, $(FLAG)))
-ASFLAGS  = $(foreach FLAG, $(MVFLAGS), $(addprefix --defsym , $(FLAG)))
-LDFLAGS  = -static -nostartfiles -unwind-tables  -nostdlib
+ifeq "$(CONFIG_DB_88F6710_BP)"  "y"
+  CFLAGS += -DCONFIG_DB_88F6710_BP
+endif
+ifeq "$(CONFIG_RD_88F6710)"  "y"
+  CFLAGS += -DCONFIG_RD_88F6710
+endif
+
+INCLUDE     += -I./ -I../inc/ -I../../../include
+
+LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
+
+HOSTCFLAGS   = -Wall $(INCLUDE)
+HOSTCPPFLAGS = $(CPPFLAGS)
+
+CSRC= ./mvUart.c ./mv_twsi.c ./utils.c ./time.c
+COBJ = $(subst .c,.o,$(CSRC))
+CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
+
+ULIB = utils.lib
+ULIB_UART = uart_utils.lib
+
+#all:   setparams $(COBJ) $(CUART_OBJ)  $(ULIB) $(ULIB_UART) 
+all:   $(ULIB) $(ULIB_UART) 
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(INCLUDE) -c -o $@ $<
+
+%.uart.o: %.c
+	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) $(INCLUDE) -c -o  $@ $<
+
+
+$(ULIB): $(COBJ)
+	ar rcs $(ULIB)  $(COBJ) 
+	$(CP) ./$@ ../
+
+
+$(ULIB_UART): $(CUART_OBJ)
+	ar rcs $(ULIB_UART)  $(CUART_OBJ) 
+	$(CP) ./$@ ../
+
+
+PARAMSFILE = params
+
+setparams: 
+	$(HOSTCC) $(HOSTCFLAGS) $(HOSTCPPFLAGS) -o $@  $(addsuffix .c, $@)
+	$(CP) $@ ../
+	echo "copy $@ to ../"
+
+clean:
+	$(RM) setparams *.lib  *.raw  ./*.o  
+

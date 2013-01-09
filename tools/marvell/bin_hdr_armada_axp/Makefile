@@ -82,9 +82,6 @@ endif
 ifeq "$(CONFIG_DB_78X60_PCAC_REV2)"  "y"
   CFLAGS += -DCONFIG_DB_78X60_PCAC_REV2
 endif
-ifeq "$(CONFIG_RD_78460_NAS)"  "y"
-  CFLAGS += -DCONFIG_RD_78460_NAS
-endif
 ifeq "$(CONFIG_RD_78460_SERVER_REV2)"  "y"
   CFLAGS += -DCONFIG_RD_78460_SERVER_REV2
 endif
@@ -95,81 +92,61 @@ ifeq "$(CONFIG_RD_78460_CUSTOMER)"  "y"
   CFLAGS += -DCONFIG_RD_78460_CUSTOMER
 endif
 
-
+ifeq "$(CONFIG_DB_88F6710_BP)"  "y"
+  CFLAGS += -DCONFIG_DB_88F6710_BP
+endif
+ifeq "$(CONFIG_RD_88F6710)"  "y"
+  CFLAGS += -DCONFIG_RD_88F6710
+endif
+ 
+SETPARAMS  = setparams
 PARAMSFILE = params
-LDSCRIPT_phy   = linker_phy.scr
-LDSCRIPT_ddr   = linker_ddr.scr
-LDSCRIPT_uart_ddr = linker_uart_ddr.scr
-
+LDSCRIPT   = linker.scr
 DRAMREGS   = ./dramregs.txt
 
-INCLUDE     = -I./ -I./inc/ -I../../include
+INCLUDE     = -I./  -I./src_phy/ -I./src_ddr/  -I./inc/ -I../../include
 
 
-
-
+LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
 HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
 
-TGT_ddr = bin_hdr_ddr
-
-TGT_phy = bin_hdr_phy
-
-
-ASRC_ddr = ./src_ddr/ddr_entry_axp.s
-CSRC_ddr = ./src_ddr/ddr3_init.c ./src_ddr/bin_sramcfg.c ./src_ddr/ddr3_spd.c
-
-ASRC_phy = ./src_phy/phy_entry_axp.s
-CSRC_phy = ./src_phy/mvHighSpeedEnvLib.c ./src_phy/mvHighSpeedEnvSpec.c
-
-CSRC_UTIL= ./src_util/mvUart.c ./src_util/mv_twsi.c ./src_util/utils.c ./src_util/time.c
-
-AOBJ_ddr = $(subst .s,.o,$(ASRC_ddr))
-COBJ_ddr = $(subst .c,.o,$(CSRC_ddr))
-AOBJ_phy = $(subst .s,.o,$(ASRC_phy))
-COBJ_phy = $(subst .c,.o,$(CSRC_phy))
-COBJ_UTIL= $(subst .c,.o,$(CSRC_UTIL))
-CUART_phy_OBJ = $(subst .c,.uart.o,$(CSRC_phy))
-CUART_ddr_OBJ = $(subst .c,.uart.o,$(CSRC_ddr))
+TGT = bin_hdr
+ 
+ASRC = bin_entry_axp.s
+CSRC =  ./src_ddr/ddr3_init.c ./src_phy/mvHighSpeedEnvLib.c ./src_phy/mvHighSpeedEnvSpec.c ./src_ddr/bin_sramcfg.c ./src_ddr/ddr3_spd.c ./src_suspendWUP/suspendWakeup.c
+ 
+AOBJ = $(subst .s,.o,$(ASRC))
+COBJ = $(subst .c,.o,$(CSRC))
+CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
 
 TLIB = ./src_ddr/ddr3_training.lib
 
-all: $(TGT_phy).elf $(TGT_phy).bin $(TGT_phy).dis $(TGT_phy).srec $(TGT_ddr).elf $(TGT_ddr).bin $(TGT_ddr).dis $(TGT_ddr).srec \
-       $(TGT_phy).uart.elf $(TGT_phy).uart.bin $(TGT_ddr).uart.elf  $(TGT_ddr).uart.bin
+ULIB = utils.lib
+UART_ULIB = uart_utils.lib
+#all:   $(LDSCRIPT) $(TGT).uart.elf $(TGT).uart.bin  $(TGT).elf $(TGT).bin $(TGT).dis $(TGT).srec
+all:   $(ULIB) $(SETPARAM) $(LDSCRIPT) $(TGT).uart.elf $(TGT).uart.bin  $(TGT).elf $(TGT).bin $(TGT).dis $(TGT).srec
 
 rtl: clean all
 fpga: clean all
 test: clean all
 
-$(AOBJ_ddr): $(ASRC_ddr)
-	$(AS) $(ASFLAGS) -o $@ $<
-
-$(AOBJ_phy): $(ASRC_phy)
+$(AOBJ): $(ASRC)
 	$(AS) $(ASFLAGS) -o $@ $<
 
 %.o: %.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(INCLUDE) -c -o $@ $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 %.uart.o: %.c
-	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) $(INCLUDE) -c -o  $@ $<
+	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) -c -o  $@ $<
 
-#############################################################################################
-$(TGT_phy).elf: $(AOBJ_phy) $(COBJ_phy) $(LDSCRIPT_phy) $(COBJ_UTIL)
-	$(CC) -T $(LDSCRIPT_phy) $(LDFLAGS) $(AOBJ_phy) $(COBJ_phy) $(COBJ_UTIL) libgcc.lib -o $@
+%.elf: $(AOBJ) $(COBJ) $(TLIB) $(ULIB)
+	$(CC) $(LDFLAGSBIN) $(AOBJ) $(COBJ) $(TLIB) $(ULIB) libgcc.lib -o $@
+ 
+%.uart.elf: $(AOBJ) $(CUART_OBJ) $(TLIB) $(UART_ULIB)
+	$(CC) $(LDFLAGSBIN) $(AOBJ) $(CUART_OBJ) $(TLIB) $(UART_ULIB) libgcc.lib -o $@
 
-$(TGT_ddr).elf: $(AOBJ_ddr) $(COBJ_ddr) $(COBJ_UTIL) $(TLIB) $(LDSCRIPT_ddr)
-	$(CC) -T $(LDSCRIPT_ddr) $(LDFLAGS) $(AOBJ_ddr) $(COBJ_ddr) $(COBJ_UTIL) $(TLIB) libgcc.lib -o $@
-
-#############################################################################################
-$(TGT_phy).uart.elf: $(AOBJ_phy) $(CUART_phy_OBJ) $(LDSCRIPT_phy) $(COBJ_UTIL)
-	$(CC) -T $(LDSCRIPT_phy) $(LDFLAGS) $(AOBJ_phy) $(CUART_phy_OBJ) $(COBJ_UTIL) libgcc.lib -o $@
-
-
-$(TGT_ddr).uart.elf: $(AOBJ_ddr) $(CUART_ddr_OBJ) $(COBJ_UTIL) $(TLIB) $(LDSCRIPT_uart_ddr)
-	$(CC) -T $(LDSCRIPT_uart_ddr) $(LDFLAGS) $(AOBJ_ddr) $(CUART_ddr_OBJ) $(COBJ_UTIL) $(TLIB) libgcc.lib -o $@
-
-#############################################################################################
 %.uart.bin: %.uart_elf
 	$(OBJCOPY) -S -O binary $< $(addsuffix .tmp, $@)
 	$(CAT) $(PARAMSFILE).raw $(addsuffix .tmp, $@) > $@
@@ -187,22 +164,20 @@ $(TGT_ddr).uart.elf: $(AOBJ_ddr) $(CUART_ddr_OBJ) $(COBJ_UTIL) $(TLIB) $(LDSCRIP
 %.dis:  %.elf
 	$(OBJDUMP) -lhaD -S $<  > $@
 
-setparams: $(PARAMSFILE).txt
-	$(HOSTCC) $(HOSTCFLAGS) $(HOSTCPPFLAGS) -o $@  $(addsuffix .c, $@)
+./src_util/$(SETPARAMS): 
+	$(MAKE) $(SETPARAMS) HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)" -C ./src_util
 
-$(LDSCRIPT_phy): setparams
-	./setparams -P $(PARAMSFILE).txt $(PARAMSFILE).raw $@
+$(UART_ULIB):  
+	$(MAKE) $(UART_ULIB) HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)" -C ./src_util
 
-$(LDSCRIPT_ddr): setparams $(TGT_phy).bin  $(LDSCRIPT_phy)
-	./setparams -P $(PARAMSFILE).txt -B $(TGT_phy).bin   $(PARAMSFILE).raw $@
+$(ULIB):
+	$(MAKE) all HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)" -C ./src_util
 
-$(LDSCRIPT_uart_ddr): setparams $(TGT_phy).uart.bin  $(LDSCRIPT_phy)
-	./setparams -P $(PARAMSFILE).txt -B $(TGT_phy).uart.bin   $(PARAMSFILE).raw $@
 
-.PHONY: clean
+$(LDSCRIPT): ./src_util/$(SETPARAMS) $(ULIB)
+	./src_util/$(SETPARAMS) -P $(PARAMSFILE).txt -R $(DRAMREGS) $(PARAMSFILE).raw $@
 
 clean:
-	$(RM) *.raw *.elf *.srec *.dis *.bin *.scr *.uart.bin *.uart.elf $(LDSCRIPT) setparams ./src_util/*.o \
-	./src_ddr/*.elf ./src_ddr/*.srec ./src_ddr/*.dis ./src_ddr/*.bin ./src_ddr/*.scr ./src_ddr/*.uart.bin ./src_ddr/*.uart.elf ./src_ddr/*.o \
-	./src_phy/*.elf ./src_phy/*.srec ./src_phy/*.dis ./src_phy/*.bin ./src_phy/*.scr ./src_phy/*.uart.bin ./src_phy/*.uart.elf ./src_phy/*.o 
+	$(RM) *.raw *.elf *.srec *.dis *.bin  *.uart.bin *.uart.elf ./src/*.o  $(LDSCRIPT) $(SETPARAMS) $(ULIB) $(UART_ULIB)
+	$(MAKE) clean -C ./src_util 
 

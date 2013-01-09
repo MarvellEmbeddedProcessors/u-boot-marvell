@@ -1,2 +1,0 @@
-BIN tools/bin_hdr_armada_a370/bin_hdr.bin
-

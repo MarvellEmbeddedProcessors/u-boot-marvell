@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+use Cwd qw();
+
 sub HELP_MESSAGE
 {
 	print "\nUsage  : build -f \"Flash type\" -v X.X.X [-b \"board name\"] [-c] [-o \"Output file\"]\n";

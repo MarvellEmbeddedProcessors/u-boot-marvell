@@ -77,6 +77,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_6710_Z1_ID		((MV_6710_DEV_ID << 16) | MV_6710_Z1_REV)
 #define MV_6710_Z1_NAME		"MV6710 Z1"
 
+#define MV_6710_A0_REV          0x0
+#define MV_6710_A0_ID           ((MV_6710_DEV_ID << 16) | MV_6710_A0_REV)
+#define MV_6710_A0_NAME         "MV6710 A0"
+
+#define MV_6710_A1_REV          0x1
+#define MV_6710_A1_ID           ((MV_6710_DEV_ID << 16) | MV_6710_A1_REV)
+#define MV_6710_A1_NAME         "MV6710 A1"
+
+#define MV_6707_DEV_ID          0x6707
+#define MV_6707_A0_REV          0x0
+#define MV_6707_A0_ID           ((MV_6707_DEV_ID << 16) | MV_6707_A0_REV)
+#define MV_6707_A0_NAME         "MV6707 A0"
+
+#define MV_6707_A1_REV          0x1
+#define MV_6707_A1_ID           ((MV_6707_DEV_ID << 16) | MV_6707_A1_REV)
+#define MV_6707_A1_NAME         "MV6707 A1"
+
 /* Armada XP Family */
 #define MV_78130_DEV_ID		0x7813
 #define MV_78160_DEV_ID		0x7816
@@ -94,32 +111,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BOARD_ID_BASE				0x0
 
 /* New board ID numbers */
-#define DB_88F78XX0_BP_ID			(BOARD_ID_BASE)
-#define RD_78460_SERVER_ID			(DB_88F78XX0_BP_ID + 1)
-#define DB_78X60_PCAC_ID			(RD_78460_SERVER_ID + 1)
-#define FPGA_88F78XX0_ID			(DB_78X60_PCAC_ID + 1)
-#define DB_88F78XX0_BP_REV2_ID		(FPGA_88F78XX0_ID + 1)
-#define RD_78460_NAS_ID				(DB_88F78XX0_BP_REV2_ID + 1)
-#define DB_78X60_AMC_ID				(RD_78460_NAS_ID + 1)
-#define DB_78X60_PCAC_REV2_ID		(DB_78X60_AMC_ID + 1)
-#define RD_78460_SERVER_REV2_ID		(DB_78X60_PCAC_REV2_ID + 1)
-#define DB_784MP_GP_ID				(RD_78460_SERVER_REV2_ID + 1)
-#define RD_78460_CUSTOMER_ID		(DB_784MP_GP_ID + 1)
-#define MV_MAX_BOARD_ID				(RD_78460_CUSTOMER_ID + 1)
-#define INVALID_BAORD_ID			0xFFFFFFFF
+#define DB_88F6710_BP_ID		(BOARD_ID_BASE)
+#define DB_88F6710_PCAC_ID		(BOARD_ID_BASE + 1)
+#define RD_88F6710_ID			(BOARD_ID_BASE + 2)
+#define MV_MAX_BOARD_ID			(BOARD_ID_BASE + 3)
+#define INVALID_BAORD_ID		0xFFFFFFFF
 
 /* Sample at Reset */
-#define MPP_SAMPLE_AT_RESET(id)			(0x18230 + (id * 4))
-#define PEX_CLK_100MHZ_MASK    0x00000004
-#define PEX_CLK_100MHZ_OFFSET  2
+#define MPP_SAMPLE_AT_RESET(id)			(0x18230)
 
 
 #define AVS_CONTROL2_REG			0x20868
 #define AVS_LOW_VDD_LIMIT			0x20860
-
-
-#define MSAR_TCLK_OFFS				28
-#define MSAR_TCLK_MASK				(0x1 << MSAR_TCLK_OFFS)
 
 
 /* Controler environment registers offsets */
@@ -127,41 +130,30 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define GEN_PURP_RES_2_REG			0x182F8
 
 /* registers offsets */
-#ifdef MV88F78X60_Z1
-#define MV_GPP_REGS_OFFSET(unit)		(0x18100 + ((unit) * 0x20))
-#else
 #define MV_GPP_REGS_OFFSET(unit)		(0x18100 + ((unit) * 0x40))
-#endif
+
 #define MPP_CONTROL_REG(id)			(0x18000 + (id * 4))
 #define MV_GPP_REGS_BASE(unit)		(MV_GPP_REGS_OFFSET(unit))
-#define MV_GPP_REGS_BASE_0		(MV_GPP_REGS_OFFSET_0)
+#define MV_GPP_REGS_BASE_0			(MV_GPP_REGS_OFFSET_0)
 
-#define GPP_DATA_OUT_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x00)
+#define GPP_DATA_OUT_REG(grp)		(MV_GPP_REGS_BASE(grp) + 0x00)
 #define GPP_DATA_OUT_REG_0			(MV_GPP_REGS_BASE_0 + 0x00)	/* Used in .S files */
-#define GPP_DATA_OUT_EN_REG(grp)		(MV_GPP_REGS_BASE(grp) + 0x04)
-#define GPP_BLINK_EN_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x08)
-#define GPP_DATA_IN_POL_REG(grp)		(MV_GPP_REGS_BASE(grp) + 0x0C)
-#define GPP_DATA_IN_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x10)
-#define GPP_INT_CAUSE_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x14)
-#define GPP_INT_MASK_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x18)
-#define GPP_INT_LVL_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x1C)
-#define GPP_OUT_SET_REG(grp)			(0x18130 + ((grp) * 0x40))
-#define GPP_64_66_DATA_OUT_SET_REG		0x181A4
-#define GPP_OUT_CLEAR_REG(grp)			(0x18134 + ((grp) * 0x40))
-#define GPP_64_66_DATA_OUT_CLEAR_REG		0x181B0
+#define GPP_DATA_OUT_EN_REG(grp)	(MV_GPP_REGS_BASE(grp) + 0x04)
+#define GPP_BLINK_EN_REG(grp)		(MV_GPP_REGS_BASE(grp) + 0x08)
+#define GPP_DATA_IN_POL_REG(grp)	(MV_GPP_REGS_BASE(grp) + 0x0C)
+#define GPP_DATA_IN_REG(grp)		(MV_GPP_REGS_BASE(grp) + 0x10)
+#define GPP_INT_CAUSE_REG(grp)		(MV_GPP_REGS_BASE(grp) + 0x14)
+#define GPP_INT_MASK_REG(grp)		(MV_GPP_REGS_BASE(grp) + 0x18)
+#define GPP_INT_LVL_REG(grp)		(MV_GPP_REGS_BASE(grp) + 0x1C)
+#define GPP_OUT_SET_REG(grp)		(0x18130 + ((grp) * 0x40))
+#define GPP_OUT_CLEAR_REG(grp)		(0x18134 + ((grp) * 0x40))
 #define GPP_FUNC_SELECT_REG			(MV_GPP_REGS_BASE(0) + 0x40)
 
-#define    MV_GPP66  BIT2
-
-/* Relevant for MV78XX0 */
-#define GPP_DATA_OUT_SET_REG			(MV_GPP_REGS_BASE(0) + 0x20)
-#define GPP_DATA_OUT_CLEAR_REG			(MV_GPP_REGS_BASE(0) + 0x24)
-
 /* This define describes the maximum number of supported PEX Interfaces */
-#define MV_PEX_MAX_IF				10
-#define MV_PEX_MAX_UNIT				4
+#define MV_PEX_MAX_IF				2
+#define MV_PEX_MAX_UNIT				2
 
-#define MV_SERDES_NUM_TO_PEX_NUM(sernum)	((sernum < 8) ? (sernum) : (8 + (sernum/12)))
+#define MV_SERDES_NUM_TO_PEX_NUM(sernum)	(sernum)
 
 #define PEX_PHY_ACCESS_REG(unit)	(0x40000 + ((unit)%2 * 0x40000) + ((unit)/2 * 0x2000) + 0x1B00)
 
@@ -193,32 +185,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define QSGMII_GEN_1_SETTING_REG(port)	(MV_ETH_REGS_BASE(port) + 0xE38)
 #define QSGMII_SERDES_CFG_REG(port)	   	(MV_ETH_REGS_BASE(port) + 0x4a0)
 
-#define SERDES_LINE_MUX_REG_0_7			0x18270
-#define SERDES_LINE_MUX_REG_8_15		0x18274
-#define QSGMII_CONTROL_1_REG			0x18404
-
-/* SOC_CTRL_REG fields */
-#define SCR_PEX_ENA_OFFS(pex)			((pex) & 0x3)
-#define SCR_PEX_ENA_MASK(pex)			(1 << pex)
-
-#define PCIE0_QUADX1_EN				(1<<7)
-#define PCIE1_QUADX1_EN				(1<<8)
-
-#define SCR_PEX_4BY1_OFFS(pex)			((pex) + 7)
-#define SCR_PEX_4BY1_MASK(pex)			(1 << SCR_PEX_4BY1_OFFS(pex))
-
-#define PCIE1_CLK_OUT_EN_OFF        5
-#define PCIE1_CLK_OUT_EN_MASK       (1 << PCIE1_CLK_OUT_EN_OFF)
-
-#define PCIE0_CLK_OUT_EN_OFF        4
-#define PCIE0_CLK_OUT_EN_MASK       (1 << PCIE0_CLK_OUT_EN_OFF)
-
-#define SCR_PEX0_4BY1_OFFS			7
-#define SCR_PEX0_4BY1_MASK			(1 << SCR_PEX0_4BY1_OFFS)
-
-#define SCR_PEX1_4BY1_OFFS			8
-#define SCR_PEX1_4BY1_MASK			(1 << SCR_PEX1_4BY1_OFFS)
-
+#define SERDES_LINE_MUX_REG_0_3			0x18270
 
 #define MV_MISC_REGS_OFFSET			(0x18200)
 #define MV_MISC_REGS_BASE			(MV_MISC_REGS_OFFSET)
@@ -227,7 +194,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /********************************************/
 /* PCI Express Control and Status Registers */
 /********************************************/
-#define MAX_PEX_DEVICES         32
+#define MAX_PEX_DEVICES         1
 #define MAX_PEX_FUNCS           8
 #define MAX_PEX_BUSSES          256
 
@@ -272,6 +239,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PEX_COMPLT_TMEOUT_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A10)
 #define PEX_PWR_MNG_EXT_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A18)
 #define PEX_FLOW_CTRL_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A20)
+#define PEX_SECONDARY_BUS_REG(pexIf)        ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A2C)
 #define PEX_DYNMC_WIDTH_MNG_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A30) 
 #define PEX_ROOT_CMPLX_SSPL_REG(pexif)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A0C) 
 #define PEX_RAM_PARITY_CTRL_REG(pexIf) 		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A50)
@@ -295,6 +263,41 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PEX_LINK_CAPABILITY_REG						0x6C
 #define PEX_LINK_CTRL_STAT_REG						0x70
 #define PEX_LINK_CTRL_STAT_2_REG					0x90
+
+/* PCI Ecpress Secondary Bus register */
+/* PEX_SECONDARY_BUS_REG */
+#define SECONDARY_BUS_NUMBER_ENABLE				BIT8
+#define SECONDARY_BUS_NUMBER_OFFS				0
+#define SECONDARY_BUS_NUMBER_MASK				0xFF
+
+/* EPPROM Modules detection information */
+
+#define MV_BOARD_MODULES_ADDR_TYPE			ADDR7_BIT
+
+#define MV_BOARD_DEVICE_CON_ADDR			0x20
+#define MV_BOARD_EEPROM_MODULE_ADDR			0x21
+#define MV_BOARD_GIGA_CON_GMII_ADDR			0x22
+#define MV_BOARD_GIGA_CON_ADDR				0x26
+#define MV_BOARD_SERDES_CON_ADDR			0x27
+
+#define MV_BOARD_TDM_GMII_MODULE_TDM_ID		0x1
+#define MV_BOARD_TDM_GMII_MODULE_GMII_ID	0x4
+#define MV_BOARD_SWITCH_MODULE_ID			0xE
+#define MV_BOARD_I2S_SPDIF_MODULE_ID		0x2
+#define MV_BOARD_NAND_SDIO_MODULE_ID		0xF
+#define MV_BOARD_MODULE_ID_MASK				0xF
+
+typedef enum {
+	LANE0 = 0x1,
+	LANE1 = 0x2,
+	LANE2 = 0x4,
+	LANE3 = 0x8
+} MV_SERDES_LANES;
+
+#define MV_BOARD_CFG_SATA0_MODE(cfg)	(cfg & 0x3)
+#define MV_BOARD_CFG_SATA1_MODE(cfg)	((cfg >> 2) & 0x1)
+#define MV_BOARD_CFG_PCIE_MODE(cfg)		((cfg >> 3) & 0x3)
+#define MV_BOARD_CFG_SDIO_MODE(cfg)		((cfg >> 5) & 0x1)
 
 
 #endif /* __INCmvBHboardEnvSpech */

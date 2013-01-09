@@ -574,13 +574,13 @@ void pci_init_board(void)
 	MV_U16 ctrlModel=mvCtrlModelGet();
 	MV_U32 pexIfNum = mvCtrlPexMaxIfGet();
 	MV_U32 pexIf=0;
+
 	MV_ADDR_WIN rempWin;
 	char *env;
 	int status;
 	MV_CPU_DEC_WIN  cpuAddrDecWin;
 	PCI_IF_MODE	pexIfMode = PCI_IF_MODE_HOST;
 	int pexIfStart = 0;
-	MV_U32 tempPexReg;
 	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
 	MV_U32 pexHWInf = 0;
     if(pexIfNum == 0)
@@ -594,6 +594,7 @@ void pci_init_board(void)
 	pexIfNum = boardPexInfo->boardPexIfNum;
 
 
+    DB2(printf("In function %s , at line %d\n", __FUNCTION__, __LINE__));
 	/* start pci scan */
 	for (pexIf = pexIfStart; pexIf < pexIfNum; pexIf++) {
 
@@ -636,37 +637,7 @@ void pci_init_board(void)
 		pexIfMode = MV_PEX_ROOT_COMPLEX;
 #endif
 
-		/* PEX capability */
-		if (mvCtrlDevFamilyIdGet(ctrlModel)==MV_67XX) {
-			tempPexReg = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CAPABILITY_REG));
-			tempPexReg &= ~(0xF);
-			#if defined(DB_88F6710)
-				switch (mvBoardPexCapabilityGet()) {
-					case 0x2:
-						tempPexReg |= 0x2;
-						break;
-					default:
-						tempPexReg |= 0x1;
-						break;
-				}
-		
-			#elif defined(DB_88F6710_PCAC)
-				if (mvGppValueGet(1, (1 << 25))) {
-					tempPexReg |= 0x1; 	/* Set pex GEN1 capability */
-					printf("PEX - GEN1 \n");
-				} else {
-					tempPexReg |= 0x2; 	/* Set pex GEN2 capability */
-					printf("PEX - GEN2 \n");
-				}
-			#elif defined(RD_88F6710_ID)
-				tempPexReg |= 0x2; 	/* Set pex GEN2 capability */
-			#else
-				tempPexReg |= 0x1; 	/* Set pex GEN1 capability */
-			#endif
-
-			MV_REG_WRITE(PEX_CFG_DIRECT_ACCESS(pexHWInf, PEX_LINK_CAPABILITY_REG), tempPexReg);
-		}
-
+        DB2(printf("In function %s (PEX%d), at line %d\n", __FUNCTION__, pexHWInf, __LINE__));
 
 		status = mvSysPexInit(pexHWInf, pexIfMode);
 		if (status == MV_ERROR) {
@@ -692,6 +663,8 @@ void pci_init_board(void)
 		
 		mv_pci_bus_mode_display(pexIf);
 
+        DB2(printf("In function %s , at line %d\n", __FUNCTION__, __LINE__));
+        
 		/* If no link on the interface it will not be scan */
 		if (status == MV_NO_SUCH) {
 			pci_hose[pexIf].last_busno =pci_hose[pexIf].first_busno;
@@ -706,6 +679,7 @@ void pci_init_board(void)
 			continue;
 		}
 #endif
+
 		if (MV_OK != mvCpuIfTargetWinGet(PCI_MEM(pexHWInf, 0), &cpuAddrDecWin)) {
 			printf("%s: ERR. mvCpuIfTargetWinGet failed\n", __FUNCTION__);
 			return ;
@@ -720,6 +694,7 @@ void pci_init_board(void)
 			return;
 		}
 
+		DB2(printf("In function %s , at line %d\n", __FUNCTION__, __LINE__));
 		/* PCI memory space */
 		pci_set_region(pci_hose[pexIf].regions + 0,
 				rempWin.baseLow, /* bus address */
@@ -739,6 +714,8 @@ void pci_init_board(void)
 				    PCI_REGION_IO);
 			pci_hose[pexIf].region_count = 2;
 		}
+		
+		DB2(printf("In function %s , at line %d\n", __FUNCTION__, __LINE__));
 		pci_set_ops(&pci_hose[pexIf],
 				pci_hose_read_config_byte_via_dword,
 				pci_hose_read_config_word_via_dword,
@@ -752,6 +729,7 @@ void pci_init_board(void)
 		pci_hose[pexIf].config_table[1].bus = mvPexLocalBusNumGet(pexHWInf);
 		pci_hose[pexIf].config_table[1].dev = mvPexLocalDevNumGet(pexHWInf);
 
+		DB2(printf("In function %s , at line %d\n", __FUNCTION__, __LINE__));
 		pci_register_hose(&pci_hose[pexIf]);
 
 		if (pexIfMode == PCI_IF_MODE_HOST) {
@@ -762,7 +740,9 @@ void pci_init_board(void)
 			pci_hose[pexIf].last_busno = pci_hose_scan(&pci_hose[pexIf]);
 			bus_scan = 0;
 
+			DB2(printf("In function %s , at line %d\n", __FUNCTION__, __LINE__));
 			pciData = mvPexConfigRead(pexHWInf,pci_hose[pexIf].first_busno,1,0, PCI_CLASS_CODE_AND_REVISION_ID);
+			DB2(printf("In function %s , at line %d\n", __FUNCTION__, __LINE__));
 	
 			baseClassCode = (pciData & PCCRIR_BASE_CLASS_MASK) >> PCCRIR_BASE_CLASS_OFFS;
 			subClassCode = 	(pciData & PCCRIR_SUB_CLASS_MASK) >> PCCRIR_SUB_CLASS_OFFS;
@@ -770,31 +750,35 @@ void pci_init_board(void)
 			if ((baseClassCode == PCI_BRIDGE_CLASS) &&
 				(subClassCode == P2P_BRIDGE_SUB_CLASS_CODE)) {
 				mvPexConfigWrite(pexHWInf,pci_hose[pexIf].first_busno,1,0,P2P_MEM_BASE_LIMIT,pciData);
+				DB2(printf("In function %s , at line %d\n", __FUNCTION__, __LINE__));
 				/* In rthe bridge : We want to open its memory and
 				IO to the maximum ! after the u-boot Scan */
 				/* first the IO */
 				pciData  = mvPexConfigRead(pexHWInf,pci_hose[pexIf].first_busno,1,0,P2P_IO_BASE_LIMIT_SEC_STATUS);
+				DB2(printf("In function %s , at line %d\n", __FUNCTION__, __LINE__));
 				/* keep the secondary status */
 				pciData  &= PIBLSS_SEC_STATUS_MASK;
 				/* set to the maximum - 0 - 0xffff */
 				pciData  |= 0xff00;
 				mvPexConfigWrite(pexHWInf,pci_hose[pexIf].first_busno,1,0,P2P_IO_BASE_LIMIT_SEC_STATUS,pciData);
+				DB2(printf("In function %s , at line %d\n", __FUNCTION__, __LINE__));
 
 				/* the the Memory */
 				pciData  = mvPexConfigRead(pexHWInf,pci_hose[pexIf].first_busno,1,0,P2P_MEM_BASE_LIMIT);
+				DB2(printf("In function %s , at line %d\n", __FUNCTION__, __LINE__));
 				/* set to the maximum - PCI_IF_REMAPED_MEM_BASE(pexIf) - 0xf000000 */
 				pciData  = 0xEFF00000 | (PCI_IF_REMAPED_MEM_BASE(pexIf) >> 16);
 				mvPexConfigWrite(pexHWInf,pci_hose[pexIf].first_busno,1,0,P2P_MEM_BASE_LIMIT,pciData);
+				DB2(printf("In function %s , at line %d\n", __FUNCTION__, __LINE__));
 			}
 		} else { /* PCI_IF_MODE_HOST */
 			pci_hose[pexIf].last_busno = pci_hose[pexIf].first_busno;
 		}
 	}
-	
+	DB2(printf("End function %s , at line %d\n", __FUNCTION__, __LINE__));
 #ifdef DB_FPGA
 	MV_REG_BIT_RESET(PCI_BASE_ADDR_ENABLE_REG(0), BIT10);
 #endif
 }
-
 #endif /* CONFIG_PCI */
 

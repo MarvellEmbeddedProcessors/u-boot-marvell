@@ -13,7 +13,7 @@
 	_start:
 
 	stmfd	sp!, {r0 - r12, lr}	/* @ save registers on stack */
-/*	bl		mvCtrlHighSpeedSerdesPhyConfig */
+	bl		mvCtrlHighSpeedSerdesPhyConfig
 	
 	bl		ddr3Init
 /*	bl      suspendWakeup */

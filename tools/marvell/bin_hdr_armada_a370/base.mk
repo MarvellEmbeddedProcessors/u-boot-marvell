@@ -69,8 +69,8 @@ OBJCOPY  = $(CROSS)objcopy
 OBJDUMP  = $(CROSS)objdump
 HOSTCC   = gcc
 
-
 RM       = @rm -rf
+CP       = @cp
 MKDIR    = @mkdir -p
 CD       = @cd
 MV       = @mv
@@ -80,15 +80,12 @@ ECHO     = @echo
 
 MVFLAGS = MV_CPU_LE=1
 ifeq ($(ARMARCH),7)
-CFLAGS += -mno-tune-ldrd 
+CFLAGS += -mno-tune-ldrd -nostdlib -mabi=aapcs
 endif
 
 CPUOPTS  = -mthumb -mthumb-interwork -march=armv7 -mlittle-endian 
 
-CFLAGS   += -Wall $(INCLUDE) -g -O0 $(CPUOPTS) -msoft-float -fPIE -fno-zero-initialized-in-bss -fno-unwind-tables  -mabi=aapcs
+CFLAGS   = -Wall $(INCLUDE) -g -O0 $(CPUOPTS) -msoft-float -fPIE -fno-zero-initialized-in-bss -fno-unwind-tables  -mabi=aapcs
 CPPFLAGS = $(foreach FLAG, $(MVFLAGS), $(addprefix -D, $(FLAG)))
 ASFLAGS  = $(foreach FLAG, $(MVFLAGS), $(addprefix --defsym , $(FLAG)))
-LDFLAGS  = -static -nostartfiles -unwind-tables  
-
-
-
+LDFLAGS  = -static -nostartfiles -unwind-tables  -nostdlib

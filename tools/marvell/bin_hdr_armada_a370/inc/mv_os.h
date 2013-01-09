@@ -203,6 +203,7 @@ typedef MV_U32 MV_HZ;
 #else
 #define __MV_PACKED /*__packed*/
 #endif
+void __udelay (unsigned long usec);
 
 #endif /* MV_ASMLANGUAGE */
 
@@ -441,9 +442,8 @@ static __inline MV_U32 MV_MEMIO_LE32_READ(MV_U32 addr)
           MV_32BIT_LE_FAST(~(bitMask)))))
 
 
-#define mvOsDelay(us)      uDelay(us*1000)
-#define mvOsUDelay         uDelay
-
+#define mvOsDelay(us)      __udelay(us*1000)
+#define mvOsUDelay         __udelay
 
 typedef void (*pFunction)(void);
 typedef void  (*PFV)(void);     /* parameterless void function */

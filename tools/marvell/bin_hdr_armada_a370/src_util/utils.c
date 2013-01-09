@@ -61,60 +61,19 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#include "config_marvell.h"  	/* Required to identify SOC and Board */
-#include "mv_os.h"
-#if defined(MV88F78X60)
-#include "ddr3_axp.h"
-#elif defined(MV88F6710)
-#include "ddr3_a370.h"
-#else
-#error "No SOC define for uart in binary header."
-#endif
-#define UBOOT_CNTR				0		/* counter to use for uboot timer  0,1 */
-
-#define CNTMR_RELOAD_REG(tmrNum)	(REG_TIMERS_CTRL_ADDR  + 0x10 + (tmrNum * 8))
-#define CNTMR_VAL_REG(tmrNum)		(REG_TIMERS_CTRL_ADDR  + 0x14 + (tmrNum * 8))
-#define CNTMR_CTRL_REG(tmrNum)		(REG_TIMERS_CTRL_ADDR)
-#define CTCR_ARM_TIMER_EN_OFFS(timer)	(timer * 2)
-#define CTCR_ARM_TIMER_EN_MASK(timer)	(1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-#define CTCR_ARM_TIMER_EN(timer)			(1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-
-#define CTCR_ARM_TIMER_AUTO_OFFS(timer)	(1 + (timer * 2))
-#define CTCR_ARM_TIMER_AUTO_MASK(timer)	(1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-#define CTCR_ARM_TIMER_AUTO_EN(timer)	(1 << CTCR_ARM_TIMER_AUTO_OFFS(timer))
-
-#define CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer) (11 + timer) 
-
-#define CTCR_ARM_TIMER_25MhzFRQ_MASK(timer)	(1 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
-#define CTCR_ARM_TIMER_25MhzFRQ_EN(timer)	(1 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
-#define CTCR_ARM_TIMER_25MhzFRQ_DIS(timer)	(0 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
-
-
-#define MV_BOARD_REFCLK_25MHZ	 25000000
-
-void __udelay(unsigned long usec)
+void *memset(void *s, int c, int n)
 {
-    unsigned long delayticks;
-	unsigned int cntmrCtrl;
-
-	/* In case udelay is called before timier was initialized */
-	delayticks = (usec * (MV_BOARD_REFCLK_25MHZ / 1000000));
-	/* init the counter */
-	MV_REG_WRITE(CNTMR_RELOAD_REG(UBOOT_CNTR),delayticks);
-	MV_REG_WRITE(CNTMR_VAL_REG(UBOOT_CNTR),delayticks);
-
-	/* set control for timer \ cunter and enable */
-	/* read control register */
-	cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
-	cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-	cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-	cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
-	MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-
-	while(MV_REG_READ(CNTMR_VAL_REG(UBOOT_CNTR)));
-
-	/* disable times*/
-	cntmrCtrl &= ~CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-	MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
+    unsigned char* p=s;
+    while(n--)
+        *p++ = (unsigned char)c;
+    return s;
 }
 
+void *memcpy(void *dest, const void *src, int n)
+{
+    char *dp = dest;
+    const char *sp = src;
+    while (n--)
+        *dp++ = *sp++;
+    return dest;
+}

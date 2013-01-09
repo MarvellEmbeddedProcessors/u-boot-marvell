@@ -61,133 +61,13 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-
-#ifndef __MV_UART_H__
-#define __MV_UART_H__
+#ifndef __UTIL_H__
+#define __UTIL_H__
 
 
 /* This structure describes the registers offsets for one UART port(channel) */
-typedef struct mvUartPort
-{
-	MV_U8 rbr;  /* 0 = 0-3*/
-	MV_U8 pad1[3];
+void *memset(void *s, int c, int n);
+void *memcpy(void *dest, const void *src, int n);
 
-	MV_U8 ier;  /* 1 = 4-7*/
-	MV_U8 pad2[3];
-
-	MV_U8 fcr;  /* 2 = 8-b*/
-	MV_U8 pad3[3];
-
-	MV_U8 lcr;  /* 3 = c-f*/
-	MV_U8 pad4[3];
-
-	MV_U8 mcr;  /* 4 = 10-13*/
-	MV_U8 pad5[3];
-
-	MV_U8 lsr;  /* 5 = 14-17*/
-	MV_U8 pad6[3];
-
-	MV_U8 msr;  /* 6 =18-1b*/
-	MV_U8 pad7[3];
-
-	MV_U8 scr;  /* 7 =1c-1f*/
-	MV_U8 pad8[3];
-} MV_UART_PORT;
-
-
-
-/* aliases - for registers which has the same offsets */
-#define thr rbr
-#define iir fcr
-#define dll rbr
-#define dlm ier
-
-/* registers feilds */
-#define FCR_FIFO_EN     	BIT0    /* fifo enable*/
-#define FCR_RXSR        	BIT1    /* reciever soft reset*/
-#define FCR_TXSR        	BIT2    /* transmitter soft reset*/
-
-#define MCR_RTS         	BIT1	/* ready to send */
-
-#define LCR_WLS_OFFS		0
-#define LCR_WLS_MASK 		0x3 << LCR_WLS_OFFS    /* character length mask  */
-#define LCR_WLS_5   		0x0 << LCR_WLS_OFFS    /* 5 bit character length */
-#define LCR_WLS_6   		0x1 << LCR_WLS_OFFS    /* 6 bit character length */
-#define LCR_WLS_7   		0x2 << LCR_WLS_OFFS    /* 7 bit character length */
-#define LCR_WLS_8   		0x3 << LCR_WLS_OFFS    /* 8 bit character length */
-#define LCR_STP_OFFS		2
-#define LCR_1_STB     		0x0 << LCR_STP_OFFS   /* Number of stop Bits */
-#define LCR_2_STB     		0x1 << LCR_STP_OFFS   /* Number of stop Bits */
-#define LCR_PEN     		0x8    		      /* Parity eneble*/
-#define LCR_PS_OFFS		4
-#define LCR_EPS     		0x1 << LCR_PS_OFFS    /* Even Parity Select*/
-#define LCR_OPS     		0x0 << LCR_PS_OFFS    /* Odd Parity Select*/
-#define LCR_SBRK_OFFS		0x6
-#define LCR_SBRK    		0x1 << LCR_SBRK_OFFS  /* Set Break*/
-#define LCR_DIVL_OFFS		7
-#define LCR_DIVL_EN    		0x1 << LCR_DIVL_OFFS   /* Divisior latch enable*/
-
-#define LSR_DR      		BIT0    /* Data ready */
-#define LSR_OE      		BIT1    /* Overrun */
-#define LSR_PE      		BIT2    /* Parity error */
-#define LSR_FE      		BIT3    /* Framing error */
-#define LSR_BI      		BIT4    /* Break */
-#define LSR_THRE    		BIT5    /* Xmit holding register empty */
-#define LSR_TEMT    		BIT6    /* Xmitter empty */
-#define LSR_ERR     		BIT7    /* Error */
-
-/* useful defaults for LCR*/
-#define LCR_8N1     LCR_WLS_8 | LCR_1_STB 
-
-
-/* APIs */
-MV_VOID	mvUartPutc(MV_U8 c);
-MV_U8	mvUartGetc(void);
-MV_BOOL mvUartTstc(void);
-MV_VOID mvUartInit(void);
-
-void putstring(char *str);
-void putdata (u32 dec_num,u32 length);
-void putdataDec (u32 dec_num,u32 length);
-
-#if defined(NOT_USE_UART)
-#undef MV_DEBUG_INIT
-#undef MV_DEBUG_INIT_FULL
-#else
-#define MV_DEBUG_INIT
-#endif
-
-
-/************
- * Debug
-*/
-
-#ifdef MV_DEBUG_INIT
-#define DEBUG_INIT_S(s)				putstring(s)
-#define DEBUG_INIT_D(d, l)			putdata(d, l)
-
-#else
-#define DEBUG_INIT_S(s)
-#define DEBUG_INIT_D(d, l)
-#endif
-
-#ifdef MV_DEBUG_INIT_FULL
-#define DEBUG_INIT_FULL_S(s)		putstring(s)
-#define DEBUG_INIT_FULL_D(d, l)		putdata(d, l)
-#define DEBUG_WR_REG(reg,val)       DEBUG_INIT_S("Write Reg: 0x"); DEBUG_INIT_D((reg), 8); DEBUG_INIT_S("= "); DEBUG_INIT_D((val), 8);DEBUG_INIT_S("\n");
-#define DEBUG_RD_REG(reg,val)       DEBUG_INIT_S("Read  Reg: 0x"); DEBUG_INIT_D((reg), 8); DEBUG_INIT_S("= "); DEBUG_INIT_D((val), 8);DEBUG_INIT_S("\n");
-#else
-#define DEBUG_INIT_FULL_S(s)
-#define DEBUG_INIT_FULL_D(d, l)
-#define DEBUG_WR_REG(reg,val)
-#define DEBUG_RD_REG(reg,val)
-#endif
-
-#define DEBUG_INIT_FULL_C(s, d, l)    DEBUG_INIT_FULL_S(s); DEBUG_INIT_FULL_D(d, l); DEBUG_INIT_FULL_S("\n")
-
-
-#define DEBUG_INIT_C(s, d, l)         DEBUG_INIT_S(s); DEBUG_INIT_D(d, l); DEBUG_INIT_S("\n")
-
-
-#endif /* __MV_UART_H__ */
+#endif /* __UTIL_H__ */
 

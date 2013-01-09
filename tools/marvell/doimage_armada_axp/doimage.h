@@ -189,11 +189,8 @@ typedef struct
 void print_usage(void);
 
 /* 32 bit checksum */
-//MV_U32	checksum32	(MV_U32 start, MV_U32 len, MV_U32 csum);
-MV_U32	checksum32	(void* start, MV_U32 len, MV_U32 csum);
-//MV_U8	checksum8	(MV_U32 start, MV_U32 len, MV_U8 csum);
-MV_U8	checksum8	(void* start, MV_U32 len, MV_U8 csum);
-
+MV_U32	checksum32	(MV_U32 start, MV_U32 len, MV_U32 csum);
+MV_U8	checksum8	(MV_U32 start, MV_U32 len, MV_U8 csum);
 MV_U32	crc32		(MV_U32 crc, volatile MV_U32 *buf, MV_U32 len);
 
 

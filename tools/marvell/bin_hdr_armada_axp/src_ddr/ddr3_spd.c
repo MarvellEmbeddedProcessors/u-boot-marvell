@@ -61,14 +61,20 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
+#if defined(MV88F78X60)
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#endif
 
 #include "config_marvell.h"  	/* Required to identify SOC and Board */
 #include "ddr3_init.h"
 #include "ddr3_spd.h"
 #include "bin_hdr_twsi.h"
 #include "bootstrap_os.h"
-#include "mvUart.h"
 #include "util.h"
+#include "mvUart.h"
 
 #if defined(MV88F78X60)
 #include "ddr3_axp_config.h"
@@ -81,14 +87,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static MV_STATUS ddr3SpdSumInit(MV_DIMM_INFO *pDimmInfo, MV_DIMM_INFO *pDimmSumInfo, MV_U32 uiDimm);
 static MV_U32 ddr3GetMaxValue(MV_U32 spdVal, MV_U32 uiDimmNum, MV_U32 staticVal);
 static MV_U32 ddr3GetMinValue(MV_U32 spdVal, MV_U32 uiDimmNum, MV_U32 staticVal);
-static MV_U32 ddr3getDimmNum(MV_U32 *auiDimmAddr);
-static MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr);
+static MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr, MV_U32 uiDimmWidth);
 static MV_U32 ddr3DivFunc(MV_U32 uiValue, MV_U32 uiDivider, MV_U32 uiSub);
 
 extern MV_U8 ucData[SPD_SIZE];
 extern MV_U32 auiODTConfig[ODT_OPT];
 extern MV_U16 auiODTStatic[ODT_OPT][MAX_CS];
 extern MV_U16 auiODTDynamic[ODT_OPT][MAX_CS];
+#if defined(DB_88F6710) || defined(DB_88F6710_PCAC) || defined(RD_88F6710)
+#else
+static MV_U32 ddr3getDimmNum(MV_U32 *auiDimmAddr);
 
 /************************************************************************************
 * Name:		ddr3getDimmNum - Find number of dimms and their addresses
@@ -99,12 +107,6 @@ extern MV_U16 auiODTDynamic[ODT_OPT][MAX_CS];
 */
 MV_U32 ddr3getDimmNum(MV_U32 *auiDimmAddr)
 {
-#if defined(DB_88F6710) || defined(RD_88F6710)
-	/* Armada 370 - SPD is not available on DIMM */
-	/* Set MC registers according to Static SPD values Values */
-	/* We only have one optional DIMM for the DB and we already got the SPD matching values */
-	return 1;
-#else	
 	MV_U32 uiDimmCurAddr;
 	MV_U8 ucData[3];
 	MV_U32 uiDimmNum = 0;
@@ -131,8 +133,8 @@ MV_U32 ddr3getDimmNum(MV_U32 *auiDimmAddr)
 		}
 	}
 	return uiDimmNum;
-#endif
 }
+#endif
 
 /******************************************************************************
 * Name:		dimmSpdInit - Get the SPD parameters.
@@ -142,13 +144,15 @@ MV_U32 ddr3getDimmNum(MV_U32 *auiDimmAddr)
 * Notes:
 * Returns:	MV_OK if function could read DIMM parameters, MV_FALSE otherwise.
 */
-MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr)
+MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr, MV_U32 uiDimmWidth)
 {
-	MV_U32 uiTemp, uiRC;
+    MV_U32 uiTemp;
 	MV_U32 uiTimeBase;
 	MV_TWSI_SLAVE twsiSlave;
+#if defined(MV88F78X60)
+    MV_U32 uiRC;
         MV_U8  ucVendorHigh, ucVendorLow;
-
+#endif
 	if (uiDimmAddr != 0) {
 		memset(ucData, 0, SPD_SIZE*sizeof(MV_U8));
 	
@@ -174,7 +178,21 @@ MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr)
 	if ((ucData[SPD_BUS_WIDTH_BYTE] & 0x18) >> 3)
 		pDimmInfo->errorCheckType = 1;
 	DEBUG_INIT_FULL_C("DRAM errorCheckType ", pDimmInfo->errorCheckType,1);
+    switch (ucData[SPD_MODULE_TYPE_BYTE])
+    {
+    case 1:
+        /* support RDIMM */
+        pDimmInfo->dimmTypeInfo = SPD_MODULE_TYPE_RDIMM;
+        break;
+    case 2:
+        /* support UDIMM */
+        pDimmInfo->dimmTypeInfo = SPD_MODULE_TYPE_UDIMM;
+        break;
+    case 11: /* LRDIMM current not supported */
+    default:
 	pDimmInfo->dimmTypeInfo = (ucData[SPD_MODULE_TYPE_BYTE]);
+        break;
+    }
 #if 0
     if (pDimmInfo->dimmTypeInfo == SPD_MODULE_TYPE_RDIMM) {
     /* print out value of all SPD registers */
@@ -224,13 +242,20 @@ MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr)
 	/* CS (Rank) Capacity - MB */
 	/* DDR3 device uiDensity val are: (device capacity/8) * (Module_width/Device_width) */
 	/* Jedec SPD DDR3 - page 7, Save ucData in Mb  - 2048=2GB*/
+    if (uiDimmWidth == 32){
+	pDimmInfo->dimmRankCapacity =
+                (((1 << pDimmInfo->sdramCapacity) * 256 * (pDimmInfo->dataWidth / pDimmInfo->sdramWidth)) << 16);
+        /* CS size = CS size / 2  */
+    }
+    else{
 	pDimmInfo->dimmRankCapacity =
 			(((1 << pDimmInfo->sdramCapacity) * 256 * (pDimmInfo->dataWidth / pDimmInfo->sdramWidth) *  0x2) << 16);
 	/* 0x2 =>  0x100000-1Mbit / 8-bit->byte / 0x10000  */
+    }
 	 DEBUG_INIT_FULL_C("DRAM dimmRankCapacity[31] ",pDimmInfo->dimmRankCapacity,1);
 
-	pDimmInfo->dimmSize = pDimmInfo->dimmRankCapacity * pDimmInfo->numOfModuleRanks;
-	DEBUG_INIT_FULL_C("Dram: dimm size in MB ",pDimmInfo->dimmSize,1);
+    /*pDimmInfo->dimmSize = pDimmInfo->dimmRankCapacity * pDimmInfo->numOfModuleRanks;
+    DEBUG_INIT_FULL_C("Dram: dimm size in MB ",pDimmInfo->dimmSize,1);*/
 
 	/* Number of devices includeing Error correction */
 	pDimmInfo->numberOfDevices = ((pDimmInfo->dataWidth/pDimmInfo->sdramWidth) *
@@ -422,7 +447,10 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 	MV_U32 uiDimmNum = 0;
 #ifdef DUNIT_SPD
 	MV_U32 uiDimmCount, uiCsCount, uiDimm;
+#if defined(DB_88F6710) || defined(DB_88F6710_PCAC) || defined(RD_88F6710)
+#else
 	MV_U32 auiDimmAddr[2] = {0, 0};
+#endif
 #endif
     MV_STATUS status;
 
@@ -430,7 +458,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 	/* Armada 370 - SPD is not available on DIMM */
 	/* Set MC registers according to Static SPD values Values - must be set manually */
 	/* We only have one optional DIMM for the DB and we already got the SPD matching values */
-    status = ddr3SpdInit(&dimmInfo[0], 0);
+    status = ddr3SpdInit(&dimmInfo[0], 0, *pUiDdrWidth);
     if( MV_OK != status )
         return status;
 
@@ -457,7 +485,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 	}
 
 	for (uiDimm = 0; uiDimm < uiDimmNum; uiDimm++) {
-        status = ddr3SpdInit(&dimmInfo[uiDimm], auiDimmAddr[uiDimm]);
+        status = ddr3SpdInit(&dimmInfo[uiDimm], auiDimmAddr[uiDimm], *pUiDdrWidth);
         if( MV_OK != status )
             return status;
         status = ddr3SpdSumInit(&dimmInfo[uiDimm], &dimmSumInfo, uiDimm);
@@ -786,9 +814,11 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 /*{0x000014C4}	-	DRAM Data and DQS Driving Strenght */
 	MV_REG_WRITE(REG_DRAM_DATA_DQS_DRIVE_STRENGTH_ADDR, 0xB2C35E9);
 
+#if defined(MV88F78X60)
 /*{0x000014CC}	-	DRAM Main Pads Calibration Machine Control Register */
 	uiReg = MV_REG_READ(REG_DRAM_MAIN_PADS_CAL_ADDR);
   MV_REG_WRITE(REG_DRAM_MAIN_PADS_CAL_ADDR, uiReg | (1 << 0));
+#endif
 
 #ifdef DUNIT_SPD
 		uiCsCount = 0;
@@ -801,10 +831,6 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 						uiCsCount = 0;
 					}
 					uiCsCount++;
-					if (*pUiDdrWidth == 32)
-						MV_REG_WRITE(REG_CS_SIZE_SCRATCH_ADDR+(uiCs*0x8),
-							((dimmInfo[uiDimmCount].dimmRankCapacity >> 1)-1));
-					else
 						MV_REG_WRITE(REG_CS_SIZE_SCRATCH_ADDR+(uiCs*0x8),
 							(dimmInfo[uiDimmCount].dimmRankCapacity-1));
 				} else

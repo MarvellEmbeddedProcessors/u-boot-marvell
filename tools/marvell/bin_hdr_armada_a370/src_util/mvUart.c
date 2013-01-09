@@ -62,6 +62,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
+#include "config_marvell.h"  	/* Required to identify SOC and Board */
+#include "soc_spec.h"
+#include "bootstrap_os.h"
+#if defined(MV88F78X60)
+#include "ddr3_axp.h"
+#elif defined(MV88F6710)
+#include "ddr3_a370.h"
+#else
+#error "No SOC define for uart in binary header."
+#endif
+
 #include "mvUart.h"
 
 /*******************************************************************************
@@ -91,12 +102,20 @@ MV_VOID mvUartInit(void)
 	MV_U32 baudDivisor = 0;
 
 	uiReg = (MV_REG_READ(REG_SAMPLE_RESET_LOW_ADDR) & (1 << REG_SAMPLE_RESET_TCLK_OFFS));
+#ifdef MV88F78X60
 	if(uiReg)
 		tmpTClkRate = _200MHZ;	/* 200; */
 	else
 		tmpTClkRate = _250MHZ;	/* 250;	*/
-	
-	
+#elif defined(MV88F6710)
+	if(uiReg)
+		tmpTClkRate = _200MHZ;	/* 200; */
+	else
+		tmpTClkRate = _166MHZ;	/* 166; */
+#else
+#error "No SOC define for uart in binary header."
+#endif
+
 	/*  UART Init */
 	switch (tmpTClkRate)
 	{
@@ -151,7 +170,6 @@ MV_VOID	mvUartPutc(MV_U8 c)
 	return;
 }
 
-#if !defined(MV_NO_PRINT)
 /*-----------------------------------------------------------------------------------		*/
 /* Name:            putstring 		*/
 /*		*/
@@ -163,6 +181,7 @@ MV_VOID	mvUartPutc(MV_U8 c)
 /*-----------------------------------------------------------------------------------		*/
 void putstring(char *str)
 {
+#if !defined(MV_NO_PRINT)
 /* For each character in the string...		*/
     while (*str != '\0')
     {
@@ -173,7 +192,7 @@ void putstring(char *str)
 
 		str++;
     }
-
+#endif
 }
 
 /*-----------------------------------------------------------------------------------	*/
@@ -188,6 +207,7 @@ void putstring(char *str)
 /*-----------------------------------------------------------------------------------	*/
 void putdata (u32 dec_num,u32 length)
 {
+#if !defined(MV_NO_PRINT)
     char str[11];
     u32 i, flag = 0, mod_val;/*, length = 8;*/
 
@@ -233,10 +253,31 @@ void putdata (u32 dec_num,u32 length)
 	str[length] = '\0';
     putstring(str);
 
-}
 #endif
-#if !defined(MV_NO_INPUT)
+}
+/*-----------------------------------------------------------------------------------	*/
+/* Name:            putdataDec	*/
+/*																						*/
+/* Description:     This function prints a decimal number into character string 	*/
+/*		    and put this string into the serial port. 	*/
+/*	                                                                                    */
+/* Input value:     unit16 dec_num     	*/
+/*	                                                                                    */
+/* Return Value:    none    	*/
+/*-----------------------------------------------------------------------------------	*/
+void putdataDec (u32 dec_num,u32 length)
+{
+    char str[11];
+    u32 i;/*, length = 8;*/
 
+    for (i=length; i > 0; i--)
+    {
+		str[i-1] = (dec_num % 10) + '0';
+		dec_num = dec_num / 10;
+    }
+	str[length] = '\0';
+    putstring(str);
+}
 /*******************************************************************************
 * mvUartGetc - Read one character from the UART
 *
@@ -255,9 +296,13 @@ void putdata (u32 dec_num,u32 length)
 *******************************************************************************/
 MV_U8	mvUartGetc()
 {
+#if !defined(MV_NO_INPUT)
 	volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + UART0_REG_OFFSET);
 	while ((pUartPort->lsr & LSR_DR) == 0) ;
 	return (pUartPort->rbr);
+#else
+	return 0xff;
+#endif
 }
 
 /*******************************************************************************
@@ -279,10 +324,13 @@ MV_U8	mvUartGetc()
 *******************************************************************************/
 MV_BOOL mvUartTstc()
 {
+#if !defined(MV_NO_INPUT)
 	volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + UART0_REG_OFFSET);
 	return ((pUartPort->lsr & LSR_DR) != 0);
+#else
+	return FALSE;
+#endif /* #if !defined(MV_NO_INPUT) */
 }
 
-#endif /* #if !defined(MV_NO_INPUT) */
 
 

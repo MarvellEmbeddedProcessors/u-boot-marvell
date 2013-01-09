@@ -66,8 +66,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "./inc/soc_spec.h"
-#include "./inc/bootstrap_def.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include "../inc/soc_spec.h"
+#include "../inc/bootstrap_def.h"
 
 #define  BUFSIZE	80
 
@@ -79,6 +81,7 @@ void printusage(char *name)
 	printf("-S		Secure mode (secure header is included in boot image)\n");
 	printf("-R <reg file>	REG header is present and produced from \"reg file\" content\n");
 	printf("-P <par file>	Text file with BIN header parameters. The text file contains\n");
+	printf("-O <Hex value>	Calculated offset of the bin header\n");
 	printf("		one parametes per line, up to 256 lines total. Each parameter is\n");
 	printf("		a hexadecimal number in range of 0 to 2^32.\n");
 
@@ -96,7 +99,10 @@ int main(int argc, char **argv)
 	FILE		*f_outparm = NULL, *f_outlink = NULL;
 	FILE		*f_reg = NULL, *f_param = NULL;
 	int 		optch; /* command-line option char */
-	static char	optstring[] = "SR:P:";
+	static char	optstring[] = "SR:P:B:";
+	offset  = RAM_TOP + HDR_BLK_OFFSET;
+	struct stat st;
+	
 
 	while ((optch = getopt(argc, argv, optstring)) != -1) {
 		switch (optch) {
@@ -120,6 +126,12 @@ int main(int argc, char **argv)
 			}
 			break;
 
+		case 'B': /* Parameters file */
+			stat(optarg, &st);
+			offset += st.st_size + 8; /* bytes (4 - header type and length + 4- Next header and 3 reserved bytes) */
+			break;
+
+
 		default:
 			goto parse_error;
 		}
@@ -127,14 +139,14 @@ int main(int argc, char **argv)
 
 	f_outparm = fopen(argv[optind], "w");
 	if (f_outparm == NULL) {
-		printf("Error opening output parameters file %s!\n", argv[optind]);
+		printf("Error opening output parameters file - %s!\n", argv[optind]);
 		goto parse_error;
 	}
 
 	optind++;
 	f_outlink = fopen(argv[optind], "w");
 	if (f_outlink == NULL) {
-		printf("Error opening output linker script file %s!\n", argv[optind]);
+		printf("Error opening output linker script file -- %s!\n", argv[optind]);
 		goto parse_error;
 	}
 
@@ -143,7 +155,7 @@ int main(int argc, char **argv)
 		while (1) {
 			int addr, val;
 
-			if (fscanf(f_reg, "%x %x\n", &addr, &val) == EOF)
+			if (fscanf(f_reg, "%x %x\n", (unsigned int *)&addr, (unsigned int *)&val) == EOF)
 				break;
 			else if ((addr == 0x0) && (val == 0x0))
 				break;
@@ -164,7 +176,6 @@ int main(int argc, char **argv)
 	}
 	printf("Supplied %ld parameters in TXT file\n", argsnum);
 
-	offset  = RAM_TOP + HDR_BLK_OFFSET;
 	/* main and secure headers */
 	offset += sizeof(BHR_t) + secure * sizeof(secExtBHR_t);
 	/* register header */
@@ -174,6 +185,7 @@ int main(int argc, char **argv)
 	}
 	/* binary header - one additional word is for number of arguments */
 	offset += sizeof(headExtBHR_t) + 4 + argsnum * 4;
+	/* printf("SUSUSUSU %x\n\n\n",offset); */
 
 	/* The start address of executable code should be aligned to 128bit boundary using dumb arguments
 	   Othervise the linker will silently align it and the execution will start at the wrong place */

@@ -63,9 +63,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
 
+#include "config_marvell.h"  	/* Required to identify SOC and Board */
 #include "mv_os.h"
 #include "soc_spec.h"
+#if defined(MV88F78X60)
 #include "ddr3_axp.h"
+#elif defined(MV88F6710)
+#include "ddr3_a370.h"
+#else
+#error "No SOC define for uart in binary header."
+#endif
 #include "bin_hdr_twsi.h"
 
 static MV_VOID twsiIntFlgClr(MV_U8 chanNum);

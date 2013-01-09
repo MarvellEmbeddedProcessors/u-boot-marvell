@@ -51,11 +51,6 @@ comri.pl
 /u-boot.geany
 /include/u-boot.lst
 
-/tools/*
-/board/mv_ebu/a370/armada_370_family/*
-/board/mv_ebu/axp/armada_xp_family/*
-/board/mv_ebu/common/mv_hal/*
-/board/mv_ebu/common/common/*
 #
 # Generated files
 #

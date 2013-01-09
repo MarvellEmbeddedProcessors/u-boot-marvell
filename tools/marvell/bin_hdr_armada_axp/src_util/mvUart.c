@@ -65,7 +65,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config_marvell.h"  	/* Required to identify SOC and Board */
 #include "soc_spec.h"
 #include "bootstrap_os.h"
+#if defined(MV88F78X60)
 #include "ddr3_axp.h"
+#elif defined(MV88F6710)
+#include "ddr3_a370.h"
+#else
+#error "No SOC define for uart in binary header."
+#endif
+
 #include "mvUart.h"
 
 /*******************************************************************************
@@ -100,11 +107,13 @@ MV_VOID mvUartInit(void)
 		tmpTClkRate = _200MHZ;	/* 200; */
 	else
 		tmpTClkRate = _250MHZ;	/* 250;	*/
-#else /* defined(MV88F67XX) */
+#elif defined(MV88F6710)
 	if(uiReg)
 		tmpTClkRate = _200MHZ;	/* 200; */
 	else
 		tmpTClkRate = _166MHZ;	/* 166; */
+#else
+#error "No SOC define for uart in binary header."
 #endif
 
 	/*  UART Init */

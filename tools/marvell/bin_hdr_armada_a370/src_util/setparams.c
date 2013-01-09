@@ -68,8 +68,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "./inc/soc_spec.h"
-#include "./inc/bootstrap_def.h"
+#include "../inc/soc_spec.h"
+#include "../inc/bootstrap_def.h"
 
 #define  BUFSIZE	80
 

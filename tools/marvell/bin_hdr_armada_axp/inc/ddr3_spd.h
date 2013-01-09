@@ -202,7 +202,7 @@ typedef struct _mvDimmInfo
     MV_U32  numOfModuleRanks;
     MV_U32  dataWidth;
 	MV_U32 	dimmRankCapacity;
-	MV_U32  dimmSize;               /* 16,64,128,256 or 512 MByte in MB units */
+    /* MV_U32  dimmSize;  */              /* 16,64,128,256 or 512 MByte in MB units */
 	MV_U32  numberOfDevices;
 	
 	MV_U32 	sdramWidth;

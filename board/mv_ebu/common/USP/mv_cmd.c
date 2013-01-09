@@ -155,8 +155,8 @@ U_BOOT_CMD(
 *****************************************************************************/
 int temperature_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	MV_U32 reg = 0;
-	MV_U32 value = 0;
+	MV_32 reg = 0;
+	MV_32 value = 0;
 
 	/* init the TSEN sensor once */
 	if ((MV_REG_READ(TSEN_CONF_REG) & TSEN_CONF_OTF_CALIB_MASK) == 0) {

@@ -118,7 +118,7 @@ HOSTCPPFLAGS = $(CPPFLAGS)
 TGT = bin_hdr
 
 ASRC = bin_entry.s
-CSRC =  ./src_ddr/ddr3_init.c ./src_ddr/bin_sramcfg.c ./src_ddr/ddr3_spd.c 
+CSRC =  ./src_ddr/ddr3_init.c ./src_phy/mvHighSpeedEnvLib.c ./src_phy/mvHighSpeedEnvSpec.c  ./src_ddr/bin_sramcfg.c ./src_ddr/ddr3_spd.c 
 
 AOBJ = $(subst .s,.o,$(ASRC))
 COBJ = $(subst .c,.o,$(CSRC))

@@ -72,7 +72,7 @@ extern "C" {
 #include "mvSysPexConfig.h"
 
 /* defines */
-#define MAX_PEX_DEVICES         32
+#define MAX_PEX_DEVICES         1
 #define MAX_PEX_FUNCS           8
 #define MAX_PEX_BUSSES          256
 
@@ -172,18 +172,19 @@ extern "C" {
 /********************************************/
 /* PCI Express Control and Status Registers */
 /********************************************/
-#define PEX_CTRL_REG(pexIf)				((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A00)
-#define PEX_LINK_CAPABILITIES_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x6C)
+#define PEX_CTRL_REG(pexIf)					((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A00)
+#define PEX_LINK_CAPABILITIES_REG(pexIf)	((MV_PEX_IF_REGS_BASE(pexIf)) + 0x6C)
 #define PEX_CAPABILITIES_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x60)
 #define PEX_STATUS_REG(pexIf)				((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A04)
-#define PEX_COMPLT_TMEOUT_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A10)
+#define PEX_SECONDARY_BUS_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A2C)
+#define PEX_COMPLT_TMEOUT_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A10)
 #define PEX_PWR_MNG_EXT_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A18)
 #define PEX_FLOW_CTRL_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A20)
-#define PEX_DYNMC_WIDTH_MNG_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A30)
-#define PEX_ROOT_CMPLX_SSPL_REG(pexif)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A0C)
+#define PEX_DYNMC_WIDTH_MNG_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A30)
+#define PEX_ROOT_CMPLX_SSPL_REG(pexif)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A0C)
 #define PEX_ACK_TMR_1X_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A40)
-#define PEX_TL_CTRL_REG(pexIf)				(MV_PEX_IF_REGS_BASE(pexIf) - (pexIf)*0x10000)
-#define PEX_RAM_PARITY_CTRL_REG(pexIf) 			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A50)
+#define PEX_TL_CTRL_REG(pexIf)				((MV_PEX_IF_REGS_BASE(pexIf)) - ((pexIf)*0x10000))
+#define PEX_RAM_PARITY_CTRL_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A50)
 #define PEX_DBG_CTRL_REG(pexIf) 			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A60)
 #define PEX_DBG_STATUS_REG(pexIf)           ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A64)
 
@@ -222,6 +223,13 @@ extern "C" {
 #define PXCR_CONF_MSTR_LB			BIT26	/* Master Loopback */
 #define PXCR_CONF_MSTR_DIS_SCRMB		BIT27	/* Master Disable Scrambling */
 #define PXCR_CONF_DIRECT_DIS_SCRMB		BIT28	/* Direct Disable Scrambling */
+
+/* PCI Ecpress Secondary Bus register */
+/* PEX_SECONDARY_BUS_REG */
+#define SECONDARY_BUS_NUMBER_ENABLE				BIT8
+#define SECONDARY_BUS_NUMBER_OFFS				0
+#define SECONDARY_BUS_NUMBER_MASK				0xFF
+
 
 /* PCI Express Status Register */
 /* PEX_STATUS_REG (PXSR) */

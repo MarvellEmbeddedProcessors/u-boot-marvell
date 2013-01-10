@@ -27,7 +27,7 @@ TOOLSUBDIRS =
 # Include this after HOSTOS HOSTARCH check
 # so that we can act intelligently.
 #
-include $(TOPDIR)/config.mk
+sinclude $(TOPDIR)/config.mk
 
 #
 # toolchains targeting win32 generate .exe files
@@ -102,6 +102,19 @@ NOPED_OBJ_FILES-y += ublimage.o
 
 	TOOLSUBDIRS += doimage_armada
 	TOOLSUBDIRS += bin_hdr_armada
+
+
+clean:
+	$(RM) doimage
+	ifeq ($(TOOLSUBDIRS),)
+		@:
+	else
+		@for dir in $(TOOLSUBDIRS) ; do \
+		    echo "clean $$dir \n"
+		    $(MAKE) clean -C $$dir || exit 1 ; \
+		done
+	endif
+
 
 
 # Don't build by default

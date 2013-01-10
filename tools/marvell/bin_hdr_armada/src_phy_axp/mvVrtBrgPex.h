@@ -38,16 +38,16 @@ modify this File under the following licensing terms.
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
-    *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+	*	Redistributions of source code must retain the above copyright notice,
+		this list of conditions and the following disclaimer.
 
-    *   Redistributions in binary form must reproduce the above copyright
-	notice, this list of conditions and the following disclaimer in the
-	documentation and/or other materials provided with the distribution.
+	*	Redistributions in binary form must reproduce the above copyright
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
 
-    *   Neither the name of Marvell nor the names of its contributors may be
-	used to endorse or promote products derived from this software without
-	specific prior written permission.
+	*	Neither the name of Marvell nor the names of its contributors may be
+		used to endorse or promote products derived from this software without
+		specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -62,61 +62,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-
-#ifndef __INCmvCpuIfh
-#define __INCmvCpuIfh
-
-/* includes */
-#include "ctrlEnv/mvCtrlEnvLib.h"
-#include "ctrlEnv/sys/mvCpuIfRegs.h"
-#include "ctrlEnv/sys/mvAhbToMbus.h"
-#if defined(MV_INCLUDE_PEX)
-#include "pex/mvPex.h"
-#endif
-
+#ifndef __INCVRTBRGPEXH
+#define __INCVRTBRGPEXH
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
-
-/* defines  */
-
-/* typedefs */
-/* This structure describes CPU interface address decode window	*/
-typedef struct _mvCpuIfDecWin {
-	MV_ADDR_WIN	addrWin;	/* An address window */
-	MV_U32		winNum;		/* Window Number in the AHB To Mbus bridge */
-	MV_BOOL		enable;		/* Address decode window is enabled/disabled */
-} MV_CPU_DEC_WIN;
-
-
-/* mvCpuIfLib.h API list */
-
-/* mvCpuIfLib.h API list */
-
-MV_STATUS mvCpuIfInit(MV_CPU_DEC_WIN *cpuAddrWinMap);
-MV_STATUS mvCpuIfVerify(MV_CPU_DEC_WIN *cpuAddrWinMap);
-MV_STATUS mvCpuIfDramInit(MV_VOID);
-MV_STATUS mvCpuIfTargetWinSet(MV_TARGET target, MV_CPU_DEC_WIN *pAddrDecWin);
-MV_STATUS mvCpuIfTargetWinGet(MV_TARGET target, MV_CPU_DEC_WIN *pAddrDecWin);
-MV_STATUS mvCpuIfTargetWinEnable(MV_TARGET target, MV_BOOL enable);
-MV_U32    mvCpuIfTargetWinSizeGet(MV_TARGET target);
-MV_U32    mvCpuIfTargetWinBaseLowGet(MV_TARGET target);
-MV_U32    mvCpuIfTargetWinBaseHighGet(MV_TARGET target);
-MV_TARGET mvCpuIfTargetOfBaseAddressGet(MV_U32 baseAddress);
-MV_STATUS mvCpuIfSramWinDisable(MV_VOID);
-#if defined(MV_INCLUDE_PEX)
-MV_U32    mvCpuIfPexRemap(MV_TARGET pexTarget, MV_ADDR_WIN *pAddrDecWin);
 #endif
-#if defined(MV_INCLUDE_PCI)
-MV_U32 	  mvCpuIfPciRemap(MV_TARGET pciTarget, MV_ADDR_WIN *pAddrDecWin);
-#endif
-MV_VOID   mvCpuIfAddDecShow(MV_VOID);
 
-MV_STATUS mvCpuIfLvdsPadsEnable(MV_BOOL enable);
+	/* Global Functions prototypes */
+	/* mvPexInit - Initialize PEX interfaces */
+	MV_STATUS mvPexVrtBrgInit(MV_U32 pexIf);
+
+	/* mvPexConfigRead - Read from configuration space */
+	MV_U32 mvPexVrtBrgConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff);
+
+	/* mvPexConfigWrite - Write to configuration space */
+	MV_STATUS mvPexVrtBrgConfigWrite(MV_U32 pexIf, MV_U32 bus, MV_U32 dev,
+					 MV_U32 func, MV_U32 regOff, MV_U32 data);
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
-
-#endif /* __INCmvCpuIfh */
+#endif
+#endif				/* #ifndef __INCPEXH */

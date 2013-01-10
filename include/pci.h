@@ -423,7 +423,7 @@
 #define PCI_MSI_DATA_32		8	/* 16 bits of data for 32-bit devices */
 #define PCI_MSI_DATA_64		12	/* 16 bits of data for 64-bit devices */
 
-#define PCI_MAX_PCI_DEVICES	32
+#define PCI_MAX_PCI_DEVICES	1
 #define PCI_MAX_PCI_FUNCTIONS	8
 
 #define PCI_DCR		0x54    /* PCIe Device Control Register */
@@ -475,10 +475,11 @@ extern __inline__ void pci_set_region(struct pci_region *reg,
 
 typedef int pci_dev_t;
 
-#define PCI_BUS(d)	(((d) >> 16) & 0xff)
+#define PCI_BUS(d)	(((d) >> 16) & 0xffff)
 #define PCI_DEV(d)	(((d) >> 11) & 0x1f)
 #define PCI_FUNC(d)	(((d) >> 8) & 0x7)
 #define PCI_BDF(b,d,f)	((b) << 16 | (d) << 11 | (f) << 8)
+#define EXT_PCI_BDF(l,b,d,f)	((l) << 24 | (b) << 16 | (d) << 11 | (f) << 8)
 
 #define PCI_ANY_ID (~0)
 

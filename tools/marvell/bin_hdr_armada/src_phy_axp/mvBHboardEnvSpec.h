@@ -77,6 +77,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_6710_Z1_ID		((MV_6710_DEV_ID << 16) | MV_6710_Z1_REV)
 #define MV_6710_Z1_NAME		"MV6710 Z1"
 
+#define MV_6710_A0_REV          0x0
+#define MV_6710_A0_ID           ((MV_6710_DEV_ID << 16) | MV_6710_A0_REV)
+#define MV_6710_A0_NAME         "MV6710 A0"
+
+#define MV_6710_A1_REV          0x1
+#define MV_6710_A1_ID           ((MV_6710_DEV_ID << 16) | MV_6710_A1_REV)
+#define MV_6710_A1_NAME         "MV6710 A1"
+
+#define MV_6707_DEV_ID          0x6707
+#define MV_6707_A0_REV          0x0
+#define MV_6707_A0_ID           ((MV_6707_DEV_ID << 16) | MV_6707_A0_REV)
+#define MV_6707_A0_NAME         "MV6707 A0"
+
+#define MV_6707_A1_REV          0x1
+#define MV_6707_A1_ID           ((MV_6707_DEV_ID << 16) | MV_6707_A1_REV)
+#define MV_6707_A1_NAME         "MV6707 A1"
+
 /* Armada XP Family */
 #define MV_78130_DEV_ID		0x7813
 #define MV_78160_DEV_ID		0x7816
@@ -227,7 +244,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /********************************************/
 /* PCI Express Control and Status Registers */
 /********************************************/
-#define MAX_PEX_DEVICES         32
+#define MAX_PEX_DEVICES         1
 #define MAX_PEX_FUNCS           8
 #define MAX_PEX_BUSSES          256
 
@@ -272,6 +289,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PEX_COMPLT_TMEOUT_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A10)
 #define PEX_PWR_MNG_EXT_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A18)
 #define PEX_FLOW_CTRL_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A20)
+#define PEX_SECONDARY_BUS_REG(pexIf)        ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A2C)
 #define PEX_DYNMC_WIDTH_MNG_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A30) 
 #define PEX_ROOT_CMPLX_SSPL_REG(pexif)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A0C) 
 #define PEX_RAM_PARITY_CTRL_REG(pexIf) 		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A50)
@@ -295,6 +313,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PEX_LINK_CAPABILITY_REG						0x6C
 #define PEX_LINK_CTRL_STAT_REG						0x70
 #define PEX_LINK_CTRL_STAT_2_REG					0x90
+
+/* PCI Ecpress Secondary Bus register */
+/* PEX_SECONDARY_BUS_REG */
+#define SECONDARY_BUS_NUMBER_ENABLE				BIT8
+#define SECONDARY_BUS_NUMBER_OFFS				0
+#define SECONDARY_BUS_NUMBER_MASK				0xFF
 
 
 #endif /* __INCmvBHboardEnvSpech */

@@ -70,6 +70,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvPexRegs.h"
 /* #include "pci-if/mvPciIf.h" */
 #include "mvPex.h"
+#include "mvVrtBrgPex.h"
 
 /* #define MV_DEBUG */
 /* defines  */
@@ -86,16 +87,13 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 	MV_PEX_MODE pexMode;
 	MV_U32 regVal;
 	MV_U32 status;
-	MV_U32 ctrlFamily;
 
 	mvOsMemcpy(&pexHalData[pexIf], halData, sizeof(MV_PEX_HAL_DATA));
-	ctrlFamily=pexHalData[pexIf].ctrlFamily;
 
 	if (mvPexModeGet(pexIf, &pexMode) != MV_OK) {
 		mvOsPrintf("PEX init ERR. mvPexModeGet failed (pexType=%d)\n", pexMode.pexType);
 		return MV_ERROR;
 	}
-
 	if (pexMode.pexLinkUp == MV_FALSE) {
 		/*  interface detected no Link. */
 		return MV_NO_SUCH;
@@ -117,20 +115,24 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 		mvPexMasterEnable(pexIf, MV_TRUE);
 
 		/* Local device slave Enable */
-		mvPexSlaveEnable(pexIf, mvPexLocalBusNumGet(pexIf), mvPexLocalDevNumGet(pexIf), MV_TRUE);
+		mvPexSlaveEnable(pexIf, 0xFF, mvPexLocalDevNumGet(pexIf), MV_TRUE);
 		/* Interrupt disable */
 		status = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_STATUS_AND_COMMAND));
 		status |= PXSAC_INT_DIS;
 		MV_REG_WRITE(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_STATUS_AND_COMMAND), status);
-	} else {
+	} else { /* if (MV_PEX_ROOT_COMPLEX != pexType) */
 			regVal = MV_REG_READ(PEX_DBG_CTRL_REG(pexIf));
 			regVal &= ~(BIT16 | BIT19);
 			MV_REG_WRITE(PEX_DBG_CTRL_REG(pexIf), regVal);
-
 	}
-#ifdef PCIE_VIRTUAL_BRIDGE_SUPPORT
+
+	/* Check if we have link */
+	if (pexMode.pexLinkUp == MV_FALSE) {
+		/*  interface detected no Link. */
+		return MV_NO_SUCH;
+	}
+
 	mvPexVrtBrgInit(pexIf);
-#endif
 	return MV_OK;
 }
 
@@ -218,16 +220,12 @@ MV_U32 mvPexModeGet(MV_U32 pexIf, MV_PEX_MODE *pexMode)
 *******************************************************************************/
 MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff)
 {
-#if defined(PCIE_VIRTUAL_BRIDGE_SUPPORT)
 	return mvPexVrtBrgConfigRead(pexIf, bus, dev, func, regOff);
 }
 
 MV_U32 mvPexHwConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff)
 {
-#endif
 	MV_U32 pexData = 0;
-	MV_U32 localDev, localBus;
-
 	if (pexIf >= MV_PEX_MAX_IF)
 		return 0xFFFFFFFF;
 
@@ -257,35 +255,9 @@ MV_U32 mvPexHwConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U
 	DB(mvOsPrintf("mvPexConfigRead: pexIf %d, bus %d, dev %d, func %d, regOff 0x%x\n",
 		      pexIf, bus, dev, func, regOff));
 
-	localDev = mvPexLocalDevNumGet(pexIf);
-	localBus = mvPexLocalBusNumGet(pexIf);
-
-	/* Speed up the process. In case on no link, return MV_ERROR */
-	if ((dev != localDev) || (bus != localBus)) {
-		pexData = MV_REG_READ(PEX_STATUS_REG(pexIf));
-
-		if ((pexData & PXSR_DL_DOWN))
-			return MV_ERROR;
-	}
-
-	/* in PCI Express we have only one device number */
-	/* and this number is the first number we encounter
-	   else that the localDev */
-	/* spec pex define return on config read/write on any device */
-	if (bus == localBus) {
-		if (localDev == 0) {
-			/* if local dev is 0 then the first number we encounter
-			   after 0 is 1 */
-			if ((dev != 1) && (dev != localDev))
+	if (dev != 0)
 				return MV_ERROR;
-		} else {
-			/* if local dev is not 0 then the first number we encounter
-			   is 0 */
 
-			if ((dev != 0) && (dev != localDev))
-				return MV_ERROR;
-		}
-	}
 	/* Creating PEX address to be passed */
 	pexData = (bus << PXCAR_BUS_NUM_OFFS);
 	pexData |= (dev << PXCAR_DEVICE_NUM_OFFS);
@@ -344,15 +316,12 @@ MV_U32 mvPexHwConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U
 *******************************************************************************/
 MV_STATUS mvPexConfigWrite(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff, MV_U32 data)
 {
-#if defined(PCIE_VIRTUAL_BRIDGE_SUPPORT)
 	return mvPexVrtBrgConfigWrite(pexIf, bus, dev, func, regOff, data);
 }
 
 MV_STATUS mvPexHwConfigWrite(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff, MV_U32 data)
 {
-#endif
 	MV_U32 pexData = 0;
-	MV_U32 localDev, localBus;
 
 	if (pexIf >= MV_PEX_MAX_IF)
 		return MV_BAD_PARAM;
@@ -360,60 +329,29 @@ MV_STATUS mvPexHwConfigWrite(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, 
 	/* Parameter checking   */
 	if (PEX_DEFAULT_IF != pexIf) {
 		if (pexIf >= pexHalData[pexIf].maxPexIf) {
-			mvOsPrintf("mvPexConfigWrite: ERR. Invalid PEX interface %d\n", pexIf);
+			DB(mvOsPrintf("mvPexConfigWrite: ERR. Invalid PEX interface %d\n", pexIf);)
 			return MV_ERROR;
 		}
 	}
 
 	if (dev >= MAX_PEX_DEVICES) {
-		mvOsPrintf("mvPexConfigWrite: ERR. device number illigal %d\n", dev);
+		DB(mvOsPrintf("mvPexConfigWrite: ERR. device number illigal %d\n", dev);)
 		return MV_BAD_PARAM;
 	}
 
 	if (func >= MAX_PEX_FUNCS) {
-		mvOsPrintf("mvPexConfigWrite: ERR. function number illigal %d\n", func);
+		DB(mvOsPrintf("mvPexConfigWrite: ERR. function number illigal %d\n", func);)
 		return MV_ERROR;
 	}
 
 	if (bus >= MAX_PEX_BUSSES) {
-		mvOsPrintf("mvPexConfigWrite: ERR. bus number illigal %d\n", bus);
+		DB(mvOsPrintf("mvPexConfigWrite: ERR. bus number illigal %d\n", bus);)
 		return MV_ERROR;
 	}
 
-	localDev = mvPexLocalDevNumGet(pexIf);
-	localBus = mvPexLocalBusNumGet(pexIf);
-
-	/* in PCI Express we have only one device number other than ourselves */
-	/* and this number is the first number we encounter
-	   else than the localDev that can be any valid dev number */
-	/* pex spec define return on config read/write on any device */
-	if (bus == localBus) {
-		if (localDev == 0) {
-			/* if local dev is 0 then the first number we encounter
-			   after 0 is 1 */
-			if ((dev != 1) && (dev != localDev))
-				return MV_ERROR;
-		} else {
-			/* if local dev is not 0 then the first number we encounter
-			   is 0 */
-
-			if ((dev != 0) && (dev != localDev))
-				return MV_ERROR;
-		}
-
-	}
-
 	/* if we are not accessing ourselves , then check the link */
-	if ((dev != localDev) || (bus != localBus)) {
-		/* workarround */
-		/* when no link return MV_ERROR */
-
-		pexData = MV_REG_READ(PEX_STATUS_REG(pexIf));
-
-		if ((pexData & PXSR_DL_DOWN))
+	if (dev != 0)
 			return MV_ERROR;
-	}
-
 	pexData = 0;
 
 	/* Creating PEX address to be passed */
@@ -521,7 +459,7 @@ MV_STATUS mvPexSlaveEnable(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_BOOL enable)
 		return MV_BAD_PARAM;
 	}
 	if (dev >= MAX_PEX_DEVICES) {
-		mvOsPrintf("mvPexLocalDevNumSet: ERR. device number illigal %d\n", dev);
+		DB(mvOsPrintf("mvPexLocalDevNumSet: ERR. device number illigal %d\n", dev));
 		return MV_BAD_PARAM;
 
 	}
@@ -540,7 +478,84 @@ MV_STATUS mvPexSlaveEnable(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_BOOL enable)
 	return MV_OK;
 
 }
+/*******************************************************************************
+* mvPexSecondaryBusNumGet - Get PEX interface local bus number.
+*
+* DESCRIPTION:
+*       This function gets the secondary bus number of a given PEX interface.
+*
+* INPUT:
+*       pexIf  - PEX interface number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Local bus number.0xffffffff on Error
+*
+*******************************************************************************/
+MV_U32 mvPexSecondaryBusNumGet(MV_U32 pexIf)
+{
+	MV_U32 pexSecondary;
 
+	if (pexIf >= MV_PEX_MAX_IF)
+		return 0xFFFFFFFF;
+
+	/* Parameter checking   */
+	if (PEX_DEFAULT_IF != pexIf) {
+		if (pexIf >= pexHalData[pexIf].maxPexIf) {
+			mvOsPrintf("mvPexLocalBusNumGet: ERR. Invalid PEX interface %d\n", pexIf);
+			return 0xFFFFFFFF;
+		}
+	}
+
+	pexSecondary = MV_REG_READ(PEX_SECONDARY_BUS_REG(pexIf));
+
+	pexSecondary &= SECONDARY_BUS_NUMBER_MASK;
+
+	return (pexSecondary >> SECONDARY_BUS_NUMBER_OFFS);
+}
+
+/*******************************************************************************
+* mvPexSecondaryBusNumSet - Set PEX interface secondary bus number.
+*
+* DESCRIPTION:
+*       This function sets given PEX interface its secondary bus number.
+*       Note: In case the PEX interface is PEX-X, the information is read-only.
+*
+* INPUT:
+*       pexIf  - PEX interface number.
+*       busNum - secondary bus number.
+*
+* OUTPUT:
+*       None.
+
+* RETURN:
+*       MV_NOT_ALLOWED in case PEX interface is PEX-X.
+*		MV_BAD_PARAM on bad parameters ,
+*       otherwise MV_OK
+*
+********************************************************************************/
+MV_STATUS mvPexSecondaryBusNumSet(MV_U32 pexIf, MV_U32 busNum)
+{
+	MV_U32 secondaryBus = 0;
+
+	/* Parameter checking   */
+	if (pexIf >= pexHalData[pexIf].maxPexIf) {
+		mvOsPrintf("mvPexSecondaryBusNumSet: ERR. Invalid PEX interface %d\n", pexIf);
+		return MV_BAD_PARAM;
+	}
+	if (busNum >= MAX_PEX_BUSSES) {
+		mvOsPrintf("mvPexSecondaryBusNumSet: ERR. bus number illigal %d\n", busNum);
+		return MV_ERROR;
+	}
+
+	secondaryBus = 0x100 | busNum;
+
+	MV_REG_WRITE(PEX_SECONDARY_BUS_REG(pexIf), secondaryBus);
+
+	return MV_OK;
+}
 /*******************************************************************************
 * mvPexLocalBusNumSet - Set PEX interface local bus number.
 *
@@ -561,6 +576,7 @@ MV_STATUS mvPexSlaveEnable(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_BOOL enable)
 *       otherwise MV_OK
 *
 *******************************************************************************/
+
 MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum)
 {
 	MV_U32 pexStatus;
@@ -579,11 +595,11 @@ MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum)
 
 	pexStatus &= ~PXSR_PEX_BUS_NUM_MASK;
 
-	pexStatus |= (busNum << PXSR_PEX_BUS_NUM_OFFS) & PXSR_PEX_BUS_NUM_MASK;
+	pexStatus |= (0xFF << PXSR_PEX_BUS_NUM_OFFS) & PXSR_PEX_BUS_NUM_MASK;
 
 	MV_REG_WRITE(PEX_STATUS_REG(pexIf), pexStatus);
 
-	return MV_OK;
+	return mvPexSecondaryBusNumSet(pexIf, busNum);
 }
 
 /*******************************************************************************
@@ -604,8 +620,6 @@ MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum)
 *******************************************************************************/
 MV_U32 mvPexLocalBusNumGet(MV_U32 pexIf)
 {
-	MV_U32 pexStatus;
-
 	if (pexIf >= MV_PEX_MAX_IF)
 		return 0xFFFFFFFF;
 
@@ -617,11 +631,7 @@ MV_U32 mvPexLocalBusNumGet(MV_U32 pexIf)
 		}
 	}
 
-	pexStatus = MV_REG_READ(PEX_STATUS_REG(pexIf));
-
-	pexStatus &= PXSR_PEX_BUS_NUM_MASK;
-
-	return (pexStatus >> PXSR_PEX_BUS_NUM_OFFS);
+	return mvPexSecondaryBusNumGet(pexIf);
 }
 
 /*******************************************************************************
@@ -657,7 +667,7 @@ MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum)
 		return MV_BAD_PARAM;
 	}
 	if (devNum >= MAX_PEX_DEVICES) {
-		mvOsPrintf("mvPexLocalDevNumSet: ERR. device number illigal %d\n", devNum);
+		DB(mvOsPrintf("mvPexLocalDevNumSet: ERR. device number illigal %d\n", devNum));
 		return MV_BAD_PARAM;
 	}
 

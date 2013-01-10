@@ -61,18 +61,6 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-
-#include "mvPex.h"
-#include "mvVrtBrgPex.h"
-
-/* #define MV_DEBUG */
-/* defines  */
-#ifdef MV_DEBUG
-#define DB(x)	x
-#else
-#define DB(x)
-#endif
-
 /* locals */
 typedef struct {
 	MV_U32 data;
@@ -168,8 +156,7 @@ MV_U32 mvPexVrtBrgConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, 
 		}
 	} else if (bus == (localBus + 1)) {
 		/* access the device behind the virtual bridge */
-/*		if ((dev == localDev) || (dev > 1)) { */
-		if (dev > 1) {
+		if ((dev == localDev) || (dev > 1)) {
 			return 0xffffffff;
 		} else {
 			/* access the device behind the virtual bridge, in this case
@@ -261,9 +248,9 @@ void resetPexConfig(MV_U32 pexIf, MV_U32 bus, MV_U32 dev)
 				resetPexConfig(pexIf, secBus, i);
 
 			/* now reset this device */
-			DB(mvOsPrintf("Reset bus %d dev %d\n", bus, dev));
+			DEBUG_INIT_FULL_S("Reset bus "); DEBUG_INIT_FULL_D(bus,1);
+			DEBUG_INIT_FULL_C("dev ", dev,1);
 			mvPexHwConfigWrite(pexIf, bus, dev, 0x0, 0x18, 0x0);
-			DB(mvOsPrintf("Reset bus %d dev %d\n", bus, dev));
 		}
 	}
 }

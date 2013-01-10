@@ -66,7 +66,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __INCPCIIFREGSH
 
 /* defines */
-#define MAX_PCI_DEVICES         32
+#define MAX_PCI_DEVICES         1
 #define MAX_PCI_FUNCS           8
 #define MAX_PCI_BUSSES          128
 

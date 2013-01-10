@@ -140,14 +140,17 @@ MV_STATUS mvPciScan(MV_U32 pciIf, MV_PCI_DEVICE *pPciAgents, MV_U32 * pPciAgents
 	DB(mvOsPrintf("mvPciScan: PCI interface num scan%d\n", pciIf));
 	
 	/* go through all busses */
-	for (busIndex = localBus; busIndex < MAX_PCI_BUSSES; busIndex++) {
+	for (busIndex = localBus; busIndex <= MAX_PCI_BUSSES; busIndex++) {
 		/* go through all possible devices on the local bus */
 		for (devIndex = 0; devIndex < MAX_PCI_DEVICES; devIndex++) {
 			/* always start with function equal to zero */
 			funcIndex = 0;
+			/* We need to scan the local bus 0xFF as well */
+			if (busIndex == MAX_PCI_BUSSES)
+				busIndex = 0xFF;
 
 			pPciDevice = &pPciAgents[detectedDevNum];
-			DB(mvOsPrintf("mvPciScan: PCI interface num scan%d:%d\n", busIndex, devIndex));
+			DB(mvOsPrintf("mvPciScan: PCI%d interface num scan %d:%d\n", pciIf, busIndex, devIndex));
 
 			if (MV_ERROR == pciDetectDevice(pciIf, busIndex, devIndex, funcIndex, pPciDevice)) {
 				/* no device detected , try the next address */

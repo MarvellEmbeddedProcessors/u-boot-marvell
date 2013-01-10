@@ -31,6 +31,7 @@ HAL_OBJS =      $(HAL_CNTMR_DIR)/mvCntmr.o 		\
 		$(HAL_GPP_DIR)/mvGpp.o 			\
 		$(HAL_PEX_DIR)/mvPex.o 			\
 		$(HAL_PEX_DIR)/mvPexAddrDec.o 		\
+		$(HAL_PEX_DIR)/mvVrtBrgPex.o 		\
 		$(HAL_RTC_DIR)/mvRtc.o 			\
 		$(HAL_SATA_CORE_DIR)/mvSata.o 		\
 		$(HAL_SATA_CORE_DIR)/mvSataAddrDec.o 	\

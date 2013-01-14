@@ -677,7 +677,7 @@ SK_U32	HwStatus)	/* Interrupt status word */
 	int			i;
 
 	SK_DBG_MSG(pAC, SK_DBGMOD_HWM, SK_DBGCAT_IRQ,
-		("HW-Error Status: 0x%08lX\n", HwStatus));
+		("HW-Error Status: 0x%08X\n", HwStatus));
 
 	/* This is necessary only for Rx timing measurements */
 	if ((HwStatus & Y2_IS_TIST_OV) != 0) {
@@ -732,7 +732,7 @@ SK_U32	HwStatus)	/* Interrupt status word */
 		SK_IN32(IoC, PCI_C(pAC, PEX_UNC_ERR_STAT), &DWord);
 
 		SK_DBG_MSG(pAC, SK_DBGMOD_HWM, SK_DBGCAT_IRQ,
-			("PEX Uncorr.Error Status: 0x%08lX\n", DWord));
+			("PEX Uncorr.Error Status: 0x%08X\n", DWord));
 
 		if (DWord != PEX_UNSUP_REQ) {
 			/* ignore Unsupported Request Errors */
@@ -751,7 +751,7 @@ SK_U32	HwStatus)	/* Interrupt status word */
 				SK_IN32(IoC, PCI_C(pAC, PEX_HEADER_LOG + i*4), &TlpHead[i]);
 
 				SK_DBG_MSG(pAC, SK_DBGMOD_HWM, SK_DBGCAT_IRQ,
-					(" 0x%08lX", TlpHead[i]));
+					(" 0x%08X", TlpHead[i]));
 			}
 			SK_DBG_MSG(pAC, SK_DBGMOD_HWM, SK_DBGCAT_IRQ, ("\n"));
 
@@ -1319,7 +1319,7 @@ SK_U32	Istatus)	/* Interrupt status word */
 		}
 
 		SK_DBG_MSG(pAC, SK_DBGMOD_HWM, SK_DBGCAT_IRQ,
-			("Timer Int: 0x%08lX\n", Istatus));
+			("Timer Int: 0x%08X\n", Istatus));
 		SkHwtIsr(pAC, IoC);
 	}
 #endif /* YUK2 */

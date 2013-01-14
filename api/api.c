@@ -724,7 +724,7 @@ void api_init(void)
 	calls_table[API_ADDCMD] = &API_add_command;
 	calls_table[API_RUNCMD] = &API_run_command;
 	calls_table[API_AUTOC] = &API_auto_complete;
-	calls_table[API_DRAM] = &API_dram_size;
+	calls_table[API_DRAM] = (cfp_t)&API_dram_size;
 	calls_no = API_MAXCALL;
 
 	debugf("API initialized with %d calls\n", calls_no);

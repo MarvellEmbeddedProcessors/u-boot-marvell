@@ -24,6 +24,7 @@
 
 #ifndef __INC_SKDRV1ST_H
 #define __INC_SKDRV1ST_H
+#define DEBUG
 
 #if 0 /* uboot */
 /* Check kernel version */
@@ -161,7 +162,6 @@ typedef struct s_DrvRlmtMbuf SK_MBUF;
 #define UINT32_C(a)		__CONCAT__(a,UL)
 #define UINT64_C(a)		__CONCAT__(a,ULL)
 
-#define DEBUG
 #ifdef DEBUG
 #define SK_DBG_PRINTF		printk
 #ifndef SK_DEBUG_CHKMOD

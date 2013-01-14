@@ -456,7 +456,7 @@ void RecoverRequest(void)
 	rcvr_state = RCVR_WAIT_4_CNCT;
 
 	/* Set the handler to the TFTP server */
-	NetSetHandler(RecoveryHandler);
+	NetSetHandler((rxhand_f *)RecoveryHandler);
 
 	/* Set the Timeout */
 	NetSetTimeout(RCVR_BEACON_TIMEOUT * CONFIG_SYS_HZ, RecoverTimeout);

@@ -25,6 +25,8 @@ disclaimer.
 #include <common.h>
 #include <asm/types.h>
 #include <command.h>
+#include <api_public.h>
+#include "../../glue.h"
 
 #include "mv_mon_init.h"
 #if defined(MV_INCLUDE_MONT_EXT) && defined (MV_INCLUDE_MONT_MMU)

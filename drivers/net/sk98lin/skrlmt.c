@@ -416,8 +416,11 @@ int		Level)	/* Initialization Level */
 		}
 
 		for (i = 0; i < (SK_U32)pAC->GIni.GIMacsFound; i++) {
+			SK_U32 * p1, *p2;
 			Random = SkOsGetTime(pAC);
-			*(SK_U32*)(&pAC->Rlmt.Port[i].Random) = *(SK_U32*)(&Random);
+			p1 = (SK_U32*)(&(pAC->Rlmt.Port[i].Random[0]));
+			p2 = (SK_U32*)(&Random);
+			*p1 = *p2;
 
 			for (j = 0; j < 4; j++) {
 				pAC->Rlmt.Port[i].Random[j] ^= pAC->Rlmt.Port[i].AddrPort->
@@ -1344,13 +1347,14 @@ SK_U32	*pSelect)	/* New active port */
 
 	/* Select port with the latest TimeStamp. */
 	for (i = 0; i < (SK_U32)pAC->GIni.GIMacsFound; i++) {
+		SK_U32	*pTemp1, *pTemp2;
+		pTemp1 = (SK_U32*)((&pAC->Rlmt.Port[i].BcTimeStamp) + OFFS_HI32);
+		pTemp2 = (SK_U32*)((&pAC->Rlmt.Port[i].BcTimeStamp) + OFFS_LO32);
+
 
 		SK_DBG_MSG(pAC, SK_DBGMOD_RLMT, SK_DBGCAT_CTRL,
 			("TimeStamp Port %d (Down: %d, NoRx: %d): %08x %08x.\n",
-				i,
-				pAC->Rlmt.Port[i].PortDown, pAC->Rlmt.Port[i].PortNoRx,
-				*((SK_U32*)(&pAC->Rlmt.Port[i].BcTimeStamp) + OFFS_HI32),
-				*((SK_U32*)(&pAC->Rlmt.Port[i].BcTimeStamp) + OFFS_LO32)));
+				i,pAC->Rlmt.Port[i].PortDown, pAC->Rlmt.Port[i].PortNoRx,*pTemp1,*pTemp2));
 
 		if (!pAC->Rlmt.Port[i].PortDown && !pAC->Rlmt.Port[i].PortNoRx) {
 			if (!PortFound || pAC->Rlmt.Port[i].BcTimeStamp > BcTimeStamp) {
@@ -1387,10 +1391,8 @@ SK_U32	*pSelect)	/* New active port */
 #ifdef DEBUG
 	if (PortFound) {
 		SK_DBG_MSG(pAC, SK_DBGMOD_RLMT, SK_DBGCAT_CTRL,
-			("SK_RLMT_SELECT_BCRX found Port %d receiving the substantially "
-			 "latest broadcast (%u).\n",
-				*pSelect,
-				BcTimeStamp - pAC->Rlmt.Port[1 - *pSelect].BcTimeStamp));
+			("SK_RLMT_SELECT_BCRX found Port %d receiving the substantially latest broadcast (%08lx).\n",
+				*pSelect, (long unsigned int)(BcTimeStamp - pAC->Rlmt.Port[1 - *pSelect].BcTimeStamp)));
 	}
 #endif	/* DEBUG */
 

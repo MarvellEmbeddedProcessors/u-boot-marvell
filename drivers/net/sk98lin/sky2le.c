@@ -140,8 +140,8 @@ SK_U32	PMemHighAddr)
 	SK_DBG_MSG(pAC, SK_DBGMOD_HWM, SK_DBGCAT_INIT,
 		("contains %d LEs", NumLE));
 	SK_DBG_MSG(pAC, SK_DBGMOD_HWM, SK_DBGCAT_INIT,
-		(" and starts at virt %08lx and phys %08lx:%08lx\n",
-		pVMem, PMemHighAddr, PMemLowAddr));
+		(" and starts at virt 0x%08x and phys %08x:%08x\n",
+		(unsigned int)pVMem, PMemHighAddr, PMemLowAddr));
 
 	/* initialize indexes */
 	pLETab->Done = 0;
@@ -195,7 +195,7 @@ SK_LE_TABLE	*pLETab)	/* pointer to list element table to be initialized */
 	SK_OUT32(IoC, Y2_PREF_Q_ADDR(Queue, PREF_UNIT_CTRL_REG), PREF_UNIT_RST_CLR);
 
 	SK_DBG_MSG(pAC, SK_DBGMOD_HWM, SK_DBGCAT_INIT,
-		("Base address: %08lx:%08lx\n", pLETab->pPhyLETABHigh,
+		("Base address: %08x:%08x\n", pLETab->pPhyLETABHigh,
 		pLETab->pPhyLETABLow));
 
 	/* Set the list base address  high part*/
@@ -250,13 +250,13 @@ SK_LE_TABLE	*pLETab)	/* pointer to status LE table */
 	SK_OUT32(IoC, STAT_CTRL, SC_STAT_RST_CLR);
 
 	SK_DBG_MSG(pAC, SK_DBGMOD_HWM, SK_DBGCAT_INIT,
-		("Base address Low: %08lX\n", pLETab->pPhyLETABLow));
+		("Base address Low: %08X\n", pLETab->pPhyLETABLow));
 
 	/* Set the list base address */
 	SK_OUT32(IoC, STAT_LIST_ADDR_LO, pLETab->pPhyLETABLow);
 
 	SK_DBG_MSG(pAC, SK_DBGMOD_HWM, SK_DBGCAT_INIT,
-		("Base address High: %08lX\n", pLETab->pPhyLETABHigh));
+		("Base address High: %08X\n", pLETab->pPhyLETABHigh));
 
 	SK_OUT32(IoC, STAT_LIST_ADDR_HI, pLETab->pPhyLETABHigh);
 

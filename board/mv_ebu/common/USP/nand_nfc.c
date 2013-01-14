@@ -1402,7 +1402,7 @@ static int orion_nfc_markbad(struct mtd_info *mtd, loff_t ofs)
 	struct nand_chip *chip = mtd->priv;
 	uint8_t buf[6] = {0, 0, 0, 0, 0, 0};
 	int block, ret = 0;
-	loff_t page_addr;
+	uint64_t page_addr;
 
 	/* Get block number */
 	block = (int)(ofs >> chip->bbt_erase_shift);

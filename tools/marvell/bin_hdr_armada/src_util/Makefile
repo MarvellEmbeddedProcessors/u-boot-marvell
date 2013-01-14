@@ -105,8 +105,6 @@ endif
 
 INCLUDE     += -I./ -I../inc/ -I../../../include
 
-LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
-
 HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
 
@@ -117,7 +115,6 @@ CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
 ULIB = utils.lib
 ULIB_UART = uart_utils.lib
 
-#all:   setparams $(COBJ) $(CUART_OBJ)  $(ULIB) $(ULIB_UART) 
 all:   $(ULIB) $(ULIB_UART) 
 
 %.o: %.c
@@ -142,7 +139,6 @@ PARAMSFILE = params
 setparams: 
 	$(HOSTCC) $(HOSTCFLAGS) $(HOSTCPPFLAGS) -o $@  $(addsuffix .c, $@)
 	$(CP) $@ ../
-	echo "copy $@ to ../"
 
 clean:
 	$(RM) setparams *.lib  *.raw  ./*.o  

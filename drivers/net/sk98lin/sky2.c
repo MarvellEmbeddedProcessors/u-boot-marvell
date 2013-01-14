@@ -2073,7 +2073,7 @@ SK_AC *pAC)       /* pointer to adapter context   */
 #endif
 							} else {
 								SK_DBG_MSG(pAC, SK_DBGMOD_DRV, SK_DBGCAT_DUMP,
-									("Got Tist %l:%l on Port %c but still waiting\n",
+									("Got Tist %x:%x on Port %c but still waiting\n",
 									pAC->GIni.GITimeStampCnt, pAC->MinTistLo,
 									'A' + i));
 							}
@@ -2253,10 +2253,13 @@ SK_AC *pAC)       /* pointer to adapter context   */
 #if USE_SYNC_TX_QUEUE
 				DoneTxS[0] = STLE_GET_DONE_IDX_TXS1(LowVal,HighVal);
 				DoneTxS[1] = STLE_GET_DONE_IDX_TXS2(LowVal,HighVal);
-#endif
 				SK_DBG_MSG(pAC, SK_DBGMOD_DRV, SK_DBGCAT_DRV_INT_SRC,
 					("DoneTxa1 0x%x DoneTxS1: 0x%x DoneTxa2 0x%x DoneTxS2: 0x%x\n",
 					DoneTxA[0], DoneTxS[0], DoneTxA[1], DoneTxS[1]));
+#else
+				SK_DBG_MSG(pAC, SK_DBGMOD_DRV, SK_DBGCAT_DRV_INT_SRC,
+					("DoneTxa1 0x%x DoneTxa2 0x%x \n",DoneTxA[0], DoneTxA[1]));
+#endif
 
 				NewDone = SK_TRUE;
 				break;

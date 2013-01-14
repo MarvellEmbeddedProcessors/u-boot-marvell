@@ -85,7 +85,7 @@ hdrparser: hdrparser.o $(LIB_PATH)/libpolarssl.a
 test: clean doimage
 
 $(LIB_PATH)/libpolarssl.a:
-	$(CD) $(LIB_ROOT); $(MAKE) CC=$(HOSTCC) all
+	$(MAKE) CC=$(HOSTCC) all -C $(LIB_ROOT)
 
 %.o: %.c
 	$(HOSTCC) $(CFLAGS) -c $<

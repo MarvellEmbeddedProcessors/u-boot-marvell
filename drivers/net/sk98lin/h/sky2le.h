@@ -612,7 +612,7 @@ extern "C" {
 			STLE_GET_DONE_IDX_TXA1(LowVal,HighVal)));					\
 		SK_DBG_MSG(pAc, SK_DBGMOD_HWM, SK_DBGCAT_INIT,					\
 			("\tTx Index TxS1: 0x%x\n",									\
-			STLE_GET_DONE_IDX_TXS1(LowVal,HighVal)));					\
+			 STLE_GET_DONE_IDX_TXS1(LowVal,HighVal)));					\
 		SK_DBG_MSG(pAc, SK_DBGMOD_HWM, SK_DBGCAT_INIT,					\
 			("\tTx Index TxA2: 0x%x\n",									\
 			STLE_GET_DONE_IDX_TXA2(LowVal,HighVal)));					\

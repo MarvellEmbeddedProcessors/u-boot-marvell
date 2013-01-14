@@ -172,7 +172,7 @@ typedef unsigned int	MV_U32;
 
 typedef short		MV_16; 
 typedef unsigned short	MV_U16;
-
+/*
 #ifdef MV_PPC64
 typedef long		MV_64;
 typedef unsigned long	MV_U64;
@@ -180,7 +180,7 @@ typedef unsigned long	MV_U64;
 typedef long long		MV_64;
 typedef unsigned long long	MV_U64;
 #endif
-
+*/
 typedef long		MV_LONG;	/* 32/64 */
 typedef unsigned long	MV_ULONG;	/* 32/64 */
 

@@ -1065,7 +1065,7 @@ SK_U32	PortNumber)	/* Port Number */
 
 	pAPort = &pAC->Addr.Port[PortNumber];
 
-#ifdef DEBUG
+#ifdef xDEBUG
 	SK_DBG_MSG(pAC,SK_DBGMOD_ADDR, SK_DBGCAT_CTRL,
 		("Next0 on Port %d: %d\n", PortNumber, Next0[PortNumber]));
 #endif /* DEBUG */
@@ -1212,7 +1212,7 @@ SK_U32	PortNumber)	/* Port Number */
 
 	pAPort = &pAC->Addr.Port[PortNumber];
 
-#ifdef DEBUG
+#ifdef xDEBUG
 	SK_DBG_MSG(pAC,SK_DBGMOD_ADDR, SK_DBGCAT_CTRL,
 		("Next0 on Port %d: %d\n", PortNumber, Next0[PortNumber]));
 #endif /* DEBUG */

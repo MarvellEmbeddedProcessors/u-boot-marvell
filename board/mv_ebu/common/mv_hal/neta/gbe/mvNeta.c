@@ -3484,7 +3484,6 @@ MV_U32 mvNetaMibCounterRead(int port, int mib, unsigned int mibOffset, MV_U32 *p
 void mvNetaMibCountersClear(int port, int mib)
 {
 	int i;
-	MV_U32 dummy;
 
 #if defined(CONFIG_MV_PON) && !defined(MV_PON_MIB_SUPPORT)
 	if (MV_PON_PORT(port))
@@ -3493,7 +3492,7 @@ void mvNetaMibCountersClear(int port, int mib)
 
 	/* Perform dummy reads from MIB counters */
 	for (i = ETH_MIB_GOOD_OCTETS_RECEIVED_LOW; i < ETH_MIB_LATE_COLLISION; i += 4)
-		dummy = MV_REG_READ((ETH_MIB_COUNTERS_BASE(port, mib) + i));
+		 MV_REG_READ((ETH_MIB_COUNTERS_BASE(port, mib) + i));
 }
 
 #if defined(CONFIG_MV_PON) && defined(MV_PON_MIB_SUPPORT)

@@ -687,7 +687,7 @@ char	*etp)		/* end pointer input position */
 	int	vpd_size;
 
 	SK_DBG_MSG(pAC, SK_DBGMOD_VPD, SK_DBGCAT_CTRL,
-		("VPD modify endtag at 0x%x = '%c%c'\n",etp,etp[0],etp[1]));
+		("VPD modify endtag at 0x%x = '%c%c'\n",(unsigned int)etp, etp[0], etp[1]));
 
 	vpd_size = pAC->vpd.vpd_size;
 

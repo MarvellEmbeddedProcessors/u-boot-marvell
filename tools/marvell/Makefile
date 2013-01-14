@@ -110,8 +110,7 @@ clean:
 		@:
 	else
 		@for dir in $(TOOLSUBDIRS) ; do \
-		    echo "clean $$dir \n"
-		    $(MAKE) clean -C $$dir || exit 1 ; \
+		    $(MAKE) -j1 clean -C $$dir || exit 1 ; \
 		done
 	endif
 
@@ -258,7 +257,7 @@ subdirs:
 ifeq ($(TOOLSUBDIRS),)
 	@:
 else
-	@for dir in $(TOOLSUBDIRS) ; do \
+	@+for dir in $(TOOLSUBDIRS) ; do \
 	    $(MAKE) \
 		HOSTOS=$(HOSTOS) \
 		HOSTARCH=$(HOSTARCH) \

@@ -40,7 +40,7 @@ extern struct spi_flash *flash;
 extern flash_info_t flash_info[];       /* info for FLASH chips */
 #endif
 
-#ifdef MV_NOR_BOOT
+#if 0 /* def MV_NOR_BOOT */
 static unsigned int flash_in_which_sec(flash_info_t *fl,unsigned int offset)
 {
 	unsigned int sec_num;
@@ -84,7 +84,7 @@ int nand_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 	extern char console_buffer[];
 	nand_info_t *nand = &nand_info[0];
 	//u_char *load_addr;
-	uint64_t size = CONFIG_UBOOT_SIZE;
+	size_t size = CONFIG_UBOOT_SIZE;
 
 	size_t offset = 0;
 	

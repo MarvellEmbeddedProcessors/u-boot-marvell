@@ -52,6 +52,9 @@ typedef struct mtd_info nand_info_t;
 
 extern int nand_curr_device;
 extern nand_info_t nand_info[];
+#if defined(CONFIG_ENV_IS_IN_NAND)
+extern int nand_get_env_offs(void);
+#endif
 
 static inline int nand_read(nand_info_t *info, loff_t ofs, size_t *len, u_char *buf)
 {

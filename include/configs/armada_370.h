@@ -39,7 +39,7 @@
 /************/
 /* VERSIONS */
 /************/
-#define CONFIG_IDENT_STRING	" Marvell version: 2012_Q4.0"
+#define CONFIG_IDENT_STRING	" Marvell version: 2013_Q1.0"
 
 /* version number passing when loading Kernel */
 #define VER_NUM 0x11120000           /* 2011.12 */

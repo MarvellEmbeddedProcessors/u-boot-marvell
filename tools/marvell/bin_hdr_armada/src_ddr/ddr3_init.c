@@ -229,7 +229,10 @@ MV_U32 ddr3Init(void)
 
 MV_U32 ddr3Init_(void)
 {
-	MV_U32 uiTargetFreq, uiEcc;
+	MV_U32 uiTargetFreq;
+#ifndef RD_88F6710
+	MV_U32 uiEcc;
+#endif
 	MV_U32 uiReg = 0;
 	MV_U32 uiCpuFreq, uiFabOpt, uiHClkTimePs, socNum, uiScrubOffs, uiScrubSize;
 	MV_U32 auWinBackup[16];
@@ -329,7 +332,9 @@ MV_U32 ddr3Init_(void)
 	uiScrubOffs = 0;
 	uiScrubSize = 0;
 #endif
+#ifndef RD_88F6710
 	uiEcc = DRAM_ECC;
+#endif
 
 #if defined(ECC_SUPPORT) && defined(AUTO_DETECTION_SUPPORT)
 	uiEcc = 0;

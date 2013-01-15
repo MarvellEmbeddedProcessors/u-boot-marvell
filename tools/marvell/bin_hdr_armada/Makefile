@@ -146,10 +146,10 @@ $(AOBJ): $(ASRC)
 	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) -c -o  $@ $<
 
 
-%.elf: $(AOBJ) $(COBJ) $(TLIB) $(ULIB)
+%.elf: $(AOBJ) $(COBJ) $(TLIB) $(ULIB) $(LDSCRIPT)
 	$(CC) $(LDFLAGSBIN) $(AOBJ) $(COBJ) $(TLIB) $(ULIB) libgcc.lib -o $@
 
-%.uart.elf: $(AOBJ) $(CUART_OBJ) $(TLIB) $(UART_ULIB)
+%.uart.elf: $(AOBJ) $(CUART_OBJ) $(TLIB) $(UART_ULIB) $(LDSCRIPT)
 	$(CC) $(LDFLAGSBIN) $(AOBJ) $(CUART_OBJ) $(TLIB) $(UART_ULIB) libgcc.lib -o $@
 
 

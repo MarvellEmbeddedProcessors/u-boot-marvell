@@ -78,9 +78,19 @@ static MV_BM_POOL	mvBmPools[MV_BM_POOLS];
 /* Initialize Hardware Buffer management unit */
 MV_STATUS mvBmInit(MV_U8 *virtBase)
 {
-	MV_U32 regVal;
 
 	mvBmVirtBase = virtBase;
+
+	mvBmRegsInit();
+
+	memset(mvBmPools, 0, sizeof(mvBmPools));
+
+	return MV_OK;
+}
+
+void mvBmRegsInit(void)
+{
+	MV_U32 regVal;
 
 	/* Mask BM all interrupts */
 	MV_REG_WRITE(MV_BM_INTR_MASK_REG, 0);
@@ -96,9 +106,7 @@ MV_STATUS mvBmInit(MV_U8 *virtBase)
 	regVal |= MV_BM_MAX_IN_BURST_SIZE_16BP;
 	MV_REG_WRITE(MV_BM_CONFIG_REG, regVal);
 
-	memset(mvBmPools, 0, sizeof(mvBmPools));
-
-	return MV_OK;
+	return;
 }
 
 MV_STATUS mvBmControl(MV_COMMAND cmd)
@@ -260,7 +268,8 @@ MV_STATUS mvBmPoolInit(int pool, void *virtPoolBase, MV_ULONG physPoolBase, int 
 	pBmPool = &mvBmPools[pool];
 	if (pBmPool->pVirt != NULL) {
 		mvOsPrintf("bmPool = %d is already busy\n", pool);
-		return MV_BUSY;
+		/* necessary for power managemaent resume process*/
+		/*return MV_BUSY;*/
 	}
 
 	pBmPool->pool = pool;

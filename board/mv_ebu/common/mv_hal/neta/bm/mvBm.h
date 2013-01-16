@@ -112,6 +112,7 @@ static INLINE MV_ULONG mvBmPoolGet(int poolId)
 
 /* prototypes */
 MV_STATUS mvBmInit(MV_U8 *virtBase);
+void      mvBmRegsInit(void);
 void      mvBmConfigSet(MV_U32 mask);
 void      mvBmConfigClear(MV_U32 mask);
 MV_STATUS mvBmControl(MV_COMMAND cmd);

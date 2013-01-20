@@ -1,0 +1,397 @@
+date:		15-Jan-2013
+release:	2013_Q1.0
+
+Release notes for Armada XP U-Boot
+==================================
+
+NOTE: This Uboot supports ArmadaXP rev. A0 and B0 boards.  and Armada-370 A1 SoC revision only.
+This UBoot should not be used with previous boards using ArmadaXP rev. Z1 silicone.
+This release was compiled and tested with SDK 2012_Q4.0 (AKA SDK 6.0)
+
+Table of Contents
+-----------------
+	1. Contents of Release
+	2. Supported boards/CPUs
+	3. How to build U-Boot
+	4. Readme file information
+	5. Limitation
+	6. Changes from Previous Releases
+	7. Known Issues
+	8. Disclaimer
+
+
+1. Contents of Release
+======================
+
+Included in current release:
+	-) doimage tool and DDR register configuration files.
+	-) Binary Image files:
+		1. elf file for debugers (e.g. Lauterbach).
+		2. srec file for external programer.
+		3. u-boot-<spi/nand/nor>.bin -
+			U-boot with BootROM header with the boot device is spi, NOR or nand, supporting 1 or 2 DRAM chip selects.
+			"gang" indicates NAND Gang Mode support and is optional.
+	-) Marvell's U-Boot source code patch.
+	-) Support
+		- Little/Big endian
+		- Uart
+		- Auto detect of PCI-E
+		- Reset
+		- RTC
+		- Gigabit Ethernet port
+		- SPI Flash
+		- SATA IDE
+		- DDR2 and DDR3 Marvell
+		- Boot from SPI & NAND & NOR & UART
+		- Thermal sensor reads
+		- USB
+		- SD/MMC
+		- NAND flash
+		- UBI/UBIFS
+		- Sample at reset control by i2c
+        - Clock gatting
+        - DRAM ECC
+        - MMC
+        - I2C Arbitration.
+
+2. Supported boards/CPU's
+=========================
+
+This U-Boot version supports the following boards:
+	DB-78460-BP (rev 2.2 for A0 and rev 2.4 for B0)
+	DB-78460-HE (same images as DB-78460-BP board)
+	DB-MV784MP-GP
+	RD-78460-SERVER
+	RD-78460-AMC
+	RD-78460-PCAC
+	DB-88F6710-BP-DDR3
+	RD-A370
+
+3. How to build U-Boot
+======================
+
+	1. Download U-Boot release 2011.12 from ftp://ftp.denx.de/pub/u-boot/.
+	2. Update the U-Boot release by copying the patch of this release under the source directory:
+		$ tar xjvf u-boot-2011.12.tar.bz2
+		$ mv u-boot-2011.12 u-boot-2011.12-2013_Q1.0
+		$ unzip u-boot-2011.12-2013_Q4.0.zip (overwrite all when asked).
+	3. Export your cross compiler using the command:
+				export CROSS_COMPILE_BH=/path/to/your/cross/little/endian/compiler
+				export CROSS_COMPILE=/path/to/your/cross/compiler
+	4. Build the U-Boot binaries as follows:
+		$ build.pl -b <board_name> -f <flash_type> -v Marvell version used(for example 5.0.1) [-e -c -o <output> -i <interfaces>]
+
+		-b <board_name>
+			armada_xp_db    - Armada XP development board
+			armada_xp_amc   - Armada XP AMC board
+			armada_xp_pcac  - Armada XP PCAC board
+			armada_xp_gp    - Armada XP GP board
+			armada_370_db   - Armada 370 DP board
+			armada_370_rd   - Armada 370 RD board
+		-f <flash_type>
+			spi  - boot from SPI
+			nor  - boot from NOR
+			nand - boot from NAND
+
+		-i <interfaces> A ":" seperated list of supported interfaces:
+			nor  - Add nor support
+			spi  - Add spi support
+			nand - Add nand support
+
+		-e  compile big endian. If not used litlle endian is used
+
+		-o <output> - The output directory/file to place the build image
+
+		-v <version> - The version name (part of image name)
+
+		-c - clean build
+
+		For example:
+		$ build.pl  -f spi -v 5.0.5 -b armada_xp_db -i nand:spi:nor -c -o /tftpboot/armada_xp_db/5.0.5");
+		will clean build little endian image for Armada XP board to boot from SPI. 
+		The output image will be placed at /tftp/u-boot.bin. The Image wil support spi, NOR and nand interfaces
+
+	*This U-Boot was built using Marvell SDK 2012_Q4.0 (AKA SDK 6.0) using gcc version 4.6.2 (Linaro GCC branch-4.6.2. Marvell GCC 201201-883.01c949de) 
+
+	5. doimage will create a binary file automaticly when compiling.
+		If you wish to use the doimage tool, it can be found under /tools/doimage_armada/ It can be compiled from there using the make command.
+		you can run ./doimage --help for more help.
+
+4. Readme file will include information about:
+		- How to upgrade to a new version of U-Boot
+		- How to use MTD partitions
+		- How to use UBIFS
+		- How to use MMC
+		- How to use USB storage device
+		- BIOS and SatR commands.
+		- Boot options
+5. Limitation
+===============
+
+	1. Big Endian : supported in V7 BE8.
+	2. DDR3 training: Run WL supplement process with short killer pattern (4 words, instead 128 words). WL results can be not accurate.
+
+
+
+6. Changes from Previous Releases
+=================================
+
+	U-Boot 2013_Q1.0 (10-Jan-2013).
+	===============================
+	1. Fixed PEX-ID before printing it.
+	2. Fixed bios write mode for DB-784MP-GP evaluation board.
+	3. Removed unsupported bios modes from bios table.	
+	4. Update the DDR3 training sequence 4.0.0 (refer to specifc section below)
+	5. Updated PHY initialization for PHY-1545MA1(for DB-784MP-GP board) and QSGMII port (DB board).
+	6. Updated AMP mode to support dual OS (Linux and vxWorks).
+	7. Support frequency 1600/800/320/640.
+	8. Support RD-78460-AMC referance design board
+	9. Update PCIe configuration (SERDES 2.0.0)
+            a. Moved auto detect PCIe speed GEN1/2 to the BootROM binary header executed before loading the U-boot.
+            b. Moved auto detect PCIe width X1/X4 to the BootROM binary header executed before loading the U-boot.
+            c. Replaced duplicate code of SERDES configuraton in U-Boot and with new code for serdes configuration detection.
+	10. Update SCSI (Vanir) PEX driver
+	11. Fixed bug in stage boot command. Fixed booting from bootcmd_lgcy, boot information not received from U-Boot.
+	12. Updated assembler code to compatible compiler 4.6.3/4.
+	13. Change images name - Added board name to images file name.
+	15. Fixed POWER_MNG_MEM_CTRL_REG register formula.
+	16. Fixed BPS fir each board.
+	17. Fixed syntax error Mhz to MHz.
+	18. Fixed build script for DDR PBS.
+	19. Added support virutal bridge:  PCIe: Use seondary bus number for indexing instead of local bus number. 
+	    This enables the virtual bridge support for EP devices working with device number zero only. 
+	    Local bus number is hard coded to 0xFF (Last Bus number)
+
+
+Changes in DDR3 Training Algorithm in the BootROM binary header
+---------------------------------------------------------------
+The list of changes is relative to previous training release 3.0.0 that was issued as part of u-boot-2011.12-axp-2012_Q4.0
+	DDR Training 4.0.0
+	------------------
+	1. Fixed CL and CWL configuration for KW40.
+	2. Fixed 1200MHz/600MHz frequency configuration parameters for KW40.
+	3. Fixed PBS algorithm. Support PBS on ECC pups.
+	4. Fixed PBS and DQS for 32 bits width, use short (32 bits) patterns.
+	5. Added killer pattern for WL process.
+	6. Enable IO Pads Calibration in DRAM Main Pads Calibration Machine Control Register (0x000014CC).
+	7. Fixed R-DIMM WL for ECC pups.
+	8. Fixed R-DIMM RC registers (2,3,4,5) initialization process.
+	9. Fixed R-DIMM training at intermediate frequency. Write to control PUP registers (0x10 - 0x18) control deskew value 0x1F before WL and value 0 after WL.
+	10. Run read FIFO reset before each read for compare operation to stabilize training.
+	11. Fixed RD_Ready_Delay default wrong values for phases 0,1,4,5.
+	12. Fixed divider value for 667MHz CPU frequency (divided by 4, instead by 3).
+	13. Fixed 533MHz and 640 frequencies with slow devices.
+	14. Updated intermediate frequency to 400MHz.
+	15. DLB WA is now supported for on-board devices configuration.
+	16. Support different debug level mechanism for training information output.  Use DDR3_LOG_LEVEL in ddr3_axp_config.h file: 
+
+	/* DDR3_LOG_LEVEL Information 
+	Level 0: Provides an error code in a case of failure, RL, WL errors and other algorithm failure
+	Level 1: Provides the D-Unit setup (SPD/Static configuration)
+	Level 2: Provides the windows margin as a results of DQS centralization
+	Level 3: Provides the windows margin of each DQ as a results of DQS centralization */
+	#define DDR3_LOG_LEVEL  0
+	
+	17.	Add external and internal DRR training Error codes.
+	
+	External codes are:
+	/* Stage 0 errors*/
+	#define MV_DDR3_TRAINING_ERR_BAD_SAR            	0xDD300001
+	/* Stage 1 errors*/
+	#define MV_DDR3_TRAINING_ERR_TWSI_FAIL              	0xDD301001
+	#define MV_DDR3_TRAINING_ERR_DIMM_TYPE_NO_MATCH     	0xDD301001
+	#define MV_DDR3_TRAINING_ERR_TWSI_BAD_TYPE          	0xDD301003
+	#define MV_DDR3_TRAINING_ERR_BUS_WIDTH_NOT_MATCH    	0xDD301004
+	#define MV_DDR3_TRAINING_ERR_BAD_DIMM_SETUP        	0xDD301005
+	#define MV_DDR3_TRAINING_ERR_MAX_CS_LIMIT           	0xDD301006
+	#define MV_DDR3_TRAINING_ERR_MAX_ENA_CS_LIMIT       	0xDD301007
+	#define MV_DDR3_TRAINING_ERR_BAD_R_DIMM_SETUP       	0xDD301008
+	/* Stage 2 errors*/
+	#define MV_DDR3_TRAINING_ERR_HW_FAIL_BASE          	0xDD302000
+
+
+Known issues
+------------
+1. DDR3 training: Run WL supplement process with short killer pattern (4 words, instead 128 words). WL results can be not accurate.
+
+
+
+
+	U-Boot 2012_Q4.0  (03-October-2012).
+	===============================
+	1. Change release name to 2012_Q4.0
+	2. DDR3 Training Sequence 3.0.0
+	3. Change customer board to armada_xp_rdcustomer
+	4. Update phy init(1540): support jumbo packes (GIGA2/3)
+	
+	
+	U-Boot 5.1.3 (23-Sep-2012).
+	===============================
+	1. DDR3 Training Sequence 2.20.0
+	2. Fixed loading image from lauterbuch debuger
+
+	U-Boot 5.1.2 (20-Sep-2012).
+	===============================
+	1. DDR3 Training Sequence 2.19.0
+	2. Update GP board MPP(external HDD power ctrl and Fan Ctrl)
+	3. Fix Bug in stage boot command.
+
+	
+	U-Boot 5.1.1 (19-Sep-2012).
+	===============================
+	1. DDR3 Training Sequence 2.17.0
+	
+	U-Boot 5.1.0 (13-Sep-2012).
+	===============================
+	1. DDR3 Training Sequence 2.16.0
+	2. Update VANIR PEX driver. 
+	3. Update build script file for UART image.
+	4. Added example to customers porting guide
+	
+
+	U-Boot 5.0.9 (12-Sep-2012).
+	===============================
+	1. DDR3 Training Sequence 2.16.99
+	2. Update Vanir PEX driver
+	3. Update ETH phy 88E154X for jumbo packets
+	4. Update UART base register pointers.
+	5. Fixed BIOS mode table for B0
+	6. Fixed warning in stage boot code
+
+
+	U-Boot 5.0.8 (6-Sep-2012).
+	===============================
+	1. DDR3 Training Sequence 2.15.3
+	2. Disable print message to UART for boot from UART images
+	3. Stage automatic boot Added new command stage_boot, allows to boot from different devices
+	4. Enable CONFIG_API option in U-Boot configuration.
+
+
+	U-Boot 5.0.7 (28-Aug-2012).
+	===============================
+	1. Fixed-Bug-in-L2-replacement-control.
+	2. DDR3 Training Sequence 2.15.2.
+	3. High speed PHY V:1.6.0 COM-PHY-20(Amplitude change and SSC enable SATA)
+	4. Fixed mmc buffer aligned to 128.
+
+	U-Boot 5.0.6 (23-Aug-2012).
+	===============================
+	1. Fixed-AVS-enable-disable-only-for-B0 and update AVS value. 
+	2. DDR3 Training Sequence 2.15.0.
+	3. Fixed DRAM Scrubbing up to 16GB
+	4. Code clean up (fixed compilation warning)
+	5. Update AXP-B0 SERDES initialization (1.5.0)
+	6. Cancel windows overlap testing even for non-LPAE systems.
+	7. Update MPP for GP SATA interface.
+	8. Support pex scsi VANIR
+	9. Fixed-buildall-
+
+
+
+	U-Boot 5.0.4 (21-Aug-2012).
+	===============================
+	1. Add LPAE Support for AXP-B0 (Support > 4GB DRAM size and Support for 4GB per CS DRAM.)
+        2. update build scrip for DB AXP-GP
+	3. DDR3 Training Sequence 2.12.3 (TWSI read for GP)
+	4. Rename board id RD_78460_GP to DB_784MP_GP
+        5. Fixed AVS enable/disable only for B0.
+	6. Fixed SatR and Bios command for all TWSI bits
+	7. Add xmodem tool to enable boot from uart using a command line and minicom.
+
+
+	U-Boot 5.0.3 (20-Aug-2012).
+	===============================
+	1. update cmm file for lauterbuch debuger.
+        2. update build scrip for DB AXP-GP
+	3. DDR3 Training Sequence 2.12.2
+	4. update tranning cmd
+	5. Fixed SPI M25P64 default parameters for AXP_GP
+
+	U-Boot 5.0.1 (16-Aug-2012).
+	===============================
+	1. Fixed USB port reset
+        2. Support board RD-78460-axp-gp (Up and runnig test only)
+	3. DDR3 Training Sequence 2.12.1
+
+
+	U-Boot 5.0.0 (30-Jul-2012).
+	===============================
+	1. Support dual DIMM
+        2. Support ECC
+	3. Add delay 2000 MS on PEX detect link down in GEN2 Vanir PEX
+	4. Add Scrubbing to u-boot early stage with suport for dual DIMM
+	5. Change binary file name. (u-boot-axp-X.X.X-NAME.bin when X.X.X is version and NAME is spi,nand or nor)
+
+
+	U-Boot 3.0.3 (11-Jul-2012).
+	===============================
+	1. Change compiler to SDK 5.1.2
+        2. Fixed PEX SERDES sequence initialization.
+	3. Fixed initialize PEX vendor ID.
+	4. Fixed MMC initialize
+        5. DDR3 Training Sequence - version 2.4.1 
+	6. Added print dot "." while SPI writing or erasing.
+
+
+	U-Boot 3.0.2 (24-Apr-2012).
+	===============================
+	1. Fixed resetenv command
+
+	U-Boot 3.0.1 (19-Apr-2012).
+	===============================
+	1. Support flashes (boot from nor/nand)
+	2. Added atags
+	3. Support Marvell monitor extension
+	4. Big endian
+	5. Aligned the changes from Marvell u-boot 2008.09 version 2.2.1
+
+	U-Boot 3.0.0 (01-Mar-2012).
+	===============================
+	Initial release. base on uboot 2011.12 and Marvell U-Boot 2.1.1
+
+7. Known issues
+================
+	1. Some USB storage devices might fail in reading at filesystem level.
+    2. PCI-E end point devices that require virtual bridge support might fail in scan.
+	3. 8GB DDR DIMMs might be wrongly detected.1. The USB interface is not tested.
+
+8. Disclaimer
+==============
+This document provides preliminary information about the products described, and such information should not be used for
+purpose of final design. Visit the Marvell  web site at www.marvell.com for the latest information on Marvell products.
+
+No part of this document may be reproduced or transmitted in any form or by any means, electronic or mechanical, including
+photocopying and recording, for any purpose, without the express written permission of Marvell. Marvell retains the right
+to make changes to this document at any time, without notice. Marvell makes no warranty of any kind, expressed or implied,
+with regard to any information contained in this document, including, but not limited to, the implied warranties of
+merchantability or fitness for any particular purpose. Further, Marvell does not warrant the accuracy or completeness of
+the information, text, graphics, or other items contained within this document. Marvell makes no commitment either to
+update or to keep current the information contained in this document. Marvell products are not designed for use in
+life-support equipment or applications that would cause a life-threatening situation if any such products failed.
+Do not use Marvell products in these types of equipment or applications. The user should contact Marvell to obtain the
+latest specifications before finalizing a product design. Marvell assumes no responsibility, either for use of these
+products or for any infringements of patents and trademarks, or other rights of third parties resulting from its use.
+No license is granted under any patents, patent rights, or trademarks of Marvell. These products may include one or more
+optional functions. The user has the choice of implementing any particular optional function. Should the user choose to
+implement any of these optional functions, it is possible that the use could be subject to third party intellectual
+property rights. Marvell recommends that the user investigate whether third party intellectual property rights are
+relevant to the intended use of these products and obtain licenses as appropriate under relevant intellectual property
+rights.
+Marvell comprises Marvell Technology Group Ltd. (MTGL) and its subsidiaries, Marvell International Ltd. (MIL),
+Marvell Semiconductor, Inc. (MSI), Marvell Asia Pte Ltd. (MAPL), Marvell Japan K.K. (MJKK),
+Marvell Semiconductor Israel Ltd. (MSIL), SysKonnect GmbH, and Radlan Computer Communications, Ltd.
+Export Controls.  With respect to any of Marvell s Information, the user or recipient, in the absence of appropriate U.S.
+government authorization, agrees: 1) not to re-export or release any such information consisting of technology, software
+or source code controlled for national security reasons by the U.S. Export Control Regulations ("EAR"), to a national of
+EAR Country Groups D:1 or E:2; 2) not to export the direct product of such technology or such software, to EAR Country
+Groups D:1 or E:2, if such technology or software and direct products thereof are controlled for national security reasons
+by the EAR; and, 3) in the case of technology controlled for national security reasons under the EAR where the direct
+product of the technology is a complete plant or component of a plant, not to export to EAR Country Groups D:1 or E:2 the
+direct product of the plant or major component thereof, if such direct product is controlled for national security reasons
+by the EAR, or is subject to controls under the U.S. Munitions List  ("USML"). At all times hereunder, the recipient of
+any such information agrees that they shall be deemed to have manually signed this document in connection with their
+receipt of any such information.
+Copyright   2004.  Marvell.  All rights reserved.  Marvell, the Marvell logo, Moving Forward Faster, Alaska, and GalNet
+are registered trademarks of Marvell.  Discovery, Fastwriter, GalTis, Horizon, Libertas, Link Street, NetGX,
+PHY Advantage, Prestera, Raising The Technology Bar, UniMAC, Virtual Cable Tester, and Yukon are trademarks of Marvell.
+All other trademarks are the property of their respective owners.

@@ -391,13 +391,14 @@ MV_U32 ddr3Init_(void)
 #if defined(MV88F78X60)
     /* RL WA for B0 */
     if (mvCtrlRevGet() == MV_78XX0_B0_REV) {
+
         uiReg = MV_REG_READ(REG_TRAINING_DEBUG_3_ADDR);
         uiReg &= ~(REG_TRAINING_DEBUG_3_MASK);
         uiReg |= 0x4;                                       /* Phase 0 */
         uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << REG_TRAINING_DEBUG_3_OFFS);
         uiReg |= (0x4 << (1 * REG_TRAINING_DEBUG_3_OFFS));      /* Phase 1 */
-        //uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << (3 * REG_TRAINING_DEBUG_3_OFFS));
-        //uiReg |= (0x6 << (3 * REG_TRAINING_DEBUG_3_OFFS));  /* Phase 3 */
+        uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << (3 * REG_TRAINING_DEBUG_3_OFFS));
+        uiReg |= (0x6 << (3 * REG_TRAINING_DEBUG_3_OFFS));  /* Phase 3 */
         uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << (4 * REG_TRAINING_DEBUG_3_OFFS));
         uiReg |= (0x6 << (4 * REG_TRAINING_DEBUG_3_OFFS));
         uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << (5 * REG_TRAINING_DEBUG_3_OFFS));

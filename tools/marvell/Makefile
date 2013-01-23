@@ -109,8 +109,8 @@ clean:
 	ifeq ($(TOOLSUBDIRS),)
 		@:
 	else
-		@for dir in $(TOOLSUBDIRS) ; do \
-		    $(MAKE) -j1 clean -C $$dir || exit 1 ; \
+		@+for dir in $(TOOLSUBDIRS) ; do \
+		    $(MAKE) clean -C $$dir || exit 1 ; \
 		done
 	endif
 

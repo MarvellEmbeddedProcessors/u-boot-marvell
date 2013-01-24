@@ -27,7 +27,7 @@ TOOLSUBDIRS =
 # Include this after HOSTOS HOSTARCH check
 # so that we can act intelligently.
 #
-sinclude $(TOPDIR)/config.mk
+include $(TOPDIR)/config.mk
 
 #
 # toolchains targeting win32 generate .exe files
@@ -257,7 +257,7 @@ subdirs:
 ifeq ($(TOOLSUBDIRS),)
 	@:
 else
-	@+for dir in $(TOOLSUBDIRS) ; do \
+	@for dir in $(TOOLSUBDIRS) ; do \
 	    $(MAKE) \
 		HOSTOS=$(HOSTOS) \
 		HOSTARCH=$(HOSTARCH) \

@@ -150,7 +150,7 @@ void debug_print_mpi( ssl_context *ssl, int level,
             break;
 
     snprintf( str, maxlen, "%s(%04d): value of '%s' (%d bits) is:\n",
-              file, line, text, ((n + 1) * sizeof( t_int )) << 3 );
+              file, line, text, (int)(((n + 1) * sizeof( t_int )) << 3 ));
 
     str[maxlen] = '\0';
     ssl->f_dbg( ssl->p_dbg, level, str );

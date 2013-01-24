@@ -375,11 +375,12 @@ typedef MV_U32 MV_HZ;
         MV_MEMIO16_WRITE(addr, MV_16BIT_LE_FAST(data))
 
 /* 16bit read in little endian mode */
-static __inline MV_U16 MV_MEMIO_LE16_READ(MV_U32 addr)
+static __inline MV_U16 MV_MEMIO_LE16_READ(void * addr)
 {
 	MV_U16 data;
+	MV_U16 * addr1 = (MV_U16 *)addr;
 
-	data= (MV_U16)MV_MEMIO16_READ(addr);
+	data= (MV_U16)MV_MEMIO16_READ(addr1);
 
 	return (MV_U16)MV_16BIT_LE_FAST(data);
 }
@@ -389,11 +390,12 @@ static __inline MV_U16 MV_MEMIO_LE16_READ(MV_U32 addr)
         MV_MEMIO32_WRITE(addr, MV_32BIT_LE_FAST(data))
 
 /* 32bit read in little endian mode */
-static __inline MV_U32 MV_MEMIO_LE32_READ(MV_U32 addr)
+static __inline MV_U32 MV_MEMIO_LE32_READ(void* addr)
 {
 	MV_U32 data;
+	MV_U32 *addr1 = (MV_U32 *)addr;
 
-	data= (MV_U32)MV_MEMIO32_READ(addr);
+	data= (MV_U32)MV_MEMIO32_READ(addr1);
 
 	return (MV_U32)MV_32BIT_LE_FAST(data);
 }
@@ -422,8 +424,7 @@ static __inline MV_U32 MV_MEMIO_LE32_READ(MV_U32 addr)
 		(MV_MEMIO32_READ((INTER_REGS_BASE | (offset))))
 
 #define MV_REG_READ(offset)         	\
-        (MV_MEMIO_LE32_READ(INTER_REGS_BASE | (offset)))
-
+        (MV_MEMIO_LE32_READ((void *)(INTER_REGS_BASE | (offset))))
 #define MV_REG_WRITE(offset, val)    \
         MV_MEMIO_LE32_WRITE((INTER_REGS_BASE | (offset)), (val))
 
@@ -476,4 +477,3 @@ typedef UINT8* PUINT8;
 #endif /* #ifndef MV_ASMLANGUAGE */
 
 #endif /* _INC_BOOTSTRAP_OS_H */
-

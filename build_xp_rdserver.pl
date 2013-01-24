@@ -6,7 +6,7 @@ use Getopt::Std;
 getopt('v');
 
 
-$fail = system("./build.pl  -f spi -v $opt_v -b armada_xp_rdserver -i spi -c -o /tftpboot/le/spi");
+$fail = system("./build.pl  -f spi -v $opt_v -b armada_xp_rdserver -i spi -c -o ");
 if($fail){
 	print  "\n *** Error: Build u-boot bot from SPI failed\n\n";
 	exit;

@@ -101,7 +101,7 @@ MV_VOID mvUartInit(void)
 	MV_U32 	tmpTClkRate; 
 	MV_U32 baudDivisor = 0;
 
-	uiReg = (MV_REG_READ(REG_SAMPLE_RESET_LOW_ADDR) & (1 << REG_SAMPLE_RESET_TCLK_OFFS));
+    uiReg = (MV_REG_READ(REG_SAMPLE_RESET_LOW_ADDR) & (1 << REG_SAMPLE_RESET_TCLK_OFFS));
 #ifdef MV88F78X60
 	if(uiReg)
 		tmpTClkRate = _200MHZ;	/* 200; */

@@ -25,6 +25,6 @@ install:
 	done
 
 clean:
-	$(MAKE) clean  -C library
-	$(MAKE) clean  -C programs
+	$(MAKE) clean -s -C library
+	$(MAKE) clean -s -C programs
 

@@ -109,8 +109,8 @@ clean:
 	ifeq ($(TOOLSUBDIRS),)
 		@:
 	else
-		@+for dir in $(TOOLSUBDIRS) ; do \
-		    $(MAKE) clean -C $$dir || exit 1 ; \
+		@for dir in $(TOOLSUBDIRS) ; do \
+		    $(MAKE) clean -s -C $$dir || exit 1 ; \
 		done
 	endif
 
@@ -263,7 +263,7 @@ else
 		HOSTARCH=$(HOSTARCH) \
 		HOSTCFLAGS="$(HOSTCFLAGS)" \
 		HOST_LDFLAGS="$(HOST_LDFLAGS)" \
-		-C $$dir || exit 1 ; \
+		-s -C $$dir || exit 1 ; \
 	done
 endif
 

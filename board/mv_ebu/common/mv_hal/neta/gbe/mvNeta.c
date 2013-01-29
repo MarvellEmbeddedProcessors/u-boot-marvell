@@ -916,7 +916,7 @@ MV_STATUS mvNetaPortDisable(int port)
 	return MV_OK;
 }
 
-MV_BOOL		mvNetaLinkIsUp(port)
+MV_BOOL mvNetaLinkIsUp(int port)
 {
 	MV_U32	regVal;
 
@@ -930,7 +930,7 @@ MV_BOOL		mvNetaLinkIsUp(port)
 	return MV_FALSE;
 }
 
-MV_STATUS	mvNetaLinkStatus(int port, MV_ETH_PORT_STATUS *pStatus)
+MV_STATUS mvNetaLinkStatus(int port, MV_ETH_PORT_STATUS *pStatus)
 {
 	MV_U32 regVal;
 
@@ -1387,7 +1387,7 @@ MV_STATUS mvNetaPortDisable(int port)
 	return MV_OK;
 }
 
-MV_BOOL		mvNetaLinkIsUp(port)
+MV_BOOL mvNetaLinkIsUp(int port)
 {
 	MV_U32	regVal;
 

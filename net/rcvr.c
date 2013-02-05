@@ -144,7 +144,7 @@ RecoverTimeout(void)
 	    debug_rcvr("Timeout, Failing the recovery process!\n");
 	    SendTftpError(TFTP_ERROR_UNDEFINED, peerTID, myTID, "Data Packet TimeOut!");
 	    NetSetTimeout(0, (thand_f *)0);
-	    NetState = NETLOOP_FAIL;
+	    net_state = NETLOOP_FAIL;
 	    rcvr_state = RCVR_INIT;
 	    break;
 
@@ -152,7 +152,7 @@ RecoverTimeout(void)
 	case RCVR_FINISHED:
 	    debug_rcvr("Finished successfully.\n");
 	    NetSetTimeout(0, (thand_f *)0);
-	    NetState = NETLOOP_SUCCESS;
+	    net_state = NETLOOP_SUCCESS;
 	    rcvr_state = RCVR_INIT;
 	    break;
 
@@ -340,7 +340,7 @@ RecoveryHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
 			{
 				debug_rcvr("ERROR: TFTP data packet larger that 512!\n");
 				NetSetTimeout(0, (thand_f *)0);
-				NetState = NETLOOP_FAIL;
+				net_state = NETLOOP_FAIL;
 				rcvr_state = RCVR_INIT;
 				return;
 			}
@@ -443,7 +443,7 @@ void RecoverRequest(void)
 	else
 	{
 	printf("ERROR: Missing environment variable for \"loadaddr\"!\n");
-	NetState = NETLOOP_FAIL;
+	net_state = NETLOOP_FAIL;
 	return;
 	}
 
@@ -456,7 +456,10 @@ void RecoverRequest(void)
 	rcvr_state = RCVR_WAIT_4_CNCT;
 
 	/* Set the handler to the TFTP server */
-	NetSetHandler((rxhand_f *)RecoveryHandler);
+/*	NetSetHandler(RecoveryHandler); */
+/* omriii - replaced old handler with udp and arp handlers*/
+	net_set_udp_handler((rxhand_f *)RecoveryHandler);
+	net_set_arp_handler((rxhand_f *)RecoveryHandler);
 
 	/* Set the Timeout */
 	NetSetTimeout(RCVR_BEACON_TIMEOUT * CONFIG_SYS_HZ, RecoverTimeout);

@@ -9,10 +9,6 @@
 #ifndef __CONFIG_FALLBACKS_H
 #define __CONFIG_FALLBACKS_H
 
-#ifndef CONFIG_SYS_BAUDRATE_TABLE
-#define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
-#endif
-
 #if defined(CONFIG_CMD_FAT) && !defined(CONFIG_FS_FAT)
 #define CONFIG_FS_FAT
 #endif

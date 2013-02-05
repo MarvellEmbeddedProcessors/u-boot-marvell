@@ -27,12 +27,13 @@ disclaimer.
 #include "mvCommon.h"
 #include "uart/mvUart.h"
 #include "cpu/mvCpu.h"
+#include <serial.h>
 
 extern unsigned int whoAmI(void);
 
 extern void print_mvBanner(void);
 
-int serial_init (void)
+int mv_serial_init (void)
 {
 	DECLARE_GLOBAL_DATA_PTR;
 
@@ -50,7 +51,7 @@ int serial_init (void)
 	return (0);
 }
 
-void serial_putc(const char c)
+void mv_serial_putc(const char c)
 {
 	if (c == '\n')
 
@@ -58,17 +59,17 @@ void serial_putc(const char c)
 	mvUartPutc(whoAmI(), c);
 }
 
-int serial_getc(void)
+int mv_serial_getc(void)
 {
 	return mvUartGetc(whoAmI());
 }
 
-int serial_tstc(void)
+int mv_serial_tstc(void)
 {
 	return mvUartTstc(whoAmI());
 }
 
-void serial_setbrg (void)
+void mv_serial_setbrg (void)
 {
 	DECLARE_GLOBAL_DATA_PTR;
 	int clock_divisor = (CONFIG_SYS_TCLK / 16)/gd->baudrate;
@@ -77,7 +78,7 @@ void serial_setbrg (void)
 	mvUartInit(whoAmI(), clock_divisor, mvUartBase(whoAmI()));
 }
 
-void serial_puts (const char *s)
+void mv_serial_puts (const char *s)
 {
 	while (*s) {
 		serial_putc (*s++);
@@ -107,3 +108,24 @@ void kgdb_interruptible (int yes)
 	return;
 }
 #endif	/* CFG_CMD_KGDB	*/
+
+static struct serial_device mv_serial_drv = {
+	.name	= "mv_serial",
+	.start	= mv_serial_init,
+	.stop	= NULL,
+	.setbrg	= mv_serial_setbrg,
+	.putc	= mv_serial_putc,
+	.puts	= default_serial_puts,
+	.getc	= mv_serial_getc,
+	.tstc	= mv_serial_tstc,
+};
+
+void mv_serial_initialize(void)
+{
+	serial_register(&mv_serial_drv);
+}
+
+__weak struct serial_device *default_serial_console(void)
+{
+	return &mv_serial_drv;
+}

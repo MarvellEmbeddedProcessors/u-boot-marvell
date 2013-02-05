@@ -54,6 +54,8 @@ disclaimer/
 #define EGIGA_TXQ_LEN   20
 #define EGIGA_RXQ_LEN   20
 
+#define NAMESIZE 16
+
 
 typedef struct _egigaPriv {
 	int port;

@@ -550,6 +550,14 @@ int do_bootm_linux(int flag, int argc, char *argv[], bootm_headers_t *images)
 	if (flag & BOOTM_STATE_OS_BD_T || flag & BOOTM_STATE_OS_CMDLINE)
 		return -1;
 
+#ifdef CONFIG_AMP_SUPPORT
+	if(amp_enable){
+		if(mv_amp_group_setup(amp_group_id, (int)images->ep)){
+			return 1; // in case of error stop boot flow
+		}
+	}
+#endif
+
 	if (flag & BOOTM_STATE_OS_PREP) {
 		boot_prep_linux(images);
 		return 0;

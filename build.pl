@@ -89,6 +89,15 @@ if($opt_c eq 1)
            ($opt_b eq "armada_xp_rdcustomer") )
 	{
 		$board = $opt_b;
+		
+    	if( (substr $board,7 , 3) eq "370" ) {
+				$boardID="a370";
+                                $targetBoard = substr $board, 11;
+		}
+		elsif ( (substr $board,7 , 2) eq "xp" ) {
+				$boardID="axp";
+                                $targetBoard = substr $board, 10;
+		}
 	}
 	else
 	{
@@ -105,24 +114,15 @@ if($opt_c eq 1)
 	# Configure Make
 	system("make mrproper");
 	print "\n**** [Cleaning Make]\t*****\n\n";
-	print " clean tools/bin_hdr_armada_xp\n";
-        $fail = chdir ('./tools/bin_hdr_armada_$boardID');
-        if($fail){
-        	print "\n *** Error: change directory tools/bin_hdr_armada_$boardID \n\n";
-        	exit 1;
-        }
-        $fail = system("make clean");
-        if($fail){
-            print "\n *** Error: make clean\n\n";
-            exit 1;
-        }
-        $fail = chdir ('..\/..\/');
-        if($fail){
-           print "\n *** Error: change directory back to root \n\n";
-        	exit 1;
-        }
-		
-	print "\n**** [Configuring Make] version $opt_v\t*****\n\n";
+
+        my $path = Cwd::cwd();
+	print " clean tools\n";
+	chdir  ("./tools/doimage_armada");
+        system("make clean");
+	chdir  ("../bin_hdr_armada");
+        system("make clean");
+	chdir  ("$path");
+	print "\n**** [Configuring Make] version $opt_v\t to board $targetBoard *****\n\n";
 	system("make ${board}_config");
 
 	# Set pre processors
@@ -211,21 +211,23 @@ if($fail){
 #Create Image and Uart Image
 print "\n**** [Creating Image]\t*****\n\n";
 if($boardID eq "axp") {
+        $failUart = system("./tools/doimage -T uart -D 0 -E 0 -C ./tools/bin_hdr_armada/bin_hdr.uart.bin u-boot.bin u-boot-axp-$opt_v-$flash_name-$targetBoard-uart.bin");
+        $fail = system("./tools/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/bin_hdr_armada/bin_hdr.bin u-boot.bin u-boot-axp-$opt_v-$flash_name-$targetBoard.bin");
 
-	$failUart = system("./tools/doimage -T uart -D 0 -E 0  -C ./tools/bin_hdr_armada_$boardID/uart_header_list.txt u-boot.bin u-boot-$boardID-$opt_v-$flash_name-uart.bin");
-	$fail = system("./tools/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -C ./tools/bin_hdr_armada_$boardID/header_list.txt u-boot.bin u-boot-$boardID-$opt_v-$flash_name.bin");
 }
 elsif($boardID eq "a370"){
-	$failUart=system("./tools/doimage -T uart -D 0 -E 0  -G ./tools/bin_hdr_armada_$boardID/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name-uart.bin");
+	$failUart=system("./tools/doimage -T uart -D 0 -E 0  -G ./tools/bin_hdr_armada/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name-$targetBoard-uart.bin");
+	$fail = system("./tools/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/bin_hdr_armada/bin_hdr.bin u-boot.bin u-boot-a370-$opt_v-$flash_name-$targetBoard.bin");
+}
 
-
-$fail = system("./tools/doimage -T uart -D 0 -E 0 -G ./tools/bin_hdr_armada_xp/bin_hdr.uart.bin u-boot.bin u-boot-axp-$opt_v-$flash_name-$targetBoard-uart.bin");
 if($fail){
+	print "\n *** Error: Doimage failed\n\n";
+	exit 1;
+}
+if($failUart){
 	print "\n *** Error: Doimage for uart image failed\n\n";
 	exit 1;
 }
-
-
 
 if(defined $opt_o)
 {
@@ -238,29 +240,10 @@ if(defined $opt_o)
 	system("cp u-boot.srec $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name-$targetBoard.srec");
 	system("cp u-boot-$boardID-$opt_v-$flash_name-$targetBoard-uart.bin $opt_o/$endian/$opt_f/");
 
-
-	if ($boardID eq "a370")
-	{
-        system("cp tools/bin_hdr_armada_$boardID/bin_hdr.bin $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_$boardID/bin_hdr.elf $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_$boardID/bin_hdr.dis $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_$boardID/bin_hdr.srec $opt_o/bin_hdr/");
-	}
-	elsif ($boardID eq "axp")
-	{
-	    system("cp tools/bin_hdr_armada_$boardID/bin_hdr_ddr.bin $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_$boardID/bin_hdr_ddr.elf $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_$boardID/bin_hdr_ddr.dis $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_$boardID/bin_hdr_ddr.srec $opt_o/bin_hdr/");
-		system("cp tools/bin_hdr_armada_$boardID/bin_hdr_phy.bin $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_$boardID/bin_hdr_phy.elf $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_$boardID/bin_hdr_phy.dis $opt_o/bin_hdr/");
-        system("cp tools/bin_hdr_armada_$boardID/bin_hdr_phy.srec $opt_o/bin_hdr/");	
-	}
-}
-if($failUart){
-	print "\n *** Error: Doimage for uart image failed\n\n";
-	exit 1;
+        system("cp tools/bin_hdr_armada/bin_hdr.bin $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada/bin_hdr.elf $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada/bin_hdr.dis $opt_o/bin_hdr/");
+        system("cp tools/bin_hdr_armada/bin_hdr.srec $opt_o/bin_hdr/");
 }
 
 exit 0;

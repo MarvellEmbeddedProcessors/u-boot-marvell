@@ -5,8 +5,7 @@ include ../common/paths.mk
 
 COBJS = cmd_bios.o \
 	cmd_sar.o \
-	mv_main_axp.o \
-	cmd_stage_boot.o
+	mv_main_axp.o 
 
 LIB	= $(obj)lib$(BOARD).o
 

@@ -44,7 +44,7 @@ disclaimer.
 /************/
 /* VERSIONS */
 /************/
-#define CONFIG_IDENT_STRING	" Marvell version: v2011.12 2013_Q1.0"
+#define CONFIG_IDENT_STRING	" Marvell version: v2013.01 2013_Q1.0"
 
 /* version number passing when loading Kernel */
 #define VER_NUM 0x11120000           /* 2011.12 */
@@ -273,8 +273,13 @@ disclaimer.
 
 /* FS supported */
 #define CONFIG_CMD_EXT2
+#define CONFIG_CMD_EXT4
+#define CONFIG_FS_EXT4
+#define CONFIG_CMD_EXT4_WRITE
+#define CONFIG_EXT4_WRITE
 #define CONFIG_CMD_JFFS2
 #define CONFIG_CMD_FAT
+#define CONFIG_FS_FAT
 #define CONFIG_SUPPORT_VFAT
 
 #define CONFIG_SYS_USE_UBI
@@ -482,7 +487,8 @@ disclaimer.
 	#define CONFIG_CMD_USB
 	#define CONFIG_USB_STORAGE
 	#define CONFIG_USB_EHCI
-	#define CONFIG_USB_EHCI_MARVELL
+//     #define CONFIG_USB_EHCI_MARVELL 
+//     omriii :  CONFIG_USB_EHCI_MARVELL disabled beacuase cause compilation of drivers/usb/host/echi-marvell.c with errors
 	#define CONFIG_EHCI_IS_TDI
 	#define CONFIG_DOS_PARTITION
 	#define CONFIG_ISO_PARTITION

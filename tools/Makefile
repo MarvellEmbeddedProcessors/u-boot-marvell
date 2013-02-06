@@ -104,6 +104,19 @@ NOPED_OBJ_FILES-y += os_support.o
 OBJ_FILES-$(CONFIG_SHA1_CHECK_UB_IMG) += ubsha1.o
 NOPED_OBJ_FILES-y += ublimage.o
 OBJ_FILES-$(CONFIG_KIRKWOOD) += kwboot.o
+	TOOLSUBDIRS += marvell/doimage_armada
+	TOOLSUBDIRS += marvell/bin_hdr_armada
+
+
+clean:
+	$(RM) doimage
+	ifeq ($(TOOLSUBDIRS),)
+		@:
+	else
+		@for dir in $(TOOLSUBDIRS) ; do \
+		    $(MAKE) clean -s -C $$dir || exit 1 ; \
+		done
+	endif
 
 	TOOLSUBDIRS += doimage_armada_$(BOARD)
 	TOOLSUBDIRS += bin_hdr_armada_$(BOARD)
@@ -267,7 +280,9 @@ else
 		HOSTARCH=$(HOSTARCH) \
 		HOSTCFLAGS="$(HOSTCFLAGS)" \
 		HOST_LDFLAGS="$(HOST_LDFLAGS)" \
-		-C $$dir || exit 1 ; \
+		HOSTCFLAGS="$(HOSTCFLAGS)" \
+		HOST_LDFLAGS="$(HOST_LDFLAGS)" \
+		-s -C $$dir || exit 1 ; \
 	done
 endif
 

@@ -1,0 +1,174 @@
+/*******************************************************************************
+Copyright (C) Marvell International Ltd. and its affiliates
+
+********************************************************************************
+Marvell GPL License Option
+
+If you received this File from Marvell, you may opt to use, redistribute and/or
+modify this File in accordance with the terms and conditions of the General
+Public License Version 2, June 1991 (the "GPL License"), a copy of which is
+available along with the File in the license.txt file or by writing to the Free
+Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
+on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
+
+THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+DISCLAIMED.  The GPL License provides additional details about this warranty
+disclaimer.
+
+*******************************************************************************/
+
+#define MV_ASMLANGUAGE
+#include "mvOsAsm.h"
+#include <config.h>
+#include <version.h>
+#include "mvBoardEnvSpec.h"
+#include "mvCtrlEnvSpec.h"
+#include "mvAhbToMbusRegs.h"
+#include "ddr2_3/mvDramIfRegs.h"
+#include "mvCtrlEnvAsm.h"
+
+.globl lowlevel_init
+
+/************************************************/
+/*              lowlevel_init                   *
+/************************************************/
+
+lowlevel_init:
+	mov	r2, lr
+
+	/* Multicore support - read MPIDR register (Multiprocessor Affinity) */
+	mrc	p15, 0, r0, c0, c0, 5
+	bic	r0, r0, #0xFFFFFFF0
+	cmp	r0, #0x0
+	bne	exit
+
+	/* If run from DRAM, then no need to init DRAM, => return */
+	adr	r0, lowlevel_init	/* run-time address of function */
+	ldr	r1, _lowlevel_init_val	/* link-time address of function */
+	cmp	r1, r0
+	beq	exit			/* exit if run from DRAM */
+
+#ifdef CONFIG_MACH_ARMADA_XP_FPGA
+	/* change CPU0 reg base to 0xf1000000 */
+	/* First descrease size of CS[2] to prevent overlap with 0xF1000000 */
+	MV_DV_REG_READ_ASM(r4, r1, 0x200B0)
+	bic	r4, r4, #0x07F00000
+	MV_DV_REG_WRITE_ASM(r4, r1, 0x200B0)
+
+	/* Set 7-Segment to '1' */
+	/* By default, 7-segment connected to CS[2] base 0xF000.000 */
+	mov	r4, #0xf0000000
+	ldr	r4, [r4, #(1 << 4)]
+
+	/* DDR PHY Lock Register */
+	ldr	r4, =0x0
+	MV_REG_WRITE_ASM(r4, r1, 0x1670)
+
+#if defined(MV_STATIC_DRAM_ON_BOARD)
+	bl	_mvDramIfStaticInit
+#endif
+
+	/*
+	 * We use 256 MB DIMM. Basically, init opens only CS[0]
+	 */
+	/* Enable FastPath windows */
+	ldr	r4, =0x0
+	MV_REG_WRITE_ASM(r4, r1, 0x20180)
+	ldr	r4, =0x0fffffe1
+	MV_REG_WRITE_ASM(r4, r1, 0x20184)
+	ldr	r4, =0x0
+	MV_REG_WRITE_ASM(r4, r1, 0x2018c)
+	ldr	r4, =0x0
+	MV_REG_WRITE_ASM(r4, r1, 0x20194)
+	ldr	r4, =0x0
+	MV_REG_WRITE_ASM(r4, r1, 0x2019c)
+
+	/* First close XBAR window 19 */
+	ldr	r4, =0x07ff0e00		/* Disabled DDR window enabled in default */
+	MV_REG_WRITE_ASM(r4, r1, 0x200e8)
+
+	/* Enable CS0 bank */
+	ldr	r4, =0x1
+	MV_REG_WRITE_ASM(r4, r1, 0x15e0)
+
+	/* Set 7-Segment to '2' */
+	/* By default, 7-segment connected to CS[2] base 0xF000.000 */
+	mov	r4, #0xf0000000
+	ldr	r4, [r4, #(2 << 4)]
+#endif /* CONFIG_MACH_ARMADA_XP_FPGA */
+
+exit:
+	mov	lr, r2
+	mov 	pc, lr
+
+.globl _lowlevel_init_val
+_lowlevel_init_val:
+	.word lowlevel_init
+
+/*
+ *************************************************************************
+ *
+ * Flush DCache
+ *
+ *************************************************************************
+ */
+
+.globl _dcache_index_max
+_dcache_index_max:
+	.word 0x0
+
+.globl _dcache_index_inc
+_dcache_index_inc:
+	.word 0x0
+
+.globl _dcache_set_max
+_dcache_set_max:
+	.word 0x0
+
+.globl _dcache_set_index
+_dcache_set_index:
+         .word 0x0
+
+
+#define s_max   r0
+#define s_inc   r1
+#define i_max   r2
+#define i_inc   r3
+
+.globl cpu_dcache_flush_all
+cpu_dcache_flush_all:
+#if !defined(CONFIG_MACH_GENERAL_FPGA)
+        stmdb	sp!, {r0-r3,ip}
+
+        ldr i_max, _dcache_index_max
+        ldr i_inc, _dcache_index_inc
+        ldr s_max, _dcache_set_max
+        ldr s_inc, _dcache_set_index
+
+Lnext_set_inv:
+        orr     ip, s_max, i_max
+Lnext_index_inv:
+        mcr     p15, 0, ip, c7, c14, 2  /* Purge D cache SE with Set/Index */
+        sub     ip, ip, i_inc
+        tst     ip, i_max               /* Index 0 is last one */
+        bne     Lnext_index_inv         /* Next index */
+        mcr     p15, 0, ip, c7, c14, 2  /* Purge D cache SE with Set/Index */
+        subs    s_max, s_max, s_inc
+        bpl     Lnext_set_inv           /* Next set */
+        ldmia	sp!, {r0-r3,ip}
+#endif
+
+        mov	pc, lr   /* back to my caller */
+
+.globl cpu_icache_flush_invalidate_all
+cpu_icache_flush_invalidate_all:
+#if !defined(CONFIG_MACH_GENERAL_FPGA)
+        stmdb	sp!, {r0}
+
+        ldr     r0,=0
+        mcr     p15, 0, r0, c7, c5, 0   /* Flush Invalidate D and I caches */
+        ldmia	sp!, {r0}
+#endif
+
+        mov	pc, lr   /* back to my caller */

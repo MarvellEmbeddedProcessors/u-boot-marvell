@@ -18,6 +18,11 @@ USP_DIR            = $(AXP_CMN_DIR)/USP
 HAL_IF_DIR	   = $(AXP_CMN_DIR)/mv_hal_if
 CONFIG_DIR         = $(AXP_CMN_DIR)/config
 
+ifeq ($(BOARD),avanta)
+SOC_DIR            = $(SRC_PATH)/avanta
+FAM_DIR            = $(SOC_DIR)/avanta_lp_family
+endif
+
 ifeq ($(BOARD),a370)
 SOC_DIR            = $(SRC_PATH)/a370
 FAM_DIR            = $(SOC_DIR)/armada_370_family
@@ -41,6 +46,7 @@ OSSERVICES_DIR     = $(AXP_CMN_DIR)/uboot_oss
 HAL_DRAM_DIR       = $(HAL_DIR)/ddr2_3
 HAL_ETHPHY_DIR     = $(HAL_DIR)/eth-phy
 HAL_FLASH_DIR      = $(HAL_DIR)/norflash
+HAL_PCI_DIR        = $(HAL_DIR)/pci
 HAL_PCIIF_DIR      = $(HAL_DIR)/pci-if
 HAL_PCIIF_UTIL_DIR = $(HAL_DIR)/pci-if/pci_util
 HAL_RTC_DIR        = $(HAL_DIR)/rtc/integ_rtc

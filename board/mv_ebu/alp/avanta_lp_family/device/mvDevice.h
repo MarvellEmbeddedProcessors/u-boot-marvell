@@ -61,45 +61,39 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
+#ifndef __INCmvDeviceH
+#define __INCmvDeviceH
 
-#include "mvCommon.h"
-#include "mvOs.h"
+#include "device/mvDeviceRegs.h"
 #include "ctrlEnv/mvCtrlEnvLib.h"
-#include "usb/mvUsb.h"
 #include "ctrlEnv/mvCtrlEnvAddrDec.h"
-#include "usb/mvUsbRegs.h"
 
-/*******************************************************************************
-* mvSysUsbHalInit - Initialize the USB subsystem
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None
-* OUTPUT:
-*		None
-* RETURN:
-*       None
-*
-*******************************************************************************/
-MV_STATUS   mvSysUsbInit(MV_U32 dev, MV_BOOL isHost)
-{
-	MV_USB_HAL_DATA halData;
-	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
-	MV_STATUS status;
+/* This structure describes device interface parameters to be assigned to   */
+/* device bank parameter                                                    */
+typedef struct _mvDeviceParam {
+				/* boundary values */
+    MV_U32       turnOff;	/* 0x0 - 0xf       */
+    MV_U32       acc2First;	/* 0x0 - 0x1f      */
+    MV_U32       acc2Next;	/* 0x0 - 0x1f      */
+    MV_U32       ale2Wr;	/* 0x0 - 0xf       */
+    MV_U32       wrLow;		/* 0x0 - 0xf       */
+    MV_U32       wrHigh;	/* 0x0 - 0xf       */
+    MV_U32       badrSkew;	/* 0x0 - 0x2       */
+    MV_U32       deviceWidth;	/* in Bytes        */
+} MV_DEVICE_PARAM;
 
-	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
-	if (status == MV_OK)
-		status = mvUsbWinInit(dev, addrWinMap);
 
-	if (dev == 0)
-		mvUsbPllInit();
-	if (status == MV_OK) {
-		halData.ctrlModel = mvCtrlModelGet();
-		halData.ctrlRev = mvCtrlRevGet();
-		halData.ctrlFamily=0x6600; /* omriii : add function for avanta lp:mvCtrlDevFamilyIdGet(halData.ctrlModel); */
-		status = mvUsbHalInit(dev, isHost, &halData);
-	}
+/* mvDevPramSet - Set device interface bank parameters */
+MV_STATUS mvDevIfPramSet(MV_DEVICE device, MV_DEVICE_PARAM *pDevParams);
 
-	return status;
-}
+/* mvDevPramget - Get device interface bank parameters */
+MV_STATUS mvDevPramGet(MV_DEVICE device, MV_DEVICE_PARAM *pDevParams);
+
+/* mvDevWidthGet - Get device width parameter*/
+MV_U32 mvDevWidthGet(MV_DEVICE device);
+
+/* mvDevNandDevCsSet - Set the NAND flash control registers with NAND device- */
+/* select and care mode */
+MV_VOID mvDevNandDevCsSet(MV_DEVICE device, MV_BOOL careMode);
+
+#endif /* #ifndef __INCmvDeviceH */

@@ -43,6 +43,8 @@ int mv_serial_init (void)
 
 	mvUartInit(whoAmI(), clock_divisor, mvUartBase(whoAmI()));
 
+	console_init_f();
+
 #if !defined(DB_78X60_PCAC) && !defined(DB_78X60_PCAC_REV2)
 	/* print banner */
 	print_mvBanner();

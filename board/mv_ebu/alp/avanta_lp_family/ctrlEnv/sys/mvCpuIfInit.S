@@ -62,44 +62,106 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
+#define MV_ASMLANGUAGE
 #include "mvCommon.h"
-#include "mvOs.h"
-#include "ctrlEnv/mvCtrlEnvLib.h"
-#include "usb/mvUsb.h"
-#include "ctrlEnv/mvCtrlEnvAddrDec.h"
-#include "usb/mvUsbRegs.h"
+#include "mvOsAsm.h"
+#include "ctrlEnv/mvCtrlEnvSpec.h"
+#include "mvDeviceId.h"
+#include "mvCtrlEnvRegs.h"
+#include "mvCpuIfRegs.h"
+#include "mvCtrlEnvAsm.h"
+
 
 /*******************************************************************************
-* mvSysUsbHalInit - Initialize the USB subsystem
+* mvCpuIfPreInit - Make early initialization of CPU interface.
 *
 * DESCRIPTION:
+*       The function will initialize the CPU interface parameters that must
+*       be initialize before any BUS activity towards the DDR interface,
+*       which means it must be executed from ROM. Because of that, the function
+*       is implemented in assembly code.
+*       The function configure the following CPU config register parameters:
+*       1) CPU2MbusLTickDrv
+*       2) CPU2MbusLTickSample.
+*       NOTE: This function must be called AFTER the internal register
+*       base is modified to INTER_REGS_BASE.
 *
 * INPUT:
-*       None
-* OUTPUT:
-*		None
-* RETURN:
-*       None
+*       None.
 *
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*       r11 holds return function address.
 *******************************************************************************/
-MV_STATUS   mvSysUsbInit(MV_U32 dev, MV_BOOL isHost)
-{
-	MV_USB_HAL_DATA halData;
-	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
-	MV_STATUS status;
+#define MV88F6281_PCKG_OPT	2
+#define MV88F6192_PCKG_OPT	1
+#define MV88F6180_PCKG_OPT	0
 
-	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
-	if (status == MV_OK)
-		status = mvUsbWinInit(dev, addrWinMap);
+	.globl _mvCpuIfPreInit
+_mvCpuIfPreInit:
 
-	if (dev == 0)
-		mvUsbPllInit();
-	if (status == MV_OK) {
-		halData.ctrlModel = mvCtrlModelGet();
-		halData.ctrlRev = mvCtrlRevGet();
-		halData.ctrlFamily=0x6600; /* omriii : add function for avanta lp:mvCtrlDevFamilyIdGet(halData.ctrlModel); */
-		status = mvUsbHalInit(dev, isHost, &halData);
-	}
+	mov     r11, LR     		/* Save link register */
+	b       done
+#if 0
+	/* Read device ID  */
+	MV_CTRL_MODEL_GET_ASM(r4, r5);
 
-	return status;
-}
+	/* goto calcConfigReg if device is 6281/6282 */
+	ldr     r5, =MV88F6281_PCKG_OPT
+	cmp     r4, r5
+	beq     calcConfigReg
+
+	/* goto calcConfigReg if device is 6192/6190 */
+	ldr     r5, =MV88F6192_PCKG_OPT
+	cmp     r4, r5
+	beq     calcConfigReg
+
+	/* Else 6180 */
+	/* Get the "sample on reset" register */
+	MV_REG_READ_ASM (r4, r5, MPP_SAMPLE_AT_RESET)
+	ldr    r5, =MSAR_CPUCLCK_MASK_6180
+	and    r5, r4, r5
+	mov    r5, r5, lsr #MSAR_CPUCLCK_OFFS_6180
+
+	ldr    r4, =CPU_2_MBUSL_DDR_CLK_1x3
+	cmp    r5, #CPU_2_DDR_CLK_1x3_1
+	beq    setConfigReg
+
+	ldr    r4, =CPU_2_MBUSL_DDR_CLK_1x4
+	cmp    r5, #CPU_2_DDR_CLK_1x4_1
+	beq    setConfigReg
+	b    setConfigReg
+
+calcConfigReg:
+	/* Get the "sample on reset" register */
+	MV_REG_READ_ASM (r4, r5, MPP_SAMPLE_AT_RESET)
+	ldr    r5, =MSAR_DDRCLCK_RTIO_MASK
+	and    r5, r4, r5
+	mov    r5, r5, lsr #MSAR_DDRCLCK_RTIO_OFFS
+
+	ldr    r4, =CPU_2_MBUSL_DDR_CLK_1x3
+	cmp    r5, #CPU_2_DDR_CLK_1x3
+	beq    setConfigReg
+
+	ldr    r4, =CPU_2_MBUSL_DDR_CLK_1x4
+	cmp    r5, #CPU_2_DDR_CLK_1x4
+	beq    setConfigReg
+
+	/* Else */
+	ldr    r4, =0
+
+setConfigReg:
+	/* Read CPU Config register */
+	MV_REG_READ_ASM (r7, r5, CPU_CONFIG_REG)
+	ldr    r5, =~(CCR_CPU_2_MBUSL_TICK_DRV_MASK | CCR_CPU_2_MBUSL_TICK_SMPL_MASK)
+	and    r7, r7, r5       /* Clear register fields */
+	orr    r7, r7, r4       /* Set the values according to the findings */
+	MV_REG_WRITE_ASM (r7, r5, CPU_CONFIG_REG)
+#endif
+
+done:
+	mov     PC, r11         /* r11 is saved link register */

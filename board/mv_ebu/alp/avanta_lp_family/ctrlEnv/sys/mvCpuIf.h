@@ -62,44 +62,60 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include "mvCommon.h"
-#include "mvOs.h"
+#ifndef __INCmvCpuIfh
+#define __INCmvCpuIfh
+
+/* includes */
 #include "ctrlEnv/mvCtrlEnvLib.h"
-#include "usb/mvUsb.h"
-#include "ctrlEnv/mvCtrlEnvAddrDec.h"
-#include "usb/mvUsbRegs.h"
+#include "ctrlEnv/sys/mvCpuIfRegs.h"
+#include "ctrlEnv/sys/mvAhbToMbus.h"
+#if defined(MV_INCLUDE_PEX)
+#include "pex/mvPex.h"
+#endif
 
-/*******************************************************************************
-* mvSysUsbHalInit - Initialize the USB subsystem
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None
-* OUTPUT:
-*		None
-* RETURN:
-*       None
-*
-*******************************************************************************/
-MV_STATUS   mvSysUsbInit(MV_U32 dev, MV_BOOL isHost)
-{
-	MV_USB_HAL_DATA halData;
-	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
-	MV_STATUS status;
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
-	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
-	if (status == MV_OK)
-		status = mvUsbWinInit(dev, addrWinMap);
+/* defines  */
 
-	if (dev == 0)
-		mvUsbPllInit();
-	if (status == MV_OK) {
-		halData.ctrlModel = mvCtrlModelGet();
-		halData.ctrlRev = mvCtrlRevGet();
-		halData.ctrlFamily=0x6600; /* omriii : add function for avanta lp:mvCtrlDevFamilyIdGet(halData.ctrlModel); */
-		status = mvUsbHalInit(dev, isHost, &halData);
-	}
+/* typedefs */
+/* This structure describes CPU interface address decode window	*/
+typedef struct _mvCpuIfDecWin {
+	MV_ADDR_WIN	addrWin;	/* An address window */
+	MV_U32		winNum;		/* Window Number in the AHB To Mbus bridge */
+	MV_BOOL		enable;		/* Address decode window is enabled/disabled */
+} MV_CPU_DEC_WIN;
 
-	return status;
+/* mvCpuIfLib.h API list */
+
+/* mvCpuIfLib.h API list */
+
+MV_STATUS mvCpuIfInit(MV_CPU_DEC_WIN *cpuAddrWinMap);
+MV_STATUS mvCpuIfVerify(MV_CPU_DEC_WIN *cpuAddrWinMap);
+MV_STATUS mvCpuIfDramInit(MV_VOID);
+MV_STATUS mvCpuIfTargetWinSet(MV_TARGET target, MV_CPU_DEC_WIN *pAddrDecWin);
+MV_STATUS mvCpuIfTargetWinGet(MV_TARGET target, MV_CPU_DEC_WIN *pAddrDecWin);
+MV_STATUS mvCpuIfTargetWinEnable(MV_TARGET target, MV_BOOL enable);
+MV_U32    mvCpuIfTargetWinSizeGet(MV_TARGET target);
+MV_U32    mvCpuIfTargetWinBaseLowGet(MV_TARGET target);
+MV_U32    mvCpuIfTargetWinBaseHighGet(MV_TARGET target);
+MV_TARGET mvCpuIfTargetOfBaseAddressGet(MV_U32 baseAddress);
+MV_STATUS mvCpuIfSramWinDisable(MV_VOID);
+#if defined(MV_INCLUDE_PEX)
+MV_U32    mvCpuIfPexRemap(MV_TARGET pexTarget, MV_ADDR_WIN *pAddrDecWin);
+MV_VOID   mvCpuIfEnablePex(MV_U32 pexUnit);
+MV_VOID   mvCpuIfPex4x1Enable(MV_U32 pexUnit, MV_BOOL enable);
+#endif
+#if defined(MV_INCLUDE_PCI)
+MV_U32 	  mvCpuIfPciRemap(MV_TARGET pciTarget, MV_ADDR_WIN *pAddrDecWin);
+#endif
+MV_VOID   mvCpuIfAddDecShow(MV_VOID);
+
+MV_STATUS mvCpuIfLvdsPadsEnable(MV_BOOL enable);
+
+#ifdef __cplusplus
 }
+#endif /* __cplusplus */
+
+#endif /* __INCmvCpuIfh */

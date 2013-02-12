@@ -70,7 +70,8 @@ extern "C" {
 #endif	/* __cplusplus */
 
 /* defines  */
-#define MARVELL_VEN_ID		    0x11ab
+#define MARVELL_VEN_ID			0x11ab
+#define MV_INVALID_DEV_ID		0xffff
 
 /* Disco-3 */
 #define MV64460_DEV_ID          	0x6480

@@ -39,67 +39,66 @@ lowlevel_init:
 
 	/* Multicore support - read MPIDR register (Multiprocessor Affinity) */
 	mrc	p15, 0, r0, c0, c0, 5
+#if defined(CONFIG_AVANTA_LP_FPGA)
 	bic	r0, r0, #0xFFFFFFF0
 	cmp	r0, #0x0
 	bne	exit
-
 	/* If run from DRAM, then no need to init DRAM, => return */
 	adr	r0, lowlevel_init	/* run-time address of function */
 	ldr	r1, _lowlevel_init_val	/* link-time address of function */
 	cmp	r1, r0
 	beq	exit			/* exit if run from DRAM */
 
-#ifdef CONFIG_MACH_ARMADA_XP_FPGA
-	/* change CPU0 reg base to 0xf1000000 */
-	/* First descrease size of CS[2] to prevent overlap with 0xF1000000 */
-	MV_DV_REG_READ_ASM(r4, r1, 0x200B0)
-	bic	r4, r4, #0x07F00000
+	/* Write to CP15:1 - point exception vector to flash (0xffff0000) */
+	mrc 	p15, 0, r0, c1, c0, 0
+	orr 	r0, r0, #0x00002000 	/* bit 13 - Exception Vector on flash 	*/
+	orr	r0, r0, #0x00001000	/* bit 12 - re-enable I-cache 		*/
+	mcr 	p15, 0, r0, c1, c0, 0
+
+	/* descrease size of CS[2] to prevent overlap with 0xf1000000*/ 
+	ldr	r4, =0x000f3b11
 	MV_DV_REG_WRITE_ASM(r4, r1, 0x200B0)
 
-	/* Set 7-Segment to '1' */
-	/* By default, 7-segment connected to CS[2] base 0xF000.000 */
-	mov	r4, #0xf0000000
-	ldr	r4, [r4, #(1 << 4)]
-
-	/* DDR PHY Lock Register */
+	/* Mask L2 End address filtering - forward CPU transactions to XBAR */
 	ldr	r4, =0x0
-	MV_REG_WRITE_ASM(r4, r1, 0x1670)
+	MV_DV_REG_WRITE_ASM(r4, r1, 0x08c04)
 
 #if defined(MV_STATIC_DRAM_ON_BOARD)
 	bl	_mvDramIfStaticInit
 #endif
 
-	/*
-	 * We use 256 MB DIMM. Basically, init opens only CS[0]
-	 */
-	/* Enable FastPath windows */
-	ldr	r4, =0x0
-	MV_REG_WRITE_ASM(r4, r1, 0x20180)
-	ldr	r4, =0x0fffffe1
-	MV_REG_WRITE_ASM(r4, r1, 0x20184)
-	ldr	r4, =0x0
-	MV_REG_WRITE_ASM(r4, r1, 0x2018c)
-	ldr	r4, =0x0
-	MV_REG_WRITE_ASM(r4, r1, 0x20194)
-	ldr	r4, =0x0
-	MV_REG_WRITE_ASM(r4, r1, 0x2019c)
-
-	/* First close XBAR window 19 */
-	ldr	r4, =0x07ff0e00		/* Disabled DDR window enabled in default */
+	/* re-open XBAR window */
+	ldr	r4, =0x0fff0e01
 	MV_REG_WRITE_ASM(r4, r1, 0x200e8)
 
 	/* Enable CS0 bank */
 	ldr	r4, =0x1
-	MV_REG_WRITE_ASM(r4, r1, 0x15e0)
+	MV_DV_REG_WRITE_ASM(r4, r1, 0x015e0)
 
-	/* Set 7-Segment to '2' */
-	/* By default, 7-segment connected to CS[2] base 0xF000.000 */
-	mov	r4, #0xf0000000
-	ldr	r4, [r4, #(2 << 4)]
-#endif /* CONFIG_MACH_ARMADA_XP_FPGA */
+#else /* if not (CONFIG_AVANTA_LP_FPGA) */
+	/* Check if we are CPU0 or CPU1 */
+	cmp     r0, #0x0
+	bne     done_cpu1
+
+	bl	done
+
+done:
+
+#ifdef CFU_DRAM_BYPASS
+	/* allow accessing to DRAM from XBAR */
+	ldr r4, =0x1fff0e01			/* Set DRAM CS[0] size in P-unit (default) */
+	MV_REG_WRITE_ASM(r4, r1, 0x200e8)
+	ldr r4, =0x20000000			/* Set DRAM CS[1] base in P-unit */
+	MV_REG_WRITE_ASM(r4, r1, 0x200e4)
+	ldr r4, =0x1fff0d01			/* Set DRAM CS[1] size in P-unit */
+	MV_REG_WRITE_ASM(r4, r1, 0x200e0)
+#endif /* CFU_DRAM_BYPASS */
+
+#endif /* CONFIG_AVANTA_LP_FPGA) */
 
 exit:
 	mov	lr, r2
+done_cpu1:
 	mov 	pc, lr
 
 .globl _lowlevel_init_val
@@ -138,7 +137,7 @@ _dcache_set_index:
 
 .globl cpu_dcache_flush_all
 cpu_dcache_flush_all:
-#if !defined(CONFIG_MACH_GENERAL_FPGA)
+#if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
         stmdb	sp!, {r0-r3,ip}
 
         ldr i_max, _dcache_index_max
@@ -163,7 +162,7 @@ Lnext_index_inv:
 
 .globl cpu_icache_flush_invalidate_all
 cpu_icache_flush_invalidate_all:
-#if !defined(CONFIG_MACH_GENERAL_FPGA)
+#if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
         stmdb	sp!, {r0}
 
         ldr     r0,=0

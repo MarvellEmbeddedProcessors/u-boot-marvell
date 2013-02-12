@@ -91,10 +91,14 @@
  * entry point of crt0 sequence
  */
  
-#ifdef CONFIG_MACH_GENERAL_FPGA
+#ifdef CONFIG_MACH_AVANTA_LP_FPGA
 .globl _board_init_f_link_addr
 _board_init_f_link_addr:
 	.word board_init_f
+
+.globl _start_link_val2
+_start_link_val2:
+	.word _main
 #endif
 
 .global _main
@@ -118,12 +122,13 @@ _main:
 	bic	sp, sp, #7	/* 8-byte alignment for ABI compliance */
 	mov	r8, sp		/* GD is above SP */
 	mov	r0, #0
-#ifdef CONFIG_MACH_GENERAL_FPGA	
+#ifdef CONFIG_MACH_AVANTA_LP_FPGA	
 	/* Instead of 'bl' use 'ldr pc, addr'
 	 * Rationale: 'bl' is PC-relative, => not appropriate when running
 	 * from Flash, because .text is already copied into RAM, so, flow has
 	 * to jump to RAM (meaning: linker-based symbol address).
 	 */
+ 	mov	r14, pc
 	ldr	pc, _board_init_f_link_addr
 #else
 	bl	board_init_f
@@ -143,6 +148,20 @@ _main:
 	sub	r8, r8, #GD_SIZE		/* new GD is below bd */
 
 	adr	lr, here
+
+/* additional test if running from flash (FPGA) */
+#ifdef CONFIG_MACH_AVANTA_LP_FPGA	
+	adr	r0, _main		/* r0 <- current position of code */
+	ldr	r1, _start_link_val2	/* r1 =  current position  offset relative to code start :test if we run from flash or RAM */
+	cmp	r0, r1			/* if not equal we run from FLASH -> r14 offset correction needed */
+	beq	no_correction
+
+	sub	r0,  r0,  r1		/* r0 = flash base */
+	sub 	r14, r14, r0		/* r14 = fixed return address after code relocation */
+#endif
+/* additional test if running from flash (FPGA) */
+
+no_correction:
 	ldr	r0, [r8, #GD_RELOC_OFF]		/* lr = gd->start_addr_sp */
 	add	lr, lr, r0
 	ldr	r0, [r8, #GD_START_ADDR_SP]	/* r0 = gd->start_addr_sp */
@@ -176,7 +195,7 @@ clbss_l:cmp	r0, r1			/* while not at end of BSS */
 #else
 
 	/* call board_init_r(gd_t *id, ulong dest_addr) */
-	mov	r0, r8			/* gd_t */
+	mov	r0, r8			/* gd<F2>_t */
 	ldr	r1, [r8, #GD_RELOCADDR]	/* dest_addr */
 	/* call board_init_r */
 	ldr	pc, =board_init_r	/* this is auto-relocated! */

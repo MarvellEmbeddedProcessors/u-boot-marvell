@@ -49,6 +49,13 @@ DECLARE_GLOBAL_DATA_PTR;
 
 char *env_name_spec = "Flash";
 
+
+# if	(CONFIG_ENV_ADDR != 0xfd060000)
+#error !!!!
+#endif
+//#define CONFIG_ENV_ADDR   0xfd060000
+
+
 #ifdef ENV_IS_EMBEDDED
 env_t *env_ptr = &environment;
 
@@ -269,7 +276,7 @@ int saveenv(void)
 	}
 #endif	/* CONFIG_ENV_SECT_SIZE */
 
-	debug("Protect off %08lX ... %08lX\n", (ulong)flash_addr, end_addr);
+	printf("Protect off %08lX ... %08lX\n", (ulong)flash_addr, end_addr);
 
 	if (flash_sect_protect(0, (long)flash_addr, end_addr))
 		goto done;

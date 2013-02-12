@@ -48,10 +48,9 @@ disclaimer.
  */
 #ifdef CONFIG_AVANTA_LP_FPGA
 	#define CONFIG_MACH_AVANTA_LP_FPGA
-	#define CONFIG_MACH_GENERAL_FPGA
 #endif
 
-#include "../../board/mv_ebu/avanta/mvSysHwConfig.h"
+#include "../../board/mv_ebu/alp/mvSysHwConfig.h"
 
 /*
  * Version
@@ -64,7 +63,7 @@ disclaimer.
 /*
  * General
  */
-#define MV88F66XX		/* kostaz: should be removed ??? */
+#define MV88F66XX	
 #define MV_SEC_64K
 #define MV_BOOTSIZE_512K
 #define MV_LARGE_PAGE
@@ -98,10 +97,11 @@ disclaimer.
 	#define MV_REF_CLK_BIT_RATE	100000		/* Ref clock frequency */
 	#define MV_REF_CLK_INPUT_GPP	6		/* Ref clock frequency input */
 
-	#define CONFIG_SYS_HZ		1000 		/*800*/
-	#define CONFIG_SYS_TCLK		mvTclkGet()
-	#define CONFIG_SYS_BUS_HZ	mvSysClkGet()
-	#define CONFIG_SYS_BUS_CLK	CONFIG_SYS_BUS_HZ
+	#define CONFIG_SYS_HZ			1000 		/*800*/
+	#define CONFIG_SYS_TCLK			mvTclkGet()
+	#define CONFIG_SYS_BUS_HZ		mvSysClkGet()
+	#define CONFIG_SYS_BUS_CLK		CONFIG_SYS_BUS_HZ
+	#define CONFIG_SYS_FPGA_DRAM_SIZE	_256M
 #endif /* __ASSEMBLY__ */
 
 #define CONFIG_DISPLAY_CPUINFO
@@ -204,7 +204,11 @@ disclaimer.
 /*
  * Serial + Parser
  */
-#define CONFIG_BAUDRATE			115200
+#ifdef CONFIG_AVANTA_LP_FPGA
+	#define CONFIG_BAUDRATE			57600 /* Workaround uart clock divisor issue. */ /* 115200 */
+#else
+	#define CONFIG_BAUDRATE			115200 
+#endif
 #define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600 }
 #define CONFIG_SYS_DUART_CHAN		0
 
@@ -336,7 +340,7 @@ disclaimer.
 #define CONFIG_SYS_FLASH_PROTECTION
 #define CONFIG_FLASH_CFI_DRIVER
 
-#ifdef CONFIG_MACH_GENERAL_FPGA
+#ifdef CONFIG_MACH_AVANTA_LP_FPGA
 #define CONFIG_FLASH_CFI_LEGACY
 #define CONFIG_SYS_FLASH_LEGACY_512Kx8
 #endif
@@ -347,7 +351,7 @@ disclaimer.
 
 #define CONFIG_FLASH_SHOW_PROGRESS		1
 #define CONFIG_SYS_FLASH_EMPTY_INFO
-#if !defined(CONFIG_MACH_GENERAL_FPGA)
+#if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 #define CONFIG_SYS_FLASH_USE_BUFFER_WRITE
 #endif
 
@@ -357,18 +361,18 @@ disclaimer.
 #define CONFIG_ENV_IS_IN_FLASH
 #define CONFIG_ENV_SIZE			0x10000
 #define CONFIG_ENV_SECT_SIZE		0x10000
-#define CONFIG_ENV_OFFSET		0
+#define CONFIG_ENV_OFFSET		0x60000
 #define CONFIG_ENV_RANGE		CONFIG_ENV_SIZE * 8
-#define CONFIG_ENV_ADDR			NOR_CS_BASE
+#define CONFIG_ENV_ADDR			(NOR_CS_BASE + CONFIG_ENV_OFFSET)
 #define MONITOR_HEADER_LEN		0x200
 #define CONFIG_SYS_MONITOR_LEN		0x70000 /* 448 K */
-#define CONFIG_SYS_MONITOR_BASE (CONFIG_SYS_FLASH_BASE + CONFIG_ENV_SECT_SIZE)
+#define CONFIG_SYS_MONITOR_BASE (0 + CONFIG_ENV_SECT_SIZE)
 #define CONFIG_SYS_MONITOR_END  (CONFIG_SYS_MONITOR_BASE + CONFIG_SYS_MONITOR_LEN)
 
 /*
  * Other
  */
-#define MV_DFL_REGS		0xd0000000 	/* boot time MV_REGS */
+#define MV_DFL_REGS		0xf1000000 	/* boot time MV_REGS */
 #define MV_REGS			INTER_REGS_BASE /* MV Registers will be mapped here */
 #define BOARD_LATE_INIT
 #define CONFIG_BOARD_LATE_INIT

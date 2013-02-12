@@ -79,7 +79,7 @@ _end_vect:
  *
  *************************************************************************/
 
-#ifdef CONFIG_MACH_GENERAL_FPGA
+#ifdef CONFIG_MACH_AVANTA_LP_FPGA
 .globl _start_link_val
 _start_link_val:
 	.word _start
@@ -174,6 +174,18 @@ reset:
 	orr	r0, r0, #0xd3
 	msr	cpsr,r0
 
+#if defined(CONFIG_AVANTA_LP_FPGA)
+	/* Replacing register base from  default 0xD0000000 to 0xF1000000 */
+	ldr     r5,=0xD0020080
+	ldr     r2,=0xF1000000
+	str     r2, [r5]
+
+/* Write to CP15:1 - point exception vector to flash (0xffff0000) */
+	ldr	r0, =0x00052078	
+	mcr 	p15, 0, r0, c1, c0, 0
+#endif
+
+
 /*
  * Setup vector:
  * (OMAP4 spl TEXT_BASE is not 32 byte aligned.
@@ -196,14 +208,14 @@ reset:
 	bl	cpu_init_crit
 #endif
 
-#ifdef CONFIG_MACH_GENERAL_FPGA
+#ifdef CONFIG_MACH_AVANTA_LP_FPGA
 /*
  * U-Boot on FPGA board runs from flash till U-Boot relocates itself to DRAM
  */
 relocate:				/* relocate U-Boot to RAM */
 	adr	r0, _start		/* r0 <- current position of code */
 	ldr	r1, _start_link_val	/* test if we run from flash or RAM */
-	cmp	r0, r1
+	cmp	r0, r1			/* if equal we run from RAM - no relocation needed */
 	beq	clear_bss_fpga
 
 	ldr	r2, _start_link_val

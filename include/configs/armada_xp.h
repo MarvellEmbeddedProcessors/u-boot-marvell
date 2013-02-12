@@ -185,10 +185,11 @@ disclaimer.
 	#define MV_REF_CLK_BIT_RATE	100000		/* Ref clock frequency */
 	#define MV_REF_CLK_INPUT_GPP	6		/* Ref clock frequency input */
 
-	#define CONFIG_SYS_HZ		1000 		/*800*/
-	#define CONFIG_SYS_TCLK		mvTclkGet()
-	#define CONFIG_SYS_BUS_HZ	mvSysClkGet()
-	#define CONFIG_SYS_BUS_CLK	CONFIG_SYS_BUS_HZ
+	#define CONFIG_SYS_HZ			1000 		/*800*/
+	#define CONFIG_SYS_TCLK			mvTclkGet()
+	#define CONFIG_SYS_BUS_HZ		mvSysClkGet()
+	#define CONFIG_SYS_BUS_CLK		CONFIG_SYS_BUS_HZ
+	#define CONFIG_SYS_FPGA_DRAM_SIZE 	_256M
 #endif /* __ASSEMBLY__ */
 
 #define CONFIG_DISPLAY_CPUINFO

@@ -18,8 +18,8 @@ USP_DIR            = $(AXP_CMN_DIR)/USP
 HAL_IF_DIR	   = $(AXP_CMN_DIR)/mv_hal_if
 CONFIG_DIR         = $(AXP_CMN_DIR)/config
 
-ifeq ($(BOARD),avanta)
-SOC_DIR            = $(SRC_PATH)/avanta
+ifeq ($(BOARD),alp)
+SOC_DIR            = $(SRC_PATH)/alp
 FAM_DIR            = $(SOC_DIR)/avanta_lp_family
 endif
 

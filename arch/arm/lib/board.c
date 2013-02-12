@@ -283,6 +283,10 @@ void board_init_f(ulong bootflag)
 #ifdef CONFIG_PRAM
 	ulong reg;
 #endif
+
+	/* Functions from init_sequence use board id */
+	mvBoardIdSet();
+
 #if defined(CONFIG_MARVELL) && defined(MV78200)
 	volatile unsigned int cpu;
 #endif

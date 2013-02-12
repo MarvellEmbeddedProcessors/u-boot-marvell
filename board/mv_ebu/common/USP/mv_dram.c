@@ -84,14 +84,17 @@ DECLARE_GLOBAL_DATA_PTR;
 
 int dram_init (void)
 {
-    mvCpuIfDramInit();
+#ifndef CONFIG_MACH_GENERAL_FPGA
+	mvCpuIfDramInit();
+#endif
+
 	gd->ram_size = (phys_size_t)mvDramIfHwSizeGet();
 
 #ifdef MV_INC_DRAM_MFG_TEST
 	mvDramMfgTrst();
 #endif
 
-#if defined(MV88F78X60)
+#if defined(MV88F78X60) && !defined(CONFIG_MACH_GENERAL_FPGA)
 	mvDramScrubbing();
 #endif
 

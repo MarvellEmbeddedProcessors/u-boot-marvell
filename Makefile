@@ -187,7 +187,6 @@ endif
 
 # load other configuration
 include $(TOPDIR)/config.mk
-
 # If board code explicitly specified LDSCRIPT or CONFIG_SYS_LDSCRIPT, use
 # that (or fail if absent).  Otherwise, search for a linker script in a
 # standard location.
@@ -217,7 +216,11 @@ ifndef LDSCRIPT
 		LDSCRIPT := $(TOPDIR)/$(CPUDIR)/u-boot.lds
 	endif
 	ifeq ($(wildcard $(LDSCRIPT)),)
-		LDSCRIPT := $(TOPDIR)/arch/$(ARCH)/cpu/u-boot.lds
+		ifeq ("$(BOARD_TYPE)","mv_fpga_board")	
+			LDSCRIPT :=  $(TOPDIR)/arch/$(ARCH)/cpu/u-boot_fpga.lds
+		else
+			LDSCRIPT := $(TOPDIR)/arch/$(ARCH)/cpu/u-boot.lds
+		endif
 		# We don't expect a Makefile here
 		LDSCRIPT_MAKEFILE_DIR =
 	endif
@@ -260,6 +263,10 @@ LIBS-y += drivers/net/npe/libnpe.o
 endif
 LIBS-$(CONFIG_OF_EMBED) += dts/libdts.o
 LIBS-y += arch/$(ARCH)/lib/lib$(ARCH).o
+
+ifeq ("$(BOARD_TYPE)","mv_fpga_board")
+# all the below LIBS are omitted
+else
 LIBS-y += fs/libfs.o \
 	fs/cbfs/libcbfs.o \
 	fs/cramfs/libcramfs.o \
@@ -271,31 +278,43 @@ LIBS-y += fs/libfs.o \
 	fs/ubifs/libubifs.o \
 	fs/yaffs2/libyaffs2.o \
 	fs/zfs/libzfs.o
-LIBS-y += net/libnet.o
-LIBS-y += disk/libdisk.o
+	
 LIBS-y += drivers/bios_emulator/libatibiosemu.o
 LIBS-y += drivers/block/libblock.o
-LIBS-$(CONFIG_BOOTCOUNT_LIMIT) += drivers/bootcount/libbootcount.o
 LIBS-y += drivers/dma/libdma.o
+LIBS-y += drivers/mmc/libmmc.o
+LIBS-y += drivers/mtd/nand/libnand.o
+LIBS-y += drivers/mtd/onenand/libonenand.o
+LIBS-y += drivers/mtd/ubi/libubi.o
+LIBS-y += drivers/net/sk98lin/libsk98lin.o
+LIBS-y += drivers/pcmcia/libpcmcia.o
+LIBS-y += drivers/power/libpower.o 
+LIBS-y += drivers/video/libvideo.o
+LIBS-y += lib/libfdt/libfdt.o
+endif
+	
+LIBS-y += net/libnet.o
+LIBS-y += disk/libdisk.o
+
+
+LIBS-$(CONFIG_BOOTCOUNT_LIMIT) += drivers/bootcount/libbootcount.o
+
 LIBS-y += drivers/fpga/libfpga.o
 LIBS-y += drivers/gpio/libgpio.o
 LIBS-y += drivers/hwmon/libhwmon.o
 LIBS-y += drivers/i2c/libi2c.o
 LIBS-y += drivers/input/libinput.o
 LIBS-y += drivers/misc/libmisc.o
-LIBS-y += drivers/mmc/libmmc.o
+
 LIBS-y += drivers/mtd/libmtd.o
-LIBS-y += drivers/mtd/nand/libnand.o
-LIBS-y += drivers/mtd/onenand/libonenand.o
-LIBS-y += drivers/mtd/ubi/libubi.o
+
 LIBS-y += drivers/mtd/spi/libspi_flash.o
 LIBS-y += drivers/net/libnet.o
 LIBS-y += drivers/net/phy/libphy.o
-LIBS-y += drivers/net/sk98lin/libsk98lin.o
+
 LIBS-y += drivers/pci/libpci.o
-LIBS-y += drivers/pcmcia/libpcmcia.o
-LIBS-y += drivers/power/libpower.o \
-	drivers/power/fuel_gauge/libfuel_gauge.o \
+
+LIBS-y += drivers/power/fuel_gauge/libfuel_gauge.o \
 	drivers/power/pmic/libpmic.o \
 	drivers/power/battery/libbattery.o
 LIBS-y += drivers/spi/libspi.o
@@ -327,10 +346,8 @@ LIBS-y += drivers/usb/musb/libusb_musb.o
 LIBS-y += drivers/usb/musb-new/libusb_musb-new.o
 LIBS-y += drivers/usb/phy/libusb_phy.o
 LIBS-y += drivers/usb/ulpi/libusb_ulpi.o
-LIBS-y += drivers/video/libvideo.o
 LIBS-y += drivers/watchdog/libwatchdog.o
 LIBS-y += common/libcommon.o
-LIBS-y += lib/libfdt/libfdt.o
 LIBS-y += api/libapi.o
 LIBS-y += post/libpost.o
 LIBS-y += test/libtest.o

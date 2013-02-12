@@ -79,6 +79,12 @@ _end_vect:
  *
  *************************************************************************/
 
+#ifdef CONFIG_MACH_GENERAL_FPGA
+.globl _start_link_val
+_start_link_val:
+	.word _start
+#endif
+
 .globl _TEXT_BASE
 _TEXT_BASE:
 	.word	CONFIG_SYS_TEXT_BASE
@@ -188,6 +194,42 @@ reset:
 #ifndef CONFIG_SKIP_LOWLEVEL_INIT
 	bl	cpu_init_cp15
 	bl	cpu_init_crit
+#endif
+
+#ifdef CONFIG_MACH_GENERAL_FPGA
+/*
+ * U-Boot on FPGA board runs from flash till U-Boot relocates itself to DRAM
+ */
+relocate:				/* relocate U-Boot to RAM */
+	adr	r0, _start		/* r0 <- current position of code */
+	ldr	r1, _start_link_val	/* test if we run from flash or RAM */
+	cmp	r0, r1
+	beq	clear_bss_fpga
+
+	ldr	r2, _start_link_val
+	ldr	r3, _end_ofs
+	add	r2, r3, r2		/* r2 <- size of armboot */
+
+copy_loop_fpga:
+	ldmia	r0!, {r3-r10}		/* copy from source address [r0] */
+	stmia	r1!, {r3-r10}		/* copy to   target address [r1] */
+	cmp	r1, r2			/* until source end addreee [r2] */
+	ble	copy_loop_fpga
+
+clear_bss_fpga:
+	ldr	r0, _bss_start_ofs
+	ldr	r1, _start_link_val
+	add	r0, r0, r1
+	ldr	r1, _bss_end_ofs
+	ldr	r2, _start_link_val
+	add	r1, r1, r2
+	mov	r2, #0x0
+
+clbss_l_fpga:
+	str	r2, [r0]
+	add	r0, r0, #4
+	cmp	r0, r1
+	ble	clbss_l_fpga
 #endif
 
 	bl	_main

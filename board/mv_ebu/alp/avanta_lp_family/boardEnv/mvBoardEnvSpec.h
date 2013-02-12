@@ -62,44 +62,49 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include "mvCommon.h"
-#include "mvOs.h"
-#include "ctrlEnv/mvCtrlEnvLib.h"
-#include "usb/mvUsb.h"
-#include "ctrlEnv/mvCtrlEnvAddrDec.h"
-#include "usb/mvUsbRegs.h"
+#ifndef __INCmvBoardEnvSpech
+#define __INCmvBoardEnvSpech
+
+#include "mvSysHwConfig.h"
+
+/* I2C bus addresses TODO - take from board design */
+#define MV_BOARD_DIMM0_I2C_ADDR			0x56
+#define MV_BOARD_DIMM0_I2C_ADDR_TYPE 		ADDR7_BIT
+#define MV_BOARD_DIMM1_I2C_ADDR			0x57
+#define MV_BOARD_DIMM1_I2C_ADDR_TYPE 		ADDR7_BIT
+#define MV_BOARD_DIMM_I2C_CHANNEL		0x0
+
+/* Board specific configuration */
+/* ============================ */
 
 /*******************************************************************************
-* mvSysUsbHalInit - Initialize the USB subsystem
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None
-* OUTPUT:
-*		None
-* RETURN:
-*       None
-*
-*******************************************************************************/
-MV_STATUS   mvSysUsbInit(MV_U32 dev, MV_BOOL isHost)
-{
-	MV_USB_HAL_DATA halData;
-	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
-	MV_STATUS status;
+ * AvanataLP customer board
+ */
+#define AVANTA_LP_CUSTOMER_MPP0_7		0x00000000
+#define AVANTA_LP_CUSTOMER_MPP8_15		0x00000000
+#define AVANTA_LP_CUSTOMER_MPP16_23		0x33000000
+#define AVANTA_LP_CUSTOMER_MPP24_31		0x11000000
+#define AVANTA_LP_CUSTOMER_MPP32_39		0x11111111
+#define AVANTA_LP_CUSTOMER_MPP40_47		0x00221100
+#define AVANTA_LP_CUSTOMER_MPP48_55		0x00000003
+#define AVANTA_LP_CUSTOMER_MPP56_63		0x00000000
+#define AVANTA_LP_CUSTOMER_MPP64_67		0x00000000
 
-	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
-	if (status == MV_OK)
-		status = mvUsbWinInit(dev, addrWinMap);
+#define AVANTA_LP_CUSTOMER_GPP_OUT_ENA_LOW	0x0
+#define AVANTA_LP_CUSTOMER_GPP_OUT_ENA_MID	0x0
+#define AVANTA_LP_CUSTOMER_GPP_OUT_ENA_HIGH	0x0
+#define AVANTA_LP_CUSTOMER_GPP_OUT_VAL_LOW	0x0
+#define AVANTA_LP_CUSTOMER_GPP_OUT_VAL_MID	0x0
+#define AVANTA_LP_CUSTOMER_GPP_OUT_VAL_HIGH	0x0
+#define AVANTA_LP_CUSTOMER_GPP_POL_LOW		0x0
+#define AVANTA_LP_CUSTOMER_GPP_POL_MID		0x0
+#define AVANTA_LP_CUSTOMER_GPP_POL_HIGH		0x0
 
-	if (dev == 0)
-		mvUsbPllInit();
-	if (status == MV_OK) {
-		halData.ctrlModel = mvCtrlModelGet();
-		halData.ctrlRev = mvCtrlRevGet();
-		halData.ctrlFamily=0x6600; /* omriii : add function for avanta lp:mvCtrlDevFamilyIdGet(halData.ctrlModel); */
-		status = mvUsbHalInit(dev, isHost, &halData);
-	}
+/* New board ID numbers */
+#define BOARD_ID_BASE				0x0
+#define MV_BOARD_ID_AVANTA_LP_FPGA		BOARD_ID_BASE
+#define MV_MAX_BOARD_ID				(MV_BOARD_ID_AVANTA_LP_FPGA+1)
+#define MV_INVALID_BOARD_ID			0xFFFFFFFF
 
-	return status;
-}
+
+#endif /* __INCmvBoardEnvSpech */

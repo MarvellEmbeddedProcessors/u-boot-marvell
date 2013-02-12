@@ -62,44 +62,51 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
+#ifndef __INCmvCpuh
+#define __INCmvCpuh
+
 #include "mvCommon.h"
+#include "ctrlEnv/mvCtrlEnvSpec.h"
+#ifndef MV_ASMLANGUAGE
 #include "mvOs.h"
-#include "ctrlEnv/mvCtrlEnvLib.h"
-#include "usb/mvUsb.h"
-#include "ctrlEnv/mvCtrlEnvAddrDec.h"
-#include "usb/mvUsbRegs.h"
+#endif
 
-/*******************************************************************************
-* mvSysUsbHalInit - Initialize the USB subsystem
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None
-* OUTPUT:
-*		None
-* RETURN:
-*       None
-*
-*******************************************************************************/
-MV_STATUS   mvSysUsbInit(MV_U32 dev, MV_BOOL isHost)
-{
-	MV_USB_HAL_DATA halData;
-	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
-	MV_STATUS status;
+#define MASTER_CPU 0
+/* defines */
+#define CPU_PART_MRVL131                0x131
+#define CPU_PART_ARM926                 0x926
+#define CPU_PART_ARM946                 0x946
+#define CPU_PART_MRVL_A9                0xC09
+#define CPU_PART_MRVL571                0x571
+#define CPU_PART_MRVL521                0x521
 
-	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
-	if (status == MV_OK)
-		status = mvUsbWinInit(dev, addrWinMap);
+#define CPU_PART_ARM_V6UP               0xb76
+#define CPU_PART_ARM_V7UP               0xc08
+#define CPU_PART_ARM_CA9                0xc09
+#define CPU_PART_ARM_V6MP               0xb02
 
-	if (dev == 0)
-		mvUsbPllInit();
-	if (status == MV_OK) {
-		halData.ctrlModel = mvCtrlModelGet();
-		halData.ctrlRev = mvCtrlRevGet();
-		halData.ctrlFamily=0x6600; /* omriii : add function for avanta lp:mvCtrlDevFamilyIdGet(halData.ctrlModel); */
-		status = mvUsbHalInit(dev, isHost, &halData);
-	}
+#define CPU_PART_MRVLPJ4B_UP               0x581
+#define CPU_PART_MRVLPJ4B_MP               0x584
 
-	return status;
-}
+#define MV_CPU_ARM_CLK_ELM_SIZE	    12
+#define MV_CPU_ARM_CLK_RATIO_OFF    8
+#define MV_CPU_ARM_CLK_DDR_OFF	    4
+
+#ifndef MV_ASMLANGUAGE
+typedef struct _mvCpuArmClkRatio {
+	MV_U32	vco2cpu;	/* VCO:PCLK0(CPU) clock ratio */
+	MV_U32	vco2l2c;	/* VCO:NB(L2 cache) clock ratio */
+	MV_U32	vco2hcl;	/* VCO:HCLK(DDR controller) clock ratio */
+	MV_U32	vco2ddr;	/* VCO:DDR(DDR memory) clock ratio */
+
+} MV_CPU_ARM_CLK_RATIO;
+
+MV_U32  mvCpuPclkGet(MV_VOID);
+MV_VOID mvCpuNameGet(char *pNameBuff);
+MV_U32  mvCpuL2ClkGet(MV_VOID);
+MV_U32  mvCpuIfPrintSystemConfig(MV_8 *buffer, MV_U32 index);
+MV_U32  whoAmI(MV_VOID);
+
+#endif /* MV_ASMLANGUAGE */
+
+#endif /* __INCmvCpuh */

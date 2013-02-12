@@ -62,44 +62,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include "mvCommon.h"
-#include "mvOs.h"
+#ifndef __INCmvAhbToMbush
+#define __INCmvAhbToMbush
+
+/* includes */
 #include "ctrlEnv/mvCtrlEnvLib.h"
-#include "usb/mvUsb.h"
+#include "ctrlEnv/sys/mvAhbToMbusRegs.h"
 #include "ctrlEnv/mvCtrlEnvAddrDec.h"
-#include "usb/mvUsbRegs.h"
 
-/*******************************************************************************
-* mvSysUsbHalInit - Initialize the USB subsystem
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None
-* OUTPUT:
-*		None
-* RETURN:
-*       None
-*
-*******************************************************************************/
-MV_STATUS   mvSysUsbInit(MV_U32 dev, MV_BOOL isHost)
-{
-	MV_USB_HAL_DATA halData;
-	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
-	MV_STATUS status;
+/* defines  */
+typedef struct _mvAhbtoMbusDecWin {
+	MV_TARGET	target;
+	MV_ADDR_WIN	addrWin;    /* An address window*/
+	MV_BOOL		enable;     /* Address decode window is enabled/disabled    */
+} MV_AHB_TO_MBUS_DEC_WIN;
 
-	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
-	if (status == MV_OK)
-		status = mvUsbWinInit(dev, addrWinMap);
+/* mvAhbToMbus.h API list */
 
-	if (dev == 0)
-		mvUsbPllInit();
-	if (status == MV_OK) {
-		halData.ctrlModel = mvCtrlModelGet();
-		halData.ctrlRev = mvCtrlRevGet();
-		halData.ctrlFamily=0x6600; /* omriii : add function for avanta lp:mvCtrlDevFamilyIdGet(halData.ctrlModel); */
-		status = mvUsbHalInit(dev, isHost, &halData);
-	}
+MV_STATUS mvAhbToMbusInit(MV_VOID);
+MV_STATUS mvAhbToMbusWinSet(MV_U32 winNum, MV_AHB_TO_MBUS_DEC_WIN *pAddrDecWin);
+MV_STATUS mvAhbToMbusWinGet(MV_U32 winNum, MV_AHB_TO_MBUS_DEC_WIN *pAddrDecWin);
+MV_STATUS mvAhbToMbusWinEnable(MV_U32 winNum, MV_BOOL enable);
+MV_U32    mvAhbToMbusWinRemap(MV_U32 winNum, MV_ADDR_WIN *pAddrDecWin);
+MV_U32	  mvAhbToMbusWinTargetGet(MV_TARGET target);
+MV_U32    mvAhbToMbusWinAvailGet(MV_VOID);
+MV_STATUS mvAhbToMbusWinTargetSwap(MV_TARGET target1, MV_TARGET target2);
+MV_VOID   mvAhbToMbusAddDecShow(MV_VOID);
 
-	return status;
-}
+#endif /* __INCmvAhbToMbush */

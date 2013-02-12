@@ -127,6 +127,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         ldr     tmpReg, =(MV_DFL_REGS + regOffs) ;	\
         str     fromReg, [tmpReg]
 
+#define MV_32BIT_READ_ASM(toReg, tmpReg, addr)       	\
+        ldr     tmpReg, =(addr) ;  			\
+        ldr     toReg, [tmpReg]                      ;  \
+        HTOLL(toReg,tmpReg)
+
+#define MV_32BIT_WRITE_ASM(fromReg, tmpReg, addr)	\
+        HTOLL(fromReg,tmpReg)                        ;  \
+        ldr     tmpReg, =(addr) 		     ;	\
+        str     fromReg, [tmpReg]
+
 #else
  #error "CPU type not selected"
 #endif

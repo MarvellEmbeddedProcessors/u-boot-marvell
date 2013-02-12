@@ -62,44 +62,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include "mvCommon.h"
-#include "mvOs.h"
-#include "ctrlEnv/mvCtrlEnvLib.h"
-#include "usb/mvUsb.h"
-#include "ctrlEnv/mvCtrlEnvAddrDec.h"
-#include "usb/mvUsbRegs.h"
 
-/*******************************************************************************
-* mvSysUsbHalInit - Initialize the USB subsystem
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None
-* OUTPUT:
-*		None
-* RETURN:
-*       None
-*
-*******************************************************************************/
-MV_STATUS   mvSysUsbInit(MV_U32 dev, MV_BOOL isHost)
-{
-	MV_USB_HAL_DATA halData;
-	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
-	MV_STATUS status;
+#ifndef __INCmvCtrlEnvAsmh
+#define __INCmvCtrlEnvAsmh
+#include "pex/mvPexRegs.h"
 
-	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
-	if (status == MV_OK)
-		status = mvUsbWinInit(dev, addrWinMap);
+#define CHIP_BOND_REG			0x18238
+#define PCKG_OPT_MASK_AS 		#3
+#define PXCCARI_REVID_MASK_AS		#PXCCARI_REVID_MASK
 
-	if (dev == 0)
-		mvUsbPllInit();
-	if (status == MV_OK) {
-		halData.ctrlModel = mvCtrlModelGet();
-		halData.ctrlRev = mvCtrlRevGet();
-		halData.ctrlFamily=0x6600; /* omriii : add function for avanta lp:mvCtrlDevFamilyIdGet(halData.ctrlModel); */
-		status = mvUsbHalInit(dev, isHost, &halData);
-	}
+/* Read device ID into toReg bits 15:0 from 0xd0000000 */
+/* defines  */
+#define MV_DV_CTRL_MODEL_GET_ASM(toReg, tmpReg) \
+	MV_DV_REG_READ_ASM(toReg, tmpReg, CHIP_BOND_REG);\
+	and     toReg, toReg, PCKG_OPT_MASK_AS			/* Mask for package ID */
 
-	return status;
-}
+/* Read device ID into toReg bits 15:0 from 0xf1000000*/
+#define MV_CTRL_MODEL_GET_ASM(toReg, tmpReg) \
+	MV_REG_READ_ASM(toReg, tmpReg, CHIP_BOND_REG);\
+	and     toReg, toReg, PCKG_OPT_MASK_AS			/* Mask for package ID */
+
+/* Read Revision into toReg bits 7:0 0xd0000000*/
+#define MV_DV_CTRL_REV_GET_ASM(toReg, tmpReg)	\
+	/* Read device revision */			\
+	MV_DV_REG_READ_ASM(toReg, tmpReg, PEX_CFG_DIRECT_ACCESS(0, PEX_CLASS_CODE_AND_REVISION_ID));\
+	and     toReg, toReg, PXCCARI_REVID_MASK_AS		/* Mask for calss ID */
+
+/* Read Revision into toReg bits 7:0 0xf1000000*/
+#define MV_CTRL_REV_GET_ASM(toReg, tmpReg)	\
+	/* Read device revision */			\
+	MV_REG_READ_ASM(toReg, tmpReg, PEX_CFG_DIRECT_ACCESS(0, PEX_CLASS_CODE_AND_REVISION_ID));\
+	and     toReg, toReg, PXCCARI_REVID_MASK_AS		/* Mask for calss ID */
+
+#endif /* __INCmvCtrlEnvAsmh */

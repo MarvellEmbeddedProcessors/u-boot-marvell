@@ -90,6 +90,12 @@
 /*
  * entry point of crt0 sequence
  */
+ 
+#ifdef CONFIG_MACH_GENERAL_FPGA
+.globl _board_init_f_link_addr
+_board_init_f_link_addr:
+	.word board_init_f
+#endif
 
 .global _main
 
@@ -112,7 +118,16 @@ _main:
 	bic	sp, sp, #7	/* 8-byte alignment for ABI compliance */
 	mov	r8, sp		/* GD is above SP */
 	mov	r0, #0
+#ifdef CONFIG_MACH_GENERAL_FPGA	
+	/* Instead of 'bl' use 'ldr pc, addr'
+	 * Rationale: 'bl' is PC-relative, => not appropriate when running
+	 * from Flash, because .text is already copied into RAM, so, flow has
+	 * to jump to RAM (meaning: linker-based symbol address).
+	 */
+	ldr	pc, _board_init_f_link_addr
+#else
 	bl	board_init_f
+#endif
 
 #if ! defined(CONFIG_SPL_BUILD)
 

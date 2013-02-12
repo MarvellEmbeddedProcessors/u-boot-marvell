@@ -62,44 +62,82 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include "mvCommon.h"
-#include "mvOs.h"
-#include "ctrlEnv/mvCtrlEnvLib.h"
-#include "usb/mvUsb.h"
-#include "ctrlEnv/mvCtrlEnvAddrDec.h"
-#include "usb/mvUsbRegs.h"
 
-/*******************************************************************************
-* mvSysUsbHalInit - Initialize the USB subsystem
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None
-* OUTPUT:
-*		None
-* RETURN:
-*       None
-*
-*******************************************************************************/
-MV_STATUS   mvSysUsbInit(MV_U32 dev, MV_BOOL isHost)
-{
-	MV_USB_HAL_DATA halData;
-	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
-	MV_STATUS status;
+#ifndef __INCmvAhbToMbusRegsh
+#define __INCmvAhbToMbusRegsh
 
-	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
-	if (status == MV_OK)
-		status = mvUsbWinInit(dev, addrWinMap);
+#define MAX_AHB_TO_MBUS_WINS			21
+#define MAX_AHB_TO_MBUS_REMAP_WINS		8
+#define MV_AHB_TO_MBUS_INTREG_WIN		20
 
-	if (dev == 0)
-		mvUsbPllInit();
-	if (status == MV_OK) {
-		halData.ctrlModel = mvCtrlModelGet();
-		halData.ctrlRev = mvCtrlRevGet();
-		halData.ctrlFamily=0x6600; /* omriii : add function for avanta lp:mvCtrlDevFamilyIdGet(halData.ctrlModel); */
-		status = mvUsbHalInit(dev, isHost, &halData);
-	}
+/***********************/
+/* AHB TO MBUS WINDOWS */
+/***********************/
+/* Window-X Control Registers */
+#define AHB_TO_MBUS_WIN_CTRL_REG(winNum)	((winNum < MAX_AHB_TO_MBUS_REMAP_WINS) ? \
+						 (MV_MBUS_REGS_OFFSET + winNum * 0x10) : \
+						 (MV_MBUS_REGS_OFFSET + 0x90 + (winNum-8)*0x08))
+#define ATMWCR_WIN_ENABLE			BIT0
+#define ATMWCR_WIN_TARGET_OFFS			4
+#define ATMWCR_WIN_TARGET_MASK			(0xf << ATMWCR_WIN_TARGET_OFFS)
+#define ATMWCR_WIN_ATTR_OFFS			8
+#define ATMWCR_WIN_ATTR_MASK			(0xff << ATMWCR_WIN_ATTR_OFFS)
+#define ATMWCR_WIN_SIZE_OFFS			16
+#define ATMWCR_WIN_SIZE_MASK			(0xffff << ATMWCR_WIN_SIZE_OFFS)
+#define ATMWCR_WIN_SIZE_ALIGNMENT		0x10000
 
-	return status;
-}
+/* Window-X Base Register */
+#define AHB_TO_MBUS_WIN_BASE_REG(winNum)	((winNum < MAX_AHB_TO_MBUS_REMAP_WINS) ? \
+						 (MV_MBUS_REGS_OFFSET + 0x4 + winNum*0x10) : \
+						 (MV_MBUS_REGS_OFFSET + 0x94 + (winNum-8)*0x08))
+#define ATMWBR_BASE_OFFS			16
+#define ATMWBR_BASE_MASK			(0xffff << 	ATMWBR_BASE_OFFS)
+#define ATMWBR_BASE_ALIGNMENT			0x10000
+
+/* Window-X Remap Low Register */
+#define AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum)	((winNum < MAX_AHB_TO_MBUS_REMAP_WINS) ? \
+						 (MV_MBUS_REGS_OFFSET + 0x8 + winNum*0x10) : \
+						 (0))
+#define ATMWRLR_REMAP_LOW_OFFS			16
+#define ATMWRLR_REMAP_LOW_MASK			(0xffff << ATMWRLR_REMAP_LOW_OFFS)
+#define ATMWRLR_REMAP_LOW_ALIGNMENT		0x10000
+
+/* Window-X Remap Hi Register */
+#define AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum)	((winNum < MAX_AHB_TO_MBUS_REMAP_WINS) ? \
+						 (MV_MBUS_REGS_OFFSET + 0xC + winNum*0x10) : \
+						 (0))
+#define ATMWRHR_REMAP_HIGH_OFFS			0
+#define ATMWRHR_REMAP_HIGH_MASK			(0xffffffff << ATMWRHR_REMAP_HIGH_OFFS)
+
+/*****************************/
+/* INTERNAL REGISTERS WINDOW */
+/*****************************/
+/* Internal Registers Base Address in set to be window 20 */
+#define AHB_TO_MBUS_WIN_INTEREG_REG		(MV_MBUS_REGS_OFFSET + 0x80)
+
+/************************/
+/* SDRAM DECODE WINDOWS */
+/************************/
+/* All DRAM Window definitions are declared under the ddr2_3 HAL */
+
+/****************************/
+/* SRAM (L2) DECODE WINDOWS */
+/****************************/
+#define SRAM_WIN_CTRL_REG(winNum)		(MV_MBUS_REGS_OFFSET + 0x240 + winNum * 0x4)
+#define SRAMWCR_ENABLE				BIT0
+#define SRAMWCR_SIZE_OFFS			8
+#define SRAMWCR_SIZE_MASK			(0x7 << SRAMWCR_SIZE_OFFS)
+#define SRAMWCR_BASE_OFFS			16
+#define SRAMWCR_BASE_MASK			(0xFFFF << SRAMWCR_BASE_OFFS)
+
+/**********************/
+/* MBUS BRIDGE WINDOW */
+/**********************/
+#define MBUS_BRIDGE_WIN_CTRL_REG		(MV_MBUS_REGS_OFFSET + 0x250)
+#define BRIDGWCR_ENABLE				BIT0
+#define BRIDGWCR_SIZE_OFFS			16
+#define BRIDGWCR_SIZE_MASK			(0xFFFF << BRIDGWCR_SIZE_OFFS)
+#define MBUS_BRIDGE_WIN_BASE_REG		(MV_MBUS_REGS_OFFSET + 0x254)
+
+#endif /* __INCmvAhbToMbusRegsh */
+

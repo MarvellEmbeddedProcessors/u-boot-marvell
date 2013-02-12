@@ -84,7 +84,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 int dram_init (void)
 {
-#ifndef CONFIG_MACH_GENERAL_FPGA
+#ifndef CONFIG_MACH_AVANTA_LP_FPGA
 	mvCpuIfDramInit();
 #endif
 
@@ -94,7 +94,7 @@ int dram_init (void)
 	mvDramMfgTrst();
 #endif
 
-#if defined(MV88F78X60) && !defined(CONFIG_MACH_GENERAL_FPGA)
+#if defined(MV88F78X60) && !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	mvDramScrubbing();
 #endif
 

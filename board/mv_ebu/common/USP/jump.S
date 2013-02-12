@@ -27,7 +27,7 @@ disclaimer.
  * Its main purpose to enable CPU to reach the reset vector code (_start symbol).
  */
 jumpStart:
-
+	
 	adr	r4, jumpStart		/* r4 <- current position of code   */
 	ldr	r5, __start		/* r5 <- linker results for _start   */
 	ldr	r2, _jumpStart		/* r2 <- linker results reset vector */

@@ -37,10 +37,9 @@ int mv_serial_init (void)
 {
 	DECLARE_GLOBAL_DATA_PTR;
 
-	int clock_divisor = (CONFIG_SYS_TCLK / 16)/gd->baudrate;
+	int clock_divisor = (CONFIG_SYS_TCLK / 16)/gd->baudrate; 
 
 	/* muti-core support, initiate each Uart to each cpu */
-
 	mvUartInit(whoAmI(), clock_divisor, mvUartBase(whoAmI()));
 
 	console_init_f();

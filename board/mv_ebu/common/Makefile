@@ -95,27 +95,25 @@ USP_OBJS +=		$(USP_DIR)/mv_rtc.o		\
 			$(USP_DIR)/mv_ide.o		\
 			$(USP_DIR)/mv_phy.o		\
 			$(USP_DIR)/cmd_pcie.o		\
-			$(USP_DIR)/mv_pci.o 		\
+			$(USP_DIR)/mv_pex.o 		\
 			$(USP_DIR)/mv_main.o		
 else
-USP_OBJS +=		$(USP_DIR)/mv_pci_alp.o		
+USP_OBJS +=		$(USP_DIR)/mv_pci.o		
 endif
+
+SOBJS = $(USP_DIR)/platform.o		
 
 ifeq ($(BOARD),axp)	
 	USP_OBJS +=	$(USP_DIR)/mv_amp.o	
-	SOBJS = $(USP_DIR)/platform_axp.o		
+	SOBJS +=	$(USP_DIR)/mv_micro_loader.o
 endif
 		
 
-ifeq ($(BOARD),avanta)	
-	SOBJS = $(USP_DIR)/jump.o 		\
+ifeq ($(BOARD),alp)	
+	SOBJS+= $(USP_DIR)/jump.o 		\
 		$(HAL_DRAM_DIR)/mvDramIfBasicInit.o	
-	SOBJS+= $(USP_DIR)/platform_alp.o		
 endif
 
-ifeq ($(BOARD),axp)	
-	SOBJS +=	$(USP_DIR)/mv_micro_loader.o	
-endif
 
 COBJS = $(COMMON_OBJS)		\
 	$(OSSERVICES_OBJS)	\

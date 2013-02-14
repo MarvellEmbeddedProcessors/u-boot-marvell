@@ -1241,7 +1241,10 @@ MV_BOARD_GPP_INFO rd78460gpInfoBoardGppInfo[] = {
 MV_DEV_CS_INFO rd78460gpInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth }*/
 #if defined(MV_INCLUDE_SPI)
-	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8} /* SPI DEV */
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
+#endif
+#if defined(MV_INCLUDE_NOR)
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16} /* NOR DEV */
 #endif
 };
 

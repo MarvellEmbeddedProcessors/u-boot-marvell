@@ -1360,51 +1360,9 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 /*******************************************************************************
  * SatR Configuration functions
  */
-MV_U8 mvBoardFabFreqGet(MV_VOID)
-{
-	MV_U8 sar0;
-	MV_U8 sar1;
 
-	sar0 = mvBoardTwsiSatRGet(2, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar0)
-		return MV_ERROR;
 
-	sar1 = mvBoardTwsiSatRGet(3, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar1)
-		return MV_ERROR;
 
-	return (((sar1 & 0x1) << 4) | ((sar0 & 0x1E) >> 1));
-}
-
-MV_STATUS mvBoardFabFreqSet(MV_U8 freqVal)
-{
-	MV_U8 sar0;
-
-	sar0 = mvBoardTwsiSatRGet(2, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar0)
-		return MV_ERROR;
-
-	sar0 &= ~(0xF << 1);
-	sar0 |= (freqVal & 0xF) << 1;
-	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar0)) {
-		DB(mvOsPrintf("Board: Write FreqOpt S@R fail\n"));
-		return MV_ERROR;
-	}
-
-	sar0 = mvBoardTwsiSatRGet(3, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar0)
-		return MV_ERROR;
-
-	sar0 &= ~(0x1);
-	sar0 |= ( (freqVal >> 4) & 0x1);
-	if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar0)) {
-		DB(mvOsPrintf("Board: Write FreqOpt S@R fail\n"));
-		return MV_ERROR;
-	}
-
-	DB(mvOsPrintf("Board: Write FreqOpt S@R succeeded\n"));
-	return MV_OK;
-}
 
 MV_U8 mvBoardCpuFreqGet(MV_VOID)
 {
@@ -1461,248 +1419,44 @@ MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
 	return MV_OK;
 }
 
-MV_U8 mvBoardBootDevGet(MV_VOID)
-{
-	MV_U8 sar;
 
-	sar = mvBoardTwsiSatRGet(0, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
 
-	return (sar & 0x7);
-}
 
-MV_STATUS mvBoardBootDevSet(MV_U8 val)
-{
-	MV_U8 sar;
 
-	sar = mvBoardTwsiSatRGet(0, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
 
-	sar &= ~(0x7);
-	sar |= (val & 0x7);
 
-	if (mvBoardTwsiSatRSet(0, 0, sar) != MV_OK) {
-		DB(mvOsPrintf("Board: Write BootDev S@R fail\n"));
-		return MV_ERROR;
-	}
 
-	DB(mvOsPrintf("Board: Write BootDev S@R succeeded\n"));
-	return MV_OK;
-}
 
-MV_U8 mvBoardBootDevWidthGet(MV_VOID)
-{
-	MV_U8 sar = mvBoardTwsiSatRGet(0, 0);
 
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
 
-	return (sar & 0x18) >> 3;
-}
 
-MV_STATUS mvBoardBootDevWidthSet(MV_U8 val)
-{
-	MV_U8 sar = mvBoardTwsiSatRGet(0, 0);
 
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
 
-	sar &= ~(0x3 << 3);
-	sar |= ((val & 0x3) << 3);
 
-	if (mvBoardTwsiSatRSet(0, 0, sar) != MV_OK) {
-		DB(mvOsPrintf("Board: Write BootDevWidth S@R fail\n"));
-		return MV_ERROR;
-	}
 
-	DB(mvOsPrintf("Board: Write BootDevWidth S@R succeeded\n"));
-	return MV_OK;
-}
 
-MV_U8 mvBoardCpu0EndianessGet(MV_VOID)
-{
-	MV_U8 sar = mvBoardTwsiSatRGet(3, 0);
 
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
 
-	return (sar & 0x08) >> 3;
-}
 
-MV_STATUS mvBoardCpu0EndianessSet(MV_U8 val)
-{
-	MV_U8 sar = mvBoardTwsiSatRGet(3, 0);
-
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
-	sar &= ~(0x1 << 3);
-	sar |= ((val & 0x1) << 3);
-
-	if (mvBoardTwsiSatRSet(3, 0, sar) != MV_OK) {
-		DB(mvOsPrintf("Board: Write Cpu0CoreMode S@R fail\n"));
-		return MV_ERROR;
-	}
-
-	DB(mvOsPrintf("Board: Write Cpu0CoreMode S@R succeeded\n"));
-	return MV_OK;
-}
-
-MV_U8 mvBoardL2SizeGet(MV_VOID)
-{
-	MV_U8 sar = mvBoardTwsiSatRGet(1, 0);
-
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
-
-	return (sar & 0x3);
-}
-
-MV_STATUS mvBoardL2SizeSet(MV_U8 val)
-{
-	MV_U8 sar = mvBoardTwsiSatRGet(1, 0);
-
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
-
-	sar &= ~(0x3);
-	sar |= (val & 0x3);
-
-	if (mvBoardTwsiSatRSet(1, 0, sar) != MV_OK) {
-		DB(mvOsPrintf("Board: Write L2Size S@R fail\n"));
-		return MV_ERROR;
-	}
-
-	DB(mvOsPrintf("Board: Write L2Size S@R succeeded\n"));
-	return MV_OK;
-}
 
 MV_U8 mvBoardCpuCoresNumGet(MV_VOID)
 {
-	MV_U8 sar = mvBoardTwsiSatRGet(3, 0);
-
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
-
-	sar = (sar & 0x6) >> 1;
-	if (sar == 1)
-		sar = 2;
-	else if (sar == 2)
-		sar =1;
-	return sar;
+	return 1;
 }
 
-MV_STATUS mvBoardCpuCoresNumSet(MV_U8 val)
-{
-	MV_U8 sar = mvBoardTwsiSatRGet(3, 0);
 
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
 
-	/* MSB and LSB are swapped on DB board */
-	if (val == 1)
-		val = 2;
-	else if (val == 2)
-		val =1;
 
-	sar &= ~(0x3 << 1);
-	sar |= ((val & 0x3) << 1);
 
-	if (mvBoardTwsiSatRSet(3, 0, sar) != MV_OK) {
-		DB(mvOsPrintf("Board: Write CpuCoreNum S@R fail\n"));
-		return MV_ERROR;
-	}
 
-	DB(mvOsPrintf("Board: Write CpuCoreNum S@R succeeded\n"));
-	return MV_OK;
-}
 
-MV_STATUS mvBoardConfIdSet(MV_U16 conf)
-{
-	if (MV_OK != mvBoardTwsiSatRSet(0, 1, conf)) {
-		DB(mvOsPrintf("Board: Write confID S@R fail\n"));
-		return MV_ERROR;
-	}
 
-	DB(mvOsPrintf("Board: Write confID S@R succeeded\n"));
-	return MV_OK;
-}
 
-MV_U16 mvBoardConfIdGet(MV_VOID)
-{
-	MV_U8 sar;
 
-	sar = mvBoardTwsiSatRGet(0, 1);
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
 
-	return (sar & 0xFF);
-}
 
-MV_STATUS mvBoardPexCapabilitySet(MV_U16 conf)
-{
-	MV_U8 sar;
-	sar = mvBoardTwsiSatRGet(1, 1);
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
 
-	sar &= ~(0x1);
-	sar |= (conf & 0x1);
 
-	if (MV_OK != mvBoardTwsiSatRSet(1, 1, sar)) {
-		DB(mvOsPrintf("Board: Write confID S@R fail\n"));
-		return MV_ERROR;
-	}
-
-	DB(mvOsPrintf("Board: Write confID S@R succeeded\n"));
-	return MV_OK;
-}
-
-MV_U16 mvBoardPexCapabilityGet(MV_VOID)
-{
-	return 0;
-}
-
-MV_STATUS mvBoardPexModeSet(MV_U16 conf)
-{
-	return MV_ERROR;
-}
-
-MV_U16 mvBoardPexModeGet(MV_VOID)
-{
-	return 0;
-}
-
-MV_STATUS mvBoardDramEccSet(MV_U16 ecc)
-{
-	return MV_ERROR;
-}
-
-MV_U16 mvBoardDramEccGet(MV_VOID)
-{
-	return 0;
-}
-
-MV_STATUS mvBoardDramBusWidthSet(MV_U16 dramBusWidth)
-{
-	return MV_ERROR;
-}
-
-MV_U16 mvBoardDramBusWidthGet(MV_VOID)
-{
-	return 0;
-}
-
-MV_U8 mvBoardAltFabFreqGet(MV_VOID)
-{
-	return 0;
-}
-
-MV_STATUS mvBoardAltFabFreqSet(MV_U8 freqVal)
-{
-	return MV_ERROR;
-}
 /*******************************************************************************
 * End of SatR Configuration functions
 *******************************************************************************/

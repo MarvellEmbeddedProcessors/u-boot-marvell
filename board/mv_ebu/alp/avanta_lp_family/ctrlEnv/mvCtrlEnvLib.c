@@ -123,6 +123,8 @@ typedef struct _ctrlEnvInfo {
 
 CTRL_ENV_INFO ctrlEnvInfo = {};
 
+MV_U32 satrOptionsConfig[MV_SATR_MAX_OPTION];
+
 MV_U32 mvCtrlGetCpuNum(MV_VOID)
 {
 	return 0; /* kostaz: fix from cider */
@@ -216,6 +218,92 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 #endif
 
 	return MV_OK;
+}
+
+/*******************************************************************************
+* mvCtrlSatRWrite
+*
+* DESCRIPTION: Write S@R configuration Field
+*
+* INPUT: satrField - Field description enum
+*  	 val       - value to write (if write action requested)
+*
+* OUTPUT: None
+*
+* RETURN:
+*       write action:
+*       if value is writen succesfully - returns the written value
+*       else if write failed - returns MV_ERROR
+*
+*******************************************************************************/
+MV_U32 mvCtrlSatRWrite(MV_SATR_TYPE_ID satrField ,MV_U8 val)
+{
+	if (satrField<MV_SATR_MAX_OPTION) {
+		//TwsiSATRWrite (satrField , val);
+		satrOptionsConfig[satrField]=val;      /* simulate dummy write instead of TWSI - will be removed */
+		//if ( val==TwsiSATRRead (satrField) )
+
+		if(satrOptionsConfig[satrField]==val)	 	/* omriii - replace ifs with if(TWSIRead==val) */
+			return (satrOptionsConfig[satrField]=val);
+		else
+			return MV_ERROR;
+	}
+
+}
+/*******************************************************************************
+* mvCtrlSatRRead
+*
+* DESCRIPTION: Read S@R configuration Field
+*
+* INPUT: satrField - Field description enum
+*
+* OUTPUT: None
+*
+* RETURN:
+*	if field is valid - returns requested S@R field value
+*       else if field is not relevant for running board, return 0xFFFFFFF.
+*
+*******************************************************************************/
+MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
+{
+	if (satrField<MV_SATR_MAX_OPTION)
+		return satrOptionsConfig[satrField];
+}
+/*******************************************************************************
+* mvCtrlSatrInit
+*
+* DESCRIPTION: Initialize S@R configuration
+* 		1. initialize all S@R fields with 0xFF
+* 		2. read boardID and according to ID, read relevant S@R fields(using TWSI/EEPROM)
+*	 	**from this point, all S@R reads will be done using mvCtrlSatRConfig function**
+*
+* INPUT:  None
+*
+* OUTPUT: None
+*
+* RETURN: NONE
+*
+*******************************************************************************/
+void mvCtrlSatrInit(void)
+{
+	int i=0;
+	/* initialize all S@R fields to -1 (MV_ERROR) */
+	for (i=0; i<MV_SATR_MAX_OPTION ; i++)
+		satrOptionsConfig[i]=MV_ERROR;
+
+	/* detect board ID to determine which S@R fields are relevant */
+	//boardIDget
+
+
+	/* read S@R register / TWSI read and save them in satrOptionsConfig */
+	// if boardID==X
+	// TWSIwrite(...
+
+	/* temp: simulate dummy twsi initalizations */
+	printf("\nmvCtrlSatrDetect : simulate Detecting S@R (1,2,3,...)\n");
+	for (i=0; i<MV_SATR_MAX_OPTION ; i++)
+		satrOptionsConfig[i]=i%3;
+	/* temp: simulate dummy initalizations */
 }
 
 /*******************************************************************************

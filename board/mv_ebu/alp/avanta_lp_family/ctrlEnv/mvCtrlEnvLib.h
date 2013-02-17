@@ -74,6 +74,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrlEnv/mvCtrlEnvRegs.h"
 #include "ctrlEnv/mvCtrlEnvAddrDec.h"
 
+typedef enum _mvSatRTypeID {
+	/* "Bios" Device */
+	MV_SATR_CPU_FREQ,
+	MV_SATR_CORE_CLK_SELECT,
+	MV_SATR_CPU_NUM,
+	MV_SATR_SSCG_DISABLE,
+	/* Jumpers  - change by removing Jumper. S@R will be changed by this option */
+	MV_SATR_I2C0_Serial_ROM,
+	MV_SATR_External_CPU_Reset,
+	MV_SATR_External_CORE_Reset,
+	/* DIP Switch - change by removing Switch. S@R will be changed by this option: */
+	MV_SATR_BOOT_DEVICE,
+	/* DPR's -modified by moving resistor with solderer. S@R will be changed by this */
+	MV_SATR_CPU_PLL_XTAL_BYPASS,
+	MV_SATR_CPU_CONFIG,
+	MV_SATR_PCI_EXPRESS,
+	MV_SATR_REF_CLOCK_ENABLE,
+	MV_SATR_TESTER_OPTIONS,
+	MV_SATR_MAX_OPTION
+} MV_SATR_TYPE_ID;
+
 /* 0 for Auto scan mode, 1 for manual. */
 #define MV_INTERNAL_SWITCH_SMI_SCAN_MODE	0
 
@@ -205,6 +226,9 @@ extern MV_BIOS_MODE bios_modes[];
 extern MV_BIOS_MODE bios_modes_b0[];
 
 /* mcspLib.h API list */
+MV_U32 mvCtrlSatRWrite(MV_SATR_TYPE_ID satrField ,MV_U8 val);
+MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField);
+MV_U32 mvCtrlSatRDetect(void);
 MV_U32 mvCtrlGetCpuNum(MV_VOID);
 MV_U32 mvCtrlGetQuadNum(MV_VOID);
 MV_STATUS mvCtrlUpdatePexId(MV_VOID);

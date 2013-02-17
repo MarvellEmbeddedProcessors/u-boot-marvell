@@ -2,7 +2,8 @@ include $(TOPDIR)/config.mk
 include ../common/paths.mk
 
 #### Objects list #####
-COBJS = mv_main_alp.o 
+COBJS = mv_main_alp.o \
+	cmd_sar.o
 
 LIB	= $(obj)lib$(BOARD).o
 

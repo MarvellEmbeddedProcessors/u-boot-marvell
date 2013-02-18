@@ -1053,8 +1053,8 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 						break;
 					sataPort =  serdesLineNum & 1; /* port 0 for serdes lines 4,6,  and port 1 for serdes lines 5*/
 					if (busSpeed) {
-						MV_REG_WRITE(SATA_BASE_REG(sataPort) | pSserdesMphyChange->serdesRegHiSpeed , pSserdesMphyChange->serdesValueLowSpeed);
-						DEBUG_WR_REG(SATA_BASE_REG(sataPort) | pSserdesMphyChange->serdesRegHiSpeed , pSserdesMphyChange->serdesValueLowSpeed);
+						MV_REG_WRITE(SATA_BASE_REG(sataPort) | pSserdesMphyChange->serdesRegHiSpeed , pSserdesMphyChange->serdesValueHiSpeed);
+						DEBUG_WR_REG(SATA_BASE_REG(sataPort) | pSserdesMphyChange->serdesRegHiSpeed , pSserdesMphyChange->serdesValueHiSpeed);
 					}
 					else {
 						MV_REG_WRITE(SATA_BASE_REG(sataPort) | pSserdesMphyChange->serdesRegLowSpeed, pSserdesMphyChange->serdesValueLowSpeed);
@@ -1076,8 +1076,8 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 					else
 						break;
 					if (busSpeed) {
-						MV_REG_WRITE(MV_ETH_REGS_BASE(sgmiiPort) | pSserdesMphyChange->serdesRegHiSpeed  ,pSserdesMphyChange->serdesValueLowSpeed);
-						DEBUG_WR_REG(MV_ETH_REGS_BASE(sgmiiPort) | pSserdesMphyChange->serdesRegHiSpeed  ,pSserdesMphyChange->serdesValueLowSpeed);
+						MV_REG_WRITE(MV_ETH_REGS_BASE(sgmiiPort) | pSserdesMphyChange->serdesRegHiSpeed  ,pSserdesMphyChange->serdesValueHiSpeed);
+						DEBUG_WR_REG(MV_ETH_REGS_BASE(sgmiiPort) | pSserdesMphyChange->serdesRegHiSpeed  ,pSserdesMphyChange->serdesValueHiSpeed);
 					}                                                                                                                       
 					else {                                                                                                                  
 						MV_REG_WRITE(MV_ETH_REGS_BASE(sgmiiPort) | pSserdesMphyChange->serdesRegLowSpeed ,pSserdesMphyChange->serdesValueLowSpeed);
@@ -1088,8 +1088,8 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 					if (serdesLineCfg != SERDES_UNIT_QSGMII) 
 						break;
 					if (busSpeed) {
-						MV_REG_WRITE(pSserdesMphyChange->serdesRegHiSpeed  ,pSserdesMphyChange->serdesValueLowSpeed);
-						DEBUG_WR_REG(pSserdesMphyChange->serdesRegHiSpeed  ,pSserdesMphyChange->serdesValueLowSpeed);
+						MV_REG_WRITE(pSserdesMphyChange->serdesRegHiSpeed  ,pSserdesMphyChange->serdesValueHiSpeed);
+						DEBUG_WR_REG(pSserdesMphyChange->serdesRegHiSpeed  ,pSserdesMphyChange->serdesValueHiSpeed);
 					}                                                                                              
 					else {                                                                                         
 						MV_REG_WRITE(pSserdesMphyChange->serdesRegLowSpeed ,pSserdesMphyChange->serdesValueLowSpeed);

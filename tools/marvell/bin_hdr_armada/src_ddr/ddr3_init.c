@@ -318,6 +318,48 @@ MV_U32 ddr3Init_(void)
 	if(uiFabOpt > FAB_OPT)
 		uiFabOpt = FAB_OPT - 1;
 	
+    if (ddr3GetLogLevel() > 0){
+        putstring("\nDDR3 Training Sequence - Run DDR3 at ");
+        switch (uiCpuFreq){
+        case 1:
+            putstring("533 Mhz\n");
+            break;
+        case 2:
+            if (uiFabOpt == 5){
+                putstring("600 Mhz\n");
+            }
+            if (uiFabOpt == 9){
+                putstring("400 Mhz\n");
+            }
+            break;
+        case 3:
+            putstring("667 Mhz\n");
+            break;
+        case 4:
+            if (uiFabOpt == 5){
+                putstring("750 Mhz\n");
+            }
+            if (uiFabOpt == 9){
+                putstring("500 Mhz\n");
+            }
+            break;
+        case 0xa:
+            putstring("400 Mhz\n");
+            break;
+        case 0xb:
+            if (uiFabOpt == 5){
+                putstring("800 Mhz\n");
+            }
+            if (uiFabOpt == 9){
+                putstring("553 Mhz\n");
+            }
+            if (uiFabOpt == 0xA){
+                putstring("640 Mhz\n");
+            }
+            break;
+        }
+    }
+
 	uiTargetFreq = s_auiCpuDdrRatios[uiFabOpt][uiCpuFreq];
 	uiHClkTimePs = s_auiCpuFabClkToHClk[uiFabOpt][uiCpuFreq];
 	if ((uiTargetFreq == 0) || (uiHClkTimePs == 0)) {
@@ -475,7 +517,7 @@ MV_U32 ddr3Init_(void)
 		uiReg = ((MV_REG_READ(REG_SDRAM_INIT_CTRL_ADDR)) & (1<<REG_SDRAM_INIT_CTRL_OFFS));
 	} while (uiReg);				/* Wait for '0' */
 
-#if defined(MV88F78X60_Z1) || defined (MV88F67XX)
+#if defined(MV88F78X60_Z1)// || defined (MV88F67XX)
 	/* MRS Command - required for AXP Z1 devices and A370 - only one set of MR registers */
 	ddr3MRSCommand(0, 0, ddr3GetCSNumFromReg(), ddr3GetCSEnaFromReg());
 #endif

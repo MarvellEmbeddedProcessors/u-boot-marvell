@@ -84,7 +84,12 @@ Level 3: Provides the windows margin of each DQ as a results of DQS centeralizat
 /* DDR3_TRAINING_DEBUG - debug prints of internal code */
 #define DDR_TARGET_FABRIC						5
 #define DRAM_ECC								FALSE
+
+#ifdef MV_DDR_32BIT
+#define BUS_WIDTH                               32
+#else
 #define BUS_WIDTH								64
+#endif
 #define SPD_SUPPORT
 #undef DQS_CLK_ALIGNED
 #undef MIXED_DIMM_STATIC

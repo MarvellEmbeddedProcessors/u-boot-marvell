@@ -771,13 +771,12 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 	MV_REG_WRITE(REG_DDR_CONT_HIGH_ADDR	, uiReg);
 
 /*{0x0000142C}	-	DDR3 Timing Register */
-#if defined(MV88F78X60) && !defined(MV88F78X60_Z1)
+    uiReg = 0x014C2F38;
+#if defined(MV88F78X60)
 	uiReg = 0x1FEC2F38;
-#else
-	if (MV_REG_READ(REG_DDR_IO_ADDR) & (1<<REG_DDR_IO_CLK_RATIO_OFFS))	
+#endif
+#if defined(MV88F78X60_Z1)
 		uiReg = 0x214C2F38;
-	else
-		uiReg = 0x014C2F38;
 #endif
 	MV_REG_WRITE(0x142C, uiReg);
 
@@ -875,8 +874,11 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 #endif
 
 	/* MR1 */
-		uiReg = 0x00000046 & REG_DDR3_MR1_ODT_MASK;
+        uiReg = 0x00000044 & REG_DDR3_MR1_ODT_MASK;
 #ifdef MULTI_CS_MRS_SUPPORT
+        if (uiCsNum > 1){
+            uiReg = 0x00000046 & REG_DDR3_MR1_ODT_MASK;
+        }
 		for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
 			if (uiCsEna & (1<<uiCs)) {
 				uiReg |= auiODTStatic[uiCsEna][uiCs];

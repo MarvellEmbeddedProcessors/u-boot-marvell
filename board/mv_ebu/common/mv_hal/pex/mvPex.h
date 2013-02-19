@@ -177,12 +177,6 @@ extern "C" {
 	/* mvPexLocalBusNumGet - Get PEX interface local bus number. */
 	MV_U32 mvPexLocalBusNumGet(MV_U32 pexIf);
 
-	/* mvPexSecondaryBusNumGet - Get the secondary bus number used in Virtual Bridge */
-	MV_U32 mvPexSecondaryBusNumGet(MV_U32 pexIf);
-
-	/* mvPexSecondaryBusNumSet - Set the secondary bus number used in the Virtual Bridge */
-	MV_STATUS mvPexSecondaryBusNumSet(MV_U32 pexIf, MV_U32 busNum);
-
 	/* mvPexLocalDevNumSet - Set PEX interface local device number. */
 	MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
 

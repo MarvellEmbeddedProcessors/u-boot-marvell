@@ -77,12 +77,9 @@ void recoveryHandle(void)
 	char cmd[256];
 	char img[10];
 	char * argv[3];
-	char *env;
-	MV_32 imagAddr, imagSize = 0, netflag = 1;
+	MV_32 imagSize = 0, netflag = 1;
 	char ip[16]= {"dhcp"};
-	char* usbload[5];
 	unsigned int netwait = 3000;
-	int upgrade = -1;
 
 	/* get the loadaddr env var */
 	if (!getenv("loadaddr")) {
@@ -92,6 +89,10 @@ void recoveryHandle(void)
 	}
 
 #ifdef CONFIG_USB_STORAGE
+	char *env;
+	char* usbload[5];
+	MV_32 imagAddr;
+	int upgrade = -1;
 	/* First try to perform recovery from USB DOK*/
 	/* try to recognize storage devices immediately */
 	if (usb_init() >= 0)

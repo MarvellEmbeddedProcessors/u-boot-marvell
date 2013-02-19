@@ -28,7 +28,6 @@ disclaimer.
 static int do_sar_list(int argc, char *const argv[])
 {
 	const char *cmd;
-	int i;
 
 	if (argc < 1)
 		goto usage;

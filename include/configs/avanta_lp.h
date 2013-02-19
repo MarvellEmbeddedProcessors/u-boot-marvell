@@ -63,7 +63,7 @@ disclaimer.
 /*
  * General
  */
-#define MV88F66XX	
+#define MV88F66XX
 #define MV_SEC_64K
 #define MV_BOOTSIZE_512K
 #define MV_LARGE_PAGE
@@ -207,7 +207,7 @@ disclaimer.
 #ifdef CONFIG_AVANTA_LP_FPGA
 	#define CONFIG_BAUDRATE			57600 /* Workaround uart clock divisor issue. */ /* 115200 */
 #else
-	#define CONFIG_BAUDRATE			115200 
+	#define CONFIG_BAUDRATE			115200
 #endif
 #define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600 }
 #define CONFIG_SYS_DUART_CHAN		0

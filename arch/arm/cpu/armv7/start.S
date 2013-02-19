@@ -181,7 +181,7 @@ reset:
 	str     r2, [r5]
 
 /* Write to CP15:1 - point exception vector to flash (0xffff0000) */
-	ldr	r0, =0x00052078	
+	ldr	r0, =0x00052078
 	mcr 	p15, 0, r0, c1, c0, 0
 #endif
 

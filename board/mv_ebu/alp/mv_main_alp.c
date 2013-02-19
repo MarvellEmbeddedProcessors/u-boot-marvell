@@ -128,7 +128,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 void mv_print_map(void)
 {
-	int add;
 #ifdef DB_78X60_PCAC
 		return 0;
 #endif
@@ -137,6 +136,7 @@ void mv_print_map(void)
 	printf("       BSS:\t\t0x%08x\n", (unsigned int)(gd->reloc_off + _bss_end_ofs));
 	printf("       Stack:\t\t0x%08x\n", (unsigned int)gd->start_addr_sp);
 #if defined(MV_INCLUDE_MONT_EXT)
+	int add;
 	if(!enaMonExt()) {
 		add = MV_PT_BASE(whoAmI());
 		printf("       PageTable:\t0x%08x\n", add);
@@ -256,15 +256,12 @@ extern void i2c_init(int speed, int slaveaddr);
 int board_init(void)
 {
 	DECLARE_GLOBAL_DATA_PTR;
-	MV_U32 boardId;
-	int clock_divisor;
 
 #ifdef CONFIG_MACH_AVANTA_LP_FPGA
 	MV_REG_BIT_RESET(0x20200, BIT8);
 #endif
 
 	mvBoardIdSet();
-	boardId = mvBoardIdGet();
 
 	if (whoAmI() != 0)
 		return 0;
@@ -272,7 +269,6 @@ int board_init(void)
 #if defined(MV_INCLUDE_TWSI)
 	MV_TWSI_ADDR slave;
 #endif
-	MV_GPP_HAL_DATA gppHalData;
 
 	unsigned int i;
 
@@ -304,11 +300,13 @@ int board_init(void)
 
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	/* Init the GPIO sub-system */
+	MV_GPP_HAL_DATA gppHalData;
 	gppHalData.ctrlRev = mvCtrlRevGet();
 	mvGppInit(&gppHalData);
 #endif
 
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
+	MV_U32 boardId= mvBoardIdGet();
 	/* arch number of Integrator Board */
 	switch (boardId) {
 	case RD_78460_NAS_ID:
@@ -992,9 +990,8 @@ void kick_next(void)
 #ifdef BOARD_LATE_INIT
 int board_late_init(void)
 {
-	char *env;
-
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
+	char *env;
 	env = getenv("enaMP");
 	if (env && ((strcmp(env, "yes") == 0) || (strcmp(env, "Yes") == 0)))
 		kick_next();
@@ -1054,7 +1051,6 @@ int board_mmc_init(bd_t *bis)
 int print_cpuinfo(void)
 {
 	char name[50];
-	int tmp;
 
 	mvBoardIdSet();
 
@@ -1090,9 +1086,6 @@ int print_cpuinfo(void)
 
 int misc_init_r(void)
 {
-	MV_U32 boardId = mvBoardIdGet();
-	char *env;
-
 	mvBoardDebugLed(5);
 
 	/* init special env variables */
@@ -1114,6 +1107,7 @@ int misc_init_r(void)
 #endif
 
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
+	MV_U32 boardId = mvBoardIdGet();
 	/* init the units decode windows */
 	misc_init_r_dec_win();
 	memset((void *)CONFIG_SYS_LOAD_ADDR, 0, CONFIG_SYS_MIN_HDR_DEL_SIZE);
@@ -1129,6 +1123,7 @@ int misc_init_r(void)
 	mvBoardDebugLed(7);
 
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
+	char *env;
 	/* pcie fine tunning */
 	env = getenv("pcieTune");
 	if (env && ((strcmp(env, "yes") == 0) || (strcmp(env, "yes") == 0)))

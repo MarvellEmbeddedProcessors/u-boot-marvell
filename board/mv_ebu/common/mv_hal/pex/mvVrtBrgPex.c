@@ -63,7 +63,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
 #include "mvPex.h"
-#include "mvVrtBrgPex.h"
 
 /* #define MV_DEBUG */
 /* defines  */
@@ -168,8 +167,7 @@ MV_U32 mvPexVrtBrgConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, 
 		}
 	} else if (bus == (localBus + 1)) {
 		/* access the device behind the virtual bridge */
-/*		if ((dev == localDev) || (dev > 1)) { */
-		if (dev > 1) {
+		if ((dev == localDev) || (dev > 1)) {
 			return 0xffffffff;
 		} else {
 			/* access the device behind the virtual bridge, in this case

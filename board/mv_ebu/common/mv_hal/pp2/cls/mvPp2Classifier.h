@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -62,48 +62,42 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include "mvCommon.h"
-#include "mvOs.h"
-#include "ctrlEnv/mvCtrlEnvLib.h"
-#include "ctrlEnv/mvCtrlEnvSpec.h"
-#include "boardEnv/mvBoardEnvLib.h"
-#include "eth-phy/mvEthPhy.h"
-#if defined(MV_ETH_LEGACY)
-#include "eth/gbe/mvEthRegs.h"
-#elif defined(MV_ETH_NETA)
-#include "neta/gbe/mvEthRegs.h"
-#else
-#include "pp2/gbe/mvPp2Gbe.h"
-#include "pp2/gmac/mvEthGmacRegs.h"
+#ifndef __MV_PNC_HW_H__
+#define __MV_PNC_HW_H__
+
+#include "mvPp2ClsHw.h"
+#include "mvPp2ClsActHw.h"
+#include "../common/mvPp2ErrCode.h"
+#include "../common/mvPp2Common.h"
+
+#ifdef CONFIG_MV_ETH_PP2_CLS2
+#include "mvPp2Cls2Hw.h"
 #endif
-#include "mvSysEthPhyApi.h"
+#ifdef CONFIG_MV_ETH_PP2_CLS3
+#include "mvPp2Cls3Hw.h"
+#endif
+#ifdef CONFIG_MV_ETH_PP2_CLS4
+#include "mvPp2Cls4Hw.h"
+#endif
+#ifdef CONFIG_MV_ETH_PP2_CLS_MC
+#include "mvPp2ClsMcHw.h"
+#endif
 
-/*******************************************************************************
-* mvSysEthPhyInit - Initialize the EthPhy subsystem
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None
-* OUTPUT:
-*		None
-* RETURN:
-*       None
-*
-*******************************************************************************/
-MV_STATUS mvSysEthPhyInit(void)
-{
-	MV_ETHPHY_HAL_DATA halData;
-	MV_U32 port;
+/* call to defult init of cls, C2, C3, C4, MC, Clear all HW structure , clean all shadow arrays */
+int mvPp2ClassifierDefInit(void);
 
-	for (port=0; port < mvCtrlEthMaxPortGet(); port++) {
-		halData.phyAddr[port] = mvBoardPhyAddrGet(port);
-		halData.LinkCryptPortAddr[port] = mvBoardPhyLinkCryptPortAddrGet(port);
-		halData.boardSpecInit = MV_FALSE;
-		halData.isSgmii[port] = mvBoardIsPortInSgmii(port);
-		halData.QuadPhyPort0[port] = mvBoardQuadPhyAddr0Get(port);
-	}
-	halData.ethPhySmiReg = ETH_SMI_REG(MV_ETH_SMI_PORT);
+/*
+Assign Rx queue to a protocol
+int mvPp2ClassifierProtoRxq(unsigned int proto, unsigned int rxq); rxq to arp
+Assign Rx queue to a vlan priority
+int mvPp2ClassifierVlanPrioRxq(int port, int prio, int rxq);
+int mvPp2Classifier2tupleIp4Rxq(unsigned int eth_port, unsigned int sip, unsigned int dip, int rxq);
+int mvPp2Classifier5tupleIp4Rxq(unsigned int eth_port, unsigned int sip, unsigned int dip, unsigned int ports,
+				unsigned int proto, int rxq);
+int  mvPp2ClassifierIp4DscpRxq(int port, unsigned char dscp, unsigned char mask, int rxq);
+change def rxq per port
+int  mvPp2ClassifierPortRxq(int port, int rxq);
+*/
 
-	return mvEthPhyHalInit(&halData);
-}
+#endif /*__MV_PNC_HW_H__ */
+

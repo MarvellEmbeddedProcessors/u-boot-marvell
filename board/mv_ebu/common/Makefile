@@ -24,8 +24,18 @@ HAL_IF_OBJS +=		  $(HAL_IF_DIR)/mvSysPex.o    	\
 			  $(HAL_IF_DIR)/mvSysCntmr.o 	
 endif
 
-ifeq ($(BOARD_TYPE),mv_fpga_board)
-ETH_OBJS =
+ifeq ($(BOARD),alp)
+ETH_OBJS =	$(HAL_IF_DIR)/mvSysPp2.o 		\
+		$(HAL_PP2_GMAC_DIR)/mvEthGmacApi.o	\
+		$(HAL_PP2_GBE_DIR)/mvPp2Gbe.o 		\
+		$(HAL_PP2_GBE_DIR)/mvPp2AddrDec.o 	\
+		$(HAL_PP2_BM_DIR)/mvBm.o		\
+		$(HAL_PP2_PRS_DIR)/mvPp2PrsHw.o 	\
+		$(HAL_PP2_PRS_DIR)/mvPp2Prs.o		\
+		$(HAL_PP2_CLS_DIR)/mvPp2ClsHw.o 	\
+		$(HAL_PP2_CLS_DIR)/mvPp2Classifier.o	\
+		$(HAL_PP2_COMMON_DIR)/mvPp2Common.o	\
+		$(USP_DIR)/mv_egiga_pp2.o
 else
 ETH_OBJS =  $(HAL_IF_DIR)/mvSysNeta.o 			\
 	    $(HAL_NETA_GBE_DIR)/mvNeta.o 		\
@@ -33,6 +43,7 @@ ETH_OBJS =  $(HAL_IF_DIR)/mvSysNeta.o 			\
 	    $(HAL_NETA_GBE_DIR)/mvNetaDebug.o 		\
 	    $(USP_DIR)/mv_egiga_neta.o
 endif
+
 
 HAL_OBJS =      $(HAL_CNTMR_DIR)/mvCntmr.o 		\
 		$(HAL_DRAM_DIR)/mvDramIf.o 		\

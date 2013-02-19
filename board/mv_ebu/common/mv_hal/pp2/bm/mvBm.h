@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -62,48 +62,87 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
+#ifndef __mvBm_h__
+#define __mvBm_h__
+
+/* includes */
+#include "mvTypes.h"
 #include "mvCommon.h"
-#include "mvOs.h"
-#include "ctrlEnv/mvCtrlEnvLib.h"
-#include "ctrlEnv/mvCtrlEnvSpec.h"
-#include "boardEnv/mvBoardEnvLib.h"
-#include "eth-phy/mvEthPhy.h"
-#if defined(MV_ETH_LEGACY)
-#include "eth/gbe/mvEthRegs.h"
-#elif defined(MV_ETH_NETA)
-#include "neta/gbe/mvEthRegs.h"
-#else
-#include "pp2/gbe/mvPp2Gbe.h"
-#include "pp2/gmac/mvEthGmacRegs.h"
-#endif
-#include "mvSysEthPhyApi.h"
+#include "mvStack.h"
+#include "mv802_3.h"
+#include "pp2/common/mvPp2Common.h"
+#include "mvBmRegs.h"
 
-/*******************************************************************************
-* mvSysEthPhyInit - Initialize the EthPhy subsystem
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None
-* OUTPUT:
-*		None
-* RETURN:
-*       None
-*
-*******************************************************************************/
-MV_STATUS mvSysEthPhyInit(void)
+typedef struct {
+	int valid;
+	int longPool;
+	int shortPool;
+	int longBufNum;
+	int shortBufNum;
+	int hwfLongPool;
+	int hwfShortPool;
+	int hwfLongBufNum;
+	int hwfShortBufNum;
+
+} MV_BM_CONFIG;
+
+typedef struct {
+	int         pool;
+	int         capacity;
+	int         bufNum;
+	int         bufSize;
+	MV_U32      *pVirt;
+	MV_ULONG    physAddr;
+} MV_BM_POOL;
+
+/* defines */
+
+/* bits[8-9] of address define pool 0-3 */
+#define BM_POOL_ACCESS_OFFS     8
+
+/* INLINE functions */
+static INLINE void mvBmPoolPut(int pool, MV_U32 bufPhysAddr, MV_U32 bufVirtAddr)
 {
-	MV_ETHPHY_HAL_DATA halData;
-	MV_U32 port;
-
-	for (port=0; port < mvCtrlEthMaxPortGet(); port++) {
-		halData.phyAddr[port] = mvBoardPhyAddrGet(port);
-		halData.LinkCryptPortAddr[port] = mvBoardPhyLinkCryptPortAddrGet(port);
-		halData.boardSpecInit = MV_FALSE;
-		halData.isSgmii[port] = mvBoardIsPortInSgmii(port);
-		halData.QuadPhyPort0[port] = mvBoardQuadPhyAddr0Get(port);
-	}
-	halData.ethPhySmiReg = ETH_SMI_REG(MV_ETH_SMI_PORT);
-
-	return mvEthPhyHalInit(&halData);
+	mvPp2WrReg(MV_BM_VIRT_RLS_REG, bufVirtAddr);
+	mvPp2WrReg(MV_BM_PHY_RLS_REG(pool), bufPhysAddr);
 }
+
+static INLINE void mvBmPoolMcPut(int pool, MV_U32 bufPhysAddr, MV_U32 bufVirtAddr, int mcId, int isForce)
+{
+	MV_U32 regVal = 0;
+
+	regVal |= ((mcId << MV_BM_MC_ID_OFFS) & MV_BM_MC_ID_MASK);
+	if (isForce)
+		regVal |= MV_BM_FORCE_RELEASE_MASK;
+
+	mvPp2WrReg(MV_BM_MC_RLS_REG, regVal);
+	mvBmPoolPut(pool, bufPhysAddr | MV_BM_PHY_RLS_MC_BUFF_MASK, bufVirtAddr);
+}
+
+static INLINE MV_U32 mvBmPoolGet(int pool)
+{
+	MV_U32 bufPhysAddr, bufVirtAddr;
+
+	bufPhysAddr = mvPp2RdReg(MV_BM_PHY_ALLOC_REG(pool));
+	bufVirtAddr = mvPp2RdReg(MV_BM_VIRT_ALLOC_REG);
+
+	return bufVirtAddr;
+}
+
+/* prototypes */
+MV_STATUS mvBmInit(void);
+MV_STATUS mvBmPoolControl(int pool, MV_COMMAND cmd);
+MV_STATE  mvBmPoolStateGet(int pool);
+void      mvBmPoolEnable(int pool);
+void      mvBmPoolDisable(int pool);
+MV_BOOL   mvBmPoolIsEnabled(int pool);
+MV_STATUS mvBmPoolInit(int pool, MV_ULONG physPoolBase, int capacity);
+MV_STATUS mvBmPoolBufNumUpdate(int pool, int buf_num);
+MV_STATUS mvBmPoolBufSizeSet(int pool, int buf_size);
+void      mvBmRegs(void);
+void      mvBmStatus(void);
+void      mvBmPoolDump(int pool, int mode);
+void      mvBmPoolPrint(int pool);
+
+#endif /* __mvBm_h__ */
+

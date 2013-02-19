@@ -29,7 +29,7 @@ disclaimer.
 #ifdef CONFIG_MACH_AVANTA_LP_FPGA
 #undef  MV_INCLUDE_PEX /* PEX should be enabled for PCI-IF HAL integration (kostaz) */
 #define MV_INCLUDE_PCI
-#undef  MV_INCLUDE_GIG_ETH
+#define MV_INCLUDE_GIG_ETH
 #undef  MV_INCLUDE_CESA
 #define OLD_CESA_HAL
 #undef  MV_INCLUDE_USB

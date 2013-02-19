@@ -54,15 +54,23 @@ disclaimer.
 #define CONFIG_MV_PON_TCONTS 1
 #endif
 
+#ifdef CONFIG_MV_ETH_PP2
+#define MV_ETH_MH_SIZE      2
+
+#define CONFIG_MV_ETH_TXQ   8
+#define CONFIG_MV_ETH_RXQ   8
+#define CONFIG_MV_ETH_RXQ_DEF 0
+#define CONFIG_MV_PON
+#define CONFIG_MV_PON_TCONTS 1
+#endif /* CONFIG_MV_ETH_PP2 */
+
 /*
 ** Base address for ethernet registers.
 */
 #ifdef CONFIG_MV_PON
-#define MV_PON_PORT(p)		((p) == MV_PON_PORT_ID)
 #define MV_PON_REG_BASE         MV_PON_REGS_OFFSET
 #define MV_ETH_REGS_BASE(p)	(MV_PON_PORT(p) ? MV_PON_REGS_OFFSET : MV_ETH_REGS_OFFSET(p))
 #else
-#define MV_PON_PORT(p)		MV_FALSE
 #define MV_ETH_REGS_BASE(p)	MV_ETH_REGS_OFFSET(p)
 #endif /* CONFIG_MV_PON */
 
@@ -75,7 +83,7 @@ disclaimer.
 #define MV_ETH_COMPLEX_BASE		(MV_ETH_COMPLEX_OFFSET)
 #define MV_ETH_ONLY_REGS_BASE		(MV_ETH_ONLY_REGS_OFFSET)
 
-#if defined(CONFIG_MV_INCLUDE_GIG_ETH)
+#if defined(MV_INCLUDE_GIG_ETH)
 
 /* put descriptors in uncached memory */
 /* #define ETH_DESCR_UNCACHED */

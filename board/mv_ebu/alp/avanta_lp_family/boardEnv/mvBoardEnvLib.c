@@ -73,7 +73,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pex/mvPex.h"
 #include "pci/mvPci.h"
 #include "device/mvDevice.h"
+
+#if defined(CONFIG_MV_ETH_NETA)
 #include "neta/gbe/mvEthRegs.h"
+#elif defined(CONFIG_MV_ETH_PP2)
+#include "pp2/gbe/mvPp2GbeRegs.h"
+#endif
+
 #include "gpp/mvGppRegs.h"
 
 /* defines  */
@@ -245,6 +251,10 @@ MV_STATUS mvBoardNameGet(char *pNameBuff)
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 {
+#if defined(CONFIG_MACH_AVANTA_LP_FPGA)
+	return (ethPortNum == 2);
+#endif
+
 	return MV_FALSE;
 }
 
@@ -291,6 +301,10 @@ MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum)
 {
 	if (ethPortNum >= board->numBoardMacInfo)
 		return MV_ERROR;
+
+#if defined(CONFIG_MACH_AVANTA_LP_FPGA)
+	return 8;
+#endif
 
 	return board->pBoardMacInfo[ethPortNum].boardEthSmiAddr;
 }
@@ -372,7 +386,38 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 	if (ethPortNum >= board->numBoardMacInfo)
 		return MV_ERROR;
 
+#if defined(CONFIG_MACH_AVANTA_LP_FPGA)
+	return (ethPortNum == 2) ? BOARD_MAC_SPEED_1000M : BOARD_MAC_SPEED_100M;
+#endif
+
 	return board->pBoardMacInfo[ethPortNum].boardMacSpeed;
+}
+
+/*******************************************************************************
+* mvBoardIsPortLb -
+*
+* DESCRIPTION:
+*       This routine returns MV_TRUE for loopback port number or MV_FALSE
+*	For all other options.
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE - port is loopback.
+*       MV_FALSE - other.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsPortLb(MV_U32 ethPortNum)
+{
+#if defined(CONFIG_MACH_AVANTA_LP_FPGA)
+	return (ethPortNum == 2);
+#endif
+
+	return MV_FALSE;
 }
 
 /*******************************************************************************

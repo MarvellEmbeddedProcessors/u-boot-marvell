@@ -78,9 +78,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(MV_INCLUDE_GIG_ETH)
 #if defined(MV_ETH_LEGACY)
 #include "eth/mvEth.h"
-#else
+#elif defined(CONFIG_MV_ETH_NETA)
 #include "neta/gbe/mvNeta.h"
-#endif /* MV_ETH_LEGACY or MV_ETH_NETA */
+#elif defined(CONFIG_MV_ETH_PP2)
+#include "pp2/gbe/mvPp2Gbe.h"
+#endif /* MV_ETH_LEGACY or MV_ETH_NETA  or PP2*/
 #endif
 
 #if defined(MV_INCLUDE_XOR)
@@ -884,9 +886,11 @@ MV_VOID mvCtrlAddrDecShow(MV_VOID)
 #if defined(MV_INCLUDE_GIG_ETH)
 #if defined(MV_ETH_LEGACY)
 	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvEthWinRead);
+#elif defined(CONFIG_MV_ETH_NETA)
+ 	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvNetaWinRead);
 #else
-	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvNetaWinRead);
-#endif /* MV_ETH_LEGACY */
+	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvPp2WinRead);
+#endif /* MV_ETH_LEGACY  or NETA pr PP2 */
 #endif /* MV_INCLUDE_GIG_ETH */
 
 #if defined(MV_INCLUDE_XOR)

@@ -122,13 +122,13 @@ _main:
 	bic	sp, sp, #7	/* 8-byte alignment for ABI compliance */
 	mov	r8, sp		/* GD is above SP */
 	mov	r0, #0
-#ifdef CONFIG_MACH_AVANTA_LP_FPGA	
+#ifdef CONFIG_MACH_AVANTA_LP_FPGA
 	/* Instead of 'bl' use 'ldr pc, addr'
 	 * Rationale: 'bl' is PC-relative, => not appropriate when running
 	 * from Flash, because .text is already copied into RAM, so, flow has
 	 * to jump to RAM (meaning: linker-based symbol address).
 	 */
- 	mov	r14, pc
+	mov	r14, pc
 	ldr	pc, _board_init_f_link_addr
 #else
 	bl	board_init_f

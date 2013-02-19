@@ -109,10 +109,10 @@ USP_OBJS +=		$(USP_DIR)/mv_rtc.o		\
 			$(USP_DIR)/mv_pex.o 		\
 			$(USP_DIR)/mv_main.o		
 else
-USP_OBJS +=		$(USP_DIR)/mv_pci.o		
+USP_OBJS +=		$(USP_DIR)/mv_pci.o
 endif
 
-SOBJS = $(USP_DIR)/platform.o		
+SOBJS = $(USP_DIR)/platform.o
 
 ifeq ($(BOARD),axp)	
 	USP_OBJS +=	$(USP_DIR)/mv_amp.o	
@@ -120,7 +120,7 @@ ifeq ($(BOARD),axp)
 endif
 		
 
-ifeq ($(BOARD),alp)	
+ifeq ($(BOARD),alp)
 	SOBJS+= $(USP_DIR)/jump.o 		\
 		$(HAL_DRAM_DIR)/mvDramIfBasicInit.o	
 endif

@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -61,49 +61,36 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
+#include "mvPp2Classifier.h"
 
-#include "mvCommon.h"
-#include "mvOs.h"
-#include "ctrlEnv/mvCtrlEnvLib.h"
-#include "ctrlEnv/mvCtrlEnvSpec.h"
-#include "boardEnv/mvBoardEnvLib.h"
-#include "eth-phy/mvEthPhy.h"
-#if defined(MV_ETH_LEGACY)
-#include "eth/gbe/mvEthRegs.h"
-#elif defined(MV_ETH_NETA)
-#include "neta/gbe/mvEthRegs.h"
-#else
-#include "pp2/gbe/mvPp2Gbe.h"
-#include "pp2/gmac/mvEthGmacRegs.h"
-#endif
-#include "mvSysEthPhyApi.h"
-
-/*******************************************************************************
-* mvSysEthPhyInit - Initialize the EthPhy subsystem
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None
-* OUTPUT:
-*		None
-* RETURN:
-*       None
-*
-*******************************************************************************/
-MV_STATUS mvSysEthPhyInit(void)
+int mvPp2ClassifierDefInit()
 {
-	MV_ETHPHY_HAL_DATA halData;
-	MV_U32 port;
 
-	for (port=0; port < mvCtrlEthMaxPortGet(); port++) {
-		halData.phyAddr[port] = mvBoardPhyAddrGet(port);
-		halData.LinkCryptPortAddr[port] = mvBoardPhyLinkCryptPortAddrGet(port);
-		halData.boardSpecInit = MV_FALSE;
-		halData.isSgmii[port] = mvBoardIsPortInSgmii(port);
-		halData.QuadPhyPort0[port] = mvBoardQuadPhyAddr0Get(port);
-	}
-	halData.ethPhySmiReg = ETH_SMI_REG(MV_ETH_SMI_PORT);
+	if (mvPp2ClsInit())
+		return MV_ERROR;
 
-	return mvEthPhyHalInit(&halData);
+	/* WorkAround HW bug */
+	//mvPp2ClsHwLastBitWorkAround();
+#ifdef CONFIG_MV_ETH_PP2_CLS2
+	if (mvPp2ClsC2Init())
+		return MV_ERROR;
+#endif /* CONFIG_MV_ETH_PP2_CLS2 */
+
+#ifdef CONFIG_MV_ETH_PP2_CLS3
+	if (mvPp2ClsC3Init())
+		return MV_ERROR;
+#endif /* CONFIG_MV_ETH_PP2_CLS3 */
+
+#ifdef CONFIG_MV_ETH_PP2_CLS4
+	mvPp2ClsC4HwClearAll();
+#endif /* CONFIG_MV_ETH_PP2_CLS2 */
+
+#ifdef CONFIG_MV_ETH_PP2_CLS_MC
+	mvPp2McHwClearAll();
+#endif /* CONFIG_MV_ETH_PP2_CLS_MC */
+
+	return MV_OK;
 }
+
+
+

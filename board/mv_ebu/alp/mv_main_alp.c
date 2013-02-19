@@ -46,9 +46,11 @@ disclaimer.
 #if defined(MV_ETH_LEGACY)
 #include "eth/mvEth.h"
 #include "mv_eth_legacy.h"
-#else
+#elif defined(MV_ETH_NETA)
 #include "neta/gbe/mvNeta.h"
-#endif /* MV_ETH_LEGACY or MV_ETH_NETA */
+#else
+#include "pp2/gbe/mvPp2Gbe.h"
+#endif /* MV_ETH_LEGACY or MV_ETH_NETA or MV_ETH_PP2 */
 #include "pex/mvPex.h"
 #include "gpp/mvGpp.h"
 #include "gpp/mvGppRegs.h"
@@ -770,14 +772,16 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 
 #if (defined(MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_UNM_ETH))
 	/* Generate random ip and mac address */
-	/* Read RTC to create pseudo-random data for enc */
-	struct rtc_time tm;
-	unsigned int xi, xj, xk, xl;
+	unsigned int xi = 0x1, xj = 0x2, xk = 0x3, xl = 0x4;
 	char ethaddr_0[30];
 	char ethaddr_1[30];
 	char ethaddr_2[30];
 	char ethaddr_3[30];
 	char pon_addr[30];
+
+#if defined(MV_INCLUDE_RTC)
+	/* Read RTC to create pseudo-random data for enc */
+	struct rtc_time tm;
 
 	rtc_get(&tm);
 	xi = ((tm.tm_yday + tm.tm_sec)% 254);
@@ -796,6 +800,7 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 
 	xk = (tm.tm_min * tm.tm_sec)%254;
 	xl = (tm.tm_hour * tm.tm_sec)%254;
+#endif /* defined(MV_INCLUDE_RTC) */
 
 	sprintf(ethaddr_0,"00:50:43:%02x:%02x:%02x",xk,xi,xj);
 	sprintf(ethaddr_1,"00:50:43:%02x:%02x:%02x",xl,xi,xj);
@@ -1015,12 +1020,10 @@ void pcie_tune(void)
 
 int board_eth_init(bd_t *bis)
 {
-#if !defined(CONFIG_MACH_ARMADA_XP_FPGA)
 #if defined(MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_UNM_ETH)
 	/* move to the begining so in case we have a PCI NIC it will
 	read the env mac addresses correctlly. */
 	mv_eth_initialize(bis);
-#endif
 #endif
 
 #if defined(CONFIG_SK98)

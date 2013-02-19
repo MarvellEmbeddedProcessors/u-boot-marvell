@@ -233,6 +233,9 @@ disclaimer.
 /*
  * Ethernet
  */
+#define MV_ETH_PP2
+#define CONFIG_MV_ETH_PP2
+
 #define CONFIG_IPADDR		10.4.50.120
 #define CONFIG_SERVERIP		10.4.50.37
 #define CONFIG_NETMASK		255.255.255.0

@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -62,48 +62,89 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include "mvCommon.h"
-#include "mvOs.h"
-#include "ctrlEnv/mvCtrlEnvLib.h"
-#include "ctrlEnv/mvCtrlEnvSpec.h"
-#include "boardEnv/mvBoardEnvLib.h"
-#include "eth-phy/mvEthPhy.h"
-#if defined(MV_ETH_LEGACY)
-#include "eth/gbe/mvEthRegs.h"
-#elif defined(MV_ETH_NETA)
-#include "neta/gbe/mvEthRegs.h"
-#else
-#include "pp2/gbe/mvPp2Gbe.h"
-#include "pp2/gmac/mvEthGmacRegs.h"
-#endif
-#include "mvSysEthPhyApi.h"
+#ifndef __MV_CLS_MC_HW_H__
+#define __MV_CLS_MC_HW_H__
 
-/*******************************************************************************
-* mvSysEthPhyInit - Initialize the EthPhy subsystem
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None
-* OUTPUT:
-*		None
-* RETURN:
-*       None
-*
-*******************************************************************************/
-MV_STATUS mvSysEthPhyInit(void)
-{
-	MV_ETHPHY_HAL_DATA halData;
-	MV_U32 port;
+#include "mvPp2ClsActHw.h"
+#include "../common/mvPp2ErrCode.h"
+#include "../common/mvPp2Common.h"
+#include "../gbe/mvPp2GbeRegs.h"
 
-	for (port=0; port < mvCtrlEthMaxPortGet(); port++) {
-		halData.phyAddr[port] = mvBoardPhyAddrGet(port);
-		halData.LinkCryptPortAddr[port] = mvBoardPhyLinkCryptPortAddrGet(port);
-		halData.boardSpecInit = MV_FALSE;
-		halData.isSgmii[port] = mvBoardIsPortInSgmii(port);
-		halData.QuadPhyPort0[port] = mvBoardQuadPhyAddr0Get(port);
-	}
-	halData.ethPhySmiReg = ETH_SMI_REG(MV_ETH_SMI_PORT);
+/*-------------------------------------------------------------------------------*/
+/*			Multicast table Top Registers	    			 */
+/*-------------------------------------------------------------------------------*/
+#define MV_PP2_MC_INDEX_REG			(MV_PP2_REG_BASE + 0x160)
+#define MV_PP2_MC_INDEX_MAX			ACT_DUP_FID_MAX
+/*-------------------------------------------------------------------------------*/
 
-	return mvEthPhyHalInit(&halData);
-}
+#define MV_PP2_MC_DATA1_REG			(MV_PP2_REG_BASE + 0x164)
+#define	MV_PP2_MC_DATA1_DPTR			1
+#define	MV_PP2_MC_DATA1_IPTR			16
+/*-------------------------------------------------------------------------------*/
+
+#define MV_PP2_MC_DATA2_REG			(MV_PP2_REG_BASE + 0x168)
+#define MV_PP2_MC_DATA2_GEM_ID			0
+#define MV_PP2_MC_DATA2_PRI			12
+#define MV_PP2_MC_DATA2_DSCP			15
+#define MV_PP2_MC_DATA2_GEM_ID_EN		(1 << 21)
+#define MV_PP2_MC_DATA2_PRI_EN			(1 << 22)
+#define MV_PP2_MC_DATA2_DSCP_EN			(1 << 23)
+/*-------------------------------------------------------------------------------*/
+
+#define MV_PP2_MC_DATA3_REG			(MV_PP2_REG_BASE + 0x16C)
+
+#define MV_PP2_MC_DATA3_QUEUE			0
+
+#define MV_PP2_MC_DATA3_HWF_EN			(1 << 8)
+
+#define MV_PP2_MC_DATA3_NEXT			16
+#define MV_PP2_MC_DATA3_NEXT_MASK		(MV_PP2_MC_INDEX_MAX << MV_PP2_MC_DATA3_NEXT)
+
+
+typedef struct {
+	int             valid;
+	int		next;
+} MC_SHADOW_ENTRY;
+
+#define LAST 	(-1)
+/*-------------------------------------------------------------------------------*/
+/*			Multicast table Public APIs				 */
+/*-------------------------------------------------------------------------------*/
+#define MV_PP2_MC_TBL_SIZE		256
+#define MV_PP2_MC_WORDS			3
+
+
+typedef struct mvPp2McEntry {
+	unsigned int index;
+	union {
+		MV_U32 words[MV_PP2_MC_WORDS];
+		struct {
+			MV_U32 data1;/* 0x164 */
+			MV_U32 data2;/* 0x168 */
+			MV_U32 data3;/* 0x16c */
+		} regs;
+	} sram;
+} MV_PP2_MC_ENTRY;
+/*
+int	mvPp2McFirstFreeGet(void)
+*/
+
+int	mvPp2McHwWrite(MV_PP2_MC_ENTRY *mc, int index);
+int	mvPp2McHwRead(MV_PP2_MC_ENTRY *mc, int index);
+int	mvPp2McSwDump(MV_PP2_MC_ENTRY *mc);
+int	mvPp2McHwDump(void);
+void	mvPp2McSwClear(MV_PP2_MC_ENTRY *mc);
+void	mvPp2McHwClearAll(void);
+
+
+int	mvPp2McSwModSet(MV_PP2_MC_ENTRY *mc, int data_ptr, int instr_offs);
+int	mvPp2McSwGpidSet(MV_PP2_MC_ENTRY *mc, int gpid, int enable);
+int	mvPp2McSwDscpSet(MV_PP2_MC_ENTRY *mc, int dscp, int enable);
+int	mvPp2McSwPrioSet(MV_PP2_MC_ENTRY *mc, int prio, int enable);
+int	mvPp2McSwQueueSet(MV_PP2_MC_ENTRY *mc, int q);
+int	mvPp2McSwForwardEn(MV_PP2_MC_ENTRY *mc, int enable);
+int	mvPp2McSwNext(MV_PP2_MC_ENTRY *mc, int next);
+
+
+#endif /*__MV_CLS_MC_HW_H__ */
+

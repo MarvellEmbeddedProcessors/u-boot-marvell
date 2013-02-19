@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -61,49 +61,73 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
+#ifndef __MV_PP2_COMMON_H__
+#define __MV_PP2_COMMON_H__
 
+#include "mvTypes.h"
 #include "mvCommon.h"
 #include "mvOs.h"
-#include "ctrlEnv/mvCtrlEnvLib.h"
-#include "ctrlEnv/mvCtrlEnvSpec.h"
-#include "boardEnv/mvBoardEnvLib.h"
-#include "eth-phy/mvEthPhy.h"
-#if defined(MV_ETH_LEGACY)
-#include "eth/gbe/mvEthRegs.h"
-#elif defined(MV_ETH_NETA)
-#include "neta/gbe/mvEthRegs.h"
-#else
-#include "pp2/gbe/mvPp2Gbe.h"
-#include "pp2/gmac/mvEthGmacRegs.h"
-#endif
-#include "mvSysEthPhyApi.h"
 
-/*******************************************************************************
-* mvSysEthPhyInit - Initialize the EthPhy subsystem
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None
-* OUTPUT:
-*		None
-* RETURN:
-*       None
-*
-*******************************************************************************/
-MV_STATUS mvSysEthPhyInit(void)
-{
-	MV_ETHPHY_HAL_DATA halData;
-	MV_U32 port;
+/*--------------------------------------------------------------------*/
+/*			PP2 COMMON MACROS			      */
+/*--------------------------------------------------------------------*/
 
-	for (port=0; port < mvCtrlEthMaxPortGet(); port++) {
-		halData.phyAddr[port] = mvBoardPhyAddrGet(port);
-		halData.LinkCryptPortAddr[port] = mvBoardPhyLinkCryptPortAddrGet(port);
-		halData.boardSpecInit = MV_FALSE;
-		halData.isSgmii[port] = mvBoardIsPortInSgmii(port);
-		halData.QuadPhyPort0[port] = mvBoardQuadPhyAddr0Get(port);
-	}
-	halData.ethPhySmiReg = ETH_SMI_REG(MV_ETH_SMI_PORT);
-
-	return mvEthPhyHalInit(&halData);
+#define DECIMAL_RANGE_VALIDATE(_VALUE_ , _MIN_, _MAX_) {\
+	if (((_VALUE_) > (_MAX_)) || ((_VALUE_) < (_MIN_))) {\
+		mvOsPrintf("%s: value %d (0x%x) is out of range [%d , %d].\n",\
+				__func__, (_VALUE_), (_VALUE_), (_MIN_), (_MAX_));\
+		return MV_ERROR;\
+	} \
 }
+
+#define RANGE_VALIDATE(_VALUE_ , _MIN_, _MAX_) {\
+	if (((_VALUE_) > (_MAX_)) || ((_VALUE_) < (_MIN_))) {\
+		mvOsPrintf("%s: value 0x%X (%d) is out of range [0x%X , 0x%X].\n",\
+				__func__, (_VALUE_), (_VALUE_), (_MIN_), (_MAX_));\
+		return MV_ERROR;\
+	} \
+}
+
+#define BIT_RANGE_VALIDATE(_VALUE_)			RANGE_VALIDATE(_VALUE_ , 0, 1)
+
+#define POS_RANGE_VALIDATE(_VALUE_, _MAX_)		RANGE_VALIDATE(_VALUE_ , 0, _MAX_)
+
+#define PTR_VALIDATE(_ptr_) {\
+	if (_ptr_ == NULL) {\
+		mvOsPrintf("%s: null pointer.\n", __func__);\
+		return MV_ERROR;\
+	} \
+}
+
+#define WARN_OOM(cond) if (cond) { mvOsPrintf("%s: out of memory\n", __func__); return NULL; }
+
+
+/*--------------------------------------------------------------------*/
+/*			PP2 COMMON FUNCTIONS			      */
+/*--------------------------------------------------------------------*/
+
+
+int mvPp2RdReg(unsigned int offset);
+
+int mvPp2WrReg(unsigned int offset, unsigned int  val);
+
+int mvPp2PrintReg(unsigned int  reg_addr, char *reg_name);
+
+int mvPp2SPrintReg(char *buf, unsigned int  reg_addr, char *reg_name);
+
+void mvEthRegPrint(MV_U32 reg_addr, char *reg_name);
+void mvEthRegPrint2(MV_U32 reg_addr, char *reg_name, MV_U32 index);
+
+/*--------------------------------------------------------------------*/
+/*			PP2 COMMON DEFINETIONS			      */
+/*--------------------------------------------------------------------*/
+#define NOT_IN_USE					(-1)
+#define IN_USE						(1)
+#define DWORD_BITS_LEN					32
+#define DWORD_BYTES_LEN                                 4
+#define RETRIES_EXCEEDED				5000
+#define ONE_BIT_MAX					1
+#define UNI_MAX						7
+#define ETH_PORTS_NUM					7
+
+#endif /* __MV_PP2_ERR_CODE_H__ */

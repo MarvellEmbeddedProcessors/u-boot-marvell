@@ -46,15 +46,18 @@ disclaimer.
 #if defined(MV_ETH_LEGACY)
 #include "eth/mvEth.h"
 #include "mv_eth_legacy.h"
-#else
+#elif defined(MV_ETH_NETA)
 #include "neta/gbe/mvNeta.h"
+#include "mv_egiga_neta.h"
+#else
+#include "pp2/gbe/mvPp2Gbe.h"
+#include "mv_egiga_pp2.h"
 #endif /* MV_ETH_LEGACY or MV_ETH_NETA */
 #include "pex/mvPex.h"
 #include "gpp/mvGpp.h"
 #include "gpp/mvGppRegs.h"
 #include "mv_phy.h"
 #include "ddr2_3/mvDramIfRegs.h"
-#include "mv_egiga_neta.h"
 #ifdef MV_INCLUDE_RTC
 #include "rtc/integ_rtc/mvRtc.h"
 #include "rtc.h"
@@ -503,16 +506,19 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	/* Generate random ip and mac address */
 	/* Read RTC to create pseudo-random data for enc */
 	struct rtc_time tm;
-	unsigned int rand[4];
+	unsigned int rand[4] = {0x1, 0x2, 0x3, 0x4};
 	char* addr_env="ethaddr" , *mtu_env="ethmtu";
 	char ethaddr_all[30];
+#if defined(MV_INCLUDE_RTC)
+	struct rtc_time tm;
+
 	rtc_get(&tm);
 	
-	rand[0] = ((tm.tm_yday + tm.tm_sec)% 254);
+	rand[0] = ((tm.tm_yday + tm.tm_sec) % 254);
 	/* No valid ip with one of the fileds has the value 0 */
 	if (rand[0] == 0)
 		rand[0]+=2;
-	rand[1] = ((tm.tm_yday + tm.tm_min)%254);
+	rand[1] = ((tm.tm_yday + tm.tm_min) % 254);
 	/* No valid ip with one of the fileds has the value 0 */
 	if (rand[1] == 0)
 		rand[1]+=2;
@@ -520,18 +526,19 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	if ((rand[1] == 1) && (rand[0] == 11))
 		rand[0]+=2;
 
-	rand[2] = (tm.tm_min * tm.tm_sec)%254;
-	rand[3] = (tm.tm_hour * tm.tm_sec)%254;
+	rand[2] = (tm.tm_min * tm.tm_sec) % 254;
+	rand[3] = (tm.tm_hour * tm.tm_sec) % 254;
+#endif /* defined(MV_INCLUDE_RTC) */
+
 	/* MAC addresses */	
-	for (i=0; i<MV_ETH_MAX_PORTS ; i++)
-	{
-		sprintf(ethaddr_all,"00:50:43:%02x:%02x:%02x",rand[(0+i)%4],rand[(1+i)%4],rand[(2+i)%4]);
-		envSetDefault(addr_env,ethaddr_all);
-		envSetDefault(mtu_env,"1500");
-		sprintf(addr_env,"eth%daddr",i+1);
-		sprintf(mtu_env,"eth%dmtu",i+1);
+	for (i = 0; i < MV_ETH_MAX_PORTS; i++) {
+		sprintf(ethaddr_all, "00:50:43:%02x:%02x:%02x", rand[(0 + i) % 4], rand[(1 + i) % 4], rand[(2 + i) % 4]);
+		envSetDefault(addr_env, ethaddr_all);
+		envSetDefault(mtu_env, "1500");
+		sprintf(addr_env, "eth%daddr", i + 1);
+		sprintf(mtu_env, "eth%dmtu", i + 1);
 	}
-	sprintf(ethaddr_all,"00:50:43:%02x:%02x:%02x",rand[3],rand[2],rand[0]);
+	sprintf(ethaddr_all,"00:50:43:%02x:%02x:%02x", rand[3], rand[2], rand[0]);
 	envSetDefault("mv_pon_addr", ethaddr_all);
 
 	/* Set mvNetConfig env parameter */
@@ -604,12 +611,10 @@ void pcie_tune(void)
 
 int board_eth_init(bd_t *bis)
 {
-#ifdef  CONFIG_MARVELL
 #if defined(MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_UNM_ETH)
 	/* move to the begining so in case we have a PCI NIC it will
 	read the env mac addresses correctlly. */
 	mv_eth_initialize(bis);
-#endif
 #endif
 #if defined(CONFIG_SK98)
 	skge_initialize(bis);

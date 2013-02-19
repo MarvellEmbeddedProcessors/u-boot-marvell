@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -62,48 +62,58 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include "mvCommon.h"
-#include "mvOs.h"
-#include "ctrlEnv/mvCtrlEnvLib.h"
-#include "ctrlEnv/mvCtrlEnvSpec.h"
-#include "boardEnv/mvBoardEnvLib.h"
-#include "eth-phy/mvEthPhy.h"
-#if defined(MV_ETH_LEGACY)
-#include "eth/gbe/mvEthRegs.h"
-#elif defined(MV_ETH_NETA)
-#include "neta/gbe/mvEthRegs.h"
-#else
-#include "pp2/gbe/mvPp2Gbe.h"
-#include "pp2/gmac/mvEthGmacRegs.h"
-#endif
-#include "mvSysEthPhyApi.h"
+#ifndef __MV_PP2_ERR_CODE_H__
+#define __MV_PP2_ERR_CODE_H__
 
-/*******************************************************************************
-* mvSysEthPhyInit - Initialize the EthPhy subsystem
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None
-* OUTPUT:
-*		None
-* RETURN:
-*       None
-*
-*******************************************************************************/
-MV_STATUS mvSysEthPhyInit(void)
-{
-	MV_ETHPHY_HAL_DATA halData;
-	MV_U32 port;
+#define  MV_ERR_CODE_BASE					0x80000000
+#define  MV_PP2_ERR_CODE_BASE					(MV_ERR_CODE_BASE | 0x00001000)
 
-	for (port=0; port < mvCtrlEthMaxPortGet(); port++) {
-		halData.phyAddr[port] = mvBoardPhyAddrGet(port);
-		halData.LinkCryptPortAddr[port] = mvBoardPhyLinkCryptPortAddrGet(port);
-		halData.boardSpecInit = MV_FALSE;
-		halData.isSgmii[port] = mvBoardIsPortInSgmii(port);
-		halData.QuadPhyPort0[port] = mvBoardQuadPhyAddr0Get(port);
-	}
-	halData.ethPhySmiReg = ETH_SMI_REG(MV_ETH_SMI_PORT);
 
-	return mvEthPhyHalInit(&halData);
-}
+#define  MV_PP2_PRS						(MV_PP2_ERR_CODE_BASE | 0x00000100)
+#define  MV_PP2_CLS						(MV_PP2_ERR_CODE_BASE | 0x00000200)
+#define  MV_PP2_CLS2						(MV_PP2_ERR_CODE_BASE | 0x00000400)
+#define  MV_PP2_CLS3						(MV_PP2_ERR_CODE_BASE | 0x00000800)
+#define  MV_PP2_CLS4						(MV_PP2_ERR_CODE_BASE | 0x00000800)
+
+
+/*****************************************************************************
+
+
+
+			    E R R O R   C O D E S
+
+
+*****************************************************************************/
+/* #define MV_OK 0  define in mvTypes*/
+#define EQUALS 0
+#define NOT_EQUALS 1
+
+/* PRS error codes */
+#define  MV_PRS_ERR						(MV_PP2_PRS | 0x00)
+#define  MV_PRS_OUT_OF_RAGE					(MV_PP2_PRS | 0x01)
+#define  MV_PRS_NULL_POINTER					(MV_PP2_PRS | 0x02)
+
+/* CLS error codes */
+#define  MV_CLS_ERR						(MV_PP2_CLS | 0x00)
+#define  MV_CLS_OUT_OF_RAGE					(MV_PP2_CLS | 0x01)
+
+/* CLS2 error codes */
+#define  MV_CLS2_ERR						(MV_PP2_CLS2 | 0x00)
+#define  MV_CLS2_OUT_OF_RAGE					(MV_PP2_CLS2 | 0x01)
+#define  MV_CLS2_NULL_POINTER					(MV_PP2_CLS2 | 0x02)
+#define  MV_CLS2_RETRIES_EXCEEDED				(MV_PP2_CLS2 | 0x03)
+
+/* CLS3 error codes */
+#define  MV_CLS3_ERR						(MV_PP2_CLS3 | 0x00)
+#define  MV_CLS3_OUT_OF_RAGE					(MV_PP2_CLS3 | 0x01)
+#define  MV_CLS3_NULL_POINTER					(MV_PP2_CLS3 | 0x02)
+#define  MV_CLS3_RETRIES_EXCEEDED				(MV_PP2_CLS3 | 0x03)
+#define  MV_CLS3_SW_INTERNAL					(MV_PP2_CLS3 | 0x04)
+
+/* CLS4 error codes */
+#define  MV_CLS4_ERR						(MV_PP2_CLS4 | 0x00)
+#define  MV_CLS4_OUT_OF_RAGE					(MV_PP2_CLS4 | 0x01)
+#define  MV_CLS4_NULL_POINTER					(MV_PP2_CLS4 | 0x02)
+#define  MV_CLS4_RETRIES_EXCEEDED				(MV_PP2_CLS4 | 0x03)
+
+#endif /* __MV_PP2_ERR_CODE_H__ */

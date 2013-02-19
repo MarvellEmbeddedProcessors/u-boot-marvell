@@ -350,6 +350,7 @@ MV_U16 mvBoardRevGet(MV_VOID);
 MV_STATUS mvBoardNameGet(char *pNameBuff);
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum);
+MV_BOOL mvBoardIsPortLb(MV_U32 ethPortNum);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
 MV_32 mvBoardPhyLinkCryptPortAddrGet(MV_U32 ethPortNum);
 

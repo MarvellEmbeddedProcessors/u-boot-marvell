@@ -284,6 +284,7 @@ int reglog(unsigned int offset, unsigned int data);
 #   define mvOsPrintf(fmt,args...)
 #endif /* MV_RT_DEBUG */
 
+#define mvOsMemset	   memset
 #define mvOsOutput         printf
 #define mvOsMalloc         malloc
 #define mvOsFree           free

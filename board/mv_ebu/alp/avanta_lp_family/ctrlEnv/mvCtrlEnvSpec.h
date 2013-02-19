@@ -112,7 +112,22 @@ extern "C" {
 #define MV_CPU_PMU_UNIT_SERV_OFFSET(cpu)	(0x22100 + (cpu) * 0x100)
 #define MV_CPU_HW_SEM_OFFSET			(0x20500)
 
-#if defined(MV_ETH_LEGACY)
+#if defined(MV_ETH_PP2)
+
+#define MV_PP2_REG_BASE				(0x80000)
+#define MV_ETH_BASE_ADDR			(0x50000)
+#define LMS_REG_BASE				(MV_ETH_BASE_ADDR)
+#define MIB_COUNTERS_REG_BASE			(MV_ETH_BASE_ADDR + 0x1000)
+#define GOP_MNG_REG_BASE			(MV_ETH_BASE_ADDR + 0x3000)
+#define GOP_REG_BASE(port)			(MV_ETH_BASE_ADDR + 0x4000 + ((port) / 2) * 0x3000 + ((port) % 2) * 0x1000)
+#define MV_PON_REGS_OFFSET			(MV_ETH_BASE_ADDR + 0x8000)
+
+#define MV_ETH_MAX_TCONT			16
+#define MV_PON_PORT_ID				7
+#define MV_ETH_RXQ_TOTAL_NUM			32
+#define MV_VLAN_1_TYPE				0x88A8
+
+#elif defined(MV_ETH_LEGACY)
 	#define MV_ETH_BASE_ADDR		(0x72000)
 #else
 	#define MV_ETH_BASE_ADDR		(0x70000)
@@ -237,6 +252,16 @@ extern "C" {
 
 /* This define describes the maximum number of supported Ethernet ports */
 /* TODO - verify all these numbers */
+
+#if defined(CONFIG_MV_ETH_PP2)
+#define MV_PON_PORT_ID                  	7
+#define MV_ETH_MAX_PORTS                        4
+#define MV_ETH_MAX_RXQ                          16 /* Maximum number of RXQs can be mapped to each port */
+#define MV_ETH_MAX_TXQ                          8
+#define MV_ETH_RXQ_TOTAL_NUM           		32 /* Total number of RXQs for usage by all ports */
+#define MV_ETH_MAX_TCONT 			16 /* Maximum number of TCONTs supported by PON port */
+#define MV_ETH_TX_CSUM_MAX_SIZE                 9800
+#else
 #define MV_ETH_VERSION 				4 /* for Legacy mode */
 #define MV_NETA_VERSION				1 /* for NETA mode */
 #define MV_ETH_MAX_PORTS			4
@@ -244,6 +269,8 @@ extern "C" {
 #define MV_ETH_MAX_TXQ              		8
 #define MV_ETH_TX_CSUM_MAX_SIZE 		9800
 #define MV_PNC_TCAM_LINES			1024	/* TCAM num of entries */
+
+#endif /* CONFIG_MV_ETH_PP2 */
 
 #if defined(MV88F78X60) && !defined(MV88F78X60_Z1)
 /* New GMAC module is used */
@@ -260,7 +287,7 @@ extern "C" {
 
 #define MV_78130_ETH_MAX_PORT			3
 #define MV_78460_ETH_MAX_PORT			4
-#define MV_FPGA_ETH_MAX_PORT			1
+#define MV_FPGA_ETH_MAX_PORT			4
 
 /* This define describes the the support of USB */
 #define MV_USB_VERSION  			1

@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -65,21 +65,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvCommon.h"
 #include "mvOs.h"
 #include "ctrlEnv/mvCtrlEnvLib.h"
-#include "ctrlEnv/mvCtrlEnvSpec.h"
 #include "boardEnv/mvBoardEnvLib.h"
-#include "eth-phy/mvEthPhy.h"
-#if defined(MV_ETH_LEGACY)
-#include "eth/gbe/mvEthRegs.h"
-#elif defined(MV_ETH_NETA)
-#include "neta/gbe/mvEthRegs.h"
-#else
+#include "cpu/mvCpu.h"
 #include "pp2/gbe/mvPp2Gbe.h"
-#include "pp2/gmac/mvEthGmacRegs.h"
-#endif
-#include "mvSysEthPhyApi.h"
+#include "pp2/gmac/mvEthGmacApi.h"
+
 
 /*******************************************************************************
-* mvSysEthPhyInit - Initialize the EthPhy subsystem
+* mvSysPp2Init - Initialize the Eth subsystem
 *
 * DESCRIPTION:
 *
@@ -91,19 +84,53 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *       None
 *
 *******************************************************************************/
-MV_STATUS mvSysEthPhyInit(void)
+void 	mvSysPp2Init(void)
 {
-	MV_ETHPHY_HAL_DATA halData;
-	MV_U32 port;
+	MV_PP2_HAL_DATA halData;
+	MV_UNIT_WIN_INFO *addrWinMap;
+	MV_STATUS status;
+	int i;
 
-	for (port=0; port < mvCtrlEthMaxPortGet(); port++) {
-		halData.phyAddr[port] = mvBoardPhyAddrGet(port);
-		halData.LinkCryptPortAddr[port] = mvBoardPhyLinkCryptPortAddrGet(port);
-		halData.boardSpecInit = MV_FALSE;
-		halData.isSgmii[port] = mvBoardIsPortInSgmii(port);
-		halData.QuadPhyPort0[port] = mvBoardQuadPhyAddr0Get(port);
+	addrWinMap = mvOsMalloc((MAX_TARGETS + 1) * sizeof(MV_UNIT_WIN_INFO));
+	if (!addrWinMap)
+		return;
+
+	memset(&halData, 0, sizeof(halData));
+	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
+	if (status != MV_OK)
+		return;
+
+	for (i = 0; i < MAX_TARGETS; i++) {
+		if (addrWinMap[i].enable == MV_FALSE)
+			continue;
+
+#ifdef CONFIG_MV_SUPPORT_L2_DEPOSIT
+		/* Setting DRAM windows attribute to :
+		   0x3 - Shared transaction + L2 write allocate (L2 Deposit) */
+		if (MV_TARGET_IS_DRAM(i)) {
+			addrWinMap[i].attrib &= ~(0x30);
+			addrWinMap[i].attrib |= 0x30;
+		}
+#endif
+		mvOsPrintf("%d - Base 0x%08x , Size = 0x%08x. , Target = 0x%08x\n", i,
+				addrWinMap[i].addrWin.baseLow,
+				(unsigned int)addrWinMap[i].addrWin.size, addrWinMap[i].targetId);
 	}
-	halData.ethPhySmiReg = ETH_SMI_REG(MV_ETH_SMI_PORT);
+	halData.maxPort = mvCtrlEthMaxPortGet();
 
-	return mvEthPhyHalInit(&halData);
+#ifdef CONFIG_MV_PON
+	halData.maxTcont = MV_ETH_MAX_TCONT;
+#endif /* CONFIG_MV_PON */
+
+	halData.pClk = mvCpuPclkGet();
+	halData.tClk = mvBoardTclkGet();
+	halData.maxCPUs = mvCtrlEthMaxCPUsGet();
+	//halData.iocc = arch_is_coherent();
+	halData.ctrlModel = mvCtrlModelGet();
+	halData.ctrlRev = mvCtrlRevGet();
+
+	mvPp2WinInit(0, addrWinMap);
+	mvPp2HalInit(&halData);
+
+	return;
 }

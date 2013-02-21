@@ -1,0 +1,232 @@
+; initialize system
+AREA.CLEAR
+AREA
+diag 16001
+
+SYStem.RESet
+
+entry &ddrSpeed
+local &ddrSpeed
+ 
+SYStem.CPU 88FR581V7
+SYStem.MultiCore COREBASE 0xc2301000 
+SYStem.MultiCore MEMORYACCESSPORT 0 
+SYStem.MultiCore DEBUGACCESSPORT  1
+
+SYStem.MultiCore ETMBASE 0xc2302000
+SYStem.MultiCore ETBBASE 0xc2304000
+
+system.mode attach
+system.Up
+ 
+; set system settings according LE MMU
+d.s C15:1 %LONG 0x00052078 
+
+if ("&ddrSpeed"=="")
+(
+	area.res
+	area.c select
+	area.s select
+	w.area select
+	screen.always
+	
+	; user selects ddr speed
+	print ""
+	print ""
+	print "Please select DDR Speed:"
+	print "1) 600 Mhz - Marvell DB board only!"
+	print "2) DDR3 trainning sequence"
+	print
+	enter &ddrSpeed
+	area.res
+	wclear
+)
+
+if &ddrSpeed==1
+(
+	print ""
+	print "Starting DRAM initialization - 600MHZ:"
+	; dram init
+	d.s 0xD0001400 %LONG 0x73014A28 ;  DDR SDRAM Configuration Register
+	d.s 0xD0001404 %LONG 0x3630B800 ;  Dunit Control Low Register - kw40 bit11 high
+	d.s 0xD0001408 %LONG 0x44149887 ;  DDR SDRAM Timing (Low) Register
+	d.s 0xD000140C %LONG 0x38000C6A ;  DDR SDRAM Timing (High) Register
+	d.s 0xD0001410 %LONG 0x04000000 ;  DDR SDRAM Address Control Register
+	d.s 0xD0001414 %LONG 0x00000000 ;  DDR SDRAM Open Pages Control Register
+	d.s 0xD0001418 %LONG 0x00000e00 ;  DDR SDRAM Operation Register
+	d.s 0xD000141C %LONG 0x00000672 ;  DDR SDRAM Mode Register
+	d.s 0xD0001420 %LONG 0x00000004 ;  DDR SDRAM Extended Mode Register
+	d.s 0xD0001424 %LONG 0x0100D1FF ;  Dunit Control High Register ( 2 :1 - bits 15:12 = 0xD )
+	d.s 0xD0001428 %LONG 0x000F8830 ;  Dunit Control High Register
+	d.s 0xD000142C %LONG 0x214C2F38 ;  Dunit Control High Register  ( 2:1 -  bit 29 = '1' )
+	d.s 0xD000147C %LONG 0x0000c671 ;
+
+	; 2:1 
+	d.s 0xD00014a8 %LONG 0x00000100 ; DSMP "101"
+	d.s 0xD0020220 %LONG 0x00000006 ; DSMP 7
+
+	d.s 0xD0001494 %LONG 0x00010000 ;  DDR SDRAM ODT Control (Low) Register
+	d.s 0xD0001498 %LONG 0x00000000 ;  DDR SDRAM ODT Control (High) Register
+	d.s 0xD000149C %LONG 0x00000001 ;  DDR Dunit ODT Control Register
+	;d.s 0xD000149C %LONG 0x00000300 ;  DDR Dunit ODT Control Register
+
+
+	; First work with Mbus DRAM window at DRAM Init - 256MB in default
+	d.s 0xD00200EC %LONG 0x00000000
+
+	d.s 0xD00200E8 %LONG 0x1FFF0E00
+	d.s 0xD0020184 %LONG 0x1FFFFFe1
+
+	; Those registers should not be connected in this device, so just to be sure we will Zero them
+	d.s 0xD0001504 %LONG 0x1FFFFFF1 ;
+	d.s 0xD000150C %LONG 0x00000000 ;  CS[1]n Size Register
+	d.s 0xD0001514 %LONG 0x00000000 ;  CS[2]n Size Register
+	d.s 0xD000151C %LONG 0x00000000 ;  CS[3]n Size Register
+
+	d.s 0xD0001524 %LONG 0x0000C800 ;  DDR I/O register
+
+	d.s 0xD0001538 %LONG 0x0000000b ;  Read Data Sample Delays Register  
+	d.s 0xD000153C %LONG 0x0000000d ;  Read Data Ready Delay Register 
+
+	
+
+	d.s 0xD00015D0 %LONG 0x00000650 ;  MR0 
+	d.s 0xD00015D4 %LONG 0x00000046 ;  MR1
+	d.s 0xD00015D8 %LONG 0x00000010 ;  MR2
+	d.s 0xD00015DC %LONG 0x00000000 ;  MR3
+
+
+	d.s 0xD00015E4 %LONG 0x00203c18;  ZQC Configuration Register 
+	d.s 0xD00015EC %LONG 0xDE000025;  DDR PHY 
+
+	LOCAL &status
+	LOCAL &bit
+
+	LOCAL &readlvl
+	&readlvl=1
+
+	if (&readlvl>0)
+	(
+
+	&status=0
+	&bit=31
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	;read leveling values
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	;PUP	RdSampleDly (+CL)	Phase	RL ADLL value
+	;0		1		1		25
+	;d.s 0xD00016A0 %LONG 0xC0020119
+         d.s 0xD00016A0 %LONG 0xC0020014
+
+	&status=Data.Long(SD:0xD00016A0) 
+	&status=&status&(1<<31)
+	WHILE (&status>0)
+	( 
+		&status=Data.Long(SD:0xD00016A0) 
+		&status=&status&(1<<31)
+	)
+
+	;1		1		1		30
+	;d.s 0xD00016A0 %LONG 0xC042011E
+         d.s 0xD00016A0 %LONG 0xC0420019 
+
+
+	&status=Data.Long(SD:0xD00016A0) 
+	&status=&status&(1<<31)
+	WHILE (&status>0)
+	( 
+		&status=Data.Long(SD:0xD00016A0) 
+		&status=&status&(1<<31)
+	)
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	)
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	;write leveling values
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+	;PUP	
+	;0		
+
+	;d.s 0xD00016A0 %LONG 0xC0005508
+         d.s 0xD00016A0 %LONG 0xC0008414
+
+	&status=Data.Long(SD:0xD00016A0) 
+	&status=&status&(1<<31)
+	WHILE (&status>0) 
+	( 
+		&status=Data.Long(SD:0xD00016A0) 
+		&status=&status&(1<<31)
+	)
+
+	;1		
+
+	;d.s 0xD00016A0 %LONG 0xC0409117
+         d.s 0xD00016A0 %LONG 0xC0404905
+
+	&status=Data.Long(SD:0xD00016A0) 
+	&status=&status&(1<<31)
+	WHILE (&status>0) 
+	( 
+		&status=Data.Long(SD:0xD00016A0) 
+		&status=&status&(1<<31)
+	)
+
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	; center DQS on read cycle
+	d.s 0xD00016A0 %LONG 0xC803000F
+
+	&status=Data.Long(SD:0xD00016A0) 
+	&status=&status&(1<<31)
+	WHILE (&status>0) 
+	( 
+		&status=Data.Long(SD:0xD00016A0) 
+		&status=&status&(1<<31)
+	)
+
+
+	d.s 0xD0001480 %LONG 0x00000001 ;  DDR SDRAM Initialization Control Register
+	WAIT 1.s
+	print "DDR3 Init Done ;-)"
+)
+else if &ddrSpeed==2
+(
+	;Enable L2 Block => Set L2Exist
+	D.S SD:0xD0020200 %LE %LONG 0x01000102
+
+	; Configure L@ ways 0-3 to be SRAM
+	D.S SD:0xD000878C %LE %LONG 0x40000000
+	D.S SD:0xD000878C %LE %LONG 0x40010001
+	D.S SD:0xD000878C %LE %LONG 0x40020002
+	D.S SD:0xD000878C %LE %LONG 0x40030003
+
+	; Open the SRAM window 0 to the 512K SRAM
+	D.S SD:0xD0020240 %LE %LONG 0x40000701
+	print "Finished setting the L2 as SRAM"
+
+	; Close fastpath window
+	D.S SD:0xD0020184 %LE %LONG 0x0
+
+	; Set stack
+	REGISTER.SET R13 0x40040000
+
+	WAIT 100.ms
+
+	print "Init Done ;-)"
+
+	D.LOAD bin_hdr\bin_hdr.elf
+	go
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+)
+
+; Set program counter at program start to be ready for start
+; Register.Set pc 0xffff0000
+; R.S PC 670000
+enddo
+
+
+

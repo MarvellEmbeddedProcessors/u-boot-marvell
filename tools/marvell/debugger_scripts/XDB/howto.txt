@@ -1,0 +1,139 @@
+
+
+
+How to use XDB for Debug and for recovering and programming U-Boot image:
+--------------------------------------------------------------------------
+
+Assumptions:
+------------
+
+- This readme refers to XDB scripts located under <u_boot root directory>\tools\marvell\debugger_script\XDB 
+  directory in the u-boot release.
+- the <u_boot root directory>\tools\marvell\debugger_script\XDB includes the following files:
+	- ARMADA1000_V7.xsf
+	- init_AXP_DDR_V7.xdb
+- An empty bin_hdr directory, copy the relevant bin_hdr.elf file from: 
+	option 1:  <u_boot developer root directory>\tools\marvell\bin_hdr_armada\
+	option 2: <release directory>\binaries\[release number]\[board name]\bin_hdr\bin_hdr.elf 
+- A valid serial connection is configured between the host and target.
+- XDB software version 5.1 or later is insalled and running.
+
+XDB configuration steps to load U-Boot Image:
+--------------------------------------------------------
+
+JTAG Connection:
+----------------
+
+
+1) Connect the Marvell JTAG POD to the target board.
+
+2) To Launch the XDB startup menu , Double click on the ARMADA1000_V7.xsf script under 
+   <u_boot root directory>\tools\marvell\debugger_script\XDB directory, based on the CPU mode V7.
+
+3) Make sure that "connection type" of the first core is set to "Reset SOC & stop",
+   "connection type" is located under the most left "CS-JTAG" tab in the settings window
+   of the startup menu (appears when clicking settings from the startup menu).
+   Please note that this is needed to be done only once.
+   
+
+4) Click on the Start button from the startup menu, this will launch the XDB
+   tool itself.
+
+5) Wait for a connection to be established, the Command window in the tool appear by 
+   default and provide a feedback on the connection status:
+
+   - If the connection was successful a “xdb>” prompt will appear at the bottom of the command window. 
+   - If "xdb_InReset>" / "xdb_nocomm>" prompt appears at the bottom of the command window, this is an indication that an error happened:
+        make sure the board is powered, the POD is properly connected, and that you are using the script ARMADA1000_V7.xsf.
+
+Note: If a reset is not desired when connecting to the AXP, choose the "Try Hot Connect & Stop" option at step 3. 
+       this is assuming the the system has a valid image is running.
+
+DRAM Initialization:
+--------------------
+
+
+
+6) To initilize memory, do the following: 
+	- Click on the file -> Batch.
+	- The “Execute Batch file” menu will appear,  browse to  <u_boot root directory> \tools\marvell\debugger_script\XDB  choose 
+          init_AXP_DDR_V7.xdb script based on the CPU mode V7.
+        - Hit the “OK” button.
+
+
+   -Please note that the init_AXP_DDR_V7.xdb scripts can be used to initilize any Armada XP SOC board, without the need for any changes.
+
+
+
+7) In the XDB command window the user will see a log starting with:
+    “BATCH "<path to the script from the previous step>"” , and ending with the ”xdb >” prompt.
+
+8) The user should see the following pattern on the terminal connected to the target:
+“
+High speed PHY - Version: x.x.x (COM-PHY-Vxx) 
+High speed PHY - Ended Successfully
+DDR3 Training Sequence - Ver X.x.x
+   .....
+   .... 
+DDR3 Training Sequence - Ended Successfully
+...
+...
+“
+This is an indication that the DRAM and PCI SERDES configuration were initialized and it can be used to load the u-Boot.
+
+9)To load the u-Boot do the following:
+
+-	From the XDB tool main menu Click on the File -> Load.
+-	The “Load” menu will appear.
+-	Click the “Symbols And Data” option.
+-	 Click the Browse button, browse to the appropriate elf u-Boot image under the <u_boot root directory> /Images directory.
+-	Check the "Download", and "initfile" options in the “Load” menu, and click “Ok”.
+-	Wait until the download is completed. download progress is presented in percentage in the bottom right 
+        coroner ( appears only when download in progress).
+-	The debugger will launch a browser window requesting the user to direct it to the source for start.s 
+        (the first file to run). This is located  root directory <u_boot root directory>\cpu\arm1136\start.s for u-boot 2009.08 and in \arch\arm\cpu\armv7\start.S for u-boot-2011.12.
+        in case of following this Precedure to "Running / Recovering u-Boot" (see below), no need to direct the debugger to the source, in case of debugging 
+	this is a must-do step.
+
+
+Running / Recovering u-Boot
+----------------------------------
+To Recover/ burn a u-Boot image to the flash DRAM Initialization:
+
+1) press the Run icon ( the green light), or press “Ctrl +r”  this will run the selected  u-Boot image from the memory.
+   the u-boot will run, and a normal u-boot plot will appear on the Serial connection.
+2) use the “bubt” command to flash a u-boot image – refer to the “How to upgrade to a new version of U-Boot” in the u-boot release notes.
+
+
+U-Boot Debugging
+-----------------------
+XDB provides full debugging capability ( step though source / assembler, adding breakpoints, and variable / register evaluation)
+thoughout the U-boot run.Here are the setups to do this ( after DRAM Initialization):
+
+
+1)   Once the user directed the debugger to the source for start.s, the debugger will be able to automatically load 
+    the source as needed by the user execution follow. No extra intervention needed.
+
+Debugging basics:
+    
+- User can run in source mode / assembler mode as needed – user can chose to show either, or both windows by clicking
+  on display -> assembler / display -> source from the main XDB window.
+- The Run menu in the main window includes the run control options ( run, step, step into ..and more), this can be done
+  in either  the source or assembler based on the selection in “Display” menu.
+- Debug menu in the main XDB window has the option to set breakpoint(s):
+	-Click the “Code” tap to set the breakpoint in a specific address.
+	-Click the “Data” tap, and then click browse to set the breakpoint at the start of a specific function.
+	-Click the “Hard” option if you wish to use a Hardware breakpoint.
+- The Display ->Cores option will show the available cores in a Multicore environment and their status. Choose the core
+  you wish to debug by double clicking on it in the cores window.
+- If loading the symbols only is desired do the following:
+	-From the XDB tool main menu Click on the File -> Load.
+	-The “Load” menu will appear.
+	-Click the “Symbols And Data” option.
+	-Click the Browse button, browse to the appropriate elf u-Boot image under the <u_boot root directory> /Images directory.
+	-make sure to Uncheck the "Download" option.
+
+
+
+Note: refer to XDB documentation for full tool capabilities.
+

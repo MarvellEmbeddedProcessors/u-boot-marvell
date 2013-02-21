@@ -1,0 +1,16 @@
+In order to operate SMP mode with the LauterBach, the following steps should be followed:
+
+1. Install the Trace32 tool from LauterBach's installation DVD. We use the November 2010 installation DVD.
+2. Apply the patch "41715479_25-01-12_files.zip" through overriding the 3 files in the T32 folder.
+   This pach adds the support for the MV78460V7 SoC that enables SMP by default (provided seperately)
+3. copy the 2 files "menmv78460.men" and "permv78460.per" under C:\T32 (provided seperately)
+3. Run marvell's initialization script "armada_xp_smp_DDR3.cmm".
+   To enable SMP debugging the following options should be selected when prompted:
+   Please select SoC Mode: ==> select option 4 "4) ARMv7 SMP (Experimental)"
+   Please select the DB board ==> select option 1 "1) db88f78x60bprev2"
+4. Pressing the "UP" button in the system menu should get the system at 0xFFFF0000
+5. you can load the symbols using the command "data.load <lef file name> /NOCODE"
+6. To break on a specific routine, set an "onChip" breakpoint at the address needed.
+7. Perform few single-step jumps to pass the reset vector zone then press go.
+8. The debugger should break at the address specified when hitting it by either CPUs. Both CPUs are breaked.
+

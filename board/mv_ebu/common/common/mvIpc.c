@@ -901,6 +901,9 @@ MV_BOOL mvIpcRxMsg(MV_U32 *outChnId, MV_IPC_MSG **outMsg, MV_U32 drblNum)
 
 	chn = &ipcChannels[chnId];
 
+	if (chn->state == MV_CHN_CLOSED)
+		return MV_FALSE;
+
 	/* First process control messages like attach, detach, close */
 	if(isCtrlMsg(chn) == MV_TRUE){
 		mvIpcRxCtrlMsg(chnId, chn->rxCtrlMsg);

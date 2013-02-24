@@ -179,6 +179,7 @@ extern "C" {
 #define PEX_COMPLT_TMEOUT_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A10)
 #define PEX_PWR_MNG_EXT_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A18)
 #define PEX_FLOW_CTRL_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A20)
+#define PEX_SECONDARY_BUS_REG(pexIf)     ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A2C)
 #define PEX_DYNMC_WIDTH_MNG_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A30)
 #define PEX_ROOT_CMPLX_SSPL_REG(pexif)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A0C)
 #define PEX_ACK_TMR_1X_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A40)

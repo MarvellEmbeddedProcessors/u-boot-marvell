@@ -131,6 +131,7 @@ extern "C" {
 #define     MV_M25Q128_MAX_SPI_FREQ             20000000    /* 20MHz */
 #define     MV_M25Q128_MAX_FAST_SPI_FREQ        50000000    /* 50MHz */
 #define     MV_M25Q128_FAST_READ_DUMMY_BYTES    1
+#define     MV_M25Q128_ADDR_CYC_CNT             3
 
 
 /* Sector Sizes and population per device model*/

@@ -1,64 +1,64 @@
 /*******************************************************************************
-Copyright (C) Marvell International Ltd. and its affiliates
+   Copyright (C) Marvell International Ltd. and its affiliates
 
-This software file (the "File") is owned and distributed by Marvell
-International Ltd. and/or its affiliates ("Marvell") under the following
-alternative licensing terms.  Once you have made an election to distribute the
-File under one of the following license alternatives, please (i) delete this
-introductory statement regarding license alternatives, (ii) delete the two
-license alternatives that you have not elected to use and (iii) preserve the
-Marvell copyright notice above.
-
-********************************************************************************
-Marvell Commercial License Option
-
-If you received this File from Marvell and you have entered into a commercial
-license agreement (a "Commercial License") with Marvell, the File is licensed
-to you under the terms of the applicable Commercial License.
+   This software file (the "File") is owned and distributed by Marvell
+   International Ltd. and/or its affiliates ("Marvell") under the following
+   alternative licensing terms.  Once you have made an election to distribute the
+   File under one of the following license alternatives, please (i) delete this
+   introductory statement regarding license alternatives, (ii) delete the two
+   license alternatives that you have not elected to use and (iii) preserve the
+   Marvell copyright notice above.
 
 ********************************************************************************
-Marvell GPL License Option
+   Marvell Commercial License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or
-modify this File in accordance with the terms and conditions of the General
-Public License Version 2, June 1991 (the "GPL License"), a copy of which is
-available along with the File in the license.txt file or by writing to the Free
-Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
-on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
+   If you received this File from Marvell and you have entered into a commercial
+   license agreement (a "Commercial License") with Marvell, the File is licensed
+   to you under the terms of the applicable Commercial License.
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
-DISCLAIMED.  The GPL License provides additional details about this warranty
-disclaimer.
 ********************************************************************************
-Marvell BSD License Option
+   Marvell GPL License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or
-modify this File under the following licensing terms.
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
+   If you received this File from Marvell, you may opt to use, redistribute and/or
+   modify this File in accordance with the terms and conditions of the General
+   Public License Version 2, June 1991 (the "GPL License"), a copy of which is
+   available along with the File in the license.txt file or by writing to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
+   on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
 
-    *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+   THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+   DISCLAIMED.  The GPL License provides additional details about this warranty
+   disclaimer.
+********************************************************************************
+   Marvell BSD License Option
 
-    *   Redistributions in binary form must reproduce the above copyright
-	notice, this list of conditions and the following disclaimer in the
-	documentation and/or other materials provided with the distribution.
+   If you received this File from Marvell, you may opt to use, redistribute and/or
+   modify this File under the following licensing terms.
+   Redistribution and use in source and binary forms, with or without modification,
+   are permitted provided that the following conditions are met:
 
-    *   Neither the name of Marvell nor the names of its contributors may be
-	used to endorse or promote products derived from this software without
-	specific prior written permission.
+*   Redistributions of source code must retain the above copyright notice,
+            this list of conditions and the following disclaimer.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*   Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
+
+*   Neither the name of Marvell nor the names of its contributors may be
+        used to endorse or promote products derived from this software without
+        specific prior written permission.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+   ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+   (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+   ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
@@ -105,7 +105,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* defines  */
 #undef MV_DEBUG
 #ifdef MV_DEBUG
-#define DB(x)	x
+#define DB(x)   x
 #else
 #define DB(x)
 #endif
@@ -114,11 +114,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Control Environment internal data structure
  * Note: it should be initialized dynamically only once.
  */
-#define MV_INVALID_CTRL_REV	0xff
+#define MV_INVALID_CTRL_REV     0xff
 
 typedef struct _ctrlEnvInfo {
-	MV_U16	ctrlModel;
-	MV_U8	ctrlRev;
+	MV_U16 ctrlModel;
+	MV_U8 ctrlRev;
 } CTRL_ENV_INFO;
 
 CTRL_ENV_INFO ctrlEnvInfo = {};
@@ -145,6 +145,7 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 {
 	return MV_ERROR;
 }
+
 #endif
 
 /*******************************************************************************
@@ -170,25 +171,25 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 *******************************************************************************/
 MV_STATUS mvCtrlEnvInit(MV_VOID)
 {
-#if !defined(CONFIG_MACH_AVANTA_LP_FPGA_FPGA)
-	MV_U32 mppGroup;
-	MV_U32 mppVal;
+	MV_BOARD_SPEC_INIT *boardSpec;
 	MV_U32 i, gppMask;
 
-	/* Disable MBus Error Propagation */
-	MV_REG_BIT_RESET(SOC_COHERENCY_FABRIC_CTRL_REG, BIT8);
-
-	/* Use Background sync barrier (polling) for I/O cache coherency */
-	MV_REG_BIT_SET(SOC_CIB_CTRL_CFG_REG, BIT8);
-
-	/* MPP Init - scan which modeule is connected */
-	mvBoardMppModulesScan();
-
-	/* Read MPP config values from board level and write MPP options to HW */
-	for (mppGroup = 0; mppGroup < MV_MPP_MAX_GROUP; mppGroup++) {
-		mppVal = mvBoardMppGet(mppGroup);	/* get pre-defined values */
-		MV_REG_WRITE(mvCtrlMppRegGet(mppGroup), mppVal);
+	/* Specific board initializations  ( from board->pBoardSpecInit ) omriii : see if can remove all these inits*/
+	boardSpec = mvBoardSpecInitGet();
+	if (boardSpec != NULL) {
+		MV_U32 reg;
+		i = 0;
+		while (boardSpec[i].reg != TBL_TERM) {
+			reg = MV_REG_READ(boardSpec[i].reg);
+			reg &= ~boardSpec[i].mask;
+			reg |= (boardSpec[i].val & boardSpec[i].mask);
+			MV_REG_WRITE(boardSpec[i].reg, reg);
+			i++;
+		}
 	}
+
+	mvBoardConfigInit();
+	mvBoardConfigWrite(); /* write MPP's config and Board general config */
 
 	/* disable all GPIO interrupts */
 	for (i = 0; i < MV_GPP_MAX_GROUP; i++) {
@@ -203,19 +204,9 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	/* Set gpp interrupts as needed */
 	for (i = 0; i < MV_GPP_MAX_GROUP; i++) {
 		gppMask = mvBoardGpioIntMaskGet(i);
-		mvGppTypeSet(i, gppMask , (MV_GPP_IN & gppMask));
-		mvGppPolaritySet(i, gppMask , (MV_GPP_IN_INVERT & gppMask));
+		mvGppTypeSet(i, gppMask, (MV_GPP_IN & gppMask));
+		mvGppPolaritySet(i, gppMask, (MV_GPP_IN_INVERT & gppMask));
 	}
-
-	/* Scan for other modules (SERDES/LVDS/...) */
-	mvBoardOtherModulesScan();
-
-	/* Update interfaces configuration based on above scan */
-	if (MV_OK != mvCtrlSerdesPhyConfig())
-		mvOsPrintf("%s: Can't init some or all SERDES lanes\n", __func__);
-
-	mvOsDelay(100);
-#endif
 
 	return MV_OK;
 }
@@ -226,7 +217,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 * DESCRIPTION: Write S@R configuration Field
 *
 * INPUT: satrField - Field description enum
-*  	 val       - value to write (if write action requested)
+*        val       - value to write (if write action requested)
 *
 * OUTPUT: None
 *
@@ -236,20 +227,22 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 *       else if write failed - returns MV_ERROR
 *
 *******************************************************************************/
-MV_U32 mvCtrlSatRWrite(MV_SATR_TYPE_ID satrField ,MV_U8 val)
+MV_U32 mvCtrlSatRWrite(MV_SATR_TYPE_ID satrField, MV_U8 val)
 {
-	if (satrField<MV_SATR_MAX_OPTION) {
+	if (satrField < MV_SATR_MAX_OPTION) {
 		//TwsiSATRWrite (satrField , val);
-		satrOptionsConfig[satrField]=val;      /* simulate dummy write instead of TWSI - will be removed */
+		satrOptionsConfig[satrField] = val;      /* simulate dummy write instead of TWSI - will be removed */
 		//if ( val==TwsiSATRRead (satrField) )
 
-		if(satrOptionsConfig[satrField]==val)	 	/* omriii - replace ifs with if(TWSIRead==val) */
-			return (satrOptionsConfig[satrField]=val);
+		if (satrOptionsConfig[satrField] == val)        /* omriii - replace ifs with if(TWSIRead==val) */
+			return satrOptionsConfig[satrField] = val;
 		else
 			return MV_ERROR;
-	}
+	}else
+		return MV_ERROR;
 
 }
+
 /*******************************************************************************
 * mvCtrlSatRRead
 *
@@ -266,16 +259,19 @@ MV_U32 mvCtrlSatRWrite(MV_SATR_TYPE_ID satrField ,MV_U8 val)
 *******************************************************************************/
 MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 {
-	if (satrField<MV_SATR_MAX_OPTION)
+	if (satrField < MV_SATR_MAX_OPTION)
 		return satrOptionsConfig[satrField];
+	else
+		return MV_ERROR;
 }
+
 /*******************************************************************************
 * mvCtrlSatrInit
 *
 * DESCRIPTION: Initialize S@R configuration
-* 		1. initialize all S@R fields with 0xFF
-* 		2. read boardID and according to ID, read relevant S@R fields(using TWSI/EEPROM)
-*	 	**from this point, all S@R reads will be done using mvCtrlSatRConfig function**
+*               1. initialize all S@R fields with 0xFF
+*               2. read boardID and according to ID, read relevant S@R fields(using TWSI/EEPROM)
+*	        **from this point, all S@R reads will be done using mvCtrlSatRRead/Write functions**
 *
 * INPUT:  None
 *
@@ -286,24 +282,28 @@ MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 *******************************************************************************/
 void mvCtrlSatrInit(void)
 {
-	int i=0;
+	MV_U8 tempVal = 0;
+	MV_BOARD_SAR_INFO info;
+	int i = 0;
+
 	/* initialize all S@R fields to -1 (MV_ERROR) */
-	for (i=0; i<MV_SATR_MAX_OPTION ; i++)
-		satrOptionsConfig[i]=MV_ERROR;
+	for (i = 0; i < MV_SATR_MAX_OPTION; i++)
+		satrOptionsConfig[i] = MV_ERROR;
 
 	/* detect board ID to determine which S@R fields are relevant */
-	//boardIDget
+	//boardID=mvBoardIdGet();
 
+	for (i = 0; i < MV_SATR_MAX_OPTION; i++) {
+		if ( MV_OK == mvBoardSarInfoGet(i, &info)) {
+			tempVal = (MV_REG_READ(MPP_SAMPLE_AT_RESET(info.regNum)) & (info.mask) >> info.offset);
+			satrOptionsConfig[info.sarid] = tempVal;
+		}
+	}
 
-	/* read S@R register / TWSI read and save them in satrOptionsConfig */
-	// if boardID==X
-	// TWSIwrite(...
-
-	/* temp: simulate dummy twsi initalizations */
-	printf("\nmvCtrlSatrDetect : simulate Detecting S@R (1,2,3,...)\n");
-	for (i=0; i<MV_SATR_MAX_OPTION ; i++)
-		satrOptionsConfig[i]=i%3;
-	/* temp: simulate dummy initalizations */
+	/*omriii: temp: simulate dummy twsi initalizations */
+	for (i = 0; i < MV_SATR_MAX_OPTION; i++)
+		satrOptionsConfig[i] = i % 3;
+	/*omriii temp: simulate dummy initalizations */
 }
 
 /*******************************************************************************
@@ -355,6 +355,7 @@ MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
 {
 	return 1;
 }
+
 #endif
 
 /*******************************************************************************
@@ -402,6 +403,7 @@ MV_U32 mvCtrlPciMaxIfGet(MV_VOID)
 {
 	return 1;
 }
+
 #endif
 #endif
 
@@ -476,6 +478,7 @@ MV_U32 mvCtrlSataMaxPortGet(MV_VOID)
 {
 	return 0;
 }
+
 #endif
 
 #if defined(MV_INCLUDE_XOR)
@@ -543,6 +546,7 @@ MV_U32 mvCtrlUsbMaxGet(void)
 {
 	return 0;
 }
+
 #endif
 
 #if defined(MV_INCLUDE_LEGACY_NAND)
@@ -565,6 +569,7 @@ MV_U32 mvCtrlNandSupport(MV_VOID)
 {
 	return 0; /* kostaz: what's that ??? */
 }
+
 #endif
 
 #if defined(MV_INCLUDE_SDIO)
@@ -587,6 +592,7 @@ MV_U32 mvCtrlSdioSupport(MV_VOID)
 {
 	return 0; /* kostaz: what's that ??? */
 }
+
 #endif
 
 #if defined(MV_INCLUDE_TDM)
@@ -634,7 +640,7 @@ MV_U32 mvCtrlTdmMaxGet(MV_VOID)
 * mvCtrlTdmUnitTypeGet
 *
 * DESCRIPTION:
-*	Return the TDM unit type being compiled in.
+*	Scan all relevant TDM units, and return the TDM unit type being used (if any)
 *
 * INPUT:
 *       None.
@@ -646,31 +652,39 @@ MV_U32 mvCtrlTdmMaxGet(MV_VOID)
 *	The TDM unit type.
 *
 *******************************************************************************/
-MV_UNIT_ID mvCtrlTdmUnitTypeGet(MV_VOID)
+MV_TDM_UNIT_TYPE mvCtrlTdmUnitTypeGet(MV_VOID)
 {
-	return TDM_UNIT_32CH; /* kostaz: FIXME */
+	return TDM_LQ_UNIT; /* omriii: FIXME */
+
+/*	implement a scan process for all 4 units, and return the enum for the correct unit being used
+ *      TDM_LQ_UNIT
+        TDM_SL_UNIT
+        TDM_ZL_UNIT
+        TDM_EXT_UNIT
+ */
 }
 
 /*******************************************************************************
-* mvCtrlTdmUnitIrqGet
-*
-* DESCRIPTION:
-*	Return the TDM unit IRQ number depending on the TDM unit compilation
-*	options.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	None.
-******************************************************************************/
+ * mvCtrlTdmUnitIrqGet
+ *
+ * DESCRIPTION:
+ *	Return the TDM unit IRQ number depending on the TDM unit compilation
+ *	options.
+ *
+ * INPUT:
+ *	None.
+ *
+ * OUTPUT:
+ *	None.
+ *
+ * RETURN:
+ *	None.
+ ******************************************************************************/
 MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID)
 {
 	return MV_TDM_IRQ_NUM;
 }
+
 #endif /* MV_INCLUDE_TDM */
 
 /*******************************************************************************
@@ -711,7 +725,7 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 	if ((reg & PMC_PEXSTOPCLOCK_MASK(0)) == PMC_PEXSTOPCLOCK_STOP(0))
 		MV_REG_WRITE(POWER_MNG_CTRL_REG, reg);
 
-	ci->ctrlModel = (MV_U16) ((devId >> 16) & 0xFFFF);
+	ci->ctrlModel = (MV_U16)((devId >> 16) & 0xFFFF);
 	return ci->ctrlModel;
 }
 
@@ -749,7 +763,7 @@ MV_U8 mvCtrlRevGet(MV_VOID)
 #endif
 
 	revNum = (MV_U8)MV_REG_READ(PEX_CFG_DIRECT_ACCESS(
-				0, PCI_CLASS_CODE_AND_REVISION_ID));
+					    0, PCI_CLASS_CODE_AND_REVISION_ID));
 
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
 	/* Return to power off state */
@@ -808,7 +822,7 @@ MV_STATUS mvCtrlNameGet(char *pNameBuff)
 *******************************************************************************/
 MV_U32 mvCtrlModelRevGet(MV_VOID)
 {
-	return ((mvCtrlModelGet() << 16) | mvCtrlRevGet());
+	return (mvCtrlModelGet() << 16) | mvCtrlRevGet();
 }
 
 /*******************************************************************************
@@ -886,6 +900,7 @@ static MV_VOID mvCtrlPexAddrDecShow(MV_VOID)
 {
 	/* kostaz: FIXME: will be filled for AvantaLP */
 }
+
 #endif
 
 /*******************************************************************************
@@ -914,7 +929,6 @@ static void mvUnitAddrDecShow(MV_U8 numUnits, MV_UNIT_ID unitId,
 	MV_U32 unit, i;
 
 	for (unit = 0; unit < numUnits; unit++) {
-
 		if (MV_FALSE == mvCtrlPwrClckGet(unitId, unit))
 			continue;
 		mvOsOutput("\n");
@@ -1023,29 +1037,29 @@ MV_U32 ctrlSizeToReg(MV_U32 size, MV_U32 alignment)
 	}
 
 	/* Take out the "alignment" portion out of the size parameter */
-	alignment--;		/* Now the alignmet is a sequance of '1' (e.g. 0xffff)          */
+	alignment--;                    /* Now the alignmet is a sequance of '1' (e.g. 0xffff)          */
 	/* and size is 0x1000000 (16MB) for example     */
-	while (alignment & 1) {	/* Check that alignmet LSB is set       */
-		size = (size >> 1);	/* If LSB is set, move 'size' one bit to right      */
+	while (alignment & 1) {         /* Check that alignmet LSB is set       */
+		size = (size >> 1);     /* If LSB is set, move 'size' one bit to right      */
 		alignment = (alignment >> 1);
 	}
 
 	/* If after the alignment first '0' was met we still have '1' in                */
 	/* it then aligment is invalid (not power of 2)                                 */
 	if (alignment) {
-		DB(mvOsPrintf("ctrlSizeToReg: ERR. Alignment parameter 0x%x invalid.\n", (MV_U32) alignment));
+		DB(mvOsPrintf("ctrlSizeToReg: ERR. Alignment parameter 0x%x invalid.\n", (MV_U32)alignment));
 		return -1;
 	}
 
 	/* Now the size is shifted right according to aligment: 0x0100                  */
-	size--;			/* Now the size is a sequance of '1': 0x00ff                    */
+	size--;                 /* Now the size is a sequance of '1': 0x00ff                    */
 	retVal = size;
 
 	/* Check that LSB to MSB is sequence of 1's followed by sequence of 0's         */
-	while (size & 1)	/* Check that LSB is set    */
-		size = (size >> 1);	/* If LSB is set, move one bit to the right         */
+	while (size & 1)                /* Check that LSB is set    */
+		size = (size >> 1);     /* If LSB is set, move one bit to the right         */
 
-	if (size) {		/* Sequance of 1's is over. Check that we have no other 1's         */
+	if (size) {                     /* Sequance of 1's is over. Check that we have no other 1's         */
 		DB(mvOsPrintf("ctrlSizeToReg: ERR. Size parameter 0x%x invalid.\n", size));
 		return -1;
 	}
@@ -1076,21 +1090,21 @@ MV_U32 ctrlRegToSize(MV_U32 regSize, MV_U32 alignment)
 	MV_U32 temp;
 
 	/* Check that LSB to MSB is sequence of 1's followed by sequence of 0's         */
-	temp = regSize;		/* Now the size is a sequance of '1': 0x00ff            */
+	temp = regSize;                 /* Now the size is a sequance of '1': 0x00ff            */
 
-	while (temp & 1)	/* Check that LSB is set                                    */
-		temp = (temp >> 1);	/* If LSB is set, move one bit to the right         */
+	while (temp & 1)                /* Check that LSB is set                                    */
+		temp = (temp >> 1);     /* If LSB is set, move one bit to the right         */
 
-	if (temp) {		/* Sequance of 1's is over. Check that we have no other 1's         */
+	if (temp) {                     /* Sequance of 1's is over. Check that we have no other 1's         */
 		DB(mvOsPrintf("%s: ERR: Size parameter 0x%x invalid.\n", __func__, regSize));
 		return -1;
 	}
 
 	/* Check that aligment is a power of two                                        */
-	temp = alignment - 1;	/* Now the alignmet is a sequance of '1' (0xffff)          */
+	temp = alignment - 1;           /* Now the alignmet is a sequance of '1' (0xffff)          */
 
-	while (temp & 1)	/* Check that alignmet LSB is set                           */
-		temp = (temp >> 1);	/* If LSB is set, move 'size' one bit to right      */
+	while (temp & 1)                /* Check that alignmet LSB is set                           */
+		temp = (temp >> 1);     /* If LSB is set, move 'size' one bit to right      */
 
 	/* If after the 'temp' first '0' was met we still have '1' in 'temp'            */
 	/* then 'temp' is invalid (not power of 2)                                      */
@@ -1099,13 +1113,13 @@ MV_U32 ctrlRegToSize(MV_U32 regSize, MV_U32 alignment)
 		return -1;
 	}
 
-	regSize++;		/* Now the size is 0x0100                                       */
+	regSize++;              /* Now the size is 0x0100                                       */
 
 	/* Add in the "alignment" portion to the register size parameter                */
-	alignment--;		/* Now the alignmet is a sequance of '1' (e.g. 0xffff)          */
+	alignment--;                            /* Now the alignmet is a sequance of '1' (e.g. 0xffff)          */
 
-	while (alignment & 1) {	/* Check that alignmet LSB is set                       */
-		regSize = (regSize << 1);	/* LSB is set, move 'size' one bit left     */
+	while (alignment & 1) {                 /* Check that alignmet LSB is set                       */
+		regSize = (regSize << 1);       /* LSB is set, move 'size' one bit left     */
 		alignment = (alignment >> 1);
 	}
 
@@ -1154,6 +1168,90 @@ MV_U32 ctrlSizeRegRoundUp(MV_U32 size, MV_U32 alignment) /* kostaz: FIXME: remov
 }
 
 /*******************************************************************************
+* mvCtrlIsLantiqTDM
+*
+* DESCRIPTION:
+*       Check if device being uesd is lantiq TDM
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE if device boot from SPI.
+*******************************************************************************/
+MV_BOOL mvCtrlIsLantiqTDM(MV_VOID)
+{
+	/* implement Scan process */
+	return MV_TRUE;
+}
+
+/*******************************************************************************
+* mvCtrlIsZarlinkTDM
+*
+* DESCRIPTION:
+*       Check if device being used is Zarlink TDM
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE if device boot from SPI.
+*******************************************************************************/
+MV_BOOL mvCtrlIsZarlinkTDM(MV_VOID)
+{
+	/* implement Scan process */
+	return MV_FALSE;
+}
+
+/*******************************************************************************
+* mvCtrlIsSiliconLabsTDM
+*
+* DESCRIPTION:
+*       Check if device being used is Silicon Labs TDM
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE if device boot from SPI.
+*******************************************************************************/
+MV_BOOL mvCtrlIsSiliconLabsTDM(MV_VOID)
+{
+	/* implement Scan process */
+	return MV_FALSE;
+}
+
+/*******************************************************************************
+* mvCtrlIsExternalTDM
+*
+* DESCRIPTION:
+*       Check if device being used is the External TDM Unit
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE if device boot from SPI.
+*******************************************************************************/
+MV_BOOL mvCtrlIsExternalTDM(MV_VOID)
+{
+	/* implement Scan process */
+	return MV_FALSE;
+}
+
+/*******************************************************************************
 * mvCtrlIsBootFromNOR
 *
 * DESCRIPTION:
@@ -1192,7 +1290,7 @@ MV_BOOL mvCtrlIsBootFromNOR(MV_VOID)
 *******************************************************************************/
 MV_BOOL mvCtrlIsBootFromSPI(MV_VOID)
 {
-	return MV_FALSE;
+	return MV_TRUE; // omriii : return to false
 }
 
 /*******************************************************************************
@@ -1303,19 +1401,18 @@ MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
 }
 
 /*******************************************************************************
-* mvCtrlPwrClckGet - Get Power State of specific Unit
-*
-* DESCRIPTION:
-*
-* INPUT:
-*
-* OUTPUT:
-*
-* RETURN:
-******************************************************************************/
+ * mvCtrlPwrClckGet - Get Power State of specific Unit
+ *
+ * DESCRIPTION:
+ *
+ * INPUT:
+ *
+ * OUTPUT:
+ *
+ * RETURN:
+ ******************************************************************************/
 MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 {
-	MV_U32 reg = MV_REG_READ(POWER_MNG_CTRL_REG);
 	MV_BOOL state = MV_TRUE;
 
 	/* Clock gating is not supported on FPGA */
@@ -1324,6 +1421,7 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 
 	switch (unitId) {
 #if defined(MV_INCLUDE_PEX)
+		MV_U32 reg = MV_REG_READ(POWER_MNG_CTRL_REG);
 	case PEX_UNIT_ID:
 		if ((reg & PMC_PEXSTOPCLOCK_MASK(index)) == PMC_PEXSTOPCLOCK_STOP(index))
 			state = MV_FALSE;
@@ -1479,23 +1577,23 @@ MV_VOID mvCtrlPwrMemSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
 }
 
 /*******************************************************************************
-* mvCtrlPwrMemGet - Get Power State of memory on specific Unit
-*
-* DESCRIPTION:
-*
-* INPUT:
-*
-* OUTPUT:
-*
-* RETURN:
-******************************************************************************/
+ * mvCtrlPwrMemGet - Get Power State of memory on specific Unit
+ *
+ * DESCRIPTION:
+ *
+ * INPUT:
+ *
+ * OUTPUT:
+ *
+ * RETURN:
+ ******************************************************************************/
 MV_BOOL mvCtrlPwrMemGet(MV_UNIT_ID unitId, MV_U32 index)
 {
-	MV_U32 reg;
 	MV_BOOL state = MV_TRUE;
 
 	switch (unitId) {
 #if defined(MV_INCLUDE_PEX)
+		MV_U32 reg;
 	case PEX_UNIT_ID:
 		reg = MV_REG_READ(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_PEX));
 		if ((reg & PMC_PEXSTOPMEM_MASK(index)) == PMC_PEXSTOPMEM_STOP(index))
@@ -1574,6 +1672,7 @@ MV_BOOL mvCtrlPwrMemGet(MV_UNIT_ID unitId, MV_U32 index)
 
 	return state;
 }
+
 #else
 MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
 {
@@ -1584,6 +1683,7 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 {
 	return MV_TRUE;
 }
+
 #endif /* #if defined(MV_INCLUDE_CLK_PWR_CNTRL) */
 
 /*******************************************************************************
@@ -1611,6 +1711,7 @@ MV_U32 mvCtrlSerdesMaxLinesGet(MV_VOID)
 MV_U32 mvCtrlDDRBudWidth(MV_VOID)
 {
 	MV_U32 reg;
+
 	reg = MV_REG_READ(0x1400);
 
 	return (reg & 0x8000) ? 64 : 32;
@@ -1619,6 +1720,7 @@ MV_U32 mvCtrlDDRBudWidth(MV_VOID)
 MV_BOOL mvCtrlDDRThruXbar(MV_VOID)
 {
 	MV_U32 reg;
+
 	reg = MV_REG_READ(0x20184);
 
 	return (reg & 0x1) ? MV_FALSE : MV_TRUE;
@@ -1627,6 +1729,7 @@ MV_BOOL mvCtrlDDRThruXbar(MV_VOID)
 MV_BOOL mvCtrlDDRECC(MV_VOID)
 {
 	MV_U32 reg;
+
 	reg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
 
 	return (reg & (0x1 << REG_SDRAM_CONFIG_ECC_OFFS)) ? MV_TRUE : MV_FALSE;

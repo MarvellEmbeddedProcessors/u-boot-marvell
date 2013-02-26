@@ -86,10 +86,8 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 	MV_PEX_MODE pexMode;
 	MV_U32 regVal;
 	MV_U32 status;
-	MV_U32 ctrlFamily;
 
 	mvOsMemcpy(&pexHalData[pexIf], halData, sizeof(MV_PEX_HAL_DATA));
-	ctrlFamily=pexHalData[pexIf].ctrlFamily;
 
 	if (mvPexModeGet(pexIf, &pexMode) != MV_OK) {
 		mvOsPrintf("PEX init ERR. mvPexModeGet failed (pexType=%d)\n", pexMode.pexType);
@@ -128,9 +126,7 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 			MV_REG_WRITE(PEX_DBG_CTRL_REG(pexIf), regVal);
 
 	}
-#ifdef PCIE_VIRTUAL_BRIDGE_SUPPORT
-	mvPexVrtBrgInit(pexIf);
-#endif
+	
 	return MV_OK;
 }
 
@@ -218,13 +214,6 @@ MV_U32 mvPexModeGet(MV_U32 pexIf, MV_PEX_MODE *pexMode)
 *******************************************************************************/
 MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff)
 {
-#if defined(PCIE_VIRTUAL_BRIDGE_SUPPORT)
-	return mvPexVrtBrgConfigRead(pexIf, bus, dev, func, regOff);
-}
-
-MV_U32 mvPexHwConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff)
-{
-#endif
 	MV_U32 pexData = 0;
 	MV_U32 localDev, localBus;
 
@@ -251,7 +240,7 @@ MV_U32 mvPexHwConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U
 
 	if (bus >= MAX_PEX_BUSSES) {
 		DB(mvOsPrintf("mvPexConfigRead: ERR. bus number illigal %d\n", bus));
-		return MV_ERROR;
+		return 0xFFFFFFFF;
 	}
 
 	DB(mvOsPrintf("mvPexConfigRead: pexIf %d, bus %d, dev %d, func %d, regOff 0x%x\n",
@@ -265,7 +254,7 @@ MV_U32 mvPexHwConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U
 		pexData = MV_REG_READ(PEX_STATUS_REG(pexIf));
 
 		if ((pexData & PXSR_DL_DOWN))
-			return MV_ERROR;
+			return 0xFFFFFFFF;
 	}
 
 	/* in PCI Express we have only one device number */
@@ -277,13 +266,13 @@ MV_U32 mvPexHwConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U
 			/* if local dev is 0 then the first number we encounter
 			   after 0 is 1 */
 			if ((dev != 1) && (dev != localDev))
-				return MV_ERROR;
+				return 0xFFFFFFFF;
 		} else {
 			/* if local dev is not 0 then the first number we encounter
 			   is 0 */
 
 			if ((dev != 0) && (dev != localDev))
-				return MV_ERROR;
+				return 0xFFFFFFFF;
 		}
 	}
 	/* Creating PEX address to be passed */
@@ -344,13 +333,6 @@ MV_U32 mvPexHwConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U
 *******************************************************************************/
 MV_STATUS mvPexConfigWrite(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff, MV_U32 data)
 {
-#if defined(PCIE_VIRTUAL_BRIDGE_SUPPORT)
-	return mvPexVrtBrgConfigWrite(pexIf, bus, dev, func, regOff, data);
-}
-
-MV_STATUS mvPexHwConfigWrite(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff, MV_U32 data)
-{
-#endif
 	MV_U32 pexData = 0;
 	MV_U32 localDev, localBus;
 

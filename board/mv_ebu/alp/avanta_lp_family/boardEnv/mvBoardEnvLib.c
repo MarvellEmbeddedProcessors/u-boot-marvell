@@ -1,64 +1,64 @@
 /*******************************************************************************
-Copyright (C) Marvell International Ltd. and its affiliates
+   Copyright (C) Marvell International Ltd. and its affiliates
 
-This software file (the "File") is owned and distributed by Marvell
-International Ltd. and/or its affiliates ("Marvell") under the following
-alternative licensing terms.  Once you have made an election to distribute the
-File under one of the following license alternatives, please (i) delete this
-introductory statement regarding license alternatives, (ii) delete the two
-license alternatives that you have not elected to use and (iii) preserve the
-Marvell copyright notice above.
-
-********************************************************************************
-Marvell Commercial License Option
-
-If you received this File from Marvell and you have entered into a commercial
-license agreement (a "Commercial License") with Marvell, the File is licensed
-to you under the terms of the applicable Commercial License.
+   This software file (the "File") is owned and distributed by Marvell
+   International Ltd. and/or its affiliates ("Marvell") under the following
+   alternative licensing terms.  Once you have made an election to distribute the
+   File under one of the following license alternatives, please (i) delete this
+   introductory statement regarding license alternatives, (ii) delete the two
+   license alternatives that you have not elected to use and (iii) preserve the
+   Marvell copyright notice above.
 
 ********************************************************************************
-Marvell GPL License Option
+   Marvell Commercial License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or
-modify this File in accordance with the terms and conditions of the General
-Public License Version 2, June 1991 (the "GPL License"), a copy of which is
-available along with the File in the license.txt file or by writing to the Free
-Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
-on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
+   If you received this File from Marvell and you have entered into a commercial
+   license agreement (a "Commercial License") with Marvell, the File is licensed
+   to you under the terms of the applicable Commercial License.
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
-DISCLAIMED.  The GPL License provides additional details about this warranty
-disclaimer.
 ********************************************************************************
-Marvell BSD License Option
+   Marvell GPL License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or
-modify this File under the following licensing terms.
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
+   If you received this File from Marvell, you may opt to use, redistribute and/or
+   modify this File in accordance with the terms and conditions of the General
+   Public License Version 2, June 1991 (the "GPL License"), a copy of which is
+   available along with the File in the license.txt file or by writing to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
+   on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
 
-    *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+   THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+   DISCLAIMED.  The GPL License provides additional details about this warranty
+   disclaimer.
+********************************************************************************
+   Marvell BSD License Option
 
-    *   Redistributions in binary form must reproduce the above copyright
-	notice, this list of conditions and the following disclaimer in the
-	documentation and/or other materials provided with the distribution.
+   If you received this File from Marvell, you may opt to use, redistribute and/or
+   modify this File under the following licensing terms.
+   Redistribution and use in source and binary forms, with or without modification,
+   are permitted provided that the following conditions are met:
 
-    *   Neither the name of Marvell nor the names of its contributors may be
-	used to endorse or promote products derived from this software without
-	specific prior written permission.
+*   Redistributions of source code must retain the above copyright notice,
+            this list of conditions and the following disclaimer.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*   Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
+
+*   Neither the name of Marvell nor the names of its contributors may be
+        used to endorse or promote products derived from this software without
+        specific prior written permission.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+   ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+   (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+   ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
@@ -85,7 +85,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* defines  */
 #undef MV_DEBUG
 #ifdef MV_DEBUG
-#define DB(x)	x
+#define DB(x)   x
 #else
 #define DB(x)
 #endif
@@ -180,7 +180,7 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 *******************************************************************************/
 MV_U16 mvBoardModelGet(MV_VOID)
 {
-	return (mvBoardIdGet() >> 16);
+	return mvBoardIdGet() >> 16;
 }
 
 /*******************************************************************************
@@ -205,7 +205,7 @@ MV_U16 mvBoardModelGet(MV_VOID)
 *******************************************************************************/
 MV_U16 mvBoardRevGet(MV_VOID)
 {
-	return (mvBoardIdGet() & 0xFFFF);
+	return mvBoardIdGet() & 0xFFFF;
 }
 
 /*******************************************************************************
@@ -307,6 +307,27 @@ MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum)
 #endif
 
 	return board->pBoardMacInfo[ethPortNum].boardEthSmiAddr;
+}
+
+/*******************************************************************************
+* mvBoardSpecInitGet -
+*
+* DESCRIPTION:
+*       This routine returns the board specific initializtion information.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       A pointer to the array holding the board specific initializations.
+*
+*******************************************************************************/
+MV_BOARD_SPEC_INIT *mvBoardSpecInitGet(MV_VOID)
+{
+	return board->pBoardSpecInit;
 }
 
 /*******************************************************************************
@@ -498,7 +519,7 @@ MV_U32 mvBoardDebugLedNumGet(MV_U32 boardId)
 * mvBoardDebugLed - Set the board debug Leds
 *
 * DESCRIPTION: turn on/off status leds.
-* 	       Note: assume MPP leds are part of group 0 only.
+*              Note: assume MPP leds are part of group 0 only.
 *
 * INPUT:
 *       hexNum - Number to be displied in hex by Leds.
@@ -661,7 +682,7 @@ MV_BOOL mvBoardIsOurPciSlot(MV_U32 busNum, MV_U32 slotNum)
 
 	if (localBusNum != busNum) {
 		DB(mvOsPrintf("%s:: localBusNum %x != busNum %x.\n",
-					__func__, localBusNum, busNum));
+			      __func__, localBusNum, busNum));
 		return MV_FALSE;
 	}
 
@@ -726,13 +747,33 @@ MV_U32 mvBoardGpioIntMaskGet(MV_U32 gppGrp)
 *******************************************************************************/
 MV_32 mvBoardMppGet(MV_U32 mppGroupNum)
 {
-	MV_U32 mppMod;
+	return board->pBoardMppConfigValue[0].mppGroup[mppGroupNum];
+}
 
-	mppMod = board->pBoardModTypeValue->boardMppMod;
-	if (mppMod >= board->numBoardMppConfigValue)
-		mppMod = 0; /* default */
+MV_32 mvBoardMppTypeGet(MV_U32 mppGroupNum)
+{
+	return (MV_U32)board->pBoardMppGroupValue[mppGroupNum];
+}
 
-	return board->pBoardMppConfigValue[mppMod].mppGroup[mppGroupNum];
+MV_STATUS mvBoardConfigInit(void)
+{
+/*   read S@R configuration From local array - already filled by mvCtrlSatrInit, and:
+ *   1. decide which group types is relevant for mpp init
+ *   2. build etherntComplex struct for kosta */
+	return MV_OK;
+}
+
+MV_VOID mvBoardConfigWrite(void)
+{
+	MV_U32 mppGroup, mppType, mppVal;
+	MV_U32 mppGroups[][10] = MPP_GROUP_TYPES;
+
+	for (mppGroup = 0; mppGroup < MV_MPP_MAX_GROUP; mppGroup++) {
+		mppType = mvBoardMppTypeGet(mppGroup);
+		mppVal = mppGroups[mppGroup][mppType];
+		MV_REG_WRITE(mvCtrlMppRegGet(mppGroup), mppVal);
+	}
+
 }
 
 /*******************************************************************************
@@ -934,10 +975,9 @@ MV_32 mvBoardGetDevicesNumber(MV_BOARD_DEV_CLASS devClass)
 {
 	MV_U32 foundIndex = 0, devNum;
 
-	for (devNum = START_DEV_CS; devNum < board->numBoardDeviceIf; devNum++) {
+	for (devNum = START_DEV_CS; devNum < board->numBoardDeviceIf; devNum++)
 		if (board->pDevCsInfo[devNum].devClass == devClass)
 			foundIndex++;
-	}
 
 	return foundIndex;
 }
@@ -1186,6 +1226,34 @@ MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index)
 }
 
 /*******************************************************************************
+* mvBoardSarInfoGet
+*
+* DESCRIPTION:
+*	Return the SAR fields information for a given SAR class.
+*
+* INPUT:
+*	sarClass - The SAR field to return the information for.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	MV_BOARD_SAR_INFO struct with mask, offset and register number.
+*
+*******************************************************************************/
+MV_STATUS mvBoardSarInfoGet(MV_SATR_TYPE_ID sarClass, MV_BOARD_SAR_INFO *sarInfo)
+{
+	int i;
+
+	for (i = 0; i < board->numBoardSarInfo; i++)
+		if (board->pBoardSarInfo[i].sarid == sarClass) {
+			*sarInfo = board->pBoardSarInfo[i];
+			return MV_OK;
+		}
+	return MV_ERROR;
+}
+
+/*******************************************************************************
 * mvBoardNandWidthGet -
 *
 * DESCRIPTION: Get the width of the first NAND device in bytes
@@ -1236,7 +1304,15 @@ MV_VOID mvBoardIdSet(MV_VOID)
 {
 #ifdef CONFIG_MACH_AVANTA_LP_FPGA
 	gBoardId = MV_BOARD_ID_AVANTA_LP_FPGA;
+#else
+	gBoardId = (MV_REG_READ(MPP_SAMPLE_AT_RESET(1)) & SAR1_BOARD_ID_MASK) >> SAR1_BOARD_ID_OFFSET;
 #endif
+
+	if (!((gBoardId >= BOARD_ID_BASE) && (gBoardId < MV_MAX_BOARD_ID))) {
+		mvOsPrintf("mvBoardIdSet: Board ID must be defined!\n");
+		while (1)
+			continue;
+	}
 	board = boardInfoTbl[gBoardId];
 }
 
@@ -1361,9 +1437,6 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
  * SatR Configuration functions
  */
 
-
-
-
 MV_U8 mvBoardCpuFreqGet(MV_VOID)
 {
 	MV_U8 sar;
@@ -1377,7 +1450,7 @@ MV_U8 mvBoardCpuFreqGet(MV_VOID)
 	if ((MV_8)MV_ERROR == (MV_8)sar)
 		return MV_ERROR;
 
-	return (((sarMsb & 0x1) << 3) | ((sar & 0x1C) >> 2));
+	return ((sarMsb & 0x1) << 3) | ((sar & 0x1C) >> 2);
 }
 
 MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
@@ -1419,43 +1492,10 @@ MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
 	return MV_OK;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 MV_U8 mvBoardCpuCoresNumGet(MV_VOID)
 {
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*******************************************************************************
 * End of SatR Configuration functions
@@ -1693,7 +1733,7 @@ MV_STATUS mvBoardTwsiReadByteThruMux(MV_U8 muxChNum, MV_U8 chNum,
 *******************************************************************************/
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
 {
-	return NULL;
+	return 0;
 }
 
 /*******************************************************************************
@@ -1717,7 +1757,6 @@ MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 	return 0;
 }
 
-
 /*******************************************************************************
 * mvBoardIsSerdesConfigurationEnabled
 *
@@ -1737,7 +1776,7 @@ MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 MV_BOOL mvBoardIsSerdesConfigurationEnabled(void)
 {
 	if (board->pBoardSerdesConfigValue)
-		return (board->pBoardSerdesConfigValue->enableSerdesConfiguration);
+		return board->pBoardSerdesConfigValue->enableSerdesConfiguration;
 	else
 		return MV_FALSE;
 }
@@ -1797,4 +1836,33 @@ MV_SERDES_CFG *mvBoardSerdesCfgGet(void)
 MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 {
 	return NULL;
+}
+
+/*******************************************************************************
+* mvBoardModuleAutoDetectEnabled
+*
+* DESCRIPTION:
+*	Indicate if the board supports auto configuration and detection of
+*	modules. This is usually enabled for DB boards only.
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*       MV_TRUE if auto-config/detection is enabled.
+*	MV_FALSE otherwise.
+*
+*******************************************************************************/
+MV_BOOL mvBoardModuleAutoDetectEnabled(void)
+{
+	return board->moduleAutoDetect;
+}
+
+void setOtherBoardSimulation(MV_U32 ID_of_board)
+{
+	board = boardInfoTbl[ID_of_board];
+	printf("\nSimulationg Board enviroment according to : %s \n", board->boardName);
 }

@@ -1,64 +1,64 @@
 /*******************************************************************************
-Copyright (C) Marvell International Ltd. and its affiliates
+   Copyright (C) Marvell International Ltd. and its affiliates
 
-This software file (the "File") is owned and distributed by Marvell
-International Ltd. and/or its affiliates ("Marvell") under the following
-alternative licensing terms.  Once you have made an election to distribute the
-File under one of the following license alternatives, please (i) delete this
-introductory statement regarding license alternatives, (ii) delete the two
-license alternatives that you have not elected to use and (iii) preserve the
-Marvell copyright notice above.
-
-********************************************************************************
-Marvell Commercial License Option
-
-If you received this File from Marvell and you have entered into a commercial
-license agreement (a "Commercial License") with Marvell, the File is licensed
-to you under the terms of the applicable Commercial License.
+   This software file (the "File") is owned and distributed by Marvell
+   International Ltd. and/or its affiliates ("Marvell") under the following
+   alternative licensing terms.  Once you have made an election to distribute the
+   File under one of the following license alternatives, please (i) delete this
+   introductory statement regarding license alternatives, (ii) delete the two
+   license alternatives that you have not elected to use and (iii) preserve the
+   Marvell copyright notice above.
 
 ********************************************************************************
-Marvell GPL License Option
+   Marvell Commercial License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or
-modify this File in accordance with the terms and conditions of the General
-Public License Version 2, June 1991 (the "GPL License"), a copy of which is
-available along with the File in the license.txt file or by writing to the Free
-Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
-on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
+   If you received this File from Marvell and you have entered into a commercial
+   license agreement (a "Commercial License") with Marvell, the File is licensed
+   to you under the terms of the applicable Commercial License.
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
-DISCLAIMED.  The GPL License provides additional details about this warranty
-disclaimer.
 ********************************************************************************
-Marvell BSD License Option
+   Marvell GPL License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or
-modify this File under the following licensing terms.
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
+   If you received this File from Marvell, you may opt to use, redistribute and/or
+   modify this File in accordance with the terms and conditions of the General
+   Public License Version 2, June 1991 (the "GPL License"), a copy of which is
+   available along with the File in the license.txt file or by writing to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
+   on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
 
-    *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+   THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+   DISCLAIMED.  The GPL License provides additional details about this warranty
+   disclaimer.
+********************************************************************************
+   Marvell BSD License Option
 
-    *   Redistributions in binary form must reproduce the above copyright
-	notice, this list of conditions and the following disclaimer in the
-	documentation and/or other materials provided with the distribution.
+   If you received this File from Marvell, you may opt to use, redistribute and/or
+   modify this File under the following licensing terms.
+   Redistribution and use in source and binary forms, with or without modification,
+   are permitted provided that the following conditions are met:
 
-    *   Neither the name of Marvell nor the names of its contributors may be
-	used to endorse or promote products derived from this software without
-	specific prior written permission.
+*   Redistributions of source code must retain the above copyright notice,
+            this list of conditions and the following disclaimer.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*   Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
+
+*   Neither the name of Marvell nor the names of its contributors may be
+        used to endorse or promote products derived from this software without
+        specific prior written permission.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+   ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+   (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+   ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
@@ -78,48 +78,46 @@ extern "C" {
 #include "twsi/mvTwsi.h"
 
 /* DUART stuff for Tclk detection only */
-#define DUART_BAUD_RATE			115200
-#define MAX_CLOCK_MARGINE		5000000	/* Maximum detected clock margin */
+#define DUART_BAUD_RATE                 115200
+#define MAX_CLOCK_MARGINE               5000000 /* Maximum detected clock margin */
 
 /* Voice devices assembly modes */
-#define DAISY_CHAIN_MODE		1
-#define DUAL_CHIP_SELECT_MODE		0
-#define INTERRUPT_TO_MPP		1
-#define INTERRUPT_TO_TDM		0
+#define DAISY_CHAIN_MODE                1
+#define DUAL_CHIP_SELECT_MODE           0
+#define INTERRUPT_TO_MPP                1
+#define INTERRUPT_TO_TDM                0
 
-#define	MV_BOARD_MAX_USB_IF		3
-#define MV_BOARD_MAX_MPP		9	/* number of MPP conf registers */
-#define MV_BOARD_NAME_LEN  		0x20
+#define BOARD_ETH_PORT_NUM  MV_ETH_MAX_PORTS
+#define BOARD_ETH_SWITCH_PORT_NUM       8
+#define BOARD_ETH_QD_SWITCH_PORT_NUM    5
+#define BOARD_ETH_SWITCH_CPUPORT_NUM    2
+#define MV_BOARD_MAX_USB_IF             3
+#define MV_BOARD_MAX_MPP                9       /* number of MPP conf registers */
+#define MV_BOARD_MAX_MPP_GROUPS         9
+#define MV_BOARD_NAME_LEN               0x20
 
 /* EPPROM Modules detection information */
 
-#define MV_BOARD_EEPROM_MODULE_ADDR		0x50
-#define MV_BOARD_EEPROM_MODULE_ADDR_TYPE	ADDR7_BIT
+#define MV_BOARD_EEPROM_MODULE_ADDR             0x50
+#define MV_BOARD_EEPROM_MODULE_ADDR_TYPE        ADDR7_BIT
 
-#define MV_BOARD_PEX_MODULE_ADDR		0x23
-#define MV_BOARD_PEX_MODULE_ADDR_TYPE		ADDR7_BIT
-#define MV_BOARD_PEX_MODULE_ID			0
+#define MV_BOARD_PEX_MODULE_ADDR                0x23
+#define MV_BOARD_PEX_MODULE_ADDR_TYPE           ADDR7_BIT
+#define MV_BOARD_PEX_MODULE_ID                  0
 
-#define MV_BOARD_LVDS_MODULE_ADDR		0x21
-#define MV_BOARD_LVDS_MODULE_ADDR_TYPE		ADDR7_BIT
-#define MV_BOARD_LVDS_MODULE_ID			0
+#define MV_BOARD_LVDS_MODULE_ADDR               0x21
+#define MV_BOARD_LVDS_MODULE_ADDR_TYPE          ADDR7_BIT
+#define MV_BOARD_LVDS_MODULE_ID                 0
 
-#define MV_BOARD_SETM_MODULE_ADDR		0x23
-#define MV_BOARD_SETM_MODULE_ADDR_TYPE		ADDR7_BIT
-#define MV_BOARD_SETM_MODULE_ID			1
+#define MV_BOARD_SETM_MODULE_ADDR               0x23
+#define MV_BOARD_SETM_MODULE_ADDR_TYPE          ADDR7_BIT
+#define MV_BOARD_SETM_MODULE_ID                 1
 
-#define MV_BOARD_MPP_MODULE_ADDR		0x20
-#define MV_BOARD_MPP_MODULE_ADDR_TYPE		ADDR7_BIT
-#define MV_BOARD_LCD_DVI_MODULE_ID		0
-#define MV_BOARD_TDM_MODULE_ID			1
-#define MV_BOARD_MII_GMII_MODULE_ID		4
-
-typedef enum {
-	BOARD_EPON_CONFIG,
-	BOARD_GPON_CONFIG,
-	BOARD_PON_NONE,
-	BOARD_PON_AUTO
-} MV_BOARD_PON_CONFIG;
+#define MV_BOARD_MPP_MODULE_ADDR                0x20
+#define MV_BOARD_MPP_MODULE_ADDR_TYPE           ADDR7_BIT
+#define MV_BOARD_LCD_DVI_MODULE_ID              0
+#define MV_BOARD_TDM_MODULE_ID                  1
+#define MV_BOARD_MII_GMII_MODULE_ID             4
 
 typedef struct _boardData {
 	MV_U32 magic;
@@ -138,10 +136,12 @@ typedef enum _devBoardMppGroupClass {
 } MV_BOARD_MPP_GROUP_CLASS;
 
 typedef enum _devBoardMppTypeClass {
-	MV_BOARD_AUTO = 0,
+	MV_BOARD_AUTO,
+	MV_BOARD_TDM_2CH,
 	MV_BOARD_TDM_32CH,
-	MV_BOARD_LCD_DVI,
-	MV_BOARD_MII_GMII,
+	MV_BOARD_RGMII0,
+	MV_BOARD_RGMII1,
+	MV_BOARD_SW_P4,
 	MV_BOARD_OTHER
 } MV_BOARD_MPP_TYPE_CLASS;
 
@@ -150,17 +150,26 @@ typedef enum _devBoardOtherTypeClass {
 	MV_BOARD_LVDS    = 0x00000001,
 	MV_BOARD_PEX     = 0x00000002,
 	MV_BOARD_SWITCH  = 0x00000004,
-	MV_BOARD_SETM 	 = 0x00000008,
+	MV_BOARD_SETM    = 0x00000008,
 	MV_BOARD_UNKNOWN = 0x80000000
 } MV_BOARD_OTHER_TYPE_CLASS;
 
-
-#define MV_BOARD_TDM	MV_BOARD_TDM_32CH
+#define MV_BOARD_TDM    MV_BOARD_TDM_32CH
 
 typedef struct _boardModuleTypeInfo {
 	MV_BOARD_MPP_TYPE_CLASS boardMppMod;
 	MV_BOARD_OTHER_TYPE_CLASS boardOtherMod;
 } MV_BOARD_MODULE_TYPE_INFO;
+
+/* omriii:  decide between MODULE_TYPE or MPP_TYPE */
+typedef struct _boardMppTypeInfo {
+	MV_BOARD_MPP_TYPE_CLASS boardMppTdm;
+
+	/* Ethernet / Sata complex                      */
+	/* A bitmask of MV_ETH_SATA_COMPLEX_OPTIONS     */
+	MV_U32 ethSataComplexOpt;
+	MV_U32 ethPortsMode;    /* bitmask of MV_ETH_PORT_MODE */
+} MV_BOARD_MPP_TYPE_INFO;
 
 typedef enum _devBoardClass {
 	BOARD_DEV_NOR_FLASH,
@@ -177,6 +186,8 @@ typedef enum _devTwsiBoardClass {
 	BOARD_DEV_TWSI_EXP,
 	BOARD_DEV_TWSI_SATR,
 	BOARD_TWSI_MUX,
+	BOARD_DEV_TWSI_EEPROM,          //omriii : _EEPROM should be added ? or used as _OTHER ?
+	BOARD_DEV_TWSI_IO_EXPANDER,     //omriii : _IO_EXPANDER should be added ? or used as _OTHER?
 	BOARD_TWSI_OTHER
 } MV_BOARD_TWSI_CLASS;
 
@@ -210,22 +221,36 @@ typedef enum _devGppBoardClass {
 	BOARD_GPP_SDIO_WP,
 	BOARD_GPP_SWITCH_PHY_INT,
 	BOARD_GPP_TSU_DIRCTION,
+	BOARD_GPP_PEX_RESET,
 	BOARD_GPP_CONF,
+	BOARD_GPP_PON_XVR_TX,
+	BOARD_GPP_SYS_LED,
+	BOARD_GPP_PON_LED,
 	BOARD_GPP_OTHER
 } MV_BOARD_GPP_CLASS;
 
 typedef struct _devCsInfo {
 	MV_U8 deviceCS;
 	MV_U32 params;
-	MV_U32 devClass;	/* MV_BOARD_DEV_CLASS */
+	MV_U32 devClass;        /* MV_BOARD_DEV_CLASS */
 	MV_U8 devWidth;
 	MV_U8 busWidth;
 } MV_DEV_CS_INFO;
 
+typedef struct _boardSwitchInfo {
+	MV_32 switchIrq;
+	MV_32 switchPort[BOARD_ETH_SWITCH_PORT_NUM];
+	MV_32 cpuPort;
+	MV_32 connectedPort[MV_ETH_MAX_PORTS];
+	MV_32 smiScanMode;
+	MV_32 quadPhyAddr[BOARD_ETH_QD_SWITCH_PORT_NUM];
+	MV_U32 forceLinkMask; /* Bitmask of switch ports to have force link (1Gbps) */
+} MV_BOARD_SWITCH_INFO;
+
 typedef struct _boardLedInfo {
 	MV_U8 activeLedsNumber;
-	MV_U8 ledsPolarity;	/* '0' or '1' to turn on led */
-	MV_U8 *gppPinNum;	/* Pointer to GPP values */
+	MV_U8 ledsPolarity;     /* '0' or '1' to turn on led */
+	MV_U8 *gppPinNum;       /* Pointer to GPP values */
 } MV_BOARD_LED_INFO;
 
 typedef struct _boardGppInfo {
@@ -239,6 +264,13 @@ typedef struct _boardTwsiInfo {
 	MV_U8 twsiDevAddrType;
 } MV_BOARD_TWSI_INFO;
 
+typedef struct _boardSarInfo {
+	MV_SATR_TYPE_ID sarid;
+	MV_U32 mask;
+	MV_U32 offset;
+	MV_U32 regNum;
+} MV_BOARD_SAR_INFO;
+
 typedef enum _boardMacSpeed {
 	BOARD_MAC_SPEED_10M,
 	BOARD_MAC_SPEED_100M,
@@ -250,27 +282,42 @@ typedef struct _boardMacInfo {
 	MV_BOARD_MAC_SPEED boardMacSpeed;
 	MV_U8 boardEthSmiAddr;
 	MV_U16 LinkCryptPortAddr;
-	MV_U8	boardEthSmiAddr0;
+	MV_U8 boardEthSmiAddr0;
 } MV_BOARD_MAC_INFO;
 
 typedef struct _boardMppInfo {
 	MV_U32 mppGroup[MV_BOARD_MAX_MPP];
 } MV_BOARD_MPP_INFO;
 
+typedef struct _boardMppGroupInfo {
+	MV_U32 mppGroupType[MV_BOARD_MAX_MPP_GROUPS];
+} MV_BOARD_MPP_GROUP_INFO;
+
+typedef enum {
+	BOARD_EPON_CONFIG,
+	BOARD_GPON_CONFIG,
+	BOARD_PON_NONE,
+	BOARD_PON_AUTO
+} MV_BOARD_PON_CONFIG;
+
 typedef struct {
 	MV_U8 spiCs;
 } MV_BOARD_TDM_INFO;
 
 typedef struct _boardPexUnitCfg {
-	MV_PEX_UNIT_CFG 	pexCfg;
-	MV_U8			pexLaneStat[4];	/* 1: enabled, 2: disabled */
+	MV_PEX_UNIT_CFG pexCfg;
+	MV_U8 pexLaneStat[4];                   /* 1: enabled, 2: disabled */
 } MV_BOARD_PEX_UNIT_CFG;
 
 typedef struct _boardPexInfo {
-	MV_PEXIF_INDX 		pexMapping[MV_PEX_MAX_IF];
-	MV_BOARD_PEX_UNIT_CFG 	pexUnitCfg[MV_PEX_MAX_UNIT];
-	MV_U32			boardPexIfNum;
+	MV_PEXIF_INDX pexMapping[MV_PEX_MAX_IF];
+	MV_BOARD_PEX_UNIT_CFG pexUnitCfg[MV_PEX_MAX_UNIT];
+	MV_U32 boardPexIfNum;
 } MV_BOARD_PEX_INFO;
+
+typedef struct {
+	MV_U8 spiId;
+} MV_BOARD_TDM_SPI_INFO;
 
 typedef enum {
 	BOARD_TDM_SLIC_880 = 0,
@@ -280,12 +327,21 @@ typedef enum {
 	BOARD_TDM_SLIC_COUNT
 } MV_BOARD_TDM_SLIC_TYPE;
 
+/* Board specific initialization. Performed before initializing the SoC. */
+typedef struct {
+	MV_U32 reg;
+	MV_U32 mask;
+	MV_U32 val;
+} MV_BOARD_SPEC_INIT;
+
 typedef struct _boardInfo {
 	char boardName[MV_BOARD_NAME_LEN];
 	MV_U8 numBoardMppTypeValue;
-	MV_BOARD_MODULE_TYPE_INFO *pBoardModTypeValue;
+	MV_BOARD_MPP_TYPE_INFO *pBoardModTypeValue;
 	MV_U8 numBoardMppConfigValue;
 	MV_BOARD_MPP_INFO *pBoardMppConfigValue;
+	MV_U8 numBoardMppGroupValue;
+	MV_BOARD_MPP_GROUP_INFO **pBoardMppGroupValue;
 	MV_U8 numBoardSerdesConfigValue;
 	MV_SERDES_CFG *pBoardSerdesConfigValue;
 	MV_U32 intsGppMaskLow;
@@ -293,6 +349,8 @@ typedef struct _boardInfo {
 	MV_U32 intsGppMaskHigh;
 	MV_U8 numBoardDeviceIf;
 	MV_DEV_CS_INFO *pDevCsInfo;
+	MV_U8 numBoardSarInfo;
+	MV_BOARD_SAR_INFO *pBoardSarInfo;
 	MV_U8 numBoardTwsiDev;
 	MV_BOARD_TWSI_INFO *pBoardTwsiDev;
 	MV_U8 numBoardMacInfo;
@@ -301,10 +359,10 @@ typedef struct _boardInfo {
 	MV_BOARD_GPP_INFO *pBoardGppInfo;
 	MV_U8 activeLedsNumber;
 	MV_U8 *pLedGppPin;
-	MV_U8 ledsPolarity;	/* '0' or '1' to turn on led */
+	MV_U8 ledsPolarity;     /* '0' or '1' to turn on led */
 
-	MV_U8	pmuPwrUpPolarity;
-	MV_U32	pmuPwrUpDelay;
+	MV_U8 pmuPwrUpPolarity;
+	MV_U32 pmuPwrUpDelay;
 	/* GPP values */
 	MV_U32 gppOutEnValLow;
 	MV_U32 gppOutEnValMid;
@@ -316,8 +374,13 @@ typedef struct _boardInfo {
 	MV_U32 gppPolarityValMid;
 	MV_U32 gppPolarityValHigh;
 
-	/*
-	 * TDM configuration:
+	/* External Switch Configuration */
+	MV_BOARD_SWITCH_INFO *pSwitchInfo;
+	MV_U32 switchInfoNum;
+
+	/* PON configuration. */
+	MV_BOARD_PON_CONFIG ponConfigValue;
+	/* TDM configuration:
 	 * We hold a different configuration array for each possible slic that
 	 * can be connected to board.
 	 * When modules are scanned, then we select the index of the relevant
@@ -329,14 +392,23 @@ typedef struct _boardInfo {
 	MV_BOARD_TDM_INFO *pBoardTdmInt2CsInfo[BOARD_TDM_SLIC_COUNT];
 	MV_16 boardTdmInfoIndex;
 
+	/* Board specific initialization. Performed before initializing the SoC. */
+	MV_BOARD_SPEC_INIT      *pBoardSpecInit;
+	/* Deep-Idle power up delay */
+	MV_U32 deepIdlePwrUpDelay;
+
 	/* NAND init params */
 	MV_U32 nandFlashReadParams;
 	MV_U32 nandFlashWriteParams;
 	MV_U32 nandFlashControl;
+	MV_BOARD_TDM_SPI_INFO *pBoardTdmSpiInfo;
 	MV_BOARD_PEX_INFO	boardPexInfo;	/* filled in runtime */
 	MV_U32 norFlashReadParams;
 	MV_U32 norFlashWriteParams;
 
+	/* Indicates if auto-detection of modules is enabled on this board. */
+	/* Set to MV_FALSE for any board that is not a DB. */
+	MV_BOOL moduleAutoDetect;
 } MV_BOARD_INFO;
 
 /* For backward compatability with Legacy mode */
@@ -348,12 +420,15 @@ MV_VOID mvBoardEnvInit(MV_VOID);
 MV_U16 mvBoardModelGet(MV_VOID);
 MV_U16 mvBoardRevGet(MV_VOID);
 MV_STATUS mvBoardNameGet(char *pNameBuff);
+MV_BOARD_SPEC_INIT *mvBoardSpecInitGet(MV_VOID);
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortLb(MV_U32 ethPortNum);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
 MV_32 mvBoardPhyLinkCryptPortAddrGet(MV_U32 ethPortNum);
 
+MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum);
+MV_STATUS mvBoardSarInfoGet(MV_SATR_TYPE_ID sarClass, MV_BOARD_SAR_INFO *sarInfo);
 MV_U32 mvBoardTclkGet(MV_VOID);
 MV_U32 mvBoardSysClkGet(MV_VOID);
 MV_U32 mvBoardDebugLedNumGet(MV_U32 boardId);
@@ -367,6 +442,7 @@ MV_32 mvBoardUSBVbusEnGpioPinGet(MV_32 devId);
 MV_BOOL mvBoardIsOurPciSlot(MV_U32 busNum, MV_U32 slotNum);
 MV_U32 mvBoardGpioIntMaskGet(MV_U32 gppGrp);
 MV_32 mvBoardMppGet(MV_U32 mppGroupNum);
+MV_32 mvBoardMppTypeGet(MV_U32 mppGroupNum);
 MV_U32 mvBoardGppConfigGet(void);
 MV_32 mvBoardTdmSpiModeGet(MV_VOID);
 MV_U8 mvBoardTdmDevicesCountGet(void);
@@ -389,33 +465,12 @@ MV_U32 mvBoardSledCpuNumGet(MV_VOID);
 
 MV_U8 mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum);
 MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
-MV_U8 mvBoardFabFreqGet(MV_VOID);
-MV_STATUS mvBoardFabFreqSet(MV_U8 freqVal);
+
 MV_U8 mvBoardCpuFreqGet(MV_VOID);
 MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal);
-MV_U8 mvBoardCpuFreqModeGet(MV_VOID);
-MV_STATUS mvBoardCpuFreqModeSet(MV_U8 freqVal);
-MV_STATUS mvBoardFabFreqModeSet(MV_U8 freqVal);
-MV_U8 mvBoardBootDevGet(MV_VOID);
-MV_STATUS mvBoardBootDevSet(MV_U8 val);
-MV_U8 mvBoardBootDevWidthGet(MV_VOID);
-MV_STATUS mvBoardBootDevWidthSet(MV_U8 val);
-MV_U8 mvBoardCpu0EndianessGet(MV_VOID);
-MV_STATUS mvBoardCpu0EndianessSet(MV_U8 val);
-MV_U8 mvBoardL2SizeGet(MV_VOID);
-MV_STATUS mvBoardL2SizeSet(MV_U8 val);
+
 MV_U8 mvBoardCpuCoresNumGet(MV_VOID);
-MV_STATUS mvBoardCpuCoresNumSet(MV_U8 val);
-MV_STATUS mvBoardConIdSet(MV_U16 conf);
-MV_U16 mvBoardConfIdGet(MV_VOID);
-MV_STATUS mvBoardPexCapabilitySet(MV_U16 conf);
-MV_U16 mvBoardPexCapabilityGet(MV_VOID);
-MV_STATUS mvBoardDramEccSet(MV_U16 conf);
-MV_U16 mvBoardDramEccGet(MV_VOID);
-MV_STATUS mvBoardDramBusWidthSet(MV_U16 conf);
-MV_U16 mvBoardDramBusWidthGet(MV_VOID);
-MV_U8 mvBoardAltFabFreqGet(MV_VOID);
-MV_STATUS mvBoardAltFabFreqSet(MV_U8 freqVal);
+
 MV_STATUS mvBoardMppModulesScan(void);
 MV_STATUS mvBoardOtherModulesScan(void);
 MV_BOOL mvBoardIsPexModuleConnected(void);
@@ -437,6 +492,6 @@ MV_STATUS mvBoardPexModeSet(MV_U16 conf);
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif  /* __cplusplus */
 
-#endif /* __INCmvBoardEnvLibh */
+#endif  /* __INCmvBoardEnvLibh */

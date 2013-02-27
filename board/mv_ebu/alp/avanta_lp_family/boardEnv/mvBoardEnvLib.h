@@ -271,6 +271,13 @@ typedef struct _boardSarInfo {
 	MV_U32 regNum;
 } MV_BOARD_SAR_INFO;
 
+typedef struct _boardConfigTypesInfo {
+	MV_CONFIG_TYPE_ID configid;
+	MV_U32 mask;
+	MV_U32 offset;
+	MV_U32 regNum;
+} MV_BOARD_CONFIG_TYPE_INFO;
+
 typedef enum _boardMacSpeed {
 	BOARD_MAC_SPEED_10M,
 	BOARD_MAC_SPEED_100M,
@@ -351,6 +358,8 @@ typedef struct _boardInfo {
 	MV_DEV_CS_INFO *pDevCsInfo;
 	MV_U8 numBoardSarInfo;
 	MV_BOARD_SAR_INFO *pBoardSarInfo;
+	MV_U8 numBoardConfigTypes;
+	MV_BOARD_CONFIG_TYPE_INFO *pBoardConfigTypes;
 	MV_U8 numBoardTwsiDev;
 	MV_BOARD_TWSI_INFO *pBoardTwsiDev;
 	MV_U8 numBoardMacInfo;
@@ -411,6 +420,119 @@ typedef struct _boardInfo {
 	MV_BOOL moduleAutoDetect;
 } MV_BOARD_INFO;
 
+typedef enum {
+	MSAR_0_BOOT_NOR_FLASH,
+	MSAR_0_BOOT_NAND_NEW,
+	MSAR_0_BOOT_UART,
+	MSAR_0_BOOT_SPI_FLASH,
+	MSAR_0_BOOT_PEX,
+	MSAR_0_BOOT_SATA,
+	MSAR_0_BOOT_NAND_LEGACY,
+	MSAR_0_BOOT_PROMPT,
+	MSAR_0_BOOT_SPI1_FLASH
+} MV_BOARD_BOOT_SRC;
+
+/* Boot device bus width */
+#define MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS          3
+/* Bus width field meaning for NOR/NAND */
+#define MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT          (0x0 << MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS)
+#define MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT         (0x1 << MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS)
+#define MSAR_0_BOOT_DEV_BUS_WIDTH_32BIT         (0x2 << MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS)
+/* Bus width field meaning for SPI */
+#define MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT  (0x1 << MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS)
+#define MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT     (0x0 << MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS)
+
+/* NAND page size */
+#define MSAR_0_NAND_PAGE_SZ_OFFS                11
+#define MSAR_0_NAND_PAGE_SZ_512B                (0x0 << MSAR_0_NAND_PAGE_SZ_OFFS)
+#define MSAR_0_NAND_PAGE_SZ_2KB                 (0x1 << MSAR_0_NAND_PAGE_SZ_OFFS)
+#define MSAR_0_NAND_PAGE_SZ_4KB                 (0x2 << MSAR_0_NAND_PAGE_SZ_OFFS)
+#define MSAR_0_NAND_PAGE_SZ_8KB                 (0x3 << MSAR_0_NAND_PAGE_SZ_OFFS)
+
+/* NAND ECC */
+#define MSAR_0_NAND_ECC_OFFS                    14
+#define MSAR_0_NAND_ECC_4BIT                    (0x0 << MSAR_0_NAND_ECC_OFFS)
+#define MSAR_0_NAND_ECC_8BIT                    (0x1 << MSAR_0_NAND_ECC_OFFS)
+#define MSAR_0_NAND_ECC_12BIT                   (0x2 << MSAR_0_NAND_ECC_OFFS)
+#define MSAR_0_NAND_ECC_16BIT                   (0x3 << MSAR_0_NAND_ECC_OFFS)
+
+#define MSAR_0_SPI0                             0
+#define MSAR_0_SPI1                             1
+
+typedef struct _mvSARBootTable {
+	MV_BOARD_BOOT_SRC bootSrc;
+	MV_U32 attr1;                           /* Device width/Port */
+	MV_U32 attr2;                           /* ALE TIming Parameters/Page Size/Serdes Lane/Address cycles */
+	MV_U32 attr3;                           /* Dev_Wen Dev_Oen Muxed/Address cycle/SPI interface */
+} MV_SAR_BOOT_TABLE;
+
+#define MV_SAR_TABLE_VAL { \
+/*00*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, 0, 0 }, \
+/*01*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,             0, 1 }, \
+/*02*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, 0, 0 }, \
+/*03*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,             0, 1 }, \
+/*04*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, 0, 0 }, \
+/*05*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,             0, 1 }, \
+/*06*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, 0, 0 }, \
+/*07*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,             0, 1 }, \
+/*08*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 0, 0 }, \
+/*09*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 6, 1 }, \
+/*10*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 0, 0 }, \
+/*11*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 6, 1 }, \
+/*12*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 4, 0 }, \
+/*13*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 6, 1 }, \
+/*14*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 5, 0 }, \
+/*15*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 5, 1 }, \
+/*16*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B, MSAR_0_NAND_ECC_4BIT }, \
+/*17*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B, MSAR_0_NAND_ECC_4BIT }, \
+/*18*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_4BIT },	\
+/*19*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_8BIT },	\
+/*20*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_12BIT }, \
+/*21*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_16BIT }, \
+/*22*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_4BIT },	\
+/*23*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_8BIT },	\
+/*24*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_12BIT }, \
+/*25*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_16BIT }, \
+/*26*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_4BIT },	\
+/*27*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_8BIT },	\
+/*28*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_12BIT }, \
+/*29*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_16BIT }, \
+/*30*/ { 0,           5,            60,          60           }, \
+/*31*/ { 0,           2,            40,          40           }, \
+/*32*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B,     2                }, \
+/*33*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB,       2                }, \
+/*34*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B,     3                }, \
+/*35*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB,       3                }, \
+/*36*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B,     3                }, \
+/*37*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB,       2                }, \
+/*38*/ { 0,           1,            2,            2              }, \
+/*39*/ { 0,           3,            6,            6              }, \
+/*40*/ { 0,           3,            5,            5              }, \
+/*41*/ { 0,           2,            6,            3              }, \
+/*42*/ { 0,           4,            10,          5              }, \
+/*43*/ { 0,           3,            6,            6              }, \
+/*44*/ { 0,           2,            4,            4              }, \
+/*45*/ { 0,           3,            6,            3              }, \
+/*46*/ { 0,           2,            5,            5              }, \
+/*47*/ { MSAR_0_BOOT_PROMPT,         2,            5,            5              }, \
+/*48*/ { MSAR_0_BOOT_UART,               1,            3,            3              }, \
+/*49*/ { MSAR_0_BOOT_SATA,                5,            10,          10           }, \
+/*50*/ { MSAR_0_BOOT_PEX,   3,            8,            4              }, \
+/*51*/ { MSAR_0_BOOT_PEX,   1,            2,            1              }, \
+/*52*/ { 0,           3,            6,            3              }, \
+/*53*/ { 0,           2,            8,            4              }, \
+/*54*/ { 0,           5,            10,          5              }, \
+/*55*/ { 0,           1,            20,          20           }, \
+/*56*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
+/*57*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 60               }, \
+/*58*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
+/*59*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 60               }, \
+/*60*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
+/*61*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 60               }, \
+/*62*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
+/*63*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 40               } \
+}
+
 /* For backward compatability with Legacy mode */
 #define mvBoardSwitchConnectedPortGet(port)	(-1)
 #define mvBoardIsSwitchConnected(port)  	(mvBoardSwitchConnectedPortGet(port) != -1)
@@ -429,6 +551,7 @@ MV_32 mvBoardPhyLinkCryptPortAddrGet(MV_U32 ethPortNum);
 
 MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum);
 MV_STATUS mvBoardSarInfoGet(MV_SATR_TYPE_ID sarClass, MV_BOARD_SAR_INFO *sarInfo);
+MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo);
 MV_U32 mvBoardTclkGet(MV_VOID);
 MV_U32 mvBoardSysClkGet(MV_VOID);
 MV_U32 mvBoardDebugLedNumGet(MV_U32 boardId);
@@ -443,6 +566,7 @@ MV_BOOL mvBoardIsOurPciSlot(MV_U32 busNum, MV_U32 slotNum);
 MV_U32 mvBoardGpioIntMaskGet(MV_U32 gppGrp);
 MV_32 mvBoardMppGet(MV_U32 mppGroupNum);
 MV_32 mvBoardMppTypeGet(MV_U32 mppGroupNum);
+MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType);
 MV_U32 mvBoardGppConfigGet(void);
 MV_32 mvBoardTdmSpiModeGet(MV_VOID);
 MV_U8 mvBoardTdmDevicesCountGet(void);
@@ -462,8 +586,13 @@ MV_32 mvBoardNandWidthGet(void);
 MV_U32 mvBoardIdGet(MV_VOID);
 MV_VOID mvBoardIdSet(MV_VOID);
 MV_U32 mvBoardSledCpuNumGet(MV_VOID);
-
-MV_U8 mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum);
+MV_VOID mvBoardConfigInit(MV_VOID);
+void mvBoardConfigWrite(MV_VOID);
+MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet(MV_VOID);
+MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet(MV_VOID);
+MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet(MV_VOID);
+MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_U32 sarBootDevice);
+MV_U8 mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum);
 MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
 
 MV_U8 mvBoardCpuFreqGet(MV_VOID);

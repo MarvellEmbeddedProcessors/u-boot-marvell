@@ -755,12 +755,271 @@ MV_32 mvBoardMppTypeGet(MV_U32 mppGroupNum)
 	return (MV_U32)board->pBoardMppGroupValue[mppGroupNum];
 }
 
-MV_STATUS mvBoardConfigInit(void)
+MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType)
 {
-/*   read S@R configuration From local array - already filled by mvCtrlSatrInit, and:
- *   1. decide which group types is relevant for mpp init
- *   2. build etherntComplex struct for kosta */
-	return MV_OK;
+	board->pBoardMppGroupValue[mppGroupNum] = groupType;
+}
+
+/*******************************************************************************
+* mvBoardConfigInit - Build board configuration : Eth-Complex & MPP types
+*
+* DESCRIPTION:
+*   read S@R & board configuration From: satrOptionsConfig[] & boardOptionsConfig[],
+*   (initialized  by mvCtrlSatrInit ) and :
+*   1. build etherntComplex configuration
+*   2. decide the relevant MPP group types
+*
+* INPUT:  None.
+*
+* OUTPUT:  None.
+*
+* RETURN:
+*       if initialized correct return MV_OK, else MV_ERROR
+*
+*******************************************************************************/
+MV_VOID mvBoardConfigInit(void)
+{
+	MV_U32 ethSataComplexOptions = 0x0;
+	MV_ETH_COMPLEX_TOPOLOGY mac0con, mac1con;
+	MV_BOARD_BOOT_SRC bootDev;
+	MV_TDM_UNIT_TYPE tdmDev;
+	MV_BOOL SW_SMI;
+
+	/* Ethernet Complex initialization : */
+	if ( (mac0con = mvBoardMac0ConfigGet()) != MV_ERROR)
+		ethSataComplexOptions |= mac0con;
+	if ( (mac1con = mvBoardMac1ConfigGet()) != MV_ERROR)
+		ethSataComplexOptions |= mac1con;
+
+	if (mac0con == 0x0) /* 00 - MAC0 connected to Switch P6 */
+		ethSataComplexOptions |= MV_ETH_COMPLEX_SW_P6_RGMII0;
+
+	if (mac1con == 0x2) /* 10  MAC1 connected to Switch P4 */
+		ethSataComplexOptions |= MV_ETH_COMPLEX_SW_P4_RGMII1;
+
+	if (mvCtrlConfigGet(MV_CONFIG_PON_SERDES) == 0x0)  /* 0 - PON SerDes connected to PON MAC */
+		ethSataComplexOptions |= MV_ETH_COMPLEX_P2P_MAC_PON_ETH_SERDES;
+
+	board->pBoardModTypeValue->ethSataComplexOpt = ethSataComplexOptions;
+
+	/* MPP Groups initialization : */
+	/* Group 0-1 - Boot device (or if SPI1 boot : Groups 3-4) */
+	bootDev = mvBoardBootDeviceGroupSet(mvCtrlSatRRead(MV_SATR_BOOT_DEVICE));
+
+	/* Group 2 - TDM unit */
+	tdmDev = mvCtrlTdmUnitTypeGet();
+	switch (tdmDev) {
+	case SLIC_LANTIQ_ID:
+		mvBoardMppTypeSet(2, SLIC_LANTIQ_UNIT);
+		break;
+	case SLIC_SILABS_ID:
+		mvBoardMppTypeSet(2, SLIC_SILABS_UNIT);
+		break;
+	case SLIC_ZARLINK_ID:
+		mvBoardMppTypeSet(2, SLIC_ZARLINK_UNIT);
+		break;
+	case SLIC_EXTERNAL_ID:
+		mvBoardMppTypeSet(2, SLIC_EXTERNAL_UNIT);
+		break;
+	}
+
+	/* Groups 3-4  - (only if not Booting from SPI1)*/
+	if (bootDev != MSAR_0_BOOT_SPI1_FLASH) {
+		if (mac1con == 0x0) /* 00 - MAC1 connected to RGMII-1 */
+			mvBoardMppTypeSet(3, GE1_UNIT);
+		else
+			mvBoardMppTypeSet(3, SDIO_UNIT);
+
+		SW_SMI = MV_TRUE; // test if SW or CPU SMI control (omriii : how to decide ?)
+		if (mvCtrlIsLantiqTDM())
+			mvBoardMppTypeSet(4, (SW_SMI ? GE1_SW_SMI_CTRL_TDM_LQ_UNIT : GE1_CPU_SMI_CTRL_TDM_LQ_UNIT));
+		else    /*REF_CLK_OUT*/
+			mvBoardMppTypeSet(4, (SW_SMI ? GE1_SW_SMI_CTRL_REF_CLK_OUT : GE1_CPU_SMI_CTRL_REF_CLK_OUT));
+	}
+
+	/* Groups 5-6-7  - */
+	if (mac0con == 0x2) { /* 10 - MAC0 connected to RGMII-0  */
+		/* omriii: what scenario leads to enable PON_CLK_OUT insted of PON_TX_FAULT?? */
+		mvBoardMppTypeSet(5, GE0_UNIT_PON_TX_FAULT);
+		mvBoardMppTypeSet(6, GE0_UNIT);
+		mvBoardMppTypeSet(7, GE0_UNIT_LED_MATRIX);  /* omriii :when to use GE0_UNIT_UA1_PTP */
+	}else if (mac1con == 0x2) { /* 10  MAC1 connected to Switch P4 */
+		mvBoardMppTypeSet(5, SWITCH_P4_PON_TX_FAULT);
+		mvBoardMppTypeSet(6, SWITCH_P4);
+		mvBoardMppTypeSet(7, SWITCH_P4_LED_MATRIX); /* omriii :when to use SWITCH_P4_UA1_PTP */
+	}
+}
+
+/*******************************************************************************
+* mvBoardBootDeviceGroupSet - test board Boot configuration and set MPP groups
+*
+* DESCRIPTION:
+*   read board BOOT configuration and set MPP groups accordingly
+*	-  Sets groups 0-1 for NAND or SPI0 Boot
+*	   Or   groups 3-4 for SPI1 Boot
+*	- return Selected boot device
+*
+* INPUT:  sarBootDevice - BOOT_DEVICE value from S@R.
+*
+* OUTPUT:  None.
+*
+* RETURN:
+*       the selected MV_BOARD_BOOT_SRC
+*
+*******************************************************************************/
+MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_U32 sarBootDevice)
+{
+	MV_SAR_BOOT_TABLE sarTable[] = MV_SAR_TABLE_VAL;
+	MV_SAR_BOOT_TABLE sarBootEntry = sarTable[sarBootDevice];
+	MV_U32 groupType;
+	MV_BOOL SW_SMI;
+
+	switch (sarBootEntry.bootSrc) {
+	case MSAR_0_BOOT_NAND_NEW:
+		mvBoardMppTypeSet(0, NAND_BOOT_V2);
+		mvBoardMppTypeSet(1, NAND_BOOT_V2);
+		return MSAR_0_BOOT_NAND_NEW;
+		break;
+	case MSAR_0_BOOT_NAND_LEGACY:
+		mvBoardMppTypeSet(0, NAND_BOOT_V1);
+		mvBoardMppTypeSet(1, NAND_BOOT_V1);
+		return MSAR_0_BOOT_NAND_LEGACY;
+		break;
+	case MSAR_0_BOOT_SPI_FLASH:
+		if (sarBootEntry.attr1 == MSAR_0_SPI0) {
+			groupType = ((mvCtrlConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2) ? SPI0_BOOT_SPDIF_AUDIO : SPI0_BOOT);
+			mvBoardMppTypeSet(0, groupType);
+			mvBoardMppTypeSet(1, groupType);
+			return MSAR_0_BOOT_SPI_FLASH;
+		}else  {                        /* MSAR_0_SPI1 - update Groups 3-4 */
+			mvBoardMppTypeSet(3, SDIO_SPI1_UNIT);
+			SW_SMI = MV_TRUE;       // test if SW or CPU SMI control (omriii : how to decide ?)
+			if (mvCtrlIsLantiqTDM())
+				mvBoardMppTypeSet(4, (SW_SMI ? SPI1_SW_SMI_CTRL_TDM_LQ_UNIT : SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT));
+			else    /*REF_CLK_OUT*/
+				mvBoardMppTypeSet(4, (SW_SMI ? SPI1_SW_SMI_CTRL_REF_CLK_OUT : SPI1_CPU_SMI_CTRL_REF_CLK_OUT));
+			// omriii : if nand/spi0 not for BOOT, enable Audio-SPDIF by default?
+			mvBoardMppTypeSet(0, SPI0_BOOT_SPDIF_AUDIO);
+			mvBoardMppTypeSet(1, SPI0_BOOT_SPDIF_AUDIO);
+			return MSAR_0_BOOT_SPI1_FLASH;
+		}
+		break;
+/* omriii : what to do with the next Boot devices  ?
+        case MSAR_0_BOOT_NOR_FLASH:
+                break;
+        case MSAR_0_BOOT_PROMPT:
+                break;
+        case MSAR_0_BOOT_UART:
+                break;
+        case MSAR_0_BOOT_SATA:
+                break;
+        case MSAR_0_BOOT_PEX:
+                break;
+ */
+	default:
+		return MV_ERROR;
+	}
+}
+
+/*******************************************************************************
+* mvBoardMac0ConfigGet - test board configuration and return the correct MAC0 config
+*
+* DESCRIPTION:
+*	test board configuration regarding MAC0
+*	if configured to SGMII-0 , will check which lane is configured to SGMII,
+*	and return its MV_ETH_COMPLEX_TOPOLOGY define
+*	else return error
+*
+* INPUT:  None.
+*
+* OUTPUT:  None.
+*
+* RETURN:
+*       if configured correct, the MV_ETH_COMPLEX_TOPOLOGY define, else MV_ERROR
+*
+*******************************************************************************/
+MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet()
+{
+	switch (mvCtrlConfigGet(MV_CONFIG_MAC0)) {
+	case 0x0:
+		return MV_ETH_COMPLEX_GE_MAC0_SW_P6;
+		break;
+	case 0x1:
+		return MV_ETH_COMPLEX_GE_MAC0_QUAD_PHY_P0;
+		break;
+	case 0x2:
+		return MV_ETH_COMPLEX_GE_MAC0_RGMII0;
+		break;
+	case 0x3:
+		return mvBoardLaneSGMIIGet();
+		break;
+	default:
+		return MV_ERROR;
+	}
+}
+
+/*******************************************************************************
+* mvBoardMac1ConfigGet - test board configuration and return the correct MAC1 config
+*
+* DESCRIPTION:
+*	test board configuration regarding PON_SERDES
+*	if MAC0 is configured to PON SerDes Connection return its MV_ETH_COMPLEX_TOPOLOGY define
+*	else test MV_CONFIG_MAC1 configuration
+*
+* INPUT:  None.
+*
+* OUTPUT:  None.
+*
+* RETURN:
+*       if configured correct, the MV_ETH_COMPLEX_TOPOLOGY define, else MV_ERROR
+*
+*******************************************************************************/
+MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet()
+{
+	if (mvCtrlConfigGet(MV_CONFIG_PON_SERDES) == 0x1)
+		return MV_ETH_COMPLEX_GE_MAC1_PON_ETH_SERDES;
+	/* else Scan MAC1 config to decide its connection */
+	switch (mvCtrlConfigGet(MV_CONFIG_MAC1)) {
+	case 0x0:
+		return MV_ETH_COMPLEX_GE_MAC1_RGMII1;
+		break;
+	case 0x1:
+		return MV_ETH_COMPLEX_GE_MAC1_SW_P4;
+		break;
+	case 0x2:
+		return MV_ETH_COMPLEX_GE_MAC1_QUAD_PHY_P3;
+		break;
+	default:
+		return MV_ERROR;
+	}
+}
+
+/*******************************************************************************
+* mvBoardIsLaneSGMII - check if a board lane is configured to SGMII-0
+*
+* DESCRIPTION:
+*	test board configuration regarding lanes-1/2/3
+*	if one of them is configured to SGMII-0 , will return its MV_ETH_COMPLEX_TOPOLOGY define
+*	else return error
+*
+* INPUT:  None.
+*
+* OUTPUT:  None.
+*
+* RETURN:
+*       value =MV_ETH_COMPLEX_GE_MAC0_COMPHY_1/2/3 if lanes 1/2/3 are SGMII-0 (adaptively)
+*       or -1 if none of them is SGMII-0
+*
+*******************************************************************************/
+MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet()
+{
+	if (mvCtrlConfigGet(MV_CONFIG_LANE1) == 0x1)
+		return MV_ETH_COMPLEX_GE_MAC0_COMPHY_1;
+	else if (mvCtrlConfigGet(MV_CONFIG_LANE2) == 0x0)
+		return MV_ETH_COMPLEX_GE_MAC0_COMPHY_2;
+	else if (mvCtrlConfigGet(MV_CONFIG_LANE3) == 0x1)
+		return MV_ETH_COMPLEX_GE_MAC0_COMPHY_3;
+	else return MV_ERROR;
 }
 
 MV_VOID mvBoardConfigWrite(void)
@@ -1254,6 +1513,34 @@ MV_STATUS mvBoardSarInfoGet(MV_SATR_TYPE_ID sarClass, MV_BOARD_SAR_INFO *sarInfo
 }
 
 /*******************************************************************************
+* mvBoardConfigTypeGet
+*
+* DESCRIPTION:
+*	Return the Config type fields information for a given Config type class.
+*
+* INPUT:
+*	configClass - The Config type field to return the information for.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	MV_BOARD_CONFIG_TYPE_INFO struct with mask, offset and register number.
+*
+*******************************************************************************/
+MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo)
+{
+	int i;
+
+	for (i = 0; i < board->numBoardConfigTypes; i++)
+		if (board->pBoardConfigTypes[i].configid == configClass) {
+			*configInfo = board->pBoardConfigTypes[i];
+			return MV_OK;
+		}
+	return MV_ERROR;
+}
+
+/*******************************************************************************
 * mvBoardNandWidthGet -
 *
 * DESCRIPTION: Get the width of the first NAND device in bytes
@@ -1342,7 +1629,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 }
 
 /*******************************************************************************
-* mvBoardTwsiSatRGet -
+* mvBoardTwsiGet -
 *
 * DESCRIPTION:
 *
@@ -1357,7 +1644,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 *		reg value
 *
 *******************************************************************************/
-MV_U8 mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum)
+MV_U8 mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum)
 {
 	MV_TWSI_SLAVE twsiSlave;
 	MV_TWSI_ADDR slave;
@@ -1370,8 +1657,8 @@ MV_U8 mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum)
 
 	/* Read MPP module ID */
 	DB(mvOsPrintf("Board: Read S@R device read\n"));
-	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(BOARD_DEV_TWSI_SATR, devNum);
-	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(BOARD_DEV_TWSI_SATR, devNum);
+	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(twsiClass, devNum);
+	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(twsiClass, devNum);
 
 	twsiSlave.validOffset = MV_TRUE;
 	/* Use offset as command */
@@ -1436,7 +1723,7 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 /*******************************************************************************
  * SatR Configuration functions
  */
-
+# if 0
 MV_U8 mvBoardCpuFreqGet(MV_VOID)
 {
 	MV_U8 sar;
@@ -1491,6 +1778,8 @@ MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
 	DB(mvOsPrintf("Board: Write CpuFreq S@R succeeded\n"));
 	return MV_OK;
 }
+
+#endif
 
 MV_U8 mvBoardCpuCoresNumGet(MV_VOID)
 {

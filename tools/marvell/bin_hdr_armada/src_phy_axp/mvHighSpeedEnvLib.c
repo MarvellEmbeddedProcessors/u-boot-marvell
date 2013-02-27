@@ -78,7 +78,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 
-#define	SERDES_VERION	"2.1.1"
+#define	SERDES_VERION	"2.1.2"
 #define ENDED_OK "High speed PHY - Ended Successfully\n"
 static const MV_U8 serdesCfg[][SERDES_LAST_UNIT] = BIN_SERDES_CFG;
 			   
@@ -725,8 +725,6 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	/* Step 6 [PEX-Only] PEX-Main configuration (X4 or X1): */
 	/*----------------------------------------------*/
 	DEBUG_INIT_FULL_S("Step 6: [PEX-Only] PEX-Main configuration (X4 or X1)\n");
-	MV_REG_WRITE(SOC_CTRL_REG, 0x200);
-	DEBUG_WR_REG(SOC_CTRL_REG, 0x200);
 	tmp = MV_REG_READ(SOC_CTRL_REG);
 	DEBUG_RD_REG(SOC_CTRL_REG, tmp);
 	tmp &= 0x200;

@@ -85,7 +85,7 @@ static const MV_U8 serdesCfg[][SERDES_LAST_UNIT] = BIN_SERDES_CFG;
 extern MV_BIN_SERDES_CFG *SerdesInfoTbl[];
 MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff);
 MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum);
-MV_U32 mvPexSecondaryBusNumGet(MV_U32 pexIf);
+MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
 
 /***************************   defined ******************************/
 #define mvBoardPexCapabilityGet(satr) 	(satr & 3)
@@ -915,19 +915,21 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 					/* check if the link established is GEN1 */
 					if (tempReg == 0x1) {
 						mvPexLocalBusNumSet(pexIf, first_busno);
+						mvPexLocalDevNumSet(pexIf, 1);
+						
 
 						DEBUG_INIT_FULL_S("** Link is Gen1, check the EP capability \n");
 						/* link is Gen1, check the EP capability */
-						addr = mvPexConfigRead(pexIf, first_busno, 1, 0, 0x34) & 0xFF;
+						addr = mvPexConfigRead(pexIf, first_busno, 0, 0, 0x34) & 0xFF;
 						DEBUG_INIT_FULL_C("mvPexConfigRead: return addr=0x", addr,4);
 						if (addr == 0xff) {
 							DEBUG_INIT_FULL_C("mvPexConfigRead: return 0xff -->PEX : Detected No Link. pexif=", pexIf,1);
 							continue;
 						}
-						while ((mvPexConfigRead(pexIf, first_busno, 1, 0, addr) & 0xFF) != 0x10) {
-							addr = (mvPexConfigRead(pexIf, first_busno, 1, 0, addr) & 0xFF00) >> 8;
+						while ((mvPexConfigRead(pexIf, first_busno, 0, 0, addr) & 0xFF) != 0x10) {
+							addr = (mvPexConfigRead(pexIf, first_busno, 0, 0, addr) & 0xFF00) >> 8;
 						}
-						if ((mvPexConfigRead(pexIf, first_busno, 1, 0, addr + 0xC) & 0xF) == 0x2) {
+						if ((mvPexConfigRead(pexIf, first_busno, 0, 0, addr + 0xC) & 0xF) == 0x2) {
 							tmp = MV_REG_READ(PEX_LINK_CTRL_STATUS2_REG(pexIf));
 							DEBUG_RD_REG(PEX_LINK_CTRL_STATUS2_REG(pexIf),tmp );
 							tmp &=~(BIT0 | BIT1);
@@ -1104,6 +1106,43 @@ MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum)
 	pexStatus &= ~PXSR_PEX_BUS_NUM_MASK;
 
 	pexStatus |= (busNum << PXSR_PEX_BUS_NUM_OFFS) & PXSR_PEX_BUS_NUM_MASK;
+
+	MV_REG_WRITE(PEX_STATUS_REG(pexIf), pexStatus);
+
+	return MV_OK;
+}
+/*******************************************************************************
+* mvPexLocalDevNumSet - Set PEX interface local device number.
+*
+* DESCRIPTION:
+*       This function sets given PEX interface its local device number.
+*       Note: In case the PEX interface is PEX-X, the information is read-only.
+*
+* INPUT:
+*       pexIf  - PEX interface number.
+*       devNum - Device number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_NOT_ALLOWED in case PEX interface is PEX-X.
+*		MV_BAD_PARAM on bad parameters ,
+*       otherwise MV_OK
+*
+*******************************************************************************/
+MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum)
+{
+	MV_U32 pexStatus;
+
+	if (pexIf >= MV_PEX_MAX_IF)
+		return MV_BAD_PARAM;
+
+	pexStatus = MV_REG_READ(PEX_STATUS_REG(pexIf));
+
+	pexStatus &= ~PXSR_PEX_DEV_NUM_MASK;
+
+	pexStatus |= (devNum << PXSR_PEX_DEV_NUM_OFFS) & PXSR_PEX_DEV_NUM_MASK;
 
 	MV_REG_WRITE(PEX_STATUS_REG(pexIf), pexStatus);
 

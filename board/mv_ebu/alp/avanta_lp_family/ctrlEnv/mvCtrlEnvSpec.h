@@ -331,10 +331,10 @@ typedef enum {
 }
 
 typedef enum {
-	TDM_LQ_UNIT,
-	TDM_SL_UNIT,
-	TDM_ZL_UNIT,
-	TDM_EXT_UNIT,
+	SLIC_LANTIQ_UNIT,
+	SLIC_SILABS_UNIT,
+	SLIC_ZARLINK_UNIT,
+	SLIC_EXTERNAL_UNIT
 } MV_GROUP_2_TYPE;
 
 #define MPP_GROUP_3_TYPE { \
@@ -431,6 +431,13 @@ typedef enum {
 }
 
 /* This enumerator defines the Marvell Units ID      */
+typedef enum {
+	SLIC_LANTIQ_ID,
+	SLIC_SILABS_ID,
+	SLIC_ZARLINK_ID,
+	SLIC_EXTERNAL_ID
+} MV_TDM_UNIT_TYPE;
+
 typedef enum _mvUnitId {
 	DRAM_UNIT_ID,
 	PEX_UNIT_ID,

@@ -98,8 +98,26 @@ typedef enum _mvSatRTypeID {
 	MV_SATR_POR_BYPASS,
 	MV_SATR_TESTER_OPTIONS,
 	MV_SATR_BOARD_ID,
-	MV_SATR_MAX_OPTION
+	MV_SATR_READ_MAX_OPTION,
+	MV_SATR_WRITE_CPU_FREQ,
+	MV_SATR_WRITE_CORE_CLK_SELECT,
+	MV_SATR_WRITE_CPU1_ENABLE,
+	MV_SATR_WRITE_SSCG_DISABLE
 } MV_SATR_TYPE_ID;
+
+typedef enum _mvConfigTypeID {
+	MV_CONFIG_MAC0,
+	MV_CONFIG_MAC1,
+	MV_CONFIG_PON_SERDES,
+	MV_CONFIG_PON_BEN_POLARITY,
+	MV_CONFIG_SGMII0_CAPACITY,
+	MV_CONFIG_SGMII1_CAPACITY,
+	MV_CONFIG_LANE1,
+	MV_CONFIG_LANE2,
+	MV_CONFIG_LANE3,
+	MV_CONFIG_DEVICE_BUS_MODULE,
+	MV_CONFIG_TYPE_MAX_OPTION
+} MV_CONFIG_TYPE_ID;
 
 /* 0 for Auto scan mode, 1 for manual. */
 #define MV_INTERNAL_SWITCH_SMI_SCAN_MODE        0
@@ -147,9 +165,9 @@ typedef enum {
 	MV_ETH_COMPLEX_GE_MAC1_PON_ETH_SERDES = 0x200,
 	MV_ETH_COMPLEX_SW_P0_QUAD_PHY_P0 =      0x400,
 	MV_ETH_COMPLEX_SW_P3_QUAD_PHY_P3 =      0x800,
-	MV_ETH_COMPLEX_SW_P4_RGMII0     =       0x1000,
+	MV_ETH_COMPLEX_SW_P6_RGMII0     =       0x1000,
 	MV_ETH_COMPLEX_P2P_MAC_PON_ETH_SERDES = 0x2000,
-	MV_ETH_COMPLEX_SW_P4_RMGII0     =       0x4000
+	MV_ETH_COMPLEX_SW_P4_RGMII1     =       0x4000
 } MV_ETH_COMPLEX_TOPOLOGY;
 
 typedef enum {
@@ -214,13 +232,7 @@ typedef struct _boardSerdesConf {
 MV_U32 mvCtrlSatRWrite(MV_SATR_TYPE_ID satrField, MV_U8 val);
 MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField);
 void mvCtrlSatrInit(MV_VOID);
-MV_STATUS mvBoardConfigInit(MV_VOID);
-void mvBoardConfigWrite(MV_VOID);
-MV_BOOL mvCtrlIsLantiqTDM(MV_VOID);
-MV_BOOL mvCtrlIsZarlinkTDM(MV_VOID);
-MV_BOOL mvCtrlIsExternalTDM(MV_VOID);
-MV_BOOL mvCtrlIsSiliconLabsTDM(MV_VOID);
-
+MV_U32 mvCtrlConfigGet(MV_CONFIG_TYPE_ID configField);
 MV_U32 mvCtrlGetCpuNum(MV_VOID);
 MV_U32 mvCtrlGetQuadNum(MV_VOID);
 MV_STATUS mvCtrlUpdatePexId(MV_VOID);
@@ -257,12 +269,14 @@ MV_U32 mvCtrlNandSupport(MV_VOID);
 #if defined(MV_INCLUDE_SDIO)
 MV_U32 mvCtrlSdioSupport(MV_VOID);
 #endif
-#if defined(MV_INCLUDE_TDM)
 MV_U32 mvCtrlTdmSupport(MV_VOID);
 MV_U32 mvCtrlTdmMaxGet(MV_VOID);
-MV_UNIT_ID mvCtrlTdmUnitTypeGet(MV_VOID);
+MV_TDM_UNIT_TYPE mvCtrlTdmUnitTypeGet(MV_VOID);
+MV_BOOL mvCtrlIsLantiqTDM(MV_VOID);
+MV_BOOL mvCtrlIsZarlinkTDM(MV_VOID);
+MV_BOOL mvCtrlIsExternalTDM(MV_VOID);
+MV_BOOL mvCtrlIsSiliconLabsTDM(MV_VOID);
 MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID);
-#endif
 
 MV_U16 mvCtrlModelGet(MV_VOID);
 MV_U8 mvCtrlRevGet(MV_VOID);

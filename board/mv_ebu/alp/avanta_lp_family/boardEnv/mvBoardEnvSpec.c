@@ -71,25 +71,43 @@
 
 MV_BOARD_SAR_INFO boardSarInfo[] = {
 /* {{MV_SATR_TYPE_ID SarID, MV_U32 Mask, MV_U32 Offset, MV_U32 regNum}} */
-	{ MV_SATR_CPU_FREQ,	       0x003E0000,	      17,		     1	      },
-	{ MV_SATR_CORE_CLK_SELECT,     0x00400000,	      22,		     1	      },
-	{ MV_SATR_CPU1_ENABLE,	       0x00008000,	      15,		     0	      },
-	{ MV_SATR_SSCG_DISABLE,	       0x00000002,	      1,		     0	      },
-	{ MV_SATR_I2C0_Serial_ROM,     0x00000001,	      0,		     0	      },
-	{ MV_SATR_External_CPU_Reset,  0x0,		      0,		     0	      },        /* omriii : check with max the relevance of these fields */
-	{ MV_SATR_External_CORE_Reset, 0x0,		      0,		     0	      },        /* omriii : check with max the relevance of these fields */
-	{ MV_SATR_BOOT_DEVICE,	       0X1F8,		      3,		     0	      },
-	{ MV_SATR_CPU_PLL_XTAL_BYPASS, 0x00000200,	      9,		     0	      },
-	{ MV_SATR_PEX0_CLOCK,	       0x00000400,	      10,		     0	      },
-	{ MV_SATR_PEX1_CLOCK,	       0x00000800,	      11,		     0	      },
-	{ MV_SATR_REF_CLOCK_ENABLE,    0x00000004,	      2,		     0	      },
-	{ MV_SATR_TESTER_OPTIONS,      0x00080000,	      19,		     0	      },
-	{ MV_SATR_CPU0_ENDIANESS,      0x00001000,	      12,		     0	      },
-	{ MV_SATR_CPU0_NMFI,	       0x00002000,	      13,		     0	      },
-	{ MV_SATR_CPU0_THUMB,	       0x00004000,	      14,		     0	      },
-	{ MV_SATR_EFUSE_BYPASS,	       0x00020000,	      17,		     0	      },
-	{ MV_SATR_POR_BYPASS,	       0x00100000,	      20,		     0	      },
-	{ MV_SATR_BOARD_ID,	       0xF0,		      4,		     1	      },
+	{ MV_SATR_CPU_FREQ,		 0x003E0000,		  17,		       1		 },
+	{ MV_SATR_CORE_CLK_SELECT,	 0x00400000,		  22,		       1		 },
+	{ MV_SATR_CPU1_ENABLE,		 0x00008000,		  15,		       0		 },
+	{ MV_SATR_SSCG_DISABLE,		 0x00000002,		  1,		       0		 },
+	{ MV_SATR_I2C0_Serial_ROM,	 0x00000001,		  0,		       0		 },
+	{ MV_SATR_External_CPU_Reset,	 0x0,			  0,		       0		 },     /* omriii : ask max the relevance of these fields */
+	{ MV_SATR_External_CORE_Reset,	 0x0,			  0,		       0		 },     /* omriii : ask max the relevance of these fields */
+	{ MV_SATR_BOOT_DEVICE,		 0X1F8,			  3,		       0		 },
+	{ MV_SATR_CPU_PLL_XTAL_BYPASS,	 0x00000200,		  9,		       0		 },
+	{ MV_SATR_PEX0_CLOCK,		 0x00000400,		  10,		       0		 },
+	{ MV_SATR_PEX1_CLOCK,		 0x00000800,		  11,		       0		 },
+	{ MV_SATR_REF_CLOCK_ENABLE,	 0x00000004,		  2,		       0		 },
+	{ MV_SATR_TESTER_OPTIONS,	 0x00080000,		  19,		       0		 },
+	{ MV_SATR_CPU0_ENDIANESS,	 0x00001000,		  12,		       0		 },
+	{ MV_SATR_CPU0_NMFI,		 0x00002000,		  13,		       0		 },
+	{ MV_SATR_CPU0_THUMB,		 0x00004000,		  14,		       0		 },
+	{ MV_SATR_EFUSE_BYPASS,		 0x00020000,		  17,		       0		 },
+	{ MV_SATR_POR_BYPASS,		 0x00100000,		  20,		       0		 },
+	{ MV_SATR_BOARD_ID,		 0xF0,			  4,		       1		 },
+	{ MV_SATR_WRITE_CPU_FREQ,	 0X1F,			  0,		       0		 },
+	{ MV_SATR_WRITE_CORE_CLK_SELECT, 0x1,			  0,		       1		 },
+	{ MV_SATR_WRITE_CPU1_ENABLE,	 0x2,			  1,		       1		 },
+	{ MV_SATR_WRITE_SSCG_DISABLE,	 0x4,			  2,		       1		 },
+};
+
+MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = {
+/* {{MV_CONFIG_TYPE_ID ConfigID, MV_U32 Mask, MV_U32 Offset, MV_U32 regNum}} */
+	{ MV_CONFIG_MAC0,	       0x3,		 0,		   0 }, /* Reg#0, BITS [0:1] */
+	{ MV_CONFIG_MAC1,	       0xC,		 2,		   0 }, /* Reg#0, BITS [2:3] */
+	{ MV_CONFIG_PON_SERDES,	       0x10,		 4,		   0 }, /* Reg#0, BITS [4] */
+	{ MV_CONFIG_PON_BEN_POLARITY,  0x20,		 5,		   0 }, /* Reg#0, BITS [5] */
+	{ MV_CONFIG_SGMII0_CAPACITY,   0x40,		 6,		   0 }, /* Reg#0, BITS [6] */
+	{ MV_CONFIG_SGMII1_CAPACITY,   0x80,		 7,		   0 }, /* Reg#0, BITS [7] */
+	{ MV_CONFIG_LANE1,	       0x3,		 0,		   1 }, /* Reg#1, BITS [0:1] */
+	{ MV_CONFIG_LANE2,	       0x4,		 2,		   1 }, /* Reg#1, BITS [2] */
+	{ MV_CONFIG_LANE3,	       0X18,		 3,		   1 }, /* Reg#1, BITS [3:4] */
+	{ MV_CONFIG_DEVICE_BUS_MODULE, 0x60,		 5,		   1 }, /* Reg#1, BITS [5:6] */
 };
 
 /*******************************************************************************
@@ -150,23 +168,23 @@ MV_BOARD_INFO avanta_lp_fpga_board_info = {
 
 MV_BOARD_TWSI_INFO db88f6600InfoBoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,	      0x4C,	   ADDR7_BIT	       },
-	{ BOARD_DEV_TWSI_SATR,	      0x4D,	   ADDR7_BIT	       },
-	{ BOARD_DEV_TWSI_EEPROM,      0x54,	   ADDR7_BIT	       },
-	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x21,	   ADDR7_BIT	       },
-	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x22,	   ADDR7_BIT	       },       /*omriii : re-verify that 0x22 is also IO_EXPANDER for 6600 board */
-	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x24,	   ADDR7_BIT	       },       /*omriii : re-verify that 0x22 is also IO_EXPANDER for 6600 board */
+	{ BOARD_DEV_TWSI_SATR,	      0x4C,	   ADDR7_BIT			     },
+	{ BOARD_DEV_TWSI_SATR,	      0x4D,	   ADDR7_BIT			     },
+	{ BOARD_DEV_TWSI_EEPROM,      0x54,	   ADDR7_BIT			     },
+	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x21,	   ADDR7_BIT			     },
+	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x22,	   ADDR7_BIT			     }, /*omriii : re-verify that 0x22 is also IO_EXPANDER for 6600 board */
+	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x24,	   ADDR7_BIT			     }, /*omriii : re-verify that 0x22 is also IO_EXPANDER for 6600 board */
 };
 MV_BOARD_MAC_INFO db88f6600InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x8		     },
-	{ BOARD_MAC_SPEED_AUTO, 0x9		     },
-	{ N_A,			N_A		     }
+	{ BOARD_MAC_SPEED_AUTO, 0x8						       },
+	{ BOARD_MAC_SPEED_AUTO, 0x9						       },
+	{ N_A,			N_A						       }
 };
 MV_BOARD_MPP_TYPE_INFO db88f6600InfoBoardModTypeInfo[] = {
 	{
 		.boardMppTdm = MV_BOARD_AUTO,
-		.ethSataComplexOpt = 0x0,
+		.ethSataComplexOpt = DB_88F6660_ETH_DEFAULT,
 		.ethPortsMode = 0x0
 	}
 };
@@ -200,6 +218,8 @@ MV_BOARD_INFO db88f6600_board_info = {
 	.pDevCsInfo			= 0,
 	.numBoardSarInfo		= ARRSZ(boardSarInfo),
 	.pBoardSarInfo			= boardSarInfo,
+	.numBoardConfigTypes		= ARRSZ(boardConfigTypesInfo),
+	.pBoardConfigTypes		= boardConfigTypesInfo,
 	.numBoardTwsiDev		= ARRSZ(db88f6600InfoBoardTwsiDev),
 	.pBoardTwsiDev			= db88f6600InfoBoardTwsiDev,
 	.numBoardMacInfo		= ARRSZ(db88f6600InfoBoardMacInfo),

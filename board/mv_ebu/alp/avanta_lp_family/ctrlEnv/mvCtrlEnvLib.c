@@ -123,7 +123,8 @@ typedef struct _ctrlEnvInfo {
 
 CTRL_ENV_INFO ctrlEnvInfo = {};
 
-MV_U32 satrOptionsConfig[MV_SATR_MAX_OPTION];
+MV_U32 satrOptionsConfig[MV_SATR_READ_MAX_OPTION];
+MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 
 MV_U32 mvCtrlGetCpuNum(MV_VOID)
 {
@@ -187,9 +188,11 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 			i++;
 		}
 	}
-
+	/* Use S@R and board config info, to Build Eth-Complex config & MPP group types */
 	mvBoardConfigInit();
-	mvBoardConfigWrite(); /* write MPP's config and Board general config */
+
+	/* write MPP's config and Board general config */
+	mvBoardConfigWrite();
 
 	/* disable all GPIO interrupts */
 	for (i = 0; i < MV_GPP_MAX_GROUP; i++) {
@@ -229,7 +232,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlSatRWrite(MV_SATR_TYPE_ID satrField, MV_U8 val)
 {
-	if (satrField < MV_SATR_MAX_OPTION) {
+	if (satrField < MV_SATR_READ_MAX_OPTION) {
 		//TwsiSATRWrite (satrField , val);
 		satrOptionsConfig[satrField] = val;      /* simulate dummy write instead of TWSI - will be removed */
 		//if ( val==TwsiSATRRead (satrField) )
@@ -259,8 +262,29 @@ MV_U32 mvCtrlSatRWrite(MV_SATR_TYPE_ID satrField, MV_U8 val)
 *******************************************************************************/
 MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 {
-	if (satrField < MV_SATR_MAX_OPTION)
+	if (satrField < MV_SATR_READ_MAX_OPTION)
 		return satrOptionsConfig[satrField];
+	else
+		return MV_ERROR;
+}
+
+/*******************************************************************************
+* mvCtrlBoardConfigGet
+*
+* DESCRIPTION: Read Board configuration Field
+*
+* INPUT: configField - Field description enum
+*
+* OUTPUT: None
+*
+* RETURN:
+*	if field is valid - returns requested Board configuration field value
+*
+*******************************************************************************/
+MV_U32 mvCtrlConfigGet(MV_CONFIG_TYPE_ID configField)
+{
+	if (configField < MV_CONFIG_TYPE_MAX_OPTION)
+		return boardOptionsConfig[configField];
 	else
 		return MV_ERROR;
 }
@@ -282,28 +306,46 @@ MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 *******************************************************************************/
 void mvCtrlSatrInit(void)
 {
-	MV_U8 tempVal = 0;
-	MV_BOARD_SAR_INFO info;
+	MV_U8 tempVal[2];
+	MV_BOARD_SAR_INFO sInfo;
+	MV_BOARD_CONFIG_TYPE_INFO cInfo;
 	int i = 0;
 
-	/* initialize all S@R fields to -1 (MV_ERROR) */
-	for (i = 0; i < MV_SATR_MAX_OPTION; i++)
+	/* initialize all S@R & Board configuration fields to -1 (MV_ERROR) */
+	for (i = 0; i < MV_SATR_READ_MAX_OPTION; i++)
 		satrOptionsConfig[i] = MV_ERROR;
+
+	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++)
+		boardOptionsConfig[i] = MV_ERROR;
 
 	/* detect board ID to determine which S@R fields are relevant */
 	//boardID=mvBoardIdGet();
 
-	for (i = 0; i < MV_SATR_MAX_OPTION; i++) {
-		if ( MV_OK == mvBoardSarInfoGet(i, &info)) {
-			tempVal = (MV_REG_READ(MPP_SAMPLE_AT_RESET(info.regNum)) & (info.mask) >> info.offset);
-			satrOptionsConfig[info.sarid] = tempVal;
+	/* Read Sample @ Reset configuration, memory access read : */
+	for (i = 0; i < MV_SATR_READ_MAX_OPTION; i++) {
+		if ( MV_OK == mvBoardSarInfoGet(i, &sInfo)) {
+			tempVal[0] = MV_REG_READ(MPP_SAMPLE_AT_RESET(sInfo.regNum));
+			satrOptionsConfig[sInfo.sarid] = ((tempVal[0]  & (sInfo.mask)) >> sInfo.offset);
 		}
 	}
 
-	/*omriii: temp: simulate dummy twsi initalizations */
-	for (i = 0; i < MV_SATR_MAX_OPTION; i++)
-		satrOptionsConfig[i] = i % 3;
-	/*omriii temp: simulate dummy initalizations */
+	/*Read rest of Board Configuration, EEPROM / Deep Switch access read : */
+	tempVal[0] = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 0);               /* EEPROM Reg#0 */
+	tempVal[1] = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 1);               /* EEPROM Reg#1 */
+	if (((MV_8)MV_ERROR == (MV_8)tempVal[0]) || ((MV_8)MV_ERROR == (MV_8)tempVal[1]) ) { /* EEPROM is not valid , data is jumpered to deep switch- read from there */
+		tempVal[0] = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 0, 0);  /* Deep Switch Reg#0 */
+		tempVal[1] = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 0, 1);  /* Deep Switch Reg#1 */
+		/* omriii : verify reads from BOARD_DEV_TWSI_IO_EXPANDER are correct */
+	}
+
+	if (((MV_8)MV_ERROR == (MV_8)tempVal[0]) || ((MV_8)MV_ERROR == (MV_8)tempVal[1]))       /* Deep Switch reading failed - omriii : use defaults (which iszeros for all fields) ??? */
+		tempVal[0] = tempVal[1] = 0x0;
+
+	/* Save values Locally */
+	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++)
+		if ( MV_OK == mvBoardConfigTypeGet(i, &cInfo))
+			boardOptionsConfig[cInfo.configid] = ((tempVal[cInfo.regNum] & (cInfo.mask)) >> cInfo.offset);
+
 }
 
 /*******************************************************************************
@@ -595,7 +637,6 @@ MV_U32 mvCtrlSdioSupport(MV_VOID)
 
 #endif
 
-#if defined(MV_INCLUDE_TDM)
 /*******************************************************************************
 * mvCtrlTdmSupport - Return if this controller has integrated TDM flash support
 *
@@ -654,14 +695,15 @@ MV_U32 mvCtrlTdmMaxGet(MV_VOID)
 *******************************************************************************/
 MV_TDM_UNIT_TYPE mvCtrlTdmUnitTypeGet(MV_VOID)
 {
-	return TDM_LQ_UNIT; /* omriii: FIXME */
-
-/*	implement a scan process for all 4 units, and return the enum for the correct unit being used
- *      TDM_LQ_UNIT
-        TDM_SL_UNIT
-        TDM_ZL_UNIT
-        TDM_EXT_UNIT
- */
+	if (mvCtrlIsLantiqTDM())
+		return SLIC_LANTIQ_ID;  /* omriii: FIXME */
+	else if (mvCtrlIsZarlinkTDM())
+		return SLIC_ZARLINK_ID;
+	else if (mvCtrlIsSiliconLabsTDM())
+		return SLIC_SILABS_ID;
+	else if (mvCtrlIsExternalTDM())
+		return SLIC_EXTERNAL_ID;
+	else return MV_ERROR;
 }
 
 /*******************************************************************************
@@ -684,8 +726,6 @@ MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID)
 {
 	return MV_TDM_IRQ_NUM;
 }
-
-#endif /* MV_INCLUDE_TDM */
 
 /*******************************************************************************
 * mvCtrlModelGet - Get Marvell controller device model (Id)
@@ -1185,7 +1225,7 @@ MV_U32 ctrlSizeRegRoundUp(MV_U32 size, MV_U32 alignment) /* kostaz: FIXME: remov
 MV_BOOL mvCtrlIsLantiqTDM(MV_VOID)
 {
 	/* implement Scan process */
-	return MV_TRUE;
+	return MV_FALSE;
 }
 
 /*******************************************************************************

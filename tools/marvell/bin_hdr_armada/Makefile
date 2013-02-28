@@ -107,37 +107,48 @@ PARAMSFILE = params
 LDSCRIPT   = linker.scr
 DRAMREGS   = ./dramregs.txt
 
-INCLUDE     = -I./  -I./src_phy/ -I./src_ddr/  -I./inc/ -I../../include
-
+INCLUDE     = -I./ -I./../ -I./src_phy_$(BOARD)/ -I./src_ddr/  -I./inc/ -I../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
 HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
 
-SRC_PHY = ./src_phy_$(BOARD)
 TGT = bin_hdr
 
 ASRC = bin_entry.s
-CSRC =  ./src_ddr/ddr3_init.c $(SRC_PHY)/mvHighSpeedEnvLib.c $(SRC_PHY)/mvHighSpeedEnvSpec.c ./src_ddr/bin_sramcfg.c ./src_ddr/ddr3_spd.c ./src_suspendWUP/suspendWakeup.c
+CSRC = mvdispacher.c
 
 AOBJ = $(subst .s,.o,$(ASRC))
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
 
+LIB_PHY = phy_$(BOARD).a
+LIB_DDR = ddr_$(BOARD).a
+LIB_UTILS = utils.a
+LIB_SWUP = suspendWUP.a
+
+LIB_PHY_UART = phy_$(BOARD).uart.a
+LIB_DDR_UART = ddr_$(BOARD).uart.a
+LIB_UTIL_UART = utils.uart.a
+LIB_SWUP_UART = suspendWUP.uart.a
+
 TLIB = ./src_ddr/ddr3_training_$(BOARD).lib
 
-ULIB = utils.lib
-UART_ULIB = uart_utils.lib
-#all:   $(LDSCRIPT) $(TGT).uart.elf $(TGT).uart.bin  $(TGT).elf $(TGT).bin $(TGT).dis $(TGT).srec
-all:   $(ULIB) $(SETPARAM) $(LDSCRIPT) $(TGT).uart.elf $(TGT).uart.bin  $(TGT).elf $(TGT).bin $(TGT).dis $(TGT).srec
+COMPONENT_SUBDIRS = src_util src_phy_$(BOARD) src_ddr src_suspendWUP
+HDR_COMPONENTS = $(LIB_PHY) $(LIB_DDR) $(TLIB) $(LIB_SWUP)
+HDR_COMPONENTS_UART = $(LIB_PHY_UART) $(LIB_DDR_UART) $(TLIB) $(LIB_SWUP)
 
-rtl: clean all
-fpga: clean all
-test: clean all
-
-$(AOBJ): $(ASRC)
-	$(AS) $(ASFLAGS) -o $@ $<
+#how to add new component to binary header:
+#EXAMPLE_COMPONENT=no
+#ifeq ($(EXAMPLE_COMPONENT),yes)
+#COMPONENT_SUBDIRS += src_example
+#HDR_COMPONENTS += component_example.a
+#HDR_COMPONENTS_UART += component_example.uart.a
+#CFLAGS += -DCONFIG_EXAMPLE_COMPONENT
+#endif
+ 
+all:   subdirs $(TGT).bin $(TGT).uart.bin  $(TGT).dis $(TGT).srec
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
@@ -145,45 +156,49 @@ $(AOBJ): $(ASRC)
 %.uart.o: %.c
 	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) -c -o  $@ $<
 
-
-%.elf: $(AOBJ) $(COBJ) $(TLIB) $(ULIB) $(LDSCRIPT)
-	$(CC) $(LDFLAGSBIN) $(AOBJ) $(COBJ) $(TLIB) $(ULIB) libgcc.lib -o $@
-
-%.uart.elf: $(AOBJ) $(CUART_OBJ) $(TLIB) $(UART_ULIB) $(LDSCRIPT)
-	$(CC) $(LDFLAGSBIN) $(AOBJ) $(CUART_OBJ) $(TLIB) $(UART_ULIB) libgcc.lib -o $@
-
-
-%.uart.bin: %.uart_elf
+$(TGT).bin: $(TGT).elf
 	$(OBJCOPY) -S -O binary $< $(addsuffix .tmp, $@)
 	$(CAT) $(PARAMSFILE).raw $(addsuffix .tmp, $@) > $@
 	$(RM) $(addsuffix .tmp, $@)
 
-%.bin: %.elf
+$(TGT).uart.bin: $(TGT).uart.elf
 	$(OBJCOPY) -S -O binary $< $(addsuffix .tmp, $@)
 	$(CAT) $(PARAMSFILE).raw $(addsuffix .tmp, $@) > $@
 	$(RM) $(addsuffix .tmp, $@)
 
-
-%.srec: %.elf
+$(TGT).srec: $(TGT).elf
 	$(OBJCOPY) -O srec $< $@
 
-%.dis:  %.elf
+$(TGT).dis:  $(TGT).elf
 	$(OBJDUMP) -lhaD -S $<  > $@
 
-./src_util/$(SETPARAMS): 
-	$(MAKE) $(SETPARAMS) HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)" -s  -C ./src_util
+$(TGT).elf: subdirs  $(AOBJ) $(COBJ) $(SETPARAM) $(LDSCRIPT)
+	$(CC) $(LDFLAGSBIN) $(AOBJ) $(COBJ) $(HDR_COMPONENTS) $(LIB_UTILS) libgcc.lib -o $@
 
-$(UART_ULIB):  
-	$(MAKE) $(UART_ULIB) HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)" -s  -C ./src_util
+$(TGT).uart.elf: $(AOBJ) $(CUART_OBJ) subdirs
+	$(CC) $(LDFLAGSBIN) $(AOBJ) $(CUART_OBJ) $(HDR_COMPONENTS_UART) $(LIB_UTIL_UART) libgcc.lib -o $@
 
-$(ULIB):
-	$(MAKE) all HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)" -s  -C ./src_util
+$(LDSCRIPT): $(SETPARAMS)
+	./$(SETPARAMS) -P $(PARAMSFILE).txt -R $(DRAMREGS) $(PARAMSFILE).raw $@
 
+$(SETPARAMS):
+	$(MAKE) $(SETPARAMS) BOARD="$(BOARD)"  HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)"  -C ./src_util
 
-$(LDSCRIPT): ./src_util/$(SETPARAMS) $(ULIB)
-	./src_util/$(SETPARAMS) -P $(PARAMSFILE).txt -R $(DRAMREGS) $(PARAMSFILE).raw $@
+subdirs:
+	@for dir in $(COMPONENT_SUBDIRS) ; do \
+	    $(MAKE) all \
+		HOSTOS=$(HOSTOS) \
+		HOSTARCH=$(HOSTARCH) \
+		HOSTCFLAGS="$(HOSTCFLAGS)" \
+		HOST_LDFLAGS="$(HOST_LDFLAGS)" \
+		BOARD="$(BOARD)" \
+		-C $$dir || exit 1 ; \
+	done
 
 clean:
-	$(RM) *.raw *.elf *.srec *.dis *.bin  *.uart.bin *.uart.elf ./src/*.o  $(LDSCRIPT) $(SETPARAMS) $(ULIB) $(UART_ULIB)
-	$(MAKE) clean  -s  -C ./src_util 
+	$(RM) *.raw *.elf *.srec *.dis *.bin *.a *.uart.bin *.uart.elf ./src/*.o  $(LDSCRIPT) $(SETPARAMS)
+	@for dir in $(COMPONENT_SUBDIRS) ; do \
+	    $(MAKE) clean -s -C $$dir || exit 1 ; \
+	done
+
 

@@ -189,7 +189,7 @@ MV_VOID levelLogPrintDD(MV_U32 dec_num, MV_U32 length, MV_LOG_LEVEL eLogLevel)
 * Returns:	None.
 */
 MV_U32 ddr3Init_(void);
-MV_U32 ddr3Init(void)
+MV_STATUS ddr3Init(void)
 {
     unsigned int status;
 

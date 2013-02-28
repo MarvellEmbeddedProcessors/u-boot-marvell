@@ -64,7 +64,7 @@
 #.SECONDARY:
 
 include ../base.mk
-sinclude ../../../include/autoconf.mk
+sinclude ../../../../include/autoconf.mk
 
 ifeq "$(MAKECMDGOALS)" "rtl"
   MVFLAGS += MV_RTL_PLATFORM=1 MV_NO_PRINT=1
@@ -105,38 +105,34 @@ endif
 INCLUDE     = -I./  -I../inc/ -I../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
- 
+
 HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
- 
-TGT = utils.a
-TGT_UART = utils.uart.a
 
-CSRC= mvUart.c mv_twsi.c utils.c time.c
+TGT = phy_axp.a
+TGT_UART = phy_axp.uart.a
+
+CSRC = mvHighSpeedEnvLib.c mvHighSpeedEnvSpec.c
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
- 
+
 all:   $(TGT) $(TGT_UART)
- 
+
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
- 
+
 %.uart.o: %.c
 	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) -c -o  $@ $<
- 
+
 $(TGT): $(COBJ)
 	ar rcs $(TGT)  $(COBJ)
 	$(CP) ./$@ ../
- 
+
 $(TGT_UART): $(CUART_OBJ)
 	ar rcs $(TGT_UART)  $(CUART_OBJ)
 	$(CP) ./$@ ../
- 
-setparams:
-	$(HOSTCC) $(HOSTCFLAGS) $(HOSTCPPFLAGS) -o $@  $(addsuffix .c, $@)
-	$(CP) $@ ../
- 
+
 clean:
-	$(RM) setparams *.raw  ./*.o  ./*.a
- 
+	$(RM) ./*.o  ./*.a
+

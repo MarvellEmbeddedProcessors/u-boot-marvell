@@ -76,82 +76,63 @@ ifeq "$(MAKECMDGOALS)" "fpga"
   MVFLAGS += MV_FPGA_HW=1 MV_NO_REAL_HW=1
 endif
 
-SETPARAMS  = ../src_util/setparams     
-PARAMSFILE = ../src_util/params
-LDSCRIPT   = ./linker_ddr.scr
-LDSCRIPT_uart_ddr = ./linker_uart_ddr.scr
-LDSCRIPT_phy = ../src_phy/linker_phy.scr
-
-INCLUDE     += -I./ -I../inc/ -I../../../include
-
+ifeq "$(CONFIG_DB_78x60_BP_REV2)"  "y"
+  CFLAGS += -DCONFIG_DB_78x60_BP_REV2
+endif
+ifeq "$(CONFIG_DB_78X60_PCAC_REV2)"  "y"
+  CFLAGS += -DCONFIG_DB_78X60_PCAC_REV2
+endif
+ifeq "$(CONFIG_RD_78460_SERVER_REV2)"  "y"
+  CFLAGS += -DCONFIG_RD_78460_SERVER_REV2
+endif
+ifeq "$(CONFIG_DB_784MP_GP)"  "y"
+  CFLAGS += -DCONFIG_DB_784MP_GP
+endif
+ifeq "$(CONFIG_DB_78X60_AMC)"  "y"
+  CFLAGS += -DCONFIG_DB_78X60_AMC
+endif
+ifeq "$(CONFIG_RD_78460_CUSTOMER)"  "y"
+  CFLAGS += -DCONFIG_RD_78460_CUSTOMER
+endif
+ 
+ifeq "$(CONFIG_DB_88F6710_BP)"  "y"
+  CFLAGS += -DCONFIG_DB_88F6710_BP
+endif
+ifeq "$(CONFIG_RD_88F6710)"  "y"
+  CFLAGS += -DCONFIG_RD_88F6710
+endif
+ 
+INCLUDE     = -I./  -I../inc/ -I../../../../include
+ 
+LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
+ 
 HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
-
-TGT_ddr = bin_hdr_ddr
-TGT_phy = bin_hdr_phy
-ULIB = ../utils.lib
-UART_ULIB = ../uart_utils.lib
-
-ASRC_ddr = ./ddr_entry_axp.s
-CSRC_ddr = ./ddr3_init.c ./bin_sramcfg.c ./ddr3_spd.c ../src_suspendWUP/suspendWakeup.c
-
-AOBJ_ddr = $(subst .s,.o,$(ASRC_ddr))
-COBJ_ddr = $(subst .c,.o,$(CSRC_ddr))
-CUART_ddr_OBJ = $(subst .c,.uart.o,$(CSRC_ddr))
-
-TLIB = ./ddr3_training.lib
-
-all: $(TGT_ddr).elf $(TGT_ddr).bin $(TGT_ddr).dis $(TGT_ddr).srec $(TGT_ddr).uart.elf  $(TGT_ddr).uart.bin
-
-rtl: clean all
-fpga: clean all
-test: clean all
-
-$(AOBJ_ddr): $(ASRC_ddr)
-	$(AS) $(ASFLAGS) -o $@ $<
-
+ 
+TGT = ddr_$(BOARD).a
+TGT_UART = ddr_$(BOARD).uart.a
+ 
+CSRC = ddr3_init.c bin_sramcfg.c ddr3_spd.c
+ 
+COBJ = $(subst .c,.o,$(CSRC))
+CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
+ 
+all:   $(TGT) $(TGT_UART)
+ 
 %.o: %.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(INCLUDE) -c -o $@ $<
-
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+ 
 %.uart.o: %.c
-	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) $(INCLUDE) -c -o  $@ $<
-
-#############################################################################################
-$(TGT_ddr).elf: $(AOBJ_ddr) $(COBJ_ddr) $(ULIB)  $(TLIB) $(LDSCRIPT)
-	$(CC) -T $(LDSCRIPT) $(LDFLAGS) $(AOBJ_ddr) $(COBJ_ddr) $(ULIB) $(TLIB)  ../libgcc.lib -o $@
-	$(CP) $@ ../
-
-#############################################################################################
-$(TGT_ddr).uart.elf: $(AOBJ_ddr) $(CUART_ddr_OBJ) $(UART_ULIB)  $(TLIB) $(LDSCRIPT_uart_ddr)
-	$(CC) -T $(LDSCRIPT_uart_ddr) $(LDFLAGS) $(AOBJ_ddr) $(CUART_ddr_OBJ) $(UART_ULIB) $(TLIB) ../libgcc.lib -o $@
-
-#############################################################################################
-%.uart.bin: %.uart_elf
-	$(OBJCOPY) -S -O binary $< $(addsuffix .tmp, $@)
-	$(CAT) $(PARAMSFILE).raw $(addsuffix .tmp, $@) > $@
-	$(RM) $(addsuffix .tmp, $@)
-	$(CP) $@ ../
-
-%.bin: %.elf
-	$(OBJCOPY) -S -O binary $< $(addsuffix .tmp, $@)
-	$(CAT) $(PARAMSFILE).raw $(addsuffix .tmp, $@) > $@
-	$(RM) $(addsuffix .tmp, $@)
-	$(CP) $@ ../
-
-%.srec: %.elf
-	$(OBJCOPY) -O srec $< $@
-
-%.dis:  %.elf
-	$(OBJDUMP) -lhaD -S $<  > $@
-
-$(LDSCRIPT): $(SETPARAMS) ../$(TGT_phy).bin  $(LDSCRIPT_phy)
-	$(SETPARAMS) -P $(PARAMSFILE).txt -B ../$(TGT_phy).bin   $(PARAMSFILE).raw $@
-
-$(LDSCRIPT_uart_ddr): $(SETPARAMS) ../$(TGT_phy).uart.bin  $(LDSCRIPT_phy)
-	$(SETPARAMS) -P $(PARAMSFILE).txt -B ../$(TGT_phy).uart.bin   $(PARAMSFILE).raw $@
-
-.PHONY: clean
-
+	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) -c -o  $@ $<
+ 
+$(TGT): $(COBJ)
+	ar rcs $(TGT)  $(COBJ)
+	$(CP) ./$@ ../
+ 
+$(TGT_UART): $(CUART_OBJ)
+	ar rcs $(TGT_UART)  $(CUART_OBJ)
+	$(CP) ./$@ ../
+ 
 clean:
-	$(RM) *.raw *.elf *.srec *.dis *.bin *.scr *.uart.bin *.uart.elf $(LDSCRIPT) 
-
+	$(RM) ./*.o  ./*.a
+ 

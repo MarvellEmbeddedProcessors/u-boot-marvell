@@ -230,20 +230,37 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 *       else if write failed - returns MV_ERROR
 *
 *******************************************************************************/
-MV_U32 mvCtrlSatRWrite(MV_SATR_TYPE_ID satrField, MV_U8 val)
+MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField,MV_SATR_TYPE_ID satrReadField, MV_U8 val)
 {
-	if (satrField < MV_SATR_READ_MAX_OPTION) {
-		//TwsiSATRWrite (satrField , val);
-		satrOptionsConfig[satrField] = val;      /* simulate dummy write instead of TWSI - will be removed */
-		//if ( val==TwsiSATRRead (satrField) )
+	MV_BOARD_SAR_INFO sInfo;
+	MV_U32 readVal, tmpVal;
+	if ((satrReadField < MV_SATR_READ_MAX_OPTION) && (satrWriteField < MV_SATR_WRITE_MAX_OPTION)) {
+		if ( MV_OK == mvBoardConfigTypeGet(satrWriteField, &sInfo))
+		{
+			/* read */
+			readVal = mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, sInfo.regNum , 0);
+			if ((MV_U8)readVal == (MV_U8)MV_ERROR)
+				return MV_ERROR;
 
-		if (satrOptionsConfig[satrField] == val)        /* omriii - replace ifs with if(TWSIRead==val) */
-			return satrOptionsConfig[satrField] = val;
-		else
-			return MV_ERROR;
-	}else
-		return MV_ERROR;
+			/* modify */
+			readVal &= !(sInfo.mask);  		/* clean old value */
+			readVal &= (val <<  sInfo.offset);	/* save new value */
 
+			/* write */
+			tmpVal = mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, sInfo.regNum, 0,readVal);
+			if ((MV_U8)tmpVal == (MV_U8)MV_ERROR)
+				return MV_ERROR;
+
+			/* verify */
+			tmpVal = mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, sInfo.regNum , 0);
+			if (tmpVal!=readVal)
+				return MV_ERROR;
+
+			/*else save written value in global array */
+			satrOptionsConfig[satrReadField] = readVal;
+			return MV_OK;
+		}
+	}
 }
 
 /*******************************************************************************

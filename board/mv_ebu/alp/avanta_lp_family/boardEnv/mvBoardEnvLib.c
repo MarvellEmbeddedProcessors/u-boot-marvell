@@ -1692,7 +1692,7 @@ MV_U8 mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum)
 *	reg value
 *
 *******************************************************************************/
-MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
+MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 {
 	MV_TWSI_SLAVE twsiSlave;
 	MV_TWSI_ADDR slave;
@@ -1703,8 +1703,8 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
 
 	/* Read MPP module ID */
-	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(BOARD_DEV_TWSI_SATR, devNum);
-	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(BOARD_DEV_TWSI_SATR, devNum);
+	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(twsiClass, devNum);
+	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(twsiClass, devNum);
 	twsiSlave.validOffset = MV_TRUE;
 	DB(mvOsPrintf("Board: Write S@R device addr %x, type %x, data %x\n",
 		      twsiSlave.slaveAddr.address, twsiSlave.slaveAddr.type, regVal));
@@ -1723,63 +1723,6 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 /*******************************************************************************
  * SatR Configuration functions
  */
-# if 0
-MV_U8 mvBoardCpuFreqGet(MV_VOID)
-{
-	MV_U8 sar;
-	MV_U8 sarMsb;
-
-	sar = mvBoardTwsiSatRGet(1, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
-
-	sarMsb = mvBoardTwsiSatRGet(2, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
-
-	return ((sarMsb & 0x1) << 3) | ((sar & 0x1C) >> 2);
-}
-
-MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
-{
-	MV_U8 sar;
-
-	sar = mvBoardTwsiSatRGet(1, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
-
-	sar &= ~(0x7 << 2);
-	sar |= (freqVal & 0x7) << 2;
-	if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar)) {
-		DB(mvOsPrintf("Board: Write CpuFreq S@R fail\n"));
-		return MV_ERROR;
-	}
-	sar = mvBoardTwsiSatRGet(2, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
-	sar &= ~(0x1);
-	sar |= ( (freqVal >> 3) & 0x1);
-	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar)) {
-		DB(mvOsPrintf("Board: Write CpuFreq S@R fail\n"));
-		return MV_ERROR;
-	}
-
-	sar = mvBoardTwsiSatRGet(2, 0);
-	if ((MV_8)MV_ERROR == (MV_8)sar)
-		return MV_ERROR;
-
-	sar &= ~(0x1);
-	sar |= ( (freqVal >> 3) & 0x1);
-	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar)) {
-		DB(mvOsPrintf("Board: Write CpuFreq S@R fail\n"));
-		return MV_ERROR;
-	}
-
-	DB(mvOsPrintf("Board: Write CpuFreq S@R succeeded\n"));
-	return MV_OK;
-}
-
-#endif
 
 MV_U8 mvBoardCpuCoresNumGet(MV_VOID)
 {

@@ -200,7 +200,7 @@ usage:
 static int do_sar_write(int argc, char *const argv[])
 {
 	const char *cmd;
-	int flag;
+	MV_BOOL flag;
 
 	if (argc < 2)
 		goto usage;
@@ -209,16 +209,16 @@ static int do_sar_write(int argc, char *const argv[])
 	MV_U8 tempVal=simple_strtoul(argv[1], NULL, 10);
 
 	if ((strcmp(cmd, "cpufreq") == 0) && (MV_ERROR != mvCtrlSatRRead(MV_SATR_CPU_FREQ)))
-		flag=mvCtrlSatRWrite(MV_SATR_CPU_FREQ, tempVal);
+		flag=mvCtrlSatRWrite(MV_SATR_WRITE_CPU_FREQ,MV_SATR_CPU_FREQ, tempVal);
 
 	else if ((strcmp(cmd, "coreclock") == 0) && (MV_ERROR != mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT)))
-		flag=mvCtrlSatRWrite(MV_SATR_CORE_CLK_SELECT, tempVal);
+		flag=mvCtrlSatRWrite(MV_SATR_WRITE_CORE_CLK_SELECT,MV_SATR_CORE_CLK_SELECT, tempVal);
 
 	else if ((strcmp(cmd, "cpusnum") == 0) && (MV_ERROR != mvCtrlSatRRead(MV_SATR_CPU1_ENABLE)))
-		flag=mvCtrlSatRWrite(MV_SATR_CPU1_ENABLE, tempVal);
+		flag=mvCtrlSatRWrite(MV_SATR_WRITE_CPU1_ENABLE,MV_SATR_CPU1_ENABLE, tempVal);
 
 	else if ((strcmp(cmd, "sscg") == 0) && (MV_ERROR != mvCtrlSatRRead(MV_SATR_SSCG_DISABLE)))
-		flag=mvCtrlSatRWrite(MV_SATR_SSCG_DISABLE, tempVal);
+		flag=mvCtrlSatRWrite(MV_SATR_WRITE_SSCG_DISABLE,MV_SATR_SSCG_DISABLE, tempVal);
 
 /* the first 4 S@R fields are writeable using S@R commands - rest  values are edited using Jumpers/DIP switch/DPR (resistors) */
 	else goto usage;

@@ -102,7 +102,8 @@ typedef enum _mvSatRTypeID {
 	MV_SATR_WRITE_CPU_FREQ,
 	MV_SATR_WRITE_CORE_CLK_SELECT,
 	MV_SATR_WRITE_CPU1_ENABLE,
-	MV_SATR_WRITE_SSCG_DISABLE
+	MV_SATR_WRITE_SSCG_DISABLE,
+	MV_SATR_WRITE_MAX_OPTION
 } MV_SATR_TYPE_ID;
 
 typedef enum _mvConfigTypeID {
@@ -229,7 +230,7 @@ typedef struct _boardSerdesConf {
 #define SAR_CPU_FAB_GET(cpu, fab)       (((cpu & 0x7) << 21) | ((fab & 0xF) << 24))
 
 /* mcspLib.h API list */
-MV_U32 mvCtrlSatRWrite(MV_SATR_TYPE_ID satrField, MV_U8 val);
+MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField,MV_SATR_TYPE_ID satrReadField, MV_U8 val);
 MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField);
 void mvCtrlSatrInit(MV_VOID);
 MV_U32 mvCtrlConfigGet(MV_CONFIG_TYPE_ID configField);

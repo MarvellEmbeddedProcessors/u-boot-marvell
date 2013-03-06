@@ -661,6 +661,9 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	/* Step 5: Activate the RX High Impedance Mode  */
 	DEBUG_INIT_FULL_S("Step 5: Activate the RX High Impedance Mode  \n");
 	rxHighImpedanceMode=0x8080;
+	if (device_rev == 2) /*   for B0 only */
+		rxHighImpedanceMode |= 4;
+
 	for (serdesLineNum = 0; serdesLineNum < maxSerdesLines; serdesLineNum++) {
 		/* for each serdes lane*/
 		serdesLineCfg = get_serdesLineCfg(serdesLineNum,pSerdesInfo);

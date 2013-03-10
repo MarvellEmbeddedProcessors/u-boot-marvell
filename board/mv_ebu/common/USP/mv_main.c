@@ -505,13 +505,11 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 #if (defined(MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_UNM_ETH))
 	/* Generate random ip and mac address */
 	/* Read RTC to create pseudo-random data for enc */
-	struct rtc_time tm;
 	unsigned int rand[4] = {0x1, 0x2, 0x3, 0x4};
 	char* addr_env="ethaddr" , *mtu_env="ethmtu";
 	char ethaddr_all[30];
 #if defined(MV_INCLUDE_RTC)
 	struct rtc_time tm;
-
 	rtc_get(&tm);
 	
 	rand[0] = ((tm.tm_yday + tm.tm_sec) % 254);

@@ -56,12 +56,15 @@ disclaimer.
 
 #ifdef CONFIG_MV_ETH_PP2
 #define MV_ETH_MH_SIZE      2
-
 #define CONFIG_MV_ETH_TXQ   8
 #define CONFIG_MV_ETH_RXQ   8
 #define CONFIG_MV_ETH_RXQ_DEF 0
 #define CONFIG_MV_PON
 #define CONFIG_MV_PON_TCONTS 1
+#elif defined CONFIG_MV_PON
+#define MV_PON_PORT(p)		((p) == MV_PON_PORT_ID)
+#else
+#define MV_PON_PORT(p)		MV_FALSE
 #endif /* CONFIG_MV_ETH_PP2 */
 
 /*

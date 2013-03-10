@@ -1476,9 +1476,9 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 	if (mvCtrlModelGet() == MV_FPGA_DEV_ID)
 		return MV_TRUE;
 
+	MV_U32 reg = MV_REG_READ(POWER_MNG_CTRL_REG);
 	switch (unitId) {
 #if defined(MV_INCLUDE_PEX)
-		MV_U32 reg = MV_REG_READ(POWER_MNG_CTRL_REG);
 	case PEX_UNIT_ID:
 		if ((reg & PMC_PEXSTOPCLOCK_MASK(index)) == PMC_PEXSTOPCLOCK_STOP(index))
 			state = MV_FALSE;
@@ -1649,8 +1649,8 @@ MV_BOOL mvCtrlPwrMemGet(MV_UNIT_ID unitId, MV_U32 index)
 	MV_BOOL state = MV_TRUE;
 
 	switch (unitId) {
+	MV_U32 reg;
 #if defined(MV_INCLUDE_PEX)
-		MV_U32 reg;
 	case PEX_UNIT_ID:
 		reg = MV_REG_READ(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_PEX));
 		if ((reg & PMC_PEXSTOPMEM_MASK(index)) == PMC_PEXSTOPMEM_STOP(index))

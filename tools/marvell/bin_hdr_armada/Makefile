@@ -148,7 +148,7 @@ HDR_COMPONENTS_UART = $(LIB_PHY_UART) $(LIB_DDR_UART) $(TLIB) $(LIB_SWUP)
 #CFLAGS += -DCONFIG_EXAMPLE_COMPONENT
 #endif
  
-all:   subdirs $(TGT).bin $(TGT).uart.bin  $(TGT).dis $(TGT).srec
+all:   subdirs $(TGT).bin $(TGT).uart.bin  $(TGT).dis $(TGT).uart.dis $(TGT).srec $(TGT).uart.srec
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
@@ -170,6 +170,12 @@ $(TGT).srec: $(TGT).elf
 	$(OBJCOPY) -O srec $< $@
 
 $(TGT).dis:  $(TGT).elf
+	$(OBJDUMP) -lhaD -S $<  > $@
+
+$(TGT).uart.srec: $(TGT).uart.elf
+	$(OBJCOPY) -O srec $< $@
+
+$(TGT).uart.dis:  $(TGT).uart.elf
 	$(OBJDUMP) -lhaD -S $<  > $@
 
 $(TGT).elf: subdirs  $(AOBJ) $(COBJ) $(SETPARAM) $(LDSCRIPT)

@@ -81,9 +81,9 @@ typedef enum _mvSatRTypeID {
 	MV_SATR_CPU1_ENABLE,
 	MV_SATR_SSCG_DISABLE,
 	// Jumpers  - change by removing Jumper. S@R will be changed by this option
-	MV_SATR_I2C0_Serial_ROM,
-	MV_SATR_External_CPU_Reset,
-	MV_SATR_External_CORE_Reset,
+	MV_SATR_I2C0_SERIAL_ROM,
+	MV_SATR_EXTERNAL_CPU_RESET,
+	MV_SATR_EXTERNAL_CORE_RESET,
 	// DIP Switch - change by removing Switch. S@R will be changed by this option:
 	MV_SATR_BOOT_DEVICE,
 	// DPR's -modified by moving resistor with solderer. S@R will be changed by this

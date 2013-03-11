@@ -867,42 +867,35 @@ MV_VOID mvBoardConfigInit(void)
 *       the selected MV_BOARD_BOOT_SRC
 *
 *******************************************************************************/
-MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_U32 sarBootDevice)
+MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_U32 sarBootDeviceValue)
 {
-	MV_SAR_BOOT_TABLE sarTable[] = MV_SAR_TABLE_VAL;
-	MV_SAR_BOOT_TABLE sarBootEntry = sarTable[sarBootDevice];
 	MV_U32 groupType;
 	MV_BOOL SW_SMI;
+	MV_BOARD_BOOT_SRC bootSrc= mvBoardBootDeviceGet(sarBootDeviceValue);
 
-	switch (sarBootEntry.bootSrc) {
+	switch (bootSrc) {
 	case MSAR_0_BOOT_NAND_NEW:
 		mvBoardMppTypeSet(0, NAND_BOOT_V2);
 		mvBoardMppTypeSet(1, NAND_BOOT_V2);
-		return MSAR_0_BOOT_NAND_NEW;
 		break;
 	case MSAR_0_BOOT_NAND_LEGACY:
 		mvBoardMppTypeSet(0, NAND_BOOT_V1);
 		mvBoardMppTypeSet(1, NAND_BOOT_V1);
-		return MSAR_0_BOOT_NAND_LEGACY;
 		break;
 	case MSAR_0_BOOT_SPI_FLASH:
-		if (sarBootEntry.attr1 == MSAR_0_SPI0) {
-			groupType = ((mvCtrlConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2) ? SPI0_BOOT_SPDIF_AUDIO : SPI0_BOOT);
-			mvBoardMppTypeSet(0, groupType);
-			mvBoardMppTypeSet(1, groupType);
-			return MSAR_0_BOOT_SPI_FLASH;
-		}else  {                        /* MSAR_0_SPI1 - update Groups 3-4 */
-			mvBoardMppTypeSet(3, SDIO_SPI1_UNIT);
-			SW_SMI = MV_TRUE;       // test if SW or CPU SMI control (omriii : how to decide ?)
-			if (mvCtrlIsLantiqTDM())
-				mvBoardMppTypeSet(4, (SW_SMI ? SPI1_SW_SMI_CTRL_TDM_LQ_UNIT : SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT));
-			else    /*REF_CLK_OUT*/
-				mvBoardMppTypeSet(4, (SW_SMI ? SPI1_SW_SMI_CTRL_REF_CLK_OUT : SPI1_CPU_SMI_CTRL_REF_CLK_OUT));
-			// omriii : if nand/spi0 not for BOOT, enable Audio-SPDIF by default?
-			mvBoardMppTypeSet(0, SPI0_BOOT_SPDIF_AUDIO);
-			mvBoardMppTypeSet(1, SPI0_BOOT_SPDIF_AUDIO);
-			return MSAR_0_BOOT_SPI1_FLASH;
-		}
+		groupType = ((mvCtrlConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2) ? SPI0_BOOT_SPDIF_AUDIO : SPI0_BOOT);
+		mvBoardMppTypeSet(0, groupType);
+		mvBoardMppTypeSet(1, groupType);
+	case MSAR_0_BOOT_SPI1_FLASH:	/* MSAR_0_SPI1 - update Groups 3-4 */
+		mvBoardMppTypeSet(3, SDIO_SPI1_UNIT);
+		SW_SMI = MV_TRUE;       // test if SW or CPU SMI control (omriii : how to decide ?)
+		if (mvCtrlIsLantiqTDM())
+			mvBoardMppTypeSet(4, (SW_SMI ? SPI1_SW_SMI_CTRL_TDM_LQ_UNIT : SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT));
+		else    /*REF_CLK_OUT*/
+			mvBoardMppTypeSet(4, (SW_SMI ? SPI1_SW_SMI_CTRL_REF_CLK_OUT : SPI1_CPU_SMI_CTRL_REF_CLK_OUT));
+		// omriii : if nand/spi0 not for BOOT, enable Audio-SPDIF by default?
+		mvBoardMppTypeSet(0, SPI0_BOOT_SPDIF_AUDIO);
+		mvBoardMppTypeSet(1, SPI0_BOOT_SPDIF_AUDIO);
 		break;
 /* omriii : what to do with the next Boot devices  ?
         case MSAR_0_BOOT_NOR_FLASH:
@@ -919,6 +912,92 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_U32 sarBootDevice)
 	default:
 		return MV_ERROR;
 	}
+	return bootSrc;
+}
+
+/*******************************************************************************
+* mvBoardBootDeviceGet -   Get the Selected S@R boot device
+*
+* DESCRIPTION:
+*   read board BOOT configuration from S@R and return Boot device accordingly
+*
+* INPUT:  sarBootDevice - BOOT_DEVICE value from S@R.
+*
+* OUTPUT:  None.
+*
+* RETURN:
+*       the selected MV_BOARD_BOOT_SRC
+*
+*******************************************************************************/
+MV_BOARD_BOOT_SRC mvBoardBootDeviceGet(MV_U32 sarBootDeviceValue)
+{
+	MV_SAR_BOOT_TABLE sarTable[] = MV_SAR_TABLE_VAL;
+	MV_SAR_BOOT_TABLE sarBootEntry = sarTable[sarBootDeviceValue];
+	if (sarBootEntry.bootSrc!=MSAR_0_BOOT_SPI_FLASH)
+		return sarBootEntry.bootSrc;
+	else /* if boot source is SPI ,verify which CS (0/1) */
+		if (mvBoardBootAttrGet(sarBootDeviceValue,1) == MSAR_0_SPI0)
+			return MSAR_0_BOOT_SPI_FLASH;
+		else return MSAR_0_BOOT_SPI1_FLASH;
+}
+
+/*******************************************************************************
+* mvBoardBootAttrGet -  Get the selected S@R Boot device attributes[1/2/3]
+*
+* DESCRIPTION:
+*   read board BOOT configuration and return attributes accordingly
+*
+* INPUT:  sarBootDevice - BOOT_DEVICE value from S@R.*
+* 	  attrNum - attribute number [1/2/3]
+* OUTPUT:  None.
+*
+* RETURN:
+*       the selected attribute value
+*
+*******************************************************************************/
+MV_U32 mvBoardBootAttrGet(MV_U32 sarBootDeviceValue, MV_U8 attrNum)
+{
+	MV_SAR_BOOT_TABLE sarTable[] = MV_SAR_TABLE_VAL;
+	MV_SAR_BOOT_TABLE sarBootEntry = sarTable[sarBootDeviceValue];
+	switch (attrNum) {
+	case 1:
+		return sarBootEntry.attr1;
+		break;
+	case 2:
+		return sarBootEntry.attr2;
+		break;
+	case 3:
+		return sarBootEntry.attr3;
+		break;
+	default:
+		return MV_ERROR;
+	}
+}
+/*******************************************************************************
+* mvBoardFreqModeGet - Get the selected S@R Frequency mode
+*
+* DESCRIPTION:
+*   read board BOOT configuration and return the selcted S@R Frequency mode
+*
+* INPUT:  freqMode - MV_FREQ_MODE struct to return the freq mode
+*
+* OUTPUT: None,
+*
+* RETURN:
+*       MV_STATUS to indicate a successful read.
+*
+*******************************************************************************/
+MV_STATUS mvBoardFreqModeGet(MV_FREQ_MODE *freqMode)
+{
+	MV_FREQ_MODE freqTable[] = MV_SAR_FREQ_MODES;
+	MV_U32 freqModeSatRValue = mvCtrlSatRRead(MV_SATR_CPU_FREQ);
+	if (MV_ERROR !=freqModeSatRValue )
+	{
+		*freqMode = freqTable[freqModeSatRValue];
+		return MV_OK;
+	}
+	else
+		return MV_ERROR;
 }
 
 /*******************************************************************************

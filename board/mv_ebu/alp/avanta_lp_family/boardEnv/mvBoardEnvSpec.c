@@ -75,9 +75,9 @@ MV_BOARD_SAR_INFO boardSarInfo[] = {
 	{ MV_SATR_CORE_CLK_SELECT,	 0x00400000,		  22,		       1		 },
 	{ MV_SATR_CPU1_ENABLE,		 0x00008000,		  15,		       0		 },
 	{ MV_SATR_SSCG_DISABLE,		 0x00000002,		  1,		       0		 },
-	{ MV_SATR_I2C0_Serial_ROM,	 0x00000001,		  0,		       0		 },
-	{ MV_SATR_External_CPU_Reset,	 0x0,			  0,		       0		 },     /* omriii : ask max the relevance of these fields */
-	{ MV_SATR_External_CORE_Reset,	 0x0,			  0,		       0		 },     /* omriii : ask max the relevance of these fields */
+	{ MV_SATR_I2C0_SERIAL_ROM,	 0X00000001,		  0,		       0		 },
+	{ MV_SATR_EXTERNAL_CPU_RESET,	 0X0,			  0,		       0		 },     /* OMRIII : ASK MAX THE RELEVANCE OF THESE FIELDS */
+	{ MV_SATR_EXTERNAL_CORE_RESET,	 0X0,			  0,		       0		 },     /* OMRIII : ASK MAX THE RELEVANCE OF THESE FIELDS */
 	{ MV_SATR_BOOT_DEVICE,		 0X1F8,			  3,		       0		 },
 	{ MV_SATR_CPU_PLL_XTAL_BYPASS,	 0x00000200,		  9,		       0		 },
 	{ MV_SATR_PEX0_CLOCK,		 0x00000400,		  10,		       0		 },

@@ -80,14 +80,15 @@
 /* New board ID numbers */
 
 typedef enum _mvBoardId {
-	BOARD_ID_BASE,
-	MV_BOARD_ID_AVANTA_LP_FPGA,
 	DB_6660_ID,
 	RD_6660_ID,
 	DB_6650_ID,
 	RD_6650_ID,
+	MV_BOARD_ID_AVANTA_LP_FPGA,
 	MV_MAX_BOARD_ID
 } MV_BOARD_ID;
+
+#define BOARD_ID_BASE DB_6660_ID
 
 #define MV_INVALID_BOARD_ID             0xFFFFFFFF
 

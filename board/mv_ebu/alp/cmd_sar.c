@@ -25,9 +25,11 @@ disclaimer.
 #include "boardEnv/mvBoardEnvLib.h"
 
 
+
 static int do_sar_list(int argc, char *const argv[])
 {
 	const char *cmd;
+	int i;
 
 	if (argc < 1)
 		goto usage;
@@ -35,22 +37,19 @@ static int do_sar_list(int argc, char *const argv[])
 /* 1. Bios Device (MUX with internal E²PROM)  change by uBoot command satr and reset.
  * 	Following S@R will be changed by this option: */
 	if (strcmp(cmd, "cpufreq") == 0) {
+		MV_FREQ_MODE pFreqModes[] = MV_SAR_FREQ_MODES;
 		printf("Determines the frequency of CPU/DDR/L2:\n");
-#ifdef DB_6660_ID
-		printf("\t0x0 = 1000Mhz\n");
-#endif
-		printf("\t0x1 =  800Mhz\n");
-		printf("\t0x2 =  667Mhz\n");
-		printf("\t0x3 =  600Mhz\n");
-
+		printf("\n\n val | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
+		for (i=0; i < FREQ_MODES_NUM; i++) {
+			printf(" %d | %s | %s | %s | \n", i,
+				   pFreqModes[i].cpuFreq,
+				   pFreqModes[i].ddrFreq,
+				   pFreqModes[i].l2Freq);
+		}
 	} else if (strcmp(cmd, "coreclock") == 0) {
 		printf("Determines the frequency of Core Clock:\n");
-#ifdef DB_6660_ID
-		printf("\t0x0 = 1000Mhz\n");
-#endif
-		printf("\t0x1 =  800Mhz\n");
-		printf("\t0x2 =  667Mhz\n");
-		printf("\t0x3 =  600Mhz\n");
+		printf("\t0x0 = 166Mhz\n");
+		printf("\t0x1 = 200Mhz\n");
 #if defined (DB_6660_ID) || defined (RD_6660_ID)	/* omriii : remove defines and detect according to runtime boardID */
 	} else if (strcmp(cmd, "cpusnum") == 0) {
 
@@ -76,26 +75,31 @@ static int do_sar_read(int argc, char *const argv[])
 	const char *cmd;
 	MV_BOOL dump_all=MV_FALSE;
 	MV_U8 temp;
-	char* cpuFreqArr[4];
-	char* bootSrcArr[5];
+	MV_FREQ_MODE freqMode;
+	char* bootSrcArr[8];
 
-	cpuFreqArr[0] = "1000 MHz";
-	cpuFreqArr[1] = "800 MHz";
-	cpuFreqArr[2] = "667 MHz";
-	cpuFreqArr[3] = "600 MHz";
-
-	bootSrcArr[0] = "BootROM enabled, Boot from NAND flash";
-	bootSrcArr[1] = "BootROM enabled, Boot from Device (NOR) flash";
-	bootSrcArr[2] = "BootROM enabled, Boot from SPI0 (CS0)";
-	bootSrcArr[3] = "BootROM enabled, Boot from SPI1 (CS1)";
-	bootSrcArr[4] = "BootROM enabled, Boot from UART";
+	bootSrcArr[0] = "NOR flash";
+	bootSrcArr[1] = "NAND flash v2";
+	bootSrcArr[2] = "UART";
+	bootSrcArr[3] = "SPI0 (CS0)";
+	bootSrcArr[4] = "PEX";
+	bootSrcArr[5] = "NAND legacy flash";
+	bootSrcArr[6] = "PROMPT";
+	bootSrcArr[7] = "SPI1 (CS1)";
 
 	if (argc < 1)
 		dump_all=MV_TRUE;
 	cmd = argv[0];
 
-	if ((strcmp(cmd, "cpufreq") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU_FREQ))))
-		printf("cpufreq = %d ==> %s\n", temp, cpuFreqArr[temp]);
+	if ((strcmp(cmd, "cpufreq") == 0) && (MV_ERROR != mvBoardFreqModeGet(&freqMode)))
+	{
+		printf("\n\n val | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
+			printf(" %d | %s | %s | %s | \n", 
+				freqMode.id,
+				freqMode.cpuFreq,
+ 				freqMode.ddrFreq,
+				freqMode.l2Freq);
+	}
 
 	else if ((strcmp(cmd, "coreclock") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT))))
 		printf("coreclock = %d \n", temp);
@@ -106,17 +110,17 @@ static int do_sar_read(int argc, char *const argv[])
 	else if ((strcmp(cmd, "sscg") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_SSCG_DISABLE))))
 		printf("sscg = %d ==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
 
-	else if ((strcmp(cmd, "i2c0") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_I2C0_Serial_ROM))))
+	else if ((strcmp(cmd, "i2c0") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_I2C0_SERIAL_ROM))))
 		printf("i2c0 = %d ==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
 
-	else if ((strcmp(cmd, "cpureset") == 0) &&(MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_External_CORE_Reset))))
+	else if ((strcmp(cmd, "cpureset") == 0) &&(MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_EXTERNAL_CORE_RESET))))
 		printf("cpureset = %d ==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
 
-	else if ((strcmp(cmd, "corereset") == 0) &&(MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_External_CPU_Reset))))
+	else if ((strcmp(cmd, "corereset") == 0) &&(MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_EXTERNAL_CPU_RESET))))
 			printf("corereset = %d ==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
 
 	else if ((strcmp(cmd, "bootsrc") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_BOOT_DEVICE))))
-			printf("bootsrc = %d ==> %s\n", temp, bootSrcArr[temp]);
+			printf("bootsrc = %d ==> %s\n", temp, bootSrcArr[mvBoardBootDeviceGet(temp)]);
 
 	else if ((strcmp(cmd, "cpubypass") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU_PLL_XTAL_BYPASS))))
 		printf("sscg = %d ==> %s Bypass\n",temp,  ( (temp == 0) ? "PLL" : "XTAL") );
@@ -142,9 +146,16 @@ static int do_sar_read(int argc, char *const argv[])
 	else if (dump_all==MV_TRUE)
 	{
 		printf ("\t S@R configuration:\n\t  --------------------\n");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU_FREQ)))
-			printf("cpufreq \t\t= %d\t\t==> %s\n", temp, cpuFreqArr[temp]);
-
+		if  (MV_ERROR != mvBoardFreqModeGet(&freqMode))
+		{
+			printf("\n\n val | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
+			printf(" %d | %s | %s | %s | \n", 
+				freqMode.id,
+				freqMode.cpuFreq,
+ 				freqMode.ddrFreq,
+				freqMode.l2Freq);
+		}
+	
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT)))
 			printf("coreclock \t= %d \n", temp);
 
@@ -154,17 +165,17 @@ static int do_sar_read(int argc, char *const argv[])
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_SSCG_DISABLE)))
 			printf("sscg \t\t= %d\t\t==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
 
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_I2C0_Serial_ROM)))
+		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_I2C0_SERIAL_ROM)))
 			printf("i2c0 \t\t= %d\t\t==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
 
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_External_CORE_Reset)))
+		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_EXTERNAL_CORE_RESET)))
 			printf("cpureset \t\t= %d\t\t==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
 
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_External_CPU_Reset)))
+		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_EXTERNAL_CPU_RESET)))
 			printf("corereset \t= %d\t\t==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
 
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_BOOT_DEVICE)))
-			printf("bootsrc \t\t= %d\t\t==> %s\n", temp, bootSrcArr[temp]);
+			printf("bootsrc = %d ==> %s\n", temp, bootSrcArr[mvBoardBootDeviceGet(temp)]);
 
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU_PLL_XTAL_BYPASS)))
 			printf("sscg \t\t= %d\t\t==> %s Bypass\n",temp,  ( (temp == 0) ? "PLL" : "XTAL") );
@@ -206,7 +217,7 @@ static int do_sar_write(int argc, char *const argv[])
 		goto usage;
 
 	cmd = argv[0];
-	MV_U8 tempVal=simple_strtoul(argv[1], NULL, 10);
+	MV_U8 tempVal = simple_strtoul(argv[1], NULL, 10);
 
 	if ((strcmp(cmd, "cpufreq") == 0) && (MV_ERROR != mvCtrlSatRRead(MV_SATR_CPU_FREQ)))
 		flag=mvCtrlSatRWrite(MV_SATR_WRITE_CPU_FREQ,MV_SATR_CPU_FREQ, tempVal);

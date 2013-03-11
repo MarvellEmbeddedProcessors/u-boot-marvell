@@ -225,15 +225,10 @@ extern "C" {
 #define PCI_MEM(pciIf, memNum)			(PEX0_MEM0 + 2 * (pciIf))
 /* This define describes the maximum number of supported PCI Interfaces 	*/
 #define MV_IDMA_MAX_CHAN			4
-#define ARMADA_XP_MAX_USB_PORTS			3
-#define ARMADA_XP_NAND				1
-#define ARMADA_XP_SDIO				1
-#define ARMADA_XP_MAX_TDM_PORTS			32
-#define ARMADA_XP_TDM				1
 #define MV_DEVICE_MAX_CS      			4
 
 #ifndef MV_USB_MAX_PORTS
-#define MV_USB_MAX_PORTS (ARMADA_XP_MAX_USB_PORTS)
+#define MV_USB_MAX_PORTS 3
 #endif
 
 

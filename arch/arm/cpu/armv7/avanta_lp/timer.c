@@ -45,13 +45,9 @@
 #include "cntmr/mvCntmr.h"
 #include "cntmr/mvCntmrRegs.h"
 #include "cpu/mvCpu.h"
-#if defined(MV88F78X60)
-#define MV_BOARD_REFCLK MV_BOARD_REFCLK_25MHZ
-#define CTCR_ARM_TIMER_FRQ_SEL(cntr) CTCR_ARM_TIMER_25MhzFRQ_EN(cntr)
-#else
+/* omriii : check if we need to support clock of 25MHz */
 #define MV_BOARD_REFCLK mvCpuL2ClkGet()
 #define CTCR_ARM_TIMER_FRQ_SEL(cntr) 0
-#endif
 #define READ_TIMER (mvCntmrRead(UBOOT_CNTR)/(MV_BOARD_REFCLK/1000))
 
 static ulong timestamp;

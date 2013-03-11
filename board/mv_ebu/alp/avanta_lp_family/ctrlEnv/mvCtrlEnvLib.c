@@ -261,6 +261,7 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField,MV_SATR_TYPE_ID satrRea
 			return MV_OK;
 		}
 	}
+	return MV_ERROR;
 }
 
 /*******************************************************************************
@@ -329,14 +330,13 @@ void mvCtrlSatrInit(void)
 	int i = 0;
 
 	/* initialize all S@R & Board configuration fields to -1 (MV_ERROR) */
-	for (i = 0; i < MV_SATR_READ_MAX_OPTION; i++)
-		satrOptionsConfig[i] = MV_ERROR;
+	memset(&satrOptionsConfig, MV_ERROR, (sizeof(MV_U32)*MV_SATR_READ_MAX_OPTION) );
 
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++)
 		boardOptionsConfig[i] = MV_ERROR;
 
 	/* detect board ID to determine which S@R fields are relevant */
-	//boardID=mvBoardIdGet();
+	/* omriii : add boardID=mvBoardIdGet(); ??? */
 
 	/* Read Sample @ Reset configuration, memory access read : */
 	for (i = 0; i < MV_SATR_READ_MAX_OPTION; i++) {
@@ -349,13 +349,15 @@ void mvCtrlSatrInit(void)
 	/*Read rest of Board Configuration, EEPROM / Deep Switch access read : */
 	tempVal[0] = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 0);               /* EEPROM Reg#0 */
 	tempVal[1] = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 1);               /* EEPROM Reg#1 */
-	if (((MV_8)MV_ERROR == (MV_8)tempVal[0]) || ((MV_8)MV_ERROR == (MV_8)tempVal[1]) ) { /* EEPROM is not valid , data is jumpered to deep switch- read from there */
+	if (((MV_8)MV_ERROR == (MV_8)tempVal[0]) || ((MV_8)MV_ERROR == (MV_8)tempVal[1]) ) { 
+		/* EEPROM is not valid , data is jumpered to deep switch- read from there */
 		tempVal[0] = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 0, 0);  /* Deep Switch Reg#0 */
 		tempVal[1] = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 0, 1);  /* Deep Switch Reg#1 */
 		/* omriii : verify reads from BOARD_DEV_TWSI_IO_EXPANDER are correct */
 	}
 
-	if (((MV_8)MV_ERROR == (MV_8)tempVal[0]) || ((MV_8)MV_ERROR == (MV_8)tempVal[1]))       /* Deep Switch reading failed - omriii : use defaults (which iszeros for all fields) ??? */
+	if (((MV_8)MV_ERROR == (MV_8)tempVal[0]) || ((MV_8)MV_ERROR == (MV_8)tempVal[1]))       
+		/* Deep Switch reading failed - omriii : use defaults (which iszeros for all fields) ??? */
 		tempVal[0] = tempVal[1] = 0x0;
 
 	/* Save values Locally */

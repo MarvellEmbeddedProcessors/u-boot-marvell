@@ -533,6 +533,47 @@ typedef struct _mvSARBootTable {
 /*63*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 40               } \
 }
 
+#define FREQ_MODES_NUM		29
+typedef struct {
+	MV_U8 id;
+	char *cpuFreq;
+	char *ddrFreq;
+	char *l2Freq;
+} MV_FREQ_MODE;
+
+#define MV_SAR_FREQ_MODES {\
+	{0,  "266",  "266", "133" },\
+	{1,  "333",  "167", "167" },\
+	{2,  "333",  "222", "167" },\
+	{3,  "333",  "333", "167" },\
+	{4,  "400",  "200", "200" },\
+	{5,  "400",  "267", "200" },\
+	{6,  "400",  "400", "200" },\
+	{7,  "500",  "250", "250" },\
+	{8,  "500",  "334", "250" },\
+	{9,  "500",  "400", "250" },\
+	{10,  "533", "267", "267" },\
+	{11, "533",  "356", "267" },\
+	{12, "533",  "533", "267" },\
+	{13, "600",  "300", "300" },\
+	{14, "600",  "400", "300" },\
+	{15, "600",  "600", "300" },\
+	{16, "666",  "333", "333" },\
+	{17, "666",  "444", "333" },\
+	{18, "666",  "666", "333" },\
+	{19, "800",  "267", "400" },\
+	{20, "800",  "400", "400" },\
+	{21, "800",  "534", "400" },\
+	{22, "900",  "300", "450" },\
+	{23, "900",  "450", "450" },\
+	{24, "900",  "600", "450" },\
+	{25, "1000", "500", "500" },\
+	{26, "1000", "667", "500" },\
+	{27, "1000", "500", "333" },\
+	{28, "400",  "400", "400" },\
+	{29, "1100", "550", "550" }\
+};
+
 /* For backward compatability with Legacy mode */
 #define mvBoardSwitchConnectedPortGet(port)	(-1)
 #define mvBoardIsSwitchConnected(port)  	(mvBoardSwitchConnectedPortGet(port) != -1)
@@ -591,7 +632,10 @@ void mvBoardConfigWrite(MV_VOID);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet(MV_VOID);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet(MV_VOID);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet(MV_VOID);
-MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_U32 sarBootDevice);
+MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_U32 sarBootDeviceValue);
+MV_BOARD_BOOT_SRC mvBoardBootDeviceGet(MV_U32 sarBootDeviceValue);
+MV_U32 mvBoardBootAttrGet(MV_U32 sarBootDeviceValue, MV_U8 attrNum);
+MV_STATUS mvBoardFreqModeGet(MV_FREQ_MODE *freqMode);
 MV_U8 mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum);
 MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
 

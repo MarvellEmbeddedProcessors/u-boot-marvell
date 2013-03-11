@@ -107,8 +107,6 @@ MV_TARGET mvCpuIfTargetOfBaseAddressGet(MV_U32 baseAddress);
 MV_STATUS mvCpuIfSramWinDisable(MV_VOID);
 #if defined(MV_INCLUDE_PEX)
 MV_U32    mvCpuIfPexRemap(MV_TARGET pexTarget, MV_ADDR_WIN *pAddrDecWin);
-MV_VOID   mvCpuIfEnablePex(MV_U32 pexUnit);
-MV_VOID   mvCpuIfPex4x1Enable(MV_U32 pexUnit, MV_BOOL enable);
 #endif
 #if defined(MV_INCLUDE_PCI)
 MV_U32 	  mvCpuIfPciRemap(MV_TARGET pciTarget, MV_ADDR_WIN *pAddrDecWin);

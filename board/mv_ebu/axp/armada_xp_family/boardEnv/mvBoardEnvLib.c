@@ -144,9 +144,6 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 		MV_REG_WRITE(DEV_BUS_SYNC_CTRL, 0x11);
 	}
 
-	MV_REG_WRITE(MV_RUNIT_PMU_REGS_OFFSET + 0x4, BOARD_INFO(boardId)->pmuPwrUpPolarity);
-	MV_REG_WRITE(MV_RUNIT_PMU_REGS_OFFSET + 0x14, BOARD_INFO(boardId)->pmuPwrUpDelay);
-
 	/* Set GPP Out value */
 	MV_REG_WRITE(GPP_DATA_OUT_REG(0), BOARD_INFO(boardId)->gppOutValLow);
 	MV_REG_WRITE(GPP_DATA_OUT_REG(1), BOARD_INFO(boardId)->gppOutValMid);

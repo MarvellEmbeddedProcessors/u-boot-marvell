@@ -1649,6 +1649,41 @@ MV_32 mvBoardNandWidthGet(void)
 }
 
 /*******************************************************************************
+* mvBoardIdReadFromSatR
+*
+* DESCRIPTION:
+*	Function name is self describing.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       void
+*
+*******************************************************************************/
+MV_U32 mvBoardIdReadFromSatR(void)
+{
+	MV_U32 boardId;
+
+#ifdef CONFIG_MACH_AVANTA_LP_FPGA
+	boardId = MV_BOARD_ID_AVANTA_LP_FPGA;
+#else
+	boardId = MV_REG_READ(MPP_SAMPLE_AT_RESET(1);
+	boardId &= (boardId & SAR1_BOARD_ID_MASK) >> SAR1_BOARD_ID_OFFSET;
+#endif
+
+	if (boardId >= MV_MAX_BOARD_ID) {
+		mvOsPrintf("%s: Error: read wrong board (%d)\n", __func__, boardId);
+		return MV_INVALID_BOARD_ID;
+	}
+
+	return boardId;
+}
+
+/*******************************************************************************
 * mvBoardIdSet - Set Board model
 *
 * DESCRIPTION:
@@ -1666,19 +1701,15 @@ MV_32 mvBoardNandWidthGet(void)
 *       void
 *
 *******************************************************************************/
-MV_VOID mvBoardIdSet(MV_VOID)
+MV_BOOL mvBoardIdSet(MV_U32 boardId)
 {
-#ifdef CONFIG_MACH_AVANTA_LP_FPGA
-	gBoardId = MV_BOARD_ID_AVANTA_LP_FPGA;
-#else
-	gBoardId = (MV_REG_READ(MPP_SAMPLE_AT_RESET(1)) & SAR1_BOARD_ID_MASK) >> SAR1_BOARD_ID_OFFSET;
-#endif
-
-	if (!((gBoardId >= BOARD_ID_BASE) && (gBoardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mvBoardIdSet: Board ID must be defined!\n");
-		while (1)
-			continue;
+	if (boardId >= MV_MAX_BOARD_ID) {
+		mvOsPrintf("%s: Error: wrong boardId (%d)\n", __func__, boardId);
+		return MV_FALSE;
 	}
+
+	gBoardId = boardId;
+
 	board = boardInfoTbl[gBoardId];
 }
 

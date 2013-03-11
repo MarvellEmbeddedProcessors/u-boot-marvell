@@ -70,6 +70,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* Defines */
 #define MV_MAX_ETH_DATA     1500
+#define MV_ETH_MH_SIZE      2
+#define MV_ETH_CRC_SIZE     4
 
 /* 802.3 types */
 #define MV_IP_TYPE                  0x0800
@@ -79,6 +81,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_NOVELL_IPX_TYPE          0x8137
 #define MV_EAPOL_TYPE				0x888e
 #define MV_VLAN_TYPE				0x8100
+#define MV_VLAN_1_TYPE				0x88A8
 #define MV_PPPOE_TYPE				0x8864
 
 /* PPPoE protocol type */

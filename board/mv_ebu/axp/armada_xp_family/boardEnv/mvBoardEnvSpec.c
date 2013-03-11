@@ -206,10 +206,6 @@ MV_BOARD_INFO db88f78XX0Info = {
 	.pLedGppPin			= db88f6781InfoBoardDebugLedIf,
 	.ledsPolarity			= 0,
 
-	/* PMU Power */
-	.pmuPwrUpPolarity		= 0,
-	.pmuPwrUpDelay			= 80000,
-
 	/* GPP values */
 	.gppOutEnValLow			= DB_88F78XX0_GPP_OUT_ENA_LOW,
 	.gppOutEnValMid			= DB_88F78XX0_GPP_OUT_ENA_MID,
@@ -385,10 +381,6 @@ MV_BOARD_INFO db88f78XX0rev2Info = {
 	.pLedGppPin			= db88f6781InfoBoardDebugLedIf,
 	.ledsPolarity			= 0,
 
-	/* PMU Power */
-	.pmuPwrUpPolarity		= 0,
-	.pmuPwrUpDelay			= 80000,
-
 	/* GPP values */
 	.gppOutEnValLow			= DB_88F78XX0_REV2_GPP_OUT_ENA_LOW,
 	.gppOutEnValMid			= DB_88F78XX0_REV2_GPP_OUT_ENA_MID,
@@ -500,10 +492,6 @@ MV_BOARD_INFO rd78460nasInfo = {
 	.activeLedsNumber		= 0,
 	.pLedGppPin			= NULL,
 	.ledsPolarity			= 0,
-
-	/* PMU Power */
-	.pmuPwrUpPolarity		= 0,
-	.pmuPwrUpDelay			= 80000,
 
 	/* GPP values */
 	.gppOutEnValLow			= RD_78460_NAS_GPP_OUT_ENA_LOW,
@@ -1045,10 +1033,6 @@ MV_BOARD_INFO fpga88f78XX0Info = {
 	.pLedGppPin			= NULL,
 	.ledsPolarity			= 0,
 
-	/* PMU Power */
-	.pmuPwrUpPolarity		= 0,
-	.pmuPwrUpDelay			= 80000,
-
 	/* GPP values */
 	.gppOutEnValLow			= FPGA_88F78XX0_GPP_OUT_ENA_LOW,
 	.gppOutEnValMid			= FPGA_88F78XX0_GPP_OUT_ENA_MID,
@@ -1283,10 +1267,6 @@ MV_BOARD_INFO rd78460gpInfo = {
 	.pLedGppPin			= NULL,
 	.ledsPolarity			= 0,
 
-	/* PMU Power */
-	.pmuPwrUpPolarity		= 0,
-	.pmuPwrUpDelay			= 80000,
-
 	/* GPP values */
 	.gppOutEnValLow			= RD_78460_GP_GPP_OUT_ENA_LOW,
 	.gppOutEnValMid			= RD_78460_GP_GPP_OUT_ENA_MID,
@@ -1397,10 +1377,6 @@ MV_BOARD_INFO rd78460customerInfo = {
 	.activeLedsNumber		= 0,
 	.pLedGppPin			= NULL,
 	.ledsPolarity			= 0,
-
-	/* PMU Power */
-	.pmuPwrUpPolarity		= 0,
-	.pmuPwrUpDelay			= 80000,
 
 	/* GPP values */
 	.gppOutEnValLow			= RD_78460_CUSTOMER_GPP_OUT_ENA_LOW,

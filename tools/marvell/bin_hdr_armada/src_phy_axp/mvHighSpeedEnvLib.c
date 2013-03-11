@@ -65,6 +65,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config_marvell.h"  	/* Required to identify SOC and Board */
 #if defined(MV88F78X60)
 #include "ddr3_axp.h"
+#include "ddr3_axp_config.h"
 #elif defined(MV88F6710)
 #include "ddr3_a370.h"
 #else
@@ -88,8 +89,6 @@ MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum);
 MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
 
 /***************************   defined ******************************/
-#define BOARD_INFO(boardId)	boardInfoTbl[boardId - BOARD_ID_BASE]
-
 #define MV_BOARD_TCLK_200MHZ	200000000
 #define MV_BOARD_TCLK_250MHZ	250000000
 #define MV_BOARD_PEX_MODULE_ADDR		0x23
@@ -104,8 +103,6 @@ MV_BOOL PexModule = 0;
 MV_BOOL SwitchModule = 0;
 
 /****************************  Local function *****************************************/
-MV_U16 mvCtrlModelGet(MV_VOID);
-/*********************************************************************/
 MV_U32 mvBoardIdGet(MV_VOID)
 {
 #if defined(DB_88F78X60)
@@ -159,19 +156,41 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 		return MV_BOARD_TCLK_250MHZ;
 }
 /*********************************************************************/
+extern MV_U8  rd78460gpInfoBoardTwsiDev[] ;
+extern MV_U8 db88f78XX0rev2InfoBoardTwsiDev[];
 MV_U8 mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum)
 {
         MV_TWSI_SLAVE twsiSlave;
         MV_TWSI_ADDR slave;
         MV_U8 data;
+		MV_U8  *pDev;
+		MV_U32 boardID = mvBoardIdGet();
 
         /* TWSI init */
         slave.type = ADDR7_BIT;
         slave.address = 0;
 		mvTwsiInit(0, CONFIG_SYS_I2C_SPEED, CONFIG_SYS_TCLK, &slave, 0);
+		switch (boardID) {
+		case DB_784MP_GP_ID:
+			pDev = rd78460gpInfoBoardTwsiDev;
+			
+			break;
+		case DB_88F78XX0_BP_ID:
+		case DB_88F78XX0_BP_REV2_ID:
+			pDev = db88f78XX0rev2InfoBoardTwsiDev;
+			break;
 
+		case DB_78X60_PCAC_ID:
+		case FPGA_88F78XX0_ID:
+		case DB_78X60_PCAC_REV2_ID:
+		case RD_78460_SERVER_REV2_ID:
+		default:
+			return 0;
+		}
+		
         /* Read MPP module ID */
-        twsiSlave.slaveAddr.address = 0x4D;
+
+        twsiSlave.slaveAddr.address = pDev[devNum];
         twsiSlave.slaveAddr.type = ADDR7_BIT;
         twsiSlave.validOffset = MV_TRUE;
         twsiSlave.offset = regNum;	        /* Use offset as command */ 
@@ -221,27 +240,61 @@ MV_BOOL mvBoardIsPexModuleConnected(void)
 {
         return PexModule;
 }
+/*******************************************************************************/
+MV_U16 mvBoardDramBusWidthGet(MV_VOID)
+{
+	MV_U8 sar;
+	MV_U8 devNum;
+	MV_U32 boardID = mvBoardIdGet();
+
+	switch (boardID) {
+	case DB_784MP_GP_ID:
+		devNum = 2;
+		break;
+	case DB_88F78XX0_BP_ID:
+	case DB_88F78XX0_BP_REV2_ID:
+		devNum = 3;
+		break;
+
+	case DB_78X60_PCAC_ID:
+	case FPGA_88F78XX0_ID:
+	case DB_78X60_PCAC_REV2_ID:
+	case RD_78460_SERVER_REV2_ID:
+	default:
+		return BUS_WIDTH;
+	}
+	sar = mvBoardTwsiSatRGet(devNum, 1);
+	return (sar & 0x1);
+}
+/*******************************************************************************/
+MV_U8 mvBoardCpuCoresNumGet(MV_VOID)
+{
+	MV_U32 socNum;
+
+	socNum = (MV_REG_READ(REG_SAMPLE_RESET_HIGH_ADDR) & SAR1_CPU_CORE_MASK) >> SAR1_CPU_CORE_OFFSET;
+	return (MV_U8)socNum;
+}
 /*********************************************************************/
+static MV_16 ctrl_mode1=-1;
+
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
-        MV_U32 devId;
-        MV_U16 model = 0;
-        MV_U32 reg, reg2;
-
-        /* if PEX0 clocks are disabled - enabled it to read */
-        reg = MV_REG_READ(POWER_MNG_CTRL_REG);
-        if ((reg & PMC_PEXSTOPCLOCK_MASK(0)) == PMC_PEXSTOPCLOCK_STOP(0)) {
-                reg2 = ((reg & ~PMC_PEXSTOPCLOCK_MASK(0)) | PMC_PEXSTOPCLOCK_EN(0));
-                MV_REG_WRITE(POWER_MNG_CTRL_REG, reg2);
-        }
-        devId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PEX_DEVICE_AND_VENDOR_ID));
-
-        /* Reset the original value of the PEX0 clock */
-        if ((reg & PMC_PEXSTOPCLOCK_MASK(0)) == PMC_PEXSTOPCLOCK_STOP(0))
-                MV_REG_WRITE(POWER_MNG_CTRL_REG, reg);
-
-        model = (MV_U16) ((devId >> 16) & 0xFFFF);
-        return model;
+        MV_U16 dramBusWidth;
+        MV_U8 cpunum = 0;
+		if (ctrl_mode1 == -1) {
+		cpunum= mvBoardCpuCoresNumGet();
+			if (3 == cpunum){
+				ctrl_mode1 = MV_78460_DEV_ID;
+			}
+			else {
+				dramBusWidth = mvBoardDramBusWidthGet();
+				if (1 == dramBusWidth)
+					ctrl_mode1 =  MV_78230_DEV_ID;
+				else
+					ctrl_mode1 = MV_78260_DEV_ID;
+			}
+		}
+		return ctrl_mode1;
 }
 /*********************************************************************/
 MV_U32 mvBoardSledCpuNumGet(MV_VOID)
@@ -339,7 +392,6 @@ MV_U32 mvCtrlSerdesMaxLinesGet(MV_VOID)
         case MV_78160_DEV_ID:
         case MV_78260_DEV_ID:
                 return 12;
-                break;
         case MV_78460_DEV_ID:
         case MV_78000_DEV_ID:
                 return 16;
@@ -347,9 +399,10 @@ MV_U32 mvCtrlSerdesMaxLinesGet(MV_VOID)
 		  return 4;
 
         default:
+  			break;
+	}
                 return 0;
 	}
-}
 /*******************************************************************************/
 MV_U32 mvCtrlPexMaxUnitGet(MV_VOID)
 {
@@ -416,28 +469,7 @@ MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
 *       8bit desscribing Marvell controller revision number
 *
 *******************************************************************************/
-#if DUAL_BIN_HEADER
-MV_U8 mvCtrlRevGet(MV_VOID)
-{
-	MV_U8 revNum;
-#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
-	/* Check pex power state */
-	MV_U32 pexPower;
-	pexPower = mvCtrlPwrClckGet(PEX_UNIT_ID, 0);
-	if (pexPower == MV_FALSE)
-		mvCtrlPwrClckSet(PEX_UNIT_ID, 0, MV_TRUE);
-#endif
-	revNum = (MV_U8) MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PCI_CLASS_CODE_AND_REVISION_ID));
-#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
-	/* Return to power off state */
-	if (pexPower == MV_FALSE)
-		mvCtrlPwrClckSet(PEX_UNIT_ID, 0, MV_FALSE);
-#endif
-	return ((revNum & PCCRIR_REVID_MASK) >> PCCRIR_REVID_OFFS);
-}
-#else
 MV_U8 mvCtrlRevGet(MV_VOID);
-#endif
 /*********************************************************************/
 MV_U32 get_serdesLineCfg(MV_U32 serdesLineNum,MV_BIN_SERDES_CFG *pSerdesInfo) 
 {
@@ -464,46 +496,49 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	MV_U8		freq;
 	MV_U8		device_rev;
 	MV_U32		rxHighImpedanceMode;
-	MV_U32 boardId = mvBoardIdGet();
-	maxSerdesLines = mvCtrlSerdesMaxLinesGet();
-
+	MV_U16 ctrlMode;
 	MV_TWSI_ADDR slave;
+	MV_U32 boardId = mvBoardIdGet();
 
 	/* TWSI init */
 	slave.type = ADDR7_BIT;
 	slave.address = 0;
 	mvTwsiInit(0, CONFIG_SYS_I2C_SPEED, CONFIG_SYS_TCLK, &slave, 0);
+	mvUartInit();
+
+
+	maxSerdesLines = mvCtrlSerdesMaxLinesGet();
 
 	if (maxSerdesLines == 0)
 		return MV_OK;
 
 
 	switch (boardId) {
-        case RD_78460_NAS_ID:
         case DB_78X60_AMC_ID:
         case DB_78X60_PCAC_REV2_ID:
         case RD_78460_CUSTOMER_ID:
 	case RD_78460_SERVER_ID:
 	case RD_78460_SERVER_REV2_ID:
-	case DB_78X60_PCAC_ID:
-	case FPGA_88F78XX0_ID:
+	case DB_78X60_PCAC_ID:	
 		satr11 = (0x1 << 1) | 1;
 		break;
+	case FPGA_88F78XX0_ID:
+	case RD_78460_NAS_ID:
+		satr11 = (0x0 << 1) | 1;
+		break;	
 	case DB_88F78XX0_BP_REV2_ID:
 	case DB_784MP_GP_ID:
 	case DB_88F78XX0_BP_ID:
 		satr11 = mvBoardTwsiSatRGet(1, 1);
+		if ((MV_8)MV_ERROR == (MV_8)satr11)
+			return MV_ERROR;
 		break;
 	}
-
-	if ((MV_8)MV_ERROR == (MV_8)satr11)
-		return MV_ERROR;
 
 	mvBoardModulesScan();
 	memset(regAddr, 0, sizeof(regAddr));
 	memset(regVal,  0, sizeof(regVal));
 
-	mvUartInit();
 
 	/* Check if DRAM is already initialized  */
 	if (MV_REG_READ(REG_BOOTROM_ROUTINE_ADDR) & (1 << REG_BOOTROM_ROUTINE_DRAM_INIT_OFFS)) {
@@ -1209,6 +1244,31 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 			   pexIf += 3;
 		}
 	}
+	/* Step 18: update pex DEVICE ID*/
+	{
+		MV_U32 devId;
+		MV_U32 pexIf;
+		MV_U32 pexIfNum = mvCtrlPexMaxIfGet();
+		ctrlMode = mvCtrlModelGet();
+		for (pexIf = 0; pexIf < pexIfNum; pexIf++) {
+			pexUnit    = (pexIf<9)? (pexIf >> 2) : 3;
+			if (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_DISABLED) {
+				if ((pexIf<8) && (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_MODE_X4))
+					pexIf += 3;
+				continue;
+			}
+			devId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_DEVICE_AND_VENDOR_ID));
+			devId &= 0xFFFF;
+			devId |= ((ctrlMode << 16) & 0xffff0000);
+			MV_REG_WRITE(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_DEVICE_AND_VENDOR_ID), devId);
+			if ((pexIf<8) && (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_MODE_X4))
+			   pexIf += 3;
+		}
+		DEBUG_INIT_S("Update PEX Device ID 0x");
+		DEBUG_INIT_D(ctrlMode,4); 
+		DEBUG_INIT_S("0\n");
+	}
+
 	DEBUG_INIT_S(ENDED_OK);
 	return MV_OK;
 }

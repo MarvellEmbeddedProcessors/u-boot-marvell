@@ -178,4 +178,6 @@ MV_BIN_SERDES_CFG* SerdesInfoTbl[] = {
 };
 
 
+MV_U8 rd78460gpInfoBoardTwsiDev[] = {0x4C,0x4D,0x4E};
+MV_U8 db88f78XX0rev2InfoBoardTwsiDev[] = {0x4C,0x4D,0x4E,0x4F};
 

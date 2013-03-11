@@ -90,10 +90,7 @@ MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
 /***************************   defined ******************************/
 #define mvBoardPexCapabilityGet(satr) 	(satr & 3)
 #define MV_PEX_UNIT_TO_IF(pexUnit)	(pexUnit)
-/******************   Static parametes ******************************/
 /****************************  Local function *****************************************/
-MV_U16 mvCtrlModelGet(MV_VOID);
-/*********************************************************************/
 MV_U32 mvBoardIdGet(MV_VOID)
 {
 #if defined(DB_88F6710)
@@ -223,24 +220,13 @@ MV_U32 mvBoardSerdesModulesScan(MV_U32 default_serdes)
 /*********************************************************************/
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
-        MV_U32 devId;
-        MV_U16 model = 0;
-        MV_U32 reg, reg2;
-
-        /* if PEX0 clocks are disabled - enabled it to read */
-        reg = MV_REG_READ(POWER_MNG_CTRL_REG);
-        if ((reg & PMC_PEXSTOPCLOCK_MASK(0)) == PMC_PEXSTOPCLOCK_STOP(0)) {
-                reg2 = ((reg & ~PMC_PEXSTOPCLOCK_MASK(0)) | PMC_PEXSTOPCLOCK_EN(0));
-                MV_REG_WRITE(POWER_MNG_CTRL_REG, reg2);
-        }
-        devId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PEX_DEVICE_AND_VENDOR_ID));
-
-        /* Reset the original value of the PEX0 clock */
-        if ((reg & PMC_PEXSTOPCLOCK_MASK(0)) == PMC_PEXSTOPCLOCK_STOP(0))
-                MV_REG_WRITE(POWER_MNG_CTRL_REG, reg);
-
-        model = (MV_U16) ((devId >> 16) & 0xFFFF);
-        return model;
+#if defined(MV88F6W11)
+	return MV_6W11_DEV_ID;
+#elif defined(MV88F6707)
+	return MV_6707_DEV_ID;
+#else /* defined(MV88F6710) */
+	return MV_6710_DEV_ID;
+#endif
 }
 /*******************************************************************************
 * mvCtrlSerdesMaxLinesGet - Get Marvell controller number of SERDES lines.
@@ -268,26 +254,28 @@ MV_U32 mvCtrlSerdesMaxLinesGet(MV_VOID)
         case MV_78160_DEV_ID:
         case MV_78260_DEV_ID:
                 return 12;
-                break;
         case MV_78460_DEV_ID:
         case MV_78000_DEV_ID:
                 return 16;
+	case MV_6W11_DEV_ID:
+	case MV_6707_DEV_ID:
 	  case MV_6710_DEV_ID:
 		  return 4;
-
         default:
+                break;
+	}
                 return 0;
 	}
-}
 /*******************************************************************************/
 MV_U32 mvCtrlPexMaxUnitGet(MV_VOID)
 {
       switch (mvCtrlModelGet()) {
-	  case MV_78130_DEV_ID:
-      case MV_6710_DEV_ID:
-	  case MV_6707_DEV_ID:
-      case MV_78230_DEV_ID:
-	  return 2;
+	case MV_78130_DEV_ID:
+	case MV_6W11_DEV_ID:
+	case MV_6707_DEV_ID:
+	case MV_6710_DEV_ID:
+	case MV_78230_DEV_ID:
+		return 2;
 
         case MV_78160_DEV_ID:
         case MV_78260_DEV_ID:
@@ -314,7 +302,9 @@ MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
 	case MV_78130_DEV_ID:
 	case MV_78230_DEV_ID:
 		return 7;
+	case MV_6W11_DEV_ID:
 	case MV_6710_DEV_ID:
+	case MV_6707_DEV_ID:
 		return MV_PEX_MAX_IF;
 
 	case MV_78160_DEV_ID:
@@ -369,6 +359,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	MV_U8   	sataPort;
 	MV_U32		rxHighImpedanceMode;
 	maxSerdesLines = mvCtrlSerdesMaxLinesGet();
+	MV_U16 ctrlMode = mvCtrlModelGet();
 
 	MV_TWSI_ADDR slave;
 
@@ -547,9 +538,6 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	tmp = MV_REG_READ(SOC_CTRL_REG);
 	DEBUG_RD_REG(SOC_CTRL_REG, tmp);
 	tmp &= 0x200;
-
-//	if ( ((MV_REG_READ(MPP_SAMPLE_AT_RESET(0)) & PEX_CLK_100MHZ_MASK) >> PEX_CLK_100MHZ_OFFSET) == 0x1) )))
-//	        tmp |= (PCIE0_CLK_OUT_EN_MASK | PCIE1_CLK_OUT_EN_MASK);
 
 	MV_REG_WRITE(SOC_CTRL_REG, tmp);
 	DEBUG_WR_REG(SOC_CTRL_REG, tmp);
@@ -955,6 +943,26 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 			if ((pexIf<8) && (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_MODE_X4))
 			   pexIf += 3;
 		}
+	}
+	/* Step 18: update pex DEVICE ID*/
+	{
+		MV_U32 devId;
+		MV_U32 pexIf;
+		MV_U32 pexIfNum = mvCtrlPexMaxIfGet();
+		for (pexIf = 0; pexIf < pexIfNum; pexIf++) {
+			pexUnit    = pexIf;
+			if (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_DISABLED) {
+				continue;
+			}
+			devId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_DEVICE_AND_VENDOR_ID));
+			devId &= 0xFFFF;
+			devId |= ((ctrlMode << 16) & 0xffff0000);
+			MV_REG_WRITE(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_DEVICE_AND_VENDOR_ID), devId);
+		}
+		DEBUG_INIT_S("Update PEX Device ID 0x");
+		DEBUG_INIT_D(ctrlMode,4);
+		DEBUG_INIT_S("0\n");
+
 	}
 	DEBUG_INIT_S(ENDED_OK);
 	return MV_OK;

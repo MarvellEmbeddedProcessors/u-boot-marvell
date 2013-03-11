@@ -192,66 +192,6 @@ MV_BOOL mvCtrlIsValidSatR(MV_VOID)
 	}
 	return MV_FALSE;
 }
-MV_STATUS mvCtrlUpdatePexId(MV_VOID)
-{
-	MV_U32 pmCtrl;
-#if defined(DB_88F78X60) || defined(RD_88F78460_SERVER) || defined (DB_88F78X60_REV2)|| defined(DB_784MP_GP) || defined(DB_78X60_AMC) 
-	MV_BIOS_MODE * pBbiosModes;
-	MV_U32 devVendId;
-	int i, j;
-	MV_U16 confId;
-	MV_U32 tmp;
-
-	if (mvCtrlRevGet() == 2)
-		pBbiosModes = bios_modes_b0;
-	else
-		pBbiosModes = bios_modes;
-	
-#endif
-	/* if PEX0 clock is disabled - enable it for reading the device ID */
-	pmCtrl = MV_REG_READ(POWER_MNG_CTRL_REG);
-	if ((pmCtrl & PMC_PEXSTOPCLOCK_MASK(0)) == PMC_PEXSTOPCLOCK_STOP(0)) {
-		MV_REG_WRITE(POWER_MNG_CTRL_REG,
-			(pmCtrl & ~PMC_PEXSTOPCLOCK_MASK(0)) | PMC_PEXSTOPCLOCK_EN(0));
-	}
-#if defined(DB_88F78X60) || defined (DB_88F78X60_REV2) || defined(DB_784MP_GP)
-
-	devVendId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PEX_DEVICE_AND_VENDOR_ID));
-
-	confId = mvBoardConfIdGet();
-	tmp = MV_REG_READ(SOC_CTRL_REG);
-	for (i = 0; i < BIOS_MODES_NUM; i++) {
-		if (pBbiosModes->confId == confId) {
-			devVendId &= 0x0000FFFF;
-			devVendId |= pBbiosModes->code << 16;
-			for (j=0;j<mvCtrlPexMaxIfGet();j++){
-				MV_REG_WRITE(MV_PEX_IF_REGS_OFFSET(j), devVendId);
-				if ((0 == j) & (0 == (tmp & PCIE0_QUADX1_EN)))
-					j+=3;
-				if ((4 == j) & (0 == (tmp & PCIE1_QUADX1_EN)))
-					j+=3;
-			}
-		}
-		pBbiosModes++;
-	}
-
-#elif defined(RD_88F78460_SERVER) || defined(DB_78X60_AMC)
-	devVendId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PEX_DEVICE_AND_VENDOR_ID));
-	devVendId &= 0x0000FFFF;
-	devVendId |= 0x7846 << 16;
-	MV_REG_WRITE(MV_PEX_IF_REGS_OFFSET(0), devVendId);
-//#elif defined(RD_78460_GP)
-//	devVendId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PEX_DEVICE_AND_VENDOR_ID));
-//	devVendId &= 0x0000FFFF;
-//	devVendId |= 0x7846 << 16;
-//	MV_REG_WRITE(MV_PEX_IF_REGS_OFFSET(0), devVendId);
-#endif
-	/* Reset the original value of PEX0 clock */
-	if ((pmCtrl & PMC_PEXSTOPCLOCK_MASK(0)) == PMC_PEXSTOPCLOCK_STOP(0))
-		MV_REG_WRITE(POWER_MNG_CTRL_REG, pmCtrl);
-
-	return MV_OK;
-}
 /*******************************************************************************
 * mvCtrlEnvInit - Initialize Marvell controller environment.
 *

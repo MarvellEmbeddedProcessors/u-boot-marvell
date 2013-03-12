@@ -85,6 +85,25 @@ static MV_STATUS pciDetectDevice(MV_U32 pciIf, MV_U32 bus, MV_U32 dev, MV_U32 fu
 
 static MV_U32 pciDetectDeviceBars(MV_U32 pciIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_PCI_DEVICE *pPciAgent);
 
+#ifdef MV_INCLUDE_PCI
+MV_BOOL mvBoardIsOurPciSlot(MV_U32 busNum, MV_U32 slotNum)
+{
+	MV_U32 localBusNum = mvPciLocalBusNumGet(PCI_DEFAULT_IF);
+
+	/* Our device number */
+	if (slotNum == mvPciLocalDevNumGet(PCI_DEFAULT_IF))
+		return MV_TRUE;
+
+	if (localBusNum != busNum) {
+		DB(mvOsPrintf("%s:: localBusNum %x != busNum %x.\n",
+			      __func__, localBusNum, busNum));
+		return MV_FALSE;
+	}
+
+	return MV_FALSE;
+}
+#endif
+
 /*******************************************************************************
 * mvPciScan - Scan a PCI interface bus
 *

@@ -261,8 +261,6 @@ int board_init(void)
 	MV_REG_BIT_RESET(0x20200, BIT8);
 #endif
 
-	mvBoardIdSet();
-
 	if (whoAmI() != 0)
 		return 0;
 
@@ -1050,8 +1048,10 @@ int board_mmc_init(bd_t *bis)
 int print_cpuinfo(void)
 {
 	char name[50];
+	MV_U32 boardId;
 
-	mvBoardIdSet();
+	boardId = mvBoardIdReadFromSatR();
+	mvBoardIdSet(boardId);
 
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	mvCtrlUpdatePexId();

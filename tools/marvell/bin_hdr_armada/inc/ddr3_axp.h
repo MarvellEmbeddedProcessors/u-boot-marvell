@@ -101,6 +101,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_MAX_DDR3_STATIC_SIZE					50
 #define MV_DDR3_MODES_NUMBER					30
 
+#define RESUME_RL_PATTERNS_ADDR                	(0xFE0000)
+#define RESUME_RL_PATTERNS_SIZE                 (0x100)
+#define RESUME_TRAINING_VALUES_ADDR            	(RESUME_RL_PATTERNS_ADDR + RESUME_RL_PATTERNS_SIZE)
+#define RESUME_TRAINING_VALUES_MAX             	(0xCD0)
+#define BOOT_INFO_ADDR 							(RESUME_RL_PATTERNS_ADDR + 0x1000)
+#define CHECKSUM_RESULT_ADDR                    (BOOT_INFO_ADDR + 0x1000)
+#define NUM_OF_REGISTER_ADDR 					(CHECKSUM_RESULT_ADDR + 4)
+#define SUSPEND_MAGIC_WORD 						(0xDEADB002)
+#define REGISTER_LIST_END 						(0xFFFFFFFF)
+
 /********************/
 /* Registers offset */
 /********************/

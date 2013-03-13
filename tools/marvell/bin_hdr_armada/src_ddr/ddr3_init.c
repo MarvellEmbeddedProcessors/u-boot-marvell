@@ -82,13 +82,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_a370_vars.h"
 #endif
 
+#if defined(DB_88F6710_PCAC)
+#include "mvBHboardEnvSpec.h"
+#endif
+
 #include "bootstrap_os.h"
 
 /* Static functions declerations */
 static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup);
 static MV_VOID	ddr3SaveAndSetTrainingWindows(MV_U32 *auWinBackup);
 
-#if defined(MV88F78X60_Z1) || defined (MV88F67XX)
+#if defined(MV88F78X60_Z1)
 static MV_VOID ddr3MRSCommand(MV_U32 uiMR1Value, MV_U32 uiMR2Value, MV_U32 uiCsNum, MV_U32 uiCsEna);
 #endif
 #ifdef STATIC_TRAINING
@@ -101,8 +105,8 @@ static MV_VOID ddr3StaticMCInit(void);
 static MV_U32 ddr3GetStaticDdrMode(void);
 #endif
 
-
-MV_VOID ddr3SetLogLevel(MV_U32 nLogLevel);
+extern MV_VOID ddr3SetPbs(MV_U32);
+extern MV_VOID ddr3SetLogLevel(MV_U32 nLogLevel);
 static MV_U32 gLogLevel = 0;
 
 /************************************************************************************
@@ -116,7 +120,17 @@ MV_VOID ddr3LogLevelInit(MV_VOID)
 {
     ddr3SetLogLevel(DDR3_LOG_LEVEL);
 }
-
+/************************************************************************************
+* Name:     ddr3PbsInit
+* Desc:     This routine initialize the PBS as defined in dd3_axp_config
+* Args:     None
+* Notes:
+* Returns:  None.
+*/
+MV_VOID ddr3PbsInit(MV_VOID)
+{
+    ddr3SetPbs(DDR3_PBS);
+}
 /************************************************************************************
 * Name:     setDdr3Log_Level
 * Desc:     This routine initialize the gLogLevel acording to nLogLevel which getting from user
@@ -194,6 +208,7 @@ MV_STATUS ddr3Init(void)
     unsigned int status;
 
     ddr3LogLevelInit();
+    ddr3SetPbs(DDR3_PBS);
 
     status = ddr3Init_();
     DEBUG_INIT_S("Status = ");
@@ -242,6 +257,7 @@ MV_U32 ddr3Init_(void)
     MV_STATUS status;
 
 	/* SoC/Board special Initializtions */
+
 	uiFabOpt = ddr3GetFabOpt();
 
 #ifdef SPD_SUPPORT
@@ -272,6 +288,10 @@ MV_U32 ddr3Init_(void)
 	/* set Pex terminations for Pex Compliance */
 	MV_REG_WRITE(SERDES_LINE_MUX_REG_0_7, 0x201);
 	MV_REG_WRITE(0x41b00, (((0x48 & 0x3fff) << 16) | 0x8080));
+
+    /*Set MPP0 and MPP1 to be UART mode*/
+    uiReg = (MV_REG_READ(MPP_CONTROL_REG(0)) & 0xFFFFFF00) | 0x11;
+    MV_REG_WRITE(MPP_CONTROL_REG(0), uiReg);
 #endif
 
 #ifdef MV88F67XX
@@ -282,12 +302,12 @@ MV_U32 ddr3Init_(void)
 #endif
 
 	mvUartInit();
+
 	ddr3PrintVersion();
-	DEBUG_INIT_S("0\n");
-    /* Lib version 3.5 */
+    DEBUG_INIT_S("0 \n");
+    /* Lib version 4.5 */
 
 	uiFabOpt = ddr3GetFabOpt();
-
 	if (bPLLWAPatch) {
 		DEBUG_INIT_C("DDR3 Training Sequence - Fabric DFS to: ", uiFabOpt, 1);
 	}
@@ -317,7 +337,7 @@ MV_U32 ddr3Init_(void)
 	
 	if(uiFabOpt > FAB_OPT)
 		uiFabOpt = FAB_OPT - 1;
-	
+
     if (ddr3GetLogLevel() > 0){
         putstring("\nDDR3 Training Sequence - Run DDR3 at ");
         switch (uiCpuFreq){
@@ -360,10 +380,10 @@ MV_U32 ddr3Init_(void)
         }
     }
 
-	uiTargetFreq = s_auiCpuDdrRatios[uiFabOpt][uiCpuFreq];
-	uiHClkTimePs = s_auiCpuFabClkToHClk[uiFabOpt][uiCpuFreq];
-	if ((uiTargetFreq == 0) || (uiHClkTimePs == 0)) {
-		DEBUG_INIT_S("DDR3 Training Sequence - FAILED - Wrong Sample at Reset Configurations \n"); 
+    uiTargetFreq = s_auiCpuDdrRatios[uiFabOpt][uiCpuFreq];
+    uiHClkTimePs = s_auiCpuFabClkToHClk[uiFabOpt][uiCpuFreq];
+    if ((uiTargetFreq == 0) || (uiHClkTimePs == 0)) {
+        DEBUG_INIT_S("DDR3 Training Sequence - FAILED - Wrong Sample at Reset Configurations \n");
         return MV_DDR3_TRAINING_ERR_BAD_SAR;
     }
 
@@ -433,7 +453,6 @@ MV_U32 ddr3Init_(void)
 #if defined(MV88F78X60)
     /* RL WA for B0 */
     if (mvCtrlRevGet() == MV_78XX0_B0_REV) {
-
         uiReg = MV_REG_READ(REG_TRAINING_DEBUG_3_ADDR);
         uiReg &= ~(REG_TRAINING_DEBUG_3_MASK);
         uiReg |= 0x4;                                       /* Phase 0 */
@@ -517,7 +536,7 @@ MV_U32 ddr3Init_(void)
 		uiReg = ((MV_REG_READ(REG_SDRAM_INIT_CTRL_ADDR)) & (1<<REG_SDRAM_INIT_CTRL_OFFS));
 	} while (uiReg);				/* Wait for '0' */
 
-#if defined(MV88F78X60_Z1)// || defined (MV88F67XX)
+#if defined(MV88F78X60_Z1)
 	/* MRS Command - required for AXP Z1 devices and A370 - only one set of MR registers */
 	ddr3MRSCommand(0, 0, ddr3GetCSNumFromReg(), ddr3GetCSEnaFromReg());
 #endif
@@ -592,7 +611,6 @@ MV_U32 ddr3GetCpuFreq(void)
 #elif defined(MV88F67XX)
 	uiCpuFreq = ((uiReg & REG_SAMPLE_RESET_CPU_FREQ_MASK) >> REG_SAMPLE_RESET_CPU_FREQ_OFFS);
 #endif
-
 	return uiCpuFreq;
 }
 
@@ -643,7 +661,7 @@ MV_U32 ddr3GetVCOFreq(void)
 
 	return uiVCOFreq;
 }
-#if defined(MV88F78X60_Z1) || defined (MV88F67XX)
+#if defined(MV88F78X60_Z1)
 /************************************************************************************
 * Name:		ddr3MRSCommand - Set MR register values to DRAM devices
 * Desc:
@@ -683,11 +701,11 @@ MV_VOID ddr3MRSCommand(MV_U32 uiMR1Value, MV_U32 uiMR2Value, MV_U32 uiCsNum, MV_
 
 			uiReg |= auiODTDynamic[uiCsEna][uiCs];
 
-			MV_REG_WRITE(REG_DDR3_MR2_ADDR, uiReg);  		/* 0x15D0 - DDR3 MR0 Register */
-			/* Issue MRS Command to current uiCs */
-			uiReg = (REG_SDRAM_OPERATION_CMD_MR2 & ~(1 << (REG_SDRAM_OPERATION_CS_OFFS + uiCs)));
-			/* [3-0] = 0x4 - MR2 Command, [11-8] - enable current uiCs */
-			MV_REG_WRITE(REG_SDRAM_OPERATION_ADDR, uiReg);  	/* 0x1418 - SDRAM Operation Register */
+            MV_REG_WRITE(REG_DDR3_MR2_ADDR, uiReg);         /* 0x15D0 - DDR3 MR0 Register */
+            /* Issue MRS Command to current uiCs */
+            uiReg = (REG_SDRAM_OPERATION_CMD_MR2 & ~(1 << (REG_SDRAM_OPERATION_CS_OFFS + uiCs)));
+            /* [3-0] = 0x4 - MR2 Command, [11-8] - enable current uiCs */
+            MV_REG_WRITE(REG_SDRAM_OPERATION_ADDR, uiReg);      /* 0x1418 - SDRAM Operation Register */
 
 			uDelay(MRS_DELAY);
 		}

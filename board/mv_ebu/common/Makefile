@@ -44,7 +44,6 @@ ETH_OBJS =  $(HAL_IF_DIR)/mvSysNeta.o 			\
 	    $(USP_DIR)/mv_egiga_neta.o
 endif
 
-
 HAL_OBJS =      $(HAL_CNTMR_DIR)/mvCntmr.o 		\
 		$(HAL_DRAM_DIR)/mvDramIf.o 		\
 		$(HAL_ETHPHY_DIR)/mvEthPhy.o 		\
@@ -105,10 +104,13 @@ USP_OBJS +=		$(USP_DIR)/mv_rtc.o		\
 			$(USP_DIR)/mv_ide.o		\
 			$(USP_DIR)/mv_phy.o		\
 			$(USP_DIR)/cmd_pcie.o		\
-			$(USP_DIR)/mv_pex.o 		\
-			$(USP_DIR)/mv_main.o		
+			$(USP_DIR)/mv_pex.o
 else
 USP_OBJS +=		$(USP_DIR)/mv_pci.o
+endif
+
+ifneq ($(BOARD),alp)
+USP_OBJS +=		$(USP_DIR)/mv_main.o
 endif
 
 SOBJS = $(USP_DIR)/platform.o

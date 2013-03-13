@@ -87,6 +87,7 @@ if($opt_c eq 1)
 		   ($opt_b eq "armada_370_db") or
 		   ($opt_b eq "armada_370_rd") or
    		   ($opt_b eq "avanta_lp_fpga") or		   		   
+		   ($opt_b eq "avanta_lp") or
            ($opt_b eq "armada_xp_rdcustomer") )
 	{
 		$board = $opt_b;

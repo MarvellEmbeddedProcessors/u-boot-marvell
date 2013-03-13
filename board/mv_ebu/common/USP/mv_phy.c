@@ -69,6 +69,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(MV_ETH_NETA)
 #include "neta/gbe/mvEthRegs.h"
 #include "neta/gbe/mvNeta.h"
+#elif defined (MV_ETH_PP2)
+#include "pp2/gmac/mvEthGmacRegs.h"
 #else
 #include "eth/gbe/mvEthRegs.h"
 #endif
@@ -81,7 +83,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***********************************************************/
 void mvBoardEgigaPhyInit(void)
 {
-	int	i;
+	int i;
 
 	mvSysEthPhyInit();
 #ifdef MV88F67XX
@@ -102,7 +104,11 @@ void mvBoardEgigaPhyInit(void)
 	{
 		for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
 			/* writing the PHY address before PHY init */
+#ifdef MV_ETH_PP2
+			mvEthPhyAddrSet(i, mvBoardPhyAddrGet(i));
+#else
 			mvNetaPhyAddrSet(i, mvBoardPhyAddrGet(i));
+#endif
 			mvEthPhyInit(i, MV_FALSE);
 		}
 	}

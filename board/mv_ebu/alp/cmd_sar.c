@@ -91,7 +91,7 @@ static int do_sar_read(int argc, char *const argv[])
 		dump_all=MV_TRUE;
 	cmd = argv[0];
 
-	if ((strcmp(cmd, "cpufreq") == 0) && (MV_ERROR != mvBoardFreqModeGet(&freqMode)))
+	if ((strcmp(cmd, "cpufreq") == 0) && (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode)))
 	{
 		printf("\n\n val | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
 			printf(" %d | %s | %s | %s | \n", 
@@ -146,7 +146,7 @@ static int do_sar_read(int argc, char *const argv[])
 	else if (dump_all==MV_TRUE)
 	{
 		printf ("\t S@R configuration:\n\t  --------------------\n");
-		if  (MV_ERROR != mvBoardFreqModeGet(&freqMode))
+		if  (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode))
 		{
 			printf("\n\n val | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
 			printf(" %d | %s | %s | %s | \n", 

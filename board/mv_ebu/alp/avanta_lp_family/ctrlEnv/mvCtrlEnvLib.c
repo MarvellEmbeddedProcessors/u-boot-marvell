@@ -287,6 +287,33 @@ MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 }
 
 /*******************************************************************************
+* mvCtrlCpuDdrL2FreqGet - Get the selected S@R Frequency mode
+*
+* DESCRIPTION:
+*   read board BOOT configuration and return the selcted S@R Frequency mode
+*
+* INPUT:  freqMode - MV_FREQ_MODE struct to return the freq mode
+*
+* OUTPUT: None,
+*
+* RETURN:
+*       MV_STATUS to indicate a successful read.
+*
+*******************************************************************************/
+MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
+{
+	MV_FREQ_MODE freqTable[] = MV_SAR_FREQ_MODES;
+	MV_U32 freqModeSatRValue = mvCtrlSatRRead(MV_SATR_CPU_FREQ);
+	if (MV_ERROR !=freqModeSatRValue )
+	{
+		*freqMode = freqTable[freqModeSatRValue];
+		return MV_OK;
+	}
+	else
+		return MV_ERROR;
+}
+
+/*******************************************************************************
 * mvCtrlBoardConfigGet
 *
 * DESCRIPTION: Read Board configuration Field
@@ -330,7 +357,7 @@ void mvCtrlSatrInit(void)
 	int i = 0;
 
 	/* initialize all S@R & Board configuration fields to -1 (MV_ERROR) */
-	memset(&satrOptionsConfig, MV_ERROR, (sizeof(MV_U32)*MV_SATR_READ_MAX_OPTION) );
+	memset(&satrOptionsConfig, 0xff, (sizeof(MV_U32)*MV_SATR_READ_MAX_OPTION) );
 
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++)
 		boardOptionsConfig[i] = MV_ERROR;
@@ -365,6 +392,27 @@ void mvCtrlSatrInit(void)
 		if ( MV_OK == mvBoardConfigTypeGet(i, &cInfo))
 			boardOptionsConfig[cInfo.configid] = ((tempVal[cInfo.regNum] & (cInfo.mask)) >> cInfo.offset);
 
+}
+/*******************************************************************************
+* mvCtrlDevFamilyIdGet - Get Device ID
+*
+* DESCRIPTION:
+*       This function returns Device ID.
+*
+* INPUT:
+*       ctrlModel.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit board Device ID number, '-1' if Device ID is undefined.
+*
+*******************************************************************************/
+MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel)
+{
+	/* omriii - check if needed to distinguish between controllers here */
+	return MV_88F66X0;
 }
 
 /*******************************************************************************
@@ -765,27 +813,19 @@ MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID)
 *******************************************************************************/
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
-	MV_U32 devId, reg, reg2;
-	CTRL_ENV_INFO *ci = &ctrlEnvInfo;
-
-	if (ci->ctrlModel != MV_INVALID_DEV_ID)
-		return ci->ctrlModel;
-
-	/* If PEX0 clock is disabled - enable it to read */
-	reg = MV_REG_READ(POWER_MNG_CTRL_REG);
-	if ((reg & PMC_PEXSTOPCLOCK_MASK(0)) == PMC_PEXSTOPCLOCK_STOP(0)) {
-		reg2 = ((reg & ~PMC_PEXSTOPCLOCK_MASK(0)) | PMC_PEXSTOPCLOCK_EN(0));
-		MV_REG_WRITE(POWER_MNG_CTRL_REG, reg2);
+/* omriii - replace with a correct read of CTRL ID register, instead of deriving the SOC from the boardID */
+	switch (mvBoardIdGet()) {
+	case DB_6660_ID:
+	case RD_6660_ID:
+		return MV_6660_DEV_ID;
+		break;
+	case DB_6650_ID:
+	case RD_6650_ID:
+		return MV_6650_DEV_ID;
+		break;
+	default:
+		return (MV_U16)MV_ERROR;
 	}
-
-	devId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PEX_DEVICE_AND_VENDOR_ID));
-
-	/* Set PEX0 clock to original state */
-	if ((reg & PMC_PEXSTOPCLOCK_MASK(0)) == PMC_PEXSTOPCLOCK_STOP(0))
-		MV_REG_WRITE(POWER_MNG_CTRL_REG, reg);
-
-	ci->ctrlModel = (MV_U16)((devId >> 16) & 0xFFFF);
-	return ci->ctrlModel;
 }
 
 /*******************************************************************************

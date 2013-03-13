@@ -791,12 +791,13 @@ void mvPp2TxpReset(int port, int txp)
 		mvPp2WrReg(MV_PP2_TXQ_INDEX_REG, 0);
 	}
 }
-/*-------------------------------------------------------------------------------*/
-/* Port */
-/* Allocate and initialize port structure
-   Alocate an initialize TXQs for this port
-   Associate <numRxqs> RXQs for Port number <port>, starting from RXQ number <firstRxq>
-   Note: mvPp2PortCtrl must be initialized, i.e. must call mvPp2HalInit before this function */
+
+/*
+ * Allocate and initialize port structure.
+ * Allocate an initialize TXQs for this port.
+ * Associate <numRxqs> RXQs for Port number <port>, starting from RXQ number <firstRxq>.
+ * Note: mvPp2PortCtrl must be initialized, i.e. must call mvPp2HalInit before this function.
+ */
 void *mvPp2PortInit(int port, int firstRxq, int numRxqs, void *osHandle)
 {
 	MV_STATUS status;

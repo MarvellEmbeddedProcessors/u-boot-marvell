@@ -210,7 +210,7 @@ static INLINE int mvPp2LogicRxqToPhysRxq(int port, int rxq)
 #define MV_PPV2_PORT_PHYS(port)			((MV_PON_PORT(port)) ? MV_PON_PHYS_PORT_GET() : (port))
 #define MV_PPV2_TXP_PHYS(port, txp)		((MV_PON_PORT(port)) ? txp : (MV_ETH_MAX_TCONT + port))
 #define MV_PPV2_TXQ_PHYS(port, txp, txq)	((MV_PON_PORT(port)) ? txp * MV_ETH_MAX_TXQ + txq :\
-											MV_PP2_TOTAL_PON_TXQ_NUM + port * MV_ETH_MAX_TXQ + txq)
+							MV_PP2_TOTAL_PON_TXQ_NUM + port * MV_ETH_MAX_TXQ + txq)
 
 #define MV_PPV2_TXQ_LOGICAL_PORT(physTxq)	((physTxq < MV_PP2_TOTAL_PON_TXQ_NUM) ? MV_PON_LOGIC_PORT_ID_GET() :\
 							(physTxq - MV_PP2_TOTAL_PON_TXQ_NUM) / MV_ETH_MAX_TXQ)

@@ -681,24 +681,6 @@ MV_32 mvBoardUSBVbusEnGpioPinGet(MV_32 devId)
 	return mvBoarGpioPinNumGet(BOARD_GPP_USB_VBUS_EN, devId);
 }
 
-#ifdef CONFIG_MACH_AVANTA_LP_FPGA
-MV_BOOL mvBoardIsOurPciSlot(MV_U32 busNum, MV_U32 slotNum)
-{
-	MV_U32 localBusNum = mvPciLocalBusNumGet(PCI_DEFAULT_IF);
-
-	/* Our device number */
-	if (slotNum == mvPciLocalDevNumGet(PCI_DEFAULT_IF))
-		return MV_TRUE;
-
-	if (localBusNum != busNum) {
-		DB(mvOsPrintf("%s:: localBusNum %x != busNum %x.\n",
-			      __func__, localBusNum, busNum));
-		return MV_FALSE;
-	}
-
-	return MV_FALSE;
-}
-#endif
 /*******************************************************************************
 * mvBoardGpioIntMaskGet - Get GPIO mask for interrupt pins
 *
@@ -1651,12 +1633,16 @@ MV_32 mvBoardNandWidthGet(void)
 MV_U32 mvBoardIdReadFromSatR(void)
 {
 	MV_U32 boardId;
+	MV_BOARD_SAR_INFO sInfo;
+	MV_U8 tempVal;
 
 #ifdef CONFIG_MACH_AVANTA_LP_FPGA
 	boardId = MV_BOARD_ID_AVANTA_LP_FPGA;
 #else
-	boardId = MV_REG_READ(MPP_SAMPLE_AT_RESET(1);
-	boardId &= (boardId & SAR1_BOARD_ID_MASK) >> SAR1_BOARD_ID_OFFSET;
+	if ( MV_OK == mvBoardSarInfoGet(MV_SATR_BOARD_ID, &sInfo)) {
+		tempVal = MV_REG_READ(MPP_SAMPLE_AT_RESET(sInfo.regNum));
+		boardId = ((tempVal & (sInfo.mask)) >> sInfo.offset);
+	}
 #endif
 
 	if (boardId >= MV_MAX_BOARD_ID) {

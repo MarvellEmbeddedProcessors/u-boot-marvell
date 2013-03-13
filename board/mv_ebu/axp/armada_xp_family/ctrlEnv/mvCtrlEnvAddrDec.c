@@ -205,7 +205,7 @@ MV_STATUS mvCtrlAddrWinMapBuild(MV_UNIT_WIN_INFO *pAddrWinMap, MV_U32 len)
 	MV_TARGET_ATTRIB targetAttrib;
 	MV_STATUS status;
 	MV_U64 startAddr, endAddr;
-	MV_UNIT_WIN_INFO ioDdrWin[4];
+	MV_UNIT_WIN_INFO ioDdrWin[MV_DRAM_MAX_CS];
 	MV_U32 base;
 	MV_U64 size;
 
@@ -286,9 +286,13 @@ MV_STATUS mvCtrlAddrWinMapBuild(MV_UNIT_WIN_INFO *pAddrWinMap, MV_U32 len)
 			base += ioDdrWin[j].addrWin.size;
 			j++;
 		}
+		/* Support only up to 4 DRAM address decode windows in the
+		** units. */
+		if (j == MV_DRAM_MAX_CS)
+			break;
 	}
-	
-	for (; j < 4; j++)
+
+	for (; j < MV_DRAM_MAX_CS; j++)
 		ioDdrWin[j].enable = MV_FALSE;
 
 	/* Fill in the pAddrWinMap fields       */

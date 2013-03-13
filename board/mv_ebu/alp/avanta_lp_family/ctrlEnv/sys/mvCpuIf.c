@@ -295,7 +295,7 @@ MV_STATUS mvCpuIfInit(MV_CPU_DEC_WIN *cpuAddrWinMap)
 *******************************************************************************/
 MV_STATUS mvCpuIfDramInit()
 {
-#if !defined(CONFIG_MACH_GENERAL_FPGA)
+#if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	MV_U64 base = 0;
 	MV_U32 size, cs, temp;
 

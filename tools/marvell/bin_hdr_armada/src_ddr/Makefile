@@ -64,7 +64,7 @@
 #.SECONDARY:
 
 include ../base.mk
-sinclude ../../../include/autoconf.mk
+sinclude ../../../../include/autoconf.mk
 
 ifeq "$(MAKECMDGOALS)" "rtl"
   MVFLAGS += MV_RTL_PLATFORM=1 MV_NO_PRINT=1
@@ -94,45 +94,45 @@ endif
 ifeq "$(CONFIG_RD_78460_CUSTOMER)"  "y"
   CFLAGS += -DCONFIG_RD_78460_CUSTOMER
 endif
- 
+
 ifeq "$(CONFIG_DB_88F6710_BP)"  "y"
   CFLAGS += -DCONFIG_DB_88F6710_BP
 endif
 ifeq "$(CONFIG_RD_88F6710)"  "y"
   CFLAGS += -DCONFIG_RD_88F6710
 endif
- 
+
 INCLUDE     = -I./  -I../inc/ -I../../../../include
- 
+
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
- 
+
 HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
- 
+
 TGT = ddr_$(BOARD).a
 TGT_UART = ddr_$(BOARD).uart.a
- 
+
 CSRC = ddr3_init.c bin_sramcfg.c ddr3_spd.c
- 
+
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
- 
+
 all:   $(TGT) $(TGT_UART)
- 
+
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
- 
+
 %.uart.o: %.c
 	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) -c -o  $@ $<
- 
+
 $(TGT): $(COBJ)
 	ar rcs $(TGT)  $(COBJ)
 	$(CP) ./$@ ../
- 
+
 $(TGT_UART): $(CUART_OBJ)
 	ar rcs $(TGT_UART)  $(CUART_OBJ)
 	$(CP) ./$@ ../
- 
+
 clean:
 	$(RM) ./*.o  ./*.a
- 
+

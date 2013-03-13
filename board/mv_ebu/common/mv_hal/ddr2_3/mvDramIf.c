@@ -137,6 +137,7 @@ MV_U32 mvDramIfSizeGet(MV_VOID)
 }
 MV_U32 mvDramIfHwSizeGet(MV_VOID)
 {
+#if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	MV_U32 base = 0;
 	MV_U32 size, cs, totalSize = 0, sizeRegVal;
 
@@ -158,6 +159,9 @@ MV_U32 mvDramIfHwSizeGet(MV_VOID)
 	totalSize = (sizeRegVal + 1) * SDRAMWCR_SIZE_ALLIGNMENT;    	     /* size = alined size (num of 16mb chunks * 16mb) */
 	/* Dram size alignment fix*/
 	return totalSize;
+#else
+	return CONFIG_SYS_FPGA_DRAM_SIZE;
+#endif
 }
 MV_U32 mvDramIfHwCsSizeGet(MV_U32 cs)
 {

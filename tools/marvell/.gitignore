@@ -1,3 +1,12 @@
+*.o
+*.elf
+*.dis
+*.scr
+*.raw
+*.srec
+*.bin
+*.depend
+*libpolarssl.a
 /bmp_logo
 /envcrc
 /gen_eth_addr

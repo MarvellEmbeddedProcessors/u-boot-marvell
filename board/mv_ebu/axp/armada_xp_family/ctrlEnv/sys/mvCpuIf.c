@@ -156,7 +156,8 @@ MV_STATUS mvCpuIfInitForCpu(MV_U32 cpu, MV_CPU_DEC_WIN *cpuAddrWinMap)
 
 	/* Set IO Bypass base address and size according to the cpuAddrWinMap */
 	for (target = 0; cpuAddrWinMap[target].enable != TBL_TERM; target++) {
-		if ((MV_TARGET_IS_DRAM(target)) || (DIS == cpuAddrWinMap[target].enable))
+		if ((MV_TARGET_IS_DRAM(target)) || (DIS == cpuAddrWinMap[target].enable) ||
+		    (target == INTER_REGS))
 			continue;
 		if (cpuAddrWinMap[target].addrWin.baseLow == 0)
 			continue;

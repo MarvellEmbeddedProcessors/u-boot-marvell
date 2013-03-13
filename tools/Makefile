@@ -119,10 +119,6 @@ clean:
 		done
 	endif
 
-	TOOLSUBDIRS += doimage_armada_$(BOARD)
-	TOOLSUBDIRS += bin_hdr_armada_$(BOARD)
-
-
 # Don't build by default
 #ifeq ($(ARCH),ppc)
 #BIN_FILES-y += mpc86x_clk$(SFX)
@@ -279,8 +275,6 @@ else
 	    $(MAKE) \
 		HOSTOS=$(HOSTOS) \
 		HOSTARCH=$(HOSTARCH) \
-		HOSTCFLAGS="$(HOSTCFLAGS)" \
-		HOST_LDFLAGS="$(HOST_LDFLAGS)" \
 		HOSTCFLAGS="$(HOSTCFLAGS)" \
 		HOST_LDFLAGS="$(HOST_LDFLAGS)" \
 		-s -C $$dir || exit 1 ; \

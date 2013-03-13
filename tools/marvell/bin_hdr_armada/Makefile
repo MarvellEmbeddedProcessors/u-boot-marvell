@@ -64,7 +64,7 @@
 #.SECONDARY:
 
 include ./base.mk
-sinclude ../../include/autoconf.mk
+sinclude ../../../include/autoconf.mk
 
 ifeq "$(MAKECMDGOALS)" "rtl"
   MVFLAGS += MV_RTL_PLATFORM=1 MV_NO_PRINT=1
@@ -137,7 +137,7 @@ TLIB = ./src_ddr/ddr3_training_$(BOARD).lib
 
 COMPONENT_SUBDIRS = src_util src_phy_$(BOARD) src_ddr src_suspendWUP
 HDR_COMPONENTS = $(LIB_PHY) $(LIB_DDR) $(TLIB) $(LIB_SWUP)
-HDR_COMPONENTS_UART = $(LIB_PHY_UART) $(LIB_DDR_UART) $(TLIB) $(LIB_SWUP)
+HDR_COMPONENTS_UART = $(LIB_PHY_UART) $(LIB_DDR_UART) $(TLIB) $(LIB_SWUP_UART)
 
 #how to add new component to binary header:
 #EXAMPLE_COMPONENT=no
@@ -147,7 +147,7 @@ HDR_COMPONENTS_UART = $(LIB_PHY_UART) $(LIB_DDR_UART) $(TLIB) $(LIB_SWUP)
 #HDR_COMPONENTS_UART += component_example.uart.a
 #CFLAGS += -DCONFIG_EXAMPLE_COMPONENT
 #endif
- 
+
 all:   subdirs $(TGT).bin $(TGT).uart.bin  $(TGT).dis $(TGT).uart.dis $(TGT).srec $(TGT).uart.srec
 
 %.o: %.c

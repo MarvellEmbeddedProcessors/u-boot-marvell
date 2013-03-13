@@ -348,7 +348,7 @@ MV_BOARD_SPEC_INIT *mvBoardSpecInitGet(MV_VOID)
 *******************************************************************************/
 MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum)
 {
-#if !defined(CONFIG_MACH_GENERAL_FPGA)
+#if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	return board->pBoardMacInfo[ethPortNum].boardEthSmiAddr0;
 #else
 	return 0;
@@ -458,7 +458,7 @@ MV_BOOL mvBoardIsPortLb(MV_U32 ethPortNum)
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
 	MV_FREQ_MODE freqMode;
-#ifdef CONFIG_MACH_GENERAL_FPGA
+#ifdef CONFIG_MACH_AVANTA_LP_FPGA
 	/* FPGA is limited to 25Mhz */
 	return MV_FPGA_CORE_CLK;
 #else
@@ -494,7 +494,7 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 MV_U32 mvBoardSysClkGet(MV_VOID)
 {
 	MV_FREQ_MODE freqMode;
-#ifdef CONFIG_MACH_GENERAL_FPGA
+#ifdef CONFIG_MACH_AVANTA_LP_FPGA
 	/* FPGA is limited to 25Mhz */
 	return MV_FPGA_SYS_CLK;
 #else

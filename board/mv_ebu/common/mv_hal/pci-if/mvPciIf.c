@@ -91,6 +91,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *	MV_OK if function success otherwise MV_ERROR or MV_BAD_PARAM
 *
 *******************************************************************************/
+#if !defined (MV88F66XX)
 MV_STATUS mvPciIfInit(MV_U32 pciIf, PCI_IF_MODE pciIfmode)
 {
 	MV_PEX_TYPE pexType;
@@ -105,6 +106,7 @@ MV_STATUS mvPciIfInit(MV_U32 pciIf, PCI_IF_MODE pciIfmode)
 	}
 	return mvSysPexInit(pciIf, pexType);
 }
+#endif
 
 /* PCI configuration space read write */
 /*******************************************************************************
@@ -133,7 +135,11 @@ MV_STATUS mvPciIfInit(MV_U32 pciIf, PCI_IF_MODE pciIfmode)
 *******************************************************************************/
 MV_U32 mvPciIfConfigRead(MV_U32 pciIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff)
 {
+#if defined (MV_INCLUDE_PEX)
 	return mvPexConfigRead(pciIf, bus, dev, func, regOff);
+#else
+	return mvPciConfigRead(pciIf, bus, dev, func, regOff);
+#endif
 }
 
 /*******************************************************************************
@@ -163,7 +169,11 @@ MV_U32 mvPciIfConfigRead(MV_U32 pciIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U
 *******************************************************************************/
 MV_STATUS mvPciIfConfigWrite(MV_U32 pciIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff, MV_U32 data)
 {
+#if defined (MV_INCLUDE_PEX)
 	return mvPexConfigWrite(pciIf, bus, dev, func, regOff, data);
+#else
+	return mvPciConfigWrite(pciIf, bus, dev, func, regOff, data);
+#endif
 }
 
 /*******************************************************************************
@@ -188,7 +198,11 @@ MV_STATUS mvPciIfConfigWrite(MV_U32 pciIf, MV_U32 bus, MV_U32 dev, MV_U32 func, 
 *******************************************************************************/
 MV_STATUS mvPciIfMasterEnable(MV_U32 pciIf, MV_BOOL enable)
 {
+#if defined (MV_INCLUDE_PEX)
 	return mvPexMasterEnable(pciIf, enable);
+#else
+	return mvPciMasterEnable(pciIf, enable);
+#endif
 }
 
 /*******************************************************************************
@@ -214,7 +228,11 @@ MV_STATUS mvPciIfMasterEnable(MV_U32 pciIf, MV_BOOL enable)
 *******************************************************************************/
 MV_STATUS mvPciIfSlaveEnable(MV_U32 pciIf, MV_U32 bus, MV_U32 dev, MV_BOOL enable)
 {
+#if defined (MV_INCLUDE_PEX)
 	return mvPexSlaveEnable(pciIf, bus, dev, enable);
+#else
+	return mvPciSlaveEnable(pciIf, bus, dev, enable);
+#endif
 }
 
 /*******************************************************************************
@@ -238,7 +256,11 @@ MV_STATUS mvPciIfSlaveEnable(MV_U32 pciIf, MV_U32 bus, MV_U32 dev, MV_BOOL enabl
 *******************************************************************************/
 MV_STATUS mvPciIfLocalBusNumSet(MV_U32 pciIf, MV_U32 busNum)
 {
+#if defined (MV_INCLUDE_PEX)
 	return mvPexLocalBusNumSet(pciIf, busNum);
+#else
+	return mvPciLocalBusNumSet(pciIf, busNum);
+#endif
 }
 
 /*******************************************************************************
@@ -259,7 +281,11 @@ MV_STATUS mvPciIfLocalBusNumSet(MV_U32 pciIf, MV_U32 busNum)
 *******************************************************************************/
 MV_U32 mvPciIfLocalBusNumGet(MV_U32 pciIf)
 {
+#if defined (MV_INCLUDE_PEX)
 	return mvPexLocalBusNumGet(pciIf);
+#else
+	return mvPciLocalBusNumGet(pciIf);
+#endif
 }
 
 /*******************************************************************************
@@ -283,7 +309,11 @@ MV_U32 mvPciIfLocalBusNumGet(MV_U32 pciIf)
 *******************************************************************************/
 MV_STATUS mvPciIfLocalDevNumSet(MV_U32 pciIf, MV_U32 devNum)
 {
+#if defined(MV_INCLUDE_PEX)
 	return mvPexLocalDevNumSet(pciIf, devNum);
+#else
+	return mvPciLocalDevNumSet(pciIf, devNum);
+#endif
 }
 
 /*******************************************************************************
@@ -304,7 +334,11 @@ MV_STATUS mvPciIfLocalDevNumSet(MV_U32 pciIf, MV_U32 devNum)
 *******************************************************************************/
 MV_U32 mvPciIfLocalDevNumGet(MV_U32 pciIf)
 {
+#if defined (MV_INCLUDE_PEX)
 	return mvPexLocalDevNumGet(pciIf);
+#else
+	return mvPciLocalDevNumGet(pciIf);
+#endif
 }
 
 /*******************************************************************************

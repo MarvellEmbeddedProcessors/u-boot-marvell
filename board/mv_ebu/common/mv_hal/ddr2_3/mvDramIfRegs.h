@@ -93,6 +93,11 @@ extern "C" {
 #define SDRAM_MAX_CS					4
 #define SRAM_WIN_CTRL_DEFAULT_VAL		0x100
 
+/* DDR SDRAM Initialization Control Register (DSICR) */
+#define DDR_SDRAM_INIT_CTRL_REG	    (MV_DDR_REGS_BASE + 0x1480)
+#define DSICR_INIT_EN		    	(1 << 0)
+#define DSICR_T200_SET		    	(1 << 8)
+
 /* sdram extended mode2 register (SEM2R) */
 #define SDRAM_PHY_REGISTER_FILE_ACCESS		(MV_DDR_CTRL_REGS_BASE + 0x16A0)
 
@@ -140,6 +145,9 @@ extern "C" {
 #define SECR_THRECC_MAX             0xFF
 #define SECR_THRECC_MASK            (SECR_THRECC_MAX << SECR_THRECC_OFFS)
 #define SECR_THRECC(threshold)      (threshold << SECR_THRECC_OFFS)
+
+/* FPGA - Delay Phase */
+#define FPGA_DDR3_DELAY_PHASE		0x00000004
 
  /* SDRAM CSn Size Register (SCSR) */
 #define SDRAM_SIZE_REG(csNum)	(0x1504 + ((csNum) * 8))

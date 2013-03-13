@@ -129,7 +129,11 @@ MV_STATUS mvPciScan(MV_U32 pciIf, MV_PCI_DEVICE *pPciAgents, MV_U32 * pPciAgents
 {
 
 	MV_U32 devIndex, funcIndex = 0, busIndex = 0, detectedDevNum = 0;
+#if !defined(MV_INCLUDE_PCI)
 	MV_U32 localBus = mvPexLocalBusNumGet(pciIf);
+#else
+	MV_U32 localBus = mvPciIfLocalBusNumGet(pciIf);
+#endif
 	MV_PCI_DEVICE *pPciDevice;
 	MV_PCI_DEVICE *pMainDevice;
 
@@ -262,9 +266,12 @@ static MV_STATUS pciDetectDevice(MV_U32 pciIf, MV_U32 bus, MV_U32 dev, MV_U32 fu
 	 */
 #if defined(MV_INCLUDE_PCI)
 	if ((PCI_IF_TYPE_CONVEN_PCIX == mvPciIfTypeGet(pciIf)) &&
+#if !defined(MV88F66XX)
 			(DB_88F5181_DDR1_PRPMC != mvBoardIdGet()) &&
 			(DB_88F5181_DDR1_PEXPCI != mvBoardIdGet()) &&
-			(DB_88F5181_DDR1_MNG != mvBoardIdGet()) && (mvBoardIsOurPciSlot(bus, dev) == MV_FALSE))
+			(DB_88F5181_DDR1_MNG != mvBoardIdGet()) &&
+#endif 
+			(mvBoardIsOurPciSlot(bus, dev) == MV_FALSE))
 		return MV_ERROR;
 
 #endif /* defined(MV_INCLUDE_PCI) */

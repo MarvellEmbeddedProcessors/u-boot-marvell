@@ -401,32 +401,132 @@ extern "C" {
 #define MV_CPU_CLK_TBL { 1000, 1066, 1200, 1333, 1500, 1666, 1800, 2000, \
 			 600,  667,  800, 1600, 2133, 2200, 2400, 0 }
 
-/*		cpu	l2c	hclk	ddr	*/
-#define MV_DDR_L2_CLK_RATIO_TBL    { \
-/*00*/ {       1,      1,      4,      2       }, \
-/*01*/ {       1,      2,      2,      2       }, \
-/*02*/ {       2,      2,      6,      3       }, \
-/*03*/ {       2,      2,      3,      3       }, \
-/*04*/ {       1,      2,      3,      3       }, \
-/*05*/ {       1,      2,      4,      2       }, \
-/*06*/ {       1,      1,      2,      2       }, \
-/*07*/ {       2,      3,      6,      6       }, \
-/*08*/ {       2,      3,      5,      5       }, \
-/*09*/ {       1,      2,      6,      3       }, \
-/*10*/ {       2,      4,      10,     5       }, \
-/*11*/ {       1,      3,      6,      6       }, \
-/*12*/ {       1,      2,      4,      4       }, \
-/*13*/ {       1,      3,      6,      3       }, \
-/*14*/ {       1,      2,      5,      5       }, \
-/*15*/ {       2,      2,      5,      5       }, \
-/*16*/ {       1,      1,      3,      3       }, \
-/*17*/ {       2,      5,      10,     10      }, \
-/*18*/ {       1,      3,      8,      4       }, \
-/*19*/ {       1,      1,      2,      1       }, \
-/*20*/ {       2,      3,      6,      3       }, \
-/*21*/ {       1,      2,      8,      4       }, \
-/*22*/ {       2,      5,      10,     5       } \
+
+typedef enum {
+	MSAR_0_BOOT_NOR_FLASH,
+	MSAR_0_BOOT_NAND_NEW,
+	MSAR_0_BOOT_UART,
+	MSAR_0_BOOT_SPI_FLASH,
+	MSAR_0_BOOT_PEX,
+	MSAR_0_BOOT_SATA,
+	MSAR_0_BOOT_NAND_LEGACY,
+	MSAR_0_BOOT_PROMPT,
+	MSAR_0_BOOT_SPI1_FLASH
+} MV_BOARD_BOOT_SRC;
+
+typedef struct _mvSARBootTable {
+	MV_BOARD_BOOT_SRC bootSrc;
+	MV_U32 attr1;                           /* Device width/Port */
+	MV_U32 attr2;                           /* ALE TIming Parameters/Page Size/Serdes Lane/Address cycles */
+	MV_U32 attr3;                           /* Dev_Wen Dev_Oen Muxed/Address cycle/SPI interface */
+} MV_SAR_BOOT_TABLE;
+
+#define MV_SAR_TABLE_VAL { \
+/*00*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, 0, 0 }, \
+/*01*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,             0, 1 }, \
+/*02*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, 0, 0 }, \
+/*03*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,             0, 1 }, \
+/*04*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, 0, 0 }, \
+/*05*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,             0, 1 }, \
+/*06*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, 0, 0 }, \
+/*07*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,             0, 1 }, \
+/*08*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 0, 0 }, \
+/*09*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 6, 1 }, \
+/*10*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 0, 0 }, \
+/*11*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 6, 1 }, \
+/*12*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 4, 0 }, \
+/*13*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 6, 1 }, \
+/*14*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 5, 0 }, \
+/*15*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 5, 1 }, \
+/*16*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B, MSAR_0_NAND_ECC_4BIT }, \
+/*17*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B, MSAR_0_NAND_ECC_4BIT }, \
+/*18*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_4BIT },	\
+/*19*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_8BIT },	\
+/*20*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_12BIT }, \
+/*21*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_16BIT }, \
+/*22*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_4BIT },	\
+/*23*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_8BIT },	\
+/*24*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_12BIT }, \
+/*25*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_16BIT }, \
+/*26*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_4BIT },	\
+/*27*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_8BIT },	\
+/*28*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_12BIT }, \
+/*29*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_16BIT }, \
+/*30*/ { 0,           5,            60,          60           }, \
+/*31*/ { 0,           2,            40,          40           }, \
+/*32*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B,     2                }, \
+/*33*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB,       2                }, \
+/*34*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B,     3                }, \
+/*35*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB,       3                }, \
+/*36*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B,     3                }, \
+/*37*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB,       2                }, \
+/*38*/ { 0,           1,            2,            2              }, \
+/*39*/ { 0,           3,            6,            6              }, \
+/*40*/ { 0,           3,            5,            5              }, \
+/*41*/ { 0,           2,            6,            3              }, \
+/*42*/ { 0,           4,            10,          5              }, \
+/*43*/ { 0,           3,            6,            6              }, \
+/*44*/ { 0,           2,            4,            4              }, \
+/*45*/ { 0,           3,            6,            3              }, \
+/*46*/ { 0,           2,            5,            5              }, \
+/*47*/ { MSAR_0_BOOT_PROMPT,         2,            5,            5              }, \
+/*48*/ { MSAR_0_BOOT_UART,               1,            3,            3              }, \
+/*49*/ { MSAR_0_BOOT_SATA,                5,            10,          10           }, \
+/*50*/ { MSAR_0_BOOT_PEX,   3,            8,            4              }, \
+/*51*/ { MSAR_0_BOOT_PEX,   1,            2,            1              }, \
+/*52*/ { 0,           3,            6,            3              }, \
+/*53*/ { 0,           2,            8,            4              }, \
+/*54*/ { 0,           5,            10,          5              }, \
+/*55*/ { 0,           1,            20,          20           }, \
+/*56*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
+/*57*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 60               }, \
+/*58*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
+/*59*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 60               }, \
+/*60*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
+/*61*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 60               }, \
+/*62*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
+/*63*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 40               } \
 }
+
+typedef struct {
+	MV_U8 id;
+	char *cpuFreq;
+	char *ddrFreq;
+	char *l2Freq;
+} MV_FREQ_MODE;
+
+#define MV_SAR_FREQ_MODES {\
+	{0,  "266",  "266", "133" },\
+	{1,  "333",  "167", "167" },\
+	{2,  "333",  "222", "167" },\
+	{3,  "333",  "333", "167" },\
+	{4,  "400",  "200", "200" },\
+	{5,  "400",  "267", "200" },\
+	{6,  "400",  "400", "200" },\
+	{7,  "500",  "250", "250" },\
+	{8,  "500",  "334", "250" },\
+	{9,  "500",  "400", "250" },\
+	{10,  "533", "267", "267" },\
+	{11, "533",  "356", "267" },\
+	{12, "533",  "533", "267" },\
+	{13, "600",  "300", "300" },\
+	{14, "600",  "400", "300" },\
+	{15, "600",  "600", "300" },\
+	{16, "666",  "333", "333" },\
+	{17, "666",  "444", "333" },\
+	{18, "666",  "666", "333" },\
+	{19, "800",  "267", "400" },\
+	{20, "800",  "400", "400" },\
+	{21, "800",  "534", "400" },\
+	{22, "900",  "300", "450" },\
+	{23, "900",  "450", "450" },\
+	{24, "900",  "600", "450" },\
+	{25, "1000", "500", "500" },\
+	{26, "1000", "667", "500" },\
+	{27, "1000", "500", "333" },\
+	{28, "400",  "400", "400" },\
+	{29, "1100", "550", "550" }\
+};
 
 /* These macros help units to identify a target Mport Arbiter group */
 #define MV_TARGET_IS_DRAM(target)   \

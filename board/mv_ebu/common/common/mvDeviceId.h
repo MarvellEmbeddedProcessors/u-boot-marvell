@@ -349,6 +349,14 @@ extern "C" {
 #define MV_78460_B0_ID         ((MV_78460_DEV_ID << 16) | MV_78XX0_B0_REV)
 #define MV_78460_B0_NAME       "MV78460 B0"
 
+
+/* Avanta LP Family */
+#define MV_88F66X0		0x6600
+#define MV_6660_DEV_ID		0x6660
+#define MV_6650_DEV_ID		0x6650
+#define MV_6610_DEV_ID		0x6610
+
+
 #ifdef __cplusplus
 }
 #endif	/* __cplusplus */

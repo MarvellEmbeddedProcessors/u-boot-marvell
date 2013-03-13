@@ -95,15 +95,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 MV_U32 mvCpuPclkGet(MV_VOID)
 {
-	MV_U32 idx;
-	MV_U32 cpuClk[] = MV_CPU_CLK_TBL;
+	MV_FREQ_MODE freqMode;
 
 	if (mvBoardIdGet() == MV_BOARD_ID_AVANTA_LP_FPGA)
 		return MV_FPGA_CORE_CLK; /* FPGA is limited to 12.5Mhz */
 
-	idx = MSAR_CPU_CLK_IDX(MV_REG_READ(MPP_SAMPLE_AT_RESET(0)), MV_REG_READ(MPP_SAMPLE_AT_RESET(1)));
-
-	return cpuClk[idx] * 1000000;
+	if (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode))
+		return (MV_U32)(1000000 * simple_strtoul(freqMode.cpuFreq, NULL, 16));
+	else
+		return (MV_U32)MV_ERROR;
 }
 
 /*******************************************************************************
@@ -118,26 +118,11 @@ MV_U32 mvCpuPclkGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCpuL2ClkGet(MV_VOID)
 {
-	MV_U32 idx;
-	MV_U32 freqMhz, l2FreqMhz;
-	MV_CPU_ARM_CLK_RATIO clockRatioTbl[] = MV_DDR_L2_CLK_RATIO_TBL;
-
-	if (mvBoardIdGet() == MV_BOARD_ID_AVANTA_LP_FPGA)
-		return MV_FPGA_CORE_CLK; /* FPGA is limited to 12.5Mhz */
-
-	idx = MSAR_DDR_L2_CLK_RATIO_IDX(MV_REG_READ(MPP_SAMPLE_AT_RESET(0)), MV_REG_READ(MPP_SAMPLE_AT_RESET(1)));
-
-	if (clockRatioTbl[idx].vco2cpu != 0) {
-		freqMhz = mvCpuPclkGet() / 1000000;	/* CPU freq */
-		freqMhz *= clockRatioTbl[idx].vco2cpu;	/* VCO freq */
-		l2FreqMhz = freqMhz / clockRatioTbl[idx].vco2l2c;
-		/* round up to integer MHz */
-		if (((freqMhz % clockRatioTbl[idx].vco2l2c) * 10 / clockRatioTbl[idx].vco2l2c) >= 5)
-			l2FreqMhz++;
-
-		return l2FreqMhz * 1000000;
-	} else
-		return (MV_U32)-1;
+	MV_FREQ_MODE freqMode;
+	if (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode))
+		return (MV_U32)(1000000 * simple_strtoul(freqMode.l2Freq, NULL, 16));
+	else
+		return (MV_U32)MV_ERROR;;
 }
 
 /*******************************************************************************

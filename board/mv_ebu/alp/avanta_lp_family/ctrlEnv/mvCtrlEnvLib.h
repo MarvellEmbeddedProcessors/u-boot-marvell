@@ -232,6 +232,7 @@ typedef struct _boardSerdesConf {
 /* mcspLib.h API list */
 MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField,MV_SATR_TYPE_ID satrReadField, MV_U8 val);
 MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField);
+MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode);
 void mvCtrlSatrInit(MV_VOID);
 MV_U32 mvCtrlConfigGet(MV_CONFIG_TYPE_ID configField);
 MV_U32 mvCtrlGetCpuNum(MV_VOID);

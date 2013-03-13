@@ -79,18 +79,17 @@
 #ifndef MV_ASMLANGUAGE
 /* New board ID numbers */
 
-typedef enum _mvBoardId {
-	DB_6660_ID,
-	RD_6660_ID,
-	DB_6650_ID,
-	RD_6650_ID,
-	MV_BOARD_ID_AVANTA_LP_FPGA,
-	MV_MAX_BOARD_ID
-} MV_BOARD_ID;
+/* boards ID numbers */
+#define BOARD_ID_BASE			0x0
 
-#define BOARD_ID_BASE DB_6660_ID
+#define DB_6660_ID			(BOARD_ID_BASE)
+#define RD_6660_ID			(DB_6660_ID + 1)
+#define DB_6650_ID			(RD_6660_ID + 1)
+#define RD_6650_ID			(DB_6650_ID + 1)
+#define MV_BOARD_ID_AVANTA_LP_FPGA	(RD_6650_ID + 1)
+#define MV_MAX_BOARD_ID			(MV_BOARD_ID_AVANTA_LP_FPGA + 1)
+#define MV_INVALID_BOARD_ID		0xFFFFFFFF
 
-#define MV_INVALID_BOARD_ID             0xFFFFFFFF
 
 /*******************************************************************************
  * AvantaLP DB-88F6600 board */

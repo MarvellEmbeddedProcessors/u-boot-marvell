@@ -308,19 +308,18 @@ int board_init(void)
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	MV_U32 boardId= mvBoardIdGet();
 	/* arch number of Integrator Board */
+
+
 	switch (boardId) {
-	case RD_78460_NAS_ID:
-		gd->bd->bi_arch_number = 3500;
+	case DB_6660_ID:
+	case RD_6660_ID:
+		gd->bd->bi_arch_number = 3500; /* omriii : check the correct values !!!! */
 		break;
-	case DB_784MP_GP_ID:
+	case DB_6650_ID:
+	case RD_6650_ID:
 		gd->bd->bi_arch_number = 3035;
 		break;
-
-	case RD_78460_SERVER_ID:
-	case RD_78460_SERVER_REV2_ID:
-		gd->bd->bi_arch_number = 3037;
-		break;
-	case DB_88F78XX0_BP_ID:
+	case MV_BOARD_ID_AVANTA_LP_FPGA:
 	default:
 		gd->bd->bi_arch_number = 3036;
 		break;
@@ -1112,8 +1111,7 @@ int misc_init_r(void)
 	misc_init_r_dec_win();
 	memset((void *)CONFIG_SYS_LOAD_ADDR, 0, CONFIG_SYS_MIN_HDR_DEL_SIZE);
 	mvBoardDebugLed(6);
-
-	if (boardId != RD_78460_SERVER_REV2_ID) {
+	if (boardId != DB_6650_ID) { //omriii : temp ID replace so it will compile -mv_main needs cleanup ! */
 		/* Prints the modules detected */
 		mvBoardMppModuleTypePrint();
 		mvBoardOtherModuleTypePrint();
@@ -1134,7 +1132,7 @@ int misc_init_r(void)
 
 #if defined(MV_INCLUDE_UNM_ETH) || defined(MV_INCLUDE_GIG_ETH)
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
-	if (boardId != RD_78460_SERVER_REV2_ID) {
+	if (boardId != DB_6650_ID) {	//omriii : temp ID replace so it will compile -mv_main needs cleanup ! */
 		/* Init the PHY or Switch of the board */
 		mvBoardEgigaPhyInit();
 	}

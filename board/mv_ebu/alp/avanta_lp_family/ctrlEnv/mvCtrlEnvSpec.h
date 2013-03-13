@@ -294,6 +294,7 @@ extern "C" {
 #ifndef MV_ASMLANGUAGE
 
 #define TBL_UNUSED      0       /* Used to mark unused entry */
+#define FREQ_MODES_NUM		29
 
 #define MPP_GROUP_0_TYPE { \
 		0x11111111,     /* NAND_V2_BOOT_DEVICE  */ \

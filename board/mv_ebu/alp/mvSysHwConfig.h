@@ -26,7 +26,9 @@ disclaimer.
 /*
  * SoC units
  */
-#ifdef CONFIG_MACH_AVANTA_LP_FPGA
+#ifndef CONFIG_MACH_AVANTA_LP_FPGA
+#define MV_INCLUDE_PEX
+#else
 #undef  MV_INCLUDE_PEX /* PEX should be enabled for PCI-IF HAL integration (kostaz) */
 #define MV_INCLUDE_PCI
 #define MV_INCLUDE_GIG_ETH

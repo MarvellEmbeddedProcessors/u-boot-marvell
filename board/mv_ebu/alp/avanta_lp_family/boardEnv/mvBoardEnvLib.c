@@ -348,14 +348,8 @@ MV_BOARD_SPEC_INIT *mvBoardSpecInitGet(MV_VOID)
 *******************************************************************************/
 MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum)
 {
-	MV_U32 boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mvBoardQuadPhyAddr0Get: Board unknown.\n");
-		return MV_ERROR;
-	}
 #if !defined(CONFIG_MACH_GENERAL_FPGA)
-	return BOARD_INFO(boardId)->pBoardMacInfo[ethPortNum].boardEthSmiAddr0;
+	return board->pBoardMacInfo[ethPortNum].boardEthSmiAddr0;
 #else
 	return 0;
 #endif
@@ -450,8 +444,9 @@ MV_BOOL mvBoardIsPortLb(MV_U32 ethPortNum)
 *		Note: In order to avoid interference, make sure task context switch
 *		and interrupts will not occure during this function operation
 *
+*		 ----- omriii : is above comment still relevant here ??? -----
+*
 * INPUT:
-*       countNum - Counter number.
 *
 * OUTPUT:
 *       None.
@@ -462,11 +457,21 @@ MV_BOOL mvBoardIsPortLb(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
+	MV_FREQ_MODE freqMode;
 #ifdef CONFIG_MACH_GENERAL_FPGA
 	/* FPGA is limited to 25Mhz */
 	return MV_FPGA_CORE_CLK;
 #else
-#error "Code must be added"
+	switch (mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT)) {
+	case 0:
+		return _166MHz;
+		break;
+	case 1:
+		return _200MHz;
+		break;
+	default:
+		return (MV_U32)MV_ERROR;
+	}
 #endif
 }
 
@@ -488,11 +493,15 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvBoardSysClkGet(MV_VOID)
 {
+	MV_FREQ_MODE freqMode;
 #ifdef CONFIG_MACH_GENERAL_FPGA
 	/* FPGA is limited to 25Mhz */
 	return MV_FPGA_SYS_CLK;
 #else
-#error "Code must be added"
+	if (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode))
+		return (MV_U32)(1000000 * simple_strtoul(freqMode.ddrFreq, NULL, 16));
+	else
+		return MV_ERROR;
 #endif
 }
 
@@ -672,6 +681,7 @@ MV_32 mvBoardUSBVbusEnGpioPinGet(MV_32 devId)
 	return mvBoarGpioPinNumGet(BOARD_GPP_USB_VBUS_EN, devId);
 }
 
+#ifdef CONFIG_MACH_AVANTA_LP_FPGA
 MV_BOOL mvBoardIsOurPciSlot(MV_U32 busNum, MV_U32 slotNum)
 {
 	MV_U32 localBusNum = mvPciLocalBusNumGet(PCI_DEFAULT_IF);
@@ -688,7 +698,7 @@ MV_BOOL mvBoardIsOurPciSlot(MV_U32 busNum, MV_U32 slotNum)
 
 	return MV_FALSE;
 }
-
+#endif
 /*******************************************************************************
 * mvBoardGpioIntMaskGet - Get GPIO mask for interrupt pins
 *
@@ -972,32 +982,6 @@ MV_U32 mvBoardBootAttrGet(MV_U32 sarBootDeviceValue, MV_U8 attrNum)
 	default:
 		return MV_ERROR;
 	}
-}
-/*******************************************************************************
-* mvBoardFreqModeGet - Get the selected S@R Frequency mode
-*
-* DESCRIPTION:
-*   read board BOOT configuration and return the selcted S@R Frequency mode
-*
-* INPUT:  freqMode - MV_FREQ_MODE struct to return the freq mode
-*
-* OUTPUT: None,
-*
-* RETURN:
-*       MV_STATUS to indicate a successful read.
-*
-*******************************************************************************/
-MV_STATUS mvBoardFreqModeGet(MV_FREQ_MODE *freqMode)
-{
-	MV_FREQ_MODE freqTable[] = MV_SAR_FREQ_MODES;
-	MV_U32 freqModeSatRValue = mvCtrlSatRRead(MV_SATR_CPU_FREQ);
-	if (MV_ERROR !=freqModeSatRValue )
-	{
-		*freqMode = freqTable[freqModeSatRValue];
-		return MV_OK;
-	}
-	else
-		return MV_ERROR;
 }
 
 /*******************************************************************************

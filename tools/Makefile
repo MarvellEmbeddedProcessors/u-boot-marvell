@@ -104,7 +104,7 @@ NOPED_OBJ_FILES-y += os_support.o
 OBJ_FILES-$(CONFIG_SHA1_CHECK_UB_IMG) += ubsha1.o
 NOPED_OBJ_FILES-y += ublimage.o
 OBJ_FILES-$(CONFIG_KIRKWOOD) += kwboot.o
-ifneq ($(BOARD_TYPE),mv_fpga_board)
+ifneq ($(BOARD),alp)
 	TOOLSUBDIRS += marvell/doimage_armada
 	TOOLSUBDIRS += marvell/bin_hdr_armada
 endif

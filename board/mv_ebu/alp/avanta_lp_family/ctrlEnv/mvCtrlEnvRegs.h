@@ -65,6 +65,7 @@
 #ifndef __INCmvCtrlEnvRegsh
 #define __INCmvCtrlEnvRegsh
 
+#include "mvTypes.h"
 #include "mvCtrlEnvSpec.h"
 #ifdef __cplusplus
 extern "C" {

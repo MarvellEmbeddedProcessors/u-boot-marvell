@@ -72,6 +72,7 @@ Level 2: Provides the windows margin as a results of DQS centeralization
 Level 3: Provides the windows margin of each DQ as a results of DQS centeralization */
 
 #define DDR3_LOG_LEVEL  0
+#define DDR3_PBS        0
 
 /* General Configurations */
 /* The following parameters are required for proper setup */

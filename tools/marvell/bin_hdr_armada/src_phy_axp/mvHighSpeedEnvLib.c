@@ -479,32 +479,20 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 
 	switch (boardId) {
-	case DB_88F78XX0_BP_ID:
-		satr11 = mvBoardTwsiSatRGet(1, 1);
-		break;
+        case RD_78460_NAS_ID:
+        case DB_78X60_AMC_ID:
+        case DB_78X60_PCAC_REV2_ID:
+        case RD_78460_CUSTOMER_ID:
 	case RD_78460_SERVER_ID:
 	case RD_78460_SERVER_REV2_ID:
 	case DB_78X60_PCAC_ID:
-		satr11 = (0x1 << 1) | 1;
-		break;
 	case FPGA_88F78XX0_ID:
-		satr11 = (0x0 << 1) | 1;
+		satr11 = (0x1 << 1) | 1;
 		break;
 	case DB_88F78XX0_BP_REV2_ID:
-		satr11 = mvBoardTwsiSatRGet(1, 1);
-		break;
 	case DB_784MP_GP_ID:
-	case RD_78460_NAS_ID:
-		satr11 = (0x0 << 1) | 1;
-		break;
-	case DB_78X60_AMC_ID:
-		satr11 = (0x1 << 1) | 1;
-		break;
-	case DB_78X60_PCAC_REV2_ID:
-		satr11 = (0x1 << 1) | 1;
-		break;
-	case RD_78460_CUSTOMER_ID:
-		satr11 = (0x1 << 1) | 1;
+	case DB_88F78XX0_BP_ID:
+		satr11 = mvBoardTwsiSatRGet(1, 1);
 		break;
 	}
 

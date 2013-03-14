@@ -228,9 +228,9 @@ MV_U16 mvBoardRevGet(MV_VOID)
 *
 *       MV_ERROR if informantion can not be read.
 *******************************************************************************/
-MV_STATUS mvBoardNameGet(char *pNameBuff)
+MV_STATUS mvBoardNameGet(char *pNameBuff, MV_U32 size)
 {
-	mvOsSPrintf(pNameBuff, "%s", board->boardName);
+	mvOsSNPrintf(pNameBuff, size, "%s", board->boardName);
 	return MV_OK;
 }
 

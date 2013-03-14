@@ -412,7 +412,7 @@ typedef struct _boardInfo {
 MV_VOID mvBoardEnvInit(MV_VOID);
 MV_U16 mvBoardModelGet(MV_VOID);
 MV_U16 mvBoardRevGet(MV_VOID);
-MV_STATUS mvBoardNameGet(char *pNameBuff);
+MV_STATUS mvBoardNameGet(char *pNameBuff, MV_U32 size);
 MV_BOARD_SPEC_INIT *mvBoardSpecInitGet(MV_VOID);
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum);

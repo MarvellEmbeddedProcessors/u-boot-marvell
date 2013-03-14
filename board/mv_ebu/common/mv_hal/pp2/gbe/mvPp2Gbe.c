@@ -206,6 +206,7 @@ function sets default values to the NETA port.
 *******************************************************************************/
 MV_STATUS mvPp2DefaultsSet(int port)
 {
+	MV_U32 regVal;
 	int txp, queue, txPortNum, i;
 	MV_PP2_PORT_CTRL *pPortCtrl = mvPp2PortHndlGet(port);
 
@@ -218,10 +219,14 @@ MV_STATUS mvPp2DefaultsSet(int port)
 		mvPp2WrReg(MV_PP2_TXP_SCHED_CMD_1_REG, 0);
 		/* Close bandwidth for all queues */
 		for (queue = 0; queue < MV_ETH_MAX_TXQ; queue++)
-			mvPp2WrReg(MV_PP2_TXQ_SCHED_TOKEN_CNTR_REG(MV_PPV2_TXQ_PHYS(port, txp, queue)),  0);
+			mvPp2WrReg(MV_PP2_TXQ_SCHED_TOKEN_CNTR_REG(MV_PPV2_TXQ_PHYS(port, txp, queue)), 0);
 
 		/* Set basic period to  1 usec */
-		mvPp2WrReg(MV_PP2_TXP_SCHED_REFILL_REG,  mvPp2HalData.tClk / 1000000);
+		regVal = mvPp2RdReg(MV_PP2_TXP_SCHED_REFILL_REG);
+		regVal &= ~MV_PP2_TXP_REFILL_PERIOD_ALL_MASK;
+		regVal |= MV_PP2_TXP_REFILL_PERIOD_MASK(1);
+		mvPp2WrReg(MV_PP2_TXP_SCHED_REFILL_REG, regVal);
+		mvPp2WrReg(MV_PP2_TXP_SCHED_PERIOD_REG, mvPp2HalData.tClk / 1000000);
 	}
 
 	/* Enable Rx cache snoop */

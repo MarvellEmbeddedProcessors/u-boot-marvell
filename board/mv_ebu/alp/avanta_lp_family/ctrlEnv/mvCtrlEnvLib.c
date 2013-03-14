@@ -231,27 +231,27 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 *******************************************************************************/
 MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField,MV_SATR_TYPE_ID satrReadField, MV_U8 val)
 {
-	MV_BOARD_SAR_INFO sInfo;
+	MV_BOARD_SAR_INFO sarInfo;
 	MV_U32 readVal, tmpVal;
 	if ((satrReadField < MV_SATR_READ_MAX_OPTION) && (satrWriteField < MV_SATR_WRITE_MAX_OPTION)) {
-		if ( MV_OK == mvBoardConfigTypeGet(satrWriteField, &sInfo))
+		if ( mvBoardSarInfoGet(satrWriteField, &sarInfo) && sarInfo.isActiveForBoard[mvBoardIdGet()])
 		{
 			/* read */
-			readVal = mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, sInfo.regNum , 0);
+			readVal = mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, sarInfo.regNum , 0);
 			if ((MV_U8)readVal == (MV_U8)MV_ERROR)
 				return MV_ERROR;
 
 			/* modify */
-			readVal &= !(sInfo.mask);  		/* clean old value */
-			readVal &= (val <<  sInfo.offset);	/* save new value */
+			readVal &= !(sarInfo.mask);  		/* clean old value */
+			readVal &= (val <<  sarInfo.offset);	/* save new value */
 
 			/* write */
-			tmpVal = mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, sInfo.regNum, 0,readVal);
+			tmpVal = mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, sarInfo.regNum, 0,readVal);
 			if ((MV_U8)tmpVal == (MV_U8)MV_ERROR)
 				return MV_ERROR;
 
 			/* verify */
-			tmpVal = mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, sInfo.regNum , 0);
+			tmpVal = mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, sarInfo.regNum , 0);
 			if (tmpVal!=readVal)
 				return MV_ERROR;
 
@@ -259,6 +259,8 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField,MV_SATR_TYPE_ID satrRea
 			satrOptionsConfig[satrReadField] = readVal;
 			return MV_OK;
 		}
+		else
+			printf("\n%s: Error: Requested S@R config is not relevant for the current board\n, __func__");
 	}
 	return MV_ERROR;
 }
@@ -308,8 +310,9 @@ MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 		*freqMode = freqTable[freqModeSatRValue];
 		return MV_OK;
 	}
-	else
-		return MV_ERROR;
+
+	DB(mvOsPrintf("Board: Read from S@R fail\n"));
+	return MV_ERROR;
 }
 
 /*******************************************************************************
@@ -351,8 +354,8 @@ MV_U32 mvCtrlConfigGet(MV_CONFIG_TYPE_ID configField)
 void mvCtrlSatrInit(void)
 {
 	MV_U8 tempVal[2];
-	MV_BOARD_SAR_INFO sInfo;
-	MV_BOARD_CONFIG_TYPE_INFO cInfo;
+	MV_BOARD_SAR_INFO sarInfo;
+	MV_BOARD_CONFIG_TYPE_INFO confInfo;
 	int i = 0;
 
 	/* initialize all S@R & Board configuration fields to -1 (MV_ERROR) */
@@ -366,9 +369,9 @@ void mvCtrlSatrInit(void)
 
 	/* Read Sample @ Reset configuration, memory access read : */
 	for (i = 0; i < MV_SATR_READ_MAX_OPTION; i++) {
-		if ( MV_OK == mvBoardSarInfoGet(i, &sInfo)) {
-			tempVal[0] = MV_REG_READ(MPP_SAMPLE_AT_RESET(sInfo.regNum));
-			satrOptionsConfig[sInfo.sarid] = ((tempVal[0]  & (sInfo.mask)) >> sInfo.offset);
+		if ( mvBoardSarInfoGet(i, &sarInfo) && sarInfo.isActiveForBoard[mvBoardIdGet()]) {
+			tempVal[0] = MV_REG_READ(MPP_SAMPLE_AT_RESET(sarInfo.regNum));
+			satrOptionsConfig[sarInfo.sarid] = ((tempVal[0]  & (sarInfo.mask)) >> sarInfo.offset);
 		}
 	}
 
@@ -388,9 +391,8 @@ void mvCtrlSatrInit(void)
 
 	/* Save values Locally */
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++)
-		if ( MV_OK == mvBoardConfigTypeGet(i, &cInfo))
-			boardOptionsConfig[cInfo.configid] = ((tempVal[cInfo.regNum] & (cInfo.mask)) >> cInfo.offset);
-
+		if ( mvBoardConfigTypeGet(i, &confInfo) && confInfo.isActiveForBoard[mvBoardIdGet()])
+			boardOptionsConfig[confInfo.configid] = ((tempVal[confInfo.regNum] & (confInfo.mask)) >> confInfo.offset);
 }
 /*******************************************************************************
 * mvCtrlDevFamilyIdGet - Get Device ID

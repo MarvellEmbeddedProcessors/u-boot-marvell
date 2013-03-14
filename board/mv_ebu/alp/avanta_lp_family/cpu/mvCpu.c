@@ -119,6 +119,7 @@ MV_U32 mvCpuPclkGet(MV_VOID)
 MV_U32 mvCpuL2ClkGet(MV_VOID)
 {
 	MV_FREQ_MODE freqMode;
+
 	if (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode))
 		return (MV_U32)(1000000 * simple_strtoul(freqMode.l2Freq, NULL, 16));
 	else

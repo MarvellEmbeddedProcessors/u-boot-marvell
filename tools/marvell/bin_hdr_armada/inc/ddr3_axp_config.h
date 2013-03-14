@@ -72,7 +72,6 @@ Level 2: Provides the windows margin as a results of DQS centeralization
 Level 3: Provides the windows margin of each DQ as a results of DQS centeralization */
 
 #define	DDR3_LOG_LEVEL	0
-#define DDR3_PBS        1
 
 /* General Configurations */
 /* The following parameters are required for proper setup */
@@ -112,7 +111,7 @@ Level 3: Provides the windows margin of each DQ as a results of DQS centeralizat
 /* DIMM support parameters: */
 /* DRAM_2T - Set Desired 2T Mode - 0 - 1T, 0x1 - 2T, 0x2 - 3T */
 /* DIMM_CS_BITMAP - bitmap representing the optional CS in DIMMs (0xF=CS0+CS1+CS2+CS3, 0xC=CS2+CS3...) */
-#define DRAM_2T                                 0x0
+#define DRAM_2T									0
 #define DIMM_CS_BITMAP							0xF
 #define DUNIT_SPD
 #endif
@@ -120,10 +119,10 @@ Level 3: Provides the windows margin of each DQ as a results of DQS centeralizat
 #ifdef DRAM_ECC
 /* ECC support parameters: */
 /* U_BOOT_START_ADDR, U_BOOT_SCRUB_SIZE - relevant when using ECC and need to configure the scrubbing area */
-#define TRAINING_SIZE                           0x20000
 #define U_BOOT_START_ADDR						0
-#define U_BOOT_SCRUB_SIZE                       0x1000000 /*- TRAINING_SIZE*/
+#define U_BOOT_SCRUB_SIZE						0x1000000
 #endif
+
 /* Registered DIMM Support - In case registered DIMM is attached, please supply the following values:
 (see JEDEC - JESD82-29A "Definition of the SSTE32882 Registering Clock Driver with Parity and Quad Chip
 Selects for DDR3/DDR3L/DDR3U RDIMM 1.5 V/1.35 V/1.25 V Applications") */

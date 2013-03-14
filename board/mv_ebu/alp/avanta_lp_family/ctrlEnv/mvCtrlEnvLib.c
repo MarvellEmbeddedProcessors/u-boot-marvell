@@ -62,6 +62,7 @@
 
 *******************************************************************************/
 
+/* includes */
 #include "mvCommon.h"
 #include "mvCtrlEnvLib.h"
 #include "boardEnv/mvBoardEnvLib.h"
@@ -533,12 +534,15 @@ MV_U32 mvCtrlPciMaxIfGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlEthMaxPortGet(MV_VOID)
 {
-#ifdef CONFIG_MACH_AVANTA_LP_FPGA
-	return MV_FPGA_ETH_MAX_PORT;
-#else
-	return 0;
-	/* fixme : #error "ETH_MAX_PORT should be defined!" */
-#endif
+	MV_U32 devId;
+
+	devId = mvCtrlModelGet();
+	switch (devId) {
+	case MV_FPGA_DEV_ID:
+		return MV_FPGA_ETH_MAX_PORT;
+	default:
+		return 0;
+	}
 }
 
 /*******************************************************************************
@@ -1087,8 +1091,8 @@ MV_VOID mvCtrlAddrDecShow(MV_VOID)
  	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvNetaWinRead);
 #else
 	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvPp2WinRead);
-#endif
-#endif
+#endif /* MV_ETH_LEGACY  or NETA pr PP2 */
+#endif /* MV_INCLUDE_GIG_ETH */
 
 #if defined(MV_INCLUDE_XOR)
 	mvUnitAddrDecShow(mvCtrlXorMaxChanGet(), XOR_UNIT_ID, "XOR", mvXorTargetWinRead);

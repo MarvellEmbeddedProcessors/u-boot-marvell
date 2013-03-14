@@ -252,7 +252,7 @@ MV_STATUS mvBoardNameGet(char *pNameBuff)
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 {
 #if defined(CONFIG_MACH_AVANTA_LP_FPGA)
-	return ethPortNum == 2;
+	return (ethPortNum == 2);
 #endif
 
 	return MV_FALSE;
@@ -398,10 +398,8 @@ MV_32 mvBoardPhyLinkCryptPortAddrGet(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 {
-	if (ethPortNum >= board->numBoardMacInfo) {
-		mvOsPrintf("%s: Error: wrong eth port (%d)\n", __func__, ethPortNum);
-		return BOARD_MAC_SPEED_100M;
-	}
+	if (ethPortNum >= board->numBoardMacInfo)
+		return MV_ERROR;
 
 #if defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	return (ethPortNum == 2) ? BOARD_MAC_SPEED_1000M : BOARD_MAC_SPEED_100M;
@@ -411,7 +409,7 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 }
 
 /*******************************************************************************
-* mvBoardIsPortLoopback -
+* mvBoardIsPortLb -
 *
 * DESCRIPTION:
 *       This routine returns MV_TRUE for loopback port number or MV_FALSE
@@ -428,7 +426,7 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 *       MV_FALSE - other.
 *
 *******************************************************************************/
-MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum)
+MV_BOOL mvBoardIsPortLb(MV_U32 ethPortNum)
 {
 #if defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	return (ethPortNum == 2);
@@ -2173,4 +2171,10 @@ MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 MV_BOOL mvBoardModuleAutoDetectEnabled(void)
 {
 	return board->moduleAutoDetect;
+}
+
+void setOtherBoardSimulation(MV_U32 ID_of_board)
+{
+	board = boardInfoTbl[ID_of_board];
+	printf("\nSimulationg Board enviroment according to : %s \n", board->boardName);
 }

@@ -283,14 +283,6 @@ void board_init_f(ulong bootflag)
 #ifdef CONFIG_PRAM
 	ulong reg;
 #endif
-
-	/* Functions from init_sequence use board id */
-	mvBoardIdSet();
-
-#if defined(CONFIG_MARVELL) && defined(MV78200)
-	volatile unsigned int cpu;
-#endif
-
 	void *new_fdt = NULL;
 	size_t fdt_size = 0;
 
@@ -307,6 +299,8 @@ void board_init_f(ulong bootflag)
 	/* Allow the early environment to override the fdt address */
 	gd->fdt_blob = (void *)getenv_ulong("fdtcontroladdr", 16,
 						(uintptr_t)gd->fdt_blob);
+
+	mvBoardIdSet(mvBoardIdGet());
 
 	for (init_fnc_ptr = init_sequence; *init_fnc_ptr; ++init_fnc_ptr) {
 		if ((*init_fnc_ptr)() != 0) {

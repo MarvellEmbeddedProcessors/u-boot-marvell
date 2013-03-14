@@ -303,29 +303,7 @@ int board_init(void)
 	mvGppInit(&gppHalData);
 #endif
 
-#if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
-	MV_U32 boardId= mvBoardIdGet();
-	/* arch number of Integrator Board */
-
-
-	switch (boardId) {
-	case DB_6660_ID:
-	case RD_6660_ID:
-		gd->bd->bi_arch_number = 3500; /* omriii : check the correct values !!!! */
-		break;
-	case DB_6650_ID:
-	case RD_6650_ID:
-		gd->bd->bi_arch_number = 3035;
-		break;
-	case MV_BOARD_ID_AVANTA_LP_FPGA:
-	default:
-		gd->bd->bi_arch_number = 3036;
-		break;
-	}
-#else
 	gd->bd->bi_arch_number = 528;
-#endif
-
 	gd->bd->bi_boot_params = 0x00000100;
 
 	/* relocate the exception vectors */
@@ -1048,10 +1026,6 @@ int board_mmc_init(bd_t *bis)
 int print_cpuinfo(void)
 {
 	char name[50];
-	MV_U32 boardId;
-
-	boardId = mvBoardIdReadFromSatR();
-	mvBoardIdSet(boardId);
 
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	mvCtrlUpdatePexId();

@@ -51,13 +51,6 @@ comri.pl
 /u-boot.geany
 /include/u-boot.lst
 
-/board/mv_ebu/alp/avanta_lp_family/*
-/board/mv_ebu/a370/armada_370_family/*
-/board/mv_ebu/axp/armada_xp_family/*
-/board/mv_ebu/common/mv_hal/*
-/board/mv_ebu/common/common/*
-/tools/marvell/*
-
 #
 # Generated files
 #

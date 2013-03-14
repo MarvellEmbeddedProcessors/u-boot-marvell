@@ -65,7 +65,6 @@
 #ifndef __INCmvCtrlEnvLibh
 #define __INCmvCtrlEnvLibh
 
-/* includes */
 #include "mvSysHwConfig.h"
 #include "mvCommon.h"
 #include "mvTypes.h"
@@ -220,7 +219,7 @@ typedef struct _boardSerdesConf {
 #define TSEN_STATUS_TEMP_OUT_OFFSET             1
 #define TSEN_STATUS_TEMP_OUT_MASK               (0x1FF << TSEN_STATUS_TEMP_OUT_OFFSET)
 
-#define TSEN_CONF_REG                                   0x184D0
+#define TSEN_CONF_REG                           0x184D0
 #define TSEN_CONF_OTF_CALIB_MASK                (0x1 << 30)
 #define TSEN_CONF_REF_CAL_MASK                  (0x1FF << 11)
 #define TSEN_CONF_SOFT_RESET_MASK               (0x1 << 1)

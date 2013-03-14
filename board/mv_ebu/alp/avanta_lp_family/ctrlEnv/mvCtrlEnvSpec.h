@@ -67,9 +67,7 @@
 
 #include "mvDeviceId.h"
 #include "mvSysHwConfig.h"
-
 #include "ctrlEnv/sys/mvCpuIfRegs.h"
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -92,7 +90,7 @@ extern "C" {
 #define MV_MPP_REGS_OFFSET			(0x18000)
 #define MV_GPP_REGS_OFFSET(unit)		(0x18100 + ((unit) * 0x40))
 #define MV_MISC_REGS_OFFSET			(0x18200)
-#define MV_CLK_CMPLX_REGS_OFFSET	(0x18700)
+#define MV_CLK_CMPLX_REGS_OFFSET		(0x18700)
 #define MV_MBUS_REGS_OFFSET			(0x20000)
 #define CPU_GLOBAL_BASE				(MV_MBUS_REGS_OFFSET)
 #define MV_COHERENCY_FABRIC_OFFSET		(0x20200)
@@ -104,8 +102,7 @@ extern "C" {
 #define MV_CPU_PMU_UNIT_SERV_OFFSET(cpu)	(0x22100 + (cpu) * 0x100)
 #define MV_CPU_HW_SEM_OFFSET			(0x20500)
 
-#if defined(MV_ETH_PP2)
-
+#if defined(CONFIG_MV_ETH_PP2)
 #define MV_PP2_REG_BASE				(0x80000)
 #define MV_ETH_BASE_ADDR			(0x50000)
 #define LMS_REG_BASE				(MV_ETH_BASE_ADDR)
@@ -256,8 +253,7 @@ extern "C" {
 #define MV_ETH_MAX_TXQ              		8
 #define MV_ETH_TX_CSUM_MAX_SIZE 		9800
 #define MV_PNC_TCAM_LINES			1024	/* TCAM num of entries */
-
-#endif /* CONFIG_MV_ETH_PP2 */
+#endif
 
 #if defined(MV88F78X60) && !defined(MV88F78X60_Z1)
 /* New GMAC module is used */

@@ -442,11 +442,6 @@ MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum)
 *
 * DESCRIPTION:
 *       This routine extract the controller core clock.
-*       This function uses the controller counters to make identification.
-*		Note: In order to avoid interference, make sure task context switch
-*		and interrupts will not occure during this function operation
-*
-*		 ----- omriii : is above comment still relevant here ??? -----
 *
 * INPUT:
 *
@@ -459,7 +454,6 @@ MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
-	MV_FREQ_MODE freqMode;
 #ifdef CONFIG_MACH_AVANTA_LP_FPGA
 	/* FPGA is limited to 25Mhz */
 	return MV_FPGA_CORE_CLK;
@@ -467,12 +461,11 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 	switch (mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT)) {
 	case 0:
 		return _166MHz;
-		break;
 	case 1:
 		return _200MHz;
-		break;
 	default:
-		return (MV_U32)MV_ERROR;
+		DB(mvOsPrintf("%s: Error : Board: Read from S@R fail\n", __func__));
+		return _200MHz;
 	}
 #endif
 }
@@ -1617,45 +1610,6 @@ MV_32 mvBoardNandWidthGet(void)
 }
 
 /*******************************************************************************
-* mvBoardIdReadFromSatR
-*
-* DESCRIPTION:
-*	Function name is self describing.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       void
-*
-*******************************************************************************/
-MV_U32 mvBoardIdReadFromSatR(void)
-{
-	MV_U32 boardId;
-	MV_BOARD_SAR_INFO sInfo;
-	MV_U8 tempVal;
-
-#ifdef CONFIG_MACH_AVANTA_LP_FPGA
-	boardId = MV_BOARD_ID_AVANTA_LP_FPGA;
-#else
-	if ( MV_OK == mvBoardSarInfoGet(MV_SATR_BOARD_ID, &sInfo)) {
-		tempVal = MV_REG_READ(MPP_SAMPLE_AT_RESET(sInfo.regNum));
-		boardId = ((tempVal & (sInfo.mask)) >> sInfo.offset);
-	}
-#endif
-
-	if (boardId >= MV_MAX_BOARD_ID) {
-		mvOsPrintf("%s: Error: read wrong board (%d)\n", __func__, boardId);
-		return MV_INVALID_BOARD_ID;
-	}
-
-	return boardId;
-}
-
-/*******************************************************************************
 * mvBoardIdSet - Set Board model
 *
 * DESCRIPTION:
@@ -1673,14 +1627,11 @@ MV_U32 mvBoardIdReadFromSatR(void)
 *       void
 *
 *******************************************************************************/
-MV_BOOL mvBoardIdSet(MV_U32 boardId)
+MV_VOID mvBoardIdSet(MV_U32 boardId)
 {
 	if (boardId >= MV_MAX_BOARD_ID) {
 		mvOsPrintf("%s: Error: wrong boardId (%d)\n", __func__, boardId);
-		return MV_FALSE;
 	}
-
-	gBoardId = boardId;
 
 	board = boardInfoTbl[gBoardId];
 }
@@ -1705,9 +1656,19 @@ MV_BOOL mvBoardIdSet(MV_U32 boardId)
 *******************************************************************************/
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-	if (gBoardId == MV_INVALID_BOARD_ID)
-		mvOsWarning();
-	return gBoardId;
+	MV_U32 boardId, tempVal;
+
+#ifdef CONFIG_MACH_AVANTA_LP_FPGA
+	boardId = MV_BOARD_ID_AVANTA_LP_FPGA;
+#else
+	tempVal = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
+	boardId = ((tempVal & (0xF0)) >> 4);
+#endif
+	if (boardId >= MV_MAX_BOARD_ID) {
+		mvOsPrintf("%s: Error: read wrong board (%d)\n", __func__, boardId);
+		return MV_INVALID_BOARD_ID;
+	}
+	return boardId;
 }
 
 /*******************************************************************************

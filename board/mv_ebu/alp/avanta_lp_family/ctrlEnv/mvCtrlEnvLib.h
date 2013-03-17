@@ -264,9 +264,6 @@ MV_U32 mvCtrlXorMaxUnitGet(MV_VOID);
 #if defined(MV_INCLUDE_USB)
 MV_U32 mvCtrlUsbMaxGet(MV_VOID);
 #endif
-#if defined(MV_INCLUDE_LEGACY_NAND)
-MV_U32 mvCtrlNandSupport(MV_VOID);
-#endif
 #if defined(MV_INCLUDE_SDIO)
 MV_U32 mvCtrlSdioSupport(MV_VOID);
 #endif

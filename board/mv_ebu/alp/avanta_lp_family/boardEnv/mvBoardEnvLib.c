@@ -865,10 +865,6 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_U32 sarBootDeviceValue)
 		mvBoardMppTypeSet(0, NAND_BOOT_V2);
 		mvBoardMppTypeSet(1, NAND_BOOT_V2);
 		break;
-	case MSAR_0_BOOT_NAND_LEGACY:
-		mvBoardMppTypeSet(0, NAND_BOOT_V1);
-		mvBoardMppTypeSet(1, NAND_BOOT_V1);
-		break;
 	case MSAR_0_BOOT_SPI_FLASH:
 		groupType = ((mvCtrlConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2) ? SPI0_BOOT_SPDIF_AUDIO : SPI0_BOOT);
 		mvBoardMppTypeSet(0, groupType);

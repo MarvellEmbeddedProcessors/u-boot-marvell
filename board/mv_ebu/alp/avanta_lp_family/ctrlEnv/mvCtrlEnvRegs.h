@@ -379,7 +379,6 @@ extern "C" {
 #define MSAR_BOOT_NOR                           (0x0 << MSAR_BOOT_MODE_OFFS)
 #define MSAR_BOOT_SPI                           (0x3 << MSAR_BOOT_MODE_OFFS)
 #define MSAR_BOOT_DOVE_NAND                     (0x1 << MSAR_BOOT_MODE_OFFS)
-#define MSAR_BOOT_LEGACY_NAND                   (0x6 << MSAR_BOOT_MODE_OFFS)
 
 #define MSAR_TCLK_OFFS                          28
 #define MSAR_TCLK_MASK                          (0x1 << MSAR_TCLK_OFFS)
@@ -410,7 +409,6 @@ typedef enum {
 	MSAR_0_BOOT_SPI_FLASH,
 	MSAR_0_BOOT_PEX,
 	MSAR_0_BOOT_SATA,
-	MSAR_0_BOOT_NAND_LEGACY,
 	MSAR_0_BOOT_PROMPT,
 	MSAR_0_BOOT_SPI1_FLASH
 } MV_BOARD_BOOT_SRC;
@@ -455,38 +453,32 @@ typedef struct _mvSARBootTable {
 /*29*/ { MSAR_0_BOOT_NAND_NEW, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_16BIT }, \
 /*30*/ { 0,           5,            60,          60           }, \
 /*31*/ { 0,           2,            40,          40           }, \
-/*32*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B,     2                }, \
-/*33*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB,       2                }, \
-/*34*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B,     3                }, \
-/*35*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB,       3                }, \
-/*36*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B,     3                }, \
-/*37*/ { MSAR_0_BOOT_NAND_LEGACY, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB,       2                }, \
-/*38*/ { 0,           1,            2,            2              }, \
-/*39*/ { 0,           3,            6,            6              }, \
-/*40*/ { 0,           3,            5,            5              }, \
-/*41*/ { 0,           2,            6,            3              }, \
-/*42*/ { 0,           4,            10,          5              }, \
-/*43*/ { 0,           3,            6,            6              }, \
-/*44*/ { 0,           2,            4,            4              }, \
-/*45*/ { 0,           3,            6,            3              }, \
-/*46*/ { 0,           2,            5,            5              }, \
-/*47*/ { MSAR_0_BOOT_PROMPT,         2,            5,            5              }, \
-/*48*/ { MSAR_0_BOOT_UART,               1,            3,            3              }, \
-/*49*/ { MSAR_0_BOOT_SATA,                5,            10,          10           }, \
-/*50*/ { MSAR_0_BOOT_PEX,   3,            8,            4              }, \
-/*51*/ { MSAR_0_BOOT_PEX,   1,            2,            1              }, \
-/*52*/ { 0,           3,            6,            3              }, \
-/*53*/ { 0,           2,            8,            4              }, \
-/*54*/ { 0,           5,            10,          5              }, \
-/*55*/ { 0,           1,            20,          20           }, \
-/*56*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
-/*57*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 60               }, \
-/*58*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
-/*59*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 60               }, \
-/*60*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
-/*61*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 60               }, \
-/*62*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
-/*63*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 40               } \
+/*32*/ { 0,           1,            2,            2              }, \
+/*33*/ { 0,           3,            6,            6              }, \
+/*34*/ { 0,           3,            5,            5              }, \
+/*35*/ { 0,           2,            6,            3              }, \
+/*36*/ { 0,           4,            10,          5              }, \
+/*37*/ { 0,           3,            6,            6              }, \
+/*38*/ { 0,           2,            4,            4              }, \
+/*39*/ { 0,           3,            6,            3              }, \
+/*40*/ { 0,           2,            5,            5              }, \
+/*41*/ { MSAR_0_BOOT_PROMPT,         2,            5,            5              }, \
+/*42*/ { MSAR_0_BOOT_UART,               1,            3,            3              }, \
+/*43*/ { MSAR_0_BOOT_SATA,                5,            10,          10           }, \
+/*44*/ { MSAR_0_BOOT_PEX,   3,            8,            4              }, \
+/*45*/ { MSAR_0_BOOT_PEX,   1,            2,            1              }, \
+/*46*/ { 0,           3,            6,            3              }, \
+/*47*/ { 0,           2,            8,            4              }, \
+/*48*/ { 0,           5,            10,          5              }, \
+/*49*/ { 0,           1,            20,          20           }, \
+/*50*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
+/*51*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 60               }, \
+/*52*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
+/*53*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 60               }, \
+/*54*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
+/*55*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 60               }, \
+/*56*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT, 60        }, \
+/*57*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 40               } \
 }
 
 typedef struct {

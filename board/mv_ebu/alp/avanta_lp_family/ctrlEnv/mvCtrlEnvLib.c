@@ -656,29 +656,6 @@ MV_U32 mvCtrlUsbMaxGet(void)
 
 #endif
 
-#if defined(MV_INCLUDE_LEGACY_NAND)
-/*******************************************************************************
-* mvCtrlNandSupport - Return if this controller has integrated NAND flash support
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE if NAND is supported and MV_FALSE otherwise
-*
-*******************************************************************************/
-MV_U32 mvCtrlNandSupport(MV_VOID)
-{
-	return 0; /* kostaz: what's that ??? */
-}
-
-#endif
-
 #if defined(MV_INCLUDE_SDIO)
 /*******************************************************************************
 * mvCtrlSdioSupport - Return if this controller has integrated SDIO flash support

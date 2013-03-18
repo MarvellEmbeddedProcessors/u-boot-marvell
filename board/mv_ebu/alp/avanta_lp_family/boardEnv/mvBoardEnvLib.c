@@ -739,12 +739,12 @@ MV_32 mvBoardMppGet(MV_U32 mppGroupNum)
 
 MV_32 mvBoardMppTypeGet(MV_U32 mppGroupNum)
 {
-	return (MV_U32)board->pBoardMppGroupValue[mppGroupNum];
+	return (MV_U32)board->pBoardMppGroupValue[0].mppGroupType[mppGroupNum];
 }
 
 MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType)
 {
-	board->pBoardMppGroupValue[mppGroupNum] = groupType;
+	board->pBoardMppGroupValue[0].mppGroupType[mppGroupNum] = groupType;
 }
 
 /*******************************************************************************
@@ -829,11 +829,11 @@ MV_VOID mvBoardConfigInit(void)
 		/* omriii: what scenario leads to enable PON_CLK_OUT insted of PON_TX_FAULT?? */
 		mvBoardMppTypeSet(5, GE0_UNIT_PON_TX_FAULT);
 		mvBoardMppTypeSet(6, GE0_UNIT);
-		mvBoardMppTypeSet(7, GE0_UNIT_LED_MATRIX);  /* omriii :when to use GE0_UNIT_UA1_PTP */
-	}else if (mac1con == 0x2) { /* 10  MAC1 connected to Switch P4 */
+		mvBoardMppTypeSet(7, GE0_UNIT_LED_MATRIX);      /* omriii :when to use GE0_UNIT_UA1_PTP */
+	}else if (mac1con == 0x2) {
 		mvBoardMppTypeSet(5, SWITCH_P4_PON_TX_FAULT);
 		mvBoardMppTypeSet(6, SWITCH_P4);
-		mvBoardMppTypeSet(7, SWITCH_P4_LED_MATRIX); /* omriii :when to use SWITCH_P4_UA1_PTP */
+		mvBoardMppTypeSet(7, SWITCH_P4_LED_MATRIX); /* omriii : when to use SWITCH_P4_UA1_PTP */
 	}
 }
 
@@ -858,7 +858,7 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_U32 sarBootDeviceValue)
 {
 	MV_U32 groupType;
 	MV_BOOL SW_SMI;
-	MV_BOARD_BOOT_SRC bootSrc= mvBoardBootDeviceGet(sarBootDeviceValue);
+	MV_BOARD_BOOT_SRC bootSrc = mvBoardBootDeviceGet(sarBootDeviceValue);
 
 	switch (bootSrc) {
 	case MSAR_0_BOOT_NAND_NEW:
@@ -869,7 +869,7 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_U32 sarBootDeviceValue)
 		groupType = ((mvCtrlConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2) ? SPI0_BOOT_SPDIF_AUDIO : SPI0_BOOT);
 		mvBoardMppTypeSet(0, groupType);
 		mvBoardMppTypeSet(1, groupType);
-	case MSAR_0_BOOT_SPI1_FLASH:	/* MSAR_0_SPI1 - update Groups 3-4 */
+	case MSAR_0_BOOT_SPI1_FLASH:    /* MSAR_0_SPI1 - update Groups 3-4 */
 		mvBoardMppTypeSet(3, SDIO_SPI1_UNIT);
 		SW_SMI = MV_TRUE;       // test if SW or CPU SMI control (omriii : how to decide ?)
 		if (mvCtrlIsLantiqTDM())
@@ -916,12 +916,15 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGet(MV_U32 sarBootDeviceValue)
 {
 	MV_SAR_BOOT_TABLE sarTable[] = MV_SAR_TABLE_VAL;
 	MV_SAR_BOOT_TABLE sarBootEntry = sarTable[sarBootDeviceValue];
-	if (sarBootEntry.bootSrc!=MSAR_0_BOOT_SPI_FLASH)
+
+	if (sarBootEntry.bootSrc != MSAR_0_BOOT_SPI_FLASH)
 		return sarBootEntry.bootSrc;
-	else /* if boot source is SPI ,verify which CS (0/1) */
-		if (mvBoardBootAttrGet(sarBootDeviceValue,1) == MSAR_0_SPI0)
-			return MSAR_0_BOOT_SPI_FLASH;
-		else return MSAR_0_BOOT_SPI1_FLASH;
+
+	/* if boot source is SPI ,verify which CS (0/1) */
+	if (mvBoardBootAttrGet(sarBootDeviceValue, 1) == MSAR_0_SPI0)
+		return MSAR_0_BOOT_SPI_FLASH;
+	else
+		return MSAR_0_BOOT_SPI1_FLASH;
 }
 
 /*******************************************************************************
@@ -931,7 +934,7 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGet(MV_U32 sarBootDeviceValue)
 *   read board BOOT configuration and return attributes accordingly
 *
 * INPUT:  sarBootDevice - BOOT_DEVICE value from S@R.*
-* 	  attrNum - attribute number [1/2/3]
+*         attrNum - attribute number [1/2/3]
 * OUTPUT:  None.
 *
 * RETURN:
@@ -942,6 +945,7 @@ MV_U32 mvBoardBootAttrGet(MV_U32 sarBootDeviceValue, MV_U8 attrNum)
 {
 	MV_SAR_BOOT_TABLE sarTable[] = MV_SAR_TABLE_VAL;
 	MV_SAR_BOOT_TABLE sarBootEntry = sarTable[sarBootDeviceValue];
+
 	switch (attrNum) {
 	case 1:
 		return sarBootEntry.attr1;
@@ -1117,7 +1121,7 @@ MV_U32 mvBoardGppConfigGet(void)
 *******************************************************************************/
 MV_32 mvBoardTdmSpiModeGet(MV_VOID)
 {
-	return DUAL_CHIP_SELECT_MODE;
+	return 0;
 }
 
 /*******************************************************************************
@@ -1625,9 +1629,8 @@ MV_32 mvBoardNandWidthGet(void)
 *******************************************************************************/
 MV_VOID mvBoardIdSet(MV_U32 boardId)
 {
-	if (boardId >= MV_MAX_BOARD_ID) {
+	if (boardId >= MV_MAX_BOARD_ID)
 		mvOsPrintf("%s: Error: wrong boardId (%d)\n", __func__, boardId);
-	}
 
 	board = boardInfoTbl[gBoardId];
 }
@@ -2011,7 +2014,7 @@ MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
 * mvBoardSwitchCpuPortGet - Get the the Ethernet Switch CPU port
 *
 * DESCRIPTION:
-*       This routine returns the Switch CPU port.
+*       This routine returns the Switch CPU port if connected , -1 else.
 *
 * INPUT:
 *       switchIdx - index of the switch. Only 0 is supported.
@@ -2026,70 +2029,6 @@ MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
 MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 {
 	return 0;
-}
-
-/*******************************************************************************
-* mvBoardIsSerdesConfigurationEnabled
-*
-* DESCRIPTION:
-*       Check if Serdes configuration is enabled on this board.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_STATUS - MV_OK, MV_ERROR.
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsSerdesConfigurationEnabled(void)
-{
-	if (board->pBoardSerdesConfigValue)
-		return board->pBoardSerdesConfigValue->enableSerdesConfiguration;
-	else
-		return MV_FALSE;
-}
-
-/*******************************************************************************
-* mvBoardSerdesConfigurationEnableSet
-*
-* DESCRIPTION:
-*	Check if Serdes configuration is enabled on this board.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_STATUS - MV_OK, MV_ERROR.
-*
-*******************************************************************************/
-MV_STATUS mvBoardSerdesConfigurationEnableSet(MV_BOOL enableSerdesConfiguration)
-{
-	return MV_ERROR;
-}
-
-/*******************************************************************************
-* mvBoardSerdesCfgGet
-*
-* DESCRIPTION:
-*
-* INPUT:
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       SERDES configuration structure or NULL on error
-*
-*******************************************************************************/
-MV_SERDES_CFG *mvBoardSerdesCfgGet(void)
-{
-	return NULL;
 }
 
 /*******************************************************************************

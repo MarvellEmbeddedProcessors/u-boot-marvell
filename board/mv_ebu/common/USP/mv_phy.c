@@ -71,6 +71,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "neta/gbe/mvNeta.h"
 #elif defined (MV_ETH_PP2)
 #include "pp2/gmac/mvEthGmacRegs.h"
+#include "pp2/gmac/mvEthGmacApi.h"
 #else
 #include "eth/gbe/mvEthRegs.h"
 #endif

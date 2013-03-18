@@ -67,8 +67,11 @@ extern int  AT91F_DataflashInit(void);
 extern void dataflash_print_info(void);
 #endif
 
-#if defined(CONFIG_HARD_I2C) || \
-    defined(CONFIG_SOFT_I2C)
+extern unsigned int mvBoardIdGet(void);
+extern void mvBoardIdSet(unsigned int boardId);
+
+#if defined(CONFIG_HARD_I2C) ||	\
+	defined(CONFIG_SOFT_I2C)
 #include <i2c.h>
 #endif
 
@@ -77,24 +80,51 @@ extern void dataflash_print_info(void);
  ************************************************************************
  * May be supplied by boards if desired
  */
-inline void __coloured_LED_init(void) {}
+inline void __coloured_LED_init(void)
+{
+}
+
 void coloured_LED_init(void)
-	__attribute__((weak, alias("__coloured_LED_init")));
-inline void __red_led_on(void) {}
+__attribute__((weak, alias("__coloured_LED_init")));
+inline void __red_led_on(void)
+{
+}
+
 void red_led_on(void) __attribute__((weak, alias("__red_led_on")));
-inline void __red_led_off(void) {}
+inline void __red_led_off(void)
+{
+}
+
 void red_led_off(void) __attribute__((weak, alias("__red_led_off")));
-inline void __green_led_on(void) {}
+inline void __green_led_on(void)
+{
+}
+
 void green_led_on(void) __attribute__((weak, alias("__green_led_on")));
-inline void __green_led_off(void) {}
+inline void __green_led_off(void)
+{
+}
+
 void green_led_off(void) __attribute__((weak, alias("__green_led_off")));
-inline void __yellow_led_on(void) {}
+inline void __yellow_led_on(void)
+{
+}
+
 void yellow_led_on(void) __attribute__((weak, alias("__yellow_led_on")));
-inline void __yellow_led_off(void) {}
+inline void __yellow_led_off(void)
+{
+}
+
 void yellow_led_off(void) __attribute__((weak, alias("__yellow_led_off")));
-inline void __blue_led_on(void) {}
+inline void __blue_led_on(void)
+{
+}
+
 void blue_led_on(void) __attribute__((weak, alias("__blue_led_on")));
-inline void __blue_led_off(void) {}
+inline void __blue_led_off(void)
+{
+}
+
 void blue_led_off(void) __attribute__((weak, alias("__blue_led_off")));
 
 /*
@@ -120,8 +150,8 @@ static int display_banner(void)
 {
 	printf("\n\n%s\n\n", version_string);
 	debug("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n",
-	       _TEXT_BASE,
-	       _bss_start_ofs + _TEXT_BASE, _bss_end_ofs + _TEXT_BASE);
+	      _TEXT_BASE,
+	      _bss_start_ofs + _TEXT_BASE, _bss_end_ofs + _TEXT_BASE);
 #ifdef CONFIG_MODEM_SUPPORT
 	debug("Modem Support enabled\n");
 #endif
@@ -130,7 +160,7 @@ static int display_banner(void)
 	debug("FIQ Stack: %08lx\n", FIQ_STACK_START);
 #endif
 
-	return (0);
+	return 0;
 }
 
 /*
@@ -161,7 +191,7 @@ static int display_dram_config(void)
 	print_size(size, "\n");
 #endif
 
-	return (0);
+	return 0;
 }
 
 #if defined(CONFIG_HARD_I2C) || defined(CONFIG_SOFT_I2C)
@@ -170,8 +200,9 @@ static int init_func_i2c(void)
 	puts("I2C:   ");
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 	puts("ready\n");
-	return (0);
+	return 0;
 }
+
 #endif
 
 #if defined(CONFIG_CMD_PCI) || defined (CONFIG_PCI)
@@ -181,6 +212,7 @@ static int arm_pci_init(void)
 	pci_init();
 	return 0;
 }
+
 #endif /* CONFIG_CMD_PCI || CONFIG_PCI */
 
 /*
@@ -206,7 +238,7 @@ static int arm_pci_init(void)
  * argument, and returns an integer return code, where 0 means
  * "continue" and != 0 means "fatal error, hang the system".
  */
-typedef int (init_fnc_t) (void);
+typedef int (init_fnc_t)(void);
 
 int print_cpuinfo(void);
 
@@ -215,24 +247,27 @@ void __dram_init_banksize(void)
 	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
 	gd->bd->bi_dram[0].size =  gd->ram_size;
 }
+
 void dram_init_banksize(void)
-	__attribute__((weak, alias("__dram_init_banksize")));
+__attribute__((weak, alias("__dram_init_banksize")));
 
 int __arch_cpu_init(void)
 {
 	return 0;
 }
+
 int arch_cpu_init(void)
-	__attribute__((weak, alias("__arch_cpu_init")));
+__attribute__((weak, alias("__arch_cpu_init")));
 
 int __power_init_board(void)
 {
 	return 0;
 }
-int power_init_board(void)
-	__attribute__((weak, alias("__power_init_board")));
 
-	/* Record the board_init_f() bootstage (after arch_cpu_init()) */
+int power_init_board(void)
+__attribute__((weak, alias("__power_init_board")));
+
+/* Record the board_init_f() bootstage (after arch_cpu_init()) */
 static int mark_bootstage(void)
 {
 	bootstage_mark_name(BOOTSTAGE_ID_START_UBOOT_F, "board_init_f");
@@ -241,7 +276,7 @@ static int mark_bootstage(void)
 }
 
 init_fnc_t *init_sequence[] = {
-	arch_cpu_init,		/* basic arch cpu dependent setup */
+	arch_cpu_init,     /* basic arch cpu dependent setup */
 	mark_bootstage,
 #ifdef CONFIG_OF_CONTROL
 	fdtdec_check_fdt,
@@ -249,28 +284,28 @@ init_fnc_t *init_sequence[] = {
 #if defined(CONFIG_BOARD_EARLY_INIT_F)
 	board_early_init_f,
 #endif
-	timer_init,		/* initialize timer */
+	timer_init,        /* initialize timer */
 #ifdef CONFIG_BOARD_POSTCLK_INIT
 	board_postclk_init,
 #endif
 #ifdef CONFIG_FSL_ESDHC
 	get_clocks,
 #endif
-	env_init,		/* initialize environment */
-	init_baudrate,		/* initialze baudrate settings */
-	serial_init,		/* serial communications setup */
-	console_init_f,		/* stage 1 init of console */
-	display_banner,		/* say that we are here */
+	env_init,               /* initialize environment */
+	init_baudrate,          /* initialze baudrate settings */
+	serial_init,            /* serial communications setup */
+	console_init_f,         /* stage 1 init of console */
+	display_banner,         /* say that we are here */
 #if defined(CONFIG_DISPLAY_CPUINFO)
-	print_cpuinfo,		/* display cpu info (and speed) */
+	print_cpuinfo,          /* display cpu info (and speed) */
 #endif
 #if defined(CONFIG_DISPLAY_BOARDINFO)
-	checkboard,		/* display board info */
+	checkboard,        /* display board info */
 #endif
 #if defined(CONFIG_HARD_I2C) || defined(CONFIG_SOFT_I2C)
 	init_func_i2c,
 #endif
-	dram_init,		/* configure available RAM banks */
+	dram_init,         /* configure available RAM banks */
 	NULL,
 };
 
@@ -280,13 +315,14 @@ void board_init_f(ulong bootflag)
 	init_fnc_t **init_fnc_ptr;
 	gd_t *id;
 	ulong addr, addr_sp;
+
 #ifdef CONFIG_PRAM
 	ulong reg;
 #endif
 	void *new_fdt = NULL;
 	size_t fdt_size = 0;
 
-	memset((void *)gd, 0, sizeof(gd_t));
+	memset((void*)gd, 0, sizeof(gd_t));
 
 	gd->mon_len = _bss_end_ofs;
 #ifdef CONFIG_OF_EMBED
@@ -294,26 +330,24 @@ void board_init_f(ulong bootflag)
 	gd->fdt_blob = _binary_dt_dtb_start;
 #elif defined CONFIG_OF_SEPARATE
 	/* FDT is at end of image */
-	gd->fdt_blob = (void *)(_end_ofs + _TEXT_BASE);
+	gd->fdt_blob = (void*)(_end_ofs + _TEXT_BASE);
 #endif
 	/* Allow the early environment to override the fdt address */
-	gd->fdt_blob = (void *)getenv_ulong("fdtcontroladdr", 16,
-						(uintptr_t)gd->fdt_blob);
+	gd->fdt_blob = (void*)getenv_ulong("fdtcontroladdr", 16,
+					   (uintptr_t)gd->fdt_blob);
 
 	mvBoardIdSet(mvBoardIdGet());
 
-	for (init_fnc_ptr = init_sequence; *init_fnc_ptr; ++init_fnc_ptr) {
-		if ((*init_fnc_ptr)() != 0) {
-			hang ();
-		}
-	}
+	for (init_fnc_ptr = init_sequence; *init_fnc_ptr; ++init_fnc_ptr)
+		if ((*init_fnc_ptr)() != 0)
+			hang();
 
 #ifdef CONFIG_OF_CONTROL
 	/* For now, put this check after the console is ready */
-	if (fdtdec_prepare_fdt()) {
+	if (fdtdec_prepare_fdt())
 		panic("** CONFIG_OF_CONTROL defined but no FDT - please see "
-			"doc/README.fdt-control");
-	}
+		      "doc/README.fdt-control");
+
 #endif
 
 	debug("monitor len: %08lX\n", gd->mon_len);
@@ -342,7 +376,7 @@ void board_init_f(ulong bootflag)
 	/* reserve kernel log buffer */
 	addr -= (LOGBUFF_RESERVE);
 	debug("Reserving %dk for kernel logbuffer at %08lx\n", LOGBUFF_LEN,
-		addr);
+	      addr);
 #endif
 #endif
 
@@ -351,7 +385,7 @@ void board_init_f(ulong bootflag)
 	 * reserve protected RAM
 	 */
 	reg = getenv_ulong("pram", 10, CONFIG_PRAM);
-	addr -= (reg << 10);		/* size is in kB */
+	addr -= (reg << 10);            /* size is in kB */
 	debug("Reserving %ldk for protected RAM at %08lx\n", reg, addr);
 #endif /* CONFIG_PRAM */
 
@@ -378,8 +412,8 @@ void board_init_f(ulong bootflag)
 	/* reserve memory for LCD display (always full pages) */
 	addr = lcd_setmem(addr);
 	gd->fb_base = addr;
-#endif /* CONFIG_FB_ADDR */
-#endif /* CONFIG_LCD */
+#endif  /* CONFIG_FB_ADDR */
+#endif  /* CONFIG_LCD */
 
 	/*
 	 * reserve memory for U-Boot code, data & bss
@@ -396,25 +430,25 @@ void board_init_f(ulong bootflag)
 	 */
 	addr_sp = addr - TOTAL_MALLOC_LEN;
 	debug("Reserving %dk for malloc() at: %08lx\n",
-			TOTAL_MALLOC_LEN >> 10, addr_sp);
+	      TOTAL_MALLOC_LEN >> 10, addr_sp);
 	/*
 	 * (permanently) allocate a Board Info struct
 	 * and a permanent copy of the "global" data
 	 */
-	addr_sp -= sizeof (bd_t);
-	bd = (bd_t *) addr_sp;
+	addr_sp -= sizeof(bd_t);
+	bd = (bd_t*)addr_sp;
 	gd->bd = bd;
 	debug("Reserving %zu Bytes for Board Info at: %08lx\n",
-			sizeof (bd_t), addr_sp);
+	      sizeof(bd_t), addr_sp);
 
 #ifdef CONFIG_MACH_TYPE
 	gd->bd->bi_arch_number = CONFIG_MACH_TYPE; /* board id for Linux */
 #endif
 
-	addr_sp -= sizeof (gd_t);
-	id = (gd_t *) addr_sp;
+	addr_sp -= sizeof(gd_t);
+	id = (gd_t*)addr_sp;
 	debug("Reserving %zu Bytes for Global Data at: %08lx\n",
-			sizeof (gd_t), addr_sp);
+	      sizeof(gd_t), addr_sp);
 
 #if defined(CONFIG_OF_SEPARATE) && defined(CONFIG_OF_CONTROL)
 	/*
@@ -426,7 +460,7 @@ void board_init_f(ulong bootflag)
 		fdt_size = ALIGN(fdt_totalsize(gd->fdt_blob) + 0x1000, 32);
 
 		addr_sp -= fdt_size;
-		new_fdt = (void *)addr_sp;
+		new_fdt = (void*)addr_sp;
 		debug("Reserving %zu Bytes for FDT at: %08lx\n",
 		      fdt_size, addr_sp);
 	}
@@ -435,9 +469,9 @@ void board_init_f(ulong bootflag)
 	/* setup stackpointer for exeptions */
 	gd->irq_sp = addr_sp;
 #ifdef CONFIG_USE_IRQ
-	addr_sp -= (CONFIG_STACKSIZE_IRQ+CONFIG_STACKSIZE_FIQ);
+	addr_sp -= (CONFIG_STACKSIZE_IRQ + CONFIG_STACKSIZE_FIQ);
 	debug("Reserving %zu Bytes for IRQ stack at: %08lx\n",
-		CONFIG_STACKSIZE_IRQ+CONFIG_STACKSIZE_FIQ, addr_sp);
+	      CONFIG_STACKSIZE_IRQ + CONFIG_STACKSIZE_FIQ, addr_sp);
 #endif
 	/* leave 3 words for abort-stack    */
 	addr_sp -= 12;
@@ -445,7 +479,7 @@ void board_init_f(ulong bootflag)
 	/* 8-byte alignment for ABI compliance */
 	addr_sp &= ~0x07;
 #else
-	addr_sp += 128;	/* leave 32 words for abort-stack   */
+	addr_sp += 128; /* leave 32 words for abort-stack   */
 	gd->irq_sp = addr_sp;
 #endif
 
@@ -459,7 +493,7 @@ void board_init_f(ulong bootflag)
 	gd->bd->bi_baudrate = gd->baudrate;
 	/* Ram ist board specific, so move it to board code ... */
 	dram_init_banksize();
-	display_dram_config();	/* and display it */
+	display_dram_config();  /* and display it */
 
 	gd->relocaddr = addr;
 	gd->start_addr_sp = addr_sp;
@@ -469,7 +503,7 @@ void board_init_f(ulong bootflag)
 		memcpy(new_fdt, gd->fdt_blob, fdt_size);
 		gd->fdt_blob = new_fdt;
 	}
-	memcpy(id, (void *)gd, sizeof(gd_t));
+	memcpy(id, (void*)gd, sizeof(gd_t));
 }
 
 #if !defined(CONFIG_SYS_NO_FLASH)
@@ -503,9 +537,10 @@ static void display_fdt_model(const void *blob)
 {
 	const char *model;
 
-	model = (char *)fdt_getprop(blob, 0, "model", NULL);
+	model = (char*)fdt_getprop(blob, 0, "model", NULL);
 	printf("Model: %s\n", model ? model : "<unknown>");
 }
+
 #endif
 
 /************************************************************************
@@ -521,11 +556,12 @@ static void display_fdt_model(const void *blob)
 void board_init_r(gd_t *id, ulong dest_addr)
 {
 	ulong malloc_start;
+
 #if !defined(CONFIG_SYS_NO_FLASH)
 	ulong flash_size;
 #endif
 
-	gd->flags |= GD_FLG_RELOC;	/* tell others: relocation done */
+	gd->flags |= GD_FLG_RELOC;      /* tell others: relocation done */
 	bootstage_mark_name(BOOTSTAGE_ID_START_UBOOT_R, "board_init_r");
 
 	monitor_flash_len = _end_ofs;
@@ -534,7 +570,7 @@ void board_init_r(gd_t *id, ulong dest_addr)
 	enable_caches();
 
 	debug("monitor flash len: %08lX\n", monitor_flash_len);
-	board_init();	/* Setup chipselects */
+	board_init();   /* Setup chipselects */
 	/*
 	 * TODO: printing of the clock inforamtion of the board is now
 	 * implemented as part of bdinfo command. Currently only support for
@@ -557,7 +593,7 @@ void board_init_r(gd_t *id, ulong dest_addr)
 
 	/* The Malloc area is immediately below the monitor copy in DRAM */
 	malloc_start = dest_addr - TOTAL_MALLOC_LEN;
-	mem_malloc_init (malloc_start, TOTAL_MALLOC_LEN);
+	mem_malloc_init(malloc_start, TOTAL_MALLOC_LEN);
 
 #ifdef CONFIG_ARCH_EARLY_INIT_R
 	arch_early_init_r();
@@ -578,11 +614,11 @@ void board_init_r(gd_t *id, ulong dest_addr)
 		 */
 		if (getenv_yesno("flashchecksum") == 1) {
 			printf("  CRC: %08X", crc32(0,
-				(const unsigned char *) CONFIG_SYS_FLASH_BASE,
-				flash_size));
+						    (const unsigned char*)CONFIG_SYS_FLASH_BASE,
+						    flash_size));
 		}
 		putc('\n');
-# else	/* !CONFIG_SYS_FLASH_CHECKSUM */
+# else          /* !CONFIG_SYS_FLASH_CHECKSUM */
 		print_size(flash_size, "\n");
 # endif /* CONFIG_SYS_FLASH_CHECKSUM */
 	} else {
@@ -593,7 +629,7 @@ void board_init_r(gd_t *id, ulong dest_addr)
 
 #if defined(CONFIG_CMD_NAND)
 	puts("NAND:  ");
-	nand_init();		/* go init the NAND */
+	nand_init();            /* go init the NAND */
 #endif
 
 #if defined(CONFIG_CMD_ONENAND)
@@ -620,7 +656,7 @@ void board_init_r(gd_t *id, ulong dest_addr)
 	arm_pci_init();
 #endif
 
-	stdio_init();	/* get the devices list going. */
+	stdio_init();   /* get the devices list going. */
 
 	jumptable_init();
 
@@ -629,7 +665,7 @@ void board_init_r(gd_t *id, ulong dest_addr)
 	api_init();
 #endif
 
-	console_init_r();	/* fully init console as a device */
+	console_init_r();       /* fully init console as a device */
 
 #ifdef CONFIG_DISPLAY_BOARDINFO_LATE
 # ifdef CONFIG_OF_CONTROL
@@ -649,7 +685,7 @@ void board_init_r(gd_t *id, ulong dest_addr)
 	misc_init_r();
 #endif
 
-	 /* set up exceptions */
+	/* set up exceptions */
 	interrupt_init();
 	/* enable exceptions */
 	enable_interrupts();
@@ -695,15 +731,14 @@ void board_init_r(gd_t *id, ulong dest_addr)
 		pram += (LOGBUFF_LEN + LOGBUFF_OVERHEAD) / 1024;
 #endif
 #endif
-		sprintf((char *)memsz, "%ldk", (gd->ram_size / 1024) - pram);
-		setenv("mem", (char *)memsz);
+		sprintf((char*)memsz, "%ldk", (gd->ram_size / 1024) - pram);
+		setenv("mem", (char*)memsz);
 	}
 #endif
 
 	/* main_loop() can return to retry autoboot, if so just run it again. */
-	for (;;) {
+	for (;; )
 		main_loop();
-	}
 
 	/* NOTREACHED - no way out of command loop except booting */
 }
@@ -711,5 +746,5 @@ void board_init_r(gd_t *id, ulong dest_addr)
 void hang(void)
 {
 	puts("### ERROR ### Please RESET the board ###\n");
-	for (;;);
+	for (;; ) ;
 }

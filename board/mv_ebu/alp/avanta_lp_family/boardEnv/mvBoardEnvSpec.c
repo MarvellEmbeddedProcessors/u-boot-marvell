@@ -168,18 +168,18 @@ MV_BOARD_INFO avanta_lp_fpga_board_info = {
 
 MV_BOARD_TWSI_INFO db88f6600InfoBoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,	      0x4C,	   ADDR7_BIT			     },
-	{ BOARD_DEV_TWSI_SATR,	      0x4D,	   ADDR7_BIT			     },
-	{ BOARD_DEV_TWSI_EEPROM,      0x54,	   ADDR7_BIT			     },
-	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x21,	   ADDR7_BIT			     },
-	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x22,	   ADDR7_BIT			     }, /*omriii : re-verify that 0x22 is also IO_EXPANDER for 6600 board */
-	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x24,	   ADDR7_BIT			     }, /*omriii : re-verify that 0x22 is also IO_EXPANDER for 6600 board */
+	{ BOARD_DEV_TWSI_SATR,	      0x4C,	   ADDR7_BIT				    },
+	{ BOARD_DEV_TWSI_SATR,	      0x4D,	   ADDR7_BIT				    },
+	{ BOARD_DEV_TWSI_EEPROM,      0x54,	   ADDR7_BIT				    },
+	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x21,	   ADDR7_BIT				    },
+	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x22,	   ADDR7_BIT				    },  /*omriii : re-verify that 0x22 is also IO_EXPANDER for 6600 board */
+	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x24,	   ADDR7_BIT				    },  /*omriii : re-verify that 0x22 is also IO_EXPANDER for 6600 board */
 };
 MV_BOARD_MAC_INFO db88f6600InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x8						       },
-	{ BOARD_MAC_SPEED_AUTO, 0x9						       },
-	{ N_A,			N_A						       }
+	{ BOARD_MAC_SPEED_AUTO, 0x8									},
+	{ BOARD_MAC_SPEED_AUTO, 0x9									},
+	{ N_A,			N_A									}
 };
 MV_BOARD_MPP_TYPE_INFO db88f6600InfoBoardModTypeInfo[] = {
 	{

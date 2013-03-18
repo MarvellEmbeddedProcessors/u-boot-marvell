@@ -77,63 +77,11 @@ extern "C" {
 #include "boardEnv/mvBoardEnvSpec.h"
 #include "twsi/mvTwsi.h"
 
-/* DUART stuff for Tclk detection only */
-#define DUART_BAUD_RATE                 115200
-#define MAX_CLOCK_MARGINE               5000000 /* Maximum detected clock margin */
-
-/* Voice devices assembly modes */
-#define DAISY_CHAIN_MODE                1
-#define DUAL_CHIP_SELECT_MODE           0
-#define INTERRUPT_TO_MPP                1
-#define INTERRUPT_TO_TDM                0
-
-#define BOARD_ETH_PORT_NUM  MV_ETH_MAX_PORTS
 #define BOARD_ETH_SWITCH_PORT_NUM       8
 #define BOARD_ETH_QD_SWITCH_PORT_NUM    5
-#define BOARD_ETH_SWITCH_CPUPORT_NUM    2
-#define MV_BOARD_MAX_USB_IF             3
 #define MV_BOARD_MAX_MPP                9       /* number of MPP conf registers */
 #define MV_BOARD_MAX_MPP_GROUPS         9
 #define MV_BOARD_NAME_LEN               0x20
-
-/* EPPROM Modules detection information */
-
-#define MV_BOARD_EEPROM_MODULE_ADDR             0x50
-#define MV_BOARD_EEPROM_MODULE_ADDR_TYPE        ADDR7_BIT
-
-#define MV_BOARD_PEX_MODULE_ADDR                0x23
-#define MV_BOARD_PEX_MODULE_ADDR_TYPE           ADDR7_BIT
-#define MV_BOARD_PEX_MODULE_ID                  0
-
-#define MV_BOARD_LVDS_MODULE_ADDR               0x21
-#define MV_BOARD_LVDS_MODULE_ADDR_TYPE          ADDR7_BIT
-#define MV_BOARD_LVDS_MODULE_ID                 0
-
-#define MV_BOARD_SETM_MODULE_ADDR               0x23
-#define MV_BOARD_SETM_MODULE_ADDR_TYPE          ADDR7_BIT
-#define MV_BOARD_SETM_MODULE_ID                 1
-
-#define MV_BOARD_MPP_MODULE_ADDR                0x20
-#define MV_BOARD_MPP_MODULE_ADDR_TYPE           ADDR7_BIT
-#define MV_BOARD_LCD_DVI_MODULE_ID              0
-#define MV_BOARD_TDM_MODULE_ID                  1
-#define MV_BOARD_MII_GMII_MODULE_ID             4
-
-typedef struct _boardData {
-	MV_U32 magic;
-	MV_U16 boardId;
-	MV_U8 boardVer;
-	MV_U8 boardRev;
-	MV_U32 reserved1;
-	MV_U32 reserved2;
-} BOARD_DATA;
-
-typedef enum _devBoardMppGroupClass {
-	MV_BOARD_MPP_GROUP_1,
-	MV_BOARD_MPP_GROUP_2,
-	MV_BOARD_MPP_GROUP_3,
-	MV_BOARD_MAX_MPP_GROUP
-} MV_BOARD_MPP_GROUP_CLASS;
 
 typedef enum _devBoardMppTypeClass {
 	MV_BOARD_AUTO,
@@ -350,7 +298,7 @@ typedef struct _boardInfo {
 	MV_U8 numBoardMppConfigValue;
 	MV_BOARD_MPP_INFO *pBoardMppConfigValue;
 	MV_U8 numBoardMppGroupValue;
-	MV_BOARD_MPP_GROUP_INFO **pBoardMppGroupValue;
+	MV_BOARD_MPP_GROUP_INFO *pBoardMppGroupValue;
 	MV_U8 numBoardSerdesConfigValue;
 	MV_SERDES_CFG *pBoardSerdesConfigValue;
 	MV_U32 intsGppMaskLow;
@@ -413,7 +361,7 @@ typedef struct _boardInfo {
 	MV_U32 nandFlashWriteParams;
 	MV_U32 nandFlashControl;
 	MV_BOARD_TDM_SPI_INFO *pBoardTdmSpiInfo;
-	MV_BOARD_PEX_INFO	boardPexInfo;	/* filled in runtime */
+	MV_BOARD_PEX_INFO boardPexInfo;         /* filled in runtime */
 	MV_U32 norFlashReadParams;
 	MV_U32 norFlashWriteParams;
 
@@ -450,8 +398,8 @@ typedef struct _boardInfo {
 #define MSAR_0_SPI1                             1
 
 /* For backward compatability with Legacy mode */
-#define mvBoardSwitchConnectedPortGet(port)	(-1)
-#define mvBoardIsSwitchConnected(port)  	(mvBoardSwitchConnectedPortGet(port) != -1)
+#define mvBoardSwitchConnectedPortGet(port)     (-1)
+#define mvBoardIsSwitchConnected(port)          (mvBoardSwitchConnectedPortGet(port) != -1)
 /*#define mvBoardLinkStatusIrqGet(port)		mvBoardSwitchIrqGet()*/
 
 MV_VOID mvBoardEnvInit(MV_VOID);
@@ -528,9 +476,8 @@ MV_BOOL mvBoardIsGMIIModuleConnected(void);
 MV_STATUS mvBoardTwsiMuxChannelSet(MV_U8 muxChNum);
 MV_STATUS mvBoardTwsiReadByteThruMux(MV_U8 muxChNum, MV_U8 chNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *data);
 MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum);
-MV_BOOL mvBoardIsSerdesConfigurationEnabled(void);
-MV_STATUS  mvBoardSerdesConfigurationEnableSet(MV_BOOL enableSerdesconfig);
-MV_SERDES_CFG *mvBoardSerdesCfgGet(void);
+MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx);
+MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
 MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void);
 MV_STATUS mvBoardConfIdSet(MV_U16 conf);
 MV_U16 mvBoardPexModeGet(MV_VOID);

@@ -229,7 +229,7 @@ typedef struct _boardSerdesConf {
 #define SAR_CPU_FAB_GET(cpu, fab)       (((cpu & 0x7) << 21) | ((fab & 0xF) << 24))
 
 /* mcspLib.h API list */
-MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField,MV_SATR_TYPE_ID satrReadField, MV_U8 val);
+MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrReadField, MV_U8 val);
 MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField);
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode);
 void mvCtrlSatrInit(MV_VOID);
@@ -275,7 +275,7 @@ MV_BOOL mvCtrlIsZarlinkTDM(MV_VOID);
 MV_BOOL mvCtrlIsExternalTDM(MV_VOID);
 MV_BOOL mvCtrlIsSiliconLabsTDM(MV_VOID);
 MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID);
-
+MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel);
 MV_U16 mvCtrlModelGet(MV_VOID);
 MV_U8 mvCtrlRevGet(MV_VOID);
 MV_STATUS mvCtrlNameGet(char *pNameBuff);
@@ -297,9 +297,6 @@ MV_BOOL mvCtrlIsBootFromNOR(MV_VOID);
 MV_BOOL mvCtrlIsBootFromSPI(MV_VOID);
 MV_BOOL mvCtrlIsBootFromNAND(MV_VOID);
 MV_BOOL   mvCtrlPwrMemGet(MV_UNIT_ID unitId, MV_U32 index);
-
-MV_U32 mvCtrlSerdesMaxLinesGet(MV_VOID);
-MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID);
 MV_U32 mvCtrlDDRBudWidth(MV_VOID);
 MV_BOOL mvCtrlDDRThruXbar(MV_VOID);
 MV_BOOL mvCtrlDDRECC(MV_VOID);

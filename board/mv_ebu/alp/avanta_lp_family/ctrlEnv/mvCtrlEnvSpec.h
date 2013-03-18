@@ -67,6 +67,7 @@
 
 #include "mvDeviceId.h"
 #include "mvSysHwConfig.h"
+
 #include "ctrlEnv/sys/mvCpuIfRegs.h"
 
 #ifdef __cplusplus
@@ -74,7 +75,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define MV_ARM_SOC
-#define SOC_NAME_PREFIX				"MV88F"
+#define SOC_NAME_PREFIX                         "MV88F"
 
 /*
  * Avanta-LP Units Address decoding
@@ -83,179 +84,154 @@ extern "C" {
 #define MV_AURORA_L2_REGS_OFFSET                (0x8000)
 #define MV_RTC_REGS_OFFSET                      (0x10300)
 #define MV_DEV_BUS_REGS_OFFSET                  (0x10400)
-#define MV_SPI_REGS_OFFSET(unit)		(0x10600 + (unit * 0x80))
-#define MV_TWSI_SLAVE_REGS_OFFSET(chanNum)	(0x11000 + (chanNum * 0x100))
-#define MV_UART_REGS_OFFSET(chanNum)		(0x12000 + (chanNum * 0x100))
-#define MV_RUNIT_PMU_REGS_OFFSET		(0x1C000)
-#define MV_MPP_REGS_OFFSET			(0x18000)
-#define MV_GPP_REGS_OFFSET(unit)		(0x18100 + ((unit) * 0x40))
-#define MV_MISC_REGS_OFFSET			(0x18200)
-#define MV_CLK_CMPLX_REGS_OFFSET		(0x18700)
-#define MV_MBUS_REGS_OFFSET			(0x20000)
-#define CPU_GLOBAL_BASE				(MV_MBUS_REGS_OFFSET)
-#define MV_COHERENCY_FABRIC_OFFSET		(0x20200)
-#define MV_CIB_CTRL_STATUS_OFFSET		(0x20280)
-#define MV_CNTMR_REGS_OFFSET			(0x20300)
-#define MV_CPUIF_LOCAL_REGS_OFFSET		(0x21000)
-#define MV_CPUIF_REGS_OFFSET(cpu)		(0x21800 + (cpu) * 0x100)
-#define MV_PMU_NFABRIC_UNIT_SERV_OFFSET		(0x22000)
-#define MV_CPU_PMU_UNIT_SERV_OFFSET(cpu)	(0x22100 + (cpu) * 0x100)
-#define MV_CPU_HW_SEM_OFFSET			(0x20500)
+#define MV_SPI_REGS_OFFSET(unit)                (0x10600 + (unit * 0x80))
+#define MV_TWSI_SLAVE_REGS_OFFSET(chanNum)      (0x11000 + (chanNum * 0x100))
+#define MV_UART_REGS_OFFSET(chanNum)            (0x12000 + (chanNum * 0x100))
+#define MV_RUNIT_PMU_REGS_OFFSET                (0x1C000)
+#define MV_MPP_REGS_OFFSET                      (0x18000)
+#define MV_GPP_REGS_OFFSET(unit)                (0x18100 + ((unit) * 0x40))
+#define MV_MISC_REGS_OFFSET                     (0x18200)
+#define MV_CLK_CMPLX_REGS_OFFSET        		(0x18700)
+#define MV_MBUS_REGS_OFFSET                     (0x20000)
+#define CPU_GLOBAL_BASE                         (MV_MBUS_REGS_OFFSET)
+#define MV_COHERENCY_FABRIC_OFFSET              (0x20200)
+#define MV_CIB_CTRL_STATUS_OFFSET               (0x20280)
+#define MV_CNTMR_REGS_OFFSET                    (0x20300)
+#define MV_CPUIF_LOCAL_REGS_OFFSET              (0x21000)
+#define MV_CPUIF_REGS_OFFSET(cpu)               (0x21800 + (cpu) * 0x100)
+#define MV_PMU_NFABRIC_UNIT_SERV_OFFSET         (0x22000)
+#define MV_CPU_PMU_UNIT_SERV_OFFSET(cpu)        (0x22100 + (cpu) * 0x100)
+#define MV_CPU_HW_SEM_OFFSET                    (0x20500)
 
-#if defined(CONFIG_MV_ETH_PP2)
-#define MV_PP2_REG_BASE				(0x80000)
-#define MV_ETH_BASE_ADDR			(0x50000)
-#define LMS_REG_BASE				(MV_ETH_BASE_ADDR)
-#define MIB_COUNTERS_REG_BASE			(MV_ETH_BASE_ADDR + 0x1000)
-#define GOP_MNG_REG_BASE			(MV_ETH_BASE_ADDR + 0x3000)
-#define GOP_REG_BASE(port)			(MV_ETH_BASE_ADDR + 0x4000 + ((port) / 2) * 0x3000 + ((port) % 2) * 0x1000)
-#define MV_PON_REGS_OFFSET			(MV_ETH_BASE_ADDR + 0x8000)
+#if defined(MV_ETH_PP2)
 
-#define MV_ETH_MAX_TCONT			16
-#define MV_PON_PORT_ID				7
-#define MV_ETH_RXQ_TOTAL_NUM			32
-#define MV_VLAN_1_TYPE				0x88A8
+#define MV_PP2_REG_BASE                         (0x80000)
+#define MV_ETH_BASE_ADDR                        (0x50000)
+#define LMS_REG_BASE                            (MV_ETH_BASE_ADDR)
+#define MIB_COUNTERS_REG_BASE                   (MV_ETH_BASE_ADDR + 0x1000)
+#define GOP_MNG_REG_BASE                        (MV_ETH_BASE_ADDR + 0x3000)
+#define GOP_REG_BASE(port)                      (MV_ETH_BASE_ADDR + 0x4000 + ((port) / 2) * 0x3000 + ((port) % 2) * 0x1000)
+#define MV_PON_REGS_OFFSET                      (MV_ETH_BASE_ADDR + 0x8000)
+
+#define MV_ETH_MAX_TCONT                        16
+#define MV_PON_PORT_ID                          7
+#define MV_ETH_RXQ_TOTAL_NUM                    32
+#define MV_VLAN_1_TYPE                          0x88A8
 
 #elif defined(MV_ETH_LEGACY)
-	#define MV_ETH_BASE_ADDR		(0x72000)
+	#define MV_ETH_BASE_ADDR                (0x72000)
 #else
-	#define MV_ETH_BASE_ADDR		(0x70000)
+	#define MV_ETH_BASE_ADDR                (0x70000)
 #endif
-#define MV_ETH_REGS_OFFSET(port)		(MV_ETH_BASE_ADDR - ((port) / 2) * 0x40000 + ((port) % 2) * 0x4000)
+#define MV_ETH_REGS_OFFSET(port)                (MV_ETH_BASE_ADDR - ((port) / 2) * 0x40000 + ((port) % 2) * 0x4000)
 
-#define MV_PEX_IF_REGS_OFFSET(pexIf)		(pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000) \
-											 : (0x42000 + ((pexIf) % 8) * 0x40000))
-#define MV_USB_REGS_OFFSET(dev)       		(0x50000 + (dev * 0x1000))
-#define MV_XOR_REGS_OFFSET(unit)		(unit ? 0xF0900 : 0x60900)
-#define MV_CESA_TDMA_REGS_OFFSET(chanNum)	(0x90000 + (chanNum * 0x2000))
-#define MV_CESA_REGS_OFFSET(chanNum)		(0x9D000 + (chanNum * 0x2000))
-#define MV_SATA_REGS_OFFSET			(0xA0000)
-#define MV_COMM_UNIT_REGS_OFFSET		(0xB0000)
-#define MV_NFC_REGS_OFFSET			(0xD0000)
-#define MV_BM_REGS_OFFSET			(0xC0000)
-#define MV_PNC_REGS_OFFSET			(0xC8000)
-#define MV_SDMMC_REGS_OFFSET			(0xD4000)
+#define MV_PEX_IF_REGS_OFFSET(pexIf)            (pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000) \
+						 : (0x42000 + ((pexIf) % 8) * 0x40000))
+#define MV_USB_REGS_OFFSET(dev)                 (0x50000 + (dev * 0x1000))
+#define MV_XOR_REGS_OFFSET(unit)                (unit ? 0xF0900 : 0x60900)
+#define MV_CESA_TDMA_REGS_OFFSET(chanNum)       (0x90000 + (chanNum * 0x2000))
+#define MV_CESA_REGS_OFFSET(chanNum)            (0x9D000 + (chanNum * 0x2000))
+#define MV_SATA_REGS_OFFSET                     (0xA0000)
+#define MV_COMM_UNIT_REGS_OFFSET                (0xB0000)
+#define MV_NFC_REGS_OFFSET                      (0xD0000)
+#define MV_BM_REGS_OFFSET                       (0xC0000)
+#define MV_PNC_REGS_OFFSET                      (0xC8000)
+#define MV_SDMMC_REGS_OFFSET                    (0xD4000)
 
+#define MV_ETH_SMI_PORT   0
 
-#ifdef CONFIG_ARMADA_XP_ERRATA_SMI_1
-	#define MV_ETH_SMI_PORT   1
-#else
-	#define MV_ETH_SMI_PORT   0
-#endif
-
-#define MV_SERDES_NUM_TO_PEX_NUM(sernum)	((sernum < 8) ? (sernum) : (8 + (sernum/12)))
+#define MV_SERDES_NUM_TO_PEX_NUM(sernum)        ((sernum < 8) ? (sernum) : (8 + (sernum / 12)))
 /*
  * Miscellanuous Controller Configurations
  */
 
-#define AVS_CONTROL2_REG			0x20868
-#define AVS_LOW_VDD_LIMIT			0x20860
+#define AVS_CONTROL2_REG                        0x20868
+#define AVS_LOW_VDD_LIMIT                       0x20860
 
-#define INTER_REGS_SIZE				_1M
+#define INTER_REGS_SIZE                         _1M
 
 /* This define describes the TWSI interrupt bit and location */
-#define TWSI_CPU_MAIN_INT_CAUSE_REG(cpu)	CPU_MAIN_INT_CAUSE_REG(1, (cpu))
-#define TWSI0_CPU_MAIN_INT_BIT(ch)		((ch) + 3)
-#define TWSI_SPEED				100000
+#define TWSI_CPU_MAIN_INT_CAUSE_REG(cpu)        CPU_MAIN_INT_CAUSE_REG(1, (cpu))
+#define TWSI0_CPU_MAIN_INT_BIT(ch)              ((ch) + 3)
+#define TWSI_SPEED                              100000
 
-#define MV_GPP_MAX_PINS				68
-#define MV_GPP_MAX_GROUP    			3 /* group == configuration register? */
-#ifndef MV88F78X60_Z1
-#define MV_CNTMR_MAX_COUNTER 		8 /* 4 global + 1 global WD + 2 current private CPU + 1 private CPU WD*/
-#else
-#define MV_CNTMR_MAX_COUNTER 		17/* 4 global + 1 global WD + 2 per CPU + 4 CPU WD*/
-#endif
-/*
-	MV88F78X60_Z1								MV88F78X60_A0
-	-------------------------------             -------------------------------
-	Global Counters 0-3  : 0-3         		    Global Counters 0-3  		: 0-3
-	Global WD            : 4                    Global WD            		: 4
+#define MV_GPP_MAX_PINS                         68
+#define MV_GPP_MAX_GROUP                        3       /* group == configuration register? */
+#define MV_CNTMR_MAX_COUNTER            17              /* 4 global + 1 global WD + 2 per CPU + 4 CPU WD*/
 
-	CPU 0 Counter 0-1    : 5-6					Private CPU Counter 0-1    : 5-6
-	CPU 0 WD             : 7                    Private CPU WD             : 7
-	CPU 1 Counter 0-1    : 8-9
-	CPU 1 WD             : 10
-	CPU 2 Counter 0-1    : 11-12
-	CPU 2 WD             : 13
-	CPU 3 Counter 0-1    : 14-15
-	CPU 3 WD             : 16
-*/
+#define MV_UART_MAX_CHAN                        4
 
-#define MV_UART_MAX_CHAN			4
+#define MV_XOR_MAX_UNIT                         2       /* XOR unit == XOR engine */
+#define MV_XOR_MAX_CHAN                         4       /* total channels for all units together*/
+#define MV_XOR_MAX_CHAN_PER_UNIT                2       /* channels for units */
 
-#define MV_XOR_MAX_UNIT				2 /* XOR unit == XOR engine */
-#define MV_XOR_MAX_CHAN         		4 /* total channels for all units together*/
-#define MV_XOR_MAX_CHAN_PER_UNIT		2 /* channels for units */
+#define MV_SATA_MAX_CHAN                        2
 
-#define MV_SATA_MAX_CHAN			2
+#define MV_MPP_MAX_GROUP                        9
 
-#define MV_MPP_MAX_GROUP			9
-
-#define MV_DRAM_MAX_CS				4
-#define MV_SPI_MAX_CS				8
+#define MV_DRAM_MAX_CS                          4
+#define MV_SPI_MAX_CS                           8
 /* This define describes the maximum number of supported PCI\PCIX Interfaces */
 #ifdef MV_INCLUDE_PCI
-	#define MV_PCI_MAX_IF			1
-	#define MV_PCI_START_IF			0
-	#define PCI_HOST_BUS_NUM(pciIf)		(pciIf)
-	#define PCI_HOST_DEV_NUM(pciIf)		0
+	#define MV_PCI_MAX_IF                   1
+	#define MV_PCI_START_IF                 0
+	#define PCI_HOST_BUS_NUM(pciIf)         (pciIf)
+	#define PCI_HOST_DEV_NUM(pciIf)         0
 #else
-	#define MV_PCI_MAX_IF			0
-	#define MV_PCI_START_IF			0
+	#define MV_PCI_MAX_IF                   0
+	#define MV_PCI_START_IF                 0
 #endif
 
 /* This define describes the maximum number of supported PEX Interfaces */
-#define MV_PEX_MAX_IF				10
-#define MV_PEX_MAX_UNIT				4
+#define MV_PEX_MAX_IF                           10
+#define MV_PEX_MAX_UNIT                         4
 #ifdef MV_INCLUDE_PEX
 #define MV_INCLUDE_PEX0
 #define MV_DISABLE_PEX_DEVICE_BAR
 
-#define MV_PEX_START_IF				MV_PCI_MAX_IF
+#define MV_PEX_START_IF                         MV_PCI_MAX_IF
  #define PEX_HOST_BUS_NUM(pciIf)               (pciIf)
  #define PEX_HOST_DEV_NUM(pciIf)               0
 #else
  #undef MV_INCLUDE_PEX0
 #endif
 
-#define PCI_IO(pciIf)				(PEX0_IO + 2 * (pciIf))
-#define PCI_MEM(pciIf, memNum)			(PEX0_MEM0 + 2 * (pciIf))
-/* This define describes the maximum number of supported PCI Interfaces 	*/
-#define MV_IDMA_MAX_CHAN			4
-#define MV_DEVICE_MAX_CS      			4
+#define PCI_IO(pciIf)                           (PEX0_IO + 2 * (pciIf))
+#define PCI_MEM(pciIf, memNum)                  (PEX0_MEM0 + 2 * (pciIf))
+/* This define describes the maximum number of supported PCI Interfaces         */
+#define MV_IDMA_MAX_CHAN                        4
+#define MV_DEVICE_MAX_CS                        4
 
 #ifndef MV_USB_MAX_PORTS
 #define MV_USB_MAX_PORTS 3
 #endif
 
-
 /* CESA version #3: One channel, 2KB SRAM, TDMA, CHAIN Mode support */
-#define MV_CESA_VERSION				3 /*TODO verify */
-#define MV_CESA_SRAM_SIZE               	(2 * 1024)
-
+#define MV_CESA_VERSION                         3 /*TODO verify */
+#define MV_CESA_SRAM_SIZE                       (2 * 1024)
 
 /* This define describes the maximum number of supported Ethernet ports */
 /* TODO - verify all these numbers */
 
 #if defined(CONFIG_MV_ETH_PP2)
-#define MV_PON_PORT_ID                  	7
+#define MV_PON_PORT_ID                          7
 #define MV_ETH_MAX_PORTS                        4
-#define MV_ETH_MAX_RXQ                          16 /* Maximum number of RXQs can be mapped to each port */
+#define MV_ETH_MAX_RXQ                          16      /* Maximum number of RXQs can be mapped to each port */
 #define MV_ETH_MAX_TXQ                          8
-#define MV_ETH_RXQ_TOTAL_NUM           		32 /* Total number of RXQs for usage by all ports */
-#define MV_ETH_MAX_TCONT 			16 /* Maximum number of TCONTs supported by PON port */
+#define MV_ETH_RXQ_TOTAL_NUM                    32      /* Total number of RXQs for usage by all ports */
+#define MV_ETH_MAX_TCONT                        16      /* Maximum number of TCONTs supported by PON port */
 #define MV_ETH_TX_CSUM_MAX_SIZE                 9800
 #else
-#define MV_ETH_VERSION 				4 /* for Legacy mode */
-#define MV_NETA_VERSION				1 /* for NETA mode */
-#define MV_ETH_MAX_PORTS			4
-#define MV_ETH_MAX_RXQ              		8
-#define MV_ETH_MAX_TXQ              		8
-#define MV_ETH_TX_CSUM_MAX_SIZE 		9800
-#define MV_PNC_TCAM_LINES			1024	/* TCAM num of entries */
-#endif
+#define MV_ETH_VERSION                          4       /* for Legacy mode */
+#define MV_NETA_VERSION                         1       /* for NETA mode */
+#define MV_ETH_MAX_PORTS                        4
+#define MV_ETH_MAX_RXQ                          8
+#define MV_ETH_MAX_TXQ                          8
+#define MV_ETH_TX_CSUM_MAX_SIZE                 9800
+#define MV_PNC_TCAM_LINES                       1024    /* TCAM num of entries */
 
-#if defined(MV88F78X60) && !defined(MV88F78X60_Z1)
+#endif /* CONFIG_MV_ETH_PP2 */
+
 /* New GMAC module is used */
 #define MV_ETH_GMAC_NEW
 /* New WRR/EJP module is used */
@@ -266,16 +242,13 @@ extern "C" {
 #define MV_ETH_PNC_NEW
 /* PNC Load Balancing support */
 #define MV_ETH_PNC_LB
-#endif /* MV88F78X60_A0/B0 */
 
-#define MV_78130_ETH_MAX_PORT			3
-#define MV_78460_ETH_MAX_PORT			4
-#define MV_FPGA_ETH_MAX_PORT			4
+#define MV_FPGA_ETH_MAX_PORT                    4
 
 /* This define describes the the support of USB */
-#define MV_USB_VERSION  			1
+#define MV_USB_VERSION                          1
 
-#define MV_SPI_VERSION				2
+#define MV_SPI_VERSION                          2
 
 #define MV_INCLUDE_SDRAM_CS0
 #undef  MV_INCLUDE_SDRAM_CS1
@@ -290,7 +263,7 @@ extern "C" {
 #ifndef MV_ASMLANGUAGE
 
 #define TBL_UNUSED      0       /* Used to mark unused entry */
-#define FREQ_MODES_NUM		29
+#define FREQ_MODES_NUM          29
 
 #define MPP_GROUP_0_TYPE { \
 		0x11111111,     /* NAND_V2_BOOT_DEVICE  */ \

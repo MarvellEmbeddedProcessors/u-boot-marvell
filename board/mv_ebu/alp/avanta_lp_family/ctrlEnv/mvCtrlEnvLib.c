@@ -229,37 +229,37 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 *       else if write failed - returns MV_ERROR
 *
 *******************************************************************************/
-MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField,MV_SATR_TYPE_ID satrReadField, MV_U8 val)
+MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrReadField, MV_U8 val)
 {
 	MV_BOARD_SAR_INFO sarInfo;
 	MV_U32 readVal, tmpVal;
+
 	if ((satrReadField < MV_SATR_READ_MAX_OPTION) && (satrWriteField < MV_SATR_WRITE_MAX_OPTION)) {
-		if ( mvBoardSarInfoGet(satrWriteField, &sarInfo) && sarInfo.isActiveForBoard[mvBoardIdGet()])
-		{
+		if ( mvBoardSarInfoGet(satrWriteField, &sarInfo) && sarInfo.isActiveForBoard[mvBoardIdGet()]) {
+
 			/* read */
-			readVal = mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, sarInfo.regNum , 0);
+			readVal = mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, sarInfo.regNum, 0);
 			if ((MV_U8)readVal == (MV_U8)MV_ERROR)
 				return MV_ERROR;
 
 			/* modify */
-			readVal &= !(sarInfo.mask);  		/* clean old value */
-			readVal &= (val <<  sarInfo.offset);	/* save new value */
+			readVal &= !(sarInfo.mask);             /* clean old value */
+			readVal &= (val <<  sarInfo.offset);    /* save new value */
 
 			/* write */
-			tmpVal = mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, sarInfo.regNum, 0,readVal);
+			tmpVal = mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, sarInfo.regNum, 0, readVal);
 			if ((MV_U8)tmpVal == (MV_U8)MV_ERROR)
 				return MV_ERROR;
 
 			/* verify */
-			tmpVal = mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, sarInfo.regNum , 0);
-			if (tmpVal!=readVal)
+			tmpVal = mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, sarInfo.regNum, 0);
+			if (tmpVal != readVal)
 				return MV_ERROR;
 
 			/*else save written value in global array */
 			satrOptionsConfig[satrReadField] = readVal;
 			return MV_OK;
-		}
-		else
+		}else
 			printf("\n%s: Error: Requested S@R config is not relevant for the current board\n, __func__");
 	}
 	return MV_ERROR;
@@ -305,8 +305,7 @@ MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 {
 	MV_FREQ_MODE freqTable[] = MV_SAR_FREQ_MODES;
 	MV_U32 freqModeSatRValue = mvCtrlSatRRead(MV_SATR_CPU_FREQ);
-	if (MV_ERROR !=freqModeSatRValue )
-	{
+	if (MV_ERROR != freqModeSatRValue) {
 		*freqMode = freqTable[freqModeSatRValue];
 		return MV_OK;
 	}
@@ -359,7 +358,7 @@ void mvCtrlSatrInit(void)
 	int i = 0;
 
 	/* initialize all S@R & Board configuration fields to -1 (MV_ERROR) */
-	memset(&satrOptionsConfig, 0xff, (sizeof(MV_U32)*MV_SATR_READ_MAX_OPTION) );
+	memset(&satrOptionsConfig, 0xff, (sizeof(MV_U32) * MV_SATR_READ_MAX_OPTION) );
 
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++)
 		boardOptionsConfig[i] = MV_ERROR;
@@ -378,14 +377,14 @@ void mvCtrlSatrInit(void)
 	/*Read rest of Board Configuration, EEPROM / Deep Switch access read : */
 	tempVal[0] = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 0);               /* EEPROM Reg#0 */
 	tempVal[1] = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 1);               /* EEPROM Reg#1 */
-	if (((MV_8)MV_ERROR == (MV_8)tempVal[0]) || ((MV_8)MV_ERROR == (MV_8)tempVal[1]) ) { 
+	if (((MV_8)MV_ERROR == (MV_8)tempVal[0]) || ((MV_8)MV_ERROR == (MV_8)tempVal[1]) ) {
 		/* EEPROM is not valid , data is jumpered to deep switch- read from there */
 		tempVal[0] = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 0, 0);  /* Deep Switch Reg#0 */
 		tempVal[1] = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 0, 1);  /* Deep Switch Reg#1 */
 		/* omriii : verify reads from BOARD_DEV_TWSI_IO_EXPANDER are correct */
 	}
 
-	if (((MV_8)MV_ERROR == (MV_8)tempVal[0]) || ((MV_8)MV_ERROR == (MV_8)tempVal[1]))       
+	if (((MV_8)MV_ERROR == (MV_8)tempVal[0]) || ((MV_8)MV_ERROR == (MV_8)tempVal[1]))
 		/* Deep Switch reading failed - omriii : use defaults (which iszeros for all fields) ??? */
 		tempVal[0] = tempVal[1] = 0x0;
 
@@ -394,6 +393,7 @@ void mvCtrlSatrInit(void)
 		if ( mvBoardConfigTypeGet(i, &confInfo) && confInfo.isActiveForBoard[mvBoardIdGet()])
 			boardOptionsConfig[confInfo.configid] = ((tempVal[confInfo.regNum] & (confInfo.mask)) >> confInfo.offset);
 }
+
 /*******************************************************************************
 * mvCtrlDevFamilyIdGet - Get Device ID
 *
@@ -917,14 +917,8 @@ MV_U32 mvCtrlModelRevGet(MV_VOID)
 *******************************************************************************/
 MV_STATUS mvCtrlModelRevNameGet(char *pNameBuff)
 {
-	switch (mvCtrlModelRevGet()) {
-	case MV_78130_Z1_ID:
-		mvOsSPrintf(pNameBuff, "%s", MV_78130_Z1_NAME);
-		break;
-	default:
-		mvCtrlNameGet(pNameBuff);
-	}
-
+	/* mvCtrlModelRevGet(); */
+	mvCtrlNameGet(pNameBuff);
 	return MV_OK;
 }
 
@@ -1063,11 +1057,11 @@ MV_VOID mvCtrlAddrDecShow(MV_VOID)
 #if defined(MV_ETH_LEGACY)
 	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvEthWinRead);
 #elif defined(CONFIG_MV_ETH_NETA)
- 	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvNetaWinRead);
+	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvNetaWinRead);
 #else
 	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvPp2WinRead);
-#endif
-#endif
+#endif  /* MV_ETH_LEGACY  or NETA pr PP2 */
+#endif  /* MV_INCLUDE_GIG_ETH */
 
 #if defined(MV_INCLUDE_XOR)
 	mvUnitAddrDecShow(mvCtrlXorMaxChanGet(), XOR_UNIT_ID, "XOR", mvXorTargetWinRead);
@@ -1666,7 +1660,7 @@ MV_BOOL mvCtrlPwrMemGet(MV_UNIT_ID unitId, MV_U32 index)
 	MV_BOOL state = MV_TRUE;
 
 	switch (unitId) {
-	MV_U32 reg;
+		MV_U32 reg;
 #if defined(MV_INCLUDE_PEX)
 	case PEX_UNIT_ID:
 		reg = MV_REG_READ(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_PEX));
@@ -1760,28 +1754,6 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 
 #endif /* #if defined(MV_INCLUDE_CLK_PWR_CNTRL) */
 
-/*******************************************************************************
-* mvCtrlSerdesMaxLinesGet - Get Marvell controller number of SERDES lines.
-*
-* DESCRIPTION:
-*       This function returns Marvell controller number of SERDES lines.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       Marvell controller number of PEX units. If controller
-*		ID is undefined the function returns '0'.
-*
-*******************************************************************************/
-MV_U32 mvCtrlSerdesMaxLinesGet(MV_VOID)
-{
-	return 0;
-}
-
 MV_U32 mvCtrlDDRBudWidth(MV_VOID)
 {
 	MV_U32 reg;
@@ -1807,27 +1779,4 @@ MV_BOOL mvCtrlDDRECC(MV_VOID)
 	reg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
 
 	return (reg & (0x1 << REG_SDRAM_CONFIG_ECC_OFFS)) ? MV_TRUE : MV_FALSE;
-}
-
-static const MV_U8 serdesCfg[][8] = SERDES_CFG;
-
-/*******************************************************************************
-* mvCtrlSerdesPhyConfig
-*
-* DESCRIPTION:
-*	Configure Serdes MUX and init PHYs connected to SERDES lines.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       Status
-*
-*******************************************************************************/
-MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
-{
-	return MV_ERROR;
 }

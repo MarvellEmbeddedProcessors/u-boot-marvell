@@ -770,7 +770,6 @@ MV_VOID mvBoardConfigInit(void)
 	MV_ETH_COMPLEX_TOPOLOGY mac0con, mac1con;
 	MV_BOARD_BOOT_SRC bootDev;
 	MV_TDM_UNIT_TYPE tdmDev;
-	MV_BOOL SW_SMI;
 
 	/* Ethernet Complex initialization : */
 	if ( (mac0con = mvBoardMac0ConfigGet()) != MV_ERROR)
@@ -791,7 +790,7 @@ MV_VOID mvBoardConfigInit(void)
 
 	/* MPP Groups initialization : */
 	/* Group 0-1 - Boot device (or if SPI1 boot : Groups 3-4) */
-	bootDev = mvBoardBootDeviceGroupSet(mvCtrlSatRRead(MV_SATR_BOOT_DEVICE));
+	bootDev = mvBoardBootDeviceGroupSet();
 
 	/* Group 2 - TDM unit */
 	tdmDev = mvCtrlTdmUnitTypeGet();
@@ -817,11 +816,10 @@ MV_VOID mvBoardConfigInit(void)
 		else
 			mvBoardMppTypeSet(3, SDIO_UNIT);
 
-		SW_SMI = MV_TRUE; // test if SW or CPU SMI control (omriii : how to decide ?)
 		if (mvCtrlIsLantiqTDM())
-			mvBoardMppTypeSet(4, (SW_SMI ? GE1_SW_SMI_CTRL_TDM_LQ_UNIT : GE1_CPU_SMI_CTRL_TDM_LQ_UNIT));
+			mvBoardMppTypeSet(4, GE1_CPU_SMI_CTRL_TDM_LQ_UNIT);
 		else    /*REF_CLK_OUT*/
-			mvBoardMppTypeSet(4, (SW_SMI ? GE1_SW_SMI_CTRL_REF_CLK_OUT : GE1_CPU_SMI_CTRL_REF_CLK_OUT));
+			mvBoardMppTypeSet(4, GE1_CPU_SMI_CTRL_REF_CLK_OUT);
 	}
 
 	/* Groups 5-6-7  - */
@@ -854,11 +852,10 @@ MV_VOID mvBoardConfigInit(void)
 *       the selected MV_BOARD_BOOT_SRC
 *
 *******************************************************************************/
-MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_U32 sarBootDeviceValue)
+MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 {
 	MV_U32 groupType;
-	MV_BOOL SW_SMI;
-	MV_BOARD_BOOT_SRC bootSrc = mvBoardBootDeviceGet(sarBootDeviceValue);
+	MV_BOARD_BOOT_SRC bootSrc = mvBoardBootDeviceGet();
 
 	switch (bootSrc) {
 	case MSAR_0_BOOT_NAND_NEW:
@@ -871,11 +868,10 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_U32 sarBootDeviceValue)
 		mvBoardMppTypeSet(1, groupType);
 	case MSAR_0_BOOT_SPI1_FLASH:    /* MSAR_0_SPI1 - update Groups 3-4 */
 		mvBoardMppTypeSet(3, SDIO_SPI1_UNIT);
-		SW_SMI = MV_TRUE;       // test if SW or CPU SMI control (omriii : how to decide ?)
 		if (mvCtrlIsLantiqTDM())
-			mvBoardMppTypeSet(4, (SW_SMI ? SPI1_SW_SMI_CTRL_TDM_LQ_UNIT : SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT));
+			mvBoardMppTypeSet(4, SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT);
 		else    /*REF_CLK_OUT*/
-			mvBoardMppTypeSet(4, (SW_SMI ? SPI1_SW_SMI_CTRL_REF_CLK_OUT : SPI1_CPU_SMI_CTRL_REF_CLK_OUT));
+			mvBoardMppTypeSet(4, SPI1_CPU_SMI_CTRL_REF_CLK_OUT);
 		// omriii : if nand/spi0 not for BOOT, enable Audio-SPDIF by default?
 		mvBoardMppTypeSet(0, SPI0_BOOT_SPDIF_AUDIO);
 		mvBoardMppTypeSet(1, SPI0_BOOT_SPDIF_AUDIO);
@@ -912,8 +908,9 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_U32 sarBootDeviceValue)
 *       the selected MV_BOARD_BOOT_SRC
 *
 *******************************************************************************/
-MV_BOARD_BOOT_SRC mvBoardBootDeviceGet(MV_U32 sarBootDeviceValue)
+MV_BOARD_BOOT_SRC mvBoardBootDeviceGet()
 {
+	MV_U32 sarBootDeviceValue = mvCtrlSatRRead(MV_SATR_BOOT_DEVICE);
 	MV_SAR_BOOT_TABLE sarTable[] = MV_SAR_TABLE_VAL;
 	MV_SAR_BOOT_TABLE sarBootEntry = sarTable[sarBootDeviceValue];
 
@@ -1062,17 +1059,73 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet()
 	else return MV_ERROR;
 }
 
+/*******************************************************************************
+* mvBoardConfigWrite - write MPP's config and Board general environment configuration
+*
+* DESCRIPTION:
+*       This function writes the environment information that was initialized
+*       by mvBoardConfigInit, such as MPP settings, Mux configuration,
+*       and Board specific initializations.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
 MV_VOID mvBoardConfigWrite(void)
 {
-	MV_U32 mppGroup, mppType, mppVal;
-	MV_U32 mppGroups[][10] = MPP_GROUP_TYPES;
+	MV_U32 mppGroup, mppType, i, reg;
+	MV_BOARD_SPEC_INIT *boardSpec;
 
+	/* Specific board initializations  ( from board->pBoardSpecInit ) omriii : see if can remove all these inits*/
 	for (mppGroup = 0; mppGroup < MV_MPP_MAX_GROUP; mppGroup++) {
 		mppType = mvBoardMppTypeGet(mppGroup);
-		mppVal = mppGroups[mppGroup][mppType];
-		MV_REG_WRITE(mvCtrlMppRegGet(mppGroup), mppVal);
+		mvBoardMppGroupWrite(mppGroup, mppType);
 	}
 
+	boardSpec = mvBoardSpecInitGet();
+	if (boardSpec != NULL) {
+		i = 0;
+		while (boardSpec[i].reg != TBL_TERM) {
+			reg = MV_REG_READ(boardSpec[i].reg);
+			reg &= ~boardSpec[i].mask;
+			reg |= (boardSpec[i].val & boardSpec[i].mask);
+			MV_REG_WRITE(boardSpec[i].reg, reg);
+			i++;
+		}
+	}
+}
+
+/*******************************************************************************
+* mvBoardMppGroupWrite - write MPP value for a single group, according to type
+*
+* DESCRIPTION:
+*       This function writes MPP value for a specific group, according to
+*       received type
+*
+* INPUT:
+*       groupNum - Group number
+*	groupType - enum that represents the mpp selected value for the group
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_VOID mvBoardMppGroupWrite(MV_U32 groupNum, MV_U32 groupType)
+{
+	MV_U32 mppVal;
+	MV_U32 mppGroups[][MV_BOARD_MAX_MPP_GROUPS] = MPP_GROUP_TYPES;
+
+	mppVal = mppGroups[groupNum][groupType];
+	MV_REG_WRITE(mvCtrlMppRegGet(groupNum), mppVal);
 }
 
 /*******************************************************************************

@@ -171,22 +171,8 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 *******************************************************************************/
 MV_STATUS mvCtrlEnvInit(MV_VOID)
 {
-	MV_BOARD_SPEC_INIT *boardSpec;
 	MV_U32 i, gppMask;
 
-	/* Specific board initializations  ( from board->pBoardSpecInit ) omriii : see if can remove all these inits*/
-	boardSpec = mvBoardSpecInitGet();
-	if (boardSpec != NULL) {
-		MV_U32 reg;
-		i = 0;
-		while (boardSpec[i].reg != TBL_TERM) {
-			reg = MV_REG_READ(boardSpec[i].reg);
-			reg &= ~boardSpec[i].mask;
-			reg |= (boardSpec[i].val & boardSpec[i].mask);
-			MV_REG_WRITE(boardSpec[i].reg, reg);
-			i++;
-		}
-	}
 	/* Use S@R and board config info, to Build Eth-Complex config & MPP group types */
 	mvBoardConfigInit();
 

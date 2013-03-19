@@ -87,7 +87,10 @@ void mvBoardEgigaPhyInit(void)
 	int i;
 
 	mvSysEthPhyInit();
-#ifdef MV88F67XX
+
+#if defined (MV88F66XX)
+		return mvBoardALPEgigaPhyInit();
+#elif defined (MV88F67XX)
 	if (mvBoardIsSwitchConnected())
 		mvEthE6171SwitchBasicInit(1);
 
@@ -114,3 +117,32 @@ void mvBoardEgigaPhyInit(void)
 		}
 	}
 }
+
+
+/***********************************************************
+*     Specific Init the PHY of the board for Avanta LP     *
+***********************************************************/
+#if defined (MV88F66XX)
+void mvBoardALPEgigaPhyInit(void)
+{
+	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
+	MV_U32 portEnabled = 0;
+
+	if (ethComplex & (MV_ETH_COMPLEX_GE_MAC0_RGMII0 | MV_ETH_COMPLEX_GE_MAC0_QUAD_PHY_P0))
+		mvEthPhyInit(0, MV_FALSE);
+
+	if (ethComplex & (MV_ETH_COMPLEX_GE_MAC1_RGMII1 | MV_ETH_COMPLEX_GE_MAC1_QUAD_PHY_P3))
+		mvEthPhyInit(1, MV_FALSE);
+
+	if (mvBoardIsInternalSwitchConnected(0) || mvBoardIsInternalSwitchConnected(1)) {
+		if (ethComplex & (MV_ETH_COMPLEX_GE_MAC0_SW_P6 | MV_ETH_COMPLEX_SW_P6_RGMII0 ))
+			portEnabled |= BIT6;
+		if (ethComplex & MV_ETH_COMPLEX_GE_MAC1_SW_P4)
+			portEnabled |= BIT4;
+		if (ethComplex & (MV_ETH_COMPLEX_GE_MAC1_QUAD_PHY_P3 | MV_ETH_COMPLEX_GE_MAC0_QUAD_PHY_P0 |\
+					MV_ETH_COMPLEX_SW_P0_QUAD_PHY_P0 | MV_ETH_COMPLEX_SW_P3_QUAD_PHY_P3))
+			portEnabled |= BIT0 | BIT1 | BIT2 | BIT3;
+		mvEthALPSwitchBasicInit(portEnabled);
+	}
+}
+#endif /* MV88F66XX */

@@ -76,5 +76,8 @@ void mvEthSwitchRegRead(MV_U32 ethPortNum, MV_U32 phyAddr, MV_U32 regOffs, MV_U1
 void mvEthSwitchRegWrite(MV_U32 ethPortNum, MV_U32 phyAddr, MV_U32 regOffs, MV_U16 data);
 void mvEthSwitchPhyRegRead(MV_U32 ethPortNum, MV_U16 prt, MV_U16 regOffs, MV_U16 *data);
 void mvEthSwitchPhyRegWrite(MV_U32 ethPortNum, MV_U16 prt, MV_U16 regOffs, MV_U16 data);
+#if defined (MV88F66XX)
+MV_VOID mvEthALPSwitchBasicInit(MV_U32 enabledPorts);
+#endif
 
 #endif /* #ifndef __INCETHSWITCHH */

@@ -269,6 +269,74 @@ MV_VOID		mvEthE6161SwitchBasicInit(MV_U32 ethPortNum)
     mvEthSwitchRegWrite (ethPortNum, MV_E6161_PORTS_OFFSET + MV_E6161_CPU_PORT, 1, 0x3e);
 }
 
+#if defined (MV88F66XX)
+/*******************************************************************************
+* mvEthALPSwitchBasicInit -
+*
+* DESCRIPTION: ALP internal SW init.
+* INPUT:
+*       enabledPorts - Enabled ethernet port numbers mask
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:   None
+*
+*******************************************************************************/
+MV_VOID mvEthALPSwitchBasicInit(MV_U32 enabledPorts)
+{
+	MV_U32 ethPortNum;
+	MV_U32 cpuPort;
+	MV_U32 forceMask;
+	MV_U32 macPort;
+	MV_U32 i;
+
+	if (mvBoardIsInternalSwitchConnected(0))
+	{
+		ethPortNum = 0;
+		cpuPort = 4;
+		macPort = 0;
+
+		/* Force link, speed, duplex for switch port #4. */
+		mvEthSwitchRegWrite(macPort, 0x14, 0x1, 0x3E);
+	}
+	else
+	{
+		/* switch is connected in port 1 only */
+		ethPortNum = 1;
+		cpuPort = 5;
+		macPort = 1;
+
+		/* Force link, speed, duplex for switch port #4. */
+		mvEthSwitchRegWrite(macPort, 0x15, 0x1, 0x3E);
+	}
+
+	forceMask = mvBoardSwitchPortForceLinkGet(0);
+	for (i = 0; i < 8; i++) {
+		if ((1 << i) & forceMask)
+			mvEthSwitchRegWrite(macPort, 0x10 + i, 0x1, 0x3E);
+	}
+
+	/* Init vlan of switch 1 and enable all ports */
+	switchVlanInit(ethPortNum,
+			cpuPort,
+			MV_KW2_SW_MAX_PORTS_NUM,
+			MV_KW2_SW_PORTS_OFFSET,
+			enabledPorts);
+
+	if (mvBoardIsInternalSwitchConnected(0))
+	{
+		/* Force link, speed, duplex for switch port #4. */
+		mvEthSwitchRegWrite(0, 0x14, 0x1, 0x3E);
+	}
+	else
+	{
+		/* Force link, speed, duplex for switch port #4. */
+		mvEthSwitchRegWrite(1, 0x15, 0x1, 0x3E);
+	}
+}
+#endif /* MV88F66XX */
+
 MV_VOID	mvEthE6171SwitchBasicInit(MV_U32 ethPortNum)
 {
 

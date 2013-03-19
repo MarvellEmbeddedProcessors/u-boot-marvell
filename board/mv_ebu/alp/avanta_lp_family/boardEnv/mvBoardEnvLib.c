@@ -786,7 +786,7 @@ MV_VOID mvBoardConfigInit(void)
 	if (mvCtrlConfigGet(MV_CONFIG_PON_SERDES) == 0x0)  /* 0 - PON SerDes connected to PON MAC */
 		ethSataComplexOptions |= MV_ETH_COMPLEX_P2P_MAC_PON_ETH_SERDES;
 
-	board->pBoardModTypeValue->ethSataComplexOpt = ethSataComplexOptions;
+	mvBoardEthComplexConfigSet(ethSataComplexOptions);
 
 	/* MPP Groups initialization : */
 	/* Group 0-1 - Boot device (or if SPI1 boot : Groups 3-4) */
@@ -1057,6 +1057,65 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet()
 	else if (mvCtrlConfigGet(MV_CONFIG_LANE3) == 0x1)
 		return MV_ETH_COMPLEX_GE_MAC0_COMPHY_3;
 	else return MV_ERROR;
+}
+
+/*******************************************************************************
+* mvBoardIsInternalSwitchConnected
+*
+* DESCRIPTION:
+*       This routine returns port's connection status
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       1 - if ethPortNum is connected to switch, 0 otherwise
+*
+*******************************************************************************/
+MV_STATUS mvBoardIsInternalSwitchConnected(MV_U32 ethPortNum)
+{
+	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
+
+	if (ethPortNum >= board->numBoardMacInfo) {
+		mvOsPrintf("%s: Error: Illegal port number(%u)\n", __func__, ethPortNum);
+		return MV_FALSE;
+	}
+
+	/* Check if internal switch is connected */
+	if ((ethPortNum == 0) && (ethComplex & MV_ETH_COMPLEX_GE_MAC0_SW_P6))
+		return MV_TRUE;
+	else if ((ethPortNum == 1) && (ethComplex & MV_ETH_COMPLEX_GE_MAC1_SW_P4))
+		return MV_TRUE;
+	else
+		return MV_FALSE;
+}
+
+/*******************************************************************************
+* mvBoardSwitchPortForceLinkGet
+*
+* DESCRIPTION:
+*       Return the switch ports force link bitmask.
+*
+* INPUT:
+*       switchIdx - index of the switch. Only 0 is supported.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       the ports bitmask, -1 if the switch is not connected.
+*
+*******************************************************************************/
+MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx)
+{
+
+	if ( board->switchInfoNum == 0 || switchIdx >= board->switchInfoNum )
+		return (MV_U32)MV_ERROR;
+
+	return board->pSwitchInfo[switchIdx].forceLinkMask;
 }
 
 /*******************************************************************************
@@ -1575,6 +1634,52 @@ MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index)
 	}
 
 	return 0xFF;
+}
+
+/*******************************************************************************
+* mvBoardEthComplexConfigGet - Return ethernet complex board configuration.
+*
+* DESCRIPTION:
+*	Returns the ethernet / Sata complex configuration from the board spec
+*	structure.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit value describing the ethernet complex config.
+*
+*******************************************************************************/
+MV_U32 mvBoardEthComplexConfigGet(MV_VOID)
+{
+	return board->pBoardModTypeValue->ethSataComplexOpt;
+}
+
+/*******************************************************************************
+* mvBoardEthComplexConfigSet - Set ethernet complex board configuration.
+*
+* DESCRIPTION:
+*	Sets the ethernet / Sata complex configuration in the board spec
+*	structure.
+*
+* INPUT:
+*       ethConfig - 32bit value describing the ethernet complex config.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig)
+{
+	/* Set ethernet complex configuration. */
+	board->pBoardModTypeValue->ethSataComplexOpt = ethConfig;
+	return;
 }
 
 /*******************************************************************************

@@ -65,7 +65,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvOs.h"
 #include "eth-phy/mvEthPhy.h"
 
-void mvBoardEgigaPhyInit(MV_VOID);
+MV_VOID mvBoardEgigaPhyInit(MV_VOID);
+MV_VOID mvBoardALPEgigaPhyInit(MV_VOID);
 
 // void mvEthSwitchRegWrite(MV_U32 ethPortNum, MV_U32 phyAddr,
 //                                  MV_U32 regOffs, MV_U16 data);

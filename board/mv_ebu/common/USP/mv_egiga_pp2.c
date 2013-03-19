@@ -412,7 +412,6 @@ static int mvEgigaTx(struct eth_device *dev, volatile void *buf, int len)
 	egigaPriv *priv = dev->priv;
 	MV_U32 timeout = 0;
 	int txDone;
-	MV_PP2_PHYS_TXQ_CTRL *pTxq;
 	MV_PP2_AGGR_TXQ_CTRL *pAggrTxq;
 	PP2_TX_DESC *pDesc;
 
@@ -420,7 +419,6 @@ static int mvEgigaTx(struct eth_device *dev, volatile void *buf, int len)
 		return 0; /* port is not initialized or not enabled */
 
 	pAggrTxq = mvPp2AggrTxqHndlGet(0);
-	pTxq = mvPp2TxqHndlGet(priv->port, EGIGA_DEF_TXP, EGIGA_DEF_TXQ);
 
 	/* get next descriptor */
 	pDesc = mvPp2AggrTxqNextDescGet(pAggrTxq);

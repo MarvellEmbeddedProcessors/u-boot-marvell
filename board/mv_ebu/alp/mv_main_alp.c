@@ -816,10 +816,6 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	if (!env)
 		setenv("usb1Mode", ENV_USB1_MODE);
 
-	env = getenv("usb2Mode");
-	if (!env)
-		setenv("usb2Mode", ENV_USB2_MODE);
-
 	env = getenv("usbActive");
 	if (!env)
 		setenv("usbActive", ENV_USB_ACTIVE);

@@ -69,7 +69,12 @@ disclaimer.
 #define MV_LARGE_PAGE
 #define MV_DDR_64BIT
 #define MV_BOOTROM
-#undef  MV_USB
+
+#ifndef CONFIG_MACH_AVANTA_LP_FPGA
+#define MV_USB
+#define MV_FS
+#define CONFIG_CMD_DATE
+#endif
 
 /*
  * Debug
@@ -106,7 +111,6 @@ disclaimer.
 
 #define CONFIG_DISPLAY_CPUINFO
 
-	
 /********************/
 /* Page Table settings */
 /********************/
@@ -126,12 +130,12 @@ disclaimer.
  * Commands
  */
 #define CONFIG_BOOTP_MASK	(CONFIG_BOOTP_DEFAULT | CONFIG_BOOTP_BOOTFILESIZE)
+#define CONFIG_CMD_DHCP
 #define CONFIG_CMD_ELF
 #define CONFIG_CMD_I2C
 #define CONFIG_CMD_EEPROM
 #define CONFIG_CMD_NET
 #define CONFIG_CMD_PING
-#undef  CONFIG_CMD_DATE
 #define CONFIG_CMD_LOADS
 #define CONFIG_CMD_BSP
 #define CONFIG_CMD_MEMORY
@@ -148,6 +152,18 @@ disclaimer.
 	#define CONFIG_CMD_PCI
 #endif
 
+#ifdef MV_FS
+/* FS supported */
+#define CONFIG_CMD_EXT2
+#define CONFIG_CMD_EXT4
+#define CONFIG_FS_EXT4
+#define CONFIG_CMD_EXT4_WRITE
+#define CONFIG_EXT4_WRITE
+#define CONFIG_CMD_JFFS2
+#define CONFIG_CMD_FAT
+#define CONFIG_FS_FAT
+#define CONFIG_SUPPORT_VFAT
+#endif /* MV_FS */
 /* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
 #include <config_cmd_default.h>
 
@@ -246,9 +262,28 @@ disclaimer.
  * PCI and PCIe
  */
 
+
 /*
  * USB
  */
+#ifdef MV_USB
+	#define MV_INCLUDE_USB
+	#define CONFIG_CMD_USB
+	#define CONFIG_USB_STORAGE
+	#define CONFIG_USB_EHCI
+/*  FIX-ME : disabled CONFIG_USB_EHCI_MARVELL : break compilation
+	#define CONFIG_USB_EHCI_MARVELL */
+	#define CONFIG_EHCI_IS_TDI
+	#define CONFIG_DOS_PARTITION
+	#define CONFIG_ISO_PARTITION
+	#define ENV_USB0_MODE	"host"
+	#define ENV_USB1_MODE	"host"
+	#define ENV_USB_ACTIVE		"0"
+#else
+	#undef MV_INCLUDE_USB
+	#undef CONFIG_CMD_USB
+	#undef CONFIG_USB_STORAGE
+#endif /* MV_USB */
 
 /*
  * SDIO and MMC

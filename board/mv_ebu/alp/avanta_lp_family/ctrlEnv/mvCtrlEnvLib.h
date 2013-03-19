@@ -119,8 +119,11 @@ typedef enum _mvConfigTypeID {
 	MV_CONFIG_TYPE_MAX_OPTION
 } MV_CONFIG_TYPE_ID;
 
-/* 0 for Auto scan mode, 1 for manual. */
-#define MV_INTERNAL_SWITCH_SMI_SCAN_MODE        0
+/* This enumerator describes the possible SMI control options */
+typedef enum _mvSMIctrl {
+	CPU_SMI_CTRL,
+	SWITCH_SMI_CTRL,
+} MV_SMI_CTRL;
 
 /* typedefs */
 typedef MV_STATUS (*MV_WIN_GET_FUNC_PTR)(MV_U32, MV_U32, MV_UNIT_WIN_INFO*);
@@ -289,7 +292,7 @@ MV_U32    ctrlSizeRegRoundUp(MV_U32 size, MV_U32 alignment);
 MV_U32 mvCtrlSysRstLengthCounterGet(MV_VOID);
 MV_STATUS ctrlWinOverlapTest(MV_ADDR_WIN *pAddrWin1, MV_ADDR_WIN *pAddrWin2);
 MV_STATUS ctrlWinWithinWinTest(MV_ADDR_WIN *pAddrWin1, MV_ADDR_WIN *pAddrWin2);
-
+MV_VOID mvCtrlSMISet(MV_SMI_CTRL smiCtrl);
 MV_VOID   mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable);
 MV_BOOL   mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index);
 MV_VOID   mvCtrlPwrMemSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable);

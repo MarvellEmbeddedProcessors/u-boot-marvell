@@ -120,7 +120,7 @@ static int do_sar_read(int argc, char *const argv[])
 			printf("corereset = %d ==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
 
 	else if ((strcmp(cmd, "bootsrc") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_BOOT_DEVICE))))
-			printf("bootsrc = %d ==> %s\n", temp, bootSrcArr[mvBoardBootDeviceGet(temp)]);
+			printf("bootsrc = %d ==> %s\n", temp, bootSrcArr[mvBoardBootDeviceGet()]);
 
 	else if ((strcmp(cmd, "cpubypass") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU_PLL_XTAL_BYPASS))))
 		printf("sscg = %d ==> %s Bypass\n",temp,  ( (temp == 0) ? "PLL" : "XTAL") );
@@ -175,7 +175,7 @@ static int do_sar_read(int argc, char *const argv[])
 			printf("corereset \t= %d\t\t==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
 
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_BOOT_DEVICE)))
-			printf("bootsrc = %d ==> %s\n", temp, bootSrcArr[mvBoardBootDeviceGet(temp)]);
+			printf("bootsrc = %d ==> %s\n", temp, bootSrcArr[mvBoardBootDeviceGet()]);
 
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU_PLL_XTAL_BYPASS)))
 			printf("sscg \t\t= %d\t\t==> %s Bypass\n",temp,  ( (temp == 0) ? "PLL" : "XTAL") );

@@ -1091,7 +1091,9 @@ int misc_init_r(void)
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	if (boardId != DB_6650_ID)      //omriii : temp ID replace so it will compile -mv_main needs cleanup ! */
 		/* Init the PHY or Switch of the board */
+		mvCtrlSMISet(CPU_SMI_CTRL);
 		mvBoardEgigaPhyInit();
+		mvCtrlSMISet(SWITCH_SMI_CTRL);
 
 #endif
 #endif

@@ -22,8 +22,8 @@
 #
 sinclude $(TOPDIR)/config.mk
 
-MARVELL_SUBDIRS += doimage_armada
-MARVELL_SUBDIRS += bin_hdr_armada
+MARVELL_SUBDIRS += doimage_mv
+MARVELL_SUBDIRS += bin_hdr
 
 clean:
 		@for dir in $(MARVELL_SUBDIRS) ; do \

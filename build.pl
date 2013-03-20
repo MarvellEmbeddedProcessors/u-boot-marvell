@@ -123,9 +123,9 @@ if($opt_c eq 1)
 
         my $path = Cwd::cwd();
 	print " clean tools\n";
-	chdir  ("./tools/marvell/doimage_armada");
+	chdir  ("./tools/marvell/doimage_mv");
         system("make clean");
-	chdir  ("../bin_hdr_armada");
+	chdir  ("../bin_hdr");
         system("make clean");
 	chdir  ("$path");
 	print "\n**** [Configuring Make] version $opt_v\t to board $targetBoard *****\n\n";
@@ -217,13 +217,13 @@ if($fail){
 #Create Image and Uart Image
 print "\n**** [Creating Image]\t*****\n\n";
 if($boardID eq "axp") {
-        $failUart = system("./tools/marvell/doimage -T uart -D 0 -E 0 -C ./tools/marvell/bin_hdr_armada/bin_hdr.uart.bin u-boot.bin u-boot-axp-$opt_v-$flash_name-$targetBoard-uart.bin");
-        $fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/marvell/bin_hdr_armada/bin_hdr.bin u-boot.bin u-boot-axp-$opt_v-$flash_name-$targetBoard.bin");
+        $failUart = system("./tools/marvell/doimage -T uart -D 0 -E 0 -C ./tools/marvell/bin_hdr/bin_hdr.uart.bin u-boot.bin u-boot-axp-$opt_v-$flash_name-$targetBoard-uart.bin");
+        $fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-axp-$opt_v-$flash_name-$targetBoard.bin");
 
 }
 elsif($boardID eq "a370"){
-	$failUart=system("./tools/marvell/doimage -T uart -D 0 -E 0  -G ./tools/marvell/bin_hdr_armada/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name-$targetBoard-uart.bin");
-	$fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/marvell/bin_hdr_armada/bin_hdr.bin u-boot.bin u-boot-a370-$opt_v-$flash_name-$targetBoard.bin");
+	$failUart=system("./tools/marvell/doimage -T uart -D 0 -E 0  -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name-$targetBoard-uart.bin");
+	$fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-a370-$opt_v-$flash_name-$targetBoard.bin");
 }
 
 if($fail){
@@ -246,10 +246,10 @@ if(defined $opt_o)
 	system("cp u-boot.srec $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name-$targetBoard.srec");
 	system("cp u-boot-$boardID-$opt_v-$flash_name-$targetBoard-uart.bin $opt_o/$endian/$opt_f/");
 
-        system("cp tools/marvell/bin_hdr_armada/bin_hdr.bin $opt_o/bin_hdr/");
-        system("cp tools/marvell/bin_hdr_armada/bin_hdr.elf $opt_o/bin_hdr/");
-        system("cp tools/marvell/bin_hdr_armada/bin_hdr.dis $opt_o/bin_hdr/");
-        system("cp tools/marvell/bin_hdr_armada/bin_hdr.srec $opt_o/bin_hdr/");
+        system("cp tools/marvell/bin_hdr/bin_hdr.bin $opt_o/bin_hdr/");
+        system("cp tools/marvell/bin_hdr/bin_hdr.elf $opt_o/bin_hdr/");
+        system("cp tools/marvell/bin_hdr/bin_hdr.dis $opt_o/bin_hdr/");
+        system("cp tools/marvell/bin_hdr/bin_hdr.srec $opt_o/bin_hdr/");
 }
 
 exit 0;

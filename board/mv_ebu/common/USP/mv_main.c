@@ -637,8 +637,6 @@ int print_cpuinfo (void)
 {
 	char name[50];
 	mvBoardIdSet();
-/* update Pex - Write Model ID */
-	mvCtrlUpdatePexId();
 	mvBoardNameGet(name);
 	printf("Board: %s\n",  name);
 	mvCtrlModelRevNameGet(name);
@@ -697,8 +695,8 @@ int misc_init_r (void)
 #ifdef DB_78X60_AMC
 	MV_U32 tmpOut;
 	/* Set GPP19 & 22 Out value to '0' */
-	MV_REG_READ(GPP_DATA_OUT_REG(0));
-	tmpOut = tmpOut & 0xFFB7FFFF;
+	tmpOut = MV_REG_READ(GPP_DATA_OUT_REG(0));
+	tmpOut &= 0xFFB7FFFF;
 	MV_REG_WRITE(GPP_DATA_OUT_REG(0), tmpOut);
       	/* Set GPP19 & 22 Out Enable */
 	mvGppTypeSet(0, 0x480000, 0x0);

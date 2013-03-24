@@ -91,11 +91,14 @@
 #endif
 
 extern MV_BOARD_INFO *boardInfoTbl[];
+extern MV_BOARD_SAR_INFO boardSarInfo[];
+extern MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[];
 
 /* Locals */
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 static MV_U32 gBoardId = MV_INVALID_BOARD_ID;
 static MV_BOARD_INFO *board = NULL;
+
 
 /*******************************************************************************
 * mvBoardEnvInit
@@ -1567,6 +1570,36 @@ MV_U32 boardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 }
 
 /*******************************************************************************
+* mvBoardIoExpValGet - read a specified value from IO Expanders
+*
+* DESCRIPTION:
+*       This function returns specified value from IO Expanders
+*
+* INPUT:
+*       ioClass - Field identifier
+*       ioInfo  - relevant IO Expander information
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_U8  :return requested value , if TWSI read was succesfull, else 0xFF.
+*
+*******************************************************************************/
+MV_U8 mvBoardIoExpValGet(MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo)
+{
+	MV_U8 tempVal, mask;
+
+	tempVal = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo.expanderNum, ioInfo.regNum);
+	if ((MV_8)MV_ERROR != (MV_8)tempVal) {
+		mask = (1 << ioInfo.offset);
+		return ( (tempVal & mask) >> ioInfo.offset);
+	}
+	else
+		return 0xFF;
+}
+
+/*******************************************************************************
 * mvBoardTwsiAddrTypeGet
 *
 * DESCRIPTION:
@@ -1622,14 +1655,11 @@ MV_U8 mvBoardTwsiAddrTypeGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index)
 MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index)
 {
 	int i;
-	MV_U32 indexFound = 0;
 
 	for (i = 0; i < board->numBoardTwsiDev; i++) {
-		if (board->pBoardTwsiDev[i].devClass == twsiClass) {
-			if (indexFound == index)
-				return board->pBoardTwsiDev[i].twsiDevAddr;
-			else
-				indexFound++;
+		if ((board->pBoardTwsiDev[i].devClass == twsiClass) \
+				&& (board->pBoardTwsiDev[i].devClassId == index)){
+			return board->pBoardTwsiDev[i].twsiDevAddr;
 		}
 	}
 
@@ -1701,11 +1731,18 @@ MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig)
 MV_STATUS mvBoardSarInfoGet(MV_SATR_TYPE_ID sarClass, MV_BOARD_SAR_INFO *sarInfo)
 {
 	int i;
+	MV_U32 boardId = mvBoardIdGet();
 
-	for (i = 0; i < board->numBoardSarInfo; i++)
-		if (board->pBoardSarInfo[i].sarid == sarClass) {
-			*sarInfo = board->pBoardSarInfo[i];
-			return MV_OK;
+	if (sarInfo == NULL )
+		return MV_ERROR;
+
+	/* verify existence of requested SATR type, pull its data,
+	 * and check if field is relevant to current running board */
+	for (i = 0; i < MV_SATR_READ_MAX_OPTION ; i++)
+		if (boardSarInfo[i].sarid == sarClass) {
+			*sarInfo = boardSarInfo[i];
+			if (boardSarInfo[i].isActiveForBoard[boardId])
+				return MV_OK;
 		}
 	return MV_ERROR;
 }
@@ -1729,10 +1766,43 @@ MV_STATUS mvBoardSarInfoGet(MV_SATR_TYPE_ID sarClass, MV_BOARD_SAR_INFO *sarInfo
 MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo)
 {
 	int i;
+	MV_U32 boardId = mvBoardIdGet();
 
-	for (i = 0; i < board->numBoardConfigTypes; i++)
-		if (board->pBoardConfigTypes[i].configid == configClass) {
-			*configInfo = board->pBoardConfigTypes[i];
+	/* verify existence of requested config type, pull its data,
+	 * and check if field is relevant to current running board */
+	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION ; i++)
+		if (boardConfigTypesInfo[i].configid == configClass) {
+			*configInfo = boardConfigTypesInfo[i];
+			if (boardConfigTypesInfo[i].isActiveForBoard[boardId])
+				return MV_OK;
+		}
+	return MV_ERROR;
+}
+
+/*******************************************************************************
+* mvBoardIoExpanderTypeGet
+*
+* DESCRIPTION:
+*	Return the Config type fields information for a given Config type class.
+*
+* INPUT:
+*	configClass - The Config type field to return the information for.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	MV_BOARD_CONFIG_TYPE_INFO struct with mask, offset and register number.
+*
+*******************************************************************************/
+MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass, MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo)
+{
+	int i;
+
+	/* verify existance of requested config type, pull its data */
+	for (i = 0; i < board->numBoardIoExpanderInfo ; i++)
+		if (board->pBoardIoExpanderInfo[i].ioFieldid == ioClass) {
+			*ioInfo = board->pBoardIoExpanderInfo[i];
 			return MV_OK;
 		}
 	return MV_ERROR;

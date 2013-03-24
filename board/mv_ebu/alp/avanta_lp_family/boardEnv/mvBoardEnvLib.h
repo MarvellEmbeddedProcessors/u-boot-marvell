@@ -208,6 +208,7 @@ typedef struct _boardGppInfo {
 
 typedef struct _boardTwsiInfo {
 	MV_BOARD_TWSI_CLASS devClass;
+	MV_U8 devClassId;
 	MV_U8 twsiDevAddr;
 	MV_U8 twsiDevAddrType;
 } MV_BOARD_TWSI_INFO;
@@ -224,9 +225,17 @@ typedef struct _boardConfigTypesInfo {
 	MV_CONFIG_TYPE_ID configid;
 	MV_U32 mask;
 	MV_U32 offset;
+	MV_U32 expanderNum;
 	MV_U32 regNum;
 	MV_U32 isActiveForBoard[MV_MAX_BOARD_ID];
 } MV_BOARD_CONFIG_TYPE_INFO;
+
+typedef struct _boardIoExapnderTypesInfo {
+	MV_IO_EXPANDER_TYPE_ID ioFieldid;
+	MV_U32 offset;
+	MV_U32 expanderNum;
+	MV_U32 regNum;
+} MV_BOARD_IO_EXPANDER_TYPE_INFO;
 
 typedef enum _boardMacSpeed {
 	BOARD_MAC_SPEED_10M,
@@ -306,10 +315,8 @@ typedef struct _boardInfo {
 	MV_U32 intsGppMaskHigh;
 	MV_U8 numBoardDeviceIf;
 	MV_DEV_CS_INFO *pDevCsInfo;
-	MV_U8 numBoardSarInfo;
-	MV_BOARD_SAR_INFO *pBoardSarInfo;
-	MV_U8 numBoardConfigTypes;
-	MV_BOARD_CONFIG_TYPE_INFO *pBoardConfigTypes;
+	MV_U8 numBoardIoExpanderInfo;
+	MV_BOARD_IO_EXPANDER_TYPE_INFO *pBoardIoExpanderInfo;
 	MV_U8 numBoardTwsiDev;
 	MV_BOARD_TWSI_INFO *pBoardTwsiDev;
 	MV_U8 numBoardMacInfo;
@@ -411,11 +418,13 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
+MV_U8 mvBoardIoExpValGet(MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo);
 MV_32 mvBoardPhyLinkCryptPortAddrGet(MV_U32 ethPortNum);
 
 MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum);
 MV_STATUS mvBoardSarInfoGet(MV_SATR_TYPE_ID sarClass, MV_BOARD_SAR_INFO *sarInfo);
 MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo);
+MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass, MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo);
 MV_U32 mvBoardTclkGet(MV_VOID);
 MV_U32 mvBoardSysClkGet(MV_VOID);
 MV_U32 mvBoardDebugLedNumGet(MV_U32 boardId);

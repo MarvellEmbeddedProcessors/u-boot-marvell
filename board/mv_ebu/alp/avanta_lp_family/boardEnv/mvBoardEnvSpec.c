@@ -70,8 +70,8 @@
 #define ARRSZ(x)                (sizeof(x) / sizeof(x[0]))
 
 MV_BOARD_SAR_INFO boardSarInfo[] = {
-/* {{MV_SATR_TYPE_ID SarID, MV_U32 Mask, MV_U32 Offset, MV_U32 regNum}} */
-	{ MV_SATR_CPU_FREQ,		 0x003E0000,	  17,	       1, {1,0,0,0} },
+/* {	{MV_SATR_TYPE_ID SarID,		MV_U32 Mask,   	      Offset, regNum , 	       isActiveForBoard[]}} */
+	{ MV_SATR_CPU_DDR_L2_FREQ,		 0x003E0000,	  17,	       1, {1,0,0,0} },
 	{ MV_SATR_CORE_CLK_SELECT,	 0x00400000,	  22,	       1, {1,0,0,0} },
 	{ MV_SATR_CPU1_ENABLE,		 0x00008000,	  15,	       0, {1,0,0,0} },
 	{ MV_SATR_SSCG_DISABLE,		 0x00000002,	  1,	       0, {1,0,0,0} },
@@ -97,17 +97,67 @@ MV_BOARD_SAR_INFO boardSarInfo[] = {
 };
 
 MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = {
-/* {{MV_CONFIG_TYPE_ID ConfigID, MV_U32 Mask, MV_U32 Offset, MV_U32 regNum}} */
-	{ MV_CONFIG_MAC0,	       0x3,	 0,	   0, {1,0,0,0} }, /* Reg#0, BITS [0:1] */
-	{ MV_CONFIG_MAC1,	       0xC,	 2,	   0, {1,0,0,0} }, /* Reg#0, BITS [2:3] */
-	{ MV_CONFIG_PON_SERDES,	       0x10,	 4,	   0, {1,0,0,0} }, /* Reg#0, BITS [4] */
-	{ MV_CONFIG_PON_BEN_POLARITY,  0x20,	 5,	   0, {1,0,0,0} }, /* Reg#0, BITS [5] */
-	{ MV_CONFIG_SGMII0_CAPACITY,   0x40,	 6,	   0, {1,0,0,0} }, /* Reg#0, BITS [6] */
-	{ MV_CONFIG_SGMII1_CAPACITY,   0x80,	 7,	   0, {1,0,0,0} }, /* Reg#0, BITS [7] */
-	{ MV_CONFIG_LANE1,	       0x3,	 0,	   1, {1,0,0,0} }, /* Reg#1, BITS [0:1] */
-	{ MV_CONFIG_LANE2,	       0x4,	 2,	   1, {1,0,0,0} }, /* Reg#1, BITS [2] */
-	{ MV_CONFIG_LANE3,	       0X18,	 3,	   1, {1,0,0,0} }, /* Reg#1, BITS [3:4] */
-	{ MV_CONFIG_DEVICE_BUS_MODULE, 0x60,	 5,	   1, {1,0,0,0} }, /* Reg#1, BITS [5:6] */
+/* {{MV_CONFIG_TYPE_ID ConfigID, MV_U32 Mask,  Offset, expanderNum,  regNum,    isActiveForBoard[]}} */
+	{ MV_CONFIG_MAC0,	       0x3,	0,	 0,		0, 	{ 1, 0, 1, 0 } }, /* Exp#0, Reg#0, BITS [0:1] */
+	{ MV_CONFIG_MAC1,	       0xC,	2,	 0,		0, 	{ 1, 0, 1, 0 } }, /* Exp#0, Reg#0, BITS [2:3] */
+	{ MV_CONFIG_PON_SERDES,	       0x10,	4,	 0,		0, 	{ 1, 0, 1, 0 } }, /* Exp#0, Reg#0, BITS [4]   */
+	{ MV_CONFIG_PON_BEN_POLARITY,  0x20,	5,	 0,		0, 	{ 1, 0, 1, 0 } }, /* Exp#0, Reg#0, BITS [5]   */
+	{ MV_CONFIG_SGMII0_CAPACITY,   0x40,	6,	 0,		0, 	{ 1, 0, 0, 0 } }, /* Exp#0, Reg#0, BITS [6]   */
+	{ MV_CONFIG_SGMII1_CAPACITY,   0x80,	7,	 0,		0, 	{ 1, 0, 1, 0 } }, /* Exp#0, Reg#0, BITS [7]   */
+	{ MV_CONFIG_SLIC_TDM_DEVICE,   0x3,	0,	 0,		1, 	{ 1, 0, 1, 0 } }, /* Exp#0, Reg#1, BITS [0:1] */
+	{ MV_CONFIG_LANE1,	       0xC,	2,	 0,		1, 	{ 1, 0, 0, 0 } }, /* Exp#0, Reg#1, BITS [2:3] */
+	{ MV_CONFIG_LANE2,	       0x10,	4,	 0,		1, 	{ 1, 0, 0, 0 } }, /* Exp#0, Reg#1, BITS [4]   */
+	{ MV_CONFIG_LANE3,	       0X60,	5,	 0,		1, 	{ 1, 0, 0, 0 } }, /* Exp#0, Reg#1, BITS [5:6] */
+	{ MV_CONFIG_DEVICE_BUS_MODULE, 0x3,	0,	 1,		0, 	{ 1, 0, 0, 0 } }, /* Exp#1, Reg#0, BITS [0:1] */
+};
+
+MV_BOARD_IO_EXPANDER_TYPE_INFO db88f6660InfoBoardIOExpanderInfo[] = {
+/* {{MV_CONFIG_TYPE_ID ConfigID,      MV_U32 Offset,	 expanderNum,  regNum,   }} */
+		/* 1st IO Expander Register*/
+	{ MV_IO_EXPANDER_SFP0_TX_DIS,		 0,		 1,	 1},
+	{ MV_IO_EXPANDER_SFP0_PRSNT,		 1,		 1,	 1},
+	{ MV_IO_EXPANDER_SFP0_TX_FAULT,		 2,		 1,	 1},
+	{ MV_IO_EXPANDER_SFP0_LOS,		 3,		 1,	 1},
+	{ MV_IO_EXPANDER_USB_VBUS,		 4,		 1,	 1},
+	{ MV_IO_EXPANDER_MAC0_RJ45_PORT_LED,	 5,		 1,	 1},
+	{ MV_IO_EXPANDER_MAC0_SFP_PORT_LED,	 6,		 1,	 1},
+	{ MV_IO_EXPANDER_PON_PORT_LED,		 7,		 1,	 1},
+		/* 2nd IO Expander Register*/
+	{ MV_IO_EXPANDER_SD_STATUS,		 0,		 2,	 0},
+	{ MV_IO_EXPANDER_SD_WRITE_PROTECT,	 1,		 2,	 0},
+	{ MV_IO_EXPANDER_SFP1_PRSNT,		 2,		 2,	 0},
+	{ MV_IO_EXPANDER_SFP1_TX_FAULT,		 3,		 2,	 0},
+	{ MV_IO_EXPANDER_SFP1_LOS,		 4,		 2,	 0},
+	{ MV_IO_EXPANDER_JUMPER1_EEPROM_ENABLED, 6,		 2,	 0},
+	{ MV_IO_EXPANDER_JUMPER2,		 7,		 2,	 0},
+		/* 3rd IO Expander Register*/
+	{ MV_IO_EXPANDER_EXT_PHY_SMI_EN,	 0,		 2,	 1},
+	{ MV_IO_EXPANDER_SFP1_TX_DIS,		 1,		 2,	 1},
+	{ MV_IO_EXPANDER_SPI1_CS_MSB0,		 2,		 2,	 1},
+	{ MV_IO_EXPANDER_SPI1_CS_MSB1,		 3,		 2,	 1},
+	{ MV_IO_EXPANDER_MAC1_SFP_PORT_LED,	 4,		 2,	 1},
+	{ MV_IO_EXPANDER_MAC1_RJ45_PORT_LED,	 5,		 2,	 1},
+	{ MV_IO_EXPANDER_INTEG_PHY_PORTS_LED,	 6,		 2,	 1},
+	{ MV_IO_EXPANDER_USB_SUPER_SPEED,	 7,		 2,	 1},
+};
+
+MV_BOARD_IO_EXPANDER_TYPE_INFO db88f6650InfoBoardIOExpanderInfo[] = {
+/* {{MV_CONFIG_TYPE_ID ConfigID,      MV_U32 Offset,	 expanderNum,  regNum,   }} */
+		/* 2nd IO Expander Register*/
+	{ MV_IO_EXPANDER_USB_VBUS,		 0,		 2,	 0},
+	{ MV_IO_EXPANDER_SFP1_PRSNT,		 2,		 2,	 0},
+	{ MV_IO_EXPANDER_SFP1_TX_FAULT,		 3,		 2,	 0},
+	{ MV_IO_EXPANDER_SFP1_LOS,		 4,		 2,	 0},
+	{ MV_IO_EXPANDER_JUMPER1_EEPROM_ENABLED, 6,		 2,	 0},
+	{ MV_IO_EXPANDER_JUMPER2,		 7,		 2,	 0},
+		/* 3rd IO Expander Register*/
+	{ MV_IO_EXPANDER_EXT_PHY_SMI_EN,	 0,		 2,	 1},
+	{ MV_IO_EXPANDER_SFP1_TX_DIS,		 1,		 2,	 1},
+	{ MV_IO_EXPANDER_MAC0_RJ45_PORT_LED,	 2,		 2,	 1},
+	{ MV_IO_EXPANDER_PON_PORT_LED,		 3,		 2,	 1},
+	{ MV_IO_EXPANDER_MAC1_SFP_PORT_LED,	 4,		 2,	 1},
+	{ MV_IO_EXPANDER_MAC1_RJ45_PORT_LED,	 5,		 2,	 1},
+	{ MV_IO_EXPANDER_INTEG_PHY_PORTS_LED,	 6,		 2,	 1},
 };
 
 /*******************************************************************************
@@ -163,25 +213,25 @@ MV_BOARD_INFO avanta_lp_fpga_board_info = {
 };
 
 /*******************************************************************************
- * AvantaLP DB-88F6600 board */
+ * AvantaLP DB-88F6660 board */
 /*******************************************************************************/
 
-MV_BOARD_TWSI_INFO db88f6600InfoBoardTwsiDev[] = {
-	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,	      0x4C,	   ADDR7_BIT				    },
-	{ BOARD_DEV_TWSI_SATR,	      0x4D,	   ADDR7_BIT				    },
-	{ BOARD_DEV_TWSI_EEPROM,      0x54,	   ADDR7_BIT				    },
-	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x21,	   ADDR7_BIT				    },
-	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x22,	   ADDR7_BIT				    },  /*omriii : re-verify that 0x22 is also IO_EXPANDER for 6600 board */
-	{ BOARD_DEV_TWSI_IO_EXPANDER, 0x24,	   ADDR7_BIT				    },  /*omriii : re-verify that 0x22 is also IO_EXPANDER for 6600 board */
+MV_BOARD_TWSI_INFO db88f6660InfoBoardTwsiDev[] = {
+	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{ BOARD_DEV_TWSI_SATR,		0,	0x4C,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4D,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_EEPROM,	0,	0x54,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_IO_EXPANDER,	0,	0x21,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_IO_EXPANDER,	1,	0x22,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_IO_EXPANDER,	2,	0x24,	   ADDR7_BIT	},
 };
-MV_BOARD_MAC_INFO db88f6600InfoBoardMacInfo[] = {
+MV_BOARD_MAC_INFO db88f6660InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_U8 boardEthSmiAddr}} */
 	{ BOARD_MAC_SPEED_AUTO, 0x8									},
 	{ BOARD_MAC_SPEED_AUTO, 0x9									},
 	{ N_A,			N_A									}
 };
-MV_BOARD_MPP_TYPE_INFO db88f6600InfoBoardModTypeInfo[] = {
+MV_BOARD_MPP_TYPE_INFO db88f6660InfoBoardModTypeInfo[] = {
 	{
 		.boardMppTdm = MV_BOARD_AUTO,
 		.ethSataComplexOpt = DB_88F6660_ETH_DEFAULT,
@@ -189,26 +239,26 @@ MV_BOARD_MPP_TYPE_INFO db88f6600InfoBoardModTypeInfo[] = {
 	}
 };
 
-MV_BOARD_MPP_GROUP_INFO db88f6600InfoBoardMppGroupConfig[] = {
+MV_BOARD_MPP_GROUP_INFO db88f6660InfoBoardMppGroupConfig[] = {
 	{ {
-		  DB_88F6600_GROUP_0_TYPE,
-		  DB_88F6600_GROUP_1_TYPE,
-		  DB_88F6600_GROUP_2_TYPE,
-		  DB_88F6600_GROUP_3_TYPE,
-		  DB_88F6600_GROUP_4_TYPE,
-		  DB_88F6600_GROUP_5_TYPE,
-		  DB_88F6600_GROUP_6_TYPE,
-		  DB_88F6600_GROUP_7_TYPE,
-		  DB_88F6600_GROUP_8_TYPE,
+		  DB_88F6660_GROUP_0_TYPE,
+		  DB_88F6660_GROUP_1_TYPE,
+		  DB_88F6660_GROUP_2_TYPE,
+		  DB_88F6660_GROUP_3_TYPE,
+		  DB_88F6660_GROUP_4_TYPE,
+		  DB_88F6660_GROUP_5_TYPE,
+		  DB_88F6660_GROUP_6_TYPE,
+		  DB_88F6660_GROUP_7_TYPE,
+		  DB_88F6660_GROUP_8_TYPE,
 	  } }
 };
 
-MV_BOARD_INFO db88f6600_board_info = {
-	.boardName			= "DB-88F6600",
-	.numBoardMppTypeValue		= ARRSZ(db88f6600InfoBoardModTypeInfo),
-	.pBoardModTypeValue		= db88f6600InfoBoardModTypeInfo,
-	.numBoardMppGroupValue		= ARRSZ(db88f6600InfoBoardMppGroupConfig),
-	.pBoardMppGroupValue		= db88f6600InfoBoardMppGroupConfig,
+MV_BOARD_INFO db88f6660_board_info = {
+	.boardName			= "DB-88F6660",
+	.numBoardMppTypeValue		= ARRSZ(db88f6660InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= db88f6660InfoBoardModTypeInfo,
+	.numBoardMppGroupValue		= ARRSZ(db88f6660InfoBoardMppGroupConfig),
+	.pBoardMppGroupValue		= db88f6660InfoBoardMppGroupConfig,
 	.numBoardSerdesConfigValue	= 0,
 	.pBoardSerdesConfigValue	= 0,
 	.intsGppMaskLow			= 0,
@@ -216,14 +266,12 @@ MV_BOARD_INFO db88f6600_board_info = {
 	.intsGppMaskHigh		= 0,
 	.numBoardDeviceIf		= 0,
 	.pDevCsInfo			= 0,
-	.numBoardSarInfo		= ARRSZ(boardSarInfo),
-	.pBoardSarInfo			= boardSarInfo,
-	.numBoardConfigTypes		= ARRSZ(boardConfigTypesInfo),
-	.pBoardConfigTypes		= boardConfigTypesInfo,
-	.numBoardTwsiDev		= ARRSZ(db88f6600InfoBoardTwsiDev),
-	.pBoardTwsiDev			= db88f6600InfoBoardTwsiDev,
-	.numBoardMacInfo		= ARRSZ(db88f6600InfoBoardMacInfo),
-	.pBoardMacInfo			= db88f6600InfoBoardMacInfo,
+	.numBoardIoExpanderInfo		= ARRSZ(db88f6660InfoBoardIOExpanderInfo),
+	.pBoardIoExpanderInfo		= db88f6660InfoBoardIOExpanderInfo,
+	.numBoardTwsiDev		= ARRSZ(db88f6660InfoBoardTwsiDev),
+	.pBoardTwsiDev			= db88f6660InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(db88f6660InfoBoardMacInfo),
+	.pBoardMacInfo			= db88f6660InfoBoardMacInfo,
 	.numBoardGppInfo		= 0,
 	.pBoardGppInfo			= 0,
 	.activeLedsNumber		= 0,
@@ -235,15 +283,15 @@ MV_BOARD_INFO db88f6600_board_info = {
 	.pmuPwrUpDelay			= 80000,
 
 	/* GPP values */
-	.gppOutEnValLow			= DB_88F6600_GPP_OUT_ENA_LOW,
-	.gppOutEnValMid			= DB_88F6600_GPP_OUT_ENA_MID,
-	.gppOutEnValHigh		= DB_88F6600_GPP_OUT_ENA_HIGH,
-	.gppOutValLow			= DB_88F6600_GPP_OUT_VAL_LOW,
-	.gppOutValMid			= DB_88F6600_GPP_OUT_VAL_MID,
-	.gppOutValHigh			= DB_88F6600_GPP_OUT_VAL_HIGH,
-	.gppPolarityValLow		= DB_88F6600_GPP_POL_LOW,
-	.gppPolarityValMid		= DB_88F6600_GPP_POL_MID,
-	.gppPolarityValHigh		= DB_88F6600_GPP_POL_HIGH,
+	.gppOutEnValLow			= DB_88F6660_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= DB_88F6660_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= DB_88F6660_GPP_OUT_ENA_HIGH,
+	.gppOutValLow			= DB_88F6660_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= DB_88F6660_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= DB_88F6660_GPP_OUT_VAL_HIGH,
+	.gppPolarityValLow		= DB_88F6660_GPP_POL_LOW,
+	.gppPolarityValMid		= DB_88F6660_GPP_POL_MID,
+	.gppPolarityValHigh		= DB_88F6660_GPP_POL_HIGH,
 
 	/* TDM */
 	.numBoardTdmInfo		= {},
@@ -396,6 +444,6 @@ MV_BOARD_INFO avanta_lp_customer_board_info = {
  * All supported avanta boards
  */
 MV_BOARD_INFO *boardInfoTbl[] = {
-	&db88f6600_board_info,
+	&db88f6660_board_info,
 	&avanta_lp_fpga_board_info,
 };

@@ -159,6 +159,8 @@ extern "C" {
 #define MV_GPP_MAX_GROUP                        3       /* group == configuration register? */
 #define MV_CNTMR_MAX_COUNTER            17              /* 4 global + 1 global WD + 2 per CPU + 4 CPU WD*/
 
+#define MV_IO_EXP_MAX_REGS			3
+
 #define MV_UART_MAX_CHAN                        4
 
 #define MV_XOR_MAX_UNIT                         2       /* XOR unit == XOR engine */

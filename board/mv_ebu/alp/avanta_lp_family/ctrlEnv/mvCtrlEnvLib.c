@@ -221,7 +221,7 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 	MV_U32 readVal, tmpVal;
 
 	if ((satrReadField < MV_SATR_READ_MAX_OPTION) && (satrWriteField < MV_SATR_WRITE_MAX_OPTION)) {
-		if ( mvBoardSarInfoGet(satrWriteField, &sarInfo) && sarInfo.isActiveForBoard[mvBoardIdGet()]) {
+		if ( mvBoardSarInfoGet(satrWriteField, &sarInfo)) {
 
 			/* read */
 			readVal = mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, sarInfo.regNum, 0);
@@ -334,7 +334,7 @@ MV_VOID mvCtrlSMISet(MV_SMI_CTRL smiCtrl)
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 {
 	MV_FREQ_MODE freqTable[] = MV_SAR_FREQ_MODES;
-	MV_U32 freqModeSatRValue = mvCtrlSatRRead(MV_SATR_CPU_FREQ);
+	MV_U32 freqModeSatRValue = mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
 	if (MV_ERROR != freqModeSatRValue) {
 		*freqMode = freqTable[freqModeSatRValue];
 		return MV_OK;
@@ -369,9 +369,10 @@ MV_U32 mvCtrlConfigGet(MV_CONFIG_TYPE_ID configField)
 * mvCtrlSatrInit
 *
 * DESCRIPTION: Initialize S@R configuration
-*               1. initialize all S@R fields with 0xFF
-*               2. read boardID and according to ID, read relevant S@R fields(using TWSI/EEPROM)
-*	        **from this point, all S@R reads will be done using mvCtrlSatRRead/Write functions**
+*               1. initialize all S@R and board configuration fields with 0xFF
+*               2. read relevant S@R fields (direct memory access)
+*               3. read relevant board configuration (using TWSI/EEPROM access)
+*	        **from this point, all reads from S@R & board config will use mvCtrlSatRRead/Write functions**
 *
 * INPUT:  None
 *
@@ -382,46 +383,106 @@ MV_U32 mvCtrlConfigGet(MV_CONFIG_TYPE_ID configField)
 *******************************************************************************/
 void mvCtrlSatrInit(void)
 {
-	MV_U8 tempVal[2];
+	MV_U8 tempVal[MV_IO_EXP_MAX_REGS];
 	MV_BOARD_SAR_INFO sarInfo;
 	MV_BOARD_CONFIG_TYPE_INFO confInfo;
 	int i = 0;
 
 	/* initialize all S@R & Board configuration fields to -1 (MV_ERROR) */
-	memset(&satrOptionsConfig, 0xff, (sizeof(MV_U32) * MV_SATR_READ_MAX_OPTION) );
-
-	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++)
-		boardOptionsConfig[i] = MV_ERROR;
-
-	/* detect board ID to determine which S@R fields are relevant */
-	/* omriii : add boardID=mvBoardIdGet(); ??? */
+	memset(&satrOptionsConfig, 0xff, sizeof(MV_U32) * MV_SATR_READ_MAX_OPTION );
+	memset(&boardOptionsConfig, 0xff, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION );
 
 	/* Read Sample @ Reset configuration, memory access read : */
 	for (i = 0; i < MV_SATR_READ_MAX_OPTION; i++) {
-		if ( mvBoardSarInfoGet(i, &sarInfo) && sarInfo.isActiveForBoard[mvBoardIdGet()]) {
+		if ( mvBoardSarInfoGet(i, &sarInfo) ) {
 			tempVal[0] = MV_REG_READ(MPP_SAMPLE_AT_RESET(sarInfo.regNum));
 			satrOptionsConfig[sarInfo.sarid] = ((tempVal[0]  & (sarInfo.mask)) >> sarInfo.offset);
 		}
 	}
 
-	/*Read rest of Board Configuration, EEPROM / Deep Switch access read : */
-	tempVal[0] = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 0);               /* EEPROM Reg#0 */
-	tempVal[1] = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 1);               /* EEPROM Reg#1 */
-	if (((MV_8)MV_ERROR == (MV_8)tempVal[0]) || ((MV_8)MV_ERROR == (MV_8)tempVal[1]) ) {
-		/* EEPROM is not valid , data is jumpered to deep switch- read from there */
-		tempVal[0] = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 0, 0);  /* Deep Switch Reg#0 */
-		tempVal[1] = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 0, 1);  /* Deep Switch Reg#1 */
-		/* omriii : verify reads from BOARD_DEV_TWSI_IO_EXPANDER are correct */
+	/*Read rest of Board Configuration, EEPROM / Dip Switch access read : */
+	if (mvCtrlBoardConfigGet((MV_U8**)&tempVal)) {
+		/* Save values Locally in tempVal[3] */
+		for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
+			if ( mvBoardConfigTypeGet(i, &confInfo) ) {
+				/* each Expander conatins 2 registers */
+				tempRegNum= confInfo.expanderNum * 2 + confInfo.regNum;
+				boardOptionsConfig[confInfo.configid] = ((tempVal[tempRegNum] & (confInfo.mask)) >> confInfo.offset);
+			}
+		}
+	}
+}
+
+/*******************************************************************************
+* mvCtrlBoardConfigGet - read Board Configuration, from EEPROM / Dip Switch
+*
+* DESCRIPTION:
+*       This function reads all board configuration from EEPROM / Dip Switch:
+*	1. read the EEPROM enable jumper, and read from configured device
+*	2. read first 2 registers for all boards
+*	3. read specific registers for specific boards
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_BOOL :  MV_TRUE if EEPROM enabled, else return MV_FALSE.
+*
+*******************************************************************************/
+MV_STATUS mvCtrlBoardConfigGet(MV_U8 **tempVal)
+{
+	MV_U32 boardId = mvBoardIdGet();
+	MV_BOOL isEepromEnabled = mvCtrlIsEepromEnabled();
+	MV_BOARD_TWSI_CLASS twsiClass= (isEepromEnabled ? BOARD_DEV_TWSI_EEPROM : BOARD_DEV_TWSI_IO_EXPANDER);
+
+	(*tempVal)[0] = mvBoardTwsiGet(twsiClass, 0, 0);		/* EEPROM/Dip Switch Reg#0 */
+	(*tempVal)[1] = mvBoardTwsiGet(twsiClass, 0, 1);		/* EEPROM/Dip Switch Reg#1 */
+
+	if (boardId == DB_6660_ID) { /* DB-6660 has another register for board configuration */
+		if (isEepromEnabled)
+			(*tempVal)[2] = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 2);		/* EEPROM Reg#2 */
+		else
+			(*tempVal)[2] = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 1, 0);	/* Dip Switch Reg#1 */
 	}
 
-	if (((MV_8)MV_ERROR == (MV_8)tempVal[0]) || ((MV_8)MV_ERROR == (MV_8)tempVal[1]))
-		/* Deep Switch reading failed - omriii : use defaults (which iszeros for all fields) ??? */
-		tempVal[0] = tempVal[1] = 0x0;
+	/* verify that all TWSI reads were successfull */
+	if (((MV_8)MV_ERROR == (*tempVal)[0]) || ((MV_8)MV_ERROR == (*tempVal)[1]))
+		return MV_ERROR;
 
-	/* Save values Locally */
-	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++)
-		if ( mvBoardConfigTypeGet(i, &confInfo) && confInfo.isActiveForBoard[mvBoardIdGet()])
-			boardOptionsConfig[confInfo.configid] = ((tempVal[confInfo.regNum] & (confInfo.mask)) >> confInfo.offset);
+	if ((boardId == DB_6660_ID) && ((MV_8)MV_ERROR == (*tempVal)[2]))
+		return MV_ERROR;
+
+	return MV_OK;
+}
+
+/*******************************************************************************
+* mvCtrlIsEepromEnabled - read jumper and verify if EEPROM is enabled
+*
+* DESCRIPTION:
+*       This function returns MV_TRUE if board configuration jumper is set to EEPROM.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_BOOL :  MV_TRUE if EEPROM enabled, else return MV_FALSE.
+*
+*******************************************************************************/
+MV_BOOL mvCtrlIsEepromEnabled()
+{
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
+
+	if(mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_JUMPER1_EEPROM_ENABLED ,&ioInfo))
+	{
+		return (mvBoardIoExpValGet(ioInfo) == 0x1);
+	}
+	else return MV_FALSE;
 }
 
 /*******************************************************************************

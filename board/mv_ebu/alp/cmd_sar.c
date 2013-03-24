@@ -219,8 +219,8 @@ static int do_sar_write(int argc, char *const argv[])
 	cmd = argv[0];
 	MV_U8 tempVal = simple_strtoul(argv[1], NULL, 10);
 
-	if ((strcmp(cmd, "cpufreq") == 0) && (MV_ERROR != mvCtrlSatRRead(MV_SATR_CPU_FREQ)))
-		flag=mvCtrlSatRWrite(MV_SATR_WRITE_CPU_FREQ,MV_SATR_CPU_FREQ, tempVal);
+	if ((strcmp(cmd, "cpufreq") == 0) && (MV_ERROR != mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ)))
+		flag=mvCtrlSatRWrite(MV_SATR_WRITE_CPU_FREQ,MV_SATR_CPU_DDR_L2_FREQ, tempVal);
 
 	else if ((strcmp(cmd, "coreclock") == 0) && (MV_ERROR != mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT)))
 		flag=mvCtrlSatRWrite(MV_SATR_WRITE_CORE_CLK_SELECT,MV_SATR_CORE_CLK_SELECT, tempVal);

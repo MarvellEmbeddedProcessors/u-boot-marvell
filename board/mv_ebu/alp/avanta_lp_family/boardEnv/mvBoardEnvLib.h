@@ -85,12 +85,10 @@ extern "C" {
 
 typedef enum _devBoardMppTypeClass {
 	MV_BOARD_AUTO,
-	MV_BOARD_TDM_2CH,
-	MV_BOARD_TDM_32CH,
-	MV_BOARD_RGMII0,
-	MV_BOARD_RGMII1,
-	MV_BOARD_SW_P4,
-	MV_BOARD_OTHER
+	MV_BOARD_SLIC_LANTIQ_ID,
+	MV_BOARD_SLIC_SILABS_ID,
+	MV_BOARD_SLIC_ZARLINK_ID,
+	MV_BOARD_SLIC_EXTERNAL_ID
 } MV_BOARD_MPP_TYPE_CLASS;
 
 typedef enum _devBoardOtherTypeClass {
@@ -102,8 +100,6 @@ typedef enum _devBoardOtherTypeClass {
 	MV_BOARD_UNKNOWN = 0x80000000
 } MV_BOARD_OTHER_TYPE_CLASS;
 
-#define MV_BOARD_TDM    MV_BOARD_TDM_32CH
-
 typedef struct _boardModuleTypeInfo {
 	MV_BOARD_MPP_TYPE_CLASS boardMppMod;
 	MV_BOARD_OTHER_TYPE_CLASS boardOtherMod;
@@ -111,7 +107,7 @@ typedef struct _boardModuleTypeInfo {
 
 /* omriii:  decide between MODULE_TYPE or MPP_TYPE */
 typedef struct _boardMppTypeInfo {
-	MV_BOARD_MPP_TYPE_CLASS boardMppTdm;
+	MV_BOARD_MPP_TYPE_CLASS boardMppSlic;
 
 	/* Ethernet / Sata complex                      */
 	/* A bitmask of MV_ETH_SATA_COMPLEX_OPTIONS     */
@@ -437,6 +433,7 @@ MV_32 mvBoardUSBVbusGpioPinGet(MV_32 devId);
 MV_32 mvBoardUSBVbusEnGpioPinGet(MV_32 devId);
 MV_BOOL mvBoardIsOurPciSlot(MV_U32 busNum, MV_U32 slotNum);
 MV_U32 mvBoardGpioIntMaskGet(MV_U32 gppGrp);
+MV_U32 mvBoardSlicMppModeGet(MV_VOID);
 MV_32 mvBoardMppGet(MV_U32 mppGroupNum);
 MV_32 mvBoardMppTypeGet(MV_U32 mppGroupNum);
 MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType);
@@ -491,6 +488,7 @@ MV_STATUS mvBoardTwsiMuxChannelSet(MV_U8 muxChNum);
 MV_STATUS mvBoardTwsiReadByteThruMux(MV_U8 muxChNum, MV_U8 chNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *data);
 MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum);
 MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx);
+MV_BOOL mvBoardModuleAutoDetectEnabled(void);
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
 MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void);
 MV_STATUS mvBoardConfIdSet(MV_U16 conf);

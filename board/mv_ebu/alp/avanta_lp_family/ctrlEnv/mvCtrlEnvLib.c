@@ -246,7 +246,7 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 			satrOptionsConfig[satrReadField] = readVal;
 			return MV_OK;
 		}else
-			printf("\n%s: Error: Requested S@R config is not relevant for the current board\n, __func__");
+			printf("%s: Error: Requested S@R config is not relevant for the current board\n", __func__);
 	}
 	return MV_ERROR;
 }
@@ -384,6 +384,7 @@ MV_U32 mvCtrlConfigGet(MV_CONFIG_TYPE_ID configField)
 void mvCtrlSatrInit(void)
 {
 	MV_U8 tempVal[MV_IO_EXP_MAX_REGS];
+	MV_U32 tempRegNum;
 	MV_BOARD_SAR_INFO sarInfo;
 	MV_BOARD_CONFIG_TYPE_INFO confInfo;
 	int i = 0;

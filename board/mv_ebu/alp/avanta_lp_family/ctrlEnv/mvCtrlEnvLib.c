@@ -173,8 +173,9 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 {
 	MV_U32 i, gppMask;
 
-	/* Use S@R and board config info, to Build Eth-Complex config & MPP group types */
-	mvBoardConfigInit();
+	/* If set to Auto Detect modules, read S@R and board config info, to build Eth-Complex config & MPP group types */
+	if (mvBoardModuleAutoDetectEnabled())
+		mvBoardConfigInit();
 
 	/* write MPP's config and Board general config */
 	mvBoardConfigWrite();
@@ -291,7 +292,7 @@ MV_VOID mvCtrlSMISet(MV_SMI_CTRL smiCtrl)
 {
 	MV_BOOL isSwSMICtrl   = (smiCtrl == SWITCH_SMI_CTRL ? MV_TRUE : MV_FALSE);
 	MV_BOOL isBootDevSPI1 = (MSAR_0_BOOT_SPI1_FLASH == mvBoardBootDeviceGet());
-	MV_BOOL isRefClkOut   = !mvCtrlIsLantiqTDM(); /* if not using Lantiq TDM, define REF_CLK_OUT */
+	MV_BOOL isRefClkOut   = !( mvCtrlSlicUnitTypeGet() == SLIC_LANTIQ_ID ); 	/* if not using Lantiq TDM, define REF_CLK_OUT */
 	MV_U8 groupTypeSelect = 0;
 
 	if (! ((smiCtrl == SWITCH_SMI_CTRL) || (smiCtrl == CPU_SMI_CTRL)) ) {
@@ -381,13 +382,17 @@ MV_U32 mvCtrlConfigGet(MV_CONFIG_TYPE_ID configField)
 * RETURN: NONE
 *
 *******************************************************************************/
-void mvCtrlSatrInit(void)
+MV_VOID mvCtrlSatrInit(void)
 {
 	MV_U8 tempVal[MV_IO_EXP_MAX_REGS];
 	MV_U32 tempRegNum;
 	MV_BOARD_SAR_INFO sarInfo;
 	MV_BOARD_CONFIG_TYPE_INFO confInfo;
 	int i = 0;
+
+	/* Verify that board support Auto detection from S@R & board configuration */
+	if (!mvBoardModuleAutoDetectEnabled())
+		return;
 
 	/* initialize all S@R & Board configuration fields to -1 (MV_ERROR) */
 	memset(&satrOptionsConfig, 0xff, sizeof(MV_U32) * MV_SATR_READ_MAX_OPTION );
@@ -812,10 +817,37 @@ MV_U32 mvCtrlTdmMaxGet(MV_VOID)
 }
 
 /*******************************************************************************
-* mvCtrlTdmUnitTypeGet
+* mvCtrlSlicUnitTypeGet - return the TDM unit type being used
 *
 * DESCRIPTION:
-*	Scan all relevant TDM units, and return the TDM unit type being used (if any)
+*	if auto detection enabled, read TDM unit from board configuration
+*	else , read pre-defined TDM unit from board information struct.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	The TDM unit type.
+*
+*******************************************************************************/
+MV_SLIC_UNIT_TYPE mvCtrlSlicUnitTypeGet(MV_VOID)
+{
+
+	if (mvBoardModuleAutoDetectEnabled())
+		return boardOptionsConfig[MV_CONFIG_SLIC_TDM_DEVICE];
+	else
+		return mvBoardSlicMppModeGet();
+}
+
+/*******************************************************************************
+* mvCtrlTdmUnitTypeGet - return the TDM unit type being used
+*
+* DESCRIPTION:
+*	if auto detection enabled, read TDM unit from board configuration
+*	else , read pre-defined TDM unit from board information struct.
 *
 * INPUT:
 *       None.
@@ -829,16 +861,10 @@ MV_U32 mvCtrlTdmMaxGet(MV_VOID)
 *******************************************************************************/
 MV_TDM_UNIT_TYPE mvCtrlTdmUnitTypeGet(MV_VOID)
 {
-	if (mvCtrlIsLantiqTDM())
-		return SLIC_LANTIQ_ID;  /* omriii: FIXME */
-	else if (mvCtrlIsZarlinkTDM())
-		return SLIC_ZARLINK_ID;
-	else if (mvCtrlIsSiliconLabsTDM())
-		return SLIC_SILABS_ID;
-	else if (mvCtrlIsExternalTDM())
-		return SLIC_EXTERNAL_ID;
-	else return MV_ERROR;
+
+	return TDM_UNIT_2CH;
 }
+
 
 /*******************************************************************************
  * mvCtrlTdmUnitIrqGet
@@ -1325,90 +1351,6 @@ MV_U32 ctrlSizeRegRoundUp(MV_U32 size, MV_U32 alignment) /* kostaz: FIXME: remov
 		return alignment;
 	else
 		return retSize;
-}
-
-/*******************************************************************************
-* mvCtrlIsLantiqTDM
-*
-* DESCRIPTION:
-*       Check if device being uesd is lantiq TDM
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE if device boot from SPI.
-*******************************************************************************/
-MV_BOOL mvCtrlIsLantiqTDM(MV_VOID)
-{
-	/* implement Scan process */
-	return MV_FALSE;
-}
-
-/*******************************************************************************
-* mvCtrlIsZarlinkTDM
-*
-* DESCRIPTION:
-*       Check if device being used is Zarlink TDM
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE if device boot from SPI.
-*******************************************************************************/
-MV_BOOL mvCtrlIsZarlinkTDM(MV_VOID)
-{
-	/* implement Scan process */
-	return MV_FALSE;
-}
-
-/*******************************************************************************
-* mvCtrlIsSiliconLabsTDM
-*
-* DESCRIPTION:
-*       Check if device being used is Silicon Labs TDM
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE if device boot from SPI.
-*******************************************************************************/
-MV_BOOL mvCtrlIsSiliconLabsTDM(MV_VOID)
-{
-	/* implement Scan process */
-	return MV_FALSE;
-}
-
-/*******************************************************************************
-* mvCtrlIsExternalTDM
-*
-* DESCRIPTION:
-*       Check if device being used is the External TDM Unit
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE if device boot from SPI.
-*******************************************************************************/
-MV_BOOL mvCtrlIsExternalTDM(MV_VOID)
-{
-	/* implement Scan process */
-	return MV_FALSE;
 }
 
 /*******************************************************************************

@@ -233,7 +233,7 @@ MV_BOARD_MAC_INFO db88f6660InfoBoardMacInfo[] = {
 };
 MV_BOARD_MPP_TYPE_INFO db88f6660InfoBoardModTypeInfo[] = {
 	{
-		.boardMppTdm = MV_BOARD_AUTO,
+		.boardMppSlic = MV_BOARD_AUTO,
 		.ethSataComplexOpt = DB_88F6660_ETH_DEFAULT,
 		.ethPortsMode = 0x0
 	}
@@ -333,7 +333,7 @@ MV_BOARD_MAC_INFO avanta_lp_customerInfoBoardMacInfo[] = {
 
 MV_BOARD_MPP_TYPE_INFO avanta_lp_customerInfoBoardModTypeInfo[] = {
 	{
-		.boardMppTdm = MV_BOARD_AUTO,
+		.boardMppSlic = MV_BOARD_AUTO,
 		.ethSataComplexOpt = 0x0,
 		.ethPortsMode = 0x0
 	}

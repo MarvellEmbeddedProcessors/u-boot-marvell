@@ -717,6 +717,28 @@ MV_U32 mvBoardGpioIntMaskGet(MV_U32 gppGrp)
 }
 
 /*******************************************************************************
+* mvBoardSlicMppModeGet - Get board MPP Group type for SLIC unit (pre-defined)
+*
+* DESCRIPTION:
+*	if not using auto detection mudules according to board configuration settings,
+*	use pre-defined SLIC type from board information
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit value describing MPP control register value.
+*
+*******************************************************************************/
+MV_U32 mvBoardSlicMppModeGet(MV_VOID)
+{
+	return board->pBoardModTypeValue->boardMppSlic;
+}
+
+/*******************************************************************************
 * mvBoardMppGet - Get board dependent MPP register value
 *
 * DESCRIPTION:
@@ -772,7 +794,7 @@ MV_VOID mvBoardConfigInit(void)
 	MV_U32 ethSataComplexOptions = 0x0;
 	MV_ETH_COMPLEX_TOPOLOGY mac0con, mac1con;
 	MV_BOARD_BOOT_SRC bootDev;
-	MV_TDM_UNIT_TYPE tdmDev;
+	MV_SLIC_UNIT_TYPE slicDev;
 
 	/* Ethernet Complex initialization : */
 	if ( (mac0con = mvBoardMac0ConfigGet()) != MV_ERROR)
@@ -795,22 +817,9 @@ MV_VOID mvBoardConfigInit(void)
 	/* Group 0-1 - Boot device (or if SPI1 boot : Groups 3-4) */
 	bootDev = mvBoardBootDeviceGroupSet();
 
-	/* Group 2 - TDM unit */
-	tdmDev = mvCtrlTdmUnitTypeGet();
-	switch (tdmDev) {
-	case SLIC_LANTIQ_ID:
-		mvBoardMppTypeSet(2, SLIC_LANTIQ_UNIT);
-		break;
-	case SLIC_SILABS_ID:
-		mvBoardMppTypeSet(2, SLIC_SILABS_UNIT);
-		break;
-	case SLIC_ZARLINK_ID:
-		mvBoardMppTypeSet(2, SLIC_ZARLINK_UNIT);
-		break;
-	case SLIC_EXTERNAL_ID:
-		mvBoardMppTypeSet(2, SLIC_EXTERNAL_UNIT);
-		break;
-	}
+	/* Group 2 - SLIC Tdm unit */
+	slicDev = mvCtrlSlicUnitTypeGet();
+	mvBoardMppTypeSet(2, slicDev);
 
 	/* Groups 3-4  - (only if not Booting from SPI1)*/
 	if (bootDev != MSAR_0_BOOT_SPI1_FLASH) {
@@ -819,7 +828,7 @@ MV_VOID mvBoardConfigInit(void)
 		else
 			mvBoardMppTypeSet(3, SDIO_UNIT);
 
-		if (mvCtrlIsLantiqTDM())
+		if (slicDev == SLIC_LANTIQ_ID)
 			mvBoardMppTypeSet(4, GE1_CPU_SMI_CTRL_TDM_LQ_UNIT);
 		else    /*REF_CLK_OUT*/
 			mvBoardMppTypeSet(4, GE1_CPU_SMI_CTRL_REF_CLK_OUT);
@@ -871,7 +880,7 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 		mvBoardMppTypeSet(1, groupType);
 	case MSAR_0_BOOT_SPI1_FLASH:    /* MSAR_0_SPI1 - update Groups 3-4 */
 		mvBoardMppTypeSet(3, SDIO_SPI1_UNIT);
-		if (mvCtrlIsLantiqTDM())
+		if ( mvCtrlSlicUnitTypeGet() == SLIC_LANTIQ_ID)
 			mvBoardMppTypeSet(4, SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT);
 		else    /*REF_CLK_OUT*/
 			mvBoardMppTypeSet(4, SPI1_CPU_SMI_CTRL_REF_CLK_OUT);
@@ -2294,7 +2303,7 @@ MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 *	MV_FALSE otherwise.
 *
 *******************************************************************************/
-MV_BOOL mvBoardModuleAutoDetectEnabled(void)
+MV_BOOL mvBoardModuleAutoDetectEnabled()
 {
 	return board->moduleAutoDetect;
 }

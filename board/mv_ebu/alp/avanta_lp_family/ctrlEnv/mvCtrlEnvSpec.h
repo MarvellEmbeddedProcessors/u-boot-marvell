@@ -402,10 +402,15 @@ typedef enum {
 
 /* This enumerator defines the Marvell Units ID      */
 typedef enum {
-	SLIC_LANTIQ_ID,
-	SLIC_SILABS_ID,
+	SLIC_EXTERNAL_ID,
 	SLIC_ZARLINK_ID,
-	SLIC_EXTERNAL_ID
+	SLIC_SILABS_ID,
+	SLIC_LANTIQ_ID
+} MV_SLIC_UNIT_TYPE;
+
+typedef enum {
+	TDM_UNIT_2CH,
+	TDM_UNIT_8CH
 } MV_TDM_UNIT_TYPE;
 
 typedef enum _mvUnitId {

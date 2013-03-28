@@ -263,7 +263,7 @@ typedef struct _boardSerdesConf {
 MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrReadField, MV_U8 val);
 MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField);
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode);
-void mvCtrlSatrInit(MV_VOID);
+MV_VOID mvCtrlSatrInit(MV_VOID);
 MV_U32 mvCtrlConfigGet(MV_CONFIG_TYPE_ID configField);
 MV_U32 mvCtrlGetCpuNum(MV_VOID);
 MV_U32 mvCtrlGetQuadNum(MV_VOID);
@@ -301,11 +301,8 @@ MV_U32 mvCtrlSdioSupport(MV_VOID);
 #endif
 MV_U32 mvCtrlTdmSupport(MV_VOID);
 MV_U32 mvCtrlTdmMaxGet(MV_VOID);
+MV_SLIC_UNIT_TYPE mvCtrlSlicUnitTypeGet(MV_VOID);
 MV_TDM_UNIT_TYPE mvCtrlTdmUnitTypeGet(MV_VOID);
-MV_BOOL mvCtrlIsLantiqTDM(MV_VOID);
-MV_BOOL mvCtrlIsZarlinkTDM(MV_VOID);
-MV_BOOL mvCtrlIsExternalTDM(MV_VOID);
-MV_BOOL mvCtrlIsSiliconLabsTDM(MV_VOID);
 MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID);
 MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel);
 MV_U16 mvCtrlModelGet(MV_VOID);

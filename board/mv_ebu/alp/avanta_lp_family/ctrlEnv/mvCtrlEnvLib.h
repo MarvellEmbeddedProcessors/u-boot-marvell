@@ -318,7 +318,7 @@ MV_U32    ctrlSizeRegRoundUp(MV_U32 size, MV_U32 alignment);
 MV_U32 mvCtrlSysRstLengthCounterGet(MV_VOID);
 MV_STATUS ctrlWinOverlapTest(MV_ADDR_WIN *pAddrWin1, MV_ADDR_WIN *pAddrWin2);
 MV_STATUS ctrlWinWithinWinTest(MV_ADDR_WIN *pAddrWin1, MV_ADDR_WIN *pAddrWin2);
-MV_VOID mvCtrlSMISet(MV_SMI_CTRL smiCtrl);
+MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl);
 MV_VOID   mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable);
 MV_BOOL   mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index);
 MV_VOID   mvCtrlPwrMemSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable);

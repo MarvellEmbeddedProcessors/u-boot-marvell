@@ -238,18 +238,24 @@ if($failUart){
 if(defined $opt_o)
 {
 	print "\n**** [Copying Image]\tto ",$opt_o,"  *****\n\n";
-	system("mkdir -p $opt_o/$endian/$opt_f");
-	system("mkdir -p $opt_o/bin_hdr");
-	system("cp u-boot-$boardID-$opt_v-$flash_name-$targetBoard.bin $opt_o/u-boot.bin");
-	system("cp u-boot-$boardID-$opt_v-$flash_name-$targetBoard.bin $opt_o/$endian/$opt_f/ ");
-	system("cp u-boot $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name-$targetBoard");
-	system("cp u-boot.srec $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name-$targetBoard.srec");
-	system("cp u-boot-$boardID-$opt_v-$flash_name-$targetBoard-uart.bin $opt_o/$endian/$opt_f/");
 
-        system("cp tools/marvell/bin_hdr/bin_hdr.bin $opt_o/bin_hdr/");
-        system("cp tools/marvell/bin_hdr/bin_hdr.elf $opt_o/bin_hdr/");
-        system("cp tools/marvell/bin_hdr/bin_hdr.dis $opt_o/bin_hdr/");
-        system("cp tools/marvell/bin_hdr/bin_hdr.srec $opt_o/bin_hdr/");
+	if($boardID eq "avanta") {
+		system("cp u-boot.bin $opt_o/u-boot.bin");
+	}
+	else {
+		system("mkdir -p $opt_o/$endian/$opt_f");
+		system("mkdir -p $opt_o/bin_hdr");
+		system("cp u-boot-$boardID-$opt_v-$flash_name-$targetBoard.bin $opt_o/u-boot.bin");
+		system("cp u-boot-$boardID-$opt_v-$flash_name-$targetBoard.bin $opt_o/$endian/$opt_f/ ");
+		system("cp u-boot $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name-$targetBoard");
+		system("cp u-boot.srec $opt_o/$endian/$opt_f/u-boot-$boardID-$opt_v-$flash_name-$targetBoard.srec");
+		system("cp u-boot-$boardID-$opt_v-$flash_name-$targetBoard-uart.bin $opt_o/$endian/$opt_f/");
+
+		system("cp tools/marvell/bin_hdr/bin_hdr.bin $opt_o/bin_hdr/");
+		system("cp tools/marvell/bin_hdr/bin_hdr.elf $opt_o/bin_hdr/");
+		system("cp tools/marvell/bin_hdr/bin_hdr.dis $opt_o/bin_hdr/");
+		system("cp tools/marvell/bin_hdr/bin_hdr.srec $opt_o/bin_hdr/");
+	}
 }
 
 exit 0;

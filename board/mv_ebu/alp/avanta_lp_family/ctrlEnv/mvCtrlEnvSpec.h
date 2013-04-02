@@ -337,12 +337,6 @@ typedef enum {
 	SPI1_SW_SMI_CTRL_REF_CLK_OUT,
 } MV_GROUP_4_TYPE;
 
-/*  this defines are used when changing a group type value,
- *  to select the correct group type, according to active interfaces */
-#define REF_CLK_OUT_GROUP_4_BASE 	GE1_CPU_SMI_CTRL_REF_CLK_OUT
-#define SW_SMI_GROUP_4_BASE 		GE1_SW_SMI_CTRL_TDM_LQ_UNIT
-#define SPI1_GROUP_4_BASE 		SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT
-
 #define MPP_GROUP_5_TYPE { \
 		0x22122220,     /* GE0      , PON_TX_FAULT */ \
 		0x22122222,     /* GE0      , PON_CLK_OUT */ \

@@ -275,7 +275,7 @@ MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 }
 
 /*******************************************************************************
-* mvCtrlSMISet - alter Group 4 MPP type, between CPU SMI control and SWITCH SMI control
+* mvCtrlSmiMasterSet - alter Group 4 MPP type, between CPU SMI control and SWITCH SMI control
 *
 * DESCRIPTION: Read board configuration which is relevant to MPP group 4 interfaces,
 * 		to derive the correct group type, and according to input SMI conrtol,
@@ -288,7 +288,7 @@ MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 * RETURN: None
 *
 *******************************************************************************/
-MV_VOID mvCtrlSMISet(MV_SMI_CTRL smiCtrl)
+MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 {
 	MV_BOOL isSwSMICtrl   = (smiCtrl == SWITCH_SMI_CTRL ? MV_TRUE : MV_FALSE);
 	MV_BOOL isBootDevSPI1 = (MSAR_0_BOOT_SPI1_FLASH == mvBoardBootDeviceGet());
@@ -303,14 +303,14 @@ MV_VOID mvCtrlSMISet(MV_SMI_CTRL smiCtrl)
 	/* MPP settings :
 	 * Test board configuration relevant to MPP group 4, and derive the correct group type */
 
-	if (isRefClkOut)
-		groupTypeSelect += REF_CLK_OUT_GROUP_4_BASE;
+	if (isRefClkOut)	/* add first REF_CLK_OUT group type */
+		groupTypeSelect += GE1_CPU_SMI_CTRL_REF_CLK_OUT;
 
-	if (isSwSMICtrl)
-		groupTypeSelect += SW_SMI_GROUP_4_BASE;
+	if (isSwSMICtrl)	/* add first SW_SMI group type */
+		groupTypeSelect += GE1_SW_SMI_CTRL_TDM_LQ_UNIT;
 
-	if (isBootDevSPI1)
-		groupTypeSelect += SPI1_GROUP_4_BASE;
+	if (isBootDevSPI1)	/* add first SPI1 group type */
+		groupTypeSelect += SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT;
 
 	mvBoardMppGroupWrite(4, groupTypeSelect);
 

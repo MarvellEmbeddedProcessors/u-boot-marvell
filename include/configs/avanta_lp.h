@@ -171,11 +171,93 @@ disclaimer.
  * U-Boot
  */
 #define CONFIG_SYS_MAXARGS	32	/* max number of command argg */
-#ifndef MV_NAND
-	/* pass compilation for non NAND board configuration */
-	#define CONFIG_SYS_NAND_MAX_CHIPS 1
+
+/* SPI Flash configuration   */
+/*****************************/
+#if defined(MV_INCLUDE_SPI)
+	#define CONFIG_CMD_SPI
+	#define CONFIG_CMD_SF
+	#define CONFIG_SPI_FLASH
+	#define CONFIG_SPI_FLASH_STMICRO
+	#define CONFIG_SPI_FLASH_MACRONIX
+	#define CONFIG_ENV_SPI_MAX_HZ		10000000	/*Max 50Mhz- will sattle on SPI bus max 41.5Mhz */
+	#define CONFIG_ENV_SPI_CS		0
+	#define CONFIG_ENV_SPI_BUS		0
+
+#ifndef CONFIG_SF_DEFAULT_SPEED
+# define CONFIG_SF_DEFAULT_SPEED	1000000
+#endif
+#ifndef CONFIG_SF_DEFAULT_MODE
+# define CONFIG_SF_DEFAULT_MODE		SPI_MODE_3
 #endif
 
+
+	/* Boot from SPI settings */
+	#if defined(MV_SPI_BOOT)
+		#define CONFIG_ENV_IS_IN_SPI_FLASH
+
+		#if defined(MV_SEC_64K)
+			#define CONFIG_ENV_SECT_SIZE		0x10000
+		#elif defined(MV_SEC_128K)
+			#define CONFIG_ENV_SECT_SIZE		0x20000
+		#elif defined(MV_SEC_256K)
+			#define CONFIG_ENV_SECT_SIZE		0x40000
+		#endif
+
+		#define CONFIG_ENV_SIZE				CONFIG_ENV_SECT_SIZE	/* environment takes one sector */
+		#define CONFIG_ENV_OFFSET			0x100000		/* (1MB For Image) environment starts here  */
+		#define CONFIG_ENV_ADDR				CONFIG_ENV_OFFSET
+		#define MONITOR_HEADER_LEN			0x200
+		#define CONFIG_SYS_MONITOR_BASE			0
+		#define CONFIG_SYS_MONITOR_LEN			0x80000			/*(512 << 10) Reserve 512 kB for Monitor */
+
+		#ifndef MV_INCLUDE_NOR
+			#ifdef MV_BOOTROM
+				#define CONFIG_SYS_FLASH_BASE		DEVICE_SPI_BASE
+				#define CONFIG_SYS_FLASH_SIZE		_16M
+			#else
+				#define CONFIG_SYS_FLASH_BASE		BOOTDEV_CS_BASE
+				#define CONFIG_SYS_FLASH_SIZE		BOOTDEV_CS_SIZE
+			#endif /* ifdef MV_BOOTROM */
+		#endif
+	#endif //#if defined(MV_SPI_BOOT)
+#endif //#if defined(MV_SPI)
+
+
+#define CONFIG_SYS_NAND_MAX_CHIPS 1	/* pass compilation for non NAND board configuration */
+
+	/* NAND-FLASH stuff     */
+/************************/
+#ifdef MV_NAND
+	#define MV_NAND_PIO_MODE
+	#define MV_NAND_1CS_MODE
+	#define MV_NAND_4BIT_MODE
+	#define MTD_NAND_NFC_INIT_RESET
+
+	#define CONFIG_SYS_MAX_NAND_DEVICE 1
+	#define CONFIG_CMD_NAND
+	#define CONFIG_MV_MTD_GANG_SUPPORT
+	#define CONFIG_MV_MTD_MLC_NAND_SUPPORT
+	#define CONFIG_SYS_64BIT_VSPRINTF
+	#define CONFIG_SKIP_BAD_BLOCK
+	#undef MV_NFC_DBG
+
+	/* Boot from NAND settings */
+	#if defined(MV_NAND_BOOT)
+		#define CONFIG_ENV_IS_IN_NAND
+
+		#define CONFIG_ENV_SIZE			0x80000		/* environment takes one erase block */
+		#define CONFIG_ENV_OFFSET		nand_get_env_offs() /* environment starts here  */
+		#define CONFIG_ENV_ADDR			CONFIG_ENV_OFFSET
+		#define MONITOR_HEADER_LEN		0x200
+		#define CONFIG_SYS_MONITOR_BASE		0
+		#define CONFIG_SYS_MONITOR_LEN		0x80000		  /* Reserve 512 kB for Monitor */
+		#define CONFIG_ENV_RANGE 		CONFIG_ENV_SIZE * 8
+
+		#define MV_NBOOT_BASE			0
+		#define MV_NBOOT_LEN			(4 << 10) 	/* Reserved 4KB for boot strap */
+	#endif /* MV_NAND_BOOT */
+#endif /* MV_NAND */
 /*
  * Board init
  */
@@ -371,41 +453,50 @@ disclaimer.
 /*
  * NOR Flash
  */
-#define CONFIG_SYS_MAX_FLASH_BANKS		1
-#define CONFIG_UBOOT_SIZE			0x70000 /* 448 K */
+#if defined(MV_INCLUDE_NOR)
+	#define CONFIG_SYS_MAX_FLASH_BANKS		1
+	#define CONFIG_UBOOT_SIZE			0x70000 /* 448 K */
 
-#define CONFIG_SYS_FLASH_CFI
-#define CONFIG_SYS_FLASH_PROTECTION
-#define CONFIG_FLASH_CFI_DRIVER
+	#define CONFIG_SYS_FLASH_CFI
+	#define CONFIG_SYS_FLASH_PROTECTION
+	#define CONFIG_FLASH_CFI_DRIVER
 
-#ifdef CONFIG_MACH_AVANTA_LP_FPGA
-#define CONFIG_FLASH_CFI_LEGACY
-#define CONFIG_SYS_FLASH_LEGACY_512Kx8
-#endif
+	#ifdef CONFIG_MACH_AVANTA_LP_FPGA
+		#define CONFIG_FLASH_CFI_LEGACY
+		#define CONFIG_SYS_FLASH_LEGACY_512Kx8
+	#endif
 
-#define CONFIG_SYS_MAX_FLASH_SECT		128
-#define CONFIG_SYS_FLASH_BASE			NOR_CS_BASE
-#define CONFIG_SYS_FLASH_CFI_WIDTH		FLASH_CFI_8BIT
+	#define CONFIG_SYS_MAX_FLASH_SECT		128
+	#define CONFIG_SYS_FLASH_BASE			NOR_CS_BASE
+	#define CONFIG_SYS_FLASH_CFI_WIDTH		FLASH_CFI_8BIT
 
-#define CONFIG_FLASH_SHOW_PROGRESS		1
-#define CONFIG_SYS_FLASH_EMPTY_INFO
-#if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
-#define CONFIG_SYS_FLASH_USE_BUFFER_WRITE
-#endif
+	#define CONFIG_FLASH_SHOW_PROGRESS		1
+	#define CONFIG_SYS_FLASH_EMPTY_INFO
+	#if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
+		#define CONFIG_SYS_FLASH_USE_BUFFER_WRITE
+	#endif
 
-#define CONFIG_CMD_FLASH
-#undef  CONFIG_CMD_IMLS
+	#define CONFIG_CMD_FLASH
+	#undef  CONFIG_CMD_IMLS
 
-#define CONFIG_ENV_IS_IN_FLASH
-#define CONFIG_ENV_SIZE			0x10000
-#define CONFIG_ENV_SECT_SIZE		0x10000
-#define CONFIG_ENV_OFFSET		0x60000
-#define CONFIG_ENV_RANGE		CONFIG_ENV_SIZE * 8
-#define CONFIG_ENV_ADDR			(NOR_CS_BASE + CONFIG_ENV_OFFSET)
-#define MONITOR_HEADER_LEN		0x200
-#define CONFIG_SYS_MONITOR_LEN		0x70000 /* 448 K */
-#define CONFIG_SYS_MONITOR_BASE (0 + CONFIG_ENV_SECT_SIZE)
-#define CONFIG_SYS_MONITOR_END  (CONFIG_SYS_MONITOR_BASE + CONFIG_SYS_MONITOR_LEN)
+
+	#if defined(MV_NOR_BOOT)
+		#define CONFIG_ENV_IS_IN_FLASH
+		#define CONFIG_ENV_SIZE			0x10000
+		#define CONFIG_ENV_SECT_SIZE		0x10000
+		#define CONFIG_ENV_OFFSET		0x60000
+		#define CONFIG_ENV_RANGE		CONFIG_ENV_SIZE * 8
+		#define CONFIG_ENV_ADDR			(NOR_CS_BASE + CONFIG_ENV_OFFSET)
+		#define MONITOR_HEADER_LEN		0x200
+		#define CONFIG_SYS_MONITOR_LEN		0x70000 /* 448 K */
+		#define CONFIG_SYS_MONITOR_BASE (0 + CONFIG_ENV_SECT_SIZE)
+		#define CONFIG_SYS_MONITOR_END  (CONFIG_SYS_MONITOR_BASE + CONFIG_SYS_MONITOR_LEN)
+	#endif /* MV_NOR_BOOT */
+#else
+	#define CONFIG_SYS_NO_FLASH
+	#undef CONFIG_CMD_FLASH
+	#undef CONFIG_CMD_IMLS
+#endif /* MV_INCLUDE_NOR */
 
 /*
  * Other

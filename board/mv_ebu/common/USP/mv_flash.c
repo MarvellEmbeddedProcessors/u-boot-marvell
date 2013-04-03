@@ -54,6 +54,7 @@ unsigned long spi_flash_init(void)
 
 #endif
 
+#ifndef CONFIG_SYS_NO_FLASH
 ulong board_flash_get_legacy(ulong base, int banknum, flash_info_t *info)
 {
 	int i;
@@ -72,3 +73,4 @@ ulong board_flash_get_legacy(ulong base, int banknum, flash_info_t *info)
 
 	return 1;
 }
+#endif /* CONFIG_SYS_NO_FLASH */

@@ -302,12 +302,13 @@ MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum)
 {
-	if (ethPortNum >= board->numBoardMacInfo)
-		return MV_ERROR;
 
 #if defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	return 8;
 #endif
+
+	if (ethPortNum >= board->numBoardMacInfo)
+		return MV_ERROR;
 
 	return board->pBoardMacInfo[ethPortNum].boardEthSmiAddr;
 }
@@ -331,56 +332,6 @@ MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum)
 MV_BOARD_SPEC_INIT *mvBoardSpecInitGet(MV_VOID)
 {
 	return board->pBoardSpecInit;
-}
-
-/*******************************************************************************
-* mvBoardQuadPhyAddr0Get - Get the phy address
-*
-* DESCRIPTION:
-*       This routine returns the Phy address of a given ethernet port.
-*
-* INPUT:
-*       ethPortNum - Ethernet port number.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       32bit describing Phy address, -1 if the port number is wrong.
-*
-*******************************************************************************/
-MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum)
-{
-#if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
-	return board->pBoardMacInfo[ethPortNum].boardEthSmiAddr0;
-#else
-	return 0;
-#endif
-
-}
-
-/*******************************************************************************
-* mvBoardPhyLinkCryptPortAddrGet
-*
-* DESCRIPTION:
-*       This routine returns the Phy address of a given ethernet port.
-*
-* INPUT:
-*       ethPortNum - Ethernet port number.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       32bit describing Phy address, -1 if the port number is wrong.
-*
-*******************************************************************************/
-MV_32 mvBoardPhyLinkCryptPortAddrGet(MV_U32 ethPortNum)
-{
-	if (ethPortNum >= board->numBoardMacInfo)
-		return MV_ERROR;
-
-	return board->pBoardMacInfo[ethPortNum].LinkCryptPortAddr;
 }
 
 /*******************************************************************************
@@ -1103,6 +1054,80 @@ MV_STATUS mvBoardIsInternalSwitchConnected(MV_U32 ethPortNum)
 		return MV_TRUE;
 	else
 		return MV_FALSE;
+}
+
+/*******************************************************************************
+* mvBoardSwitchConnectedPortGet -
+*
+* DESCRIPTION:
+*       This routine returns the switch port connected to the ethPort
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*
+*******************************************************************************/
+MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort)
+{
+
+	if (board->switchInfoNum == 0)
+		return -1;
+
+	return board->pSwitchInfo[0].connectedPort[ethPort];
+}
+
+
+/*******************************************************************************
+* mvBoardSwitchPortsMaskGet -
+*
+* DESCRIPTION:
+*       This routine returns a mask describing all the connected switch ports
+*
+* INPUT:
+*       switchIdx - index of the switch. Only 0 is supported.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*
+*******************************************************************************/
+MV_8 mvBoardSwitchPortsMaskGet(MV_U32 switchIdx)
+{
+	if ((board->switchInfoNum == 0) || (switchIdx >= board->switchInfoNum))
+	return -1;
+
+	return board->pSwitchInfo[switchIdx].connectedPortMask;
+}
+
+/*******************************************************************************
+* mvBoardInternalQuadPhyAddrGet - Get QUAD phy SMI address.
+*
+* DESCRIPTION:
+*       This routine returns the external QUAD phy address.
+*
+* INPUT:
+*       switchIdx - index of the switch. Only 0 is supported.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       The QUAD phy start address or -1 if error.
+*
+*******************************************************************************/
+MV_32 mvBoardInternalQuadPhyAddrGet(MV_U32 switchIdx)
+{
+
+	if ((board->switchInfoNum == 0) || (switchIdx >= board->switchInfoNum))
+		return -1;
+
+	return board->pSwitchInfo[switchIdx].internalQuadPhyAddr;
+
 }
 
 /*******************************************************************************
@@ -2244,7 +2269,10 @@ MV_STATUS mvBoardTwsiReadByteThruMux(MV_U8 muxChNum, MV_U8 chNum,
 *******************************************************************************/
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
 {
-	return board->pSwitchInfo[switchIdx].smiScanMode;
+	if ((board->switchInfoNum == 0) || (switchIdx >= board->switchInfoNum))
+		return -1;
+
+	return BOARD_ETH_SWITCH_SMI_SCAN_MODE;
 }
 
 /*******************************************************************************
@@ -2265,7 +2293,10 @@ MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 {
-	return 0;
+	if ((board->switchInfoNum == 0) || (switchIdx >= board->switchInfoNum))
+		return -1;
+
+	return board->pSwitchInfo[switchIdx].cpuPort;
 }
 
 /*******************************************************************************
@@ -2287,7 +2318,11 @@ MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_32 mvBoardSwitchIrqGet(MV_VOID)
 {
-	return -1;
+
+	if (board->switchInfoNum == 0)
+		return -1;
+
+	return board->pSwitchInfo[0].switchIrq;
 }
 
 /*******************************************************************************

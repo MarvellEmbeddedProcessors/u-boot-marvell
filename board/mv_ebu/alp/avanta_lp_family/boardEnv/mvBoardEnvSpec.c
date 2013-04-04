@@ -226,9 +226,9 @@ MV_BOARD_TWSI_INFO db88f6660InfoBoardTwsiDev[] = {
 	{ BOARD_DEV_TWSI_IO_EXPANDER,	2,	0x24,	   ADDR7_BIT	},
 };
 MV_BOARD_MAC_INFO db88f6660InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x8									},
-	{ BOARD_MAC_SPEED_AUTO, 0x9									},
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
+	{ BOARD_MAC_SPEED_1000M, -1									},
+	{ BOARD_MAC_SPEED_AUTO, 0x1									},
 	{ N_A,			N_A									}
 };
 MV_BOARD_MPP_TYPE_INFO db88f6660InfoBoardModTypeInfo[] = {
@@ -251,6 +251,18 @@ MV_BOARD_MPP_GROUP_INFO db88f6660InfoBoardMppGroupConfig[] = {
 		  DB_88F6660_GROUP_7_TYPE,
 		  DB_88F6660_GROUP_8_TYPE,
 	  } }
+};
+
+MV_BOARD_SWITCH_INFO db88f6660InfoBoardSwitchValue[] = {
+	{
+	 .switchIrq = 29,	/* set to -1 for timer operation */
+	 .switchPort = {0, 1, 2, 3, 4, -1, -1},
+	 .cpuPort = 6,
+	 .connectedPort = {6, -1},
+	 .internalQuadPhyAddr = 0,
+	 .connectedPortMask= ( BIT0| BIT1| BIT2| BIT3| BIT4| BIT6),
+	 .forceLinkMask = 0x0
+	 }
 };
 
 MV_BOARD_INFO db88f6660_board_info = {
@@ -293,6 +305,10 @@ MV_BOARD_INFO db88f6660_board_info = {
 	.gppPolarityValMid		= DB_88F6660_GPP_POL_MID,
 	.gppPolarityValHigh		= DB_88F6660_GPP_POL_HIGH,
 
+	/* External Switch Configuration */
+	.pSwitchInfo = db88f6660InfoBoardSwitchValue,
+	.switchInfoNum = ARRSZ(db88f6660InfoBoardSwitchValue),
+
 	/* TDM */
 	.numBoardTdmInfo		= {},
 	.pBoardTdmInt2CsInfo		= {},
@@ -325,10 +341,10 @@ MV_BOARD_INFO db88f6660_board_info = {
 
 MV_BOARD_MAC_INFO avanta_lp_customerInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x10, 0x0 },
-	{ BOARD_MAC_SPEED_AUTO, 0x11, 0x0 },
-	{ BOARD_MAC_SPEED_AUTO, 0x12, 0x0 },
-	{ BOARD_MAC_SPEED_AUTO, 0x13, 0x0 }
+	{ BOARD_MAC_SPEED_AUTO, 0x10},
+	{ BOARD_MAC_SPEED_AUTO, 0x11},
+	{ BOARD_MAC_SPEED_AUTO, 0x12},
+	{ BOARD_MAC_SPEED_AUTO, 0x13}
 };
 
 MV_BOARD_MPP_TYPE_INFO avanta_lp_customerInfoBoardModTypeInfo[] = {

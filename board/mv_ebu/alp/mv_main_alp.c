@@ -1009,7 +1009,7 @@ int print_cpuinfo(void)
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	mvCtrlUpdatePexId();
 #endif
-	mvBoardNameGet(name);
+	mvBoardNameGet(name,50);
 	printf("Board: %s\n",  name);
 	mvCtrlModelRevNameGet(name);
 	printf("SoC:   %s\n", name);
@@ -1301,9 +1301,9 @@ void mv_cpu_init(void)
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
 void mv_set_power_scheme(void)
 {
-	char name[30];
+	char name[50];
 
-	mvBoardNameGet(name);
+	mvBoardNameGet(name,50);
 
 	/*start with shutting the power to any unused cores
 	   this is done via mpps on the DB board*/

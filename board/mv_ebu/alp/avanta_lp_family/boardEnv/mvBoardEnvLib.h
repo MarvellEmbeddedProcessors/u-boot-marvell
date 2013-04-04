@@ -77,8 +77,8 @@ extern "C" {
 #include "boardEnv/mvBoardEnvSpec.h"
 #include "twsi/mvTwsi.h"
 
-#define BOARD_ETH_SWITCH_PORT_NUM       8
-#define BOARD_ETH_QD_SWITCH_PORT_NUM    5
+#define BOARD_ETH_SWITCH_PORT_NUM       7
+#define BOARD_ETH_SWITCH_SMI_SCAN_MODE	2
 #define MV_BOARD_MAX_MPP                9       /* number of MPP conf registers */
 #define MV_BOARD_MAX_MPP_GROUPS         9
 #define MV_BOARD_NAME_LEN               0x20
@@ -186,8 +186,8 @@ typedef struct _boardSwitchInfo {
 	MV_32 switchPort[BOARD_ETH_SWITCH_PORT_NUM];
 	MV_32 cpuPort;
 	MV_32 connectedPort[MV_ETH_MAX_PORTS];
-	MV_32 smiScanMode;
-	MV_32 quadPhyAddr[BOARD_ETH_QD_SWITCH_PORT_NUM];
+	MV_8 connectedPortMask;
+	MV_32 internalQuadPhyAddr;
 	MV_U32 forceLinkMask; /* Bitmask of switch ports to have force link (1Gbps) */
 } MV_BOARD_SWITCH_INFO;
 
@@ -242,9 +242,7 @@ typedef enum _boardMacSpeed {
 
 typedef struct _boardMacInfo {
 	MV_BOARD_MAC_SPEED boardMacSpeed;
-	MV_U8 boardEthSmiAddr;
-	MV_U16 LinkCryptPortAddr;
-	MV_U8 boardEthSmiAddr0;
+	MV_8 boardEthSmiAddr;
 } MV_BOARD_MAC_INFO;
 
 typedef struct _boardMppInfo {
@@ -401,7 +399,6 @@ typedef struct _boardInfo {
 #define MSAR_0_SPI1                             1
 
 /* For backward compatability with Legacy mode */
-#define mvBoardSwitchConnectedPortGet(port)     (-1)
 #define mvBoardIsSwitchConnected(port)          (mvBoardSwitchConnectedPortGet(port) != -1)
 /*#define mvBoardLinkStatusIrqGet(port)		mvBoardSwitchIrqGet()*/
 
@@ -416,9 +413,6 @@ MV_32 mvBoardSwitchPortMap(MV_U32 switchIdx, MV_U32 switchPortNum);
 MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
 MV_U8 mvBoardIoExpValGet(MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo);
-MV_32 mvBoardPhyLinkCryptPortAddrGet(MV_U32 ethPortNum);
-
-MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum);
 MV_STATUS mvBoardSarInfoGet(MV_SATR_TYPE_ID sarClass, MV_BOARD_SAR_INFO *sarInfo);
 MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo);
 MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass, MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo);
@@ -469,12 +463,9 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGet(MV_VOID);
 MV_U32 mvBoardBootAttrGet(MV_U32 sarBootDeviceValue, MV_U8 attrNum);
 MV_U8 mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum);
 MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
-
 MV_U8 mvBoardCpuFreqGet(MV_VOID);
 MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal);
-
 MV_U8 mvBoardCpuCoresNumGet(MV_VOID);
-
 MV_STATUS mvBoardMppModulesScan(void);
 MV_STATUS mvBoardOtherModulesScan(void);
 MV_BOOL mvBoardIsPexModuleConnected(void);
@@ -495,6 +486,9 @@ MV_32 mvBoardGePhySwitchPortGet(void);
 MV_32 mvBoardRgmiiASwitchPortGet(void);
 MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum);
 MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx);
+MV_32 mvBoardSwitchIrqGet(MV_VOID);
+MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort);
+MV_8 mvBoardSwitchPortsMaskGet(MV_U32 switchIdx);
 MV_BOOL mvBoardModuleAutoDetectEnabled(void);
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
 MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void);

@@ -275,6 +275,7 @@ int reglog(unsigned int offset, unsigned int data);
 
 #define INLINE             inline
 #define mvOsSPrintf        sprintf
+#define mvOsSNPrintf       snprintf
 
 /* In order to minimize image size printf, is defined as NULL */
 

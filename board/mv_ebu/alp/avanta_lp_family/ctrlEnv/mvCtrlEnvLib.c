@@ -65,6 +65,7 @@
 #include "mvCommon.h"
 #include "mvCtrlEnvLib.h"
 #include "boardEnv/mvBoardEnvLib.h"
+#include "ctrlEnv/mvCtrlEthCompLib.h"
 #include "ctrlEnv/sys/mvCpuIf.h"
 #include "ctrlEnv/mvCtrlEnvSpec.h"
 #include "gpp/mvGpp.h"
@@ -197,6 +198,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvGppPolaritySet(i, gppMask, (MV_GPP_IN_INVERT & gppMask));
 	}
 
+	mvEthernetComplexInit();
 	return MV_OK;
 }
 

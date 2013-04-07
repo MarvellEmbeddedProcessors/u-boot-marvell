@@ -757,7 +757,7 @@ MV_VOID mvBoardConfigInit(void)
 		ethSataComplexOptions |= MV_ETH_COMPLEX_SW_P6_RGMII0;
 
 	if (mac1con == 0x2) /* 10  MAC1 connected to Switch P4 */
-		ethSataComplexOptions |= MV_ETH_COMPLEX_SW_P4_RGMII1;
+		ethSataComplexOptions |= MV_ETH_COMPLEX_SW_P4_RGMII0;
 
 	if (mvCtrlConfigGet(MV_CONFIG_PON_SERDES) == 0x0)  /* 0 - PON SerDes connected to PON MAC */
 		ethSataComplexOptions |= MV_ETH_COMPLEX_P2P_MAC_PON_ETH_SERDES;

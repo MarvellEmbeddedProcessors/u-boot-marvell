@@ -92,6 +92,7 @@ extern "C" {
 #define MV_GPP_REGS_OFFSET(unit)                (0x18100 + ((unit) * 0x40))
 #define MV_MISC_REGS_OFFSET                     (0x18200)
 #define MV_CLK_CMPLX_REGS_OFFSET        		(0x18700)
+#define MV_ETH_COMPLEX_OFFSET			0x18900
 #define MV_MBUS_REGS_OFFSET                     (0x20000)
 #define CPU_GLOBAL_BASE                         (MV_MBUS_REGS_OFFSET)
 #define MV_COHERENCY_FABRIC_OFFSET              (0x20200)

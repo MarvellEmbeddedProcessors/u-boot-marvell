@@ -38,16 +38,16 @@ modify this File under the following licensing terms.
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
-    *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+    * 	Redistributions of source code must retain the above copyright notice,
+	this list of conditions and the following disclaimer.
 
-    *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+    *	Redistributions in binary form must reproduce the above copyright
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
-    *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+    *	Neither the name of Marvell nor the names of its contributors may be
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -62,15 +62,48 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include "mvOs.h"
-#include "eth-phy/mvEthPhy.h"
+#ifndef __INCmvCtrlEthCompLibh
+#define __INCmvCtrlEthCompLibh
 
-MV_VOID mvBoardEgigaPhyInit(MV_VOID);
-MV_VOID mvBoardALPEgigaPhyInit(MV_VOID);
-MV_VOID mvEthInternalQuadPhyBasicInit(MV_U32 enabledPhys, MV_BOOL eeeEnable);
+#include "ctrlEnv/mvCtrlEnvSpec.h"
+#include "mvSysEthConfig.h"
 
-// void mvEthSwitchRegWrite(MV_U32 ethPortNum, MV_U32 phyAddr,
-//                                  MV_U32 regOffs, MV_U16 data);
-//
-// void mvEthSwitchRegRead(MV_U32 ethPortNum, MV_U32 phyAddr,
-//                              MV_U32 regOffs, MV_U16 *data);
+#define MV_ETHCOMP_CTRL_REG(id)			(MV_ETH_COMPLEX_BASE + 0x10 + (id * 4))
+
+/* Ethernet Complex Control 0 */
+#define ETHCC_SW_PORT_0_SRC_OFFSET		4
+#define ETHCC_SW_PORT_0_SRC_MASK		(0x1 << ETHCC_SW_PORT_0_SRC_OFFSET)
+#define ETHCC_SW_PORT_3_SRC_OFFSET		5
+#define ETHCC_SW_PORT_3_SRC_MASK		(0x1 << ETHCC_SW_PORT_3_SRC_OFFSET)
+#define ETHCC_SW_PORT_4_SRC_OFFSET		6
+#define ETHCC_SW_PORT_4_SRC_MASK		(0x1 << ETHCC_SW_PORT_4_SRC_OFFSET)
+#define ETHCC_SW_PORT_6_SRC_OFFSET		7
+#define ETHCC_SW_PORT_6_SRC_MASK		(0x1 << ETHCC_SW_PORT_6_SRC_OFFSET)
+#define ETHCC_GBE_MAC0_SRC_OFFSET		10
+#define ETHCC_GBE_MAC0_SRC_MASK			(0x3 << ETHCC_GBE_MAC0_SRC_OFFSET)
+#define ETHCC_GBE_MAC1_SRC_OFFSET		12
+#define ETHCC_GBE_MAC1_SRC_MASK			(0x3 << ETHCC_GBE_MAC1_SRC_OFFSET)
+#define ETHCC_GBE_PHY_PORT_0_SRC_OFFSET		14
+#define ETHCC_GBE_PHY_PORT_0_SRC_MASK		(0x1 << ETHCC_GBE_PHY_PORT_0_SRC_OFFSET)
+#define ETHCC_GBE_PHY_PORT_1_SMI_SRC_OFFSET	15
+#define ETHCC_GBE_PHY_PORT_1_SMI_SRC_MASK	(0x1 << ETHCC_GBE_PHY_PORT_1_SMI_SRC_OFFSET)
+#define ETHCC_GBE_PHY_PORT_2_SMI_SRC_OFFSET	16
+#define ETHCC_GBE_PHY_PORT_2_SMI_SRC_MASK	(0x1 << ETHCC_GBE_PHY_PORT_2_SMI_SRC_OFFSET)
+#define ETHCC_GBE_PHY_PORT_3_SRC_OFFSET		17
+#define ETHCC_GBE_PHY_PORT_3_SRC_MASK		(0x1 << ETHCC_GBE_PHY_PORT_0_SRC_OFFSET)
+#define ETHCC_GE_MAC0_SW_PORT_6_SPD_OFFSET	18
+#define ETHCC_GE_MAC0_SW_PORT_6_SPD_MASK	(0x1 << ETHCC_GE_MAC0_SW_PORT_6_SPD_OFFSET)
+#define ETHCC_LOOPBACK_PORT_SPD_OFFSET		18
+#define ETHCC_LOOPBACK_PORT_SPD_MASK		(0x1 << ETHCC_LOOPBACK_PORT_SPD_OFFSET)
+
+MV_VOID mvEthCompSkipInitSet(MV_BOOL skip);
+MV_STATUS mvEthCompMac2SwitchConfig(MV_U32 ethCompCfg, MV_BOOL muxCfgOnly);
+MV_STATUS mvEthCompSwitchReset(MV_U32 ethCompCfg);
+MV_STATUS mvEthCompMac2RgmiiConfig(MV_U32 ethCompCfg);
+MV_STATUS mvEthCompSwP56ToRgmiiConfig(MV_U32 ethCompCfg);
+MV_STATUS mvEthCompSataConfig(MV_U32 ethCompCfg);
+MV_STATUS mvEthernetComplexShutdownIf(MV_BOOL integSwitch, MV_BOOL gePhy, MV_BOOL fePhy);
+MV_STATUS mvEthernetComplexInit(MV_VOID);
+MV_STATUS mvEthernetComplexChangeMode(MV_U32 oldCfg, MV_U32 newCfg);
+
+#endif /* __INCmvCtrlEthCompLibh */

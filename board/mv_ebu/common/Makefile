@@ -82,6 +82,10 @@ SOC_OBJS = 	$(SOC_ENV_DIR)/mvCtrlEnvAddrDec.o 		\
 			$(SOC_CPU_DIR)/mvCpu.o 			\
 			$(SOC_DEVICE_DIR)/mvDevice.o
 
+ifeq ($(BOARD),alp)
+SOC_OBJS +=	$(SOC_ENV_DIR)/mvCtrlEthCompLib.o
+endif
+
 USP_OBJS =	$(USP_DIR)/mv_serial.o 			\
 			$(USP_DIR)/nand_nfc.o		\
 			$(USP_DIR)/mv_flash.o		\

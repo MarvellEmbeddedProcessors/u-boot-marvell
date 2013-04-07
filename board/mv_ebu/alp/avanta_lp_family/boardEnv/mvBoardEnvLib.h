@@ -398,10 +398,6 @@ typedef struct _boardInfo {
 #define MSAR_0_SPI0                             0
 #define MSAR_0_SPI1                             1
 
-/* For backward compatability with Legacy mode */
-#define mvBoardIsSwitchConnected(port)          (mvBoardSwitchConnectedPortGet(port) != -1)
-/*#define mvBoardLinkStatusIrqGet(port)		mvBoardSwitchIrqGet()*/
-
 MV_VOID mvBoardEnvInit(MV_VOID);
 MV_U16 mvBoardModelGet(MV_VOID);
 MV_U16 mvBoardRevGet(MV_VOID);

@@ -127,22 +127,106 @@ void mvBoardALPEgigaPhyInit(void)
 {
 	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
 	MV_U32 portEnabled = 0;
-
-	if (ethComplex & (MV_ETH_COMPLEX_GE_MAC0_RGMII0 | MV_ETH_COMPLEX_GE_MAC0_QUAD_PHY_P0))
-		mvEthPhyInit(0, MV_FALSE);
-
-	if (ethComplex & (MV_ETH_COMPLEX_GE_MAC1_RGMII1 | MV_ETH_COMPLEX_GE_MAC1_QUAD_PHY_P3))
-		mvEthPhyInit(1, MV_FALSE);
-
+	MV_U32 phyEnabled = 0;
+	
+	/* 1st Run switch basic init with enabled ports, then initalize internal Quad PHYs*/
 	if (mvBoardIsInternalSwitchConnected(0) || mvBoardIsInternalSwitchConnected(1)) {
 		if (ethComplex & (MV_ETH_COMPLEX_GE_MAC0_SW_P6 | MV_ETH_COMPLEX_SW_P6_RGMII0 ))
 			portEnabled |= BIT6;
 		if (ethComplex & MV_ETH_COMPLEX_GE_MAC1_SW_P4)
 			portEnabled |= BIT4;
-		if (ethComplex & (MV_ETH_COMPLEX_GE_MAC1_QUAD_PHY_P3 | MV_ETH_COMPLEX_GE_MAC0_QUAD_PHY_P0 |\
-					MV_ETH_COMPLEX_SW_P0_QUAD_PHY_P0 | MV_ETH_COMPLEX_SW_P3_QUAD_PHY_P3))
-			portEnabled |= BIT0 | BIT1 | BIT2 | BIT3;
+		if (ethComplex & MV_ETH_COMPLEX_SW_P0_QUAD_PHY_P0) {
+			portEnabled |= BIT0;
+			phyEnabled |=BIT0;
+		}
+		if (ethComplex & MV_ETH_COMPLEX_SW_P3_QUAD_PHY_P3) {
+			portEnabled |= BIT3;
+			phyEnabled |=BIT3;
+		}
+
+		portEnabled |= BIT1 | BIT2;
+		phyEnabled |= BIT1 | BIT2;	/* ports 1-2 are connected to switch by default */
+
 		mvEthALPSwitchBasicInit(portEnabled);
+		mvEthInternalQuadPhyBasicInit(phyEnabled, MV_FALSE);
+	}
+
+
+	/* if MAC-0 is connected through switch port 6, or directly to RGMII-0 / Quad Phy */
+	if (ethComplex & (MV_ETH_COMPLEX_GE_MAC0_SW_P6 | MV_ETH_COMPLEX_GE_MAC0_RGMII0 | MV_ETH_COMPLEX_GE_MAC0_QUAD_PHY_P0 ))
+		mvEthPhyInit(0, MV_FALSE);
+
+	/* if MAC-1 is connected through switch port 4, or directly to Quad Phy */
+	if (ethComplex & (MV_ETH_COMPLEX_GE_MAC1_SW_P4| MV_ETH_COMPLEX_GE_MAC1_QUAD_PHY_P3))
+		mvEthPhyInit(1, MV_FALSE);
+
+
+	/* if Switch port 4 is connected to RGMII-0 external phy 
+	 * (if SW-P4 is not connected to MAC1 or MAC0 is not connected to RGMII-0  */
+//	if ( !(ethComplex & (MV_ETH_COMPLEX_GE_MAC1_SW_P4| MV_ETH_COMPLEX_GE_MAC0_RGMII0)) )
+//		mvEthPhyInit(???, MV_FALSE);
+
+	/* if MAC-1 is connected to RGMII-1
+	 * due to phy address 0x1 conflict, first disable quad phy 0x1 cpu ctrl, and enable externl phy cpu ctrl:
+	 * 	- force quad phy 0x1 SMI ctrl to switch SMI ctrl
+	 * 	- Enable external RGMII-1 phy buffer  */
+	if (ethComplex & (MV_ETH_COMPLEX_GE_MAC1_RGMII1)) {
+		/* enable external phy cpu ctrl */
+		mvEthPhyInit(1, MV_FALSE);
+		/* disable external phy cpu ctrl */
+	}
+
+}
+
+MV_VOID mvEthInternalQuadPhyBasicInit(MV_U32 enabledPhys, MV_BOOL eeeEnable)
+{
+	int i;
+	MV_U16 reg;
+	MV_U32 port=0;
+
+	//switchPhyRegWrite 0 1 0x1D 9
+	mvEthSwitchPhyRegWrite(port, 1, 0x1D, 9);
+
+	//switchPhyRegWrite 0 1 0x1F  bits[6:5] change to 0
+	//switchPhyRegWrite 0 2 0x1F  bits[6:5] change to 0
+	//switchPhyRegWrite 0 3 0x1F  bits[6:5] change to 0
+	for (i=1; i<4; i++) {
+		mvEthSwitchPhyRegRead(port, i, 0x1F, &reg);
+		reg &= ~(BIT6 | BIT5);
+		mvEthSwitchPhyRegWrite(port, i, 0x1F, reg);
+	}
+
+	//switchPhyRegWrite 0 1 0x1D 10
+	mvEthSwitchPhyRegWrite(port, 1, 0x1D, 0x10);
+
+	//switchPhyRegWrite 0 1 0x1E bit [13] change to 0
+	//switchPhyRegWrite 0 2 0x1E bit [13] change to 0
+	//switchPhyRegWrite 0 3 0x1E bit [13] change to 0
+	for (i=1; i<4; i++) {
+		mvEthSwitchPhyRegRead(port, i, 0x1E, &reg);
+		reg &= ~(BIT13);
+		mvEthSwitchPhyRegWrite(port, i, 0x1E, reg);
+	}
+
+	//switchPhyRegWrite 0 1 0x1D 0
+	mvEthSwitchPhyRegWrite(port, 1, 0x1D, 0);
+
+	/* Raise falltime configuration. */
+	mvEthSwitchPhyRegWrite(port, 1, 0x1D, 0x8005);
+	mvEthSwitchPhyRegWrite(port, 1, 0x1E, 0x2000);
+	mvEthSwitchPhyRegWrite(port, 1, 0x1D, 0x9005);
+	mvEthSwitchPhyRegWrite(port, 1, 0x1E, 0x2000);
+	mvEthSwitchPhyRegWrite(port, 1, 0x1D, 0xA005);
+	mvEthSwitchPhyRegWrite(port, 1, 0x1E, 0x2000);
+
+	for (i=1; i<4; i++) {
+		mvEthSwitchPhyRegWrite(port, i, 0x1C, 0xF03);
+
+		/* soft reset the phy */
+		mvEthSwitchPhyRegRead(port, i, 0, &reg);
+		reg |= BIT15;
+		mvEthSwitchPhyRegWrite(port, i, 0, reg);
 	}
 }
+
 #endif /* MV88F66XX */

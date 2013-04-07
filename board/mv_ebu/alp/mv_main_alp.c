@@ -1089,7 +1089,8 @@ int misc_init_r(void)
 		/* Init the PHY or Switch of the board */
 		mvCtrlSmiMasterSet(CPU_SMI_CTRL);
 		mvBoardEgigaPhyInit();
-		mvCtrlSmiMasterSet(SWITCH_SMI_CTRL);
+		if (mvBoardIsInternalSwitchConnected(0) || mvBoardIsInternalSwitchConnected(1))
+			mvCtrlSmiMasterSet(SWITCH_SMI_CTRL);
 
 #endif
 #endif

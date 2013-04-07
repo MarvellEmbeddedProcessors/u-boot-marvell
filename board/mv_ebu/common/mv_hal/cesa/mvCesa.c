@@ -960,13 +960,13 @@ MV_STATUS mvCesaAction(MV_U8 chan, MV_CESA_COMMAND *pCmd)
 			}
 			status = mvCesaFragReqProcess(chan, pReq, frag);
 			if (status == MV_OK) {
-#ifdef MV_CESA_CHAIN_MODE
+#if defined(MV_CESA_CHAIN_MODE) || defined(MV_CESA_INT_COALESCING_SUPPORT)
 				if (frag) {
 					pReq->dma[frag - 1].pDmaLast->phyNextDescPtr =
 					    MV_32BIT_LE(mvCesaVirtToPhys(&pReq->dmaDescBuf, pReq->dma[frag].pDmaFirst));
 					mvOsCacheFlush(NULL, pReq->dma[frag - 1].pDmaLast, sizeof(MV_DMA_DESC));
 				}
-#endif /* MV_CESA_CHAIN_MODE */
+#endif /* MV_CESA_CHAIN_MODE || MV_CESA_INT_COALESCING_SUPPORT */
 				frag++;
 			}
 		}
@@ -1158,10 +1158,10 @@ MV_STATUS mvCesaReadyGet(MV_U8 chan, MV_CESA_RESULT *pResult)
 		MV_U8 *pNewDigest;
 		int frag;
 
-#ifdef MV_CESA_CHAIN_MODE
+#if defined(MV_CESA_CHAIN_MODE) || defined(MV_CESA_INT_COALESCING_SUPPORT)
 		pReq->frags.nextFrag = 1;
 		while (pReq->frags.nextFrag <= pReq->frags.numFrag) {
-#endif /* MV_CESA_CHAIN_MODE */
+#endif
 
 			frag = (pReq->frags.nextFrag - 1);
 
@@ -1204,7 +1204,7 @@ MV_STATUS mvCesaReadyGet(MV_U8 chan, MV_CESA_RESULT *pResult)
 				}
 				readyStatus = MV_OK;
 			}
-#ifdef MV_CESA_CHAIN_MODE
+#if defined(MV_CESA_CHAIN_MODE) || defined(MV_CESA_INT_COALESCING_SUPPORT)
 			pReq->frags.nextFrag++;
 		}
 #endif

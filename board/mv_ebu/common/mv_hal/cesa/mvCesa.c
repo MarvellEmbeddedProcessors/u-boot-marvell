@@ -415,16 +415,9 @@ MV_STATUS mvCesaHalInit(int numOfSession, int queueDepth, void *osHandle, MV_CES
 
 #ifdef MV_CESA_INT_COALESCING_SUPPORT
 		configReg |= MV_CESA_CFG_CHAIN_MODE_MASK;
-#ifdef MV_CESA_TEST
-		/* Enable interrupt coalescing for test tool */
-		MV_REG_WRITE(MV_CESA_INT_COAL_TH_REG(chan), 0x1);
-		MV_REG_WRITE(MV_CESA_INT_TIME_TH_REG(chan), 0xff);
-
-#else
 		/* Enable interrupt coalescing */
-		MV_REG_WRITE(MV_CESA_INT_COAL_TH_REG(chan), 0x2);
-		MV_REG_WRITE(MV_CESA_INT_TIME_TH_REG(chan), 0xfffff);
-#endif
+		MV_REG_WRITE(MV_CESA_INT_COAL_TH_REG(chan), MV_CESA_INT_COAL_THRESHOLD);
+		MV_REG_WRITE(MV_CESA_INT_TIME_TH_REG(chan), MV_CESA_INT_COAL_TIME_THRESHOLD);
 #endif
 
 		/* Set CESA configuration registers */

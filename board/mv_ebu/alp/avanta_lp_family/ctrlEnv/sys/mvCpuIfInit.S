@@ -84,7 +84,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *       1) CPU2MbusLTickDrv
 *       2) CPU2MbusLTickSample.
 *       NOTE: This function must be called AFTER the internal register
-*       base is modified to INTER_REGS_BASE.
+*       base is modified to INTER_REGS_VIRT_BASE.
 *
 * INPUT:
 *       None.

@@ -395,9 +395,10 @@ MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum)
 * mvBoardTclkGet
 *
 * DESCRIPTION:
-*       This routine extract the controller core clock.
+*       This routine extract the controller core clock, aka, TCLK clock.
 *
 * INPUT:
+* 	None.
 *
 * OUTPUT:
 *       None.
@@ -418,7 +419,6 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 	case 1:
 		return _200MHz;
 	default:
-		DB(mvOsPrintf("%s: Error : Board: Read from S@R fail\n", __func__));
 		return _200MHz;
 	}
 #endif

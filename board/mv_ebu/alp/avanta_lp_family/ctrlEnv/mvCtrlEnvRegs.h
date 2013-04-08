@@ -83,10 +83,6 @@ extern "C" {
 /* Controler environment registers offsets */
 #define MV_TDM_IRQ_NUM                          56
 
-/* Coherent Fabric Control and Status */
-#define MV_COHERENCY_FABRIC_CTRL_REG            (MV_COHERENCY_FABRIC_OFFSET + 0x0)
-#define MV_COHERENCY_FABRIC_CFG_REG             (MV_COHERENCY_FABRIC_OFFSET + 0x4)
-
 /* CIB registers offsets */
 #define MV_CIB_CTRL_CFG_REG                     (MV_COHERENCY_FABRIC_OFFSET + 0x80)
 

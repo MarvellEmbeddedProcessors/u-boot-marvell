@@ -144,8 +144,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern "C" {
 #endif
 
+#if !defined(CONFIG_OF)
 #include "ctrlEnv/mvCtrlEnvSpec.h"
 #include "mvSysNfcConfig.h"
+#else
+#include "mvSysHwConfig.h"
+#endif
 
 /********************************/
 /* Enums and structures 	*/

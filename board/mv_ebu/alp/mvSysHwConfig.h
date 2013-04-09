@@ -81,11 +81,8 @@ disclaimer.
  * DRAM
  */
 #undef MV_INC_BOARD_DDIM
-#ifdef CONFIG_MACH_AVANTA_LP_FPGA
-#define MV_STATIC_DRAM_ON_BOARD
-#endif
 
-#ifndef MV_BOOTROM
+#if !defined(MV_BOOTROM) || defined(CONFIG_MACH_AVANTA_LP_FPGA)
 #define MV_STATIC_DRAM_ON_BOARD
 #endif
 

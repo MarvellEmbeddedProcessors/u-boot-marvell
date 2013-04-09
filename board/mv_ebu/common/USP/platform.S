@@ -75,30 +75,10 @@ lowlevel_init:
 	ldr	r4, =0x1
 	MV_DV_REG_WRITE_ASM(r4, r1, 0x015e0)
 
-#else /* if not (CONFIG_AVANTA_LP_FPGA) */
-	/* Check if we are CPU0 or CPU1 */
-	cmp     r0, #0x0
-	bne     done_cpu1
-
-	bl	done
-
-done:
-
-#ifdef CFU_DRAM_BYPASS
-	/* allow accessing to DRAM from XBAR */
-	ldr r4, =0x1fff0e01			/* Set DRAM CS[0] size in P-unit (default) */
-	MV_REG_WRITE_ASM(r4, r1, 0x200e8)
-	ldr r4, =0x20000000			/* Set DRAM CS[1] base in P-unit */
-	MV_REG_WRITE_ASM(r4, r1, 0x200e4)
-	ldr r4, =0x1fff0d01			/* Set DRAM CS[1] size in P-unit */
-	MV_REG_WRITE_ASM(r4, r1, 0x200e0)
-#endif /* CFU_DRAM_BYPASS */
-
 #endif /* CONFIG_AVANTA_LP_FPGA) */
 
 exit:
 	mov	lr, r2
-done_cpu1:
 	mov 	pc, lr
 
 .globl _lowlevel_init_val

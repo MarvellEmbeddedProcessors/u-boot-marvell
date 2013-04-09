@@ -408,14 +408,14 @@ typedef enum {
 	MSAR_0_BOOT_SPI1_FLASH
 } MV_BOARD_BOOT_SRC;
 
-typedef struct _mvSARBootTable {
+typedef struct _mvSATRBootTable {
 	MV_BOARD_BOOT_SRC bootSrc;
 	MV_U32 attr1;                           /* Device width/Port */
 	MV_U32 attr2;                           /* ALE TIming Parameters/Page Size/Serdes Lane/Address cycles */
 	MV_U32 attr3;                           /* Dev_Wen Dev_Oen Muxed/Address cycle/SPI interface */
-} MV_SAR_BOOT_TABLE;
+} MV_SATR_BOOT_TABLE;
 
-#define MV_SAR_TABLE_VAL { \
+#define MV_SATR_TABLE_VAL { \
 /*00*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, 0, 0 }, \
 /*01*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,             0, 1 }, \
 /*02*/ { MSAR_0_BOOT_NOR_FLASH,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, 0, 0 }, \

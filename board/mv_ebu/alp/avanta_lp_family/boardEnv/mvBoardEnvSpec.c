@@ -69,7 +69,7 @@
 
 #define ARRSZ(x)                (sizeof(x) / sizeof(x[0]))
 
-MV_BOARD_SAR_INFO boardSarInfo[] = {
+MV_BOARD_SATR_INFO boardSatrInfo[] = {
 /* {	{MV_SATR_TYPE_ID SarID,		MV_U32 Mask,   	      Offset, regNum , 	       isActiveForBoard[]}} */
 	{ MV_SATR_CPU_DDR_L2_FREQ,		 0x003E0000,	  17,	       1, {1,0,0,0} },
 	{ MV_SATR_CORE_CLK_SELECT,	 0x00400000,	  22,	       1, {1,0,0,0} },
@@ -324,7 +324,7 @@ MV_BOARD_INFO db88f6660_board_info = {
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,
 	/* Enable modules auto-detection. */
-	.moduleAutoDetect		= MV_TRUE
+	.configAutoDetect		= MV_TRUE
 };
 
 /*******************************************************************************

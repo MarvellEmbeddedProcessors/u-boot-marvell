@@ -91,7 +91,7 @@
 #endif
 
 extern MV_BOARD_INFO *boardInfoTbl[];
-extern MV_BOARD_SAR_INFO boardSarInfo[];
+extern MV_BOARD_SATR_INFO boardSatrInfo[];
 extern MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[];
 
 /* Locals */
@@ -307,8 +307,10 @@ MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum)
 	return 8;
 #endif
 
-	if (ethPortNum >= board->numBoardMacInfo)
+	if (ethPortNum >= board->numBoardMacInfo) {
+		DB(mvOsPrintf("%s: Error: invalid ethPortNum (%d)\n", __func__, ethPortNum));
 		return MV_ERROR;
+	}
 
 	return board->pBoardMacInfo[ethPortNum].boardEthSmiAddr;
 }
@@ -542,7 +544,18 @@ MV_32 mvBoarGpioPinNumGet(MV_BOARD_GPP_CLASS gppClass, MV_U32 index)
 *******************************************************************************/
 MV_VOID mvBoardReset(MV_VOID)
 {
-	/* empty */
+	MV_32 resetPin;
+
+	/* Get gpp reset pin if define */
+	resetPin = mvBoardResetGpioPinGet();
+	if (resetPin != MV_ERROR)
+		MV_REG_BIT_RESET(GPP_DATA_OUT_REG((int)(resetPin/32)), (1 << (resetPin % 32)));
+	else
+	{
+		/* No gpp reset pin was found, try to reset using system reset out */
+		MV_REG_BIT_SET( CPU_RSTOUTN_MASK_REG , BIT0);
+		MV_REG_BIT_SET( CPU_SYS_SOFT_RST_REG , BIT0);
+	}
 }
 
 /*******************************************************************************
@@ -807,7 +820,7 @@ MV_VOID mvBoardConfigInit(void)
 *	   Or   groups 3-4 for SPI1 Boot
 *	- return Selected boot device
 *
-* INPUT:  sarBootDevice - BOOT_DEVICE value from S@R.
+* INPUT:
 *
 * OUTPUT:  None.
 *
@@ -863,7 +876,7 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 * DESCRIPTION:
 *   read board BOOT configuration from S@R and return Boot device accordingly
 *
-* INPUT:  sarBootDevice - BOOT_DEVICE value from S@R.
+* INPUT:
 *
 * OUTPUT:  None.
 *
@@ -873,15 +886,15 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 *******************************************************************************/
 MV_BOARD_BOOT_SRC mvBoardBootDeviceGet()
 {
-	MV_U32 sarBootDeviceValue = mvCtrlSatRRead(MV_SATR_BOOT_DEVICE);
-	MV_SAR_BOOT_TABLE sarTable[] = MV_SAR_TABLE_VAL;
-	MV_SAR_BOOT_TABLE sarBootEntry = sarTable[sarBootDeviceValue];
+	MV_U32 satrBootDeviceValue = mvCtrlSatRRead(MV_SATR_BOOT_DEVICE);
+	MV_SATR_BOOT_TABLE satrTable[] = MV_SATR_TABLE_VAL;
+	MV_SATR_BOOT_TABLE satrBootEntry = satrTable[satrBootDeviceValue];
 
-	if (sarBootEntry.bootSrc != MSAR_0_BOOT_SPI_FLASH)
-		return sarBootEntry.bootSrc;
+	if (satrBootEntry.bootSrc != MSAR_0_BOOT_SPI_FLASH)
+		return satrBootEntry.bootSrc;
 
 	/* if boot source is SPI ,verify which CS (0/1) */
-	if (mvBoardBootAttrGet(sarBootDeviceValue, 1) == MSAR_0_SPI0)
+	if (mvBoardBootAttrGet(satrBootDeviceValue, 1) == MSAR_0_SPI0)
 		return MSAR_0_BOOT_SPI_FLASH;
 	else
 		return MSAR_0_BOOT_SPI1_FLASH;
@@ -893,7 +906,7 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGet()
 * DESCRIPTION:
 *   read board BOOT configuration and return attributes accordingly
 *
-* INPUT:  sarBootDevice - BOOT_DEVICE value from S@R.*
+* INPUT:  satrBootDevice - BOOT_DEVICE value from S@R.*
 *         attrNum - attribute number [1/2/3]
 * OUTPUT:  None.
 *
@@ -901,20 +914,20 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGet()
 *       the selected attribute value
 *
 *******************************************************************************/
-MV_U32 mvBoardBootAttrGet(MV_U32 sarBootDeviceValue, MV_U8 attrNum)
+MV_U32 mvBoardBootAttrGet(MV_U32 satrBootDeviceValue, MV_U8 attrNum)
 {
-	MV_SAR_BOOT_TABLE sarTable[] = MV_SAR_TABLE_VAL;
-	MV_SAR_BOOT_TABLE sarBootEntry = sarTable[sarBootDeviceValue];
+	MV_SATR_BOOT_TABLE satrTable[] = MV_SATR_TABLE_VAL;
+	MV_SATR_BOOT_TABLE satrBootEntry = satrTable[satrBootDeviceValue];
 
 	switch (attrNum) {
 	case 1:
-		return sarBootEntry.attr1;
+		return satrBootEntry.attr1;
 		break;
 	case 2:
-		return sarBootEntry.attr2;
+		return satrBootEntry.attr2;
 		break;
 	case 3:
-		return sarBootEntry.attr3;
+		return satrBootEntry.attr3;
 		break;
 	default:
 		return MV_ERROR;
@@ -1620,17 +1633,17 @@ MV_U32 boardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 *       MV_U8  :return requested value , if TWSI read was succesfull, else 0xFF.
 *
 *******************************************************************************/
-MV_U8 mvBoardIoExpValGet(MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo)
+MV_U8 mvBoardIoExpValGet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo)
 {
-	MV_U8 tempVal, mask;
+	MV_U8 val, mask;
 
-	tempVal = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo.expanderNum, ioInfo.regNum);
-	if ((MV_8)MV_ERROR != (MV_8)tempVal) {
-		mask = (1 << ioInfo.offset);
-		return ( (tempVal & mask) >> ioInfo.offset);
+	val = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum, ioInfo->regNum);
+	if ((MV_U8)MV_ERROR != val) {
+		mask = (1 << ioInfo->offset);
+		return ( (val & mask) >> ioInfo->offset);
 	}
-	else
-		return 0xFF;
+	DB(mvOsPrintf("%s: Error: Read from IO Expander failed\n", __func__));
+	return 0xFF;
 }
 
 /*******************************************************************************
@@ -1664,7 +1677,7 @@ MV_U8 mvBoardTwsiAddrTypeGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index)
 				indexFound++;
 		}
 	}
-
+	DB(mvOsPrintf("%s: Error: read TWSI address type failed\n", __func__));
 	return MV_ERROR;
 }
 
@@ -1747,37 +1760,37 @@ MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig)
 }
 
 /*******************************************************************************
-* mvBoardSarInfoGet
+* mvBoardSatrInfoGet
 *
 * DESCRIPTION:
 *	Return the SAR fields information for a given SAR class.
 *
 * INPUT:
-*	sarClass - The SAR field to return the information for.
+*	satrClass - The SATR field to return the information for.
 *
 * OUTPUT:
 *       None.
 *
 * RETURN:
-*	MV_BOARD_SAR_INFO struct with mask, offset and register number.
+*	MV_BOARD_SATR_INFO struct with mask, offset and register number.
 *
 *******************************************************************************/
-MV_STATUS mvBoardSarInfoGet(MV_SATR_TYPE_ID sarClass, MV_BOARD_SAR_INFO *sarInfo)
+MV_STATUS mvBoardSatrInfoGet(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo)
 {
 	int i;
 	MV_U32 boardId = mvBoardIdGet();
 
-	if (sarInfo == NULL )
-		return MV_ERROR;
-
 	/* verify existence of requested SATR type, pull its data,
 	 * and check if field is relevant to current running board */
 	for (i = 0; i < MV_SATR_READ_MAX_OPTION ; i++)
-		if (boardSarInfo[i].sarid == sarClass) {
-			*sarInfo = boardSarInfo[i];
-			if (boardSarInfo[i].isActiveForBoard[boardId])
+		if (boardSatrInfo[i].satrId == satrClass) {
+			satrInfo = &boardSatrInfo[i];
+			if (boardSatrInfo[i].isActiveForBoard[boardId])
 				return MV_OK;
+			else
+				return MV_ERROR;
 		}
+	DB(mvOsPrintf("%s: Error: requested MV_SATR_TYPE_ID was not found (%d)\n", __func__,satrClass));
 	return MV_ERROR;
 }
 
@@ -1805,11 +1818,14 @@ MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TY
 	/* verify existence of requested config type, pull its data,
 	 * and check if field is relevant to current running board */
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION ; i++)
-		if (boardConfigTypesInfo[i].configid == configClass) {
-			*configInfo = boardConfigTypesInfo[i];
+		if (boardConfigTypesInfo[i].configId == configClass) {
+			configInfo = &boardConfigTypesInfo[i];
 			if (boardConfigTypesInfo[i].isActiveForBoard[boardId])
 				return MV_OK;
+			else
+				return MV_ERROR;
 		}
+	DB(mvOsPrintf("%s: Error: requested MV_CONFIG_TYPE_ID was not found (%d) \n", __func__, configClass));
 	return MV_ERROR;
 }
 
@@ -1836,9 +1852,10 @@ MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass, MV_BOARD_IO_E
 	/* verify existance of requested config type, pull its data */
 	for (i = 0; i < board->numBoardIoExpanderInfo ; i++)
 		if (board->pBoardIoExpanderInfo[i].ioFieldid == ioClass) {
-			*ioInfo = board->pBoardIoExpanderInfo[i];
+			ioInfo = &board->pBoardIoExpanderInfo[i];
 			return MV_OK;
 		}
+	DB(mvOsPrintf("%s: Error: requested MV_IO_EXPANDER_TYPE_ID was not found\n", __func__));
 	return MV_ERROR;
 }
 
@@ -1867,7 +1884,7 @@ MV_32 mvBoardNandWidthGet(void)
 			return devWidth / 8;
 	}
 
-	/* NAND wasn't found */
+	DB(mvOsPrintf("%s: Error: NAND device was not found\n", __func__));
 	return MV_ERROR;
 }
 
@@ -1917,13 +1934,13 @@ MV_VOID mvBoardIdSet(MV_U32 boardId)
 *******************************************************************************/
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-	MV_U32 boardId, tempVal;
+	MV_U32 boardId, value;
 
 #ifdef CONFIG_MACH_AVANTA_LP_FPGA
 	boardId = MV_BOARD_ID_AVANTA_LP_FPGA;
 #else
-	tempVal = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
-	boardId = ((tempVal & (0xF0)) >> 4);
+	value = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
+	boardId = ((value & (0xF0)) >> 4);
 #endif
 	if (boardId >= MV_MAX_BOARD_ID) {
 		mvOsPrintf("%s: Error: read wrong board (%d)\n", __func__, boardId);
@@ -2016,10 +2033,10 @@ MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 	twsiSlave.offset = regNum;
 	twsiSlave.moreThen256 = MV_FALSE;
 	if (MV_OK != mvTwsiWrite(0, &twsiSlave, &regVal, 1)) {
-		DB(mvOsPrintf("Board: Write S@R fail\n"));
+		DB(mvOsPrintf("%s: Write S@R fail\n" __func__));
 		return MV_ERROR;
 	}
-	DB(mvOsPrintf("Board: Write S@R succeded\n"));
+	DB(mvOsPrintf("%s: Write S@R succeded\n" __func__));
 
 	return MV_OK;
 }
@@ -2511,7 +2528,7 @@ MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 }
 
 /*******************************************************************************
-* mvBoardModuleAutoDetectEnabled
+* mvBoardConfigAutoDetectEnabled
 *
 * DESCRIPTION:
 *	Indicate if the board supports auto configuration and detection of
@@ -2528,7 +2545,7 @@ MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 *	MV_FALSE otherwise.
 *
 *******************************************************************************/
-MV_BOOL mvBoardModuleAutoDetectEnabled()
+MV_BOOL mvBoardConfigAutoDetectEnabled()
 {
-	return board->moduleAutoDetect;
+	return board->configAutoDetect;
 }

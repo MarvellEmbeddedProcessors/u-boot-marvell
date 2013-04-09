@@ -209,16 +209,16 @@ typedef struct _boardTwsiInfo {
 	MV_U8 twsiDevAddrType;
 } MV_BOARD_TWSI_INFO;
 
-typedef struct _boardSarInfo {
-	MV_SATR_TYPE_ID sarid;
+typedef struct _boardSatrInfo {
+	MV_SATR_TYPE_ID satrId;
 	MV_U32 mask;
 	MV_U32 offset;
 	MV_U32 regNum;
 	MV_U32 isActiveForBoard[MV_MAX_BOARD_ID];
-} MV_BOARD_SAR_INFO;
+} MV_BOARD_SATR_INFO;
 
 typedef struct _boardConfigTypesInfo {
-	MV_CONFIG_TYPE_ID configid;
+	MV_CONFIG_TYPE_ID configId;
 	MV_U32 mask;
 	MV_U32 offset;
 	MV_U32 expanderNum;
@@ -368,7 +368,7 @@ typedef struct _boardInfo {
 
 	/* Indicates if auto-detection of modules is enabled on this board. */
 	/* Set to MV_FALSE for any board that is not a DB. */
-	MV_BOOL moduleAutoDetect;
+	MV_BOOL configAutoDetect;
 } MV_BOARD_INFO;
 
 /* Boot device bus width */
@@ -408,8 +408,8 @@ MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum);
 MV_32 mvBoardSwitchPortMap(MV_U32 switchIdx, MV_U32 switchPortNum);
 MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
-MV_U8 mvBoardIoExpValGet(MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo);
-MV_STATUS mvBoardSarInfoGet(MV_SATR_TYPE_ID sarClass, MV_BOARD_SAR_INFO *sarInfo);
+MV_U8 mvBoardIoExpValGet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo);
+MV_STATUS mvBoardSatrInfoGet(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo);
 MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo);
 MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass, MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo);
 MV_U32 mvBoardTclkGet(MV_VOID);
@@ -456,7 +456,7 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet(MV_VOID);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet(MV_VOID);
 MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_VOID);
 MV_BOARD_BOOT_SRC mvBoardBootDeviceGet(MV_VOID);
-MV_U32 mvBoardBootAttrGet(MV_U32 sarBootDeviceValue, MV_U8 attrNum);
+MV_U32 mvBoardBootAttrGet(MV_U32 satrBootDeviceValue, MV_U8 attrNum);
 MV_U8 mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum);
 MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
 MV_U8 mvBoardCpuFreqGet(MV_VOID);
@@ -485,7 +485,7 @@ MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx);
 MV_32 mvBoardSwitchIrqGet(MV_VOID);
 MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort);
 MV_8 mvBoardSwitchPortsMaskGet(MV_U32 switchIdx);
-MV_BOOL mvBoardModuleAutoDetectEnabled(void);
+MV_BOOL mvBoardConfigAutoDetectEnabled(void);
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
 MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void);
 MV_STATUS mvBoardConfIdSet(MV_U16 conf);

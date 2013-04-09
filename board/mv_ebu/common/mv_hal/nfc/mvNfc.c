@@ -64,8 +64,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mvCommon.h"
 #include "mvOs.h"
-#include "ctrlEnv/mvCtrlEnvSpec.h"
-#include "mvSysNfcConfig.h"
 #include "mvNfcRegs.h"
 #ifdef MV_INCLUDE_PDMA
 #include "pdma/mvPdma.h"

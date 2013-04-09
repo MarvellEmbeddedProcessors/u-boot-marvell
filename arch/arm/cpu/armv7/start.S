@@ -131,19 +131,18 @@ IRQ_STACK_START_IN:
 
 reset:
 #ifdef CONFIG_MARVELL
-#ifdef MV88F78X60
 	/* Disable windows that overlap with 0xF1000000	*/
 	/* By default, window #12 overlaps with 0xF1000000 */
 	mov  r1, #0
 	ldr  r0, =0xD00200B0
 	str  r1, [r0]
-
 	/* Set Registers Base address. */
 	ldr  r1, =INTER_REGS_BASE
 	ldr  r0, =0xD0020080
 	str  r1, [r0]
-#endif
 
+
+#ifdef MV88F78X60
 /*
 @ Initial PJ4B configurations
 @ configure Marvell debug R1
@@ -163,6 +162,7 @@ reset:
 	nop;nop;nop;nop;
 	nop;nop;nop;nop;
 #endif
+#endif	/* if MV88F78X60 */
 #endif
 
 	bl	save_boot_params
@@ -175,11 +175,6 @@ reset:
 	msr	cpsr,r0
 
 #if defined(CONFIG_AVANTA_LP_FPGA)
-	/* Replacing register base from  default 0xD0000000 to 0xF1000000 */
-	ldr     r5,=0xD0020080
-	ldr     r2,=0xF1000000
-	str     r2, [r5]
-
 /* Write to CP15:1 - point exception vector to flash (0xffff0000) */
 	ldr	r0, =0x00052078
 	mcr 	p15, 0, r0, c1, c0, 0

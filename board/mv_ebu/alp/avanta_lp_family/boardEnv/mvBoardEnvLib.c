@@ -720,17 +720,58 @@ MV_U32 mvBoardSlicMppModeGet(MV_VOID)
 *******************************************************************************/
 MV_32 mvBoardMppGet(MV_U32 mppGroupNum)
 {
-	return board->pBoardMppConfigValue[0].mppGroup[mppGroupNum];
+	return board->pBoardMppConfigValue->mppGroup[mppGroupNum];
 }
 
-MV_32 mvBoardMppTypeGet(MV_U32 mppGroupNum)
+/*******************************************************************************
+* mvBoardMppSet - Set board dependent MPP register value
+*
+* DESCRIPTION:
+*	This function updates board dependend MPP register value.
+*
+* INPUT:
+*       mppGroupNum - MPP group number.
+*	mppValue - new MPP value to be written
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       -None
+*
+*******************************************************************************/
+MV_VOID mvBoardMppSet(MV_U32 mppGroupNum, MV_U32 mppValue)
 {
-	return (MV_U32)board->pBoardMppGroupValue[0].mppGroupType[mppGroupNum];
+	board->pBoardMppConfigValue->mppGroup[mppGroupNum] = mppValue;
 }
 
+/*******************************************************************************
+* mvBoardMppTypeSet - Set board dependent MPP Group Type value
+*
+* DESCRIPTION:
+*	This function updates board dependend MPP Group Type value.
+*
+* INPUT:
+*       mppGroupNum - MPP group number.
+*	groupType - new MPP Group type. derrive MPP Value using groupType
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       -None
+*
+*******************************************************************************/
 MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType)
 {
-	board->pBoardMppGroupValue[0].mppGroupType[mppGroupNum] = groupType;
+	MV_U32 mppVal;
+	MV_U32 mppGroups[MV_BOARD_MAX_MPP_GROUPS][MV_BOARD_MPP_GROUPS_MAX_TYPES] = MPP_GROUP_TYPES;
+
+	mppVal = mppGroups[mppGroupNum][groupType];
+	mvBoardMppSet(mppGroupNum,mppVal);
+
+	/* add Group types update here (if needed for later usage),
+	 * and add mvBoardMppTypeGet to detect which type is in use currently */
 }
 
 /*******************************************************************************
@@ -1185,13 +1226,12 @@ MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_VOID mvBoardConfigWrite(void)
 {
-	MV_U32 mppGroup, mppType, i, reg;
+	MV_U32 mppGroup, i, reg;
 	MV_BOARD_SPEC_INIT *boardSpec;
 
 	/* Specific board initializations  ( from board->pBoardSpecInit ) omriii : see if can remove all these inits*/
 	for (mppGroup = 0; mppGroup < MV_MPP_MAX_GROUP; mppGroup++) {
-		mppType = mvBoardMppTypeGet(mppGroup);
-		mvBoardMppGroupWrite(mppGroup, mppType);
+		MV_REG_WRITE(mvCtrlMppRegGet(mppGroup), mvBoardMppGet(mppGroup));
 	}
 
 	boardSpec = mvBoardSpecInitGet();
@@ -1205,33 +1245,6 @@ MV_VOID mvBoardConfigWrite(void)
 			i++;
 		}
 	}
-}
-
-/*******************************************************************************
-* mvBoardMppGroupWrite - write MPP value for a single group, according to type
-*
-* DESCRIPTION:
-*       This function writes MPP value for a specific group, according to
-*       received type
-*
-* INPUT:
-*       groupNum - Group number
-*	groupType - enum that represents the mpp selected value for the group
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       None.
-*
-*******************************************************************************/
-MV_VOID mvBoardMppGroupWrite(MV_U32 groupNum, MV_U32 groupType)
-{
-	MV_U32 mppVal;
-	MV_U32 mppGroups[][MV_BOARD_MAX_MPP_GROUPS] = MPP_GROUP_TYPES;
-
-	mppVal = mppGroups[groupNum][groupType];
-	MV_REG_WRITE(mvCtrlMppRegGet(groupNum), mppVal);
 }
 
 /*******************************************************************************

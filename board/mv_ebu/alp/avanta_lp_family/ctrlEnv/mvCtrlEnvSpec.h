@@ -272,10 +272,10 @@ typedef enum {
 #define MV_GROUP_1_TYPE         MV_GROUP_0_TYPE
 
 #define MPP_GROUP_2_TYPE { \
-		0x33030022,     /* TDM_LQ_UNIT  */ \
-		0x11110022,     /* TDM_SL_UNIT  */ \
-		0x44440022,     /* TDM_ZL_UNIT  */ \
-		0x22222222,     /* TDM_EXT_UNIT	*/ \
+		0x33030022,     /* SLIC_LANTIQ_UNIT  */ \
+		0x11110022,     /* SLIC_SILABS_UNIT  */ \
+		0x44440022,     /* SLIC_ZARLINK_UNIT  */ \
+		0x22222222,     /* SLIC_EXTERNAL_UNIT	*/ \
 }
 
 typedef enum {

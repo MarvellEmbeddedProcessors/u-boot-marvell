@@ -324,7 +324,8 @@ MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 	if (isBootDevSPI1)	/* add first SPI1 group type */
 		groupTypeSelect += SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT;
 
-	mvBoardMppGroupWrite(4, groupTypeSelect);
+	mvBoardMppTypeSet(4, groupTypeSelect);	/* Set MPP value according to group type */
+	MV_REG_WRITE(mvCtrlMppRegGet(4), mvBoardMppGet(4));
 
 	/* Mux settings :
 	 * Add mux configuration setup here ! */

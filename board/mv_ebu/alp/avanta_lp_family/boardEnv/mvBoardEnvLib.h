@@ -81,6 +81,7 @@ extern "C" {
 #define BOARD_ETH_SWITCH_SMI_SCAN_MODE	2
 #define MV_BOARD_MAX_MPP                9       /* number of MPP conf registers */
 #define MV_BOARD_MAX_MPP_GROUPS         9
+#define MV_BOARD_MPP_GROUPS_MAX_TYPES   8
 #define MV_BOARD_NAME_LEN               0x20
 
 typedef enum _devBoardMppTypeClass {
@@ -249,10 +250,6 @@ typedef struct _boardMppInfo {
 	MV_U32 mppGroup[MV_BOARD_MAX_MPP];
 } MV_BOARD_MPP_INFO;
 
-typedef struct _boardMppGroupInfo {
-	MV_U32 mppGroupType[MV_BOARD_MAX_MPP_GROUPS];
-} MV_BOARD_MPP_GROUP_INFO;
-
 typedef enum {
 	BOARD_EPON_CONFIG,
 	BOARD_GPON_CONFIG,
@@ -300,8 +297,6 @@ typedef struct _boardInfo {
 	MV_BOARD_MPP_TYPE_INFO *pBoardModTypeValue;
 	MV_U8 numBoardMppConfigValue;
 	MV_BOARD_MPP_INFO *pBoardMppConfigValue;
-	MV_U8 numBoardMppGroupValue;
-	MV_BOARD_MPP_GROUP_INFO *pBoardMppGroupValue;
 	MV_U8 numBoardSerdesConfigValue;
 	MV_SERDES_CFG *pBoardSerdesConfigValue;
 	MV_U32 intsGppMaskLow;
@@ -426,8 +421,8 @@ MV_BOOL mvBoardIsOurPciSlot(MV_U32 busNum, MV_U32 slotNum);
 MV_U32 mvBoardGpioIntMaskGet(MV_U32 gppGrp);
 MV_U32 mvBoardSlicMppModeGet(MV_VOID);
 MV_32 mvBoardMppGet(MV_U32 mppGroupNum);
-MV_32 mvBoardMppTypeGet(MV_U32 mppGroupNum);
 MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType);
+MV_VOID mvBoardMppSet(MV_U32 mppGroupNum, MV_U32 mppValue);
 MV_U32 mvBoardGppConfigGet(void);
 MV_32 mvBoardTdmSpiModeGet(MV_VOID);
 MV_U8 mvBoardTdmDevicesCountGet(void);
@@ -450,7 +445,6 @@ MV_U32 mvBoardIdGet(MV_VOID);
 MV_U32 mvBoardSledCpuNumGet(MV_VOID);
 MV_VOID mvBoardConfigInit(MV_VOID);
 MV_VOID mvBoardConfigWrite(MV_VOID);
-MV_VOID mvBoardMppGroupWrite(MV_U32 groupNum, MV_U32 groupType);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet(MV_VOID);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet(MV_VOID);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet(MV_VOID);

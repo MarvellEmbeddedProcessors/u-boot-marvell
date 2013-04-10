@@ -430,7 +430,8 @@ MV_VOID mvCtrlSatrInit(void)
 			}
 		}
 	}
-	printf("%s: Error: Read board configuration from EEPROM/Dip Switch failed\n", __func__);
+
+	mvOsPrintf("%s: Error: Read board configuration from EEPROM/Dip Switch failed\n", __func__);
 }
 
 /*******************************************************************************
@@ -512,7 +513,7 @@ MV_BOOL mvCtrlIsEepromEnabled()
 		if (value != 0xFF)
 			return (value == 0x1);
 	}
-	printf("%s: Error: Read from IO expander failed (EEPROM enabled jumper)\n", __func__);
+	mvOsPrintf("%s: Error: Read from IO expander failed (EEPROM enabled jumper)\n", __func__);
 	return MV_FALSE;
 }
 

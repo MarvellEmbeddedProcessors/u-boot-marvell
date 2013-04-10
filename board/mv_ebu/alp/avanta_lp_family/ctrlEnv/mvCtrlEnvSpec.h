@@ -87,27 +87,23 @@ extern "C" {
 #define MV_SPI_REGS_OFFSET(unit)                (0x10600 + (unit * 0x80))
 #define MV_TWSI_SLAVE_REGS_OFFSET(chanNum)      (0x11000 + (chanNum * 0x100))
 #define MV_UART_REGS_OFFSET(chanNum)            (0x12000 + (chanNum * 0x100))
-#define MV_RUNIT_PMU_REGS_OFFSET                (0x1C000)
 #define MV_MPP_REGS_OFFSET                      (0x18000)
 #define MV_GPP_REGS_OFFSET(unit)                (0x18100 + ((unit) * 0x40))
 #define MV_MISC_REGS_OFFSET                     (0x18200)
-#define MV_CLK_CMPLX_REGS_OFFSET        		(0x18700)
-#define MV_ETH_COMPLEX_OFFSET			0x18900
+#define MV_CLK_CMPLX_REGS_OFFSET        	(0x18700)
+#define MV_ETH_COMPLEX_OFFSET			(0x18900)
 #define MV_MBUS_REGS_OFFSET                     (0x20000)
 #define CPU_GLOBAL_BASE                         (MV_MBUS_REGS_OFFSET)
-#define MV_COHERENCY_FABRIC_OFFSET              (0x20200)
+#define MV_COHERENCY_FABRIC_OFFSET              (0x20200) /* ??? IO Error Control Register = Offset: 0x00020200 */
 #define MV_CIB_CTRL_STATUS_OFFSET               (0x20280)
 #define MV_CNTMR_REGS_OFFSET                    (0x20300)
-#define MV_CPUIF_LOCAL_REGS_OFFSET              (0x21000)
+#define MV_CPUIF_LOCAL_REGS_OFFSET              (0x21000) /**** ????? */
 #define MV_CPUIF_REGS_OFFSET(cpu)               (0x21800 + (cpu) * 0x100)
-#define MV_PMU_NFABRIC_UNIT_SERV_OFFSET         (0x22000)
-#define MV_CPU_PMU_UNIT_SERV_OFFSET(cpu)        (0x22100 + (cpu) * 0x100)
 #define MV_CPU_HW_SEM_OFFSET                    (0x20500)
 
 #if defined(MV_ETH_PP2)
-
-#define MV_PP2_REG_BASE                         (0x80000)
-#define MV_ETH_BASE_ADDR                        (0x50000)
+#define MV_PP2_REG_BASE                         (0xF0000)
+#define MV_ETH_BASE_ADDR                        (0xC0000)
 #define LMS_REG_BASE                            (MV_ETH_BASE_ADDR)
 #define MIB_COUNTERS_REG_BASE                   (MV_ETH_BASE_ADDR + 0x1000)
 #define GOP_MNG_REG_BASE                        (MV_ETH_BASE_ADDR + 0x3000)
@@ -118,36 +114,28 @@ extern "C" {
 #define MV_PON_PORT_ID                          7
 #define MV_ETH_RXQ_TOTAL_NUM                    32
 #define MV_VLAN_1_TYPE                          0x88A8
-
-#elif defined(MV_ETH_LEGACY)
-	#define MV_ETH_BASE_ADDR                (0x72000)
 #else
 	#define MV_ETH_BASE_ADDR                (0x70000)
-#endif
+#endif /*MV_ETH_PP2*/
+
 #define MV_ETH_REGS_OFFSET(port)                (MV_ETH_BASE_ADDR - ((port) / 2) * 0x40000 + ((port) % 2) * 0x4000)
 
 #define MV_PEX_IF_REGS_OFFSET(pexIf)            (pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000) \
 						 : (0x42000 + ((pexIf) % 8) * 0x40000))
-#define MV_USB_REGS_OFFSET(dev)                 (0x50000 + (dev * 0x1000))
-#define MV_XOR_REGS_OFFSET(unit)                (unit ? 0xF0900 : 0x60900)
+#define MV_USB_REGS_OFFSET(dev)                 (0x50000)
+#define MV_XOR_REGS_OFFSET(unit)                (0x60800)
 #define MV_CESA_TDMA_REGS_OFFSET(chanNum)       (0x90000 + (chanNum * 0x2000))
 #define MV_CESA_REGS_OFFSET(chanNum)            (0x9D000 + (chanNum * 0x2000))
 #define MV_SATA_REGS_OFFSET                     (0xA0000)
 #define MV_COMM_UNIT_REGS_OFFSET                (0xB0000)
 #define MV_NFC_REGS_OFFSET                      (0xD0000)
-#define MV_BM_REGS_OFFSET                       (0xC0000)
-#define MV_PNC_REGS_OFFSET                      (0xC8000)
 #define MV_SDMMC_REGS_OFFSET                    (0xD4000)
 
 #define MV_ETH_SMI_PORT   0
 
-#define MV_SERDES_NUM_TO_PEX_NUM(sernum)        ((sernum < 8) ? (sernum) : (8 + (sernum / 12)))
 /*
  * Miscellanuous Controller Configurations
  */
-
-#define AVS_CONTROL2_REG                        0x20868
-#define AVS_LOW_VDD_LIMIT                       0x20860
 
 #define INTER_REGS_SIZE                         _1M
 
@@ -231,7 +219,6 @@ extern "C" {
 #define MV_ETH_MAX_RXQ                          8
 #define MV_ETH_MAX_TXQ                          8
 #define MV_ETH_TX_CSUM_MAX_SIZE                 9800
-#define MV_PNC_TCAM_LINES                       1024    /* TCAM num of entries */
 
 #endif /* CONFIG_MV_ETH_PP2 */
 
@@ -241,10 +228,6 @@ extern "C" {
 #define MV_ETH_WRR_NEW
 /* IPv6 parsing support for Legacy parser */
 #define MV_ETH_LEGACY_PARSER_IPV6
-/* New PNC module - extra fields */
-#define MV_ETH_PNC_NEW
-/* PNC Load Balancing support */
-#define MV_ETH_PNC_LB
 
 #define MV_FPGA_ETH_MAX_PORT                    4
 

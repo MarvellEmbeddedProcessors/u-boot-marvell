@@ -86,32 +86,6 @@ extern "C" {
 /* CIB registers offsets */
 #define MV_CIB_CTRL_CFG_REG                     (MV_COHERENCY_FABRIC_OFFSET + 0x80)
 
-/* PMU_NFABRIC PMU_NFABRIC PMU_UNIT_SERVICE Units */
-#define MV_L2C_NFABRIC_PM_CTRL_CFG_REG          (MV_PMU_NFABRIC_UNIT_SERV_OFFSET + 0x4)
-#define MV_L2C_NFABRIC_PM_CTRL_CFG_PWR_DOWN     (1 << 20)
-
-#define MV_L2C_NFABRIC_PWR_DOWN_FLOW_CTRL_REG   (MV_PMU_NFABRIC_UNIT_SERV_OFFSET + 0x8)
-
-#define PM_CONTROL_AND_CONFIG_REG(cpu)          (MV_CPU_PMU_UNIT_SERV_OFFSET(cpu) + 0x4)
-#define PM_CONTROL_AND_CONFIG_DFS_REQ           (1 << 18)
-#define PM_CONTROL_AND_CONFIG_PWDDN_REQ         (1 << 16)
-#define PM_CONTROL_AND_CONFIG_L2_PWDDN          (1 << 20)
-
-#define PM_STATUS_AND_MASK_REG(cpu)             (MV_CPU_PMU_UNIT_SERV_OFFSET(cpu) + 0xc)
-#define PM_STATUS_AND_MASK_CPU_IDLE_WAIT        (1 << 16)
-#define PM_STATUS_AND_MASK_SNP_Q_EMPTY_WAIT     (1 << 17)
-#define PM_STATUS_AND_MASK_IRQ_WAKEUP           (1 << 20)
-#define PM_STATUS_AND_MASK_FIQ_WAKEUP           (1 << 21)
-#define PM_STATUS_AND_MASK_DBG_WAKEUP           (1 << 22)
-#define PM_STATUS_AND_MASK_IRQ_MASK             (1 << 24)
-#define PM_STATUS_AND_MASK_FIQ_MASK             (1 << 25)
-
-#define PM_EVENT_STATUS_AND_MASK_REG(cpu)               (MV_CPU_PMU_UNIT_SERV_OFFSET(cpu) + 0x20)
-#define PM_EVENT_STATUS_AND_MASK_DFS_DONE_OFFS                  1
-#define PM_EVENT_STATUS_AND_MASK_DFS_DONE_MASK_OFFS             17
-
-#define PM_CPU_BOOT_ADDR_REDIRECT(cpu)          (MV_CPU_PMU_UNIT_SERV_OFFSET(cpu) + 0x24)
-
 /* Power Management Memory Power Down Registers 1 - 6 */
 #define POWER_MNG_MEM_CTRL_REG(num)             ((num) < 6 ? 0x1820C + (num) * 4 : 0x18228)
 #define PMC_MCR_NUM_COMM                        6
@@ -247,7 +221,6 @@ extern "C" {
 #define L2C_MTCMOS_CONTROL_0_REG    0x22F00
 #define L2C_MTCMOS_CONTROL_1_REG    0x22F04
 
-#define PMU_DFS_CTRL_REG(cpu)                   (MV_RUNIT_PMU_REGS_OFFSET + 0x54 + ((cpu) * 0x4))
 #define PMU_DFS_CTRL_INIT_RATIO_OFFS    24
 #define PMU_DFS_CTRL_INIT_RATIO_MASK    0x3F
 #define PMU_DFS_CTRL_RATIO_OFFS                 16
@@ -318,19 +291,6 @@ extern "C" {
 #define PMC_DDRSTOPCLOCK_EN                     (1 << PMC_DDRSTOPCLOCK_OFFS)
 #define PMC_DDRSTOPCLOCK_STOP                   (0 << PMC_DDRSTOPCLOCK_OFFS)
 
-#define SATA_IMP_TX_SSC_CTRL_REG(port)          (0xA2810 + (port) * 0x2000)
-#define SATA_GEN_1_SET_0_REG(port)                      (0xA2834 + (port) * 0x2000)
-#define SATA_GEN_1_SET_1_REG(port)                      (0xA2838 + (port) * 0x2000)
-#define SATA_GEN_2_SET_0_REG(port)                      (0xA283C + (port) * 0x2000)
-#define SATA_GEN_2_SET_1_REG(port)                      (0xA2840 + (port) * 0x2000)
-
-#define SATA_PWR_PLL_CTRL_REG(port)                     (0xA2804 + (port) * 0x2000)
-#define SATA_DIG_LP_ENA_REG(port)                       (0xA288C + (port) * 0x2000)
-#define SATA_REF_CLK_SEL_REG(port)                      (0xA2918 + (port) * 0x2000)
-#define SATA_COMPHY_CTRL_REG(port)                      (0xA2920 + (port) * 0x2000)
-#define SATA_LP_PHY_EXT_CTRL_REG(port)          (0xA2058 + (port) * 0x2000)
-#define SATA_LP_PHY_EXT_STAT_REG(port)          (0xA205C + (port) * 0x2000)
-
 #define SGMII_PWR_PLL_CTRL_REG(port)            (0x72E04 + ((port) % 2) * 0x4000 - ((port) / 2) * 0x40000)
 #define SGMII_DIG_LP_ENA_REG(port)              (0x72E8C + ((port) % 2) * 0x4000 - ((port) / 2) * 0x40000)
 #define SGMII_REF_CLK_SEL_REG(port)             (0x72F18 + ((port) % 2) * 0x4000 - ((port) / 2) * 0x40000)
@@ -339,12 +299,6 @@ extern "C" {
 #define SGMII_COMPHY_CTRL_REG(port)             (0x72F20 + ((port) % 2) * 0x4000 - ((port) / 2) * 0x40000)
 #define QSGMII_GEN_1_SETTING_REG(port)          (0x72E38 + ((port) % 2) * 0x4000 - ((port) / 2) * 0x40000)
 
-#define SERDES_LINE_MUX_REG_0_7                 0x18270
-#define SERDES_LINE_MUX_REG_8_15                0x18274
-#define QSGMII_CONTROL_1_REG                    0x18404
-/* Controler environment registers offsets */
-#define GEN_PURP_RES_1_REG                      0x182F4
-#define GEN_PURP_RES_2_REG                      0x182F8
 
 #define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
 
@@ -362,23 +316,6 @@ extern "C" {
 #define CHIP_BOND_REG                           0x18238
 #define PCKG_OPT_MASK                           0x3
 
-#define MPP_OUTPUT_DRIVE_REG                    0x184E4
-#define MPP_GE_A_OUTPUT_DRIVE_OFFS              6
-#define MPP_GE_A_1_8_OUTPUT_DRIVE               (0x1 << MPP_GE_A_OUTPUT_DRIVE_OFFS)
-#define MPP_GE_A_2_5_OUTPUT_DRIVE               (0x2 << MPP_GE_A_OUTPUT_DRIVE_OFFS)
-#define MPP_GE_B_OUTPUT_DRIVE_OFFS              14
-#define MPP_GE_B_1_8_OUTPUT_DRIVE               (0x1 << MPP_GE_B_OUTPUT_DRIVE_OFFS)
-#define MPP_GE_B_2_5_OUTPUT_DRIVE               (0x2 << MPP_GE_B_OUTPUT_DRIVE_OFFS)
-
-#define MSAR_BOOT_MODE_OFFS                     5
-#define MSAR_BOOT_MODE_MASK                     (0xF << MSAR_BOOT_MODE_OFFS)
-#define MSAR_BOOT_NOR                           (0x0 << MSAR_BOOT_MODE_OFFS)
-#define MSAR_BOOT_SPI                           (0x3 << MSAR_BOOT_MODE_OFFS)
-#define MSAR_BOOT_DOVE_NAND                     (0x1 << MSAR_BOOT_MODE_OFFS)
-
-#define MSAR_TCLK_OFFS                          28
-#define MSAR_TCLK_MASK                          (0x1 << MSAR_TCLK_OFFS)
-
 /*****************/
 /* PUP registers */
 /*****************/
@@ -387,15 +324,8 @@ extern "C" {
 /* Extract CPU, L2, DDR clocks SAR value from
 ** SAR bits 24-27
 */
-#define MSAR_CPU_CLK_IDX(sar0, sar1)            ((((sar0) >> 21) & 0x7) + ((((sar1) >> 20) & 1) << 3))
-#define MSAR_CPU_CLK_TWSI(sar0, sar1)           ((((sar0) >> 2)  & 0x7) + (((sar1) & 1) << 3))
-#define MSAR_DDR_L2_CLK_RATIO_IDX(sar0, sar1)   ((((sar0) >> 24) & 0xF) + ((((sar1) >> 19) & 1) << 4))
-#define MSAR_DDR_L2_CLK_RATIO_TWSI(sar0)        (((sar0) >> 1)  & 0xF)
 
 #ifndef MV_ASMLANGUAGE
-
-#define MV_CPU_CLK_TBL { 1000, 1066, 1200, 1333, 1500, 1666, 1800, 2000, \
-			 600,  667,  800, 1600, 2133, 2200, 2400, 0 }
 
 typedef enum {
 	MSAR_0_BOOT_NOR_FLASH,
@@ -545,36 +475,12 @@ typedef struct {
 
 #define MV_TARGET_IS_DEVICE(target)     ((target >= DEVICE_CS0) && (target <= DEVICE_CS3))
 
-#define MV_PCI_DRAM_BAR_TO_DRAM_TARGET(bar)   0
-
 #define MV_CHANGE_BOOT_CS(target) target
-
-#define TCLK_TO_COUNTER_RATIO   1   /* counters running in Tclk */
-
-#define BOOT_TARGETS_NAME_ARRAY {	\
-		BOOT_ROM_CS,			\
-		BOOT_ROM_CS,			\
-		BOOT_ROM_CS,			\
-		BOOT_ROM_CS,			\
-		BOOT_ROM_CS,			\
-		BOOT_ROM_CS,			\
-		BOOT_ROM_CS,			\
-		BOOT_ROM_CS,			\
-		TBL_TERM,			\
-		TBL_TERM,			\
-		TBL_TERM,			\
-		TBL_TERM,			\
-		TBL_TERM,			\
-		TBL_TERM,			\
-		TBL_TERM,			\
-		BOOT_ROM_CS			\
-}
 
 #define START_DEV_CS            DEV_CS0
 #define DEV_TO_TARGET(dev)      ((dev) + START_DEV_CS)
 
 #define PCI_IF0_MEM0            PEX0_MEM
-#define PCI_IF0_IO              PEX0_IO
 
 /* This enumerator defines the Marvell controller target ID  (see Address map) */
 typedef enum _mvTargetId {

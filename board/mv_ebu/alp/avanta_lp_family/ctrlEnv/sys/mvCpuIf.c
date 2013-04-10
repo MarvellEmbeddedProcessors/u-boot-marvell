@@ -86,7 +86,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* static functions */
 static MV_BOOL cpuTargetWinOverlap(MV_TARGET target, MV_ADDR_WIN *pAddrWin);
 
-MV_TARGET sampleAtResetTargetArray[] = BOOT_TARGETS_NAME_ARRAY;
 MV_STATUS mvCpuIfVerify(MV_CPU_DEC_WIN *cpuAddrWinMap)
 {
 	MV_CPU_DEC_WIN win;

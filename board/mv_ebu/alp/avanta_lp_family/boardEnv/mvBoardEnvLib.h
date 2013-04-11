@@ -187,6 +187,7 @@ typedef struct _boardSwitchInfo {
 	MV_32 switchPort[BOARD_ETH_SWITCH_PORT_NUM];
 	MV_32 cpuPort;
 	MV_32 connectedPort[MV_ETH_MAX_PORTS];
+	MV_32 smiScanMode;
 	MV_8 connectedPortMask;
 	MV_32 internalQuadPhyAddr;
 	MV_U32 forceLinkMask; /* Bitmask of switch ports to have force link (1Gbps) */
@@ -443,7 +444,9 @@ MV_U32 mvBoardEthComplexConfigGet(MV_VOID);
 MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig);
 MV_U32 mvBoardIdGet(MV_VOID);
 MV_U32 mvBoardSledCpuNumGet(MV_VOID);
-MV_VOID mvBoardConfigInit(MV_VOID);
+MV_VOID mvBoardMppIdUpdate(MV_VOID);
+MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID);
+MV_STATUS mvBoardSwitchInfoUpdate(MV_VOID);
 MV_VOID mvBoardConfigWrite(MV_VOID);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet(MV_VOID);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet(MV_VOID);

@@ -694,11 +694,32 @@ MV_U32 mvBoardGpioIntMaskGet(MV_U32 gppGrp)
 *       32bit value describing MPP control register value.
 *
 *******************************************************************************/
-MV_U32 mvBoardSlicMppModeGet(MV_VOID)
+MV_U32 mvBoardSlicUnitTypeGet(MV_VOID)
 {
 	return board->pBoardModTypeValue->boardMppSlic;
 }
 
+/*******************************************************************************
+* mvBoardSlicUnitTypeSet - Get board MPP Group type for SLIC unit (pre-defined)
+*
+* DESCRIPTION:
+*	if not using auto detection mudules according to board configuration settings,
+*	use pre-defined SLIC type from board information
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit value describing MPP control register value.
+*
+*******************************************************************************/
+MV_VOID mvBoardSlicUnitTypeSet(MV_U32 slicType)
+{
+	board->pBoardModTypeValue->boardMppSlic = slicType;
+}
 /*******************************************************************************
 * mvBoardMppGet - Get board dependent MPP register value
 *
@@ -775,6 +796,33 @@ MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType)
 }
 
 /*******************************************************************************
+* mvBoardInfoUpdate - Update Board information structures according to auto-detection.
+*
+* DESCRIPTION:
+*	Update board information according to detection using TWSI bus.
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_VOID mvBoardInfoUpdate(MV_VOID)
+{
+	MV_U32 slicDev;
+
+	mvBoardEthComplexInfoUpdate();
+	mvBoardMppIdUpdate();
+	mvBoardSwitchInfoUpdate();
+	slicDev = mvCtrlSysConfigGet(MV_CONFIG_SLIC_TDM_DEVICE);
+	mvBoardSlicUnitTypeSet(slicDev);
+}
+
+/*******************************************************************************
 * mvBoardMppIdUpdate - Update MPP ID's according to modules auto-detection.
 *
 * DESCRIPTION:
@@ -803,7 +851,7 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 	bootDev = mvBoardBootDeviceGroupSet();
 
 	/* Group 2 - SLIC Tdm unit */
-	slicDev = mvCtrlSlicUnitTypeGet();
+	slicDev = mvBoardSlicUnitTypeGet();
 	mvBoardMppTypeSet(2, slicDev);
 
 	/* Groups 3-4  - (only if not Booting from SPI1)*/
@@ -990,12 +1038,12 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 		mvBoardMppTypeSet(1, NAND_BOOT_V2);
 		break;
 	case MSAR_0_BOOT_SPI_FLASH:
-		groupType = ((mvCtrlConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2) ? SPI0_BOOT_SPDIF_AUDIO : SPI0_BOOT);
+		groupType = ((mvCtrlSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2) ? SPI0_BOOT_SPDIF_AUDIO : SPI0_BOOT);
 		mvBoardMppTypeSet(0, groupType);
 		mvBoardMppTypeSet(1, groupType);
 	case MSAR_0_BOOT_SPI1_FLASH:    /* MSAR_0_SPI1 - update Groups 3-4 */
 		mvBoardMppTypeSet(3, SDIO_SPI1_UNIT);
-		if ( mvCtrlSlicUnitTypeGet() == SLIC_LANTIQ_ID)
+		if ( mvBoardSlicUnitTypeGet() == SLIC_LANTIQ_ID)
 			mvBoardMppTypeSet(4, SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT);
 		else    /*REF_CLK_OUT*/
 			mvBoardMppTypeSet(4, SPI1_CPU_SMI_CTRL_REF_CLK_OUT);
@@ -1104,7 +1152,7 @@ MV_U32 mvBoardBootAttrGet(MV_U32 satrBootDeviceValue, MV_U8 attrNum)
 *******************************************************************************/
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet()
 {
-	switch (mvCtrlConfigGet(MV_CONFIG_MAC0)) {
+	switch (mvCtrlSysConfigGet(MV_CONFIG_MAC0)) {
 	case 0x0:
 		return MV_ETH_COMPLEX_GE_MAC0_SW_P6;
 		break;
@@ -1141,10 +1189,10 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet()
 *******************************************************************************/
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet()
 {
-	if (mvCtrlConfigGet(MV_CONFIG_PON_SERDES) == 0x1)
+	if (mvCtrlSysConfigGet(MV_CONFIG_PON_SERDES) == 0x1)
 		return MV_ETH_COMPLEX_GE_MAC1_PON_ETH_SERDES;
 	/* else Scan MAC1 config to decide its connection */
-	switch (mvCtrlConfigGet(MV_CONFIG_MAC1)) {
+	switch (mvCtrlSysConfigGet(MV_CONFIG_MAC1)) {
 	case 0x0:
 		return MV_ETH_COMPLEX_GE_MAC1_RGMII1;
 		break;
@@ -1179,11 +1227,11 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet()
 *******************************************************************************/
 MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet()
 {
-	if (mvCtrlConfigGet(MV_CONFIG_LANE1) == 0x1)
+	if (mvCtrlSysConfigGet(MV_CONFIG_LANE1) == 0x1)
 		return MV_ETH_COMPLEX_GE_MAC0_COMPHY_1;
-	else if (mvCtrlConfigGet(MV_CONFIG_LANE2) == 0x0)
+	else if (mvCtrlSysConfigGet(MV_CONFIG_LANE2) == 0x0)
 		return MV_ETH_COMPLEX_GE_MAC0_COMPHY_2;
-	else if (mvCtrlConfigGet(MV_CONFIG_LANE3) == 0x1)
+	else if (mvCtrlSysConfigGet(MV_CONFIG_LANE3) == 0x1)
 		return MV_ETH_COMPLEX_GE_MAC0_COMPHY_3;
 
 	mvOsPrintf("%s: Error: unexpected value from mvCtrlConfigGet \n", __func__);
@@ -1764,13 +1812,16 @@ MV_U8 mvBoardIoExpValGet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo)
 {
 	MV_U8 val, mask;
 
+	if (ioInfo==NULL)
+		return (MV_U8)MV_ERROR;
+
 	val = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum, ioInfo->regNum);
 	if ((MV_U8)MV_ERROR != val) {
 		mask = (1 << ioInfo->offset);
 		return ( (val & mask) >> ioInfo->offset);
 	}
 	DB(mvOsPrintf("%s: Error: Read from IO Expander failed\n", __func__));
-	return 0xFF;
+	return (MV_U8)MV_ERROR;
 }
 
 /*******************************************************************************

@@ -177,13 +177,11 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	/* If set to Auto detect board config, read S@R and board config info, to build Eth-Complex config & MPP group types */
 	if (mvBoardConfigAutoDetectEnabled())
 	{
-		mvBoardConfigInit();
-		/* split mvBoardConfigInit to
-			 * mvBoardMppIdUpdate
-			 * mvBoardSwitchInfoUpdate
-		 * rest_of_board_info_update */
+		mvBoardEthComplexInfoUpdate();
+		mvBoardMppIdUpdate();
+		mvBoardSwitchInfoUpdate();
+		/* if needed, implement mvBoard_Rest_of_board_info_update(); */
 	}
-
 
 	/* write MPP's config and Board general config */
 	mvBoardConfigWrite();

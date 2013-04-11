@@ -775,45 +775,28 @@ MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType)
 }
 
 /*******************************************************************************
-* mvBoardConfigInit - Build board configuration : Eth-Complex & MPP types
+* mvBoardMppIdUpdate - Update MPP ID's according to modules auto-detection.
 *
 * DESCRIPTION:
-*   read S@R & board configuration From: satrOptionsConfig[] & boardOptionsConfig[],
-*   (initialized  by mvCtrlSatrInit ) and :
-*   1. build etherntComplex configuration
-*   2. decide the relevant MPP group types
+*	Update MPP ID's according to on-board modules as detected using TWSI bus.
+*	Update board information for changed mpp values
+	Must run AFTER mvBoardEthComplexInfoUpdate
 *
-* INPUT:  None.
+* INPUT:
+*	None.
 *
-* OUTPUT:  None.
+* OUTPUT:
+*       None.
 *
 * RETURN:
-*       if initialized correct return MV_OK, else MV_ERROR
+*	None.
 *
 *******************************************************************************/
-MV_VOID mvBoardConfigInit(void)
+MV_VOID mvBoardMppIdUpdate(MV_VOID)
 {
-	MV_U32 ethSataComplexOptions = 0x0;
-	MV_ETH_COMPLEX_TOPOLOGY mac0con, mac1con;
 	MV_BOARD_BOOT_SRC bootDev;
 	MV_SLIC_UNIT_TYPE slicDev;
-
-	/* Ethernet Complex initialization : */
-	if ( (mac0con = mvBoardMac0ConfigGet()) != MV_ERROR)
-		ethSataComplexOptions |= mac0con;
-	if ( (mac1con = mvBoardMac1ConfigGet()) != MV_ERROR)
-		ethSataComplexOptions |= mac1con;
-
-	if (mac0con == 0x0) /* 00 - MAC0 connected to Switch P6 */
-		ethSataComplexOptions |= MV_ETH_COMPLEX_SW_P6_RGMII0;
-
-	if (mac1con == 0x2) /* 10  MAC1 connected to Switch P4 */
-		ethSataComplexOptions |= MV_ETH_COMPLEX_SW_P4_RGMII0;
-
-	if (mvCtrlConfigGet(MV_CONFIG_PON_SERDES) == 0x0)  /* 0 - PON SerDes connected to PON MAC */
-		ethSataComplexOptions |= MV_ETH_COMPLEX_P2P_MAC_PON_ETH_SERDES;
-
-	mvBoardEthComplexConfigSet(ethSataComplexOptions);
+	MV_U32	ethSataComplexOptions = mvBoardEthComplexConfigGet();
 
 	/* MPP Groups initialization : */
 	/* Group 0-1 - Boot device (or if SPI1 boot : Groups 3-4) */
@@ -825,7 +808,7 @@ MV_VOID mvBoardConfigInit(void)
 
 	/* Groups 3-4  - (only if not Booting from SPI1)*/
 	if (bootDev != MSAR_0_BOOT_SPI1_FLASH) {
-		if (mac1con == 0x0) /* 00 - MAC1 connected to RGMII-1 */
+		if ( (ethSataComplexOptions & MV_ETH_COMPLEX_GE_MAC1_RGMII1) == MV_TRUE) /* 00 - MAC1 connected to RGMII-1 */
 			mvBoardMppTypeSet(3, GE1_UNIT);
 		else
 			mvBoardMppTypeSet(3, SDIO_UNIT);
@@ -837,16 +820,146 @@ MV_VOID mvBoardConfigInit(void)
 	}
 
 	/* Groups 5-6-7  - */
-	if (mac0con == 0x2) { /* 10 - MAC0 connected to RGMII-0  */
+	if ( (ethSataComplexOptions & MV_ETH_COMPLEX_GE_MAC0_RGMII0) == MV_TRUE) { /* 10 - MAC0 connected to RGMII-0  */
 		/* omriii: what scenario leads to enable PON_CLK_OUT insted of PON_TX_FAULT?? */
 		mvBoardMppTypeSet(5, GE0_UNIT_PON_TX_FAULT);
 		mvBoardMppTypeSet(6, GE0_UNIT);
 		mvBoardMppTypeSet(7, GE0_UNIT_LED_MATRIX);      /* omriii :when to use GE0_UNIT_UA1_PTP */
-	}else if (mac1con == 0x2) {
+	}else if ( (ethSataComplexOptions & MV_ETH_COMPLEX_GE_MAC1_SW_P4) == MV_TRUE) {
 		mvBoardMppTypeSet(5, SWITCH_P4_PON_TX_FAULT);
 		mvBoardMppTypeSet(6, SWITCH_P4);
 		mvBoardMppTypeSet(7, SWITCH_P4_LED_MATRIX); /* omriii : when to use SWITCH_P4_UA1_PTP */
 	}
+}
+
+/*******************************************************************************
+* mvBoardEthComplexInfoUpdate
+*
+* DESCRIPTION:
+*	Update etherntComplex configuration,
+*	according to modules detection (S@R & board configuration)
+*
+** INPUT:
+*	None.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_OK - on success,
+*	MV_ERROR - On failure.
+*
+*******************************************************************************/
+MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID)
+{
+	MV_U32 ethSataComplexOptions = 0x0;
+	MV_ETH_COMPLEX_TOPOLOGY mac0con, mac1con;
+
+	/* Ethernet Complex initialization : */
+	if ( (mac0con = mvBoardMac0ConfigGet()) != MV_ERROR)
+		ethSataComplexOptions |= mac0con;
+	else {
+		mvOsPrintf("%s: Error: Ethernet Complex init failed (MAC0). Using default configuration. \n", __func__);
+		return MV_ERROR;
+	}
+
+	if ( (mac1con = mvBoardMac1ConfigGet()) != MV_ERROR)
+		ethSataComplexOptions |= mac1con;
+	else {
+		mvOsPrintf("%s: Error: Ethernet Complex init failed (MAC1). Using default configuration. \n", __func__);
+		return MV_ERROR;
+	}
+
+	/* if MAC0 is NOT connected to QUAD_PHY_P0 --> connect Switch port 0 to QUAD_PHY_P0 */
+	if ( (ethSataComplexOptions & MV_ETH_COMPLEX_GE_MAC0_QUAD_PHY_P0) == MV_FALSE )
+		ethSataComplexOptions |= MV_ETH_COMPLEX_SW_P0_QUAD_PHY_P0;
+
+	/* if MAC1 is NOT connected to QUAD_PHY_P3 --> connect Switch port 3 to QUAD_PHY_P3 */
+	if ( (ethSataComplexOptions & MV_ETH_COMPLEX_GE_MAC1_QUAD_PHY_P3) == MV_FALSE )
+		ethSataComplexOptions |= MV_ETH_COMPLEX_SW_P3_QUAD_PHY_P3;
+
+	/* if MAC1 is NOT connected to PON SerDes --> connect PON MAC to to PON SerDes */
+	if ( (ethSataComplexOptions & MV_ETH_COMPLEX_GE_MAC1_PON_ETH_SERDES) == MV_FALSE )
+		ethSataComplexOptions |= MV_ETH_COMPLEX_P2P_MAC_PON_ETH_SERDES;
+
+	mvBoardEthComplexConfigSet(ethSataComplexOptions);
+	return MV_OK;
+}
+/*******************************************************************************
+* mvBoardSwitchInfoUpdate
+*
+* DESCRIPTION:
+*	Update board switch information structure,
+*	according to modules detection (S@R & board configuration)
+*
+** INPUT:
+*	None.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_OK - on success,
+*	MV_ERROR - On failure.
+*
+*******************************************************************************/
+MV_STATUS mvBoardSwitchInfoUpdate(MV_VOID)
+{
+	MV_U32 i, ethSataComplexOptions = mvBoardEthComplexConfigGet();
+
+	/* Update board switch information according to Ethernet Complex init */
+	if ((!mvBoardIsInternalSwitchConnected(0)) && (!mvBoardIsInternalSwitchConnected(1))) {
+		board->switchInfoNum = 0;
+		return MV_OK;
+	}
+
+	/* Update the cpuPort & connectedPort fields */
+	board->pSwitchInfo[0].cpuPort = -1;
+	for (i = 0; i < MV_ETH_MAX_PORTS; i++)
+		board->pSwitchInfo[0].connectedPort[i] = -1;
+
+	/* Check if Switch port 6 is connected to MAC0 */
+	if (ethSataComplexOptions & MV_ETH_COMPLEX_GE_MAC0_SW_P6) {
+		board->pSwitchInfo[0].cpuPort = 6;
+		board->pSwitchInfo[0].connectedPort[0] = 6;
+	}
+
+	/* Check if Switch port 6 is connected to MAC0 */
+	if (ethSataComplexOptions & MV_ETH_COMPLEX_GE_MAC1_SW_P4) {
+		board->pSwitchInfo[0].connectedPort[1] = 4;
+		if (board->pSwitchInfo[0].cpuPort != -1)
+			board->pSwitchInfo[0].cpuPort = 4;	/*  If Sw port 6 is not cpu port, set Sw port 4 to cpu port */
+	}
+
+	/* Set all switch ports to -1 and clean connected ports mask*/
+	board->pSwitchInfo[0].connectedPortMask = 0;
+	for (i=0 ; i < BOARD_ETH_SWITCH_PORT_NUM; i++)
+		board->pSwitchInfo[0].switchPort[i] = -1;
+
+	/* Set Switch port 0 */
+	if (ethSataComplexOptions & MV_ETH_COMPLEX_SW_P0_QUAD_PHY_P0) {
+		board->pSwitchInfo[0].switchPort[0] = 0;
+		board->pSwitchInfo[0].connectedPortMask |= BIT0;
+	}
+	/* Set Switch port 1-2 */
+	board->pSwitchInfo[0].switchPort[1] = 1;
+	board->pSwitchInfo[0].switchPort[2] = 2;
+	board->pSwitchInfo[0].connectedPortMask |= ( BIT1 | BIT2 );
+	/* Switch port 3 */
+	if (ethSataComplexOptions & MV_ETH_COMPLEX_SW_P3_QUAD_PHY_P3) {
+		board->pSwitchInfo[0].switchPort[3] = 0;
+		board->pSwitchInfo[0].connectedPortMask |= BIT3;
+	}
+	/* Set Switch port 4 */
+	if (ethSataComplexOptions & MV_ETH_COMPLEX_SW_P4_RGMII0) {
+		board->pSwitchInfo[0].switchPort[4] = 4;
+		board->pSwitchInfo[0].connectedPortMask |= BIT4;
+	}
+	/* Set Switch port 6 */
+	if (ethSataComplexOptions & MV_ETH_COMPLEX_GE_MAC0_SW_P6)
+		board->pSwitchInfo[0].connectedPortMask |= BIT6;
+
+	return MV_OK;
 }
 
 /*******************************************************************************
@@ -1005,6 +1118,7 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet()
 		return mvBoardLaneSGMIIGet();
 		break;
 	default:
+		mvOsPrintf("%s: Error: unexpected value from mvCtrlConfigGet \n", __func__);
 		return MV_ERROR;
 	}
 }
@@ -1041,6 +1155,7 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet()
 		return MV_ETH_COMPLEX_GE_MAC1_QUAD_PHY_P3;
 		break;
 	default:
+		mvOsPrintf("%s: Error: unexpected value from mvCtrlConfigGet \n", __func__);
 		return MV_ERROR;
 	}
 }
@@ -1070,7 +1185,9 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet()
 		return MV_ETH_COMPLEX_GE_MAC0_COMPHY_2;
 	else if (mvCtrlConfigGet(MV_CONFIG_LANE3) == 0x1)
 		return MV_ETH_COMPLEX_GE_MAC0_COMPHY_3;
-	else return MV_ERROR;
+
+	mvOsPrintf("%s: Error: unexpected value from mvCtrlConfigGet \n", __func__);
+	return MV_ERROR;
 }
 
 /*******************************************************************************

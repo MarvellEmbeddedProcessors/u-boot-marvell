@@ -2244,7 +2244,7 @@ MV_STATUS mvBoardTwsiReadByteThruMux(MV_U8 muxChNum, MV_U8 chNum,
 *******************************************************************************/
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
 {
-	return 0;
+	return board->pSwitchInfo[switchIdx].smiScanMode;
 }
 
 /*******************************************************************************
@@ -2266,6 +2266,196 @@ MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
 MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 {
 	return 0;
+}
+
+/*******************************************************************************
+* mvBoardSwitchIrqGet - Get the IRQ number for the link status indication
+*
+* DESCRIPTION:
+*       This routine returns the IRQ number for the link status indication.
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	the number of the IRQ for the link status indication, -1 if the port
+*	number is wrong or if not relevant.
+*
+*******************************************************************************/
+MV_32 mvBoardSwitchIrqGet(MV_VOID)
+{
+	return -1;
+}
+
+/*******************************************************************************
+* mvBoardIsQsgmiiModuleConnected
+*
+* DESCRIPTION:
+*       This routine returns whether the QSGMII module is connected or not.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE if QSGMII module is connected, MV_FALSE otherwise.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsQsgmiiModuleConnected(MV_VOID)
+{
+	return MV_FALSE;
+}
+
+/*******************************************************************************
+* mvBoardGePhySwitchPortGet
+*
+* DESCRIPTION:
+*       This routine returns whether the internal GE PHY is connected to
+*	Switch Port 0, Switch port 5 or not connected to any Switch port.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       0 if the internal GE PHY is connected to Switch Port 0,
+*	5 if the internal GE PHY is connected to Switch Port 5,
+*	-1 otherwise.
+*
+*******************************************************************************/
+MV_32 mvBoardGePhySwitchPortGet(MV_VOID)
+{
+	return -1;
+}
+
+/*******************************************************************************
+* mvBoardRgmiiASwitchPortGet
+*
+* DESCRIPTION:
+*       This routine returns whether RGMII-A is connected to
+*	Switch Port 5, Switch port 6 or not connected to any Switch port.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       5 if the internal GE PHY is connected to Switch Port 5,
+*	6 if the internal GE PHY is connected to Switch Port 6,
+*	-1 otherwise.
+*
+*******************************************************************************/
+MV_32 mvBoardRgmiiASwitchPortGet(MV_VOID)
+{
+	return -1;
+}
+
+/*******************************************************************************
+* mvBoardSwitchPortMap
+*
+* DESCRIPTION:
+*	Map front panel connector number to switch port number.
+*
+* INPUT:
+*	switchIdx - The switch index.
+*	switchPortNum - The switch port number to get the mapping for.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	The switch port mapping.
+*	OR -1 if the port number is wrong or if not relevant.
+*
+*******************************************************************************/
+MV_32 mvBoardSwitchPortMap(MV_U32 switchIdx, MV_U32 switchPortNum)
+{
+	int i;
+	if (board->switchInfoNum == 0 || switchIdx >= board->switchInfoNum) {
+		mvOsPrintf("%s: Error: wrong switch index (%d)\n", __func__, switchIdx);
+		return -1;
+	}
+
+	for (i = 0; i < BOARD_ETH_SWITCH_PORT_NUM; i++) {
+		if (board->pSwitchInfo[switchIdx].switchPort[i] == switchPortNum)
+			return i;
+	}
+
+	mvOsPrintf("%s: Error: switch port map not found\n", __func__);
+	return -1;
+}
+
+/*******************************************************************************
+* mvBoardIsSerdesConfigurationEnabled
+*
+* DESCRIPTION:
+*       Check if Serdes configuration is enabled on this board.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_STATUS - MV_OK, MV_ERROR.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsSerdesConfigurationEnabled(void)
+{
+	if (board->pBoardSerdesConfigValue)
+		return board->pBoardSerdesConfigValue->enableSerdesConfiguration;
+	else
+		return MV_FALSE;
+}
+
+/*******************************************************************************
+* mvBoardSerdesConfigurationEnableSet
+*
+* DESCRIPTION:
+*	Check if Serdes configuration is enabled on this board.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_STATUS - MV_OK, MV_ERROR.
+*
+*******************************************************************************/
+MV_STATUS mvBoardSerdesConfigurationEnableSet(MV_BOOL enableSerdesConfiguration)
+{
+	return MV_ERROR;
+}
+
+/*******************************************************************************
+* mvBoardSerdesCfgGet
+*
+* DESCRIPTION:
+*
+* INPUT:
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       SERDES configuration structure or NULL on error
+*
+*******************************************************************************/
+MV_SERDES_CFG *mvBoardSerdesCfgGet(void)
+{
+	return NULL;
 }
 
 /*******************************************************************************

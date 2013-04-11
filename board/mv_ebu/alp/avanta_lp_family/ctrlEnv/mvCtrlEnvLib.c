@@ -174,13 +174,13 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 {
 	MV_U32 i, gppMask;
 
-	/* If set to Auto detect board config, read S@R and board config info, to build Eth-Complex config & MPP group types */
+	mvCtrlSatrInit();
+
+	/* If set to Auto detect, read board config info, update Eth-Complex config, MPP group types and switch info */
 	if (mvBoardConfigAutoDetectEnabled())
 	{
-		mvBoardEthComplexInfoUpdate();
-		mvBoardMppIdUpdate();
-		mvBoardSwitchInfoUpdate();
-		/* if needed, implement mvBoard_Rest_of_board_info_update(); */
+		mvCtrlSysConfigInit();
+		mvBoardInfoUpdate();
 	}
 
 	/* write MPP's config and Board general config */
@@ -302,7 +302,7 @@ MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 {
 	MV_BOOL isSwSMICtrl   = (smiCtrl == SWITCH_SMI_CTRL ? MV_TRUE : MV_FALSE);
 	MV_BOOL isBootDevSPI1 = (MSAR_0_BOOT_SPI1_FLASH == mvBoardBootDeviceGet());
-	MV_BOOL isRefClkOut   = !( mvCtrlSlicUnitTypeGet() == SLIC_LANTIQ_ID ); 	/* if not using Lantiq TDM, define REF_CLK_OUT */
+	MV_BOOL isRefClkOut   = !( mvBoardSlicUnitTypeGet() == SLIC_LANTIQ_ID ); 	/* if not using Lantiq TDM, define REF_CLK_OUT */
 	MV_U8 groupTypeSelect = 0;
 
 	if (! ((smiCtrl == SWITCH_SMI_CTRL) || (smiCtrl == CPU_SMI_CTRL)) ) {
@@ -357,7 +357,7 @@ MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 }
 
 /*******************************************************************************
-* mvCtrlBoardConfigGet
+* mvCtrlSysConfigGet
 *
 * DESCRIPTION: Read Board configuration Field
 *
@@ -369,9 +369,15 @@ MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 *	if field is valid - returns requested Board configuration field value
 *
 *******************************************************************************/
-MV_U32 mvCtrlConfigGet(MV_CONFIG_TYPE_ID configField)
+MV_U32 mvCtrlSysConfigGet(MV_CONFIG_TYPE_ID configField)
 {
 	MV_BOARD_CONFIG_TYPE_INFO *configInfo = NULL;
+
+	if (!mvBoardConfigAutoDetectEnabled()) {
+		mvOsPrintf("%s: Error:Auto detect is disabled for board ,can't read board configuration\n", __func__);
+		return MV_ERROR;
+	}
+
 	if (configField < MV_CONFIG_TYPE_MAX_OPTION && mvBoardConfigTypeGet(configField, configInfo) == MV_OK)
 		return boardOptionsConfig[configField];
 
@@ -383,10 +389,9 @@ MV_U32 mvCtrlConfigGet(MV_CONFIG_TYPE_ID configField)
 * mvCtrlSatrInit
 *
 * DESCRIPTION: Initialize S@R configuration
-*               1. initialize all S@R and board configuration fields with 0xFF
+*               1. initialize all S@R and fields
 *               2. read relevant S@R fields (direct memory access)
-*               3. read relevant board configuration (using TWSI/EEPROM access)
-*	        **from this point, all reads from S@R & board config will use mvCtrlSatRRead/Write functions**
+*               **from this point, all reads from S@R will use mvCtrlSatRRead/Write functions**
 *
 * INPUT:  None
 *
@@ -397,26 +402,44 @@ MV_U32 mvCtrlConfigGet(MV_CONFIG_TYPE_ID configField)
 *******************************************************************************/
 MV_VOID mvCtrlSatrInit(void)
 {
-	MV_U8 regNum, satrVal, configVal[MV_IO_EXP_MAX_REGS];
+	MV_U32 satrVal[2];
 	MV_BOARD_SATR_INFO *satrInfo = NULL;
-	MV_BOARD_CONFIG_TYPE_INFO *configInfo = NULL;
-	int i = 0;
-
-	/* Verify that board support Auto detection from S@R & board configuration */
-	if (!mvBoardConfigAutoDetectEnabled())
-		return;
+	MV_U32 i;
 
 	/* initialize all S@R & Board configuration fields to -1 (MV_ERROR) */
 	memset(&satrOptionsConfig, 0x0, sizeof(MV_U32) * MV_SATR_READ_MAX_OPTION );
-	memset(&boardOptionsConfig, 0x0, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION );
 
 	/* Read Sample @ Reset configuration, memory access read : */
-	for (i = 0; i < MV_SATR_READ_MAX_OPTION; i++) {
-		if ( mvBoardSatrInfoGet(i, satrInfo) == MV_OK ) {
-			satrVal = MV_REG_READ(MPP_SAMPLE_AT_RESET(satrInfo->regNum));
-			satrOptionsConfig[satrInfo->satrId] = ((satrVal  & (satrInfo->mask)) >> (satrInfo->offset));
-		}
-	}
+	satrVal[0] = MV_REG_READ(MPP_SAMPLE_AT_RESET(0));
+	satrVal[1] = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
+
+	for (i = 0; i < MV_SATR_READ_MAX_OPTION; i++)
+		if ( mvBoardSatrInfoGet(i, satrInfo) == MV_OK )
+			satrOptionsConfig[satrInfo->satrId] = ((satrVal[satrInfo->regNum]  & (satrInfo->mask)) >> (satrInfo->offset));
+
+}
+
+/*******************************************************************************
+* mvCtrlSysConfigInit
+*
+* DESCRIPTION: Initialize S@R configuration
+*               1. initialize all board configuration fields
+*               3. read relevant board configuration (using TWSI/EEPROM access)
+*               **from this point, all reads from S@R & board config will use mvCtrlSatRRead/Write functions**
+*
+* INPUT:  None
+*
+* OUTPUT: None
+*
+* RETURN: NONE
+*
+*******************************************************************************/
+MV_VOID mvCtrlSysConfigInit()
+{
+	MV_U8 regNum, i, configVal[MV_IO_EXP_MAX_REGS];
+	MV_BOARD_CONFIG_TYPE_INFO *configInfo = NULL;
+
+	memset(&boardOptionsConfig, 0x0, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION );
 
 	/*Read rest of Board Configuration, EEPROM / Dip Switch access read : */
 	if (mvCtrlBoardConfigGet(configVal) == MV_OK) {
@@ -842,32 +865,6 @@ MV_U32 mvCtrlTdmMaxGet(MV_VOID)
 }
 
 /*******************************************************************************
-* mvCtrlSlicUnitTypeGet - return the TDM unit type being used
-*
-* DESCRIPTION:
-*	if auto detection enabled, read TDM unit from board configuration
-*	else , read pre-defined TDM unit from board information struct.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*	The TDM unit type.
-*
-*******************************************************************************/
-MV_SLIC_UNIT_TYPE mvCtrlSlicUnitTypeGet(MV_VOID)
-{
-
-	if (mvBoardConfigAutoDetectEnabled())
-		return boardOptionsConfig[MV_CONFIG_SLIC_TDM_DEVICE];
-	else
-		return mvBoardSlicMppModeGet();
-}
-
-/*******************************************************************************
 * mvCtrlTdmUnitTypeGet - return the TDM unit type being used
 *
 * DESCRIPTION:
@@ -886,7 +883,6 @@ MV_SLIC_UNIT_TYPE mvCtrlSlicUnitTypeGet(MV_VOID)
 *******************************************************************************/
 MV_TDM_UNIT_TYPE mvCtrlTdmUnitTypeGet(MV_VOID)
 {
-
 	return TDM_UNIT_2CH;
 }
 
@@ -931,14 +927,19 @@ MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID)
 *******************************************************************************/
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
-/* omriii - replace with a correct read of CTRL ID register, instead of deriving the SOC from the boardID */
-	switch (mvBoardIdGet()) {
-	case DB_6660_ID:
-	case RD_6660_ID:
+	MV_U32 ctrlId;
+
+#ifdef CONFIG_MACH_AVANTA_LP_FPGA
+	ctrlId = MV_88F66X0;
+#else
+	ctrlId = MV_REG_READ(DEVICE_ID_REG);
+	ctrlId = (ctrlId & (DEVICE_ID_REG_VEND_ID_MASK)) >> DEVICE_ID_REG_DEV_ID_OFFS;
+#endif
+	switch (ctrlId) {
+	case 0x6660:
 		return MV_6660_DEV_ID;
 		break;
-	case DB_6650_ID:
-	case RD_6650_ID:
+	case 0x6650:
 		return MV_6650_DEV_ID;
 		break;
 	default:

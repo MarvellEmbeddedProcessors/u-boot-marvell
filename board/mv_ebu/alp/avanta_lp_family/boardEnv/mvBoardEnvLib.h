@@ -84,13 +84,13 @@ extern "C" {
 #define MV_BOARD_MPP_GROUPS_MAX_TYPES   8
 #define MV_BOARD_NAME_LEN               0x20
 
-typedef enum _devBoardMppTypeClass {
+typedef enum _devBoardSlicType {
 	MV_BOARD_AUTO,
-	MV_BOARD_SLIC_LANTIQ_ID,
-	MV_BOARD_SLIC_SILABS_ID,
-	MV_BOARD_SLIC_ZARLINK_ID,
-	MV_BOARD_SLIC_EXTERNAL_ID
-} MV_BOARD_MPP_TYPE_CLASS;
+	MV_BOARD_SLIC_SSI_ID, /* Zarlink Integrated SLIC */
+	MV_BOARD_SLIC_ISI_ID, /* Silicon Labs ISI Bus */
+	MV_BOARD_SLIC_ZSI_ID, /* Zarlink ZSI Bus */
+	MV_BOARD_SLIC_EXTERNAL_ID /* Cross vendor external SLIC */
+} MV_BOARD_SLIC_TYPE;
 
 typedef enum _devBoardOtherTypeClass {
 	MV_BOARD_NONE    = 0x00000000,
@@ -101,14 +101,9 @@ typedef enum _devBoardOtherTypeClass {
 	MV_BOARD_UNKNOWN = 0x80000000
 } MV_BOARD_OTHER_TYPE_CLASS;
 
-typedef struct _boardModuleTypeInfo {
-	MV_BOARD_MPP_TYPE_CLASS boardMppMod;
-	MV_BOARD_OTHER_TYPE_CLASS boardOtherMod;
-} MV_BOARD_MODULE_TYPE_INFO;
-
 /* omriii:  decide between MODULE_TYPE or MPP_TYPE */
 typedef struct _boardMppTypeInfo {
-	MV_BOARD_MPP_TYPE_CLASS boardMppSlic;
+	MV_BOARD_SLIC_TYPE boardMppSlic;
 
 	/* Ethernet / Sata complex                      */
 	/* A bitmask of MV_ETH_SATA_COMPLEX_OPTIONS     */
@@ -420,7 +415,8 @@ MV_32 mvBoardUSBVbusGpioPinGet(MV_32 devId);
 MV_32 mvBoardUSBVbusEnGpioPinGet(MV_32 devId);
 MV_BOOL mvBoardIsOurPciSlot(MV_U32 busNum, MV_U32 slotNum);
 MV_U32 mvBoardGpioIntMaskGet(MV_U32 gppGrp);
-MV_U32 mvBoardSlicMppModeGet(MV_VOID);
+MV_U32 mvBoardSlicUnitTypeGet(MV_VOID);
+MV_VOID mvBoardSlicUnitTypeSet(MV_U32 slicType);
 MV_32 mvBoardMppGet(MV_U32 mppGroupNum);
 MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType);
 MV_VOID mvBoardMppSet(MV_U32 mppGroupNum, MV_U32 mppValue);
@@ -444,6 +440,7 @@ MV_U32 mvBoardEthComplexConfigGet(MV_VOID);
 MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig);
 MV_U32 mvBoardIdGet(MV_VOID);
 MV_U32 mvBoardSledCpuNumGet(MV_VOID);
+MV_VOID mvBoardInfoUpdate(MV_VOID);
 MV_VOID mvBoardMppIdUpdate(MV_VOID);
 MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID);
 MV_STATUS mvBoardSwitchInfoUpdate(MV_VOID);

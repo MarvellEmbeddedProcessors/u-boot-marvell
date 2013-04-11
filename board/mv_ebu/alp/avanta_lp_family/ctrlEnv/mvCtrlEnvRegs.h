@@ -304,6 +304,11 @@ extern "C" {
 
 /* Sample at Reset */
 #define MPP_SAMPLE_AT_RESET(id)                 (0xE8200 + ( id * 0x4 ))
+#define DEVICE_ID_REG                            0x18238
+#define DEVICE_ID_REG_VEND_ID_OFFS               0
+#define DEVICE_ID_REG_VEND_ID_MASK               0xFFFF
+#define DEVICE_ID_REG_DEV_ID_OFFS                16
+#define DEVICE_ID_REG_DEV_ID_MASK                0xFFFF0000
 
 /* SYSRSTn Length Counter */
 #define SYSRST_LENGTH_COUNTER_REG               0x18250

@@ -71,7 +71,7 @@
 
 MV_BOARD_SATR_INFO boardSatrInfo[] = {
 /* {	{MV_SATR_TYPE_ID SarID,		MV_U32 Mask,   	      Offset, regNum , 	       isActiveForBoard[]}} */
-	{ MV_SATR_CPU_DDR_L2_FREQ,		 0x003E0000,	  17,	       1, {1,0,0,0} },
+	{ MV_SATR_CPU_DDR_L2_FREQ,	 0x003E0000,	  17,	       1, {1,0,0,0} },
 	{ MV_SATR_CORE_CLK_SELECT,	 0x00400000,	  22,	       1, {1,0,0,0} },
 	{ MV_SATR_CPU1_ENABLE,		 0x00008000,	  15,	       0, {1,0,0,0} },
 	{ MV_SATR_SSCG_DISABLE,		 0x00000002,	  1,	       0, {1,0,0,0} },
@@ -326,6 +326,18 @@ MV_BOARD_INFO db88f6660_board_info = {
 	.configAutoDetect		= MV_TRUE
 };
 
+MV_BOARD_INFO rd88f6650_board_info = {
+
+};
+
+MV_BOARD_INFO db88f6650_board_info = {
+
+};
+
+MV_BOARD_INFO rd88f6660_board_info = {
+
+};
+
 /*******************************************************************************
 * AvanataLP customer board
 *******************************************************************************/
@@ -458,6 +470,9 @@ MV_BOARD_INFO avanta_lp_customer_board_info = {
  * All supported avanta boards
  */
 MV_BOARD_INFO *boardInfoTbl[] = {
+	&rd88f6650_board_info,
+	&db88f6650_board_info,
+	&rd88f6660_board_info,
 	&db88f6660_board_info,
 	&avanta_lp_fpga_board_info,
 };

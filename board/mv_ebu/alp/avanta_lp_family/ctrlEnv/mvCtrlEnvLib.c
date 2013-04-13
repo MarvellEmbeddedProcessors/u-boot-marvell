@@ -409,6 +409,7 @@ MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 {
 	MV_FREQ_MODE freqTable[] = MV_SAR_FREQ_MODES;
 	MV_U32 freqModeSatRValue = mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
+
 	if (MV_ERROR != freqModeSatRValue) {
 		*freqMode = freqTable[freqModeSatRValue];
 		return MV_OK;
@@ -1518,8 +1519,6 @@ MV_BOOL mvCtrlIsBootFromNAND(MV_VOID)
 *******************************************************************************/
 MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
 {
-	/* kostaz: FIXME: verify 0x18220 is not changed */
-
 	/* Clock gating is not supported on FPGA */
 	if (mvCtrlModelGet() == MV_FPGA_DEV_ID)
 		return;
@@ -1528,62 +1527,44 @@ MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
 #if defined(MV_INCLUDE_PEX)
 	case PEX_UNIT_ID:
 		if (enable == MV_FALSE)
-			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_PEXSTOPCLOCK_MASK(index));
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_PEX_STOP_CLK_MASK(index));
 		else
-			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_PEXSTOPCLOCK_MASK(index));
-
-		break;
-#endif
-#if defined(MV_INCLUDE_GIG_ETH)
-	case ETH_GIG_UNIT_ID:
-		if (enable == MV_FALSE)
-			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_GESTOPCLOCK_MASK(index));
-		else
-			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_GESTOPCLOCK_MASK(index));
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_PEX_STOP_CLK_MASK(index));
 
 		break;
 #endif
 #if defined(MV_INCLUDE_INTEG_SATA)
 	case SATA_UNIT_ID:
 		if (enable == MV_FALSE)
-			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_SATASTOPCLOCK_MASK(index));
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_SATA_STOP_CLK_MASK);
 		else
-			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_SATASTOPCLOCK_MASK(index));
-
-		break;
-#endif
-#if defined(MV_INCLUDE_CESA)
-	case CESA_UNIT_ID:
-		if (enable == MV_FALSE)
-			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_CESASTOPCLOCK_MASK);
-		else
-			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_CESASTOPCLOCK_MASK);
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_SATA_STOP_CLK_MASK);
 
 		break;
 #endif
 #if defined(MV_INCLUDE_USB)
 	case USB_UNIT_ID:
 		if (enable == MV_FALSE)
-			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_USBSTOPCLOCK_MASK(index));
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_USB_STOP_CLK_MASK(index));
 		else
-			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_USBSTOPCLOCK_MASK(index));
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_USB_STOP_CLK_MASK(index));
 
 		break;
 #endif
 #if defined(MV_INCLUDE_SDIO)
 	case SDIO_UNIT_ID:
 		if (enable == MV_FALSE)
-			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_SDIOSTOPCLOCK_MASK);
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_SDIO_STOP_CLK_MASK);
 		else
-			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_SDIOSTOPCLOCK_MASK);
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_SDIO_STOP_CLK_MASK);
 
 		break;
 #endif
 	case TDM_32CH_UNIT_ID:
 		if (enable == MV_FALSE)
-			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_TDMSTOPCLOCK_MASK);
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_TDM_STOP_CLK_MASK);
 		else
-			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_TDMSTOPCLOCK_MASK);
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_TDM_STOP_CLK_MASK);
 		break;
 	default:
 		break;
@@ -1613,15 +1594,7 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 	switch (unitId) {
 #if defined(MV_INCLUDE_PEX)
 	case PEX_UNIT_ID:
-		if ((reg & PMC_PEXSTOPCLOCK_MASK(index)) == PMC_PEXSTOPCLOCK_STOP(index))
-			state = MV_FALSE;
-		else
-			state = MV_TRUE;
-		break;
-#endif
-#if defined(MV_INCLUDE_GIG_ETH)
-	case ETH_GIG_UNIT_ID:
-		if ((reg & PMC_GESTOPCLOCK_MASK(index)) == PMC_GESTOPCLOCK_STOP(index))
+		if ((reg & PMC_PEX_STOP_CLK_MASK(index)) == PMC_PEX_STOP_CLK_STOP(index))
 			state = MV_FALSE;
 		else
 			state = MV_TRUE;
@@ -1629,15 +1602,7 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 #endif
 #if defined(MV_INCLUDE_SATA)
 	case SATA_UNIT_ID:
-		if ((reg & PMC_SATASTOPCLOCK_MASK(index)) == PMC_SATASTOPCLOCK_STOP(index))
-			state = MV_FALSE;
-		else
-			state = MV_TRUE;
-		break;
-#endif
-#if defined(MV_INCLUDE_CESA)
-	case CESA_UNIT_ID:
-		if ((reg & PMC_CESASTOPCLOCK_MASK) == PMC_CESASTOPCLOCK_STOP)
+		if ((reg & PMC_SATA_STOP_CLK_MASK) == PMC_SATA_STOP_CLK_STOP)
 			state = MV_FALSE;
 		else
 			state = MV_TRUE;
@@ -1645,7 +1610,7 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 #endif
 #if defined(MV_INCLUDE_USB)
 	case USB_UNIT_ID:
-		if ((reg & PMC_USBSTOPCLOCK_MASK(index)) == PMC_USBSTOPCLOCK_STOP(index))
+		if ((reg & PMC_USB_STOP_CLK_MASK(index)) == PMC_USB_STOP_CLK_STOP(index))
 			state = MV_FALSE;
 		else
 			state = MV_TRUE;
@@ -1653,7 +1618,7 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 #endif
 #if defined(MV_INCLUDE_SDIO)
 	case SDIO_UNIT_ID:
-		if ((reg & PMC_SDIOSTOPCLOCK_MASK) == PMC_SDIOSTOPCLOCK_STOP)
+		if ((reg & PMC_SDIO_STOP_CLK_MASK) == PMC_SDIO_STOP_CLK_STOP)
 			state = MV_FALSE;
 		else
 			state = MV_TRUE;
@@ -1661,195 +1626,7 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 #endif
 #if defined(MV_INCLUDE_TDM)
 	case TDM_32CH_UNIT_ID:
-		if ((reg & PMC_TDMSTOPCLOCK_MASK) == PMC_TDMSTOPCLOCK_STOP)
-			state = MV_FALSE;
-		else
-			state = MV_TRUE;
-		break;
-#endif
-	default:
-		state = MV_TRUE;
-		break;
-	}
-
-	return state;
-}
-
-/*******************************************************************************
-* mvCtrlPwrMemSet - Set Power State for memory on specific Unit
-*
-* DESCRIPTION:
-*
-* INPUT:
-*
-* OUTPUT:
-*
-* RETURN:
-*******************************************************************************/
-MV_VOID mvCtrlPwrMemSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
-{
-	switch (unitId) {
-#if defined(MV_INCLUDE_PEX)
-	case PEX_UNIT_ID:
-		if (enable == MV_FALSE)
-			MV_REG_BIT_SET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_PEX), PMC_PEXSTOPMEM_STOP(index));
-		else
-			MV_REG_BIT_RESET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_PEX), PMC_PEXSTOPMEM_MASK(index));
-
-		break;
-#endif
-#if defined(MV_INCLUDE_GIG_ETH)
-	case ETH_GIG_UNIT_ID:
-		if (enable == MV_FALSE)
-			MV_REG_BIT_SET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_GE), PMC_GESTOPMEM_STOP(index));
-		else
-			MV_REG_BIT_RESET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_GE), PMC_GESTOPMEM_MASK(index));
-
-		break;
-#endif
-#if defined(MV_INCLUDE_INTEG_SATA)
-	case SATA_UNIT_ID:
-		if (enable == MV_FALSE)
-			MV_REG_BIT_SET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_SATA), PMC_SATASTOPMEM_STOP(index));
-		else
-			MV_REG_BIT_RESET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_SATA), PMC_SATASTOPMEM_MASK(index));
-
-		break;
-#endif
-#if defined(MV_INCLUDE_CESA)
-	case CESA_UNIT_ID:
-		if (enable == MV_FALSE)
-			MV_REG_BIT_SET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_CESA), PMC_CESASTOPMEM_STOP);
-		else
-			MV_REG_BIT_RESET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_CESA), PMC_CESASTOPMEM_MASK);
-
-		break;
-#endif
-#if defined(MV_INCLUDE_USB)
-	case USB_UNIT_ID:
-		if (enable == MV_FALSE)
-			MV_REG_BIT_SET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_USB), PMC_USBSTOPMEM_STOP(index));
-		else
-			MV_REG_BIT_RESET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_USB), PMC_USBSTOPMEM_MASK(index));
-
-		break;
-#endif
-#if defined(MV_INCLUDE_XOR)
-	case XOR_UNIT_ID:
-		if (enable == MV_FALSE)
-			MV_REG_BIT_SET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_XOR), PMC_XORSTOPMEM_STOP(index));
-		else
-			MV_REG_BIT_RESET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_XOR), PMC_XORSTOPMEM_MASK(index));
-
-		break;
-#endif
-#if defined(MV_INCLUDE_BM)
-	case BM_UNIT_ID:
-		if (enable == MV_FALSE)
-			MV_REG_BIT_SET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_BM), PMC_BMSTOPMEM_STOP);
-		else
-			MV_REG_BIT_RESET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_BM), PMC_BMSTOPMEM_MASK);
-
-		break;
-#endif
-#if defined(MV_INCLUDE_PNC)
-	case PNC_UNIT_ID:
-		if (enable == MV_FALSE)
-			MV_REG_BIT_SET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_PNC), PMC_PNCSTOPMEM_STOP);
-		else
-			MV_REG_BIT_RESET(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_PNC), PMC_PNCSTOPMEM_MASK);
-
-		break;
-#endif
-	default:
-		break;
-	}
-}
-
-/*******************************************************************************
- * mvCtrlPwrMemGet - Get Power State of memory on specific Unit
- *
- * DESCRIPTION:
- *
- * INPUT:
- *
- * OUTPUT:
- *
- * RETURN:
- ******************************************************************************/
-MV_BOOL mvCtrlPwrMemGet(MV_UNIT_ID unitId, MV_U32 index)
-{
-	MV_BOOL state = MV_TRUE;
-
-	switch (unitId) {
-		MV_U32 reg;
-#if defined(MV_INCLUDE_PEX)
-	case PEX_UNIT_ID:
-		reg = MV_REG_READ(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_PEX));
-		if ((reg & PMC_PEXSTOPMEM_MASK(index)) == PMC_PEXSTOPMEM_STOP(index))
-			state = MV_FALSE;
-		else
-			state = MV_TRUE;
-		break;
-#endif
-#if defined(MV_INCLUDE_GIG_ETH)
-	case ETH_GIG_UNIT_ID:
-		reg = MV_REG_READ(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_GE));
-		if ((reg & PMC_GESTOPMEM_MASK(index)) == PMC_GESTOPMEM_STOP(index))
-			state = MV_FALSE;
-		else
-			state = MV_TRUE;
-		break;
-#endif
-#if defined(MV_INCLUDE_SATA)
-	case SATA_UNIT_ID:
-		reg = MV_REG_READ(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_SATA));
-		if ((reg & PMC_SATASTOPMEM_MASK(index)) == PMC_SATASTOPMEM_STOP(index))
-			state = MV_FALSE;
-		else
-			state = MV_TRUE;
-		break;
-#endif
-#if defined(MV_INCLUDE_CESA)
-	case CESA_UNIT_ID:
-		reg = MV_REG_READ(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_CESA));
-		if ((reg & PMC_CESASTOPMEM_MASK) == PMC_CESASTOPMEM_STOP)
-			state = MV_FALSE;
-		else
-			state = MV_TRUE;
-		break;
-#endif
-#if defined(MV_INCLUDE_USB)
-	case USB_UNIT_ID:
-		reg = MV_REG_READ(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_USB));
-		if ((reg & PMC_USBSTOPMEM_MASK(index)) == PMC_USBSTOPMEM_STOP(index))
-			state = MV_FALSE;
-		else
-			state = MV_TRUE;
-		break;
-#endif
-#if defined(MV_INCLUDE_XOR)
-	case XOR_UNIT_ID:
-		reg = MV_REG_READ(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_XOR));
-		if ((reg & PMC_XORSTOPMEM_MASK(index)) == PMC_XORSTOPMEM_STOP(index))
-			state = MV_FALSE;
-		else
-			state = MV_TRUE;
-		break;
-#endif
-#if defined(MV_INCLUDE_BM)
-	case BM_UNIT_ID:
-		reg = MV_REG_READ(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_BM));
-		if ((reg & PMC_BMSTOPMEM_MASK) == PMC_BMSTOPMEM_STOP)
-			state = MV_FALSE;
-		else
-			state = MV_TRUE;
-		break;
-#endif
-#if defined(MV_INCLUDE_PNC)
-	case PNC_UNIT_ID:
-		reg = MV_REG_READ(POWER_MNG_MEM_CTRL_REG(PMC_MCR_NUM_PNC));
-		if ((reg & PMC_PNCSTOPMEM_MASK) == PMC_PNCSTOPMEM_STOP)
+		if ((reg & PMC_TDM_STOP_CLK_MASK) == PMC_TDM_STOP_CLK_STOP)
 			state = MV_FALSE;
 		else
 			state = MV_TRUE;

@@ -86,219 +86,40 @@ extern "C" {
 /* CIB registers offsets */
 #define MV_CIB_CTRL_CFG_REG                     (MV_COHERENCY_FABRIC_OFFSET + 0x80)
 
-/* Power Management Memory Power Down Registers 1 - 6 */
-#define POWER_MNG_MEM_CTRL_REG(num)             ((num) < 6 ? 0x1820C + (num) * 4 : 0x18228)
-#define PMC_MCR_NUM_COMM                        6
-#define PMC_MCR_NUM_PEX                         2
-#define PMC_MCR_NUM_USB                         4
-#define PMC_MCR_NUM_DUNIT                       3
-#define PMC_MCR_NUM_DEVB                        4
-#define PMC_MCR_NUM_NF                          4
-#define PMC_MCR_NUM_XOR                         4
-#define PMC_MCR_NUM_SATA                        5
-#define PMC_MCR_NUM_CESA                        4
-#define PMC_MCR_NUM_GE                          5
-#define PMC_MCR_NUM_PNC                         5
-#define PMC_MCR_NUM_BM                          5
-#define PMC_MCR_NUM_PDMA                        1
-#define PMC_MCR_NUM_NCS                         3
-#define PMC_MCR_NUM_CFU                         3
-#define PMC_MCR_NUM_L2                          3
-#define PMC_MCR_NUM_CIB                         3
-#define PMC_MCR_NUM_CPU                         3
-#define PMC_MCR_NUM_IDMA                        4
-#define PMC_MCR_NUM_LCD                         4
-#define PMC_MCR_NUM_PMU                         6
+/*
+ * Power Management Clock (PMC) Gating Control Register
+ */
+#define POWER_MNG_CTRL_REG			0x18220
 
-#define PMC_COMMSTOPMEM_OFFS                    4
-#define PMC_COMMSTOPMEM_MASK                    (7 << PMC_COMMSTOPMEM_OFFS)
-#define PMC_COMMSTOPMEM_EN                      (0 << PMC_COMMSTOPMEM_OFFS)
-#define PMC_COMMSTOPMEM_STOP                    (1 << PMC_COMMSTOPMEM_OFFS)
+#define PMC_TDM_STOP_CLK_OFFS			25
+#define PMC_TDM_STOP_CLK_MASK			(1 << PMC_TDM_STOP_CLK_OFFS)
+#define PMC_TDM_STOP_CLK_EN			(1 << PMC_TDM_STOP_CLK_OFFS)
+#define PMC_TDM_STOP_CLK_STOP			(0 << PMC_TDM_STOP_CLK_OFFS)
 
-#define PMC_PEXSTOPMEM_OFFS(port)               ((port) < 10 ? ((port) * 3) : 0)
-#define PMC_PEXSTOPMEM_MASK(port)               (7 << PMC_PEXSTOPMEM_OFFS(port))
-#define PMC_PEXSTOPMEM_EN(port)                 (0 << PMC_PEXSTOPMEM_OFFS(port))
-#define PMC_PEXSTOPMEM_STOP(port)               (1 << PMC_PEXSTOPMEM_OFFS(port))
+#define PMC_PEX_STOP_CLK_OFFS(port)		((port) + 5)
+#define PMC_PEX_STOP_CLK_MASK(port)		(1 << PMC_PEX_STOP_CLK_OFFS(port))
+#define PMC_PEX_STOP_CLK_EN(port)		(1 << PMC_PEX_STOP_CLK_OFFS(port))
+#define PMC_PEX_STOP_CLK_STOP(port)		(0 << PMC_PEX_STOP_CLK_OFFS(port))
 
-#define PMC_USBSTOPMEM_OFFS(port)               ((port) < 3 ? (3 + (port) * 3) : 0)
-#define PMC_USBSTOPMEM_MASK(port)               (7 << PMC_USBSTOPMEM_OFFS(port))
-#define PMC_USBSTOPMEM_EN(port)                 (0 << PMC_USBSTOPMEM_OFFS(port))
-#define PMC_USBSTOPMEM_STOP(port)               (1 << PMC_USBSTOPMEM_OFFS(port))
+#define PMC_USB_STOP_CLK_OFFS			18
+#define PMC_USB_STOP_CLK_MASK			(1 << PMC_USB_STOP_CLK_OFFS)
+#define PMC_USB_STOP_CLK_EN			(1 << PMC_USB_STOP_CLK_OFFS)
+#define PMC_USB_STOP_CLK_STOP			(0 << PMC_USB_STOP_CLK_OFFS)
 
-#define PMC_DUNITSTOPMEM_OFFS                   12
-#define PMC_DUNITSTOPMEM_MASK                   (7 << PMC_DUNITSTOPMEM_OFFS)
-#define PMC_DUNITSTOPMEM_EN                     (0 << PMC_DUNITSTOPMEM_OFFS)
-#define PMC_DUNITSTOPMEM_STOP                   (1 << PMC_DUNITSTOPMEM_OFFS)
+#define PMC_SDIO_STOP_CLK_OFFS			17
+#define PMC_SDIO_STOP_CLK_MASK			(1 << PMC_SDIO_STOP_CLK_OFFS)
+#define PMC_SDIO_STOP_CLK_EN			(1 << PMC_SDIO_STOP_CLK_OFFS)
+#define PMC_SDIO_STOP_CLK_STOP			(0 << PMC_SDIO_STOP_CLK_OFFS)
 
-#define PMC_NFSTOPMEM_OFFS                      27
-#define PMC_NFSTOPMEM_MASK                      (7 << PMC_NFSTOPMEM_OFFS)
-#define PMC_NFSTOPMEM_EN                        (0 << PMC_NFSTOPMEM_OFFS)
-#define PMC_NFSTOPMEM_STOP                      (1 << PMC_NFSTOPMEM_OFFS)
+#define PMC_XOR_STOP_CLK_OFFS(xor_id)		(xor_id == 0 ? 22 : 28)
+#define PMC_XOR_STOP_CLK_MASK(xor_id)		(1 << PMC_XOR_STOP_CLK_OFFS(xor_id))
+#define PMC_XOR_STOP_CLK_EN(xor_id)		(1 << PMC_XOR_STOP_CLK_OFFS(xor_id))
+#define PMC_XOR_STOP_CLK_STOP(xor_id)		(0 << PMC_XOR_STOP_CLK_OFFS(xor_id))
 
-#define PMC_DEVBSTOPMEM_OFFS                    21
-#define PMC_DEVBSTOPMEM_MASK                    (7 << PMC_DEVBSTOPMEM_OFFS)
-#define PMC_DEVBSTOPMEM_EN                      (0 << PMC_DEVBSTOPMEM_OFFS)
-#define PMC_DEVBSTOPMEM_STOP                    (1 << PMC_DEVBSTOPMEM_OFFS)
-
-#define PMC_XORSTOPMEM_OFFS(port)               ((port) == 0 ? 15 : 24)
-#define PMC_XORSTOPMEM_MASK(port)               (7 << PMC_XORSTOPMEM_OFFS(port))
-#define PMC_XORSTOPMEM_EN(port)                 (0 << PMC_XORSTOPMEM_OFFS(port))
-#define PMC_XORSTOPMEM_STOP(port)               (1 << PMC_XORSTOPMEM_OFFS(port))
-
-#define PMC_SATASTOPMEM_OFFS(port)              ((port) == 0 ? 18 : 24)
-#define PMC_SATASTOPMEM_MASK(port)              (0x3F << PMC_SATASTOPMEM_OFFS(port))
-#define PMC_SATASTOPMEM_EN(port)                (0 << PMC_SATASTOPMEM_OFFS(port))
-#define PMC_SATASTOPMEM_STOP(port)              (9 << PMC_SATASTOPMEM_OFFS(port))
-
-#define PMC_CESASTOPMEM_OFFS                    18
-#define PMC_CESASTOPMEM_MASK                    (7 << PMC_CESASTOPMEM_OFFS)
-#define PMC_CESASTOPMEM_EN                      (0 << PMC_CESASTOPMEM_OFFS)
-#define PMC_CESASTOPMEM_STOP                    (1 << PMC_CESASTOPMEM_OFFS)
-
-#define PMC_GESTOPMEM_OFFS(port)                ((port) < 4 ? (9 - (port) * 3) : 0)
-#define PMC_GESTOPMEM_MASK(port)                (7 << PMC_GESTOPMEM_OFFS(port))
-#define PMC_GESTOPMEM_EN(port)                  (0 << PMC_GESTOPMEM_OFFS(port))
-#define PMC_GESTOPMEM_STOP(port)                (1 << PMC_GESTOPMEM_OFFS(port))
-
-#define PMC_PNCSTOPMEM_OFFS                     12
-#define PMC_PNCSTOPMEM_MASK                     (7 << PMC_PNCSTOPMEM_OFFS)
-#define PMC_PNCSTOPMEM_EN                       (0 << PMC_PNCSTOPMEM_OFFS)
-#define PMC_PNCSTOPMEM_STOP                     (1 << PMC_PNCSTOPMEM_OFFS)
-
-#define PMC_BMSTOPMEM_OFFS                      15
-#define PMC_BMSTOPMEM_MASK                      (7 << PMC_BMSTOPMEM_OFFS)
-#define PMC_BMSTOPMEM_EN                        (0 << PMC_BMSTOPMEM_OFFS)
-#define PMC_BMSTOPMEM_STOP                      (1 << PMC_BMSTOPMEM_OFFS)
-
-#define PMC_PDMASTOPMEM_OFFS                    0
-#define PMC_PDMATOPMEM_MASK                     (7 << PMC_PDMASTOPMEM_OFFS)
-#define PMC_PDMASTOPMEM_EN                      (0 << PMC_PDMASTOPMEM_OFFS)
-#define PMC_PDMASTOPMEM_STOP                    (1 << PMC_PDMASTOPMEM_OFFS)
-
-#define PMC_NCSSTOPMEM_OFFS                     24
-#define PMC_NCSSTOPMEM_MASK                     (7 << PMC_NCSSTOPMEM_OFFS)
-#define PMC_NCSSTOPMEM_EN                       (0 << PMC_NCSSTOPMEM_OFFS)
-#define PMC_NCSSTOPMEM_STOP                     (1 << PMC_NCSSTOPMEM_OFFS)
-
-#define PMC_CFUSTOPMEM_OFFS                     21
-#define PMC_CFUSTOPMEM_MASK                     (7 << PMC_CFUSTOPMEM_OFFS)
-#define PMC_CFUSTOPMEM_EN                       (0 << PMC_CFUSTOPMEM_OFFS)
-#define PMC_CFUSTOPMEM_STOP                     (1 << PMC_CFUSTOPMEM_OFFS)
-
-#define PMC_L2STOPMEM_OFFS                      18
-#define PMC_L2STOPMEM_MASK                      (7 << PMC_L2STOPMEM_OFFS)
-#define PMC_L2STOPMEM_EN                        (0 << PMC_L2STOPMEM_OFFS)
-#define PMC_L2STOPMEM_STOP                      (1 << PMC_L2STOPMEM_OFFS)
-
-#define PMC_CIBSTOPMEM_OFFS                     15
-#define PMC_CIBSTOPMEM_MASK                     (7 << PMC_CIBSTOPMEM_OFFS)
-#define PMC_CIBSTOPMEM_EN                       (0 << PMC_CIBSTOPMEM_OFFS)
-#define PMC_CIBSTOPMEM_STOP                     (1 << PMC_CIBSTOPMEM_OFFS)
-
-/* TODO - verify, the manual has no description */
-#define PMC_CPUSTOPMEM_OFFS(id)                 ((id) < 4 ? (id) * 3 : 0)
-#define PMC_CPUSTOPMEM_MASK(id)                 (7 << PMC_CPUSTOPMEM_OFFS(id))
-#define PMC_CPUSTOPMEM_EN(id)                   (0 << PMC_CPUSTOPMEM_OFFS(id))
-#define PMC_CPUSTOPMEM_STOP(id)                 (1 << PMC_CPUSTOPMEM_OFFS(id))
-
-#define PMC_IDMASTOPMEM_OFFS                    12
-#define PMC_IDMASTOPMEM_MASK                    (7 << PMC_IDMASTOPMEM_OFFS)
-#define PMC_IDMASTOPMEM_EN                      (0 << PMC_IDMASTOPMEM_OFFS)
-#define PMC_IDMASTOPMEM_STOP                    (1 << PMC_IDMASTOPMEM_OFFS)
-
-#define PMC_LCDSTOPMEM_OFFS                     0
-#define PMC_LCDSTOPMEM_MASK                     (7 << PMC_LCDSTOPMEM_OFFS)
-#define PMC_LCDSTOPMEM_EN                       (0 << PMC_LCDSTOPMEM_OFFS)
-#define PMC_LCDSTOPMEM_STOP                     (1 << PMC_LCDSTOPMEM_OFFS)
-
-#define PMC_PMUSTOPMEM_OFFS                     0
-#define PMC_PMUSTOPMEM_MASK                     (7 << PMC_PMUSTOPMEM_OFFS)
-#define PMC_PMUSTOPMEM_EN                       (0 << PMC_PMUSTOPMEM_OFFS)
-#define PMC_PMUSTOPMEM_STOP                     (1 << PMC_PMUSTOPMEM_OFFS)
-
-/*  Power Management Clock Gating Control Register	*/
-#define POWER_MNG_CTRL_REG                      0x18220
-#define L2C_MTCMOS_CONTROL_0_REG    0x22F00
-#define L2C_MTCMOS_CONTROL_1_REG    0x22F04
-
-#define PMU_DFS_CTRL_INIT_RATIO_OFFS    24
-#define PMU_DFS_CTRL_INIT_RATIO_MASK    0x3F
-#define PMU_DFS_CTRL_RATIO_OFFS                 16
-#define PMU_DFS_CTRL_RATIO_MASK                 0x3F
-
-#define PMC_TDMSTOPCLOCK_OFFS                   25
-#define PMC_TDMSTOPCLOCK_MASK                   (1 << PMC_TDMSTOPCLOCK_OFFS)
-#define PMC_TDMSTOPCLOCK_EN                     (1 << PMC_TDMSTOPCLOCK_OFFS)
-#define PMC_TDMSTOPCLOCK_STOP                   (0 << PMC_TDMSTOPCLOCK_OFFS)
-
-#define PMC_PEXSTOPCLOCK_OFFS(port)             ((port) < 8 ? (5 + (port)) : (18 + (port)))
-#define PMC_PEXSTOPCLOCK_MASK(port)             (1 << PMC_PEXSTOPCLOCK_OFFS(port))
-#define PMC_PEXSTOPCLOCK_EN(port)               (1 << PMC_PEXSTOPCLOCK_OFFS(port))
-#define PMC_PEXSTOPCLOCK_STOP(port)             (0 << PMC_PEXSTOPCLOCK_OFFS(port))
-
-#define PMC_USBSTOPCLOCK_OFFS(port)             ((port) < 3 ? (18 + (port)) : 0)
-#define PMC_USBSTOPCLOCK_MASK(port)             (1 << PMC_USBSTOPCLOCK_OFFS(port))
-#define PMC_USBSTOPCLOCK_EN(port)               (1 << PMC_USBSTOPCLOCK_OFFS(port))
-#define PMC_USBSTOPCLOCK_STOP(port)             (0 << PMC_USBSTOPCLOCK_OFFS(port))
-
-#define PMC_SDIOSTOPCLOCK_OFFS                  17
-#define PMC_SDIOSTOPCLOCK_MASK                  (1 << PMC_SDIOSTOPCLOCK_OFFS)
-#define PMC_SDIOSTOPCLOCK_EN                    (1 << PMC_SDIOSTOPCLOCK_OFFS)
-#define PMC_SDIOSTOPCLOCK_STOP                  (0 << PMC_SDIOSTOPCLOCK_OFFS)
-
-#define PMC_RUNITSTOPCLOCK_OFFS                 24
-#define PMC_RUNITSTOPCLOCK_MASK                 (1 << PMC_RUNITSTOPCLOCK_OFFS)
-#define PMC_RUNITSTOPCLOCK_EN                   (1 << PMC_RUNITSTOPCLOCK_OFFS)
-#define PMC_RUNITSTOPCLOCK_STOP                 (0 << PMC_RUNITSTOPCLOCK_OFFS)
-
-#define PMC_XORSTOPCLOCK_OFFS                   22
-#define PMC_XORSTOPCLOCK_MASK                   (1 << PMC_XORSTOPCLOCK_OFFS)
-#define PMC_XORSTOPCLOCK_EN                     (1 << PMC_XORSTOPCLOCK_OFFS)
-#define PMC_XORSTOPCLOCK_STOP                   (0 << PMC_XORSTOPCLOCK_OFFS)
-
-#define PMC_SATASTOPCLOCK_OFFS(ch)              (ch == 0 ? 14 : 29)
-#define PMC_SATASTOPCLOCK_MASK(ch)              (3 << PMC_SATASTOPCLOCK_OFFS(ch))
-#define PMC_SATASTOPCLOCK_EN(ch)                (3 << PMC_SATASTOPCLOCK_OFFS(ch))
-#define PMC_SATASTOPCLOCK_STOP(ch)              (0 << PMC_SATASTOPCLOCK_OFFS(ch))
-
-#define PMC_CESASTOPCLOCK_OFFS                  23
-#define PMC_CESASTOPCLOCK_MASK                  (1 << PMC_CESASTOPCLOCK_OFFS)
-#define PMC_CESASTOPCLOCK_EN                    (1 << PMC_CESASTOPCLOCK_OFFS)
-#define PMC_CESASTOPCLOCK_STOP                  (0 << PMC_CESASTOPCLOCK_OFFS)
-
-#define PMC_GESTOPCLOCK_OFFS(port)              ((port) < 4 ? (4 - (port)) : 0)
-#define PMC_GESTOPCLOCK_MASK(port)              (1 << PMC_GESTOPCLOCK_OFFS(port))
-#define PMC_GESTOPCLOCK_EN(port)                (1 << PMC_GESTOPCLOCK_OFFS(port))
-#define PMC_GESTOPCLOCK_STOP(port)              (0 << PMC_GESTOPCLOCK_OFFS(port))
-
-#define PMC_NETASTOPCLOCK_OFFS                  13
-#define PMC_NETASTOPCLOCK_MASK                  (1 << PMC_NETASTOPCLOCK_OFFS)
-#define PMC_NETASTOPCLOCK_EN                    (1 << PMC_NETASTOPCLOCK_OFFS)
-#define PMC_NETASTOPCLOCK_STOP                  (0 << PMC_NETASTOPCLOCK_OFFS)
-
-#define PMC_LCDSTOPCLOCK_OFFS                   16
-#define PMC_LCDSTOPCLOCK_MASK                   (1 << PMC_LCDSTOPCLOCK_OFFS)
-#define PMC_LCDSTOPCLOCK_EN                     (1 << PMC_LCDSTOPCLOCK_OFFS)
-#define PMC_LCDSTOPCLOCK_STOP                   (0 << PMC_LCDSTOPCLOCK_OFFS)
-
-#define PMC_IDMASTOPCLOCK_OFFS                  21
-#define PMC_IDMASTOPCLOCK_MASK                  (1 << PMC_IDMASTOPCLOCK_OFFS)
-#define PMC_IDMASTOPCLOCK_EN                    (1 << PMC_IDMASTOPCLOCK_OFFS)
-#define PMC_IDMASTOPCLOCK_STOP                  (0 << PMC_IDMASTOPCLOCK_OFFS)
-
-#define PMC_DDRSTOPCLOCK_OFFS                   28
-#define PMC_DDRSTOPCLOCK_MASK                   (1 << PMC_DDRSTOPCLOCK_OFFS)
-#define PMC_DDRSTOPCLOCK_EN                     (1 << PMC_DDRSTOPCLOCK_OFFS)
-#define PMC_DDRSTOPCLOCK_STOP                   (0 << PMC_DDRSTOPCLOCK_OFFS)
-
-#define SGMII_PWR_PLL_CTRL_REG(port)            (0x72E04 + ((port) % 2) * 0x4000 - ((port) / 2) * 0x40000)
-#define SGMII_DIG_LP_ENA_REG(port)              (0x72E8C + ((port) % 2) * 0x4000 - ((port) / 2) * 0x40000)
-#define SGMII_REF_CLK_SEL_REG(port)             (0x72F18 + ((port) % 2) * 0x4000 - ((port) / 2) * 0x40000)
-#define SGMII_SERDES_CFG_REG(port)              (0x724A0 + ((port) % 2) * 0x4000 - ((port) / 2) * 0x40000)
-#define SGMII_SERDES_STAT_REG(port)             (0x724A4 + ((port) % 2) * 0x4000 - ((port) / 2) * 0x40000)
-#define SGMII_COMPHY_CTRL_REG(port)             (0x72F20 + ((port) % 2) * 0x4000 - ((port) / 2) * 0x40000)
-#define QSGMII_GEN_1_SETTING_REG(port)          (0x72E38 + ((port) % 2) * 0x4000 - ((port) / 2) * 0x40000)
-
+#define PMC_SATA_STOP_CLK_OFFS			14
+#define PMC_SATA_STOP_CLK_MASK			(3 << PMC_SATA_STOP_CLK_OFFS)
+#define PMC_SATA_STOP_CLK_EN			(3 << PMC_SATA_STOP_CLK_OFFS)
+#define PMC_SATA_STOP_CLK_STOP			(0 << PMC_SATA_STOP_CLK_OFFS)
 
 #define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
 

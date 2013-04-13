@@ -67,7 +67,7 @@
 
 #include "mvSysHwConfig.h"
 
-/* I2C bus addresses TODO (omriii) - take from board design */
+/* I2C bus addresses */
 #define MV_BOARD_DIMM0_I2C_ADDR                 0x56
 #define MV_BOARD_DIMM0_I2C_ADDR_TYPE            ADDR7_BIT
 #define MV_BOARD_DIMM1_I2C_ADDR                 0x57

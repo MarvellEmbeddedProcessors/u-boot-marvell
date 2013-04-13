@@ -126,8 +126,8 @@ typedef enum _devTwsiBoardClass {
 	BOARD_DEV_TWSI_EXP,
 	BOARD_DEV_TWSI_SATR,
 	BOARD_TWSI_MUX,
-	BOARD_DEV_TWSI_EEPROM,          //omriii : _EEPROM should be added ? or used as _OTHER ?
-	BOARD_DEV_TWSI_IO_EXPANDER,     //omriii : _IO_EXPANDER should be added ? or used as _OTHER?
+	BOARD_DEV_TWSI_EEPROM,
+	BOARD_DEV_TWSI_IO_EXPANDER,
 	BOARD_TWSI_OTHER
 } MV_BOARD_TWSI_CLASS;
 

@@ -1047,22 +1047,9 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 			mvBoardMppTypeSet(4, SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT);
 		else    /*REF_CLK_OUT*/
 			mvBoardMppTypeSet(4, SPI1_CPU_SMI_CTRL_REF_CLK_OUT);
-		// omriii : if nand/spi0 not for BOOT, enable Audio-SPDIF by default?
 		mvBoardMppTypeSet(0, SPI0_BOOT_SPDIF_AUDIO);
 		mvBoardMppTypeSet(1, SPI0_BOOT_SPDIF_AUDIO);
 		break;
-/* omriii : what to do with the next Boot devices  ?
-        case MSAR_0_BOOT_NOR_FLASH:
-                break;
-        case MSAR_0_BOOT_PROMPT:
-                break;
-        case MSAR_0_BOOT_UART:
-                break;
-        case MSAR_0_BOOT_SATA:
-                break;
-        case MSAR_0_BOOT_PEX:
-                break;
- */
 	default:
 		return MV_ERROR;
 	}
@@ -1394,7 +1381,6 @@ MV_VOID mvBoardConfigWrite(void)
 	MV_U32 mppGroup, i, reg;
 	MV_BOARD_SPEC_INIT *boardSpec;
 
-	/* Specific board initializations  ( from board->pBoardSpecInit ) omriii : see if can remove all these inits*/
 	for (mppGroup = 0; mppGroup < MV_MPP_MAX_GROUP; mppGroup++) {
 		MV_REG_WRITE(mvCtrlMppRegGet(mppGroup), mvBoardMppGet(mppGroup));
 	}

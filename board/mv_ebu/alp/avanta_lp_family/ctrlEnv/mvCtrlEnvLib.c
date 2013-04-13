@@ -128,12 +128,7 @@ MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 
 MV_U32 mvCtrlGetCpuNum(MV_VOID)
 {
-	return 0; /* kostaz: fix from cider */
-}
-
-MV_U32 mvCtrlGetQuadNum(MV_VOID)
-{
-	return 0; /* kostaz: fix */
+	return 0;
 }
 
 MV_BOOL mvCtrlIsValidSatR(MV_VOID)
@@ -620,7 +615,6 @@ MV_BOOL mvCtrlIsEepromEnabled()
 *******************************************************************************/
 MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel)
 {
-	/* omriii - check if needed to distinguish between controllers here */
 	return MV_88F66X0;
 }
 
@@ -843,7 +837,7 @@ MV_U32 mvCtrlXorMaxUnitGet(MV_VOID)
 
 #if defined(MV_INCLUDE_USB)
 /*******************************************************************************
-* mvCtrlUsbHostMaxGet - Get number of Marvell Usb  controllers
+* mvCtrlUsbMaxGet - Get number of Marvell Usb  controllers
 *
 * DESCRIPTION:
 *
@@ -1075,8 +1069,8 @@ MV_STATUS mvCtrlNameGet(char *pNameBuff)
 	if (mvCtrlModelGet() == 0x7800)
 		mvOsSPrintf(pNameBuff, "%s78XX", SOC_NAME_PREFIX);
 	else
-		mvOsSPrintf(pNameBuff, "%s%x Rev %d", SOC_NAME_PREFIX, mvCtrlModelGet(), mvCtrlRevGet());
-
+		mvOsSPrintf(pNameBuff, "%s%x Rev %d",
+			    SOC_NAME_PREFIX, mvCtrlModelGet(), mvCtrlRevGet());
 	return MV_OK;
 }
 
@@ -1171,7 +1165,7 @@ const MV_8 *mvCtrlTargetNameGet(MV_TARGET target)
 #if defined(MV_INCLUDE_PEX)
 static MV_VOID mvCtrlPexAddrDecShow(MV_VOID)
 {
-	/* kostaz: FIXME: will be filled for AvantaLP */
+	/* TBD */
 }
 
 #endif
@@ -1254,6 +1248,7 @@ MV_VOID mvCtrlAddrDecShow(MV_VOID)
 #if defined(MV_INCLUDE_PEX)
 	mvCtrlPexAddrDecShow();
 #endif
+
 #if defined(MV_INCLUDE_USB)
 	mvUnitAddrDecShow(mvCtrlUsbMaxGet(), USB_UNIT_ID, "USB", mvUsbWinRead);
 #endif
@@ -1265,12 +1260,13 @@ MV_VOID mvCtrlAddrDecShow(MV_VOID)
 	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvNetaWinRead);
 #else
 	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvPp2WinRead);
-#endif  /* MV_ETH_LEGACY  or NETA pr PP2 */
-#endif  /* MV_INCLUDE_GIG_ETH */
+#endif
+#endif
 
 #if defined(MV_INCLUDE_XOR)
 	mvUnitAddrDecShow(mvCtrlXorMaxChanGet(), XOR_UNIT_ID, "XOR", mvXorTargetWinRead);
 #endif
+
 #if defined(MV_INCLUDE_SATA)
 	mvUnitAddrDecShow(mvCtrlSataMaxPortGet(), SATA_UNIT_ID, "Sata", mvSataWinRead);
 #endif
@@ -1418,7 +1414,7 @@ MV_U32 ctrlRegToSize(MV_U32 regSize, MV_U32 alignment)
 * RETURN:
 *       32bit describing size value correspond to size in register.
 *******************************************************************************/
-MV_U32 ctrlSizeRegRoundUp(MV_U32 size, MV_U32 alignment) /* kostaz: FIXME: remove unused */
+MV_U32 ctrlSizeRegRoundUp(MV_U32 size, MV_U32 alignment)
 {
 	MV_U32 msbBit = 0;
 	MV_U32 retSize;

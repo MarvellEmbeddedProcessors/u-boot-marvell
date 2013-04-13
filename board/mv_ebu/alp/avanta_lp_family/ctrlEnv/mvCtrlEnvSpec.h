@@ -97,7 +97,14 @@ extern "C" {
 #define MV_COHERENCY_FABRIC_OFFSET              (0x20200) /* ??? IO Error Control Register = Offset: 0x00020200 */
 #define MV_CIB_CTRL_STATUS_OFFSET               (0x20280)
 #define MV_CNTMR_REGS_OFFSET                    (0x20300)
-#define MV_CPUIF_LOCAL_REGS_OFFSET              (0x21000) /**** ????? */
+
+/*
+ * CPU virtual/banked registers: 0x21000 to 0x21100 (64 registers).
+ * Physical registers:
+ * 	CPU0: 0x21800 - 0x21900
+ * 	CPU1: 0x21900 - 0x21a00
+ */
+#define MV_CPUIF_LOCAL_REGS_OFFSET              (0x21000)
 #define MV_CPUIF_REGS_OFFSET(cpu)               (0x21800 + (cpu) * 0x100)
 #define MV_CPU_HW_SEM_OFFSET                    (0x20500)
 

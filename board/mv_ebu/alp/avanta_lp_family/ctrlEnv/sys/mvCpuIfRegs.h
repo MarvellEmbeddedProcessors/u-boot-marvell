@@ -62,7 +62,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-
 #ifndef __INCmvCpuIfRegsh
 #define __INCmvCpuIfRegsh
 
@@ -74,13 +73,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MV_CPUIF_REGS_BASE(cpu)			(MV_CPUIF_REGS_OFFSET(cpu))
 #define MV_MISC_REGS_BASE			(MV_MISC_REGS_OFFSET)
-#define MV_CLK_CMPLX_REGS_BASE		(MV_CLK_CMPLX_REGS_OFFSET)
+#define MV_CLK_CMPLX_REGS_BASE			(MV_CLK_CMPLX_REGS_OFFSET)
 #define MV_L2C_REGS_BASE			(MV_AURORA_L2_REGS_OFFSET)
 #define MV_CPUIF_SHARED_REGS_BASE		(MV_MBUS_REGS_OFFSET)
 #define MV_COHERENCY_FABRIC_REGS_BASE		(MV_COHERENCY_FABRIC_OFFSET)
 
 #define CPU_CONFIG_REG(cpu)			(MV_CPUIF_REGS_BASE(cpu))
 #define CPU_CTRL_STAT_REG(cpu)			(MV_CPUIF_REGS_BASE(cpu) + 0x8)
+
+#define PCIE_BOOT_ADDR_REG			(MV_MISC_REGS_BASE + 0x2D4)
+#define CPU_RESUME_ADDR_REG			(MV_PCIE_BOOT_ADDR_REG)
+
+#define CPU_SOFT_RESET_REG(cpu)			(0x20800 + (cpu) * 0x8)
+
 #define CPU_RSTOUTN_MASK_REG			(MV_MISC_REGS_BASE + 0x54)
 #define CPU_SYS_SOFT_RST_REG			(MV_MISC_REGS_BASE + 0x58)
 #define CPU_L2_CTRL_REG				(MV_L2C_REGS_BASE + 0x100)
@@ -170,7 +175,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CCR_CLUSTER_ID_OFFS			24
 #define CCR_CLUSTER_ID_MASK			(0xF << CCR_SRAM_LOW_LEAK_OFFS)
 
-
 /* ARM Control and Status register */
 /* CPU_CTRL_STAT_REG (CCSR) */
 
@@ -181,7 +185,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CCSR_ENDIAN_STATUS_MASK			(1 << CCSR_ENDIAN_STATUS_OFFS)
 #define CCSR_ENDIAN_STATUS_LITTLE		(0 << CCSR_ENDIAN_STATUS_OFFS)
 #define CCSR_ENDIAN_STATUS_BIG			(1 << CCSR_ENDIAN_STATUS_OFFS)
-
 
 /* RSTOUTn Mask Register */
 /* CPU_RSTOUTN_MASK_REG (CRMR) */
@@ -200,7 +203,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CRMR_PEX_TRST_OUT_MASK(bus)		(1 << CRMR_PEX_TRST_OUT_OFFS(bus))
 #define CRMR_PEX_TRST_OUT_ENABLE(bus)		(1 << CRMR_PEX_TRST_OUT_OFFS(bus))
 #define CRMR_PEX_TRST_OUT_DISABLE(bus)		(0 << CRMR_PEX_TRST_OUT_OFFS(bus))
-
 
 /* System Software Reset Register */
 /* CPU_SYS_SOFT_RST_REG (CSSRR) */
@@ -265,10 +267,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define CL2ACR_REP_STRGY_LFSR_MASK              (0x1 << CL2ACR_REP_STRGY_OFFS)
 #define CL2ACR_REP_STRGY_semiPLRU_MASK		(0x2 << CL2ACR_REP_STRGY_OFFS)
-#define CL2ACR_REP_STRGY_semiPLRU_WA_MASK          (0x3 << CL2ACR_REP_STRGY_OFFS)
-#define CL2_DUAL_EVICTION		(0x1 << 4)
-#define CL2_PARITY_ENABLE		(0x1 << 21)
-#define CL2_InvalEvicLineUCErr          (0x1 << 22)
+#define CL2ACR_REP_STRGY_semiPLRU_WA_MASK	(0x3 << CL2ACR_REP_STRGY_OFFS)
+#define CL2_DUAL_EVICTION			(0x1 << 4)
+#define CL2_PARITY_ENABLE			(0x1 << 21)
+#define CL2_InvalEvicLineUCErr			(0x1 << 22)
 
 /* SOC_CTRL_REG fields */
 #define SCR_PEX_ENA_OFFS(pex)			((pex) & 0x3)
@@ -294,20 +296,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LVDS_PADS_CONF_PD_MASK(idx)		(1 << (16 + idx))
 #define LVDS_PADS_CONF_PD_EN(idx, en)		((en ? 0 : 1) << LVDS_PADS_CONF_PD_OFFS(idx))
 
-
 /*******************************************/
 /* Main Interrupt Controller Registers Map */
 /*******************************************/
-
 #define CPU_MAIN_INT_CAUSE_REG(vec, cpu)	(MV_CPUIF_REGS_BASE(cpu) + 0x80 + (vec * 0x4))
-#define CPU_MAIN_INT_TWSI_OFFS(i)			(2 + i)
-#define CPU_MAIN_INT_CAUSE_TWSI(i)			(31 + i)
+#define CPU_MAIN_INT_TWSI_OFFS(i)		(2 + i)
+#define CPU_MAIN_INT_CAUSE_TWSI(i)		(31 + i)
 
-#define CPU_CF_LOCAL_MASK_REG(cpu)			(MV_CPUIF_REGS_BASE(cpu) + 0xc4)
+#define CPU_CF_LOCAL_MASK_REG(cpu)		(MV_CPUIF_REGS_BASE(cpu) + 0xc4)
 #define CPU_CF_LOCAL_MASK_PMU_MASK_OFFS		18
 #define CPU_INT_SOURCE_CONTROL_REG(i)		(MV_CPUIF_SHARED_REGS_BASE + 0xB00 + (i * 0x4))
 
-#define CPU_INT_SOURCE_CONTROL_IRQ_OFFS		28 
+#define CPU_INT_SOURCE_CONTROL_IRQ_OFFS		28
 #define CPU_INT_SOURCE_CONTROL_IRQ_MASK		(1 << CPU_INT_SOURCE_CONTROL_IRQ_OFFS )
 
 #define CPU_INT_SET_ENABLE_REG			(MV_CPUIF_SHARED_REGS_BASE + 0xA30)
@@ -319,26 +319,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CPU_INT_SET_MASK_LOCAL_REG		(MV_CPUIF_LOCAL_REGS_OFFSET + CPU_INT_SET_MASK_OFFS)
 #define CPU_INT_CLEAR_MASK_LOCAL_REG		(MV_CPUIF_LOCAL_REGS_OFFSET + CPU_INT_CLEAR_MASK_OFFS)
 
-
-#define MV_IRQ_NR							116
-
+#define MV_IRQ_NR				116
 
 /*******************************************/
-/* ARM Doorbell Registers Map		   */
+/* ARM Doorbell Registers Map              */
 /*******************************************/
-#define CPU_SW_TRIG_IRQ						(MV_MBUS_REGS_OFFSET + 0xA04)
-#define CPU_DOORBELL_IN_REG					(MV_CPUIF_LOCAL_REGS_OFFSET + 0x78)
-#define CPU_DOORBELL_IN_MASK_REG			(MV_CPUIF_LOCAL_REGS_OFFSET + 0x7C)
+#define CPU_SW_TRIG_IRQ				(MV_MBUS_REGS_OFFSET + 0xA04)
+#define CPU_DOORBELL_IN_REG			(MV_CPUIF_LOCAL_REGS_OFFSET + 0x78)
+#define CPU_DOORBELL_IN_MASK_REG		(MV_CPUIF_LOCAL_REGS_OFFSET + 0x7C)
 #define CPU_HOST_TO_ARM_DRBL_REG(cpu)		(MV_CPUIF_REGS_BASE(cpu) + 0x78)
 #define CPU_HOST_TO_ARM_MASK_REG(cpu)		(MV_CPUIF_REGS_BASE(cpu) + 0x7C)
 #define CPU_ARM_TO_HOST_DRBL_REG(cpu)		(MV_CPUIF_REGS_BASE(cpu) + 0x70)
 #define CPU_ARM_TO_HOST_MASK_REG(cpu)		(MV_CPUIF_REGS_BASE(cpu) + 0x74)
 
 /*******************************************/
-/* CLOCK Complex Registers Map			   */
+/* CLOCK Complex Registers Map             */
 /*******************************************/
-
-#define CPU_DIV_CLK_CTRL0_REG				(MV_CLK_CMPLX_REGS_OFFSET)
+#define CPU_DIV_CLK_CTRL0_REG			(MV_CLK_CMPLX_REGS_OFFSET)
 #define CPU_DIV_CLK_CTRL0_RESET_MASK_OFFS	8
 #define CPU_DIV_CLK_CTRL2_RATIO_FULL0_REG	(MV_CLK_CMPLX_REGS_OFFSET + 0x8)
 #define CPU_DIV_CLK_CTRL2_NB_RATIO_OFFS		16
@@ -350,6 +347,4 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CPU_CONFIG_DEFAULT_MASK         	(CCR_VEC_INIT_LOC_MASK)
 #define CPU_CONFIG_DEFAULT                      (CCR_VEC_INIT_LOC_FF00)
 
-
 #endif /* __INCmvCpuIfRegsh */
-

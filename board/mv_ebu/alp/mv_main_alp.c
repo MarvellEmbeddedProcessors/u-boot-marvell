@@ -270,7 +270,6 @@ int board_init(void)
 	unsigned int i;
 
 	maskAllInt();
-	mvCtrlSatrInit();  /* temp located here - for FPGA - move to mvCtrlEnvInit() */
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	/* Init the Board environment module (device bank params init) */
 	mvBoardEnvInit();

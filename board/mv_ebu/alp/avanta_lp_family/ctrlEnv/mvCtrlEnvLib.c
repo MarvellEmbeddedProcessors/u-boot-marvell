@@ -177,8 +177,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	mvCtrlSatrInit();
 
 	/* If set to Auto detect, read board config info, update Eth-Complex config, MPP group types and switch info */
-	if (mvBoardConfigAutoDetectEnabled())
-	{
+	if (mvBoardConfigAutoDetectEnabled()) {
 		mvCtrlSysConfigInit();
 		mvBoardInfoUpdate();
 	}

@@ -233,14 +233,14 @@ MV_BOARD_MAC_INFO db88f6660InfoBoardMacInfo[] = {
 MV_BOARD_MPP_TYPE_INFO db88f6660InfoBoardModTypeInfo[] = {
 	{
 		.boardMppSlic = MV_BOARD_AUTO,
-		.ethSataComplexOpt = (MV_ETH_COMPLEX_GE_MAC0_SW_P6 | MV_ETH_COMPLEX_GE_MAC1_RGMII1 | MV_ETH_COMPLEX_SW_P0_QUAD_PHY_P0 | \
-				MV_ETH_COMPLEX_SW_P3_QUAD_PHY_P3 | MV_ETH_COMPLEX_SW_P4_RGMII0),
+		.ethSataComplexOpt = (MV_ETHCOMP_GE_MAC0_2_SW_P6 | MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_SW_P0_2_GE_PHY_P0 | \
+				MV_ETHCOMP_SW_P3_2_GE_PHY_P3 | MV_ETHCOMP_SW_P4_2_RGMII0),
 		.ethPortsMode = 0x0
 	}
 };
 
-MV_BOARD_MPP_INFO db88f6660InfoBoardMppConfigValue = {
-	{
+MV_BOARD_MPP_INFO db88f6660InfoBoardMppConfigValue[] = {
+	{ {
 		  DB_88F6660_MPP0_7,
 		  DB_88F6660_MPP8_15,
 		  DB_88F6660_MPP16_23,
@@ -250,7 +250,7 @@ MV_BOARD_MPP_INFO db88f6660InfoBoardMppConfigValue = {
 		  DB_88F6660_MPP48_55,
 		  DB_88F6660_MPP56_63,
 		  DB_88F6660_MPP64_67,
-	 }
+	 } }
 };
 
 MV_BOARD_SWITCH_INFO db88f6660InfoBoardSwitchValue[] = {
@@ -269,7 +269,7 @@ MV_BOARD_INFO db88f6660_board_info = {
 	.boardName			= "DB-88F6660",
 	.numBoardMppTypeValue		= ARRSZ(db88f6660InfoBoardModTypeInfo),
 	.pBoardModTypeValue		= db88f6660InfoBoardModTypeInfo,
-	.pBoardMppConfigValue		= &db88f6660InfoBoardMppConfigValue,
+	.pBoardMppConfigValue		= db88f6660InfoBoardMppConfigValue,
 	.numBoardSerdesConfigValue	= 0,
 	.pBoardSerdesConfigValue	= 0,
 	.intsGppMaskLow			= 0,
@@ -378,8 +378,8 @@ MV_DEV_CS_INFO avanta_lp_customerInfoBoardDeCsInfo[] = {
 #endif
 };
 
-MV_BOARD_MPP_INFO avanta_lp_customerInfoBoardMppConfigValue = {
-	{
+MV_BOARD_MPP_INFO avanta_lp_customerInfoBoardMppConfigValue[] = {
+	{ {
 		  AVANTA_LP_CUSTOMER_MPP0_7,
 		  AVANTA_LP_CUSTOMER_MPP8_15,
 		  AVANTA_LP_CUSTOMER_MPP16_23,
@@ -389,7 +389,7 @@ MV_BOARD_MPP_INFO avanta_lp_customerInfoBoardMppConfigValue = {
 		  AVANTA_LP_CUSTOMER_MPP48_55,
 		  AVANTA_LP_CUSTOMER_MPP56_63,
 		  AVANTA_LP_CUSTOMER_MPP64_67,
-	 }
+	 } }
 };
 
 MV_SERDES_CFG avanta_lp_customerInfoBoardSerdesConfigValue[] = {
@@ -419,7 +419,7 @@ MV_BOARD_INFO avanta_lp_customer_board_info = {
 	.boardName				= "AvantaLP-CUSTOMER",
 	.numBoardMppTypeValue			= ARRSZ(avanta_lp_customerInfoBoardModTypeInfo),
 	.pBoardModTypeValue			= avanta_lp_customerInfoBoardModTypeInfo,
-	.pBoardMppConfigValue			= &avanta_lp_customerInfoBoardMppConfigValue,
+	.pBoardMppConfigValue			= avanta_lp_customerInfoBoardMppConfigValue,
 	.numBoardSerdesConfigValue		= ARRSZ(avanta_lp_customerInfoBoardSerdesConfigValue),
 	.pBoardSerdesConfigValue		= avanta_lp_customerInfoBoardSerdesConfigValue,
 	.intsGppMaskLow				= 0,

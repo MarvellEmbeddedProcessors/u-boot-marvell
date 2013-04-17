@@ -622,7 +622,7 @@ MV_STATUS mvCtrlEepromEnable(MV_BOOL enable)
 		return 	(mvBoardIoExpValSet(ioInfo, (enable? 0x1 : 0x0)));
 	}
 	mvOsPrintf("%s: Error: Read from IO expander failed (EEPROM enabled jumper)\n", __func__);
-	return MV_FALSE;
+	return MV_ERROR;
 }
 
 /*******************************************************************************
@@ -998,7 +998,7 @@ MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID)
 *
 * DESCRIPTION:
 *       This function returns 16bit describing the device model (ID) as defined
-*       in PCI Device and Vendor ID configuration register offset 0x0.
+*       in Vendor ID configuration register
 *
 * INPUT:
 *       None.
@@ -1035,7 +1035,7 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 *
 * DESCRIPTION:
 *       This function returns 8bit describing the device revision as defined
-*       in PCI Express Class Code and Revision ID Register.
+*       Revision ID Register.
 *
 * INPUT:
 *       None.
@@ -1049,31 +1049,10 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 *******************************************************************************/
 MV_U8 mvCtrlRevGet(MV_VOID)
 {
-	CTRL_ENV_INFO *ci = &ctrlEnvInfo;
-	MV_U8 revNum;
+	MV_U8 value;
 
-	if (ci->ctrlRev != MV_INVALID_CTRL_REV)
-		return ci->ctrlRev;
-
-#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
-	/* Check pex power state */
-	MV_U32 pexPower;
-	pexPower = mvCtrlPwrClckGet(PEX_UNIT_ID, 0);
-	if (pexPower == MV_FALSE)
-		mvCtrlPwrClckSet(PEX_UNIT_ID, 0, MV_TRUE);
-#endif
-
-	revNum = (MV_U8)MV_REG_READ(PEX_CFG_DIRECT_ACCESS(
-					    0, PCI_CLASS_CODE_AND_REVISION_ID));
-
-#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
-	/* Return to power off state */
-	if (pexPower == MV_FALSE)
-		mvCtrlPwrClckSet(PEX_UNIT_ID, 0, MV_FALSE);
-#endif
-
-	ci->ctrlRev = ((revNum & PCCRIR_REVID_MASK) >> PCCRIR_REVID_OFFS);
-	return ci->ctrlRev;
+	value = MV_REG_READ(DEVICE_VERSION_ID_REG);
+	return  ((value & (DEVICE_VERSION_ID_REG_REV_ID_MASK) ) >> DEVICE_VERSION_ID_REG_REV_ID_OFFS);
 }
 
 /*******************************************************************************

@@ -408,11 +408,13 @@ MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
+	MV_U32 value;
 #ifdef CONFIG_MACH_AVANTA_LP_FPGA
 	/* FPGA is limited to 25Mhz */
 	return MV_FPGA_CORE_CLK;
 #else
-	switch (mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT)) {
+	value = ((MV_REG_READ(MPP_SAMPLE_AT_RESET(1)) & (0x400000)) >> 22);
+	switch (value) {
 	case 0:
 		return _166MHz;
 	case 1:

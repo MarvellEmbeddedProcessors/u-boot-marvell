@@ -122,7 +122,7 @@ extern "C" {
 #define MV_ETH_RXQ_TOTAL_NUM                    32
 #define MV_VLAN_1_TYPE                          0x88A8
 #else
-	#define MV_ETH_BASE_ADDR                (0x70000)
+#define MV_ETH_BASE_ADDR			(0x70000)
 #endif /*MV_ETH_PP2*/
 
 #define MV_ETH_REGS_OFFSET(port)                (MV_ETH_BASE_ADDR - ((port) / 2) * 0x40000 + ((port) % 2) * 0x4000)
@@ -259,9 +259,9 @@ extern "C" {
 #define FREQ_MODES_NUM          29
 
 #define MPP_GROUP_0_TYPE { \
-		0x11111111,     /* NAND_V2_BOOT_DEVICE  */ \
-		0x00020020,     /* SPI_BOOT_DEVICE	*/ \
-		0x44024420,     /* SPI_BOOT_DEVICE & SPDIF Audio	*/ \
+	0x11111111,     /* NAND_V2_BOOT_DEVICE  */ \
+	0x00020020,     /* SPI_BOOT_DEVICE	*/ \
+	0x44024420,     /* SPI_BOOT_DEVICE & SPDIF Audio */ \
 }
 
 typedef enum {
@@ -271,18 +271,18 @@ typedef enum {
 } MV_GROUP_0_TYPE;
 
 #define MPP_GROUP_1_TYPE { \
-		0x22111111,     /* NAND_V2_BOOT_DEVICE  */ \
-		0x22000022,     /* SPI_BOOT_DEVICE	*/ \
-		0x22044022,     /* SPI_BOOT_DEVICE & SPDIF Audio	*/ \
+	0x22111111,     /* NAND_V2_BOOT_DEVICE  */ \
+	0x22000022,     /* SPI_BOOT_DEVICE	*/ \
+	0x22044022,     /* SPI_BOOT_DEVICE & SPDIF Audio	*/ \
 }
 
 #define MV_GROUP_1_TYPE         MV_GROUP_0_TYPE
 
 #define MPP_GROUP_2_TYPE { \
-		0x33030022,     /* SLIC_SSI_DEV  */ \
-		0x11110022,     /* SLIC_ISI_DEV  */ \
-		0x44440022,     /* SLIC_ZSI_DEV  */ \
-		0x22222222,     /* SLIC_EXTERNAL_DEV	*/ \
+	0x33030022,     /* SLIC_SSI_DEV  */ \
+	0x11110022,     /* SLIC_ISI_DEV  */ \
+	0x44440022,     /* SLIC_ZSI_DEV  */ \
+	0x22222222,     /* SLIC_EXTERNAL_DEV	*/ \
 }
 
 typedef enum {
@@ -293,10 +293,10 @@ typedef enum {
 } MV_GROUP_2_TYPE;
 
 #define MPP_GROUP_3_TYPE { \
-		0x22222222,     /* GE1  */ \
-		0x00333333,     /* SDIO	*/ \
-		0x33000000,     /* SPI1_BOOT	*/ \
-		0x33333333,     /* SDIO & SPI1	*/ \
+	0x22222222,     /* GE1  */ \
+	0x00333333,     /* SDIO	*/ \
+	0x33000000,     /* SPI1_BOOT	*/ \
+	0x33333333,     /* SDIO & SPI1	*/ \
 }
 
 typedef enum {
@@ -307,14 +307,14 @@ typedef enum {
 } MV_GROUP_3_TYPE;
 
 #define MPP_GROUP_4_TYPE { \
-		0x22222440,     /* GE1,  CPU SMI CONTROL,    TDM_LQ_UNIT */ \
-		0x22222444,     /* GE1,  CPU SMI CONTROL,    REF_CLK_OUT */ \
-		0x22222550,     /* GE1,  SWITCH SMI CONTROL, TDM_LQ_UNIT */ \
-		0x22222554,     /* GE1,  SWITCH SMI CONTROL, REF_CLK_OUT */ \
-		0x33332440,     /* SPI1, CPU SMI CONTROL,    TDM_LQ_UNIT */ \
-		0x33332444,     /* SPI1, CPU SMI CONTROL,    REF_CLK_OUT */ \
-		0x33332550,     /* SPI1, SWITCH SMI CONTROL, TDM_LQ_UNIT */ \
-		0x33332554,     /* SPI1, SWITCH SMI CONTROL, REF_CLK_OUT */ \
+	0x22222440,     /* GE1,  CPU SMI CONTROL,    TDM_LQ_UNIT */ \
+	0x22222444,     /* GE1,  CPU SMI CONTROL,    REF_CLK_OUT */ \
+	0x22222550,     /* GE1,  SWITCH SMI CONTROL, TDM_LQ_UNIT */ \
+	0x22222554,     /* GE1,  SWITCH SMI CONTROL, REF_CLK_OUT */ \
+	0x33332440,     /* SPI1, CPU SMI CONTROL,    TDM_LQ_UNIT */ \
+	0x33332444,     /* SPI1, CPU SMI CONTROL,    REF_CLK_OUT */ \
+	0x33332550,     /* SPI1, SWITCH SMI CONTROL, TDM_LQ_UNIT */ \
+	0x33332554,     /* SPI1, SWITCH SMI CONTROL, REF_CLK_OUT */ \
 }
 
 typedef enum {
@@ -329,10 +329,10 @@ typedef enum {
 } MV_GROUP_4_TYPE;
 
 #define MPP_GROUP_5_TYPE { \
-		0x22122220,     /* GE0      , PON_TX_FAULT */ \
-		0x22122222,     /* GE0      , PON_CLK_OUT */ \
-		0x44122220,     /* SWITCH_P4, PON_TX_FAULT	 */ \
-		0x44122222,     /* SWITCH_P4, PON_CLK_OUT	 */ \
+	0x22122220,     /* GE0      , PON_TX_FAULT */ \
+	0x22122222,     /* GE0      , PON_CLK_OUT */ \
+	0x44122220,     /* SWITCH_P4, PON_TX_FAULT	 */ \
+	0x44122222,     /* SWITCH_P4, PON_CLK_OUT	 */ \
 }
 typedef enum {
 	GE0_UNIT_PON_TX_FAULT,
@@ -342,8 +342,8 @@ typedef enum {
 } MV_GROUP_5_TYPE;
 
 #define MPP_GROUP_6_TYPE { \
-		0x22222222,     /* GE0  */ \
-		0x44444444,     /* SWITCH_P4	*/ \
+	0x22222222,     /* GE0  */ \
+	0x44444444,     /* SWITCH_P4	*/ \
 }
 
 typedef enum {
@@ -352,10 +352,10 @@ typedef enum {
 } MV_GROUP_6_TYPE;
 
 #define MPP_GROUP_7_TYPE { \
-		0x44444444,     /* SWITCH_P4 , LED_MATRIX       */ \
-		0x44444422,     /* GE0	     , LED_MATRIX       */ \
-		0x20220244,     /* SWITCH_P4 , UA1 ,  PTP       */ \
-		0x20220222,     /* GE0	     , UA1 ,  PTP       */ \
+	0x44444444,     /* SWITCH_P4 , LED_MATRIX       */ \
+	0x44444422,     /* GE0	     , LED_MATRIX       */ \
+	0x20220244,     /* SWITCH_P4 , UA1 ,  PTP       */ \
+	0x20220222,     /* GE0	     , UA1 ,  PTP       */ \
 }
 
 typedef enum {
@@ -374,15 +374,15 @@ typedef enum {
 } MV_GROUP_8_TYPE;
 
 #define MPP_GROUP_TYPES { \
-		MPP_GROUP_0_TYPE, \
-		MPP_GROUP_1_TYPE, \
-		MPP_GROUP_2_TYPE, \
-		MPP_GROUP_3_TYPE, \
-		MPP_GROUP_4_TYPE, \
-		MPP_GROUP_5_TYPE, \
-		MPP_GROUP_6_TYPE, \
-		MPP_GROUP_7_TYPE, \
-		MPP_GROUP_8_TYPE, \
+	MPP_GROUP_0_TYPE, \
+	MPP_GROUP_1_TYPE, \
+	MPP_GROUP_2_TYPE, \
+	MPP_GROUP_3_TYPE, \
+	MPP_GROUP_4_TYPE, \
+	MPP_GROUP_5_TYPE, \
+	MPP_GROUP_6_TYPE, \
+	MPP_GROUP_7_TYPE, \
+	MPP_GROUP_8_TYPE, \
 }
 
 /* This enumerator defines the Marvell Units ID      */
@@ -416,6 +416,7 @@ typedef enum _mvUnitId {
 	XPON_UNIT_ID,
 	BM_UNIT_ID,
 	PNC_UNIT_ID,
+	I2C_UNIT_ID,
 	MAX_UNITS_ID
 } MV_UNIT_ID;
 
@@ -455,22 +456,6 @@ typedef enum _mvTarget {
 	PEX0_IO,        /*  9 PCI Express 0 IO			*/
 	PEX1_MEM,       /* 10 PCI Express 1 Memory		*/
 	PEX1_IO,        /* 11 PCI Express 1 IO			*/
-	PEX2_MEM,       /* 12 PCI Express 2 Memory		*/
-	PEX2_IO,        /* 13 PCI Express 2 IO			*/
-	PEX3_MEM,       /* 14 PCI Express 3 Memory		*/
-	PEX3_IO,        /* 15 PCI Express 3 IO			*/
-	PEX4_MEM,       /* 16 PCI Express 4 Memory		*/
-	PEX4_IO,        /* 17 PCI Express 4 IO			*/
-	PEX5_MEM,       /* 18 PCI Express 5 Memory		*/
-	PEX5_IO,        /* 19 PCI Express 5 IO			*/
-	PEX6_MEM,       /* 20 PCI Express 6 Memory		*/
-	PEX6_IO,        /* 21 PCI Express 6 IO			*/
-	PEX7_MEM,       /* 22 PCI Express 7 Memory		*/
-	PEX7_IO,        /* 23 PCI Express 7 IO			*/
-	PEX8_MEM,       /* 24 PCI Express 8 Memory		*/
-	PEX8_IO,        /* 25 PCI Express 8 IO			*/
-	PEX9_MEM,       /* 26 PCI Express 9 Memory		*/
-	PEX9_IO,        /* 27 PCI Express 9 IO			*/
 	INTER_REGS,     /* 28 Internal registers		*/
 	DMA_UART,       /* 29 DMA based UART request		*/
 	SPI_CS0,        /* 30 SPI_CS0				*/
@@ -483,7 +468,6 @@ typedef enum _mvTarget {
 	SPI_CS7,        /* 37 SPI_CS7				*/
 	BOOT_ROM_CS,    /* 38 BOOT_ROM_CS			*/
 	DEV_BOOCS,      /* 39 DEV_BOOCS				*/
-	PMU_SCRATCHPAD, /* 40 PMU Scratchpad			*/
 	CRYPT0_ENG,     /* 41 Crypto0 Engine			*/
 	CRYPT1_ENG,     /* 42 Crypto1 Engine			*/
 	PNC_BM,         /* 43 PNC + BM				*/
@@ -510,99 +494,65 @@ typedef enum _mvTarget {
  #define SEC_BOOT_ATTR          0x2F    /* Boot Device CS */
 #endif
 
-#define TARGETS_DEF_ARRAY       {			\
-		{ DRAM_CS0_ATTR, DRAM_TARGET_ID   },    /* SDRAM_CS0 */	    \
-		{ DRAM_CS1_ATTR, DRAM_TARGET_ID   },    /* SDRAM_CS1 */	    \
-		{ DRAM_CS2_ATTR, DRAM_TARGET_ID   },    /* SDRAM_CS0 */	    \
-		{ DRAM_CS3_ATTR, DRAM_TARGET_ID   },    /* SDRAM_CS1 */	    \
-		{ 0x3E, DEV_TARGET_ID    },             /* DEVICE_CS0 */     \
-		{ 0x3D, DEV_TARGET_ID    },             /* DEVICE_CS1 */     \
-		{ 0x3B, DEV_TARGET_ID    },             /* DEVICE_CS2 */     \
-		{ 0x37, DEV_TARGET_ID    },             /* DEVICE_CS3 */     \
-		{ 0xE8, PEX0_2_TARGET_ID },             /* PEX0_LANE0_MEM */ \
-		{ 0xE0, PEX0_2_TARGET_ID },             /* PEX0_LANE0_IO */  \
-		{ 0xD8, PEX0_2_TARGET_ID },             /* PEX0_LANE1_MEM */ \
-		{ 0xD0, PEX0_2_TARGET_ID },             /* PEX0_LANE1_IO */  \
-		{ 0xB8, PEX0_2_TARGET_ID },             /* PEX0_LANE2_MEM */ \
-		{ 0xB0, PEX0_2_TARGET_ID },             /* PEX0_LANE2_IO */  \
-		{ 0x78, PEX0_2_TARGET_ID },             /* PEX0_LANE3_MEM */ \
-		{ 0x70, PEX0_2_TARGET_ID },             /* PEX0_LANE3_IO */  \
-		{ 0xE8, PEX1_3_TARGET_ID },             /* PEX1_LANE0_MEM */ \
-		{ 0xE0, PEX1_3_TARGET_ID },             /* PEX1_LANE0_IO */  \
-		{ 0xD8, PEX1_3_TARGET_ID },             /* PEX1_LANE1_MEM */ \
-		{ 0xD0, PEX1_3_TARGET_ID },             /* PEX1_LANE1_IO */  \
-		{ 0xB8, PEX1_3_TARGET_ID },             /* PEX1_LANE2_MEM */ \
-		{ 0xB0, PEX1_3_TARGET_ID },             /* PEX1_LANE2_IO */  \
-		{ 0x78, PEX1_3_TARGET_ID },             /* PEX1_LANE3_MEM */ \
-		{ 0x70, PEX1_3_TARGET_ID },             /* PEX1_LANE3_IO */  \
-		{ 0xF8, PEX0_2_TARGET_ID },             /* PEX2_LANE0_MEM */ \
-		{ 0xF0, PEX0_2_TARGET_ID },             /* PEX2_LANE0_IO */  \
-		{ 0xF8, PEX1_3_TARGET_ID },             /* PEX3_LANE0_MEM */ \
-		{ 0xF0, PEX1_3_TARGET_ID },             /* PEX3_LANE0_IO */  \
-		{ 0xFF, 0xFF             },             /* INTER_REGS */     \
-		{ 0x01, DEV_TARGET_ID    },             /* DMA_UART */	     \
-		{ 0x1E, DEV_TARGET_ID    },             /* SPI_CS0 */	     \
-		{ 0x5E, DEV_TARGET_ID    },             /* SPI_CS1 */	     \
-		{ 0x9E, DEV_TARGET_ID    },             /* SPI_CS2 */	     \
-		{ 0xDE, DEV_TARGET_ID    },             /* SPI_CS3 */	     \
-		{ 0x1F, DEV_TARGET_ID    },             /* SPI_CS4 */	     \
-		{ 0x5F, DEV_TARGET_ID    },             /* SPI_CS5 */	     \
-		{ 0x9F, DEV_TARGET_ID    },             /* SPI_CS6 */	     \
-		{ 0xDF, DEV_TARGET_ID    },             /* SPI_CS7 */	     \
-		{ MAIN_BOOT_ATTR, DEV_TARGET_ID    },   /* Main Boot device */	   \
-		{ SEC_BOOT_ATTR, DEV_TARGET_ID    },    /* Secondary Boot device, */	    \
-		{ 0x2D, DEV_TARGET_ID    },             /* PMU_SCRATCHPAD */ \
-		{ 0x01, CRYPT_TARGET_ID  },             /* CRYPT_ENG0 */     \
-		{ 0x05, CRYPT_TARGET_ID  },             /* CRYPT_ENG1 */     \
-		{ 0x00, PNC_BM_TARGET_ID },             /* PNC_BM */	     \
+#define TARGETS_DEF_ARRAY {                                                 \
+	{ DRAM_CS0_ATTR, DRAM_TARGET_ID },      /* SDRAM_CS0             */ \
+	{ DRAM_CS1_ATTR, DRAM_TARGET_ID },      /* SDRAM_CS1             */ \
+	{ DRAM_CS2_ATTR, DRAM_TARGET_ID },      /* SDRAM_CS0             */ \
+	{ DRAM_CS3_ATTR, DRAM_TARGET_ID },      /* SDRAM_CS1             */ \
+	{ 0x3E, DEV_TARGET_ID    },             /* DEVICE_CS0            */ \
+	{ 0x3D, DEV_TARGET_ID    },             /* DEVICE_CS1            */ \
+	{ 0x3B, DEV_TARGET_ID    },             /* DEVICE_CS2            */ \
+	{ 0x37, DEV_TARGET_ID    },             /* DEVICE_CS3            */ \
+	{ 0xE8, PEX_TARGET_ID    },             /* PEX0_LANE0_MEM        */ \
+	{ 0xE0, PEX_TARGET_ID    },             /* PEX0_LANE0_IO         */ \
+	{ 0xE8, PEX_TARGET_ID    },             /* PEX1_LANE0_MEM        */ \
+	{ 0xE0, PEX_TARGET_ID    },             /* PEX1_LANE0_IO         */ \
+	{ 0xFF, 0xFF             },             /* INTER_REGS            */ \
+	{ 0x01, DEV_TARGET_ID    },             /* DMA_UART              */ \
+	{ 0x1E, DEV_TARGET_ID    },             /* SPI_CS0               */ \
+	{ 0x5E, DEV_TARGET_ID    },             /* SPI_CS1               */ \
+	{ 0x9E, DEV_TARGET_ID    },             /* SPI_CS2               */ \
+	{ 0xDE, DEV_TARGET_ID    },             /* SPI_CS3               */ \
+	{ 0x1F, DEV_TARGET_ID    },             /* SPI_CS4               */ \
+	{ 0x5F, DEV_TARGET_ID    },             /* SPI_CS5               */ \
+	{ 0x9F, DEV_TARGET_ID    },             /* SPI_CS6               */ \
+	{ 0xDF, DEV_TARGET_ID    },             /* SPI_CS7               */ \
+	{ MAIN_BOOT_ATTR, DEV_TARGET_ID },      /* Main Boot device      */ \
+	{ SEC_BOOT_ATTR, DEV_TARGET_ID  },      /* Secondary Boot device */ \
+	{ 0x01, CRYPT_TARGET_ID  },             /* CRYPT_ENG0            */ \
+	{ 0x05, CRYPT_TARGET_ID  },             /* CRYPT_ENG1            */ \
+	{ 0x00, PNC_BM_TARGET_ID },             /* PNC_BM                */ \
 }
 
 #define CESA_TARGET_NAME_DEF    ("CRYPT_ENG0", "CRYPT_ENG1")
-#define TARGETS_NAME_ARRAY      {		\
-		"SDRAM_CS0",            /* SDRAM_CS0 */		\
-		"SDRAM_CS1",            /* SDRAM_CS1 */		\
-		"SDRAM_CS2",            /* SDRAM_CS1 */		\
-		"SDRAM_CS3",            /* SDRAM_CS1 */		\
-		"DEVICE_CS0",           /* DEVICE_CS0 */	\
-		"DEVICE_CS1",           /* DEVICE_CS1 */	\
-		"DEVICE_CS2",           /* DEVICE_CS2 */	\
-		"DEVICE_CS3",           /* DEVICE_CS3 */	\
-		"PEX0_MEM",             /* PEX0_MEM */		\
-		"PEX0_IO",              /* PEX0_IO */		\
-		"PEX1_MEM",             /* PEX1_MEM */		\
-		"PEX1_IO",              /* PEX1_IO */		\
-		"PEX2_MEM",             /* PEX2_MEM */		\
-		"PEX2_IO",              /* PEX2_IO */		\
-		"PEX3_MEM",             /* PEX3_MEM */		\
-		"PEX3_IO",              /* PEX3_IO */		\
-		"PEX4_MEM",             /* PEX4_MEM */		\
-		"PEX4_IO",              /* PEX4_IO */		\
-		"PEX5_MEM",             /* PEX5_MEM */		\
-		"PEX5_IO",              /* PEX5_IO */		\
-		"PEX6_MEM",             /* PEX6_MEM */		\
-		"PEX6_IO",              /* PEX6_IO */		\
-		"PEX7_MEM",             /* PEX7_MEM */		\
-		"PEX7_IO",              /* PEX7_IO */		\
-		"PEX8_MEM",             /* PEX8_MEM */		\
-		"PEX8_IO",              /* PEX8_IO */		\
-		"PEX9_MEM",             /* PEX9_MEM */		\
-		"PEX9_IO",              /* PEX9_IO */		\
-		"INTER_REGS",           /* INTER_REGS */	\
-		"DMA_UART",             /* DMA_UART */		\
-		"SPI_CS0",              /* SPI_CS0 */		\
-		"SPI_CS1",              /* SPI_CS1 */		\
-		"SPI_CS2",              /* SPI_CS2 */		\
-		"SPI_CS3",              /* SPI_CS3 */		\
-		"SPI_CS4",              /* SPI_CS4 */		\
-		"SPI_CS5",              /* SPI_CS5 */		\
-		"SPI_CS6",              /* SPI_CS6 */		\
-		"SPI_CS7",              /* SPI_CS7 */		\
-		"BOOT_ROM_CS",          /* BOOT_ROM_CS */	\
-		"DEV_BOOTCS",           /* DEV_BOOCS */		\
-		"PMU_SCRATCHPAD",       /* PMU_SCRATCHPAD */   \
-		"CRYPT1_ENG",           /* CRYPT1_ENG */	\
-		"CRYPT2_ENG",           /* CRYPT2_ENG */	\
-		"PNC_BM"                /* PNC_BM */		\
+#define TARGETS_NAME_ARRAY      {			\
+	"SDRAM_CS0",            /* SDRAM_CS0 */		\
+	"SDRAM_CS1",            /* SDRAM_CS1 */		\
+	"SDRAM_CS2",            /* SDRAM_CS1 */		\
+	"SDRAM_CS3",            /* SDRAM_CS1 */		\
+	"DEVICE_CS0",           /* DEVICE_CS0 */	\
+	"DEVICE_CS1",           /* DEVICE_CS1 */	\
+	"DEVICE_CS2",           /* DEVICE_CS2 */	\
+	"DEVICE_CS3",           /* DEVICE_CS3 */	\
+	"PEX0_MEM",             /* PEX0_MEM */		\
+	"PEX0_IO",              /* PEX0_IO */		\
+	"PEX1_MEM",             /* PEX1_MEM */		\
+	"PEX1_IO",              /* PEX1_IO */		\
+	"INTER_REGS",           /* INTER_REGS */	\
+	"DMA_UART",             /* DMA_UART */		\
+	"SPI_CS0",              /* SPI_CS0 */		\
+	"SPI_CS1",              /* SPI_CS1 */		\
+	"SPI_CS2",              /* SPI_CS2 */		\
+	"SPI_CS3",              /* SPI_CS3 */		\
+	"SPI_CS4",              /* SPI_CS4 */		\
+	"SPI_CS5",              /* SPI_CS5 */		\
+	"SPI_CS6",              /* SPI_CS6 */		\
+	"SPI_CS7",              /* SPI_CS7 */		\
+	"BOOT_ROM_CS",          /* BOOT_ROM_CS */	\
+	"DEV_BOOTCS",           /* DEV_BOOCS */		\
+	"CRYPT1_ENG",           /* CRYPT1_ENG */	\
+	"CRYPT2_ENG",           /* CRYPT2_ENG */	\
+	"PNC_BM"                /* PNC_BM */		\
 }
 
 #endif /* MV_ASMLANGUAGE */

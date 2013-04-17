@@ -161,57 +161,6 @@ MV_BOARD_IO_EXPANDER_TYPE_INFO db88f6650InfoBoardIOExpanderInfo[] = {
 };
 
 /*******************************************************************************
- * AvantaLP FPGA board
- */
-MV_BOARD_INFO avanta_lp_fpga_board_info = {
-	.boardName			= "CortexA9-FPGA",
-	.numBoardMppTypeValue		= 0,
-	.pBoardModTypeValue		= NULL,
-	.pBoardMppConfigValue		= NULL,
-	.numBoardSerdesConfigValue	= 0,
-	.pBoardSerdesConfigValue	= NULL,
-	.intsGppMaskLow			= 0,
-	.intsGppMaskMid			= 0,
-	.intsGppMaskHigh		= 0,
-	.numBoardDeviceIf		= 0,
-	.pDevCsInfo			= NULL,
-	.numBoardTwsiDev		= 0,
-	.pBoardTwsiDev			= NULL,
-	.numBoardMacInfo		= 0,
-	.pBoardMacInfo			= NULL,
-	.numBoardGppInfo		= 0,
-	.pBoardGppInfo			= NULL,
-	.activeLedsNumber		= 0,
-	.pLedGppPin			= NULL,
-	.ledsPolarity			= 0,
-
-	/* PMU Power */
-	.pmuPwrUpPolarity		= 0,
-	.pmuPwrUpDelay			= 0,
-
-	/* GPP values */
-	.gppOutEnValLow			= 0,
-	.gppOutEnValMid			= 0,
-	.gppOutEnValHigh		= 0,
-	.gppOutValLow			= 0,
-	.gppOutValMid			= 0,
-	.gppOutValHigh			= 0,
-	.gppPolarityValLow		= 0,
-	.gppPolarityValMid		= 0,
-	.gppPolarityValHigh		= 0,
-
-	/* TDM */
-	.numBoardTdmInfo		= {},
-	.pBoardTdmInt2CsInfo		= {},
-	.boardTdmInfoIndex		= -1,
-
-	/* NAND init params */
-	.nandFlashReadParams		= 0,
-	.nandFlashWriteParams		= 0,
-	.nandFlashControl		= 0,
-};
-
-/*******************************************************************************
  * AvantaLP DB-88F6660 board */
 /*******************************************************************************/
 
@@ -237,6 +186,13 @@ MV_BOARD_MPP_TYPE_INFO db88f6660InfoBoardModTypeInfo[] = {
 				MV_ETHCOMP_SW_P3_2_GE_PHY_P3 | MV_ETHCOMP_SW_P4_2_RGMII0),
 		.ethPortsMode = 0x0
 	}
+};
+
+MV_DEV_CS_INFO db88f6660InfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 } /* SPI DEV */
+#endif
 };
 
 MV_BOARD_MPP_INFO db88f6660InfoBoardMppConfigValue[] = {
@@ -270,13 +226,11 @@ MV_BOARD_INFO db88f6660_board_info = {
 	.numBoardMppTypeValue		= ARRSZ(db88f6660InfoBoardModTypeInfo),
 	.pBoardModTypeValue		= db88f6660InfoBoardModTypeInfo,
 	.pBoardMppConfigValue		= db88f6660InfoBoardMppConfigValue,
-	.numBoardSerdesConfigValue	= 0,
-	.pBoardSerdesConfigValue	= 0,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
-	.numBoardDeviceIf		= 0,
-	.pDevCsInfo			= 0,
+	.numBoardDeviceIf		= ARRSZ(db88f6660InfoBoardDeCsInfo),
+	.pDevCsInfo			= db88f6660InfoBoardDeCsInfo,
 	.numBoardIoExpanderInfo		= ARRSZ(db88f6660InfoBoardIOExpanderInfo),
 	.pBoardIoExpanderInfo		= db88f6660InfoBoardIOExpanderInfo,
 	.numBoardTwsiDev		= ARRSZ(db88f6660InfoBoardTwsiDev),
@@ -326,16 +280,185 @@ MV_BOARD_INFO db88f6660_board_info = {
 	.configAutoDetect		= MV_TRUE
 };
 
+/*******************************************************************************
+ * AvantaLP DB-88F6650 board */
+/*******************************************************************************/
+
+MV_BOARD_TWSI_INFO db88f6650InfoBoardTwsiDev[] = {
+	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{ BOARD_DEV_TWSI_SATR,		0,	0x4C,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4D,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_EEPROM,	0,	0x54,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_IO_EXPANDER,	0,	0x21,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_IO_EXPANDER,	2,	0x24,	   ADDR7_BIT	},
+};
+MV_BOARD_MAC_INFO db88f6650InfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x4									},
+	{ BOARD_MAC_SPEED_AUTO, 0x1									},
+	{ N_A,			N_A									}
+};
+MV_BOARD_MPP_TYPE_INFO db88f6650InfoBoardModTypeInfo[] = {
+	{
+		.boardMppSlic = MV_BOARD_AUTO,
+		.ethSataComplexOpt = (MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0),
+		.ethPortsMode = 0x0
+	}
+};
+
+MV_DEV_CS_INFO db88f6650InfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 } /* SPI DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO db88f6650InfoBoardMppConfigValue[] = {
+	{ {
+		  DB_88F6650_MPP0_7,
+		  DB_88F6650_MPP8_15,
+		  DB_88F6650_MPP16_23,
+		  DB_88F6650_MPP24_31,
+		  DB_88F6650_MPP32_39,
+		  DB_88F6650_MPP40_47,
+		  DB_88F6650_MPP48_55,
+		  DB_88F6650_MPP56_63,
+		  DB_88F6650_MPP64_67,
+	 } }
+};
+
+MV_BOARD_SWITCH_INFO db88f6650InfoBoardSwitchValue[] = {
+	{
+	 .switchIrq = 29,	/* set to -1 for timer operation */
+	 .switchPort = {0, 1, 2, 3, 4, -1, -1},
+	 .cpuPort = 6,
+	 .connectedPort = {6, -1},
+	 .internalQuadPhyAddr = 0,
+	 .connectedPortMask= ( BIT0| BIT1| BIT2| BIT3| BIT4| BIT6),
+	 .forceLinkMask = 0x0
+	 }
+};
+
+MV_BOARD_INFO db88f6650_board_info = {
+	.boardName			= "DB-88F6650",
+	.numBoardMppTypeValue		= ARRSZ(db88f6650InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= db88f6650InfoBoardModTypeInfo,
+	.pBoardMppConfigValue		= db88f6650InfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(db88f6650InfoBoardDeCsInfo),
+	.pDevCsInfo			= db88f6650InfoBoardDeCsInfo,
+	.numBoardIoExpanderInfo		= ARRSZ(db88f6650InfoBoardIOExpanderInfo),
+	.pBoardIoExpanderInfo		= db88f6650InfoBoardIOExpanderInfo,
+	.numBoardTwsiDev		= ARRSZ(db88f6650InfoBoardTwsiDev),
+	.pBoardTwsiDev			= db88f6650InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(db88f6650InfoBoardMacInfo),
+	.pBoardMacInfo			= db88f6650InfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= 0,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow			= DB_88F6650_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= DB_88F6650_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= DB_88F6650_GPP_OUT_ENA_HIGH,
+	.gppOutValLow			= DB_88F6650_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= DB_88F6650_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= DB_88F6650_GPP_OUT_VAL_HIGH,
+	.gppPolarityValLow		= DB_88F6650_GPP_POL_LOW,
+	.gppPolarityValMid		= DB_88F6650_GPP_POL_MID,
+	.gppPolarityValHigh		= DB_88F6650_GPP_POL_HIGH,
+
+	/* External Switch Configuration */
+	.pSwitchInfo = db88f6650InfoBoardSwitchValue,
+	.switchInfoNum = ARRSZ(db88f6650InfoBoardSwitchValue),
+
+	/* TDM */
+	.numBoardTdmInfo		= {},
+	.pBoardTdmInt2CsInfo		= {},
+	.boardTdmInfoIndex		= -1,
+
+	.pBoardSpecInit			= NULL,
+
+	/* NAND init params */
+	.nandFlashReadParams		= 0,
+	.nandFlashWriteParams		= 0,
+	.nandFlashControl		= 0,
+	/* NOR init params */
+	.norFlashReadParams		= 0,
+	.norFlashWriteParams		= 0,
+	/* Enable modules auto-detection. */
+	.configAutoDetect		= MV_TRUE
+};
+
+/*******************************************************************************
+ * AvantaLP RD-88F6650 board */
+/*******************************************************************************/
 MV_BOARD_INFO rd88f6650_board_info = {
 
 };
 
-MV_BOARD_INFO db88f6650_board_info = {
+/*******************************************************************************
+ * AvantaLP RD-88F6660 board */
+/*******************************************************************************/
+MV_BOARD_INFO rd88f6660_board_info = {
 
 };
 
-MV_BOARD_INFO rd88f6660_board_info = {
+/*******************************************************************************
+ * AvantaLP FPGA board
+*******************************************************************************/
+MV_BOARD_INFO avanta_lp_fpga_board_info = {
+	.boardName			= "CortexA9-FPGA",
+	.numBoardMppTypeValue		= 0,
+	.pBoardModTypeValue		= NULL,
+	.pBoardMppConfigValue		= NULL,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= 0,
+	.pDevCsInfo			= NULL,
+	.numBoardTwsiDev		= 0,
+	.pBoardTwsiDev			= NULL,
+	.numBoardMacInfo		= 0,
+	.pBoardMacInfo			= NULL,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= NULL,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
 
+	/* PMU Power */
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 0,
+
+	/* GPP values */
+	.gppOutEnValLow			= 0,
+	.gppOutEnValMid			= 0,
+	.gppOutEnValHigh		= 0,
+	.gppOutValLow			= 0,
+	.gppOutValMid			= 0,
+	.gppOutValHigh			= 0,
+	.gppPolarityValLow		= 0,
+	.gppPolarityValMid		= 0,
+	.gppPolarityValHigh		= 0,
+
+	/* TDM */
+	.numBoardTdmInfo		= {},
+	.pBoardTdmInt2CsInfo		= {},
+	.boardTdmInfoIndex		= -1,
+
+	/* NAND init params */
+	.nandFlashReadParams		= 0,
+	.nandFlashWriteParams		= 0,
+	.nandFlashControl		= 0,
 };
 
 /*******************************************************************************
@@ -392,36 +515,11 @@ MV_BOARD_MPP_INFO avanta_lp_customerInfoBoardMppConfigValue[] = {
 	 } }
 };
 
-MV_SERDES_CFG avanta_lp_customerInfoBoardSerdesConfigValue[] = {
-	{       /* default */
-		MV_TRUE,
-		0x00223001,
-		0x11111111,
-		PEX_BUS_MODE_X1,
-		PEX_BUS_DISABLED,
-		PEX_BUS_MODE_X4,
-		PEX_BUS_MODE_X4,
-		0x00000030
-	},
-	{       /* Switch module */
-		MV_TRUE,
-		0x33320201,
-		0x11111111,
-		PEX_BUS_MODE_X1,
-		PEX_BUS_DISABLED,
-		PEX_BUS_MODE_X4,
-		PEX_BUS_MODE_X4,
-		0x00000030
-	},
-};
-
 MV_BOARD_INFO avanta_lp_customer_board_info = {
 	.boardName				= "AvantaLP-CUSTOMER",
 	.numBoardMppTypeValue			= ARRSZ(avanta_lp_customerInfoBoardModTypeInfo),
 	.pBoardModTypeValue			= avanta_lp_customerInfoBoardModTypeInfo,
 	.pBoardMppConfigValue			= avanta_lp_customerInfoBoardMppConfigValue,
-	.numBoardSerdesConfigValue		= ARRSZ(avanta_lp_customerInfoBoardSerdesConfigValue),
-	.pBoardSerdesConfigValue		= avanta_lp_customerInfoBoardSerdesConfigValue,
 	.intsGppMaskLow				= 0,
 	.intsGppMaskMid				= 0,
 	.intsGppMaskHigh			= 0,
@@ -475,4 +573,5 @@ MV_BOARD_INFO *boardInfoTbl[] = {
 	&rd88f6660_board_info,
 	&db88f6660_board_info,
 	&avanta_lp_fpga_board_info,
+	&avanta_lp_customer_board_info,
 };

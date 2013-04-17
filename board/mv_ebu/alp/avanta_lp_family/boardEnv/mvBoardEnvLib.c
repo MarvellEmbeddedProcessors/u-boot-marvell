@@ -873,7 +873,7 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 		mvBoardMppTypeSet(5, GE0_UNIT_PON_TX_FAULT);
 		mvBoardMppTypeSet(6, GE0_UNIT);
 		mvBoardMppTypeSet(7, GE0_UNIT_LED_MATRIX);      /* omriii :when to use GE0_UNIT_UA1_PTP */
-	}else if ( (ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_SW_P4) == MV_TRUE) {
+	}else if ( (ethComplexOptions & MV_ETHCOMP_SW_P4_2_RGMII0) == MV_TRUE) {
 		mvBoardMppTypeSet(5, SWITCH_P4_PON_TX_FAULT);
 		mvBoardMppTypeSet(6, SWITCH_P4);
 		mvBoardMppTypeSet(7, SWITCH_P4_LED_MATRIX); /* omriii : when to use SWITCH_P4_UA1_PTP */
@@ -2622,70 +2622,6 @@ MV_32 mvBoardSwitchPortMap(MV_U32 switchIdx, MV_U32 switchPortNum)
 
 	mvOsPrintf("%s: Error: switch port map not found\n", __func__);
 	return -1;
-}
-
-/*******************************************************************************
-* mvBoardIsSerdesConfigurationEnabled
-*
-* DESCRIPTION:
-*       Check if Serdes configuration is enabled on this board.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_STATUS - MV_OK, MV_ERROR.
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsSerdesConfigurationEnabled(void)
-{
-	if (board->pBoardSerdesConfigValue)
-		return board->pBoardSerdesConfigValue->enableSerdesConfiguration;
-	else
-		return MV_FALSE;
-}
-
-/*******************************************************************************
-* mvBoardSerdesConfigurationEnableSet
-*
-* DESCRIPTION:
-*	Check if Serdes configuration is enabled on this board.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_STATUS - MV_OK, MV_ERROR.
-*
-*******************************************************************************/
-MV_STATUS mvBoardSerdesConfigurationEnableSet(MV_BOOL enableSerdesConfiguration)
-{
-	return MV_ERROR;
-}
-
-/*******************************************************************************
-* mvBoardSerdesCfgGet
-*
-* DESCRIPTION:
-*
-* INPUT:
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       SERDES configuration structure or NULL on error
-*
-*******************************************************************************/
-MV_SERDES_CFG *mvBoardSerdesCfgGet(void)
-{
-	return NULL;
 }
 
 /*******************************************************************************

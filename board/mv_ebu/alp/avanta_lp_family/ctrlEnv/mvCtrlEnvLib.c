@@ -598,6 +598,34 @@ MV_BOOL mvCtrlIsEepromEnabled()
 }
 
 /*******************************************************************************
+* mvCtrlEepromEnable
+*
+* DESCRIPTION:
+*       This function enable/disable the Eeprom usage
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_BOOL :  MV_TRUE if EEPROM enabled, else return MV_FALSE.
+*
+*******************************************************************************/
+MV_STATUS mvCtrlEepromEnable(MV_BOOL enable)
+{
+	MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo = NULL;
+
+	if(mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_JUMPER1_EEPROM_ENABLED ,ioInfo))
+	{
+		return 	(mvBoardIoExpValSet(ioInfo, (enable? 0x1 : 0x0)));
+	}
+	mvOsPrintf("%s: Error: Read from IO expander failed (EEPROM enabled jumper)\n", __func__);
+	return MV_FALSE;
+}
+
+/*******************************************************************************
 * mvCtrlDevFamilyIdGet - Get Device ID
 *
 * DESCRIPTION:

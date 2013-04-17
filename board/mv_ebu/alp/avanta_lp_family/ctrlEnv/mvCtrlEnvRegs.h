@@ -280,24 +280,8 @@ typedef struct {
 	((target >= PEX0_MEM) && (target <= PEX0_IO))
 #define MV_TARGET_IS_PEX1(target)   \
 	((target >= PEX1_MEM) && (target <= PEX1_IO))
-#define MV_TARGET_IS_PEX2(target)   \
-	((target >= PEX2_MEM) && (target <= PEX2_IO))
-#define MV_TARGET_IS_PEX3(target)   \
-	((target >= PEX3_MEM) && (target <= PEX3_IO))
-#define MV_TARGET_IS_PEX4(target)   \
-	((target >= PEX4_MEM) && (target <= PEX4_IO))
-#define MV_TARGET_IS_PEX5(target)   \
-	((target >= PEX5_MEM) && (target <= PEX5_IO))
-#define MV_TARGET_IS_PEX6(target)   \
-	((target >= PEX6_MEM) && (target <= PEX6_IO))
-#define MV_TARGET_IS_PEX7(target)   \
-	((target >= PEX7_MEM) && (target <= PEX7_IO))
-#define MV_TARGET_IS_PEX8(target)   \
-	((target >= PEX8_MEM) && (target <= PEX8_IO))
-#define MV_TARGET_IS_PEX9(target)   \
-	((target >= PEX9_MEM) && (target <= PEX9_IO))
 
-#define MV_TARGET_IS_PEX(target)        ((target >= PEX0_MEM) && (target <= PEX9_IO))
+#define MV_TARGET_IS_PEX(target)        ((target >= PEX0_MEM) && (target <= PEX1_IO))
 
 #define MV_TARGET_IS_DEVICE(target)     ((target >= DEVICE_CS0) && (target <= DEVICE_CS3))
 
@@ -308,14 +292,14 @@ typedef struct {
 
 #define PCI_IF0_MEM0            PEX0_MEM
 
-/* This enumerator defines the Marvell controller target ID  (see Address map) */
+/* This enumerator defines the Marvell controller target ID (see Address map) */
 typedef enum _mvTargetId {
-	DRAM_TARGET_ID      = 0,        /* Port 0 -> DRAM interface		*/
-	DEV_TARGET_ID       = 1,        /* Port 1 -> Device port, BootROM, SPI	*/
-	PEX0_2_TARGET_ID    = 4,        /* Port 4 -> PCI Express 0 and 2	*/
-	PEX1_3_TARGET_ID    = 8,        /* Port 4 -> PCI Express 1 and 3	*/
-	CRYPT_TARGET_ID     = 9,        /* Port 9 --> Crypto Engine SRAM	*/
-	PNC_BM_TARGET_ID    = 12,       /* Port 12 -> PNC + BM Unit		*/
+	DRAM_TARGET_ID   = 0,  /* Port 0  -> DRAM interface             */
+	DEV_TARGET_ID    = 1,  /* Port 1  -> Device bus, BootROM, SPI, UART,
+				*	     GPIO, MPP, and Miscellaneous */
+	PEX_TARGET_ID    = 4,  /* Port 4  -> PCI Express 0 and 1        */
+	CRYPT_TARGET_ID  = 9,  /* Port 9  -> Crypto Engine SRAM         */
+	PNC_BM_TARGET_ID = 12, /* Port 12 -> PNC + BM Unit              */
 	MAX_TARGETS_ID
 } MV_TARGET_ID;
 

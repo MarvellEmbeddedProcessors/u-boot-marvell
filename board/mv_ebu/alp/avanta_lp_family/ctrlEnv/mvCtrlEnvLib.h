@@ -271,6 +271,7 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID);
 MV_BOOL mvCtrlIsValidSatR(MV_VOID);
 MV_BOOL mvCtrlIsEepromEnabled(MV_VOID);
 MV_STATUS mvCtrlBoardConfigGet(MV_U8 *tempVal);
+MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit);
 MV_STATUS mvCtrlEnvInit(MV_VOID);
 MV_U32    mvCtrlMppRegGet(MV_U32 mppGroup);
 

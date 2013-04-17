@@ -130,6 +130,9 @@ extern "C" {
 #define DEVICE_ID_REG_VEND_ID_MASK               0xFFFF
 #define DEVICE_ID_REG_DEV_ID_OFFS                16
 #define DEVICE_ID_REG_DEV_ID_MASK                0xFFFF0000
+#define DEVICE_VERSION_ID_REG                    0x1823C
+#define DEVICE_VERSION_ID_REG_REV_ID_OFFS        8
+#define DEVICE_VERSION_ID_REG_REV_ID_MASK        0xF00
 
 /* SYSRSTn Length Counter */
 #define SYSRST_LENGTH_COUNTER_REG               0x18250

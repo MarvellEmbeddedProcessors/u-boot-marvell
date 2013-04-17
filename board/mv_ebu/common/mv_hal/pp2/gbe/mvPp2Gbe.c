@@ -156,12 +156,24 @@ MV_STATUS mvPp2HalInit(MV_PP2_HAL_DATA *halData)
 
 	/* Allocate physical TXQs */
 	status = mvPp2PhysTxqsAlloc();
+	if (status != MV_OK) {
+		mvOsPrintf("%s: mvPp2PhysTxqsAlloc failed\n", __func__);
+		return status;
+	}
 
 	/* Allocate aggregated TXQs */
 	status = mvPp2AggrTxqsAlloc(mvPp2HalData.maxCPUs);
+	if (status != MV_OK) {
+		mvOsPrintf("%s: mvPp2AggrTxqsAlloc failed\n", __func__);
+		return status;
+	}
 
 	/* Allocate physical RXQs */
 	status = mvPp2PhysRxqsAlloc();
+	if (status != MV_OK) {
+		mvOsPrintf("%s: mvPp2PhysRxqsAlloc failed\n", __func__);
+		return status;
+	}
 
 	mvBmInit();
 
@@ -796,13 +808,12 @@ void mvPp2TxpReset(int port, int txp)
 		mvPp2WrReg(MV_PP2_TXQ_INDEX_REG, 0);
 	}
 }
-
-/*
- * Allocate and initialize port structure.
- * Allocate an initialize TXQs for this port.
- * Associate <numRxqs> RXQs for Port number <port>, starting from RXQ number <firstRxq>.
- * Note: mvPp2PortCtrl must be initialized, i.e. must call mvPp2HalInit before this function.
- */
+/*-------------------------------------------------------------------------------*/
+/* Port */
+/* Allocate and initialize port structure
+   Alocate an initialize TXQs for this port
+   Associate <numRxqs> RXQs for Port number <port>, starting from RXQ number <firstRxq>
+   Note: mvPp2PortCtrl must be initialized, i.e. must call mvPp2HalInit before this function */
 void *mvPp2PortInit(int port, int firstRxq, int numRxqs, void *osHandle)
 {
 	MV_STATUS status;
@@ -1271,7 +1282,7 @@ MV_STATUS mvPp2TxpBurstSet(int port, int txp, int burst)
 		size = MV_PP2_TXP_TOKEN_SIZE_MAX;
 
 	/* Token bucket size must be larger then MTU */
-	mtu = mvPp2RdReg(MV_PP2_TXP_SCHED_TOKEN_SIZE_REG);
+	mtu = mvPp2RdReg(MV_PP2_TXP_SCHED_MTU_REG);
 	if (mtu > size) {
 		mvOsPrintf("%s Error: Bucket size (%d bytes) < MTU (%d bytes)\n",
 					__func__, (size / 8), (mtu / 8));

@@ -72,64 +72,66 @@ extern "C" {
 #define MV_PP2_PLCR_NUM		16
 
 /*********************************** RX Policer Registers *******************/
-#define MV_PP2_PLCR_ENABLE_REG				(MV_PP2_REG_BASE + 0x1300)
+#define MV_PP2_PLCR_ENABLE_REG                  (MV_PP2_REG_BASE + 0x1300)
 
-#define MV_PP2_PLCR_EN_OFFS					0
-#define MV_PP2_PLCR_EN_ALL_MASK				(((1 << MV_PP2_PLCR_NUM) - 1) << MV_PP2_PLCR_EN_OFFS)
-#define MV_PP2_PLCR_EN_MASK(plcr)			((1 << (plcr)) << MV_PP2_PLCR_EN_OFFS)
+#define MV_PP2_PLCR_EN_OFFS                     0
+#define MV_PP2_PLCR_EN_ALL_MASK                 (((1 << MV_PP2_PLCR_NUM) - 1) << MV_PP2_PLCR_EN_OFFS)
+#define MV_PP2_PLCR_EN_MASK(plcr)               ((1 << (plcr)) << MV_PP2_PLCR_EN_OFFS)
 /*---------------------------------------------------------------------------------------------*/
 
-#define MV_PP2_PLCR_BASE_PERIOD_REG			(MV_PP2_REG_BASE + 0x1304)
+#define MV_PP2_PLCR_BASE_PERIOD_REG             (MV_PP2_REG_BASE + 0x1304)
 
-#define MV_PP2_PLCR_BASE_PERIOD_OFFS		0
-#define MV_PP2_PLCR_BASE_PERIOD_BITS		16
-#define MV_PP2_PLCR_BASE_PERIOD_ALL_MASK	(((1 << MV_PP2_PLCR_BASE_PERIOD_BITS) - 1) << MV_PP2_PLCR_BASE_PERIOD_OFFS)
-#define MV_PP2_PLCR_BASE_PERIOD_MASK(p)		(((p) << MV_PP2_PLCR_BASE_PERIOD_OFFS) & MV_PP2_PLCR_BASE_PERIOD_ALL_MASK)
+#define MV_PP2_PLCR_BASE_PERIOD_OFFS            0
+#define MV_PP2_PLCR_BASE_PERIOD_BITS            16
+#define MV_PP2_PLCR_BASE_PERIOD_ALL_MASK        (((1 << MV_PP2_PLCR_BASE_PERIOD_BITS) - 1) << MV_PP2_PLCR_BASE_PERIOD_OFFS)
+#define MV_PP2_PLCR_BASE_PERIOD_MASK(p)         (((p) << MV_PP2_PLCR_BASE_PERIOD_OFFS) & MV_PP2_PLCR_BASE_PERIOD_ALL_MASK)
 
-#define MV_PP2_PLCR_ADD_TOKENS_EN_BIT		16
-#define MV_PP2_PLCR_ADD_TOKENS_EN_MASK      (1 << MV_PP2_PLCR_ADD_TOKENS_EN_BIT)
+#define MV_PP2_PLCR_ADD_TOKENS_EN_BIT           16
+#define MV_PP2_PLCR_ADD_TOKENS_EN_MASK          (1 << MV_PP2_PLCR_ADD_TOKENS_EN_BIT)
 /*---------------------------------------------------------------------------------------------*/
 
-#define MV_PP2_PLCR_TABLE_INDEX_REG			(MV_PP2_REG_BASE + 0x130c)
+#define MV_PP2_PLCR_TABLE_INDEX_REG		(MV_PP2_REG_BASE + 0x130c)
 #define MV_PP2_PLCR_COMMIT_TOKENS_REG		(MV_PP2_REG_BASE + 0x1310)
 #define MV_PP2_PLCR_EXCESS_TOKENS_REG		(MV_PP2_REG_BASE + 0x1314)
 /*---------------------------------------------------------------------------------------------*/
 
-#define MV_PP2_PLCR_BUCKET_SIZE_REG			(MV_PP2_REG_BASE + 0x1318)
+#define MV_PP2_PLCR_BUCKET_SIZE_REG		(MV_PP2_REG_BASE + 0x1318)
 
 #define MV_PP2_PLCR_COMMIT_SIZE_OFFS		0
 #define MV_PP2_PLCR_COMMIT_SIZE_BITS		16
 #define MV_PP2_PLCR_COMMIT_SIZE_ALL_MASK	(((1 << MV_PP2_PLCR_COMMIT_SIZE_BITS) - 1) << MV_PP2_PLCR_COMMIT_SIZE_OFFS)
-#define MV_PP2_PLCR_COMMIT_SIZE_MASK(size)  (((size)	<< MV_PP2_PLCR_COMMIT_SIZE_OFFS) & MV_PP2_PLCR_COMMIT_SIZE_ALL_MASK)
+#define MV_PP2_PLCR_COMMIT_SIZE_MASK(size)      (((size) << MV_PP2_PLCR_COMMIT_SIZE_OFFS) & MV_PP2_PLCR_COMMIT_SIZE_ALL_MASK)
 
 #define MV_PP2_PLCR_EXCESS_SIZE_OFFS		16
 #define MV_PP2_PLCR_EXCESS_SIZE_BITS		16
 #define MV_PP2_PLCR_EXCESS_SIZE_ALL_MASK	(((1 << MV_PP2_PLCR_EXCESS_SIZE_BITS) - 1) << MV_PP2_PLCR_EXCESS_SIZE_OFFS)
-#define MV_PP2_PLCR_EXCESS_SIZE_MASK(size)  (((size) << MV_PP2_PLCR_EXCESS_SIZE_OFFS) & MV_PP2_PLCR_EXCESS_SIZE_ALL_MASK)
+#define MV_PP2_PLCR_EXCESS_SIZE_MASK(size)      (((size) << MV_PP2_PLCR_EXCESS_SIZE_OFFS) & MV_PP2_PLCR_EXCESS_SIZE_ALL_MASK)
 /*---------------------------------------------------------------------------------------------*/
 
-#define MV_PP2_PLCR_TOKEN_CFG_REG			(MV_PP2_REG_BASE + 0x131c)
+#define MV_PP2_PLCR_TOKEN_CFG_REG		(MV_PP2_REG_BASE + 0x131c)
 
 #define MV_PP2_PLCR_TOKEN_VALUE_OFFS		0
 #define MV_PP2_PLCR_TOKEN_VALUE_BITS		10
 #define MV_PP2_PLCR_TOKEN_VALUE_ALL_MASK	(((1 << MV_PP2_PLCR_TOKEN_VALUE_BITS) - 1) << MV_PP2_PLCR_TOKEN_VALUE_OFFS)
 #define MV_PP2_PLCR_TOKEN_VALUE_MASK(val)	(((val) << MV_PP2_PLCR_TOKEN_VALUE_OFFS) & MV_PP2_PLCR_TOKEN_VALUE_ALL_MASK)
 
-#define MV_PP2_PLCR_TOKEN_TYPE_OFFS			12
-#define MV_PP2_PLCR_TOKEN_TYPE_BITS			3
+#define MV_PP2_PLCR_TOKEN_TYPE_OFFS		12
+#define MV_PP2_PLCR_TOKEN_TYPE_BITS		3
 #define MV_PP2_PLCR_TOKEN_TYPE_ALL_MASK		(((1 << MV_PP2_PLCR_TOKEN_TYPE_BITS) - 1) << MV_PP2_PLCR_TOKEN_TYPE_OFFS)
 #define MV_PP2_PLCR_TOKEN_TYPE_MASK(type)	(((type) << MV_PP2_PLCR_TOKEN_TYPE_OFFS) & MV_PP2_PLCR_TOKEN_TYPE_ALL_MASK)
 
-#define MV_PP2_PLCR_TOKEN_UNIT_BIT			31
-#define MV_PP2_PLCR_TOKEN_UNIT_MASK			(1 << MV_PP2_PLCR_TOKEN_UNIT_BIT)
+#define MV_PP2_PLCR_TOKEN_UNIT_BIT		31
+#define MV_PP2_PLCR_TOKEN_UNIT_MASK		(1 << MV_PP2_PLCR_TOKEN_UNIT_BIT)
 #define MV_PP2_PLCR_TOKEN_UNIT_BYTES		(0 << MV_PP2_PLCR_TOKEN_UNIT_BIT)
-#define MV_PP2_PLCR_TOKEN_UNIT_PKTS			(1 << MV_PP2_PLCR_TOKEN_UNIT_BIT)
+#define MV_PP2_PLCR_TOKEN_UNIT_PKTS		(1 << MV_PP2_PLCR_TOKEN_UNIT_BIT)
 
-#define MV_PP2_PLCR_COLOR_MODE_BIT			30
-#define MV_PP2_PLCR_COLOR_MODE_MASK			(1 << MV_PP2_PLCR_COLOR_MODE_BIT)
+#define MV_PP2_PLCR_COLOR_MODE_BIT		30
+#define MV_PP2_PLCR_COLOR_MODE_MASK		(1 << MV_PP2_PLCR_COLOR_MODE_BIT)
+#define MV_PP2_PLCR_COLOR_MODE_BLIND            (0 << MV_PP2_PLCR_COLOR_MODE_BIT)
+#define MV_PP2_PLCR_COLOR_MODE_AWARE            (1 << MV_PP2_PLCR_COLOR_MODE_BIT)
 /*---------------------------------------------------------------------------------------------*/
 
-#define MV_PP2_PLCR_MIN_PKT_LEN_REG			(MV_PP2_REG_BASE + 0x1320)
+#define MV_PP2_PLCR_MIN_PKT_LEN_REG		(MV_PP2_REG_BASE + 0x1320)
 
 #define MV_PP2_PLCR_MIN_PKT_LEN_OFFS		0
 #define MV_PP2_PLCR_MIN_PKT_LEN_BITS		8
@@ -137,16 +139,16 @@ extern "C" {
 #define MV_PP2_PLCR_MIN_PKT_LEN_MASK(len)	(((len) << MV_PP2_PLCR_MIN_PKT_LEN_OFFS) & MV_PP2_PLCR_MIN_PKT_LEN_ALL_MASK)
 /*---------------------------------------------------------------------------------------------*/
 
-#define MV_PP2_PLCR_EDROP_EN_REG			(MV_PP2_REG_BASE + 0x1330)
+#define MV_PP2_PLCR_EDROP_EN_REG		(MV_PP2_REG_BASE + 0x1330)
 
-#define MV_PP2_PLCR_EDROP_EN_BIT			0
-#define MV_PP2_PLCR_EDROP_EN_MASK			(1 << MV_PP2_PLCR_EDROP_EN_BIT)
+#define MV_PP2_PLCR_EDROP_EN_BIT		0
+#define MV_PP2_PLCR_EDROP_EN_MASK		(1 << MV_PP2_PLCR_EDROP_EN_BIT)
 /*---------------------------------------------------------------------------------------------*/
 
 #define MV_PP2_PLCR_EDROP_THRESH_NUM		4
 
 #define MV_PP2_PLCR_EDROP_TR_OFFS(i)		((i % 2) ? 16 : 0)
-#define MV_PP2_PLCR_EDROP_TR_BITS			16
+#define MV_PP2_PLCR_EDROP_TR_BITS		16
 #define MV_PP2_PLCR_EDROP_TR_ALL_MASK(i)	(((1 << MV_PP2_PLCR_EDROP_TR_BITS) - 1) << MV_PP2_PLCR_EDROP_TR_OFFS(i))
 #define MV_PP2_PLCR_EDROP_TR_MASK(i, tr)	(((tr) << MV_PP2_PLCR_EDROP_TR_OFFS(i)) & MV_PP2_PLCR_EDROP_TR_ALL_MASK(i))
 
@@ -154,11 +156,11 @@ extern "C" {
 #define MV_PP2_PLCR_EDROP_HWF_TR_REG(i)		(MV_PP2_REG_BASE + 0x1350 + (((i) / 2) << 2))
 /*---------------------------------------------------------------------------------------------*/
 
-#define MV_PP2_PLCR_EDROP_RXQ_REG			(MV_PP2_REG_BASE + 0x1348)
+#define MV_PP2_PLCR_EDROP_RXQ_REG		(MV_PP2_REG_BASE + 0x1348)
 #define MV_PP2_PLCR_EDROP_RXQ_TR_REG		(MV_PP2_REG_BASE + 0x134c)
 /*---------------------------------------------------------------------------------------------*/
 
-#define MV_PP2_PLCR_EDROP_TXQ_REG			(MV_PP2_REG_BASE + 0x1358)
+#define MV_PP2_PLCR_EDROP_TXQ_REG		(MV_PP2_REG_BASE + 0x1358)
 #define MV_PP2_PLCR_EDROP_TXQ_TR_REG		(MV_PP2_REG_BASE + 0x135c)
 /*---------------------------------------------------------------------------------------------*/
 
@@ -179,7 +181,6 @@ MV_STATUS   mvPp2PlcrHwCpuThreshSet(int idx, int threshold);
 MV_STATUS   mvPp2PlcrHwHwfThreshSet(int idx, int threshold);
 MV_STATUS   mvPp2PlcrHwRxqThreshSet(int rxq, int idx);
 MV_STATUS   mvPp2PlcrHwTxqThreshSet(int txq, int idx);
-
 
 #ifdef __cplusplus
 }

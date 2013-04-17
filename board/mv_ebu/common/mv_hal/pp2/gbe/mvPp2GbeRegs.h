@@ -583,7 +583,7 @@ typedef struct pp2_rx_desc {
 #define PP2_RX_BUF_HDR_MASK                	(1 << PP2_RX_BUF_HDR_BIT)
 
 /* status field MACROs */
-#define PP2_RX_L3_IS_IP4(status)		(((status) & PP2_RX_L3_MASK) == PP2_RX_L3_IP4) 
+#define PP2_RX_L3_IS_IP4(status)		(((status) & PP2_RX_L3_MASK) == PP2_RX_L3_IP4)
 #define PP2_RX_L3_IS_IP4_OPT(status)		(((status) & PP2_RX_L3_MASK) == PP2_RX_L3_IP4_OPT)
 #define PP2_RX_L3_IS_IP4_OTHER(status)		(((status) & PP2_RX_L3_MASK) == PP2_RX_L3_IP4_OTHER)
 #define PP2_RX_L3_IS_IP6(status)		(((status) & PP2_RX_L3_MASK) == PP2_RX_L3_IP6)
@@ -594,19 +594,29 @@ typedef struct pp2_rx_desc {
 #define PP2_RX_IP4_FRG(status)			((status) & PP2_RX_IP_FRAG_MASK)
 #define PP2_RX_L4_CHK_OK(status)		((status) & PP2_RX_L4_CHK_OK_MASK)
 
-/* Bits of "parserInfo" field */
+/* Sub fields of "parserInfo" field */
 #define PP2_RX_LKP_ID_OFFS              	0
-#define PP2_RX_LKP_ID_BITS			6				
+#define PP2_RX_LKP_ID_BITS			6
 #define PP2_RX_LKP_ID_MASK              	(((1 << PP2_RX_LKP_ID_BITS) - 1) << PP2_RX_LKP_ID_OFFS)
 
 #define PP2_RX_CPU_CODE_OFFS			6
-#define PP2_RX_CPU_CODE_MASK			((0x7) << PP2_RX_CPU_CODE_OFFS)
-#define PP2_RX_SPECIAL				(1 << PP2_RX_CPU_CODE_OFFS)
-#define PP2_RX_IS_RX_SPECIAL(parserInfo)	(((parserInfo) & PP2_RX_CPU_CODE_MASK) == PP2_RX_SPECIAL)
+#define PP2_RX_CPU_CODE_BITS			3
+#define PP2_RX_CPU_CODE_MASK			(((1 << PP2_RX_CPU_CODE_BITS) - 1) << PP2_RX_CPU_CODE_OFFS)
 
-#define PP2_RX_PRS_INFO_OFFS            	6
-#define PP2_RX_PRS_INFO_BITS			10				
-#define PP2_RX_PRS_INFO_MASK            	(((1 << PP2_RX_PRS_INFO_BITS) - 1) << PP2_RX_PRS_INFO_OFFS)
+#define PP2_RX_PPPOE_BIT                        9
+#define PP2_RX_PPPOE_MASK                       (1 << PP2_RX_PPPOE_BIT)
+
+#define PP2_RX_L3_CAST_OFFS                     10
+#define PP2_RX_L3_CAST_BITS                     2
+#define PP2_RX_L3_CAST_MASK                     (((1 << PP2_RX_L3_CAST_BITS) - 1) << PP2_RX_L3_CAST_OFFS)
+
+#define PP2_RX_L2_CAST_OFFS                     12
+#define PP2_RX_L2_CAST_BITS                     2
+#define PP2_RX_L2_CAST_MASK                     (((1 << PP2_RX_L2_CAST_BITS) - 1) << PP2_RX_L2_CAST_OFFS)
+
+#define PP2_RX_VLAN_INFO_OFFS                   14
+#define PP2_RX_VLAN_INFO_BITS                   2
+#define PP2_RX_VLAN_INFO_MASK                   (((1 << PP2_RX_VLAN_INFO_BITS) - 1) << PP2_RX_VLAN_INFO_OFFS)
 /*-------------------------------------------------------------------------------*/
 
 /* TXQ */
@@ -617,11 +627,8 @@ typedef struct pp2_tx_desc {
 	MV_U16 dataSize;
 	MV_U32 bufPhysAddr;
 	MV_U32 bufCookie;
-	MV_U16 ponHwCmd;
-	MV_U16 initialCsumL4;
-	MV_U16 reserved;
-	MV_U16 modifyInfo[3];
-	MV_U32 reserved2;
+	MV_U32 hwCmd[3];
+	MV_U32 reserved;
 } PP2_TX_DESC;
 
 /* Bits of "command" field */
@@ -659,6 +666,72 @@ typedef struct pp2_tx_desc {
 
 #define PP2_TX_F_DESC_BIT			29
 #define PP2_TX_F_DESC_MASK			(1 << PP2_TX_F_DESC_BIT)
+
+/* Bits of "hwCmd[0]" field - offset 0x10 */
+#define PP2_TX_GEMPID_OFFS                      0
+#define PP2_TX_GEMPID_BITS                      12
+#define PP2_TX_GEMPID_ALL_MASK                  (((1 << PP2_TX_GEMPID_BITS) - 1) << PP2_TX_GEMPID_OFFS)
+#define PP2_TX_GEMPID_MASK(gpid)                (((gpid) & PP2_TX_GEMPID_ALL_MASK) << PP2_TX_GEMPID_OFFS)
+
+#define PP2_TX_COLOR_OFFS                       12
+#define PP2_TX_COLOR_ALL_MASK                   (0x3 << PP2_TX_COLOR_OFFS)
+#define PP2_TX_COLOR_GREEN                      0
+#define PP2_TX_COLOR_YELLOW                     1
+#define PP2_TX_COLOR_MASK(col)                  (((col) & PP2_TX_COLOR_ALL_MASK) << PP2_TX_COLOR_OFFS)
+
+#define PP2_TX_DSA_OFFS                         14
+#define PP2_TX_DSA_ALL_MASK                     (0x3 << PP2_TX_DSA_OFFS)
+#define PP2_TX_DSA_NONE                         0
+#define PP2_TX_DSA_TAG                          1
+#define PP2_TX_EDSA_TAG                         2
+#define PP2_TX_DSA_MASK(dsa)                    (((dsa) & PP2_TX_DSA_ALL_MASK) << PP2_TX_DSA_OFFS)
+
+#define PP2_TX_L4_CSUM_INIT_OFFS                16
+#define PP2_TX_L4_CSUM_INIT_MASK                (0xffff << PP2_TX_L4_CSUM_INIT_OFFS)
+
+/* Bits of "hwCmd[1]" field - offset 0x14 */
+
+/* bits 0..15 are reserved */
+#define PP2_TX_MOD_DSCP_OFFS                    16
+#define PP2_TX_MOD_DSCP_BITS                    6
+#define PP2_TX_MOD_DSCP_MASK                    (((1 << PP2_TX_MOD_DSCP_BITS) - 1) << PP2_TX_MOD_DSCP_OFFS)
+
+#define PP2_TX_MOD_PRIO_OFFS                    22
+#define PP2_TX_MOD_PRIO_BITS                    3
+#define PP2_TX_MOD_PRIO_MASK                    (((1 << PP2_TX_MOD_PRIO_BITS) - 1) << PP2_TX_MOD_PRIO_OFFS)
+
+#define PP2_TX_MOD_DSCP_EN_BIT                  25
+#define PP2_TX_MOD_DSCP_EN_MASK                 (1 << PP2_TX_MOD_DSCP_EN_BIT)
+
+#define PP2_TX_MOD_PRIO_EN_BIT                  26
+#define PP2_TX_MOD_PRIO_EN_MASK                 (1 << PP2_TX_MOD_PRIO_EN_BIT)
+
+#define PP2_TX_MOD_GEMPID_EN_BIT                27
+#define PP2_TX_MOD_GEMPID_EN_MASK               (1 << PP2_TX_MOD_GEMPID_EN_BIT)
+
+/* Bits of "hwCmd[2]" field - offset 0x18 */
+#define PP2_TX_PME_DPTR_OFFS                    0
+#define PP2_TX_PME_DPTR_ALL_MASK                (0xffff << PP2_TX_PME_DPTR_OFFS)
+#define PP2_TX_PME_DPTR_MASK(val)               (((val) & PP2_TX_PME_DPTR_ALL_MASK) << PP2_TX_PME_DPTR_OFFS)
+
+#define PP2_TX_PME_IPTR_OFFS                    16
+#define PP2_TX_PME_IPTR_ALL_MASK                (0xff << PP2_TX_PME_IPTR_OFFS)
+#define PP2_TX_PME_IPTR_MASK(val)               (((val) & PP2_TX_PME_IPTR_ALL_MASK) << PP2_TX_PME_IPTR_OFFS)
+
+/* Bit 24 - HWF_IDB is for HWF usage only */
+
+#define PP2_TX_GEM_OEM_BIT                      25
+#define PP2_TX_GEM_OEM_MASK                     (1 << PP2_TX_GEM_OEM_BIT)
+
+/* Bit 26 - ERROR_SUM is for HWF usage only */
+
+#define PP2_TX_PON_FEC_BIT                      27
+#define PP2_TX_PON_FEC_MASK                     (1 << PP2_TX_PON_FEC_BIT)
+
+#define PP2_TX_CPU_MAP_OFFS                     28
+#define PP2_TX_CPU_MAP_BITS                     4
+#define PP2_TX_CPU_MAP_MASK                     (((1 << PP2_TX_CPU_MAP_BITS) - 1) << PP2_TX_CPU_MAP_OFFS)
+
 
 /************************** Buffer Header defines ******************************/
 typedef struct pp2_buff_hdr {

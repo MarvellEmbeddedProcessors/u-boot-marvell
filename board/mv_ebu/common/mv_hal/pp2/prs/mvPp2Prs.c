@@ -119,9 +119,20 @@ static int mvPrsDblVlanAiFreeGet(void)
 /******************************************************************************
  * Common utilities
  ******************************************************************************/
-/*
- * Helper: match ethertype
- */
+static bool mvPp2PrsEtypeEquals(MV_PP2_PRS_ENTRY *pe, int offset, unsigned short ethertype)
+{
+	unsigned char etype[MV_ETH_TYPE_LEN];
+
+	PRS_DBG("%s\n", __func__);
+	etype[0] =  (ethertype >> 8) & 0xFF;
+	etype[1] =  ethertype & 0xFF;
+
+	if (mvPp2PrsSwTcamBytesIgnorMaskCmp(pe, offset, MV_ETH_TYPE_LEN, etype) == NOT_EQUALS)
+		return MV_FALSE;
+
+	return MV_TRUE;
+}
+
 static void mvPp2PrsMatchEtype(MV_PP2_PRS_ENTRY *pe, int offset, unsigned short ethertype)
 {
 	PRS_DBG("%s\n", __func__);
@@ -145,10 +156,58 @@ static void mvPp2PrsMatchMh(MV_PP2_PRS_ENTRY *pe, unsigned short mh)
  ******************************************************************************
  */
 
-static MV_PP2_PRS_ENTRY *mvPrsMacDaFind(unsigned char *da)
+static bool mvPrsMacRangeEquals(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
+{
+	int		index;
+	unsigned char 	tcamByte, tcamMask;
+
+	for (index = 0; index < MV_MAC_ADDR_SIZE; index++) {
+		mvPp2PrsSwTcamByteGet(pe, MV_ETH_MH_SIZE + index, &tcamByte, &tcamMask);
+		if (tcamMask != mask[index])
+			return	MV_FALSE;
+
+		if ((tcamMask & tcamByte) != (da[index] & mask[index]))
+			return MV_FALSE;
+	}
+
+	return MV_TRUE;
+}
+
+static bool mvPrsMacRangeIntersec(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
+{
+	int		index;
+	unsigned char 	tcamByte, tcamMask, commonMask;
+
+	for (index = 0; index < MV_MAC_ADDR_SIZE; index++) {
+		mvPp2PrsSwTcamByteGet(pe, MV_ETH_MH_SIZE + index, &tcamByte, &tcamMask);
+
+		commonMask = mask[index] & tcamMask;
+
+
+		if ((commonMask & tcamByte) != (commonMask & da[index]))
+			return MV_FALSE;
+	}
+	return MV_TRUE;
+}
+
+static bool mvPrsMacInRange(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
+{
+	int		index;
+	unsigned char 	tcamByte, tcamMask;
+
+	for (index = 0; index < MV_MAC_ADDR_SIZE; index++) {
+		mvPp2PrsSwTcamByteGet(pe, MV_ETH_MH_SIZE + index, &tcamByte, &tcamMask);
+		if ((tcamByte & mask[index]) != (da[index] & mask[index]))
+			return MV_FALSE;
+	}
+
+	return MV_TRUE;
+}
+
+static MV_PP2_PRS_ENTRY *mvPrsMacDaRangeFind(int portMap, unsigned char *da, unsigned char *mask, int udfType)
 {
 	MV_PP2_PRS_ENTRY *pe;
-	int tid;
+	int tid, entryPmap;
 
 	pe = mvPp2PrsSwAlloc(PRS_LU_MAC);
 
@@ -157,25 +216,96 @@ static MV_PP2_PRS_ENTRY *mvPrsMacDaFind(unsigned char *da)
 		if ((!mvPp2PrsShadowIsValid(tid)) || (mvPp2PrsShadowLu(tid) != PRS_LU_MAC))
 			continue;
 
+		if (mvPp2PrsShadowUdf(tid) != udfType)
+			continue;
+
 		pe->index = tid;
 		mvPp2PrsHwRead(pe);
-		if (mvPp2PrsSwTcamBytesIgnorMaskCmp(pe, MV_ETH_MH_SIZE, MV_MAC_ADDR_SIZE, da) == EQUALS)
+
+		mvPp2PrsSwTcamPortMapGet(pe, &entryPmap);
+
+		if (mvPrsMacRangeEquals(pe, da, mask) && (entryPmap == portMap))
 			return pe;
 	}
 	mvPp2PrsSwFree(pe);
 	return NULL;
+
 }
 
-/* Accept special MAC DA - 6 bytes */
+static MV_PP2_PRS_ENTRY *mvPrsMacDaFind(int port, unsigned char *da)
+{
+	unsigned char mask[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+
+	/* Scan TCAM and see if entry with this <MAC DA, port> already exist */
+	return mvPrsMacDaRangeFind((1 << port), da, mask, PRS_UDF_MAC_DEF);
+}
+
+static int mvPrsMacDaRangeAccept(int portMap, MV_U8 *da, MV_U8 *mask, unsigned int ri, unsigned int riMask, bool finish)
+{
+	int	tid, len;
+	MV_PP2_PRS_ENTRY *pe = NULL;
+
+	/* Scan TCAM and see if entry with this <MAC DA, port> already exist */
+	pe = mvPrsMacDaRangeFind(portMap, da, mask, PRS_UDF_MAC_RANGE);
+
+	if (pe == NULL) {
+		/* entry not exist */
+		/* find last simple mac entry*/
+		for (tid = PE_LAST_FREE_TID ; tid >= PE_FIRST_FREE_TID; tid--)
+			if (mvPp2PrsShadowIsValid(tid) && (mvPp2PrsShadowLu(tid) == PRS_LU_MAC) &&
+				(mvPp2PrsShadowUdf(tid) == PRS_UDF_MAC_DEF))
+					break;
+
+		/* Go through the all entires from first to last */
+		tid = mvPp2PrsTcamFirstFree(tid + 1, PE_LAST_FREE_TID);
+
+		/* Can't add - No free TCAM entries */
+		if (tid == MV_PRS_OUT_OF_RAGE) {
+			mvOsPrintf("%s: No free TCAM entiry\n", __func__);
+			mvPp2PrsSwFree(pe);
+			return MV_ERROR;
+		}
+
+		pe = mvPp2PrsSwAlloc(PRS_LU_MAC);
+		pe->index = tid;
+		mvPp2PrsSwTcamPortMapSet(pe, portMap);
+		/* shift to ethertype */
+		mvPp2PrsSwSramShiftSet(pe, MV_ETH_MH_SIZE + 2 * MV_MAC_ADDR_SIZE, SRAM_OP_SEL_SHIFT_ADD);
+
+		/* set DA range */
+		len = MV_MAC_ADDR_SIZE;
+
+		while (len--)
+			mvPp2PrsSwTcamByteSet(pe, MV_ETH_MH_SIZE + len, da[len], mask[len]);
+
+		/* Update mvPrsShadowTbl */
+		mvPp2PrsShadowSet(pe->index, PRS_LU_MAC, "mac-range");
+		mvPp2PrsShadowUdfSet(pe->index, PRS_UDF_MAC_RANGE);
+
+	}
+
+	/* Set result info bits */
+	mvPp2PrsSwSramRiUpdate(pe, ri, riMask);
+	finish ? mvPp2PrsSwSramFlowidGenSet(pe) : mvPp2PrsSwSramFlowidGenClear(pe);
+
+	/* Write entry to TCAM */
+	mvPp2PrsHwWrite(pe);
+
+	mvPp2PrsSwFree(pe);
+	return MV_OK;
+}
+
+/* TODO: use mvPrsMacDaRangeAccept */
 int mvPrsMacDaAccept(int port, unsigned char *da, int add)
 {
 	MV_PP2_PRS_ENTRY *pe = NULL;
-	unsigned int     len, ports;
+	unsigned int     len, ports, ri;
 	int              tid;
-	char             *name;
+	char name[PRS_TEXT_SIZE];
 
-	/* Scan TCAM and see if entry with this MAC DA already exist */
-	pe = mvPrsMacDaFind(da);
+	/* Scan TCAM and see if entry with this <MAC DA, port> already exist */
+	pe = mvPrsMacDaFind(port, da);
+
 	if (pe == NULL) {
 		/* No such entry */
 		if (!add) {
@@ -184,12 +314,19 @@ int mvPrsMacDaAccept(int port, unsigned char *da, int add)
 		}
 		/* Create new TCAM entry */
 
+		/* find last range mac entry*/
+		for (tid = PE_FIRST_FREE_TID ; tid <= PE_LAST_FREE_TID; tid++)
+			if (mvPp2PrsShadowIsValid(tid) && (mvPp2PrsShadowLu(tid) == PRS_LU_MAC) &&
+				(mvPp2PrsShadowUdf(tid) == PRS_UDF_MAC_RANGE))
+					break;
+
 		/* Go through the all entires from first to last */
-		tid = mvPp2PrsTcamFirstFree(0, MV_PP2_PRS_TCAM_SIZE - 1);
+		tid = mvPp2PrsTcamFirstFree(0, tid - 1);
 
 		/* Can't add - No free TCAM entries */
 		if (tid == MV_PRS_OUT_OF_RAGE) {
 			mvOsPrintf("%s: No free TCAM entiry\n", __func__);
+			mvPp2PrsSwFree(pe);
 			return MV_ERROR;
 		}
 
@@ -205,12 +342,14 @@ int mvPrsMacDaAccept(int port, unsigned char *da, int add)
 
 	if (ports == 0) {
 		if (add) {
+			mvPp2PrsSwFree(pe);
 			/* Internal error, port should be set in ports bitmap */
 			return MV_ERROR;
 		}
 		/* No ports - invalidate the entry */
 		mvPp2PrsHwInv(pe->index);
 		mvPp2PrsShadowClear(pe->index);
+		mvPp2PrsSwFree(pe);
 		return MV_OK;
 
 	}
@@ -225,18 +364,20 @@ int mvPrsMacDaAccept(int port, unsigned char *da, int add)
 
 	/* Set result info bits */
 	if (MV_IS_BROADCAST_MAC(da)) {
-		mvPp2PrsSwSramRiUpdate(pe, RI_L2_BCAST, RI_L2_CAST_MASK);
-		name = "bcast";
-	/*TODO - remove mcast ,  handled in mvPrsMacAllMultiSet */
+		ri = RI_L2_BCAST | RI_MAC_ME_MASK;
+		mvOsSPrintf(name, "bcast-port-%d", port);
+
 	} else if (MV_IS_MULTICAST_MAC(da)) {
-		mvPp2PrsSwSramRiUpdate(pe, RI_L2_MCAST, RI_L2_CAST_MASK);
-		name = "mcast";
+		ri = RI_L2_MCAST | RI_MAC_ME_MASK;
+		mvOsSPrintf(name, "mcast-port-%d", port);
 	} else {
-		mvPp2PrsSwSramRiUpdate(pe, RI_L2_UCAST, RI_L2_CAST_MASK);
-		name = "ucast";
+		ri = RI_L2_UCAST | RI_MAC_ME_MASK;
+		mvOsSPrintf(name, "ucast-port-%d", port);
 	}
 
-	mvPp2PrsSwSramRiSetBit(pe, RI_MAC_ME_BIT);
+	/*mvPp2PrsSwSramRiSetBit(pe, RI_MAC_ME_BIT);*/
+	mvPp2PrsSwSramRiUpdate(pe, ri, RI_L2_CAST_MASK | RI_MAC_ME_MASK);
+	mvPp2PrsShadowRiSet(pe->index, ri, RI_L2_CAST_MASK | RI_MAC_ME_MASK);
 
 	/* shift to ethertype */
 	mvPp2PrsSwSramShiftSet(pe, MV_ETH_MH_SIZE + 2 * MV_MAC_ADDR_SIZE, SRAM_OP_SEL_SHIFT_ADD);
@@ -246,8 +387,143 @@ int mvPrsMacDaAccept(int port, unsigned char *da, int add)
 
 	/* Update mvPrsShadowTbl */
 	mvPp2PrsShadowSet(pe->index, PRS_LU_MAC, name);
+	mvPp2PrsShadowUdfSet(pe->index, PRS_UDF_MAC_DEF);
 
 	mvPp2PrsSwFree(pe);
+	return MV_OK;
+}
+
+
+static int mvPrsMacDaRangeValid(unsigned int portMap, MV_U8 *da, MV_U8 *mask)
+{
+	MV_PP2_PRS_ENTRY pe;
+	unsigned int entryPmap;
+	int tid;
+
+	for (tid = PE_LAST_FREE_TID ; tid >= PE_FIRST_FREE_TID; tid--) {
+		if (!mvPp2PrsShadowIsValid(tid) || (mvPp2PrsShadowLu(tid) != PRS_LU_MAC) ||
+			(mvPp2PrsShadowUdf(tid) != PRS_UDF_MAC_RANGE))
+				continue;
+
+		pe.index = tid;
+		mvPp2PrsHwRead(&pe);
+
+		mvPp2PrsSwTcamPortMapGet(&pe, &entryPmap);
+
+		if ((mvPrsMacRangeIntersec(&pe, da, mask)) & !mvPrsMacRangeEquals(&pe, da, mask)) {
+			if (entryPmap & portMap) {
+				mvOsPrintf("%s: operation not supported, range intersection\n", __func__);
+				mvOsPrintf("%s: user must delete portMap 0x%x from entry %d.\n",
+					__func__, entryPmap & portMap, tid);
+				return MV_ERROR;
+			}
+
+		} else if (mvPrsMacRangeEquals(&pe, da, mask) && (entryPmap != portMap) && (entryPmap & portMap)) {
+			mvOsPrintf("%s: operation not supported, range intersection\n", __func__);
+			mvOsPrintf("%s: user must delete portMap 0x%x from entry %d.\n", __func__, entryPmap & portMap, tid);
+
+			return MV_ERROR;
+		}
+	}
+	return MV_OK;
+}
+
+int mvPrsMacDaRangeSet(unsigned int portMap, MV_U8 *da, MV_U8 *mask, unsigned int ri, unsigned int riMask, bool finish)
+{
+	MV_PP2_PRS_ENTRY pe;
+	int tid;
+	unsigned int entryPmap;
+	bool done = MV_FALSE;
+
+	/* step 1 - validation, ranges intersections are forbidden*/
+	if (mvPrsMacDaRangeValid(portMap, da, mask))
+		return MV_ERROR;
+
+	/* step 2 - update TCAM */
+	for (tid = PE_LAST_FREE_TID ; tid >= PE_FIRST_FREE_TID; tid--) {
+		if (!mvPp2PrsShadowIsValid(tid) || !(mvPp2PrsShadowLu(tid) == PRS_LU_MAC))
+			continue;
+
+		pe.index = tid;
+		mvPp2PrsHwRead(&pe);
+		mvPp2PrsSwTcamPortMapGet(&pe, &entryPmap);
+
+		if ((mvPp2PrsShadowUdf(tid) == PRS_UDF_MAC_RANGE) &&
+			mvPrsMacRangeEquals(&pe, da, mask) && (entryPmap == portMap)) {
+				/* portMap and range are equals to TCAM entry*/
+				done = MV_TRUE;
+				mvPp2PrsSwSramRiUpdate(&pe, ri, riMask);
+				finish ? mvPp2PrsSwSramFlowidGenSet(&pe) : mvPp2PrsSwSramFlowidGenClear(&pe);
+				mvPp2PrsHwWrite(&pe);
+				continue;
+		}
+
+		/* PRS_UDF_MAC_DEF */
+		if (mvPrsMacInRange(&pe, da, mask) && (entryPmap & portMap)) {
+			mvPp2PrsSwSramRiUpdate(&pe, ri, riMask);
+			finish ? mvPp2PrsSwSramFlowidGenSet(&pe) : mvPp2PrsSwSramFlowidGenClear(&pe);
+			mvPp2PrsHwWrite(&pe);
+		}
+	}
+	/* step 3 - Add new range entry */
+	if (!done)
+		return mvPrsMacDaRangeAccept(portMap, da, mask, ri, riMask, finish);
+
+	return MV_OK;
+
+}
+
+int mvPrsMacDaRangeDel(unsigned int portMap, MV_U8 *da, MV_U8 *mask)
+{
+	MV_PP2_PRS_ENTRY pe;
+	int tid;
+	unsigned int entryPmap;
+	bool found = MV_FALSE;
+
+	for (tid = PE_LAST_FREE_TID ; tid >= PE_FIRST_FREE_TID; tid--) {
+		if (!mvPp2PrsShadowIsValid(tid) || !(mvPp2PrsShadowLu(tid) == PRS_LU_MAC))
+			continue;
+
+		pe.index = tid;
+		mvPp2PrsHwRead(&pe);
+		mvPp2PrsSwTcamPortMapGet(&pe, &entryPmap);
+
+		/* differents ports */
+		if (!(entryPmap & portMap))
+			continue;
+
+		if ((mvPp2PrsShadowUdf(tid) == PRS_UDF_MAC_RANGE) && (mvPrsMacRangeEquals(&pe, da, mask))) {
+
+			found = MV_TRUE;
+			entryPmap &= ~portMap;
+
+			if (!entryPmap) {
+				/* delete entry */
+				mvPp2PrsHwInv(pe.index);
+				mvPp2PrsShadowClear(pe.index);
+				continue;
+			}
+
+			/* update port map */
+			mvPp2PrsSwTcamPortMapSet(&pe, entryPmap);
+			mvPp2PrsHwWrite(&pe);
+			continue;
+		}
+
+		/* PRS_UDF_MAC_RANGE */
+		if (!found) {
+			/* range entry not exist */
+			mvOsPrintf("%s: Error, entry not found\n", __func__);
+			return MV_ERROR;
+		}
+
+		/* range entry allready found, now fix all relevant default entries*/
+		if (mvPrsMacInRange(&pe, da, mask)) {
+			mvPp2PrsSwSramFlowidGenClear(&pe);
+			mvPp2PrsSwSramRiSet(&pe, mvPp2PrsShadowRi(tid), mvPp2PrsShadowRiMask(tid));
+			mvPp2PrsHwWrite(&pe);
+		}
+	}
 	return MV_OK;
 }
 
@@ -376,7 +652,7 @@ int mvPrsMacAllMultiSet(int port, int add)
 	return MV_OK;
 }
 
-int mvPrsMhRxSpecialSet(int port, int add, unsigned short mh)
+int mvPrsMhRxSpecialSet(int port, unsigned short mh, int add)
 {
 	MV_PP2_PRS_ENTRY pe;
 
@@ -704,13 +980,7 @@ int mvPp2PrsTagModeSet(int port, int type)
 		/* remove port from DSA entries */
 		mvPp2PrsDsaTagSet(port, 0, TAGGED, DSA);
 		mvPp2PrsDsaTagSet(port, 0, UNTAGGED, DSA);
-/*
-		 remove port from all EtherType DSA/EDSA entries
-		mvPp2PrsDsaTagEtherTypeSet(port, 0, UNTAGGED, EDSA);
-		mvPp2PrsDsaTagEtherTypeSet(port, 0, TAGGED, EDSA);
-		mvPp2PrsDsaTagEtherTypeSet(port, 0, UNTAGGED, DSA);
-		mvPp2PrsDsaTagEtherTypeSet(port, 0, TAGGED, DSA);
-*/
+
 		break;
 
 	case MV_PP2_DSA:
@@ -721,13 +991,7 @@ int mvPp2PrsTagModeSet(int port, int type)
 		/* remove port from EDSA entries */
 		mvPp2PrsDsaTagSet(port, 0, TAGGED, EDSA);
 		mvPp2PrsDsaTagSet(port, 0, UNTAGGED, EDSA);
-/*
-		remove port from all EtherType DSA/EDSA entries
-		mvPp2PrsDsaTagEtherTypeSet(port, 0, UNTAGGED, EDSA);
-		mvPp2PrsDsaTagEtherTypeSet(port, 0, TAGGED, EDSA);
-		mvPp2PrsDsaTagEtherTypeSet(port, 0, UNTAGGED, DSA);
-		mvPp2PrsDsaTagEtherTypeSet(port, 0, TAGGED, DSA);
-*/
+
 		break;
 
 	case MV_PP2_MH:
@@ -738,13 +1002,7 @@ int mvPp2PrsTagModeSet(int port, int type)
 		mvPp2PrsDsaTagSet(port, 0, UNTAGGED, DSA);
 		mvPp2PrsDsaTagSet(port, 0, TAGGED, EDSA);
 		mvPp2PrsDsaTagSet(port, 0, UNTAGGED, EDSA);
-/*
-		Add port from all EtherType DSA/EDSA entries
-		mvPp2PrsDsaTagEtherTypeSet(port, 1, UNTAGGED, EDSA);
-		mvPp2PrsDsaTagEtherTypeSet(port, 1, TAGGED, EDSA);
-		mvPp2PrsDsaTagEtherTypeSet(port, 1, UNTAGGED, DSA);
-		mvPp2PrsDsaTagEtherTypeSet(port, 1, TAGGED, DSA);
-*/
+
 		break;
 
 	default:
@@ -762,6 +1020,23 @@ int mvPp2PrsTagModeSet(int port, int type)
  *
  ******************************************************************************
  */
+
+char *mvPrsVlanInfoStr(unsigned int vlan_info)
+{
+	switch (vlan_info) {
+	case RI_VLAN_NONE:
+		return "None";
+	case RI_VLAN_SINGLE:
+		return "Single";
+	case RI_VLAN_DOUBLE:
+		return "Double";
+	case RI_VLAN_TRIPLE:
+		return "Triple";
+	default:
+		return "Unknown";
+	}
+	return NULL;
+}
 
 static MV_PP2_PRS_ENTRY *mvPrsVlanFind(unsigned short tpid, int ai)
 {
@@ -1051,7 +1326,7 @@ int mvPp2PrsDoubleVlanAdd(unsigned short tpid1, unsigned short tpid2, unsigned i
 int mvPp2PrsDoubleVlanDel(unsigned short tpid1, unsigned short tpid2)
 {
 	MV_PP2_PRS_ENTRY *pe = NULL;
-	int ai, enable;
+	unsigned int ai, enable;
 
 
 	pe = mvPrsDoubleVlanFind(tpid1, tpid2);
@@ -1098,7 +1373,7 @@ int mvPp2PrsDoubleVlan(unsigned short tpid1, unsigned short tpid2, unsigned int 
 int mvPp2PrsTripleVlan(unsigned short tpid1, unsigned short tpid2, unsigned short tpid3, unsigned int portBmp, int add)
 {
 	MV_PP2_PRS_ENTRY *pe;
-	int ai, aiEnable;
+	unsigned int ai, aiEnable;
 	int status;
 
 	pe = mvPrsDoubleVlanFind(tpid1, tpid2);
@@ -1209,7 +1484,175 @@ static int mvPp2PrsVlanInit(void)
  *
  ******************************************************************************
  */
+/*TODO USE this function for all def etypres creation */
+static int mvPrsEthTypeCreate(int portMap, unsigned short eth_type, unsigned int ri, unsigned int riMask)
+{
+	int tid;
+	MV_PP2_PRS_ENTRY *pe;
+	/* Go through the all entires from first to last */
+	tid = mvPp2PrsTcamFirstFree(PE_FIRST_FREE_TID, PE_LAST_FREE_TID);
 
+	/* Can't add - No free TCAM entries */
+	if (tid == MV_PRS_OUT_OF_RAGE) {
+		mvOsPrintf("%s: No free TCAM entiry\n", __func__);
+		return MV_ERROR;
+	}
+
+	pe = mvPp2PrsSwAlloc(PRS_LU_L2);
+
+	pe->index = tid;
+
+	mvPp2PrsMatchEtype(pe, 0, eth_type);
+
+	mvPp2PrsSwSramRiSet(pe, ri, riMask);
+	mvPp2PrsSwTcamPortMapSet(pe, portMap);
+	/* Continue - set next lookup */
+
+	mvPp2PrsSwSramNextLuSet(pe, PRS_LU_FLOWS);
+	mvPp2PrsSwSramFlowidGenSet(pe);
+
+	mvPp2PrsHwWrite(pe);
+
+	mvPp2PrsShadowSet(pe->index, PRS_LU_L2, "etype-user-define");
+	mvPp2PrsShadowUdfSet(pe->index, PRS_UDF_L2_USER);
+	mvPp2PrsShadowRiSet(pe->index, ri, riMask);
+
+	mvPp2PrsSwFree(pe);
+
+	return MV_OK;
+}
+
+static int mvPrsEthTypeValid(unsigned int portMap, unsigned short ethertype)
+{
+	MV_PP2_PRS_ENTRY pe;
+	unsigned int entryPmap;
+	int tid;
+
+	for (tid = PE_LAST_FREE_TID ; tid >= PE_FIRST_FREE_TID; tid--) {
+		if (!mvPp2PrsShadowIsValid(tid) || (mvPp2PrsShadowLu(tid) != PRS_LU_L2))
+			continue;
+
+		pe.index = tid;
+		mvPp2PrsHwRead(&pe);
+
+		if (!mvPp2PrsEtypeEquals(&pe, 0, ethertype))
+			continue;
+
+		/* in default entries portmask must be 0xff */
+		if ((mvPp2PrsShadowUdf(tid) == PRS_UDF_L2_DEF) & (portMap != PORT_MASK)) {
+			mvOsPrintf("%s: operation not supported.\n", __func__);
+			mvOsPrintf("%s: ports map must be 0xFF for default ether type\n", __func__);
+			return MV_ERROR;
+
+		} else {
+
+			/* port maps cannot intersection in User entries*/
+			/* PRS_UDF_L2_USER */
+			mvPp2PrsSwTcamPortMapGet(&pe, &entryPmap);
+			if ((portMap & entryPmap) && (portMap != entryPmap)) {
+				mvOsPrintf("%s: operation not supported\n", __func__);
+				mvOsPrintf("%s: user must delete portMap 0x%x from entry %d.\n", __func__, entryPmap & portMap, tid);
+				return MV_ERROR;
+			}
+		}
+	}
+	return MV_OK;
+}
+
+int mvPrsEthTypeSet(int portMap, unsigned short ethertype, unsigned int ri, unsigned int riMask, bool finish)
+{
+	MV_PP2_PRS_ENTRY pe;
+	int tid;
+	unsigned int  entryPmap;
+	bool done = MV_FALSE;
+
+	/* step 1 - validation */
+	if (mvPrsEthTypeValid(portMap, ethertype))
+		return MV_ERROR;
+
+
+	/* step 2 - update TCAM */
+	for (tid = PE_FIRST_FREE_TID ; tid <= PE_LAST_FREE_TID; tid++) {
+		if (!mvPp2PrsShadowIsValid(tid) || (mvPp2PrsShadowLu(tid) != PRS_LU_L2))
+			continue;
+
+		pe.index = tid;
+		mvPp2PrsHwRead(&pe);
+
+		if (!mvPp2PrsEtypeEquals(&pe, 0, ethertype))
+			continue;
+
+		mvPp2PrsSwTcamPortMapGet(&pe, &entryPmap);
+
+		if (entryPmap != portMap)
+			continue;
+
+		done = MV_TRUE;
+		mvPp2PrsSwSramRiUpdate(&pe, ri, riMask);
+
+		if ((mvPp2PrsShadowUdf(tid) == PRS_UDF_L2_USER) || finish)
+			mvPp2PrsSwSramFlowidGenSet(&pe);
+
+		mvPp2PrsHwWrite(&pe);
+	}
+	/* step 3 - Add new ethertype entry */
+	if (!done)
+		return mvPrsEthTypeCreate(portMap, ethertype, ri, riMask);
+
+	return MV_OK;
+}
+
+int mvPrsEthTypeDel(int portMap, unsigned short ethertype)
+{
+	MV_PP2_PRS_ENTRY pe;
+	unsigned int entryPmap;
+	int tid;
+
+	for (tid = PE_FIRST_FREE_TID; tid <= PE_LAST_FREE_TID; tid++) {
+
+		if (!mvPp2PrsShadowIsValid(tid) || (mvPp2PrsShadowLu(tid) != PRS_LU_L2))
+			continue;
+
+		/* EtherType entry */
+		pe.index = tid;
+		mvPp2PrsHwRead(&pe);
+
+		if (!mvPp2PrsEtypeEquals(&pe, 0, ethertype))
+			continue;
+
+		if (mvPp2PrsShadowUdf(tid) == PRS_UDF_L2_DEF) {
+			if (portMap != PORT_MASK) {
+				mvOsPrintf("%s: ports map must be 0xFF for default ether type\n", __func__);
+				return MV_ERROR;
+			}
+
+			mvPp2PrsSwSramRiSet(&pe, mvPp2PrsShadowRi(tid), mvPp2PrsShadowRiMask(tid));
+
+			if (!mvPp2PrsShadowFin(tid))
+				mvPp2PrsSwSramFlowidGenClear(&pe);
+
+			mvPp2PrsHwWrite(&pe);
+
+			continue;
+		}
+
+		/*PRS_UDF_L2_USER */
+
+		mvPp2PrsSwTcamPortMapGet(&pe, &entryPmap);
+		/*mask ports in user entry */
+		entryPmap &= ~portMap;
+
+		if (entryPmap == 0) {
+			mvPp2PrsHwInv(tid);
+			mvPp2PrsShadowClear(tid);
+			continue;
+		}
+
+		mvPp2PrsSwTcamPortMapSet(&pe, entryPmap);
+		mvPp2PrsHwWrite(&pe);
+	}
+	return MV_OK;
+}
 
 static int mvPp2PrsEtypePppoe(void)
 {
@@ -1240,6 +1683,9 @@ static int mvPp2PrsEtypePppoe(void)
 
 	/* Update mvPrsShadowTbl */
 	mvPp2PrsShadowSet(pe->index, PRS_LU_L2, "etype-PPPoE");
+	mvPp2PrsShadowUdfSet(pe->index, PRS_UDF_L2_DEF);
+	mvPp2PrsShadowRiSet(pe->index, RI_PPPOE_MASK, RI_PPPOE_MASK);
+	mvPp2PrsShadowFinSet(pe->index, MV_FALSE);
 	mvPp2PrsSwFree(pe);
 
 	return MV_OK;
@@ -1283,6 +1729,9 @@ static int mvPp2PrsEtypeIp4(void)
 
 	/* Update mvPrsShadowTbl */
 	mvPp2PrsShadowSet(pe->index, PRS_LU_L2, "etype-ipv4");
+	mvPp2PrsShadowFinSet(pe->index, MV_FALSE);
+	mvPp2PrsShadowUdfSet(pe->index, PRS_UDF_L2_DEF);
+	mvPp2PrsShadowRiSet(pe->index, RI_L3_IP4, RI_L3_PROTO_MASK);
 	mvPp2PrsSwFree(pe);
 
 	/* IPv4 with options */
@@ -1313,6 +1762,9 @@ static int mvPp2PrsEtypeIp4(void)
 
 	/* Update mvPrsShadowTbl */
 	mvPp2PrsShadowSet(pe->index, PRS_LU_L2, "etype-ipv4-opt");
+	mvPp2PrsShadowUdfSet(pe->index, PRS_UDF_L2_DEF);
+	mvPp2PrsShadowFinSet(pe->index, MV_FALSE);
+	mvPp2PrsShadowRiSet(pe->index, RI_L3_IP4_OPT, RI_L3_PROTO_MASK);
 
 	mvPp2PrsSwFree(pe);
 
@@ -1352,6 +1804,9 @@ static int mvPp2PrsEtypeArp(void)
 	mvPp2PrsHwWrite(pe);
 
 	mvPp2PrsShadowSet(pe->index, PRS_LU_L2, "etype-arp");
+	mvPp2PrsShadowUdfSet(pe->index, PRS_UDF_L2_DEF);
+	mvPp2PrsShadowFinSet(pe->index, MV_TRUE);
+	mvPp2PrsShadowRiSet(pe->index, RI_L3_ARP, RI_L3_PROTO_MASK);
 
 	mvPp2PrsSwFree(pe);
 
@@ -1395,6 +1850,9 @@ static int mvPp2PrsEtypeIp6(void)
 	mvPp2PrsHwWrite(pe);
 
 	mvPp2PrsShadowSet(pe->index, PRS_LU_L2, "etype-ipv6");
+	mvPp2PrsShadowUdfSet(pe->index, PRS_UDF_L2_DEF);
+	mvPp2PrsShadowFinSet(pe->index, MV_FALSE);
+	mvPp2PrsShadowRiSet(pe->index, RI_L3_IP6, RI_L3_PROTO_MASK);
 
 	mvPp2PrsSwFree(pe);
 
@@ -1423,6 +1881,9 @@ static int mvPp2PrsEtypeUn(void)
 
 	/* Update mvPrsShadowTbl */
 	mvPp2PrsShadowSet(pe->index, PRS_LU_L2, "etype-unknown");
+	mvPp2PrsShadowUdfSet(pe->index, PRS_UDF_L2_DEF);
+	mvPp2PrsShadowFinSet(pe->index, MV_TRUE);
+	mvPp2PrsShadowRiSet(pe->index, RI_L3_UN, RI_L3_PROTO_MASK);
 
 	mvPp2PrsSwFree(pe);
 
@@ -1872,7 +2333,8 @@ static int mvPp2PrsIp6Init(void)
 static MV_PP2_PRS_ENTRY *mvPrsFlowFind(int flow)
 {
 	MV_PP2_PRS_ENTRY *pe;
-	int tid, bits, enable;
+	int tid;
+	unsigned int bits, enable;
 
 	pe = mvPp2PrsSwAlloc(PRS_LU_FLOWS);
 
@@ -2002,9 +2464,7 @@ int mvPrsDefaultInit(void)
 
 	/* Always start from lookup = 0 */
 	for (port = 0; port < MV_PP2_MAX_PORTS; port++)
-		mvPp2PrsHwPortInit(port,
-					PRS_LU_MAC/*first lu id*/,
-					MV_PP2_PRS_PORT_LU_MAX, 0);
+		mvPp2PrsHwPortInit(port, PRS_LU_MAC, MV_PP2_PRS_PORT_LU_MAX, 0);
 
 	rc = mvPp2PrsMacInit();
 	if (rc)
@@ -2014,11 +2474,11 @@ int mvPrsDefaultInit(void)
 	if (rc)
 		return rc;
 
-	rc = mvPp2PrsVlanInit();
+	rc = mvPp2PrsEtypeInit();
 	if (rc)
 		return rc;
 
-	rc = mvPp2PrsEtypeInit();
+	rc = mvPp2PrsVlanInit();
 	if (rc)
 		return rc;
 

@@ -130,12 +130,12 @@ static void        mvPp2PlcrHwDumpTitle(void)
 	regVal = mvPp2RdReg(MV_PP2_PLCR_MIN_PKT_LEN_REG);
 	mvOsPrintf("min_pkt=%d bytes\n", (regVal & MV_PP2_PLCR_MIN_PKT_LEN_ALL_MASK) >> MV_PP2_PLCR_MIN_PKT_LEN_OFFS);
 
-	mvOsPrintf("PLCR: enable period  unit   type  tokens  c_size  e_size  c_tokens  e_tokens\n");
+	mvOsPrintf("PLCR: enable period  unit   type  tokens  color  c_size  e_size  c_tokens  e_tokens\n");
 }
 
 static void        mvPp2PlcrHwDump(int plcr)
 {
-	int units, type, tokens;
+	int units, type, tokens, color;
 	MV_U32 regVal;
 
 	mvPp2WrReg(MV_PP2_PLCR_TABLE_INDEX_REG, plcr);
@@ -148,9 +148,11 @@ static void        mvPp2PlcrHwDump(int plcr)
 
 	regVal = mvPp2RdReg(MV_PP2_PLCR_TOKEN_CFG_REG);
 	units = regVal & MV_PP2_PLCR_TOKEN_UNIT_MASK;
+	color = regVal & MV_PP2_PLCR_COLOR_MODE_MASK;
 	type = (regVal & MV_PP2_PLCR_TOKEN_TYPE_ALL_MASK) >> MV_PP2_PLCR_TOKEN_TYPE_OFFS;
 	tokens =  (regVal & MV_PP2_PLCR_TOKEN_VALUE_ALL_MASK) >> MV_PP2_PLCR_TOKEN_VALUE_OFFS;
-	mvOsPrintf("   %5s  %2d   %5d", units ? "pkts" : "bytes", type, tokens);
+	mvOsPrintf("   %-5s  %2d   %5d", units ? "pkts" : "bytes", type, tokens);
+	mvOsPrintf("  %-5s", color ? "aware" : "blind");
 
 	regVal = mvPp2RdReg(MV_PP2_PLCR_BUCKET_SIZE_REG);
 	mvOsPrintf("    %04x    %04x",

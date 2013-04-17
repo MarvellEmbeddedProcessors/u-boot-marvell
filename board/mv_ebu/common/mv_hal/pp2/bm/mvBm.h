@@ -121,10 +121,10 @@ static INLINE void mvBmPoolMcPut(int pool, MV_U32 bufPhysAddr, MV_U32 bufVirtAdd
 
 static INLINE MV_U32 mvBmPoolGet(int pool)
 {
-	MV_U32 bufPhysAddr, bufVirtAddr;
+	MV_U32 bufVirtAddr;
 
-	bufPhysAddr = mvPp2RdReg(MV_BM_PHY_ALLOC_REG(pool));
-	bufVirtAddr = mvPp2RdReg(MV_BM_VIRT_ALLOC_REG);
+	mvPp2RdReg(MV_BM_PHY_ALLOC_REG(pool)); /* read physical address */
+	bufVirtAddr = mvPp2RdReg(MV_BM_VIRT_ALLOC_REG); /* return virtual address */
 
 	return bufVirtAddr;
 }

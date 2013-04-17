@@ -61,8 +61,8 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#include "pp2/gbe/mvPp2Gbe.h"
 #include "mvEthGmacApi.h"
+#include "pp2/gbe/mvPp2Gbe.h"
 
 void mvEthPortEnable(int port)
 {
@@ -573,7 +573,6 @@ MV_U32 mvEthMibCounterRead(int port, unsigned int mibOffset, MV_U32 *pHigh32)
 void mvEthMibCountersClear(int port)
 {
 	int i;
-	MV_U32 dummy;
 
 #if defined(CONFIG_MV_PON) && !defined(MV_PON_MIB_SUPPORT)
 	if (MV_PON_PORT(port))
@@ -582,7 +581,7 @@ void mvEthMibCountersClear(int port)
 
 	/* Perform dummy reads from MIB counters */
 	for (i = ETH_MIB_GOOD_OCTETS_RECEIVED_LOW; i < ETH_MIB_LATE_COLLISION; i += 4)
-		dummy = MV_REG_READ((ETH_MIB_COUNTERS_BASE(port) + i));
+		MV_REG_READ((ETH_MIB_COUNTERS_BASE(port) + i));
 }
 
 static void mvEthMibPrint(int port, MV_U32 offset, char *mib_name)

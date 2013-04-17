@@ -87,12 +87,51 @@ int mvPp2PrsShadowLu(int index)
 	return mvPrsShadowTbl[index].lu;
 }
 
+int mvPp2PrsShadowUdf(int index)
+{
+	return mvPrsShadowTbl[index].udf;
+}
+unsigned int mvPp2PrsShadowRi(int index)
+{
+	return mvPrsShadowTbl[index].ri;
+}
+
+unsigned int mvPp2PrsShadowRiMask(int index)
+{
+	return mvPrsShadowTbl[index].riMask;
+}
+
+void mvPp2PrsShadowUdfSet(int index, int udf)
+{
+	mvPrsShadowTbl[index].udf = udf;
+}
+
 void mvPp2PrsShadowSet(int index, int lu, char *text)
 {
-	strncpy(mvPrsShadowTbl[index].text, text, PRS_TEXT_SIZE);
+	strncpy((char *)mvPrsShadowTbl[index].text, text, PRS_TEXT_SIZE);
 	mvPrsShadowTbl[index].text[PRS_TEXT_SIZE - 1] = 0;
 	mvPrsShadowTbl[index].valid = MV_TRUE;
 	mvPrsShadowTbl[index].lu = lu;
+}
+void mvPp2PrsShadowLuSet(int index, int lu)
+{
+	mvPrsShadowTbl[index].lu = lu;
+}
+
+void mvPp2PrsShadowRiSet(int index, unsigned int ri, unsigned int riMask)
+{
+	mvPrsShadowTbl[index].riMask = riMask;
+	mvPrsShadowTbl[index].ri = ri;
+}
+
+void mvPp2PrsShadowFinSet(int index, bool finish)
+{
+	mvPrsShadowTbl[index].finish = finish;
+}
+
+bool mvPp2PrsShadowFin(int index)
+{
+	return mvPrsShadowTbl[index].finish;
 }
 
 void mvPp2PrsShadowClear(int index)
@@ -651,6 +690,19 @@ int mvPp2PrsSwTcamPortSet(MV_PP2_PRS_ENTRY *pe, unsigned int port, int add)
 	return MV_OK;
 }
 
+int mvPp2PrsSwTcamPortGet(MV_PP2_PRS_ENTRY *pe, unsigned int port, bool *status)
+{
+	PTR_VALIDATE(pe);
+	POS_RANGE_VALIDATE(port, 7);/*TODO define max port val*/
+
+	if (~(pe->tcam.byte[TCAM_MASK_OFFS(TCAM_PORT_BYTE)]) & (1 << port))
+		*status = MV_TRUE;
+	else
+		*status = MV_FALSE;
+
+	return MV_OK;
+}
+
 int mvPp2PrsSwTcamPortMapSet(MV_PP2_PRS_ENTRY *pe, unsigned int ports)
 {
 	PTR_VALIDATE(pe);
@@ -726,6 +778,14 @@ int mvPp2PrsSwSramRiClearBit(MV_PP2_PRS_ENTRY *pe, unsigned int bit)
 /* set RI and RI_UPDATE */
 int mvPp2PrsSwSramRiUpdate(MV_PP2_PRS_ENTRY *pe, unsigned int bits, unsigned int enable)
 {
+/* ALTERNATIVE WAY:
+   find the bist that set in defRiMask and clear in riMask
+   maskDiff = defRiMask & (defRiMask ^ riMask);
+   update 1's: ri |= (defRi & maskDiff);
+   update 0's: ri &= ~(maskDiff & (~defRi));
+   update mask: riMask |= defRiMask;
+*/
+
 	unsigned int i;
 
 	PTR_VALIDATE(pe);
@@ -754,10 +814,19 @@ int mvPp2PrsSwSramRiGet(MV_PP2_PRS_ENTRY *pe, unsigned int *bits, unsigned int *
 	return MV_OK;
 }
 
+int mvPp2PrsSwSramRiSet(MV_PP2_PRS_ENTRY *pe, unsigned int bits, unsigned int enable)
+{
+	PTR_VALIDATE(pe);
+
+	pe->sram.word[SRAM_RI_OFFS/32] = bits;
+	pe->sram.word[SRAM_RI_CTRL_OFFS/32] = enable;
+	return MV_OK;
+}
+
 static int mvPp2PrsSwSramRiDump(MV_PP2_PRS_ENTRY *pe)
 {
-	int i, data, mask;
-	int off = 0, bitsOffs = 0;
+	unsigned int data, mask;
+	int i, off = 0, bitsOffs = 0;
 	char bits[100];
 
 	PTR_VALIDATE(pe);
@@ -847,7 +916,8 @@ int mvPp2PrsSwSramAiGet(MV_PP2_PRS_ENTRY *pe, unsigned int *bits, unsigned int *
 
 static int mvPp2PrsSwSramAiDump(MV_PP2_PRS_ENTRY *pe)
 {
-	int i, data, mask, bitsOffs = 0;
+	int i, bitsOffs = 0;
+	unsigned int data, mask;
 	char bits[30];
 
 	PTR_VALIDATE(pe);

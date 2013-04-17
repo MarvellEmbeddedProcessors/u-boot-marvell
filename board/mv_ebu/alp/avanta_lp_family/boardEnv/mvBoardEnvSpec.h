@@ -109,8 +109,9 @@
    58-64			LED_MATRIX				(4)
  */
 
-/* default MPP Types */
-
+/*******************************************************************************
+* Avanata LP DB-6660 board
+*******************************************************************************/
 #define DB_88F6660_MPP0_7               0x11111111
 #define DB_88F6660_MPP8_15              0x22111111
 #define DB_88F6660_MPP16_23             0x33030022
@@ -132,7 +133,30 @@
 #define DB_88F6660_GPP_POL_HIGH         0x0
 
 /*******************************************************************************
-* AvanataLP customer board
+* Avanata LP DB-6650 board
+*******************************************************************************/
+#define DB_88F6650_MPP0_7               0x11111111
+#define DB_88F6650_MPP8_15              0x22111111
+#define DB_88F6650_MPP16_23             0x33030022
+#define DB_88F6650_MPP24_31             0x22222222
+#define DB_88F6650_MPP32_39             0x22222440
+#define DB_88F6650_MPP40_47             0x44122220
+#define DB_88F6650_MPP48_55             0x44444444
+#define DB_88F6650_MPP56_63             0x44444444
+#define DB_88F6650_MPP64_67             0x204
+
+#define DB_88F6650_GPP_OUT_ENA_LOW      0x0
+#define DB_88F6650_GPP_OUT_ENA_MID      0x0
+#define DB_88F6650_GPP_OUT_ENA_HIGH     0x0
+#define DB_88F6650_GPP_OUT_VAL_LOW      0x0
+#define DB_88F6650_GPP_OUT_VAL_MID      0x0
+#define DB_88F6650_GPP_OUT_VAL_HIGH     0x0
+#define DB_88F6650_GPP_POL_LOW          0x0
+#define DB_88F6650_GPP_POL_MID          0x0
+#define DB_88F6650_GPP_POL_HIGH         0x0
+
+/*******************************************************************************
+* Avanata LP customer board
 *******************************************************************************/
 #define AVANTA_LP_CUSTOMER_MPP0_7               0x00000000
 #define AVANTA_LP_CUSTOMER_MPP8_15              0x00000000

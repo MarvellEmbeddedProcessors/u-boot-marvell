@@ -1001,12 +1001,10 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 	switch (ctrlId) {
 	case 0x6660:
 		return MV_6660_DEV_ID;
-		break;
 	case 0x6650:
 		return MV_6650_DEV_ID;
-		break;
 	default:
-		return (MV_U16)MV_ERROR;
+		return MV_6650_DEV_ID;
 	}
 }
 

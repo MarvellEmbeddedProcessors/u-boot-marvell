@@ -293,8 +293,6 @@ typedef struct _boardInfo {
 	MV_BOARD_MPP_TYPE_INFO *pBoardModTypeValue;
 	MV_U8 numBoardMppConfigValue;
 	MV_BOARD_MPP_INFO *pBoardMppConfigValue;
-	MV_U8 numBoardSerdesConfigValue;
-	MV_SERDES_CFG *pBoardSerdesConfigValue;
 	MV_U32 intsGppMaskLow;
 	MV_U32 intsGppMaskMid;
 	MV_U32 intsGppMaskHigh;

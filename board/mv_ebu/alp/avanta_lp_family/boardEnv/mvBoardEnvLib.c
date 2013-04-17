@@ -1784,7 +1784,6 @@ MV_U32 boardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 *       This function returns specified value from IO Expanders
 *
 * INPUT:
-*       ioClass - Field identifier
 *       ioInfo  - relevant IO Expander information
 *
 * OUTPUT:
@@ -1807,6 +1806,47 @@ MV_U8 mvBoardIoExpValGet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo)
 		return ( (val & mask) >> ioInfo->offset);
 	}
 	DB(mvOsPrintf("%s: Error: Read from IO Expander failed\n", __func__));
+	return (MV_U8)MV_ERROR;
+}
+
+/*******************************************************************************
+* mvBoardIoExpValSet - write a specified value to IO Expanders
+*
+* DESCRIPTION:
+*       This function writes specified value to IO Expanders
+*
+* INPUT:
+*       ioInfo  - relevant IO Expander information
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_U8  :return requested value , if TWSI read was succesfull, else 0xFF.
+*
+*******************************************************************************/
+MV_STATUS mvBoardIoExpValSet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo, MV_U8 value)
+{
+	MV_U8 readVal;
+
+	if (ioInfo==NULL)
+		return (MV_U8)MV_ERROR;
+	/* Read */
+	readVal = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum, ioInfo->regNum);
+	if ((MV_U8)MV_ERROR != readVal) {
+		/* Modify */
+		readVal &= !(1 << ioInfo->offset);	/* clean bit of old value  */
+		value = value << ioInfo->offset;	/* shift bit of new value to its location */
+		value &= readVal;
+
+		/* Write */
+		readVal = mvBoardTwsiSet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum, ioInfo->regNum, value);
+		if ((MV_U8)MV_ERROR != readVal)
+			return MV_OK;
+	}
+
+
+	mvOsPrintf("%s: Error: Write to IO Expander failed\n", __func__);
 	return (MV_U8)MV_ERROR;
 }
 
@@ -2022,6 +2062,35 @@ MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass, MV_BOARD_IO_E
 	DB(mvOsPrintf("%s: Error: requested MV_IO_EXPANDER_TYPE_ID was not found\n", __func__));
 	return MV_ERROR;
 }
+
+/*******************************************************************************
+* mvBoardExtPhyBufferSelect - enable/disable buffer status
+*
+* DESCRIPTION:
+*       This function enables/disabke the buffer status - according to Boolean input
+*
+* INPUT:
+*       enable - Boolean to indicate requested status
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable)
+{
+	MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo = NULL;
+
+	if(mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_EXT_PHY_SMI_EN ,ioInfo))
+	{
+		return 	(mvBoardIoExpValSet(ioInfo, (enable? 0x0 : 0x1)));
+	}
+	mvOsPrintf("%s: Error: Read from IO expander failed (External Phy Buffer select)\n", __func__);
+	return MV_FALSE;
+}
+
 
 /*******************************************************************************
 * mvBoardNandWidthGet -

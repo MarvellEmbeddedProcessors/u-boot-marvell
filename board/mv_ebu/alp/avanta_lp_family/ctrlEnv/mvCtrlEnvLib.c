@@ -149,6 +149,69 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 
 #endif
 
+/* Avanta LP family linear id */
+#define MV_6660_INDEX		0
+#define MV_6650_INDEX		1
+#define MV_6610_INDEX		2
+#define MV_66xx_INDEX_MAX	3
+
+static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
+{
+	MV_U32 index;
+
+	switch (devId) {
+	case MV_6660_DEV_ID:
+		index = MV_6660_INDEX;
+		break;
+	case MV_6650_DEV_ID:
+		index = MV_6650_INDEX;
+		break;
+	case MV_6610_DEV_ID:
+		index = MV_6610_INDEX;
+		break;
+	default:
+		index = MV_6650_INDEX;
+	}
+
+	return index;
+}
+
+MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_66xx_INDEX_MAX] = {
+/*                           6660               6650            6610 */
+/* DRAM_UNIT_ID         */ { 1,                 1,              1, },
+/* PEX_UNIT_ID          */ { 2,                 1,              0, },
+/* ETH_GIG_UNIT_ID      */ { 2,                 2,              2, },
+/* USB_UNIT_ID          */ { 1,                 1,              0, },
+/* IDMA_UNIT_ID         */ { 0,                 0,              0, },
+/* XOR_UNIT_ID          */ { 2,                 2,              0, },
+/* SATA_UNIT_ID         */ { 2,                 0,              0, },
+/* TDM_32CH_UNIT_ID     */ { 1,                 1,              1, },
+/* UART_UNIT_ID         */ { 2,                 2,              2, },
+/* CESA_UNIT_ID         */ { 1,                 0,              0, },
+/* SPI_UNIT_ID          */ { 2,                 2,              2, },
+/* AUDIO_UNIT_ID        */ { 1,                 0,              0, },
+/* SDIO_UNIT_ID         */ { 1,                 0,              0, },
+/* TS_UNIT_ID           */ { 0,                 0,              0, },
+/* XPON_UNIT_ID         */ { 1,                 1,              1, },
+/* BM_UNIT_ID           */ { 1,                 1,              1, },
+/* PNC_UNIT_ID          */ { 1,                 1,              1, },
+/* I2C_UNIT_ID          */ { 2,                 1,              1, },
+};
+
+MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit)
+{
+	MV_U32 devId, devIdIndex;
+
+	if (unit >= MAX_UNITS_ID) {
+		mvOsPrintf("%s: Error: Wrong unit type (%u)\n", __func__, unit);
+		return 0;
+	}
+
+	devId = mvCtrlModelGet();
+	devIdIndex = mvCtrlDevIdIndexGet(devId);
+	return mvCtrlSocUnitNums[unit][devIdIndex];
+}
+
 /*******************************************************************************
 * mvCtrlEnvInit - Initialize Marvell controller environment.
 *

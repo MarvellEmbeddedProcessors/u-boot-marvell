@@ -71,7 +71,40 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Defines */
 #define MV_MAX_ETH_DATA     1500
 #define MV_ETH_MH_SIZE      2
+#define MV_ETH_DSA_SIZE     4
+#define MV_ETH_EDSA_SIZE    8
+#define MV_ETH_VLAN_SIZE    4
 #define MV_ETH_CRC_SIZE     4
+
+/* Marvell tag types */
+typedef enum {
+	MV_TAG_TYPE_NONE = 0,
+	MV_TAG_TYPE_MH   = 1,
+	MV_TAG_TYPE_DSA  = 2,
+	MV_TAG_TYPE_EDSA = 3,
+	MV_TAG_TYPE_VLAN = 4,
+	MV_TAG_TYPE_LAST = 5
+} MV_TAG_TYPE;
+
+typedef union mv_tag {
+	MV_U32 edsa[2];
+	MV_U32 dsa;
+	MV_U32 vlan;
+	MV_U16 mh;
+} MV_TAG;
+
+typedef struct mv_mux_tag {
+	MV_TAG_TYPE tag_type;
+	MV_TAG      tx_tag;
+	MV_TAG      rx_tag_ptrn;
+	MV_TAG      rx_tag_mask;
+} MV_MUX_TAG;
+
+typedef enum {
+	MV_PRESET_TRANSPARENT    = 0,
+	MV_PRESET_SINGLE_VLAN    = 1,
+	MV_PRESET_PER_PORT_VLAN  = 2,
+} MV_SWITCH_PRESET_TYPE;
 
 /* 802.3 types */
 #define MV_IP_TYPE                  0x0800

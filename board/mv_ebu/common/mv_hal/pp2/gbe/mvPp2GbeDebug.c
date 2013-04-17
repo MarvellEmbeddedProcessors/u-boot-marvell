@@ -545,9 +545,9 @@ void mvPp2PortStatus(int port)
 	mvOsPrintf("\n[RXQ mapping: port=%d, ctrl=%p]\n", port, pPortCtrl);
 	if (pPortCtrl->pRxQueue) {
 		mvOsPrintf("         RXQ: ");
-		for (i = 0; i < pPortCtrl->rxqNum; i++) {
+		for (i = 0; i < pPortCtrl->rxqNum; i++)
 			mvOsPrintf(" %4d", i);
-		}
+
 		mvOsPrintf("\nphysical RXQ: ");
 		for (i = 0; i < pPortCtrl->rxqNum; i++) {
 			if (pPortCtrl->pRxQueue[i])

@@ -89,6 +89,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define	DSA_ETHER_TYPE		0xDADA/*TODO set to default DSA ether type*/
 
 
+/* MAC entries , shadow udf */
+enum prs_udf {
+	PRS_UDF_MAC_DEF,
+	PRS_UDF_MAC_RANGE,
+	PRS_UDF_L2_DEF,
+	PRS_UDF_L2_DEF_COPY,
+	PRS_UDF_L2_USER,
+};
 
 /* LOOKUP ID */
 enum prs_lookup {
@@ -102,8 +110,9 @@ enum prs_lookup {
 	PRS_LU_FLOWS,
 	PRS_LU_LAST,
 };
-/* Tcam entries ID */
 
+
+/* Tcam entries ID */
 #define	PE_DROP_ALL					0
 #define	PE_RX_SPECIAL					1
 #define PE_FIRST_FREE_TID				2
@@ -132,7 +141,6 @@ enum prs_lookup {
 #define PE_MAC_PROMISCOUS   	(MV_PP2_PRS_TCAM_SIZE - 2) /* promiscous mode */
 #define PE_MAC_NON_PROMISCOUS   (MV_PP2_PRS_TCAM_SIZE - 1) /* non-promiscous mode */
 
-
 /*
  * Pre-defined FlowId assigment
 */
@@ -145,8 +153,10 @@ enum prs_lookup {
 int mvPrsDefFlow(int port);
 int mvPrsDefaultInit(void);
 int mvPrsMacDaAccept(int port, unsigned char *da, int add);
+int mvPrsMacDaRangeSet(unsigned portBmp, MV_U8 *da, MV_U8 *mask, unsigned int ri, unsigned int riMask, bool finish);
+int mvPrsMacDaRangeDel(unsigned portBmp, MV_U8 *da, MV_U8 *mask);
 int mvPrsMacDropAllSet(int port, int add);
-int mvPrsMhRxSpecialSet(int port, int add, unsigned short mh);
+int mvPrsMhRxSpecialSet(int port, unsigned short mh, int add);
 int mvPrsMacPromiscousSet(int port, int add);
 int mvPrsMacAllMultiSet(int port, int add);
 int mvPrsDebugBasicInit(void);
@@ -154,9 +164,12 @@ int mvPrsFlowIdGen(int tid, int flowId, unsigned int res, unsigned int resMask, 
 int mvPp2PrsTagModeSet(int port, int type);
 int mvPp2PrsEtypeDsaModeSet(int port, int extand);
 int mvPp2PrsEtypeDsaSet(unsigned int eType);
+int mvPrsEthTypeSet(int portMap, unsigned short ethertype, unsigned int ri, unsigned int riMask, bool finish);
+int mvPrsEthTypeDel(int portMap, unsigned short eth_type);
 int mvPp2PrsTripleVlan(unsigned short tpid1, unsigned short tpid2, unsigned short tpid3, unsigned int portBmp, int add);
 int mvPp2PrsDoubleVlan(unsigned short tpid1, unsigned short tpid2, unsigned int portBmp, int add);
 int mvPp2PrsSingleVlan(unsigned short tpid, unsigned int portBmp, int add);
+char *mvPrsVlanInfoStr(unsigned int vlan_info);
 /*
 int mvPrsMacDaDrop(int port, unsigned char *da, int add);
 */

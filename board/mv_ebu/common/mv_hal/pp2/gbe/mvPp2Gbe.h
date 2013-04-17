@@ -74,7 +74,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvPp2GbeRegs.h"
 #include "pp2/gmac/mvEthGmacApi.h"
 #include "pp2/common/mvPp2Common.h"
+#include "pp2/prs/mvPp2PrsHw.h"
 
+
+#define PP2_CPU_CODE_IS_RX_SPECIAL(cpu_code)		((cpu_code) & RI_CPU_CODE_RX_SPEC_VAL)
+
+static inline int mvPp2IsRxSpecial(MV_U16 parser_info)
+{
+	MV_U16 cpu_code = (parser_info & PP2_RX_CPU_CODE_MASK) >> PP2_RX_CPU_CODE_OFFS;
+
+	return PP2_CPU_CODE_IS_RX_SPECIAL(cpu_code);
+}
 
 /************************** PPv2 HW Configuration ***********************/
 typedef struct eth_pbuf {
@@ -210,7 +220,7 @@ static INLINE int mvPp2LogicRxqToPhysRxq(int port, int rxq)
 #define MV_PPV2_PORT_PHYS(port)			((MV_PON_PORT(port)) ? MV_PON_PHYS_PORT_GET() : (port))
 #define MV_PPV2_TXP_PHYS(port, txp)		((MV_PON_PORT(port)) ? txp : (MV_ETH_MAX_TCONT + port))
 #define MV_PPV2_TXQ_PHYS(port, txp, txq)	((MV_PON_PORT(port)) ? txp * MV_ETH_MAX_TXQ + txq :\
-							MV_PP2_TOTAL_PON_TXQ_NUM + port * MV_ETH_MAX_TXQ + txq)
+											MV_PP2_TOTAL_PON_TXQ_NUM + port * MV_ETH_MAX_TXQ + txq)
 
 #define MV_PPV2_TXQ_LOGICAL_PORT(physTxq)	((physTxq < MV_PP2_TOTAL_PON_TXQ_NUM) ? MV_PON_LOGIC_PORT_ID_GET() :\
 							(physTxq - MV_PP2_TOTAL_PON_TXQ_NUM) / MV_ETH_MAX_TXQ)

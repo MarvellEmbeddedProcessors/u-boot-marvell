@@ -177,12 +177,56 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ETH_TX_FLOW_CTRL_ACTIVE_MASK       (1 << ETH_TX_FLOW_CTRL_ACTIVE_BIT)
 /*-------------------------------------------------------------------------------*/
 
+#define ETH_PORT_ISR_CAUSE_REG(p)	(ETH_REG_BASE(p) + 0x20)
+
+#define ETH_PORT_ISR_SUM_BIT		0
+#define ETH_PORT_ISR_SUM_MASK		(1 << ETH_PORT_ISR_SUM_BIT)
+
+#define ETH_PORT_LINK_CHANGE_BIT	1
+#define ETH_PORT_LINK_CHANGE_MASK	(1 << ETH_PORT_LINK_CHANGE_BIT)
+
+#define ETH_PORT_ISR_MASK_REG(p)	(ETH_REG_BASE(p) + 0x24)
+
 /****************************************/
 /*        LMS Unit Registers       	*/
 /****************************************/
 #define ETH_PHY_ADDR_REG		(LMS_REG_BASE + 0x30)
 #define ETH_PHY_ADDR_OFFS(port)		(port * 5)
 #define ETH_PHY_ADDR_MASK(port)		(0x1F << ETH_PHY_ADDR_OFFS(port))
+/*-------------------------------------------------------------------------------*/
+
+#define ETH_ISR_SUM_CAUSE_REG		(LMS_REG_BASE + 0x10)
+#define ETH_ISR_SUM_LMS_BIT		0
+#define ETH_ISR_SUM_LMS_MASK		(1 << ETH_ISR_SUM_LMS_BIT)
+
+#define ETH_ISR_SUM_LMS0_BIT		1
+#define ETH_ISR_SUM_LMS0_MASK		(1 << ETH_ISR_SUM_LMS0_BIT)
+
+#define ETH_ISR_SUM_LMS1_BIT		2
+#define ETH_ISR_SUM_LMS1_MASK		(1 << ETH_ISR_SUM_LMS1_BIT)
+
+#define ETH_ISR_SUM_LMS2_BIT		3
+#define ETH_ISR_SUM_LMS2_MASK		(1 << ETH_ISR_SUM_LMS2_BIT)
+
+#define ETH_ISR_SUM_LMS3_BIT		4
+#define ETH_ISR_SUM_LMS3_MASK		(1 << ETH_ISR_SUM_LMS3_BIT)
+
+#define ETH_ISR_SUM_PORTS_BIT		16
+#define ETH_ISR_SUM_PORTS_MASK		(1 << ETH_ISR_SUM_PORTS_BIT)
+
+#define ETH_ISR_SUM_PORT0_BIT		17
+#define ETH_ISR_SUM_PORT0_MASK		(1 << ETH_ISR_SUM_PORT0_BIT)
+
+#define ETH_ISR_SUM_PORT1_BIT		18
+#define ETH_ISR_SUM_PORT1_MASK		(1 << ETH_ISR_SUM_PORT1_BIT)
+
+#define ETH_ISR_SUM_PORT2_BIT		19
+#define ETH_ISR_SUM_PORT2_MASK		(1 << ETH_ISR_SUM_PORT2_BIT)
+
+#define ETH_ISR_SUM_PORT_MASK(p)	(1 << (ETH_ISR_SUM_PORT0_BIT + p))
+
+#define ETH_ISR_SUM_MASK_REG		(LMS_REG_BASE + 0x220c)
+/*-------------------------------------------------------------------------------*/
 
 #define ETH_SMI_REG(port)		(LMS_REG_BASE + 0x54)
 

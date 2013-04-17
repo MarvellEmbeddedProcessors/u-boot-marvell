@@ -102,6 +102,30 @@ typedef struct eth_link_status {
 
 } MV_ETH_PORT_STATUS;
 
+/***************************************************************************/
+/*                          Inline functions                               */
+/***************************************************************************/
+static INLINE void mvEthIsrSummaryMask(MV_VOID)
+{
+	MV_REG_WRITE(ETH_ISR_SUM_MASK_REG, 0);
+}
+
+static INLINE void mvEthIsrSummaryUnmask(MV_VOID)
+{
+	MV_REG_WRITE(ETH_ISR_SUM_MASK_REG, ETH_ISR_SUM_PORTS_MASK | ETH_ISR_SUM_PORT0_MASK |
+							ETH_ISR_SUM_PORT1_MASK | ETH_ISR_SUM_PORT2_MASK);
+}
+
+static INLINE MV_U32 mvEthIsrSummaryCauseGet(MV_VOID)
+{
+	return MV_REG_READ(ETH_ISR_SUM_CAUSE_REG);
+}
+
+static INLINE MV_U32 mvEthPortIsrCauseGet(int port)
+{
+	return MV_REG_READ(ETH_PORT_ISR_CAUSE_REG(port));
+}
+
 void mvEthPortEnable(int port);
 void mvEthPortDisable(int port);
 MV_BOOL mvEthPortIsLinkUp(int port);

@@ -285,7 +285,8 @@ reg 5 --> reg 0
 #define RI_CPU_CODE_OFFS           			4 /* bits 4 - 6 */
 #define RI_CPU_CODE_BITS				3
 #define RI_CPU_CODE_MASK				(((1 << RI_CPU_CODE_BITS) - 1) << RI_CPU_CODE_OFFS)
-#define RI_CPU_CODE_RX_SPEC				(1 << RI_CPU_CODE_OFFS)
+#define RI_CPU_CODE_RX_SPEC_VAL				1
+#define RI_CPU_CODE_RX_SPEC				(RI_CPU_CODE_RX_SPEC_VAL << RI_CPU_CODE_OFFS)
 
 /* bits 7 - 8 */
 #define RI_L2_VER_OFFS					7
@@ -396,9 +397,22 @@ typedef struct {
 	int             valid;
 	int		lu;
 	unsigned char   text[PRS_TEXT_SIZE];
+	int		udf;
+	unsigned	ri;
+	unsigned	riMask;
+	bool		finish;
 } PRS_SHADOW_ENTRY;
 
+
 void mvPp2PrsShadowSet(int index, int lu, char *text);
+void mvPp2PrsShadowLuSet(int index, int lu);
+int mvPp2PrsShadowUdf(int index);
+void mvPp2PrsShadowUdfSet(int index, int udf);
+unsigned int mvPp2PrsShadowRi(int index);
+unsigned int mvPp2PrsShadowRiMask(int index);
+void mvPp2PrsShadowRiSet(int index, unsigned int ri, unsigned int riMask);
+void mvPp2PrsShadowFinSet(int index, bool finish); /* set bit 111 (GEN_BIT) in SRAM */
+bool mvPp2PrsShadowFin(int index);
 void mvPp2PrsShadowClear(int index);
 void mvPp2PrsShadowClearAll(void);
 int mvPp2PrsShadowLu(int index);
@@ -634,7 +648,14 @@ int mvPp2PrsSwTcamAiSetBit(MV_PP2_PRS_ENTRY *pe, unsigned char bit);
  * tcam AI[bit] = 0 , tcam mask AI[bit] = 1
 */
 int mvPp2PrsSwTcamAiClearBit(MV_PP2_PRS_ENTRY *pe, unsigned char bit);
+/*
+ * mvPp2PrsSwTcamPortGet - return tcam port status in prs sw entry.
+ * @pe: sw prs entry
+ * @port: single port
+ * @status: 1 - port bit is set, 0 - port bit is not set
+*/
 
+int mvPp2PrsSwTcamPortGet(MV_PP2_PRS_ENTRY *pe, unsigned int port, bool *status);
 /*
  * mvPp2PrsSwTcamPortSet - set tcam port map in prs sw entry.
  * @pe: sw prs entry
@@ -699,7 +720,14 @@ int mvPp2PrsSwSramRiClearBit(MV_PP2_PRS_ENTRY *pe, unsigned int bit);
  * sram RI_EN[i] <--1 only if enable[i] is set.
  */
 int mvPp2PrsSwSramRiUpdate(MV_PP2_PRS_ENTRY *pe, unsigned int bits, unsigned int enable);
+/*
+ * mvPp2PrsSwSramRiSet - set sram result info bits in prs sw entry.
+ * @pe: sw prs entry
+ * @bits: bits to set
+ * @enable: bits mask
+  */
 
+int mvPp2PrsSwSramRiSet(MV_PP2_PRS_ENTRY *pe, unsigned int bits, unsigned int enable);
 /*
  * mvPp2PrsSwSramRiGet - get sram result info from prs sw entry.
  * @pe: sw prs entry

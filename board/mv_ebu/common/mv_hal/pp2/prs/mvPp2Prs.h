@@ -153,7 +153,7 @@ enum prs_lookup {
 int mvPrsDefFlow(int port);
 int mvPrsDefaultInit(void);
 int mvPrsMacDaAccept(int port, unsigned char *da, int add);
-int mvPrsMacDaRangeSet(unsigned portBmp, MV_U8 *da, MV_U8 *mask, unsigned int ri, unsigned int riMask, bool finish);
+int mvPrsMacDaRangeSet(unsigned portBmp, MV_U8 *da, MV_U8 *mask, unsigned int ri, unsigned int riMask, int finish);
 int mvPrsMacDaRangeDel(unsigned portBmp, MV_U8 *da, MV_U8 *mask);
 int mvPrsMacDropAllSet(int port, int add);
 int mvPrsMhRxSpecialSet(int port, unsigned short mh, int add);
@@ -164,7 +164,7 @@ int mvPrsFlowIdGen(int tid, int flowId, unsigned int res, unsigned int resMask, 
 int mvPp2PrsTagModeSet(int port, int type);
 int mvPp2PrsEtypeDsaModeSet(int port, int extand);
 int mvPp2PrsEtypeDsaSet(unsigned int eType);
-int mvPrsEthTypeSet(int portMap, unsigned short ethertype, unsigned int ri, unsigned int riMask, bool finish);
+int mvPrsEthTypeSet(int portMap, unsigned short ethertype, unsigned int ri, unsigned int riMask, int finish);
 int mvPrsEthTypeDel(int portMap, unsigned short eth_type);
 int mvPp2PrsTripleVlan(unsigned short tpid1, unsigned short tpid2, unsigned short tpid3, unsigned int portBmp, int add);
 int mvPp2PrsDoubleVlan(unsigned short tpid1, unsigned short tpid2, unsigned int portBmp, int add);

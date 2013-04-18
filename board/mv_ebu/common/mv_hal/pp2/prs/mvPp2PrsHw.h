@@ -400,7 +400,7 @@ typedef struct {
 	int		udf;
 	unsigned	ri;
 	unsigned	riMask;
-	int		finish;
+	MV_BOOL		finish;
 } PRS_SHADOW_ENTRY;
 
 
@@ -411,8 +411,8 @@ void mvPp2PrsShadowUdfSet(int index, int udf);
 unsigned int mvPp2PrsShadowRi(int index);
 unsigned int mvPp2PrsShadowRiMask(int index);
 void mvPp2PrsShadowRiSet(int index, unsigned int ri, unsigned int riMask);
-void mvPp2PrsShadowFinSet(int index, int finish); /* set bit 111 (GEN_BIT) in SRAM */
-int mvPp2PrsShadowFin(int index);
+void mvPp2PrsShadowFinSet(int index, MV_BOOL finish); /* set bit 111 (GEN_BIT) in SRAM */
+MV_BOOL mvPp2PrsShadowFin(int index);
 void mvPp2PrsShadowClear(int index);
 void mvPp2PrsShadowClearAll(void);
 int mvPp2PrsShadowLu(int index);
@@ -655,7 +655,7 @@ int mvPp2PrsSwTcamAiClearBit(MV_PP2_PRS_ENTRY *pe, unsigned char bit);
  * @status: 1 - port bit is set, 0 - port bit is not set
 */
 
-int mvPp2PrsSwTcamPortGet(MV_PP2_PRS_ENTRY *pe, unsigned int port, int *status);
+int mvPp2PrsSwTcamPortGet(MV_PP2_PRS_ENTRY *pe, unsigned int port, MV_BOOL *status);
 /*
  * mvPp2PrsSwTcamPortSet - set tcam port map in prs sw entry.
  * @pe: sw prs entry

@@ -124,12 +124,12 @@ void mvPp2PrsShadowRiSet(int index, unsigned int ri, unsigned int riMask)
 	mvPrsShadowTbl[index].ri = ri;
 }
 
-void mvPp2PrsShadowFinSet(int index, bool finish)
+void mvPp2PrsShadowFinSet(int index, int finish)
 {
 	mvPrsShadowTbl[index].finish = finish;
 }
 
-bool mvPp2PrsShadowFin(int index)
+int mvPp2PrsShadowFin(int index)
 {
 	return mvPrsShadowTbl[index].finish;
 }
@@ -690,7 +690,7 @@ int mvPp2PrsSwTcamPortSet(MV_PP2_PRS_ENTRY *pe, unsigned int port, int add)
 	return MV_OK;
 }
 
-int mvPp2PrsSwTcamPortGet(MV_PP2_PRS_ENTRY *pe, unsigned int port, bool *status)
+int mvPp2PrsSwTcamPortGet(MV_PP2_PRS_ENTRY *pe, unsigned int port, int *status)
 {
 	PTR_VALIDATE(pe);
 	POS_RANGE_VALIDATE(port, 7);/*TODO define max port val*/

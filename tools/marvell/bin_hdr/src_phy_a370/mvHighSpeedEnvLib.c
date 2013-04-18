@@ -88,6 +88,8 @@ MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum);
 MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
 
 /***************************   defined ******************************/
+#define MV_BOARD_TCLK_200MHZ	200000000
+#define MV_BOARD_TCLK_250MHZ	250000000
 #define mvBoardPexCapabilityGet(satr) 	(satr & 3)
 #define MV_PEX_UNIT_TO_IF(pexUnit)	(pexUnit)
 /****************************  Local function *****************************************/
@@ -103,6 +105,36 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		return INVALID_BAORD_ID;
 #endif
 
+}
+/*******************************************************************************
+* mvBoardTclkGet - Get the board Tclk (Controller clock)
+*
+* DESCRIPTION:
+*       This routine extract the controller core clock.
+*       This function uses the controller counters to make identification.
+*		Note: In order to avoid interference, make sure task context switch
+*		and interrupts will not occure during this function operation
+*
+* INPUT:
+*       countNum - Counter number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit clock cycles in Hertz.
+*
+*******************************************************************************/
+MV_U32 mvBoardTclkGet(MV_VOID)
+{
+#ifdef TCLK_AUTO_DETECT
+	if ((MV_REG_READ(MPP_SAMPLE_AT_RESET) & MSAR_TCLK_MASK) != 0)
+		return MV_BOARD_TCLK_200MHZ;
+	else
+		return MV_BOARD_TCLK_166MHZ;
+#else
+	return MV_BOARD_TCLK_200MHZ;
+#endif
 }
 /*********************************************************************/
 MV_U8 mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum)

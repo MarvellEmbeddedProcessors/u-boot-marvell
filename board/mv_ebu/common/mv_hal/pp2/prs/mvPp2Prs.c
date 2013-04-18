@@ -119,7 +119,7 @@ static int mvPrsDblVlanAiFreeGet(void)
 /******************************************************************************
  * Common utilities
  ******************************************************************************/
-static int mvPp2PrsEtypeEquals(MV_PP2_PRS_ENTRY *pe, int offset, unsigned short ethertype)
+static MV_BOOL mvPp2PrsEtypeEquals(MV_PP2_PRS_ENTRY *pe, int offset, unsigned short ethertype)
 {
 	unsigned char etype[MV_ETH_TYPE_LEN];
 
@@ -156,7 +156,7 @@ static void mvPp2PrsMatchMh(MV_PP2_PRS_ENTRY *pe, unsigned short mh)
  ******************************************************************************
  */
 
-static int mvPrsMacRangeEquals(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
+static MV_BOOL mvPrsMacRangeEquals(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
 {
 	int		index;
 	unsigned char 	tcamByte, tcamMask;
@@ -173,7 +173,7 @@ static int mvPrsMacRangeEquals(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
 	return MV_TRUE;
 }
 
-static int mvPrsMacRangeIntersec(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
+static MV_BOOL mvPrsMacRangeIntersec(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
 {
 	int		index;
 	unsigned char 	tcamByte, tcamMask, commonMask;
@@ -190,7 +190,7 @@ static int mvPrsMacRangeIntersec(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
 	return MV_TRUE;
 }
 
-static int mvPrsMacInRange(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
+static MV_BOOL mvPrsMacInRange(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
 {
 	int		index;
 	unsigned char 	tcamByte, tcamMask;
@@ -240,7 +240,7 @@ static MV_PP2_PRS_ENTRY *mvPrsMacDaFind(int port, unsigned char *da)
 	return mvPrsMacDaRangeFind((1 << port), da, mask, PRS_UDF_MAC_DEF);
 }
 
-static int mvPrsMacDaRangeAccept(int portMap, MV_U8 *da, MV_U8 *mask, unsigned int ri, unsigned int riMask, int finish)
+static int mvPrsMacDaRangeAccept(int portMap, MV_U8 *da, MV_U8 *mask, unsigned int ri, unsigned int riMask, MV_BOOL finish)
 {
 	int	tid, len;
 	MV_PP2_PRS_ENTRY *pe = NULL;
@@ -428,12 +428,12 @@ static int mvPrsMacDaRangeValid(unsigned int portMap, MV_U8 *da, MV_U8 *mask)
 	return MV_OK;
 }
 
-int mvPrsMacDaRangeSet(unsigned int portMap, MV_U8 *da, MV_U8 *mask, unsigned int ri, unsigned int riMask, int finish)
+int mvPrsMacDaRangeSet(unsigned int portMap, MV_U8 *da, MV_U8 *mask, unsigned int ri, unsigned int riMask, MV_BOOL finish)
 {
 	MV_PP2_PRS_ENTRY pe;
 	int tid;
 	unsigned int entryPmap;
-	int done = MV_FALSE;
+	MV_BOOL done = MV_FALSE;
 
 	/* step 1 - validation, ranges intersections are forbidden*/
 	if (mvPrsMacDaRangeValid(portMap, da, mask))
@@ -478,7 +478,7 @@ int mvPrsMacDaRangeDel(unsigned int portMap, MV_U8 *da, MV_U8 *mask)
 	MV_PP2_PRS_ENTRY pe;
 	int tid;
 	unsigned int entryPmap;
-	int found = MV_FALSE;
+	MV_BOOL found = MV_FALSE;
 
 	for (tid = PE_LAST_FREE_TID ; tid >= PE_FIRST_FREE_TID; tid--) {
 		if (!mvPp2PrsShadowIsValid(tid) || !(mvPp2PrsShadowLu(tid) == PRS_LU_MAC))
@@ -1559,12 +1559,12 @@ static int mvPrsEthTypeValid(unsigned int portMap, unsigned short ethertype)
 	return MV_OK;
 }
 
-int mvPrsEthTypeSet(int portMap, unsigned short ethertype, unsigned int ri, unsigned int riMask, int finish)
+int mvPrsEthTypeSet(int portMap, unsigned short ethertype, unsigned int ri, unsigned int riMask, MV_BOOL finish)
 {
 	MV_PP2_PRS_ENTRY pe;
 	int tid;
 	unsigned int  entryPmap;
-	int done = MV_FALSE;
+	MV_BOOL done = MV_FALSE;
 
 	/* step 1 - validation */
 	if (mvPrsEthTypeValid(portMap, ethertype))

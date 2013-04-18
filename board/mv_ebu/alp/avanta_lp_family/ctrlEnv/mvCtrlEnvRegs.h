@@ -124,15 +124,15 @@ extern "C" {
 #define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
 
 /* Sample at Reset */
-#define MPP_SAMPLE_AT_RESET(id)                 (0xE8200 + ( id * 0x4 ))
-#define DEVICE_ID_REG                            0x18238
-#define DEVICE_ID_REG_VEND_ID_OFFS               0
-#define DEVICE_ID_REG_VEND_ID_MASK               0xFFFF
-#define DEVICE_ID_REG_DEV_ID_OFFS                16
-#define DEVICE_ID_REG_DEV_ID_MASK                0xFFFF0000
-#define DEVICE_VERSION_ID_REG                    0x1823C
-#define DEVICE_VERSION_ID_REG_REV_ID_OFFS        8
-#define DEVICE_VERSION_ID_REG_REV_ID_MASK        0xF00
+#define MPP_SAMPLE_AT_RESET(id)		(0xE8200 + ( id * 0x4 ))
+#define DEV_ID_REG			0x18238
+#define VENDOR_ID_OFFS			0
+#define VENDOR_ID_MASK			0xFFFF
+#define DEVICE_ID_OFFS			16
+#define DEVICE_ID_MASK			0xFFFF0000
+#define DEV_VERSION_ID_REG		0x1823C
+#define REVISON_ID_OFFS			8
+#define REVISON_ID_MASK			0xF00
 
 /* SYSRSTn Length Counter */
 #define SYSRST_LENGTH_COUNTER_REG               0x18250

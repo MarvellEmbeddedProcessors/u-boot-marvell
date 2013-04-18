@@ -115,43 +115,12 @@ disclaimer.
 #define PEX0_MEM_SIZE			_64M
 #define PEX1_MEM_BASE			0xC4000000
 #define PEX1_MEM_SIZE			_64M
-#define PEX2_MEM_BASE			0xCC000000
-#define PEX2_MEM_SIZE			_64M
-#define PEX3_MEM_BASE			0xE0000000
-#define PEX3_MEM_SIZE			_64M
-#define PEX4_MEM_BASE			0xCA000000
-#define PEX4_MEM_SIZE			_32M
-#define PEX5_MEM_BASE			0x0	/*TBD*/
-#define PEX5_MEM_SIZE			_32M
-#define PEX6_MEM_BASE			0xE4000000
-#define PEX6_MEM_SIZE			_64M
-#define PEX7_MEM_BASE			0x0	/*TBD*/
-#define PEX7_MEM_SIZE			_32M
-#define PEX8_MEM_BASE			0xE8000000
-#define PEX8_MEM_SIZE			_64M
-#define PEX9_MEM_BASE			0xEC000000
-#define PEX9_MEM_SIZE			_64M
+
 
 #define PEX0_IO_BASE			0xF1100000
 #define PEX0_IO_SIZE			_1M
 #define PEX1_IO_BASE			0xF1200000
 #define PEX1_IO_SIZE			_1M
-#define PEX2_IO_BASE			0xF1300000
-#define PEX2_IO_SIZE			_1M
-#define PEX3_IO_BASE			0xF1400000
-#define PEX3_IO_SIZE			_1M
-#define PEX4_IO_BASE			0xF1500000
-#define PEX4_IO_SIZE			_1M
-#define PEX5_IO_BASE			0xF1600000
-#define PEX5_IO_SIZE			_1M
-#define PEX6_IO_BASE			0xF1700000
-#define PEX6_IO_SIZE			_1M
-#define PEX7_IO_BASE			0xF1800000
-#define PEX7_IO_SIZE			_1M
-#define PEX8_IO_BASE			0xF1900000
-#define PEX8_IO_SIZE			_1M
-#define PEX9_IO_BASE			0xF1A00000
-#define PEX9_IO_SIZE			_1M
 
 /* Device: CS0 - NOR or NAND, CS1 - SPI, CS2 - Boot ROM, CS3 - Boot device */
 /* NOR and NAND are configure to CS0 but it is posible to load
@@ -271,22 +240,6 @@ disclaimer.
 	{{PEX0_MEM_BASE,	0,	PEX0_MEM_SIZE	},	1,		EN},	/* PEX0_MEM */  \
 	{{PEX1_MEM_BASE,	0,	PEX1_MEM_SIZE	},	1,		DIS},	/* PEX1_MEM */  \
 	{{PEX1_IO_BASE,		0,	PEX1_IO_SIZE	},	TBL_UNUSED,	DIS},	/* PEX1_IO */   \
-	{{PEX2_MEM_BASE,	0,	PEX2_MEM_SIZE	},	2,		DIS},	/* PEX2_MEM */  \
-	{{PEX2_IO_BASE,		0,	PEX2_IO_SIZE	},	TBL_UNUSED,	DIS},	/* PEX2_IO */   \
-	{{PEX3_MEM_BASE,	0,	PEX3_MEM_SIZE	},	3,		DIS},	/* PEX3_MEM */  \
-	{{PEX3_IO_BASE,		0,	PEX3_IO_SIZE	},	TBL_UNUSED,	DIS},	/* PEX3_IO */   \
-	{{PEX4_MEM_BASE,	0,	PEX4_MEM_SIZE	},	4,		DIS},	/* PEX4_MEM */  \
-	{{PEX4_IO_BASE,		0,	PEX4_IO_SIZE	},	TBL_UNUSED,	DIS},	/* PEX4_IO */   \
-	{{PEX5_MEM_BASE,	0,	PEX5_MEM_SIZE	},	TBL_UNUSED,	DIS},	/* PEX5_MEM */  \
-	{{PEX5_IO_BASE,		0,	PEX5_IO_SIZE	},	TBL_UNUSED,	DIS},	/* PEX5_IO */   \
-	{{PEX6_MEM_BASE,	0,	PEX6_MEM_SIZE	},	5,		DIS},	/* PEX6_MEM */  \
-	{{PEX6_IO_BASE,		0,	PEX6_IO_SIZE	},	TBL_UNUSED,	DIS},	/* PEX6_IO */   \
-	{{PEX7_MEM_BASE,	0,	PEX7_MEM_SIZE	},	TBL_UNUSED,	DIS},	/* PEX7_MEM */  \
-	{{PEX7_IO_BASE,		0,	PEX7_IO_SIZE	},	TBL_UNUSED,	DIS},	/* PEX7_IO */   \
-	{{PEX8_MEM_BASE,	0,	PEX8_MEM_SIZE	},	6,		DIS},	/* PEX8_MEM */  \
-	{{PEX8_IO_BASE,		0,	PEX8_IO_SIZE	},	TBL_UNUSED,	DIS},	/* PEX8_IO */   \
-	{{PEX9_MEM_BASE,	0,	PEX9_MEM_SIZE	},	7,		DIS},	/* PEX9_MEM */  \
-	{{PEX9_IO_BASE,		0,	PEX9_IO_SIZE	},	TBL_UNUSED,	DIS},	/* PEX9_IO */   \
 	{{INTER_REGS_BASE,	0,	INTER_REGS_SIZE	},	MV_AHB_TO_MBUS_INTREG_WIN, EN},	/* INTER_REGS */\
 	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* DMA_UART   */\
 	{{SPI_CS_BASE,		0,	SPI_CS_SIZE	},	8,		DIS},	/* SPI_CS0 */   \
@@ -297,9 +250,8 @@ disclaimer.
 	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* SPI_CS5 */   \
 	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* SPI_CS6 */   \
 	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* SPI_CS7 */   \
-	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},	9,		EN},	/* DEV_BOOCS */   \
 	{{0xf8000000,		0,	_1M		},	13,		DIS},	/* BOOT_ROM_CS */\
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* PMU_SCRATCHPAD */   \
+	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},	9,		EN},	/* DEV_BOOCS */   \
 	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},	10,		DIS},	/* CRYPT_ENG */ \
 	{{PNC_BM_PHYS_BASE,	0,	PNC_BM_SIZE	},	TBL_UNUSED,	DIS},	/* PNC_BM */    \
 	{{TBL_TERM,		TBL_TERM, TBL_TERM	},	TBL_TERM,	TBL_TERM}               \

@@ -1017,8 +1017,8 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 #ifdef CONFIG_MACH_AVANTA_LP_FPGA
 	ctrlId = MV_88F66X0;
 #else
-	ctrlId = MV_REG_READ(DEVICE_ID_REG);
-	ctrlId = (ctrlId & (DEVICE_ID_REG_VEND_ID_MASK)) >> DEVICE_ID_REG_DEV_ID_OFFS;
+	ctrlId = MV_REG_READ(DEV_ID_REG);
+	ctrlId = (ctrlId & (VENDOR_ID_MASK)) >> VENDOR_ID_OFFS;
 #endif
 	switch (ctrlId) {
 	case 0x6660:
@@ -1051,8 +1051,8 @@ MV_U8 mvCtrlRevGet(MV_VOID)
 {
 	MV_U8 value;
 
-	value = MV_REG_READ(DEVICE_VERSION_ID_REG);
-	return  ((value & (DEVICE_VERSION_ID_REG_REV_ID_MASK) ) >> DEVICE_VERSION_ID_REG_REV_ID_OFFS);
+	value = MV_REG_READ(DEV_VERSION_ID_REG);
+	return  ((value & (REVISON_ID_MASK) ) >> REVISON_ID_OFFS);
 }
 
 /*******************************************************************************
@@ -1546,9 +1546,9 @@ MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
 #if defined(MV_INCLUDE_USB)
 	case USB_UNIT_ID:
 		if (enable == MV_FALSE)
-			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_USB_STOP_CLK_MASK(index));
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_USB_STOP_CLK_MASK);
 		else
-			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_USB_STOP_CLK_MASK(index));
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_USB_STOP_CLK_MASK);
 
 		break;
 #endif
@@ -1611,7 +1611,7 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 #endif
 #if defined(MV_INCLUDE_USB)
 	case USB_UNIT_ID:
-		if ((reg & PMC_USB_STOP_CLK_MASK(index)) == PMC_USB_STOP_CLK_STOP(index))
+		if ((reg & PMC_USB_STOP_CLK_MASK) == PMC_USB_STOP_CLK_STOP)
 			state = MV_FALSE;
 		else
 			state = MV_TRUE;

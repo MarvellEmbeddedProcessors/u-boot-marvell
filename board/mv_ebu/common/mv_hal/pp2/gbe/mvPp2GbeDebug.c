@@ -501,10 +501,12 @@ void mvPp2DropCntrs(int port)
 	mvEthRegPrint(MV_PP2_CLS_DROP_REG(MV_PPV2_PORT_PHYS(port)), "MV_PP2_CLS_DROP_REG");
 
 	if (MV_PON_PORT(port)) {
+#ifdef CONFIG_MV_PON
 		for (i = 0; i < CONFIG_MV_PON_TCONTS; i++) {
 			mvEthRegPrint2(MV_PP2_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);
 			mvEthRegPrint2(MV_PP2_TX_DESC_DROP_REG(i), "MV_PP2_TX_DESC_DROP_REG", i);
 		}
+#endif
 	} else {
 		i = MV_ETH_MAX_TCONT + port;
 		mvEthRegPrint2(MV_PP2_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);

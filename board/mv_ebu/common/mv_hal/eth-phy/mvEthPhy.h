@@ -87,6 +87,7 @@ extern "C" {
 #define MV_PHY_88E1340S 0x1C    /* 88E1340S */
 #define MV_PHY_88E1512  0x1D
 #define MV_PHY_88E1340  0x1E    /* 88E1340/x0a */
+#define MV_PHY_88E1543  0x2A     /* 88E15453 */
 #define MV_PHY_88E154X  0x2B     /* 88E1545M */
 #define MV_PHY_88E1340M 0x1F    /* 88E1340M/x0a */
 #define MV_PHY_88E1116R 0x24

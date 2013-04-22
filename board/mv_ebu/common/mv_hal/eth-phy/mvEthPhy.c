@@ -171,6 +171,7 @@ MV_STATUS mvEthPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 		mvEth1145PhyBasicInit(ethPortNum);
 		break;
 	case MV_PHY_88E154X:
+	case MV_PHY_88E1543:
 	case MV_PHY_88E1340M: /* BUG IN THE 1543 IS RETURNING THE 1340 ID FOR PORTS 3-4 */
 	/* case MV_PHY_KW2_INTERNAL_GE:
 		if (ethPortNum != ((MV_U32) -1))

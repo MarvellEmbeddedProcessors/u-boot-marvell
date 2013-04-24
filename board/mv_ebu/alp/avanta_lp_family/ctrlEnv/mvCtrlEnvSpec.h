@@ -468,7 +468,7 @@ typedef enum _mvTarget {
 	SPI_CS7,        /* 37 SPI_CS7				*/
 	BOOT_ROM_CS,    /* 38 BOOT_ROM_CS			*/
 	DEV_BOOCS,      /* 39 DEV_BOOCS				*/
-	CRYPT_ENG,     /* 41 Crypto0 Engine			*/
+	CRYPT0_ENG,     /* 41 Crypto0 Engine			*/
 	PNC_BM,         /* 43 PNC + BM				*/
 	MAX_TARGETS
 } MV_TARGET;

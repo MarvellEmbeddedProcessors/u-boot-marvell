@@ -101,7 +101,7 @@ MV_U32 mvCpuPclkGet(MV_VOID)
 		return MV_FPGA_CORE_CLK; /* FPGA is limited to 12.5Mhz */
 
 	if (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode))
-		return (MV_U32)(1000000 * simple_strtoul(freqMode.cpuFreq, NULL, 16));
+		return (MV_U32)(1000000 * freqMode.cpuFreq);
 	else
 		return (MV_U32)MV_ERROR;
 }
@@ -121,7 +121,7 @@ MV_U32 mvCpuL2ClkGet(MV_VOID)
 	MV_FREQ_MODE freqMode;
 
 	if (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode))
-		return (MV_U32)(1000000 * simple_strtoul(freqMode.l2Freq, NULL, 16));
+		return (MV_U32)(1000000 * freqMode.l2Freq);
 	else
 		return (MV_U32)MV_ERROR;;
 }

@@ -15,26 +15,25 @@
  * MA 02111-1307 USA
  */
 /*******************************************************************************
-Copyright (C) Marvell International Ltd. and its affiliates
+   Copyright (C) Marvell International Ltd. and its affiliates
 
 ********************************************************************************
-Marvell GPL License Option
+   Marvell GPL License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or
-modify this File in accordance with the terms and conditions of the General
-Public License Version 2, June 1991 (the "GPL License"), a copy of which is
-available along with the File in the license.txt file or by writing to the Free
-Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
-on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
+   If you received this File from Marvell, you may opt to use, redistribute and/or
+   modify this File in accordance with the terms and conditions of the General
+   Public License Version 2, June 1991 (the "GPL License"), a copy of which is
+   available along with the File in the license.txt file or by writing to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
+   on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
-DISCLAIMED.  The GPL License provides additional details about this warranty
-disclaimer.
+   THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
+   DISCLAIMED.  The GPL License provides additional details about this warranty
+   disclaimer.
 *******************************************************************************/
 #ifndef __CONFIG_MARVELL_H
 #define __CONFIG_MARVELL_H
-
 
 /***********/
 /* General */
@@ -49,7 +48,7 @@ disclaimer.
 #ifdef CONFIG_DB_88F6710_BP
 #define DB_88F6710
 #define MV88F6710
-#define MV88F67XX	
+#define MV88F67XX
 
 /**********************************/
 /* defines for DB-RD_88F6710	  */
@@ -58,7 +57,6 @@ disclaimer.
 #define RD_88F6710
 #define MV88F6710
 #define MV88F67XX
-
 
 /**********************************/
 /* defines for DB-78x60-BP REV2   */
@@ -85,7 +83,7 @@ disclaimer.
 #elif defined(CONFIG_RD_78460_NAS)
 
 /**********************************/
-/* defines for DB-78x60-NAS 	   */
+/* defines for DB-78x60-NAS        */
 /**********************************/
 	#define RD_78460_NAS
 	#define MV88F78X60
@@ -105,7 +103,7 @@ disclaimer.
 /* defines for DB-784MP-GP        */
 /**********************************/
 
-	#define DB_784MP_GP	
+	#define DB_784MP_GP
 	#define MV88F78X60
 
 #elif defined(CONFIG_RD_78460_CUSTOMER)
@@ -118,9 +116,12 @@ disclaimer.
 	#define MV88F78X60
 
 #else
-#error "*** Error: Board type unspecified\n"
 
-#endif // CONFIG_RD_78460_GP
+/***************************************/
+/* defines for Avanta LP - All boards  */
+/***************************************/
+	#define MV88F66XX
 
-#endif /* __CONFIG_MARVELL_H */
+#endif  // CONFIG_RD_78460_GP
 
+#endif  /* __CONFIG_MARVELL_H */

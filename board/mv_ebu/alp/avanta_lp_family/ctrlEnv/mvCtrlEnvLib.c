@@ -232,6 +232,9 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 {
 	MV_U32 i, gppMask;
 
+	/* Set I2C MPP's(MPP Group 1), before reading board configuration, using TWSI read */
+	MV_REG_WRITE(mvCtrlMppRegGet(1), mvBoardMppGet(1));
+
 	mvCtrlSatrInit();
 
 	/* If set to Auto detect, read board config info, update Eth-Complex config, MPP group types and switch info */
@@ -403,7 +406,9 @@ MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 {
 	MV_FREQ_MODE freqTable[] = MV_SAR_FREQ_MODES;
-	MV_U32 freqModeSatRValue = mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
+	MV_U32 freqModeSatRValue = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
+
+	freqModeSatRValue = ((freqModeSatRValue & 0x003E0000) >> 17);
 
 	if (MV_ERROR != freqModeSatRValue) {
 		*freqMode = freqTable[freqModeSatRValue];
@@ -436,7 +441,8 @@ MV_U32 mvCtrlSysConfigGet(MV_CONFIG_TYPE_ID configField)
 		return MV_ERROR;
 	}
 
-	if (configField < MV_CONFIG_TYPE_MAX_OPTION && mvBoardConfigTypeGet(configField, configInfo) == MV_OK)
+	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
+	    mvBoardConfigTypeGet(configField, configInfo) == MV_OK)
 		return boardOptionsConfig[configField];
 
 	DB(mvOsPrintf("%s: Error: Requested board config is not valid for this board(%d)\n", __func__, configField));
@@ -461,7 +467,7 @@ MV_U32 mvCtrlSysConfigGet(MV_CONFIG_TYPE_ID configField)
 MV_VOID mvCtrlSatrInit(void)
 {
 	MV_U32 satrVal[2];
-	MV_BOARD_SATR_INFO *satrInfo = NULL;
+	MV_BOARD_SATR_INFO satrInfo;
 	MV_U32 i;
 
 	/* initialize all S@R & Board configuration fields to -1 (MV_ERROR) */
@@ -472,8 +478,8 @@ MV_VOID mvCtrlSatrInit(void)
 	satrVal[1] = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
 
 	for (i = 0; i < MV_SATR_READ_MAX_OPTION; i++)
-		if ( mvBoardSatrInfoGet(i, satrInfo) == MV_OK )
-			satrOptionsConfig[satrInfo->satrId] = ((satrVal[satrInfo->regNum]  & (satrInfo->mask)) >> (satrInfo->offset));
+		if (mvBoardSatrInfoGet(i, &satrInfo) == MV_OK)
+			satrOptionsConfig[satrInfo.satrId] = ((satrVal[satrInfo.regNum]  & (satrInfo.mask)) >> (satrInfo.offset));
 
 }
 
@@ -506,7 +512,8 @@ MV_VOID mvCtrlSysConfigInit()
 			if ( mvBoardConfigTypeGet(i, configInfo) == MV_OK) {
 				/* each Expander conatins 2 registers */
 				regNum = configInfo->expanderNum * 2 + configInfo->regNum;
-				boardOptionsConfig[configInfo->configId] = ((configVal[regNum] & (configInfo->mask)) >> configInfo->offset);
+				boardOptionsConfig[configInfo->configId] =
+					(configVal[regNum] & configInfo->mask) >> configInfo->offset;
 			}
 		}
 	}
@@ -1073,11 +1080,7 @@ MV_U8 mvCtrlRevGet(MV_VOID)
 *******************************************************************************/
 MV_STATUS mvCtrlNameGet(char *pNameBuff)
 {
-	if (mvCtrlModelGet() == 0x7800)
-		mvOsSPrintf(pNameBuff, "%s78XX", SOC_NAME_PREFIX);
-	else
-		mvOsSPrintf(pNameBuff, "%s%x Rev %d",
-			    SOC_NAME_PREFIX, mvCtrlModelGet(), mvCtrlRevGet());
+	mvOsSPrintf(pNameBuff, "%s%x Rev %d", SOC_NAME_PREFIX, mvCtrlModelGet(), mvCtrlRevGet());
 	return MV_OK;
 }
 

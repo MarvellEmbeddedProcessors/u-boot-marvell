@@ -38,7 +38,6 @@
 #include "mvBoardEnvLib.h"
 #include "mvCpuIf.h"
 #include "mvCtrlEnvLib.h"
-#include "mv_mon_init.h"
 #include "mvDebug.h"
 #include "device/mvDevice.h"
 #include "twsi/mvTwsi.h"
@@ -103,6 +102,8 @@
 #else
 #define DB(x)
 #endif
+
+extern int display_dram_config(int print);
 
 /* CPU address decode table. */
 MV_CPU_DEC_WIN mvCpuAddrWinMap[] = MV_CPU_IF_ADDR_WIN_MAP_TBL;
@@ -284,8 +285,6 @@ int board_init(void)
 	mvCtrlEnvInit();
 
 	mvBoardDebugLed(2);
-	/* Init the Controller CPU interface */
-	mvCpuIfDramInit();
 #endif  /* CONFIG_MACH_AVANTA_LP_FPGA */
 
 	mvCpuIfInit(mvCpuAddrWinMap);
@@ -1001,9 +1000,31 @@ int board_mmc_init(bd_t *bis)
 
 #endif
 
+/*
+* print_cpuinfo - original U-Boot print function - used before code relocation
+*
+* DESCRIPTION:
+*       This function is called by board_init_f (before code relocation).
+*       no actual print is done here, due to global variables limitations (bss).
+*       after code relocation, we can start using global variables and print board information.
+ */
 int print_cpuinfo(void)
 {
+	return 0;
+}
+
+/*
+* late_print_cpuinfo - marvell U-Boot print function - used after code relocation
+*
+* DESCRIPTION:
+*       This function is called by board_init_r (after code relocation).
+*       all global variables limitations(bss) are off at this state
+ */
+int late_print_cpuinfo(void)
+{
 	char name[50];
+
+	mvBoardIdSet(mvBoardIdGet());
 
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	mvCtrlUpdatePexId();
@@ -1012,8 +1033,7 @@ int print_cpuinfo(void)
 	printf("Board: %s\n",  name);
 	mvCtrlModelRevNameGet(name);
 	printf("SoC:   %s\n", name);
-	if (mvCtrlModelRevGet() !=  MV_6710_Z1_ID)
-		printf("       running %d CPUs\n", mvCtrlGetCpuNum() + 1);
+	printf("       running %d CPUs\n", mvCtrlGetCpuNum() + 1);
 	if (!mvCtrlIsValidSatR())
 		printf("       Custom configuration\n");
 	mvCpuNameGet(name);
@@ -1024,14 +1044,14 @@ int print_cpuinfo(void)
 	printf(" BE\n");
 #endif
 
-	if (mvCtrlModelRevGet() !=  MV_6710_Z1_ID)
-		printf("       CPU %d\n",  whoAmI());
-	printf("       CPU    @ %d   [Hz]\n", mvCpuPclkGet());
-	printf("       L2     @ %d   [Hz]\n", mvCpuL2ClkGet());
-	printf("       TClock @ %d   [Hz]\n", mvTclkGet());
-	printf("       DDR    @ %d   [Hz]\n", CONFIG_SYS_BUS_CLK);
+	printf("       CPU %d\n",  whoAmI());
+	printf("       CPU    @ %d [MHz]\n", mvCpuPclkGet()/1000000);
+	printf("       L2     @ %d [MHz]\n", mvCpuL2ClkGet()/1000000);
+	printf("       TClock @ %d [MHz]\n", mvTclkGet()/1000000);
+	printf("       DDR    @ %d [MHz]\n", CONFIG_SYS_BUS_CLK/1000000);
 	printf("       DDR %dBit Width, %s Memory Access\n", mvCtrlDDRBudWidth(), mvCtrlDDRThruXbar() ? "XBAR" : "FastPath");
-	printf("       DDR ECC %s\n", mvCtrlDDRECC() ? "Enabled" : "Disabled");
+
+	display_dram_config(1);
 	return 0;
 }
 
@@ -1084,12 +1104,10 @@ int misc_init_r(void)
 
 #if defined(MV_INCLUDE_UNM_ETH) || defined(MV_INCLUDE_GIG_ETH)
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
-	if (boardId != DB_6650_ID)      //omriii : temp ID replace so it will compile -mv_main needs cleanup ! */
-		/* Init the PHY or Switch of the board */
-		mvCtrlSmiMasterSet(CPU_SMI_CTRL);
-		mvBoardEgigaPhyInit();
-		if (mvBoardIsInternalSwitchConnected(0) || mvBoardIsInternalSwitchConnected(1))
-			mvCtrlSmiMasterSet(SWITCH_SMI_CTRL);
+	mvCtrlSmiMasterSet(CPU_SMI_CTRL);
+	mvBoardEgigaPhyInit();
+	if (mvBoardIsInternalSwitchConnected(0) || mvBoardIsInternalSwitchConnected(1))
+		mvCtrlSmiMasterSet(SWITCH_SMI_CTRL);
 
 #endif
 #endif
@@ -1124,6 +1142,9 @@ void reset_cpu(ulong addr)
 
 void mv_cpu_init(void)
 {
+	/* Disable MBUS Err Prop - inorder to avoid data aborts */
+	MV_REG_BIT_RESET(SOC_COHERENCY_FABRIC_CTRL_REG, BIT8);
+#if 0
 	char *env;
 	volatile unsigned int temp;
 
@@ -1292,43 +1313,15 @@ void mv_cpu_init(void)
 	temp &= ~BIT13;
 	asm ("mcr p15, 0, %0, c1, c0, 0\n" \
 	     "mcr p15, 0, %0, c7, c5, 4" : : "r" (temp));  /* imb */
+#endif
 
-	/* Disable MBUS Err Prop - inorder to avoid data aborts */
-	MV_REG_BIT_RESET(SOC_COHERENCY_FABRIC_CTRL_REG, BIT8);
 }
 
 /* Set unit in power off mode acording to the detection of MPP/SERDES */
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
 void mv_set_power_scheme(void)
 {
-	char name[50];
-
-	mvBoardNameGet(name,50);
-
-	/*start with shutting the power to any unused cores
-	   this is done via mpps on the DB board*/
-	if (strcmp(name, "DB-78460-BP") == 0) {
-		//MV_U32 soc_type=mvCtrlModelRevGet();
-		switch (mvCtrlGetCpuNum() + 1) {
-		case 1:
-			/*in the DB board GPIO 40 * 57 control the power to CPU1 & CPU 2&3 */
-			/*make sure GPIO40 & 57 are enabled as output first*/
-			printf(" shutting the power to CORES 1,2 & 3\n");
-			mvGppTypeSet(1, (BIT8 | BIT25), ((MV_GPP_OUT & BIT8) | (MV_GPP_OUT & BIT25)) );
-			mvGppValueSet(1, (BIT8 | BIT25), (BIT8 | BIT25));
-			break;
-		case 2:
-			/*turn off the power to core 2&3 - GPIO 57*/
-			printf("shutting the power to CORES 2 & 3\n");
-			mvGppTypeSet(1, BIT25, ( MV_GPP_OUT & BIT25 ) );
-			mvGppValueSet(1, BIT25, BIT25);
-			break;
-		case 3: /*core 2 &3 are tied togther and can't be seperated*/
-		case 4:
-		default:
-			break;
-		}
-	}
+	return;
 }
 
 #endif

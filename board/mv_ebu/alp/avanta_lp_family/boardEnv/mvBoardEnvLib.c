@@ -96,7 +96,6 @@ extern MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[];
 
 /* Locals */
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
-static MV_U32 gBoardId = MV_INVALID_BOARD_ID;
 static MV_BOARD_INFO *board = NULL;
 
 
@@ -1991,7 +1990,7 @@ MV_STATUS mvBoardSatrInfoGet(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satr
 	 * and check if field is relevant to current running board */
 	for (i = 0; i < MV_SATR_READ_MAX_OPTION ; i++)
 		if (boardSatrInfo[i].satrId == satrClass) {
-			satrInfo = &boardSatrInfo[i];
+			*satrInfo = boardSatrInfo[i];
 			if (boardSatrInfo[i].isActiveForBoard[boardId])
 				return MV_OK;
 			else
@@ -2147,7 +2146,7 @@ MV_VOID mvBoardIdSet(MV_U32 boardId)
 	if (boardId >= MV_MAX_BOARD_ID)
 		mvOsPrintf("%s: Error: wrong boardId (%d)\n", __func__, boardId);
 
-	board = boardInfoTbl[gBoardId];
+	board = boardInfoTbl[boardId];
 }
 
 /*******************************************************************************
@@ -2212,8 +2211,7 @@ MV_U8 mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum)
 	slave.address = 0;
 	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
 
-	/* Read MPP module ID */
-	DB(mvOsPrintf("Board: Read S@R device read\n"));
+	DB(mvOsPrintf("Board: TWSI Read device\n"));
 	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(twsiClass, devNum);
 	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(twsiClass, devNum);
 
@@ -2223,7 +2221,7 @@ MV_U8 mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum)
 	twsiSlave.moreThen256 = MV_FALSE;
 
 	if (MV_OK != mvTwsiRead(0, &twsiSlave, &data, 1)) {
-		DB(mvOsPrintf("Board: Read S@R fail\n"));
+		mvOsPrintf("%s: Twsi Read fail\n", __func__);
 		return MV_ERROR;
 	}
 	DB(mvOsPrintf("Board: Read S@R succeded\n"));
@@ -2263,7 +2261,7 @@ MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(twsiClass, devNum);
 	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(twsiClass, devNum);
 	twsiSlave.validOffset = MV_TRUE;
-	DB(mvOsPrintf("Board: Write S@R device addr %x, type %x, data %x\n",
+	DB(mvOsPrintf("%s: TWSI Write addr %x, type %x, data %x\n", __func__,
 		      twsiSlave.slaveAddr.address, twsiSlave.slaveAddr.type, regVal));
 	/* Use offset as command */
 	twsiSlave.offset = regNum;

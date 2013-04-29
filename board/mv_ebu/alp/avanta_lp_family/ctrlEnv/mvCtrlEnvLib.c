@@ -608,12 +608,12 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *config)
 *******************************************************************************/
 MV_BOOL mvCtrlIsEepromEnabled()
 {
-	MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo = NULL;
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
 	MV_U8 value;
 
-	if(mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_JUMPER1_EEPROM_ENABLED ,ioInfo))
+	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, &ioInfo) == MV_OK)
 	{
-		value = mvBoardIoExpValGet(ioInfo);
+		value = mvBoardIoExpValGet(&ioInfo);
 		if (value != 0xFF)
 			return (value == 0x1);
 	}
@@ -641,10 +641,9 @@ MV_STATUS mvCtrlEepromEnable(MV_BOOL enable)
 {
 	MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo = NULL;
 
-	if(mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_JUMPER1_EEPROM_ENABLED ,ioInfo))
-	{
+	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, ioInfo))
 		return 	(mvBoardIoExpValSet(ioInfo, (enable? 0x1 : 0x0)));
-	}
+
 	mvOsPrintf("%s: Error: Read from IO expander failed (EEPROM enabled jumper)\n", __func__);
 	return MV_ERROR;
 }

@@ -449,7 +449,7 @@ MV_U32 mvBoardSysClkGet(MV_VOID)
 	return MV_FPGA_SYS_CLK;
 #else
 	if (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode))
-		return (MV_U32)(1000000 * simple_strtoul(freqMode.ddrFreq, NULL, 16));
+		return (MV_U32)(1000000 * freqMode.ddrFreq);
 	else
 		return MV_ERROR;
 #endif
@@ -2058,7 +2058,7 @@ MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass, MV_BOARD_IO_E
 	/* verify existance of requested config type, pull its data */
 	for (i = 0; i < board->numBoardIoExpanderInfo ; i++)
 		if (board->pBoardIoExpanderInfo[i].ioFieldid == ioClass) {
-			ioInfo = &board->pBoardIoExpanderInfo[i];
+			*ioInfo = board->pBoardIoExpanderInfo[i];
 			return MV_OK;
 		}
 	DB(mvOsPrintf("%s: Error: requested MV_IO_EXPANDER_TYPE_ID was not found\n", __func__));
@@ -2083,12 +2083,11 @@ MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass, MV_BOARD_IO_E
 *******************************************************************************/
 MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable)
 {
-	MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo = NULL;
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
 
-	if(mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_EXT_PHY_SMI_EN ,ioInfo))
-	{
-		return 	(mvBoardIoExpValSet(ioInfo, (enable? 0x0 : 0x1)));
-	}
+	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_EXT_PHY_SMI_EN, &ioInfo) == MV_OK)
+		return mvBoardIoExpValSet(&ioInfo, (enable ? 0x0 : 0x1));
+
 	mvOsPrintf("%s: Error: Read from IO expander failed (External Phy Buffer select)\n", __func__);
 	return MV_FALSE;
 }

@@ -131,6 +131,11 @@ IRQ_STACK_START_IN:
 
 reset:
 #ifdef CONFIG_MARVELL
+	/* Disable L2 Cache */
+	ldr r1, =0x0
+	ldr r0, =0xD0008100
+	str r1, [r0]
+
 	/* Disable windows that overlap with 0xF1000000	*/
 	/* By default, window #12 overlaps with 0xF1000000 */
 	mov  r1, #0

@@ -67,8 +67,7 @@ extern int  AT91F_DataflashInit(void);
 extern void dataflash_print_info(void);
 #endif
 
-extern unsigned int mvBoardIdGet(void);
-extern void mvBoardIdSet(unsigned int boardId);
+extern int late_print_cpuinfo(void);
 
 #if defined(CONFIG_HARD_I2C) ||	\
 	defined(CONFIG_SOFT_I2C)
@@ -170,9 +169,12 @@ static int display_banner(void)
  * gives a simple yet clear indication which part of the
  * initialization if failing.
  */
-static int display_dram_config(void)
+int display_dram_config(int print)
 {
 	int i;
+
+	if (!print)
+		return 0;
 
 #ifdef DEBUG
 	puts("RAM Configuration:\n");
@@ -336,8 +338,6 @@ void board_init_f(ulong bootflag)
 	gd->fdt_blob = (void*)getenv_ulong("fdtcontroladdr", 16,
 					   (uintptr_t)gd->fdt_blob);
 
-	mvBoardIdSet(mvBoardIdGet());
-
 	for (init_fnc_ptr = init_sequence; *init_fnc_ptr; ++init_fnc_ptr)
 		if ((*init_fnc_ptr)() != 0)
 			hang();
@@ -493,7 +493,7 @@ void board_init_f(ulong bootflag)
 	gd->bd->bi_baudrate = gd->baudrate;
 	/* Ram ist board specific, so move it to board code ... */
 	dram_init_banksize();
-	display_dram_config();  /* and display it */
+	display_dram_config(0);  /* Do not print board information before relocation */
 
 	gd->relocaddr = addr;
 	gd->start_addr_sp = addr_sp;
@@ -556,6 +556,9 @@ static void display_fdt_model(const void *blob)
 void board_init_r(gd_t *id, ulong dest_addr)
 {
 	ulong malloc_start;
+#if defined(CONFIG_DISPLAY_CPUINFO)
+	late_print_cpuinfo();          /* display cpu info (and speed) */
+#endif
 
 #if !defined(CONFIG_SYS_NO_FLASH)
 	ulong flash_size;

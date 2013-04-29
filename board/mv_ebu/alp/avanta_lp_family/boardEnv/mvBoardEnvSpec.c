@@ -70,30 +70,30 @@
 #define ARRSZ(x)                (sizeof(x) / sizeof(x[0]))
 
 MV_BOARD_SATR_INFO boardSatrInfo[] = {
-/* {	{MV_SATR_TYPE_ID SarID,		MV_U32 Mask,   	      Offset, regNum , 	       isActiveForBoard[]}} */
-	{ MV_SATR_CPU_DDR_L2_FREQ,	 0x003E0000,	  17,	       1, {1,0,0,0} },
-	{ MV_SATR_CORE_CLK_SELECT,	 0x00400000,	  22,	       1, {1,0,0,0} },
-	{ MV_SATR_CPU1_ENABLE,		 0x00008000,	  15,	       0, {1,0,0,0} },
-	{ MV_SATR_SSCG_DISABLE,		 0x00000002,	  1,	       0, {1,0,0,0} },
-	{ MV_SATR_I2C0_SERIAL_ROM,	 0X00000001,	  0,	       0, {1,0,0,0} },
-	{ MV_SATR_EXTERNAL_CPU_RESET,	 0X00000000,	  0,	       0, {1,0,0,0} },
-	{ MV_SATR_EXTERNAL_CORE_RESET,	 0X00000000,	  0,	       0, {1,0,0,0} },
-	{ MV_SATR_BOOT_DEVICE,		 0X000001F8,	  3,	       0, {1,0,0,0} },
-	{ MV_SATR_CPU_PLL_XTAL_BYPASS,	 0x00000200,	  9,	       0, {1,0,0,0} },
-	{ MV_SATR_PEX0_CLOCK,		 0x00000400,	  10,	       0, {1,0,0,0} },
-	{ MV_SATR_PEX1_CLOCK,		 0x00000800,	  11,	       0, {1,0,0,0} },
-	{ MV_SATR_REF_CLOCK_ENABLE,	 0x00000004,	  2,	       0, {1,0,0,0} },
-	{ MV_SATR_TESTER_OPTIONS,	 0x00080000,	  19,	       0, {1,0,0,0} },
-	{ MV_SATR_CPU0_ENDIANESS,	 0x00001000,	  12,	       0, {1,0,0,0} },
-	{ MV_SATR_CPU0_NMFI,		 0x00002000,	  13,	       0, {1,0,0,0} },
-	{ MV_SATR_CPU0_THUMB,		 0x00004000,	  14,	       0, {1,0,0,0} },
-	{ MV_SATR_EFUSE_BYPASS,		 0x00020000,	  17,	       0, {1,0,0,0} },
-	{ MV_SATR_POR_BYPASS,		 0x00100000,	  20,	       0, {1,0,0,0} },
-	{ MV_SATR_BOARD_ID,		 0x000000F0,	  4,	       1, {1,0,0,0} },
-	{ MV_SATR_WRITE_CPU_FREQ,	 0X0000001F,	  0,	       0, {1,0,1,0} },
-	{ MV_SATR_WRITE_CORE_CLK_SELECT, 0x00000001,	  0,	       1, {1,0,1,0} },
-	{ MV_SATR_WRITE_CPU1_ENABLE,	 0x00000002,	  1,	       1, {1,0,1,0} },
-	{ MV_SATR_WRITE_SSCG_DISABLE,	 0x00000004,	  2,	       1, {1,0,1,0} },
+/*{{MV_SATR_TYPE_ID SarID,	Mask	Offset, regNum, isActiveForBoard[]}*/
+{ MV_SATR_CPU_DDR_L2_FREQ,	 0x003E0000,	17,	1, {1, 1, 1, 1} },
+{ MV_SATR_CORE_CLK_SELECT,	 0x00400000,	22,	1, {1, 0, 0, 0} },
+{ MV_SATR_CPU1_ENABLE,		 0x00008000,	15,	0, {1, 0, 0, 0} },
+{ MV_SATR_SSCG_DISABLE,		 0x00000002,	1,	0, {1, 0, 0, 0} },
+{ MV_SATR_I2C0_SERIAL_ROM,	 0X00000001,	0,	0, {1, 0, 0, 0} },
+{ MV_SATR_EXTERNAL_CPU_RESET,	 0X00000000,	0,	0, {1, 0, 0, 0} },
+{ MV_SATR_EXTERNAL_CORE_RESET,	 0X00000000,	0,	0, {1, 0, 0, 0} },
+{ MV_SATR_BOOT_DEVICE,		 0X000001F8,	3,	0, {1, 1, 1, 1} },
+{ MV_SATR_CPU_PLL_XTAL_BYPASS,	 0x00000200,	9,	0, {1, 0, 0, 0} },
+{ MV_SATR_PEX0_CLOCK,		 0x00000400,	10,	0, {1, 0, 0, 0} },
+{ MV_SATR_PEX1_CLOCK,		 0x00000800,	11,	0, {1, 0, 0, 0} },
+{ MV_SATR_REF_CLOCK_ENABLE,	 0x00000004,	2,	0, {1, 0, 0, 0} },
+{ MV_SATR_TESTER_OPTIONS,	 0x00080000,	19,	0, {1, 0, 0, 0} },
+{ MV_SATR_CPU0_ENDIANESS,	 0x00001000,	12,	0, {1, 0, 0, 0} },
+{ MV_SATR_CPU0_NMFI,		 0x00002000,	13,	0, {1, 0, 0, 0} },
+{ MV_SATR_CPU0_THUMB,		 0x00004000,	14,	0, {1, 0, 0, 0} },
+{ MV_SATR_EFUSE_BYPASS,		 0x00020000,	17,	0, {1, 0, 0, 0} },
+{ MV_SATR_POR_BYPASS,		 0x00100000,	20,	0, {1, 0, 0, 0} },
+{ MV_SATR_BOARD_ID,		 0x000000F0,	4,	1, {1, 0, 0, 0} },
+{ MV_SATR_WRITE_CPU_FREQ,	 0X0000001F,	0,	0, {1, 0, 1, 0} },
+{ MV_SATR_WRITE_CORE_CLK_SELECT, 0x00000001,	0,	1, {1, 0, 1, 0} },
+{ MV_SATR_WRITE_CPU1_ENABLE,	 0x00000002,	1,	1, {1, 0, 1, 0} },
+{ MV_SATR_WRITE_SSCG_DISABLE,	 0x00000004,	2,	1, {1, 0, 1, 0} },
 };
 
 MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = {
@@ -294,14 +294,14 @@ MV_BOARD_TWSI_INFO db88f6650InfoBoardTwsiDev[] = {
 };
 MV_BOARD_MAC_INFO db88f6650InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x4									},
+	{ BOARD_MAC_SPEED_AUTO, 0x0									},
 	{ BOARD_MAC_SPEED_AUTO, 0x1									},
 	{ N_A,			N_A									}
 };
 MV_BOARD_MPP_TYPE_INFO db88f6650InfoBoardModTypeInfo[] = {
 	{
 		.boardMppSlic = MV_BOARD_AUTO,
-		.ethSataComplexOpt = (MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0),
+		.ethSataComplexOpt = MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0,
 		.ethPortsMode = 0x0
 	}
 };
@@ -395,7 +395,7 @@ MV_BOARD_INFO db88f6650_board_info = {
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,
 	/* Enable modules auto-detection. */
-	.configAutoDetect		= MV_TRUE
+	.configAutoDetect		= MV_FALSE
 };
 
 /*******************************************************************************

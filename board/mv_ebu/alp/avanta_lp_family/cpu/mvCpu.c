@@ -305,8 +305,5 @@ MV_U32 mvCpuIfPrintSystemConfig(MV_8 *buffer, MV_U32 index)
 *******************************************************************************/
 unsigned int whoAmI(void)
 {
-	MV_U32 value;
-
-	__asm__ __volatile__("mrc p15, 0, %0, c0, c0, 5   @ read CPUID reg\n" : "=r"(value) : : "memory");
-	return (value & 0x7);
+	return 0;
 }

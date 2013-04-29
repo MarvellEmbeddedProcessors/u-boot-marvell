@@ -181,8 +181,8 @@ extern "C" {
 #endif
 
 /* This define describes the maximum number of supported PEX Interfaces */
-#define MV_PEX_MAX_IF                           10
-#define MV_PEX_MAX_UNIT                         4
+#define MV_PEX_MAX_IF                           2
+#define MV_PEX_MAX_UNIT                         2
 #ifdef MV_INCLUDE_PEX
 #define MV_INCLUDE_PEX0
 #define MV_DISABLE_PEX_DEVICE_BAR

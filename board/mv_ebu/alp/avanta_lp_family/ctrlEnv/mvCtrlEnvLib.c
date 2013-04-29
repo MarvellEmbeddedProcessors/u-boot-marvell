@@ -171,6 +171,21 @@ static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
 	return index;
 }
 
+static MV_VOID mvCtrlPexConfig(MV_VOID)
+{
+	MV_U8 pexUnit;
+	MV_U32 pexIfNum = mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
+
+	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
+
+	memset(boardPexInfo, 0, sizeof(MV_BOARD_PEX_INFO));
+
+	for (pexUnit = 0; pexUnit < pexIfNum; pexUnit++)
+		boardPexInfo->pexUnitCfg[pexUnit] = PEX_BUS_MODE_X1;
+
+	boardPexInfo->boardPexIfNum = pexIfNum;
+}
+
 MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_66xx_INDEX_MAX] = {
 /*                           6660               6650            6610 */
 /* DRAM_UNIT_ID         */ { 1,                 1,              1, },
@@ -242,6 +257,8 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvCtrlSysConfigInit();
 		mvBoardInfoUpdate();
 	}
+
+	mvCtrlPexConfig();
 
 	/* write MPP's config and Board general config */
 	mvBoardConfigWrite();
@@ -700,7 +717,7 @@ MV_U32 mvCtrlMppRegGet(MV_U32 mppGroup)
 *******************************************************************************/
 MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
 {
-	return 1;
+	return mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
 }
 
 #endif
@@ -724,7 +741,7 @@ MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlPexMaxUnitGet(MV_VOID)
 {
-	return 1;
+	return mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
 }
 
 #if defined(MV_INCLUDE_PCI)

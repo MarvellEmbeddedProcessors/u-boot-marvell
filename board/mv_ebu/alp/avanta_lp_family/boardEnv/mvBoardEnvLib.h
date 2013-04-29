@@ -257,14 +257,8 @@ typedef struct {
 	MV_U8 spiCs;
 } MV_BOARD_TDM_INFO;
 
-typedef struct _boardPexUnitCfg {
-	MV_PEX_UNIT_CFG pexCfg;
-	MV_U8 pexLaneStat[4];                   /* 1: enabled, 2: disabled */
-} MV_BOARD_PEX_UNIT_CFG;
-
 typedef struct _boardPexInfo {
-	MV_PEXIF_INDX pexMapping[MV_PEX_MAX_IF];
-	MV_BOARD_PEX_UNIT_CFG pexUnitCfg[MV_PEX_MAX_UNIT];
+	MV_PEX_UNIT_CFG pexUnitCfg[MV_PEX_MAX_UNIT];
 	MV_U32 boardPexIfNum;
 } MV_BOARD_PEX_INFO;
 

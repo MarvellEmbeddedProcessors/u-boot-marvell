@@ -85,7 +85,7 @@ struct eth_device {
 	int state;
 
 	int  (*init) (struct eth_device *, bd_t *);
-	int  (*send) (struct eth_device *, void *packet, int length);
+	int  (*send) (struct eth_device *, volatile void *packet, int length);
 	int  (*recv) (struct eth_device *);
 	void (*halt) (struct eth_device *);
 #ifdef CONFIG_MCAST_TFTP

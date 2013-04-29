@@ -41,7 +41,7 @@ static int do_sar_list(int argc, char *const argv[])
 		printf("Determines the frequency of CPU/DDR/L2:\n");
 		printf("\n\n val | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
 		for (i=0; i < FREQ_MODES_NUM; i++) {
-			printf(" %d | %s | %s | %s | \n", i,
+			printf(" %d | %d | %d | %d | \n", i,
 				   pFreqModes[i].cpuFreq,
 				   pFreqModes[i].ddrFreq,
 				   pFreqModes[i].l2Freq);
@@ -94,7 +94,7 @@ static int do_sar_read(int argc, char *const argv[])
 	if ((strcmp(cmd, "cpufreq") == 0) && (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode)))
 	{
 		printf("\n\n val | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
-			printf(" %d | %s | %s | %s | \n", 
+			printf(" %d | %d | %d | %d | \n",
 				freqMode.id,
 				freqMode.cpuFreq,
  				freqMode.ddrFreq,
@@ -149,7 +149,7 @@ static int do_sar_read(int argc, char *const argv[])
 		if  (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode))
 		{
 			printf("\n\n val | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
-			printf(" %d | %s | %s | %s | \n", 
+			printf(" %d | %d | %d | %d | \n",
 				freqMode.id,
 				freqMode.cpuFreq,
  				freqMode.ddrFreq,

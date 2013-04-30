@@ -105,15 +105,12 @@ static MV_STATUS ethWinOverlapDetect(MV_U32 winNum, MV_ADDR_WIN *pAddrWin);
 *******************************************************************************/
 MV_STATUS mvPp2WinInit(MV_U32 dummy/*backward compability*/, MV_UNIT_WIN_INFO *addrWinMap)
 {
-	MV_U32 winNum, winPrioIndex = 0, regVal = 0;
+	MV_U32 winNum, winPrioIndex = 0;
 	MV_UNIT_WIN_INFO *addrDecWin;
 
 	/* Initiate Ethernet address decode */
 	/* First disable all address decode windows */
-	for (winNum = 0; winNum < ETH_MAX_DECODE_WIN; winNum++)
-		regVal |= MV_BIT_MASK(winNum);
-
-	mvPp2WrReg(ETH_BASE_ADDR_ENABLE_REG, regVal);
+	mvPp2WrReg(ETH_BASE_ADDR_ENABLE_REG, 0);
 
 	/* Go through all windows in user table until table terminator      */
 	for (winNum = 0; ((ethAddrDecPrioTab[winPrioIndex] != TBL_TERM) && (winNum < ETH_MAX_DECODE_WIN));) {
@@ -187,7 +184,7 @@ MV_STATUS mvPp2WinWrite(MV_U32 dummy/*backward compability*/, MV_U32 winNum, MV_
 	}
 
 	baseReg = (pAddrDecWin->addrWin.baseLow & ETH_WIN_BASE_MASK);
-	sizeReg = MV_REG_READ(ETH_WIN_SIZE_REG(winNum));
+	sizeReg = mvPp2RdReg(ETH_WIN_SIZE_REG(winNum));
 
 	/* set size */
 	alignment = 1 << ETH_WIN_SIZE_OFFS;
@@ -247,7 +244,7 @@ static MV_STATUS ethWinOverlapDetect(MV_U32 winNum, MV_ADDR_WIN *pAddrWin)
 	MV_UNIT_WIN_INFO addrDecWin;
 
 	/* Read base address enable register. Do not check disabled windows     */
-	baseAddrEnableReg = MV_REG_READ(ETH_BASE_ADDR_ENABLE_REG);
+	baseAddrEnableReg = mvPp2RdReg(ETH_BASE_ADDR_ENABLE_REG);
 
 	for (winNumIndex = 0; winNumIndex < ETH_MAX_DECODE_WIN; winNumIndex++) {
 		/* Do not check window itself           */
@@ -298,8 +295,8 @@ MV_STATUS mvPp2WinRead(MV_U32 dummy/*backward compability*/, MV_U32 winNum, MV_U
 		return MV_NOT_SUPPORTED;
 	}
 
-	baseReg = MV_REG_READ(ETH_WIN_BASE_REG(winNum));
-	sizeReg = MV_REG_READ(ETH_WIN_SIZE_REG(winNum));
+	baseReg = mvPp2RdReg(ETH_WIN_BASE_REG(winNum));
+	sizeReg = mvPp2RdReg(ETH_WIN_SIZE_REG(winNum));
 
 	alignment = 1 << ETH_WIN_SIZE_OFFS;
 	size = (sizeReg & ETH_WIN_SIZE_MASK) >> ETH_WIN_SIZE_OFFS;
@@ -314,7 +311,7 @@ MV_STATUS mvPp2WinRead(MV_U32 dummy/*backward compability*/, MV_U32 winNum, MV_U
 	pAddrDecWin->targetId = (baseReg & ETH_WIN_TARGET_MASK) >> ETH_WIN_TARGET_OFFS;
 
 	/* Check if window is enabled   */
-	if (~(MV_REG_READ(ETH_BASE_ADDR_ENABLE_REG)) & (1 << winNum))
+	if (~(mvPp2RdReg(ETH_BASE_ADDR_ENABLE_REG)) & (1 << winNum))
 		pAddrDecWin->enable = MV_TRUE;
 	else
 		pAddrDecWin->enable = MV_FALSE;

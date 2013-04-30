@@ -185,7 +185,7 @@ void        mvPp2PmeHwRegs(void)
 
 	mvOsPrintf("\nMV_PP2_PME_STATUS_2_REG[txp] registers that are not zero\n");
 	for (i = 0; i < MV_PP2_TOTAL_TXP_NUM; i++) {
-		regVal = MV_REG_READ(MV_PP2_PME_STATUS_2_REG(i));
+		regVal = mvPp2RdReg(MV_PP2_PME_STATUS_2_REG(i));
 		if (regVal != 0)
 			mvOsPrintf("%-32s[%2d]: 0x%x = 0x%08x\n",
 				"MV_PP2_PME_STATUS_2_REG", i, MV_PP2_PME_STATUS_2_REG(i), regVal);
@@ -193,7 +193,7 @@ void        mvPp2PmeHwRegs(void)
 
 	mvOsPrintf("\nMV_PP2_PME_STATUS_3_REG[txp] registers that are not zero\n");
 	for (i = 0; i < MV_PP2_TOTAL_TXP_NUM; i++) {
-		regVal = MV_REG_READ(MV_PP2_PME_STATUS_3_REG(i));
+		regVal = mvPp2RdReg(MV_PP2_PME_STATUS_3_REG(i));
 		if (regVal != 0)
 			mvOsPrintf("%-32s[%2d]: 0x%x = 0x%08x\n",
 				"MV_PP2_PME_STATUS_3_REG", i, MV_PP2_PME_STATUS_3_REG(i), regVal);

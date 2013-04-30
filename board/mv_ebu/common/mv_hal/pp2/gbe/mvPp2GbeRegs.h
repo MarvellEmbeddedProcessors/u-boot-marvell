@@ -780,7 +780,4 @@ typedef struct pp2_buff_hdr {
 #define ETH_TARGET_DEF_ID_REG      			(MV_PP2_REG_BASE + 0x4068)
 /*-----------------------------------------------------------------------------------------------*/
 
-#endif /* MV_PP2_GBE_REGS_H */
-
-
-
+#endif /* __MV_PP2_GBE_REGS_H__ */

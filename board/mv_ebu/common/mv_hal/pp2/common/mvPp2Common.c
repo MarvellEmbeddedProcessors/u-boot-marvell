@@ -68,7 +68,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int mvPp2WrReg(unsigned int offset, unsigned int  val)
 {
-	MV_REG_WRITE(offset, val);
+	MV_PP2_REG_WRITE(offset, val);
 #if defined(PP2_REG_WRITE_TRACE)
 	mvOsPrintf("REG:0x%08X	W:0x%08X\n", offset, val);
 #endif
@@ -77,7 +77,7 @@ int mvPp2WrReg(unsigned int offset, unsigned int  val)
 
 int mvPp2RdReg(unsigned int offset)
 {
-	unsigned int val = MV_REG_READ(offset);
+	unsigned int val = MV_PP2_REG_READ(offset);
 
 #if defined(PP2_REG_READ_TRACE)
 	mvOsPrintf("REG:0x%08X	R:0x%08X\n", offset, val);
@@ -88,13 +88,21 @@ int mvPp2RdReg(unsigned int offset)
 int mvPp2SPrintReg(char *buf, unsigned int  reg_addr, char *reg_name)
 
 {
-	return mvOsSPrintf(buf, "  %-32s: 0x%x = 0x%08x\n", reg_name, reg_addr, MV_REG_READ(reg_addr));
+	return mvOsSPrintf(buf, "  %-32s: 0x%x = 0x%08x\n", reg_name, reg_addr, mvPp2RdReg(reg_addr));
 }
 
 int mvPp2PrintReg(unsigned int reg_addr, char *reg_name)
 
 {
-	return mvOsPrintf("  %-32s: 0x%x = 0x%08x\n", reg_name, reg_addr, MV_REG_READ(reg_addr));
+	return mvOsPrintf("  %-32s: 0x%x = 0x%08x\n", reg_name, reg_addr, mvPp2RdReg(reg_addr));
+}
+
+void mvPp2RegPrint2(MV_U32 reg_addr, char *reg_name, MV_U32 index)
+{
+	char buf[64];
+
+	mvOsSPrintf(buf, "%s[%d]", reg_name, index);
+	mvOsPrintf("  %-32s: 0x%x = 0x%08x\n", buf, reg_addr, mvPp2RdReg(reg_addr));
 }
 
 void mvEthRegPrint(MV_U32 reg_addr, char *reg_name)

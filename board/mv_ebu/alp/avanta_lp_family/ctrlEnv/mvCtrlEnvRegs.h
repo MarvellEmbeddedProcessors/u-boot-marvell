@@ -302,7 +302,7 @@ typedef enum _mvTargetId {
 				*	     GPIO, MPP, and Miscellaneous */
 	PEX_TARGET_ID    = 4,  /* Port 4  -> PCI Express 0 and 1        */
 	CRYPT_TARGET_ID  = 9,  /* Port 9  -> Crypto Engine SRAM         */
-	PNC_BM_TARGET_ID = 12, /* Port 12 -> PNC + BM Unit              */
+	PP2_TARGET_ID = 15,    /* Port 12 -> PP2 Unit                   */
 	MAX_TARGETS_ID
 } MV_TARGET_ID;
 

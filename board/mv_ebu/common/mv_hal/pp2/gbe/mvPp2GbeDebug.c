@@ -80,18 +80,18 @@ MV_VOID mvPp2RxDmaRegsPrint(void)
 	mvOsPrintf("\n[RX DMA regs]\n");
 
 	for (i = 0; i < MV_BM_POOLS; i++)
-		mvEthRegPrint2(MV_PP2_POOL_BUF_SIZE_REG(i), "MV_PP2_POOL_BUF_SIZE_REG", i);
+		mvPp2RegPrint2(MV_PP2_POOL_BUF_SIZE_REG(i), "MV_PP2_POOL_BUF_SIZE_REG", i);
 
 	mvOsPrintf("\n");
 
 	for (i = 0; i < MV_ETH_RXQ_TOTAL_NUM; i++)
-		mvEthRegPrint2(MV_PP2_RXQ_CONFIG_REG(i), "MV_PP2_RXQ_CONFIG_REG", i);
+		mvPp2RegPrint2(MV_PP2_RXQ_CONFIG_REG(i), "MV_PP2_RXQ_CONFIG_REG", i);
 
 	mvOsPrintf("\n");
 
 	for (i = 0; i < MV_PP2_MAX_PORTS; i++) {
-		mvEthRegPrint2(MV_PP2_PORT_HWF_CONFIG_REG(i), "MV_PP2_PORT_HWF_CONFIG_REG", i);
-		mvEthRegPrint2(MV_PP2_RX_CTRL_REG(i), "MV_PP2_RX_CTRL_REG", i);
+		mvPp2RegPrint2(MV_PP2_PORT_HWF_CONFIG_REG(i), "MV_PP2_PORT_HWF_CONFIG_REG", i);
+		mvPp2RegPrint2(MV_PP2_RX_CTRL_REG(i), "MV_PP2_RX_CTRL_REG", i);
 	}
 	mvOsPrintf("\n");
 }
@@ -107,21 +107,21 @@ MV_VOID mvPp2DescMgrRegsRxPrint(void)
 
 	for (i = 0; i < MV_ETH_RXQ_TOTAL_NUM; i++) {
 		mvOsPrintf("RXQ %d:\n", i);
-		MV_REG_WRITE(MV_PP2_RXQ_NUM_REG, i);
-		val1 = MV_REG_READ(MV_PP2_RXQ_DESC_ADDR_REG);
-		val = MV_REG_READ(MV_PP2_RXQ_DESC_SIZE_REG);
+		mvPp2WrReg(MV_PP2_RXQ_NUM_REG, i);
+		val1 = mvPp2RdReg(MV_PP2_RXQ_DESC_ADDR_REG);
+		val = mvPp2RdReg(MV_PP2_RXQ_DESC_SIZE_REG);
 		mvOsPrintf("   addr reg: 0x%x,   size reg: 0x%x\n", val1, val);
 		mvOsPrintf("   * address: %d,  size: %d,  L2 deposit: %d\n", val1,
 				val & MV_PP2_RXQ_DESC_SIZE_MASK,
 				(val & MV_PP2_RXQ_L2_DEPOSIT_MASK) >> MV_PP2_RXQ_L2_DEPOSIT_OFFSET);
 
-		val = MV_REG_READ(MV_PP2_RXQ_STATUS_REG(i));
+		val = mvPp2RdReg(MV_PP2_RXQ_STATUS_REG(i));
 		mvOsPrintf("   status reg: 0x%x\n", val);
 		mvOsPrintf("   * occupied: %d,  non-occupied: %d\n",
 				(val & MV_PP2_RXQ_OCCUPIED_MASK) >> MV_PP2_RXQ_OCCUPIED_OFFSET,
 				(val & MV_PP2_RXQ_NON_OCCUPIED_MASK) >> MV_PP2_RXQ_NON_OCCUPIED_OFFSET);
 
-		val = MV_REG_READ(MV_PP2_RXQ_THRESH_REG);
+		val = mvPp2RdReg(MV_PP2_RXQ_THRESH_REG);
 		mvOsPrintf("   rx thresh reg: 0x%x\n", val);
 		mvOsPrintf("   * occupied thrsh: %d,  non-occupied thrsh: %d\n",
 				(val & MV_PP2_OCCUPIED_THRESH_MASK) >> MV_PP2_OCCUPIED_THRESH_OFFSET,
@@ -139,24 +139,24 @@ MV_VOID mvPp2DescMgrRegsTxPrint(void)
 
 	for (i = 0; i < MV_PP2_TXQ_TOTAL_NUM; i++) {
 		mvOsPrintf("TXQ %d:\n", i);
-		MV_REG_WRITE(MV_PP2_TXQ_NUM_REG, i);
-		val1 = MV_REG_READ(MV_PP2_TXQ_DESC_ADDR_REG);
-		val = MV_REG_READ(MV_PP2_TXQ_DESC_SIZE_REG);
-		val2 = MV_REG_READ(MV_PP2_TXQ_DESC_HWF_SIZE_REG);
+		mvPp2WrReg(MV_PP2_TXQ_NUM_REG, i);
+		val1 = mvPp2RdReg(MV_PP2_TXQ_DESC_ADDR_REG);
+		val = mvPp2RdReg(MV_PP2_TXQ_DESC_SIZE_REG);
+		val2 = mvPp2RdReg(MV_PP2_TXQ_DESC_HWF_SIZE_REG);
 		mvOsPrintf("   addr reg: 0x%x,   size reg: 0x%x,  hwf size reg: 0x%x\n", val1, val, val2);
 		mvOsPrintf("   * address: %d,  size: %d,   hwf size: %d\n", val1, val, val2);
 
-		val = MV_REG_READ(MV_PP2_TXQ_SENT_REG(i));
+		val = mvPp2RdReg(MV_PP2_TXQ_SENT_REG(i));
 		mvOsPrintf("   status reg: 0x%x\n", val);
 		mvOsPrintf("   * transmitted count: %d\n",
 				(val & MV_PP2_TRANSMITTED_COUNT_MASK) >> MV_PP2_TRANSMITTED_COUNT_OFFSET);
 
-		val = MV_REG_READ(MV_PP2_TXQ_THRESH_REG);
+		val = mvPp2RdReg(MV_PP2_TXQ_THRESH_REG);
 		mvOsPrintf("   tx thresh reg: 0x%x\n", val);
 		mvOsPrintf("   * transmitted thrsh: %d\n",
 				(val & MV_PP2_TRANSMITTED_THRESH_MASK) >> MV_PP2_TRANSMITTED_THRESH_OFFSET);
 
-		val = MV_REG_READ(MV_PP2_TXQ_PENDING_REG);
+		val = mvPp2RdReg(MV_PP2_TXQ_PENDING_REG);
 		mvOsPrintf("   desc status reg: 0x%x\n", val);
 		mvOsPrintf("   * pending: %d,  hwf pending: %d\n",
 				(val & MV_PP2_TXQ_PENDING_MASK) >> MV_PP2_TXQ_PENDING_OFFSET,
@@ -174,10 +174,10 @@ MV_VOID mvPp2DescMgrRegsAggrTxPrint(void)
 
 	for (i = 0; i < CONFIG_NR_CPUS; i++) {
 		mvOsPrintf("CPU %d:\n", i);
-		MV_REG_WRITE(MV_PP2_TXQ_NUM_REG, i);
-		val1 = MV_REG_READ(MV_PP2_AGGR_TXQ_DESC_ADDR_REG(i));
-		val = MV_REG_READ(MV_PP2_AGGR_TXQ_DESC_SIZE_REG(i));
-		val2 = MV_REG_READ(MV_PP2_AGGR_TXQ_STATUS_REG(i));
+		mvPp2WrReg(MV_PP2_TXQ_NUM_REG, i);
+		val1 = mvPp2RdReg(MV_PP2_AGGR_TXQ_DESC_ADDR_REG(i));
+		val = mvPp2RdReg(MV_PP2_AGGR_TXQ_DESC_SIZE_REG(i));
+		val2 = mvPp2RdReg(MV_PP2_AGGR_TXQ_STATUS_REG(i));
 		mvOsPrintf("   addr reg: 0x%x,   size reg: 0x%x,  status reg: 0x%x\n", val1, val, val2);
 		mvOsPrintf("   * address: %d,  size: %d,   pending: %d\n", val1, val, val2);
 	}
@@ -193,18 +193,18 @@ MV_VOID mvPp2AddressDecodeRegsPrint(void)
 
 	for (i = 0; i < ETH_MAX_DECODE_WIN; i++) {
 		mvOsPrintf("window %d:\n", i);
-		val = MV_REG_READ(ETH_WIN_BASE_REG(i));
+		val = mvPp2RdReg(ETH_WIN_BASE_REG(i));
 		mvOsPrintf("   win base reg: 0x%x\n", val);
 		mvOsPrintf("   * target :%d,  attr: %d,  base addr: %d\n", val & ETH_WIN_TARGET_MASK,
 			(val & ETH_WIN_ATTR_MASK) >> ETH_WIN_ATTR_OFFS, (val & ETH_WIN_BASE_MASK) >> ETH_WIN_BASE_OFFS);
 
-		val = MV_REG_READ(ETH_WIN_SIZE_REG(i));
+		val = mvPp2RdReg(ETH_WIN_SIZE_REG(i));
 		mvOsPrintf("   win size reg: 0x%x\n", val);
 		mvOsPrintf("   * size: %d\n", (val & ETH_WIN_SIZE_MASK) >> ETH_WIN_SIZE_OFFS);
-		val = MV_REG_READ(ETH_WIN_REMAP_REG(i));
+		val = mvPp2RdReg(ETH_WIN_REMAP_REG(i));
 	}
 
-	val = MV_REG_READ(ETH_BASE_ADDR_ENABLE_REG);
+	val = mvPp2RdReg(ETH_BASE_ADDR_ENABLE_REG);
 	mvOsPrintf("base addr enable reg: 0x%x\n", val);
 	mvOsPrintf("\n");
 }
@@ -343,23 +343,23 @@ void mvPp2IsrRegs(int port)
 	physPort = MV_PPV2_PORT_PHYS(port);
 
 	mvOsPrintf("\n[PPv2 ISR registers: port=%d - %s]\n", port, MV_PON_PORT(port) ? "PON" : "GMAC");
-	mvEthRegPrint(MV_PP2_ISR_RXQ_GROUP_REG(port), "MV_PP2_ISR_RXQ_GROUP_REG");
-	mvEthRegPrint(MV_PP2_ISR_ENABLE_REG(port), "MV_PP2_ISR_ENABLE_REG");
-	mvEthRegPrint(MV_PP2_ISR_RX_TX_CAUSE_REG(physPort), "MV_PP2_ISR_RX_TX_CAUSE_REG");
-	mvEthRegPrint(MV_PP2_ISR_RX_TX_MASK_REG(physPort), "MV_PP2_ISR_RX_TX_MASK_REG");
+	mvPp2PrintReg(MV_PP2_ISR_RXQ_GROUP_REG(port), "MV_PP2_ISR_RXQ_GROUP_REG");
+	mvPp2PrintReg(MV_PP2_ISR_ENABLE_REG(port), "MV_PP2_ISR_ENABLE_REG");
+	mvPp2PrintReg(MV_PP2_ISR_RX_TX_CAUSE_REG(physPort), "MV_PP2_ISR_RX_TX_CAUSE_REG");
+	mvPp2PrintReg(MV_PP2_ISR_RX_TX_MASK_REG(physPort), "MV_PP2_ISR_RX_TX_MASK_REG");
 
-	mvEthRegPrint(MV_PP2_ISR_RX_ERR_CAUSE_REG(physPort), "MV_PP2_ISR_RX_ERR_CAUSE_REG");
-	mvEthRegPrint(MV_PP2_ISR_RX_ERR_MASK_REG(physPort), "MV_PP2_ISR_RX_ERR_MASK_REG");
+	mvPp2PrintReg(MV_PP2_ISR_RX_ERR_CAUSE_REG(physPort), "MV_PP2_ISR_RX_ERR_CAUSE_REG");
+	mvPp2PrintReg(MV_PP2_ISR_RX_ERR_MASK_REG(physPort), "MV_PP2_ISR_RX_ERR_MASK_REG");
 
 	if (MV_PON_PORT(port)) {
-		mvEthRegPrint(MV_PP2_ISR_PON_TX_UNDR_CAUSE_REG, "MV_PP2_ISR_PON_TX_UNDR_CAUSE_REG");
-		mvEthRegPrint(MV_PP2_ISR_PON_TX_UNDR_MASK_REG, "MV_PP2_ISR_PON_TX_UNDR_MASK_REG");
+		mvPp2PrintReg(MV_PP2_ISR_PON_TX_UNDR_CAUSE_REG, "MV_PP2_ISR_PON_TX_UNDR_CAUSE_REG");
+		mvPp2PrintReg(MV_PP2_ISR_PON_TX_UNDR_MASK_REG, "MV_PP2_ISR_PON_TX_UNDR_MASK_REG");
 	} else {
-		mvEthRegPrint(MV_PP2_ISR_TX_ERR_CAUSE_REG(physPort), "MV_PP2_ISR_TX_ERR_CAUSE_REG");
-		mvEthRegPrint(MV_PP2_ISR_TX_ERR_MASK_REG(physPort), "MV_PP2_ISR_TX_ERR_MASK_REG");
+		mvPp2PrintReg(MV_PP2_ISR_TX_ERR_CAUSE_REG(physPort), "MV_PP2_ISR_TX_ERR_CAUSE_REG");
+		mvPp2PrintReg(MV_PP2_ISR_TX_ERR_MASK_REG(physPort), "MV_PP2_ISR_TX_ERR_MASK_REG");
 	}
-	mvEthRegPrint(MV_PP2_ISR_MISC_CAUSE_REG, "MV_PP2_ISR_MISC_CAUSE_REG");
-	mvEthRegPrint(MV_PP2_ISR_MISC_MASK_REG, "MV_PP2_ISR_MISC_MASK_REG");
+	mvPp2PrintReg(MV_PP2_ISR_MISC_CAUSE_REG, "MV_PP2_ISR_MISC_CAUSE_REG");
+	mvPp2PrintReg(MV_PP2_ISR_MISC_MASK_REG, "MV_PP2_ISR_MISC_MASK_REG");
 }
 
 void mvPp2PhysRxqRegs(int rxq)
@@ -369,17 +369,17 @@ void mvPp2PhysRxqRegs(int rxq)
 	if (mvPp2MaxCheck(rxq, MV_ETH_RXQ_TOTAL_NUM, "physical rxq"))
 		return;
 
-	MV_REG_WRITE(MV_PP2_RXQ_NUM_REG, rxq);
-	mvEthRegPrint(MV_PP2_RXQ_NUM_REG, "MV_PP2_RXQ_NUM_REG");
-	mvEthRegPrint(MV_PP2_RXQ_DESC_ADDR_REG, "MV_PP2_RXQ_DESC_ADDR_REG");
-	mvEthRegPrint(MV_PP2_RXQ_DESC_SIZE_REG, "MV_PP2_RXQ_DESC_SIZE_REG");
-	mvEthRegPrint(MV_PP2_RXQ_STATUS_REG(rxq), "MV_PP2_RXQ_STATUS_REG");
-	mvEthRegPrint(MV_PP2_RXQ_THRESH_REG, "MV_PP2_RXQ_THRESH_REG");
-	mvEthRegPrint(MV_PP2_RXQ_INDEX_REG, "MV_PP2_RXQ_INDEX_REG");
-	mvEthRegPrint(MV_PP2_RXQ_CONFIG_REG(rxq), "MV_PP2_RXQ_CONFIG_REG");
-	mvEthRegPrint(MV_PP2_RXQ_SNOOP_REG(rxq), "MV_PP2_RXQ_SNOOP_REG");
-	mvEthRegPrint(MV_PP2_RX_EARLY_DROP_REG(rxq), "MV_PP2_RX_EARLY_DROP_REG");
-	mvEthRegPrint(MV_PP2_RX_DESC_DROP_REG(rxq), "MV_PP2_RX_DESC_DROP_REG");
+	mvPp2WrReg(MV_PP2_RXQ_NUM_REG, rxq);
+	mvPp2PrintReg(MV_PP2_RXQ_NUM_REG, "MV_PP2_RXQ_NUM_REG");
+	mvPp2PrintReg(MV_PP2_RXQ_DESC_ADDR_REG, "MV_PP2_RXQ_DESC_ADDR_REG");
+	mvPp2PrintReg(MV_PP2_RXQ_DESC_SIZE_REG, "MV_PP2_RXQ_DESC_SIZE_REG");
+	mvPp2PrintReg(MV_PP2_RXQ_STATUS_REG(rxq), "MV_PP2_RXQ_STATUS_REG");
+	mvPp2PrintReg(MV_PP2_RXQ_THRESH_REG, "MV_PP2_RXQ_THRESH_REG");
+	mvPp2PrintReg(MV_PP2_RXQ_INDEX_REG, "MV_PP2_RXQ_INDEX_REG");
+	mvPp2PrintReg(MV_PP2_RXQ_CONFIG_REG(rxq), "MV_PP2_RXQ_CONFIG_REG");
+	mvPp2PrintReg(MV_PP2_RXQ_SNOOP_REG(rxq), "MV_PP2_RXQ_SNOOP_REG");
+	mvPp2PrintReg(MV_PP2_RX_EARLY_DROP_REG(rxq), "MV_PP2_RX_EARLY_DROP_REG");
+	mvPp2PrintReg(MV_PP2_RX_DESC_DROP_REG(rxq), "MV_PP2_RX_DESC_DROP_REG");
 }
 
 void mvPp2PhysTxqRegs(int txq)
@@ -389,16 +389,16 @@ void mvPp2PhysTxqRegs(int txq)
 	if (mvPp2MaxCheck(txq, MV_PP2_TXQ_TOTAL_NUM, "physical txq"))
 		return;
 
-	MV_REG_WRITE(MV_PP2_TXQ_NUM_REG, txq);
-	mvEthRegPrint(MV_PP2_TXQ_NUM_REG, "MV_PP2_TXQ_NUM_REG");
-	mvEthRegPrint(MV_PP2_TXQ_DESC_ADDR_REG, "MV_PP2_TXQ_DESC_ADDR_REG");
-	mvEthRegPrint(MV_PP2_TXQ_DESC_SIZE_REG, "MV_PP2_TXQ_DESC_SIZE_REG");
-	mvEthRegPrint(MV_PP2_TXQ_DESC_HWF_SIZE_REG, "MV_PP2_TXQ_DESC_HWF_SIZE_REG");
-	mvEthRegPrint(MV_PP2_TXQ_INDEX_REG, "MV_PP2_TXQ_INDEX_REG");
-	mvEthRegPrint(MV_PP2_TXQ_PREF_BUF_REG, "MV_PP2_TXQ_PREF_BUF_REG");
-	mvEthRegPrint(MV_PP2_TXQ_PENDING_REG, "MV_PP2_TXQ_PENDING_REG");
-	mvEthRegPrint(MV_PP2_TXQ_SENT_REG(txq), "MV_PP2_TXQ_SENT_REG");
-	mvEthRegPrint(MV_PP2_TXQ_INT_STATUS_REG, "MV_PP2_TXQ_INT_STATUS_REG");
+	mvPp2WrReg(MV_PP2_TXQ_NUM_REG, txq);
+	mvPp2PrintReg(MV_PP2_TXQ_NUM_REG, "MV_PP2_TXQ_NUM_REG");
+	mvPp2PrintReg(MV_PP2_TXQ_DESC_ADDR_REG, "MV_PP2_TXQ_DESC_ADDR_REG");
+	mvPp2PrintReg(MV_PP2_TXQ_DESC_SIZE_REG, "MV_PP2_TXQ_DESC_SIZE_REG");
+	mvPp2PrintReg(MV_PP2_TXQ_DESC_HWF_SIZE_REG, "MV_PP2_TXQ_DESC_HWF_SIZE_REG");
+	mvPp2PrintReg(MV_PP2_TXQ_INDEX_REG, "MV_PP2_TXQ_INDEX_REG");
+	mvPp2PrintReg(MV_PP2_TXQ_PREF_BUF_REG, "MV_PP2_TXQ_PREF_BUF_REG");
+	mvPp2PrintReg(MV_PP2_TXQ_PENDING_REG, "MV_PP2_TXQ_PENDING_REG");
+	mvPp2PrintReg(MV_PP2_TXQ_SENT_REG(txq), "MV_PP2_TXQ_SENT_REG");
+	mvPp2PrintReg(MV_PP2_TXQ_INT_STATUS_REG, "MV_PP2_TXQ_INT_STATUS_REG");
 }
 
 void mvPp2PortTxqRegs(int port, int txp, int txq)
@@ -421,10 +421,10 @@ void mvPp2AggrTxqRegs(int cpu)
 	if (mvPp2CpuCheck(cpu))
 		return;
 
-	mvEthRegPrint(MV_PP2_AGGR_TXQ_DESC_ADDR_REG(cpu), "MV_PP2_AGGR_TXQ_DESC_ADDR_REG");
-	mvEthRegPrint(MV_PP2_AGGR_TXQ_DESC_SIZE_REG(cpu), "MV_PP2_AGGR_TXQ_DESC_SIZE_REG");
-	mvEthRegPrint(MV_PP2_AGGR_TXQ_STATUS_REG(cpu), "MV_PP2_AGGR_TXQ_STATUS_REG");
-	mvEthRegPrint(MV_PP2_AGGR_TXQ_INDEX_REG(cpu), "MV_PP2_AGGR_TXQ_INDEX_REG");
+	mvPp2PrintReg(MV_PP2_AGGR_TXQ_DESC_ADDR_REG(cpu), "MV_PP2_AGGR_TXQ_DESC_ADDR_REG");
+	mvPp2PrintReg(MV_PP2_AGGR_TXQ_DESC_SIZE_REG(cpu), "MV_PP2_AGGR_TXQ_DESC_SIZE_REG");
+	mvPp2PrintReg(MV_PP2_AGGR_TXQ_STATUS_REG(cpu), "MV_PP2_AGGR_TXQ_STATUS_REG");
+	mvPp2PrintReg(MV_PP2_AGGR_TXQ_INDEX_REG(cpu), "MV_PP2_AGGR_TXQ_INDEX_REG");
 }
 
 void mvPp2AddrDecodeRegs(void)
@@ -434,19 +434,19 @@ void mvPp2AddrDecodeRegs(void)
 
 	/* ToDo - print Misc interrupt Cause and Mask registers */
 
-	mvEthRegPrint(ETH_BASE_ADDR_ENABLE_REG, "ETH_BASE_ADDR_ENABLE_REG");
-	mvEthRegPrint(ETH_TARGET_DEF_ADDR_REG, "ETH_TARGET_DEF_ADDR_REG");
-	mvEthRegPrint(ETH_TARGET_DEF_ID_REG, "ETH_TARGET_DEF_ID_REG");
+	mvPp2PrintReg(ETH_BASE_ADDR_ENABLE_REG, "ETH_BASE_ADDR_ENABLE_REG");
+	mvPp2PrintReg(ETH_TARGET_DEF_ADDR_REG, "ETH_TARGET_DEF_ADDR_REG");
+	mvPp2PrintReg(ETH_TARGET_DEF_ID_REG, "ETH_TARGET_DEF_ID_REG");
 
-	regValue = MV_REG_READ(ETH_BASE_ADDR_ENABLE_REG);
+	regValue = mvPp2RdReg(ETH_BASE_ADDR_ENABLE_REG);
 	for (win = 0; win < ETH_MAX_DECODE_WIN; win++) {
 		if (regValue & (1 << win))
 			continue; /* window is disable */
 		mvOsPrintf("\t win[%d]\n", win);
-		mvEthRegPrint(ETH_WIN_BASE_REG(win), "\t ETH_WIN_BASE_REG");
-		mvEthRegPrint(ETH_WIN_SIZE_REG(win), "\t ETH_WIN_SIZE_REG");
+		mvPp2PrintReg(ETH_WIN_BASE_REG(win), "\t ETH_WIN_BASE_REG");
+		mvPp2PrintReg(ETH_WIN_SIZE_REG(win), "\t ETH_WIN_SIZE_REG");
 		if (win < ETH_MAX_HIGH_ADDR_REMAP_WIN)
-			mvEthRegPrint(ETH_WIN_REMAP_REG(win), "\t ETH_WIN_REMAP_REG");
+			mvPp2PrintReg(ETH_WIN_REMAP_REG(win), "\t ETH_WIN_REMAP_REG");
 	}
 }
 
@@ -459,37 +459,37 @@ void mvPp2TxSchedRegs(int port, int txp)
 
 	mvOsPrintf("\n[TXP Scheduler registers: port=%d, txp=%d, physPort=%d]\n", port, txp, physTxp);
 
-	MV_REG_WRITE(MV_PP2_TXP_SCHED_PORT_INDEX_REG, physTxp);
-	mvEthRegPrint(MV_PP2_TXP_SCHED_PORT_INDEX_REG, "MV_PP2_TXP_SCHED_PORT_INDEX_REG");
-	mvEthRegPrint(MV_PP2_TXP_SCHED_Q_CMD_REG, "MV_PP2_TXP_SCHED_Q_CMD_REG");
-	mvEthRegPrint(MV_PP2_TXP_SCHED_CMD_1_REG, "MV_PP2_TXP_SCHED_CMD_1_REG");
-	mvEthRegPrint(MV_PP2_TXP_SCHED_FIXED_PRIO_REG, "MV_PP2_TXP_SCHED_FIXED_PRIO_REG");
-	mvEthRegPrint(MV_PP2_TXP_SCHED_PERIOD_REG, "MV_PP2_TXP_SCHED_PERIOD_REG");
-	mvEthRegPrint(MV_PP2_TXP_SCHED_MTU_REG, "MV_PP2_TXP_SCHED_MTU_REG");
-	mvEthRegPrint(MV_PP2_TXP_SCHED_REFILL_REG, "MV_PP2_TXP_SCHED_REFILL_REG");
-	mvEthRegPrint(MV_PP2_TXP_SCHED_TOKEN_SIZE_REG, "MV_PP2_TXP_SCHED_TOKEN_SIZE_REG");
-	mvEthRegPrint(MV_PP2_TXP_SCHED_TOKEN_CNTR_REG, "MV_PP2_TXP_SCHED_TOKEN_CNTR_REG");
+	mvPp2WrReg(MV_PP2_TXP_SCHED_PORT_INDEX_REG, physTxp);
+	mvPp2PrintReg(MV_PP2_TXP_SCHED_PORT_INDEX_REG, "MV_PP2_TXP_SCHED_PORT_INDEX_REG");
+	mvPp2PrintReg(MV_PP2_TXP_SCHED_Q_CMD_REG, "MV_PP2_TXP_SCHED_Q_CMD_REG");
+	mvPp2PrintReg(MV_PP2_TXP_SCHED_CMD_1_REG, "MV_PP2_TXP_SCHED_CMD_1_REG");
+	mvPp2PrintReg(MV_PP2_TXP_SCHED_FIXED_PRIO_REG, "MV_PP2_TXP_SCHED_FIXED_PRIO_REG");
+	mvPp2PrintReg(MV_PP2_TXP_SCHED_PERIOD_REG, "MV_PP2_TXP_SCHED_PERIOD_REG");
+	mvPp2PrintReg(MV_PP2_TXP_SCHED_MTU_REG, "MV_PP2_TXP_SCHED_MTU_REG");
+	mvPp2PrintReg(MV_PP2_TXP_SCHED_REFILL_REG, "MV_PP2_TXP_SCHED_REFILL_REG");
+	mvPp2PrintReg(MV_PP2_TXP_SCHED_TOKEN_SIZE_REG, "MV_PP2_TXP_SCHED_TOKEN_SIZE_REG");
+	mvPp2PrintReg(MV_PP2_TXP_SCHED_TOKEN_CNTR_REG, "MV_PP2_TXP_SCHED_TOKEN_CNTR_REG");
 
 	for (txq = 0; txq < MV_ETH_MAX_TXQ; txq++) {
 		mvOsPrintf("\n[TxQ Scheduler registers: port=%d, txp=%d, txq=%d]\n", port, txp, txq);
-		mvEthRegPrint(MV_PP2_TXQ_SCHED_REFILL_REG(txq), "MV_PP2_TXQ_SCHED_REFILL_REG");
-		mvEthRegPrint(MV_PP2_TXQ_SCHED_TOKEN_SIZE_REG(txq), "MV_PP2_TXQ_SCHED_TOKEN_SIZE_REG");
-		mvEthRegPrint(MV_PP2_TXQ_SCHED_TOKEN_CNTR_REG(txq), "MV_PP2_TXQ_SCHED_TOKEN_CNTR_REG");
+		mvPp2PrintReg(MV_PP2_TXQ_SCHED_REFILL_REG(txq), "MV_PP2_TXQ_SCHED_REFILL_REG");
+		mvPp2PrintReg(MV_PP2_TXQ_SCHED_TOKEN_SIZE_REG(txq), "MV_PP2_TXQ_SCHED_TOKEN_SIZE_REG");
+		mvPp2PrintReg(MV_PP2_TXQ_SCHED_TOKEN_CNTR_REG(txq), "MV_PP2_TXQ_SCHED_TOKEN_CNTR_REG");
 	}
 }
 
 void mvPp2BmPoolRegs(int pool)
 {
 	mvOsPrintf("\n[BM pool registers: pool=%d]\n", pool);
-	mvEthRegPrint(MV_BM_POOL_BASE_REG(pool), "MV_BM_POOL_BASE_REG");
-	mvEthRegPrint(MV_BM_POOL_SIZE_REG(pool), "MV_BM_POOL_SIZE_REG");
-	mvEthRegPrint(MV_BM_POOL_READ_PTR_REG(pool), "MV_BM_POOL_READ_PTR_REG");
-	mvEthRegPrint(MV_BM_POOL_PTRS_NUM_REG(pool), "MV_BM_POOL_PTRS_NUM_REG");
-	mvEthRegPrint(MV_BM_BPPI_READ_PTR_REG(pool), "MV_BM_BPPI_READ_PTR_REG");
-	mvEthRegPrint(MV_BM_BPPI_PTRS_NUM_REG(pool), "MV_BM_BPPI_PTRS_NUM_REG");
-	mvEthRegPrint(MV_BM_POOL_CTRL_REG(pool), "MV_BM_POOL_CTRL_REG");
-	mvEthRegPrint(MV_BM_INTR_CAUSE_REG(pool), "MV_BM_INTR_CAUSE_REG");
-	mvEthRegPrint(MV_BM_INTR_MASK_REG(pool), "MV_BM_INTR_MASK_REG");
+	mvPp2PrintReg(MV_BM_POOL_BASE_REG(pool), "MV_BM_POOL_BASE_REG");
+	mvPp2PrintReg(MV_BM_POOL_SIZE_REG(pool), "MV_BM_POOL_SIZE_REG");
+	mvPp2PrintReg(MV_BM_POOL_READ_PTR_REG(pool), "MV_BM_POOL_READ_PTR_REG");
+	mvPp2PrintReg(MV_BM_POOL_PTRS_NUM_REG(pool), "MV_BM_POOL_PTRS_NUM_REG");
+	mvPp2PrintReg(MV_BM_BPPI_READ_PTR_REG(pool), "MV_BM_BPPI_READ_PTR_REG");
+	mvPp2PrintReg(MV_BM_BPPI_PTRS_NUM_REG(pool), "MV_BM_BPPI_PTRS_NUM_REG");
+	mvPp2PrintReg(MV_BM_POOL_CTRL_REG(pool), "MV_BM_POOL_CTRL_REG");
+	mvPp2PrintReg(MV_BM_INTR_CAUSE_REG(pool), "MV_BM_INTR_CAUSE_REG");
+	mvPp2PrintReg(MV_BM_INTR_MASK_REG(pool), "MV_BM_INTR_MASK_REG");
 }
 
 void mvPp2DropCntrs(int port)
@@ -497,24 +497,24 @@ void mvPp2DropCntrs(int port)
 	int i;
 
 	mvOsPrintf("\n[Port #%d Drop counters]\n", port);
-	mvEthRegPrint(MV_PP2_OVERRUN_DROP_REG(MV_PPV2_PORT_PHYS(port)), "MV_PP2_OVERRUN_DROP_REG");
-	mvEthRegPrint(MV_PP2_CLS_DROP_REG(MV_PPV2_PORT_PHYS(port)), "MV_PP2_CLS_DROP_REG");
+	mvPp2PrintReg(MV_PP2_OVERRUN_DROP_REG(MV_PPV2_PORT_PHYS(port)), "MV_PP2_OVERRUN_DROP_REG");
+	mvPp2PrintReg(MV_PP2_CLS_DROP_REG(MV_PPV2_PORT_PHYS(port)), "MV_PP2_CLS_DROP_REG");
 
 	if (MV_PON_PORT(port)) {
 #ifdef CONFIG_MV_PON
 		for (i = 0; i < CONFIG_MV_PON_TCONTS; i++) {
-			mvEthRegPrint2(MV_PP2_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);
-			mvEthRegPrint2(MV_PP2_TX_DESC_DROP_REG(i), "MV_PP2_TX_DESC_DROP_REG", i);
+			mvPp2RegPrint2(MV_PP2_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);
+			mvPp2RegPrint2(MV_PP2_TX_DESC_DROP_REG(i), "MV_PP2_TX_DESC_DROP_REG", i);
 		}
 #endif
 	} else {
 		i = MV_ETH_MAX_TCONT + port;
-		mvEthRegPrint2(MV_PP2_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);
-		mvEthRegPrint2(MV_PP2_TX_DESC_DROP_REG(i), "MV_PP2_TX_DESC_DROP_REG", i);
+		mvPp2RegPrint2(MV_PP2_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);
+		mvPp2RegPrint2(MV_PP2_TX_DESC_DROP_REG(i), "MV_PP2_TX_DESC_DROP_REG", i);
 	}
 	for (i = port * CONFIG_MV_ETH_RXQ; i < (port * CONFIG_MV_ETH_RXQ + CONFIG_MV_ETH_RXQ); i++) {
-		mvEthRegPrint2(MV_PP2_RX_EARLY_DROP_REG(i), "MV_PP2_RX_EARLY_DROP_REG", i);
-		mvEthRegPrint2(MV_PP2_RX_DESC_DROP_REG(i), "MV_PP2_RX_DESC_DROP_REG", i);
+		mvPp2RegPrint2(MV_PP2_RX_EARLY_DROP_REG(i), "MV_PP2_RX_EARLY_DROP_REG", i);
+		mvPp2RegPrint2(MV_PP2_RX_DESC_DROP_REG(i), "MV_PP2_RX_DESC_DROP_REG", i);
 	}
 }
 
@@ -523,10 +523,10 @@ void mvPp2RxFifoRegs(int port)
 	int p = MV_PPV2_PORT_PHYS(port);
 
 	mvOsPrintf("\n[Port #%d RX Fifo]\n", p);
-	mvEthRegPrint(MV_PP2_RX_DATA_FIFO_SIZE_REG(p), "MV_PP2_RX_DATA_FIFO_SIZE_REG");
-	mvEthRegPrint(MV_PP2_RX_ATTR_FIFO_SIZE_REG(p), "MV_PP2_RX_ATTR_FIFO_SIZE_REG");
+	mvPp2PrintReg(MV_PP2_RX_DATA_FIFO_SIZE_REG(p), "MV_PP2_RX_DATA_FIFO_SIZE_REG");
+	mvPp2PrintReg(MV_PP2_RX_ATTR_FIFO_SIZE_REG(p), "MV_PP2_RX_ATTR_FIFO_SIZE_REG");
 	mvOsPrintf("\n[Global RX Fifo regs]\n");
-	mvEthRegPrint(MV_PP2_RX_MIN_PKT_SIZE_REG, "MV_PP2_RX_MIN_PKT_SIZE_REG");
+	mvPp2PrintReg(MV_PP2_RX_MIN_PKT_SIZE_REG, "MV_PP2_RX_MIN_PKT_SIZE_REG");
 }
 
 

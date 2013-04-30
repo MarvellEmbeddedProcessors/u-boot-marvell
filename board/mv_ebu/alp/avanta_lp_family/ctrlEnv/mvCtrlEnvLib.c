@@ -768,7 +768,7 @@ MV_U32 mvCtrlEthMaxPortGet(MV_VOID)
 #ifdef CONFIG_MACH_AVANTA_LP_FPGA
 	return MV_FPGA_ETH_MAX_PORT;
 #else
-	return 0;
+	return 4;
 	/* fixme : #error "ETH_MAX_PORT should be defined!" */
 #endif
 }

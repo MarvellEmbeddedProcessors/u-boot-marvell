@@ -135,6 +135,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_PP2_CLS2_ACT_DUP_ATTR_REG			(MV_PP2_REG_BASE + 0x1B6C)
 
 /*-------------------------------------------------------------------------------*/
+#define MV_PP2_CLS2_TCAM_CTRL_REG			(MV_PP2_REG_BASE + 0x1B90)
+#define MV_PP2_CLS2_TCAM_CTRL_EN				0
+/*-------------------------------------------------------------------------------*/
 /*		Classifier C2 QOS Table	(DSCP/PRI Table)			 */
 /*-------------------------------------------------------------------------------*/
 #define QOS_TBL_LINE_NUM_PRI				(8)
@@ -230,6 +233,7 @@ typedef struct mvPp2ClsC2Entry {
 	} sram;
 } MV_PP2_CLS_C2_ENTRY;
 
+int 	mvPp2ClsC2SwTcam(int enable);
 int 	mvPp2ClsC2HwWrite(int index, MV_PP2_CLS_C2_ENTRY *c2);
 int 	mvPp2ClsC2HwRead(int index, MV_PP2_CLS_C2_ENTRY *c2);
 int 	mvPp2ClsC2SwDump(MV_PP2_CLS_C2_ENTRY *c2);

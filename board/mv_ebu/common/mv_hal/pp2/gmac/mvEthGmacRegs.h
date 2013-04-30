@@ -91,6 +91,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define ETH_GMAC_CTRL_1_REG(p)             (ETH_REG_BASE(p) + 0x4)
 
+#define ETH_GMAC_PERIODIC_XON_EN_BIT       1
+#define ETH_GMAC_PERIODIC_XON_EN_MASK      (0x1 << ETH_GMAC_PERIODIC_XON_EN_BIT)
+
 #define ETH_GMAC_GMII_LB_EN_BIT            5
 #define ETH_GMAC_GMII_LB_EN_MASK           (1 << ETH_GMAC_GMII_LB_EN_BIT)
 
@@ -190,11 +193,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /****************************************/
 /*        LMS Unit Registers       	*/
 /****************************************/
+
+/*
+ * PHY Address Ports 0 through 5 Register
+ */
 #define ETH_PHY_ADDR_REG		(LMS_REG_BASE + 0x30)
 #define ETH_PHY_ADDR_OFFS(port)		(port * 5)
 #define ETH_PHY_ADDR_MASK(port)		(0x1F << ETH_PHY_ADDR_OFFS(port))
-/*-------------------------------------------------------------------------------*/
 
+/*------------------------------------------------------------------------------
+ * Interrupt Summary Cause Register
+ */
 #define ETH_ISR_SUM_CAUSE_REG		(LMS_REG_BASE + 0x10)
 #define ETH_ISR_SUM_LMS_BIT		0
 #define ETH_ISR_SUM_LMS_MASK		(1 << ETH_ISR_SUM_LMS_BIT)
@@ -226,10 +235,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ETH_ISR_SUM_PORT_MASK(p)	(1 << (ETH_ISR_SUM_PORT0_BIT + p))
 
 #define ETH_ISR_SUM_MASK_REG		(LMS_REG_BASE + 0x220c)
-/*-------------------------------------------------------------------------------*/
 
+/*------------------------------------------------------------------------------
+ * PHY Auto-Negotiation Configuration Register0
+ */
+#define ETH_PHY_AN_CFG0_REG(port)		(LMS_REG_BASE + 0x34 + (port * 0x2000))
+#define ETH_PHY_AN_CFG0_STOP_AN_SMI0_BIT	7
+#define ETH_PHY_AN_CFG0_STOP_AN_SMI0_MASK	(1 << ETH_PHY_AN_CFG0_STOP_AN_SMI0_BIT)
+
+/*------------------------------------------------------------------------------
+ * SMI Management Register
+ */
 #define ETH_SMI_REG(port)		(LMS_REG_BASE + 0x54)
-
 
 /****************************************/
 /*        MIB counters		       	*/

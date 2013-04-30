@@ -2454,6 +2454,9 @@ int mvPrsDefaultInit(void)
 {
 	int    port, rc;
 
+	/*enable tcam table*/
+	mvPp2PrsSwTcam(1);
+
 	/*write zero to all the lines*/
 	mvPp2PrsHwClearAll();
 

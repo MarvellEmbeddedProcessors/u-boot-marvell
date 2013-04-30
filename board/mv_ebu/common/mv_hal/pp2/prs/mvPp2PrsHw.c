@@ -267,6 +267,9 @@ int mvPp2PrsHwRegsDump()
 		mvPp2PrintReg(MV_PP2_PRS_SRAM_DATA_REG(i), reg_name);
 	}
 
+	mvPp2PrintReg(MV_PP2_PRS_EXP_REG, "MV_PP2_PRS_EXP_REG");
+	mvPp2PrintReg(MV_PP2_PRS_TCAM_CTRL_REG, "MV_PP2_PRS_TCAM_CTRL_REG");
+
 	return MV_OK;
 }
 
@@ -276,7 +279,7 @@ int mvPrsHwLkpFirstSet(int port, int lu_first)
 	unsigned int regVal;
 
 	POS_RANGE_VALIDATE(lu_first, MV_PP2_PRS_PORT_LU_MAX);
-	regVal = MV_REG_READ(MV_PP2_PRS_INIT_LOOKUP_REG);
+	regVal = mvPp2RdReg(MV_PP2_PRS_INIT_LOOKUP_REG);
 	regVal &= ~MV_PP2_PRS_PORT_LU_MASK(port);
 	regVal |=  MV_PP2_PRS_PORT_LU_VAL(port, lu_first);
 	mvPp2WrReg(MV_PP2_PRS_INIT_LOOKUP_REG, regVal);
@@ -290,7 +293,7 @@ int mvPrsHwLkpMaxSet(int port, int lu_max)
 
 	RANGE_VALIDATE(lu_max, MV_PP2_PRS_MAX_LOOP_MIN, MV_PP2_PRS_PORT_LU_MAX);
 
-	regVal = MV_REG_READ(MV_PP2_PRS_MAX_LOOP_REG(port));
+	regVal = mvPp2RdReg(MV_PP2_PRS_MAX_LOOP_REG(port));
 	regVal &= ~MV_PP2_PRS_MAX_LOOP_MASK(port);
 	regVal |= MV_PP2_PRS_MAX_LOOP_VAL(port, lu_max);
 	mvPp2WrReg(MV_PP2_PRS_MAX_LOOP_REG(port), regVal);
@@ -305,7 +308,7 @@ int mvPrsHwLkpFirstOffsSet(int port, int off)
 
 	POS_RANGE_VALIDATE(off, MV_PP2_PRS_INIT_OFF_MAX);
 
-	regVal = MV_REG_READ(MV_PP2_PRS_INIT_OFFS_REG(port));
+	regVal = mvPp2RdReg(MV_PP2_PRS_INIT_OFFS_REG(port));
 	regVal &= ~MV_PP2_PRS_INIT_OFF_MASK(port);
 	regVal |= MV_PP2_PRS_INIT_OFF_VAL(port, off);
 	mvPp2WrReg(MV_PP2_PRS_INIT_OFFS_REG(port), regVal);
@@ -512,6 +515,18 @@ void mvPp2PrsSwClear(MV_PP2_PRS_ENTRY *pe)
 	memset(pe, 0, sizeof(MV_PP2_PRS_ENTRY));
 }
 
+/*
+	enable - Tcam Ebable/Disable
+*/
+
+int mvPp2PrsSwTcam(int enable)
+{
+	POS_RANGE_VALIDATE(enable, 1);
+
+	mvPp2WrReg(MV_PP2_PRS_TCAM_CTRL_REG, enable);
+
+	return MV_OK;
+}
 /*
 	byte - data to tcam entry
 	enable - data to tcam enable endtry

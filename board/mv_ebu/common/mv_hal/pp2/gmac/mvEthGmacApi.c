@@ -71,7 +71,7 @@ void mvEthPortEnable(int port)
 	regVal = MV_REG_READ(ETH_GMAC_CTRL_0_REG(port));
 	regVal |= ETH_GMAC_PORT_EN_MASK;
 
-	mvPp2WrReg(ETH_GMAC_CTRL_0_REG(port), regVal);
+	MV_REG_WRITE(ETH_GMAC_CTRL_0_REG(port), regVal);
 }
 
 void mvEthPortDisable(int port)
@@ -80,7 +80,7 @@ void mvEthPortDisable(int port)
 
 	regVal = MV_REG_READ(ETH_GMAC_CTRL_0_REG(port));
 	regVal &= ~(ETH_GMAC_PORT_EN_MASK);
-	mvPp2WrReg(ETH_GMAC_CTRL_0_REG(port), regVal);
+	MV_REG_WRITE(ETH_GMAC_CTRL_0_REG(port), regVal);
 }
 
 static void mvEthPortRgmiiSet(int port, int enable)
@@ -93,7 +93,7 @@ static void mvEthPortRgmiiSet(int port, int enable)
 	else
 		regVal &= ~ETH_GMAC_PORT_RGMII_MASK;
 
-	mvPp2WrReg(ETH_GMAC_CTRL_2_REG(port), regVal);
+	MV_REG_WRITE(ETH_GMAC_CTRL_2_REG(port), regVal);
 }
 
 static void mvEthPortSgmiiSet(int port, int enable)
@@ -106,7 +106,7 @@ static void mvEthPortSgmiiSet(int port, int enable)
 	else
 		regVal &= ~ETH_GMAC_PCS_ENABLE_MASK;
 
-	mvPp2WrReg(ETH_GMAC_CTRL_2_REG(port), regVal);
+	MV_REG_WRITE(ETH_GMAC_CTRL_2_REG(port), regVal);
 }
 
 void mvEthPortLbSet(int port, int isGmii, int isPcsEn)
@@ -125,7 +125,7 @@ void mvEthPortLbSet(int port, int isGmii, int isPcsEn)
 	else
 		regVal &= ~ETH_GMAC_PCS_LB_EN_MASK;
 
-	mvPp2WrReg(ETH_GMAC_CTRL_1_REG(port), regVal);
+	MV_REG_WRITE(ETH_GMAC_CTRL_1_REG(port), regVal);
 }
 
 void mvEthPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii)
@@ -135,10 +135,14 @@ void mvEthPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii)
 	mvEthPortSgmiiSet(port, isSgmii);
 	mvEthPortRgmiiSet(port, isRgmii);
 
+	regVal = MV_REG_READ(ETH_GMAC_CTRL_1_REG(port));
+	regVal &= ~ETH_GMAC_PERIODIC_XON_EN_MASK;
+	MV_REG_WRITE(ETH_GMAC_CTRL_1_REG(port), regVal);
+
 	/* Cancel Port Reset */
 	regVal = MV_REG_READ(ETH_GMAC_CTRL_2_REG(port));
 	regVal &= (~ETH_GMAC_PORT_RESET_MASK);
-	mvPp2WrReg(ETH_GMAC_CTRL_2_REG(port), regVal);
+	MV_REG_WRITE(ETH_GMAC_CTRL_2_REG(port), regVal);
 	while ((MV_REG_READ(ETH_GMAC_CTRL_2_REG(port)) & ETH_GMAC_PORT_RESET_MASK) != 0)
 		continue;
 }
@@ -224,7 +228,7 @@ void mvEthMaxRxSizeSet(int port, int maxRxSize)
 		regVal =  MV_REG_READ(ETH_GMAC_CTRL_0_REG(port));
 		regVal &= ~ETH_GMAC_MAX_RX_SIZE_MASK;
 		regVal |= (((maxRxSize - MV_ETH_MH_SIZE) / 2) << ETH_GMAC_MAX_RX_SIZE_OFFS);
-		mvPp2WrReg(ETH_GMAC_CTRL_0_REG(port), regVal);
+		MV_REG_WRITE(ETH_GMAC_CTRL_0_REG(port), regVal);
 /*
 		mvOsPrintf("%s: port=%d, maxRxSize=%d, regAddr=0x%x, regVal=0x%x\n",
 			__func__, port, maxRxSize, ETH_GMAC_CTRL_0_REG(port), regVal);
@@ -268,7 +272,7 @@ MV_STATUS mvEthForceLinkModeSet(int portNo, MV_BOOL force_link_up, MV_BOOL force
 	else
 		regVal &= ~ETH_FORCE_LINK_FAIL_MASK;
 
-	mvPp2WrReg(ETH_GMAC_AN_CTRL_REG(portNo), regVal);
+	MV_REG_WRITE(ETH_GMAC_AN_CTRL_REG(portNo), regVal);
 
     return MV_OK;
 }
@@ -341,7 +345,7 @@ MV_STATUS mvEthSpeedDuplexSet(int portNo, MV_ETH_PORT_SPEED speed, MV_ETH_PORT_D
 		return MV_BAD_PARAM;
 	}
 
-	mvPp2WrReg(ETH_GMAC_AN_CTRL_REG(portNo), regVal);
+	MV_REG_WRITE(ETH_GMAC_AN_CTRL_REG(portNo), regVal);
 	return MV_OK;
 }
 
@@ -444,7 +448,7 @@ MV_STATUS mvEthFlowCtrlSet(int port, MV_ETH_PORT_FC flowControl)
 		return MV_BAD_VALUE;
 	}
 
-	mvPp2WrReg(ETH_GMAC_AN_CTRL_REG(port), regVal);
+	MV_REG_WRITE(ETH_GMAC_AN_CTRL_REG(port), regVal);
 
 	return MV_OK;
 }
@@ -503,7 +507,7 @@ void mvEthPhyAddrSet(int port, int phyAddr)
 	regData &= ~ETH_PHY_ADDR_MASK(port);
 	regData |= (phyAddr << ETH_PHY_ADDR_OFFS(port));
 
-	mvPp2WrReg(ETH_PHY_ADDR_REG, regData);
+	MV_REG_WRITE(ETH_PHY_ADDR_REG, regData);
 
 	return;
 }

@@ -145,8 +145,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_PP2_PRS_SRAM_DATA2_REG		(MV_PP2_REG_BASE + 0x120c)
 #define MV_PP2_PRS_SRAM_DATA3_REG		(MV_PP2_REG_BASE + 0x1210)
 /*-------------------------------------------------------------------------------*/
+/*TODO: Add API and sysfs commands for this reg */
+#define MV_PP2_PRS_EXP_REG			(MV_PP2_REG_BASE + 0x1214)
+#define MV_PP2_PRS_EXP_MISS			0
+#define MV_PP2_PRS_EXP_EXEED			1
+#define MV_PP2_PRS_EXP_OF			2
 
+/*-------------------------------------------------------------------------------*/
+#define MV_PP2_PRS_TCAM_CTRL_REG		(MV_PP2_REG_BASE + 0x1230)
+#define MV_PP2_PRS_TCAM_CTRL_EN			0
 
+/*-------------------------------------------------------------------------------*/
+/*				TCAM 						*/
+/*-------------------------------------------------------------------------------*/
 #define AI_BITS  				8
 #define AI_MASK					((1 << AI_BITS) - 1)
 #define AI_DONE_BIT				7
@@ -546,12 +557,18 @@ int mvPp2PrsSwDump(MV_PP2_PRS_ENTRY *pe);
  * mvPp2PrsSwClear - clear prs sw entry
  * @pe: sw prs entry
 */
-int mvPp2PrsHwDump(void);
-
+void mvPp2PrsSwClear(MV_PP2_PRS_ENTRY *pe);
 /*
  * mvPp2PrsHwDump - dump all valid hw entries
 */
-void mvPp2PrsSwClear(MV_PP2_PRS_ENTRY *pe);
+
+int mvPp2PrsHwDump(void);
+
+/*
+	enable - Tcam Ebable/Disable
+*/
+
+int mvPp2PrsSwTcam(int enable);
 
 /*
  * mvPp2PrsSwTcamWordGet - get byte form tcam data and tcam mask

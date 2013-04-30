@@ -302,11 +302,11 @@ void mvBmPoolDump(int pool, int mode)
 	mvOsPrintf("poolBase=%p (0x%x), capacity=%d, buf_num=%d, buf_size=%d\n",
 		   pBmPool->pVirt, (unsigned)pBmPool->physAddr, pBmPool->capacity, pBmPool->bufNum, pBmPool->bufSize);
 
-	regVal = MV_REG_READ(MV_BM_POOL_READ_PTR_REG(pool));
+	regVal = mvPp2RdReg(MV_BM_POOL_READ_PTR_REG(pool));
 	setReadIdx = ((regVal & MV_BM_POOL_SET_READ_PTR_MASK) >> MV_BM_POOL_SET_READ_PTR_OFFS) / 4;
 	getReadIdx = ((regVal & MV_BM_POOL_GET_READ_PTR_MASK) >> MV_BM_POOL_GET_READ_PTR_OFFS) / 4;
 
-	regVal = MV_REG_READ(MV_BM_POOL_WRITE_PTR_REG(pool));
+	regVal = mvPp2RdReg(MV_BM_POOL_WRITE_PTR_REG(pool));
 	setWriteIdx = ((regVal & MV_BM_POOL_SET_WRITE_PTR_MASK) >> MV_BM_POOL_SET_WRITE_PTR_OFFS) / 4;
 	getWriteIdx = ((regVal & MV_BM_POOL_GET_WRITE_PTR_MASK) >> MV_BM_POOL_GET_WRITE_PTR_OFFS) / 4;
 	if (getWriteIdx >= getReadIdx)

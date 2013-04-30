@@ -689,6 +689,18 @@ int 	mvPp2ClsC2HwDump()
 	}
 	return MV_OK;
 }
+
+/*-------------------------------------------------------------------------------*/
+
+int mvPp2ClsC2SwTcam(int enable)
+{
+	POS_RANGE_VALIDATE(enable, 1);
+
+	mvPp2WrReg(MV_PP2_CLS2_TCAM_CTRL_REG, enable);
+
+	return MV_OK;
+}
+
 /*-------------------------------------------------------------------------------*/
 int mvPp2ClsC2TcamByteSet(MV_PP2_CLS_C2_ENTRY *c2, unsigned int offs, unsigned char byte, unsigned char enable)
 {
@@ -1126,5 +1138,6 @@ int	mvPp2ClsC2Init(void)
 {
 	mvPp2ClsC2QosHwClearAll();
 	mvPp2ClsC2HwClearAll();
+	mvPp2ClsC2SwTcam(1);
 	return MV_OK;
 }

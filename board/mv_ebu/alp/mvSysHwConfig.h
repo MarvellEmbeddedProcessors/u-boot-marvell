@@ -139,8 +139,8 @@ disclaimer.
 #define SPI_CS_BASE 0xf4000000 /*0xf8000000*/
 #define SPI_CS_SIZE _8M
 
-#define PNC_BM_PHYS_BASE 0xf2100000 /*0xF5000000*/
-#define PNC_BM_SIZE	 _1M
+#define PP2_PHYS_BASE 0xf2100000 /*0xF5000000*/
+#define PP2_SIZE	 _1M
 
 /* Important for MP - Do not disable/change this window, used by BOOTROM when booting other cores */
 #define CRYPT_ENG_BASE	 0xc8010000
@@ -253,7 +253,7 @@ disclaimer.
 	{{0xf8000000,		0,	_1M		},	13,		DIS},	/* BOOT_ROM_CS */\
 	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},	9,		EN},	/* DEV_BOOCS */   \
 	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},	10,		DIS},	/* CRYPT_ENG */ \
-	{{PNC_BM_PHYS_BASE,	0,	PNC_BM_SIZE	},	TBL_UNUSED,	DIS},	/* PNC_BM */    \
+	{{PP2_PHYS_BASE,	0,	PP2_SIZE	},	12,		EN},	/* PP2 */    \
 	{{TBL_TERM,		TBL_TERM, TBL_TERM	},	TBL_TERM,	TBL_TERM}               \
 };
 

@@ -97,8 +97,10 @@ MV_U32 mvCpuPclkGet(MV_VOID)
 {
 	MV_FREQ_MODE freqMode;
 
+#ifdef MACH_AVANTA_LP_FPGA
 	if (mvBoardIdGet() == MV_BOARD_ID_AVANTA_LP_FPGA)
 		return MV_FPGA_CORE_CLK; /* FPGA is limited to 12.5Mhz */
+#endif
 
 	if (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode))
 		return (MV_U32)(1000000 * freqMode.cpuFreq);

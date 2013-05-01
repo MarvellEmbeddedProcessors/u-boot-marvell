@@ -195,6 +195,12 @@ int reglog(unsigned int offset, unsigned int data);
         MV_MEMIO_LE32_WRITE((INTER_REGS_BASE | (offset)), (val))
 #endif
 
+/* PPv2 specific reg read/write */
+#define MV_PP2_REG_READ(offset)             \
+	(MV_MEMIO_LE32_READ(PP2_PHYS_BASE | (offset)))
+#define MV_PP2_REG_WRITE(offset, val)    \
+	MV_MEMIO_LE32_WRITE((PP2_PHYS_BASE | (offset)), (val))
+
 #if defined(REG_DEBUG)
 #define MV_REG_WORD_WRITE(offset, val)  \
 (	MV_MEMIO_LE16_WRITE((INTER_REGS_BASE | (offset)), (val))+ \

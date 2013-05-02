@@ -27,7 +27,6 @@ disclaimer/
 #include "mvOs.h"
 #include "mvSysHwConfig.h"
 
-
 #include "pp2/gbe/mvPp2Gbe.h"
 #include "pp2/bm/mvBm.h"
 #include "pp2/prs/mvPp2Prs.h"
@@ -80,7 +79,6 @@ typedef struct _packetInfo {
 	MV_ULONG bufPhysAddr;
 	MV_U32 dataSize;
 } pktInfo;
-
 
 /******************************************************
  * functions prototype --                             *
@@ -181,9 +179,11 @@ int mv_eth_initialize(bd_t *bis)
 	/* HAL init + port power up + port win init */
 	mvSysPp2Init();
 	mv_eth_bm_init();
+
 	/* Parser default initialization */
 	if (mvPrsDefaultInit())
 		printf("Warning PARSER default init failed\n");
+
 	if (mvPp2ClassifierDefInit())
 		printf("Warning Classifier defauld init failed\n");
 
@@ -193,10 +193,10 @@ int mv_eth_initialize(bd_t *bis)
 	}
 
 	for (port = 0; port < mvCtrlEthMaxPortGet(); port++) {
-
+/*
 		if (MV_FALSE ==  mvBoardIsGbEPortConnected(port))
 			continue;
-
+*/
 		if (MV_FALSE == mvCtrlPwrClckGet(ETH_GIG_UNIT_ID, port))
 			continue;
 
@@ -278,8 +278,8 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 		/* port power up - release from reset */
 		if (!MV_PON_PORT(priv->port))
 			mvEthPortPowerUp(priv->port,
-				MV_FALSE /*mvBoardIsPortInSgmii(priv->port)*/,
-				MV_FALSE /*mvBoardIsPortInRgmii(port)*/);
+				MV_FALSE/*mvBoardIsPortInSgmii(priv->port)*/,
+				MV_FALSE/*mvBoardIsPortInRgmii(priv->port)*/);
 
 		/* init the hal -- create internal port control structure and descriptor rings, */
 		/* open address decode windows, disable rx and tx operations. mask interrupts.  */

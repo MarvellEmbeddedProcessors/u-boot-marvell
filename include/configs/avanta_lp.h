@@ -144,7 +144,6 @@ extern unsigned int mvTclkGet(void);
 #define CONFIG_CMD_RUN
 #define CONFIG_CMD_MISC
 #define CONFIG_CMD_SAR
-#define CONFIG_CMD_STAGE_BOOT
 #define CONFIG_CMD_RCVR
 
 #if defined(MV_INCLUDE_PEX) || defined(MV_INCLUDE_PCI)
@@ -377,10 +376,10 @@ extern unsigned int mvTclkGet(void);
 /*
  * Linux boot and other
  */
-#define MV_BOOTARGS_END         ":10.4.50.254:255.255.255.0:AvantaLP:eth0:none"
+#define MV_BOOTARGS_END         ":10.4.50.254:255.255.255.0:AvantaLP:eth4:none"
 #define MV_BOOTARGS_END_SWITCH  ":::AvantaLP:eth0:none"
 #define RCVR_IP_ADDR            "169.254.100.100"
-#define RCVR_LOAD_ADDR          "0x02000000"
+	#define RCVR_LOAD_ADDR          "0x02000000"
 
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 

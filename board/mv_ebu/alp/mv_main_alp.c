@@ -655,42 +655,9 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 #if (CONFIG_BOOTDELAY >= 0)
 	env = getenv("bootcmd");
 	if (!env)
-#if defined(CONFIG_OF_LIBFDT)
-		sdv
-		setenv("bootcmd", "tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000 - 0x1000000;");
-#elif defined(CONFIG_CMD_STAGE_BOOT)
-		setenv("bootcmd", "stage_boot $boot_order");
-#elif defined(MV_INCLUDE_TDM) && defined(MV_INC_BOARD_QD_SWITCH)
-		sdv
-		setenv("bootcmd", "tftpboot 0x2000000 $image_name;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000; ");
-#elif defined(MV_INC_BOARD_QD_SWITCH)
-		sd
-		setenv("bootcmd", "tftpboot 0x2000000 $image_name;\
-setenv bootargs $console  $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000; ");
-#elif defined(MV_INCLUDE_TDM)
-		sdv
-		setenv("bootcmd", "tftpboot 0x2000000 $image_name;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000; ");
-#else
-		sdv
-		setenv("bootcmd", "tftpboot 0x2000000 $image_name;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000; ");
-#endif
-#if defined(CONFIG_CMD_STAGE_BOOT)
-	env = getenv("bootcmd_auto");
-	if (!env)
-		setenv("bootcmd_auto", "stage_boot $boot_order");
-	env = getenv("bootcmd_lgcy");
-	if (!env)
-		setenv("bootcmd_lgcy", "tftpboot 0x2000000 $image_name; setenv bootargs $bootargs_dflt; bootm 0x2000000; ");
-#endif
+		setenv("bootcmd", "tftpboot 2000000 $image_name ; setenv bootargs $console $bootargs_root nfsroot=$serverip:$rootpath \
+ip=$ipaddr:$serverip$bootargs_end $mvNetConfig;  bootm 0x2000000;");
+
 #endif  /* (CONFIG_BOOTDELAY >= 0) */
 
 	env = getenv("standalone");

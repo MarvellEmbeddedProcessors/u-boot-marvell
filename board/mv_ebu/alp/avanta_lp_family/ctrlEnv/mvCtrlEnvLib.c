@@ -280,7 +280,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvGppPolaritySet(i, gppMask, (MV_GPP_IN_INVERT & gppMask));
 	}
 
-	mvEthernetComplexInit();
+	mvEthCompInit();
 	return MV_OK;
 }
 

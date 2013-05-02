@@ -234,7 +234,9 @@ static MV_PP2_PRS_ENTRY *mvPrsMacDaRangeFind(int portMap, unsigned char *da, uns
 
 static MV_PP2_PRS_ENTRY *mvPrsMacDaFind(int port, unsigned char *da)
 {
-	unsigned char mask[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+	unsigned char mask[6];
+
+	mask[0] = 0xff; mask[1] = 0xff; mask[2] = 0xff; mask[3] = 0xff; mask[4] = 0xff; mask[5] = 0xff;
 
 	/* Scan TCAM and see if entry with this <MAC DA, port> already exist */
 	return mvPrsMacDaRangeFind((1 << port), da, mask, PRS_UDF_MAC_DEF);

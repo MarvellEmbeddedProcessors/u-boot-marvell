@@ -67,8 +67,6 @@ extern int  AT91F_DataflashInit(void);
 extern void dataflash_print_info(void);
 #endif
 
-extern int late_print_cpuinfo(void);
-
 #if defined(CONFIG_HARD_I2C) ||	\
 	defined(CONFIG_SOFT_I2C)
 #include <i2c.h>
@@ -556,9 +554,6 @@ static void display_fdt_model(const void *blob)
 void board_init_r(gd_t *id, ulong dest_addr)
 {
 	ulong malloc_start;
-#if defined(CONFIG_DISPLAY_CPUINFO)
-	late_print_cpuinfo();          /* display cpu info (and speed) */
-#endif
 
 #if !defined(CONFIG_SYS_NO_FLASH)
 	ulong flash_size;

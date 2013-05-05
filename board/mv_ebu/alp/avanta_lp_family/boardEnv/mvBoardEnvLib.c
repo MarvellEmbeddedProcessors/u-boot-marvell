@@ -118,10 +118,10 @@ static MV_BOARD_INFO *board = NULL;
 *******************************************************************************/
 MV_VOID mvBoardEnvInit(MV_VOID)
 {
-	/*
-	 * FPGA board doesn't use MPP neither GPIO.
-	 */
-#if !defined(CONFIG_MACH_AVANTA_LP_FPGA_FPGA)
+	mvBoardIdSet(mvBoardIdGet());
+
+	/*  FPGA board doesn't use MPP neither GPIO */
+#if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	MV_U32 nandDev;
 	MV_U32 norDev;
 

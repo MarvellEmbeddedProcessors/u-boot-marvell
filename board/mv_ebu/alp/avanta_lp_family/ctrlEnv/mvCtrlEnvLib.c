@@ -248,7 +248,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	MV_U32 i, gppMask;
 
 	/* Set I2C MPP's(MPP Group 1), before reading board configuration, using TWSI read */
-	MV_REG_WRITE(mvCtrlMppRegGet(1), mvBoardMppGet(1));
+	MV_REG_WRITE(mvCtrlMppRegGet(1), GROUP1_DEFAULT_MPP_SPI_I2C);
 
 	mvCtrlSatrInit();
 
@@ -423,9 +423,7 @@ MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 {
 	MV_FREQ_MODE freqTable[] = MV_SAR_FREQ_MODES;
-	MV_U32 freqModeSatRValue = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
-
-	freqModeSatRValue = ((freqModeSatRValue & 0x003E0000) >> 17);
+	MV_U32 freqModeSatRValue = mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
 
 	if (MV_ERROR != freqModeSatRValue) {
 		*freqMode = freqTable[freqModeSatRValue];
@@ -461,7 +459,7 @@ MV_U32 mvCtrlSysConfigGet(MV_CONFIG_TYPE_ID configField)
 	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
 	    mvBoardConfigTypeGet(configField, configInfo) == MV_OK)
 		return boardOptionsConfig[configField];
-
+	
 	DB(mvOsPrintf("%s: Error: Requested board config is not valid for this board(%d)\n", __func__, configField));
 	return MV_ERROR;
 }
@@ -614,8 +612,8 @@ MV_BOOL mvCtrlIsEepromEnabled()
 	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, &ioInfo) == MV_OK)
 	{
 		value = mvBoardIoExpValGet(&ioInfo);
-		if (value != 0xFF)
-			return (value == 0x1);
+		if (value == 0x1)
+			return MV_TRUE;
 	}
 	mvOsPrintf("%s: Error: Read from IO expander failed (EEPROM enabled jumper)\n", __func__);
 	return MV_FALSE;

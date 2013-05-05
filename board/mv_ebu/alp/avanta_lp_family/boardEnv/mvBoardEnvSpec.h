@@ -83,9 +83,9 @@
 #define BOARD_ID_BASE                   0x0
 
 #define RD_6650_ID                      (BOARD_ID_BASE)
-#define RD_6660_ID                      (RD_6650_ID + 1)
-#define DB_6650_ID                      (RD_6660_ID + 1)
-#define DB_6660_ID                      (DB_6650_ID + 1)
+#define DB_6650_ID                      (RD_6650_ID + 1)
+#define RD_6660_ID                      (DB_6650_ID + 1)
+#define DB_6660_ID                      (RD_6660_ID + 1)
 #define MV_BOARD_ID_AVANTA_LP_FPGA      (DB_6660_ID + 1)
 #define MV_MAX_BOARD_ID                 (MV_BOARD_ID_AVANTA_LP_FPGA + 1)
 #define MV_INVALID_BOARD_ID             0xFFFFFFFF
@@ -108,7 +108,7 @@
    46-57			Port 0 connected to: Switch		(2)
    58-64			LED_MATRIX				(4)
  */
-
+#define GROUP1_DEFAULT_MPP_SPI_I2C         0x22000022  /* SPI , I2C */
 /*******************************************************************************
 * Avanata LP DB-6660 board
 *******************************************************************************/

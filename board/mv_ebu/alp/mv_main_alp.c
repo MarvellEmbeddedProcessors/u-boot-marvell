@@ -104,6 +104,7 @@
 #endif
 
 extern int display_dram_config(int print);
+int late_print_cpuinfo(void);
 
 /* CPU address decode table. */
 MV_CPU_DEC_WIN mvCpuAddrWinMap[] = MV_CPU_IF_ADDR_WIN_MAP_TBL;
@@ -283,6 +284,10 @@ int board_init(void)
 
 	/* Init the Controlloer environment module (MPP init) */
 	mvCtrlEnvInit();
+
+#if defined(CONFIG_DISPLAY_CPUINFO)
+	late_print_cpuinfo();          /* display cpu info (and speed) */
+#endif
 
 	mvBoardDebugLed(2);
 #endif  /* CONFIG_MACH_AVANTA_LP_FPGA */
@@ -991,8 +996,6 @@ int late_print_cpuinfo(void)
 {
 	char name[50];
 
-	mvBoardIdSet(mvBoardIdGet());
-
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	mvCtrlUpdatePexId();
 #endif
@@ -1071,11 +1074,7 @@ int misc_init_r(void)
 
 #if defined(MV_INCLUDE_UNM_ETH) || defined(MV_INCLUDE_GIG_ETH)
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
-	mvCtrlSmiMasterSet(CPU_SMI_CTRL);
 	mvBoardEgigaPhyInit();
-	if (mvBoardIsInternalSwitchConnected(0) || mvBoardIsInternalSwitchConnected(1))
-		mvCtrlSmiMasterSet(SWITCH_SMI_CTRL);
-
 #endif
 #endif
 

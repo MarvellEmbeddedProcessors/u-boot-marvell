@@ -85,6 +85,9 @@ void mvBoardEgigaPhyInit(void)
 {
 	int i;
 
+	/* Set SMI control to CPU, before initializing phy */
+	mvCtrlSmiMasterSet(CPU_SMI_CTRL);
+
 	mvSysEthPhyInit();
 
 #if defined (MV88F66XX)
@@ -115,6 +118,10 @@ void mvBoardEgigaPhyInit(void)
 			mvEthPhyInit(i, MV_FALSE);
 		}
 	}
+
+	/* If switch is in use, Set SMI control back to Switch, after initializing phy */
+	if (mvBoardIsInternalSwitchConnected(0) || mvBoardIsInternalSwitchConnected(1))
+		mvCtrlSmiMasterSet(SWITCH_SMI_CTRL);
 }
 
 /***********************************************************

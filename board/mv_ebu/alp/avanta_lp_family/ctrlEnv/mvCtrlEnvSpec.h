@@ -86,7 +86,7 @@ extern "C" {
 #define MV_DEV_BUS_REGS_OFFSET                  (0x10400)
 #define MV_SPI_REGS_OFFSET(unit)                (0x10600 + (unit * 0x80))
 #define MV_TWSI_SLAVE_REGS_OFFSET(chanNum)      (0x11000 + (chanNum * 0x100))
-#define MV_UART_REGS_OFFSET(chanNum)            (0x12000 + (chanNum * 0x100))
+#define MV_UART_REGS_OFFSET(chanNum)            (0x12000 + (chanNum * 0x100))	
 #define MV_MPP_REGS_OFFSET                      (0x18000)
 #define MV_GPP_REGS_OFFSET(unit)                (0x18100 + ((unit) * 0x40))
 #define MV_MISC_REGS_OFFSET                     (0x18200)
@@ -244,7 +244,7 @@ extern "C" {
 #define MV_SPI_VERSION                          2
 
 #define MV_INCLUDE_SDRAM_CS0
-#undef  MV_INCLUDE_SDRAM_CS1
+#define  MV_INCLUDE_SDRAM_CS1
 #undef  MV_INCLUDE_SDRAM_CS2
 #undef  MV_INCLUDE_SDRAM_CS3
 

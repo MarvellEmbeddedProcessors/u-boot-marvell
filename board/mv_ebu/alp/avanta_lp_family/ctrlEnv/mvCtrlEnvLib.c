@@ -354,8 +354,8 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 *******************************************************************************/
 MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 {
-	MV_BOARD_SATR_INFO *satrInfo = NULL;;
-	if (satrField < MV_SATR_READ_MAX_OPTION && mvBoardSatrInfoGet(satrField, satrInfo))
+	MV_BOARD_SATR_INFO *satrInfo = NULL;
+	if (satrField < MV_SATR_READ_MAX_OPTION && mvBoardSatrInfoGet(satrField, satrInfo) == MV_OK)
 		return satrOptionsConfig[satrField];
 	else
 		return MV_ERROR;

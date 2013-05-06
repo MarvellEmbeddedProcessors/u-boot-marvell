@@ -112,9 +112,6 @@ void 	mvSysPp2Init(void)
 			addrWinMap[i].attrib |= 0x30;
 		}
 #endif
-		mvOsPrintf("%d - Base 0x%08x , Size = 0x%08x. , Target = 0x%08x\n", i,
-				addrWinMap[i].addrWin.baseLow,
-				(unsigned int)addrWinMap[i].addrWin.size, addrWinMap[i].targetId);
 	}
 	halData.maxPort = mvCtrlEthMaxPortGet();
 

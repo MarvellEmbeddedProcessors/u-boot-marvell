@@ -282,7 +282,7 @@ MV_U16 mvCtrlModelGet(MV_VOID)
         MV_U16 dramBusWidth;
         MV_U8 cpunum = 0;
 		if (ctrl_mode1 == -1) {
-			cpunum= mvBoardCpuCoresNumGet();
+		cpunum= mvBoardCpuCoresNumGet();
 			if (3 == cpunum){
 				ctrl_mode1 = MV_78460_DEV_ID;
 			}
@@ -386,23 +386,23 @@ MV_BIN_SERDES_CFG *mvBoardSerdesCfgGet(MV_U8 pexMode)
 MV_U32 mvCtrlSerdesMaxLinesGet(MV_VOID)
 {        
       switch (mvCtrlModelGet()) {
-		case MV_78130_DEV_ID:
+        case MV_78130_DEV_ID:
         case MV_78230_DEV_ID:
-			return 7;
+                return 7;
         case MV_78160_DEV_ID:
         case MV_78260_DEV_ID:
-            return 12;
+                return 12;
         case MV_78460_DEV_ID:
         case MV_78000_DEV_ID:
-            return 16;
-		case MV_6710_DEV_ID:
-			return 4;
+                return 16;
+	  case MV_6710_DEV_ID:
+		  return 4;
 
-	  default:
+        default:
   			break;
 	}
-	  return 0;
-}
+                return 0;
+	}
 /*******************************************************************************/
 MV_U32 mvCtrlPexMaxUnitGet(MV_VOID)
 {
@@ -512,6 +512,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	if (maxSerdesLines == 0)
 		return MV_OK;
 
+
 	switch (boardId) {
         case DB_78X60_AMC_ID:
         case DB_78X60_PCAC_REV2_ID:
@@ -529,8 +530,8 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	case DB_784MP_GP_ID:
 	case DB_88F78XX0_BP_ID:
 		satr11 = mvBoardTwsiSatRGet(1, 1);
-	if ((MV_8)MV_ERROR == (MV_8)satr11)
-		return MV_ERROR;
+		if ((MV_8)MV_ERROR == (MV_8)satr11)
+			return MV_ERROR;
 		break;
 	}
 
@@ -557,46 +558,21 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 /* 	DEBUG_INIT_C("\n\n  **** Read SatR freq: ", freq,2); */
 	if (device_rev == 2) {/*   for B0 only */
-		MV_U32 cpuAvs;
-		MV_U8 fabricFreq;
-		cpuAvs  = MV_REG_READ(CPU_AVS_CONTROL2_REG);
-		DEBUG_RD_REG(CPU_AVS_CONTROL2_REG, cpuAvs);
-		cpuAvs &= ~BIT9;
-
+		tmp = MV_REG_READ(AVS_CONTROL2_REG);
+		DEBUG_RD_REG(AVS_CONTROL2_REG, tmp);
 		if ((0x4 == freq) || (0xB == freq)){
 			MV_U32 tmp2;
-			tmp2 = MV_REG_READ(CPU_AVS_CONTROL0_REG);
-			DEBUG_RD_REG(CPU_AVS_CONTROL0_REG, tmp2);
-			tmp2 |= 0x0FF; /* cpu upper limit = 1.1V  cpu lower limit = 0.9125V  */
-			MV_REG_WRITE(CPU_AVS_CONTROL0_REG , tmp2);
-			DEBUG_WR_REG(CPU_AVS_CONTROL0_REG , tmp2);
-			cpuAvs  |= BIT9; /* cpu avs enable */
-			cpuAvs  |= BIT18; /* AvsAvddDetEn enable  */
-			fabricFreq = (MV_REG_READ(MPP_SAMPLE_AT_RESET(0)) & SAR0_FABRIC_FREQ_MASK) >> SAR0_FABRIC_FREQ_OFFSET;
-			if ((0xB == freq) && (5 == fabricFreq)){
-				MV_U32 coreAvs;
-				coreAvs = MV_REG_READ(CORE_AVS_CONTROL_0REG)
-				DEBUG_RD_REG(CORE_AVS_CONTROL_0REG, coreAvs);
-				coreAvs &= ~(0xff);
-				coreAvs |= 0x0E;	/*    Set core lower limit = 0.9V & core upper limit = 0.9125V */
-				MV_REG_WRITE(CORE_AVS_CONTROL_0REG, coreAvs);
-				DEBUG_WR_REG(CORE_AVS_CONTROL_0REG, coreAvs);
-
-				coreAvs = MV_REG_READ(CORE_AVS_CONTROL_2REG)
-				DEBUG_RD_REG(CORE_AVS_CONTROL_2REG, coreAvs);
-				coreAvs |= BIT9; /*  core AVS enable  */
-				MV_REG_WRITE(CORE_AVS_CONTROL_2REG, coreAvs);
-				DEBUG_WR_REG(CORE_AVS_CONTROL_2REG, coreAvs);
-
-				tmp2 = MV_REG_READ(GENERAL_PURPOSE_RESERVED0_REG )
-				DEBUG_RD_REG(GENERAL_PURPOSE_RESERVED0_REG , tmp2);
-				tmp2 |= BIT0; /*  AvsCoreAvddDetEn enable   */
-				MV_REG_WRITE(GENERAL_PURPOSE_RESERVED0_REG , tmp2);
-				DEBUG_WR_REG(GENERAL_PURPOSE_RESERVED0_REG , tmp2);
-			}
+			tmp2 = MV_REG_READ(AVS_LOW_VDD_LIMIT);
+			DEBUG_RD_REG(AVS_LOW_VDD_LIMIT, tmp2);
+			tmp2 |= 0x0f0;
+			MV_REG_WRITE(AVS_LOW_VDD_LIMIT , tmp2);
+			DEBUG_WR_REG(AVS_LOW_VDD_LIMIT , tmp2);
+			tmp |= BIT9;
 		}
-		MV_REG_WRITE(CPU_AVS_CONTROL2_REG,  cpuAvs);
-		DEBUG_WR_REG(CPU_AVS_CONTROL2_REG,  cpuAvs);
+		else
+			tmp &= ~BIT9;
+		MV_REG_WRITE(AVS_CONTROL2_REG , tmp);
+		DEBUG_WR_REG(AVS_CONTROL2_REG , tmp);
 	}
 /**********************************************************************************/
 	pSerdesInfo = mvBoardSerdesCfgGet(mvBoardPexModeGet(satr11));

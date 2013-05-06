@@ -226,6 +226,11 @@ elsif($boardID eq "a370"){
 	$fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-a370-$opt_v-$flash_name-$targetBoard.bin");
 }
 
+elsif($boardID eq "avanta"){
+	$failUart = system("./tools/marvell/doimage -T uart -D 0 -E 0 -G ./tools/marvell/bin_hdr/bin_hdr.uart.bin u-boot.bin u-boot-alp-$opt_v-$flash_name-uart.bin");
+	$fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-alp-$opt_v-$flash_name.bin");
+}
+
 if($fail){
 	print "\n *** Error: Doimage failed\n\n";
 	exit 1;

@@ -1,7 +1,6 @@
 *.o
 *.elf
 *.dis
-*.scr
 *.raw
 *.srec
 *.bin

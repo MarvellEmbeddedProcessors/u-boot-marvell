@@ -61,80 +61,80 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#ifndef _INC_DDR_H
-#define _INC_DDR_H
 
-#include "mv_os.h"
+#ifndef _DDR3_ALP_CONFIG_H
+#define _DDR3_ALP_CONFIG_H
 
-#include "config_marvell.h"     /* Required to identify SOC and Board */
+/*DDR3_LOG_LEVEL Information
+Level 0: Provides an error code in a case of failure, RL, WL errors and other algorithm failure
+Level 1: Provides the D-Unit setup (SPD/Static configuration)
+Level 2: Provides the windows margin as a results of DQS centeralization
+Level 3: Provides the windows margin of each DQ as a results of DQS centeralization */
 
-#ifdef MV88F78X60
-#include "ddr3_axp.h"
-#elif defined(MV88F67XX)
-#include "ddr3_a370.h"
-#elif defined(MV88F66XX)
-#include "ddr3_alp.h"
+#define DDR3_LOG_LEVEL      0
+#define DDR3_PBS            0
+#define DDR3_FAST_PATH_EN   1
+
+
+#undef STATIC_TRAINING
+#define DUNIT_STATIC
+
+/* General Configurations */
+/* The following parameters are required for proper setup */
+/* DDR_TARGET_FABRIC - Set desiered fabric configuration (for sample@Reset fabfreq parameter) */
+/* DRAM_ECC - set ECC support TRUE/FALSE */
+/* BUS_WIDTH - 16/32 bit */
+/* SPD_SUPPORT - Enables auto detection of DIMMs and their timing values */
+/* DQS_CLK_ALIGNED - Set this if CLK and DQS signals are aligned on board */
+/* MIXED_DIMM_STATIC - Mixed DIMM + On board devices support (ODT registers values are taken statically) */
+/* DDR3_TRAINING_DEBUG - debug prints of internal code */
+#define DDR_TARGET_FABRIC                       5
+#define DRAM_ECC                                FALSE
+
+#ifdef MV_DDR_32BIT
+#define BUS_WIDTH                               32
+#else
+#define BUS_WIDTH                               16
 #endif
 
-/*DRR training Error codes*/
-/*Stage 0 errors*/
-#define MV_DDR3_TRAINING_ERR_BAD_SAR            0xDD300001
-/*Stage 1 errors*/
-#define MV_DDR3_TRAINING_ERR_TWSI_FAIL              0xDD301001
-#define MV_DDR3_TRAINING_ERR_DIMM_TYPE_NO_MATCH     0xDD301001
-#define MV_DDR3_TRAINING_ERR_TWSI_BAD_TYPE          0xDD301003
-#define MV_DDR3_TRAINING_ERR_BUS_WIDTH_NOT_MATCH    0xDD301004
-#define MV_DDR3_TRAINING_ERR_BAD_DIMM_SETUP         0xDD301005
-#define MV_DDR3_TRAINING_ERR_MAX_CS_LIMIT           0xDD301006
-#define MV_DDR3_TRAINING_ERR_MAX_ENA_CS_LIMIT       0xDD301007
-#define MV_DDR3_TRAINING_ERR_BAD_R_DIMM_SETUP       0xDD301008
-/*Stage 2 errors*/
-#define MV_DDR3_TRAINING_ERR_HW_FAIL_BASE           0xDD302000
+#undef SPD_SUPPORT
+#undef DQS_CLK_ALIGNED
+#undef MIXED_DIMM_STATIC
+#define DDR3_TRAINING_DEBUG                     FALSE
+#define REG_DIMM_SKIP_WL                        FALSE
 
-typedef enum  _mvConfigType {
-    CONFIG_ECC,
-    CONFIG_MULTI_CS,
-    CONFIG_BUS_WIDTH
-} MV_CONFIG_TYPE;
+/* Marvell boards specific configurations */
 
-typedef enum  {
-    MV_LOG_LEVEL_0,
-    MV_LOG_LEVEL_1,
-    MV_LOG_LEVEL_2,
-    MV_LOG_LEVEL_3
-} MV_LOG_LEVEL;
+#ifdef SPD_SUPPORT
+/* DIMM support parameters: */
+/* DRAM_2T - Set Desired 2T Mode - 0 - 1T, 0x1 - 2T, 0x2 - 3T */
+/* DIMM_CS_BITMAP - bitmap representing the optional CS in DIMMs (0xF=CS0+CS1+CS2+CS3, 0xC=CS2+CS3...) */
+#define DRAM_2T                                 0x0
+#define DIMM_CS_BITMAP                          0xF
+#define DUNIT_SPD
+#endif
 
-MV_VOID     sramConfig(void);
-MV_VOID     changeResetVecBase(MV_32 val);
-MV_VOID     setCPSR(MV_32 val);
+/* Registered DIMM Support - In case registered DIMM is attached, please supply the following values:
+(see JEDEC - JESD82-29A "Definition of the SSTE32882 Registering Clock Driver with Parity and Quad Chip
+Selects for DDR3/DDR3L/DDR3U RDIMM 1.5 V/1.35 V/1.25 V Applications") */
+/* RC0: Global Features Control Word */
+/* RC1: Clock Driver Enable Control Word */
+/* RC2: Timing Control Word */
+/* RC3-RC5 - taken from SPD */
+/* RC8: Additional IBT Setting Control Word */
+/* RC9: Power Saving Settings Control Word */
+/* RC10: Encoding for RDIMM Operating Speed */
+/* RC11: Operating Voltage VDD and VREFCA Control Word */
+#define RDIMM_RC0                               0
+#define RDIMM_RC1                               0
+#define RDIMM_RC2                               0
+#define RDIMM_RC8                               0
+#define RDIMM_RC9                               0
+#define RDIMM_RC10                              0x2
+#define RDIMM_RC11                              0x0
 
-MV_STATUS   ddr3HwTraining(MV_U32 uiTargetFreq, MV_U32 uiDdrWidth,
-                        MV_BOOL bXorBypass, MV_U32 uiScrubOffs, MV_U32 uiScrubSize, MV_BOOL bDQSCLKAligned,
-                        MV_BOOL bDebugMode, MV_BOOL bRegDimmSkipWL);
+#if defined(MIXED_DIMM_STATIC) || !defined (SPD_SUPPORT)
+#define DUNIT_STATIC
+#endif
 
-MV_VOID     ddr3PrintVersion(void);
-
-MV_VOID     fixPLLValue(MV_U8 targetFabric);
-MV_U8       ddr3GetEpromFabric(void);
-
-MV_VOID     uDelay(MV_U32 uiDelay);
-
-MV_U32      ddr3GetFabOpt(void);
-MV_U32      ddr3GetCpuFreq(void);
-MV_U32      ddr3GetVCOFreq(void);
-MV_BOOL     ddr3CheckConfig(MV_U32 twsiAddr, MV_CONFIG_TYPE configType);
-MV_U32 ddr3GetStaticMCValue(MV_U32 regAddr, MV_U32 offset1, MV_U32 mask1, MV_U32 offset2, MV_U32 mask2);
-
-MV_U32 ddr3CLtoValidCL(MV_U32 uiCL);
-MV_U32 ddr3ValidCLtoCL(MV_U32 uiValidCL);
-MV_U32 ddr3GetCSNumFromReg(void);
-MV_U32 ddr3GetCSEnaFromReg(void);
-MV_U8 mvCtrlRevGet(MV_VOID);
-MV_VOID     levelLogPrintS(char *str,MV_LOG_LEVEL eLogLevel);
-MV_VOID     levelLogPrintD(MV_U32 dec_num,MV_U32 length,MV_LOG_LEVEL eLogLevel);
-MV_VOID     levelLogPrintDD(MV_U32 dec_num,MV_U32 length,MV_LOG_LEVEL eLogLevel);
-MV_VOID     printDunitSetup(void);
-MV_VOID ddr3SetDqsResultsPrintStatus(MV_U32 status);
-MV_U32      ddr3GetLogLevel(void);
-
-#endif /* _INC_DDR_H */
+#endif /* _DDR3_ALP_CONFIG_H */

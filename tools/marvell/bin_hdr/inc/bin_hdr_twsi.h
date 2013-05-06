@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	this list of conditions and the following disclaimer.
+    this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-	notice, this list of conditions and the following disclaimer in the
-	documentation and/or other materials provided with the distribution.
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-	used to endorse or promote products derived from this software without
-	specific prior written permission.
+    used to endorse or promote products derived from this software without
+    specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -68,102 +68,101 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mv_os.h"
 
 /* TWSI */
-extern MV_U32 mvBoardTclkGet(MV_VOID);
-#define CONFIG_SYS_TCLK						mvBoardTclkGet()
-#define CONFIG_SYS_I2C_SPEED				100000		/* I2C speed default */
-#define TWSI_SPEED							100000
-#define MV_ABS(number)  					(((int)(number) < 0) ? -(int)(number) : (int)(number))
-#define MV_MBUS_REGS_OFFSET					(0x20000)
-#define MV_CPUIF_REGS_BASE(cpu)				(MV_CPUIF_REGS_OFFSET(cpu))
-#define MV_MISC_REGS_BASE					(MV_MISC_REGS_OFFSET)
-#define MV_L2C_REGS_BASE					(MV_AURORA_L2_REGS_OFFSET)
-#define MV_CPUIF_SHARED_REGS_BASE			(MV_MBUS_REGS_OFFSET)
-#define MV_COHERENCY_FABRIC_REGS_BASE		(MV_COHERENCY_FABRIC_OFFSET)
-#define CPU_CF_LOCAL_MASK_REG(cpu)			(MV_CPUIF_REGS_BASE(cpu) + 0x8c4)
-#define CPU_INT_SOURCE_CONTROL_REG(i)		(MV_CPUIF_SHARED_REGS_BASE + 0xB00 + (i * 0x4))
+#define CONFIG_SYS_TCLK                     200000000
+#define CONFIG_SYS_I2C_SPEED                100000      /* I2C speed default */
+#define TWSI_SPEED                          100000
+#define MV_ABS(number)                      (((int)(number) < 0) ? -(int)(number) : (int)(number))
+#define MV_MBUS_REGS_OFFSET                 (0x20000)
+#define MV_CPUIF_REGS_BASE(cpu)             (MV_CPUIF_REGS_OFFSET(cpu))
+#define MV_MISC_REGS_BASE                   (MV_MISC_REGS_OFFSET)
+#define MV_L2C_REGS_BASE                    (MV_AURORA_L2_REGS_OFFSET)
+#define MV_CPUIF_SHARED_REGS_BASE           (MV_MBUS_REGS_OFFSET)
+#define MV_COHERENCY_FABRIC_REGS_BASE       (MV_COHERENCY_FABRIC_OFFSET)
+#define CPU_CF_LOCAL_MASK_REG(cpu)          (MV_CPUIF_REGS_BASE(cpu) + 0x8c4)
+#define CPU_INT_SOURCE_CONTROL_REG(i)       (MV_CPUIF_SHARED_REGS_BASE + 0xB00 + (i * 0x4))
 
-#define CPU_INT_SOURCE_CONTROL_ENA_OFFS		28
-#define CPU_INT_SOURCE_CONTROL_ENA_MASK		(1 << CPU_INT_SOURCE_CONTROL_ENA_OFFS)
+#define CPU_INT_SOURCE_CONTROL_ENA_OFFS     28
+#define CPU_INT_SOURCE_CONTROL_ENA_MASK     (1 << CPU_INT_SOURCE_CONTROL_ENA_OFFS)
 
-#define CPU_MAIN_INT_TWSI_OFFS(i)			(2 + i)
-#define CPU_MAIN_INT_CAUSE_TWSI(i)			(31 + i)
-#define CPU_INT_SOURCE_CONTROL_IRQ_OFFS		0
-#define CPU_INT_SOURCE_CONTROL_IRQ_MASK		(1 << CPU_INT_SOURCE_CONTROL_IRQ_OFFS)
+#define CPU_MAIN_INT_TWSI_OFFS(i)           (2 + i)
+#define CPU_MAIN_INT_CAUSE_TWSI(i)          (31 + i)
+#define CPU_INT_SOURCE_CONTROL_IRQ_OFFS     0
+#define CPU_INT_SOURCE_CONTROL_IRQ_MASK     (1 << CPU_INT_SOURCE_CONTROL_IRQ_OFFS)
 
-#define MV_CPUIF_REGS_OFFSET(cpu)			(0x21000 + (cpu) * 0x100)
-#define MV_CPUIF_REGS_BASE(cpu)				(MV_CPUIF_REGS_OFFSET(cpu))
-#define CPU_MAIN_INT_CAUSE_REG(vec, cpu)	(MV_CPUIF_REGS_BASE(cpu) + 0x880 + (vec * 0x4))
-#define CPU_MAIN_INT_TWSI_OFFS(i)			(2 + i)
-#define CPU_MAIN_INT_CAUSE_TWSI(i)			(31 + i)
+#define MV_CPUIF_REGS_OFFSET(cpu)           (0x21000 + (cpu) * 0x100)
+#define MV_CPUIF_REGS_BASE(cpu)             (MV_CPUIF_REGS_OFFSET(cpu))
+#define CPU_MAIN_INT_CAUSE_REG(vec, cpu)    (MV_CPUIF_REGS_BASE(cpu) + 0x880 + (vec * 0x4))
+#define CPU_MAIN_INT_TWSI_OFFS(i)           (2 + i)
+#define CPU_MAIN_INT_CAUSE_TWSI(i)          (31 + i)
 
 
-#define TWSI_CPU_MAIN_INT_CAUSE_REG		CPU_MAIN_INT_CAUSE_REG(1, 0) 
-#define MV_TWSI_SLAVE_REGS_OFFSET(chanNum)	(0x11000 + (chanNum * 0x100))
+#define TWSI_CPU_MAIN_INT_CAUSE_REG     CPU_MAIN_INT_CAUSE_REG(1, 0)
+#define MV_TWSI_SLAVE_REGS_OFFSET(chanNum)  (0x11000 + (chanNum * 0x100))
 /*
 ** Base address for TWSI registers.
 */
-#define MV_TWSI_SLAVE_REGS_BASE(unit) 		(MV_TWSI_SLAVE_REGS_OFFSET(unit))
+#define MV_TWSI_SLAVE_REGS_BASE(unit)       (MV_TWSI_SLAVE_REGS_OFFSET(unit))
 
 /*
 ** Specific definition for Main CPU interrupt cause register.
 ** Needed for TWSI operation completion monitoring.
 */
-#define MV_TWSI_CPU_MAIN_INT_CASUE(chNum)	TWSI_CPU_MAIN_INT_CAUSE_REG
+#define MV_TWSI_CPU_MAIN_INT_CASUE(chNum)   TWSI_CPU_MAIN_INT_CAUSE_REG
 
 
-#define TWSI_TIMEOUT_VALUE 					0x500
+#define TWSI_TIMEOUT_VALUE                  0x500
 
-/*#define TWSI_CPU_MAIN_INT_CAUSE_REG			0x20200 */
-/* #define TWSI_CPU_MAIN_INT_TWSI_OFFS			29 		 */   /*5*/
-#define TWSI_CPU_MAIN_INT_TWSI_BIT			(1 << TWSI_CPU_MAIN_INT_TWSI_OFFS)
-
-
-#define CPU_LCD_TWSI_CONFIG_1_REG			(INTER_REGS_BASE + 0xE802C)
-#define CPU_LCD_TWSI_CONFIG_2_REG			(INTER_REGS_BASE + 0xE8030)
-
-#define TWSI_SLAVE_ADDR_REG(chanNum)		(MV_TWSI_SLAVE_REGS_BASE(chanNum) + 0x00)
-
-#define TWSI_SLAVE_ADDR_GCE_ENA				BIT0
-#define TWSI_SLAVE_ADDR_7BIT_OFFS			0x1
-#define TWSI_SLAVE_ADDR_7BIT_MASK 			(0xFF << TWSI_SLAVE_ADDR_7BIT_OFFS)
-#define TWSI_SLAVE_ADDR_10BIT_OFFS			0x7
-#define TWSI_SLAVE_ADDR_10BIT_MASK 			0x300
-#define	TWSI_SLAVE_ADDR_10BIT_CONST 		0xF0
-
-#define TWSI_EXTENDED_SLAVE_ADDR_REG(chanNum)	(MV_TWSI_SLAVE_REGS_BASE(chanNum) + 0x10)
-#define TWSI_EXTENDED_SLAVE_OFFS 			0
-#define TWSI_EXTENDED_SLAVE_MASK			(0xFF << TWSI_EXTENDED_SLAVE_OFFS)
-
-#define TWSI_DATA_REG(chanNum)				(MV_TWSI_SLAVE_REGS_BASE(chanNum) + 0x04)
-#define TWSI_DATA_COMMAND_OFFS				0x0
-#define TWSI_DATA_COMMAND_MASK 				(0x1 << TWSI_DATA_COMMAND_OFFS)
-#define TWSI_DATA_COMMAND_WR				(0x1 << TWSI_DATA_COMMAND_OFFS)
-#define TWSI_DATA_COMMAND_RD				(0x0 << TWSI_DATA_COMMAND_OFFS)
-#define TWSI_DATA_ADDR_7BIT_OFFS			0x1
-#define TWSI_DATA_ADDR_7BIT_MASK 			(0xFF << TWSI_DATA_ADDR_7BIT_OFFS)
-#define TWSI_DATA_ADDR_10BIT_OFFS			0x7
-#define TWSI_DATA_ADDR_10BIT_MASK			0x300
-#define TWSI_DATA_ADDR_10BIT_CONST			0xF0
-
-#define TWSI_CONTROL_REG(chanNum)			(MV_TWSI_SLAVE_REGS_BASE(chanNum) + 0x08)
-#define TWSI_CONTROL_ACK            		BIT2
-#define TWSI_CONTROL_INT_FLAG_SET   		BIT3
-#define TWSI_CONTROL_STOP_BIT    			BIT4
-#define TWSI_CONTROL_START_BIT 				BIT5
-#define TWSI_CONTROL_ENA     				BIT6
-#define TWSI_CONTROL_INT_ENA    			BIT7
+/*#define TWSI_CPU_MAIN_INT_CAUSE_REG           0x20200 */
+/* #define TWSI_CPU_MAIN_INT_TWSI_OFFS          29       */   /*5*/
+#define TWSI_CPU_MAIN_INT_TWSI_BIT          (1 << TWSI_CPU_MAIN_INT_TWSI_OFFS)
 
 
-#define TWSI_STATUS_BAUDE_RATE_REG(chanNum)	(MV_TWSI_SLAVE_REGS_BASE(chanNum) + 0x0c)
-#define TWSI_BAUD_RATE_N_OFFS				0
-#define TWSI_BAUD_RATE_N_MASK				(0x7 << TWSI_BAUD_RATE_N_OFFS)
-#define TWSI_BAUD_RATE_M_OFFS   			3
-#define TWSI_BAUD_RATE_M_MASK  				(0xF << TWSI_BAUD_RATE_M_OFFS)
+#define CPU_LCD_TWSI_CONFIG_1_REG           (INTER_REGS_BASE + 0xE802C)
+#define CPU_LCD_TWSI_CONFIG_2_REG           (INTER_REGS_BASE + 0xE8030)
 
-#define TWSI_SOFT_RESET_REG(chanNum)		(MV_TWSI_SLAVE_REGS_BASE(chanNum) + 0x1c)
+#define TWSI_SLAVE_ADDR_REG(chanNum)        (MV_TWSI_SLAVE_REGS_BASE(chanNum) + 0x00)
+
+#define TWSI_SLAVE_ADDR_GCE_ENA             BIT0
+#define TWSI_SLAVE_ADDR_7BIT_OFFS           0x1
+#define TWSI_SLAVE_ADDR_7BIT_MASK           (0xFF << TWSI_SLAVE_ADDR_7BIT_OFFS)
+#define TWSI_SLAVE_ADDR_10BIT_OFFS          0x7
+#define TWSI_SLAVE_ADDR_10BIT_MASK          0x300
+#define TWSI_SLAVE_ADDR_10BIT_CONST         0xF0
+
+#define TWSI_EXTENDED_SLAVE_ADDR_REG(chanNum)   (MV_TWSI_SLAVE_REGS_BASE(chanNum) + 0x10)
+#define TWSI_EXTENDED_SLAVE_OFFS            0
+#define TWSI_EXTENDED_SLAVE_MASK            (0xFF << TWSI_EXTENDED_SLAVE_OFFS)
+
+#define TWSI_DATA_REG(chanNum)              (MV_TWSI_SLAVE_REGS_BASE(chanNum) + 0x04)
+#define TWSI_DATA_COMMAND_OFFS              0x0
+#define TWSI_DATA_COMMAND_MASK              (0x1 << TWSI_DATA_COMMAND_OFFS)
+#define TWSI_DATA_COMMAND_WR                (0x1 << TWSI_DATA_COMMAND_OFFS)
+#define TWSI_DATA_COMMAND_RD                (0x0 << TWSI_DATA_COMMAND_OFFS)
+#define TWSI_DATA_ADDR_7BIT_OFFS            0x1
+#define TWSI_DATA_ADDR_7BIT_MASK            (0xFF << TWSI_DATA_ADDR_7BIT_OFFS)
+#define TWSI_DATA_ADDR_10BIT_OFFS           0x7
+#define TWSI_DATA_ADDR_10BIT_MASK           0x300
+#define TWSI_DATA_ADDR_10BIT_CONST          0xF0
+
+#define TWSI_CONTROL_REG(chanNum)           (MV_TWSI_SLAVE_REGS_BASE(chanNum) + 0x08)
+#define TWSI_CONTROL_ACK                    BIT2
+#define TWSI_CONTROL_INT_FLAG_SET           BIT3
+#define TWSI_CONTROL_STOP_BIT               BIT4
+#define TWSI_CONTROL_START_BIT              BIT5
+#define TWSI_CONTROL_ENA                    BIT6
+#define TWSI_CONTROL_INT_ENA                BIT7
+
+
+#define TWSI_STATUS_BAUDE_RATE_REG(chanNum) (MV_TWSI_SLAVE_REGS_BASE(chanNum) + 0x0c)
+#define TWSI_BAUD_RATE_N_OFFS               0
+#define TWSI_BAUD_RATE_N_MASK               (0x7 << TWSI_BAUD_RATE_N_OFFS)
+#define TWSI_BAUD_RATE_M_OFFS               3
+#define TWSI_BAUD_RATE_M_MASK               (0xF << TWSI_BAUD_RATE_M_OFFS)
+
+#define TWSI_SOFT_RESET_REG(chanNum)        (MV_TWSI_SLAVE_REGS_BASE(chanNum) + 0x1c)
 
 /* defines */
-#define TWSI_TIMEOUT_VALUE 					0x500
+#define TWSI_TIMEOUT_VALUE                  0x500
 
 /* TWSI status codes */
 #define TWSI_BUS_ERROR                                            0x00
@@ -200,35 +199,35 @@ extern MV_U32 mvBoardTclkGet(MV_VOID);
 
 
 /* Timers */
-#define REG_TIMERS_CTRL_ADDR									0x20300
-#define REG_TIMERS_EVENTS_ADDR									0x20304
-#define REG_TIMER0_VALUE_ADDR									0x20314
-#define REG_TIMER0_ENABLE_MASK									0x1
+#define REG_TIMERS_CTRL_ADDR                                    0x20300
+#define REG_TIMERS_EVENTS_ADDR                                  0x20304
+#define REG_TIMER0_VALUE_ADDR                                   0x20314
+#define REG_TIMER0_ENABLE_MASK                                  0x1
 
 /* The TWSI interface supports both 7-bit and 10-bit addressing.            */
 /* This enumerator describes addressing type.                               */
 typedef enum {
-	ADDR7_BIT,                      /* 7 bit address    */
-	ADDR10_BIT                      /* 10 bit address   */
+    ADDR7_BIT,                      /* 7 bit address    */
+    ADDR10_BIT                      /* 10 bit address   */
 } MV_TWSI_ADDR_TYPE;
 
 /* This structure describes TWSI address.                                   */
 typedef struct _mvTwsiAddr {
-	MV_U32              address;    /* address          */
-	MV_TWSI_ADDR_TYPE   type;       /* Address type     */
+    MV_U32              address;    /* address          */
+    MV_TWSI_ADDR_TYPE   type;       /* Address type     */
 } MV_TWSI_ADDR;
 
 /* This structure describes a TWSI slave.                                   */
 typedef struct _mvTwsiSlave {
-	MV_TWSI_ADDR	slaveAddr;
-	MV_BOOL 		validOffset;	/* whether the slave has offset (i.e. Eeprom  etc.) 	*/
-	MV_U32		offset;		/* offset in the slave.					*/
-	MV_BOOL 		moreThen256;	/* whether the ofset is bigger then 256 		*/
+    MV_TWSI_ADDR    slaveAddr;
+    MV_BOOL         validOffset;    /* whether the slave has offset (i.e. Eeprom  etc.)     */
+    MV_U32      offset;     /* offset in the slave.                 */
+    MV_BOOL         moreThen256;    /* whether the ofset is bigger then 256         */
 } MV_TWSI_SLAVE;
 
 /* This enumerator describes TWSI protocol commands.                        */
 typedef enum _mvTwsiCmd {
-	MV_TWSI_WRITE,   /* TWSI write command - 0 according to spec   */
+    MV_TWSI_WRITE,   /* TWSI write command - 0 according to spec   */
  MV_TWSI_READ   /* TWSI read command  - 1 according to spec */
 } MV_TWSI_CMD;
 

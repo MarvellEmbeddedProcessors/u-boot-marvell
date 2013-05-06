@@ -63,8 +63,8 @@
 #;*******************************************************************************/
 #.SECONDARY:
 
-include ./base.mk
-sinclude ../../../include/autoconf.mk
+include ../base.mk
+sinclude ../../../../include/autoconf.mk
 
 ifeq "$(MAKECMDGOALS)" "rtl"
   MVFLAGS += MV_RTL_PLATFORM=1 MV_NO_PRINT=1
@@ -102,61 +102,22 @@ ifeq "$(CONFIG_RD_88F6710)"  "y"
   CFLAGS += -DCONFIG_RD_88F6710
 endif
 
-SETPARAMS  = setparams
-PARAMSFILE = params
-LDSCRIPT   = linker.scr
-DRAMREGS   = ./dramregs.txt
+INCLUDE     = -I./  -I../inc/ -I../../../../include
 
-INCLUDE     = -I./ -I./../ -I./src_phy_$(BOARD)/ -I./src_ddr/  -I./inc/ -I../../../include
-
-#LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
-#LDFLAGSBIN  = -T linker1.scr $(LDFLAGS) --split-by-file=0x100
-ifneq ($(BOARD),alp)
-	LDFLAGSBIN  = -T linker.scr $(LDFLAGS)
-else
-	LDFLAGSBIN  = -T linker1.scr $(LDFLAGS)
-endif
-
-
+LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
 HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
 
-TGT = bin_hdr
+TGT = phy_alp.a
+TGT_UART = phy_alp.uart.a
 
-ASRC = bin_entry.s
-CSRC = mvdispacher.c
+CSRC = mvHighSpeedEnvLib.c mvHighSpeedEnvSpec.c
 
-AOBJ = $(subst .s,.o,$(ASRC))
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
 
-LIB_PHY = phy_$(BOARD).a
-LIB_DDR = ddr_$(BOARD).a
-LIB_UTILS = utils.a
-LIB_SWUP = suspendWUP.a
-
-LIB_PHY_UART = phy_$(BOARD).uart.a
-LIB_DDR_UART = ddr_$(BOARD).uart.a
-LIB_UTIL_UART = utils.uart.a
-LIB_SWUP_UART = suspendWUP.uart.a
-
-TLIB = ./src_ddr/ddr3_training_$(BOARD).lib
-
-COMPONENT_SUBDIRS = src_util src_phy_$(BOARD) src_ddr src_suspendWUP
-HDR_COMPONENTS = $(LIB_PHY) $(LIB_DDR) $(TLIB) $(LIB_SWUP)
-HDR_COMPONENTS_UART = $(LIB_PHY_UART) $(LIB_DDR_UART) $(TLIB) $(LIB_SWUP_UART)
-
-#how to add new component to binary header:
-#EXAMPLE_COMPONENT=no
-#ifeq ($(EXAMPLE_COMPONENT),yes)
-#COMPONENT_SUBDIRS += src_example
-#HDR_COMPONENTS += component_example.a
-#HDR_COMPONENTS_UART += component_example.uart.a
-#CFLAGS += -DCONFIG_EXAMPLE_COMPONENT
-#endif
-
-all:   subdirs $(TGT).bin $(TGT).uart.bin  $(TGT).dis $(TGT).uart.dis $(TGT).srec $(TGT).uart.srec
+all:   $(TGT) $(TGT_UART)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
@@ -164,55 +125,13 @@ all:   subdirs $(TGT).bin $(TGT).uart.bin  $(TGT).dis $(TGT).uart.dis $(TGT).sre
 %.uart.o: %.c
 	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) -c -o  $@ $<
 
-$(TGT).bin: $(TGT).elf
-	$(OBJCOPY) -S -O binary $< $(addsuffix .tmp, $@)
-	$(CAT) $(PARAMSFILE).raw $(addsuffix .tmp, $@) > $@
-	$(RM) $(addsuffix .tmp, $@)
+$(TGT): $(COBJ)
+	ar rcs $(TGT)  $(COBJ)
+	$(CP) ./$@ ../
 
-$(TGT).uart.bin: $(TGT).uart.elf
-	$(OBJCOPY) -S -O binary $< $(addsuffix .tmp, $@)
-	$(CAT) $(PARAMSFILE).raw $(addsuffix .tmp, $@) > $@
-	$(RM) $(addsuffix .tmp, $@)
-
-$(TGT).srec: $(TGT).elf
-	$(OBJCOPY) -O srec $< $@
-
-$(TGT).dis:  $(TGT).elf
-	$(OBJDUMP) -lhaD -S $<  > $@
-
-$(TGT).uart.srec: $(TGT).uart.elf
-	$(OBJCOPY) -O srec $< $@
-
-$(TGT).uart.dis:  $(TGT).uart.elf
-	$(OBJDUMP) -lhaD -S $<  > $@
-
-$(TGT).elf: subdirs  $(AOBJ) $(COBJ) $(SETPARAM) $(LDSCRIPT)
-	$(CC) $(LDFLAGSBIN) $(AOBJ) $(COBJ) $(HDR_COMPONENTS) $(LIB_UTILS) libgcc.lib -o $@
-
-$(TGT).uart.elf: $(AOBJ) $(CUART_OBJ) subdirs
-	$(CC) $(LDFLAGSBIN) $(AOBJ) $(CUART_OBJ) $(HDR_COMPONENTS_UART) $(LIB_UTIL_UART) libgcc.lib -o $@
-
-$(LDSCRIPT): $(SETPARAMS)
-	./$(SETPARAMS) -P $(PARAMSFILE).txt -R $(DRAMREGS) $(PARAMSFILE).raw $@
-
-$(SETPARAMS):
-	$(MAKE) $(SETPARAMS) BOARD="$(BOARD)"  HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)"  -C ./src_util
-
-subdirs:
-	@for dir in $(COMPONENT_SUBDIRS) ; do \
-	    $(MAKE) all \
-		HOSTOS=$(HOSTOS) \
-		HOSTARCH=$(HOSTARCH) \
-		HOSTCFLAGS="$(HOSTCFLAGS)" \
-		HOST_LDFLAGS="$(HOST_LDFLAGS)" \
-		BOARD="$(BOARD)" \
-		-C $$dir || exit 1 ; \
-	done
+$(TGT_UART): $(CUART_OBJ)
+	ar rcs $(TGT_UART)  $(CUART_OBJ)
+	$(CP) ./$@ ../
 
 clean:
-	$(RM) *.raw *.elf *.srec *.dis *.bin *.a *.uart.bin *.uart.elf ./src/*.o  $(LDSCRIPT) $(SETPARAMS)
-	@for dir in $(COMPONENT_SUBDIRS) ; do \
-	    $(MAKE) clean -s -C $$dir || exit 1 ; \
-	done
-
-
+	$(RM) ./*.o  ./*.a

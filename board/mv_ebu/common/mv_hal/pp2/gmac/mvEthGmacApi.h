@@ -112,8 +112,7 @@ static INLINE void mvEthIsrSummaryMask(MV_VOID)
 
 static INLINE void mvEthIsrSummaryUnmask(MV_VOID)
 {
-	MV_REG_WRITE(ETH_ISR_SUM_MASK_REG, ETH_ISR_SUM_PORTS_MASK | ETH_ISR_SUM_PORT0_MASK |
-							ETH_ISR_SUM_PORT1_MASK | ETH_ISR_SUM_PORT2_MASK);
+	MV_REG_WRITE(ETH_ISR_SUM_MASK_REG, ETH_ISR_SUM_PORT0_MASK | ETH_ISR_SUM_PORT1_MASK | 0x20/*magic bit*/);
 }
 
 static INLINE MV_U32 mvEthIsrSummaryCauseGet(MV_VOID)
@@ -124,6 +123,16 @@ static INLINE MV_U32 mvEthIsrSummaryCauseGet(MV_VOID)
 static INLINE MV_U32 mvEthPortIsrCauseGet(int port)
 {
 	return MV_REG_READ(ETH_PORT_ISR_CAUSE_REG(port));
+}
+
+static INLINE MV_VOID mvEthPortIsrMask(int port)
+{
+	MV_REG_WRITE(ETH_PORT_ISR_MASK_REG(port), 0);
+}
+
+static INLINE MV_VOID mvEthPortIsrUnmask(int port)
+{
+	MV_REG_WRITE(ETH_PORT_ISR_MASK_REG(port), ETH_PORT_LINK_CHANGE_MASK);
 }
 
 void mvEthPortEnable(int port);

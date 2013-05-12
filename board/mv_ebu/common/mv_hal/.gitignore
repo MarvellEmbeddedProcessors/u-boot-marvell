@@ -4,3 +4,5 @@
 *.rej
 *.su
 nfc/
+cesa/
+neta/

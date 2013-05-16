@@ -118,6 +118,7 @@ extern "C" {
 #define MV_SATA_DEVICE_ID_7813			0x7813 /* DSMP */
 #define MV_SATA_DEVICE_ID_7823			0x7823 /* DSMP */
 #define MV_SATA_DEVICE_ID_7888			0x7888 /* DSMP */
+#define MV_SATA_DEVICE_ID_6660			0x6660 /* AvantaLP */
 #define MV_SATA_CHANNELS_NUM                    8
 #define MV_SATA_UNITS_NUM                       2
 #define MV_SATA_5082_PORT_NUM                   1

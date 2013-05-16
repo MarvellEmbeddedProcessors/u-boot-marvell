@@ -107,7 +107,10 @@ extern int display_dram_config(int print);
 int late_print_cpuinfo(void);
 
 /* CPU address decode table. */
-MV_CPU_DEC_WIN mvCpuAddrWinMap[] = MV_CPU_IF_ADDR_WIN_MAP_TBL;
+MV_CPU_DEC_WIN mvCpuAddrWinMap_88F6660[] = MV_CPU_IF_ADDR_WIN_MAP_88F6660_TBL;
+MV_CPU_DEC_WIN mvCpuAddrWinMap_88F6650[] = MV_CPU_IF_ADDR_WIN_MAP_88F6650_TBL;
+MV_CPU_DEC_WIN mvCpuAddrWinMap_88F6610[] = MV_CPU_IF_ADDR_WIN_MAP_88F6610_TBL;
+
 #if defined(CONFIG_CMD_RCVR)
 extern void recoveryDetection(void);
 #endif

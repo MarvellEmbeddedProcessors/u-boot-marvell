@@ -98,17 +98,17 @@ MV_BOARD_SATR_INFO boardSatrInfo[] = {
 
 MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = {
 /* {{MV_CONFIG_TYPE_ID ConfigID, MV_U32 Mask,  Offset, expanderNum,  regNum,    isActiveForBoard[]}} */
-	{ MV_CONFIG_MAC0,	       0x3,	0,	 0,		0, 	{ 1, 0, 1, 0 } }, /* Exp#0, Reg#0, BITS [0:1] */
-	{ MV_CONFIG_MAC1,	       0xC,	2,	 0,		0, 	{ 1, 0, 1, 0 } }, /* Exp#0, Reg#0, BITS [2:3] */
-	{ MV_CONFIG_PON_SERDES,	       0x10,	4,	 0,		0, 	{ 1, 0, 1, 0 } }, /* Exp#0, Reg#0, BITS [4]   */
-	{ MV_CONFIG_PON_BEN_POLARITY,  0x20,	5,	 0,		0, 	{ 1, 0, 1, 0 } }, /* Exp#0, Reg#0, BITS [5]   */
-	{ MV_CONFIG_SGMII0_CAPACITY,   0x40,	6,	 0,		0, 	{ 1, 0, 0, 0 } }, /* Exp#0, Reg#0, BITS [6]   */
-	{ MV_CONFIG_SGMII1_CAPACITY,   0x80,	7,	 0,		0, 	{ 1, 0, 1, 0 } }, /* Exp#0, Reg#0, BITS [7]   */
-	{ MV_CONFIG_SLIC_TDM_DEVICE,   0x3,	0,	 0,		1, 	{ 1, 0, 1, 0 } }, /* Exp#0, Reg#1, BITS [0:1] */
-	{ MV_CONFIG_LANE1,	       0xC,	2,	 0,		1, 	{ 1, 0, 0, 0 } }, /* Exp#0, Reg#1, BITS [2:3] */
-	{ MV_CONFIG_LANE2,	       0x10,	4,	 0,		1, 	{ 1, 0, 0, 0 } }, /* Exp#0, Reg#1, BITS [4]   */
-	{ MV_CONFIG_LANE3,	       0X60,	5,	 0,		1, 	{ 1, 0, 0, 0 } }, /* Exp#0, Reg#1, BITS [5:6] */
-	{ MV_CONFIG_DEVICE_BUS_MODULE, 0x3,	0,	 1,		0, 	{ 1, 0, 0, 0 } }, /* Exp#1, Reg#0, BITS [0:1] */
+	{ MV_CONFIG_MAC0,	       0x3,	0,	 0,		0, 	{ 1, 0, 1, 1 } }, /* Exp#0, Reg#0, BITS [0:1] */
+	{ MV_CONFIG_MAC1,	       0xC,	2,	 0,		0, 	{ 1, 0, 1, 1 } }, /* Exp#0, Reg#0, BITS [2:3] */
+	{ MV_CONFIG_PON_SERDES,	       0x10,	4,	 0,		0, 	{ 1, 0, 1, 1 } }, /* Exp#0, Reg#0, BITS [4]   */
+	{ MV_CONFIG_PON_BEN_POLARITY,  0x20,	5,	 0,		0, 	{ 1, 0, 1, 1 } }, /* Exp#0, Reg#0, BITS [5]   */
+	{ MV_CONFIG_SGMII0_CAPACITY,   0x40,	6,	 0,		0, 	{ 1, 0, 0, 1 } }, /* Exp#0, Reg#0, BITS [6]   */
+	{ MV_CONFIG_SGMII1_CAPACITY,   0x80,	7,	 0,		0, 	{ 1, 0, 1, 1 } }, /* Exp#0, Reg#0, BITS [7]   */
+	{ MV_CONFIG_SLIC_TDM_DEVICE,   0x3,	0,	 0,		1, 	{ 1, 0, 1, 1 } }, /* Exp#0, Reg#1, BITS [0:1] */
+	{ MV_CONFIG_LANE1,	       0xC,	2,	 0,		1, 	{ 1, 0, 0, 1 } }, /* Exp#0, Reg#1, BITS [2:3] */
+	{ MV_CONFIG_LANE2,	       0x10,	4,	 0,		1, 	{ 1, 0, 0, 1 } }, /* Exp#0, Reg#1, BITS [4]   */
+	{ MV_CONFIG_LANE3,	       0X20,	5,	 0,		1, 	{ 1, 0, 0, 1 } }, /* Exp#0, Reg#1, BITS [5:6] */
+	{ MV_CONFIG_DEVICE_BUS_MODULE, 0x3,	0,	 1,		0, 	{ 1, 0, 0, 1 } }, /* Exp#1, Reg#0, BITS [0:1] */
 };
 
 MV_BOARD_IO_EXPANDER_TYPE_INFO db88f6660InfoBoardIOExpanderInfo[] = {

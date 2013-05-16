@@ -143,7 +143,10 @@ extern unsigned int mvTclkGet(void);
 #define CONFIG_CMD_CONSOLE
 #define CONFIG_CMD_RUN
 #define CONFIG_CMD_MISC
+#define CONFIG_CMD_IDE
+#define CONFIG_CMD_SCSI
 #define CONFIG_CMD_SAR
+#define CONFIG_CMD_STAGE_BOOT
 #define CONFIG_CMD_RCVR
 
 #if defined(MV_INCLUDE_PEX) || defined(MV_INCLUDE_PCI)
@@ -165,6 +168,48 @@ extern unsigned int mvTclkGet(void);
 #endif /* MV_FS */
 /* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
 #include <config_cmd_default.h>
+
+#define	CONFIG_SYS_MAXARGS	32	/* max number of command args	*/
+
+/*-----------------------------------------------------------------------
+ * IDE/ATA/SATA stuff (Supports IDE harddisk on PCMCIA Adapter)
+ *-----------------------------------------------------------------------
+ */
+
+#undef	CONFIG_IDE_8xx_PCCARD		/* Use IDE with PC Card	Adapter	*/
+
+#undef	CONFIG_IDE_8xx_DIRECT		/* Direct IDE    not supported	*/
+#undef	CONFIG_IDE_LED			/* LED   for ide not supported	*/
+#undef	CONFIG_IDE_RESET		/* reset for ide not supported	*/
+
+#define CONFIG_SYS_IDE_MAXBUS		4				/* max. 1 IDE bus		*/
+#define CONFIG_SYS_IDE_MAXDEVICE	CONFIG_SYS_IDE_MAXBUS * 8	/* max. 1 drive per IDE bus	*/
+
+#define CONFIG_SYS_ATA_IDE0_OFFSET	0x0000
+
+#undef CONFIG_MAC_PARTITION
+#define CONFIG_DOS_PARTITION
+#define CONFIG_EFI_PARTITION
+
+
+#define CONFIG_SYS_64BIT_LBA			/*    Support disk over 2TB        */
+
+#define CONFIG_LBA48
+//#define CONFIG_SCSI_AHCI
+#ifdef  CONFIG_SCSI_AHCI
+	#define CONFIG_SATA_6121
+	#define CONFIG_SYS_SCSI_MAX_SCSI_ID	4
+	#define CONFIG_SYS_SCSI_MAX_LUN	1
+	#define CONFIG_SYS_SCSI_MAX_DEVICE 	(CONFIG_SYS_SCSI_MAX_SCSI_ID * CONFIG_SYS_SCSI_MAX_LUN)
+#endif /* CONFIG_SCSI_AHCI */
+
+#define CONFIG_SCSI_MV94XX
+#ifdef  CONFIG_SCSI_MV94XX
+	//#define CONFIG_SATA_6121
+	#define CONFIG_SYS_SCSI_MAX_SCSI_ID	40 /*8 PM * 5 sata port*/
+	#define CONFIG_SYS_SCSI_MAX_LUN	1
+	#define CONFIG_SYS_SCSI_MAX_DEVICE 	(CONFIG_SYS_SCSI_MAX_SCSI_ID * CONFIG_SYS_SCSI_MAX_LUN)
+#endif /* CONFIG_SCSI_AHCI */
 
 /*
  * U-Boot

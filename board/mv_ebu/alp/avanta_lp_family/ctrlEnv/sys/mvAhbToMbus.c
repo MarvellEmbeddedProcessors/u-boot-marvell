@@ -628,6 +628,8 @@ MV_STATUS mvAhbToMbusWinTargetSwap(MV_TARGET target1, MV_TARGET target2)
 *******************************************************************************/
 static MV_STATUS ahbToMbusRemapRegOffsGet(MV_U32 winNum, AHB_TO_MBUS_REMAP_REG_OFFS *pRemapRegs)
 {
+	MV_U16 ctrlMode = mvCtrlModelGet();
+
 	switch (winNum) {
 	case 0:
 	case 1:
@@ -636,17 +638,19 @@ static MV_STATUS ahbToMbusRemapRegOffsGet(MV_U32 winNum, AHB_TO_MBUS_REMAP_REG_O
 		break;
 	case 2:
 	case 3:
-		if ((mvCtrlModelGet() == MV_5281_DEV_ID) ||
-			(mvCtrlModelGet() == MV_1281_DEV_ID) ||
-			(mvCtrlModelGet() == MV_6183_DEV_ID) ||
-			(mvCtrlModelGet() == MV_6183L_DEV_ID) ||
-			(mvCtrlModelGet() == MV_6710_DEV_ID) ||
-			(mvCtrlModelGet() == MV_78130_DEV_ID) ||
-			(mvCtrlModelGet() == MV_78160_DEV_ID) ||
-			(mvCtrlModelGet() == MV_78230_DEV_ID) ||
-			(mvCtrlModelGet() == MV_78260_DEV_ID) ||
-			(mvCtrlModelGet() == MV_78460_DEV_ID) ||
-			(mvCtrlModelGet() == MV_78000_DEV_ID)) {
+		if ((ctrlMode == MV_5281_DEV_ID) ||
+			(ctrlMode == MV_1281_DEV_ID) ||
+			(ctrlMode == MV_6183_DEV_ID) ||
+			(ctrlMode == MV_6183L_DEV_ID) ||
+			(ctrlMode == MV_6710_DEV_ID) ||
+			(ctrlMode == MV_78130_DEV_ID) ||
+			(ctrlMode == MV_78160_DEV_ID) ||
+			(ctrlMode == MV_78230_DEV_ID) ||
+			(ctrlMode == MV_78260_DEV_ID) ||
+			(ctrlMode == MV_78460_DEV_ID) ||
+			(ctrlMode == MV_6660_DEV_ID) ||
+			(ctrlMode == MV_6650_DEV_ID) ||
+			(ctrlMode == MV_78000_DEV_ID)) {
 			pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
 			pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);
 			break;
@@ -662,17 +666,19 @@ static MV_STATUS ahbToMbusRemapRegOffsGet(MV_U32 winNum, AHB_TO_MBUS_REMAP_REG_O
 	case 5:
 	case 6:
 	case 7:
-		if ((mvCtrlModelGet() == MV_5281_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_1281_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_6183_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_6183L_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_6710_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_78130_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_78160_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_78230_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_78260_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_78460_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_78000_DEV_ID)) {
+		if ((ctrlMode == MV_5281_DEV_ID) ||
+			(ctrlMode == MV_1281_DEV_ID) ||
+			(ctrlMode == MV_6183_DEV_ID) ||
+			(ctrlMode == MV_6183L_DEV_ID) ||
+			(ctrlMode == MV_6710_DEV_ID) ||
+			(ctrlMode == MV_78130_DEV_ID) ||
+			(ctrlMode == MV_78160_DEV_ID) ||
+			(ctrlMode == MV_78230_DEV_ID) ||
+			(ctrlMode == MV_78260_DEV_ID) ||
+			(ctrlMode == MV_78460_DEV_ID) ||
+			(ctrlMode == MV_6660_DEV_ID) ||
+			(ctrlMode == MV_6650_DEV_ID) ||
+			(ctrlMode == MV_78000_DEV_ID)) {
 			pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
 			pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);
 			break;

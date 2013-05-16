@@ -4762,6 +4762,7 @@ MV_BOOLEAN mvSataInitAdapter(MV_SATA_ADAPTER *pAdapter)
 	case MV_SATA_DEVICE_ID_6710:
 	case MV_SATA_DEVICE_ID_6707:
 	case MV_SATA_DEVICE_ID_7888:
+	case MV_SATA_DEVICE_ID_6660:
 		pAdapter->numberOfChannels = 2;
 		pAdapter->numberOfUnits = 1;
 		pAdapter->portsPerUnit = 2;

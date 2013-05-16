@@ -456,20 +456,20 @@ typedef enum _mvTarget {
 	PEX0_IO,        /*  9 PCI Express 0 IO			*/
 	PEX1_MEM,       /* 10 PCI Express 1 Memory		*/
 	PEX1_IO,        /* 11 PCI Express 1 IO			*/
-	INTER_REGS,     /* 28 Internal registers		*/
-	DMA_UART,       /* 29 DMA based UART request		*/
-	SPI_CS0,        /* 30 SPI_CS0				*/
-	SPI_CS1,        /* 31 SPI_CS1				*/
-	SPI_CS2,        /* 32 SPI_CS2				*/
-	SPI_CS3,        /* 33 SPI_CS3				*/
-	SPI_CS4,        /* 34 SPI_CS4				*/
-	SPI_CS5,        /* 35 SPI_CS5				*/
-	SPI_CS6,        /* 36 SPI_CS6				*/
-	SPI_CS7,        /* 37 SPI_CS7				*/
-	BOOT_ROM_CS,    /* 38 BOOT_ROM_CS			*/
-	DEV_BOOCS,      /* 39 DEV_BOOCS				*/
-	CRYPT0_ENG,     /* 41 Crypto0 Engine			*/
-	PP2,         	/* 43 PP2				*/
+	INTER_REGS,     /* 12 Internal registers		*/
+	DMA_UART,       /* 13 DMA based UART request	*/
+	SPI_CS0,        /* 14 SPI_CS0					*/
+	SPI_CS1,        /* 15 SPI_CS1					*/
+	SPI_CS2,        /* 16 SPI_CS2					*/
+	SPI_CS3,        /* 17 SPI_CS3					*/
+	SPI_CS4,        /* 18 SPI_CS4					*/
+	SPI_CS5,        /* 19 SPI_CS5					*/
+	SPI_CS6,        /* 20 SPI_CS6					*/
+	SPI_CS7,        /* 21 SPI_CS7					*/
+	BOOT_ROM_CS,    /* 22 BOOT_ROM_CS				*/
+	DEV_BOOCS,      /* 23 DEV_BOOCS					*/
+	CRYPT0_ENG,      /* 24 Crypto0 Engine			*/
+	PP2,         	/* 25 PP2						*/
 	MAX_TARGETS
 } MV_TARGET;
 
@@ -504,8 +504,8 @@ typedef enum _mvTarget {
 	{ 0x37, DEV_TARGET_ID    },             /* DEVICE_CS3            */ \
 	{ 0xE8, PEX_TARGET_ID    },             /* PEX0_LANE0_MEM        */ \
 	{ 0xE0, PEX_TARGET_ID    },             /* PEX0_LANE0_IO         */ \
-	{ 0xE8, PEX_TARGET_ID    },             /* PEX1_LANE0_MEM        */ \
-	{ 0xE0, PEX_TARGET_ID    },             /* PEX1_LANE0_IO         */ \
+	{ 0xD8, PEX_TARGET_ID    },             /* PEX1_LANE0_MEM        */ \
+	{ 0xD0, PEX_TARGET_ID    },             /* PEX1_LANE0_IO         */ \
 	{ 0xFF, 0xFF             },             /* INTER_REGS            */ \
 	{ 0x01, DEV_TARGET_ID    },             /* DMA_UART              */ \
 	{ 0x1E, DEV_TARGET_ID    },             /* SPI_CS0               */ \

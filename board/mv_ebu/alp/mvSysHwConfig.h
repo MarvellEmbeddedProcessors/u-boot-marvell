@@ -23,13 +23,14 @@ disclaimer.
 
 #include <config.h>
 
-/*
- * SoC units
- */
+/****************************************/
+/* Soc supporetd Units definitions	*/
+/****************************************/
 #ifndef CONFIG_MACH_AVANTA_LP_FPGA
 #define MV_INCLUDE_PEX
 #define MV_INCLUDE_GIG_ETH
 #define OLD_CESA_HAL
+#define MV_INCLUDE_USB
 #define MV_INCLUDE_TWSI
 #define MV_INCLUDE_NAND
 #define MV_INCLUDE_UART
@@ -228,32 +229,32 @@ disclaimer.
  */
 #define MV_CPU_IF_ADDR_WIN_MAP_TBL {									\
 	/* base low        base high    size       		WinNum       enable */			\
-	{{SDRAM_CS0_BASE,	0,	SDRAM_CS0_SIZE	},	0xFFFFFFFF,	DIS},	/* SDRAM_CS0 */ \
-	{{SDRAM_CS1_BASE,	0,	SDRAM_CS1_SIZE	},	0xFFFFFFFF,	DIS},	/* SDRAM_CS1 */ \
-	{{SDRAM_CS2_BASE,	0,	SDRAM_CS2_SIZE	},	0xFFFFFFFF,	DIS},	/* SDRAM_CS2 */ \
-	{{SDRAM_CS3_BASE,	0,	SDRAM_CS3_SIZE	},	0xFFFFFFFF,	DIS},	/* SDRAM_CS3 */ \
-	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},	10,		DIS},	/* DEVICE_CS0 */\
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* DEVICE_CS1 */\
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* DEVICE_CS2 */\
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* DEVICE_CS3 */\
-	{{PEX0_IO_BASE,		0,	PEX0_IO_SIZE	},	0,		EN},	/* PEX0_IO */   \
-	{{PEX0_MEM_BASE,	0,	PEX0_MEM_SIZE	},	1,		EN},	/* PEX0_MEM */  \
-	{{PEX1_MEM_BASE,	0,	PEX1_MEM_SIZE	},	1,		DIS},	/* PEX1_MEM */  \
-	{{PEX1_IO_BASE,		0,	PEX1_IO_SIZE	},	TBL_UNUSED,	DIS},	/* PEX1_IO */   \
-	{{INTER_REGS_BASE,	0,	INTER_REGS_SIZE	},	MV_AHB_TO_MBUS_INTREG_WIN, EN},	/* INTER_REGS */\
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* DMA_UART   */\
-	{{SPI_CS_BASE,		0,	SPI_CS_SIZE	},	8,		DIS},	/* SPI_CS0 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* SPI_CS1 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* SPI_CS2 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* SPI_CS3 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* SPI_CS4 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* SPI_CS5 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* SPI_CS6 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* SPI_CS7 */   \
-	{{0xf8000000,		0,	_1M		},	13,		DIS},	/* BOOT_ROM_CS */\
-	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},	9,		EN},	/* DEV_BOOCS */   \
-	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},	10,		DIS},	/* CRYPT_ENG */ \
-	{{PP2_PHYS_BASE,	0,	PP2_SIZE	},	12,		EN},	/* PP2 */    \
+	{{SDRAM_CS0_BASE,	0,	SDRAM_CS0_SIZE	},	0xFFFFFFFF,	DIS},	/*  0 SDRAM_CS0 */ \
+	{{SDRAM_CS1_BASE,	0,	SDRAM_CS1_SIZE	},	0xFFFFFFFF,	DIS},	/*  1 SDRAM_CS1 */ \
+	{{SDRAM_CS2_BASE,	0,	SDRAM_CS2_SIZE	},	0xFFFFFFFF,	DIS},	/*  2 SDRAM_CS2 */ \
+	{{SDRAM_CS3_BASE,	0,	SDRAM_CS3_SIZE	},	0xFFFFFFFF,	DIS},	/*  3 SDRAM_CS3 */ \
+	{{NOR_CS_BASE,		0,	NOR_CS_SIZE		},			10,	DIS},	/*  4 DEVICE_CS0 */\
+	{{TBL_UNUSED,		0,	TBL_UNUSED		},	TBL_UNUSED,	DIS},	/*  5 DEVICE_CS1 */\
+	{{TBL_UNUSED,		0,	TBL_UNUSED		},	TBL_UNUSED,	DIS},	/*  6 DEVICE_CS2 */\
+	{{TBL_UNUSED,		0,	TBL_UNUSED		},	TBL_UNUSED,	DIS},	/*  7 DEVICE_CS3 */\
+	{{PEX0_MEM_BASE,	0,	PEX0_MEM_SIZE	},			0,   EN},	/*  8 PEX0_MEM */  \
+	{{PEX0_IO_BASE,		0,	PEX0_IO_SIZE	},	TBL_UNUSED,	DIS},	/*  9 PEX0_IO */   \
+	{{PEX1_MEM_BASE,	0,	PEX1_MEM_SIZE	},			1,   EN},	/* 10 PEX1_MEM */  \
+	{{PEX1_IO_BASE,		0,	PEX1_IO_SIZE	},	TBL_UNUSED,	DIS},	/* 11 PEX1_IO */   \
+	{{INTER_REGS_BASE,	0,	INTER_REGS_SIZE	},MV_AHB_TO_MBUS_INTREG_WIN, EN},	/* 12 INTER_REGS */\
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 13 DMA_UART   */\
+	{{SPI_CS_BASE,		0,	SPI_CS_SIZE	},				8,	DIS},	/* 14 SPI_CS0 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 15 SPI_CS1 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 16 SPI_CS2 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 17 SPI_CS3 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 18 SPI_CS4 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 19 SPI_CS5 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 20 SPI_CS6 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 21 SPI_CS7 */   \
+	{{0xf8000000,		0,		_1M		},			   13,	DIS},	/* 22 BOOT_ROM_CS */\
+	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},				9,	 EN},	/* 23 DEV_BOOCS */   \
+	{{CRYPT_ENG_BASE,	0,CRYPT_ENG_SIZE},			   10,	DIS},	/* 24 CRYPT_ENG */ \
+	{{PP2_PHYS_BASE,	0,	PP2_SIZE	},			   12,	 EN},	/* 25 PP2 */    \
 	{{TBL_TERM,		TBL_TERM, TBL_TERM	},	TBL_TERM,	TBL_TERM}               \
 };
 

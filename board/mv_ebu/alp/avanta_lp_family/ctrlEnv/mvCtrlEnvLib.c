@@ -280,7 +280,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvGppPolaritySet(i, gppMask, (MV_GPP_IN_INVERT & gppMask));
 	}
 
-	mvEthCompInit();
+	mvEthComplexInit(mvBoardEthComplexConfigGet());
 	return MV_OK;
 }
 
@@ -383,7 +383,7 @@ MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 	MV_U8 groupTypeSelect = 0;
 
 	if (! ((smiCtrl == SWITCH_SMI_CTRL) || (smiCtrl == CPU_SMI_CTRL)) ) {
-		DB(mvOsPrintf("mvCtrlSMISet: SMI ctrl initialize fail \n"));;
+		DB(mvOsPrintf("mvCtrlSMISet: SMI ctrl initialize failed\n"));
 		return;
 	}
 

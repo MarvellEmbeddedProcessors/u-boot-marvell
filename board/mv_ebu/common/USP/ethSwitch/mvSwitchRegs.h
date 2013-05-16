@@ -147,4 +147,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define KW2_SW_PHY_SMI_BUSY_BIT					15  /* Busy */
 #define KW2_SW_PHY_SMI_BUSY_MASK				(1 << ETH_PHY_SMI_BUSY_BIT)
 
+/* ALP internal related */
+#define MV_ALP_SW_PORTS_OFFSET					0x10
+#define MV_ALP_SW_MAX_PORTS_NUM					7
+
 #endif /* __INCethswitchregsh */

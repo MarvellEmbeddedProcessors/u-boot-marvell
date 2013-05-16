@@ -376,9 +376,9 @@ extern unsigned int mvTclkGet(void);
 #define MV_ETH_PP2
 #define CONFIG_MV_ETH_PP2
 #define CONFIG_NET_MULTI
-#define CONFIG_IPADDR           10.4 .50 .120
-#define CONFIG_SERVERIP         10.4 .50 .37
-#define CONFIG_NETMASK          255.255 .255 .0
+#define CONFIG_IPADDR           10.4.50.120
+#define CONFIG_SERVERIP         10.4.50.1
+#define CONFIG_NETMASK          255.255.255.0
 #define ETHADDR                 "00:00:00:00:51:81"
 #define ENV_ETH_PRIME           "egiga0"
 
@@ -484,13 +484,6 @@ extern unsigned int mvTclkGet(void);
 #define PCI_HOST_ADAPTER 0              /* configure ar pci adapter     */
 #define PCI_HOST_FORCE   1              /* configure as pci host        */
 #define PCI_HOST_AUTO    2              /* detected via arbiter enable  */
-
-/*
- * Yukon
- */
-#define __io_pci(x) x
-#define __arch_getw(a)                  (*(volatile unsigned short*)(a))
-#define __arch_putw(v, a)                (*(volatile unsigned short*)(a) = (v))
 
 /*
  * NOR Flash

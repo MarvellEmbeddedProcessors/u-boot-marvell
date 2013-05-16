@@ -76,9 +76,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pp2/common/mvPp2Common.h"
 #include "pp2/prs/mvPp2PrsHw.h"
 
-#define GBE_PORT(n)					(n)
-#define GE_PHY(n)					(n)
-
 #define PP2_CPU_CODE_IS_RX_SPECIAL(cpu_code)		((cpu_code) & RI_CPU_CODE_RX_SPEC_VAL)
 
 static inline int mvPp2IsRxSpecial(MV_U16 parser_info)

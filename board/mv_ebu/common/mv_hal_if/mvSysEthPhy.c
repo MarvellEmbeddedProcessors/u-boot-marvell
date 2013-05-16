@@ -102,6 +102,8 @@ MV_STATUS mvSysEthPhyInit(void)
 		halData.isSgmii[port] = mvBoardIsPortInSgmii(port);
 	}
 	halData.ethPhySmiReg = ETH_SMI_REG(MV_ETH_SMI_PORT);
+	halData.ctrlModel = mvCtrlModelGet();
+	halData.ctrlFamily=mvCtrlDevFamilyIdGet(halData.ctrlModel);
 
 	return mvEthPhyHalInit(&halData);
 }

@@ -286,23 +286,26 @@ MV_BOARD_INFO db88f6660_board_info = {
 
 MV_BOARD_TWSI_INFO db88f6650InfoBoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,		0,	0x4C,	   ADDR7_BIT	},
-	{ BOARD_DEV_TWSI_SATR,		1,	0x4E,	   ADDR7_BIT	},
-	{ BOARD_DEV_TWSI_EEPROM,	0,	0x54,	   ADDR7_BIT	},
-	{ BOARD_DEV_TWSI_IO_EXPANDER,	0,	0x21,	   ADDR7_BIT	},
-	{ BOARD_DEV_TWSI_IO_EXPANDER,	2,	0x24,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_SATR,		0,	0x4C,	ADDR7_BIT },
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4E,	ADDR7_BIT },
+	{ BOARD_DEV_TWSI_EEPROM,	0,	0x54,	ADDR7_BIT },
+	{ BOARD_DEV_TWSI_IO_EXPANDER,	0,	0x21,	ADDR7_BIT },
+	{ BOARD_DEV_TWSI_IO_EXPANDER,	2,	0x24,	ADDR7_BIT },
 };
+
 MV_BOARD_MAC_INFO db88f6650InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x0									},
-	{ BOARD_MAC_SPEED_AUTO, 0x1									},
-	{ N_A,			N_A									}
+	{ BOARD_MAC_SPEED_AUTO, 0x0 },
+	{ BOARD_MAC_SPEED_AUTO, 0x3 },
+	{ N_A,			N_A },
 };
+
 MV_BOARD_MPP_TYPE_INFO db88f6650InfoBoardModTypeInfo[] = {
 	{
 		.boardMppSlic = MV_BOARD_AUTO,
-		.ethSataComplexOpt = MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0,
-		.ethPortsMode = 0x0
+		.ethSataComplexOpt = MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0 |
+				     MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3,
+		.ethPortsMode = 0x0,
 	}
 };
 
@@ -315,28 +318,28 @@ MV_DEV_CS_INFO db88f6650InfoBoardDeCsInfo[] = {
 
 MV_BOARD_MPP_INFO db88f6650InfoBoardMppConfigValue[] = {
 	{ {
-		  DB_88F6650_MPP0_7,
-		  DB_88F6650_MPP8_15,
-		  DB_88F6650_MPP16_23,
-		  DB_88F6650_MPP24_31,
-		  DB_88F6650_MPP32_39,
-		  DB_88F6650_MPP40_47,
-		  DB_88F6650_MPP48_55,
-		  DB_88F6650_MPP56_63,
-		  DB_88F6650_MPP64_67,
+		DB_88F6650_MPP0_7,
+		DB_88F6650_MPP8_15,
+		DB_88F6650_MPP16_23,
+		DB_88F6650_MPP24_31,
+		DB_88F6650_MPP32_39,
+		DB_88F6650_MPP40_47,
+		DB_88F6650_MPP48_55,
+		DB_88F6650_MPP56_63,
+		DB_88F6650_MPP64_67,
 	 } }
 };
 
 MV_BOARD_SWITCH_INFO db88f6650InfoBoardSwitchValue[] = {
 	{
-	 .switchIrq = 29,	/* set to -1 for timer operation */
-	 .switchPort = {0, 1, 2, 3, 4, -1, -1},
-	 .cpuPort = 6,
-	 .connectedPort = {6, -1},
-	 .internalQuadPhyAddr = 0,
-	 .connectedPortMask= ( BIT0| BIT1| BIT2| BIT3| BIT4| BIT6),
-	 .forceLinkMask = 0x0
-	 }
+		.switchIrq = 29,	/* set to -1 for timer operation */
+		.switchPort = {0, 1, 2, 3, 4, -1, -1},
+		.cpuPort = 6,
+		.connectedPort = {6, -1},
+		.internalQuadPhyAddr = 0,
+		 .connectedPortMask = (BIT0 | BIT1 | BIT2 | BIT3 | BIT6),
+		.forceLinkMask = 0x0,
+	}
 };
 
 MV_BOARD_INFO db88f6650_board_info = {

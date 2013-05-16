@@ -79,11 +79,11 @@ void mvEthPortDisable(int port)
 	MV_U32 regVal;
 
 	regVal = MV_REG_READ(ETH_GMAC_CTRL_0_REG(port));
-	regVal &= ~(ETH_GMAC_PORT_EN_MASK);
+	regVal &= ~ETH_GMAC_PORT_EN_MASK;
 	MV_REG_WRITE(ETH_GMAC_CTRL_0_REG(port), regVal);
 }
 
-static void mvEthPortRgmiiSet(int port, int enable)
+void mvEthPortRgmiiSet(int port, int enable)
 {
 	MV_U32  regVal;
 
@@ -96,7 +96,7 @@ static void mvEthPortRgmiiSet(int port, int enable)
 	MV_REG_WRITE(ETH_GMAC_CTRL_2_REG(port), regVal);
 }
 
-static void mvEthPortSgmiiSet(int port, int enable)
+void mvEthPortSgmiiSet(int port, int enable)
 {
 	MV_U32 regVal;
 
@@ -107,6 +107,20 @@ static void mvEthPortSgmiiSet(int port, int enable)
 		regVal &= ~ETH_GMAC_PCS_ENABLE_MASK;
 
 	MV_REG_WRITE(ETH_GMAC_CTRL_2_REG(port), regVal);
+}
+
+void mvEthPortPeriodicXonSet(int port, int enable)
+{
+	MV_U32 regVal;
+
+	regVal = MV_REG_READ(ETH_GMAC_CTRL_1_REG(port));
+
+	if (enable)
+		regVal |= ETH_GMAC_PERIODIC_XON_EN_MASK;
+	else
+		regVal &= ~ETH_GMAC_PERIODIC_XON_EN_MASK;
+
+	MV_REG_WRITE(ETH_GMAC_CTRL_1_REG(port), regVal);
 }
 
 void mvEthPortLbSet(int port, int isGmii, int isPcsEn)
@@ -128,23 +142,32 @@ void mvEthPortLbSet(int port, int isGmii, int isPcsEn)
 	MV_REG_WRITE(ETH_GMAC_CTRL_1_REG(port), regVal);
 }
 
-void mvEthPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii)
+void mvEthPortResetSet(int port, MV_BOOL setReset)
 {
 	MV_U32 regVal;
 
+	regVal = MV_REG_READ(ETH_GMAC_CTRL_2_REG(port));
+	regVal &= ~ETH_GMAC_PORT_RESET_MASK;
+
+	if (setReset == MV_TRUE)
+		regVal |= ETH_GMAC_PORT_RESET_MASK;
+	else
+		regVal &= ~ETH_GMAC_PORT_RESET_MASK;
+
+	MV_REG_WRITE(ETH_GMAC_CTRL_2_REG(port), regVal);
+
+	if (setReset == MV_FALSE)
+		while (MV_REG_READ(ETH_GMAC_CTRL_2_REG(port) &
+		       ETH_GMAC_PORT_RESET_MASK))
+				;
+}
+
+void mvEthPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii)
+{
 	mvEthPortSgmiiSet(port, isSgmii);
 	mvEthPortRgmiiSet(port, isRgmii);
-
-	regVal = MV_REG_READ(ETH_GMAC_CTRL_1_REG(port));
-	regVal &= ~ETH_GMAC_PERIODIC_XON_EN_MASK;
-	MV_REG_WRITE(ETH_GMAC_CTRL_1_REG(port), regVal);
-
-	/* Cancel Port Reset */
-	regVal = MV_REG_READ(ETH_GMAC_CTRL_2_REG(port));
-	regVal &= (~ETH_GMAC_PORT_RESET_MASK);
-	MV_REG_WRITE(ETH_GMAC_CTRL_2_REG(port), regVal);
-	while ((MV_REG_READ(ETH_GMAC_CTRL_2_REG(port)) & ETH_GMAC_PORT_RESET_MASK) != 0)
-		continue;
+	mvEthPortPeriodicXonSet(port, MV_FALSE);
+	mvEthPortResetSet(port, MV_FALSE);
 }
 
 void mvEthPortPowerDown(int port)
@@ -204,6 +227,7 @@ MV_STATUS mvEthLinkStatus(int port, MV_ETH_PORT_STATUS *pStatus)
 
 	return MV_OK;
 }
+
 /******************************************************************************/
 /*                          Port Configuration functions                      */
 /******************************************************************************/
@@ -254,10 +278,10 @@ void mvEthMaxRxSizeSet(int port, int maxRxSize)
 *******************************************************************************/
 MV_STATUS mvEthForceLinkModeSet(int portNo, MV_BOOL force_link_up, MV_BOOL force_link_down)
 {
-	MV_U32	regVal;
+	MV_U32 regVal;
 
 	/* Can't force link pass and link fail at the same time */
-	if ((force_link_up) && (force_link_down))
+	if (force_link_up && force_link_down)
 		return MV_BAD_PARAM;
 
 	regVal = MV_REG_READ(ETH_GMAC_AN_CTRL_REG(portNo));
@@ -274,7 +298,7 @@ MV_STATUS mvEthForceLinkModeSet(int portNo, MV_BOOL force_link_up, MV_BOOL force
 
 	MV_REG_WRITE(ETH_GMAC_AN_CTRL_REG(portNo), regVal);
 
-    return MV_OK;
+	return MV_OK;
 }
 
 /*******************************************************************************
@@ -296,7 +320,7 @@ MV_STATUS mvEthSpeedDuplexSet(int portNo, MV_ETH_PORT_SPEED speed, MV_ETH_PORT_D
 	MV_U32 regVal;
 
 	/* Check validity */
-	if ((speed == MV_ETH_SPEED_1000) && (duplex == MV_ETH_DUPLEX_HALF))
+	if (speed == MV_ETH_SPEED_1000 && duplex == MV_ETH_DUPLEX_HALF)
 		return MV_BAD_PARAM;
 
 	regVal = MV_REG_READ(ETH_GMAC_AN_CTRL_REG(portNo));
@@ -309,7 +333,6 @@ MV_STATUS mvEthSpeedDuplexSet(int portNo, MV_ETH_PORT_SPEED speed, MV_ETH_PORT_D
 	case MV_ETH_SPEED_1000:
 		regVal &= ~ETH_ENABLE_SPEED_AUTO_NEG_MASK;
 		regVal |= ETH_SET_GMII_SPEED_1000_MASK;
-		regVal &= ~ETH_SET_MII_SPEED_100_MASK;
 		/* the 100/10 bit doesn't matter in this case */
 		break;
 	case MV_ETH_SPEED_100:
@@ -492,6 +515,40 @@ MV_STATUS mvEthFlowCtrlGet(int port, MV_ETH_PORT_FC *pFlowCntrl)
 		else
 			*pFlowCntrl = MV_ETH_FC_DISABLE;
 	}
+	return MV_OK;
+}
+
+MV_STATUS mvEthPortLinkSpeedFlowCtrl(int port, MV_ETH_PORT_SPEED speed,
+				     int forceLinkUp)
+{
+	if (forceLinkUp) {
+		if (mvEthSpeedDuplexSet(port, speed, MV_ETH_DUPLEX_FULL)) {
+			mvOsPrintf("mvEthSpeedDuplexSet failed\n");
+			return MV_FAIL;
+		}
+		if (mvEthFlowCtrlSet(port, MV_ETH_FC_ENABLE)) {
+			mvOsPrintf("mvEthFlowCtrlSet failed\n");
+			return MV_FAIL;
+		}
+		if (mvEthForceLinkModeSet(port, 1, 0)) {
+			mvOsPrintf("mvEthForceLinkModeSet failed\n");
+			return MV_FAIL;
+		}
+	} else {
+		if (mvEthForceLinkModeSet(port, 0, 0)) {
+			mvOsPrintf("mvEthForceLinkModeSet failed\n");
+			return MV_FAIL;
+		}
+		if (mvEthSpeedDuplexSet(port, MV_ETH_SPEED_AN, MV_ETH_DUPLEX_AN)) {
+			mvOsPrintf("mvEthSpeedDuplexSet failed\n");
+			return MV_FAIL;
+		}
+		if (mvEthFlowCtrlSet(port, MV_ETH_FC_AN_SYM)) {
+			mvOsPrintf("mvEthFlowCtrlSet failed\n");
+			return MV_FAIL;
+		}
+	}
+
 	return MV_OK;
 }
 

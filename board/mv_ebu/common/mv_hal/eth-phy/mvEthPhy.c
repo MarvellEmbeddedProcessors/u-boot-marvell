@@ -172,14 +172,12 @@ MV_STATUS mvEthPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 		break;
 	case MV_PHY_88E154X:
 	case MV_PHY_88E1543:
-	case MV_PHY_88E1340M: /* BUG IN THE 1543 IS RETURNING THE 1340 ID FOR PORTS 3-4 */
-	/* case MV_PHY_KW2_INTERNAL_GE:
-		if (ethPortNum != ((MV_U32) -1))
-			mvEthInternalGEPhyBasicInit(ethPortNum);
-		else
-	*/
-			mvEth1540PhyBasicInit(ethPortNum, eeeEnable);
+	case MV_PHY_88E1340M:
+		mvEth1540PhyBasicInit(ethPortNum, eeeEnable);
 		break;
+	case MV_PHY_ALP_INTERNAL_QUAD_GE:
+		if (ethphyHalData.ctrlFamily == MV_88F66X0)
+			mvEthInternalQuadGEPhyBasicInit();
 	case MV_PHY_88E1340S:
 	case MV_PHY_88E1340:
 		mvEth1340PhyBasicInit();
@@ -823,7 +821,28 @@ MV_VOID		mvEthE1111PhyBasicInit(MV_U32 ethPortNum)
 }
 
 /*******************************************************************************
-* mvEthE1112PhyBasicInit -
+* mvEthInternalQuadGEPhyBasicInit -
+*
+* DESCRIPTION:
+*	Do a basic Init to the Phy , including reset
+*
+* INPUT:
+*       NONE.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None
+*
+*******************************************************************************/
+MV_VOID mvEthInternalQuadGEPhyBasicInit(MV_VOID)
+{
+	/* No init needed */
+}
+
+/*******************************************************************************
+* mvEthE1112PhyBasicInit
 *
 * DESCRIPTION:
 *	Do a basic Init to the Phy , including reset

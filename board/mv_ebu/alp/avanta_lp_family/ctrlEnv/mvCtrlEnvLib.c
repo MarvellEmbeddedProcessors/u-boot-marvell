@@ -1039,15 +1039,18 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 	ctrlId = MV_88F66X0;
 #else
 	ctrlId = MV_REG_READ(DEV_ID_REG);
-	ctrlId = (ctrlId & (VENDOR_ID_MASK)) >> VENDOR_ID_OFFS;
+	ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
 #endif
 	switch (ctrlId) {
 	case 0x6660:
 		return MV_6660_DEV_ID;
 	case 0x6650:
 		return MV_6650_DEV_ID;
+	case 0x6610:
+		return MV_6610_DEV_ID;
 	default:
-		return MV_6650_DEV_ID;
+		mvOsOutput("mvCtrlModelGet: error read ctrl mode (0x%x)\n",ctrlId);
+		return 0;
 	}
 }
 

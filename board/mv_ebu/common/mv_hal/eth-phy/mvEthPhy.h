@@ -84,12 +84,12 @@ extern "C" {
 #define MV_PHY_88E1111  0xC      /* E1111, E1115 */
 #define MV_PHY_88E114X  0xD
 #define MV_PHY_88E1181  0xE
-#define MV_PHY_88E1340S 0x1C    /* 88E1340S */
+#define MV_PHY_88E1340S 0x1C     /* 88E1340S */
 #define MV_PHY_88E1512  0x1D
-#define MV_PHY_88E1340  0x1E    /* 88E1340/x0a */
+#define MV_PHY_88E1340  0x1E     /* 88E1340/x0a */
 #define MV_PHY_88E1543  0x2A     /* 88E15453 */
 #define MV_PHY_88E154X  0x2B     /* 88E1545M */
-#define MV_PHY_88E1340M 0x1F    /* 88E1340M/x0a */
+#define MV_PHY_88E1340M 0x1F     /* 88E1340M/x0a */
 #define MV_PHY_88E1116R 0x24
 #define MV_PHY_88E1116  0x21     /* E1116, E1116R */
 #define MV_PHY_88E3016_88E3019  0x22     /* E3015, E3016, E3018, 88E3019 */
@@ -97,8 +97,9 @@ extern "C" {
 #define MV_PHY_88E1149R 0x25
 #define MV_PHY_88E1119R 0x28    /* 88E1119R */
 #define MV_PHY_88E1310  0x29    /* 88E1310 */
-#define MV_PHY_KW2_INTERNAL_GE  0x2b
-#define MV_PHY_KW2_INTERNAL_3FE 0x26
+#define MV_PHY_KW2_INTERNAL_GE		0x2b
+#define MV_PHY_KW2_INTERNAL_3FE		0x26
+#define MV_PHY_ALP_INTERNAL_QUAD_GE	0x0
 
 #define MV_IS_MARVELL_OUI(_reg2, _reg3)		\
 	(((_reg2) == 0x0141) && (((_reg3)&0xFC00) == 0x0C00))
@@ -112,6 +113,8 @@ typedef struct {
 	MV_U32		ethPhySmiReg;		/* Ethernet unit PHY SMI register offset */
 	MV_BOOL		isSgmii[MV_ETH_MAX_PORTS];
 	MV_U32		QuadPhyPort0[MV_ETH_MAX_PORTS];		/* quad phy port 0 address */
+	MV_U16		ctrlModel;
+	MV_U32		ctrlFamily;
 } MV_ETHPHY_HAL_DATA;
 
 MV_STATUS 	mvEthPhyHalInit(MV_ETHPHY_HAL_DATA *halData);
@@ -129,6 +132,7 @@ MV_STATUS	mvEthPhyPrintStatus(MV_U32 phyAddr);
 MV_STATUS	mvEthPhyAdvertiseSet(MV_U32 phyAddr, MV_U16 advertise);
 MV_STATUS	mvEthPhyAdvertiseGet(MV_U32 phyAddr, MV_U16 *advertise);
 
+MV_VOID		mvEthInternalQuadGEPhyBasicInit(MV_VOID);
 MV_VOID		mvEthE1111PhyBasicInit(MV_U32 ethPortNum);
 MV_VOID		mvEthE1112PhyBasicInit(MV_U32 ethPortNum);
 MV_VOID		mvEthE1112PhyPowerDown(MV_U32 ethPortNum);
@@ -145,10 +149,6 @@ MV_VOID		mvEthInternalGEPhyBasicInit(MV_U32 ethPortNum);
 MV_VOID		mvEth1540PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable);
 MV_VOID		mvEth1340PhyBasicInit(void);
 MV_VOID		mvEthE1512PhyBasicInit(MV_U32 ethPortNum);
-
-/* MV_VOID		mvEthInternal3FEPhyBasicInit(MV_U32 port); */
-
-
 
 #ifdef __cplusplus
 }

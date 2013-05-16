@@ -298,7 +298,6 @@ MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum)
 {
-
 #if defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	return 8;
 #endif
@@ -958,7 +957,7 @@ MV_STATUS mvBoardSwitchInfoUpdate(MV_VOID)
 	MV_U32 i, ethComplexOptions = mvBoardEthComplexConfigGet();
 
 	/* Update board switch information according to Ethernet Complex init */
-	if ((!mvBoardIsInternalSwitchConnected(0)) && (!mvBoardIsInternalSwitchConnected(1))) {
+	if (mvBoardIsInternalSwitchConnected() == MV_FALSE) {
 		board->switchInfoNum = 0;
 		return MV_OK;
 	}
@@ -1228,6 +1227,40 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet()
 }
 
 /*******************************************************************************
+* mvBoardIsInternalSwitchConnectedToPort
+*
+* DESCRIPTION:
+*       This routine returns port's connection status
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       1 - if ethPortNum is connected to switch, 0 otherwise
+*
+*******************************************************************************/
+MV_STATUS mvBoardIsInternalSwitchConnectedToPort(MV_U32 ethPortNum)
+{
+	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
+
+	if (ethPortNum >= board->numBoardMacInfo) {
+		mvOsPrintf("%s: Error: Illegal port number(%u)\n", __func__, ethPortNum);
+		return MV_FALSE;
+	}
+
+	/* Check if internal switch is connected */
+	if ((ethPortNum == 0) && (ethComplex & MV_ETHCOMP_GE_MAC0_2_SW_P6))
+		return MV_TRUE;
+	else if ((ethPortNum == 1) && (ethComplex & MV_ETHCOMP_GE_MAC1_2_SW_P4))
+		return MV_TRUE;
+	else
+		return MV_FALSE;
+}
+
+/*******************************************************************************
 * mvBoardIsInternalSwitchConnected
 *
 * DESCRIPTION:
@@ -1243,19 +1276,12 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet()
 *       1 - if ethPortNum is connected to switch, 0 otherwise
 *
 *******************************************************************************/
-MV_STATUS mvBoardIsInternalSwitchConnected(MV_U32 ethPortNum)
+MV_STATUS mvBoardIsInternalSwitchConnected(void)
 {
 	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
 
-	if (ethPortNum >= board->numBoardMacInfo) {
-		mvOsPrintf("%s: Error: Illegal port number(%u)\n", __func__, ethPortNum);
-		return MV_FALSE;
-	}
-
-	/* Check if internal switch is connected */
-	if ((ethPortNum == 0) && (ethComplex & MV_ETHCOMP_GE_MAC0_2_SW_P6))
-		return MV_TRUE;
-	else if ((ethPortNum == 1) && (ethComplex & MV_ETHCOMP_GE_MAC1_2_SW_P4))
+	if ((ethComplex & MV_ETHCOMP_GE_MAC0_2_SW_P6) ||
+	    (ethComplex & MV_ETHCOMP_GE_MAC1_2_SW_P4))
 		return MV_TRUE;
 	else
 		return MV_FALSE;
@@ -1278,13 +1304,11 @@ MV_STATUS mvBoardIsInternalSwitchConnected(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort)
 {
-
 	if (board->switchInfoNum == 0)
 		return -1;
 
 	return board->pSwitchInfo[0].connectedPort[ethPort];
 }
-
 
 /*******************************************************************************
 * mvBoardSwitchPortsMaskGet -
@@ -1301,12 +1325,24 @@ MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort)
 * RETURN:
 *
 *******************************************************************************/
-MV_8 mvBoardSwitchPortsMaskGet(MV_U32 switchIdx)
+MV_U32 mvBoardSwitchPortsMaskGet(MV_U32 switchIdx)
 {
-	if ((board->switchInfoNum == 0) || (switchIdx >= board->switchInfoNum))
-	return -1;
+	MV_U32 mask = 0, c = mvBoardEthComplexConfigGet();
 
-	return board->pSwitchInfo[switchIdx].connectedPortMask;
+	if (c & MV_ETHCOMP_SW_P0_2_GE_PHY_P0)
+		mask |= BIT0;
+	if (c & MV_ETHCOMP_SW_P1_2_GE_PHY_P1)
+		mask |= BIT1;
+	if (c & MV_ETHCOMP_SW_P2_2_GE_PHY_P2)
+		mask |= BIT2;
+	if (c & MV_ETHCOMP_SW_P3_2_GE_PHY_P3)
+		mask |= BIT3;
+	if ((c & MV_ETHCOMP_SW_P4_2_RGMII0) || (c & MV_ETHCOMP_GE_MAC1_2_SW_P4))
+		mask |= BIT4;
+	if (c & MV_ETHCOMP_GE_MAC0_2_SW_P6)
+		mask |= BIT6;
+
+	return mask;
 }
 
 /*******************************************************************************
@@ -1327,12 +1363,10 @@ MV_8 mvBoardSwitchPortsMaskGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_32 mvBoardInternalQuadPhyAddrGet(MV_U32 switchIdx)
 {
-
 	if ((board->switchInfoNum == 0) || (switchIdx >= board->switchInfoNum))
 		return -1;
 
 	return board->pSwitchInfo[switchIdx].internalQuadPhyAddr;
-
 }
 
 /*******************************************************************************
@@ -1353,8 +1387,7 @@ MV_32 mvBoardInternalQuadPhyAddrGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx)
 {
-
-	if ( board->switchInfoNum == 0 || switchIdx >= board->switchInfoNum )
+	if (board->switchInfoNum == 0 || switchIdx >= board->switchInfoNum)
 		return (MV_U32)MV_ERROR;
 
 	return board->pSwitchInfo[switchIdx].forceLinkMask;
@@ -2069,16 +2102,16 @@ MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass, MV_BOARD_IO_E
 * mvBoardExtPhyBufferSelect - enable/disable buffer status
 *
 * DESCRIPTION:
-*       This function enables/disabke the buffer status - according to Boolean input
+*	This function enables/disables the buffer status.
 *
 * INPUT:
-*       enable - Boolean to indicate requested status
+*	enable - Boolean to indicate requested status
 *
 * OUTPUT:
-*       None.
+*	None.
 *
 * RETURN:
-*       None.
+*	None.
 *
 *******************************************************************************/
 MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable)
@@ -2091,7 +2124,6 @@ MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable)
 	mvOsPrintf("%s: Error: Read from IO expander failed (External Phy Buffer select)\n", __func__);
 	return MV_FALSE;
 }
-
 
 /*******************************************************************************
 * mvBoardNandWidthGet -
@@ -2529,24 +2561,31 @@ MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
 * mvBoardSwitchCpuPortGet - Get the the Ethernet Switch CPU port
 *
 * DESCRIPTION:
-*       This routine returns the Switch CPU port if connected , -1 else.
+*	This routine returns the Switch CPU port if connected, -1 else.
 *
 * INPUT:
-*       switchIdx - index of the switch. Only 0 is supported.
+*	switchIdx - index of the switch. Only 0 is supported.
 *
 * OUTPUT:
-*       None.
+*	None.
 *
 * RETURN:
-*       the Switch CPU port, -1 if the switch is not connected.
+*	the Switch CPU port, -1 if the switch is not connected.
 *
 *******************************************************************************/
-MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
+MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 {
-	if ((board->switchInfoNum == 0) || (switchIdx >= board->switchInfoNum))
-		return -1;
+	MV_U32 c = board->pBoardModTypeValue->ethSataComplexOpt;
+	MV_U32 cpuPort = -1;
 
-	return board->pSwitchInfo[switchIdx].cpuPort;
+	if (c & MV_ETHCOMP_GE_MAC0_2_SW_P6)
+		cpuPort = 6;
+	else if (c & MV_ETHCOMP_GE_MAC1_2_SW_P4)
+		cpuPort = 4;
+	else
+		mvOsPrintf("%s: Error: No CPU port.\n", __func__);
+
+	return cpuPort;
 }
 
 /*******************************************************************************

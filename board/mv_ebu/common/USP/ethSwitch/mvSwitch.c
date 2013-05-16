@@ -270,70 +270,22 @@ MV_VOID		mvEthE6161SwitchBasicInit(MV_U32 ethPortNum)
 }
 
 #if defined (MV88F66XX)
-/*******************************************************************************
-* mvEthALPSwitchBasicInit -
-*
-* DESCRIPTION: ALP internal SW init.
-* INPUT:
-*       enabledPorts - Enabled ethernet port numbers mask
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:   None
-*
-*******************************************************************************/
-MV_VOID mvEthALPSwitchBasicInit(MV_U32 enabledPorts)
+MV_VOID mvAlpBoardSwitchBasicInit(MV_U32 enabledPorts)
 {
-	MV_U32 ethPortNum;
-	MV_U32 cpuPort;
-	MV_U32 forceMask;
-	MV_U32 macPort;
-	MV_U32 i;
+	MV_U32 port, forceMask, switchCpuPort = mvBoardSwitchCpuPortGet(0);
 
-	if (mvBoardIsInternalSwitchConnected(0))
-	{
-		ethPortNum = 0;
-		cpuPort = 4;
-		macPort = 0;
-
-		/* Force link, speed, duplex for switch port #4. */
-		mvEthSwitchRegWrite(macPort, 0x14, 0x1, 0x3E);
-	}
-	else
-	{
-		/* switch is connected in port 1 only */
-		ethPortNum = 1;
-		cpuPort = 5;
-		macPort = 1;
-
-		/* Force link, speed, duplex for switch port #4. */
-		mvEthSwitchRegWrite(macPort, 0x15, 0x1, 0x3E);
-	}
+	/* Force link, speed, duplex for switch CPU port */
+	mvEthSwitchRegWrite(0, 0x10 + switchCpuPort, 0x1, 0x3e);
 
 	forceMask = mvBoardSwitchPortForceLinkGet(0);
-	for (i = 0; i < 8; i++) {
-		if ((1 << i) & forceMask)
-			mvEthSwitchRegWrite(macPort, 0x10 + i, 0x1, 0x3E);
+	for (port = 0; port < 6; port++) {
+		MV_U32 toForce = forceMask & (1 << port);
+		if (toForce)
+			mvEthSwitchRegWrite(0, 0x10 + port, 0x1, 0x3e);
 	}
 
-	/* Init vlan of switch 1 and enable all ports */
-	switchVlanInit(ethPortNum,
-			cpuPort,
-			MV_KW2_SW_MAX_PORTS_NUM,
-			MV_KW2_SW_PORTS_OFFSET,
-			enabledPorts);
-
-	if (mvBoardIsInternalSwitchConnected(0))
-	{
-		/* Force link, speed, duplex for switch port #4. */
-		mvEthSwitchRegWrite(0, 0x14, 0x1, 0x3E);
-	}
-	else
-	{
-		/* Force link, speed, duplex for switch port #4. */
-		mvEthSwitchRegWrite(1, 0x15, 0x1, 0x3E);
-	}
+	switchVlanInit(0, switchCpuPort, MV_ALP_SW_MAX_PORTS_NUM,
+		       MV_ALP_SW_PORTS_OFFSET, enabledPorts);
 }
 #endif /* MV88F66XX */
 
@@ -419,87 +371,66 @@ MV_VOID	mvEthE6171SwitchBasicInit(MV_U32 ethPortNum)
 
 }
 
-
 static void switchVlanInit(MV_U32 ethPortNum, MV_U32 switchCpuPort, MV_U32 switchMaxPortsNum,
-						   MV_U32 switchPortsOffset, MV_U32 switchEnabledPortsMask)
+			   MV_U32 switchPortsOffset, MV_U32 switchEnabledPortsMask)
 {
-	MV_U32 prt;
+	MV_U32 port;
 	MV_U16 reg;
 
-    	/*enable only appropriate ports to forwarding mode - and disable the others*/
-    	for(prt=0; prt < switchMaxPortsNum; prt++) {
-        	if ((1 << prt)& switchEnabledPortsMask)	{
-			mvEthSwitchRegRead(ethPortNum, MV_SWITCH_PORT_OFFSET(prt),
-								  MV_SWITCH_PORT_CONTROL_REG,&reg);
+	/*enable only appropriate ports to forwarding mode - and disable the others*/
+	for(port=0; port < switchMaxPortsNum; port++) {
+		if ((1 << port)& switchEnabledPortsMask)	{
+			mvEthSwitchRegRead(ethPortNum, MV_SWITCH_PORT_OFFSET(port),
+					   MV_SWITCH_PORT_CONTROL_REG,&reg);
 			reg |= 0x3;
-			mvEthSwitchRegWrite (ethPortNum, MV_SWITCH_PORT_OFFSET(prt),
-								  MV_SWITCH_PORT_CONTROL_REG,reg);
-		}
-		else
-		{
+			mvEthSwitchRegWrite(ethPortNum, MV_SWITCH_PORT_OFFSET(port),
+					    MV_SWITCH_PORT_CONTROL_REG,reg);
+		} else {
 			/* Disable port */
-			mvEthSwitchRegRead (ethPortNum, MV_SWITCH_PORT_OFFSET(prt),
-								  MV_SWITCH_PORT_CONTROL_REG,&reg);
+			mvEthSwitchRegRead(ethPortNum, MV_SWITCH_PORT_OFFSET(port),
+					   MV_SWITCH_PORT_CONTROL_REG,&reg);
 			reg &= ~0x3;
-			mvEthSwitchRegWrite (ethPortNum, MV_SWITCH_PORT_OFFSET(prt),
-								  MV_SWITCH_PORT_CONTROL_REG,reg);
+			mvEthSwitchRegWrite(ethPortNum, MV_SWITCH_PORT_OFFSET(port),
+					   MV_SWITCH_PORT_CONTROL_REG,reg);
 		}
 	}
-	return;
 }
 
-void mvEthSwitchRegWrite(MV_U32 ethPortNum, MV_U32 phyAddr,
-                                 MV_U32 regOffs, MV_U16 data)
+void mvEthSwitchRegWrite(MV_U32 ethPortNum, MV_U32 switchPort,
+                                 MV_U32 switchReg, MV_U16 data)
 {
-	MV_U16 reg;
+	MV_U32 offset = 0;
 
-	if(switchMultiChipMode == 0xdeadbeef) {
-		if (mvBoardSmiScanModeGet(0) == 2)
-			switchMultiChipMode = mvBoardPhyAddrGet(ethPortNum);
-		else
-			switchMultiChipMode = 0xffffffff;
+	if (mvBoardIsInternalSwitchConnected() == MV_FALSE) {
+		mvOsPrintf("No Switch.\n");
+		return;
 	}
 
-	if(switchMultiChipMode == 0xffffffff)
-		mvEthPhyRegWrite(phyAddr, regOffs, data);
-	else { /*If Switch is in multichip mode, need to use indirect register access */
-		do {
-			mvEthPhyRegRead(switchMultiChipMode, 0x0, &reg);
-		} while((reg & BIT15));    // Poll till SMIBusy bit is clear
-		mvEthPhyRegWrite(switchMultiChipMode, 0x1, data);   // Write data to Switch indirect data register
-		mvEthPhyRegWrite(switchMultiChipMode, 0x0, regOffs | (phyAddr << 5) |
-				BIT10 | BIT12 | BIT15);   // Write command to Switch indirect command register
-	}
+	offset |= (0x3 << 16); /* [19:16] - APB bridge on XBar port #3 */
+	/* [15:13] - Switch is target 0 on ABP splitter */
+	offset |= (switchPort << 7); /* [11:7] - Switch port */
+	offset |= (switchReg << 2);  /* [6:2] - Switch Register */
+	MV_REG_WRITE(offset, data);
 }
 
-void mvEthSwitchRegRead(MV_U32 ethPortNum, MV_U32 phyAddr,
-                             MV_U32 regOffs, MV_U16 *data)
+void mvEthSwitchRegRead(MV_U32 ethPortNum, MV_U32 switchPort,
+                             MV_U32 switchReg, MV_U16 *data)
 {
-	MV_U16 reg;
+	MV_U32 result, reg = 0;
 
-/*	switchMultiChipMode = mvBoardPhyAddrGet(ethPortNum); */
-	if(switchMultiChipMode == 0xdeadbeef) {
-		if (mvBoardSmiScanModeGet(0) == 2)
-			switchMultiChipMode = mvBoardPhyAddrGet(ethPortNum);
-		else
-			switchMultiChipMode = 0xffffffff;
+	if (mvBoardIsInternalSwitchConnected() == MV_FALSE) {
+		mvOsPrintf("No Switch.\n");
+		return;
 	}
 
-	if(switchMultiChipMode == 0xffffffff)
-		mvEthPhyRegRead(phyAddr, regOffs, data);
-	else //If Switch is in multichip mode, need to use indirect register access
-	{
-		do {
-			mvEthPhyRegRead(switchMultiChipMode, 0x0, &reg);
-		} while((reg & BIT15));    // Poll till SMIBusy bit is clear
-		mvEthPhyRegWrite(switchMultiChipMode, 0x0, regOffs | (phyAddr << 5) |
-				BIT11 | BIT12 | BIT15);   // Write command to Switch indirect command register
-		do {
-			mvEthPhyRegRead(switchMultiChipMode, 0, &reg);
-		} while((reg & BIT15));    // Poll till SMIBusy bit is clear
-		mvEthPhyRegRead(switchMultiChipMode, 0x1, data);   // Write data to Switch indirect data register
-	}
+	reg |= (0x3 << 16); /* [19:16] - APB bridge on XBar port #3 */
+	/* [15:13] - Switch is target 0 on ABP splitter */
+	reg |= (switchPort << 7); /* [11:7] - Switch port */
+	reg |= (switchReg << 2);  /* [6:2] - Switch Register */
+	result = MV_REG_READ(reg);
+	*data = result;
 }
+
 void mvEthSwitchPhyRegWrite(MV_U32 ethPortNum, MV_U16 prt,
                                  MV_U16 regOffs, MV_U16 data)
 {

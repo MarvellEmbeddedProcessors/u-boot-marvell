@@ -74,7 +74,8 @@ typedef enum {
 	MV_ETH_SPEED_AN,
 	MV_ETH_SPEED_10,
 	MV_ETH_SPEED_100,
-	MV_ETH_SPEED_1000
+	MV_ETH_SPEED_1000,
+	MV_ETH_SPEED_2000,
 } MV_ETH_PORT_SPEED;
 
 typedef enum {
@@ -112,7 +113,8 @@ static INLINE void mvEthIsrSummaryMask(MV_VOID)
 
 static INLINE void mvEthIsrSummaryUnmask(MV_VOID)
 {
-	MV_REG_WRITE(ETH_ISR_SUM_MASK_REG, ETH_ISR_SUM_PORT0_MASK | ETH_ISR_SUM_PORT1_MASK | 0x20/*magic bit*/);
+	MV_REG_WRITE(ETH_ISR_SUM_MASK_REG, ETH_ISR_SUM_PORT0_MASK |
+		     ETH_ISR_SUM_PORT1_MASK | 0x20 /* magic bit */);
 }
 
 static INLINE MV_U32 mvEthIsrSummaryCauseGet(MV_VOID)
@@ -137,9 +139,13 @@ static INLINE MV_VOID mvEthPortIsrUnmask(int port)
 
 void mvEthPortEnable(int port);
 void mvEthPortDisable(int port);
+void mvEthPortRgmiiSet(int port, int enable);
+void mvEthPortSgmiiSet(int port, int enable);
+void mvEthPortPeriodicXonSet(int port, int enable);
 MV_BOOL mvEthPortIsLinkUp(int port);
 MV_STATUS mvEthLinkStatus(int port, MV_ETH_PORT_STATUS *pStatus);
 void mvEthPortLbSet(int port, int isGmii, int isPcsEn);
+void mvEthPortResetSet(int port, MV_BOOL setReset);
 void mvEthPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii);
 void mvEthPortPowerDown(int port);
 
@@ -152,6 +158,8 @@ MV_STATUS mvEthSpeedDuplexSet(int portNo, MV_ETH_PORT_SPEED speed, MV_ETH_PORT_D
 MV_STATUS mvEthSpeedDuplexGet(int portNo, MV_ETH_PORT_SPEED *speed, MV_ETH_PORT_DUPLEX *duplex);
 MV_STATUS mvEthFlowCtrlSet(int port, MV_ETH_PORT_FC flowControl);
 MV_STATUS mvEthFlowCtrlGet(int port, MV_ETH_PORT_FC *pFlowCntrl);
+MV_STATUS mvEthPortLinkSpeedFlowCtrl(int port, MV_ETH_PORT_SPEED speed,
+				     int forceLinkUp);
 
 /******************************************************************************/
 /*                         PHY Control Functions                              */

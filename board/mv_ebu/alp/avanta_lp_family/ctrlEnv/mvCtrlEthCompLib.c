@@ -65,635 +65,401 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <mvCommon.h>
 #include <mvOs.h>
 #include "ctrlEnv/mvCtrlEnvSpec.h"
-#include "ctrlEnv/mvCtrlEthCompLib.h"
+#include "mvCtrlEthCompLib.h"
 #include "ctrlEnv/mvCtrlEnvLib.h"
 #include "boardEnv/mvBoardEnvLib.h"
 #include "pp2/gmac/mvEthGmacRegs.h"
 #include "pp2/gbe/mvPp2Gbe.h"
 
-static MV_BOOL gEthComplexSkipInit = MV_FALSE;
-
-/******************************************************************************
-* mvEthCompSkipInitSet
-*
-* DESCRIPTION:
-*	Configure the eth-complex to skip initialization.
-*
-* INPUT:
-*	skip - MV_TRUE to skip initialization.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	None.
-*******************************************************************************/
-void mvEthCompSkipInitSet(MV_BOOL skip)
-{
-	gEthComplexSkipInit = skip;
-	return;
-}
-
-/******************************************************************************
-* mvEthCompMac2SwitchConfig
-*
-* DESCRIPTION:
-*	Configure ethernet complex for MAC0/1 to switch ports 4/6 mode.
-*
-* INPUT:
-*	ethCompCfg - Ethernet complex configuration bitmap.
-*	muxCfgOnly - MV_TRUE: Configure only the ethernet complex mux'es and
-*		     skip other switch reset configurations.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	MV_OK on success,
-*	MV_ERROR otherwise.
-*******************************************************************************/
-MV_STATUS mvEthCompMac2SwitchConfig(MV_U32 ethCompCfg, MV_BOOL muxCfgOnly)
-{
-	return MV_OK;
-}
-
-/******************************************************************************
-* mvEthCompSwitchReset
-*
-* DESCRIPTION:
-*	Reset switch device after being configured by ethernet complex functions.
-*
-* INPUT:
-*	ethCompCfg - Ethernet complex configuration bitmap.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	MV_OK on success,
-*	MV_ERROR otherwise.
-*******************************************************************************/
-MV_STATUS mvEthCompSwitchReset(MV_U32 ethCompCfg)
-{
-	return MV_OK;
-}
-
-/******************************************************************************
-* mvEthCompMac2RgmiiConfig
-*
-* DESCRIPTION:
-*	Configure ethernet complex for MAC0/1 to RGMII output.
-*
-* INPUT:
-*	ethCompCfg - Ethernet complex configuration bitmap.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	MV_OK on success,
-*	MV_ERROR otherwise.
-*******************************************************************************/
-MV_STATUS mvEthCompMac2RgmiiConfig(MV_U32 ethCompCfg)
-{
-	return MV_OK;
-}
-
-/******************************************************************************
-* mvEthCompSwP56ToRgmiiConfig
-*
-* DESCRIPTION:
-*	Configure ethernet complex for Switch port 5 or 6 to RGMII output.
-*
-* INPUT:
-*	ethCompCfg - Ethernet complex configuration bitmap.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	MV_OK on success,
-*	MV_ERROR otherwise.
-*******************************************************************************/
-MV_STATUS mvEthCompSwP56ToRgmiiConfig(MV_U32 ethCompCfg)
-{
-	return MV_OK;
-}
-
-
-/******************************************************************************
-* mvEthCompSataConfig
-*
-* DESCRIPTION:
-*	Configure ethernet complex for sata port output.
-*
-* INPUT:
-*	ethCompCfg - Ethernet complex configuration bitmap.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	MV_OK on success,
-*	MV_ERROR otherwise.
-*******************************************************************************/
-MV_STATUS mvEthCompSataConfig(MV_U32 ethCompCfg)
-{
-	return MV_OK;
-}
-
-/******************************************************************************
-* mvEthCompShutdownIf
-*
-* DESCRIPTION:
-*	Shutdown ethernet complex interfaces.
-*
-* INPUT:
-*	integSwitch	- MV_TRUE to shutdown the integrated switch.
-*	gePhy		- MV_TRUE to shutdown the GE-PHY
-*	fePhy		- MV_TRUE to shutdown the 3xFE PHY.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	MV_OK on success,
-*	MV_ERROR otherwise.
-*******************************************************************************/
-MV_STATUS mvEthCompShutdownIf(MV_BOOL integSwitch, MV_BOOL gePhy, MV_BOOL fePhy)
-{
-	return MV_OK;
-}
-
-/******************************************************************************
-* mvEthCompGopPhySmiAutoPollSet
-*
-* DESCRIPTION:
-* 	Disables hardware PHY polling mode.
-* 	Relevant for SMI Interface0.
-* 	Used for Auto-Negotiation and PHY configuration of the PHY devices
-* 	connected to ports 0 through 11. Stops the Auto-Negotiation process
-* 	on SMI Interface0. When the CPU accesses a PHY via SMI Interface0,
-* 	this bit must be set to 1 when a 88E1112 is connected to one of the ports.
-* 	NOTE: Although the device ignores the information read from the
-* 	PHY registers, it keeps polling these registers.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	None.
-*******************************************************************************/
-#if 0 /* This bit does not work !!! */
-static void mvEthCompGopPhySmiAutoPollSet(MV_BOOL enable)
-{
-	if (enable == MV_TRUE)
-		MV_REG_BIT_RESET(ETH_PHY_AN_CFG0_REG(0),
-				 ETH_PHY_AN_CFG0_STOP_AN_SMI0_MASK);
-	else
-		MV_REG_BIT_SET  (ETH_PHY_AN_CFG0_REG(0),
-				 ETH_PHY_AN_CFG0_STOP_AN_SMI0_MASK);
-}
-#endif
-
-/******************************************************************************
-* mvEthCompGopPhySmiAddrSet
-*
-* DESCRIPTION:
-*	Perform basic setup that is needed before configuring the eth-complex
-*	registers.
-*
-* INPUT:
-*	ethCompCfg - Ethernet complex configuration.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	None.
-*******************************************************************************/
-static void mvEthCompGopPhySmiAddrSet(MV_U32 port, MV_U32 smiAddr)
+static void mvEthComplexGbePhySrcSet(MV_U32 phy, MV_U32 src)
 {
 	MV_U32 reg;
 
-	/*
-	 * Set PHY SMI address: set PcsPhyAddress to PHY SMI address.
-	 */
-	reg = MV_REG_READ(MV_ETHCOMP_GBE_PHY_CTRL0_REG(port));
-	reg &= ~ETHCGPC0_PCS_PHY_ADDR_MASK;
-	smiAddr &= ETHCGPC0_PCS_PHY_ADDR_MASK;
-	reg |= (smiAddr << ETHCGPC0_PCS_PHY_ADDR_OFFSET);
-	MV_REG_WRITE(MV_ETHCOMP_GBE_PHY_CTRL0_REG(port), reg);
-}
-
-/******************************************************************************
-* mvEthCompMacSetReset
-*
-* DESCRIPTION:
-* 	None.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	None.
-*******************************************************************************/
-void mvEthCompMacSetReset(MV_U32 port, MV_BOOL enable)
-{
-	MV_U32 reg, mask;
-
-	if (enable == MV_TRUE)
-		mask = 0x1;
-	else
-		mask = 0x0;
-
-	/*
-	 * Set 'PortMACReset' in Port MAC Control Register 2 to 'Port_MAC_Not_reset'.
-	 */
-	reg = MV_REG_READ(ETH_GMAC_CTRL_2_REG(port));
-	reg &= ~ETH_GMAC_PORT_RESET_MASK;
-	reg |= (mask << ETH_GMAC_PORT_RESET_BIT);
-	MV_REG_WRITE(ETH_GMAC_CTRL_2_REG(port), reg);
-}
-
-/******************************************************************************
-* mvEthCompPreInit
-*
-* DESCRIPTION:
-*	Perform basic setup that is needed before configuring the eth-complex
-*	registers.
-*
-* INPUT:
-*	ethCompCfg - Ethernet complex configuration.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	None.
-*******************************************************************************/
-static void mvEthCompPreInit(MV_U32 ethCompCfg, MV_U32 smiAddr)
-{
-#if 0
-	mvEthCompMacSetReset(GBE_PORT(0), MV_TRUE);
-	mvEthCompMacSetReset(GBE_PORT(1), MV_TRUE);
-#endif
-
-	/* mvEthCompGopPhySmiAutoPollSet(MV_FALSE); <--- does not works according to Eran Maor !!! */
-
-	mvEthCompGopPhySmiAddrSet(GBE_PORT(0), smiAddr);
-	mvEthCompGopPhySmiAddrSet(GBE_PORT(1), smiAddr);
-}
-
-/******************************************************************************
-* mvEthCompPostInit
-*
-* DESCRIPTION:
-*	Perform basic setup that is needed after configuring the eth-complex
-*	registers.
-*
-* INPUT:
-*	ethCompCfg - Ethernet complex configuration.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	None.
-*******************************************************************************/
-static void mvEthCompPostInit(MV_U32 ethCompCfg)
-{
-	/* mvEthCompGopPhySmiAutoPollSet(MV_FALSE); <--- does not works according to Eran Maor !!! */
-}
-
-/******************************************************************************
-* mvEthCompMacSetAutoNegMode
-*
-* DESCRIPTION:
-* 	None.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	None.
-*******************************************************************************/
-static void mvEthCompMacSetAutoNegMode(MV_U32 macId)
-{
-	MV_U32 reg;
-
-	/*
-	 * When working on AN mode, set the following:
-	 * 'AnFcEn'		=> 'AnFcEnable'
-	 * 'PauseAdv'		=> 'Support_Flow_Control'
-	 * 'AnSpeedEn'		=> 'Enable_Update'
-	 * 'AnDuplexEn'		=> 'AnDuplexEnable'
-	 * 'SetFullDuplex'	=> 'Full_duplex'
-	 */
-
-	reg = MV_REG_READ(ETH_GMAC_AN_CTRL_REG(macId));
-
-	/* 'AnFcEn'		=> 'AnFcEnable' */
-	reg &= ~ETH_ENABLE_FLOW_CONTROL_AUTO_NEG_MASK;
-	reg |= (0x1 << ETH_ENABLE_FLOW_CONTROL_AUTO_NEG_BIT);
-
-	/* 'PauseAdv'		=> 'Support_Flow_Control' */
-	reg &= ~ETH_FLOW_CONTROL_ADVERTISE_MASK;
-	reg |= (0x1 << ETH_FLOW_CONTROL_ADVERTISE_BIT);
-
-	/* 'AnSpeedEn'		=> 'Enable_Update' */
-	reg &= ~ETH_ENABLE_SPEED_AUTO_NEG_MASK;
-	reg |= (0x1 << ETH_ENABLE_SPEED_AUTO_NEG_BIT);
-
-	/* 'AnDuplexEn'		=> 'AnDuplexEnable' */
-	reg &= ~ETH_ENABLE_DUPLEX_AUTO_NEG_MASK;
-	reg |= (0x1 << ETH_ENABLE_DUPLEX_AUTO_NEG_BIT);
-
-	/* 'SetFullDuplex'	=> 'Full_duplex' */
-	reg &= ~ETH_SET_FULL_DUPLEX_MASK;
-	reg |= (0x1 << ETH_SET_FULL_DUPLEX_BIT);
-
-	MV_REG_WRITE(ETH_GMAC_AN_CTRL_REG(macId), reg);
-}
-
-/******************************************************************************
-* mvEthCompMac0ToGePhyConfig
-*
-* DESCRIPTION:
-*	This flow assumes Auto Negotionation (AN) between MAC and GE PHY.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	None.
-*******************************************************************************/
-static void mvEthCompMacToGePhyConfig(MV_U32 port, MV_U32 phy, MV_U32 ethCompCfg)
-{
-	MV_U32 reg;
-
-	if ((ethCompCfg & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0) == 0)
-		return;
-
-	/*----------------------------------------------------------------------
-	 * GE MAC 0 to GE PHY Port 0
-	 */
 	reg = MV_REG_READ(MV_ETHCOMP_CTRL_REG);
+	reg &= ~ETHCC_GBE_PHY_PORT_SMI_SRC_MASK(phy);
 
-	/* Set 'GbEPhyPort0Source' field in Ethernet Complex Control 0 reg to 0x0 */
-	reg &= ~ETHCC_GBE_PHY_PORT_0_SRC_MASK;
-	reg |= (0x0 << ETHCC_GBE_PHY_PORT_0_SRC_OFFSET);
+	src <<= ETHCC_GBE_PHY_PORT_SMI_SRC_OFFSET(phy);
+	src &= ETHCC_GBE_PHY_PORT_SMI_SRC_MASK(phy);
 
-	/* Set 'GeMAC0Source' field in Ethernet Complex Control 0 reg to 0x2 */
-	reg &= ~ETHCC_GBE_MAC0_SRC_MASK;
-	reg |= (0x2 << ETHCC_GBE_MAC0_SRC_OFFSET);
+	reg |= src;
 
-	/* Set 'SwitchPort6Source' field in Ethernet Complex Control 0 to 0x0 'UC' */
-	reg &= ~ETHCC_SW_PORT_6_SRC_MASK;
-	reg |= (0x0 << ETHCC_SW_PORT_6_SRC_OFFSET);
+	MV_REG_WRITE(MV_ETHCOMP_CTRL_REG, reg);
+}
+
+static MV_U32 mvEthComplexSwPortSrcCalc(MV_U32 swPort, enum mvSwPortSrc src)
+{
+	MV_U32 val = 0x0;
+
+	if (swPort != 0 && swPort != 3 && swPort != 4 && swPort != 6) {
+		mvOsPrintf("%s: Wrong switch port (%d)\n",
+			   __func__, swPort);
+		return 0x0;
+	}
+
+	switch (swPort) {
+	case 0:
+	case 3:
+		if (src == ETHC_SW_PORT_SRC_GBE_PHY)
+			val = 0x1;
+		else if (src == ETHC_SW_PORT_SRC_NC)
+			val = 0x0;
+		else {
+			mvOsPrintf("%s: Wrong src (%d) for switch port (%d)\n",
+				   __func__, src, swPort);
+		}
+		break;
+	case 4:
+		if (src == ETHC_SW_PORT_SRC_MPP)
+			val = 0x1;
+		else if (src == ETHC_SW_PORT_SRC_GBE_MAC)
+			val = 0x0;
+		else {
+			mvOsPrintf("%s: Wrong src (%d) for switch port (%d)\n",
+				   __func__, src, swPort);
+		}
+		break;
+	case 6:
+		if (src == ETHC_SW_PORT_SRC_GBE_MAC)
+			val = 0x1;
+		else if (src == ETHC_SW_PORT_SRC_NC)
+			val = 0x0;
+		else {
+			mvOsPrintf("%s: Wrong src (%d) for switch port (%d)\n",
+				   __func__, src, swPort);
+		}
+		break;
+	}
+
+	return val;
+}
+
+static void mvEthComplexSwPortSrcSet(MV_U32 swPort, MV_U32 src)
+{
+	MV_U32 reg;
+
+	reg = MV_REG_READ(MV_ETHCOMP_CTRL_REG);
+	reg &= ~ETHCC_SW_PORT_SRC_MASK(swPort);
+
+	src <<= ETHCC_SW_PORT_SRC_OFFSET(swPort);
+	src &= ETHCC_SW_PORT_SRC_MASK(swPort);
+
+	reg |= src;
+
+	MV_REG_WRITE(MV_ETHCOMP_CTRL_REG, reg);
+}
+
+static void mvEthComplexGbePortSrcSet(MV_U32 port, MV_U32 src)
+{
+	MV_U32 reg;
+
+	reg = MV_REG_READ(MV_ETHCOMP_CTRL_REG);
+	reg &= ~ETHCC_GBE_MAC_SRC_MASK(port);
+
+	src <<= ETHCC_GBE_MAC_SRC_OFFSET(port);
+	src &= ETHCC_GBE_MAC_SRC_MASK(port);
+
+	reg |= src;
+
+	MV_REG_WRITE(MV_ETHCOMP_CTRL_REG, reg);
+}
+
+/*
+ * Set speed Gbe Port 0 when it is connected to switch port 6
+ */
+static void mvEthComplexGbeToSwitchSpeedSet(MV_ETH_PORT_SPEED speed)
+{
+	MV_U32 reg;
+
+	if (speed != MV_ETH_SPEED_1000 && speed != MV_ETH_SPEED_2000) {
+		mvOsPrintf("%s: wrong speed (%d)\n", __func__, speed);
+		return;
+	}
+
+	reg = MV_REG_READ(MV_ETHCOMP_CTRL_REG);
+	reg &= ~ETHCC_GE_MAC0_SW_PORT_6_SPEED_MASK;
+
+	if (speed == MV_ETH_SPEED_2000)
+		reg |= (0x1 << ETHCC_GE_MAC0_SW_PORT_6_SPEED_OFFSET);
+	else
+		reg |= (0x0 << ETHCC_GE_MAC0_SW_PORT_6_SPEED_OFFSET);
 
 	MV_REG_WRITE(MV_ETHCOMP_CTRL_REG, reg);
 
-	/*----------------------------------------------------------------------
-	 * Set 'Port[0/1]DpClkSource' field in Ports Group Control and Status to 0x1
-	 */
+	if (speed == MV_ETH_SPEED_2000) {
+		reg = MV_REG_READ(MV_ETHCOMP_SW_CONFIG_RESET_CTRL);
+		reg &= ~ETHSCRC_PORT_2G_SELECT_MASK;
+		reg |= (0x1 << ETHSCRC_PORT_2G_SELECT_OFFSET);
+		MV_REG_WRITE(MV_ETHCOMP_SW_CONFIG_RESET_CTRL, reg);
+	}
+}
+
+static void mvEthComplexPortDpClkSrcSet(MV_U32 port, MV_U32 src)
+{
+	MV_U32 reg;
+
 	reg = MV_REG_READ(MV_ETHCOMP_GOP_CTRL_STAT_REG);
 	reg &= ~ETHCGCS_PORT_DP_CLK_SRC_MASK(port);
-	reg |= (0x1 << ETHCGCS_PORT_DP_CLK_SRC_OFFSET(port));
+
+	src <<= ETHCGCS_PORT_DP_CLK_SRC_OFFSET(port);
+	src &= ETHCGCS_PORT_DP_CLK_SRC_MASK(port);
+
+	reg |= src;
+
 	MV_REG_WRITE(MV_ETHCOMP_GOP_CTRL_STAT_REG, reg);
-
-	/*----------------------------------------------------------------------
-	 * GE PHY configuration
-	 */
-
-	/* Set PHY SMI address: set PcsPhyAddress to PHY SMI address.
-	 * Note: it is set in pre-init function.
-	 */
-
-	/* Set PdConfigEdetA field */
-	reg = MV_REG_READ(MV_ETHCOMP_GBE_PHY_CTRL1_REG(phy));
-	reg &= ~ETHCGPC1_PD_CFG_EDED_A_MASK;
-	reg |= (0x0 << ETHCGPC1_PD_CFG_EDED_A_OFFSET);
-	MV_REG_WRITE(MV_ETHCOMP_GBE_PHY_CTRL1_REG(phy), reg);
-
-	/* Set PsEnaXcS field */
-	reg = MV_REG_READ(MV_ETHCOMP_GBE_PHY_CTRL1_REG(phy));
-	reg &= ~ETHCGPC1_PS_ENA_XCS_MASK;
-	reg |= (0x0 << ETHCGPC1_PS_ENA_XCS_OFFSET);
-	MV_REG_WRITE(MV_ETHCOMP_GBE_PHY_CTRL1_REG(phy), reg);
-
-	mvOsDelay(200);
-
-	/* Set 'DPLLReset' field in Quad Gbe PHY Common Control and Status
-	 * register to 'Normal Operation'.
-	 */
-	reg = MV_REG_READ(MV_ETHCOMP_QUAD_GBE_PHY_CTRL_STAT_REG);
-	reg &= ~ETHQPCS_DPLL_RESET_MASK;
-	reg |= (0x1 << ETHQPCS_DPLL_RESET_OFFSET);
-	MV_REG_WRITE(MV_ETHCOMP_QUAD_GBE_PHY_CTRL_STAT_REG, reg);
-
-	mvOsDelay(20);
-
-	/* Set 'Reset' field in Quad Gbe PHY Common Control and Status
-	 * register to 'Normal'.
-	 */
-	reg = MV_REG_READ(MV_ETHCOMP_QUAD_GBE_PHY_CTRL_STAT_REG);
-	reg &= ~ETHQPCS_RESET_MASK;
-	reg |= (0x1 << ETHQPCS_RESET_OFFSET);
-	MV_REG_WRITE(MV_ETHCOMP_QUAD_GBE_PHY_CTRL_STAT_REG, reg);
-
-	/*----------------------------------------------------------------------
-	 * GOP init
-	 */
-
-	/* GOP works NOT in SGMII, ==> set 'PcsEn' field in
-	 * Port MAC Control Register2 to 'Not_working'.
-	 */
-	reg = MV_REG_READ(ETH_GMAC_CTRL_2_REG(port));
-	reg &= ETH_GMAC_PCS_ENABLE_MASK;
-	reg |= (0 << ETH_GMAC_PCS_ENABLE_BIT);
-	MV_REG_WRITE(ETH_GMAC_CTRL_2_REG(port), reg);
-
-	/*
-	 * When working with GbE PHY:
-	 * Set 'PeriodicXonEn' field in Port MAC Control Register 1 to 'Disabled'.
-	 */
-	reg = MV_REG_READ(ETH_GMAC_CTRL_1_REG(port));
-	reg &= ~ETH_GMAC_PERIODIC_XON_EN_MASK;
-	reg |= (0x0 << ETH_GMAC_PERIODIC_XON_EN_BIT);
-	MV_REG_WRITE(ETH_GMAC_CTRL_1_REG(port), reg);
-
-	/*
-	 * Working in Auto Negotiation (AN) mode
-	 */
-	mvEthCompMacSetAutoNegMode(port);
-
-	/*
-	 * Set 'PortMACReset' in Port MAC Control Register 2 to 'Port_MAC_Not_reset'.
-	 */
-	mvEthCompMacSetReset(port, MV_FALSE);
 }
 
-/******************************************************************************
-* mvEthCompMacRgmii1Config
-*
-* DESCRIPTION:
-* 	None.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	None.
-*******************************************************************************/
-static void mvEthCompMacRgmii1Config(MV_U32 port, MV_U32 ethCompCfg)
+static void mvEthComplexGopDevEnable(void)
 {
 	MV_U32 reg;
 
-	if ((ethCompCfg & MV_ETHCOMP_GE_MAC1_2_RGMII1) == 0)
-		return;
-
-	/*----------------------------------------------------------------------
-	 * Connect GE MAC 1 to RGMII 1
-	 */
-
-	/*
-	 * Set 'GeMAC1Source' field in Ethernet Complex Control 0 reg to 0x0, ==>
-	 * GbE MAC 1 is connected to an MPP (RGMII).
-	 */
-	reg = MV_REG_READ(MV_ETHCOMP_CTRL_REG);
-	reg &= ~ETHCC_GBE_MAC1_SRC_MASK;
-	reg |= (0x0 << ETHCC_GBE_MAC1_SRC_OFFSET);
-	MV_REG_WRITE(MV_ETHCOMP_CTRL_REG, reg);
-
-	/*
-	 * Set MPP[35:24] to option 0x2.
-	 */
-
-	/* Read MPP[31:24] and config MPP[31:24] to option 0x2 */
-	reg = MV_REG_READ(MPP_CONTROL_REG(3));
-	reg &= ~0xffffffff; /* each MPP stands for 4 bits */
-	reg |= 0x22222222;
-	MV_REG_WRITE(MPP_CONTROL_REG(3), reg);
-
-	/* Read MPP[32:39] and config MPP[35:32] to option 0x2 */
-	reg = MV_REG_READ(MPP_CONTROL_REG(4));
-	reg &= ~0xffff; /* each MPP stands for 4 bits */
-	reg |= 0x2222;
-	MV_REG_WRITE(MPP_CONTROL_REG(4), reg);
-
-	/*----------------------------------------------------------------------
-	 * Set 'Port[0/1]DpClkSource' field in Ports Group Control and Status to 0x1
-	 */
 	reg = MV_REG_READ(MV_ETHCOMP_GOP_CTRL_STAT_REG);
-
-	reg &= ~ETHCGCS_PORT_DP_CLK_SRC_MASK(port);
-	reg |= (0x1 << ETHCGCS_PORT_DP_CLK_SRC_OFFSET(port));
-
 	reg &= ~ETHCGCS_GOP_ENABLE_DEV_MASK;
 	reg |= (0x1 << ETHCGCS_GOP_ENABLE_DEV_OFFSET);
 
 	MV_REG_WRITE(MV_ETHCOMP_GOP_CTRL_STAT_REG, reg);
-
-	/*----------------------------------------------------------------------
-	 * GOP init
-	 */
-
-	/* GOP works NOT in SGMII, ==> set 'PcsEn' field in
-	 * Port MAC Control Register2 to 'Not_working'.
-	 */
-	reg = MV_REG_READ(ETH_GMAC_CTRL_2_REG(port));
-	reg &= ETH_GMAC_PCS_ENABLE_MASK;
-	reg |= (0 << ETH_GMAC_PCS_ENABLE_BIT);
-	MV_REG_WRITE(ETH_GMAC_CTRL_2_REG(port), reg);
-
-	/*
-	 * Working in Auto Negotiation (AN) mode
-	 */
-	mvEthCompMacSetAutoNegMode(port);
-
-	/*
-	 * Set 'PortMACReset' in Port MAC Control Register 2 to 'Port_MAC_Not_reset'.
-	 */
-	mvEthCompMacSetReset(port, MV_FALSE);
 }
 
-/******************************************************************************
-* mvEthCompInit
-*
-* DESCRIPTION:
-*	Initialize the ethernet complex according to the boardEnv setup.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	MV_OK on success,
-*	MV_ERROR otherwise.
-*******************************************************************************/
-MV_STATUS mvEthCompInit(void)
+static void mvEthComplexSwResetSet(MV_BOOL setReset)
 {
-	MV_U32 ethCompCfg = mvBoardEthComplexConfigGet();
+	MV_U32 reg;
 
-	if (gEthComplexSkipInit == MV_TRUE)
-		return MV_OK;
+	reg = MV_REG_READ(MV_ETHCOMP_SW_CONFIG_RESET_CTRL);
+	reg &= ~ETHSCRC_SWITCH_RESET_MASK;
 
-	mvEthCompPreInit(ethCompCfg, mvBoardPhyAddrGet(GBE_PORT(0)));
+	if (setReset == MV_TRUE)
+		reg |= (0x0 << ETHSCRC_SWITCH_RESET_OFFSET);
+	else
+		reg |= (0x1 << ETHSCRC_SWITCH_RESET_OFFSET);
 
-	/* MAC1 to RGMII1 */
-	mvEthCompMacRgmii1Config(GBE_PORT(1), ethCompCfg);
-
-	/* MAC0 to GE PHY Port0 */
-	mvEthCompMacToGePhyConfig(GBE_PORT(0), GE_PHY(0), ethCompCfg);
-
-	/*  Reset the switch after all configurations are done. */
-	mvEthCompSwitchReset(ethCompCfg);
-
-	mvEthCompPostInit(ethCompCfg);
-
-	return MV_OK;
+	MV_REG_WRITE(MV_ETHCOMP_SW_CONFIG_RESET_CTRL, reg);
 }
 
-/******************************************************************************
-* mvEthCompChangeMode
-*
-* DESCRIPTION:
-*	Change the ethernet complex configuration at runtime.
-*	Meanwhile the function supports only the following mode changes:
-*		- Moving the switch between MAC0 & MAC1.
-*		- Connect / Disconnect GE-PHY to MAC1.
-*		- Connect / Disconnect RGMII-B to MAC0.
-*
-* INPUT:
-*	oldCfg	- The old ethernet complex configuration.
-*	newCfg	- The new ethernet complex configuration to switch to.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	MV_OK on success,
-*	MV_ERROR otherwise.
-*******************************************************************************/
-static MV_STATUS mvEthCompChangeMode(MV_U32 oldCfg, MV_U32 newCfg)
+static void mvEthComplexComPhySelectorSet(MV_U32 phy, MV_U32 val)
 {
+	MV_U32 reg;
+
+	reg = MV_REG_READ(MV_COMMON_PHY_SELECTORS_REG);
+	reg &= ~ETHCPS_COMPHY_SELECTOR_MASK(phy);
+
+	val <<= ETHCPS_COMPHY_SELECTOR_OFFSET(phy);
+	val &= ETHCPS_COMPHY_SELECTOR_MASK(phy);
+
+	reg |= val;
+
+	MV_REG_WRITE(MV_COMMON_PHY_SELECTORS_REG, reg);
+}
+
+static void mvEthComplexGbePhyPowerSet(MV_U32 phy, MV_BOOL setPowerUp)
+{
+	MV_U32 reg;
+
+	reg = MV_REG_READ(MV_ETHCOMP_GBE_PHY_CTRL1_REG(phy));
+	reg &= ~ETHCGPC1_PHY_POWER_DOWN_MASK;
+
+	if (setPowerUp == MV_TRUE)
+		reg |= (0x0 << ETHCGPC1_PHY_POWER_DOWN_OFFSET);
+	else
+		reg |= (0x3 << ETHCGPC1_PHY_POWER_DOWN_OFFSET);
+
+	MV_REG_WRITE(MV_ETHCOMP_GBE_PHY_CTRL1_REG(phy), reg);
+}
+
+static void mvEthComplexGbePhyPowerCycle(MV_U32 phy)
+{
+	mvEthComplexGbePhyPowerSet(phy, MV_FALSE);
+	mvOsDelay(100);
+	mvEthComplexGbePhyPowerSet(phy, MV_TRUE);
+}
+
+static void mvEthComplexGbePhyPdConfigEdetASet(MV_U32 phy, MV_U32 val)
+{
+	MV_U32 reg;
+
+	reg = MV_REG_READ(MV_ETHCOMP_GBE_PHY_CTRL1_REG(phy));
+	reg &= ~ETHCGPC1_PD_CFG_EDED_A_MASK;
+
+	val <<= ETHCGPC1_PD_CFG_EDED_A_OFFSET;
+	val &= ETHCGPC1_PD_CFG_EDED_A_MASK;
+
+	reg |= val;
+
+	MV_REG_WRITE(MV_ETHCOMP_GBE_PHY_CTRL1_REG(phy), reg);
+}
+
+static void mvEthComplexGbePhyPsEnaXcSSet(MV_U32 phy, MV_U32 val)
+{
+	MV_U32 reg;
+
+	reg = MV_REG_READ(MV_ETHCOMP_GBE_PHY_CTRL1_REG(phy));
+	reg &= ~ETHCGPC1_PS_ENA_XCS_MASK;
+
+	val <<= ETHCGPC1_PS_ENA_XCS_OFFSET;
+	val &= ETHCGPC1_PS_ENA_XCS_MASK;
+
+	reg |= val;
+
+	MV_REG_WRITE(MV_ETHCOMP_GBE_PHY_CTRL1_REG(phy), reg);
+}
+
+static void mvEthComplexGbePhyResetSet(MV_BOOL setReset)
+{
+	MV_U32 reg;
+
+	reg = MV_REG_READ(MV_ETHCOMP_QUAD_GBE_PHY_CTRL_STAT_REG);
+
+	reg &= ~ETHQPCS_DPLL_RESET_MASK;
+	reg &= ~ETHQPCS_RESET_MASK;
+
+	if (setReset == MV_TRUE) {
+		reg |= (0x0 << ETHQPCS_RESET_OFFSET);
+		reg |= (0x0 << ETHQPCS_DPLL_RESET_OFFSET);
+	} else {
+		reg |= (0x1 << ETHQPCS_RESET_OFFSET);
+		reg |= (0x1 << ETHQPCS_DPLL_RESET_OFFSET);
+	}
+
+	MV_REG_WRITE(MV_ETHCOMP_QUAD_GBE_PHY_CTRL_STAT_REG, reg);
+}
+
+static void mvEthComplexGopInit(int port, int isSgmii, int isPeriodicXon, int isAN)
+{
+	mvEthPortSgmiiSet(port, isSgmii);
+	mvEthPortPeriodicXonSet(port, isPeriodicXon);
+
+	if (isAN)
+		mvEthPortLinkSpeedFlowCtrl(port, MV_ETH_SPEED_AN, 0);
+	else
+		mvEthPortLinkSpeedFlowCtrl(port, MV_ETH_SPEED_1000, 1);
+
+	mvEthPortResetSet(port, MV_FALSE);
+}
+
+static void mvEthComplexMacToSwPort(MV_U32 port, MV_U32 swPort,
+				    MV_ETH_PORT_SPEED speed)
+{
+	MV_U32 src;
+
+	mvEthComplexSwResetSet(MV_FALSE);
+	mvOsDelay(200);
+
+	src = mvEthComplexSwPortSrcCalc(swPort, ETHC_SW_PORT_SRC_GBE_MAC);
+	mvEthComplexSwPortSrcSet(swPort, src);
+	mvEthComplexGbePortSrcSet(port, 0x1);
+
+	if (port == 0 && swPort == 6)
+		mvEthComplexGbeToSwitchSpeedSet(speed);
+	else
+		mvEthComplexPortDpClkSrcSet(port, 0x1);
+
+	mvEthComplexGopInit(port, MV_FALSE, MV_FALSE, MV_FALSE);
+	mvEthComplexComPhySelectorSet(2, 0x1);
+}
+
+static void mvEthComplexSwPortToRgmii(MV_U32 swPort, MV_U32 port)
+{
+	mvOsPrintf("%s: Not implemented.\n", __func__);
+}
+
+static void mvEthComplexXponMacToPonSerdes(void)
+{
+	mvOsPrintf("%s: Not implemented.\n", __func__);
+}
+
+static void mvEthComplexMacToGbePhy(MV_U32 port, MV_U32 phy, MV_U32 phyAddr)
+{
+	mvEthComplexGbePhySrcSet(phy, 0x0);
+	mvEthComplexGbePortSrcSet(port, 0x2);
+
+	if (port == 0)
+		mvEthComplexSwPortSrcSet(6, 0x0);
+
+	mvEthComplexPortDpClkSrcSet(port, 0x1);
+	mvEthComplexGbePhyPdConfigEdetASet(phy, 0x0);
+	mvEthComplexGbePhyPsEnaXcSSet(phy, 0x0);
+	mvEthComplexGbePhyResetSet(MV_FALSE);
+	mvEthComplexComPhySelectorSet(2, 0x1);
+	mvEthComplexGopInit(port, MV_FALSE, MV_FALSE, MV_TRUE);
+}
+
+static void mvEthComplexMacToComPhy(MV_U32 port, MV_U32 comPhy)
+{
+	mvOsPrintf("%s: Not implemented.\n", __func__);
+}
+
+static void mvEthComplexMac1ToPonSerdes(MV_U32 port)
+{
+	mvOsPrintf("%s: Not implemented.\n", __func__);
+}
+
+static void mvEthComplexMacToRgmii(MV_U32 port, MV_U32 phy)
+{
+	mvEthComplexGbePortSrcSet(port, 0x0);
+	mvEthComplexPortDpClkSrcSet(port, 0x1);
+	mvEthComplexGopDevEnable();
+	mvEthComplexGopInit(port, MV_FALSE, MV_FALSE, MV_TRUE);
+}
+
+static void mvEthComplexSwPortToGbePhy(MV_U32 swPort, MV_U32 phy)
+{
+	mvEthComplexSwPortSrcSet(swPort, 0x1);
+	mvEthComplexGbePhySrcSet(phy, 0x1);
+	mvEthComplexGbePhyResetSet(MV_FALSE);
+	mvEthComplexGbePhyPowerCycle(phy);
+}
+
+MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig)
+{
+	MV_U32 c = ethCompConfig;
+
+	mvEthComplexGopDevEnable();
+
+	if (c & MV_ETHCOMP_GE_MAC0_2_SW_P6)
+		mvEthComplexMacToSwPort(0, 6, MV_ETH_SPEED_1000);
+
+	if (c & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)
+		mvEthComplexMacToGbePhy(0, 0, mvBoardPhyAddrGet(0));
+
+	if (c & MV_ETHCOMP_GE_MAC0_2_RGMII0)
+		mvEthComplexMacToRgmii(0, 0);
+
+	if (c & MV_ETHCOMP_GE_MAC0_2_COMPHY_1)
+		mvEthComplexMacToComPhy(0, 1);
+
+	if (c & MV_ETHCOMP_GE_MAC0_2_COMPHY_2)
+		mvEthComplexMacToComPhy(0, 2);
+
+	if (c & MV_ETHCOMP_GE_MAC0_2_COMPHY_3)
+		mvEthComplexMacToComPhy(0, 3);
+
+	if (c & MV_ETHCOMP_GE_MAC1_2_SW_P4)
+		mvEthComplexMacToSwPort(1, 4, MV_ETH_SPEED_1000);
+
+	if (c & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3)
+		mvEthComplexMacToGbePhy(1, 3, mvBoardPhyAddrGet(1));
+
+	if (c & MV_ETHCOMP_GE_MAC1_2_RGMII1)
+		mvEthComplexMacToRgmii(1, 1);
+
+	if (c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)
+		mvEthComplexMac1ToPonSerdes(1);
+
+	if (c & MV_ETHCOMP_SW_P0_2_GE_PHY_P0)
+		mvEthComplexSwPortToGbePhy(0, 0);
+
+	if (c & MV_ETHCOMP_SW_P1_2_GE_PHY_P1)
+		mvEthComplexSwPortToGbePhy(0, 0);
+
+	if (c & MV_ETHCOMP_SW_P2_2_GE_PHY_P2)
+		mvEthComplexSwPortToGbePhy(0, 0);
+
+	if (c & MV_ETHCOMP_SW_P3_2_GE_PHY_P3)
+		mvEthComplexSwPortToGbePhy(3, 3);
+
+	if (c & MV_ETHCOMP_SW_P4_2_RGMII0)
+		mvEthComplexSwPortToRgmii(4, 0);
+
+	if (c & MV_ETHCOMP_P2P_MAC_2_PON_ETH_SERDES)
+		mvEthComplexXponMacToPonSerdes();
+
 	return MV_OK;
 }

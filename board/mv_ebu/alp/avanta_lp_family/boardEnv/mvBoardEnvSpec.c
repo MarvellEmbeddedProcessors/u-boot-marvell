@@ -209,18 +209,6 @@ MV_BOARD_MPP_INFO db88f6660InfoBoardMppConfigValue[] = {
 	 } }
 };
 
-MV_BOARD_SWITCH_INFO db88f6660InfoBoardSwitchValue[] = {
-	{
-	 .switchIrq = 29,	/* set to -1 for timer operation */
-	 .switchPort = {0, 1, 2, 3, 4, -1, -1},
-	 .cpuPort = 6,
-	 .connectedPort = {6, -1},
-	 .internalQuadPhyAddr = 0,
-	 .connectedPortMask= ( BIT0| BIT1| BIT2| BIT3| BIT4| BIT6),
-	 .forceLinkMask = 0x0
-	 }
-};
-
 MV_BOARD_INFO db88f6660_board_info = {
 	.boardName			= "DB-88F6660",
 	.numBoardMppTypeValue		= ARRSZ(db88f6660InfoBoardModTypeInfo),
@@ -259,8 +247,7 @@ MV_BOARD_INFO db88f6660_board_info = {
 	.gppPolarityValHigh		= DB_88F6660_GPP_POL_HIGH,
 
 	/* External Switch Configuration */
-	.pSwitchInfo = db88f6660InfoBoardSwitchValue,
-	.switchInfoNum = ARRSZ(db88f6660InfoBoardSwitchValue),
+	.switchforceLinkMask		= 0x0,
 
 	/* TDM */
 	.numBoardTdmInfo		= {},
@@ -334,18 +321,6 @@ MV_BOARD_MPP_INFO db88f6650InfoBoardMppConfigValue[] = {
 	 } }
 };
 
-MV_BOARD_SWITCH_INFO db88f6650InfoBoardSwitchValue[] = {
-	{
-		.switchIrq = 29,	/* set to -1 for timer operation */
-		.switchPort = {0, 1, 2, 3, 4, -1, -1},
-		.cpuPort = 6,
-		.connectedPort = {6, -1},
-		.internalQuadPhyAddr = 0,
-		 .connectedPortMask = (BIT0 | BIT1 | BIT2 | BIT3 | BIT6),
-		.forceLinkMask = 0x0
-	}
-};
-
 MV_BOARD_INFO db88f6650_board_info = {
 	.boardName			= "DB-88F6650",
 	.numBoardMppTypeValue		= ARRSZ(db88f6650InfoBoardModTypeInfo),
@@ -384,8 +359,7 @@ MV_BOARD_INFO db88f6650_board_info = {
 	.gppPolarityValHigh		= DB_88F6650_GPP_POL_HIGH,
 
 	/* External Switch Configuration */
-	.pSwitchInfo = db88f6650InfoBoardSwitchValue,
-	.switchInfoNum = ARRSZ(db88f6650InfoBoardSwitchValue),
+	.switchforceLinkMask		= 0x0,
 
 	/* TDM */
 	.numBoardTdmInfo		= {},

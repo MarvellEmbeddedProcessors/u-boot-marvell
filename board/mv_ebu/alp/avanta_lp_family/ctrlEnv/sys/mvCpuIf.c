@@ -924,66 +924,6 @@ MV_VOID mvCpuIfAddDecShow(MV_VOID)
 	}
 }
 
-#if defined(MV_INCLUDE_PEX)
-/*******************************************************************************
-* mvCpuIfEnablePex - Enable PCI Express unit.
-*
-* DESCRIPTION:
-*	This function enables PCI Express access to the device address
-*	space.
-*
-* INPUT:
-*	pexUnit	- PEX unit (0 - 3).
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       None.
-*
-*******************************************************************************/
-MV_VOID mvCpuIfEnablePex(MV_U32 pexUnit)
-{
-	MV_U32 socMaxPexUnit = mvCtrlPexMaxUnitGet();
-
-	if (pexUnit > socMaxPexUnit) {
-		DB(mvOsPrintf("mvCpuIfEnablePex: Bad PEX unit ID (%x)\n", pexUnit));
-		return;
-	}
-
-	/* SOC config register Pex enable */
-	MV_REG_BIT_SET(SOC_CTRL_REG, SCR_PEX_ENA_MASK(pexUnit));
-}
-
-/*******************************************************************************
-* mvCpuIfPex4x1Enable - Enable/Disable the 4x1 mode on PCI Express unit.
-*
-* DESCRIPTION:
-*	This function enables/disables 4x1 mode on PCI Express unit 0 or 1
-*
-* INPUT:
-*	pexUnit	- PEX unit (0 or 1).
-*	enable	- enable (MV_TRUE) or disable (MV_FALSE) 4x1 mode
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       None.
-*
-*******************************************************************************/
-MV_VOID mvCpuIfPex4x1Enable(MV_U32 pexUnit, MV_BOOL enable)
-{
-	if (pexUnit == 0)
-		MV_REG_BIT_SET(SOC_CTRL_REG, SCR_PEX0_4BY1_MASK);
-	else if (pexUnit == 1)
-		MV_REG_BIT_SET(SOC_CTRL_REG, SCR_PEX1_4BY1_MASK);
-	else
-		DB(mvOsPrintf("mvCpuIfPex4x1Enable: Bad PEX unit ID (%x)\n", pexUnit));
-}
-
-#endif
-
 /*******************************************************************************
 * mvCpuIfLvdsPadsEnable
 *

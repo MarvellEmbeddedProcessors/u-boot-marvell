@@ -305,7 +305,7 @@ MV_BOARD_MPP_TYPE_INFO db88f6650InfoBoardModTypeInfo[] = {
 		.boardMppSlic = MV_BOARD_AUTO,
 		.ethSataComplexOpt = MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0 |
 				     MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3,
-		.ethPortsMode = 0x0,
+		.ethPortsMode = 0x0
 	}
 };
 
@@ -338,7 +338,7 @@ MV_BOARD_SWITCH_INFO db88f6650InfoBoardSwitchValue[] = {
 		.connectedPort = {6, -1},
 		.internalQuadPhyAddr = 0,
 		 .connectedPortMask = (BIT0 | BIT1 | BIT2 | BIT3 | BIT6),
-		.forceLinkMask = 0x0,
+		.forceLinkMask = 0x0
 	}
 };
 

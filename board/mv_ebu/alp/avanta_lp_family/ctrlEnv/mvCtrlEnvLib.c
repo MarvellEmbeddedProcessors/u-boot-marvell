@@ -193,9 +193,9 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_66xx_INDEX_MAX] = {
 /* ETH_GIG_UNIT_ID      */ { 2,                 2,              2, },
 /* USB_UNIT_ID          */ { 1,                 1,              0, },
 /* IDMA_UNIT_ID         */ { 0,                 0,              0, },
-/* XOR_UNIT_ID          */ { 2,                 2,              0, },
+/* XOR_UNIT_ID          */ { 2,                 0,              0, },
 /* SATA_UNIT_ID         */ { 2,                 0,              0, },
-/* TDM_32CH_UNIT_ID     */ { 1,                 1,              1, },
+/* TDM_UNIT_ID		*/ { 1,                 1,              1, },
 /* UART_UNIT_ID         */ { 2,                 2,              2, },
 /* CESA_UNIT_ID         */ { 1,                 0,              0, },
 /* SPI_UNIT_ID          */ { 2,                 2,              2, },
@@ -834,7 +834,7 @@ MV_U8 mvCtrlEthMaxCPUsGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlSataMaxPortGet(MV_VOID)
 {
-	return 0;
+	return mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID);
 }
 
 #endif
@@ -858,7 +858,7 @@ MV_U32 mvCtrlSataMaxPortGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlXorMaxChanGet(MV_VOID)
 {
-	return 0;
+	return mvCtrlSocUnitInfoNumGet(XOR_UNIT_ID);
 }
 
 /*******************************************************************************
@@ -879,7 +879,7 @@ MV_U32 mvCtrlXorMaxChanGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlXorMaxUnitGet(MV_VOID)
 {
-	return 0;
+	return mvCtrlSocUnitInfoNumGet(XOR_UNIT_ID);
 }
 
 #endif
@@ -902,7 +902,7 @@ MV_U32 mvCtrlXorMaxUnitGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlUsbMaxGet(void)
 {
-	return 0;
+	return mvCtrlSocUnitInfoNumGet(USB_UNIT_ID);
 }
 
 #endif
@@ -925,7 +925,7 @@ MV_U32 mvCtrlUsbMaxGet(void)
 *******************************************************************************/
 MV_U32 mvCtrlSdioSupport(MV_VOID)
 {
-	return 0; /* kostaz: what's that ??? */
+	return mvCtrlSocUnitInfoNumGet(SDIO_UNIT_ID) ? MV_TRUE : MV_FALSE;
 }
 
 #endif
@@ -947,7 +947,7 @@ MV_U32 mvCtrlSdioSupport(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlTdmSupport(MV_VOID)
 {
-	return 0; /* kostaz: what's that ??? */
+	return mvCtrlSocUnitInfoNumGet(TDM_UNIT_ID) ? MV_TRUE : MV_FALSE;
 }
 
 /*******************************************************************************
@@ -967,7 +967,7 @@ MV_U32 mvCtrlTdmSupport(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlTdmMaxGet(MV_VOID)
 {
-	return 0; /* kostaz: what's that ??? */
+	return mvCtrlSocUnitInfoNumGet(TDM_UNIT_ID);
 }
 
 /*******************************************************************************
@@ -1192,7 +1192,80 @@ const MV_8 *mvCtrlTargetNameGet(MV_TARGET target)
 #if defined(MV_INCLUDE_PEX)
 static MV_VOID mvCtrlPexAddrDecShow(MV_VOID)
 {
-	/* TBD */
+	MV_PEX_BAR pexBar;
+	MV_PEX_DEC_WIN win;
+	MV_U32 pexIf;
+	MV_U32 bar, winNum;
+	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
+	MV_U32 pexHWInf = 0;
+
+	for (pexIf = 0; pexIf < boardPexInfo->boardPexIfNum; pexIf++) {
+		pexHWInf = pexIf;
+
+
+		if (MV_FALSE == mvCtrlPwrClckGet(PEX_UNIT_ID, pexHWInf))
+			continue;
+		mvOsOutput("\n");
+		mvOsOutput("PEX%d:\n", pexHWInf);
+		mvOsOutput("-----\n");
+
+		mvOsOutput("\nPex Bars\n\n");
+
+		for (bar = 0; bar < PEX_MAX_BARS; bar++) {
+			memset(&pexBar, 0, sizeof(MV_PEX_BAR));
+
+			mvOsOutput("%s ", pexBarNameGet(bar));
+
+			if (mvPexBarGet(pexHWInf, bar, &pexBar) == MV_OK) {
+				if (pexBar.enable) {
+					mvOsOutput("base %08x, ", pexBar.addrWin.baseLow);
+					if (pexBar.addrWin.size == 0)
+						mvOsOutput("size %3dGB ", 4);
+					else
+						mvSizePrint(pexBar.addrWin.size);
+					mvOsOutput("\n");
+				} else
+					mvOsOutput("disable\n");
+			}
+		}
+		mvOsOutput("\nPex Decode Windows\n\n");
+
+		for (winNum = 0; winNum < PEX_MAX_TARGET_WIN - 2; winNum++) {
+			memset(&win, 0, sizeof(MV_PEX_DEC_WIN));
+
+			mvOsOutput("win%d - ", winNum);
+
+			if (mvPexTargetWinRead(pexHWInf, winNum, &win) == MV_OK) {
+				if (win.winInfo.enable) {
+					mvOsOutput("%s base %08x, ",
+						   mvCtrlTargetNameGet(mvCtrlTargetByWinInfoGet(&win.winInfo)),
+						   win.winInfo.addrWin.baseLow);
+					mvOsOutput("....");
+					mvSizePrint(win.winInfo.addrWin.size);
+
+					mvOsOutput("\n");
+				} else
+					mvOsOutput("disable\n");
+			}
+		}
+
+		memset(&win, 0, sizeof(MV_PEX_DEC_WIN));
+
+		mvOsOutput("default win - ");
+
+		if (mvPexTargetWinRead(pexHWInf, MV_PEX_WIN_DEFAULT, &win) == MV_OK) {
+			mvOsOutput("%s ", mvCtrlTargetNameGet(win.target));
+			mvOsOutput("\n");
+		}
+		memset(&win, 0, sizeof(MV_PEX_DEC_WIN));
+
+		mvOsOutput("Expansion ROM - ");
+
+		if (mvPexTargetWinRead(pexHWInf, MV_PEX_WIN_EXP_ROM, &win) == MV_OK) {
+			mvOsOutput("%s ", mvCtrlTargetNameGet(win.target));
+			mvOsOutput("\n");
+		}
+	}
 }
 
 #endif
@@ -1581,7 +1654,7 @@ MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
 
 		break;
 #endif
-	case TDM_32CH_UNIT_ID:
+	case TDM_UNIT_ID:
 		if (enable == MV_FALSE)
 			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_TDM_STOP_CLK_MASK);
 		else
@@ -1646,7 +1719,7 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 		break;
 #endif
 #if defined(MV_INCLUDE_TDM)
-	case TDM_32CH_UNIT_ID:
+	case TDM_UNIT_ID:
 		if ((reg & PMC_TDM_STOP_CLK_MASK) == PMC_TDM_STOP_CLK_STOP)
 			state = MV_FALSE;
 		else

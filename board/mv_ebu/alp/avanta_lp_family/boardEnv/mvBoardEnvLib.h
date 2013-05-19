@@ -177,17 +177,6 @@ typedef struct _devCsInfo {
 	MV_U8 busWidth;
 } MV_DEV_CS_INFO;
 
-typedef struct _boardSwitchInfo {
-	MV_32 switchIrq;
-	MV_32 switchPort[BOARD_ETH_SWITCH_PORT_NUM];
-	MV_32 cpuPort;
-	MV_32 connectedPort[MV_ETH_MAX_PORTS];
-	MV_32 smiScanMode;
-	MV_8 connectedPortMask;
-	MV_32 internalQuadPhyAddr;
-	MV_U32 forceLinkMask; /* Bitmask of switch ports to have force link (1Gbps) */
-} MV_BOARD_SWITCH_INFO;
-
 typedef struct _boardLedInfo {
 	MV_U8 activeLedsNumber;
 	MV_U8 ledsPolarity;     /* '0' or '1' to turn on led */
@@ -318,8 +307,7 @@ typedef struct _boardInfo {
 	MV_U32 gppPolarityValHigh;
 
 	/* External Switch Configuration */
-	MV_BOARD_SWITCH_INFO *pSwitchInfo;
-	MV_U32 switchInfoNum;
+	MV_U32 switchforceLinkMask;
 
 	/* PON configuration. */
 	MV_BOARD_PON_CONFIG ponConfigValue;
@@ -438,7 +426,6 @@ MV_U32 mvBoardSledCpuNumGet(MV_VOID);
 MV_VOID mvBoardInfoUpdate(MV_VOID);
 MV_VOID mvBoardMppIdUpdate(MV_VOID);
 MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID);
-MV_STATUS mvBoardSwitchInfoUpdate(MV_VOID);
 MV_VOID mvBoardConfigWrite(MV_VOID);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet(MV_VOID);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet(MV_VOID);
@@ -465,7 +452,6 @@ MV_BOOL mvBoardIsGMIIModuleConnected(void);
 MV_STATUS mvBoardTwsiMuxChannelSet(MV_U8 muxChNum);
 MV_STATUS mvBoardTwsiReadByteThruMux(MV_U8 muxChNum, MV_U8 chNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *data);
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
-MV_32 mvBoardSwitchIrqGet(void);
 MV_BOOL mvBoardIsQsgmiiModuleConnected(void);
 MV_32 mvBoardGePhySwitchPortGet(void);
 MV_32 mvBoardRgmiiASwitchPortGet(void);

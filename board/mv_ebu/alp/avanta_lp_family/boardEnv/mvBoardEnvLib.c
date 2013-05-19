@@ -927,6 +927,11 @@ MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID)
 	if ( (ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3) == MV_FALSE )
 		ethComplexOptions |= MV_ETHCOMP_SW_P3_2_GE_PHY_P3;
 
+	 /* if Switch is connected --> connect Switch ports 2/3 to QUAD_PHY_P2/3 */
+	if ((ethComplexOptions & MV_ETHCOMP_GE_MAC0_2_SW_P6) ||
+	    (ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_SW_P4))
+		ethComplexOptions |= (MV_ETHCOMP_SW_P2_2_GE_PHY_P2 | MV_ETHCOMP_SW_P3_2_GE_PHY_P3);
+
 	/* if MAC1 is NOT connected to PON SerDes --> connect PON MAC to to PON SerDes */
 	if ( (ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES) == MV_FALSE )
 		ethComplexOptions |= MV_ETHCOMP_P2P_MAC_2_PON_ETH_SERDES;
@@ -1835,13 +1840,13 @@ MV_U8 mvBoardIoExpValGet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo)
 	if (ioInfo==NULL)
 		return (MV_U8)MV_ERROR;
 
-	val = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum, ioInfo->regNum);
-	if ((MV_U8)MV_ERROR != val) {
-		mask = (1 << ioInfo->offset);
-		return ( (val & mask) >> ioInfo->offset);
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum, ioInfo->regNum, &val) != MV_OK) {
+		mvOsPrintf("%s: Error: Read from IO Expander failed\n", __func__);
+		return (MV_U8)MV_ERROR;
 	}
-	DB(mvOsPrintf("%s: Error: Read from IO Expander failed\n", __func__));
-	return (MV_U8)MV_ERROR;
+
+	mask = (1 << ioInfo->offset);
+	return (val & mask) >> ioInfo->offset;
 }
 
 /*******************************************************************************
@@ -1864,25 +1869,28 @@ MV_STATUS mvBoardIoExpValSet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo, MV_U8 value
 {
 	MV_U8 readVal;
 
-	if (ioInfo==NULL)
-		return (MV_U8)MV_ERROR;
+	if (ioInfo == NULL) {
+		mvOsPrintf("%s: Error: Write to IO Expander failed\n", __func__);
+		return MV_ERROR;
+	}
 	/* Read */
-	readVal = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum, ioInfo->regNum);
-	if ((MV_U8)MV_ERROR != readVal) {
-		/* Modify */
-		readVal &= !(1 << ioInfo->offset);	/* clean bit of old value  */
-		value = value << ioInfo->offset;	/* shift bit of new value to its location */
-		value &= readVal;
 
-		/* Write */
-		readVal = mvBoardTwsiSet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum, ioInfo->regNum, value);
-		if ((MV_U8)MV_ERROR != readVal)
-			return MV_OK;
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum, ioInfo->regNum, &readVal) != MV_OK) {
+		mvOsPrintf("%s: Error: Read from IO Expander failed\n", __func__);
+		return MV_ERROR;
 	}
 
+	/* Modify */
+	readVal &= ~(1 << ioInfo->offset);	/* clean bit of old value  */
+	readVal |= (value << ioInfo->offset);
 
-	mvOsPrintf("%s: Error: Write to IO Expander failed\n", __func__);
-	return (MV_U8)MV_ERROR;
+	/* Write */
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum, ioInfo->regNum, readVal) != MV_OK) {
+		mvOsPrintf("%s: Error: Write to IO Expander failed\n", __func__);
+		return MV_ERROR;
+	}
+
+	return MV_OK;
 }
 
 /*******************************************************************************
@@ -2049,7 +2057,7 @@ MV_STATUS mvBoardSatrInfoGet(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satr
 *	MV_BOARD_CONFIG_TYPE_INFO struct with mask, offset and register number.
 *
 *******************************************************************************/
-MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo)
+MV_BOOL mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo)
 {
 	int i;
 	MV_U32 boardId = mvBoardIdGet();
@@ -2058,14 +2066,14 @@ MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TY
 	 * and check if field is relevant to current running board */
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION ; i++)
 		if (boardConfigTypesInfo[i].configId == configClass) {
-			configInfo = &boardConfigTypesInfo[i];
+			*configInfo = boardConfigTypesInfo[i];
 			if (boardConfigTypesInfo[i].isActiveForBoard[boardId])
-				return MV_OK;
+				return MV_TRUE;
 			else
-				return MV_ERROR;
+				return MV_FALSE;
 		}
-	DB(mvOsPrintf("%s: Error: requested MV_CONFIG_TYPE_ID was not found (%d) \n", __func__, configClass));
-	return MV_ERROR;
+	mvOsPrintf("%s: Error: requested MV_CONFIG_TYPE_ID was not found (%d)\n", __func__, configClass);
+	return MV_FALSE;
 }
 
 /*******************************************************************************
@@ -2231,7 +2239,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 *		reg value
 *
 *******************************************************************************/
-MV_U8 mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum)
+MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData)
 {
 	MV_TWSI_SLAVE twsiSlave;
 	MV_TWSI_ADDR slave;
@@ -2257,7 +2265,8 @@ MV_U8 mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum)
 	}
 	DB(mvOsPrintf("Board: Read S@R succeded\n"));
 
-	return data;
+	*pData = data;
+	return MV_OK;
 }
 
 /*******************************************************************************

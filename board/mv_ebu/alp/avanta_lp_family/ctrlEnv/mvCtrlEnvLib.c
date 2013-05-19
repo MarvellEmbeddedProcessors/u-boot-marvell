@@ -302,8 +302,8 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 *******************************************************************************/
 MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrReadField, MV_U8 val)
 {
-	MV_BOARD_SATR_INFO *satrInfo = NULL;
-	MV_U8 readVal;
+	MV_BOARD_SATR_INFO satrInfo;
+	MV_U8 readValue, verifyValue;
 
 	if (satrReadField >= MV_SATR_READ_MAX_OPTION ||
 		satrWriteField >= MV_SATR_WRITE_MAX_OPTION) {
@@ -311,30 +311,40 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 		return MV_ERROR;
 	}
 
-	if (mvBoardSatrInfoGet(satrWriteField, satrInfo) != MV_OK) {
+	if (mvBoardSatrInfoGet(satrWriteField, &satrInfo) != MV_OK) {
 		mvOsPrintf("%s: mvBoardSarInfoGet failed: S@R config is not relevant for this board(%d)\n", __func__, satrWriteField);
 		return MV_ERROR;
 	}
 
 	/* read */
-	readVal = mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo->regNum, 0);
-	if (readVal == (MV_U8)MV_ERROR)
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, &readValue) != MV_OK) {
+		mvOsPrintf("%s: Error: Read from S@R failed\n", __func__);
 		return MV_ERROR;
+	}
 
 	/* modify */
-	readVal &= !(satrInfo->mask);             /* clean old value */
-	readVal &= (val <<  satrInfo->offset);    /* save new value */
+	readValue &= ~(satrInfo.mask);             /* clean old value */
+	readValue |= (val <<  satrInfo.offset);    /* save new value */
 
 	/* write */
-	if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, satrInfo->regNum, 0, readVal) == MV_ERROR)
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, readValue) != MV_OK) {
+		mvOsPrintf("%s: Error: Write to S@R failed\n", __func__);
 		return MV_ERROR;
+	}
 
 	/* verify */
-	if (readVal != mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo->regNum, 0))
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, &verifyValue) != MV_OK) {
+		mvOsPrintf("%s: Error: 2nd Read from S@R failed\n", __func__);
 		return MV_ERROR;
+	}
+
+	if (readValue != verifyValue) {
+		mvOsPrintf("%s: Error: Write to S@R failed : written value doesn't match\n", __func__);
+		return MV_ERROR;
+	}
 
 	/*else save written value in global array */
-	satrOptionsConfig[satrReadField] = readVal;
+	satrOptionsConfig[satrReadField] = val;
 	return MV_OK;
 }
 
@@ -354,8 +364,8 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 *******************************************************************************/
 MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 {
-	MV_BOARD_SATR_INFO *satrInfo = NULL;
-	if (satrField < MV_SATR_READ_MAX_OPTION && mvBoardSatrInfoGet(satrField, satrInfo) == MV_OK)
+	MV_BOARD_SATR_INFO satrInfo;
+	if (satrField < MV_SATR_READ_MAX_OPTION && mvBoardSatrInfoGet(satrField, &satrInfo) == MV_OK)
 		return satrOptionsConfig[satrField];
 	else
 		return MV_ERROR;
@@ -449,24 +459,25 @@ MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 *******************************************************************************/
 MV_U32 mvCtrlSysConfigGet(MV_CONFIG_TYPE_ID configField)
 {
-	MV_BOARD_CONFIG_TYPE_INFO *configInfo = NULL;
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
 
 	if (!mvBoardConfigAutoDetectEnabled()) {
-		mvOsPrintf("%s: Error:Auto detect is disabled for board ,can't read board configuration\n", __func__);
+		mvOsPrintf("%s: Error reading board configuration - Auto detection is disabled\n", __func__);
 		return MV_ERROR;
 	}
 
 	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
-	    mvBoardConfigTypeGet(configField, configInfo) == MV_OK)
-		return boardOptionsConfig[configField];
-	
-	DB(mvOsPrintf("%s: Error: Requested board config is not valid for this board(%d)\n", __func__, configField));
-	return MV_ERROR;
+		mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
+		mvOsPrintf("%s: Error: Requested board config is not valid for this board(%d)\n", __func__, configField);
+		return -1;
+	}
+
+	return boardOptionsConfig[configField];
+
 }
 
 /*******************************************************************************
 * mvCtrlSatrInit
-*
 * DESCRIPTION: Initialize S@R configuration
 *               1. initialize all S@R and fields
 *               2. read relevant S@R fields (direct memory access)
@@ -516,24 +527,30 @@ MV_VOID mvCtrlSatrInit(void)
 MV_VOID mvCtrlSysConfigInit()
 {
 	MV_U8 regNum, i, configVal[MV_IO_EXP_MAX_REGS];
-	MV_BOARD_CONFIG_TYPE_INFO *configInfo = NULL;
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
+	MV_BOOL readSuccess = MV_FALSE;
 
 	memset(&boardOptionsConfig, 0x0, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION );
 
 	/*Read rest of Board Configuration, EEPROM / Dip Switch access read : */
-	if (mvCtrlBoardConfigGet(configVal) == MV_OK) {
-		/* Save values Locally in configVal[] */
-		for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
-			if ( mvBoardConfigTypeGet(i, configInfo) == MV_OK) {
-				/* each Expander conatins 2 registers */
-				regNum = configInfo->expanderNum * 2 + configInfo->regNum;
-				boardOptionsConfig[configInfo->configId] =
-					(configVal[regNum] & configInfo->mask) >> configInfo->offset;
-			}
+	if (mvCtrlBoardConfigGet(configVal) != MV_OK) {
+		mvOsPrintf("%s: Error: mvCtrlBoardConfigGet failed\n", __func__);
+		return;
+	}
+
+	/* Save values Locally in configVal[] */
+	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
+		if (mvBoardConfigTypeGet(i, &configInfo) == MV_TRUE) {
+			readSuccess = MV_TRUE;
+			/* each Expander conatins 2 registers */
+			regNum = configInfo.expanderNum * 2 + configInfo.regNum;
+			boardOptionsConfig[configInfo.configId] =
+				(configVal[regNum] & configInfo.mask) >> configInfo.offset;
 		}
 	}
 
-	mvOsPrintf("%s: Error: Read board configuration from EEPROM/Dip Switch failed\n", __func__);
+	if (readSuccess == MV_FALSE)
+		mvOsPrintf("%s: Error: Read board configuration from EEPROM/Dip Switch failed\n", __func__);
 }
 
 /*******************************************************************************
@@ -552,35 +569,33 @@ MV_VOID mvCtrlSysConfigInit()
 *       None.
 *
 * RETURN:
-*       MV_BOOL :  MV_TRUE if EEPROM enabled, else return MV_FALSE.
+*       MV_BOOL :  MV_TRUE if EEPROM enabled, else return MV_ERROR.
 *
 *******************************************************************************/
 MV_STATUS mvCtrlBoardConfigGet(MV_U8 *config)
 {
 	MV_U32 boardId = mvBoardIdGet();
+	MV_STATUS status1, status2;
+
 	MV_BOOL isEepromEnabled = mvCtrlIsEepromEnabled();
 	MV_BOARD_TWSI_CLASS twsiClass = (isEepromEnabled ? BOARD_DEV_TWSI_EEPROM : BOARD_DEV_TWSI_IO_EXPANDER);
 
-	config[0] = mvBoardTwsiGet(twsiClass, 0, 0);		/* EEPROM/Dip Switch Reg#0 */
-	if ((MV_U8)MV_ERROR == config[0]) {
-		DB(mvOsPrintf("%s: Error: Read from EEPROM/Dip Switch Reg#0 failed\n", __func__));
-		return MV_ERROR;
-	}
+	status1 = mvBoardTwsiGet(twsiClass, 0, 0, &config[0]);		/* EEPROM/Dip Switch Reg#0 */
+	status2 = mvBoardTwsiGet(twsiClass, 0, 0, &config[1]);		/* EEPROM/Dip Switch Reg#1 */
 
-	config[1] = mvBoardTwsiGet(twsiClass, 0, 1);		/* EEPROM/Dip Switch Reg#1 */
-	if ((MV_U8)MV_ERROR == config[1]) {
-		DB(mvOsPrintf("%s: Error: Read from EEPROM/Dip Switch Reg#1 failed\n", __func__));
+	if (status1 != MV_OK || status2 != MV_OK) {
+		DB(mvOsPrintf("%s: Error: mvBoardTwsiGet from EEPROM/Dip Switch failed\n", __func__));
 		return MV_ERROR;
 	}
 
 	if (boardId == DB_6660_ID) { /* DB-6660 has another register for board configuration */
 		if (isEepromEnabled == MV_OK)
-			config[2] = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 2);		/* EEPROM Reg#2 */
+			status1 = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 2, &config[2]);	/* EEPROM Reg#2 */
 		else
-			config[2] = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 1, 0);	/* Dip Switch Reg#1 */
+			status1 = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 1, 0, &config[2]);	/* Dip Switch Reg#1 */
 
-		if ((MV_U8)MV_ERROR == config[2]) {
-			DB(mvOsPrintf("%s: Error: Read from EEPROM/Dip Switch Reg#2 failed\n", __func__));
+		if (status1 != MV_OK) {
+			DB(mvOsPrintf("%s: Error: mvBoardTwsiGet from EEPROM/Dip Switch Reg#2 failed\n", __func__));
 			return MV_ERROR;
 		}
 	}
@@ -609,14 +624,17 @@ MV_BOOL mvCtrlIsEepromEnabled()
 	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
 	MV_U8 value;
 
-	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, &ioInfo) == MV_OK)
+	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, &ioInfo) != MV_OK)
 	{
-		value = mvBoardIoExpValGet(&ioInfo);
-		if (value == 0x1)
-			return MV_TRUE;
+		mvOsPrintf("%s: Error: Read from IO expander failed (EEPROM enabled jumper)\n", __func__);
+		return MV_FALSE;
 	}
-	mvOsPrintf("%s: Error: Read from IO expander failed (EEPROM enabled jumper)\n", __func__);
-	return MV_FALSE;
+
+	value = mvBoardIoExpValGet(&ioInfo);
+	if (value == 0x1)
+		return MV_FALSE; /* Jumper is OUT: EEPROM disabled */
+	else
+		return MV_TRUE;  /* Jumper is IN: EEPROM enabled */
 }
 
 /*******************************************************************************

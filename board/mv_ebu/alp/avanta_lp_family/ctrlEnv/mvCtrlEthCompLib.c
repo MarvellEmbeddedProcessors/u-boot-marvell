@@ -357,12 +357,12 @@ static void mvEthComplexMacToSwPort(MV_U32 port, MV_U32 swPort,
 
 static void mvEthComplexSwPortToRgmii(MV_U32 swPort, MV_U32 port)
 {
-	mvOsPrintf("%s: Not implemented.\n", __func__);
+	/* Not implemented */
 }
 
 static void mvEthComplexXponMacToPonSerdes(void)
 {
-	mvOsPrintf("%s: Not implemented.\n", __func__);
+	/* Not implemented */
 }
 
 static void mvEthComplexMacToGbePhy(MV_U32 port, MV_U32 phy, MV_U32 phyAddr)
@@ -384,12 +384,12 @@ static void mvEthComplexMacToGbePhy(MV_U32 port, MV_U32 phy, MV_U32 phyAddr)
 
 static void mvEthComplexMacToComPhy(MV_U32 port, MV_U32 comPhy)
 {
-	mvOsPrintf("%s: Not implemented.\n", __func__);
+	/* Not implemented */
 }
 
 static void mvEthComplexMac1ToPonSerdes(MV_U32 port)
 {
-	mvOsPrintf("%s: Not implemented.\n", __func__);
+	/* Not implemented */
 }
 
 static void mvEthComplexMacToRgmii(MV_U32 port, MV_U32 phy)

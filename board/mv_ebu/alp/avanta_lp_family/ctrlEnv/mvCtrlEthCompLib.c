@@ -379,6 +379,7 @@ static void mvEthComplexMacToGbePhy(MV_U32 port, MV_U32 phy, MV_U32 phyAddr)
 	mvEthComplexGbePhyResetSet(MV_FALSE);
 	mvEthComplexComPhySelectorSet(2, 0x1);
 	mvEthComplexGopInit(port, MV_FALSE, MV_FALSE, MV_TRUE);
+	mvEthPhyAddrSet(port, phy);
 }
 
 static void mvEthComplexMacToComPhy(MV_U32 port, MV_U32 comPhy)
@@ -397,6 +398,7 @@ static void mvEthComplexMacToRgmii(MV_U32 port, MV_U32 phy)
 	mvEthComplexPortDpClkSrcSet(port, 0x1);
 	mvEthComplexGopDevEnable();
 	mvEthComplexGopInit(port, MV_FALSE, MV_FALSE, MV_TRUE);
+	mvEthPhyAddrSet(port, phy);
 }
 
 static void mvEthComplexSwPortToGbePhy(MV_U32 swPort, MV_U32 phy)
@@ -420,7 +422,7 @@ MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig)
 		mvEthComplexMacToGbePhy(0, 0, mvBoardPhyAddrGet(0));
 
 	if (c & MV_ETHCOMP_GE_MAC0_2_RGMII0)
-		mvEthComplexMacToRgmii(0, 0);
+		mvEthComplexMacToRgmii(0, mvBoardPhyAddrGet(0));
 
 	if (c & MV_ETHCOMP_GE_MAC0_2_COMPHY_1)
 		mvEthComplexMacToComPhy(0, 1);
@@ -438,7 +440,7 @@ MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig)
 		mvEthComplexMacToGbePhy(1, 3, mvBoardPhyAddrGet(1));
 
 	if (c & MV_ETHCOMP_GE_MAC1_2_RGMII1)
-		mvEthComplexMacToRgmii(1, 1);
+		mvEthComplexMacToRgmii(1, mvBoardPhyAddrGet(1));
 
 	if (c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)
 		mvEthComplexMac1ToPonSerdes(1);

@@ -88,20 +88,14 @@ static void mvAlpBoardEgigaPhyInit(void)
 
 	mvSysEthPhyInit();
 
-	/*
-	 * Init PHY connected to MAC0
-	 */
+	/* Init PHY connected to MAC0 */
 	if (ethComplex & (MV_ETHCOMP_GE_MAC0_2_RGMII0 |
 			  MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)) {
-		mvEthPhyAddrSet(0, mvBoardPhyAddrGet(0));
 		mvEthPhyInit(0, MV_FALSE);
 	}
 
-	/*
-	 * Init PHY connected to MAC1
-	 */
+	/* Init PHY connected to MAC1 */
 	if (ethComplex & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3) {
-		mvEthPhyAddrSet(1, mvBoardPhyAddrGet(1));
 		mvEthPhyInit(1, MV_FALSE);
 	}
 

@@ -376,7 +376,7 @@ MV_BOARD_INFO db88f6650_board_info = {
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,
 	/* Enable modules auto-detection. */
-	.configAutoDetect		= MV_FALSE
+	.configAutoDetect		= MV_TRUE
 };
 
 /*******************************************************************************

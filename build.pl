@@ -11,7 +11,7 @@ sub HELP_MESSAGE
 	print "\t-f\tBoot device. Accepts spi, nor, nand\n";
         print "\t-b\tBoard type. Accepts:\n";
         print "\t\tarmada_xp_db, armada_xp_rdnas, armada_xp_pcac armada_xp_rdserver armada_xp_dbgp armada_xp_rdcustomer\n";
-        print "\t\tarmada_370_db armada_370_rd\n";
+        print "\t\tarmada_370_db armada_370_rd, armada_375\n";
 	print "\t-c\tClean build. calls make mrproper\n";
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
@@ -88,10 +88,11 @@ if($opt_c eq 1)
 		   ($opt_b eq "armada_370_rd") or
    		   ($opt_b eq "avanta_lp_fpga") or		   		   
 		   ($opt_b eq "avanta_lp") or
+		   ($opt_b eq "armada_375") or
            ($opt_b eq "armada_xp_rdcustomer") )
 	{
 		$board = $opt_b;
-		
+
     	if( (substr $board,7 , 3) eq "370" ) {
 				$boardID="a370";
                                 $targetBoard = substr $board, 11;
@@ -103,6 +104,10 @@ if($opt_c eq 1)
 		elsif ( (substr $board,7 , 2) eq "lp" ) {
 				$boardID="avanta";
                                 $targetBoard = substr $board, 10;
+		}
+		elsif ( (substr $board,7 , 3) eq "375" ) {
+				$boardID="a375";
+                                $targetBoard = substr $board, 7;
 		}
 	}
 	else
@@ -207,7 +212,7 @@ if($opt_c eq 1)
 
 # Build !
 print "\n**** [Building U-BOOT]\t*****\n\n";
-$fail = system("make -j6 -s");
+$fail = system("make -j5 -s");
 
 if($fail){
 	print "\n *** Error: Build failed\n\n";
@@ -215,7 +220,7 @@ if($fail){
 }
 
 #Create Image and Uart Image
-print "\n**** [Creating Image]\t*****\n\n";
+print "\n**** [Creating Image for $boardID]\t*****\n\n";
 if($boardID eq "axp") {
         $failUart = system("./tools/marvell/doimage -T uart -D 0 -E 0 -C ./tools/marvell/bin_hdr/bin_hdr.uart.bin u-boot.bin u-boot-axp-$opt_v-$flash_name-$targetBoard-uart.bin");
         $fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-axp-$opt_v-$flash_name-$targetBoard.bin");
@@ -225,10 +230,13 @@ elsif($boardID eq "a370"){
 	$failUart=system("./tools/marvell/doimage -T uart -D 0 -E 0  -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name-$targetBoard-uart.bin");
 	$fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-a370-$opt_v-$flash_name-$targetBoard.bin");
 }
-
 elsif($boardID eq "avanta"){
-	$failUart = system("./tools/marvell/doimage -T uart -D 0 -E 0 -G ./tools/marvell/bin_hdr/bin_hdr.uart.bin u-boot.bin u-boot-alp-$opt_v-$flash_name-uart.bin");
-	$fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-alp-$opt_v-$flash_name.bin");
+	$failUart=system("./tools/marvell/doimage -T uart -D 0 -E 0  -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name-$targetBoard-uart.bin");
+	$fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name-$targetBoard.bin");
+}
+elsif($boardID eq "a375"){
+	$failUart=system("./tools/marvell/doimage -T uart -D 0 -E 0  -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name-$targetBoard-uart.bin");
+	$fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name-$targetBoard.bin");
 }
 
 if($fail){

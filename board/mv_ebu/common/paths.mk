@@ -23,6 +23,11 @@ SOC_DIR            = $(SRC_PATH)/alp
 FAM_DIR            = $(SOC_DIR)/avanta_lp_family
 endif
 
+ifeq ($(BOARD),a375)
+SOC_DIR            = $(SRC_PATH)/a375
+FAM_DIR            = $(SOC_DIR)/armada_375_family
+endif
+
 ifeq ($(BOARD),a370)
 SOC_DIR            = $(SRC_PATH)/a370
 FAM_DIR            = $(SOC_DIR)/armada_370_family

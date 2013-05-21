@@ -86,6 +86,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_alp_config.h"
 #endif
 
+#if defined(MV88F672X)
+#include "ddr3_a375_config.h"
+#endif
+
 #ifdef DUNIT_SPD
 
 static MV_STATUS ddr3SpdSumInit(MV_DIMM_INFO *pDimmInfo, MV_DIMM_INFO *pDimmSumInfo, MV_U32 uiDimm);
@@ -153,7 +157,7 @@ MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr, MV_U32 uiDimmW
     MV_U32 uiTemp;
     MV_U32 uiTimeBase;
     MV_TWSI_SLAVE twsiSlave;
-#if defined(MV88F78X60) || defined(MV88F66XX)
+#if defined(MV88F78X60) || defined(MV88F66XX) || defined(MV88F672X)
     MV_U32 uiRC;
         MV_U8  ucVendorHigh, ucVendorLow;
 #endif
@@ -350,7 +354,7 @@ MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr, MV_U32 uiDimmW
     uiTemp = (((ucData[SPD_TFAW_MSB_BYTE] & SPD_TFAW_MSB_MASK) << 8) | ucData[SPD_TFAW_LSB_BYTE]);
     pDimmInfo->minFourActiveWinDelay = uiTemp * uiTimeBase;
     DEBUG_INIT_FULL_C("DRAM minFourActiveWinDelay ",pDimmInfo->minFourActiveWinDelay,1);
-#if defined(MV88F78X60) || defined(MV88F66XX)
+#if defined(MV88F78X60) || defined(MV88F66XX) || defined(MV88F672X)
     /* Registered DIMM support */
     if (pDimmInfo->dimmTypeInfo == SPD_MODULE_TYPE_RDIMM) {
         for (uiRC=2; uiRC<6; uiRC+=2) {
@@ -608,6 +612,12 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
         DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - Datawidth - 32Bits \n");
     } else
         DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - Datawidth - 16Bits \n");
+#elif MV88F672X
+    if (*pUiDdrWidth == 32) {
+        uiReg |= (1 << REG_SDRAM_CONFIG_WIDTH_OFFS);
+        DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - Datawidth - 32Bits \n");
+    } else
+        DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - Datawidth - 16Bits \n");
 #endif
     uiStaticVal = ddr3GetStaticMCValue(REG_SDRAM_CONFIG_ADDR, 0, REG_SDRAM_CONFIG_RFRS_MASK, 0, 0);
     uiTemp = ddr3GetMaxValue(dimmSumInfo.refreshInterval/uiHClkTime, uiDimmNum, uiStaticVal);
@@ -617,7 +627,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
     if (uiCL != 3)
         uiReg |= (1<<16);   /*  If 2:1 need to set P2DWr */
 
-#if defined(MV88F66XX)
+#if defined(MV88F66XX)  || defined(MV88F672X)
     uiReg |= (1 << 27); /* PhyRfRST = Disable */
 #endif
     MV_REG_WRITE(REG_SDRAM_CONFIG_ADDR, uiReg);
@@ -706,7 +716,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
     uiReg = 0x000F0000;
 
     /*tFAW - (24:28)  */
-#if (defined(MV88F78X60) || defined(MV88F66XX)) && !defined(MV88F78X60_Z1)
+#if (defined(MV88F78X60) || defined(MV88F66XX) || defined(MV88F672X)) && !defined(MV88F78X60_Z1)
     uiTemp = dimmSumInfo.minFourActiveWinDelay;
     uiSpdVal = ddr3DivFunc(uiTemp, uiDDRClkTime, 0);
     uiStaticVal = ddr3GetStaticMCValue(REG_SDRAM_ADDRESS_CTRL_ADDR, 24, 0x3F, 0, 0);
@@ -777,7 +787,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
     MV_REG_WRITE(REG_SDRAM_EXT_MODE_ADDR, uiReg);
 
 /*{0x00001424}  -   DDR Controller Control (High) Register */
-#if (defined(MV88F78X60) || defined(MV88F66XX)) && !defined(MV88F78X60_Z1)
+#if (defined(MV88F78X60) || defined(MV88F66XX) || defined(MV88F672X)) && !defined(MV88F78X60_Z1)
     uiReg = 0x0000D3FF;
 #else
     uiReg = 0x0100D1FF;
@@ -786,7 +796,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 
 /*{0x0000142C}  -   DDR3 Timing Register */
     uiReg = 0x014C2F38;
-#if defined(MV88F78X60) || defined(MV88F66XX)
+#if defined(MV88F78X60) || defined(MV88F66XX) || defined(MV88F672X)
     uiReg = 0x1FEC2F38;
 #endif
 #if defined(MV88F78X60_Z1)
@@ -820,7 +830,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
     MV_REG_WRITE(REG_DRAM_FIFO_CTRL_ADDR, uiReg);
     }
 #endif
-#if defined(MV88F66XX)
+#if defined(MV88F66XX) || defined(MV88F672X)
     uiReg = 0x000006A9;
     MV_REG_WRITE(REG_DRAM_FIFO_CTRL_ADDR, uiReg);
 #endif
@@ -831,13 +841,13 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 /*{0x000014C4}  -   DRAM Data and DQS Driving Strenght */
     MV_REG_WRITE(REG_DRAM_DATA_DQS_DRIVE_STRENGTH_ADDR, 0xB2C35E9);
 
-#if (defined(MV88F78X60) || defined(MV88F66XX))
+#if (defined(MV88F78X60) || defined(MV88F66XX) || defined(MV88F672X))
 /*{0x000014CC}  -   DRAM Main Pads Calibration Machine Control Register */
     uiReg = MV_REG_READ(REG_DRAM_MAIN_PADS_CAL_ADDR);
   MV_REG_WRITE(REG_DRAM_MAIN_PADS_CAL_ADDR, uiReg | (1 << 0));
 #endif
 
-#if defined(MV88F66XX)
+#if defined(MV88F66XX) || defined(MV88F672X)
     /* DRAM Main Pads Calibration Machine Control Register */
     /* 0x14CC[4:3] - CalUpdateControl = IntOnly */
     uiReg = MV_REG_READ(REG_DRAM_MAIN_PADS_CAL_ADDR);
@@ -1012,14 +1022,14 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
     }
 #else
     uiReg = 0xDE000025;
-#if defined(MV88F66XX)
+#if defined(MV88F66XX) || defined(MV88F672X)
     uiReg = 0xF800A225;
 #endif
 #endif
     MV_REG_WRITE(REG_DRAM_PHY_CONFIG_ADDR, uiReg);
 
 
-#if (defined(MV88F78X60) || defined(MV88F66XX)) && !defined(MV88F78X60_Z1)
+#if (defined(MV88F78X60) || defined(MV88F66XX) || defined(MV88F672X)) && !defined(MV88F78X60_Z1)
     /* Registered DIMM support - supported only in AXP A0 devices */
     /* Currently supported for SPD detection only */
     /* Flow is according to the Registered DIMM chapter in the Functional Spec */

@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-        this list of conditions and the following disclaimer.
+	    this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -61,64 +61,52 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#include "config_marvell.h"     /* Required to identify SOC and Board */
-#include "mv_os.h"
-#if defined(MV88F78X60)
-#include "ddr3_axp.h"
-#elif defined(MV88F6710)
-#include "ddr3_a370.h"
-#elif defined(MV88F66XX)
-#include "ddr3_alp.h"
-#elif defined(MV88F672X)
-#include "ddr3_a375.h"
-#else
-#error "No SOC define for uart in binary header."
+
+#ifndef __INCmvCpuh
+#define __INCmvCpuh
+
+#include "mvCommon.h"
+#include "ctrlEnv/mvCtrlEnvSpec.h"
+#ifndef MV_ASMLANGUAGE
+#include "mvOs.h"
 #endif
-#define UBOOT_CNTR              0       /* counter to use for uboot timer  0,1 */
 
-#define CNTMR_RELOAD_REG(tmrNum)    (REG_TIMERS_CTRL_ADDR  + 0x10 + (tmrNum * 8))
-#define CNTMR_VAL_REG(tmrNum)       (REG_TIMERS_CTRL_ADDR  + 0x14 + (tmrNum * 8))
-#define CNTMR_CTRL_REG(tmrNum)      (REG_TIMERS_CTRL_ADDR)
-#define CTCR_ARM_TIMER_EN_OFFS(timer)   (timer * 2)
-#define CTCR_ARM_TIMER_EN_MASK(timer)   (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-#define CTCR_ARM_TIMER_EN(timer)            (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
+#define MASTER_CPU 0
+/* defines */
+#define CPU_PART_MRVL131                0x131
+#define CPU_PART_ARM926                 0x926
+#define CPU_PART_ARM946                 0x946
+#define CPU_PART_MRVL_A9                0xC09
+#define CPU_PART_MRVL571                0x571
+#define CPU_PART_MRVL521                0x521
 
-#define CTCR_ARM_TIMER_AUTO_OFFS(timer) (1 + (timer * 2))
-#define CTCR_ARM_TIMER_AUTO_MASK(timer) (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-#define CTCR_ARM_TIMER_AUTO_EN(timer)   (1 << CTCR_ARM_TIMER_AUTO_OFFS(timer))
+#define CPU_PART_ARM_V6UP               0xb76
+#define CPU_PART_ARM_V7UP               0xc08
+#define CPU_PART_ARM_CA9                0xc09
+#define CPU_PART_ARM_V6MP               0xb02
 
-#define CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer) (11 + timer)
+#define CPU_PART_MRVLPJ4B_UP               0x581
+#define CPU_PART_MRVLPJ4B_MP               0x584
 
-#define CTCR_ARM_TIMER_25MhzFRQ_MASK(timer) (1 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
-#define CTCR_ARM_TIMER_25MhzFRQ_EN(timer)   (1 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
-#define CTCR_ARM_TIMER_25MhzFRQ_DIS(timer)  (0 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
+#define MV_CPU_ARM_CLK_ELM_SIZE	    12
+#define MV_CPU_ARM_CLK_RATIO_OFF    8
+#define MV_CPU_ARM_CLK_DDR_OFF	    4
 
+#ifndef MV_ASMLANGUAGE
+typedef struct _mvCpuArmClkRatio {
+	MV_U32	vco2cpu;	/* VCO:PCLK0(CPU) clock ratio */
+	MV_U32	vco2l2c;	/* VCO:NB(L2 cache) clock ratio */
+	MV_U32	vco2hcl;	/* VCO:HCLK(DDR controller) clock ratio */
+	MV_U32	vco2ddr;	/* VCO:DDR(DDR memory) clock ratio */
 
-#define MV_BOARD_REFCLK_25MHZ    25000000
+} MV_CPU_ARM_CLK_RATIO;
 
-void __udelay(unsigned long usec)
-{
-    unsigned long delayticks;
-    unsigned int cntmrCtrl;
+MV_U32  mvCpuPclkGet(MV_VOID);
+MV_VOID mvCpuNameGet(char *pNameBuff);
+MV_U32  mvCpuL2ClkGet(MV_VOID);
+MV_U32  mvCpuIfPrintSystemConfig(MV_8 *buffer, MV_U32 index);
+MV_U32  whoAmI(MV_VOID);
 
-    /* In case udelay is called before timier was initialized */
-    delayticks = (usec * (MV_BOARD_REFCLK_25MHZ / 1000000));
-    /* init the counter */
-    MV_REG_WRITE(CNTMR_RELOAD_REG(UBOOT_CNTR),delayticks);
-    MV_REG_WRITE(CNTMR_VAL_REG(UBOOT_CNTR),delayticks);
+#endif /* MV_ASMLANGUAGE */
 
-    /* set control for timer \ cunter and enable */
-    /* read control register */
-    cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
-    cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-
-    while(MV_REG_READ(CNTMR_VAL_REG(UBOOT_CNTR)));
-
-    /* disable times*/
-    cntmrCtrl &= ~CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-}
-
+#endif /* __INCmvCpuh */

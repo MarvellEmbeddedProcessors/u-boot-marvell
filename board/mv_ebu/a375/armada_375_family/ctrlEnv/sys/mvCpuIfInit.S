@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-        this list of conditions and the following disclaimer.
+	    this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -61,64 +61,107 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#include "config_marvell.h"     /* Required to identify SOC and Board */
-#include "mv_os.h"
-#if defined(MV88F78X60)
-#include "ddr3_axp.h"
-#elif defined(MV88F6710)
-#include "ddr3_a370.h"
-#elif defined(MV88F66XX)
-#include "ddr3_alp.h"
-#elif defined(MV88F672X)
-#include "ddr3_a375.h"
-#else
-#error "No SOC define for uart in binary header."
+
+#define MV_ASMLANGUAGE
+#include "mvCommon.h"
+#include "mvOsAsm.h"
+#include "ctrlEnv/mvCtrlEnvSpec.h"
+#include "mvDeviceId.h"
+#include "mvCtrlEnvRegs.h"
+#include "mvCpuIfRegs.h"
+#include "mvCtrlEnvAsm.h"
+
+
+/*******************************************************************************
+* mvCpuIfPreInit - Make early initialization of CPU interface.
+*
+* DESCRIPTION:
+*       The function will initialize the CPU interface parameters that must
+*       be initialize before any BUS activity towards the DDR interface,
+*       which means it must be executed from ROM. Because of that, the function
+*       is implemented in assembly code.
+*       The function configure the following CPU config register parameters:
+*       1) CPU2MbusLTickDrv
+*       2) CPU2MbusLTickSample.
+*       NOTE: This function must be called AFTER the internal register
+*       base is modified to INTER_REGS_VIRT_BASE.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*       r11 holds return function address.
+*******************************************************************************/
+#define MV88F6281_PCKG_OPT	2
+#define MV88F6192_PCKG_OPT	1
+#define MV88F6180_PCKG_OPT	0
+
+	.globl _mvCpuIfPreInit
+_mvCpuIfPreInit:
+
+	mov     r11, LR     		/* Save link register */
+	b       done
+#if 0
+	/* Read device ID  */
+	MV_CTRL_MODEL_GET_ASM(r4, r5);
+
+	/* goto calcConfigReg if device is 6281/6282 */
+	ldr     r5, =MV88F6281_PCKG_OPT
+	cmp     r4, r5
+	beq     calcConfigReg
+
+	/* goto calcConfigReg if device is 6192/6190 */
+	ldr     r5, =MV88F6192_PCKG_OPT
+	cmp     r4, r5
+	beq     calcConfigReg
+
+	/* Else 6180 */
+	/* Get the "sample on reset" register */
+	MV_REG_READ_ASM (r4, r5, MPP_SAMPLE_AT_RESET)
+	ldr    r5, =MSAR_CPUCLCK_MASK_6180
+	and    r5, r4, r5
+	mov    r5, r5, lsr #MSAR_CPUCLCK_OFFS_6180
+
+	ldr    r4, =CPU_2_MBUSL_DDR_CLK_1x3
+	cmp    r5, #CPU_2_DDR_CLK_1x3_1
+	beq    setConfigReg
+
+	ldr    r4, =CPU_2_MBUSL_DDR_CLK_1x4
+	cmp    r5, #CPU_2_DDR_CLK_1x4_1
+	beq    setConfigReg
+	b    setConfigReg
+
+calcConfigReg:
+	/* Get the "sample on reset" register */
+	MV_REG_READ_ASM (r4, r5, MPP_SAMPLE_AT_RESET)
+	ldr    r5, =MSAR_DDRCLCK_RTIO_MASK
+	and    r5, r4, r5
+	mov    r5, r5, lsr #MSAR_DDRCLCK_RTIO_OFFS
+
+	ldr    r4, =CPU_2_MBUSL_DDR_CLK_1x3
+	cmp    r5, #CPU_2_DDR_CLK_1x3
+	beq    setConfigReg
+
+	ldr    r4, =CPU_2_MBUSL_DDR_CLK_1x4
+	cmp    r5, #CPU_2_DDR_CLK_1x4
+	beq    setConfigReg
+
+	/* Else */
+	ldr    r4, =0
+
+setConfigReg:
+	/* Read CPU Config register */
+	MV_REG_READ_ASM (r7, r5, CPU_CONFIG_REG)
+	ldr    r5, =~(CCR_CPU_2_MBUSL_TICK_DRV_MASK | CCR_CPU_2_MBUSL_TICK_SMPL_MASK)
+	and    r7, r7, r5       /* Clear register fields */
+	orr    r7, r7, r4       /* Set the values according to the findings */
+	MV_REG_WRITE_ASM (r7, r5, CPU_CONFIG_REG)
 #endif
-#define UBOOT_CNTR              0       /* counter to use for uboot timer  0,1 */
 
-#define CNTMR_RELOAD_REG(tmrNum)    (REG_TIMERS_CTRL_ADDR  + 0x10 + (tmrNum * 8))
-#define CNTMR_VAL_REG(tmrNum)       (REG_TIMERS_CTRL_ADDR  + 0x14 + (tmrNum * 8))
-#define CNTMR_CTRL_REG(tmrNum)      (REG_TIMERS_CTRL_ADDR)
-#define CTCR_ARM_TIMER_EN_OFFS(timer)   (timer * 2)
-#define CTCR_ARM_TIMER_EN_MASK(timer)   (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-#define CTCR_ARM_TIMER_EN(timer)            (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-
-#define CTCR_ARM_TIMER_AUTO_OFFS(timer) (1 + (timer * 2))
-#define CTCR_ARM_TIMER_AUTO_MASK(timer) (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-#define CTCR_ARM_TIMER_AUTO_EN(timer)   (1 << CTCR_ARM_TIMER_AUTO_OFFS(timer))
-
-#define CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer) (11 + timer)
-
-#define CTCR_ARM_TIMER_25MhzFRQ_MASK(timer) (1 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
-#define CTCR_ARM_TIMER_25MhzFRQ_EN(timer)   (1 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
-#define CTCR_ARM_TIMER_25MhzFRQ_DIS(timer)  (0 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
-
-
-#define MV_BOARD_REFCLK_25MHZ    25000000
-
-void __udelay(unsigned long usec)
-{
-    unsigned long delayticks;
-    unsigned int cntmrCtrl;
-
-    /* In case udelay is called before timier was initialized */
-    delayticks = (usec * (MV_BOARD_REFCLK_25MHZ / 1000000));
-    /* init the counter */
-    MV_REG_WRITE(CNTMR_RELOAD_REG(UBOOT_CNTR),delayticks);
-    MV_REG_WRITE(CNTMR_VAL_REG(UBOOT_CNTR),delayticks);
-
-    /* set control for timer \ cunter and enable */
-    /* read control register */
-    cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
-    cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-
-    while(MV_REG_READ(CNTMR_VAL_REG(UBOOT_CNTR)));
-
-    /* disable times*/
-    cntmrCtrl &= ~CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-}
-
+done:
+	mov     PC, r11         /* r11 is saved link register */

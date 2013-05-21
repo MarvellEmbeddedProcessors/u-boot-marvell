@@ -1,5 +1,5 @@
 /*******************************************************************************
-   Coutsyright (C) Marvell International Ltd. and its affiliates
+Copyright (C) Marvell International Ltd. and its affiliates
 
    This software file (the "File") is owned and distributed by Marvell
    International Ltd. and/or its affiliates ("Marvell") under the following
@@ -89,7 +89,6 @@
 #endif
 
 #include "bootstrap_os.h"
-;
 #if defined(MV88F78X60_Z1) || defined (MV88F67XX)
 static MV_VOID ddr3MRSCommand(MV_U32 uiMR1Value, MV_U32 uiMR2Value, MV_U32 uiCsNum, MV_U32 uiCsEna);
 #endif
@@ -102,7 +101,11 @@ static MV_VOID ddr3StaticMCInit(void);
 #if defined(DUNIT_STATIC) || defined(STATIC_TRAINING)
 static MV_U32 ddr3GetStaticDdrMode(void);
 #endif
-;
+#if defined(MV88F66XX)
+MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs);
+#endif
+MV_U32 mvBoardIdGet(MV_VOID);
+
 
 extern MV_VOID ddr3SetPbs(MV_U32);
 extern MV_VOID ddr3SetLogLevel(MV_U32 nLogLevel);
@@ -119,7 +122,6 @@ MV_VOID ddr3LogLevelInit(MV_VOID)
 {
 	ddr3SetLogLevel(DDR3_LOG_LEVEL);
 }
-
 /************************************************************************************
  * Name:     ddr3PbsInit
  * Desc:     This routine initialize the PBS as defined in dd3_axp_config
@@ -131,7 +133,6 @@ MV_VOID ddr3PbsInit(MV_VOID)
 {
 	ddr3SetPbs(DDR3_PBS);
 }
-
 /************************************************************************************
  * Name:     setDdr3Log_Level
  * Desc:     This routine initialize the gLogLevel acording to nLogLevel which getting from user
@@ -143,7 +144,6 @@ MV_VOID ddr3SetLogLevel(MV_U32 nLogLevel)
 {
 	gLogLevel = nLogLevel;
 }
-
 /************************************************************************************
  * Name:     ddr3GetLogLevel
  * Desc:     This routine returns the log level
@@ -334,32 +334,32 @@ MV_STATUS ddr3Init(void)
 	ddr3SetPbs(DDR3_PBS);
 
 	status = ddr3Init_();
-	DEBUG_INIT_S("Status = ");
-	if ( status == MV_DDR3_TRAINING_ERR_BAD_SAR)
+//	DEBUG_INIT_S("Status = ");
+	if (status == MV_DDR3_TRAINING_ERR_BAD_SAR)
 		DEBUG_INIT_S("DDR3 Training Error: Bad sample at reset");
-	if ( status == MV_DDR3_TRAINING_ERR_BAD_DIMM_SETUP)
+	if (status == MV_DDR3_TRAINING_ERR_BAD_DIMM_SETUP)
 		DEBUG_INIT_S("DDR3 Training Error: Bad DIMM setup");
-	if ( status == MV_DDR3_TRAINING_ERR_MAX_CS_LIMIT)
+	if (status == MV_DDR3_TRAINING_ERR_MAX_CS_LIMIT)
 		DEBUG_INIT_S("DDR3 Training Error: Max CS limit");
-	if ( status == MV_DDR3_TRAINING_ERR_MAX_ENA_CS_LIMIT)
+	if (status == MV_DDR3_TRAINING_ERR_MAX_ENA_CS_LIMIT)
 		DEBUG_INIT_S("DDR3 Training Error: Max enable CS limit");
-	if ( status == MV_DDR3_TRAINING_ERR_BAD_R_DIMM_SETUP)
+	if (status == MV_DDR3_TRAINING_ERR_BAD_R_DIMM_SETUP)
 		DEBUG_INIT_S("DDR3 Training Error: Bad R-DIMM setup");
-	if ( status == MV_DDR3_TRAINING_ERR_TWSI_FAIL)
+	if (status == MV_DDR3_TRAINING_ERR_TWSI_FAIL)
 		DEBUG_INIT_S("DDR3 Training Error: TWSI failure");
-	if ( status == MV_DDR3_TRAINING_ERR_DIMM_TYPE_NO_MATCH)
+	if (status == MV_DDR3_TRAINING_ERR_DIMM_TYPE_NO_MATCH)
 		DEBUG_INIT_S("DDR3 Training Error: DIMM type no match");
-	if ( status == MV_DDR3_TRAINING_ERR_TWSI_BAD_TYPE)
+	if (status == MV_DDR3_TRAINING_ERR_TWSI_BAD_TYPE)
 		DEBUG_INIT_S("DDR3 Training Error: TWSI bad type");
-	if ( status == MV_DDR3_TRAINING_ERR_BUS_WIDTH_NOT_MATCH)
+	if (status == MV_DDR3_TRAINING_ERR_BUS_WIDTH_NOT_MATCH)
 		DEBUG_INIT_S("DDR3 Training Error: bus width no match");
 
-	if ( status > MV_DDR3_TRAINING_ERR_HW_FAIL_BASE)
+	if (status > MV_DDR3_TRAINING_ERR_HW_FAIL_BASE)
 		DEBUG_INIT_C("DDR3 Training Error: HW Failure 0x", status, 8);
 
 
-	if ( status == MV_OK) DEBUG_INIT_S("MV_OK");
-	DEBUG_INIT_S("\n");
+//	if ( status == MV_OK) DEBUG_INIT_S("MV_OK");
+//	DEBUG_INIT_S("\n");
 	return status;
 }
 
@@ -412,8 +412,11 @@ void printDrrTargetFreq(MV_U32 uiCpuFreq, MV_U32 uiFabOpt)
 MV_U32 ddr3Init_(void)
 {
 	MV_U32 uiTargetFreq;
+
 #ifndef RD_88F6710
+#ifdef ECC_SUPPORT
 	MV_U32 uiEcc;
+#endif
 #endif
 	MV_U32 uiReg = 0;
 	MV_U32 uiCpuFreq, uiFabOpt, uiHClkTimePs, socNum, uiScrubOffs, uiScrubSize;
@@ -474,9 +477,9 @@ MV_U32 ddr3Init_(void)
 	/* Lib version 5.0.1 */
 
 	uiFabOpt = ddr3GetFabOpt();
-	if (bPLLWAPatch){
+	if (bPLLWAPatch)
 		DEBUG_INIT_C("DDR3 Training Sequence - Fabric DFS to: ", uiFabOpt, 1);
-	}
+
 	/* Switching CPU to MRVL ID */
 	socNum = (MV_REG_READ(REG_SAMPLE_RESET_HIGH_ADDR) & SAR1_CPU_CORE_MASK) >> SAR1_CPU_CORE_OFFSET;
 	switch (socNum) {
@@ -523,7 +526,9 @@ MV_U32 ddr3Init_(void)
 	uiScrubSize = 0;
 #endif
 #ifndef RD_88F6710
+#ifdef ECC_SUPPORT
 	uiEcc = DRAM_ECC;
+#endif
 #endif
 
 #if defined(ECC_SUPPORT) && defined(AUTO_DETECTION_SUPPORT)

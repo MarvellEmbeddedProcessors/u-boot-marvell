@@ -454,9 +454,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PCCRIR_REVID_MASK                       (0xff << PCCRIR_REVID_OFFS)
 
 /*  Power Management Clock Gating Control Register  */
-#define MV_PEX_IF_REGS_OFFSET(pexIf)\
-            (pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000)\
-    : (0X42000 + ((pexIf) % 8) * 0x40000))
+#define MV_PEX_IF_REGS_OFFSET(pexIf)            (pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000) \
+						 : (0x42000 + ((pexIf) % 8) * 0x40000))
 #define MV_PEX_IF_REGS_BASE(unit)               (MV_PEX_IF_REGS_OFFSET(unit))
 
 #define POWER_MNG_CTRL_REG                      0x18220

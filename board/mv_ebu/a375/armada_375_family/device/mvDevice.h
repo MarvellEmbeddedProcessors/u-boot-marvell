@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-        this list of conditions and the following disclaimer.
+	    this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -61,64 +61,39 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#include "config_marvell.h"     /* Required to identify SOC and Board */
-#include "mv_os.h"
-#if defined(MV88F78X60)
-#include "ddr3_axp.h"
-#elif defined(MV88F6710)
-#include "ddr3_a370.h"
-#elif defined(MV88F66XX)
-#include "ddr3_alp.h"
-#elif defined(MV88F672X)
-#include "ddr3_a375.h"
-#else
-#error "No SOC define for uart in binary header."
-#endif
-#define UBOOT_CNTR              0       /* counter to use for uboot timer  0,1 */
+#ifndef __INCmvDeviceH
+#define __INCmvDeviceH
 
-#define CNTMR_RELOAD_REG(tmrNum)    (REG_TIMERS_CTRL_ADDR  + 0x10 + (tmrNum * 8))
-#define CNTMR_VAL_REG(tmrNum)       (REG_TIMERS_CTRL_ADDR  + 0x14 + (tmrNum * 8))
-#define CNTMR_CTRL_REG(tmrNum)      (REG_TIMERS_CTRL_ADDR)
-#define CTCR_ARM_TIMER_EN_OFFS(timer)   (timer * 2)
-#define CTCR_ARM_TIMER_EN_MASK(timer)   (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-#define CTCR_ARM_TIMER_EN(timer)            (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
+#include "device/mvDeviceRegs.h"
+#include "ctrlEnv/mvCtrlEnvLib.h"
+#include "ctrlEnv/mvCtrlEnvAddrDec.h"
 
-#define CTCR_ARM_TIMER_AUTO_OFFS(timer) (1 + (timer * 2))
-#define CTCR_ARM_TIMER_AUTO_MASK(timer) (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-#define CTCR_ARM_TIMER_AUTO_EN(timer)   (1 << CTCR_ARM_TIMER_AUTO_OFFS(timer))
-
-#define CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer) (11 + timer)
-
-#define CTCR_ARM_TIMER_25MhzFRQ_MASK(timer) (1 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
-#define CTCR_ARM_TIMER_25MhzFRQ_EN(timer)   (1 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
-#define CTCR_ARM_TIMER_25MhzFRQ_DIS(timer)  (0 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
+/* This structure describes device interface parameters to be assigned to   */
+/* device bank parameter                                                    */
+typedef struct _mvDeviceParam {
+				/* boundary values */
+    MV_U32       turnOff;	/* 0x0 - 0xf       */
+    MV_U32       acc2First;	/* 0x0 - 0x1f      */
+    MV_U32       acc2Next;	/* 0x0 - 0x1f      */
+    MV_U32       ale2Wr;	/* 0x0 - 0xf       */
+    MV_U32       wrLow;		/* 0x0 - 0xf       */
+    MV_U32       wrHigh;	/* 0x0 - 0xf       */
+    MV_U32       badrSkew;	/* 0x0 - 0x2       */
+    MV_U32       deviceWidth;	/* in Bytes        */
+} MV_DEVICE_PARAM;
 
 
-#define MV_BOARD_REFCLK_25MHZ    25000000
+/* mvDevPramSet - Set device interface bank parameters */
+MV_STATUS mvDevIfPramSet(MV_DEVICE device, MV_DEVICE_PARAM *pDevParams);
 
-void __udelay(unsigned long usec)
-{
-    unsigned long delayticks;
-    unsigned int cntmrCtrl;
+/* mvDevPramget - Get device interface bank parameters */
+MV_STATUS mvDevPramGet(MV_DEVICE device, MV_DEVICE_PARAM *pDevParams);
 
-    /* In case udelay is called before timier was initialized */
-    delayticks = (usec * (MV_BOARD_REFCLK_25MHZ / 1000000));
-    /* init the counter */
-    MV_REG_WRITE(CNTMR_RELOAD_REG(UBOOT_CNTR),delayticks);
-    MV_REG_WRITE(CNTMR_VAL_REG(UBOOT_CNTR),delayticks);
+/* mvDevWidthGet - Get device width parameter*/
+MV_U32 mvDevWidthGet(MV_DEVICE device);
 
-    /* set control for timer \ cunter and enable */
-    /* read control register */
-    cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
-    cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
+/* mvDevNandDevCsSet - Set the NAND flash control registers with NAND device- */
+/* select and care mode */
+MV_VOID mvDevNandDevCsSet(MV_DEVICE device, MV_BOOL careMode);
 
-    while(MV_REG_READ(CNTMR_VAL_REG(UBOOT_CNTR)));
-
-    /* disable times*/
-    cntmrCtrl &= ~CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-}
-
+#endif /* #ifndef __INCmvDeviceH */

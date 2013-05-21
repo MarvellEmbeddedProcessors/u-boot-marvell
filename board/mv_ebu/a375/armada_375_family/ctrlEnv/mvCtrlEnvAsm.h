@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-        this list of conditions and the following disclaimer.
+	    this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -61,64 +61,37 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#include "config_marvell.h"     /* Required to identify SOC and Board */
-#include "mv_os.h"
-#if defined(MV88F78X60)
-#include "ddr3_axp.h"
-#elif defined(MV88F6710)
-#include "ddr3_a370.h"
-#elif defined(MV88F66XX)
-#include "ddr3_alp.h"
-#elif defined(MV88F672X)
-#include "ddr3_a375.h"
-#else
-#error "No SOC define for uart in binary header."
-#endif
-#define UBOOT_CNTR              0       /* counter to use for uboot timer  0,1 */
-
-#define CNTMR_RELOAD_REG(tmrNum)    (REG_TIMERS_CTRL_ADDR  + 0x10 + (tmrNum * 8))
-#define CNTMR_VAL_REG(tmrNum)       (REG_TIMERS_CTRL_ADDR  + 0x14 + (tmrNum * 8))
-#define CNTMR_CTRL_REG(tmrNum)      (REG_TIMERS_CTRL_ADDR)
-#define CTCR_ARM_TIMER_EN_OFFS(timer)   (timer * 2)
-#define CTCR_ARM_TIMER_EN_MASK(timer)   (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-#define CTCR_ARM_TIMER_EN(timer)            (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-
-#define CTCR_ARM_TIMER_AUTO_OFFS(timer) (1 + (timer * 2))
-#define CTCR_ARM_TIMER_AUTO_MASK(timer) (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-#define CTCR_ARM_TIMER_AUTO_EN(timer)   (1 << CTCR_ARM_TIMER_AUTO_OFFS(timer))
-
-#define CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer) (11 + timer)
-
-#define CTCR_ARM_TIMER_25MhzFRQ_MASK(timer) (1 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
-#define CTCR_ARM_TIMER_25MhzFRQ_EN(timer)   (1 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
-#define CTCR_ARM_TIMER_25MhzFRQ_DIS(timer)  (0 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
 
 
-#define MV_BOARD_REFCLK_25MHZ    25000000
+#ifndef __INCmvCtrlEnvAsmh
+#define __INCmvCtrlEnvAsmh
+#include "pex/mvPexRegs.h"
 
-void __udelay(unsigned long usec)
-{
-    unsigned long delayticks;
-    unsigned int cntmrCtrl;
+#define CHIP_BOND_REG			0x18238
+#define PCKG_OPT_MASK_AS 		#3
+#define PXCCARI_REVID_MASK_AS		#PXCCARI_REVID_MASK
 
-    /* In case udelay is called before timier was initialized */
-    delayticks = (usec * (MV_BOARD_REFCLK_25MHZ / 1000000));
-    /* init the counter */
-    MV_REG_WRITE(CNTMR_RELOAD_REG(UBOOT_CNTR),delayticks);
-    MV_REG_WRITE(CNTMR_VAL_REG(UBOOT_CNTR),delayticks);
+/* Read device ID into toReg bits 15:0 from 0xd0000000 */
+/* defines  */
+#define MV_DV_CTRL_MODEL_GET_ASM(toReg, tmpReg) \
+	MV_DV_REG_READ_ASM(toReg, tmpReg, CHIP_BOND_REG);\
+	and     toReg, toReg, PCKG_OPT_MASK_AS			/* Mask for package ID */
 
-    /* set control for timer \ cunter and enable */
-    /* read control register */
-    cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
-    cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
+/* Read device ID into toReg bits 15:0 from 0xf1000000*/
+#define MV_CTRL_MODEL_GET_ASM(toReg, tmpReg) \
+	MV_REG_READ_ASM(toReg, tmpReg, CHIP_BOND_REG);\
+	and     toReg, toReg, PCKG_OPT_MASK_AS			/* Mask for package ID */
 
-    while(MV_REG_READ(CNTMR_VAL_REG(UBOOT_CNTR)));
+/* Read Revision into toReg bits 7:0 0xd0000000*/
+#define MV_DV_CTRL_REV_GET_ASM(toReg, tmpReg)	\
+	/* Read device revision */			\
+	MV_DV_REG_READ_ASM(toReg, tmpReg, PEX_CFG_DIRECT_ACCESS(0, PEX_CLASS_CODE_AND_REVISION_ID));\
+	and     toReg, toReg, PXCCARI_REVID_MASK_AS		/* Mask for calss ID */
 
-    /* disable times*/
-    cntmrCtrl &= ~CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-}
+/* Read Revision into toReg bits 7:0 0xf1000000*/
+#define MV_CTRL_REV_GET_ASM(toReg, tmpReg)	\
+	/* Read device revision */			\
+	MV_REG_READ_ASM(toReg, tmpReg, PEX_CFG_DIRECT_ACCESS(0, PEX_CLASS_CODE_AND_REVISION_ID));\
+	and     toReg, toReg, PXCCARI_REVID_MASK_AS		/* Mask for calss ID */
 
+#endif /* __INCmvCtrlEnvAsmh */

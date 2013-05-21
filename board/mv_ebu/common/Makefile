@@ -24,7 +24,7 @@ HAL_IF_OBJS +=		  $(HAL_IF_DIR)/mvSysPex.o    	\
 			  $(HAL_IF_DIR)/mvSysCntmr.o 	
 endif
 
-ifeq ($(BOARD),alp)
+ifneq ($(BOARD),axp)
 ETH_OBJS =	$(HAL_IF_DIR)/mvSysPp2.o 		\
 		$(HAL_PP2_GMAC_DIR)/mvEthGmacApi.o	\
 		$(HAL_PP2_GBE_DIR)/mvPp2Gbe.o 		\
@@ -71,9 +71,6 @@ HAL_OBJS +=	$(HAL_PEX_DIR)/mvPex.o 			\
 else
 HAL_OBJS +=	$(HAL_PCI_DIR)/mvPci.o			
 endif
-		
-
-
 
 SOC_OBJS = 	$(SOC_ENV_DIR)/mvCtrlEnvAddrDec.o 		\
 			$(SOC_ENV_DIR)/mvCtrlEnvLib.o		\
@@ -113,7 +110,7 @@ else
 USP_OBJS +=		$(USP_DIR)/mv_pci.o
 endif
 
-ifneq ($(BOARD),alp)
+ifeq ($(BOARD),axp)
 USP_OBJS +=		$(USP_DIR)/mv_main.o
 endif
 
@@ -125,11 +122,10 @@ ifeq ($(BOARD),axp)
 endif
 		
 
-ifeq ($(BOARD),alp)
+ifneq ($(BOARD),axp)
 	SOBJS+= $(USP_DIR)/jump.o 		\
 		$(HAL_DRAM_DIR)/mvDramIfBasicInit.o	
 endif
-
 
 COBJS = $(COMMON_OBJS)		\
 	$(OSSERVICES_OBJS)	\

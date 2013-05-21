@@ -61,64 +61,80 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#include "config_marvell.h"     /* Required to identify SOC and Board */
-#include "mv_os.h"
-#if defined(MV88F78X60)
-#include "ddr3_axp.h"
-#elif defined(MV88F6710)
-#include "ddr3_a370.h"
-#elif defined(MV88F66XX)
-#include "ddr3_alp.h"
-#elif defined(MV88F672X)
-#include "ddr3_a375.h"
+
+#ifndef _DDR3_ALP_CONFIG_H
+#define _DDR3_ALP_CONFIG_H
+
+/*DDR3_LOG_LEVEL Information
+Level 0: Provides an error code in a case of failure, RL, WL errors and other algorithm failure
+Level 1: Provides the D-Unit setup (SPD/Static configuration)
+Level 2: Provides the windows margin as a results of DQS centeralization
+Level 3: Provides the windows margin of each DQ as a results of DQS centeralization */
+
+#define DDR3_LOG_LEVEL      0
+#define DDR3_PBS            0
+#define DDR3_FAST_PATH_EN   1
+
+
+#undef STATIC_TRAINING
+#define DUNIT_STATIC
+
+/* General Configurations */
+/* The following parameters are required for proper setup */
+/* DDR_TARGET_FABRIC - Set desiered fabric configuration (for sample@Reset fabfreq parameter) */
+/* DRAM_ECC - set ECC support TRUE/FALSE */
+/* BUS_WIDTH - 16/32 bit */
+/* SPD_SUPPORT - Enables auto detection of DIMMs and their timing values */
+/* DQS_CLK_ALIGNED - Set this if CLK and DQS signals are aligned on board */
+/* MIXED_DIMM_STATIC - Mixed DIMM + On board devices support (ODT registers values are taken statically) */
+/* DDR3_TRAINING_DEBUG - debug prints of internal code */
+#define DDR_TARGET_FABRIC                       5
+#define DRAM_ECC                                FALSE
+
+#ifdef MV_DDR_32BIT
+#define BUS_WIDTH                               32
 #else
-#error "No SOC define for uart in binary header."
+#define BUS_WIDTH                               16
 #endif
-#define UBOOT_CNTR              0       /* counter to use for uboot timer  0,1 */
 
-#define CNTMR_RELOAD_REG(tmrNum)    (REG_TIMERS_CTRL_ADDR  + 0x10 + (tmrNum * 8))
-#define CNTMR_VAL_REG(tmrNum)       (REG_TIMERS_CTRL_ADDR  + 0x14 + (tmrNum * 8))
-#define CNTMR_CTRL_REG(tmrNum)      (REG_TIMERS_CTRL_ADDR)
-#define CTCR_ARM_TIMER_EN_OFFS(timer)   (timer * 2)
-#define CTCR_ARM_TIMER_EN_MASK(timer)   (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-#define CTCR_ARM_TIMER_EN(timer)            (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
+#undef SPD_SUPPORT
+#undef DQS_CLK_ALIGNED
+#undef MIXED_DIMM_STATIC
+#define DDR3_TRAINING_DEBUG                     FALSE
+#define REG_DIMM_SKIP_WL                        FALSE
 
-#define CTCR_ARM_TIMER_AUTO_OFFS(timer) (1 + (timer * 2))
-#define CTCR_ARM_TIMER_AUTO_MASK(timer) (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
-#define CTCR_ARM_TIMER_AUTO_EN(timer)   (1 << CTCR_ARM_TIMER_AUTO_OFFS(timer))
+/* Marvell boards specific configurations */
 
-#define CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer) (11 + timer)
+#ifdef SPD_SUPPORT
+/* DIMM support parameters: */
+/* DRAM_2T - Set Desired 2T Mode - 0 - 1T, 0x1 - 2T, 0x2 - 3T */
+/* DIMM_CS_BITMAP - bitmap representing the optional CS in DIMMs (0xF=CS0+CS1+CS2+CS3, 0xC=CS2+CS3...) */
+#define DRAM_2T                                 0x0
+#define DIMM_CS_BITMAP                          0xF
+#define DUNIT_SPD
+#endif
 
-#define CTCR_ARM_TIMER_25MhzFRQ_MASK(timer) (1 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
-#define CTCR_ARM_TIMER_25MhzFRQ_EN(timer)   (1 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
-#define CTCR_ARM_TIMER_25MhzFRQ_DIS(timer)  (0 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer))
+/* Registered DIMM Support - In case registered DIMM is attached, please supply the following values:
+(see JEDEC - JESD82-29A "Definition of the SSTE32882 Registering Clock Driver with Parity and Quad Chip
+Selects for DDR3/DDR3L/DDR3U RDIMM 1.5 V/1.35 V/1.25 V Applications") */
+/* RC0: Global Features Control Word */
+/* RC1: Clock Driver Enable Control Word */
+/* RC2: Timing Control Word */
+/* RC3-RC5 - taken from SPD */
+/* RC8: Additional IBT Setting Control Word */
+/* RC9: Power Saving Settings Control Word */
+/* RC10: Encoding for RDIMM Operating Speed */
+/* RC11: Operating Voltage VDD and VREFCA Control Word */
+#define RDIMM_RC0                               0
+#define RDIMM_RC1                               0
+#define RDIMM_RC2                               0
+#define RDIMM_RC8                               0
+#define RDIMM_RC9                               0
+#define RDIMM_RC10                              0x2
+#define RDIMM_RC11                              0x0
 
+#if defined(MIXED_DIMM_STATIC) || !defined (SPD_SUPPORT)
+#define DUNIT_STATIC
+#endif
 
-#define MV_BOARD_REFCLK_25MHZ    25000000
-
-void __udelay(unsigned long usec)
-{
-    unsigned long delayticks;
-    unsigned int cntmrCtrl;
-
-    /* In case udelay is called before timier was initialized */
-    delayticks = (usec * (MV_BOARD_REFCLK_25MHZ / 1000000));
-    /* init the counter */
-    MV_REG_WRITE(CNTMR_RELOAD_REG(UBOOT_CNTR),delayticks);
-    MV_REG_WRITE(CNTMR_VAL_REG(UBOOT_CNTR),delayticks);
-
-    /* set control for timer \ cunter and enable */
-    /* read control register */
-    cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
-    cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-
-    while(MV_REG_READ(CNTMR_VAL_REG(UBOOT_CNTR)));
-
-    /* disable times*/
-    cntmrCtrl &= ~CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-}
-
+#endif /* _DDR3_ALP_CONFIG_H */

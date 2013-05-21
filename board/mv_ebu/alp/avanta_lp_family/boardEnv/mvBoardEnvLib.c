@@ -844,7 +844,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	MV_U32 slicDev, ethComplex;
 
 	/* Update Ethernet complex according to board configuration */
-	mvBoardEthComplexnfoUpdate();
+	mvBoardEthComplexInfoUpdate();
 
 	/* Update SMI phy address for MAC0/1 */
 	ethComplex = mvBoardEthComplexConfigGet();

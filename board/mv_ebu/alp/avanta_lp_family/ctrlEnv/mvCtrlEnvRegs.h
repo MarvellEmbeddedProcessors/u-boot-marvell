@@ -125,6 +125,9 @@ extern "C" {
 
 /* Sample at Reset */
 #define MPP_SAMPLE_AT_RESET(id)		(0xE8200 + ( id * 0x4 ))
+#define SATR_DEVICE_ID_2_0_OFFS		21
+#define SATR_DEVICE_ID_2_0_MASK		(3 << SATR_DEVICE_ID_2_0_OFFS)
+
 #define DEV_ID_REG			0x18238
 #define VENDOR_ID_OFFS			0
 #define VENDOR_ID_MASK			0xFFFF

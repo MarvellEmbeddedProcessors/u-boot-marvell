@@ -359,21 +359,19 @@ MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_U8 *pDat
 *******************************************************************************/
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
-    MV_U32 ctrlId;
+    MV_U32 ctrlId, satr0;
 
-    ctrlId = (MV_REG_READ(DEVICE_ID_REG) & DEVICE_ID_REG_DEV_ID_MASK);
-    ctrlId >>= DEVICE_ID_REG_DEV_ID_OFFS;
+    ctrlId = MV_REG_READ(DEV_ID_REG);
+    ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
 
-    switch (ctrlId) {
-    case 0x6660:
-        return MV_6660_DEV_ID;
-    case 0x6650:
-        return MV_6650_DEV_ID;
-    case 0x6610:
-      return MV_6610_DEV_ID;
-    default:
-        return MV_6650_DEV_ID;
-    }
+    if (ctrlId == 0x6660)
+	return MV_6660_DEV_ID;
+
+    satr0 = MV_REG_READ(MPP_SAMPLE_AT_RESET(0));
+    satr0 &= SATR_DEVICE_ID_2_0_MASK;
+    if (satr0 == 0)
+	return MV_6650_DEV_ID;
+    return MV_6610_DEV_ID;
 }
 
 /*******************************************************************************

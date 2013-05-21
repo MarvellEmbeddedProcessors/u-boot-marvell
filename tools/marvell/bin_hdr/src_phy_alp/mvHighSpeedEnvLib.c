@@ -134,13 +134,13 @@ MV_U32 mvBoardIdGet(MV_VOID)
     value = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
     boardId = ((value & (0xF0)) >> 4);
     if (boardId >= MV_MAX_BOARD_ID) {
-     DEBUG_INIT_FULL_C("Error: read wrong board ID=0x", boardId,2);
+     DEBUG_INIT_C("Error: read wrong board ID=0x", boardId,2);
     }
 
 #if 0
     if (boardId == 0)
     {
-      DEBUG_INIT_FULL_S(">>>>> boardid is zero. changing it temporarily to 3 . Giora <<<<<<<<<<<<<<<\n");
+      DEBUG_INIT_S(">>>>> boardid is zero. changing it temporarily to 3 . Giora <<<<<<<<<<<<<<<\n");
       boardId = 3;
     }
 #endif
@@ -169,8 +169,8 @@ MV_BOOL mvCtrlIsEepromEnabled()
 {
     MV_U8 regVal;
 
-     if (mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER_JUMPER1, 0, 0, &regVal))
-		 return ((regVal & 0x80)? MV_TRUE : MV_FALSE);
+     if (MV_OK == mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER_JUMPER1, 0, 0, &regVal))
+		 return ((regVal & 0x80)? MV_FALSE : MV_TRUE);
 	 return MV_FALSE;
 }
 /*******************************************************************************
@@ -202,7 +202,7 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *tempVal)
     rc2 = mvBoardTwsiGet(address, 0, 1, &tempVal[1] );  /* EEPROM/Dip Switch Reg#1 */
 
     /* verify that all TWSI reads were successfully */
-    if ((rc1 == MV_FALSE) || (rc2 == MV_FALSE))
+    if ((rc1 != MV_OK) || (rc2 != MV_OK))
         return MV_ERROR;
 
     return MV_OK;
@@ -244,7 +244,7 @@ MV_VOID mvCtrlSatrInit(void)
 		case 2: boardLaneConfig[1] = SERDES_UNIT_SATA; 	break;
 		case 3:
 		default:
-			DEBUG_INIT_FULL_S("Error: Read board configuration (SERDES LAN1) from EEPROM/Dip Switch failed \n");
+			DEBUG_INIT_S("Error: Read board configuration (SERDES LAN1) from EEPROM/Dip Switch failed \n");
 			boardLaneConfig[1] = SERDES_UNIT_UNCONNECTED;
 			break;
 		}
@@ -252,8 +252,8 @@ MV_VOID mvCtrlSatrInit(void)
 		boardLaneConfig[3] = ((configVal[1] & 0x20) >> 5)? SERDES_UNIT_SGMII:SERDES_UNIT_USB3;
 	}
     else{
-        DEBUG_INIT_FULL_S("Error: Read board configuration from EEPROM/Dip Switch failed \n");
-        DEBUG_INIT_FULL_S(">>>>> temporarily setting boardLaneConfig to PEX1, SGMII, SATA2, USB3     for testing. Giora <<<<\n");
+        DEBUG_INIT_S("Error: Read board configuration from EEPROM/Dip Switch failed \n");
+        DEBUG_INIT_S(">>>>> temporarily setting boardLaneConfig to PEX1, SGMII, SATA2, USB3     for testing. Giora <<<<\n");
 		boardLaneConfig[1] = SERDES_UNIT_SGMII;
 		boardLaneConfig[2] = SERDES_UNIT_SATA;
 		boardLaneConfig[3] = SERDES_UNIT_USB3;
@@ -286,7 +286,7 @@ MV_U32 mvBoardTclkGet(MV_VOID)
         case 1:
             return _200MHz;
         default:
-            DEBUG_INIT_FULL_S("Error : Board: Read from S@R fail\n");
+            DEBUG_INIT_S("Error : Board: Read from S@R fail\n");
             return _200MHz;
     }
 }
@@ -333,12 +333,12 @@ MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_U8 *pDat
      twsiSlave.moreThen256 = MV_FALSE;
 
      if (MV_OK != mvTwsiRead(0, &twsiSlave, pData, 1)) {
-            DEBUG_INIT_FULL_S("TWSI Read failed\n");
+            DEBUG_INIT_S("TWSI Read failed\n");
             return MV_ERROR;
      }
      DEBUG_INIT_FULL_C("Board: Read TWSI succeeded data=0x",*pData, 2);
 
-     return MV_TRUE;
+     return MV_OK;
 }
 /*******************************************************************************
 * mvCtrlModelGet - Get Marvell controller device model (Id)
@@ -654,8 +654,8 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
                 break;
             case SERDES_UNIT_SATA:
                 MV_REG_WRITE(RESERVED_46_REG(serdesLaneNum),0xFF00);
-                MV_REG_WRITE(POWER_AND_PLL_CONTROL_REG(serdesLaneNum),0xFC60); /* PHY Mode = SATA */
-                MV_REG_WRITE(MISCELLANEOUS_CONTROL0_REG(serdesLaneNum),0x6017); /* REFCLK SEL =0x0 (the ref_clk comes from the group 1 pins) */
+                MV_REG_WRITE(POWER_AND_PLL_CONTROL_REG(serdesLaneNum),0xFC01); /* PHY Mode = SATA */
+                MV_REG_WRITE(MISCELLANEOUS_CONTROL0_REG(serdesLaneNum),0x6417); /* REFCLK SEL =0x0 (the ref_clk comes from the group 1 pins) */
                 break;
             case SERDES_UNIT_SGMII:
                 MV_REG_WRITE(RESERVED_46_REG(serdesLaneNum),0xFF00); /* Enable soft_reset*/
@@ -664,8 +664,8 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
                 MV_REG_WRITE(DIGITAL_LOOPBACK_ENABLE_REG(serdesLaneNum),0x0); /* SEL_BITS = 0x0 (10-bits mode) */
                 MV_REG_WRITE(MISCELLANEOUS_CONTROL0_REG(serdesLaneNum),0x6417); /* REFCLK SEL =0x1 (the ref_clk comes from the group 1 pins) */
                 break;
-		case SERDES_UNIT_UNCONNECTED:
-		default:
+	    case SERDES_UNIT_UNCONNECTED:
+	    default:
 			break;
         }
     }
@@ -731,9 +731,9 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 				if (tempReg == 0x1) {
 					mvPexLocalBusNumSet(pexIf, first_busno);
 					mvPexLocalDevNumSet(pexIf, 1);
-					DEBUG_INIT_S("PEX: pexIf ");
-					DEBUG_INIT_D(pexIf, 1);
-					DEBUG_INIT_S(", link is Gen1, checking the EP capability \n");
+					DEBUG_INIT_FULL_S("PEX: pexIf ");
+					DEBUG_INIT_FULL_D(pexIf, 1);
+					DEBUG_INIT_FULL_S(", link is Gen1, checking the EP capability \n");
 
 
 					/* link is Gen1, check the EP capability */
@@ -761,13 +761,13 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 						DEBUG_WR_REG(PEX_CTRL_REG(pexIf),tmp);
 						mvOsUDelay(10000);/* We need to wait 10ms before reading the PEX_DBG_STATUS_REG in order not to read the status of the former state*/
 
-						DEBUG_INIT_S("PEX: pexIf ");
-						DEBUG_INIT_D(pexIf, 1);
-						DEBUG_INIT_S(", Link upgraded to Gen2 based on client cpabilities \n");
+						DEBUG_INIT_FULL_S("PEX: pexIf ");
+						DEBUG_INIT_FULL_D(pexIf, 1);
+						DEBUG_INIT_FULL_S(", Link upgraded to Gen2 based on client cpabilities \n");
 					} else {
-						DEBUG_INIT_S("PEX: pexIf ");
-						DEBUG_INIT_D(pexIf, 1);
-						DEBUG_INIT_S(", remains Gen1\n");
+						DEBUG_INIT_FULL_S("PEX: pexIf ");
+						DEBUG_INIT_FULL_D(pexIf, 1);
+						DEBUG_INIT_FULL_S(", remains Gen1\n");
 					}
 				}
 		  }
@@ -775,9 +775,9 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
       else
       {
-        DEBUG_INIT_S("PEX: pexIf ");
-        DEBUG_INIT_D(pexIf, 1);
-        DEBUG_INIT_S(", detected no link\n");
+	DEBUG_INIT_FULL_S("PEX: pexIf ");
+	DEBUG_INIT_FULL_D(pexIf, 1);
+	DEBUG_INIT_FULL_S(", detected no link\n");
       }
     }
 	/* Step 7: update pex DEVICE ID*/
@@ -797,7 +797,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 		DEBUG_INIT_FULL_S("\n");
 	}
 
-	DEBUG_INIT_FULL_S(ENDED_OK);
+	DEBUG_INIT_S(ENDED_OK);
 	DEBUG_INIT_S("\n");
 
     return MV_OK;
@@ -915,7 +915,7 @@ MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum)
 	MV_U32 pexStatus;
 
 	if (busNum >= MAX_PEX_BUSSES) {
-		DEBUG_INIT_FULL_C("mvPexLocalBusNumSet: ERR. bus number illigal %d\n", busNum,4);
+		DEBUG_INIT_C("mvPexLocalBusNumSet: ERR. bus number illigal %d\n", busNum,4);
 		return MV_ERROR;
 	}
 

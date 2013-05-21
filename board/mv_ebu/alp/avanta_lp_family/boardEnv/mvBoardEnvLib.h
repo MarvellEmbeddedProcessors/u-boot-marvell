@@ -78,7 +78,7 @@ extern "C" {
 #include "twsi/mvTwsi.h"
 
 #define BOARD_ETH_SWITCH_PORT_NUM       7
-#define BOARD_ETH_SWITCH_SMI_SCAN_MODE	2
+#define BOARD_ETH_SWITCH_SMI_SCAN_MODE	1	/* Use manual scanning mode */
 #define MV_BOARD_MAX_MPP                9       /* number of MPP conf registers */
 #define MV_BOARD_MAX_MPP_GROUPS         9
 #define MV_BOARD_MPP_GROUPS_MAX_TYPES   8

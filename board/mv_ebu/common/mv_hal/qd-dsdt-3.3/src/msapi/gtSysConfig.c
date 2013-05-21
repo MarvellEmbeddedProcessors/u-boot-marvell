@@ -295,6 +295,9 @@ GT_STATUS qdLoadDriver
     if((dev->deviceId&0xfff8)==GT_88EC000) /* device id 0xc00 - 0xc07 are GT_88EC0XX */
       dev->deviceId=GT_88EC000;
 
+	if (dev->deviceId == 0xc10)
+		dev->deviceId = GT_88E6352;
+
     switch(dev->deviceId)
     {
         case GT_88E6021:

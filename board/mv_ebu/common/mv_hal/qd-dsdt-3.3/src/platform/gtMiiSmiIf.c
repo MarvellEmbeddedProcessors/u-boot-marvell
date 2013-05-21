@@ -257,6 +257,7 @@ GT_U16 miiSmiManualIfInit
         case 0x3500:    /* Agate */
         case 0x1100:    /* Pearl */
         case 0x3100:    /* Pearl */
+	case 0xc100:	/* ALP Fix */
             return data;
         default:
             break;
@@ -300,6 +301,7 @@ GT_STATUS miiSmiIfReadRegister
 )
 {
     unsigned int tmpData;
+
 #ifdef GT_RMGMT_ACCESS
     if((dev->accessMode == SMI_MULTI_ADDR_MODE) &&
        (dev->fgtHwAccessMod == HW_ACCESS_MODE_SMI))

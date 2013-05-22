@@ -67,8 +67,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mv_os.h"
 
+#define MV_BOARD_TCLK_200MHZ	200000000
+#define MV_BOARD_TCLK_250MHZ	250000000
+#define MV_BOARD_TCLK_166MHZ	166666667
+
 /* TWSI */
-#define CONFIG_SYS_TCLK                     200000000
+extern MV_U32 mvBoardTclkGet(MV_VOID);
+#define CONFIG_SYS_TCLK				mvBoardTclkGet()
 #define CONFIG_SYS_I2C_SPEED                100000      /* I2C speed default */
 #define TWSI_SPEED                          100000
 #define MV_ABS(number)                      (((int)(number) < 0) ? -(int)(number) : (int)(number))

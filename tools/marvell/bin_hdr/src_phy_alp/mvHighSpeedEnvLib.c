@@ -89,10 +89,6 @@ extern MV_BIN_SERDES_UNIT_INDX boardLaneConfig[];
 /***************************   defined ******************************/
 #define BOARD_INFO(boardId) boardInfoTbl[boardId - BOARD_ID_BASE]
 
-#define MV_BOARD_TCLK_200MHZ    200000000
-#define MV_BOARD_TCLK_166MHZ    166000000
-
-
 #define BOARD_DEV_TWSI_EEPROM               0x54
 #define BOARD_DEV_TWSI_IO_EXPANDER          0x21
 #define BOARD_DEV_TWSI_IO_EXPANDER_JUMPER1  0x24
@@ -282,12 +278,12 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 
     switch (value) {
         case 0:
-            return _166MHz;
+            return MV_BOARD_TCLK_166MHZ;
         case 1:
-            return _200MHz;
+            return MV_BOARD_TCLK_200MHZ;
         default:
             DEBUG_INIT_S("Error : Board: Read from S@R fail\n");
-            return _200MHz;
+            return MV_BOARD_TCLK_200MHZ;
     }
 }
 /*******************************************************************************

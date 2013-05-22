@@ -89,8 +89,6 @@ MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum);
 MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
 
 /***************************   defined ******************************/
-#define MV_BOARD_TCLK_200MHZ	200000000
-#define MV_BOARD_TCLK_250MHZ	250000000
 #define MV_BOARD_PEX_MODULE_ADDR		0x23
 #define MV_BOARD_PEX_MODULE_ADDR_TYPE	ADDR7_BIT
 #define MV_BOARD_PEX_MODULE_ID			0

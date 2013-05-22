@@ -76,7 +76,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error "No SOC define for uart in binary header."
 #endif
 #include "bin_hdr_twsi.h"
-extern MV_U32 mvBoardTclkGet(MV_VOID);
 
 static MV_VOID twsiIntFlgClr(MV_U8 chanNum);
 static MV_BOOL twsiMainIntGet(MV_U8 chanNum);
@@ -987,20 +986,13 @@ MV_VOID mvTwsiDelay(MV_U32 uiDelay)
     MV_U32 uiReg,uiTclk,uiCycles;
 
     /* Read Sample at reset to find TCLK frequency - 0x18230 [28] */
-#if defined(MV88F66XX) /* avanta LP */
     uiReg = mvBoardTclkGet();
-    if (uiReg == 200000000)  /* 200; */
+    if (uiReg == MV_BOARD_TCLK_200MHZ)  /* 200MHz */
         uiTclk = 200;
+    else if (uiReg == MV_BOARD_TCLK_166MHZ)  /* 160MHz */
+	uiTclk = 160;
     else
         uiTclk = 250;
-#else
-
-    uiReg = (MV_REG_READ(REG_SAMPLE_RESET_LOW_ADDR) & (1 << REG_SAMPLE_RESET_TCLK_OFFS));
-    if(uiReg)
-        uiTclk = 200;
-    else
-        uiTclk = 250;
-#endif
 
     /* reset Timer configurations */
     MV_REG_WRITE(REG_TIMERS_CTRL_ADDR, 0);

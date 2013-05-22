@@ -159,6 +159,7 @@ extern "C" {
 #define ECC_SUPPORT
 #define REG_SDRAM_CONFIG_ADDR                                   0x1400
 #define REG_SDRAM_CONFIG_ECC_OFFS                               18
+#define REG_SDRAM_CONFIG_DDR_BUS_OFFS				15
 #define REG_SDRAM_CONFIG_IERR									19
 #define REG_STATIC_DRAM_DLB_CONTROL                             0x1700
 #define DLB_ENABLE 0x1

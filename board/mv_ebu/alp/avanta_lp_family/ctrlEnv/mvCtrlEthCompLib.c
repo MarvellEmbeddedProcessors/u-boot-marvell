@@ -234,21 +234,6 @@ static void mvEthComplexSwResetSet(MV_BOOL setReset)
 	MV_REG_WRITE(MV_ETHCOMP_SW_CONFIG_RESET_CTRL, reg);
 }
 
-static void mvEthComplexComPhySelectorSet(MV_U32 phy, MV_U32 val)
-{
-	MV_U32 reg;
-
-	reg = MV_REG_READ(MV_COMMON_PHY_SELECTORS_REG);
-	reg &= ~ETHCPS_COMPHY_SELECTOR_MASK(phy);
-
-	val <<= ETHCPS_COMPHY_SELECTOR_OFFSET(phy);
-	val &= ETHCPS_COMPHY_SELECTOR_MASK(phy);
-
-	reg |= val;
-
-	MV_REG_WRITE(MV_COMMON_PHY_SELECTORS_REG, reg);
-}
-
 static void mvEthComplexGbePhyPowerSet(MV_U32 phy, MV_BOOL setPowerUp)
 {
 	MV_U32 reg;
@@ -352,7 +337,6 @@ static void mvEthComplexMacToSwPort(MV_U32 port, MV_U32 swPort,
 		mvEthComplexPortDpClkSrcSet(port, 0x1);
 
 	mvEthComplexGopInit(port, MV_FALSE, MV_FALSE, MV_FALSE);
-	mvEthComplexComPhySelectorSet(2, 0x1);
 }
 
 static void mvEthComplexSwPortToRgmii(MV_U32 swPort, MV_U32 port)
@@ -377,7 +361,6 @@ static void mvEthComplexMacToGbePhy(MV_U32 port, MV_U32 phy, MV_U32 phyAddr)
 	mvEthComplexGbePhyPdConfigEdetASet(phy, 0x0);
 	mvEthComplexGbePhyPsEnaXcSSet(phy, 0x0);
 	mvEthComplexGbePhyResetSet(MV_FALSE);
-	mvEthComplexComPhySelectorSet(2, 0x1);
 	mvEthComplexGopInit(port, MV_FALSE, MV_FALSE, MV_TRUE);
 	mvEthPhyAddrSet(port, phy);
 }

@@ -153,14 +153,6 @@ enum mvSwPortSrc {
 #define     ETHQPCS_DPLL_RESET_OFFSET			4
 #define     ETHQPCS_DPLL_RESET_MASK			(0x1 << ETHQPCS_DPLL_RESET_OFFSET)
 
-/*******************************************************************************
- * Common PHYs Selectors
- */
-#define MV_COMMON_PHY_SELECTORS_REG			MV_COMMON_PHY_REGS_OFFSET
-
-#define     ETHCPS_COMPHY_SELECTOR_OFFSET(phy)		(phy)
-#define     ETHCPS_COMPHY_SELECTOR_MASK(phy)		(0x1 << ETHCPS_COMPHY_SELECTOR_OFFSET(phy))
-
 MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig);
 
 #endif /* __INCmvCtrlEthCompLibh */

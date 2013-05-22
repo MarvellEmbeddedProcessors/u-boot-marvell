@@ -89,7 +89,7 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #endif
 
 #include "bootstrap_os.h"
-#if defined(MV88F78X60_Z1) || defined (MV88F67XX)
+#if defined(MV88F78X60_Z1)
 static MV_VOID ddr3MRSCommand(MV_U32 uiMR1Value, MV_U32 uiMR2Value, MV_U32 uiCsNum, MV_U32 uiCsEna);
 #endif
 #ifdef STATIC_TRAINING
@@ -414,7 +414,7 @@ MV_U32 ddr3Init_(void)
 	MV_U32 uiTargetFreq;
 
 #ifndef RD_88F6710
-#ifdef ECC_SUPPORT
+#if defined(MV88F78X60) || defined(ECC_SUPPORT) || defined(DUNIT_SPD)
 	MV_U32 uiEcc;
 #endif
 #endif
@@ -526,7 +526,7 @@ MV_U32 ddr3Init_(void)
 	uiScrubSize = 0;
 #endif
 #ifndef RD_88F6710
-#ifdef ECC_SUPPORT
+#if defined(MV88F78X60) || defined(ECC_SUPPORT )  || defined(DUNIT_SPD)
 	uiEcc = DRAM_ECC;
 #endif
 #endif

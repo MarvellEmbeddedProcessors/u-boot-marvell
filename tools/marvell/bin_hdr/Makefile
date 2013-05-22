@@ -109,10 +109,8 @@ DRAMREGS   = ./dramregs.txt
 
 INCLUDE     = -I./ -I./../ -I./src_phy_$(BOARD)/ -I./src_ddr/  -I./inc/ -I../../../include
 
-#LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
-#LDFLAGSBIN  = -T linker1.scr $(LDFLAGS) --split-by-file=0x100
 ifneq ($(BOARD),alp)
-	LDFLAGSBIN  = -T linker.scr $(LDFLAGS)
+	LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 else
 	LDFLAGSBIN  = -T linker1.scr $(LDFLAGS)
 endif

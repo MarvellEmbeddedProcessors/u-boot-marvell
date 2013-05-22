@@ -79,16 +79,15 @@ MV_STATUS suspendWakeup(void);
 /* How to add new component to binary header:
 #ifdef CONFIG_EXAMPLE_COMPONENT
 MV_STATUS componentExample(void);
-#define BIN_HEADER_COMPONENT_TABLE      {"SERDES initialization", mvCtrlHighSpeedSerdesPhyConfig},  \
-                    {"DRAM initialization", ddr3Init},              \
-                    {"Example component", componentExample },       \
-                    {"Suspend wake up", suspendWakeup},             \
+#define BIN_HEADER_COMPONENT_TABLE  	{"SERDES initialization", mvCtrlHighSpeedSerdesPhyConfig}, 	\
+					{"DRAM initialization", ddr3Init},				\
+					{"Example component", componentExample },		\
+					{"Suspend wake up", suspendWakeup}, 			\
                     {NULL,NULL}
 #endif */
-#define BIN_HEADER_COMPONENT_TABLE      \
-    {"SERDES initialization", mvCtrlHighSpeedSerdesPhyConfig},  \
-    {"DRAM initialization", ddr3Init},              \
-    {"Suspend wake up", suspendWakeup},             \
+#define BIN_HEADER_COMPONENT_TABLE  	{"SERDES initialization", mvCtrlHighSpeedSerdesPhyConfig}, 	\
+					{"DRAM initialization", ddr3Init},				\
+					{"Suspend wake up", suspendWakeup}, 			\
     {NULL,NULL}
 
 #endif /* __INCmvBinHdrComponentsh */

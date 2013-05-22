@@ -418,7 +418,7 @@ MV_U32 mvCtrlSerdesMaxLanesGet(MV_VOID){
 *       serdes unit index
 *
 *******************************************************************************/
-#define mvGetSerdesLaneCfg(serdesLaneNum) boardLaneConfig[serdesLaneNum];
+#define mvGetSerdesLaneCfg(serdesLaneNum) boardLaneConfig[serdesLaneNum]
 /*******************************************************************************
 * GetLaneSelectorConfig
 *
@@ -435,22 +435,32 @@ MV_U32 mvCtrlSerdesMaxLanesGet(MV_VOID){
 *       Register value
 *
 *******************************************************************************/
+#define	AVANTA_Z1
+#ifdef AVANTA_Z1
+#define	SERDES_LAN2_OFFS	2
+#define	SERDES_LAN3_OFFS	3
+#else
+#define	SERDES_LAN2_OFFS	3
+#define	SERDES_LAN3_OFFS	4
+#endif
 MV_U32 GetLaneSelectorConfig(void)
 {
     MV_U32 tmp,uiReg;
 
     uiReg = 0x1; /* lane 0 is always PEX */
 
-	switch (boardLaneConfig[1]) {
+	switch (mvGetSerdesLaneCfg(1)) {
+	default:
 	case SERDES_UNIT_PEX:	tmp = 0;	break;
 	case SERDES_UNIT_SGMII: tmp = 1;	break;
+#ifndef AVANTA_Z1
 	case SERDES_UNIT_SATA:	tmp = 2;	break;
-	default:				tmp = 3;	break;
+#endif
 	}
-    uiReg |= (tmp<<1); /* lane 1  */
+    uiReg |= (tmp << 1); /* lane 1  */
 
-    uiReg |= (((boardLaneConfig[2]==SERDES_UNIT_SATA)?1:0)  << 3); /* lane 2  */
-    uiReg |= (((boardLaneConfig[3]==SERDES_UNIT_SGMII)?1:0)  << 4); /* lane 3  */
+    uiReg |= (((mvGetSerdesLaneCfg(2) == SERDES_UNIT_SATA) ? 1 : 0)  << SERDES_LAN2_OFFS); /* lane 2  */
+    uiReg |= (((mvGetSerdesLaneCfg(3) == SERDES_UNIT_SGMII) ? 1 : 0)  << SERDES_LAN3_OFFS); /* lane 3  */
 
 
     DEBUG_INIT_FULL_S(">>>>>>> after  GetLaneSelectorConfig, uiReg=0x");

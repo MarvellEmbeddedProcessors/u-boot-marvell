@@ -296,6 +296,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LVDS_PADS_CONF_PD_MASK(idx)		(1 << (16 + idx))
 #define LVDS_PADS_CONF_PD_EN(idx, en)		((en ? 0 : 1) << LVDS_PADS_CONF_PD_OFFS(idx))
 
+#define CPU_IO_SYNC_BARRIER_PER_CPU_REG(cpu)	(MV_CPUIF_REGS_BASE(cpu) + 0x10)
+#define CPU_IO_SYNC_BARRIER_REG			(MV_CPUIF_LOCAL_REGS_OFFSET + 0x10)
+
 /*******************************************/
 /* Main Interrupt Controller Registers Map */
 /*******************************************/

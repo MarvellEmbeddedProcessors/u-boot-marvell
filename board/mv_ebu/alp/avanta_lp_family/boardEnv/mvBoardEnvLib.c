@@ -903,23 +903,23 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 
 	/* Groups 3-4  - (only if not Booting from SPI1)*/
 	if (bootDev != MSAR_0_BOOT_SPI1_FLASH) {
-		if ((ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_RGMII1)) /* 00 - MAC1 connected to RGMII-1 */
+		if (ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_RGMII1)
 			mvBoardMppTypeSet(3, GE1_UNIT);
 		else
 			mvBoardMppTypeSet(3, SDIO_UNIT);
 
 		if (slicDev == SLIC_LANTIQ_ID)
 			mvBoardMppTypeSet(4, GE1_CPU_SMI_CTRL_TDM_LQ_UNIT);
-		else    /*REF_CLK_OUT*/
+		else /* REF_CLK_OUT */
 			mvBoardMppTypeSet(4, GE1_CPU_SMI_CTRL_REF_CLK_OUT);
 	}
 
 	/* Groups 5-6-7 Set GE0 or Switch port 4 */
-	if ((ethComplexOptions & MV_ETHCOMP_GE_MAC0_2_RGMII0)) { /* 10 - MAC0 connected to RGMII-0  */
+	if (ethComplexOptions & MV_ETHCOMP_GE_MAC0_2_RGMII0) {
 		mvBoardMppTypeSet(5, GE0_UNIT_PON_TX_FAULT);
 		mvBoardMppTypeSet(6, GE0_UNIT);
 		mvBoardMppTypeSet(7, GE0_UNIT_LED_MATRIX);
-	} else if ((ethComplexOptions & MV_ETHCOMP_SW_P4_2_RGMII0)) {
+	} else if (ethComplexOptions & MV_ETHCOMP_SW_P4_2_RGMII0) {
 		mvBoardMppTypeSet(5, SWITCH_P4_PON_TX_FAULT);
 		mvBoardMppTypeSet(6, SWITCH_P4);
 		mvBoardMppTypeSet(7, SWITCH_P4_LED_MATRIX);

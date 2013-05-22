@@ -73,8 +73,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 /************************************************************************************
-* Name:		suspendWakeup -
-* Desc:	 	Detectes suspend to RAM state, reads the return PC
+* Name:		suspendWakeup - 
+* Desc:	 	Detectes suspend to RAM state, reads the return PC 
 * 		and performs registers write according to a list.
 * 		The data is stored in the following format
 * 		boot_info_addr + 0x0 = magic word
@@ -88,7 +88,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define BOOT_INFO_ADDR 		(0x3000)
 #define SUSPEND_MAGIC_WORD 	(0xDEADB002)
-#define REGISTER_LIST_END 	(0xFFFFFFFF)
+#define REGISTER_LIST_END 	(0xFFFFFFFF) 
 
 void suspendWakeup(void)
 {
@@ -111,7 +111,7 @@ void suspendWakeup(void)
 
 		/* Restore registers */
 		reg_addr = (int *)(*boot_info++);
-
+		
 		while (reg_addr != (int *)REGISTER_LIST_END)
 		{
 			reg_value = (*boot_info++);
@@ -123,8 +123,9 @@ void suspendWakeup(void)
 		/* CLean after bootrom */
 
 		/* Jump back to OS */
-		resumeFunc();
+		resumeFunc();		
 	}
 #endif
 	return;
 }
+

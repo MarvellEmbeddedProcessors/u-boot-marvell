@@ -7,6 +7,10 @@
 *.bin
 *.depend
 *libpolarssl.a
+*.a
+*.rej
+*.orig
+*.su
 /bmp_logo
 /envcrc
 /gen_eth_addr

@@ -107,7 +107,7 @@ MV_VOID		changeResetVecBase(MV_32 val);
 MV_VOID		setCPSR(MV_32 val);
 
 MV_STATUS	ddr3HwTraining(MV_U32 uiTargetFreq, MV_U32 uiDdrWidth,
-						MV_BOOL bXorBypass, MV_U32 uiScrubOffs, MV_U32 uiScrubSize,	MV_BOOL bDQSCLKAligned,
+						MV_BOOL bXorBypass, MV_U32 uiScrubOffs, MV_U32 uiScrubSize,	MV_BOOL bDQSCLKAligned, 
 						MV_BOOL bDebugMode, MV_BOOL bRegDimmSkipWL);
 
 MV_VOID		ddr3PrintVersion(void);

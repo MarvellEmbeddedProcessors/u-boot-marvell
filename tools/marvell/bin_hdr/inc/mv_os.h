@@ -1,7 +1,7 @@
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
-This software file (the "File") is owned and distributed by Marvell
+This software file (the "File") is owned and distributed by Marvell 
 International Ltd. and/or its affiliates ("Marvell") under the following
 alternative licensing terms.  Once you have made an election to distribute the
 File under one of the following license alternatives, please (i) delete this
@@ -19,45 +19,45 @@ to you under the terms of the applicable Commercial License.
 ********************************************************************************
 Marvell GPL License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or
-modify this File in accordance with the terms and conditions of the General
-Public License Version 2, June 1991 (the "GPL License"), a copy of which is
-available along with the File in the license.txt file or by writing to the Free
-Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
-on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
+If you received this File from Marvell, you may opt to use, redistribute and/or 
+modify this File in accordance with the terms and conditions of the General 
+Public License Version 2, June 1991 (the "GPL License"), a copy of which is 
+available along with the File in the license.txt file or by writing to the Free 
+Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or 
+on the worldwide web at http://www.gnu.org/licenses/gpl.txt. 
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
-DISCLAIMED.  The GPL License provides additional details about this warranty
+THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED 
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY 
+DISCLAIMED.  The GPL License provides additional details about this warranty 
 disclaimer.
 ********************************************************************************
 Marvell BSD License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or
-modify this File under the following licensing terms.
-Redistribution and use in source and binary forms, with or without modification,
+If you received this File from Marvell, you may opt to use, redistribute and/or 
+modify this File under the following licensing terms. 
+Redistribution and use in source and binary forms, with or without modification, 
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+	    this list of conditions and the following disclaimer. 
 
     *   Redistributions in binary form must reproduce the above copyright
         notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+        documentation and/or other materials provided with the distribution. 
 
-    *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    *   Neither the name of Marvell nor the names of its contributors may be 
+        used to endorse or promote products derived from this software without 
+        specific prior written permission. 
+    
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR 
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON 
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
@@ -104,8 +104,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_DV_REG_WRITE_ASM(fromReg, tmpReg, regOffs)  	\
         HTOLL(fromReg,tmpReg)                        ;	\
         ldr     tmpReg, =(MV_DFL_REGS + regOffs) ;	\
-        str     fromReg, [tmpReg]
-
+        str     fromReg, [tmpReg]                         
+		
 
 
 
@@ -170,7 +170,7 @@ typedef unsigned char	MV_U8;
 typedef int		MV_32;
 typedef unsigned int	MV_U32;
 
-typedef short		MV_16;
+typedef short		MV_16; 
 typedef unsigned short	MV_U16;
 
 #ifdef MV_PPC64
@@ -241,7 +241,7 @@ void __udelay (unsigned long usec);
 #define BIT29       0x20000000
 #define BIT30       0x40000000
 #define BIT31       0x80000000
-
+		
 /* includes */
 #define _1K         0x00000400
 #define _4K         0x00001000
@@ -274,7 +274,7 @@ void __udelay (unsigned long usec);
                                     ((X&0xf0) >> 4) |    \
                                     ((X&0xf00) << 4) |   \
                                     ((X&0xf000) >> 4))
-
+        
 /* 32bit nibble swap. For example 0x12345678 -> 0x21436587                  */
 #define MV_NIBBLE_SWAP_32BIT(X)    (((X&0xf) << 4) |       \
                                     ((X&0xf0) >> 4) |      \
@@ -306,14 +306,14 @@ void __udelay (unsigned long usec);
 
 /* Endianess macros.                                                        */
 #if defined(MV_CPU_LE)
-    #define MV_16BIT_LE(X)  (X)
+    #define MV_16BIT_LE(X)  (X) 
     #define MV_32BIT_LE(X)  (X)
     #define MV_64BIT_LE(X)  (X)
     #define MV_16BIT_BE(X)  MV_BYTE_SWAP_16BIT(X)
     #define MV_32BIT_BE(X)  MV_BYTE_SWAP_32BIT(X)
     #define MV_64BIT_BE(X)  MV_BYTE_SWAP_64BIT(X)
 #elif defined(MV_CPU_BE)
-    #define MV_16BIT_LE(X)  MV_BYTE_SWAP_16BIT(X)
+    #define MV_16BIT_LE(X)  MV_BYTE_SWAP_16BIT(X) 
     #define MV_32BIT_LE(X)  MV_BYTE_SWAP_32BIT(X)
     #define MV_64BIT_LE(X)  MV_BYTE_SWAP_64BIT(X)
     #define MV_16BIT_BE(X)  (X)
@@ -321,13 +321,13 @@ void __udelay (unsigned long usec);
     #define MV_64BIT_BE(X)  (X)
 #else
     #error "CPU endianess isn't defined!\n"
-#endif
+#endif 
 
 
 
 #ifndef MV_ASMLANGUAGE
 /* Get the min between 'a' or 'b'                                           */
-#define MV_MIN(a,b)    (((a) < (b)) ? (a) : (b))
+#define MV_MIN(a,b)    (((a) < (b)) ? (a) : (b)) 
 
 
 /* Marvell controller register read/write macros */
@@ -361,7 +361,7 @@ void __udelay (unsigned long usec);
 #define MV_16BIT_LE_FAST(val)            MV_16BIT_LE(val)
 #define MV_32BIT_BE_FAST(val)            MV_32BIT_BE(val)
 #define MV_16BIT_BE_FAST(val)            MV_16BIT_BE(val)
-
+    
 /* 32 and 16 bit read/write in big/little endian mode */
 
 /* 16bit write in little endian mode */
@@ -420,7 +420,7 @@ static __inline MV_U32 MV_MEMIO_LE32_READ(MV_U32 addr)
 
 #define MV_REG_WRITE(offset, val)    \
         MV_MEMIO_LE32_WRITE((INTER_REGS_BASE | (offset)), (val))
-
+                                                
 #define MV_REG_BYTE_READ(offset)	\
 	(MV_MEMIO8_READ((INTER_REGS_BASE | (offset))))
 
@@ -435,7 +435,7 @@ static __inline MV_U32 MV_MEMIO_LE32_READ(MV_U32 addr)
         (MV_MEMIO32_WRITE((INTER_REGS_BASE | (offset)), \
          (MV_MEMIO32_READ((INTER_REGS_BASE | (offset))) | \
           MV_32BIT_LE_FAST((bitMask)))))
-
+	
 #define MV_REG_BIT_RESET(offset,bitMask)                \
         (MV_MEMIO32_WRITE((INTER_REGS_BASE | (offset)), \
          (MV_MEMIO32_READ((INTER_REGS_BASE | (offset))) & \
@@ -472,3 +472,4 @@ typedef UINT8* PUINT8;
 #endif /* #ifndef MV_ASMLANGUAGE */
 
 #endif /* _INC_BOOTSTRAP_OS_H */
+

@@ -124,7 +124,7 @@ MV_U32 ddr3getDimmNum(MV_U32 *auiDimmAddr)
 		/* Far-End DIMM must be connected */
 		if ((uiDimmNum == 0) && (uiDimmCurAddr < FAR_END_DIMM_ADDR))
 			return 0;
-
+		 
 		if (MV_OK == mvTwsiRead(0, &twsiSlave, ucData, 3)) {
 			if (ucData[SPD_DEV_TYPE_BYTE] == SPD_MEM_TYPE_DDR3) {
 				auiDimmAddr[uiDimmNum] = uiDimmCurAddr;
@@ -155,14 +155,14 @@ MV_STATUS ddr3SpdInit(MV_DIMM_INFO *pDimmInfo, MV_U32 uiDimmAddr, MV_U32 uiDimmW
 #endif
 	if (uiDimmAddr != 0) {
 		memset(ucData, 0, SPD_SIZE*sizeof(MV_U8));
-
+	
 		twsiSlave.slaveAddr.type = ADDR7_BIT;
 		twsiSlave.slaveAddr.address = uiDimmAddr;
-
+	
 		twsiSlave.validOffset = MV_TRUE;
 		twsiSlave.offset = 0;
 		twsiSlave.moreThen256 = MV_FALSE;
-
+	
 		if (MV_OK != mvTwsiRead(0, &twsiSlave, ucData, SPD_SIZE))
             return MV_DDR3_TRAINING_ERR_TWSI_FAIL;
     }
@@ -469,19 +469,19 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
     status = ddr3SpdSumInit(&dimmInfo[0], &dimmSumInfo, 0);
     if( MV_OK != status )
         return status;
-#else
+#else	
 	/* Dynamic D-Unit Setup - Read SPD values */
 #ifdef DUNIT_SPD
 	uiDimmNum = ddr3getDimmNum(auiDimmAddr);
 	if (uiDimmNum == 0) {
 #ifdef MIXED_DIMM_STATIC
 		DEBUG_INIT_S("DDR3 Training Sequence - No DIMMs detected \n");
-#else
+#else	
 		DEBUG_INIT_S("DDR3 Training Sequence - FAILED (Wrong DIMMs Setup) \n");
         return MV_DDR3_TRAINING_ERR_BAD_DIMM_SETUP;
 #endif
 	} else {
-		DEBUG_INIT_C("DDR3 Training Sequence - Number of DIMMs detected: ", uiDimmNum, 1);
+		DEBUG_INIT_C("DDR3 Training Sequence - Number of DIMMs detected: ", uiDimmNum, 1);	
 	}
 
 	for (uiDimm = 0; uiDimm < uiDimmNum; uiDimm++) {
@@ -560,7 +560,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 #endif
 	if (uiCL < 5)
 		uiCL = 5;
-
+	
 	DEBUG_INIT_FULL_C("DDR3 - DUNIT-SET - Cas Latency = ", uiCL, 1);
 
 /* {0x00001400} -	DDR SDRAM Configuration Register */
@@ -572,7 +572,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 		DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - ECC Enabled \n");
 	} else
 		DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - ECC Disabled \n");
-
+	
 	if (dimmSumInfo.dimmTypeInfo == SPD_MODULE_TYPE_RDIMM) {
 #ifdef DUNIT_STATIC
 		DEBUG_INIT_S("DDR3 Training Sequence - FAIL - Illegal R-DIMM setup \n");
@@ -597,7 +597,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 #else
 	DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - Datawidth - 16Bits \n");
 #endif
-
+	
 	uiStaticVal = ddr3GetStaticMCValue(REG_SDRAM_CONFIG_ADDR, 0, REG_SDRAM_CONFIG_RFRS_MASK, 0, 0);
 	uiTemp = ddr3GetMaxValue(dimmSumInfo.refreshInterval/uiHClkTime, uiDimmNum, uiStaticVal);
 	DEBUG_INIT_FULL_C("DDR3 - DUNIT-SET - RefreshInterval/Hclk = ", uiTemp, 4);
@@ -670,7 +670,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 
 	if (uiCL < 7)
 		uiReg = 0x33137663;
-
+		
 	MV_REG_WRITE(REG_SDRAM_TIMING_LOW_ADDR, uiReg);
 
 /*{0x0000140C}	-	DDR SDRAM Timing (High) Register */
@@ -707,7 +707,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 	DEBUG_INIT_FULL_C("DDR3 - DUNIT-SET - tFAW-4*tRRD = ", uiTemp, 1);
 	uiReg |= ((uiTemp & 0x1F) << 24);
 #endif
-
+	
 	/* SDRAM device capacity */
 #ifdef DUNIT_STATIC
 	uiReg |= (MV_REG_READ(REG_SDRAM_ADDRESS_CTRL_ADDR) & 0xF0FFFF);
@@ -723,10 +723,10 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 			}
 			uiCsCount++;
 			if (dimmInfo[uiDimmCount].sdramCapacity < 0x3) {
-				uiReg |= ((dimmInfo[uiDimmCount].sdramCapacity + 1) <<
+				uiReg |= ((dimmInfo[uiDimmCount].sdramCapacity + 1) << 
 					(REG_SDRAM_ADDRESS_SIZE_OFFS + (REG_SDRAM_ADDRESS_CTRL_STRUCT_OFFS * uiCs)));
 			} else if (dimmInfo[uiDimmCount].sdramCapacity > 0x3) {
-				uiReg |= ((dimmInfo[uiDimmCount].sdramCapacity & 0x3) <<
+				uiReg |= ((dimmInfo[uiDimmCount].sdramCapacity & 0x3) << 
 					(REG_SDRAM_ADDRESS_SIZE_OFFS + (REG_SDRAM_ADDRESS_CTRL_STRUCT_OFFS * uiCs)));
 				uiReg |= ((dimmInfo[uiDimmCount].sdramCapacity & 0x4) << (REG_SDRAM_ADDRESS_SIZE_HIGH_OFFS + uiCs));
 			}
@@ -800,7 +800,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 	MV_REG_WRITE(REG_DUNIT_ODT_CTRL_ADDR, uiReg);
 
 /*{0x000014A0}	-	DDR Dunit ODT Control Register */
-#if defined(MV88F78X60) && !defined(MV88F78X60_Z1)
+#if defined(MV88F78X60) && !defined(MV88F78X60_Z1)	
 	if (mvCtrlRevGet() == MV_78XX0_A0_REV) {
 	uiReg = 0x000006A9;
 	MV_REG_WRITE(REG_DRAM_FIFO_CTRL_ADDR, uiReg);
@@ -840,7 +840,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 
 /*{0x00020184}	-	Close FastPath - 2G */
 	MV_REG_WRITE(REG_FASTPATH_WIN_0_CTRL_ADDR, 0);
-
+	
 /*{0x00001538}	-	 Read Data Sample Delays Register */
 	uiReg = 0;
 	for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
@@ -894,7 +894,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 		uiTemp = uiHClkTime / 2;
 	else
 		uiTemp = uiHClkTime;
-
+		
 		if (uiTemp >= 2500)
 			uiCWL = 5; /* CWL = 5 */
 		else if (uiTemp >= 1875 && uiTemp < 2500)
@@ -911,7 +911,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 			uiCWL = 11; /* CWL = 11 */
 		else if (uiTemp >= 750 && uiTemp < 833)
 			uiCWL = 12; /* CWL = 12 */
-
+		
 		uiReg = ((uiCWL - 5) << REG_DDR3_MR2_CWL_OFFS);
 
 #ifdef MULTI_CS_MRS_SUPPORT
@@ -983,7 +983,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 	if (mvCtrlRevGet() == MV_78XX0_B0_REV) {
 		uiReg = 0xF800A225;
 	}
-#else
+#else	
 	uiReg = 0xDE000025;
 #endif
 	MV_REG_WRITE(REG_DRAM_PHY_CONFIG_ADDR, uiReg);
@@ -996,7 +996,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 
 	if (dimmSumInfo.dimmTypeInfo == SPD_MODULE_TYPE_RDIMM) {
 		DEBUG_INIT_S("DDR3 Training Sequence - Registered DIMM detected \n");
-
+		
 		/* Set commands parity completion */
 		uiReg = MV_REG_READ(REG_REGISTERED_DRAM_CTRL_ADDR);
 		uiReg &= ~REG_REGISTERED_DRAM_CTRL_PARITY_MASK;
@@ -1018,7 +1018,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 				if (uiRC != 6 && uiRC != 7) {
 #if 0
 					uiReg = (REG_SDRAM_OPERATION_CMD_CWA & ~(uiCsEna << REG_SDRAM_OPERATION_CS_OFFS)); /* Set CWA Command */
-#endif
+#endif 
 					uiReg = (REG_SDRAM_OPERATION_CMD_CWA & ~(0xF << REG_SDRAM_OPERATION_CS_OFFS)); /* Set CWA Command */
 					uiReg |= ((dimmInfo[0].regDimmRC[uiRC] & REG_SDRAM_OPERATION_CWA_DATA_MASK) << REG_SDRAM_OPERATION_CWA_DATA_OFFS);
 					uiReg |= uiRC << REG_SDRAM_OPERATION_CWA_RC_OFFS;
@@ -1059,9 +1059,9 @@ MV_U32 ddr3DivFunc(MV_U32 uiValue, MV_U32 uiDivider, MV_U32 uiSub)
 }
 
 /******************************************************************************
-* Name:		ddr3GetMaxValue
+* Name:		ddr3GetMaxValue 
 * Desc:
-* Args:
+* Args:		
 * Notes:
 * Returns:
 */
@@ -1081,9 +1081,9 @@ MV_U32 ddr3GetMaxValue(MV_U32 spdVal, MV_U32 uiDimmNum, MV_U32 staticVal)
 }
 
 /******************************************************************************
-* Name:		ddr3GetMinValue
+* Name:		ddr3GetMinValue 
 * Desc:
-* Args:
+* Args:		
 * Notes:
 * Returns:
 */

@@ -96,13 +96,13 @@ MV_DRAM_MC_INIT ddr3_A0_db_400[MV_MAX_DDR3_STATIC_SIZE] =
 	{0x000014C4, 0xEFB24C8}, 	/* DRAM Data and DQS Driving Strenght  */
 
 	{0x000200e8, 0x1FFF0E01}, 	/* DO NOT Modify - Open Mbus Window - 2G - Mbus is required for the training sequence*/
-	{0x00020184, 0x1FFFFFE0}, 	/* DO NOT Modify - Close fast path Window to - 2G */
+ 	{0x00020184, 0x1FFFFFE0}, 	/* DO NOT Modify - Close fast path Window to - 2G */
 
 	{0x0001504, 0x1FFFFFF1}, 	/* CS0 Size */
 	{0x000150C, 0x00000000}, 	/* CS1 Size */
 	{0x0001514, 0x00000000}, 	/* CS2 Size */
 	{0x000151C, 0x00000000}, 	/* CS3 Size */
-
+ 
 	{0x00001538, 0x00000006},	/*Read Data Sample Delays Register */
 	{0x0000153C, 0x00000007},	/*Read Data Ready Delay Register */
 
@@ -215,3 +215,4 @@ MV_DRAM_MC_INIT ddr3_A0_rd_600[MV_MAX_DDR3_STATIC_SIZE] =
 };
 
 #endif /* _INC_AXP_MC_STATIC_H */
+

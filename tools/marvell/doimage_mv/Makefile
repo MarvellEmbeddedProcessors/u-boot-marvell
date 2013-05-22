@@ -93,3 +93,4 @@ $(LIB_PATH)/libpolarssl.a:
 clean:
 	$(RM) doimage ../doimage hdrparser *.o  doimage.o
 	$(MAKE) CC=$(HOSTCC) clean -s -C $(LIB_ROOT)
+

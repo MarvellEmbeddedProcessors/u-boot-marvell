@@ -31,7 +31,7 @@ Introduction
 ------------
 doimage
 ------------
-Doimage tool is used for preparation of specially-formatted image for usage with
+Doimage tool is used for preparation of specially-formatted image for usage with 
 BootROM to bring up a secondary boot loader or OS from various types of supported
 boot media.
 The boot image contains one or more headers and binary (executable) part.
@@ -86,7 +86,7 @@ hdparser
 Hdparset has only one mandatory parameter - the boot image file name.
 
 	hdparser -[t] <boot_image_file_name>
-
+	
 -t
 	Verify headers block and binary image RSA signatures,
 	print RSA public key SHA-256 digest for eFuse usage
@@ -141,7 +141,7 @@ Mandatory parameters
 -S image_source
 	Hexadecimal byte offset of binary image part from the start of the boot image.
 	For SATA devices the offset is counted in 512b sectors.
-	This parameter is ignored for pex boot device. If omitted, the 0 is assumed and
+	This parameter is ignored for pex boot device. If omitted, the 0 is assumed and 
 	the binary image is located next to the boot image headers.
 	The offset must be aligned to 512 bytes boundary for nand boot devices.
 
@@ -178,7 +178,7 @@ Optional parameters
 
 -G exec_file
 	ASCII file name of single binary header with raw ARM code with stripped ELF header.
-	The header must include array of all its parameters placed before the entry point and
+	The header must include array of all its parameters placed before the entry point and 
 	an appropriate ARM code for saving all affected CPU registers to stack at procedure start
 	and restoring them before return from the routine (similar to a regular function).
 	The code should be linked to a right SRAM address and take into account the amount of
@@ -189,12 +189,12 @@ Optional parameters
 	directory.
 
 -R regs_file
-	ASCII file name that contains single list of address-value pairs used for configuring
+	ASCII file name that contains single list of address-value pairs used for configuring 
 	the device registers before the binary image execution (Register header).
 	For including more than one register header or a special headers order please use "-C" command option.
 
 -C hdrs_file
-	ASCII file name that defines order and source filenames for multiple binary and
+	ASCII file name that defines order and source filenames for multiple binary and 
 	register headers that should be embedded into the boot image.
 
 -X pre_pad
@@ -302,7 +302,7 @@ SPI/NOR flash images
 1. Secure mode is enabled. JTAG support is enabled. Delay boot execution by 10 sec for JTAG probe connection.
 Run DRAM registers configuration (REG header) procedure defined in dramregs.txt file followed by single BIN header
 execution taken from binhdr.bin file before running U-boot.
-Encode binary image using AES-128 key taken from file aes128.bin. Assign BoxID of 0xDEADBEF and FlashID of 0xBABE
+Encode binary image using AES-128 key taken from file aes128.bin. Assign BoxID of 0xDEADBEF and FlashID of 0xBABE 
 to the boot image. Sign headers block and encoded binary image by RSA signatures created with help of RSA private key
 defined in file rsa_priv.txt.
 Load U-boot into DRAM address 0x600000 and start execution at address 0x6A0000.
@@ -335,10 +335,10 @@ Consult Marvell documentation for address map of specific device.
 NAND flash images
 ---------------------
 
-1. Flash page size is 2K, block size is 128K, SLC-type. Secure mode is enabled. JTAG support is enabled.
-Delay boot execution by 10 sec for JTAG probe connection. Run DRAM registers configuration (REG header)
+1. Flash page size is 2K, block size is 128K, SLC-type. Secure mode is enabled. JTAG support is enabled. 
+Delay boot execution by 10 sec for JTAG probe connection. Run DRAM registers configuration (REG header) 
 procedure defined in dramregs.txt file followed by single BIN header execution taken from binhdr.bin file
-before running U-boot. Encode binary image using AES-128 key taken from file aes128.bin.
+before running U-boot. Encode binary image using AES-128 key taken from file aes128.bin. 
 Assign BoxID of 0xDEADBEF and FlashID of 0xBABE to the boot image. Sign headers block and encoded binary
 image by RSA signatures created with help of RSA private key defined in file rsa_priv.txt.
 Load U-boot into DRAM address 0x600000 and start execution at address 0x6A0000.
@@ -346,7 +346,7 @@ Load U-boot into DRAM address 0x600000 and start execution at address 0x6A0000.
 	doimage -T nand -D 0x600000 -E 0x6A0000 -P 2048 -L 128 -N S -Z rsa_priv.txt -A aes128.bin \
 		-J 1 -B 0xDEADBEEF -F 0xBABE -R dramregs.txt -G binhdr.bin u-boot.bin u-boot_nand_dram_secure.bin
 
-2. Flash page size is 4K, block size is 256K, MLC-type. Non-secure boot mode.
+2. Flash page size is 4K, block size is 256K, MLC-type. Non-secure boot mode. 
 Add headers listed in headers_def.txt file to the boot image.
 Load U-boot into DRAM address 0x600000 and start execution at address 0x6A0000.
 
@@ -356,7 +356,7 @@ Load U-boot into DRAM address 0x600000 and start execution at address 0x6A0000.
 UART image
 -------------
 
-Image for UART. Secure mode is disabled.
+Image for UART. Secure mode is disabled. 
 Run DRAM registers configuration (REG header) procedure defined in dramregs.txt file followed by single BIN header
 execution taken from binhdr.bin file before running U-boot.
 Load U-boot into DRAM address 0x600000 and start execution at address 0x6A0000.
@@ -383,9 +383,9 @@ Load U-boot into DRAM address 0x600000 and start execution at address 0x6A0000.
 hdparser output example for regular boot image
 -----------------------------------------------
 
-hdrparser test_image.bin
+hdrparser test_image.bin 
 #####################################################
-Marvell Boot Image checker version 1.0
+Marvell Boot Image checker version 1.0 
 -----------------------------------------------------
 Image file:
 test_image.bin
@@ -474,7 +474,7 @@ hdparser output example for secure boot image
 
 ./hdrparser -t test_image_secure.bin
 #####################################################
-Marvell Boot Image checker version 1.0
+Marvell Boot Image checker version 1.0 
 -----------------------------------------------------
 Image file:
 test_image_secure.bin
@@ -576,10 +576,11 @@ File size = 766420 bytes
 -----------------------------------------------------
 Binary image checksum = 0x4F5141E2 (GOOD)
 RSA key SHA256 digest for eFuse:
-  BE FULL: c1 9e fc 0a 99 2c 9d a0 be 8a 9c b5 e0 ac d3 1d
-           de 67 67 fd cf 09 90 3a b8 bc a5 01 8e 99 a0 fb
-  LE REGS: [0]0afc9ec1 [1]a09d2c99 [2]b59c8abe [3]1dd3ace0
-           [4]fd6767de [5]3a9009cf [6]01a5bcb8 [7]fba0998e
+  BE FULL: c1 9e fc 0a 99 2c 9d a0 be 8a 9c b5 e0 ac d3 1d 
+           de 67 67 fd cf 09 90 3a b8 bc a5 01 8e 99 a0 fb 
+  LE REGS: [0]0afc9ec1 [1]a09d2c99 [2]b59c8abe [3]1dd3ace0 
+           [4]fd6767de [5]3a9009cf [6]01a5bcb8 [7]fba0998e 
 Header RSA signature verification - PASSED
 Image  RSA signature verification - PASSED
 ************ T E S T   S U C C E E D E D ************
+

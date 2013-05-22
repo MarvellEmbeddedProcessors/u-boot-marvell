@@ -284,7 +284,7 @@ int build_reg_header (char *fname, MV_U8 *buffer, MV_U32 current_size)
 		fprintf(stderr,"Maximum number of extentions reached!\n");
 		return 0;
 	}
-
+	
 	/* Indicate next header in previous extention if any */
 	if (mainHdr->ext != 0) {
 		prevExtHdrTail = (tailExtBHR_t*)(buffer + current_size - sizeof(tailExtBHR_t));
@@ -296,7 +296,7 @@ int build_reg_header (char *fname, MV_U8 *buffer, MV_U32 current_size)
 
 	headExtHdr->type = EXT_HDR_TYP_REGISTER;
 	max_bytes_to_write = MAX_HEADER_SIZE - current_size - EXT_HDR_BASE_SIZE;
-
+	
 	if ((f_dram = fopen(fname, "r")) == NULL) {
 		fprintf(stderr,"Failed to open file '%s'\n", fname);
 		perror("Error:");
@@ -322,7 +322,7 @@ int build_reg_header (char *fname, MV_U8 *buffer, MV_U32 current_size)
 	tmp_len = EXT_HDR_BASE_SIZE + i * 4;
 	/* Write total length into the current header fields */
 	EXT_HDR_SET_LEN(headExtHdr, tmp_len);
-
+	
 	return tmp_len;
 } /* end of build_reg_header() */
 
@@ -353,7 +353,7 @@ int build_bin_header (char *fname, MV_U8 *buffer, MV_U32 current_size)
 		fprintf(stderr,"Maximum number of extentions reached!\n");
 		return 0;
 	}
-
+	
 	/* Indicate next header in previous extention if any */
 	if (mainHdr->ext != 0) {
 		prevExtHdrTail = (tailExtBHR_t*)(buffer + current_size - sizeof(tailExtBHR_t));
@@ -592,7 +592,7 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 
 				/* strip trailing LF/CR symbols */
 				last = strlen(fname) - 1;
-				while ((strncmp(fname + last, "\n", 1) == 0) ||
+				while ((strncmp(fname + last, "\n", 1) == 0) || 
 					(strncmp(fname + last, "\r", 1) == 0)) {
 					fname[last] = 0;
 					last--;
@@ -1936,3 +1936,4 @@ parse_error:
 	exit(1);
 
 } /* end of main() */
+

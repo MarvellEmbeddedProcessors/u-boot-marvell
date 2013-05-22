@@ -16,7 +16,7 @@
 	bl		mvBinHdrDispatcher
 	mov	r0, #0x0				/* @ return value: 0x0 NO_ERR */
 	ldmfd	sp!, {r0 - r12, pc}	/* @ restore regs and return */
-
+	
 
 /*************************************/
 /* cache_inv - invalidate Cache line  */
@@ -25,7 +25,7 @@
 	.global cache_inv
 	.type  cache_inv, %function
 	cache_inv:
-
+	
 	stmfd   sp!, {r1-r12}
 
 	mcr     p15, 0, r0, c7, c6, 1
@@ -41,7 +41,7 @@
 	.global flush_l1_v6
 	.type	flush_l1_v6, %function
 	flush_l1_v6:
-
+	
 	stmfd   sp!, {r1-r12}
 
 	mcr     p15, 0, r0, c7, c10, 5          /* @ data memory barrier */
@@ -59,7 +59,7 @@
 	.global flush_l1_v7
 	.type	flush_l1_v7, %function
 	flush_l1_v7:
-
+	
 	stmfd   sp!, {r1-r12}
 
 	dmb 									/* @data memory barrier */
@@ -72,7 +72,7 @@
 /**********************************************************************/
 /* changeResetVecBase - change reset vector offset 0x0 / 0xFFFF0000  	*/
 /* r0 - direction														*/
-
+			
 	.global changeResetVecBase
 	.type	changeResetVecBase, %function
 	changeResetVecBase:
@@ -83,12 +83,12 @@
 	dsb
 	bx      lr
 
-
+			
 /******************************************/
 /* setCPSR - set/reset CPSR register bits  */
 /* r0 - required bit 						*/
-
-
+			
+			
 	.global setCPSR
    .type	setCPSR, %function
 	setCPSR:

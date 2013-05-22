@@ -3,3 +3,4 @@ REG     /home/kostap/scratchbox/bootrom/DiscoSMP_Bootrom/tests/dramregs_dove.txt
 BIN   /home/kostap/scratchbox/bootrom/DiscoSMP_Bootrom/tests/bin_hdr/bin_hdr.bin
 REG      /home/kostap/scratchbox/bootrom/DiscoSMP_Bootrom/tests/dramregs_aurora.txt
 BIN   /home/kostap/scratchbox/bootrom/DiscoSMP_Bootrom/tests/bin_hdr/bin_hdr.bin
+

@@ -206,3 +206,5 @@ clean:
 	@for dir in $(COMPONENT_SUBDIRS) ; do \
 	    $(MAKE) clean -s -C $$dir || exit 1 ; \
 	done
+
+

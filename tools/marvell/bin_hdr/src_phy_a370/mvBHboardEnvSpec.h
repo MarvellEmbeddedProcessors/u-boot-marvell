@@ -252,11 +252,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PEX_PWR_MNG_EXT_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A18)
 #define PEX_FLOW_CTRL_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A20)
 #define PEX_SECONDARY_BUS_REG(pexIf)        ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A2C)
-#define PEX_DYNMC_WIDTH_MNG_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A30)
-#define PEX_ROOT_CMPLX_SSPL_REG(pexif)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A0C)
+#define PEX_DYNMC_WIDTH_MNG_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A30) 
+#define PEX_ROOT_CMPLX_SSPL_REG(pexif)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A0C) 
 #define PEX_RAM_PARITY_CTRL_REG(pexIf) 		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A50)
 #define PEX_DBG_CTRL_REG(pexIf) 			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A60)
-#define PEX_DBG_STATUS_REG(pexIf)           ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A64)
+#define PEX_DBG_STATUS_REG(pexIf)           ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A64) 
 
 #define PXLCSR_NEG_LNK_GEN_OFFS			16	/* Negotiated Link GEN */
 #define PXLCSR_NEG_LNK_GEN_MASK 		(0xf << PXLCSR_NEG_LNK_GEN_OFFS)
@@ -313,3 +313,4 @@ typedef enum {
 
 
 #endif /* __INCmvBHboardEnvSpech */
+

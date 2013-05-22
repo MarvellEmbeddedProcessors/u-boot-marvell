@@ -97,7 +97,7 @@ extern MV_U32 mvBoardTclkGet(MV_VOID);
 #define CPU_MAIN_INT_CAUSE_TWSI(i)			(31 + i)
 
 
-#define TWSI_CPU_MAIN_INT_CAUSE_REG		CPU_MAIN_INT_CAUSE_REG(1, 0)
+#define TWSI_CPU_MAIN_INT_CAUSE_REG		CPU_MAIN_INT_CAUSE_REG(1, 0) 
 #define MV_TWSI_SLAVE_REGS_OFFSET(chanNum)	(0x11000 + (chanNum * 0x100))
 /*
 ** Base address for TWSI registers.
@@ -243,3 +243,4 @@ MV_STATUS mvTwsiWrite(MV_U8 chanNum, MV_TWSI_SLAVE *twsiSlave, MV_U8 *pBlock, MV
 
 
 #endif /* __INCmvTwsiH */
+

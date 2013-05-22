@@ -1,7 +1,7 @@
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
-This software file (the "File") is owned and distributed by Marvell
+This software file (the "File") is owned and distributed by Marvell 
 International Ltd. and/or its affiliates ("Marvell") under the following
 alternative licensing terms.  Once you have made an election to distribute the
 File under one of the following license alternatives, please (i) delete this
@@ -19,45 +19,45 @@ to you under the terms of the applicable Commercial License.
 ********************************************************************************
 Marvell GPL License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or
-modify this File in accordance with the terms and conditions of the General
-Public License Version 2, June 1991 (the "GPL License"), a copy of which is
-available along with the File in the license.txt file or by writing to the Free
-Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
-on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
+If you received this File from Marvell, you may opt to use, redistribute and/or 
+modify this File in accordance with the terms and conditions of the General 
+Public License Version 2, June 1991 (the "GPL License"), a copy of which is 
+available along with the File in the license.txt file or by writing to the Free 
+Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or 
+on the worldwide web at http://www.gnu.org/licenses/gpl.txt. 
 
-THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
-WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
-DISCLAIMED.  The GPL License provides additional details about this warranty
+THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED 
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY 
+DISCLAIMED.  The GPL License provides additional details about this warranty 
 disclaimer.
 ********************************************************************************
 Marvell BSD License Option
 
-If you received this File from Marvell, you may opt to use, redistribute and/or
-modify this File under the following licensing terms.
-Redistribution and use in source and binary forms, with or without modification,
+If you received this File from Marvell, you may opt to use, redistribute and/or 
+modify this File under the following licensing terms. 
+Redistribution and use in source and binary forms, with or without modification, 
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+	    this list of conditions and the following disclaimer. 
 
     *   Redistributions in binary form must reproduce the above copyright
         notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+        documentation and/or other materials provided with the distribution. 
 
-    *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    *   Neither the name of Marvell nor the names of its contributors may be 
+        used to endorse or promote products derived from this software without 
+        specific prior written permission. 
+    
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR 
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON 
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
@@ -148,7 +148,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SPD_MEM_TYPE_DDR1 								0x7
 #define SPD_MEM_TYPE_DDR2 								0x8
 #define SPD_MEM_TYPE_DDR3 								0xB
-
+        
 #define DIMM_MODULE_MANU_OFFS					 		64
 #define DIMM_MODULE_MANU_SIZE 							8
 #define DIMM_MODULE_VEN_OFFS 							73
@@ -159,25 +159,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* enumeration for voltage levels. */
 typedef enum {
-    TTL_5V_TOLERANT,
-    LVTTL,
-    HSTL_1_5V,
-    SSTL_3_3V,
-    SSTL_2_5V,
-    VOLTAGE_UNKNOWN,
+    TTL_5V_TOLERANT, 
+    LVTTL, 
+    HSTL_1_5V, 
+    SSTL_3_3V, 
+    SSTL_2_5V, 
+    VOLTAGE_UNKNOWN, 
 } MV_DIMM_VOLTAGE_IF;
 
 
 /* enumaration for SDRAM CAS Latencies. */
 typedef enum _mvDimmSdramCas
 {
-    SD_CL_1 =1,
-    SD_CL_2,
-    SD_CL_3,
-    SD_CL_4,
-    SD_CL_5,
-    SD_CL_6,
-    SD_CL_7,
+    SD_CL_1 =1,  
+    SD_CL_2,  
+    SD_CL_3, 
+    SD_CL_4, 
+    SD_CL_5, 
+    SD_CL_6, 
+    SD_CL_7, 
     SD_FAULT
 }MV_DIMM_SDRAM_CAS;
 
@@ -191,7 +191,7 @@ typedef enum _mvMemoryType
 }MV_MEMORY_TYPE;
 
 
-/* DIMM information structure */
+/* DIMM information structure */                                                    
 typedef struct _mvDimmInfo
 {
     MV_MEMORY_TYPE  memoryType; 	/* DDR or SDRAM */
@@ -204,21 +204,21 @@ typedef struct _mvDimmInfo
 	MV_U32 	dimmRankCapacity;
     /* MV_U32  dimmSize;  */              /* 16,64,128,256 or 512 MByte in MB units */
 	MV_U32  numberOfDevices;
-
+	
 	MV_U32 	sdramWidth;
 	MV_U32  numOfBanksOnEachDevice;
 	MV_U32  sdramCapacity;
-
+	
 	MV_U32  numOfRowAddr;
 	MV_U32  numOfColAddr;
-
+	
 	MV_U32 	addressMirroring;
-
+	
     MV_U32  errorCheckType;             /* ECC , PARITY..*/
 	MV_U32  dimmTypeInfo;           /* DDR2 only */
 	MV_U32  dimmAttributes;
-
-
+	
+	
     /* DIMM timing parameters */
 	MV_U32  suportedCasLatencies;
 	MV_U32  refreshInterval;

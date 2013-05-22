@@ -129,7 +129,7 @@ MV_STATUS mvTwsiStartBitSet(MV_U8 chanNum)
 		isIntFlag = MV_TRUE;
 	/* set start Bit */
 	temp = MV_REG_READ(TWSI_CONTROL_REG(chanNum));
-
+	
 /*	add = TWSI_CONTROL_REG(chanNum); */
 	MV_REG_WRITE(TWSI_CONTROL_REG(chanNum), temp | TWSI_CONTROL_START_BIT);
 
@@ -183,7 +183,7 @@ MV_STATUS mvTwsiStopBitSet(MV_U8 chanNum)
 
 	/* Generate stop bit */
 	temp = MV_REG_READ(TWSI_CONTROL_REG(chanNum));
-
+	
 /*	add = TWSI_CONTROL_REG(chanNum); */
 	MV_REG_WRITE(TWSI_CONTROL_REG(chanNum), temp | TWSI_CONTROL_STOP_BIT);
 
@@ -295,7 +295,7 @@ static MV_VOID twsiAckBitSet(MV_U8 chanNum)
 
 	/*Set the Ack bit */
 	temp = MV_REG_READ(TWSI_CONTROL_REG(chanNum));
-
+	
 	MV_REG_WRITE(TWSI_CONTROL_REG(chanNum), temp | TWSI_CONTROL_ACK);
 
 	/* Add delay of 1ms */
@@ -394,7 +394,7 @@ MV_U32 mvTwsiInit(MV_U8 chanNum, MV_HZ frequancy, MV_U32 Tclk, MV_TWSI_ADDR *pTw
 	/* unmask twsi int */
 	val = MV_REG_READ(TWSI_CONTROL_REG(chanNum));
 	MV_REG_WRITE(TWSI_CONTROL_REG(chanNum), val | TWSI_CONTROL_INT_ENA);
-
+		
 	/* unmask twsi int in Interrupt source control register */
 	val = (MV_REG_READ(CPU_INT_SOURCE_CONTROL_REG(CPU_MAIN_INT_CAUSE_TWSI(chanNum))) |
 			 (1<<CPU_INT_SOURCE_CONTROL_ENA_OFFS));

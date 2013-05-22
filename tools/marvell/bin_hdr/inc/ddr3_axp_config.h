@@ -67,8 +67,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /*DDR3_LOG_LEVEL Information
 Level 0: Provides an error code in a case of failure, RL, WL errors and other algorithm failure
-Level 1: Provides the D-Unit setup (SPD/Static configuration)
-Level 2: Provides the windows margin as a results of DQS centeralization
+Level 1: Provides the D-Unit setup (SPD/Static configuration) 
+Level 2: Provides the windows margin as a results of DQS centeralization 
 Level 3: Provides the windows margin of each DQ as a results of DQS centeralization */
 
 #define	DDR3_LOG_LEVEL	0

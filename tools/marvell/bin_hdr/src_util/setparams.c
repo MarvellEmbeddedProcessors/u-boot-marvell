@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 	int 		optch; /* command-line option char */
 	static char	optstring[] = "SR:P:B:";
 	struct stat st;
-
+	
 	offset  = RAM_TOP + HDR_BLK_OFFSET;
 
 	while ((optch = getopt(argc, argv, optstring)) != -1) {

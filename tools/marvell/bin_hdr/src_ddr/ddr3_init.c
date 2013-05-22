@@ -329,12 +329,12 @@ MV_U32 ddr3Init_(void)
 	/* Power down deskew PLL */
 	uiReg = (MV_REG_READ(REG_DDRPHY_APLL_CTRL_ADDR) & ~(1<<25));	/* 0x18780 [25]  */
 	MV_REG_WRITE(REG_DDRPHY_APLL_CTRL_ADDR, uiReg);
-
+	
 	/************************************************************************************/
 	/* Stage 0 - Set board configuration 												*/
 	/************************************************************************************/
 	uiCpuFreq = ddr3GetCpuFreq();
-
+	
 	if(uiFabOpt > FAB_OPT)
 		uiFabOpt = FAB_OPT - 1;
 
@@ -413,7 +413,7 @@ MV_U32 ddr3Init_(void)
 		DEBUG_INIT_S("DDR3 Training Sequence - 2nd boot - Skip \n");
 		return MV_OK;
 	}
-
+	
 	/************************************************************************************/
 	/* Stage 1 - Dunit Setup 															*/
 	/************************************************************************************/
@@ -484,7 +484,7 @@ MV_U32 ddr3Init_(void)
 	/* DLB Enable */
 #if defined(MV88F78X60_Z1)
 	MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
-#else
+#else 
 	if (mvCtrlRevGet() == MV_78XX0_B0_REV)
 		MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0xc19e);
 	else
@@ -556,7 +556,7 @@ MV_U32 ddr3Init_(void)
 #if defined(MV88F78X60)
 	/* Disable ECC Ignore bit */
 	uiReg = (MV_REG_READ(REG_SDRAM_CONFIG_ADDR) & ~(1 << REG_SDRAM_CONFIG_IERR_OFFS));
-	MV_REG_WRITE(REG_SDRAM_CONFIG_ADDR, uiReg);
+	MV_REG_WRITE(REG_SDRAM_CONFIG_ADDR, uiReg);		
 #endif
 
 	/* Restore and set windows */
@@ -593,7 +593,7 @@ MV_U32 ddr3Init_(void)
 /******************************************************************************
 * Name:		ddr3GetCpuFreq
 * Desc:		read S@R and return CPU frequency
-* Args:
+* Args:	
 * Notes:
 * Returns:	required value
 */
@@ -601,7 +601,7 @@ MV_U32 ddr3Init_(void)
 MV_U32 ddr3GetCpuFreq(void)
 {
 	MV_U32 uiReg, uiCpuFreq;
-
+		
 	/* Read sample at reset setting */
 	uiReg = MV_REG_READ(REG_SAMPLE_RESET_LOW_ADDR);	/* 0x18230 [23:21] */
 #if defined(MV88F78X60)
@@ -617,7 +617,7 @@ MV_U32 ddr3GetCpuFreq(void)
 /******************************************************************************
 * Name:		ddr3GetFabOpt
 * Desc:		read S@R and return CPU frequency
-* Args:
+* Args:	
 * Notes:
 * Returns:	required value
 */
@@ -625,11 +625,11 @@ MV_U32 ddr3GetCpuFreq(void)
 MV_U32 ddr3GetFabOpt(void)
 {
 	MV_U32 uiReg, uiFabOpt;
-
+	
 	/* Read sample at reset setting */
 	uiReg = MV_REG_READ(REG_SAMPLE_RESET_LOW_ADDR);
 	uiFabOpt = ((uiReg & REG_SAMPLE_RESET_FAB_MASK) >> REG_SAMPLE_RESET_FAB_OFFS);
-
+	
 #if defined(MV88F78X60)
 	uiReg = MV_REG_READ(REG_SAMPLE_RESET_HIGH_ADDR);
 	uiFabOpt |= (((uiReg >> 19) & 0x1) << 4);
@@ -641,7 +641,7 @@ MV_U32 ddr3GetFabOpt(void)
 /******************************************************************************
 * Name:		ddr3GetVCOFreq
 * Desc:		read S@R and return VCO frequency
-* Args:
+* Args:	
 * Notes:
 * Returns:	required value
 */
@@ -649,7 +649,7 @@ MV_U32 ddr3GetFabOpt(void)
 MV_U32 ddr3GetVCOFreq(void)
 {
 	MV_U32 uiFab, uiCpuFreq, uiVCOFreq;
-
+	
 	uiFab = ddr3GetFabOpt();
 	uiCpuFreq = ddr3GetCpuFreq();
 
@@ -745,7 +745,7 @@ MV_VOID ddr3StaticTrainingInit()
 #else
 	chipId = 0x0;
 #endif
-
+	
 	ddrMode = ddr3GetStaticDdrMode();
 
 	j = 0;
@@ -834,7 +834,7 @@ MV_VOID ddr3StaticMCInit(void)
 {
 	MV_U32 ddrMode;
 	int j;
-
+	
 	ddrMode = ddr3GetStaticDdrMode();
 	j = 0;
 	while (ddr_modes[ddrMode].regs[j].reg_addr != 0) {
@@ -846,7 +846,7 @@ MV_VOID ddr3StaticMCInit(void)
 
 /************************************************************************************
 * Name:		ddr3CheckConfig - Check user configurations: ECC/MultiCS
-* Desc:
+* Desc:		
 * Args:	 	twsi Address
 * Notes:	Only Available for ArmadaXP/Armada 370 DB boards
 * Returns:	None.
@@ -864,7 +864,7 @@ MV_BOOL ddr3CheckConfig(MV_U32 twsiAddr, MV_CONFIG_TYPE configType)
 		twsiSlave.offset = 1;
 	else
 		twsiSlave.offset = 0;
-
+	
 	if (MV_OK == mvTwsiRead(0, &twsiSlave, &ucData, 1)) {
 		switch (configType) {
 		case CONFIG_ECC:
@@ -893,7 +893,7 @@ MV_BOOL ddr3CheckConfig(MV_U32 twsiAddr, MV_CONFIG_TYPE configType)
 #if defined(DB_88F78X60_REV2)
 /************************************************************************************
 * Name:		ddr3GetEpromFabric - Get Fabric configuration from EPROM
-* Desc:
+* Desc:		
 * Args:	 	twsi Address
 * Notes:	Only Available for ArmadaXP DB Rev2 boards
 * Returns:	None.
@@ -908,7 +908,7 @@ MV_U8 ddr3GetEpromFabric(void)
 	twsiSlave.moreThen256 = MV_FALSE;
 	twsiSlave.slaveAddr.address = NEW_FABRIC_TWSI_ADDR;
 	twsiSlave.offset = 1;
-
+	
 	if (MV_OK == mvTwsiRead(0, &twsiSlave, &ucData, 1))
 		return (ucData & 0x1F);
 #endif
@@ -1012,9 +1012,9 @@ MV_U32 ddr3ValidCLtoCL(MV_U32 uiValidCL)
 
 
 /******************************************************************************
-* Name:		ddr3GetCSNumFromReg
+* Name:		ddr3GetCSNumFromReg 
 * Desc:
-* Args:
+* Args:		
 * Notes:
 * Returns:
 */
@@ -1034,7 +1034,7 @@ MV_U32 ddr3GetCSNumFromReg(void) {
 /******************************************************************************
 * Name:		ddr3GetCSEnaFromReg
 * Desc:
-* Args:
+* Args:		
 * Notes:
 * Returns:
 */
@@ -1199,3 +1199,5 @@ MV_32 uiReg;
     DEBUG_DUNIT_REG(REG_CDI_CONFIG_ADDR);
 #endif
 }
+
+

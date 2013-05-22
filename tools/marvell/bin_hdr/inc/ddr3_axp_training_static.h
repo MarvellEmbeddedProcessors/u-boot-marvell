@@ -119,11 +119,11 @@ MV_DRAM_TRAINING_INIT ddr3_db_rev2_667[MV_MAX_DDR3_STATIC_SIZE] =
 
 	/*center DQS on read cycle */
 	{0x000016A0, 0xC803000F},
-
+		
 	{0x00001538, 0x0000000B}, 	/*Read Data Sample Delays Register */
 	{0x0000153C, 0x0000000F}, 	/*Read Data Ready Delay Register */
-
-	/*init DRAM */
+	
+ 	/*init DRAM */
 	{0x00001480, 0x00000001},
 	{0x0, 0x0}
 };
@@ -149,7 +149,7 @@ MV_DRAM_TRAINING_INIT ddr3_db_rev2_800[MV_MAX_DDR3_STATIC_SIZE] =
 	{0x000016A0, 0xC1C2011D},
 	/*8 */
 	{0x000016A0, 0xC2020212},
-
+	
 	/* Write Leveling */
 	/*0 */
 	{0x000016A0, 0xC0007A12},
@@ -189,14 +189,14 @@ MV_DRAM_TRAINING_INIT ddr3_db_rev2_800[MV_MAX_DDR3_STATIC_SIZE] =
 	{0x000016A0, 0xC1C05509},
 	/*8 */
 	{0x000016A0, 0xC2003A01},
-
+		
 	/*center DQS on read cycle */
 	{0x000016A0, 0xC803000B},
-
+		
 	{0x00001538, 0x0000000D}, 	/*Read Data Sample Delays Register */
 	{0x0000153C, 0x00000011}, 	/*Read Data Ready Delay Register */
-
-	/*init DRAM */
+	
+ 	/*init DRAM */
 	{0x00001480, 0x00000001},
 	{0x0, 0x0}
 };
@@ -244,13 +244,13 @@ MV_DRAM_TRAINING_INIT ddr3_db_400[MV_MAX_DDR3_STATIC_SIZE] =
 	{0x000016A0, 0xC1C08013},
 	/*8 */
 	{0x000016A0, 0xC2005508},
-
+	
 	/*center DQS on read cycle */
 	{0x000016A0, 0xC803000F},
-
+	
 	{0x00001538, 0x00000008},	/*Read Data Sample Delays Register */
 	{0x0000153C, 0x0000000A},	/*Read Data Ready Delay Register */
-
+	
 	/*init DRAM */
 	{0x00001480, 0x00000001},
 	{0x0, 0x0}
@@ -278,7 +278,7 @@ MV_DRAM_TRAINING_INIT ddr3_db_533[MV_MAX_DDR3_STATIC_SIZE] =
 	{0x000016A0, 0xC1C20117},
 	/*8		2		4		10 */
 	{0x000016A0, 0xC2020117},
-
+		
 	/* Write Leveling */
 	/*0 */
 	{0x000016A0, 0xC0008113},
@@ -298,13 +298,13 @@ MV_DRAM_TRAINING_INIT ddr3_db_533[MV_MAX_DDR3_STATIC_SIZE] =
 	{0x000016A0, 0xC1C0b01F},
 	/*8 */
 	{0x000016A0, 0xC2005D0A},
-
+		
 	/*center DQS on read cycle */
 	{0x000016A0, 0xC803000F},
-
+		
 	{0x00001538, 0x00000008},	/*Read Data Sample Delays Register */
 	{0x0000153C, 0x0000000A},	/*Read Data Ready Delay Register */
-
+		
 	/*init DRAM */
 	{0x00001480, 0x00000001},
 	{0x0, 0x0}
@@ -332,7 +332,7 @@ MV_DRAM_TRAINING_INIT ddr3_db_600[MV_MAX_DDR3_STATIC_SIZE] =
 	{0x000016A0, 0xC1C2000C},
 	/*8		2		2		22 */
 	{0x000016A0, 0xC2020112},
-
+		
 	/* Write Leveling */
 	/*0 */
 	{0x000016A0, 0xC0009919},
@@ -352,10 +352,10 @@ MV_DRAM_TRAINING_INIT ddr3_db_600[MV_MAX_DDR3_STATIC_SIZE] =
 	{0x000016A0, 0xC1C04103},
 	/*8 */
 	{0x000016A0, 0xC2006D0E},
-
+		
 	/*center DQS on read cycle */
 	{0x000016A0, 0xC803000F},
-
+		
 	{0x00001538, 0x0000000B}, 	/*Read Data Sample Delays Register */
 	{0x0000153C, 0x0000000F}, 	/*Read Data Ready Delay Register */
 	/*init DRAM */
@@ -386,7 +386,7 @@ MV_DRAM_TRAINING_INIT ddr3_db_667[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C20010},
  /*8		2		2		22 */
  {0x000016A0, 0xC2020112},
-
+	
  /* Write Leveling */
  /*0 */
  {0x000016A0, 0xC000b11F},
@@ -406,13 +406,13 @@ MV_DRAM_TRAINING_INIT ddr3_db_667[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C04d06},
  /*8 */
  {0x000016A0, 0xC2008514},
-
+	
  /*center DQS on read cycle */
  {0x000016A0, 0xC803000F},
-
+	
  {0x00001538, 0x0000000B}, 	/*Read Data Sample Delays Register */
  {0x0000153C, 0x0000000F}, 	/*Read Data Ready Delay Register */
-
+	
  /*init DRAM */
  {0x00001480, 0x00000001},
  {0x0, 0x0}
@@ -441,7 +441,7 @@ MV_DRAM_TRAINING_INIT ddr3_db_800[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C20106},
  /*8		2		2		22 */
  {0x000016A0, 0xC2020112},
-
+	
  /* Write Leveling */
  /*0 */
  {0x000016A0, 0xC000620B},
@@ -461,13 +461,13 @@ MV_DRAM_TRAINING_INIT ddr3_db_800[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C06D0E},
  /*8 */
  {0x000016A0, 0xC200AD1E},
-
+	
  /*center DQS on read cycle */
  {0x000016A0, 0xC803000F},
-
+	
  {0x00001538, 0x0000000C}, 	/*Read Data Sample Delays Register */
  {0x0000153C, 0x0000000E}, 	/*Read Data Ready Delay Register */
-
+	
  /*init DRAM */
  {0x00001480, 0x00000001},
  {0x0, 0x0}
@@ -495,7 +495,7 @@ MV_DRAM_TRAINING_INIT ddr3_rd_667_0[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C2001C},
  /*8 */
  {0x000016A0, 0xC2020109},
-
+	
  /* Write Leveling */
  /*0 */
  {0x000016A0, 0xC0003600},
@@ -515,13 +515,13 @@ MV_DRAM_TRAINING_INIT ddr3_rd_667_0[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C05107},
  /*8 */
  {0x000016A0, 0xC2008113},
-
+	
  /*center DQS on read cycle */
  {0x000016A0, 0xC803000F},
-
+	
  {0x00001538, 0x0000000B}, 	/*Read Data Sample Delays Register */
  {0x0000153C, 0x0000000F}, 	/*Read Data Ready Delay Register */
-
+	
  /*init DRAM */
  {0x00001480, 0x00000001},
  {0x0, 0x0}
@@ -550,7 +550,7 @@ MV_DRAM_TRAINING_INIT ddr3_rd_667_1[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C20011},
  /*8 */
  {0x000016A0, 0xC2020101},
-
+	
  /* Write Leveling */
  /*0 */
  {0x000016A0, 0xC0003600},
@@ -570,13 +570,13 @@ MV_DRAM_TRAINING_INIT ddr3_rd_667_1[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C0610B},
  /*8 */
  {0x000016A0, 0xC2008113},
-
+	
  /*center DQS on read cycle */
  {0x000016A0, 0xC803000F},
-
+	
  {0x00001538, 0x0000000B}, 	/*Read Data Sample Delays Register */
  {0x0000153C, 0x0000000F}, 	/*Read Data Ready Delay Register */
-
+	
  /*init DRAM */
  {0x00001480, 0x00000001},
  {0x0, 0x0}
@@ -604,7 +604,7 @@ MV_DRAM_TRAINING_INIT ddr3_rd_667_2[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C20017},
  /*8 */
  {0x000016A0, 0xC2020107},
-
+	
  /* Write Leveling */
  /*0 */
  {0x000016A0, 0xC0003600},
@@ -624,13 +624,13 @@ MV_DRAM_TRAINING_INIT ddr3_rd_667_2[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C0610B},
  /*8 */
  {0x000016A0, 0xC2008113},
-
+	
  /*center DQS on read cycle */
  {0x000016A0, 0xC803000F},
-
+	
  {0x00001538, 0x0000000B}, 	/*Read Data Sample Delays Register */
  {0x0000153C, 0x0000000F}, 	/*Read Data Ready Delay Register */
-
+	
  /*init DRAM */
  {0x00001480, 0x00000001},
  {0x0, 0x0}
@@ -660,7 +660,7 @@ MV_DRAM_TRAINING_INIT ddr3_db_667_M[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C20010},
  /*8		2		2		22 */
  {0x000016A0, 0xC2020112},
-
+	
  /* Write Leveling */
  /*0 */
  {0x000016A0, 0xC000b11F},
@@ -680,12 +680,12 @@ MV_DRAM_TRAINING_INIT ddr3_db_667_M[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C04d06},
  /*8 */
  {0x000016A0, 0xC2008514},
-
+	
  /*center DQS on read cycle */
  {0x000016A0, 0xC803000F},
-
+	
  /* CS 1 */
-
+	
  {0x000016A0, 0xC0060103},
  /*1		2		2		6 */
  {0x000016A0, 0xC0460012},
@@ -703,7 +703,7 @@ MV_DRAM_TRAINING_INIT ddr3_db_667_M[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C60010},
  /*8		2		2		22 */
  {0x000016A0, 0xC2060112},
-
+	
  /* Write Leveling */
  /*0 */
  {0x000016A0, 0xC004b11F},
@@ -723,15 +723,15 @@ MV_DRAM_TRAINING_INIT ddr3_db_667_M[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C44d06},
  /*8 */
  {0x000016A0, 0xC2048514},
-
+	
  /*center DQS on read cycle */
  {0x000016A0, 0xC807000F},
-
+	
  /* Both CS */
-
+	
  {0x00001538, 0x00000B0B}, 	/*Read Data Sample Delays Register */
  {0x0000153C, 0x00000F0F}, 	/*Read Data Ready Delay Register */
-
+	
  /*init DRAM */
  {0x00001480, 0x00000001},
  {0x0, 0x0}
@@ -759,7 +759,7 @@ MV_DRAM_TRAINING_INIT ddr3_rd_667_3[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C20107},
  /*8 */
  {0x000016A0, 0xC2020113},
-
+	
  /* Write Leveling */
  /*0 */
  {0x000016A0, 0xC0003600},
@@ -779,13 +779,13 @@ MV_DRAM_TRAINING_INIT ddr3_rd_667_3[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C04D06},
  /*8 */
  {0x000016A0, 0xC2008113},
-
+	
  /*center DQS on read cycle */
  {0x000016A0, 0xC803000F},
-
+	
  {0x00001538, 0x0000000B}, 	/*Read Data Sample Delays Register */
  {0x0000153C, 0x0000000F}, 	/*Read Data Ready Delay Register */
-
+	
  /*init DRAM */
  {0x00001480, 0x00000001},
  {0x0, 0x0}
@@ -814,7 +814,7 @@ MV_DRAM_TRAINING_INIT ddr3_pcac_600[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C2031B},
  /* 8		2		2		22 */
  {0x000016A0, 0xC2020112},
-
+	
  /*  Write Leveling */
  /* 0 */
  {0x000016A0, 0xC0004905},
@@ -834,7 +834,7 @@ MV_DRAM_TRAINING_INIT ddr3_pcac_600[MV_MAX_DDR3_STATIC_SIZE] =
  {0x000016A0, 0xC1C09418},
  /* 8 */
  {0x000016A0, 0xC2006D0E},
-
+	
  /*center DQS on read cycle */
  {0x000016A0, 0xC803000F},
  {0x00001538, 0x00000009}, 	/*Read Data Sample Delays Register */

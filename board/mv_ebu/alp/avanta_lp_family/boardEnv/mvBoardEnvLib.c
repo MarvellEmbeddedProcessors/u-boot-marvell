@@ -2266,10 +2266,10 @@ MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 	twsiSlave.offset = regNum;
 	twsiSlave.moreThen256 = MV_FALSE;
 	if (MV_OK != mvTwsiWrite(0, &twsiSlave, &regVal, 1)) {
-		DB(mvOsPrintf("%s: Write S@R fail\n" __func__));
+		DB(mvOsPrintf("%s: Write S@R fail\n", __func__));
 		return MV_ERROR;
 	}
-	DB(mvOsPrintf("%s: Write S@R succeded\n" __func__));
+	DB(mvOsPrintf("%s: Write S@R succeded\n", __func__));
 
 	return MV_OK;
 }

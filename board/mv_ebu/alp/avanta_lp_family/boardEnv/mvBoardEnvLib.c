@@ -408,11 +408,7 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum)
 {
-#if defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	return (ethPortNum == 2);
-#endif
-
-	return MV_FALSE;
 }
 
 /*******************************************************************************

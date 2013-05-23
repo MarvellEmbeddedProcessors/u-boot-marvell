@@ -177,7 +177,7 @@ MV_BOARD_MAC_INFO db88f6660InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
 	{ BOARD_MAC_SPEED_1000M, -1									},
 	{ BOARD_MAC_SPEED_AUTO, 0x1									},
-	{ N_A,			N_A									}
+	{ BOARD_MAC_SPEED_1000M, -1									}
 };
 MV_BOARD_MPP_TYPE_INFO db88f6660InfoBoardModTypeInfo[] = {
 	{
@@ -284,7 +284,7 @@ MV_BOARD_MAC_INFO db88f6650InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
 	{ BOARD_MAC_SPEED_AUTO, 0x0 },
 	{ BOARD_MAC_SPEED_AUTO, 0x3 },
-	{ N_A,			N_A },
+	{ BOARD_MAC_SPEED_1000M, -1 },
 };
 
 MV_BOARD_MPP_TYPE_INFO db88f6650InfoBoardModTypeInfo[] = {

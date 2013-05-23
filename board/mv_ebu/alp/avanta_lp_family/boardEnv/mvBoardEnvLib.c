@@ -1535,6 +1535,7 @@ MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId)
 MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 {
 	MV_U32 ethConfig = mvBoardEthComplexConfigGet();
+
 	mvOsOutput("Board configuration detected:\n");
 
 	/* TDM */
@@ -1878,16 +1879,32 @@ MV_U8 mvBoardIoExpValGet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo)
 *******************************************************************************/
 MV_STATUS mvBoardIoExpValSet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo, MV_U8 value)
 {
-	MV_U8 readVal;
+	MV_U8 readVal, configVal;
 
 	if (ioInfo == NULL) {
 		mvOsPrintf("%s: Error: Write to IO Expander failed (invalid Expander info)\n", __func__);
 		return MV_ERROR;
 	}
-	/* Read */
-
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum, ioInfo->regNum, &readVal) != MV_OK) {
+	/* Read Value */
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum,
+					ioInfo->regNum, &readVal) != MV_OK) {
 		mvOsPrintf("%s: Error: Read from IO Expander failed\n", __func__);
+		return MV_ERROR;
+	}
+
+	/* Read Configuration Value */
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum,
+					ioInfo->regNum + 6, &configVal) != MV_OK) {
+		mvOsPrintf("%s: Error: Read Configuration from IO Expander failed\n", __func__);
+		return MV_ERROR;
+	}
+
+	/* Modify Configuration value to Enable write for requested bit */
+	configVal &= ~(1 << ioInfo->offset);	/* clean bit of old value  */
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum,
+					ioInfo->regNum + 6, configVal) != MV_OK) {
+		mvOsPrintf("%s: Error: Enable Write to IO Expander at 0x%x failed\n", __func__
+			   , mvBoardTwsiAddrGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum));
 		return MV_ERROR;
 	}
 
@@ -1896,7 +1913,8 @@ MV_STATUS mvBoardIoExpValSet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo, MV_U8 value
 	readVal |= (value << ioInfo->offset);
 
 	/* Write */
-	if (mvBoardTwsiSet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum, ioInfo->regNum, readVal) != MV_OK) {
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum,
+					ioInfo->regNum + 2, readVal) != MV_OK) {
 		mvOsPrintf("%s: Error: Write to IO Expander at 0x%x failed\n", __func__
 			   , mvBoardTwsiAddrGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum));
 		return MV_ERROR;
@@ -2137,11 +2155,10 @@ MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass, MV_BOARD_IO_E
 MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable)
 {
 	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
-
 	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_EXT_PHY_SMI_EN, &ioInfo) == MV_OK)
 		return mvBoardIoExpValSet(&ioInfo, (enable ? 0x0 : 0x1));
 
-	mvOsPrintf("%s: Error: Read from IO expander failed (External Phy Buffer select)\n", __func__);
+	mvOsPrintf("%s: Error: Write to IO expander failed (External Phy Buffer select)\n", __func__);
 	return MV_FALSE;
 }
 

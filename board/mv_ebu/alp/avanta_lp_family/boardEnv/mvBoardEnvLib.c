@@ -438,11 +438,11 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 	tclk = ((tclk & 0x400000) >> 22);
 	switch (tclk) {
 	case 0:
-		return _166MHz;
+		return MV_BOARD_TCLK_166MHZ;
 	case 1:
-		return _200MHz;
+		return MV_BOARD_TCLK_200MHZ;
 	default:
-		return _200MHz;
+		return MV_BOARD_TCLK_200MHZ;
 	}
 #endif
 }

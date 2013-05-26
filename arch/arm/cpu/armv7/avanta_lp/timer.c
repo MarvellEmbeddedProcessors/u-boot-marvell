@@ -44,12 +44,12 @@
 #include "cntmr/mvCntmr.h"
 #include "cntmr/mvCntmrRegs.h"
 #include "cpu/mvCpu.h"
-#define MV_BOARD_REFCLK MV_BOARD_REFCLK_25MHZ
-#define CTCR_ARM_TIMER_FRQ_SEL(cntr) CTCR_ARM_TIMER_25MhzFRQ_EN(cntr)
+#define MV_BOARD_REFCLK mvBoardTclkGet()
 #define READ_TIMER (mvCntmrRead(UBOOT_CNTR) / (MV_BOARD_REFCLK / 1000))
 
 static ulong timestamp;
 static ulong lastdec;
+extern MV_U32 mvBoardTclkGet(MV_VOID);
 
 int timer_init_done = 0;
 
@@ -70,9 +70,6 @@ int timer_init(void)
 	cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
 	cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
 	cntmrCtrl |= CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-#if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
-	cntmrCtrl |= CTCR_ARM_TIMER_FRQ_SEL(UBOOT_CNTR);
-#endif
 
 	MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR), cntmrCtrl);
 	/* init the timestamp and lastdec value */

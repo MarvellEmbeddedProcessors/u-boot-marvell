@@ -260,7 +260,7 @@ extern "C" {
 #define FREQ_MODES_NUM          29
 
 #define MPP_GROUP_0_TYPE { \
-	0x11111111,     /* NAND_V2_BOOT_DEVICE  */ \
+	0x55555555,     /* NAND_V2_BOOT_DEVICE  */ \
 	0x00020020,     /* SPI_BOOT_DEVICE	*/ \
 	0x44024420,     /* SPI_BOOT_DEVICE & SPDIF Audio */ \
 }
@@ -272,7 +272,7 @@ typedef enum {
 } MV_GROUP_0_TYPE;
 
 #define MPP_GROUP_1_TYPE { \
-	0x22111111,     /* NAND_V2_BOOT_DEVICE  */ \
+	0x22555555,     /* NAND_V2_BOOT_DEVICE  */ \
 	0x22000022,     /* SPI_BOOT_DEVICE	*/ \
 	0x22044022,     /* SPI_BOOT_DEVICE & SPDIF Audio	*/ \
 }

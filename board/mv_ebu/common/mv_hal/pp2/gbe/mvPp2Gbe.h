@@ -554,6 +554,8 @@ int mvPp2TxDonePktsCoalGet(int port, int txp, int txq);
 
 void mvPp2TxpReset(int port, int txp);
 
+MV_STATUS mvPp2TxqTempInit(int descNum, int hwfNum);
+
 /* Allocate and initialize port structure
    Associate relevant TXQs for this port (predefined)
    Associate <numRxqs> RXQs for Port number <port>, starting from RXQ number <firstRxq>

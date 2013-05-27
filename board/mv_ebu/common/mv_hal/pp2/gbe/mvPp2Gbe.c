@@ -658,13 +658,14 @@ MV_STATUS mvPp2PhysTxqsAlloc()
 {
 	int i;
 
-	mvPp2PhysTxqs = mvOsMalloc(MV_PP2_TXQ_TOTAL_NUM * sizeof(MV_PP2_PHYS_TXQ_CTRL));
+	/* Alloc one extra element for temporary TXQ */
+	mvPp2PhysTxqs = mvOsMalloc((MV_PP2_TXQ_TOTAL_NUM + 1) * sizeof(MV_PP2_PHYS_TXQ_CTRL));
 	if (!mvPp2PhysTxqs) {
 		mvOsPrintf("mvPp2 Can't allocate %d Bytes for %d TXQs control\n",
-			   MV_PP2_TXQ_TOTAL_NUM * sizeof(MV_PP2_PHYS_TXQ_CTRL), MV_PP2_TXQ_TOTAL_NUM);
+			   (MV_PP2_TXQ_TOTAL_NUM + 1) * sizeof(MV_PP2_PHYS_TXQ_CTRL), MV_PP2_TXQ_TOTAL_NUM);
 		return MV_OUT_OF_CPU_MEM;
 	}
-	for (i = 0; i < MV_PP2_TXQ_TOTAL_NUM; i++)
+	for (i = 0; i < (MV_PP2_TXQ_TOTAL_NUM + 1); i++)
 		mvPp2PhysTxqs[i].txq = i;
 
 	return MV_OK;
@@ -728,6 +729,7 @@ MV_STATUS mvPp2AggrTxqDescInit(MV_PP2_AGGR_TXQ_CTRL *txqCtrl, int descNum, int c
    This function must be called before any use of aggregated TXQ */
 MV_STATUS mvPp2AggrTxqsAlloc(int cpuNum)
 {
+	/* Alloc one extra element for temporary TXQ */
 	mvPp2AggrTxqs = mvOsMalloc(cpuNum * sizeof(MV_PP2_PHYS_TXQ_CTRL));
 	if (!mvPp2AggrTxqs) {
 		mvOsPrintf("mvPp2 Can't allocate %d Bytes for %d aggr TXQs control\n",
@@ -807,6 +809,33 @@ void mvPp2TxpReset(int port, int txp)
 		mvPp2WrReg(MV_PP2_TXQ_NUM_REG, ptxq);
 		mvPp2WrReg(MV_PP2_TXQ_INDEX_REG, 0);
 	}
+}
+
+/* Allocate and initialize descriptors for temporary TXQ */
+MV_STATUS mvPp2TxqTempInit(int descNum, int hwfNum)
+{
+	MV_STATUS status;
+	int ptxq = MV_PP2_TXQ_TOTAL_NUM;
+	MV_PP2_PHYS_TXQ_CTRL *pTxq = &mvPp2PhysTxqs[ptxq];
+	MV_PP2_QUEUE_CTRL *qCtrl = &pTxq->queueCtrl;
+
+	status = mvPp2DescrCreate(qCtrl, descNum);
+	if (status != MV_OK)
+		return MV_FAIL;
+
+	mvPp2DescRingReset(qCtrl);
+
+	/* Set Tx descriptors queue starting address */
+	/* indirect access */
+	mvPp2WrReg(MV_PP2_TXQ_NUM_REG, ptxq);
+	mvPp2WrReg(MV_PP2_TXQ_DESC_ADDR_REG, pp2DescVirtToPhys(qCtrl, (MV_U8 *)qCtrl->pFirst));
+	mvPp2WrReg(MV_PP2_TXQ_DESC_SIZE_REG, descNum & MV_PP2_TXQ_DESC_SIZE_MASK);
+	mvPp2WrReg(MV_PP2_TXQ_DESC_HWF_SIZE_REG, hwfNum & MV_PP2_TXQ_DESC_HWF_SIZE_MASK);
+	mvPp2WrReg(MV_PP2_TXQ_INDEX_REG, 0);
+
+	mvPp2WrReg(MV_PP2_TXQ_PREF_BUF_REG, MV_PP2_PREF_BUF_PTR(ptxq * 4) | MV_PP2_PREF_BUF_SIZE_4 | MV_PP2_PREF_BUF_THRESH(2));
+
+	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
 /* Port */

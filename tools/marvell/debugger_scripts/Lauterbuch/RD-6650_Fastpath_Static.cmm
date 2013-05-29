@@ -1,0 +1,184 @@
+; Disable the id check because the cpu does not send to the debugger the expected pattern
+sys.option noircheck on
+
+entry &ddrSpeed
+local &ddrSpeed
+
+; other 946 cpu bug fix seen also on 926
+sys.option MULTIPLESFIX on
+
+; First it is very importate to select the CPU first and then set the options,
+; otherwise important options are cleared again
+SYStem.RESet
+SYStem.CPU CortexA9MPCore ; or CortexA9
+SYStem.JtagClock 10Mhz
+SYStem.MultiCore COREBASE 0xc2310000
+SYStem.MultiCore MEMORYACCESSPORT 0
+SYStem.MultiCore DEBUGACCESSPORT  1
+; SYStem.MultiCore JTAGACCESSPORT 2
+
+SYStem.MultiCore ETMBASE 0xc2323000
+SYStem.MultiCore ETBBASE 0xc2324000
+etm.cycleaccurate on
+trace.clock 25.0Mhz
+
+;trace.init
+; Enable ETM by reading. This will clear sticky bit
+; data.in EAPB:0xc2302314 /long
+;WAIT 6.s
+
+SYStem.mode attach
+BREAK.SELECT PROGRAM ONCHIP
+BREAK
+
+; set system settings according LE MMU
+Data.Set C15:1 %LONG 0x00052078
+
+
+
+
+
+
+	; 533 MHZ DDR
+	print ""
+	print "Starting DRAM Static initialization :"
+
+	; First descrease size of CS[2] to prevent overlap with 0xD0000000
+	d.s 0xD00200b0 %LONG 0x000f3b11
+	; Start DRAM init
+	;SDRAM_CONFIG_ADDR
+	d.s 0xd0001400 %LONG 0x7B004C30
+	;SDRAM_DUNIT_CTRL_LOW_ADDR
+	d.s 0xd0001404 %LONG 0x36301820
+	;SDRAM_TIMING_LOW_ADDR
+	d.s 0xd0001408 %LONG 0x33137772
+	;SDRAM_TIMING_HI_ADDR
+	d.s 0xd000140c %LONG 0x384019D5
+	;SDRAM_ADDR_CTRL_ADDR
+	d.s 0xd0001410 %LONG 0x10000000
+	d.s 0xd0001414 %LONG 0x00000700
+	;DDR_CONTROLLER_CTRL_HIGH
+	d.s 0xd0001424 %LONG 0x60F3FF
+	;DDR_CONTROLLER_CTRL_HIGH
+	d.s 0xd0001428 %LONG 0xD6720
+	;DDR ODT Timing (High) Register
+	d.s 0xd000147c %LONG 0xB571
+	;SDRAM_SRAM_ODT_CNTL_LOW
+	d.s 0xd0001494 %LONG 0x30000
+	;SDRAM_ODT_CONTROL
+	d.s 0xd000149c %LONG 0x3
+	;AXI Control Register
+	d.s 0xd00014a8 %LONG 0x0
+
+	;Win 0 Control Register (This value will be writen by the bin header file to register 0x20184)
+	d.s 0xd0001504 %LONG 0x3FFFFFE1
+	;Win 1 Control Register (This value will be writen by the bin header file to register 0x2018C)
+	d.s 0xd000150c %LONG 0x3FFFFFE5
+	;Win 2 Control Register (This value will be writen by the bin header file to register 0x20194)
+	d.s 0xd0001514 %LONG 0x0
+	;Win 3 Control Register (This value will be writen by the bin header file to register 0x2019C)
+	d.s 0xd000151c %LONG 0x0
+
+	;Read Data Sample Delays Register
+	d.s 0xd0001538 %LONG 0x707
+	;Read Data Ready Delays Register
+	d.s 0xd000153c %LONG 0x707
+
+	;DDR3 MR0 Register
+	d.s 0xd00015d0 %LONG 0x630
+	;DDR3 MR1 Register
+	d.s 0xd00015d4 %LONG 0x46
+	;DDR3 MR2 Register
+	d.s 0xd00015d8 %LONG 0x8
+	;DDR3 MR3 Register
+	d.s 0xd00015dC %LONG 0x0
+	;DDR3 Rank Control Register
+	d.s 0xd00015e0 %LONG 0x3
+	;ZQC Configuration Register
+	d.s 0xd00015e4 %LONG 0x203C18
+
+	;DRAM PHY Configuration Register
+	d.s 0xd00015ec %LONG 0xF8000F25
+
+	;DRAM address and Control Driving Strenght
+	d.s 0xd00014c0 %LONG 0x192434E9
+	;DRAM Data and DQS Driving Strenght
+	d.s 0xd00014c4 %LONG 0x192434E9
+
+	; Phase select
+	;d.s 0xd00016a0 %LONG 0xc8003400
+	;d.s 0xd00016a0 %LONG 0xc8043400
+	;d.s 0xd00016a0 %LONG 0xc8000004
+	;d.s 0xd00016a0 %LONG 0xc8010004
+	;d.s 0xd00016a0 %LONG 0xc8020004
+	;d.s 0xd00016a0 %LONG 0xc8030004
+	;d.s 0xd00016a0 %LONG 0xc8040004
+	;d.s 0xd00016a0 %LONG 0xc8050004
+	;d.s 0xd00016a0 %LONG 0xc8060004
+	;d.s 0xd00016a0 %LONG 0xc8070004
+	;d.s 0xd00016a0 %LONG 0xc8090004
+	;d.s 0xd00016a0 %LONG 0xc80a0004
+
+
+	; CDI Config 2to1
+	;d.s 0xd0020220 %LONG 0x7
+	;d.s 0xd0020220 %LONG 0x1
+	;d.s 0xd0001480 %LONG 0x1
+	;remain default settings : D-UNIT DRAM windows closed
+	;d.s 0xd0020180 %LONG 0x0
+	;d.s 0xd0020184 %LONG 0x0fffffe1
+	;d.s 0xd002018c %LONG 0x0
+	;d.s 0xd0020194 %LONG 0x0
+	;d.s 0xd002019c %LONG 0x0
+
+
+	;Enable DDR
+	d.s 0xd0001480 %LONG 0x1
+
+	; Set Dram size 256MB for FPGA (only if using XBAR)
+	d.s 0xd0008c04 %LONG 0x3fff0000
+
+	;set ddr_phy width
+	d.s 0xd00014a8 %LONG 0x00000000
+
+	;FASTPASS - enable Fastpass (set BIT0=1)
+	d.s 0xd0020184 %LONG 0x1fFFFFE1
+
+	;FASTPASS- close XBAR window 19 (set BIT0=0 - Disabled DDR window enabled in default)
+	d.s 0xd00200e8 %LONG 0x0fff0e00
+
+	;XBAR - open XBAR window :
+	;d.s 0xd00200e8 %LONG 0x0fff0e01
+
+	;FASTPASS - disable Fastpass (set BIT0=0)
+	;d.s 0xd0020184 %LONG 0x00FFFFE0
+
+
+
+	; training
+	d.s 0xd00015B0 %LONG 0x80100008
+	WAIT 1.s
+
+	; training
+	d.s 0xd00015B0 %LONG 0x80100010
+	WAIT 1.s
+
+	; training
+	d.s 0xd00015B0 %LONG 0x80100040
+	WAIT 1.s
+
+	; End DRAM init
+
+	; set program counter at program start to be ready for start
+	Register.Set pc 0x0
+	; SYStem.Up
+
+
+	break.select program onchip
+
+	;WAIT 2.s
+
+	print "Init Done ;-)"
+
+
+enddo

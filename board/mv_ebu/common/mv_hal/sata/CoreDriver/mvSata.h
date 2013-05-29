@@ -551,6 +551,7 @@ typedef struct mvSataAdapter {
 	MV_BOOLEAN chipIs60X1C0;
 	MV_BOOLEAN chipIs62X1Z0;
 	MV_BOOLEAN chipIs65XXZ0;
+	MV_BOOLEAN chipIs66XXX0;
 	MV_U8 signalAmps[MV_SATA_CHANNELS_NUM];
 	MV_U8 pre[MV_SATA_CHANNELS_NUM];
 	struct mvQueuedCommandEntry adapterCommands[_MV_SATA_COMMANDS_PER_ADAPTER];

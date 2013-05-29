@@ -328,7 +328,7 @@ extern unsigned int mvTclkGet(void);
  * DRAM
  */
 #define CONFIG_SYS_DRAM_BANKS           1
-#define CONFIG_NR_DRAM_BANKS            1
+#define CONFIG_NR_DRAM_BANKS            2
 
 #define CONFIG_SYS_MEMTEST_START        0x00400000
 #define CONFIG_SYS_MEMTEST_END          0x007fffff

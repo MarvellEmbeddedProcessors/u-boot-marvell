@@ -70,26 +70,27 @@
 #define ARRSZ(x)                (sizeof(x) / sizeof(x[0]))
 
 MV_BOARD_SATR_INFO boardSatrInfo[] = {
-/*{{MV_SATR_TYPE_ID SarID,	Mask	Offset, regNum, isActiveForBoard[]}*/
+/*{{MV_SATR_TYPE_ID SarID,	   Mask,     Offset, regNum, isActiveForBoard[]}*/
+/*		     isActiveForBoard[] = { RD_6650, DB_6650, RD_6660, DB_6660 }*/
 { MV_SATR_CPU_DDR_L2_FREQ,	 0x003E0000,	17,	1, {1, 1, 1, 1} },
-{ MV_SATR_CORE_CLK_SELECT,	 0x00400000,	22,	1, {1, 0, 0, 0} },
-{ MV_SATR_CPU1_ENABLE,		 0x00008000,	15,	0, {1, 0, 0, 0} },
-{ MV_SATR_SSCG_DISABLE,		 0x00000002,	1,	0, {1, 0, 0, 0} },
-{ MV_SATR_I2C0_SERIAL_ROM,	 0X00000001,	0,	0, {1, 0, 0, 0} },
-{ MV_SATR_EXTERNAL_CPU_RESET,	 0X00000000,	0,	0, {1, 0, 0, 0} },
-{ MV_SATR_EXTERNAL_CORE_RESET,	 0X00000000,	0,	0, {1, 0, 0, 0} },
+{ MV_SATR_CORE_CLK_SELECT,	 0x00400000,	22,	1, {0, 0, 0, 0} },
+{ MV_SATR_CPU1_ENABLE,		 0x00008000,	15,	0, {0, 0, 1, 0} },
+{ MV_SATR_SSCG_DISABLE,		 0x00000002,	1,	0, {0, 0, 0, 0} },
+{ MV_SATR_I2C0_SERIAL_ROM,	 0X00000001,	0,	0, {0, 0, 0, 0} },
+{ MV_SATR_EXTERNAL_CPU_RESET,	 0X00000000,	0,	0, {0, 0, 0, 0} },
+{ MV_SATR_EXTERNAL_CORE_RESET,	 0X00000000,	0,	0, {0, 0, 0, 0} },
 { MV_SATR_BOOT_DEVICE,		 0X000001F8,	3,	0, {1, 1, 1, 1} },
-{ MV_SATR_CPU_PLL_XTAL_BYPASS,	 0x00000200,	9,	0, {1, 0, 0, 0} },
-{ MV_SATR_PEX0_CLOCK,		 0x00000400,	10,	0, {1, 0, 0, 0} },
-{ MV_SATR_PEX1_CLOCK,		 0x00000800,	11,	0, {1, 0, 0, 0} },
-{ MV_SATR_REF_CLOCK_ENABLE,	 0x00000004,	2,	0, {1, 0, 0, 0} },
-{ MV_SATR_TESTER_OPTIONS,	 0x00080000,	19,	0, {1, 0, 0, 0} },
-{ MV_SATR_CPU0_ENDIANESS,	 0x00001000,	12,	0, {1, 0, 0, 0} },
-{ MV_SATR_CPU0_NMFI,		 0x00002000,	13,	0, {1, 0, 0, 0} },
-{ MV_SATR_CPU0_THUMB,		 0x00004000,	14,	0, {1, 0, 0, 0} },
-{ MV_SATR_EFUSE_BYPASS,		 0x00020000,	17,	0, {1, 0, 0, 0} },
-{ MV_SATR_POR_BYPASS,		 0x00100000,	20,	0, {1, 0, 0, 0} },
-{ MV_SATR_BOARD_ID,		 0x000000F0,	4,	1, {1, 0, 0, 0} },
+{ MV_SATR_CPU_PLL_XTAL_BYPASS,	 0x00000200,	9,	0, {0, 0, 0, 0} },
+{ MV_SATR_PEX0_CLOCK,		 0x00000400,	10,	0, {0, 0, 0, 0} },
+{ MV_SATR_PEX1_CLOCK,		 0x00000800,	11,	0, {0, 0, 0, 0} },
+{ MV_SATR_REF_CLOCK_ENABLE,	 0x00000004,	2,	0, {0, 0, 0, 0} },
+{ MV_SATR_TESTER_OPTIONS,	 0x00080000,	19,	0, {0, 0, 0, 0} },
+{ MV_SATR_CPU0_ENDIANESS,	 0x00001000,	12,	0, {0, 0, 0, 0} },
+{ MV_SATR_CPU0_NMFI,		 0x00002000,	13,	0, {0, 0, 0, 0} },
+{ MV_SATR_CPU0_THUMB,		 0x00004000,	14,	0, {0, 0, 0, 0} },
+{ MV_SATR_EFUSE_BYPASS,		 0x00020000,	17,	0, {0, 0, 0, 0} },
+{ MV_SATR_POR_BYPASS,		 0x00100000,	20,	0, {0, 0, 0, 0} },
+{ MV_SATR_BOARD_ID,		 0x000000F0,	4,	1, {0, 0, 0, 0} },
 { MV_SATR_WRITE_CPU_FREQ,	 0X0000001F,	0,	0, {1, 0, 1, 0} },
 { MV_SATR_WRITE_CORE_CLK_SELECT, 0x00000001,	0,	1, {1, 0, 1, 0} },
 { MV_SATR_WRITE_CPU1_ENABLE,	 0x00000002,	1,	1, {1, 0, 1, 0} },
@@ -175,9 +176,9 @@ MV_BOARD_TWSI_INFO db88f6660InfoBoardTwsiDev[] = {
 };
 MV_BOARD_MAC_INFO db88f6660InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_1000M, -1									},
-	{ BOARD_MAC_SPEED_AUTO, 0x1									},
-	{ BOARD_MAC_SPEED_1000M, -1									}
+	{ BOARD_MAC_SPEED_1000M, -1},
+	{ BOARD_MAC_SPEED_AUTO, 0x1},
+	{ BOARD_MAC_SPEED_1000M, -1}
 };
 MV_BOARD_MPP_TYPE_INFO db88f6660InfoBoardModTypeInfo[] = {
 	{
@@ -282,9 +283,9 @@ MV_BOARD_TWSI_INFO db88f6650InfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO db88f6650InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x0 },
-	{ BOARD_MAC_SPEED_AUTO, 0x3 },
-	{ BOARD_MAC_SPEED_1000M, -1 },
+	{ BOARD_MAC_SPEED_AUTO, 0x0},
+	{ BOARD_MAC_SPEED_AUTO, 0x3},
+	{ BOARD_MAC_SPEED_1000M, -1},
 };
 
 MV_BOARD_MPP_TYPE_INFO db88f6650InfoBoardModTypeInfo[] = {
@@ -382,8 +383,105 @@ MV_BOARD_INFO db88f6650_board_info = {
 /*******************************************************************************
  * AvantaLP RD-88F6650 board */
 /*******************************************************************************/
-MV_BOARD_INFO rd88f6650_board_info = {
 
+MV_BOARD_TWSI_INFO rd88f6650InfoBoardTwsiDev[] = {
+	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{ BOARD_DEV_TWSI_SATR,		0,	0x4C,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4E,	   ADDR7_BIT	},
+};
+MV_BOARD_MAC_INFO rd88f6650InfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
+	{ BOARD_MAC_SPEED_1000M, -1},
+	{ BOARD_MAC_SPEED_AUTO, 0x1},
+	{ BOARD_MAC_SPEED_1000M, -1}
+};
+MV_BOARD_MPP_TYPE_INFO rd88f6650InfoBoardModTypeInfo[] = {
+	{
+		.boardMppSlic = MV_BOARD_AUTO,
+		.ethSataComplexOpt = MV_ETHCOMP_SW_P0_2_GE_PHY_P0 |
+				     MV_ETHCOMP_SW_P1_2_GE_PHY_P1 |
+				     MV_ETHCOMP_SW_P2_2_GE_PHY_P2 |
+				     MV_ETHCOMP_SW_P3_2_GE_PHY_P3 |
+				     MV_ETHCOMP_GE_MAC0_2_SW_P6,
+		.ethPortsMode = 0x0
+	}
+};
+
+MV_DEV_CS_INFO rd88f6650InfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 } /* SPI DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO rd88f6650InfoBoardMppConfigValue[] = {
+	{ {
+		RD_88F6650_MPP0_7,
+		RD_88F6650_MPP8_15,
+		RD_88F6650_MPP16_23,
+		RD_88F6650_MPP24_31,
+		RD_88F6650_MPP32_39,
+		RD_88F6650_MPP40_47,
+		RD_88F6650_MPP48_55,
+		RD_88F6650_MPP56_63,
+		RD_88F6650_MPP64_67,
+	} }
+};
+
+MV_BOARD_INFO rd88f6650_board_info = {
+	.boardName			= "RD-88F6650",
+	.numBoardMppTypeValue		= ARRSZ(rd88f6650InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= rd88f6650InfoBoardModTypeInfo,
+	.pBoardMppConfigValue		= rd88f6650InfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(rd88f6650InfoBoardDeCsInfo),
+	.pDevCsInfo			= rd88f6650InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(rd88f6650InfoBoardTwsiDev),
+	.pBoardTwsiDev			= rd88f6650InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(rd88f6650InfoBoardMacInfo),
+	.pBoardMacInfo			= rd88f6650InfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= 0,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow			= RD_88F6650_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= RD_88F6650_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= RD_88F6650_GPP_OUT_ENA_HIGH,
+	.gppOutValLow			= RD_88F6650_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= RD_88F6650_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= RD_88F6650_GPP_OUT_VAL_HIGH,
+	.gppPolarityValLow		= RD_88F6650_GPP_POL_LOW,
+	.gppPolarityValMid		= RD_88F6650_GPP_POL_MID,
+	.gppPolarityValHigh		= RD_88F6650_GPP_POL_HIGH,
+
+	/* External Switch Configuration */
+	.switchforceLinkMask		= 0x0,
+
+	/* TDM */
+	.numBoardTdmInfo		= {},
+	.pBoardTdmInt2CsInfo		= {},
+	.boardTdmInfoIndex		= -1,
+
+	.pBoardSpecInit			= NULL,
+
+	/* NAND init params */
+	.nandFlashReadParams		= 0,
+	.nandFlashWriteParams		= 0,
+	.nandFlashControl		= 0,
+	/* NOR init params */
+	.norFlashReadParams		= 0,
+	.norFlashWriteParams		= 0,
+	/* Enable modules auto-detection. */
+	.configAutoDetect		= MV_FALSE
 };
 
 /*******************************************************************************

@@ -184,7 +184,7 @@ MV_STATUS mvPp2HalInit(MV_PP2_HAL_DATA *halData)
 	for (i = 0; i <= MV_PON_PORT_ID; i++)
 		mvPp2GbeIsrRxqGroup(i, 0);
 
-	mvPp2WrReg(ETH_MNG_EXTENDED_GLOBAL_CTRL_REG, 0x27);
+	MV_REG_WRITE(ETH_MNG_EXTENDED_GLOBAL_CTRL_REG, 0x27);
 
 	/* Allow cache snoop when transmiting packets */
 	mvPp2WrReg(MV_PP2_TX_SNOOP_REG, 0x1);

@@ -110,7 +110,11 @@ DRAMREGS   = ./dramregs.txt
 INCLUDE     = -I./ -I./../ -I./src_phy_$(BOARD)/ -I./src_ddr/  -I./inc/ -I../../../include
 
 ifneq ($(BOARD),alp)
-	LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
+	ifneq ($(BOARD),a375)
+		LDFLAGSBIN  = -T linker.scr $(LDFLAGS)
+	else
+		LDFLAGSBIN  = -T linker1.scr $(LDFLAGS)
+	endif
 else
 	LDFLAGSBIN  = -T linker1.scr $(LDFLAGS)
 endif

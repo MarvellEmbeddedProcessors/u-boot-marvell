@@ -39,7 +39,7 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-        this list of conditions and the following disclaimer.
+		this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
     notice, this list of conditions and the following disclaimer in the
@@ -69,38 +69,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Board specific configuration */
 /* ============================ */
 
-
-/* Avanta LP family*/
-#define MV_6660_DEV_ID      0x6660
-#define MV_6650_DEV_ID      0x6650
-#define MV_6610_DEV_ID      0x6610
+#define MV_6720_DEV_ID 0x6720
 
 /* boards ID numbers */
 #define BOARD_ID_BASE               0x0
 
-#define RD_88F6650_BP_ID            (BOARD_ID_BASE)
-#define DB_88F6650_BP_ID            (RD_88F6650_BP_ID + 1)
-#define RD_88F6660_BP_ID            (DB_88F6650_BP_ID + 1)
-#define DB_88F6660_BP_ID            (RD_88F6660_BP_ID + 1)
+#define DB_88F6720_BP_ID            (BOARD_ID_BASE)
 
-#define MV_MAX_BOARD_ID             (DB_88F6660_BP_ID + 1)
+#define MV_MAX_BOARD_ID             (DB_88F6720_BP_ID + 1)
 #define INVALID_BAORD_ID            0xFFFFFFFF
 
 /* Sample at Reset */
-#define MPP_SAMPLE_AT_RESET(id)		(0xE8200 + (id * 4))
-#define PEX_CLK_100MHZ_MASK		0x00000004
-#define PEX_CLK_100MHZ_OFFSET		2
-#define SATR_DEVICE_ID_2_0_OFFS		21
-#define SATR_DEVICE_ID_2_0_MASK		(3 << SATR_DEVICE_ID_2_0_OFFS)
+#define MPP_SAMPLE_AT_RESET(id)     (0xE8200 + (id * 4))
+#define PEX_CLK_100MHZ_MASK         0x00000004
+#define PEX_CLK_100MHZ_OFFSET       2
 
-#define MSAR_TCLK_OFFS			22
-#define MSAR_TCLK_MASK			(0x1 << MSAR_TCLK_OFFS)
+#define MSAR_TCLK_OFFS              22
+#define MSAR_TCLK_MASK              (0x1 << MSAR_TCLK_OFFS)
 
-#define DEV_ID_REG			0x18238
-#define VENDOR_ID_OFFS			0
-#define VENDOR_ID_MASK			0xFFFF
-#define DEVICE_ID_OFFS			16
-#define DEVICE_ID_MASK			0xFFFF0000
+#define DEVICE_ID_REG               0x18238
+#define DEVICE_ID_REG_VEND_ID_OFFS  0
+#define DEVICE_ID_REG_VEND_ID_MASK  0xFFFF
+#define DEVICE_ID_REG_DEV_ID_OFFS   16
+#define DEVICE_ID_REG_DEV_ID_MASK   0xFFFF0000
 
 
 #define COMMON_PHY_SELECTOR_REG     0x18300
@@ -190,7 +181,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PEX_CAPABILITIES_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x60)
 #define PEX_CTRL_REG(pexIf)         ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A00)
 #define PEX_LINK_CTRL_STATUS2_REG(pexIf)  ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x90)
-#define PEX_DBG_STATUS_REG(pexIf)         ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A64)
+#define PEX_DBG_STATUS_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A64)
 #define PEX_STATUS_REG(pexIf)       ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A04)
 #define PEX_LINK_CAPABILITY_REG     0x6C
 #define PEX_LINK_CTRL_STAT_REG      0x70

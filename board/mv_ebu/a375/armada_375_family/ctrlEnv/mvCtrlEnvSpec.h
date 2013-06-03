@@ -214,7 +214,7 @@ extern "C" {
 
 #if defined(CONFIG_MV_ETH_PP2)
 #define MV_PON_PORT_ID                          7
-#define MV_ETH_MAX_PORTS                        4
+#define MV_ETH_MAX_PORTS                        2
 #define MV_ETH_MAX_RXQ                          16      /* Maximum number of RXQs can be mapped to each port */
 #define MV_ETH_MAX_TXQ                          8
 #define MV_ETH_RXQ_TOTAL_NUM                    32      /* Total number of RXQs for usage by all ports */
@@ -260,7 +260,7 @@ extern "C" {
 #define FREQ_MODES_NUM          29
 
 #define MPP_GROUP_0_TYPE { \
-	0x11111111,     /* NAND_V2_BOOT_DEVICE  */ \
+	0x55555555,     /* NAND_V2_BOOT_DEVICE  */ \
 	0x00020020,     /* SPI_BOOT_DEVICE	*/ \
 	0x44024420,     /* SPI_BOOT_DEVICE & SPDIF Audio */ \
 }
@@ -272,7 +272,7 @@ typedef enum {
 } MV_GROUP_0_TYPE;
 
 #define MPP_GROUP_1_TYPE { \
-	0x22111111,     /* NAND_V2_BOOT_DEVICE  */ \
+	0x22555555,     /* NAND_V2_BOOT_DEVICE  */ \
 	0x22000022,     /* SPI_BOOT_DEVICE	*/ \
 	0x22044022,     /* SPI_BOOT_DEVICE & SPDIF Audio	*/ \
 }
@@ -486,8 +486,8 @@ typedef enum _mvTarget {
 #define DRAM_CS3_ATTR           0x07
 #endif
 
- #define MAIN_BOOT_ATTR         0x1D    /* BootROM */
- #define SEC_BOOT_ATTR          0x2F    /* Boot Device CS */
+#define MAIN_BOOT_ATTR         0x1D    /* BootROM */
+#define SEC_BOOT_ATTR          0x2F    /* Boot Device CS */
 
 #define TARGETS_DEF_ARRAY {                                                 \
 	{ DRAM_CS0_ATTR, DRAM_TARGET_ID },      /* SDRAM_CS0             */ \

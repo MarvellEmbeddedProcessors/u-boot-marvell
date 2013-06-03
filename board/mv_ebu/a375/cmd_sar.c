@@ -41,16 +41,17 @@ static int do_sar_list(int argc, char *const argv[])
 		printf("Determines the frequency of CPU/DDR/L2:\n");
 		printf("\n\n val | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
 		for (i=0; i < FREQ_MODES_NUM; i++) {
-			printf(" %d | %d | %d | %d | \n", i,
-				   pFreqModes[i].cpuFreq,
-				   pFreqModes[i].ddrFreq,
-				   pFreqModes[i].l2Freq);
+			printf(" %d | %d | %d | %d |\n", i,
+					pFreqModes[i].cpuFreq,
+					pFreqModes[i].ddrFreq,
+					pFreqModes[i].l2Freq);
 		}
 	} else if (strcmp(cmd, "coreclock") == 0) {
 		printf("Determines the frequency of Core Clock:\n");
 		printf("\t0x0 = 166Mhz\n");
 		printf("\t0x1 = 200Mhz\n");
 	} else if (strcmp(cmd, "cpusnum") == 0) {
+
 		printf("Determines the number of CPU cores:\n");
 		printf("\t0x0 = Single CPU\n");
 		printf("\t0x1 = Dual CPU\n");
@@ -91,7 +92,7 @@ static int do_sar_read(int argc, char *const argv[])
 	if ((strcmp(cmd, "cpufreq") == 0) && (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode)))
 	{
 		printf("\n\n val | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
-			printf(" %d | %d | %d | %d | \n",
+			printf(" %d | %d | %d | %d |\n",
 				freqMode.id,
 				freqMode.cpuFreq,
 				freqMode.ddrFreq,
@@ -146,7 +147,7 @@ static int do_sar_read(int argc, char *const argv[])
 		if  (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode))
 		{
 			printf("\n\n val | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
-			printf(" %d | %d | %d | %d | \n",
+			printf(" %d | %d | %d | %d |\n",
 				freqMode.id,
 				freqMode.cpuFreq,
 				freqMode.ddrFreq,
@@ -154,10 +155,10 @@ static int do_sar_read(int argc, char *const argv[])
 		}
 
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT)))
-			printf("coreclock \t= %d \n", temp);
+			printf("coreclock \t= %d\n", temp);
 
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU1_ENABLE)))
-			printf("cpusnum \t\t= %d \n", temp);
+			printf("cpusnum \t\t= %d\n", temp);
 
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_SSCG_DISABLE)))
 			printf("sscg \t\t= %d\t\t==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );

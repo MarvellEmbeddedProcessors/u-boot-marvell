@@ -21,7 +21,7 @@ disclaimer.
 #ifndef __INCmvSysHwConfigh
 #define __INCmvSysHwConfigh
 
-#include <config.h>
+#include <configs/armada_375.h>
 
 /****************************************/
 /* Soc supporetd Units definitions	*/

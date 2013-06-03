@@ -39,14 +39,14 @@ static int do_bios_list(void)
 			pBbiosModes = bios_modes;
 		for (i=0; i < BIOS_MODES_NUM-1; i++) {
 			printf("| %s |   0x%02x |     0x%x|      0x%x|   0x%02x|                  0x%x|          0x%x|          0x%x|\n",
-				   pBbiosModes->name,
-				   pBbiosModes->confId,
-				   pBbiosModes->l2size,
-				   pBbiosModes->cpuFreq,
-				   pBbiosModes->fabricFreq,
-				   pBbiosModes->cpuEna,
-				   pBbiosModes->cpuEndianess,
-				   pBbiosModes->dramBusWidth);
+			pBbiosModes->name,
+			pBbiosModes->confId,
+			pBbiosModes->l2size,
+			pBbiosModes->cpuFreq,
+			pBbiosModes->fabricFreq,
+			pBbiosModes->cpuEna,
+			pBbiosModes->cpuEndianess,
+			pBbiosModes->dramBusWidth);
 		pBbiosModes++;
 		}
 	} else {
@@ -84,7 +84,6 @@ static int do_bios_read(void)
 			(pBbiosModes->confId == confId) &&
 			(pBbiosModes->dramBusWidth == dramBusWidth))
 		{
-
 			printf("Current BIOS mode is: %s\n", pBbiosModes->name);
 			flag = 1;
 		}

@@ -1029,17 +1029,13 @@ int misc_init_r(void)
 		mon_extension_after_relloc();
 	}
 #endif
-
-	MV_U32 boardId = mvBoardIdGet();
 	/* init the units decode windows */
 	misc_init_r_dec_win();
 	memset((void*)CONFIG_SYS_LOAD_ADDR, 0, CONFIG_SYS_MIN_HDR_DEL_SIZE);
 	mvBoardDebugLed(6);
-	if (boardId != DB_6720_ID) { //IgorP : temp ID replace so it will compile -mv_main needs cleanup ! */
-		/* Prints the modules detected */
-		mvBoardMppModuleTypePrint();
-		mvBoardOtherModuleTypePrint();
-	}
+
+	mvBoardMppModuleTypePrint();
+	mvBoardOtherModuleTypePrint();
 
 	mvBoardDebugLed(7);
 

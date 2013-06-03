@@ -59,7 +59,7 @@
 /*
  * General
  */
-#define MV88F66XX
+#define MV88F672X
 #define MV_SEC_64K
 #define MV_BOOTSIZE_512K
 #define MV_LARGE_PAGE

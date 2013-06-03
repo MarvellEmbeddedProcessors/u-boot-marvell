@@ -127,24 +127,7 @@ MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
 *******************************************************************************/
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-    MV_U32 boardId, value;
-
-    value = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
-    boardId = ((value & (0xF0)) >> 4);
-    if (boardId >= MV_MAX_BOARD_ID) {
-     DEBUG_INIT_C("Error: read wrong board ID=0x", boardId,2);
-    }
-
-#if 0
-    if (boardId == 0)
-    {
-      DEBUG_INIT_S(">>>>> boardid is zero. changing it temporarily to 3 . Giora <<<<<<<<<<<<<<<\n");
-      boardId = 3;
-    }
-#endif
-	DEBUG_INIT_FULL_C("Read board ID=0x", boardId,2);
-
-    return boardId;
+	return DB_88F6720_BP_ID;
 }
 
 /*******************************************************************************
@@ -226,7 +209,8 @@ MV_VOID mvCtrlSatrInit(void)
     /* Verify that board support Auto detection from S@R & board configuration
      else write manually the lane configurations*/
 
-    if (boardId == RD_88F6660_BP_ID){
+	if (boardId == DB_88F6720_BP_ID) {
+		boardLaneConfig[0] = SERDES_UNIT_PEX;
 		boardLaneConfig[1] = SERDES_UNIT_PEX;
 		boardLaneConfig[2] = SERDES_UNIT_SATA;
 		boardLaneConfig[3] = SERDES_UNIT_USB3;
@@ -357,19 +341,7 @@ MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_U8 *pDat
 *******************************************************************************/
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
-    MV_U32 ctrlId, satr0;
-
-    ctrlId = MV_REG_READ(DEV_ID_REG);
-    ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
-
-    if (ctrlId == 0x6660)
-	return MV_6660_DEV_ID;
-
-    satr0 = MV_REG_READ(MPP_SAMPLE_AT_RESET(0));
-    satr0 &= SATR_DEVICE_ID_2_0_MASK;
-    if (satr0 == 0)
-	return MV_6650_DEV_ID;
-    return MV_6610_DEV_ID;
+	return MV_6720_DEV_ID;
 }
 
 /*******************************************************************************
@@ -390,19 +362,7 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 *
 *******************************************************************************/
 MV_U32 mvCtrlSerdesMaxLanesGet(MV_VOID){
-      switch (mvCtrlModelGet()) {
-        case MV_6660_DEV_ID:
-                return 4;
-        case MV_6650_DEV_ID:
-                return 1;
-        case MV_6610_DEV_ID:
-                if (mvBoardIdGet() == DB_88F6650_BP_ID)
-                  return 1;
-                else
-                  return 0;
-        default:
-                return 0;
-        }
+	return 4;
 }
 /*******************************************************************************
 * mvGetSerdesLaneCfg
@@ -420,7 +380,7 @@ MV_U32 mvCtrlSerdesMaxLanesGet(MV_VOID){
 *       serdes unit index
 *
 *******************************************************************************/
-#define mvGetSerdesLaneCfg(serdesLaneNum) boardLaneConfig[serdesLaneNum];
+#define mvGetSerdesLaneCfg(serdesLaneNum) boardLaneConfig[serdesLaneNum]
 /*******************************************************************************
 * GetLaneSelectorConfig
 *
@@ -437,22 +397,32 @@ MV_U32 mvCtrlSerdesMaxLanesGet(MV_VOID){
 *       Register value
 *
 *******************************************************************************/
+#define	ARMADA_375_Z1
+#ifdef ARMADA_375_Z1
+#define	SERDES_LAN2_OFFS	2
+#define	SERDES_LAN3_OFFS	3
+#else
+#define	SERDES_LAN2_OFFS	3
+#define	SERDES_LAN3_OFFS	4
+#endif
 MV_U32 GetLaneSelectorConfig(void)
 {
     MV_U32 tmp,uiReg;
 
     uiReg = 0x1; /* lane 0 is always PEX */
 
-	switch (boardLaneConfig[1]) {
+	switch (mvGetSerdesLaneCfg(1)) {
+	default:
 	case SERDES_UNIT_PEX:	tmp = 0;	break;
 	case SERDES_UNIT_SGMII: tmp = 1;	break;
+#ifndef AVANTA_Z1
 	case SERDES_UNIT_SATA:	tmp = 2;	break;
-	default:				tmp = 3;	break;
+#endif
 	}
-    uiReg |= (tmp<<1); /* lane 1  */
+	uiReg |= (tmp << 1); /* lane 1  */
 
-    uiReg |= (((boardLaneConfig[2]==SERDES_UNIT_SATA)?1:0)  << 3); /* lane 2  */
-    uiReg |= (((boardLaneConfig[3]==SERDES_UNIT_SGMII)?1:0)  << 4); /* lane 3  */
+	uiReg |= (((mvGetSerdesLaneCfg(2) == SERDES_UNIT_SATA) ? 1 : 0)  << SERDES_LAN2_OFFS); /* lane 2  */
+	uiReg |= (((mvGetSerdesLaneCfg(3) == SERDES_UNIT_SGMII) ? 1 : 0)  << SERDES_LAN3_OFFS); /* lane 3  */
 
 
     DEBUG_INIT_FULL_S(">>>>>>> after  GetLaneSelectorConfig, uiReg=0x");
@@ -481,8 +451,8 @@ MV_U32 getSerdesSpeedConfig(MV_BIN_SERDES_UNIT_INDX serdesLaneCfg)
     switch (serdesLaneCfg){
 	case SERDES_UNIT_SGMII:
 		{
-            if ((configVal[0] & 0x40)) /* 0 \96 1G SGMII  1 \96 2.5G SGMII*/
-                return 0x8;
+			if ((configVal[0] & 0x40)) /* 0 - 1G SGMII  1 - 2.5G SGMII*/
+				return 0x8;
 			return 0x6;
 		}
         case SERDES_UNIT_USB3:

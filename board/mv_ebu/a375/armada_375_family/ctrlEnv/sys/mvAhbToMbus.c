@@ -138,38 +138,37 @@ MV_STATUS mvAhbToMbusWinSet(MV_U32 winNum, MV_AHB_TO_MBUS_DEC_WIN *pAddrDecWin)
 	MV_DEC_REGS decRegs;
 	MV_U32 sizeToReg;
 
-	/* Parameter checking   */
 	if (winNum >= MAX_AHB_TO_MBUS_WINS) {
-		mvOsPrintf("mvAhbToMbusWinSet: ERR. Invalid winNum %d\n", winNum);
+		mvOsPrintf("%s: Error: Invalid winNum %d\n", __func__, winNum);
 		return MV_NOT_SUPPORTED;
 	}
 
 	/* check if address is aligned to the size */
 	if (MV_IS_NOT_ALIGN(pAddrDecWin->addrWin.baseLow, pAddrDecWin->addrWin.size)) {
-		mvOsPrintf("mvAhbToMbusWinSet:Error setting AHB to MBUS window %d to "
+		mvOsPrintf("%s: Error: Setting AHB to MBUS window %d to "
 			   "target %s.\nAddress 0x%08x is unaligned to size 0x%llx.\n",
-			   winNum,
-			   mvCtrlTargetNameGet(pAddrDecWin->target),
+			   __func__, winNum, mvCtrlTargetNameGet(pAddrDecWin->target),
 			   pAddrDecWin->addrWin.baseLow, pAddrDecWin->addrWin.size);
 		return MV_ERROR;
 	}
 
-	/* Size parameter validity check.                       */
+	/* Size parameter validity check */
 	if (MV_IS_NOT_ALIGN(pAddrDecWin->addrWin.size, ATMWCR_WIN_SIZE_ALIGNMENT)) {
-		mvOsPrintf("mvAhbToMbusWinSet: Failed, size not aligned to 0x%x.\n", ATMWCR_WIN_SIZE_ALIGNMENT);
+		mvOsPrintf("%s: Failed, size not aligned to 0x%x.\n",
+			   __func__, ATMWCR_WIN_SIZE_ALIGNMENT);
 		return MV_BAD_PARAM;
 	}
 
-	/* Write to address decode Base Address Register        */
+	/* Write to address decode Base Address Register */
 	decRegs.baseReg = (pAddrDecWin->addrWin.baseLow & ATMWBR_BASE_MASK);
 
-	/* Get size register value according to window size     */
+	/* Get size register value according to window size */
 	sizeToReg = (pAddrDecWin->addrWin.size / ATMWCR_WIN_SIZE_ALIGNMENT) - 1;
 
-	/* set size                                             */
+	/* set size */
 	decRegs.ctrlReg = (sizeToReg << ATMWCR_WIN_SIZE_OFFS);
 
-	/* enable\Disable */
+	/* enable/disable */
 	if (MV_TRUE == pAddrDecWin->enable)
 		decRegs.ctrlReg |= ATMWCR_WIN_ENABLE;
 	else
@@ -185,23 +184,21 @@ MV_STATUS mvAhbToMbusWinSet(MV_U32 winNum, MV_AHB_TO_MBUS_DEC_WIN *pAddrDecWin)
 	decRegs.ctrlReg |= targetAttribs.targetId << ATMWCR_WIN_TARGET_OFFS;
 
 #if !defined(MV_RUN_FROM_FLASH)
-	/* To be on the safe side we disable the window before writing the  */
-	/* new values.                                                      */
+	/* To be on the safe side: disable window before writing new values. */
 	if (winNum != MV_AHB_TO_MBUS_INTREG_WIN)
 		mvAhbToMbusWinEnable(winNum, MV_FALSE);
 #endif
 
-	/* 3) Write to address decode Base Address Register                   */
+	/* Write to address decode Base Address Register */
 	if (winNum != MV_AHB_TO_MBUS_INTREG_WIN)
 		MV_REG_WRITE(AHB_TO_MBUS_WIN_BASE_REG(winNum), decRegs.baseReg);
 	else
 		MV_REG_WRITE(AHB_TO_MBUS_WIN_INTEREG_REG, decRegs.baseReg);
 
-
 	/* Internal register space have no size */
 	/* register. Do not perform size register assigment for those targets   */
 	if (winNum != MV_AHB_TO_MBUS_INTREG_WIN) {
-		/* Write to address decode Size Register                                */
+		/* Write to address decode Size Register */
 		MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(winNum), decRegs.ctrlReg);
 	}
 
@@ -628,8 +625,6 @@ MV_STATUS mvAhbToMbusWinTargetSwap(MV_TARGET target1, MV_TARGET target2)
 *******************************************************************************/
 static MV_STATUS ahbToMbusRemapRegOffsGet(MV_U32 winNum, AHB_TO_MBUS_REMAP_REG_OFFS *pRemapRegs)
 {
-	MV_U16 ctrlMode = mvCtrlModelGet();
-
 	switch (winNum) {
 	case 0:
 	case 1:
@@ -638,55 +633,15 @@ static MV_STATUS ahbToMbusRemapRegOffsGet(MV_U32 winNum, AHB_TO_MBUS_REMAP_REG_O
 		break;
 	case 2:
 	case 3:
-		if ((ctrlMode == MV_5281_DEV_ID) ||
-			(ctrlMode == MV_1281_DEV_ID) ||
-			(ctrlMode == MV_6183_DEV_ID) ||
-			(ctrlMode == MV_6183L_DEV_ID) ||
-			(ctrlMode == MV_6710_DEV_ID) ||
-			(ctrlMode == MV_78130_DEV_ID) ||
-			(ctrlMode == MV_78160_DEV_ID) ||
-			(ctrlMode == MV_78230_DEV_ID) ||
-			(ctrlMode == MV_78260_DEV_ID) ||
-			(ctrlMode == MV_78460_DEV_ID) ||
-			(ctrlMode == MV_6720_DEV_ID) ||
-			(ctrlMode == MV_78000_DEV_ID)) {
-			pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
-			pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);
-			break;
-		} else {
-			pRemapRegs->lowRegOffs = 0;
-			pRemapRegs->highRegOffs = 0;
-
-			DB(mvOsPrintf("ahbToMbusRemapRegOffsGet: ERR. Invalid winNum %d\n", winNum));
-			return MV_NO_SUCH;
-		}
+		pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
+		pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);
 		break;
 	case 4:
 	case 5:
 	case 6:
 	case 7:
-		if ((ctrlMode == MV_5281_DEV_ID) ||
-			(ctrlMode == MV_1281_DEV_ID) ||
-			(ctrlMode == MV_6183_DEV_ID) ||
-			(ctrlMode == MV_6183L_DEV_ID) ||
-			(ctrlMode == MV_6710_DEV_ID) ||
-			(ctrlMode == MV_78130_DEV_ID) ||
-			(ctrlMode == MV_78160_DEV_ID) ||
-			(ctrlMode == MV_78230_DEV_ID) ||
-			(ctrlMode == MV_78260_DEV_ID) ||
-			(ctrlMode == MV_78460_DEV_ID) ||
-			(ctrlMode == MV_6720_DEV_ID) ||
-			(ctrlMode == MV_78000_DEV_ID)) {
-			pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
-			pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);
-			break;
-		} else {
-			pRemapRegs->lowRegOffs = 0;
-			pRemapRegs->highRegOffs = 0;
-
-			DB(mvOsPrintf("ahbToMbusRemapRegOffsGet: ERR. Invalid winNum %d\n", winNum));
-			return MV_NO_SUCH;
-		}
+		pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
+		pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);
 		break;
 	default:
 		pRemapRegs->lowRegOffs = 0;

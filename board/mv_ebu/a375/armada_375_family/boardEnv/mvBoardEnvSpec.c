@@ -113,21 +113,32 @@ MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = {
 
 MV_BOARD_IO_EXPANDER_TYPE_INFO db88f6720InfoBoardIOExpanderInfo[] = {
 /* {{MV_CONFIG_TYPE_ID ConfigID,      MV_U32 Offset,	 expanderNum,  regNum,   }} */
+		/* 1st IO Expander Register*/
+	{ MV_IO_EXPANDER_SFP0_TX_DIS,		 0,		 1,	 1},
+	{ MV_IO_EXPANDER_SFP0_PRSNT,		 1,		 1,	 1},
+	{ MV_IO_EXPANDER_SFP0_TX_FAULT,		 2,		 1,	 1},
+	{ MV_IO_EXPANDER_SFP0_LOS,		 3,		 1,	 1},
+	{ MV_IO_EXPANDER_USB_VBUS,		 4,		 1,	 1},
+	{ MV_IO_EXPANDER_MAC0_RJ45_PORT_LED,	 5,		 1,	 1},
+	{ MV_IO_EXPANDER_MAC0_SFP_PORT_LED,	 6,		 1,	 1},
+	{ MV_IO_EXPANDER_PON_PORT_LED,		 7,		 1,	 1},
 		/* 2nd IO Expander Register*/
-	{ MV_IO_EXPANDER_USB_VBUS,		 0,		 2,	 0},
+	{ MV_IO_EXPANDER_SD_STATUS,		 0,		 2,	 0},
+	{ MV_IO_EXPANDER_SD_WRITE_PROTECT,	 1,		 2,	 0},
 	{ MV_IO_EXPANDER_SFP1_PRSNT,		 2,		 2,	 0},
 	{ MV_IO_EXPANDER_SFP1_TX_FAULT,		 3,		 2,	 0},
 	{ MV_IO_EXPANDER_SFP1_LOS,		 4,		 2,	 0},
-	{ MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, 6,		 2,	 0},
-	{ MV_IO_EXPANDER_JUMPER3,		 7,		 2,	 0},
+	{ MV_IO_EXPANDER_JUMPER1,		 6,		 2,	 0},
+	{ MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, 7,		 2,	 0},
 		/* 3rd IO Expander Register*/
 	{ MV_IO_EXPANDER_EXT_PHY_SMI_EN,	 0,		 2,	 1},
 	{ MV_IO_EXPANDER_SFP1_TX_DIS,		 1,		 2,	 1},
-	{ MV_IO_EXPANDER_MAC0_RJ45_PORT_LED,	 2,		 2,	 1},
-	{ MV_IO_EXPANDER_PON_PORT_LED,		 3,		 2,	 1},
+	{ MV_IO_EXPANDER_SPI1_CS_MSB0,		 2,		 2,	 1},
+	{ MV_IO_EXPANDER_SPI1_CS_MSB1,		 3,		 2,	 1},
 	{ MV_IO_EXPANDER_MAC1_SFP_PORT_LED,	 4,		 2,	 1},
 	{ MV_IO_EXPANDER_MAC1_RJ45_PORT_LED,	 5,		 2,	 1},
 	{ MV_IO_EXPANDER_INTEG_PHY_PORTS_LED,	 6,		 2,	 1},
+	{ MV_IO_EXPANDER_USB_SUPER_SPEED,	 7,		 2,	 1},
 };
 
 /*******************************************************************************
@@ -137,21 +148,22 @@ MV_BOARD_IO_EXPANDER_TYPE_INFO db88f6720InfoBoardIOExpanderInfo[] = {
 MV_BOARD_TWSI_INFO db88f6720InfoBoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
 	{ BOARD_DEV_TWSI_SATR,		0,	0x4C,	   ADDR7_BIT	},
-	{ BOARD_DEV_TWSI_SATR,		1,	0x4E,	   ADDR7_BIT	},
-	{ BOARD_DEV_TWSI_EEPROM,	0,	0x54,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4D,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_EEPROM,	0,	0x52,	   ADDR7_BIT	},
 	{ BOARD_DEV_TWSI_IO_EXPANDER,	0,	0x21,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_IO_EXPANDER,	1,	0x22,	   ADDR7_BIT	},
 	{ BOARD_DEV_TWSI_IO_EXPANDER,	2,	0x24,	   ADDR7_BIT	},
 };
 MV_BOARD_MAC_INFO db88f6720InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
 	{ BOARD_MAC_SPEED_AUTO, 0x0									},
-	{ BOARD_MAC_SPEED_AUTO, 0x1									},
+	{ BOARD_MAC_SPEED_AUTO, 0x3									},
 	{ N_A,			N_A									}
 };
 MV_BOARD_MPP_TYPE_INFO db88f6720InfoBoardModTypeInfo[] = {
 	{
 		.boardMppSlic = MV_BOARD_AUTO,
-		.ethSataComplexOpt = MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0,
+		.ethSataComplexOpt = (MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3 | MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0),
 		.ethPortsMode = 0x0
 	}
 };
@@ -175,18 +187,6 @@ MV_BOARD_MPP_INFO db88f6720InfoBoardMppConfigValue[] = {
 		  DB_88F6720_MPP56_63,
 		  DB_88F6720_MPP64_67,
 	 } }
-};
-
-MV_BOARD_SWITCH_INFO db88f6720InfoBoardSwitchValue[] = {
-	{
-	 .switchIrq = 29,	/* set to -1 for timer operation */
-	 .switchPort = {0, 1, 2, 3, 4, -1, -1},
-	 .cpuPort = 6,
-	 .connectedPort = {6, -1},
-	 .internalQuadPhyAddr = 0,
-	 .connectedPortMask= ( BIT0| BIT1| BIT2| BIT3| BIT4| BIT6),
-	 .forceLinkMask = 0x0
-	 }
 };
 
 MV_BOARD_INFO db88f6720_board_info = {
@@ -227,8 +227,7 @@ MV_BOARD_INFO db88f6720_board_info = {
 	.gppPolarityValHigh		= DB_88F6720_GPP_POL_HIGH,
 
 	/* External Switch Configuration */
-	.pSwitchInfo = db88f6720InfoBoardSwitchValue,
-	.switchInfoNum = ARRSZ(db88f6720InfoBoardSwitchValue),
+	.switchforceLinkMask		= 0x0,
 
 	/* TDM */
 	.numBoardTdmInfo		= {},
@@ -247,7 +246,6 @@ MV_BOARD_INFO db88f6720_board_info = {
 	/* Enable modules auto-detection. */
 	.configAutoDetect		= MV_FALSE
 };
-
 
 /*
  * All supported Armada 375 boards

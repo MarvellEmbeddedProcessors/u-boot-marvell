@@ -78,7 +78,7 @@ extern "C" {
 #include "twsi/mvTwsi.h"
 
 #define BOARD_ETH_SWITCH_PORT_NUM       7
-#define BOARD_ETH_SWITCH_SMI_SCAN_MODE	2
+#define BOARD_ETH_SWITCH_SMI_SCAN_MODE	1	/* Use manual scanning mode */
 #define MV_BOARD_MAX_MPP                9       /* number of MPP conf registers */
 #define MV_BOARD_MAX_MPP_GROUPS         9
 #define MV_BOARD_MPP_GROUPS_MAX_TYPES   8
@@ -176,17 +176,6 @@ typedef struct _devCsInfo {
 	MV_U8 devWidth;
 	MV_U8 busWidth;
 } MV_DEV_CS_INFO;
-
-typedef struct _boardSwitchInfo {
-	MV_32 switchIrq;
-	MV_32 switchPort[BOARD_ETH_SWITCH_PORT_NUM];
-	MV_32 cpuPort;
-	MV_32 connectedPort[MV_ETH_MAX_PORTS];
-	MV_32 smiScanMode;
-	MV_8 connectedPortMask;
-	MV_32 internalQuadPhyAddr;
-	MV_U32 forceLinkMask; /* Bitmask of switch ports to have force link (1Gbps) */
-} MV_BOARD_SWITCH_INFO;
 
 typedef struct _boardLedInfo {
 	MV_U8 activeLedsNumber;
@@ -318,8 +307,7 @@ typedef struct _boardInfo {
 	MV_U32 gppPolarityValHigh;
 
 	/* External Switch Configuration */
-	MV_BOARD_SWITCH_INFO *pSwitchInfo;
-	MV_U32 switchInfoNum;
+	MV_U32 switchforceLinkMask;
 
 	/* PON configuration. */
 	MV_BOARD_PON_CONFIG ponConfigValue;
@@ -391,6 +379,7 @@ MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum);
 MV_32 mvBoardSwitchPortMap(MV_U32 switchIdx, MV_U32 switchPortNum);
 MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
+MV_VOID mvBoardPhyAddrSet(MV_U32 ethPortNum, MV_U32 smiAddr);
 MV_U8 mvBoardIoExpValGet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo);
 MV_STATUS mvBoardIoExpValSet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo, MV_U8 value);
 MV_STATUS mvBoardSatrInfoGet(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo);
@@ -438,7 +427,6 @@ MV_U32 mvBoardSledCpuNumGet(MV_VOID);
 MV_VOID mvBoardInfoUpdate(MV_VOID);
 MV_VOID mvBoardMppIdUpdate(MV_VOID);
 MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID);
-MV_STATUS mvBoardSwitchInfoUpdate(MV_VOID);
 MV_VOID mvBoardConfigWrite(MV_VOID);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet(MV_VOID);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet(MV_VOID);
@@ -446,26 +434,22 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet(MV_VOID);
 MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_VOID);
 MV_BOARD_BOOT_SRC mvBoardBootDeviceGet(MV_VOID);
 MV_U32 mvBoardBootAttrGet(MV_U32 satrBootDeviceValue, MV_U8 attrNum);
-MV_U8 mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum);
+MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);
 MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
 MV_U8 mvBoardCpuFreqGet(MV_VOID);
 MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal);
 MV_U8 mvBoardCpuCoresNumGet(MV_VOID);
 MV_STATUS mvBoardMppModulesScan(void);
-MV_STATUS mvBoardOtherModulesScan(void);
 MV_BOOL mvBoardIsPexModuleConnected(void);
 MV_BOOL mvBoardIsSetmModuleConnected(void);
-MV_BOOL mvBoardIsSwitchModuleConnected(void);
 MV_STATUS mvBoardIsInternalSwitchConnectedToPort(MV_U32 ethPortNum);
 MV_STATUS mvBoardIsInternalSwitchConnected(void);
 MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx);
 MV_BOOL mvBoardIsLvdsModuleConnected(void);
 MV_BOOL mvBoardIsLcdDviModuleConnected(void);
-MV_BOOL mvBoardIsGMIIModuleConnected(void);
 MV_STATUS mvBoardTwsiMuxChannelSet(MV_U8 muxChNum);
 MV_STATUS mvBoardTwsiReadByteThruMux(MV_U8 muxChNum, MV_U8 chNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *data);
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
-MV_32 mvBoardSwitchIrqGet(void);
 MV_BOOL mvBoardIsQsgmiiModuleConnected(void);
 MV_32 mvBoardGePhySwitchPortGet(void);
 MV_32 mvBoardRgmiiASwitchPortGet(void);

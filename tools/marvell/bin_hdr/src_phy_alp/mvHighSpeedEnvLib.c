@@ -536,7 +536,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
         return MV_OK;
 
 	/*Set MPP1 for twsi access */
-	uiReg = (MV_REG_READ(MPP_CONTROL_REG(1))  & 0x00FFFF00) | 0x22000022;
+	uiReg = (MV_REG_READ(MPP_CONTROL_REG(1))  & 0x00FFFFFF) | 0x22000000;
 	MV_REG_WRITE(MPP_CONTROL_REG(1), uiReg);
 
 	/* TWSI init */

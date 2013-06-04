@@ -85,6 +85,7 @@
 #define IH_OS_UNITY		20	/* Unity OS	*/
 #define IH_OS_INTEGRITY		21	/* INTEGRITY	*/
 #define IH_OS_OSE		22	/* OSE		*/
+#define IH_OS_FREERTOS		23	/* FreeRTOS/OpenRTOS */
 
 /*
  * CPU Architecture Codes (supported by Linux)

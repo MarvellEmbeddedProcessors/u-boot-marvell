@@ -159,6 +159,9 @@ static boot_os_fn *boot_os[] = {
 #ifdef CONFIG_INTEGRITY
 	[IH_OS_INTEGRITY] = do_bootm_integrity,
 #endif
+#ifdef CONFIG_AMP_SUPPORT
+	[IH_OS_FREERTOS] = do_bootm_linux,
+#endif
 };
 
 bootm_headers_t images;		/* pointers to os/initrd/fdt images */

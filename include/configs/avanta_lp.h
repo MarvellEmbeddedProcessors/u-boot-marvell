@@ -120,6 +120,14 @@ extern unsigned int mvTclkGet(void);
 	#define MV_PT_BASE(cpu)  (CONFIG_SYS_MALLOC_BASE - 0x20000 - (cpu * 0x20000))
 #endif /* MV_PT */
 
+/********************/
+/* AMP settings	    */
+/********************/
+#define CONFIG_AMP_SUPPORT		1
+#ifdef CONFIG_AMP_SUPPORT
+	#define MAX_AMP_GROUPS		2
+#endif
+
 /*
  * High Level Configuration Options
  */

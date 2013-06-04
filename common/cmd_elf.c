@@ -22,8 +22,38 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#ifdef CONFIG_AMP_SUPPORT
+extern int amp_enable;
+void amp_wait_to_boot(void);
+#endif
+
+int valid_elf_image (unsigned long addr);
 static unsigned long load_elf_image_phdr(unsigned long addr);
 static unsigned long load_elf_image_shdr(unsigned long addr);
+
+#ifdef CONFIG_MARVELL
+/* indicator showing that uboot is booting vxWorks with other endianness */
+static int g_changeEndian = 0;
+
+__u32 mv_swab32(__u32 num)
+{
+  if (g_changeEndian)
+    return swab32(num);
+  else
+    return num;
+}
+
+__u16 mv_swab16(__u16 num)
+{
+  if (g_changeEndian)
+    return swab16(num);
+  else
+    return num;
+}
+#else
+#define mv_swab32(x) x
+#define mv_swab16(x) x
+#endif
 
 /* Allow ports to override the default behavior */
 __attribute__((weak))
@@ -69,15 +99,19 @@ int valid_elf_image(unsigned long addr)
 		printf("## No elf image at address 0x%08lx\n", addr);
 		return 0;
 	}
-
-	if (ehdr->e_type != ET_EXEC) {
-		printf("## Not a 32-bit elf image at address 0x%08lx\n", addr);
+#ifdef CONFIG_MARVELL
+	/* Check if elf image is BE image */
+	g_changeEndian = (ehdr->e_ident[EI_DATA]  == ELFDATA2MSB);
+#endif
+	if (mv_swab16(ehdr->e_type) != ET_EXEC) {
+		printf ("## Not a 32-bit elf image at address 0x%08lx\n", addr);
 		return 0;
 	}
 
 #if 0
-	if (ehdr->e_machine != EM_PPC) {
-		printf("## Not a PowerPC elf image at address 0x%08lx\n", addr);
+	if (mv_swab16(ehdr->e_machine) != EM_PPC) {
+		printf ("## Not a PowerPC elf image at address 0x%08lx\n",
+			addr);
 		return 0;
 	}
 #endif
@@ -252,6 +286,9 @@ int do_bootvx(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	 */
 
 	if (valid_elf_image(addr)) {
+#ifdef CONFIG_MARVELL
+		printf("## vxWorks image is %s\n",(g_changeEndian)?"BE":"LE");
+#endif
 		addr = load_elf_image_shdr(addr);
 	} else {
 		puts("## Not an ELF image, assuming binary\n");
@@ -263,6 +300,11 @@ int do_bootvx(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	printf("## Starting vxWorks at 0x%08lx ...\n", addr);
 
 	dcache_disable();
+#ifdef CONFIG_AMP_SUPPORT
+	if(amp_enable)
+		amp_wait_to_boot();
+#endif
+
     /* send machine id as second parameter to vxWorks */
 	((void (*)(int,int)) addr) (0,machid);
 

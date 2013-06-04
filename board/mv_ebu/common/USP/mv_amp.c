@@ -30,6 +30,10 @@ disclaimer.
 
 #ifdef CONFIG_AMP_SUPPORT
 
+#ifdef CONFIG_AMP_TEST_CPU1
+#define TEST_CPU1_WAKE_UP
+#endif
+
 int  image_load_addr;   /* used to pass load address to micro loader */
 int  image_param_addr;  /* used to pass parameters address to micro loader */
 int  machine_id;        /* used to pass machine id for linux micro loader */
@@ -172,11 +176,13 @@ static void amp_create_group(int group_id, char *os, char *cpu_count, char *mast
 	int img_load_addr;
 	int isLinux;
 	int isVxWorks;
+	int isFreeRTOS;
 
 	isLinux   = ((strcmp(os, "linux") == 0));
 	isVxWorks = ((strcmp(os, "vxworks") == 0));
+	isFreeRTOS = ((strcmp(os, "freertos") == 0));
 
-	if(!isVxWorks && ! isLinux)
+	if(!isVxWorks && ! isLinux && !isFreeRTOS)
 	{
 		printf("Error: Specified unsupported OS %s\n", os);
 		return;
@@ -195,14 +201,16 @@ static void amp_create_group(int group_id, char *os, char *cpu_count, char *mast
 	if(group_id > 0){
 		amp_duplicate_env("image_name", group_id, 0);
 		amp_duplicate_env("console", group_id, 0);
+#ifdef CONFIG_MTD_DEVICE
 		amp_duplicate_env("mtdparts", group_id, 0);
+#endif
 		amp_duplicate_env("serverip", group_id, 0);
 		amp_duplicate_env("bootargs_root", group_id, 0);
 		amp_duplicate_env("rootpath", group_id, 0);
 		amp_duplicate_env("mvNetConfig", group_id, 0);
 		amp_set_env("ipaddr", "192.168.1.1", group_id, 0);
 
-		if(isLinux)
+		if(isLinux || isFreeRTOS)
 			amp_duplicate_env("bootargs_end", group_id, 0);
 	}
 
@@ -211,7 +219,7 @@ static void amp_create_group(int group_id, char *os, char *cpu_count, char *mast
 
 	sprintf(cmd_name, "bootcmd_g%d", group_id);
 
-	if(isLinux)
+	if(isLinux || isFreeRTOS)
 	{
 		amp_set_linux_bootargs(group_id);
 
@@ -264,7 +272,7 @@ static void amp_create_group(int group_id, char *os, char *cpu_count, char *mast
 		setenv(cmd_name, boot_cmd);
 }
 
-static void amp_wait_to_boot(void)
+void amp_wait_to_boot(void)
 {
 	if(amp_sync_boot == 0)
 		return;
@@ -295,11 +303,32 @@ static void amp_get_boot_cmd(char *boot_cmd_name, int group_id)
 		amp_set_linux_bootargs(group_id);
 }
 
+/* The mv_amp_group_setup() function tries to allocate requested size of physical
+ * memory for each of the AMP groups. It is called from do_bootm_linux() and have
+ * to overwrite the dram_hw_info array before call to setup_memory_tags().
+ * It will adjust overlapping memory blocks, cut out shared memory and split the
+ * window going through the 4GB boundary.
+ * After this function is called, the info about memory banks (dram_hw_info) will
+ * be corrupted and it will be impossible to run amp_boot again. */
 int mv_amp_group_setup(int group_id, int load_addr)
 {
 	char *env;
-	unsigned long mem_base = -1;
-	unsigned long mem_size = -1;
+	int i;
+	unsigned long long mem_base = -1;
+	unsigned long long mem_size = 0;
+	unsigned long long mem_total = 0;
+	unsigned long shared_base = -1;
+	unsigned long shared_size = 0;
+
+	unsigned long long next_mem_base;
+	unsigned long g_mem_base;
+	unsigned long long g_mem_size;
+	unsigned long last_mem_base = 0;
+	unsigned long long last_mem_size = 0;
+
+	static unsigned int last_group_id;
+	static unsigned long long last_mem_end = 0;
+	static unsigned long long phys_mem_end = 0;
 
 	env = getenv("amp_enable");
 	if( !env || ( ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) )))
@@ -307,45 +336,160 @@ int mv_amp_group_setup(int group_id, int load_addr)
 
 	env = amp_getenv("amp_mem_base", group_id);
 	if(env)
-		mem_base = strtol(env, NULL, 16);
-	else
+		mem_base = simple_strtoul(env, NULL, 16);
+	else {
 		printf("Error: please set variable amp_mem_base_g%d\n", group_id);
-
-	env = amp_getenv("amp_mem_size", group_id);
-	if(env)
-		mem_size = strtol(env, NULL, 16);
-	else
-		printf("Error: please set variable amp_mem_size_g%d\n", group_id);
-
-
-	/*Verify load address matches physical offset */
-	if(load_addr != (mem_base + (0x8000))){
-		printf("\nAMP Error: Load address (%#08x) != mem base + 0x8000 (%#010x)\n\n", load_addr, (unsigned int)(mem_base + (0x8000)));
 		return 1;
 	}
 
-	gd->bd->bi_boot_params   = mem_base + (0x100); // == param_phys in Makefile.boot
-	gd->bd->bi_dram[0].start = mem_base;
-	gd->bd->bi_dram[0].size  = mem_size;
+	env = amp_getenv("amp_mem_size", group_id);
+	if(env)
+		mem_size = simple_strtoull(env, NULL, 16);
+	else {
+		printf("Error: please set variable amp_mem_size_g%d\n", group_id);
+		return 1;
+	}
+
+	env = getenv("amp_shared_mem");
+	if(env) {
+		shared_base = simple_strtoul(env, &env, 16);
+		if (*env == ':')
+			shared_size = simple_strtoul(++env, NULL, 16);
+	}
+
+	/* Count the total size of contiguous physical memory */
+	if(phys_mem_end == 0) {
+		phys_mem_end = gd->dram_hw_info[0].start;
+		for(i = 0; i < CONFIG_NR_DRAM_BANKS; i++)
+			if(phys_mem_end == gd->dram_hw_info[i].start)
+				phys_mem_end += gd->dram_hw_info[i].size;
+	}
+
+	mem_total = mem_size;
+	/* Check whether the memory region does not interfere with other groups
+	 * Find end of memory block occupied by the group which have the highest base */
+	for(i = 0; i < MAX_AMP_GROUPS; i++) {
+		env = amp_getenv("amp_mem_base", i);
+		if(env == NULL)
+			continue;
+		g_mem_base = simple_strtoul(env, NULL, 16);
+		env = amp_getenv("amp_mem_size", i);
+		if(env == NULL)
+			continue;
+		g_mem_size = simple_strtoull(env, NULL, 16);
+
+		if((last_mem_end == 0) && (g_mem_base >= last_mem_base)) {
+			last_mem_base = g_mem_base;
+			last_mem_size = g_mem_size;
+			last_group_id = i;
+		}
+
+		if((mem_base < g_mem_base) &&
+				(mem_base + mem_size > g_mem_base))
+			mem_size = g_mem_base - mem_base;
+	}
+
+	/* Verify load address matches physical memory region */
+	if((load_addr < mem_base) || (load_addr >= mem_base + mem_size)){
+		printf("\nAMP Error: Load address (%#08x) not within allocated memory "
+		       "[%#08x:%#08x]\n\n", load_addr, (unsigned int)mem_base,
+		       (unsigned int)(mem_base + mem_size));
+		return 1;
+	}
+
+	if(last_mem_end == 0) {
+		if(last_mem_size == 0) {
+			printf("\nAMP Error: Groups memory not configured properly.\n");
+			return 1;
+		} else
+			last_mem_end = last_mem_base + last_mem_size;
+	}
+
+	gd->bd->bi_boot_params = mem_base + (0x100); // == param_phys in Makefile.boot
+
+	/* Overwrite dram_hw_info array to change available memory blocks passed
+	 * to the OS from setup_memory_tags() */
+	for(i = 0; i < CONFIG_NR_DRAM_BANKS; i++) {
+		next_mem_base = 0;
+
+		if(mem_base >= phys_mem_end) {
+			mem_base = 0;
+			mem_size = 0;
+		} else if(mem_base + mem_size > phys_mem_end) {
+			mem_size = phys_mem_end - mem_base;
+			next_mem_base = phys_mem_end;
+		}
+		if((mem_base < 0x100000000ll) &&
+				(mem_base + mem_size > 0x100000000ll)) {
+			mem_size = 0x100000000ll - mem_base;
+			next_mem_base = 0x100000000ll;
+		}
+		if((shared_size > 0) && (mem_base <= shared_base) &&
+				(mem_base + mem_size > shared_base)) {
+			mem_size = shared_base - mem_base;
+			next_mem_base = shared_base + shared_size;
+			if (mem_total > shared_size)
+				mem_total -= shared_size;
+			else
+				mem_total = 0;
+		}
+		if(next_mem_base > last_mem_end)
+			last_mem_end = next_mem_base;
+		if(mem_base + mem_size > last_mem_end)
+			last_mem_end = mem_base + mem_size;
+		if((group_id != last_group_id) && (next_mem_base < last_mem_end))
+			next_mem_base = last_mem_end;
+
+		gd->dram_hw_info[i].start = mem_base;
+		gd->dram_hw_info[i].size  = mem_size;
+
+		mem_total -= mem_size;
+		mem_size = mem_total;
+		if(mem_size > 0)
+			mem_base = next_mem_base;
+		else
+			mem_base = 0;
+	}
 
 	return 0;
 }
+#ifdef TEST_CPU1_WAKE_UP
+void cpu1IsAlive(void)
+{
+    ulong cpu1Stack = 0x20000;
+    int i;
+    asm ("mov sp, %0" : "=r" (cpu1Stack) : );
 
+    for (i=0; i<20; i++) {
+	printf("I'm CPU 1 - test cpu1 wake up (defined TEST_CPU1_WAKE_UP)\n");
+    }
+    hang();
+}
+#endif
 static void mvWakeCpuToFunc(int cpu_id, void *func_addr)
 {
-
+	MV_U32 *pOpcode;
 	/* Enable a window of size 0x7FF for bootrom code */
-	MV_REG_WRITE(0x200b8, 0x07ff1d11);
 
-	/* Z1 PATCH - write 0 for Bootrom to figure PM mode*/
-	MV_REG_WRITE(CPU_RESUME_CTRL_REG, 0x0);
+        MV_REG_WRITE(0x200b8,0x00000991);//config window to Tunit SRAM
+        MV_REG_WRITE(0x200bc ,0xffff0000);
+	pOpcode = (MV_U32 *)0xffff0000;
+	*pOpcode++= 0xe59f0004;  //set op-codes for boot
+	*pOpcode++= 0xe5900000;
+	*pOpcode++= 0xe12fff30;
+	*pOpcode++= 0xf10182d4;
 
 	/* Write function pointer to boot register. Bootrom will
 	 * read from theres_more and jump to that adress */
+#ifdef TEST_CPU1_WAKE_UP
+	if (cpu_id)
+	    func_addr  = cpu1IsAlive;
+#endif
+        // set address in register
 	MV_REG_WRITE(CPU_RESUME_ADDR_REG(cpu_id), (MV_U32)func_addr);
 
 	/* Release hanging core by writing to reset register */
-	MV_REG_WRITE(CPU_RESET_REG(cpu_id), 0x0);
+	MV_REG_WRITE(CPU_RESET_REG(cpu_id), 0);
 }
 
 #define AXP_CPU_DIVCLK_CTRL0			0x18700
@@ -399,8 +543,6 @@ static void mvSetSecondaryClock(int cpu_id)
 /*static void mvPrepareSecondaryLoad(int mach_id, int load_addr, int param_addr, int uart_port, int cpu_id)
 {
 
-
-
 }*/
 
 static void amp_linux_boot(int mach_id, int load_addr, int param_addr, int group_id)
@@ -429,17 +571,15 @@ static void amp_linux_boot(int mach_id, int load_addr, int param_addr, int group
 
 	// Initialize UART for secondary group
 	mvUartInit(group_id, clock_divisor, mvUartBase(group_id));
-
 	// Initialize clock for secondary CPU
 	mvSetSecondaryClock(master_core_id);
 
 	// Set globals to be accessed by micro loader
-	machine_id 	 	 = mach_id;
+	machine_id 	 = mach_id;
 	image_load_addr  = load_addr;
 	image_param_addr = param_addr;
 
-	if((strcmp(env, "linux") == 0))	{
-
+	if((strcmp(env, "linux") == 0) || (strcmp(env, "freertos") == 0)) {
 	/* Wake up CPU to to micro loader function */
 	mvWakeCpuToFunc(master_core_id, &linuxMicroLoader);
 }
@@ -460,7 +600,6 @@ int amp_boot(int machid, int load_addr, int param_addr)
 		return 1;
 	}
 	else{
-		amp_wait_to_boot();
 		return 0;
 	}
 }
@@ -483,7 +622,7 @@ int amp_printenv_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	int group_id = -1, group_count, id;
 	char *env, *os;
-	int isLinux;
+	int isLinux, isFreeRTOS;
 
 	env = getenv("amp_enable");
 	if(!env || ( ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) ))){
@@ -524,6 +663,7 @@ int amp_printenv_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	{
 		os = amp_getenv("amp_os", id);
 		isLinux   = ((strcmp(os, "linux") == 0));
+		isFreeRTOS  = ((strcmp(os, "freertos") == 0));
 
 		printf("\n**** AMP Group %d ****\n\n", id);
 		group_printenv("amp_os", id, 1);
@@ -539,9 +679,11 @@ int amp_printenv_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		group_printenv("serverip", id, 0);
 		group_printenv("bootargs_end", id, 0);
 
-		if(isLinux){
+		if(isLinux || isFreeRTOS){
 			group_printenv("console", id, 0);
+#ifdef CONFIG_MTD_DEVICE
 			group_printenv("mtdparts", id, 0);
+#endif
 		group_printenv("bootargs_root", id, 0);
 		group_printenv("rootpath", id, 0);
 		group_printenv("mvNetConfig", id, 0);
@@ -679,7 +821,8 @@ int amp_config_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 1;
 	}
 
-	if ((strcmp(argv[2], "linux") != 0) && (strcmp(argv[2], "vxworks") != 0))
+	if ((strcmp(argv[2], "linux") != 0) && (strcmp(argv[2], "vxworks") != 0) &&
+	    (strcmp(argv[2], "freertos") != 0))
 	{
 		printf("Error: Specified unsupported OS %s\n", argv[2]);
 		return 1;
@@ -707,7 +850,7 @@ U_BOOT_CMD(
 	"\t<cpu_count>  - how many cpus to use in the group. \n"
 	"\t<master_cpu> - cpu id of first cpu in the group. \n"
 	"\t<mem_base>   - base physical address of group's image \n"
-	"\t<mem_size>   - physical space size of group's image \n"
+	"\t<mem_size>   - requested memory size of group's image; for LPAE may overlap with other groups \n"
 	"\t<resources>  - resource string \n"
 );
 
@@ -715,9 +858,8 @@ U_BOOT_CMD(
 int amp_verify_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	int group_count, id, test_id, i;
-	int cpu_count, master_cpu, mem_base, mem_size, mem_end;
+	int cpu_count, master_cpu, mem_base, shared_base, shared_size = 0;
 	int mem_blk_start[MAX_AMP_GROUPS];
-	int mem_blk_end[MAX_AMP_GROUPS];
 	int base_cpu_id;
 	int mstr_rsrc = 0;
 	char *env;
@@ -776,16 +918,14 @@ int amp_verify_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		base_cpu_id = master_cpu + cpu_count;
 
 		mem_base  = simple_strtoul(amp_getenv("amp_mem_base", id), NULL, 16);
-		mem_size  = simple_strtoul(amp_getenv("amp_mem_size", id), NULL, 16);
-		mem_end   = mem_base + mem_size;
 
-		/* Verify Memory allocation - avoid block overllaps*/
-
+		/* Verify Memory allocation - groups cannot have the same base addresses.
+		 * Overlapping blocks will be automatically adjusted. */
 		for(i = 0; i < id; i++)
 		{
-			if(((mem_base < mem_blk_end[i]) && (mem_base > mem_blk_start[i])) ||
-			   ((mem_end  < mem_blk_end[i]) && (mem_end  > mem_blk_start[i]))){
-				printf ("group %d memory [%#010x - %#010x] overlaps [%#010x - %#010x]\n", id, mem_base, mem_end, mem_blk_start[i], mem_blk_end[i]);
+			if(mem_base == mem_blk_start[i]) {
+				printf ("group %d memory (%#010x) overlaps with group %d (%#010x)\n",
+						id, mem_base, i, mem_blk_start[i]);
 				goto failed;
 			}
 		}
@@ -810,11 +950,30 @@ int amp_verify_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		}
 
 		mem_blk_start[id] = mem_base;
-		mem_blk_end[id]   = mem_end;
 	}
 
-	/* TODO - add a test that shared memory doesnt overlap */
-        
+	/* Verify shared memory location. Memory blocks overlapping on shared block will be adjusted. */
+	env = getenv("amp_shared_mem");
+	if(env) {
+		shared_base = simple_strtoul(env, &env, 16);
+		if (*env == ':')
+			shared_size = simple_strtoul(++env, NULL, 16);
+		if (shared_size == 0) {
+			printf ("Shared memory size is not configured properly.\n");
+			goto failed;
+		}
+
+		for(id = 0; id < group_count; id++)
+			if ((shared_base <= mem_blk_start[id]) &&
+					(shared_base + shared_size > mem_blk_start[id])) {
+				printf ("Shared memory overlaps with group %d memory.\n", id);
+				goto failed;
+			}
+	} else {
+		printf ("Shared memory base is not configured properly.\n");
+		goto failed;
+	}
+
 	/* Check that all resources are exclusive */
 	for(id = 0; id < group_count; id++)
 	{

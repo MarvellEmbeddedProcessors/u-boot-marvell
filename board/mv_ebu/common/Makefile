@@ -115,16 +115,14 @@ USP_OBJS +=		$(USP_DIR)/mv_main.o
 endif
 
 SOBJS = $(USP_DIR)/platform.o
-
-ifeq ($(BOARD),axp)	
-	USP_OBJS +=	$(USP_DIR)/mv_amp.o	
+ifdef   CONFIG_AMP_SUPPORT
+	USP_OBJS +=	$(USP_DIR)/mv_amp.o
 	SOBJS +=	$(USP_DIR)/mv_micro_loader.o
 endif
-		
 
 ifneq ($(BOARD),axp)
 	SOBJS+= $(USP_DIR)/jump.o 		\
-		$(HAL_DRAM_DIR)/mvDramIfBasicInit.o	
+		$(HAL_DRAM_DIR)/mvDramIfBasicInit.o
 endif
 
 COBJS = $(COMMON_OBJS)		\

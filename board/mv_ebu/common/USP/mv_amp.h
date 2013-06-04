@@ -22,6 +22,7 @@ disclaimer.
 #define MV_AMP_H
 
 int  amp_boot(int machid, int load_addr, int param_addr);
+void amp_wait_to_boot(void);
 int  mv_amp_group_setup(int group_id, int load_addr);
 void amp_init(void);
 

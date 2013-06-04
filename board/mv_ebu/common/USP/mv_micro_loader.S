@@ -20,7 +20,6 @@ disclaimer.
 
 #define MV_ASMLANGUAGE
 
-
 .globl lock_hw_mutex
 lock_hw_mutex:
 

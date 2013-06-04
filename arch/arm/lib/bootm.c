@@ -64,6 +64,7 @@ static ulong get_sp(void)
 extern int amp_enable;
 extern int amp_group_id;
 int  amp_boot(int mach_id, int load_addr, int param_addr);
+void amp_wait_to_boot(void);
 int  mv_amp_group_setup(int group_id, int load_addr);
 #endif
 
@@ -503,6 +504,15 @@ static void boot_jump_linux(bootm_headers_t *images)
 
 	announce_and_cleanup();
 
+#ifdef CONFIG_AMP_SUPPORT
+	/*
+	 * Function amp_wait_to_boot() decreases amp_barrier. If the amp_barrier
+	 * reach 0, other cores will start and may change internal register base.
+	 * Internal registers (console) cannot be written after this call.
+	 */
+	if(amp_enable)
+		amp_wait_to_boot();
+#endif
 #ifdef CONFIG_OF_LIBFDT
 	if (images->ft_len)
 		r2 = (unsigned long)images->ft_addr;

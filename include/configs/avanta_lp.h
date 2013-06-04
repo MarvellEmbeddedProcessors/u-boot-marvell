@@ -485,12 +485,13 @@ extern unsigned int mvTclkGet(void);
 #define PCI_HOST_FORCE   1              /* configure as pci host        */
 #define PCI_HOST_AUTO    2              /* detected via arbiter enable  */
 
+
+#define CONFIG_UBOOT_SIZE                       0x100000
 /*
  * NOR Flash
  */
 #if defined(MV_INCLUDE_NOR)
 	#define CONFIG_SYS_MAX_FLASH_BANKS              1
-	#define CONFIG_UBOOT_SIZE                       0x70000 /* 448 K */
 
 	#define CONFIG_SYS_FLASH_CFI
 	#define CONFIG_SYS_FLASH_PROTECTION

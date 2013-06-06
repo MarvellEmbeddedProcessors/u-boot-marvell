@@ -167,6 +167,17 @@ int sp_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #endif
 	MV_U32 pexHWInf = 0;
 
+#if defined(MV88F68XX)
+	printf("PCI interfaces mapping:\n");
+	printf("+-------------------------+---+---+---+---+---+---+---+\n");
+	printf("| Active interface number | 0 | 1 | 2 | 3 |\n");
+	printf("+-------------------------+---+---+---+---+---+---+---+\n");
+	printf("| HW interface number     | %d | %d | %d | %d |\n",
+		boardPexInfo->pexMapping[0], boardPexInfo->pexMapping[1],
+	        boardPexInfo->pexMapping[2], boardPexInfo->pexMapping[3]);
+	printf("+-------------------------+---+---+---+---+---+---+---+\n\n");
+#endif
+
 	if (argc > 1)
 		host = simple_strtoul(argv[1], NULL, 10);
 
@@ -181,16 +192,16 @@ int sp_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	pexHWInf = host;
 #endif
 
-	printf("scanning pex number: %d\n", pexHWInf);
+	printf("Scanning PCIe HW interface %d\n", pexHWInf);
 	if ( scanPci(pexHWInf) == MV_FALSE)
-		printf("PCI %d Scan - FAILED!!.\n", host);
+		printf("PCIe %d Scan - FAILED!!.\n", host);
 	return 1;
 }
 
 U_BOOT_CMD(
 	sp,      2,     1,      sp_cmd,
-	"sp	- Scan PCI Interface [bus].\n",
-	"\tScan and detect all devices on mvPCI Interface \n"
+	"scan and detect all devices on PCI-e interface",
+	"[active interface number]\n"
 	);
 
 int me_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -206,18 +217,18 @@ int me_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	}
 
 	if (mvPexMasterEnable(host, MV_TRUE)  == MV_OK)
-		printf("PCI %d Master enabled.\n", host);
+		printf("PCIe %d Master enabled.\n", host);
 	else
-		printf("PCI %d Master enabled -FAILED!!\n", host);
+		printf("PCIe %d Master enabled -FAILED!!\n", host);
 
 	return 1;
 }
 
 U_BOOT_CMD(
 	me,      2,      1,      me_cmd,
-	"me	- PCI master enable\n",
+	"me	- PCIe master enable\n",
 	" [0/1] \n"
-	"\tEnable the MV device as Master on PCI 0/1. \n"
+	"\tEnable the MV device as Master on PCIe 0/1. \n"
 	);
 
 int se_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -238,7 +249,7 @@ int se_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	dev = simple_strtoul(argv[3], NULL, 16);
 
 	if (host >= mvCtrlPexMaxIfGet()) {
-		printf("PCI %d doesn't exist\n", host);
+		printf("PCIe %d doesn't exist\n", host);
 		return 1;
 	}
 
@@ -249,17 +260,17 @@ int se_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #endif
 
 	if (mvPexSlaveEnable(pexHWInf, bus, dev, MV_TRUE) == MV_OK)
-		printf("PCI %d Bus %d Slave 0x%x enabled.\n", host, bus, dev);
+		printf("PCIe %d Bus %d Slave 0x%x enabled.\n", host, bus, dev);
 	else
-		printf("PCI %d Bus %d Slave 0x%x enabled - FAILED!!.\n", host, bus, dev);
+		printf("PCIe %d Bus %d Slave 0x%x enabled - FAILED!!.\n", host, bus, dev);
 	return 1;
 }
 
 U_BOOT_CMD(
 	se,      4,     1,      se_cmd,
-	"se	- PCI Slave enable\n",
+	"se	- PCIe Slave enable\n",
 	" [0/1] bus dev \n"
-	"\tEnable the PCI device as Slave on PCI 0/1. \n"
+	"\tEnable the PCIe device as Slave on PCIe 0/1. \n"
 	);
 
 /******************************************************************************
@@ -286,7 +297,7 @@ int mapPci_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		pciWin.baseLow = simple_strtoul(argv[2], NULL, 16);
 
 	if (host >= mvCtrlPexMaxIfGet()) {
-		printf("PCI %d doesn't exist\n", host);
+		printf("PCIe %d doesn't exist\n", host);
 		return 1;
 	}
 
@@ -309,15 +320,15 @@ int mapPci_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 1;
 	}
 
-	printf("PCI %x Access base address : %x\n", host, effectiveBaseAddress);
+	printf("PCIe %x Access base address : %x\n", host, effectiveBaseAddress);
 	return 1;
 }
 
 U_BOOT_CMD(
 	mp,      3,     1,      mapPci_cmd,
-	"mp	- map PCI BAR\n",
+	"mp	- map PCIe BAR\n",
 	" [0/1] address \n"
-	"\tChange the remap of PCI 0/1 window 0 to address 'addrress'.\n"
+	"\tChange the remap of PCIe 0/1 window 0 to address 'addrress'.\n"
 	"\tIt also displays the new access address, since the remap is not always\n"
 	"\tthe same as requested. \n"
 	);
@@ -425,7 +436,7 @@ static void mv_setup_host(struct pci_controller *hose,
 	return;
 }
 
-static void mv_pci_bus_mode_display(MV_U32 host)
+static void mv_pci_bus_mode_display(MV_U32 host, int bus)
 {
 #if defined(MV_INCLUDE_PEX)
 
@@ -446,7 +457,11 @@ static void mv_pci_bus_mode_display(MV_U32 host)
 	if (mvPexModeGet(pexHWInf, &pexMode) != MV_OK)
 		printf("mv_pci_bus_mode_display: mvPexModeGet failed\n");
 
-	printf("PEX %d: ", host);
+#if defined(MV88F68XX)
+	printf("PCI-e %d (%d-%d) ", pexHWInf , host, bus);
+#else
+	printf("PCi-e %d: (%d) ",host, bus);
+#endif
 
 	switch (pexMode.pexType) {
 	case MV_PEX_ROOT_COMPLEX:
@@ -531,6 +546,7 @@ void pci_init_board(void)
 	struct pci_controller *pci;
 	char *env;
 	int status;
+	MV_U32 link_found, lastPexIfWithFoundLink;
 #ifdef MV88F68XX
 	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
 #endif
@@ -547,7 +563,15 @@ void pci_init_board(void)
 	DB(printf("Start scan of %d PEX interfaces\n", activePexCount));
 
 	/* Initialize and scan all PEX interfaces */
+	printf("\nInitialize and scan all PCIe interfaces\n");
+#if defined(MV88F68XX)
+	printf("PCI-e unit (active IF[-first bus]):\n");
+#else
+	printf("PCI-e unit [-first bus]:\n");
+#endif
+	printf("------------------------------------------\n");
 	for (pexIf = 0; pexIf < activePexCount; pexIf++) {
+
 		pci = &pci_hose[pexIf];
 #if defined(MV88F68XX)
 		pexHWInf = boardPexInfo->pexMapping[pexIf];
@@ -560,13 +584,24 @@ void pci_init_board(void)
 		if (pexIf == 0) {
 			pci->first_busno = 0;
 			pci->last_busno = 0;
-		}else  {
-			pci->first_busno = pci_hose[pexIf - 1].last_busno + 1;
+			link_found = 0;
+			lastPexIfWithFoundLink = 0;
+		}
+		else if (!link_found) {
+			/* No link was found in previous PEX interfaces */
+			pci->first_busno = 0;
+			DB(printf("Set first,last=%d,%d bus numbers in U-BOOT stack for pexIf %d\n",
+			pci->first_busno, pci->last_busno, pexIf));
+		}
+		else {
+			pci->first_busno = pci_hose[lastPexIfWithFoundLink].last_busno + 1;
 			pci->last_busno = pci->first_busno;
+			DB(printf("Set first,last=%d,%d bus numbers in U-BOOT stack according to previously found pexIf.last_busno=%d.%d\n",
+				  pci->first_busno, pci->last_busno, lastPexIfWithFoundLink,
+				  pci_hose[lastPexIfWithFoundLink].last_busno));
 		}
 
 		pci->config_table = mv_config_table;
-
 		/* Check if PEX IF is powered */
 		if (MV_FALSE == mvCtrlPwrClckGet(PEX_UNIT_ID, pexHWInf))
 			continue;
@@ -593,7 +628,8 @@ void pci_init_board(void)
 
 		status = mvSysPexInit(pexHWInf, pexIfMode);
 		if (status == MV_ERROR)
-			printf("pci_init_board:Error calling mvPexIfInit for PEX%d.%d(%d)\n", pexHWInf / 4, pexHWInf % 4, pexIf);
+			printf("pci_init_board:Error calling mvPexIfInit for PCI-e%d (%d)\n",
+			       pexHWInf, pexIf);
 		else {
 			if (status == MV_OK) {
 				/* Link detected. Set U-BOOT scan parameters */
@@ -604,20 +640,27 @@ void pci_init_board(void)
 				 * Set device number to 1 to enable detecting
 				 * Devices that answer only when device is 0
 				 */
+				DB(printf("Set local device number to 1 in pexHWInf %d\n", pexHWInf));
 				mvPexLocalDevNumSet(pexHWInf, 1);
 
 				/* Set bus No based on previous scan results */
+				DB(printf("Set bus number %d in pexHWInf %d on previous scan results\n",
+					  pci->first_busno, pexHWInf));
 				if (mvPexLocalBusNumSet(pexHWInf, pci->first_busno) != MV_OK)
 					printf("pci_init_board:Error calling mvPexLocalBusNumSet for pexIf %d\n", pexIf);
 			}else  {
 				/* Interface with no link */
-				printf("PEX %d: Detected No Link.\n", pexIf);
+				printf("PCI-e %d: Detected No Link.\n", pexIf);
+				if (pci->first_busno) {
+					pci->first_busno = 0;
+					pci->last_busno = 0;
+				}
 				continue;
 			}
 		}
 
-		/* Print PEX mode, Lane count and GEN*/
-		mv_pci_bus_mode_display(pexIf);
+		/* Print PEX unit, port, active IF and first bus numbers */
+		mv_pci_bus_mode_display(pexIf, pci->first_busno);
 
 		/* Skip scan if link is down */
 		if (status == MV_NO_SUCH) {
@@ -636,6 +679,7 @@ void pci_init_board(void)
 		rempWin.baseHigh = 0;
 
 		/* Perform a remap for the PEX0 interface */
+		DB(printf("Performing remap for the PCI-e%d interface\n", pexHWInf));
 		if (0xffffffff == mvCpuIfPexRemap(PCI_MEM(pexHWInf, 0), &rempWin)) {
 			printf("%s:mvCpuIfPexRemap failed, %d\n", __FUNCTION__, pexHWInf);
 			return;
@@ -690,7 +734,7 @@ void pci_init_board(void)
 			pci->last_busno = pci->first_busno;
 	}
 
-	DB(printf("Completed PEX scan\n"));
+	DB(printf("Completed PCI-e scan\n"));
 #ifdef DB_FPGA
 	MV_REG_BIT_RESET(PCI_BASE_ADDR_ENABLE_REG(0), BIT10);
 #endif

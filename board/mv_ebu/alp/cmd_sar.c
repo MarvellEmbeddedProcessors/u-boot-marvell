@@ -24,57 +24,76 @@ disclaimer.
 #include "ctrlEnv/mvCtrlEnvLib.h"
 #include "boardEnv/mvBoardEnvLib.h"
 
-
+extern int do_sar(cmd_tbl_t * cmdtb, int flag, int argc, char * const argv[]);
 
 static int do_sar_list(int argc, char *const argv[])
 {
 	const char *cmd;
-	int i;
+	MV_FREQ_MODE pFreqModes[] = MV_USER_SAR_FREQ_MODES;
+	int i, maxFreqModes = 0;
+	MV_U16 ctrlModel = mvCtrlModelGet();
+
+	if (ctrlModel == MV_6610_DEV_ID)
+		maxFreqModes = FREQ_MODES_NUM_6610;
+	else if (ctrlModel == MV_6650_DEV_ID)
+		maxFreqModes = FREQ_MODES_NUM_6650;
+	else if (ctrlModel == MV_6660_DEV_ID)
+		maxFreqModes = FREQ_MODES_NUM_6660;
 
 	if (argc < 1)
 		goto usage;
 	cmd = argv[0];
-/* 1. Bios Device (MUX with internal E²PROM)  change by uBoot command satr and reset.
- * 	Following S@R will be changed by this option: */
+
 	if (strcmp(cmd, "cpufreq") == 0) {
-		MV_FREQ_MODE pFreqModes[] = MV_SAR_FREQ_MODES;
-		printf("Determines the frequency of CPU/DDR/L2:\n");
-		printf("\n\n val | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
-		for (i=0; i < FREQ_MODES_NUM; i++) {
-			printf(" %d | %d | %d | %d | \n", i,
-				   pFreqModes[i].cpuFreq,
-				   pFreqModes[i].ddrFreq,
-				   pFreqModes[i].l2Freq);
+		printf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n");
+		printf("\n| ID  | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
+		printf("---------------------------------------------------------\n");
+		for (i=0; i < maxFreqModes; i++) {
+			printf("|  %2d |      %4d      |      %d       |      %d      | \n",
+				pFreqModes[i].id,
+				pFreqModes[i].cpuFreq,
+				pFreqModes[i].ddrFreq,
+				pFreqModes[i].l2Freq);
 		}
+		printf("---------------------------------------------------------\n");
 	} else if (strcmp(cmd, "coreclock") == 0) {
 		printf("Determines the frequency of Core Clock:\n");
 		printf("\t0x0 = 166Mhz\n");
 		printf("\t0x1 = 200Mhz\n");
-#if defined (DB_6660_ID) || defined (RD_6660_ID)	/* omriii : remove defines and detect according to runtime boardID */
 	} else if (strcmp(cmd, "cpusnum") == 0) {
-
-		printf("Determines the number of CPU cores:\n");
+		printf("cpusnum options - Determines the number of CPU cores:\n");
 		printf("\t0x0 = Single CPU\n");
 		printf("\t0x1 = Dual CPU\n");
-		printf("\t0x2 = Reserved\n");
-#endif
-
 	} else if (strcmp(cmd, "sscg") == 0) {
 		printf("Determines the SSCG  mode:\n");
 		printf("\t0x0 = SSCG Enabled\n");
 		printf("\t0x1 = SSCG Disabled\n");
 	}
+	else goto usage;
 	return 0;
 usage:
 	printf("Usage: sar list [options] (see help) \n");
 	return 1;
 }
 
+static MV_STATUS GetAndVerifySatr(MV_SATR_TYPE_ID satrField, MV_U32* result)
+{
+	MV_U32 temp = mvCtrlSatRRead(satrField);
+
+	if (temp == MV_ERROR) {
+		printf("%s: Requested SatR field is not relevant for current board\n", __func__);
+		return MV_ERROR;
+	}
+
+	*result = temp;
+	return MV_OK;
+}
+
 static int do_sar_read(int argc, char *const argv[])
 {
 	const char *cmd;
-	MV_BOOL dump_all=MV_FALSE;
-	MV_U8 temp;
+	MV_BOOL dump_all = MV_FALSE;
+	MV_U32 temp;
 	MV_FREQ_MODE freqMode;
 	char* bootSrcArr[8];
 
@@ -93,113 +112,116 @@ static int do_sar_read(int argc, char *const argv[])
 
 	if ((strcmp(cmd, "cpufreq") == 0) && (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode)))
 	{
-		printf("\n\n val | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
-			printf(" %d | %d | %d | %d | \n",
+		printf("\nCurrent cpufreq configuration:\n");
+		printf("| ID  | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
+		printf("|  %2d |      %4d      |      %d       |      %d      | \n",
 				freqMode.id,
 				freqMode.cpuFreq,
  				freqMode.ddrFreq,
 				freqMode.l2Freq);
+		printf("---------------------------------------------------------\n");
 	}
 
-	else if ((strcmp(cmd, "coreclock") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT))))
-		printf("coreclock = %d \n", temp);
-
-	else if ((strcmp(cmd, "cpusnum") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU1_ENABLE))))
-		printf("cpusnum = %d \n", temp);
-
-	else if ((strcmp(cmd, "sscg") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_SSCG_DISABLE))))
-		printf("sscg = %d ==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
-
-	else if ((strcmp(cmd, "i2c0") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_I2C0_SERIAL_ROM))))
-		printf("i2c0 = %d ==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
-
-	else if ((strcmp(cmd, "cpureset") == 0) &&(MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_EXTERNAL_CORE_RESET))))
-		printf("cpureset = %d ==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
-
-	else if ((strcmp(cmd, "corereset") == 0) &&(MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_EXTERNAL_CPU_RESET))))
-			printf("corereset = %d ==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
-
-	else if ((strcmp(cmd, "bootsrc") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_BOOT_DEVICE))))
-			printf("bootsrc = %d ==> %s\n", temp, bootSrcArr[mvBoardBootDeviceGet()]);
-
-	else if ((strcmp(cmd, "cpubypass") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU_PLL_XTAL_BYPASS))))
-		printf("sscg = %d ==> %s Bypass\n",temp,  ( (temp == 0) ? "PLL" : "XTAL") );
-
-	else if ((strcmp(cmd, "cpuendi") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU0_ENDIANESS))))
-			printf("cpuendi = %d ==> %s Endianess\n", temp, ( (temp == 0) ? "Little" : "Big"));
-
-	else if ((strcmp(cmd, "cpunmfi") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU0_NMFI))))
-			printf("cpunmfi = %d ==> FIQ mask %s \n", temp, ( (temp == 0) ? "Enabled" : "Disabled"));
-
-	else if ((strcmp(cmd, "cputhumb") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU0_THUMB))))
-			printf("cputhumb = %d ==> %s mode \n", temp, ( (temp == 0) ? "ARM" : "Thumb"));
-
-	else if ((strcmp(cmd, "pcimode0") == 0) && (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_PEX0_CLOCK))))
-		printf("pcimode0 = %d ==> %s mode\n",temp,  ( (temp == 0) ? "Root Complex" : "Clock") );
-
-	else if ((strcmp(cmd, "refclk") == 0) &&(MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_REF_CLOCK_ENABLE))))
-			printf("refclk = %d ==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
-
-	else if ((strcmp(cmd, "tester") == 0) &&(MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_TESTER_OPTIONS))))
-			printf("tester = %d \n",temp);
-
-	else if (dump_all==MV_TRUE)
+	else if (strcmp(cmd, "coreclock") == 0) {
+		if (GetAndVerifySatr(MV_SATR_CORE_CLK_SELECT, &temp) == MV_OK)
+			printf("\ncoreclock = %d  ==> %sMhz\n",temp, (temp == 0x0) ? "166" : "200");
+	}
+	else if (strcmp(cmd, "cpusnum") == 0) {
+		if (GetAndVerifySatr(MV_SATR_CPU1_ENABLE, &temp) == MV_OK)
+			printf("\ncpusnum = %d  ==> %s CPU \n", temp, (temp == 0) ? "Single" : "Dual");
+	}
+	else if (strcmp(cmd, "sscg") == 0) {
+		if (GetAndVerifySatr(MV_SATR_SSCG_DISABLE, &temp) == MV_OK)
+			printf("\nsscg = %d  ==> %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
+	}
+	else if (strcmp(cmd, "i2c0") == 0) {
+		if (GetAndVerifySatr(MV_SATR_I2C0_SERIAL_ROM, &temp) == MV_OK)
+		printf("\ni2c0 = %d  ==> %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
+	}
+	else if (strcmp(cmd, "cpureset") == 0) {
+		if (GetAndVerifySatr(MV_SATR_EXTERNAL_CORE_RESET, &temp) == MV_OK)
+			printf("\ncpureset = %d  ==> %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
+	}
+	else if (strcmp(cmd, "corereset") == 0) {
+		if (GetAndVerifySatr(MV_SATR_EXTERNAL_CPU_RESET, &temp) == MV_OK)
+			printf("\ncorereset = %d  ==> %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
+	}
+	else if (strcmp(cmd, "bootsrc") == 0) {
+		if (GetAndVerifySatr(MV_SATR_BOOT_DEVICE, &temp) == MV_OK)
+			printf("\nbootsrc = %d  ==> %s\n", temp, bootSrcArr[mvBoardBootDeviceGet()]);
+	}
+	else if (strcmp(cmd, "cpubypass") == 0) {
+		if (GetAndVerifySatr(MV_SATR_CPU_PLL_XTAL_BYPASS, &temp) == MV_OK)
+		printf("\nsscg = %d  ==> %s Bypass\n",temp, (temp == 0) ? "PLL" : "XTAL");
+	}
+	else if (strcmp(cmd, "cpuendi") == 0) {
+		if (GetAndVerifySatr(MV_SATR_CPU0_ENDIANESS, &temp) == MV_OK)
+			printf("\ncpuendi = %d  ==> %s Endianess\n", temp, (temp == 0) ? "Little" : "Big");
+	}
+	else if (strcmp(cmd, "cpunmfi") == 0) {
+		if (GetAndVerifySatr(MV_SATR_CPU0_NMFI, &temp) == MV_OK)
+			printf("\ncpunmfi = %d  ==> FIQ mask %s \n", temp, (temp == 0) ? "Enabled" : "Disabled");
+	}
+	else if (strcmp(cmd, "cputhumb") == 0) {
+		if (GetAndVerifySatr(MV_SATR_CPU0_THUMB, &temp) == MV_OK)
+			printf("\ncputhumb = %d  ==> %s mode \n", temp, (temp == 0) ? "ARM" : "Thumb");
+	}
+	else if (strcmp(cmd, "pcimode0") == 0) {
+		if (GetAndVerifySatr(MV_SATR_PEX0_CLOCK, &temp) == MV_OK)
+		printf("\npcimode0 = %d  ==> %s mode\n",temp, (temp == 0) ? "Root Complex" : "Clock");
+	}
+	else if (strcmp(cmd, "refclk") == 0) {
+		if (GetAndVerifySatr(MV_SATR_REF_CLOCK_ENABLE, &temp) == MV_OK)
+			printf("\nrefclk = %d  ==> %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
+	}
+	else if (strcmp(cmd, "tester") == 0) {
+		if (GetAndVerifySatr(MV_SATR_TESTER_OPTIONS, &temp) == MV_OK)
+			printf("\ntester = %d \n",temp);
+	}
+	else if (dump_all == MV_TRUE)
 	{
-		printf ("\t S@R configuration:\n\t  --------------------\n");
+		printf ("\n\t\t  S@R configuration:\n\t\t----------------------\n");
 		if  (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode))
 		{
-			printf("\n\n val | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
-			printf(" %d | %d | %d | %d | \n",
+			printf("\n| ID  | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
+		printf("---------------------------------------------------------\n");
+			printf("|  %2d |      %4d      |      %d       |      %d      | \n",
 				freqMode.id,
 				freqMode.cpuFreq,
  				freqMode.ddrFreq,
 				freqMode.l2Freq);
+		printf("---------------------------------------------------------\n\n");
 		}
-	
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT)))
-			printf("coreclock \t= %d \n", temp);
-
+			printf("coreclock \t= %3d  ==>   %sMhz\n",temp, (temp == 0x0) ? "166" : "200");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU1_ENABLE)))
-			printf("cpusnum \t\t= %d \n", temp);
-
+		printf("cpusnum \t= %3d  ==>   %s CPU \n", temp, (temp == 0) ? "Single" : "Dual");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_SSCG_DISABLE)))
-			printf("sscg \t\t= %d\t\t==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
-
+			printf("sscg \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_I2C0_SERIAL_ROM)))
-			printf("i2c0 \t\t= %d\t\t==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
-
+			printf("i2c0 \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_EXTERNAL_CORE_RESET)))
-			printf("cpureset \t\t= %d\t\t==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
-
+			printf("cpureset \t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_EXTERNAL_CPU_RESET)))
-			printf("corereset \t= %d\t\t==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
-
+			printf("corereset \t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_BOOT_DEVICE)))
-			printf("bootsrc = %d ==> %s\n", temp, bootSrcArr[mvBoardBootDeviceGet()]);
-
+			printf("bootsrc \t= %3d  ==>   %s\n", temp, bootSrcArr[mvBoardBootDeviceGet()]);
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU_PLL_XTAL_BYPASS)))
-			printf("sscg \t\t= %d\t\t==> %s Bypass\n",temp,  ( (temp == 0) ? "PLL" : "XTAL") );
-
+			printf("sscg \t\t= %3d  ==>   %s Bypass\n",temp, (temp == 0) ? "PLL" : "XTAL");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU0_ENDIANESS)))
-			printf("cpuendi = %d ==> %s Endianess\n", temp, ( (temp == 0) ? "Little" : "Big"));
-
+			printf("cpuendi \t= %3d  ==>   %s Endianess\n", temp, (temp == 0) ? "Little" : "Big");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU0_NMFI)))
-			printf("cpunmfi = %d ==> FIQ mask %s \n", temp, ( (temp == 0) ? "Enabled" : "Disabled"));
-
+			printf("cpunmfi \t= %3d  ==>   FIQ mask %s \n", temp, (temp == 0) ? "Enabled" : "Disabled");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU0_THUMB)))
-			printf("cputhumb = %d ==> %s mode \n", temp, ( (temp == 0) ? "ARM" : "Thumb"));
-
+			printf("cputhumb \t= %3d  ==>   %s mode \n", temp, (temp == 0) ? "ARM" : "Thumb");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_PEX0_CLOCK)))
-			printf("pcimode0 \t\t= %d\t\t==> PEX0 clock %s enable\n",temp,  ( (temp == 0) ? "Input" : "Output") );
-
+			printf("pcimode0 \t= %3d  ==>   PEX0 clock %s enable\n",temp, (temp == 0) ? "Input" : "Output");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_PEX1_CLOCK)))
-			printf("pcimode1 \t\t= %d\t\t==> PEX1 clock %s enable\n",temp,  ( (temp == 0) ? "Input" : "Output") );
-
+			printf("pcimode1 \t= %3d  ==>   PEX1 clock %s enable\n",temp, (temp == 0) ? "Input" : "Output");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_REF_CLOCK_ENABLE)))
-			printf("refclk \t\t= %d\t\t==> %s\n",temp,  ( (temp == 0) ? "Disabled" : "Enabled") );
-
+			printf("refclk \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_TESTER_OPTIONS)))
-			printf("tester \t\t= %d \n",temp);
+			printf("tester \t\t= %3d \n",temp);
 	}
 	else goto usage;
 	return 0;
@@ -210,35 +232,52 @@ usage:
 
 static int do_sar_write(int argc, char *const argv[])
 {
-	const char *cmd;
+	const char *cmd = argv[0];
+	MV_U32 temp;
 	MV_BOOL flag;
+	MV_U8 writeVal = simple_strtoul(argv[1], NULL, 10);
 
 	if (argc < 2)
 		goto usage;
 
-	cmd = argv[0];
-	MV_U8 tempVal = simple_strtoul(argv[1], NULL, 10);
-
-	if ((strcmp(cmd, "cpufreq") == 0) && (MV_ERROR != mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ)))
-		flag=mvCtrlSatRWrite(MV_SATR_WRITE_CPU_FREQ,MV_SATR_CPU_DDR_L2_FREQ, tempVal);
-
-	else if ((strcmp(cmd, "coreclock") == 0) && (MV_ERROR != mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT)))
-		flag=mvCtrlSatRWrite(MV_SATR_WRITE_CORE_CLK_SELECT,MV_SATR_CORE_CLK_SELECT, tempVal);
-
-	else if ((strcmp(cmd, "cpusnum") == 0) && (MV_ERROR != mvCtrlSatRRead(MV_SATR_CPU1_ENABLE)))
-		flag=mvCtrlSatRWrite(MV_SATR_WRITE_CPU1_ENABLE,MV_SATR_CPU1_ENABLE, tempVal);
-
-	else if ((strcmp(cmd, "sscg") == 0) && (MV_ERROR != mvCtrlSatRRead(MV_SATR_SSCG_DISABLE)))
-		flag=mvCtrlSatRWrite(MV_SATR_WRITE_SSCG_DISABLE,MV_SATR_SSCG_DISABLE, tempVal);
+	if (strcmp(cmd, "cpufreq") == 0) {
+		if (writeVal < 0 || writeVal > FREQ_MODES_NUM)
+			goto input_error;
+		else if (GetAndVerifySatr(MV_SATR_CPU_DDR_L2_FREQ, &temp) == MV_OK )
+			flag = mvCtrlSatRWrite(MV_SATR_WRITE_CPU_FREQ, MV_SATR_CPU_DDR_L2_FREQ, writeVal);
+	}
+	else if (strcmp(cmd, "coreclock") == 0) {
+		if (writeVal != 0 && writeVal != 1)
+			goto input_error;
+		else if (GetAndVerifySatr(MV_SATR_CORE_CLK_SELECT, &temp) == MV_OK )
+			flag = mvCtrlSatRWrite(MV_SATR_WRITE_CORE_CLK_SELECT,MV_SATR_CORE_CLK_SELECT, writeVal);
+	}
+	else if (strcmp(cmd, "cpusnum") == 0) {
+		if (writeVal != 0 && writeVal != 1)
+			goto input_error;
+		else if (GetAndVerifySatr(MV_SATR_CPU1_ENABLE, &temp) == MV_OK )
+			flag = mvCtrlSatRWrite(MV_SATR_WRITE_CPU1_ENABLE,MV_SATR_CPU1_ENABLE, writeVal);
+	}
+	else if (strcmp(cmd, "sscg") == 0) {
+		if (writeVal != 0 && writeVal != 1)
+			goto input_error;
+		else if (GetAndVerifySatr(MV_SATR_SSCG_DISABLE, &temp) == MV_OK )
+			flag = mvCtrlSatRWrite(MV_SATR_WRITE_SSCG_DISABLE,MV_SATR_SSCG_DISABLE, writeVal);
+	}
 
 /* the first 4 S@R fields are writeable using S@R commands - rest  values are edited using Jumpers/DIP switch/DPR (resistors) */
 	else goto usage;
 
 	return 0;
 
-if (MV_ERROR==flag)
-	printf("Write S@R failed!\n");
-		return 1;
+	if (MV_ERROR == flag)
+		printf("Write S@R failed!\n");
+	return 1;
+
+input_error:
+	printf("\nError: value is not valid for \"%s\" (%d)\n\n",cmd , writeVal);
+	do_sar_list(1, argv);
+	return 1;
 
 usage:
 	printf("Usage: SatR write [options] (see help) \n");
@@ -274,11 +313,12 @@ usage:
 U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"Sample At Reset sub-system\n",
 
-	"SatR list cpufreq	- prints the S@R modes list\n"
+	"list cpufreq	- prints the S@R modes list\n"
 	"SatR list coreclock	- prints the S@R modes list\n"
 	"SatR list cpusnum	- prints the S@R modes list\n"
 	"SatR list sscg		- prints the S@R modes list\n\n"
 
+	"SatR read 	-	  read and print all active S@R values\n"
 	"SatR read cpufreq	- read and print the CPU frequency S@R value\n"
 	"SatR read coreclock	- read and print the Core Clock frequency S@R value\n"
 	"SatR read cpusnum	- read and print the number of CPU cores S@R value\n"

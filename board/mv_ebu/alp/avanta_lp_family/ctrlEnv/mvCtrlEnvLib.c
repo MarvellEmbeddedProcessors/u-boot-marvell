@@ -318,8 +318,8 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 		return MV_ERROR;
 	}
 
-	if (mvBoardSatrInfoGet(satrWriteField, &satrInfo) != MV_OK) {
-		mvOsPrintf("%s: mvBoardSarInfoGet failed: S@R config is not relevant for this board(%d)\n", __func__, satrWriteField);
+	if (mvBoardSatrInfoConfig(satrWriteField, &satrInfo, MV_FALSE) != MV_OK) {
+		mvOsPrintf("%s: Error: Requested S@R field is not relevant for this board\n", __func__);
 		return MV_ERROR;
 	}
 
@@ -372,7 +372,8 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 {
 	MV_BOARD_SATR_INFO satrInfo;
-	if (satrField < MV_SATR_READ_MAX_OPTION && mvBoardSatrInfoGet(satrField, &satrInfo) == MV_OK)
+	if (satrField < MV_SATR_READ_MAX_OPTION &&
+			mvBoardSatrInfoConfig(satrField, &satrInfo, MV_TRUE) == MV_OK)
 		return satrOptionsConfig[satrField];
 	else
 		return MV_ERROR;
@@ -511,7 +512,7 @@ MV_VOID mvCtrlSatrInit(void)
 	satrVal[1] = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
 
 	for (i = 0; i < MV_SATR_READ_MAX_OPTION; i++)
-		if (mvBoardSatrInfoGet(i, &satrInfo) == MV_OK)
+		if (mvBoardSatrInfoConfig(i, &satrInfo, MV_TRUE) == MV_OK)
 			satrOptionsConfig[satrInfo.satrId] = ((satrVal[satrInfo.regNum]  & (satrInfo.mask)) >> (satrInfo.offset));
 
 }

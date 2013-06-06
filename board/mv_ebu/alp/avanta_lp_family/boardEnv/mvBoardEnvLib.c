@@ -2037,7 +2037,7 @@ MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig)
 }
 
 /*******************************************************************************
-* mvBoardSatrInfoGet
+* mvBoardSatrInfoConfig
 *
 * DESCRIPTION:
 *	Return the SAR fields information for a given SAR class.
@@ -2052,14 +2052,22 @@ MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig)
 *	MV_BOARD_SATR_INFO struct with mask, offset and register number.
 *
 *******************************************************************************/
-MV_STATUS mvBoardSatrInfoGet(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo)
+MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo, MV_BOOL read)
 {
-	int i;
+	int i, start, end;
 	MV_U32 boardId = mvBoardIdGet();
+
+	if (read == MV_TRUE) {	/* if read request, check read SATR fields */
+		start = 0;
+		end = MV_SATR_READ_MAX_OPTION;
+	} else {		/* if write request, check write SATR fields */
+		start = MV_SATR_READ_MAX_OPTION;
+		end = MV_SATR_WRITE_MAX_OPTION;
+	}
 
 	/* verify existence of requested SATR type, pull its data,
 	 * and check if field is relevant to current running board */
-	for (i = 0; i < MV_SATR_READ_MAX_OPTION ; i++)
+	for (i = start; i < end ; i++)
 		if (boardSatrInfo[i].satrId == satrClass) {
 			*satrInfo = boardSatrInfo[i];
 			if (boardSatrInfo[i].isActiveForBoard[boardId])

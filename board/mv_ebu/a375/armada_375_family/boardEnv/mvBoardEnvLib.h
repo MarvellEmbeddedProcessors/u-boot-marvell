@@ -212,13 +212,6 @@ typedef struct _boardConfigTypesInfo {
 	MV_U32 isActiveForBoard[MV_MAX_BOARD_ID];
 } MV_BOARD_CONFIG_TYPE_INFO;
 
-typedef struct _boardIoExapnderTypesInfo {
-	MV_IO_EXPANDER_TYPE_ID ioFieldid;
-	MV_U32 offset;
-	MV_U32 expanderNum;
-	MV_U32 regNum;
-} MV_BOARD_IO_EXPANDER_TYPE_INFO;
-
 typedef enum _boardMacSpeed {
 	BOARD_MAC_SPEED_10M,
 	BOARD_MAC_SPEED_100M,
@@ -281,8 +274,6 @@ typedef struct _boardInfo {
 	MV_U32 intsGppMaskHigh;
 	MV_U8 numBoardDeviceIf;
 	MV_DEV_CS_INFO *pDevCsInfo;
-	MV_U8 numBoardIoExpanderInfo;
-	MV_BOARD_IO_EXPANDER_TYPE_INFO *pBoardIoExpanderInfo;
 	MV_U8 numBoardTwsiDev;
 	MV_BOARD_TWSI_INFO *pBoardTwsiDev;
 	MV_U8 numBoardMacInfo;
@@ -380,11 +371,8 @@ MV_32 mvBoardSwitchPortMap(MV_U32 switchIdx, MV_U32 switchPortNum);
 MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
 MV_VOID mvBoardPhyAddrSet(MV_U32 ethPortNum, MV_U32 smiAddr);
-MV_U8 mvBoardIoExpValGet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo);
-MV_STATUS mvBoardIoExpValSet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo, MV_U8 value);
 MV_STATUS mvBoardSatrInfoGet(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo);
 MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo);
-MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass, MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo);
 MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable);
 MV_U32 mvBoardTclkGet(MV_VOID);
 MV_U32 mvBoardSysClkGet(MV_VOID);

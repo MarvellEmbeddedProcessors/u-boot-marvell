@@ -148,18 +148,8 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 #define MV_67xx_INDEX_MAX	1
 
 static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
-{ //IgorP - the mechanism will be replaced
-	MV_U32 index;
-
-	switch (devId) {
-	case MV_6720_DEV_ID:
-		index = MV_6720_INDEX;
-		break;
-	default:
-		index = MV_6720_INDEX;
-	}
-
-	return index;
+{
+	return MV_6720_INDEX;
 }
 
 static MV_VOID mvCtrlPexConfig(MV_VOID)
@@ -244,9 +234,8 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 
 	mvCtrlSatrInit();
 
-	/* If set to Auto detect, read board config info, update Eth-Complex config, MPP group types and switch info */
+	/* If set to Auto detect, read board config info, update MPP group types*/
 	if (mvBoardConfigAutoDetectEnabled()) {
-		mvCtrlSysConfigInit();
 		mvBoardInfoUpdate();
 	}
 
@@ -503,158 +492,6 @@ MV_VOID mvCtrlSatrInit(void)
 		if (mvBoardSatrInfoGet(i, &satrInfo) == MV_OK)
 			satrOptionsConfig[satrInfo.satrId] = ((satrVal[satrInfo.regNum]  & (satrInfo.mask)) >> (satrInfo.offset));
 
-}
-
-/*******************************************************************************
-* mvCtrlSysConfigInit
-*
-* DESCRIPTION: Initialize S@R configuration
-*               1. initialize all board configuration fields
-*               3. read relevant board configuration (using TWSI/EEPROM access)
-*               **from this point, all reads from S@R & board config will use mvCtrlSatRRead/Write functions**
-*
-* INPUT:  None
-*
-* OUTPUT: None
-*
-* RETURN: NONE
-*
-*******************************************************************************/
-MV_VOID mvCtrlSysConfigInit()
-{
-	MV_U8 regNum, i, configVal[MV_IO_EXP_MAX_REGS];
-	MV_BOARD_CONFIG_TYPE_INFO configInfo;
-	MV_BOOL readSuccess = MV_FALSE;
-
-	memset(&boardOptionsConfig, 0x0, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION );
-
-	/*Read rest of Board Configuration, EEPROM / Dip Switch access read : */
-	if (mvCtrlBoardConfigGet(configVal) != MV_OK) {
-		mvOsPrintf("%s: Error: mvCtrlBoardConfigGet failed\n", __func__);
-		return;
-	}
-
-	/* Save values Locally in configVal[] */
-	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
-		if (mvBoardConfigTypeGet(i, &configInfo) == MV_TRUE) {
-			readSuccess = MV_TRUE;
-			/* each Expander conatins 2 registers */
-			regNum = configInfo.expanderNum * 2 + configInfo.regNum;
-			boardOptionsConfig[configInfo.configId] =
-				(configVal[regNum] & configInfo.mask) >> configInfo.offset;
-		}
-	}
-
-	if (readSuccess == MV_FALSE)
-		mvOsPrintf("%s: Error: Read board configuration from EEPROM/Dip Switch failed\n", __func__);
-}
-
-/*******************************************************************************
-* mvCtrlBoardConfigGet - read Board Configuration, from EEPROM / Dip Switch
-*
-* DESCRIPTION:
-*       This function reads all board configuration from EEPROM / Dip Switch:
-*	1. read the EEPROM enable jumper, and read from configured device
-*	2. read first 2 registers for all boards
-*	3. read specific registers for specific boards
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_BOOL :  MV_TRUE if EEPROM enabled, else return MV_ERROR.
-*
-*******************************************************************************/
-MV_STATUS mvCtrlBoardConfigGet(MV_U8 *config)
-{
-	MV_STATUS status1, status2;
-
-	MV_BOOL isEepromEnabled = mvCtrlIsEepromEnabled();
-	MV_BOARD_TWSI_CLASS twsiClass = (isEepromEnabled ? BOARD_DEV_TWSI_EEPROM : BOARD_DEV_TWSI_IO_EXPANDER);
-
-	status1 = mvBoardTwsiGet(twsiClass, 0, 0, &config[0]);		/* EEPROM/Dip Switch Reg#0 */
-	status2 = mvBoardTwsiGet(twsiClass, 0, 0, &config[1]);		/* EEPROM/Dip Switch Reg#1 */
-
-	if (status1 != MV_OK || status2 != MV_OK) {
-		DB(mvOsPrintf("%s: Error: mvBoardTwsiGet from EEPROM/Dip Switch failed\n", __func__));
-		return MV_ERROR;
-	}
-
-	if (isEepromEnabled == MV_OK)
-		status1 = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 2, &config[2]);	/* EEPROM Reg#2 */
-	else
-		status1 = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 1, 0, &config[2]);	/* Dip Switch Reg#1 */
-
-	if (status1 != MV_OK) {
-		DB(mvOsPrintf("%s: Error: mvBoardTwsiGet from EEPROM/Dip Switch Reg#2 failed\n", __func__));
-		return MV_ERROR;
-	}
-
-	return MV_OK;
-}
-
-/*******************************************************************************
-* mvCtrlIsEepromEnabled - read jumper and verify if EEPROM is enabled
-*
-* DESCRIPTION:
-*       This function returns MV_TRUE if board configuration jumper is set to EEPROM.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_BOOL :  MV_TRUE if EEPROM enabled, else return MV_FALSE.
-*
-*******************************************************************************/
-MV_BOOL mvCtrlIsEepromEnabled()
-{
-	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
-	MV_U8 value;
-
-	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, &ioInfo) != MV_OK)
-	{
-		mvOsPrintf("%s: Error: Read from IO expander failed (EEPROM enabled jumper)\n", __func__);
-		return MV_FALSE;
-	}
-
-	value = mvBoardIoExpValGet(&ioInfo);
-	if (value == 0x1)
-		return MV_FALSE; /* Jumper is OUT: EEPROM disabled */
-	else
-		return MV_TRUE;  /* Jumper is IN: EEPROM enabled */
-}
-
-/*******************************************************************************
-* mvCtrlEepromEnable
-*
-* DESCRIPTION:
-*       This function enable/disable the Eeprom usage
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_BOOL :  MV_TRUE if EEPROM enabled, else return MV_FALSE.
-*
-*******************************************************************************/
-MV_STATUS mvCtrlEepromEnable(MV_BOOL enable)
-{
-	MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo = NULL;
-
-	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, ioInfo))
-		return 	(mvBoardIoExpValSet(ioInfo, (enable? 0x1 : 0x0)));
-
-	mvOsPrintf("%s: Error: Read from IO expander failed (EEPROM enabled jumper)\n", __func__);
-	return MV_ERROR;
 }
 
 /*******************************************************************************

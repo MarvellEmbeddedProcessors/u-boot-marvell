@@ -119,7 +119,6 @@ extern "C" {
 #define MV_PON_REGS_OFFSET                      (MV_ETH_BASE_ADDR + 0x8000)
 
 #define MV_ETH_MAX_TCONT                        16
-#define MV_PON_PORT_ID                          7
 #define MV_ETH_RXQ_TOTAL_NUM                    32
 #define MV_VLAN_1_TYPE                          0x88A8
 #else
@@ -213,9 +212,9 @@ extern "C" {
 /* TODO - verify all these numbers */
 
 #if defined(CONFIG_MV_ETH_PP2)
-#define MV_PON_PORT_ID                          7
-#define MV_ETH_MAX_PORTS                        2
-#define MV_ETH_MAX_RXQ                          16      /* Maximum number of RXQs can be mapped to each port */
+#define MV_PON_PORT_ID							7
+#define MV_ETH_MAX_PORTS                        4
+#define MV_ETH_MAX_RXQ                          16/* Maximum number of RXQs can be mapped to each port */
 #define MV_ETH_MAX_TXQ                          8
 #define MV_ETH_RXQ_TOTAL_NUM                    32      /* Total number of RXQs for usage by all ports */
 #define MV_ETH_MAX_TCONT                        16      /* Maximum number of TCONTs supported by PON port */
@@ -262,7 +261,6 @@ extern "C" {
 #define MPP_GROUP_0_TYPE { \
 	0x55555555,     /* NAND_V2_BOOT_DEVICE  */ \
 	0x00020020,     /* SPI_BOOT_DEVICE	*/ \
-	0x44024420,     /* SPI_BOOT_DEVICE & SPDIF Audio */ \
 }
 
 typedef enum {
@@ -274,16 +272,13 @@ typedef enum {
 #define MPP_GROUP_1_TYPE { \
 	0x22555555,     /* NAND_V2_BOOT_DEVICE  */ \
 	0x22000022,     /* SPI_BOOT_DEVICE	*/ \
-	0x22044022,     /* SPI_BOOT_DEVICE & SPDIF Audio	*/ \
 }
 
 #define MV_GROUP_1_TYPE         MV_GROUP_0_TYPE
 
 #define MPP_GROUP_2_TYPE { \
-	0x33030022,     /* SLIC_SSI_DEV  */ \
-	0x11110022,     /* SLIC_ISI_DEV  */ \
-	0x44440022,     /* SLIC_ZSI_DEV  */ \
-	0x22222222,     /* SLIC_EXTERNAL_DEV	*/ \
+	0x22222222,     /* UART, TDM  */ \
+	0x22222222,     /* UART, TDM  */ \
 }
 
 typedef enum {
@@ -294,10 +289,8 @@ typedef enum {
 } MV_GROUP_2_TYPE;
 
 #define MPP_GROUP_3_TYPE { \
-	0x22222222,     /* GE1  */ \
-	0x00333333,     /* SDIO	*/ \
-	0x33000000,     /* SPI1_BOOT	*/ \
-	0x33333333,     /* SDIO & SPI1	*/ \
+	0x33333333,     /* SDIO */ \
+	0x33333333,     /* SDIO	*/ \
 }
 
 typedef enum {
@@ -308,14 +301,8 @@ typedef enum {
 } MV_GROUP_3_TYPE;
 
 #define MPP_GROUP_4_TYPE { \
-	0x04422222,     /* GE1,  CPU SMI CONTROL,    TDM_LQ_UNIT */ \
-	0x44422222,     /* GE1,  CPU SMI CONTROL,    REF_CLK_OUT */ \
-	0x05522222,     /* GE1,  SWITCH SMI CONTROL, TDM_LQ_UNIT */ \
-	0x45522222,     /* GE1,  SWITCH SMI CONTROL, REF_CLK_OUT */ \
-	0x04423333,     /* SPI1, CPU SMI CONTROL,    TDM_LQ_UNIT */ \
-	0x44423333,     /* SPI1, CPU SMI CONTROL,    REF_CLK_OUT */ \
-	0x05523333,     /* SPI1, SWITCH SMI CONTROL, TDM_LQ_UNIT */ \
-	0x45523333,     /* SPI1, SWITCH SMI CONTROL, REF_CLK_OUT */ \
+	0x04403330,     /* SPI, SMI */ \
+	0x04403330,     /* SPI, SMI */ \
 }
 
 typedef enum {
@@ -330,10 +317,8 @@ typedef enum {
 } MV_GROUP_4_TYPE;
 
 #define MPP_GROUP_5_TYPE { \
-	0x22122220,     /* GE0      , PON_TX_FAULT */ \
-	0x22122222,     /* GE0      , PON_CLK_OUT */ \
-	0x44122220,     /* SWITCH_P4, PON_TX_FAULT	 */ \
-	0x44122222,     /* SWITCH_P4, PON_CLK_OUT	 */ \
+	0x22002044,     /* UART1, GE0 */ \
+	0x22002044,     /* UART1, GE0 */ \
 }
 typedef enum {
 	GE0_UNIT_PON_TX_FAULT,
@@ -344,7 +329,7 @@ typedef enum {
 
 #define MPP_GROUP_6_TYPE { \
 	0x22222222,     /* GE0  */ \
-	0x44444444,     /* SWITCH_P4	*/ \
+	0x22222222,     /* GE0	*/ \
 }
 
 typedef enum {
@@ -353,10 +338,8 @@ typedef enum {
 } MV_GROUP_6_TYPE;
 
 #define MPP_GROUP_7_TYPE { \
-	0x44444444,     /* SWITCH_P4 , LED_MATRIX       */ \
-	0x44444422,     /* GE0	     , LED_MATRIX       */ \
-	0x20220244,     /* SWITCH_P4 , UA1 ,  PTP       */ \
-	0x20220222,     /* GE0	     , UA1 ,  PTP       */ \
+	0x00000022,     /* GE0 , LED  */ \
+	0x00000022,     /* GE0 , LED  */ \
 }
 
 typedef enum {
@@ -367,7 +350,7 @@ typedef enum {
 } MV_GROUP_7_TYPE;
 
 #define MPP_GROUP_8_TYPE { \
-		0x204, /* LED_MATRIX, PTP       */ \
+		0x000,\
 }
 
 typedef enum {

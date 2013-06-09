@@ -224,8 +224,7 @@ int do_ide(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 								 blk, cnt,
 								 (ulong *)addr);
 			/* flush cache after read */
-			flush_cache(addr,
-				    cnt * ide_dev_desc[curr_device].blksz);
+			flush_cache(addr, cnt * ide_dev_desc[curr_device].blksz);
 
 			printf("%ld blocks read: %s\n",
 			       n, (n == cnt) ? "OK" : "ERROR");
@@ -829,7 +828,7 @@ static void ide_ident(block_dev_desc_t *dev_desc)
 
 /* ------------------------------------------------------------------------- */
 
-ulong ide_read(int device, ulong blknr, lbaint_t blkcnt, void *buffer)
+ulong ide_read(int device, lbaint_t blknr, ulong blkcnt, void *buffer)
 {
 	ulong n = 0;
 	unsigned char c;
@@ -933,8 +932,13 @@ ulong ide_read(int device, ulong blknr, lbaint_t blkcnt, void *buffer)
 
 		if ((c & (ATA_STAT_DRQ | ATA_STAT_BUSY | ATA_STAT_ERR)) !=
 		    ATA_STAT_DRQ) {
-			printf("Error (no IRQ) dev %d blk %ld: status %#02x\n",
+#if defined(CONFIG_SYS_64BIT_LBA)
+			printf("Error (no IRQ) dev %d blk %lld: status 0x%02x\n",
 				device, blknr, c);
+#else
+			printf("Error (no IRQ) dev %d blk %ld: status 0x%02x\n",
+				device, (ulong) blknr, c);
+#endif
 			break;
 		}
 
@@ -953,7 +957,7 @@ IDE_READ_E:
 /* ------------------------------------------------------------------------- */
 
 
-ulong ide_write(int device, ulong blknr, lbaint_t blkcnt, const void *buffer)
+ulong ide_write(int device, lbaint_t blknr, ulong blkcnt, const void *buffer)
 {
 	ulong n = 0;
 	unsigned char c;
@@ -1021,8 +1025,13 @@ ulong ide_write(int device, ulong blknr, lbaint_t blkcnt, const void *buffer)
 
 		if ((c & (ATA_STAT_DRQ | ATA_STAT_BUSY | ATA_STAT_ERR)) !=
 		    ATA_STAT_DRQ) {
-			printf("Error (no IRQ) dev %d blk %ld: status %#02x\n",
+#if defined(CONFIG_SYS_64BIT_LBA)
+			printf("Error (no IRQ) dev %d blk %lld: status 0x%02x\n",
 				device, blknr, c);
+#else
+			printf("Error (no IRQ) dev %d blk %ld: status 0x%02x\n",
+				device, (ulong) blknr, c);
+#endif
 			goto WR_OUT;
 		}
 
@@ -1511,7 +1520,7 @@ static void atapi_inquiry(block_dev_desc_t *dev_desc)
 #define ATAPI_READ_BLOCK_SIZE	2048	/* assuming CD part */
 #define ATAPI_READ_MAX_BLOCK	(ATAPI_READ_MAX_BYTES/ATAPI_READ_BLOCK_SIZE)
 
-ulong atapi_read(int device, ulong blknr, lbaint_t blkcnt, void *buffer)
+ulong atapi_read(int device, lbaint_t blknr, ulong blkcnt, void *buffer)
 {
 	ulong n = 0;
 	unsigned char ccb[12];	/* Command descriptor block */

@@ -200,7 +200,9 @@ static struct pci_device_id mv94xx_pci_ids[] = {
 void scsi_init(void)
 {
 	int busdevfunc;
+#ifndef CONFIG_SCSI_MV94XX
 	int i;
+#endif
 	/*
 	 * Find a device from the list, this driver will support a single
 	 * controller.

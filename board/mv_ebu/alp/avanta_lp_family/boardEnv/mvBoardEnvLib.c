@@ -914,11 +914,17 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 	if (ethComplexOptions & MV_ETHCOMP_GE_MAC0_2_RGMII0) {
 		mvBoardMppTypeSet(5, GE0_UNIT_PON_TX_FAULT);
 		mvBoardMppTypeSet(6, GE0_UNIT);
-		mvBoardMppTypeSet(7, GE0_UNIT_LED_MATRIX);
+		if (mvCtrlGetCpuNum() == 0) /* if using Dual CPU ,set UART1 */
+			mvBoardMppTypeSet(7, GE0_UNIT_LED_MATRIX);
+		else
+			mvBoardMppTypeSet(7, GE0_UNIT_UA1_PTP);
 	} else if (ethComplexOptions & MV_ETHCOMP_SW_P4_2_RGMII0) {
 		mvBoardMppTypeSet(5, SWITCH_P4_PON_TX_FAULT);
 		mvBoardMppTypeSet(6, SWITCH_P4);
-		mvBoardMppTypeSet(7, SWITCH_P4_LED_MATRIX);
+		if (mvCtrlGetCpuNum() == 0) /* if using Dual CPU ,set UART1 */
+			mvBoardMppTypeSet(7, SWITCH_P4_LED_MATRIX);
+		else
+			mvBoardMppTypeSet(7, SWITCH_P4_UA1_PTP);
 	}
 }
 

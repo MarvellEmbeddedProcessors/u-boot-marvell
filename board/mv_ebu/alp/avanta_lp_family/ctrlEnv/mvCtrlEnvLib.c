@@ -329,6 +329,14 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 		return MV_ERROR;
 	}
 
+	/* #1 Workaround for mirrored bits bug (for freq. mode SatR value only!)
+	 * Bug: all freq. mode bits are reversed when sampled at reset from I2C
+	 *		(caused due to a bug in board design)
+	 * Solution: reverse them before write to I2C
+	 *		(reverse only 5 bits - size of SatR field) */
+	if (satrWriteField == MV_SATR_WRITE_CPU_FREQ)
+		val = mvReverseBits(val) >> 3 ;
+
 	/* modify */
 	readValue &= ~(satrInfo.mask);             /* clean old value */
 	readValue |= (val <<  satrInfo.offset);    /* save new value */
@@ -350,7 +358,12 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 		return MV_ERROR;
 	}
 
-	/*else save written value in global array */
+	/* #2 Workaround for mirrored bits bug (for freq. mode SatR value only!)
+	 * Reverse bits again to locally save them properly */
+	if (satrWriteField == MV_SATR_WRITE_CPU_FREQ)
+		val = mvReverseBits(val) >> 3 ;
+
+	/* Save written value in global array */
 	satrOptionsConfig[satrReadField] = val;
 	return MV_OK;
 }

@@ -193,6 +193,8 @@ int mv_eth_initialize(bd_t *bis)
 	}
 
 	for (port = 0; port < mvCtrlEthMaxPortGet(); port++) {
+		if (MV_PON_PORT(port) || mvBoardIsPortLoopback(port))
+			continue;
 /*
 		if (MV_FALSE ==  mvBoardIsGbEPortConnected(port))
 			continue;

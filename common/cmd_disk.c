@@ -67,7 +67,7 @@ int common_diskboot(cmd_tbl_t *cmdtp, const char *intf, int argc,
 	       "Name: %.32s  Type: %.32s\n", intf, dev, part, info.name,
 	       info.type);
 
-	debug("First Block: %ld,  # of blocks: %ld, Block Size: %ld\n",
+	debug("First Block: " LBAF_10D ",  # of blocks: " LBAF_10D ", Block Size: %ld\n",
 	      info.start, info.size, info.blksz);
 
 	if (dev_desc->block_read(dev, info.start, 1, (ulong *) addr) != 1) {

@@ -363,3 +363,27 @@ MV_STATUS mvWinWithinWinTest(MV_ADDR_WIN *pAddrWin1, MV_ADDR_WIN *pAddrWin2)
 	else
 		return MV_FALSE;
 }
+
+/*******************************************************************************
+* mvReverseBits
+*
+* DESCRIPTION:
+*       This function Reverts the direction of the bits (LSB to MSB and vice versa)
+*
+* INPUT:
+*	num - MV_U8 number to revert
+*
+* OUTPUT:
+*       Reverted number
+*
+* RETURN:
+*	None
+*
+*******************************************************************************/
+MV_U8 mvReverseBits(MV_U8 num)
+{
+	num = (num & 0xF0) >> 4 | (num & 0x0F) << 4;
+	num = (num & 0xCC) >> 2 | (num & 0x33) << 2;
+	num = (num & 0xAA) >> 1 | (num & 0x55) << 1;
+	return num;
+}

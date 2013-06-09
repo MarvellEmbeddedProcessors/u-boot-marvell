@@ -93,25 +93,18 @@
 #define GROUP1_DEFAULT_MPP_SPI_I2C         0x22000022  /* SPI , I2C */
 #define DB_88F6720_MPP0_7               0x00020020  /* SPI */
 #define DB_88F6720_MPP8_15              0x22000022  /* SPI , I2C */
-#define DB_88F6720_MPP16_23             0x00000022
-#define DB_88F6720_MPP24_31             0x22222222  /* RGMII-1*/
-#define DB_88F6720_MPP32_39             0x04422222  /* GE_SMI ,GE1, PON */
-#define DB_88F6720_MPP40_47             0x22100220  /* PON , GE0 */
+#define DB_88F6720_MPP16_23             0x22222222	/* UART, TDM*/
+#define DB_88F6720_MPP24_31             0x33333333  /* SDIO*/
+#define DB_88F6720_MPP32_39             0x04403330  /* SPI, SMI */
+#define DB_88F6720_MPP40_47             0x22002044  /* UART1, GE0  */
 #define DB_88F6720_MPP48_55             0x22222222  /*GE0*/
-#define DB_88F6720_MPP56_63             0x44444422  /* GE0 , LED */
-#define DB_88F6720_MPP64_67             0x004	
+#define DB_88F6720_MPP56_63             0x00000022  /* GE0 , LED */
+#define DB_88F6720_MPP64_67				0x000
 
+/*Nand MPPS, for reference*/
 #if 0
-/*Armada 375 real MPPs values*/
-#define DB_88F6720_MPP0_7               0x44224422  /* SPI, Audio */
-#define DB_88F6720_MPP8_15              0x22244222  /* SPI ,Audio, I2C */
-#define DB_88F6720_MPP16_23             0x00000022
-#define DB_88F6720_MPP24_31             0x22222222  /* RGMII-1*/
-#define DB_88F6720_MPP32_39             0x04422222  /* GE_SMI ,GE1, PON */
-#define DB_88F6720_MPP40_47             0x22100220  /* PON , GE0 */
-#define DB_88F6720_MPP48_55             0x22222222  /*GE0*/
-#define DB_88F6720_MPP56_63             0x44444422  /* GE0 , LED */
-#define DB_88F6720_MPP64_67             0x004	
+#define DB_88F6720_MPP0_7               0x55555555  /* NAND */
+#define DB_88F6720_MPP8_15              0x22555555  /* NAND , I2C */
 #endif
 
 #define DB_88F6720_GPP_OUT_ENA_LOW      0xFFFFFFFF

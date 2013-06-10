@@ -156,7 +156,22 @@ static void mvPp2PrsMatchMh(MV_PP2_PRS_ENTRY *pe, unsigned short mh)
  ******************************************************************************
  */
 
-static MV_BOOL mvPrsMacRangeEquals(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
+char *mvPrsL2InfoStr(unsigned int l2_info)
+{
+	switch (l2_info << RI_L2_CAST_OFFS) {
+	case RI_L2_UCAST:
+		return "Ucast";
+	case RI_L2_MCAST:
+		return "Mcast";
+	case RI_L2_BCAST:
+		return "Bcast";
+	default:
+		return "Unknown";
+	}
+	return NULL;
+}
+
+static MV_BOOL mvPrsMacRangeEquals(MV_PP2_PRS_ENTRY *pe, MV_U8 *da, MV_U8 *mask)
 {
 	int		index;
 	unsigned char 	tcamByte, tcamMask;
@@ -173,7 +188,7 @@ static MV_BOOL mvPrsMacRangeEquals(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
 	return MV_TRUE;
 }
 
-static MV_BOOL mvPrsMacRangeIntersec(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
+static MV_BOOL mvPrsMacRangeIntersec(MV_PP2_PRS_ENTRY *pe, MV_U8 *da, MV_U8 *mask)
 {
 	int		index;
 	unsigned char 	tcamByte, tcamMask, commonMask;
@@ -234,9 +249,9 @@ static MV_PP2_PRS_ENTRY *mvPrsMacDaRangeFind(int portMap, unsigned char *da, uns
 
 static MV_PP2_PRS_ENTRY *mvPrsMacDaFind(int port, unsigned char *da)
 {
-	unsigned char mask[6];
+	unsigned char mask[MV_MAC_ADDR_SIZE];
 
-	mask[0] = 0xff; mask[1] = 0xff; mask[2] = 0xff; mask[3] = 0xff; mask[4] = 0xff; mask[5] = 0xff;
+	mask[0] = mask[1] = mask[2] = mask[3] = mask[4] = mask[5] = 0xff;
 
 	/* Scan TCAM and see if entry with this <MAC DA, port> already exist */
 	return mvPrsMacDaRangeFind((1 << port), da, mask, PRS_UDF_MAC_DEF);
@@ -1025,7 +1040,7 @@ int mvPp2PrsTagModeSet(int port, int type)
 
 char *mvPrsVlanInfoStr(unsigned int vlan_info)
 {
-	switch (vlan_info) {
+	switch (vlan_info << RI_VLAN_OFFS) {
 	case RI_VLAN_NONE:
 		return "None";
 	case RI_VLAN_SINGLE:

@@ -138,8 +138,31 @@ MV_U32 mvCtrlGetCpuNum(MV_VOID)
 		return cpu1Enabled;
 }
 
+/*******************************************************************************
+* mvCtrlIsValidSatR
+*
+* DESCRIPTION: check frequency modes table and verify current mode is supported
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*        MV_TRUE - if current cpu/ddr/l2 frequency mode is supported for board
+*
+*******************************************************************************/
 MV_BOOL mvCtrlIsValidSatR(MV_VOID)
 {
+	MV_U32 i, cpuFreqMode, maxFreqModes = mvBoardFreqModesNumGet();
+	MV_FREQ_MODE pFreqModes[] = MV_USER_SAR_FREQ_MODES;
+
+	cpuFreqMode =  mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
+
+	for (i = 0; i < maxFreqModes; i++) {
+		if (cpuFreqMode == pFreqModes[i].id)
+			return MV_TRUE;
+	}
+
 	return MV_FALSE;
 }
 

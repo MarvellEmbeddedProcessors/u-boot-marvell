@@ -1008,7 +1008,7 @@ int late_print_cpuinfo(void)
 	printf("SoC:   %s\n", name);
 	printf("       running %d CPUs\n", mvCtrlGetCpuNum() + 1);
 	if (!mvCtrlIsValidSatR())
-		printf("       Custom configuration\n");
+		printf("       Unsupported DDR/CPU/L2 Clock configuration\n");
 	mvCpuNameGet(name);
 	printf("CPU:   %s",  name);
 #ifdef MV_CPU_LE

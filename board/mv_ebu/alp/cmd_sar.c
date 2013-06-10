@@ -30,15 +30,7 @@ static int do_sar_list(int argc, char *const argv[])
 {
 	const char *cmd;
 	MV_FREQ_MODE pFreqModes[] = MV_USER_SAR_FREQ_MODES;
-	int i, maxFreqModes = 0;
-	MV_U16 ctrlModel = mvCtrlModelGet();
-
-	if (ctrlModel == MV_6610_DEV_ID)
-		maxFreqModes = FREQ_MODES_NUM_6610;
-	else if (ctrlModel == MV_6650_DEV_ID)
-		maxFreqModes = FREQ_MODES_NUM_6650;
-	else if (ctrlModel == MV_6660_DEV_ID)
-		maxFreqModes = FREQ_MODES_NUM_6660;
+	int i, maxFreqModes = mvBoardFreqModesNumGet();
 
 	if (argc < 1)
 		goto usage;
@@ -286,7 +278,7 @@ usage:
 
 int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 {
-	const char *cmd;
+	const char *cmd, *cmd2;
 
 	/* need at least two arguments */
 	if (argc < 2)
@@ -294,11 +286,16 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 
 	cmd = argv[1];
 
+	if (argc > 2)
+		cmd2 = argv[2];
+
 	if (strcmp(cmd, "list") == 0)
 		return do_sar_list(argc - 2, argv + 2);
 	else if (strcmp(cmd, "write") == 0) {
 		if (do_sar_write(argc - 2, argv + 2) == 0) {
 			do_sar_read(argc - 2, argv + 2);
+			if (strcmp(cmd2, "cpufreq") == 0 && !mvCtrlIsValidSatR())
+				printf("\n*** Selected Unsupported DDR/CPU/L2 Clock configuration ***\n\n");
 		}
 		return 0;
 

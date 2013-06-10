@@ -162,12 +162,13 @@ typedef struct secExtBHR_t
 #define MAX_TWSI_HDR_SIZE	(60 * 1024) /* MAX eeprom is 64K & leave 4K for image and header */
 
 /* Boot Type - block ID */
-#define IBR_HDR_I2C_ID		0x4D
-#define IBR_HDR_SPI_ID    	0x5A
+#define IBR_HDR_I2C_ID			0x4D
+#define IBR_HDR_SPI_ID			0x5A
 #define IBR_HDR_NAND_ID     	0x8B
 #define IBR_HDR_SATA_ID     	0x78
-#define IBR_HDR_PEX_ID		0x9C
+#define IBR_HDR_PEX_ID			0x9C
 #define IBR_HDR_UART_ID     	0x69
+#define IBR_HDR_MMC_ID			0x3E
 #define IBR_DEF_ATTRIB      	0x00
 
 #endif /* MV_ASMLANGUAGE */

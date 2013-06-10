@@ -442,6 +442,10 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 			hdr->blockID = IBR_HDR_SPI_ID;
 			break;
 
+		case IMG_MMC:
+			hdr->blockID = IBR_HDR_MMC_ID;
+			break;
+
 		case IMG_NAND:
 			hdr->blockID = IBR_HDR_NAND_ID;
 			/*hdr->nandEccMode = (MV_U8)opt->nandEccMode; <<== reserved */
@@ -660,6 +664,7 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 	/* If not UART/TWSI image, an extra word for boot image checksum is needed */
 	if ((opt->image_type == IMG_FLASH) ||
 	    (opt->image_type == IMG_NAND)  ||
+	    (opt->image_type == IMG_MMC)  ||
 	    (opt->image_type == IMG_SATA)  ||
 	    (opt->image_type == IMG_PEX)   ||
 	    (opt->image_type == IMG_I2C))
@@ -1703,6 +1708,7 @@ int select_image (char *img_name, USER_OPTIONS *opt)
 	{ IMG_SATA,	"sata",		D_OPTION_MASK|T_OPTION_MASK|E_OPTION_MASK },
 	{ IMG_UART, 	"uart",		D_OPTION_MASK|T_OPTION_MASK|E_OPTION_MASK },
 	{ IMG_FLASH, 	"flash",	D_OPTION_MASK|T_OPTION_MASK|E_OPTION_MASK },
+	{ IMG_MMC,	"mmc",	D_OPTION_MASK|T_OPTION_MASK|E_OPTION_MASK },
 	{ IMG_BOOTROM, 	"bootrom",	T_OPTION_MASK },
 	{ IMG_NAND,	"nand",		D_OPTION_MASK|T_OPTION_MASK|E_OPTION_MASK|
 					L_OPTION_MASK|N_OPTION_MASK|P_OPTION_MASK },

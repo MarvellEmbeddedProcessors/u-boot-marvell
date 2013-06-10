@@ -1989,37 +1989,37 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 	boardPexInfo->pexUnitCfg[2].pexCfg = ((RegX4 & 0x0F00) == 0x0F00) ? PEX_BUS_MODE_X4: PEX_BUS_MODE_X1;
 	boardPexInfo->pexUnitCfg[3].pexCfg = ((RegX4 & 0x0F000) == 0x0F000) ? PEX_BUS_MODE_X4: PEX_BUS_MODE_X1;
 
+	serdesLine0_7 = MV_REG_READ(SERDES_LINE_MUX_REG_0_7);
 	/* Prepare PHY parameters for each step according to  MUX selection */
 	for (pexIf = 0; pexIf < pexIfNum; pexIf++) {
 		/* for each serdes lane*/
 		pexUnit    = (pexIf<9)? (pexIf >> 2) : 3;
-		if ((socCtrlReg & (1<< pexUnit)) == 0){
+		if ((socCtrlReg & (1 << pexUnit)) == 0) {
 			boardPexInfo->pexUnitCfg[pexUnit].pexCfg = PEX_BUS_DISABLED;
-		   continue;
-		   }
-		   boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = pexIf;
-				boardPexInfo->boardPexIfNum++;
-		   boardPexInfo->pexUnitCfg[pexUnit].pexLaneStat[pexIf] = 0x1;
-		   powermngmntctrlregmap = powermngmntctrlregmap | (0x1<<(pexIf+5));
-		   if (pexIf < 8) {
-			   if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X4){
-				   powermngmntctrlregmap |= (0xf<<(pexIf+5));
-				   pexIf += 3;
-			   }
-			   else
-				   powermngmntctrlregmap |= (0x1<<(pexIf+5));
-		   }
-		   else 
-			   powermngmntctrlregmap |= (0x1<<(18+pexIf));
-	} 
-	serdesLine0_7 = MV_REG_READ(SERDES_LINE_MUX_REG_0_7);
+			continue;
+		}
+		if (pexIf < 8) {
+			serdesLineCfg = (serdesLine0_7 >> (pexIf << 2)) & 0xF;
+			if (serdesLineCfg != serdesCfg[pexIf][SERDES_UNIT_PEX])
+				continue;
+		}
+		boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = pexIf;
+		boardPexInfo->boardPexIfNum++;
+		boardPexInfo->pexUnitCfg[pexUnit].pexLaneStat[pexIf] = 0x1;
+		powermngmntctrlregmap = powermngmntctrlregmap | (0x1<<(pexIf+5));
+		if (pexIf < 8) {
+			if (boardPexInfo->pexUnitCfg[pexUnit].pexCfg == PEX_BUS_MODE_X4) {
+				powermngmntctrlregmap |= (0xf<<(pexIf+5));
+				pexIf += 3;
+			} else
+				powermngmntctrlregmap |= (0x1<<(pexIf+5));
+		} else
+			powermngmntctrlregmap |= (0x1<<(18+pexIf));
+	}
 
 	for (serdesLineNum = 0; serdesLineNum < 8; serdesLineNum++) {
-	
 		serdesLineCfg =(serdesLine0_7 >> (serdesLineNum << 2)) & 0xF;
-	
 		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SATA]) {
-
 			if ((serdesLineNum == 4) || (serdesLineNum == 6))
 				powermngmntctrlregmap |= PMC_SATASTOPCLOCK_MASK(0);
 			else if (serdesLineNum == 5)

@@ -98,16 +98,16 @@ extern MV_TARGET sampleAtResetTargetArray[];
 *******************************************************************************/
 MV_STATUS mvCtrlAttribGet(MV_TARGET target, MV_TARGET_ATTRIB *targetAttrib)
 {
-	targetAttrib->attrib = mvTargetDefaultsArray[MV_CHANGE_BOOT_CS(target)].attrib;
-	targetAttrib->targetId = mvTargetDefaultsArray[MV_CHANGE_BOOT_CS(target)].targetId;
+	targetAttrib->attrib   = mvTargetDefaultsArray[target].attrib;
+	targetAttrib->targetId = mvTargetDefaultsArray[target].targetId;
 
 	return MV_OK;
 }
 /*******************************************************************************/
 MV_STATUS mvCtrlAttribSet(MV_TARGET target, MV_TARGET_ATTRIB *targetAttrib)
 {
-	mvTargetDefaultsArray[MV_CHANGE_BOOT_CS(target)].attrib  = targetAttrib->attrib;
-	mvTargetDefaultsArray[MV_CHANGE_BOOT_CS(target)].targetId= targetAttrib->targetId;
+	mvTargetDefaultsArray[target].attrib   = targetAttrib->attrib;
+	mvTargetDefaultsArray[target].targetId = targetAttrib->targetId;
 
 	return MV_OK;
 }
@@ -129,9 +129,9 @@ MV_TARGET mvCtrlTargetGet(MV_TARGET_ATTRIB *targetAttrib)
 	MV_TARGET target;
 	MV_TARGET x;
 	for (target = SDRAM_CS0; target < MAX_TARGETS; target++) {
-		x = MV_CHANGE_BOOT_CS(target);
+		x = target;
 		if ((mvTargetDefaultsArray[x].attrib == targetAttrib->attrib) &&
-		    (mvTargetDefaultsArray[MV_CHANGE_BOOT_CS(target)].targetId == targetAttrib->targetId)) {
+		    (mvTargetDefaultsArray[target].targetId == targetAttrib->targetId)) {
 			/* found it */
 			break;
 		}
@@ -157,9 +157,9 @@ MV_TARGET mvCtrlTargetByWinInfoGet(MV_UNIT_WIN_INFO *unitWinInfo)
 	MV_TARGET target;
 	MV_TARGET x;
 	for (target = SDRAM_CS0; target < MAX_TARGETS; target++) {
-		x = MV_CHANGE_BOOT_CS(target);
+		x = target;
 		if ((mvTargetDefaultsArray[x].attrib == unitWinInfo->attrib) &&
-		    (mvTargetDefaultsArray[MV_CHANGE_BOOT_CS(target)].targetId == unitWinInfo->targetId)) {
+		    (mvTargetDefaultsArray[target].targetId == unitWinInfo->targetId)) {
 			/* found it */
 			break;
 		}

@@ -84,6 +84,7 @@ MV_STATUS mvAhbToMbusWinSet(MV_U32 winNum, MV_AHB_TO_MBUS_DEC_WIN *pAddrDecWin);
 MV_STATUS mvAhbToMbusWinGet(MV_U32 winNum, MV_AHB_TO_MBUS_DEC_WIN *pAddrDecWin);
 MV_STATUS mvAhbToMbusWinEnable(MV_U32 winNum, MV_BOOL enable);
 MV_U32    mvAhbToMbusWinRemap(MV_U32 winNum, MV_ADDR_WIN *pAddrDecWin);
+MV_STATUS mvAhbToMbusWinNumByTargetGet(MV_TARGET target, MV_U32 *pWinNum);
 MV_U32	  mvAhbToMbusWinTargetGet(MV_TARGET target);
 MV_U32    mvAhbToMbusWinAvailGet(MV_VOID);
 MV_STATUS mvAhbToMbusWinTargetSwap(MV_TARGET target1, MV_TARGET target2);

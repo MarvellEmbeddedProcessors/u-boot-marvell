@@ -227,9 +227,8 @@ MV_STATUS mvAhbToMbusWinGet(MV_U32 winNum, MV_AHB_TO_MBUS_DEC_WIN *pAddrDecWin)
 	MV_TARGET_ATTRIB targetAttrib;
 	MV_U32 sizeRegVal;
 
-	/* Parameter checking   */
 	if (winNum >= MAX_AHB_TO_MBUS_WINS) {
-		mvOsPrintf("mvAhbToMbusWinGet: ERR. Invalid winNum %d\n", winNum);
+		mvOsPrintf("%s: Error: Invalid winNum %d\n", __func__, winNum);
 		return MV_NOT_SUPPORTED;
 	}
 
@@ -254,7 +253,6 @@ MV_STATUS mvAhbToMbusWinGet(MV_U32 winNum, MV_AHB_TO_MBUS_DEC_WIN *pAddrDecWin)
 		pAddrDecWin->addrWin.size = INTER_REGS_SIZE;
 		pAddrDecWin->target = INTER_REGS;
 		pAddrDecWin->enable = MV_TRUE;
-
 		return MV_OK;
 	}
 
@@ -275,6 +273,53 @@ MV_STATUS mvAhbToMbusWinGet(MV_U32 winNum, MV_AHB_TO_MBUS_DEC_WIN *pAddrDecWin)
 	return MV_OK;
 }
 
+/*
+ * Straight forward function what returns _only_ the index of the
+ * memory window according to provided SoC target.
+ */
+MV_STATUS mvAhbToMbusWinNumByTargetGet(MV_TARGET target, MV_U32 *pWinNum)
+{
+	MV_TARGET_ATTRIB targetAttribs;
+	MV_U32 winNum, ctrlReg, targetId;
+
+	if (pWinNum == NULL) {
+		mvOsPrintf("%s: Error: pWinNum is NULL\n", __func__);
+		return MV_FAIL;
+	}
+
+	if (target >= MAX_TARGETS) {
+		mvOsPrintf("%s: Error: target %d is illegal\n", __func__, target);
+		return MV_FAIL;
+	}
+
+	if (target == INTER_REGS) {
+		*pWinNum = MV_AHB_TO_MBUS_INTREG_WIN;
+		return MV_OK;
+	}
+
+	if (mvCtrlAttribGet(target, &targetAttribs) != MV_OK) {
+		mvOsPrintf("%s: Error: mvCtrlAttribGet(target = %d) failed\n",
+			   __func__, target);
+		return MV_FAIL;
+	}
+
+	for (winNum = 0; winNum < MAX_AHB_TO_MBUS_WINS; winNum++) {
+		if (winNum == MV_AHB_TO_MBUS_INTREG_WIN)
+			continue;
+
+		ctrlReg = MV_REG_READ(AHB_TO_MBUS_WIN_CTRL_REG(winNum));
+		targetId = (ctrlReg & ATMWCR_WIN_TARGET_MASK) >> ATMWCR_WIN_TARGET_OFFS;
+
+		if (targetId == targetAttribs.targetId) {
+			*pWinNum = winNum;
+			return MV_OK;
+		}
+
+	}
+
+	return MV_FAIL;
+}
+
 /*******************************************************************************
 * mvAhbToMbusWinTargetGet - Get Window number associated with target
 *
@@ -292,9 +337,8 @@ MV_U32 mvAhbToMbusWinTargetGet(MV_TARGET target)
 	MV_AHB_TO_MBUS_DEC_WIN decWin;
 	MV_U32 winNum;
 
-	/* Check parameters */
 	if (target >= MAX_TARGETS) {
-		mvOsPrintf("mvAhbToMbusWinTargetGet: target %d is illegal\n", target);
+		mvOsPrintf("%s: Error: target %d is illegal\n", __func__, target);
 		return 0xffffffff;
 	}
 
@@ -306,7 +350,8 @@ MV_U32 mvAhbToMbusWinTargetGet(MV_TARGET target)
 			continue;
 
 		if (mvAhbToMbusWinGet(winNum, &decWin) != MV_OK) {
-			mvOsPrintf("mvAhbToMbusWinTargetGet: mvAhbToMbusWinGet fail\n");
+			mvOsPrintf("%s: Error: mvAhbToMbusWinGet(winNum = %d) failed\n",
+				   __func__, winNum);
 			return 0xffffffff;
 		}
 

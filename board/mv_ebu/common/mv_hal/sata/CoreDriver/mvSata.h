@@ -119,6 +119,7 @@ extern "C" {
 #define MV_SATA_DEVICE_ID_7823			0x7823 /* DSMP */
 #define MV_SATA_DEVICE_ID_7888			0x7888 /* DSMP */
 #define MV_SATA_DEVICE_ID_6660			0x6660 /* AvantaLP */
+#define MV_SATA_DEVICE_ID_6720			0x6720 /* Armada375 */
 #define MV_SATA_CHANNELS_NUM                    8
 #define MV_SATA_UNITS_NUM                       2
 #define MV_SATA_5082_PORT_NUM                   1
@@ -552,6 +553,7 @@ typedef struct mvSataAdapter {
 	MV_BOOLEAN chipIs62X1Z0;
 	MV_BOOLEAN chipIs65XXZ0;
 	MV_BOOLEAN chipIs66XXX0;
+	MV_BOOLEAN chipIs672XX0;
 	MV_U8 signalAmps[MV_SATA_CHANNELS_NUM];
 	MV_U8 pre[MV_SATA_CHANNELS_NUM];
 	struct mvQueuedCommandEntry adapterCommands[_MV_SATA_COMMANDS_PER_ADAPTER];

@@ -133,17 +133,19 @@ LIB_PHY = phy_$(BOARD).a
 LIB_DDR = ddr_$(BOARD).a
 LIB_UTILS = utils.a
 LIB_SWUP = suspendWUP.a
+LIB_GENERAL_INIT = generalInit.a
 
 LIB_PHY_UART = phy_$(BOARD).uart.a
 LIB_DDR_UART = ddr_$(BOARD).uart.a
 LIB_UTIL_UART = utils.uart.a
 LIB_SWUP_UART = suspendWUP.uart.a
+LIB_GENERAL_INIT_UART = generalInit.uart.a
 
 TLIB = ./src_ddr/ddr3_training_$(BOARD).lib
 
-COMPONENT_SUBDIRS = src_util src_phy_$(BOARD) src_ddr src_suspendWUP
-HDR_COMPONENTS = $(LIB_PHY) $(LIB_DDR) $(TLIB) $(LIB_SWUP)
-HDR_COMPONENTS_UART = $(LIB_PHY_UART) $(LIB_DDR_UART) $(TLIB) $(LIB_SWUP_UART)
+COMPONENT_SUBDIRS = src_util src_phy_$(BOARD) src_ddr src_suspendWUP src_generalInit
+HDR_COMPONENTS = $(LIB_GENERAL_INIT) $(LIB_PHY) $(LIB_DDR) $(TLIB) $(LIB_SWUP)
+HDR_COMPONENTS_UART = $(LIB_GENERAL_INIT_UART) $(LIB_PHY_UART) $(LIB_DDR_UART) $(TLIB) $(LIB_SWUP_UART)
 
 #how to add new component to binary header:
 #EXAMPLE_COMPONENT=no

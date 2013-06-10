@@ -86,9 +86,6 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_a375_vars.h"
 #endif
 
-#if defined(DB_88F6710_PCAC)
-#include "mvBHboardEnvSpec.h"
-#endif
 
 #include "bootstrap_os.h"
 #if defined(MV88F78X60_Z1)
@@ -454,25 +451,6 @@ MV_U32 ddr3Init_(void)
 		bPLLWAPatch = TRUE;
 	}
 #endif
-
-#ifdef DB_88F6710_PCAC
-	/* set Pex terminations for Pex Compliance */
-	MV_REG_WRITE(SERDES_LINE_MUX_REG_0_7, 0x201);
-	MV_REG_WRITE(0x41b00, (((0x48 & 0x3fff) << 16) | 0x8080));
-
-	/*Set MPP0 and MPP1 to be UART mode*/
-	uiReg = (MV_REG_READ(MPP_CONTROL_REG(0)) & 0xFFFFFF00) | 0x11;
-	MV_REG_WRITE(MPP_CONTROL_REG(0), uiReg);
-#endif
-
-#ifdef MV88F67XX
-	/* Check is its A370 A0 */
-	if (mvCtrlRevGet() == 0)
-		/* Armada 370 - Must Run the sram reconfig WA */
-		sramConfig();
-#endif
-
-	mvUartInit();
 
 	ddr3PrintVersion();
 	DEBUG_INIT_S("1 \n");

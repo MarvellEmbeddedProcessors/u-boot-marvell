@@ -67,42 +67,42 @@ include ../base.mk
 sinclude ../../../../include/autoconf.mk
 
 ifeq "$(MAKECMDGOALS)" "rtl"
-  MVFLAGS += MV_RTL_PLATFORM=1 MV_NO_PRINT=1
+	MVFLAGS += MV_RTL_PLATFORM=1 MV_NO_PRINT=1
 endif
 ifeq "$(MAKECMDGOALS)" "test"
-  MVFLAGS += MV_TEST_PLATFORM=1 MV_NO_REAL_HW=1
+	MVFLAGS += MV_TEST_PLATFORM=1 MV_NO_REAL_HW=1
 endif
 ifeq "$(MAKECMDGOALS)" "fpga"
-  MVFLAGS += MV_FPGA_HW=1 MV_NO_REAL_HW=1
+	MVFLAGS += MV_FPGA_HW=1 MV_NO_REAL_HW=1
 endif
 
 ifeq "$(CONFIG_DB_78x60_BP_REV2)"  "y"
-  CFLAGS += -DCONFIG_DB_78x60_BP_REV2
+	CFLAGS += -DCONFIG_DB_78x60_BP_REV2
 endif
 ifeq "$(CONFIG_DB_78X60_PCAC_REV2)"  "y"
-  CFLAGS += -DCONFIG_DB_78X60_PCAC_REV2
+	CFLAGS += -DCONFIG_DB_78X60_PCAC_REV2
 endif
 ifeq "$(CONFIG_RD_78460_SERVER_REV2)"  "y"
-  CFLAGS += -DCONFIG_RD_78460_SERVER_REV2
+	CFLAGS += -DCONFIG_RD_78460_SERVER_REV2
 endif
 ifeq "$(CONFIG_DB_784MP_GP)"  "y"
-  CFLAGS += -DCONFIG_DB_784MP_GP
+	CFLAGS += -DCONFIG_DB_784MP_GP
 endif
 ifeq "$(CONFIG_DB_78X60_AMC)"  "y"
-  CFLAGS += -DCONFIG_DB_78X60_AMC
+	CFLAGS += -DCONFIG_DB_78X60_AMC
 endif
 ifeq "$(CONFIG_RD_78460_CUSTOMER)"  "y"
-  CFLAGS += -DCONFIG_RD_78460_CUSTOMER
+	CFLAGS += -DCONFIG_RD_78460_CUSTOMER
 endif
 
 ifeq "$(CONFIG_DB_88F6710_BP)"  "y"
-  CFLAGS += -DCONFIG_DB_88F6710_BP
+	CFLAGS += -DCONFIG_DB_88F6710_BP
 endif
 ifeq "$(CONFIG_RD_88F6710)"  "y"
-  CFLAGS += -DCONFIG_RD_88F6710
+	CFLAGS += -DCONFIG_RD_88F6710
 endif
 ifeq "$(CONFIG_DB_88F6710_PCAC )"  "y"
-  CFLAGS += -DCONFIG_DB_88F6710_PCAC
+	CFLAGS += -DCONFIG_DB_88F6710_PCAC
 endif
 
 INCLUDE     = -I./  -I../inc/ -I../../../../include
@@ -112,10 +112,10 @@ LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
 
-TGT = phy_a370.a
-TGT_UART = phy_a370.uart.a
+TGT = generalInit.a
+TGT_UART = generalInit.uart.a
 
-CSRC = mvHighSpeedEnvLib.c mvHighSpeedEnvSpec.c
+CSRC = generalInit.c bin_sramcfg.c
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
@@ -138,4 +138,3 @@ $(TGT_UART): $(CUART_OBJ)
 
 clean:
 	$(RM) ./*.o  ./*.a
-

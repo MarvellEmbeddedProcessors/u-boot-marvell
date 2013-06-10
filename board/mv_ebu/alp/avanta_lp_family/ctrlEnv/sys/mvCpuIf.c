@@ -119,6 +119,7 @@ MV_STATUS mvCpuIfVerify(MV_CPU_DEC_WIN *cpuAddrWinMap)
 	}
 	return MV_OK;
 }
+
 /*******************************************************************************
 * mvCpuIfInitForCpu - Initialize Controller CPU interface
 *
@@ -209,7 +210,7 @@ MV_STATUS mvCpuIfInitForCpu(MV_U32 cpu, MV_CPU_DEC_WIN *cpuAddrWinMap)
 		if (target == DEV_BOOCS)
 			continue;
 #endif /* MV_RUN_FROM_FLASH */
-		mvCpuIfTargetWinEnable(MV_CHANGE_BOOT_CS(target), MV_FALSE);
+		mvCpuIfTargetWinEnable(target, MV_FALSE);
 	}
 
 #if defined(MV_RUN_FROM_FLASH)
@@ -269,7 +270,6 @@ MV_STATUS mvCpuIfInitForCpu(MV_U32 cpu, MV_CPU_DEC_WIN *cpuAddrWinMap)
 	return MV_OK;
 }
 
-/*******************************************************************************/
 MV_STATUS mvCpuIfInit(MV_CPU_DEC_WIN *cpuAddrWinMap)
 {
 	return mvCpuIfInitForCpu(whoAmI(), cpuAddrWinMap);
@@ -307,13 +307,6 @@ MV_STATUS mvCpuIfDramInit()
 			temp = (base & 0xFF000000ll) | ((base >> 32) & 0xF);
 			MV_REG_WRITE(SDRAM_WIN_BASE_REG(cs), temp);
 
-			/* Check if out of max window size and resize the window */
-#if 0
-			if (base+size > SDRAM_MAX_ADDR) {
-				size = SDRAM_MAX_ADDR - base - 1;
-				MV_REG_WRITE(SDRAM_SIZE_REG(cs), 0);
-			}
-#endif
 			temp = (MV_REG_READ(SDRAM_WIN_CTRL_REG(cs)) & ~(SDRAM_ADDR_MASK)) | (1<<SDRAM_WIN_CTRL_WIN_ENA_OFFS);
 			temp |= (size & SDRAM_ADDR_MASK);
 
@@ -358,15 +351,11 @@ MV_STATUS mvCpuIfTargetWinSet(MV_TARGET target, MV_CPU_DEC_WIN *pAddrDecWin)
 	MV_U32 existingWinNum;
 	MV_DRAM_DEC_WIN addrDecWin;
 
-	target = MV_CHANGE_BOOT_CS(target);
-
-	/* Check parameters */
 	if (target >= MAX_TARGETS) {
 		mvOsPrintf("mvCpuIfTargetWinSet: target %d is illegal\n", target);
 		return MV_ERROR;
 	}
 
-	/* 2) Check if the requested window overlaps with current windows */
 	if (MV_TRUE == cpuTargetWinOverlap(target, &pAddrDecWin->addrWin)) {
 		mvOsPrintf("mvCpuIfTargetWinSet: ERR. Target %d overlap\n", target);
 		return MV_BAD_PARAM;
@@ -417,8 +406,7 @@ MV_STATUS mvCpuIfTargetWinSet(MV_TARGET target, MV_CPU_DEC_WIN *pAddrDecWin)
 /*******************************************************************************
 * mvCpuIfTargetWinGet - Get CPU-to-peripheral target address window
 *
-* DESCRIPTION:
-*		Get the CPU peripheral target address window.
+* DESCRIPTION: Get the CPU peripheral target address window.
 *
 * INPUT:
 *       target - Peripheral target enumerator
@@ -435,8 +423,6 @@ MV_STATUS mvCpuIfTargetWinGet(MV_TARGET target, MV_CPU_DEC_WIN *pAddrDecWin)
 	MV_U32 winNum = 0xffffffff;
 	MV_AHB_TO_MBUS_DEC_WIN decWin;
 	MV_DRAM_DEC_WIN addrDecWin;
-
-	target = MV_CHANGE_BOOT_CS(target);
 
 	/* Check parameters */
 	if (target >= MAX_TARGETS) {
@@ -504,8 +490,6 @@ MV_STATUS mvCpuIfTargetWinEnable(MV_TARGET target, MV_BOOL enable)
 	MV_U32 winNum, temp;
 	MV_CPU_DEC_WIN addrDecWin;
 
-	target = MV_CHANGE_BOOT_CS(target);
-
 	/* Check parameters */
 	if (target >= MAX_TARGETS) {
 		mvOsPrintf("mvCpuIfTargetWinEnable: target %d is illegal\n", target);
@@ -571,8 +555,6 @@ MV_U32 mvCpuIfTargetWinSizeGet(MV_TARGET target)
 {
 	MV_CPU_DEC_WIN addrDecWin;
 
-	target = MV_CHANGE_BOOT_CS(target);
-
 	/* Check parameters */
 	if (target >= MAX_TARGETS) {
 		mvOsPrintf("mvCpuIfTargetWinSizeGet: target %d is illegal\n", target);
@@ -614,8 +596,6 @@ MV_U32 mvCpuIfTargetWinBaseLowGet(MV_TARGET target)
 {
 	MV_CPU_DEC_WIN addrDecWin;
 
-	target = MV_CHANGE_BOOT_CS(target);
-
 	/* Check parameters */
 	if (target >= MAX_TARGETS) {
 		mvOsPrintf("mvCpuIfTargetWinBaseLowGet: target %d is illegal\n", target);
@@ -631,7 +611,7 @@ MV_U32 mvCpuIfTargetWinBaseLowGet(MV_TARGET target)
 	if (MV_FALSE == addrDecWin.enable)
 		return 0xffffffff;
 
-	return (addrDecWin.addrWin.baseLow);
+	return addrDecWin.addrWin.baseLow;
 }
 
 /*******************************************************************************
@@ -656,8 +636,6 @@ MV_U32 mvCpuIfTargetWinBaseHighGet(MV_TARGET target)
 {
 	MV_CPU_DEC_WIN addrDecWin;
 
-	target = MV_CHANGE_BOOT_CS(target);
-
 	/* Check parameters */
 	if (target >= MAX_TARGETS) {
 		mvOsPrintf("mvCpuIfTargetWinBaseLowGet: target %d is illegal\n", target);
@@ -673,7 +651,7 @@ MV_U32 mvCpuIfTargetWinBaseHighGet(MV_TARGET target)
 	if (MV_FALSE == addrDecWin.enable)
 		return 0;
 
-	return (addrDecWin.addrWin.baseHigh);
+	return addrDecWin.addrWin.baseHigh;
 }
 
 

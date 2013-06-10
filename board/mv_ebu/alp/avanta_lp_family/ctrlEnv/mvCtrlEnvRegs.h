@@ -304,8 +304,6 @@ typedef struct {
 
 #define MV_TARGET_IS_DEVICE(target)     ((target >= DEVICE_CS0) && (target <= DEVICE_CS3))
 
-#define MV_CHANGE_BOOT_CS(target) target
-
 #define START_DEV_CS            DEV_CS0
 #define DEV_TO_TARGET(dev)      ((dev) + START_DEV_CS)
 

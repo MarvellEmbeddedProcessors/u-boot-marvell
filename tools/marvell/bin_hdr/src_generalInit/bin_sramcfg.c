@@ -61,12 +61,13 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
+#include "mv_os.h"
+#include "config_marvell.h"     /* Required to identify SOC and Board */
+#include "soc_spec.h"
+#ifdef MV88F67XX
+#include "generalInit.h"
 
-#ifdef MV88F78X60
-#include <stdlib.h>
-#include <stdio.h>
-#endif
-#include "ddr3_init.h"
+#define REG_XBAR_WIN_19_CTRL_ADDR	0x200e8
 
 MV_VOID sramConfig(void)
 {
@@ -76,15 +77,15 @@ MV_VOID sramConfig(void)
 	MV_REG_WRITE(REG_XBAR_WIN_19_CTRL_ADDR, 0x1FFF0E00);	/*Close Mbus Window - 1G */
 
 	/* Fix L2 way 0 size to 256KB */
-	MV_REG_WRITE(0x20240,0x40000301); 
-		
+	MV_REG_WRITE(0x20240,0x40000301);
+
 	/* set L2 way 3 to SRAM at 0 */
 	MV_REG_WRITE(0x850C,0x1);
 	MV_REG_WRITE(0x20244,0x001);
-	
+
 	ptr = (void*)0x10;
 	*ptr = 0xE3A0F02C;		/* mov pc,#0x2C */
-	ptr = (void*)0x2C;		
+	ptr = (void*)0x2C;
 	*ptr = 0xE24EE008;		/* sub r14,r14,#0x8 */
 	ptr = (void*)0x30;
 	*ptr = 0xE1B0F00E;		/* movs pc,r14 */
@@ -105,4 +106,4 @@ MV_VOID sramConfig(void)
 	/* enable DRAM Window */
 	MV_REG_WRITE(REG_XBAR_WIN_19_CTRL_ADDR, 0x1FFF0E01);	/*Close Mbus Window - 1G */
 }
-
+#endif /* MV88F67XX */

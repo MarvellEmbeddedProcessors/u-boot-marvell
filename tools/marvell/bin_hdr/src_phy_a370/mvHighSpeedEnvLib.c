@@ -78,7 +78,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 
-#define	SERDES_VERION	"2.1.2"
+#define	SERDES_VERION	"2.1.3"
 #define ENDED_OK "High speed PHY - Ended Successfully\n"
 static const MV_U8 serdesCfg[][SERDES_LAST_UNIT] = BIN_SERDES_CFG;
 			   
@@ -866,6 +866,14 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	}
 	MV_REG_WRITE(SOC_CTRL_REG, tmp);
 	DEBUG_WR_REG(SOC_CTRL_REG, tmp);
+
+#ifdef CONFIG_DB_88F6710_PCAC
+	/* set Pex terminations for Pex Compliance */
+	MV_REG_WRITE(SERDES_LINE_MUX_REG_0_7, 0x201);
+	MV_REG_WRITE(0x41b00, (((0x48 & 0x3fff) << 16) | 0x8080));
+#endif
+
+
 	/* Step 17: Speed change to target speed and width*/
 	{
 		MV_U32 pexIfNum = mvCtrlPexMaxIfGet();

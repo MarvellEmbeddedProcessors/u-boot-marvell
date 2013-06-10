@@ -79,7 +79,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 
-#define	SERDES_VERION	"2.1.2"
+#define	SERDES_VERION	"2.1.3"
 #define ENDED_OK "High speed PHY - Ended Successfully\n"
 static const MV_U8 serdesCfg[][SERDES_LAST_UNIT] = BIN_SERDES_CFG;
 			   
@@ -573,7 +573,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 			fabricFreq = (MV_REG_READ(MPP_SAMPLE_AT_RESET(0)) & SAR0_FABRIC_FREQ_MASK) >> SAR0_FABRIC_FREQ_OFFSET;
 			if ((0xB == freq) && (5 == fabricFreq)){
 				MV_U32 coreAvs;
-				coreAvs = MV_REG_READ(CORE_AVS_CONTROL_0REG)
+				coreAvs = MV_REG_READ(CORE_AVS_CONTROL_0REG);
 				DEBUG_RD_REG(CORE_AVS_CONTROL_0REG, coreAvs);
 				coreAvs &= ~(0xff);
 				coreAvs |= 0x0E;	/*    Set core lower limit = 0.9V & core upper limit = 0.9125V */
@@ -583,13 +583,13 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 				MV_REG_WRITE(CORE_AVS_CONTROL_0REG, coreAvs);
 				DEBUG_WR_REG(CORE_AVS_CONTROL_0REG, coreAvs);
 
-				coreAvs = MV_REG_READ(CORE_AVS_CONTROL_2REG)
+				coreAvs = MV_REG_READ(CORE_AVS_CONTROL_2REG);
 				DEBUG_RD_REG(CORE_AVS_CONTROL_2REG, coreAvs);
 				coreAvs |= BIT9; /*  core AVS enable  */
 				MV_REG_WRITE(CORE_AVS_CONTROL_2REG, coreAvs);
 				DEBUG_WR_REG(CORE_AVS_CONTROL_2REG, coreAvs);
 
-				tmp2 = MV_REG_READ(GENERAL_PURPOSE_RESERVED0_REG )
+				tmp2 = MV_REG_READ(GENERAL_PURPOSE_RESERVED0_REG );
 				DEBUG_RD_REG(GENERAL_PURPOSE_RESERVED0_REG , tmp2);
 				tmp2 |= BIT0; /*  AvsCoreAvddDetEn enable   */
 				MV_REG_WRITE(GENERAL_PURPOSE_RESERVED0_REG , tmp2);
@@ -958,7 +958,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	} /* for each serdes lane*/
 	/* Step 12 [PEX-Only] Last phase of PEX-PIPE Configuration */
-	DEBUG_INIT_FULL_S("Steps 12: [PEX-Only] Last phase of PEX-PIPE Configuration");
+	DEBUG_INIT_FULL_S("Steps 12: [PEX-Only] Last phase of PEX-PIPE Configuration\n");
 	for (serdesLineNum = 0; serdesLineNum < maxSerdesLines; serdesLineNum++) {
 		/* for each serdes lane*/
 
@@ -1033,7 +1033,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	/* step14 [PEX-Only]  In order to configure RC/EP mode please write  to register 0x0060 bits */
 	/*----------------------------------------------*/
-	DEBUG_INIT_FULL_S("Steps 14: [PEX-Only]  In order to configure");
+	DEBUG_INIT_FULL_S("Steps 14: [PEX-Only]  In order to configure\n");
 	for (pexUnit = 0; pexUnit < mvCtrlPexMaxUnitGet(); pexUnit++) {
 		if (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_DISABLED)
 			continue;
@@ -1050,7 +1050,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 		
 	/* step 15 [PEX-Only] Only for EP mode set to Zero bits 19 and 16 of register 0x1a60 */
 	/*----------------------------------------------*/
-	DEBUG_INIT_FULL_S("Steps 15: [PEX-Only]  In order to configure");
+	DEBUG_INIT_FULL_S("Steps 15: [PEX-Only]  In order to configure\n");
 	for (pexUnit = 0; pexUnit < mvCtrlPexMaxUnitGet(); pexUnit++) {
 		if (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_DISABLED)
 			continue;
@@ -1180,7 +1180,10 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 		DEBUG_INIT_FULL_C("step 17: max_if= 0x", pexIfNum,1);
 		next_busno = 0;
 		for (pexIf = 0; pexIf < pexIfNum; pexIf++) {
-
+			serdesLineNum = (pexIf <= 8)? pexIf: 12;
+			serdesLineCfg = get_serdesLineCfg(serdesLineNum,pSerdesInfo);
+			if (serdesLineCfg != serdesCfg[serdesLineNum][SERDES_UNIT_PEX])
+				continue;
 			pexUnit    = (pexIf<9)? (pexIf >> 2) : 3;
 			DEBUG_INIT_FULL_S("step 17:  PEX"); DEBUG_INIT_FULL_D(pexIf,1);
 			DEBUG_INIT_FULL_C("  pexUnit= ", pexUnit,1);

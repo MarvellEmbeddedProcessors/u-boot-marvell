@@ -102,6 +102,7 @@ typedef enum
 	IMG_SATA,
 	IMG_UART,
 	IMG_FLASH,
+	IMG_MMC,
 	IMG_BOOTROM,
 	IMG_NAND,
 	IMG_HEX,

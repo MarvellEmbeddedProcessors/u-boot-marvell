@@ -2713,6 +2713,7 @@ static void _fixPhyParams(MV_SATA_ADAPTER *pAdapter, MV_U8 channelIndex)
 	if ((pAdapter->sataAdapterGeneration >= MV_SATA_GEN_II) &&
 	    (pAdapter->chipIs62X1Z0 == MV_FALSE) &&
 	    (pAdapter->chipIs66XXX0 == MV_FALSE) &&
+	    (pAdapter->chipIs672XX0 == MV_FALSE) &&
 	    (pAdapter->chipIs65XXZ0 == MV_FALSE)) {
 		MV_U32 phyMode2Offset = getEdmaRegOffset(channelIndex) + MV_SATA_II_PHY_MODE_2_REG_OFFSET;
 		if ((pAdapter->chipIs60X1B2 == MV_TRUE) || (pAdapter->chipIs60X1C0 == MV_TRUE)) {
@@ -2815,8 +2816,9 @@ static void _fixPhyParams(MV_SATA_ADAPTER *pAdapter, MV_U8 channelIndex)
 			 pAdapter->adapterId, channelIndex,
 			 MV_REG_READ_DWORD(pAdapter->adapterIoBaseAddress, phyMode2Offset));
 	}
-	if ((pAdapter->chipIs62X1Z0 == MV_TRUE) || (pAdapter->chipIs66XXX0 == MV_TRUE))  {
-
+	if ((pAdapter->chipIs62X1Z0 == MV_TRUE) ||
+		(pAdapter->chipIs66XXX0 == MV_TRUE) ||
+		(pAdapter->chipIs672XX0 == MV_TRUE)) {
 		regVal = MV_REG_READ_DWORD(pAdapter->adapterIoBaseAddress,
 					   getEdmaRegOffset(channelIndex) + MV_SATA_II_PHY_MODE_3_REG_OFFSET);
 
@@ -4479,6 +4481,7 @@ MV_BOOLEAN mvSataInitAdapter(MV_SATA_ADAPTER *pAdapter)
 	pAdapter->chipIs62X1Z0 = MV_FALSE;
 	pAdapter->chipIs65XXZ0 = MV_FALSE;
 	pAdapter->chipIs66XXX0 = MV_FALSE;
+	pAdapter->chipIs672XX0 = MV_FALSE;
 	pAdapter->numberOfChannels = MV_SATA_CHANNELS_NUM;
 	pAdapter->numberOfUnits = MV_SATA_UNITS_NUM;
 	pAdapter->portsPerUnit = MV_SATA_PORT_PER_UNIT;
@@ -4795,6 +4798,16 @@ MV_BOOLEAN mvSataInitAdapter(MV_SATA_ADAPTER *pAdapter)
 		pAdapter->mainMaskOffset = 0x20024;
 		pAdapter->mainCauseOffset = 0x20020;
 		pAdapter->chipIs66XXX0 = MV_TRUE;
+		break;
+	case MV_SATA_DEVICE_ID_6720:
+		pAdapter->numberOfChannels = 2;
+		pAdapter->numberOfUnits = 1;
+		pAdapter->portsPerUnit = 2;
+		pAdapter->sataAdapterGeneration = MV_SATA_GEN_IIE;
+		pAdapter->hostInterface = MV_HOST_IF_INTEGRATED;
+		pAdapter->mainMaskOffset = 0x20024;
+		pAdapter->mainCauseOffset = 0x20020;
+		pAdapter->chipIs672XX0 = MV_TRUE;
 		break;
 
 	default:
@@ -5270,9 +5283,11 @@ MV_BOOLEAN mvSataIsStorageDeviceConnected(MV_SATA_ADAPTER *pAdapter, MV_U8 chann
 			break;
 		}
 	case MV_PHY_DET_STATE_DEVICE_AND_PHY_COM:
-	if (pAdapter->chipIs66XXX0 == MV_TRUE) { /*for Avanta LP 6660 check HD type GEN1 or GEN2*/
-		det = (MV_REG_READ_DWORD(pAdapter->adapterIoBaseAddress, SStatusOffset) & 0xf0)>>4;
-		if ((det == 1) && (pAdapter->sataAdapterGeneration >= MV_SATA_GEN_II)) {
+		if ((pAdapter->chipIs66XXX0 == MV_TRUE) ||
+			(pAdapter->chipIs672XX0 == MV_TRUE)) {
+			/* for Avanta LP 6660 check HD GEN1 or GEN2 */
+			det = (MV_REG_READ_DWORD(pAdapter->adapterIoBaseAddress, SStatusOffset) & 0xf0)>>4;
+			if ((det == 1) && (pAdapter->sataAdapterGeneration >= MV_SATA_GEN_II)) {
 				/* HD deteced to GEN1 set SATA speed configuration from GEN2 to GEN1 */
 				MV_U32 regVal;
 				mvOsSemTake(&pAdapter->semaphore);
@@ -6026,6 +6041,7 @@ MV_BOOLEAN mvSataSetChannelPhyParams(MV_SATA_ADAPTER *pAdapter, MV_U8 channelInd
 
 	if ((pAdapter->chipIs62X1Z0 == MV_TRUE) ||
 	    (pAdapter->chipIs66XXX0 == MV_TRUE) ||
+	    (pAdapter->chipIs672XX0 == MV_TRUE) ||
 	    (pAdapter->chipIs65XXZ0 == MV_TRUE)) {
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_FATAL_ERROR, "%d  : mvSataSetChannelPhyPara\
 m" "s Failed, This function not supported for this adapter\n", pAdapter->adapterId);

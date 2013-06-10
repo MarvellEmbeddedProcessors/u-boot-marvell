@@ -1378,6 +1378,39 @@ MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx)
 }
 
 /*******************************************************************************
+* mvBoardFreqModesNumGet
+*
+* DESCRIPTION:
+*      Return the number of supported frequency modes for this board
+*
+*
+* INPUT:
+*      None.
+*
+* OUTPUT:
+*      None.
+*
+* RETURN:
+*      Number of supported frequency modes
+*
+*******************************************************************************/
+MV_U32 mvBoardFreqModesNumGet()
+{
+	MV_U16 ctrlModel = mvCtrlModelGet();
+
+	if (ctrlModel == MV_6610_DEV_ID)
+		return FREQ_MODES_NUM_6610;
+	else if (ctrlModel == MV_6650_DEV_ID)
+		return FREQ_MODES_NUM_6650;
+	else if (ctrlModel == MV_6660_DEV_ID)
+		return FREQ_MODES_NUM_6660;
+
+	mvOsPrintf("%s: Error: Illegal ctrl Model (%x)\n", __func__, ctrlModel);
+	return MV_ERROR;
+}
+
+
+/*******************************************************************************
 * mvBoardConfigWrite - write MPP's config and Board general environment configuration
 *
 * DESCRIPTION:

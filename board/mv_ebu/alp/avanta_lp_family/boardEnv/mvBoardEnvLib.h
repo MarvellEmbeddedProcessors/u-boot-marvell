@@ -445,6 +445,7 @@ MV_BOOL mvBoardIsSetmModuleConnected(void);
 MV_STATUS mvBoardIsInternalSwitchConnectedToPort(MV_U32 ethPortNum);
 MV_STATUS mvBoardIsInternalSwitchConnected(void);
 MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx);
+MV_U32 mvBoardFreqModesNumGet(void);
 MV_BOOL mvBoardIsLvdsModuleConnected(void);
 MV_BOOL mvBoardIsLcdDviModuleConnected(void);
 MV_STATUS mvBoardTwsiMuxChannelSet(MV_U8 muxChNum);

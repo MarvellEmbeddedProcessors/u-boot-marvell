@@ -170,6 +170,7 @@ int mvPp2PrsTripleVlan(unsigned short tpid1, unsigned short tpid2, unsigned shor
 int mvPp2PrsDoubleVlan(unsigned short tpid1, unsigned short tpid2, unsigned int portBmp, int add);
 int mvPp2PrsSingleVlan(unsigned short tpid, unsigned int portBmp, int add);
 char *mvPrsVlanInfoStr(unsigned int vlan_info);
+char *mvPrsL2InfoStr(unsigned int l2_info);
 /*
 int mvPrsMacDaDrop(int port, unsigned char *da, int add);
 */

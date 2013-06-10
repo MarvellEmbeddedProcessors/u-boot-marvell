@@ -846,11 +846,9 @@ U_BOOT_CMD(
 	"\tWrite to the Phy register.\n"
 );
 
-#if defined(MV_INCLUDE_SWITCH)
-
 #include "ethSwitch/mvSwitch.h"
 
-int switch_read_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int switch_read_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U16 phyReg;
 
@@ -870,7 +868,7 @@ U_BOOT_CMD(
 );
 
 
-int switch_write_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int switch_write_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	mvEthSwitchRegWrite(simple_strtoul( argv[1], NULL, 16 ),
 						simple_strtoul( argv[2], NULL, 16 ), simple_strtoul( argv[3], NULL, 16 ),
@@ -886,7 +884,7 @@ U_BOOT_CMD(
 	"\tWrite to the switch register.\n"
 );
 
-int switch_phy_read_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int switch_phy_read_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U16 phyReg;
 
@@ -904,7 +902,7 @@ U_BOOT_CMD(
 	"\tRead the switch register. \n"
 );
 
-int switch_phy_write_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int switch_phy_write_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	mvEthSwitchPhyRegWrite(simple_strtoul( argv[1], NULL, 16 ),
 						   simple_strtoul( argv[2], NULL, 16 ), simple_strtoul( argv[3], NULL, 16 ),
@@ -920,7 +918,9 @@ U_BOOT_CMD(
 	"\tWrite to the switch register.\n"
 );
 
-int switch_cntread_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+#if defined(MV_INCLUDE_SWITCH)
+
+int switch_cntread_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U16 data;
 	MV_U32 port;

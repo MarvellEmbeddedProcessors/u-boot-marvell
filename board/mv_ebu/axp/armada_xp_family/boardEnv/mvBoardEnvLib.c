@@ -1071,8 +1071,14 @@ MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum)
 			return MV_FALSE;
 		break;
 	case 2:
-		if ( (mvBoardIsPexModuleConnected()) || (mvBoardIsSetmModuleConnected()) )
+		if (mvBoardIsSetmModuleConnected())
 			return MV_FALSE;
+		if (mvBoardIsPexModuleConnected()) {
+			MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
+			if (boardPexInfo->pexUnitCfg[1].pexCfg == PEX_BUS_MODE_X1)
+				return MV_TRUE;
+			return MV_FALSE;
+		}
 		break;
 	case 3:
 		break;

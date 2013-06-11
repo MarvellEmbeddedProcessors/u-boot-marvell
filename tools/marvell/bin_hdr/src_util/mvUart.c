@@ -102,6 +102,7 @@ extern MV_U32 mvBoardTclkGet(MV_VOID);
 
 MV_VOID mvUartInit(void)
 {
+#if !defined(MV_NO_PRINT)
 	volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + UART0_REG_OFFSET);
     MV_U32  tmpTClkRate;
     MV_U32 baudDivisor = 0;
@@ -135,6 +136,7 @@ MV_VOID mvUartInit(void)
 
     /* Clear & enable FIFOs */
     pUartPort->fcr = FCR_FIFO_EN | FCR_RXSR | FCR_TXSR;
+#endif
     return;
 }
 
@@ -157,9 +159,11 @@ MV_VOID mvUartInit(void)
 *******************************************************************************/
 MV_VOID mvUartPutc(MV_U8 c)
 {
+#if !defined(MV_NO_PRINT)
     volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + UART0_REG_OFFSET);
     while ((pUartPort->lsr & LSR_THRE) == 0) ;
     pUartPort->thr = c;
+#endif
     return;
 }
 

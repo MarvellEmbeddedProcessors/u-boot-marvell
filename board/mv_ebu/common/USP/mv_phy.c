@@ -103,18 +103,22 @@ static void mvAlpBoardEgigaPhyInit(void)
 	if ((ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1) &&
 		!(ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0)) {
 
-		/* enable external phy cpu ctrl */
+		/* enable external phy cpu ctrl - MAC1 is polling this phy */
 		mvBoardExtPhyBufferSelect(MV_TRUE);
 
 		mvEthPhyInit(1, MV_FALSE);
 
-		/* disable external phy cpu ctrl */
-		mvBoardExtPhyBufferSelect(MV_FALSE);
 	}
 
 	/* if Switch is connected to RGMII-0, it has to auto-poll the phy */
-	if (ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0)
+	if (ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0) {
 		mvCtrlSmiMasterSet(SWITCH_SMI_CTRL);
+		/* disable external phy cpu ctrl - Switch is SMI master */
+		mvBoardExtPhyBufferSelect(MV_FALSE);
+
+		/* implement differentiation between internal Phy#1 to external Phy#1
+		 * Solve phy address conflicts */
+	}
 
 /*
  * Due to phy address 0x1 conflict, the following configurations demands :

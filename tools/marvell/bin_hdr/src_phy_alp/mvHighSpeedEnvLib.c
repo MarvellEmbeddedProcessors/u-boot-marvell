@@ -217,22 +217,22 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *tempVal)
 *******************************************************************************/
 MV_VOID mvCtrlSatrInit(void)
 {
-    MV_U8 tmp;
-    MV_U32  boardId = mvBoardIdGet();
+	MV_U8 tmp;
+	MV_U32  boardId = mvBoardIdGet();
 	boardLaneConfig[0] = SERDES_UNIT_PEX;
 
-    /* Verify that board support Auto detection from S@R & board configuration
-     else write manually the lane configurations*/
+	/* Verify that board support Auto detection from S@R & board configuration
+	else write manually the lane configurations*/
+	boardLaneConfig[1] = SERDES_UNIT_PEX;
+	boardLaneConfig[2] = SERDES_UNIT_SATA;
+	boardLaneConfig[3] = SERDES_UNIT_USB3;
 
-    if (boardId == RD_88F6660_BP_ID){
-		boardLaneConfig[1] = SERDES_UNIT_PEX;
-		boardLaneConfig[2] = SERDES_UNIT_SATA;
-		boardLaneConfig[3] = SERDES_UNIT_USB3;
-        return;
-    }
+	/* Read Serdes board configuration for DB-6660 */
+	if (boardId != DB_88F6660_BP_ID)
+	return;
 
-    /*Read rest of Board Configuration, EEPROM / Dip Switch access read : */
-    if (mvCtrlBoardConfigGet(configVal) == MV_OK ) {
+	/*Read rest of Board Configuration, EEPROM / Dip Switch access read : */
+	if (mvCtrlBoardConfigGet(configVal) == MV_OK) {
 		tmp = ((configVal[1] & 0x0c) >> 2);
 		switch (tmp) {
 		case 0: boardLaneConfig[1] = SERDES_UNIT_PEX; 	break;
@@ -247,13 +247,10 @@ MV_VOID mvCtrlSatrInit(void)
 		boardLaneConfig[2] = ((configVal[1] & 0x10) >> 4)? SERDES_UNIT_SATA:SERDES_UNIT_SGMII;
 		boardLaneConfig[3] = ((configVal[1] & 0x20) >> 5)? SERDES_UNIT_SGMII:SERDES_UNIT_USB3;
 	}
-    else{
-        DEBUG_INIT_S("Error: Read board configuration from EEPROM/Dip Switch failed \n");
-        DEBUG_INIT_S(">>>>> temporarily setting boardLaneConfig to PEX1, SGMII, SATA2, USB3     for testing. Giora <<<<\n");
-		boardLaneConfig[1] = SERDES_UNIT_SGMII;
-		boardLaneConfig[2] = SERDES_UNIT_SATA;
-		boardLaneConfig[3] = SERDES_UNIT_USB3;
-    }
+	else{
+		DEBUG_INIT_S("Error: Read board configuration from EEPROM/Dip Switch failed \n");
+		DEBUG_INIT_S(">>>>> temporarily setting boardLaneConfig to PEX, PEX, SATA2, USB3     for testing. Giora <<<<\n");
+	}
 }
 /*******************************************************************************
 * mvBoardTclkGet -

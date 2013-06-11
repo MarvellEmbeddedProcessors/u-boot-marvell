@@ -584,6 +584,11 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 			pexUnit    = serdesLineNum;
 			if (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_DISABLED)
 				continue;
+			tmp = MV_REG_READ(PEX_LINK_CTRL_STATUS_REG(pexUnit));
+			DEBUG_RD_REG(PEX_LINK_CTRL_STATUS_REG(pexUnit),tmp);
+			tmp |= BIT6;
+			MV_REG_WRITE(PEX_LINK_CTRL_STATUS_REG(pexUnit), tmp);
+			DEBUG_WR_REG(PEX_LINK_CTRL_STATUS_REG(pexUnit), tmp);
 
 			tmp = MV_REG_READ(PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)));
 			DEBUG_RD_REG(PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), tmp );

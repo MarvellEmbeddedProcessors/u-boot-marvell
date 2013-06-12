@@ -115,14 +115,14 @@ void 	mvSysPp2Init(void)
 	}
 	halData.maxPort = mvCtrlEthMaxPortGet();
 
-#ifdef CONFIG_MV_PON
+#ifdef CONFIG_MV_INCLUDE_PON
 	halData.maxTcont = MV_ETH_MAX_TCONT;
-#endif /* CONFIG_MV_PON */
+#endif /* CONFIG_MV_INCLUDE_PON */
 
 	halData.pClk = mvCpuPclkGet();
 	halData.tClk = mvBoardTclkGet();
 	halData.maxCPUs = mvCtrlEthMaxCPUsGet();
-	//halData.iocc = arch_is_coherent();
+	halData.iocc = MV_FALSE;
 	halData.ctrlModel = mvCtrlModelGet();
 	halData.ctrlRev = mvCtrlRevGet();
 

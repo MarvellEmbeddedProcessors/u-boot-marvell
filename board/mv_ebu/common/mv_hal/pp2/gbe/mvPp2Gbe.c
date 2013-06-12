@@ -187,7 +187,8 @@ MV_STATUS mvPp2HalInit(MV_PP2_HAL_DATA *halData)
 	MV_REG_WRITE(ETH_MNG_EXTENDED_GLOBAL_CTRL_REG, 0x27);
 
 	/* Allow cache snoop when transmiting packets */
-	mvPp2WrReg(MV_PP2_TX_SNOOP_REG, 0x1);
+	if (mvPp2HalData.iocc)
+		mvPp2WrReg(MV_PP2_TX_SNOOP_REG, 0x1);
 
 	return MV_OK;
 }
@@ -242,10 +243,11 @@ MV_STATUS mvPp2DefaultsSet(int port)
 	}
 
 	/* Enable Rx cache snoop */
-	for (i = 0; i < pPortCtrl->rxqNum; i++) {
-		queue = mvPp2LogicRxqToPhysRxq(port, i);
-		mvPp2WrReg(MV_PP2_RXQ_SNOOP_REG(queue), MV_PP2_SNOOP_PKT_SIZE_MASK | MV_PP2_SNOOP_BUF_HDR_MASK);
-	}
+	if (mvPp2HalData.iocc)
+		for (i = 0; i < pPortCtrl->rxqNum; i++) {
+			queue = mvPp2LogicRxqToPhysRxq(port, i);
+			mvPp2WrReg(MV_PP2_RXQ_SNOOP_REG(queue), MV_PP2_SNOOP_PKT_SIZE_MASK | MV_PP2_SNOOP_BUF_HDR_MASK);
+		}
 
 	/* At default, mask all interrupts to all cpus */
 	for (i = 0; i < mvPp2HalData.maxCPUs; i++)

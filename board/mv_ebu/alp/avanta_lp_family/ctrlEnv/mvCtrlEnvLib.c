@@ -625,7 +625,7 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *config)
 	MV_BOARD_TWSI_CLASS twsiClass = (isEepromEnabled ? BOARD_DEV_TWSI_EEPROM : BOARD_DEV_TWSI_IO_EXPANDER);
 
 	status1 = mvBoardTwsiGet(twsiClass, 0, 0, &config[0]);		/* EEPROM/Dip Switch Reg#0 */
-	status2 = mvBoardTwsiGet(twsiClass, 0, 0, &config[1]);		/* EEPROM/Dip Switch Reg#1 */
+	status2 = mvBoardTwsiGet(twsiClass, 0, 1, &config[1]);		/* EEPROM/Dip Switch Reg#1 */
 
 	if (status1 != MV_OK || status2 != MV_OK) {
 		DB(mvOsPrintf("%s: Error: mvBoardTwsiGet from EEPROM/Dip Switch failed\n", __func__));
@@ -633,7 +633,15 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *config)
 	}
 
 	if (boardId == DB_6660_ID) { /* DB-6660 has another register for board configuration */
-		if (isEepromEnabled == MV_OK)
+		/*
+		 * Workaround for DIP Switch IO Expander 0x21 bug in DB-6660 board
+		 * Bug: Pins at IO expander 0x21 are reversed (only on DB-6660)
+		 * Solution: reverse bits after reading IO expander
+		 */
+		config[0] = mvReverseBits(config[0]);
+		config[1] = mvReverseBits(config[1]);
+
+		if (isEepromEnabled == MV_TRUE)
 			status1 = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 2, &config[2]);	/* EEPROM Reg#2 */
 		else
 			status1 = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 1, 0, &config[2]);	/* Dip Switch Reg#1 */

@@ -47,6 +47,8 @@
 #define MV_BOARD_REFCLK (mvCpuL2ClkGet() / 2)
 #define READ_TIMER (mvCntmrRead(UBOOT_CNTR) / (MV_BOARD_REFCLK / 1000))
 
+extern MV_U32 mvCpuL2ClkGet(MV_VOID);
+
 static ulong timestamp;
 static ulong lastdec;
 extern MV_U32 mvBoardTclkGet(MV_VOID);

@@ -43,8 +43,8 @@
 #include "mvOs.h"
 #include "cntmr/mvCntmr.h"
 #include "cntmr/mvCntmrRegs.h"
-#include "cpu/mvCpu.h"
-#define MV_BOARD_REFCLK mvBoardTclkGet()
+/* Global timer source clock is the Punit clock (which is L2 clock divided by 2) */
+#define MV_BOARD_REFCLK (mvCpuL2ClkGet() / 2)
 #define READ_TIMER (mvCntmrRead(UBOOT_CNTR) / (MV_BOARD_REFCLK / 1000))
 
 static ulong timestamp;

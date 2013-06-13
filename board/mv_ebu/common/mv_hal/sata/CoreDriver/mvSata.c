@@ -5283,30 +5283,48 @@ MV_BOOLEAN mvSataIsStorageDeviceConnected(MV_SATA_ADAPTER *pAdapter, MV_U8 chann
 			break;
 		}
 	case MV_PHY_DET_STATE_DEVICE_AND_PHY_COM:
+		/*for Avanta LP 6660 check HD type GEN1 or GEN2*/
 		if ((pAdapter->chipIs66XXX0 == MV_TRUE) ||
-			(pAdapter->chipIs672XX0 == MV_TRUE)) {
-			/* for Avanta LP 6660 check HD GEN1 or GEN2 */
+#ifdef ERRATA_GL_3651961
+    /* Using SATA II 3.0 Gbps Host with 1.5 Gbps Device */
+		    (pAdapter->chipIs62X1Z0 == MV_TRUE) ||
+#endif
+		    (pAdapter->chipIs672XX0 == MV_TRUE)) {
 			det = (MV_REG_READ_DWORD(pAdapter->adapterIoBaseAddress, SStatusOffset) & 0xf0)>>4;
 			if ((det == 1) && (pAdapter->sataAdapterGeneration >= MV_SATA_GEN_II)) {
-				/* HD deteced to GEN1 set SATA speed configuration from GEN2 to GEN1 */
+				/* HD deteced to GEN1 --> set SATA speed configuration from GEN2 to GEN1 */
 				MV_U32 regVal;
 				mvOsSemTake(&pAdapter->semaphore);
 				regVal = MV_REG_READ_DWORD(pAdapter->adapterIoBaseAddress,
-								getEdmaRegOffset(channelIndex) +
-								MV_SATA_II_SATA_CONFIG_REG_OFFSET);
-				regVal &= ~MV_BIT7;	/* Disable GEn II */
-				MV_REG_WRITE_DWORD(pAdapter->adapterIoBaseAddress, getEdmaRegOffset(channelIndex) +
-							MV_SATA_II_SATA_CONFIG_REG_OFFSET, regVal);
-
-				SStatusOffset = pAdapter->adapterIoBaseAddress & 0xff000000; /* get base address */
-				det = MV_REG_READ_DWORD(SStatusOffset, COMMON_PHY_CONFIGURATION1_REG_OFFSET);
-				det &= ~(0xFF << 22); /* set SERDES lan2 configuration to GEN1  */
-				MV_REG_WRITE_DWORD(SStatusOffset, COMMON_PHY_CONFIGURATION1_REG_OFFSET, det);
+							getEdmaRegOffset(channelIndex) +
+							MV_SATA_II_SATA_CONFIG_REG_OFFSET);
+				regVal &= ~MV_BIT7;		/* Disable GEn II */
+				MV_REG_WRITE_DWORD(pAdapter->adapterIoBaseAddress,
+						getEdmaRegOffset(channelIndex) +
+						MV_SATA_II_SATA_CONFIG_REG_OFFSET,
+						regVal);
+				if ((pAdapter->chipIs66XXX0 == MV_TRUE) ||
+					(pAdapter->chipIs672XX0 == MV_TRUE)) {
+					/* SStatusOffset get base address */
+					SStatusOffset = pAdapter->adapterIoBaseAddress & 0xff000000;
+					det = MV_REG_READ_DWORD(SStatusOffset, COMMON_PHY_CONFIGURATION1_REG_OFFSET);
+					det &= ~(0xFF << 22); /* set SERDES lan2 configuration to GEN1  */
+					MV_REG_WRITE_DWORD(SStatusOffset, COMMON_PHY_CONFIGURATION1_REG_OFFSET, det);
+				}
+				if (pAdapter->chipIs62X1Z0 == MV_TRUE) {
+					det = MV_REG_READ_DWORD(pAdapter->adapterIoBaseAddress,
+							getEdmaRegOffset(channelIndex) +
+							MV_SATA_II_LP_EXT_CTRL_REG_OFFSET);
+					det &= ~(0x1fe0); /* set PIN_PHY_GEN_RX/TX to GEN1  */
+					MV_REG_WRITE_DWORD(pAdapter->adapterIoBaseAddress,
+							   getEdmaRegOffset(channelIndex) +
+							   MV_SATA_II_LP_EXT_CTRL_REG_OFFSET,
+							   det);
+				}
 				_channelHardReset(pAdapter, channelIndex);
 				/* If interface is already active, then device detection is needed */
 				if (pAdapter->staggaredSpinup[channelIndex] == MV_TRUE)
 					_establishSataComm(pAdapter, channelIndex);
-
 				mvOsSemRelease(&pAdapter->semaphore);
 			}
 		}

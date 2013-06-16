@@ -106,6 +106,30 @@ MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
 /****************************  function implementation *****************************************/
 
 /*******************************************************************************
+* mvReverseBits
+*
+* DESCRIPTION:
+*       This function Reverts the direction of the bits (LSB to MSB and vice versa)
+*
+* INPUT:
+*	num - MV_U8 number to revert
+*
+* OUTPUT:
+*       Reverted number
+*
+* RETURN:
+*	None
+*
+*******************************************************************************/
+static MV_U8 mvReverseBits(MV_U8 num)
+{
+	num = (num & 0xF0) >> 4 | (num & 0x0F) << 4;
+	num = (num & 0xCC) >> 2 | (num & 0x33) << 2;
+	num = (num & 0xAA) >> 1 | (num & 0x55) << 1;
+	return num;
+}
+
+/*******************************************************************************
 * mvBoardIdGet - Get Board model
 *
 * DESCRIPTION:
@@ -203,7 +227,8 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *tempVal)
 
     return MV_OK;
 }
-/*******************************************************************************
+
+/*****************************************************************:**************
 * mvCtrlSatrInit
 *
 * DESCRIPTION: read relevant board configuration (using TWSI/EEPROM access)
@@ -233,6 +258,13 @@ MV_VOID mvCtrlSatrInit(void)
 
 	/*Read rest of Board Configuration, EEPROM / Dip Switch access read : */
 	if (mvCtrlBoardConfigGet(configVal) == MV_OK) {
+		/*
+		 * Workaround for DIP Switch IO Expander 0x21 bug in DB-6660 board
+		 * Bug: Pins at IO expander 0x21 are reversed (only on DB-6660)
+		 * Solution: reverse bits after reading IO expander
+		 */
+		configVal[0] = mvReverseBits(configVal[0]);
+		configVal[1] = mvReverseBits(configVal[1]);
 		tmp = ((configVal[1] & 0x0c) >> 2);
 		switch (tmp) {
 		case 0: boardLaneConfig[1] = SERDES_UNIT_PEX; 	break;

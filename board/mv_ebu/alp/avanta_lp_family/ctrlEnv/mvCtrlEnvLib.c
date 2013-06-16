@@ -513,14 +513,15 @@ MV_U32 mvCtrlSysConfigGet(MV_CONFIG_TYPE_ID configField)
 	MV_BOARD_CONFIG_TYPE_INFO configInfo;
 
 	if (!mvBoardConfigAutoDetectEnabled()) {
-		mvOsPrintf("%s: Error reading board configuration - Auto detection is disabled\n", __func__);
+		mvOsPrintf("%s: Error  Failed to read board config (Auto detection disabled)\n", __func__);
 		return MV_ERROR;
 	}
 
 	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
 		mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
-		mvOsPrintf("%s: Error: Requested board config is not valid for this board(%d)\n", __func__, configField);
-		return -1;
+		mvOsPrintf("%s: Error: Requested board config is invalid for this board" \
+				" (%d)\n", __func__, configField);
+		return MV_ERROR;
 	}
 
 	return boardOptionsConfig[configField];

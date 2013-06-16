@@ -987,23 +987,15 @@ MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID)
 	MV_ETH_COMPLEX_TOPOLOGY mac0Config, mac1Config;
 
 	/* Ethernet Complex initialization : */
-	/* MAC0 */
+	/* MAC0/1 */
 	mac0Config = mvBoardMac0ConfigGet();
-	if (mac0Config != MV_ERROR)
-		ethComplexOptions |= mac0Config;
-	else {
-		mvOsPrintf("%s: Error: Ethernet Complex init failed (MAC0). Using default configuration.\n", __func__);
-		return MV_ERROR;
-	}
-
-	/* MAC1 */
 	mac1Config = mvBoardMac1ConfigGet();
-	if (mac1Config != MV_ERROR)
-		ethComplexOptions |= mac1Config;
-	else {
-		mvOsPrintf("%s: Error: Ethernet Complex init failed (MAC1). Using default configuration.\n", __func__);
+	if (mac0Config == MV_ERROR || mac1Config == MV_ERROR) {
+		mvOsPrintf("%s: Error: Using default configuration.\n\n", __func__);
 		return MV_ERROR;
 	}
+	ethComplexOptions |= mac0Config | mac1Config;
+
 	/* if MAC1 is NOT connected to PON SerDes --> connect PON MAC to to PON SerDes */
 	if ((ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES) == MV_FALSE)
 		ethComplexOptions |= MV_ETHCOMP_P2P_MAC_2_PON_ETH_SERDES;
@@ -1162,23 +1154,43 @@ MV_U32 mvBoardBootAttrGet(MV_U32 satrBootDeviceValue, MV_U8 attrNum)
 *******************************************************************************/
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet()
 {
-	MV_U32 sgmiiLane;
-	switch (mvCtrlSysConfigGet(MV_CONFIG_MAC0)) {
-	case 0x0:
-		return MV_ETHCOMP_GE_MAC0_2_SW_P6;
-	case 0x1:
-		return MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0;
-	case 0x2:
-		return MV_ETHCOMP_GE_MAC0_2_RGMII0;
-	case 0x3:
-		sgmiiLane = mvBoardLaneSGMIIGet();
-		if (sgmiiLane != MV_ERROR)
-			return sgmiiLane;
-		break;
+	MV_ETH_COMPLEX_TOPOLOGY sgmiiLane;
+	MV_STATUS isSgmiiLaneEnabled;
+	MV_U32 mac0Config = mvCtrlSysConfigGet(MV_CONFIG_MAC0);
+
+	if (mac0Config == MV_ERROR) {
+		mvOsPrintf("%s: Error: failed reading MAC0 connection board configuration" \
+				"\n", __func__);
+		return MV_ERROR;
 	}
 
-	mvOsPrintf("%s: Error: unexpected value for MAC0 or Serdes Lanes board configuration\n", __func__);
+	/*
+	 * if a Serdes lane is configured to SGMII, and conflicts MAC0 settings,
+	 * then the selected Serdes lane will be used (overriding MAC0 settings)
+	 */
+	isSgmiiLaneEnabled = mvBoardLaneSGMIIGet(&sgmiiLane);
+	if (isSgmiiLaneEnabled == MV_TRUE && mac0Config != MAC0_2_SGMII) {
+		mvOsPrintf("%s: Error: Board configuration conflict for MAC0 connection" \
+				" and Serdes Lanes.\n\n", __func__);
+		return sgmiiLane;
+	}
+
+	switch (mac0Config) {
+	case MAC0_2_SW_P6:
+		return MV_ETHCOMP_GE_MAC0_2_SW_P6;
+	case MAC0_2_GE_PHY_P0:
+		return MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0;
+	case MAC0_2_RGMII:
+		return MV_ETHCOMP_GE_MAC0_2_RGMII0;
+	case MAC0_2_SGMII:
+		if (isSgmiiLaneEnabled == MV_TRUE)
+			return sgmiiLane;
+	}
+
+	/* if MAC0 set to SGMII, but no Serdes lane selected, --> ERROR (use defaults) */
+	mvOsPrintf("%s: Error: Configuration conflict for MAC0 connection.\n", __func__);
 	return MV_ERROR;
+
 }
 
 /*******************************************************************************
@@ -1213,7 +1225,7 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet()
 		return MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3;
 		break;
 	default:
-		mvOsPrintf("%s: Error: unexpected value from mvCtrlConfigGet \n", __func__);
+		mvOsPrintf("%s: Error: Configuration conflict for MAC1 connection.\n", __func__);
 		return MV_ERROR;
 	}
 }
@@ -1231,34 +1243,56 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet()
 * OUTPUT:  None.
 *
 * RETURN:
-*       value =MV_ETH_COMPLEX_GE_MAC0_COMPHY_1/2/3 if lanes 1/2/3 are SGMII-0 (adaptively)
-*       or -1 if none of them is SGMII-0
+*      MV_TRUE if SGMII settings are valid and Enabled only for a single lane
 *
 *******************************************************************************/
-MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet()
+MV_BOOL mvBoardLaneSGMIIGet(MV_ETH_COMPLEX_TOPOLOGY *sgmiiConfig)
 {
-	MV_U32 laneConfig;
-	/* Lane 1 */
-	laneConfig = mvCtrlSysConfigGet(MV_CONFIG_LANE1);
-	if (laneConfig == MV_ERROR)
-		return MV_ERROR;
-	else if (laneConfig == 0x1)
-		return MV_ETHCOMP_GE_MAC0_2_COMPHY_1;
-	/* Lane 2 */
-	laneConfig = mvCtrlSysConfigGet(MV_CONFIG_LANE2);
-	if (laneConfig == MV_ERROR)
-		return MV_ERROR;
-	else if (laneConfig == 0x0)
-		return MV_ETHCOMP_GE_MAC0_2_COMPHY_2;
-	/* Lane 3 */
-	laneConfig = mvCtrlSysConfigGet(MV_CONFIG_LANE3);
-	if (laneConfig == MV_ERROR)
-		return MV_ERROR;
-	else if (laneConfig == 0x1)
-		return MV_ETHCOMP_GE_MAC0_2_COMPHY_3;
+	MV_U32 laneConfig = 0;
+	MV_BOOL isSgmiiLaneEnabled = MV_FALSE;
 
-	mvOsPrintf("%s: Error: unexpected value for Serdes Lane board configuration\n", __func__);
-	return MV_ERROR;
+	if (sgmiiConfig == NULL) {
+		mvOsPrintf("%s: Error: NULL pointer parameter\n", __func__);
+		return MV_FALSE;
+	}
+
+	/* Serdes lane board configuration is only for DB-6660  */
+	if (mvBoardIdGet() != DB_6660_ID)
+		return MV_FALSE;
+
+	/* Lane 1 */
+	if (mvCtrlSysConfigGet(MV_CONFIG_LANE1) == 0x1) {
+		laneConfig = MV_ETHCOMP_GE_MAC0_2_COMPHY_1;
+		isSgmiiLaneEnabled = MV_TRUE;
+	}
+	/* Lane 2 */
+	if (mvCtrlSysConfigGet(MV_CONFIG_LANE2) == 0x0) {
+		if (isSgmiiLaneEnabled == MV_FALSE) {
+			laneConfig = MV_ETHCOMP_GE_MAC0_2_COMPHY_2;
+			isSgmiiLaneEnabled = MV_TRUE;
+		} else /* SGMII was already set in the previous lanes */
+			laneConfig = -1;
+	}
+	/* Lane 3 */
+	if (mvCtrlSysConfigGet(MV_CONFIG_LANE3) == 0x1) {
+		if (isSgmiiLaneEnabled == MV_FALSE) {
+			laneConfig = MV_ETHCOMP_GE_MAC0_2_COMPHY_3;
+		} else /* SGMII was already set in the previous lanes */
+			laneConfig = -1;
+	}
+
+	/* if no Serdes lanes are configured to SGMII */
+	if (laneConfig == 0)
+		return MV_FALSE;
+
+	/* if more then 1 Serdes lanes are configured to SGMII */
+	if (laneConfig == -1) {
+		mvOsPrintf("%s: Error: Only one Serdes lanes can be configured to SGMII\n\n", __func__);
+		return MV_FALSE;
+	}
+
+	*sgmiiConfig = laneConfig;
+	return MV_TRUE;
 }
 
 /*******************************************************************************
@@ -1591,7 +1625,7 @@ MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId)
 }
 
 /*******************************************************************************
-* mvBoardMppModuleTypePrint
+* mvBoardConfigurationPrint
 *
 * DESCRIPTION:
 *	Print on-board detected modules.
@@ -1606,7 +1640,7 @@ MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId)
 *	None.
 *
 *******************************************************************************/
-MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
+MV_VOID mvBoardConfigurationPrint(MV_VOID)
 {
 	MV_U32 ethConfig = mvBoardEthComplexConfigGet();
 
@@ -1619,6 +1653,15 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 	/* LCD DVI Module */
 	if (mvBoardIsLcdDviModuleConnected())
 		mvOsOutput("       LCD DVI module.\n");
+
+	/* Serdex configuration */
+	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_COMPHY_1)
+		mvOsOutput("       SGMII0 on MAC0 [Lane1]\n");
+	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_COMPHY_2)
+		mvOsOutput("       SGMII0 on MAC0 [Lane2]\n");
+	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_COMPHY_3)
+		mvOsOutput("       SGMII0 on MAC0 [Lane3]\n");
+
 
 	/* Switch Module */
 	if ((ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6) &&
@@ -1659,10 +1702,6 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 		if (ethConfig & MV_ETHCOMP_SW_P3_2_GE_PHY_P3)
 			mvOsOutput("       GE-PHY-3 Module on Switch port #3\n");
 	}
-
-
-
-
 }
 
 MV_VOID mvBoardOtherModuleTypePrint(MV_VOID)

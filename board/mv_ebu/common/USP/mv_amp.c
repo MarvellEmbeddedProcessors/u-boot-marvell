@@ -489,7 +489,7 @@ static void mvWakeCpuToFunc(int cpu_id, void *func_addr)
 	MV_REG_WRITE(CPU_RESUME_ADDR_REG(cpu_id), (MV_U32)func_addr);
 
 	/* Release hanging core by writing to reset register */
-	MV_REG_WRITE(CPU_RESET_REG(cpu_id), 0);
+	MV_REG_WRITE(CPU_SOFT_RESET_REG(cpu_id), 0);
 }
 
 #define AXP_CPU_DIVCLK_CTRL0			0x18700

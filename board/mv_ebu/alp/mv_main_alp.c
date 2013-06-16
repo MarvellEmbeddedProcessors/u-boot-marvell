@@ -1057,7 +1057,7 @@ int misc_init_r(void)
 	mvBoardDebugLed(6);
 
 	/* Prints the modules detected */
-	mvBoardMppModuleTypePrint();
+	mvBoardConfigurationPrint();
 	mvBoardOtherModuleTypePrint();
 #endif
 

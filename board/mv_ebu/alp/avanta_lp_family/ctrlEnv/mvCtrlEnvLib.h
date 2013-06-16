@@ -202,6 +202,13 @@ typedef enum {
 } MV_ETH_COMPLEX_TOPOLOGY;
 
 typedef enum {
+	MAC0_2_SW_P6		=	0x0,
+	MAC0_2_GE_PHY_P0	=	0x1,
+	MAC0_2_RGMII		=	0x2,
+	MAC0_2_SGMII		=	0x3,
+} MV_ETH_MAC0_CONFIG;
+
+typedef enum {
 	EPM_DEFAULT = 0x0,      /* RGMII */
 	EPM_MAC0_MII = 0x01,
 	EPM_MAC1_MII = 0x10,

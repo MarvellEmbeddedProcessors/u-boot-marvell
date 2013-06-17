@@ -175,5 +175,9 @@ void mvBoardEgigaPhyInit(void)
 			mvEthPhyInit(i, MV_FALSE);
 		}
 	}
+#elif defined(MV88F672X)
+	mvSysEthPhyInit();
+	mvEthPhyInit(0, MV_FALSE);
+	mvEthPhyInit(1, MV_FALSE);
 #endif
 }

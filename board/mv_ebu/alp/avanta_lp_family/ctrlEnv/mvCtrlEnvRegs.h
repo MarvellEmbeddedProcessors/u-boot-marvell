@@ -314,6 +314,7 @@ typedef enum _mvTargetId {
 	DRAM_TARGET_ID   = 0,  /* Port 0  -> DRAM interface             */
 	DEV_TARGET_ID    = 1,  /* Port 1  -> Device bus, BootROM, SPI, UART,
 				*	     GPIO, MPP, and Miscellaneous */
+	USB3_TARGET_ID   = 5,  /* Port 5  -> USB3 Unit,			*/
 	PEX_TARGET_ID    = 4,  /* Port 4  -> PCI Express 0 and 1        */
 	CRYPT_TARGET_ID  = 9,  /* Port 9  -> Crypto Engine SRAM         */
 	PP2_TARGET_ID = 15,    /* Port 12 -> PP2 Unit                   */

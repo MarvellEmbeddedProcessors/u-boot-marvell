@@ -2101,4 +2101,65 @@ err_cfg:
 
 }
 
+/*******************************************************************************
+* mvCtrlGetJuncTemp
+*
+* DESCRIPTION:
+*       Read temperature, calibrate at first time the TSEN
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Tj value.
+*******************************************************************************/
+MV_U32 mvCtrlGetJuncTemp(MV_VOID)
+{
+	MV_32 reg = 0;
+
+	/* init the TSEN sensor once */
+	if ((MV_REG_READ(TSEN_CONF_REG) & TSEN_CONF_OTF_CALIB_MASK) == 0) {
+		MV_REG_BIT_SET(TSEN_CONF_REG, TSEN_CONF_OTF_CALIB_MASK);
+
+		reg = MV_REG_READ(TSEN_CONF_REG);
+		reg &= ~(TSEN_CONF_REF_CAL_MASK);
+		reg |= (0xf1 << 11);
+		MV_REG_WRITE(TSEN_CONF_REG, reg);
+
+		/* Do not start calibration sequence */
+		MV_REG_BIT_RESET(TSEN_CONF_REG, TSEN_CONF_START_CALIB_MASK);
+
+		/* Initiate Soft Reset*/
+		MV_REG_BIT_SET(TSEN_CONF_REG, TSEN_CONF_SOFT_RESET_MASK);
+		mvOsDelay(1);
+
+		/* Exit from Soft Reset*/
+		MV_REG_BIT_RESET(TSEN_CONF_REG, TSEN_CONF_SOFT_RESET_MASK);
+		mvOsDelay(10);
+	}
+
+	reg = MV_REG_READ(TSEN_STATUS_REG);
+	reg = (reg & TSEN_STATUS_TEMP_OUT_MASK) >> TSEN_STATUS_TEMP_OUT_OFFSET;
+#ifdef ERRATA_FE_982377
+	{ /* Internal CPU Temperature Read Out Stability */
+		int reg1, reg2, reg3, i;
+		for (i = 0; i < 20; i++) {
+			reg1 = MV_REG_READ(TSEN_STATUS_REG);
+			reg1 = (reg1 & TSEN_STATUS_TEMP_OUT_MASK) >> TSEN_STATUS_TEMP_OUT_OFFSET;
+			reg2 = MV_REG_READ(TSEN_STATUS_REG);
+			reg2 = (reg2 & TSEN_STATUS_TEMP_OUT_MASK) >> TSEN_STATUS_TEMP_OUT_OFFSET;
+			reg3 = MV_REG_READ(TSEN_STATUS_REG);
+			reg3 = (reg3 & TSEN_STATUS_TEMP_OUT_MASK) >> TSEN_STATUS_TEMP_OUT_OFFSET;
+			if ((reg1 == reg2) && (reg1 == reg3)) {
+				reg = reg1;
+				break;
+			}
+		}
+	}
+#endif
+	return (3153000 - (10000 * reg)) / 13825;
+}
 

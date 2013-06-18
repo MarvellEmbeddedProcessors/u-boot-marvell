@@ -1598,3 +1598,43 @@ MV_BOOL mvCtrlDDRECC(MV_VOID)
 
 	return (reg & (0x1 << REG_SDRAM_CONFIG_ECC_OFFS)) ? MV_TRUE : MV_FALSE;
 }
+
+
+/*******************************************************************************
+* mvCtrlGetJuncTemp
+*
+* DESCRIPTION:
+*       Read temperature, calibrate at first time the TSEN
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Tj value.
+*******************************************************************************/
+MV_U32 mvCtrlGetJuncTemp(MV_VOID)
+{
+	/*Used Hard Coded values, TODO sync with Spec*/
+	MV_U32 reg = 0;
+
+	/* init the TSEN sensor once */
+	if ((MV_REG_READ(TSEN_STATE_REG) & TSEN_STATE_MASK) == 0) {
+		MV_REG_BIT_RESET(TSEN_STATE_REG, TSEN_STATE_MASK);
+
+		MV_REG_WRITE(TSEN_STATE_REG, 0x8011E214);
+
+		reg = MV_REG_READ(TSEN_CONF_REG);
+
+		reg = 0x00a80909;
+		MV_REG_WRITE(TSEN_CONF_REG, reg);
+		mvOsDelay(10);
+	}
+
+	reg = MV_REG_READ(TSEN_STATUS_REG);
+	reg = (reg & TSEN_STATUS_TEMP_OUT_MASK) >> TSEN_STATUS_TEMP_OUT_OFFSET;
+
+	return (3171900 - (10000 * reg)) / 13553;
+}

@@ -155,34 +155,7 @@ U_BOOT_CMD(
 *****************************************************************************/
 int temperature_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	MV_32 reg = 0;
-	MV_32 value = 0;
-
-	/* init the TSEN sensor once */
-	if ((MV_REG_READ(TSEN_CONF_REG) & TSEN_CONF_OTF_CALIB_MASK) == 0) {
-		MV_REG_BIT_SET(TSEN_CONF_REG, TSEN_CONF_OTF_CALIB_MASK);
-
-		reg = MV_REG_READ(TSEN_CONF_REG);
-		reg &= ~(TSEN_CONF_REF_CAL_MASK);
-		reg |= (0xf1 << 11);
-		MV_REG_WRITE(TSEN_CONF_REG, reg);
-
-        /* Do not start calibration sequence */
-		MV_REG_BIT_RESET(TSEN_CONF_REG, TSEN_CONF_START_CALIB_MASK);
-
-		/* Initiate Soft Reset*/
-		MV_REG_BIT_SET(TSEN_CONF_REG, TSEN_CONF_SOFT_RESET_MASK);
-		udelay(1000);
-
-		/* Exit from Soft Reset*/
-        MV_REG_BIT_RESET(TSEN_CONF_REG, TSEN_CONF_SOFT_RESET_MASK);
-		udelay(10000);
-	}
-
-	reg = MV_REG_READ(TSEN_STATUS_REG);
-	reg = (reg & TSEN_STATUS_TEMP_OUT_MASK) >> TSEN_STATUS_TEMP_OUT_OFFSET;
-	value = ((3153000 - (10000 * reg)) / 13825);
-	printf("Junction Temprature (Tj) = %d\n", value);
+	printf("Junction Temprature (Tj) = %d\n", mvCtrlGetJuncTemp());
 
 	return 1;
 }

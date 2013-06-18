@@ -246,15 +246,16 @@ typedef struct _boardSerdesConf {
 } MV_SERDES_CFG;
 
 /* Termal Sensor Registers */
-#define TSEN_STATUS_REG                         0x184C4
-#define TSEN_STATUS_TEMP_OUT_OFFSET             1
-#define TSEN_STATUS_TEMP_OUT_MASK               (0x1FF << TSEN_STATUS_TEMP_OUT_OFFSET)
+#define TSEN_STATE_REG							0xE8070
+#define TSEN_STATE_OFFSET						31
+#define TSEN_STATE_MASK							(0x1 << TSEN_STATE_OFFSET)
 
-#define TSEN_CONF_REG                           0x184D0
-#define TSEN_CONF_OTF_CALIB_MASK                (0x1 << 30)
-#define TSEN_CONF_REF_CAL_MASK                  (0x1FF << 11)
-#define TSEN_CONF_SOFT_RESET_MASK               (0x1 << 1)
-#define TSEN_CONF_START_CALIB_MASK              (0x1 << 25)
+#define TSEN_CONF_REG							0xE8074
+#define TSEN_CONF_OTF_CALIB_MASK				(0x1 << 8)
+
+#define TSEN_STATUS_REG							0xE8078
+#define TSEN_STATUS_TEMP_OUT_OFFSET				0
+#define TSEN_STATUS_TEMP_OUT_MASK				(0x1FF << TSEN_STATUS_TEMP_OUT_OFFSET)
 
 /* BIOS Modes related defines */
 #define SAR_CPU_FAB_GET(cpu, fab)       (((cpu & 0x7) << 21) | ((fab & 0xF) << 24))
@@ -276,6 +277,7 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *tempVal);
 MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit);
 MV_STATUS mvCtrlEnvInit(MV_VOID);
 MV_U32    mvCtrlMppRegGet(MV_U32 mppGroup);
+MV_U32 mvCtrlGetJuncTemp(MV_VOID);
 
 #if defined(MV_INCLUDE_PEX)
 MV_U32 mvCtrlPexMaxIfGet(MV_VOID);

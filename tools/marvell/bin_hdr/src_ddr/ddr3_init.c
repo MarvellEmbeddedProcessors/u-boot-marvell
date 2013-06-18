@@ -105,7 +105,7 @@ MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs);
 #endif
 MV_U32 mvBoardIdGet(MV_VOID);
 
-
+extern MV_VOID ddr3SetSwWlRlDebug(MV_U32);
 extern MV_VOID ddr3SetPbs(MV_U32);
 extern MV_VOID ddr3SetLogLevel(MV_U32 nLogLevel);
 static MV_U32 gLogLevel = 0;
@@ -331,9 +331,10 @@ MV_STATUS ddr3Init(void)
 
 	ddr3LogLevelInit();
 	ddr3SetPbs(DDR3_PBS);
+    ddr3SetSwWlRlDebug(DDR3_RUN_SW_WHEN_HW_FAIL);
 
 	status = ddr3Init_();
-//	DEBUG_INIT_S("Status = ");
+/*	DEBUG_INIT_S("Status = ");*/
 	if (status == MV_DDR3_TRAINING_ERR_BAD_SAR)
 		DEBUG_INIT_S("DDR3 Training Error: Bad sample at reset");
 	if (status == MV_DDR3_TRAINING_ERR_BAD_DIMM_SETUP)
@@ -353,12 +354,10 @@ MV_STATUS ddr3Init(void)
 	if (status == MV_DDR3_TRAINING_ERR_BUS_WIDTH_NOT_MATCH)
 		DEBUG_INIT_S("DDR3 Training Error: bus width no match");
 
-	if (status > MV_DDR3_TRAINING_ERR_HW_FAIL_BASE)
-		DEBUG_INIT_C("DDR3 Training Error: HW Failure 0x", status, 8);
+	if (status > MV_DDR3_TRAINING_ERR_HW_FAIL_BASE) {
+        DEBUG_INIT_C("DDR3 Training Error: HW Failure 0x", status, 8);
+    }
 
-
-//	if ( status == MV_OK) DEBUG_INIT_S("MV_OK");
-//	DEBUG_INIT_S("\n");
 	return status;
 }
 
@@ -453,13 +452,13 @@ MV_U32 ddr3Init_(void)
 #endif
 
 	ddr3PrintVersion();
-	DEBUG_INIT_S("1 \n");
-	/* Lib version 5.0.1 */
+	DEBUG_INIT_S("5 \n");
+	/* Lib version 5.0.5 */
 
 	uiFabOpt = ddr3GetFabOpt();
-	if (bPLLWAPatch)
+	if (bPLLWAPatch){
 		DEBUG_INIT_C("DDR3 Training Sequence - Fabric DFS to: ", uiFabOpt, 1);
-
+	}
 	/* Switching CPU to MRVL ID */
 	socNum = (MV_REG_READ(REG_SAMPLE_RESET_HIGH_ADDR) & SAR1_CPU_CORE_MASK) >> SAR1_CPU_CORE_OFFSET;
 	switch (socNum) {

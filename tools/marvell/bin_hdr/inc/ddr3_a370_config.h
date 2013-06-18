@@ -71,8 +71,10 @@ Level 1: Provides the D-Unit setup (SPD/Static configuration)
 Level 2: Provides the windows margin as a results of DQS centeralization
 Level 3: Provides the windows margin of each DQ as a results of DQS centeralization */
 
-#define DDR3_LOG_LEVEL  0
-#define DDR3_PBS        0
+#define DDR3_LOG_LEVEL              0
+#define DDR3_PBS                    0
+/* this flag allows the execution of SW WL/RL oppon HW failure */
+#define DDR3_RUN_SW_WHEN_HW_FAIL    1
 
 /* General Configurations */
 /* The following parameters are required for proper setup */

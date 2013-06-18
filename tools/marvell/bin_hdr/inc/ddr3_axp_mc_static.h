@@ -102,7 +102,7 @@ MV_DRAM_MC_INIT ddr3_A0_db_667[MV_MAX_DDR3_STATIC_SIZE] =
 
  {0x00001494, 0x00010000}, 	/*DDR SDRAM ODT Control (Low) Register */
  {0x00001498, 0x00000000}, 	/*DDR SDRAM ODT Control (High) Register */
- {0x0000149C, 0x00000001}, 	/*DDR Dunit ODT Control Register */
+ {0x0000149C, 0x00000301}, 	/*DDR Dunit ODT Control Register */
 
  {0x000014C0, 0x192434e9}, 	/* DRAM address and Control Driving Strenght  */
  {0x000014C4, 0x092434e9}, 	/* DRAM Data and DQS Driving Strenght  */
@@ -161,7 +161,7 @@ MV_DRAM_MC_INIT ddr3_A0_AMC_667[MV_MAX_DDR3_STATIC_SIZE] =
 
  {0x00001494, 0x00010000}, 	/*DDR SDRAM ODT Control (Low) Register */
  {0x00001498, 0x00000000}, 	/*DDR SDRAM ODT Control (High) Register */
- {0x0000149C, 0x00000001}, 	/*DDR Dunit ODT Control Register */
+ {0x0000149C, 0x00000301}, 	/*DDR Dunit ODT Control Register */
 
  {0x000014C0, 0x192434e9}, 	/* DRAM address and Control Driving Strenght  */
  {0x000014C4, 0x092434e9}, 	/* DRAM Data and DQS Driving Strenght  */
@@ -212,7 +212,7 @@ MV_DRAM_MC_INIT ddr3_A0_db_400[MV_MAX_DDR3_STATIC_SIZE] =
 
 {0x00001494, 0x00010000},	/*DDR SDRAM ODT Control (Low) Register */
 {0x00001498, 0x00000000},	/*DDR SDRAM ODT Control (High) Register */
-{0x0000149C, 0x00000001},	/*DDR Dunit ODT Control Register */
+{0x0000149C, 0x00000301},	/*DDR Dunit ODT Control Register */
 
 {0x000014a0, 0x000002A9},
 {0x000014a8, 0x00000101}, 	/*2:1 */
@@ -274,7 +274,7 @@ MV_DRAM_MC_INIT ddr3_Z1_db_600[MV_MAX_DDR3_STATIC_SIZE] =
 
  {0x00001494, 0x00010000}, 	/*DDR SDRAM ODT Control (Low) Register */
  {0x00001498, 0x00000000}, 	/*DDR SDRAM ODT Control (High) Register */
- {0x0000149C, 0x00000001}, 	/*DDR Dunit ODT Control Register */
+ {0x0000149C, 0x00000301}, 	/*DDR Dunit ODT Control Register */
 
  {0x000014C0, 0x192424C8}, 	/* DRAM address and Control Driving Strenght  */
  {0x000014C4, 0xEFB24C8}, 	/* DRAM Data and DQS Driving Strenght  */
@@ -325,7 +325,7 @@ MV_DRAM_MC_INIT ddr3_Z1_db_300[MV_MAX_DDR3_STATIC_SIZE] =
 
  {0x00001494, 0x00010000},	/*DDR SDRAM ODT Control (Low) Register */
  {0x00001498, 0x00000000},	/*DDR SDRAM ODT Control (High) Register */
- {0x0000149C, 0x00000001},	/*DDR Dunit ODT Control Register */
+ {0x0000149C, 0x00000301},	/*DDR Dunit ODT Control Register */
 
  {0x000014C0, 0x192424C8}, 	/* DRAM address and Control Driving Strenght  */
  {0x000014C4, 0xEFB24C8}, 	/* DRAM Data and DQS Driving Strenght  */

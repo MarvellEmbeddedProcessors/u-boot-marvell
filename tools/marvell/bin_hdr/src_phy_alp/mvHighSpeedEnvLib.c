@@ -80,7 +80,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 
-#define SERDES_VERION   "0.1.1"
+#define SERDES_VERION   "1.0.0"
 #define ENDED_OK "High speed PHY - Ended Successfully\n"
 
 
@@ -432,6 +432,30 @@ MV_U32 mvCtrlSerdesMaxLanesGet(MV_VOID){
         }
 }
 /*******************************************************************************
+* mvCtrlRevGet - Get Marvell controller device revision number
+*
+* DESCRIPTION:
+*       This function returns 8bit describing the device revision as defined
+*       Revision ID Register.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       8bit desscribing Marvell controller revision number
+*
+*******************************************************************************/
+MV_U8 mvCtrlRevisionGet(MV_VOID)
+{
+             MV_U8 value;
+
+             value = MV_REG_READ(DEV_VERSION_ID_REG);
+             return  ((value & (REVISON_ID_MASK) ) >> REVISON_ID_OFFS);
+}
+/*******************************************************************************
 * mvGetSerdesLaneCfg
 *
 * DESCRIPTION: This function returns the serdes unit index from the boardLaneConfig
@@ -464,17 +488,33 @@ MV_U32 mvCtrlSerdesMaxLanesGet(MV_VOID){
 *       Register value
 *
 *******************************************************************************/
-#define	AVANTA_Z1
+/*#define	AVANTA_Z1
 #ifdef AVANTA_Z1
 #define	SERDES_LAN2_OFFS	2
 #define	SERDES_LAN3_OFFS	3
 #else
 #define	SERDES_LAN2_OFFS	3
 #define	SERDES_LAN3_OFFS	4
-#endif
+#endif*/
 MV_U32 GetLaneSelectorConfig(void)
 {
     MV_U32 tmp,uiReg;
+    MV_U8 uiLan2Offs,uiLan3Offs;
+
+    switch(mvCtrlRevisionGet()) {
+        case TSMC_Z1:
+        case UMC_Z1:
+        case TSMC_Z1_GPON_METAL_FIX:
+             uiLan2Offs = 2;
+             uiLan3Offs = 3;
+             break;
+        case UMC_A0:
+             uiLan2Offs = 3;
+             uiLan3Offs = 4;
+             break;
+        default:
+            break;
+    }
 
     uiReg = 0x1; /* lane 0 is always PEX */
 
@@ -482,15 +522,12 @@ MV_U32 GetLaneSelectorConfig(void)
 	default:
 	case SERDES_UNIT_PEX:	tmp = 0;	break;
 	case SERDES_UNIT_SGMII: tmp = 1;	break;
-#ifndef AVANTA_Z1
 	case SERDES_UNIT_SATA:	tmp = 2;	break;
-#endif
 	}
     uiReg |= (tmp << 1); /* lane 1  */
 
-    uiReg |= (((mvGetSerdesLaneCfg(2) == SERDES_UNIT_SATA) ? 1 : 0)  << SERDES_LAN2_OFFS); /* lane 2  */
-    uiReg |= (((mvGetSerdesLaneCfg(3) == SERDES_UNIT_SGMII) ? 1 : 0)  << SERDES_LAN3_OFFS); /* lane 3  */
-
+    uiReg |= (((mvGetSerdesLaneCfg(2) == SERDES_UNIT_SATA) ? 1 : 0)  << uiLan2Offs); /* lane 2  */
+    uiReg |= (((mvGetSerdesLaneCfg(3) == SERDES_UNIT_SGMII) ? 1 : 0)  << uiLan3Offs); /* lane 3  */
 
     DEBUG_INIT_FULL_S(">>>>>>> after  GetLaneSelectorConfig, uiReg=0x");
     DEBUG_INIT_FULL_D(uiReg, 8);
@@ -641,6 +678,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
         switch(serdesLaneCfg){
             case SERDES_UNIT_USB3:
                 uiReg |= PHY_MODE_MASK;  /* PHY Mode = USB */
+                uiReg |= PIPE_SELECT_MASK ; /* Select USB3_PEX */
                 break;
             case SERDES_UNIT_PEX:
                 uiReg |= PIPE_SELECT_MASK ; /* Select USB3_PEX */

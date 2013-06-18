@@ -73,6 +73,8 @@ Level 3: Provides the windows margin of each DQ as a results of DQS centeralizat
 
 #define	DDR3_LOG_LEVEL	0
 #define DDR3_PBS        1
+/* this flag allows the execution of SW WL/RL oppon HW failure */
+#define DDR3_RUN_SW_WHEN_HW_FAIL    1
 
 /* General Configurations */
 /* The following parameters are required for proper setup */

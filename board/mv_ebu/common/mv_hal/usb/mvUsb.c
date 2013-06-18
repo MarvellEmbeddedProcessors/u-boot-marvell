@@ -183,27 +183,79 @@ int mvUsbBackVoltageUpdate(int dev, MV_U8 gppNo)
 }
 #endif /* MV_USB_VOLTAGE_FIX */
 
+
+/* USB Phy init specific for 40nm LP (88F6660) */
+MV_STATUS mvUsbPhy40nmLpInit(int dev)
+{
+	MV_U32 regVal;
+
+	/* Set the PLL clocks to 450 MHz. Our ref clock is 25 Mhz so to
+	 * achieve 480 MHz we set divider = 5 multiplier = 96 */
+	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 1));
+	regVal = (regVal & (~0x1FF)) | (96);
+	regVal = (regVal & (~0x1E00)) | (5 << 9);
+	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 1), regVal);
+
+	/* Turn on the PLL and wait 200 usec */
+	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 2));
+	regVal |= BIT13;
+	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 2), regVal);
+	mvOsUDelay(200);
+
+	/* Enable the analog part of the PHY */
+	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 13));
+	regVal |= BIT14;
+	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 13), regVal);
+	mvOsUDelay(200);
+
+	/* Turn on the VCO calibration */
+	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 2));
+	regVal |= BIT2;
+	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 2), regVal);
+	mvOsUDelay(1000);
+
+	/* Perform Impedance calibration for 40 usec */
+	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 4));
+	regVal |= BIT13;
+	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 4), regVal);
+	mvOsUDelay(40);
+
+	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 4));
+	regVal &= ~BIT13;
+	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 4), regVal);
+	mvOsUDelay(400);
+
+	/* Check if the PHY is ready */
+	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 2));
+	if ((regVal & BIT15) == 0) {
+		mvOsPrintf("Error: USB2 Phy NOT ready\n");
+		return MV_NOT_READY;
+	}
+
+	return MV_OK;
+}
+
 /* USB Phy init (change from defaults) specific for 40nm (78X30 78X60) */
 static int mvUsbPhy40nmInit(int dev)
 {
 	MV_U32 regVal;
 
-	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 3));
+	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 19));
 	regVal |= BIT15;
-	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 3), regVal);
+	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 19), regVal);
 	/*-------------------------------------------------*/
 
 	/******* Assert REG_RCAL_START in Channel REG 1 *******/
-	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 1));
+	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 17));
 	regVal |= BIT12;
-	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 1), regVal);
+	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 17), regVal);
 
 	/* Wait 40 usec */
 	mvOsUDelay(40);
 
-	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 1));
+	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 17));
 	regVal &= ~BIT12;
-	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 1), regVal);
+	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 17), regVal);
 	/*-------------------------------------------------*/
 
 /* BTS #231 - for KW40 only */
@@ -707,6 +759,73 @@ MV_STATUS mvUsbPllInit()
 	return 0;
 }
 /*******************************************************************************
+* mvUsbUtmiPhyInit - Initialize USB UTMI PHY
+*
+* DESCRIPTION:
+*       This function initialize USB UTMI PHY.
+*
+* INPUT:
+*       dev - The PHY number to initialize
+*       halData - Pointer to halData structure
+*
+* OUTPUT:
+*       status - status of the init operation
+*
+* RETURN:
+*       MV_ERROR if setting fail.
+*******************************************************************************/
+MV_STATUS mvUsbUtmiPhyInit(int dev, MV_USB_HAL_DATA *usbHalData)
+{
+	MV_STATUS status = MV_OK;
+
+	if ((usbHalData->ctrlModel == MV_78100_DEV_ID) ||
+		(usbHalData->ctrlModel == MV_78200_DEV_ID) ||
+		(usbHalData->ctrlModel == MV_76100_DEV_ID) ||
+		(usbHalData->ctrlModel == MV_6281_DEV_ID) ||
+		(usbHalData->ctrlModel == MV_6282_DEV_ID) ||
+		(usbHalData->ctrlModel == MV_6280_DEV_ID) ||
+		(usbHalData->ctrlModel == MV_6192_DEV_ID) ||
+		(usbHalData->ctrlModel == MV_6190_DEV_ID) ||
+		(usbHalData->ctrlModel == MV_6180_DEV_ID) ||
+		(usbHalData->ctrlModel == MV_6321_DEV_ID) ||
+		(usbHalData->ctrlModel == MV_6322_DEV_ID) ||
+		(usbHalData->ctrlModel == MV_6323_DEV_ID)) {
+
+		mvUsbPhy65nmNewInit(dev);
+
+	} else if ((usbHalData->ctrlModel == MV_78XX0_DEV_ID)) {
+
+		mvUsbPhy65nmInit(dev);
+
+	} else if (usbHalData->ctrlModel == MV_6183_DEV_ID) {
+
+		mvUsbPhy90nmInit(dev);
+
+	} else if ((usbHalData->ctrlModel == MV_6510_DEV_ID) ||
+		(usbHalData->ctrlModel == MV_6530_DEV_ID) ||
+		(usbHalData->ctrlModel == MV_6550_DEV_ID) ||
+		(usbHalData->ctrlModel == MV_6560_DEV_ID)) {
+
+		mvUsbPhy65nmNewInit(dev);
+
+	} else if ((usbHalData->ctrlFamily == MV_67XX) ||
+		(usbHalData->ctrlFamily == MV_78XX0)) {
+
+		if (mvUsbPhy40nmInit(dev))
+			status = MV_NOT_READY;
+
+	} else if ((usbHalData->ctrlFamily == MV_88F66X0) ||
+		   (usbHalData->ctrlFamily == MV_88F67X0)) {
+
+		status = mvUsbPhy40nmLpInit(dev);
+
+	} else
+		mvUsbPhyInit(dev);
+
+
+	return status;
+}
+/*******************************************************************************
 * mvUsbHalInit - Initialize USB engine
 *
 * DESCRIPTION:
@@ -790,49 +909,9 @@ MV_STATUS mvUsbHalInit(int dev, MV_BOOL isHost, MV_USB_HAL_DATA *halData)
 		MV_REG_WRITE(MV_USB_BRIDGE_IPG_REG(dev), regVal);
 	}
 #ifndef MV_USB_PHY_DONT_OVERRIDE
-
-    /********* Update USB PHY configuration **********/
-	if ((usbHalData.ctrlModel == MV_78100_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_78200_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_76100_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_6281_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_6282_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_6280_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_6192_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_6190_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_6180_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_6321_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_6322_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_6323_DEV_ID)) {
-
-		mvUsbPhy65nmNewInit(dev);
-
-	} else if ((usbHalData.ctrlModel == MV_78XX0_DEV_ID)) {
-
-		mvUsbPhy65nmInit(dev);
-
-	} else if (usbHalData.ctrlModel == MV_6183_DEV_ID) {
-
-		mvUsbPhy90nmInit(dev);
-
-	} else if ((usbHalData.ctrlModel == MV_6510_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_6530_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_6550_DEV_ID) ||
-		(usbHalData.ctrlModel == MV_6560_DEV_ID)) {
-
-		mvUsbPhy65nmNewInit(dev);
-
-/* 	mvUsbPhyKW6500Init(dev); */
-	} else if ((usbHalData.ctrlFamily==MV_67XX) ||
-		(usbHalData.ctrlFamily==MV_78XX0)) {
-
-		if (mvUsbPhy40nmInit(dev))
-			status = MV_NOT_READY;
-
-	} else
-		mvUsbPhyInit(dev);
-
+	status = mvUsbUtmiPhyInit(dev, &usbHalData);
 #endif
+
 	/* Set Mode register (Stop and Reset USB Core before) */
 	/* Stop the controller */
 	regVal = MV_REG_READ(MV_USB_CORE_CMD_REG(dev));

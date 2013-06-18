@@ -81,6 +81,7 @@ typedef struct {
 /* Functions */
 MV_STATUS	mvUsbPllInit(void);
 MV_STATUS	mvUsbHalInit(int dev, MV_BOOL isHost, MV_USB_HAL_DATA *halData);
+MV_STATUS	mvUsbUtmiPhyInit(int dev, MV_USB_HAL_DATA *halData);
 MV_U32		mvUsbGetCapRegAddr(int devNo);
 MV_U32		mvUsbGetCapRegAddr(int devNo);
 void		mvUsbDevResetComplete(int devNo);

@@ -207,7 +207,7 @@ static INLINE int mvPp2LogicRxqToPhysRxq(int port, int rxq)
 
 
 /************************** TXQ: Physical - Logical Mapping ******************************/
-#ifdef CONFIG_MV_PON
+#ifdef MV_PON_EXIST
 
 #define MV_PON_LOGIC_PORT_GET()			(mvPp2HalData.maxPort - 1)
 #define MV_PON_PORT(p)				((p) == MV_PON_LOGIC_PORT_GET())
@@ -238,7 +238,7 @@ static INLINE int mvPp2LogicRxqToPhysRxq(int port, int rxq)
 #define MV_PPV2_TXQ_LOGICAL_PORT(physTxq)	(physTxq / MV_ETH_MAX_TXQ)
 #define MV_PPV2_TXQ_LOGICAL_TXP(physTxq)	0
 
-#endif /* CONFIG_MV_PON */
+#endif /* MV_PON_EXIST */
 
 #define MV_PPV2_TXQ_LOGICAL_TXQ(physTxq)	(physTxq % MV_ETH_MAX_TXQ)
 #define MV_PP2_TXQ_TOTAL_NUM			(MV_PP2_TOTAL_TXP_NUM * MV_ETH_MAX_TXQ)

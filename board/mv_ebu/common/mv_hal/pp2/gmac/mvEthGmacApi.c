@@ -635,10 +635,8 @@ void mvEthMibCountersClear(int port)
 {
 	int i;
 
-#if defined(CONFIG_MV_PON) && !defined(MV_PON_MIB_SUPPORT)
 	if (MV_PON_PORT(port))
 		return;
-#endif /* CONFIG_MV_PON && !MV_PON_MIB_SUPPORT */
 
 	/* Perform dummy reads from MIB counters */
 	for (i = ETH_MIB_GOOD_OCTETS_RECEIVED_LOW; i < ETH_MIB_LATE_COLLISION; i += 4)

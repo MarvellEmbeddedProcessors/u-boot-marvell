@@ -871,7 +871,7 @@ void *mvPp2PortInit(int port, int firstRxq, int numRxqs, void *osHandle)
 	pCtrl->osHandle = osHandle;
 
 	/* associate TXQs to this port */
-#ifdef CONFIG_MV_PON
+#ifdef CONFIG_MV_INCLUDE_PON
 	pCtrl->txpNum = MV_PON_PORT(port) ? CONFIG_MV_PON_TCONTS : 1;
 #else
 	pCtrl->txpNum = 1;

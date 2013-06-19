@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-        this list of conditions and the following disclaimer.
+		this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+		used to endorse or promote products derived from this software without
+		specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -71,9 +71,12 @@ Level 1: Provides the D-Unit setup (SPD/Static configuration)
 Level 2: Provides the windows margin as a results of DQS centeralization
 Level 3: Provides the windows margin of each DQ as a results of DQS centeralization */
 
-#define DDR3_LOG_LEVEL      0
-#define DDR3_PBS            0
-#define DDR3_FAST_PATH_EN   1
+#define DDR3_LOG_LEVEL				0
+#define DDR3_PBS					0
+
+/* this flag allows the execution of SW WL/RL oppon HW failure */
+#define DDR3_RUN_SW_WHEN_HW_FAIL	1
+#define DDR3_FAST_PATH_EN			1
 
 
 #undef STATIC_TRAINING
@@ -133,7 +136,7 @@ Selects for DDR3/DDR3L/DDR3U RDIMM 1.5 V/1.35 V/1.25 V Applications") */
 #define RDIMM_RC10                              0x2
 #define RDIMM_RC11                              0x0
 
-#if defined(MIXED_DIMM_STATIC) || !defined (SPD_SUPPORT)
+#if defined(MIXED_DIMM_STATIC) || !defined(SPD_SUPPORT)
 #define DUNIT_STATIC
 #endif
 

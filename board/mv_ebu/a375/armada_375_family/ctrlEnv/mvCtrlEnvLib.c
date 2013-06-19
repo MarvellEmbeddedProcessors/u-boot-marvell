@@ -131,8 +131,31 @@ MV_U32 mvCtrlGetCpuNum(MV_VOID)
 	return 0;
 }
 
+/*******************************************************************************
+* mvCtrlIsValidSatR
+*
+* DESCRIPTION: check frequency modes table and verify current mode is supported
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*        MV_TRUE - if current cpu/ddr/l2 frequency mode is supported for board
+*
+*******************************************************************************/
 MV_BOOL mvCtrlIsValidSatR(MV_VOID)
 {
+	MV_U32 i, cpuFreqMode, maxFreqModes = mvBoardFreqModesNumGet();
+	MV_FREQ_MODE pFreqModes[] = MV_USER_SAR_FREQ_MODES;
+
+	cpuFreqMode =  mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
+
+	for (i = 0; i < maxFreqModes; i++) {
+		if (cpuFreqMode == pFreqModes[i].id)
+			return MV_TRUE;
+	}
+
 	return MV_FALSE;
 }
 
@@ -294,8 +317,8 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 		return MV_ERROR;
 	}
 
-	if (mvBoardSatrInfoGet(satrWriteField, &satrInfo) != MV_OK) {
-		mvOsPrintf("%s: mvBoardSarInfoGet failed: S@R config is not relevant for this board(%d)\n", __func__, satrWriteField);
+	if (mvBoardSatrInfoConfig(satrWriteField, &satrInfo, MV_FALSE) != MV_OK) {
+		mvOsPrintf("%s: Error: Requested S@R field is not relevant for this board\n", __func__);
 		return MV_ERROR;
 	}
 
@@ -304,6 +327,14 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 		mvOsPrintf("%s: Error: Read from S@R failed\n", __func__);
 		return MV_ERROR;
 	}
+
+	/* #1 Workaround for mirrored bits bug (for freq. mode SatR value only!)
+	 * Bug: all freq. mode bits are reversed when sampled at reset from I2C
+	 *		(caused due to a bug in board design)
+	 * Solution: reverse them before write to I2C
+	 *		(reverse only 5 bits - size of SatR field) */
+	if (satrWriteField == MV_SATR_WRITE_CPU_FREQ)
+		val = mvReverseBits(val) >> 3 ;
 
 	/* modify */
 	readValue &= ~(satrInfo.mask);             /* clean old value */
@@ -326,7 +357,12 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 		return MV_ERROR;
 	}
 
-	/*else save written value in global array*/
+	/* #2 Workaround for mirrored bits bug (for freq. mode SatR value only!)
+	 * Reverse bits again to locally save them properly */
+	if (satrWriteField == MV_SATR_WRITE_CPU_FREQ)
+		val = mvReverseBits(val) >> 3 ;
+
+	/* Save written value in global array */
 	satrOptionsConfig[satrReadField] = val;
 	return MV_OK;
 }
@@ -348,7 +384,8 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 {
 	MV_BOARD_SATR_INFO satrInfo;
-	if (satrField < MV_SATR_READ_MAX_OPTION && mvBoardSatrInfoGet(satrField, &satrInfo) == MV_OK)
+	if (satrField < MV_SATR_READ_MAX_OPTION &&
+			mvBoardSatrInfoConfig(satrField, &satrInfo, MV_TRUE) == MV_OK)
 		return satrOptionsConfig[satrField];
 	else
 		return MV_ERROR;
@@ -489,7 +526,7 @@ MV_VOID mvCtrlSatrInit(void)
 	satrVal[1] = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
 
 	for (i = 0; i < MV_SATR_READ_MAX_OPTION; i++)
-		if (mvBoardSatrInfoGet(i, &satrInfo) == MV_OK)
+		if (mvBoardSatrInfoConfig(i, &satrInfo, MV_TRUE) == MV_OK)
 			satrOptionsConfig[satrInfo.satrId] = ((satrVal[satrInfo.regNum]  & (satrInfo.mask)) >> (satrInfo.offset));
 
 }

@@ -284,6 +284,13 @@ typedef struct {
 		{ 29, 1100, 550, 550 } \
 };
 
+#define MV_USER_SAR_FREQ_MODES { \
+		{ 6,  400,  400, 200 }, \
+		{ 14, 600,  400, 300 }, \
+		{ 21, 800,  534, 400 }, \
+		{ 25, 1000, 500, 500 }, \
+};
+
 /* These macros help units to identify a target Mport Arbiter group */
 #define MV_TARGET_IS_DRAM(target)   \
 	((target >= SDRAM_CS0) && (target <= SDRAM_CS3))

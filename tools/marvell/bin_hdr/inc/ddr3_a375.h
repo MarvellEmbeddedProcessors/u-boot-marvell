@@ -198,6 +198,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define REG_DDR_CONT_HIGH_ADDR                  0x1424
 
 #define REG_ODT_TIME_LOW_ADDR                   0x1428
+#define REG_ODT_ON_CTL_RD_OFFS                  12
+#define REG_ODT_OFF_CTL_RD_OFFS                 16
 #define REG_SDRAM_ERROR_ADDR                    0x1454
 #define REG_SDRAM_AUTO_PWR_SAVE_ADDR            0x1474
 #define REG_ODT_TIME_HIGH_ADDR                  0x147C
@@ -215,6 +217,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #define REG_DUNIT_ODT_CTRL_ADDR                 0x149C
+#define REG_DUNIT_ODT_CTRL_OVRD_OFFS            8
+#define REG_DUNIT_ODT_CTRL_OVRD_VAL_OFFS        9
 
 #define REG_DRAM_FIFO_CTRL_ADDR                 0x14A0
 

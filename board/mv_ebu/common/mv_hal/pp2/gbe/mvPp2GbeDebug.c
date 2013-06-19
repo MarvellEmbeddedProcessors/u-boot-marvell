@@ -501,7 +501,7 @@ void mvPp2DropCntrs(int port)
 	mvPp2PrintReg(MV_PP2_CLS_DROP_REG(MV_PPV2_PORT_PHYS(port)), "MV_PP2_CLS_DROP_REG");
 
 	if (MV_PON_PORT(port)) {
-#ifdef CONFIG_MV_PON
+#ifdef CONFIG_MV_INCLUDE_PON
 		for (i = 0; i < CONFIG_MV_PON_TCONTS; i++) {
 			mvPp2RegPrint2(MV_PP2_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);
 			mvPp2RegPrint2(MV_PP2_TX_DESC_DROP_REG(i), "MV_PP2_TX_DESC_DROP_REG", i);

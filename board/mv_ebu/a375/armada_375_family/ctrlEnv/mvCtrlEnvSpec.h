@@ -257,6 +257,7 @@ extern "C" {
 
 #define TBL_UNUSED      0       /* Used to mark unused entry */
 #define FREQ_MODES_NUM          29
+#define FREQ_MODES_NUM_6720	3
 
 #define MPP_GROUP_0_TYPE { \
 	0x55555555,     /* NAND_V2_BOOT_DEVICE  */ \

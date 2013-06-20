@@ -102,6 +102,14 @@ ifeq "$(CONFIG_RD_88F6710)"  "y"
   CFLAGS += -DCONFIG_RD_88F6710
 endif
 
+ifeq "$(CONFIG_ARMADA_375)"  "y"
+  CFLAGS += -DCONFIG_ARMADA_375
+endif
+ifeq "$(CONFIG_AVANTA_LP)"  "y"
+  CFLAGS += -DCONFIG_AVANTA_LP
+endif
+
+
 INCLUDE     = -I./  -I../inc/ -I../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)

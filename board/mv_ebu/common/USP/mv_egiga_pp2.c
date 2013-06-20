@@ -278,10 +278,14 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 	/* init each port only once */
 	if (priv->devInit != MV_TRUE) {
 		/* port power up - release from reset */
-		if (!MV_PON_PORT(priv->port))
+		if (!MV_PON_PORT(priv->port)) {
+			mvEthPhyAddrSet(priv->port, mvBoardPhyAddrGet(priv->port));
+			mvEthPhyReset(mvBoardPhyAddrGet(priv->port), 10000);
+
 			mvEthPortPowerUp(priv->port,
 				MV_FALSE/*mvBoardIsPortInSgmii(priv->port)*/,
 				MV_FALSE/*mvBoardIsPortInRgmii(priv->port)*/);
+		}
 
 		/* init the hal -- create internal port control structure and descriptor rings, */
 		/* open address decode windows, disable rx and tx operations. mask interrupts.  */

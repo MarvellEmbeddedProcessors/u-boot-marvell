@@ -148,7 +148,7 @@ void mvEthPortLbSet(int port, int isGmii, int isPcsEn);
 void mvEthPortResetSet(int port, MV_BOOL setReset);
 void mvEthPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii);
 void mvEthPortPowerDown(int port);
-
+char *mvEthSpeedStrGet(MV_ETH_PORT_SPEED speed);
 /******************************************************************************/
 /*                          Port Configuration functions                      */
 /******************************************************************************/

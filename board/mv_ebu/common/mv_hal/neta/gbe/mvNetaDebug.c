@@ -647,7 +647,7 @@ void mvEthPortUcastShow(int port)
 	macL = MV_REG_READ(ETH_MAC_ADDR_LOW_REG(port));
 	macH = MV_REG_READ(ETH_MAC_ADDR_HIGH_REG(port));
 
-	mvOsPrintf("Unicast MAC Table: port=%d %02x:%02x:%02x:%02x:%02x:%02x\n",
+	mvOsPrintf("\nUnicast MAC Table: port=%d %02x:%02x:%02x:%02x:%02x:%02x\n",
 		   port, ((macH >> 24) & 0xff), ((macH >> 16) & 0xff),
 		   ((macH >> 8) & 0xff), (macH & 0xff), ((macL >> 8) & 0xff), (macL & 0xff));
 
@@ -665,8 +665,16 @@ void mvEthPortMcastShow(int port)
 {
 	int tblIdx, regIdx;
 	MV_U32 regVal;
+	MV_NETA_PORT_CTRL *pPortCtrl;
 
-	mvOsPrintf("Special (IP) Multicast Table port=%d: 01:00:5E:00:00:XX\n", port);
+	if (mvNetaPortCheck(port))
+		return;
+
+	pPortCtrl = mvNetaPortHndlGet(port);
+	if (!pPortCtrl)
+		return;
+
+	mvOsPrintf("\nSpecial (IP) Multicast Table port=%d: 01:00:5E:00:00:XX\n", port);
 
 	for (tblIdx = 0; tblIdx < (256 / 4); tblIdx++) {
 		regVal = MV_REG_READ((ETH_DA_FILTER_SPEC_MCAST_BASE(port) + tblIdx * 4));
@@ -678,13 +686,14 @@ void mvEthPortMcastShow(int port)
 		}
 	}
 
-	mvOsPrintf("Other Multicast Table: port=%d\n", port);
+	mvOsPrintf("\nOther Multicast Table: port=%d\n", port);
 	for (tblIdx = 0; tblIdx < (256 / 4); tblIdx++) {
 		regVal = MV_REG_READ((ETH_DA_FILTER_OTH_MCAST_BASE(port) + tblIdx * 4));
 		for (regIdx = 0; regIdx < 4; regIdx++) {
 			if ((regVal & (0x01 << (regIdx * 8))) != 0) {
-				mvOsPrintf("crc8=0x%02X: accepted, rxq = %d\n",
-					   tblIdx * 4 + regIdx, ((regVal >> (regIdx * 8 + 1)) & 0x07));
+				mvOsPrintf("crc8=0x%02X: accepted, rxq = %d, ref=%d\n",
+					   tblIdx * 4 + regIdx, ((regVal >> (regIdx * 8 + 1)) & 0x07),
+					   pPortCtrl->mcastCount[tblIdx * 4 + regIdx]);
 			}
 		}
 	}

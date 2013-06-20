@@ -1710,15 +1710,15 @@ MV_STATUS mvNetaMcastAddrSet(int port, MV_U8 *pAddr, int queue)
 
 			pPortCtrl->mcastCount[crcResult]--;
 			if (pPortCtrl->mcastCount[crcResult] != 0) {
-				mvOsPrintf("ethPort #%d: After delete there are %d valid Mcast for crc8=0x%02x\n",
+				mvNetaDebugPrintf("ethPort #%d: Left %d valid Mcast for crc8=0x%02x\n",
 					   pPortCtrl->portNo, pPortCtrl->mcastCount[crcResult], (unsigned)crcResult);
 				return MV_NO_CHANGE;
 			}
 		} else {
 			pPortCtrl->mcastCount[crcResult]++;
 			if (pPortCtrl->mcastCount[crcResult] > 1) {
-				mvOsPrintf("ethPort #%d: Valid Mcast for crc8=0x%02x already exists\n",
-					   port, (unsigned)crcResult);
+				mvNetaDebugPrintf("ethPort #%d: Exist %d valid Mcast for crc8=0x%02x\n",
+					   port, pPortCtrl->mcastCount[crcResult], (unsigned)crcResult);
 				return MV_NO_CHANGE;
 			}
 		}

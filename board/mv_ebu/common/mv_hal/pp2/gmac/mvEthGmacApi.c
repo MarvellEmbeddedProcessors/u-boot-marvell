@@ -228,6 +228,32 @@ MV_STATUS mvEthLinkStatus(int port, MV_ETH_PORT_STATUS *pStatus)
 	return MV_OK;
 }
 
+char *mvEthSpeedStrGet(MV_ETH_PORT_SPEED speed)
+{
+	char *str;
+
+	switch (speed) {
+	case MV_ETH_SPEED_10:
+		str = "10 Mbps";
+		break;
+	case MV_ETH_SPEED_100:
+		str = "100 Mbps";
+		break;
+	case MV_ETH_SPEED_1000:
+		str = "1 Gbps";
+		break;
+	case MV_ETH_SPEED_2000:
+		str = "2 Gbps";
+		break;
+	case MV_ETH_SPEED_AN:
+		str = "AutoNeg";
+		break;
+	default:
+		str = "Unknown";
+	}
+	return str;
+}
+
 /******************************************************************************/
 /*                          Port Configuration functions                      */
 /******************************************************************************/

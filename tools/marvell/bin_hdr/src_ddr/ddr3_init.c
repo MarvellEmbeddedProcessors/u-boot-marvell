@@ -949,7 +949,6 @@ MV_U32 ddr3GetStaticDdrMode(void)
 	MV_U32 size;
 
 /* Do not modify this code. relevant only for marvell Boards */
-	chipBoardRev = A0;
 #if defined (MV88F78X60_Z1)
 	chipBoardRev = Z1;
 #endif
@@ -967,6 +966,8 @@ MV_U32 ddr3GetStaticDdrMode(void)
 #endif
 #if defined (MV88F66XX) || defined(MV88F672X)
 	chipBoardRev = mvBoardIdGet();
+#else
+	chipBoardRev = A0;
 #endif
 
 	size = sizeof(ddr_modes) / sizeof(MV_DRAM_MODES);
@@ -1295,12 +1296,12 @@ MV_VOID     printDunitSetup(MV_VOID)
 	DEBUG_DUNIT_REG(DLB_AGING_REGISTER);
 	DEBUG_DUNIT_REG(DLB_EVICTION_CONTROL_REG);
 	DEBUG_DUNIT_REG(DLB_EVICTION_TIMERS_REGISTER_REG);
-    #ifdef MV88F66XX
+    #if defined(MV88F66XX)
 	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_CTRL_ADDR(0));
     DEBUG_DUNIT_REG(REG_FASTPATH_WIN_BASE_ADDR(0));
     DEBUG_DUNIT_REG(REG_FASTPATH_WIN_CTRL_ADDR(1));
     DEBUG_DUNIT_REG(REG_FASTPATH_WIN_BASE_ADDR(1));
-	#elif MV88F672X
+	#elif defined(MV88F672X)
 	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_CTRL_ADDR(0));
     DEBUG_DUNIT_REG(REG_FASTPATH_WIN_BASE_ADDR(0));
     DEBUG_DUNIT_REG(REG_FASTPATH_WIN_CTRL_ADDR(1));

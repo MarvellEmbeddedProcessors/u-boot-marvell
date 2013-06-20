@@ -71,12 +71,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* Board/Soc revisions define - DONT CHANGE ORDER */
 typedef enum  {
-    Z1_ALP_RD_650 = 0,
-    Z1_ALP_RD_660,
-    Z1_ALP_DB_650,
-    Z1_ALP_DB_660,
-    A0
-
+    A375_DB_6720 = 0,
 } MV_SOC_BOARD_REV;
 
 typedef struct __mvDramModes {
@@ -93,12 +88,7 @@ MV_DRAM_MODES ddr_modes[] =
 {
     /*  Conf name       CPUFreq     FabFreq     Chip ID Chip/Board  MC regs         Training Values */
     /* db board values  */
-    {"db_88F6650_533",  0x15,        0,          0x0,    Z1_ALP_DB_650,  ddr3_Z0_db_88F6650_533, ddr3_db_88F6650},
-    {"db_88F6660_533",  0x15,        0,          0x0,    Z1_ALP_DB_660,  ddr3_Z0_db_88F6660_533, ddr3_db_88F6660},
-    {"db_88F6660_400",  0x14,        0,          0x0,    Z1_ALP_DB_660,  ddr3_Z0_db_88F6660_533, ddr3_db_88F6660},
-    /* rd board values  */
-    {"rd_88F6650_400",  0x3,        0,          0x0,    Z1_ALP_RD_650,  ddr3_Z0_rd_88F6650_400, NULL},
-    {"rd_88F6650_533",  0x3,        0,          0x0,    Z1_ALP_RD_660,  ddr3_Z0_rd_88F6650_533, NULL},
+    {"rd_88F6650_400",  0x3,        0,          0x0,    A375_DB_6720,  ddr3_A375_DB_6720_400, NULL},
 };
 
 MV_U16 auiODTStatic[ODT_OPT][MAX_CS] =

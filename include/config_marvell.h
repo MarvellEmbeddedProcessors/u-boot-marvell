@@ -115,11 +115,19 @@
 	#define RD_78460_CUSTOMER
 	#define MV88F78X60
 
-#else
+#elif defined(CONFIG_ARMADA_375)
+
+/**********************************/
+/* defines for DB-6720  */
+/**********************************/
+
+	#define MV88F672X
 
 /***************************************/
 /* defines for Avanta LP - All boards  */
 /***************************************/
+#elif defined(CONFIG_AVANTA_LP)
+
 	#define MV88F66XX
 
 #endif  // CONFIG_RD_78460_GP

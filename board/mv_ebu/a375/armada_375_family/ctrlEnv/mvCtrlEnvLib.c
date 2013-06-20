@@ -674,27 +674,6 @@ MV_U32 mvCtrlEthMaxPortGet(MV_VOID)
 	return MV_ETH_MAX_PORTS;
 }
 
-/*******************************************************************************
-* mvCtrlEthMaxCPUsGet - Get Marvell controller number of CPUs.
-*
-* DESCRIPTION:
-*       This function returns Marvell controller number of CPUs.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       Marvell controller number of CPUs.
-*
-*******************************************************************************/
-MV_U8 mvCtrlEthMaxCPUsGet(MV_VOID)
-{
-	return 1;
-}
-
 #if defined(MV_INCLUDE_SATA)
 /*******************************************************************************
 * mvCtrlSataMaxPortGet - Get Marvell controller number of Sata ports.

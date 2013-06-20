@@ -121,7 +121,7 @@ void 	mvSysPp2Init(void)
 
 	halData.pClk = mvCpuPclkGet();
 	halData.tClk = mvBoardTclkGet();
-	halData.maxCPUs = mvCtrlEthMaxCPUsGet();
+	halData.maxCPUs = 1;
 	halData.iocc = MV_FALSE;
 	halData.ctrlModel = mvCtrlModelGet();
 	halData.ctrlRev = mvCtrlRevGet();

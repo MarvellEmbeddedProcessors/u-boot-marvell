@@ -62,18 +62,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _INC_ALP_MC_STATIC_H
-#define _INC_ALP_MC_STATIC_H
+#ifndef _INC_A375_MC_STATIC_H
+#define _INC_A375_MC_STATIC_H
+
+#include "ddr3_a375.h"
 
 typedef struct __mvDramMcInit {
 	MV_U32 reg_addr;
 	MV_U32 reg_value;
 } MV_DRAM_MC_INIT;
 
-/* DB-88F6650 (Avanta_LP_16 bit) 533MHz  */
-MV_DRAM_MC_INIT ddr3_Z0_db_88F6650_533[MV_MAX_DDR3_STATIC_SIZE] =
+
+/* DB-88F5720 (Armada375 32bit) 533MHz  */
+MV_DRAM_MC_INIT ddr3_A375_DB_6720_400[MV_MAX_DDR3_STATIC_SIZE] =
 {
-    {0x00001400, 0x7B005040}, 	/*DDR SDRAM Configuration Register */
+    {0x00001400, 0x7B00D040}, 	/*DDR SDRAM Configuration Register*/
     {0x00001404, 0x36301820}, 	/*Dunit Control Low Register */
     {0x00001408, 0x33137772}, 	/*DDR SDRAM Timing (Low) Register */
     {0x0000140C, 0x384019D5}, 	/*DDR SDRAM Timing (High) Register */
@@ -85,89 +88,11 @@ MV_DRAM_MC_INIT ddr3_Z0_db_88F6650_533[MV_MAX_DDR3_STATIC_SIZE] =
     {0x0000142C, 0x028C50C3}, 	/*DDR3 Timing Register */
     {0x0000147C, 0x0000B571},  /*DDR ODT Timing (High) Register */
     {0x00001494, 0x00030000},  /*SDRAM_SRAM_ODT_CNTL_LOW */
-	{0x0000149C, 0x00000303},  /*SDRAM_ODT_CONTROL */
+    {0x0000149C, 0x00000303},  /*SDRAM_ODT_CONTROL */
 
     {0x000014a8, 0x00000000}, 	/*AXI Control Register */
     {0x00001504, 0x3FFFFFE1}, 	/* CS0 Size */
     {0x0000150C, 0x3FFFFFE5}, 	/* CS1 Size */
-    {0x00001514, 0x00000000}, 	/* CS2 Size */
-    {0x0000151C, 0x00000000}, 	/* CS3 Size */
-    {0x00001538, 0x00000707}, 	/*Read Data Sample Delays Register */
-    {0x0000153C, 0x00000707}, 	/*Read Data Ready Delay Register */
-
-    {0x000015D0, 0x00000630}, 	/*MR0 */
-    {0x000015D4, 0x00000046}, 	/*MR1 */
-    {0x000015D8, 0x00000008}, 	/*MR2 */
-    {0x000015DC, 0x00000000}, 	/*MR3 */
-
-    {0x000015E0, 0x00000023/*0x00000003*/}, 	/*DDR3 Rank Control Register */
-    {0x000015E4, 0x00203c18}, 	/*ZQC Configuration Register */
-    {0x000015EC, 0xF8000f25}, 	/*DDR PHY */
-
-    {0x000014C0, 0x192434E9}, 	/*DRAM address and Control Driving Strenght */
-    {0x000014C4, 0x192434E9}, 	/*DRAM Data and DQS Driving Strenght */
-    {0x0, 0x0}
-};
-
-/* RD-88F6650 (Avanta_LP_16 bit) 400MHz  */
-MV_DRAM_MC_INIT ddr3_Z0_rd_88F6650_400[MV_MAX_DDR3_STATIC_SIZE] =
-{
-    {0x00001400, 0x7B004C30}, 	/*DDR SDRAM Configuration Register */
-    {0x00001404, 0x36300820}, 	/*Dunit Control Low Register */
-    {0x00001408, 0x3303555D}, 	/*DDR SDRAM Timing (Low) Register */
-    {0x0000140C, 0x384019BF}, 	/*DDR SDRAM Timing (High) Register */
-    {0x00001410, 0x10000001}, 	/*DDR SDRAM Open Pages Control Register */
-    {0x00001414, 0x00000700}, 	/*DDR SDRAM Open Pages Control Register */
-
-    {0x00001424, 0x0060F3FF}, 	/*Dunit Control High Register */
-    {0x00001428, 0x000C5720}, 	/*DDR ODT Timing (Low) Register */
-    {0x0000142C, 0x028C5093}, 	/*DDR3 Timing Register */
-    {0x0000147C, 0x0000A471},  /*DDR ODT Timing (High) Register */
-    {0x00001494, 0x00010000},  /*SDRAM_SRAM_ODT_CNTL_LOW */
-	{0x0000149C, 0x00000301},  /*SDRAM_ODT_CONTROL */
-
-    {0x000014a8, 0x00000000}, 	/*AXI Control Register */
-    {0x00001504, 0x1FFFFFE1}, 	/* CS0 Size */
-    {0x0000150C, 0x00000000}, 	/* CS1 Size */
-    {0x00001514, 0x00000000}, 	/* CS2 Size */
-    {0x0000151C, 0x00000000}, 	/* CS3 Size */
-    {0x00001538, 0x00000006}, 	/*Read Data Sample Delays Register */
-    {0x0000153C, 0x00000006}, 	/*Read Data Ready Delay Register */
-
-    {0x000015D0, 0x00000620}, 	/*MR0 */
-    {0x000015D4, 0x00000044}, 	/*MR1 */
-    {0x000015D8, 0x00000000}, 	/*MR2 */
-    {0x000015DC, 0x00000000}, 	/*MR3 */
-
-    {0x000015E0, 0x00000001}, 	/*DDR3 Rank Control Register */
-    {0x000015E4, 0x00203c18}, 	/*ZQC Configuration Register */
-    {0x000015EC, 0xF8000f25}, 	/*DDR PHY */
-
-    {0x000014C0, 0x192424C9}, 	/*DRAM address and Control Driving Strenght */
-    {0x000014C4, 0x192424C9}, 	/*DRAM Data and DQS Driving Strenght */
-    {0x0, 0x0}
-};
-
-/* DB-88F6660 (Avanta_LP_32 bit) 533MHz  */
-MV_DRAM_MC_INIT ddr3_Z0_db_88F6660_533[MV_MAX_DDR3_STATIC_SIZE] =
-{
-    {0x00001400, 0x7B00D040}, 	/*DDR SDRAM Configuration Register */
-    {0x00001404, 0x36301820}, 	/*Dunit Control Low Register */
-    {0x00001408, 0x33137772}, 	/*DDR SDRAM Timing (Low) Register */
-    {0x0000140C, 0x384019D5}, 	/*DDR SDRAM Timing (High) Register */
-    {0x00001410, 0x10000000}, 	/*DDR SDRAM Open Pages Control Register */
-    {0x00001414, 0x00000700}, 	/*DDR SDRAM Open Pages Control Register */
-
-    {0x00001424, 0x0060F3FF}, 	/*Dunit Control High Register */
-    {0x00001428, 0x000D6720}, 	/*DDR ODT Timing (Low) Register */
-    {0x0000142C, 0x028C50C3}, 	/*DDR3 Timing Register */
-    {0x0000147C, 0x0000B571},  /*DDR ODT Timing (High) Register */
-    {0x00001494, 0x00030000},  /*SDRAM_SRAM_ODT_CNTL_LOW */
-	{0x0000149C, 0x00000303},  /*SDRAM_ODT_CONTROL */
-
-    {0x000014a8, 0x00000000}, 	/*AXI Control Register */
-    {0x00001504, 0x7FFFFFE1}, 	/* CS0 Size */
-    {0x0000150C, 0x7FFFFFE5}, 	/* CS1 Size */
     {0x00001514, 0x00000000}, 	/* CS2 Size */
     {0x0000151C, 0x00000000}, 	/* CS3 Size */
     {0x00001538, 0x00000707}, 	/*Read Data Sample Delays Register */
@@ -187,42 +112,5 @@ MV_DRAM_MC_INIT ddr3_Z0_db_88F6660_533[MV_MAX_DDR3_STATIC_SIZE] =
     {0x0, 0x0}
 };
 
-/* RD-88F6660 (Avanta_LP_32 bit) 533MHz  */
-MV_DRAM_MC_INIT ddr3_Z0_rd_88F6650_533[MV_MAX_DDR3_STATIC_SIZE] =
-{
-    {0x00001400, 0x7B00D040}, 	/*DDR SDRAM Configuration Register */
-    {0x00001404, 0x36300820}, 	/*Dunit Control Low Register */
-    {0x00001408, 0x33137772}, 	/*DDR SDRAM Timing (Low) Register */
-    {0x0000140C, 0x3841199F}, 	/*DDR SDRAM Timing (High) Register */
-    {0x00001410, 0x16100011}, 	/*DDR SDRAM Open Pages Control Register */
-    {0x00001414, 0x00000700}, 	/*DDR SDRAM Open Pages Control Register */
+#endif /* _INC_A375_MC_STATIC_H */
 
-    {0x00001424, 0x0060F3FF}, 	/*Dunit Control High Register */
-    {0x00001428, 0x000D6720}, 	/*DDR ODT Timing (Low) Register */
-    {0x0000142C, 0x028C50C3}, 	/*DDR3 Timing Register */
-    {0x0000147C, 0x0000B571},  /*DDR ODT Timing (High) Register */
-    {0x00001494, 0x00010000},  /*SDRAM_SRAM_ODT_CNTL_LOW */
-	{0x0000149C, 0x00000301},  /*SDRAM_ODT_CONTROL */
-
-    {0x000014a8, 0x00000000}, 	/*AXI Control Register */
-    {0x00001504, 0x7FFFFFE1}, 	/* CS0 Size */
-    {0x0000150C, 0x7FFFFFE5}, 	/* CS1 Size */
-    {0x00001514, 0x00000000}, 	/* CS2 Size */
-    {0x0000151C, 0x00000000}, 	/* CS3 Size */
-    {0x00001538, 0x00000007}, 	/*Read Data Sample Delays Register */
-    {0x0000153C, 0x00000007}, 	/*Read Data Ready Delay Register */
-
-    {0x000015D0, 0x00000630}, 	/*MR0 */
-    {0x000015D4, 0x00000044}, 	/*MR1 */
-    {0x000015D8, 0x00000008}, 	/*MR2 */
-    {0x000015DC, 0x00000000}, 	/*MR3 */
-
-    {0x000015E0, 0x00000001}, 	/*DDR3 Rank Control Register */
-    {0x000015E4, 0x00203c18}, 	/*ZQC Configuration Register */
-    {0x000015EC, 0xF8000f25}, 	/*DDR PHY */
-
-    {0x000014C0, 0x192424C9}, 	/*DRAM address and Control Driving Strenght */
-    {0x000014C4, 0x192424C9}, 	/*DRAM Data and DQS Driving Strenght */
-    {0x0, 0x0}
-};
-#endif /* _INC_ALP_MC_STATIC_H */

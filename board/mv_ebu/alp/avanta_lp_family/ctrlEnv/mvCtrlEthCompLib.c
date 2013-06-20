@@ -306,19 +306,6 @@ static void mvEthComplexGbePhyResetSet(MV_BOOL setReset)
 	MV_REG_WRITE(MV_ETHCOMP_QUAD_GBE_PHY_CTRL_STAT_REG, reg);
 }
 
-static void mvEthComplexGopInit(int port, int isSgmii, int isPeriodicXon, int isAN)
-{
-	mvEthPortSgmiiSet(port, isSgmii);
-	mvEthPortPeriodicXonSet(port, isPeriodicXon);
-
-	if (isAN)
-		mvEthPortLinkSpeedFlowCtrl(port, MV_ETH_SPEED_AN, 0);
-	else
-		mvEthPortLinkSpeedFlowCtrl(port, MV_ETH_SPEED_1000, 1);
-
-	mvEthPortResetSet(port, MV_FALSE);
-}
-
 static void mvEthComplexMacToSwPort(MV_U32 port, MV_U32 swPort,
 				    MV_ETH_PORT_SPEED speed)
 {
@@ -335,8 +322,6 @@ static void mvEthComplexMacToSwPort(MV_U32 port, MV_U32 swPort,
 		mvEthComplexGbeToSwitchSpeedSet(speed);
 	else
 		mvEthComplexPortDpClkSrcSet(port, 0x1);
-
-	mvEthComplexGopInit(port, MV_FALSE, MV_FALSE, MV_FALSE);
 }
 
 static void mvEthComplexSwPortToRgmii(MV_U32 swPort, MV_U32 port)
@@ -361,8 +346,6 @@ static void mvEthComplexMacToGbePhy(MV_U32 port, MV_U32 phy, MV_U32 phyAddr)
 	mvEthComplexGbePhyPdConfigEdetASet(phy, 0x0);
 	mvEthComplexGbePhyPsEnaXcSSet(phy, 0x0);
 	mvEthComplexGbePhyResetSet(MV_FALSE);
-	mvEthComplexGopInit(port, MV_FALSE, MV_FALSE, MV_TRUE);
-	mvEthPhyAddrSet(port, phy);
 }
 
 static void mvEthComplexMacToComPhy(MV_U32 port, MV_U32 comPhy)
@@ -380,8 +363,6 @@ static void mvEthComplexMacToRgmii(MV_U32 port, MV_U32 phy)
 	mvEthComplexGbePortSrcSet(port, 0x0);
 	mvEthComplexPortDpClkSrcSet(port, 0x1);
 	mvEthComplexGopDevEnable();
-	mvEthComplexGopInit(port, MV_FALSE, MV_FALSE, MV_TRUE);
-	mvEthPhyAddrSet(port, phy);
 }
 
 static void mvEthComplexSwPortToGbePhy(MV_U32 swPort, MV_U32 phy)

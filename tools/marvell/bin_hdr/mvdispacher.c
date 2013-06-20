@@ -78,9 +78,9 @@ int mvBinHdrDispatcher(void)
 		if (rc != MV_OK)
 		{
 			mvUartInit();
-			DEBUG_INIT_S(" **********          ");
+			DEBUG_INIT_S("\n\n **********          ");
 			DEBUG_INIT_S(pComponent->ComponentName);
-			DEBUG_INIT_S(" faild!   ********\n");
+			DEBUG_INIT_S(" failed!   ********\n");
 			while(1);
 		}
 		pComponent++;

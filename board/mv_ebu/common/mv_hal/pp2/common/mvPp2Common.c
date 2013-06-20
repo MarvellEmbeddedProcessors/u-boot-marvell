@@ -69,6 +69,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int mvPp2WrReg(unsigned int offset, unsigned int  val)
 {
 	MV_PP2_REG_WRITE(offset, val);
+
 #if defined(PP2_REG_WRITE_TRACE)
 	mvOsPrintf("REG:0x%08X	W:0x%08X\n", offset, val);
 #endif

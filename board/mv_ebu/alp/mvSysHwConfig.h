@@ -140,8 +140,8 @@ disclaimer.
 #define SPI_CS_BASE 0xf4000000 /*0xf8000000*/
 #define SPI_CS_SIZE _8M
 
-#define PP2_PHYS_BASE 0xf2100000 /*0xF5000000*/
-#define PP2_SIZE	 _1M
+#define PP2_CPU0_PHYS_BASE 0xf2100000 /*0xF5000000*/
+#define PP2_SIZE	 _64K
 
 /* Important for MP - Do not disable/change this window, used by BOOTROM when booting other cores */
 #define CRYPT_ENG_BASE	 0xc8010000
@@ -233,28 +233,28 @@ disclaimer.
 	{{SDRAM_CS1_BASE,	0,	SDRAM_CS1_SIZE	},	0xFFFFFFFF,	DIS},	/*  1 SDRAM_CS1 */ \
 	{{SDRAM_CS2_BASE,	0,	SDRAM_CS2_SIZE	},	0xFFFFFFFF,	DIS},	/*  2 SDRAM_CS2 */ \
 	{{SDRAM_CS3_BASE,	0,	SDRAM_CS3_SIZE	},	0xFFFFFFFF,	DIS},	/*  3 SDRAM_CS3 */ \
-	{{NOR_CS_BASE,		0,	NOR_CS_SIZE		},			10,	DIS},	/*  4 DEVICE_CS0 */\
-	{{TBL_UNUSED,		0,	TBL_UNUSED		},	TBL_UNUSED,	DIS},	/*  5 DEVICE_CS1 */\
-	{{TBL_UNUSED,		0,	TBL_UNUSED		},	TBL_UNUSED,	DIS},	/*  6 DEVICE_CS2 */\
-	{{TBL_UNUSED,		0,	TBL_UNUSED		},	TBL_UNUSED,	DIS},	/*  7 DEVICE_CS3 */\
-	{{PEX0_MEM_BASE,	0,	PEX0_MEM_SIZE	},			0,   EN},	/*  8 PEX0_MEM */  \
+	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},		10,	DIS},	/*  4 DEVICE_CS0 */\
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/*  5 DEVICE_CS1 */\
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/*  6 DEVICE_CS2 */\
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/*  7 DEVICE_CS3 */\
+	{{PEX0_MEM_BASE,	0,	PEX0_MEM_SIZE	},		 0,	 EN},	/*  8 PEX0_MEM */  \
 	{{PEX0_IO_BASE,		0,	PEX0_IO_SIZE	},	TBL_UNUSED,	DIS},	/*  9 PEX0_IO */   \
-	{{PEX1_MEM_BASE,	0,	PEX1_MEM_SIZE	},			1,   EN},	/* 10 PEX1_MEM */  \
+	{{PEX1_MEM_BASE,	0,	PEX1_MEM_SIZE	},		 1,	 EN},	/* 10 PEX1_MEM */  \
 	{{PEX1_IO_BASE,		0,	PEX1_IO_SIZE	},	TBL_UNUSED,	DIS},	/* 11 PEX1_IO */   \
 	{{INTER_REGS_BASE,	0,	INTER_REGS_SIZE	},MV_AHB_TO_MBUS_INTREG_WIN, EN},	/* 12 INTER_REGS */\
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 13 DMA_UART   */\
-	{{SPI_CS_BASE,		0,	SPI_CS_SIZE	},				8,	DIS},	/* 14 SPI_CS0 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 15 SPI_CS1 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 16 SPI_CS2 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 17 SPI_CS3 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 18 SPI_CS4 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 19 SPI_CS5 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 20 SPI_CS6 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 21 SPI_CS7 */   \
-	{{0xf8000000,		0,		_1M		},			   13,	DIS},	/* 22 BOOT_ROM_CS */\
-	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},				9,	 EN},	/* 23 DEV_BOOCS */   \
-	{{CRYPT_ENG_BASE,	0,CRYPT_ENG_SIZE},			   10,	DIS},	/* 24 CRYPT_ENG */ \
-	{{PP2_PHYS_BASE,	0,	PP2_SIZE	},			   12,	 EN},	/* 25 PP2 */    \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* 13 DMA_UART   */\
+	{{SPI_CS_BASE,		0,	SPI_CS_SIZE	},		 8,	DIS},	/* 14 SPI_CS0 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* 15 SPI_CS1 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* 16 SPI_CS2 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* 17 SPI_CS3 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* 18 SPI_CS4 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* 19 SPI_CS5 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* 20 SPI_CS6 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* 21 SPI_CS7 */   \
+	{{0xf8000000,		0,		_1M	},		13,	DIS},	/* 22 BOOT_ROM_CS */\
+	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},		 9,	 EN},	/* 23 DEV_BOOCS */   \
+	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},		10,	DIS},	/* 24 CRYPT_ENG */ \
+	{{PP2_CPU0_PHYS_BASE,	0,	PP2_SIZE	},		12,	 EN},	/* 25 PP2 */    \
 	{{TBL_TERM,		TBL_TERM, TBL_TERM	},	TBL_TERM,	TBL_TERM}               \
 };
 #define MV_CPU_IF_ADDR_WIN_MAP_88F6650_TBL {									\
@@ -284,7 +284,7 @@ disclaimer.
 	{{0xf8000000,		0,	_1M		},		13,	DIS},	/* 22 BOOT_ROM_CS */\
 	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},		 9,	 EN},	/* 23 DEV_BOOCS */   \
 	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},		10,	DIS},	/* 24 CRYPT_ENG */ \
-	{{PP2_PHYS_BASE,	0,	PP2_SIZE	},		12,	 EN},	/* 25 PP2 */    \
+	{{PP2_CPU0_PHYS_BASE,	0,	PP2_SIZE	},		12,	 EN},	/* 25 PP2 */    \
 	{{TBL_TERM,		TBL_TERM, TBL_TERM	},	TBL_TERM,  TBL_TERM}               \
 };
 
@@ -315,7 +315,7 @@ disclaimer.
 	{{0xf8000000,		0,		_1M	},		13,	DIS},	/* 22 BOOT_ROM_CS */\
 	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},		 9,	 EN},	/* 23 DEV_BOOCS */   \
 	{{CRYPT_ENG_BASE,	0,CRYPT_ENG_SIZE	},		10,	DIS},	/* 24 CRYPT_ENG */ \
-	{{PP2_PHYS_BASE,	0,	PP2_SIZE	},		12,	 EN},	/* 25 PP2 */    \
+	{{PP2_CPU0_PHYS_BASE,	0,	PP2_SIZE	},		12,	 EN},	/* 25 PP2 */    \
 	{{TBL_TERM,		TBL_TERM, TBL_TERM	},	TBL_TERM,  TBL_TERM}               \
 };
 #define mvCpuAddrWinMapGet(x)   ((x == MV_6660_DEV_ID)? 	\

@@ -449,32 +449,33 @@ typedef enum _mvDevice {
 /* controller can access. They are also refered as "targets"                */
 typedef enum _mvTarget {
 	TBL_TERM = -1,  /* none valid target, used as targets list terminator*/
-	SDRAM_CS0,      /*  0 SDRAM chip select 0		*/
-	SDRAM_CS1,      /*  1 SDRAM chip select 1		*/
-	SDRAM_CS2,      /*  2 SDRAM chip select 2		*/
-	SDRAM_CS3,      /*  3 SDRAM chip select 3		*/
-	DEVICE_CS0,     /*  4 Device chip select 0		*/
-	DEVICE_CS1,     /*  5 Device chip select 1		*/
-	DEVICE_CS2,     /*  6 Device chip select 2		*/
-	DEVICE_CS3,     /*  7 Device chip select 3		*/
-	PEX0_MEM,       /*  8 PCI Express 0 Memory		*/
-	PEX0_IO,        /*  9 PCI Express 0 IO			*/
-	PEX1_MEM,       /* 10 PCI Express 1 Memory		*/
-	PEX1_IO,        /* 11 PCI Express 1 IO			*/
-	INTER_REGS,     /* 12 Internal registers		*/
-	DMA_UART,       /* 13 DMA based UART request	*/
-	SPI_CS0,        /* 14 SPI_CS0					*/
-	SPI_CS1,        /* 15 SPI_CS1					*/
-	SPI_CS2,        /* 16 SPI_CS2					*/
-	SPI_CS3,        /* 17 SPI_CS3					*/
-	SPI_CS4,        /* 18 SPI_CS4					*/
-	SPI_CS5,        /* 19 SPI_CS5					*/
-	SPI_CS6,        /* 20 SPI_CS6					*/
-	SPI_CS7,        /* 21 SPI_CS7					*/
-	BOOT_ROM_CS,    /* 22 BOOT_ROM_CS				*/
-	DEV_BOOCS,      /* 23 DEV_BOOCS					*/
-	CRYPT0_ENG,      /* 24 Crypto0 Engine			*/
-	PP2,         	/* 25 PP2						*/
+	SDRAM_CS0,	/*  0 SDRAM chip select 0	*/
+	SDRAM_CS1,	/*  1 SDRAM chip select 1	*/
+	SDRAM_CS2,	/*  2 SDRAM chip select 2	*/
+	SDRAM_CS3,	/*  3 SDRAM chip select 3	*/
+	DEVICE_CS0,	/*  4 Device chip select 0	*/
+	DEVICE_CS1,	/*  5 Device chip select 1	*/
+	DEVICE_CS2,	/*  6 Device chip select 2	*/
+	DEVICE_CS3,	/*  7 Device chip select 3	*/
+	PEX0_MEM,	/*  8 PCI Express 0 Memory	*/
+	PEX0_IO,	/*  9 PCI Express 0 IO		*/
+	PEX1_MEM,	/* 10 PCI Express 1 Memory	*/
+	PEX1_IO,	/* 11 PCI Express 1 IO		*/
+	INTER_REGS,	/* 12 Internal registers	*/
+	DMA_UART,	/* 13 DMA based UART request	*/
+	SPI_CS0,	/* 14 SPI_CS0			*/
+	SPI_CS1,	/* 15 SPI_CS1			*/
+	SPI_CS2,	/* 16 SPI_CS2			*/
+	SPI_CS3,	/* 17 SPI_CS3			*/
+	SPI_CS4,	/* 18 SPI_CS4			*/
+	SPI_CS5,	/* 19 SPI_CS5			*/
+	SPI_CS6,	/* 20 SPI_CS6			*/
+	SPI_CS7,	/* 21 SPI_CS7			*/
+	BOOT_ROM_CS,	/* 22 BOOT_ROM_CS		*/
+	DEV_BOOCS,	/* 23 DEV_BOOCS			*/
+	CRYPT0_ENG,	/* 24 Crypto0 Engine		*/
+	PP2_CPU0,	/* 25 PP2 - CPU 0		*/
+	PP2_CPU1,	/* 26 PP2 - CPU 1		*/
 	MAX_TARGETS
 } MV_TARGET;
 
@@ -499,62 +500,64 @@ typedef enum _mvTarget {
 #endif
 
 #define TARGETS_DEF_ARRAY {                                                 \
-	{ DRAM_CS0_ATTR, DRAM_TARGET_ID },      /* SDRAM_CS0             */ \
-	{ DRAM_CS1_ATTR, DRAM_TARGET_ID },      /* SDRAM_CS1             */ \
-	{ DRAM_CS2_ATTR, DRAM_TARGET_ID },      /* SDRAM_CS0             */ \
-	{ DRAM_CS3_ATTR, DRAM_TARGET_ID },      /* SDRAM_CS1             */ \
-	{ 0x3E, DEV_TARGET_ID    },             /* DEVICE_CS0            */ \
-	{ 0x3D, DEV_TARGET_ID    },             /* DEVICE_CS1            */ \
-	{ 0x3B, DEV_TARGET_ID    },             /* DEVICE_CS2            */ \
-	{ 0x37, DEV_TARGET_ID    },             /* DEVICE_CS3            */ \
-	{ 0xE8, PEX_TARGET_ID    },             /* PEX0_LANE0_MEM        */ \
-	{ 0xE0, PEX_TARGET_ID    },             /* PEX0_LANE0_IO         */ \
-	{ 0xD8, PEX_TARGET_ID    },             /* PEX1_LANE0_MEM        */ \
-	{ 0xD0, PEX_TARGET_ID    },             /* PEX1_LANE0_IO         */ \
-	{ 0xFF, 0xFF             },             /* INTER_REGS            */ \
-	{ 0x01, DEV_TARGET_ID    },             /* DMA_UART              */ \
-	{ 0x1E, DEV_TARGET_ID    },             /* SPI_CS0               */ \
-	{ 0x5E, DEV_TARGET_ID    },             /* SPI_CS1               */ \
-	{ 0x9E, DEV_TARGET_ID    },             /* SPI_CS2               */ \
-	{ 0xDE, DEV_TARGET_ID    },             /* SPI_CS3               */ \
-	{ 0x1F, DEV_TARGET_ID    },             /* SPI_CS4               */ \
-	{ 0x5F, DEV_TARGET_ID    },             /* SPI_CS5               */ \
-	{ 0x9F, DEV_TARGET_ID    },             /* SPI_CS6               */ \
-	{ 0xDF, DEV_TARGET_ID    },             /* SPI_CS7               */ \
-	{ MAIN_BOOT_ATTR, DEV_TARGET_ID },      /* Main Boot device      */ \
-	{ SEC_BOOT_ATTR, DEV_TARGET_ID  },      /* Secondary Boot device */ \
-	{ 0x01, CRYPT_TARGET_ID  },             /* CRYPT_ENG0            */ \
-	{ 0x00, PP2_TARGET_ID },                /* PP2                   */ \
+	{ DRAM_CS0_ATTR, DRAM_TARGET_ID },	/* SDRAM_CS0             */ \
+	{ DRAM_CS1_ATTR, DRAM_TARGET_ID },	/* SDRAM_CS1             */ \
+	{ DRAM_CS2_ATTR, DRAM_TARGET_ID },	/* SDRAM_CS0             */ \
+	{ DRAM_CS3_ATTR, DRAM_TARGET_ID },	/* SDRAM_CS1             */ \
+	{ 0x3E, DEV_TARGET_ID	},		/* DEVICE_CS0            */ \
+	{ 0x3D, DEV_TARGET_ID	},		/* DEVICE_CS1            */ \
+	{ 0x3B, DEV_TARGET_ID	},		/* DEVICE_CS2            */ \
+	{ 0x37, DEV_TARGET_ID	},		/* DEVICE_CS3            */ \
+	{ 0xE8, PEX_TARGET_ID	},		/* PEX0_LANE0_MEM        */ \
+	{ 0xE0, PEX_TARGET_ID	},		/* PEX0_LANE0_IO         */ \
+	{ 0xD8, PEX_TARGET_ID	},		/* PEX1_LANE0_MEM        */ \
+	{ 0xD0, PEX_TARGET_ID	},		/* PEX1_LANE0_IO         */ \
+	{ 0xFF, 0xFF		},		/* INTER_REGS            */ \
+	{ 0x01, DEV_TARGET_ID	},		/* DMA_UART              */ \
+	{ 0x1E, DEV_TARGET_ID	},		/* SPI_CS0               */ \
+	{ 0x5E, DEV_TARGET_ID	},		/* SPI_CS1               */ \
+	{ 0x9E, DEV_TARGET_ID	},		/* SPI_CS2               */ \
+	{ 0xDE, DEV_TARGET_ID	},		/* SPI_CS3               */ \
+	{ 0x1F, DEV_TARGET_ID	},		/* SPI_CS4               */ \
+	{ 0x5F, DEV_TARGET_ID	},		/* SPI_CS5               */ \
+	{ 0x9F, DEV_TARGET_ID	},		/* SPI_CS6               */ \
+	{ 0xDF, DEV_TARGET_ID	},		/* SPI_CS7               */ \
+	{ MAIN_BOOT_ATTR, DEV_TARGET_ID	},	/* Main Boot device      */ \
+	{ SEC_BOOT_ATTR, DEV_TARGET_ID	},	/* Secondary Boot device */ \
+	{ 0x01, CRYPT_TARGET_ID	},		/* CRYPT_ENG0            */ \
+	{ 0x00, PP2_TARGET_ID	},		/* PP2 - CPU 0           */ \
+	{ 0x01, PP2_TARGET_ID	},		/* PP2 - CPU 1           */ \
 }
 
-#define CESA_TARGET_NAME_DEF    ("CRYPT_ENG0", "CRYPT_ENG1")
-#define TARGETS_NAME_ARRAY      {			\
-	"SDRAM_CS0",            /* SDRAM_CS0 */		\
-	"SDRAM_CS1",            /* SDRAM_CS1 */		\
-	"SDRAM_CS2",            /* SDRAM_CS1 */		\
-	"SDRAM_CS3",            /* SDRAM_CS1 */		\
-	"DEVICE_CS0",           /* DEVICE_CS0 */	\
-	"DEVICE_CS1",           /* DEVICE_CS1 */	\
-	"DEVICE_CS2",           /* DEVICE_CS2 */	\
-	"DEVICE_CS3",           /* DEVICE_CS3 */	\
-	"PEX0_MEM",             /* PEX0_MEM */		\
-	"PEX0_IO",              /* PEX0_IO */		\
-	"PEX1_MEM",             /* PEX1_MEM */		\
-	"PEX1_IO",              /* PEX1_IO */		\
-	"INTER_REGS",           /* INTER_REGS */	\
-	"DMA_UART",             /* DMA_UART */		\
-	"SPI_CS0",              /* SPI_CS0 */		\
-	"SPI_CS1",              /* SPI_CS1 */		\
-	"SPI_CS2",              /* SPI_CS2 */		\
-	"SPI_CS3",              /* SPI_CS3 */		\
-	"SPI_CS4",              /* SPI_CS4 */		\
-	"SPI_CS5",              /* SPI_CS5 */		\
-	"SPI_CS6",              /* SPI_CS6 */		\
-	"SPI_CS7",              /* SPI_CS7 */		\
-	"BOOT_ROM_CS",          /* BOOT_ROM_CS */	\
-	"DEV_BOOTCS",           /* DEV_BOOCS */		\
-	"CRYPT1_ENG",           /* CRYPT1_ENG */	\
-	"PP2"                   /* PP2 */		\
+#define CESA_TARGET_NAME_DEF	("CRYPT_ENG0", "CRYPT_ENG1")
+#define TARGETS_NAME_ARRAY	{			\
+	"SDRAM_CS0",		/* SDRAM_CS0 */		\
+	"SDRAM_CS1",		/* SDRAM_CS1 */		\
+	"SDRAM_CS2",		/* SDRAM_CS1 */		\
+	"SDRAM_CS3",		/* SDRAM_CS1 */		\
+	"DEVICE_CS0",		/* DEVICE_CS0 */	\
+	"DEVICE_CS1",		/* DEVICE_CS1 */	\
+	"DEVICE_CS2",		/* DEVICE_CS2 */	\
+	"DEVICE_CS3",		/* DEVICE_CS3 */	\
+	"PEX0_MEM",		/* PEX0_MEM */		\
+	"PEX0_IO",		/* PEX0_IO */		\
+	"PEX1_MEM",		/* PEX1_MEM */		\
+	"PEX1_IO",		/* PEX1_IO */		\
+	"INTER_REGS",		/* INTER_REGS */	\
+	"DMA_UART",		/* DMA_UART */		\
+	"SPI_CS0",		/* SPI_CS0 */		\
+	"SPI_CS1",		/* SPI_CS1 */		\
+	"SPI_CS2",		/* SPI_CS2 */		\
+	"SPI_CS3",		/* SPI_CS3 */		\
+	"SPI_CS4",		/* SPI_CS4 */		\
+	"SPI_CS5",		/* SPI_CS5 */		\
+	"SPI_CS6",		/* SPI_CS6 */		\
+	"SPI_CS7",		/* SPI_CS7 */		\
+	"BOOT_ROM_CS",		/* BOOT_ROM_CS */	\
+	"DEV_BOOTCS",		/* DEV_BOOCS */		\
+	"CRYPT1_ENG",		/* CRYPT1_ENG */	\
+	"PP2 - CPU 0",		/* PP2 - CPU 0 */	\
+	"PP2 - CPU 1"		/* PP2 - CPU 1 */	\
 }
 
 #endif /* MV_ASMLANGUAGE */

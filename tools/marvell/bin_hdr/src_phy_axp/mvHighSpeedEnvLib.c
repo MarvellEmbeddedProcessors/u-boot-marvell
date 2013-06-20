@@ -496,7 +496,8 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	MV_U32		rxHighImpedanceMode;
 	MV_U16 ctrlMode;
 	MV_TWSI_ADDR slave;
-	MV_U32 boardId = mvBoardIdGet();
+	MV_U32	boardId = mvBoardIdGet();
+	MV_U32	pexIf;
 
 	/* TWSI init */
 	slave.type = ADDR7_BIT;
@@ -802,18 +803,19 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 				0x0 X4-Link.
 				0x1 X1-Link */
 
-			pexUnit    = serdesLineNum >> 2;
+			pexUnit = serdesLineNum >> 2;
+			pexIf	= MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum);
 			if (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_DISABLED)
 				continue;
 			/*  set Common Clock Configuration */
-			tmp = MV_REG_READ(PEX_LINK_CTRL_STATUS_REG(pexUnit));
-			DEBUG_RD_REG(PEX_LINK_CTRL_STATUS_REG(pexUnit),tmp);
+			tmp = MV_REG_READ(PEX_LINK_CTRL_STATUS_REG(pexIf));
+			DEBUG_RD_REG(PEX_LINK_CTRL_STATUS_REG(pexIf),tmp);
 			tmp |= BIT6;
-			MV_REG_WRITE(PEX_LINK_CTRL_STATUS_REG(pexUnit), tmp);
-			DEBUG_WR_REG(PEX_LINK_CTRL_STATUS_REG(pexUnit), tmp);
+			MV_REG_WRITE(PEX_LINK_CTRL_STATUS_REG(pexIf), tmp);
+			DEBUG_WR_REG(PEX_LINK_CTRL_STATUS_REG(pexIf), tmp);
 
-			tmp = MV_REG_READ(PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)));
-			DEBUG_RD_REG(PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), tmp );
+			tmp = MV_REG_READ(PEX_LINK_CAPABILITIES_REG(pexIf));
+			DEBUG_RD_REG(PEX_LINK_CAPABILITIES_REG(pexIf), tmp);
 			tmp &= ~(0x3FF);
 			if (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_MODE_X1)
 				tmp |= (0x1 << 4);
@@ -823,8 +825,8 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 				tmp |= 0x1;
 			else
 				tmp	|= 0x2;
-			MV_REG_WRITE(PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), tmp);
-			DEBUG_WR_REG(PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), tmp);
+			MV_REG_WRITE(PEX_LINK_CAPABILITIES_REG(pexIf), tmp);
+			DEBUG_WR_REG(PEX_LINK_CAPABILITIES_REG(pexIf), tmp);
 
 			/* if pex is X4, no need to pass thru the other 3X1 serdes lines */
 			if (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_MODE_X4)
@@ -1177,7 +1179,6 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 		MV_U32 pexIfNum = mvCtrlPexMaxIfGet();
 		MV_U32 tempReg, tempPexReg;
 		MV_U32 addr;
-		MV_U32 pexIf=0;
 		MV_U32 first_busno, next_busno;
 		MV_U32 maxLinkWidth = 0;
 		MV_U32 negLinkWidth = 0;

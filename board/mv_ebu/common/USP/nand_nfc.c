@@ -1693,13 +1693,18 @@ int board_nand_init(struct nand_chip *nand)
 	struct orion_nfc_info *info;
 	int ret = 0;
 	MV_NFC_INFO nfcInfo;
+	unsigned int muxReg;
 
 	info = malloc(sizeof(struct orion_nfc_info));
 	if (info == NULL) {
 		dev_err(&pdev->dev, "orion_nfc_info malloc failed!\n");
 		return -ENOMEM;
 	}
-	MV_REG_BIT_SET(MV_SOC_DEV_MUX_REG, BIT0);
+	/* Set NfArbiterEn to NAND Flash (Bootrom accidently Set NfArbiterEn to Device) */
+	muxReg = MV_REG_READ(MV_SOC_DEV_MUX_REG);
+	muxReg |= BIT0;
+	muxReg &= ~BIT27;
+	MV_REG_WRITE(MV_SOC_DEV_MUX_REG, muxReg);
 
 	info->tclk = CONFIG_SYS_TCLK;
 #ifdef MV_NAND_GANG_MODE

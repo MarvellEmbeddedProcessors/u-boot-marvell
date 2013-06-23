@@ -347,21 +347,15 @@ MV_STATUS mvNetaDefaultsSet(int port)
 #endif /* CONFIG_MV_PON */
 
 		/* Disable Legacy WRR, Disable EJP, Release from reset */
-#ifdef MV_ETH_WRR_NEW
 		MV_REG_WRITE(NETA_TX_CMD_1_REG(port, txp), 0);
+
 		/* Close bandwidth for all queues */
 		for (queue = 0; queue < MV_ETH_MAX_TXQ; queue++)
 			MV_REG_WRITE(NETA_TXQ_TOKEN_CNTR_REG(port, txp, queue),  0);
 
 		/* Set basic period to  1 usec */
 		MV_REG_WRITE(NETA_TX_REFILL_PERIOD_REG(port, txp),  mvNetaHalData.tClk / 1000000);
-#else
-		MV_REG_WRITE(ETH_TXQ_CMD_1_REG(port, txp), 0);
-		for (queue = 0; queue < MV_ETH_MAX_TXQ; queue++) {
-			MV_REG_WRITE(ETH_TXQ_TOKEN_COUNT_REG(port, txp, queue), 0);
-			MV_REG_WRITE(ETH_TXQ_TOKEN_CFG_REG(port, txp, queue), 0);
-		}
-#endif /* MV_ETH_WRR_NEW */
+		mvNetaTxpRateMaxSet(port, txp);
 
 		MV_REG_WRITE(NETA_PORT_TX_RESET_REG(port, txp), 0);
 	}
@@ -2329,17 +2323,22 @@ void mvNetaTxqAddrSet(int port, int txp, int queue, int descrNum)
 	MV_REG_WRITE(NETA_TXQ_SIZE_REG(port, txp, queue), NETA_TXQ_DESC_NUM_MASK(descrNum));
 }
 
+/* Set maximum bandwidth for TX port */
+void mvNetaTxpRateMaxSet(int port, int txp)
+{
+	MV_U32 regVal = NETA_TXP_REFILL_TOKENS_ALL_MASK | NETA_TXP_REFILL_PERIOD_MASK(1);
+
+	MV_REG_WRITE(NETA_TXP_REFILL_REG(port, txp), regVal);
+	MV_REG_WRITE(NETA_TXP_TOKEN_CNTR_REG(port, txp), NETA_TXP_TOKEN_CNTR_MAX);
+}
 
 /* Set maximum bandwidth for enabled TXQs */
 void mvNetaTxqBandwidthSet(int port, int txp,  int queue)
 {
+	MV_U32 regVal = NETA_TXQ_REFILL_TOKENS_ALL_MASK | NETA_TXQ_REFILL_PERIOD_MASK(1);
 
-#ifdef MV_ETH_WRR_NEW
-    MV_REG_WRITE(NETA_TXQ_TOKEN_CNTR_REG(port, txp, queue), NETA_TXQ_TOKEN_CNTR_MAX);
-#else
-	MV_REG_WRITE(ETH_TXQ_TOKEN_CFG_REG(port, txp, queue), 0x03ffffff);
-	MV_REG_WRITE(ETH_TXQ_TOKEN_COUNT_REG(port, txp, queue), 0x3fffffff);
-#endif /* MV_ETH_WRR_NEW */
+	MV_REG_WRITE(NETA_TXQ_REFILL_REG(port, txp, queue), regVal);
+	MV_REG_WRITE(NETA_TXQ_TOKEN_CNTR_REG(port, txp, queue), NETA_TXQ_TOKEN_CNTR_MAX);
 }
 
 
@@ -2395,13 +2394,8 @@ void mvNetaTxqDelete(int port, int txp, int queue)
 
 	memset(pQueueCtrl, 0, sizeof(*pQueueCtrl));
 
-    /* Set minimum bandwidth for disabled TXQs */
-#ifdef MV_ETH_WRR_NEW
+	/* Set minimum bandwidth for disabled TXQs */
 	MV_REG_WRITE(NETA_TXQ_TOKEN_CNTR_REG(port, txp, queue), 0);
-#else
-	MV_REG_WRITE(ETH_TXQ_TOKEN_CFG_REG(port, txp, queue), 0);
-	MV_REG_WRITE(ETH_TXQ_TOKEN_COUNT_REG(port, txp, queue), 0);
-#endif /* MV_ETH_WRR_NEW */
 
 	/* Set Tx descriptors queue starting address and size */
 	MV_REG_WRITE(NETA_TXQ_BASE_ADDR_REG(port, txp, queue), 0);
@@ -2854,7 +2848,6 @@ MV_STATUS mvNetaTxpEjpTxSpeedSet(int port, int txp, int type, int speed)
 	return MV_OK;
 }
 
-#ifdef MV_ETH_WRR_NEW
 /* Calculate period and tokens accordingly with required rate and accuracy */
 MV_STATUS mvNetaRateCalc(int rate, unsigned int accuracy, unsigned int *pPeriod, unsigned int *pTokens)
 {
@@ -3158,181 +3151,6 @@ MV_STATUS mvNetaTxqBurstSet(int port, int txp, int txq, int burst)
 
 	return MV_OK;
 }
-
-#else /* Old WRR/EJP module */
-
-MV_STATUS mvNetaTxpEjpSet(int port, int txp, int enable)
-{
-	if (mvNetaTxpCheck(port, txp))
-		return MV_BAD_PARAM;
-
-	mvOsPrintf("Not supported\n");
-
-	return MV_OK;
-}
-
-
-/* Set TXQ to work in FIX priority mode */
-MV_STATUS mvNetaTxqFixPrioSet(int port, int txp, int txq)
-{
-	MV_U32 regVal;
-
-	if (mvNetaTxpCheck(port, txp))
-		return MV_BAD_PARAM;
-
-	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ))
-		return MV_BAD_PARAM;
-
-	regVal = MV_REG_READ(ETH_TX_FIXED_PRIO_CFG_REG(port, txp));
-	regVal |= (1 << txq);
-	MV_REG_WRITE(ETH_TX_FIXED_PRIO_CFG_REG(port, txp), regVal);
-
-	return MV_OK;
-}
-
-/* Set TXQ to work in WRR mode and set relative weight. */
-/*   Weight range [1..N] */
-MV_STATUS mvNetaTxqWrrPrioSet(int port, int txp, int txq, int weight)
-{
-	MV_U32 regVal;
-
-	if (mvNetaTxpCheck(port, txp))
-		return MV_BAD_PARAM;
-
-	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ))
-		return MV_BAD_PARAM;
-
-	regVal = MV_REG_READ(ETH_TXQ_ARBITER_CFG_REG(port, txp, txq));
-	if (weight > ETH_TXQ_WRR_WEIGHT_MAX)
-		weight = ETH_TXQ_WRR_WEIGHT_MAX;
-
-	regVal &= ~ETH_TXQ_WRR_WEIGHT_ALL_MASK;
-	regVal |= ETH_TXQ_WRR_WEIGHT_MASK(weight);
-	MV_REG_WRITE(ETH_TXQ_ARBITER_CFG_REG(port, txp, txq), regVal);
-
-	regVal = MV_REG_READ(ETH_TX_FIXED_PRIO_CFG_REG(port, txp));
-	regVal &= ~(1 << txq);
-	MV_REG_WRITE(ETH_TX_FIXED_PRIO_CFG_REG(port, txp), regVal);
-
-	return MV_OK;
-}
-
-MV_STATUS   mvNetaTxpMaxTxSizeSet(int port, int txp, int maxTxSize)
-{
-	if (mvNetaTxpCheck(port, txp))
-		return MV_BAD_PARAM;
-
-	/* TBD */
-	return MV_OK;
-}
-
-/* Set bandwidth limitation for TX port
- *   bw [kbps]    - steady state TX bandwidth limitation
- */
-MV_STATUS mvNetaTxpRateSet(int port, int txp, int bw)
-{
-	MV_U32 regVal, rate;
-
-	if (mvNetaTxpCheck(port, txp))
-		return MV_BAD_PARAM;
-
-	/* TokenRate[1/64 bit/cycle] = BW[kb/sec]*64/TCLK[MHz]. */
-	rate = (((bw * 64) / 1000) / (mvNetaHalData.tClk / 1000000));
-	if (rate > ETH_TXP_TOKEN_RATE_MAX)
-		rate = ETH_TXP_TOKEN_RATE_MAX;
-
-	regVal = MV_REG_READ(ETH_TXP_TOKEN_RATE_CFG_REG(port, txp));
-	regVal &= ~ETH_TXP_TOKEN_RATE_ALL_MASK;
-	regVal |= ETH_TXP_TOKEN_RATE_MASK(rate);
-
-	MV_REG_WRITE(ETH_TXP_TOKEN_RATE_CFG_REG(port, txp), regVal);
-
-	return MV_OK;
-}
-
-/* Set maximum burst size for TX port
- *   burst [bytes] - number of bytes to be sent with maximum possible TX rate,
- *                    before TX rate limitation will take place.
- */
-MV_STATUS mvNetaTxpBurstSet(int port, int txp, int burst)
-{
-	MV_U32 regVal, size;
-
-	if (mvNetaTxpCheck(port, txp))
-		return MV_BAD_PARAM;
-
-	/* Token Bucket Size */
-	size = (burst / 256);
-	if (size > ETH_TXP_TOKEN_SIZE_MAX)
-		size = ETH_TXP_TOKEN_SIZE_MAX;
-
-	regVal = MV_REG_READ(ETH_TXP_TOKEN_SIZE_REG(port, txp));
-	regVal &= ~ETH_TXP_TOKEN_SIZE_ALL_MASK;
-	regVal |= ETH_TXP_TOKEN_SIZE_MASK(size);
-
-	MV_REG_WRITE(ETH_TXP_TOKEN_SIZE_REG(port, txp), regVal);
-
-	return MV_OK;
-}
-
-/* Set bandwidth limitation for TXQ
- *   rate  [kbps]  - steady state TX rate limitation
- */
-MV_STATUS mvNetaTxqRateSet(int port, int txp, int txq, int bw)
-{
-	MV_U32 regVal;
-	MV_U32 rate;
-
-	if (mvNetaTxpCheck(port, txp))
-		return MV_BAD_PARAM;
-
-	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ))
-		return MV_BAD_PARAM;
-
-	regVal = MV_REG_READ(ETH_TXQ_TOKEN_CFG_REG(port, txp, txq));
-
-	/* TokenRate[1/64 bit/cycle] = BW[Mb/sec]*64/TCLK[MHz]. */
-	rate = (((bw * 64) / 1000) / (mvNetaHalData.tClk / 1000000));
-	if (rate > ETH_TXQ_TOKEN_RATE_MAX)
-		rate = ETH_TXQ_TOKEN_RATE_MAX;
-
-	regVal &= ~ETH_TXQ_TOKEN_RATE_ALL_MASK;
-	regVal |= ETH_TXQ_TOKEN_RATE_MASK(rate);
-
-	MV_REG_WRITE(ETH_TXQ_TOKEN_CFG_REG(port, txp, txq), regVal);
-
-	return MV_OK;
-}
-
-/* Set maximum burst size for TX port
- *   burst [bytes] - number of bytes to be sent with maximum possible TX rate,
- *                    before TX bandwidth limitation will take place.
- */
-MV_STATUS mvNetaTxqBurstSet(int port, int txp, int txq, int burst)
-{
-	MV_U32 regVal, size;
-
-	if (mvNetaTxpCheck(port, txp))
-		return MV_BAD_PARAM;
-
-	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ))
-		return MV_BAD_PARAM;
-
-	/* Token Bucket Size */
-	size = (burst / 256);
-	if (size > ETH_TXQ_TOKEN_SIZE_MAX)
-		size = ETH_TXQ_TOKEN_SIZE_MAX;
-
-	regVal = MV_REG_READ(ETH_TXQ_TOKEN_CFG_REG(port, txp, txq));
-
-	regVal &= ~ETH_TXQ_TOKEN_SIZE_ALL_MASK;
-	regVal |= ETH_TXQ_TOKEN_SIZE_MASK(size);
-
-	MV_REG_WRITE(ETH_TXQ_TOKEN_CFG_REG(port, txp, txq), regVal);
-
-	return MV_OK;
-}
-#endif /* MV_ETH_WRR_NEW */
 
 #ifdef CONFIG_MV_ETH_LEGACY_PARSER
 /******************************************************************************/

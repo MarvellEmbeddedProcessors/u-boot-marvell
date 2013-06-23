@@ -122,7 +122,6 @@ void mvEthTxpWrrRegs(int port, int txp)
 	mvOsPrintf("\n[TXP WRR/EJP registers: port=%d, txp=%d]\n", port, txp);
 	mvEthRegPrint(ETH_TX_QUEUE_COMMAND_REG(port, txp), "ETH_TX_QUEUE_COMMAND_REG");
 
-#ifdef MV_ETH_WRR_NEW
 	mvEthRegPrint(NETA_TX_CMD_1_REG(port, txp),          "NETA_TX_CMD_1_REG");
 	mvEthRegPrint(NETA_TX_FIXED_PRIO_CFG_REG(port, txp), "NETA_TX_FIXED_PRIO_CFG_REG");
 	mvEthRegPrint(NETA_TX_REFILL_PERIOD_REG(port, txp),  "NETA_TX_REFILL_PERIOD_REG");
@@ -144,21 +143,6 @@ void mvEthTxpWrrRegs(int port, int txp)
 		if ((queue == 2) || (queue == 3))
 			mvEthRegPrint(NETA_TXQ_EJP_IPG_REG(port, txp, queue), "NETA_TXQ_EJP_IPG_REG");
 	}
-#else
-	mvEthRegPrint(ETH_TXQ_CMD_1_REG(port, txp), "ETH_TXQ_CMD_1_REG");
-	mvEthRegPrint(ETH_TX_FIXED_PRIO_CFG_REG(port, txp), "ETH_TX_FIXED_PRIO_CFG_REG");
-	mvEthRegPrint(ETH_TXP_TOKEN_RATE_CFG_REG(port, txp), "ETH_TXP_TOKEN_RATE_CFG_REG");
-	mvEthRegPrint(ETH_MAX_TRANSMIT_UNIT_REG(port, txp), "ETH_MAX_TRANSMIT_UNIT_REG");
-	mvEthRegPrint(ETH_TXP_TOKEN_SIZE_REG(port, txp), "ETH_TXP_TOKEN_BUCKET_SIZE_REG");
-	mvEthRegPrint(ETH_TXP_TOKEN_COUNT_REG(port, txp), "ETH_TXP_TOKEN_BUCKET_COUNT_REG");
-
-	for (queue = 0; queue < MV_ETH_MAX_TXQ; queue++) {
-		mvOsPrintf("\n[TxQ policy: port=%d, txp=%d, txq=%d]\n", port, txp, queue);
-		mvEthRegPrint(ETH_TXQ_TOKEN_COUNT_REG(port, txp, queue), "ETH_TXQ_TOKEN_COUNT_REG");
-		mvEthRegPrint(ETH_TXQ_TOKEN_CFG_REG(port, txp, queue), "ETH_TXQ_TOKEN_CFG_REG");
-		mvEthRegPrint(ETH_TXQ_ARBITER_CFG_REG(port, txp, queue), "ETH_TXQ_ARBITER_CFG_REG");
-	}
-#endif /* MV_ETH_WRR_NEW */
 }
 
 /* Print important registers of Ethernet port */

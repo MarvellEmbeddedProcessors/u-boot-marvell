@@ -675,6 +675,7 @@ void		mvNetaTxqDelete(int port, int txp, int queue);
 void		mvNetaRxqDelete(int port, int queue);
 void		mvNetaRxqAddrSet(int port, int queue, int descrNum);
 void 		mvNetaTxqAddrSet(int port, int txp, int queue, int descrNum);
+void            mvNetaTxpRateMaxSet(int port, int txp);
 void 		mvNetaTxqBandwidthSet(int port, int txp,  int queue);
 
 void mvNetaRxReset(int port);

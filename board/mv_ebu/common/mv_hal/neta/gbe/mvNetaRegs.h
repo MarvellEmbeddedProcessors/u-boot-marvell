@@ -825,9 +825,7 @@ extern "C" {
 
 #endif /* MV_ETH_PMT_NEW */
 
-#ifdef MV_ETH_WRR_NEW
 /*********************** New TX WRR EJP Registers ********************************/
-
 #define NETA_TX_CMD_1_REG(p, txp)           (NETA_TX_REG_BASE((p), (txp)) + 0x1a00)
 
 #define NETA_TX_EJP_RESET_BIT               0
@@ -939,7 +937,6 @@ extern "C" {
 #define NETA_TXP_EJP_LO_ASYNC_REG(p, txp)   (NETA_TX_REG_BASE((p), (txp)) + 0x1ab8)
 #define NETA_TXP_EJP_SPEED_REG(p, txp)      (NETA_TX_REG_BASE((p), (txp)) + 0x1abc)
 /*-----------------------------------------------------------------------------------------------*/
-#endif /* MV_ETH_WRR_NEW */
 
 /******************** NETA RX EXTENDED DESCRIPTOR ********************************/
 

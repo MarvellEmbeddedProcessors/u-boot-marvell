@@ -389,6 +389,31 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 }
 
 /*******************************************************************************
+* mvBoardMacSpeedSet - Set the Mac speed
+*
+* DESCRIPTION:
+*       This routine Sets the Mac speed of a given ethernet port.
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*       macSpeed   - Requested MAC speed
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None
+*
+*******************************************************************************/
+MV_VOID mvBoardMacSpeedSet(MV_U32 ethPortNum, MV_BOARD_MAC_SPEED macSpeed)
+{
+	if (ethPortNum >= board->numBoardMacInfo)
+		mvOsPrintf("%s: Error: wrong eth port (%d)\n", __func__, ethPortNum);
+
+	board->pBoardMacInfo[ethPortNum].boardMacSpeed = macSpeed;
+}
+
+/*******************************************************************************
 * mvBoardIsPortLoopback -
 *
 * DESCRIPTION:
@@ -837,7 +862,8 @@ MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType)
 *******************************************************************************/
 MV_VOID mvBoardInfoUpdate(MV_VOID)
 {
-	MV_U32 slicDev, ethComplex;
+	MV_U32 smiAddress, slicDev, ethComplex;
+	MV_BOARD_MAC_SPEED macSpeed = BOARD_MAC_SPEED_AUTO; /*if Mac is not connected to switch, auto-negotiate speed*/
 
 	/* Update Ethernet complex according to board configuration */
 	mvBoardEthComplexInfoUpdate();
@@ -845,18 +871,27 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	/* Update SMI phy address for MAC0/1 */
 	ethComplex = mvBoardEthComplexConfigGet();
 	if (ethComplex & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)
-		mvBoardPhyAddrSet(0, 0x0);
+		smiAddress = 0x0;
 	else if (ethComplex & MV_ETHCOMP_GE_MAC0_2_RGMII0)
-		mvBoardPhyAddrSet(0, 0x4);
-	else
-		mvBoardPhyAddrSet(0, -1); /* no SMI address if connected to switch */
+		smiAddress = 0x4;
+	else {
+		smiAddress = -1; /* no SMI address if connected to switch */
+		macSpeed = BOARD_MAC_SPEED_1000M;
+	}
+	mvBoardPhyAddrSet(0, smiAddress);
+	mvBoardMacSpeedSet(0, macSpeed);
 
+	macSpeed = BOARD_MAC_SPEED_AUTO; /*if Mac is not connected to switch, auto-negotiate speed*/
 	if (ethComplex & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3)
-		mvBoardPhyAddrSet(1, 0x3);
+		smiAddress = 0x3;
 	else if (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1)
-		mvBoardPhyAddrSet(1, 0x1);
-	else
-		mvBoardPhyAddrSet(1, -1); /* no SMI address if connected to switch */
+		smiAddress = 0x1;
+	else {
+		smiAddress = -1; /* no SMI address if connected to switch */
+		macSpeed = BOARD_MAC_SPEED_1000M;
+	}
+	mvBoardPhyAddrSet(1, smiAddress);
+	mvBoardMacSpeedSet(1, macSpeed);
 
 	/* Update MPP group types and values according to board configuration */
 	mvBoardMppIdUpdate();

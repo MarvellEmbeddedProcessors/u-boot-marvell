@@ -951,20 +951,15 @@ MV_U32 ddr3GetStaticDdrMode(void)
 /* Do not modify this code. relevant only for marvell Boards */
 #if defined (MV88F78X60_Z1)
 	chipBoardRev = Z1;
-#endif
-#if defined(DB_78X60_PCAC)
+#elif defined(DB_78X60_PCAC)
 	chipBoardRev = Z1_PCAC;
-#endif
-#if defined(DB_78X60_AMC)
+#elif defined(DB_78X60_AMC)
 	chipBoardRev = A0_AMC;
-#endif
-#if defined (DB_88F6710_PCAC)
+#elif defined (DB_88F6710_PCAC)
 	chipBoardRev = A0_PCAC;
-#endif
-#if defined (RD_88F6710)
+#elif defined (RD_88F6710)
 	chipBoardRev = A0_RD;
-#endif
-#if defined (MV88F66XX) || defined(MV88F672X)
+#elif defined (MV88F66XX) || defined(MV88F672X)
 	chipBoardRev = mvBoardIdGet();
 #else
 	chipBoardRev = A0;

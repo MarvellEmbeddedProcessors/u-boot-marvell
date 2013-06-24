@@ -455,6 +455,7 @@ MV_BOOL mvBoardIsQsgmiiModuleConnected(void);
 MV_32 mvBoardGePhySwitchPortGet(void);
 MV_32 mvBoardRgmiiASwitchPortGet(void);
 MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum);
+MV_VOID mvBoardMacSpeedSet(MV_U32 ethPortNum, MV_BOARD_MAC_SPEED macSpeed);
 MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx);
 MV_32 mvBoardSwitchIrqGet(MV_VOID);
 MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort);

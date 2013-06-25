@@ -855,7 +855,7 @@ MV_STATUS mvUsbHalInit(int dev, MV_BOOL isHost, MV_USB_HAL_DATA *halData)
 	else
 		regVal = MV_USB_CORE_MODE_DEVICE | MV_USB_CORE_SETUP_LOCK_DISABLE_MASK;
 
-#if (MV_USB_VERSION == 0)
+#ifdef ERRATA_FE_215660
 	regVal |= MV_USB_CORE_STREAM_DISABLE_MASK;
 #endif
 

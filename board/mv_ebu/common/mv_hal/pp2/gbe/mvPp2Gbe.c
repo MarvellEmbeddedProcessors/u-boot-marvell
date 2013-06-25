@@ -533,6 +533,8 @@ MV_STATUS mvPp2PortRxqsInit(int port, int firstRxq, int numRxqs)
 	if (!pCtrl->pRxQueue)
 		return MV_OUT_OF_CPU_MEM;
 
+	mvOsMemset(pCtrl->pRxQueue, 0, (MV_ETH_MAX_RXQ * sizeof(MV_PP2_PHYS_RXQ_CTRL *)));
+
 	/* Associate requested RXQs with port */
 	for (i = firstRxq; i < firstRxq + numRxqs; i++)
 		mvPp2PhysRxqMapAdd(i, port, i - firstRxq);

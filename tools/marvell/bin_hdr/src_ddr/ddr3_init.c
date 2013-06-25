@@ -452,8 +452,8 @@ MV_U32 ddr3Init_(void)
 #endif
 
 	ddr3PrintVersion();
-	DEBUG_INIT_S("5 \n");
-	/* Lib version 5.0.5 */
+	DEBUG_INIT_S("6 \n");
+	/* Lib version 5.0.6 */
 
 	uiFabOpt = ddr3GetFabOpt();
 	if (bPLLWAPatch){
@@ -592,11 +592,14 @@ MV_U32 ddr3Init_(void)
 	uiReg = MV_REG_READ(REG_TRAINING_DEBUG_3_ADDR);
 	/* 0x15C8[2:0] - should be 0x4  // TrnDbgRdyIncPh0_2to1 = 4
 	   0x15C8[5:3] - should be 0x4  // TrnDbgRdyIncPh1_2to1 = 4
+	   0x15C8[8:6] - should be 0x4  // TrnDbgRdyIncPh2_2to1 = 4
+	   0x15C8[11:9] - should be 0x4  // TrnDbgRdyIncPh3_2to1 = 4
 	   0x15C8[14:12] - should be 0x6  // TrnDbgRdyIncPh4_2to1 = 6
 	   0x15C8[17:15] - should be 0x6  // TrnDbgRdyIncPh5_2to1 = 6
 	 */
 	uiReg &= 0xFFFC0000;
-	uiReg |= 0x36024;
+	uiReg |= 0x36924;
+
 	MV_REG_WRITE(REG_TRAINING_DEBUG_3_ADDR, uiReg);
 #endif
 

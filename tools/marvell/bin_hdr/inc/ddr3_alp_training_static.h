@@ -73,36 +73,31 @@ typedef struct __mvDramTrainingInit {
 	MV_U32 reg_value;
 } MV_DRAM_TRAINING_INIT;
 
-MV_DRAM_TRAINING_INIT ddr3_db_88F6650[MV_MAX_DDR3_STATIC_SIZE] =
+MV_DRAM_TRAINING_INIT ddr3_rd_88F6650[MV_MAX_DDR3_STATIC_SIZE] =
 {
-#if 0
-    /*PUP	RdSampleDly (+CL)	Phase	RL ADLL value */
-    /* Read Leveling */
+
+     /* Read Leveling */
 	/* PUP0 */
-    {0x000016A0, 0xC0020000},/*CS0*/
-    {0x000016A0, 0xC0060000},/*CS1*/
+    {0x000016A0, 0xC002030f},/*CS0*/
 	/* PUP1 */
-    {0x000016A0, 0xC0420000},/*CS0*/
-    {0x000016A0, 0xC0460000},/*CS1*/
+    {0x000016A0, 0xC0420400},/*CS0*/
 
     /* Write Leveling */
     /* PUP0 */
-    {0x000016A0, 0xC0008812},/*CS0*/
-    {0x000016A0, 0xC0048812},/*CS1*/
+    {0x000016A0, 0xC0003c04},/*CS0*/
     /* PUP1 */
-    {0x000016A0, 0xC0408812},/*CS0*/
-    {0x000016A0, 0xC0448812},/*CS1*/
+    {0x000016A0, 0xC0403c02},/*CS0*/
 
     /* DQS ref delay*/
-    {0x000016A0, 0xC003000f},/*CS0*/
-    {0x000016A0, 0xC007000f},/*CS1*/
+    {0x000016A0, 0xC803000f},/*CS0*/
 
-    {0x00001538, 0x00000909}, 	/*Read Data Sample Delays Register */
-    {0x0000153C, 0x00000d0d}, 	/*Read Data Ready Delay Register */
-#endif
+
+    {0x00001538, 0x00000006}, 	/*Read Data Sample Delays Register */
+    {0x0000153C, 0x0000000a}, 	/*Read Data Ready Delay Register */
+
     /*init DRAM */
     {0x00001480, 0x00000001},
-
+#if 0
     /*HW mechanizem*/
     /* WL training*/
     {0x000015B0, 0x80300008},
@@ -110,7 +105,7 @@ MV_DRAM_TRAINING_INIT ddr3_db_88F6650[MV_MAX_DDR3_STATIC_SIZE] =
     {0x000015B0, 0x80300010},
     /* Read Leveling using training pattern at high frequency*/
     {0x000015B0, 0x80300040},
-
+#endif
     {0x0, 0x0}
 };
 MV_DRAM_TRAINING_INIT ddr3_db_88F6660[MV_MAX_DDR3_STATIC_SIZE] =

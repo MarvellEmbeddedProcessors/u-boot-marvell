@@ -213,6 +213,30 @@ typedef enum {
 
 /* Defined Flash Types */
 MV_NFC_FLASH_INFO flashDeviceInfo[] = {
+	{			/* Micron 4Gb */
+	.tADL = 70,		/* tADL, Address to write data delay */
+	.tCH = 5,		/* tCH, Enable signal hold time */
+	.tCS = 15,		/* tCS, Enable signal setup time */
+	.tWC = 20,		/* tWC, ND_nWE cycle duration */
+	.tWH = 7,		/* tWH, ND_nWE high duration */
+	.tWP = 10,		/* tWP, ND_nWE pulse time */
+	.tRC = 20,		/* tWC, ND_nRE cycle duration */
+	.tRH = 7,		/* tRH, ND_nRE high duration */
+	.tRP = 10,		/* tRP, ND_nRE pulse width */
+	.tR = 25000,		/* tR = tR+tRR+tWB+1, ND_nWE high to ND_nRE low for read - 25000+20+100+1 */
+	.tWHR = 60,		/* tWHR, ND_nWE high to ND_nRE low delay for status read */
+	.tAR = 10,		/* tAR, ND_ALE low to ND_nRE low delay */
+	.tRHW = 100,		/* tRHW, ND_nRE high to ND_nWE low delay */
+	.pgPrBlk = 64,		/* Pages per block - detected */
+	.pgSz = 2048,		/* Page size */
+	.oobSz = 64,		/* Spare size */
+	.blkNum = 4096,		/* Number of blocks/sectors in the flash */
+	.id = 0xDC2C,		/* Device ID 0xDevice,Vendor */
+	.model = "Micron 4Gb 8bit",
+	.bb_page = 63,		/* Manufacturer Bad block marking page in block */
+	.flags = NFC_CLOCK_UPSCALE_200M
+	},
+
 	{			/* ST 1Gb */
 	.tADL = 100,		/* tADL, Address to write data delay */
 	.tCH = 5,		/* tCH, Enable signal hold time */

@@ -244,22 +244,34 @@ static void mvPp2QueueShow(MV_PP2_QUEUE_CTRL *pQueueCtrl, int mode, int isTxq)
 MV_VOID mvPp2RxqShow(int port, int rxq, int mode)
 {
 	int pRxq;
+	MV_PP2_PORT_CTRL *pCtrl;
 	MV_PP2_PHYS_RXQ_CTRL *pRxqCtrl;
 	MV_PP2_QUEUE_CTRL *pQueueCtrl;
-
-	mvOsPrintf("\n[PPv2 RxQ show: port=%d, rxq=%d]\n", port, rxq);
 
 	if (mvPp2PortCheck(port))
 		return;
 
+	pCtrl = mvPp2PortCtrl[port];
+	if ((pCtrl == NULL) || (pCtrl->pRxQueue == NULL)) {
+		mvOsPrintf("port #%d is not initialized\n", port);
+		return;
+	}
+
 	if (mvPp2MaxCheck(rxq, MV_ETH_MAX_RXQ, "logical rxq"))
 		return;
+
+	if (pCtrl->pRxQueue[rxq] == NULL) {
+		mvOsPrintf("rxq #%d of port #%d is not initialized\n", rxq, port);
+		return;
+	}
 
 	pRxq = mvPp2LogicRxqToPhysRxq(port, rxq);
 	if (pRxq < 0) {
 		mvOsPrintf("Port/RXQ is not mapped to physical RXQ\n");
 		return;
 	}
+	mvOsPrintf("\n[PPv2 RxQ show: port=%d, logical rxq=%d -> physical rxq=%d]\n",
+			port, rxq, pRxq);
 
 	pRxqCtrl = &mvPp2PhysRxqs[pRxq];
 	pQueueCtrl = &pRxqCtrl->queueCtrl;

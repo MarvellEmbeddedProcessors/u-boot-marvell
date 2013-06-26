@@ -41,7 +41,7 @@
 #include <ext4fs.h>
 #include <ext_common.h>
 
-unsigned long part_offset;
+lbaint_t part_offset;
 
 static block_dev_desc_t *ext4fs_block_dev_desc;
 static disk_partition_t *part_info;
@@ -55,7 +55,7 @@ void ext4fs_set_blk_dev(block_dev_desc_t *rbdd, disk_partition_t *info)
 	get_fs()->dev_desc = rbdd;
 }
 
-int ext4fs_devread(int sector, int byte_offset, int byte_len, char *buf)
+int ext4fs_devread(lbaint_t sector, int byte_offset, int byte_len, char *buf)
 {
 	ALLOC_CACHE_ALIGN_BUFFER(char, sec_buf, SECTOR_SIZE);
 	unsigned block_len;
@@ -64,7 +64,7 @@ int ext4fs_devread(int sector, int byte_offset, int byte_len, char *buf)
 	if ((sector < 0)
 	    || ((sector + ((byte_offset + byte_len - 1) >> SECTOR_BITS)) >=
 		part_info->size)) {
-		printf("%s read outside partition %d\n", __func__, sector);
+		printf("%s read outside partition " LBAFU "\n", __func__, sector);
 		return 0;
 	}
 
@@ -72,7 +72,7 @@ int ext4fs_devread(int sector, int byte_offset, int byte_len, char *buf)
 	sector += byte_offset >> SECTOR_BITS;
 	byte_offset &= SECTOR_SIZE - 1;
 
-	debug(" <%d, %d, %d>\n", sector, byte_offset, byte_len);
+	debug(" <" LBAFU ", %d, %d>\n", sector, byte_offset, byte_len);
 
 	if (ext4fs_block_dev_desc == NULL) {
 		printf("** Invalid Block Device Descriptor (NULL)\n");

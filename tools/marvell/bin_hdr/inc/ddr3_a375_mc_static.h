@@ -74,7 +74,7 @@ typedef struct __mvDramMcInit {
 
 
 /* DB-88F5720 (Armada375 32bit) 533MHz  */
-MV_DRAM_MC_INIT ddr3_A375_DB_6720_400[MV_MAX_DDR3_STATIC_SIZE] =
+MV_DRAM_MC_INIT ddr3_A375_DB_6720_533[MV_MAX_DDR3_STATIC_SIZE] =
 {
     {0x00001400, 0x7B00D040}, 	/*DDR SDRAM Configuration Register*/
     {0x00001404, 0x36301820}, 	/*Dunit Control Low Register */
@@ -91,8 +91,8 @@ MV_DRAM_MC_INIT ddr3_A375_DB_6720_400[MV_MAX_DDR3_STATIC_SIZE] =
     {0x0000149C, 0x00000303},  /*SDRAM_ODT_CONTROL */
 
     {0x000014a8, 0x00000000}, 	/*AXI Control Register */
-    {0x00001504, 0x3FFFFFE1}, 	/* CS0 Size */
-    {0x0000150C, 0x3FFFFFE5}, 	/* CS1 Size */
+    {0x00001504, 0x7FFFFFE1}, 	/* CS0 Size */
+    {0x0000150C, 0x7FFFFFE5}, 	/* CS1 Size */
     {0x00001514, 0x00000000}, 	/* CS2 Size */
     {0x0000151C, 0x00000000}, 	/* CS3 Size */
     {0x00001538, 0x00000707}, 	/*Read Data Sample Delays Register */

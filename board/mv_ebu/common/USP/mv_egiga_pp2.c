@@ -280,7 +280,7 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 		/* port power up - release from reset */
 		if (!MV_PON_PORT(priv->port)) {
 			mvEthPhyAddrSet(priv->port, mvBoardPhyAddrGet(priv->port));
-			mvEthPhyReset(mvBoardPhyAddrGet(priv->port), 10000);
+			mvEthPhyRestartAN(mvBoardPhyAddrGet(priv->port), 10000);
 
 			mvEthPortPowerUp(priv->port,
 				MV_FALSE/*mvBoardIsPortInSgmii(priv->port)*/,

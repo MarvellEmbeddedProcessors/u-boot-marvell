@@ -606,13 +606,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
     DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - Datawidth - 16Bits \n");
 #endif
 
-#ifdef MV88F66XX
-    if (*pUiDdrWidth == 32) {
-        uiReg |= (1 << REG_SDRAM_CONFIG_WIDTH_OFFS);
-        DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - Datawidth - 32Bits \n");
-    } else
-        DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - Datawidth - 16Bits \n");
-#elif MV88F672X
+#if defined(MV88F66XX) || defined(MV88F672X)
     if (*pUiDdrWidth == 32) {
         uiReg |= (1 << REG_SDRAM_CONFIG_WIDTH_OFFS);
         DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - Datawidth - 32Bits \n");

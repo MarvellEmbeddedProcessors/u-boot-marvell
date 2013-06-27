@@ -86,9 +86,9 @@ typedef struct __mvDramModes {
 
 MV_DRAM_MODES ddr_modes[] =
 {
-    /*  Conf name       CPUFreq     FabFreq     Chip ID Chip/Board  MC regs         Training Values */
+    /*  Conf name     CPUFreq    FabFreq  Chip ID       Chip/Board               MC regs             Training Values */
     /* db board values  */
-    {"rd_88F6650_400",  0x3,        0,          0x0,    A375_DB_6720,  ddr3_A375_DB_6720_400, NULL},
+    {"db_88F6720_533",  0x15,       0,      0x0,        A375_DB_6720,       ddr3_A375_DB_6720_533,      NULL},
 };
 
 MV_U16 auiODTStatic[ODT_OPT][MAX_CS] =

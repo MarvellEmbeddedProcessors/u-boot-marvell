@@ -747,11 +747,9 @@ MV_STATUS mvPexBarSet(MV_U32 pexIf, MV_U32 barNum, MV_PEX_BAR *pAddrWin)
 	/* write base low */
 	MV_REG_WRITE(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_MV_BAR_BASE(barNum)), regBaseLow);
 
-	if (pAddrWin->addrWin.baseHigh != 0) {
-		/* Read base address high */
-		MV_REG_WRITE(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_MV_BAR_BASE_HIGH(barNum)),
-			     pAddrWin->addrWin.baseHigh);
-	}
+	/* Write base address high */
+	MV_REG_WRITE(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_MV_BAR_BASE_HIGH(barNum)),
+		     pAddrWin->addrWin.baseHigh);
 
 	/* lastly enable the Bar */
 	if (pAddrWin->enable == MV_TRUE) {

@@ -183,8 +183,12 @@ MV_BOARD_MAC_INFO db88f6660InfoBoardMacInfo[] = {
 MV_BOARD_MPP_TYPE_INFO db88f6660InfoBoardModTypeInfo[] = {
 	{
 		.boardMppSlic = MV_BOARD_AUTO,
-		.ethSataComplexOpt = (MV_ETHCOMP_GE_MAC0_2_SW_P6 | MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_SW_P0_2_GE_PHY_P0 | \
-				MV_ETHCOMP_SW_P3_2_GE_PHY_P3 | MV_ETHCOMP_SW_P4_2_RGMII0),
+		.ethSataComplexOpt = MV_ETHCOMP_SW_P0_2_GE_PHY_P0 |
+				     MV_ETHCOMP_SW_P1_2_GE_PHY_P1 |
+				     MV_ETHCOMP_SW_P2_2_GE_PHY_P2 |
+				     MV_ETHCOMP_SW_P3_2_GE_PHY_P3 |
+				     MV_ETHCOMP_GE_MAC0_2_SW_P6 |
+				     MV_ETHCOMP_GE_MAC1_2_RGMII1,
 		.ethPortsMode = 0x0
 	}
 };
@@ -402,6 +406,7 @@ MV_BOARD_MPP_TYPE_INFO rd88f6650InfoBoardModTypeInfo[] = {
 				     MV_ETHCOMP_SW_P1_2_GE_PHY_P1 |
 				     MV_ETHCOMP_SW_P2_2_GE_PHY_P2 |
 				     MV_ETHCOMP_SW_P3_2_GE_PHY_P3 |
+				     MV_ETHCOMP_GE_MAC1_2_SW_P4   |
 				     MV_ETHCOMP_GE_MAC0_2_SW_P6,
 		.ethPortsMode = 0x0
 	}

@@ -144,7 +144,7 @@ MV_BIN_SERDES_CFG fpga88f78XX0InfoBoardSerdesConfigValue[] = {
 /*----------------------------------------------*/
 /*----------------------------------------------*/
 MV_BIN_SERDES_CFG db78X60amcInfoBoardSerdesConfigValue[] = {
-	 {MV_PEX_ROOT_COMPLEX, 0x23111111, 0x11111111, {PEX_BUS_MODE_X4, PEX_BUS_MODE_X1, PEX_BUS_MODE_X4, PEX_BUS_MODE_X4}, 0x0030, db88f78XX0BoardSerdesChangeMphy} /* Default */
+	 {MV_PEX_ROOT_COMPLEX, 0x33111111,0x00010001, {PEX_BUS_MODE_X4, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1, PEX_BUS_MODE_X1}, 0x0030, db88f78XX0BoardSerdesChangeMphy} /* Default */
 };
 
 

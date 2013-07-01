@@ -180,8 +180,6 @@ static void mvEthComplexGbeToSwitchSpeedSet(MV_ETH_PORT_SPEED speed)
 
 	if (speed == MV_ETH_SPEED_2000)
 		reg |= (0x1 << ETHCC_GE_MAC0_SW_PORT_6_SPEED_OFFSET);
-	else
-		reg |= (0x0 << ETHCC_GE_MAC0_SW_PORT_6_SPEED_OFFSET);
 
 	MV_REG_WRITE(MV_ETHCOMP_CTRL_REG, reg);
 

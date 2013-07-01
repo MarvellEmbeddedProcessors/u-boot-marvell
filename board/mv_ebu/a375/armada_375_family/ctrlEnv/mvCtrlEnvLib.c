@@ -287,6 +287,12 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	/*Disabled for kernel compilation*/
 	/*mvEthComplexInit(mvBoardEthComplexConfigGet());*/
 
+	/*
+	 * Enable NAND Flash PUP (Pack-Unpack)
+	 * HW machanism to accelerate transactions (controlled by SoC register)
+	 */
+	MV_REG_BIT_SET(PUP_EN_REG, BIT4);
+
 	return MV_OK;
 }
 

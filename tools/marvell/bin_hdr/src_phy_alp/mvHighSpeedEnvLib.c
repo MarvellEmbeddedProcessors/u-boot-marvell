@@ -278,7 +278,7 @@ MV_VOID mvCtrlSatrInit(void)
 			boardLaneConfig[1] = SERDES_UNIT_UNCONNECTED;
 			break;
 		}
-		boardLaneConfig[2] = ((configVal[1] & 0x10) >> 4)? SERDES_UNIT_SATA:SERDES_UNIT_SGMII;
+		boardLaneConfig[2] = ((configVal[1] & 0x10) >> 4)? SERDES_UNIT_SGMII:SERDES_UNIT_SATA;
 		boardLaneConfig[3] = ((configVal[1] & 0x20) >> 5)? SERDES_UNIT_SGMII:SERDES_UNIT_USB3;
 	}
 	else{

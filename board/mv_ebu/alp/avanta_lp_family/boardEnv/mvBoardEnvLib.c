@@ -1266,7 +1266,7 @@ MV_BOOL mvBoardLaneSGMIIGet(MV_ETH_COMPLEX_TOPOLOGY *sgmiiConfig)
 		isSgmiiLaneEnabled = MV_TRUE;
 	}
 	/* Lane 2 */
-	if (mvCtrlSysConfigGet(MV_CONFIG_LANE2) == 0x0) {
+	if (mvCtrlSysConfigGet(MV_CONFIG_LANE2) == 0x1) {
 		if (isSgmiiLaneEnabled == MV_FALSE) {
 			laneConfig = MV_ETHCOMP_GE_MAC0_2_COMPHY_2;
 			isSgmiiLaneEnabled = MV_TRUE;

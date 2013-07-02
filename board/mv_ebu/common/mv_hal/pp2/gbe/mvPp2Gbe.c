@@ -219,7 +219,6 @@ function sets default values to the NETA port.
 *******************************************************************************/
 MV_STATUS mvPp2DefaultsSet(int port)
 {
-	MV_U32 regVal;
 	int txp, queue, txPortNum, i;
 	MV_PP2_PORT_CTRL *pPortCtrl = mvPp2PortHndlGet(port);
 
@@ -234,12 +233,9 @@ MV_STATUS mvPp2DefaultsSet(int port)
 		for (queue = 0; queue < MV_ETH_MAX_TXQ; queue++)
 			mvPp2WrReg(MV_PP2_TXQ_SCHED_TOKEN_CNTR_REG(MV_PPV2_TXQ_PHYS(port, txp, queue)), 0);
 
-		/* Set basic period to  1 usec */
-		regVal = mvPp2RdReg(MV_PP2_TXP_SCHED_REFILL_REG);
-		regVal &= ~MV_PP2_TXP_REFILL_PERIOD_ALL_MASK;
-		regVal |= MV_PP2_TXP_REFILL_PERIOD_MASK(1);
-		mvPp2WrReg(MV_PP2_TXP_SCHED_REFILL_REG, regVal);
+		/* Set refill period to 1 usec, refill tokens and bucket size to maximum */
 		mvPp2WrReg(MV_PP2_TXP_SCHED_PERIOD_REG, mvPp2HalData.tClk / 1000000);
+		mvPp2TxpMaxRateSet(port, txp);
 	}
 
 	/* Enable Rx cache snoop */
@@ -629,6 +625,8 @@ MV_PP2_PHYS_TXQ_CTRL *mvPp2TxqInit(int port, int txp, int txq, int descNum, int 
 	mvPp2WrReg(MV_PP2_TXQ_PREF_BUF_REG, MV_PP2_PREF_BUF_PTR(ptxq*4) | MV_PP2_PREF_BUF_SIZE_4 |
 				MV_PP2_PREF_BUF_THRESH(4/2));
 
+	mvPp2TxqMaxRateSet(port, txp, txq);
+
 	return pTxq;
 }
 
@@ -658,7 +656,7 @@ MV_STATUS mvPp2TxqDelete(int port, int txp, int txq)
 
 /* Allocate and initialize all physical TXQs.
    This function must be called before any use of TXQ */
-MV_STATUS mvPp2PhysTxqsAlloc()
+MV_STATUS mvPp2PhysTxqsAlloc(void)
 {
 	int i;
 
@@ -1214,6 +1212,47 @@ MV_STATUS mvPp2GbeIsrRxqGroup(int port, int rxqNum)
 }
 /*-------------------------------------------------------------------------------*/
 /* WRR / EJP configuration routines */
+
+MV_STATUS mvPp2TxpMaxRateSet(int port, int txp)
+{
+	MV_U32 regVal;
+	int eport;
+
+	eport = mvPp2EgressPort(port, txp);
+	mvPp2WrReg(MV_PP2_TXP_SCHED_PORT_INDEX_REG, eport);
+
+	regVal = mvPp2RdReg(MV_PP2_TXP_SCHED_REFILL_REG);
+	regVal &= ~MV_PP2_TXP_REFILL_PERIOD_ALL_MASK;
+	regVal |= MV_PP2_TXP_REFILL_PERIOD_MASK(1);
+	regVal |= MV_PP2_TXP_REFILL_TOKENS_ALL_MASK;
+	mvPp2WrReg(MV_PP2_TXP_SCHED_REFILL_REG, regVal);
+
+	regVal = MV_PP2_TXP_TOKEN_CNTR_MAX;
+	mvPp2WrReg(MV_PP2_TXP_SCHED_TOKEN_SIZE_REG, regVal);
+
+	return MV_OK;
+}
+
+MV_STATUS mvPp2TxqMaxRateSet(int port, int txp, int txq)
+{
+	MV_U32 regVal;
+	int eport;
+
+	eport = mvPp2EgressPort(port, txp);
+	mvPp2WrReg(MV_PP2_TXP_SCHED_PORT_INDEX_REG, eport);
+
+	regVal = mvPp2RdReg(MV_PP2_TXQ_SCHED_REFILL_REG(txq));
+	regVal &= ~MV_PP2_TXQ_REFILL_PERIOD_ALL_MASK;
+	regVal |= MV_PP2_TXQ_REFILL_PERIOD_MASK(1);
+	regVal |= MV_PP2_TXQ_REFILL_TOKENS_ALL_MASK;
+	mvPp2WrReg(MV_PP2_TXQ_SCHED_REFILL_REG(txq), regVal);
+
+	regVal = MV_PP2_TXQ_TOKEN_CNTR_MAX;
+	mvPp2WrReg(MV_PP2_TXQ_SCHED_TOKEN_SIZE_REG(txq), regVal);
+
+	return MV_OK;
+}
+
 /* Calculate period and tokens accordingly with required rate and accuracy */
 MV_STATUS mvPp2RateCalc(int rate, unsigned int accuracy, unsigned int *pPeriod, unsigned int *pTokens)
 {
@@ -1508,13 +1547,13 @@ MV_STATUS   mvPp2TxpMaxTxSizeSet(int port, int txp, int maxTxSize)
 		mvPp2WrReg(MV_PP2_TXP_SCHED_TOKEN_SIZE_REG, regVal);
 	}
 	for (txq = 0; txq < CONFIG_MV_ETH_TXQ; txq++) {
-		regVal = mvPp2RdReg(MV_PP2_TXQ_SCHED_REFILL_REG(txq));
+		regVal = mvPp2RdReg(MV_PP2_TXQ_SCHED_TOKEN_SIZE_REG(txq));
 		size = regVal & MV_PP2_TXQ_TOKEN_SIZE_MAX;
 		if (size < mtu) {
 			size = mtu;
 			regVal &= ~MV_PP2_TXQ_TOKEN_SIZE_MAX;
 			regVal |= size;
-			mvPp2WrReg(MV_PP2_TXQ_SCHED_REFILL_REG(txq), regVal);
+			mvPp2WrReg(MV_PP2_TXQ_SCHED_TOKEN_SIZE_REG(txq), regVal);
 		}
 	}
 	return MV_OK;

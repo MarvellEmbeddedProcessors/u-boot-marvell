@@ -98,7 +98,18 @@ static INLINE MV_U32 DEV_BANK_PARAM_REG(int num)
 #define DEV_BANK_PARAM_REG_WR(num)	(DEV_BANK_PARAM_REG(num)+0x4)
 #define DEV_NAND_CTRL_REG		(MV_DEV_BUS_REGS_OFFSET + 0x0470)
 #define DEV_BUS_SYNC_CTRL		(MV_DEV_BUS_REGS_OFFSET + 0xC8)
-
+/* Select Ready Polarity bit for CS in DEV_BUS_SYNC_CTRL */
+#define SYNC_CTRL_READY_POL(cs)		(cs == DEV_BOOCS ? 0x20 : \
+					(cs == DEVICE_CS0 ? 0x400 : \
+					(cs == DEVICE_CS1 ? 0x8000 : \
+					(cs == DEVICE_CS2 ? 0x100000 : \
+					(cs == DEVICE_CS3 ? 0x2000000 : 0)))))
+/* Select Ready Ignore bit for CS in DEV_BUS_SYNC_CTRL */
+#define SYNC_CTRL_READY_IGNORE(cs)	(cs == DEV_BOOCS ? 0x10 : \
+					(cs == DEVICE_CS0 ? 0x200 : \
+					(cs == DEVICE_CS1 ? 0x4000 : \
+					(cs == DEVICE_CS2 ? 0x80000 : \
+					(cs == DEVICE_CS3 ? 0x100000 : 0)))))
 /* Device Bank Parameters register fields (DBP_REG)*/
 /* Boot Device Bank Parameters (DBP) register fields (DEV_BOOT_BANK_PARAM_REG)*/
 /* DBP_XXX_MASK_HIGH is the offset of the extend bit from the msb of the input value */

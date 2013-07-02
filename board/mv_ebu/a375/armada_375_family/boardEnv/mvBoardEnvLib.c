@@ -122,14 +122,16 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 	MV_U32 norDev;
 
 	mvBoardIdSet(mvBoardIdGet());
+	MV_U32 syncCtrl = 0;
 
 	nandDev = boardGetDevCSNum(0, BOARD_DEV_NAND_FLASH);
 	if (nandDev != 0xFFFFFFFF) {
 		/* Set NAND interface access parameters */
-		nandDev = BOOT_CS;
 		MV_REG_WRITE(DEV_BANK_PARAM_REG(nandDev), board->nandFlashReadParams);
 		MV_REG_WRITE(DEV_BANK_PARAM_REG_WR(nandDev), board->nandFlashWriteParams);
 		MV_REG_WRITE(DEV_NAND_CTRL_REG, board->nandFlashControl);
+		/* Set Ready Polarity to Active High */
+		syncCtrl |= SYNC_CTRL_READY_POL(nandDev);
 	}
 
 	norDev = boardGetDevCSNum(0, BOARD_DEV_NOR_FLASH);
@@ -137,7 +139,15 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 		/* Set NOR interface access parameters */
 		MV_REG_WRITE(DEV_BANK_PARAM_REG(norDev), board->norFlashReadParams);
 		MV_REG_WRITE(DEV_BANK_PARAM_REG_WR(norDev), board->norFlashWriteParams);
-		MV_REG_WRITE(DEV_BUS_SYNC_CTRL, 0x11);
+		/* Ignore Ready signal */
+		syncCtrl |= SYNC_CTRL_READY_IGNORE(norDev);
+	}
+
+	if (nandDev != 0xFFFFFFFF || norDev != 0xFFFFFFFF) {
+		/* Set TCLK Divide Value to 1:1 */
+		syncCtrl |= 0x1;
+		/* Finally - write the Bus Sync Control configuration */
+		MV_REG_WRITE(DEV_BUS_SYNC_CTRL, syncCtrl);
 	}
 
 	/* Set GPP Out value */

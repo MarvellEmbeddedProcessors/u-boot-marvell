@@ -68,8 +68,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvTypes.h"
 #include "mvCommon.h"
 #include "mvOs.h"
-#include "ctrlEnv/mvCtrlEnvSpec.h"
-#include "ctrlEnv/mvCtrlEnvLib.h"
 #include "mvSysEthConfig.h"
 #include "mvPp2GbeRegs.h"
 #include "pp2/gmac/mvEthGmacApi.h"
@@ -83,6 +81,11 @@ static inline int mvPp2IsRxSpecial(MV_U16 parser_info)
 	MV_U16 cpu_code = (parser_info & PP2_RX_CPU_CODE_MASK) >> PP2_RX_CPU_CODE_OFFS;
 
 	return PP2_CPU_CODE_IS_RX_SPECIAL(cpu_code);
+}
+
+static inline int mvPp2RxBmPoolId(PP2_RX_DESC *rxDesc)
+{
+	return (rxDesc->status & PP2_RX_BM_POOL_ALL_MASK) >> PP2_RX_BM_POOL_ID_OFFS;
 }
 
 /************************** PPv2 HW Configuration ***********************/
@@ -581,6 +584,8 @@ MV_STATUS mvPp2MhSet(int port, MV_PP2_MH_MODE mh);
 MV_STATUS mvPp2RxFifoInit(int portNum);
 
 MV_STATUS mvPp2TxpMaxTxSizeSet(int port, int txp, int maxTxSize);
+MV_STATUS mvPp2TxpMaxRateSet(int port, int txp);
+MV_STATUS mvPp2TxqMaxRateSet(int port, int txp, int txq);
 MV_STATUS mvPp2TxpRateSet(int port, int txp, int rate);
 MV_STATUS mvPp2TxpBurstSet(int port, int txp, int burst);
 MV_STATUS mvPp2TxqRateSet(int port, int txp, int txq, int rate);

@@ -126,9 +126,29 @@ CTRL_ENV_INFO ctrlEnvInfo = {};
 MV_U32 satrOptionsConfig[MV_SATR_READ_MAX_OPTION];
 MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 
+/*******************************************************************************
+* mvCtrlGetCpuNum
+*
+* DESCRIPTION: Read number of cores enabled by SatR
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*        Number of cores enabled
+*
+*******************************************************************************/
 MV_U32 mvCtrlGetCpuNum(MV_VOID)
 {
-	return 0;
+	MV_U32 cpu1Enabled;
+
+	cpu1Enabled = mvCtrlSatRRead(MV_SATR_CPU1_ENABLE);
+	if (cpu1Enabled == MV_ERROR) {
+		DB(mvOsPrintf("%s: Error: MV_SATR_CPU1_ENABLE is not active for board (using default)\n", __func__));
+		return 0;
+	} else
+		return cpu1Enabled;
 }
 
 /*******************************************************************************

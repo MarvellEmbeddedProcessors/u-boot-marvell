@@ -118,6 +118,9 @@ MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = {
 #define DB_88F6720_BOARD_NOR_READ_PARAMS	0x403E07CF
 #define DB_88F6720_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
 
+#define DB_88F6720_BOARD_NAND_READ_PARAMS	0x003E07CF
+#define DB_88F6720_BOARD_NAND_WRITE_PARAMS	0x000F0F0F
+
 MV_BOARD_TWSI_INFO db88f6720InfoBoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
 	{ BOARD_DEV_TWSI_SATR,		0,	0x4C,	   ADDR7_BIT	},
@@ -144,6 +147,9 @@ MV_DEV_CS_INFO db88f6720InfoBoardDeCsInfo[] = {
 #endif
 #if defined(MV_INCLUDE_NOR)
 	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16}, /* NOR DEV */
+#endif
+#if defined(MV_INCLUDE_LEGACY_NAND)
+	{DEV_BOOCS, N_A, BOARD_DEV_NAND_FLASH, 16, 16}  /* NAND DEV */
 #endif
 };
 
@@ -207,8 +213,8 @@ MV_BOARD_INFO db88f6720_board_info = {
 	.pBoardSpecInit			= NULL,
 
 	/* NAND init params */
-	.nandFlashReadParams		= 0,
-	.nandFlashWriteParams		= 0,
+	.nandFlashReadParams		= DB_88F6720_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_88F6720_BOARD_NAND_WRITE_PARAMS,
 	.nandFlashControl		= 0,
 	/* NOR init params */
 	.norFlashReadParams		= DB_88F6720_BOARD_NOR_READ_PARAMS,

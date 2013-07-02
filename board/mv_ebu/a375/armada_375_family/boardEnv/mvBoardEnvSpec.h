@@ -91,8 +91,19 @@
 /******************************************************************************/
 /*SPI, NAND cases*/
 #define GROUP1_DEFAULT_MPP_SPI_I2C         0x22000022  /* SPI , I2C */
+#if defined(MV_INCLUDE_LEGACY_NAND) || defined(MV_INCLUDE_NOR)
+#define DB_88F6720_MPP0_7               0x11111111  /* DEV */
+#define DB_88F6720_MPP8_15              0x22111111  /* DEV , I2C */
+#elif defined(MV_INCLUDE_SPI)
 #define DB_88F6720_MPP0_7               0x00020020  /* SPI */
 #define DB_88F6720_MPP8_15              0x22000022  /* SPI , I2C */
+#elif defined(MTD_NAND_NFC)
+#define DB_88F6720_MPP0_7               0x55555555  /* NFC */
+#define DB_88F6720_MPP8_15              0x22555555  /* NFC , I2C */
+#else
+#define DB_88F6720_MPP0_7               0x00000000  /* GPIO */
+#define DB_88F6720_MPP8_15              0x22000000  /* GPIO , I2C */
+#endif
 #define DB_88F6720_MPP16_23             0x22222222	/* UART, TDM*/
 #define DB_88F6720_MPP24_31             0x33333333  /* SDIO*/
 #define DB_88F6720_MPP32_39             0x04403330  /* SPI, SMI */

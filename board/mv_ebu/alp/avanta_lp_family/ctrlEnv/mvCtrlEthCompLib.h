@@ -153,6 +153,10 @@ enum mvSwPortSrc {
 #define     ETHQPCS_DPLL_RESET_OFFSET			4
 #define     ETHQPCS_DPLL_RESET_MASK			(0x1 << ETHQPCS_DPLL_RESET_OFFSET)
 
+#ifdef CONFIG_MV_ETH_PP2
 MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig);
+#else
+MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig) { /* empty */ }
+#endif
 
 #endif /* __INCmvCtrlEthCompLibh */

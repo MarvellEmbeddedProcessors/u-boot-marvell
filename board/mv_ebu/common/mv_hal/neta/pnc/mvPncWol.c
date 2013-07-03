@@ -195,7 +195,7 @@ int mv_pnc_wol_rule_set(int port, char *data, char *mask, int size)
 	if (mvNetaPortCheck(port))
 		return -1;
 
-	if (mvNetaMaxCheck(size, (MV_PNC_TOTAL_DATA_SIZE + 1)))
+	if (mvNetaMaxCheck(size, (MV_PNC_TOTAL_DATA_SIZE + 1), "data_size"))
 		return -1;
 
 	/* Save WoL rule in mv_pnc_wol_tbl */
@@ -418,7 +418,7 @@ int mv_pnc_wol_rule_dump(int idx)
 	int	i;
 	MV_PNC_WOL_RULE *pWolRule;
 
-	if (mvNetaMaxCheck(idx, MV_PNC_MAX_RULES))
+	if (mvNetaMaxCheck(idx, MV_PNC_MAX_RULES, "pnc_rules"))
 		return -1;
 
 	pWolRule = mv_pnc_wol_tbl[idx];

@@ -70,7 +70,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern "C" {
 #endif /* __cplusplus */
 
+#if !defined(CONFIG_OF)
 #include "mvSysEthConfig.h"
+#endif
 
 #define NETA_REG_BASE(port) 				MV_ETH_REGS_BASE(port)
 
@@ -385,7 +387,10 @@ extern "C" {
 /*-------------------------------------------------------------------------------*/
 
 #define NETA_BM_ADDR_REG(p)                 (NETA_REG_BASE(p) + 0x2504)
+/*-------------------------------------------------------------------------------*/
 
+/* RXQs and TXQs to CPU mapping */
+#define NETA_MAX_CPU_REGS                   4
 #define NETA_CPU_MAP_REG(p, cpu)            (NETA_REG_BASE(p) + 0x2540 + ((cpu) << 2))
 
 #define NETA_CPU_RXQ_ACCESS_OFFS            0
@@ -395,6 +400,7 @@ extern "C" {
 #define NETA_CPU_TXQ_ACCESS_OFFS            8
 #define NETA_CPU_TXQ_ACCESS_ALL_MASK        (0xFF << NETA_CPU_TXQ_ACCESS_OFFS)
 #define NETA_CPU_TXQ_ACCESS_MASK(q)         (1 << (NETA_CPU_TXQ_ACCESS_OFFS + (q)))
+/*-------------------------------------------------------------------------------*/
 
 /* Interrupt coalescing mechanism */
 #define NETA_RXQ_INTR_TIME_COAL_REG(p, q)   (NETA_REG_BASE(p) + 0x2580 + ((q) << 2))
@@ -826,6 +832,7 @@ extern "C" {
 #endif /* MV_ETH_PMT_NEW */
 
 /*********************** New TX WRR EJP Registers ********************************/
+
 #define NETA_TX_CMD_1_REG(p, txp)           (NETA_TX_REG_BASE((p), (txp)) + 0x1a00)
 
 #define NETA_TX_EJP_RESET_BIT               0
@@ -1013,8 +1020,8 @@ typedef struct neta_rx_desc {
 #define NETA_RX_L3_MASK                     (3 << NETA_RX_L3_OFFS)
 #define NETA_RX_L3_UN                       (0 << NETA_RX_L3_OFFS)
 #define NETA_RX_L3_IP6                      (1 << NETA_RX_L3_OFFS)
-#define NETA_RX_L3_IP4           	        (2 << NETA_RX_L3_OFFS)
-#define NETA_RX_L3_IP4_ERR            		(3 << NETA_RX_L3_OFFS)
+#define NETA_RX_L3_IP4                      (2 << NETA_RX_L3_OFFS)
+#define NETA_RX_L3_IP4_ERR                  (3 << NETA_RX_L3_OFFS)
 
 #define NETA_RX_L4_OFFS                     28
 #define NETA_RX_L4_MASK                     (3 << NETA_RX_L4_OFFS)
@@ -1059,8 +1066,8 @@ typedef struct neta_rx_desc {
 #define NETA_RX_L3_MASK                     (3 << NETA_RX_L3_OFFS)
 #define NETA_RX_L3_UN                       (0 << NETA_RX_L3_OFFS)
 #define NETA_RX_L3_IP6                      (2 << NETA_RX_L3_OFFS)
-#define NETA_RX_L3_IP4           	        (3 << NETA_RX_L3_OFFS)
-#define NETA_RX_L3_IP4_ERR            		(1 << NETA_RX_L3_OFFS)
+#define NETA_RX_L3_IP4                      (3 << NETA_RX_L3_OFFS)
+#define NETA_RX_L3_IP4_ERR                  (1 << NETA_RX_L3_OFFS)
 
 #else
 
@@ -1081,12 +1088,12 @@ typedef struct neta_rx_desc {
 
 /* Bit map of "hw_cmd" field */
 #define NETA_RX_COLOR_BIT                   3
-#define NETA_RX_COLOR_MASK				    (1 << NETA_RX_COLOR_BIT)
+#define NETA_RX_COLOR_MASK                  (1 << NETA_RX_COLOR_BIT)
 #define NETA_RX_COLOR_GREEN                 (0 << NETA_RX_COLOR_BIT)
 #define NETA_RX_COLOR_YELLOW                (1 << NETA_RX_COLOR_BIT)
 
-#define NETA_RX_DSA_OFFS           		    4
-#define NETA_RX_DSA_MASK           		    (3 << NETA_RX_DSA_OFFS)
+#define NETA_RX_DSA_OFFS                    4
+#define NETA_RX_DSA_MASK                    (3 << NETA_RX_DSA_OFFS)
 #define NETA_RX_DSA_NONE                    (0 << NETA_RX_DSA_OFFS)
 #define NETA_RX_DSA                         (1 << NETA_RX_DSA_OFFS)
 #define NETA_RX_DSA_E                       (2 << NETA_RX_DSA_OFFS)

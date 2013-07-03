@@ -228,7 +228,7 @@ void mvNetaRxqRegs(int port, int rxq)
 	if (mvNetaPortCheck(port))
 		return;
 
-	if (mvNetaMaxCheck(rxq, MV_ETH_MAX_RXQ))
+	if (mvNetaMaxCheck(rxq, MV_ETH_MAX_RXQ, "rxq"))
 		return;
 
 	mvOsPrintf("\n[NetA Rx: port=%d, rxq=%d]\n", port, rxq);
@@ -247,7 +247,7 @@ void mvNetaTxqRegs(int port, int txp, int txq)
 	if (mvNetaTxpCheck(port, txp))
 		return;
 
-	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ))
+	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ, "txq"))
 		return;
 
 	mvOsPrintf("\n[NetA Tx: port=%d, txp=%d, txq=%d]\n", port, txp, txq);
@@ -362,7 +362,7 @@ void mvNetaPortRegs(int port)
 		return;
 
 	/* Per CPU register */
-	for (i = 0; i < mvNetaHalData.maxCPUs; i++)
+	for (i = 0; i < NETA_MAX_CPU_REGS; i++)
 		mvEthRegPrint2(NETA_CPU_MAP_REG(port, i), "NETA_CPU_MAP_REG", i);
 
 	/* Per BM pool registers */
@@ -443,7 +443,7 @@ void mvNetaRxqShow(int port, int rxq, int mode)
 	if (mvNetaPortCheck(port))
 		return;
 
-	if (mvNetaMaxCheck(rxq, MV_ETH_MAX_RXQ))
+	if (mvNetaMaxCheck(rxq, MV_ETH_MAX_RXQ, "rxq"))
 		return;
 
 	pPortCtrl = mvNetaPortHndlGet(port);
@@ -499,7 +499,7 @@ void mvNetaTxqShow(int port, int txp, int txq, int mode)
 	if (!pPortCtrl)
 		return;
 
-	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ))
+	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ, "txq"))
 		return;
 
 	mvOsPrintf("\n[NetA TxQ: port=%d, txp=%d, txq=%d]\n", port, txp, txq);

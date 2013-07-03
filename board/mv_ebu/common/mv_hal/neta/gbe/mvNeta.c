@@ -94,49 +94,38 @@ static void mvNetaDescRingReset(MV_NETA_QUEUE_CTRL *pQueueHndl);
 #define TX_FIFO_EMPTY_TIMEOUT_MSEC  10000
 #define PORT_DISABLE_WAIT_TCLOCKS   5000
 
+
+int mvNetaMaxCheck(int value, int limit, char *name)
+{
+	if ((value < 0) || (value >= limit)) {
+		mvOsPrintf("%s %d is out of range [0..%d]\n",
+			name ? name : "value", value, (limit - 1));
+		return 1;
+	}
+	return 0;
+}
+
 int mvNetaPortCheck(int port)
 {
-	if ((port < 0) || (port >= mvNetaHalData.maxPort)) {
-		mvOsPrintf("port %d is out of range\n", port);
-		return 1;
-	}
-	if (!(MV_BIT_CHECK(mvNetaHalData.portMask, port))) {
-		mvOsPrintf("port %d is not in portMask (%x)\n", port,  	mvNetaHalData.portMask);
-		return 1;
-	}
-
-	return 0;
+	return mvNetaMaxCheck(port, mvNetaHalData.maxPort, "port");
 }
 
 int mvNetaTxpCheck(int port, int txp)
 {
-	int txpNum;
+	int txpMax = 1;
 
 	if (mvNetaPortCheck(port))
 		return 1;
 
-	txpNum = 1;
-
-#ifdef CONFIG_MV_PON
 	if (MV_PON_PORT(port))
-		txpNum = MV_ETH_MAX_TCONT();
-#endif /* CONFIG_MV_PON */
+		txpMax = MV_ETH_MAX_TCONT();
 
-	if ((txp < 0) || (txp >= txpNum)) {
-		mvOsPrintf("txp %d is out of range\n", txp);
-		return 1;
-	}
-	return 0;
+	return mvNetaMaxCheck(txp, txpMax, "txp");
 }
 
-int mvNetaMaxCheck(int num, int limit)
+int mvNetaCpuCheck(int cpu)
 {
-	if ((num < 0) || (num >= limit)) {
-		mvOsPrintf("%d is out of range %d\n", num, limit);
-		return 1;
-	}
-
-	return 0;
+	return mvNetaMaxCheck(cpu, NETA_MAX_CPU_REGS, "cpu");
 }
 
 /******************************************************************************/
@@ -323,7 +312,7 @@ MV_STATUS mvNetaDefaultsSet(int port)
 
 	/* Set CPU queue access map - all CPUs have access to all RX queues and to all TX queues */
 
-	for (cpu = 0; cpu < mvNetaHalData.maxCPUs; cpu++)
+	for (cpu = 0; cpu < NETA_MAX_CPU_REGS; cpu++)
 		if (MV_BIT_CHECK(mvNetaHalData.cpuMask, cpu))
 			MV_REG_WRITE(NETA_CPU_MAP_REG(port, cpu), (NETA_CPU_RXQ_ACCESS_ALL_MASK | NETA_CPU_TXQ_ACCESS_ALL_MASK));
 
@@ -486,7 +475,10 @@ MV_STATUS	mvNetaRxqCpuMaskSet(int port, int rxq_mask, int cpu)
 {
 	MV_U32	regVal;
 
-	if (!(MV_BIT_CHECK(mvNetaHalData.cpuMask, cpu)))
+	if (mvNetaPortCheck(port))
+		return MV_ERROR;
+
+	if (mvNetaCpuCheck(cpu))
 		return MV_ERROR;
 
 	regVal = MV_REG_READ(NETA_CPU_MAP_REG(port, cpu));
@@ -502,7 +494,10 @@ MV_STATUS	mvNetaTxqCpuMaskSet(int port, int txq_mask, int cpu)
 {
 	MV_U32	regVal;
 
-	if (!(MV_BIT_CHECK(mvNetaHalData.cpuMask, cpu)))
+	if (mvNetaPortCheck(port))
+		return MV_ERROR;
+
+	if (mvNetaCpuCheck(cpu))
 		return MV_ERROR;
 
 	regVal = MV_REG_READ(NETA_CPU_MAP_REG(port, cpu));
@@ -2316,7 +2311,6 @@ void mvNetaTxqAddrSet(int port, int txp, int queue, int descrNum)
 	pTxqCtrl = mvNetaTxqHndlGet(port, txp, queue);
 	pQueueCtrl = &pTxqCtrl->queueCtrl;
 
-
 	/* Set Tx descriptors queue starting address */
 	MV_REG_WRITE(NETA_TXQ_BASE_ADDR_REG(port, txp, queue), netaDescVirtToPhys(pQueueCtrl, (MV_U8 *)pQueueCtrl->pFirst));
 
@@ -2478,6 +2472,36 @@ MV_STATUS mvNetaMhSet(int port, MV_NETA_MH_MODE mh)
 		break;
 
 	case MV_NETA_DSA_EXT:
+		regVal |= ETH_DSA_EXT_MASK;
+
+	default:
+		mvOsPrintf("port=%d: Unexpected MH = %d value\n", port, mh);
+		return MV_BAD_PARAM;
+	}
+	MV_REG_WRITE(ETH_PORT_MARVELL_HEADER_REG(port), regVal);
+	return MV_OK;
+}
+
+MV_STATUS mvNetaTagSet(int port, MV_TAG_TYPE mh)
+{
+	MV_U32 regVal;
+
+	regVal = MV_REG_READ(ETH_PORT_MARVELL_HEADER_REG(port));
+	/* Clear relevant fields */
+	regVal &= ~(ETH_DSA_EN_MASK | ETH_MH_EN_MASK);
+	switch (mh) {
+	case MV_TAG_TYPE_NONE:
+		break;
+
+	case MV_TAG_TYPE_MH:
+		regVal |= ETH_MH_EN_MASK;
+		break;
+
+	case MV_TAG_TYPE_DSA:
+		regVal |= ETH_DSA_MASK;
+		break;
+
+	case MV_TAG_TYPE_EDSA:
 		regVal |= ETH_DSA_EXT_MASK;
 
 	default:
@@ -2917,7 +2941,7 @@ MV_STATUS mvNetaTxqFixPrioSet(int port, int txp, int txq)
 	if (mvNetaTxpCheck(port, txp))
 		return MV_BAD_PARAM;
 
-	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ))
+	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ, "txq"))
 		return MV_BAD_PARAM;
 
 	regVal = MV_REG_READ(NETA_TX_FIXED_PRIO_CFG_REG(port, txp));
@@ -2936,7 +2960,7 @@ MV_STATUS mvNetaTxqWrrPrioSet(int port, int txp, int txq, int weight)
 	if (mvNetaTxpCheck(port, txp))
 		return MV_BAD_PARAM;
 
-	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ))
+	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ, "txq"))
 		return MV_BAD_PARAM;
 
 	/* Weight * 256 bytes * 8 bits must be larger then MTU [bits] */
@@ -3090,7 +3114,7 @@ MV_STATUS   mvNetaTxqRateSet(int port, int txp, int txq, int rate)
 	if (mvNetaTxpCheck(port, txp))
 		return MV_BAD_PARAM;
 
-	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ))
+	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ, "txq"))
 		return MV_BAD_PARAM;
 
 	status = mvNetaRateCalc(rate, accuracy, &period, &tokens);
@@ -3130,7 +3154,7 @@ MV_STATUS mvNetaTxqBurstSet(int port, int txp, int txq, int burst)
 	if (mvNetaTxpCheck(port, txp))
 		return MV_BAD_PARAM;
 
-	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ))
+	if (mvNetaMaxCheck(txq, MV_ETH_MAX_TXQ, "txq"))
 		return MV_BAD_PARAM;
 
 	/* Calulate Tocket Bucket Size */
@@ -3325,7 +3349,7 @@ MV_STATUS   mvNetaPonRxMibDefault(int mib)
 		/* Don't count default packets that not match Gem portID */
 		regVal &= ~NETA_PON_MIB_RX_VALID_MASK;
 	} else {
-		if (mvNetaMaxCheck(mib, MV_ETH_MAX_TCONT()))
+		if (mvNetaMaxCheck(mib, MV_ETH_MAX_TCONT(), "tcont"))
 			return MV_BAD_PARAM;
 
 		regVal &= ~NETA_PON_MIB_RX_MIB_NO_MASK;
@@ -3342,7 +3366,7 @@ MV_STATUS   mvNetaPonRxMibGemPid(int mib, MV_U16 gemPid)
 	MV_U32	regVal;
 	int	i, free = -1;
 
-	if ((mib != -1) && mvNetaMaxCheck(mib, MV_ETH_MAX_TCONT()))
+	if ((mib != -1) && mvNetaMaxCheck(mib, MV_ETH_MAX_TCONT(), "tcont"))
 		return MV_BAD_PARAM;
 
 	/* look for gemPid if exist of first free entry */

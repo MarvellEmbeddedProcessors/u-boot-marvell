@@ -130,19 +130,25 @@ MV_STATUS mvEthPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 		phyAddr = ethphyHalData.phyAddr[ethPortNum];
 
 	/* Set page as 0 */
-	if (mvEthPhyRegWrite(phyAddr, 22, 0) != MV_OK)
+	if (mvEthPhyRegWrite(phyAddr, 22, 0) != MV_OK) {
+		mvOsPrintf("Port%d: phyAddr=0x%x -  phy set page 0 failed\n", ethPortNum, phyAddr);
 		return MV_ERROR;
+	}
 
 	/* Reads ID1 */
-	if (mvEthPhyRegRead(phyAddr, 2, &id1) != MV_OK)
+	if (mvEthPhyRegRead(phyAddr, 2, &id1) != MV_OK) {
+		mvOsPrintf("Port%d: phyAddr=0x%x -  phy read id1 failed\n", ethPortNum, phyAddr);
 		return MV_ERROR;
+	}
 
 	/* Reads ID2 */
-	if (mvEthPhyRegRead(phyAddr, 3, &id2) != MV_OK)
+	if (mvEthPhyRegRead(phyAddr, 3, &id2) != MV_OK) {
+		mvOsPrintf("Port%d: phyAddr=0x%x -  phy read id2 failed\n", ethPortNum, phyAddr);
 		return MV_ERROR;
+	}
 
 	if (!MV_IS_MARVELL_OUI(id1, id2)) {
-		mvOsPrintf("Not Marvell PHY id1 %x id2 %x\n", id1, id2);
+		mvOsPrintf("Port%d: phyAddr=0x%x, Not Marvell PHY id1 %x id2 %x\n", ethPortNum, phyAddr, id1, id2);
 		return MV_ERROR;
 	}
 
@@ -359,6 +365,8 @@ MV_STATUS mvEthPhyRegWrite(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 data)
 	smiReg &= ~ETH_PHY_SMI_OPCODE_READ;
 
 	/* write the smi register */
+	DB(printf("%s: phyAddr=0x%x offset = 0x%x data=0x%x\n", __func__, phyAddr, regOffs, data));
+	DB(printf("%s: ethphyHalData.ethPhySmiReg = 0x%x smiReg=0x%x\n", __func__, ethphyHalData.ethPhySmiReg, smiReg));
 	MV_REG_WRITE(ethphyHalData.ethPhySmiReg, smiReg);
 
 	return MV_OK;
@@ -1762,7 +1770,7 @@ MV_VOID mvEth1540A1PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	mvEthPhyRegWrite(i, 0x10, reg);
 	mvEthPhyRegWrite(i, 0x16, 0x0);
 
-	DB2(printf("%s: configure jumbo QuadPhyPort=0x%x offset = 0x%x\n",__FUNCTION__,port0, offs));
+	DB2(printf("%s: configure jumbo QuadPhyPort=0x%x offset = 0x%x\n", __func__, port0, offs));
 	if (0 == initJumboPackets) {
 		int j;
 		initJumboPackets = 1;
@@ -1923,7 +1931,7 @@ MV_VOID mvEth1540A0PhyBasicInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	mvEthPhyRegWrite(i, 0x10, reg);
 	mvEthPhyRegWrite(i, 0x16, 0x0);
 
-	DB2(printf("%s: configure jumbo QuadPhyPort=0x%x offset = 0x%x\n",__FUNCTION__,port0, offs));
+	DB2(printf("%s: configure jumbo QuadPhyPort=0x%x offset = 0x%x\n", __func__, port0, offs));
 	if (0 == initJumboPackets) {
 		int j;
 		initJumboPackets = 1;

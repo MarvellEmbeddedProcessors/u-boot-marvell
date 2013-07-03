@@ -71,8 +71,6 @@ extern "C" {
 #include "mvTypes.h"
 #include "mvCommon.h"
 #include "mvOs.h"
-#include "ctrlEnv/mvCtrlEnvSpec.h"
-#include "mvSysEthConfig.h"
 #include "mvNetaRegs.h"
 #include "mvEthRegs.h"
 
@@ -96,12 +94,6 @@ extern "C" {
 #endif
 
 #define NFP_MAX_PORTS   (MV_ETH_MAX_PORTS + NFP_EXT_NUM)
-
-#ifdef CONFIG_MV_ETH_SWITCH
-# define NFP_MAX_SWITCH_GROUPS  CONFIG_MV_ETH_SWITCH_NETDEV_NUM
-#else
-# define NFP_MAX_SWITCH_GROUPS  1
-#endif /* CONFIG_MV_ETH_SWITCH */
 
 typedef struct {
 	void   *dev;
@@ -196,9 +188,10 @@ typedef struct {
 #define NETA_RX_L3_IS_IP4_ERR(status)  (((status) & ETH_RX_IP_FRAME_TYPE_MASK) &&	\
 					!((status) & ETH_RX_IP_HEADER_OK_MASK))
 
-#define NETA_RX_L3_SET_IP4_ERR(rxd)													\
-					((rxd)->status |= ETH_RX_IP_FRAME_TYPE_MASK);					\
-					((rxd)->status &= ~ETH_RX_IP_HEADER_OK_MASK);
+#define NETA_RX_L3_SET_IP4_ERR(rxd) do {                \
+	((rxd)->status |= ETH_RX_IP_FRAME_TYPE_MASK);	\
+	((rxd)->status &= ~ETH_RX_IP_HEADER_OK_MASK);   \
+} while (0)
 
 #define NETA_RX_L3_IS_IP6(status)      (MV_FALSE)
 #define NETA_RX_L3_SET_IP6(rxd)        NETA_RX_L3_SET_UN(rxd)
@@ -294,9 +287,8 @@ typedef enum {
 
 typedef struct {
 	MV_U32 maxPort;
-	MV_U32 pClk;
 	MV_U32 tClk;
-	int	maxCPUs;
+	MV_U32 cpuMask;
 	MV_BOOL	iocc;
 	MV_U16 ctrlModel;       /* Controller Model     */
 	MV_U8  ctrlRev;         /* Controller Revision  */
@@ -311,8 +303,10 @@ typedef struct {
 	MV_U8 *pncVirtBase;
 #endif /* CONFIG_MV_ETH_PNC */
 
+	/* Obsolete fields - unused */
+	MV_U32 pClk;
 	MV_U32 portMask;
-	MV_U32 cpuMask;
+	int    maxCPUs;
 } MV_NETA_HAL_DATA;
 
 typedef struct eth_pbuf {
@@ -370,6 +364,8 @@ extern MV_NETA_HAL_DATA mvNetaHalData;
 
 #ifdef CONFIG_MV_PON
 #define MV_ETH_MAX_TCONT() 	CONFIG_MV_PON_TCONTS
+#else
+#define MV_ETH_MAX_TCONT()      1
 #endif /* CONFIG_MV_PON */
 
 /* Get Giga port handler */
@@ -412,10 +408,10 @@ static INLINE void mvNetaRxqDescSwap(NETA_RX_DESC *pRxDesc)
 static INLINE void mvNetaTxqDescSwap(NETA_TX_DESC *pTxDesc)
 {
 	pTxDesc->command = MV_BYTE_SWAP_32BIT(pTxDesc->command);
-    pTxDesc->csumL4 = MV_BYTE_SWAP_16BIT(pTxDesc->csumL4);
-    pTxDesc->dataSize = MV_BYTE_SWAP_16BIT(pTxDesc->dataSize);
-    pTxDesc->bufPhysAddr = MV_BYTE_SWAP_32BIT(pTxDesc->bufPhysAddr);
-    pTxDesc->hw_cmd = MV_BYTE_SWAP_32BIT(pTxDesc->hw_cmd);
+	pTxDesc->csumL4 = MV_BYTE_SWAP_16BIT(pTxDesc->csumL4);
+	pTxDesc->dataSize = MV_BYTE_SWAP_16BIT(pTxDesc->dataSize);
+	pTxDesc->bufPhysAddr = MV_BYTE_SWAP_32BIT(pTxDesc->bufPhysAddr);
+	pTxDesc->hw_cmd = MV_BYTE_SWAP_32BIT(pTxDesc->hw_cmd);
 }
 #else
 static INLINE void mvNetaRxqDescSwap(NETA_RX_DESC *pRxDesc)
@@ -737,6 +733,7 @@ MV_U32 mvNetaTxDonePktsCoalGet(int port, int txp, int txq);
 
 MV_STATUS mvNetaRxqBufSizeSet(int port, int rxq, int bufSize);
 MV_STATUS mvNetaMhSet(int port, MV_NETA_MH_MODE mh);
+MV_STATUS mvNetaTagSet(int port, MV_TAG_TYPE mh);
 MV_STATUS mvNetaTxMhRegSet(int port, int txp, int reg, MV_U16 mh);
 MV_STATUS mvNetaMaxRxSizeSet(int port, int maxRxSize);
 MV_STATUS mvNetaMacAddrSet(int port, unsigned char *pAddr, int queue);
@@ -760,7 +757,7 @@ MV_STATUS mvNetaTxpEjpTxSpeedSet(int port, int txp, int type, int speed);
 
 int mvNetaPortCheck(int port);
 int mvNetaTxpCheck(int port, int txp);
-int mvNetaMaxCheck(int num, int limit);
+int mvNetaMaxCheck(int num, int limit, char *name);
 
 void mvNetaMibCountersClear(int port, int txp);
 MV_U32 mvNetaMibCounterRead(int port, int txp, unsigned int mibOffset, MV_U32 *pHigh32);

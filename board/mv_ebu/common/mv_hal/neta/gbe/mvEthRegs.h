@@ -72,8 +72,6 @@ extern "C" {
 
 #include "mvNetaRegs.h"
 
-#define MV_ETH_MH_SIZE					2
-#define MV_ETH_CRC_SIZE                 4
 
 #define ETH_MAX_DECODE_WIN              6
 #define ETH_MAX_HIGH_ADDR_REMAP_WIN     4

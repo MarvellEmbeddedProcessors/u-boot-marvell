@@ -189,9 +189,6 @@ MV_STATUS mvCpuIfInitForCpu(MV_U32 cpu, MV_CPU_DEC_WIN *cpuAddrWinMap)
 	for (i = 0; i < MAX_AHB_TO_MBUS_WINS-2; i++)
 		mvAhbToMbusWinEnable(i, MV_FALSE);
 
-	/* Disable all SRAM windows  */
-	mvCpuIfSramWinDisable();
-
 	/* First disable all CPU target windows  */
 	for (target = 0; cpuAddrWinMap[target].enable != TBL_TERM; target++) {
 		if ((MV_TARGET_IS_DRAM(target)) || (target == INTER_REGS))

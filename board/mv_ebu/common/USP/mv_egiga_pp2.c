@@ -271,6 +271,7 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 	int i, phys_queue, phys_port;
 	MV_BOARD_MAC_SPEED mac_speed;
 	MV_ETH_PORT_SPEED speed = 0;
+	MV_8 phy_addr;
 	static MV_U8 mac_bcast[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
 	mv_eth_bm_start();
@@ -279,8 +280,9 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 	if (priv->devInit != MV_TRUE) {
 		/* port power up - release from reset */
 		if (!MV_PON_PORT(priv->port)) {
-			mvEthPhyAddrSet(priv->port, mvBoardPhyAddrGet(priv->port));
-			mvEthPhyRestartAN(mvBoardPhyAddrGet(priv->port), 10000);
+			phy_addr = mvBoardPhyAddrGet(priv->port);
+			if (phy_addr != (MV_8)-1)
+				mvEthPhyAddrSet(priv->port, phy_addr);
 
 			mvEthPortPowerUp(priv->port,
 				MV_FALSE/*mvBoardIsPortInSgmii(priv->port)*/,

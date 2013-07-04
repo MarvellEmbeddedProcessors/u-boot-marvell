@@ -1065,11 +1065,15 @@ MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum)
 			return MV_FALSE;
 		break;
 	case 1:
+#ifdef DB_78X60_AMC
+		return MV_FALSE; /* port 1 on AMC board is disconnected */
+#else
 		if (mvBoardIsLcdDviModuleConnected())
 			return MV_FALSE;
 		else if (mvBoardIsGMIIModuleConnected())
 			return MV_FALSE;
 		break;
+#endif
 	case 2:
 		if (mvBoardIsSetmModuleConnected())
 			return MV_FALSE;

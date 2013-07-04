@@ -2090,10 +2090,34 @@ void mvNetaPhyAddrSet(int port, int phyAddr)
 
 	MV_REG_WRITE(ETH_PHY_ADDR_REG(port), regData);
 
-    /* Enable PHY polling */
-    regData = MV_REG_READ(ETH_UNIT_CONTROL_REG(port));
-    regData |= ETH_PHY_POLLING_ENABLE_MASK;
-    MV_REG_WRITE(ETH_UNIT_CONTROL_REG(port), regData);
+	/* Enable PHY polling */
+	regData = MV_REG_READ(ETH_UNIT_CONTROL_REG(port));
+	regData |= ETH_PHY_POLLING_ENABLE_MASK;
+	MV_REG_WRITE(ETH_UNIT_CONTROL_REG(port), regData);
+
+	return;
+}
+/*******************************************************************************
+* mvNetaPhyAddrPollingDisable - disable PHY polling
+*
+* DESCRIPTION:
+*       This routine diable PHY polling
+*
+* INPUT:
+*       int     portNo		- Port number.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+void mvNetaPhyAddrPollingDisable(int port)
+{
+	unsigned int regData;
+
+	/* Enable PHY polling */
+	regData = MV_REG_READ(ETH_UNIT_CONTROL_REG(port));
+	regData &= ~ETH_PHY_POLLING_ENABLE_MASK;
+	MV_REG_WRITE(ETH_UNIT_CONTROL_REG(port), regData);
 
 	return;
 }

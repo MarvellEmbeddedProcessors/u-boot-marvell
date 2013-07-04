@@ -719,6 +719,7 @@ MV_STATUS	mvNetaBpduRxq(int port, int rxq);
 
 void 		mvNetaPhyAddrSet(int port, int phyAddr);
 int 		mvNetaPhyAddrGet(int port);
+void		mvNetaPhyAddrPollingDisable(int port);
 
 void 		mvNetaPortPowerDown(int port);
 void 		mvNetaPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii);

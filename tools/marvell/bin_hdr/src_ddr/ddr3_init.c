@@ -452,8 +452,8 @@ MV_U32 ddr3Init_(void)
 #endif
 
 	ddr3PrintVersion();
-	DEBUG_INIT_S("6 \n");
-	/* Lib version 5.0.6 */
+	DEBUG_INIT_S("9 \n");
+	/* Lib version 5.0.9 */
 
 	uiFabOpt = ddr3GetFabOpt();
 	if (bPLLWAPatch){
@@ -613,13 +613,13 @@ MV_U32 ddr3Init_(void)
 	MV_REG_WRITE(REG_DRAM_AXI_CTRL_ADDR, 0);                /* 0x14A8 - AXI Control Register */
 #else
 	MV_REG_WRITE(REG_DRAM_AXI_CTRL_ADDR, 0x00000100);       /* 0x14A8 - AXI Control Register */
-#endif
-	MV_REG_WRITE(REG_CDI_CONFIG_ADDR, 0x00000006);
+    MV_REG_WRITE(REG_CDI_CONFIG_ADDR, 0x00000006);
 
 	if ((uiDdrWidth == 64) && (MV_REG_READ(REG_DDR_IO_ADDR) & (1 << REG_DDR_IO_CLK_RATIO_OFFS))) {
 		MV_REG_WRITE(REG_DRAM_AXI_CTRL_ADDR, 0x00000101); /* 0x14A8 - AXI Control Register */
 		MV_REG_WRITE(REG_CDI_CONFIG_ADDR, 0x00000007);
 	}
+#endif
 
 #if defined(MV88F78X60) // || defined(MV88F66XX) TBD - moti, activate DLB for avanta-lp
 	/* DLB Enable */

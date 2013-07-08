@@ -816,19 +816,11 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 
 	/* Update SMI phy address for MAC0/1 */
 	ethComplex = mvBoardEthComplexConfigGet();
-	if (ethComplex & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)
+
+	if (ethComplex & MV_ETHCOMP_GE_MAC0_2_RGMII0)
 		mvBoardPhyAddrSet(0, 0x0);
-	else if (ethComplex & MV_ETHCOMP_GE_MAC0_2_RGMII0)
-		mvBoardPhyAddrSet(0, 0x4);
 	else
 		mvBoardPhyAddrSet(0, -1); /* no SMI address if connected to switch */
-
-	if (ethComplex & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3)
-		mvBoardPhyAddrSet(1, 0x3);
-	else if (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1)
-		mvBoardPhyAddrSet(1, 0x1);
-	else
-		mvBoardPhyAddrSet(1, -1); /* no SMI address if connected to switch */
 
 	/* Update MPP group types and values according to board configuration */
 	mvBoardMppIdUpdate();

@@ -177,7 +177,8 @@ void mvBoardEgigaPhyInit(void)
 	}
 #elif defined(MV88F672X)
 	mvSysEthPhyInit();
+
+	/*MAC0 to RGMII, only enternal phy 0 on board.*/
 	mvEthPhyInit(0, MV_FALSE);
-	mvEthPhyInit(1, MV_FALSE);
 #endif
 }

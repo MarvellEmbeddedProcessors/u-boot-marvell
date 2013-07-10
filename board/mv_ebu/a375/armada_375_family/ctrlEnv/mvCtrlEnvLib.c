@@ -313,6 +313,11 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	 */
 	MV_REG_BIT_SET(PUP_EN_REG, BIT4);
 
+#ifdef MV_NOR_BOOT
+	/*Enable PUP bit for NOR*/
+	MV_REG_BIT_SET(PUP_EN_REG, BIT6);
+#endif
+
 	return MV_OK;
 }
 

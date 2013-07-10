@@ -70,6 +70,11 @@ static uint flash_verbose = 1;
 #define flash_verbose 1
 #endif
 
+static inline unsigned long le32_to_int1(unsigned char *le32)
+{
+	return ((le32[3] << 24) + (le32[2] << 16) + (le32[1] << 8) + le32[0]);
+}
+
 flash_info_t flash_info[CFI_MAX_FLASH_BANKS];	/* FLASH chips info */
 
 /*
@@ -2057,6 +2062,8 @@ ulong flash_get_size (phys_addr_t base, int banknum)
 		info->ext_addr = le16_to_cpu(qry.p_adr);
 		num_erase_regions = qry.num_erase_regions;
 
+		udelay(1);
+
 		if (info->ext_addr) {
 			info->cfi_version = (ushort) flash_read_uchar (info,
 						info->ext_addr + 3) << 8;
@@ -2140,7 +2147,7 @@ ulong flash_get_size (phys_addr_t base, int banknum)
 				break;
 			}
 
-			tmp = le32_to_cpu(qry.erase_region_info[i]);
+			tmp = le32_to_cpu(le32_to_int1((unsigned char *)&qry.erase_region_info[i]));
 			debug("erase region %u: 0x%08lx\n", i, tmp);
 
 			erase_region_count = (tmp & 0xffff) + 1;

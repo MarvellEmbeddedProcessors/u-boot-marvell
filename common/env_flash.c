@@ -49,13 +49,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 char *env_name_spec = "Flash";
 
-
-# if	(CONFIG_ENV_ADDR != 0xfd060000)
-#error !!!!
-#endif
-//#define CONFIG_ENV_ADDR   0xfd060000
-
-
 #ifdef ENV_IS_EMBEDDED
 env_t *env_ptr = &environment;
 

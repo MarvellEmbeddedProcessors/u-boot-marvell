@@ -478,38 +478,46 @@ extern unsigned int mvTclkGet(void);
 
 #define CONFIG_UBOOT_SIZE                       0x100000
 
-/*
- * NOR Flash
- */
-#if defined(MV_INCLUDE_NOR)
-	#define CONFIG_SYS_MAX_FLASH_BANKS              1
+/* NOR-FLASH stuff	*/
+/************************/
+#define CONFIG_SYS_MAX_FLASH_BANKS 1
+#define CONFIG_ENV_SIZE_NOR			0x20000
+#define CONFIG_ENV_SECT_SIZE_NOR	0x20000
+#define CONFIG_ENV_OFFSET_NOR		0x100000	/* environment starts here  */
+#define CONFIG_ENV_RANGE_NOR 		CONFIG_ENV_SIZE_NOR * 8
+#define CONFIG_ENV_ADDR_NOR			(NOR_CS_BASE + CONFIG_ENV_OFFSET_NOR)
 
+#if defined(MV_INCLUDE_NOR)
+
+	#define CONFIG_NOR_FLASH
 	#define CONFIG_SYS_FLASH_CFI
 	#define CONFIG_SYS_FLASH_PROTECTION
 	#define CONFIG_FLASH_CFI_DRIVER
+	#define CONFIG_SYS_MAX_FLASH_SECT	128
+	#define CONFIG_SYS_FLASH_BASE		NOR_CS_BASE
 
-	#define CONFIG_SYS_MAX_FLASH_SECT               128
-	#define CONFIG_SYS_FLASH_BASE                   NOR_CS_BASE
-	#define CONFIG_SYS_FLASH_CFI_WIDTH              FLASH_CFI_8BIT
+	#define CONFIG_SYS_FLASH_CFI_WIDTH	FLASH_CFI_8BIT
 
-	#define CONFIG_FLASH_SHOW_PROGRESS              1
+	#define CONFIG_FLASH_SHOW_PROGRESS 1
 	#define CONFIG_SYS_FLASH_EMPTY_INFO
 	#define CONFIG_SYS_FLASH_USE_BUFFER_WRITE
 
 	#define CONFIG_CMD_FLASH
-	#undef  CONFIG_CMD_IMLS
+	#undef CONFIG_CMD_IMLS
 
+	/* Boot from NOR settings */
 	#if defined(MV_NOR_BOOT)
 		#define CONFIG_ENV_IS_IN_FLASH
-		#define CONFIG_ENV_SIZE                 0x10000
-		#define CONFIG_ENV_SECT_SIZE            0x10000
-		#define CONFIG_ENV_OFFSET               0x60000
-		#define CONFIG_ENV_RANGE                CONFIG_ENV_SIZE * 8
-		#define CONFIG_ENV_ADDR                 (NOR_CS_BASE + CONFIG_ENV_OFFSET)
-		#define MONITOR_HEADER_LEN              0x200
-		#define CONFIG_SYS_MONITOR_LEN          0x70000 /* 448 K */
-		#define CONFIG_SYS_MONITOR_BASE (0 + CONFIG_ENV_SECT_SIZE)
-		#define CONFIG_SYS_MONITOR_END  (CONFIG_SYS_MONITOR_BASE + CONFIG_SYS_MONITOR_LEN)
+
+		#define CONFIG_ENV_SIZE			CONFIG_ENV_SIZE_NOR
+		#define CONFIG_ENV_SECT_SIZE		CONFIG_ENV_SECT_SIZE_NOR
+		#define CONFIG_ENV_OFFSET		CONFIG_ENV_OFFSET_NOR   /* environment starts here  */
+		#define CONFIG_ENV_RANGE 		CONFIG_ENV_RANGE_NOR
+		#define CONFIG_ENV_ADDR			CONFIG_ENV_ADDR_NOR
+		#define MONITOR_HEADER_LEN		0x200
+		#define CONFIG_SYS_MONITOR_BASE		0
+		#define CONFIG_SYS_MONITOR_LEN		0xC0000		/* Reserve 768 kB for Monitor */
+
 	#endif /* MV_NOR_BOOT */
 #else
 	#define CONFIG_SYS_NO_FLASH

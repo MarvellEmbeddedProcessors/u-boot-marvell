@@ -316,7 +316,7 @@ MV_TDM_UNIT_TYPE mvCtrlTdmUnitTypeGet(MV_VOID);
 MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID);
 MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel);
 MV_U16 mvCtrlModelGet(MV_VOID);
-MV_U8 mvCtrlRevGet(MV_VOID);
+MV_U32 mvCtrlRevGet(MV_VOID);
 MV_STATUS mvCtrlNameGet(char *pNameBuff);
 MV_U32 mvCtrlModelRevGet(MV_VOID);
 MV_STATUS mvCtrlModelRevNameGet(char *pNameBuff);

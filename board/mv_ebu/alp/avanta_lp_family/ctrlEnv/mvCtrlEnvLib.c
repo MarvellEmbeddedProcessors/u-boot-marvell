@@ -1125,9 +1125,9 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 *       8bit desscribing Marvell controller revision number
 *
 *******************************************************************************/
-MV_U8 mvCtrlRevGet(MV_VOID)
+MV_U32 mvCtrlRevGet(MV_VOID)
 {
-	MV_U8 value;
+	MV_U32 value;
 
 	value = MV_REG_READ(DEV_VERSION_ID_REG);
 	return  ((value & (REVISON_ID_MASK) ) >> REVISON_ID_OFFS);

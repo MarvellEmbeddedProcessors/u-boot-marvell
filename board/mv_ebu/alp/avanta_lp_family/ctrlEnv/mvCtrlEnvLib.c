@@ -1130,7 +1130,17 @@ MV_U32 mvCtrlRevGet(MV_VOID)
 	MV_U32 value;
 
 	value = MV_REG_READ(DEV_VERSION_ID_REG);
-	return  ((value & (REVISON_ID_MASK) ) >> REVISON_ID_OFFS);
+	value = (value & REVISON_ID_MASK) >> REVISON_ID_OFFS;
+
+	switch (value) {
+	case MV_88F66X0_Z1_ID:
+	case MV_88F66X0_Z2_ID:
+	case MV_88F66X0_Z3_ID:
+			return value;
+	default:
+			mvOsPrintf("%s: Error: Failed to read Revision ID\n", __func__);
+			return 0x0;
+	}
 }
 
 /*******************************************************************************
@@ -1149,10 +1159,43 @@ MV_U32 mvCtrlRevGet(MV_VOID)
 *
 *       MV_ERROR if informantion can not be read.
 *******************************************************************************/
-MV_STATUS mvCtrlNameGet(char *pNameBuff)
+MV_VOID mvCtrlNameGet(char *pNameBuff)
 {
-	mvOsSPrintf(pNameBuff, "%s%x Rev %d", SOC_NAME_PREFIX, mvCtrlModelGet(), mvCtrlRevGet());
-	return MV_OK;
+	mvOsSPrintf(pNameBuff, "%s%x", SOC_NAME_PREFIX, mvCtrlModelGet());
+}
+
+/*******************************************************************************
+* mvCtrlRevNameGet - Get Marvell controller name
+*
+* DESCRIPTION:
+*       This function returns a string describing the revision id.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       pNameBuff - Buffer to contain revision name string. Minimum size 30 chars.
+*
+* RETURN:
+*
+*       MV_ERROR if informantion can not be read.
+*******************************************************************************/
+MV_VOID mvCtrlRevNameGet(char *pNameBuff)
+{
+	MV_U32 revId;
+	char *revArray[] = MV_88FX66X0_ID_ARRAY;
+
+	revId = mvCtrlRevGet();
+
+	switch (revId) {
+	case MV_88F66X0_Z1_ID:
+	case MV_88F66X0_Z2_ID:
+	case MV_88F66X0_Z3_ID:
+			mvOsSPrintf(pNameBuff, " Rev %s", revArray[revId]);
+			return;
+	default:
+		mvOsPrintf("%s: Error: Failed to read Revision ID\n", __func__);
+	}
 }
 
 /*******************************************************************************
@@ -1195,11 +1238,10 @@ MV_U32 mvCtrlModelRevGet(MV_VOID)
 *
 *       MV_ERROR if informantion can not be read.
 *******************************************************************************/
-MV_STATUS mvCtrlModelRevNameGet(char *pNameBuff)
+MV_VOID mvCtrlModelRevNameGet(char *pNameBuff)
 {
-	/* mvCtrlModelRevGet(); */
 	mvCtrlNameGet(pNameBuff);
-	return MV_OK;
+	mvCtrlRevNameGet(pNameBuff + strlen(pNameBuff));
 }
 
 static const char *cntrlName[] = TARGETS_NAME_ARRAY;

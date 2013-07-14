@@ -4,18 +4,17 @@ use Cwd qw();
 
 sub HELP_MESSAGE
 {
-	print "\nUsage  : build -f \"Flash type\" -v X.X.X [-b \"board name\"] [-c] [-o \"Output file\"]\n";
-	print "Example: build -f nor -b pcac -c\n";
+	print "\nUsage  : build -f \"Flash type\" -v X.X.X -b \"board name\" [-c] [-o \"Output file\"]\n";
+	print "Example: build -f spi -v 13T3 -b avanta_lp -c\n";
 	print "\n";
 	print "Options:\n";
 	print "\t-f\tBoot device. Accepts spi, nor, nand\n";
-	print "\t-b\tBoard type. Accepts:\n";
-	print "\t\tavanta_lp, armada_375, armada_xp_dbgp, avanta_lp_fpga\n";
+	print "\t-b\tBoard type. Accepts: avanta_lp, armada_375\n";
 	print "\t-c\tClean build. calls make mrproper\n";
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
 	print "\t-i\tSupported interfaces. A \":\" seperated list of\n";
-	print "\t-v\tSW version (add to binary file name u-boot--axp-X.X.X-spi.bin)\n";
+	print "\t-v\tSW version (add to binary file name u-boot-alp-X.X.X-spi.bin)\n";
 	print "\t\tinterfaces. Supports spi, nor, nand. the boot \n";
 	print "\t\tinterface will always be suppored\n";
 	print "\n";
@@ -29,6 +28,14 @@ sub HELP_MESSAGE
 use Getopt::Std;
 
 getopt('f:b:o:i:v:');
+
+if((!defined $opt_b) or
+	(!defined $opt_f) or
+	(!defined $opt_v)) {
+	printf "\n *** Error: Please set required compilation options\n";
+	HELP_MESSAGE();
+	exit 1;
+}
 
 $cross    = $ENV{'CROSS_COMPILE'};
 $cross_bh = $ENV{'CROSS_COMPILE_BH'};

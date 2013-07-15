@@ -143,6 +143,7 @@ extern unsigned int mvTclkGet(void);
 #define CONFIG_CMD_STAGE_BOOT
 #define CONFIG_CMD_RCVR
 #define CONFIG_CMD_BOOT_MENU
+#define CONFIG_CMD_SYS_RESTORE
 
 
 #if defined(MV_INCLUDE_PEX) || defined(MV_INCLUDE_PCI)

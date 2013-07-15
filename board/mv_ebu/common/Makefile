@@ -116,7 +116,9 @@ USP_OBJS =	$(USP_DIR)/mv_serial.o 			\
 			$(USP_DIR)/cmd_resetenv.o	\
 			$(USP_DIR)/mvDramScrubbing.o	\
 			$(USP_DIR)/mv_fdt.o		\
-			$(USP_DIR)/cmd_ddr.o
+			$(USP_DIR)/cmd_ddr.o		\
+			$(USP_DIR)/cmd_sys_restore.o
+
 			
 ifneq ($(BOARD_TYPE),mv_fpga_board)
 USP_OBJS +=		$(USP_DIR)/mv_rtc.o		\

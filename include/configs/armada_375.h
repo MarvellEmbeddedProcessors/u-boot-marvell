@@ -148,6 +148,12 @@ extern unsigned int mvTclkGet(void);
 	#define CONFIG_CMD_PCI
 #endif
 
+/* Pre eXecution Environment (PXE) support*/
+#define CONFIG_CMD_PXE
+#define CONFIG_BOOTP_PXE
+#define CONFIG_MENU
+#define CONFIG_BOOTP_PXE_CLIENTARCH	0x100
+#define CONFIG_BOOTP_VCI_STRING		"U-boot.armv7.armada_375"
 #ifdef MV_FS
 /* FS supported */
 #define CONFIG_CMD_EXT2

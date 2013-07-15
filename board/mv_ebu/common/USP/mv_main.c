@@ -377,7 +377,7 @@ void misc_init_r_env(void){
 	envSetDefault("kernel_addr_r", "2080000"); 
 	envSetDefault("ramdisk_addr_r", "2880000");
 	envSetDefault("device_partition", "0:1");
-	envSetDefault("boot_order", "hd_scr hd_img pxe net_img net_scr");
+	envSetDefault("boot_order", "hd_scr usb_scr mmc_scr hd_img usb_img mmc_img pxe net_img net_scr");
 	envSetDefault("script_name", "boot.scr");
 	envSetDefault("ide_path", "/");
 	envSetDefault("script_addr_r", "3000000");

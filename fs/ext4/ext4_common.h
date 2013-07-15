@@ -69,7 +69,8 @@ int ext4fs_read_file(struct ext2fs_node *node, int pos,
 int ext4fs_find_file(const char *path, struct ext2fs_node *rootnode,
 			struct ext2fs_node **foundnode, int expecttype);
 int ext4fs_iterate_dir(struct ext2fs_node *dir, char *name,
-			struct ext2fs_node **fnode, int *ftype);
+			struct ext2fs_node **fnode, int *ftype,
+			char *outbuff, int outsize);
 
 #if defined(CONFIG_EXT4_WRITE)
 uint32_t ext4fs_div_roundup(uint32_t size, uint32_t n);

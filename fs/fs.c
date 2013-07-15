@@ -214,7 +214,7 @@ int fs_ls(const char *dirname)
 		ret = fs_ls_fat(dirname);
 		break;
 	case FS_TYPE_EXT:
-		ret = fs_ls_ext(dirname);
+		ret = fs_ls_ext(dirname, NULL, 0);
 		break;
 	default:
 		ret = fs_ls_unsupported(dirname);

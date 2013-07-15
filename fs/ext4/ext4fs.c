@@ -168,7 +168,7 @@ int ext4fs_read_file(struct ext2fs_node *node, int pos,
 	return len;
 }
 
-int ext4fs_ls(const char *dirname)
+int ext4fs_ls(const char *dirname, char *outbuff, int outsize)
 {
 	struct ext2fs_node *dirnode;
 	int status;
@@ -183,7 +183,7 @@ int ext4fs_ls(const char *dirname)
 		return 1;
 	}
 
-	ext4fs_iterate_dir(dirnode, NULL, NULL, NULL);
+	ext4fs_iterate_dir(dirnode, NULL, NULL, NULL, outbuff, outsize);
 	ext4fs_free_node(dirnode, &ext4fs_root->diropen);
 
 	return 0;

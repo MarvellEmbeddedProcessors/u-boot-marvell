@@ -1219,6 +1219,7 @@ static int mmc_send_if_cond(struct mmc *mmc)
 	return 0;
 }
 
+static int mmc_dev_init(int dev_num);
 int mmc_register(struct mmc *mmc)
 {
 	/* Setup the universal parts of the block interface just once */
@@ -1228,6 +1229,7 @@ int mmc_register(struct mmc *mmc)
 	mmc->block_dev.block_read = mmc_bread;
 	mmc->block_dev.block_write = mmc_bwrite;
 	mmc->block_dev.block_erase = mmc_berase;
+	mmc->block_dev.dev_init = mmc_dev_init;
 	if (!mmc->b_max)
 		mmc->b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
 
@@ -1248,6 +1250,15 @@ block_dev_desc_t *mmc_get_dev(int dev)
 	return &mmc->block_dev;
 }
 #endif
+
+static int mmc_dev_init(int dev_num)
+{
+	struct mmc *mmc = find_mmc_device(dev_num);
+	if (!mmc)
+		return -1;
+
+	return mmc_init(mmc);
+}
 
 int mmc_init(struct mmc *mmc)
 {

@@ -330,6 +330,7 @@ MV_STATUS ctrlWinWithinWinTest(MV_ADDR_WIN *pAddrWin1, MV_ADDR_WIN *pAddrWin2);
 MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl);
 MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable);
 MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index);
+MV_BOOL mvCtrlIsDLBEnabled(MV_VOID);
 MV_BOOL mvCtrlIsBootFromNOR(MV_VOID);
 MV_BOOL mvCtrlIsBootFromSPI(MV_VOID);
 MV_BOOL mvCtrlIsBootFromNAND(MV_VOID);

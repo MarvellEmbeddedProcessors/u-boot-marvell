@@ -483,7 +483,7 @@ void misc_init_r_env(void)
 		setenv("device_partition", "0:1");
 	env = getenv("boot_order");
 	if (!env)
-		setenv("boot_order", "hd_scr hd_img pxe net_img net_scr");
+		setenv("boot_order", "hd_scr usb_scr mmc_scr hd_img usb_img mmc_img pxe net_img net_scr");
 	env = getenv("script_name");
 	if (!env)
 		setenv("script_name", "boot.scr");

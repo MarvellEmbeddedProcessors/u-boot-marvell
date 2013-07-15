@@ -1633,6 +1633,26 @@ MV_U32 ctrlSizeRegRoundUp(MV_U32 size, MV_U32 alignment)
 }
 
 /*******************************************************************************
+ * mvCtrlIsDLBEnabled - Read DLB configuration
+ *
+ * DESCRIPTION: return True if DLB is enabled
+ *
+ * INPUT: None
+ *
+ * OUTPUT: None
+ *
+ * RETURN: MV_TRUE, if DLB is enabled
+ ******************************************************************************/
+MV_BOOL mvCtrlIsDLBEnabled(MV_VOID)
+{
+	MV_U32 reg;
+
+	reg = MV_REG_READ(REG_STATIC_DRAM_DLB_CONTROL);
+
+	return (reg & 0x1) ? MV_TRUE : MV_FALSE;
+}
+
+/*******************************************************************************
 * mvCtrlIsBootFromNOR
 *
 * DESCRIPTION:

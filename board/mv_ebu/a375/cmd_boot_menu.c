@@ -129,7 +129,7 @@ int do_boot_menu(cmd_tbl_t * cmdtb, int flag, int argc, char * const argv[])
 	*ifname = '\0';
 	ifname++;
 
-	strncpy(dev_part, ifname, strstr(ifname, ':') - ifname - 1);
+	strncpy(dev_part, ifname, strstr(ifname, ":") - ifname - 1);
 	device = simple_strtoul(ifname, NULL, 0);
 	ifname = strchr(ifname, ':');
 	if (ifname == NULL) {
@@ -227,10 +227,15 @@ int do_boot_menu(cmd_tbl_t * cmdtb, int flag, int argc, char * const argv[])
 				break;
 			}
 	}
-	if (i == j)
+	if (i == j) {
 		menu_default_set(m, bm_item_list[0].key);
+		filename = bm_item_list[0].name;
+	}
 
 	/* Show the menu and save the default option. */
+	printf("\nPress any key to stop the count-down or the default boot "
+		"script\n    (%s) will be used.\n", filename);
+
 	if (menu_get_choice(m, (void**)&choice) != 1) {
 		printf("boot_menu: Incorrect choice.\n");
 		goto error;

@@ -588,7 +588,7 @@ void mvEthPhyAddrSet(int port, int phyAddr)
 	regData = MV_REG_READ(ETH_PHY_ADDR_REG);
 
 	regData &= ~ETH_PHY_ADDR_MASK(port);
-	regData |= (phyAddr << ETH_PHY_ADDR_OFFS(port));
+	regData |= ((phyAddr << ETH_PHY_ADDR_OFFS(port)) & ETH_PHY_ADDR_MASK(port));
 
 	MV_REG_WRITE(ETH_PHY_ADDR_REG, regData);
 

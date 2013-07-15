@@ -149,7 +149,7 @@ U_BOOT_CMD(
 	"- display info of the current MMC device"
 );
 
-static int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	enum mmc_state state;
 

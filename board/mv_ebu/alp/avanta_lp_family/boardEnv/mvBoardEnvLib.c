@@ -1643,8 +1643,8 @@ MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId)
 MV_VOID mvBoardConfigurationPrint(MV_VOID)
 {
 	MV_U32 ethConfig = mvBoardEthComplexConfigGet();
-
-	mvOsOutput("Board configuration detected:\n");
+	char *lane1[] = {"PCIe1", "SGMII-0", "SATA-1", "Invalid Configuration" };
+	mvOsOutput("Board configuration:\n");
 
 	/* TDM */
 	if (mvBoardTdmDevicesCountGet() > 0)
@@ -1702,13 +1702,23 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 		if (ethConfig & MV_ETHCOMP_SW_P3_2_GE_PHY_P3)
 			mvOsOutput("       GE-PHY-3 Module on Switch port #3\n");
 	}
+
+	/* SERDES Lanes*/
+	mvOsOutput("SERDES configuration:\n");
+	mvOsOutput("       Lane #0: PCIe0\n");
+
+	/* rest of SERDES lanes are relevant only to DB-6660 board */
+	if (mvBoardIdGet() != DB_6660_ID)
+		return;
+
+	mvOsOutput("       Lane #1: %s\n", lane1[mvCtrlSysConfigGet(MV_CONFIG_LANE1)]);
+	mvOsOutput("       Lane #2: %s\n", mvCtrlSysConfigGet(MV_CONFIG_LANE2) ? "SATA-0" : "SGMII-0");
+	mvOsOutput("       Lane #3: %s\n", mvCtrlSysConfigGet(MV_CONFIG_LANE3) ? "SGMII-0" : "USB3");
+
 }
 
 MV_VOID mvBoardOtherModuleTypePrint(MV_VOID)
 {
-	/* Pex Module */
-	if (mvBoardIsPexModuleConnected())
-		mvOsOutput("       PEX module.\n");
 	/* SETM Module */
 	if (mvBoardIsSetmModuleConnected())
 		mvOsOutput("       SETM module.\n");

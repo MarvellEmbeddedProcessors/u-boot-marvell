@@ -452,8 +452,8 @@ MV_U32 ddr3Init_(void)
 #endif
 
 	ddr3PrintVersion();
-	DEBUG_INIT_S("0\n");
-	/* Lib version 5.1.0 */
+	DEBUG_INIT_S("1\n");
+	/* Lib version 5.1.1 */
 
 	uiFabOpt = ddr3GetFabOpt();
 	if (bPLLWAPatch){
@@ -620,17 +620,14 @@ MV_U32 ddr3Init_(void)
 		MV_REG_WRITE(REG_CDI_CONFIG_ADDR, 0x00000007);
 	}
 #endif
-
-#if defined(MV88F78X60) // || defined(MV88F66XX) TBD - moti, activate DLB for avanta-lp
-	/* DLB Enable */
-#if defined(MV88F78X60_Z1)
-	MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
-#else
-	if (mvCtrlRevGet() == MV_78XX0_B0_REV)
-		MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0xc19e);
-	else
-		MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
-
+#if !defined(MV88F67XX)
+/* ARMADA-370 activate DLB later at the u-boot*/
+MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
+#if defined(MV88F78X60)
+/* WA according to eratta GL-8672902*/
+	if (mvCtrlRevGet() == MV_78XX0_B0_REV){
+        MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0xc19e);
+    }
 #endif
 	MV_REG_WRITE(DLB_AGING_REGISTER, 0x0f7f007f);
 	MV_REG_WRITE(DLB_EVICTION_CONTROL_REG, 0x0);
@@ -641,13 +638,15 @@ MV_U32 ddr3Init_(void)
 	MV_REG_WRITE(MBUS_UNITS_PREFETCH_CONTROL_REG, 0xffff);
 	MV_REG_WRITE(FABRIC_UNITS_PREFETCH_CONTROL_REG, 0xf0f);
 
+#if defined(MV88F78X60)
+/* WA according to eratta GL-8672902*/
 	if (mvCtrlRevGet() == MV_78XX0_B0_REV) {
 		uiReg = MV_REG_READ(REG_STATIC_DRAM_DLB_CONTROL);
 		uiReg |= DLB_ENABLE;
 		MV_REG_WRITE(REG_STATIC_DRAM_DLB_CONTROL, uiReg);
 	}
-#endif
-
+#endif /* end defined(MV88F78X60) */
+#endif /* end !defined(MV88F67XX) */
 	if (ddr3GetLogLevel() >= MV_LOG_LEVEL_1)
 		printDunitSetup();
 
@@ -706,19 +705,20 @@ MV_U32 ddr3Init_(void)
 	uiReg = MV_REG_READ(REG_BOOTROM_ROUTINE_ADDR);
 	MV_REG_WRITE(REG_BOOTROM_ROUTINE_ADDR, uiReg | (1 << REG_BOOTROM_ROUTINE_DRAM_INIT_OFFS));
 
-#if defined(MV88F78X60) // || defined(MV88F66XX) TBD moti, check fot avanta-lp
+#if !defined(MV88F67XX)
+#if defined(MV88F78X60)
 	if (mvCtrlRevGet() == MV_78XX0_B0_REV) {
 		uiReg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
 		if (uiEcc == 0)
 			MV_REG_WRITE(REG_SDRAM_CONFIG_ADDR, uiReg | (1 << 19));
 	}
-
+#endif /* end defined(MV88F78X60) */
 	MV_REG_WRITE(DLB_EVICTION_CONTROL_REG, 0x9);
 
 	uiReg = MV_REG_READ(REG_STATIC_DRAM_DLB_CONTROL);
 	uiReg |= (DLB_ENABLE | DLB_WRITE_COALESING | DLB_AXI_PREFETCH_EN | DLB_MBUS_PREFETCH_EN | PreFetchNLnSzTr);
 	MV_REG_WRITE(REG_STATIC_DRAM_DLB_CONTROL, uiReg);
-#endif
+#endif /* end !defined(MV88F67XX) */
 
 #ifdef STATIC_TRAINING
 	DEBUG_INIT_S("DDR3 Training Sequence - Ended Successfully (S) \n");

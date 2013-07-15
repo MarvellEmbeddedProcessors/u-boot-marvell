@@ -3,7 +3,8 @@ include ../common/paths.mk
 
 #### Objects list #####
 COBJS = mv_main_a375.o \
-	cmd_sar.o
+	cmd_sar.o \
+	cmd_stage_boot.o
 
 LIB	= $(obj)lib$(BOARD).o
 

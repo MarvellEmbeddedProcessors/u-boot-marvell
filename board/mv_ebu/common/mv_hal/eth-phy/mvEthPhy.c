@@ -2045,12 +2045,24 @@ MV_VOID mvEth1340PhyBasicInit(void)
 *******************************************************************************/
 MV_VOID mvEthE1512PhyBasicInit(MV_U32 ethPortNum)
 {
+#if defined(MV88F672X)
+	/*
+	 * In 88F6720 DB board, phy might loose the link after reset.
+	 * This related to second time initialization as the PHY does not
+	 * receive a reset signal.
+	 * The default PHY configurations are sufficient.
+	 */
+
+	return;
+#endif
+
 /*
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x12);
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x14, 0x201);
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x14, 0x8201);
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0);
 */
+
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x16, 0x00FF);
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x11, 0x214B);
 	mvEthPhyRegWrite(ethphyHalData.phyAddr[ethPortNum], 0x10, 0x2144);

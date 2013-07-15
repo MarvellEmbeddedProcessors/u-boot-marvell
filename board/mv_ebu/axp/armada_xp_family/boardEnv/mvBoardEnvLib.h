@@ -402,7 +402,7 @@ MV_U32 mvBoardIdGet(MV_VOID);
 MV_VOID mvBoardIdSet(MV_VOID);
 MV_U32 mvBoardSledCpuNumGet(MV_VOID);
 
-MV_U8 mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum);
+MV_STATUS mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);
 MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
 MV_U8 mvBoardFabFreqGet(MV_VOID);
 MV_STATUS mvBoardFabFreqSet(MV_U8 freqVal);

@@ -4,7 +4,9 @@ include ../common/paths.mk
 #### Objects list #####
 COBJS = mv_main_a375.o \
 	cmd_sar.o \
-	cmd_stage_boot.o
+	cmd_stage_boot.o \
+	cmd_boot_menu.o
+
 
 LIB	= $(obj)lib$(BOARD).o
 

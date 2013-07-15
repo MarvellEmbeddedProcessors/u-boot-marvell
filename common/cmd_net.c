@@ -104,7 +104,7 @@ U_BOOT_CMD(
 #endif
 
 #if defined(CONFIG_CMD_DHCP)
-static int do_dhcp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+int do_dhcp (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	BootFile[0]='\0';
 	return netboot_common(DHCP, cmdtp, argc, argv);

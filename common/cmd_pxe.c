@@ -408,7 +408,7 @@ int do_pxe_get(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (pxe_uuid_path((void *)pxefile_addr_r) > 0
 		|| pxe_mac_path((void *)pxefile_addr_r) > 0
 		|| pxe_ipaddr_paths((void *)pxefile_addr_r) > 0
-		|| pxe_env_files(pxefile_addr_r)>0
+		|| pxe_env_files((void*)pxefile_addr_r)>0
 		|| get_pxelinux_path("default", (void *)pxefile_addr_r) > 0) {
 
 		printf("Config file found\n");

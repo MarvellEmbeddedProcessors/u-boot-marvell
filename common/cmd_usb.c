@@ -363,7 +363,7 @@ static int do_usbboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 /******************************************************************************
  * usb command intepreter
  */
-static int do_usb(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+int do_usb(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 
 	int i;

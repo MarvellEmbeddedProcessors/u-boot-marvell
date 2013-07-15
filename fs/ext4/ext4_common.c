@@ -1875,11 +1875,13 @@ void ext4fs_close(void)
 }
 
 int ext4fs_iterate_dir(struct ext2fs_node *dir, char *name,
-				struct ext2fs_node **fnode, int *ftype)
+				struct ext2fs_node **fnode, int *ftype,
+				char *outbuff, int outsize)
 {
 	unsigned int fpos = 0;
 	int status;
 	struct ext2fs_node *diro = (struct ext2fs_node *) dir;
+	char sftype[6];
 
 #ifdef DEBUG
 	if (name != NULL)
@@ -1979,21 +1981,34 @@ int ext4fs_iterate_dir(struct ext2fs_node *dir, char *name,
 				}
 				switch (type) {
 				case FILETYPE_DIRECTORY:
-					printf("<DIR> ");
+					strcpy(sftype, "<DIR>");
 					break;
 				case FILETYPE_SYMLINK:
-					printf("<SYM> ");
+					strcpy(sftype, "<SYM>");
 					break;
 				case FILETYPE_REG:
-					printf("      ");
+					strcpy(sftype, "     ");
 					break;
 				default:
-					printf("< ? > ");
+					strcpy(sftype, "< ? >");
 					break;
 				}
-				printf("%10d %s\n",
-					__le32_to_cpu(fdiro->inode.size),
-					filename);
+
+				if (outbuff == NULL) {
+					printf ("%s %10d %s\n", sftype,
+						__le32_to_cpu (fdiro->inode.size),
+						filename);
+				} else {
+					if (outsize < sizeof(sftype) + 11 + strlen(filename) + 2) {
+						free (fdiro);
+						return (0);
+					}
+					status = sprintf (outbuff, "%s %10d %s\n", sftype,
+							__le32_to_cpu (fdiro->inode.size),
+							filename);
+					outsize -= status;
+					outbuff += status;
+				}
 			}
 			free(fdiro);
 		}
@@ -2075,7 +2090,7 @@ static int ext4fs_find_file1(const char *currpath,
 		oldnode = currnode;
 
 		/* Iterate over the directory. */
-		found = ext4fs_iterate_dir(currnode, name, &currnode, &type);
+		found = ext4fs_iterate_dir(currnode, name, &currnode, &type, NULL, 0);
 		if (found == 0)
 			return 0;
 

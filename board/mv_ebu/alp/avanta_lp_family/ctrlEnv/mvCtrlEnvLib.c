@@ -438,13 +438,24 @@ MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 *******************************************************************************/
 MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 {
-	MV_BOOL isSwSMICtrl   = (smiCtrl == SWITCH_SMI_CTRL ? MV_TRUE : MV_FALSE);
-	MV_BOOL isBootDevSPI1 = (MSAR_0_BOOT_SPI1_FLASH == mvBoardBootDeviceGet());
-	MV_BOOL isRefClkOut   = !( mvBoardSlicUnitTypeGet() == SLIC_LANTIQ_ID ); 	/* if not using Lantiq TDM, define REF_CLK_OUT */
-	MV_U8 groupTypeSelect = 0;
+	MV_BOOL isSPI1Enabled, isRefClkOut;
+	MV_U32 slicDev, ethComplex, groupTypeSelect = 0;
 
-	if (! ((smiCtrl == SWITCH_SMI_CTRL) || (smiCtrl == CPU_SMI_CTRL)) ) {
-		DB(mvOsPrintf("mvCtrlSMISet: SMI ctrl initialize failed\n"));
+	ethComplex = mvBoardEthComplexConfigGet();
+	slicDev = mvBoardSlicUnitTypeGet();
+
+	/* if not using Lantiq TDM, define REF_CLK_OUT (both utilize the same gpio) */
+	isRefClkOut   = !(slicDev == SLIC_LANTIQ_ID);
+
+	/*SPI1 in use: if enabled external SLI and disabled RGMII-1, or boot from SPI1*/
+	if ((slicDev == SLIC_EXTERNAL_ID && !(ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1))
+			|| mvBoardBootDeviceGet() == MSAR_0_BOOT_SPI1_FLASH)
+		isSPI1Enabled = MV_TRUE;
+	else
+		isSPI1Enabled = MV_FALSE;
+
+	if (!((smiCtrl == SWITCH_SMI_CTRL) || (smiCtrl == CPU_SMI_CTRL))) {
+		mvOsPrintf("mvCtrlSMISet: SMI ctrl initialize failed\n");
 		return;
 	}
 
@@ -454,10 +465,10 @@ MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 	if (isRefClkOut)	/* add first REF_CLK_OUT group type */
 		groupTypeSelect += GE1_CPU_SMI_CTRL_REF_CLK_OUT;
 
-	if (isSwSMICtrl)	/* add first SW_SMI group type */
+	if (smiCtrl == SWITCH_SMI_CTRL)	/* add first SW_SMI group type */
 		groupTypeSelect += GE1_SW_SMI_CTRL_TDM_LQ_UNIT;
 
-	if (isBootDevSPI1)	/* add first SPI1 group type */
+	if (isSPI1Enabled)	/* add first SPI1 group type */
 		groupTypeSelect += SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT;
 
 	mvBoardMppTypeSet(4, groupTypeSelect);	/* Set MPP value according to group type */

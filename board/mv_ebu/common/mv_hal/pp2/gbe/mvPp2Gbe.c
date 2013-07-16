@@ -1147,24 +1147,25 @@ MV_STATUS mvPp2RxqTimeCoalSet(int port, int rxq, MV_U32 uSec)
 	MV_U32 regVal;
 	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
 
-	regVal = (mvPp2HalData.tClk / 1000000) * uSec;
+	regVal = uSec * (mvPp2HalData.tClk / 1000000);
 
 	mvPp2WrReg(MV_PP2_ISR_RX_THRESHOLD_REG(prxq), regVal);
 
 	return MV_OK;
 }
 
-int mvPp2RxqTimeCoalGet(int port, int rxq)
+unsigned int mvPp2RxqTimeCoalGet(int port, int rxq)
 {
 	MV_U32 regVal;
 	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
+	unsigned int res, tClkUsec;
 
 	regVal = mvPp2RdReg(MV_PP2_ISR_RX_THRESHOLD_REG(prxq));
 
-	regVal = (regVal * 1000000) / mvPp2HalData.tClk;
+	tClkUsec = mvPp2HalData.tClk / 1000000;
+	res = regVal / tClkUsec;
 
-
-	return regVal;
+	return res;
 }
 
 /* unmask the current CPU's rx/tx interrupts                   *

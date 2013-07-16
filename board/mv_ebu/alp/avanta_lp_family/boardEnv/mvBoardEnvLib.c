@@ -767,6 +767,12 @@ MV_U32 mvBoardSlicUnitTypeGet(MV_VOID)
 *******************************************************************************/
 MV_VOID mvBoardSlicUnitTypeSet(MV_U32 slicType)
 {
+	if (slicType >= MV_BOARD_SLIC_MAX_OPTION) {
+		mvOsPrintf("%s: Error: Unsupported SLIC/TDM configuration selected (%x)\n",
+				__func__, slicType);
+		slicType = MV_BOARD_SLIC_DISABLED;
+	}
+
 	board->pBoardModTypeValue->boardMppSlic = slicType;
 }
 /*******************************************************************************
@@ -893,11 +899,16 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	mvBoardPhyAddrSet(1, smiAddress);
 	mvBoardMacSpeedSet(1, macSpeed);
 
+	/* Update SLIC device configuration */
+	slicDev = mvCtrlSysConfigGet(MV_CONFIG_SLIC_TDM_DEVICE);
+	if (slicDev == SLIC_EXTERNAL_ID && (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1))
+		mvOsPrintf("%s: Error: board configuration conflict between MAC1 to RGMII-1, " \
+				"and External TDM - using RGMII-1 (disabled External TDM)\n\n", __func__);
+
+	mvBoardSlicUnitTypeSet(slicDev);
+
 	/* Update MPP group types and values according to board configuration */
 	mvBoardMppIdUpdate();
-
-	slicDev = mvCtrlSysConfigGet(MV_CONFIG_SLIC_TDM_DEVICE);
-	mvBoardSlicUnitTypeSet(slicDev);
 }
 
 /*******************************************************************************
@@ -934,15 +945,19 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 
 	/* Groups 3-4  - (only if not Booting from SPI1)*/
 	if (bootDev != MSAR_0_BOOT_SPI1_FLASH) {
-		if (ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_RGMII1)
+		if (ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_RGMII1) {
 			mvBoardMppTypeSet(3, GE1_UNIT);
-		else
-			mvBoardMppTypeSet(3, SDIO_UNIT);
-
-		if (slicDev == SLIC_LANTIQ_ID)
-			mvBoardMppTypeSet(4, GE1_CPU_SMI_CTRL_TDM_LQ_UNIT);
-		else /* REF_CLK_OUT */
-			mvBoardMppTypeSet(4, GE1_CPU_SMI_CTRL_REF_CLK_OUT);
+			if (slicDev == SLIC_LANTIQ_ID)
+				mvBoardMppTypeSet(4, GE1_CPU_SMI_CTRL_TDM_LQ_UNIT);
+			else /* REF_CLK_OUT */
+				mvBoardMppTypeSet(4, GE1_CPU_SMI_CTRL_REF_CLK_OUT);
+		} else { /* if RGMII-1 isn't used, set SPI1 MPP's */
+			mvBoardMppTypeSet(3, SDIO_SPI1_UNIT);
+			if (slicDev == SLIC_LANTIQ_ID)
+				mvBoardMppTypeSet(4, SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT);
+			else /* REF_CLK_OUT */
+				mvBoardMppTypeSet(4, SPI1_CPU_SMI_CTRL_REF_CLK_OUT);
+		}
 	}
 
 	/* Groups 5-6-7 Set GE0 or Switch port 4 */
@@ -1642,13 +1657,12 @@ MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId)
 *******************************************************************************/
 MV_VOID mvBoardConfigurationPrint(MV_VOID)
 {
-	MV_U32 ethConfig = mvBoardEthComplexConfigGet();
 	char *lane1[] = {"PCIe1", "SGMII-0", "SATA-1", "Invalid Configuration" };
-	mvOsOutput("Board configuration:\n");
+	char *tdmSlic[] = {"None", "SSI", "ISI", "ZSI", "TDM"};
+	MV_U32 boardID, slicDevice, ethConfig = mvBoardEthComplexConfigGet();
 
-	/* TDM */
-	if (mvBoardTdmDevicesCountGet() > 0)
-		mvOsOutput("       TDM module.\n");
+	boardID = mvBoardIdGet();
+	mvOsOutput("\nBoard configuration:\n");
 
 	/* LCD DVI Module */
 	if (mvBoardIsLcdDviModuleConnected())
@@ -1703,16 +1717,27 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 			mvOsOutput("       GE-PHY-3 Module on Switch port #3\n");
 	}
 
+	/* TDM / Slic configuration */
+	slicDevice = mvBoardSlicUnitTypeGet();
+	if (slicDevice < MV_BOARD_SLIC_MAX_OPTION) /* 4 supported configurations */
+		mvOsOutput("       TDM/SLIC: %s\n", tdmSlic[slicDevice]);
+	else
+		mvOsOutput("       TDM/SLIC: Unsupported configuration\n");
+
+	/* SERDES lanes configuration is relevant only to DB board */
+	if (boardID != DB_6660_ID && boardID != DB_6650_ID)
+		return;
+
 	/* SERDES Lanes*/
-	mvOsOutput("SERDES configuration:\n");
+	mvOsOutput("\nSERDES configuration:\n");
 	mvOsOutput("       Lane #0: PCIe0\n");
 
-	/* rest of SERDES lanes are relevant only to DB-6660 board */
-	if (mvBoardIdGet() != DB_6660_ID)
+	/* SERDES lanes #1,#2,#3 are relevant only to DB-6660 board */
+	if (boardID != DB_6660_ID)
 		return;
 
 	mvOsOutput("       Lane #1: %s\n", lane1[mvCtrlSysConfigGet(MV_CONFIG_LANE1)]);
-	mvOsOutput("       Lane #2: %s\n", mvCtrlSysConfigGet(MV_CONFIG_LANE2) ? "SATA-0" : "SGMII-0");
+	mvOsOutput("       Lane #2: %s\n", mvCtrlSysConfigGet(MV_CONFIG_LANE2) ? "SGMII-0" : "SATA-0");
 	mvOsOutput("       Lane #3: %s\n", mvCtrlSysConfigGet(MV_CONFIG_LANE3) ? "SGMII-0" : "USB3");
 
 }

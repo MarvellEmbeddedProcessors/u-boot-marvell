@@ -286,6 +286,7 @@ typedef enum {
 #define MV_GROUP_1_TYPE         MV_GROUP_0_TYPE
 
 #define MPP_GROUP_2_TYPE { \
+	0x00000022,     /* SLIC_DISABLED  */ \
 	0x33030022,     /* SLIC_SSI_DEV  */ \
 	0x11110022,     /* SLIC_ISI_DEV  */ \
 	0x44440022,     /* SLIC_ZSI_DEV  */ \
@@ -293,6 +294,7 @@ typedef enum {
 }
 
 typedef enum {
+	SLIC_DISABLED,
 	SLIC_SSI_DEV,
 	SLIC_ISI_DEV,
 	SLIC_ZSI_DEV,
@@ -318,10 +320,10 @@ typedef enum {
 	0x44422222,     /* GE1,  CPU SMI CONTROL,    REF_CLK_OUT */ \
 	0x05522222,     /* GE1,  SWITCH SMI CONTROL, TDM_LQ_UNIT */ \
 	0x45522222,     /* GE1,  SWITCH SMI CONTROL, REF_CLK_OUT */ \
-	0x04423333,     /* SPI1, CPU SMI CONTROL,    TDM_LQ_UNIT */ \
-	0x44423333,     /* SPI1, CPU SMI CONTROL,    REF_CLK_OUT */ \
-	0x05523333,     /* SPI1, SWITCH SMI CONTROL, TDM_LQ_UNIT */ \
-	0x45523333,     /* SPI1, SWITCH SMI CONTROL, REF_CLK_OUT */ \
+	0x04423330,     /* SPI1, CPU SMI CONTROL,    TDM_LQ_UNIT */ \
+	0x44423330,     /* SPI1, CPU SMI CONTROL,    REF_CLK_OUT */ \
+	0x05523330,     /* SPI1, SWITCH SMI CONTROL, TDM_LQ_UNIT */ \
+	0x45523330,     /* SPI1, SWITCH SMI CONTROL, REF_CLK_OUT */ \
 }
 
 typedef enum {
@@ -394,10 +396,11 @@ typedef enum {
 
 /* This enumerator defines the Marvell Units ID      */
 typedef enum {
-	SLIC_EXTERNAL_ID,
-	SLIC_ZARLINK_ID,
+	SLIC_NONE_ID,
+	SLIC_LANTIQ_ID,
 	SLIC_SILABS_ID,
-	SLIC_LANTIQ_ID
+	SLIC_ZARLINK_ID,
+	SLIC_EXTERNAL_ID
 } MV_SLIC_UNIT_TYPE;
 
 typedef enum {

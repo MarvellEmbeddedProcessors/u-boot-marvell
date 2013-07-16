@@ -85,11 +85,12 @@ extern "C" {
 #define MV_BOARD_NAME_LEN               0x20
 
 typedef enum _devBoardSlicType {
-	MV_BOARD_AUTO,
+	MV_BOARD_SLIC_DISABLED,
 	MV_BOARD_SLIC_SSI_ID, /* Lantiq Integrated SLIC */
 	MV_BOARD_SLIC_ISI_ID, /* Silicon Labs ISI Bus */
 	MV_BOARD_SLIC_ZSI_ID, /* Zarlink ZSI Bus */
-	MV_BOARD_SLIC_EXTERNAL_ID /* Cross vendor external SLIC */
+	MV_BOARD_SLIC_EXTERNAL_ID, /* Cross vendor external SLIC */
+	MV_BOARD_SLIC_MAX_OPTION
 } MV_BOARD_SLIC_TYPE;
 
 typedef enum _devBoardOtherTypeClass {

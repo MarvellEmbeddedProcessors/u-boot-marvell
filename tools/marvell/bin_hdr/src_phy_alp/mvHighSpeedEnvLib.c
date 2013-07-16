@@ -267,7 +267,7 @@ MV_VOID mvCtrlSatrInit(void)
 		 */
 		configVal[0] = mvReverseBits(configVal[0]);
 		configVal[1] = mvReverseBits(configVal[1]);
-		tmp = ((configVal[1] & 0x0c) >> 2);
+		tmp = ((configVal[1] & 0x18) >> 3);
 		switch (tmp) {
 		case 0: boardLaneConfig[1] = SERDES_UNIT_PEX; 	break;
 		case 1: boardLaneConfig[1] = SERDES_UNIT_SGMII;	break;
@@ -278,8 +278,8 @@ MV_VOID mvCtrlSatrInit(void)
 			boardLaneConfig[1] = SERDES_UNIT_UNCONNECTED;
 			break;
 		}
-		boardLaneConfig[2] = ((configVal[1] & 0x10) >> 4)? SERDES_UNIT_SGMII:SERDES_UNIT_SATA;
-		boardLaneConfig[3] = ((configVal[1] & 0x20) >> 5)? SERDES_UNIT_SGMII:SERDES_UNIT_USB3;
+		boardLaneConfig[2] = ((configVal[1] & 0x20) >> 5)? SERDES_UNIT_SGMII:SERDES_UNIT_SATA;
+		boardLaneConfig[3] = ((configVal[1] & 0x40) >> 6)? SERDES_UNIT_SGMII:SERDES_UNIT_USB3;
 	}
 	else{
 		DEBUG_INIT_S("Error: Read board configuration from EEPROM/Dip Switch failed \n");

@@ -508,6 +508,7 @@ static INLINE MV_ULONG pp2DescVirtToPhys(MV_PP2_QUEUE_CTRL *pQueueCtrl, MV_U8 *p
 }
 
 MV_STATUS mvPp2HalInit(MV_PP2_HAL_DATA *halData);
+MV_VOID mvPp2HalDestroy(MV_VOID);
 
 /* Add a mapping prxq <-> (port, lrxq) */
 MV_STATUS mvPp2PhysRxqMapAdd(int prxq, int port, int lrxq);
@@ -543,15 +544,15 @@ MV_STATUS mvPp2TxqDelete(int port, int txp, int txq);
 MV_STATUS mvPp2PhysTxqsAlloc(MV_VOID);
 
 /* Destroy all physical TXQs */
-MV_STATUS mvPp2PhysTxqsDestroy(MV_VOID);
+MV_VOID mvPp2PhysTxqsDestroy(MV_VOID);
 
 /* Allocate and initialize all aggregated TXQs.
    This function must be called before any use of aggregated TXQ */
 MV_STATUS mvPp2AggrTxqsAlloc(int cpuNum);
 
 /* Destroy all aggregated TXQs */
-MV_STATUS mvPp2AggrTxqsDestroy(MV_VOID);
-
+MV_VOID mvPp2AggrTxqsDestroy(MV_VOID);
+MV_VOID mvPp2AggrTxqDelete(int cpu);
 /* Initialize aggregated TXQ */
 MV_PP2_AGGR_TXQ_CTRL *mvPp2AggrTxqInit(int cpu, int descNum);
 
@@ -561,6 +562,7 @@ int mvPp2TxDonePktsCoalGet(int port, int txp, int txq);
 void mvPp2TxpReset(int port, int txp);
 
 MV_STATUS mvPp2TxqTempInit(int descNum, int hwfNum);
+MV_VOID mvPp2TxqTempDelete(MV_VOID);
 
 /* Allocate and initialize port structure
    Associate relevant TXQs for this port (predefined)

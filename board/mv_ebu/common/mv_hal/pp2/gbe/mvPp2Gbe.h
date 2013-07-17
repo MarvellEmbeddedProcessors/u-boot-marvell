@@ -596,8 +596,8 @@ MV_STATUS mvPp2TxqWrrPrioSet(int port, int txp, int txq, int weight);
 /*****************************/
 /*      Interrupts API       */
 /*****************************/
-MV_VOID		mvPp2GbeCpuInterruptsDisable(int port, int cpu);
-MV_VOID		mvPp2GbeCpuInterruptsEnable(int port, int cpu);
+MV_VOID		mvPp2GbeCpuInterruptsDisable(int port, int cpuMask);
+MV_VOID		mvPp2GbeCpuInterruptsEnable(int port, int cpuMask);
 MV_STATUS	mvPp2RxqTimeCoalSet(int port, int rxq, MV_U32 uSec);
 unsigned int	mvPp2RxqTimeCoalGet(int port, int rxq);
 MV_STATUS	mvPp2GbeIsrRxqGroup(int port, int rxqNum);

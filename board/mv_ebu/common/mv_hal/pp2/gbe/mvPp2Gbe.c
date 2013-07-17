@@ -246,8 +246,7 @@ MV_STATUS mvPp2DefaultsSet(int port)
 		}
 
 	/* At default, mask all interrupts to all cpus */
-	for (i = 0; i < mvPp2HalData.maxCPUs; i++)
-		mvPp2GbeCpuInterruptsDisable(port, i);
+	mvPp2GbeCpuInterruptsDisable(port, (1 << mvPp2HalData.maxCPUs) - 1);
 
 	return MV_OK;
 
@@ -1127,19 +1126,19 @@ MV_STATUS mvPp2RxFifoInit(int portNum)
 /*******************************/
 /*       Interrupts API        */
 /*******************************/
-MV_VOID mvPp2GbeCpuInterruptsDisable(int port, int cpu)
+MV_VOID mvPp2GbeCpuInterruptsDisable(int port, int cpuMask)
 {
-	if ((cpu < 0) || mvPp2PortCheck(port))
+	if (mvPp2PortCheck(port))
 		return;
 
-	mvPp2WrReg(MV_PP2_ISR_ENABLE_REG(port), MV_PP2_ISR_DISABLE_INTERRUPT(cpu));
+	mvPp2WrReg(MV_PP2_ISR_ENABLE_REG(port), MV_PP2_ISR_DISABLE_INTERRUPT(cpuMask));
 }
 
-MV_VOID mvPp2GbeCpuInterruptsEnable(int port, int cpu)
+MV_VOID mvPp2GbeCpuInterruptsEnable(int port, int cpuMask)
 {
-	if ((cpu < 0) || mvPp2PortCheck(port))
+	if (mvPp2PortCheck(port))
 		return;
-	mvPp2WrReg(MV_PP2_ISR_ENABLE_REG(port), MV_PP2_ISR_ENABLE_INTERRUPT(cpu));
+	mvPp2WrReg(MV_PP2_ISR_ENABLE_REG(port), MV_PP2_ISR_ENABLE_INTERRUPT(cpuMask));
 }
 
 MV_STATUS mvPp2RxqTimeCoalSet(int port, int rxq, MV_U32 uSec)

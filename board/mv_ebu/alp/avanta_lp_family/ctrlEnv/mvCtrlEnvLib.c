@@ -130,10 +130,9 @@ MV_U32 mvCtrlGetCpuNum(MV_VOID)
 {
 	MV_U32 cpu1Enabled;
 
-	cpu1Enabled = mvCtrlSatRRead(MV_SATR_CPU1_ENABLE);
-	if (cpu1Enabled == MV_ERROR) {
-		DB(mvOsPrintf("%s: Error: MV_SATR_CPU1_ENABLE is not active for board (using default)\n", __func__));
-		return 0;
+	if (mvCtrlSatRRead(MV_SATR_CPU1_ENABLE, &cpu1Enabled) != MV_OK) {
+		mvOsPrintf("%s: Error: failed to read CPU#1 status\n", __func__);
+		return 0; /* use single CPU */
 	} else
 		return cpu1Enabled;
 }
@@ -156,7 +155,10 @@ MV_BOOL mvCtrlIsValidSatR(MV_VOID)
 	MV_U32 i, cpuFreqMode, maxFreqModes = mvBoardFreqModesNumGet();
 	MV_FREQ_MODE pFreqModes[] = MV_USER_SAR_FREQ_MODES;
 
-	cpuFreqMode =  mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
+	if (mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ, &cpuFreqMode) != MV_OK) {
+		mvOsPrintf("%s: Error: failed to read Frequency status\n", __func__);
+		return MV_FALSE;
+	}
 
 	for (i = 0; i < maxFreqModes; i++) {
 		if (cpuFreqMode == pFreqModes[i].id)
@@ -341,10 +343,15 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 *       else if write failed - returns MV_ERROR
 *
 *******************************************************************************/
-MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrReadField, MV_U8 val)
+MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrReadField, MV_U8 val)
 {
 	MV_BOARD_SATR_INFO satrInfo;
 	MV_U8 readValue, verifyValue;
+
+	/* S@R Write field enums are following the read field enums,
+	 * with equal field order as the read fields, adaptively.
+	 * The write fields starts right after the last Read field */
+	MV_SATR_TYPE_ID satrWriteField = satrReadField + MV_SATR_READ_MAX_OPTION + 1;
 
 	if (satrReadField >= MV_SATR_READ_MAX_OPTION ||
 		satrWriteField >= MV_SATR_WRITE_MAX_OPTION) {
@@ -408,6 +415,7 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 * DESCRIPTION: Read S@R configuration Field
 *
 * INPUT: satrField - Field description enum
+*	 value - pointer for returned value
 *
 * OUTPUT: None
 *
@@ -416,14 +424,30 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 *       else if field is not relevant for running board, return 0xFFFFFFF.
 *
 *******************************************************************************/
-MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
+MV_STATUS mvCtrlSatRRead(MV_SATR_TYPE_ID satrField, MV_U32 *value)
 {
 	MV_BOARD_SATR_INFO satrInfo;
+
+	if (value == NULL) {
+		DB(mvOsPrintf("%s: Error: NULL pointer parameter\n", __func__));
+		return MV_ERROR;
+	}
+
 	if (satrField < MV_SATR_READ_MAX_OPTION &&
-			mvBoardSatrInfoConfig(satrField, &satrInfo, MV_TRUE) == MV_OK)
-		return satrOptionsConfig[satrField];
+			mvBoardSatrInfoConfig(satrField, &satrInfo, MV_TRUE) == MV_OK) {
+		*value = satrOptionsConfig[satrField];
+		return MV_OK;
+	}
 	else
 		return MV_ERROR;
+
+/* The last MV_ERROR indicates that a certain field is not relevant for board
+ * There is no print/indication needed for user in case this "error" occurs,
+ * as this could be a result of a Valid situation:
+ *  - when using "SatR read"-read all fields: this indicates which fields to print
+ *  - but when using "SatR read fieldX" -to read 1 X field: this will be handled
+ *    by caller, and will be followed with an appropriate error message
+ */
 }
 
 /*******************************************************************************
@@ -499,15 +523,20 @@ MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 {
 	MV_FREQ_MODE freqTable[] = MV_SAR_FREQ_MODES;
-	MV_U32 freqModeSatRValue = mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
+	MV_U32 freqModeSatRValue;
 
-	if (MV_ERROR != freqModeSatRValue) {
-		*freqMode = freqTable[freqModeSatRValue];
-		return MV_OK;
+	if (freqMode == NULL) {
+		mvOsPrintf("%s: Error: NULL pointer parameter\n", __func__);
+		return MV_ERROR;
 	}
 
-	DB(mvOsPrintf("%s: Error Read from S@R fail\n", __func__));
-	return MV_ERROR;
+	if (mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ, &freqModeSatRValue) != MV_OK) {
+		mvOsPrintf("%s: Error: failed to read frequency status\n", __func__);
+		return MV_ERROR;
+	}
+
+	*freqMode = freqTable[freqModeSatRValue];
+	return MV_OK;
 }
 
 /*******************************************************************************

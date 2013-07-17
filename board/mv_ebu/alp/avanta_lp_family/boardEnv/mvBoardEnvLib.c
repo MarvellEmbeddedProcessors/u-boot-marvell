@@ -1109,9 +1109,17 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 *******************************************************************************/
 MV_BOARD_BOOT_SRC mvBoardBootDeviceGet()
 {
-	MV_U32 satrBootDeviceValue = mvCtrlSatRRead(MV_SATR_BOOT_DEVICE);
+	MV_U32 satrBootDeviceValue;
 	MV_SATR_BOOT_TABLE satrTable[] = MV_SATR_TABLE_VAL;
-	MV_SATR_BOOT_TABLE satrBootEntry = satrTable[satrBootDeviceValue];
+	MV_SATR_BOOT_TABLE satrBootEntry;
+
+	if (mvCtrlSatRRead(MV_SATR_BOOT_DEVICE, &satrBootDeviceValue) != MV_OK) {
+		mvOsPrintf("%s: Error: failed to read boot source\n", __func__);
+		mvOsPrintf("Using NAND as the default boot source\n");
+		return MSAR_0_BOOT_NAND_NEW; /* NAND is the Default Boot source */
+	}
+
+	satrBootEntry = satrTable[satrBootDeviceValue];
 
 	if (satrBootEntry.bootSrc != MSAR_0_BOOT_SPI_FLASH)
 		return satrBootEntry.bootSrc;

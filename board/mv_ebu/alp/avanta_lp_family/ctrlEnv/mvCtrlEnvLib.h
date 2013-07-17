@@ -270,7 +270,7 @@ typedef struct _boardSerdesConf {
 #define SAR_CPU_FAB_GET(cpu, fab)       (((cpu & 0x7) << 21) | ((fab & 0xF) << 24))
 
 /* mcspLib.h API list */
-MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrReadField, MV_U8 val);
+MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrReadField, MV_U8 val, MV_BOOL restoreDefault);
 MV_STATUS mvCtrlSatRRead(MV_SATR_TYPE_ID satrField, MV_U32 *value);
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode);
 MV_VOID mvCtrlSatrInit(MV_VOID);

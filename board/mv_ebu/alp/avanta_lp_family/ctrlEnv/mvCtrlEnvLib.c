@@ -343,7 +343,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 *       else if write failed - returns MV_ERROR
 *
 *******************************************************************************/
-MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrReadField, MV_U8 val)
+MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrReadField, MV_U8 val, MV_BOOL restoreDefault)
 {
 	MV_BOARD_SATR_INFO satrInfo;
 	MV_U8 readValue, verifyValue;
@@ -355,12 +355,14 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrReadField, MV_U8 val)
 
 	if (satrReadField >= MV_SATR_READ_MAX_OPTION ||
 		satrWriteField >= MV_SATR_WRITE_MAX_OPTION) {
-		mvOsPrintf("%s: Error: wrong MV_SATR_TYPE_ID field value (%d).\n", __func__ ,satrWriteField);
+		mvOsPrintf("%s: Error: wrong MV_SATR_TYPE_ID field value (%d).\n"
+				, __func__, satrWriteField);
 		return MV_ERROR;
 	}
 
 	if (mvBoardSatrInfoConfig(satrWriteField, &satrInfo, MV_FALSE) != MV_OK) {
-		mvOsPrintf("%s: Error: Requested S@R field is not relevant for this board\n", __func__);
+		if (restoreDefault == MV_FALSE)
+			mvOsPrintf("%s: Error: Requested S@R field is not relevant for this board\n", __func__);
 		return MV_ERROR;
 	}
 

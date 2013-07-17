@@ -26,6 +26,55 @@ disclaimer.
 
 extern int do_sar(cmd_tbl_t * cmdtb, int flag, int argc, char * const argv[]);
 
+typedef struct _boardSatrDefault {
+	MV_SATR_TYPE_ID satrId;
+	MV_U32 defauleValueForBoard[MV_MAX_BOARD_ID];
+} MV_BOARD_SATR_DEFAULT;
+
+MV_BOARD_SATR_DEFAULT boardSatrDefault[] = {
+/* 	defauleValueForBoard[] = { RD_6650,	DB_6650,	RD_6660,	DB_6660 }*/
+{ MV_SATR_WRITE_CPU_FREQ,	  {6,		21,		6,		21} 	  },
+{ MV_SATR_WRITE_CORE_CLK_SELECT,  {_200MHz,	_200MHz,	_200MHz,	_200MHz}  },
+{ MV_SATR_WRITE_CPU1_ENABLE,	  {MV_TRUE,	MV_FALSE,	MV_TRUE,	MV_FALSE} },
+{ MV_SATR_WRITE_SSCG_DISABLE,	  {MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE} },
+};
+
+static int do_sar_default(void)
+{
+	MV_U32 temp, defaultValue, boardId = mvBoardIdGet();
+
+	defaultValue = boardSatrDefault[MV_SATR_CPU_DDR_L2_FREQ].defauleValueForBoard[boardId];
+	if (mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ, &temp) == MV_OK )
+			mvCtrlSatRWrite(MV_SATR_CPU_DDR_L2_FREQ, defaultValue, MV_TRUE);
+
+	defaultValue = boardSatrDefault[MV_SATR_CORE_CLK_SELECT].defauleValueForBoard[boardId];
+	if (defaultValue == _200MHz)
+		defaultValue = 0x1;
+	else
+		defaultValue = 0x0;
+	if (mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT, &temp) == MV_OK )
+			mvCtrlSatRWrite(MV_SATR_CORE_CLK_SELECT, defaultValue, MV_TRUE);
+
+	defaultValue = boardSatrDefault[MV_SATR_CPU1_ENABLE].defauleValueForBoard[boardId];
+	if (defaultValue == MV_TRUE)
+		defaultValue = 0x1;
+	else
+		defaultValue = 0x0;
+	if (mvCtrlSatRRead(MV_SATR_CPU1_ENABLE, &temp) == MV_OK )
+			mvCtrlSatRWrite(MV_SATR_CPU1_ENABLE, defaultValue, MV_TRUE);
+
+	defaultValue = boardSatrDefault[MV_SATR_SSCG_DISABLE].defauleValueForBoard[boardId];
+	if (defaultValue == MV_TRUE)
+		defaultValue = 0x1;
+	else
+		defaultValue = 0x0;
+	if (mvCtrlSatRRead(MV_SATR_SSCG_DISABLE, &temp) == MV_OK )
+			mvCtrlSatRWrite(MV_SATR_SSCG_DISABLE, defaultValue, MV_TRUE);
+
+	printf("\nSample at Reset values were restored to default.\n");
+	return 0;
+}
+
 static int do_sar_list(int argc, char *const argv[])
 {
 	const char *cmd;
@@ -236,25 +285,25 @@ static int do_sar_write(int argc, char *const argv[])
 		if (writeVal < 0 || writeVal > FREQ_MODES_NUM)
 			goto input_error;
 		else if (GetAndVerifySatr(MV_SATR_CPU_DDR_L2_FREQ, &temp) == MV_OK )
-			flag = mvCtrlSatRWrite(MV_SATR_CPU_DDR_L2_FREQ, writeVal);
+			flag = mvCtrlSatRWrite(MV_SATR_CPU_DDR_L2_FREQ, writeVal, MV_FALSE);
 	}
 	else if (strcmp(cmd, "coreclock") == 0) {
 		if (writeVal != 0 && writeVal != 1)
 			goto input_error;
 		else if (GetAndVerifySatr(MV_SATR_CORE_CLK_SELECT, &temp) == MV_OK )
-			flag = mvCtrlSatRWrite(MV_SATR_CORE_CLK_SELECT, writeVal);
+			flag = mvCtrlSatRWrite(MV_SATR_CORE_CLK_SELECT, writeVal, MV_FALSE);
 	}
 	else if (strcmp(cmd, "cpusnum") == 0) {
 		if (writeVal != 0 && writeVal != 1)
 			goto input_error;
 		else if (GetAndVerifySatr(MV_SATR_CPU1_ENABLE, &temp) == MV_OK )
-			flag = mvCtrlSatRWrite(MV_SATR_CPU1_ENABLE, writeVal);
+			flag = mvCtrlSatRWrite(MV_SATR_CPU1_ENABLE, writeVal, MV_FALSE);
 	}
 	else if (strcmp(cmd, "sscg") == 0) {
 		if (writeVal != 0 && writeVal != 1)
 			goto input_error;
 		else if (GetAndVerifySatr(MV_SATR_SSCG_DISABLE, &temp) == MV_OK )
-			flag = mvCtrlSatRWrite(MV_SATR_SSCG_DISABLE, writeVal);
+			flag = mvCtrlSatRWrite(MV_SATR_SSCG_DISABLE, writeVal, MV_FALSE);
 	}
 
 /* the first 4 S@R fields are writeable using S@R commands - rest  values are edited using Jumpers/DIP switch/DPR (resistors) */
@@ -299,11 +348,16 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 				return 1;
 			}
 			printf("\nChanges will be applied after reset.\n");
+			return 0;
 		}
-		return 0;
-
 	} else if (strcmp(cmd, "read") == 0)
 		return do_sar_read(argc - 2, argv + 2);
+	else if (strcmp(cmd, "default") == 0) {
+		do_sar_default();
+		do_sar_read(argc - 2, argv + 2);
+		printf("\nChanges will be applied after reset.\n\n");
+		return 0;
+	}
 
 usage:
 	cmd_usage(cmdtp);
@@ -313,12 +367,12 @@ usage:
 U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"Sample At Reset sub-system\n",
 
-	"list cpufreq	- prints the S@R modes list\n"
+	"SatR list cpufreq	- prints the S@R modes list\n"
 	"SatR list coreclock	- prints the S@R modes list\n"
 	"SatR list cpusnum	- prints the S@R modes list\n"
 	"SatR list sscg		- prints the S@R modes list\n\n"
 
-	"SatR read 	-	  read and print all active S@R values\n"
+	"SatR read 		- read and print all active S@R values\n"
 	"SatR read cpufreq	- read and print the CPU frequency S@R value\n"
 	"SatR read coreclock	- read and print the Core Clock frequency S@R value\n"
 	"SatR read cpusnum	- read and print the number of CPU cores S@R value\n"
@@ -339,7 +393,9 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR write cpufreq <val>	- write the S@R with CPU frequency value\n"
 	"SatR write coreclock <val>	- write the S@R with Core Clock frequency value\n"
 	"SatR write cpusnum <val>	- write the S@R with number of CPU cores value\n"
-	"SatR write sscg <val>		- write the S@R with sscg mode value\n"	/* omriii : explain the field */
+	"SatR write sscg <val>		- write the S@R with sscg mode value\n"
+
+	"SatR write default		- restore writeable S@R values to their default value\n"
 );
 #endif /*defined(CONFIG_CMD_SAR)*/
 

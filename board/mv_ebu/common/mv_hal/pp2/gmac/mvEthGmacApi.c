@@ -585,10 +585,6 @@ void mvEthPhyAddrSet(int port, int phyAddr)
 {
 	unsigned int regData;
 
-	regData = MV_REG_READ(ETH_PHY_AN_CFG0_REG);
-	regData |= ETH_PHY_AN_EN_MASK(port);
-	MV_REG_WRITE(ETH_PHY_AN_CFG0_REG, regData);
-
 	regData = MV_REG_READ(ETH_PHY_ADDR_REG);
 
 	regData &= ~ETH_PHY_ADDR_MASK(port);

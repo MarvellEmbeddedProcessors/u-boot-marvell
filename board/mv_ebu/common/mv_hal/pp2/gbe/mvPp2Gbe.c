@@ -193,6 +193,15 @@ MV_STATUS mvPp2HalInit(MV_PP2_HAL_DATA *halData)
 	return MV_OK;
 }
 
+/*-------------------------------------------------------------------------------*/
+MV_VOID mvPp2HalDestroy(MV_VOID)
+{
+	mvPp2PhysTxqsDestroy();
+	mvPp2AggrTxqsDestroy();
+	mvPp2PhysRxqsDestroy();
+	mvOsFree(mvPp2PortCtrl);
+	memset(&mvPp2HalData, 0, sizeof(mvPp2HalData));
+}
 
 /*******************************************************************************
 * mvNetaDefaultsSet - Set defaults to the NETA port
@@ -479,14 +488,19 @@ void mvPp2RxqDelete(int port, int rxq)
    This function must be called before any use of RXQ */
 MV_STATUS mvPp2PhysRxqsAlloc(MV_VOID)
 {
-	int i;
+	int i, bytes;
 
-	mvPp2PhysRxqs = mvOsMalloc(MV_ETH_RXQ_TOTAL_NUM * sizeof(MV_PP2_PHYS_RXQ_CTRL));
+	bytes = MV_ETH_RXQ_TOTAL_NUM * sizeof(MV_PP2_PHYS_RXQ_CTRL);
+	mvPp2PhysRxqs = mvOsMalloc(bytes);
+
 	if (!mvPp2PhysRxqs) {
 		mvOsPrintf("mvPp2 Can't allocate %d Bytes for %d RXQs controls\n",
-			   MV_ETH_RXQ_TOTAL_NUM * sizeof(MV_PP2_PHYS_RXQ_CTRL), MV_ETH_RXQ_TOTAL_NUM);
+			   bytes, MV_ETH_RXQ_TOTAL_NUM);
 		return MV_OUT_OF_CPU_MEM;
 	}
+
+	memset(mvPp2PhysRxqs, 0, bytes);
+
 	for (i = 0; i < MV_ETH_RXQ_TOTAL_NUM; i++) {
 		mvPp2PhysRxqs[i].port = MV_PP2_RXQ_FREE;
 		mvPp2PhysRxqs[i].logicRxq = MV_PP2_RXQ_FREE;
@@ -498,7 +512,7 @@ MV_STATUS mvPp2PhysRxqsAlloc(MV_VOID)
 /* Destroy all physical RXQs */
 MV_STATUS mvPp2PhysRxqsDestroy(MV_VOID)
 {
-/*TODO*/
+	mvOsFree(mvPp2PhysRxqs);
 	return MV_OK;
 }
 
@@ -657,15 +671,21 @@ MV_STATUS mvPp2TxqDelete(int port, int txp, int txq)
    This function must be called before any use of TXQ */
 MV_STATUS mvPp2PhysTxqsAlloc(void)
 {
-	int i;
+	int i, bytes;
 
 	/* Alloc one extra element for temporary TXQ */
-	mvPp2PhysTxqs = mvOsMalloc((MV_PP2_TXQ_TOTAL_NUM + 1) * sizeof(MV_PP2_PHYS_TXQ_CTRL));
+	bytes = (MV_PP2_TXQ_TOTAL_NUM + 1) * sizeof(MV_PP2_PHYS_TXQ_CTRL);
+
+	mvPp2PhysTxqs = mvOsMalloc(bytes);
+
 	if (!mvPp2PhysTxqs) {
 		mvOsPrintf("mvPp2 Can't allocate %d Bytes for %d TXQs control\n",
-			   (MV_PP2_TXQ_TOTAL_NUM + 1) * sizeof(MV_PP2_PHYS_TXQ_CTRL), MV_PP2_TXQ_TOTAL_NUM);
+			   bytes, MV_PP2_TXQ_TOTAL_NUM);
 		return MV_OUT_OF_CPU_MEM;
 	}
+
+	memset(mvPp2PhysTxqs, 0, bytes);
+
 	for (i = 0; i < (MV_PP2_TXQ_TOTAL_NUM + 1); i++)
 		mvPp2PhysTxqs[i].txq = i;
 
@@ -673,10 +693,9 @@ MV_STATUS mvPp2PhysTxqsAlloc(void)
 }
 
 /* Destroy all physical TXQs */
-MV_STATUS mvPp2PhysTxqsDestroy(MV_VOID)
+MV_VOID mvPp2PhysTxqsDestroy(MV_VOID)
 {
-/*TODO*/
-	return MV_OK;
+	mvOsFree(mvPp2PhysTxqs);
 }
 
 /* Associate TXQs for this port
@@ -731,21 +750,38 @@ MV_STATUS mvPp2AggrTxqDescInit(MV_PP2_AGGR_TXQ_CTRL *txqCtrl, int descNum, int c
 MV_STATUS mvPp2AggrTxqsAlloc(int cpuNum)
 {
 	/* Alloc one extra element for temporary TXQ */
-	mvPp2AggrTxqs = mvOsMalloc(cpuNum * sizeof(MV_PP2_PHYS_TXQ_CTRL));
+	int bytes = cpuNum * sizeof(MV_PP2_PHYS_TXQ_CTRL);
+
+	mvPp2AggrTxqs = mvOsMalloc(bytes);
+
 	if (!mvPp2AggrTxqs) {
-		mvOsPrintf("mvPp2 Can't allocate %d Bytes for %d aggr TXQs control\n",
-			   cpuNum * sizeof(MV_PP2_PHYS_TXQ_CTRL), cpuNum);
+		mvOsPrintf("mvPp2 Can't allocate %d Bytes for %d aggr TXQs control\n", bytes, cpuNum);
 		return MV_OUT_OF_CPU_MEM;
 	}
+
+	memset(mvPp2AggrTxqs, 0, bytes);
 
 	return MV_OK;
 }
 
-/* Destroy all aggregated TXQs */
-MV_STATUS mvPp2AggrTxqsDestroy(MV_VOID)
+/* release all aggregated TXQs */
+MV_VOID mvPp2AggrTxqsDestroy(MV_VOID)
 {
-/*TODO*/
-	return MV_OK;
+	mvOsFree(mvPp2AggrTxqs);
+}
+
+
+/* Destroy all aggregated TXQs */
+MV_VOID mvPp2AggrTxqDelete(int cpu)
+{
+	MV_PP2_AGGR_TXQ_CTRL *pTxqCtrl = &mvPp2AggrTxqs[cpu];
+	MV_PP2_QUEUE_CTRL *pQueuCtrl = &pTxqCtrl->queueCtrl;
+	MV_BUF_INFO *pDescBuf = &pQueuCtrl->descBuf;
+
+	mvPp2DescrMemoryFree(pDescBuf->bufSize, (MV_ULONG *)pDescBuf->bufPhysAddr,
+				pDescBuf->bufVirtPtr, (MV_U32 *)pDescBuf->memHandle);
+
+	mvOsMemset(pQueuCtrl, 0, sizeof(*pQueuCtrl));
 }
 
 /* Initialize aggregated TXQ */
@@ -838,6 +874,19 @@ MV_STATUS mvPp2TxqTempInit(int descNum, int hwfNum)
 
 	return MV_OK;
 }
+
+void mvPp2TxqTempDelete(void)
+{
+	int ptxq = MV_PP2_TXQ_TOTAL_NUM;
+
+	MV_PP2_PHYS_TXQ_CTRL *pTxq = &mvPp2PhysTxqs[ptxq];
+	MV_PP2_QUEUE_CTRL *qCtrl = &pTxq->queueCtrl;
+	MV_BUF_INFO *pDescBuf = &qCtrl->descBuf;
+	mvPp2DescrMemoryFree(pDescBuf->bufSize, (MV_ULONG *)pDescBuf->bufPhysAddr,
+				pDescBuf->bufVirtPtr, (MV_U32 *)pDescBuf->memHandle);
+
+	mvOsMemset(qCtrl, 0, sizeof(*qCtrl));
+}
 /*-------------------------------------------------------------------------------*/
 /* Port */
 /* Allocate and initialize port structure
@@ -902,7 +951,18 @@ void *mvPp2PortInit(int port, int firstRxq, int numRxqs, void *osHandle)
 
 void mvPp2PortDestroy(int portNo)
 {
-/*TODO*/
+	MV_PP2_PORT_CTRL *pPortCtrl = mvPp2PortHndlGet(portNo);
+
+	if (pPortCtrl->pTxQueue)
+		mvOsFree(pPortCtrl->pTxQueue);
+
+	if (pPortCtrl->pRxQueue)
+		mvOsFree(pPortCtrl->pRxQueue);
+
+	if (pPortCtrl)
+		mvOsFree(pPortCtrl);
+
+	mvPp2PortCtrl[portNo] = NULL;
 }
 
 /*******************************************************************************

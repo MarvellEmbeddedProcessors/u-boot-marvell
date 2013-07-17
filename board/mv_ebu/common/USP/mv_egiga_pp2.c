@@ -283,6 +283,7 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 			phy_addr = mvBoardPhyAddrGet(priv->port);
 			if (phy_addr != (MV_8)-1)
 				mvEthPhyAddrSet(priv->port, phy_addr);
+			mvEthPhyInit(priv->port, MV_FALSE);
 
 			mvEthPortPowerUp(priv->port,
 				MV_FALSE/*mvBoardIsPortInSgmii(priv->port)*/,

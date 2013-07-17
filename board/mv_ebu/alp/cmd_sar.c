@@ -58,8 +58,8 @@ static int do_sar_list(int argc, char *const argv[])
 		printf("\t0x1 = Dual CPU\n");
 	} else if (strcmp(cmd, "sscg") == 0) {
 		printf("Determines the SSCG  mode:\n");
-		printf("\t0x0 = SSCG Enabled\n");
-		printf("\t0x1 = SSCG Disabled\n");
+		printf("\t0x0 = SSCG Disabled\n");
+		printf("\t0x1 = SSCG Enabled\n");
 	}
 	else goto usage;
 	return 0;
@@ -70,9 +70,9 @@ usage:
 
 static MV_STATUS GetAndVerifySatr(MV_SATR_TYPE_ID satrField, MV_U32* result)
 {
-	MV_U32 temp = mvCtrlSatRRead(satrField);
+	MV_U32 temp;
 
-	if (temp == MV_ERROR) {
+	if (mvCtrlSatRRead(satrField, &temp) == MV_ERROR) {
 		printf("%s: Requested SatR field is not relevant for current board\n", __func__);
 		return MV_ERROR;
 	}
@@ -184,35 +184,35 @@ static int do_sar_read(int argc, char *const argv[])
 				freqMode.l2Freq);
 		printf("---------------------------------------------------------\n\n");
 		}
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT)))
+		if (mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT, &temp) == MV_OK)
 			printf("coreclock \t= %3d  ==>   %sMhz\n",temp, (temp == 0x0) ? "166" : "200");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU1_ENABLE)))
+		if (mvCtrlSatRRead(MV_SATR_CPU1_ENABLE, &temp) == MV_OK)
 		printf("cpusnum \t= %3d  ==>   %s CPU \n", temp, (temp == 0) ? "Single" : "Dual");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_SSCG_DISABLE)))
+		if (mvCtrlSatRRead(MV_SATR_SSCG_DISABLE, &temp) == MV_OK)
 			printf("sscg \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_I2C0_SERIAL_ROM)))
+		if (mvCtrlSatRRead(MV_SATR_I2C0_SERIAL_ROM, &temp) == MV_OK)
 			printf("i2c0 \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_EXTERNAL_CORE_RESET)))
+		if (mvCtrlSatRRead(MV_SATR_EXTERNAL_CORE_RESET, &temp) == MV_OK)
 			printf("cpureset \t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_EXTERNAL_CPU_RESET)))
+		if (mvCtrlSatRRead(MV_SATR_EXTERNAL_CPU_RESET, &temp) == MV_OK)
 			printf("corereset \t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_BOOT_DEVICE)))
+		if (mvCtrlSatRRead(MV_SATR_BOOT_DEVICE, &temp) == MV_OK)
 			printf("bootsrc \t= %3d  ==>   %s\n", temp, bootSrcArr[mvBoardBootDeviceGet()]);
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU_PLL_XTAL_BYPASS)))
+		if (mvCtrlSatRRead(MV_SATR_CPU_PLL_XTAL_BYPASS, &temp) == MV_OK)
 			printf("sscg \t\t= %3d  ==>   %s Bypass\n",temp, (temp == 0) ? "PLL" : "XTAL");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU0_ENDIANESS)))
+		if (mvCtrlSatRRead(MV_SATR_CPU0_ENDIANESS, &temp) == MV_OK)
 			printf("cpuendi \t= %3d  ==>   %s Endianess\n", temp, (temp == 0) ? "Little" : "Big");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU0_NMFI)))
+		if (mvCtrlSatRRead(MV_SATR_CPU0_NMFI, &temp) == MV_OK)
 			printf("cpunmfi \t= %3d  ==>   FIQ mask %s \n", temp, (temp == 0) ? "Enabled" : "Disabled");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU0_THUMB)))
+		if (mvCtrlSatRRead(MV_SATR_CPU0_THUMB, &temp) == MV_OK)
 			printf("cputhumb \t= %3d  ==>   %s mode \n", temp, (temp == 0) ? "ARM" : "Thumb");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_PEX0_CLOCK)))
+		if (mvCtrlSatRRead(MV_SATR_PEX0_CLOCK, &temp) == MV_OK)
 			printf("pcimode0 \t= %3d  ==>   PEX0 clock %s enable\n",temp, (temp == 0) ? "Input" : "Output");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_PEX1_CLOCK)))
+		if (mvCtrlSatRRead(MV_SATR_PEX1_CLOCK, &temp) == MV_OK)
 			printf("pcimode1 \t= %3d  ==>   PEX1 clock %s enable\n",temp, (temp == 0) ? "Input" : "Output");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_REF_CLOCK_ENABLE)))
+		if (mvCtrlSatRRead(MV_SATR_REF_CLOCK_ENABLE, &temp) == MV_OK)
 			printf("refclk \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_TESTER_OPTIONS)))
+		if (mvCtrlSatRRead(MV_SATR_TESTER_OPTIONS, &temp) == MV_OK)
 			printf("tester \t\t= %3d \n",temp);
 	}
 	else goto usage;
@@ -236,25 +236,25 @@ static int do_sar_write(int argc, char *const argv[])
 		if (writeVal < 0 || writeVal > FREQ_MODES_NUM)
 			goto input_error;
 		else if (GetAndVerifySatr(MV_SATR_CPU_DDR_L2_FREQ, &temp) == MV_OK )
-			flag = mvCtrlSatRWrite(MV_SATR_WRITE_CPU_FREQ, MV_SATR_CPU_DDR_L2_FREQ, writeVal);
+			flag = mvCtrlSatRWrite(MV_SATR_CPU_DDR_L2_FREQ, writeVal);
 	}
 	else if (strcmp(cmd, "coreclock") == 0) {
 		if (writeVal != 0 && writeVal != 1)
 			goto input_error;
 		else if (GetAndVerifySatr(MV_SATR_CORE_CLK_SELECT, &temp) == MV_OK )
-			flag = mvCtrlSatRWrite(MV_SATR_WRITE_CORE_CLK_SELECT,MV_SATR_CORE_CLK_SELECT, writeVal);
+			flag = mvCtrlSatRWrite(MV_SATR_CORE_CLK_SELECT, writeVal);
 	}
 	else if (strcmp(cmd, "cpusnum") == 0) {
 		if (writeVal != 0 && writeVal != 1)
 			goto input_error;
 		else if (GetAndVerifySatr(MV_SATR_CPU1_ENABLE, &temp) == MV_OK )
-			flag = mvCtrlSatRWrite(MV_SATR_WRITE_CPU1_ENABLE,MV_SATR_CPU1_ENABLE, writeVal);
+			flag = mvCtrlSatRWrite(MV_SATR_CPU1_ENABLE, writeVal);
 	}
 	else if (strcmp(cmd, "sscg") == 0) {
 		if (writeVal != 0 && writeVal != 1)
 			goto input_error;
 		else if (GetAndVerifySatr(MV_SATR_SSCG_DISABLE, &temp) == MV_OK )
-			flag = mvCtrlSatRWrite(MV_SATR_WRITE_SSCG_DISABLE,MV_SATR_SSCG_DISABLE, writeVal);
+			flag = mvCtrlSatRWrite(MV_SATR_SSCG_DISABLE, writeVal);
 	}
 
 /* the first 4 S@R fields are writeable using S@R commands - rest  values are edited using Jumpers/DIP switch/DPR (resistors) */
@@ -294,8 +294,11 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	else if (strcmp(cmd, "write") == 0) {
 		if (do_sar_write(argc - 2, argv + 2) == 0) {
 			do_sar_read(argc - 2, argv + 2);
-			if (strcmp(cmd2, "cpufreq") == 0 && !mvCtrlIsValidSatR())
+			if (strcmp(cmd2, "cpufreq") == 0 && !mvCtrlIsValidSatR()) {
 				printf("\n*** Selected Unsupported DDR/CPU/L2 Clock configuration ***\n\n");
+				return 1;
+			}
+			printf("\nChanges will be applied after reset.\n");
 		}
 		return 0;
 

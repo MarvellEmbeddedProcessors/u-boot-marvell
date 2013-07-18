@@ -694,6 +694,9 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 			tmp = MV_REG_READ(QSGMII_CONTROL_1_REG);
 			DEBUG_RD_REG(QSGMII_CONTROL_1_REG, tmp );
 			tmp |= BIT30;
+#ifdef ERRATA_GL_6572255
+			tmp |= BIT27;
+#endif
 			MV_REG_WRITE(QSGMII_CONTROL_1_REG,  tmp);
 			DEBUG_WR_REG(QSGMII_CONTROL_1_REG,  tmp);
 		}

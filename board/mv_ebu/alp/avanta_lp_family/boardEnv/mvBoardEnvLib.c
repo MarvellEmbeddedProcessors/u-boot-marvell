@@ -880,9 +880,12 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		smiAddress = 0x0;
 	else if (ethComplex & MV_ETHCOMP_GE_MAC0_2_RGMII0)
 		smiAddress = 0x4;
-	else {
-		smiAddress = -1; /* no SMI address if connected to switch */
-		macSpeed = BOARD_MAC_SPEED_1000M;
+	else {				/* else MAC0 is connected to SW port 6 */
+		smiAddress = -1;	/* no SMI address if connected to switch */
+		if (ethComplex & MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G)
+			macSpeed = BOARD_MAC_SPEED_2000M;
+		else
+			macSpeed = BOARD_MAC_SPEED_1000M;
 	}
 	mvBoardPhyAddrSet(0, smiAddress);
 	mvBoardMacSpeedSet(0, macSpeed);
@@ -1010,6 +1013,10 @@ MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID)
 		return MV_ERROR;
 	}
 	ethComplexOptions |= mac0Config | mac1Config;
+
+	/* read if using 2G speed for MAC0 to Switch*/
+	if (mvCtrlSysConfigGet(MV_CONFIG_MAC0_SW_SPEED) == 0x0)
+		ethComplexOptions |= MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G;
 
 	/* if MAC1 is NOT connected to PON SerDes --> connect PON MAC to to PON SerDes */
 	if ((ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES) == MV_FALSE)
@@ -1705,16 +1712,15 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 
 
 	/* Switch Module */
-	if ((ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6) &&
-		!(ethConfig & MV_ETHCOMP_GE_MAC1_2_SW_P4))
-		mvOsOutput("       Ethernet Switch port 6 on MAC0 [Default]\n");
+	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6)
+		mvOsOutput("       Ethernet Switch port 6 on MAC0, %s Speed [Default]\n"
+				, mvBoardMacSpeedGet(0) == BOARD_MAC_SPEED_2000M ? "2G" : "1G");
 	else if ((ethConfig & MV_ETHCOMP_GE_MAC1_2_SW_P4) &&
 		!(ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6))
-		mvOsOutput("       Ethernet Switch port 4 on MAC1 [Default]\n");
-	else if ((ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6) &&
+		mvOsOutput("       Ethernet Switch port 4 on MAC1, 1G Speed [Default]\n");
+	if ((ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6) &&
 		(ethConfig & MV_ETHCOMP_GE_MAC1_2_SW_P4)) {
-		mvOsOutput("       Ethernet Switch port 6 on MAC0 [Default]\n");
-		mvOsOutput("       Ethernet Switch port 4 on MAC1\n");
+		mvOsOutput("       Ethernet Switch port 4 on MAC1, 1G Speed\n");
 	}
 
 	/* RGMII */

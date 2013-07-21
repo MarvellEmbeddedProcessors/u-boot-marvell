@@ -109,6 +109,7 @@ MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = {
 	{ MV_CONFIG_LANE1,	       0x18,	3,	 0,		1,	{ 0, 0, 0, 1 } }, /* Exp#0, Reg#1, BITS [2:3] */
 	{ MV_CONFIG_LANE2,	       0x20,	5,	 0,		1,	{ 0, 0, 0, 1 } }, /* Exp#0, Reg#1, BITS [4]   */
 	{ MV_CONFIG_LANE3,	       0X40,	6,	 0,		1,	{ 0, 0, 0, 1 } }, /* Exp#0, Reg#1, BITS [5:6] */
+	{ MV_CONFIG_MAC0_SW_SPEED,     0X80,	7,	 0,		1,	{ 0, 1, 0, 1 } }, /* Exp#0, Reg#1, BITS [5:6] */
 	{ MV_CONFIG_DEVICE_BUS_MODULE, 0x3,	0,	 1,		0,	{ 0, 0, 0, 1 } }, /* Exp#1, Reg#0, BITS [0:1] */
 };
 

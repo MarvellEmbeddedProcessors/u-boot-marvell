@@ -414,6 +414,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define REG_TIMER1_VALUE_ADDR					0x2031C
 #define REG_TIMER0_ENABLE_MASK					0x1
 
+#define CNTMR_RELOAD_REG(tmrNum)    (REG_TIMERS_CTRL_ADDR  + 0x10 + (tmrNum * 8))
+#define CNTMR_VAL_REG(tmrNum)       (REG_TIMERS_CTRL_ADDR  + 0x14 + (tmrNum * 8))
+#define CNTMR_CTRL_REG(tmrNum)      (REG_TIMERS_CTRL_ADDR)
+#define CTCR_ARM_TIMER_EN_OFFS(timer)   (timer * 2)
+#define CTCR_ARM_TIMER_EN_MASK(timer)   (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
+#define CTCR_ARM_TIMER_EN(timer)            (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
+
+#define CTCR_ARM_TIMER_AUTO_OFFS(timer) (1 + (timer * 2))
+#define CTCR_ARM_TIMER_AUTO_MASK(timer) (1 << CTCR_ARM_TIMER_EN_OFFS(timer))
+#define CTCR_ARM_TIMER_AUTO_EN(timer)   (1 << CTCR_ARM_TIMER_AUTO_OFFS(timer))
+
+#define CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(timer) (11 + timer)
+
+#define CTCR_ARM_TIMER_25MhzFRQ_EN(timer)   0
+#define MV_BOARD_REFCLK		mvCpuL2ClkGet()
+
+
+
 /* PMU */
 #define REG_PMU_I_F_CTRL_ADDR					0x1C090
 #define REG_PMU_DUNIT_BLK_OFFS					16

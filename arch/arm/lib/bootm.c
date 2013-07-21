@@ -305,7 +305,7 @@ static void setup_marvell_tag(void)
 
 	for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
 		sprintf(temp, (i ? "eth%daddr" : "ethaddr"), i);
-		if (i == 2)
+		if (i == 3)
 			sprintf(temp, "mv_pon_addr");
 
 		env = getenv(temp);

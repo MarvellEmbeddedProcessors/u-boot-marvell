@@ -252,11 +252,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PEX_PWR_MNG_EXT_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A18)
 #define PEX_FLOW_CTRL_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A20)
 #define PEX_SECONDARY_BUS_REG(pexIf)        ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A2C)
-#define PEX_DYNMC_WIDTH_MNG_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A30) 
-#define PEX_ROOT_CMPLX_SSPL_REG(pexif)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A0C) 
+#define PEX_DYNMC_WIDTH_MNG_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A30)
+#define PEX_ROOT_CMPLX_SSPL_REG(pexif)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A0C)
 #define PEX_RAM_PARITY_CTRL_REG(pexIf) 		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A50)
 #define PEX_DBG_CTRL_REG(pexIf) 			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A60)
-#define PEX_DBG_STATUS_REG(pexIf)           ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A64) 
+#define PEX_DBG_STATUS_REG(pexIf)           ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A64)
 
 #define PXLCSR_NEG_LNK_GEN_OFFS			16	/* Negotiated Link GEN */
 #define PXLCSR_NEG_LNK_GEN_MASK 		(0xf << PXLCSR_NEG_LNK_GEN_OFFS)
@@ -312,5 +312,53 @@ typedef enum {
 #define MV_BOARD_CFG_SDIO_MODE(cfg)		((cfg >> 5) & 0x1)
 
 
-#endif /* __INCmvBHboardEnvSpech */
+#define MSAR_DDR_L2_CLK_RATIO_IDX(sar0)		(((sar0) >> 15) & 0x1F)
 
+#define MV_CPU_CLK_TBL { 400, 533, 667, 800, 1000, 1067, 1200, 1333, 1500, 1600, 1667,\
+			1800, 2000, 333, 600, 900, 0 }
+
+#define MV_DEFAULT_PCLK		1200000000
+
+typedef struct _mvCpuArmClkRatio {
+	MV_U32	vco2cpu;	/* VCO:PCLK0(CPU) clock ratio */
+	MV_U32	vco2l2c;	/* VCO:NB(L2 cache) clock ratio */
+	MV_U32	vco2hcl;	/* VCO:HCLK(DDR controller) clock ratio */
+	MV_U32	vco2ddr;	/* VCO:DDR(DDR memory) clock ratio */
+
+} MV_CPU_ARM_CLK_RATIO;
+
+/*		cpu	l2c	hclk	ddr	*/
+#define MV_DDR_L2_CLK_RATIO_TBL    { \
+/*00*/	{	1,	1,	4,	2	},\
+/*01*/	{	1,	2,	2,	2	},\
+/*02*/	{	2,	2,	6,	3	},\
+/*03*/	{	2,	2,	3,	3	},\
+/*04*/	{	1,	2,	3,	3	},\
+/*05*/	{	1,	2,	4,	2	},\
+/*06*/	{	1,	1,	2,	2	},\
+/*07*/	{	2,	3,	6,	6	},\
+/*08*/	{	2,	3,	5,	5	},\
+/*09*/	{	1,	2,	6,	3	},\
+/*10*/	{	2,	4,	10,	5	},\
+/*11*/	{	1,	3,	6,	6	},\
+/*12*/	{	1,	2,	4,	4	},\
+/*13*/	{	1,	3,	6,	3	},\
+/*14*/	{	1,	2,	5,	5	},\
+/*15*/	{	2,	2,	5,	5	},\
+/*16*/	{	1,	1,	3,	3	},\
+/*17*/	{	2,	5,	10,	10	},\
+/*18*/	{	1,	3,	8,	4	},\
+/*19*/	{	1,	1,	2,	1	},\
+/*20*/	{	2,	3,	6,	3	},\
+/*21*/	{	1,	2,	8,	4	},\
+/*22*/	{	0,	0,	0,	0	},\
+/*23*/	{	0,	0,	0,	0	},\
+/*24*/	{	0,	0,	0,	0	},\
+/*25*/	{	0,	0,	0,	0	},\
+/*26*/	{	0,	0,	0,	0	},\
+/*27*/	{	1,	1,	1,	1	},\
+/*EOT*/	{	0,	0,	0,	0	} \
+}
+
+
+#endif /* __INCmvBHboardEnvSpech */

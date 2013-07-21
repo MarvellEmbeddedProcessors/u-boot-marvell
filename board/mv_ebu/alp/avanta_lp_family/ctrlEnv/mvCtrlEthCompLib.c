@@ -166,11 +166,11 @@ static void mvEthComplexGbePortSrcSet(MV_U32 port, MV_U32 src)
 /*
  * Set speed Gbe Port 0 when it is connected to switch port 6
  */
-static void mvEthComplexGbeToSwitchSpeedSet(MV_ETH_PORT_SPEED speed)
+static void mvEthComplexGbeToSwitchSpeedSet(MV_BOARD_MAC_SPEED speed)
 {
 	MV_U32 reg;
 
-	if (speed != MV_ETH_SPEED_1000 && speed != MV_ETH_SPEED_2000) {
+	if (speed != BOARD_MAC_SPEED_1000M && speed != BOARD_MAC_SPEED_2000M) {
 		mvOsPrintf("%s: wrong speed (%d)\n", __func__, speed);
 		return;
 	}
@@ -178,12 +178,12 @@ static void mvEthComplexGbeToSwitchSpeedSet(MV_ETH_PORT_SPEED speed)
 	reg = MV_REG_READ(MV_ETHCOMP_CTRL_REG);
 	reg &= ~ETHCC_GE_MAC0_SW_PORT_6_SPEED_MASK;
 
-	if (speed == MV_ETH_SPEED_2000)
+	if (speed == BOARD_MAC_SPEED_2000M)
 		reg |= (0x1 << ETHCC_GE_MAC0_SW_PORT_6_SPEED_OFFSET);
 
 	MV_REG_WRITE(MV_ETHCOMP_CTRL_REG, reg);
 
-	if (speed == MV_ETH_SPEED_2000) {
+	if (speed == BOARD_MAC_SPEED_2000M) {
 		reg = MV_REG_READ(MV_ETHCOMP_SW_CONFIG_RESET_CTRL);
 		reg &= ~ETHSCRC_PORT_2G_SELECT_MASK;
 		reg |= (0x1 << ETHSCRC_PORT_2G_SELECT_OFFSET);
@@ -305,7 +305,7 @@ static void mvEthComplexGbePhyResetSet(MV_BOOL setReset)
 }
 
 static void mvEthComplexMacToSwPort(MV_U32 port, MV_U32 swPort,
-				    MV_ETH_PORT_SPEED speed)
+				   MV_BOARD_MAC_SPEED speed)
 {
 	MV_U32 src;
 
@@ -316,9 +316,11 @@ static void mvEthComplexMacToSwPort(MV_U32 port, MV_U32 swPort,
 	mvEthComplexSwPortSrcSet(swPort, src);
 	mvEthComplexGbePortSrcSet(port, 0x1);
 
-	if (port == 0 && swPort == 6)
+	/* GE MAC #0 - Switch Port6 2G Speed */
+	if (port == 0 && swPort == 6 && speed == BOARD_MAC_SPEED_2000M) {
 		mvEthComplexGbeToSwitchSpeedSet(speed);
-	else
+		mvEthComplexPortDpClkSrcSet(port, 0x0);
+	} else
 		mvEthComplexPortDpClkSrcSet(port, 0x1);
 }
 
@@ -378,7 +380,7 @@ MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig)
 	mvEthComplexGopDevEnable();
 
 	if (c & MV_ETHCOMP_GE_MAC0_2_SW_P6)
-		mvEthComplexMacToSwPort(0, 6, MV_ETH_SPEED_1000);
+		mvEthComplexMacToSwPort(0, 6, mvBoardMacSpeedGet(0));
 
 	if (c & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)
 		mvEthComplexMacToGbePhy(0, 0, mvBoardPhyAddrGet(0));
@@ -396,7 +398,7 @@ MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig)
 		mvEthComplexMacToComPhy(0, 3);
 
 	if (c & MV_ETHCOMP_GE_MAC1_2_SW_P4)
-		mvEthComplexMacToSwPort(1, 4, MV_ETH_SPEED_1000);
+		mvEthComplexMacToSwPort(1, 4, mvBoardMacSpeedGet(1));
 
 	if (c & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3)
 		mvEthComplexMacToGbePhy(1, 3, mvBoardPhyAddrGet(1));

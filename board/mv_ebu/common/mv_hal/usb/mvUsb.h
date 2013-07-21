@@ -79,10 +79,11 @@ typedef struct {
 } MV_USB_HAL_DATA;
 
 /* Functions */
-MV_STATUS   mvUsbPllInit(void);
-MV_STATUS   mvUsbHalInit(int dev, MV_BOOL isHost, MV_USB_HAL_DATA *halData);
-MV_U32      mvUsbGetCapRegAddr(int devNo);
-void        mvUsbDevResetComplete(int devNo);
+MV_STATUS	mvUsbPllInit(void);
+MV_STATUS	mvUsbHalInit(int dev, MV_BOOL isHost, MV_USB_HAL_DATA *halData);
+MV_U32		mvUsbGetCapRegAddr(int devNo);
+MV_U32		mvUsbGetCapRegAddr(int devNo);
+void		mvUsbDevResetComplete(int devNo);
 
 #ifdef MV_USB_VOLTAGE_FIX
 MV_U8       mvUsbGppInit(int dev);

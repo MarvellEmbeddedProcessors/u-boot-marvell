@@ -390,7 +390,7 @@ int mv_amp_group_setup(int group_id, int load_addr)
 	}
 
 	/* Verify load address matches physical memory region */
-	if((load_addr < mem_base) || (load_addr >= mem_base + mem_size)){
+	if(((unsigned int)load_addr < mem_base) || ((unsigned int)load_addr >= mem_base + mem_size)){
 		printf("\nAMP Error: Load address (%#08x) not within allocated memory "
 		       "[%#08x:%#08x]\n\n", load_addr, (unsigned int)mem_base,
 		       (unsigned int)(mem_base + mem_size));

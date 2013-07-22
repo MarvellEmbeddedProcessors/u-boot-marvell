@@ -2163,3 +2163,107 @@ MV_U32 mvCtrlGetJuncTemp(MV_VOID)
 	return (3153000 - (10000 * reg)) / 13825;
 }
 
+/*******************************************************************************
+* mvCtrlSramInit
+*
+* DESCRIPTION:
+*	Init SRAM memory:
+*	- set lockdown registers
+*	- init the SRAM ways
+*	- open SRAM windows
+*	- Set L2$-SRAM WAs
+*
+* INPUT:
+*       regs_base_address - Internal Registers Base Address
+*				(to support init of other CPUs' SRAM)
+*	sram_base         - SRAM base address
+*	ways_num          - number of SRAM ways to init, allocate the ways from
+*				the end od the SRAM.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Status
+*
+*******************************************************************************/
+MV_STATUS mvCtrlSramInit(MV_U32 baseAddr, MV_U32 sramBase, MV_U32 waysNum)
+{
+	MV_U32 sramTotalWaysNum;
+	MV_U32 leftWaysNum;
+	MV_U32 firstWay;
+	MV_U32 cpu;
+	MV_U32 i;
+	MV_U32 temp;
+
+	/* get the number of L2 ways */
+	sramTotalWaysNum = (4 << ((MV_MEMIO32_READ(baseAddr | CPU_L2_AUX_CTRL_REG)
+					& CL2ACR_L2_SIZE_MASK) >> CL2ACR_L2_SIZE_OFFS));
+
+	if (sramTotalWaysNum < waysNum)
+		waysNum = sramTotalWaysNum;
+
+	/* use the upper ways for SRAM */
+	firstWay = (sramTotalWaysNum - waysNum);
+
+	/* Configure CPUs Data Lockdown */
+	temp = ((1 << waysNum) - 1) << firstWay;
+
+	for (cpu = 0; cpu < mvCtrlGetCpuNum(); cpu++) {
+		MV_MEMIO32_WRITE((baseAddr | CPU_L2_DATA_LOCKDOWN_REG(cpu)), temp);
+		MV_MEMIO32_WRITE((baseAddr | CPU_L2_INSTRUCTION_LOCKDOWN_REG(cpu)), temp);
+	}
+
+	MV_MEMIO32_WRITE(baseAddr | CPU_IO_BRIDGE_LOCKDOWN_REG, temp);
+
+	/* Configure L2 upper ways to be SRAM */
+	for (i = 0; i < waysNum; i++) {
+		/* set current way as SRAM and set the way base address */
+		MV_MEMIO32_WRITE((baseAddr | CPU_L2_BLOCK_ALLOCATION_REG),
+				(sramBase | (i * _64K) | (i + firstWay)));
+
+		if ((i % SRAMWCR_MAX_WIN_WAYS) == 0) {
+			/* Open the SRAM windows, each SRAM window covers up to 8 ways */
+			leftWaysNum = waysNum - i;
+			if (leftWaysNum <= SRAMWCR_MAX_WIN_WAYS) {
+				temp = leftWaysNum;
+				leftWaysNum = 0;
+
+				/* calculate the window real size */
+				if (temp >= 5) {
+					/* 256KB - 512KB */
+					temp = 8;
+				} else if (temp >= 3) {
+					/* 128KB - 256KB */
+					temp = 4;
+				}
+			} else {
+				temp = SRAMWCR_MAX_WIN_WAYS;
+			}
+
+			MV_MEMIO32_WRITE((baseAddr | SRAM_WIN_CTRL_REG(i / SRAMWCR_MAX_WIN_WAYS)),
+					((sramBase + (i * _64K)) |
+					 ((temp - 1) << SRAMWCR_SIZE_OFFS) |
+					 SRAMWCR_ENABLE));
+		}
+	}
+
+	/* disable the "Shared L2 Present" bit in CPU Configuration register.
+	   The "Shared L2 Present" bit affects the "level of coherence" value in the clidr CP15
+	   register. Cache operation functions such as "flush all" and "invalidate all"
+	   operate on all the cache levels that included in the defined level of coherence.
+	   When IOCC is enabled, this bit causes unnecessary flushes of the L2 cache. */
+	for (cpu = 0; cpu < mvCtrlGetCpuNum(); cpu++) {
+		MV_MEMIO32_WRITE((baseAddr | CPU_CONFIG_REG(cpu)),
+				(MV_MEMIO32_READ(baseAddr | CPU_CONFIG_REG(cpu)) &
+				 MV_32BIT_LE_FAST(~(1 << 16))));
+	}
+
+	/* Set point of coherence (PoC) to L2 - valid only when IOCC is enabled */
+	MV_MEMIO32_WRITE((baseAddr | SOC_CFU_CFG_REG),
+			(MV_MEMIO32_READ(baseAddr | SOC_CFU_CFG_REG) &
+			 MV_32BIT_LE_FAST(~(1 << 17))));
+
+	return MV_OK;
+}
+

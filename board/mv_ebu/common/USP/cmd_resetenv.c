@@ -58,7 +58,7 @@ int resetenv_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	size_t env_offset = CONFIG_ENV_OFFSET;
 	nand_info_t *nand = &nand_info[0];
 
-	printf("Erasing 0x%x - 0x%x:",env_offset, CONFIG_ENV_RANGE);
+	printf("Erasing 0x%x - 0x%x:",env_offset, env_offset + CONFIG_ENV_RANGE);
 	nand_erase(nand, env_offset, CONFIG_ENV_RANGE);
 	puts ("[Done]\n");
 

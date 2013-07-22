@@ -143,11 +143,9 @@ int nand_get_env_offs(void)
 		i++;
 		if (sum >= CONFIG_UBOOT_SIZE)
 			break;
-		
 	}
 
 	offset += CONFIG_UBOOT_SIZE;
-
 
 	/* Find Env start */
         sum = 0;
@@ -167,6 +165,8 @@ int nand_get_env_offs(void)
 	offset = CONFIG_UBOOT_SIZE;
 #endif
 
+	/* Align U-Boot size to currently used blocksize */
+	offset = ( (offset + (blocksize - 1)) & (~(blocksize-1)) );
 	return offset;
 }
 #endif

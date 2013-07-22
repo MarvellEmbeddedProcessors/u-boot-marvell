@@ -83,17 +83,17 @@ int nand_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 	MV_U32 ret = 0;
 	extern char console_buffer[];
 	nand_info_t *nand = &nand_info[0];
-	//u_char *load_addr;
+	size_t blocksize = nand_info[0].erasesize;
+	size_t env_offset = CONFIG_ENV_OFFSET;
 	size_t size = CONFIG_UBOOT_SIZE;
-
 	size_t offset = 0;
-	
-	offset = 0;
+
+	/* Align U-Boot size to currently used blocksize */
+	size = ((size + (blocksize - 1)) & (~(blocksize-1)));
+
 #if defined(CONFIG_SKIP_BAD_BLOCK)
 	int i = 0;
 	int sum = 0;
-	size_t blocksize;
-	blocksize = nand_info[0].erasesize;
 
 	while(i * blocksize < nand_info[0].size) {
 		if (!nand_block_isbad(&nand_info[0], (i * blocksize)))
@@ -103,7 +103,7 @@ int nand_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 			offset = (i + 1) * blocksize;
 		}
 
-		if (sum >= CONFIG_UBOOT_SIZE)
+		if (sum >= size)
 			break;
 		i++;
 	}
@@ -129,13 +129,13 @@ int nand_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 	    strcmp(console_buffer,"yes") == 0 ||
 	    strcmp(console_buffer,"y") == 0 ) {
 
-		printf("Erasing 0x%x - 0x%x:",CONFIG_UBOOT_SIZE + offset, CONFIG_ENV_RANGE);
-		nand_erase(nand, CONFIG_UBOOT_SIZE + offset, CONFIG_ENV_RANGE);
+		printf("Erasing 0x%x - 0x%x:",env_offset, CONFIG_ENV_RANGE);
+		nand_erase(nand, env_offset, CONFIG_ENV_RANGE);
 		printf("\t[Done]\n");
 	}
 
-	printf("Erasing 0x%x - 0x%x: ", offset, offset + CONFIG_UBOOT_SIZE);
-	nand_erase(nand, offset, CONFIG_UBOOT_SIZE);
+	printf("Erasing 0x%x - 0x%x: ", offset, offset + size);
+	nand_erase(nand, offset, size);
 	printf("\t[Done]\n");
 
 	printf("Writing image to NAND:");

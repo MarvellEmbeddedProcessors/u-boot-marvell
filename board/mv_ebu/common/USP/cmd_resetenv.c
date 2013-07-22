@@ -55,31 +55,13 @@ int resetenv_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #endif
 
 #if defined(CONFIG_ENV_IS_IN_NAND)
-	size_t offset = 0;
+	size_t env_offset = CONFIG_ENV_OFFSET;
 	nand_info_t *nand = &nand_info[0];
-	int sum = 0;
 
-#if defined(CONFIG_SKIP_BAD_BLOCK)
-	int i = 0;
-	size_t blocksize;
-	blocksize = nand_info[0].erasesize;
-	while(i * blocksize < nand_info[0].size) {
-		if (!nand_block_isbad(&nand_info[0], (i * blocksize)))
-			sum += blocksize;
-		else {
-			sum = 0;
-			offset = (i + 1) * blocksize;
-		}
-		if (sum >= CONFIG_UBOOT_SIZE)
-			break;
-		i++;
-	}
-#else
-	offset = CONFIG_ENV_OFFSET;
-#endif
-	printf("Erasing 0x%x - 0x%x:",CONFIG_UBOOT_SIZE + offset, CONFIG_ENV_RANGE);
-	nand_erase(nand, CONFIG_UBOOT_SIZE + offset, CONFIG_ENV_RANGE);
+	printf("Erasing 0x%x - 0x%x:",env_offset, CONFIG_ENV_RANGE);
+	nand_erase(nand, env_offset, CONFIG_ENV_RANGE);
 	puts ("[Done]\n");
+
 #elif defined(CONFIG_ENV_IS_IN_SPI_FLASH)
 	u32 sector = 1;
 
@@ -88,7 +70,6 @@ int resetenv_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		if (CONFIG_ENV_SIZE % CONFIG_ENV_SECT_SIZE)
 			sector++;
 	}
-
 
 #ifdef CONFIG_SPI_FLASH_PROTECTION
 	printf("Unprotecting flash:");
@@ -114,7 +95,6 @@ int resetenv_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	spi_flash_protect(flash, 1);
 	printf("\t\t[Done]\n");
 #endif
-
 
 #elif defined(CONFIG_ENV_IS_IN_FLASH )
 	start_addr = CONFIG_ENV_ADDR;

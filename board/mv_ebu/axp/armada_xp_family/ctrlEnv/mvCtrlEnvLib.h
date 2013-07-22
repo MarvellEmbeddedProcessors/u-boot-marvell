@@ -275,5 +275,6 @@ MV_U32 mvCtrlDDRBudWidth(MV_VOID);
 MV_BOOL mvCtrlDDRThruXbar(MV_VOID);
 MV_BOOL mvCtrlDDRECC(MV_VOID);
 MV_U32 mvCtrlGetJuncTemp(MV_VOID);
+MV_STATUS mvCtrlSramInit(MV_U32 baseAddr, MV_U32 sramBase, MV_U32 waysNum);
 
 #endif /* __INCmvCtrlEnvLibh */

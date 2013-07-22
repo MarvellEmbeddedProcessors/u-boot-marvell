@@ -106,6 +106,20 @@ static MV_U8 factor;
 static MV_PCM_FORMAT pcmFormat;
 static MV_BAND_MODE tdmBandMode;
 static MV_TDM_CH_INFO *tdmChInfo[MV_TDM_TOTAL_CHANNELS] = { NULL, NULL };
+static volatile MV_U8 chanStopCount;
+
+static MV_U8 intLock;
+static MV_U32 intRxCount;
+static MV_U32 intTxCount;
+static MV_U32 intRx0Count;
+static MV_U32 intTx0Count;
+static MV_U32 intRx1Count;
+static MV_U32 intTx1Count;
+static MV_U32 intRx0Miss;
+static MV_U32 intTx0Miss;
+static MV_U32 intRx1Miss;
+static MV_U32 intTx1Miss;
+static MV_U32 pcmRestartCount;
 
 MV_STATUS mvTdmHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 {
@@ -119,9 +133,15 @@ MV_STATUS mvTdmHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	/* Init globals */
 	rxInt = txInt = 0;
 	rxFull = txEmpty = BUFF_INVALID;
-	tdmEnable = 0;
+	tdmEnable = 0, intLock = 0;
 	spiMode = halData->spiMode;
 	pcmFormat = tdmParams->pcmFormat;
+	intRxCount = 0, intTxCount = 0;
+	intRx0Count = 0, intTx0Count = 0;
+	intRx1Count = 0, intTx1Count = 0;
+	intRx0Miss = 0, intTx0Miss = 0;
+	intRx1Miss = 0, intTx1Miss = 0;
+	pcmRestartCount = 0;
 
 	if (tdmParams->samplingPeriod > MV_TDM_MAX_SAMPLING_PERIOD)
 		factor = 1;	/* use base sample period(10ms) */
@@ -160,8 +180,8 @@ MV_STATUS mvTdmHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	}
 
 	/* Config TDM */
-	MV_REG_BIT_RESET(TDM_SPI_MUX_REG, 1);	/* enable TDM/SPI interface */
-	MV_REG_BIT_SET(TDM_MISC_REG, BIT0);	/* sw reset to TDM for 5181L-A1 & up */
+	MV_REG_BIT_RESET(TDM_SPI_MUX_REG, BIT0);	/* enable TDM/SPI interface */
+	MV_REG_BIT_SET(TDM_MISC_REG, BIT0);		/* sw reset to TDM for 5181L-A1 & up */
 	MV_REG_WRITE(INT_RESET_SELECT_REG, CLEAR_ON_ZERO);	/* int cause is not clear on read */
 	MV_REG_WRITE(INT_EVENT_MASK_REG, 0x3ffff);	/* all interrupt bits latched in status */
 	MV_REG_WRITE(INT_STATUS_MASK_REG, 0);	/* disable interrupts */
@@ -344,6 +364,8 @@ MV_VOID mvTdmPcmStart(MV_VOID)
 	MV_TRC_REC("->%s\n", __func__);
 
 	tdmEnable = 1;		/* TDM is enabled  */
+	intLock = 0;
+	chanStopCount = 0;
 	mvTdmReset();
 
 	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
@@ -471,9 +493,12 @@ MV_STATUS mvTdmRx(MV_U8 *tdmRxBuff)
 }
 
 /* Low level TDM interrupt service routine */
-MV_VOID mvTdmIntLow(MV_TDM_INT_INFO *tdmIntInfo)
+MV_32 mvTdmIntLow(MV_TDM_INT_INFO *tdmIntInfo)
 {
 	MV_U32 statusReg, maskReg, statusAndMask;
+	MV_32 ret = 0;
+	MV_32 intTxMiss = -1;
+	MV_32 intRxMiss = -1;
 	MV_U8 ch;
 
 	MV_TRC_REC("->%s\n", __func__);
@@ -512,68 +537,111 @@ MV_VOID mvTdmIntLow(MV_TDM_INT_INFO *tdmIntInfo)
 	}
 
 	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
-		if (statusAndMask & TDM_INT_TX(ch)) {
-			/* Give next buff to TDM and set curr buff as empty */
-			if ((statusAndMask & TX_BIT(ch)) && tdmEnable) {
-				MV_TRC_REC("Tx interrupt(ch%d) !!!\n", ch);
 
-				/* MV_OK -> Tx is done for both channels */
-				if (mvTdmChTxLow(ch) == MV_OK) {
-					MV_TRC_REC("Assign Tx aggregate buffer for further processing\n");
-					tdmIntInfo->tdmTxBuff = txAggrBuffVirt;
-					tdmIntInfo->intType |= MV_TX_INT;
+		/* Give next buff to TDM and set curr buff as empty */
+		if ((statusAndMask & TX_BIT(ch)) && tdmEnable && !intLock) {
+			MV_TRC_REC("Tx interrupt(ch%d) !!!\n", ch);
+
+			intTxCount++;
+			if (ch == 0) {
+				intTx0Count++;
+				if (intTx0Count <= intTx1Count) {
+					intTxMiss = 0;
+					intTx0Miss++;
+				}
+			} else {
+				intTx1Count++;
+				if (intTx1Count < intTx0Count) {
+					intTxMiss = 1;
+					intTx1Miss++;
 				}
 			}
 
-			if (statusAndMask & TX_UNDERFLOW_BIT(ch)) {
-				MV_TRC_REC("Tx underflow(ch%d) - checking for root cause...\n", ch);
-				if (tdmEnable) {
-					MV_TRC_REC("Tx underflow ERROR\n");
-					tdmIntInfo->intType |= MV_TX_ERROR_INT;
-					if (!(statusAndMask & TX_BIT(ch))) {
-						MV_TRC_REC("Trying to recover for ch(%d)\n", ch);
-						/* Set HW ownership */
-						MV_REG_BYTE_WRITE(CH_BUFF_OWN_REG(ch) + TX_OWN_BYTE_OFFS, OWN_BY_HW);
-						/* Enable Tx */
-						MV_REG_BYTE_WRITE(CH_ENABLE_REG(ch) + TX_ENABLE_BYTE_OFFS, CH_ENABLE);
-					}
-				} else {
-					MV_TRC_REC("Expected Tx underflow(not an error)\n");
-					MV_REG_WRITE(INT_STATUS_MASK_REG,
-						     MV_REG_READ(INT_STATUS_MASK_REG) & (~(TDM_INT_TX(ch))));
+			/* MV_OK -> Tx is done for both channels */
+			if (mvTdmChTxLow(ch) == MV_OK) {
+				MV_TRC_REC("Assign Tx aggregate buffer for further processing\n");
+				tdmIntInfo->tdmTxBuff = txAggrBuffVirt;
+				tdmIntInfo->intType |= MV_TX_INT;
+			}
+		}
+	}
+
+	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
+
+		if ((statusAndMask & RX_BIT(ch)) && tdmEnable && !intLock) {
+			MV_TRC_REC("Rx interrupt(ch%d) !!!\n", ch);
+
+			intRxCount++;
+			if (ch == 0) {
+				intRx0Count++;
+				if (intRx0Count <= intRx1Count) {
+					intRxMiss = 0;
+					intRx0Miss++;
 				}
+			} else {
+				intRx1Count++;
+				if (intRx1Count < intRx0Count) {
+					intRxMiss = 1;
+					intRx1Miss++;
+				}
+			}
+
+			/* MV_OK -> Rx is done for both channels */
+			if (mvTdmChRxLow(ch) == MV_OK) {
+				MV_TRC_REC("Assign Rx aggregate buffer for further processing\n");
+				tdmIntInfo->tdmRxBuff = rxAggrBuffVirt;
+				tdmIntInfo->intType |= MV_RX_INT;
+			}
+		}
+	}
+
+	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
+
+		if (statusAndMask & TX_UNDERFLOW_BIT(ch)) {
+
+			MV_TRC_REC("Tx underflow(ch%d) - checking for root cause...\n", ch);
+			if (tdmEnable) {
+				MV_TRC_REC("Tx underflow ERROR\n");
+				tdmIntInfo->intType |= MV_TX_ERROR_INT;
+				if (!(statusAndMask & TX_BIT(ch))) {
+					ret = -1;
+					/* MV_OK -> Tx is done for both channels */
+					if (mvTdmChTxLow(ch) == MV_OK) {
+						MV_TRC_REC("Assign Tx aggregate buffer for further processing\n");
+						tdmIntInfo->tdmTxBuff = txAggrBuffVirt;
+						tdmIntInfo->intType |= MV_TX_INT;
+					}
+				}
+			} else {
+				MV_TRC_REC("Expected Tx underflow(not an error)\n");
+				tdmIntInfo->intType |= MV_CHAN_STOP_INT;
+				tdmIntInfo->data = ++chanStopCount; /* Update number of channels already stopped */
+				MV_REG_WRITE(INT_STATUS_MASK_REG,
+					MV_REG_READ(INT_STATUS_MASK_REG) & (~(TDM_INT_TX(ch))));
 			}
 		}
 
-		if (statusAndMask & TDM_INT_RX(ch)) {
-			if ((statusAndMask & RX_BIT(ch)) && tdmEnable) {
-				MV_TRC_REC("Rx interrupt(ch%d) !!!\n", ch);
 
-				/* MV_OK -> Rx is done for both channels */
-				if (mvTdmChRxLow(ch) == MV_OK) {
-					MV_TRC_REC("Assign Rx aggregate buffer for further processing\n");
-					tdmIntInfo->tdmRxBuff = rxAggrBuffVirt;
-					tdmIntInfo->intType |= MV_RX_INT;
-				}
-			}
-
-			if (statusAndMask & RX_OVERFLOW_BIT(ch)) {
-				MV_TRC_REC("Rx overflow(ch%d) - checking for root cause...\n", ch);
-				if (tdmEnable) {
-					MV_TRC_REC("Rx overflow ERROR\n");
-					tdmIntInfo->intType |= MV_RX_ERROR_INT;
-					if (!(statusAndMask & RX_BIT(ch))) {
-						MV_TRC_REC("Trying to recover for ch(%d)\n", ch);
-						/* Set HW ownership */
-						MV_REG_BYTE_WRITE(CH_BUFF_OWN_REG(ch) + RX_OWN_BYTE_OFFS, OWN_BY_HW);
-						/* Enable Rx */
-						MV_REG_BYTE_WRITE(CH_ENABLE_REG(ch) + RX_ENABLE_BYTE_OFFS, CH_ENABLE);
+		if (statusAndMask & RX_OVERFLOW_BIT(ch)) {
+			MV_TRC_REC("Rx overflow(ch%d) - checking for root cause...\n", ch);
+			if (tdmEnable) {
+				MV_TRC_REC("Rx overflow ERROR\n");
+				tdmIntInfo->intType |= MV_RX_ERROR_INT;
+				if (!(statusAndMask & RX_BIT(ch))) {
+					ret = -1;
+					/* MV_OK -> Rx is done for both channels */
+					if (mvTdmChRxLow(ch) == MV_OK) {
+						MV_TRC_REC("Assign Rx aggregate buffer for further processing\n");
+						tdmIntInfo->tdmRxBuff = rxAggrBuffVirt;
+						tdmIntInfo->intType |= MV_RX_INT;
 					}
-				} else {
-					MV_TRC_REC("Expected Rx overflow(not an error)\n");
-					MV_REG_WRITE(INT_STATUS_MASK_REG,
-						     MV_REG_READ(INT_STATUS_MASK_REG) & (~(TDM_INT_RX(ch))));
 				}
+			} else {
+				MV_TRC_REC("Expected Rx overflow(not an error)\n");
+				tdmIntInfo->intType |= MV_CHAN_STOP_INT;
+				tdmIntInfo->data = ++chanStopCount; /* Update number of channels already stopped */
+				MV_REG_WRITE(INT_STATUS_MASK_REG,
+					     MV_REG_READ(INT_STATUS_MASK_REG) & (~(TDM_INT_RX(ch))));
 			}
 		}
 	}
@@ -581,8 +649,32 @@ MV_VOID mvTdmIntLow(MV_TDM_INT_INFO *tdmIntInfo)
 	/* clear TDM interrupts */
 	MV_REG_WRITE(INT_STATUS_REG, ~statusReg);
 
+	/* Check if interrupt was missed -> restart */
+	if  (intTxMiss != -1)  {
+		MV_TRC_REC("Missing Tx Interrupt Detected ch%d!!!\n", intTxMiss);
+		if (intTxMiss)
+			intTx1Count = intTx0Count;
+		else
+			intTx0Count  = (intTx1Count + 1);
+		ret = -1;
+	}
+
+	if  (intRxMiss != -1)  {
+		MV_TRC_REC("Missing Rx Interrupt Detected ch%d!!!\n", intRxMiss);
+		if (intRxMiss)
+			intRx1Count = intRx0Count;
+		else
+			intRx0Count  = (intRx1Count + 1);
+		ret = -1;
+	}
+
+	if (ret == -1) {
+		intLock = 1;
+		pcmRestartCount++;
+	}
+
 	MV_TRC_REC("<-%s\n", __func__);
-	return;
+	return ret;
 }
 
 static INLINE MV_STATUS mvTdmChTxLow(MV_U8 ch)
@@ -933,3 +1025,41 @@ MV_VOID mvTdmIntDisable(MV_VOID)
 
 	MV_TRC_REC("<-%s\n", __func__);
 }
+
+MV_VOID mvTdmPcmIfReset(MV_VOID)
+{
+	MV_TRC_REC("->%s\n", __func__);
+
+	MV_REG_BIT_RESET(PCM_CTRL_REG, BIT0);
+
+	/* Wait a bit - might be fine tuned */
+	mvOsDelay(5);
+
+	MV_REG_BIT_SET(TDM_SPI_MUX_REG, BIT0);	/* Disable TDM/SPI interface */
+
+	MV_REG_WRITE(TDM_MISC_REG, 0);		/* SW PCM reset */
+
+	/* Wait a bit more - might be fine tuned */
+	mvOsDelay(100);
+
+	MV_TRC_REC("<-%s\n", __func__);
+}
+
+#ifdef MV_TDM_EXT_STATS
+MV_VOID mvTdmExtStatsGet(MV_TDM_EXTENDED_STATS *tdmExtStats)
+{
+	tdmExtStats->intRxCount = intRxCount;
+	tdmExtStats->intTxCount = intTxCount;
+	tdmExtStats->intRx0Count = intRx0Count;
+	tdmExtStats->intTx0Count = intTx0Count;
+	tdmExtStats->intRx1Count = intRx1Count;
+	tdmExtStats->intTx1Count = intTx1Count;
+	tdmExtStats->intRx0Miss = intRx0Miss;
+	tdmExtStats->intTx0Miss = intTx0Miss;
+	tdmExtStats->intRx1Miss = intRx1Miss;
+	tdmExtStats->intTx1Miss = intTx1Miss;
+	tdmExtStats->pcmRestartCount = pcmRestartCount;
+
+	return;
+}
+#endif

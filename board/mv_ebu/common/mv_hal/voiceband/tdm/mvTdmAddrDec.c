@@ -174,7 +174,7 @@ static MV_STATUS mvTdmWinWrite(MV_U32 winNum, MV_UNIT_WIN_INFO *pDecWin)
 	if (MV_IS_NOT_ALIGN(pDecWin->addrWin.baseLow, pDecWin->addrWin.size)) {
 		mvOsPrintf("mvTdmWinWrite: Error setting TDM window %d"
 			   "\nAddress 0x%08x is unaligned to size 0x%x.\n",
-			   winNum, pDecWin->addrWin.baseLow, pDecWin->addrWin.size);
+			   winNum, pDecWin->addrWin.baseLow, (MV_U32)pDecWin->addrWin.size);
 		return MV_ERROR;
 	}
 

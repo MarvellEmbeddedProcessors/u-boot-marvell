@@ -310,10 +310,17 @@ MV_U32 mvCtrlUsbMaxGet(MV_VOID);
 #if defined(MV_INCLUDE_SDIO)
 MV_U32 mvCtrlSdioSupport(MV_VOID);
 #endif
+#if defined(MV_INCLUDE_TDM)
 MV_U32 mvCtrlTdmSupport(MV_VOID);
 MV_U32 mvCtrlTdmMaxGet(MV_VOID);
 MV_TDM_UNIT_TYPE mvCtrlTdmUnitTypeGet(MV_VOID);
 MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID);
+MV_VOID mvCtrlTdmClkCtrlConfig(MV_VOID);
+#if defined(MV_TDM_USE_DCO)
+MV_32 mvCtrlTdmClkCtrlGet(MV_VOID);
+MV_VOID mvCtrlTdmClkCtrlSet(MV_32 correction);
+#endif
+#endif
 MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel);
 MV_U16 mvCtrlModelGet(MV_VOID);
 MV_U32 mvCtrlRevGet(MV_VOID);

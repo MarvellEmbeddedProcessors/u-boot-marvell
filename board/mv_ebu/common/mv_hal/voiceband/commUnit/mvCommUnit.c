@@ -245,7 +245,6 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	/**********************/
 	/* MCSC Configuration */
 	/**********************/
-
 	if (IS_KW2_A0(ctrlModel, ctrlRev)) {
 		/* Disable Rx/Tx channel balancing & Linear mode fix */
 		MV_REG_BIT_SET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_TCBD_MASK);
@@ -474,8 +473,7 @@ MV_VOID mvCommUnitRelease(MV_VOID)
 		mvOsDelay(10);
 
 		/* Calculate total Rx/Tx buffer size */
-		buffSize = (sampleSize * MV_TDM_TOTAL_CH_SAMPLES * samplingCoeff * totalChannels)
-				+ CPU_D_CACHE_LINE_SIZE;
+		buffSize = (sampleSize * MV_TDM_TOTAL_CH_SAMPLES * samplingCoeff * totalChannels) + CPU_D_CACHE_LINE_SIZE;
 
 		/* Calculate total MCDMA Rx/Tx descriptors chain size */
 		totalRxDescSize = totalChannels * sizeof(MV_TDM_MCDMA_RX_DESC);
@@ -852,7 +850,7 @@ MV_STATUS mvCommUnitRx(MV_U8 *pTdmRxBuff)
 }
 
 /* Low level TDM interrupt service routine */
-MV_VOID mvCommUnitIntLow(MV_TDM_INT_INFO *pTdmIntInfo)
+MV_32 mvCommUnitIntLow(MV_TDM_INT_INFO *pTdmIntInfo)
 {
 	MV_U32 causeReg, maskReg, causeAndMask;
 	MV_U32 intAckBits = 0, currDesc;
@@ -896,7 +894,7 @@ MV_VOID mvCommUnitIntLow(MV_TDM_INT_INFO *pTdmIntInfo)
 	if (tdmEnable == MV_FALSE) {
 		MV_TRC_REC("TDM is disabled - quit low level ISR\n");
 		MV_REG_WRITE(TDM_CAUSE_REG, ~intAckBits);
-		return;
+		return 0;
 	}
 
 	/* Handle TDM Error/s */
@@ -944,7 +942,7 @@ MV_VOID mvCommUnitIntLow(MV_TDM_INT_INFO *pTdmIntInfo)
 	MV_REG_WRITE(TDM_CAUSE_REG, ~intAckBits);
 
 	TRC_REC("<-%s\n", __func__);
-	return;
+	return 0;
 }
 
 static MV_VOID mvCommUnitDescChainBuild(MV_VOID)
@@ -1014,9 +1012,12 @@ MV_VOID mvCommUnitShow(MV_VOID)
 			   (MV_U32) rxBuffPhys[index]);
 		mvOsPrintf("Tx Buff(%d): virt = 0x%x, phys = 0x%x\n", index, (MV_U32) txBuffVirt[index],
 			   (MV_U32) txBuffPhys[index]);
+
 		mvOsPrintf("Rx Desc(%d): virt = 0x%x, phys = 0x%x\n", index,
 			   (MV_U32) mcdmaRxDescPtr[index], (MV_U32) mcdmaRxDescPhys[index]);
+
 		mvOsPrintf("Tx Desc(%d): virt = 0x%x, phys = 0x%x\n", index,
 			   (MV_U32) mcdmaTxDescPtr[index], (MV_U32) mcdmaTxDescPhys[index]);
+
 	}
 }

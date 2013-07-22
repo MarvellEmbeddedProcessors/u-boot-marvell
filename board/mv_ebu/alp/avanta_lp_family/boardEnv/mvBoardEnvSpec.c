@@ -214,6 +214,10 @@ MV_BOARD_MPP_INFO db88f6660InfoBoardMppConfigValue[] = {
 	 } }
 };
 
+MV_BOARD_TDM_INFO db88f6660Tdm880[] = { {0} };
+
+MV_BOARD_TDM_SPI_INFO db88f6660TdmSpiInfo[] = { {1} };
+
 MV_BOARD_INFO db88f6660_board_info = {
 	.boardName			= "DB-88F6660",
 	.numBoardMppTypeValue		= ARRSZ(db88f6660InfoBoardModTypeInfo),
@@ -255,9 +259,9 @@ MV_BOARD_INFO db88f6660_board_info = {
 	.switchforceLinkMask		= 0x0,
 
 	/* TDM */
-	.numBoardTdmInfo		= {},
-	.pBoardTdmInt2CsInfo		= {},
-	.boardTdmInfoIndex		= -1,
+	.numBoardTdmInfo		= {1},
+	.pBoardTdmInt2CsInfo		= {db88f6660Tdm880},
+	.boardTdmInfoIndex		= 0,
 
 	.pBoardSpecInit			= NULL,
 
@@ -265,6 +269,8 @@ MV_BOARD_INFO db88f6660_board_info = {
 	.nandFlashReadParams		= 0,
 	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
+	.pBoardTdmSpiInfo		= db88f6660TdmSpiInfo,
+
 	/* NOR init params */
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,
@@ -326,6 +332,10 @@ MV_BOARD_MPP_INFO db88f6650InfoBoardMppConfigValue[] = {
 	 } }
 };
 
+MV_BOARD_TDM_INFO db88f6650Tdm880[] = { {0} };
+
+MV_BOARD_TDM_SPI_INFO db88f6650TdmSpiInfo[] = { {1} };
+
 MV_BOARD_INFO db88f6650_board_info = {
 	.boardName			= "DB-88F6650",
 	.numBoardMppTypeValue		= ARRSZ(db88f6650InfoBoardModTypeInfo),
@@ -367,9 +377,9 @@ MV_BOARD_INFO db88f6650_board_info = {
 	.switchforceLinkMask		= 0x0,
 
 	/* TDM */
-	.numBoardTdmInfo		= {},
-	.pBoardTdmInt2CsInfo		= {},
-	.boardTdmInfoIndex		= -1,
+	.numBoardTdmInfo		= {1},
+	.pBoardTdmInt2CsInfo		= {db88f6650Tdm880},
+	.boardTdmInfoIndex		= 0,
 
 	.pBoardSpecInit			= NULL,
 
@@ -377,6 +387,8 @@ MV_BOARD_INFO db88f6650_board_info = {
 	.nandFlashReadParams		= 0,
 	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
+	.pBoardTdmSpiInfo		= db88f6650TdmSpiInfo,
+
 	/* NOR init params */
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,

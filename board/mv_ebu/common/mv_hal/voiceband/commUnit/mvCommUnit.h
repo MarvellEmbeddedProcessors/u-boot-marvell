@@ -188,7 +188,7 @@ extern "C" {
 /* CommUnit APIs */
 	MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *pTdmParams, MV_TDM_HAL_DATA *halData);
 	MV_STATUS mvCommUnitWinInit(MV_UNIT_WIN_INFO *pAddrWinMap);
-	MV_VOID mvCommUnitIntLow(MV_TDM_INT_INFO *pTdmIntInfo);
+	MV_32 mvCommUnitIntLow(MV_TDM_INT_INFO *pTdmIntInfo);
 	MV_VOID mvCommUnitPcmStart(MV_VOID);
 	MV_VOID mvCommUnitPcmStop(MV_VOID);
 	MV_STATUS mvCommUnitTx(MV_U8 *pTdmTxBuff);

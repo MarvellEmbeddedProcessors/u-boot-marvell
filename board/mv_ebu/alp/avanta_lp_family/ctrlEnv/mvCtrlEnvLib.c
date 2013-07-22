@@ -318,6 +318,10 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	 */
 	MV_REG_BIT_SET(PUP_EN_REG, BIT4);
 
+#if defined(MV_INCLUDE_TDM)
+	mvCtrlTdmClkCtrlConfig();
+#endif
+
 	return MV_OK;
 }
 
@@ -998,6 +1002,120 @@ MV_U32 mvCtrlSdioSupport(MV_VOID)
 
 #endif
 
+#if defined(MV_INCLUDE_TDM)
+/*******************************************************************************
+* mvCtrlTdmClkCtrlSet - Set TDM Clock Out Divider Control register
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_VOID mvCtrlTdmClkCtrlConfig(MV_VOID)
+{
+	MV_U32 clkReg, pcmClkFreq;
+
+#if defined(MV_TDM_PCM_CLK_8MHZ)
+	pcmClkFreq = DCO_CLK_DIV_RATIO_8M;
+#elif defined(MV_TDM_PCM_CLK_4MHZ)
+	pcmClkFreq = DCO_CLK_DIV_RATIO_4M;
+#elif defined(MV_TDM_PCM_CLK_2MHZ)
+	pcmClkFreq = DCO_CLK_DIV_RATIO_2M;
+#else
+	pcmClkFreq = DCO_CLK_DIV_RATIO_8M;
+#endif
+
+	/* Reload new DCO source ratio */
+	clkReg = MV_REG_READ(CORE_DIVCLK_CTRL_REG);
+	MV_REG_WRITE(CORE_DIVCLK_CTRL_REG,
+		     MV_BIT_CLEAR(clkReg, DCO_CLK_DIV_MOD_OFFS));
+	mvOsUDelay(1);
+
+	clkReg = MV_REG_READ(CORE_DIVCLK_CTRL_REG);
+	MV_REG_WRITE(CORE_DIVCLK_CTRL_REG,
+		     MV_BIT_SET(clkReg, DCO_CLK_DIV_MOD_OFFS));
+	mvOsUDelay(1);
+
+	clkReg = MV_REG_READ(CORE_DIVCLK_CTRL_REG);
+	MV_REG_WRITE(CORE_DIVCLK_CTRL_REG,
+		     MV_BIT_CLEAR(clkReg, DCO_CLK_DIV_MOD_OFFS));
+	mvOsUDelay(1);
+
+	clkReg = MV_REG_READ(CORE_DIVCLK_CTRL_REG);
+	MV_REG_WRITE(CORE_DIVCLK_CTRL_REG,
+		     MV_BIT_SET(clkReg, DCO_CLK_DIV_RESET_OFFS));
+	mvOsUDelay(1);
+
+	/* Set DCO correction to 0PPM */
+	clkReg = MV_REG_READ(DCO_MOD_CTRL_REG);
+	MV_REG_WRITE(DCO_MOD_CTRL_REG,
+		     (clkReg & ~DCO_MOD_CTRL_MASK) | DCO_MOD_CTRL_BASE_VAL);
+	mvOsUDelay(1);
+
+	/* Set DCO source ratio */
+	clkReg = MV_REG_READ(CORE_DIVCLK_CTRL_REG);
+	MV_REG_WRITE(CORE_DIVCLK_CTRL_REG,
+		     (clkReg & ~DCO_CLK_DIV_RATIO_MASK) | pcmClkFreq);
+	mvOsUDelay(1);
+}
+
+#if defined(MV_TDM_USE_DCO)
+/*******************************************************************************
+* mvCtrlTdmClkCtrlGet - Get DCO correction ratio
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_32 mvCtrlTdmClkCtrlGet(MV_VOID)
+{
+	MV_32 val;
+
+	/* Get DCO correction */
+	val = ((((MV_REG_READ(DCO_MOD_CTRL_REG)) & DCO_MOD_CTRL_MASK) >> DCO_MOD_CTRL_OFFS) - DCO_MOD_CTRL_BASE);
+
+	return val;
+}
+
+/*******************************************************************************
+* mvCtrlTdmClkCtrlSet - Set DCO correction ratio
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Current DCO correction.
+*
+*******************************************************************************/
+MV_VOID mvCtrlTdmClkCtrlSet(MV_32 correction)
+{
+	/* Set DCO correction to correction * 1PPM */
+	MV_REG_WRITE(DCO_MOD_CTRL_REG,
+		     ((MV_REG_READ(DCO_MOD_CTRL_REG) & ~DCO_MOD_CTRL_MASK) |
+		     (((DCO_MOD_CTRL_BASE_VAL >> DCO_MOD_CTRL_OFFS) + correction) << DCO_MOD_CTRL_OFFS)));
+}
+#endif /* MV_TDM_USE_DCO */
+
 /*******************************************************************************
 * mvCtrlTdmSupport - Return if this controller has integrated TDM flash support
 *
@@ -1099,6 +1217,8 @@ MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID)
 *       16bit desscribing Marvell controller ID
 *
 *******************************************************************************/
+#endif /* MV_INCLUDE_TDM */
+
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
 #ifdef CONFIG_MACH_AVANTA_LP_FPGA

@@ -81,7 +81,7 @@ extern "C" {
 #define PCCRIR_REVID_MASK                       (0xff << PCCRIR_REVID_OFFS)
 
 /* Controler environment registers offsets */
-#define MV_TDM_IRQ_NUM                          56
+#define MV_TDM_IRQ_NUM                          59
 
 /* CIB registers offsets */
 #define MV_CIB_CTRL_CFG_REG                     (MV_COHERENCY_FABRIC_OFFSET + 0x80)
@@ -152,6 +152,31 @@ extern "C" {
 /* PUP registers */
 /*****************/
 #define PUP_EN_REG                              0x1864C
+
+/* Core DivClk Control Register */
+#define CORE_DIVCLK_CTRL_REG			0x18730
+
+/* DCO clock apply/reset bits */
+#define DCO_CLK_DIV_MOD_OFFS			24
+#define DCO_CLK_DIV_APPLY			(0x1 << DCO_CLK_DIV_MOD_OFFS)
+#define DCO_CLK_DIV_RESET_OFFS			25
+#define DCO_CLK_DIV_RESET			(0x1 << DCO_CLK_DIV_RESET_OFFS)
+
+/* DCO clock ratio is 48Mhz/x */
+#define DCO_CLK_DIV_RATIO_OFFS			26
+#define DCO_CLK_DIV_RATIO_MASK			(BIT26 | BIT27 | BIT28 | BIT29 | BIT30 | BIT31)
+#define DCO_CLK_DIV_RATIO_8M			(0x6 << DCO_CLK_DIV_RATIO_OFFS)
+#define DCO_CLK_DIV_RATIO_4M			(0xc << DCO_CLK_DIV_RATIO_OFFS)
+#define DCO_CLK_DIV_RATIO_2M			(0x18 << DCO_CLK_DIV_RATIO_OFFS)
+
+
+/* DCO Control Register [13:2], Value range: 0x20-0xFE0, 0x1 = 1.27PPM */
+#define DCO_MOD_CTRL_REG			0x18794
+#define DCO_MOD_CTRL_MASK			(BIT2 | BIT3 | BIT4 | BIT5 | BIT6 | BIT7 | BIT8 | BIT9 | BIT10 | BIT11 | BIT12 | BIT13)
+#define DCO_MOD_CTRL_OFFS			0x2
+#define DCO_MOD_CTRL_BASE			0x800
+#define DCO_MOD_CTRL_BASE_VAL			(0x800 << DCO_MOD_CTRL_OFFS)
+
 
 /* Extract CPU, L2, DDR clocks SAR value from
 ** SAR bits 24-27

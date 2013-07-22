@@ -257,10 +257,11 @@ typedef struct {
 } MV_BOARD_TDM_SPI_INFO;
 
 typedef enum {
-	BOARD_TDM_SLIC_880 = 0,
-	BOARD_TDM_SLIC_792,
-	BOARD_TDM_SLIC_3215,
-	BOARD_TDM_SLIC_OTHER,
+	BOARD_SLIC_880 = 0,
+	BOARD_SLIC_792,
+	BOARD_SLIC_SSI,
+	BOARD_SLIC_ISI,
+	BOARD_SLIC_ZSI,
 	BOARD_TDM_SLIC_COUNT
 } MV_BOARD_TDM_SLIC_TYPE;
 
@@ -408,6 +409,7 @@ MV_U32 mvBoardGppConfigGet(void);
 MV_32 mvBoardTdmSpiModeGet(MV_VOID);
 MV_U8 mvBoardTdmDevicesCountGet(void);
 MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId);
+MV_U8 mvBoardTdmSpiIdGet(MV_VOID);
 MV_VOID mvBoardConfigurationPrint(MV_VOID);
 MV_VOID mvBoardOtherModuleTypePrint(MV_VOID);
 MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum);

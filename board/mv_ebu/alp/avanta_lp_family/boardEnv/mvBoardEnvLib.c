@@ -1640,6 +1640,33 @@ MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId)
 }
 
 /*******************************************************************************
+* mvBoardTdmSpiIdGet
+*
+* DESCRIPTION:
+*	Return SPI port ID per board.
+*
+* INPUT:
+*	None
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	SPI port ID.
+*
+*******************************************************************************/
+MV_U8 mvBoardTdmSpiIdGet(MV_VOID)
+{
+	MV_16 index;
+
+	index = board->boardTdmInfoIndex;
+	if (index == -1)
+		return 0;
+
+	return board->pBoardTdmSpiInfo[0].spiId;
+}
+
+/*******************************************************************************
 * mvBoardConfigurationPrint
 *
 * DESCRIPTION:

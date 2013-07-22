@@ -122,7 +122,7 @@ void nand_init(void)
 #endif
 }
 #if defined(CONFIG_ENV_IS_IN_NAND)
-int nand_get_env_offs(void) 
+int nand_get_env_offs(void)
 {
 	size_t offset = 0;
 
@@ -168,6 +168,21 @@ int nand_get_env_offs(void)
 	/* Align U-Boot size to currently used blocksize */
 	offset = ( (offset + (blocksize - 1)) & (~(blocksize-1)) );
 	return offset;
+}
+
+/* return block size for environment range usage,
+ * unless blocksize is smaller then pre-defined environment range:
+ * then return pre-defined range, aligned to blocksize */
+int nand_get_env_range(void)
+{
+	size_t env_size = 0;
+	size_t blocksize = nand_info[0].erasesize;
+
+	if (blocksize < CONFIG_ENV_SIZE) {
+		env_size = ((CONFIG_ENV_SIZE + (blocksize - 1)) & (~(blocksize-1)));
+		return env_size;
+	} else
+		return blocksize;
 }
 #endif
 

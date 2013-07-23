@@ -6414,8 +6414,8 @@ GT_STATUS gprtSet200Base
         return GT_BAD_PARAM;
     }
 
-    /* Get the high error rate bit.  */
-    retVal = hwSetPortRegField(dev,hwPort, QD_REG_PORT_STATUS,6,1,(GT_U16)mode&0x1);
+	/* Get the high error rate bit.  */
+	retVal = hwSetPortRegField(dev, hwPort, QD_REG_PCS_CONTROL, 12, 1, (GT_U16)mode & 0x1);
 
     if(retVal != GT_OK)
     {

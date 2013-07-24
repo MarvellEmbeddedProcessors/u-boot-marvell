@@ -59,7 +59,7 @@ extern GT_U8 portToSmiMapping(GT_QD_DEV *dev, GT_U8 portNum, GT_U32 accessType);
 #define GLOBAL2_REG_ACCESS    4
 #define GLOBAL3_REG_ACCESS    5
 
-#define QD_SMI_ACCESS_LOOP        1000
+#define QD_SMI_ACCESS_LOOP        2000
 #define QD_SMI_TIMEOUT            2
 
 

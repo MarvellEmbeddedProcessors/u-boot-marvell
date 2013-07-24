@@ -651,6 +651,9 @@ typedef struct pp2_tx_desc {
 #define PP2_TX_IP_CSUM_DISABLE_BIT		15
 #define PP2_TX_IP_CSUM_DISABLE_MASK		(1 << PP2_TX_IP_CSUM_DISABLE_BIT)
 
+#define PP2_TX_POOL_INDEX_OFFS			16
+#define PP2_TX_POOL_INDEX_MASK			(7 << PP2_TX_POOL_INDEX_OFFS)
+
 #define PP2_TX_PADDING_DISABLE_BIT		23
 #define PP2_TX_PADDING_DISABLE_MASK		(1 << PP2_TX_PADDING_DISABLE_BIT)
 
@@ -667,6 +670,14 @@ typedef struct pp2_tx_desc {
 
 #define PP2_TX_F_DESC_BIT			29
 #define PP2_TX_F_DESC_MASK			(1 << PP2_TX_F_DESC_BIT)
+
+#define PP2_TX_DESC_FRMT_BIT			30
+#define PP2_TX_DESC_FRMT_MASK			(1 << PP2_TX_DESC_FRMT_BIT)
+#define PP2_TX_DESC_PER_BUF			(0 << PP2_TX_DESC_FRMT_BIT)
+#define PP2_TX_DESC_PER_PKT			(1 << PP2_TX_DESC_FRMT_BIT)
+
+#define PP2_TX_BUF_HDR_BIT			31
+#define PP2_TX_BUF_HDR_MASK			(1 << PP2_TX_BUF_HDR_BIT)
 
 /* Bits of "hwCmd[0]" field - offset 0x10 */
 #define PP2_TX_GEMPID_OFFS                      0

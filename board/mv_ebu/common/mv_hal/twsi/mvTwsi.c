@@ -354,7 +354,7 @@ MV_U32 mvTwsiInit(MV_U8 chanNum, MV_HZ frequancy, MV_U32 Tclk, MV_TWSI_ADDR *pTw
 	MV_U32 actualFreq = 0, actualN = 0, actualM = 0, val;
 
 	if (frequancy > 100000)
-		mvOsPrintf("Warning TWSI frequancy is too high, please use up tp 100Khz. \n");
+		mvOsPrintf("Warning TWSI frequancy is too high, please use up to 100Khz.\n");
 
 	DB(mvOsPrintf("TWSI: mvTwsiInit - Tclk = %d freq = %d\n", Tclk, frequancy));
 	/* Calucalte N and M for the TWSI clock baud rate */

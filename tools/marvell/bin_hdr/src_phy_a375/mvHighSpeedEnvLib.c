@@ -574,6 +574,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
         switch(serdesLaneCfg){
             case SERDES_UNIT_USB3:
                 uiReg |= PHY_MODE_MASK;  /* PHY Mode = USB */
+                uiReg |= PIPE_SELECT_MASK ; /* Select USB3_PEX */
                 break;
             case SERDES_UNIT_PEX:
                 uiReg |= PIPE_SELECT_MASK ; /* Select USB3_PEX */

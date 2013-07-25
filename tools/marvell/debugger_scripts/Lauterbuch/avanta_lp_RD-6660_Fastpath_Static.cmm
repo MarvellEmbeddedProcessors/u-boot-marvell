@@ -47,53 +47,53 @@ Data.Set C15:1 %LONG 0x00052078
 	d.s 0xD00200b0 %LONG 0x000f3b11
 	; Start DRAM init
 	;SDRAM_CONFIG_ADDR
-	d.s 0xd0001400 %LONG 0x7B004C30
+	d.s 0xd0001400 %LONG 0x7B00D040
 	;SDRAM_DUNIT_CTRL_LOW_ADDR
-	d.s 0xd0001404 %LONG 0x36301820
+	d.s 0xd0001404 %LONG 0x36300820
 	;SDRAM_TIMING_LOW_ADDR
 	d.s 0xd0001408 %LONG 0x33137772
 	;SDRAM_TIMING_HI_ADDR
-	d.s 0xd000140c %LONG 0x384019D5
+	d.s 0xd000140c %LONG 0x3841199F
 	;SDRAM_ADDR_CTRL_ADDR
-	d.s 0xd0001410 %LONG 0x10000000
+	d.s 0xd0001410 %LONG 0x16100011
 	d.s 0xd0001414 %LONG 0x00000700
 	;DDR_CONTROLLER_CTRL_HIGH
 	d.s 0xd0001424 %LONG 0x60F3FF
 	;DDR_CONTROLLER_CTRL_HIGH
-	d.s 0xd0001428 %LONG 0xD6720
+	d.s 0xd0001428 %LONG 0x000D6720
 	;DDR ODT Timing (High) Register
-	d.s 0xd000147c %LONG 0xB571
+	d.s 0xd000147c %LONG 0x0000B571
 	;SDRAM_SRAM_ODT_CNTL_LOW
-	d.s 0xd0001494 %LONG 0x30000
+	d.s 0xd0001494 %LONG 0x00010000
 	;SDRAM_ODT_CONTROL
-	d.s 0xd000149c %LONG 0x3
+	d.s 0xd000149c %LONG 0x301
 	;AXI Control Register
 	d.s 0xd00014a8 %LONG 0x0
 
 	;Win 0 Control Register (This value will be writen by the bin header file to register 0x20184)
-	d.s 0xd0001504 %LONG 0x3FFFFFE1
+	d.s 0xd0001504 %LONG 0x1FFFFFE1
 	;Win 1 Control Register (This value will be writen by the bin header file to register 0x2018C)
-	d.s 0xd000150c %LONG 0x3FFFFFE5
+	d.s 0xd000150c %LONG 0x7FFFFFE5
 	;Win 2 Control Register (This value will be writen by the bin header file to register 0x20194)
 	d.s 0xd0001514 %LONG 0x0
 	;Win 3 Control Register (This value will be writen by the bin header file to register 0x2019C)
 	d.s 0xd000151c %LONG 0x0
 
 	;Read Data Sample Delays Register
-	d.s 0xd0001538 %LONG 0x707
+	d.s 0xd0001538 %LONG 0x6
 	;Read Data Ready Delays Register
-	d.s 0xd000153c %LONG 0x707
+	d.s 0xd000153c %LONG 0xc
 
 	;DDR3 MR0 Register
 	d.s 0xd00015d0 %LONG 0x630
 	;DDR3 MR1 Register
-	d.s 0xd00015d4 %LONG 0x46
+	d.s 0xd00015d4 %LONG 0x44
 	;DDR3 MR2 Register
 	d.s 0xd00015d8 %LONG 0x8
 	;DDR3 MR3 Register
 	d.s 0xd00015dC %LONG 0x0
 	;DDR3 Rank Control Register
-	d.s 0xd00015e0 %LONG 0x3
+	d.s 0xd00015e0 %LONG 0x1
 	;ZQC Configuration Register
 	d.s 0xd00015e4 %LONG 0x203C18
 
@@ -101,9 +101,9 @@ Data.Set C15:1 %LONG 0x00052078
 	d.s 0xd00015ec %LONG 0xF8000F25
 
 	;DRAM address and Control Driving Strenght
-	d.s 0xd00014c0 %LONG 0x192434E9
+	d.s 0xd00014c0 %LONG 0x192424C9
 	;DRAM Data and DQS Driving Strenght
-	d.s 0xd00014c4 %LONG 0x192434E9
+	d.s 0xd00014c4 %LONG 0x192424C9
 
 	; Phase select
 	;d.s 0xd00016a0 %LONG 0xc8003400

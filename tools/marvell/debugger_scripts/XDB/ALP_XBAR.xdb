@@ -1,0 +1,177 @@
+
+set option /memory=long
+
+! First descrease size of CS[2] to prevent overlap with 0xD0000000
+!d.s 0xD00200b0 %LONG 0x000f3b11
+set val /size=long 0xD00200b0 = 0x000f3b11
+
+!; Start DRAM init
+!;SDRAM_CONFIG_ADDR
+!d.s 0xd0001400 %LONG 0x7B005040
+set val /size=long 0xd0001400 = 0x7B005040
+
+!;SDRAM_DUNIT_CTRL_LOW_ADDR
+!d.s 0xd0001404 %LONG 0x36301820
+set val /size=long 0xd0001404 = 0x36301820
+
+!;SDRAM_TIMING_LOW_ADDR
+!d.s 0xd0001408 %LONG 0x33137772
+set val /size=long 0xd0001408 = 0x33137772
+
+!;SDRAM_TIMING_HI_ADDR
+!d.s 0xd000140c %LONG 0x384019D5
+set val /size=long 0xd000140c = 0x384019D5
+
+!;SDRAM_ADDR_CTRL_ADDR
+!d.s 0xd0001410 %LONG 0x10000000
+set val /size=long 0xd0001410 = 0x10000000
+
+!d.s 0xd0001414 %LONG 0x00000700
+set val /size=long 0xd0001414 = 0x00000700
+
+!;DDR_CONTROLLER_CTRL_HIGH
+!d.s 0xd0001424 %LONG 0x60F3FF
+set val /size=long 0xd0001424 = 0x60F3FF
+
+!;DDR_CONTROLLER_CTRL_HIGH
+!d.s 0xd0001428 %LONG 0xD6720
+set val /size=long 0xd0001428 = 0xD6720
+
+!;DDR ODT Timing (High) Register
+!d.s 0xd000147c %LONG 0xB571
+set val /size=long 0xd000147c = 0xB571
+
+!;SDRAM_SRAM_ODT_CNTL_LOW
+!d.s 0xd0001494 %LONG 0x30000
+set val /size=long 0xd0001494 = 0x30000
+
+!;SDRAM_ODT_CONTROL
+!d.s 0xd000149c %LONG 0x3
+set val /size=long 0xd000149c = 0x3
+
+!;AXI Control Register
+!d.s 0xd00014a8 %LONG 0x0
+set val /size=long 0xd00014a8 = 0x0
+
+!;Win 0 Control Register (This value will be writen by the bin header file to register 0x20184)
+!d.s 0xd0001504 %LONG 0x3FFFFFE1
+set val /size=long 0xd0001504 = 0x3FFFFFE1
+
+!;Win 1 Control Register (This value will be writen by the bin header file to register 0x2018C)
+!d.s 0xd000150c %LONG 0x3FFFFFE5
+set val /size=long 0xd000150c = 0x3FFFFFE5
+
+!;Win 2 Control Register (This value will be writen by the bin header file to register 0x20194)
+!d.s 0xd0001514 %LONG 0x0
+set val /size=long 0xd0001514 = 0x0
+
+!;Win 3 Control Register (This value will be writen by the bin header file to register 0x2019C)
+!d.s 0xd000151c %LONG 0x0
+set val /size=long 0xd000151c = 0x0
+
+!;Read Data Sample Delays Register
+!d.s 0xd0001538 %LONG 0x707
+set val /size=long 0xd0001538 = 0x707
+
+!;Read Data Ready Delays Register
+!d.s 0xd000153c %LONG 0x707
+set val /size=long 0xd000153c = 0x707
+
+!;DDR3 MR0 Register
+!d.s 0xd00015d0 %LONG 0x630
+set val /size=long 0xd00015d0 = 0x630
+
+!;DDR3 MR1 Register
+!d.s 0xd00015d4 %LONG 0x46
+set val /size=long 0xd00015d4 = 0x46
+
+!;DDR3 MR2 Register
+!d.s 0xd00015d8 %LONG 0x8
+set val /size=long 0xd00015d8 = 0x8
+
+!;DDR3 MR3 Register
+!d.s 0xd00015dC %LONG 0x0
+set val /size=long 0xd00015dC = 0x0
+
+!;DDR3 Rank Control Register
+!d.s 0xd00015e0 %LONG 0x3
+set val /size=long 0xd00015e0 = 0x3
+
+!;ZQC Configuration Register
+!d.s 0xd00015e4 %LONG 0x203C18
+set val /size=long 0xd00015e4 = 0x203C18
+
+!;DRAM PHY Configuration Register
+!d.s 0xd00015ec %LONG 0xF8000F25
+set val /size=long 0xd00015ec = 0xF8000F25
+
+!;DRAM address and Control Driving Strenght
+!d.s 0xd00014c0 %LONG 0x192434E9
+set val /size=long 0xd00014c0 = 0x192434E9
+
+!;DRAM Data and DQS Driving Strenght
+!d.s 0xd00014c4 %LONG 0x192434E9
+set val /size=long 0xd00014c4 = 0x192434E9
+
+!;Enable DDR
+!d.s 0xd0001480 %LONG 0x1
+set val /size=long 0xd0001480 = 0x1
+
+!;XBAR- Set Dram size 256MB for FPGA (only if using XBAR)
+!;d.s 0xd0008c04 %LONG 0x0
+set val /size=long 0xd0008c04 = 0x0
+
+!;set ddr_phy width = 128
+!d.s 0xd00014a8 %LONG 0x00000100
+set val /size=long 0xd00014a8 = 0x00000100
+
+!;FASTPASS - enable Fastpass (set BIT0=1)
+!d.s 0xd0020184 %LONG 0x00FFFFE1
+!set val /size=long 0xd0020184 = 0x00FFFFE1
+
+!;FASTPASS- close XBAR window 19 (set BIT0=0 - Disabled DDR window enabled in default)
+!d.s 0xd00200e8 %LONG 0x0fff0e00
+!set val /size=long 0xd00200e8 = 0x0fff0e00
+
+!;XBAR - open XBAR window :
+!d.s 0xd00200e8 %LONG 0x0fff0e01
+set val /size=long 0xd00200e8 = 0x0fff0e01
+
+!;FASTPASS - disable Fastpass (set BIT0=0)
+!d.s 0xd0020184 %LONG 0x00FFFFE0
+set val /size=long 0xd0020184 = 0x00FFFFE0
+
+!; training
+!d.s 0xd00015B0 %LONG 0x80100008
+set val /size=long 0xd00015B0 = 0x80100008
+!WAIT 1.s
+CUSTOM "DELAY(1000)"
+
+!; training
+!d.s 0xd00015B0 %LONG 0x80100010
+set val /size=long 0xd00015B0 = 0x80100010
+!WAIT 1.s
+CUSTOM "DELAY(1000)"
+
+!; training
+!d.s 0xd00015B0 %LONG 0x80100040
+set val /size=long 0xd00015B0 = 0x80100040
+!WAIT 1.s
+CUSTOM "DELAY(1000)"
+
+!; End DRAM init
+
+!; set program counter at program start to be ready for start
+!Register.Set pc 0x00000000
+!set reg pc=0x00000000
+!; SYStem.Up
+
+
+!break.select program onchip
+
+!WAIT 2.s
+CUSTOM "DELAY(2000)"
+!	print "Init Done ;-)"
+
+
+!enddo

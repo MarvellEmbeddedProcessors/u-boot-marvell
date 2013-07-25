@@ -10,8 +10,15 @@ Assumptions:
 - This readme refers to XDB scripts located under <u_boot root directory>\tools\marvell\debugger_script\XDB 
   directory in the u-boot release.
 - the <u_boot root directory>\tools\marvell\debugger_script\XDB includes the following files:
+Armada-XP:
 	- ARMADA1000_V7.xsf
 	- init_AXP_DDR_V7.xdb
+Avanta-LP:
+	- MV_CortexA9_AvantaLP_UP.xsf
+	- MV_CortexA9_AvantaLP_SMP.xsf
+	- ALP_FastPath.xdb
+	- ALP_XBAR.xdb
+
 - An empty bin_hdr directory, copy the relevant bin_hdr.elf file from: 
 	option 1:  <u_boot developer root directory>\tools\marvell\bin_hdr_armada\
 	option 2: <release directory>\binaries\[release number]\[board name]\bin_hdr\bin_hdr.elf 
@@ -27,8 +34,8 @@ JTAG Connection:
 
 1) Connect the Marvell JTAG POD to the target board.
 
-2) To Launch the XDB startup menu , Double click on the ARMADA1000_V7.xsf script under 
-   <u_boot root directory>\tools\marvell\debugger_script\XDB directory, based on the CPU mode V7.
+2) To Launch the XDB startup menu , Double click on the .xsf script under
+   <u_boot root directory>\tools\marvell\debugger_script\XDB directory.
 
 3) Make sure that "connection type" of the first core is set to "Reset SOC & stop",
    "connection type" is located under the most left "CS-JTAG" tab in the settings window
@@ -44,7 +51,7 @@ JTAG Connection:
 
    - If the connection was successful a “xdb>” prompt will appear at the bottom of the command window. 
    - If "xdb_InReset>" / "xdb_nocomm>" prompt appears at the bottom of the command window, this is an indication that an error happened:
-        make sure the board is powered, the POD is properly connected, and that you are using the script ARMADA1000_V7.xsf.
+        make sure the board is powered, the POD is properly connected, and that you are using the correct .xsf script.
 
 Note: If a reset is not desired when connecting to the AXP, choose the "Try Hot Connect & Stop" option at step 3. 
        this is assuming the the system has a valid image is running.
@@ -56,12 +63,11 @@ DRAM Initialization:
 
 6) To initilize memory, do the following: 
 	- Click on the file -> Batch.
-	- The “Execute Batch file” menu will appear,  browse to  <u_boot root directory> \tools\marvell\debugger_script\XDB  choose 
-          init_AXP_DDR_V7.xdb script based on the CPU mode V7.
+	- The “Execute Batch file” menu will appear,  browse to  <u_boot root directory> \tools\marvell\debugger_script\XDB
+	  choose the relevant .xdb script
         - Hit the “OK” button.
 
 
-   -Please note that the init_AXP_DDR_V7.xdb scripts can be used to initilize any Armada XP SOC board, without the need for any changes.
 
 
 
@@ -91,7 +97,7 @@ This is an indication that the DRAM and PCI SERDES configuration were initialize
 -	Wait until the download is completed. download progress is presented in percentage in the bottom right 
         coroner ( appears only when download in progress).
 -	The debugger will launch a browser window requesting the user to direct it to the source for start.s 
-        (the first file to run). This is located  root directory <u_boot root directory>\cpu\arm1136\start.s for u-boot 2009.08 and in \arch\arm\cpu\armv7\start.S for u-boot-2011.12.
+        (the first file to run). This is located  root directory <u_boot root directory>\cpu\arm1136\start.s for u-boot 2009.08 and in \arch\arm\cpu\armv7\start.S for u-boot-2011.12 and above
         in case of following this Precedure to "Running / Recovering u-Boot" (see below), no need to direct the debugger to the source, in case of debugging 
 	this is a must-do step.
 

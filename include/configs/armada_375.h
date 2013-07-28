@@ -51,7 +51,7 @@
 /*
  * Version
  */
-#define CONFIG_IDENT_STRING		" Marvell version: 2013_Q3.0.eng_dropv4"
+#define CONFIG_IDENT_STRING		" Marvell version: 2013_Q3.0.eng_dropv5"
 
 /* Version number passed to kernel */
 #define VER_NUM 0x13010000              /* 2013.01 */

@@ -188,6 +188,7 @@ MV_BOARD_MPP_TYPE_INFO db88f6660InfoBoardModTypeInfo[] = {
 				     MV_ETHCOMP_SW_P1_2_GE_PHY_P1 |
 				     MV_ETHCOMP_SW_P2_2_GE_PHY_P2 |
 				     MV_ETHCOMP_SW_P3_2_GE_PHY_P3 |
+				     MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G |
 				     MV_ETHCOMP_GE_MAC0_2_SW_P6 |
 				     MV_ETHCOMP_GE_MAC1_2_RGMII1,
 		.ethPortsMode = 0x0
@@ -303,6 +304,7 @@ MV_BOARD_MPP_TYPE_INFO db88f6650InfoBoardModTypeInfo[] = {
 				     MV_ETHCOMP_SW_P1_2_GE_PHY_P1 |
 				     MV_ETHCOMP_SW_P2_2_GE_PHY_P2 |
 				     MV_ETHCOMP_SW_P3_2_GE_PHY_P3 |
+				     MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G |
 				     MV_ETHCOMP_GE_MAC0_2_SW_P6 |
 				     MV_ETHCOMP_GE_MAC1_2_RGMII1,
 		.ethPortsMode = 0x0
@@ -402,7 +404,7 @@ MV_BOARD_TWSI_INFO rd88f6650InfoBoardTwsiDev[] = {
 };
 MV_BOARD_MAC_INFO rd88f6650InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_1000M, -1},
+	{ BOARD_MAC_SPEED_2000M, -1},
 	{ BOARD_MAC_SPEED_AUTO, 0x1},
 	{ BOARD_MAC_SPEED_1000M, -1}
 };
@@ -413,6 +415,7 @@ MV_BOARD_MPP_TYPE_INFO rd88f6650InfoBoardModTypeInfo[] = {
 				     MV_ETHCOMP_SW_P1_2_GE_PHY_P1 |
 				     MV_ETHCOMP_SW_P2_2_GE_PHY_P2 |
 				     MV_ETHCOMP_SW_P3_2_GE_PHY_P3 |
+				     MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G |
 				     MV_ETHCOMP_GE_MAC1_2_SW_P4   |
 				     MV_ETHCOMP_GE_MAC0_2_SW_P6,
 		.ethPortsMode = 0x0
@@ -499,7 +502,7 @@ MV_BOARD_INFO rd88f6650_board_info = {
 
 MV_BOARD_MAC_INFO rd88f6660InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_1000M, -1},
+	{ BOARD_MAC_SPEED_2000M, -1},
 	{ BOARD_MAC_SPEED_AUTO, 0x1},
 	{ BOARD_MAC_SPEED_1000M, -1}
 };
@@ -510,6 +513,7 @@ MV_BOARD_MPP_TYPE_INFO rd88f6660InfoBoardModTypeInfo[] = {
 				     MV_ETHCOMP_SW_P1_2_GE_PHY_P1 |
 				     MV_ETHCOMP_SW_P2_2_GE_PHY_P2 |
 				     MV_ETHCOMP_SW_P3_2_GE_PHY_P3 |
+				     MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G |
 				     MV_ETHCOMP_GE_MAC1_2_SW_P4   |
 				     MV_ETHCOMP_GE_MAC0_2_SW_P6,
 		.ethPortsMode = 0x0

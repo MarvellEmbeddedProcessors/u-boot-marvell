@@ -922,7 +922,7 @@ void *mvPp2PortInit(int port, int firstRxq, int numRxqs, void *osHandle)
 
 	/* associate TXQs to this port */
 #ifdef CONFIG_MV_INCLUDE_PON
-	pCtrl->txpNum = MV_PON_PORT(port) ? CONFIG_MV_PON_TCONTS : 1;
+	pCtrl->txpNum = MV_PON_PORT(port) ? mvPp2HalData.maxTcont : 1;
 #else
 	pCtrl->txpNum = 1;
 #endif

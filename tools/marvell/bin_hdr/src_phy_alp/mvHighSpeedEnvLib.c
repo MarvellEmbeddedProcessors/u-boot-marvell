@@ -132,6 +132,33 @@ static MV_U8 mvReverseBits(MV_U8 num)
 }
 
 /*******************************************************************************
+* mvCpuL2ClkGet - Get the CPU L2 (CPU bus clock)
+*
+* DESCRIPTION:
+*       This routine extract the CPU L2 clock from Sample at reset
+*       Read S@R frequency mode value, and translate vvalue to coresponding L2 clock
+*
+* RETURN:
+*       32bit clock cycles in Hertz.
+*
+*******************************************************************************/
+MV_U32 mvCpuL2ClkGet(MV_VOID)
+{
+	MV_FREQ_MODE freqMode, freqTable[] = MV_SAR_FREQ_MODES;
+	MV_U32 freqSatR;
+
+	/* read SatR value for frequency mode */
+	freqSatR = MV_REG_READ(REG_SAMPLE_RESET_HIGH_ADDR); /* 0xE8200 */
+	freqSatR = ((freqSatR & REG_SAMPLE_RESET_CPU_FREQ_MASK) >> REG_SAMPLE_RESET_CPU_FREQ_OFFS);
+
+	/* Get mode values for CPU,L2,DDR frequency */
+	freqMode = freqTable[freqSatR];
+
+	return (MV_U32)(1000000 * freqMode.l2Freq);
+
+}
+
+/*******************************************************************************
 * mvBoardIdGet - Get Board model
 *
 * DESCRIPTION:

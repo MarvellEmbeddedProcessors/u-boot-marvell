@@ -1473,7 +1473,14 @@ MV_U32 mvBoardSwitchPortsMaskGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx)
 {
-	return board->switchforceLinkMask;
+	MV_U32 mask = 0, c = mvBoardEthComplexConfigGet();
+
+	if (c & MV_ETHCOMP_GE_MAC1_2_SW_P4)
+		mask |= BIT4;
+	if (c & MV_ETHCOMP_GE_MAC0_2_SW_P6)
+		mask |= BIT6;
+
+	return mask;
 }
 
 /*******************************************************************************

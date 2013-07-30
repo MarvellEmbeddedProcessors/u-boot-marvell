@@ -256,9 +256,6 @@ MV_BOARD_INFO db88f6660_board_info = {
 	.gppPolarityValMid		= DB_88F6660_GPP_POL_MID,
 	.gppPolarityValHigh		= DB_88F6660_GPP_POL_HIGH,
 
-	/* External Switch Configuration */
-	.switchforceLinkMask		= 0x0,
-
 	/* TDM */
 	.numBoardTdmInfo		= {1},
 	.pBoardTdmInt2CsInfo		= {db88f6660Tdm880},
@@ -374,9 +371,6 @@ MV_BOARD_INFO db88f6650_board_info = {
 	.gppPolarityValMid		= DB_88F6650_GPP_POL_MID,
 	.gppPolarityValHigh		= DB_88F6650_GPP_POL_HIGH,
 
-	/* External Switch Configuration */
-	.switchforceLinkMask		= 0x0,
-
 	/* TDM */
 	.numBoardTdmInfo		= {1},
 	.pBoardTdmInt2CsInfo		= {db88f6650Tdm880},
@@ -481,9 +475,6 @@ MV_BOARD_INFO rd88f6650_board_info = {
 	.gppPolarityValMid		= RD_88F6650_GPP_POL_MID,
 	.gppPolarityValHigh		= RD_88F6650_GPP_POL_HIGH,
 
-	/* External Switch Configuration */
-	.switchforceLinkMask		= 0x0,
-
 	/* TDM */
 	.numBoardTdmInfo		= {},
 	.pBoardTdmInt2CsInfo		= {},
@@ -578,9 +569,6 @@ MV_BOARD_INFO rd88f6660_board_info = {
 	.gppPolarityValLow		= RD_88F6660_GPP_POL_LOW,
 	.gppPolarityValMid		= RD_88F6660_GPP_POL_MID,
 	.gppPolarityValHigh		= RD_88F6660_GPP_POL_HIGH,
-
-	/* External Switch Configuration */
-	.switchforceLinkMask		= 0x0,
 
 	/* TDM */
 	.numBoardTdmInfo		= {},

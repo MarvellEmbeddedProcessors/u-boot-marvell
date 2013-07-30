@@ -309,9 +309,6 @@ typedef struct _boardInfo {
 	MV_U32 gppPolarityValMid;
 	MV_U32 gppPolarityValHigh;
 
-	/* External Switch Configuration */
-	MV_U32 switchforceLinkMask;
-
 	/* PON configuration. */
 	MV_BOARD_PON_CONFIG ponConfigValue;
 	/* TDM configuration:

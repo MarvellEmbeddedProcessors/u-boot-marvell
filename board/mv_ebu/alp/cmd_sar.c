@@ -43,6 +43,11 @@ static int do_sar_default(void)
 {
 	MV_U32 temp, defaultValue, boardId = mvBoardIdGet();
 
+	if (boardId == RD_6660_ID || boardId == RD_6650_ID) {
+		printf("\nError: S@R fields are readable only for current board\n");
+		return 1;
+	}
+
 	defaultValue = boardSatrDefault[MV_SATR_CPU_DDR_L2_FREQ].defauleValueForBoard[boardId];
 	if (mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ, &temp) == MV_OK )
 			mvCtrlSatRWrite(MV_SATR_CPU_DDR_L2_FREQ, defaultValue, MV_TRUE);
@@ -275,7 +280,7 @@ static int do_sar_write(int argc, char *const argv[])
 {
 	const char *cmd = argv[0];
 	MV_U32 temp;
-	MV_BOOL flag;
+	MV_BOOL flag = MV_ERROR;
 	MV_U8 writeVal = simple_strtoul(argv[1], NULL, 10);
 
 	if (argc < 2)
@@ -305,15 +310,15 @@ static int do_sar_write(int argc, char *const argv[])
 		else if (GetAndVerifySatr(MV_SATR_SSCG_DISABLE, &temp) == MV_OK )
 			flag = mvCtrlSatRWrite(MV_SATR_SSCG_DISABLE, writeVal, MV_FALSE);
 	}
+	else
+		goto usage;
 
-/* the first 4 S@R fields are writeable using S@R commands - rest  values are edited using Jumpers/DIP switch/DPR (resistors) */
-	else goto usage;
+	if (flag == MV_ERROR) {
+		printf("Write S@R failed!\n");
+		return 1;
+	}
 
 	return 0;
-
-	if (MV_ERROR == flag)
-		printf("Write S@R failed!\n");
-	return 1;
 
 input_error:
 	printf("\nError: value is not valid for \"%s\" (%d)\n\n",cmd , writeVal);
@@ -327,7 +332,7 @@ usage:
 
 int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 {
-	const char *cmd, *cmd2;
+	const char *cmd, *cmd2 = NULL;
 
 	/* need at least two arguments */
 	if (argc < 2)
@@ -340,6 +345,15 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 
 	if (strcmp(cmd, "list") == 0)
 		return do_sar_list(argc - 2, argv + 2);
+	else if ((strcmp(cmd, "write") == 0) && (strcmp(cmd2, "default") == 0)) {
+		if (do_sar_default() == 0) {
+			do_sar_read(argc - 3, argv + 3);
+			printf("\nChanges will be applied after reset.\n\n");
+			return 0;
+		}
+		else
+			return 1;
+	}
 	else if (strcmp(cmd, "write") == 0) {
 		if (do_sar_write(argc - 2, argv + 2) == 0) {
 			do_sar_read(argc - 2, argv + 2);
@@ -350,14 +364,11 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 			printf("\nChanges will be applied after reset.\n");
 			return 0;
 		}
+		else
+			return 1;
 	} else if (strcmp(cmd, "read") == 0)
 		return do_sar_read(argc - 2, argv + 2);
-	else if (strcmp(cmd, "default") == 0) {
-		do_sar_default();
-		do_sar_read(argc - 2, argv + 2);
-		printf("\nChanges will be applied after reset.\n\n");
-		return 0;
-	}
+
 
 usage:
 	cmd_usage(cmdtp);
@@ -367,12 +378,12 @@ usage:
 U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"Sample At Reset sub-system\n",
 
-	"SatR list cpufreq	- prints the S@R modes list\n"
+	"list cpufreq	- prints the S@R modes list\n"
 	"SatR list coreclock	- prints the S@R modes list\n"
 	"SatR list cpusnum	- prints the S@R modes list\n"
 	"SatR list sscg		- prints the S@R modes list\n\n"
 
-	"SatR read 		- read and print all active S@R values\n"
+	"SatR read		- read and print all active S@R values\n"
 	"SatR read cpufreq	- read and print the CPU frequency S@R value\n"
 	"SatR read coreclock	- read and print the Core Clock frequency S@R value\n"
 	"SatR read cpusnum	- read and print the number of CPU cores S@R value\n"
@@ -387,7 +398,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR read cputhumb	- read and print the CPU Thumb mode (ARM/ Thumb) S@R value (reading the I2C device)\n"
 	"SatR read pcimode0	- read and print the pci0 clock mode (input/output) from S@R value (reading the I2C device)\n"
 	"SatR read pcimode1	- read and print the pci0 clock mode (input/output) from S@R value (reading the I2C device)\n"
-	"SatR read refclk      	- read and print the ref clock mode S@R value \n"
+	"SatR read refclk	- read and print the ref clock mode S@R value \n"
 	"SatR read tester	- read and print the tester mode S@R value\n\n"
 
 	"SatR write cpufreq <val>	- write the S@R with CPU frequency value\n"

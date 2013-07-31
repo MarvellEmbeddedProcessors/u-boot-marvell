@@ -105,12 +105,14 @@ typedef struct {
 	MV_BOOL	en16Bit;
 	/* should we assert / disassert CS for each byte we read / write */
 	MV_BOOL	byteCsAsrt;
+	MV_BOOL clockPolLow;
 	MV_U32	baudRate;
 } MV_SPI_TYPE_INFO;
 
 typedef enum {
 	SPI_TYPE_FLASH = 0,
-	SPI_TYPE_SLIC
+	SPI_TYPE_SLIC_ZARLINK_SILABS,
+	SPI_TYPE_SLIC_LANTIQ
 } MV_SPI_TYPE;
 
 

@@ -82,11 +82,19 @@ static MV_SPI_TYPE_INFO spiTypes[] = {
 	{
 		.en16Bit = MV_TRUE,
 		.byteCsAsrt = MV_FALSE,
+		.clockPolLow = MV_TRUE,
 		.baudRate = (20 << 20) /*  20M */
 	},
 	{
 		.en16Bit = MV_FALSE,
+		.clockPolLow = MV_TRUE,
 		.byteCsAsrt = MV_TRUE,
+		.baudRate = _8M
+	},
+	{
+		.en16Bit = MV_FALSE,
+		.clockPolLow = MV_TRUE,
+		.byteCsAsrt = MV_FALSE,
 		.baudRate = _8M
 	}
 };
@@ -115,6 +123,8 @@ MV_SPI_TYPE_INFO *currSpiInfo = NULL;
 ********************************************************************************/
 MV_STATUS mvSpiParamsSet(MV_U8 spiId, MV_U8 csId, MV_SPI_TYPE type)
 {
+	MV_SPI_IF_PARAMS ifParams;
+
 	if (csId > (MV_SPI_MAX_CS - 1)) {
 		mvOsPrintf("Error, csId(%d) exceeded maximum(%d)\n", csId, (MV_SPI_MAX_CS - 1));
 		return MV_ERROR;
@@ -130,6 +140,12 @@ MV_STATUS mvSpiParamsSet(MV_U8 spiId, MV_U8 csId, MV_SPI_TYPE type)
 	if (currSpiInfo != (&(spiTypes[type]))) {
 		currSpiInfo = &(spiTypes[type]);
 		mvSpiBaudRateSet(spiId, currSpiInfo->baudRate);
+
+		ifParams.clockPolLow = currSpiInfo->clockPolLow;
+		ifParams.clockPhase = SPI_CLK_BEGIN_CYC;
+		ifParams.txMsbFirst = MV_FALSE;
+		ifParams.rxMsbFirst = MV_FALSE;
+		mvSpiIfConfigSet(spiId, &ifParams);
 	}
 
 	return MV_OK;

@@ -473,6 +473,39 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 }
 
 /*******************************************************************************
+* mvBoardL2ClkGetRaw
+*
+* DESCRIPTION:
+*	This routine extract the L2 Cache frequency/clock.
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	32bit clock cycles in Hertz.
+*
+*******************************************************************************/
+MV_U32 mvBoardL2ClkGetRaw(MV_VOID)
+{
+#ifdef CONFIG_MACH_AVANTA_LP_FPGA
+	return MV_FPGA_L2_CLK;
+#else
+	MV_U32 clkSelect;
+	MV_FREQ_MODE freq[] = MV_SAR_FREQ_MODES;
+
+	clkSelect = (MV_REG_READ(MPP_SAMPLE_AT_RESET(1)));
+
+	clkSelect = clkSelect & (0x1f << 17);
+	clkSelect >>= 17;
+
+	return 1000000 * freq[clkSelect].l2Freq;
+#endif
+}
+
+/*******************************************************************************
 * mvBoardSysClkGet - Get the board SysClk (CPU bus clock , i.e. DDR clock)
 *
 * DESCRIPTION:

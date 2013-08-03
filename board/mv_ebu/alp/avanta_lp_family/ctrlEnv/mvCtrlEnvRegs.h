@@ -121,6 +121,15 @@ extern "C" {
 #define PMC_SATA_STOP_CLK_EN			(3 << PMC_SATA_STOP_CLK_OFFS)
 #define PMC_SATA_STOP_CLK_STOP			(0 << PMC_SATA_STOP_CLK_OFFS)
 
+/* SSCG Registers */
+#define	SSCG_CONF_REG				0x184D8
+#define	SSCG_CONF_MODE(reg)			(((reg) >> 16) & 0x3)
+#define	SSCG_SPREAD_DOWN			0x0
+#define	SSCG_SPREAD_UP				0x1
+#define	SSCG_SPREAD_CENTRAL			0x2
+#define	SSCG_CONF_LOW(reg)			(((reg) >> 8) & 0xFF)
+#define	SSCG_CONF_HIGH(reg)			((reg) & 0xFF)
+
 #define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
 
 /* Sample at Reset */

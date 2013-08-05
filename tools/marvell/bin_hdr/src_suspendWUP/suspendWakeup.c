@@ -90,7 +90,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SUSPEND_MAGIC_WORD 	(0xDEADB002)
 #define REGISTER_LIST_END 	(0xFFFFFFFF) 
 
-void suspendWakeup(void)
+MV_STATUS suspendWakeup(void)
 {
 #if defined(MV88F78X60)
 	int *boot_info = (int*)(BOOT_INFO_ADDR);
@@ -126,6 +126,6 @@ void suspendWakeup(void)
 		resumeFunc();		
 	}
 #endif
-	return;
+	return MV_OK;
 }
 

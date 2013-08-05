@@ -78,9 +78,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(MV_INCLUDE_GIG_ETH)
 #if defined(MV_ETH_LEGACY)
 #include "eth/mvEth.h"
-#else
+#endif /* MV_ETH_LEGACY */
+
+#if defined(MV_ETH_NETA)
 #include "neta/gbe/mvNeta.h"
-#endif /* MV_ETH_LEGACY or MV_ETH_NETA */
+#endif /* MV_ETH_NETA */
 #endif
 
 #if defined(MV_INCLUDE_XOR)
@@ -1255,9 +1257,11 @@ MV_VOID mvCtrlAddrDecShow(MV_VOID)
 #if defined(MV_INCLUDE_GIG_ETH)
 #if defined(MV_ETH_LEGACY)
 	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvEthWinRead);
-#else
-	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvNetaWinRead);
 #endif /* MV_ETH_LEGACY */
+
+#if defined(MV_ETH_NETA)
+	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvNetaWinRead);
+#endif /* MV_ETH_NETA */
 #endif /* MV_INCLUDE_GIG_ETH */
 
 #if defined(MV_INCLUDE_XOR)

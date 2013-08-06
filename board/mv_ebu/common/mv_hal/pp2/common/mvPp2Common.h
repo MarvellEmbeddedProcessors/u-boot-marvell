@@ -111,13 +111,10 @@ int mvPp2RdReg(unsigned int offset);
 
 int mvPp2WrReg(unsigned int offset, unsigned int  val);
 
-int mvPp2PrintReg(unsigned int  reg_addr, char *reg_name);
-void mvPp2RegPrint2(MV_U32 reg_addr, char *reg_name, MV_U32 index);
+void mvPp2PrintReg(unsigned int  reg_addr, char *reg_name);
+void mvPp2PrintReg2(MV_U32 reg_addr, char *reg_name, MV_U32 index);
 
 int mvPp2SPrintReg(char *buf, unsigned int  reg_addr, char *reg_name);
-
-void mvEthRegPrint(MV_U32 reg_addr, char *reg_name);
-void mvEthRegPrint2(MV_U32 reg_addr, char *reg_name, MV_U32 index);
 
 /*--------------------------------------------------------------------*/
 /*			PP2 COMMON DEFINETIONS			      */

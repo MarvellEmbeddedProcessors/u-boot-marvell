@@ -87,35 +87,19 @@ int mvPp2RdReg(unsigned int offset)
 }
 
 int mvPp2SPrintReg(char *buf, unsigned int  reg_addr, char *reg_name)
-
 {
 	return mvOsSPrintf(buf, "  %-32s: 0x%x = 0x%08x\n", reg_name, reg_addr, mvPp2RdReg(reg_addr));
 }
 
-int mvPp2PrintReg(unsigned int reg_addr, char *reg_name)
-
+void mvPp2PrintReg(unsigned int reg_addr, char *reg_name)
 {
-	return mvOsPrintf("  %-32s: 0x%x = 0x%08x\n", reg_name, reg_addr, mvPp2RdReg(reg_addr));
+	mvOsPrintf("  %-32s: 0x%x = 0x%08x\n", reg_name, reg_addr, mvPp2RdReg(reg_addr));
 }
 
-void mvPp2RegPrint2(MV_U32 reg_addr, char *reg_name, MV_U32 index)
+void mvPp2PrintReg2(MV_U32 reg_addr, char *reg_name, MV_U32 index)
 {
 	char buf[64];
 
 	mvOsSPrintf(buf, "%s[%d]", reg_name, index);
 	mvOsPrintf("  %-32s: 0x%x = 0x%08x\n", buf, reg_addr, mvPp2RdReg(reg_addr));
 }
-
-void mvEthRegPrint(MV_U32 reg_addr, char *reg_name)
-{
-	mvOsPrintf("  %-32s: 0x%x = 0x%08x\n", reg_name, reg_addr, MV_REG_READ(reg_addr));
-}
-
-void mvEthRegPrint2(MV_U32 reg_addr, char *reg_name, MV_U32 index)
-{
-	char buf[64];
-
-	mvOsSPrintf(buf, "%s[%d]", reg_name, index);
-	mvOsPrintf("  %-32s: 0x%x = 0x%08x\n", buf, reg_addr, MV_REG_READ(reg_addr));
-}
-

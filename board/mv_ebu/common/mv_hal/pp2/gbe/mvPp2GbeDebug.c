@@ -80,18 +80,18 @@ MV_VOID mvPp2RxDmaRegsPrint(void)
 	mvOsPrintf("\n[RX DMA regs]\n");
 
 	for (i = 0; i < MV_BM_POOLS; i++)
-		mvPp2RegPrint2(MV_PP2_POOL_BUF_SIZE_REG(i), "MV_PP2_POOL_BUF_SIZE_REG", i);
+		mvPp2PrintReg2(MV_PP2_POOL_BUF_SIZE_REG(i), "MV_PP2_POOL_BUF_SIZE_REG", i);
 
 	mvOsPrintf("\n");
 
 	for (i = 0; i < MV_ETH_RXQ_TOTAL_NUM; i++)
-		mvPp2RegPrint2(MV_PP2_RXQ_CONFIG_REG(i), "MV_PP2_RXQ_CONFIG_REG", i);
+		mvPp2PrintReg2(MV_PP2_RXQ_CONFIG_REG(i), "MV_PP2_RXQ_CONFIG_REG", i);
 
 	mvOsPrintf("\n");
 
 	for (i = 0; i < MV_PP2_MAX_PORTS; i++) {
-		mvPp2RegPrint2(MV_PP2_PORT_HWF_CONFIG_REG(i), "MV_PP2_PORT_HWF_CONFIG_REG", i);
-		mvPp2RegPrint2(MV_PP2_RX_CTRL_REG(i), "MV_PP2_RX_CTRL_REG", i);
+		mvPp2PrintReg2(MV_PP2_PORT_HWF_CONFIG_REG(i), "MV_PP2_PORT_HWF_CONFIG_REG", i);
+		mvPp2PrintReg2(MV_PP2_RX_CTRL_REG(i), "MV_PP2_RX_CTRL_REG", i);
 	}
 	mvOsPrintf("\n");
 }
@@ -515,18 +515,18 @@ void mvPp2DropCntrs(int port)
 	if (MV_PON_PORT(port)) {
 #ifdef CONFIG_MV_INCLUDE_PON
 		for (i = 0; i < mvPp2HalData.maxTcont; i++) {
-			mvPp2RegPrint2(MV_PP2_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);
-			mvPp2RegPrint2(MV_PP2_TX_DESC_DROP_REG(i), "MV_PP2_TX_DESC_DROP_REG", i);
+			mvPp2PrintReg2(MV_PP2_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);
+			mvPp2PrintReg2(MV_PP2_TX_DESC_DROP_REG(i), "MV_PP2_TX_DESC_DROP_REG", i);
 		}
 #endif
 	} else {
 		i = MV_ETH_MAX_TCONT + port;
-		mvPp2RegPrint2(MV_PP2_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);
-		mvPp2RegPrint2(MV_PP2_TX_DESC_DROP_REG(i), "MV_PP2_TX_DESC_DROP_REG", i);
+		mvPp2PrintReg2(MV_PP2_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);
+		mvPp2PrintReg2(MV_PP2_TX_DESC_DROP_REG(i), "MV_PP2_TX_DESC_DROP_REG", i);
 	}
 	for (i = port * CONFIG_MV_ETH_RXQ; i < (port * CONFIG_MV_ETH_RXQ + CONFIG_MV_ETH_RXQ); i++) {
-		mvPp2RegPrint2(MV_PP2_RX_EARLY_DROP_REG(i), "MV_PP2_RX_EARLY_DROP_REG", i);
-		mvPp2RegPrint2(MV_PP2_RX_DESC_DROP_REG(i), "MV_PP2_RX_DESC_DROP_REG", i);
+		mvPp2PrintReg2(MV_PP2_RX_EARLY_DROP_REG(i), "MV_PP2_RX_EARLY_DROP_REG", i);
+		mvPp2PrintReg2(MV_PP2_RX_DESC_DROP_REG(i), "MV_PP2_RX_DESC_DROP_REG", i);
 	}
 }
 

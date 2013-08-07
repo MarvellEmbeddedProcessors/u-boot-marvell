@@ -109,9 +109,6 @@ int late_print_cpuinfo(void);
 /* CPU address decode table. */
 MV_CPU_DEC_WIN mvCpuAddrWinMap[] = MV_CPU_IF_ADDR_WIN_MAP_TBL;
 
-#if defined(CONFIG_CMD_RCVR)
-extern void recoveryDetection(void);
-#endif
 void mv_cpu_init(void);
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
 void mv_set_power_scheme(void);
@@ -840,10 +837,6 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	if (!env)
 		setenv("netretry", "no");
 
-	env = getenv("rcvrip");
-	if (!env)
-		setenv("rcvrip", RCVR_IP_ADDR);
-
 	env = getenv("loadaddr");
 	if (!env)
 		setenv("loadaddr", RCVR_LOAD_ADDR);
@@ -852,8 +845,6 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	if (!env)
 		setenv("autoload", "no");
 
-	/* Check the recovery trigger */
-	recoveryDetection();
 #endif
 	env = getenv("eeeEnable");
 	if (!env)

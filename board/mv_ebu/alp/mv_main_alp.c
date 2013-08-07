@@ -111,9 +111,6 @@ MV_CPU_DEC_WIN mvCpuAddrWinMap_88F6660[] = MV_CPU_IF_ADDR_WIN_MAP_88F6660_TBL;
 MV_CPU_DEC_WIN mvCpuAddrWinMap_88F6650[] = MV_CPU_IF_ADDR_WIN_MAP_88F6650_TBL;
 MV_CPU_DEC_WIN mvCpuAddrWinMap_88F6610[] = MV_CPU_IF_ADDR_WIN_MAP_88F6610_TBL;
 
-#if defined(CONFIG_CMD_RCVR)
-extern void recoveryDetection(void);
-#endif
 void mv_cpu_init(void);
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
 void mv_set_power_scheme(void);
@@ -775,7 +772,7 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	/* Set mvNetConfig env parameter */
 	env = getenv("mvNetConfig");
 	if (!env)
-		setenv("mvNetConfig", "mv_net_config=4,(00:50:43:11:11:11,0:1:2:3),mtu=1500");
+		setenv("mvNetConfig", "mv_switch_config=none");
 
 #endif  /*  (MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_UNM_ETH) */
 
@@ -824,9 +821,9 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	if (!env)
 		setenv("netretry", "no");
 
-	env = getenv("rcvrip");
+	env = getenv("rcvr_image");
 	if (!env)
-		setenv("rcvrip", RCVR_IP_ADDR);
+		setenv("rcvr_image", "rootfs.squashfs.rcvr.img");
 
 	env = getenv("loadaddr");
 	if (!env)
@@ -836,8 +833,6 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	if (!env)
 		setenv("autoload", "no");
 
-	/* Check the recovery trigger */
-	recoveryDetection();
 #endif
 	env = getenv("eeeEnable");
 	if (!env)

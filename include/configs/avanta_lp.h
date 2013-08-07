@@ -71,7 +71,9 @@
 #define MV_BOOTROM
 
 #ifndef CONFIG_MACH_AVANTA_LP_FPGA
+/* USB currently disabled due to instability
 #define MV_USB
+*/
 #define MV_FS
 #define CONFIG_CMD_DATE
 #endif

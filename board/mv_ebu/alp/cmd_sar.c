@@ -112,8 +112,8 @@ static int do_sar_list(int argc, char *const argv[])
 		printf("\t0x1 = Dual CPU\n");
 	} else if (strcmp(cmd, "sscg") == 0) {
 		printf("Determines the SSCG  mode:\n");
-		printf("\t0x0 = SSCG Disabled\n");
-		printf("\t0x1 = SSCG Enabled\n");
+		printf("\t0x0 = SSCG Enabled\n");
+		printf("\t0x1 = SSCG Disabled\n");
 	}
 	else goto usage;
 	return 0;
@@ -178,7 +178,7 @@ static int do_sar_read(int argc, char *const argv[])
 	}
 	else if (strcmp(cmd, "sscg") == 0) {
 		if (GetAndVerifySatr(MV_SATR_SSCG_DISABLE, &temp) == MV_OK)
-			printf("\nsscg = %d  ==> %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
+			printf("\nsscg = %d  ==> %s\n",temp, (temp == 0) ? "Enabled" : "Disabled");
 	}
 	else if (strcmp(cmd, "i2c0") == 0) {
 		if (GetAndVerifySatr(MV_SATR_I2C0_SERIAL_ROM, &temp) == MV_OK)
@@ -243,7 +243,7 @@ static int do_sar_read(int argc, char *const argv[])
 		if (mvCtrlSatRRead(MV_SATR_CPU1_ENABLE, &temp) == MV_OK)
 		printf("cpusnum \t= %3d  ==>   %s CPU \n", temp, (temp == 0) ? "Single" : "Dual");
 		if (mvCtrlSatRRead(MV_SATR_SSCG_DISABLE, &temp) == MV_OK)
-			printf("sscg \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
+			printf("sscg \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Enabled" : "Disabled");
 		if (mvCtrlSatRRead(MV_SATR_I2C0_SERIAL_ROM, &temp) == MV_OK)
 			printf("i2c0 \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
 		if (mvCtrlSatRRead(MV_SATR_EXTERNAL_CORE_RESET, &temp) == MV_OK)

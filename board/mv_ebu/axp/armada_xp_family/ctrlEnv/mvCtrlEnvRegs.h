@@ -356,6 +356,9 @@ extern "C" {
 /* Sample at Reset */
 #define MPP_SAMPLE_AT_RESET(id)			(0x18230 + (id * 4))
 
+/* Core Divider Clock Control */
+#define CORE_DIV_CLK_CTRL(num)			(0x18740 + ((num) * 0x8))
+
 /* SYSRSTn Length Counter */
 #define SYSRST_LENGTH_COUNTER_REG		0x18250
 #define SLCR_COUNT_OFFS				0

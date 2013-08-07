@@ -596,23 +596,23 @@ static MV_STATUS mvNfcDeviceModeSet(MV_NFC_CTRL *nfcCtrl, MV_NFC_ONFI_MODE mode)
 
 MV_VOID setNANDClock(MV_U32 nClock)
 {
-    /* Set the division ratio of ECC Clock 0x00018748[13:8] (by default it's double of core clock) */
-    MV_U32 nVal = MV_REG_READ(0x18748);
-    nVal = nVal & ~(BIT8|BIT9|BIT10|BIT11|BIT12|BIT13);
-    nVal = nVal | (nClock<<8);
-    MV_REG_WRITE(0x18748, nVal);
+	/* Set the division ratio of ECC Clock 0x00018748[13:8] (by default it's double of core clock) */
+	MV_U32 nVal = MV_REG_READ(CORE_DIV_CLK_CTRL(1));
+	nVal = nVal & ~(BIT8|BIT9|BIT10|BIT11|BIT12|BIT13);
+	nVal = nVal | (nClock<<8);
+	MV_REG_WRITE(CORE_DIV_CLK_CTRL(1), nVal);
 
-    /* Set reload force of ECC clock 0x00018740[7:0] to 0x2 (meaning you will force only the ECC clock) */
-    nVal = MV_REG_READ(0x18740);
-    nVal = nVal & ~(0xff);
-    nVal = nVal | 0x2;
-    MV_REG_WRITE(0x18740, nVal);
+	/* Set reload force of ECC clock 0x00018740[7:0] to 0x2 (meaning you will force only the ECC clock) */
+	nVal = MV_REG_READ(CORE_DIV_CLK_CTRL(0));
+	nVal = nVal & ~(0xff);
+	nVal = nVal | 0x2;
+	MV_REG_WRITE(CORE_DIV_CLK_CTRL(0), nVal);
 
-    /* Set reload ratio bit 0x00018740[8] to 1'b1 */
-    MV_REG_BIT_SET(0x18740, BIT8);
-    mvOsDelay(1); /*  msec */
-    /* Set reload ratio bit 0x00018740[8] to 1'b1 */
-    MV_REG_BIT_RESET(0x18740, BIT8);
+	/* Set reload ratio bit 0x00018740[8] to 1'b1 */
+	MV_REG_BIT_SET(CORE_DIV_CLK_CTRL(0), BIT8);
+	mvOsDelay(1); /*  msec */
+	/* Set reload ratio bit 0x00018740[8] to 1'b1 */
+	MV_REG_BIT_RESET(CORE_DIV_CLK_CTRL(0), BIT8);
 }
 
 /*******************************************************************************

@@ -137,6 +137,17 @@ MV_U32 mvCtrlGetCpuNum(MV_VOID)
 		return cpu1Enabled;
 }
 
+MV_BOOL mvCtrlIsSscgEnabled(MV_VOID)
+{
+	MV_U32 sscgDisabled;
+
+	if (mvCtrlSatRRead(MV_SATR_SSCG_DISABLE, &sscgDisabled) != MV_OK) {
+		mvOsPrintf("%s: Error: failed to read SSCG status\n", __func__);
+		return MV_TRUE; /* if error reading S@R, assume sscg is default (enabled) */
+	} else
+		return sscgDisabled == 0x1 ? MV_FALSE : MV_TRUE;
+}
+
 /*******************************************************************************
 * mvCtrlIsValidSatR
 *

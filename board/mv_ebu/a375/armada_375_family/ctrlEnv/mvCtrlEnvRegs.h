@@ -128,6 +128,9 @@ extern "C" {
 #define SATR_DEVICE_ID_2_0_OFFS		21
 #define SATR_DEVICE_ID_2_0_MASK		(3 << SATR_DEVICE_ID_2_0_OFFS)
 
+/* Core Divider Clock Control */
+#define CORE_DIV_CLK_CTRL(num)		(0xE8250 + ((num) * 0x4))
+
 #define DEV_ID_REG			0x18238
 #define VENDOR_ID_OFFS			0
 #define VENDOR_ID_MASK			0xFFFF

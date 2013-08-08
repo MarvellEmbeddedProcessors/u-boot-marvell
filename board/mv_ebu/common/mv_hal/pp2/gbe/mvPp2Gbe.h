@@ -519,6 +519,7 @@ MV_STATUS mvPp2PortLogicRxqMapDel(int port, int lrxq);
 /* Allocate and initialize descriptors for RXQ */
 MV_PP2_PHYS_RXQ_CTRL *mvPp2RxqInit(int port, int rxq, int descNum);
 void mvPp2RxqDelete(int port, int queue);
+void mvPp2RxqReset(int port, int queue);
 
 /* Allocate and initialize all physical RXQs.
    This function must be called before any use of RXQ */
@@ -560,6 +561,7 @@ MV_STATUS mvPp2TxDonePktsCoalSet(int port, int txp, int txq, MV_U32 pkts);
 int mvPp2TxDonePktsCoalGet(int port, int txp, int txq);
 
 void mvPp2TxpReset(int port, int txp);
+void mvPp2TxqReset(int port, int txp, int txq);
 
 MV_STATUS mvPp2TxqTempInit(int descNum, int hwfNum);
 MV_VOID mvPp2TxqTempDelete(MV_VOID);
@@ -629,6 +631,7 @@ MV_VOID mvPp2AggrTxqShow(int cpu, int mode);
 void mvPp2PhysTxqRegs(int txq);
 void mvPp2PortTxqRegs(int port, int txp, int txq);
 void mvPp2AggrTxqRegs(int cpu);
+void mvPp2TxRegs(void);
 void mvPp2AddrDecodeRegs(void);
 void mvPp2TxSchedRegs(int port, int txp);
 void mvPp2BmPoolRegs(int pool);

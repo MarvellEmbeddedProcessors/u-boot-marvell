@@ -1587,6 +1587,9 @@ MV_STATUS   mvPp2TxpMaxTxSizeSet(int port, int txp, int maxTxSize)
 	if (mtu > MV_PP2_TXP_MTU_MAX)
 		mtu = MV_PP2_TXP_MTU_MAX;
 
+	/* WA for wrong Token bucket update: Set MTU value = 3*real MTU value */
+	mtu = 3 * mtu;
+
 	txPortNum = mvPp2EgressPort(port, txp);
 
 	mvPp2WrReg(MV_PP2_TXP_SCHED_PORT_INDEX_REG, txPortNum);

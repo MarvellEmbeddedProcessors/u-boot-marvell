@@ -595,21 +595,31 @@ int mvPp2RxqPktsCoalGet(int port, int rxq)
 	return (regVal & MV_PP2_OCCUPIED_THRESH_MASK) >> MV_PP2_OCCUPIED_THRESH_OFFSET;
 }
 
+void mvPp2RxqReset(int port, int rxq)
+{
+	MV_PP2_PHYS_RXQ_CTRL *pRxq;
+	int prxq;
+
+	prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
+	pRxq = &mvPp2PhysRxqs[prxq];
+
+	mvPp2DescRingReset(&pRxq->queueCtrl);
+	/* zero occupied and non-occupied counters - direct access */
+	mvPp2WrReg(MV_PP2_RXQ_STATUS_REG(prxq), 0);
+
+	/* zero next descriptor index - indirect access */
+	mvPp2WrReg(MV_PP2_RXQ_NUM_REG, prxq);
+	mvPp2WrReg(MV_PP2_RXQ_INDEX_REG, 0);
+}
+
 /* Reset all RXQs */
 void mvPp2RxReset(int port)
 {
-	int rxq, prxq;
 	MV_PP2_PORT_CTRL *pPortCtrl = mvPp2PortCtrl[port];
-	MV_PP2_PHYS_RXQ_CTRL *pRxq;
+	int rxq;
 
-	for (rxq = 0; rxq < pPortCtrl->rxqNum ; rxq++) {
-		prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
-		pRxq = &mvPp2PhysRxqs[prxq];
-
-		mvPp2DescRingReset(&pRxq->queueCtrl);
-		mvPp2WrReg(MV_PP2_RXQ_NUM_REG, prxq);
-		mvPp2WrReg(MV_PP2_RXQ_INDEX_REG, 0);
-	}
+	for (rxq = 0; rxq < pPortCtrl->rxqNum ; rxq++)
+		mvPp2RxqReset(port, rxq);
 }
 /*-------------------------------------------------------------------------------*/
 /* TXQ */
@@ -831,21 +841,27 @@ int mvPp2TxDonePktsCoalGet(int port, int txp, int txq)
 	return (regVal & MV_PP2_TRANSMITTED_THRESH_MASK) >> MV_PP2_TRANSMITTED_THRESH_OFFSET;
 }
 
+void mvPp2TxqReset(int port, int txp, int txq)
+{
+	int ptxq;
+	MV_PP2_PHYS_TXQ_CTRL *pTxq;
+
+	ptxq = MV_PPV2_TXQ_PHYS(port, txp, txq);
+	pTxq = &mvPp2PhysTxqs[ptxq];
+
+	mvPp2DescRingReset(&pTxq->queueCtrl);
+	mvPp2WrReg(MV_PP2_TXQ_NUM_REG, ptxq);
+	mvPp2WrReg(MV_PP2_TXQ_INDEX_REG, 0);
+}
+
 /* Reset all TXQs */
 void mvPp2TxpReset(int port, int txp)
 {
-	int txq, ptxq;
-	MV_PP2_PHYS_TXQ_CTRL *pTxq;
+	int txq;
 	MV_PP2_PORT_CTRL *pPortCtrl = mvPp2PortCtrl[port];
 
-	for (txq = 0; txq < pPortCtrl->txqNum; txq++) {
-		ptxq = MV_PPV2_TXQ_PHYS(port, txp, txq);
-		pTxq = &mvPp2PhysTxqs[ptxq];
-
-		mvPp2DescRingReset(&pTxq->queueCtrl);
-		mvPp2WrReg(MV_PP2_TXQ_NUM_REG, ptxq);
-		mvPp2WrReg(MV_PP2_TXQ_INDEX_REG, 0);
-	}
+	for (txq = 0; txq < pPortCtrl->txqNum; txq++)
+		mvPp2TxqReset(port, txp, txq);
 }
 
 /* Allocate and initialize descriptors for temporary TXQ */

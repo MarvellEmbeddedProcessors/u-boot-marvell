@@ -317,6 +317,9 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	/*Enable PUP bit for NOR*/
 	MV_REG_BIT_SET(PUP_EN_REG, BIT6);
 #endif
+	/* XXX: Following setting should be configured by u-boot */
+	/* Disable arbitration between device and NAND */
+	MV_REG_BIT_RESET(SOC_DEV_MUX_REG, BIT27);
 
 	return MV_OK;
 }

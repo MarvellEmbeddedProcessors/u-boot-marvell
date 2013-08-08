@@ -622,6 +622,7 @@ MV_VOID mvPp2DescMgrRegsTxPrint(MV_VOID);
 MV_VOID mvPp2AddressDecodeRegsPrint(MV_VOID);
 void mvPp2IsrRegs(int port);
 void mvPp2PhysRxqRegs(int rxq);
+void mvPp2PortRxqRegs(int port, int rxq);
 MV_VOID mvPp2RxqShow(int port, int rxq, int mode);
 MV_VOID mvPp2TxqShow(int port, int txp, int txq, int mode);
 MV_VOID mvPp2AggrTxqShow(int cpu, int mode);

@@ -376,9 +376,9 @@ void mvPp2IsrRegs(int port)
 
 void mvPp2PhysRxqRegs(int rxq)
 {
-	mvOsPrintf("\n[PPv2 Phys RxQ registers: rxq=%d]\n", rxq);
+	mvOsPrintf("\n[PPv2 RxQ registers: global rxq=%d]\n", rxq);
 
-	if (mvPp2MaxCheck(rxq, MV_ETH_RXQ_TOTAL_NUM, "physical rxq"))
+	if (mvPp2MaxCheck(rxq, MV_ETH_RXQ_TOTAL_NUM, "global rxq"))
 		return;
 
 	mvPp2WrReg(MV_PP2_RXQ_NUM_REG, rxq);
@@ -394,11 +394,24 @@ void mvPp2PhysRxqRegs(int rxq)
 	mvPp2PrintReg(MV_PP2_RX_DESC_DROP_REG(rxq), "MV_PP2_RX_DESC_DROP_REG");
 }
 
+void mvPp2PortRxqRegs(int port, int rxq)
+{
+	mvOsPrintf("\n[PPv2 RxQ registers: port=%d, local rxq=%d]\n", port, rxq);
+
+	if (mvPp2PortCheck(port))
+		return;
+
+	if (mvPp2MaxCheck(rxq, MV_ETH_MAX_RXQ, "local rxq"))
+		return;
+
+	mvPp2PhysRxqRegs(mvPp2LogicRxqToPhysRxq(port, rxq));
+}
+
 void mvPp2PhysTxqRegs(int txq)
 {
-	mvOsPrintf("\n[PPv2 Phys TxQ registers: txq=%d]\n", txq);
+	mvOsPrintf("\n[PPv2 TxQ registers: global txq=%d]\n", txq);
 
-	if (mvPp2MaxCheck(txq, MV_PP2_TXQ_TOTAL_NUM, "physical txq"))
+	if (mvPp2MaxCheck(txq, MV_PP2_TXQ_TOTAL_NUM, "global txq"))
 		return;
 
 	mvPp2WrReg(MV_PP2_TXQ_NUM_REG, txq);
@@ -415,12 +428,12 @@ void mvPp2PhysTxqRegs(int txq)
 
 void mvPp2PortTxqRegs(int port, int txp, int txq)
 {
-	mvOsPrintf("\n[PPv2 Phys TxQ registers: txq=%d]\n", txq);
+	mvOsPrintf("\n[PPv2 TxQ registers: port=%d, txp=%d, local txq=%d]\n", port, txp, txq);
 
 	if (mvPp2TxpCheck(port, txp))
 		return;
 
-	if (mvPp2MaxCheck(txq, MV_ETH_MAX_TXQ, "logical txq"))
+	if (mvPp2MaxCheck(txq, MV_ETH_MAX_TXQ, "local txq"))
 		return;
 
 	mvPp2PhysTxqRegs(MV_PPV2_TXQ_PHYS(port, txp, txq));

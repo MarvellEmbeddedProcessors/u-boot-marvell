@@ -126,6 +126,8 @@ CTRL_ENV_INFO ctrlEnvInfo = {};
 MV_U32 satrOptionsConfig[MV_SATR_READ_MAX_OPTION];
 MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 
+MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
+
 MV_U32 mvCtrlGetCpuNum(MV_VOID)
 {
 	MV_U32 cpu1Enabled;
@@ -373,7 +375,7 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrReadField, MV_U8 val, MV_BOOL rest
 
 	if (mvBoardSatrInfoConfig(satrWriteField, &satrInfo, MV_FALSE) != MV_OK) {
 		if (restoreDefault == MV_FALSE)
-			mvOsPrintf("%s: Error: Requested S@R field is not relevant for this board\n", __func__);
+			mvOsPrintf("%s: Error: Requested field is not writeable for this board\n", __func__);
 		return MV_ERROR;
 	}
 
@@ -439,28 +441,13 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrReadField, MV_U8 val, MV_BOOL rest
 *******************************************************************************/
 MV_STATUS mvCtrlSatRRead(MV_SATR_TYPE_ID satrField, MV_U32 *value)
 {
-	MV_BOARD_SATR_INFO satrInfo;
-
 	if (value == NULL) {
 		DB(mvOsPrintf("%s: Error: NULL pointer parameter\n", __func__));
 		return MV_ERROR;
 	}
 
-	if (satrField < MV_SATR_READ_MAX_OPTION &&
-			mvBoardSatrInfoConfig(satrField, &satrInfo, MV_TRUE) == MV_OK) {
-		*value = satrOptionsConfig[satrField];
-		return MV_OK;
-	}
-	else
-		return MV_ERROR;
-
-/* The last MV_ERROR indicates that a certain field is not relevant for board
- * There is no print/indication needed for user in case this "error" occurs,
- * as this could be a result of a Valid situation:
- *  - when using "SatR read"-read all fields: this indicates which fields to print
- *  - but when using "SatR read fieldX" -to read 1 X field: this will be handled
- *    by caller, and will be followed with an appropriate error message
- */
+	*value = satrOptionsConfig[satrField];
+	return MV_OK;
 }
 
 /*******************************************************************************

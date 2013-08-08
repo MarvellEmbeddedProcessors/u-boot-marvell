@@ -92,7 +92,7 @@
 
 extern MV_BOARD_INFO *boardInfoTbl[];
 extern MV_BOARD_SATR_INFO boardSatrInfo[];
-extern MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[];
+MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_BOARD_CONFIG_INFO;
 
 /* Locals */
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
@@ -2283,24 +2283,19 @@ MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig)
 *******************************************************************************/
 MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo, MV_BOOL read)
 {
-	int i, start, end;
+	int i;
 	MV_U32 boardId = mvBoardIdGet();
 
-	if (read == MV_TRUE) {	/* if read request, check read SATR fields */
-		start = 0;
-		end = MV_SATR_READ_MAX_OPTION;
-	} else {		/* if write request, check write SATR fields */
-		start = MV_SATR_READ_MAX_OPTION;
-		end = MV_SATR_WRITE_MAX_OPTION;
-	}
-
-	/* verify existence of requested SATR type, pull its data,
-	 * and check if field is relevant to current running board */
-	for (i = start; i < end ; i++)
+	/* verify existence of requested SATR type, and pull its data,
+	 * if write sequence, check if field is writeable for running board */
+	for (i = 0; i < MV_SATR_WRITE_MAX_OPTION ; i++)
 		if (boardSatrInfo[i].satrId == satrClass) {
-			*satrInfo = boardSatrInfo[i];
-			if (boardSatrInfo[i].isActiveForBoard[boardId])
+
+			/* if read sequence, or an authorized write sequence -> return true */
+			if (read == MV_TRUE || boardSatrInfo[i].isWriteable[boardId]) {
+				*satrInfo = boardSatrInfo[i];
 				return MV_OK;
+			}
 			else
 				return MV_ERROR;
 		}
@@ -2359,17 +2354,40 @@ MV_BOOL mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE
 *	MV_BOARD_CONFIG_TYPE_INFO struct with mask, offset and register number.
 *
 *******************************************************************************/
-MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass, MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo)
+MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass,
+		MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo)
 {
-	int i;
+	MV_U32 i;
+
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioe6660[] = MV_BOARD_IO_EXP_DB6660_INFO;
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioe6650[] = MV_BOARD_IO_EXP_DB6650_INFO;
+	MV_BOARD_IO_EXPANDER_TYPE_INFO *ioe;
+	MV_U8 n = 0;
+
+	switch (mvBoardIdGet()) {
+	case DB_6650_ID:
+		ioe = ioe6650;
+		n = ARRSZ(ioe6650);
+		break;
+	case DB_6660_ID:
+		ioe = ioe6660;
+		n = ARRSZ(ioe6660);
+		break;
+	default:
+		mvOsPrintf("%s: Error: IO Expander doesn't exists on board\n", __func__);
+		return MV_ERROR;
+	}
 
 	/* verify existance of requested config type, pull its data */
-	for (i = 0; i < board->numBoardIoExpanderInfo ; i++)
-		if (board->pBoardIoExpanderInfo[i].ioFieldid == ioClass) {
-			*ioInfo = board->pBoardIoExpanderInfo[i];
+	for (i = 0; i < n ; i++)
+		if (ioe[i].ioFieldid == ioClass) {
+
+			*ioInfo = ioe[i];
 			return MV_OK;
 		}
-	DB(mvOsPrintf("%s: Error: requested MV_IO_EXPANDER_TYPE_ID was not found\n", __func__));
+
+	mvOsPrintf("%s: Error: requested IO expander id was not found (%d)\n",
+			__func__, ioClass);
 	return MV_ERROR;
 }
 

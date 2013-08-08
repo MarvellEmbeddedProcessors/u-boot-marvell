@@ -77,6 +77,7 @@ extern "C" {
 #include "boardEnv/mvBoardEnvSpec.h"
 #include "twsi/mvTwsi.h"
 
+#define ARRSZ(x)                (sizeof(x) / sizeof(x[0]))
 #define BOARD_ETH_SWITCH_PORT_NUM       7
 #define BOARD_ETH_SWITCH_SMI_SCAN_MODE	1	/* Use manual scanning mode */
 #define MV_BOARD_MAX_MPP                9       /* number of MPP conf registers */
@@ -201,7 +202,7 @@ typedef struct _boardSatrInfo {
 	MV_U32 mask;
 	MV_U32 offset;
 	MV_U32 regNum;
-	MV_U32 isActiveForBoard[MV_MAX_BOARD_ID];
+	MV_U32 isWriteable[MV_MAX_BOARD_ID];
 } MV_BOARD_SATR_INFO;
 
 typedef struct _boardConfigTypesInfo {
@@ -212,13 +213,6 @@ typedef struct _boardConfigTypesInfo {
 	MV_U32 regNum;
 	MV_U32 isActiveForBoard[MV_MAX_BOARD_ID];
 } MV_BOARD_CONFIG_TYPE_INFO;
-
-typedef struct _boardIoExapnderTypesInfo {
-	MV_IO_EXPANDER_TYPE_ID ioFieldid;
-	MV_U32 offset;
-	MV_U32 expanderNum;
-	MV_U32 regNum;
-} MV_BOARD_IO_EXPANDER_TYPE_INFO;
 
 typedef enum _boardMacSpeed {
 	BOARD_MAC_SPEED_10M,
@@ -273,6 +267,41 @@ typedef struct {
 	MV_U32 val;
 } MV_BOARD_SPEC_INIT;
 
+typedef enum _mvIoExpanderTypeID {
+	MV_IO_EXPANDER_SFP0_TX_DIS,
+	MV_IO_EXPANDER_SFP0_PRSNT,
+	MV_IO_EXPANDER_SFP0_TX_FAULT,
+	MV_IO_EXPANDER_SFP0_LOS,
+	MV_IO_EXPANDER_SFP1_PRSNT,
+	MV_IO_EXPANDER_SFP1_TX_FAULT,
+	MV_IO_EXPANDER_SFP1_LOS,
+	MV_IO_EXPANDER_SFP1_TX_DIS,
+	MV_IO_EXPANDER_USB_VBUS,
+	MV_IO_EXPANDER_MAC0_RJ45_PORT_LED,
+	MV_IO_EXPANDER_MAC0_SFP_PORT_LED,
+	MV_IO_EXPANDER_MAC1_RJ45_PORT_LED,
+	MV_IO_EXPANDER_MAC1_SFP_PORT_LED,
+	MV_IO_EXPANDER_PON_PORT_LED,
+	MV_IO_EXPANDER_SD_STATUS,
+	MV_IO_EXPANDER_SD_WRITE_PROTECT,
+	MV_IO_EXPANDER_JUMPER1,
+	MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED,
+	MV_IO_EXPANDER_JUMPER3,
+	MV_IO_EXPANDER_EXT_PHY_SMI_EN,
+	MV_IO_EXPANDER_SPI1_CS_MSB0,
+	MV_IO_EXPANDER_SPI1_CS_MSB1,
+	MV_IO_EXPANDER_INTEG_PHY_PORTS_LED,
+	MV_IO_EXPANDER_USB_SUPER_SPEED,
+	MV_IO_EXPANDER_MAX_OPTION
+} MV_IO_EXPANDER_TYPE_ID;
+
+typedef struct _boardIoExapnderTypesInfo {
+	MV_IO_EXPANDER_TYPE_ID ioFieldid;
+	MV_U32 offset;
+	MV_U32 expanderNum;
+	MV_U32 regNum;
+} MV_BOARD_IO_EXPANDER_TYPE_INFO;
+
 typedef struct _boardInfo {
 	char boardName[MV_BOARD_NAME_LEN];
 	MV_U8 numBoardMppTypeValue;
@@ -284,8 +313,6 @@ typedef struct _boardInfo {
 	MV_U32 intsGppMaskHigh;
 	MV_U8 numBoardDeviceIf;
 	MV_DEV_CS_INFO *pDevCsInfo;
-	MV_U8 numBoardIoExpanderInfo;
-	MV_BOARD_IO_EXPANDER_TYPE_INFO *pBoardIoExpanderInfo;
 	MV_U8 numBoardTwsiDev;
 	MV_BOARD_TWSI_INFO *pBoardTwsiDev;
 	MV_U8 numBoardMacInfo;
@@ -341,6 +368,70 @@ typedef struct _boardInfo {
 	/* Set to MV_FALSE for any board that is not a DB. */
 	MV_BOOL configAutoDetect;
 } MV_BOARD_INFO;
+
+/* {{MV_CONFIG_TYPE_ID ConfigID, MV_U32 Mask,  Offset, expanderNum,  regNum,    isActiveForBoard[]}} */
+#define MV_BOARD_CONFIG_INFO { \
+{ MV_CONFIG_MAC0,	       0x3,	0,	 0,		0,	{ 0, 1, 1, 1 } }, \
+{ MV_CONFIG_MAC1,	       0xC,	2,	 0,		0,	{ 0, 1, 1, 1 } }, \
+{ MV_CONFIG_PON_SERDES,	       0x10,	4,	 0,		0,	{ 0, 1, 1, 1 } }, \
+{ MV_CONFIG_PON_BEN_POLARITY,  0x20,	5,	 0,		0,	{ 0, 0, 1, 1 } }, \
+{ MV_CONFIG_SGMII0_CAPACITY,   0x40,	6,	 0,		0,	{ 0, 1, 0, 1 } }, \
+{ MV_CONFIG_SGMII1_CAPACITY,   0x80,	7,	 0,		0,	{ 0, 1, 1, 1 } }, \
+{ MV_CONFIG_SLIC_TDM_DEVICE,   0x7,	0,	 0,		1,	{ 0, 1, 1, 1 } }, \
+{ MV_CONFIG_LANE1,	       0x18,	3,	 0,		1,	{ 0, 0, 0, 1 } }, \
+{ MV_CONFIG_LANE2,	       0x20,	5,	 0,		1,	{ 0, 0, 0, 1 } }, \
+{ MV_CONFIG_LANE3,	       0X40,	6,	 0,		1,	{ 0, 0, 0, 1 } }, \
+{ MV_CONFIG_MAC0_SW_SPEED,     0X80,	7,	 0,		1,	{ 0, 1, 0, 1 } }, \
+{ MV_CONFIG_DEVICE_BUS_MODULE, 0x3,	0,	 1,		0,	{ 0, 0, 0, 1 } }, \
+};
+
+/* MV_CONFIG_TYPE_ID ConfigID,      MV_U32 Offset,	 expanderNum,  regNum,   }} */
+#define MV_BOARD_IO_EXP_DB6650_INFO { \
+	/* 2nd IO Expander Register*/ \
+{ MV_IO_EXPANDER_USB_VBUS,		 0,		 2,	 0}, \
+{ MV_IO_EXPANDER_SFP1_PRSNT,		 2,		 2,	 0}, \
+{ MV_IO_EXPANDER_SFP1_TX_FAULT,		 3,		 2,	 0}, \
+{ MV_IO_EXPANDER_SFP1_LOS,		 4,		 2,	 0}, \
+{ MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, 6,		 2,	 0}, \
+{ MV_IO_EXPANDER_JUMPER3,		 7,		 2,	 0}, \
+	/* 3rd IO Expander Register*/ \
+{ MV_IO_EXPANDER_EXT_PHY_SMI_EN,	 0,		 2,	 1}, \
+{ MV_IO_EXPANDER_SFP1_TX_DIS,		 1,		 2,	 1}, \
+{ MV_IO_EXPANDER_MAC0_RJ45_PORT_LED,	 2,		 2,	 1}, \
+{ MV_IO_EXPANDER_PON_PORT_LED,		 3,		 2,	 1}, \
+{ MV_IO_EXPANDER_MAC1_SFP_PORT_LED,	 4,		 2,	 1}, \
+{ MV_IO_EXPANDER_MAC1_RJ45_PORT_LED,	 5,		 2,	 1}, \
+{ MV_IO_EXPANDER_INTEG_PHY_PORTS_LED,	 6,		 2,	 1}, \
+};
+
+#define MV_BOARD_IO_EXP_DB6660_INFO { \
+	/* 1st IO Expander Register*/ \
+{ MV_IO_EXPANDER_SFP0_TX_DIS,		 0,		 1,	 1}, \
+{ MV_IO_EXPANDER_SFP0_PRSNT,		 1,		 1,	 1}, \
+{ MV_IO_EXPANDER_SFP0_TX_FAULT,		 2,		 1,	 1}, \
+{ MV_IO_EXPANDER_SFP0_LOS,		 3,		 1,	 1}, \
+{ MV_IO_EXPANDER_USB_VBUS,		 4,		 1,	 1}, \
+{ MV_IO_EXPANDER_MAC0_RJ45_PORT_LED,	 5,		 1,	 1}, \
+{ MV_IO_EXPANDER_MAC0_SFP_PORT_LED,	 6,		 1,	 1}, \
+{ MV_IO_EXPANDER_PON_PORT_LED,		 7,		 1,	 1}, \
+	/* 2nd IO Expander Register*/ \
+{ MV_IO_EXPANDER_SD_STATUS,		 0,		 2,	 0}, \
+{ MV_IO_EXPANDER_SD_WRITE_PROTECT,	 1,		 2,	 0}, \
+{ MV_IO_EXPANDER_SFP1_PRSNT,		 2,		 2,	 0}, \
+{ MV_IO_EXPANDER_SFP1_TX_FAULT,		 3,		 2,	 0}, \
+{ MV_IO_EXPANDER_SFP1_LOS,		 4,		 2,	 0}, \
+{ MV_IO_EXPANDER_JUMPER1,		 6,		 2,	 0}, \
+{ MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, 7,		 2,	 0}, \
+	/* 3rd IO Expander Register*/ \
+{ MV_IO_EXPANDER_EXT_PHY_SMI_EN,	 0,		 2,	 1}, \
+{ MV_IO_EXPANDER_SFP1_TX_DIS,		 1,		 2,	 1}, \
+{ MV_IO_EXPANDER_SPI1_CS_MSB0,		 2,		 2,	 1}, \
+{ MV_IO_EXPANDER_SPI1_CS_MSB1,		 3,		 2,	 1}, \
+{ MV_IO_EXPANDER_MAC1_SFP_PORT_LED,	 4,		 2,	 1}, \
+{ MV_IO_EXPANDER_MAC1_RJ45_PORT_LED,	 5,		 2,	 1}, \
+{ MV_IO_EXPANDER_INTEG_PHY_PORTS_LED,	 6,		 2,	 1}, \
+{ MV_IO_EXPANDER_USB_SUPER_SPEED,	 7,		 2,	 1}, \
+};
 
 /* Boot device bus width */
 #define MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS          3

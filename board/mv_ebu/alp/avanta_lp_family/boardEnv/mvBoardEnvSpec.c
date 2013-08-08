@@ -67,101 +67,6 @@
 #include "twsi/mvTwsi.h"
 #include "pex/mvPexRegs.h"
 
-#define ARRSZ(x)                (sizeof(x) / sizeof(x[0]))
-
-MV_BOARD_SATR_INFO boardSatrInfo[] = {
-/*{{MV_SATR_TYPE_ID SarID,	   Mask,     Offset, regNum, isActiveForBoard[]}*/
-/*		     isActiveForBoard[] = { RD_6650, DB_6650, RD_6660, DB_6660 }*/
-{ MV_SATR_CPU_DDR_L2_FREQ,	 0x003E0000,	17,	1, {1, 1, 1, 1} },
-{ MV_SATR_CORE_CLK_SELECT,	 0x00400000,	22,	1, {1, 1, 1, 1} },
-{ MV_SATR_CPU1_ENABLE,		 0x00008000,	15,	0, {1, 1, 1, 1} },
-{ MV_SATR_SSCG_DISABLE,		 0x00000002,	1,	0, {1, 1, 1, 1} },
-{ MV_SATR_I2C0_SERIAL_ROM,	 0X00000001,	0,	0, {1, 1, 1, 1} },
-{ MV_SATR_EXTERNAL_CPU_RESET,	 0X00000000,	0,	0, {1, 1, 1, 1} },
-{ MV_SATR_EXTERNAL_CORE_RESET,	 0X00000000,	0,	0, {1, 1, 1, 1} },
-{ MV_SATR_BOOT_DEVICE,		 0X000001F8,	3,	0, {1, 1, 1, 1} },
-{ MV_SATR_CPU_PLL_XTAL_BYPASS,	 0x00000200,	9,	0, {1, 1, 1, 1} },
-{ MV_SATR_PEX0_CLOCK,		 0x00000400,	10,	0, {1, 1, 1, 1} },
-{ MV_SATR_PEX1_CLOCK,		 0x00000800,	11,	0, {1, 1, 1, 1} },
-{ MV_SATR_REF_CLOCK_ENABLE,	 0x00000004,	2,	0, {1, 1, 1, 1} },
-{ MV_SATR_TESTER_OPTIONS,	 0x00080000,	19,	0, {1, 1, 1, 1} },
-{ MV_SATR_CPU0_ENDIANESS,	 0x00001000,	12,	0, {1, 1, 1, 1} },
-{ MV_SATR_CPU0_NMFI,		 0x00002000,	13,	0, {1, 1, 1, 1} },
-{ MV_SATR_CPU0_THUMB,		 0x00004000,	14,	0, {1, 1, 1, 1} },
-{ MV_SATR_EFUSE_BYPASS,		 0x00020000,	17,	0, {1, 1, 1, 1} },
-{ MV_SATR_POR_BYPASS,		 0x00100000,	20,	0, {1, 1, 1, 1} },
-{ MV_SATR_BOARD_ID,		 0x000000F0,	4,	1, {1, 1, 1, 1} },
-{ MV_SATR_WRITE_CPU_FREQ,	 0X0000001F,	0,	0, {0, 1, 0, 1} },
-{ MV_SATR_WRITE_CORE_CLK_SELECT, 0x00000001,	0,	1, {0, 1, 0, 1} },
-{ MV_SATR_WRITE_CPU1_ENABLE,	 0x00000002,	1,	1, {0, 1, 0, 1} },
-{ MV_SATR_WRITE_SSCG_DISABLE,	 0x00000004,	2,	1, {0, 1, 0, 1} },
-};
-
-MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = {
-/* {{MV_CONFIG_TYPE_ID ConfigID, MV_U32 Mask,  Offset, expanderNum,  regNum,    isActiveForBoard[]}} */
-	{ MV_CONFIG_MAC0,	       0x3,	0,	 0,		0,	{ 0, 1, 1, 1 } }, /* Exp#0, Reg#0, BITS [0:1] */
-	{ MV_CONFIG_MAC1,	       0xC,	2,	 0,		0,	{ 0, 1, 1, 1 } }, /* Exp#0, Reg#0, BITS [2:3] */
-	{ MV_CONFIG_PON_SERDES,	       0x10,	4,	 0,		0,	{ 0, 1, 1, 1 } }, /* Exp#0, Reg#0, BITS [4]   */
-	{ MV_CONFIG_PON_BEN_POLARITY,  0x20,	5,	 0,		0,	{ 0, 0, 1, 1 } }, /* Exp#0, Reg#0, BITS [5]   */
-	{ MV_CONFIG_SGMII0_CAPACITY,   0x40,	6,	 0,		0,	{ 0, 1, 0, 1 } }, /* Exp#0, Reg#0, BITS [6]   */
-	{ MV_CONFIG_SGMII1_CAPACITY,   0x80,	7,	 0,		0,	{ 0, 1, 1, 1 } }, /* Exp#0, Reg#0, BITS [7]   */
-	{ MV_CONFIG_SLIC_TDM_DEVICE,   0x7,	0,	 0,		1,	{ 0, 1, 1, 1 } }, /* Exp#0, Reg#1, BITS [0:1] */
-	{ MV_CONFIG_LANE1,	       0x18,	3,	 0,		1,	{ 0, 0, 0, 1 } }, /* Exp#0, Reg#1, BITS [2:3] */
-	{ MV_CONFIG_LANE2,	       0x20,	5,	 0,		1,	{ 0, 0, 0, 1 } }, /* Exp#0, Reg#1, BITS [4]   */
-	{ MV_CONFIG_LANE3,	       0X40,	6,	 0,		1,	{ 0, 0, 0, 1 } }, /* Exp#0, Reg#1, BITS [5:6] */
-	{ MV_CONFIG_MAC0_SW_SPEED,     0X80,	7,	 0,		1,	{ 0, 1, 0, 1 } }, /* Exp#0, Reg#1, BITS [5:6] */
-	{ MV_CONFIG_DEVICE_BUS_MODULE, 0x3,	0,	 1,		0,	{ 0, 0, 0, 1 } }, /* Exp#1, Reg#0, BITS [0:1] */
-};
-
-MV_BOARD_IO_EXPANDER_TYPE_INFO db88f6660InfoBoardIOExpanderInfo[] = {
-/* {{MV_CONFIG_TYPE_ID ConfigID,      MV_U32 Offset,	 expanderNum,  regNum,   }} */
-		/* 1st IO Expander Register*/
-	{ MV_IO_EXPANDER_SFP0_TX_DIS,		 0,		 1,	 1},
-	{ MV_IO_EXPANDER_SFP0_PRSNT,		 1,		 1,	 1},
-	{ MV_IO_EXPANDER_SFP0_TX_FAULT,		 2,		 1,	 1},
-	{ MV_IO_EXPANDER_SFP0_LOS,		 3,		 1,	 1},
-	{ MV_IO_EXPANDER_USB_VBUS,		 4,		 1,	 1},
-	{ MV_IO_EXPANDER_MAC0_RJ45_PORT_LED,	 5,		 1,	 1},
-	{ MV_IO_EXPANDER_MAC0_SFP_PORT_LED,	 6,		 1,	 1},
-	{ MV_IO_EXPANDER_PON_PORT_LED,		 7,		 1,	 1},
-		/* 2nd IO Expander Register*/
-	{ MV_IO_EXPANDER_SD_STATUS,		 0,		 2,	 0},
-	{ MV_IO_EXPANDER_SD_WRITE_PROTECT,	 1,		 2,	 0},
-	{ MV_IO_EXPANDER_SFP1_PRSNT,		 2,		 2,	 0},
-	{ MV_IO_EXPANDER_SFP1_TX_FAULT,		 3,		 2,	 0},
-	{ MV_IO_EXPANDER_SFP1_LOS,		 4,		 2,	 0},
-	{ MV_IO_EXPANDER_JUMPER1,		 6,		 2,	 0},
-	{ MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, 7,		 2,	 0},
-		/* 3rd IO Expander Register*/
-	{ MV_IO_EXPANDER_EXT_PHY_SMI_EN,	 0,		 2,	 1},
-	{ MV_IO_EXPANDER_SFP1_TX_DIS,		 1,		 2,	 1},
-	{ MV_IO_EXPANDER_SPI1_CS_MSB0,		 2,		 2,	 1},
-	{ MV_IO_EXPANDER_SPI1_CS_MSB1,		 3,		 2,	 1},
-	{ MV_IO_EXPANDER_MAC1_SFP_PORT_LED,	 4,		 2,	 1},
-	{ MV_IO_EXPANDER_MAC1_RJ45_PORT_LED,	 5,		 2,	 1},
-	{ MV_IO_EXPANDER_INTEG_PHY_PORTS_LED,	 6,		 2,	 1},
-	{ MV_IO_EXPANDER_USB_SUPER_SPEED,	 7,		 2,	 1},
-};
-
-MV_BOARD_IO_EXPANDER_TYPE_INFO db88f6650InfoBoardIOExpanderInfo[] = {
-/* {{MV_CONFIG_TYPE_ID ConfigID,      MV_U32 Offset,	 expanderNum,  regNum,   }} */
-		/* 2nd IO Expander Register*/
-	{ MV_IO_EXPANDER_USB_VBUS,		 0,		 2,	 0},
-	{ MV_IO_EXPANDER_SFP1_PRSNT,		 2,		 2,	 0},
-	{ MV_IO_EXPANDER_SFP1_TX_FAULT,		 3,		 2,	 0},
-	{ MV_IO_EXPANDER_SFP1_LOS,		 4,		 2,	 0},
-	{ MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, 6,		 2,	 0},
-	{ MV_IO_EXPANDER_JUMPER3,		 7,		 2,	 0},
-		/* 3rd IO Expander Register*/
-	{ MV_IO_EXPANDER_EXT_PHY_SMI_EN,	 0,		 2,	 1},
-	{ MV_IO_EXPANDER_SFP1_TX_DIS,		 1,		 2,	 1},
-	{ MV_IO_EXPANDER_MAC0_RJ45_PORT_LED,	 2,		 2,	 1},
-	{ MV_IO_EXPANDER_PON_PORT_LED,		 3,		 2,	 1},
-	{ MV_IO_EXPANDER_MAC1_SFP_PORT_LED,	 4,		 2,	 1},
-	{ MV_IO_EXPANDER_MAC1_RJ45_PORT_LED,	 5,		 2,	 1},
-	{ MV_IO_EXPANDER_INTEG_PHY_PORTS_LED,	 6,		 2,	 1},
-};
-
 /*******************************************************************************
  * AvantaLP DB-88F6660 board */
 /*******************************************************************************/
@@ -231,8 +136,6 @@ MV_BOARD_INFO db88f6660_board_info = {
 	.intsGppMaskHigh		= 0,
 	.numBoardDeviceIf		= ARRSZ(db88f6660InfoBoardDeCsInfo),
 	.pDevCsInfo			= db88f6660InfoBoardDeCsInfo,
-	.numBoardIoExpanderInfo		= ARRSZ(db88f6660InfoBoardIOExpanderInfo),
-	.pBoardIoExpanderInfo		= db88f6660InfoBoardIOExpanderInfo,
 	.numBoardTwsiDev		= ARRSZ(db88f6660InfoBoardTwsiDev),
 	.pBoardTwsiDev			= db88f6660InfoBoardTwsiDev,
 	.numBoardMacInfo		= ARRSZ(db88f6660InfoBoardMacInfo),
@@ -348,8 +251,6 @@ MV_BOARD_INFO db88f6650_board_info = {
 	.intsGppMaskHigh		= 0,
 	.numBoardDeviceIf		= ARRSZ(db88f6650InfoBoardDeCsInfo),
 	.pDevCsInfo			= db88f6650InfoBoardDeCsInfo,
-	.numBoardIoExpanderInfo		= ARRSZ(db88f6650InfoBoardIOExpanderInfo),
-	.pBoardIoExpanderInfo		= db88f6650InfoBoardIOExpanderInfo,
 	.numBoardTwsiDev		= ARRSZ(db88f6650InfoBoardTwsiDev),
 	.pBoardTwsiDev			= db88f6650InfoBoardTwsiDev,
 	.numBoardMacInfo		= ARRSZ(db88f6650InfoBoardMacInfo),

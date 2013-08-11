@@ -163,9 +163,6 @@ int sp_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U32 host = 0;
 
-#if defined(MV88F78X60)
-	MV_BOARD_PEX_INFO       *boardPexInfo = mvBoardPexInfoGet();
-#endif
 	MV_U32 pexHWInf = 0;
 
 	if (argc > 1)
@@ -176,11 +173,7 @@ int sp_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 1;
 	}
 
-#if defined(MV88F78X60)
-	pexHWInf = boardPexInfo->pexMapping[host];
-#else
 	pexHWInf = host;
-#endif
 
 	printf("scanning pex number: %d\n", pexHWInf);
 	if ( scanPci(pexHWInf) == MV_FALSE)
@@ -225,9 +218,6 @@ int se_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U32 host = 0, dev = 0, bus = 0;
 
-#if defined(MV88F78X60)
-	MV_BOARD_PEX_INFO       *boardPexInfo = mvBoardPexInfoGet();
-#endif
 	MV_U32 pexHWInf = 0;
 
 	if (argc != 4) {
@@ -244,11 +234,7 @@ int se_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 1;
 	}
 
-#if defined(MV88F78X60)
-	pexHWInf = boardPexInfo->pexMapping[host];
-#else
 	pexHWInf = host;
-#endif
 
 	if (mvPexSlaveEnable(pexHWInf, bus, dev, MV_TRUE) == MV_OK)
 		printf("PCI %d Bus %d Slave 0x%x enabled.\n", host, bus, dev);
@@ -274,9 +260,6 @@ int mapPci_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	MV_TARGET target = 0;
 	MV_U32 host = 0, effectiveBaseAddress = 0;
 
-#if defined(MV88F78X60)
-	MV_BOARD_PEX_INFO       *boardPexInfo = mvBoardPexInfoGet();
-#endif
 	MV_U32 pexHWInf = 0;
 
 	pciWin.baseLow = 0;
@@ -293,11 +276,7 @@ int mapPci_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 1;
 	}
 
-#if defined(MV88F78X60)
-	pexHWInf = boardPexInfo->pexMapping[host];
-#else
 	pexHWInf = host;
-#endif
 
 	target = PCI0_MEM0 + (2 * pexHWInf);
 
@@ -442,20 +421,12 @@ static void mv_pci_bus_mode_display(MV_U32 host)
 		return;
 	}
 
-#if defined(MV88F78X60)
-	pexHWInf = boardPexInfo->pexMapping[host];
-#else
 	pexHWInf = host;
-#endif
 
 	if (mvPexModeGet(pexHWInf, &pexMode) != MV_OK)
 		printf("mv_pci_bus_mode_display: mvPexModeGet failed\n");
 
-#if defined(MV88F78X60)
-	printf("PEX %d.%d(%d): ", (pexHWInf < 8) ? (pexHWInf / 4) : (pexHWInf - 6), (pexHWInf < 8) ? (pexHWInf % 4) : 0, host);
-#else
 	printf("PEX %d: ", host);
-#endif
 
 	switch (pexMode.pexType) {
 	case MV_PEX_ROOT_COMPLEX:
@@ -557,11 +528,7 @@ void pci_init_board(void)
 	for (pexIf = 0; pexIf < activePexCount; pexIf++) {
 		pci = &pci_hose[pexIf];
 
-#if defined(MV88F78X60)
-		pexHWInf = boardPexInfo->pexMapping[pexIf];
-#else
 		pexHWInf = pexIf;
-#endif
 		DB(printf("Starting scan of PEX%d\n", pexHWInf));
 
 		/* Set bus numbers in U-BOOT stack */
@@ -575,12 +542,9 @@ void pci_init_board(void)
 
 		pci->config_table = mv_config_table;
 
-#if !defined(MV88F78X60)
 		/* Check if PEX IF is powered */
 		if (MV_FALSE == mvCtrlPwrClckGet(PEX_UNIT_ID, pexHWInf))
 			continue;
-
-#endif
 
 		/* Set device or host mode */
 #if defined(MV_INCLUDE_PEX)
@@ -622,7 +586,7 @@ void pci_init_board(void)
 					printf("pci_init_board:Error calling mvPexLocalBusNumSet for pexIf %d\n", pexIf);
 			}else  {
 				/* Interface with no link */
-				printf("PEX %d.%d(%d): Detected No Link.\n", (pexHWInf < 8) ? (pexHWInf / 4) : (pexHWInf - 6), (pexHWInf < 8) ? (pexHWInf % 4) : 0, pexIf);
+				printf("PEX %d: Detected No Link.\n", pexIf);
 				continue;
 			}
 		}

@@ -431,7 +431,7 @@ extern unsigned int mvTclkGet(void);
 /*
  * Linux boot and other
  */
-#define MV_BOOTARGS_END         ":10.4.50.254:255.255.255.0:AvantaLP:eth4:none"
+#define MV_BOOTARGS_END         ":10.4.50.254:255.255.255.0:AvantaLP:eth0:none"
 #define MV_BOOTARGS_END_SWITCH  ":::AvantaLP:eth0:none"
 #define RCVR_IP_ADDR            "169.254.100.100"
 	#define RCVR_LOAD_ADDR          "0x02000000"

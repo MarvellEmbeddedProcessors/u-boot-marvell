@@ -285,10 +285,10 @@ typedef enum {
 #define MV_GROUP_1_TYPE         MV_GROUP_0_TYPE
 
 #define MPP_GROUP_2_TYPE { \
-	0x00000022,     /* SLIC_DISABLED  */ \
-	0x33030022,     /* SLIC_SSI_DEV  */ \
-	0x11110022,     /* SLIC_ISI_DEV  */ \
-	0x44440022,     /* SLIC_ZSI_DEV  */ \
+	0x00002222,     /* SLIC_DISABLED  */ \
+	0x33032222,     /* SLIC_SSI_DEV  */ \
+	0x11112222,     /* SLIC_ISI_DEV  */ \
+	0x44442222,     /* SLIC_ZSI_DEV  */ \
 	0x22222222,     /* SLIC_EXTERNAL_DEV	*/ \
 }
 

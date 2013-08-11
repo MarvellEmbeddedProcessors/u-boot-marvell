@@ -27,20 +27,49 @@ void recoveryHandle(cmd_tbl_t *cmdtp)
 	char cmd[256];
 	char img[10];
 	char * args_to_func[3];
+	char *str, *strStart, *strEnd, *strSize = NULL;
+	MV_U32 uImageAddr;
 
-	args_to_func[0]="tftp";
-	args_to_func[1]=getenv("loadaddr");;
-	args_to_func[2]=getenv("rcvr_image");
+	/* read 'mtdparts' to extract load address of uImage from NAND - in linux partition */
+	str = getenv("mtdparts");
+	if (!str) {
+		mvOsPrintf("%s:Error: requested variable ('mtdparts') does not exists.\n",__func__);
+		return;
+	}
+
+	/* expected syntax for example :"mtdparts=armada-nand:4m(boot)ro,8m@4m(kernel),-(rootfs)" */
+	strStart = strchr(str, ':') + 1;
+	strEnd = strchr(strStart, 'm');
+	if (strStart == NULL || strEnd == NULL) {
+		mvOsPrintf("%s:Error: Incorrect format of 'mtdparts' variable.\n",__func__);
+		return;
+	}
+	strncpy(strSize , strStart, (strEnd - strStart));
+	uImageAddr = simple_strtoul(strSize, NULL, 0) * _1M;
+	sprintf(cmd, "setenv bootargs ${console} ubi.mtd=2 root=ubi0:rootfsU rootfstype=ubifs ${mvNetConfig}; nand read.e ${loadaddr} 0x%x 0x400000; bootm ${loadaddr};", uImageAddr);
+
+	/* Load recovery image from tftp, according to env. variables */
+	args_to_func[0] = "tftp";
+	args_to_func[1] = getenv("loadaddr");;
+	args_to_func[2] = getenv("rcvr_image");
+	if ( !args_to_func[1] || !args_to_func[2]) {
+		mvOsPrintf("%s:Error: requested variables ('loadaddr' and 'rcvr_image' ) does not exists.\n",__func__);
+		return;
+	}
+
 	do_tftpb(cmdtp, 1, 3,args_to_func);
 	mvOsDelay(100);
 
-	setenv("bootcmd","setenv bootargs ${console} ubi.mtd=2 root=ubi0:rootfsU rootfstype=ubifs ${mvNetConfig}; nand read.e ${loadaddr} 0x200000 0x400000; bootm ${loadaddr};");
+	/* after loading image and setting recovery boot command, save it for after reset */
+	setenv("bootcmd",cmd);
 	setenv("console","console=ttyS0,115200");
 	saveenv();
 
 	printf("\nPermanent bootcmd: %s\n", getenv("bootcmd"));
 	printf("\nPermanent console: %s\n", getenv("console"));
 
+
+	/* set temporary boot command, for recorvery process usage only */
 	sprintf(cmd,"setenv bootargs ${console} root=/dev/ram0 ${mvNetConfig} recovery=static rcvrip=%s:%s%s  ethact=${ethact} ethaddr=%s eth1addr=%s; bootm ${loadaddr};", getenv("ipaddr"), getenv("serverip"), getenv("bootargs_end"), getenv("ethaddr"), getenv("eth1addr"));
 	setenv("bootcmd", cmd);
 	printf("\nRecovery bootcmd: %s\n", cmd);

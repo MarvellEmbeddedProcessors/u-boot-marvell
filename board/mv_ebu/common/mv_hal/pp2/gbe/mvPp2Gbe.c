@@ -1637,3 +1637,49 @@ MV_STATUS   mvPp2TxpMaxTxSizeSet(int port, int txp, int maxTxSize)
 	}
 	return MV_OK;
 }
+
+/* Function for swithcing SWF to HWF */
+/* txq is physical (global) txq in range 0..MV_PP2_TXQ_TOTAL_NUM */
+/* txq is physical (global) rxq in range 0..MV_ETH_RXQ_TOTAL_NUM */
+
+MV_STATUS mvPp2FwdSwitchCtrl(MV_U32 flowId, int txq, int rxq, int msec)
+{
+	MV_U32 regVal;
+	int timeout, max;
+
+	/* Check validity of parameters */
+	if (mvPp2MaxCheck(txq, MV_PP2_TXQ_TOTAL_NUM, "global txq"))
+		return MV_BAD_PARAM;
+
+	if (mvPp2MaxCheck(rxq, MV_ETH_RXQ_TOTAL_NUM, "global rxq"))
+		return MV_BAD_PARAM;
+
+	timeout = MV_PP2_FWD_SWITCH_TIMEOUT_MAX * 1024;
+	max = timeout / (mvPp2HalData.tClk / 1000);
+	if (mvPp2MaxCheck(msec, max + 1, "timeout msec"))
+		return MV_BAD_PARAM;
+
+	mvPp2WrReg(MV_PP2_FWD_SWITCH_FLOW_ID_REG, flowId);
+	timeout = ((mvPp2HalData.tClk / 1000) * msec) / 1024;
+	regVal = MV_PP2_FWD_SWITCH_TXQ_VAL(txq) | MV_PP2_FWD_SWITCH_RXQ_VAL(rxq) |
+		MV_PP2_FWD_SWITCH_TIMEOUT_VAL(timeout);
+	mvPp2WrReg(MV_PP2_FWD_SWITCH_CTRL_REG, regVal);
+
+	return MV_OK;
+}
+
+int       mvPp2FwdSwitchStatus(int *hwState, int *msec)
+{
+	MV_U32 regVal, cycles;
+
+	regVal = mvPp2RdReg(MV_PP2_FWD_SWITCH_STATUS_REG);
+	if (hwState)
+		*hwState = (regVal & MV_PP2_FWD_SWITCH_STATE_MASK) >> MV_PP2_FWD_SWITCH_STATE_OFFS;
+
+	cycles = (regVal & MV_PP2_FWD_SWITCH_TIMER_MASK) >> MV_PP2_FWD_SWITCH_TIMER_OFFS;
+	cycles *= 1024;
+	if (msec)
+		*msec = cycles / (mvPp2HalData.tClk / 1000);
+
+	return (regVal & MV_PP2_FWD_SWITCH_STATUS_MASK) >> MV_PP2_FWD_SWITCH_STATUS_OFFS;
+}

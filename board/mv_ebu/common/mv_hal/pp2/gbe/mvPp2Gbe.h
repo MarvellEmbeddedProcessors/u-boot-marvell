@@ -597,6 +597,11 @@ MV_STATUS mvPp2TxqBurstSet(int port, int txp, int txq, int burst);
 MV_STATUS mvPp2TxqFixPrioSet(int port, int txp, int txq);
 MV_STATUS mvPp2TxqWrrPrioSet(int port, int txp, int txq, int weight);
 
+/* Function for swithcing SWF to HWF */
+MV_STATUS mvPp2FwdSwitchCtrl(MV_U32 flowId, int txq, int rxq, int usec);
+int       mvPp2FwdSwitchStatus(int *hwState, int *usec);
+void      mvPp2FwdSwitchRegs(void);
+
 /*****************************/
 /*      Interrupts API       */
 /*****************************/

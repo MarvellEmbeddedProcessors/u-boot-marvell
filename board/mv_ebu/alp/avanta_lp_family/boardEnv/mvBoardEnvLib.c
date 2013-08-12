@@ -945,6 +945,12 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 
 	/* Update MPP group types and values according to board configuration */
 	mvBoardMppIdUpdate();
+
+	/* If needed, enable SFP0 TX for SGMII, for DB-6660 */
+	if (mvBoardIdGet() == DB_6660_ID) {
+		if (ethComplex & MV_ETHCOMP_GE_MAC0_2_COMPHY_2)
+			mvBoardSgmiiSfp0TxSet(MV_TRUE);
+	}
 }
 
 /*******************************************************************************
@@ -2418,11 +2424,40 @@ MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass,
 MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable)
 {
 	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
-	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_EXT_PHY_SMI_EN, &ioInfo) == MV_OK)
-		return mvBoardIoExpValSet(&ioInfo, (enable ? 0x0 : 0x1));
+	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_EXT_PHY_SMI_EN, &ioInfo) != MV_OK) {
+		mvOsPrintf("%s: Error: Write to IO expander failed (External Phy SMI Buffer select)\n", __func__);
+		return MV_ERROR;
+	}
 
-	mvOsPrintf("%s: Error: Write to IO expander failed (External Phy Buffer select)\n", __func__);
-	return MV_FALSE;
+	return mvBoardIoExpValSet(&ioInfo, (enable ? 0x0 : 0x1));
+}
+
+/*******************************************************************************
+* mvBoardSgmiiSfp0TxSet - enable/disable SGMII_SFP0_TX_DISABLE status
+*
+* DESCRIPTION:
+*	This function enables/disables the field status.
+*
+* INPUT:
+*	enable - Boolean to indicate requested status
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_STATUS mvBoardSgmiiSfp0TxSet(MV_BOOL enable)
+{
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
+
+	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_SFP0_TX_DIS, &ioInfo) != MV_OK) {
+		mvOsPrintf("%s: Error: Write to IO expander failed (SFP0_TX_DIS)\n", __func__);
+		return MV_ERROR;
+	}
+
+	return mvBoardIoExpValSet(&ioInfo, (enable ? 0x0 : 0x1));
 }
 
 /*******************************************************************************

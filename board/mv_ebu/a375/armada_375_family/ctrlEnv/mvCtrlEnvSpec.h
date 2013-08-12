@@ -91,6 +91,7 @@ extern "C" {
 #define MV_GPP_REGS_OFFSET(unit)                (0x18100 + ((unit) * 0x40))
 #define MV_MISC_REGS_OFFSET                     (0x18200)
 #define MV_COMMON_PHY_REGS_OFFSET               (0x18300)
+#define MV_IP_CONFIG_REGS_OFFSET                (0x18400)
 #define MV_CLK_CMPLX_REGS_OFFSET        	(0x18700)
 #define MV_ETH_COMPLEX_OFFSET			(0x18900)
 #define MV_MBUS_REGS_OFFSET                     (0x20000)
@@ -131,6 +132,7 @@ extern "C" {
 #define MV_PEX_IF_REGS_OFFSET(pexIf)            (pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000) \
 						 : (0x42000 + ((pexIf) % 8) * 0x40000))
 #define MV_USB_REGS_OFFSET(dev)                 (0x50000)
+#define MV_USB3_REGS_OFFSET(dev)                (0x5FF80)
 #define MV_XOR_REGS_OFFSET(unit)                (0x60800)
 #define MV_CESA_TDMA_REGS_OFFSET(chanNum)       (0x90000 + (chanNum * 0x2000))
 #define MV_CESA_REGS_OFFSET(chanNum)            (0x9D000 + (chanNum * 0x2000))
@@ -454,9 +456,10 @@ typedef enum _mvTarget {
 	SPI_CS7,	/* 21 SPI_CS7			*/
 	BOOT_ROM_CS,	/* 22 BOOT_ROM_CS		*/
 	DEV_BOOCS,	/* 23 DEV_BOOCS			*/
-	CRYPT0_ENG,	/* 24 Crypto0 Engine		*/
-	PP2_CPU0,	/* 25 PP2 - CPU 0		*/
-	PP2_CPU1,	/* 26 PP2 - CPU 1		*/
+	USB3,           /* 24 USB3                      */
+	CRYPT0_ENG,     /* 25 Crypto0 Engine            */
+	PP2_CPU0,	/* 26 PP2 - CPU 0		*/
+	PP2_CPU1,	/* 27 PP2 - CPU 1		*/
 	MAX_TARGETS
 } MV_TARGET;
 
@@ -500,6 +503,7 @@ typedef enum _mvTarget {
 	{ 0xDF, DEV_TARGET_ID	},		/* SPI_CS7               */ \
 	{ MAIN_BOOT_ATTR, DEV_TARGET_ID },	/* Main Boot device      */ \
 	{ SEC_BOOT_ATTR, DEV_TARGET_ID  },	/* Secondary Boot device */ \
+	{ 0x00, USB3_TARGET_ID },               /* USB3                  */ \
 	{ 0x01, CRYPT_TARGET_ID	},		/* CRYPT_ENG0            */ \
 	{ 0x00, PP2_TARGET_ID	},		/* PP2 - CPU 0           */ \
 	{ 0x01, PP2_TARGET_ID	},		/* PP2 - CPU 1           */ \
@@ -531,6 +535,7 @@ typedef enum _mvTarget {
 	"SPI_CS7",		/* SPI_CS7 */		\
 	"BOOT_ROM_CS",		/* BOOT_ROM_CS */	\
 	"DEV_BOOTCS",		/* DEV_BOOCS */		\
+	"USB3",                 /* USB3 */              \
 	"CRYPT1_ENG",		/* CRYPT1_ENG */	\
 	"PP2 - CPU 0",		/* PP2 - CPU 0 */	\
 	"PP2 - CPU 1"		/* PP2 - CPU 1 */	\

@@ -160,20 +160,20 @@
 *******************************************************************************/
 #define RD_88F6660_MPP0_7               0x55555555  /* NAND */
 #define RD_88F6660_MPP8_15              0x22555555  /* NAND , I2C */
-#define RD_88F6660_MPP16_23             0x11110022  /* UA0, SSI, GPIO's */
-#define RD_88F6660_MPP24_31             0x04606101  /* PCIe0CLKREQ, P0,C0_Leds & DYING GASP */
-#define RD_88F6660_MPP32_39             0x04420000  /* GE_SMI, PON & GPIO's */
-#define RD_88F6660_MPP40_47             0x22120020  /* GE0, PON_[XVR,TX_PD,TX_SD] */
+#define RD_88F6660_MPP16_23             0x22222222  /* UA0, TDM */
+#define RD_88F6660_MPP24_31             0x33333333  /* SDIO, SPI1 */
+#define RD_88F6660_MPP32_39             0x00023330  /* SD_Stat (GPIO_input), SPI1,PON BEN, 3xGPIOs  */
+#define RD_88F6660_MPP40_47             0x22122220  /* GPIO, Dying, SATA_PRESENT,PON_TX_[PD,SD], GE0*/
 #define RD_88F6660_MPP48_55             0x22222222  /* GE0 */
-#define RD_88F6660_MPP56_63             0x44004422  /* GE0 , LED, GPIO's */
+#define RD_88F6660_MPP56_63             0x44444422  /* GE0 , C0_LED */
 #define RD_88F6660_MPP64_67             0x004	    /* GPIO's */
 
-#define RD_88F6660_GPP_OUT_ENA_LOW      (~(BIT19 | BIT25))
-#define RD_88F6660_GPP_OUT_ENA_MID      0xFFFFFFFF
-#define RD_88F6660_GPP_OUT_ENA_HIGH     0xFFFFFFFF
-#define RD_88F6660_GPP_OUT_VAL_LOW      (BIT19 | BIT25)
+#define RD_88F6660_GPP_OUT_ENA_LOW      0xFFFFFFFF
+#define RD_88F6660_GPP_OUT_ENA_MID      (~(BIT7 | BIT8 | BIT11))
+#define RD_88F6660_GPP_OUT_ENA_HIGH     (~(BIT0 | BIT1))
+#define RD_88F6660_GPP_OUT_VAL_LOW      0x0
 #define RD_88F6660_GPP_OUT_VAL_MID      0x0
-#define RD_88F6660_GPP_OUT_VAL_HIGH     0x0
+#define RD_88F6660_GPP_OUT_VAL_HIGH     (BIT0)
 #define RD_88F6660_GPP_POL_LOW          0x0
 #define RD_88F6660_GPP_POL_MID          0x0
 #define RD_88F6660_GPP_POL_HIGH         0x0
@@ -194,7 +194,7 @@
 #define RD_88F6650_GPP_OUT_ENA_LOW      (~(BIT19 | BIT25))
 #define RD_88F6650_GPP_OUT_ENA_MID      0xFFFFFFFF
 #define RD_88F6650_GPP_OUT_ENA_HIGH     0xFFFFFFFF
-#define RD_88F6650_GPP_OUT_VAL_LOW      (BIT19 | BIT25)
+#define RD_88F6650_GPP_OUT_VAL_LOW      0x0
 #define RD_88F6650_GPP_OUT_VAL_MID      0x0
 #define RD_88F6650_GPP_OUT_VAL_HIGH     0x0
 #define RD_88F6650_GPP_POL_LOW          0x0

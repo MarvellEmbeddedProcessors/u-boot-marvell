@@ -46,7 +46,7 @@ void recoveryHandle(cmd_tbl_t *cmdtp)
 	}
 	strncpy(strSize , strStart, (strEnd - strStart));
 	uImageAddr = simple_strtoul(strSize, NULL, 0) * _1M;
-	sprintf(cmd, "setenv bootargs ${console} ubi.mtd=2 root=ubi0:rootfsU rootfstype=ubifs ${mvNetConfig}; nand read.e ${loadaddr} 0x%x 0x400000; bootm ${loadaddr};", uImageAddr);
+	sprintf(cmd, "setenv bootargs ${console} ${mtdparts} ubi.mtd=2 root=ubi0:rootfsU rootfstype=ubifs ${mvNetConfig}; nand read.e ${loadaddr} 0x%x 0x400000; bootm ${loadaddr};", uImageAddr);
 
 	/* Load recovery image from tftp, according to env. variables */
 	args_to_func[0] = "tftp";
@@ -70,7 +70,7 @@ void recoveryHandle(cmd_tbl_t *cmdtp)
 
 
 	/* set temporary boot command, for recorvery process usage only */
-	sprintf(cmd,"setenv bootargs ${console} root=/dev/ram0 ${mvNetConfig} recovery=static rcvrip=%s:%s%s  ethact=${ethact} ethaddr=%s eth1addr=%s; bootm ${loadaddr};", getenv("ipaddr"), getenv("serverip"), getenv("bootargs_end"), getenv("ethaddr"), getenv("eth1addr"));
+	sprintf(cmd,"setenv bootargs ${console} ${mtdparts} root=/dev/ram0 ${mvNetConfig} recovery=static rcvrip=%s:%s%s  ethact=${ethact} ethaddr=%s eth1addr=%s; bootm ${loadaddr};", getenv("ipaddr"), getenv("serverip"), getenv("bootargs_end"), getenv("ethaddr"), getenv("eth1addr"));
 	setenv("bootcmd", cmd);
 	printf("\nRecovery bootcmd: %s\n", cmd);
 

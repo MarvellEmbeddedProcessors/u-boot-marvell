@@ -2104,7 +2104,79 @@ err_cfg:
 	return MV_ERROR;
 
 }
+/*******************************************************************************
+* mvCtrlGetPexActive
+*
+* DESCRIPTION:
+*	fill input boolean array of pex interface
+*
+* INPUT:
+*       pPexActive - pointer to boolean array (size is max pex IF).
+*	size	   - array size
+*
+* OUTPUT:
+*        boolean array - true or false if pex exists
+*
+* RETURN:
+*       None
+*
+*******************************************************************************/
+void mvCtrlGetPexActive(MV_BOOL *pPexActive, int size)
+{
+	MV_U32	pexIf, i;
+	MV_BOARD_PEX_INFO	*boardPexInfo = mvBoardPexInfoGet();
 
+	if (size == 0)
+		return;
+
+	memset(pPexActive, MV_FALSE, size * sizeof(MV_BOOL));
+	for (i = 0; i < boardPexInfo->boardPexIfNum; i++) {
+		pexIf = boardPexInfo->pexMapping[i];
+		if (pexIf < size)
+			pPexActive[pexIf] = MV_TRUE;
+	}
+}
+#if defined(MV_INCLUDE_INTEG_SATA)
+/*******************************************************************************
+* mvCtrlGetSataActive
+*
+* DESCRIPTION:
+*	fill input boolean array of SATA interface
+*
+* INPUT:
+*       pSataAtive - pointer to boolean array.
+*	size	   - array size
+*
+* OUTPUT:
+*        boolean array - true or false if integrated SATA exists
+*
+* RETURN:
+*       None
+*
+*******************************************************************************/
+void mvCtrlGetSataActive(MV_BOOL *pSataAtive, int size)
+{
+	MV_U32	serdesLine0_7;
+	MV_U32	serdesLineCfg;
+	MV_U8	serdesLineNum;
+
+	if (size <= 0)
+		return;
+	pSataAtive[0] = MV_FALSE;
+	if (size > 1)
+		pSataAtive[1] = MV_FALSE;
+	serdesLine0_7 = MV_REG_READ(SERDES_LINE_MUX_REG_0_7);
+	for (serdesLineNum = 4; serdesLineNum < 7; serdesLineNum++) {
+		serdesLineCfg = (serdesLine0_7 >> (serdesLineNum << 2)) & 0xF;
+		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SATA]) {
+			if ((serdesLineNum == 4) || (serdesLineNum == 6))
+				pSataAtive[0] = MV_TRUE;
+			else if ((serdesLineNum == 5) && (size > 1))
+				pSataAtive[1] = MV_TRUE;
+		}
+	}
+}
+#endif
 /*******************************************************************************
 * mvCtrlGetJuncTemp
 *

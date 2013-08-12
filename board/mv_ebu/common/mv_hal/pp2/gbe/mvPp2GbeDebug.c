@@ -165,50 +165,6 @@ MV_VOID mvPp2DescMgrRegsTxPrint(void)
 	mvOsPrintf("\n");
 }
 
-MV_VOID mvPp2DescMgrRegsAggrTxPrint(void)
-{
-	MV_U32 val, val1, val2;
-	int i;
-
-	mvOsPrintf("--- %s ---\n\n", __func__);
-
-	for (i = 0; i < CONFIG_NR_CPUS; i++) {
-		mvOsPrintf("CPU %d:\n", i);
-		mvPp2WrReg(MV_PP2_TXQ_NUM_REG, i);
-		val1 = mvPp2RdReg(MV_PP2_AGGR_TXQ_DESC_ADDR_REG(i));
-		val = mvPp2RdReg(MV_PP2_AGGR_TXQ_DESC_SIZE_REG(i));
-		val2 = mvPp2RdReg(MV_PP2_AGGR_TXQ_STATUS_REG(i));
-		mvOsPrintf("   addr reg: 0x%x,   size reg: 0x%x,  status reg: 0x%x\n", val1, val, val2);
-		mvOsPrintf("   * address: %d,  size: %d,   pending: %d\n", val1, val, val2);
-	}
-	mvOsPrintf("\n");
-}
-
-MV_VOID mvPp2AddressDecodeRegsPrint(void)
-{
-	MV_U32 val;
-	int i;
-
-	mvOsPrintf("--- %s ---\n\n", __func__);
-
-	for (i = 0; i < ETH_MAX_DECODE_WIN; i++) {
-		mvOsPrintf("window %d:\n", i);
-		val = mvPp2RdReg(ETH_WIN_BASE_REG(i));
-		mvOsPrintf("   win base reg: 0x%x\n", val);
-		mvOsPrintf("   * target :%d,  attr: %d,  base addr: %d\n", val & ETH_WIN_TARGET_MASK,
-			(val & ETH_WIN_ATTR_MASK) >> ETH_WIN_ATTR_OFFS, (val & ETH_WIN_BASE_MASK) >> ETH_WIN_BASE_OFFS);
-
-		val = mvPp2RdReg(ETH_WIN_SIZE_REG(i));
-		mvOsPrintf("   win size reg: 0x%x\n", val);
-		mvOsPrintf("   * size: %d\n", (val & ETH_WIN_SIZE_MASK) >> ETH_WIN_SIZE_OFFS);
-		val = mvPp2RdReg(ETH_WIN_REMAP_REG(i));
-	}
-
-	val = mvPp2RdReg(ETH_BASE_ADDR_ENABLE_REG);
-	mvOsPrintf("base addr enable reg: 0x%x\n", val);
-	mvOsPrintf("\n");
-}
-
 static void mvPp2QueueShow(MV_PP2_QUEUE_CTRL *pQueueCtrl, int mode, int isTxq)
 {
 	mvOsPrintf("pFirst=%p (0x%x), numOfDescr=%d\n",
@@ -501,6 +457,15 @@ void mvPp2TxSchedRegs(int port, int txp)
 		mvPp2PrintReg(MV_PP2_TXQ_SCHED_TOKEN_SIZE_REG(txq), "MV_PP2_TXQ_SCHED_TOKEN_SIZE_REG");
 		mvPp2PrintReg(MV_PP2_TXQ_SCHED_TOKEN_CNTR_REG(txq), "MV_PP2_TXQ_SCHED_TOKEN_CNTR_REG");
 	}
+}
+
+void      mvPp2FwdSwitchRegs(void)
+{
+	mvOsPrintf("\n[FWD Switch registers]\n");
+
+	mvPp2PrintReg(MV_PP2_FWD_SWITCH_FLOW_ID_REG, "MV_PP2_FWD_SWITCH_FLOW_ID_REG");
+	mvPp2PrintReg(MV_PP2_FWD_SWITCH_CTRL_REG, "MV_PP2_FWD_SWITCH_CTRL_REG");
+	mvPp2PrintReg(MV_PP2_FWD_SWITCH_STATUS_REG, "MV_PP2_FWD_SWITCH_STATUS_REG");
 }
 
 void mvPp2BmPoolRegs(int pool)

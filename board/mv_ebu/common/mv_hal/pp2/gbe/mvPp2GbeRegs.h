@@ -137,7 +137,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*-------------------------------------------------------------------------------*/
 
 #define MV_PP2_RX_CTRL_REG(port)		(MV_PP2_REG_BASE + 0x140 + 4 * (port))
-/************************** Dsecriptor Manager Top Registers ******************************/
+
+/************************** Descriptor Manager Top Registers ******************************/
 
 #define MV_PP2_RXQ_NUM_REG			(MV_PP2_REG_BASE + 0x2040)
 
@@ -254,8 +255,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_PP2_TRANSMITTED_COUNT_MASK		(0x3FFF << MV_PP2_TRANSMITTED_COUNT_OFFSET)
 /*-------------------------------------------------------------------------------*/
 
-
-/*-------------------------------------------------------------------------------*/
 #define MV_PP2_AGGR_TXQ_DESC_ADDR_REG(cpu)	(MV_PP2_REG_BASE + 0x2100 + 4 * (cpu))
 
 #define MV_PP2_AGGR_TXQ_DESC_SIZE_REG(cpu)	(MV_PP2_REG_BASE + 0x2140 + 4 * (cpu))
@@ -269,6 +268,53 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*-------------------------------------------------------------------------------*/
 
 #define MV_PP2_AGGR_TXQ_INDEX_REG(cpu)		(MV_PP2_REG_BASE + 0x21c0 + 4 * (cpu))
+/*-------------------------------------------------------------------------------*/
+
+/* Registers for HWF to SWF switching */
+#define MV_PP2_FWD_SWITCH_FLOW_ID_REG		(MV_PP2_REG_BASE + 0x2200)
+
+#define MV_PP2_FWD_SWITCH_CTRL_REG		(MV_PP2_REG_BASE + 0x2204)
+
+#define MV_PP2_FWD_SWITCH_TXQ_OFFS		0
+#define MV_PP2_FWD_SWITCH_TXQ_MAX		255
+#define MV_PP2_FWD_SWITCH_TXQ_MASK              (255 << MV_PP2_FWD_SWITCH_TXQ_OFFS)
+#define MV_PP2_FWD_SWITCH_TXQ_VAL(txq)		(((txq) << MV_PP2_FWD_SWITCH_TXQ_OFFS) & \
+							MV_PP2_FWD_SWITCH_TXQ_MASK)
+
+#define MV_PP2_FWD_SWITCH_RXQ_OFFS		8
+#define MV_PP2_FWD_SWITCH_RXQ_MAX		255
+#define MV_PP2_FWD_SWITCH_RXQ_MASK              (255 << MV_PP2_FWD_SWITCH_RXQ_OFFS)
+#define MV_PP2_FWD_SWITCH_RXQ_VAL(rxq)		(((rxq) << MV_PP2_FWD_SWITCH_RXQ_OFFS) & \
+							MV_PP2_FWD_SWITCH_RXQ_MASK)
+
+#define MV_PP2_FWD_SWITCH_TIMEOUT_OFFS		16
+#define MV_PP2_FWD_SWITCH_TIMEOUT_BITS		10
+#define MV_PP2_FWD_SWITCH_TIMEOUT_MAX		((1 << MV_PP2_FWD_SWITCH_TIMEOUT_BITS) - 1)
+#define MV_PP2_FWD_SWITCH_TIMEOUT_MASK          (MV_PP2_FWD_SWITCH_TIMEOUT_MAX << MV_PP2_FWD_SWITCH_TIMEOUT_OFFS)
+#define MV_PP2_FWD_SWITCH_TIMEOUT_VAL(time)	(((time) << MV_PP2_FWD_SWITCH_TIMEOUT_OFFS) & \
+							MV_PP2_FWD_SWITCH_TIMEOUT_MASK)
+
+#define MV_PP2_FWD_SWITCH_STATUS_REG		(MV_PP2_REG_BASE + 0x2208)
+
+#define MV_PP2_FWD_SWITCH_STATE_OFFS		0
+#define MV_PP2_FWD_SWITCH_STATE_MASK		(0x7 << MV_PP2_FWD_SWITCH_STATE_OFFS)
+
+#define MV_PP2_FWD_SWITCH_STATUS_OFFS		4
+#define MV_PP2_FWD_SWITCH_STATUS_MASK		(0x3 << MV_PP2_FWD_SWITCH_STATUS_OFFS)
+
+#define MV_PP2_FWD_SWITCH_TIMER_OFFS		16
+#define MV_PP2_FWD_SWITCH_TIMER_BITS		10
+#define MV_PP2_FWD_SWITCH_TIMER_MAX		((1 << MV_PP2_FWD_SWITCH_TIMER_BITS) - 1)
+#define MV_PP2_FWD_SWITCH_TIMER_MASK		(MV_PP2_FWD_SWITCH_TIMER_MAX << MV_PP2_FWD_SWITCH_TIMER_OFFS)
+/*-------------------------------------------------------------------------------*/
+
+/* Unused registers */
+#define MV_PP2_INTERNAL_BUF_CTRL_REG		(MV_PP2_REG_BASE + 0x2220)
+
+/* No CPU access to Physcal TXQ descriptors, so Snoop doesn't needed */
+#define MV_PP2_TX_DESC_SNOOP_REG		(MV_PP2_REG_BASE + 0x2224)
+/*-------------------------------------------------------------------------------*/
+
 
 /************************** Interrupt Cause and Mask registers ******************/
 #define MV_PP2_ISR_RX_THRESHOLD_REG(port)	(MV_PP2_REG_BASE + 0x5200 + 4 * (port))

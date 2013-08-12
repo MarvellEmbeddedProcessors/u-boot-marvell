@@ -357,10 +357,8 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	else if (strcmp(cmd, "write") == 0) {
 		if (do_sar_write(argc - 2, argv + 2) == 0) {
 			do_sar_read(argc - 2, argv + 2);
-			if (strcmp(cmd2, "cpufreq") == 0 && !mvCtrlIsValidSatR()) {
+			if (strcmp(cmd2, "cpufreq") == 0 && !mvCtrlIsValidSatR())
 				printf("\n*** Selected Unsupported DDR/CPU/L2 Clock configuration ***\n\n");
-				return 1;
-			}
 			printf("\nChanges will be applied after reset.\n");
 			return 0;
 		}

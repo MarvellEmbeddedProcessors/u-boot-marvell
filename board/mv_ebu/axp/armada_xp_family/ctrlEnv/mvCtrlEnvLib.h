@@ -271,6 +271,10 @@ MV_BOOL	  mvCtrlPwrMemGet(MV_UNIT_ID unitId, MV_U32 index);
 
 MV_U32 mvCtrlSerdesMaxLinesGet(MV_VOID);
 MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID);
+MV_U32 mvCtrlSataMaxPortGet(MV_VOID);
+
+void mvCtrlGetPexActive(MV_BOOL *pPexActive, int size);
+void mvCtrlGetSataActive(MV_BOOL *pSataAtive, int size);
 MV_U32 mvCtrlDDRBudWidth(MV_VOID);
 MV_BOOL mvCtrlDDRThruXbar(MV_VOID);
 MV_BOOL mvCtrlDDRECC(MV_VOID);

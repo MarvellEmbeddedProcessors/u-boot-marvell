@@ -412,14 +412,8 @@ static void mv_pci_bus_mode_display(MV_U32 host)
 #if defined(MV_INCLUDE_PEX)
 
 	MV_PEX_MODE pexMode;
-	MV_BOARD_PEX_INFO       *boardPexInfo = mvBoardPexInfoGet();
 	MV_U32 pexHWInf;
 	MV_32 linkDelayCount;
-
-	if (boardPexInfo == NULL) {
-		printf("mv_pci_bus_mode_display: mvBoardPexInfoGet failed\n");
-		return;
-	}
 
 	pexHWInf = host;
 
@@ -507,7 +501,6 @@ void pci_init_board(void)
 	MV_ADDR_WIN rempWin;
 	MV_CPU_DEC_WIN cpuAddrDecWin;
 	PCI_IF_MODE pexIfMode = PCI_IF_MODE_HOST;
-	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
 	MV_U32 pexHWInf, pexIf;
 	struct pci_controller *pci;
 	char *env;
@@ -521,7 +514,7 @@ void pci_init_board(void)
 	if (env && ( (strcmp(env, "yes") == 0) || (strcmp(env, "Yes") == 0) ) )
 		printf("Warning: skip configuration of Marvell devices!!!\n");
 
-	activePexCount = boardPexInfo->boardPexIfNum;
+	activePexCount = mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
 	DB(printf("Start scan of %d PEX interfaces\n", activePexCount));
 
 	/* Initialize and scan all PEX interfaces */

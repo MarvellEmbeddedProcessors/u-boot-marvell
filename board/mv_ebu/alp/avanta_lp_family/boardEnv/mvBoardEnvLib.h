@@ -360,7 +360,6 @@ typedef struct _boardInfo {
 	MV_U32 nandFlashWriteParams;
 	MV_U32 nandFlashControl;
 	MV_BOARD_TDM_SPI_INFO *pBoardTdmSpiInfo;
-	MV_BOARD_PEX_INFO boardPexInfo;         /* filled in runtime */
 	MV_U32 norFlashReadParams;
 	MV_U32 norFlashWriteParams;
 
@@ -555,7 +554,6 @@ MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort);
 MV_U32 mvBoardSwitchPortsMaskGet(MV_U32 switchIdx);
 MV_BOOL mvBoardConfigAutoDetectEnabled(void);
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
-MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void);
 MV_STATUS mvBoardConfIdSet(MV_U16 conf);
 MV_U16 mvBoardPexModeGet(MV_VOID);
 MV_STATUS mvBoardPexModeSet(MV_U16 conf);

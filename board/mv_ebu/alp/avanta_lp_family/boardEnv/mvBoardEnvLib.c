@@ -2934,23 +2934,6 @@ MV_32 mvBoardSwitchPortMap(MV_U32 switchIdx, MV_U32 switchPortNum)
 }
 
 /*******************************************************************************
-* mvBoardPexInfoGet - Get board PEX Info
-*
-* DESCRIPTION:
-*
-* INPUT:
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*******************************************************************************/
-MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
-{
-	return &board->boardPexInfo;
-}
-
-/*******************************************************************************
 * mvBoardConfigAutoDetectEnabled
 *
 * DESCRIPTION:

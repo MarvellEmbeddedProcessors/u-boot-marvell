@@ -216,21 +216,6 @@ static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
 	return index;
 }
 
-static MV_VOID mvCtrlPexConfig(MV_VOID)
-{
-	MV_U8 pexUnit;
-	MV_U32 pexIfNum = mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
-
-	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
-
-	memset(boardPexInfo, 0, sizeof(MV_BOARD_PEX_INFO));
-
-	for (pexUnit = 0; pexUnit < pexIfNum; pexUnit++)
-		boardPexInfo->pexUnitCfg[pexUnit] = PEX_BUS_MODE_X1;
-
-	boardPexInfo->boardPexIfNum = pexIfNum;
-}
-
 MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_66xx_INDEX_MAX] = {
 /*                           6660               6650            6610 */
 /* DRAM_UNIT_ID         */ { 1,                 1,              1, },
@@ -302,8 +287,6 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvCtrlSysConfigInit();
 		mvBoardInfoUpdate();
 	}
-
-	mvCtrlPexConfig();
 
 	/* write MPP's config and Board general config */
 	mvBoardConfigWrite();
@@ -1452,10 +1435,10 @@ static MV_VOID mvCtrlPexAddrDecShow(MV_VOID)
 	MV_PEX_DEC_WIN win;
 	MV_U32 pexIf;
 	MV_U32 bar, winNum;
-	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
+	MV_U32 boardPexIfNum = mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
 	MV_U32 pexHWInf = 0;
 
-	for (pexIf = 0; pexIf < boardPexInfo->boardPexIfNum; pexIf++) {
+	for (pexIf = 0; pexIf < boardPexIfNum; pexIf++) {
 		pexHWInf = pexIf;
 
 

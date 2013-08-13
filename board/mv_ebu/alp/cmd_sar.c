@@ -91,17 +91,21 @@ static int do_sar_list(int argc, char *const argv[])
 	cmd = argv[0];
 
 	if (strcmp(cmd, "cpufreq") == 0) {
-		printf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n");
-		printf("\n| ID  | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
-		printf("---------------------------------------------------------\n");
-		for (i=0; i < maxFreqModes; i++) {
-			printf("|  %2d |      %4d      |      %d       |      %d      | \n",
-				pFreqModes[i].id,
-				pFreqModes[i].cpuFreq,
-				pFreqModes[i].ddrFreq,
-				pFreqModes[i].l2Freq);
+		if (maxFreqModes <= 0)
+			printf("Error: This board does not support altering frequency mode\n");
+		else {
+			printf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n");
+			printf("\n| ID  | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
+			printf("---------------------------------------------------------\n");
+			for (i=0; i < maxFreqModes; i++) {
+				printf("|  %2d |      %4d      |      %d       |      %d      | \n",
+					pFreqModes[i].id,
+					pFreqModes[i].cpuFreq,
+					pFreqModes[i].ddrFreq,
+					pFreqModes[i].l2Freq);
+			}
+			printf("---------------------------------------------------------\n");
 		}
-		printf("---------------------------------------------------------\n");
 	} else if (strcmp(cmd, "coreclock") == 0) {
 		printf("Determines the frequency of Core Clock:\n");
 		printf("\t0x0 = 166Mhz\n");

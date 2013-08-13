@@ -220,7 +220,7 @@ MV_BOARD_INFO db88f6720_board_info = {
 	.norFlashReadParams		= DB_88F6720_BOARD_NOR_READ_PARAMS,
 	.norFlashWriteParams		= DB_88F6720_BOARD_NOR_WRITE_PARAMS,
 	/* Enable modules auto-detection. */
-	.configAutoDetect		= MV_FALSE /* MV_TRUE */
+	.configAutoDetect		= MV_TRUE
 };
 
 /*

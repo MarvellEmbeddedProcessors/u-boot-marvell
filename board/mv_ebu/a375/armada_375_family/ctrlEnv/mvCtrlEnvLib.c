@@ -1668,7 +1668,7 @@ MV_BOOL mvCtrlDDRECC(MV_VOID)
 MV_U32 mvCtrlGetJuncTemp(MV_VOID)
 {
 	/*Used Hard Coded values, TODO sync with Spec*/
-	MV_U32 reg = 0;
+	MV_32 reg = 0;
 
 	/* init the TSEN sensor once */
 	if ((MV_REG_READ(TSEN_STATE_REG) & TSEN_STATE_MASK) == 0) {

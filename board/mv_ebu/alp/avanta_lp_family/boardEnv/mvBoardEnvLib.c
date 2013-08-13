@@ -1535,17 +1535,25 @@ MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_U32 mvBoardFreqModesNumGet()
 {
-	MV_U16 ctrlModel = mvCtrlModelGet();
+	MV_U32 freqNum;
 
-	if (ctrlModel == MV_6610_DEV_ID)
-		return FREQ_MODES_NUM_6610;
-	else if (ctrlModel == MV_6650_DEV_ID)
-		return FREQ_MODES_NUM_6650;
-	else if (ctrlModel == MV_6660_DEV_ID)
-		return FREQ_MODES_NUM_6660;
+	switch (mvBoardIdGet()) {
+	case DB_6650_ID:
+		freqNum = FREQ_MODES_NUM_DB_6650;
+		break;
+	case DB_6660_ID:
+		freqNum = FREQ_MODES_NUM_DB_6660;
+		break;
+	case RD_6650_ID:
+	case RD_6660_ID:
+		freqNum = FREQ_MODES_NUM_RD_66X0;
+		break;
+	default:
+		mvOsPrintf("%s: Error: IO Expander doesn't exists on board\n", __func__);
+		return MV_ERROR;
+	}
 
-	mvOsPrintf("%s: Error: Illegal ctrl Model (%x)\n", __func__, ctrlModel);
-	return MV_ERROR;
+	return freqNum;
 }
 
 

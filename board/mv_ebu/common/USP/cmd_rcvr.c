@@ -57,7 +57,11 @@ void recoveryHandle(cmd_tbl_t *cmdtp)
 		return;
 	}
 
-	do_tftpb(cmdtp, 1, 3,args_to_func);
+	if (do_tftpb(cmdtp, 1, 3,args_to_func) != 0) {
+		printf("\nError: Failed to receive recovery image. Aborting recovery process.\n");
+		return;
+	}
+
 	mvOsDelay(100);
 
 	/* after loading image and setting recovery boot command, save it for after reset */

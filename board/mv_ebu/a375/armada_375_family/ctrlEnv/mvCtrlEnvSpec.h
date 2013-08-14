@@ -110,7 +110,7 @@ extern "C" {
 #define MV_CPUIF_REGS_OFFSET(cpu)               (0x21800 + (cpu) * 0x100)
 #define MV_CPU_HW_SEM_OFFSET                    (0x20500)
 
-#if defined(MV_ETH_PP2)
+/* PPv2 register base addresses */
 #define MV_PP2_REG_BASE                         (0xF0000)
 #define MV_ETH_BASE_ADDR                        (0xC0000)
 #define LMS_REG_BASE                            (MV_ETH_BASE_ADDR)
@@ -122,12 +122,6 @@ extern "C" {
 #define MV_PON_EXIST
 #define MV_ETH_MAX_TCONT                        16
 #define MV_ETH_RXQ_TOTAL_NUM                    32
-#define MV_VLAN_1_TYPE                          0x88A8
-#else
-#define MV_ETH_BASE_ADDR			(0x70000)
-#endif /*MV_ETH_PP2*/
-
-#define MV_ETH_REGS_OFFSET(port)                (MV_ETH_BASE_ADDR - ((port) / 2) * 0x40000 + ((port) % 2) * 0x4000)
 
 #define MV_PEX_IF_REGS_OFFSET(pexIf)            (pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000) \
 						 : (0x42000 + ((pexIf) % 8) * 0x40000))
@@ -212,34 +206,13 @@ extern "C" {
 #define MV_CESA_SRAM_SIZE                       (2 * 1024)
 
 /* This define describes the maximum number of supported Ethernet ports */
-/* TODO - verify all these numbers */
-
-#if defined(CONFIG_MV_ETH_PP2)
-#define MV_PON_PORT_ID							7
+#define MV_PON_PORT_ID				7
 #define MV_ETH_MAX_PORTS                        4
 #define MV_ETH_MAX_RXQ                          16/* Maximum number of RXQs can be mapped to each port */
 #define MV_ETH_MAX_TXQ                          8
 #define MV_ETH_RXQ_TOTAL_NUM                    32      /* Total number of RXQs for usage by all ports */
 #define MV_ETH_MAX_TCONT                        16      /* Maximum number of TCONTs supported by PON port */
 #define MV_ETH_TX_CSUM_MAX_SIZE                 9800
-#else
-#define MV_ETH_VERSION                          4       /* for Legacy mode */
-#define MV_NETA_VERSION                         1       /* for NETA mode */
-#define MV_ETH_MAX_PORTS                        4
-#define MV_ETH_MAX_RXQ                          8
-#define MV_ETH_MAX_TXQ                          8
-#define MV_ETH_TX_CSUM_MAX_SIZE                 9800
-
-#endif /* CONFIG_MV_ETH_PP2 */
-
-/* New GMAC module is used */
-#define MV_ETH_GMAC_NEW
-/* New WRR/EJP module is used */
-#define MV_ETH_WRR_NEW
-/* IPv6 parsing support for Legacy parser */
-#define MV_ETH_LEGACY_PARSER_IPV6
-
-#define MV_FPGA_ETH_MAX_PORT                    4
 
 /* This define describes the the support of USB */
 #define MV_USB_VERSION                          1

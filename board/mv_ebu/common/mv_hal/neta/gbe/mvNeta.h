@@ -491,6 +491,20 @@ static INLINE void mvNetaRxqNonOccupDescAdd(int port, int rxq, int rx_desc)
 	MV_REG_WRITE(NETA_RXQ_STATUS_UPDATE_REG(port, rxq), regVal);
 }
 
+/* Decrement number of processed descriptors */
+static INLINE void mvNetaRxqOccupDescDec(int port, int rxq, int rx_desc)
+{
+	MV_U32	regVal;
+
+	/* Only 255 descriptors can be updated at once */
+	while (rx_desc > 0xFF) {
+		regVal = (0xFF << NETA_RXQ_DEC_OCCUPIED_OFFS);
+		MV_REG_WRITE(NETA_RXQ_STATUS_UPDATE_REG(port, rxq), regVal);
+		rx_desc = rx_desc - 0xFF;
+	}
+	regVal = (rx_desc << NETA_RXQ_DEC_OCCUPIED_OFFS);
+	MV_REG_WRITE(NETA_RXQ_STATUS_UPDATE_REG(port, rxq), regVal);
+}
 
 /* Decrement sent descriptors counter */
 static INLINE void mvNetaTxqSentDescDec(int port, int txp, int txq, int sent_desc)
@@ -535,7 +549,11 @@ static INLINE void mvNetaTxqPendDescAdd(int port, int txp, int txq, int pend_des
 	MV_U32 regVal;
 
 	/* Only 255 descriptors can be added at once - we don't check it for performance */
-	/* Assume caller process TX desriptors in quanta less than 256 */
+	while (pend_desc > 0xFF) {
+		regVal = (0xFF << NETA_TXQ_ADD_PENDING_OFFS);
+		MV_REG_WRITE(NETA_TXQ_UPDATE_REG(port, txp, txq), regVal);
+		pend_desc = pend_desc - 0xFF;
+	}
 	regVal = (pend_desc << NETA_TXQ_ADD_PENDING_OFFS);
 	MV_REG_WRITE(NETA_TXQ_UPDATE_REG(port, txp, txq), regVal);
 }

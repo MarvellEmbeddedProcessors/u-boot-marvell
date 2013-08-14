@@ -287,6 +287,7 @@ MV_U32 mvCtrlPexMaxUnitGet(MV_VOID);
 #else
 #define mvCtrlPciMaxIfGet()             1
 #endif
+MV_U32 mvCtrlPexActiveUnitNumGet(MV_VOID);
 
 #if defined(MV_INCLUDE_PCI)
 #define mvCtrlPciIfMaxIfGet()           1
@@ -295,12 +296,14 @@ MV_U32 mvCtrlPexMaxUnitGet(MV_VOID);
 #endif
 
 MV_U32 mvCtrlEthMaxPortGet(MV_VOID);
+MV_U32 mvCtrlSataMaxPortGet(MV_VOID);
 #if defined(MV_INCLUDE_XOR)
 MV_U32 mvCtrlXorMaxChanGet(MV_VOID);
 MV_U32 mvCtrlXorMaxUnitGet(MV_VOID);
 #endif
 #if defined(MV_INCLUDE_USB)
 MV_U32 mvCtrlUsbMaxGet(MV_VOID);
+MV_U32 mvCtrlUsb3MaxGet(MV_VOID);
 #endif
 #if defined(MV_INCLUDE_SDIO)
 MV_U32 mvCtrlSdioSupport(MV_VOID);

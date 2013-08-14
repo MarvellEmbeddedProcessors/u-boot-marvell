@@ -2252,6 +2252,30 @@ MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 }
 
 /*******************************************************************************
+* mvBoardIsEthConnected - detect if a certain Ethernet port is active
+*
+* DESCRIPTION:
+*	This routine returns true if a certain Ethernet port is active
+*
+* INPUT:
+*	ethNum - index of the ethernet port requested
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_TRUE if the requested ethernet port is connected.
+*
+*******************************************************************************/
+MV_U32 mvBoardIsEthConnected(MV_U32 ethNum)
+{
+	if (ethNum == 0)
+		return MV_TRUE;
+
+	return MV_FALSE;
+}
+
+/*******************************************************************************
 * mvBoardIsQsgmiiModuleConnected
 *
 * DESCRIPTION:

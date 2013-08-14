@@ -85,7 +85,7 @@ extern "C" {
 #define MV_BOARD_NAME_LEN               0x20
 
 typedef enum _devBoardSlicType {
-	MV_BOARD_AUTO,
+	MV_BOARD_SLIC_DISABLED,
 	MV_BOARD_SLIC_SSI_ID, /* Lantiq Integrated SLIC */
 	MV_BOARD_SLIC_ISI_ID, /* Silicon Labs ISI Bus */
 	MV_BOARD_SLIC_ZSI_ID, /* Zarlink ZSI Bus */
@@ -443,6 +443,7 @@ MV_32 mvBoardGePhySwitchPortGet(void);
 MV_32 mvBoardRgmiiASwitchPortGet(void);
 MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum);
 MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx);
+MV_U32 mvBoardIsEthConnected(MV_U32 ethNum);
 MV_32 mvBoardSwitchIrqGet(MV_VOID);
 MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort);
 MV_U32 mvBoardSwitchPortsMaskGet(MV_U32 switchIdx);

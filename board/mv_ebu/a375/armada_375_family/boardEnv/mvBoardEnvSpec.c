@@ -134,7 +134,7 @@ MV_BOARD_MAC_INFO db88f6720InfoBoardMacInfo[] = {
 };
 MV_BOARD_MPP_TYPE_INFO db88f6720InfoBoardModTypeInfo[] = {
 	{
-		.boardMppSlic = MV_BOARD_AUTO,
+		.boardMppSlic = MV_BOARD_SLIC_DISABLED,
 		.ethSataComplexOpt = MV_ETHCOMP_GE_MAC0_2_RGMII0,
 		.ethPortsMode = 0x0
 	}

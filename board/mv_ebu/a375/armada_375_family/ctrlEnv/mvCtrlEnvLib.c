@@ -217,6 +217,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_67xx_INDEX_MAX] = {
 /* PEX_UNIT_ID          */ { 2, },
 /* ETH_GIG_UNIT_ID      */ { 2, },
 /* USB_UNIT_ID          */ { 1, },
+/* USB3_UNIT_ID          */ { 1, },
 /* IDMA_UNIT_ID         */ { 0, },
 /* XOR_UNIT_ID          */ { 2, },
 /* SATA_UNIT_ID         */ { 2, },
@@ -660,6 +661,28 @@ MV_U32 mvCtrlPexMaxUnitGet(MV_VOID)
 	return mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
 }
 
+/*******************************************************************************
+* mvCtrlPexActiveUnitNumGet
+*
+* DESCRIPTION:
+*       This function returns Marvell controller number of PEX units.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Marvell controller number of PEX units. If controller
+*		ID is undefined the function returns '0'.
+*
+*******************************************************************************/
+MV_U32 mvCtrlPexActiveUnitNumGet(MV_VOID)
+{
+	return mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
+}
+
 #if defined(MV_INCLUDE_PCI)
 /*******************************************************************************
 * mvCtrlPciMaxIfGet
@@ -796,6 +819,26 @@ MV_U32 mvCtrlXorMaxUnitGet(MV_VOID)
 MV_U32 mvCtrlUsbMaxGet(void)
 {
 	return mvCtrlSocUnitInfoNumGet(USB_UNIT_ID);
+}
+
+/*******************************************************************************
+* mvCtrlUsb3MaxGet - Get number of Marvell USB 3.0 controllers
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       returns number of Marvell USB 3.0 controllers.
+*
+*******************************************************************************/
+MV_U32 mvCtrlUsb3MaxGet(void)
+{
+	return mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID);
 }
 
 #endif

@@ -31,9 +31,7 @@ disclaimer.
 #define OLD_CESA_HAL
 #define MV_INCLUDE_USB
 #define MV_INCLUDE_TWSI
-#define MV_INCLUDE_NAND
 #define MV_INCLUDE_UART
-#define MV_INCLUDE_SPI
 #define MV_INCLUDE_TDM
 #define MV_INCLUDE_XOR
 #define MV_INCLUDE_SATA

@@ -272,6 +272,7 @@ MV_VOID		mvEthE6161SwitchBasicInit(MV_U32 ethPortNum)
 #if defined (MV88F66XX)
 MV_VOID mvAlpBoardSwitchBasicInit(MV_U32 enabledPorts)
 {
+	MV_U16 regVal;
 	MV_U32 port, forceMask, switchCpuPort = mvBoardSwitchCpuPortGet(0);
 
 	/* Force link, speed, duplex for switch CPU port */
@@ -280,8 +281,16 @@ MV_VOID mvAlpBoardSwitchBasicInit(MV_U32 enabledPorts)
 	forceMask = mvBoardSwitchPortForceLinkGet(0);
 	for (port = 0; port < 6; port++) {
 		MV_U32 toForce = forceMask & (1 << port);
-		if (toForce)
-			mvEthSwitchRegWrite(0, 0x10 + port, 0x1, 0x3e);
+		if (toForce) {
+			mvEthSwitchRegWrite(0, MV_SWITCH_PORT_OFFSET(port),
+						MV_SWITCH_PHYS_CONTROL_REG, 0x3e);
+
+			/* Disable PHY polling for forced link ports - clear bit 12 */
+			mvEthSwitchRegRead(0, MV_SWITCH_PORT_OFFSET(port),
+						MV_SWITCH_PORT_STATUS_REG, &regVal);
+			mvEthSwitchRegWrite(0, MV_SWITCH_PORT_OFFSET(port),
+						MV_SWITCH_PORT_STATUS_REG, regVal & ~BIT12);
+		}
 	}
 
 	switchVlanInit(0, switchCpuPort, MV_ALP_SW_MAX_PORTS_NUM,

@@ -17,7 +17,6 @@ SECTIONS
 		ddr3_hw_training*.o (.text)
 		ddr3_init*.o (.text)
 		ddr3_pbs*.o (.text)
-
 	} > ram1 = 0x0
 
 	.text3 : {
@@ -29,12 +28,10 @@ SECTIONS
 		*.o (.text)
 	} > ram3 = 0x0
         .data : {
-
                  *(.data)
         } > ram2 = 0x0
 
         .bss : {
                 *(.bss)
         } > ram2 = 0x0
-
 }

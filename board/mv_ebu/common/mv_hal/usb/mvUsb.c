@@ -228,9 +228,11 @@ MV_STATUS mvUsbPhy40nmLpInit(int dev)
 	/* Check if the PHY is ready */
 	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 2));
 	if ((regVal & BIT15) == 0) {
-		mvOsPrintf("Error: USB2 Phy NOT ready\n");
+		mvOsPrintf("Error: USB2 UTMI PHY not ready\n");
 		return MV_NOT_READY;
 	}
+
+	mvOsPrintf("USB2 UTMI PHY initialized succesfully\n");
 
 	return MV_OK;
 }
@@ -808,7 +810,7 @@ MV_STATUS mvUsbUtmiPhyInit(int dev, MV_USB_HAL_DATA *usbHalData)
 
 		mvUsbPhy65nmNewInit(dev);
 
-	} else if ((usbHalData->ctrlFamily == MV_67XX) ||
+	} else if ((usbHalData->ctrlModel == MV_6710_DEV_ID) ||
 		(usbHalData->ctrlFamily == MV_78XX0)) {
 
 		if (mvUsbPhy40nmInit(dev))
@@ -816,7 +818,6 @@ MV_STATUS mvUsbUtmiPhyInit(int dev, MV_USB_HAL_DATA *usbHalData)
 
 	} else if ((usbHalData->ctrlFamily == MV_88F66X0) ||
 		   (usbHalData->ctrlFamily == MV_88F67X0)) {
-
 		status = mvUsbPhy40nmLpInit(dev);
 
 	} else

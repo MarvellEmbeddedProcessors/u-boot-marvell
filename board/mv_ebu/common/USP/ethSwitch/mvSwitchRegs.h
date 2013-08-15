@@ -67,12 +67,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "eth-phy/mvEthPhyRegs.h"
 
+#define MV_SWITCH_PORTS_OFFSET					0x10
+
+#define MV_SWITCH_PORT_STATUS_REG				0x0
+#define MV_SWITCH_PHYS_CONTROL_REG				0x1
 #define MV_SWITCH_PORT_CONTROL_REG				0x4
 #define MV_SWITCH_PORT_VMAP_REG					0x6
 #define MV_SWITCH_PORT_VID_REG					0x7
 
 
-#define MV_SWITCH_PORT_OFFSET(port) (switchPortsOffset+port)
+#define MV_SWITCH_PORT_OFFSET(port) (MV_SWITCH_PORTS_OFFSET + port)
 
 /* E6063 related */
 #define MV_E6063_CPU_PORT						5

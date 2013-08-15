@@ -120,10 +120,10 @@ ifneq ($(BOARD),alp)
 	ifneq ($(BOARD),a375)
 		LDFLAGSBIN  = -T linker.scr $(LDFLAGS)
 	else
-		LDFLAGSBIN  = -T linker1.scr $(LDFLAGS)
+		LDFLAGSBIN  = -T linker_alp_a375.scr $(LDFLAGS)
 	endif
 else
-	LDFLAGSBIN  = -T linker1.scr $(LDFLAGS)
+	LDFLAGSBIN  = -T linker_alp_a375.scr $(LDFLAGS)
 endif
 
 

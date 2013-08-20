@@ -22,31 +22,63 @@ disclaimer.
 #if defined(CONFIG_CMD_RCVR)
 #include "boardEnv/mvBoardEnvLib.h"
 
+/*******************************************************************************
+* parseIntFromString
+*
+* DESCRIPTION: parse string from prefix to suffix - extract size to integer format
+*
+* INPUT:	str - string
+*		prefix - prefix char of the requested size
+*		suffix - suffix char of the requested size
+*
+* OUTPUT: None
+*
+* RETURN:
+*        size/offset integer - scaled to bytes (to be directly used as load address and size)
+*
+*******************************************************************************/
+MV_U32 parseIntFromString(char *str, char prefix, char suffix)
+{
+	char *strStart, *strEnd, *strSize = NULL;
+
+	if (!str) {
+		mvOsPrintf("%s:Error: requested variable ('mtdparts') does not exists.\n", __func__);
+		return -1;
+	}
+
+	strStart = strchr(str, prefix) + 1;
+	strEnd = strchr(strStart, suffix);
+	if (strStart == NULL || strEnd == NULL) {
+		mvOsPrintf("%s:Error: Incorrect format of 'mtdparts' variable.\n", __func__);
+		return -1;
+	}
+	strncpy(strSize , strStart, (strEnd - strStart));
+
+	return simple_strtoul(strSize, NULL, 0) * _1M;
+
+}
+
 void recoveryHandle(cmd_tbl_t *cmdtp)
 {
 	char cmd[256];
 	char img[10];
 	char * args_to_func[3];
-	char *str, *strStart, *strEnd, *strSize = NULL;
-	MV_U32 uImageAddr;
+	char *str;
+	MV_U32 uImageAddr, uImageSize;
 
-	/* read 'mtdparts' to extract load address of uImage from NAND - in linux partition */
+	/* read 'mtdparts' to extract load address and size of uImage from NAND - in linux partition
+	 * expected syntax for example :"mtdparts=armada-nand:4m(boot)ro,8m@4m(kernel),-(rootfs)" */
 	str = getenv("mtdparts");
-	if (!str) {
-		mvOsPrintf("%s:Error: requested variable ('mtdparts') does not exists.\n",__func__);
-		return;
-	}
 
-	/* expected syntax for example :"mtdparts=armada-nand:4m(boot)ro,8m@4m(kernel),-(rootfs)" */
-	strStart = strchr(str, ':') + 1;
-	strEnd = strchr(strStart, 'm');
-	if (strStart == NULL || strEnd == NULL) {
+	/* Parse uImage offset and address from mtdparts */
+	uImageAddr = parseIntFromString(str, ':' , 'm');
+	uImageSize = parseIntFromString(str, ',' , 'm');
+
+	if (uImageAddr == -1 || uImageSize == -1) {
 		mvOsPrintf("%s:Error: Incorrect format of 'mtdparts' variable.\n",__func__);
 		return;
 	}
-	strncpy(strSize , strStart, (strEnd - strStart));
-	uImageAddr = simple_strtoul(strSize, NULL, 0) * _1M;
-	sprintf(cmd, "setenv bootargs ${console} ${mtdparts} ubi.mtd=2 root=ubi0:rootfsU rootfstype=ubifs ${mvNetConfig}; nand read.e ${loadaddr} 0x%x 0x400000; bootm ${loadaddr};", uImageAddr);
+	sprintf(cmd, "setenv bootargs ${console} ${mtdparts} ubi.mtd=2 root=ubi0:rootfsU rootfstype=ubifs ${mvNetConfig}; nand read.e ${loadaddr} 0x%x 0x%x; bootm ${loadaddr};", uImageAddr, uImageSize);
 
 	/* Load recovery image from tftp, according to env. variables */
 	args_to_func[0] = "tftp";

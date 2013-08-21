@@ -188,6 +188,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_MISC_REGS_BASE           (MV_MISC_REGS_OFFSET)
 #define SOC_CTRL_REG                (MV_MISC_REGS_BASE + 0x4)
 
+#define GPIO_DATA_OUT_REG_BASE          0x18100
+#define GPIO_DATA_OUT_REG(Num)          (GPIO_DATA_OUT_REG_BASE + (0x40*Num))
+#define GPIO_DATA_OUT_ENABLE_REG_BASE   0x18104
+#define GPIO_DATA_OUT_ENABLE_REG(Num)   (GPIO_DATA_OUT_ENABLE_REG_BASE + (0x40*Num))
+
 
 
 /********************************************/

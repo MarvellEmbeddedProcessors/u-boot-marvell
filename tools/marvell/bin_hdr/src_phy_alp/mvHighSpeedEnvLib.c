@@ -104,6 +104,7 @@ MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_U8 *pDat
 MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff);
 MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum);
 MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
+MV_STATUS mvPexAgentReset();
 
 /****************************  function implementation *****************************************/
 
@@ -645,6 +646,9 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
     /* initialize board configuration database */
     mvCtrlSatrInit();
 
+        /* Release PEX agents reset */
+	mvPexAgentReset();
+
     memset(regAddr, 0, sizeof(regAddr));
     memset(regVal,  0, sizeof(regVal));
 
@@ -1063,5 +1067,44 @@ MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum)
 
 	MV_REG_WRITE(PEX_STATUS_REG(pexIf), pexStatus);
 
+	return MV_OK;
+}
+/*******************************************************************************
+* mvPexAgentReset - Release PEX agent reset.
+*
+* DESCRIPTION:
+*       This function is relevant for RD6650 and RD6660
+*       it configure the relevant MPP to be GPIO out at HIGH state
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       otherwise MV_OK
+*
+*******************************************************************************/
+MV_STATUS mvPexAgentReset()
+{
+	MV_U32  uiReg, reNum, bitNum;
+	MV_U32  boardId = mvBoardIdGet();
+
+	if ((boardId == RD_88F6650_BP_ID) || (boardId == RD_88F6660_BP_ID)) {
+		if (boardId == RD_88F6650_BP_ID) {
+			reNum = 0;
+			bitNum = 0x20000000;
+		} else if (boardId == RD_88F6660_BP_ID) {
+			reNum = 2;
+			bitNum = 0x4;
+		}
+		uiReg = MV_REG_READ(GPIO_DATA_OUT_ENABLE_REG(reNum));
+		uiReg &= ~(bitNum);
+		MV_REG_WRITE(GPIO_DATA_OUT_ENABLE_REG(reNum), uiReg);
+		uiReg = MV_REG_READ(GPIO_DATA_OUT_REG(reNum));
+		uiReg |= bitNum;
+		MV_REG_WRITE(GPIO_DATA_OUT_REG(reNum), uiReg);
+	}
 	return MV_OK;
 }

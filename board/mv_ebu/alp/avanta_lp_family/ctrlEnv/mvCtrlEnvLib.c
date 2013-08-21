@@ -279,10 +279,10 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 
 	/* Set I2C MPP's(MPP Group 1), before reading board configuration, using TWSI read */
 	MV_REG_WRITE(mvCtrlMppRegGet(1), GROUP1_DEFAULT_MPP_SPI_I2C);
-
 	mvCtrlSatrInit();
 
-	/* If set to Auto detect, read board config info, update Eth-Complex config, MPP group types and switch info */
+	/* If set to Auto detect, read board config information,
+	 * Accordingly update Eth-Complex config, MPP group types and switch info */
 	if (mvBoardConfigAutoDetectEnabled()) {
 		mvCtrlSysConfigInit();
 		mvBoardInfoUpdate();
@@ -300,7 +300,6 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	/* clear all int */
 	for (i = 0; i < MV_GPP_MAX_GROUP; i++)
 		MV_REG_WRITE(GPP_INT_CAUSE_REG(i), 0x0);
-
 	/* Set gpp interrupts as needed */
 	for (i = 0; i < MV_GPP_MAX_GROUP; i++) {
 		gppMask = mvBoardGpioIntMaskGet(i);
@@ -309,7 +308,6 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	}
 
 	mvEthComplexInit(mvBoardEthComplexConfigGet());
-
 	/*
 	 * Enable NAND Flash PUP (Pack-Unpack)
 	 * HW machanism to accelerate transactions (controlled by SoC register)

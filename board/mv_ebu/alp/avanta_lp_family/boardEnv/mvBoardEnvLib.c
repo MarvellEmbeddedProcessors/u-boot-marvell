@@ -1525,8 +1525,7 @@ MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx)
 /*******************************************************************************
 * mvBoardFreqModesNumGet
 *
-* DESCRIPTION:
-*      Return the number of supported frequency modes for this board
+* DESCRIPTION: Return the number of supported frequency modes for this SoC
 *
 *
 * INPUT:
@@ -1543,19 +1542,18 @@ MV_U32 mvBoardFreqModesNumGet()
 {
 	MV_U32 freqNum;
 
-	switch (mvBoardIdGet()) {
-	case DB_6650_ID:
-		freqNum = FREQ_MODES_NUM_DB_6650;
+	switch (mvCtrlModelGet()) {
+	case MV_6610_DEV_ID:
+		freqNum = FREQ_MODES_NUM_6610;
 		break;
-	case DB_6660_ID:
-		freqNum = FREQ_MODES_NUM_DB_6660;
+	case MV_6650_DEV_ID:
+		freqNum = FREQ_MODES_NUM_6650;
 		break;
-	case RD_6650_ID:
-	case RD_6660_ID:
-		freqNum = FREQ_MODES_NUM_RD_66X0;
+	case MV_6660_DEV_ID:
+		freqNum = FREQ_MODES_NUM_6660;
 		break;
 	default:
-		mvOsPrintf("%s: Error: IO Expander doesn't exists on board\n", __func__);
+		mvOsPrintf("%s: Error: failed to read ctrlModel (SoC ID)\n", __func__);
 		return MV_ERROR;
 	}
 

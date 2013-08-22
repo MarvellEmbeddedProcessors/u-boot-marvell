@@ -32,10 +32,10 @@ lock_hw_mutex:
 	cmp r2, r3		/* if lock == core ID the lock is ours*/
 	/*bne lock_hw_mutex*/
 	moveq pc, lr		/*Exit the routine */
-	ldr r4, _mv_sema_wait
+	ldr r1, _mv_sema_wait
 lock_wait:
-	sub r4, r4, #1		/* Wait "_mv_sema_wait" loops */
-	cmp r4, #0
+	sub r1, r1, #1		/* Wait "_mv_sema_wait" loops */
+	cmp r1, #0
 	bne lock_wait
 	b  lock_hw_mutex 	/* Try getting lock again*/
 

@@ -582,52 +582,52 @@ typedef struct pp2_rx_desc {
 #define PP2_RX_L3_OFFSET_OFFS			0
 #define PP2_RX_L3_OFFSET_MASK			(0x7F << PP2_RX_L3_OFFSET_OFFS)
 
-#define PP2_RX_IP_HLEN_OFFS                	8
-#define PP2_RX_IP_HLEN_MASK                	(0x1F << PP2_RX_IP_HLEN_OFFS)
+#define PP2_RX_IP_HLEN_OFFS			8
+#define PP2_RX_IP_HLEN_MASK			(0x1F << PP2_RX_IP_HLEN_OFFS)
 
-#define PP2_RX_ERR_CODE_OFFS               	13
-#define PP2_RX_ERR_CODE_MASK               	(3 << PP2_RX_ERR_CODE_OFFS)
-#define PP2_RX_ERR_CRC                     	(0 << PP2_RX_ERR_CODE_OFFS)
-#define PP2_RX_ERR_OVERRUN                 	(1 << PP2_RX_ERR_CODE_OFFS)
-#define PP2_RX_RESERVED                    	(2 << PP2_RX_ERR_CODE_OFFS)
-#define PP2_RX_ERR_RESOURCE                	(3 << PP2_RX_ERR_CODE_OFFS)
+#define PP2_RX_ERR_CODE_OFFS			13
+#define PP2_RX_ERR_CODE_MASK			(3 << PP2_RX_ERR_CODE_OFFS)
+#define PP2_RX_ERR_CRC				(0 << PP2_RX_ERR_CODE_OFFS)
+#define PP2_RX_ERR_OVERRUN			(1 << PP2_RX_ERR_CODE_OFFS)
+#define PP2_RX_RESERVED				(2 << PP2_RX_ERR_CODE_OFFS)
+#define PP2_RX_ERR_RESOURCE			(3 << PP2_RX_ERR_CODE_OFFS)
 
-#define PP2_RX_ES_BIT                      	15
-#define PP2_RX_ES_MASK                     	(1 << PP2_RX_ES_BIT)
+#define PP2_RX_ES_BIT				15
+#define PP2_RX_ES_MASK				(1 << PP2_RX_ES_BIT)
 
-#define PP2_RX_BM_POOL_ID_OFFS             	16
-#define PP2_RX_BM_POOL_ALL_MASK            	(0x3 << PP2_RX_BM_POOL_ID_OFFS)
-#define PP2_RX_BM_POOL_ID_MASK(pool)       	((pool) << PP2_RX_BM_POOL_ID_OFFS)
+#define PP2_RX_BM_POOL_ID_OFFS			16
+#define PP2_RX_BM_POOL_ALL_MASK			(0x7 << PP2_RX_BM_POOL_ID_OFFS)
+#define PP2_RX_BM_POOL_ID_MASK(pool)		((pool) << PP2_RX_BM_POOL_ID_OFFS)
 
-#define PP2_RX_HWF_SYNC_BIT                	21
-#define PP2_RX_HWF_SYNC_MASK               	(1 << PP2_RX_HWF_SYNC_BIT)
+#define PP2_RX_HWF_SYNC_BIT			21
+#define PP2_RX_HWF_SYNC_MASK			(1 << PP2_RX_HWF_SYNC_BIT)
 
-#define PP2_RX_L4_CHK_OK_BIT               	22
-#define PP2_RX_L4_CHK_OK_MASK              	(1 << PP2_RX_L4_CHK_OK_BIT)
+#define PP2_RX_L4_CHK_OK_BIT			22
+#define PP2_RX_L4_CHK_OK_MASK			(1 << PP2_RX_L4_CHK_OK_BIT)
 
-#define PP2_RX_IP_FRAG_BIT                 	23
-#define PP2_RX_IP_FRAG_MASK                	(1 << PP2_RX_IP_FRAG_BIT)
+#define PP2_RX_IP_FRAG_BIT			23
+#define PP2_RX_IP_FRAG_MASK			(1 << PP2_RX_IP_FRAG_BIT)
 
-#define PP2_RX_IP4_HEADER_ERR_BIT          	24
-#define PP2_RX_IP4_HEADER_ERR_MASK         	(1 << PP2_RX_IP4_HEADER_ERR_BIT)
+#define PP2_RX_IP4_HEADER_ERR_BIT		24
+#define PP2_RX_IP4_HEADER_ERR_MASK		(1 << PP2_RX_IP4_HEADER_ERR_BIT)
 
-#define PP2_RX_L4_OFFS                     	25
-#define PP2_RX_L4_MASK                     	(7 << PP2_RX_L4_OFFS)
+#define PP2_RX_L4_OFFS				25
+#define PP2_RX_L4_MASK				(7 << PP2_RX_L4_OFFS)
 /* Value 0 - N/A, 3-7 - User Defined */
-#define PP2_RX_L4_TCP                      	(1 << PP2_RX_L4_OFFS)
-#define PP2_RX_L4_UDP                      	(2 << PP2_RX_L4_OFFS)
+#define PP2_RX_L4_TCP				(1 << PP2_RX_L4_OFFS)
+#define PP2_RX_L4_UDP				(2 << PP2_RX_L4_OFFS)
 
-#define PP2_RX_L3_OFFS                     	28
-#define PP2_RX_L3_MASK                     	(7 << PP2_RX_L3_OFFS)
+#define PP2_RX_L3_OFFS				28
+#define PP2_RX_L3_MASK				(7 << PP2_RX_L3_OFFS)
 /* Value 0 - N/A, 6-7 - User Defined */
-#define PP2_RX_L3_IP4                		(1 << PP2_RX_L3_OFFS)
-#define PP2_RX_L3_IP4_OPT          	   	(2 << PP2_RX_L3_OFFS)
-#define PP2_RX_L3_IP4_OTHER                	(3 << PP2_RX_L3_OFFS)
-#define PP2_RX_L3_IP6                  		(4 << PP2_RX_L3_OFFS)
-#define PP2_RX_L3_IP6_EXT              		(5 << PP2_RX_L3_OFFS)
+#define PP2_RX_L3_IP4				(1 << PP2_RX_L3_OFFS)
+#define PP2_RX_L3_IP4_OPT			(2 << PP2_RX_L3_OFFS)
+#define PP2_RX_L3_IP4_OTHER			(3 << PP2_RX_L3_OFFS)
+#define PP2_RX_L3_IP6				(4 << PP2_RX_L3_OFFS)
+#define PP2_RX_L3_IP6_EXT			(5 << PP2_RX_L3_OFFS)
 
-#define PP2_RX_BUF_HDR_BIT                 	31
-#define PP2_RX_BUF_HDR_MASK                	(1 << PP2_RX_BUF_HDR_BIT)
+#define PP2_RX_BUF_HDR_BIT			31
+#define PP2_RX_BUF_HDR_MASK			(1 << PP2_RX_BUF_HDR_BIT)
 
 /* status field MACROs */
 #define PP2_RX_L3_IS_IP4(status)		(((status) & PP2_RX_L3_MASK) == PP2_RX_L3_IP4)

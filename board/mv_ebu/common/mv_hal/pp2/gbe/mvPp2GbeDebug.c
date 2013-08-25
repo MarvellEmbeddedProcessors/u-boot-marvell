@@ -470,6 +470,9 @@ void      mvPp2FwdSwitchRegs(void)
 
 void mvPp2BmPoolRegs(int pool)
 {
+	if (mvPp2MaxCheck(pool, MV_BM_POOLS, "bm_pool"))
+		return;
+
 	mvOsPrintf("\n[BM pool registers: pool=%d]\n", pool);
 	mvPp2PrintReg(MV_BM_POOL_BASE_REG(pool), "MV_BM_POOL_BASE_REG");
 	mvPp2PrintReg(MV_BM_POOL_SIZE_REG(pool), "MV_BM_POOL_SIZE_REG");

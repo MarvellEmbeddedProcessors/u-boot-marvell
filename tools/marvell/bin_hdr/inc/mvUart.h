@@ -165,20 +165,23 @@ void putdataDec (u32 dec_num,u32 length);
 #ifdef MV_DEBUG_INIT
 #define DEBUG_INIT_S(s)				putstring(s)
 #define DEBUG_INIT_D(d, l)			putdata(d, l)
-
+#define DEBUG_INIT_D_10(d, l)			putdataDec(d, l)
 #else
 #define DEBUG_INIT_S(s)
 #define DEBUG_INIT_D(d, l)
+#define DEBUG_INIT_D_10(d, l)
 #endif
 
 #ifdef MV_DEBUG_INIT_FULL
 #define DEBUG_INIT_FULL_S(s)		putstring(s)
 #define DEBUG_INIT_FULL_D(d, l)		putdata(d, l)
+#define DEBUG_INIT_FULL_D_10(d, l)	putdataDec(d, l)
 #define DEBUG_WR_REG(reg,val)       DEBUG_INIT_S("Write Reg: 0x"); DEBUG_INIT_D((reg), 8); DEBUG_INIT_S("= "); DEBUG_INIT_D((val), 8);DEBUG_INIT_S("\n");
 #define DEBUG_RD_REG(reg,val)       DEBUG_INIT_S("Read  Reg: 0x"); DEBUG_INIT_D((reg), 8); DEBUG_INIT_S("= "); DEBUG_INIT_D((val), 8);DEBUG_INIT_S("\n");
 #else
 #define DEBUG_INIT_FULL_S(s)
 #define DEBUG_INIT_FULL_D(d, l)
+#define DEBUG_INIT_FULL_D_10(d, l)
 #define DEBUG_WR_REG(reg,val)
 #define DEBUG_RD_REG(reg,val)
 #endif

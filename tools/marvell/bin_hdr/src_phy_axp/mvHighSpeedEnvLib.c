@@ -494,10 +494,11 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	MV_U8		freq;
 	MV_U8		device_rev;
 	MV_U32		rxHighImpedanceMode;
-	MV_U16 ctrlMode;
-	MV_TWSI_ADDR slave;
-	MV_U32	boardId = mvBoardIdGet();
-	MV_U32	pexIf;
+	MV_U16		ctrlMode;
+	MV_TWSI_ADDR 	slave;
+	MV_U32		boardId = mvBoardIdGet();
+	MV_U32		pexIf;
+	MV_U32 		pexIfNum;
 
 	/* TWSI init */
 	slave.type = ADDR7_BIT;
@@ -718,12 +719,21 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	for (serdesLineNum = 0; serdesLineNum < maxSerdesLines; serdesLineNum++) {
 		/* for each serdes lane*/
+		DEBUG_INIT_FULL_S("SERDES  ");
+		DEBUG_INIT_FULL_D_10(serdesLineNum,2);
 		serdesLineCfg = get_serdesLineCfg(serdesLineNum,pSerdesInfo);
-		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_UNCONNECTED]) 
+		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_UNCONNECTED]) {
+			DEBUG_INIT_FULL_S(" unconnected ***\n");
 			continue;
+		}
 		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_PEX]) {
 			pexUnit    = serdesLineNum >> 2;
 			pexLineNum = serdesLineNum % 4;
+			DEBUG_INIT_FULL_S(" - PEX unit ");
+			DEBUG_INIT_FULL_D_10(pexUnit,1);
+			DEBUG_INIT_FULL_S(" line=  ");
+			DEBUG_INIT_FULL_D_10(pexLineNum,1);
+			DEBUG_INIT_FULL_S("\n");
 
 			/* Needed for PEX_PHY_ACCESS_REG macro */
 			if ((serdesLineNum > 7) && (pSerdesInfo->pexMod[3] == PEX_BUS_MODE_X8))
@@ -754,11 +764,15 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SATA]) {
 
 			sataPort =  serdesLineNum & 1; /* port 0 for serdes lines 4,6,  and port 1 for serdes lines 5*/
+			DEBUG_INIT_FULL_S(" - SATA port  ");
+			DEBUG_INIT_FULL_D_10(sataPort,2);
+			DEBUG_INIT_FULL_S("\n");
 			MV_REG_WRITE(SATA_COMPHY_CTRL_REG(sataPort), rxHighImpedanceMode);
 			DEBUG_WR_REG(SATA_COMPHY_CTRL_REG(sataPort), rxHighImpedanceMode);
 			continue;
 		}
 		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_QSGMII]) {
+			DEBUG_INIT_FULL_S(" - QSGMII\n");
 			MV_REG_WRITE(SGMII_COMPHY_CTRL_REG(0), rxHighImpedanceMode);
 			DEBUG_WR_REG(SGMII_COMPHY_CTRL_REG(0), rxHighImpedanceMode);
 			continue;
@@ -773,6 +787,9 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 			sgmiiPort = 3;
 		else
 			continue;
+			DEBUG_INIT_FULL_S(" - SGMII port  ");
+			DEBUG_INIT_FULL_D_10(sgmiiPort,2);
+			DEBUG_INIT_FULL_S("\n");
 			MV_REG_WRITE(SGMII_COMPHY_CTRL_REG(sgmiiPort), rxHighImpedanceMode);
 			DEBUG_WR_REG(SGMII_COMPHY_CTRL_REG(sgmiiPort), rxHighImpedanceMode);
 	} /* for each serdes lane*/
@@ -828,6 +845,8 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 				tmp |= 0x1;
 			else
 				tmp	|= 0x2;
+			DEBUG_INIT_FULL_S("Step 6.2: PEX "); DEBUG_INIT_FULL_D(pexIf,1);
+			DEBUG_INIT_FULL_C(" set GEN", (tmp & 3),1);
 			MV_REG_WRITE(PEX_LINK_CAPABILITIES_REG(pexIf), tmp);
 			DEBUG_WR_REG(PEX_LINK_CAPABILITIES_REG(pexIf), tmp);
 
@@ -1179,13 +1198,12 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	DEBUG_WR_REG(SOC_CTRL_REG, tmp);
 	/* Step 17: Speed change to target speed and width*/
 	{
-		MV_U32 pexIfNum = mvCtrlPexMaxIfGet();
 		MV_U32 tempReg, tempPexReg;
 		MV_U32 addr;
 		MV_U32 first_busno, next_busno;
 		MV_U32 maxLinkWidth = 0;
 		MV_U32 negLinkWidth = 0;
-
+		pexIfNum = mvCtrlPexMaxIfGet();
 		mvOsDelay(150);
 		DEBUG_INIT_FULL_C("step 17: max_if= 0x", pexIfNum,1);
 		next_busno = 0;
@@ -1285,8 +1303,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	/* Step 18: update pex DEVICE ID*/
 	{
 		MV_U32 devId;
-		MV_U32 pexIf;
-		MV_U32 pexIfNum = mvCtrlPexMaxIfGet();
+		pexIfNum = mvCtrlPexMaxIfGet();
 		ctrlMode = mvCtrlModelGet();
 		for (pexIf = 0; pexIf < pexIfNum; pexIf++) {
 			pexUnit    = (pexIf<9)? (pexIf >> 2) : 3;
@@ -1298,6 +1315,9 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 			devId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_DEVICE_AND_VENDOR_ID));
 			devId &= 0xFFFF;
 			devId |= ((ctrlMode << 16) & 0xffff0000);
+			DEBUG_INIT_S("Update Device ID PEX"); DEBUG_INIT_D(pexIf,1);
+			DEBUG_INIT_D(devId,8);
+			DEBUG_INIT_S("\n");
 			MV_REG_WRITE(PEX_CFG_DIRECT_ACCESS(pexIf, PEX_DEVICE_AND_VENDOR_ID), devId);
 			if ((pexIf<8) && (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_MODE_X4))
 			   pexIf += 3;
@@ -1306,6 +1326,8 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 		DEBUG_INIT_D(ctrlMode,4); 
 		DEBUG_INIT_S("0\n");
 	}
+	tmp = MV_REG_READ(PEX_DBG_STATUS_REG(0));
+	DEBUG_RD_REG(PEX_DBG_STATUS_REG(0), tmp);
 
 	DEBUG_INIT_S(ENDED_OK);
 	return MV_OK;

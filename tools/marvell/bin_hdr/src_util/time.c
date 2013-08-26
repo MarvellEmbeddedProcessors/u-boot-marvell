@@ -105,4 +105,39 @@ void __udelay(unsigned long usec)
     cntmrCtrl &= ~CTCR_ARM_TIMER_EN(UBOOT_CNTR);
     MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
 }
+void __timerSet(unsigned long usec)
+{
+    unsigned int cntmrCtrl;
+    unsigned long startTicks;
+
+    /* In case udelay is called before timier was initialized */
+    startTicks = (usec * (MV_BOARD_REFCLK / 1000000));
+    /* init the counter */
+    MV_REG_WRITE(CNTMR_RELOAD_REG(UBOOT_CNTR),startTicks);
+    MV_REG_WRITE(CNTMR_VAL_REG(UBOOT_CNTR),startTicks);
+
+    /* set control for timer \ cunter and enable */
+    /* read control register */
+    cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
+    cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
+    cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
+    cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
+    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
+
+}
+MV_U32 __timerGet(void)
+{
+    return MV_REG_READ(CNTMR_VAL_REG(UBOOT_CNTR));
+}
+
+void __timerDisable(void)
+{
+    unsigned int cntmrCtrl;
+    cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
+    cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
+    cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
+    /* disable times*/
+    cntmrCtrl &= ~CTCR_ARM_TIMER_EN(UBOOT_CNTR);
+    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
+}
 

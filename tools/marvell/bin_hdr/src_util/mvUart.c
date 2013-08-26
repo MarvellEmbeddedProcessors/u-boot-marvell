@@ -273,6 +273,14 @@ void putdataDec (u32 dec_num,u32 length)
         dec_num = dec_num / 10;
     }
     str[length] = '\0';
+    /* replace leading zeroes with blank */
+    for (i=0; i < (length-1); i++)
+    {
+        if ('0' == str[i])
+		str[i] = ' ';
+	else
+		break;
+    }
     putstring(str);
 }
 /*******************************************************************************

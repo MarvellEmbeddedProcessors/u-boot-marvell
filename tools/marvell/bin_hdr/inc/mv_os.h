@@ -204,6 +204,9 @@ typedef MV_U32 MV_HZ;
 #define __MV_PACKED /*__packed*/
 #endif
 void __udelay (unsigned long usec);
+void __timerSet(unsigned long usec);
+void __timerDisable(void);
+MV_U32 __timerGet(void);
 
 #endif /* MV_ASMLANGUAGE */
 

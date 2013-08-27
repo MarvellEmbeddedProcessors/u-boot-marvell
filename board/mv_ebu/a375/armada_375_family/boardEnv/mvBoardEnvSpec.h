@@ -81,9 +81,9 @@
 
 /* boards ID numbers */
 #define BOARD_ID_BASE                   0x0
-
 #define DB_6720_ID                      (BOARD_ID_BASE)
-#define MV_MAX_BOARD_ID                 (DB_6720_ID + 1)
+#define A375_CUSTOMER_ID                (DB_6720_ID + 1)
+#define MV_MAX_BOARD_ID                 (A375_CUSTOMER_ID + 1)
 #define MV_INVALID_BOARD_ID             0xFFFFFFFF
 
 /*******************************************************************************
@@ -128,6 +128,49 @@
 #define DB_88F6720_GPP_POL_LOW          0x0
 #define DB_88F6720_GPP_POL_MID          0x0
 #define DB_88F6720_GPP_POL_HIGH         0x0
+
+/*******************************************************************************
+ * Armada 375 Customer board */
+/******************************************************************************/
+/*SPI, NAND cases*/
+#define GROUP1_DEFAULT_MPP_SPI_I2C         0x22000022  /* SPI , I2C */
+#if defined(MV_INCLUDE_LEGACY_NAND) || defined(MV_INCLUDE_NOR)
+#define A375_CUSTOMER_BOARD_MPP0_7               0x11111111  /* DEV */
+#define A375_CUSTOMER_BOARD_MPP8_15              0x22111111  /* DEV , I2C */
+#elif defined(MV_INCLUDE_SPI)
+#define A375_CUSTOMER_BOARD_MPP0_7               0x00020020  /* SPI */
+#define A375_CUSTOMER_BOARD_MPP8_15              0x22000022  /* SPI , I2C */
+#elif defined(MTD_NAND_NFC)
+#define A375_CUSTOMER_BOARD_MPP0_7               0x55555555  /* NFC */
+#define A375_CUSTOMER_BOARD_MPP8_15              0x22555555  /* NFC , I2C */
+#else
+#define A375_CUSTOMER_BOARD_MPP0_7               0x00000000  /* GPIO */
+#define A375_CUSTOMER_BOARD_MPP8_15              0x22000000  /* GPIO , I2C */
+#endif
+#define A375_CUSTOMER_BOARD_MPP16_23             0x22222222	/* UART, TDM*/
+#define A375_CUSTOMER_BOARD_MPP24_31             0x33333333  /* SDIO*/
+#define A375_CUSTOMER_BOARD_MPP32_39             0x04403330  /* SPI, SMI */
+#define A375_CUSTOMER_BOARD_MPP40_47             0x22002044  /* UART1, GE0  */
+#define A375_CUSTOMER_BOARD_MPP48_55             0x22222222  /*GE0*/
+#define A375_CUSTOMER_BOARD_MPP56_63             0x44444422  /* GE0 , LED_MATRIX */
+#define A375_CUSTOMER_BOARD_MPP64_67				0x004		/* LED_MATRIX */
+
+#if 0
+/*NOR case, not supported, for refference only*/
+#define A375_CUSTOMER_BOARD_MPP40_47             0x66002044  /* UART1, NOR  */
+#define A375_CUSTOMER_BOARD_MPP48_55             0x66666666  /* NOR */
+#define A375_CUSTOMER_BOARD_MPP56_63             0x46664466  /* NOR , LED_MATRIX */
+#endif
+
+#define A375_CUSTOMER_BOARD_GPP_OUT_ENA_LOW      0xFFFFFFFF
+#define A375_CUSTOMER_BOARD_GPP_OUT_ENA_MID      0xFFFFFFFF
+#define A375_CUSTOMER_BOARD_GPP_OUT_ENA_HIGH     0xFFFFFFFF
+#define A375_CUSTOMER_BOARD_GPP_OUT_VAL_LOW      0x0
+#define A375_CUSTOMER_BOARD_GPP_OUT_VAL_MID      0x0
+#define A375_CUSTOMER_BOARD_GPP_OUT_VAL_HIGH     0x0
+#define A375_CUSTOMER_BOARD_GPP_POL_LOW          0x0
+#define A375_CUSTOMER_BOARD_GPP_POL_MID          0x0
+#define A375_CUSTOMER_BOARD_GPP_POL_HIGH         0x0
 
 
 #endif  /* MV_ASMLANGUAGE */

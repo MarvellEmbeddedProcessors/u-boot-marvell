@@ -43,7 +43,7 @@ static int do_sar_default(void)
 {
 	MV_U32 temp, defaultValue, boardId = mvBoardIdGet();
 
-	if (boardId == RD_6660_ID || boardId == RD_6650_ID) {
+	if (boardId != DB_6660_ID && boardId != DB_6650_ID) {
 		printf("\nError: S@R fields are readable only for current board\n");
 		return 1;
 	}
@@ -279,9 +279,14 @@ usage:
 static int do_sar_write(int argc, char *const argv[])
 {
 	const char *cmd = argv[0];
-	MV_U32 temp;
+	MV_U32 temp, boardId = mvBoardIdGet();
 	MV_BOOL flag = MV_ERROR;
 	MV_U8 writeVal = simple_strtoul(argv[1], NULL, 10);
+
+	if (boardId != DB_6660_ID && boardId != DB_6650_ID) {
+		printf("\nError: S@R fields are readable only for current board\n");
+		return 1;
+	}
 
 	if (argc < 2)
 		goto usage;

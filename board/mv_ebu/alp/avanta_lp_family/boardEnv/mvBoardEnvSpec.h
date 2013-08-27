@@ -80,15 +80,16 @@
 /* New board ID numbers */
 
 /* boards ID numbers */
-#define BOARD_ID_BASE                   0x0
+#define BOARD_ID_BASE			0x0
 
-#define RD_6650_ID                      (BOARD_ID_BASE)
-#define DB_6650_ID                      (RD_6650_ID + 1)
-#define RD_6660_ID                      (DB_6650_ID + 1)
-#define DB_6660_ID                      (RD_6660_ID + 1)
-#define MV_BOARD_ID_AVANTA_LP_FPGA      (DB_6660_ID + 1)
-#define MV_MAX_BOARD_ID                 (MV_BOARD_ID_AVANTA_LP_FPGA + 1)
-#define MV_INVALID_BOARD_ID             0xFFFFFFFF
+#define RD_6650_ID			(BOARD_ID_BASE)
+#define DB_6650_ID			(RD_6650_ID + 1)
+#define RD_6660_ID			(DB_6650_ID + 1)
+#define DB_6660_ID			(RD_6660_ID + 1)
+#define AVANTA_LP_CUSTOMER_ID		(DB_6660_ID + 1)
+#define MV_BOARD_ID_AVANTA_LP_FPGA	(AVANTA_LP_CUSTOMER_ID + 1)
+#define MV_MAX_BOARD_ID			(MV_BOARD_ID_AVANTA_LP_FPGA + 1)
+#define MV_INVALID_BOARD_ID		0xFFFFFFFF
 
 /*******************************************************************************
  * AvantaLP DB-88F6600 board */
@@ -202,22 +203,29 @@
 #define RD_88F6650_GPP_POL_HIGH         0x0
 
 /*******************************************************************************
-* Avanata LP customer board
+* AVANTA_LP_CUSTOMER_ID - customer board
 *******************************************************************************/
-#define AVANTA_LP_CUSTOMER_MPP0_7               0x00000000
-#define AVANTA_LP_CUSTOMER_MPP8_15              0x00000000
-#define AVANTA_LP_CUSTOMER_MPP16_23             0x33000000
-#define AVANTA_LP_CUSTOMER_MPP24_31             0x11000000
-#define AVANTA_LP_CUSTOMER_MPP32_39             0x11111111
-#define AVANTA_LP_CUSTOMER_MPP40_47             0x00221100
-#define AVANTA_LP_CUSTOMER_MPP48_55             0x00000003
-#define AVANTA_LP_CUSTOMER_MPP56_63             0x00000000
-#define AVANTA_LP_CUSTOMER_MPP64_67             0x00000000
+#define AVANTA_LP_CUSTOMER_MPP0_7               0x55555555  /* NAND */
+#define AVANTA_LP_CUSTOMER_MPP8_15              0x22555555  /* NAND , I2C */
+#define AVANTA_LP_CUSTOMER_MPP16_23             0x11110022  /* UA0, SSI, GPIO's */
+#define AVANTA_LP_CUSTOMER_MPP24_31             0x04606101  /* PCIe0CLKREQ, P0,C0_Leds & DYING GASP*/
+#define AVANTA_LP_CUSTOMER_MPP32_39             0x04420000  /* GE_SMI, PON & GPIO's */
+#define AVANTA_LP_CUSTOMER_MPP40_47             0x22120020  /* GE0, PON_[XVR,TX_PD,TX_SD]*/
+#define AVANTA_LP_CUSTOMER_MPP48_55             0x22222222  /* GE0*/
+#define AVANTA_LP_CUSTOMER_MPP56_63             0x44004422  /* GE0 , LED, GPIO's */
+#define AVANTA_LP_CUSTOMER_MPP64_67             0x004	     /* GPIO's */
 
-#define AVANTA_LP_CUSTOMER_GPP_OUT_ENA_LOW      0x0
-#define AVANTA_LP_CUSTOMER_GPP_OUT_ENA_MID      0x0
-#define AVANTA_LP_CUSTOMER_GPP_OUT_ENA_HIGH     0x0
-#define AVANTA_LP_CUSTOMER_GPP_OUT_VAL_LOW      0x0
+/* GPPs
+MPP#	NAME			IN/OUT
+--------------------------------------
+19	TDM_reset		OUT
+25	Ethernet Reset		OUT
+29	PCIe0_RSTOUTn		OUT
+*/
+#define AVANTA_LP_CUSTOMER_GPP_OUT_ENA_LOW      (~(BIT19 | BIT25 | BIT29))
+#define AVANTA_LP_CUSTOMER_GPP_OUT_ENA_MID      0xFFFFFFFF
+#define AVANTA_LP_CUSTOMER_GPP_OUT_ENA_HIGH     0xFFFFFFFF
+#define AVANTA_LP_CUSTOMER_GPP_OUT_VAL_LOW      BIT29
 #define AVANTA_LP_CUSTOMER_GPP_OUT_VAL_MID      0x0
 #define AVANTA_LP_CUSTOMER_GPP_OUT_VAL_HIGH     0x0
 #define AVANTA_LP_CUSTOMER_GPP_POL_LOW          0x0

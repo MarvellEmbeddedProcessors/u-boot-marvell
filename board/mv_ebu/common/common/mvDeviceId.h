@@ -371,6 +371,10 @@ extern "C" {
 #define MV_88F67X0			0x6700
 #define MV_6720_DEV_ID		0x6720
 
+/* BobCat2  Family */
+#define MV_BOBCAT2_DEV_ID		0xFC00
+
+
 #ifdef __cplusplus
 }
 #endif	/* __cplusplus */

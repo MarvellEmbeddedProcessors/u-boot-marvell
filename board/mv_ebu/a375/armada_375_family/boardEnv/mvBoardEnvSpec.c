@@ -223,9 +223,122 @@ MV_BOARD_INFO db88f6720_board_info = {
 	.configAutoDetect		= MV_TRUE
 };
 
+/*******************************************************************************
+ * Armada 375 Customer board */
+/*******************************************************************************/
+
+#define A375_CUSTOMER_BOARD_NOR_READ_PARAMS		0x403E07CF
+#define A375_CUSTOMER_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
+
+#define A375_CUSTOMER_BOARD_NAND_READ_PARAMS	0x003E07CF
+#define A375_CUSTOMER_BOARD_NAND_WRITE_PARAMS	0x000F0F0F
+
+MV_BOARD_TWSI_INFO armada_375_customer_InfoBoardTwsiDev[] = {
+	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{ BOARD_DEV_TWSI_SATR,		0,	0x4C,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4D,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_EEPROM,	0,	0x52,	   ADDR7_BIT	},
+};
+
+MV_BOARD_MAC_INFO armada_375_customer_InfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x0									}
+};
+MV_BOARD_MPP_TYPE_INFO armada_375_customer_InfoBoardModTypeInfo[] = {
+	{
+		.boardMppSlic = MV_BOARD_AUTO,
+		.ethSataComplexOpt = MV_ETHCOMP_GE_MAC0_2_RGMII0,
+		.ethPortsMode = 0x0
+	}
+};
+
+MV_DEV_CS_INFO armada_375_customer_InfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 }, /* SPI DEV */
+#endif
+#if defined(MV_INCLUDE_NOR)
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16}, /* NOR DEV */
+#endif
+#if defined(MV_INCLUDE_LEGACY_NAND)
+	{DEV_BOOCS, N_A, BOARD_DEV_NAND_FLASH, 16, 16}  /* NAND DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO armada_375_customer_InfoBoardMppConfigValue[] = {
+	{ {
+		  A375_CUSTOMER_BOARD_MPP0_7,
+		  A375_CUSTOMER_BOARD_MPP8_15,
+		  A375_CUSTOMER_BOARD_MPP16_23,
+		  A375_CUSTOMER_BOARD_MPP24_31,
+		  A375_CUSTOMER_BOARD_MPP32_39,
+		  A375_CUSTOMER_BOARD_MPP40_47,
+		  A375_CUSTOMER_BOARD_MPP48_55,
+		  A375_CUSTOMER_BOARD_MPP56_63,
+		  A375_CUSTOMER_BOARD_MPP64_67,
+	 } }
+};
+
+MV_BOARD_INFO armada_375_customer_board_info = {
+	.boardName			= "A375-CUSTOMER-BOARD",
+	.numBoardMppTypeValue		= ARRSZ(armada_375_customer_InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= armada_375_customer_InfoBoardModTypeInfo,
+	.pBoardMppConfigValue		= armada_375_customer_InfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(armada_375_customer_InfoBoardDeCsInfo),
+	.pDevCsInfo			= armada_375_customer_InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(armada_375_customer_InfoBoardTwsiDev),
+	.pBoardTwsiDev			= armada_375_customer_InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(armada_375_customer_InfoBoardMacInfo),
+	.pBoardMacInfo			= armada_375_customer_InfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= 0,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow			= A375_CUSTOMER_BOARD_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= A375_CUSTOMER_BOARD_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= A375_CUSTOMER_BOARD_GPP_OUT_ENA_HIGH,
+	.gppOutValLow			= A375_CUSTOMER_BOARD_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= A375_CUSTOMER_BOARD_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= A375_CUSTOMER_BOARD_GPP_OUT_VAL_HIGH,
+	.gppPolarityValLow		= A375_CUSTOMER_BOARD_GPP_POL_LOW,
+	.gppPolarityValMid		= A375_CUSTOMER_BOARD_GPP_POL_MID,
+	.gppPolarityValHigh		= A375_CUSTOMER_BOARD_GPP_POL_HIGH,
+
+	/* External Switch Configuration */
+	.switchforceLinkMask		= 0x0,
+
+	/* TDM */
+	.numBoardTdmInfo		= {},
+	.pBoardTdmInt2CsInfo		= {},
+	.boardTdmInfoIndex		= -1,
+
+	.pBoardSpecInit			= NULL,
+
+	/* NAND init params */
+	.nandFlashReadParams		= A375_CUSTOMER_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= A375_CUSTOMER_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= 0,
+	/* NOR init params */
+	.norFlashReadParams		= A375_CUSTOMER_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= A375_CUSTOMER_BOARD_NOR_WRITE_PARAMS,
+	/* Enable modules auto-detection. */
+	.configAutoDetect		= MV_TRUE
+};
+
 /*
  * All supported Armada 375 boards
  */
 MV_BOARD_INFO *boardInfoTbl[] = {
 	&db88f6720_board_info,
+	&armada_375_customer_board_info,
 };

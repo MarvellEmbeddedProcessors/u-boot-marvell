@@ -946,11 +946,63 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	/* Update MPP group types and values according to board configuration */
 	mvBoardMppIdUpdate();
 
-	/* If needed, enable SFP0 TX for SGMII, for DB-6660 */
+	/* according to board config, only DB-6660 utilize 3 SerDes lanes, and SFP0 */
 	if (mvBoardIdGet() == DB_6660_ID) {
+		/* Verify board config vs. SerDes actual setup (Common phy Selector) */
+		mvBoardVerifySerdesCofig();
+		/* If needed, enable SFP0 TX for SGMII, for DB-6660 */
 		if (ethComplex & MV_ETHCOMP_GE_MAC0_2_COMPHY_2)
 			mvBoardSgmiiSfp0TxSet(MV_TRUE);
 	}
+}
+
+/*******************************************************************************
+* mvBoardVerifySerdesCofig - Verify board config vs. SerDes actual setup (Common phy Selector)
+*
+* DESCRIPTION:
+	read board configuration for SerDes lanes 1-3,
+	and compare it to SerDes common phy Selector (Actual SerDes config in use)
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_VOID mvBoardVerifySerdesCofig(MV_VOID)
+{
+	MV_U32 laneConfig, laneSelector = MV_REG_READ(MV_COMMON_PHY_REGS_OFFSET);
+
+	/* Lane1:
+	 * PCIe0   : board config = 0x0, Selector  = 0x0
+	 * SGMII-0 : board config = 0x2,  Selector  = 0x1
+	 */
+	laneConfig = mvCtrlSysConfigGet(MV_CONFIG_LANE1);
+	if (!((laneConfig == 0x0 && ((laneSelector & BIT1) >> 1) == 0x0) ||
+		(laneConfig == 0x2 && ((laneSelector & BIT1) >> 1) == 0x1)))
+		mvOsPrintf("Error: board configuration conflicts with SerDes configuration\n" \
+			"SerDes#1: Board configuration= %x  SerDes Selector = %x\n" \
+			, laneConfig, (laneSelector & BIT1) >> 1);
+
+	/* for lane2, board config value is reversed, compared to SerDes selector value:
+	 * SATA0   : board config = 0x0, Selector = 0x1
+	 * SGMII-0 : board config = 0x1, Selector = 0x0
+	 */
+	laneConfig = mvCtrlSysConfigGet(MV_CONFIG_LANE2);
+	if (!laneConfig != (laneSelector & BIT2) >> 2)
+		mvOsPrintf("Error: board configuration conflicts with SerDes configuration\n" \
+			"SerDes#2: Board configuration= %x  SerDes Selector = %x\n" \
+			, !laneConfig, (laneSelector & BIT2) >> 2);
+
+	laneConfig = mvCtrlSysConfigGet(MV_CONFIG_LANE3);
+	if (laneConfig != (laneSelector & BIT3) >> 3)
+		mvOsPrintf("Error: board configuration conflicts with SerDes configuration\n" \
+			"SerDes#1: Board configuration= %x  SerDes Selector = %x\n" \
+			, laneConfig, (laneSelector & BIT3) >> 3);
 }
 
 /*******************************************************************************
@@ -1109,8 +1161,9 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 		break;
 	case MSAR_0_BOOT_SPI_FLASH:
 		/* read SPDIF_AUDIO board configuration for DB-6660 board */
-		if (mvBoardIdGet() == DB_6660_ID)
-			groupType = ((mvCtrlSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2) ? SPI0_BOOT_SPDIF_AUDIO : SPI0_BOOT);
+		if ((mvBoardIdGet() == DB_6660_ID) &&
+			(mvCtrlSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2))	/* 0x2=SPDIF_AUDIO */
+			groupType = SPI0_BOOT_SPDIF_AUDIO;
 		else
 			groupType = SPI0_BOOT;
 
@@ -1688,9 +1741,8 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 {
 	char *lane1[] = {"PCIe1", "SGMII-0", "SATA-1", "Invalid Configuration" };
 	char *tdmSlic[] = {"None", "SSI", "ISI", "ZSI", "TDM"};
-	MV_U32 boardID, slicDevice, ethConfig = mvBoardEthComplexConfigGet();
+	MV_U32 slicDevice, laneSelector, ethConfig = mvBoardEthComplexConfigGet();
 
-	boardID = mvBoardIdGet();
 	mvOsOutput("\nBoard configuration:\n");
 
 	/* Mac configuration */
@@ -1748,22 +1800,19 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 	else
 		mvOsOutput("       TDM/SLIC: Unsupported configuration\n");
 
-	/* SERDES lanes configuration is relevant only to DB board */
-	if (boardID != DB_6660_ID && boardID != DB_6650_ID)
-		return;
-
 	/* SERDES Lanes*/
 	mvOsOutput("\nSERDES configuration:\n");
-	mvOsOutput("       Lane #0: PCIe0\n");
+	mvOsOutput("       Lane #0: PCIe0\n");	/* Lane 0 is always PCIe0 */
 
-	/* SERDES lanes #1,#2,#3 are relevant only to DB-6660 board */
-	if (boardID != DB_6660_ID)
+	/* SERDES lanes #1,#2,#3 are relevant only to MV88F6660 SoC*/
+	if (mvCtrlModelGet() != MV_6660_DEV_ID)
 		return;
 
-	mvOsOutput("       Lane #1: %s\n", lane1[mvCtrlSysConfigGet(MV_CONFIG_LANE1)]);
-	mvOsOutput("       Lane #2: %s\n", mvCtrlSysConfigGet(MV_CONFIG_LANE2) ? "SGMII-0" : "SATA-0");
-	mvOsOutput("       Lane #3: %s\n", mvCtrlSysConfigGet(MV_CONFIG_LANE3) ? "SGMII-0" : "USB3");
-
+	/* Read Common Phy selectors to determine SerDes configuration */
+	laneSelector = MV_REG_READ(MV_COMMON_PHY_REGS_OFFSET);
+	mvOsOutput("       Lane #1: %s\n", lane1[(laneSelector & BIT1) >> 1]);
+	mvOsOutput("       Lane #2: %s\n", (laneSelector & BIT2) >> 2 ? "SATA-0" : "SGMII-0");
+	mvOsOutput("       Lane #3: %s\n", (laneSelector & BIT3) >> 3 ? "SGMII-0" : "USB3");
 }
 
 /*******************************************************************************

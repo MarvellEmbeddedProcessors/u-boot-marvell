@@ -513,6 +513,7 @@ MV_U32 mvBoardIdGet(MV_VOID);
 MV_VOID mvBoardIdSet(MV_U32 boardId);
 MV_U32 mvBoardSledCpuNumGet(MV_VOID);
 MV_VOID mvBoardInfoUpdate(MV_VOID);
+MV_VOID mvBoardVerifySerdesCofig(MV_VOID);
 MV_VOID mvBoardMppIdUpdate(MV_VOID);
 MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID);
 MV_VOID mvBoardConfigWrite(MV_VOID);

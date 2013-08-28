@@ -897,7 +897,7 @@ void kick_next(void)
 		udelay(1000);
 	}
 
-	cpuNum = mvBoardCpuCoresNumGet() == 2 ? (mvBoardCpuCoresNumGet() - 1) : (mvBoardCpuCoresNumGet());
+	cpuNum = mvCtrlGetCpuNum() + 1;
 	if (whoAmI() < cpuNum) {
 		reg = MV_REG_READ((MV_CPU_SW_RESET_CONTROL(whoAmI() + 1)));
 		reg &= 0xFFFFFFFE;
@@ -1055,7 +1055,6 @@ int misc_init_r(void)
 
 	/* Prints the modules detected */
 	mvBoardConfigurationPrint();
-	mvBoardOtherModuleTypePrint();
 #endif
 
 	mvBoardDebugLed(7);

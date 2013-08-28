@@ -1365,40 +1365,6 @@ MV_BOOL mvBoardLaneSGMIIGet(MV_ETH_COMPLEX_TOPOLOGY *sgmiiConfig)
 }
 
 /*******************************************************************************
-* mvBoardIsInternalSwitchConnectedToPort
-*
-* DESCRIPTION:
-*       This routine returns port's connection status
-*
-* INPUT:
-*       ethPortNum - Ethernet port number.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       1 - if ethPortNum is connected to switch, 0 otherwise
-*
-*******************************************************************************/
-MV_STATUS mvBoardIsInternalSwitchConnectedToPort(MV_U32 ethPortNum)
-{
-	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
-
-	if (ethPortNum >= board->numBoardMacInfo) {
-		mvOsPrintf("%s: Error: Illegal port number(%u)\n", __func__, ethPortNum);
-		return MV_FALSE;
-	}
-
-	/* Check if internal switch is connected */
-	if ((ethPortNum == 0) && (ethComplex & MV_ETHCOMP_GE_MAC0_2_SW_P6))
-		return MV_TRUE;
-	else if ((ethPortNum == 1) && (ethComplex & MV_ETHCOMP_GE_MAC1_2_SW_P4))
-		return MV_TRUE;
-	else
-		return MV_FALSE;
-}
-
-/*******************************************************************************
 * mvBoardIsInternalSwitchConnected
 *
 * DESCRIPTION:
@@ -1602,37 +1568,6 @@ MV_VOID mvBoardConfigWrite(void)
 }
 
 /*******************************************************************************
-* mvBoardGppConfigGet
-*
-* DESCRIPTION:
-*	Get board configuration according to the input configuration GPP's.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*	The value of the board configuration GPP's.
-*
-*******************************************************************************/
-MV_U32 mvBoardGppConfigGet(void)
-{
-	MV_U32 gpp, i, result = 0;
-
-	for (i = 0; i < board->numBoardGppInfo; i++) {
-		if (board->pBoardGppInfo[i].devClass == BOARD_GPP_CONF) {
-			gpp = board->pBoardGppInfo[i].gppPinNum;
-			result <<= 1;
-			result |= (mvGppValueGet(gpp >> 5, 1 << (gpp & 0x1F)) >> (gpp & 0x1F));
-		}
-	}
-
-	return result;
-}
-
-/*******************************************************************************
 * mvBoardTdmSpiModeGet - return SLIC/DAA connection
 *
 * DESCRIPTION:
@@ -1758,11 +1693,7 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 	boardID = mvBoardIdGet();
 	mvOsOutput("\nBoard configuration:\n");
 
-	/* LCD DVI Module */
-	if (mvBoardIsLcdDviModuleConnected())
-		mvOsOutput("       LCD DVI module.\n");
-
-	/* Serdex configuration */
+	/* Mac configuration */
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_COMPHY_1)
 		mvOsOutput("       SGMII0 on MAC0 [Lane1]\n");
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_COMPHY_2)
@@ -1771,7 +1702,7 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 		mvOsOutput("       SGMII0 on MAC0 [Lane3]\n");
 
 
-	/* Switch Module */
+	/* Switch configuration */
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6)
 		mvOsOutput("       Ethernet Switch port 6 on MAC0, %s Speed [Default]\n"
 				, mvBoardMacSpeedGet(0) == BOARD_MAC_SPEED_2000M ? "2G" : "1G");
@@ -1833,16 +1764,6 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 	mvOsOutput("       Lane #2: %s\n", mvCtrlSysConfigGet(MV_CONFIG_LANE2) ? "SGMII-0" : "SATA-0");
 	mvOsOutput("       Lane #3: %s\n", mvCtrlSysConfigGet(MV_CONFIG_LANE3) ? "SGMII-0" : "USB3");
 
-}
-
-MV_VOID mvBoardOtherModuleTypePrint(MV_VOID)
-{
-	/* SETM Module */
-	if (mvBoardIsSetmModuleConnected())
-		mvOsOutput("       SETM module.\n");
-	/* LVDS Module */
-	if (mvBoardIsLvdsModuleConnected())
-		mvOsOutput("       LVDS module.\n");
 }
 
 /*******************************************************************************
@@ -1950,34 +1871,6 @@ MV_32 mvBoardGetDeviceBusWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 		return devEntry->busWidth;
 
 	return 0xFFFFFFFF;
-}
-
-/*******************************************************************************
-* mvBoardGetDeviceWidth - Get dev width of a device existing on the board
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       devIndex - The device sequential number on the board
-*		devType - The device type ( Flash,RTC , etc .. )
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       If the device is found on the board the then the functions returns the
-*		dev width else the function returns 0xffffffff
-*
-*
-*******************************************************************************/
-MV_32 mvBoardGetDeviceWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
-{
-	MV_DEV_CS_INFO *devEntry = boardGetDevEntry(devNum, devClass);
-
-	if (devEntry)
-		return devEntry->devWidth;
-
-	return MV_ERROR;
 }
 
 /*******************************************************************************
@@ -2459,35 +2352,6 @@ MV_STATUS mvBoardSgmiiSfp0TxSet(MV_BOOL enable)
 }
 
 /*******************************************************************************
-* mvBoardNandWidthGet -
-*
-* DESCRIPTION: Get the width of the first NAND device in bytes
-*
-* INPUT:
-*
-* OUTPUT:
-*       None.
-*
-* RETURN: 1, 2, 4 or MV_ERROR
-*
-*
-*******************************************************************************/
-MV_32 mvBoardNandWidthGet(void)
-{
-	MV_U32 devNum;
-	MV_U32 devWidth;
-
-	for (devNum = START_DEV_CS; devNum < board->numBoardDeviceIf; devNum++) {
-		devWidth = mvBoardGetDeviceWidth(devNum, BOARD_DEV_NAND_FLASH);
-		if (devWidth != MV_ERROR)
-			return devWidth / 8;
-	}
-
-	DB(mvOsPrintf("%s: Error: NAND device was not found\n", __func__));
-	return MV_ERROR;
-}
-
-/*******************************************************************************
 * mvBoardIdSet - Set Board model
 *
 * DESCRIPTION:
@@ -2641,170 +2505,6 @@ MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 }
 
 /*******************************************************************************
- * SatR Configuration functions
- */
-
-MV_U8 mvBoardCpuCoresNumGet(MV_VOID)
-{
-	return 1;
-}
-
-/*******************************************************************************
-* End of SatR Configuration functions
-*******************************************************************************/
-
-/*******************************************************************************
-* mvBoardMppModulesScan
-*
-* DESCRIPTION:
-*	Scan for modules connected through MPP lines.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None
-*
-* RETURN:
-*       MV_STATUS - MV_OK, MV_ERROR.
-*
-*******************************************************************************/
-MV_STATUS mvBoardMppModulesScan(void)
-{
-	return MV_OK;
-}
-
-/*******************************************************************************
-* mvBoardIsPexModuleConnected
-*
-* DESCRIPTION:
-*	Check if PEX module is connected to the board.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None
-*
-* RETURN:
-*       MV_TRUE / MV_FALSE
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsPexModuleConnected(void)
-{
-	return MV_FALSE;
-}
-
-/*******************************************************************************
-* mvBoardIsSetmModuleConnected
-*
-* DESCRIPTION:
-*	Check if SETM module is connected to the board.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None
-*
-* RETURN:
-*       MV_TRUE / MV_FALSE
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsSetmModuleConnected(void)
-{
-	return MV_FALSE;
-}
-
-/*******************************************************************************
-* mvBoardIsLvdsModuleConnected
-*
-* DESCRIPTION:
-*	Check if LVDS module is connected to the board.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None
-*
-* RETURN:
-*       MV_TRUE / MV_FALSE
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsLvdsModuleConnected(void)
-{
-	return MV_FALSE;
-}
-
-/*******************************************************************************
-* mvBoardIsLcdDviModuleConnected
-*
-* DESCRIPTION:
-*	Check if LVDS module is connected to the board.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None
-*
-* RETURN:
-*       MV_TRUE / MV_FALSE
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsLcdDviModuleConnected(void)
-{
-	return MV_FALSE;
-}
-
-/*******************************************************************************
-* mvBoardTwsiMuxChannelSet
-*
-* DESCRIPTION:
-*	Set the channel number of the on-board TWSI mux.
-*
-* INPUT:
-*	chNum	- The channel number to set.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*       MV_STATUS - MV_OK, MV_ERROR.
-*
-*******************************************************************************/
-MV_STATUS mvBoardTwsiMuxChannelSet(MV_U8 muxChNum)
-{
-	return MV_ERROR;
-}
-
-/*******************************************************************************
-* mvBoardTwsiReadByteThruMux
-*
-* DESCRIPTION:
-*	Read a single byte from a TWSI device through the TWSI Mux.
-*
-* INPUT:
-*	muxChNum	- The Twsi Mux channel number to read through.
-*	chNum		- The TWSI channel number.
-*	pTwsiSlave	- The TWSI slave address.
-*	data		- Buffer to read into (1 byte).
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*       MV_STATUS - MV_OK, MV_ERROR.
-*
-*******************************************************************************/
-MV_STATUS mvBoardTwsiReadByteThruMux(MV_U8 muxChNum, MV_U8 chNum,
-				     MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *data)
-{
-	return MV_ERROR;
-}
-
-/*******************************************************************************
 * mvBoardSmiScanModeGet - Get Switch SMI scan mode
 *
 * DESCRIPTION:
@@ -2935,116 +2635,6 @@ MV_U32 mvBoardMacCpuPortGet(MV_VOID)
 		DB(mvOsPrintf("%s: Error: No MAC CPU port.\n", __func__));
 
 	return macCpuPort;
-}
-
-/*******************************************************************************
-* mvBoardIsQsgmiiModuleConnected
-*
-* DESCRIPTION:
-*       This routine returns whether the QSGMII module is connected or not.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE if QSGMII module is connected, MV_FALSE otherwise.
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsQsgmiiModuleConnected(MV_VOID)
-{
-	return MV_FALSE;
-}
-
-/*******************************************************************************
-* mvBoardGePhySwitchPortGet
-*
-* DESCRIPTION:
-*       This routine returns whether the internal GE PHY is connected to
-*	Switch Port 0, Switch port 5 or not connected to any Switch port.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       0 if the internal GE PHY is connected to Switch Port 0,
-*	5 if the internal GE PHY is connected to Switch Port 5,
-*	-1 otherwise.
-*
-*******************************************************************************/
-MV_32 mvBoardGePhySwitchPortGet(MV_VOID)
-{
-	return -1;
-}
-
-/*******************************************************************************
-* mvBoardRgmiiASwitchPortGet
-*
-* DESCRIPTION:
-*       This routine returns whether RGMII-A is connected to
-*	Switch Port 5, Switch port 6 or not connected to any Switch port.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       5 if the internal GE PHY is connected to Switch Port 5,
-*	6 if the internal GE PHY is connected to Switch Port 6,
-*	-1 otherwise.
-*
-*******************************************************************************/
-MV_32 mvBoardRgmiiASwitchPortGet(MV_VOID)
-{
-	return -1;
-}
-
-/*******************************************************************************
-* mvBoardSwitchPortMap
-*
-* DESCRIPTION:
-*	Map front panel connector number to switch port number.
-*
-* INPUT:
-*	switchIdx - The switch index.
-*	switchPortNum - The switch port number to get the mapping for.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*	The switch port mapping.
-*	OR -1 if the port number is wrong or if not relevant.
-*
-*******************************************************************************/
-MV_32 mvBoardSwitchPortMap(MV_U32 switchIdx, MV_U32 switchPortNum)
-{
-	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
-	if (switchPortNum >= BOARD_ETH_SWITCH_PORT_NUM) {
-		mvOsPrintf("%s: Error: wrong switch port number (%d)\n", __func__, switchPortNum);
-		return -1;
-	}
-
-	if ((switchPortNum == 0) && (ethComplex & MV_ETHCOMP_SW_P0_2_GE_PHY_P0))
-		return 0;
-	else if ((switchPortNum == 1) && (ethComplex & MV_ETHCOMP_SW_P1_2_GE_PHY_P1))
-		return 1;
-	else if ((switchPortNum == 2) && (ethComplex & MV_ETHCOMP_SW_P2_2_GE_PHY_P2))
-		return 2;
-	else if ((switchPortNum == 3) && (ethComplex & MV_ETHCOMP_SW_P3_2_GE_PHY_P3))
-		return 3;
-	else if ((switchPortNum == 4) && (ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0))
-		return 4;
-
-	mvOsPrintf("%s: Error: switch port map not found\n", __func__);
-	return -1;
 }
 
 /*******************************************************************************

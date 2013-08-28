@@ -126,6 +126,8 @@ CTRL_ENV_INFO ctrlEnvInfo = {};
 MV_U32 satrOptionsConfig[MV_SATR_READ_MAX_OPTION];
 MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 
+MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
+
 /*******************************************************************************
 * mvCtrlGetCpuNum
 *

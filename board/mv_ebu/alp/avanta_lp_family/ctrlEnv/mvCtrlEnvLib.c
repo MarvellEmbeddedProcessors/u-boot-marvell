@@ -1790,47 +1790,6 @@ MV_U32 ctrlRegToSize(MV_U32 regSize, MV_U32 alignment)
 }
 
 /*******************************************************************************
-* ctrlSizeRegRoundUp - Round up given size
-*
-* DESCRIPTION:
-*       This function round up a given size to a size that fits the
-*       restrictions of size format given an aligment parameter.
-*		to given aligment paramter. For example for size parameter 0xa1000 and
-*		aligment 0x1000 the function will return 0xFF000.
-*
-* INPUT:
-*       size - Size.
-*		alignment - Size alignment.	Note that alignment must be power of 2!
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       32bit describing size value correspond to size in register.
-*******************************************************************************/
-MV_U32 ctrlSizeRegRoundUp(MV_U32 size, MV_U32 alignment)
-{
-	MV_U32 msbBit = 0;
-	MV_U32 retSize;
-
-	/* Check if size parameter is already comply with restriction   */
-	if (!(-1 == ctrlSizeToReg(size, alignment)))
-		return size;
-
-	while (size) {
-		size = (size >> 1);
-		msbBit++;
-	}
-
-	retSize = (1 << msbBit);
-
-	if (retSize < alignment)
-		return alignment;
-	else
-		return retSize;
-}
-
-/*******************************************************************************
  * mvCtrlIsDLBEnabled - Read DLB configuration
  *
  * DESCRIPTION: return True if DLB is enabled
@@ -1848,69 +1807,6 @@ MV_BOOL mvCtrlIsDLBEnabled(MV_VOID)
 	reg = MV_REG_READ(REG_STATIC_DRAM_DLB_CONTROL);
 
 	return (reg & 0x1) ? MV_TRUE : MV_FALSE;
-}
-
-/*******************************************************************************
-* mvCtrlIsBootFromNOR
-*
-* DESCRIPTION:
-*       Check if device is configured to boot from NOR flash according to the
-*	SAR registers.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE if device boot from SPI.
-*******************************************************************************/
-MV_BOOL mvCtrlIsBootFromNOR(MV_VOID)
-{
-	return MV_TRUE;
-}
-
-/*******************************************************************************
-* mvCtrlIsBootFromSPI
-*
-* DESCRIPTION:
-*       Check if device is configured to boot from SPI flash according to the
-*	SAR registers.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE if device boot from SPI.
-*******************************************************************************/
-MV_BOOL mvCtrlIsBootFromSPI(MV_VOID)
-{
-	return MV_TRUE; // omriii : return to false
-}
-
-/*******************************************************************************
-* mvCtrlIsBootFromNAND
-*
-* DESCRIPTION:
-*       Check if device is confiogured to boot from NAND flash according to the SAR
-*	registers.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE if device boot from NAND.
-*******************************************************************************/
-MV_BOOL mvCtrlIsBootFromNAND(MV_VOID)
-{
-	return MV_FALSE;
 }
 
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)

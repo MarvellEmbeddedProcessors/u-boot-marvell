@@ -273,18 +273,6 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *tempVal)
 MV_VOID mvCtrlSatrInit(void)
 {
 	MV_U8 tmp;
-	MV_U32  boardId = mvBoardIdGet();
-	boardLaneConfig[0] = SERDES_UNIT_PEX;
-
-	/* Verify that board support Auto detection from S@R & board configuration
-	else write manually the lane configurations*/
-	boardLaneConfig[1] = SERDES_UNIT_PEX;
-	boardLaneConfig[2] = SERDES_UNIT_SATA;
-	boardLaneConfig[3] = SERDES_UNIT_USB3;
-
-	/* Read Serdes board configuration for DB-6660 */
-	if (boardId != DB_88F6660_BP_ID)
-	return;
 
 	/*Read rest of Board Configuration, EEPROM / Dip Switch access read : */
 	if (mvCtrlBoardConfigGet(configVal) == MV_OK) {
@@ -297,12 +285,18 @@ MV_VOID mvCtrlSatrInit(void)
 		configVal[1] = mvReverseBits(configVal[1]);
 		tmp = ((configVal[1] & 0x18) >> 3);
 		switch (tmp) {
-		case 0: boardLaneConfig[1] = SERDES_UNIT_PEX; 	break;
-		case 1: boardLaneConfig[1] = SERDES_UNIT_SGMII;	break;
-		case 2: boardLaneConfig[1] = SERDES_UNIT_SATA; 	break;
+		case 0:
+			boardLaneConfig[1] = SERDES_UNIT_PEX;
+			break;
+		case 1:
+			boardLaneConfig[1] = SERDES_UNIT_SATA;
+			break;
+		case 2:
+			boardLaneConfig[1] = SERDES_UNIT_SGMII;
+			break;
 		case 3:
 		default:
-			DEBUG_INIT_S("Error: Read board configuration (SERDES LAN1) from EEPROM/Dip Switch failed \n");
+			DEBUG_INIT_S("Error: Read board configuration (SERDES LANE1) from EEPROM/Dip Switch failed\n");
 			boardLaneConfig[1] = SERDES_UNIT_UNCONNECTED;
 			break;
 		}
@@ -518,14 +512,6 @@ MV_U8 mvCtrlRevisionGet(MV_VOID)
 *       Register value
 *
 *******************************************************************************/
-/*#define	AVANTA_Z1
-#ifdef AVANTA_Z1
-#define	SERDES_LAN2_OFFS	2
-#define	SERDES_LAN3_OFFS	3
-#else
-#define	SERDES_LAN2_OFFS	3
-#define	SERDES_LAN3_OFFS	4
-#endif*/
 MV_U32 GetLaneSelectorConfig(void)
 {
     MV_U32 tmp,uiReg;
@@ -549,10 +535,18 @@ MV_U32 GetLaneSelectorConfig(void)
     uiReg = 0x1; /* lane 0 is always PEX */
 
 	switch (mvGetSerdesLaneCfg(1)) {
+	case SERDES_UNIT_PEX:
+	case SERDES_UNIT_UNCONNECTED: /* if SerDes is not connected, don't modify selector */
+		tmp = 0;
+		break;
+	case SERDES_UNIT_SGMII:
+		tmp = 1;
+		break;
+	case SERDES_UNIT_SATA:
+		tmp = 2;
+		break;
 	default:
-	case SERDES_UNIT_PEX:	tmp = 0;	break;
-	case SERDES_UNIT_SGMII: tmp = 1;	break;
-	case SERDES_UNIT_SATA:	tmp = 2;	break;
+		break;
 	}
     uiReg |= (tmp << 1); /* lane 1  */
 
@@ -625,7 +619,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	MV_U32  first_busno, next_busno;
     MV_U32	addr;
 	MV_TWSI_ADDR slave;
-
+	MV_U32  boardId = mvBoardIdGet();
     maxSerdesLanes = mvCtrlSerdesMaxLanesGet();
 
     if (maxSerdesLanes == 0)
@@ -643,9 +637,22 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	mvUartInit();
 
-    /* initialize board configuration database */
-    mvCtrlSatrInit();
+	/* Initialize board configuration database */
+	boardLaneConfig[0] = SERDES_UNIT_PEX;		/* SerDes 0 is alwyas PCIe0*/
+	boardLaneConfig[1] = SERDES_UNIT_UNCONNECTED;
+	boardLaneConfig[2] = SERDES_UNIT_UNCONNECTED;
+	boardLaneConfig[3] = SERDES_UNIT_UNCONNECTED;
 
+	/* Configure SGMII speed*/
+	configVal[0] = 0x0; /* default SGMII speed is 1G */
+
+	if (boardId == DB_88F6660_BP_ID) {		 /* for DB-6660, read SerDes configuration from DIP-Switch*/
+		mvCtrlSatrInit();
+	} else if (boardId == RD_88F6660_BP_ID) {	/* use static configuration for RD-6660 */
+		boardLaneConfig[1] = SERDES_UNIT_PEX;
+		boardLaneConfig[2] = SERDES_UNIT_SATA;
+		boardLaneConfig[3] = SERDES_UNIT_USB3;
+	}
         /* Release PEX agents reset */
 	mvPexAgentReset();
 

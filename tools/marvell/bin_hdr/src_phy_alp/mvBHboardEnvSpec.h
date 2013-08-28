@@ -75,6 +75,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_6650_DEV_ID      0x6650
 #define MV_6610_DEV_ID      0x6610
 
+/* SGMII speed */
+#define SGMII0_CAPACITY_2_5G	BIT7
+#define SGMII1_CAPACITY_2_5G	BIT8
+
 /* boards ID numbers */
 #define BOARD_ID_BASE               0x0
 

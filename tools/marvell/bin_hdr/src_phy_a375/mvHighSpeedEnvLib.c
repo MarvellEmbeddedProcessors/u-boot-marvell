@@ -216,59 +216,6 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *tempVal)
     return MV_OK;
 }
 /*******************************************************************************
-* mvCtrlSatrInit
-*
-* DESCRIPTION: read relevant board configuration (using TWSI/EEPROM access)
-*
-* INPUT:  None
-*
-* OUTPUT: None
-*
-* RETURN: NONE
-*
-*******************************************************************************/
-MV_VOID mvCtrlSatrInit(void)
-{
-    MV_U8 tmp;
-    MV_U32  boardId = mvBoardIdGet();
-	boardLaneConfig[0] = SERDES_UNIT_PEX;
-
-    /* Verify that board support Auto detection from S@R & board configuration
-     else write manually the lane configurations*/
-
-	if (boardId == DB_88F6720_BP_ID) {
-		boardLaneConfig[0] = SERDES_UNIT_PEX;
-		boardLaneConfig[1] = SERDES_UNIT_PEX;
-		boardLaneConfig[2] = SERDES_UNIT_SATA;
-		boardLaneConfig[3] = SERDES_UNIT_USB3;
-        return;
-    }
-
-    /*Read rest of Board Configuration, EEPROM / Dip Switch access read : */
-    if (mvCtrlBoardConfigGet(configVal) == MV_OK ) {
-		tmp = ((configVal[1] & 0x0c) >> 2);
-		switch (tmp) {
-		case 0: boardLaneConfig[1] = SERDES_UNIT_PEX; 	break;
-		case 1: boardLaneConfig[1] = SERDES_UNIT_SGMII;	break;
-		case 2: boardLaneConfig[1] = SERDES_UNIT_SATA; 	break;
-		case 3:
-		default:
-			DEBUG_INIT_S("Error: Read board configuration (SERDES LAN1) from EEPROM/Dip Switch failed \n");
-			boardLaneConfig[1] = SERDES_UNIT_UNCONNECTED;
-			break;
-		}
-		boardLaneConfig[2] = ((configVal[1] & 0x10) >> 4)? SERDES_UNIT_SATA:SERDES_UNIT_SGMII;
-		boardLaneConfig[3] = ((configVal[1] & 0x20) >> 5)? SERDES_UNIT_SGMII:SERDES_UNIT_USB3;
-	}
-    else{
-        DEBUG_INIT_S("Error: Read board configuration from EEPROM/Dip Switch failed \n");
-        DEBUG_INIT_S(">>>>> temporarily setting boardLaneConfig to PEX1, SGMII, SATA2, USB3     for testing. Giora <<<<\n");
-		boardLaneConfig[1] = SERDES_UNIT_SGMII;
-		boardLaneConfig[2] = SERDES_UNIT_SATA;
-		boardLaneConfig[3] = SERDES_UNIT_USB3;
-    }
-}
-/*******************************************************************************
 * mvBoardTclkGet -
 *
 * DESCRIPTION: this function read the TCLK frequency from S@R register and return
@@ -536,8 +483,11 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	mvUartInit();
 
-    /* initialize board configuration database */
-    mvCtrlSatrInit();
+	/* initialize board configuration database */
+	boardLaneConfig[0] = SERDES_UNIT_PEX;
+	boardLaneConfig[1] = SERDES_UNIT_PEX;
+	boardLaneConfig[2] = SERDES_UNIT_SATA;
+	boardLaneConfig[3] = SERDES_UNIT_USB3;
 
     memset(regAddr, 0, sizeof(regAddr));
     memset(regVal,  0, sizeof(regVal));

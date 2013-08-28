@@ -92,7 +92,7 @@
 
 extern MV_BOARD_INFO *boardInfoTbl[];
 extern MV_BOARD_SATR_INFO boardSatrInfo[];
-extern MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[];
+MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_BOARD_CONFIG_INFO;
 
 /* Locals */
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);

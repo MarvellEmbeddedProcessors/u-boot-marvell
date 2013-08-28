@@ -333,6 +333,22 @@ typedef struct _boardInfo {
 	MV_BOOL configAutoDetect;
 } MV_BOARD_INFO;
 
+/* {{MV_CONFIG_TYPE_ID ConfigID, MV_U32 Mask,  Offset, expanderNum,  regNum,    isActiveForBoard[]}} */
+#define MV_BOARD_CONFIG_INFO { \
+	{ MV_CONFIG_MAC0,			0x3,	0,	0,	0,	{0 } },\
+	{ MV_CONFIG_MAC1,			0xC,	2,	0,	0,	{0 } },\
+	{ MV_CONFIG_PON_SERDES,			0x10,	4,	0,	0,	{0 } },\
+	{ MV_CONFIG_PON_BEN_POLARITY,	0x20,	5,	0,	0,	{0 } },\
+	{ MV_CONFIG_SGMII0_CAPACITY,	0x40,	6,	0,	0,	{0 } },\
+	{ MV_CONFIG_SGMII1_CAPACITY,	0x80,	7,	0,	0,	{0 } },\
+	{ MV_CONFIG_SLIC_TDM_DEVICE,	0x3,	0,	0,	1,	{0 } },\
+	{ MV_CONFIG_LANE1,			0xC,	2,	0,	1,	{0 } },\
+	{ MV_CONFIG_LANE2,			0x10,	4,	0,	1,	{0 } },\
+	{ MV_CONFIG_LANE3,			0X60,	5,	0,	1,	{0 } },\
+	{ MV_CONFIG_DEVICE_BUS_MODULE, 0x3,	0,	1,	0,	{0 } },\
+};
+
+
 /* Boot device bus width */
 #define MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS          3
 /* Bus width field meaning for NOR/NAND */

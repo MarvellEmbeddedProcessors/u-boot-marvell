@@ -100,10 +100,10 @@ int do_boot_menu(cmd_tbl_t * cmdtb, int flag, int argc, char * const argv[])
 	char source_device[10];
 	char dev_part[10];
 	struct bm_item *choice;
-	int j, i, device, part;
+	int j, i, device, part, len;
 	block_dev_desc_t * dev_desc;
 	struct menu *m = NULL;
-	char *args_to_func[2];
+	char *args_to_func[3];
 	disk_partition_t info;
 
 	out_buffer = (char *)malloc(BM_OUT_BUF_SIZE);
@@ -129,7 +129,9 @@ int do_boot_menu(cmd_tbl_t * cmdtb, int flag, int argc, char * const argv[])
 	*ifname = '\0';
 	ifname++;
 
-	strncpy(dev_part, ifname, strstr(ifname, ":") - ifname - 1);
+	len = strstr(ifname, ":") - ifname;
+	strncpy(dev_part, ifname, len);
+	dev_part[len] = '\0';
 	device = simple_strtoul(ifname, NULL, 0);
 	ifname = strchr(ifname, ':');
 	if (ifname == NULL) {
@@ -151,6 +153,11 @@ int do_boot_menu(cmd_tbl_t * cmdtb, int flag, int argc, char * const argv[])
 		args_to_func[0]=ifname;
 		args_to_func[1]="rescan";
 		do_mmcops(cmdtb, 1, 2, args_to_func);
+		args_to_func[0]=ifname;
+		args_to_func[1]="dev";
+		args_to_func[2]=dev_part;
+		do_mmcops(cmdtb, 1, 3, args_to_func);
+
 	}
 	filename = BM_SCRIPTS_LOCATION;
 

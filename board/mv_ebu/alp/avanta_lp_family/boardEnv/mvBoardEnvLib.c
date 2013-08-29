@@ -2843,7 +2843,7 @@ MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 {
-	MV_U32 c = board->pBoardModTypeValue->ethSataComplexOpt;
+	MV_U32 c = mvBoardEthComplexConfigGet();
 	MV_U32 cpuPort = -1;
 
 	if (c & MV_ETHCOMP_GE_MAC0_2_SW_P6)
@@ -2854,6 +2854,87 @@ MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 		mvOsPrintf("%s: Error: No CPU port.\n", __func__);
 
 	return cpuPort;
+}
+
+/*******************************************************************************
+* mvBoardIsEthConnected - detect if a certain Ethernet port is active
+*
+* DESCRIPTION:
+*	This routine returns true if a certain Ethernet port is active and usable
+*
+* INPUT:
+*	ethNum - index of the ethernet port requested
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_TRUE if the requested ethernet port is connected and usable.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
+{
+	MV_U32 c = mvBoardEthComplexConfigGet();
+	MV_BOOL isConnected = MV_FALSE;
+
+	if (ethNum >= board->numBoardMacInfo) {
+		mvOsPrintf("%s: Error: Illegal port number(%u)\n", __func__, ethNum);
+		return MV_FALSE;
+	}
+
+	/*
+	 * Determine if port is both active and usable:
+	 * 1. active : if MAC is set as active in Ethernet complex board configuration
+	 * 2. usable : - MAC always usable when connected to RGMII, COMPHY, or GE-PHY
+	 *             - if connected to switch ,a MAC is usable only as the CPU Port
+	 *               (if a 2nd MAC is connected to switch, it used for Loopback)
+	 */
+
+	if ((ethNum == 0) && ((c & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0) ||
+			(c & MV_ETHCOMP_GE_MAC0_2_RGMII0) ||
+			(c & MV_ETHCOMP_GE_MAC0_2_COMPHY_2) ||
+			((c & MV_ETHCOMP_GE_MAC0_2_SW_P6) && mvBoardMacCpuPortGet() == 0)))
+			isConnected = MV_TRUE;
+
+	if ((ethNum == 1) && ((c & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3) ||
+			(c & MV_ETHCOMP_GE_MAC1_2_RGMII1) ||
+			((c & MV_ETHCOMP_GE_MAC1_2_SW_P4) && mvBoardMacCpuPortGet() == 1)))
+			isConnected = MV_TRUE;
+
+	return isConnected;
+}
+
+/*******************************************************************************
+* mvBoardMacCpuPortGet - returns the MAC CPU port connected to switch
+*
+* DESCRIPTION:
+*	This routine returns true returns the MAC CPU port connected to switch
+*
+* INPUT:
+*	None
+*
+* OUTPUT:
+*	None
+*
+* RETURN:
+*	the MAC CPU port number connected to switch
+*
+*******************************************************************************/
+MV_U32 mvBoardMacCpuPortGet(MV_VOID)
+{
+	MV_U32 c = mvBoardEthComplexConfigGet();
+	MV_U32 macCpuPort = -1;
+
+	if (c & MV_ETHCOMP_GE_MAC0_2_SW_P6)		/* MAC0 is the default CPU port */
+		macCpuPort = 0;
+	/* only If MAC0 isn't connected to switch, then MAC1 is the CPU port
+	 * If both MAC0 and MAC1 connected to switch, MAC1 is used for Loopback */
+	else if (c & MV_ETHCOMP_GE_MAC1_2_SW_P4)
+		macCpuPort = 1;
+	else
+		DB(mvOsPrintf("%s: Error: No MAC CPU port.\n", __func__));
+
+	return macCpuPort;
 }
 
 /*******************************************************************************

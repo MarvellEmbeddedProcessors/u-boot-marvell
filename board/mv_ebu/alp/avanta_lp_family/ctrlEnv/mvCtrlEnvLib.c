@@ -222,6 +222,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_66xx_INDEX_MAX] = {
 /* PEX_UNIT_ID          */ { 2,                 1,              0, },
 /* ETH_GIG_UNIT_ID      */ { 2,                 2,              2, },
 /* USB_UNIT_ID          */ { 1,                 1,              0, },
+/* USB3_UNIT_ID         */ { 1,                 0,              0, },
 /* IDMA_UNIT_ID         */ { 0,                 0,              0, },
 /* XOR_UNIT_ID          */ { 2,                 0,              0, },
 /* SATA_UNIT_ID         */ { 2,                 0,              0, },
@@ -844,6 +845,34 @@ MV_U32 mvCtrlPexMaxUnitGet(MV_VOID)
 	return mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
 }
 
+/*******************************************************************************
+* mvCtrlPexActiveUnitNumGet
+*
+* DESCRIPTION:
+*       This function returns Marvell controller number of PEX units.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Marvell controller number of PEX units.
+*
+*******************************************************************************/
+MV_U32 mvCtrlPexActiveUnitNumGet(MV_VOID)
+{
+	/* check board configuration for DB-6660:
+	 * if PEX1 is disabled , only PEX0 is active (return constant 1)
+	 * (only if MV_CONFIG_LANE1=0 --> then LANE1=PEX) */
+	if (mvBoardIdGet() == DB_6660_ID && mvCtrlSysConfigGet(MV_CONFIG_LANE1) != 0x0)
+		return 1;
+
+	/* else, all PEX interfaces are active */
+	return mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
+}
+
 #if defined(MV_INCLUDE_PCI)
 /*******************************************************************************
 * mvCtrlPciMaxIfGet
@@ -916,7 +945,11 @@ MV_U32 mvCtrlEthMaxPortGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlSataMaxPortGet(MV_VOID)
 {
-	return mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID);
+	/* Typical HW setup for DB-6660 is is with 1 SATA only*/
+	if (mvBoardIdGet() == DB_6660_ID)
+		return 1;
+	else
+		return mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID);
 }
 
 #endif
@@ -968,7 +1001,7 @@ MV_U32 mvCtrlXorMaxUnitGet(MV_VOID)
 
 #if defined(MV_INCLUDE_USB)
 /*******************************************************************************
-* mvCtrlUsbMaxGet - Get number of Marvell Usb  controllers
+* mvCtrlUsbMaxGet - Get number of Marvell USB controllers
 *
 * DESCRIPTION:
 *
@@ -979,12 +1012,32 @@ MV_U32 mvCtrlXorMaxUnitGet(MV_VOID)
 *       None.
 *
 * RETURN:
-*       returns number of Marvell USB  controllers.
+*       returns number of Marvell USB controllers.
 *
 *******************************************************************************/
 MV_U32 mvCtrlUsbMaxGet(void)
 {
 	return mvCtrlSocUnitInfoNumGet(USB_UNIT_ID);
+}
+
+/*******************************************************************************
+* mvCtrlUsb3MaxGet - Get number of Marvell USB 3.0 controllers
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       returns number of Marvell USB 3.0 controllers.
+*
+*******************************************************************************/
+MV_U32 mvCtrlUsb3MaxGet(void)
+{
+	return mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID);
 }
 
 #endif
@@ -1007,7 +1060,11 @@ MV_U32 mvCtrlUsbMaxGet(void)
 *******************************************************************************/
 MV_U32 mvCtrlSdioSupport(MV_VOID)
 {
-	return mvCtrlSocUnitInfoNumGet(SDIO_UNIT_ID) ? MV_TRUE : MV_FALSE;
+	/* default HW setup is with SDIO only for RD-6660*/
+	if (mvBoardIdGet() == RD_6660_ID)
+		return mvCtrlSocUnitInfoNumGet(SDIO_UNIT_ID) ? MV_TRUE : MV_FALSE;
+	else
+		return 0;
 }
 
 #endif

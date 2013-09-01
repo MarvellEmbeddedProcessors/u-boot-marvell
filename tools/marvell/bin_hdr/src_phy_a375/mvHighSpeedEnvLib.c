@@ -395,7 +395,7 @@ MV_U32 GetLaneSelectorConfig(void)
 	}
 	uiReg |= (tmp << 1); /* lane 1  */
 
-	uiReg |= (((mvGetSerdesLaneCfg(2) == SERDES_UNIT_SATA) ? 1 : 0)  << SERDES_LAN2_OFFS); /* lane 2  */
+	uiReg |= (((mvGetSerdesLaneCfg(2) == SERDES_UNIT_SGMII) ? 0 : 1)  << SERDES_LAN2_OFFS); /* lane 2  */
 	uiReg |= (((mvGetSerdesLaneCfg(3) == SERDES_UNIT_SGMII) ? 1 : 0)  << SERDES_LAN3_OFFS); /* lane 3  */
 
 

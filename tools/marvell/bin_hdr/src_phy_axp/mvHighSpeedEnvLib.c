@@ -79,7 +79,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 
-#define	SERDES_VERION	"2.1.3"
+#define	SERDES_VERION	"2.1.4"
 #define ENDED_OK "High speed PHY - Ended Successfully\n"
 static const MV_U8 serdesCfg[][SERDES_LAST_UNIT] = BIN_SERDES_CFG;
 			   
@@ -904,7 +904,28 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 				((pSerdesInfo->pexMod[pexUnit] == PEX_BUS_MODE_X1))){
 				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit),(0x01 << 16) | (pexLineNum << 24) | 0xFC60);
 				DEBUG_WR_REG(PEX_PHY_ACCESS_REG(pexUnit),(0x01 << 16) | (pexLineNum << 24) | 0xFC60);
+/*    Step 8.1: [PEX-Only] Configure Max PLL Rate(bit 8 in  KVCO Calibration Control and bits[10:9] in */
+                        /* Use Maximum PLL Rate(Bit 8) */
+				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0x02 << 16) | (1 << 31) | (pexLineNum << 24)); 	/* read command*/
+				DEBUG_WR_REG(PEX_PHY_ACCESS_REG(pexUnit), (0x02 << 16) | (1 << 31) | (pexLineNum << 24));
+				tmp = MV_REG_READ(PEX_PHY_ACCESS_REG(pexUnit));
+				DEBUG_RD_REG(PEX_PHY_ACCESS_REG(pexUnit), tmp );
+				tmp &= ~(1<<31);
+				tmp |= (1<<8);
+				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit),tmp);
+				DEBUG_WR_REG(PEX_PHY_ACCESS_REG(pexUnit),tmp);
+
+				/* Use Maximum PLL Rate(Bits [10:9]) */
+				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit),(0x81 << 16) | (1 << 31) | (pexLineNum << 24)); 	/* read command*/
+				DEBUG_WR_REG(PEX_PHY_ACCESS_REG(pexUnit),(0x81 << 16) | (1 << 31) | (pexLineNum << 24));
+				tmp = MV_REG_READ(PEX_PHY_ACCESS_REG(pexUnit));
+				DEBUG_RD_REG(PEX_PHY_ACCESS_REG(pexUnit), tmp );
+				tmp &= ~(1<<31);
+				tmp |= (3<<9);
+				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit),tmp);
+				DEBUG_WR_REG(PEX_PHY_ACCESS_REG(pexUnit),tmp);
 			}
+
 			continue;
 		}
 		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SATA]) {

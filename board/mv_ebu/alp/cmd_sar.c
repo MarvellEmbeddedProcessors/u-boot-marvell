@@ -198,7 +198,7 @@ static int do_sar_read(int argc, char *const argv[])
 	}
 	else if (strcmp(cmd, "cpubypass") == 0) {
 		if (GetAndVerifySatr(MV_SATR_CPU_PLL_XTAL_BYPASS, &temp) == MV_OK)
-		printf("\nsscg = %d  ==> %s Bypass\n",temp, (temp == 0) ? "PLL" : "XTAL");
+		printf("\ncpubypass = %d  ==> %s Bypass\n",temp, (temp == 0) ? "PLL" : "XTAL");
 	}
 	else if (strcmp(cmd, "cpuendi") == 0) {
 		if (GetAndVerifySatr(MV_SATR_CPU0_ENDIANESS, &temp) == MV_OK)
@@ -253,7 +253,7 @@ static int do_sar_read(int argc, char *const argv[])
 		if (mvCtrlSatRRead(MV_SATR_BOOT_DEVICE, &temp) == MV_OK)
 			printf("bootsrc \t= %3d  ==>   %s\n", temp, bootSrcArr[mvBoardBootDeviceGet()]);
 		if (mvCtrlSatRRead(MV_SATR_CPU_PLL_XTAL_BYPASS, &temp) == MV_OK)
-			printf("sscg \t\t= %3d  ==>   %s Bypass\n",temp, (temp == 0) ? "PLL" : "XTAL");
+			printf("cpubypass \t= %3d  ==>   %s Bypass\n",temp, (temp == 0) ? "PLL" : "XTAL");
 		if (mvCtrlSatRRead(MV_SATR_CPU0_ENDIANESS, &temp) == MV_OK)
 			printf("cpuendi \t= %3d  ==>   %s Endianess\n", temp, (temp == 0) ? "Little" : "Big");
 		if (mvCtrlSatRRead(MV_SATR_CPU0_NMFI, &temp) == MV_OK)

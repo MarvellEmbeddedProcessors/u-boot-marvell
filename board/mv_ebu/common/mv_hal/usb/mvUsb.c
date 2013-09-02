@@ -242,22 +242,22 @@ static int mvUsbPhy40nmInit(int dev)
 {
 	MV_U32 regVal;
 
-	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 19));
+	regVal = MV_REG_READ(MV_USB_X3_PHY_CHANNEL_REG(dev, 3));
 	regVal |= BIT15;
-	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 19), regVal);
+	MV_REG_WRITE(MV_USB_X3_PHY_CHANNEL_REG(dev, 3), regVal);
 	/*-------------------------------------------------*/
 
 	/******* Assert REG_RCAL_START in Channel REG 1 *******/
-	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 17));
+	regVal = MV_REG_READ(MV_USB_X3_PHY_CHANNEL_REG(dev, 1));
 	regVal |= BIT12;
-	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 17), regVal);
+	MV_REG_WRITE(MV_USB_X3_PHY_CHANNEL_REG(dev, 1), regVal);
 
 	/* Wait 40 usec */
 	mvOsUDelay(40);
 
-	regVal = MV_REG_READ(MV_USB_PHY_CHANNEL_REG(dev, 17));
+	regVal = MV_REG_READ(MV_USB_X3_PHY_CHANNEL_REG(dev, 1));
 	regVal &= ~BIT12;
-	MV_REG_WRITE(MV_USB_PHY_CHANNEL_REG(dev, 17), regVal);
+	MV_REG_WRITE(MV_USB_X3_PHY_CHANNEL_REG(dev, 1), regVal);
 	/*-------------------------------------------------*/
 
 /* BTS #231 - for KW40 only */

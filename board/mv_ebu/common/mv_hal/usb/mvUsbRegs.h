@@ -186,12 +186,11 @@ extern "C" {
 #define MV_USB_PHY_TEST_GROUP_CTRL_REG_1(dev)   (MV_USB_REGS_BASE(dev) + 0x454)
 
 /* New design used in 40nm SOC */
-#define MV_USB_PHY_REGS_BASE(unit)		(MV_USB_REGS_BASE(0) | \
-						(unit << 12) | 0x800)
-#define MV_USB_PHY_PLL_REG(reg)			(MV_USB_PHY_REGS_BASE(0) | \
-						((reg & 0xF) << 2))
-#define MV_USB_PHY_CHANNEL_REG(unit, reg)       (MV_USB_PHY_REGS_BASE(unit) | \
-						(reg << 2))
+#define MV_USB_PHY_REGS_BASE(unit)		(MV_USB_REGS_BASE(0) | (unit << 12) | 0x800)
+#define MV_USB_PHY_CHANNEL_REG(unit, reg)       (MV_USB_PHY_REGS_BASE(unit) | (reg << 2))
+#define MV_USB_X3_REGS_BASE(addr)		(MV_USB_REGS_BASE(0) | BIT11 | (((addr) & 0xF) << 6))
+#define MV_USB_X3_PHY_CHANNEL_REG(dev, reg)	(MV_USB_X3_REGS_BASE(dev + 1) | ((reg & 0xF) << 2))
+#define MV_USB_PHY_PLL_REG(reg)			(MV_USB_PHY_REGS_BASE(0) | ((reg & 0xF) << 2))
 
 /*******************************************/
 /* USB Windows Registers		   */

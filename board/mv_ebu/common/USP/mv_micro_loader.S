@@ -21,6 +21,40 @@ disclaimer.
 
 #define MV_ASMLANGUAGE
 
+#ifdef CONFIG_ALP_HW_SEMAPHORE_WA
+.globl lock_hw_mutex
+lock_hw_mutex:
+
+	ldr r1, _mv_sema_reg_base
+	ldrexb r2, [r1]		   /* Read lock */
+	and r2, r2, #0xFF
+	/* If semaphore free, lock it */
+	cmp r2, #0xFF
+	bne lock_wait		/* If not, wait */
+	mov r3, #1
+	strexb r0, r3, [r1]	/* If free lock it */
+	cmp r0, #0		/* Test if store'ex suceeded */
+	bne lock_hw_mutex	/* Retry if not */
+	mov pc, lr		/* Exit the routine */
+
+lock_wait:
+	ldr r1, _mv_sema_wait
+1:	sub r1, r1, #1		/* Wait "_mv_sema_wait" loops */
+	cmp r1, #0
+	bne 1b
+	b  lock_hw_mutex 	/* Try getting lock again*/
+
+
+.globl unlock_hw_mutex
+unlock_hw_mutex:
+
+	ldr r1, _mv_sema_reg_base
+	ldr r2, _mv_sema_release
+	str r2, [r1] /* release semaphore */
+	mov pc, lr
+
+#else
+
 .globl lock_hw_mutex
 lock_hw_mutex:
 
@@ -49,6 +83,8 @@ unlock_hw_mutex:
 	ldr r2, _mv_sema_release
 	strb r2, [r1] /* release HW semaphore */
 	mov pc, lr
+#endif
+
 
 .globl linuxMicroLoader
 
@@ -194,6 +230,10 @@ _image_load_addr: .word image_load_addr
 _amp_sync_boot: .word amp_sync_boot
 _amp_hw_lock_id: .word amp_hw_lock_id
 _amp_barrier: .word amp_barrier
+#ifdef CONFIG_ALP_HW_SEMAPHORE_WA
+_mv_sema_reg_base: .word amp_soft_sem
+#else
 _mv_sema_reg_base: .word 0xF1020500
+#endif
 _mv_sema_release: .word 0xFF
 _mv_sema_wait: .word 0x400

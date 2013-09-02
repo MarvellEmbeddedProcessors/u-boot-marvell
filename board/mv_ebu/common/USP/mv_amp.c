@@ -39,6 +39,9 @@ int  image_param_addr;  /* used to pass parameters address to micro loader */
 int  machine_id;        /* used to pass machine id for linux micro loader */
 int  amp_group_id;      /* Stores the current amp group id */
 int  amp_sync_boot;     /* All images exit U-BOOT together using barrier*/
+#ifdef CONFIG_ALP_HW_SEMAPHORE_WA
+volatile int  amp_soft_sem;
+#endif
 int  amp_hw_lock_id = 0;   /* Spinlock for barrier */
 int  amp_enable = 0;
 volatile int  amp_barrier;       /* Barrier for AMP launch */
@@ -74,6 +77,10 @@ void amp_init(void)
 			amp_sync_boot = 1;
 
 		amp_barrier = group_count;
+#ifdef CONFIG_ALP_HW_SEMAPHORE_WA
+		/* mark semaphore as free */
+		amp_soft_sem = 0xFF;
+#endif
 	}
 }
 

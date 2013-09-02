@@ -562,5 +562,6 @@ extern unsigned int mvTclkGet(void);
 #undef  CONFIG_USE_IRQ
 
 #define CONFIG_STACKSIZE        (1 << 20)       /* regular stack - up to 4M (in case of exception)*/
+#define CONFIG_ALP_HW_SEMAPHORE_WA
 
 #endif /* __CONFIG_H */

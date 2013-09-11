@@ -220,7 +220,8 @@ MV_STATUS mvCntmrCtrlSet(MV_U32 countNum, MV_CNTMR_CTRL *pCtrl)
 	else			/* no auto mode */
 		cntmrCtrl &= ~(CTCR_ARM_TIMER_AUTO_EN(countNum));
 		
-	if (cntmrHalData.ctrlFamily==MV_78XX0) {
+	if ((cntmrHalData.ctrlFamily == MV_78XX0) ||
+	    (cntmrHalData.ctrlFamily == MV_BOBCAT2_DEV_ID)) {
 		cntmrCtrl &= ~(CTCR_ARM_TIMER_RATIO_MASK(countNum));
 		cntmrCtrl |= (pCtrl->Ratio & 0x7) << (CTCR_ARM_TIMER_RATIO_OFFS(countNum));
 
@@ -275,8 +276,8 @@ MV_STATUS mvCntmrCtrlGet(MV_U32 countNum, MV_CNTMR_CTRL *pCtrl)
 		pCtrl->autoEnable = MV_TRUE;
 	else
 		pCtrl->autoEnable = MV_FALSE;
-	if (cntmrHalData.ctrlFamily==MV_78XX0) 
-	{
+	if ((cntmrHalData.ctrlFamily == MV_78XX0) ||
+	    (cntmrHalData.ctrlFamily == MV_BOBCAT2_DEV_ID)) {
 		pCtrl->Ratio = (cntmrCtrl & (CTCR_ARM_TIMER_RATIO_MASK(countNum))) / (1 << (CTCR_ARM_TIMER_RATIO_OFFS(countNum)));
 		pCtrl->enable_25Mhz = (cntmrCtrl & CTCR_ARM_TIMER_25MhzFRQ_MASK(countNum)) ? MV_TRUE : MV_FALSE;
 	}

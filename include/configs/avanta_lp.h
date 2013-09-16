@@ -71,9 +71,14 @@
 #define MV_BOOTROM
 
 #ifndef CONFIG_MACH_AVANTA_LP_FPGA
-/* USB currently disabled due to instability
+
+#define MV_USB3
+#undef MV_USB2
+
+#if defined (MV_USB3) || defined (MV_USB2)
 #define MV_USB
-*/
+#endif
+
 #define MV_FS
 #define CONFIG_CMD_DATE
 #endif
@@ -399,13 +404,17 @@ extern unsigned int mvTclkGet(void);
 /*
  * USB
  */
+#ifdef MV_USB2
+	#define CONFIG_USB_EHCI
+#elif defined MV_USB3
+	#define CONFIG_USB_XHCI
+	#define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS  1
+#endif
+
 #ifdef MV_USB
 	#define MV_INCLUDE_USB
 	#define CONFIG_CMD_USB
 	#define CONFIG_USB_STORAGE
-	#define CONFIG_USB_EHCI
-/*  FIX-ME : disabled CONFIG_USB_EHCI_MARVELL : break compilation
- #define CONFIG_USB_EHCI_MARVELL */
 	#define CONFIG_EHCI_IS_TDI
 	#define CONFIG_DOS_PARTITION
 	#define CONFIG_ISO_PARTITION

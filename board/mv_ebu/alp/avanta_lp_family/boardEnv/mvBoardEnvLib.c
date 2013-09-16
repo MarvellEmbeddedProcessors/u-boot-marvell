@@ -946,10 +946,14 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	/* Update MPP group types and values according to board configuration */
 	mvBoardMppIdUpdate();
 
-	/* according to board config, only DB-6660 utilize 3 SerDes lanes, and SFP0 */
+	/* specific initializations required only for DB-6660 */
 	if (mvBoardIdGet() == DB_6660_ID) {
 		/* Verify board config vs. SerDes actual setup (Common phy Selector) */
 		mvBoardVerifySerdesCofig();
+
+		/* Enable Super-Speed mode on Avanta DB boards (900Mah output) */
+		mvBoardUsbSsEnSet(MV_TRUE);
+
 		/* If needed, enable SFP0 TX for SGMII, for DB-6660 */
 		if (ethComplex & MV_ETHCOMP_GE_MAC0_2_COMPHY_2)
 			mvBoardSgmiiSfp0TxSet(MV_TRUE);
@@ -2398,6 +2402,35 @@ MV_STATUS mvBoardSgmiiSfp0TxSet(MV_BOOL enable)
 	}
 
 	return mvBoardIoExpValSet(&ioInfo, (enable ? 0x0 : 0x1));
+}
+
+/*******************************************************************************
+* mvBoardUsbSsEnSet - enable/disable USB_SS_EN status
+*
+* DESCRIPTION:
+*	This function enables/disables USB_SS_EN status.
+*	USB_SS_EN = 1 --> Enable USB 3.0 900mA current limit
+*
+* INPUT:
+*	enable - Boolean to indicate requested status
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_STATUS mvBoardUsbSsEnSet(MV_BOOL enable)
+{
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
+
+	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_USB_SUPER_SPEED, &ioInfo) != MV_OK) {
+		mvOsPrintf("%s: Error: Write to IO expander failed (USB_SS_EN)\n", __func__);
+		return MV_ERROR;
+	}
+
+	return mvBoardIoExpValSet(&ioInfo, (enable ? 0x1 : 0x0));
 }
 
 /*******************************************************************************

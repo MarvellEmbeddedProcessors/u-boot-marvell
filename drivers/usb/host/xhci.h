@@ -27,8 +27,13 @@
 #ifndef HOST_XHCI_H_
 #define HOST_XHCI_H_
 
+#include <asm/io.h>
 #include <asm/cache.h>
 #include <linux/list.h>
+
+typedef int bool;
+#define false	0
+#define true     (!(false))
 
 /* (shifted) direction/type/recipient from the USB 2.0 spec, table 9.2 */
 #define DeviceRequest \

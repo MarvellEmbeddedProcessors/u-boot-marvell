@@ -34,3 +34,4 @@ disclaimer.
 ** Base address for USB registers.
 */
 #define MV_USB_REGS_BASE(unit) 		(MV_USB_REGS_OFFSET(unit))
+#define MV_USB3_REGS_BASE(unit)		MV_USB3_REGS_OFFSET(unit)

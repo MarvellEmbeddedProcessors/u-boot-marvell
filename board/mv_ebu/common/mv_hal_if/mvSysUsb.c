@@ -69,6 +69,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrlEnv/mvCtrlEnvAddrDec.h"
 #include "usb/mvUsbRegs.h"
 
+
 /*******************************************************************************
 * mvSysUsbHalInit - Initialize the USB subsystem
 *
@@ -85,21 +86,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 MV_STATUS   mvSysUsbInit(MV_U32 dev, MV_BOOL isHost)
 {
 	MV_USB_HAL_DATA halData;
-	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
 	MV_STATUS status;
+#if defined (CONFIG_USB_EHCI)
+	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
+#endif
 
+	halData.ctrlModel = mvCtrlModelGet();
+	halData.ctrlRev = mvCtrlRevGet();
+	halData.ctrlFamily = mvCtrlDevFamilyIdGet(halData.ctrlModel);
+
+#if defined (CONFIG_USB_XHCI)
+	/* for USB3.0 only UTMI Phy Init is needed from usb HAL */
+	status = mvUsbUtmiPhyInit(dev, &halData);
+
+#elif defined (CONFIG_USB_EHCI)
 	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
 	if (status == MV_OK)
 		status = mvUsbWinInit(dev, addrWinMap);
 
 	if (dev == 0)
 		mvUsbPllInit();
-	if (status == MV_OK) {
-		halData.ctrlModel = mvCtrlModelGet();
-		halData.ctrlRev = mvCtrlRevGet();
-		halData.ctrlFamily=0x6600; /* omriii : add function for avanta lp:mvCtrlDevFamilyIdGet(halData.ctrlModel); */
+	if (status == MV_OK)
 		status = mvUsbHalInit(dev, isHost, &halData);
-	}
+#endif
 
 	return status;
 }

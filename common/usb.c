@@ -303,7 +303,6 @@ usb_set_maxpacket_ep(struct usb_device *dev, int if_idx, int ep_idx)
 	int b;
 	struct usb_endpoint_descriptor *ep;
 	u16 ep_wMaxPacketSize;
-	struct usb_interface *if_desc = NULL;
 
 	ep = &dev->config.if_desc[if_idx].ep_desc[ep_idx];
 

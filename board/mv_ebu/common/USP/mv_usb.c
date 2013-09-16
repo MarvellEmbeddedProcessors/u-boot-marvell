@@ -24,6 +24,7 @@
 #if defined(CONFIG_CMD_USB)
 #include <usb.h>
 #include "ctrlEnv/mvCtrlEnvLib.h"
+#include "boardEnv/mvBoardEnvLib.h"
 #include "ctrlEnv/mvCtrlEnvSpec.h"
 #include "ctrlEnv/sys/mvCpuIf.h"
 #if defined (CONFIG_USB_XHCI)

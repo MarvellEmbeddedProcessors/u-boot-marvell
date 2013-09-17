@@ -303,6 +303,7 @@ usb_set_maxpacket_ep(struct usb_device *dev, int if_idx, int ep_idx)
 	int b;
 	struct usb_endpoint_descriptor *ep;
 	u16 ep_wMaxPacketSize;
+	struct usb_interface *if_desc = NULL;
 
 	ep = &dev->config.if_desc[if_idx].ep_desc[ep_idx];
 
@@ -360,6 +361,7 @@ static int usb_parse_config(struct usb_device *dev,
 	int index, ifno, epno, curr_if_num;
 	int i;
 	u16 ep_wMaxPacketSize;
+	struct usb_interface *if_desc = NULL;
 
 	ifno = -1;
 	epno = -1;
@@ -387,23 +389,27 @@ static int usb_parse_config(struct usb_device *dev,
 			     &buffer[index])->bInterfaceNumber != curr_if_num) {
 				/* this is a new interface, copy new desc */
 				ifno = dev->config.no_of_if;
+				if_desc = &dev->config.if_desc[ifno];
 				dev->config.no_of_if++;
-				memcpy(&dev->config.if_desc[ifno],
-					&buffer[index], buffer[index]);
-				dev->config.if_desc[ifno].no_of_ep = 0;
-				dev->config.if_desc[ifno].num_altsetting = 1;
+				memcpy(if_desc,	&buffer[index], buffer[index]);
+				if_desc->no_of_ep = 0;
+				if_desc->num_altsetting = 1;
 				curr_if_num =
-				     dev->config.if_desc[ifno].desc.bInterfaceNumber;
+				     if_desc->desc.bInterfaceNumber;
 			} else {
 				/* found alternate setting for the interface */
-				dev->config.if_desc[ifno].num_altsetting++;
+				if (ifno >= 0) {
+					if_desc = &dev->config.if_desc[ifno];
+					if_desc->num_altsetting++;
+				}
 			}
 			break;
 		case USB_DT_ENDPOINT:
 			epno = dev->config.if_desc[ifno].no_of_ep;
+			if_desc = &dev->config.if_desc[ifno];
 			/* found an endpoint */
-			dev->config.if_desc[ifno].no_of_ep++;
-			memcpy(&dev->config.if_desc[ifno].ep_desc[epno],
+			if_desc->no_of_ep++;
+			memcpy(&if_desc->ep_desc[epno],
 				&buffer[index], buffer[index]);
 			ep_wMaxPacketSize = get_unaligned(&dev->config.\
 							if_desc[ifno].\

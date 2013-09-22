@@ -108,6 +108,9 @@ disclaimer.
 #define INTER_REGS_BASE			0xF1000000
 #define ARMADAXP_SB_REGS_PHYS_BASE	INTER_REGS_BASE
 
+#define USB3_REGS_PHYS_BASE		0xFF100000
+#define USB3_REGS_SIZE			_128K
+
 #define NFLASH_CS_BASE 0xfd000000 /* not relevant for the new controller */
 #define NFLASH_CS_SIZE _2M
 
@@ -230,8 +233,8 @@ disclaimer.
 	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 21 SPI_CS7 */   \
 	{{0xf8000000,		0,		_1M	},			13,	DIS},	/* 22 BOOT_ROM_CS */\
 	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},			9,	 EN},	/* 23 DEV_BOOCS */  \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 24 USB3 */   \
-	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},			10,	DIS},	/* 25 CRYPT_ENG */ \
+	{{USB3_REGS_PHYS_BASE,	0,	USB3_REGS_SIZE	},			14,	 EN},	/* 24 USB3 */   \
+	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},			11,	DIS},	/* 25 CRYPT_ENG */ \
 	{{PP2_CPU0_PHYS_BASE,	0,	PP2_SIZE	},			12,	 EN},	/* 26 PP2 */    \
 	{{TBL_TERM,		TBL_TERM, TBL_TERM	},		TBL_TERM,	TBL_TERM}               \
 };

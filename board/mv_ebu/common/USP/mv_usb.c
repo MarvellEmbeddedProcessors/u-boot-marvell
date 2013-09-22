@@ -89,7 +89,7 @@ MV_STATUS mvUsb3WinInit(MV_U32 unitId)
 				(MV_U64)cpuAddrDecWin.addrWin.baseLow);
 
 		MV_REG_WRITE(MV_USB3_REGS_OFFSET(0) + USB3_WIN_CTRL(win), winCtrlValue);
-		MV_REG_WRITE(MV_USB3_REGS_OFFSET(0) + USB3_WIN_BASE(win), baseAddr);
+		MV_REG_WRITE(MV_USB3_REGS_OFFSET(0) + USB3_WIN_BASE(win), (MV_U32)baseAddr);
 	}
 
 	return MV_OK;
@@ -106,6 +106,7 @@ MV_STATUS mvUsb3WinInit(MV_U32 unitId)
 static int mv_xhci_core_init(MV_U32 unitId)
 {
 	int reg, mask;
+	MV_U32 rev = mvCtrlRevGet();
 
 	/* Set UTMI PHY Selector:
 	 * - Connect UTMI PHY to USB2 port of USB3 Host
@@ -120,9 +121,9 @@ static int mv_xhci_core_init(MV_U32 unitId)
 		return MV_ERROR;
 	}
 
-	/* LFPS FREQUENCY WA */
-	// Add support for A375 Z1 Revision
-	if (mvCtrlRevGet() == MV_88F66X0_Z1_ID) {
+	/* LFPS FREQUENCY WA for Z revisions (Should be fixed for A0) */
+	if (rev == MV_88F66X0_Z1_ID || rev == MV_88F66X0_Z2_ID
+			|| rev == MV_88F66X0_Z3_ID || rev == MV_88F6720_Z1_ID) {
 		/*
 		 * All defines below are used for a temporary workaround, and therefore
 		 * placed inside the code and not in an include file

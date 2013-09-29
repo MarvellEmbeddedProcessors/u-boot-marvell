@@ -395,12 +395,15 @@ typedef struct {
 	MV_U32		cmdb3;
 } MV_NFC_CMD;
 
+struct MV_NFC_HAL_DATA {
+	void (*mvCtrlNandClkSetFunction) (int);    /* Controller NAND clock div  */
+};
+
 
 /********************************/
 /* Functions API 		*/
 /********************************/
-
-MV_STATUS mvNfcInit(MV_NFC_INFO *nfcInfo, MV_NFC_CTRL *nfcCtrl);
+MV_STATUS mvNfcInit(MV_NFC_INFO *nfcInfo, MV_NFC_CTRL *nfcCtrl, struct MV_NFC_HAL_DATA *halData);
 MV_STATUS mvNfcSelectChip(MV_NFC_CTRL *nfcCtrl, MV_NFC_CHIP_SEL chip);
 MV_STATUS mvNfcCommandPio(MV_NFC_CTRL *nfcCtrl, MV_NFC_MULTI_CMD * cmd_desc, MV_BOOL next);
 MV_STATUS mvNfcCommandMultiple(MV_NFC_CTRL *nfcCtrl, MV_NFC_MULTI_CMD *descInfo, MV_U32 descCnt);

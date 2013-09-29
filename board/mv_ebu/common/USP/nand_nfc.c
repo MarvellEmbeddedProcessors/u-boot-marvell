@@ -1577,7 +1577,7 @@ static int orion_nfc_probe(struct platform_device *pdev)
 	nfcInfo.dataPdmaIntMask = MV_PDMA_END_OF_RX_INTR_EN | MV_PDMA_END_INTR_EN;
 	nfcInfo.cmdPdmaIntMask = 0x0;
 #endif
-	if (mvNfcInit(&nfcInfo, &info->nfcCtrl) != MV_OK) {
+	if (mvSysNfcInit(&nfcInfo, &info->nfcCtrl) != MV_OK) {
 		dev_err(&pdev->dev, "mvNfcInit() failed.\n");
 		ret = -ENODEV;
 		goto fail_put_clk;
@@ -1760,7 +1760,7 @@ int board_nand_init(struct nand_chip *nand)
 	nfcInfo.dataPdmaIntMask = MV_PDMA_END_OF_RX_INTR_EN | MV_PDMA_END_INTR_EN;
 	nfcInfo.cmdPdmaIntMask = 0x0;
 #endif
-	if (mvNfcInit(&nfcInfo, &info->nfcCtrl) != MV_OK) {
+	if (mvSysNfcInit(&nfcInfo, &info->nfcCtrl) != MV_OK) {
 		dev_err(&pdev->dev, "mvNfcInit() failed.\n");
 		ret = -ENODEV;
 		goto fail_free_orion;

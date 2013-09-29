@@ -280,6 +280,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID);
 MV_U32    mvCtrlMppRegGet(MV_U32 mppGroup);
 MV_U32 mvCtrlGetJuncTemp(MV_VOID);
 MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig);
+void mvCtrlNandClkSet(int nClock);
 
 #if defined(MV_INCLUDE_PEX)
 MV_U32 mvCtrlPexMaxIfGet(MV_VOID);

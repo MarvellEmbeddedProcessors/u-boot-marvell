@@ -8,7 +8,7 @@
 #ifdef MV_INCLUDE_PDMA
 #include "pdma/mvPdma.h"
 #endif
-#include "nfc/mvNfc.h"
+#include "mvSysNfcApi.h"
 #include "nfc/mvNfcRegs.h"
 
 enum nfc_page_size

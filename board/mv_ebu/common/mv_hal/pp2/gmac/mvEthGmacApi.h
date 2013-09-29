@@ -137,6 +137,7 @@ static INLINE MV_VOID mvEthPortIsrUnmask(int port)
 	MV_REG_WRITE(ETH_PORT_ISR_MASK_REG(port), ETH_PORT_LINK_CHANGE_MASK);
 }
 
+void mvGmacDefaultsSet(int port);
 void mvEthPortEnable(int port);
 void mvEthPortDisable(int port);
 void mvEthPortRgmiiSet(int port, int enable);
@@ -149,6 +150,7 @@ void mvEthPortResetSet(int port, MV_BOOL setReset);
 void mvEthPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii);
 void mvEthPortPowerDown(int port);
 char *mvEthSpeedStrGet(MV_ETH_PORT_SPEED speed);
+
 /******************************************************************************/
 /*                          Port Configuration functions                      */
 /******************************************************************************/

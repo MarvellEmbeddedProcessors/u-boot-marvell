@@ -72,6 +72,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define ETH_REG_BASE(port)                 GOP_REG_BASE(port)
 
+/****************************************/
+/*        MAC Unit Registers            */
+/****************************************/
+
+/**** Tri-Speed Ports MAC and CPU Port MAC Configuration Sub-Unit Registers ****/
 #define ETH_GMAC_CTRL_0_REG(p)             (ETH_REG_BASE(p) + 0x0)
 
 #define ETH_GMAC_PORT_EN_BIT               0
@@ -116,6 +121,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ETH_GMAC_PORT_RESET_MASK           (1 << ETH_GMAC_PORT_RESET_BIT)
 /*-------------------------------------------------------------------------------*/
 
+/**** Port Auto-Negotiation Configuration Sub-Unit Registers ****/
 #define ETH_GMAC_AN_CTRL_REG(p)                (ETH_REG_BASE(p) + 0xC)
 
 #define ETH_FORCE_LINK_FAIL_BIT                0
@@ -156,6 +162,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ETH_ENABLE_DUPLEX_AUTO_NEG_MASK        (1 << ETH_ENABLE_DUPLEX_AUTO_NEG_BIT)
 /*-------------------------------------------------------------------------------*/
 
+/**** Port Status Sub-Unit Registers ****/
 #define ETH_GMAC_STATUS_REG(p)             (ETH_REG_BASE(p) + 0x10)
 
 #define ETH_GMAC_LINK_UP_BIT               0
@@ -183,6 +190,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ETH_TX_FLOW_CTRL_ACTIVE_MASK       (1 << ETH_TX_FLOW_CTRL_ACTIVE_BIT)
 /*-------------------------------------------------------------------------------*/
 
+/**** Port Internal Sub-Unit Registers ****/
+#define GMAC_PORT_FIFO_CFG_0_REG(p)        (ETH_REG_BASE(p) + 0x18)
+
+#define GMAC_PORT_FIFO_CFG_1_REG(p)        (ETH_REG_BASE(p) + 0x1C)
+
+#define GMAC_RX_FIFO_MAX_TH_OFFS           0
+
+#define GMAC_TX_FIFO_MIN_TH_OFFS           6
+#define GMAC_TX_FIFO_MIN_TH_ALL_MASK       (0x7F << GMAC_TX_FIFO_MIN_TH_OFFS)
+#define GMAC_TX_FIFO_MIN_TH_MASK(val)      (((val) << GMAC_TX_FIFO_MIN_TH_OFFS) & GMAC_TX_FIFO_MIN_TH_ALL_MASK)
+/*-------------------------------------------------------------------------------*/
+
+/**** Port Interrupt Sub-Unit Registers ****/
 #define ETH_PORT_ISR_CAUSE_REG(p)	(ETH_REG_BASE(p) + 0x20)
 
 #define ETH_PORT_ISR_SUM_BIT		0
@@ -192,6 +212,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ETH_PORT_LINK_CHANGE_MASK	(1 << ETH_PORT_LINK_CHANGE_BIT)
 
 #define ETH_PORT_ISR_MASK_REG(p)	(ETH_REG_BASE(p) + 0x24)
+/*-------------------------------------------------------------------------------*/
 
 /****************************************/
 /*        LMS Unit Registers       	*/

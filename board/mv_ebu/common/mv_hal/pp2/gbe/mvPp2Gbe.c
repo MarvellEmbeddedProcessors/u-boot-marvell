@@ -231,6 +231,10 @@ MV_STATUS mvPp2DefaultsSet(int port)
 	int txp, queue, txPortNum, i;
 	MV_PP2_PORT_CTRL *pPortCtrl = mvPp2PortHndlGet(port);
 
+
+	if (!MV_PON_PORT(port))
+		mvGmacDefaultsSet(port);
+
 	for (txp = 0; txp < pPortCtrl->txpNum; txp++) {
 		/* Disable Legacy WRR, Disable EJP, Release from reset */
 		txPortNum = mvPp2EgressPort(port, txp);

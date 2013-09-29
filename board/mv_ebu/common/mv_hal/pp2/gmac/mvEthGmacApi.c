@@ -170,6 +170,17 @@ void mvEthPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii)
 	mvEthPortResetSet(port, MV_FALSE);
 }
 
+void mvGmacDefaultsSet(int port)
+{
+	MV_U32 regVal;
+
+	/* Update TX FIFO MIN Threshold */
+	regVal = MV_REG_READ(GMAC_PORT_FIFO_CFG_1_REG(port));
+	regVal &= ~GMAC_TX_FIFO_MIN_TH_ALL_MASK;
+	regVal |= GMAC_TX_FIFO_MIN_TH_MASK(0x40);
+	MV_REG_WRITE(GMAC_PORT_FIFO_CFG_1_REG(port), regVal);
+}
+
 void mvEthPortPowerDown(int port)
 {
 }

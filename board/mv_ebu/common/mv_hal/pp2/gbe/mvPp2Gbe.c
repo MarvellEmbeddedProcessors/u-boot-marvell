@@ -645,8 +645,8 @@ MV_PP2_PHYS_TXQ_CTRL *mvPp2TxqInit(int port, int txp, int txq, int descNum, int 
 	mvPp2WrReg(MV_PP2_TXQ_DESC_HWF_SIZE_REG, hwfNum & MV_PP2_TXQ_DESC_HWF_SIZE_MASK);
 	mvPp2WrReg(MV_PP2_TXQ_INDEX_REG, 0);
 
-	mvPp2WrReg(MV_PP2_TXQ_PREF_BUF_REG, MV_PP2_PREF_BUF_PTR(ptxq*4) | MV_PP2_PREF_BUF_SIZE_4 |
-				MV_PP2_PREF_BUF_THRESH(4/2));
+	mvPp2WrReg(MV_PP2_TXQ_PREF_BUF_REG, MV_PP2_PREF_BUF_PTR(ptxq * 16) | MV_PP2_PREF_BUF_SIZE_16 |
+				MV_PP2_PREF_BUF_THRESH(8));
 
 	mvPp2TxqMaxRateSet(port, txp, txq);
 

@@ -2022,3 +2022,39 @@ MV_U32 mvCtrlGetJuncTemp(MV_VOID)
 
 	return (3171900 - (10000 * reg)) / 13553;
 }
+
+/*******************************************************************************
+* mvCtrlNandClkSet
+*
+* DESCRIPTION:
+*       Set the division ratio of ECC Clock
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None
+*******************************************************************************/
+void mvCtrlNandClkSet(int nClock)
+{
+	/* Set the division ratio of ECC Clock 0x00018748[13:8] (by default it's double of core clock) */
+	MV_U32 nVal = MV_REG_READ(CORE_DIV_CLK_CTRL(1));
+	nVal &= ~(NAND_ECC_DIVCKL_RATIO_MASK);
+	nVal |= (nClock << NAND_ECC_DIVCKL_RATIO_OFFS);
+	MV_REG_WRITE(CORE_DIV_CLK_CTRL(1), nVal);
+
+	/* Set reload force of ECC clock 0x00018740[7:0] to 0x2 (meaning you will force only the ECC clock) */
+	nVal = MV_REG_READ(CORE_DIV_CLK_CTRL(0));
+	nVal &= ~(CORE_DIVCLK_RELOAD_FORCE_MASK);
+	nVal |= CORE_DIVCLK_RELOAD_FORCE_VAL;
+	MV_REG_WRITE(CORE_DIV_CLK_CTRL(0), nVal);
+
+	/* Set reload ratio bit 0x00018740[8] to 1'b1 */
+	MV_REG_BIT_SET(CORE_DIV_CLK_CTRL(0), CORE_DIVCLK_RELOAD_RATIO_MASK);
+	mvOsDelay(1); /*  msec */
+	/* Set reload ratio bit 0x00018740[8] to 0'b1 */
+	MV_REG_BIT_RESET(CORE_DIV_CLK_CTRL(0), CORE_DIVCLK_RELOAD_RATIO_MASK);
+}

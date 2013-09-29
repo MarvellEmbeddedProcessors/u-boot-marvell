@@ -71,6 +71,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 #include "mvNfc.h"
 
+#ifdef _DEBUG__
+#define DB(x)	x
+#else
+#define DB(x)
+#endif
 /*************/
 /* Constants */
 /*************/
@@ -594,26 +599,10 @@ static MV_STATUS mvNfcDeviceFeatureSet(MV_NFC_CTRL *nfcCtrl, MV_U8 cmd, MV_U8 ad
 static MV_STATUS mvNfcDeviceFeatureGet(MV_NFC_CTRL *nfcCtrl, MV_U8 cmd, MV_U8 addr, MV_U32 *data0, MV_U32 *data1);
 static MV_STATUS mvNfcDeviceModeSet(MV_NFC_CTRL *nfcCtrl, MV_NFC_ONFI_MODE mode);
 
-MV_VOID setNANDClock(MV_U32 nClock)
-{
-	/* Set the division ratio of ECC Clock 0x00018748[13:8] (by default it's double of core clock) */
-	MV_U32 nVal = MV_REG_READ(CORE_DIV_CLK_CTRL(1));
-	nVal = nVal & ~(BIT8|BIT9|BIT10|BIT11|BIT12|BIT13);
-	nVal = nVal | (nClock<<8);
-	MV_REG_WRITE(CORE_DIV_CLK_CTRL(1), nVal);
+/**************/
+/* Local Data */
+/**************/
 
-	/* Set reload force of ECC clock 0x00018740[7:0] to 0x2 (meaning you will force only the ECC clock) */
-	nVal = MV_REG_READ(CORE_DIV_CLK_CTRL(0));
-	nVal = nVal & ~(0xff);
-	nVal = nVal | 0x2;
-	MV_REG_WRITE(CORE_DIV_CLK_CTRL(0), nVal);
-
-	/* Set reload ratio bit 0x00018740[8] to 1'b1 */
-	MV_REG_BIT_SET(CORE_DIV_CLK_CTRL(0), BIT8);
-	mvOsDelay(1); /*  msec */
-	/* Set reload ratio bit 0x00018740[8] to 1'b1 */
-	MV_REG_BIT_RESET(CORE_DIV_CLK_CTRL(0), BIT8);
-}
 
 /*******************************************************************************
 * mvNfcInit
@@ -636,7 +625,7 @@ MV_VOID setNANDClock(MV_U32 nClock)
 *	MV_TIMEOUT 	- Error accessing the underlying flahs device.
 *	MV_FAIL		- On failure
 *******************************************************************************/
-MV_STATUS mvNfcInit(MV_NFC_INFO *nfcInfo, MV_NFC_CTRL *nfcCtrl)
+MV_STATUS mvNfcInit(MV_NFC_INFO *nfcInfo, MV_NFC_CTRL *nfcCtrl, struct MV_NFC_HAL_DATA *halData)
 {
 	MV_U32 ctrl_reg;
 	MV_STATUS ret;
@@ -645,14 +634,14 @@ MV_STATUS mvNfcInit(MV_NFC_INFO *nfcInfo, MV_NFC_CTRL *nfcCtrl)
 	MV_U32 nand_clock;
 	/* Initial register values */
 	ctrl_reg = 0;
-
 	/*
 	 Reduce NAND clock for supporting slower flashes for initialization
 	 ECC engine clock = (2Ghz / divider)
 	 NFC clock = ECC clock / 2
 	 */
-	setNANDClock(8); /* Go down to 125MHz */
+	halData->mvCtrlNandClkSetFunction(8); /* setNANDClock(8);  Go down to 125MHz */
 	nand_clock = 125000000;
+	DB(printf("mvNfcInit: set nand clock to %d\n", nand_clock));
 
 	/* Relax Timing configurations to avoid timing violations after flash reset */
 	MV_REG_WRITE(NFC_TIMING_0_REG, 0xFC3F3F7F);
@@ -727,9 +716,11 @@ MV_STATUS mvNfcInit(MV_NFC_INFO *nfcInfo, MV_NFC_CTRL *nfcCtrl)
 
 	/* Critical Initialization done. Raise NFC clock if needed */
 	if (flashDeviceInfo[i].flags & NFC_CLOCK_UPSCALE_200M) {
-		setNANDClock(5);
+
+		halData->mvCtrlNandClkSetFunction(5); /* setNANDClock(5); */
 		nand_clock = 200000000;
 	}
+	DB(printf("mvNfcInit: set nand clock to %d\n", nand_clock));
 
 	/* Configure the command set based on page size */
 	if (flashDeviceInfo[i].pgSz < MV_NFC_2KB_PAGE)
@@ -739,8 +730,10 @@ MV_STATUS mvNfcInit(MV_NFC_INFO *nfcInfo, MV_NFC_CTRL *nfcCtrl)
 
 	/* calculate Timing parameters */
 	ret = mvNfcTimingSet(nand_clock, &flashDeviceInfo[i]);
-	if (ret != MV_OK)
+	if (ret != MV_OK) {
+		DB(printf("mvNfcInit: mvNfcTimingSet failed for clock %d\n", nand_clock));
 		return ret;
+	}
 
 	/* Configure the control register based on the device detected */
 	ctrl_reg = MV_REG_READ(NFC_CONTROL_REG);

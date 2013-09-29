@@ -195,11 +195,11 @@ int mv_eth_initialize(bd_t *bis)
 	for (port = 0; port < mvCtrlEthMaxPortGet(); port++) {
 		if (MV_PON_PORT(port) || mvBoardIsPortLoopback(port))
 			continue;
-/*
-		if (MV_FALSE ==  mvBoardIsGbEPortConnected(port))
+
+		if (mvBoardIsEthConnected(port) == MV_FALSE)
 			continue;
-*/
-		if (MV_FALSE == mvCtrlPwrClckGet(ETH_GIG_UNIT_ID, port))
+
+		if (mvCtrlPwrClckGet(ETH_GIG_UNIT_ID, port) == MV_FALSE)
 			continue;
 
 		/* interface name */

@@ -212,5 +212,6 @@ MV_BOOL mvCtrlDDRThruXbar(MV_VOID);
 MV_BOOL mvCtrlDDRECC(MV_VOID);
 MV_U32 mvCtrlGetJuncTemp(MV_VOID);
 void mvCtrlGetPexActive(MV_BOOL *pPexActive, int size);
+void mvCtrlNandClkSet(int nClock);
 
 #endif /* __INCmvCtrlEnvLibh */

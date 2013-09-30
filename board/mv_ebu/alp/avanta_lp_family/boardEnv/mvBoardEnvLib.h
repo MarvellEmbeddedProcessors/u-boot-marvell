@@ -478,7 +478,7 @@ MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable);
 MV_STATUS mvBoardSgmiiSfp0TxSet(MV_BOOL enable);
 MV_STATUS mvBoardUsbSsEnSet(MV_BOOL enable);
 MV_U32 mvBoardTclkGet(MV_VOID);
-MV_U32 mvBoardL2ClkGetRaw(MV_VOID);
+MV_U32 mvBoardL2ClkGet(MV_VOID);
 MV_U32 mvBoardSysClkGet(MV_VOID);
 MV_U32 mvBoardDebugLedNumGet(MV_U32 boardId);
 MV_VOID mvBoardDebugLed(MV_U32 hexNum);

@@ -133,15 +133,28 @@ MV_U32 mvCtrlGetCpuNum(MV_VOID)
 		return cpu1Enabled;
 }
 
+/*
+ * Note: this function is called at the very early stage
+ * in Linux Kernel, hence, it has to read from SoC register, not
+ * from pre-built database.
+ */
 MV_BOOL mvCtrlIsSscgEnabled(MV_VOID)
 {
+	MV_BOARD_SATR_INFO satrInfo;
 	MV_U32 sscgDisabled;
 
-	if (mvCtrlSatRRead(MV_SATR_SSCG_DISABLE, &sscgDisabled) != MV_OK) {
-		mvOsPrintf("%s: Error: failed to read SSCG status\n", __func__);
-		return MV_TRUE; /* if error reading S@R, assume sscg is default (enabled) */
-	} else
-		return sscgDisabled == 0x1 ? MV_FALSE : MV_TRUE;
+	if (mvBoardSatrInfoConfig(MV_SATR_SSCG_DISABLE, &satrInfo, MV_TRUE) != MV_OK) {
+		mvOsPrintf("%s: mvBoardSatrInfoConfig failed\n", __func__);
+		return MV_FALSE;
+	}
+
+	sscgDisabled = MV_REG_READ(MPP_SAMPLE_AT_RESET(satrInfo.regNum));
+	sscgDisabled = (sscgDisabled & (satrInfo.mask)) >> (satrInfo.offset);
+
+	if (sscgDisabled == 0)
+		return MV_TRUE; /* SSCG mechanism is enabled */
+	else
+		return MV_FALSE; /* SSCG mechanism is disabled */
 }
 
 /*******************************************************************************

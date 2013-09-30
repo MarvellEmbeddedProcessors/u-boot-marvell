@@ -473,10 +473,13 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 }
 
 /*******************************************************************************
-* mvBoardL2ClkGetRaw
+* mvBoardL2ClkGet
 *
 * DESCRIPTION:
 *	This routine extract the L2 Cache frequency/clock.
+*	Note: this function is called at the very early stage
+*	in Linux Kernel, hence, it has to read from SoC register, not
+*	from pre-built database.
 *
 * INPUT:
 *	None.
@@ -488,7 +491,7 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 *	32bit clock cycles in Hertz.
 *
 *******************************************************************************/
-MV_U32 mvBoardL2ClkGetRaw(MV_VOID)
+MV_U32 mvBoardL2ClkGet(MV_VOID)
 {
 #ifdef CONFIG_MACH_AVANTA_LP_FPGA
 	return MV_FPGA_L2_CLK;
@@ -496,8 +499,7 @@ MV_U32 mvBoardL2ClkGetRaw(MV_VOID)
 	MV_U32 clkSelect;
 	MV_FREQ_MODE freq[] = MV_SAR_FREQ_MODES;
 
-	clkSelect = (MV_REG_READ(MPP_SAMPLE_AT_RESET(1)));
-
+	clkSelect = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
 	clkSelect = clkSelect & (0x1f << 17);
 	clkSelect >>= 17;
 

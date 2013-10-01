@@ -177,7 +177,8 @@ void mvGmacDefaultsSet(int port)
 	/* Update TX FIFO MIN Threshold */
 	regVal = MV_REG_READ(GMAC_PORT_FIFO_CFG_1_REG(port));
 	regVal &= ~GMAC_TX_FIFO_MIN_TH_ALL_MASK;
-	regVal |= GMAC_TX_FIFO_MIN_TH_MASK(0x40);
+	/* Minimal TX threshold must be less than minimal packet length */
+	regVal |= GMAC_TX_FIFO_MIN_TH_MASK(64 - 4 - 2);
 	MV_REG_WRITE(GMAC_PORT_FIFO_CFG_1_REG(port), regVal);
 }
 

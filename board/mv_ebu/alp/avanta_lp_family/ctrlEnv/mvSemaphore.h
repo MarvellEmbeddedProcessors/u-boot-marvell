@@ -69,6 +69,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config.h"
 #endif
 
+
+#ifdef CONFIG_ALP_HW_SEMAPHORE_WA
+/*
+ * XXX: After returning from U-Boot the value of GLOBAL_SCRATCH_PAD(0) is 0x5E
+ * instead of reset value 0x0. Next values (for GLOBAL_SCRATCH_PAD(1-7)) are
+ * correct - 0x0
+ */
+#define GLOBAL_SCRATCH_PAD_0	(0x20520)
+#define GLOBAL_SCRATCH_PAD(x)	(INTER_REGS_VIRT_BASE \
+					   | (GLOBAL_SCRATCH_PAD_0 + (32 * (x))))
+#define MV_MAX_SEMA		8
+
+/*
+ * Only 8 scratch reg are available
+ */
+#define ADR_WIN_EN_REG		1
+#define MV_SEMA_PEX0		2
+#define MV_SEMA_GIC		3
+#define MV_SEMA_IRQ		4
+#define MV_SEMA_CLOCK		5
+#define MV_SEMA_CLOCK_INIT	6
+#define MV_SEMA_TWSI		7
+
+#else /* CONFIG_ALP_HW_SEMAPHORE_WA */
+
 #define MV_AMP_GLOBAL_REG(x)	(0x20980 + (4*x))
 #define ADR_WIN_EN_REG			0
 
@@ -89,6 +114,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_SEMA_CLOCK_INIT	10
 
 #define MV_SEMA_BARRIER(cpu)	(50 + cpu)
+
+#endif /* CONFIG_ALP_HW_SEMAPHORE_WA */
 
 #define MV_LOCK_SEMA		0x10C
 

@@ -66,9 +66,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrlEnv/sys/mvCpuIf.h"
 #include "cpu/mvCpu.h"
 #include "ctrlEnv/mvSemaphore.h"
+#include <linux/spinlock.h>
 
 MV_BOOL mvSemaLock(MV_32 num)
 {
+#ifdef CONFIG_ALP_HW_SEMAPHORE_WA
+	BUG_ON(num >= MV_MAX_SEMA);
+	arch_spin_lock((arch_spinlock_t *)GLOBAL_SCRATCH_PAD(num));
+#else
 	MV_U32 tmp;
 	MV_U32 cpuId;
 	if (num > MV_MAX_SEMA)
@@ -81,11 +86,16 @@ MV_BOOL mvSemaLock(MV_32 num)
 	{
 		tmp = MV_REG_BYTE_READ(MV_SEMA_REG_BASE+num);
 	} while ((tmp & 0xFF) != cpuId);
+#endif
 	return MV_TRUE;
 }
 
 MV_BOOL mvSemaTryLock(MV_32 num)
 {
+#ifdef CONFIG_ALP_HW_SEMAPHORE_WA
+	BUG_ON(num >= MV_MAX_SEMA);
+	return arch_spin_trylock((arch_spinlock_t *)GLOBAL_SCRATCH_PAD(num));
+#else
 	MV_U32 tmp;
 	if (num > MV_MAX_SEMA)
 	{
@@ -99,25 +109,39 @@ MV_BOOL mvSemaTryLock(MV_32 num)
 	}
 	else
 		return MV_TRUE;
+#endif
 }
 
 MV_BOOL mvSemaUnlock(MV_32 num)
 {
+#ifdef CONFIG_ALP_HW_SEMAPHORE_WA
+	BUG_ON(num >= MV_MAX_SEMA);
+	arch_spin_unlock((arch_spinlock_t *)GLOBAL_SCRATCH_PAD(num));
+#else
 	if (num > MV_MAX_SEMA)
 	{
 		mvOsPrintf("Invalid semaphore number\n");
 		return MV_FALSE;
 	}
 	MV_REG_BYTE_WRITE(MV_SEMA_REG_BASE+(num), 0xFF);
+#endif
 	return MV_TRUE;
 }
 
 MV_32 mvReadAmpReg(int regId)
 {
+#ifdef CONFIG_ALP_HW_SEMAPHORE_WA
+	return MV_REG_READ((GLOBAL_SCRATCH_PAD_0 + (32 * regId)));
+#else
 	return MV_REG_READ(MV_AMP_GLOBAL_REG(regId));
+#endif
 }
 
 MV_32 mvWriteAmpReg(int regId, MV_32 value)
 {
+#ifdef CONFIG_ALP_HW_SEMAPHORE_WA
+	return MV_REG_WRITE((GLOBAL_SCRATCH_PAD_0 + (32 * regId)), value);
+#else
 	return MV_REG_WRITE(MV_AMP_GLOBAL_REG(regId), value);
+#endif
 }

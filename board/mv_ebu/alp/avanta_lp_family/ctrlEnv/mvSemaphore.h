@@ -85,9 +85,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_SEMA_L2		6
 #define MV_SEMA_TWSI		7
 #define MV_SEMA_ADR_WIN		8
+#define MV_SEMA_GIC		9
+#define MV_SEMA_CLOCK_INIT	10
 
 #define MV_SEMA_BARRIER(cpu)	(50 + cpu)
 
+#define MV_LOCK_SEMA		0x10C
 
 MV_BOOL mvSemaLock(MV_32 num);
 MV_BOOL mvSemaTryLock(MV_32 num);

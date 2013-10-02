@@ -173,6 +173,10 @@ MV_BOOL mvUnitMapSetup(char* cmdLine, STRSTR_FUNCPTR strstr_func)
 	return MV_TRUE;
 }
 
+#if 0
+/*
+ * Exclude unused function from build
+ */
 MV_U32 mvSocUnitMapFillFlagFormTable(void)
 {
 	int i;
@@ -210,6 +214,7 @@ MV_U32 mvSocUnitMapFillFlagFormTable(void)
 
 	return flag;
 }*/
+#endif
 MV_VOID mvUnitMapSetAllMine()
 {
 	int unitIdx;

@@ -990,7 +990,7 @@ int mvPp2PrsTagModeSet(int port, int type)
 
 	switch (type) {
 
-	case MV_PP2_DSA_EXT:
+	case MV_TAG_TYPE_EDSA:
 		/* Add port to EDSA entries */
 		mvPp2PrsDsaTagSet(port, 1, TAGGED, EDSA);
 		mvPp2PrsDsaTagSet(port, 1, UNTAGGED, EDSA);
@@ -1000,7 +1000,7 @@ int mvPp2PrsTagModeSet(int port, int type)
 
 		break;
 
-	case MV_PP2_DSA:
+	case MV_TAG_TYPE_DSA:
 		/* Add port to DSA entries */
 		mvPp2PrsDsaTagSet(port, 1, TAGGED, DSA);
 		mvPp2PrsDsaTagSet(port, 1, UNTAGGED, DSA);
@@ -1011,8 +1011,8 @@ int mvPp2PrsTagModeSet(int port, int type)
 
 		break;
 
-	case MV_PP2_MH:
-	case MV_PP2_MH_NONE:
+	case MV_TAG_TYPE_MH:
+	case MV_TAG_TYPE_NONE:
 
 		/* remove port form EDSA and DSA entries */
 		mvPp2PrsDsaTagSet(port, 0, TAGGED, DSA);
@@ -1023,7 +1023,7 @@ int mvPp2PrsTagModeSet(int port, int type)
 		break;
 
 	default:
-		POS_RANGE_VALIDATE(type, MV_PP2_DSA_EXT);
+		POS_RANGE_VALIDATE(type, MV_TAG_TYPE_EDSA);
 	}
 
 	return MV_OK;

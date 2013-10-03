@@ -67,6 +67,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mvTypes.h"
 #include "mvCommon.h"
+#include "mv802_3.h"
 #include "mvOs.h"
 #include "mvSysEthConfig.h"
 #include "mvPp2GbeRegs.h"
@@ -99,13 +100,6 @@ typedef struct eth_pbuf {
 	MV_U8  reserved;
 	MV_U16 vlanId;
 } MV_ETH_PKT;
-
-typedef enum {
-	MV_PP2_MH_NONE = 0,
-	MV_PP2_MH = 1,
-	MV_PP2_DSA = 2,
-	MV_PP2_DSA_EXT = 3
-} MV_PP2_MH_MODE;
 
 /************************** Port + Queue Control Structures ******************************/
 typedef struct {
@@ -583,7 +577,7 @@ MV_STATUS mvPp2BmPoolBufSizeSet(int pool, int bufsize);
 MV_STATUS mvPp2RxqBmPoolSet(int port, int rxq, int shortPool, int longPool);
 MV_STATUS mvPp2PortHwfBmPoolSet(int port, int shortPool, int longPool);
 
-MV_STATUS mvPp2MhSet(int port, MV_PP2_MH_MODE mh);
+MV_STATUS mvPp2MhSet(int port, MV_TAG_TYPE mh);
 
 MV_STATUS mvPp2RxFifoInit(int portNum);
 

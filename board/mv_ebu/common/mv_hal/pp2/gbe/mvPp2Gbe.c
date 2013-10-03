@@ -1155,7 +1155,7 @@ MV_STATUS mvPp2PortHwfBmPoolSet(int port, int shortPool, int longPool)
 }
 /*-------------------------------------------------------------------------------*/
 
-MV_STATUS mvPp2MhSet(int port, MV_PP2_MH_MODE mh)
+MV_STATUS mvPp2MhSet(int port, MV_TAG_TYPE mh)
 {
 	MV_U32 regVal;
 
@@ -1163,18 +1163,18 @@ MV_STATUS mvPp2MhSet(int port, MV_PP2_MH_MODE mh)
 	/* Clear relevant fields */
 	regVal &= ~(MV_PP2_DSA_EN_MASK | MV_PP2_MH_EN_MASK);
 	switch (mh) {
-	case MV_PP2_MH_NONE:
+	case MV_TAG_TYPE_NONE:
 		break;
 
-	case MV_PP2_MH:
+	case MV_TAG_TYPE_MH:
 		regVal |= MV_PP2_MH_EN_MASK;
 		break;
 
-	case MV_PP2_DSA:
+	case MV_TAG_TYPE_DSA:
 		regVal |= MV_PP2_DSA_EN_MASK;
 		break;
 
-	case MV_PP2_DSA_EXT:
+	case MV_TAG_TYPE_EDSA:
 		regVal |= MV_PP2_DSA_EXTENDED;
 
 	default:

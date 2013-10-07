@@ -118,12 +118,13 @@ static int e1000_write_phy_reg(struct e1000_hw *hw, uint32_t reg_addr,
 static int32_t e1000_phy_hw_reset(struct e1000_hw *hw);
 static int e1000_phy_reset(struct e1000_hw *hw);
 static int e1000_detect_gig_phy(struct e1000_hw *hw);
-static void e1000_put_hw_eeprom_semaphore(struct e1000_hw *hw);
 static void e1000_set_media_type(struct e1000_hw *hw);
 
 static int32_t e1000_swfw_sync_acquire(struct e1000_hw *hw, uint16_t mask);
 static int32_t e1000_check_phy_reset_block(struct e1000_hw *hw);
 
+#ifndef CONFIG_E1000_NO_NVM
+static void e1000_put_hw_eeprom_semaphore(struct e1000_hw *hw);
 static int32_t e1000_read_eeprom(struct e1000_hw *hw, uint16_t offset,
 		uint16_t words,
 		uint16_t *data);
@@ -889,6 +890,7 @@ static int e1000_validate_eeprom_checksum(struct e1000_hw *hw)
 
 	return -E1000_ERR_EEPROM;
 }
+#endif /* CONFIG_E1000_NO_NVM */
 
 /*****************************************************************************
  * Set PHY to class A mode
@@ -901,6 +903,7 @@ static int e1000_validate_eeprom_checksum(struct e1000_hw *hw)
 static int32_t
 e1000_set_phy_mode(struct e1000_hw *hw)
 {
+#ifndef CONFIG_E1000_NO_NVM
 	int32_t ret_val;
 	uint16_t eeprom_data;
 
@@ -927,10 +930,11 @@ e1000_set_phy_mode(struct e1000_hw *hw)
 			hw->phy_reset_disable = FALSE;
 		}
 	}
-
+#endif
 	return E1000_SUCCESS;
 }
 
+#ifndef CONFIG_E1000_NO_NVM
 /***************************************************************************
  *
  * Obtaining software semaphore bit (SMBI) before resetting PHY.
@@ -969,6 +973,7 @@ e1000_get_software_semaphore(struct e1000_hw *hw)
 
 	return E1000_SUCCESS;
 }
+#endif
 
 /***************************************************************************
  * This function clears HW semaphore bits.
@@ -981,6 +986,7 @@ e1000_get_software_semaphore(struct e1000_hw *hw)
 static void
 e1000_put_hw_eeprom_semaphore(struct e1000_hw *hw)
 {
+#ifndef CONFIG_E1000_NO_NVM
 	 uint32_t swsm;
 
 	DEBUGFUNC();
@@ -995,6 +1001,7 @@ e1000_put_hw_eeprom_semaphore(struct e1000_hw *hw)
 	} else
 		swsm &= ~(E1000_SWSM_SWESMBI);
 	E1000_WRITE_REG(hw, SWSM, swsm);
+#endif
 }
 
 /***************************************************************************
@@ -1011,6 +1018,7 @@ e1000_put_hw_eeprom_semaphore(struct e1000_hw *hw)
 static int32_t
 e1000_get_hw_eeprom_semaphore(struct e1000_hw *hw)
 {
+#ifndef CONFIG_E1000_NO_NVM
 	int32_t timeout;
 	uint32_t swsm;
 
@@ -1047,7 +1055,7 @@ e1000_get_hw_eeprom_semaphore(struct e1000_hw *hw)
 				"SWESMBI bit is set.\n");
 		return -E1000_ERR_EEPROM;
 	}
-
+#endif
 	return E1000_SUCCESS;
 }
 
@@ -1101,6 +1109,7 @@ static boolean_t e1000_is_second_port(struct e1000_hw *hw)
 	}
 }
 
+#ifndef CONFIG_E1000_NO_NVM
 /******************************************************************************
  * Reads the adapter's MAC address from the EEPROM and inverts the LSB for the
  * second function of dual function devices
@@ -1140,6 +1149,7 @@ e1000_read_mac_addr(struct eth_device *nic)
 #endif
 	return 0;
 }
+#endif
 
 /******************************************************************************
  * Initializes receive address filters.
@@ -1768,9 +1778,11 @@ static int
 e1000_setup_link(struct eth_device *nic)
 {
 	struct e1000_hw *hw = nic->priv;
-	uint32_t ctrl_ext;
 	int32_t ret_val;
+#ifndef CONFIG_E1000_NO_NVM
+	uint32_t ctrl_ext;
 	uint16_t eeprom_data;
+#endif
 
 	DEBUGFUNC();
 
@@ -1779,6 +1791,7 @@ e1000_setup_link(struct eth_device *nic)
 	if (e1000_check_phy_reset_block(hw))
 		return E1000_SUCCESS;
 
+#ifndef CONFIG_E1000_NO_NVM
 	/* Read and store word 0x0F of the EEPROM. This word contains bits
 	 * that determine the hardware's default PAUSE (flow control) mode,
 	 * a bit that determines whether the HW defaults to enabling or
@@ -1792,7 +1805,7 @@ e1000_setup_link(struct eth_device *nic)
 		DEBUGOUT("EEPROM Read Error\n");
 		return -E1000_ERR_EEPROM;
 	}
-
+#endif
 	if (hw->fc == e1000_fc_default) {
 		switch (hw->mac_type) {
 		case e1000_ich8lan:
@@ -1801,6 +1814,7 @@ e1000_setup_link(struct eth_device *nic)
 			hw->fc = e1000_fc_full;
 			break;
 		default:
+#ifndef CONFIG_E1000_NO_NVM
 			ret_val = e1000_read_eeprom(hw,
 				EEPROM_INIT_CONTROL2_REG, 1, &eeprom_data);
 			if (ret_val) {
@@ -1813,6 +1827,7 @@ e1000_setup_link(struct eth_device *nic)
 				    EEPROM_WORD0F_ASM_DIR)
 				hw->fc = e1000_fc_tx_pause;
 			else
+#endif
 				hw->fc = e1000_fc_full;
 			break;
 		}
@@ -1832,6 +1847,7 @@ e1000_setup_link(struct eth_device *nic)
 
 	DEBUGOUT("After fix-ups FlowControl is now = %x\n", hw->fc);
 
+#ifndef CONFIG_E1000_NO_NVM
 	/* Take the 4 bits from EEPROM word 0x0F that determine the initial
 	 * polarity value for the SW controlled pins, and setup the
 	 * Extended Device Control reg with that info.
@@ -1844,6 +1860,7 @@ e1000_setup_link(struct eth_device *nic)
 			    SWDPIO__EXT_SHIFT);
 		E1000_WRITE_REG(hw, CTRL_EXT, ctrl_ext);
 	}
+#endif
 
 	/* Call the necessary subroutine to configure the link. */
 	ret_val = (hw->media_type == e1000_media_type_fiber) ?
@@ -5199,6 +5216,7 @@ e1000_initialize(bd_t * bis)
 		e1000_reset_hw(hw);
 		list_add_tail(&hw->list_node, &e1000_hw_list);
 
+#ifndef CONFIG_E1000_NO_NVM
 		/* Validate the EEPROM and get chipset information */
 #if !defined(CONFIG_MVBC_1G)
 		if (e1000_init_eeprom_params(hw)) {
@@ -5209,11 +5227,17 @@ e1000_initialize(bd_t * bis)
 			continue;
 #endif
 		e1000_read_mac_addr(nic);
+#endif
 		e1000_get_bus_type(hw);
 
+#ifndef CONFIG_E1000_NO_NVM
 		printf("e1000: %02x:%02x:%02x:%02x:%02x:%02x\n       ",
 		       nic->enetaddr[0], nic->enetaddr[1], nic->enetaddr[2],
 		       nic->enetaddr[3], nic->enetaddr[4], nic->enetaddr[5]);
+#else
+		memset(nic->enetaddr, 0, 6);
+		printf("e1000: no NVM\n");
+#endif
 
 		/* Set up the function pointers and register the device */
 		nic->init = e1000_init;

@@ -258,8 +258,8 @@ extern "C" {
 #define TBL_UNUSED      0       /* Used to mark unused entry */
 #define FREQ_MODES_NUM		29
 #define FREQ_MODES_NUM_6610	0
-#define FREQ_MODES_NUM_6650	3
-#define FREQ_MODES_NUM_6660	4
+#define FREQ_MODES_NUM_6650	4
+#define FREQ_MODES_NUM_6660	5
 
 
 #define MPP_GROUP_0_TYPE { \

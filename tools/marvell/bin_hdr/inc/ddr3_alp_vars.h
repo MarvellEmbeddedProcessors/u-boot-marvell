@@ -98,6 +98,7 @@ MV_DRAM_MODES ddr_modes[] =
     {"db_88F6660_400",  0x14,        0,          0x0,    Z1_ALP_DB_6660,  ddr3_Z0_db_88F6660_533, ddr3_db_88F6660},
     /* rd board values  */
     {"rd_88F6650_400",  0xE,        0,          0x0,    Z1_ALP_RD_6650,  ddr3_Z0_rd_88F6650_400, ddr3_rd_88F6650},
+    {"rd_88F6650_400",  0x14,        0,          0x0,    Z1_ALP_RD_6650,  ddr3_Z0_rd_88F6650_400, ddr3_rd_88F6650},
     {"rd_88F6660_533",  0x15,        0,          0x0,    Z1_ALP_RD_6660,  ddr3_Z0_rd_88F6660_533, NULL},
 };
 

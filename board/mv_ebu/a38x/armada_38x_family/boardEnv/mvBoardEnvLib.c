@@ -93,10 +93,12 @@
 extern MV_BOARD_INFO *boardInfoTbl[];
 extern MV_BOARD_SATR_INFO boardSatrInfo[];
 MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_BOARD_CONFIG_INFO;
+MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
 
 /* Locals */
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 static MV_BOARD_INFO *board = NULL;
+MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 
 
 /*******************************************************************************
@@ -120,10 +122,9 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 {
 	MV_U32 nandDev;
 	MV_U32 norDev;
-
-	mvBoardIdSet(mvBoardIdGet());
 	MV_U32 syncCtrl = 0;
 
+	mvBoardIdSet(mvBoardIdGet());
 	nandDev = boardGetDevCSNum(0, BOARD_DEV_NAND_FLASH);
 	if (nandDev != 0xFFFFFFFF) {
 		/* Set NAND interface access parameters */
@@ -167,7 +168,7 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 }
 
 /*******************************************************************************
-* mvBoardModelGet - Get Board model
+* mvBoardModelGet - Get Board model - (ECO version)
 *
 * DESCRIPTION:
 *       This function returns 16bit describing board model.
@@ -188,7 +189,6 @@ MV_U16 mvBoardModelGet(MV_VOID)
 {
 	return mvBoardIdGet() >> 16;
 }
-
 /*******************************************************************************
 * mbBoardRevlGet - Get Board revision
 *
@@ -206,12 +206,20 @@ MV_U16 mvBoardModelGet(MV_VOID)
 *       None.
 *
 * RETURN:
-*       String describing board model.
 *
 *******************************************************************************/
-MV_U16 mvBoardRevGet(MV_VOID)
+MV_U32 mvBoardRevGet(MV_VOID)
 {
-	return mvBoardIdGet() & 0xFFFF;
+
+	MV_U32 boardECO;
+	MV_U8 readValue;
+
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 1, &readValue) != MV_OK) {
+		mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);
+		return MV_ERROR;
+	}
+	boardECO = (readValue & 0x0F) | ((readValue & 0x0f0) << 12);
+	return boardECO;
 }
 
 /*******************************************************************************
@@ -257,6 +265,14 @@ MV_STATUS mvBoardNameGet(char *pNameBuff, MV_U32 size)
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 {
+	MV_U8 readValue;
+
+	if (mvBoardTwsiGet(BOARD_TWSI_MODULE_DETECT, 2, 0, &readValue) != MV_OK) {
+		mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);
+		return MV_FALSE;
+	}
+	if (readValue == 0x0d)
+		return MV_TRUE;
 	return MV_FALSE;
 }
 
@@ -426,7 +442,7 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 {
 	MV_U32 tclk;
 	tclk = (MV_REG_READ(MPP_SAMPLE_AT_RESET(1)));
-	tclk = ((tclk & 0x400000) >> 22);
+	tclk = ((tclk & (1 << 22)) >> 22);
 	switch (tclk) {
 	case 0:
 		return MV_BOARD_TCLK_166MHZ;
@@ -585,31 +601,6 @@ MV_32 mvBoardResetGpioPinGet(MV_VOID)
 }
 
 /*******************************************************************************
-* mvBoardSDIOGpioPinGet
-*
-* DESCRIPTION:
-*	used for hotswap detection
-* INPUT:
-*	type - Type of SDIO GPP to get.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*       GPIO pin number. The function return -1 for bad parameters.
-*
-*******************************************************************************/
-MV_32 mvBoardSDIOGpioPinGet(MV_BOARD_GPP_CLASS type)
-{
-	if (type != BOARD_GPP_SDIO_POWER &&
-	    type != BOARD_GPP_SDIO_DETECT &&
-	    type != BOARD_GPP_SDIO_WP)
-		return MV_FAIL;
-
-	return mvBoarGpioPinNumGet(type, 0);
-}
-
-/*******************************************************************************
 * mvBoardUSBVbusGpioPinGet - return Vbus input GPP
 *
 * DESCRIPTION:
@@ -705,7 +696,7 @@ MV_U32 mvBoardGpioIntMaskGet(MV_U32 gppGrp)
 *******************************************************************************/
 MV_U32 mvBoardSlicUnitTypeGet(MV_VOID)
 {
-	return board->pBoardModTypeValue->boardMppSlic;
+	return MV_BOARD_SLIC_DISABLED;
 }
 
 /*******************************************************************************
@@ -727,7 +718,6 @@ MV_U32 mvBoardSlicUnitTypeGet(MV_VOID)
 *******************************************************************************/
 MV_VOID mvBoardSlicUnitTypeSet(MV_U32 slicType)
 {
-	board->pBoardModTypeValue->boardMppSlic = slicType;
 }
 /*******************************************************************************
 * mvBoardMppGet - Get board dependent MPP register value
@@ -822,27 +812,62 @@ MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType)
 *******************************************************************************/
 MV_VOID mvBoardInfoUpdate(MV_VOID)
 {
-	MV_U32 ethComplex;
+	MV_U8 readValue;
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
+	MV_U32 boardId = mvBoardIdGet();
+	int i;
 
-	/* Update SMI phy address for MAC0/1 */
-	ethComplex = mvBoardEthComplexConfigGet();
+	memset(&boardOptionsConfig, 0x0, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION);
 
-	if (ethComplex & MV_ETHCOMP_GE_MAC0_2_RGMII0)
-		mvBoardPhyAddrSet(0, 0x0);
-	else
-		mvBoardPhyAddrSet(0, -1); /* no SMI address if connected to switch */
-
+	/*Read all TWSI board module if exsist : */
+	/* Save values Locally in configVal[] */
+	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
+		if (mvBoardConfigTypeGet(i, &configInfo) == MV_TRUE) {
+			if (mvBoardTwsiGet(configInfo.twsiAddr, configInfo.offset, 0, &readValue) != MV_OK) {
+				mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);
+				return;
+			}
+			if ((configInfo.twsiId == readValue) &&
+				(configInfo.isActiveForBoard[boardId]))
+				boardOptionsConfig[configInfo.configId] = 1;
+		}
+	}
 	/* Update MPP group types and values according to board configuration */
 	mvBoardMppIdUpdate();
-
+	mvBoardEthComplexInfoUpdate();
+}
+/*******************************************************************************
+* mvBoardIsModuleConnected
+*
+* DESCRIPTION:
+*	Checks if a given Module connected to board.
+*
+* INPUT:
+*	Module ID
+*
+* OUTPUT:
+*       None
+*
+* RETURN:
+*	MV_TRUE if Module is connected, MV_FALSE otherwise.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsModuleConnected(MV_U32 ModuleID)
+{
+	if (ModuleID >= MV_CONFIG_TYPE_MAX_OPTION)
+		return MV_FALSE;
+	if (boardOptionsConfig[ModuleID] == 1)
+		return MV_TRUE;
+	return MV_FALSE;
 }
 
 /*******************************************************************************
 * mvBoardMppIdUpdate - Update MPP ID's according to modules auto-detection.
 *
 * DESCRIPTION:
-*	Update MPP ID's according to boot source
+*	Update MPP ID's according to on-board modules as detected using TWSI bus.
 *	Update board information for changed mpp values
+	Must run AFTER mvBoardEthComplexInfoUpdate
 *
 * INPUT:
 *	None.
@@ -856,11 +881,46 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 *******************************************************************************/
 MV_VOID mvBoardMppIdUpdate(MV_VOID)
 {
-	/* MPP Groups initialization : */
-	/* Set Group 0-1 - Boot device (else if booting from SPI1: Set Groups 3-4) */
-	mvBoardBootDeviceGroupSet();
+	/*
+	if (mvBoardIsModuleConnected(MV_CONFIG_MII)) {
+	}
+	if (mvBoardIsModuleConnected(MV_CONFIG_NOR)) {
+	}
+	if (mvBoardIsModuleConnected(MV_CONFIG_NAND)) {
+	}
+	if (mvBoardIsModuleConnected(MV_CONFIG_SDIO)) {
+	}
+	if (mvBoardIsModuleConnected(MV_CONFIG_SLIC_TDM_DEVICE)) {
+	}
+	if (mvBoardIsModuleConnected(MV_CONFIG_I2S_DEVICE)) {
+	}
+	if (mvBoardIsModuleConnected(MV_CONFIG_SPDIF_DEVICE)) {
+	}
+*/
 }
 
+/*******************************************************************************
+* mvBoardEthComplexInfoUpdate
+*
+* DESCRIPTION:
+*	Update etherntComplex configuration,
+*	according to modules detection (S@R & board configuration)
+*
+** INPUT:
+*	None.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_OK - on success,
+*	MV_ERROR - On failure.
+*
+*******************************************************************************/
+MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID)
+{
+	return MV_OK;
+}
 
 /*******************************************************************************
 * mvBoardBootDeviceGroupSet - test board Boot configuration and set MPP groups
@@ -884,13 +944,13 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 	MV_BOARD_BOOT_SRC bootSrc = mvBoardBootDeviceGet();
 
 	switch (bootSrc) {
+	case MSAR_0_BOOT_NOR_FLASH:
+		break;
 	case MSAR_0_BOOT_NAND_NEW:
-		mvBoardMppTypeSet(0, NAND_BOOT_V2);
-		mvBoardMppTypeSet(1, NAND_BOOT_V2);
 		break;
 	case MSAR_0_BOOT_SPI_FLASH:
-		mvBoardMppTypeSet(0, SPI0_BOOT);
-		mvBoardMppTypeSet(1, SPI0_BOOT);
+		break;
+	case MSAR_0_BOOT_SPI1_FLASH:
 		break;
 	default:
 		return MV_ERROR;
@@ -914,9 +974,18 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 *******************************************************************************/
 MV_BOARD_BOOT_SRC mvBoardBootDeviceGet()
 {
-	MV_U32 satrBootDeviceValue = mvCtrlSatRRead(MV_SATR_BOOT_DEVICE);
+	MV_U32 satrBootDeviceValue;
 	MV_SATR_BOOT_TABLE satrTable[] = MV_SATR_TABLE_VAL;
-	MV_SATR_BOOT_TABLE satrBootEntry = satrTable[satrBootDeviceValue];
+	MV_SATR_BOOT_TABLE satrBootEntry;
+
+	satrBootDeviceValue = mvBoardSatRRead(MV_SATR_BOOT_DEVICE);
+	if (satrBootDeviceValue == MV_ERROR) {
+		mvOsPrintf("%s: Error: failed to read boot source\n", __func__);
+		mvOsPrintf("Using NAND as the default boot source\n");
+		return MSAR_0_BOOT_SPI_FLASH; /* SPI is the Default Boot source */
+	}
+
+	satrBootEntry = satrTable[satrBootDeviceValue];
 
 	if (satrBootEntry.bootSrc != MSAR_0_BOOT_SPI_FLASH)
 		return satrBootEntry.bootSrc;
@@ -963,83 +1032,6 @@ MV_U32 mvBoardBootAttrGet(MV_U32 satrBootDeviceValue, MV_U8 attrNum)
 }
 
 /*******************************************************************************
-* mvBoardIsLaneSGMII - check if a board lane is configured to SGMII-0
-*
-* DESCRIPTION:
-*	test board configuration regarding lanes-1/2/3
-*	if one of them is configured to SGMII-0 , will return its MV_ETH_COMPLEX_TOPOLOGY define
-*	else return error
-*
-* INPUT:  None.
-*
-* OUTPUT:  None.
-*
-* RETURN:
-*       value =MV_ETH_COMPLEX_GE_MAC0_COMPHY_1/2/3 if lanes 1/2/3 are SGMII-0 (adaptively)
-*       or -1 if none of them is SGMII-0
-*
-*******************************************************************************/
-MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet()
-{
-	MV_U32 laneConfig;
-	/* Lane 1 */
-	laneConfig = mvCtrlSysConfigGet(MV_CONFIG_LANE1);
-	if (laneConfig == MV_ERROR)
-		return MV_ERROR;
-	else if (laneConfig == 0x1)
-		return MV_ETHCOMP_GE_MAC0_2_COMPHY_1;
-	/* Lane 2 */
-	laneConfig = mvCtrlSysConfigGet(MV_CONFIG_LANE2);
-	if (laneConfig == MV_ERROR)
-		return MV_ERROR;
-	else if (laneConfig == 0x0)
-		return MV_ETHCOMP_GE_MAC0_2_COMPHY_2;
-	/* Lane 3 */
-	laneConfig = mvCtrlSysConfigGet(MV_CONFIG_LANE3);
-	if (laneConfig == MV_ERROR)
-		return MV_ERROR;
-	else if (laneConfig == 0x1)
-		return MV_ETHCOMP_GE_MAC0_2_COMPHY_3;
-
-	mvOsPrintf("%s: Error: unexpected value for Serdes Lane board configuration\n", __func__);
-	return MV_ERROR;
-}
-
-/*******************************************************************************
-* mvBoardIsInternalSwitchConnectedToPort
-*
-* DESCRIPTION:
-*       This routine returns port's connection status
-*
-* INPUT:
-*       ethPortNum - Ethernet port number.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       1 - if ethPortNum is connected to switch, 0 otherwise
-*
-*******************************************************************************/
-MV_STATUS mvBoardIsInternalSwitchConnectedToPort(MV_U32 ethPortNum)
-{
-	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
-
-	if (ethPortNum >= board->numBoardMacInfo) {
-		mvOsPrintf("%s: Error: Illegal port number(%u)\n", __func__, ethPortNum);
-		return MV_FALSE;
-	}
-
-	/* Check if internal switch is connected */
-	if ((ethPortNum == 0) && (ethComplex & MV_ETHCOMP_GE_MAC0_2_SW_P6))
-		return MV_TRUE;
-	else if ((ethPortNum == 1) && (ethComplex & MV_ETHCOMP_GE_MAC1_2_SW_P4))
-		return MV_TRUE;
-	else
-		return MV_FALSE;
-}
-
-/*******************************************************************************
 * mvBoardIsInternalSwitchConnected
 *
 * DESCRIPTION:
@@ -1057,47 +1049,7 @@ MV_STATUS mvBoardIsInternalSwitchConnectedToPort(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_STATUS mvBoardIsInternalSwitchConnected(void)
 {
-	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
-
-	if ((ethComplex & MV_ETHCOMP_GE_MAC0_2_SW_P6) ||
-	    (ethComplex & MV_ETHCOMP_GE_MAC1_2_SW_P4))
-		return MV_TRUE;
-	else
-		return MV_FALSE;
-}
-
-/*******************************************************************************
-* mvBoardSwitchConnectedPortGet -
-*
-* DESCRIPTION:
-*       This routine returns the switch port connected to the ethPort
-*
-* INPUT:
-*       ethPortNum - Ethernet port number.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*	switch port connected to the ethPort
-*
-*******************************************************************************/
-MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort)
-{
-	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
-
-	if (ethPort >= board->numBoardMacInfo) {
-		mvOsPrintf("%s: Error: Illegal port number(%u)\n", __func__, ethPort);
-		return MV_FALSE;
-	}
-
-	if ((ethPort == 0) && (ethComplex & MV_ETHCOMP_GE_MAC0_2_SW_P6))
-		return 6;
-	else if ((ethPort == 1) && (ethComplex & MV_ETHCOMP_GE_MAC1_2_SW_P4))
-		return 4;
-	else
-		return -1;
-
+	return MV_FALSE;
 }
 
 /*******************************************************************************
@@ -1117,22 +1069,7 @@ MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort)
 *******************************************************************************/
 MV_U32 mvBoardSwitchPortsMaskGet(MV_U32 switchIdx)
 {
-	MV_U32 mask = 0, c = mvBoardEthComplexConfigGet();
-
-	if (c & MV_ETHCOMP_SW_P0_2_GE_PHY_P0)
-		mask |= BIT0;
-	if (c & MV_ETHCOMP_SW_P1_2_GE_PHY_P1)
-		mask |= BIT1;
-	if (c & MV_ETHCOMP_SW_P2_2_GE_PHY_P2)
-		mask |= BIT2;
-	if (c & MV_ETHCOMP_SW_P3_2_GE_PHY_P3)
-		mask |= BIT3;
-	if ((c & MV_ETHCOMP_SW_P4_2_RGMII0) || (c & MV_ETHCOMP_GE_MAC1_2_SW_P4))
-		mask |= BIT4;
-	if (c & MV_ETHCOMP_GE_MAC0_2_SW_P6)
-		mask |= BIT6;
-
-	return mask;
+	return 0;
 }
 
 /*******************************************************************************
@@ -1153,14 +1090,13 @@ MV_U32 mvBoardSwitchPortsMaskGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx)
 {
-	return board->switchforceLinkMask;
+	return 0;
 }
 
 /*******************************************************************************
 * mvBoardFreqModesNumGet
 *
-* DESCRIPTION:
-*      Return the number of supported frequency modes for this board
+* DESCRIPTION: Return the number of supported frequency modes for this SoC
 *
 *
 * INPUT:
@@ -1175,13 +1111,21 @@ MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_U32 mvBoardFreqModesNumGet()
 {
-	MV_U16 ctrlModel = mvCtrlModelGet();
+	MV_U32 freqNum;
 
-	if (ctrlModel == MV_6720_DEV_ID)
-		return FREQ_MODES_NUM_6720;
+	switch (mvCtrlModelGet()) {
+	case MV_6810_DEV_ID:
+		freqNum = FREQ_MODES_NUM_6810;
+		break;
+	case MV_6820_DEV_ID:
+		freqNum = FREQ_MODES_NUM_6820;
+		break;
+	default:
+		mvOsPrintf("%s: Error: failed to read ctrlModel (SoC ID)\n", __func__);
+		return MV_ERROR;
+	}
 
-	mvOsPrintf("%s: Error: Illegal ctrl Model (%x)\n", __func__, ctrlModel);
-	return MV_ERROR;
+	return freqNum;
 }
 
 
@@ -1224,112 +1168,6 @@ MV_VOID mvBoardConfigWrite(void)
 		}
 	}
 }
-
-/*******************************************************************************
-* mvBoardGppConfigGet
-*
-* DESCRIPTION:
-*	Get board configuration according to the input configuration GPP's.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*	The value of the board configuration GPP's.
-*
-*******************************************************************************/
-MV_U32 mvBoardGppConfigGet(void)
-{
-	MV_U32 gpp, i, result = 0;
-
-	for (i = 0; i < board->numBoardGppInfo; i++) {
-		if (board->pBoardGppInfo[i].devClass == BOARD_GPP_CONF) {
-			gpp = board->pBoardGppInfo[i].gppPinNum;
-			result <<= 1;
-			result |= (mvGppValueGet(gpp >> 5, 1 << (gpp & 0x1F)) >> (gpp & 0x1F));
-		}
-	}
-
-	return result;
-}
-
-/*******************************************************************************
-* mvBoardTdmSpiModeGet - return SLIC/DAA connection
-*
-* DESCRIPTION:
-*
-* INPUT:
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*
-*******************************************************************************/
-MV_32 mvBoardTdmSpiModeGet(MV_VOID)
-{
-	return 0;
-}
-
-/*******************************************************************************
-* mvBoardTdmDevicesCountGet
-*
-* DESCRIPTION:
-*	Return the number of TDM devices on board.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*	Number of devices.
-*
-*******************************************************************************/
-MV_U8 mvBoardTdmDevicesCountGet(void)
-{
-	MV_16 index = board->boardTdmInfoIndex;
-
-	if (index == -1)
-		return 0;
-
-	return board->numBoardTdmInfo[index];
-}
-
-/*******************************************************************************
-* mvBoardTdmSpiCsGet
-*
-* DESCRIPTION:
-*	Return the SPI Chip-select number for a given device.
-*
-* INPUT:
-*	devId	- The Slic device ID to get the SPI CS for.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*	The SPI CS if found, -1 otherwise.
-*
-*******************************************************************************/
-MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId)
-{
-	MV_16 index;
-
-	index = board->boardTdmInfoIndex;
-	if (index == -1)
-		return 0;
-
-	if (devId >= board->numBoardTdmInfo[index])
-		return -1;
-
-	return board->pBoardTdmInt2CsInfo[index][devId].spiCs;
-}
-
 /*******************************************************************************
 * mvBoardMppModuleTypePrint
 *
@@ -1348,74 +1186,31 @@ MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId)
 *******************************************************************************/
 MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 {
-	MV_U32 ethConfig = mvBoardEthComplexConfigGet();
-
+	int i;
+	char *moduleStr[MV_CONFIG_TYPE_MAX_OPTION] = { \
+		"SGMII",                                \
+		"MII",                                  \
+		"TDM",                                  \
+		"I2S",                                  \
+		"SPDIF",                                \
+		"SERDES PEX LANE1",                     \
+		"SERDES PEX LANE2",                     \
+		"NOR",                                  \
+		"NAND",                                 \
+		"SDIO",                                 \
+		"GIGA"
+	};
 	mvOsOutput("Board configuration detected:\n");
 
-	/* TDM */
-	if (mvBoardTdmDevicesCountGet() > 0)
-		mvOsOutput("       TDM module.\n");
+	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
+		if (mvBoardIsModuleConnected(i))
+			mvOsOutput("       %s module.\n", moduleStr[i]);
 
-	/* LCD DVI Module */
-	if (mvBoardIsLcdDviModuleConnected())
-		mvOsOutput("       LCD DVI module.\n");
-
-	/* Switch Module */
-	if ((ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6) &&
-		!(ethConfig & MV_ETHCOMP_GE_MAC1_2_SW_P4))
-		mvOsOutput("       Ethernet Switch port 6 on MAC0 [Default]\n");
-	else if ((ethConfig & MV_ETHCOMP_GE_MAC1_2_SW_P4) &&
-		!(ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6))
-		mvOsOutput("       Ethernet Switch port 4 on MAC1 [Default]\n");
-	else if ((ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6) &&
-		(ethConfig & MV_ETHCOMP_GE_MAC1_2_SW_P4)) {
-		mvOsOutput("       Ethernet Switch port 6 on MAC0 [Default]\n");
-		mvOsOutput("       Ethernet Switch port 4 on MAC1\n");
 	}
-
-	/* RGMII */
-	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_RGMII0)
-		mvOsOutput("       RGMII0 Module on MAC0\n");
-	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_RGMII1)
-		mvOsOutput("       RGMII1 on MAC1\n");
-	if (ethConfig & MV_ETHCOMP_SW_P4_2_RGMII0)
-		mvOsOutput("       RGMII0 Module on Switch port #4\n");
-
-	/* Internal GE Quad Phy */
-	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)
-			mvOsOutput("       GE-PHY-0 on MAC0\n");
-	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3)
-			mvOsOutput("       GE-PHY-3 on MAC1\n");
-	if ((ethConfig & MV_ETHCOMP_SW_P0_2_GE_PHY_P0) && (ethConfig & MV_ETHCOMP_SW_P1_2_GE_PHY_P1)
-		&& (ethConfig & MV_ETHCOMP_SW_P2_2_GE_PHY_P2) && (ethConfig & MV_ETHCOMP_SW_P3_2_GE_PHY_P3))
-			mvOsOutput("       4xGE-PHY Module on 4 Switch ports\n");
-	else {
-		if (ethConfig & MV_ETHCOMP_SW_P0_2_GE_PHY_P0)
-			mvOsOutput("       GE-PHY-0 Module on Switch port #0\n");
-		if (ethConfig & MV_ETHCOMP_SW_P1_2_GE_PHY_P1)
-			mvOsOutput("       GE-PHY-1 Module on Switch port #1\n");
-		if (ethConfig & MV_ETHCOMP_SW_P2_2_GE_PHY_P2)
-			mvOsOutput("       GE-PHY-2 Module on Switch port #2\n");
-		if (ethConfig & MV_ETHCOMP_SW_P3_2_GE_PHY_P3)
-			mvOsOutput("       GE-PHY-3 Module on Switch port #3\n");
-	}
-
-
-
-
 }
 
 MV_VOID mvBoardOtherModuleTypePrint(MV_VOID)
 {
-	/* Pex Module */
-	if (mvBoardIsPexModuleConnected())
-		mvOsOutput("       PEX module.\n");
-	/* SETM Module */
-	if (mvBoardIsSetmModuleConnected())
-		mvOsOutput("       SETM module.\n");
-	/* LVDS Module */
-	if (mvBoardIsLvdsModuleConnected())
-		mvOsOutput("       LVDS module.\n");
 }
 
 /*******************************************************************************
@@ -1728,7 +1523,7 @@ MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index)
 *******************************************************************************/
 MV_U32 mvBoardEthComplexConfigGet(MV_VOID)
 {
-	return board->pBoardModTypeValue->ethSataComplexOpt;
+	return 0;
 }
 
 /*******************************************************************************
@@ -1750,8 +1545,6 @@ MV_U32 mvBoardEthComplexConfigGet(MV_VOID)
 *******************************************************************************/
 MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig)
 {
-	/* Set ethernet complex configuration. */
-	board->pBoardModTypeValue->ethSataComplexOpt = ethConfig;
 	return;
 }
 
@@ -1771,22 +1564,14 @@ MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig)
 *	MV_BOARD_SATR_INFO struct with mask, offset and register number.
 *
 *******************************************************************************/
-MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo, MV_BOOL read)
+MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo)
 {
-	int i, start, end;
+	int i;
 	MV_U32 boardId = mvBoardIdGet();
-
-	if (read == MV_TRUE) {	/* if read request, check read SATR fields */
-		start = 0;
-		end = MV_SATR_READ_MAX_OPTION;
-	} else {		/* if write request, check write SATR fields */
-		start = MV_SATR_READ_MAX_OPTION;
-		end = MV_SATR_WRITE_MAX_OPTION;
-	}
 
 	/* verify existence of requested SATR type, pull its data,
 	 * and check if field is relevant to current running board */
-	for (i = start; i < end ; i++)
+	for (i = 0; i < MV_SATR_MAX_OPTION ; i++)
 		if (boardSatrInfo[i].satrId == satrClass) {
 			*satrInfo = boardSatrInfo[i];
 			if (boardSatrInfo[i].isActiveForBoard[boardId])
@@ -1929,12 +1714,14 @@ MV_VOID mvBoardIdSet(MV_U32 boardId)
 *******************************************************************************/
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-	MV_U32 boardId, value;
-	/*Fake board ID, TODO fix*/
-	return 0x0;
+	MV_U32 boardId;
+	MV_U8 readValue;
 
-	value = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
-	boardId = ((value & (0xF0)) >> 4);
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 0, &readValue) != MV_OK) {
+		mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);
+		return MV_ERROR;
+	}
+	boardId = readValue & 0x07;
 
 	if (boardId >= MV_MAX_BOARD_ID) {
 		mvOsPrintf("%s: Error: read wrong board (%d)\n", __func__, boardId);
@@ -2049,48 +1836,6 @@ MV_U8 mvBoardCpuCoresNumGet(MV_VOID)
 *******************************************************************************/
 
 /*******************************************************************************
-* mvBoardMppModulesScan
-*
-* DESCRIPTION:
-*	Scan for modules connected through MPP lines.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None
-*
-* RETURN:
-*       MV_STATUS - MV_OK, MV_ERROR.
-*
-*******************************************************************************/
-MV_STATUS mvBoardMppModulesScan(void)
-{
-	return MV_OK;
-}
-
-/*******************************************************************************
-* mvBoardIsPexModuleConnected
-*
-* DESCRIPTION:
-*	Check if PEX module is connected to the board.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None
-*
-* RETURN:
-*       MV_TRUE / MV_FALSE
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsPexModuleConnected(void)
-{
-	return MV_FALSE;
-}
-
-/*******************************************************************************
 * mvBoardIsSetmModuleConnected
 *
 * DESCRIPTION:
@@ -2108,28 +1853,7 @@ MV_BOOL mvBoardIsPexModuleConnected(void)
 *******************************************************************************/
 MV_BOOL mvBoardIsSetmModuleConnected(void)
 {
-	return MV_FALSE;
-}
-
-/*******************************************************************************
-* mvBoardIsLvdsModuleConnected
-*
-* DESCRIPTION:
-*	Check if LVDS module is connected to the board.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None
-*
-* RETURN:
-*       MV_TRUE / MV_FALSE
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsLvdsModuleConnected(void)
-{
-	return MV_FALSE;
+	return mvBoardIsModuleConnected(MV_CONFIG_SLIC_TDM_DEVICE);
 }
 
 /*******************************************************************************
@@ -2173,32 +1897,6 @@ MV_STATUS mvBoardTwsiMuxChannelSet(MV_U8 muxChNum)
 {
 	return MV_ERROR;
 }
-
-/*******************************************************************************
-* mvBoardTwsiReadByteThruMux
-*
-* DESCRIPTION:
-*	Read a single byte from a TWSI device through the TWSI Mux.
-*
-* INPUT:
-*	muxChNum	- The Twsi Mux channel number to read through.
-*	chNum		- The TWSI channel number.
-*	pTwsiSlave	- The TWSI slave address.
-*	data		- Buffer to read into (1 byte).
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*       MV_STATUS - MV_OK, MV_ERROR.
-*
-*******************************************************************************/
-MV_STATUS mvBoardTwsiReadByteThruMux(MV_U8 muxChNum, MV_U8 chNum,
-				     MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *data)
-{
-	return MV_ERROR;
-}
-
 /*******************************************************************************
 * mvBoardSmiScanModeGet - Get Switch SMI scan mode
 *
@@ -2238,17 +1936,7 @@ MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 {
-	MV_U32 c = board->pBoardModTypeValue->ethSataComplexOpt;
-	MV_U32 cpuPort = -1;
-
-	if (c & MV_ETHCOMP_GE_MAC0_2_SW_P6)
-		cpuPort = 6;
-	else if (c & MV_ETHCOMP_GE_MAC1_2_SW_P4)
-		cpuPort = 4;
-	else
-		mvOsPrintf("%s: Error: No CPU port.\n", __func__);
-
-	return cpuPort;
+	return -1;
 }
 
 /*******************************************************************************
@@ -2267,7 +1955,7 @@ MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 *	MV_TRUE if the requested ethernet port is connected.
 *
 *******************************************************************************/
-MV_U32 mvBoardIsEthConnected(MV_U32 ethNum)
+MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 {
 	if (ethNum == 0)
 		return MV_TRUE;
@@ -2364,24 +2052,6 @@ MV_32 mvBoardRgmiiASwitchPortGet(MV_VOID)
 *******************************************************************************/
 MV_32 mvBoardSwitchPortMap(MV_U32 switchIdx, MV_U32 switchPortNum)
 {
-	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
-	if (switchPortNum >= BOARD_ETH_SWITCH_PORT_NUM) {
-		mvOsPrintf("%s: Error: wrong switch port number (%d)\n", __func__, switchPortNum);
-		return -1;
-	}
-
-	if ((switchPortNum == 0) && (ethComplex & MV_ETHCOMP_SW_P0_2_GE_PHY_P0))
-		return 0;
-	else if ((switchPortNum == 1) && (ethComplex & MV_ETHCOMP_SW_P1_2_GE_PHY_P1))
-		return 1;
-	else if ((switchPortNum == 2) && (ethComplex & MV_ETHCOMP_SW_P2_2_GE_PHY_P2))
-		return 2;
-	else if ((switchPortNum == 3) && (ethComplex & MV_ETHCOMP_SW_P3_2_GE_PHY_P3))
-		return 3;
-	else if ((switchPortNum == 4) && (ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0))
-		return 4;
-
-	mvOsPrintf("%s: Error: switch port map not found\n", __func__);
 	return -1;
 }
 
@@ -2423,4 +2093,219 @@ MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 MV_BOOL mvBoardConfigAutoDetectEnabled()
 {
 	return board->configAutoDetect;
+}
+/*******************************************************************************
+* mvBoardTwsiSatRGet -
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	device num - one of three devices
+*	reg num - 0 or 1
+*
+* OUTPUT:
+*		None.
+*
+* RETURN:
+*		reg value
+*
+*******************************************************************************/
+MV_STATUS mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum, MV_U8 *pData)
+{
+	MV_TWSI_SLAVE twsiSlave;
+	MV_TWSI_ADDR slave;
+
+	/* Read MPP module ID */
+	DB(mvOsPrintf("Board: Read S@R device read\n"));
+	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(BOARD_DEV_TWSI_SATR, devNum);
+	if (0xFF == twsiSlave.slaveAddr.address)
+		return MV_ERROR;
+	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(BOARD_DEV_TWSI_SATR, devNum);
+
+	/* Use offset as command */
+	twsiSlave.offset = regNum;
+	twsiSlave.moreThen256 = MV_FALSE;
+	twsiSlave.validOffset = MV_TRUE;
+
+	/* TWSI init */
+	slave.type = ADDR7_BIT;
+	slave.address = 0;
+	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
+
+
+	if (MV_OK != mvTwsiRead(0, &twsiSlave, pData, 1)) {
+		DB(mvOsPrintf("Board: Read S@R fail\n"));
+		return MV_ERROR;
+	}
+	DB(mvOsPrintf("Board: Read S@R succeded\n"));
+
+	return MV_OK;
+}
+
+/*******************************************************************************
+* mvBoardTwsiSatRSet -
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	devNum - one of three devices
+*	regNum - 0 or 1
+*	regVal - value
+*
+*
+* OUTPUT:
+*		None.
+*
+* RETURN:
+*		reg value
+*
+*******************************************************************************/
+MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
+{
+	MV_TWSI_SLAVE twsiSlave;
+	MV_TWSI_ADDR slave;
+
+	/* Read MPP module ID */
+	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(BOARD_DEV_TWSI_SATR, devNum);
+	if (0xFF == twsiSlave.slaveAddr.address)
+		return MV_ERROR;
+	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(BOARD_DEV_TWSI_SATR, devNum);
+	twsiSlave.validOffset = MV_TRUE;
+	DB(mvOsPrintf("Board: Write S@R device addr %x, type %x, data %x\n",
+		      twsiSlave.slaveAddr.address, twsiSlave.slaveAddr.type, regVal));
+	/* Use offset as command */
+	twsiSlave.offset = regNum;
+	twsiSlave.moreThen256 = MV_FALSE;
+	/* TWSI init */
+	slave.type = ADDR7_BIT;
+	slave.address = 0;
+	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
+
+	if (MV_OK != mvTwsiWrite(0, &twsiSlave, &regVal, 1)) {
+		DB(mvOsPrintf("Board: Write S@R fail\n"));
+		return MV_ERROR;
+	}
+	DB(mvOsPrintf("Board: Write S@R succeded\n"));
+
+	return MV_OK;
+}
+
+/*******************************************************************************
+* mvBoardSatRRead
+*
+* DESCRIPTION: Read S@R configuration Field
+*
+* INPUT: satrField - Field description enum
+*
+* OUTPUT: None
+*
+* RETURN:
+*	if field is valid - returns requested S@R field value
+*       else if field is not relevant for running board, return 0xFFFFFFF.
+*
+*******************************************************************************/
+MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField)
+{
+	MV_BOARD_SATR_INFO satrInfo;
+	MV_U8 data;
+
+	if (satrField >= MV_SATR_MAX_OPTION) {
+		mvOsPrintf("%s: Error: wrong MV_SATR_TYPE_ID field value (%d).\n", __func__ , satrField);
+		return MV_ERROR;
+	}
+
+	if (mvBoardSatrInfoConfig(satrField, &satrInfo) != MV_OK) {
+		mvOsPrintf("%s: Error: Requested S@R field is not relevant for this board\n", __func__);
+		return MV_ERROR;
+	}
+
+	/* read */
+	if (mvBoardTwsiSatRGet(satrInfo.devClassId , satrInfo.regOffset, &data) != MV_OK) {
+		mvOsPrintf("%s: Error: Read from S@R failed\n", __func__);
+		return MV_ERROR;
+	}
+	data &= satrInfo.mask;
+	data = (data >> satrInfo.bitOffset);
+	if (satrInfo.status & BOARD_SATR_SWAP_BIT) {
+		MV_U32 c = mvCountMaskBits(satrInfo.mask);
+		data = mvReverseBits(data) >> (8-c) ;
+	}
+
+	if (satrField == MV_SATR_BOOT_DEVICE) {
+		/*  read boot mode second part from rd */
+		MV_U32 tmp = mvBoardSatRRead(MV_SATR_BOOT2_DEVICE);
+		if (tmp == MV_ERROR) {
+			mvOsPrintf("%s: Error: Read from S@R failed\n", __func__);
+			return MV_ERROR;
+		}
+		data = data | ((tmp & 0x0f) << 2);
+	}
+	return data;
+}
+
+/*******************************************************************************
+* mvBoardSatRWrite
+*
+* DESCRIPTION: Write S@R configuration Field
+*
+* INPUT: satrField - Field description enum
+*        val       - value to write (if write action requested)
+*
+* OUTPUT: None
+*
+* RETURN:
+*       write action:
+*       if value is writen succesfully - returns the written value
+*       else if write failed - returns MV_ERROR
+*
+*******************************************************************************/
+MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val)
+{
+	MV_BOARD_SATR_INFO satrInfo;
+	MV_U8 data, val1;
+
+	if (satrWriteField >= MV_SATR_MAX_OPTION) {
+		mvOsPrintf("%s: Error: wrong MV_SATR_TYPE_ID field value (%d).\n", __func__ , satrWriteField);
+		return MV_ERROR;
+	}
+
+	if (mvBoardSatrInfoConfig(satrWriteField, &satrInfo) != MV_OK) {
+		mvOsPrintf("%s: Error: Requested S@R field is not relevant for this board\n", __func__);
+		return MV_ERROR;
+	}
+	if (satrInfo.status & BOARD_SATR_READ_ONLY) {
+		mvOsPrintf("%s: Error: Requested S@R field is read only\n", __func__);
+		return MV_ERROR;
+	}
+	if (satrWriteField == MV_SATR_BOOT_DEVICE) {
+		val1 = (val & 0x3c) >> 2;
+		if (mvBoardSatRWrite(MV_SATR_BOOT2_DEVICE, val1) != MV_OK) {
+			mvOsPrintf("%s: Error: write boot device second field\n", __func__);
+			return MV_ERROR;
+		}
+	}
+	val &= (satrInfo.mask >> satrInfo.bitOffset); /* verify correct value */
+
+	/* read */
+	if (mvBoardTwsiSatRGet(satrInfo.devClassId , satrInfo.regOffset, &data) != MV_OK) {
+		mvOsPrintf("%s: Error: Read from S@R failed\n", __func__);
+		return MV_ERROR;
+	}
+
+	if (satrInfo.status & BOARD_SATR_SWAP_BIT) {
+		MV_U32 c = mvCountMaskBits(satrInfo.mask);
+		val = mvReverseBits(val) >> (8 - c) ;
+	}
+
+
+	/* modify */
+	data &= ~(satrInfo.mask);             /* clean old value */
+	data |= (val <<  satrInfo.bitOffset);    /* save new value */
+
+	/* write */
+	if (mvBoardTwsiSatRSet(satrInfo.devClassId , satrInfo.regOffset, data) != MV_OK) {
+		mvOsPrintf("%s: Error: Write to S@R failed\n", __func__);
+		return MV_ERROR;
+	}
+	return MV_OK;
 }

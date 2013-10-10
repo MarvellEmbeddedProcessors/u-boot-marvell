@@ -10,8 +10,7 @@ OSSERVICES_OBJS+= $(OSSERVICES_DIR)/mvOsSata.o
 endif		  
 BOARD_OBJS      = $(BOARD_ENV_DIR)/mvBoardEnvLib.o $(BOARD_ENV_DIR)/mvBoardEnvSpec.o
 
-HAL_IF_OBJS = $(HAL_IF_DIR)/mvSysDdr.o	  \
-			  $(HAL_IF_DIR)/mvSysEthPhy.o 	\
+HAL_IF_OBJS = 		  $(HAL_IF_DIR)/mvSysEthPhy.o 	\
 			  $(HAL_IF_DIR)/mvSysSpi.o	\
 			  $(HAL_IF_DIR)/mvSysUsb.o 	\
 			  $(HAL_IF_DIR)/mvSysNfc.o 	\
@@ -51,11 +50,25 @@ ETH_OBJS =	$(HAL_IF_DIR)/mvSysPp2.o 		\
 		$(HAL_PP2_COMMON_DIR)/mvPp2Common.o	\
 		$(USP_DIR)/mv_egiga_pp2.o
 else
+ifeq ($(BOARD),a38x)
+ETH_OBJS =	$(HAL_IF_DIR)/mvSysPp2.o 		\
+		$(HAL_PP2_GMAC_DIR)/mvEthGmacApi.o	\
+		$(HAL_PP2_GBE_DIR)/mvPp2Gbe.o 		\
+		$(HAL_PP2_GBE_DIR)/mvPp2AddrDec.o 	\
+		$(HAL_PP2_BM_DIR)/mvBm.o		\
+		$(HAL_PP2_PRS_DIR)/mvPp2PrsHw.o 	\
+		$(HAL_PP2_PRS_DIR)/mvPp2Prs.o		\
+		$(HAL_PP2_CLS_DIR)/mvPp2ClsHw.o 	\
+		$(HAL_PP2_CLS_DIR)/mvPp2Classifier.o	\
+		$(HAL_PP2_COMMON_DIR)/mvPp2Common.o	\
+		$(USP_DIR)/mv_egiga_pp2.o
+else
 ETH_OBJS =  $(HAL_IF_DIR)/mvSysNeta.o 			\
 	    $(HAL_NETA_GBE_DIR)/mvNeta.o 		\
 	    $(HAL_NETA_GBE_DIR)/mvNetaAddrDec.o 	\
 	    $(HAL_NETA_GBE_DIR)/mvNetaDebug.o 		\
 	    $(USP_DIR)/mv_egiga_neta.o
+endif
 endif
 endif
 
@@ -102,6 +115,10 @@ ifeq ($(BOARD),a375)
 SOC_OBJS +=	$(SOC_ENV_DIR)/mvCtrlEthCompLib.o
 endif
 
+ifeq ($(BOARD),a38x)
+#SOC_OBJS +=	$(SOC_ENV_DIR)/mvCtrlEthCompLib.o
+endif
+
 USP_OBJS =	$(USP_DIR)/mv_serial.o 			\
 			$(USP_DIR)/nand_nfc.o		\
 			$(USP_DIR)/mv_flash.o		\
@@ -134,7 +151,9 @@ endif
 
 ifneq ($(BOARD),alp)
 ifneq ($(BOARD),a375)
+ifneq ($(BOARD),a38x)
 USP_OBJS +=		$(USP_DIR)/mv_main.o
+endif
 endif
 endif
 
@@ -150,6 +169,11 @@ ifeq ($(BOARD),alp)
 endif
 
 ifeq ($(BOARD),a375)
+	SOBJS+= $(USP_DIR)/jump.o 		\
+		$(HAL_DRAM_DIR)/mvDramIfBasicInit.o
+endif
+
+ifeq ($(BOARD),a38x)
 	SOBJS+= $(USP_DIR)/jump.o 		\
 		$(HAL_DRAM_DIR)/mvDramIfBasicInit.o
 endif

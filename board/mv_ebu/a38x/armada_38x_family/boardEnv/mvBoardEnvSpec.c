@@ -62,83 +62,171 @@
 
 *******************************************************************************/
 #include "mvCommon.h"
-#include "mvBoardEnvLib.h"
-#include "mvBoardEnvSpec.h"
+#include "boardEnv/mvBoardEnvLib.h"
+#include "boardEnv/mvBoardEnvSpec.h"
 #include "twsi/mvTwsi.h"
 #include "pex/mvPexRegs.h"
 
-#define ARRSZ(x)                (sizeof(x) / sizeof(x[0]))
-
 /*******************************************************************************
- * Armada 375 DB-88F6720 board */
+ * A380 DB-88F6660 board */
 /*******************************************************************************/
-
-#define DB_88F6720_BOARD_NOR_READ_PARAMS	0x403E07CF
-#define DB_88F6720_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
-
-#define DB_88F6720_BOARD_NAND_READ_PARAMS	0x003E07CF
-#define DB_88F6720_BOARD_NAND_WRITE_PARAMS	0x000F0F0F
-
-MV_BOARD_TWSI_INFO db88f6720InfoBoardTwsiDev[] = {
-	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,		0,	0x4C,	   ADDR7_BIT	},
-	{ BOARD_DEV_TWSI_SATR,		1,	0x4D,	   ADDR7_BIT	},
-	{ BOARD_DEV_TWSI_EEPROM,	0,	0x52,	   ADDR7_BIT	},
-};
-
-MV_BOARD_MAC_INFO db88f6720InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x0									}
-};
-MV_BOARD_MPP_TYPE_INFO db88f6720InfoBoardModTypeInfo[] = {
-	{
-		.boardMppSlic = MV_BOARD_SLIC_DISABLED,
-		.ethSataComplexOpt = MV_ETHCOMP_GE_MAC0_2_RGMII0,
-		.ethPortsMode = 0x0
-	}
-};
-
-MV_DEV_CS_INFO db88f6720InfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
-#if defined(MV_INCLUDE_SPI)
-	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 }, /* SPI DEV */
-#endif
-#if defined(MV_INCLUDE_NOR)
-	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16}, /* NOR DEV */
-#endif
-#if defined(MV_INCLUDE_LEGACY_NAND)
-	{DEV_BOOCS, N_A, BOARD_DEV_NAND_FLASH, 16, 16}  /* NAND DEV */
-#endif
-};
-
-MV_BOARD_MPP_INFO db88f6720InfoBoardMppConfigValue[] = {
+MV_BOARD_MPP_INFO db88f68xxInfoBoardMppConfigValue[] = {
 	{ {
-		  DB_88F6720_MPP0_7,
-		  DB_88F6720_MPP8_15,
-		  DB_88F6720_MPP16_23,
-		  DB_88F6720_MPP24_31,
-		  DB_88F6720_MPP32_39,
-		  DB_88F6720_MPP40_47,
-		  DB_88F6720_MPP48_55,
-		  DB_88F6720_MPP56_63,
-		  DB_88F6720_MPP64_67,
+		  DB_88F68XX_MPP0_7,
+		  DB_88F68XX_MPP8_15,
+		  DB_88F68XX_MPP16_23,
+		  DB_88F68XX_MPP24_31,
+		  DB_88F68XX_MPP32_39,
+		  DB_88F68XX_MPP40_47,
+		  DB_88F68XX_MPP48_55,
+		  DB_88F68XX_MPP56_63
 	 } }
 };
 
-MV_BOARD_INFO db88f6720_board_info = {
-	.boardName			= "DB-88F6720",
-	.numBoardMppTypeValue		= ARRSZ(db88f6720InfoBoardModTypeInfo),
-	.pBoardModTypeValue		= db88f6720InfoBoardModTypeInfo,
-	.pBoardMppConfigValue		= db88f6720InfoBoardMppConfigValue,
+MV_BOARD_TWSI_INFO db88f68xxInfoBoardTwsiDev[] = {
+	/* {{devClass,		devClassId, twsiDevAddr, twsiDevAddrType}} */
+	{ BOARD_DEV_TWSI_SATR,		0,	0x54,	   ADDR7_BIT},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4c,	   ADDR7_BIT},
+	{ BOARD_DEV_TWSI_SATR,		2,	0x4d,	   ADDR7_BIT},
+	{ BOARD_DEV_TWSI_SATR,		3,	0x4e,	   ADDR7_BIT},
+	{ BOARD_DEV_TWSI_SATR,		4,	0x21,	   ADDR7_BIT},
+	{ BOARD_TWSI_MODULE_DETECT,	0,	0x20,	   ADDR7_BIT},   /* modules */
+	{ BOARD_TWSI_MODULE_DETECT,	1,	0x23,	   ADDR7_BIT},
+	{ BOARD_TWSI_MODULE_DETECT,	2,	0x24,	   ADDR7_BIT},
+	{ BOARD_TWSI_MODULE_DETECT,	3,	0x25,	   ADDR7_BIT},
+	{ BOARD_TWSI_MODULE_DETECT,	4,	0x26,	   ADDR7_BIT},
+	{ BOARD_TWSI_MODULE_DETECT,	5,	0x27,	   ADDR7_BIT},
+};
+MV_BOARD_MAC_INFO db88f68xxInfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
+	{ BOARD_MAC_SPEED_AUTO, 0},
+	{ BOARD_MAC_SPEED_AUTO, 0x1},
+};
+
+MV_DEV_CS_INFO db88f68xxInfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 } /* SPI DEV */
+#endif
+};
+/*
+MV_BOARD_MPP_TYPE_INFO db88f68XXInfoBoardModTypeInfo[] = {
+	{
+		.externalModule = MV_BOARD_NONE,
+		.ModuleMpp = 0,
+	}
+};
+*/
+
+MV_BOARD_TDM_INFO db88f68xxTdm880[] = { {0} };
+
+MV_BOARD_TDM_SPI_INFO db88f68xxTdmSpiInfo[] = { {1} };
+
+MV_BOARD_INFO db88f68xx_board_info = {
+	.boardName		= "DB-88f68xx",
+	.numBoardMppTypeValue	= 0,		/* ARRSZ(db88f68XXInfoBoardModTypeInfo), */
+	.pBoardModTypeValue	= NULL,		/* db88f68XXInfoBoardModTypeInfo, */
+	.pBoardMppConfigValue	= db88f68xxInfoBoardMppConfigValue,
+	.intsGppMaskLow		= 0,
+	.intsGppMaskMid		= 0,
+	.intsGppMaskHigh	= 0,
+	.numBoardDeviceIf	= ARRSZ(db88f68xxInfoBoardDeCsInfo),
+	.pDevCsInfo		= db88f68xxInfoBoardDeCsInfo,
+	.numBoardTwsiDev	= ARRSZ(db88f68xxInfoBoardTwsiDev),
+	.pBoardTwsiDev		= db88f68xxInfoBoardTwsiDev,
+	.numBoardMacInfo	= ARRSZ(db88f68xxInfoBoardMacInfo),
+	.pBoardMacInfo		= db88f68xxInfoBoardMacInfo,
+	.numBoardGppInfo	= 0,
+	.pBoardGppInfo		= 0,
+	.activeLedsNumber	= 0,
+	.pLedGppPin		= NULL,
+	.ledsPolarity		= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity	= 0,
+	.pmuPwrUpDelay		= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow		= DB_88F68XX_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid		= DB_88F68XX_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh	= DB_88F68XX_GPP_OUT_ENA_HIGH,
+	.gppOutValLow		= DB_88F68XX_GPP_OUT_VAL_LOW,
+	.gppOutValMid		= DB_88F68XX_GPP_OUT_VAL_MID,
+	.gppOutValHigh		= DB_88F68XX_GPP_OUT_VAL_HIGH,
+	.gppPolarityValLow	= DB_88F68XX_GPP_POL_LOW,
+	.gppPolarityValMid	= DB_88F68XX_GPP_POL_MID,
+	.gppPolarityValHigh	= DB_88F68XX_GPP_POL_HIGH,
+
+	/* TDM */
+	.numBoardTdmInfo		= {1},
+	.pBoardTdmInt2CsInfo		= {db88f68xxTdm880},
+	.boardTdmInfoIndex		= 0,
+
+	.pBoardSpecInit			= NULL,
+
+	/* NAND init params */
+	.nandFlashReadParams		= 0,
+	.nandFlashWriteParams		= 0,
+	.nandFlashControl		= 0,
+	.pBoardTdmSpiInfo		= db88f68xxTdmSpiInfo,
+
+	/* NOR init params */
+	.norFlashReadParams		= 0,
+	.norFlashWriteParams		= 0,
+	/* Enable modules auto-detection. */
+	.configAutoDetect		= MV_TRUE
+};
+
+
+/*******************************************************************************
+ * A380 RD-88F68XX board */
+/*******************************************************************************/
+
+MV_BOARD_TWSI_INFO rd88F68XXInfoBoardTwsiDev[] = {
+	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{ BOARD_DEV_TWSI_SATR,	0,	0x54, ADDR7_BIT	},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,	1,	0x4C, ADDR7_BIT	},
+};
+MV_BOARD_MAC_INFO rd88F68XXInfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
+	{ BOARD_MAC_SPEED_AUTO, 0},
+	{ BOARD_MAC_SPEED_AUTO, 0x1}
+};
+
+MV_DEV_CS_INFO rd88F68XXInfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 } /* SPI DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO rd88f68XXInfoBoardMppConfigValue[] = {
+	{ {
+		RD_88F68XX_MPP0_7,
+		RD_88F68XX_MPP8_15,
+		RD_88F68XX_MPP16_23,
+		RD_88F68XX_MPP24_31,
+		RD_88F68XX_MPP32_39,
+		RD_88F68XX_MPP40_47,
+		RD_88F68XX_MPP48_55,
+		RD_88F68XX_MPP56_63,
+	} }
+};
+
+MV_BOARD_INFO rd88f68XX_board_info = {
+	.boardName			= "RD-88F68XX",
+	.numBoardMppTypeValue	= ARRSZ(rd88f68XXInfoBoardMppConfigValue),
+	.pBoardModTypeValue		= NULL,
+	.pBoardMppConfigValue	= rd88f68XXInfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
-	.numBoardDeviceIf		= ARRSZ(db88f6720InfoBoardDeCsInfo),
-	.pDevCsInfo			= db88f6720InfoBoardDeCsInfo,
-	.numBoardTwsiDev		= ARRSZ(db88f6720InfoBoardTwsiDev),
-	.pBoardTwsiDev			= db88f6720InfoBoardTwsiDev,
-	.numBoardMacInfo		= ARRSZ(db88f6720InfoBoardMacInfo),
-	.pBoardMacInfo			= db88f6720InfoBoardMacInfo,
+	.numBoardDeviceIf		= ARRSZ(rd88F68XXInfoBoardDeCsInfo),
+	.pDevCsInfo				= rd88F68XXInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(rd88F68XXInfoBoardTwsiDev),
+	.pBoardTwsiDev			= rd88F68XXInfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(rd88F68XXInfoBoardMacInfo),
+	.pBoardMacInfo			= rd88F68XXInfoBoardMacInfo,
 	.numBoardGppInfo		= 0,
 	.pBoardGppInfo			= 0,
 	.activeLedsNumber		= 0,
@@ -150,18 +238,12 @@ MV_BOARD_INFO db88f6720_board_info = {
 	.pmuPwrUpDelay			= 80000,
 
 	/* GPP values */
-	.gppOutEnValLow			= DB_88F6720_GPP_OUT_ENA_LOW,
-	.gppOutEnValMid			= DB_88F6720_GPP_OUT_ENA_MID,
-	.gppOutEnValHigh		= DB_88F6720_GPP_OUT_ENA_HIGH,
-	.gppOutValLow			= DB_88F6720_GPP_OUT_VAL_LOW,
-	.gppOutValMid			= DB_88F6720_GPP_OUT_VAL_MID,
-	.gppOutValHigh			= DB_88F6720_GPP_OUT_VAL_HIGH,
-	.gppPolarityValLow		= DB_88F6720_GPP_POL_LOW,
-	.gppPolarityValMid		= DB_88F6720_GPP_POL_MID,
-	.gppPolarityValHigh		= DB_88F6720_GPP_POL_HIGH,
-
-	/* External Switch Configuration */
-	.switchforceLinkMask		= 0x0,
+	.gppOutEnValLow			= RD_88F68XX_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= RD_88F68XX_GPP_OUT_ENA_MID,
+	.gppOutValLow			= RD_88F68XX_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= RD_88F68XX_GPP_OUT_VAL_MID,
+	.gppPolarityValLow		= RD_88F68XX_GPP_POL_LOW,
+	.gppPolarityValMid		= RD_88F68XX_GPP_POL_MID,
 
 	/* TDM */
 	.numBoardTdmInfo		= {},
@@ -171,90 +253,82 @@ MV_BOARD_INFO db88f6720_board_info = {
 	.pBoardSpecInit			= NULL,
 
 	/* NAND init params */
-	.nandFlashReadParams		= DB_88F6720_BOARD_NAND_READ_PARAMS,
-	.nandFlashWriteParams		= DB_88F6720_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashReadParams		= 0,
+	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
 	/* NOR init params */
-	.norFlashReadParams		= DB_88F6720_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= DB_88F6720_BOARD_NOR_WRITE_PARAMS,
+	.norFlashReadParams		= 0,
+	.norFlashWriteParams		= 0,
 	/* Enable modules auto-detection. */
-	.configAutoDetect		= MV_TRUE
+	.configAutoDetect		= MV_FALSE
 };
 
-/*******************************************************************************
- * Armada 375 Customer board */
-/*******************************************************************************/
 
-#define A375_CUSTOMER_BOARD_NOR_READ_PARAMS		0x403E07CF
-#define A375_CUSTOMER_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
+#define A380_CUSTOMER_BOARD_NAND_READ_PARAMS       0x000C0282
+#define A380_CUSTOMER_BOARD_NAND_WRITE_PARAMS      0x00010305
+/*NAND care support for small page chips*/
+#define A380_CUSTOMER_BOARD_NAND_CONTROL           0x01c00543
 
-#define A375_CUSTOMER_BOARD_NAND_READ_PARAMS	0x003E07CF
-#define A375_CUSTOMER_BOARD_NAND_WRITE_PARAMS	0x000F0F0F
+#define A380_CUSTOMER_BOARD_NOR_READ_PARAMS        0x403E07CF
+#define A380_CUSTOMER_BOARD_NOR_WRITE_PARAMS       0x000F0F0F
 
-MV_BOARD_TWSI_INFO armada_375_customer_InfoBoardTwsiDev[] = {
+MV_BOARD_TWSI_INFO A380_customerInfoBoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
 	{ BOARD_DEV_TWSI_SATR,		0,	0x4C,	   ADDR7_BIT	},
 	{ BOARD_DEV_TWSI_SATR,		1,	0x4D,	   ADDR7_BIT	},
-	{ BOARD_DEV_TWSI_EEPROM,	0,	0x52,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_EEPROM,	0,	0x54,	   ADDR7_BIT	},
 };
 
-MV_BOARD_MAC_INFO armada_375_customer_InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x0									}
-};
-MV_BOARD_MPP_TYPE_INFO armada_375_customer_InfoBoardModTypeInfo[] = {
-	{
-		.boardMppSlic = MV_BOARD_SLIC_DISABLED,
-		.ethSataComplexOpt = MV_ETHCOMP_GE_MAC0_2_RGMII0,
-		.ethPortsMode = 0x0
-	}
+MV_BOARD_MAC_INFO A380_customerInfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x10},
+	{ BOARD_MAC_SPEED_AUTO, 0x11},
+	{ BOARD_MAC_SPEED_AUTO, 0x12},
+	{ BOARD_MAC_SPEED_AUTO, 0x13},
 };
 
-MV_DEV_CS_INFO armada_375_customer_InfoBoardDeCsInfo[] = {
+MV_DEV_CS_INFO A380_customerInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth }*/
 #if defined(MV_INCLUDE_SPI)
-	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 }, /* SPI DEV */
-#endif
-#if defined(MV_INCLUDE_NOR)
-	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16}, /* NOR DEV */
-#endif
-#if defined(MV_INCLUDE_LEGACY_NAND)
-	{DEV_BOOCS, N_A, BOARD_DEV_NAND_FLASH, 16, 16}  /* NAND DEV */
+	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 } /* SPI DEV */
 #endif
 };
 
-MV_BOARD_MPP_INFO armada_375_customer_InfoBoardMppConfigValue[] = {
+MV_BOARD_TDM_INFO A380_customerTdm880[] = { {0} };
+
+MV_BOARD_TDM_SPI_INFO A380_customerTdmSpiInfo[] = { {1} };
+
+MV_BOARD_MPP_INFO A380_customerInfoBoardMppConfigValue[] = {
 	{ {
-		  A375_CUSTOMER_BOARD_MPP0_7,
-		  A375_CUSTOMER_BOARD_MPP8_15,
-		  A375_CUSTOMER_BOARD_MPP16_23,
-		  A375_CUSTOMER_BOARD_MPP24_31,
-		  A375_CUSTOMER_BOARD_MPP32_39,
-		  A375_CUSTOMER_BOARD_MPP40_47,
-		  A375_CUSTOMER_BOARD_MPP48_55,
-		  A375_CUSTOMER_BOARD_MPP56_63,
-		  A375_CUSTOMER_BOARD_MPP64_67,
+		  A380_CUSTOMER_MPP0_7,
+		  A380_CUSTOMER_MPP8_15,
+		  A380_CUSTOMER_MPP16_23,
+		  A380_CUSTOMER_MPP24_31,
+		  A380_CUSTOMER_MPP32_39,
+		  A380_CUSTOMER_MPP40_47,
+		  A380_CUSTOMER_MPP48_55,
+		  A380_CUSTOMER_MPP56_63
 	 } }
 };
 
-MV_BOARD_INFO armada_375_customer_board_info = {
-	.boardName			= "A375-CUSTOMER-BOARD",
-	.numBoardMppTypeValue		= ARRSZ(armada_375_customer_InfoBoardModTypeInfo),
-	.pBoardModTypeValue		= armada_375_customer_InfoBoardModTypeInfo,
-	.pBoardMppConfigValue		= armada_375_customer_InfoBoardMppConfigValue,
+MV_BOARD_INFO A380_customer_board_info = {
+	.boardName				= "A380-CUSTOMER",
+	.numBoardMppTypeValue	= 0,
+	.pBoardModTypeValue		= NULL,
+	.pBoardMppConfigValue	= A380_customerInfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
-	.numBoardDeviceIf		= ARRSZ(armada_375_customer_InfoBoardDeCsInfo),
-	.pDevCsInfo			= armada_375_customer_InfoBoardDeCsInfo,
-	.numBoardTwsiDev		= ARRSZ(armada_375_customer_InfoBoardTwsiDev),
-	.pBoardTwsiDev			= armada_375_customer_InfoBoardTwsiDev,
-	.numBoardMacInfo		= ARRSZ(armada_375_customer_InfoBoardMacInfo),
-	.pBoardMacInfo			= armada_375_customer_InfoBoardMacInfo,
+	.numBoardDeviceIf		= ARRSZ(A380_customerInfoBoardDeCsInfo),
+	.pDevCsInfo				= A380_customerInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(A380_customerInfoBoardTwsiDev),
+	.pBoardTwsiDev			= A380_customerInfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(A380_customerInfoBoardMacInfo),
+	.pBoardMacInfo			= A380_customerInfoBoardMacInfo,
 	.numBoardGppInfo		= 0,
-	.pBoardGppInfo			= 0,
+	.pBoardGppInfo			= NULL,
 	.activeLedsNumber		= 0,
-	.pLedGppPin			= NULL,
+	.pLedGppPin				= NULL,
 	.ledsPolarity			= 0,
 
 	/* PMU Power */
@@ -262,41 +336,32 @@ MV_BOARD_INFO armada_375_customer_board_info = {
 	.pmuPwrUpDelay			= 80000,
 
 	/* GPP values */
-	.gppOutEnValLow			= A375_CUSTOMER_BOARD_GPP_OUT_ENA_LOW,
-	.gppOutEnValMid			= A375_CUSTOMER_BOARD_GPP_OUT_ENA_MID,
-	.gppOutEnValHigh		= A375_CUSTOMER_BOARD_GPP_OUT_ENA_HIGH,
-	.gppOutValLow			= A375_CUSTOMER_BOARD_GPP_OUT_VAL_LOW,
-	.gppOutValMid			= A375_CUSTOMER_BOARD_GPP_OUT_VAL_MID,
-	.gppOutValHigh			= A375_CUSTOMER_BOARD_GPP_OUT_VAL_HIGH,
-	.gppPolarityValLow		= A375_CUSTOMER_BOARD_GPP_POL_LOW,
-	.gppPolarityValMid		= A375_CUSTOMER_BOARD_GPP_POL_MID,
-	.gppPolarityValHigh		= A375_CUSTOMER_BOARD_GPP_POL_HIGH,
-
-	/* External Switch Configuration */
-	.switchforceLinkMask		= 0x0,
+	.gppOutEnValLow			= A380_CUSTOMER_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= A380_CUSTOMER_GPP_OUT_ENA_MID,
+	.gppOutValLow			= A380_CUSTOMER_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= A380_CUSTOMER_GPP_OUT_VAL_MID,
+	.gppPolarityValLow		= A380_CUSTOMER_GPP_POL_LOW,
+	.gppPolarityValMid		= A380_CUSTOMER_GPP_POL_MID,
 
 	/* TDM */
-	.numBoardTdmInfo		= {},
-	.pBoardTdmInt2CsInfo		= {},
-	.boardTdmInfoIndex		= -1,
-
-	.pBoardSpecInit			= NULL,
+	.numBoardTdmInfo		= {1},
+	.pBoardTdmInt2CsInfo		= {A380_customerTdm880},
+	.boardTdmInfoIndex		= 0,
 
 	/* NAND init params */
-	.nandFlashReadParams		= A375_CUSTOMER_BOARD_NAND_READ_PARAMS,
-	.nandFlashWriteParams		= A375_CUSTOMER_BOARD_NAND_WRITE_PARAMS,
-	.nandFlashControl		= 0,
+	.nandFlashReadParams		= A380_CUSTOMER_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= A380_CUSTOMER_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= A380_CUSTOMER_BOARD_NAND_CONTROL,
 	/* NOR init params */
-	.norFlashReadParams		= A375_CUSTOMER_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= A375_CUSTOMER_BOARD_NOR_WRITE_PARAMS,
-	/* Enable modules auto-detection. */
-	.configAutoDetect		= MV_TRUE
+	.norFlashReadParams		= A380_CUSTOMER_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= A380_CUSTOMER_BOARD_NOR_WRITE_PARAMS
 };
 
 /*
- * All supported Armada 375 boards
+ * All supported A380 boards
  */
 MV_BOARD_INFO *boardInfoTbl[] = {
-	&db88f6720_board_info,
-	&armada_375_customer_board_info,
+	&rd88f68XX_board_info,
+	&db88f68xx_board_info,
+	&A380_customer_board_info
 };

@@ -77,39 +77,28 @@ extern "C" {
 #include "boardEnv/mvBoardEnvSpec.h"
 #include "twsi/mvTwsi.h"
 
+#define ARRSZ(x)                (sizeof(x) / sizeof(x[0]))
 #define BOARD_ETH_SWITCH_PORT_NUM       7
 #define BOARD_ETH_SWITCH_SMI_SCAN_MODE	1	/* Use manual scanning mode */
-#define MV_BOARD_MAX_MPP                9       /* number of MPP conf registers */
+#define MV_BOARD_MAX_MPP                59       /* number of MPP conf registers */
 #define MV_BOARD_MAX_MPP_GROUPS         9
 #define MV_BOARD_MPP_GROUPS_MAX_TYPES   8
 #define MV_BOARD_NAME_LEN               0x20
 
-typedef enum _devBoardSlicType {
-	MV_BOARD_SLIC_DISABLED,
-	MV_BOARD_SLIC_SSI_ID, /* Lantiq Integrated SLIC */
-	MV_BOARD_SLIC_ISI_ID, /* Silicon Labs ISI Bus */
-	MV_BOARD_SLIC_ZSI_ID, /* Zarlink ZSI Bus */
-	MV_BOARD_SLIC_EXTERNAL_ID /* Cross vendor external SLIC */
-} MV_BOARD_SLIC_TYPE;
-
 typedef enum _devBoardOtherTypeClass {
-	MV_BOARD_NONE    = 0x00000000,
-	MV_BOARD_LVDS    = 0x00000001,
-	MV_BOARD_PEX     = 0x00000002,
-	MV_BOARD_SWITCH  = 0x00000004,
-	MV_BOARD_SETM    = 0x00000008,
-	MV_BOARD_UNKNOWN = 0x80000000
+	MV_BOARD_NONE		= 0x00000000,
+	MV_BOARD_SPDIF		= 0x00000001,
+	MV_BOARD_I2S		= 0x00000002,
+	MV_BOARD_TDM		= 0x00000004,
+	MV_BOARD_MII		= 0x00000008,
+	MV_BOARD_SGMII		= 0x00000010,
+	MV_BOARD_SERDES_MUX	= 0x00000020,
+	MV_BOARD_NOR		= 0x00000040,
+	MV_BOARD_NAND16BIT	= 0x00000080,
+	MV_BOARD_SDIO4BIT	= 0x00000100,
+	MV_BOARD_UNKNOWN	= 0x80000000
 } MV_BOARD_OTHER_TYPE_CLASS;
 
-/* omriii:  decide between MODULE_TYPE or MPP_TYPE */
-typedef struct _boardMppTypeInfo {
-	MV_BOARD_SLIC_TYPE boardMppSlic;
-
-	/* Ethernet / Sata complex                      */
-	/* A bitmask of MV_ETH_SATA_COMPLEX_OPTIONS     */
-	MV_U32 ethSataComplexOpt;
-	MV_U32 ethPortsMode;    /* bitmask of MV_ETH_PORT_MODE */
-} MV_BOARD_MPP_TYPE_INFO;
 
 typedef enum _devBoardClass {
 	BOARD_DEV_NOR_FLASH,
@@ -122,12 +111,9 @@ typedef enum _devBoardClass {
 } MV_BOARD_DEV_CLASS;
 
 typedef enum _devTwsiBoardClass {
-	BOARD_TWSI_RTC,
-	BOARD_DEV_TWSI_EXP,
 	BOARD_DEV_TWSI_SATR,
-	BOARD_TWSI_MUX,
+	BOARD_TWSI_MODULE_DETECT,
 	BOARD_DEV_TWSI_EEPROM,
-	BOARD_DEV_TWSI_IO_EXPANDER,
 	BOARD_TWSI_OTHER
 } MV_BOARD_TWSI_CLASS;
 
@@ -169,6 +155,29 @@ typedef enum _devGppBoardClass {
 	BOARD_GPP_OTHER
 } MV_BOARD_GPP_CLASS;
 
+typedef enum _mvSatRTypeID {
+/*  "Bios" Device  */
+	MV_SATR_CPU_DDR_L2_FREQ,
+	MV_SATR_CORE_CLK_SELECT,
+	MV_SATR_CPU1_ENABLE,
+	MV_SATR_SSCG_DISABLE,
+	/*  SW parameters: */
+	MV_SATR_DDR4_SELECT,
+	MV_SATR_DDR_BUS_WIDTH,
+	MV_SATR_DDR_ECC_ENABLE,
+	MV_SATR_NAND_DETECT,
+	MV_SATR_RD_LANE1_2_CFG,
+	MV_SATR_RD_LANE4_CFG,
+	MV_SATR_RD_LANE0_CFG,
+	MV_SATR_RD_APPS_CFG,
+	MV_SATR_BOOT_DEVICE,
+	MV_SATR_BOOT2_DEVICE,
+	MV_SATR_BOARD_ID,
+	MV_SATR_BOARD_ECO_VERSION,
+	MV_SATR_MAX_OPTION,
+} MV_SATR_TYPE_ID;
+
+
 typedef struct _devCsInfo {
 	MV_U8 deviceCS;
 	MV_U32 params;
@@ -176,6 +185,11 @@ typedef struct _devCsInfo {
 	MV_U8 devWidth;
 	MV_U8 busWidth;
 } MV_DEV_CS_INFO;
+
+typedef enum _SatRstatus {
+	BOARD_SATR_READ_ONLY = 0x01,
+	BOARD_SATR_SWAP_BIT  = 0x02,
+} MV_BOARD_SATR_STATUS;
 
 typedef struct _boardLedInfo {
 	MV_U8 activeLedsNumber;
@@ -198,17 +212,18 @@ typedef struct _boardTwsiInfo {
 typedef struct _boardSatrInfo {
 	MV_SATR_TYPE_ID satrId;
 	MV_U32 mask;
-	MV_U32 offset;
-	MV_U32 regNum;
+	MV_U32 bitOffset;
+	MV_U32 devClassId;
+	MV_U32 regOffset;
 	MV_U32 isActiveForBoard[MV_MAX_BOARD_ID];
+	MV_BOARD_SATR_STATUS status;
 } MV_BOARD_SATR_INFO;
 
 typedef struct _boardConfigTypesInfo {
 	MV_CONFIG_TYPE_ID configId;
-	MV_U32 mask;
+	MV_U32 twsiAddr;
 	MV_U32 offset;
-	MV_U32 expanderNum;
-	MV_U32 regNum;
+	MV_U32 twsiId;
 	MV_U32 isActiveForBoard[MV_MAX_BOARD_ID];
 } MV_BOARD_CONFIG_TYPE_INFO;
 
@@ -216,6 +231,7 @@ typedef enum _boardMacSpeed {
 	BOARD_MAC_SPEED_10M,
 	BOARD_MAC_SPEED_100M,
 	BOARD_MAC_SPEED_1000M,
+	BOARD_MAC_SPEED_2000M,
 	BOARD_MAC_SPEED_AUTO
 } MV_BOARD_MAC_SPEED;
 
@@ -227,6 +243,11 @@ typedef struct _boardMacInfo {
 typedef struct _boardMppInfo {
 	MV_U32 mppGroup[MV_BOARD_MAX_MPP];
 } MV_BOARD_MPP_INFO;
+
+typedef struct _boardMppTypeInfo {
+	MV_BOARD_OTHER_TYPE_CLASS externalModule;
+	MV_BOARD_MPP_INFO		  ModuleMpp;
+} MV_BOARD_MPP_TYPE_INFO;
 
 typedef enum {
 	BOARD_EPON_CONFIG,
@@ -244,15 +265,24 @@ typedef struct _boardPexInfo {
 	MV_U32 boardPexIfNum;
 } MV_BOARD_PEX_INFO;
 
+typedef enum _devBoardSlicType {
+	MV_BOARD_SLIC_DISABLED,
+	MV_BOARD_SLIC_SSI_ID, /* Lantiq Integrated SLIC */
+	MV_BOARD_SLIC_ISI_ID, /* Silicon Labs ISI Bus */
+	MV_BOARD_SLIC_ZSI_ID, /* Zarlink ZSI Bus */
+	MV_BOARD_SLIC_EXTERNAL_ID /* Cross vendor external SLIC */
+} MV_BOARD_SLIC_TYPE;
+
 typedef struct {
 	MV_U8 spiId;
 } MV_BOARD_TDM_SPI_INFO;
 
 typedef enum {
-	BOARD_TDM_SLIC_880 = 0,
-	BOARD_TDM_SLIC_792,
-	BOARD_TDM_SLIC_3215,
-	BOARD_TDM_SLIC_OTHER,
+	BOARD_SLIC_880 = 0,
+	BOARD_SLIC_792,
+	BOARD_SLIC_SSI,
+	BOARD_SLIC_ISI,
+	BOARD_SLIC_ZSI,
 	BOARD_TDM_SLIC_COUNT
 } MV_BOARD_TDM_SLIC_TYPE;
 
@@ -297,9 +327,6 @@ typedef struct _boardInfo {
 	MV_U32 gppPolarityValMid;
 	MV_U32 gppPolarityValHigh;
 
-	/* External Switch Configuration */
-	MV_U32 switchforceLinkMask;
-
 	/* PON configuration. */
 	MV_BOARD_PON_CONFIG ponConfigValue;
 	/* TDM configuration:
@@ -333,21 +360,20 @@ typedef struct _boardInfo {
 	MV_BOOL configAutoDetect;
 } MV_BOARD_INFO;
 
-/* {{MV_CONFIG_TYPE_ID ConfigID, MV_U32 Mask,  Offset, expanderNum,  regNum,    isActiveForBoard[]}} */
+/* {{MV_CONFIG_TYPE_ID ConfigID, twsi-ID,  Offset, ID,  isActiveForBoard[]}} */
 #define MV_BOARD_CONFIG_INFO { \
-	{ MV_CONFIG_MAC0,			0x3,	0,	0,	0,	{0 } },\
-	{ MV_CONFIG_MAC1,			0xC,	2,	0,	0,	{0 } },\
-	{ MV_CONFIG_PON_SERDES,			0x10,	4,	0,	0,	{0 } },\
-	{ MV_CONFIG_PON_BEN_POLARITY,	0x20,	5,	0,	0,	{0 } },\
-	{ MV_CONFIG_SGMII0_CAPACITY,	0x40,	6,	0,	0,	{0 } },\
-	{ MV_CONFIG_SGMII1_CAPACITY,	0x80,	7,	0,	0,	{0 } },\
-	{ MV_CONFIG_SLIC_TDM_DEVICE,	0x3,	0,	0,	1,	{0 } },\
-	{ MV_CONFIG_LANE1,			0xC,	2,	0,	1,	{0 } },\
-	{ MV_CONFIG_LANE2,			0x10,	4,	0,	1,	{0 } },\
-	{ MV_CONFIG_LANE3,			0X60,	5,	0,	1,	{0 } },\
-	{ MV_CONFIG_DEVICE_BUS_MODULE, 0x3,	0,	1,	0,	{0 } },\
+{ MV_CONFIG_SGMII,				0x2,	0,	 0xD,	{ 0, 1, 0} }, \
+{ MV_CONFIG_MII,				0x1,	0,	 0x4,	{ 0, 1, 0} }, \
+{ MV_CONFIG_SLIC_TDM_DEVICE,	0x0,	0,	 0x1,	{ 0, 1, 0} }, \
+{ MV_CONFIG_I2S_DEVICE,			0x1,	0,	 0x3,	{ 0, 1, 0} }, \
+{ MV_CONFIG_SPDIF_DEVICE,		0x1,	0,	 0x2,	{ 0, 1, 0} }, \
+{ MV_CONFIG_SERDES_PEX_LAN1,	0x3,	0,	 0xC,	{ 0, 1, 0} }, \
+{ MV_CONFIG_SERDES_PEX_LAN2,	0x3,	0,	 0xD,	{ 0, 1, 0} }, \
+{ MV_CONFIG_NOR,				0x4,	0,	 0xF,	{ 0, 1, 0} }, \
+{ MV_CONFIG_NAND,				0x4,	0,	 0x1,	{ 0, 1, 0} }, \
+{ MV_CONFIG_SDIO,				0x4,	0,	 0x2,	{ 0, 1, 0} }, \
+{ MV_CONFIG_GIGA,				0x27,	0,	 0xE,	{ 0, 1, 0} }, \
 };
-
 
 /* Boot device bus width */
 #define MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS          3
@@ -356,7 +382,7 @@ typedef struct _boardInfo {
 #define MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT         (0x1 << MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS)
 #define MSAR_0_BOOT_DEV_BUS_WIDTH_32BIT         (0x2 << MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS)
 /* Bus width field meaning for SPI */
-#define MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24_16BIT  (0x1 << MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS)
+#define MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24BIT		(0x1 << MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS)
 #define MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT     (0x0 << MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS)
 
 /* NAND page size */
@@ -378,26 +404,27 @@ typedef struct _boardInfo {
 
 MV_VOID mvBoardEnvInit(MV_VOID);
 MV_U16 mvBoardModelGet(MV_VOID);
-MV_U16 mvBoardRevGet(MV_VOID);
+MV_U32 mvBoardRevGet(MV_VOID);
 MV_STATUS mvBoardNameGet(char *pNameBuff, MV_U32 size);
 MV_BOARD_SPEC_INIT *mvBoardSpecInitGet(MV_VOID);
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum);
-MV_32 mvBoardSwitchPortMap(MV_U32 switchIdx, MV_U32 switchPortNum);
 MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
 MV_VOID mvBoardPhyAddrSet(MV_U32 ethPortNum, MV_U32 smiAddr);
-MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo, MV_BOOL read);
+MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo);
 MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo);
 MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable);
+MV_STATUS mvBoardSgmiiSfp0TxSet(MV_BOOL enable);
 MV_U32 mvBoardTclkGet(MV_VOID);
+MV_U32 mvBoardL2ClkGetRaw(MV_VOID);
 MV_U32 mvBoardSysClkGet(MV_VOID);
 MV_U32 mvBoardDebugLedNumGet(MV_U32 boardId);
 MV_VOID mvBoardDebugLed(MV_U32 hexNum);
 MV_32 mvBoarGpioPinNumGet(MV_BOARD_GPP_CLASS class, MV_U32 index);
 MV_VOID mvBoardReset(MV_VOID);
+MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void);
 MV_32 mvBoardResetGpioPinGet(MV_VOID);
-MV_32 mvBoardSDIOGpioPinGet(MV_BOARD_GPP_CLASS type);
 MV_32 mvBoardUSBVbusGpioPinGet(MV_32 devId);
 MV_32 mvBoardUSBVbusEnGpioPinGet(MV_32 devId);
 MV_BOOL mvBoardIsOurPciSlot(MV_U32 busNum, MV_U32 slotNum);
@@ -407,34 +434,32 @@ MV_VOID mvBoardSlicUnitTypeSet(MV_U32 slicType);
 MV_32 mvBoardMppGet(MV_U32 mppGroupNum);
 MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType);
 MV_VOID mvBoardMppSet(MV_U32 mppGroupNum, MV_U32 mppValue);
-MV_U32 mvBoardGppConfigGet(void);
 MV_32 mvBoardTdmSpiModeGet(MV_VOID);
 MV_U8 mvBoardTdmDevicesCountGet(void);
 MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId);
-MV_VOID mvBoardMppModuleTypePrint(MV_VOID);
-MV_VOID mvBoardOtherModuleTypePrint(MV_VOID);
+MV_U8 mvBoardTdmSpiIdGet(MV_VOID);
+MV_VOID mvBoardConfigurationPrint(MV_VOID);
 MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum);
 MV_32 mvBoardGetDevicesNumber(MV_BOARD_DEV_CLASS devClass);
 MV_32 mvBoardGetDeviceBaseAddr(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_32 mvBoardGetDeviceBusWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
-MV_32 mvBoardGetDeviceWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_32 mvBoardGetDeviceWinSize(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_U32 boardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_U8 mvBoardTwsiAddrTypeGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
-MV_32 mvBoardNandWidthGet(void);
 MV_U32 mvBoardEthComplexConfigGet(MV_VOID);
 MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig);
 MV_U32 mvBoardIdGet(MV_VOID);
 MV_VOID mvBoardIdSet(MV_U32 boardId);
 MV_U32 mvBoardSledCpuNumGet(MV_VOID);
 MV_VOID mvBoardInfoUpdate(MV_VOID);
+MV_VOID mvBoardVerifySerdesCofig(MV_VOID);
 MV_VOID mvBoardMppIdUpdate(MV_VOID);
 MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID);
 MV_VOID mvBoardConfigWrite(MV_VOID);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet(MV_VOID);
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet(MV_VOID);
-MV_ETH_COMPLEX_TOPOLOGY mvBoardLaneSGMIIGet(MV_VOID);
+MV_BOOL mvBoardLaneSGMIIGet(MV_ETH_COMPLEX_TOPOLOGY *sgmiiConfig);
 MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_VOID);
 MV_BOARD_BOOT_SRC mvBoardBootDeviceGet(MV_VOID);
 MV_U32 mvBoardBootAttrGet(MV_U32 satrBootDeviceValue, MV_U8 attrNum);
@@ -442,34 +467,58 @@ MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
 MV_U8 mvBoardCpuFreqGet(MV_VOID);
 MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal);
-MV_U8 mvBoardCpuCoresNumGet(MV_VOID);
-MV_STATUS mvBoardMppModulesScan(void);
-MV_BOOL mvBoardIsPexModuleConnected(void);
-MV_BOOL mvBoardIsSetmModuleConnected(void);
-MV_STATUS mvBoardIsInternalSwitchConnectedToPort(MV_U32 ethPortNum);
 MV_STATUS mvBoardIsInternalSwitchConnected(void);
 MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx);
-MV_BOOL mvBoardIsLvdsModuleConnected(void);
-MV_BOOL mvBoardIsLcdDviModuleConnected(void);
-MV_STATUS mvBoardTwsiMuxChannelSet(MV_U8 muxChNum);
-MV_STATUS mvBoardTwsiReadByteThruMux(MV_U8 muxChNum, MV_U8 chNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *data);
+MV_U32 mvBoardFreqModesNumGet(void);
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
-MV_BOOL mvBoardIsQsgmiiModuleConnected(void);
-MV_32 mvBoardGePhySwitchPortGet(void);
-MV_32 mvBoardRgmiiASwitchPortGet(void);
 MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum);
+MV_VOID mvBoardMacSpeedSet(MV_U32 ethPortNum, MV_BOARD_MAC_SPEED macSpeed);
 MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx);
-MV_U32 mvBoardIsEthConnected(MV_U32 ethNum);
+MV_U32 mvBoardMacCpuPortGet(MV_VOID);
+MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum);
 MV_32 mvBoardSwitchIrqGet(MV_VOID);
-MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort);
 MV_U32 mvBoardSwitchPortsMaskGet(MV_U32 switchIdx);
 MV_BOOL mvBoardConfigAutoDetectEnabled(void);
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
-MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void);
 MV_STATUS mvBoardConfIdSet(MV_U16 conf);
 MV_U16 mvBoardPexModeGet(MV_VOID);
 MV_STATUS mvBoardPexModeSet(MV_U16 conf);
-MV_U32 mvBoardFreqModesNumGet(void);
+MV_BOOL mvBoardIsLcdDviModuleConnected(void);
+MV_BOOL mvBoardIsPexModuleConnected(void);
+MV_BOOL mvBoardIsLvdsModuleConnected(void);
+MV_BOOL mvBoardIsSetmModuleConnected(void);
+MV_U8 mvBoardCpuCoresNumGet(MV_VOID);
+MV_VOID mvBoardMppModuleTypePrint(MV_VOID);
+MV_VOID mvBoardOtherModuleTypePrint(MV_VOID);
+MV_BOOL mvBoardIsModuleConnected(MV_U32 ModuleID);
+
+MV_STATUS mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);
+MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
+MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField);
+MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val);
+
+/*    SATR-ID                   Mask    bit    TWSI   Reg  board	*/
+/*    SATR-ID                   Mask  offset  devID  num  active	*/
+#define MV_SAR_INFO { \
+{ MV_SATR_CPU_DDR_L2_FREQ,	0x1F,	0,	1,	0,	{1, 1, 0}, BOARD_SATR_SWAP_BIT},\
+{ MV_SATR_CORE_CLK_SELECT,	0x08,	3,	3,	0,	{0, 1, 0}, 0},\
+{ MV_SATR_CPU1_ENABLE,		0x01,	0,	2,	0,	{0, 1, 0}, 0},\
+{ MV_SATR_SSCG_DISABLE,		0x10,	4,	2,	0,	{0, 1, 0}, 0},\
+{ MV_SATR_DDR4_SELECT,		0x20,	5,	4,	1,	{0, 1, 0}, BOARD_SATR_READ_ONLY},\
+{ MV_SATR_DDR_BUS_WIDTH,	0x02,	1,	4,	0,	{0, 1, 0}, BOARD_SATR_READ_ONLY},\
+{ MV_SATR_DDR_ECC_ENABLE,	0x04,	2,	4,	0,	{0, 1, 0}, 0},\
+{ MV_SATR_NAND_DETECT,		0x1,	0,	4,	1,	{0, 1, 0}, BOARD_SATR_READ_ONLY},\
+{ MV_SATR_RD_LANE1_2_CFG,	0x1,	0,	1,	1,	{1, 0, 0}, 0},\
+{ MV_SATR_RD_LANE4_CFG,		0x2,	1,	1,	1,	{1, 0, 0}, 0},\
+{ MV_SATR_RD_LANE0_CFG,		0x4,	2,	1,	1,	{1, 0, 0}, 0},\
+{ MV_SATR_RD_APPS_CFG,		0x8,	3,	1,	1,	{1, 0, 0}, 0},\
+{ MV_SATR_BOOT_DEVICE,		0x3,	0,	3,	0,	{0, 1, 0}, BOARD_SATR_SWAP_BIT},\
+{ MV_SATR_BOOT2_DEVICE,		0x1E,	1,	4,	0,	{0, 1, 0}, BOARD_SATR_SWAP_BIT},\
+{ MV_SATR_BOARD_ID,		0x7,	0,	0,	0,	{1, 1, 0}, BOARD_SATR_READ_ONLY},\
+{ MV_SATR_BOARD_ECO_VERSION,	0xff,	0,	0,	1,	{1, 1, 0}, BOARD_SATR_READ_ONLY},\
+{ MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0}, 0},\
+};
+
 
 #ifdef __cplusplus
 }

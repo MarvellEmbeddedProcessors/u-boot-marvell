@@ -116,18 +116,6 @@
  */
 #define MV_INVALID_CTRL_REV     0xff
 
-typedef struct _ctrlEnvInfo {
-	MV_U16 ctrlModel;
-	MV_U8 ctrlRev;
-} CTRL_ENV_INFO;
-
-CTRL_ENV_INFO ctrlEnvInfo = {};
-
-MV_U32 satrOptionsConfig[MV_SATR_READ_MAX_OPTION];
-MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
-
-MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
-
 /*******************************************************************************
 * mvCtrlGetCpuNum
 *
@@ -145,12 +133,10 @@ MV_U32 mvCtrlGetCpuNum(MV_VOID)
 {
 	MV_U32 cpu1Enabled;
 
-	cpu1Enabled = mvCtrlSatRRead(MV_SATR_CPU1_ENABLE);
-	if (cpu1Enabled == MV_ERROR) {
-		DB(mvOsPrintf("%s: Error: MV_SATR_CPU1_ENABLE is not active for board (using default)\n", __func__));
-		return 0;
-	} else
-		return cpu1Enabled;
+	cpu1Enabled = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
+	if (cpu1Enabled & SATR_CPU1_ENABLE_MASK)
+		return 2;
+	return 1;
 }
 
 /*******************************************************************************
@@ -171,7 +157,7 @@ MV_BOOL mvCtrlIsValidSatR(MV_VOID)
 	MV_U32 i, cpuFreqMode, maxFreqModes = mvBoardFreqModesNumGet();
 	MV_FREQ_MODE pFreqModes[] = MV_USER_SAR_FREQ_MODES;
 
-	cpuFreqMode =  mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
+	cpuFreqMode =  mvBoardSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
 
 	for (i = 0; i < maxFreqModes; i++) {
 		if (cpuFreqMode == pFreqModes[i].id)
@@ -189,12 +175,17 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 
 #endif
 
-#define MV_6720_INDEX		0
-#define MV_67xx_INDEX_MAX	1
+#define MV_6820_INDEX		0
+#define MV_6810_INDEX		1
+#define MV_68xx_INDEX_MAX	2
 
-static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
+static MV_U32 mvCtrlDevIdIndexGet(void)
 {
-	return MV_6720_INDEX;
+	switch (mvCtrlModelGet()) {
+	case MV_6820_DEV_ID: return MV_6820_INDEX;
+	case MV_6810_DEV_ID: return MV_6810_INDEX;
+	}
+	return MV_6820_INDEX;
 }
 
 static MV_VOID mvCtrlPexConfig(MV_VOID)
@@ -213,40 +204,39 @@ static MV_VOID mvCtrlPexConfig(MV_VOID)
 }
 
 
-MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_67xx_INDEX_MAX] = {
-/*                          6720 */
-/* DRAM_UNIT_ID         */ { 1, },
-/* PEX_UNIT_ID          */ { 2, },
-/* ETH_GIG_UNIT_ID      */ { 2, },
-/* USB_UNIT_ID          */ { 1, },
-/* USB3_UNIT_ID          */ { 1, },
-/* IDMA_UNIT_ID         */ { 0, },
-/* XOR_UNIT_ID          */ { 2, },
-/* SATA_UNIT_ID         */ { 2, },
-/* TDM_32CH_UNIT_ID     */ { 1, },
-/* UART_UNIT_ID         */ { 2, },
-/* CESA_UNIT_ID         */ { 1, },
-/* SPI_UNIT_ID          */ { 2, },
-/* AUDIO_UNIT_ID        */ { 1, },
-/* SDIO_UNIT_ID         */ { 1, },
-/* TS_UNIT_ID           */ { 0, },
-/* XPON_UNIT_ID         */ { 1, },
-/* BM_UNIT_ID           */ { 1, },
-/* PNC_UNIT_ID          */ { 1, },
-/* I2C_UNIT_ID          */ { 2, },
+MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_68xx_INDEX_MAX] = {
+/*                          6820 */
+/* DRAM_UNIT_ID         */ { 1, 1},
+/* PEX_UNIT_ID          */ { 2, 2},
+/* ETH_GIG_UNIT_ID      */ { 2, 2},
+/* USB_UNIT_ID          */ { 3, 3},
+/* USB3_UNIT_ID         */ { 1, 1},
+/* IDMA_UNIT_ID         */ { 1, 1},
+/* XOR_UNIT_ID          */ { 2, 2},
+/* SATA_UNIT_ID         */ { 2, 2},
+/* TDM_32CH_UNIT_ID     */ { 1, 1},
+/* UART_UNIT_ID         */ { 2, 2},
+/* CESA_UNIT_ID         */ { 1, 1},
+/* SPI_UNIT_ID          */ { 2, 2},
+/* AUDIO_UNIT_ID        */ { 1, 1},
+/* SDIO_UNIT_ID         */ { 1, 1},
+/* TS_UNIT_ID           */ { 0, 0},
+/* XPON_UNIT_ID         */ { 1, 1},
+/* BM_UNIT_ID           */ { 1, 1},
+/* PNC_UNIT_ID          */ { 1, 1},
+/* I2C_UNIT_ID          */ { 2, 2},
 };
 
 MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit)
 {
-	MV_U32 devId, devIdIndex;
+	MV_U32 devIdIndex;
 
 	if (unit >= MAX_UNITS_ID) {
 		mvOsPrintf("%s: Error: Wrong unit type (%u)\n", __func__, unit);
 		return 0;
 	}
 
-	devId = mvCtrlModelGet();
-	devIdIndex = mvCtrlDevIdIndexGet(devId);
+	devIdIndex = mvCtrlDevIdIndexGet();
 	return mvCtrlSocUnitNums[unit][devIdIndex];
 }
 
@@ -278,7 +268,6 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	/* Set I2C MPP's(MPP Group 1), before reading board configuration, using TWSI read */
 	MV_REG_WRITE(mvCtrlMppRegGet(1), GROUP1_DEFAULT_MPP_SPI_I2C);
 
-	mvCtrlSatrInit();
 
 	/* If set to Auto detect, read board config info, update MPP group types*/
 	if (mvBoardConfigAutoDetectEnabled()) {
@@ -328,152 +317,6 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 }
 
 /*******************************************************************************
-* mvCtrlSatRWrite
-*
-* DESCRIPTION: Write S@R configuration Field
-*
-* INPUT: satrField - Field description enum
-*        val       - value to write (if write action requested)
-*
-* OUTPUT: None
-*
-* RETURN:
-*       write action:
-*       if value is writen succesfully - returns the written value
-*       else if write failed - returns MV_ERROR
-*
-*******************************************************************************/
-MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrReadField, MV_U8 val)
-{
-	MV_BOARD_SATR_INFO satrInfo;
-	MV_U8 readValue, verifyValue;
-
-	if (satrReadField >= MV_SATR_READ_MAX_OPTION ||
-		satrWriteField >= MV_SATR_WRITE_MAX_OPTION) {
-		mvOsPrintf("%s: Error: wrong MV_SATR_TYPE_ID field value (%d).\n", __func__ ,satrWriteField);
-		return MV_ERROR;
-	}
-
-	if (mvBoardSatrInfoConfig(satrWriteField, &satrInfo, MV_FALSE) != MV_OK) {
-		mvOsPrintf("%s: Error: Requested S@R field is not relevant for this board\n", __func__);
-		return MV_ERROR;
-	}
-
-	/* read */
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, &readValue) != MV_OK) {
-		mvOsPrintf("%s: Error: Read from S@R failed\n", __func__);
-		return MV_ERROR;
-	}
-
-	/* #1 Workaround for mirrored bits bug (for freq. mode SatR value only!)
-	 * Bug: all freq. mode bits are reversed when sampled at reset from I2C
-	 *		(caused due to a bug in board design)
-	 * Solution: reverse them before write to I2C
-	 *		(reverse only 5 bits - size of SatR field) */
-	if (satrWriteField == MV_SATR_WRITE_CPU_FREQ)
-		val = mvReverseBits(val) >> 3 ;
-
-	/* modify */
-	readValue &= ~(satrInfo.mask);             /* clean old value */
-	readValue |= (val <<  satrInfo.offset);    /* save new value */
-
-	/* write */
-	if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, readValue) != MV_OK) {
-		mvOsPrintf("%s: Error: Write to S@R failed\n", __func__);
-		return MV_ERROR;
-	}
-
-	/* verify */
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, &verifyValue) != MV_OK) {
-		mvOsPrintf("%s: Error: 2nd Read from S@R failed\n", __func__);
-		return MV_ERROR;
-	}
-
-	if (readValue != verifyValue) {
-		mvOsPrintf("%s: Error: Write to S@R failed : written value doesn't match\n", __func__);
-		return MV_ERROR;
-	}
-
-	/* #2 Workaround for mirrored bits bug (for freq. mode SatR value only!)
-	 * Reverse bits again to locally save them properly */
-	if (satrWriteField == MV_SATR_WRITE_CPU_FREQ)
-		val = mvReverseBits(val) >> 3 ;
-
-	/* Save written value in global array */
-	satrOptionsConfig[satrReadField] = val;
-	return MV_OK;
-}
-
-/*******************************************************************************
-* mvCtrlSatRRead
-*
-* DESCRIPTION: Read S@R configuration Field
-*
-* INPUT: satrField - Field description enum
-*
-* OUTPUT: None
-*
-* RETURN:
-*	if field is valid - returns requested S@R field value
-*       else if field is not relevant for running board, return 0xFFFFFFF.
-*
-*******************************************************************************/
-MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
-{
-	MV_BOARD_SATR_INFO satrInfo;
-	if (satrField < MV_SATR_READ_MAX_OPTION &&
-			mvBoardSatrInfoConfig(satrField, &satrInfo, MV_TRUE) == MV_OK)
-		return satrOptionsConfig[satrField];
-	else
-		return MV_ERROR;
-}
-
-/*******************************************************************************
-* mvCtrlSmiMasterSet - alter Group 4 MPP type, between CPU SMI control and SWITCH SMI control
-*
-* DESCRIPTION: Read board configuration which is relevant to MPP group 4 interfaces,
-* 		to derive the correct group type, and according to input SMI conrtol,
-* 		write the correct MPP value.
-*
-* INPUT: smiCtrl - enum to select between SWITCH/CPU SMI controll
-*
-* OUTPUT: None
-*
-* RETURN: None
-*
-*******************************************************************************/
-MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
-{
-	MV_BOOL isSwSMICtrl   = (smiCtrl == SWITCH_SMI_CTRL ? MV_TRUE : MV_FALSE);
-	MV_BOOL isBootDevSPI1 = (MSAR_0_BOOT_SPI1_FLASH == mvBoardBootDeviceGet());
-	MV_BOOL isRefClkOut   = !( mvBoardSlicUnitTypeGet() == SLIC_LANTIQ_ID ); 	/* if not using Lantiq TDM, define REF_CLK_OUT */
-	MV_U8 groupTypeSelect = 0;
-
-	if (! ((smiCtrl == SWITCH_SMI_CTRL) || (smiCtrl == CPU_SMI_CTRL)) ) {
-		DB(mvOsPrintf("mvCtrlSMISet: SMI ctrl initialize failed\n"));
-		return;
-	}
-
-	/* MPP settings :
-	 * Test board configuration relevant to MPP group 4, and derive the correct group type */
-
-	if (isRefClkOut)	/* add first REF_CLK_OUT group type */
-		groupTypeSelect += GE1_CPU_SMI_CTRL_REF_CLK_OUT;
-
-	if (isSwSMICtrl)	/* add first SW_SMI group type */
-		groupTypeSelect += GE1_SW_SMI_CTRL_TDM_LQ_UNIT;
-
-	if (isBootDevSPI1)	/* add first SPI1 group type */
-		groupTypeSelect += SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT;
-
-	mvBoardMppTypeSet(4, groupTypeSelect);	/* Set MPP value according to group type */
-	MV_REG_WRITE(mvCtrlMppRegGet(4), mvBoardMppGet(4));
-
-	/* Mux settings :
-	 * Add mux configuration setup here ! */
-}
-
-/*******************************************************************************
 * mvCtrlCpuDdrL2FreqGet - Get the selected S@R Frequency mode
 *
 * DESCRIPTION:
@@ -490,84 +333,18 @@ MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 {
 	MV_FREQ_MODE freqTable[] = MV_SAR_FREQ_MODES;
-	MV_U32 freqModeSatRValue = mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
+	MV_U32 freqModeSatRValue, satrVal;
 
-	if (MV_ERROR != freqModeSatRValue) {
+	satrVal = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
+	freqModeSatRValue = (satrVal & SATR_CPU_FREQ_MASK) >> SATR_CPU_FREQ_OFFS;
+
+	if (freqModeSatRValue <= 29) {
 		*freqMode = freqTable[freqModeSatRValue];
 		return MV_OK;
 	}
-
 	DB(mvOsPrintf("%s: Error Read from S@R fail\n", __func__));
 	return MV_ERROR;
 }
-
-/*******************************************************************************
-* mvCtrlSysConfigGet
-*
-* DESCRIPTION: Read Board configuration Field
-*
-* INPUT: configField - Field description enum
-*
-* OUTPUT: None
-*
-* RETURN:
-*	if field is valid - returns requested Board configuration field value
-*
-*******************************************************************************/
-MV_U32 mvCtrlSysConfigGet(MV_CONFIG_TYPE_ID configField)
-{
-	MV_BOARD_CONFIG_TYPE_INFO configInfo;
-
-	if (!mvBoardConfigAutoDetectEnabled()) {
-		mvOsPrintf("%s: Error reading board configuration", __func__);
-		mvOsPrintf("- Auto detection is disabled\n");
-		return MV_ERROR;
-	}
-
-	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
-		mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
-		mvOsPrintf("%s: Error: Requested board config", __func__);
-		mvOsPrintf("is not valid for this board(%d)\n", configField);
-		return -1;
-	}
-
-	return boardOptionsConfig[configField];
-
-}
-
-/*******************************************************************************
-* mvCtrlSatrInit
-* DESCRIPTION: Initialize S@R configuration
-*               1. initialize all S@R and fields
-*               2. read relevant S@R fields (direct memory access)
-*               **from this point, all reads from S@R will use mvCtrlSatRRead/Write functions**
-*
-* INPUT:  None
-*
-* OUTPUT: None
-*
-* RETURN: NONE
-*
-*******************************************************************************/
-MV_VOID mvCtrlSatrInit(void)
-{
-	MV_U32 satrVal[2];
-	MV_BOARD_SATR_INFO satrInfo;
-	MV_U32 i;
-
-	/* initialize all S@R & Board configuration fields to -1 (MV_ERROR) */
-	memset(&satrOptionsConfig, 0x0, sizeof(MV_U32) * MV_SATR_READ_MAX_OPTION );
-
-	/* Read Sample @ Reset configuration, memory access read : */
-	satrVal[0] = MV_REG_READ(MPP_SAMPLE_AT_RESET(0));
-	satrVal[1] = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
-
-	for (i = 0; i < MV_SATR_READ_MAX_OPTION; i++)
-		if (mvBoardSatrInfoConfig(i, &satrInfo, MV_TRUE) == MV_OK)
-			satrOptionsConfig[satrInfo.satrId] = ((satrVal[satrInfo.regNum]  & (satrInfo.mask)) >> (satrInfo.offset));
-
-}
-
 /*******************************************************************************
 * mvCtrlDevFamilyIdGet - Get Device ID
 *
@@ -586,7 +363,9 @@ MV_VOID mvCtrlSatrInit(void)
 *******************************************************************************/
 MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel)
 {
-	return MV_88F67X0;
+	MV_U32 devFamilyId = ctrlModel & 0xFF00;
+
+	return devFamilyId;
 }
 
 /*******************************************************************************
@@ -971,7 +750,14 @@ MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID)
 *******************************************************************************/
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
-	return MV_6720_DEV_ID;
+	MV_U32	ctrlId = MV_REG_READ(DEV_ID_REG);
+	ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
+	if (ctrlId == 0x6820)
+		return MV_6820_DEV_ID;
+	if (ctrlId == 0x6810)
+		return MV_6810_DEV_ID;
+
+	return MV_INVALID_DEV_ID;
 }
 
 /*******************************************************************************
@@ -1732,4 +1518,39 @@ MV_U32 mvCtrlGetJuncTemp(MV_VOID)
 	reg = (reg & TSEN_STATUS_TEMP_OUT_MASK) >> TSEN_STATUS_TEMP_OUT_OFFSET;
 
 	return (3171900 - (10000 * reg)) / 13553;
+}
+/*******************************************************************************
+* mvCtrlNandClkSet
+*
+* DESCRIPTION:
+*       Set the division ratio of ECC Clock
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None
+*******************************************************************************/
+void mvCtrlNandClkSet(int nClock)
+{
+	/* Set the division ratio of ECC Clock 0x00018748[13:8] (by default it's double of core clock) */
+	MV_U32 nVal = MV_REG_READ(CORE_DIV_CLK_CTRL(1));
+	nVal &= ~(NAND_ECC_DIVCKL_RATIO_MASK);
+	nVal |= (nClock << NAND_ECC_DIVCKL_RATIO_OFFS);
+	MV_REG_WRITE(CORE_DIV_CLK_CTRL(1), nVal);
+
+	/* Set reload force of ECC clock 0x00018740[7:0] to 0x2 (meaning you will force only the ECC clock) */
+	nVal = MV_REG_READ(CORE_DIV_CLK_CTRL(0));
+	nVal &= ~(CORE_DIVCLK_RELOAD_FORCE_MASK);
+	nVal |= CORE_DIVCLK_RELOAD_FORCE_VAL;
+	MV_REG_WRITE(CORE_DIV_CLK_CTRL(0), nVal);
+
+	/* Set reload ratio bit 0x00018740[8] to 1'b1 */
+	MV_REG_BIT_SET(CORE_DIV_CLK_CTRL(0), CORE_DIVCLK_RELOAD_RATIO_MASK);
+	mvOsDelay(1); /*  msec */
+	/* Set reload ratio bit 0x00018740[8] to 0'b1 */
+	MV_REG_BIT_RESET(CORE_DIV_CLK_CTRL(0), CORE_DIVCLK_RELOAD_RATIO_MASK);
 }

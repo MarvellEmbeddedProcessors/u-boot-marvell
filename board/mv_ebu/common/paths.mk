@@ -36,7 +36,11 @@ endif
 ifeq ($(BOARD),axp)	
 SOC_DIR            = $(SRC_PATH)/axp
 FAM_DIR            = $(SOC_DIR)/armada_xp_family
-		
+endif
+
+ifeq ($(BOARD),a38x)
+SOC_DIR            = $(SRC_PATH)/a38x
+FAM_DIR            = $(SOC_DIR)/armada_38x_family
 endif
 
 SOC_ENV_DIR        = $(FAM_DIR)/ctrlEnv

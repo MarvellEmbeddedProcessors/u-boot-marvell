@@ -130,6 +130,15 @@
 
 	#define MV88F66XX
 
+#elif defined(CONFIG_ARMADA_38X)
+
+/**********************************/
+/* defines for DB-6820  */
+/**********************************/
+
+	#define MV88F682X
+	#define MV88F68XX
+
 #endif  // CONFIG_RD_78460_GP
 
 #endif  /* __CONFIG_MARVELL_H */

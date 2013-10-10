@@ -67,12 +67,6 @@
 
 #include "mvSysHwConfig.h"
 
-/* I2C bus addresses */
-#define MV_BOARD_DIMM0_I2C_ADDR                 0x56
-#define MV_BOARD_DIMM0_I2C_ADDR_TYPE            ADDR7_BIT
-#define MV_BOARD_DIMM1_I2C_ADDR                 0x57
-#define MV_BOARD_DIMM1_I2C_ADDR_TYPE            ADDR7_BIT
-#define MV_BOARD_DIMM_I2C_CHANNEL               0x0
 
 /* Board specific configuration */
 /* ============================ */
@@ -80,62 +74,138 @@
 /* New board ID numbers */
 
 /* boards ID numbers */
-#define BOARD_ID_BASE                   0x0
-#define DB_6720_ID                      (BOARD_ID_BASE)
-#define A375_CUSTOMER_ID                (DB_6720_ID + 1)
-#define MV_MAX_BOARD_ID                 (A375_CUSTOMER_ID + 1)
-#define MV_INVALID_BOARD_ID             0xFFFFFFFF
+#define BOARD_ID_BASE			0x0
+
+#define RD_68XX_ID			(BOARD_ID_BASE)
+#define DB_68XX_ID			(RD_68XX_ID + 1)
+#define A380_CUSTOMER_ID		(DB_68XX_ID + 1)
+#define MV_MAX_BOARD_ID			(A380_CUSTOMER_ID + 1)
+#define MV_INVALID_BOARD_ID		0xFFFFFFFF
 
 /*******************************************************************************
- * Armada 375 DB-88F6720 board */
-/******************************************************************************/
-/*SPI, NAND cases*/
+ * A380 DB-88F6810 board */
+/******************************************************************************
+   MPP#			DEFAULT UNIT		        MPP Values (respectively)
+   -----------------------------------------------------------------------------------
+   0-1			UART				1
+   2-3			I2C0				1
+   4-5			SMI ( MDC/MDIO )		1
+   6-17			GE0				1
+   18			SGMII , GIGA0			0
+   19-20		Uart1				6
+   21, 27-32
+   37-41	GE1					2
+   22-25	SPI					1
+   33-35	7 segment				0
+   26		USB Device detect			0  (USB3_0)
+   36,42	Spare Inputs				0
+   43		M_VTT_CTRL (out)			2
+   44		SATA3_PRESENT_ACTIVEn			4
+45,46,56	Inputs( PIC outputs )			0
+	47		SATA1_PRESENT_ACTIVEn		4
+   48-50
+   52-55
+   57-59	SDIO 8 Bit				5
+    51		USB Device detect0			0
+*/
 #define GROUP1_DEFAULT_MPP_SPI_I2C         0x22000022  /* SPI , I2C */
-#define DB_88F6720_MPP0_7               0x00020020  /* SPI */
-#define DB_88F6720_MPP8_15              0x22000022  /* SPI , I2C */
-#define DB_88F6720_MPP16_23             0x22222222	/* UART, TDM*/
-#define DB_88F6720_MPP24_31             0x33333333  /* SDIO*/
-#define DB_88F6720_MPP32_39             0x04403330  /* SPI, SMI */
-#define DB_88F6720_MPP40_47             0x22002044  /* UART1, GE0  */
-#define DB_88F6720_MPP48_55             0x22222222  /*GE0*/
-#define DB_88F6720_MPP56_63             0x44444422  /* GE0 , LED_MATRIX */
-#define DB_88F6720_MPP64_67				0x004		/* LED_MATRIX */
+/*******************************************************************************
+* A380 DB-68xx board
+*******************************************************************************/
+#define DB_88F68XX_MPP0_7               0x11111111
+#define DB_88F68XX_MPP8_15              0x11111111
+#define DB_88F68XX_MPP16_23             0x11266011
+#define DB_88F68XX_MPP24_31             0x22222011
+#define DB_88F68XX_MPP32_39             0x22200002
+#define DB_88F68XX_MPP40_47             0x40042022
+#define DB_88F68XX_MPP48_55             0x55550555
+#define DB_88F68XX_MPP56_63             0x00005550
 
-#define DB_88F6720_GPP_OUT_ENA_LOW      0xFFFFFFFF
-#define DB_88F6720_GPP_OUT_ENA_MID      0xFFFFFFFF
-#define DB_88F6720_GPP_OUT_ENA_HIGH     0xFFFFFFFF
-#define DB_88F6720_GPP_OUT_VAL_LOW      0x0
-#define DB_88F6720_GPP_OUT_VAL_MID      0x0
-#define DB_88F6720_GPP_OUT_VAL_HIGH     0x0
-#define DB_88F6720_GPP_POL_LOW          0x0
-#define DB_88F6720_GPP_POL_MID          0x0
-#define DB_88F6720_GPP_POL_HIGH         0x0
+#define DB_88F68XX_GPP_OUT_ENA_LOW      0xFFFFFFFF
+#define DB_88F68XX_GPP_OUT_ENA_MID      (~(0x0E))
+#define DB_88F68XX_GPP_OUT_ENA_HIGH     (~(BIT1))
+#define DB_88F68XX_GPP_OUT_VAL_LOW      0x0
+#define DB_88F68XX_GPP_OUT_VAL_MID      0x0
+#define DB_88F68XX_GPP_OUT_VAL_HIGH     0x0
+#define DB_88F68XX_GPP_POL_LOW          0x0
+#define DB_88F68XX_GPP_POL_MID          0x0
+#define DB_88F68XX_GPP_POL_HIGH         0x0
+
 
 /*******************************************************************************
- * Armada 375 Customer board */
-/******************************************************************************/
-/*SPI, NAND cases*/
-#define GROUP1_DEFAULT_MPP_SPI_I2C         0x22000022  /* SPI , I2C */
-#define A375_CUSTOMER_BOARD_MPP0_7               0x00020020  /* SPI */
-#define A375_CUSTOMER_BOARD_MPP8_15              0x22000022  /* SPI , I2C */
-#define A375_CUSTOMER_BOARD_MPP16_23             0x22222222	/* UART, TDM*/
-#define A375_CUSTOMER_BOARD_MPP24_31             0x33333333  /* SDIO*/
-#define A375_CUSTOMER_BOARD_MPP32_39             0x04403330  /* SPI, SMI */
-#define A375_CUSTOMER_BOARD_MPP40_47             0x22002044  /* UART1, GE0  */
-#define A375_CUSTOMER_BOARD_MPP48_55             0x22222222  /*GE0*/
-#define A375_CUSTOMER_BOARD_MPP56_63             0x44444422  /* GE0 , LED_MATRIX */
-#define A375_CUSTOMER_BOARD_MPP64_67				0x004		/* LED_MATRIX */
+* A380 RD-68XX board
+*******************************************************************************/
+/******************************************************************************
+   MPP#			DEFAULT UNIT		        MPP Values (respectively)
+   -----------------------------------------------------------------------------------
+   0-1			UART					1
+   2-3			I2C0					1
+   4-5			SMI ( MDC/MDIO )			1
+   6-17			GE0					1
+   18			IO_INT					0
+   19			SATA1					4
+   20			SATA0					4
+   21, 27-32
+   37-41	GE1						2
+   22-26	SPI0						1
+   33		CPU Clock Frequency Options[0]			0
+   34      CPU Clock Frequency Options[3]			0
+   35      CPU Clock Frequency Options[4]			0
+   36      CPU1 Enable						0
+   42		FAN_CTRL					0
+   43		M_VTT_CTRL (out)				2
+   44		SATA3_PRESENT_ACTIVEn				4
+   45-46	REF_CLK_OUT[0,1] (out)				0
+   47		SATA2_PRESENT_ACTIVEn				3
+   48-50
+   52-55
+   57-59	SDIO 8 Bit					5
+    56		boot Device mode				0
+    51		USB Device detect0				0
+ */
+#define RD_88F68XX_MPP0_7               0x11111111
+#define RD_88F68XX_MPP8_15              0x11111111
+#define RD_88F68XX_MPP16_23             0x11244011
+#define RD_88F68XX_MPP24_31             0x22222111
+#define RD_88F68XX_MPP32_39             0x22200002
+#define RD_88F68XX_MPP40_47             0x30042022
+#define RD_88F68XX_MPP48_55             0x55550555
+#define RD_88F68XX_MPP56_63             0x00005550
 
-#define A375_CUSTOMER_BOARD_GPP_OUT_ENA_LOW      0xFFFFFFFF
-#define A375_CUSTOMER_BOARD_GPP_OUT_ENA_MID      0xFFFFFFFF
-#define A375_CUSTOMER_BOARD_GPP_OUT_ENA_HIGH     0xFFFFFFFF
-#define A375_CUSTOMER_BOARD_GPP_OUT_VAL_LOW      0x0
-#define A375_CUSTOMER_BOARD_GPP_OUT_VAL_MID      0x0
-#define A375_CUSTOMER_BOARD_GPP_OUT_VAL_HIGH     0x0
-#define A375_CUSTOMER_BOARD_GPP_POL_LOW          0x0
-#define A375_CUSTOMER_BOARD_GPP_POL_MID          0x0
-#define A375_CUSTOMER_BOARD_GPP_POL_HIGH         0x0
+#define RD_88F68XX_GPP_OUT_ENA_LOW      (~(BIT1  | BIT4  | BIT6  | BIT7  | BIT8  | BIT9  | BIT10 | \
+					   BIT11 | BIT19 | BIT20 | BIT22 | BIT23 | BIT25 | BIT26 | \
+					   BIT27 | BIT29 | BIT30 | BIT31))
+#define RD_88F68XX_GPP_OUT_ENA_MID	(~(BIT0 | BIT1 | BIT2 | BIT3 | BIT4 | BIT15 | BIT16 | BIT17 | BIT18))
+#define RD_88F68XX_GPP_OUT_VAL_LOW	0x0
+#define RD_88F68XX_GPP_OUT_VAL_MID	0x0
+#define RD_88F68XX_GPP_POL_LOW		0x0
+#define RD_88F68XX_GPP_POL_MID		0x0
 
+
+/*******************************************************************************
+* A380_CUSTOMER_ID - customer board
+*******************************************************************************/
+#define A380_CUSTOMER_MPP0_7		0x11111111
+#define A380_CUSTOMER_MPP8_15		0x11111111
+#define A380_CUSTOMER_MPP16_23		0x11244011
+#define A380_CUSTOMER_MPP24_31		0x22222111
+#define A380_CUSTOMER_MPP32_39		0x22200002
+#define A380_CUSTOMER_MPP40_47		0x30042022
+#define A380_CUSTOMER_MPP48_55		0x55550555
+#define A380_CUSTOMER_MPP56_63		0x00005550
+
+/* GPPs
+MPP#	NAME			IN/OUT
+--------------------------------------
+19	TDM_reset		OUT
+25	Ethernet Reset		OUT			   29	PCIe0_RSTOUTn		OUT
+*/
+#define A380_CUSTOMER_GPP_OUT_ENA_LOW      (~(BIT19 | BIT25 | BIT29))
+#define A380_CUSTOMER_GPP_OUT_ENA_MID      0xFFFFFFFF
+#define A380_CUSTOMER_GPP_OUT_VAL_LOW      0x0
+#define A380_CUSTOMER_GPP_OUT_VAL_MID      0x0
+#define A380_CUSTOMER_GPP_POL_LOW          0x0
+#define A380_CUSTOMER_GPP_POL_MID          0x0
 
 #endif  /* MV_ASMLANGUAGE */
 

@@ -9,7 +9,7 @@ sub HELP_MESSAGE
 	print "\n";
 	print "Options:\n";
 	print "\t-f\tBoot device. Accepts spi, nor, nand\n";
-	print "\t-b\tBoard type. Accepts: avanta_lp, armada_375\n";
+	print "\t-b\tBoard type. Accepts: avanta_lp, armada_375, armada_38x\n";
 	print "\t-c\tClean build. calls make mrproper\n";
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
@@ -57,7 +57,8 @@ if($opt_c eq 1)
 	if(($opt_b eq "armada_xp_dbgp") or
 		($opt_b eq "avanta_lp_fpga") or
 		($opt_b eq "avanta_lp") or
-		($opt_b eq "armada_375") )
+                ($opt_b eq "armada_375") or
+		($opt_b eq "armada_38x") )
 	{
 		$board = $opt_b;
 		if( (substr $board,7 , 3) eq "370" ) {
@@ -74,6 +75,10 @@ if($opt_c eq 1)
 		}
 		elsif ( (substr $board,7 , 3) eq "375" ) {
 			$boardID="a375";
+			$targetBoard = substr $board, 7;
+		}
+		elsif ( (substr $board,7 , 3) eq "38x" ) {
+			$boardID="a38x";
 			$targetBoard = substr $board, 7;
 		}
 	}
@@ -122,7 +127,8 @@ if($opt_c eq 1)
 		$flash_name = "nand";
 		$img_type   = "nand";
 		if( ($boardID eq "axp") or
-			($boardID eq "a375") ) {
+			($boardID eq "a375") or
+                        ($boardID eq "a38x")) {
 			$img_opts   = "-P 4096 -L 128 -N MLC";
 		}
 		elsif($boardID eq "alp") {
@@ -210,7 +216,8 @@ if($fail){
 
 
 if( ($boardID eq "alp") or
-    ($boardID eq "a375") ) {
+    ($boardID eq "a375") or
+    ($boardID eq "a38x") ) {
 	$targetBoard = "";
 }
 else {

@@ -83,9 +83,10 @@ static void mvAlpBoardEgigaPhyInit(void)
 {
 	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
 
-	/* Set SMI control to CPU, before initializing phy */
+	/* Set SMI control to CPU, before initializing PHY */
 	mvCtrlSmiMasterSet(CPU_SMI_CTRL);
 
+	/* Prepare HAL data information */
 	mvSysEthPhyInit();
 
 	/* Init PHY connected to MAC0 */
@@ -93,6 +94,13 @@ static void mvAlpBoardEgigaPhyInit(void)
 			  MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)) {
 		mvEthPhyInit(0, MV_FALSE);
 	}
+
+	/* for RD-6650 board, RGMII-0 is connected to switch port 4
+	 * to avoid address conflicts between 1512 PHY with internal PHY (0x1),
+	 * the 1512 PHY is also SMI controlled and initialized by MAC0
+	 */
+	if (mvBoardIdGet() == RD_6650_ID && (ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0))
+		mvEthPhyInit(0, MV_FALSE);
 
 	/* Init PHY connected to MAC1 */
 	if (ethComplex & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3) {
@@ -110,6 +118,7 @@ static void mvAlpBoardEgigaPhyInit(void)
 
 	}
 
+#if 0 /* the following configurations were not fully implemented yet */
 	/* if Switch is connected to RGMII-0, it has to auto-poll the phy */
 	if (ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0) {
 		mvCtrlSmiMasterSet(SWITCH_SMI_CTRL);
@@ -139,6 +148,7 @@ static void mvAlpBoardEgigaPhyInit(void)
 	 * if (ethComplex & (MV_ETHCOMP_GE_MAC1_2_RGMII1 |
 			  MV_ETHCOMP_SW_P4_2_RGMII0)) {
 	*/
+#endif
 }
 #endif /* MV88F66XX */
 

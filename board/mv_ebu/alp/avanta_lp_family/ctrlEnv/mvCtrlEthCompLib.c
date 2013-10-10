@@ -326,7 +326,10 @@ static void mvEthComplexMacToSwPort(MV_U32 port, MV_U32 swPort,
 
 static void mvEthComplexSwPortToRgmii(MV_U32 swPort, MV_U32 port)
 {
-	/* Not implemented */
+	MV_U32 src;
+
+	src = mvEthComplexSwPortSrcCalc(swPort, ETHC_SW_PORT_SRC_MPP);
+	mvEthComplexSwPortSrcSet(swPort, src);
 }
 
 static void mvEthComplexXponMacToPonSerdes(void)

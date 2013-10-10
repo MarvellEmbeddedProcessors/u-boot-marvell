@@ -1544,7 +1544,13 @@ MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx)
 	if (c & MV_ETHCOMP_GE_MAC0_2_SW_P6)
 		mask |= BIT6;
 
+	/* If switch port 4 is connected to RGMII-0, the PHY SMI is controlled by CPU MAC,
+	 * To avoid address conflict between internal PHY (0x1), SMI is not handled by switch.
+	 * Auto-negotiation can not be applied with this configuration - so we use force link */
+	if (c & MV_ETHCOMP_SW_P4_2_RGMII0)
+		mask |= BIT4;
 	return mask;
+
 }
 
 /*******************************************************************************
@@ -1763,7 +1769,7 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 	/* Switch configuration */
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6)
 		mvOsOutput("       Ethernet Switch port 6 on MAC0, %s Speed [Default]\n"
-				, mvBoardMacSpeedGet(0) == BOARD_MAC_SPEED_2000M ? "2G" : "1G");
+				, (ethConfig & MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G) ? "2G" : "1G");
 	else if ((ethConfig & MV_ETHCOMP_GE_MAC1_2_SW_P4) &&
 		!(ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6))
 		mvOsOutput("       Ethernet Switch port 4 on MAC1, 1G Speed [Default]\n");
@@ -1778,7 +1784,7 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_RGMII1)
 		mvOsOutput("       RGMII1 on MAC1\n");
 	if (ethConfig & MV_ETHCOMP_SW_P4_2_RGMII0)
-		mvOsOutput("       RGMII0 Module on Switch port #4\n");
+		mvOsOutput("       RGMII0 Module on Switch port #4, 1G speed\n");
 
 	/* Internal GE Quad Phy */
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)

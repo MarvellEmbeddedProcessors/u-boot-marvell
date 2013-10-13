@@ -311,7 +311,7 @@ MV_STATUS mvPp2WinRead(MV_U32 dummy/*backward compability*/, MV_U32 winNum, MV_U
 	pAddrDecWin->targetId = (baseReg & ETH_WIN_TARGET_MASK) >> ETH_WIN_TARGET_OFFS;
 
 	/* Check if window is enabled   */
-	if (~(mvPp2RdReg(ETH_BASE_ADDR_ENABLE_REG)) & (1 << winNum))
+	if ((mvPp2RdReg(ETH_BASE_ADDR_ENABLE_REG)) & (1 << winNum))
 		pAddrDecWin->enable = MV_TRUE;
 	else
 		pAddrDecWin->enable = MV_FALSE;

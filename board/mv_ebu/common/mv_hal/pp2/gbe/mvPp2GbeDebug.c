@@ -421,8 +421,9 @@ void mvPp2AddrDecodeRegs(void)
 
 	regValue = mvPp2RdReg(ETH_BASE_ADDR_ENABLE_REG);
 	for (win = 0; win < ETH_MAX_DECODE_WIN; win++) {
-		if (regValue & (1 << win))
+		if ((regValue & (1 << win)) == 0)
 			continue; /* window is disable */
+
 		mvOsPrintf("\t win[%d]\n", win);
 		mvPp2PrintReg(ETH_WIN_BASE_REG(win), "\t ETH_WIN_BASE_REG");
 		mvPp2PrintReg(ETH_WIN_SIZE_REG(win), "\t ETH_WIN_SIZE_REG");

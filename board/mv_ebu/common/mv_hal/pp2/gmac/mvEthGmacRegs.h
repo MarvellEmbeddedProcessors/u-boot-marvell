@@ -284,9 +284,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ETH_MIB_GOOD_OCTETS_RECEIVED_LOW    0x0
 #define ETH_MIB_GOOD_OCTETS_RECEIVED_HIGH   0x4
 #define ETH_MIB_BAD_OCTETS_RECEIVED         0x8
-#define ETH_MIB_INTERNAL_MAC_TRANSMIT_ERR   0xc
-#define ETH_MIB_GOOD_FRAMES_RECEIVED        0x10
-#define ETH_MIB_BAD_FRAMES_RECEIVED         0x14
+/* Reserved                                 0xc */
+#define ETH_MIB_UNICAST_FRAMES_RECEIVED     0x10
+#define ETH_MIB_CRC_ERRORS_SENT             0x14
 #define ETH_MIB_BROADCAST_FRAMES_RECEIVED   0x18
 #define ETH_MIB_MULTICAST_FRAMES_RECEIVED   0x1c
 #define ETH_MIB_FRAMES_64_OCTETS            0x20
@@ -297,14 +297,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ETH_MIB_FRAMES_1024_TO_MAX_OCTETS   0x34
 #define ETH_MIB_GOOD_OCTETS_SENT_LOW        0x38
 #define ETH_MIB_GOOD_OCTETS_SENT_HIGH       0x3c
-#define ETH_MIB_GOOD_FRAMES_SENT            0x40
-#define ETH_MIB_EXCESSIVE_COLLISION         0x44
+#define ETH_MIB_UNICAST_FRAMES_SENT         0x40
+/* Reserved                                 0x44 */
 #define ETH_MIB_MULTICAST_FRAMES_SENT       0x48
 #define ETH_MIB_BROADCAST_FRAMES_SENT       0x4c
-#define ETH_MIB_UNREC_MAC_CONTROL_RECEIVED  0x50
+/* Reserved                                 0x50 */
 #define ETH_MIB_FC_SENT                     0x54
-#define ETH_MIB_GOOD_FC_RECEIVED            0x58
-#define ETH_MIB_BAD_FC_RECEIVED             0x5c
+#define ETH_MIB_FC_RECEIVED                 0x58
+#define ETH_MIB_RX_FIFO_OVERRUN             0x5c
 #define ETH_MIB_UNDERSIZE_RECEIVED          0x60
 #define ETH_MIB_FRAGMENTS_RECEIVED          0x64
 #define ETH_MIB_OVERSIZE_RECEIVED           0x68

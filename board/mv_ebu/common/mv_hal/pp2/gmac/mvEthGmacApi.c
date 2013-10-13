@@ -671,14 +671,11 @@ MV_U32 mvEthMibCounterRead(int port, unsigned int mibOffset, MV_U32 *pHigh32)
 *******************************************************************************/
 void mvEthMibCountersClear(int port)
 {
-	int i;
-
 	if (MV_PON_PORT(port))
 		return;
 
-	/* Perform dummy reads from MIB counters */
-	for (i = ETH_MIB_GOOD_OCTETS_RECEIVED_LOW; i < ETH_MIB_LATE_COLLISION; i += 4)
-		MV_REG_READ((ETH_MIB_COUNTERS_BASE(port) + i));
+	/* Perform dummy reads from last counter in the MIB */
+	mvEthMibCounterRead(port, ETH_MIB_LATE_COLLISION, NULL);
 }
 
 static void mvEthMibPrint(int port, MV_U32 offset, char *mib_name)
@@ -688,53 +685,59 @@ static void mvEthMibPrint(int port, MV_U32 offset, char *mib_name)
 	regVaLo = mvEthMibCounterRead(port, offset, &regValHi);
 
 	if (!regValHi)
-		mvOsPrintf("  %-32s: %u\n", mib_name, regVaLo);
+		mvOsPrintf("  %-32s: 0x%02x = %u\n", mib_name, offset, regVaLo);
 	else
-		mvOsPrintf("  t%-32s: 0x%08x%08x\n", mib_name, regValHi, regVaLo);
+		mvOsPrintf("  %-32s: 0x%02x = 0x%08x%08x\n", mib_name, offset, regValHi, regVaLo);
 }
 
 /* Print MIB counters of the Ethernet port */
 void mvEthMibCountersShow(int port)
 {
+	if (mvPp2PortCheck(port))
+		return;
+
 	if (MV_PON_PORT(port)) {
 		mvOsPrintf("%s: not supported for PON port\n", __func__);
 		return;
 	}
 
-/*TODO: check port
-	if (mvNetaTxpCheck(port))
-		return;
-*/
-	mvOsPrintf("\nMIBs: port=%d\n", port);
+	mvOsPrintf("\nMIBs: port=%d, base=0x%x\n", port, ETH_MIB_COUNTERS_BASE(port));
 
 	mvOsPrintf("\n[Rx]\n");
-	mvEthMibPrint(port, ETH_MIB_GOOD_FRAMES_RECEIVED, "GOOD_FRAMES_RECEIVED");
-	mvEthMibPrint(port, ETH_MIB_BAD_FRAMES_RECEIVED, "BAD_FRAMES_RECEIVED");
+	mvEthMibPrint(port, ETH_MIB_GOOD_OCTETS_RECEIVED_LOW, "GOOD_OCTETS_RECEIVED");
+	mvEthMibPrint(port, ETH_MIB_BAD_OCTETS_RECEIVED, "BAD_OCTETS_RECEIVED");
+	mvEthMibPrint(port, ETH_MIB_UNICAST_FRAMES_RECEIVED, "UNCAST_FRAMES_RECEIVED");
 	mvEthMibPrint(port, ETH_MIB_BROADCAST_FRAMES_RECEIVED, "BROADCAST_FRAMES_RECEIVED");
 	mvEthMibPrint(port, ETH_MIB_MULTICAST_FRAMES_RECEIVED, "MULTICAST_FRAMES_RECEIVED");
-	mvEthMibPrint(port, ETH_MIB_GOOD_OCTETS_RECEIVED_LOW, "GOOD_OCTETS_RECEIVED");
-	mvOsPrintf("\n[Rx Errors]\n");
-	mvEthMibPrint(port, ETH_MIB_BAD_OCTETS_RECEIVED, "BAD_OCTETS_RECEIVED");
+
+	mvOsPrintf("\n[RMON]\n");
+	mvEthMibPrint(port, ETH_MIB_FRAMES_64_OCTETS, "FRAMES_64_OCTETS");
+	mvEthMibPrint(port, ETH_MIB_FRAMES_65_TO_127_OCTETS, "FRAMES_65_TO_127_OCTETS");
+	mvEthMibPrint(port, ETH_MIB_FRAMES_128_TO_255_OCTETS, "FRAMES_128_TO_255_OCTETS");
+	mvEthMibPrint(port, ETH_MIB_FRAMES_256_TO_511_OCTETS, "FRAMES_256_TO_511_OCTETS");
+	mvEthMibPrint(port, ETH_MIB_FRAMES_512_TO_1023_OCTETS, "FRAMES_512_TO_1023_OCTETS");
+	mvEthMibPrint(port, ETH_MIB_FRAMES_1024_TO_MAX_OCTETS, "FRAMES_1024_TO_MAX_OCTETS");
+
+	mvOsPrintf("\n[Tx]\n");
+	mvEthMibPrint(port, ETH_MIB_GOOD_OCTETS_SENT_LOW, "GOOD_OCTETS_SENT");
+	mvEthMibPrint(port, ETH_MIB_UNICAST_FRAMES_SENT, "UNICAST_FRAMES_SENT");
+	mvEthMibPrint(port, ETH_MIB_MULTICAST_FRAMES_SENT, "MULTICAST_FRAMES_SENT");
+	mvEthMibPrint(port, ETH_MIB_BROADCAST_FRAMES_SENT, "BROADCAST_FRAMES_SENT");
+	mvEthMibPrint(port, ETH_MIB_CRC_ERRORS_SENT, "CRC_ERRORS_SENT");
+
+	mvOsPrintf("\n[FC control]\n");
+	mvEthMibPrint(port, ETH_MIB_FC_RECEIVED, "FC_RECEIVED");
+	mvEthMibPrint(port, ETH_MIB_FC_SENT, "FC_SENT");
+
+	mvOsPrintf("\n[Errors]\n");
+	mvEthMibPrint(port, ETH_MIB_RX_FIFO_OVERRUN, "ETH_MIB_RX_FIFO_OVERRUN");
 	mvEthMibPrint(port, ETH_MIB_UNDERSIZE_RECEIVED, "UNDERSIZE_RECEIVED");
 	mvEthMibPrint(port, ETH_MIB_FRAGMENTS_RECEIVED, "FRAGMENTS_RECEIVED");
 	mvEthMibPrint(port, ETH_MIB_OVERSIZE_RECEIVED, "OVERSIZE_RECEIVED");
 	mvEthMibPrint(port, ETH_MIB_JABBER_RECEIVED, "JABBER_RECEIVED");
 	mvEthMibPrint(port, ETH_MIB_MAC_RECEIVE_ERROR, "MAC_RECEIVE_ERROR");
 	mvEthMibPrint(port, ETH_MIB_BAD_CRC_EVENT, "BAD_CRC_EVENT");
-	mvOsPrintf("\n[Tx]\n");
-	mvEthMibPrint(port, ETH_MIB_GOOD_FRAMES_SENT, "GOOD_FRAMES_SENT");
-	mvEthMibPrint(port, ETH_MIB_BROADCAST_FRAMES_SENT, "BROADCAST_FRAMES_SENT");
-	mvEthMibPrint(port, ETH_MIB_MULTICAST_FRAMES_SENT, "MULTICAST_FRAMES_SENT");
-	mvEthMibPrint(port, ETH_MIB_GOOD_OCTETS_SENT_LOW, "GOOD_OCTETS_SENT");
-	mvOsPrintf("\n[Tx Errors]\n");
-	mvEthMibPrint(port, ETH_MIB_INTERNAL_MAC_TRANSMIT_ERR, "INTERNAL_MAC_TRANSMIT_ERR");
-	mvEthMibPrint(port, ETH_MIB_EXCESSIVE_COLLISION, "EXCESSIVE_COLLISION");
 	mvEthMibPrint(port, ETH_MIB_COLLISION, "COLLISION");
+	/* This counter must be read last. Read it clear all the counters */
 	mvEthMibPrint(port, ETH_MIB_LATE_COLLISION, "LATE_COLLISION");
-	mvOsPrintf("\n[FC control]\n");
-	mvEthMibPrint(port, ETH_MIB_UNREC_MAC_CONTROL_RECEIVED, "UNREC_MAC_CONTROL_RECEIVED");
-	mvEthMibPrint(port, ETH_MIB_GOOD_FC_RECEIVED, "GOOD_FC_RECEIVED");
-	mvEthMibPrint(port, ETH_MIB_BAD_FC_RECEIVED, "BAD_FC_RECEIVED");
-	mvEthMibPrint(port, ETH_MIB_FC_SENT, "FC_SENT");
-	mvOsPrintf("\n");
 }

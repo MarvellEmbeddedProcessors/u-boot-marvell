@@ -117,7 +117,7 @@ extern "C" {
 #define PM_CPU_BOOT_ADDR_REDIRECT(cpu)		(MV_CPU_PMU_UNIT_SERV_OFFSET(cpu) + 0x24)
 
 /* Power Management Memory Power Down Registers 1 - 6 */
-#define POWER_MNG_MEM_CTRL_REG(num)		((num) < 6 ? 0x1820C + (num) * 4 : 0x18228)
+#define POWER_MNG_MEM_CTRL_REG(num)		(((num) < 6) ? (0x1820C + ((num) - 1) * 4) : 0x18228)
 #define PMC_MCR_NUM_COMM			6
 #define PMC_MCR_NUM_PEX				2
 #define PMC_MCR_NUM_USB				4

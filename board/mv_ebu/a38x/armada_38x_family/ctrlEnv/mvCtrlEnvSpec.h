@@ -123,8 +123,7 @@ extern "C" {
 #define MV_ETH_MAX_TCONT                        16
 #define MV_ETH_RXQ_TOTAL_NUM                    32
 
-#define MV_PEX_IF_REGS_OFFSET(pexIf)            (pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000) \
-						 : (0x42000 + ((pexIf) % 8) * 0x40000))
+#define MV_PEX_IF_REGS_OFFSET(pexIf)            (((pexIf) == 0) ? 0x80000 : (0x40000 + ((pexIf) * 0x4000)))
 #define MV_USB_REGS_OFFSET(dev)                 (0x50000)
 #define MV_USB3_REGS_OFFSET(dev)                (0x5FF80)
 #define MV_XOR_REGS_OFFSET(unit)                (0x60800)
@@ -142,6 +141,8 @@ extern "C" {
  */
 
 #define INTER_REGS_SIZE                         _1M
+#define MV_SERDES_MAX_LANES			6
+#define MV_SERDES_MAX_LANES_6810		5
 
 /* This define describes the TWSI interrupt bit and location */
 #define TWSI_CPU_MAIN_INT_CAUSE_REG(cpu)        CPU_MAIN_INT_CAUSE_REG(1, (cpu))
@@ -178,8 +179,10 @@ extern "C" {
 #endif
 
 /* This define describes the maximum number of supported PEX Interfaces */
-#define MV_PEX_MAX_IF                           2
-#define MV_PEX_MAX_UNIT                         2
+
+#define MV_PEX_MAX_IF                           4
+#define MV_PEX_MAX_UNIT                         4
+#define MV_PEX_MAX_UNIT_6810                    3
 #ifdef MV_INCLUDE_PEX
 #define MV_INCLUDE_PEX0
 #define MV_DISABLE_PEX_DEVICE_BAR
@@ -194,12 +197,14 @@ extern "C" {
 #define PCI_IO(pciIf)                           (PEX0_IO + 2 * (pciIf))
 #define PCI_MEM(pciIf, memNum)                  (PEX0_MEM0 + 2 * (pciIf))
 /* This define describes the maximum number of supported PCI Interfaces         */
-#define MV_IDMA_MAX_CHAN                        4
+#define MV_IDMA_MAX_CHAN                        0
 #define MV_DEVICE_MAX_CS                        4
 
 #ifndef MV_USB_MAX_PORTS
-#define MV_USB_MAX_PORTS 3
+#define MV_USB_MAX_PORTS			1
 #endif
+#define MV_USB3_MAX_PORTS			3
+#define MV_USB3_MAX_PORTS_6810			2
 
 /* CESA version #3: One channel, 2KB SRAM, TDMA, CHAIN Mode support */
 #define MV_CESA_VERSION                         3 /*TODO verify */
@@ -207,7 +212,8 @@ extern "C" {
 
 /* This define describes the maximum number of supported Ethernet ports */
 #define MV_PON_PORT_ID				7
-#define MV_ETH_MAX_PORTS                        4
+#define MV_ETH_MAX_PORTS                        3
+#define MV_ETH_MAX_PORTS_6810                   2
 #define MV_ETH_MAX_RXQ                          16/* Maximum number of RXQs can be mapped to each port */
 #define MV_ETH_MAX_TXQ                          8
 #define MV_ETH_RXQ_TOTAL_NUM                    32      /* Total number of RXQs for usage by all ports */

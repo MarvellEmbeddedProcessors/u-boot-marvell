@@ -139,15 +139,12 @@ typedef enum {
 } MV_ETH_PORT_MODE;
 
 typedef enum {
-	SERDES_UNIT_UNCONNECTED = 0x0,
-	SERDES_UNIT_PEX         = 0x1,
-	SERDES_UNIT_SATA        = 0x2,
-	SERDES_UNIT_SGMII0      = 0x3,
-	SERDES_UNIT_SGMII1      = 0x4,
-	SERDES_UNIT_SGMII2      = 0x5,
-	SERDES_UNIT_SGMII3      = 0x6,
-	SERDES_UNIT_QSGMII      = 0x7,
-	SERDES_UNIT_LAST
+	SERDES_UNIT_NA		= 0x0,
+	SERDES_UNIT_PEX		= 0x10,
+	SERDES_UNIT_SATA	= 0x20,
+	SERDES_UNIT_GBE		= 0x30,
+	SERDES_UNIT_USB_H	= 0x40,
+	SERDES_UNIT_USB		= 0x50,
 } MV_SERDES_UNIT_INDX;
 
 typedef enum {
@@ -156,23 +153,40 @@ typedef enum {
 	PEX_BUS_MODE_X4         = 2,
 	PEX_BUS_MODE_X8         = 3
 } MV_PEX_UNIT_CFG;
+/*
+	This enum should reflect the units numbers in register
+	space which we will need when accessing the HW
+*/
 
-/* Configuration per SERDES line.
-   Each nibble is MV_SERDES_LINE_TYPE */
-typedef struct _boardSerdesConf {
-	MV_U32 enableSerdesConfiguration;       /*This will determine if mvCtrlSerdesPhyConfig will configure the serdes*/
-	MV_U32 serdesLine0_7;                   /* Lines 0 to 7 SERDES MUX one nibble per line */
-	MV_U32 serdesLine8_15;                  /* Lines 8 to 15 SERDES MUX one nibble per line */
-	MV_PEX_UNIT_CFG pex0Mod;
-	MV_PEX_UNIT_CFG pex1Mod;
-	MV_PEX_UNIT_CFG pex2Mod;
-	MV_PEX_UNIT_CFG pex3Mod;
-	MV_U32 busSpeed;        /* Bus speed - one bit per SERDES line:
-	                           Low speed (0)		High speed (1)
-	                           PEX	2.5 G (10 bit)		5 G (20 bit)
-	                           SATA	1.5 G			3 G
-	                           SGMII        1.25 Gbps		3.125 Gbps	*/
-} MV_SERDES_CFG;
+typedef enum {
+	PEX0_IF,
+	PEX1_IF,
+	PEX2_IF,
+	PEX3_IF,
+	PEXIF_MAX
+} MV_PEXIF_INDX;
+
+/*
+	This structure refrect registers:
+	Serdes 0-6 selectors		0x183fc
+*/
+
+#define SERDES_CFG {	\
+/* Lane 0 */ {SERDES_UNIT_NA,		SERDES_UNIT_PEX | PEX0_IF, SERDES_UNIT_SATA | 0,	SERDES_UNIT_GBE  | 0,\
+	      SERDES_UNIT_NA,		SERDES_UNIT_NA,		    SERDES_UNIT_NA,		SERDES_UNIT_NA},     \
+/* Lane 1 */ {SERDES_UNIT_NA,		SERDES_UNIT_PEX | PEX0_IF, SERDES_UNIT_NA,		SERDES_UNIT_SATA | 0,\
+	      SERDES_UNIT_GBE | 0,	SERDES_UNIT_GBE | 1,	    SERDES_UNIT_NA,		SERDES_UNIT_NA},     \
+/* Lane 2 */ {SERDES_UNIT_NA,		SERDES_UNIT_PEX | PEX1_IF, SERDES_UNIT_NA,		SERDES_UNIT_SATA | 1,\
+	      SERDES_UNIT_GBE | 1,	SERDES_UNIT_NA,		    SERDES_UNIT_NA,		SERDES_UNIT_NA},     \
+/* Lane 3 */ {SERDES_UNIT_NA,		SERDES_UNIT_PEX | PEX3_IF, SERDES_UNIT_NA,		SERDES_UNIT_SATA | 3,\
+	      SERDES_UNIT_GBE | 2,	SERDES_UNIT_USB_H | 1,	    SERDES_UNIT_USB,		SERDES_UNIT_NA},     \
+/* Lane 4 */ {SERDES_UNIT_NA,		SERDES_UNIT_PEX | PEX1_IF, SERDES_UNIT_SATA | 1,	SERDES_UNIT_GBE  | 1,\
+	      SERDES_UNIT_USB_H | 0,	SERDES_UNIT_USB,	    SERDES_UNIT_NA,		SERDES_UNIT_NA},     \
+/* Lane 5 */ {SERDES_UNIT_NA,		SERDES_UNIT_PEX | PEX2_IF, SERDES_UNIT_SATA | 2,	SERDES_UNIT_GBE  | 2,\
+	      SERDES_UNIT_USB_H | 1,	SERDES_UNIT_USB,	    SERDES_UNIT_NA,		SERDES_UNIT_NA},     \
+}
+
+
 
 /* Termal Sensor Registers */
 #define TSEN_STATE_REG							0xE8070
@@ -201,6 +215,7 @@ MV_BOOL mvCtrlIsEepromEnabled(MV_VOID);
 MV_STATUS mvCtrlEepromEnable(MV_BOOL enable);
 MV_STATUS mvCtrlBoardConfigGet(MV_U8 *tempVal);
 MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit);
+MV_U32 mvCtrlSocUnitInfoNumSet(MV_UNIT_ID unit, MV_U32 maxValue);
 MV_STATUS mvCtrlEnvInit(MV_VOID);
 MV_U32    mvCtrlMppRegGet(MV_U32 mppGroup);
 MV_U32 mvCtrlGetJuncTemp(MV_VOID);

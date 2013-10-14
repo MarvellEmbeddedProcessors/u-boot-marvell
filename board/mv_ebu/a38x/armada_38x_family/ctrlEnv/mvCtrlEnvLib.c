@@ -109,7 +109,7 @@
 #else
 #define DB(x)
 #endif
-
+static const MV_U8 serdesCfg[MV_SERDES_MAX_LANES][8] = SERDES_CFG;
 /*
  * Control Environment internal data structure
  * Note: it should be initialized dynamically only once.
@@ -190,40 +190,60 @@ static MV_U32 mvCtrlDevIdIndexGet(void)
 
 static MV_VOID mvCtrlPexConfig(MV_VOID)
 {
-	MV_U8 pexUnit;
-	MV_U32 pexIfNum = mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
+	MV_U32 pexIf, commPhyConfigReg, comPhyCfg, serdesNum, serdesCongigField, maxSerdesLane;
 
 	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
 
+	switch (mvCtrlModelGet()) {
+	case MV_6810_DEV_ID:
+		maxSerdesLane = 5;
+		break;
+	default:
+	case MV_6820_DEV_ID:
+		maxSerdesLane = MV_SERDES_MAX_LANES;
+	}
+
 	memset(boardPexInfo, 0, sizeof(MV_BOARD_PEX_INFO));
-
-	for (pexUnit = 0; pexUnit < pexIfNum; pexUnit++)
-		boardPexInfo->pexUnitCfg[pexUnit] = PEX_BUS_MODE_X1;
-
-	boardPexInfo->boardPexIfNum = pexIfNum;
+	commPhyConfigReg = MV_REG_READ(COMM_PHY_SELECTOR_REG);
+	for (serdesNum = 0; serdesNum < maxSerdesLane; serdesNum++) {
+		serdesCongigField = (commPhyConfigReg & COMPHY_SELECT_MASK(serdesNum)) >> COMPHY_SELECT_OFFS(serdesNum);
+		comPhyCfg = serdesCfg[serdesNum][serdesCongigField];
+		DB(printf("%s:   serdesCongigField = 0x%x, comPhyCfg = 0x%x\n",
+			  serdesCongigField, comPhyCfg));
+		if ((comPhyCfg & 0xF0) != SERDES_UNIT_PEX)
+			continue;
+		pexIf = comPhyCfg & 0x0f;
+		if ((pexIf == PEX0_IF) && (commPhyConfigReg & PCIE0_X4_EN_MASK))
+			boardPexInfo->pexUnitCfg[pexIf] = PEX_BUS_MODE_X4;
+		else
+			boardPexInfo->pexUnitCfg[pexIf] = PEX_BUS_MODE_X1;
+			boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = pexIf;
+			boardPexInfo->boardPexIfNum++;
+	}
+	mvCtrlSocUnitInfoNumSet(PEX_UNIT_ID, boardPexInfo->boardPexIfNum);
 }
 
 
 MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_68xx_INDEX_MAX] = {
 /*                          6820 */
 /* DRAM_UNIT_ID         */ { 1, 1},
-/* PEX_UNIT_ID          */ { 2, 2},
-/* ETH_GIG_UNIT_ID      */ { 2, 2},
-/* USB_UNIT_ID          */ { 3, 3},
-/* USB3_UNIT_ID         */ { 1, 1},
-/* IDMA_UNIT_ID         */ { 1, 1},
-/* XOR_UNIT_ID          */ { 2, 2},
-/* SATA_UNIT_ID         */ { 2, 2},
+/* PEX_UNIT_ID          */ { MV_PEX_MAX_UNIT, MV_PEX_MAX_UNIT_6810},
+/* ETH_GIG_UNIT_ID      */ { MV_ETH_MAX_PORTS, MV_ETH_MAX_PORTS_6810},
+/* USB_UNIT_ID          */ { MV_USB_MAX_PORTS, MV_USB3_MAX_PORTS_6810},
+/* USB3_UNIT_ID         */ { MV_USB3_MAX_PORTS, MV_USB3_MAX_PORTS_6810},
+/* IDMA_UNIT_ID         */ { MV_IDMA_MAX_CHAN, MV_IDMA_MAX_CHAN},
+/* XOR_UNIT_ID          */ { MV_XOR_MAX_UNIT, MV_XOR_MAX_UNIT},
+/* SATA_UNIT_ID         */ { MV_SATA_MAX_CHAN, MV_SATA_MAX_CHAN},
 /* TDM_32CH_UNIT_ID     */ { 1, 1},
-/* UART_UNIT_ID         */ { 2, 2},
+/* UART_UNIT_ID         */ { MV_UART_MAX_CHAN, MV_UART_MAX_CHAN},
 /* CESA_UNIT_ID         */ { 1, 1},
-/* SPI_UNIT_ID          */ { 2, 2},
+/* SPI_UNIT_ID          */ { 1, 1},
 /* AUDIO_UNIT_ID        */ { 1, 1},
 /* SDIO_UNIT_ID         */ { 1, 1},
 /* TS_UNIT_ID           */ { 0, 0},
-/* XPON_UNIT_ID         */ { 1, 1},
-/* BM_UNIT_ID           */ { 1, 1},
-/* PNC_UNIT_ID          */ { 1, 1},
+/* XPON_UNIT_ID         */ { 0, 0},
+/* BM_UNIT_ID           */ { 0, 0},
+/* PNC_UNIT_ID          */ { 0, 0},
 /* I2C_UNIT_ID          */ { 2, 2},
 };
 
@@ -238,6 +258,18 @@ MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit)
 
 	devIdIndex = mvCtrlDevIdIndexGet();
 	return mvCtrlSocUnitNums[unit][devIdIndex];
+}
+MV_U32 mvCtrlSocUnitInfoNumSet(MV_UNIT_ID unit, MV_U32 maxValue)
+{
+	MV_U32 devIdIndex;
+
+	if (unit >= MAX_UNITS_ID) {
+		mvOsPrintf("%s: Error: Wrong unit type (%u)\n", __func__, unit);
+		return 0;
+	}
+
+	devIdIndex = mvCtrlDevIdIndexGet();
+	return mvCtrlSocUnitNums[unit][devIdIndex] = maxValue;
 }
 
 /*******************************************************************************
@@ -509,7 +541,7 @@ MV_U32 mvCtrlPciMaxIfGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlEthMaxPortGet(MV_VOID)
 {
-	return MV_ETH_MAX_PORTS;
+	return mvCtrlSocUnitInfoNumGet(ETH_GIG_UNIT_ID);
 }
 
 #if defined(MV_INCLUDE_SATA)

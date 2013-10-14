@@ -171,6 +171,13 @@ extern "C" {
 #define CHIP_BOND_REG                           0x18238
 #define PCKG_OPT_MASK                           0x3
 
+	/* common PHys Selectors register */
+#define COMM_PHY_SELECTOR_REG			0x183fc
+#define COMPHY_SELECT_OFFS(x)			(x * 3)
+#define COMPHY_SELECT_MASK(x)			(0x07 << COMPHY_SELECT_OFFS(x))
+#define	PCIE0_X4_EN_OFFS			18
+#define	PCIE0_X4_EN_MASK			(1 << PCIE0_X4_EN_OFFS)
+
 /*****************/
 /* PUP registers */
 /*****************/
@@ -342,24 +349,7 @@ typedef enum _mvTargetId {
 	MAX_TARGETS_ID
 } MV_TARGET_ID;
 
-/*
-        This enum should reflect the units numbers in register
-        space which we will need when accessing the HW
- */
 
-typedef enum {
-	PEX0_0x4        = 0,
-	PEX0_1x4        = 1,
-	PEX0_2x4        = 2,
-	PEX0_3x4        = 3,
-	PEX1_0x4        = 4,
-	PEX1_1x4        = 5,
-	PEX1_2x4        = 6,
-	PEX1_3x4        = 7,
-	PEX2_0x4        = 8,
-	PEX3_0x4        = 9,
-	PEXIF_MAX       = 10
-} MV_PEXIF_INDX;
 
 #endif /* MV_ASMLANGUAGE */
 

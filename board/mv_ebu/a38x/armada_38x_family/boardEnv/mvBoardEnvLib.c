@@ -296,6 +296,8 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum)
 {
+	if (ethPortNum < 2)
+		return MV_TRUE;
 	return MV_FALSE;
 }
 

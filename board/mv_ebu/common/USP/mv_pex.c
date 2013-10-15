@@ -162,7 +162,9 @@ MV_BOOL scanPci(MV_U32 host)
 int sp_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U32 host = 0;
-
+#if defined(MV88F68XX)
+	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
+#endif
 	MV_U32 pexHWInf = 0;
 
 	if (argc > 1)
@@ -173,7 +175,11 @@ int sp_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 1;
 	}
 
+#if defined(MV88F68XX)
+	pexHWInf = boardPexInfo->pexMapping[host];
+#else
 	pexHWInf = host;
+#endif
 
 	printf("scanning pex number: %d\n", pexHWInf);
 	if ( scanPci(pexHWInf) == MV_FALSE)
@@ -217,7 +223,9 @@ U_BOOT_CMD(
 int se_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U32 host = 0, dev = 0, bus = 0;
-
+#if defined(MV88F68XX)
+	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
+#endif
 	MV_U32 pexHWInf = 0;
 
 	if (argc != 4) {
@@ -234,7 +242,11 @@ int se_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 1;
 	}
 
+#if defined(MV88F68XX)
+	pexHWInf = boardPexInfo->pexMapping[host];
+#else
 	pexHWInf = host;
+#endif
 
 	if (mvPexSlaveEnable(pexHWInf, bus, dev, MV_TRUE) == MV_OK)
 		printf("PCI %d Bus %d Slave 0x%x enabled.\n", host, bus, dev);
@@ -259,7 +271,9 @@ int mapPci_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	MV_ADDR_WIN pciWin;
 	MV_TARGET target = 0;
 	MV_U32 host = 0, effectiveBaseAddress = 0;
-
+#if defined(MV88F68XX)
+	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
+#endif
 	MV_U32 pexHWInf = 0;
 
 	pciWin.baseLow = 0;
@@ -276,7 +290,11 @@ int mapPci_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 1;
 	}
 
+#if defined(MV88F68XX)
+	pexHWInf = boardPexInfo->pexMapping[host];
+#else
 	pexHWInf = host;
+#endif
 
 	target = PCI0_MEM0 + (2 * pexHWInf);
 
@@ -414,8 +432,16 @@ static void mv_pci_bus_mode_display(MV_U32 host)
 	MV_PEX_MODE pexMode;
 	MV_U32 pexHWInf;
 	MV_32 linkDelayCount;
-
+#if defined(MV88F68XX)
+	MV_BOARD_PEX_INFO 	*boardPexInfo = mvBoardPexInfoGet();
+	if (boardPexInfo == NULL) {
+		printf("mv_pci_bus_mode_display: mvBoardPexInfoGet failed\n");
+		return;
+	}
+	pexHWInf = boardPexInfo->pexMapping[host];
+#else
 	pexHWInf = host;
+#endif
 
 	if (mvPexModeGet(pexHWInf, &pexMode) != MV_OK)
 		printf("mv_pci_bus_mode_display: mvPexModeGet failed\n");
@@ -505,6 +531,9 @@ void pci_init_board(void)
 	struct pci_controller *pci;
 	char *env;
 	int status;
+#ifdef MV88F68XX
+	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
+#endif
 
 	if (mvCtrlPexMaxIfGet() == 0)
 		return;
@@ -520,8 +549,11 @@ void pci_init_board(void)
 	/* Initialize and scan all PEX interfaces */
 	for (pexIf = 0; pexIf < activePexCount; pexIf++) {
 		pci = &pci_hose[pexIf];
-
+#if defined(MV88F68XX)
+		pexHWInf = boardPexInfo->pexMapping[pexIf];
+#else
 		pexHWInf = pexIf;
+#endif
 		DB(printf("Starting scan of PEX%d\n", pexHWInf));
 
 		/* Set bus numbers in U-BOOT stack */

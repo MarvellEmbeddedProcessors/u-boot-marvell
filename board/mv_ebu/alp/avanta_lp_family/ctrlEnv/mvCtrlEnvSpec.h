@@ -110,7 +110,7 @@ extern "C" {
 #define MV_CPUIF_REGS_OFFSET(cpu)               (0x21800 + (cpu) * 0x100)
 #define MV_CPU_HW_SEM_OFFSET                    (0x20500)
 
-#if defined(MV_ETH_PP2)
+/* Network units */
 #define MV_PP2_REG_BASE                         (0xF0000)
 #define MV_ETH_BASE_ADDR                        (0xC0000)
 #define LMS_REG_BASE                            (MV_ETH_BASE_ADDR)
@@ -124,9 +124,6 @@ extern "C" {
 #define MV_PON_PORT_ID                          7
 #define MV_ETH_RXQ_TOTAL_NUM                    32
 #define MV_VLAN_1_TYPE                          0x88A8
-#else
-#define MV_ETH_BASE_ADDR			(0x70000)
-#endif /*MV_ETH_PP2*/
 
 #define MV_ETH_REGS_OFFSET(port)                (MV_ETH_BASE_ADDR - ((port) / 2) * 0x40000 + ((port) % 2) * 0x4000)
 

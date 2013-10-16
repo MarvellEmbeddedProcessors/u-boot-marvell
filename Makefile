@@ -178,7 +178,7 @@ endif
 
 # load ARCH, BOARD, and CPU configuration
 include $(obj)include/config.mk
-export	ARCH CPU BOARD VENDOR SOC
+export	ARCH CPU BOARD VENDOR SOC DDR3LIB
 
 # set default to nothing for native builds
 ifeq ($(HOSTARCH),$(ARCH))

@@ -205,6 +205,12 @@ if($opt_c eq 1)
 	}
 }
 
+if($opt_d eq 1)
+{
+	system("echo \"DDR3LIB = y\" >> include/config.mk");
+	print "\n *** DDR3LIB = y *********************************\n\n";
+}
+
 # Build !
 print "\n**** [Building U-BOOT]\t*****\n\n";
 $fail = system("make -j6 -s");

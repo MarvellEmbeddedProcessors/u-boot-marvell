@@ -1210,19 +1210,42 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGet()
 	MV_U32 satrBootDeviceValue;
 	MV_SATR_BOOT_TABLE satrTable[] = MV_SATR_TABLE_VAL;
 	MV_SATR_BOOT_TABLE satrBootEntry;
+	MV_BOARD_BOOT_SRC defaultBootSrc;
+
+	/* prepare default boot source, in case of:
+	 * 1. S@R read ERROR
+	 * 2. Boot from UART is selected as boot source at S@R
+	 *    Pre-compiled image type (SPI/NAND) is selected as boot source
+	 */
+#if defined(MV_SPI_BOOT)
+	defaultBootSrc = MSAR_0_BOOT_SPI_FLASH;
+	DB(mvOsPrintf("default boot source is SPI-0\n"));
+#elif defined(MV_NAND_BOOT)
+	defaultBootSrc = MSAR_0_BOOT_NAND_NEW;
+	DB(mvOsPrintf("default boot source is NAND\n"));
+#endif
 
 	if (mvCtrlSatRRead(MV_SATR_BOOT_DEVICE, &satrBootDeviceValue) != MV_OK) {
 		mvOsPrintf("%s: Error: failed to read boot source\n", __func__);
-		mvOsPrintf("Using NAND as the default boot source\n");
-		return MSAR_0_BOOT_NAND_NEW; /* NAND is the Default Boot source */
+		mvOsPrintf("Using pre-compiled image type as boot source\n");
+		return defaultBootSrc;
 	}
 
+	/* Get boot source entry from Satr boot table */
 	satrBootEntry = satrTable[satrBootDeviceValue];
 
+	/* If booting from UART, return pre-compiled boot source*/
+	if (satrBootEntry.bootSrc == MSAR_0_BOOT_UART) {
+		mvOsPrintf("\t** Booting from UART (restore DIP-switch to");
+		mvOsPrintf(" requested boot source before reset!) **\n");
+		return defaultBootSrc;
+	}
+
+	/* If not booting from SPI, return boot source*/
 	if (satrBootEntry.bootSrc != MSAR_0_BOOT_SPI_FLASH)
 		return satrBootEntry.bootSrc;
 
-	/* if boot source is SPI ,verify which CS (0/1) */
+	/* if booting from SPI ,verify which CS (0/1) */
 	if (mvBoardBootAttrGet(satrBootDeviceValue, 1) == MSAR_0_SPI0)
 		return MSAR_0_BOOT_SPI_FLASH;
 	else

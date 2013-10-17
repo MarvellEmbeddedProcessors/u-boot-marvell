@@ -280,7 +280,7 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 * mvBoardIsPortInGmii
 *
 * DESCRIPTION:
-*       This routine returns MV_TRUE for port number works in SGMII or MV_FALSE
+*	This routine returns MV_TRUE for port number works in GMII or MV_FALSE
 *	For all other options.
 *
 * INPUT:
@@ -290,11 +290,33 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 *       None.
 *
 * RETURN:
-*       MV_TRUE - port in SGMII.
+*       MV_TRUE - port in GMII.
 *       MV_FALSE - other.
 *
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum)
+{
+	return MV_FALSE;
+}
+/*******************************************************************************
+* mvBoardIsPortInRgmii
+*
+* DESCRIPTION:
+*       This routine returns MV_TRUE for port number works in RGMII or MV_FALSE
+*	For all other options.
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE - port in RGMII.
+*       MV_FALSE - other.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum)
 {
 	if (ethPortNum < 2)
 		return MV_TRUE;

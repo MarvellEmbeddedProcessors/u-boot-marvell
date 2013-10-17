@@ -152,6 +152,42 @@ static void mvAlpBoardEgigaPhyInit(void)
 }
 #endif /* MV88F66XX */
 
+
+/*******************************************************************************
+* switchPhyRegWrite 0 0 16 0 - Initialize LEDS Matrix
+*******************************************************************************/
+void mvBoardLedMatrixInit(void)
+{
+	MV_U8 i;
+
+	/* Enable Matrix, Set Mode B signals assignment, invert C1-C3 in Matrix*/
+	MV_REG_WRITE(LED_MATRIX_CONTROL_REG(0), BIT0 | BIT2 | BIT5);
+	/* initialize LEDS general configuration */
+	MV_REG_WRITE(LED_MATRIX_CONTROL_REG(1), 0x2db6db6d);
+	/* Use an internal device signal to drive the LED Matrix Control */
+	MV_REG_WRITE(LED_MATRIX_CONTROL_REG(2), BIT0 | BIT2 | BIT3 | BIT5);
+
+	/* initialize internal PHYs controlled by switch */
+	for (i = 0; i < 4; i++) {
+		mvOsDelay(10);
+		mvEthSwitchPhyRegWrite(0x0, i, 0x16, 0x3);
+		mvOsDelay(10);
+		mvEthSwitchPhyRegWrite(0x0, i, 0x10, 0x1791);
+		mvOsDelay(10);
+		mvEthSwitchPhyRegWrite(0x0, i, 0x11, 0x8801);
+		mvOsDelay(10);
+		mvEthSwitchPhyRegWrite(0x0, i, 0x16, 0x0);
+	}
+
+	/* initialize External RGMII-0 PHY (SMI controlled by MAC0 @address 0x1) */
+	if(mvBoardEthComplexConfigGet() & MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY) {
+		mvEthPhyRegWrite(0x1, 0x16, 0x3);
+		mvEthPhyRegWrite(0x1, 0x10, 0x1771);
+		mvEthPhyRegWrite(0x1, 0x11, 0x8801);
+		mvEthPhyRegWrite(0x1, 0x16, 0x0);
+	}
+}
+
 /***********************************************************
  * Init the PHY of the board                               *
  ***********************************************************/
@@ -162,6 +198,8 @@ void mvBoardEgigaPhyInit(void)
 
 	if (mvBoardIsInternalSwitchConnected() == MV_TRUE)
 		mvAlpBoardSwitchBasicInit(mvBoardSwitchPortsMaskGet(0));
+
+	mvBoardLedMatrixInit();
 
 #elif defined(MV88F68XX)
 	int i;

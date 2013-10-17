@@ -171,6 +171,9 @@ extern "C" {
 #define CHIP_BOND_REG                           0x18238
 #define PCKG_OPT_MASK                           0x3
 
+/* LED Matrix Control */
+#define LED_MATRIX_CONTROL_REG(unit)		(MV_MISC_REGS_OFFSET + 0xf0 + (unit * 4))
+
 /*****************/
 /* PUP registers */
 /*****************/

@@ -109,7 +109,7 @@ ifeq "$(CONFIG_AVANTA_LP)"  "y"
   CFLAGS += -DCONFIG_AVANTA_LP
 endif
 
-INCLUDE     = -I./  -I../inc/ -I../../../../include -I./ddr3lib/inc-internal/
+INCLUDE     = -I./  -I../inc/ -I../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
@@ -119,16 +119,12 @@ HOSTCPPFLAGS = $(CPPFLAGS)
 TGT = ddr_$(BOARD).a
 TGT_UART = ddr_$(BOARD).uart.a
 
-TLIB = ./ddr3_training_$(BOARD).lib
-TSRC = $(wildcard ./ddr3lib/src-internal/*.c)
-TOBJ = $(TSRC:.c=.o)
 CSRC = ddr3_init.c ddr3_spd.c
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
 
-all:   $(TGT) $(TGT_UART)
-ddr3lib: $(TLIB)
+all:   $(TGT) $(TGT_UART) subdirs
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
@@ -144,9 +140,28 @@ $(TGT_UART): $(CUART_OBJ)
 	ar rcs $(TGT_UART)  $(CUART_OBJ)
 	$(CP) ./$@ ../
 
-$(TLIB): $(TOBJ)
-	ar rcs $(TLIB) $(TOBJ)
-	$(CP) ./$@ ../
+ifeq ($(DDR3LIB),y)
+SRC_DDR_SUBDIRS = ddr3lib
+else
+SRC_DDR_SUBDIRS =
+endif
+
+
 
 clean:
 	$(RM) ./*.o  ./*.a
+
+	@for dir in $(SRC_DDR_SUBDIRS) ; do \
+		    $(MAKE) clean BOARD="$(BOARD)" -C $$dir || exit 1 ; \
+	done
+
+subdirs:
+	@for dir in $(SRC_DDR_SUBDIRS) ; do \
+		$(MAKE) \
+		HOSTOS=$(HOSTOS) \
+		HOSTARCH=$(HOSTARCH) \
+		HOSTCFLAGS="$(HOSTCFLAGS)" \
+		HOST_LDFLAGS="$(HOST_LDFLAGS)" \
+		BOARD="$(BOARD)" \
+		-C $$dir || exit 1 ; \
+	done

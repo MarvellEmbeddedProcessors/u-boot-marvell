@@ -697,8 +697,20 @@ typedef struct pp2_tx_desc {
 #define PP2_TX_IP_CSUM_DISABLE_BIT		15
 #define PP2_TX_IP_CSUM_DISABLE_MASK		(1 << PP2_TX_IP_CSUM_DISABLE_BIT)
 
+/* 3 bits: 16..18 */
 #define PP2_TX_POOL_INDEX_OFFS			16
 #define PP2_TX_POOL_INDEX_MASK			(7 << PP2_TX_POOL_INDEX_OFFS)
+
+/* bit 19 - Reserved */
+
+#define PP2_TX_PKT_OFFS_9_BIT			20
+#define PP2_TX_PKT_OFFS_9_MASK			(1 << PP2_TX__PKT_OFFS_9_BIT)
+
+#define PP2_TX_HWF_SYNC_BIT                     21
+#define PP2_TX_HWF_SYNC_MASK	                (1 << PP2_TX_HWF_SYNC_BIT)
+
+#define PP2_TX_HWF_BIT                          22
+#define PP2_TX_HWF_MASK	                        (1 << PP2_TX_HWF_BIT)
 
 #define PP2_TX_PADDING_DISABLE_BIT		23
 #define PP2_TX_PADDING_DISABLE_MASK		(1 << PP2_TX_PADDING_DISABLE_BIT)

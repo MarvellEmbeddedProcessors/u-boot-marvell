@@ -236,6 +236,8 @@ MV_U32 mvCtrlPexActiveUnitNumGet(MV_VOID);
 #endif
 
 MV_U32 mvCtrlEthMaxPortGet(MV_VOID);
+MV_U8 mvCtrlEthMaxCPUsGet(MV_VOID);
+
 MV_U32 mvCtrlSataMaxPortGet(MV_VOID);
 #if defined(MV_INCLUDE_XOR)
 MV_U32 mvCtrlXorMaxChanGet(MV_VOID);

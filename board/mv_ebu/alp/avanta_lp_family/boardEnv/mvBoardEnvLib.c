@@ -2683,6 +2683,9 @@ MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 			((c & MV_ETHCOMP_GE_MAC1_2_SW_P4) && mvBoardMacCpuPortGet() == 1)))
 			isConnected = MV_TRUE;
 
+	if ((ethNum == 2) && mvBoardIsPortLoopback(ethNum))
+			isConnected = MV_TRUE;
+
 	return isConnected;
 }
 

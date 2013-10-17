@@ -89,16 +89,23 @@ disclaimer.
 /*
  * PEX Address Decoding
  */
-#define PEX0_MEM_BASE			0xC0000000
-#define PEX0_MEM_SIZE			_64M
-#define PEX1_MEM_BASE			0xC4000000
-#define PEX1_MEM_SIZE			_64M
-
+#define PEX0_MEM_BASE			0xE0000000
+#define PEX0_MEM_SIZE			_32M
+#define PEX1_MEM_BASE			0xE2000000
+#define PEX1_MEM_SIZE			_32M
+#define PEX2_MEM_BASE			0xE4000000
+#define PEX2_MEM_SIZE			_32M
+#define PEX3_MEM_BASE			0xE6000000
+#define PEX3_MEM_SIZE			_32M
 
 #define PEX0_IO_BASE			0xF1100000
 #define PEX0_IO_SIZE			_1M
 #define PEX1_IO_BASE			0xF1200000
 #define PEX1_IO_SIZE			_1M
+#define PEX2_IO_BASE			0xF1300000
+#define PEX2_IO_SIZE			_1M
+#define PEX3_IO_BASE			0xF1400000
+#define PEX3_IO_SIZE			_1M
 
 /* Device: CS0 - NOR or NAND, CS1 - SPI, CS2 - Boot ROM, CS3 - Boot device */
 /* NOR and NAND are configure to CS0 but it is posible to load
@@ -218,6 +225,10 @@ disclaimer.
 	{{PEX0_IO_BASE,		0,	PEX0_IO_SIZE	},		TBL_UNUSED,	DIS},	/*  9 PEX0_IO */   \
 	{{PEX1_MEM_BASE,	0,	PEX1_MEM_SIZE	},			1,	EN},	/* 10 PEX1_MEM */  \
 	{{PEX1_IO_BASE,		0,	PEX1_IO_SIZE	},		TBL_UNUSED,	DIS},	/* 11 PEX1_IO */   \
+	{{PEX2_MEM_BASE,	0,	PEX2_MEM_SIZE	},			2,	EN},	/* 12 PEX2_MEM */  \
+	{{PEX2_IO_BASE,		0,	PEX2_IO_SIZE	},		TBL_UNUSED,	DIS},	/* 13 PEX2_IO */   \
+	{{PEX3_MEM_BASE,	0,	PEX3_MEM_SIZE	},			3,	EN},	/* 14 PEX3_MEM */  \
+	{{PEX3_IO_BASE,		0,	PEX3_IO_SIZE	},		TBL_UNUSED,	DIS},	/* 15 PEX3_IO */   \
 	{{INTER_REGS_BASE,	0,	INTER_REGS_SIZE	}, MV_AHB_TO_MBUS_INTREG_WIN, 	EN},	/* 12 INTER_REGS */\
 	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 13 DMA_UART   */\
 	{{SPI_CS_BASE,		0,	SPI_CS_SIZE	},			8,	DIS},	/* 14 SPI_CS0 */   \

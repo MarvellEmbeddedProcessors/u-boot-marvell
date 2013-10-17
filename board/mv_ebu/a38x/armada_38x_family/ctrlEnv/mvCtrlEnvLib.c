@@ -543,6 +543,12 @@ MV_U32 mvCtrlEthMaxPortGet(MV_VOID)
 {
 	return mvCtrlSocUnitInfoNumGet(ETH_GIG_UNIT_ID);
 }
+/* compatable to NETA and AXP */
+MV_U8 mvCtrlEthMaxCPUsGet(MV_VOID)
+{
+	return mvCtrlEthMaxPortGet();
+}
+
 
 #if defined(MV_INCLUDE_SATA)
 /*******************************************************************************

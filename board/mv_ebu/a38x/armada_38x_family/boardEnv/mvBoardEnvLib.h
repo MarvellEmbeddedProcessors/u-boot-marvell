@@ -409,6 +409,7 @@ MV_STATUS mvBoardNameGet(char *pNameBuff, MV_U32 size);
 MV_BOARD_SPEC_INIT *mvBoardSpecInitGet(MV_VOID);
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum);
+MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
 MV_VOID mvBoardPhyAddrSet(MV_U32 ethPortNum, MV_U32 smiAddr);

@@ -110,18 +110,15 @@ extern "C" {
 #define MV_CPUIF_REGS_OFFSET(cpu)               (0x21800 + (cpu) * 0x100)
 #define MV_CPU_HW_SEM_OFFSET                    (0x20500)
 
-/* PPv2 register base addresses */
-#define MV_PP2_REG_BASE                         (0xF0000)
-#define MV_ETH_BASE_ADDR                        (0xC0000)
-#define LMS_REG_BASE                            (MV_ETH_BASE_ADDR)
-#define MIB_COUNTERS_REG_BASE                   (MV_ETH_BASE_ADDR + 0x1000)
-#define GOP_MNG_REG_BASE                        (MV_ETH_BASE_ADDR + 0x3000)
-#define GOP_REG_BASE(port)                      (MV_ETH_BASE_ADDR + 0x4000 + ((port) / 2) * 0x3000 + ((port) % 2) * 0x1000)
-#define MV_PON_REGS_OFFSET                      (MV_ETH_BASE_ADDR + 0x8000)
-
-#define MV_PON_EXIST
-#define MV_ETH_MAX_TCONT                        16
-#define MV_ETH_RXQ_TOTAL_NUM                    32
+/* Network ports register base addresses */
+#if defined(MV_ETH_LEGACY)
+	#define MV_ETH_BASE_ADDR		(0x72000)
+#else
+	#define MV_ETH_BASE_ADDR		(0x70000)
+#endif
+#define MV_ETH_REGS_OFFSET(port)		(port < 1 ? MV_ETH_BASE_ADDR : MV_ETH_BASE_ADDR - 0x40000 \
+						+ ((port) / 2) * 0x4000)
+#define MV_ETH_SGMII_PHY_REGS_OFFSET(port)	(port < 1 ? 0x72000 : 0x32000 + ((port) / 2) * 0x4000)
 
 #define MV_PEX_IF_REGS_OFFSET(pexIf)            (((pexIf) == 0) ? 0x80000 : (0x40000 + ((pexIf) * 0x4000)))
 #define MV_USB_REGS_OFFSET(dev)                 (0x50000)
@@ -132,6 +129,7 @@ extern "C" {
 #define MV_SATA_REGS_OFFSET                     (0xA0000)
 #define MV_COMM_UNIT_REGS_OFFSET                (0xB0000)
 #define MV_NFC_REGS_OFFSET                      (0xD0000)
+#define MV_BM_REGS_OFFSET			(0xC8000)
 #define MV_SDMMC_REGS_OFFSET                    (0xD4000)
 
 #define MV_ETH_SMI_PORT   0
@@ -217,7 +215,6 @@ extern "C" {
 #define MV_ETH_MAX_RXQ                          16/* Maximum number of RXQs can be mapped to each port */
 #define MV_ETH_MAX_TXQ                          8
 #define MV_ETH_RXQ_TOTAL_NUM                    32      /* Total number of RXQs for usage by all ports */
-#define MV_ETH_MAX_TCONT                        16      /* Maximum number of TCONTs supported by PON port */
 #define MV_ETH_TX_CSUM_MAX_SIZE                 9800
 
 /* This define describes the the support of USB */

@@ -128,6 +128,14 @@ extern "C" {
 
 #define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
 
+#define SGMII_PWR_PLL_CTRL_REG(port)		(MV_ETH_SGMII_PHY_REGS_BASE(port) + 0xE04)
+#define SGMII_GEN_1_SET_REG(port)		(MV_ETH_SGMII_PHY_REGS_BASE(port) + 0xE34)
+#define SGMII_DIG_LP_ENA_REG(port)		(MV_ETH_SGMII_PHY_REGS_BASE(port) + 0xE8C)
+#define SGMII_REF_CLK_SEL_REG(port)		(MV_ETH_SGMII_PHY_REGS_BASE(port) + 0xF18)
+#define SGMII_PHY_CTRL_REG(port)		(MV_ETH_SGMII_PHY_REGS_BASE(port) + 0xF20)
+#define SGMII_SERDES_CFG_REG(port)		(MV_ETH_SGMII_PHY_REGS_BASE(port) + 0x4A0)
+#define SGMII_SERDES_STAT_REG(port)		(MV_ETH_SGMII_PHY_REGS_BASE(port) + 0x4A4)
+
 /* Sample at Reset */
 #define MPP_SAMPLE_AT_RESET(id)		(0xE8200 + ( id * 0x4 ))
 #define SATR_DEVICE_ID_2_0_OFFS		21

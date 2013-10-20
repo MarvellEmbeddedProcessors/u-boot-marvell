@@ -76,8 +76,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DB(x)
 #endif
 
-static MV_VOID gppRegSet(MV_U32 group, MV_U32 regOffs, MV_U32 mask, MV_U32 value);
-
 static MV_GPP_HAL_DATA gppHalData;
 
 /*******************************************************************************
@@ -367,7 +365,7 @@ MV_STATUS mvGppValueSet(MV_U32 group, MV_U32 mask, MV_U32 value)
 *       None.
 *
 *******************************************************************************/
-static MV_VOID gppRegSet(MV_U32 group, MV_U32 regOffs, MV_U32 mask, MV_U32 value)
+MV_VOID gppRegSet(MV_U32 group, MV_U32 regOffs, MV_U32 mask, MV_U32 value)
 {
 	MV_U32 gppData;
 

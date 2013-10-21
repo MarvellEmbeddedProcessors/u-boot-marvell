@@ -138,6 +138,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MV_PP2_RX_CTRL_REG(port)		(MV_PP2_REG_BASE + 0x140 + 4 * (port))
 
+#define MV_PP2_RX_GEMPID_SRC_OFFS		8
+#define MV_PP2_RX_GEMPID_SRC_MASK		(0x7 << MV_PP2_RX_GEMPID_SRC_OFFS)
+
+#define MV_PP2_RX_LOW_LATENCY_PKT_SIZE_OFFS	16
+#define MV_PP2_RX_LOW_LATENCY_PKT_SIZE_BITS	12
+#define MV_PP2_RX_LOW_LATENCY_PKT_SIZE_MAX	((1 << MV_PP2_RX_LOW_LATENCY_PKT_SIZE_BITS) - 1)
+#define MV_PP2_RX_LOW_LATENCY_PKT_SIZE_MASK(s)	(((s) & MV_PP2_RX_LOW_LATENCY_PKT_SIZE_MAX) << \
+							MV_PP2_RX_LOW_LATENCY_PKT_SIZE_OFFS)
+
+#define MV_PP2_RX_DROP_ON_CSUM_ERR_BIT		30
+#define MV_PP2_RX_DROP_ON_CSUM_ERR_MASK		(1 << MV_PP2_RX_DROP_ON_CSUM_ERR_BIT)
+
+#define MV_PP2_RX_USE_PSEUDO_FOR_CSUM_BIT	31
+#define MV_PP2_RX_USE_PSEUDO_FOR_CSUM_MASK      (1 << MV_PP2_RX_USE_PSEUDO_FOR_CSUM_BIT)
+/*-------------------------------------------------------------------------------*/
+
 /************************** Descriptor Manager Top Registers ******************************/
 
 #define MV_PP2_RXQ_NUM_REG			(MV_PP2_REG_BASE + 0x2040)

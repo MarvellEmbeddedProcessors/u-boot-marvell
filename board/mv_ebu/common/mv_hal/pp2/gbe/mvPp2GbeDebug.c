@@ -79,88 +79,19 @@ MV_VOID mvPp2RxDmaRegsPrint(void)
 
 	mvOsPrintf("\n[RX DMA regs]\n");
 
+	mvOsPrintf("\nRXQs [0..%d] registers\n", MV_ETH_RXQ_TOTAL_NUM);
+	for (i = 0; i < MV_ETH_RXQ_TOTAL_NUM; i++) {
+		mvPp2PrintReg2(MV_PP2_RXQ_SNOOP_REG(i),  "MV_PP2_RXQ_SNOOP_REG", i);
+		mvPp2PrintReg2(MV_PP2_RXQ_CONFIG_REG(i), "MV_PP2_RXQ_CONFIG_REG", i);
+	}
+	mvOsPrintf("\nBM pools [0..%d] registers\n", MV_BM_POOLS);
 	for (i = 0; i < MV_BM_POOLS; i++)
 		mvPp2PrintReg2(MV_PP2_POOL_BUF_SIZE_REG(i), "MV_PP2_POOL_BUF_SIZE_REG", i);
 
-	mvOsPrintf("\n");
-
-	for (i = 0; i < MV_ETH_RXQ_TOTAL_NUM; i++)
-		mvPp2PrintReg2(MV_PP2_RXQ_CONFIG_REG(i), "MV_PP2_RXQ_CONFIG_REG", i);
-
-	mvOsPrintf("\n");
-
+	mvOsPrintf("\nIngress ports [0..%d] registers\n", MV_PP2_MAX_PORTS);
 	for (i = 0; i < MV_PP2_MAX_PORTS; i++) {
 		mvPp2PrintReg2(MV_PP2_PORT_HWF_CONFIG_REG(i), "MV_PP2_PORT_HWF_CONFIG_REG", i);
 		mvPp2PrintReg2(MV_PP2_RX_CTRL_REG(i), "MV_PP2_RX_CTRL_REG", i);
-	}
-	mvOsPrintf("\n");
-}
-
-
-
-MV_VOID mvPp2DescMgrRegsRxPrint(void)
-{
-	MV_U32 val, val1;
-	int i;
-
-	mvOsPrintf("--- %s ---\n\n", __func__);
-
-	for (i = 0; i < MV_ETH_RXQ_TOTAL_NUM; i++) {
-		mvOsPrintf("RXQ %d:\n", i);
-		mvPp2WrReg(MV_PP2_RXQ_NUM_REG, i);
-		val1 = mvPp2RdReg(MV_PP2_RXQ_DESC_ADDR_REG);
-		val = mvPp2RdReg(MV_PP2_RXQ_DESC_SIZE_REG);
-		mvOsPrintf("   addr reg: 0x%x,   size reg: 0x%x\n", val1, val);
-		mvOsPrintf("   * address: %d,  size: %d,  L2 deposit: %d\n", val1,
-				val & MV_PP2_RXQ_DESC_SIZE_MASK,
-				(val & MV_PP2_RXQ_L2_DEPOSIT_MASK) >> MV_PP2_RXQ_L2_DEPOSIT_OFFSET);
-
-		val = mvPp2RdReg(MV_PP2_RXQ_STATUS_REG(i));
-		mvOsPrintf("   status reg: 0x%x\n", val);
-		mvOsPrintf("   * occupied: %d,  non-occupied: %d\n",
-				(val & MV_PP2_RXQ_OCCUPIED_MASK) >> MV_PP2_RXQ_OCCUPIED_OFFSET,
-				(val & MV_PP2_RXQ_NON_OCCUPIED_MASK) >> MV_PP2_RXQ_NON_OCCUPIED_OFFSET);
-
-		val = mvPp2RdReg(MV_PP2_RXQ_THRESH_REG);
-		mvOsPrintf("   rx thresh reg: 0x%x\n", val);
-		mvOsPrintf("   * occupied thrsh: %d,  non-occupied thrsh: %d\n",
-				(val & MV_PP2_OCCUPIED_THRESH_MASK) >> MV_PP2_OCCUPIED_THRESH_OFFSET,
-				(val & MV_PP2_NON_OCCUPIED_THRESH_MASK) >> MV_PP2_NON_OCCUPIED_THRESH_OFFSET);
-	}
-	mvOsPrintf("\n");
-}
-
-MV_VOID mvPp2DescMgrRegsTxPrint(void)
-{
-	MV_U32 val, val1, val2;
-	int i;
-
-	mvOsPrintf("--- %s ---\n\n", __func__);
-
-	for (i = 0; i < MV_PP2_TXQ_TOTAL_NUM; i++) {
-		mvOsPrintf("TXQ %d:\n", i);
-		mvPp2WrReg(MV_PP2_TXQ_NUM_REG, i);
-		val1 = mvPp2RdReg(MV_PP2_TXQ_DESC_ADDR_REG);
-		val = mvPp2RdReg(MV_PP2_TXQ_DESC_SIZE_REG);
-		val2 = mvPp2RdReg(MV_PP2_TXQ_DESC_HWF_SIZE_REG);
-		mvOsPrintf("   addr reg: 0x%x,   size reg: 0x%x,  hwf size reg: 0x%x\n", val1, val, val2);
-		mvOsPrintf("   * address: %d,  size: %d,   hwf size: %d\n", val1, val, val2);
-
-		val = mvPp2RdReg(MV_PP2_TXQ_SENT_REG(i));
-		mvOsPrintf("   status reg: 0x%x\n", val);
-		mvOsPrintf("   * transmitted count: %d\n",
-				(val & MV_PP2_TRANSMITTED_COUNT_MASK) >> MV_PP2_TRANSMITTED_COUNT_OFFSET);
-
-		val = mvPp2RdReg(MV_PP2_TXQ_THRESH_REG);
-		mvOsPrintf("   tx thresh reg: 0x%x\n", val);
-		mvOsPrintf("   * transmitted thrsh: %d\n",
-				(val & MV_PP2_TRANSMITTED_THRESH_MASK) >> MV_PP2_TRANSMITTED_THRESH_OFFSET);
-
-		val = mvPp2RdReg(MV_PP2_TXQ_PENDING_REG);
-		mvOsPrintf("   desc status reg: 0x%x\n", val);
-		mvOsPrintf("   * pending: %d,  hwf pending: %d\n",
-				(val & MV_PP2_TXQ_PENDING_MASK) >> MV_PP2_TXQ_PENDING_OFFSET,
-				(val & MV_PP2_TXQ_HWF_PENDING_MASK) >> MV_PP2_TXQ_HWF_PENDING_OFFSET);
 	}
 	mvOsPrintf("\n");
 }

@@ -249,6 +249,9 @@ MV_STATUS mvPp2DefaultsSet(int port)
 		mvPp2WrReg(MV_PP2_TXP_SCHED_PERIOD_REG, mvPp2HalData.tClk / 1000000);
 		mvPp2TxpMaxRateSet(port, txp);
 	}
+	/* Set MaximumLowLatencyPacketSize value to 256 */
+	mvPp2WrReg(MV_PP2_RX_CTRL_REG(port), MV_PP2_RX_USE_PSEUDO_FOR_CSUM_MASK |
+						MV_PP2_RX_LOW_LATENCY_PKT_SIZE_MASK(256));
 
 	/* Enable Rx cache snoop */
 	if (mvPp2HalData.iocc)

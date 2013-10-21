@@ -36,6 +36,7 @@ disclaimer.
 #endif
 
 MV_U8 i2c_current_bus = 0;
+MV_U32 i2c_current_speed = CONFIG_SYS_I2C_SPEED;
 
 /*
  * Initialization, must be called once on start up, may be called
@@ -79,7 +80,7 @@ int i2c_read(uchar chip, uint addr, int alen, uchar *buffer, int len)
 			twsiSlave.moreThen256 = MV_FALSE;
 		}
 	}
-	i2c_init(CONFIG_SYS_I2C_SPEED,0); /* set the i2c frequency */
+	i2c_init(i2c_current_speed,0); /* set the i2c frequency */
 	return mvTwsiRead (i2c_current_bus, &twsiSlave, buffer, len);
 }
 int i2c_write(uchar chip, uint addr, int alen, uchar *buffer, int len)
@@ -101,7 +102,7 @@ int i2c_write(uchar chip, uint addr, int alen, uchar *buffer, int len)
 			twsiSlave.moreThen256 = MV_FALSE;
 		}
 	}
-	i2c_init(CONFIG_SYS_I2C_SPEED,0); /* set the i2c frequency */
+	i2c_init(i2c_current_speed,0); /* set the i2c frequency */
 	return mvTwsiWrite (i2c_current_bus, &twsiSlave, buffer, len);
 }
 /*
@@ -123,7 +124,7 @@ int i2c_probe(uchar chip)
 
 	//for (i2c_current_bus = 0; i2c_current_bus < MV_TWSI_MAX_CHAN; i2c_current_bus++) {
 
-	i2c_init(CONFIG_SYS_I2C_SPEED,0); /* set the i2c frequency */
+	i2c_init(i2c_current_speed,0); /* set the i2c frequency */
 
 	status = mvTwsiStartBitSet(i2c_current_bus);
 
@@ -191,7 +192,12 @@ unsigned int i2c_get_bus_num(void)
  */
 int i2c_set_bus_speed(unsigned int speed)
 {
-	printf("Speed change not supported\n");
+	if (speed <= 0 || speed > CONFIG_SYS_I2C_SPEED) {
+		printf("Error: TWSI frequency speed must be under %d Khz\n", CONFIG_SYS_I2C_SPEED);
+		return -1;
+	}
+
+	i2c_current_speed = speed;
 	return 0;
 }
 /*
@@ -201,6 +207,6 @@ int i2c_set_bus_speed(unsigned int speed)
  */
 unsigned int i2c_get_bus_speed(void)
 {
-	return CONFIG_SYS_I2C_SPEED;
+	return i2c_current_speed;
 }
 #endif

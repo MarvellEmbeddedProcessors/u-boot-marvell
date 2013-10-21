@@ -145,6 +145,7 @@ extern unsigned int mvTclkGet(void);
 #define CONFIG_CMD_BOOT_MENU
 #define CONFIG_CMD_SYS_RESTORE
 
+#define	CONFIG_ENV_MIN_ENTRIES 128
 
 #if defined(MV_INCLUDE_PEX) || defined(MV_INCLUDE_PCI)
 	#define CONFIG_PCI
@@ -156,7 +157,7 @@ extern unsigned int mvTclkGet(void);
 #define CONFIG_BOOTP_PXE
 #define CONFIG_MENU
 #define CONFIG_BOOTP_PXE_CLIENTARCH	0x100
-#define CONFIG_BOOTP_VCI_STRING		"U-boot.armv7.armada_375"
+#define CONFIG_BOOTP_VCI_STRING		"U-boot.armv7.armada_38x"
 #ifdef MV_FS
 /* FS supported */
 #define CONFIG_CMD_EXT2

@@ -434,19 +434,18 @@ typedef enum _mvTarget {
 	PEX3_IO,	/* 15 PCI Express 3 IO		*/
 	INTER_REGS,	/* 16 Internal registers	*/
 	DMA_UART,	/* 17 DMA based UART request	*/
-	SPI_CS0,	/* 18 SPI_CS0			*/
-	SPI_CS1,	/* 19 SPI_CS1			*/
-	SPI_CS2,	/* 20 SPI_CS2			*/
-	SPI_CS3,	/* 21 SPI_CS3			*/
-	SPI_CS4,	/* 22 SPI_CS4			*/
-	SPI_CS5,	/* 23 SPI_CS5			*/
-	SPI_CS6,	/* 24 SPI_CS6			*/
-	SPI_CS7,	/* 25 SPI_CS7			*/
-	BOOT_ROM_CS,	/* 26 BOOT_ROM_CS		*/
-	DEV_BOOCS,	/* 27 DEV_BOOCS			*/
-	USB3,		/* 28 USB3                      */
-	CRYPT0_ENG,	/* 29 Crypto0 Engine		*/
-	PNC_BM,		/* 30 PNC + BM			*/
+	SPI_CS0,	/* 18 SPI0_CS0			*/
+	SPI0_CS1,	/* 19 SPI0_CS1			*/
+	SPI0_CS2,	/* 20 SPI0_CS2			*/
+	SPI1_CS0,	/* 21 SPI1_CS0			*/
+	SPI1_CS1,	/* 22 SPI1_CS1			*/
+	SPI1_CS2,	/* 23 SPI1_CS2			*/
+	SPI1_CS3,	/* 24 SPI1_CS3			*/
+	BOOT_ROM_CS,	/* 25 BOOT_ROM_CS		*/
+	DEV_BOOCS,	/* 26 DEV_BOOCS			*/
+	USB3,		/* 27 USB3                      */
+	CRYPT0_ENG,	/* 28 Crypto0 Engine		*/
+	PNC_BM,		/* 29 PNC + BM			*/
 	MAX_TARGETS
 } MV_TARGET;
 
@@ -474,20 +473,23 @@ typedef enum _mvTarget {
 	{ 0x3D, DEV_TARGET_ID	},		/* DEVICE_CS1            */ \
 	{ 0x3B, DEV_TARGET_ID	},		/* DEVICE_CS2            */ \
 	{ 0x37, DEV_TARGET_ID	},		/* DEVICE_CS3            */ \
-	{ 0xE8, PEX_TARGET_ID	},		/* PEX0_LANE0_MEM        */ \
-	{ 0xE0, PEX_TARGET_ID	},		/* PEX0_LANE0_IO         */ \
-	{ 0xD8, PEX_TARGET_ID	},		/* PEX1_LANE0_MEM        */ \
-	{ 0xD0, PEX_TARGET_ID	},		/* PEX1_LANE0_IO         */ \
+	{ 0xE8, PEX_TARGET_ID	},		/* PEX0_MEM              */ \
+	{ 0xE0, PEX_TARGET_ID	},		/* PEX0_IO               */ \
+	{ 0xD8, PEX_TARGET_ID	},		/* PEX1_MEM              */ \
+	{ 0xD0, PEX_TARGET_ID	},		/* PEX1_IO               */ \
+	{ 0xB8, PEX_TARGET_ID	},		/* PEX2_MEM              */ \
+	{ 0xB0, PEX_TARGET_ID	},		/* PEX2_IO               */ \
+	{ 0x78, PEX_TARGET_ID	},		/* PEX3_MEM              */ \
+	{ 0x70, PEX_TARGET_ID	},		/* PEX3_IO               */ \
 	{ 0xFF, 0xFF		},		/* INTER_REGS            */ \
 	{ 0x01, DEV_TARGET_ID	},		/* DMA_UART              */ \
 	{ 0x1E, DEV_TARGET_ID	},		/* SPI_CS0               */ \
-	{ 0x5E, DEV_TARGET_ID	},		/* SPI_CS1               */ \
-	{ 0x9E, DEV_TARGET_ID	},		/* SPI_CS2               */ \
-	{ 0xDE, DEV_TARGET_ID	},		/* SPI_CS3               */ \
-	{ 0x1F, DEV_TARGET_ID	},		/* SPI_CS4               */ \
-	{ 0x5F, DEV_TARGET_ID	},		/* SPI_CS5               */ \
-	{ 0x9F, DEV_TARGET_ID	},		/* SPI_CS6               */ \
-	{ 0xDF, DEV_TARGET_ID	},		/* SPI_CS7               */ \
+	{ 0x5E, DEV_TARGET_ID	},		/* SPI0_CS1               */ \
+	{ 0x9E, DEV_TARGET_ID	},		/* SPI0_CS2               */ \
+	{ 0x1A, DEV_TARGET_ID	},		/* SPI1_CS0               */ \
+	{ 0x5A, DEV_TARGET_ID	},		/* SPI1_CS1               */ \
+	{ 0x9A, DEV_TARGET_ID	},		/* SPI1_CS2               */ \
+	{ 0xDA, DEV_TARGET_ID	},		/* SPI1_CS3               */ \
 	{ MAIN_BOOT_ATTR, DEV_TARGET_ID },	/* Main Boot device      */ \
 	{ SEC_BOOT_ATTR, DEV_TARGET_ID  },	/* Secondary Boot device */ \
 	{ 0x00, USB3_TARGET_ID },               /* USB3                  */ \

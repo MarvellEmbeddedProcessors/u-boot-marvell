@@ -110,15 +110,11 @@ extern "C" {
 #define MV_CPUIF_REGS_OFFSET(cpu)               (0x21800 + (cpu) * 0x100)
 #define MV_CPU_HW_SEM_OFFSET                    (0x20500)
 
-/* Network ports register base addresses */
-#if defined(MV_ETH_LEGACY)
-	#define MV_ETH_BASE_ADDR		(0x72000)
-#else
-	#define MV_ETH_BASE_ADDR		(0x70000)
-#endif
-#define MV_ETH_REGS_OFFSET(port)		(port < 1 ? MV_ETH_BASE_ADDR : MV_ETH_BASE_ADDR - 0x40000 \
-						+ ((port) / 2) * 0x4000)
-#define MV_ETH_SGMII_PHY_REGS_OFFSET(port)	(port < 1 ? 0x72000 : 0x32000 + ((port) / 2) * 0x4000)
+#define MV_ETH_BASE_ADDR_PORT1_2		(0x00030000)	/* Port1 = 0x30000   port1 = 0x34000 */
+#define MV_ETH_BASE_ADDR_PORT0			(0x00070000)
+#define MV_ETH_REGS_OFFSET(p)			(((p) == 0) ? MV_ETH_BASE_ADDR_PORT0 : \
+						(MV_ETH_BASE_ADDR_PORT1_2 + (((p) - 1) * 0x4000)))
+#define MV_ETH_SGMII_PHY_REGS_OFFSET(p)		(MV_ETH_REGS_OFFSET(p)+0x2000)
 
 #define MV_PEX_IF_REGS_OFFSET(pexIf)            (((pexIf) == 0) ? 0x80000 : (0x40000 + ((pexIf) * 0x4000)))
 #define MV_USB_REGS_OFFSET(dev)                 (0x50000)
@@ -128,8 +124,8 @@ extern "C" {
 #define MV_CESA_REGS_OFFSET(chanNum)            (0x9D000 + (chanNum * 0x2000))
 #define MV_SATA_REGS_OFFSET                     (0xA0000)
 #define MV_COMM_UNIT_REGS_OFFSET                (0xB0000)
+#define MV_BM_REGS_OFFSET                       (0xC8000)
 #define MV_NFC_REGS_OFFSET                      (0xD0000)
-#define MV_BM_REGS_OFFSET			(0xC8000)
 #define MV_SDMMC_REGS_OFFSET                    (0xD4000)
 
 #define MV_ETH_SMI_PORT   0
@@ -209,13 +205,23 @@ extern "C" {
 #define MV_CESA_SRAM_SIZE                       (2 * 1024)
 
 /* This define describes the maximum number of supported Ethernet ports */
-#define MV_PON_PORT_ID				7
-#define MV_ETH_MAX_PORTS                        3
-#define MV_ETH_MAX_PORTS_6810                   2
-#define MV_ETH_MAX_RXQ                          16/* Maximum number of RXQs can be mapped to each port */
-#define MV_ETH_MAX_TXQ                          8
-#define MV_ETH_RXQ_TOTAL_NUM                    32      /* Total number of RXQs for usage by all ports */
-#define MV_ETH_TX_CSUM_MAX_SIZE                 9800
+/* TODO - verify all these numbers */
+/* This define describes the maximum number of supported Ethernet ports */
+#define MV_ETH_MAX_PORTS			3
+#define MV_ETH_MAX_PORTS_6810			2
+#define MV_ETH_VERSION				4 /* for Legacy mode */
+#define MV_NETA_VERSION				1 /* for NETA mode */
+#define MV_ETH_MAX_RXQ				8
+#define MV_ETH_MAX_TXQ				8
+#define MV_ETH_TX_CSUM_MAX_SIZE			9800
+#define MV_PNC_TCAM_LINES			1024	/* TCAM num of entries */
+
+/* New GMAC module is used */
+#define MV_ETH_GMAC_NEW
+/* New WRR/EJP module is used */
+#define MV_ETH_WRR_NEW
+/* IPv6 parsing support for Legacy parser */
+#define MV_ETH_LEGACY_PARSER_IPV6
 
 /* This define describes the the support of USB */
 #define MV_USB_VERSION                          1
@@ -422,22 +428,25 @@ typedef enum _mvTarget {
 	PEX0_IO,	/*  9 PCI Express 0 IO		*/
 	PEX1_MEM,	/* 10 PCI Express 1 Memory	*/
 	PEX1_IO,	/* 11 PCI Express 1 IO		*/
-	INTER_REGS,	/* 12 Internal registers	*/
-	DMA_UART,	/* 13 DMA based UART request	*/
-	SPI_CS0,	/* 14 SPI_CS0			*/
-	SPI_CS1,	/* 15 SPI_CS1			*/
-	SPI_CS2,	/* 16 SPI_CS2			*/
-	SPI_CS3,	/* 17 SPI_CS3			*/
-	SPI_CS4,	/* 18 SPI_CS4			*/
-	SPI_CS5,	/* 19 SPI_CS5			*/
-	SPI_CS6,	/* 20 SPI_CS6			*/
-	SPI_CS7,	/* 21 SPI_CS7			*/
-	BOOT_ROM_CS,	/* 22 BOOT_ROM_CS		*/
-	DEV_BOOCS,	/* 23 DEV_BOOCS			*/
-	USB3,           /* 24 USB3                      */
-	CRYPT0_ENG,     /* 25 Crypto0 Engine            */
-	PP2_CPU0,	/* 26 PP2 - CPU 0		*/
-	PP2_CPU1,	/* 27 PP2 - CPU 1		*/
+	PEX2_MEM,	/* 12 PCI Express 2 Memory		*/
+	PEX2_IO,	/* 13 PCI Express 2 IO		*/
+	PEX3_MEM,	/* 14 PCI Express 3 Memory		*/
+	PEX3_IO,	/* 15 PCI Express 3 IO		*/
+	INTER_REGS,	/* 16 Internal registers	*/
+	DMA_UART,	/* 17 DMA based UART request	*/
+	SPI_CS0,	/* 18 SPI_CS0			*/
+	SPI_CS1,	/* 19 SPI_CS1			*/
+	SPI_CS2,	/* 20 SPI_CS2			*/
+	SPI_CS3,	/* 21 SPI_CS3			*/
+	SPI_CS4,	/* 22 SPI_CS4			*/
+	SPI_CS5,	/* 23 SPI_CS5			*/
+	SPI_CS6,	/* 24 SPI_CS6			*/
+	SPI_CS7,	/* 25 SPI_CS7			*/
+	BOOT_ROM_CS,	/* 26 BOOT_ROM_CS		*/
+	DEV_BOOCS,	/* 27 DEV_BOOCS			*/
+	USB3,		/* 28 USB3                      */
+	CRYPT0_ENG,	/* 29 Crypto0 Engine		*/
+	PNC_BM,		/* 30 PNC + BM			*/
 	MAX_TARGETS
 } MV_TARGET;
 
@@ -483,8 +492,7 @@ typedef enum _mvTarget {
 	{ SEC_BOOT_ATTR, DEV_TARGET_ID  },	/* Secondary Boot device */ \
 	{ 0x00, USB3_TARGET_ID },               /* USB3                  */ \
 	{ 0x01, CRYPT_TARGET_ID	},		/* CRYPT_ENG0            */ \
-	{ 0x00, PP2_TARGET_ID	},		/* PP2 - CPU 0           */ \
-	{ 0x01, PP2_TARGET_ID	},		/* PP2 - CPU 1           */ \
+	{0x00, PNC_BM_TARGET_ID },		/* PNC_BM		 */ \
 }
 
 #define CESA_TARGET_NAME_DEF    ("CRYPT_ENG0", "CRYPT_ENG1")
@@ -515,8 +523,7 @@ typedef enum _mvTarget {
 	"DEV_BOOTCS",		/* DEV_BOOCS */		\
 	"USB3",                 /* USB3 */              \
 	"CRYPT1_ENG",		/* CRYPT1_ENG */	\
-	"PP2 - CPU 0",		/* PP2 - CPU 0 */	\
-	"PP2 - CPU 1"		/* PP2 - CPU 1 */	\
+	"PNC_BM"		/* PNC_BM */		\
 }
 
 #endif /* MV_ASMLANGUAGE */

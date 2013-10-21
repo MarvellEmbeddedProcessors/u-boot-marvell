@@ -458,9 +458,9 @@ static void mv_pci_bus_mode_display(MV_U32 host, int bus)
 		printf("mv_pci_bus_mode_display: mvPexModeGet failed\n");
 
 #if defined(MV88F68XX)
-	printf("PCI-e %d (%d-%d) ", pexHWInf , host, bus);
+	printf("PCI-e %d (IF %d - bus %d) ", pexHWInf , host, bus);
 #else
-	printf("PCi-e %d: (%d) ",host, bus);
+	printf("PCi-e %d: (bus %d) ",host, bus);
 #endif
 
 	switch (pexMode.pexType) {
@@ -563,13 +563,6 @@ void pci_init_board(void)
 	DB(printf("Start scan of %d PEX interfaces\n", activePexCount));
 
 	/* Initialize and scan all PEX interfaces */
-	printf("\nInitialize and scan all PCIe interfaces\n");
-#if defined(MV88F68XX)
-	printf("PCI-e unit (active IF[-first bus]):\n");
-#else
-	printf("PCI-e unit [-first bus]:\n");
-#endif
-	printf("------------------------------------------\n");
 	for (pexIf = 0; pexIf < activePexCount; pexIf++) {
 
 		pci = &pci_hose[pexIf];

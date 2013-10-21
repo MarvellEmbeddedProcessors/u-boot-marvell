@@ -372,14 +372,16 @@ extern unsigned int mvTclkGet(void);
 /*
  * Ethernet
  */
-#define MV_ETH_PP2
-#define CONFIG_MV_ETH_PP2
+#define MV_ETH_NETA
+#define CONFIG_MV_ETH_NETA
+/* to change the default ethernet port, use this define (options: 0, 1, 2) */
 #define CONFIG_NET_MULTI
-#define CONFIG_IPADDR           10.4.50.120
-#define CONFIG_SERVERIP         10.4.50.1
-#define CONFIG_NETMASK          255.255.255.0
-#define ETHADDR                 "00:00:00:00:51:81"
-#define ENV_ETH_PRIME           "egiga0"
+#define CONFIG_IPADDR		10.4.50.170
+#define CONFIG_SERVERIP		10.4.50.38
+#define CONFIG_NETMASK		255.255.255.0
+#define ETHADDR			"00:00:00:00:51:81"
+#define ETH1ADDR		"00:00:00:00:51:82"
+#define ENV_ETH_PRIME		"egiga0"
 
 /*
  * PCI and PCIe

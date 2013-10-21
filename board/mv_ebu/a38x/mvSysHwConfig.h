@@ -124,9 +124,6 @@ disclaimer.
 #define SPI_CS_BASE 0xf4000000 /*0xf8000000*/
 #define SPI_CS_SIZE _8M
 
-#define PP2_CPU0_PHYS_BASE 0xf2100000 /*0xF5000000*/
-#define PP2_SIZE	 _64K
-
 /* Important for MP - Do not disable/change this window, used by BOOTROM when booting other cores */
 #define CRYPT_ENG_BASE	 0xc8010000
 #define CRYPT_ENG_SIZE	 _64K
@@ -229,22 +226,21 @@ disclaimer.
 	{{PEX2_IO_BASE,		0,	PEX2_IO_SIZE	},		TBL_UNUSED,	DIS},	/* 13 PEX2_IO */   \
 	{{PEX3_MEM_BASE,	0,	PEX3_MEM_SIZE	},			3,	EN},	/* 14 PEX3_MEM */  \
 	{{PEX3_IO_BASE,		0,	PEX3_IO_SIZE	},		TBL_UNUSED,	DIS},	/* 15 PEX3_IO */   \
-	{{INTER_REGS_BASE,	0,	INTER_REGS_SIZE	}, MV_AHB_TO_MBUS_INTREG_WIN, 	EN},	/* 12 INTER_REGS */\
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 13 DMA_UART   */\
-	{{SPI_CS_BASE,		0,	SPI_CS_SIZE	},			8,	DIS},	/* 14 SPI_CS0 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 15 SPI_CS1 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 16 SPI_CS2 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 17 SPI_CS3 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 18 SPI_CS4 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 19 SPI_CS5 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 20 SPI_CS6 */   \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 21 SPI_CS7 */   \
-	{{0xf8000000,		0,		_1M	},			13,	DIS},	/* 22 BOOT_ROM_CS */\
-	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},			9,	 EN},	/* 23 DEV_BOOCS */  \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 24 USB3 */   \
-	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},			10,	DIS},	/* 25 CRYPT_ENG */ \
-	{{PP2_CPU0_PHYS_BASE,	0,	PP2_SIZE	},			12,	 EN},	/* 26 PP2 */    \
-	{{TBL_TERM,		TBL_TERM, TBL_TERM	},		TBL_TERM,	TBL_TERM}               \
+	{{INTER_REGS_BASE,	0,	INTER_REGS_SIZE	}, MV_AHB_TO_MBUS_INTREG_WIN, 	EN},	/* 16 INTER_REGS */\
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 17 DMA_UART   */\
+	{{SPI_CS_BASE,		0,	SPI_CS_SIZE	},			8,	DIS},	/* 18 SPI_CS0 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 19 SPI_CS1 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 20 SPI_CS2 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 21 SPI_CS3 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 22 SPI_CS4 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 23 SPI_CS5 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 24 SPI_CS6 */   \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 25 SPI_CS7 */   \
+	{{0xf8000000,		0,		_1M	},			13,	DIS},	/* 26 BOOT_ROM_CS */\
+	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},			9,	 EN},	/* 27 DEV_BOOCS */  \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 28 USB3 */   \
+	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},			10,	DIS},	/* 29 CRYPT_ENG */ \
+	{{TBL_TERM,	TBL_TERM, 	TBL_TERM	},		TBL_TERM,	TBL_TERM}               \
 };
 
 #define MV_CACHEABLE(address) ((address) | 0x80000000)

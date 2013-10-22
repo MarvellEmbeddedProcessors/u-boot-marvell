@@ -26,6 +26,7 @@
 
 enum {
 	CMD_DUMP = MV_SATR_MAX_OPTION+1,
+	CMD_DEFAULT,
 	CMD_UNKNOWN
 };
 
@@ -97,6 +98,46 @@ MV_BOOT_SRC bootSrcTbl[] = {
 	{ "38  |    SPI 24 bit address                  ", MV_TRUE },
 	{ "39  |    SPI 32 bit address                  ", MV_TRUE },
 };
+typedef struct _boardSatrDefault {
+	MV_SATR_TYPE_ID satrId;
+	MV_U32 defauleValueForBoard[MV_MAX_BOARD_ID];
+} MV_BOARD_SATR_DEFAULT;
+
+MV_BOARD_SATR_DEFAULT boardSatrDefault[] = {
+/* 	defauleValueForBoard[] = RD_68xx,	DB_68xx*/
+{ MV_SATR_CPU_DDR_L2_FREQ,	{6,	       6}  },
+{ MV_SATR_CORE_CLK_SELECT,	{1,	       1}  },
+{ MV_SATR_CPU1_ENABLE,	  	{MV_FALSE,     MV_FALSE} },
+{ MV_SATR_SSCG_DISABLE,	  	{MV_FALSE,     MV_FALSE} },
+{ MV_SATR_DDR_ECC_ENABLE,	{MV_FALSE,     MV_FALSE} },
+{ MV_SATR_RD_LANE1_2_CFG,	{0,	       0} },
+{ MV_SATR_RD_LANE4_CFG,		{0,	       0} },
+{ MV_SATR_RD_LANE0_CFG,		{0,	       0} },
+{ MV_SATR_RD_APPS_CFG,		{0,	       0} },
+};
+static int do_sar_default(void)
+{
+	MV_U32 i, rc, defaultValue, boardId = mvBoardIdGet();
+	MV_SATR_TYPE_ID satrClassId;
+	MV_BOARD_SATR_INFO satrInfo;
+
+	if (boardId != RD_68XX_ID && boardId != DB_68XX_ID) {
+		printf("\nError: S@R fields are readable only for current board\n");
+		return 1;
+	}
+	for (i = 0; i < 9; i++) {
+		satrClassId = boardSatrDefault[i].satrId;
+		if (mvBoardSatrInfoConfig(satrClassId, &satrInfo) != MV_OK)
+			continue;
+		defaultValue = boardSatrDefault[i].defauleValueForBoard[boardId];
+		rc = mvBoardSatRWrite(satrClassId, defaultValue);
+		if (rc == MV_ERROR) {
+			mvOsPrintf("Error write S@R for id=%d\n", satrClassId);
+		}
+	}
+	printf("\nSample at Reset values were restored to default.\n");
+	return 0;
+}
 
 void SatR_usage(void);
 
@@ -323,8 +364,7 @@ static int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 		return 1;
 	}
 	rc = mvBoardSatRWrite(satrInfo->satrId, value);
-	if (rc == MV_ERROR)
-	{
+	if (rc == MV_ERROR) {
 		mvOsPrintf("Error write to TWSI\n");
 		return 1;
 	}
@@ -351,6 +391,15 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	}
 	if (strcmp(cmd, "list") == 0)
 		return do_sar_list(&satrInfo);
+	else if ((strcmp(cmd, "write") == 0) && (mode == CMD_DEFAULT)) {
+		if (do_sar_default() == 0) {
+			do_sar_read(CMD_DUMP, &satrInfo);
+			printf("\nChanges will be applied after reset.\n\n");
+			return 0;
+		}
+		else
+			return 1;
+	}
 	else if (strcmp(cmd, "write") == 0) {
 		value = simple_strtoul(argv[3], NULL, 10);
 		if (do_sar_write(&satrInfo, value) == 0)

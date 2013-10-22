@@ -363,18 +363,35 @@ typedef struct _boardInfo {
 
 /* {{MV_CONFIG_TYPE_ID ConfigID, twsi-ID,  Offset, ID,  isActiveForBoard[]}} */
 #define MV_BOARD_CONFIG_INFO { \
-{ MV_CONFIG_SGMII,				0x2,	0,	 0xD,	{ 0, 1, 0} }, \
-{ MV_CONFIG_MII,				0x1,	0,	 0x4,	{ 0, 1, 0} }, \
+{ MV_CONFIG_SGMII,		0x2,	0,	 0xD,	{ 0, 1, 0} }, \
+{ MV_CONFIG_MII,		0x1,	0,	 0x4,	{ 0, 1, 0} }, \
 { MV_CONFIG_SLIC_TDM_DEVICE,	0x0,	0,	 0x1,	{ 0, 1, 0} }, \
-{ MV_CONFIG_I2S_DEVICE,			0x1,	0,	 0x3,	{ 0, 1, 0} }, \
-{ MV_CONFIG_SPDIF_DEVICE,		0x1,	0,	 0x2,	{ 0, 1, 0} }, \
+{ MV_CONFIG_I2S_DEVICE,		0x1,	0,	 0x3,	{ 0, 1, 0} }, \
+{ MV_CONFIG_SPDIF_DEVICE,	0x1,	0,	 0x2,	{ 0, 1, 0} }, \
 { MV_CONFIG_SERDES_PEX_LAN1,	0x3,	0,	 0xC,	{ 0, 1, 0} }, \
 { MV_CONFIG_SERDES_PEX_LAN2,	0x3,	0,	 0xD,	{ 0, 1, 0} }, \
-{ MV_CONFIG_NOR,				0x4,	0,	 0xF,	{ 0, 1, 0} }, \
-{ MV_CONFIG_NAND,				0x4,	0,	 0x1,	{ 0, 1, 0} }, \
-{ MV_CONFIG_SDIO,				0x4,	0,	 0x2,	{ 0, 1, 0} }, \
-{ MV_CONFIG_GIGA,				0x27,	0,	 0xE,	{ 0, 1, 0} }, \
+{ MV_CONFIG_NOR,		0x4,	0,	 0xF,	{ 0, 1, 0} }, \
+{ MV_CONFIG_NAND,		0x4,	0,	 0x1,	{ 0, 1, 0} }, \
+{ MV_CONFIG_SDIO,		0x4,	0,	 0x2,	{ 0, 1, 0} }, \
+{ MV_CONFIG_GIGA,		0x5,	0,	 0xE,	{ 0, 1, 0} }, \
 };
+
+struct _mvBoardMppModule {
+	MV_U32 group;
+	MV_U32 mppValue;
+};
+
+
+#define MPP_MII_MODULE		{ {0, 0x12111111}, {1, 0x11111111}, {2, 0x11266011} }
+#define MPP_TDM_MODULE		{ {6, 0x45333333}, {7, 0x00004444} }
+#define MPP_I2S_MODULE		{6, 0x55544554}
+#define MPP_SPDIF_MODULE	{6, 0x55444444}
+#define MPP_NOR_MODULE		{ {0, 0x51111111}, {1, 0x11555555}, {2, 0x55566011}, \
+				  {3, 0x55555055}, {4, 0x55555555}, {5, 0x40045525 } }
+#define MPP_NAND_MODULE		{ {0, 0x55111111}, {1, 0x15555555}, {2, 0x55266011}, \
+				  {3, 0x25255051}, {4, 0x25555555}, {5, 0x40042555 } }
+#define MPP_SDIO_MODULE		{ {2, 0x11466011}, {3, 0x22242011}, {4, 0x44400002}, \
+				  {5, 0x40042024 } }
 
 /* Boot device bus width */
 #define MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS          3
@@ -434,7 +451,6 @@ MV_U32 mvBoardGpioIntMaskGet(MV_U32 gppGrp);
 MV_U32 mvBoardSlicUnitTypeGet(MV_VOID);
 MV_VOID mvBoardSlicUnitTypeSet(MV_U32 slicType);
 MV_32 mvBoardMppGet(MV_U32 mppGroupNum);
-MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType);
 MV_VOID mvBoardMppSet(MV_U32 mppGroupNum, MV_U32 mppValue);
 MV_U8 mvBoardTdmSpiIdGet(MV_VOID);
 MV_VOID mvBoardConfigurationPrint(MV_VOID);

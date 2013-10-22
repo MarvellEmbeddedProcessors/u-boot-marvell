@@ -123,7 +123,7 @@ MV_BOARD_TDM_INFO db88f68xxTdm880[] = { {0} };
 MV_BOARD_TDM_SPI_INFO db88f68xxTdmSpiInfo[] = { {1} };
 
 MV_BOARD_INFO db88f68xx_board_info = {
-	.boardName		= "DB-88f68xx",
+	.boardName		= "DB-88F6820-BP",
 	.numBoardMppTypeValue	= 0,		/* ARRSZ(db88f68XXInfoBoardModTypeInfo), */
 	.pBoardModTypeValue	= NULL,		/* db88f68XXInfoBoardModTypeInfo, */
 	.pBoardMppConfigValue	= db88f68xxInfoBoardMppConfigValue,
@@ -214,7 +214,7 @@ MV_BOARD_MPP_INFO rd88f68XXInfoBoardMppConfigValue[] = {
 };
 
 MV_BOARD_INFO rd88f68XX_board_info = {
-	.boardName			= "RD-88F68XX",
+	.boardName			= "RD-88F6820-DDR3",
 	.numBoardMppTypeValue	= ARRSZ(rd88f68XXInfoBoardMppConfigValue),
 	.pBoardModTypeValue		= NULL,
 	.pBoardMppConfigValue	= rd88f68XXInfoBoardMppConfigValue,

@@ -163,27 +163,14 @@ void mvBoardEgigaPhyInit(void)
 	if (mvBoardIsInternalSwitchConnected() == MV_TRUE)
 		mvAlpBoardSwitchBasicInit(mvBoardSwitchPortsMaskGet(0));
 
-#elif defined(MV88F67XX) || defined(MV88F78X60)
+#elif defined(MV88F68XX)
+	int i;
 	mvSysEthPhyInit();
 
-	if (mvBoardIsSwitchConnected())
-		mvEthE6171SwitchBasicInit(1);
-
-	if (mvBoardIsSwitchConnected() || mvBoardIsGMIIConnected()) {
-		/* Init Only Phy 0 */
-		/* writing the PHY address before PHY init */
-		unsigned int regData;
-		regData = MV_REG_READ(ETH_PHY_ADDR_REG(0));
-		regData &= ~ETH_PHY_ADDR_MASK;
-		regData |= mvBoardPhyAddrGet(0);
-		MV_REG_WRITE(ETH_PHY_ADDR_REG(0), regData);
-		mvEthPhyInit(0, MV_FALSE);
-	} else {
-		for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
-			/* writing the PHY address before PHY init */
-			mvNetaPhyAddrSet(i, mvBoardPhyAddrGet(i));
-			mvEthPhyInit(i, MV_FALSE);
-		}
+	for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
+        /* writing the PHY address before PHY init */
+		mvNetaPhyAddrSet(i, mvBoardPhyAddrGet(i));
+		mvEthPhyInit(i, MV_FALSE);
 	}
 #elif defined(MV88F672X)
 	mvSysEthPhyInit();

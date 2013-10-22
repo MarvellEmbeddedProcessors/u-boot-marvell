@@ -789,34 +789,6 @@ MV_VOID mvBoardMppSet(MV_U32 mppGroupNum, MV_U32 mppValue)
 	board->pBoardMppConfigValue->mppGroup[mppGroupNum] = mppValue;
 }
 
-/*******************************************************************************
-* mvBoardMppTypeSet - Set board dependent MPP Group Type value
-*
-* DESCRIPTION:
-*	This function updates board dependend MPP Group Type value.
-*
-* INPUT:
-*       mppGroupNum - MPP group number.
-*	groupType - new MPP Group type. derrive MPP Value using groupType
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       -None
-*
-*******************************************************************************/
-MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType)
-{
-	MV_U32 mppVal;
-	MV_U32 mppGroups[MV_BOARD_MAX_MPP_GROUPS][MV_BOARD_MPP_GROUPS_MAX_TYPES] = MPP_GROUP_TYPES;
-
-	mppVal = mppGroups[mppGroupNum][groupType];
-	mvBoardMppSet(mppGroupNum,mppVal);
-
-	/* add Group types update here (if needed for later usage),
-	 * and add mvBoardMppTypeGet to detect which type is in use currently */
-}
 
 /*******************************************************************************
 * mvBoardInfoUpdate - Update Board information structures according to auto-detection.
@@ -884,6 +856,31 @@ MV_BOOL mvBoardIsModuleConnected(MV_U32 ModuleID)
 		return MV_TRUE;
 	return MV_FALSE;
 }
+/*******************************************************************************
+* mvModuleMppUpdate
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	num of grup.
+*	pointer to arreay MV_BOARD_MPP_MODULE
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+void mvModuleMppUpdate(MV_U32 numGroup, struct _mvBoardMppModule *pMpp)
+{
+	int i;
+	if (pMpp == NULL)
+		return;
+	for (i = 0; i < numGroup; i++) {
+		mvBoardMppSet(pMpp->group, pMpp->mppValue);
+		pMpp++;
+	}
+}
 
 /*******************************************************************************
 * mvBoardMppIdUpdate - Update MPP ID's according to modules auto-detection.
@@ -905,22 +902,35 @@ MV_BOOL mvBoardIsModuleConnected(MV_U32 ModuleID)
 *******************************************************************************/
 MV_VOID mvBoardMppIdUpdate(MV_VOID)
 {
-	/*
+	struct _mvBoardMppModule miiModule[3] = MPP_MII_MODULE;
+	struct _mvBoardMppModule norModule[6] = MPP_NOR_MODULE;
+	struct _mvBoardMppModule nandModule[6] = MPP_NAND_MODULE;
+	struct _mvBoardMppModule sdioModule[4] = MPP_SDIO_MODULE;
+	struct _mvBoardMppModule tdmModule[2] = MPP_TDM_MODULE;
+	struct _mvBoardMppModule i2sModule = MPP_I2S_MODULE;
+	struct _mvBoardMppModule spdifModule = MPP_SPDIF_MODULE;
+
 	if (mvBoardIsModuleConnected(MV_CONFIG_MII)) {
+		mvModuleMppUpdate(3, miiModule);
 	}
 	if (mvBoardIsModuleConnected(MV_CONFIG_NOR)) {
+		mvModuleMppUpdate(6, norModule);
 	}
 	if (mvBoardIsModuleConnected(MV_CONFIG_NAND)) {
+		mvModuleMppUpdate(6, nandModule);
 	}
 	if (mvBoardIsModuleConnected(MV_CONFIG_SDIO)) {
+		mvModuleMppUpdate(4, sdioModule);
 	}
 	if (mvBoardIsModuleConnected(MV_CONFIG_SLIC_TDM_DEVICE)) {
+		mvModuleMppUpdate(2, tdmModule);
 	}
 	if (mvBoardIsModuleConnected(MV_CONFIG_I2S_DEVICE)) {
+		mvModuleMppUpdate(1, &i2sModule);
 	}
 	if (mvBoardIsModuleConnected(MV_CONFIG_SPDIF_DEVICE)) {
+		mvModuleMppUpdate(1, &spdifModule);
 	}
-*/
 }
 
 /*******************************************************************************

@@ -188,15 +188,19 @@ static MV_U32 mvCtrlDevIdIndexGet(void)
 	return MV_6820_INDEX;
 }
 
-static MV_VOID mvCtrlPexConfig(MV_VOID)
+static MV_VOID mvCtrlSerdesConfig(MV_VOID)
 {
 	MV_U32 pexIf, commPhyConfigReg, comPhyCfg, serdesNum, serdesCongigField, maxSerdesLane;
+	MV_U32 ethIfCount = 0;
+	MV_U32 sataIfCount = 0;
+	MV_U32 usbIfCount = 0;
+	MV_U32 usbHIfCount = 0;
 
 	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
 
 	switch (mvCtrlModelGet()) {
 	case MV_6810_DEV_ID:
-		maxSerdesLane = 5;
+		maxSerdesLane = MV_SERDES_MAX_LANES_6810;
 		break;
 	default:
 	case MV_6820_DEV_ID:
@@ -210,17 +214,36 @@ static MV_VOID mvCtrlPexConfig(MV_VOID)
 		comPhyCfg = serdesCfg[serdesNum][serdesCongigField];
 		DB(printf("%s:   serdesCongigField = 0x%x, comPhyCfg = 0x%x\n",
 			  serdesCongigField, comPhyCfg));
-		if ((comPhyCfg & 0xF0) != SERDES_UNIT_PEX)
-			continue;
-		pexIf = comPhyCfg & 0x0f;
-		if ((pexIf == PEX0_IF) && (commPhyConfigReg & PCIE0_X4_EN_MASK))
-			boardPexInfo->pexUnitCfg[pexIf] = PEX_BUS_MODE_X4;
-		else
-			boardPexInfo->pexUnitCfg[pexIf] = PEX_BUS_MODE_X1;
+		switch (comPhyCfg & 0xF0) {
+		case SERDES_UNIT_PEX:
+			pexIf = comPhyCfg & 0x0f;
+			if ((pexIf == PEX0_IF) && (commPhyConfigReg & PCIE0_X4_EN_MASK))
+				boardPexInfo->pexUnitCfg[pexIf] = PEX_BUS_MODE_X4;
+			else
+				boardPexInfo->pexUnitCfg[pexIf] = PEX_BUS_MODE_X1;
 			boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = pexIf;
 			boardPexInfo->boardPexIfNum++;
+			break;
+		case SERDES_UNIT_SATA:
+			sataIfCount++;
+			break;
+		case SERDES_UNIT_GBE:
+			ethIfCount++;
+			break;
+		case SERDES_UNIT_USB_H:
+			usbHIfCount++;
+			break;
+		case SERDES_UNIT_USB:
+			usbIfCount++;
+			break;
+		}
 	}
 	mvCtrlSocUnitInfoNumSet(PEX_UNIT_ID, boardPexInfo->boardPexIfNum);
+	mvCtrlSocUnitInfoNumSet(SATA_UNIT_ID , sataIfCount);
+	mvCtrlSocUnitInfoNumSet(USB_UNIT_ID , usbIfCount);
+	mvCtrlSocUnitInfoNumSet(USB3_UNIT_ID, usbHIfCount);
+	if (ethIfCount) /* if serdes configuration found SGMII ports replace the existing RGMII gonfiguration*/
+		mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, ethIfCount);
 }
 
 
@@ -306,7 +329,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvBoardInfoUpdate();
 	}
 
-	mvCtrlPexConfig();
+	mvCtrlSerdesConfig();
 
 	/* write MPP's config and Board general config */
 	mvBoardConfigWrite();

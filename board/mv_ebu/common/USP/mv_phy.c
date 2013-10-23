@@ -150,8 +150,6 @@ static void mvAlpBoardEgigaPhyInit(void)
 	*/
 #endif
 }
-#endif /* MV88F66XX */
-
 
 /*******************************************************************************
 * switchPhyRegWrite 0 0 16 0 - Initialize LEDS Matrix
@@ -187,6 +185,7 @@ void mvBoardLedMatrixInit(void)
 		mvEthPhyRegWrite(0x1, 0x16, 0x0);
 	}
 }
+#endif /* MV88F66XX */
 
 /***********************************************************
  * Init the PHY of the board                               *

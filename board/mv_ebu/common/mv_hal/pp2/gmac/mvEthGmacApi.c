@@ -70,6 +70,7 @@ void mvEthPortEnable(int port)
 
 	regVal = MV_REG_READ(ETH_GMAC_CTRL_0_REG(port));
 	regVal |= ETH_GMAC_PORT_EN_MASK;
+	regVal |= ETH_GMAC_MIB_CNTR_EN_MASK;
 
 	MV_REG_WRITE(ETH_GMAC_CTRL_0_REG(port), regVal);
 }
@@ -184,6 +185,9 @@ void mvGmacDefaultsSet(int port)
 
 void mvEthPortPowerDown(int port)
 {
+	mvEthPortDisable(port);
+	mvEthMibCountersClear(port);
+	mvEthPortResetSet(port, MV_TRUE);
 }
 
 MV_BOOL mvEthPortIsLinkUp(int port)

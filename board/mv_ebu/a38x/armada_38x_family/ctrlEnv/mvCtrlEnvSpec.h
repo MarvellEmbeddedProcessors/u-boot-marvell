@@ -208,6 +208,7 @@ extern "C" {
 /* TODO - verify all these numbers */
 /* This define describes the maximum number of supported Ethernet ports */
 #define MV_ETH_MAX_PORTS			3
+#define MV_ETH_MAX_ON_BOARD_PORTS		2
 #define MV_ETH_MAX_PORTS_6810			2
 #define MV_ETH_VERSION				4 /* for Legacy mode */
 #define MV_NETA_VERSION				1 /* for NETA mode */
@@ -363,14 +364,14 @@ typedef enum _mvTarget {
 	{ 0x3D, DEV_TARGET_ID	},		/* DEVICE_CS1            */ \
 	{ 0x3B, DEV_TARGET_ID	},		/* DEVICE_CS2            */ \
 	{ 0x37, DEV_TARGET_ID	},		/* DEVICE_CS3            */ \
-	{ 0xE8, PEX_TARGET_ID	},		/* PEX0_MEM              */ \
-	{ 0xE0, PEX_TARGET_ID	},		/* PEX0_IO               */ \
-	{ 0xD8, PEX_TARGET_ID	},		/* PEX1_MEM              */ \
-	{ 0xD0, PEX_TARGET_ID	},		/* PEX1_IO               */ \
-	{ 0xB8, PEX_TARGET_ID	},		/* PEX2_MEM              */ \
-	{ 0xB0, PEX_TARGET_ID	},		/* PEX2_IO               */ \
-	{ 0x78, PEX_TARGET_ID	},		/* PEX3_MEM              */ \
-	{ 0x70, PEX_TARGET_ID	},		/* PEX3_IO               */ \
+	{ 0xE8, PEX_TARGET_ID_0	},		/* PEX0_MEM              */ \
+	{ 0xE0, PEX_TARGET_ID_0	},		/* PEX0_IO               */ \
+	{ 0xE8, PEX_TARGET_ID_123 },		/* PEX1_MEM              */ \
+	{ 0xE0, PEX_TARGET_ID_123 },		/* PEX1_IO               */ \
+	{ 0xB8, PEX_TARGET_ID_123 },		/* PEX2_MEM              */ \
+	{ 0xB0, PEX_TARGET_ID_123 },		/* PEX2_IO               */ \
+	{ 0x78, PEX_TARGET_ID_123 },		/* PEX3_MEM              */ \
+	{ 0x70, PEX_TARGET_ID_123 },		/* PEX3_IO               */ \
 	{ 0xFF, 0xFF		},		/* INTER_REGS            */ \
 	{ 0x01, DEV_TARGET_ID	},		/* DMA_UART              */ \
 	{ 0x1E, DEV_TARGET_ID	},		/* SPI_CS0               */ \
@@ -401,6 +402,10 @@ typedef enum _mvTarget {
 	"PEX0_IO",		/* PEX0_IO */		\
 	"PEX1_MEM",		/* PEX1_MEM */		\
 	"PEX1_IO",		/* PEX1_IO */		\
+	"PEX2_MEM",		/* PEX0_MEM */		\
+	"PEX2_IO",		/* PEX0_IO */		\
+	"PEX3_MEM",		/* PEX1_MEM */		\
+	"PEX3_IO",		/* PEX1_IO */		\
 	"INTER_REGS",		/* INTER_REGS */	\
 	"DMA_UART",		/* DMA_UART */		\
 	"SPI_CS0",		/* SPI_CS0 */		\

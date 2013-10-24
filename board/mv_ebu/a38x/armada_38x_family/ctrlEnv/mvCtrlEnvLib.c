@@ -133,10 +133,10 @@ MV_U32 mvCtrlGetCpuNum(MV_VOID)
 {
 	MV_U32 cpu1Enabled;
 
-	cpu1Enabled = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
+	cpu1Enabled = MV_REG_READ(MPP_SAMPLE_AT_RESET);
 	if (cpu1Enabled & SATR_CPU1_ENABLE_MASK)
-		return 2;
-	return 1;
+		return 1;
+	return 0;
 }
 
 /*******************************************************************************
@@ -244,30 +244,32 @@ static MV_VOID mvCtrlSerdesConfig(MV_VOID)
 	mvCtrlSocUnitInfoNumSet(USB3_UNIT_ID, usbHIfCount);
 	if (ethIfCount) /* if serdes configuration found SGMII ports replace the existing RGMII gonfiguration*/
 		mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, ethIfCount);
+	else
+		mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, MV_ETH_MAX_ON_BOARD_PORTS);
 }
 
 
 MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_68xx_INDEX_MAX] = {
 /*                          6820 */
 /* DRAM_UNIT_ID         */ { 1, 1},
-/* PEX_UNIT_ID          */ { MV_PEX_MAX_UNIT, MV_PEX_MAX_UNIT_6810},
-/* ETH_GIG_UNIT_ID      */ { MV_ETH_MAX_PORTS, MV_ETH_MAX_PORTS_6810},
-/* USB_UNIT_ID          */ { MV_USB_MAX_PORTS, MV_USB3_MAX_PORTS_6810},
-/* USB3_UNIT_ID         */ { MV_USB3_MAX_PORTS, MV_USB3_MAX_PORTS_6810},
-/* IDMA_UNIT_ID         */ { MV_IDMA_MAX_CHAN, MV_IDMA_MAX_CHAN},
-/* XOR_UNIT_ID          */ { MV_XOR_MAX_UNIT, MV_XOR_MAX_UNIT},
-/* SATA_UNIT_ID         */ { MV_SATA_MAX_CHAN, MV_SATA_MAX_CHAN},
-/* TDM_32CH_UNIT_ID     */ { 1, 1},
-/* UART_UNIT_ID         */ { MV_UART_MAX_CHAN, MV_UART_MAX_CHAN},
-/* CESA_UNIT_ID         */ { 1, 1},
-/* SPI_UNIT_ID          */ { 1, 1},
-/* AUDIO_UNIT_ID        */ { 1, 1},
-/* SDIO_UNIT_ID         */ { 1, 1},
-/* TS_UNIT_ID           */ { 0, 0},
-/* XPON_UNIT_ID         */ { 0, 0},
-/* BM_UNIT_ID           */ { 0, 0},
-/* PNC_UNIT_ID          */ { 0, 0},
-/* I2C_UNIT_ID          */ { 2, 2},
+/* PEX_UNIT_ID          */ { MV_PEX_MAX_UNIT,		MV_PEX_MAX_UNIT_6810},
+/* ETH_GIG_UNIT_ID      */ { MV_ETH_MAX_PORTS,	MV_ETH_MAX_PORTS_6810},
+/* USB_UNIT_ID          */ { MV_USB_MAX_PORTS,		MV_USB3_MAX_PORTS_6810},
+/* USB3_UNIT_ID         */ { MV_USB3_MAX_PORTS,		MV_USB3_MAX_PORTS_6810},
+/* IDMA_UNIT_ID         */ { MV_IDMA_MAX_CHAN,		MV_IDMA_MAX_CHAN},
+/* XOR_UNIT_ID          */ { MV_XOR_MAX_UNIT,		MV_XOR_MAX_UNIT},
+/* SATA_UNIT_ID         */ { MV_SATA_MAX_CHAN,		MV_SATA_MAX_CHAN},
+/* TDM_32CH_UNIT_ID     */ { 1,				1},
+/* UART_UNIT_ID         */ { MV_UART_MAX_CHAN,		MV_UART_MAX_CHAN},
+/* CESA_UNIT_ID         */ { 1,				1},
+/* SPI_UNIT_ID          */ { 1,				1},
+/* AUDIO_UNIT_ID        */ { 1,				1},
+/* SDIO_UNIT_ID         */ { 1,				1},
+/* TS_UNIT_ID           */ { 0,				0},
+/* XPON_UNIT_ID         */ { 0,				0},
+/* BM_UNIT_ID           */ { 0,				0},
+/* PNC_UNIT_ID          */ { 0,				0},
+/* I2C_UNIT_ID          */ { 2,				2},
 };
 
 MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit)
@@ -390,7 +392,7 @@ MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 	MV_FREQ_MODE freqTable[] = MV_SAR_FREQ_MODES;
 	MV_U32 freqModeSatRValue, satrVal;
 
-	satrVal = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
+	satrVal = MV_REG_READ(MPP_SAMPLE_AT_RESET);
 	freqModeSatRValue = (satrVal & SATR_CPU_FREQ_MASK) >> SATR_CPU_FREQ_OFFS;
 
 	if (freqModeSatRValue <= 29) {

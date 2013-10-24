@@ -97,7 +97,7 @@ MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
 
 /* Locals */
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
-static MV_BOARD_INFO *board = NULL;
+static MV_BOARD_INFO *board;
 MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 
 
@@ -124,6 +124,7 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 	MV_U32 norDev;
 	MV_U32 syncCtrl = 0;
 
+	board = boardInfoTbl[DB_68XX_ID];	/* init for first time get the correct twsi address */
 	mvBoardIdSet(mvBoardIdGet());
 	nandDev = boardGetDevCSNum(0, BOARD_DEV_NAND_FLASH);
 	if (nandDev != 0xFFFFFFFF) {
@@ -214,7 +215,7 @@ MV_U32 mvBoardRevGet(MV_VOID)
 	MV_U32 boardECO;
 	MV_U8 readValue;
 
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 1, &readValue) != MV_OK) {
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, 1, &readValue) != MV_OK) {
 		mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);
 		return MV_ERROR;
 	}
@@ -268,7 +269,7 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 	MV_U8 readValue;
 
 	if (mvBoardTwsiGet(BOARD_TWSI_MODULE_DETECT, 2, 0, &readValue) != MV_OK) {
-		mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);
+		DB(mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__));
 		return MV_FALSE;
 	}
 	if (readValue == 0x0d)
@@ -465,15 +466,15 @@ MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum)
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
 	MV_U32 tclk;
-	tclk = (MV_REG_READ(MPP_SAMPLE_AT_RESET(1)));
-	tclk = ((tclk & (1 << 22)) >> 22);
+	tclk = (MV_REG_READ(MPP_SAMPLE_AT_RESET));
+	tclk = ((tclk & (1 << 15)) >> 15);
 	switch (tclk) {
 	case 0:
-		return MV_BOARD_TCLK_166MHZ;
+		return MV_BOARD_TCLK_250MHZ;
 	case 1:
 		return MV_BOARD_TCLK_200MHZ;
 	default:
-		return MV_BOARD_TCLK_200MHZ;
+		return MV_BOARD_TCLK_250MHZ;
 	}
 }
 
@@ -820,7 +821,8 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
 		if (mvBoardConfigTypeGet(i, &configInfo) == MV_TRUE) {
 			if (mvBoardTwsiGet(configInfo.twsiAddr, configInfo.offset, 0, &readValue) != MV_OK) {
-				mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);
+				mvOsPrintf("%s: Error: Read from TWSI failed addr=0x%x\n",
+					   __func__, configInfo.twsiAddr);
 				return;
 			}
 			if ((configInfo.twsiId == readValue) &&
@@ -1265,6 +1267,9 @@ MV_VOID mvBoardOtherModuleTypePrint(MV_VOID)
 *******************************************************************************/
 MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum)
 {
+	if (ethPortNum < mvCtrlEthMaxPortGet())
+		return MV_TRUE;
+
 	return MV_FALSE;
 }
 
@@ -1537,6 +1542,35 @@ MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index)
 
 	return 0xFF;
 }
+/*******************************************************************************
+* mvBoardTwsiIsMore256Get
+*
+* DESCRIPTION:
+*	Return flag if TWSI have more then 256 byte.
+*
+* INPUT:
+*	twsiClass - The TWSI device to return the address type for.
+*	index	  - The TWSI device index (Pass 0 in case of a single
+*		    device)
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	The flag from spec table.
+*
+*******************************************************************************/
+MV_U8 mvBoardTwsiIsMore256Get(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index)
+{
+	int i;
+
+	for (i = 0; i < board->numBoardTwsiDev; i++) {
+		if ((board->pBoardTwsiDev[i].devClass == twsiClass) && (board->pBoardTwsiDev[i].devClassId == index))
+			return board->pBoardTwsiDev[i].moreThen256;
+	}
+
+	return 0xFF;
+}
 
 /*******************************************************************************
 * mvBoardEthComplexConfigGet - Return ethernet complex board configuration.
@@ -1746,22 +1780,25 @@ MV_VOID mvBoardIdSet(MV_U32 boardId)
 *       32bit board ID number, '-1' if board is undefined.
 *
 *******************************************************************************/
+static MV_U32 gBoardId = -1;
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-	MV_U32 boardId;
 	MV_U8 readValue;
+	if (gBoardId != -1)
+		return gBoardId;
 
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 0, &readValue) != MV_OK) {
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, 0, &readValue) != MV_OK) {
 		mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);
-		return MV_ERROR;
+		mvOsPrintf("%s: Set default board ID to DB-88F6820-BP", __func__);
+		readValue = DB_68XX_ID;
 	}
-	boardId = readValue & 0x07;
+	gBoardId = readValue & 0x07;
 
-	if (boardId >= MV_MAX_BOARD_ID) {
-		mvOsPrintf("%s: Error: read wrong board (%d)\n", __func__, boardId);
+	if (gBoardId >= MV_MAX_BOARD_ID) {
+		mvOsPrintf("%s: Error: read wrong board (%d)\n", __func__, gBoardId);
 		return MV_INVALID_BOARD_ID;
 	}
-	return boardId;
+	return gBoardId;
 }
 
 /*******************************************************************************
@@ -1794,14 +1831,14 @@ MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 	DB(mvOsPrintf("Board: TWSI Read device\n"));
 	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(twsiClass, devNum);
 	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(twsiClass, devNum);
+	twsiSlave.moreThen256 = mvBoardTwsiIsMore256Get(twsiClass, devNum);
 
 	twsiSlave.validOffset = MV_TRUE;
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
-	twsiSlave.moreThen256 = MV_FALSE;
 
 	if (MV_OK != mvTwsiRead(0, &twsiSlave, &data, 1)) {
-		mvOsPrintf("%s: Twsi Read fail\n", __func__);
+		DB(mvOsPrintf("%s: Twsi Read fail\n", __func__));
 		return MV_ERROR;
 	}
 	DB(mvOsPrintf("Board: Read S@R succeded\n"));
@@ -1846,7 +1883,7 @@ MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 		      twsiSlave.slaveAddr.address, twsiSlave.slaveAddr.type, regVal));
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
-	twsiSlave.moreThen256 = MV_FALSE;
+	twsiSlave.moreThen256 = mvBoardTwsiIsMore256Get(twsiClass, devNum);
 	if (MV_OK != mvTwsiWrite(0, &twsiSlave, &regVal, 1)) {
 		DB(mvOsPrintf("%s: Write S@R fail\n", __func__));
 		return MV_ERROR;
@@ -2155,10 +2192,10 @@ MV_STATUS mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum, MV_U8 *pData)
 	if (0xFF == twsiSlave.slaveAddr.address)
 		return MV_ERROR;
 	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(BOARD_DEV_TWSI_SATR, devNum);
+	twsiSlave.moreThen256 = mvBoardTwsiIsMore256Get(BOARD_DEV_TWSI_SATR, devNum);
 
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
-	twsiSlave.moreThen256 = MV_FALSE;
 	twsiSlave.validOffset = MV_TRUE;
 
 	/* TWSI init */
@@ -2209,7 +2246,7 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 		      twsiSlave.slaveAddr.address, twsiSlave.slaveAddr.type, regVal));
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
-	twsiSlave.moreThen256 = MV_FALSE;
+	twsiSlave.moreThen256 = mvBoardTwsiIsMore256Get(BOARD_DEV_TWSI_SATR, devNum);
 	/* TWSI init */
 	slave.type = ADDR7_BIT;
 	slave.address = 0;

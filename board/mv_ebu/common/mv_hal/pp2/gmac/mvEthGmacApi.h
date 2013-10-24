@@ -175,5 +175,7 @@ int mvEthPhyAddrGet(int port);
 MV_U32 mvEthMibCounterRead(int port, unsigned int mibOffset, MV_U32 *pHigh32);
 void mvEthMibCountersClear(int port);
 void mvEthMibCountersShow(int port);
+void mvGmacPortRegs(int port);
+void mvGmacLmsRegs(void);
 
 #endif /* __mvEthGmac_h__ */

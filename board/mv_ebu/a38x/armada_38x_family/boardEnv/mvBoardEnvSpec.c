@@ -84,18 +84,18 @@ MV_BOARD_MPP_INFO db88f68xxInfoBoardMppConfigValue[] = {
 };
 
 MV_BOARD_TWSI_INFO db88f68xxInfoBoardTwsiDev[] = {
-	/* {{devClass,		devClassId, twsiDevAddr, twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,		0,	0x54,	   ADDR7_BIT},  /* read only for HW configuration */
-	{ BOARD_DEV_TWSI_SATR,		1,	0x4c,	   ADDR7_BIT},
-	{ BOARD_DEV_TWSI_SATR,		2,	0x4d,	   ADDR7_BIT},
-	{ BOARD_DEV_TWSI_SATR,		3,	0x4e,	   ADDR7_BIT},
-	{ BOARD_DEV_TWSI_SATR,		4,	0x21,	   ADDR7_BIT},
-	{ BOARD_TWSI_MODULE_DETECT,	0,	0x20,	   ADDR7_BIT},   /* modules */
-	{ BOARD_TWSI_MODULE_DETECT,	1,	0x23,	   ADDR7_BIT},
-	{ BOARD_TWSI_MODULE_DETECT,	2,	0x24,	   ADDR7_BIT},
-	{ BOARD_TWSI_MODULE_DETECT,	3,	0x25,	   ADDR7_BIT},
-	{ BOARD_TWSI_MODULE_DETECT,	4,	0x26,	   ADDR7_BIT},
-	{ BOARD_TWSI_MODULE_DETECT,	5,	0x27,	   ADDR7_BIT},
+	/* {{devClass,		devClassId, twsiDevAddr, twsiDevAddrType, moreThen256}} */
+	{ BOARD_DEV_TWSI_SATR,		0,	0x54,	   ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4c,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		2,	0x4d,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		3,	0x4e,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		4,	0x21,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	0,	0x20,	   ADDR7_BIT, MV_FALSE},   /* modules */
+	{ BOARD_TWSI_MODULE_DETECT,	1,	0x23,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	2,	0x24,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	3,	0x25,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	4,	0x26,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	5,	0x27,	   ADDR7_BIT, MV_FALSE},
 };
 MV_BOARD_MAC_INFO db88f68xxInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
@@ -184,8 +184,8 @@ MV_BOARD_INFO db88f68xx_board_info = {
 
 MV_BOARD_TWSI_INFO rd88F68XXInfoBoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,	0,	0x54, ADDR7_BIT	},  /* read only for HW configuration */
-	{ BOARD_DEV_TWSI_SATR,	1,	0x4C, ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_SATR,	0,	0x54, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,	1,	0x4C, ADDR7_BIT, MV_FALSE},
 };
 MV_BOARD_MAC_INFO rd88F68XXInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
@@ -276,7 +276,7 @@ MV_BOARD_TWSI_INFO A380_customerInfoBoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
 	{ BOARD_DEV_TWSI_SATR,		0,	0x4C,	   ADDR7_BIT	},
 	{ BOARD_DEV_TWSI_SATR,		1,	0x4D,	   ADDR7_BIT	},
-	{ BOARD_DEV_TWSI_EEPROM,	0,	0x54,	   ADDR7_BIT	},
+	{ BOARD_DEV_TWSI_SATR,		0,	0x54,	   ADDR7_BIT	},
 };
 
 MV_BOARD_MAC_INFO A380_customerInfoBoardMacInfo[] = {

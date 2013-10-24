@@ -137,12 +137,10 @@ extern "C" {
 #define SGMII_SERDES_STAT_REG(port)		(MV_ETH_SGMII_PHY_REGS_BASE(port) + 0x4A4)
 
 /* Sample at Reset */
-#define MPP_SAMPLE_AT_RESET(id)		(0xE8200 + ( id * 0x4 ))
-#define SATR_DEVICE_ID_2_0_OFFS		21
-#define SATR_DEVICE_ID_2_0_MASK		(3 << SATR_DEVICE_ID_2_0_OFFS)
-#define SATR_CPU_FREQ_OFFS			17
-#define SATR_CPU_FREQ_MASK			(0x1F << SATR_CPU_FREQ_OFFS)
-#define SATR_CPU1_ENABLE_OFFS		15
+#define MPP_SAMPLE_AT_RESET		(0x18600)
+#define SATR_CPU_FREQ_OFFS		10
+#define SATR_CPU_FREQ_MASK		(0x1F << SATR_CPU_FREQ_OFFS)
+#define SATR_CPU1_ENABLE_OFFS		19
 #define SATR_CPU1_ENABLE_MASK		(1 << SATR_CPU1_ENABLE_OFFS)
 
 /* Core Divider Clock Control */
@@ -351,7 +349,8 @@ typedef enum _mvTargetId {
 	DEV_TARGET_ID    = 1,  /* Port 1  -> Device bus, BootROM, SPI, UART,
 				*	     GPIO, MPP, and Miscellaneous */
 	USB3_TARGET_ID   = 5,  /* Port 5  -> USB3 Unit,                 */
-	PEX_TARGET_ID    = 4,  /* Port 4  -> PCI Express 0 and 1        */
+	PEX_TARGET_ID_123  = 4,  /* Port 4  -> PCI Express 0 and 1        */
+	PEX_TARGET_ID_0   = 8,  /* Port 4  -> PCI Express 0 and 1        */
 	CRYPT_TARGET_ID  = 9,  /* Port 9  -> Crypto Engine SRAM         */
 	PNC_BM_TARGET_ID = 0xC,    /* Port 12 -> PP2 Unit                   */
 	MAX_TARGETS_ID

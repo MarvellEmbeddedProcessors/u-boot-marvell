@@ -113,7 +113,6 @@ typedef enum _devBoardClass {
 typedef enum _devTwsiBoardClass {
 	BOARD_DEV_TWSI_SATR,
 	BOARD_TWSI_MODULE_DETECT,
-	BOARD_DEV_TWSI_EEPROM,
 	BOARD_TWSI_OTHER
 } MV_BOARD_TWSI_CLASS;
 
@@ -207,6 +206,7 @@ typedef struct _boardTwsiInfo {
 	MV_U8 devClassId;
 	MV_U8 twsiDevAddr;
 	MV_U8 twsiDevAddrType;
+	MV_U8 moreThen256;
 } MV_BOARD_TWSI_INFO;
 
 typedef struct _boardSatrInfo {
@@ -462,6 +462,7 @@ MV_32 mvBoardGetDeviceWinSize(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_U32 boardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_U8 mvBoardTwsiAddrTypeGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
+MV_U8 mvBoardTwsiIsMore256Get(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_U32 mvBoardEthComplexConfigGet(MV_VOID);
 MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig);
 MV_U32 mvBoardIdGet(MV_VOID);

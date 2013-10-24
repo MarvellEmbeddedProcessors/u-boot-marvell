@@ -620,6 +620,48 @@ int mvEthPhyAddrGet(int port)
 	return ((regData & ETH_PHY_ADDR_MASK(port)) >> ETH_PHY_ADDR_OFFS(port));
 }
 
+void mvGmacPrintReg(unsigned int reg_addr, char *reg_name)
+{
+	mvOsPrintf("  %-32s: 0x%x = 0x%08x\n", reg_name, reg_addr, MV_REG_READ(reg_addr));
+}
+
+void mvGmacLmsRegs(void)
+{
+	mvOsPrintf("\n[GoP LMS registers]\n");
+
+	mvGmacPrintReg(ETH_PHY_ADDR_REG, "MV_GOP_LMS_PHY_ADDR_REG");
+	mvGmacPrintReg(ETH_PHY_AN_CFG0_REG, "MV_GOP_LMS_PHY_AN_CFG0_REG");
+}
+
+void mvGmacPortRegs(int port)
+{
+	if (mvPp2PortCheck(port))
+		return;
+
+	if (MV_PON_PORT(port)) {
+		mvOsPrintf("Not supported for PON port\n");
+		return;
+	}
+
+	port = MV_PPV2_PORT_PHYS(port);
+
+	mvOsPrintf("\n[GoP MAC #%d registers]\n", port);
+
+	mvGmacPrintReg(ETH_GMAC_CTRL_0_REG(port), "MV_GMAC_CTRL_0_REG");
+	mvGmacPrintReg(ETH_GMAC_CTRL_1_REG(port), "MV_GMAC_CTRL_1_REG");
+	mvGmacPrintReg(ETH_GMAC_CTRL_2_REG(port), "MV_GMAC_CTRL_2_REG");
+
+	mvGmacPrintReg(ETH_GMAC_AN_CTRL_REG(port), "MV_GMAC_AN_CTRL_REG");
+	mvGmacPrintReg(ETH_GMAC_STATUS_REG(port), "MV_GMAC_STATUS_REG");
+
+	mvGmacPrintReg(GMAC_PORT_FIFO_CFG_0_REG(port), "MV_GMAC_PORT_FIFO_CFG_0_REG");
+	mvGmacPrintReg(GMAC_PORT_FIFO_CFG_1_REG(port), "MV_GMAC_PORT_FIFO_CFG_1_REG");
+
+	mvGmacPrintReg(ETH_PORT_ISR_CAUSE_REG(port), "MV_GMAC_ISR_CAUSE_REG");
+	mvGmacPrintReg(ETH_PORT_ISR_MASK_REG(port), "MV_GMAC_ISR_MASK_REG");
+}
+
+
 /******************************************************************************/
 /*                      MIB Counters functions                                */
 /******************************************************************************/

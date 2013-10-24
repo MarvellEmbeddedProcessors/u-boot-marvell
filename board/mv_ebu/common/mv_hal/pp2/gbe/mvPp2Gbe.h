@@ -370,6 +370,16 @@ static INLINE void mvPp2RxqNonOccupDescAdd(int port, int rxq, int rx_desc)
 	mvPp2WrReg(MV_PP2_RXQ_STATUS_UPDATE_REG(prxq), regVal);
 }
 
+/* Decrement number of processed descriptors */
+static INLINE void mvPp2RxqOccupDescDec(int port, int rxq, int rx_done)
+{
+	MV_U32 regVal;
+	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
+
+	regVal = (rx_done << MV_PP2_RXQ_NUM_PROCESSED_OFFSET);
+	mvPp2WrReg(MV_PP2_RXQ_STATUS_UPDATE_REG(prxq), regVal);
+}
+
 /*-------------------------------------------------------------------------------*/
 /* Get number of TXQ descriptors waiting to be transmitted by HW */
 static INLINE int mvPp2TxqPendDescNumGet(int port, int txp, int txq)

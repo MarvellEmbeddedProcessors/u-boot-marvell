@@ -440,6 +440,10 @@ MV_DEV_CS_INFO rd88f6660InfoBoardDeCsInfo[] = {
 #endif
 };
 
+MV_BOARD_TDM_INFO rd88f6660Tdm886[] = { {0} };
+
+MV_BOARD_TDM_SPI_INFO rd88f6660TdmSpiInfo[] = { {1} };
+
 MV_BOARD_MPP_INFO rd88f6660InfoBoardMppConfigValue[] = {
 	{ {
 		RD_88F6660_MPP0_7,
@@ -488,9 +492,9 @@ MV_BOARD_INFO rd88f6660_board_info = {
 	.gppPolarityValHigh		= RD_88F6660_GPP_POL_HIGH,
 
 	/* TDM */
-	.numBoardTdmInfo		= {},
-	.pBoardTdmInt2CsInfo		= {},
-	.boardTdmInfoIndex		= -1,
+	.numBoardTdmInfo		= {1},
+	.pBoardTdmInt2CsInfo		= {rd88f6660Tdm886},
+	.boardTdmInfoIndex		= 0,
 
 	.pBoardSpecInit			= NULL,
 
@@ -498,6 +502,9 @@ MV_BOARD_INFO rd88f6660_board_info = {
 	.nandFlashReadParams		= 0,
 	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
+
+	.pBoardTdmSpiInfo		= rd88f6660TdmSpiInfo,
+
 	/* NOR init params */
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,

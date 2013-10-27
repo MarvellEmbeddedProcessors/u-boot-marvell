@@ -68,6 +68,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif defined(MV88F6710)
 #include "ddr3_a370.h"
 extern MV_U32 mvCpuL2ClkGet(MV_VOID);
+#elif defined(MV88F68XX)
+#include "ddr3_a38x.h"
 #elif defined(MV88F66XX)
 #include "ddr3_alp.h"
 extern MV_U32 mvCpuL2ClkGet(MV_VOID);

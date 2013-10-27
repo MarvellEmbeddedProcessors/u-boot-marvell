@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+        this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-	notice, this list of conditions and the following disclaimer in the
-	documentation and/or other materials provided with the distribution.
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-	used to endorse or promote products derived from this software without
-	specific prior written permission.
+        used to endorse or promote products derived from this software without
+        specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -59,47 +59,22 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
 ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 *******************************************************************************/
 
-/* includes */
+
 #include "mv_os.h"
-#include "config_marvell.h"  	/* Required to identify SOC and Board */
-#include "mvUart.h"
-#include "util.h"
-#include "generalInit.h"
-
-#ifdef MV88F68XX
-#include "../src_phy_a38x/mvBHboardEnvSpec.h"
-#endif
-
-#if defined(DB_88F6710_PCAC)
 #include "mvBHboardEnvSpec.h"
-#endif
+#include "bin_hdr_twsi.h"
 
-MV_STATUS mvGeneralInit(void)
+#define MV_DEBUG_INIT_FULL
+#include "mvUart.h"
+
+#include "util.h"
+
+
+
+/***************************************************************************/
+MV_U32 mvBoardTclkGet(MV_VOID)
 {
-#ifdef DB_88F6710_PCAC
-	MV_U32 uiReg = 0;
-#endif
-#ifdef MV88F67XX
-	/* Check is its A370 A0 */
-	if (mvCtrlRevGet() == 0)
-		sramConfig();  /* Armada 370 - Must Run the sram reconfig WA */
-#endif
-#ifdef MV88F68XX
-        MV_U32 regData = (MV_REG_READ(MPP_CTRL_REG)  & MPP_SET_MASK) | MPP_SET_DATA;
-        MV_REG_WRITE(MPP_CTRL_REG, regData);
-#endif
-
-#ifdef CONFIG_DB_88F6710_PCAC
-    /*Set MPP0 and MPP1 to be UART mode*/
-	uiReg = (MV_REG_READ(MPP_CONTROL_REG(0)) & 0xFFFFFF00) | 0x11;
-	MV_REG_WRITE(MPP_CONTROL_REG(0), uiReg);
-#endif
-#if !defined(MV_NO_PRINT)
-	mvUartInit();
-	DEBUG_INIT_S("General initialization - Version: " GENERAL_VERION "\n");
-#endif
-	return MV_OK;
+    return MV_BOARD_TCLK_200MHZ;
 }

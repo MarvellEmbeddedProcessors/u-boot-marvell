@@ -109,6 +109,9 @@ ifeq "$(CONFIG_AVANTA_LP)"  "y"
   CFLAGS += -DCONFIG_AVANTA_LP
 endif
 
+ifeq "$(CONFIG_ARMADA_38X)"  "y"
+  CFLAGS += -DCONFIG_ARMADA_38X
+endif
 SETPARAMS  = setparams
 PARAMSFILE = params
 LDSCRIPT   = linker.scr

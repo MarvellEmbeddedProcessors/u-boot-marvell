@@ -1,3 +1,4 @@
+
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
@@ -42,12 +43,12 @@ are permitted provided that the following conditions are met:
 	    this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-	notice, this list of conditions and the following disclaimer in the
-	documentation and/or other materials provided with the distribution.
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-	used to endorse or promote products derived from this software without
-	specific prior written permission.
+		used to endorse or promote products derived from this software without
+		specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -62,44 +63,85 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-/* includes */
-#include "mv_os.h"
-#include "config_marvell.h"  	/* Required to identify SOC and Board */
-#include "mvUart.h"
-#include "util.h"
-#include "generalInit.h"
 
-#ifdef MV88F68XX
-#include "../src_phy_a38x/mvBHboardEnvSpec.h"
-#endif
+#ifndef _DDR3_A380_CONFIG_H
+#define _DDR3_A380_CONFIG_H
 
-#if defined(DB_88F6710_PCAC)
-#include "mvBHboardEnvSpec.h"
-#endif
+#define SPEED_BIN		SPEED_BIN_DDR_1866L
+#define DDR_BUS_WIDTH   BUS_WIDTH_16
+#define MEM_SIZE		MEM_4G
+#define CL				0
+#define CWL				0
 
-MV_STATUS mvGeneralInit(void)
-{
-#ifdef DB_88F6710_PCAC
-	MV_U32 uiReg = 0;
-#endif
-#ifdef MV88F67XX
-	/* Check is its A370 A0 */
-	if (mvCtrlRevGet() == 0)
-		sramConfig();  /* Armada 370 - Must Run the sram reconfig WA */
-#endif
-#ifdef MV88F68XX
-        MV_U32 regData = (MV_REG_READ(MPP_CTRL_REG)  & MPP_SET_MASK) | MPP_SET_DATA;
-        MV_REG_WRITE(MPP_CTRL_REG, regData);
-#endif
 
-#ifdef CONFIG_DB_88F6710_PCAC
-    /*Set MPP0 and MPP1 to be UART mode*/
-	uiReg = (MV_REG_READ(MPP_CONTROL_REG(0)) & 0xFFFFFF00) | 0x11;
-	MV_REG_WRITE(MPP_CONTROL_REG(0), uiReg);
+//Igorp
+/*DDR3_LOG_LEVEL Information
+Level 0: Provides an error code in a case of failure, RL, WL errors and other algorithm failure
+Level 1: Provides the D-Unit setup (SPD/Static configuration)
+Level 2: Provides the windows margin as a results of DQS centeralization
+Level 3: Provides the windows margin of each DQ as a results of DQS centeralization */
+
+#define	DDR3_LOG_LEVEL	0
+#define DDR3_PBS        1
+/* this flag allows the execution of SW WL/RL oppon HW failure */
+#define DDR3_RUN_SW_WHEN_HW_FAIL    1
+
+/* General Configurations */
+/* The following parameters are required for proper setup */
+/* DDR_TARGET_FABRIC - Set desiered fabric configuration (for sample@Reset fabfreq parameter) */
+/* DRAM_ECC - set ECC support TRUE/FALSE */
+/* BUS_WIDTH - 64/32 bit */
+/* SPD_SUPPORT - Enables auto detection of DIMMs and their timing values */
+/* DQS_CLK_ALIGNED - Set this if CLK and DQS signals are aligned on board */
+/* MIXED_DIMM_STATIC - Mixed DIMM + On board devices support (ODT registers values are taken statically) */
+/* DDR3_TRAINING_DEBUG - debug prints of internal code */
+#define DDR_TARGET_FABRIC						5
+#define DRAM_ECC								FALSE
+
+#ifdef MV_DDR_32BIT
+#define BUS_WIDTH                               32
+#else
+#define BUS_WIDTH								64
 #endif
-#if !defined(MV_NO_PRINT)
-	mvUartInit();
-	DEBUG_INIT_S("General initialization - Version: " GENERAL_VERION "\n");
+#define SPD_SUPPORT
+#undef DQS_CLK_ALIGNED
+#undef MIXED_DIMM_STATIC
+#define DDR3_TRAINING_DEBUG						FALSE
+#define REG_DIMM_SKIP_WL						FALSE
+
+#ifdef DRAM_ECC
+/* ECC support parameters: */
+/* U_BOOT_START_ADDR, U_BOOT_SCRUB_SIZE - relevant when using ECC and need to configure the scrubbing area */
+#define TRAINING_SIZE                           0x20000
+#define U_BOOT_START_ADDR						0
+#define U_BOOT_SCRUB_SIZE                       0x1000000 /*- TRAINING_SIZE*/
 #endif
-	return MV_OK;
-}
+/* Registered DIMM Support - In case registered DIMM is attached, please supply the following values:
+(see JEDEC - JESD82-29A "Definition of the SSTE32882 Registering Clock Driver with Parity and Quad Chip
+Selects for DDR3/DDR3L/DDR3U RDIMM 1.5 V/1.35 V/1.25 V Applications") */
+/* RC0: Global Features Control Word */
+/* RC1: Clock Driver Enable Control Word */
+/* RC2: Timing Control Word */
+/* RC3-RC5 - taken from SPD */
+/* RC8: Additional IBT Setting Control Word */
+/* RC9: Power Saving Settings Control Word */
+/* RC10: Encoding for RDIMM Operating Speed */
+/* RC11: Operating Voltage VDD and VREFCA Control Word */
+#define RDIMM_RC0								0
+#define RDIMM_RC1								0
+#define RDIMM_RC2								0
+#define RDIMM_RC8								0
+#define RDIMM_RC9								0
+#define RDIMM_RC10								0x2
+#define RDIMM_RC11								0x0
+
+//------------STUBS-----------------
+MV_U32 s_auiCpuFabClkToHClk[1][1];
+MV_U8 s_auiDivRatio2to1[1][1];
+MV_U16 auiODTStatic[1][1];
+MV_U8 s_auiDivRatio1to1[1][1];
+//------------/STUBS------------------
+//Endof Igorp
+
+
+#endif /* _DDR3_A380_CONFIG_H */

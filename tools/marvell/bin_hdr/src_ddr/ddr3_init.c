@@ -84,7 +84,19 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_alp_vars.h"
 #elif defined(MV88F672X)
 #include "ddr3_a375_vars.h"
+#elif defined(MV88F68XX)
+#include "ddr3_a38x.h"
+#include "ddr3_a38x_config.h"
 #endif
+
+#if defined(MV88F68XX)
+MV_STATUS ddr3Init(void)
+{
+	return MV_OK;
+}
+
+
+#else
 
 
 #include "bootstrap_os.h"
@@ -1398,3 +1410,4 @@ MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs)
     return;
 }
 #endif
+#endif /* #if !defined(MV88F68XX) */

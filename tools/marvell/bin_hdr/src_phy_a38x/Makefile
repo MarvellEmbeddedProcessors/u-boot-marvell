@@ -65,6 +65,8 @@
 
 include ../base.mk
 sinclude ../../../../include/autoconf.mk
+#just for compilation 1 time.
+CFLAGS += -DCONFIG_DB_78x60_BP_REV2
 
 ifeq "$(MAKECMDGOALS)" "rtl"
   MVFLAGS += MV_RTL_PLATFORM=1 MV_NO_PRINT=1
@@ -112,6 +114,7 @@ endif
 ifeq "$(CONFIG_ARMADA_38X)"  "y"
   CFLAGS += -DCONFIG_ARMADA_38X
 endif
+
 INCLUDE     = -I./  -I../inc/ -I../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
@@ -119,18 +122,20 @@ LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
 
-TGT = ddr_$(BOARD).a
-TGT_UART = ddr_$(BOARD).uart.a
+TGT = phy_a38x.a
+TGT_UART = phy_a38x.uart.a
 
-CSRC = ddr3_init.c ddr3_spd.c
+CSRC =  mvBHboardEnvSpec.c mvHighSpeedEnvLib.c
+#CSRC = mvBHboardEnvSpec.c mvCtrlPex.c mvHighSpeedEnvLib.c
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
 
-all:   $(TGT) $(TGT_UART) subdirs
+all:   $(TGT) $(TGT_UART)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+#	echo 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 %.uart.o: %.c
 	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) -c -o  $@ $<
@@ -143,28 +148,5 @@ $(TGT_UART): $(CUART_OBJ)
 	ar rcs $(TGT_UART)  $(CUART_OBJ)
 	$(CP) ./$@ ../
 
-ifeq ($(DDR3LIB),y)
-SRC_DDR_SUBDIRS = ddr3lib
-else
-SRC_DDR_SUBDIRS =
-endif
-
-
-
 clean:
 	$(RM) ./*.o  ./*.a
-
-	@for dir in $(SRC_DDR_SUBDIRS) ; do \
-		    $(MAKE) clean BOARD="$(BOARD)" -C $$dir || exit 1 ; \
-	done
-
-subdirs:
-	@for dir in $(SRC_DDR_SUBDIRS) ; do \
-		$(MAKE) \
-		HOSTOS=$(HOSTOS) \
-		HOSTARCH=$(HOSTARCH) \
-		HOSTCFLAGS="$(HOSTCFLAGS)" \
-		HOST_LDFLAGS="$(HOST_LDFLAGS)" \
-		BOARD="$(BOARD)" \
-		-C $$dir || exit 1 ; \
-	done

@@ -164,7 +164,7 @@
 #define RD_88F6660_MPP16_23             0x22222222  /* UA0, TDM */
 #define RD_88F6660_MPP24_31             0x33333333  /* SDIO, SPI1 */
 #define RD_88F6660_MPP32_39             0x00023330  /* SD_Stat (GPIO_input), SPI1,PON BEN, 3xGPIOs  */
-#define RD_88F6660_MPP40_47             0x44120020  /* Switch P4, PON_[XVR,TX_PD,TX_SD]*/
+#define RD_88F6660_MPP40_47             0x44100020  /* Switch P4, PON_[XVR,TX_SD]*/
 #define RD_88F6660_MPP48_55             0x44444444  /* Switch P4 */
 #define RD_88F6660_MPP56_63             0x44004444  /* GE0 , LED, GPIO's */
 #define RD_88F6660_MPP64_67             0x004	    /* GPIO's */
@@ -187,7 +187,7 @@
 #define RD_88F6650_MPP16_23             0x11110022  /* UA0, SSI, GPIO's */
 #define RD_88F6650_MPP24_31             0x04606001  /* P0,C0_Leds & DYING GASP*/
 #define RD_88F6650_MPP32_39             0x04420000  /* GE_SMI, PON & GPIO's */
-#define RD_88F6650_MPP40_47             0x44120020  /* Switch P4, PON_[XVR,TX_PD,TX_SD]*/
+#define RD_88F6650_MPP40_47             0x44100020  /* Switch P4, PON_[XVR,TX_SD]*/
 #define RD_88F6650_MPP48_55             0x44444444  /* Switch P4 */
 #define RD_88F6650_MPP56_63             0x44004444  /* GE0 , LED, GPIO's */
 #define RD_88F6650_MPP64_67             0x004	    /* GPIO's */

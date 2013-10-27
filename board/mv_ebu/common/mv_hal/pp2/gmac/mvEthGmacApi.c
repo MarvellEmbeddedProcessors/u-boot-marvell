@@ -102,10 +102,11 @@ void mvEthPortSgmiiSet(int port, int enable)
 	MV_U32 regVal;
 
 	regVal = MV_REG_READ(ETH_GMAC_CTRL_2_REG(port));
+
 	if (enable)
-		regVal |= ETH_GMAC_PCS_ENABLE_MASK;
+		regVal |= (ETH_GMAC_PCS_ENABLE_MASK | ETH_GMAC_INBAND_AN_MASK);
 	else
-		regVal &= ~ETH_GMAC_PCS_ENABLE_MASK;
+		regVal &= ~(ETH_GMAC_PCS_ENABLE_MASK | ETH_GMAC_INBAND_AN_MASK);
 
 	MV_REG_WRITE(ETH_GMAC_CTRL_2_REG(port), regVal);
 }

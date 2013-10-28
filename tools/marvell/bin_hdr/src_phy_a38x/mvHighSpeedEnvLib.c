@@ -70,13 +70,69 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
 	MV_U32 i;
 
-	DEBUG_INIT_S("Initializing PCIe 1 on lane 2 -");
+	DEBUG_INIT_S("Initializing PCIe-0 on lane 1 - ");
+
+	//print "Set the capabilities register"
+	MV_REG_WRITE(0x8006c, 0x7ac12);
+
+	//rint "STEP-0 Configure the MUX select for PCIe-1 on Serdes Lane 2"
+	MV_REG_WRITE(0x183fc, 0x8);
+
+	//;print "STEP-1 Set values that should be constant from beginning of sequence"
+	MV_REG_WRITE(0x18328, 0x04470004);
+	MV_REG_WRITE(0x1832c, 0x00000058);
+	MV_REG_WRITE(0x18334, 0x0000000d);
+
+	//print "STEP-2 Assert reset"
+	// Nothing to do as both bit 13, 14 are asserted to reset by default
+
+	//print "STEP-3 Deassert reset"
+	MV_REG_WRITE(0x18328, 0x04476004);
+
+	//print "STEP-6"
+	MV_REG_WRITE(0xA0F04, 0x00000025);
+
+	//print "STEP-4"
+	MV_REG_WRITE(0xA0804, 0x0000fc60);
+
+	//print "STEP-5 PHY gen max"
+	MV_REG_WRITE(0xA0894, 0x000017ff);
+
+	//7. Irrelevent - USB device mode only
+
+	//print "STEP-8, not needed - only for simulation"
+	//data.out 0xD00A1200 %LONG 0x00001000
+
+	//print "STEP-9 "
+	MV_REG_WRITE(0xA093c, 0x0000a08a);	//bit 7 = 1.bit 6=0
+
+	//print "STEP-10, not needed - only for simulation"
+	//;data.out 0xD00A1144 %LONG 0x00000304 ; check if we need to write to this register
+
+	//print "Release phy reset"
+	MV_REG_WRITE(0xA0F04, 0x00000024);
+
+	//print "Enable PCIe interface"
+	MV_REG_WRITE(0x18204, 0x0707c0f1);
+
+	for (i=0; i<100000; i++) {
+		if ((MV_REG_READ(0x81a64) & 0xFF) == 0x7E) {
+			DEBUG_INIT_S("LINK UP ;-)\n");
+			break;
+		}
+		mvOsUDelay(10);
+	}
+
+	if (i==100000)
+		DEBUG_INIT_S("NO LINK\n");
+
+	DEBUG_INIT_S("Initializing PCIe-1 on lane 2 - ");
 
 	//print "Set the capabilities register"
 	MV_REG_WRITE(0x4006c, 0x7ac12);
 
 	//rint "STEP-0 Configure the MUX select for PCIe-1 on Serdes Lane 2"
-	MV_REG_WRITE(0x183fc, 0x40);
+	MV_REG_WRITE(0x183fc, 0x48); // Keeping also PCI-0
 
 	//;print "STEP-1 Set values that should be constant from beginning of sequence"
 	MV_REG_WRITE(0x18350, 0x04470004);
@@ -113,11 +169,11 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	MV_REG_WRITE(0xA1704, 0x00000024);
 
 	//print "Enable PCIe interface"
-	MV_REG_WRITE(0x18204, 0x0707c0f2);
+	MV_REG_WRITE(0x18204, 0x0707c0f3); // Keeping also PCI-0
 
 	for (i=0; i<100000; i++) {
 		if ((MV_REG_READ(0x41a64) & 0xFF) == 0x7E) {
-			DEBUG_INIT_S("Done\n");
+			DEBUG_INIT_S("LINK UP ;-)\n");
 			return MV_OK;
 		}
 		mvOsUDelay(10);

@@ -242,9 +242,6 @@ extern "C" {
 #ifndef MV_ASMLANGUAGE
 
 #define TBL_UNUSED      0       /* Used to mark unused entry */
-#define FREQ_MODES_NUM		29
-#define FREQ_MODES_NUM_6810	3
-#define FREQ_MODES_NUM_6820	3
 
 
 /* This enumerator defines the Marvell Units ID      */

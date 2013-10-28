@@ -30,8 +30,6 @@ enum {
 	CMD_UNKNOWN
 };
 
-MV_FREQ_MODE coreClockTbl[] = MV_USER_SAR_FREQ_MODES;
-
 MV_FREQ_MODE cpuDdrClkTbl[] = MV_SAR_FREQ_MODES;
 
 
@@ -180,15 +178,18 @@ static int sar_cmd_get(const char *cmd)
 
 static int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 {
-	MV_FREQ_MODE pFreqModes[] = MV_USER_SAR_FREQ_MODES;
-	int i, maxFreqModes = mvBoardFreqModesNumGet();
+	MV_FREQ_MODE pFreqModes[] = MV_SAR_FREQ_MODES;
+	int i;
 
 	switch (satrInfo->satrId) {
 	case MV_SATR_CPU_DDR_L2_FREQ:
 		mvOsPrintf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n");
 		mvOsPrintf("\n| ID  | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
 		mvOsPrintf("---------------------------------------------------------\n");
-		for (i=0; i < maxFreqModes; i++) {
+		for (i=0; i <= MV_SAR_FREQ_MODES_EOT; i++) {
+			if (pFreqModes[i].id == MV_SAR_FREQ_MODES_EOT)
+				break;
+
 			mvOsPrintf("|  %2d |      %4d      |      %d       |      %d      | \n",
 				pFreqModes[i].id,
 				pFreqModes[i].cpuFreq,

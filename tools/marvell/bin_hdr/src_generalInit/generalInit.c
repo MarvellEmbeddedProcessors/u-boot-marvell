@@ -99,7 +99,7 @@ MV_STATUS mvGeneralInit(void)
 #endif
 #if !defined(MV_NO_PRINT)
 	mvUartInit();
-	DEBUG_INIT_S("General initialization - Version: " GENERAL_VERION "\n");
+	DEBUG_INIT_S("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
 #endif
 	return MV_OK;
 }

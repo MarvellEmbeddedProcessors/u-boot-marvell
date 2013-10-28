@@ -139,34 +139,6 @@ MV_U32 mvCtrlGetCpuNum(MV_VOID)
 	return 0;
 }
 
-/*******************************************************************************
-* mvCtrlIsValidSatR
-*
-* DESCRIPTION: check frequency modes table and verify current mode is supported
-*
-* INPUT: None
-*
-* OUTPUT: None
-*
-* RETURN:
-*        MV_TRUE - if current cpu/ddr/l2 frequency mode is supported for board
-*
-*******************************************************************************/
-MV_BOOL mvCtrlIsValidSatR(MV_VOID)
-{
-	MV_U32 i, cpuFreqMode, maxFreqModes = mvBoardFreqModesNumGet();
-	MV_FREQ_MODE pFreqModes[] = MV_USER_SAR_FREQ_MODES;
-
-	cpuFreqMode =  mvBoardSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
-
-	for (i = 0; i < maxFreqModes; i++) {
-		if (cpuFreqMode == pFreqModes[i].id)
-			return MV_TRUE;
-	}
-
-	return MV_FALSE;
-}
-
 #ifdef MV_INCLUDE_PEX
 MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 {
@@ -390,14 +362,19 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 {
 	MV_FREQ_MODE freqTable[] = MV_SAR_FREQ_MODES;
-	MV_U32 freqModeSatRValue, satrVal;
+	MV_U32 freqModeSatRValue, satrVal, i;
 
 	satrVal = MV_REG_READ(MPP_SAMPLE_AT_RESET);
 	freqModeSatRValue = (satrVal & SATR_CPU_FREQ_MASK) >> SATR_CPU_FREQ_OFFS;
 
-	if (freqModeSatRValue <= 29) {
-		*freqMode = freqTable[freqModeSatRValue];
-		return MV_OK;
+	for (i = 0; i <= MV_SAR_FREQ_MODES_EOT; i++) {
+		if (freqTable[i].id == MV_SAR_FREQ_MODES_EOT)
+			break;  /* reached end of table */
+
+		if (freqTable[i].id == freqModeSatRValue) {
+			*freqMode = freqTable[i];
+			return MV_OK;
+		}
 	}
 	DB(mvOsPrintf("%s: Error Read from S@R fail\n", __func__));
 	return MV_ERROR;

@@ -1130,42 +1130,6 @@ MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx)
 }
 
 /*******************************************************************************
-* mvBoardFreqModesNumGet
-*
-* DESCRIPTION: Return the number of supported frequency modes for this SoC
-*
-*
-* INPUT:
-*      None.
-*
-* OUTPUT:
-*      None.
-*
-* RETURN:
-*      Number of supported frequency modes
-*
-*******************************************************************************/
-MV_U32 mvBoardFreqModesNumGet()
-{
-	MV_U32 freqNum;
-
-	switch (mvCtrlModelGet()) {
-	case MV_6810_DEV_ID:
-		freqNum = FREQ_MODES_NUM_6810;
-		break;
-	case MV_6820_DEV_ID:
-		freqNum = FREQ_MODES_NUM_6820;
-		break;
-	default:
-		mvOsPrintf("%s: Error: failed to read ctrlModel (SoC ID)\n", __func__);
-		return MV_ERROR;
-	}
-
-	return freqNum;
-}
-
-
-/*******************************************************************************
 * mvBoardConfigWrite - write MPP's config and Board general environment configuration
 *
 * DESCRIPTION:

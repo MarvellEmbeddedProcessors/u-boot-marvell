@@ -485,7 +485,6 @@ MV_U8 mvBoardCpuFreqGet(MV_VOID);
 MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal);
 MV_STATUS mvBoardIsInternalSwitchConnected(void);
 MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx);
-MV_U32 mvBoardFreqModesNumGet(void);
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
 MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum);
 MV_VOID mvBoardMacSpeedSet(MV_U32 ethPortNum, MV_BOARD_MAC_SPEED macSpeed);

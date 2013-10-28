@@ -363,6 +363,9 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	/*Enable PUP bit for NOR*/
 	MV_REG_BIT_SET(PUP_EN_REG, BIT6);
 #endif
+	/* change default because Egiga0 is not alive by default */
+	MV_REG_WRITE(GENERAL_PURPOSE_RESERVED1_REG, GENERAL_PURPOSE_RESERVED1_DEFAULT_VALUE);
+
 	/* XXX: Following setting should be configured by u-boot */
 	/* Disable arbitration between device and NAND */
 	MV_REG_BIT_RESET(SOC_DEV_MUX_REG, BIT27);

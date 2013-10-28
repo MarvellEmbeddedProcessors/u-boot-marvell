@@ -36,6 +36,7 @@
 #include <common.h>
 #include "mvTypes.h"
 #include "mvBoardEnvLib.h"
+#include "mvBoardEnvSpec.h"
 #include "mvCpuIf.h"
 #include "mvCtrlEnvLib.h"
 #include "mvDebug.h"
@@ -1026,7 +1027,14 @@ int late_print_cpuinfo(void)
 	display_dram_config(1);
 	return 0;
 }
-
+int board_early_init_f (void)
+{
+	/* set mpp0,1 to uart and MPP 2,3 to twsi */
+        MV_U32 regData = (MV_REG_READ(mvCtrlMppRegGet(0))  & ~(GROUP0_DEFAULT_MPP_TWSI_I2C_MASK));
+        regData |= GROUP0_DEFAULT_MPP_TWSI_I2C;
+        MV_REG_WRITE(mvCtrlMppRegGet(0), regData);
+	return 0;
+}
 int misc_init_r(void)
 {
 	mvBoardDebugLed(5);

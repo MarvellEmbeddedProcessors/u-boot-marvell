@@ -188,6 +188,11 @@ extern "C" {
 /* PUP registers */
 /*****************/
 #define PUP_EN_REG                              0x1864C
+/*****************/
+/* General Purpose registers */
+/*****************/
+#define GENERAL_PURPOSE_RESERVED1_REG		0x182E4
+#define GENERAL_PURPOSE_RESERVED1_DEFAULT_VALUE	(~BIT17)
 
 /* Extract CPU, L2, DDR clocks SAR value from
 ** SAR bits 24-27

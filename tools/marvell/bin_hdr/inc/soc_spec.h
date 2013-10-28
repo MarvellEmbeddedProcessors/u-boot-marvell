@@ -82,7 +82,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef MV_TEST_PLATFORM
 	#define RAM_TOP			0x81004000 /*  Use PEX memory - (16KB for MMU table) */
 #else
-	#define RAM_TOP			0x40004000 /*  L2 cache 512KB - (16KB for MMU table) */
+	#define RAM_TOP			0x40000000 /*  L2 cache 512KB - (16KB for MMU table) */
 #endif
 
 #define HDR_BLK_OFFSET		0x00000000	/* Header is 64KB long? */

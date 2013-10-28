@@ -90,8 +90,139 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #endif
 
 #if defined(MV88F68XX)
+void _staticDelay(void)
+{
+	unsigned int status;
+
+	do {
+		mvOsUDelay(10);	/* wait 10ns before reading  capability for speed */
+		status = MV_REG_READ(0x000016A0) & (1 << 31);
+
+	} while (status);
+}
+
 MV_STATUS ddr3Init(void)
 {
+	MV_U32 i;
+
+	DEBUG_INIT_S("DRAM STATIC INIT (667 MHZ) 1.0.0 - ");
+
+	MV_REG_WRITE(0x00001400, 0x7B00Ca28);	/* DDR SDRAM Configuration Register  		*/
+	MV_REG_WRITE(0x00001404, 0x36301820);	/* Dunit Control Low Register - kw40 bit11 high */
+	MV_REG_WRITE(0x00001408, 0x43149997);	/* DDR SDRAM Timing (Low) Register              */
+	MV_REG_WRITE(0x0000140C, 0x38411bc7);	/* DDR SDRAM Timing (High) Register             */
+	MV_REG_WRITE(0x00001410, 0x14300000); 	/* DDR SDRAM Address Control Register     	*/
+	MV_REG_WRITE(0x00001414, 0x00000700);	/* DDR SDRAM Open Pages Control Register  	*/
+/*
+	MV_REG_WRITE(0x00001418, 0x00000e00);  DDR SDRAM Operation Register     );
+	MV_REG_WRITE(0x0000141C, 0x00000672);  DDR SDRAM Mode Register          );
+	MV_REG_WRITE(0x00001420, 0x00000004);  DDR SDRAM Extended Mode Register );
+*/
+	MV_REG_WRITE(0x00001424, 0x0060f3ff);	/* Dunit Control High Register ( 2 :1 - bits 15:12 = 0xD )  */
+	MV_REG_WRITE(0x00001428, 0x000F8830);   /* Dunit Control High Register                              */
+	MV_REG_WRITE(0x0000142C, 0x028c50f8);   /* Dunit Control High Register  ( 2:1 -  bit 29 = '1' )     */
+	MV_REG_WRITE(0x0000147C, 0x0000c671);   /*  */
+
+	MV_REG_WRITE(0x0001494, 0x00030000);  /* DDR SDRAM ODT Control (Low) Register  */
+/*	MV_REG_WRITE(0x0001498, 0x00000000);   DDR SDRAM ODT Control (High) Register  */
+/*	MV_REG_WRITE(0x000149C,  0x00000003);  DDR Dunit ODT Control Register */
+	MV_REG_WRITE(0x000149C, 0x00000300);  /* DDR Dunit ODT Control Register  */
+
+	MV_REG_WRITE(0x00014a8, 0x00000000);
+	MV_REG_WRITE(0x00014cc, 0xbd09000d);
+	MV_REG_WRITE(0x0001474, 0x00000000);
+
+	MV_REG_WRITE(0x0001538, 0x00000009);  /* Read Data Sample Delays Register */
+	MV_REG_WRITE(0x000153C, 0x0000000c);  /* Read Data Ready Delay Register  */
+
+	MV_REG_WRITE(0x0001504, 0xFFFFFFF1);
+	MV_REG_WRITE(0x000150c, 0xFFFFFFE5);
+	MV_REG_WRITE(0x0001514, 0x00000000);
+	MV_REG_WRITE(0x000151c, 0x00000000);
+
+	MV_REG_WRITE(0x00015D0, 0x00000650);  /* MR0 */
+	MV_REG_WRITE(0x00015D4, 0x00000046);  /* MR1 */
+	MV_REG_WRITE(0x00015D8, 0x00000010);  /* MR2 */
+	MV_REG_WRITE(0x00015DC, 0x00000000);  /* MR3 */
+
+	MV_REG_WRITE(0x00015E0, 0x23);
+	MV_REG_WRITE(0x00015E4, 0x00203c18); /* ZQC Configuration Register  */
+	MV_REG_WRITE(0x00015EC, 0xf8000019); /* DDR PHY                     */
+
+	MV_REG_WRITE(0x00016A0, 0xe8243dfe);	/* ZNR / SPR                */
+	MV_REG_WRITE(0x00016A0, 0xe8280434);   /* disable clamp and Vref   */
+
+	MV_REG_WRITE(0x00016A0, 0x281020da);   /* Clock skew               */
+	MV_REG_WRITE(0x00016A0, 0xe8260cb2);
+	MV_REG_WRITE(0x00016A0, 0xe8290000);
+	MV_REG_WRITE(0x00016A0, 0xf810001f);
+
+	MV_REG_WRITE(0x00016A0, 0xC0005847);
+
+	//DEBUG_INIT_S("while 1 ");
+	_staticDelay();
+	MV_REG_WRITE(0x00016A0, 0xC0406049);
+	//DEBUG_INIT_S(" 2");
+	_staticDelay();
+
+	MV_REG_WRITE(0x00016A0, 0xC080704d );
+	//DEBUG_INIT_S(" 3");
+	_staticDelay();
+
+	MV_REG_WRITE(0x00016A0, 0xC0C0a85b);
+	//DEBUG_INIT_S(" 4");
+	_staticDelay();
+
+
+	MV_REG_WRITE(0x00016A0, 0xC002008d );
+	//DEBUG_INIT_S(" 5");
+	_staticDelay();
+
+	MV_REG_WRITE(0x00016A0, 0xC0420084);
+	//DEBUG_INIT_S(" 6");
+	_staticDelay();
+
+	MV_REG_WRITE(0x00016A0, 0xC082009f );
+	//DEBUG_INIT_S(" 7");
+	_staticDelay();
+
+	MV_REG_WRITE(0x00016A0, 0xC0c20099);
+	//DEBUG_INIT_S(" 8");
+	_staticDelay();
+
+	MV_REG_WRITE(0x00016A0, 0xC003000F);
+	//DEBUG_INIT_S(" 9");
+	_staticDelay();
+
+	MV_REG_WRITE(0x00016A0, 0xC043000f);
+	//DEBUG_INIT_S(" A");
+	_staticDelay();
+
+	MV_REG_WRITE(0x00016A0, 0xC083000f);
+	//DEBUG_INIT_S(" B");
+	_staticDelay();
+
+	MV_REG_WRITE(0x00016A0, 0xC0C3000f );
+	//DEBUG_INIT_S(" C");
+	_staticDelay();
+	//DEBUG_INIT_S(" D\n");
+	MV_REG_WRITE(0x00001480, 0x00000001);  /* DDR SDRAM Initialization Control Register */
+	for (i=0; i<1000000; i++) {
+		if ((MV_REG_READ(0x00001480) & 0x1) == 0x0)
+			break;
+	}
+	//mvOsUDelay(1000000);	/* wait 2ms before reading  capability for speed */
+	DEBUG_INIT_S("Done ;-)\n");
+
+	MV_REG_WRITE(0x000015B0, 0x80100008);	/* WL              */
+	mvOsUDelay(1000);
+	MV_REG_WRITE(0x000015B0, 0x80100002);   /* Load pattern ;  */
+	mvOsUDelay(1000);
+	MV_REG_WRITE(0x000015B0, 0x80100040);   /* RL              */
+	mvOsUDelay(1000);
+	MV_REG_WRITE(0x000200e8, 0x0); 		/* RL */
+	MV_REG_WRITE(0x00020184, 0x0FFFFFE1); 	/* RL */
+
 	return MV_OK;
 }
 

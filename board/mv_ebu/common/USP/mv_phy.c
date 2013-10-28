@@ -166,15 +166,17 @@ void mvBoardLedMatrixInit(void)
 	MV_REG_WRITE(LED_MATRIX_CONTROL_REG(2), BIT0 | BIT2 | BIT3 | BIT5);
 
 	/* initialize internal PHYs controlled by switch */
-	for (i = 0; i < 4; i++) {
-		mvOsDelay(10);
-		mvEthSwitchPhyRegWrite(0x0, i, 0x16, 0x3);
-		mvOsDelay(10);
-		mvEthSwitchPhyRegWrite(0x0, i, 0x10, 0x1791);
-		mvOsDelay(10);
-		mvEthSwitchPhyRegWrite(0x0, i, 0x11, 0x8801);
-		mvOsDelay(10);
-		mvEthSwitchPhyRegWrite(0x0, i, 0x16, 0x0);
+	if (mvBoardIsInternalSwitchConnected() == MV_TRUE) {
+		for (i = 0; i < 4; i++) {
+			mvOsDelay(10);
+			mvEthSwitchPhyRegWrite(0x0, i, 0x16, 0x3);
+			mvOsDelay(10);
+			mvEthSwitchPhyRegWrite(0x0, i, 0x10, 0x1791);
+			mvOsDelay(10);
+			mvEthSwitchPhyRegWrite(0x0, i, 0x11, 0x8801);
+			mvOsDelay(10);
+			mvEthSwitchPhyRegWrite(0x0, i, 0x16, 0x0);
+		}
 	}
 
 	/* initialize External RGMII-0 PHY (SMI controlled by MAC0 @address 0x1) */

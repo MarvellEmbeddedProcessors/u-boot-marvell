@@ -69,7 +69,7 @@
 #define MV_USB
 #define MV_FS
 #define CONFIG_CMD_DATE
-
+#define CONFIG_BOARD_EARLY_INIT_F
 /*
  * Debug
  */

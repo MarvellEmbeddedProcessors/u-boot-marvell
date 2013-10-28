@@ -322,9 +322,6 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 {
 	MV_U32 i, gppMask;
 
-	/* Set I2C MPP's(MPP Group 1), before reading board configuration, using TWSI read */
-	MV_REG_WRITE(mvCtrlMppRegGet(1), GROUP1_DEFAULT_MPP_SPI_I2C);
-
 
 	/* If set to Auto detect, read board config info, update MPP group types*/
 	if (mvBoardConfigAutoDetectEnabled()) {

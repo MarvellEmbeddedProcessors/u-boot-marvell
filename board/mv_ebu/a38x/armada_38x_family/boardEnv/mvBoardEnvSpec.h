@@ -108,7 +108,8 @@
    57-59	SDIO 8 Bit				5
     51		USB Device detect0			0
 */
-#define GROUP1_DEFAULT_MPP_SPI_I2C         0x22000022  /* SPI , I2C */
+#define GROUP0_DEFAULT_MPP_TWSI_I2C         0x1111  /* TWSI , I2C */
+#define GROUP0_DEFAULT_MPP_TWSI_I2C_MASK    0xFFFF  /* TWSI , I2C */
 /*******************************************************************************
 * A380 DB-68xx board
 *******************************************************************************/

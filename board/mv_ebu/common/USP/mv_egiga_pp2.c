@@ -224,8 +224,8 @@ static int mvEgigaLoad(int port, char *name, char *enet_addr)
 	struct eth_device *dev = NULL;
 	egigaPriv *priv = NULL;
 
-	/* First disable and reset GMAC */
-	mvEthPortPowerDown(priv->port);
+	/* First disable GMAC */
+	mvEthPortDisable(priv->port);
 
 	dev = malloc(sizeof(struct eth_device));
 	if (!dev) {
@@ -416,7 +416,7 @@ static int mvEgigaHalt(struct eth_device *dev)
 
 	mv_eth_bm_stop();
 
-	mvEthPortPowerDown(priv->port);
+	mvEthPortDisable(priv->port);
 
 	return 0;
 }

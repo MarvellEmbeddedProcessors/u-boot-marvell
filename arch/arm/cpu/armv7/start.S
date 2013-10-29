@@ -136,6 +136,48 @@ reset:
 	ldr r0, =0xD0008100
 	str r1, [r0]
 
+#if defined (MV88F66XX) || defined (MV88F672X)
+/* set lower RTC/WTC configurations (01/00) for Avanta-LP & Armada-375
+   this WA is relevant only for Z1,Z2,Z3 stepping revisions */
+
+	/* Read revision ID value
+	 r0 = (MV_REG_READ(DEV_VERSION_ID_REG) & REVISON_ID_MASK) >> REVISON_ID_OFFS; */
+	ldr r0, =0xD001823C
+	ldr r1, [r0]
+	and r1, r1, #0xF00
+	mov r1, r1, lsr #8
+
+	/* Z1=0, Z2=1, Z3=2 */
+	cmp r1, #2
+	bgt not_z_revision
+
+	/* CPU RAMs */
+	ldr r2, =0x00000E01
+	ldr r3, =0xD00E8000
+	str r2, [r3]
+
+	ldr r1, =0x11111111
+	ldr r0, =0xD00EA100
+	str r1, [r0]
+
+	/* SCU  RAMs */
+	str r2, [r3]
+
+	ldr r1, =0x00000001
+	ldr r0, =0xD00EA108
+	str r1, [r0]
+
+	/* L2 RAMs */
+	str r2, [r3]
+
+	ldr r1, =0x00000111
+	ldr r0, =0xD00EA10c
+	str r1, [r0]
+
+not_z_revision:
+
+#endif /* (MV88F66XX) || (MV88F672X) */
+
 	/* Disable windows that overlap with 0xF1000000	*/
 	/* By default, window #12 overlaps with 0xF1000000 */
 	mov  r1, #0

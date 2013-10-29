@@ -625,6 +625,10 @@ void pci_init_board(void)
 			       pexHWInf, pexIf);
 		else {
 			if (status == MV_OK) {
+				/* Start counting PCI buses since at least one interface was found with LINK UP */
+				link_found = 1;
+				lastPexIfWithFoundLink = pexIf;
+
 				/* Link detected. Set U-BOOT scan parameters */
 				pci->current_busno = pci->first_busno;
 				pci->last_busno = 0xff;

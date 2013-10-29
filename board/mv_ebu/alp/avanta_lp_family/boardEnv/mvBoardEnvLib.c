@@ -2559,7 +2559,11 @@ MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 	twsiSlave.validOffset = MV_TRUE;
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
-	twsiSlave.moreThen256 = MV_FALSE;
+
+	if (twsiClass == BOARD_DEV_TWSI_EEPROM)
+		twsiSlave.moreThen256 = MV_TRUE;
+	else
+		twsiSlave.moreThen256 = MV_FALSE;
 
 	if (MV_OK != mvTwsiRead(0, &twsiSlave, &data, 1)) {
 		mvOsPrintf("%s: Twsi Read fail\n", __func__);
@@ -2607,7 +2611,14 @@ MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 		      twsiSlave.slaveAddr.address, twsiSlave.slaveAddr.type, regVal));
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
-	twsiSlave.moreThen256 = MV_FALSE;
+
+	/* need to use 2 address bytes when accessing EEPROM */
+	if (twsiClass == BOARD_DEV_TWSI_EEPROM)
+		twsiSlave.moreThen256 = MV_TRUE; /* use  2 address bytes */
+	else
+		twsiSlave.moreThen256 = MV_FALSE; /* use  1 address byte */
+
+
 	if (MV_OK != mvTwsiWrite(0, &twsiSlave, &regVal, 1)) {
 		DB(mvOsPrintf("%s: Write S@R fail\n", __func__));
 		return MV_ERROR;

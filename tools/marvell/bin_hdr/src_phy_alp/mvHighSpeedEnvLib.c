@@ -247,6 +247,7 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *tempVal)
     MV_STATUS rc1, rc2;
     MV_BOOL isEepromEnabled = mvCtrlIsEepromEnabled();
     MV_U32 address = (isEepromEnabled ? BOARD_DEV_TWSI_EEPROM : BOARD_DEV_TWSI_IO_EXPANDER);
+    MV_U8 temp;
 
     rc1 = mvBoardTwsiGet(address, 0, 0, &tempVal[0] ); /* EEPROM/Dip Switch Reg#0 */
     rc2 = mvBoardTwsiGet(address, 0, 1, &tempVal[1] );  /* EEPROM/Dip Switch Reg#1 */
@@ -257,8 +258,14 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *tempVal)
 	 * Solution: after reading IO expander, reverse bits of both registers
 	 */
 	if (isEepromEnabled != MV_TRUE) {
-		tempVal[0] = mvReverseBits(tempVal[0]);
+		/* Reverse all BITS */
 		tempVal[1] = mvReverseBits(tempVal[1]);
+
+		/* Swap field's MSB with LSB */
+		temp = (configVal[1] & 0x18) >> 3;
+		temp = mvReverseBits(temp) >> 6;
+		tempVal[1] &= ~0x18;
+		tempVal[1] |= temp << 3;
 	}
 
     /* verify that all TWSI reads were successfully */
@@ -293,10 +300,10 @@ MV_VOID mvCtrlSatrInit(void)
 			boardLaneConfig[1] = SERDES_UNIT_PEX;
 			break;
 		case 1:
-			boardLaneConfig[1] = SERDES_UNIT_SATA;
+			boardLaneConfig[1] = SERDES_UNIT_SGMII;
 			break;
 		case 2:
-			boardLaneConfig[1] = SERDES_UNIT_SGMII;
+			boardLaneConfig[1] = SERDES_UNIT_SATA;
 			break;
 		case 3:
 		default:

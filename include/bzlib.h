@@ -257,6 +257,16 @@ BZ_EXTERN int BZ_API(BZ2_bzBuffToBuffCompress) (
       int           workFactor
    );
 
+BZ_EXTERN int BZ_API(BZ2_bzBuffToBuffDecompress_extended) (
+      char*         dest,
+      unsigned int* destLen,
+      char*         source,
+      unsigned int  sourceLen,
+      unsigned int* total_in,
+      int           small,
+      int           verbosity
+   );
+
 BZ_EXTERN int BZ_API(BZ2_bzBuffToBuffDecompress) (
       char*         dest,
       unsigned int* destLen,

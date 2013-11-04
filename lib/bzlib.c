@@ -1372,6 +1372,55 @@ int BZ_API(BZ2_bzBuffToBuffDecompress)
    return ret;
 }
 
+int BZ_API(BZ2_bzBuffToBuffDecompress_extended)
+			   ( char*         dest,
+			     unsigned int* destLen,
+			     char*         source,
+			     unsigned int  sourceLen,
+           unsigned int* total_in,
+			     int           small,
+			     int           verbosity )
+{
+   bz_stream strm;
+   int ret;
+
+   if (destLen == NULL || source == NULL)
+	  return BZ_PARAM_ERROR;
+
+   strm.bzalloc = NULL;
+   strm.bzfree = NULL;
+   strm.opaque = NULL;
+   ret = BZ2_bzDecompressInit ( &strm, verbosity, small );
+   if (ret != BZ_OK) return ret;
+
+   strm.next_in = source;
+   strm.next_out = dest;
+   strm.avail_in = sourceLen;
+   strm.avail_out = *destLen;
+
+   ret = BZ2_bzDecompress ( &strm );
+   *total_in = strm.total_in_lo32;
+   if (ret == BZ_OK) {
+	if (strm.avail_out > 0) {
+		BZ2_bzDecompressEnd ( &strm );
+		return BZ_UNEXPECTED_EOF;
+	} else {
+		BZ2_bzDecompressEnd ( &strm );
+		return BZ_OUTBUFF_FULL;
+	}
+   }
+
+   if (ret != BZ_STREAM_END) {
+	BZ2_bzDecompressEnd ( &strm );
+	return ret;
+   }
+
+   /* normal termination */
+   *destLen -= strm.avail_out;
+   BZ2_bzDecompressEnd ( &strm );
+   return BZ_OK;
+}
+
 
 /*---------------------------------------------------*/
 /*--

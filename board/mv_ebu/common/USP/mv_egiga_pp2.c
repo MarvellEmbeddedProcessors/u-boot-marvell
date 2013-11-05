@@ -158,7 +158,7 @@ static void mv_eth_bm_stop(MV_VOID)
 	unsigned char *buff;
 
 	for (i = 0; i < EGIGA_BM_SIZE; i++) {
-		buff = (unsigned char *)mvBmPoolGet(EGIGA_BM_POOL);
+		buff = (unsigned char *)mvBmPoolGet(EGIGA_BM_POOL, NULL);
 		free(buff);
 	}
 

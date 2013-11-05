@@ -119,12 +119,14 @@ static INLINE void mvBmPoolMcPut(int pool, MV_U32 bufPhysAddr, MV_U32 bufVirtAdd
 	mvBmPoolPut(pool, bufPhysAddr | MV_BM_PHY_RLS_MC_BUFF_MASK, bufVirtAddr);
 }
 
-static INLINE MV_U32 mvBmPoolGet(int pool)
+static INLINE MV_U32 mvBmPoolGet(int pool, MV_U32 *bufPhysAddr)
 {
-	MV_U32 bufVirtAddr;
+	MV_U32 bufVirtAddr, physAddr;
 
-	mvPp2RdReg(MV_BM_PHY_ALLOC_REG(pool)); /* read physical address */
+	physAddr = mvPp2RdReg(MV_BM_PHY_ALLOC_REG(pool)); /* read physical address */
 	bufVirtAddr = mvPp2RdReg(MV_BM_VIRT_ALLOC_REG); /* return virtual address */
+	if (bufPhysAddr)
+		*bufPhysAddr = physAddr;
 
 	return bufVirtAddr;
 }

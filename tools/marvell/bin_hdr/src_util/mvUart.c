@@ -109,11 +109,7 @@ MV_VOID mvUartInit(void)
     MV_U32  tmpTClkRate;
     MV_U32 baudDivisor = 0;
 
-#if defined(MV88F68XX)
-    tmpTClkRate = _200MHZ;
-#else
     tmpTClkRate = mvBoardTclkGet();
-#endif
 
 
     /*  UART Init */

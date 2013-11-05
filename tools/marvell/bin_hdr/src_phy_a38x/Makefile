@@ -65,8 +65,6 @@
 
 include ../base.mk
 sinclude ../../../../include/autoconf.mk
-#just for compilation 1 time.
-CFLAGS += -DCONFIG_DB_78x60_BP_REV2
 
 ifeq "$(MAKECMDGOALS)" "rtl"
   MVFLAGS += MV_RTL_PLATFORM=1 MV_NO_PRINT=1

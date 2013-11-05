@@ -87,6 +87,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define GENERATION_DIVIDER_FORCE_REG            0xd00a0144
 #define RESET_DFE_REG                           0xd00a0148
 
+/* Sample at Reset */
+#define MPP_SAMPLE_AT_RESET		            (0x18600)
 
 /* TWSI addresses */
 #define BOARD_ID_GET_ADDR                       0x54

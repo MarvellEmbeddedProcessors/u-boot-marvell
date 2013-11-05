@@ -80,8 +80,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_6650_DEV_ID                          0x6650
 #define MV_6610_DEV_ID                          0x6610
 
-/* Sample at Reset */
-#define MPP_SAMPLE_AT_RESET(id)		            (0xE4200 + (id * 4))
 #define DEV_ID_REG			                    0x18238
 
 #define DEVICE_ID_OFFS			                16

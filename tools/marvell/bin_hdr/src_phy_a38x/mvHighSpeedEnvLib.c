@@ -183,3 +183,19 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	return MV_OK;
 }
+
+/***************************************************************************/
+MV_U32 mvBoardTclkGet(MV_VOID)
+{
+	MV_U32 tclk;
+	tclk = (MV_REG_READ(MPP_SAMPLE_AT_RESET));
+	tclk = ((tclk & (1 << 15)) >> 15);
+	switch (tclk) {
+	case 0:
+		return MV_BOARD_TCLK_250MHZ;
+	case 1:
+		return MV_BOARD_TCLK_200MHZ;
+	default:
+		return MV_BOARD_TCLK_250MHZ;
+	}
+}

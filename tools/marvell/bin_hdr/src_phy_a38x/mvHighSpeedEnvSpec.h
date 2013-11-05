@@ -214,7 +214,7 @@ typedef struct
 * OUTPUT:               None.
 * RETURNS:              MV_OK           -   for success
 ***************************************************************************/
-MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID);
+MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID);
 
 /**************************************************************************
 * mvSerdesPowerUpCtrl -

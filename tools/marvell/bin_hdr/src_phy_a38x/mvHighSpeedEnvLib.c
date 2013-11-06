@@ -65,12 +65,45 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvBHboardEnvSpec.h"
 //#include "mvCtrlPex.h"
 
+MV_U32 _MV_REG_READ(MV_U32 regAddr)
+{
+  DEBUG_INIT_FULL_S(" >>>       MV_REG_READ.  regAddr=0x");
+  DEBUG_INIT_FULL_D(INTER_REGS_BASE | (regAddr), 8);
+  DEBUG_INIT_FULL_S(" regData=0x");
+
+  MV_U32 regData = MV_MEMIO_LE32_READ((void *)(INTER_REGS_BASE | (regAddr)));
+
+  DEBUG_INIT_FULL_D(regData, 8);
+  DEBUG_INIT_FULL_S(" - Done\n");
+
+  return regData;
+}
+
+MV_VOID _MV_REG_WRITE(MV_U32 regAddr, MV_U32 regData)
+{
+  DEBUG_INIT_FULL_S(" >>>       MV_REG_WRITE. regAddr=0x");
+  DEBUG_INIT_FULL_D(INTER_REGS_BASE | (regAddr), 8);
+  DEBUG_INIT_FULL_S(" regData=0x");
+  DEBUG_INIT_FULL_D(regData, 8);
+
+  MV_MEMIO_LE32_WRITE((INTER_REGS_BASE | (regAddr)), (regData));
+  DEBUG_INIT_FULL_S(" - Done \n\n");
+}
+
+#define SERDES_LOCAL_DEBUG
+#ifdef SERDES_LOCAL_DEBUG
+#define MV_REG_WRITE 	_MV_REG_WRITE
+#define MV_REG_READ 	_MV_REG_READ
+#endif
+
+#define LINK_WAIT_CNTR	100
+#define LINK_WAIT_SLEEP	100
 
 MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
 	MV_U32 i;
 
-	DEBUG_INIT_S("Initializing PCIe-0 on lane 1 - ");
+	DEBUG_INIT_S("Initializing PCIe-0 on lane 1: \n");
 
 	//print "Set the capabilities register"
 	MV_REG_WRITE(0x8006c, 0x7ac12);
@@ -115,18 +148,18 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	//print "Enable PCIe interface"
 	MV_REG_WRITE(0x18204, 0x0707c0f1);
 
-	for (i=0; i<100000; i++) {
+	for (i=0; i<LINK_WAIT_CNTR; i++) {
 		if ((MV_REG_READ(0x81a64) & 0xFF) == 0x7E) {
 			DEBUG_INIT_S("LINK UP ;-)\n");
 			break;
 		}
-		mvOsUDelay(10);
+		mvOsUDelay(LINK_WAIT_SLEEP);
 	}
 
-	if (i==100000)
+	if (i==LINK_WAIT_CNTR)
 		DEBUG_INIT_S("NO LINK\n");
 
-	DEBUG_INIT_S("Initializing PCIe-1 on lane 2 - ");
+	DEBUG_INIT_S("Initializing PCIe-1 on lane 2:\n");
 
 	//print "Set the capabilities register"
 	MV_REG_WRITE(0x4006c, 0x7ac12);
@@ -171,15 +204,52 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	//print "Enable PCIe interface"
 	MV_REG_WRITE(0x18204, 0x0707c0f3); // Keeping also PCI-0
 
-	for (i=0; i<100000; i++) {
+	for (i=0; i<LINK_WAIT_CNTR; i++) {
 		if ((MV_REG_READ(0x41a64) & 0xFF) == 0x7E) {
 			DEBUG_INIT_S("LINK UP ;-)\n");
-			return MV_OK;
+			break;
 		}
-		mvOsUDelay(10);
+		mvOsUDelay(LINK_WAIT_SLEEP);
 	}
 
-	DEBUG_INIT_S("NO LINK\n");
+	if (i==LINK_WAIT_CNTR)
+		DEBUG_INIT_S("NO LINK\n");
+
+	DEBUG_INIT_S("Initializing SATA:\n");
+
+	MV_REG_WRITE(0xa80a0, 0x00000000);
+	MV_REG_WRITE(0xa80a4, 0x00000000);
+	MV_REG_WRITE(0xa80a0, 0x00000000);
+	//bits [3:0] => GenI 5 ,GENII 6,GENIII - 7
+	MV_REG_WRITE(0xa80a4, 0x00000046);
+	MV_REG_WRITE(0xa80a0, 0x00000004);
+	MV_REG_WRITE(0xa80a4, 0x00000000);
+
+
+	MV_REG_WRITE(0x183fC, 0x0000004A);
+	MV_REG_WRITE(0x18300, 0x08881802);
+	MV_REG_WRITE(0x1830C, 0x0000000F);
+	MV_REG_WRITE(0x18300, 0x08886002);
+	MV_REG_WRITE(0xa0004, 0x0000FC01);
+	MV_REG_WRITE(0xa0094, 0x00001BFF);
+	MV_REG_WRITE(0xa008C, 0x00000074);
+	MV_REG_WRITE(0xa013C, 0x0000044A);
+	MV_REG_WRITE(0x18300, 0x08876002);
+
+	MV_REG_WRITE(0xa80a0, 0x00000000);
+	//bits [3:0] => GenI 5 ,GENII 6,GENIII - 7
+	MV_REG_WRITE(0xa80a4, 0x00C40006);
+
+	for (i=0; i<LINK_WAIT_CNTR; i++) {
+		if ((MV_REG_READ(0x18318) & 0xD) == 0xD) {
+			DEBUG_INIT_S("PLL READY ;-)\n");
+			return MV_OK;
+		}
+		mvOsUDelay(LINK_WAIT_SLEEP);
+	}
+
+	if (i==LINK_WAIT_CNTR)
+		DEBUG_INIT_S("PLL NOT READY\n");
 
 	return MV_OK;
 }

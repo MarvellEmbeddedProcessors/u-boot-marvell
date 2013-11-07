@@ -118,7 +118,9 @@ typedef enum _mvConfigTypeID {
 	MV_CONFIG_MAC0_SW_SPEED,
 	MV_CONFIG_DEVICE_BUS_MODULE,
 	MV_CONFIG_SLIC_TDM_DEVICE,
-	MV_CONFIG_TYPE_MAX_OPTION
+	MV_CONFIG_TYPE_MAX_OPTION,
+	MV_CONFIG_TYPE_CMD_DUMP_ALL,
+	MV_CONFIG_TYPE_CMD_SET_DEFAULT
 } MV_CONFIG_TYPE_ID;
 
 /* This enumerator describes the possible SMI control options */
@@ -249,13 +251,12 @@ MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode);
 MV_VOID mvCtrlSatrInit(MV_VOID);
 MV_VOID mvCtrlSysConfigInit(MV_VOID);
 MV_U32 mvCtrlSysConfigGet(MV_CONFIG_TYPE_ID configField);
+MV_STATUS mvCtrlSysConfigSet(MV_CONFIG_TYPE_ID configField, MV_U8 value);
 MV_U32 mvCtrlGetCpuNum(MV_VOID);
 MV_BOOL mvCtrlIsSscgEnabled(MV_VOID);
 MV_U32 mvCtrlGetQuadNum(MV_VOID);
 MV_STATUS mvCtrlUpdatePexId(MV_VOID);
 MV_BOOL mvCtrlIsValidSatR(MV_VOID);
-MV_BOOL mvCtrlIsEepromEnabled(MV_VOID);
-MV_STATUS mvCtrlEepromEnable(MV_BOOL enable);
 MV_STATUS mvCtrlBoardConfigGet(MV_U8 *tempVal);
 MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit);
 MV_STATUS mvCtrlEnvInit(MV_VOID);

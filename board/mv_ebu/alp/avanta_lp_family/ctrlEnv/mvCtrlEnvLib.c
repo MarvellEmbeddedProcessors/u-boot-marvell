@@ -559,13 +559,42 @@ MV_U32 mvCtrlSysConfigGet(MV_CONFIG_TYPE_ID configField)
 
 	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
 		mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
-		mvOsPrintf("%s: Error: Requested board config is invalid for this board" \
-				" (%d)\n", __func__, configField);
+		DB(mvOsPrintf("%s: Error: Requested board config is invalid for this board" \
+				" (%d)\n", __func__, configField));
 		return MV_ERROR;
 	}
 
 	return boardOptionsConfig[configField];
 
+}
+
+/*******************************************************************************
+* mvCtrlSysConfigSet
+*
+* DESCRIPTION: Write Board configuration Field to local array
+*
+* INPUT: configField - Field description enum
+*
+* OUTPUT: None
+*
+* RETURN:
+*	Write requested Board configuration field value to local array
+*
+*******************************************************************************/
+MV_STATUS mvCtrlSysConfigSet(MV_CONFIG_TYPE_ID configField, MV_U8 value)
+{
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
+
+	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
+		mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
+		DB(mvOsPrintf("Error: Requested board config is invalid for this board" \
+				" (%d)\n", configField));
+		return MV_ERROR;
+	}
+
+	boardOptionsConfig[configField] = value;
+
+	return MV_OK;
 }
 
 /*******************************************************************************
@@ -618,9 +647,10 @@ MV_VOID mvCtrlSatrInit(void)
 *******************************************************************************/
 MV_VOID mvCtrlSysConfigInit()
 {
-	MV_U8 regNum, i, configVal[MV_IO_EXP_MAX_REGS];
+	MV_U8 regNum, i, configVal[MV_IO_EXP_MAX_REGS], readValue, bitsNum;
 	MV_BOARD_CONFIG_TYPE_INFO configInfo;
 	MV_BOOL readSuccess = MV_FALSE;
+	MV_BOOL isEepromEnabled = mvBoardIsEepromEnabled();
 
 	memset(&boardOptionsConfig, 0x0, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION );
 
@@ -632,13 +662,30 @@ MV_VOID mvCtrlSysConfigInit()
 
 	/* Save values Locally in configVal[] */
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
-		if (mvBoardConfigTypeGet(i, &configInfo) == MV_TRUE) {
-			readSuccess = MV_TRUE;
-			/* each Expander conatins 2 registers */
-			regNum = configInfo.expanderNum * 2 + configInfo.regNum;
-			boardOptionsConfig[configInfo.configId] =
-				(configVal[regNum] & configInfo.mask) >> configInfo.offset;
+		/* Get board configuration field information (Mask, offset, etc..) */
+		if (mvBoardConfigTypeGet(i, &configInfo) != MV_TRUE)
+			continue;
+
+		/* each Expander conatins 2 registers */
+		regNum = configInfo.expanderNum * 2 + configInfo.regNum;
+		readValue = (configVal[regNum] & configInfo.mask) >> configInfo.offset;
+
+		/*
+		 * Workaround for DIP Switch IO Expander 0x21 bug in DB-6660 board
+		 * Bug: Pins at IO expander 0x21 are reversed (only on DB-6660)
+		 * example : instead of reading 00000110, we read 01100000
+		 * WA step 1 (mvCtrlBoardConfigGet)
+		 *  after reading IO expander, reverse bits of both registers
+		 * WA step 2 (in mvCtrlSysConfigInit):
+		 *  after reversing bits, swap MSB and LSB - due to Dip-Switch reversed mapping
+		 */
+		if (!isEepromEnabled && configInfo.expanderNum == 0)  {
+			bitsNum = mvCountMaskBits(configInfo.mask);
+			readValue = mvReverseBits(readValue) >> (8-bitsNum);
 		}
+
+		boardOptionsConfig[configInfo.configId] =  readValue;
+		readSuccess = MV_TRUE;
 	}
 
 	if (readSuccess == MV_FALSE)
@@ -668,8 +715,10 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *config)
 {
 	MV_U32 boardId = mvBoardIdGet();
 	MV_STATUS status1, status2;
+	MV_BOOL isEepromEnabled = (mvBoardEepromInit() == MV_OK) ? MV_TRUE : MV_FALSE;
 
-	MV_BOOL isEepromEnabled = mvCtrlIsEepromEnabled();
+	config[0] = config[1] = config[2] = 0x0;
+
 	MV_BOARD_TWSI_CLASS twsiClass = (isEepromEnabled ? BOARD_DEV_TWSI_EEPROM : BOARD_DEV_TWSI_IO_EXPANDER);
 
 	status1 = mvBoardTwsiGet(twsiClass, 0, 0, &config[0]);		/* EEPROM/Dip Switch Reg#0 */
@@ -679,20 +728,23 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *config)
 		DB(mvOsPrintf("%s: Error: mvBoardTwsiGet from EEPROM/Dip Switch failed\n", __func__));
 		return MV_ERROR;
 	}
-
 	if (boardId == DB_6660_ID) { /* DB-6660 has another register for board configuration */
-		/*
-		 * Workaround for DIP Switch IO Expander 0x21 bug in DB-6660 board
-		 * Bug: Pins at IO expander 0x21 are reversed (only on DB-6660)
-		 * Solution: reverse bits after reading IO expander
-		 */
-		config[0] = mvReverseBits(config[0]);
-		config[1] = mvReverseBits(config[1]);
-
 		if (isEepromEnabled == MV_TRUE)
 			status1 = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 2, &config[2]);	/* EEPROM Reg#2 */
-		else
+		else {
 			status1 = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 1, 0, &config[2]);	/* Dip Switch Reg#1 */
+			/*
+			 * Workaround for DIP Switch IO Expander 0x21 bug in DB-6660 board
+			 * Bug: Pins at IO expander 0x21 are reversed (only on DB-6660)
+			 * example : instead of reading 00000110, we read 01100000
+			 * WA step 1 (mvCtrlBoardConfigGet)
+			 *  after reading IO expander, reverse bits of both registers
+			 * WA step 2 (in mvCtrlSysConfigInit):
+			 *  after reversing bits, swap MSB and LSB - due to Dip-Switch reversed mapping
+			 */
+			config[0] = mvReverseBits(config[0]);
+			config[1] = mvReverseBits(config[1]);
+		}
 
 		if (status1 != MV_OK) {
 			DB(mvOsPrintf("%s: Error: mvBoardTwsiGet from EEPROM/Dip Switch Reg#2 failed\n", __func__));
@@ -701,40 +753,6 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *config)
 	}
 
 	return MV_OK;
-}
-
-/*******************************************************************************
-* mvCtrlIsEepromEnabled - read jumper and verify if EEPROM is enabled
-*
-* DESCRIPTION:
-*       This function returns MV_TRUE if board configuration jumper is set to EEPROM.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_BOOL :  MV_TRUE if EEPROM enabled, else return MV_FALSE.
-*
-*******************************************************************************/
-MV_BOOL mvCtrlIsEepromEnabled()
-{
-	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
-	MV_U8 value;
-
-	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, &ioInfo) != MV_OK)
-	{
-		mvOsPrintf("%s: Error: Read from IO expander failed (EEPROM enabled jumper)\n", __func__);
-		return MV_FALSE;
-	}
-
-	value = mvBoardIoExpValGet(&ioInfo);
-	if (value == 0x1)
-		return MV_FALSE; /* Jumper is OUT: EEPROM disabled */
-	else
-		return MV_TRUE;  /* Jumper is IN: EEPROM enabled */
 }
 
 /*******************************************************************************

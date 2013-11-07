@@ -161,6 +161,7 @@ extern unsigned int mvTclkGet(void);
 #define CONFIG_CMD_IDE
 #define CONFIG_CMD_SCSI
 #define CONFIG_CMD_SAR
+#define CONFIG_CMD_BOARDCFG
 #define CONFIG_CMD_STAGE_BOOT
 #define CONFIG_CMD_RCVR
 

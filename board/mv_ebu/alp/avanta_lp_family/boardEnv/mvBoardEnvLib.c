@@ -974,7 +974,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 * mvBoardVerifySerdesCofig - Verify board config vs. SerDes actual setup (Common phy Selector)
 *
 * DESCRIPTION:
-	read board configuration for SerDes lanes 1-3,
+	read board configuration for SerDes lanes 1-3 (SerDes 1 is pre-fixed to PCI-e)
 	and compare it to SerDes common phy Selector (Actual SerDes config in use)
 *
 * INPUT:
@@ -989,34 +989,25 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 *******************************************************************************/
 MV_VOID mvBoardVerifySerdesCofig(MV_VOID)
 {
-	MV_U32 laneConfig, laneSelector = MV_REG_READ(MV_COMMON_PHY_REGS_OFFSET);
+	MV_U32 i, laneConfig, laneSelector, selector = MV_REG_READ(MV_COMMON_PHY_REGS_OFFSET);
+	MV_CONFIG_TYPE_ID configID = MV_CONFIG_LANE1;
 
-	/* Lane1:
-	 * PCIe0   : board config = 0x0, Selector  = 0x0
-	 * SGMII-0 : board config = 0x2,  Selector  = 0x1
-	 */
-	laneConfig = mvCtrlSysConfigGet(MV_CONFIG_LANE1);
-	if (!((laneConfig == 0x0 && ((laneSelector & BIT1) >> 1) == 0x0) ||
-		(laneConfig == 0x2 && ((laneSelector & BIT1) >> 1) == 0x1)))
-		mvOsPrintf("Error: board configuration conflicts with SerDes configuration\n" \
-			"SerDes#1: Board configuration= %x  SerDes Selector = %x\n" \
-			, laneConfig, (laneSelector & BIT1) >> 1);
-
-	/* for lane2, board config value is reversed, compared to SerDes selector value:
-	 * SATA0   : board config = 0x0, Selector = 0x1
-	 * SGMII-0 : board config = 0x1, Selector = 0x0
-	 */
-	laneConfig = mvCtrlSysConfigGet(MV_CONFIG_LANE2);
-	if (!laneConfig != (laneSelector & BIT2) >> 2)
-		mvOsPrintf("Error: board configuration conflicts with SerDes configuration\n" \
-			"SerDes#2: Board configuration= %x  SerDes Selector = %x\n" \
-			, !laneConfig, (laneSelector & BIT2) >> 2);
-
-	laneConfig = mvCtrlSysConfigGet(MV_CONFIG_LANE3);
-	if (laneConfig != (laneSelector & BIT3) >> 3)
-		mvOsPrintf("Error: board configuration conflicts with SerDes configuration\n" \
-			"SerDes#1: Board configuration= %x  SerDes Selector = %x\n" \
-			, laneConfig, (laneSelector & BIT3) >> 3);
+	/* Lane 1 & Lane 3 use the same values for SerDes config and selector,
+	 * Lane2 values  are reversed:
+	 * | Value  | board Config | Selector |
+	 * | 0x0    | SATA0        | SGMII-0  |
+	 * | 0x1    | SGMII-0      | SATA0    | */
+	for (i = 1; i < 4; i++) {
+		laneConfig = mvCtrlSysConfigGet(configID);
+		laneSelector = (selector & SERDES_LANE_MASK(i)) >> SERDES_LANE_OFFS(i);
+		if ((i != 2 && laneSelector != laneConfig) || /* lanes 1,3 use the same value */
+			(i == 2 && laneSelector == laneConfig)) { /* lane 2 use opposite values */
+			mvOsPrintf("Error: board configuration conflicts with SerDes configuration\n");
+			mvOsPrintf("SerDes#%d: Board configuration= %x  SerDes Selector = %x\n" \
+			, i, laneConfig, laneSelector);
+		}
+		configID++;
+	}
 }
 
 /*******************************************************************************
@@ -1087,37 +1078,32 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 }
 
 /*******************************************************************************
-* mvBoardEthComplexInfoUpdate
-*
-* DESCRIPTION:
-*	Update etherntComplex configuration,
-*	according to modules detection (S@R & board configuration)
-*
-** INPUT:
-*	None.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	MV_OK - on success,
-*	MV_ERROR - On failure.
-*
+ * mvBoardEthComplexInfoUpdate
+ *
+ * DESCRIPTION:
+ *	Verify and Update etherntComplex configuration,
+ *	according to modules detection (S@R & board configuration)
+ *
+ * INPUT:
+ *	updateSetup:
+ *	MV_TRUE  : update configuration in board structure (occurs once on startup)
+ *	MV_FALSE : only verify if configuration is valid, when altered config at runtime
+ *
+ * OUTPUT:
+ *	None.
+ *
+ * RETURN:
+ *	MV_OK - on success,
+ *	MV_ERROR - On failure.
+ *
 *******************************************************************************/
-MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID)
+MV_STATUS mvBoardEthComplexInfoUpdate()
 {
 	MV_U32 ethComplexOptions = 0x0;
-	MV_ETH_COMPLEX_TOPOLOGY mac0Config, mac1Config;
 
-	/* Ethernet Complex initialization : */
-	/* MAC0/1 */
-	mac0Config = mvBoardMac0ConfigGet();
-	mac1Config = mvBoardMac1ConfigGet();
-	if (mac0Config == MV_ERROR || mac1Config == MV_ERROR) {
-		mvOsPrintf("%s: Error: Using default configuration.\n\n", __func__);
+	ethComplexOptions = mvBoardEthComplexMacConfigCheck();
+	if (ethComplexOptions == MV_ERROR)
 		return MV_ERROR;
-	}
-	ethComplexOptions |= mac0Config | mac1Config;
 
 	/* read if using 2G speed for MAC0 to Switch*/
 	if (mvCtrlSysConfigGet(MV_CONFIG_MAC0_SW_SPEED) == 0x0)
@@ -1146,6 +1132,38 @@ MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID)
 	return MV_OK;
 }
 
+/*******************************************************************************
+ * mvBoardEthComplexMacConfigCheck
+ *
+ * DESCRIPTION:
+ *	Verify and return etherntComplex MAC0 configuration,
+ *	according to modules detection (S@R & board configuration)
+ *
+ * INPUT:
+ *	None.
+ * OUTPUT:
+ *	None.
+ *
+ * RETURN:
+ *	MV_ETH_COMPLEX_TOPOLOGY which defines MAC0 and MAC1 board configuration
+ *
+*******************************************************************************/
+MV_ETH_COMPLEX_TOPOLOGY mvBoardEthComplexMacConfigCheck()
+{
+	MV_ETH_COMPLEX_TOPOLOGY mac0Config, mac1Config;
+
+	/* Ethernet Complex initialization : */
+	/* MAC0/1 */
+	mac0Config = mvBoardMac0ConfigGet();
+	mac1Config = mvBoardMac1ConfigGet();
+
+	if (mac0Config == MV_ERROR || mac1Config == MV_ERROR) {
+		mvOsPrintf("Warning: Will use default configuration.\n\n");
+		return MV_ERROR;
+	}
+
+	return mac0Config | mac1Config;
+}
 /*******************************************************************************
 * mvBoardBootDeviceGroupSet - test board Boot configuration and set MPP groups
 *
@@ -1314,23 +1332,29 @@ MV_U32 mvBoardBootAttrGet(MV_U32 satrBootDeviceValue, MV_U8 attrNum)
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet()
 {
 	MV_ETH_COMPLEX_TOPOLOGY sgmiiLane;
-	MV_STATUS isSgmiiLaneEnabled;
+	MV_STATUS isSgmiiLaneEnabled = MV_FALSE;
 	MV_U32 mac0Config = mvCtrlSysConfigGet(MV_CONFIG_MAC0);
 
 	if (mac0Config == MV_ERROR) {
-		mvOsPrintf("%s: Error: failed reading MAC0 connection board configuration" \
-				"\n", __func__);
+		mvOsPrintf("%s: Error: failed reading MAC0 board configuration\n", __func__);
 		return MV_ERROR;
 	}
 
-	/*
-	 * if a Serdes lane is configured to SGMII, and conflicts MAC0 settings,
-	 * then the selected Serdes lane will be used (overriding MAC0 settings)
-	 */
-	isSgmiiLaneEnabled = mvBoardLaneSGMIIGet(&sgmiiLane);
+	/* Serdes lane board configuration is only for DB-6660  */
+	if (mvBoardIdGet() == DB_6660_ID)
+		isSgmiiLaneEnabled = mvBoardLaneSGMIIGet(&sgmiiLane);
+	else if (mac0Config == MAC0_2_SGMII) {
+		mvOsPrintf("%s: Warning: only DB-6660 board supports MAC0 to SGMII", __func__);
+		return MV_ERROR;
+	}
+
+	/* if a Serdes lane is configured to SGMII, and conflicts MAC0 settings,
+	 * then the selected Serdes lane will be used (overriding MAC0 settings) */
+
 	if (isSgmiiLaneEnabled == MV_TRUE && mac0Config != MAC0_2_SGMII) {
-		mvOsPrintf("%s: Error: Board configuration conflict for MAC0 connection" \
-				" and Serdes Lanes.\n\n", __func__);
+		mvOsPrintf("Warning: a Serdes lane is set to SGMII, but MAC0 is not set to");
+		mvOsPrintf(" SGMII - Overriding MAC0 setting to be SGMII.\n\n");
+
 		return sgmiiLane;
 	}
 
@@ -1347,7 +1371,7 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet()
 	}
 
 	/* if MAC0 set to SGMII, but no Serdes lane selected, --> ERROR (use defaults) */
-	mvOsPrintf("%s: Error: Configuration conflict for MAC0 connection.\n", __func__);
+	mvOsPrintf("Warning: MAC0 is set to SGMII but no Serdes lane is set to SGMII\n\n");
 	return MV_ERROR;
 
 }
@@ -1407,50 +1431,40 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet()
 *******************************************************************************/
 MV_BOOL mvBoardLaneSGMIIGet(MV_ETH_COMPLEX_TOPOLOGY *sgmiiConfig)
 {
-	MV_U32 laneConfig = 0;
 	MV_BOOL isSgmiiLaneEnabled = MV_FALSE;
+	MV_U8 i;
+	MV_ETH_COMPLEX_TOPOLOGY laneConfig = 0;
+	MV_ETH_COMPLEX_TOPOLOGY laneOptions[] = {MV_ETHCOMP_GE_MAC0_2_COMPHY_1, \
+						MV_ETHCOMP_GE_MAC0_2_COMPHY_2, \
+						MV_ETHCOMP_GE_MAC0_2_COMPHY_3 };
+	MV_CONFIG_TYPE_ID configID[] = {MV_CONFIG_LANE1, MV_CONFIG_LANE2, MV_CONFIG_LANE3};
+
 
 	if (sgmiiConfig == NULL) {
 		mvOsPrintf("%s: Error: NULL pointer parameter\n", __func__);
 		return MV_FALSE;
 	}
 
-	/* Serdes lane board configuration is only for DB-6660  */
-	if (mvBoardIdGet() != DB_6660_ID)
-		return MV_FALSE;
+	for (i = 0; i < 3; i++) {
+		/* if not set to SGMII, check next lane*/
+		if (mvCtrlSysConfigGet(configID[i]) != 0x1)
+			continue;
 
-	/* Lane 1 */
-	if (mvCtrlSysConfigGet(MV_CONFIG_LANE1) == 0x1) {
-		laneConfig = MV_ETHCOMP_GE_MAC0_2_COMPHY_1;
-		isSgmiiLaneEnabled = MV_TRUE;
-	}
-	/* Lane 2 */
-	if (mvCtrlSysConfigGet(MV_CONFIG_LANE2) == 0x1) {
+		/* if no Lane already set to SGMII */
 		if (isSgmiiLaneEnabled == MV_FALSE) {
-			laneConfig = MV_ETHCOMP_GE_MAC0_2_COMPHY_2;
+			laneConfig = laneOptions[i];
 			isSgmiiLaneEnabled = MV_TRUE;
-		} else /* SGMII was already set in the previous lanes */
-			laneConfig = -1;
-	}
-	/* Lane 3 */
-	if (mvCtrlSysConfigGet(MV_CONFIG_LANE3) == 0x1) {
-		if (isSgmiiLaneEnabled == MV_FALSE) {
-			laneConfig = MV_ETHCOMP_GE_MAC0_2_COMPHY_3;
-		} else /* SGMII was already set in the previous lanes */
-			laneConfig = -1;
+		} else { /* SGMII was already set in the previous lanes */
+			mvOsPrintf("%s: Error: Only one Serdes lanes can be configured to SGMII\n\n", __func__);
+			return MV_FALSE;
+		}
 	}
 
-	/* if no Serdes lanes are configured to SGMII */
-	if (laneConfig == 0)
+	if (isSgmiiLaneEnabled != MV_TRUE)
 		return MV_FALSE;
-
-	/* if more then 1 Serdes lanes are configured to SGMII */
-	if (laneConfig == -1) {
-		mvOsPrintf("%s: Error: Only one Serdes lanes can be configured to SGMII\n\n", __func__);
-		return MV_FALSE;
-	}
 
 	*sgmiiConfig = laneConfig;
+
 	return MV_TRUE;
 }
 
@@ -1788,64 +1802,66 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 
 	mvOsOutput("\nBoard configuration:\n");
 
+	mvOsOutput("\tEEPROM/Dip Switch: %s\n", mvBoardIsEepromEnabled() ? "EEPROM" : "DIP-Switch");
+
 	/* Mac configuration */
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_COMPHY_1)
-		mvOsOutput("       SGMII0 on MAC0 [Lane1]\n");
+		mvOsOutput("\tSGMII0 on MAC0 [Lane1]\n");
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_COMPHY_2)
-		mvOsOutput("       SGMII0 on MAC0 [Lane2]\n");
+		mvOsOutput("\tSGMII0 on MAC0 [Lane2]\n");
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_COMPHY_3)
-		mvOsOutput("       SGMII0 on MAC0 [Lane3]\n");
+		mvOsOutput("\tSGMII0 on MAC0 [Lane3]\n");
 
 
 	/* Switch configuration */
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6)
-		mvOsOutput("       Ethernet Switch port 6 on MAC0, %s Speed [Default]\n"
+		mvOsOutput("\tEthernet Switch port 6 on MAC0, %s Speed [Default]\n"
 				, (ethConfig & MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G) ? "2G" : "1G");
 	else if ((ethConfig & MV_ETHCOMP_GE_MAC1_2_SW_P4) &&
 		!(ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6))
-		mvOsOutput("       Ethernet Switch port 4 on MAC1, 1G Speed [Default]\n");
+		mvOsOutput("\tEthernet Switch port 4 on MAC1, 1G Speed [Default]\n");
 	if ((ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6) &&
 		(ethConfig & MV_ETHCOMP_GE_MAC1_2_SW_P4)) {
-		mvOsOutput("       Ethernet Switch port 4 on MAC1, 1G Speed\n");
+		mvOsOutput("\tEthernet Switch port 4 on MAC1, 1G Speed\n");
 	}
 
 	/* RGMII */
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_RGMII0)
-		mvOsOutput("       RGMII0 Module on MAC0\n");
+		mvOsOutput("\tRGMII0 Module on MAC0\n");
 	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_RGMII1)
-		mvOsOutput("       RGMII1 on MAC1\n");
+		mvOsOutput("\tRGMII1 on MAC1\n");
 	if (ethConfig & MV_ETHCOMP_SW_P4_2_RGMII0)
-		mvOsOutput("       RGMII0 Module on Switch port #4, 1G speed\n");
+		mvOsOutput("\tRGMII0 Module on Switch port #4, 1G speed\n");
 
 	/* Internal GE Quad Phy */
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)
-			mvOsOutput("       GE-PHY-0 on MAC0\n");
+			mvOsOutput("\tGE-PHY-0 on MAC0\n");
 	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3)
-			mvOsOutput("       GE-PHY-3 on MAC1\n");
+			mvOsOutput("\tGE-PHY-3 on MAC1\n");
 	if ((ethConfig & MV_ETHCOMP_SW_P0_2_GE_PHY_P0) && (ethConfig & MV_ETHCOMP_SW_P1_2_GE_PHY_P1)
 		&& (ethConfig & MV_ETHCOMP_SW_P2_2_GE_PHY_P2) && (ethConfig & MV_ETHCOMP_SW_P3_2_GE_PHY_P3))
-			mvOsOutput("       4xGE-PHY Module on 4 Switch ports\n");
+			mvOsOutput("\t4xGE-PHY Module on 4 Switch ports\n");
 	else {
 		if (ethConfig & MV_ETHCOMP_SW_P0_2_GE_PHY_P0)
-			mvOsOutput("       GE-PHY-0 Module on Switch port #0\n");
+			mvOsOutput("\tGE-PHY-0 Module on Switch port #0\n");
 		if (ethConfig & MV_ETHCOMP_SW_P1_2_GE_PHY_P1)
-			mvOsOutput("       GE-PHY-1 Module on Switch port #1\n");
+			mvOsOutput("\tGE-PHY-1 Module on Switch port #1\n");
 		if (ethConfig & MV_ETHCOMP_SW_P2_2_GE_PHY_P2)
-			mvOsOutput("       GE-PHY-2 Module on Switch port #2\n");
+			mvOsOutput("\tGE-PHY-2 Module on Switch port #2\n");
 		if (ethConfig & MV_ETHCOMP_SW_P3_2_GE_PHY_P3)
-			mvOsOutput("       GE-PHY-3 Module on Switch port #3\n");
+			mvOsOutput("\tGE-PHY-3 Module on Switch port #3\n");
 	}
 
 	/* TDM / Slic configuration */
 	slicDevice = mvBoardSlicUnitTypeGet();
 	if (slicDevice < MV_BOARD_SLIC_MAX_OPTION) /* 4 supported configurations */
-		mvOsOutput("       TDM/SLIC: %s\n", tdmSlic[slicDevice]);
+		mvOsOutput("\tTDM/SLIC: %s\n", tdmSlic[slicDevice]);
 	else
-		mvOsOutput("       TDM/SLIC: Unsupported configuration\n");
+		mvOsOutput("\tTDM/SLIC: Unsupported configuration\n");
 
 	/* SERDES Lanes*/
 	mvOsOutput("\nSERDES configuration:\n");
-	mvOsOutput("       Lane #0: PCIe0\n");	/* Lane 0 is always PCIe0 */
+	mvOsOutput("\tLane #0: PCIe0\n");	/* Lane 0 is always PCIe0 */
 
 	/* SERDES lanes #1,#2,#3 are relevant only to MV88F6660 SoC*/
 	if (mvCtrlModelGet() != MV_6660_DEV_ID)
@@ -1853,9 +1869,9 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 
 	/* Read Common Phy selectors to determine SerDes configuration */
 	laneSelector = MV_REG_READ(MV_COMMON_PHY_REGS_OFFSET);
-	mvOsOutput("       Lane #1: %s\n", lane1[(laneSelector & BIT1) >> 1]);
-	mvOsOutput("       Lane #2: %s\n", (laneSelector & BIT2) >> 2 ? "SATA-0" : "SGMII-0");
-	mvOsOutput("       Lane #3: %s\n", (laneSelector & BIT3) >> 3 ? "SGMII-0" : "USB3");
+	mvOsOutput("\tLane #1: %s\n", lane1[(laneSelector & BIT1) >> 1]);
+	mvOsOutput("\tLane #2: %s\n", (laneSelector & BIT2) >> 2 ? "SATA-0" : "SGMII-0");
+	mvOsOutput("\tLane #3: %s\n", (laneSelector & BIT3) >> 3 ? "SGMII-0" : "USB3");
 }
 
 /*******************************************************************************
@@ -2652,7 +2668,7 @@ MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 }
 
 /*******************************************************************************
-* mvBoardTwsiSatRSet
+* mvBoardTwsiSet
 *
 * DESCRIPTION:
 *
@@ -2702,6 +2718,227 @@ MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 	DB(mvOsPrintf("%s: Write S@R succeded\n", __func__));
 
 	return MV_OK;
+}
+
+
+/*******************************************************************************
+* mvBoardEepromWrite - Write a new configuration value for a specific field
+*
+* DESCRIPTION:
+*	Verify if the EEPROM have been initialized (if not, initialize it):
+*	EEPROM expected mapping:
+*	[0x0] - configuration 1st byte
+*	[0x1] - configuration 2nd byte
+*	[0x2] - configuration 3rd byte
+*	[0x4-0x7] - 32bit pattern to detect if EEPROM is initialized
+* INPUT:
+*       None
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Returns MV_TRUE if a chip responded, MV_FALSE on failure
+*
+*******************************************************************************/
+MV_STATUS mvBoardEepromWrite(MV_CONFIG_TYPE_ID configType, MV_U8 value)
+{
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
+	MV_U8 readValue, regNum;
+
+	if (mvBoardConfigTypeGet(configType, &configInfo) != MV_TRUE) {
+		mvOsPrintf("%s: Error: Write configuration to EEPROM failed\n", __func__);
+		return MV_ERROR;
+	}
+
+	/* reg num is according to DIP-switch mapping (each Expander conatins 2 registers) */
+	regNum = configInfo.expanderNum * 2 + configInfo.regNum;
+
+	/* Read */
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, regNum , &readValue) != MV_OK) {
+		mvOsPrintf("%s: Error: Read configuration from EEPROM failed\n", __func__);
+		return MV_ERROR;
+	}
+
+	/* Modify */
+	readValue &= ~configInfo.mask;
+	readValue |= (value << configInfo.offset);
+
+	/* Write */
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, regNum, readValue) != MV_OK) {
+			mvOsPrintf("%s: Error: Write configuration to EEPROM failed\n", __func__);
+			return MV_ERROR;
+	}
+
+	/* Update local array information */
+	mvCtrlSysConfigSet(configInfo.configId, value);
+
+	/* run conflict verification sequence on MAC and SerDes configuration */
+	mvBoardEthComplexMacConfigCheck();
+
+	return MV_OK;
+}
+
+/*******************************************************************************
+* mvBoardTwsiProbe - Probe the given I2C chip address
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       chip - i2c chip address to probe
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Returns MV_TRUE if a chip responded, MV_FALSE on failure
+*
+*******************************************************************************/
+MV_STATUS mvBoardTwsiProbe(MV_U32 chip)
+{
+	MV_TWSI_ADDR eepromAddress, slave;
+	MV_U32 status = 0;
+
+	/* TWSI init */
+	slave.type = ADDR7_BIT;
+	slave.address = 0;
+
+	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
+
+	status = mvTwsiStartBitSet(0);
+
+	if (status) {
+		mvOsPrintf("%s: Transaction start failed: 0x%02x\n", __func__, status);
+		mvTwsiStopBitSet(0);
+		return MV_FALSE;
+	}
+
+	eepromAddress.type = ADDR7_BIT;
+	eepromAddress.address = chip;
+
+	status = mvTwsiAddrSet(0, &eepromAddress, MV_TWSI_WRITE); /* send the slave address */
+	if (status) {
+		mvOsPrintf("%s: Failed to set slave address: 0x%02x\n", __func__, status);
+		mvTwsiStopBitSet(0);
+		return MV_FALSE;
+	}
+	DB(mvOsPrintf("address %#x returned %#x\n", chip,
+				MV_REG_READ(TWSI_STATUS_BAUDE_RATE_REG(i2c_current_bus))));
+
+	/* issue a stop bit */
+	mvTwsiStopBitSet(0);
+
+	DB(mvOsPrintf("%s: successful I2C probe\n", __func__));
+	return MV_TRUE; /* successful completion */
+}
+
+/*******************************************************************************
+* mvBoardEepromInit - Verify if the EEPROM have been initialized
+*
+* DESCRIPTION:
+*	Verify if the EEPROM have been initialized (if not, initialize it):
+*	EEPROM expected mapping:
+*	[0x0] - configuration 1st byte
+*	[0x1] - configuration 2nd byte
+*	[0x2] - configuration 3rd byte
+*	[0x4-0x7] - 32bit pattern
+* INPUT:
+*       None
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Returns MV_TRUE if a chip responded, MV_FALSE on failure
+*
+*******************************************************************************/
+MV_STATUS mvBoardEepromInit()
+{
+	MV_U32 readValue, i, pattern = 0;
+	MV_U8 patternByte;
+
+	if (mvBoardIsEepromEnabled() != MV_TRUE) {
+		DB(printf("%s: EEPROM doesn't exists on board\n" , __func__));
+		return MV_ERROR;
+	}
+
+	/* verify EEPROM: read 4 bytes at address 0x4 (read magic pattern) */
+	for (i = 0; i < 4; i++) {
+		if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 0x4 + i, (MV_U8 *)&readValue) != MV_OK) {
+			mvOsPrintf("%s: Error: Read pattern from EEPROM failed\n", __func__);
+			return MV_ERROR;
+		}
+		/* shift byte to correct location in 32bit pattern */
+		pattern |= (readValue & 0x000000FF) << (32 - 8*(i+1));
+	}
+
+	/* If EEPROM is initialized with magic pattern, continue and exit*/
+	if (pattern == EEPROM_VERIFICATION_PATTERN)
+		return MV_OK;
+
+	/* Else write default configuration and set magic pattern */
+	for (i = 0x0; i < 4; i++) {
+		/* write default board configuration (default value for all fields is 0x0) */
+		if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, i, 0x0) != MV_OK) {
+			mvOsPrintf("%s: Error: Write configuration to EEPROM failed\n", __func__);
+			return MV_ERROR;
+		}
+
+		/* shift bytes to correct location from 32bit pattern to 1 byte chunks*/
+		patternByte = ((EEPROM_VERIFICATION_PATTERN) >> (32 - 8*(i+1))) & 0x000000FF;
+		if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, 0x4+i, patternByte) != MV_OK) {
+			mvOsPrintf("%s: Error: Write configuration to EEPROM failed\n", __func__);
+			return MV_ERROR;
+		}
+	}
+
+	mvOsPrintf("\n%s: Initialized EEPROM with default board ", __func__);
+	mvOsPrintf("configuration (1st use of EEPROM)\n\n");
+	return MV_OK;
+}
+
+/*******************************************************************************
+* mvBoardIsEepromEnabled - read EEPROM and verify if EEPROM exists
+*
+* DESCRIPTION:
+*       This function returns MV_TRUE if board configuration EEPROM exists on board.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_BOOL :  MV_TRUE if EEPROM exists, else return MV_FALSE.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsEepromEnabled()
+{
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
+	MV_U8 value, addr = mvBoardTwsiAddrGet(BOARD_DEV_TWSI_EEPROM, 0);
+
+	if (addr == 0xFF)
+		return MV_FALSE;
+
+	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_JUMPER2_EEPROM_ENABLED, &ioInfo) != MV_OK) {
+		mvOsPrintf("%s: Error: Read from IO expander failed (EEPROM enabled jumper)\n", __func__);
+		return MV_FALSE;
+	}
+
+	value = mvBoardIoExpValGet(&ioInfo);
+	if (value == 0x1) { /* Jumper is OUT: EEPROM disabled */
+		DB(mvOsPrintf("%s: EEPROM Jumper is disabled\n", __func__));
+		return MV_OK;
+	}
+	/* else Jumper is IN: EEPROM enabled */
+	DB(mvOsPrintf("%s: EEPROM Jumper is enabled\n", __func__));
+
+	DB(mvOsPrintf("%s probing for i2c chip 0x%x\n", __func__, addr));
+	if (mvBoardTwsiProbe((MV_U32)addr) == MV_TRUE)
+		return MV_TRUE;  /* EEPROM enabled */
+	else
+		return MV_FALSE; /* EEPROM disabled */
 }
 
 /*******************************************************************************

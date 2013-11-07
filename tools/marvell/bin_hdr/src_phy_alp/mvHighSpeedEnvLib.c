@@ -91,7 +91,7 @@ extern MV_BIN_SERDES_UNIT_INDX boardLaneConfig[];
 /***************************   defined ******************************/
 #define BOARD_INFO(boardId) boardInfoTbl[boardId - BOARD_ID_BASE]
 
-#define BOARD_DEV_TWSI_EEPROM               0x54
+#define BOARD_DEV_TWSI_EEPROM               0x55
 #define BOARD_DEV_TWSI_IO_EXPANDER          0x21
 #define BOARD_DEV_TWSI_IO_EXPANDER_JUMPER1  0x24
 
@@ -246,10 +246,20 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *tempVal)
 {
     MV_STATUS rc1, rc2;
     MV_BOOL isEepromEnabled = mvCtrlIsEepromEnabled();
-    MV_U32 address= (isEepromEnabled ? BOARD_DEV_TWSI_EEPROM : BOARD_DEV_TWSI_IO_EXPANDER);
+    MV_U32 address = (isEepromEnabled ? BOARD_DEV_TWSI_EEPROM : BOARD_DEV_TWSI_IO_EXPANDER);
 
     rc1 = mvBoardTwsiGet(address, 0, 0, &tempVal[0] ); /* EEPROM/Dip Switch Reg#0 */
     rc2 = mvBoardTwsiGet(address, 0, 1, &tempVal[1] );  /* EEPROM/Dip Switch Reg#1 */
+
+	/*
+	 * Workaround for DIP Switch IO Expander 0x21 bug in DB-6660 board
+	 * Bug: Pins at IO expander 0x21 are reversed (only on DB-6660)
+	 * Solution: after reading IO expander, reverse bits of both registers
+	 */
+	if (isEepromEnabled != MV_TRUE) {
+		tempVal[0] = mvReverseBits(tempVal[0]);
+		tempVal[1] = mvReverseBits(tempVal[1]);
+	}
 
     /* verify that all TWSI reads were successfully */
     if ((rc1 != MV_OK) || (rc2 != MV_OK))
@@ -276,14 +286,8 @@ MV_VOID mvCtrlSatrInit(void)
 
 	/*Read rest of Board Configuration, EEPROM / Dip Switch access read : */
 	if (mvCtrlBoardConfigGet(configVal) == MV_OK) {
-		/*
-		 * Workaround for DIP Switch IO Expander 0x21 bug in DB-6660 board
-		 * Bug: Pins at IO expander 0x21 are reversed (only on DB-6660)
-		 * Solution: reverse bits after reading IO expander
-		 */
-		configVal[0] = mvReverseBits(configVal[0]);
-		configVal[1] = mvReverseBits(configVal[1]);
 		tmp = ((configVal[1] & 0x18) >> 3);
+
 		switch (tmp) {
 		case 0:
 			boardLaneConfig[1] = SERDES_UNIT_PEX;
@@ -305,7 +309,7 @@ MV_VOID mvCtrlSatrInit(void)
 	}
 	else{
 		DEBUG_INIT_S("Error: Read board configuration from EEPROM/Dip Switch failed \n");
-		DEBUG_INIT_S(">>>>> temporarily setting boardLaneConfig to PEX, PEX, SATA2, USB3     for testing. Giora <<<<\n");
+		DEBUG_INIT_S("setting default Serdes lanes configuration: PCIe-0, PCIe-1 SATA2, USB3\n");
 	}
 }
 /*******************************************************************************
@@ -379,7 +383,11 @@ MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_U8 *pDat
      twsiSlave.validOffset = MV_TRUE;
      /* Use offset as command */
      twsiSlave.offset = regNum;
-     twsiSlave.moreThen256 = MV_FALSE;
+
+	if (address == BOARD_DEV_TWSI_EEPROM)
+		twsiSlave.moreThen256 = MV_TRUE;
+	else
+		twsiSlave.moreThen256 = MV_FALSE;
 
      if (MV_OK != mvTwsiRead(0, &twsiSlave, pData, 1)) {
             DEBUG_INIT_S("TWSI Read failed\n");

@@ -102,6 +102,7 @@ struct spi_flash *spi_flash_probe_winbond(struct spi_slave *spi, u8 *idcode)
 	flash->page_size = 256;
 	flash->sector_size = 4096;
 	flash->size = 4096 * 16 * params->nr_blocks;
+	flash->addr_cycles = 3;
 
 	return flash;
 }

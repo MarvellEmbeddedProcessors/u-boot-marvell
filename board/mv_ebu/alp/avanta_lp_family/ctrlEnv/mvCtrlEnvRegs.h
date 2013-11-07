@@ -155,6 +155,11 @@ extern "C" {
 #define CORE_DIVCLK_RELOAD_RATIO_OFFS		8
 #define CORE_DIVCLK_RELOAD_RATIO_MASK		(1 << CORE_DIVCLK_RELOAD_RATIO_OFFS)
 
+/* Common PHY selector (MV_COMMON_PHY_REGS_OFFSET) */
+#define SERDES_LANE_OFFS(num)			num
+#define SERDES_LANE_MASK(num)			(2 << (num - 1))
+
+#define EEPROM_VERIFICATION_PATTERN	0xfadecafe
 
 #define DEV_ID_REG			0x18238
 #define VENDOR_ID_OFFS			0

@@ -228,6 +228,7 @@ extern unsigned int mvTclkGet(void);
 	#define CONFIG_SPI_FLASH
 	#define CONFIG_SPI_FLASH_STMICRO
 	#define CONFIG_SPI_FLASH_MACRONIX
+	#define CONFIG_SPI_FLASH_WINBOND
 	#define CONFIG_ENV_SPI_MAX_HZ           10000000        /*Max 50Mhz- will sattle on SPI bus max 41.5Mhz */
 	#define CONFIG_ENV_SPI_CS               0
 	#define CONFIG_ENV_SPI_BUS              0

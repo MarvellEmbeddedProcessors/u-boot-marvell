@@ -267,18 +267,13 @@ int board_init(void)
 	unsigned int i;
 
 	maskAllInt();
-	/* Init the Board environment module (device bank params init) */
-	mvBoardEnvInit();
-
-	/*Init the board network module*/
-	//mvEthComplexInit(mvBoardEthComplexConfigGet());
-
-
 #if defined(MV_INCLUDE_TWSI)
 	slave.type = ADDR7_BIT;
 	slave.address = 0;
 	mvTwsiInit(0, CONFIG_SYS_I2C_SPEED, CONFIG_SYS_TCLK, &slave, 0);
 #endif
+	/* Init the Board environment module (device bank params init) */
+	mvBoardEnvInit();
 
 	/* Init the Controlloer environment module (MPP init) */
 	mvCtrlEnvInit();

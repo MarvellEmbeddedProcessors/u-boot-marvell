@@ -460,7 +460,7 @@ static void mv_pci_bus_mode_display(MV_U32 host, int bus)
 #if defined(MV88F68XX)
 	printf("PCI-e %d (IF %d - bus %d) ", pexHWInf , host, bus);
 #else
-	printf("PCi-e %d: (bus %d) ",host, bus);
+	printf("PCI-e %d: (bus %d) ",host, bus);
 #endif
 
 	switch (pexMode.pexType) {

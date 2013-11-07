@@ -91,9 +91,9 @@
 #endif
 
 extern MV_BOARD_INFO *boardInfoTbl[];
-extern MV_BOARD_SATR_INFO boardSatrInfo[];
 MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_BOARD_CONFIG_INFO;
 MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
+MV_SATR_BOOT_TABLE satrBootSrcTable[] = MV_SATR_BOOT_SRC_TABLE_VAL;
 
 /* Locals */
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
@@ -811,25 +811,25 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 {
 	MV_U8 readValue;
 	MV_BOARD_CONFIG_TYPE_INFO configInfo;
-	MV_U32 boardId = mvBoardIdGet();
 	int i;
 
 	memset(&boardOptionsConfig, 0x0, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION);
-
 	/*Read all TWSI board module if exsist : */
 	/* Save values Locally in configVal[] */
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
 		if (mvBoardConfigTypeGet(i, &configInfo) == MV_TRUE) {
-			if (mvBoardTwsiGet(configInfo.twsiAddr, configInfo.offset, 0, &readValue) != MV_OK) {
-				mvOsPrintf("%s: Error: Read from TWSI failed addr=0x%x\n",
-					   __func__, configInfo.twsiAddr);
-				return;
+			if (mvBoardTwsiGet(BOARD_TWSI_MODULE_DETECT, configInfo.twsiAddr,
+					   configInfo.offset, &readValue) != MV_OK) {
+				DB(mvOsPrintf("%s: Error: Read from TWSI failed addr=0x%x\n",
+					   __func__, configInfo.twsiAddr));
+				continue;
 			}
-			if ((configInfo.twsiId == readValue) &&
-				(configInfo.isActiveForBoard[boardId]))
+			/* twsi ID represente  module configuration ID*/
+			if (configInfo.twsiId == readValue)
 				boardOptionsConfig[configInfo.configId] = 1;
 		}
 	}
+
 	/* Update MPP group types and values according to board configuration */
 	mvBoardMppIdUpdate();
 	mvBoardEthComplexInfoUpdate();
@@ -912,27 +912,26 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 	struct _mvBoardMppModule i2sModule = MPP_I2S_MODULE;
 	struct _mvBoardMppModule spdifModule = MPP_SPDIF_MODULE;
 
-	if (mvBoardIsModuleConnected(MV_CONFIG_MII)) {
+	if (mvBoardIsModuleConnected(MV_CONFIG_MII))
 		mvModuleMppUpdate(3, miiModule);
-	}
-	if (mvBoardIsModuleConnected(MV_CONFIG_NOR)) {
+
+	if (mvBoardIsModuleConnected(MV_CONFIG_NOR))
 		mvModuleMppUpdate(6, norModule);
-	}
-	if (mvBoardIsModuleConnected(MV_CONFIG_NAND)) {
+
+	if (mvBoardIsModuleConnected(MV_CONFIG_NAND))
 		mvModuleMppUpdate(6, nandModule);
-	}
-	if (mvBoardIsModuleConnected(MV_CONFIG_SDIO)) {
+
+	if (mvBoardIsModuleConnected(MV_CONFIG_SDIO))
 		mvModuleMppUpdate(4, sdioModule);
-	}
-	if (mvBoardIsModuleConnected(MV_CONFIG_SLIC_TDM_DEVICE)) {
+
+	if (mvBoardIsModuleConnected(MV_CONFIG_SLIC_TDM_DEVICE))
 		mvModuleMppUpdate(2, tdmModule);
-	}
-	if (mvBoardIsModuleConnected(MV_CONFIG_I2S_DEVICE)) {
+
+	if (mvBoardIsModuleConnected(MV_CONFIG_I2S_DEVICE))
 		mvModuleMppUpdate(1, &i2sModule);
-	}
-	if (mvBoardIsModuleConnected(MV_CONFIG_SPDIF_DEVICE)) {
+
+	if (mvBoardIsModuleConnected(MV_CONFIG_SPDIF_DEVICE))
 		mvModuleMppUpdate(1, &spdifModule);
-	}
 }
 
 /*******************************************************************************
@@ -1011,7 +1010,6 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 MV_BOARD_BOOT_SRC mvBoardBootDeviceGet()
 {
 	MV_U32 satrBootDeviceValue;
-	MV_SATR_BOOT_TABLE satrTable[] = MV_SATR_TABLE_VAL;
 	MV_SATR_BOOT_TABLE satrBootEntry;
 
 	satrBootDeviceValue = mvBoardSatRRead(MV_SATR_BOOT_DEVICE);
@@ -1021,7 +1019,7 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGet()
 		return MSAR_0_BOOT_SPI_FLASH; /* SPI is the Default Boot source */
 	}
 
-	satrBootEntry = satrTable[satrBootDeviceValue];
+	satrBootEntry = satrBootSrcTable[satrBootDeviceValue];
 
 	if (satrBootEntry.bootSrc != MSAR_0_BOOT_SPI_FLASH)
 		return satrBootEntry.bootSrc;
@@ -1049,8 +1047,7 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGet()
 *******************************************************************************/
 MV_U32 mvBoardBootAttrGet(MV_U32 satrBootDeviceValue, MV_U8 attrNum)
 {
-	MV_SATR_BOOT_TABLE satrTable[] = MV_SATR_TABLE_VAL;
-	MV_SATR_BOOT_TABLE satrBootEntry = satrTable[satrBootDeviceValue];
+	MV_SATR_BOOT_TABLE satrBootEntry = satrBootSrcTable[satrBootDeviceValue];
 
 	switch (attrNum) {
 	case 1:
@@ -1792,10 +1789,10 @@ MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 	slave.address = 0;
 	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
 
-	DB(mvOsPrintf("Board: TWSI Read device\n"));
 	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(twsiClass, devNum);
 	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(twsiClass, devNum);
 	twsiSlave.moreThen256 = mvBoardTwsiIsMore256Get(twsiClass, devNum);
+	DB(mvOsPrintf("Board: TWSI Read device addr=0x%x\n", twsiSlave.slaveAddr.address));
 
 	twsiSlave.validOffset = MV_TRUE;
 	/* Use offset as command */
@@ -2151,12 +2148,13 @@ MV_STATUS mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum, MV_U8 *pData)
 	MV_TWSI_ADDR slave;
 
 	/* Read MPP module ID */
-	DB(mvOsPrintf("Board: Read S@R device read\n"));
 	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(BOARD_DEV_TWSI_SATR, devNum);
 	if (0xFF == twsiSlave.slaveAddr.address)
 		return MV_ERROR;
 	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(BOARD_DEV_TWSI_SATR, devNum);
 	twsiSlave.moreThen256 = mvBoardTwsiIsMore256Get(BOARD_DEV_TWSI_SATR, devNum);
+	DB(mvOsPrintf("Board: Read S@R device read ADDR=0x%X, regnum=%d\n",	\
+		      twsiSlave.slaveAddr.address, regNum));
 
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
@@ -2172,7 +2170,7 @@ MV_STATUS mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum, MV_U8 *pData)
 		DB(mvOsPrintf("Board: Read S@R fail\n"));
 		return MV_ERROR;
 	}
-	DB(mvOsPrintf("Board: Read S@R succeded\n"));
+	DB(mvOsPrintf("Board: Read S@R succeded 0x%X\n", *pData));
 
 	return MV_OK;
 }
@@ -2206,8 +2204,8 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 		return MV_ERROR;
 	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(BOARD_DEV_TWSI_SATR, devNum);
 	twsiSlave.validOffset = MV_TRUE;
-	DB(mvOsPrintf("Board: Write S@R device addr %x, type %x, data %x\n",
-		      twsiSlave.slaveAddr.address, twsiSlave.slaveAddr.type, regVal));
+	DB(mvOsPrintf("Board: Write S@R device addr %x, regNum %x, data 0x%X\n",
+		      twsiSlave.slaveAddr.address, regNum, regVal));
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
 	twsiSlave.moreThen256 = mvBoardTwsiIsMore256Get(BOARD_DEV_TWSI_SATR, devNum);
@@ -2220,7 +2218,7 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 		DB(mvOsPrintf("Board: Write S@R fail\n"));
 		return MV_ERROR;
 	}
-	DB(mvOsPrintf("Board: Write S@R succeded\n"));
+	DB(mvOsPrintf("Board: Write S@R succeded addr=0x%X data=0x%X\n", twsiSlave.slaveAddr.address, regVal));
 
 	return MV_OK;
 }
@@ -2242,7 +2240,8 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField)
 {
 	MV_BOARD_SATR_INFO satrInfo;
-	MV_U8 data;
+	MV_U8 data, data1;
+	MV_U32 c;
 
 	if (satrField >= MV_SATR_MAX_OPTION) {
 		mvOsPrintf("%s: Error: wrong MV_SATR_TYPE_ID field value (%d).\n", __func__ , satrField);
@@ -2261,9 +2260,12 @@ MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField)
 	}
 	data &= satrInfo.mask;
 	data = (data >> satrInfo.bitOffset);
+
 	if (satrInfo.status & BOARD_SATR_SWAP_BIT) {
-		MV_U32 c = mvCountMaskBits(satrInfo.mask);
-		data = mvReverseBits(data) >> (8-c) ;
+		c = mvCountMaskBits(satrInfo.mask);
+		data1 = mvReverseBits(data);
+		data =  (data1 >> (8-c));
+		DB(mvOsPrintf("%s: value after mvReverseBits = 0x%X\n", __func__, data));
 	}
 
 	if (satrField == MV_SATR_BOOT_DEVICE) {
@@ -2297,7 +2299,8 @@ MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField)
 MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val)
 {
 	MV_BOARD_SATR_INFO satrInfo;
-	MV_U8 data, val1;
+	MV_U8 data, val1, data1;
+	MV_U32 c;
 
 	if (satrWriteField >= MV_SATR_MAX_OPTION) {
 		mvOsPrintf("%s: Error: wrong MV_SATR_TYPE_ID field value (%d).\n", __func__ , satrWriteField);
@@ -2328,10 +2331,11 @@ MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val)
 	}
 
 	if (satrInfo.status & BOARD_SATR_SWAP_BIT) {
-		MV_U32 c = mvCountMaskBits(satrInfo.mask);
-		val = mvReverseBits(val) >> (8 - c) ;
+		c = mvCountMaskBits(satrInfo.mask);
+		data1 = mvReverseBits(val);
+		val =  (data1 >> (8-c));
+		DB(mvOsPrintf("%s: value after mvReverseBits = 0x%X\n", __func__, val));
 	}
-
 
 	/* modify */
 	data &= ~(satrInfo.mask);             /* clean old value */

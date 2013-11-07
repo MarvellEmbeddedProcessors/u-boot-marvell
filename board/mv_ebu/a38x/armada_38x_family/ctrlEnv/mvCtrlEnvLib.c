@@ -116,6 +116,32 @@ static const MV_U8 serdesCfg[MV_SERDES_MAX_LANES][8] = SERDES_CFG;
  */
 #define MV_INVALID_CTRL_REV     0xff
 
+#define MV_6820_INDEX		0
+#define MV_6810_INDEX		1
+#define MV_68xx_INDEX_MAX	2
+
+MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_68xx_INDEX_MAX] = {
+/*                          6820 */
+/* DRAM_UNIT_ID         */ { 1, 1},
+/* PEX_UNIT_ID          */ { MV_PEX_MAX_UNIT,		MV_PEX_MAX_UNIT_6810},
+/* ETH_GIG_UNIT_ID      */ { MV_ETH_MAX_PORTS,	MV_ETH_MAX_PORTS_6810},
+/* USB_UNIT_ID          */ { MV_USB_MAX_PORTS,		MV_USB3_MAX_PORTS_6810},
+/* USB3_UNIT_ID         */ { MV_USB3_MAX_PORTS,		MV_USB3_MAX_PORTS_6810},
+/* IDMA_UNIT_ID         */ { MV_IDMA_MAX_CHAN,		MV_IDMA_MAX_CHAN},
+/* XOR_UNIT_ID          */ { MV_XOR_MAX_UNIT,		MV_XOR_MAX_UNIT},
+/* SATA_UNIT_ID         */ { MV_SATA_MAX_CHAN,		MV_SATA_MAX_CHAN},
+/* TDM_32CH_UNIT_ID     */ { 1,				1},
+/* UART_UNIT_ID         */ { MV_UART_MAX_CHAN,		MV_UART_MAX_CHAN},
+/* CESA_UNIT_ID         */ { 1,				1},
+/* SPI_UNIT_ID          */ { 1,				1},
+/* AUDIO_UNIT_ID        */ { 1,				1},
+/* SDIO_UNIT_ID         */ { 1,				1},
+/* TS_UNIT_ID           */ { 0,				0},
+/* XPON_UNIT_ID         */ { 0,				0},
+/* BM_UNIT_ID           */ { 0,				0},
+/* PNC_UNIT_ID          */ { 0,				0},
+/* I2C_UNIT_ID          */ { 2,				2},
+};
 /*******************************************************************************
 * mvCtrlGetCpuNum
 *
@@ -147,103 +173,39 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 
 #endif
 
-#define MV_6820_INDEX		0
-#define MV_6810_INDEX		1
-#define MV_68xx_INDEX_MAX	2
-
-static MV_U32 mvCtrlDevIdIndexGet(void)
+/*******************************************************************************
+* mvCtrlDevIdIndexGet
+*
+* DESCRIPTION: return SOC device index
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*        return SOC device index
+*
+*******************************************************************************/
+MV_U32 mvCtrlDevIdIndexGet(void)
 {
-	switch (mvCtrlModelGet()) {
-	case MV_6820_DEV_ID: return MV_6820_INDEX;
-	case MV_6810_DEV_ID: return MV_6810_INDEX;
-	}
+	if (MV_6810_DEV_ID ==  mvCtrlModelGet())
+		return MV_6810_INDEX;
 	return MV_6820_INDEX;
 }
 
-static MV_VOID mvCtrlSerdesConfig(MV_VOID)
-{
-	MV_U32 pexIf, commPhyConfigReg, comPhyCfg, serdesNum, serdesCongigField, maxSerdesLane;
-	MV_U32 ethIfCount = 0;
-	MV_U32 sataIfCount = 0;
-	MV_U32 usbIfCount = 0;
-	MV_U32 usbHIfCount = 0;
-
-	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
-
-	switch (mvCtrlModelGet()) {
-	case MV_6810_DEV_ID:
-		maxSerdesLane = MV_SERDES_MAX_LANES_6810;
-		break;
-	default:
-	case MV_6820_DEV_ID:
-		maxSerdesLane = MV_SERDES_MAX_LANES;
-	}
-
-	memset(boardPexInfo, 0, sizeof(MV_BOARD_PEX_INFO));
-	commPhyConfigReg = MV_REG_READ(COMM_PHY_SELECTOR_REG);
-	for (serdesNum = 0; serdesNum < maxSerdesLane; serdesNum++) {
-		serdesCongigField = (commPhyConfigReg & COMPHY_SELECT_MASK(serdesNum)) >> COMPHY_SELECT_OFFS(serdesNum);
-		comPhyCfg = serdesCfg[serdesNum][serdesCongigField];
-		DB(printf("%s:   serdesCongigField = 0x%x, comPhyCfg = 0x%x\n",
-			  serdesCongigField, comPhyCfg));
-		switch (comPhyCfg & 0xF0) {
-		case SERDES_UNIT_PEX:
-			pexIf = comPhyCfg & 0x0f;
-			if ((pexIf == PEX0_IF) && (commPhyConfigReg & PCIE0_X4_EN_MASK))
-				boardPexInfo->pexUnitCfg[pexIf] = PEX_BUS_MODE_X4;
-			else
-				boardPexInfo->pexUnitCfg[pexIf] = PEX_BUS_MODE_X1;
-			boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = pexIf;
-			boardPexInfo->boardPexIfNum++;
-			break;
-		case SERDES_UNIT_SATA:
-			sataIfCount++;
-			break;
-		case SERDES_UNIT_GBE:
-			ethIfCount++;
-			break;
-		case SERDES_UNIT_USB_H:
-			usbHIfCount++;
-			break;
-		case SERDES_UNIT_USB:
-			usbIfCount++;
-			break;
-		}
-	}
-	mvCtrlSocUnitInfoNumSet(PEX_UNIT_ID, boardPexInfo->boardPexIfNum);
-	mvCtrlSocUnitInfoNumSet(SATA_UNIT_ID , sataIfCount);
-	mvCtrlSocUnitInfoNumSet(USB_UNIT_ID , usbIfCount);
-	mvCtrlSocUnitInfoNumSet(USB3_UNIT_ID, usbHIfCount);
-	if (ethIfCount) /* if serdes configuration found SGMII ports replace the existing RGMII gonfiguration*/
-		mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, ethIfCount);
-	else
-		mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, MV_ETH_MAX_ON_BOARD_PORTS);
-}
-
-
-MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_68xx_INDEX_MAX] = {
-/*                          6820 */
-/* DRAM_UNIT_ID         */ { 1, 1},
-/* PEX_UNIT_ID          */ { MV_PEX_MAX_UNIT,		MV_PEX_MAX_UNIT_6810},
-/* ETH_GIG_UNIT_ID      */ { MV_ETH_MAX_PORTS,	MV_ETH_MAX_PORTS_6810},
-/* USB_UNIT_ID          */ { MV_USB_MAX_PORTS,		MV_USB3_MAX_PORTS_6810},
-/* USB3_UNIT_ID         */ { MV_USB3_MAX_PORTS,		MV_USB3_MAX_PORTS_6810},
-/* IDMA_UNIT_ID         */ { MV_IDMA_MAX_CHAN,		MV_IDMA_MAX_CHAN},
-/* XOR_UNIT_ID          */ { MV_XOR_MAX_UNIT,		MV_XOR_MAX_UNIT},
-/* SATA_UNIT_ID         */ { MV_SATA_MAX_CHAN,		MV_SATA_MAX_CHAN},
-/* TDM_32CH_UNIT_ID     */ { 1,				1},
-/* UART_UNIT_ID         */ { MV_UART_MAX_CHAN,		MV_UART_MAX_CHAN},
-/* CESA_UNIT_ID         */ { 1,				1},
-/* SPI_UNIT_ID          */ { 1,				1},
-/* AUDIO_UNIT_ID        */ { 1,				1},
-/* SDIO_UNIT_ID         */ { 1,				1},
-/* TS_UNIT_ID           */ { 0,				0},
-/* XPON_UNIT_ID         */ { 0,				0},
-/* BM_UNIT_ID           */ { 0,				0},
-/* PNC_UNIT_ID          */ { 0,				0},
-/* I2C_UNIT_ID          */ { 2,				2},
-};
-
+/*******************************************************************************
+* mvCtrlSocUnitInfoNumGet
+*
+* DESCRIPTION: return the max interface detected for special unit
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*
+*
+*******************************************************************************/
 MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit)
 {
 	MV_U32 devIdIndex;
@@ -256,6 +218,19 @@ MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit)
 	devIdIndex = mvCtrlDevIdIndexGet();
 	return mvCtrlSocUnitNums[unit][devIdIndex];
 }
+/*******************************************************************************
+* mvCtrlSocUnitInfoNumSet
+*
+* DESCRIPTION: Set the max interface detected for special unit
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*
+*
+*******************************************************************************/
 MV_U32 mvCtrlSocUnitInfoNumSet(MV_UNIT_ID unit, MV_U32 maxValue)
 {
 	MV_U32 devIdIndex;
@@ -267,6 +242,88 @@ MV_U32 mvCtrlSocUnitInfoNumSet(MV_UNIT_ID unit, MV_U32 maxValue)
 
 	devIdIndex = mvCtrlDevIdIndexGet();
 	return mvCtrlSocUnitNums[unit][devIdIndex] = maxValue;
+}
+
+/*******************************************************************************
+* mvCtrlSerdesConfig
+*
+* DESCRIPTION: auto detect serdes configuration and Set the max interface detected for
+*		SERDES units
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*
+*
+*******************************************************************************/
+MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
+{
+	MV_U32 pexIf, commPhyConfigReg, comPhyCfg, serdesNum, serdesCongigField, maxSerdesLane;
+	MV_U32 ethIfCount = 0;
+	MV_U32 sataIfCount = 0;
+	MV_U32 usbIfCount = 0;
+	MV_U32 usbHIfCount = 0;
+
+	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
+
+	maxSerdesLane = MV_SERDES_MAX_LANES;
+	if (MV_6810_DEV_ID == mvCtrlModelGet())
+		maxSerdesLane = MV_SERDES_MAX_LANES_6810;
+
+	memset(boardPexInfo, 0, sizeof(MV_BOARD_PEX_INFO));
+	commPhyConfigReg = MV_REG_READ(COMM_PHY_SELECTOR_REG);
+	DB(printf("mvCtrlSerdesConfig: commPhyConfigReg=0x%x\n", commPhyConfigReg));
+	for (serdesNum = 0; serdesNum < maxSerdesLane; serdesNum++) {
+		serdesCongigField = (commPhyConfigReg & COMPHY_SELECT_MASK(serdesNum)) >> COMPHY_SELECT_OFFS(serdesNum);
+		comPhyCfg = serdesCfg[serdesNum][serdesCongigField];
+		DB(printf("serdesCongigField=0x%x, comPhyCfg=0x%2x SERDES %d detect as ",	\
+			  serdesCongigField, comPhyCfg, serdesNum));
+		switch (comPhyCfg & 0xF0) {
+		case SERDES_UNIT_PEX:
+			pexIf = comPhyCfg & 0x0f;
+			if ((pexIf == PEX0_IF) && (commPhyConfigReg & PCIE0_X4_EN_MASK))
+				boardPexInfo->pexUnitCfg[pexIf] = PEX_BUS_MODE_X4;
+			else
+				boardPexInfo->pexUnitCfg[pexIf] = PEX_BUS_MODE_X1;
+			boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = pexIf;
+			boardPexInfo->boardPexIfNum++;
+			DB(printf("PEX, if=%d\n", pexIf));
+			break;
+		case SERDES_UNIT_SATA:
+			DB(printf("SATA, if=%d\n", (comPhyCfg & 0x0f)));
+			sataIfCount++;
+			break;
+		case SERDES_UNIT_GBE:
+			DB(printf("SGMII, if=%d\n", (comPhyCfg & 0x0f)));
+			ethIfCount++;
+			break;
+		case SERDES_UNIT_USB_H:
+		DB(printf("USB_H, if=%d\n", (comPhyCfg & 0x0f)));
+			usbHIfCount++;
+			break;
+		case SERDES_UNIT_USB:
+			DB(printf("USB, if=%d\n", (comPhyCfg & 0x0f)));
+			usbIfCount++;
+			break;
+		case SERDES_UNIT_NA:
+			DB(printf("Not connected! ***\n"));
+		}
+	}
+	mvCtrlSocUnitInfoNumSet(PEX_UNIT_ID, boardPexInfo->boardPexIfNum);
+	mvCtrlSocUnitInfoNumSet(SATA_UNIT_ID , sataIfCount);
+	mvCtrlSocUnitInfoNumSet(USB_UNIT_ID , usbIfCount);
+	mvCtrlSocUnitInfoNumSet(USB3_UNIT_ID, usbHIfCount);
+	if (ethIfCount) /* if serdes configuration found SGMII ports replace the existing RGMII gonfiguration*/
+		mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, ethIfCount);
+	else
+		mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, MV_ETH_MAX_ON_BOARD_PORTS);
+	DB(printf("mvCtrlSocUnitGet[PEX] = %d,\n", mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID)));
+	DB(printf("mvCtrlSocUnitGet[ETH] = %d,\n", mvCtrlSocUnitInfoNumGet(ETH_GIG_UNIT_ID)));
+	DB(printf("mvCtrlSocUnitGet[SATA]= %d,\n", mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID)));
+	DB(printf("mvCtrlSocUnitGet[USBH]= %d,\n", mvCtrlSocUnitInfoNumGet(USB_UNIT_ID)));
+	DB(printf("mvCtrlSocUnitGet[USB3]= %d,\n", mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID)));
 }
 
 /*******************************************************************************
@@ -300,7 +357,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvBoardInfoUpdate();
 	}
 
-	mvCtrlSerdesConfig();
+	mvCtrlSerdesConfigDetect();
 
 	/* write MPP's config and Board general config */
 	mvBoardConfigWrite();
@@ -356,7 +413,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 * OUTPUT: None,
 *
 * RETURN:
-*       MV_STATUS to indicate a successful read.
+*	MV_STATUS to indicate a successful read.
 *
 *******************************************************************************/
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
@@ -1539,7 +1596,7 @@ MV_BOOL mvCtrlDDRECC(MV_VOID)
 MV_U32 mvCtrlGetJuncTemp(MV_VOID)
 {
 	/*Used Hard Coded values, TODO sync with Spec*/
-	MV_32 reg = 0;
+	MV_32 reg = 0, temp;
 
 	/* init the TSEN sensor once */
 	if ((MV_REG_READ(TSEN_STATE_REG) & TSEN_STATE_MASK) == 0) {
@@ -1556,8 +1613,9 @@ MV_U32 mvCtrlGetJuncTemp(MV_VOID)
 
 	reg = MV_REG_READ(TSEN_STATUS_REG);
 	reg = (reg & TSEN_STATUS_TEMP_OUT_MASK) >> TSEN_STATUS_TEMP_OUT_OFFSET;
+	temp = (((((10000 * reg) / 21445) * 1000) - 272674) / 1000);
 
-	return (3171900 - (10000 * reg)) / 13553;
+	return temp;
 }
 /*******************************************************************************
 * mvCtrlNandClkSet

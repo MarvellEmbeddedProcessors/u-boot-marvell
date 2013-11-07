@@ -485,6 +485,7 @@ MV_U8 mvBoardCpuFreqGet(MV_VOID);
 MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal);
 MV_STATUS mvBoardIsInternalSwitchConnected(void);
 MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx);
+MV_U32 mvBoardFreqModesNumGet(void);
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
 MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum);
 MV_VOID mvBoardMacSpeedSet(MV_U32 ethPortNum, MV_BOARD_MAC_SPEED macSpeed);
@@ -516,9 +517,9 @@ MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val);
 /*    SATR-ID                   Mask  offset  devID  num  active	*/
 #define MV_SAR_INFO { \
 { MV_SATR_CPU_DDR_L2_FREQ,	0x1F,	0,	1,	0,	{1, 1, 0}, BOARD_SATR_SWAP_BIT},\
-{ MV_SATR_CORE_CLK_SELECT,	0x08,	3,	3,	0,	{0, 1, 0}, 0},\
+{ MV_SATR_CORE_CLK_SELECT,	0x04,	2,	3,	0,	{0, 1, 0}, 0},\
 { MV_SATR_CPU1_ENABLE,		0x01,	0,	2,	0,	{0, 1, 0}, 0},\
-{ MV_SATR_SSCG_DISABLE,		0x10,	4,	2,	0,	{0, 1, 0}, 0},\
+{ MV_SATR_SSCG_DISABLE,		0x08,	3,	3,	0,	{0, 1, 0}, 0},\
 { MV_SATR_DDR4_SELECT,		0x20,	5,	4,	1,	{0, 1, 0}, BOARD_SATR_READ_ONLY},\
 { MV_SATR_DDR_BUS_WIDTH,	0x02,	1,	4,	0,	{0, 1, 0}, BOARD_SATR_READ_ONLY},\
 { MV_SATR_DDR_ECC_ENABLE,	0x04,	2,	4,	0,	{0, 1, 0}, 0},\
@@ -528,7 +529,7 @@ MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val);
 { MV_SATR_RD_LANE0_CFG,		0x4,	2,	1,	1,	{1, 0, 0}, 0},\
 { MV_SATR_RD_APPS_CFG,		0x8,	3,	1,	1,	{1, 0, 0}, 0},\
 { MV_SATR_BOOT_DEVICE,		0x3,	0,	3,	0,	{0, 1, 0}, BOARD_SATR_SWAP_BIT},\
-{ MV_SATR_BOOT2_DEVICE,		0x1E,	1,	4,	0,	{0, 1, 0}, BOARD_SATR_SWAP_BIT},\
+{ MV_SATR_BOOT2_DEVICE,		0x1E,	1,	2,	0,	{0, 1, 0}, BOARD_SATR_SWAP_BIT},\
 { MV_SATR_BOARD_ID,		0x7,	0,	0,	0,	{1, 1, 0}, BOARD_SATR_READ_ONLY},\
 { MV_SATR_BOARD_ECO_VERSION,	0xff,	0,	0,	1,	{1, 1, 0}, BOARD_SATR_READ_ONLY},\
 { MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0}, 0},\

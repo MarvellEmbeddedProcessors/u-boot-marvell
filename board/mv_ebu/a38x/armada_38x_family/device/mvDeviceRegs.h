@@ -96,7 +96,7 @@ static INLINE MV_U32 DEV_BANK_PARAM_REG(int num)
 }
 
 #define DEV_BANK_PARAM_REG_WR(num)	(DEV_BANK_PARAM_REG(num)+0x4)
-#define DEV_NAND_CTRL_REG		(MV_DEV_BUS_REGS_OFFSET + 0x0470)
+#define DEV_NAND_CTRL_REG		(MV_DEV_BUS_REGS_OFFSET + 0x070)
 #define DEV_BUS_SYNC_CTRL		(MV_DEV_BUS_REGS_OFFSET + 0xC8)
 /* Select Ready Polarity bit for CS in DEV_BUS_SYNC_CTRL */
 #define SYNC_CTRL_READY_POL(cs)		(cs == DEV_BOOCS ? 0x20 : \

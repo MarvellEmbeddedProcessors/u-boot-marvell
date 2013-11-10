@@ -595,6 +595,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
                 MV_REG_WRITE(POWER_AND_PLL_CONTROL_REG(serdesLaneNum),0xFCA0); /* PHY Mode = USB3 */
                 MV_REG_WRITE(KVCO_CALOBRATION_CONTROL_REG(serdesLaneNum),0x40); /* use_max_pll_rate=0x0, ext_force_cal_done=0x0 */
                 MV_REG_WRITE(RESET_AND_CLOCK_CONTROL_REG(serdesLaneNum),0x20); /* Release soft_reset */
+		MV_REG_WRITE(GENERETION_2_SETTINGS_1_REG(serdesLaneNum),0x149); /* Mulitiple frequency setup */
                 break;
             case SERDES_UNIT_SATA:
                 MV_REG_WRITE(RESERVED_46_REG(serdesLaneNum),0xFF00);

@@ -118,7 +118,9 @@ static MV_BOARD_INFO *board = NULL;
 *******************************************************************************/
 MV_VOID mvBoardEnvInit(MV_VOID)
 {
-	mvBoardIdSet(mvBoardIdGet());
+	MV_U32 boardId = mvBoardIdGet();
+
+	mvBoardIdSet(boardId);
 
 	/*  FPGA board doesn't use MPP neither GPIO */
 #if !defined(CONFIG_MACH_AVANTA_LP_FPGA)
@@ -156,6 +158,12 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 	mvGppTypeSet(0, 0xFFFFFFFF, board->gppOutEnValLow);
 	mvGppTypeSet(1, 0xFFFFFFFF, board->gppOutEnValMid);
 	mvGppTypeSet(2, 0xFFFFFFFF, board->gppOutEnValHigh);
+
+	/* specific External SATA initializations (required only for RD-6660) */
+	if (boardId == RD_6660_ID) {
+		mvBoardHDDPowerSet(MV_TRUE);
+		mvBoardHddExtSet(MV_TRUE);
+	}
 #endif
 }
 
@@ -2348,19 +2356,24 @@ MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass,
 {
 	MV_U32 i;
 
-	MV_BOARD_IO_EXPANDER_TYPE_INFO ioe6660[] = MV_BOARD_IO_EXP_DB6660_INFO;
-	MV_BOARD_IO_EXPANDER_TYPE_INFO ioe6650[] = MV_BOARD_IO_EXP_DB6650_INFO;
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioe_db6660[] = MV_BOARD_IO_EXP_DB6660_INFO;
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioe_db6650[] = MV_BOARD_IO_EXP_DB6650_INFO;
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioe_rd6660[] = MV_BOARD_IO_EXP_RD6660_INFO;
 	MV_BOARD_IO_EXPANDER_TYPE_INFO *ioe;
 	MV_U8 n = 0;
 
 	switch (mvBoardIdGet()) {
 	case DB_6650_ID:
-		ioe = ioe6650;
-		n = ARRSZ(ioe6650);
+		ioe = ioe_db6650;
+		n = ARRSZ(ioe_db6650);
 		break;
 	case DB_6660_ID:
-		ioe = ioe6660;
-		n = ARRSZ(ioe6660);
+		ioe = ioe_db6660;
+		n = ARRSZ(ioe_db6660);
+		break;
+	case RD_6660_ID:
+		ioe = ioe_rd6660;
+		n = ARRSZ(ioe_rd6660);
 		break;
 	default:
 		mvOsPrintf("%s: Error: IO Expander doesn't exists on board\n", __func__);
@@ -2433,6 +2446,69 @@ MV_STATUS mvBoardSgmiiSfp0TxSet(MV_BOOL enable)
 	}
 
 	return mvBoardIoExpValSet(&ioInfo, (enable ? 0x0 : 0x1));
+}
+
+/*******************************************************************************
+* mvBoardHDDSelecteExternal - Select External / Internal HDD
+*
+* DESCRIPTION:
+*	This function External / Internal HDD
+*	HDD_SELECT = 1 --> Routes SATA signals to External connector
+*	HDD_SELECT = 0 --> Routes SATA signals to Internal connector
+*
+* INPUT:
+*	enableInternal - Boolean to indicate requested status
+*	MV_TRUE --> set Internal HDD
+*	MV_FALSE --> set External HDD
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_STATUS mvBoardHddExtSet(MV_BOOL enableExternal)
+{
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
+
+	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_HDD_SELECT, &ioInfo) != MV_OK) {
+		mvOsPrintf("%s: Error: Write to IO expander failed (USB_SS_EN)\n", __func__);
+		return MV_ERROR;
+	}
+
+	return mvBoardIoExpValSet(&ioInfo, (enableExternal ? 0x1 : 0x0));
+}
+
+/*******************************************************************************
+* mvBoardHDDPowerSet - enable HDD Power status
+*
+* DESCRIPTION:
+*	This function enables/disables  HDD Power status.
+*	HDD_SELECT = 1 --> Enables SATA power
+*
+* INPUT:
+*	enable - Boolean to indicate requested status
+*	MV_TRUE -->  Enables SATA power
+*	MV_FALSE --> Disables SATA power
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_STATUS mvBoardHDDPowerSet(MV_BOOL enable)
+{
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
+
+	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_HDD_PWR_EN, &ioInfo) != MV_OK) {
+		mvOsPrintf("%s: Error: Write to IO expander failed (USB_SS_EN)\n", __func__);
+		return MV_ERROR;
+	}
+
+	return mvBoardIoExpValSet(&ioInfo, (enable ? 0x1 : 0x1));
 }
 
 /*******************************************************************************

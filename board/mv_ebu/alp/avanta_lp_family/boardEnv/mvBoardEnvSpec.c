@@ -409,6 +409,11 @@ MV_BOARD_INFO rd88f6650_board_info = {
 /*******************************************************************************
  * AvantaLP RD-88F6660 board */
 /*******************************************************************************/
+MV_BOARD_TWSI_INFO rd88f6660InfoBoardTwsiDev[] = {
+	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{ BOARD_DEV_TWSI_IO_EXPANDER,	0,	0x20,	ADDR7_BIT },
+};
+
 /* When Switch Port 4 is connected to external PHY through RGMII-0,
  * this external PHY is managed through MAC-0 SMI lines.
  * The 'boardEthSmiAddr' variable is used only for PHY init. */
@@ -468,6 +473,8 @@ MV_BOARD_INFO rd88f6660_board_info = {
 	.intsGppMaskHigh		= 0,
 	.numBoardDeviceIf		= ARRSZ(rd88f6660InfoBoardDeCsInfo),
 	.pDevCsInfo			= rd88f6660InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(rd88f6660InfoBoardTwsiDev),
+	.pBoardTwsiDev			= rd88f6660InfoBoardTwsiDev,
 	.numBoardMacInfo		= ARRSZ(rd88f6660InfoBoardMacInfo),
 	.pBoardMacInfo			= rd88f6660InfoBoardMacInfo,
 	.numBoardGppInfo		= 0,

@@ -430,12 +430,12 @@ extern unsigned int mvTclkGet(void);
 /*
  * SDIO and MMC
  */
-#undef  CONFIG_MMC
-#undef  CONFIG_CMD_MMC
-#undef  CONFIG_GENERIC_MMC
-#undef  CONFIG_MRVL_MMC
-#undef  CONFIG_SYS_MMC_BASE
-#undef  CONFIG_SYS_MMC_MAX_DEVICE
+#define CONFIG_MMC
+#define CONFIG_CMD_MMC
+#define CONFIG_GENERIC_MMC
+#define CONFIG_MRVL_MMC
+#define CONFIG_SYS_MMC_BASE			(INTER_REGS_BASE + 0xd4000)
+#define CONFIG_SYS_MMC_MAX_DEVICE	1
 
 /*
  * Linux boot and other

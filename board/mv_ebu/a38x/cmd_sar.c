@@ -43,17 +43,18 @@ typedef struct _boardSatrDefault {
 	MV_SATR_TYPE_ID satrId;
 	MV_U32 defauleValueForBoard[MV_MAX_BOARD_ID];
 } MV_BOARD_SATR_DEFAULT;
-#define MAX_DEFAULT_ENTRY	4
+#define MAX_DEFAULT_ENTRY	5
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 /* 	defauleValueForBoard[] = RD_68xx,	DB_68xx*/
-{ MV_SATR_CPU_DDR_L2_FREQ,	{8,	       6}  },
-{ MV_SATR_CORE_CLK_SELECT,	{1,	       1}  },
-{ MV_SATR_CPU1_ENABLE,	  	{MV_FALSE,     MV_FALSE} },
-{ MV_SATR_SSCG_DISABLE,	  	{MV_FALSE,     MV_FALSE} }
-/*{ MV_SATR_RD_LANE1_2_CFG,	{0,	       0} },
-{ MV_SATR_RD_LANE4_CFG,		{0,	       0} },
-{ MV_SATR_RD_LANE0_CFG,		{0,	       0} },
-{ MV_SATR_RD_APPS_CFG,		{0,	       0} },
+{ MV_SATR_CPU_DDR_L2_FREQ,	{8,		8}  },
+{ MV_SATR_CORE_CLK_SELECT,	{1,		1}  },
+{ MV_SATR_CPU1_ENABLE,	  	{MV_FALSE,	MV_FALSE} },
+{ MV_SATR_SSCG_DISABLE,	  	{MV_FALSE,	MV_FALSE} },
+{ MV_SATR_BOOT_DEVICE,		{0x32,     	0x32} },
+/*{ MV_SATR_RD_LANE1_2_CFG,	{0,		0} },
+{ MV_SATR_RD_LANE4_CFG,		{0,		0} },
+{ MV_SATR_RD_LANE0_CFG,		{0,		0} },
+{ MV_SATR_RD_APPS_CFG,		{0,		0} },
 */
 };
 int do_sar_default(void)
@@ -96,8 +97,9 @@ int sar_cmd_get(const char *cmd)
 		return MV_SATR_DDR_BUS_WIDTH;
 	if (strcmp(cmd, "ddreccenable") == 0)
 		return MV_SATR_DDR_ECC_ENABLE;
-	if (strcmp(cmd, "nanddetect") == 0)
+/*	if (strcmp(cmd, "nanddetect") == 0)
 		return MV_SATR_NAND_DETECT;
+*/
 	if (strcmp(cmd, "rd_lane1_2_cfg") == 0)
 		return MV_SATR_RD_LANE1_2_CFG;
 	if (strcmp(cmd, "rd_lane4_cfg") == 0)
@@ -108,9 +110,9 @@ int sar_cmd_get(const char *cmd)
 		return MV_SATR_RD_APPS_CFG;
 	if (strcmp(cmd, "bootsrc") == 0)
 		return MV_SATR_BOOT_DEVICE;
-	if (strcmp(cmd, "board_id") == 0)
+	if (strcmp(cmd, "boardid") == 0)
 		return MV_SATR_BOARD_ID;
-	if (strcmp(cmd, "EcoVersion") == 0)
+	if (strcmp(cmd, "ecoversion") == 0)
 		return MV_SATR_BOARD_ECO_VERSION;
 	if (strcmp(cmd, "dump") == 0)
 		return CMD_DUMP;
@@ -126,13 +128,13 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 	switch (satrInfo->satrId) {
 	case MV_SATR_CPU_DDR_L2_FREQ:
 		mvOsPrintf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n");
-		mvOsPrintf("\n| ID  | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
-		mvOsPrintf("---------------------------------------------------------\n");
+		mvOsPrintf("\n| ID  | CPU Freq (MHz) | L2 Freq (MHz)  | SDRAM Freq (MHz) |\n");
+		mvOsPrintf("------------------------------------------------------------\n");
 		for (i=0; i <= MV_SAR_FREQ_MODES_EOT; i++) {
 			if (cpuDdrClkTbl[i].id == MV_SAR_FREQ_MODES_EOT)
 				break;
 			if (cpuDdrClkTbl[i].isDisplay)
-				mvOsPrintf("|  %2d |      %4d      |      %d       |      %d      | \n",
+				mvOsPrintf("|  %2d |      %4d      |      %d       |      %d         | \n",
 					   cpuDdrClkTbl[i].id,
 					   cpuDdrClkTbl[i].cpuFreq,
 					   cpuDdrClkTbl[i].ddrFreq,
@@ -170,12 +172,12 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("0x0 = No ECC      \n");
 		mvOsPrintf("0x1 = ECC enabled  \n ");
 		break;
-	case MV_SATR_NAND_DETECT:
+/*	case MV_SATR_NAND_DETECT:
 		mvOsPrintf("Determines NAND Device  detect:\n");
-		mvOsPrintf("0x0 = No NAND      \n");
-		mvOsPrintf("0x1 = NAND device detected\n ");
-
+		mvOsPrintf("0x0 = NAND device detected\n ");
+		mvOsPrintf("0x1 = No NAND      \n");
 		break;
+*/
 	case MV_SATR_RD_LANE1_2_CFG:
 		mvOsPrintf("Determines the SERDES lane 1 and 2 configuring\n");
 		mvOsPrintf("0x0 = Configuring lane 1 and lane 2 to PEX\n");
@@ -235,7 +237,10 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 			if (cpuDdrClkTbl[i].id == MV_SAR_FREQ_MODES_EOT)
 				break;
 			if (cpuDdrClkTbl[i].id == tmp) {
-				mvOsPrintf("|  %2d |      %4d      |      %d       |      %d      | \n",
+				mvOsPrintf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n");
+				mvOsPrintf("\n| ID  | CPU Freq (MHz) | L2 Freq (MHz)  | SDRAM Freq (MHz) |\n");
+				mvOsPrintf("------------------------------------------------------------\n");
+				mvOsPrintf("|  %2d |      %4d      |      %d       |      %d         | \n",
 					   cpuDdrClkTbl[i].id,
 					   cpuDdrClkTbl[i].cpuFreq,
 					   cpuDdrClkTbl[i].ddrFreq,
@@ -266,9 +271,10 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		else
 			mvOsPrintf("0x1 = ECC enabled  \n ");
 		break;
-	case MV_SATR_NAND_DETECT:
+/*	case MV_SATR_NAND_DETECT:
 		mvOsPrintf("NAND Device detect: %s\n", (tmp == 0) ? "0x0 = No NAND":"0x1 = NAND device detected");
 		break;
+*/
 	case MV_SATR_RD_LANE1_2_CFG:
 		mvOsPrintf("SERDES lane 1 and 2 configuring to %s\n", (tmp == 0) ? "PEX" : "SATA");
 		break;
@@ -297,8 +303,10 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 			MV_BOARD_SATR_INFO satrInfo;
 
 			for (i = MV_SATR_CPU_DDR_L2_FREQ; i < MV_SATR_MAX_OPTION; i++) {
+				if (i == MV_SATR_BOOT2_DEVICE)
+					continue;
 				if (mvBoardSatrInfoConfig(i, &satrInfo) != MV_OK)
-					break;
+					continue;
 				do_sar_read(i, &satrInfo);
 			}
 		}
@@ -381,34 +389,34 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "SatR list cpuddrfreq   - prints the S@R modes list\n"
 "SatR list cpusnum      - prints the S@R modes list\n"
 "SatR list sscg         - prints the S@R modes list\n"
+"SatR list bootsrc	- prints the S@R modes list\n"
 "SatR list ddr4select   - prints the S@R modes list\n"
 "SatR list ddrbuswidth  - prints the S@R modes list\n"
 "SatR list ddreccenable - prints the S@R modes list\n"
-"SatR list nanddetect   - prints the S@R modes list\n"
 "SatR list rd_lane1_2_cfg - (RD only) prints the S@R modes list\n"
 "SatR list rd_lane4_cfg - (RD only) prints the S@R modes list\n"
 "SatR list rd_lane0_cfg - (RD only) prints the S@R modes list\n"
-"SatR list rd_apps_cfg  - (RD only) prints the S@R modes list\n"
-"SatR list bootsrc  - (RD only) prints the S@R modes list\n\n"
+"SatR list rd_apps_cfg  - (RD only) prints the S@R modes list\n\n"
 
 "SatR read coreclock	- read and print the core frequency S@R value\n"
 "SatR read cpuddrfreq	- read and print the CPU DDR frequency S@R value\n"
 "SatR read cpusnum	- read and print the number of CPU cores S@R value\n"
+"SatR read sscg		- read and print the boot source from S@R value\n"
+"SatR read bootsrc	- read and print the boot source from S@R value\n"
 "SatR read ddr4select   - read and print the DDR3/4 S@R value\n"
 "SatR read ddrbuswidth  - read and print the DDR 16/32 S@R value\n"
 "SatR read ddreccenable - read and print the DDR ECC enable S@R value\n"
-"SatR read nanddetect   - read and print the NAND detect S@R value\n"
 "SatR read rd_lane1_2_cfg - read and print the SERDES lane 1-2 S@R value\n"
 "SatR read rd_lane4_cfg - read and print the SERDES lane 4 S@R value\n"
 "SatR read rd_lane0_cfg - read and print the SERDES lane0 S@R value\n"
 "SatR read rd_apps_cfg  - read and print the application S@R value\n"
-"SatR read bootsrc	- read and print the boot source from S@R value\n"
-"SatR read board_id     - read and print the board ID S@R value\n"
-"SatR read EcoVersion   - read and print the ECO version S@R value\n"
-"SatR read dump         - read and print all active S@R value\n"
+"SatR read boardid      - read and print the board ID S@R value\n"
+"SatR read ecoversion   - read and print the ECO version S@R value\n"
+"SatR read dump         - read and print all active S@R value\n\n"
 
-"SatR write coreclock   <val>	- write the S@R with core frequency value\n"
+"SatR write coreclock <val>	- write the S@R with core frequency value\n"
 "SatR write cpuddrfreq <val>	- write the S@R with CPU DDR frequency value\n"
+"SatR write cpusnum <val>	- write the S@R with sscg mode value\n"
 "SatR write sscg <val>		- write the S@R with sscg mode value\n"
 "SatR write bootsrc <val>	- write the S@R with Boot source value\n"
 "SatR write default <val>	- write the S@R default value\n"

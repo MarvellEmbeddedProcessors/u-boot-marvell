@@ -254,11 +254,12 @@ MV_STATUS mvPp2DefaultsSet(int port)
 						MV_PP2_RX_LOW_LATENCY_PKT_SIZE_MASK(256));
 
 	/* Enable Rx cache snoop */
-	if (mvPp2HalData.iocc)
+	if (mvPp2HalData.iocc) {
 		for (i = 0; i < pPortCtrl->rxqNum; i++) {
 			queue = mvPp2LogicRxqToPhysRxq(port, i);
 			mvPp2WrReg(MV_PP2_RXQ_SNOOP_REG(queue), MV_PP2_SNOOP_PKT_SIZE_MASK | MV_PP2_SNOOP_BUF_HDR_MASK);
 		}
+	}
 
 	/* At default, mask all interrupts to all cpus */
 	mvPp2GbeCpuInterruptsDisable(port, (1 << mvPp2HalData.maxCPUs) - 1);
@@ -452,6 +453,9 @@ MV_PP2_PHYS_RXQ_CTRL *mvPp2RxqInit(int port, int rxq, int descNum)
 
 	mvPp2DescRingReset(qCtrl);
 
+	/* zero occupied and non-occupied counters - direct access */
+	mvPp2WrReg(MV_PP2_RXQ_STATUS_REG(prxq), 0);
+
 	/* Set Rx descriptors queue starting address */
 	/* indirect access */
 	mvPp2WrReg(MV_PP2_RXQ_NUM_REG, prxq);
@@ -633,6 +637,7 @@ void mvPp2RxReset(int port)
 MV_PP2_PHYS_TXQ_CTRL *mvPp2TxqInit(int port, int txp, int txq, int descNum, int hwfNum)
 {
 	MV_STATUS status;
+	MV_U32 regVal;
 	int ptxq = MV_PPV2_TXQ_PHYS(port, txp, txq);
 	MV_PP2_PHYS_TXQ_CTRL *pTxq = &mvPp2PhysTxqs[ptxq];
 	MV_PP2_QUEUE_CTRL *qCtrl = &pTxq->queueCtrl;
@@ -651,6 +656,19 @@ MV_PP2_PHYS_TXQ_CTRL *mvPp2TxqInit(int port, int txp, int txq, int descNum, int 
 	mvPp2WrReg(MV_PP2_TXQ_DESC_HWF_SIZE_REG, hwfNum & MV_PP2_TXQ_DESC_HWF_SIZE_MASK);
 	mvPp2WrReg(MV_PP2_TXQ_INDEX_REG, 0);
 
+	/* Sanity check: Pending descriptors counter and sent descriptors counter must be 0 */
+	/* Pending counter read - indirect access */
+	regVal = mvPp2RdReg(MV_PP2_TXQ_PENDING_REG);
+	if (regVal != 0) {
+		mvOsPrintf("port=%d, txp=%d txq=%d, ptxq=%d, pend=0x%08x - Pending packets\n",
+			port, txp, txq, ptxq, regVal);
+	}
+	/* Sent descriptors counter - direct access */
+	regVal = mvPp2RdReg(MV_PP2_TXQ_SENT_REG(ptxq));
+	if (regVal != 0) {
+		mvOsPrintf("port=%d, txp=%d txq=%d, ptxq=%d, sent=0x%08x - Sent packets\n",
+			port, txp, txq, ptxq, regVal);
+	}
 	mvPp2WrReg(MV_PP2_TXQ_PREF_BUF_REG, MV_PP2_PREF_BUF_PTR(ptxq * 16) | MV_PP2_PREF_BUF_SIZE_16 |
 				MV_PP2_PREF_BUF_THRESH(8));
 
@@ -1220,6 +1238,7 @@ MV_VOID mvPp2GbeCpuInterruptsEnable(int port, int cpuMask)
 {
 	if (mvPp2PortCheck(port))
 		return;
+
 	mvPp2WrReg(MV_PP2_ISR_ENABLE_REG(port), MV_PP2_ISR_ENABLE_INTERRUPT(cpuMask));
 }
 

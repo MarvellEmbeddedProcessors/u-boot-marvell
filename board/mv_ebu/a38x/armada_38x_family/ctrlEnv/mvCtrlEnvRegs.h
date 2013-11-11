@@ -333,9 +333,9 @@ typedef struct {
 #define MV_SAR_FREQ_MODES_EOT		0xFF
 
 #define MV_SAR_FREQ_MODES { \
-		{ 0x4,   1066, 533, 266, MV_TRUE  }, \
-		{ 0x8,   1332, 666, 333, MV_TRUE  }, \
-		{ 0xC,   1600, 800, 400, MV_TRUE  }, \
+		{ 0x4,   1066, 533, 533, MV_TRUE  }, \
+		{ 0x8,   1332, 666, 666, MV_TRUE  }, \
+		{ 0xC,   1600, 800, 800, MV_TRUE  }, \
 		{ MV_SAR_FREQ_MODES_EOT,  0,    0,   0, MV_FALSE } \
 };
 

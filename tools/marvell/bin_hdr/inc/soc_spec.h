@@ -64,6 +64,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _SOC_SPEC_H
 #define _SOC_SPEC_H
 
+#include "config_marvell.h"     /* Required to identify SOC and Board */
+
 /************************/
 /* CPU ADDRESS DECODING */
 /************************/
@@ -79,10 +81,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NOR_FLASH_BASE			0xD8000000 /* Boot CS - NOR Flash on BootCS */
 #define NAND_FLASH_BASE			0xD8000000 /* Boot CS - Legacy NAND Controller */
 
-#ifdef MV_TEST_PLATFORM
+#if defined(MV_TEST_PLATFORM)
 	#define RAM_TOP			0x81004000 /*  Use PEX memory - (16KB for MMU table) */
+#elif defined(MV88F6710) || defined(MV88F78X60)
+	#define RAM_TOP			0x40004000 /*  L2 cache 512KB - (16KB for MMU table) */
+#elif defined(MV88F66XX) || defined(MV88F68XX) || defined(MV88F672X)
+	#define RAM_TOP			0x40000000 /*  L2 cache 512KB */
 #else
-	#define RAM_TOP			0x40000000 /*  L2 cache 512KB - (16KB for MMU table) */
+#error "SoC TYPE NOT DEFINED CORRECTLY!!!!!!"
 #endif
 
 #define HDR_BLK_OFFSET		0x00000000	/* Header is 64KB long? */

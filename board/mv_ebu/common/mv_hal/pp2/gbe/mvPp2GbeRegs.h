@@ -487,10 +487,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Port Maximum Transmit Unit (PMTU) */
 #define MV_PP2_TXP_SCHED_MTU_REG		(MV_PP2_REG_BASE + 0x801c)
 
-#define MV_PP2_TXP_MTU_OFFS                 	0
-#define MV_PP2_TXP_MTU_MAX                  	0x3FFFF
-#define MV_PP2_TXP_MTU_ALL_MASK             	(MV_PP2_TXP_MTU_MAX << MV_PP2_TXP_MTU_OFFS)
-#define MV_PP2_TXP_MTU_MASK(mtu)            	((mtu) << MV_PP2_TXP_MTU_OFFS)
+#define MV_PP2_TXP_MTU_OFFS			0
+#define MV_PP2_TXP_MTU_MAX			0x7FFFF
+#define MV_PP2_TXP_MTU_ALL_MASK			(MV_PP2_TXP_MTU_MAX << MV_PP2_TXP_MTU_OFFS)
+#define MV_PP2_TXP_MTU_MASK(mtu)		((mtu) << MV_PP2_TXP_MTU_OFFS)
 /*-----------------------------------------------------------------------------------------------*/
 
 /* Port Bucket Refill (PRefill) */

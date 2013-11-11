@@ -288,19 +288,15 @@ char *mvEthSpeedStrGet(MV_ETH_PORT_SPEED speed)
 *******************************************************************************/
 void mvEthMaxRxSizeSet(int port, int maxRxSize)
 {
-    MV_U32		regVal;
+	MV_U32		regVal;
 
-	if (!MV_PON_PORT(port)) {
+	if (MV_PON_PORT(port))
+		return;
 
-		regVal =  MV_REG_READ(ETH_GMAC_CTRL_0_REG(port));
-		regVal &= ~ETH_GMAC_MAX_RX_SIZE_MASK;
-		regVal |= (((maxRxSize - MV_ETH_MH_SIZE) / 2) << ETH_GMAC_MAX_RX_SIZE_OFFS);
-		MV_REG_WRITE(ETH_GMAC_CTRL_0_REG(port), regVal);
-/*
-		mvOsPrintf("%s: port=%d, maxRxSize=%d, regAddr=0x%x, regVal=0x%x\n",
-			__func__, port, maxRxSize, ETH_GMAC_CTRL_0_REG(port), regVal);
-*/
-	}
+	regVal =  MV_REG_READ(ETH_GMAC_CTRL_0_REG(port));
+	regVal &= ~ETH_GMAC_MAX_RX_SIZE_MASK;
+	regVal |= (((maxRxSize - MV_ETH_MH_SIZE) / 2) << ETH_GMAC_MAX_RX_SIZE_OFFS);
+	MV_REG_WRITE(ETH_GMAC_CTRL_0_REG(port), regVal);
 }
 
 /*******************************************************************************
@@ -718,11 +714,15 @@ MV_U32 mvEthMibCounterRead(int port, unsigned int mibOffset, MV_U32 *pHigh32)
 *******************************************************************************/
 void mvEthMibCountersClear(int port)
 {
+	int i;
+
 	if (MV_PON_PORT(port))
 		return;
 
-	/* Perform dummy reads from last counter in the MIB */
-	mvEthMibCounterRead(port, ETH_MIB_LATE_COLLISION, NULL);
+	/* Perform dummy reads from MIB counters */
+	/* Read of last counter clear all counter were read before */
+	for (i = ETH_MIB_GOOD_OCTETS_RECEIVED_LOW; i <= ETH_MIB_LATE_COLLISION; i += 4)
+		MV_REG_READ((ETH_MIB_COUNTERS_BASE(port) + i));
 }
 
 static void mvEthMibPrint(int port, MV_U32 offset, char *mib_name)

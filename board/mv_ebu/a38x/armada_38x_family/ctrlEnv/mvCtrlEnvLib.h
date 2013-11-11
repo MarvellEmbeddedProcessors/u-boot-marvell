@@ -198,7 +198,7 @@ typedef enum {
 
 #define TSEN_STATUS_REG						0xE4078
 #define TSEN_STATUS_TEMP_OUT_OFFSET				0
-#define TSEN_STATUS_TEMP_OUT_MASK				(0x1FF << TSEN_STATUS_TEMP_OUT_OFFSET)
+#define TSEN_STATUS_TEMP_OUT_MASK				(0x3FF << TSEN_STATUS_TEMP_OUT_OFFSET)
 
 
 /* BIOS Modes related defines */

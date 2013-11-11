@@ -379,8 +379,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvGppPolaritySet(i, gppMask, (MV_GPP_IN_INVERT & gppMask));
 	}
 
-	/*Disabled for kernel compilation*/
-	/*mvEthComplexInit(mvBoardEthComplexConfigGet());*/
+	MV_REG_BIT_SET(TSEN_CONF_REG, BIT8); /* init Tsen */
 
 	/*
 	 * Enable NAND Flash PUP (Pack-Unpack)
@@ -1596,22 +1595,20 @@ MV_BOOL mvCtrlDDRECC(MV_VOID)
 MV_U32 mvCtrlGetJuncTemp(MV_VOID)
 {
 	/*Used Hard Coded values, TODO sync with Spec*/
-	MV_32 reg = 0, temp;
+	MV_32 reg = 0, temp, i;
 
 	/* init the TSEN sensor once */
-	if ((MV_REG_READ(TSEN_STATE_REG) & TSEN_STATE_MASK) == 0) {
-		MV_REG_BIT_RESET(TSEN_STATE_REG, TSEN_STATE_MASK);
-
-		MV_REG_WRITE(TSEN_STATE_REG, 0x8011E214);
-
-		reg = MV_REG_READ(TSEN_CONF_REG);
-
-		reg = 0x00a80909;
-		MV_REG_WRITE(TSEN_CONF_REG, reg);
+	for (i = 0 ; i < 20; i++) {
+		reg = MV_REG_READ(TSEN_STATUS_REG);
+		if (reg & BIT10)
+			break;
 		mvOsDelay(10);
 	}
+	if ((reg & BIT10) == 0) {
+		mvOsPrintf("%s: TSEN not ready\n", __func__);
+		return 0;
+	}
 
-	reg = MV_REG_READ(TSEN_STATUS_REG);
 	reg = (reg & TSEN_STATUS_TEMP_OUT_MASK) >> TSEN_STATUS_TEMP_OUT_OFFSET;
 	temp = (((((10000 * reg) / 21445) * 1000) - 272674) / 1000);
 

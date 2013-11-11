@@ -638,7 +638,7 @@ MV_PP2_PHYS_TXQ_CTRL *mvPp2TxqInit(int port, int txp, int txq, int descNum, int 
 {
 	MV_STATUS status;
 	MV_U32 regVal;
-	int ptxq = MV_PPV2_TXQ_PHYS(port, txp, txq);
+	int desc, descPerTxq, ptxq = MV_PPV2_TXQ_PHYS(port, txp, txq);
 	MV_PP2_PHYS_TXQ_CTRL *pTxq = &mvPp2PhysTxqs[ptxq];
 	MV_PP2_QUEUE_CTRL *qCtrl = &pTxq->queueCtrl;
 
@@ -669,8 +669,18 @@ MV_PP2_PHYS_TXQ_CTRL *mvPp2TxqInit(int port, int txp, int txq, int descNum, int 
 		mvOsPrintf("port=%d, txp=%d txq=%d, ptxq=%d, sent=0x%08x - Sent packets\n",
 			port, txp, txq, ptxq, regVal);
 	}
-	mvPp2WrReg(MV_PP2_TXQ_PREF_BUF_REG, MV_PP2_PREF_BUF_PTR(ptxq * 16) | MV_PP2_PREF_BUF_SIZE_16 |
-				MV_PP2_PREF_BUF_THRESH(8));
+
+	/* Calculate base address in prefetch buffer. We reserve 16 descriptors for each existing TXQ */
+	/* TCONTS for PON port must be continious from 0 to mvPp2HalData.maxTcont */
+	/* GBE ports assumed to be continious from 0 to (mvPp2HalData.maxPort - 1) */
+	descPerTxq = 16;
+	if (MV_PON_PORT(port))
+		desc = ptxq * descPerTxq;
+	else
+		desc = (mvPp2HalData.maxTcont * MV_ETH_MAX_TXQ * descPerTxq) + (port * MV_ETH_MAX_TXQ * descPerTxq);
+
+	mvPp2WrReg(MV_PP2_TXQ_PREF_BUF_REG, MV_PP2_PREF_BUF_PTR(desc) | MV_PP2_PREF_BUF_SIZE_16 |
+				MV_PP2_PREF_BUF_THRESH(descPerTxq/2));
 
 	mvPp2TxqMaxRateSet(port, txp, txq);
 

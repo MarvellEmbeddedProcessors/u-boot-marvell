@@ -117,7 +117,6 @@ INCLUDE     = -I./  -I../inc/ -I../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
-HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
 
 TGT = utils.a
@@ -145,7 +144,7 @@ $(TGT_UART): $(CUART_OBJ)
 	$(CP) ./$@ ../
 
 setparams:
-	$(HOSTCC) $(BOARDFLAG) $(HOSTCFLAGS) $(HOSTCPPFLAGS) -o $@  $(addsuffix .c, $@)
+	$(HOSTCC) $(BOARDFLAG) -Wall $(INCLUDE) $(HOSTCPPFLAGS) -o $@  $(addsuffix .c, $@)
 	$(CP) $@ ../
 
 clean:

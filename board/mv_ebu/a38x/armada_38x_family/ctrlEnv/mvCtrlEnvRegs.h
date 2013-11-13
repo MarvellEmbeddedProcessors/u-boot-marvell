@@ -144,7 +144,7 @@ extern "C" {
 #define SATR_CPU1_ENABLE_MASK		(1 << SATR_CPU1_ENABLE_OFFS)
 
 /* Core Divider Clock Control */
-#define CORE_DIV_CLK_CTRL(num)		(0xE8250 + ((num) * 0x4))
+#define CORE_DIV_CLK_CTRL(num)		(0xE4250 + ((num) * 0x4))
 
 #define CORE_DIVCLK_RELOAD_FORCE_OFFS		0
 #define CORE_DIVCLK_RELOAD_FORCE_MASK		(0xFF << CORE_DIVCLK_RELOAD_FORCE_OFFS)

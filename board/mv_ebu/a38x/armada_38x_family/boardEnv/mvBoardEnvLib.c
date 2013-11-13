@@ -120,29 +120,35 @@ MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 *******************************************************************************/
 MV_VOID mvBoardEnvInit(MV_VOID)
 {
-	MV_U32 nandDev;
-	MV_U32 norDev;
-	MV_U32 syncCtrl = 0;
+	MV_U32 nandDev	= 0xFFFFFFFF;
+	MV_U32 norDev	= 0xFFFFFFFF;
+	MV_U32 syncCtrl	= 0;
+	MV_BOARD_BOOT_SRC bootSrc;
+
+	memset(&boardOptionsConfig, 0x0, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION);
 
 	board = boardInfoTbl[DB_68XX_ID];	/* init for first time get the correct twsi address */
 	mvBoardIdSet(mvBoardIdGet());
-	nandDev = boardGetDevCSNum(0, BOARD_DEV_NAND_FLASH);
-	if (nandDev != 0xFFFFFFFF) {
-		/* Set NAND interface access parameters */
-		MV_REG_WRITE(DEV_BANK_PARAM_REG(nandDev), board->nandFlashReadParams);
-		MV_REG_WRITE(DEV_BANK_PARAM_REG_WR(nandDev), board->nandFlashWriteParams);
-		MV_REG_WRITE(DEV_NAND_CTRL_REG, board->nandFlashControl);
-		/* Set Ready Polarity to Active High */
-		syncCtrl |= SYNC_CTRL_READY_POL(nandDev);
-	}
-
-	norDev = boardGetDevCSNum(0, BOARD_DEV_NOR_FLASH);
-	if (norDev != 0xFFFFFFFF) {
-		/* Set NOR interface access parameters */
-		MV_REG_WRITE(DEV_BANK_PARAM_REG(norDev), board->norFlashReadParams);
-		MV_REG_WRITE(DEV_BANK_PARAM_REG_WR(norDev), board->norFlashWriteParams);
-		/* Ignore Ready signal */
-		syncCtrl |= SYNC_CTRL_READY_IGNORE(norDev);
+	bootSrc = mvBoardBootDeviceGroupSet();
+	if (MSAR_0_BOOT_NAND_NEW == bootSrc) {
+		nandDev = boardGetDevCSNum(0, BOARD_DEV_NAND_FLASH);
+		if (nandDev != 0xFFFFFFFF) {
+			/* Set NAND interface access parameters */
+			MV_REG_WRITE(DEV_BANK_PARAM_REG(nandDev), board->nandFlashReadParams);
+			MV_REG_WRITE(DEV_BANK_PARAM_REG_WR(nandDev), board->nandFlashWriteParams);
+			MV_REG_WRITE(DEV_NAND_CTRL_REG, board->nandFlashControl);
+			/* Set Ready Polarity to Active High */
+			syncCtrl |= SYNC_CTRL_READY_POL(nandDev);
+		}
+	} else if (MSAR_0_BOOT_NOR_FLASH == bootSrc) {
+		norDev = boardGetDevCSNum(0, BOARD_DEV_NOR_FLASH);
+		if (norDev != 0xFFFFFFFF) {
+			/* Set NOR interface access parameters */
+			MV_REG_WRITE(DEV_BANK_PARAM_REG(norDev), board->norFlashReadParams);
+			MV_REG_WRITE(DEV_BANK_PARAM_REG_WR(norDev), board->norFlashWriteParams);
+			/* Ignore Ready signal */
+			syncCtrl |= SYNC_CTRL_READY_IGNORE(norDev);
+		}
 	}
 
 	if (nandDev != 0xFFFFFFFF || norDev != 0xFFFFFFFF) {
@@ -812,11 +818,12 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	MV_U8 readValue;
 	MV_BOARD_CONFIG_TYPE_INFO configInfo;
 	int i;
+	MV_BOARD_BOOT_SRC bootSrc;
 
-	memset(&boardOptionsConfig, 0x0, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION);
+
 	/*Read all TWSI board module if exsist : */
 	/* Save values Locally in configVal[] */
-	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
+	for (i = 0; i < MV_CONFIG_TYPE_MAX_MODULE; i++) {
 		if (mvBoardConfigTypeGet(i, &configInfo) == MV_TRUE) {
 			if (mvBoardTwsiGet(BOARD_TWSI_MODULE_DETECT, configInfo.twsiAddr,
 					   configInfo.offset, &readValue) != MV_OK) {
@@ -829,6 +836,9 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 				boardOptionsConfig[configInfo.configId] = 1;
 		}
 	}
+	bootSrc = mvBoardBootDeviceGroupSet();
+	if (MSAR_0_BOOT_NAND_NEW == bootSrc)
+		boardOptionsConfig[MV_CONFIG_NAND_ON_BOARD] = 1;
 
 	/* Update MPP group types and values according to board configuration */
 	mvBoardMppIdUpdate();
@@ -911,6 +921,7 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 	struct _mvBoardMppModule tdmModule[2] = MPP_TDM_MODULE;
 	struct _mvBoardMppModule i2sModule = MPP_I2S_MODULE;
 	struct _mvBoardMppModule spdifModule = MPP_SPDIF_MODULE;
+	struct _mvBoardMppModule nandOnBoard[4] = MPP_NAND_ON_BOARD;
 
 	if (mvBoardIsModuleConnected(MV_CONFIG_MII))
 		mvModuleMppUpdate(3, miiModule);
@@ -932,6 +943,10 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 
 	if (mvBoardIsModuleConnected(MV_CONFIG_SPDIF_DEVICE))
 		mvModuleMppUpdate(1, &spdifModule);
+
+	if (mvBoardIsModuleConnected(MV_CONFIG_NAND_ON_BOARD))
+		mvModuleMppUpdate(4, nandOnBoard);
+
 }
 
 /*******************************************************************************
@@ -982,6 +997,7 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 	case MSAR_0_BOOT_NOR_FLASH:
 		break;
 	case MSAR_0_BOOT_NAND_NEW:
+		boardOptionsConfig[MV_CONFIG_NAND_ON_BOARD] = 1;
 		break;
 	case MSAR_0_BOOT_SPI_FLASH:
 		break;
@@ -1184,7 +1200,7 @@ MV_VOID mvBoardConfigWrite(void)
 MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 {
 	int i;
-	char *moduleStr[MV_CONFIG_TYPE_MAX_OPTION] = { \
+	char *moduleStr[MV_CONFIG_TYPE_MAX_MODULE] = { \
 		"SGMII",                                \
 		"MII",                                  \
 		"TDM",                                  \
@@ -1199,7 +1215,7 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 	};
 	mvOsOutput("Board configuration detected:\n");
 
-	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
+	for (i = 0; i < MV_CONFIG_TYPE_MAX_MODULE; i++) {
 		if (mvBoardIsModuleConnected(i))
 			mvOsOutput("       %s module.\n", moduleStr[i]);
 

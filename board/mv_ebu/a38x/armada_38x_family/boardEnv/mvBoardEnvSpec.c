@@ -70,6 +70,14 @@
 /*******************************************************************************
  * A380 DB-88F6660 board */
 /*******************************************************************************/
+#define DB_88F68XX_BOARD_NAND_READ_PARAMS	0x000C0282
+#define DB_88F68XX_BOARD_NAND_WRITE_PARAMS	0x00010305
+/*NAND care support for small page chips*/
+#define DB_88F68XX_BOARD_NAND_CONTROL		0x01c00543
+
+#define DB_88F68XX_BOARD_NOR_READ_PARAMS	0x403E07CF
+#define DB_88F68XX_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
+
 MV_BOARD_MPP_INFO db88f68xxInfoBoardMppConfigValue[] = {
 	{ {
 		  DB_88F68XX_MPP0_7,
@@ -106,7 +114,10 @@ MV_BOARD_MAC_INFO db88f68xxInfoBoardMacInfo[] = {
 MV_DEV_CS_INFO db88f68xxInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth }*/
 #if defined(MV_INCLUDE_SPI)
-	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 } /* SPI DEV */
+	{ SPI_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
+#endif
+#ifdef MV_NAND
+	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8},  /* NAND DEV */
 #endif
 };
 /*
@@ -165,9 +176,9 @@ MV_BOARD_INFO db88f68xx_board_info = {
 	.pBoardSpecInit			= NULL,
 
 	/* NAND init params */
-	.nandFlashReadParams		= 0,
-	.nandFlashWriteParams		= 0,
-	.nandFlashControl		= 0,
+	.nandFlashReadParams		= DB_88F68XX_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_88F68XX_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= DB_88F68XX_BOARD_NAND_CONTROL,
 	.pBoardTdmSpiInfo		= db88f68xxTdmSpiInfo,
 
 	/* NOR init params */

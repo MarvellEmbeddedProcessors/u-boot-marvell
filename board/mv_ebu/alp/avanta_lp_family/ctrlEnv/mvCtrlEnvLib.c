@@ -322,6 +322,13 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	 */
 	MV_REG_BIT_SET(PUP_EN_REG, BIT4);
 
+	/* XXX: Following setting should be configured by u-boot */
+	MV_REG_BIT_SET(SOC_DEV_MUX_REG, BIT0); /* Configure NAND flush enabled */
+
+	/* Set NfArbiterEn to NAND Flash (Bootrom accidently Set NfArbiterEn to Device) */
+	/* Disable arbitration between device and NAND */
+	MV_REG_BIT_RESET(SOC_DEV_MUX_REG, BIT27);
+
 #if defined(MV_INCLUDE_TDM)
 	mvCtrlTdmClkCtrlConfig();
 #endif

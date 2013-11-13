@@ -87,6 +87,11 @@ extern "C" {
 #define MV_CIB_CTRL_CFG_REG                     (MV_COHERENCY_FABRIC_OFFSET + 0x80)
 
 /*
+ * SoC Device Multiplex Register
+ */
+#define SOC_DEV_MUX_REG				0x18208
+
+/*
  * Power Management Clock (PMC) Gating Control Register
  */
 #define POWER_MNG_CTRL_REG			0x18220

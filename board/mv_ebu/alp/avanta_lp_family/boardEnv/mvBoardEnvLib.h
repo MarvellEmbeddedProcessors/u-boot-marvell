@@ -82,7 +82,7 @@ extern "C" {
 #define BOARD_ETH_SWITCH_SMI_SCAN_MODE	1	/* Use manual scanning mode */
 #define MV_BOARD_MAX_MPP                9       /* number of MPP conf registers */
 #define MV_BOARD_MAX_MPP_GROUPS         9
-#define MV_BOARD_MPP_GROUPS_MAX_TYPES   8
+#define MV_BOARD_MPP_GROUPS_MAX_TYPES   9
 #define MV_BOARD_NAME_LEN               0x20
 
 typedef enum _devBoardSlicType {

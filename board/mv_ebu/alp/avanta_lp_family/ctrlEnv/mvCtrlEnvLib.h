@@ -127,6 +127,7 @@ typedef enum _mvConfigTypeID {
 typedef enum _mvSMIctrl {
 	CPU_SMI_CTRL,
 	SWITCH_SMI_CTRL,
+	NO_SMI_CTRL,
 } MV_SMI_CTRL;
 
 /* typedefs */

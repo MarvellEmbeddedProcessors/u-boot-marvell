@@ -83,6 +83,7 @@ static void mvAlpBoardEgigaPhyInit(void)
 {
 	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
 
+
 	/* Set SMI control to CPU, before initializing PHY */
 	mvCtrlSmiMasterSet(CPU_SMI_CTRL);
 
@@ -99,7 +100,7 @@ static void mvAlpBoardEgigaPhyInit(void)
 	 * to avoid address conflicts between 1512 PHY with internal PHY (0x1),
 	 * the 1512 PHY is also SMI controlled and initialized by MAC0
 	 */
-	if (mvBoardIdGet() == RD_6650_ID && (ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0))
+	if (ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY)
 		mvEthPhyInit(0, MV_FALSE);
 
 	/* Init PHY connected to MAC1 */
@@ -109,7 +110,7 @@ static void mvAlpBoardEgigaPhyInit(void)
 
 	/* if MAC-1 is connected to RGMII-1 && SW_P4 is not connected RGMII-0 */
 	if ((ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1) &&
-		!(ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0)) {
+		!(ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY)) {
 
 		/* enable external phy cpu ctrl - MAC1 is polling this phy */
 		mvBoardExtPhyBufferSelect(MV_TRUE);
@@ -201,6 +202,14 @@ void mvBoardEgigaPhyInit(void)
 		mvAlpBoardSwitchBasicInit(mvBoardSwitchPortsMaskGet(0));
 
 	mvBoardLedMatrixInit();
+
+	/*If NOT using any external RGMII/PHY connected to any MAC - RESET SMI control */
+	if (!(mvBoardEthComplexConfigGet() & (MV_ETHCOMP_GE_MAC0_2_RGMII0 |
+					MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0 |
+					MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY |
+					MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3 |
+					MV_ETHCOMP_GE_MAC1_2_RGMII1)))
+		mvCtrlSmiMasterSet(NO_SMI_CTRL);
 
 #elif defined(MV88F68XX)
 	int i;

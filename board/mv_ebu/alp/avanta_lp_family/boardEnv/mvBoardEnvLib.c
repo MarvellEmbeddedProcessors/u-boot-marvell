@@ -159,11 +159,6 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 	mvGppTypeSet(1, 0xFFFFFFFF, board->gppOutEnValMid);
 	mvGppTypeSet(2, 0xFFFFFFFF, board->gppOutEnValHigh);
 
-	/* specific External SATA initializations (required only for RD-6660) */
-	if (boardId == RD_6660_ID) {
-		mvBoardHDDPowerSet(MV_TRUE);
-		mvBoardHddExtSet(MV_TRUE);
-	}
 #endif
 }
 

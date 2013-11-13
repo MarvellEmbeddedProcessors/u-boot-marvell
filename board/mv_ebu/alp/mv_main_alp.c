@@ -850,6 +850,12 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	if (!env)
 		setenv("lcd_panel", "0");
 
+	if (mvBoardIdGet() == RD_6660_ID) {
+		env = getenv("enaExtDisk");
+		if(!env)
+			setenv("enaExtDisk", "yes");
+	}
+
 	return;
 }
 
@@ -917,10 +923,16 @@ int board_late_init(void)
 		kick_next();
 #endif
 
-#if defined (RD_88F78460_SERVER)
-	if (mvBoardSledCpuNumGet() == 0)
-		MV_REG_BIT_SET(GPP_DATA_OUT_REG(0), BIT28 | BIT29 | BIT30 | BIT31);
-#endif
+	/* specific External SATA initializations - only for RD-6660 */
+	if (mvBoardIdGet() == RD_6660_ID) {
+		mvBoardHDDPowerSet(MV_TRUE);
+		env = getenv("enaExtDisk");
+		if (env && ((strcmp(env, "yes") == 0) || (strcmp(env, "Yes") == 0)))
+			mvBoardHddExtSet(MV_TRUE);  /* set External HDD */
+		else
+			mvBoardHddExtSet(MV_FALSE); /* set Internal HDD */
+	}
+
 
 	mvBoardDebugLed(0);
 	return 0;

@@ -381,6 +381,9 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 
 	MV_REG_BIT_SET(TSEN_CONF_REG, BIT8); /* init Tsen */
 
+	/* change default because Egiga0 is not alive by default */
+	MV_REG_WRITE(GENERAL_PURPOSE_RESERVED1_REG, GENERAL_PURPOSE_RESERVED1_DEFAULT_VALUE);
+
 	/*
 	 * Enable NAND Flash PUP (Pack-Unpack)
 	 * HW machanism to accelerate transactions (controlled by SoC register)
@@ -391,12 +394,11 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	/*Enable PUP bit for NOR*/
 	MV_REG_BIT_SET(PUP_EN_REG, BIT6);
 #endif
-	/* change default because Egiga0 is not alive by default */
-	MV_REG_WRITE(GENERAL_PURPOSE_RESERVED1_REG, GENERAL_PURPOSE_RESERVED1_DEFAULT_VALUE);
-
 	/* XXX: Following setting should be configured by u-boot */
-	/* Disable arbitration between device and NAND */
-	MV_REG_BIT_RESET(SOC_DEV_MUX_REG, BIT27);
+	MV_REG_BIT_SET(SOC_DEV_MUX_REG, BIT0); /* Configure NAND flush enabled */
+
+	/* Enable arbitration between device and NAND */
+	MV_REG_BIT_SET(SOC_DEV_MUX_REG, BIT27);
 
 	return MV_OK;
 }

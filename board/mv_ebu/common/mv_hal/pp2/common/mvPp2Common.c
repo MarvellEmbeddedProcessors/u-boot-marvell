@@ -103,3 +103,22 @@ void mvPp2PrintReg2(MV_U32 reg_addr, char *reg_name, MV_U32 index)
 	mvOsSPrintf(buf, "%s[%d]", reg_name, index);
 	mvOsPrintf("  %-32s: 0x%x = 0x%08x\n", buf, reg_addr, mvPp2RdReg(reg_addr));
 }
+
+void mvPp2RegPrintNonZero(MV_U32 reg_addr, char *reg_name)
+{
+	unsigned int regVal = MV_REG_READ(reg_addr);
+
+	if (regVal)
+		mvOsPrintf("  %-32s: 0x%x = 0x%08x\n", reg_name, reg_addr, regVal);
+}
+
+void mvPp2RegPrintNonZero2(MV_U32 reg_addr, char *reg_name, MV_U32 index)
+{
+	char buf[64];
+	unsigned int regVal = MV_REG_READ(reg_addr);
+
+	if (regVal) {
+		mvOsSPrintf(buf, "%s[%d]", reg_name, index);
+		mvOsPrintf("  %-32s: 0x%x = 0x%08x\n", buf, reg_addr, regVal);
+	}
+}

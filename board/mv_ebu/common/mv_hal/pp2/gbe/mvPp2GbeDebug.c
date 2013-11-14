@@ -81,8 +81,13 @@ MV_VOID mvPp2RxDmaRegsPrint(void)
 
 	mvOsPrintf("\nRXQs [0..%d] registers\n", MV_ETH_RXQ_TOTAL_NUM);
 	for (i = 0; i < MV_ETH_RXQ_TOTAL_NUM; i++) {
-		mvPp2PrintReg2(MV_PP2_RXQ_SNOOP_REG(i),  "MV_PP2_RXQ_SNOOP_REG", i);
+#ifdef CONFIG_MV_ETH_PP2_1
+		mvPp2PrintReg(MV_PP2_RX_STATUS, "MV_PP2_RX_STATUS");
 		mvPp2PrintReg2(MV_PP2_RXQ_CONFIG_REG(i), "MV_PP2_RXQ_CONFIG_REG", i);
+#else
+		mvPp2PrintReg2(MV_PP2_V0_RXQ_SNOOP_REG(i), "MV_PP2_RXQ_SNOOP_REG", i);
+		mvPp2PrintReg2(MV_PP2_V0_RXQ_CONFIG_REG(i), "MV_PP2_RXQ_CONFIG_REG", i);
+#endif
 	}
 	mvOsPrintf("\nBM pools [0..%d] registers\n", MV_BM_POOLS);
 	for (i = 0; i < MV_BM_POOLS; i++)
@@ -90,7 +95,9 @@ MV_VOID mvPp2RxDmaRegsPrint(void)
 
 	mvOsPrintf("\nIngress ports [0..%d] registers\n", MV_PP2_MAX_PORTS);
 	for (i = 0; i < MV_PP2_MAX_PORTS; i++) {
-		mvPp2PrintReg2(MV_PP2_PORT_HWF_CONFIG_REG(i), "MV_PP2_PORT_HWF_CONFIG_REG", i);
+#ifndef CONFIG_MV_ETH_PP2_1
+		mvPp2PrintReg2(MV_PP2_V0_PORT_HWF_CONFIG_REG(i), "MV_PP2_PORT_HWF_CONFIG_REG", i);
+#endif
 		mvPp2PrintReg2(MV_PP2_RX_CTRL_REG(i), "MV_PP2_RX_CTRL_REG", i);
 	}
 	mvOsPrintf("\n");
@@ -98,9 +105,10 @@ MV_VOID mvPp2RxDmaRegsPrint(void)
 
 static void mvPp2QueueShow(MV_PP2_QUEUE_CTRL *pQueueCtrl, int mode, int isTxq)
 {
-	mvOsPrintf("pFirst=%p (0x%x), numOfDescr=%d\n",
-		   pQueueCtrl->pFirst,
-		   (MV_U32) pp2DescVirtToPhys(pQueueCtrl, (MV_U8 *) pQueueCtrl->pFirst), pQueueCtrl->lastDesc + 1);
+	mvOsPrintf("pFirst=%p (0x%x), descSize=%d, numOfDescr=%d\n",
+			pQueueCtrl->pFirst,
+			(MV_U32) pp2DescVirtToPhys(pQueueCtrl, (MV_U8 *) pQueueCtrl->pFirst),
+			pQueueCtrl->descSize, pQueueCtrl->lastDesc + 1);
 
 	if (mode > 0) {
 		int i;
@@ -275,10 +283,15 @@ void mvPp2PhysRxqRegs(int rxq)
 	mvPp2PrintReg(MV_PP2_RXQ_STATUS_REG(rxq), "MV_PP2_RXQ_STATUS_REG");
 	mvPp2PrintReg(MV_PP2_RXQ_THRESH_REG, "MV_PP2_RXQ_THRESH_REG");
 	mvPp2PrintReg(MV_PP2_RXQ_INDEX_REG, "MV_PP2_RXQ_INDEX_REG");
+#ifdef CONFIG_MV_ETH_PP2_1
 	mvPp2PrintReg(MV_PP2_RXQ_CONFIG_REG(rxq), "MV_PP2_RXQ_CONFIG_REG");
-	mvPp2PrintReg(MV_PP2_RXQ_SNOOP_REG(rxq), "MV_PP2_RXQ_SNOOP_REG");
-	mvPp2PrintReg(MV_PP2_RX_EARLY_DROP_REG(rxq), "MV_PP2_RX_EARLY_DROP_REG");
-	mvPp2PrintReg(MV_PP2_RX_DESC_DROP_REG(rxq), "MV_PP2_RX_DESC_DROP_REG");
+#else
+	mvPp2PrintReg(MV_PP2_V0_RXQ_CONFIG_REG(rxq), "MV_PP2_RXQ_CONFIG_REG");
+	mvPp2PrintReg(MV_PP2_V0_RXQ_SNOOP_REG(rxq), "MV_PP2_RXQ_SNOOP_REG");
+	mvPp2PrintReg(MV_PP2_V0_RX_EARLY_DROP_REG(rxq), "MV_PP2_V0_RX_EARLY_DROP_REG");
+	mvPp2PrintReg(MV_PP2_V0_RX_DESC_DROP_REG(rxq), "MV_PP2_V0_RX_DESC_DROP_REG");
+#endif
+
 }
 
 void mvPp2PortRxqRegs(int port, int rxq)
@@ -417,7 +430,7 @@ void mvPp2BmPoolRegs(int pool)
 	mvPp2PrintReg(MV_BM_INTR_MASK_REG(pool), "MV_BM_INTR_MASK_REG");
 }
 
-void mvPp2DropCntrs(int port)
+void mvPp2V0DropCntrs(int port)
 {
 	int i;
 
@@ -426,21 +439,90 @@ void mvPp2DropCntrs(int port)
 	mvPp2PrintReg(MV_PP2_CLS_DROP_REG(MV_PPV2_PORT_PHYS(port)), "MV_PP2_CLS_DROP_REG");
 
 	if (MV_PON_PORT(port)) {
-#ifdef CONFIG_MV_INCLUDE_PON
 		for (i = 0; i < mvPp2HalData.maxTcont; i++) {
-			mvPp2PrintReg2(MV_PP2_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);
-			mvPp2PrintReg2(MV_PP2_TX_DESC_DROP_REG(i), "MV_PP2_TX_DESC_DROP_REG", i);
+			mvPp2PrintReg2(MV_PP2_V0_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);
+			mvPp2PrintReg2(MV_PP2_V0_TX_DESC_DROP_REG(i), "MV_PP2_TX_DESC_DROP_REG", i);
 		}
-#endif
 	} else {
 		i = MV_ETH_MAX_TCONT + port;
-		mvPp2PrintReg2(MV_PP2_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);
-		mvPp2PrintReg2(MV_PP2_TX_DESC_DROP_REG(i), "MV_PP2_TX_DESC_DROP_REG", i);
+		mvPp2PrintReg2(MV_PP2_V0_TX_EARLY_DROP_REG(i), "MV_PP2_TX_EARLY_DROP_REG", i);
+		mvPp2PrintReg2(MV_PP2_V0_TX_DESC_DROP_REG(i), "MV_PP2_TX_DESC_DROP_REG", i);
 	}
 	for (i = port * CONFIG_MV_ETH_RXQ; i < (port * CONFIG_MV_ETH_RXQ + CONFIG_MV_ETH_RXQ); i++) {
-		mvPp2PrintReg2(MV_PP2_RX_EARLY_DROP_REG(i), "MV_PP2_RX_EARLY_DROP_REG", i);
-		mvPp2PrintReg2(MV_PP2_RX_DESC_DROP_REG(i), "MV_PP2_RX_DESC_DROP_REG", i);
+		mvPp2PrintReg2(MV_PP2_V0_RX_EARLY_DROP_REG(i), "MV_PP2_RX_EARLY_DROP_REG", i);
+		mvPp2PrintReg2(MV_PP2_V0_RX_DESC_DROP_REG(i), "MV_PP2_RX_DESC_DROP_REG", i);
 	}
+}
+
+void mvPp2V1DropCntrs(int port)
+{
+	int txp, phyRxq, q;
+	MV_PP2_PORT_CTRL *pPortCtrl = mvPp2PortHndlGet(port);
+	int physPort = MV_PPV2_PORT_PHYS(port);
+
+
+	mvOsPrintf("\n[global drop counters]\n");
+	mvPp2RegPrintNonZero(MV_PP2_V1_OVERFLOW_MC_DROP_REG, "MV_PP2_OVERRUN_DROP_REG");
+
+	mvOsPrintf("\n[Port #%d Drop counters]\n", port);
+	mvPp2RegPrintNonZero(MV_PP2_OVERRUN_DROP_REG(physPort), "MV_PP2_OVERRUN_DROP_REG");
+	mvPp2RegPrintNonZero(MV_PP2_CLS_DROP_REG(physPort), "MV_PP2_CLS_DROP_REG");
+
+	for (txp = 0; txp < pPortCtrl->txpNum; txp++) {
+		for (q = 0; q < MV_ETH_MAX_TXQ; q++) {
+			mvOsPrintf("\n------ [Port #%d txp #%d txq #%d counters] -----\n", port, txp, q);
+			mvPp2WrReg(MV_PP2_V1_CNT_IDX_REG, TX_CNT_IDX(port, txp, q));
+			mvPp2RegPrintNonZero(MV_PP2_V1_TX_PKT_FULLQ_DROP_REG, "MV_PP2_V1_TX_PKT_FULLQ_DROP_REG");
+			mvPp2RegPrintNonZero(MV_PP2_V1_TX_PKT_EARLY_DROP_REG, "MV_PP2_V1_TX_PKT_EARLY_DROP_REG");
+			mvPp2RegPrintNonZero(MV_PP2_V1_TX_PKT_BM_DROP_REG, "MV_PP2_V1_TX_PKT_BM_DROP_REG");
+			mvPp2RegPrintNonZero(MV_PP2_V1_TX_PKT_BM_MC_DROP_REG, "MV_PP2_V1_TX_PKT_BM_MC_DROP_REG");
+		}
+	}
+
+	for (q = 0; q < CONFIG_MV_ETH_RXQ; q++) {
+		mvOsPrintf("\n------ [Port #%d, rxq #%d counters] -----\n", port, q);
+		phyRxq = mvPp2LogicRxqToPhysRxq(port, q);
+		mvPp2WrReg(MV_PP2_V1_CNT_IDX_REG, phyRxq);
+		mvPp2RegPrintNonZero(MV_PP2_V1_RX_PKT_FULLQ_DROP_REG, "MV_PP2_V1_RX_PKT_FULLQ_DROP_REG");
+		mvPp2RegPrintNonZero(MV_PP2_V1_RX_PKT_EARLY_DROP_REG, "MV_PP2_V1_RX_PKT_EARLY_DROP_REG");
+		mvPp2RegPrintNonZero(MV_PP2_V1_RX_PKT_BM_DROP_REG, "MV_PP2_V1_RX_PKT_BM_DROP_REG");
+	}
+}
+
+void mvPp2V1TxqDbgCntrs(int port, int txp, int txq)
+{
+	mvOsPrintf("\n------ [Port #%d txp #%d txq #%d counters] -----\n", port, txp, txq);
+	mvPp2WrReg(MV_PP2_V1_CNT_IDX_REG, TX_CNT_IDX(port, txp, txq));
+	mvPp2PrintReg(MV_PP2_V1_TX_DESC_ENQ_REG, "MV_PP2_V1_TX_DESC_ENQ_REG");
+	mvPp2PrintReg(MV_PP2_V1_TX_DESC_ENQ_TO_DRAM_REG, "MV_PP2_V1_TX_DESC_ENQ_TO_DRAM_REG");
+	mvPp2PrintReg(MV_PP2_V1_TX_BUF_ENQ_TO_DRAM_REG, "MV_PP2_V1_TX_BUF_ENQ_TO_DRAM_REG");
+	mvPp2PrintReg(MV_PP2_V1_TX_DESC_HWF_ENQ_REG, "MV_PP2_V1_TX_DESC_HWF_ENQ_REG");
+	mvPp2PrintReg(MV_PP2_V1_TX_PKT_DQ_REG, "MV_PP2_V1_TX_PKT_DQ_REG");
+	mvPp2PrintReg(MV_PP2_V1_TX_PKT_FULLQ_DROP_REG, "MV_PP2_V1_TX_PKT_FULLQ_DROP_REG");
+	mvPp2PrintReg(MV_PP2_V1_TX_PKT_EARLY_DROP_REG, "MV_PP2_V1_TX_PKT_EARLY_DROP_REG");
+	mvPp2PrintReg(MV_PP2_V1_TX_PKT_BM_DROP_REG, "MV_PP2_V1_TX_PKT_BM_DROP_REG");
+	mvPp2PrintReg(MV_PP2_V1_TX_PKT_BM_MC_DROP_REG, "MV_PP2_V1_TX_PKT_BM_MC_DROP_REG");
+}
+
+void mvPp2V1RxqDbgCntrs(int port, int rxq)
+{
+	int phyRxq = mvPp2LogicRxqToPhysRxq(port, rxq);
+
+	mvOsPrintf("\n------ [Port #%d, rxq #%d counters] -----\n", port, rxq);
+	mvPp2WrReg(MV_PP2_V1_CNT_IDX_REG, phyRxq);
+	mvPp2PrintReg(MV_PP2_V1_RX_PKT_FULLQ_DROP_REG, "MV_PP2_V1_RX_PKT_FULLQ_DROP_REG");
+	mvPp2PrintReg(MV_PP2_V1_RX_PKT_EARLY_DROP_REG, "MV_PP2_V1_RX_PKT_EARLY_DROP_REG");
+	mvPp2PrintReg(MV_PP2_V1_RX_PKT_BM_DROP_REG, "MV_PP2_V1_RX_PKT_BM_DROP_REG");
+	mvPp2PrintReg(MV_PP2_V1_RX_DESC_ENQ_REG, "MV_PP2_V1_RX_DESC_ENQ_REG");
+}
+
+void mvPp2TxRegs(void)
+{
+	mvOsPrintf("\n[TX general registers]\n");
+
+	mvPp2PrintReg(MV_PP2_TX_SNOOP_REG, "MV_PP2_TX_SNOOP_REG");
+	mvPp2PrintReg(MV_PP2_TX_FIFO_THRESH_REG, "MV_PP2_TX_FIFO_THRESH_REG");
+	mvPp2PrintReg(MV_PP2_TX_PORT_FLUSH_REG, "MV_PP2_TX_PORT_FLUSH_REG");
 }
 
 void mvPp2RxFifoRegs(int port)
@@ -458,7 +540,7 @@ void mvPp2RxFifoRegs(int port)
 /* Print status of Ethernet port */
 void mvPp2PortStatus(int port)
 {
-	int i;
+	int i, txp, txq;
 	MV_ETH_PORT_STATUS	link;
 	MV_PP2_PORT_CTRL 	*pPortCtrl;
 
@@ -485,13 +567,45 @@ void mvPp2PortStatus(int port)
 		mvOsPrintf("\n");
 	}
 
+	mvOsPrintf("\n[BM queue to Qset mapping]\n");
+	if (pPortCtrl->pRxQueue) {
+		mvOsPrintf("       RXQ: ");
+		for (i = 0; i < pPortCtrl->rxqNum; i++)
+			mvOsPrintf(" %4d", i);
+
+		mvOsPrintf("\n long Qset: ");
+		for (i = 0; i < pPortCtrl->rxqNum; i++)
+			mvOsPrintf(" %4d", mvBmRxqToQsetLongGet(mvPp2LogicRxqToPhysRxq(port, i)));
+
+		mvOsPrintf("\nshort Qset: ");
+		for (i = 0; i < pPortCtrl->rxqNum; i++)
+			mvOsPrintf(" %4d", mvBmRxqToQsetShortGet(mvPp2LogicRxqToPhysRxq(port, i)));
+
+		mvOsPrintf("\n");
+	}
+	if (pPortCtrl->pTxQueue) {
+		for (txp = 0; txp < pPortCtrl->txpNum; txp++) {
+			mvOsPrintf("\nTXP %2d, TXQ:", txp);
+			for (txq = 0; txq < pPortCtrl->txqNum; txq++)
+				mvOsPrintf(" %4d", txq);
+
+			mvOsPrintf("\n long Qset: ");
+			for (txq = 0; txq < pPortCtrl->txqNum; txq++)
+				mvOsPrintf(" %4d", mvBmTxqToQsetLongGet(MV_PPV2_TXQ_PHYS(port, txp, txq)));
+
+			mvOsPrintf("\nshort Qset: ");
+			for (txq = 0; txq < pPortCtrl->txqNum; txq++)
+				mvOsPrintf(" %4d", mvBmTxqToQsetShortGet(MV_PPV2_TXQ_PHYS(port, txp, txq)));
+
+			mvOsPrintf("\n");
+		}
+	}
+
 	mvOsPrintf("\n[Link: port=%d, ctrl=%p]\n", port, pPortCtrl);
 
-	if (MV_PON_PORT(port)) {
-		mvOsPrintf("GPON port %d link is up\n", port);
-	} else {
+	if (!MV_PON_PORT(port)) {
 
-		mvEthLinkStatus(port, &link);
+		mvGmacLinkStatus(port, &link);
 
 		if (link.linkup) {
 			mvOsPrintf("link up");

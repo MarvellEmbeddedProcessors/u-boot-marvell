@@ -222,7 +222,8 @@ static MV_BOOL mvPrsMacInRange(MV_PP2_PRS_ENTRY *pe, MV_U8* da, MV_U8* mask)
 static MV_PP2_PRS_ENTRY *mvPrsMacDaRangeFind(int portMap, unsigned char *da, unsigned char *mask, int udfType)
 {
 	MV_PP2_PRS_ENTRY *pe;
-	unsigned int tid, entryPmap;
+	int tid;
+	unsigned int entryPmap;
 
 	pe = mvPp2PrsSwAlloc(PRS_LU_MAC);
 
@@ -867,7 +868,7 @@ static int mvPp2PrsDsaTagSet(int port, int add, int tagged, int extend)
 		/* set tagged bit in DSA tag */
 		/* TODO use define */
 		if (tagged) {
-			mvPp2PrsSwTcamByteSet(&pe, 3, 0x20, 0x20);
+			mvPp2PrsSwTcamByteSet(&pe, 0, 0x20, 0x20);
 
 			/* Clear all AI bits for next iteration */
 			mvPp2PrsSwSramAiUpdate(&pe, 0, SRAM_AI_MASK);
@@ -1494,7 +1495,23 @@ static int mvPp2PrsVlanInit(void)
 	return MV_OK;
 }
 
+/* remove all vlan entries */
+int mvPp2PrsVlanAllDel(void)
+{
+	int tid;
 
+	/* clear doublr Vlan shadow */
+	mvPrsDblVlanAiShadowClearAll();
+
+	for (tid = PE_FIRST_FREE_TID ; tid <= PE_LAST_FREE_TID; tid++) {
+		if (mvPp2PrsShadowIsValid(tid) && (mvPp2PrsShadowLu(tid) == PRS_LU_VLAN)) {
+			mvPp2PrsHwInv(tid);
+			mvPp2PrsShadowClear(tid);
+		}
+	}
+
+	return MV_OK;
+}
 /******************************************************************************
  *
  * Ethertype Section

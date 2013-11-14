@@ -178,18 +178,16 @@ int mvPp2ClsHwUniPortSet(int uni_port, int spid)
 }
 /*-------------------------------------------------------------------------------*/
 
-int mvPp2ClsHwVirtPortSet(int virt_port, int gem_portid)
+int mvPp2ClsHwVirtPortSet(int index, int gem_portid)
 {
-	unsigned int regVal;
-
-	POS_RANGE_VALIDATE(virt_port, MV_PP2_CLS_GEM_VIRT_REGS_NUM - 1);
+	POS_RANGE_VALIDATE(index, MV_PP2_CLS_GEM_VIRT_REGS_NUM - 1);
 	POS_RANGE_VALIDATE(gem_portid, MV_PP2_CLS_GEM_VIRT_MAX);
-
-	regVal = mvPp2RdReg(MV_PP2_CLS_GEM_VIRT_REG(virt_port));
-	regVal &= ~MV_PP2_CLS_GEM_VIRT_MASK;
-	regVal |= gem_portid;
-	mvPp2WrReg(MV_PP2_CLS_GEM_VIRT_REG(virt_port), regVal);
-
+#ifdef CONFIG_MV_ETH_PP2_1
+	mvPp2WrReg(MV_PP2_CLS_GEM_VIRT_INDEX_REG, index);
+	mvPp2WrReg(MV_PP2_CLS_GEM_VIRT_REG, gem_portid);
+#else
+	mvPp2WrReg(MV_PP2_CLS_GEM_VIRT_REG(index), gem_portid);
+#endif /* CONFIG_MV_ETH_PP2_1 */
 	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
@@ -217,23 +215,34 @@ int mvPp2ClsHwUdfSet(int udf_no, int offs_id, int offs_bits, int size_bits)
 	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
+/*
+PPv2.1 (feature MAS 3.7) feature update
+Note: this function overwrite q_high value that set by mvPp2ClsHwRxQueueHighSet
+*/
 int mvPp2ClsHwOversizeRxqSet(int port, int rxq)
 {
-	unsigned int regVal;
 
 	POS_RANGE_VALIDATE(rxq, MV_PP2_CLS_OVERSIZE_RXQ_MAX);
-
 	/* set oversize rxq */
-	regVal = mvPp2RdReg(MV_PP2_CLS_OVERSIZE_RXQ_REG(port));
-	regVal &= ~MV_PP2_CLS_OVERSIZE_RX_MASK;
-	regVal |= (rxq << MV_PP2_CLS_OVERSIZE_RXQ_OFFS);
-	mvPp2WrReg(MV_PP2_CLS_OVERSIZE_RXQ_REG(port), regVal);
+#ifdef CONFIG_MV_ETH_PP2_1
+	mvPp2WrReg(MV_PP2_CLS_OVERSIZE_RXQ_LOW_REG(port), rxq);
+
+	mvPp2WrReg(MV_PP2_CLS_SWFWD_P2HQ_REG(port), (rxq >> MV_PP2_CLS_OVERSIZE_RXQ_LOW_BITS));
+#else
+	{
+		unsigned int regVal;
+		regVal = mvPp2RdReg(MV_PP2_CLS_OVERSIZE_RXQ_REG(port));
+		regVal &= ~MV_PP2_CLS_OVERSIZE_RX_MASK;
+		regVal |= (rxq << MV_PP2_CLS_OVERSIZE_RXQ_OFFS);
+		mvPp2WrReg(MV_PP2_CLS_OVERSIZE_RXQ_REG(port), regVal);
+	}
+#endif /*PPv2_1*/
 
 	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
-
-int mvPp2ClsHwMtuSet(int port, int txp, int mtu)
+/*PPv2.1 feature changed MAS 3.7*/
+int mvPp2V0ClsHwMtuSet(int port, int txp, int mtu)
 {
 	int eport;
 	unsigned int regVal;
@@ -256,6 +265,94 @@ int mvPp2ClsHwMtuSet(int port, int txp, int mtu)
 
 	return MV_OK;
 
+}
+
+int mvPp2V1ClsHwMtuSet(int index, int mtu)
+{
+	POS_RANGE_VALIDATE(mtu, MV_PP2_CLS_MTU_MAX);
+	POS_RANGE_VALIDATE(index, 15 /* define MAX value */);
+
+	/* set mtu */
+	mvPp2WrReg(MV_PP2_CLS_MTU_REG(index), mtu);
+	return MV_OK;
+
+}
+
+/*-------------------------------------------------------------------------------
+PPv2.1 new feature MAS 3.5
+set high queue -
+	from = 0 : The value of QueueHigh is as defined by the Classifier
+	from = 1 : The value of QueueHigh set to queue
+	None: this function overwite rxq value that set by mvPp2ClsHwOversizeRxSet
+-------------------------------------------------------------------------------*/
+
+int mvPp2ClsHwRxQueueHighSet(int port, int from, int queue)
+{
+	unsigned int regVal;
+
+	POS_RANGE_VALIDATE(port, MV_PP2_MAX_PORTS - 1);
+	POS_RANGE_VALIDATE(from, 1);
+
+	regVal = mvPp2RdReg(MV_PP2_CLS_SWFWD_PCTRL_REG);
+
+	if (from) {
+		POS_RANGE_VALIDATE(queue, MV_PP2_CLS_SWFWD_P2HQ_QUEUE_MASK);
+		mvPp2WrReg(MV_PP2_CLS_SWFWD_P2HQ_REG(port), queue);
+		regVal |= MV_PP2_CLS_SWFWD_PCTRL_MASK(port);
+	} else
+		regVal &= ~MV_PP2_CLS_SWFWD_PCTRL_MASK(port);
+
+	mvPp2WrReg(MV_PP2_CLS_SWFWD_PCTRL_REG, regVal);
+
+	return MV_OK;
+
+}
+
+/*-------------------------------------------------------------------------------
+PPv2.1 new feature MAS 3.18
+	virtEn: port support/not support generation of virtual portId, not relevant for PON port.
+	uniEn:  port support/not support generation of UNI portId
+	mh: default Marvell header value, used for For UNI and Virtual Port ID generation
+	    in case that ETH port do not support Marvell header, not relevant for PON port.
+-------------------------------------------------------------------------------*/
+int mvPp2ClsHwMhSet(int port, int virtEn, int uniEn, unsigned short mh)
+{
+	unsigned int regVal = 0;
+	int uniDisable = 1 - uniEn;
+	int VirtDisable = 1 - virtEn;
+
+	POS_RANGE_VALIDATE(port, MV_PP2_MAX_PORTS - 1);
+	BIT_RANGE_VALIDATE(uniEn);
+	BIT_RANGE_VALIDATE(virtEn);
+	POS_RANGE_VALIDATE(mh, MV_PP2_CLS_PCTRL_MH_MASK);
+
+	if (MV_PON_PORT(port))
+		regVal = uniDisable << MV_PP2_CLS_PCTRL_UNI_EN_OFFS;
+	else
+		regVal = (uniDisable << MV_PP2_CLS_PCTRL_UNI_EN_OFFS) |
+			(VirtDisable << MV_PP2_CLS_PCTRL_VIRT_EN_OFFS) |
+			(mh << MV_PP2_CLS_PCTRL_MH_OFFS);
+
+	mvPp2WrReg(MV_PP2_CLS_PCTRL_REG(port), regVal);
+
+	return MV_OK;
+
+}
+
+/*-------------------------------------------------------------------------------*/
+int mvPp2ClsHwSeqInstrSizeSet(int index, int size)
+{
+	unsigned int regVal;
+
+	POS_RANGE_VALIDATE(index, MV_PP2_CLS_SEQ_INDEX_MAX);
+	POS_RANGE_VALIDATE(size, MV_PP2_CLS_SEQ_SIZE_MAX);
+
+	regVal = mvPp2RdReg(MV_PP2_CLS_SEQ_SIZE_REG);
+	regVal &= ~MV_PP2_CLS_SEQ_SIZE_MASK(index);
+	regVal |= MV_PP2_CLS_SEQ_SIZE_VAL(index, size);
+	mvPp2WrReg(MV_PP2_CLS_SEQ_SIZE_REG, regVal);
+
+	return MV_OK;
 }
 
 /******************************************************************************/
@@ -514,7 +611,19 @@ int mvPp2ClsSwFlowDump(MV_PP2_CLS_FLOW_ENTRY *fe)
 	mvOsPrintf("0x%2.2x    0x%2.2x", int32bit_1, int32bit_2);
 
 	mvOsPrintf("\n");
+#ifdef CONFIG_MV_ETH_PP2_1
+	mvOsPrintf("\n");
+	mvOsPrintf("       PPPEO   VLAN   MACME   UDF7   SELECT SEQ_CTRL\n");
+	mvOsPrintf("         %1d      %1d      %1d       %1d      %1d      %1d\n",
+			(fe->data[0] & FLOW_PPPOE_MASK) >> FLOW_PPPOE,
+			(fe->data[0] & FLOW_VLAN_MASK) >> FLOW_VLAN,
+			(fe->data[0] & FLOW_MACME_MASK) >> FLOW_MACME,
+			(fe->data[0] & FLOW_UDF7_MASK) >> FLOW_UDF7,
+			(fe->data[0] & FLOW_PORT_ID_SEL_MASK) >> FLOW_PORT_ID_SEL,
+			(fe->data[1] & FLOW_SEQ_CTRL_MASK) >> FLOW_SEQ_CTRL);
+	mvOsPrintf("\n");
 
+#endif
 	return MV_OK;
 }
 
@@ -591,11 +700,74 @@ int mvPp2ClsSwFlowPortSet(MV_PP2_CLS_FLOW_ENTRY *fe, int type, int portid)
 	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
+/*PPv2.1 new feature MAS 3.18*/
+int mvPp2ClsSwPortIdSelect(MV_PP2_CLS_FLOW_ENTRY *fe, int from)
+{
+	PTR_VALIDATE(fe);
+	BIT_RANGE_VALIDATE(from);
+
+	if (from)
+		fe->data[0] |= FLOW_PORT_ID_SEL_MASK;
+	else
+		fe->data[0] &= ~FLOW_PORT_ID_SEL_MASK;
+
+	return MV_OK;
+}
+
+/*-------------------------------------------------------------------------------*/
+/*PPv2.1 new feature MAS 3.18*/
+int mvPp2ClsSwFlowPppoeSet(MV_PP2_CLS_FLOW_ENTRY *fe,  int mode)
+{
+	PTR_VALIDATE(fe);
+	POS_RANGE_VALIDATE(mode, FLOW_PPPOE_MAX);
+
+	fe->data[0] &= ~FLOW_PPPOE_MASK;
+	fe->data[0] |= (mode << FLOW_PPPOE);
+	return MV_OK;
+}
+
+/*-------------------------------------------------------------------------------*/
+/*PPv2.1 new feature MAS 3.18*/
+int mvPp2ClsSwFlowVlanSet(MV_PP2_CLS_FLOW_ENTRY *fe,  int mode)
+{
+	PTR_VALIDATE(fe);
+	POS_RANGE_VALIDATE(mode, FLOW_VLAN_MAX);
+
+	fe->data[0] &= ~FLOW_VLAN_MASK;
+	fe->data[0] |= (mode << FLOW_VLAN);
+	return MV_OK;
+}
+
+/*-------------------------------------------------------------------------------*/
+/*PPv2.1 new feature MAS 3.18*/
+int mvPp2ClsSwFlowMacMeSet(MV_PP2_CLS_FLOW_ENTRY *fe,  int mode)
+{
+	PTR_VALIDATE(fe);
+	POS_RANGE_VALIDATE(mode, FLOW_MACME_MAX);
+
+	fe->data[0] &= ~FLOW_MACME_MASK;
+	fe->data[0] |= (mode << FLOW_MACME);
+	return MV_OK;
+}
+
+/*-------------------------------------------------------------------------------*/
+/*PPv2.1 new feature MAS 3.18*/
+int mvPp2ClsSwFlowUdf7Set(MV_PP2_CLS_FLOW_ENTRY *fe,  int mode)
+{
+	PTR_VALIDATE(fe);
+	POS_RANGE_VALIDATE(mode, FLOW_UDF7_MAX);
+
+	fe->data[0] &= ~FLOW_UDF7_MASK;
+	fe->data[0] |= (mode << FLOW_UDF7);
+	return MV_OK;
+}
+
+/*-------------------------------------------------------------------------------*/
 int mvPp2ClsSwFlowEngineSet(MV_PP2_CLS_FLOW_ENTRY *fe, int engine, int is_last)
 {
 	PTR_VALIDATE(fe);
 
-	POS_RANGE_VALIDATE(is_last, 1);
+	BIT_RANGE_VALIDATE(is_last);
 	POS_RANGE_VALIDATE(engine, FLOW_ENGINE_MAX);
 
 	fe->data[0] &= ~FLOW_LAST_MASK;
@@ -606,6 +778,17 @@ int mvPp2ClsSwFlowEngineSet(MV_PP2_CLS_FLOW_ENTRY *fe, int engine, int is_last)
 
 	return MV_OK;
 
+}
+/*-------------------------------------------------------------------------------*/
+int mvPp2ClsSwFlowSeqCtrlSet(MV_PP2_CLS_FLOW_ENTRY *fe, int mode)
+{
+	PTR_VALIDATE(fe);
+	POS_RANGE_VALIDATE(mode, FLOW_ENGINE_MAX);
+
+	fe->data[1] &= ~FLOW_SEQ_CTRL_MASK;
+	fe->data[1] |= (mode << FLOW_SEQ_CTRL);
+
+	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
 
@@ -690,12 +873,16 @@ int mvPp2ClsPktLenChangeWrite(int index, unsigned int data)
 {
 
 	POS_RANGE_VALIDATE(index, MV_PP2_CLS_LEN_CHANGE_TBL_SIZE);
-
+#ifdef CONFIG_MV_ETH_PP2_1
 	/*write index*/
-	mvPp2WrReg(MV_PP2_CLS_LEN_CHANGE_INDEX_REG, index);
+	mvPp2WrReg(MV_PP2_V1_CLS_LEN_CHANGE_INDEX_REG, index);
 
-	mvPp2WrReg(MV_PP2_CLS_LEN_CHANGE_TBL_REG, data);
+	mvPp2WrReg(MV_PP2_V1_CLS_LEN_CHANGE_TBL_REG, data);
+#else
+	mvPp2WrReg(MV_PP2_V0_CLS_LEN_CHANGE_INDEX_REG, index);
 
+	mvPp2WrReg(MV_PP2_V0_CLS_LEN_CHANGE_TBL_REG, data);
+#endif
 	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
@@ -705,11 +892,17 @@ int mvPp2ClsPktLenChangeRead(int index, unsigned int *data)
 	PTR_VALIDATE(data);
 
 	POS_RANGE_VALIDATE(index, MV_PP2_CLS_LEN_CHANGE_TBL_SIZE);
-
+#ifdef CONFIG_MV_ETH_PP2_1
 	/*write index*/
-	mvPp2WrReg(MV_PP2_CLS_LEN_CHANGE_INDEX_REG, index);
+	mvPp2WrReg(MV_PP2_V1_CLS_LEN_CHANGE_INDEX_REG, index);
 
-	*data = mvPp2RdReg(MV_PP2_CLS_LEN_CHANGE_TBL_REG);
+	*data = mvPp2RdReg(MV_PP2_V1_CLS_LEN_CHANGE_TBL_REG);
+#else
+	/*write index*/
+	mvPp2WrReg(MV_PP2_V0_CLS_LEN_CHANGE_INDEX_REG, index);
+
+	*data = mvPp2RdReg(MV_PP2_V0_CLS_LEN_CHANGE_TBL_REG);
+#endif
 
 	return MV_OK;
 }
@@ -796,26 +989,55 @@ int mvPp2ClsHwRegsDump()
 		mvOsSPrintf(reg_name, "MV_PP2_CLS_SPID_UNI_%d_REG", i);
 		mvPp2PrintReg((MV_PP2_CLS_SPID_UNI_BASE_REG + (4 * i)), reg_name);
 	}
-
+#ifdef CONFIG_MV_ETH_PP2_1
+	for (i = 0; i < MV_PP2_CLS_GEM_VIRT_REGS_NUM; i++) {
+		/* indirect access */
+		mvPp2WrReg(MV_PP2_CLS_GEM_VIRT_INDEX_REG, i);
+		mvOsSPrintf(reg_name, "MV_PP2_CLS_GEM_VIRT_%d_REG", i);
+		mvPp2PrintReg(MV_PP2_CLS_GEM_VIRT_REG, reg_name);
+	}
+#else
 	for (i = 0; i < MV_PP2_CLS_GEM_VIRT_REGS_NUM; i++) {
 		mvOsSPrintf(reg_name, "MV_PP2_CLS_GEM_VIRT_%d_REG", i);
 		mvPp2PrintReg(MV_PP2_CLS_GEM_VIRT_REG(i), reg_name);
 	}
-
+#endif
 	for (i = 0; i < MV_PP2_CLS_UDF_BASE_REGS; i++)	{
 		mvOsSPrintf(reg_name, "MV_PP2_CLS_UDF_REG_%d_REG", i);
-		mvPp2PrintReg((MV_PP2_CLS_UDF_BASE_REG + (4 * i)), reg_name);
+		mvPp2PrintReg(MV_PP2_CLS_UDF_REG(i), reg_name);
+	}
+#ifdef CONFIG_MV_ETH_PP2_1
+	for (i = 0; i < 16; i++) {
+		mvOsSPrintf(reg_name, "MV_PP2_CLS_MTU_%d_REG", i);
+		mvPp2PrintReg(MV_PP2_CLS_MTU_REG(i), reg_name);
+	}
+	for (i = 0; i < MV_PP2_MAX_PORTS; i++) {
+		mvOsSPrintf(reg_name, "MV_PP2_CLS_OVER_RXQ_LOW_%d_REG", i);
+		mvPp2PrintReg(MV_PP2_CLS_OVERSIZE_RXQ_LOW_REG(i), reg_name);
+	}
+	for (i = 0; i < MV_PP2_MAX_PORTS; i++) {
+		mvOsSPrintf(reg_name, "MV_PP2_CLS_SWFWD_P2HQ_%d_REG", i);
+		mvPp2PrintReg(MV_PP2_CLS_SWFWD_P2HQ_REG(i), reg_name);
 	}
 
+	mvPp2PrintReg(MV_PP2_CLS_SWFWD_PCTRL_REG, "MV_PP2_CLS_SWFWD_PCTRL_REG");
+	mvPp2PrintReg(MV_PP2_CLS_SEQ_SIZE_REG, "MV_PP2_CLS_SEQ_SIZE_REG");
+
+	for (i = 0; i < MV_PP2_MAX_PORTS; i++) {
+		mvOsSPrintf(reg_name, "MV_PP2_CLS_PCTRL_%d_REG", i);
+		mvPp2PrintReg(MV_PP2_CLS_PCTRL_REG(i), reg_name);
+	}
+#else
 	for (i = 0; i < (MV_ETH_MAX_TCONT + MV_PP2_MAX_PORTS - 1); i++) {
 		mvOsSPrintf(reg_name, "MV_PP2_CLS_MTU_%d_REG", i);
 		mvPp2PrintReg(MV_PP2_CLS_MTU_REG(i), reg_name);
 	}
 
 	for (i = 0; i < MV_PP2_MAX_PORTS; i++) {
-		mvOsSPrintf(reg_name, "MV_PP2_CLS_OVERSIZE_RXQ_%d_REG", i);
+		mvOsSPrintf(reg_name, "MV_PP2_CLS_OVER_RXQ_%d_REG", i);
 		mvPp2PrintReg(MV_PP2_CLS_OVERSIZE_RXQ_REG(i), reg_name);
 	}
+#endif
 
 	return MV_OK;
 }
@@ -847,6 +1069,42 @@ void mvPp2ClsHwFlowClearAll()
 
 }
 /*-------------------------------------------------------------------------------*/
+static int mvPp2V1ClsHwFlowHitGet(int index,  unsigned int *cnt)
+{
+
+	POS_RANGE_VALIDATE(index, MV_PP2_CLS_FLOWS_TBL_SIZE);
+
+	/*set index */
+	mvPp2WrReg(MV_PP2_V1_CNT_IDX_REG, MV_PP2_V1_CNT_IDX_FLOW(index));
+
+	if (cnt)
+		*cnt = mvPp2RdReg(MV_PP2_V1_CLS_FLOW_TBL_HIT_REG);
+	else
+		mvOsPrintf("HITS = %d\n", mvPp2RdReg(MV_PP2_V1_CLS_FLOW_TBL_HIT_REG));
+
+	return MV_OK;
+
+}
+/*-------------------------------------------------------------------------------*/
+
+static int mvPp2V1ClsHwLkpHitGet(int lkpid, int way,  unsigned int *cnt)
+{
+
+	BIT_RANGE_VALIDATE(way);
+	POS_RANGE_VALIDATE(lkpid, MV_PP2_CLS_LKP_TBL_SIZE);
+
+	/*set index */
+	mvPp2WrReg(MV_PP2_V1_CNT_IDX_REG, MV_PP2_V1_CNT_IDX_LKP(lkpid, way));
+
+	if (cnt)
+		*cnt = mvPp2RdReg(MV_PP2_V1_CLS_LKP_TBL_HIT_REG);
+	else
+		mvOsPrintf("HITS: %d\n", mvPp2RdReg(MV_PP2_V1_CLS_LKP_TBL_HIT_REG));
+
+	return MV_OK;
+
+}
+/*-------------------------------------------------------------------------------*/
 int mvPp2ClsHwFlowDump()
 {
 	int index;
@@ -857,12 +1115,37 @@ int mvPp2ClsHwFlowDump()
 		if (mvClsFlowShadowTbl[index] == IN_USE) {
 			mvPp2ClsHwFlowRead(index, &fe);
 			mvPp2ClsSwFlowDump(&fe);
+#ifdef CONFIG_MV_ETH_PP2_1
+			mvPp2V1ClsHwFlowHitGet(index, NULL);
+#endif
 			mvOsPrintf("------------------------------------------------------------------\n");
 		}
 	}
 	return MV_OK;
 
 }
+
+/*-------------------------------------------------------------------------------*/
+/*PPv2.1 new counters MAS 3.20*/
+int mvPp2V1ClsHwFlowHitsDump()
+{
+	int index;
+	unsigned int cnt;
+	MV_PP2_CLS_FLOW_ENTRY fe;
+
+	for (index = 0; index < MV_PP2_CLS_FLOWS_TBL_SIZE ; index++) {
+		if (mvClsFlowShadowTbl[index] == IN_USE) {
+			mvPp2V1ClsHwFlowHitGet(index, &cnt);
+			if (cnt != 0) {
+				mvPp2ClsHwFlowRead(index, &fe);
+				mvPp2ClsSwFlowDump(&fe);
+			}
+		}
+	}
+
+	return MV_OK;
+}
+
 /*-------------------------------------------------------------------------------*/
 void mvPp2ClsHwLkpClearAll()
 {
@@ -881,13 +1164,36 @@ void mvPp2ClsHwLkpClearAll()
 
 }
 /*-------------------------------------------------------------------------------*/
+/*PPv2.1 new counters MAS 3.20*/
+int mvPp2V1ClsHwLkpHitsDump()
+{
+	int index, way, entryInd;
+	unsigned int cnt;
+
+	mvOsPrintf("< ID  WAY >:	HITS\n");
+	for (index = 0; index < MV_PP2_CLS_LKP_TBL_SIZE ; index++)
+		for (way = 0; way < 2 ; way++)	{
+			entryInd = (way << MV_PP2_CLS_LKP_INDEX_WAY_OFFS) | index;
+			if (mvClsLkpShadowTbl[entryInd] == IN_USE) {
+				mvPp2V1ClsHwLkpHitGet(index, way,  &cnt);
+				if (cnt != 0)
+					mvOsPrintf(" 0x%2.2x  %1.1d\t0x%8.8x\n", index, way, cnt);
+			}
+	}
+	return MV_OK;
+}
+/*-------------------------------------------------------------------------------*/
+/*PPv2.1 new counters MAS 3.20*/
 int mvPp2ClsHwLkpDump()
 {
 	int index, way, int32bit, ind;
 
 	MV_PP2_CLS_LKP_ENTRY fe;
-
-	mvOsPrintf("< ID  WAY >:	RXQ  	EN	FLOW	MODE_BASE\n");
+#ifdef CONFIG_MV_ETH_PP2_1
+	mvOsPrintf("< ID  WAY >:	RXQ	EN	FLOW	MODE_BASE  HITS\n");
+#else
+	mvOsPrintf("< ID  WAY >:	RXQ	EN	FLOW	MODE_BASE\n");
+#endif
 	for (index = 0; index < MV_PP2_CLS_LKP_TBL_SIZE ; index++)
 		for (way = 0; way < 2 ; way++)	{
 			ind = (way << MV_PP2_CLS_LKP_INDEX_WAY_OFFS) | index;
@@ -901,9 +1207,14 @@ int mvPp2ClsHwLkpDump()
 				mvPp2ClsSwLkpFlowGet(&fe, &int32bit);
 				mvOsPrintf("0x%3.3x\t", int32bit);
 				mvPp2ClsSwLkpModGet(&fe, &int32bit);
-				mvOsPrintf(" 0x%2.2x\n", int32bit);
+				mvOsPrintf(" 0x%2.2x\t", int32bit);
+#ifdef CONFIG_MV_ETH_PP2_1
+				mvPp2V1ClsHwLkpHitGet(index, way, &int32bit);
+				mvOsPrintf(" 0x%8.8x\n", int32bit);
+#endif
+				mvOsPrintf("\n");
+
 			}
 		}
-
 	return MV_OK;
 }

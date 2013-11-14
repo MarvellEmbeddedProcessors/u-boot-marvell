@@ -110,7 +110,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MV_PP2_CLS2_HIT_CTR_REG				(MV_PP2_REG_BASE + 0x1B50)
 #define MV_PP2_CLS2_HIT_CTR_OFF				0
+
+#ifdef CONFIG_MV_ETH_PP2_1
+#define MV_PP2_CLS2_HIT_CTR_BITS			32
+#else
 #define MV_PP2_CLS2_HIT_CTR_BITS			24
+#endif
 #define MV_PP2_CLS2_HIT_CTR_MASK			((1  << MV_PP2_CLS2_HIT_CTR_BITS) - 1)
 /*-------------------------------------------------------------------------------*/
 
@@ -135,8 +140,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_PP2_CLS2_ACT_DUP_ATTR_REG			(MV_PP2_REG_BASE + 0x1B6C)
 
 /*-------------------------------------------------------------------------------*/
+/*
+  PPv2.1 (feature MAS 3.14) SEQ_ATTR new register in action table
+ */
+#define MV_PP2_CLS2_ACT_SEQ_ATTR_REG			(MV_PP2_REG_BASE + 0x1B70)
+
+#define ACT_SEQ_ATTR_ID					0
+#define ACT_SEQ_ATTR_ID_BITS				8
+#define ACT_SEQ_ATTR_ID_MASK				(((1 << ACT_SEQ_ATTR_ID_BITS) - 1) << ACT_SEQ_ATTR_ID)
+#define ACT_SEQ_ATTR_ID_MAX				((1 << ACT_SEQ_ATTR_ID_BITS) - 1)
+
+#define ACT_SEQ_ATTR_MISS				8
+#define ACT_SEQ_ATTR_MISS_MASK				(1 << ACT_SEQ_ATTR_MISS)
+
+/*-------------------------------------------------------------------------------*/
+
 #define MV_PP2_CLS2_TCAM_CTRL_REG			(MV_PP2_REG_BASE + 0x1B90)
-#define MV_PP2_CLS2_TCAM_CTRL_EN				0
+#define MV_PP2_CLS2_TCAM_CTRL_EN			0
 /*-------------------------------------------------------------------------------*/
 /*		Classifier C2 QOS Table	(DSCP/PRI Table)			 */
 /*-------------------------------------------------------------------------------*/
@@ -229,6 +249,8 @@ typedef struct mvPp2ClsC2Entry {
 			MV_U32 qos_attr;   /* 0x1B64*/
 			MV_U32 hwf_attr;   /* 0x1B68 */
 			MV_U32 dup_attr;   /* 0x1B6C */
+			/* PPv2.1 (feature MAS 3.14) SEQ_ATTR new register in action table */
+			MV_U32 seq_attr;   /* 0x1B70 */
 		} regs;
 	} sram;
 } MV_PP2_CLS_C2_ENTRY;
@@ -257,9 +279,19 @@ int	mvPp2ClsC2QueueHighSet(MV_PP2_CLS_C2_ENTRY *c2, int cmd, int queue, int from
 int	mvPp2ClsC2QueueLowSet(MV_PP2_CLS_C2_ENTRY *c2, int cmd, int queue, int from);
 int	mvPp2ClsC2QueueSet(MV_PP2_CLS_C2_ENTRY *c2, int cmd, int queue, int from);
 int	mvPp2ClsC2ForwardSet(MV_PP2_CLS_C2_ENTRY *c2, int cmd);
+
+#ifdef CONFIG_MV_ETH_PP2_1
+int	mvPp2ClsC2PolicerSet(MV_PP2_CLS_C2_ENTRY *c2, int cmd, int policerId, int bank);
+#else
 int	mvPp2ClsC2PolicerSet(MV_PP2_CLS_C2_ENTRY *c2, int cmd, int policerId);
+#endif
+
+int     mvPp2ClsC2FlowIdEn(MV_PP2_CLS_C2_ENTRY *c2, int flowid_en);
 int	mvPp2ClsC2ModSet(MV_PP2_CLS_C2_ENTRY *c2, int data_ptr, int instr_offs, int l4_csum);
+int	mvPp2ClsC2MtuSet(MV_PP2_CLS_C2_ENTRY *c2, int mtu_inx);
 int	mvPp2ClsC2DupSet(MV_PP2_CLS_C2_ENTRY *c2, int dupid, int count);
+int	mvPp2ClsC2SeqSet(MV_PP2_CLS_C2_ENTRY *c2, int miss, int id);
+
 
 /*-------------------------------------------------------------------------------*/
 /*		Classifier C2 engine Hit counters Public APIs		    	 */

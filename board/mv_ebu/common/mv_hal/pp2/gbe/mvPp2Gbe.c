@@ -228,11 +228,15 @@ function sets default values to the NETA port.
 *******************************************************************************/
 MV_STATUS mvPp2DefaultsSet(int port)
 {
+	MV_U32 regVal;
 	int txp, queue, txPortNum, i;
 	MV_PP2_PORT_CTRL *pPortCtrl = mvPp2PortHndlGet(port);
 
 	if (!MV_PON_PORT(port))
 		mvGmacDefaultsSet(port);
+
+	/* avoid unused variable compilation warninig */
+	regVal = 0;
 
 	for (txp = 0; txp < pPortCtrl->txpNum; txp++) {
 		/* Disable Legacy WRR, Disable EJP, Release from reset */
@@ -257,7 +261,14 @@ MV_STATUS mvPp2DefaultsSet(int port)
 	if (mvPp2HalData.iocc) {
 		for (i = 0; i < pPortCtrl->rxqNum; i++) {
 			queue = mvPp2LogicRxqToPhysRxq(port, i);
-			mvPp2WrReg(MV_PP2_RXQ_SNOOP_REG(queue), MV_PP2_SNOOP_PKT_SIZE_MASK | MV_PP2_SNOOP_BUF_HDR_MASK);
+#ifdef CONFIG_MV_ETH_PP2_1
+			regVal = mvPp2RdReg(MV_PP2_RXQ_CONFIG_REG(queue));
+			regVal |= MV_PP2_SNOOP_PKT_SIZE_MASK | MV_PP2_SNOOP_BUF_HDR_MASK;
+			mvPp2WrReg(MV_PP2_RXQ_CONFIG_REG(queue), regVal);
+#else
+			regVal = MV_PP2_V0_SNOOP_PKT_SIZE_MASK | MV_PP2_V0_SNOOP_BUF_HDR_MASK;
+			mvPp2WrReg(MV_PP2_V0_RXQ_SNOOP_REG(queue), regVal);
+#endif
 		}
 	}
 
@@ -378,7 +389,7 @@ static void mvPp2DescRingReset(MV_PP2_QUEUE_CTRL *pQueueCtrl)
 }
 
 /* allocate descriptors */
-static MV_U8 *mvPp2DescrMemoryAlloc(int descSize, MV_ULONG *pPhysAddr, MV_U32 *memHandle)
+MV_U8 *mvPp2DescrMemoryAlloc(int descSize, MV_ULONG *pPhysAddr, MV_U32 *memHandle)
 {
 	MV_U8 *pVirt;
 #ifdef ETH_DESCR_UNCACHED
@@ -392,7 +403,7 @@ static MV_U8 *mvPp2DescrMemoryAlloc(int descSize, MV_ULONG *pPhysAddr, MV_U32 *m
 	return pVirt;
 }
 
-static void mvPp2DescrMemoryFree(int descSize, MV_ULONG *pPhysAddr, MV_U8 *pVirt, MV_U32 *memHandle)
+void mvPp2DescrMemoryFree(int descSize, MV_ULONG *pPhysAddr, MV_U8 *pVirt, MV_U32 *memHandle)
 {
 #ifdef ETH_DESCR_UNCACHED
 	mvOsIoUncachedFree(NULL, descSize, (MV_ULONG)pPhysAddr, pVirt, (MV_U32)memHandle);
@@ -411,6 +422,7 @@ MV_STATUS mvPp2DescrCreate(MV_PP2_QUEUE_CTRL *qCtrl, int descNum)
 	    mvPp2DescrMemoryAlloc(descSize, &qCtrl->descBuf.bufPhysAddr, &qCtrl->descBuf.memHandle);
 
 	qCtrl->descBuf.bufSize = descSize;
+	qCtrl->descSize = MV_PP2_DESC_ALIGNED_SIZE;
 
 	if (qCtrl->descBuf.bufVirtPtr == NULL) {
 		mvOsPrintf("%s: Can't allocate %d bytes for %d descr\n", __func__, descSize, descNum);
@@ -561,27 +573,6 @@ MV_STATUS mvPp2PortRxqsInit(int port, int firstRxq, int numRxqs)
 	return MV_OK;
 }
 
-MV_STATUS mvPp2RxqOffsetSet(int port, int rxq, int offset)
-{
-	MV_U32 regVal;
-	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
-
-	if (offset % 32 != 0) {
-		mvOsPrintf("%s: offset must be in units of 32\n", __func__);
-		return MV_BAD_PARAM;
-	}
-
-	regVal = mvPp2RdReg(MV_PP2_RXQ_CONFIG_REG(prxq));
-	regVal &= ~MV_PP2_RXQ_PACKET_OFFSET_MASK;
-
-	/* Offset is in */
-	regVal |= ((offset << MV_PP2_RXQ_PACKET_OFFSET_OFFS) & MV_PP2_RXQ_PACKET_OFFSET_MASK);
-
-	mvPp2WrReg(MV_PP2_RXQ_CONFIG_REG(prxq), regVal);
-
-	return MV_OK;
-}
-
 MV_STATUS mvPp2RxqPktsCoalSet(int port, int rxq, MV_U32 pkts)
 {
 	MV_U32 regVal;
@@ -632,6 +623,14 @@ void mvPp2RxReset(int port)
 		mvPp2RxqReset(port, rxq);
 }
 /*-------------------------------------------------------------------------------*/
+void mvPp2TxqHwfSizeSet(int port, int txp, int txq, int hwfNum)
+{
+	int ptxq = MV_PPV2_TXQ_PHYS(port, txp, txq);
+
+	mvPp2WrReg(MV_PP2_TXQ_NUM_REG, ptxq);
+	mvPp2WrReg(MV_PP2_TXQ_DESC_HWF_SIZE_REG, hwfNum & MV_PP2_TXQ_DESC_HWF_SIZE_MASK);
+}
+
 /* TXQ */
 /* Allocate and initialize descriptors for TXQ */
 MV_PP2_PHYS_TXQ_CTRL *mvPp2TxqInit(int port, int txp, int txq, int descNum, int hwfNum)
@@ -993,7 +992,10 @@ void *mvPp2PortInit(int port, int firstRxq, int numRxqs, void *osHandle)
 		return NULL;
 
 	/* Disable port */
-	mvPp2PortDisable(port);
+	mvPp2PortIngressEnable(port, MV_FALSE);
+	mvPp2PortEgressEnable(port, MV_FALSE);
+	mvPp2PortEnable(port, MV_FALSE);
+
 	mvPp2DefaultsSet(port);
 
 	return pCtrl;
@@ -1016,135 +1018,49 @@ void mvPp2PortDestroy(int portNo)
 }
 
 /*******************************************************************************
-* mvPp2PortUp - Start the Ethernet port RX and TX activity.
+* mvPp2PortEgressEnable
 *
 * DESCRIPTION:
-*       This routine start Rx and Tx activity:
+*	Disable fetch descriptors from initialized TXQs
 *
-*       Note: Each Rx and Tx queue descriptor's list must be initialized prior
-*       to calling this function.
-*
-* INPUT:
-*		int     portNo		- Port number.
-*
-* RETURN:   MV_STATUS
-*           MV_OK - Success, Others - Failure.
-*
-*******************************************************************************/
-MV_STATUS mvPp2PortUp(int port)
-{
-	int queue, txp, txPortNum;
-	MV_U32 qMap;
-	MV_PP2_PORT_CTRL *pPortCtrl = mvPp2PortHndlGet(port);
-	MV_PP2_QUEUE_CTRL *pQueueCtrl;
-
-	mvEthMibCountersClear(port);
-
-	/* Enable all initialized TXs. */
-	for (txp = 0; txp < pPortCtrl->txpNum; txp++) {
-		txPortNum = mvPp2EgressPort(port, txp);
-
-		qMap = 0;
-		for (queue = 0; queue < pPortCtrl->txqNum; queue++) {
-			pQueueCtrl = &pPortCtrl->pTxQueue[txp * CONFIG_MV_ETH_TXQ + queue]->queueCtrl;
-
-			if (pQueueCtrl->pFirst != NULL)
-				qMap |= (1 << queue);
-		}
-
-		mvPp2WrReg(MV_PP2_TXP_SCHED_PORT_INDEX_REG, txPortNum);
-		mvPp2WrReg(MV_PP2_TXP_SCHED_Q_CMD_REG, qMap);
-	}
-
-	return MV_OK;
-}
-
-/*******************************************************************************
-* mvPp2PortDown - Stop the Ethernet port activity.
-*
-* DESCRIPTION:
+*       Note: Effects TXQs initialized prior to calling this function.
 *
 * INPUT:
-*		int     portNo		- Port number.
+*	int     portNo		- Port number.
 *
 * RETURN:   MV_STATUS
 *               MV_OK - Success, Others - Failure.
 *
-* NOTE : used for port link down.
 *******************************************************************************/
-MV_STATUS mvPp2PortDown(int port)
+MV_STATUS mvPp2PortEgressEnable(int port, MV_BOOL en)
 {
-	int	          txp, txPortNum;
+	int	         txp;
 	MV_PP2_PORT_CTRL *pPortCtrl = mvPp2PortHndlGet(port);
-	MV_U32 		  regData;
-	int 		  mDelay;
 
-	/* Stop Rx port activity. Check port Rx activity. */
-	/*TBD*/
-
-	if (!MV_PON_PORT(port)) {
-		/* Stop Tx port activity. Check port Tx activity. */
-		for (txp = 0; txp < pPortCtrl->txpNum; txp++) {
-			txPortNum = mvPp2EgressPort(port, txp);
-
-			/* Issue stop command for active channels only */
-			mvPp2WrReg(MV_PP2_TXP_SCHED_PORT_INDEX_REG, txPortNum);
-			regData = (mvPp2RdReg(MV_PP2_TXP_SCHED_Q_CMD_REG)) & MV_PP2_TXP_SCHED_ENQ_MASK;
-			if (regData != 0)
-				mvPp2WrReg(MV_PP2_TXP_SCHED_Q_CMD_REG, (regData << MV_PP2_TXP_SCHED_DISQ_OFFSET));
-
-			/* Wait for all Tx activity to terminate. */
-			mDelay = 0;
-			do {
-				if (mDelay >= TX_DISABLE_TIMEOUT_MSEC) {
-					mvOsPrintf("port=%d, txp=%d: TIMEOUT for TX stopped !!! txQueueCmd - 0x%08x\n",
-						   port, txp, regData);
-					break;
-				}
-				mvOsDelay(1);
-				mDelay++;
-
-				/* Check port TX Command register that all Tx queues are stopped */
-				regData = mvPp2RdReg(MV_PP2_TXP_SCHED_Q_CMD_REG);
-			} while (regData & 0xFF);
-		}
-
-		/* Double check to Verify that TX FIFO is Empty */
-		/*TBD*/
+	/* Disable all physical TXQs */
+	for (txp = 0; txp < pPortCtrl->txpNum; txp++) {
+		if (en)
+			mvPp2TxpEnable(port, txp);
+		else
+			mvPp2TxpDisable(port, txp);
 	}
-	/* Wait about 200 usec */
-	mvOsUDelay(200);
-
-	return MV_OK;
-}
-
-MV_STATUS mvPp2PortEnable(int port)
-{
-	if (!MV_PON_PORT(port)) {
-		/* Enable port */
-		mvEthPortEnable(MV_PPV2_PORT_PHYS(port));
-
-		/* If Link is UP, Start RX and TX traffic */
-		if (mvEthPortIsLinkUp(MV_PPV2_PORT_PHYS(port)))
-			return mvPp2PortUp(port);
-	}
-	return MV_NOT_READY;
-}
-
-MV_STATUS mvPp2PortDisable(int port)
-{
-	mvPp2PortDown(port);
-
-	if (!MV_PON_PORT(port)) {
-		/* Reset the Enable bit in the Serial Control Register */
-		mvEthPortDisable(MV_PPV2_PORT_PHYS(port));
-	}
-	/* Wait about 200 usec */
-	mvOsUDelay(200);
-
 	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
+
+MV_STATUS mvPp2PortEnable(int port, MV_BOOL en)
+{
+	if (!MV_PON_PORT(port)) {
+		/* Enable port */
+		if (en)
+			mvGmacPortEnable(port);
+		else
+			mvGmacPortDisable(port);
+	}
+	return MV_OK;
+}
+/*-------------------------------------------------------------------------------*/
+
 /* BM */
 MV_STATUS mvPp2BmPoolBufSizeSet(int pool, int bufsize)
 {
@@ -1157,18 +1073,199 @@ MV_STATUS mvPp2BmPoolBufSizeSet(int pool, int bufsize)
 	return MV_OK;
 }
 
-MV_STATUS mvPp2RxqBmPoolSet(int port, int rxq, int shortPool, int longPool)
+#ifdef CONFIG_MV_ETH_PP2_1
+
+/*******************************************************************************
+* mvPp2PortIngressEnable
+*
+* DESCRIPTION:
+*	Enable/Disable receive packets to RXQs for SWF and receive packets to TXQs for HWF.
+*
+*       Note: Effects only Rx and Tx queues initialized prior to calling this function.
+*
+* INPUT:
+*	int     portNo		- Port number.
+*
+* RETURN:   MV_STATUS
+*           MV_OK - Success, Others - Failure.
+*
+*******************************************************************************/
+MV_STATUS mvPp2PortIngressEnable(int port, MV_BOOL en)
+{
+	int txp, txq, rxq;
+	MV_PP2_PORT_CTRL *pPortCtrl = mvPp2PortHndlGet(port);
+
+	/* Enable all initialized RXQs */
+	for (rxq = 0; rxq < pPortCtrl->rxqNum ; rxq++) {
+		if (pPortCtrl->pRxQueue[rxq] != NULL)
+			mvPp2RxqEnable(port, rxq, en);
+	}
+
+	/* Enable HWF for all initialized TXQs. */
+	for (txp = 0; txp < pPortCtrl->txpNum; txp++) {
+		for (txq = 0; txq < pPortCtrl->txqNum; txq++) {
+			if (pPortCtrl->pTxQueue[txp * pPortCtrl->txqNum + txq] != NULL)
+				mvPp2HwfTxqEnable(port, txp, txq, en);
+		}
+	}
+	return MV_OK;
+}
+
+MV_STATUS mvPp2RxqOffsetSet(int port, int rxq, int offset)
+{
+	MV_U32 regVal;
+	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
+
+	if (offset % 32 != 0) {
+		mvOsPrintf("%s: offset must be in units of 32\n", __func__);
+		return MV_BAD_PARAM;
+	}
+
+	/* convert offset from bytes to units of 32 bytes */
+	offset = offset >> 5;
+
+	regVal = mvPp2RdReg(MV_PP2_RXQ_CONFIG_REG(prxq));
+	regVal &= ~MV_PP2_RXQ_PACKET_OFFSET_MASK;
+
+	/* Offset is in */
+	regVal |= ((offset << MV_PP2_RXQ_PACKET_OFFSET_OFFS) & MV_PP2_RXQ_PACKET_OFFSET_MASK);
+
+	mvPp2WrReg(MV_PP2_RXQ_CONFIG_REG(prxq), regVal);
+
+	return MV_OK;
+}
+
+MV_STATUS mvPp2RxqBmLongPoolSet(int port, int rxq, int longPool)
 {
 	MV_U32 regVal = 0;
 	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
 
 	regVal = mvPp2RdReg(MV_PP2_RXQ_CONFIG_REG(prxq));
-	regVal &= ~MV_PP2_RXQ_POOL_MASK;
-
-	regVal |= ((shortPool << MV_PP2_RXQ_POOL_SHORT_ID_OFFS) & MV_PP2_RXQ_POOL_SHORT_ID_MASK);
-	regVal |= ((longPool << MV_PP2_RXQ_POOL_LONG_ID_OFFS) & MV_PP2_RXQ_POOL_LONG_ID_MASK);
+	regVal &= ~MV_PP2_RXQ_POOL_LONG_MASK;
+	regVal |= ((longPool << MV_PP2_RXQ_POOL_LONG_OFFS) & MV_PP2_RXQ_POOL_LONG_MASK);
 
 	mvPp2WrReg(MV_PP2_RXQ_CONFIG_REG(prxq), regVal);
+
+	/* Update default BM priority rule */
+	mvBmRxqToQsetLongClean(prxq);
+	mvBmRxqToQsetLongSet(prxq, mvBmDefaultQsetNumGet(longPool));
+
+	return MV_OK;
+}
+
+MV_STATUS mvPp2RxqBmShortPoolSet(int port, int rxq, int shortPool)
+{
+	MV_U32 regVal = 0;
+	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
+
+	regVal = mvPp2RdReg(MV_PP2_RXQ_CONFIG_REG(prxq));
+	regVal &= ~MV_PP2_RXQ_POOL_SHORT_MASK;
+	regVal |= ((shortPool << MV_PP2_RXQ_POOL_SHORT_OFFS) & MV_PP2_RXQ_POOL_SHORT_MASK);
+
+	mvPp2WrReg(MV_PP2_RXQ_CONFIG_REG(prxq), regVal);
+
+	/* Update default BM priority rule */
+	mvBmRxqToQsetShortClean(prxq);
+	mvBmRxqToQsetShortSet(prxq, mvBmDefaultQsetNumGet(shortPool));
+
+	return MV_OK;
+}
+
+MV_STATUS mvPp2TxqBmShortPoolSet(int port, int txp, int txq, int shortPool)
+{
+	MV_U32 regVal = 0;
+	int ptxq = MV_PPV2_TXQ_PHYS(port, txp, txq);
+
+	regVal = mvPp2RdReg(MV_PP2_HWF_TXQ_CONFIG_REG(ptxq));
+	regVal &= ~MV_PP2_HWF_TXQ_POOL_SHORT_MASK;
+
+	regVal |= ((shortPool << MV_PP2_HWF_TXQ_POOL_SHORT_OFFS) & MV_PP2_HWF_TXQ_POOL_SHORT_MASK);
+
+	mvPp2WrReg(MV_PP2_HWF_TXQ_CONFIG_REG(ptxq), regVal);
+
+	mvBmTxqToQsetShortClean(ptxq);
+	mvBmTxqToQsetShortSet(ptxq, mvBmDefaultQsetNumGet(shortPool));
+
+	return MV_OK;
+}
+
+MV_STATUS mvPp2TxqBmLongPoolSet(int port, int txp, int txq, int longPool)
+{
+	MV_U32 regVal = 0;
+	int ptxq = MV_PPV2_TXQ_PHYS(port, txp, txq);
+
+	regVal = mvPp2RdReg(MV_PP2_HWF_TXQ_CONFIG_REG(ptxq));
+	regVal &= ~MV_PP2_HWF_TXQ_POOL_LONG_MASK;
+
+	regVal |= ((longPool << MV_PP2_HWF_TXQ_POOL_LONG_OFFS) & MV_PP2_HWF_TXQ_POOL_LONG_MASK);
+
+	mvPp2WrReg(MV_PP2_HWF_TXQ_CONFIG_REG(ptxq), regVal);
+
+	mvBmTxqToQsetLongClean(ptxq);
+	mvBmTxqToQsetLongSet(ptxq, mvBmDefaultQsetNumGet(longPool));
+
+	return MV_OK;
+}
+
+#else
+
+MV_STATUS mvPp2PortIngressEnable(int port, MV_BOOL en)
+{
+	if (en)
+		mvPrsMacDropAllSet(port, 0);
+	else
+		mvPrsMacDropAllSet(port, 1);
+
+	return MV_OK;
+}
+
+MV_STATUS mvPp2RxqOffsetSet(int port, int rxq, int offset)
+{
+	MV_U32 regVal;
+	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
+
+	if (offset % 32 != 0) {
+		mvOsPrintf("%s: offset must be in units of 32\n", __func__);
+		return MV_BAD_PARAM;
+	}
+
+	/* convert offset from bytes to units of 32 bytes */
+	offset = offset >> 5;
+
+	regVal = mvPp2RdReg(MV_PP2_V0_RXQ_CONFIG_REG(prxq));
+
+	regVal &= ~MV_PP2_V0_RXQ_PACKET_OFFSET_MASK;
+	regVal |= ((offset << MV_PP2_V0_RXQ_PACKET_OFFSET_OFFS) & MV_PP2_V0_RXQ_PACKET_OFFSET_MASK);
+
+	mvPp2WrReg(MV_PP2_V0_RXQ_CONFIG_REG(prxq), regVal);
+
+	return MV_OK;
+}
+
+MV_STATUS mvPp2RxqBmLongPoolSet(int port, int rxq, int longPool)
+{
+	MV_U32 regVal = 0;
+	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
+
+	regVal = mvPp2RdReg(MV_PP2_V0_RXQ_CONFIG_REG(prxq));
+	regVal &= ~MV_PP2_V0_RXQ_POOL_LONG_MASK;
+	regVal |= ((longPool << MV_PP2_V0_RXQ_POOL_LONG_OFFS) & MV_PP2_V0_RXQ_POOL_LONG_MASK);
+
+	mvPp2WrReg(MV_PP2_V0_RXQ_CONFIG_REG(prxq), regVal);
+
+	return MV_OK;
+}
+
+MV_STATUS mvPp2RxqBmShortPoolSet(int port, int rxq, int shortPool)
+{
+	MV_U32 regVal = 0;
+	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
+
+	regVal = mvPp2RdReg(MV_PP2_V0_RXQ_CONFIG_REG(prxq));
+	regVal &= ~MV_PP2_V0_RXQ_POOL_SHORT_MASK;
+	regVal |= ((shortPool << MV_PP2_V0_RXQ_POOL_SHORT_OFFS) & MV_PP2_V0_RXQ_POOL_SHORT_MASK);
+
+	mvPp2WrReg(MV_PP2_V0_RXQ_CONFIG_REG(prxq), regVal);
 
 	return MV_OK;
 }
@@ -1177,13 +1274,15 @@ MV_STATUS mvPp2PortHwfBmPoolSet(int port, int shortPool, int longPool)
 {
 	MV_U32 regVal = 0;
 
-	regVal |= ((shortPool << MV_PP2_PORT_HWF_POOL_SHORT_ID_OFFS) & MV_PP2_PORT_HWF_POOL_SHORT_ID_MASK);
-	regVal |= ((longPool << MV_PP2_PORT_HWF_POOL_LONG_ID_OFFS) & MV_PP2_PORT_HWF_POOL_LONG_ID_MASK);
+	regVal |= ((shortPool << MV_PP2_V0_PORT_HWF_POOL_SHORT_OFFS) & MV_PP2_V0_PORT_HWF_POOL_SHORT_MASK);
+	regVal |= ((longPool << MV_PP2_V0_PORT_HWF_POOL_LONG_OFFS) & MV_PP2_V0_PORT_HWF_POOL_LONG_MASK);
 
-	mvPp2WrReg(MV_PP2_PORT_HWF_CONFIG_REG(MV_PPV2_PORT_PHYS(port)), regVal);
+	mvPp2WrReg(MV_PP2_V0_PORT_HWF_CONFIG_REG(MV_PPV2_PORT_PHYS(port)), regVal);
 
 	return MV_OK;
 }
+#endif /* CONFIG_MV_ETH_PP2_1 */
+
 /*-------------------------------------------------------------------------------*/
 
 MV_STATUS mvPp2MhSet(int port, MV_TAG_TYPE mh)
@@ -1672,6 +1771,154 @@ MV_STATUS   mvPp2TxpMaxTxSizeSet(int port, int txp, int maxTxSize)
 	}
 	return MV_OK;
 }
+
+/* Disable transmit via physical egress queue - HW doesn't take descriptors from DRAM */
+MV_STATUS mvPp2TxpDisable(int port, int txp)
+{
+	MV_U32 regData;
+	int    mDelay;
+	int    txPortNum = mvPp2EgressPort(port, txp);
+
+	/* Issue stop command for active channels only */
+	mvPp2WrReg(MV_PP2_TXP_SCHED_PORT_INDEX_REG, txPortNum);
+	regData = (mvPp2RdReg(MV_PP2_TXP_SCHED_Q_CMD_REG)) & MV_PP2_TXP_SCHED_ENQ_MASK;
+	if (regData != 0)
+		mvPp2WrReg(MV_PP2_TXP_SCHED_Q_CMD_REG, (regData << MV_PP2_TXP_SCHED_DISQ_OFFSET));
+
+	/* Wait for all Tx activity to terminate. */
+	mDelay = 0;
+	do {
+		if (mDelay >= TX_DISABLE_TIMEOUT_MSEC) {
+			mvOsPrintf("port=%d, txp=%d: TIMEOUT for TX stopped !!! txQueueCmd - 0x%08x\n",
+				   port, txp, regData);
+			return MV_TIMEOUT;
+		}
+		mvOsDelay(1);
+		mDelay++;
+
+		/* Check port TX Command register that all Tx queues are stopped */
+		regData = mvPp2RdReg(MV_PP2_TXP_SCHED_Q_CMD_REG);
+	} while (regData & MV_PP2_TXP_SCHED_ENQ_MASK);
+
+	return MV_OK;
+}
+
+/* Enable transmit via physical egress queue - HW starts take descriptors from DRAM */
+MV_STATUS mvPp2TxpEnable(int port, int txp)
+{
+	MV_PP2_PORT_CTRL *pPortCtrl = mvPp2PortHndlGet(port);
+	MV_U32 qMap;
+	int    txq, eport = mvPp2EgressPort(port, txp);
+
+	/* Enable all initialized TXs. */
+	qMap = 0;
+	for (txq = 0; txq < pPortCtrl->txqNum; txq++) {
+		if (pPortCtrl->pTxQueue[txp * CONFIG_MV_ETH_TXQ + txq] != NULL)
+			qMap |= (1 << txq);
+	}
+	/* Indirect access to register */
+	mvPp2WrReg(MV_PP2_TXP_SCHED_PORT_INDEX_REG, eport);
+	mvPp2WrReg(MV_PP2_TXP_SCHED_Q_CMD_REG, qMap);
+
+	return MV_OK;
+}
+
+#ifdef CONFIG_MV_ETH_PP2_1
+/* Functions implemented only for PPv2.1 version (A0 and later) */
+MV_STATUS mvPp2RxqEnable(int port, int rxq, MV_BOOL en)
+{
+	MV_U32 regVal;
+	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
+
+	regVal = mvPp2RdReg(MV_PP2_RXQ_CONFIG_REG(prxq));
+	if (en)
+		regVal &= ~MV_PP2_RXQ_DISABLE_MASK;
+	else
+		regVal |= MV_PP2_RXQ_DISABLE_MASK;
+
+	mvPp2WrReg(MV_PP2_RXQ_CONFIG_REG(prxq), regVal);
+
+	return MV_OK;
+}
+
+MV_STATUS mvPp2HwfTxqEnable(int port, int txp, int txq, MV_BOOL en)
+{
+	MV_U32 regVal;
+	int ptxq = MV_PPV2_TXQ_PHYS(port, txp, txq);
+
+	regVal = mvPp2RdReg(MV_PP2_HWF_TXQ_CONFIG_REG(ptxq));
+
+	if (en)
+		regVal &= ~MV_PP2_HWF_TXQ_DISABLE_MASK;
+	else
+		regVal |= MV_PP2_HWF_TXQ_DISABLE_MASK;
+
+	mvPp2WrReg(MV_PP2_HWF_TXQ_CONFIG_REG(ptxq), regVal);
+
+	return MV_OK;
+}
+
+MV_BOOL mvPp2DisableCmdInProgress(void)
+{
+	MV_U32 regVal;
+
+	regVal = mvPp2RdReg(MV_PP2_RX_STATUS);
+	regVal &= MV_PP2_DISABLE_IN_PROG_MASK;
+
+	return regVal;
+}
+
+
+MV_STATUS mvPp2TxqDrainSet(int port, int txp, int txq, MV_BOOL en)
+{
+	MV_U32 regVal;
+	int ptxq = MV_PPV2_TXQ_PHYS(port, txp, txq);
+
+	mvPp2WrReg(MV_PP2_TXQ_NUM_REG, ptxq);
+	regVal = mvPp2RdReg(MV_PP2_TXQ_PREF_BUF_REG);
+
+	if (en)
+		regVal |= MV_PP2_HWF_TXQ_DISABLE_MASK;
+	else
+		regVal &= ~MV_PP2_HWF_TXQ_DISABLE_MASK;
+
+	mvPp2WrReg(MV_PP2_TXQ_PREF_BUF_REG, regVal);
+
+	return MV_OK;
+}
+
+MV_STATUS mvPp2TxPortFifoFlush(int port, MV_BOOL en)
+{
+	MV_U32 regVal;
+
+	/* valid only for ethernet ports (not for xPON) */
+	if (MV_PON_PORT(port))
+		return MV_NOT_SUPPORTED;
+
+	regVal = mvPp2RdReg(MV_PP2_TX_PORT_FLUSH_REG);
+
+	if (en)
+		regVal |= MV_PP2_TX_PORT_FLUSH_MASK(port);
+	else
+		regVal &= ~MV_PP2_TX_PORT_FLUSH_MASK(port);
+
+	mvPp2WrReg(MV_PP2_TX_PORT_FLUSH_REG, regVal);
+
+	return MV_OK;
+}
+
+#else /* Stabs for Z1 */
+
+MV_STATUS mvPp2TxqDrainSet(int port, int txp, int txq, MV_BOOL en)
+{
+	return MV_OK;
+}
+
+MV_STATUS mvPp2TxPortFifoFlush(int port, MV_BOOL en)
+{
+	return MV_OK;
+}
+#endif /* CONFIG_MV_ETH_PP2_1 */
 
 /* Function for swithcing SWF to HWF */
 /* txq is physical (global) txq in range 0..MV_PP2_TXQ_TOTAL_NUM */

@@ -156,6 +156,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_PP2_PRS_TCAM_CTRL_EN			0
 
 /*-------------------------------------------------------------------------------*/
+/*PPv2.1 MASS 3.20 new feature */
+#define MV_PP2_PRS_TCAM_HIT_IDX_REG		(MV_PP2_REG_BASE + 0x1240)
+/*-------------------------------------------------------------------------------*/
+/*PPv2.1 MASS 3.20 new feature */
+#define MV_PP2_PRS_TCAM_HIT_CNT_REG		(MV_PP2_REG_BASE + 0x1244)
+#define MV_PP2_PRS_TCAM_HIT_CNT_BITS		16
+#define MV_PP2_PRS_TCAM_HIT_CNT_OFFS		0
+#define MV_PP2_PRS_TCAM_HIT_CNT_MASK		\
+	(((1 << MV_PP2_PRS_TCAM_HIT_CNT_BITS) - 1) << MV_PP2_PRS_TCAM_HIT_CNT_OFFS)
+
+/*-------------------------------------------------------------------------------*/
 /*				TCAM 						*/
 /*-------------------------------------------------------------------------------*/
 #define AI_BITS  				8
@@ -563,6 +574,11 @@ void mvPp2PrsSwClear(MV_PP2_PRS_ENTRY *pe);
 */
 
 int mvPp2PrsHwDump(void);
+
+/*
+	mvPp2V1PrsHwHitsDump - dump all entries with non zeroed hit counters
+*/
+int mvPp2V1PrsHwHitsDump(void);
 
 /*
 	enable - Tcam Ebable/Disable

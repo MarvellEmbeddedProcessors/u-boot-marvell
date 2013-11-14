@@ -64,7 +64,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvEthGmacApi.h"
 #include "pp2/gbe/mvPp2Gbe.h"
 
-void mvEthPortEnable(int port)
+void mvGmacPortEnable(int port)
 {
 	MV_U32 regVal;
 
@@ -75,16 +75,16 @@ void mvEthPortEnable(int port)
 	MV_REG_WRITE(ETH_GMAC_CTRL_0_REG(port), regVal);
 }
 
-void mvEthPortDisable(int port)
+void mvGmacPortDisable(int port)
 {
 	MV_U32 regVal;
 
 	regVal = MV_REG_READ(ETH_GMAC_CTRL_0_REG(port));
-	regVal &= ~ETH_GMAC_PORT_EN_MASK;
+	regVal &= ~(ETH_GMAC_PORT_EN_MASK);
 	MV_REG_WRITE(ETH_GMAC_CTRL_0_REG(port), regVal);
 }
 
-void mvEthPortRgmiiSet(int port, int enable)
+static void mvGmacPortRgmiiSet(int port, int enable)
 {
 	MV_U32  regVal;
 
@@ -97,7 +97,7 @@ void mvEthPortRgmiiSet(int port, int enable)
 	MV_REG_WRITE(ETH_GMAC_CTRL_2_REG(port), regVal);
 }
 
-void mvEthPortSgmiiSet(int port, int enable)
+static void mvGmacPortSgmiiSet(int port, int enable)
 {
 	MV_U32 regVal;
 
@@ -111,7 +111,7 @@ void mvEthPortSgmiiSet(int port, int enable)
 	MV_REG_WRITE(ETH_GMAC_CTRL_2_REG(port), regVal);
 }
 
-void mvEthPortPeriodicXonSet(int port, int enable)
+void mvGmacPortPeriodicXonSet(int port, int enable)
 {
 	MV_U32 regVal;
 
@@ -125,7 +125,7 @@ void mvEthPortPeriodicXonSet(int port, int enable)
 	MV_REG_WRITE(ETH_GMAC_CTRL_1_REG(port), regVal);
 }
 
-void mvEthPortLbSet(int port, int isGmii, int isPcsEn)
+void mvGmacPortLbSet(int port, int isGmii, int isPcsEn)
 {
 	MV_U32 regVal;
 
@@ -144,7 +144,7 @@ void mvEthPortLbSet(int port, int isGmii, int isPcsEn)
 	MV_REG_WRITE(ETH_GMAC_CTRL_1_REG(port), regVal);
 }
 
-void mvEthPortResetSet(int port, MV_BOOL setReset)
+void mvGmacPortResetSet(int port, MV_BOOL setReset)
 {
 	MV_U32 regVal;
 
@@ -160,16 +160,15 @@ void mvEthPortResetSet(int port, MV_BOOL setReset)
 
 	if (setReset == MV_FALSE)
 		while (MV_REG_READ(ETH_GMAC_CTRL_2_REG(port) &
-		       ETH_GMAC_PORT_RESET_MASK))
-				;
+		       ETH_GMAC_PORT_RESET_MASK));
 }
 
-void mvEthPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii)
+void mvGmacPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii)
 {
-	mvEthPortSgmiiSet(port, isSgmii);
-	mvEthPortRgmiiSet(port, isRgmii);
-	mvEthPortPeriodicXonSet(port, MV_FALSE);
-	mvEthPortResetSet(port, MV_FALSE);
+	mvGmacPortSgmiiSet(port, isSgmii);
+	mvGmacPortRgmiiSet(port, isRgmii);
+	mvGmacPortPeriodicXonSet(port, MV_FALSE);
+	mvGmacPortResetSet(port, MV_FALSE);
 }
 
 void mvGmacDefaultsSet(int port)
@@ -184,19 +183,22 @@ void mvGmacDefaultsSet(int port)
 	MV_REG_WRITE(GMAC_PORT_FIFO_CFG_1_REG(port), regVal);
 }
 
-void mvEthPortPowerDown(int port)
+void mvGmacPortPowerDown(int port)
 {
-	mvEthPortDisable(port);
-	mvEthMibCountersClear(port);
-	mvEthPortResetSet(port, MV_TRUE);
+	return;
+/*
+	mvGmacPortDisable(port);
+	mvGmacMibCountersClear(port);
+	mvGmacPortResetSet(port, MV_TRUE);
+*/
 }
 
-MV_BOOL mvEthPortIsLinkUp(int port)
+MV_BOOL mvGmacPortIsLinkUp(int port)
 {
 	return (MV_REG_READ(ETH_GMAC_STATUS_REG(port)) & ETH_GMAC_LINK_UP_MASK);
 }
 
-MV_STATUS mvEthLinkStatus(int port, MV_ETH_PORT_STATUS *pStatus)
+MV_STATUS mvGmacLinkStatus(int port, MV_ETH_PORT_STATUS *pStatus)
 {
 	MV_U32 regVal;
 
@@ -245,7 +247,7 @@ MV_STATUS mvEthLinkStatus(int port, MV_ETH_PORT_STATUS *pStatus)
 	return MV_OK;
 }
 
-char *mvEthSpeedStrGet(MV_ETH_PORT_SPEED speed)
+char *mvGmacSpeedStrGet(MV_ETH_PORT_SPEED speed)
 {
 	char *str;
 
@@ -286,21 +288,22 @@ char *mvEthSpeedStrGet(MV_ETH_PORT_SPEED speed)
 *
 * RETURN:
 *******************************************************************************/
-void mvEthMaxRxSizeSet(int port, int maxRxSize)
+MV_STATUS mvGmacMaxRxSizeSet(int port, int maxRxSize)
 {
 	MV_U32		regVal;
 
 	if (MV_PON_PORT(port))
-		return;
+		return MV_ERROR;
 
 	regVal =  MV_REG_READ(ETH_GMAC_CTRL_0_REG(port));
 	regVal &= ~ETH_GMAC_MAX_RX_SIZE_MASK;
 	regVal |= (((maxRxSize - MV_ETH_MH_SIZE) / 2) << ETH_GMAC_MAX_RX_SIZE_OFFS);
 	MV_REG_WRITE(ETH_GMAC_CTRL_0_REG(port), regVal);
+	return MV_OK;
 }
 
 /*******************************************************************************
-* mvEthForceLinkModeSet -
+* mvGmacForceLinkModeSet -
 *
 * DESCRIPTION:
 *       Sets "Force Link Pass" and "Do Not Force Link Fail" bits.
@@ -315,12 +318,12 @@ void mvEthMaxRxSizeSet(int port, int maxRxSize)
 *
 * RETURN:
 *******************************************************************************/
-MV_STATUS mvEthForceLinkModeSet(int portNo, MV_BOOL force_link_up, MV_BOOL force_link_down)
+MV_STATUS mvGmacForceLinkModeSet(int portNo, MV_BOOL force_link_up, MV_BOOL force_link_down)
 {
 	MV_U32 regVal;
 
 	/* Can't force link pass and link fail at the same time */
-	if (force_link_up && force_link_down)
+	if ((force_link_up) && (force_link_down))
 		return MV_BAD_PARAM;
 
 	regVal = MV_REG_READ(ETH_GMAC_AN_CTRL_REG(portNo));
@@ -341,7 +344,7 @@ MV_STATUS mvEthForceLinkModeSet(int portNo, MV_BOOL force_link_up, MV_BOOL force
 }
 
 /*******************************************************************************
-* mvEthSpeedDuplexSet -
+* mvGmacSpeedDuplexSet -
 *
 * DESCRIPTION:
 *       Sets port speed to Auto Negotiation / 1000 / 100 / 10 Mbps.
@@ -354,12 +357,12 @@ MV_STATUS mvEthForceLinkModeSet(int portNo, MV_BOOL force_link_up, MV_BOOL force
 *
 * RETURN:
 *******************************************************************************/
-MV_STATUS mvEthSpeedDuplexSet(int portNo, MV_ETH_PORT_SPEED speed, MV_ETH_PORT_DUPLEX duplex)
+MV_STATUS mvGmacSpeedDuplexSet(int portNo, MV_ETH_PORT_SPEED speed, MV_ETH_PORT_DUPLEX duplex)
 {
 	MV_U32 regVal;
 
 	/* Check validity */
-	if (speed == MV_ETH_SPEED_1000 && duplex == MV_ETH_DUPLEX_HALF)
+	if ((speed == MV_ETH_SPEED_1000) && (duplex == MV_ETH_DUPLEX_HALF))
 		return MV_BAD_PARAM;
 
 	regVal = MV_REG_READ(ETH_GMAC_AN_CTRL_REG(portNo));
@@ -412,7 +415,7 @@ MV_STATUS mvEthSpeedDuplexSet(int portNo, MV_ETH_PORT_SPEED speed, MV_ETH_PORT_D
 }
 
 /*******************************************************************************
-* mvEthSpeedDuplexGet -
+* mvGmacSpeedDuplexGet -
 *
 * DESCRIPTION:
 *       Gets port speed
@@ -426,7 +429,7 @@ MV_STATUS mvEthSpeedDuplexSet(int portNo, MV_ETH_PORT_SPEED speed, MV_ETH_PORT_D
 *
 * RETURN:
 *******************************************************************************/
-MV_STATUS mvEthSpeedDuplexGet(int portNo, MV_ETH_PORT_SPEED *speed, MV_ETH_PORT_DUPLEX *duplex)
+MV_STATUS mvGmacSpeedDuplexGet(int portNo, MV_ETH_PORT_SPEED *speed, MV_ETH_PORT_DUPLEX *duplex)
 {
 	MV_U32 regVal;
 
@@ -455,7 +458,7 @@ MV_STATUS mvEthSpeedDuplexGet(int portNo, MV_ETH_PORT_SPEED *speed, MV_ETH_PORT_
 }
 
 /*******************************************************************************
-* mvEthFlowCtrlSet - Set Flow Control of the port.
+* mvGmacFlowCtrlSet - Set Flow Control of the port.
 *
 * DESCRIPTION:
 *       This function configures the port's Flow Control properties.
@@ -470,7 +473,7 @@ MV_STATUS mvEthSpeedDuplexGet(int portNo, MV_ETH_PORT_SPEED *speed, MV_ETH_PORT_
 *       MV_BAD_VALUE    - Value flowControl parameters is not valid
 *
 *******************************************************************************/
-MV_STATUS mvEthFlowCtrlSet(int port, MV_ETH_PORT_FC flowControl)
+MV_STATUS mvGmacFlowCtrlSet(int port, MV_ETH_PORT_FC flowControl)
 {
 	MV_U32 regVal;
 
@@ -516,7 +519,7 @@ MV_STATUS mvEthFlowCtrlSet(int port, MV_ETH_PORT_FC flowControl)
 }
 
 /*******************************************************************************
-* mvEthFlowCtrlGet - Get Flow Control configuration of the port.
+* mvGmacFlowCtrlGet - Get Flow Control configuration of the port.
 *
 * DESCRIPTION:
 *       This function returns the port's Flow Control properties.
@@ -532,7 +535,7 @@ MV_STATUS mvEthFlowCtrlSet(int port, MV_ETH_PORT_FC flowControl)
 *       MV_OUT_OF_RANGE - Failed. Port is out of valid range
 *
 *******************************************************************************/
-MV_STATUS mvEthFlowCtrlGet(int port, MV_ETH_PORT_FC *pFlowCntrl)
+MV_STATUS mvGmacFlowCtrlGet(int port, MV_ETH_PORT_FC *pFlowCntrl)
 {
 	MV_U32 regVal;
 
@@ -557,33 +560,33 @@ MV_STATUS mvEthFlowCtrlGet(int port, MV_ETH_PORT_FC *pFlowCntrl)
 	return MV_OK;
 }
 
-MV_STATUS mvEthPortLinkSpeedFlowCtrl(int port, MV_ETH_PORT_SPEED speed,
+MV_STATUS mvGmacPortLinkSpeedFlowCtrl(int port, MV_ETH_PORT_SPEED speed,
 				     int forceLinkUp)
 {
 	if (forceLinkUp) {
-		if (mvEthSpeedDuplexSet(port, speed, MV_ETH_DUPLEX_FULL)) {
-			mvOsPrintf("mvEthSpeedDuplexSet failed\n");
+		if (mvGmacSpeedDuplexSet(port, speed, MV_ETH_DUPLEX_FULL)) {
+			mvOsPrintf("mvGmacSpeedDuplexSet failed\n");
 			return MV_FAIL;
 		}
-		if (mvEthFlowCtrlSet(port, MV_ETH_FC_ENABLE)) {
-			mvOsPrintf("mvEthFlowCtrlSet failed\n");
+		if (mvGmacFlowCtrlSet(port, MV_ETH_FC_ENABLE)) {
+			mvOsPrintf("mvGmacFlowCtrlSet failed\n");
 			return MV_FAIL;
 		}
-		if (mvEthForceLinkModeSet(port, 1, 0)) {
-			mvOsPrintf("mvEthForceLinkModeSet failed\n");
+		if (mvGmacForceLinkModeSet(port, 1, 0)) {
+			mvOsPrintf("mvGmacForceLinkModeSet failed\n");
 			return MV_FAIL;
 		}
 	} else {
-		if (mvEthForceLinkModeSet(port, 0, 0)) {
-			mvOsPrintf("mvEthForceLinkModeSet failed\n");
+		if (mvGmacForceLinkModeSet(port, 0, 0)) {
+			mvOsPrintf("mvGmacForceLinkModeSet failed\n");
 			return MV_FAIL;
 		}
-		if (mvEthSpeedDuplexSet(port, MV_ETH_SPEED_AN, MV_ETH_DUPLEX_AN)) {
-			mvOsPrintf("mvEthSpeedDuplexSet failed\n");
+		if (mvGmacSpeedDuplexSet(port, MV_ETH_SPEED_AN, MV_ETH_DUPLEX_AN)) {
+			mvOsPrintf("mvGmacSpeedDuplexSet failed\n");
 			return MV_FAIL;
 		}
-		if (mvEthFlowCtrlSet(port, MV_ETH_FC_AN_SYM)) {
-			mvOsPrintf("mvEthFlowCtrlSet failed\n");
+		if (mvGmacFlowCtrlSet(port, MV_ETH_FC_AN_SYM)) {
+			mvOsPrintf("mvGmacFlowCtrlSet failed\n");
 			return MV_FAIL;
 		}
 	}
@@ -594,7 +597,7 @@ MV_STATUS mvEthPortLinkSpeedFlowCtrl(int port, MV_ETH_PORT_SPEED speed,
 /******************************************************************************/
 /*                         PHY Control Functions                              */
 /******************************************************************************/
-void mvEthPhyAddrSet(int port, int phyAddr)
+void mvGmacPhyAddrSet(int port, int phyAddr)
 {
 	unsigned int regData;
 
@@ -608,7 +611,7 @@ void mvEthPhyAddrSet(int port, int phyAddr)
 	return;
 }
 
-int mvEthPhyAddrGet(int port)
+int mvGmacPhyAddrGet(int port)
 {
 	unsigned int 	regData;
 
@@ -664,7 +667,7 @@ void mvGmacPortRegs(int port)
 /******************************************************************************/
 
 /*******************************************************************************
-* mvEthMibCounterRead - Read a MIB counter
+* mvGmacMibCounterRead - Read a MIB counter
 *
 * DESCRIPTION:
 *       This function reads a MIB counter of a specific ethernet port.
@@ -684,7 +687,7 @@ void mvGmacPortRegs(int port)
 *       32 low sgnificant bits of MIB counter value.
 *
 *******************************************************************************/
-MV_U32 mvEthMibCounterRead(int port, unsigned int mibOffset, MV_U32 *pHigh32)
+MV_U32 mvGmacMibCounterRead(int port, unsigned int mibOffset, MV_U32 *pHigh32)
 {
 	MV_U32 valLow32, valHigh32;
 
@@ -701,7 +704,7 @@ MV_U32 mvEthMibCounterRead(int port, unsigned int mibOffset, MV_U32 *pHigh32)
 }
 
 /*******************************************************************************
-* mvEthMibCountersClear - Clear all MIB counters
+* mvGmacMibCountersClear - Clear all MIB counters
 *
 * DESCRIPTION:
 *       This function clears all MIB counters
@@ -712,7 +715,7 @@ MV_U32 mvEthMibCounterRead(int port, unsigned int mibOffset, MV_U32 *pHigh32)
 * RETURN:   void
 *
 *******************************************************************************/
-void mvEthMibCountersClear(int port)
+void mvGmacMibCountersClear(int port)
 {
 	int i;
 
@@ -725,11 +728,11 @@ void mvEthMibCountersClear(int port)
 		MV_REG_READ((ETH_MIB_COUNTERS_BASE(port) + i));
 }
 
-static void mvEthMibPrint(int port, MV_U32 offset, char *mib_name)
+static void mvGmacMibPrint(int port, MV_U32 offset, char *mib_name)
 {
 	MV_U32 regVaLo, regValHi = 0;
 
-	regVaLo = mvEthMibCounterRead(port, offset, &regValHi);
+	regVaLo = mvGmacMibCounterRead(port, offset, &regValHi);
 
 	if (!regValHi)
 		mvOsPrintf("  %-32s: 0x%02x = %u\n", mib_name, offset, regVaLo);
@@ -738,7 +741,7 @@ static void mvEthMibPrint(int port, MV_U32 offset, char *mib_name)
 }
 
 /* Print MIB counters of the Ethernet port */
-void mvEthMibCountersShow(int port)
+void mvGmacMibCountersShow(int port)
 {
 	if (mvPp2PortCheck(port))
 		return;
@@ -751,40 +754,40 @@ void mvEthMibCountersShow(int port)
 	mvOsPrintf("\nMIBs: port=%d, base=0x%x\n", port, ETH_MIB_COUNTERS_BASE(port));
 
 	mvOsPrintf("\n[Rx]\n");
-	mvEthMibPrint(port, ETH_MIB_GOOD_OCTETS_RECEIVED_LOW, "GOOD_OCTETS_RECEIVED");
-	mvEthMibPrint(port, ETH_MIB_BAD_OCTETS_RECEIVED, "BAD_OCTETS_RECEIVED");
-	mvEthMibPrint(port, ETH_MIB_UNICAST_FRAMES_RECEIVED, "UNCAST_FRAMES_RECEIVED");
-	mvEthMibPrint(port, ETH_MIB_BROADCAST_FRAMES_RECEIVED, "BROADCAST_FRAMES_RECEIVED");
-	mvEthMibPrint(port, ETH_MIB_MULTICAST_FRAMES_RECEIVED, "MULTICAST_FRAMES_RECEIVED");
+	mvGmacMibPrint(port, ETH_MIB_GOOD_OCTETS_RECEIVED_LOW, "GOOD_OCTETS_RECEIVED");
+	mvGmacMibPrint(port, ETH_MIB_BAD_OCTETS_RECEIVED, "BAD_OCTETS_RECEIVED");
+	mvGmacMibPrint(port, ETH_MIB_UNICAST_FRAMES_RECEIVED, "UNCAST_FRAMES_RECEIVED");
+	mvGmacMibPrint(port, ETH_MIB_BROADCAST_FRAMES_RECEIVED, "BROADCAST_FRAMES_RECEIVED");
+	mvGmacMibPrint(port, ETH_MIB_MULTICAST_FRAMES_RECEIVED, "MULTICAST_FRAMES_RECEIVED");
 
 	mvOsPrintf("\n[RMON]\n");
-	mvEthMibPrint(port, ETH_MIB_FRAMES_64_OCTETS, "FRAMES_64_OCTETS");
-	mvEthMibPrint(port, ETH_MIB_FRAMES_65_TO_127_OCTETS, "FRAMES_65_TO_127_OCTETS");
-	mvEthMibPrint(port, ETH_MIB_FRAMES_128_TO_255_OCTETS, "FRAMES_128_TO_255_OCTETS");
-	mvEthMibPrint(port, ETH_MIB_FRAMES_256_TO_511_OCTETS, "FRAMES_256_TO_511_OCTETS");
-	mvEthMibPrint(port, ETH_MIB_FRAMES_512_TO_1023_OCTETS, "FRAMES_512_TO_1023_OCTETS");
-	mvEthMibPrint(port, ETH_MIB_FRAMES_1024_TO_MAX_OCTETS, "FRAMES_1024_TO_MAX_OCTETS");
+	mvGmacMibPrint(port, ETH_MIB_FRAMES_64_OCTETS, "FRAMES_64_OCTETS");
+	mvGmacMibPrint(port, ETH_MIB_FRAMES_65_TO_127_OCTETS, "FRAMES_65_TO_127_OCTETS");
+	mvGmacMibPrint(port, ETH_MIB_FRAMES_128_TO_255_OCTETS, "FRAMES_128_TO_255_OCTETS");
+	mvGmacMibPrint(port, ETH_MIB_FRAMES_256_TO_511_OCTETS, "FRAMES_256_TO_511_OCTETS");
+	mvGmacMibPrint(port, ETH_MIB_FRAMES_512_TO_1023_OCTETS, "FRAMES_512_TO_1023_OCTETS");
+	mvGmacMibPrint(port, ETH_MIB_FRAMES_1024_TO_MAX_OCTETS, "FRAMES_1024_TO_MAX_OCTETS");
 
 	mvOsPrintf("\n[Tx]\n");
-	mvEthMibPrint(port, ETH_MIB_GOOD_OCTETS_SENT_LOW, "GOOD_OCTETS_SENT");
-	mvEthMibPrint(port, ETH_MIB_UNICAST_FRAMES_SENT, "UNICAST_FRAMES_SENT");
-	mvEthMibPrint(port, ETH_MIB_MULTICAST_FRAMES_SENT, "MULTICAST_FRAMES_SENT");
-	mvEthMibPrint(port, ETH_MIB_BROADCAST_FRAMES_SENT, "BROADCAST_FRAMES_SENT");
-	mvEthMibPrint(port, ETH_MIB_CRC_ERRORS_SENT, "CRC_ERRORS_SENT");
+	mvGmacMibPrint(port, ETH_MIB_GOOD_OCTETS_SENT_LOW, "GOOD_OCTETS_SENT");
+	mvGmacMibPrint(port, ETH_MIB_UNICAST_FRAMES_SENT, "UNICAST_FRAMES_SENT");
+	mvGmacMibPrint(port, ETH_MIB_MULTICAST_FRAMES_SENT, "MULTICAST_FRAMES_SENT");
+	mvGmacMibPrint(port, ETH_MIB_BROADCAST_FRAMES_SENT, "BROADCAST_FRAMES_SENT");
+	mvGmacMibPrint(port, ETH_MIB_CRC_ERRORS_SENT, "CRC_ERRORS_SENT");
 
 	mvOsPrintf("\n[FC control]\n");
-	mvEthMibPrint(port, ETH_MIB_FC_RECEIVED, "FC_RECEIVED");
-	mvEthMibPrint(port, ETH_MIB_FC_SENT, "FC_SENT");
+	mvGmacMibPrint(port, ETH_MIB_FC_RECEIVED, "FC_RECEIVED");
+	mvGmacMibPrint(port, ETH_MIB_FC_SENT, "FC_SENT");
 
 	mvOsPrintf("\n[Errors]\n");
-	mvEthMibPrint(port, ETH_MIB_RX_FIFO_OVERRUN, "ETH_MIB_RX_FIFO_OVERRUN");
-	mvEthMibPrint(port, ETH_MIB_UNDERSIZE_RECEIVED, "UNDERSIZE_RECEIVED");
-	mvEthMibPrint(port, ETH_MIB_FRAGMENTS_RECEIVED, "FRAGMENTS_RECEIVED");
-	mvEthMibPrint(port, ETH_MIB_OVERSIZE_RECEIVED, "OVERSIZE_RECEIVED");
-	mvEthMibPrint(port, ETH_MIB_JABBER_RECEIVED, "JABBER_RECEIVED");
-	mvEthMibPrint(port, ETH_MIB_MAC_RECEIVE_ERROR, "MAC_RECEIVE_ERROR");
-	mvEthMibPrint(port, ETH_MIB_BAD_CRC_EVENT, "BAD_CRC_EVENT");
-	mvEthMibPrint(port, ETH_MIB_COLLISION, "COLLISION");
+	mvGmacMibPrint(port, ETH_MIB_RX_FIFO_OVERRUN, "ETH_MIB_RX_FIFO_OVERRUN");
+	mvGmacMibPrint(port, ETH_MIB_UNDERSIZE_RECEIVED, "UNDERSIZE_RECEIVED");
+	mvGmacMibPrint(port, ETH_MIB_FRAGMENTS_RECEIVED, "FRAGMENTS_RECEIVED");
+	mvGmacMibPrint(port, ETH_MIB_OVERSIZE_RECEIVED, "OVERSIZE_RECEIVED");
+	mvGmacMibPrint(port, ETH_MIB_JABBER_RECEIVED, "JABBER_RECEIVED");
+	mvGmacMibPrint(port, ETH_MIB_MAC_RECEIVE_ERROR, "MAC_RECEIVE_ERROR");
+	mvGmacMibPrint(port, ETH_MIB_BAD_CRC_EVENT, "BAD_CRC_EVENT");
+	mvGmacMibPrint(port, ETH_MIB_COLLISION, "COLLISION");
 	/* This counter must be read last. Read it clear all the counters */
-	mvEthMibPrint(port, ETH_MIB_LATE_COLLISION, "LATE_COLLISION");
+	mvGmacMibPrint(port, ETH_MIB_LATE_COLLISION, "LATE_COLLISION");
 }

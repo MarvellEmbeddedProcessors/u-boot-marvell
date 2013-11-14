@@ -69,8 +69,6 @@ int mvPp2ClassifierDefInit()
 	if (mvPp2ClsInit())
 		return MV_ERROR;
 
-	/* WorkAround HW bug */
-	/*mvPp2ClsHwLastBitWorkAround();*/
 #ifdef CONFIG_MV_ETH_PP2_CLS2
 	if (mvPp2ClsC2Init())
 		return MV_ERROR;

@@ -60,6 +60,7 @@ disclaimer/
 #define EGIGA_TXQ_HWF_LEN   16
 #define EGIGA_TXQ_LEN       32
 #define EGIGA_RXQ_LEN       32
+#define EGIGA_TX_DESC_ALIGN 0x1F
 
 /* BM configuration */
 #define EGIGA_BM_POOL	    0
@@ -101,6 +102,8 @@ static int mv_eth_bm_init(MV_VOID)
 	MV_STATUS status;
 	unsigned char *pool_addr, *pool_addr_phys;
 
+	mvBmInit();
+
 	pool_addr = mvOsIoUncachedMalloc(NULL,
 		(sizeof(MV_U32) * EGIGA_BM_SIZE) + MV_BM_POOL_PTR_ALIGN, (MV_ULONG *)&pool_addr_phys, NULL);
 	if (!pool_addr) {
@@ -110,11 +113,16 @@ static int mv_eth_bm_init(MV_VOID)
 	if (MV_IS_NOT_ALIGN((MV_ULONG)pool_addr_phys, MV_BM_POOL_PTR_ALIGN))
 		pool_addr_phys = (unsigned char *)MV_ALIGN_UP((MV_ULONG)pool_addr_phys, MV_BM_POOL_PTR_ALIGN);
 
-	status = mvBmPoolInit(EGIGA_BM_POOL, (MV_ULONG)pool_addr_phys, EGIGA_BM_SIZE);
+	status = mvBmPoolInit(EGIGA_BM_POOL, (MV_U32 *)pool_addr, (MV_ULONG)pool_addr_phys, EGIGA_BM_SIZE);
 	if (status != MV_OK) {
 		printf("Can't init #%d BM pool. status=%d\n", EGIGA_BM_POOL, status);
 		return -1;
 	}
+
+#ifdef CONFIG_MV_ETH_PP2_1
+	/* Disable BM priority */
+	mvPp2WrReg(MV_BM_PRIO_CTRL_REG, 0);
+#endif
 
 	mvBmPoolControl(EGIGA_BM_POOL, MV_START);
 	mvPp2BmPoolBufSizeSet(EGIGA_BM_POOL, RX_BUFFER_SIZE);
@@ -225,7 +233,7 @@ static int mvEgigaLoad(int port, char *name, char *enet_addr)
 	egigaPriv *priv = NULL;
 
 	/* First disable GMAC */
-	mvEthPortDisable(priv->port);
+	mvGmacPortDisable(priv->port);
 
 	dev = malloc(sizeof(struct eth_device));
 	if (!dev) {
@@ -285,11 +293,11 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 		if (!MV_PON_PORT(priv->port)) {
 			phy_addr = mvBoardPhyAddrGet(priv->port);
 			if (phy_addr != -1) {
-				mvEthPhyAddrSet(priv->port, phy_addr);
+				mvGmacPhyAddrSet(priv->port, phy_addr);
 				mvEthPhyInit(priv->port, MV_FALSE);
 			}
 
-			mvEthPortPowerUp(priv->port,
+			mvGmacPortPowerUp(priv->port,
 				MV_FALSE/*mvBoardIsPortInSgmii(priv->port)*/,
 				MV_FALSE/*mvBoardIsPortInRgmii(priv->port)*/);
 		}
@@ -315,7 +323,9 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 			printf("Txq Init Failed\n");
 			goto error;
 		}
-		mvPp2RxqBmPoolSet(priv->port, EGIGA_DEF_RXQ, EGIGA_BM_POOL, EGIGA_BM_POOL);
+		mvPp2RxqBmLongPoolSet(priv->port, EGIGA_DEF_RXQ, EGIGA_BM_POOL);
+		mvPp2RxqBmShortPoolSet(priv->port, EGIGA_DEF_RXQ, EGIGA_BM_POOL);
+
 		mvPp2RxqNonOccupDescAdd(priv->port, EGIGA_DEF_RXQ, EGIGA_RXQ_LEN);
 
 		mvPp2TxpMaxTxSizeSet(priv->port, EGIGA_DEF_TXP, RX_PKT_SIZE);
@@ -339,22 +349,22 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 			/* do nothing */
 			break;
 		}
-		if (mvEthForceLinkModeSet(priv->port, MV_TRUE, MV_FALSE)) {
+		if (mvGmacForceLinkModeSet(priv->port, MV_TRUE, MV_FALSE)) {
 			printf("mvEthForceLinkModeSet failed\n");
 			goto error;
 		}
-		if (mvEthSpeedDuplexSet(priv->port, speed, MV_ETH_DUPLEX_FULL)) {
+		if (mvGmacSpeedDuplexSet(priv->port, speed, MV_ETH_DUPLEX_FULL)) {
 			printf("mvEthSpeedDuplexSet failed\n");
 			goto error;
 		}
-		if (mvEthFlowCtrlSet(priv->port, MV_ETH_FC_DISABLE)) {
+		if (mvGmacFlowCtrlSet(priv->port, MV_ETH_FC_DISABLE)) {
 			printf("mvEthFlowCtrlSet failed\n");
 			goto error;
 		}
 	}
 
 	/* allow new packets to RXQs */
-	mvPrsMacDropAllSet(priv->port, 0);
+	mvPp2PortIngressEnable(priv->port, 1);
 
 	/* classifier port default config */
 	phys_queue = mvPp2LogicRxqToPhysRxq(priv->port, EGIGA_DEF_RXQ);
@@ -378,7 +388,7 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 	/* start the hal - rx/tx activity */
 	/* Check if link is up for 2 Sec */
 	for (i = 1; i < 100; i++) {
-		status = mvPp2PortEnable(priv->port);
+		status = mvPp2PortEnable(priv->port, 1);
 		if (status == MV_OK) {
 			priv->devEnable = MV_TRUE;
 			break;
@@ -389,6 +399,8 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 		printf("%s: %s mvPp2PortEnable failed (error)\n", __func__, dev->name);
 		goto error;
 	}
+
+	mvPp2PortEgressEnable(priv->port, 1);
 
 	return 1;
 error:
@@ -406,17 +418,18 @@ static int mvEgigaHalt(struct eth_device *dev)
 
 	if (priv->devInit == MV_TRUE && priv->devEnable == MV_TRUE) {
 		/* stop new packets from arriving to RXQs */
-		mvPrsMacDropAllSet(priv->port, 1);
+
+		mvPp2PortIngressEnable(priv->port, 0);
 
 		/* stop the port activity, mask all interrupts */
-		if (mvPp2PortDisable(priv->port) != MV_OK)
+		if (mvPp2PortEnable(priv->port, 0) != MV_OK)
 			printf("mvPp2PortDisable failed (error)\n");
 		priv->devEnable = MV_FALSE;
 	}
 
 	mv_eth_bm_stop();
 
-	mvEthPortDisable(priv->port);
+	mvGmacPortDisable(priv->port);
 
 	return 0;
 }
@@ -445,7 +458,8 @@ static int mvEgigaTx(struct eth_device *dev, volatile void *buf, int len)
 	/* set descriptor fields */
 	pDesc->command = 0 | PP2_TX_L4_CSUM_NOT | PP2_TX_F_DESC_MASK | PP2_TX_L_DESC_MASK;
 	pDesc->dataSize = len;
-	pDesc->bufPhysAddr = (MV_U32)buf;
+	pDesc->pktOffset = (MV_U32)buf & EGIGA_TX_DESC_ALIGN;
+	pDesc->bufPhysAddr = (MV_U32)buf & (~EGIGA_TX_DESC_ALIGN);
 	pDesc->bufCookie = (MV_U32)buf;
 	pDesc->physTxq = MV_PPV2_TXQ_PHYS(priv->port, EGIGA_DEF_TXP, EGIGA_DEF_TXQ);
 
@@ -458,6 +472,9 @@ static int mvEgigaTx(struct eth_device *dev, volatile void *buf, int len)
 	/* send */
 	mvPp2AggrTxqPendDescAdd(1);
 
+	/* Enable TXQ drain */
+	mvPp2TxqDrainSet(priv->port, EGIGA_DEF_TXP, EGIGA_DEF_TXQ, MV_TRUE);
+
 	/* Tx done processing */
 	/* wait for agrregated to physical TXQ transfer */
 	txDone = mvPp2AggrTxqPendDescNumGet(0);
@@ -468,6 +485,9 @@ static int mvEgigaTx(struct eth_device *dev, volatile void *buf, int len)
 		}
 		txDone = mvPp2AggrTxqPendDescNumGet(0);
 	}
+
+	/* Disable TXQ drain */
+	mvPp2TxqDrainSet(priv->port, EGIGA_DEF_TXP, EGIGA_DEF_TXQ, MV_FALSE);
 
 	timeout = 0;
 	txDone = mvPp2TxqSentDescProc(priv->port, EGIGA_DEF_TXP, EGIGA_DEF_TXQ);

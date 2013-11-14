@@ -79,10 +79,14 @@ void        mvPp2PlcrHwRegs(void)
 
 	mvOsPrintf("\n[PLCR registers: %d policers]\n", MV_PP2_PLCR_NUM);
 
-	mvPp2PrintReg(MV_PP2_PLCR_ENABLE_REG,      "MV_PP2_PLCR_ENABLE_REG");
-	mvPp2PrintReg(MV_PP2_PLCR_BASE_PERIOD_REG, "MV_PP2_PLCR_BASE_PERIOD_REG");
-	mvPp2PrintReg(MV_PP2_PLCR_MIN_PKT_LEN_REG,   "MV_PP2_PLCR_MIN_PKT_LEN_REG");
-	mvPp2PrintReg(MV_PP2_PLCR_EDROP_EN_REG,      "MV_PP2_PLCR_EDROP_EN_REG");
+#ifdef CONFIG_MV_ETH_PP2_1
+	mvPp2PrintReg(MV_PP2_PLCR_MODE_REG,	"MV_PP2_PLCR_MODE_REG");
+#else
+	mvPp2PrintReg(MV_PP2_PLCR_ENABLE_REG,	"MV_PP2_PLCR_ENABLE_REG");
+#endif
+	mvPp2PrintReg(MV_PP2_PLCR_BASE_PERIOD_REG,	"MV_PP2_PLCR_BASE_PERIOD_REG");
+	mvPp2PrintReg(MV_PP2_PLCR_MIN_PKT_LEN_REG,	"MV_PP2_PLCR_MIN_PKT_LEN_REG");
+	mvPp2PrintReg(MV_PP2_PLCR_EDROP_EN_REG,		"MV_PP2_PLCR_EDROP_EN_REG");
 
 	for (i = 0; i < MV_PP2_PLCR_NUM; i++) {
 		mvOsPrintf("\n[Policer %d registers]\n", i);
@@ -95,10 +99,18 @@ void        mvPp2PlcrHwRegs(void)
 	}
 
 	mvOsPrintf("\nEarly Drop Thresholds for SW and HW forwarding\n");
-	for (i = 0; i < MV_PP2_PLCR_EDROP_THRESH_NUM; i += 2) {
-		mvPp2PrintReg2(MV_PP2_PLCR_EDROP_CPU_TR_REG(i),   "MV_PP2_PLCR_EDROP_CPU_TR_REG", i);
-		mvPp2PrintReg2(MV_PP2_PLCR_EDROP_HWF_TR_REG(i),   "MV_PP2_PLCR_EDROP_HWF_TR_REG", i);
+#ifdef CONFIG_MV_ETH_PP2_1
+	for (i = 0; i < MV_PP2_V1_PLCR_EDROP_THRESH_NUM; i++) {
+		mvPp2PrintReg2(MV_PP2_V1_PLCR_EDROP_CPU_TR_REG(i),   "MV_PP2_V1_PLCR_EDROP_CPU_TR_REG", i);
+		mvPp2PrintReg2(MV_PP2_V1_PLCR_EDROP_HWF_TR_REG(i),   "MV_PP2_V1_PLCR_EDROP_HWF_TR_REG", i);
 	}
+#else
+
+	for (i = 0; i < MV_PP2_V0_PLCR_EDROP_THRESH_NUM; i++) {
+		mvPp2PrintReg2(MV_PP2_V0_PLCR_EDROP_CPU_TR_REG(i),   "MV_PP2_V0_PLCR_EDROP_CPU_TR_REG", i);
+		mvPp2PrintReg2(MV_PP2_V0_PLCR_EDROP_HWF_TR_REG(i),   "MV_PP2_V0_PLCR_EDROP_HWF_TR_REG", i);
+	}
+#endif
 	mvOsPrintf("\nPer RXQ: Non zero early drop thresholds\n");
 	for (i = 0; i < MV_ETH_RXQ_TOTAL_NUM; i++) {
 		mvPp2WrReg(MV_PP2_PLCR_EDROP_RXQ_REG, i);
@@ -135,24 +147,31 @@ static void        mvPp2PlcrHwDumpTitle(void)
 
 static void        mvPp2PlcrHwDump(int plcr)
 {
-	int units, type, tokens, color;
+	int units, type, tokens, color, enable;
 	MV_U32 regVal;
 
 	mvPp2WrReg(MV_PP2_PLCR_TABLE_INDEX_REG, plcr);
 	mvOsPrintf("%3d:  ", plcr);
-	regVal = mvPp2RdReg(MV_PP2_PLCR_ENABLE_REG);
-	mvOsPrintf("%4s", MV_BIT_CHECK(regVal, plcr) ? "Yes" : "No");
 
-	regVal = mvPp2RdReg(MV_PP2_PLCR_BASE_PERIOD_REG);
-	mvOsPrintf("  %6d", regVal & MV_PP2_PLCR_BASE_PERIOD_ALL_MASK);
+#ifndef CONFIG_MV_ETH_PP2_1
+	enable = mvPp2RdReg(MV_PP2_PLCR_ENABLE_REG);
+	mvOsPrintf("%4s", MV_BIT_CHECK(enable, plcr) ? "Yes" : "No");
+#endif
 
 	regVal = mvPp2RdReg(MV_PP2_PLCR_TOKEN_CFG_REG);
 	units = regVal & MV_PP2_PLCR_TOKEN_UNIT_MASK;
 	color = regVal & MV_PP2_PLCR_COLOR_MODE_MASK;
 	type = (regVal & MV_PP2_PLCR_TOKEN_TYPE_ALL_MASK) >> MV_PP2_PLCR_TOKEN_TYPE_OFFS;
 	tokens =  (regVal & MV_PP2_PLCR_TOKEN_VALUE_ALL_MASK) >> MV_PP2_PLCR_TOKEN_VALUE_OFFS;
+#ifdef CONFIG_MV_ETH_PP2_1
+	enable = regVal & MV_PP2_PLCR_ENABLE_MASK;
+	mvOsPrintf("%4s", enable ? "Yes" : "No");
+#endif
 	mvOsPrintf("   %-5s  %2d   %5d", units ? "pkts" : "bytes", type, tokens);
 	mvOsPrintf("  %-5s", color ? "aware" : "blind");
+
+	regVal = mvPp2RdReg(MV_PP2_PLCR_BASE_PERIOD_REG);
+	mvOsPrintf("  %6d", regVal & MV_PP2_PLCR_BASE_PERIOD_ALL_MASK);
 
 	regVal = mvPp2RdReg(MV_PP2_PLCR_BUCKET_SIZE_REG);
 	mvOsPrintf("    %04x    %04x",
@@ -210,17 +229,25 @@ MV_STATUS   mvPp2PlcrHwBasePeriodSet(int period)
 	return MV_OK;
 }
 
+MV_STATUS   mvPp2PlcrHwMode(int mode)
+{
+	mvPp2WrReg(MV_PP2_PLCR_MODE_REG, mode);
+	return MV_OK;
+}
+
 MV_STATUS   mvPp2PlcrHwEnable(int plcr, int enable)
 {
 	MV_U32 regVal;
 
-	regVal = mvPp2RdReg(MV_PP2_PLCR_ENABLE_REG);
-	if (enable)
-		regVal |= MV_PP2_PLCR_EN_MASK(plcr);
-	else
-		regVal &= ~MV_PP2_PLCR_EN_MASK(plcr);
+	mvPp2WrReg(MV_PP2_PLCR_TABLE_INDEX_REG, plcr);
 
-	mvPp2WrReg(MV_PP2_PLCR_ENABLE_REG, regVal);
+	regVal = mvPp2RdReg(MV_PP2_PLCR_TOKEN_CFG_REG);
+	if (enable)
+		regVal |= MV_PP2_PLCR_ENABLE_MASK;
+	else
+		regVal &= ~MV_PP2_PLCR_ENABLE_MASK;
+
+	mvPp2WrReg(MV_PP2_PLCR_TOKEN_CFG_REG, regVal);
 
 	return MV_OK;
 }
@@ -312,27 +339,43 @@ MV_STATUS   mvPp2PlcrHwBucketSizeSet(int plcr, int commit, int excess)
 
 	return MV_OK;
 }
-
-MV_STATUS   mvPp2PlcrHwCpuThreshSet(int idx, int threshold)
+/*ppv2.1 policer early drop threshold mechanism changed*/
+MV_STATUS   mvPp2V0PlcrHwCpuThreshSet(int idx, int threshold)
 {
 	MV_U32 regVal;
 
-	regVal = mvPp2RdReg(MV_PP2_PLCR_EDROP_CPU_TR_REG(idx));
-	regVal &= ~MV_PP2_PLCR_EDROP_TR_ALL_MASK(idx);
-	regVal |= MV_PP2_PLCR_EDROP_TR_MASK(idx, threshold);
-	mvPp2WrReg(MV_PP2_PLCR_EDROP_CPU_TR_REG(idx), regVal);
+	regVal = mvPp2RdReg(MV_PP2_V0_PLCR_EDROP_CPU_TR_REG(idx));
+	regVal &= ~MV_PP2_V0_PLCR_EDROP_TR_ALL_MASK(idx);
+	regVal |= MV_PP2_V0_PLCR_EDROP_TR_MASK(idx, threshold);
+	mvPp2WrReg(MV_PP2_V0_PLCR_EDROP_CPU_TR_REG(idx), regVal);
+
+	return MV_OK;
+}
+/*ppv2.1 policer early drop threshold mechanism changed*/
+MV_STATUS   mvPp2V1PlcrHwCpuThreshSet(int idx, int threshold)
+{
+	mvPp2WrReg(MV_PP2_V1_PLCR_EDROP_CPU_TR_REG(idx), threshold);
 
 	return MV_OK;
 }
 
-MV_STATUS   mvPp2PlcrHwHwfThreshSet(int idx, int threshold)
+/*ppv2.1 policer early drop threshold mechanism changed*/
+MV_STATUS   mvPp2V0PlcrHwHwfThreshSet(int idx, int threshold)
 {
 	MV_U32 regVal;
 
-	regVal = mvPp2RdReg(MV_PP2_PLCR_EDROP_HWF_TR_REG(idx));
-	regVal &= ~MV_PP2_PLCR_EDROP_TR_ALL_MASK(idx);
-	regVal |= MV_PP2_PLCR_EDROP_TR_MASK(idx, threshold);
-	mvPp2WrReg(MV_PP2_PLCR_EDROP_HWF_TR_REG(idx), regVal);
+	regVal = mvPp2RdReg(MV_PP2_V0_PLCR_EDROP_HWF_TR_REG(idx));
+	regVal &= ~MV_PP2_V0_PLCR_EDROP_TR_ALL_MASK(idx);
+	regVal |= MV_PP2_V0_PLCR_EDROP_TR_MASK(idx, threshold);
+	mvPp2WrReg(MV_PP2_V0_PLCR_EDROP_HWF_TR_REG(idx), regVal);
+
+	return MV_OK;
+}
+
+/*ppv2.1 policer early drop threshold mechanism changed*/
+MV_STATUS   mvPp2V1PlcrHwHwfThreshSet(int idx, int threshold)
+{
+	mvPp2WrReg(MV_PP2_V1_PLCR_EDROP_HWF_TR_REG(idx), threshold);
 
 	return MV_OK;
 }
@@ -351,4 +394,12 @@ MV_STATUS   mvPp2PlcrHwTxqThreshSet(int txq, int idx)
 	mvPp2WrReg(MV_PP2_PLCR_EDROP_TXQ_TR_REG, idx);
 
 	return MV_OK;
+}
+
+void mvPp2V1PlcrTbCntDump(int plcr)
+{
+	mvPp2PrintReg2(MV_PP2_V1_PLCR_PKT_GREEN_REG(plcr), "MV_PP2_V1_PLCR_PKT_GREEN_REG", plcr);
+	mvPp2PrintReg2(MV_PP2_V1_PLCR_PKT_YELLOW_REG(plcr), "MV_PP2_V1_PLCR_PKT_YELLOW_REG", plcr);
+	mvPp2PrintReg2(MV_PP2_V1_PLCR_PKT_RED_REG(plcr), "MV_PP2_V1_PLCR_PKT_RED_REG", plcr);
+
 }

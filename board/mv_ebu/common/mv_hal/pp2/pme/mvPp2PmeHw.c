@@ -107,8 +107,8 @@ static char *mvPp2PmeCmdName(enum MV_PP2_PME_CMD_E cmd)
 	case MV_PP2_PME_CMD_REPLACE_MID: return "REPLACE_MID";
 	case MV_PP2_PME_CMD_ADD_MULT:	return "ADD_MULT";
 	case MV_PP2_PME_CMD_REPLACE_MULT: return "REPLACE_MULT";
-	case MV_PP2_PME_CMD_RESERVED_1:
-	case MV_PP2_PME_CMD_RESERVED_2:	return "RESERVED";
+	case MV_PP2_PME_CMD_REPLACE_REM_2B: return "REPLACE_REM_2B"; /* For PPv2.1 - A0 only, MAS 3.3 */
+	case MV_PP2_PME_CMD_ADD_IP6_HDR: return "ADD_IP6_HDR";       /* For PPv2.1 - A0 only, MAS 3.15 */
 	case MV_PP2_PME_CMD_DROP_PKT:	return "DROP";
 	default:
 		return "UNKNOWN";

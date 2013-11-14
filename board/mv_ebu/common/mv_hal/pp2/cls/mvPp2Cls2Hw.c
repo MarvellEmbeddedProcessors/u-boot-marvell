@@ -406,7 +406,10 @@ int mvPp2ClsC2HwWrite(int index, MV_PP2_CLS_C2_ENTRY *c2)
 
 	/* write dup_attr 0x1B6C */
 	mvPp2WrReg(MV_PP2_CLS2_ACT_DUP_ATTR_REG, c2->sram.regs.dup_attr);
-
+#ifdef CONFIG_MV_ETH_PP2_1
+	/* write seq_attr 0x1B70 */
+	mvPp2WrReg(MV_PP2_CLS2_ACT_SEQ_ATTR_REG, c2->sram.regs.seq_attr);
+#endif
 	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
@@ -451,6 +454,11 @@ int mvPp2ClsC2HwRead(int index, MV_PP2_CLS_C2_ENTRY *c2)
 
 	/* read dup_attr 0x1B6C */
 	c2->sram.regs.dup_attr = mvPp2RdReg(MV_PP2_CLS2_ACT_DUP_ATTR_REG);
+
+#ifdef CONFIG_MV_ETH_PP2_1
+	/* read seq_attr 0x1B70 */
+	c2->sram.regs.seq_attr = mvPp2RdReg(MV_PP2_CLS2_ACT_SEQ_ATTR_REG);
+#endif
 
 	return MV_OK;
 }
@@ -536,41 +544,17 @@ int mvPp2ClsC2SwDump(MV_PP2_CLS_C2_ENTRY *c2)
 
 	mvOsPrintf("ACT_CMD:		COLOR	PRIO	DSCP	GEMID	LOW_Q	HIGH_Q	FWD	POLICER	FID\n");
 	mvOsPrintf("			");
-	/* color command*/
-	int32bit =  ((c2->sram.regs.actions & ACT_COLOR_MASK) >> ACT_COLOR);
-	mvOsPrintf("%1.1d\t", int32bit);
 
-	/* pri command*/
-	int32bit =  ((c2->sram.regs.actions & ACT_PRI_MASK) >> ACT_PRI);
-	mvOsPrintf("%1.1d\t", int32bit);
-
-	/* dscp command*/
-	int32bit =  ((c2->sram.regs.actions & ACT_DSCP_MASK) >> ACT_DSCP);
-	mvOsPrintf("%1.1d\t", int32bit);
-
-	/* gemport id command*/
-	int32bit =  ((c2->sram.regs.actions & ACT_GEM_ID_MASK) >> ACT_GEM_ID);
-	mvOsPrintf("%1.1d\t", int32bit);
-
-	/* queue low command*/
-	int32bit =  ((c2->sram.regs.actions & ACT_LOW_Q_MASK) >> ACT_LOW_Q);
-	mvOsPrintf("%1.1d\t", int32bit);
-
-	/* queue high command*/
-	int32bit =  ((c2->sram.regs.actions & ACT_HIGH_Q_MASK) >> ACT_HIGH_Q);
-	mvOsPrintf("%1.1d\t", int32bit);
-
-	/* forwarding command*/
-	int32bit =  ((c2->sram.regs.actions & ACT_FWD_MASK) >> ACT_FWD);
-	mvOsPrintf("%1.1d\t", int32bit);
-
-	/* policer select command*/
-	int32bit =  ((c2->sram.regs.actions & ACT_POLICER_SELECT_MASK) >> ACT_POLICER_SELECT);
-	mvOsPrintf("%1.1d\t", int32bit);
-
-	/* flow id en */
-	int32bit =  ((c2->sram.regs.actions & ACT_FLOW_ID_EN_MASK) >> ACT_FLOW_ID_EN);
-	mvOsPrintf("%1.1d\t", int32bit);
+	mvOsPrintf("%1.1d\t%1.1d\t%1.1d\t%1.1d\t%1.1d\t%1.1d\t%1.1d\t%1.1d\t%1.1d\t",
+			((c2->sram.regs.actions & ACT_COLOR_MASK) >> ACT_COLOR),
+			((c2->sram.regs.actions & ACT_PRI_MASK) >> ACT_PRI),
+			((c2->sram.regs.actions & ACT_DSCP_MASK) >> ACT_DSCP),
+			((c2->sram.regs.actions & ACT_GEM_ID_MASK) >> ACT_GEM_ID),
+			((c2->sram.regs.actions & ACT_LOW_Q_MASK) >> ACT_LOW_Q),
+			((c2->sram.regs.actions & ACT_HIGH_Q_MASK) >> ACT_HIGH_Q),
+			((c2->sram.regs.actions & ACT_FWD_MASK) >> ACT_FWD),
+			((c2->sram.regs.actions & ACT_POLICER_SELECT_MASK) >> ACT_POLICER_SELECT),
+			((c2->sram.regs.actions & ACT_FLOW_ID_EN_MASK) >> ACT_FLOW_ID_EN));
 	mvOsPrintf("\n\n");
 
 
@@ -611,8 +595,11 @@ int mvPp2ClsC2SwDump(MV_PP2_CLS_C2_ENTRY *c2)
 	/*------------------------------*/
 	/*	hwf_attr 0x1B68		*/
 	/*------------------------------*/
-
+#ifdef CONFIG_MV_ETH_PP2_1
+	mvOsPrintf("HWF_ATTR:		IPTR	DPTR	CHKSM   MTU_IDX\n");
+#else
 	mvOsPrintf("HWF_ATTR:		IPTR	DPTR	CHKSM\n");
+#endif
 	mvOsPrintf("			");
 
 	/* HWF modification instraction pointer */
@@ -625,29 +612,46 @@ int mvPp2ClsC2SwDump(MV_PP2_CLS_C2_ENTRY *c2)
 
 	/* HWF modification instraction pointer */
 	int32bit =  ((c2->sram.regs.hwf_attr & ACT_HWF_ATTR_CHKSM_EN_MASK) >> ACT_HWF_ATTR_CHKSM_EN);
-	mvOsPrintf("%s\t", int32bit ? "ENABLE" : "DISABLE");
+	mvOsPrintf("%s\t", int32bit ? "ENABLE " : "DISABLE");
+
+#ifdef CONFIG_MV_ETH_PP2_1
+	/* mtu index */
+	int32bit =  ((c2->sram.regs.hwf_attr & ACT_HWF_ATTR_MTU_INX_MASK) >> ACT_HWF_ATTR_MTU_INX);
+	mvOsPrintf("0x%1.1x\t", int32bit);
+#endif
 	mvOsPrintf("\n\n");
 
 	/*------------------------------*/
 	/*	dup_attr 0x1B6C		*/
 	/*------------------------------*/
-
-	mvOsPrintf("DUP_ATTR:		FID	COUNT	POLICER\n");
-	mvOsPrintf("		");
-
-	/* HW duplication fid */
-	int32bit =  ((c2->sram.regs.dup_attr & ACT_DUP_FID_MASK) >> ACT_DUP_FID);
-	mvOsPrintf("	0x%2.2x\t", int32bit);
-
-	/* HW duplication count */
-	int32bit =  ((c2->sram.regs.dup_attr & ACT_DUP_COUNT_MASK) >> ACT_DUP_COUNT);
-	mvOsPrintf("0x%1.1x\t", int32bit);
-
-	/* policer id */
-	int32bit =  ((c2->sram.regs.dup_attr & ACT_DUP_POLICER_MASK) >> ACT_DUP_POLICER_ID);
-	mvOsPrintf("0x%1.1x\t", int32bit);
+#ifdef CONFIG_MV_ETH_PP2_1
+	mvOsPrintf("DUP_ATTR:		FID	COUNT	POLICER [id    bank]\n");
+	mvOsPrintf("			0x%2.2x\t0x%1.1x\t\t[0x%2.2x   0x%1.1x]\n",
+		((c2->sram.regs.dup_attr & ACT_DUP_FID_MASK) >> ACT_DUP_FID),
+		((c2->sram.regs.dup_attr & ACT_DUP_COUNT_MASK) >> ACT_DUP_COUNT),
+		((c2->sram.regs.dup_attr & ACT_DUP_POLICER_MASK) >> ACT_DUP_POLICER_ID),
+		((c2->sram.regs.dup_attr & ACT_DUP_POLICER_BANK_MASK) >> ACT_DUP_POLICER_BANK_BIT));
+	mvOsPrintf("\n");
+	/*------------------------------*/
+	/*	seq_attr 0x1B70		*/
+	/*------------------------------*/
+	/*PPv2.1 new feature MAS 3.14*/
+	mvOsPrintf("SEQ_ATTR:		ID	MISS\n");
+	mvOsPrintf("			0x%2.2x    0x%2.2x\n",
+			((c2->sram.regs.seq_attr & ACT_SEQ_ATTR_ID_MASK) >> ACT_SEQ_ATTR_ID),
+			((c2->sram.regs.seq_attr & ACT_SEQ_ATTR_MISS_MASK) >> ACT_SEQ_ATTR_MISS));
 
 	mvOsPrintf("\n\n");
+
+#else
+	mvOsPrintf("DUP_ATTR:		FID	COUNT	POLICER\n");
+	mvOsPrintf("	0x%2.2x\t0x%1.1x\t0x%2.2x",
+		((c2->sram.regs.dup_attr & ACT_DUP_FID_MASK) >> ACT_DUP_FID),
+		((c2->sram.regs.dup_attr & ACT_DUP_COUNT_MASK) >> ACT_DUP_COUNT),
+		((c2->sram.regs.dup_attr & ACT_DUP_POLICER_MASK) >> ACT_DUP_POLICER_ID));
+
+	mvOsPrintf("\n\n");
+#endif
 
 	return MV_OK;
 }
@@ -675,6 +679,7 @@ void 	mvPp2ClsC2HwClearAll()
 int 	mvPp2ClsC2HwDump()
 {
 	int index;
+	unsigned cnt;
 
 	MV_PP2_CLS_C2_ENTRY c2;
 
@@ -684,6 +689,8 @@ int 	mvPp2ClsC2HwDump()
 		mvPp2ClsC2HwRead(index, &c2);
 		if (c2.inv == 0) {
 			mvPp2ClsC2SwDump(&c2);
+			mvPp2ClsC2HitCntrRead(index, &cnt);
+			mvOsPrintf("HITS: %d\n", cnt);
 			mvOsPrintf("-----------------------------------------------------------------\n");
 		}
 	}
@@ -953,7 +960,30 @@ int mvPp2ClsC2ForwardSet(MV_PP2_CLS_C2_ENTRY *c2, int cmd)
 	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
+#ifdef CONFIG_MV_ETH_PP2_1
+int mvPp2ClsC2PolicerSet(MV_PP2_CLS_C2_ENTRY *c2, int cmd, int policerId, int bank)
+{
+	PTR_VALIDATE(c2);
+	POS_RANGE_VALIDATE(cmd, UPDATE_AND_LOCK);
+	POS_RANGE_VALIDATE(policerId, ACT_DUP_POLICER_MAX);
+	BIT_RANGE_VALIDATE(bank);
 
+	c2->sram.regs.actions &= ~ACT_POLICER_SELECT_MASK;
+	c2->sram.regs.actions |= (cmd << ACT_POLICER_SELECT);
+
+	c2->sram.regs.dup_attr &= ~ACT_DUP_POLICER_MASK;
+	c2->sram.regs.dup_attr |= (policerId << ACT_DUP_POLICER_ID);
+
+	if (bank)
+		c2->sram.regs.dup_attr |= ACT_DUP_POLICER_BANK_MASK;
+	else
+		c2->sram.regs.dup_attr &= ~ACT_DUP_POLICER_BANK_MASK;
+
+	return MV_OK;
+
+}
+
+#else
 int mvPp2ClsC2PolicerSet(MV_PP2_CLS_C2_ENTRY *c2, int cmd, int policerId)
 {
 	PTR_VALIDATE(c2);
@@ -965,6 +995,21 @@ int mvPp2ClsC2PolicerSet(MV_PP2_CLS_C2_ENTRY *c2, int cmd, int policerId)
 
 	c2->sram.regs.dup_attr &= ~ACT_DUP_POLICER_MASK;
 	c2->sram.regs.dup_attr |= (policerId << ACT_DUP_POLICER_ID);
+	return MV_OK;
+}
+#endif /*CONFIG_MV_ETH_PP2_1*/
+ /*-------------------------------------------------------------------------------*/
+
+int mvPp2ClsC2FlowIdEn(MV_PP2_CLS_C2_ENTRY *c2, int flowid_en)
+{
+	PTR_VALIDATE(c2);
+
+	/*set Flow ID enable or disable*/
+	if (flowid_en)
+		c2->sram.regs.actions |= (1 << ACT_FLOW_ID_EN);
+	else
+		c2->sram.regs.actions &= ~(1 << ACT_FLOW_ID_EN);
+
 	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
@@ -986,6 +1031,22 @@ int mvPp2ClsC2ModSet(MV_PP2_CLS_C2_ENTRY *c2, int data_ptr, int instr_offs, int 
 
 	return MV_OK;
 }
+
+/*-------------------------------------------------------------------------------*/
+
+/*  PPv2.1 (feature MAS 3.7) new feature - set mtu index */
+
+int mvPp2ClsC2MtuSet(MV_PP2_CLS_C2_ENTRY *c2, int mtu_inx)
+{
+	PTR_VALIDATE(c2);
+	POS_RANGE_VALIDATE(mtu_inx, ACT_HWF_ATTR_MTU_INX_MAX);
+
+	c2->sram.regs.hwf_attr &= ~ACT_HWF_ATTR_MTU_INX_MASK;
+	c2->sram.regs.hwf_attr |= (mtu_inx << ACT_HWF_ATTR_MTU_INX);
+
+	return MV_OK;
+}
+
 /*-------------------------------------------------------------------------------*/
 
 int mvPp2ClsC2DupSet(MV_PP2_CLS_C2_ENTRY *c2, int dupid, int count)
@@ -994,13 +1055,26 @@ int mvPp2ClsC2DupSet(MV_PP2_CLS_C2_ENTRY *c2, int dupid, int count)
 	POS_RANGE_VALIDATE(count, ACT_DUP_COUNT_MAX);
 	POS_RANGE_VALIDATE(dupid, ACT_DUP_FID_MAX);
 
-	/*set Flow ID enable*/
-	c2->sram.regs.actions |= (1 << ACT_FLOW_ID_EN);
-
 	/*set flowid and count*/
 	c2->sram.regs.dup_attr &= ~(ACT_DUP_FID_MASK | ACT_DUP_COUNT_MASK);
 	c2->sram.regs.dup_attr |= (dupid << ACT_DUP_FID);
 	c2->sram.regs.dup_attr |= (count << ACT_DUP_COUNT);
+
+	return MV_OK;
+}
+
+/*-------------------------------------------------------------------------------*/
+/*
+  PPv2.1 (feature MAS 3.14) SEQ_ATTR new register in action table
+ */
+int mvPp2ClsC2SeqSet(MV_PP2_CLS_C2_ENTRY *c2, int miss, int id)
+{
+	PTR_VALIDATE(c2);
+	POS_RANGE_VALIDATE(miss, 1);
+	POS_RANGE_VALIDATE(id, ACT_SEQ_ATTR_ID_MAX);
+
+	c2->sram.regs.seq_attr = 0;
+	c2->sram.regs.seq_attr = ((id << ACT_SEQ_ATTR_ID) | (miss << ACT_SEQ_ATTR_MISS));
 
 	return MV_OK;
 }
@@ -1040,17 +1114,11 @@ int mvPp2ClsC2HitCntrsIsBusy(void)
 int mvPp2ClsC2HitCntrRead(int index, MV_U32 *cntr)
 {
 	unsigned int value = 0;
-/*
-	if (cntr == NULL) {
-		mvOsPrintf("mvCls2Hw %s: null pointer.\n", __func__);
-		return MV_CLS2_ERR;
-	}
-*/
+
 	/* write index reg */
 	mvPp2WrReg(MV_PP2_CLS2_TCAM_IDX_REG, index);
 
 	value = mvPp2RdReg(MV_PP2_CLS2_HIT_CTR_REG);
-	value &= MV_PP2_CLS2_HIT_CTR_MASK;
 
 	if (cntr)
 		*cntr = value;
@@ -1097,7 +1165,9 @@ int mvPp2ClsC2RegsDump()
 	mvPp2PrintReg(MV_PP2_CLS2_ACT_QOS_ATTR_REG, "MV_PP2_CLS2_ACT_QOS_ATTR_REG");
 	mvPp2PrintReg(MV_PP2_CLS2_ACT_HWF_ATTR_REG, "MV_PP2_CLS2_ACT_HWF_ATTR_REG");
 	mvPp2PrintReg(MV_PP2_CLS2_ACT_DUP_ATTR_REG, "MV_PP2_CLS2_ACT_DUP_ATTR_REG");
-
+#ifdef CONFIG_MV_ETH_PP2_1
+	mvPp2PrintReg(MV_PP2_CLS2_ACT_SEQ_ATTR_REG, "MV_PP2_CLS2_ACT_SEQ_ATTR_REG");
+#endif
 	return MV_OK;
 }
 

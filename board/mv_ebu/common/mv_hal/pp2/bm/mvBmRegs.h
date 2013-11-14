@@ -120,7 +120,7 @@ extern "C" {
 /*-------------------------------------------------------------------------------*/
 
 /* BM Activation Register */
-#define MV_BM_POOL_CTRL_REG(pool)       (MV_PP2_REG_BASE + 0x6200 + 4 * pool)
+#define MV_BM_POOL_CTRL_REG(pool)       (MV_PP2_REG_BASE + 0x6200 + ((pool) * 4))
 
 #define MV_BM_START_BIT                 0
 #define MV_BM_START_MASK                (1 << MV_BM_START_BIT)
@@ -141,7 +141,7 @@ extern "C" {
 /*-------------------------------------------------------------------------------*/
 
 /* BM Interrupt Cause Register */
-#define MV_BM_INTR_CAUSE_REG(pool)      (MV_PP2_REG_BASE + 0x6240 + 4 * pool)
+#define MV_BM_INTR_CAUSE_REG(pool)      (MV_PP2_REG_BASE + 0x6240 + ((pool) * 4))
 
 #define MV_BM_RELEASED_DELAY_BIT        0
 #define MV_BM_RELEASED_DELAY_MASK       (1 << MV_BM_RELEASED_DELAY_BIT)
@@ -160,19 +160,23 @@ extern "C" {
 /*-------------------------------------------------------------------------------*/
 
 /* BM interrupt Mask Register */
-#define MV_BM_INTR_MASK_REG(pool)       (MV_PP2_REG_BASE + 0x6280 + 4 * pool)
+#define MV_BM_INTR_MASK_REG(pool)       (MV_PP2_REG_BASE + 0x6280 + ((pool) * 4))
 /*-------------------------------------------------------------------------------*/
 
 /* BM physical address allocate */
-#define MV_BM_PHY_ALLOC_REG(pool)	(MV_PP2_REG_BASE + 0x6400 + 4 * pool)
+#define MV_BM_PHY_ALLOC_REG(pool)	(MV_PP2_REG_BASE + 0x6400 + ((pool) * 4))
+
+#define MV_BM_PHY_ALLOC_GRNTD_MASK	(0x1)
 
 /* BM virtual address allocate */
 #define MV_BM_VIRT_ALLOC_REG		(MV_PP2_REG_BASE + 0x6440)
 
 /* BM physical address release */
-#define MV_BM_PHY_RLS_REG(pool)		(MV_PP2_REG_BASE + 0x6480 + 4 * pool)
+#define MV_BM_PHY_RLS_REG(pool)		(MV_PP2_REG_BASE + 0x6480 + ((pool) * 4))
 
 #define MV_BM_PHY_RLS_MC_BUFF_MASK	(0x1)
+#define MV_BM_PHY_RLS_PRIO_EN_MASK	(0x2)
+#define MV_BM_PHY_RLS_GRNTD_MASK	(0x4)
 
 /* BM virtual address release */
 #define MV_BM_VIRT_RLS_REG		(MV_PP2_REG_BASE + 0x64c0)
@@ -187,6 +191,80 @@ extern "C" {
 
 #define MV_BM_FORCE_RELEASE_OFFS	12
 #define MV_BM_FORCE_RELEASE_MASK	(0x1 << MV_BM_FORCE_RELEASE_OFFS)
+
+/*-------------------------------------------------------------------------------*/
+/* BM prio alloc/release */
+#define MV_BM_QSET_ALLOC_REG		(MV_PP2_REG_BASE + 0x63fc)
+
+#define MV_BM_ALLOC_QSET_NUM_OFFS	0
+#define MV_BM_ALLOC_QSET_NUM_MASK	(0x7f << MV_BM_ALLOC_QSET_NUM_OFFS)
+
+#define MV_BM_ALLOC_YELLOW_MASK		(0x1 << 8)
+
+#define MV_BM_ALLOC_PRIO_EN_MASK	(0x1 << 12)
+
+
+#define MV_BM_QSET_RLS_REG		(MV_PP2_REG_BASE + 0x64c8)
+
+#define MV_BM_RLS_QSET_NUM_OFFS		0
+#define MV_BM_RLS_QSET_NUM_MASK		(0x7f << MV_BM_RLS_QSET_NUM_OFFS)
+/*-------------------------------------------------------------------------------*/
+/* BM Priority Configuration Registers */
+
+#define MV_BM_PRIO_CTRL_REG		(MV_PP2_REG_BASE + 0x6800)
+
+
+#define MV_BM_PRIO_IDX_REG		(MV_PP2_REG_BASE + 0x6810)
+#define MV_BM_PRIO_IDX_MASK		0xff
+
+
+#define MV_BM_CPU_QSET_REG		(MV_PP2_REG_BASE + 0x6814)
+
+#define MV_BM_CPU_SHORT_QSET_OFFS	0
+#define MV_BM_CPU_SHORT_QSET_MASK	(0x7f << MV_BM_CPU_SHORT_QSET_OFFS)
+
+#define MV_BM_CPU_LONG_QSET_OFFS	8
+#define MV_BM_CPU_LONG_QSET_MASK	(0x7f << MV_BM_CPU_LONG_QSET_OFFS)
+
+
+#define MV_BM_HWF_QSET_REG		(MV_PP2_REG_BASE + 0x6818)
+
+#define MV_BM_HWF_SHORT_QSET_OFFS	0
+#define MV_BM_HWF_SHORT_QSET_MASK	(0x7f << MV_BM_HWF_SHORT_QSET_OFFS)
+
+#define MV_BM_HWF_LONG_QSET_OFFS	8
+#define MV_BM_HWF_LONG_QSET_MASK	(0x7f << MV_BM_HWF_LONG_QSET_OFFS)
+
+
+#define MV_BM_QSET_SET_MAX_REG		(MV_PP2_REG_BASE + 0x6820)
+
+#define MV_BM_QSET_MAX_SHARED_OFFS	0
+#define MV_BM_QSET_MAX_GRNTD_OFFS	16
+
+#define MV_BM_QSET_MAX_SHARED_MASK	(0xffff << MV_BM_QSET_MAX_SHARED_OFFS)
+#define MV_BM_QSET_MAX_GRNTD_MASK	(0xffff << MV_BM_QSET_MAX_GRNTD_OFFS)
+
+
+#define MV_BM_QSET_SET_CNTRS_REG	(MV_PP2_REG_BASE + 0x6824)
+
+#define MV_BM_QSET_CNTR_SHARED_OFFS	0
+#define MV_BM_QSET_CNTR_GRNTD_OFFS	16
+
+
+#define MV_BM_POOL_MAX_SHARED_REG(pool)	(MV_PP2_REG_BASE + 0x6840 + ((pool) * 4))
+#define MV_BM_POOL_MAX_SHARED_OFFS	0
+#define MV_BM_POOL_MAX_SHARED_MASK	(0xffff << MV_BM_POOL_MAX_SHARED_OFFS)
+
+#define MV_BM_POOL_SET_CNTRS_REG(pool)	(MV_PP2_REG_BASE + 0x6880 + ((pool) * 4))
+
+#define MV_BM_POOL_CNTR_SHARED_OFFS	0
+#define MV_BM_POOL_CNTR_GRNTD_OFFS	16
+
+#define MV_BM_V1_PKT_DROP_REG(pool)		(MV_PP2_REG_BASE + 0x7300 + 4 * (pool))
+#define MV_BM_V1_PKT_MC_DROP_REG(pool)		(MV_PP2_REG_BASE + 0x7340 + 4 * (pool))
+
+
+#define MV_BM_POOL_SHARED_STATUS(pool)		(MV_PP2_REG_BASE + 0x68c0 + ((pool) * 4))
 
 
 #ifdef __cplusplus

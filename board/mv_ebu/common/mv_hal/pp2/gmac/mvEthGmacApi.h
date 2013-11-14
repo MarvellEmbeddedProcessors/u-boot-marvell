@@ -106,76 +106,74 @@ typedef struct eth_link_status {
 /***************************************************************************/
 /*                          Inline functions                               */
 /***************************************************************************/
-static INLINE void mvEthIsrSummaryMask(MV_VOID)
+static INLINE void mvGmacIsrSummaryMask(MV_VOID)
 {
 	MV_REG_WRITE(ETH_ISR_SUM_MASK_REG, 0);
 }
 
-static INLINE void mvEthIsrSummaryUnmask(MV_VOID)
+static INLINE void mvGmacIsrSummaryUnmask(MV_VOID)
 {
 	MV_REG_WRITE(ETH_ISR_SUM_MASK_REG, ETH_ISR_SUM_PORT0_MASK |
 		     ETH_ISR_SUM_PORT1_MASK | 0x20 /* magic bit */);
 }
 
-static INLINE MV_U32 mvEthIsrSummaryCauseGet(MV_VOID)
+static INLINE MV_U32 mvGmacIsrSummaryCauseGet(MV_VOID)
 {
 	return MV_REG_READ(ETH_ISR_SUM_CAUSE_REG);
 }
 
-static INLINE MV_U32 mvEthPortIsrCauseGet(int port)
+static INLINE MV_U32 mvGmacPortIsrCauseGet(int port)
 {
 	return MV_REG_READ(ETH_PORT_ISR_CAUSE_REG(port));
 }
 
-static INLINE MV_VOID mvEthPortIsrMask(int port)
+static INLINE MV_VOID mvGmacPortIsrMask(int port)
 {
 	MV_REG_WRITE(ETH_PORT_ISR_MASK_REG(port), 0);
 }
 
-static INLINE MV_VOID mvEthPortIsrUnmask(int port)
+static INLINE MV_VOID mvGmacPortIsrUnmask(int port)
 {
 	MV_REG_WRITE(ETH_PORT_ISR_MASK_REG(port), ETH_PORT_LINK_CHANGE_MASK);
 }
 
 void mvGmacDefaultsSet(int port);
-void mvEthPortEnable(int port);
-void mvEthPortDisable(int port);
-void mvEthPortRgmiiSet(int port, int enable);
-void mvEthPortSgmiiSet(int port, int enable);
-void mvEthPortPeriodicXonSet(int port, int enable);
-MV_BOOL mvEthPortIsLinkUp(int port);
-MV_STATUS mvEthLinkStatus(int port, MV_ETH_PORT_STATUS *pStatus);
-void mvEthPortLbSet(int port, int isGmii, int isPcsEn);
-void mvEthPortResetSet(int port, MV_BOOL setReset);
-void mvEthPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii);
-void mvEthPortPowerDown(int port);
-char *mvEthSpeedStrGet(MV_ETH_PORT_SPEED speed);
+void mvGmacPortEnable(int port);
+void mvGmacPortDisable(int port);
+void mvGmacPortPeriodicXonSet(int port, int enable);
+MV_BOOL mvGmacPortIsLinkUp(int port);
+MV_STATUS mvGmacLinkStatus(int port, MV_ETH_PORT_STATUS *pStatus);
+void mvGmacPortLbSet(int port, int isGmii, int isPcsEn);
+void mvGmacPortResetSet(int port, MV_BOOL setReset);
+void mvGmacPortPowerUp(int port, MV_BOOL isSgmii, MV_BOOL isRgmii);
+void mvGmacPortPowerDown(int port);
+char *mvGmacSpeedStrGet(MV_ETH_PORT_SPEED speed);
 
 /******************************************************************************/
 /*                          Port Configuration functions                      */
 /******************************************************************************/
-void mvEthMaxRxSizeSet(int port, int maxRxSize);
-MV_STATUS mvEthForceLinkModeSet(int portNo, MV_BOOL force_link_up, MV_BOOL force_link_down);
-MV_STATUS mvEthSpeedDuplexSet(int portNo, MV_ETH_PORT_SPEED speed, MV_ETH_PORT_DUPLEX duplex);
-MV_STATUS mvEthSpeedDuplexGet(int portNo, MV_ETH_PORT_SPEED *speed, MV_ETH_PORT_DUPLEX *duplex);
-MV_STATUS mvEthFlowCtrlSet(int port, MV_ETH_PORT_FC flowControl);
-MV_STATUS mvEthFlowCtrlGet(int port, MV_ETH_PORT_FC *pFlowCntrl);
-MV_STATUS mvEthPortLinkSpeedFlowCtrl(int port, MV_ETH_PORT_SPEED speed,
+MV_STATUS mvGmacMaxRxSizeSet(int port, int maxRxSize);
+MV_STATUS mvGmacForceLinkModeSet(int portNo, MV_BOOL force_link_up, MV_BOOL force_link_down);
+MV_STATUS mvGmacSpeedDuplexSet(int portNo, MV_ETH_PORT_SPEED speed, MV_ETH_PORT_DUPLEX duplex);
+MV_STATUS mvGmacSpeedDuplexGet(int portNo, MV_ETH_PORT_SPEED *speed, MV_ETH_PORT_DUPLEX *duplex);
+MV_STATUS mvGmacFlowCtrlSet(int port, MV_ETH_PORT_FC flowControl);
+MV_STATUS mvGmacFlowCtrlGet(int port, MV_ETH_PORT_FC *pFlowCntrl);
+MV_STATUS mvGmacPortLinkSpeedFlowCtrl(int port, MV_ETH_PORT_SPEED speed,
 				     int forceLinkUp);
 
 /******************************************************************************/
 /*                         PHY Control Functions                              */
 /******************************************************************************/
-void mvEthPhyAddrSet(int port, int phyAddr);
-int mvEthPhyAddrGet(int port);
+void mvGmacPhyAddrSet(int port, int phyAddr);
+int mvGmacPhyAddrGet(int port);
 
 /****************************************/
 /*        MIB counters		       	*/
 /****************************************/
-MV_U32 mvEthMibCounterRead(int port, unsigned int mibOffset, MV_U32 *pHigh32);
-void mvEthMibCountersClear(int port);
-void mvEthMibCountersShow(int port);
+MV_U32 mvGmacMibCounterRead(int port, unsigned int mibOffset, MV_U32 *pHigh32);
+void mvGmacMibCountersClear(int port);
+void mvGmacMibCountersShow(int port);
 void mvGmacPortRegs(int port);
 void mvGmacLmsRegs(void);
 
-#endif /* __mvEthGmac_h__ */
+#endif /* __mvGmacGmac_h__ */

@@ -71,6 +71,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvOs.h"
 #include "mvSysEthConfig.h"
 #include "mvPp2GbeRegs.h"
+#include "pp2/bm/mvBm.h"
 #include "pp2/gmac/mvEthGmacApi.h"
 #include "pp2/common/mvPp2Common.h"
 #include "pp2/prs/mvPp2PrsHw.h"
@@ -91,14 +92,16 @@ static inline int mvPp2RxBmPoolId(PP2_RX_DESC *rxDesc)
 
 /************************** PPv2 HW Configuration ***********************/
 typedef struct eth_pbuf {
-	void *osInfo;
+	void	*osInfo;
 	MV_ULONG physAddr;
-	MV_U8 *pBuf;
-	MV_U16 bytes;
-	MV_U16 offset;
-	MV_U8  pool;
-	MV_U8  reserved;
-	MV_U16 vlanId;
+	MV_U8	*pBuf;
+	MV_U16	bytes;
+	MV_U16	offset;
+	MV_U8	pool;
+	MV_U8	qset;
+	MV_U8	grntd;
+	MV_U8	reserved;
+	MV_U16	vlanId;
 } MV_ETH_PKT;
 
 /************************** Port + Queue Control Structures ******************************/
@@ -111,13 +114,13 @@ typedef struct {
 } MV_PP2_QUEUE_CTRL;
 
 #define MV_PP2_QUEUE_DESC_PTR(pQueueCtrl, descIdx)                 \
-    ((pQueueCtrl)->pFirst + ((descIdx) * MV_PP2_DESC_ALIGNED_SIZE))
+	((pQueueCtrl)->pFirst + ((descIdx) * (pQueueCtrl)->descSize))
 
 #define MV_PP2_QUEUE_NEXT_DESC(pQueueCtrl, descIdx)  \
-    (((descIdx) < (pQueueCtrl)->lastDesc) ? ((descIdx) + 1) : 0)
+	(((descIdx) < (pQueueCtrl)->lastDesc) ? ((descIdx) + 1) : 0)
 
 #define MV_PP2_QUEUE_PREV_DESC(pQueueCtrl, descIdx)  \
-    (((descIdx) > 0) ? ((descIdx) - 1) : (pQueueCtrl)->lastDesc)
+	(((descIdx) > 0) ? ((descIdx) - 1) : (pQueueCtrl)->lastDesc)
 
 /*-------------------------------------------------------------------------------*/
 /* TXQ */
@@ -326,7 +329,7 @@ static INLINE int mvPp2RxqBusyDescNumGet(int port, int rxq)
 	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
 
 	if (prxq < 0)
-		return 0;
+		return prxq;
 
 	regVal = mvPp2RdReg(MV_PP2_RXQ_STATUS_REG(prxq));
 
@@ -340,7 +343,7 @@ static INLINE int mvPp2RxqFreeDescNumGet(int port, int rxq)
 	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
 
 	if (prxq < 0)
-		return 0;
+		return prxq;
 
 	regVal = mvPp2RdReg(MV_PP2_RXQ_STATUS_REG(prxq));
 
@@ -381,6 +384,23 @@ static INLINE void mvPp2RxqOccupDescDec(int port, int rxq, int rx_done)
 }
 
 /*-------------------------------------------------------------------------------*/
+/*
+   PPv2 new feature MAS 3.16
+   reserved TXQ descriptorts allocation request
+*/
+static INLINE int mvPp2TxqAllocReservedDesc(int port, int txp, int txq, int num)
+{
+	MV_U32 regVal, ptxq;
+
+	ptxq = MV_PPV2_TXQ_PHYS(port, txp, txq);
+	regVal = (ptxq << MV_PP2_TXQ_RSVD_REQ_Q_OFFSET) || (num << MV_PP2_TXQ_RSVD_REQ_DESC_OFFSET);
+	mvPp2WrReg(MV_PP2_TXQ_RSVD_REQ_REG, regVal);
+
+	regVal = mvPp2RdReg(MV_PP2_TXQ_RSVD_RSLT_REG);
+
+	return (regVal & MV_PP2_TXQ_RSVD_REQ_DESC_MASK) >> MV_PP2_TXQ_RSVD_RSLT_OFFSET;
+}
+
 /* Get number of TXQ descriptors waiting to be transmitted by HW */
 static INLINE int mvPp2TxqPendDescNumGet(int port, int txp, int txq)
 {
@@ -394,7 +414,28 @@ static INLINE int mvPp2TxqPendDescNumGet(int port, int txp, int txq)
 	return (regVal & MV_PP2_TXQ_PENDING_MASK) >> MV_PP2_TXQ_PENDING_OFFSET;
 }
 
-/* Get number of TXQ HWF descriptors waiting to be transmitted by HW */
+/*
+   PPv2.1 new feature MAS 3.16
+   Get number of SWF reserved descriptors
+*/
+static INLINE int mvPp2TxqPendRsrvdDescNumGet(int port, int txp, int txq)
+{
+	MV_U32 regVal, ptxq;
+
+	ptxq = MV_PPV2_TXQ_PHYS(port, txp, txq);
+	mvPp2WrReg(MV_PP2_TXQ_NUM_REG, ptxq);
+
+	regVal = mvPp2RdReg(MV_PP2_TXQ_PENDING_REG);
+
+	return (regVal & MV_PP2_TXQ_RSVD_DESC_OFFSET) >> MV_PP2_TXQ_RSVD_DESC_OFFSET;
+}
+
+
+/*
+   PPv2.1 field removed, MAS 3.16
+   Relevant only for ppv2.0
+   Get number of TXQ HWF descriptors waiting to be transmitted by HW
+*/
 static INLINE int mvPp2TxqPendHwfDescNumGet(int port, int txp, int txq)
 {
 	MV_U32 regVal, ptxq;
@@ -511,6 +552,9 @@ static INLINE MV_ULONG pp2DescVirtToPhys(MV_PP2_QUEUE_CTRL *pQueueCtrl, MV_U8 *p
 	return (pQueueCtrl->descBuf.bufPhysAddr + (pDesc - pQueueCtrl->descBuf.bufVirtPtr));
 }
 
+MV_U8 *mvPp2DescrMemoryAlloc(int descSize, MV_ULONG *pPhysAddr, MV_U32 *memHandle);
+void mvPp2DescrMemoryFree(int descSize, MV_ULONG *pPhysAddr, MV_U8 *pVirt, MV_U32 *memHandle);
+
 MV_STATUS mvPp2HalInit(MV_PP2_HAL_DATA *halData);
 MV_VOID mvPp2HalDestroy(MV_VOID);
 
@@ -538,6 +582,8 @@ MV_STATUS mvPp2RxqPktsCoalSet(int port, int rxq, MV_U32 pkts);
 int mvPp2RxqPktsCoalGet(int port, int rxq);
 
 void mvPp2RxReset(int port);
+
+void mvPp2TxqHwfSizeSet(int port, int txp, int txq, int hwfNum);
 
 /* Allocate and initialize descriptors for TXQ */
 MV_PP2_PHYS_TXQ_CTRL *mvPp2TxqInit(int port, int txp, int txq, int descNum, int hwfNum);
@@ -577,14 +623,25 @@ MV_VOID mvPp2TxqTempDelete(MV_VOID);
 void *mvPp2PortInit(int port, int firstRxq, int numRxqs, void *osHandle);
 void mvPp2PortDestroy(int port);
 
-MV_STATUS mvPp2PortUp(int port);
-MV_STATUS mvPp2PortDown(int port);
+/* Low Level APIs */
+MV_STATUS mvPp2RxqEnable(int port, int rxq, MV_BOOL en);
+MV_STATUS mvPp2HwfTxqEnable(int port, int txp, int txq, MV_BOOL en);
+MV_BOOL   mvPp2DisableCmdInProgress(void);
+MV_STATUS mvPp2TxqDrainSet(int port, int txp, int txq, MV_BOOL en);
+MV_STATUS mvPp2TxPortFifoFlush(int port, MV_BOOL en);
+MV_STATUS mvPp2TxpEnable(int port, int txp);
+MV_STATUS mvPp2TxpDisable(int port, int txp);
+MV_STATUS mvPp2PortEnable(int port, MV_BOOL en);
 
-MV_STATUS mvPp2PortEnable(int port);
-MV_STATUS mvPp2PortDisable(int port);
+/* High Level APIs */
+MV_STATUS mvPp2PortIngressEnable(int port, MV_BOOL en);
+MV_STATUS mvPp2PortEgressEnable(int port, MV_BOOL en);
 
 MV_STATUS mvPp2BmPoolBufSizeSet(int pool, int bufsize);
-MV_STATUS mvPp2RxqBmPoolSet(int port, int rxq, int shortPool, int longPool);
+MV_STATUS mvPp2RxqBmShortPoolSet(int port, int rxq, int shortPool);
+MV_STATUS mvPp2RxqBmLongPoolSet(int port, int rxq, int longPool);
+MV_STATUS mvPp2TxqBmShortPoolSet(int port, int txp, int txq, int shortPool);
+MV_STATUS mvPp2TxqBmLongPoolSet(int port, int txp, int txq, int longPool);
 MV_STATUS mvPp2PortHwfBmPoolSet(int port, int shortPool, int longPool);
 
 MV_STATUS mvPp2MhSet(int port, MV_TAG_TYPE mh);
@@ -644,7 +701,11 @@ void mvPp2TxRegs(void);
 void mvPp2AddrDecodeRegs(void);
 void mvPp2TxSchedRegs(int port, int txp);
 void mvPp2BmPoolRegs(int pool);
-void mvPp2DropCntrs(int port);
+void mvPp2V0DropCntrs(int port);
+/* PPv2.1 MAS 3.20 - counters change */
+void mvPp2V1DropCntrs(int port);
+void mvPp2V1TxqDbgCntrs(int port, int txp, int txq);
+void mvPp2V1RxqDbgCntrs(int port, int rxq);
 void mvPp2RxFifoRegs(int port);
 void mvPp2PortStatus(int port);
 #endif /* MV_PP2_GBE_H */

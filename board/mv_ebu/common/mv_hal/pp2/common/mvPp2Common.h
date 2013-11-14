@@ -116,6 +116,9 @@ void mvPp2PrintReg2(MV_U32 reg_addr, char *reg_name, MV_U32 index);
 
 int mvPp2SPrintReg(char *buf, unsigned int  reg_addr, char *reg_name);
 
+void mvPp2RegPrintNonZero(MV_U32 reg_addr, char *reg_name);
+void mvPp2RegPrintNonZero2(MV_U32 reg_addr, char *reg_name, MV_U32 index);
+
 /*--------------------------------------------------------------------*/
 /*			PP2 COMMON DEFINETIONS			      */
 /*--------------------------------------------------------------------*/
@@ -123,7 +126,7 @@ int mvPp2SPrintReg(char *buf, unsigned int  reg_addr, char *reg_name);
 #define IN_USE						(1)
 #define DWORD_BITS_LEN					32
 #define DWORD_BYTES_LEN                                 4
-#define RETRIES_EXCEEDED				5000
+#define RETRIES_EXCEEDED				15000
 #define ONE_BIT_MAX					1
 #define UNI_MAX						7
 #define ETH_PORTS_NUM					7

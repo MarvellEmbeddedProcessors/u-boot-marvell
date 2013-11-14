@@ -245,9 +245,42 @@ int mvPp2ClsC4SwDump(MV_PP2_CLS_C4_ENTRY *C4)
 	/*------------------------------*/
 	/*	actions	0x1E80		*/
 	/*------------------------------*/
+/*
+  PPv2.1 (feature MAS 3.9) Add forwarding command to C4
+*/
 
-	mvOsPrintf("ACT_TBL:	COLOR	PRIO	DSCP	GPID	LOW_Q	HIGH_Q  POLICER\n");
-	mvOsPrintf("CMD:		[%1d]	[%1d]	[%1d]	[%1d]	[%1d]	[%1d]	[%1d]\n",
+#ifdef CONFIG_MV_ETH_PP2_1
+	mvOsPrintf("ACT_TBL:COLOR	PRIO	DSCP	GPID	LOW_Q	HIGH_Q	POLICER		FWD\n");
+	mvOsPrintf("CMD:    [%1d]	[%1d]	[%1d]	[%1d]	[%1d]	[%1d]	[%1d]		[%1d]\n",
+			((C4->sram.regs.actions & (ACT_COLOR_MASK)) >> ACT_COLOR),
+			((C4->sram.regs.actions & (ACT_PRI_MASK)) >> ACT_PRI),
+			((C4->sram.regs.actions & (ACT_DSCP_MASK)) >> ACT_DSCP),
+			((C4->sram.regs.actions & (ACT_GEM_ID_MASK)) >> ACT_GEM_ID),
+			((C4->sram.regs.actions & (ACT_LOW_Q_MASK)) >> ACT_LOW_Q),
+			((C4->sram.regs.actions & (ACT_HIGH_Q_MASK)) >> ACT_HIGH_Q),
+			((C4->sram.regs.actions & (ACT_POLICER_SELECT_MASK)) >> ACT_POLICER_SELECT),
+			((C4->sram.regs.actions & ACT_FWD_MASK) >> ACT_FWD));
+
+
+	/*------------------------------*/
+	/*	qos_attr 0x1E84		*/
+	/*------------------------------*/
+	/*mvOsPrintf("ACT_TBL:COLOR	PRIO	DSCP	GPID	LOW_Q	HIGH_Q	POLICER		FWD\n");*/
+
+	/*mvOsPrintf("VAL:		PRIO	DSCP	GPID	LOW_Q	HIGH_Q	 POLICER\n");*/
+
+	mvOsPrintf("VAL:		[%1d]	[%1d]	[%1d]	[%1d]	[0x%x]	[id 0x%2.2x bank %1.1x]\n",
+			((C4->sram.regs.qos_attr & (ACT_QOS_ATTR_MDF_PRI_MASK)) >> ACT_QOS_ATTR_MDF_PRI),
+			((C4->sram.regs.qos_attr & (ACT_QOS_ATTR_MDF_DSCP_MASK)) >> ACT_QOS_ATTR_MDF_DSCP),
+			((C4->sram.regs.qos_attr & (ACT_QOS_ATTR_MDF_GEM_ID_MASK)) >> ACT_QOS_ATTR_MDF_GEM_ID),
+			((C4->sram.regs.qos_attr & (ACT_QOS_ATTR_MDF_LOW_Q_MASK)) >> ACT_QOS_ATTR_MDF_LOW_Q),
+			((C4->sram.regs.qos_attr & (ACT_QOS_ATTR_MDF_HIGH_Q_MASK)) >> ACT_QOS_ATTR_MDF_HIGH_Q),
+			((C4->sram.regs.dup_attr & (ACT_DUP_POLICER_MASK)) >> ACT_DUP_POLICER_ID),
+			((C4->sram.regs.dup_attr & ACT_DUP_POLICER_BANK_MASK) >> ACT_DUP_POLICER_BANK_BIT));
+
+#else
+	mvOsPrintf("ACT_TBL:    COLOR   PRIO    DSCP    GPID    LOW_Q   HIGH_Q  POLICER\n");
+	mvOsPrintf("CMD:                [%1d]   [%1d]   [%1d]   [%1d]   [%1d]   [%1d]   [%1d]\n",
 			((C4->sram.regs.actions & (ACT_COLOR_MASK)) >> ACT_COLOR),
 			((C4->sram.regs.actions & (ACT_PRI_MASK)) >> ACT_PRI),
 			((C4->sram.regs.actions & (ACT_DSCP_MASK)) >> ACT_DSCP),
@@ -270,6 +303,34 @@ int mvPp2ClsC4SwDump(MV_PP2_CLS_C4_ENTRY *C4)
 			((C4->sram.regs.qos_attr & (ACT_QOS_ATTR_MDF_HIGH_Q_MASK)) >> ACT_QOS_ATTR_MDF_HIGH_Q),
 			((C4->sram.regs.dup_attr & (ACT_DUP_POLICER_MASK)) >> ACT_DUP_POLICER_ID));
 
+#endif
+
+
+
+	return MV_OK;
+}
+
+/*-------------------------------------------------------------------------------*/
+/* PPv2.1 MASS 3.20 new feature */
+static int mvPp2V1ClsC4HwCntDump(int rule, int set, unsigned int *cnt)
+{
+	unsigned int regVal;
+
+	POS_RANGE_VALIDATE(rule, (MV_PP2_CLS_C4_GRP_SIZE-1));
+	POS_RANGE_VALIDATE(set, (MV_PP2_CLS_C4_GRPS_NUM-1));
+
+	/* write index */
+	regVal =  MV_PP2_V1_CNT_IDX_RULE(rule, set);
+	mvPp2WrReg(MV_PP2_V1_CNT_IDX_REG, regVal);
+
+	/*read hit counter*/
+	regVal = mvPp2RdReg(MV_PP2_V1_CLS_C4_TBL_HIT_REG);
+
+	if (cnt)
+		*cnt = regVal;
+	else
+		mvOsPrintf("HIT COUNTER: %d\n", regVal);
+
 	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
@@ -282,6 +343,31 @@ int mvPp2ClsC4HwDumpAll()
 		for (rule = 0; rule <  MV_PP2_CLS_C4_GRP_SIZE; rule++) {
 			mvPp2ClsC4HwRead(&C4, rule, set);
 			mvPp2ClsC4SwDump(&C4);
+#ifdef CONFIG_MV_ETH_PP2_1
+			mvPp2V1ClsC4HwCntDump(rule, set, NULL);
+#endif
+			mvOsPrintf("--------------------------------------------------------------------\n");
+		}
+	return MV_OK;
+}
+/*-------------------------------------------------------------------------------*/
+/* mvPp2V1ClsC4HwHitsDump - dump all non zeroed hit counters and the associated  HWentries */
+/* PPv2.1 MASS 3.20 new feature */
+int mvPp2V1ClsC4HwHitsDump()
+{
+	int set, rule;
+	unsigned int cnt;
+	MV_PP2_CLS_C4_ENTRY C4;
+
+	for (set = 0; set < MV_PP2_CLS_C4_GRPS_NUM; set++)
+		for (rule = 0; rule <  MV_PP2_CLS_C4_GRP_SIZE; rule++) {
+			mvPp2V1ClsC4HwCntDump(rule, set, &cnt);
+			if (cnt == 0)
+				continue;
+
+			mvPp2ClsC4HwRead(&C4, rule, set);
+			mvPp2ClsC4SwDump(&C4);
+			mvOsPrintf("HITS: %d\n", cnt);
 			mvOsPrintf("--------------------------------------------------------------------\n");
 		}
 	return MV_OK;
@@ -521,6 +607,28 @@ int mvPp2ClsC4GpidSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd, int gid)
 }
 
 /*-------------------------------------------------------------------------------*/
+#ifdef CONFIG_MV_ETH_PP2_1
+int mvPp2ClsC4PolicerSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd, int policerId, int bank)
+{
+	PTR_VALIDATE(C4);
+	POS_RANGE_VALIDATE(cmd, UPDATE_AND_LOCK);
+	POS_RANGE_VALIDATE(policerId, ACT_DUP_POLICER_MAX);
+	BIT_RANGE_VALIDATE(bank);
+
+	C4->sram.regs.actions &= ~ACT_POLICER_SELECT_MASK;
+	C4->sram.regs.actions |= (cmd << ACT_POLICER_SELECT);
+
+	C4->sram.regs.dup_attr &= ~ACT_DUP_POLICER_MASK;
+	C4->sram.regs.dup_attr |= (policerId << ACT_DUP_POLICER_ID);
+
+	if (bank)
+		C4->sram.regs.dup_attr |= ACT_DUP_POLICER_BANK_MASK;
+	else
+		C4->sram.regs.dup_attr &= ~ACT_DUP_POLICER_BANK_MASK;
+
+	return MV_OK;
+}
+#else
 int mvPp2ClsC4PolicerSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd, int policerId)
 {
 	PTR_VALIDATE(C4);
@@ -534,6 +642,8 @@ int mvPp2ClsC4PolicerSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd, int policerId)
 	C4->sram.regs.dup_attr |= (policerId << ACT_DUP_POLICER_ID);
 	return MV_OK;
 }
+#endif /*CONFIG_MV_ETH_PP2_1*/
+
 
 /*-------------------------------------------------------------------------------*/
 int mvPp2ClsC4QueueHighSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd, int queue)
@@ -595,7 +705,17 @@ int mvPp2ClsC4QueueSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd, int queue)
 
 }
 
+/*-------------------------------------------------------------------------------*/
+/*
+  PPv2.1 (feature MAS 3.9) Add forwarding command to C4
+*/
+int mvPp2ClsC4ForwardSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd)
+{
+	PTR_VALIDATE(C4);
+	POS_RANGE_VALIDATE(cmd, SWF_AND_LOCK);
 
-
-
+	C4->sram.regs.actions &= ~ACT_FWD_MASK;
+	C4->sram.regs.actions |= (cmd << ACT_FWD);
+	return MV_OK;
+}
 

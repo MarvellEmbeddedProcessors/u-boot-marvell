@@ -160,7 +160,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*-------------------------------------------------------------------------------*/
 #define MV_PP2_CLS4_ACT_DUP_ATTR_REG				(MV_PP2_REG_BASE + 0x1E88)
 /*-------------------------------------------------------------------------------*/
+/*PPv2.1 new counters MAS 3.20*/
+#define MV_PP2_V1_CNT_IDX_REG				(MV_PP2_REG_BASE + 0x7040)
+#define MV_PP2_V1_CNT_IDX_RULE(rule, set)		((rule) << 3 | (set))
 
+#define MV_PP2_V1_CLS_C4_TBL_HIT_REG			(MV_PP2_REG_BASE + 0x7708)
 
 /*-------------------------------------------------------------------------------*/
 /*			Classifier C4 engine Public APIs			 */
@@ -217,6 +221,7 @@ int mvPp2ClsC4SwDump(MV_PP2_CLS_C4_ENTRY *C4);
 void mvPp2ClsC4SwClear(MV_PP2_CLS_C4_ENTRY *C4);
 void mvPp2ClsC4HwClearAll(void);
 int mvPp2ClsC4RegsDump(void);
+int mvPp2V1ClsC4HwHitsDump(void);
 int mvPp2ClsC4HwDumpAll(void);
 
 
@@ -243,9 +248,17 @@ int mvPp2ClsC4PrioSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd, int prio);
 int mvPp2ClsC4DscpSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd, int dscp);
 int mvPp2ClsC4GpidSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd, int gpid);
 int mvPp2ClsC4ForwardSet(MV_PP2_CLS_C4_ENTRY *c4, int cmd);
-int mvPp2ClsC4PolicerSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd, int policerId);
+#ifdef CONFIG_MV_ETH_PP2_1
+int mvPp2ClsC4PolicerSet(MV_PP2_CLS_C4_ENTRY *c2, int cmd, int policerId, int bank);
+#else
+int mvPp2ClsC4PolicerSet(MV_PP2_CLS_C4_ENTRY *c2, int cmd, int policerId);
+#endif
 int mvPp2ClsC4QueueHighSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd, int queue);
 int mvPp2ClsC4QueueLowSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd, int queue);
 int mvPp2ClsC4QueueSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd, int queue);
+/*
+  PPv2.1 (feature MAS 3.9) Add forwarding command to C4
+*/
+int mvPp2ClsC4ForwardSet(MV_PP2_CLS_C4_ENTRY *c4, int cmd);
 
 #endif /* MV_CLS4_HW */

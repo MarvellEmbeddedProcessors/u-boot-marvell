@@ -169,6 +169,7 @@ int mvPrsEthTypeDel(int portMap, unsigned short eth_type);
 int mvPp2PrsTripleVlan(unsigned short tpid1, unsigned short tpid2, unsigned short tpid3, unsigned int portBmp, int add);
 int mvPp2PrsDoubleVlan(unsigned short tpid1, unsigned short tpid2, unsigned int portBmp, int add);
 int mvPp2PrsSingleVlan(unsigned short tpid, unsigned int portBmp, int add);
+int mvPp2PrsVlanAllDel(void);
 char *mvPrsVlanInfoStr(unsigned int vlan_info);
 char *mvPrsL2InfoStr(unsigned int l2_info);
 /*

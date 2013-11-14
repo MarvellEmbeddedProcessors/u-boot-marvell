@@ -65,10 +65,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 CLS3_SHADOW_HASH_ENTRY mvCls3ShadowTbl[MV_PP2_CLS_C3_HASH_TBL_SIZE];
 int mvCls3ShadowExtTbl[MV_PP2_CLS_C3_EXT_TBL_SIZE];
-
 static int mvPp2ClsC3SwActDump(MV_PP2_CLS_C3_ENTRY *c3);
 
-static int initHitCounter = 0;
+static int SwInitCntSet;
 
 /******************************************************************************
  * 			Common utilities
@@ -139,10 +138,8 @@ void mvPp2C3ShadowClear(int index)
 }
 /*-------------------------------------------------------------------------------
 retun 1 scan procedure completed
-TODO - ASK RUVEN , i use scane state , is it good enough ?
 -------------------------------------------------------------------------------*/
-/*
-static int mvPp2ClsC3ScanIsCompleate(void)
+static int mvPp2ClsC3ScanIsComplete(void)
 {
 	unsigned int regVal;
 
@@ -152,7 +149,6 @@ static int mvPp2ClsC3ScanIsCompleate(void)
 
 	return regVal;
 }
-*/
 /*-------------------------------------------------------------------------------
 return 1 if that the last CPU access (Query,Add or Delete) was completed
 -------------------------------------------------------------------------------*/
@@ -182,6 +178,7 @@ static int mvPp2ClsC3ScanStateGet(int *state)
 	regVal &= MV_PP2_CLS3_STATE_SC_STATE_MASK;
 	regVal >>= MV_PP2_CLS3_STATE_SC_STATE;
 	*state = regVal;
+
 	return MV_OK;
 }
 /*-------------------------------------------------------------------------------
@@ -218,7 +215,10 @@ int mvPp2ClsC3Init()
 --------------------------------------------------------------------------------*/
 static int mvPp2ClsC3IsReservedIndex(int index)
 {
-	if ((index % 512/*MV_PP2_CLS_C3_BANK_SIZE*/) > 1)
+#ifdef CONFIG_MV_ETH_PP2_1
+	return MV_FALSE;
+#endif
+	if ((index % MV_PP2_CLS_C3_BANK_SIZE) > 1)
 		/* not reserved */
 		return MV_FALSE;
 
@@ -229,7 +229,6 @@ static int mvPp2ClsC3IsReservedIndex(int index)
 Add entry to hash table
 ext_index used only if hek size < 12
 -------------------------------------------------------------------------------*/
-
 int mvPp2ClsC3HwAdd(MV_PP2_CLS_C3_ENTRY *c3, int index, int ext_index)
 {
 	int regStartInd, hekSize, iter = 0;
@@ -263,9 +262,15 @@ int mvPp2ClsC3HwAdd(MV_PP2_CLS_C3_ENTRY *c3, int index, int ext_index)
 
 
 	regVal |= (index << MV_PP2_CLS3_HASH_OP_TBL_ADDR);
+	regVal &= ~MV_PP2_CLS3_MISS_PTR_MASK; /*set miss bit to 0, ppv2.1 mas 3.16*/
 	regVal |= (1 << MV_PP2_CLS3_HASH_OP_ADD);
-	regVal |= (initHitCounter << MV_PP2_CLS3_HASH_OP_INIT_CTR_VAL);
 
+	/* set hit counter init value */
+#ifdef CONFIG_MV_ETH_PP2_1
+	mvPp2WrReg(MV_PP2_CLS3_INIT_HIT_CNT_REG, SwInitCntSet << MV_PP2_CLS3_INIT_HIT_CNT_OFFS);
+#else
+	regVal |= (SwInitCntSet << MV_PP2_CLS3_HASH_OP_INIT_CTR_VAL);
+#endif
 	/*trigger ADD operation*/
 	mvPp2WrReg(MV_PP2_CLS3_HASH_OP_REG, regVal);
 
@@ -281,10 +286,46 @@ int mvPp2ClsC3HwAdd(MV_PP2_CLS_C3_ENTRY *c3, int index, int ext_index)
 	mvPp2WrReg(MV_PP2_CLS3_ACT_QOS_ATTR_REG, c3->sram.regs.qos_attr);
 	mvPp2WrReg(MV_PP2_CLS3_ACT_HWF_ATTR_REG, c3->sram.regs.hwf_attr);
 	mvPp2WrReg(MV_PP2_CLS3_ACT_DUP_ATTR_REG, c3->sram.regs.dup_attr);
-
+#ifdef CONFIG_MV_ETH_PP2_1
+	mvPp2WrReg(MV_PP2_CLS3_ACT_SEQ_L_ATTR_REG, c3->sram.regs.seq_l_attr);
+	mvPp2WrReg(MV_PP2_CLS3_ACT_SEQ_H_ATTR_REG, c3->sram.regs.seq_h_attr);
+#endif
 	/* set entry as valid, extesion pointer in use only if size > 12*/
 	mvPp2ClsC3ShadowSet(hekSize, index, ext_index);
 
+
+	return MV_OK;
+}
+
+/*-------------------------------------------------------------------------------
+Add entry to miss hash table
+ppv2.1 mas 3.16 relevant only for ppv2.1
+-------------------------------------------------------------------------------*/
+int mvPp2ClsC3HwMissAdd(MV_PP2_CLS_C3_ENTRY *c3, int lkp_type)
+{
+	unsigned int regVal = 0;
+
+	PTR_VALIDATE(c3);
+	POS_RANGE_VALIDATE(lkp_type, MV_PP2_CLS_C3_MISS_TBL_SIZE - 1);
+
+	c3->index = lkp_type;
+
+	regVal |= (lkp_type << MV_PP2_CLS3_HASH_OP_TBL_ADDR);
+	regVal |= (1 << MV_PP2_CLS3_HASH_OP_ADD);
+	regVal |= MV_PP2_CLS3_MISS_PTR_MASK;/*set miss bit to 1, ppv2.1 mas 3.16*/
+
+	/*index to miss table */
+	mvPp2WrReg(MV_PP2_CLS3_HASH_OP_REG, regVal);
+
+	/* write action table registers */
+	mvPp2WrReg(MV_PP2_CLS3_ACT_REG, c3->sram.regs.actions);
+	mvPp2WrReg(MV_PP2_CLS3_ACT_QOS_ATTR_REG, c3->sram.regs.qos_attr);
+	mvPp2WrReg(MV_PP2_CLS3_ACT_HWF_ATTR_REG, c3->sram.regs.hwf_attr);
+	mvPp2WrReg(MV_PP2_CLS3_ACT_DUP_ATTR_REG, c3->sram.regs.dup_attr);
+	mvPp2WrReg(MV_PP2_CLS3_ACT_SEQ_L_ATTR_REG, c3->sram.regs.seq_l_attr);
+	mvPp2WrReg(MV_PP2_CLS3_ACT_SEQ_H_ATTR_REG, c3->sram.regs.seq_h_attr);
+	/*clear hit counter, clear on read */
+	mvPp2ClsC3HitCntrsMissRead(lkp_type, &regVal);
 
 	return MV_OK;
 }
@@ -300,6 +341,8 @@ int mvPp2ClsC3HwDel(int index)
 
 	regVal |= (index << MV_PP2_CLS3_HASH_OP_TBL_ADDR);
 	regVal |= (1 << MV_PP2_CLS3_HASH_OP_DEL);
+	regVal &= ~MV_PP2_CLS3_MISS_PTR_MASK;/*set miss bit to 1, ppv2.1 mas 3.16*/
+
 
 	/*trigger del operation*/
 	mvPp2WrReg(MV_PP2_CLS3_HASH_OP_REG, regVal);
@@ -327,14 +370,13 @@ int mvPp2ClsC3HwDelAll()
 		if (status != MV_OK)
 			return status;
 	}
-
 	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
 
 void mvPp2ClsC3HwInitCtrSet(int cntVal)
 {
-	initHitCounter = cntVal;
+	SwInitCntSet = cntVal;
 }
 
 /*-------------------------------------------------------------------------------*/
@@ -404,15 +446,8 @@ static int mvPp2ClsC3HwQueryAddRelocate(int new_idx, int max_depth, int cur_dept
 	/* if we reached here, we found a valid free index */
 	index_free = usedIndex[idx];
 
-	/* del is not necessary */
-/*
-	status = mvPp2ClsC3HwDel(new_idx);
+	/* new_idx del is not necessary */
 
-	if (status != MV_OK) {
-		mvOsPrintf("%s:Error - mvPp2ClsC3HwDel failed, depth = %d\n", __func__, cur_depth);
-		return status;
-	}
-*/
 	/*We do not chage extension tabe*/
 	status = mvPp2ClsC3HwAdd(&local_c3, index_free, local_c3.ext_index);
 
@@ -579,6 +614,11 @@ int mvPp2ClsC3HwRead(MV_PP2_CLS_C3_ENTRY *c3, int index)
 	c3->sram.regs.hwf_attr = mvPp2RdReg(MV_PP2_CLS3_ACT_HWF_ATTR_REG);
 	c3->sram.regs.dup_attr = mvPp2RdReg(MV_PP2_CLS3_ACT_DUP_ATTR_REG);
 
+#ifdef CONFIG_MV_ETH_PP2_1
+	c3->sram.regs.seq_l_attr = mvPp2RdReg(MV_PP2_CLS3_ACT_SEQ_L_ATTR_REG);
+	c3->sram.regs.seq_h_attr = mvPp2RdReg(MV_PP2_CLS3_ACT_SEQ_H_ATTR_REG);
+#endif
+
 	/* read hash data*/
 	for (i = 0; i < MV_PP2_CLS3_HASH_DATA_REG_NUM; i++)
 		hashData[i] = mvPp2RdReg(MV_PP2_CLS3_HASH_DATA_REG(i));
@@ -655,12 +695,24 @@ int mvPp2ClsC3HwRead(MV_PP2_CLS_C3_ENTRY *c3, int index)
 
 		c3->key.key_ctrl |= (((hashData[3] & KEY_PRT_ID_MASK(isExt)) >>
 					(KEY_PRT_ID(isExt) % DWORD_BITS_LEN)) << KEY_CTRL_PRT_ID);
-		/* port ID type */
+
+#ifdef CONFIG_MV_ETH_PP2_1
+		/* PPv2.1 (feature MAS 3.16) LKP_TYPE size and offset changed */
+
+		c3->key.key_ctrl |= (((hashData[3] & KEY_PRT_ID_TYPE_MASK(isExt)) >>
+					(KEY_PRT_ID_TYPE(isExt) % DWORD_BITS_LEN)) << KEY_CTRL_PRT_ID_TYPE);
+
+		c3->key.key_ctrl |= ((((hashData[2] & 0xf8000000) >> 27) |
+					((hashData[3] & 0x1) << 5)) << KEY_CTRL_LKP_TYPE);
+
+#else
 		c3->key.key_ctrl |= ((((hashData[2] & 0x80000000) >> 31) |
 					((hashData[3] & 0x1) << 1)) << KEY_CTRL_PRT_ID_TYPE);
 
 		c3->key.key_ctrl |= (((hashData[2] & KEY_LKP_TYPE_MASK(isExt)) >>
 					(KEY_LKP_TYPE(isExt) % DWORD_BITS_LEN)) << KEY_CTRL_LKP_TYPE);
+
+#endif /* CONFIG_MV_ETH_PP2_1 */
 
 		c3->key.key_ctrl |= (((hashData[2] & KEY_L4_INFO_MASK(isExt)) >>
 					(KEY_L4_INFO(isExt) % DWORD_BITS_LEN)) << KEY_CTRL_L4);
@@ -668,6 +720,36 @@ int mvPp2ClsC3HwRead(MV_PP2_CLS_C3_ENTRY *c3, int index)
 
 	/* update hek size */
 	c3->key.key_ctrl |= ((mvCls3ShadowTbl[index].size << KEY_CTRL_HEK_SIZE) & KEY_CTRL_HEK_SIZE_MASK);
+
+	return MV_OK;
+}
+
+/*-------------------------------------------------------------------------------*/
+/* ppv2.1 MAS 3.12								*/
+/*-------------------------------------------------------------------------------*/
+
+int mvPp2ClsC3HwMissRead(MV_PP2_CLS_C3_ENTRY *c3, int lkp_type)
+{
+	unsigned int regVal = 0;
+
+	PTR_VALIDATE(c3);
+	POS_RANGE_VALIDATE(lkp_type, MV_PP2_CLS_C3_MISS_TBL_SIZE - 1);
+
+	mvPp2ClsC3SwClear(c3);
+
+	c3->index = lkp_type;
+	c3->ext_index = NOT_IN_USE;
+
+	regVal = (lkp_type << MV_PP2_CLS3_HASH_OP_TBL_ADDR) | MV_PP2_CLS3_MISS_PTR_MASK;
+	mvPp2WrReg(MV_PP2_CLS3_HASH_OP_REG, regVal);
+
+	/* read action table */
+	c3->sram.regs.actions = mvPp2RdReg(MV_PP2_CLS3_ACT_REG);
+	c3->sram.regs.qos_attr = mvPp2RdReg(MV_PP2_CLS3_ACT_QOS_ATTR_REG);
+	c3->sram.regs.hwf_attr = mvPp2RdReg(MV_PP2_CLS3_ACT_HWF_ATTR_REG);
+	c3->sram.regs.dup_attr = mvPp2RdReg(MV_PP2_CLS3_ACT_DUP_ATTR_REG);
+	c3->sram.regs.seq_l_attr = mvPp2RdReg(MV_PP2_CLS3_ACT_SEQ_L_ATTR_REG);
+	c3->sram.regs.seq_h_attr = mvPp2RdReg(MV_PP2_CLS3_ACT_SEQ_H_ATTR_REG);
 
 	return MV_OK;
 }
@@ -722,12 +804,13 @@ static int mvPp2ClsC3SwActDump(MV_PP2_CLS_C3_ENTRY *c3)
 	PTR_VALIDATE(c3);
 	mvOsPrintf("\n");
 
+#ifdef CONFIG_MV_ETH_PP2_1
 	/*------------------------------*/
-	/*	actions 0x1B60		*/
+	/*	actions 0x1D40		*/
 	/*------------------------------*/
 
-	mvOsPrintf("ACT_TBL: COLOR   LOW_Q   HIGH_Q    FWD    POLICER   FID\n");
-	mvOsPrintf("CMD:     [%1d]      [%1d]    [%1d]        [%1d]   [%1d]       [%1d]\n",
+	mvOsPrintf("ACT_TBL: COLOR   LOW_Q   HIGH_Q     FWD   POLICER  FID\n");
+	mvOsPrintf("CMD:     [%1d]      [%1d]    [%1d]        [%1d]   [%1d]      [%1d]\n",
 			((c3->sram.regs.actions & (ACT_COLOR_MASK)) >> ACT_COLOR),
 			((c3->sram.regs.actions & (ACT_LOW_Q_MASK)) >> ACT_LOW_Q),
 			((c3->sram.regs.actions & (ACT_HIGH_Q_MASK)) >> ACT_HIGH_Q),
@@ -735,16 +818,59 @@ static int mvPp2ClsC3SwActDump(MV_PP2_CLS_C3_ENTRY *c3)
 			((c3->sram.regs.actions & (ACT_POLICER_SELECT_MASK)) >> ACT_POLICER_SELECT),
 			((c3->sram.regs.actions & ACT_FLOW_ID_EN_MASK) >> ACT_FLOW_ID_EN));
 
-	/*mvOsPrintf("ACT_TBL:		LOW_Q	HIGH_Q		POLICER\n");*/
-
-	mvOsPrintf("VAL:              [%1d]    [0x%x]            [%1d]\n",
+	mvOsPrintf("VAL:              [%1d]    [0x%x]\n",
 			((c3->sram.regs.qos_attr & (ACT_QOS_ATTR_MDF_LOW_Q_MASK)) >> ACT_QOS_ATTR_MDF_LOW_Q),
-			((c3->sram.regs.qos_attr & (ACT_QOS_ATTR_MDF_HIGH_Q_MASK)) >> ACT_QOS_ATTR_MDF_HIGH_Q),
-			((c3->sram.regs.dup_attr & (ACT_DUP_POLICER_MASK)) >> ACT_DUP_POLICER_ID));
+			((c3->sram.regs.qos_attr & (ACT_QOS_ATTR_MDF_HIGH_Q_MASK)) >> ACT_QOS_ATTR_MDF_HIGH_Q));
 
 	mvOsPrintf("\n");
 	/*------------------------------*/
-	/*	hwf_attr 0x1B68		*/
+	/*	hwf_attr 0x1D48		*/
+	/*------------------------------*/
+
+	mvOsPrintf("HWF_ATTR: IPTR	DPTR	 CHKSM     MTU_IDX\n");
+	mvOsPrintf("          0x%1.1x   0x%4.4x   %s   0x%1.1x\n",
+
+			((c3->sram.regs.hwf_attr & ACT_HWF_ATTR_IPTR_MASK) >> ACT_HWF_ATTR_IPTR),
+			((c3->sram.regs.hwf_attr & ACT_HWF_ATTR_DPTR_MASK) >> ACT_HWF_ATTR_DPTR),
+			(((c3->sram.regs.hwf_attr &
+				ACT_HWF_ATTR_CHKSM_EN_MASK) >> ACT_HWF_ATTR_CHKSM_EN) ? "ENABLE" : "DISABLE"),
+			((c3->sram.regs.hwf_attr & ACT_HWF_ATTR_MTU_INX_MASK) >> ACT_HWF_ATTR_MTU_INX));
+	mvOsPrintf("\n");
+	/*------------------------------*/
+	/*	dup_attr 0x1D4C		*/
+	/*------------------------------*/
+	mvOsPrintf("DUP_ATTR:FID	COUNT	POLICER [id    bank]\n");
+	mvOsPrintf("         0x%2.2x\t0x%1.1x\t\t[0x%2.2x   0x%1.1x]\n",
+		((c3->sram.regs.dup_attr & ACT_DUP_FID_MASK) >> ACT_DUP_FID),
+		((c3->sram.regs.dup_attr & ACT_DUP_COUNT_MASK) >> ACT_DUP_COUNT),
+		((c3->sram.regs.dup_attr & ACT_DUP_POLICER_MASK) >> ACT_DUP_POLICER_ID),
+		((c3->sram.regs.dup_attr & ACT_DUP_POLICER_BANK_MASK) >> ACT_DUP_POLICER_BANK_BIT));
+	mvOsPrintf("\n");
+	mvOsPrintf("SEQ_ATTR: HIGH[32:37] LOW[0:31]\n");
+	mvOsPrintf("          0x%2.2x        0x%8.8x", c3->sram.regs.seq_h_attr, c3->sram.regs.seq_l_attr);
+
+#else
+	/*------------------------------*/
+	/*	actions 0x1D40		*/
+	/*------------------------------*/
+
+	mvOsPrintf("ACT_TBL: COLOR   LOW_Q   HIGH_Q     FWD   POLICER  FID\n");
+	mvOsPrintf("CMD:     [%1d]      [%1d]    [%1d]        [%1d]   [%1d]      [%1d]\n",
+			((c3->sram.regs.actions & (ACT_COLOR_MASK)) >> ACT_COLOR),
+			((c3->sram.regs.actions & (ACT_LOW_Q_MASK)) >> ACT_LOW_Q),
+			((c3->sram.regs.actions & (ACT_HIGH_Q_MASK)) >> ACT_HIGH_Q),
+			((c3->sram.regs.actions & ACT_FWD_MASK) >> ACT_FWD),
+			((c3->sram.regs.actions & (ACT_POLICER_SELECT_MASK)) >> ACT_POLICER_SELECT),
+			((c3->sram.regs.actions & ACT_FLOW_ID_EN_MASK) >> ACT_FLOW_ID_EN));
+
+	mvOsPrintf("VAL:              [%1d]    [0x%x]            [0x%x]\n",
+			((c3->sram.regs.qos_attr & (ACT_QOS_ATTR_MDF_LOW_Q_MASK)) >> ACT_QOS_ATTR_MDF_LOW_Q),
+			((c3->sram.regs.qos_attr & (ACT_QOS_ATTR_MDF_HIGH_Q_MASK)) >> ACT_QOS_ATTR_MDF_HIGH_Q),
+			((c3->sram.regs.dup_attr & (ACT_DUP_POLICER_MASK)) >> ACT_DUP_POLICER_ID));
+	mvOsPrintf("\n");
+
+	/*------------------------------*/
+	/*	hwf_attr 0x1D48		*/
 	/*------------------------------*/
 
 	mvOsPrintf("HWF_ATTR: IPTR    DPTR   CHKSM\n");
@@ -756,13 +882,16 @@ static int mvPp2ClsC3SwActDump(MV_PP2_CLS_C3_ENTRY *c3)
 	mvOsPrintf("\n");
 
 	/*------------------------------*/
-	/*	dup_attr 0x1B6C		*/
+	/*	dup_attr 0x1D4C		*/
 	/*------------------------------*/
 
-	mvOsPrintf("DUP_ATTR: FID     COUNT\n");
-	mvOsPrintf("          0x%2.2x      0x%1.1x\t",
+	mvOsPrintf("DUP_ATTR: FID   COUNT\n");
+	mvOsPrintf("          0x%2.2x  0x%1.1x\n",
 			((c3->sram.regs.dup_attr & ACT_DUP_FID_MASK) >> ACT_DUP_FID),
 			((c3->sram.regs.dup_attr & ACT_DUP_COUNT_MASK) >> ACT_DUP_COUNT));
+
+
+#endif /* CONFIG_MV_ETH_PP2_1 */
 
 	mvOsPrintf("\n\n");
 
@@ -787,6 +916,29 @@ int mvPp2ClsC3HwDump()
 
 	return MV_OK;
 }
+/*-------------------------------------------------------------------------------*/
+/*
+All miss entries are valid,
+the key+heks in miss entries are hot in use and this is the
+reason that we dump onlt action table fields
+*/
+int mvPp2ClsC3HwMissDump()
+{
+	int index;
+	MV_PP2_CLS_C3_ENTRY c3;
+
+	mvPp2ClsC3SwClear(&c3);
+
+	for (index = 0; index < MV_PP2_CLS_C3_MISS_TBL_SIZE; index++) {
+		mvPp2ClsC3HwMissRead(&c3, index);
+		mvOsPrintf("INDEX[0x%3.3X]\n", index);
+		mvPp2ClsC3SwActDump(&c3);
+		mvOsPrintf("----------------------------------------------------------------------\n");
+	}
+
+	return MV_OK;
+}
+
 
 /*-------------------------------------------------------------------------------*/
 int mvPp2ClsC3HwExtDump()
@@ -967,7 +1119,28 @@ int mvPp2ClsC3ForwardSet(MV_PP2_CLS_C3_ENTRY *c3, int cmd)
 	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
+#ifdef CONFIG_MV_ETH_PP2_1
+int mvPp2ClsC3PolicerSet(MV_PP2_CLS_C3_ENTRY *c3, int cmd, int policerId, int bank)
+{
+	PTR_VALIDATE(c3);
+	POS_RANGE_VALIDATE(cmd, UPDATE_AND_LOCK);
+	POS_RANGE_VALIDATE(policerId, ACT_DUP_POLICER_MAX);
+	BIT_RANGE_VALIDATE(bank);
 
+	c3->sram.regs.actions &= ~ACT_POLICER_SELECT_MASK;
+	c3->sram.regs.actions |= (cmd << ACT_POLICER_SELECT);
+
+	c3->sram.regs.dup_attr &= ~ACT_DUP_POLICER_MASK;
+	c3->sram.regs.dup_attr |= (policerId << ACT_DUP_POLICER_ID);
+
+	if (bank)
+		c3->sram.regs.dup_attr |= ACT_DUP_POLICER_BANK_MASK;
+	else
+		c3->sram.regs.dup_attr &= ~ACT_DUP_POLICER_BANK_MASK;
+
+	return MV_OK;
+}
+#else
 int mvPp2ClsC3PolicerSet(MV_PP2_CLS_C3_ENTRY *c3, int cmd, int policerId)
 {
 	PTR_VALIDATE(c3);
@@ -981,7 +1154,24 @@ int mvPp2ClsC3PolicerSet(MV_PP2_CLS_C3_ENTRY *c3, int cmd, int policerId)
 	c3->sram.regs.dup_attr |= (policerId << ACT_DUP_POLICER_ID);
 	return MV_OK;
 }
+#endif /*CONFIG_MV_ETH_PP2_1*/
+ /*-------------------------------------------------------------------------------*/
+int mvPp2ClsC3FlowIdEn(MV_PP2_CLS_C3_ENTRY *c3, int flowid_en)
+{
+	PTR_VALIDATE(c3);
+
+	/*set Flow ID enable or disable*/
+	if (flowid_en)
+		c3->sram.regs.actions |= (1 << ACT_FLOW_ID_EN);
+	else
+		c3->sram.regs.actions &= ~(1 << ACT_FLOW_ID_EN);
+
+	return MV_OK;
+}
 /*-------------------------------------------------------------------------------*/
+/*
+  PPv2.1 (feature MAS 3.7) function changed , get also MTU index as parameter
+ */
 int mvPp2ClsC3ModSet(MV_PP2_CLS_C3_ENTRY *c3, int data_ptr, int instr_offs, int l4_csum)
 {
 	PTR_VALIDATE(c3);
@@ -999,6 +1189,22 @@ int mvPp2ClsC3ModSet(MV_PP2_CLS_C3_ENTRY *c3, int data_ptr, int instr_offs, int 
 
 	return MV_OK;
 }
+
+
+/*-------------------------------------------------------------------------------*/
+/*
+  PPv2.1 (feature MAS 3.7) mtu - new field at action table
+*/
+
+int mvPp2ClsC3MtuSet(MV_PP2_CLS_C3_ENTRY *c3, int mtu_inx)
+{
+	PTR_VALIDATE(c3);
+	POS_RANGE_VALIDATE(mtu_inx, ACT_HWF_ATTR_MTU_INX_MAX);
+
+	c3->sram.regs.hwf_attr &= ~ACT_HWF_ATTR_MTU_INX_MASK;
+	c3->sram.regs.hwf_attr |= (mtu_inx << ACT_HWF_ATTR_MTU_INX);
+	return MV_OK;
+}
 /*-------------------------------------------------------------------------------*/
 
 int mvPp2ClsC3DupSet(MV_PP2_CLS_C3_ENTRY *c3, int dupid, int count)
@@ -1007,15 +1213,55 @@ int mvPp2ClsC3DupSet(MV_PP2_CLS_C3_ENTRY *c3, int dupid, int count)
 	POS_RANGE_VALIDATE(count, ACT_DUP_COUNT_MAX);
 	POS_RANGE_VALIDATE(dupid, ACT_DUP_FID_MAX);
 
-	/*set Flow ID enable*/
-	c3->sram.regs.actions |= (1 << ACT_FLOW_ID_EN);
-
 	/*set flowid and count*/
 	c3->sram.regs.dup_attr &= ~(ACT_DUP_FID_MASK | ACT_DUP_COUNT_MASK);
 	c3->sram.regs.dup_attr |= (dupid << ACT_DUP_FID);
 	c3->sram.regs.dup_attr |= (count << ACT_DUP_COUNT);
 
 	return MV_OK;
+}
+
+/*-------------------------------------------------------------------------------*/
+/* PPv2.1 (feature MAS 3.14) cls sequence */
+int mvPp2ClsC3SeqSet(MV_PP2_CLS_C3_ENTRY *c3, int id,  int bits_offs,  int bits)
+{
+	unsigned int low_bits, high_bits = 0;
+
+	PTR_VALIDATE(c3);
+	POS_RANGE_VALIDATE(bits, MV_PP2_CLS_SEQ_SIZE_MAX);
+	POS_RANGE_VALIDATE(id, (1 << bits) - 1);
+	POS_RANGE_VALIDATE(bits_offs + bits, MV_PP2_CLS3_ACT_SEQ_SIZE);
+
+	if (bits_offs >= DWORD_BITS_LEN)
+		high_bits = bits;
+
+	else if (bits_offs + bits > DWORD_BITS_LEN)
+		high_bits = (bits_offs + bits) % DWORD_BITS_LEN;
+
+	low_bits = bits - high_bits;
+
+	/*
+	high_bits hold the num of bits that we need to write in seq_h_attr
+	low_bits hold the num of bits that we need to write in seq_l_attr
+	*/
+
+	if (low_bits) {
+		/* mask and set new value in seq_l_attr*/
+		c3->sram.regs.seq_l_attr &= ~(((1 << low_bits) - 1)  << bits_offs);
+		c3->sram.regs.seq_l_attr |= (id  << bits_offs);
+	}
+
+	if (high_bits) {
+		int high_id = id >> low_bits;
+		int high_offs = (low_bits == 0) ? (bits_offs % DWORD_BITS_LEN) : 0;
+
+		/* mask and set new value in seq_h_attr*/
+		c3->sram.regs.seq_h_attr &= ~(((1 << high_bits) - 1)  << high_offs);
+		c3->sram.regs.seq_h_attr |= (high_id << high_offs);
+	}
+
+	return MV_OK;
+
 }
 
 /*-------------------------------------------------------------------------------*/
@@ -1045,9 +1291,15 @@ int mvPp2ClsC3HitCntrsClear(int lkpType)
 int mvPp2ClsC3HitCntrsClearAll(void)
 {
 	int iter = 0;
+/*
+  PPv2.1 (feature MAS 3.16)  CLEAR_COUNTERS size changed, clear all code changed from 0x1f to 0x3f
+*/
 
-	mvPp2WrReg(MV_PP2_CLS3_CLEAR_COUNTERS_REG, 0x1F /*clear all*/);
-
+#ifdef CONFIG_MV_ETH_PP2_1
+	mvPp2WrReg(MV_PP2_CLS3_CLEAR_COUNTERS_REG, MV_PP2_V1_CLS3_CLEAR_ALL);
+#else
+	mvPp2WrReg(MV_PP2_CLS3_CLEAR_COUNTERS_REG, MV_PP2_V0_CLS3_CLEAR_ALL);
+#endif
 	/* wait to clear het counters done bit */
 	while (!mvPp2ClsC3HitCntrClearDone())
 		if (++iter >= RETRIES_EXCEEDED) {
@@ -1069,10 +1321,39 @@ int mvPp2ClsC3HitCntrsRead(int index, MV_U32 *cntr)
 	mvPp2WrReg(MV_PP2_CLS3_DB_INDEX_REG, index);
 
 	/*counter read*/
-	counter = mvPp2RdReg(MV_PP2_CLS3_HIT_COUNTER_REG) & MV_PP2_CLS3_HIT_COUNTER_MASK;
+#ifdef CONFIG_MV_ETH_PP2_1
+	counter = mvPp2RdReg(MV_PP2_CLS3_HIT_COUNTER_REG) & MV_PP2_V1_CLS3_HIT_COUNTER_MASK;
+#else
+	counter = mvPp2RdReg(MV_PP2_CLS3_HIT_COUNTER_REG) & MV_PP2_V0_CLS3_HIT_COUNTER_MASK;
+#endif
 
 	if (!cntr)
-		mvOsPrintf("ADDR:0x%3.3x	COUNTER VAL:0x%4.4x\n", index, counter);
+		mvOsPrintf("ADDR:0x%3.3x	COUNTER VAL:0x%6.6x\n", index, counter);
+	else
+		*cntr = counter;
+	return MV_OK;
+}
+/*-------------------------------------------------------------------------------*/
+
+int mvPp2ClsC3HitCntrsMissRead(int lkp_type, MV_U32 *cntr)
+{
+	unsigned int counter;
+	int index;
+
+	POS_RANGE_VALIDATE(lkp_type, MV_PP2_CLS_C3_MISS_TBL_SIZE - 1);
+
+
+	/*set miss bit to 1, ppv2.1 mas 3.16*/
+	index = (lkp_type | MV_PP2_CLS3_DB_MISS_MASK);
+
+	/*write entry index*/
+	mvPp2WrReg(MV_PP2_CLS3_DB_INDEX_REG, index);
+
+	/*counter read*/
+	counter = mvPp2RdReg(MV_PP2_CLS3_HIT_COUNTER_REG) & MV_PP2_V1_CLS3_HIT_COUNTER_MASK;
+
+	if (!cntr)
+		mvOsPrintf("LKPT:0x%3.3x	COUNTER VAL:0x%6.6x\n", lkp_type, counter);
 	else
 		*cntr = counter;
 	return MV_OK;
@@ -1091,9 +1372,20 @@ int mvPp2ClsC3HitCntrsReadAll(void)
 		if (counter == 0)
 			continue;
 
-		mvOsPrintf("ADDR:0x%3.3x	COUNTER VAL:0x%4.4x\n", index, counter);
+		mvOsPrintf("ADDR:0x%3.3x	COUNTER VAL:0x%6.6x\n", index, counter);
 	}
 
+#ifdef CONFIG_MV_ETH_PP2_1
+	for (index = 0; index < MV_PP2_CLS_C3_MISS_TBL_SIZE; index++) {
+		mvPp2ClsC3HitCntrsMissRead(index, &counter);
+
+		/* skip initial counter value */
+		if (counter == 0)
+			continue;
+
+		mvOsPrintf("LKPT:0x%3.3x	COUNTER VAL:0x%6.6x\n", index, counter);
+	}
+#endif
 	return MV_OK;
 }
 
@@ -1102,17 +1394,17 @@ int mvPp2ClsC3HitCntrsReadAll(void)
 /*-------------------------------------------------------------------------------*/
 int mvPp2ClsC3ScanStart()
 {
-	int scState, iter = 0;
+	int complete, iter = 0;
 
 	/* trigger scan operation */
 	mvPp2WrReg(MV_PP2_CLS3_SC_ACT_REG, (1 << MV_PP2_CLS3_SC_ACT));
 
 	do {
-		mvPp2ClsC3ScanStateGet(&scState);
-	} while (scState != 0 && ((iter++) < RETRIES_EXCEEDED));/*scan compleated*/
+		complete = mvPp2ClsC3ScanIsComplete();
+
+	} while ((!complete) && ((iter++) < RETRIES_EXCEEDED));/*scan compleated*/
 
 	if (iter >= RETRIES_EXCEEDED) {
-		mvOsPrintf("%s:Error - retries exceeded.\n", __func__);
 		return MV_CLS3_RETRIES_EXCEEDED;
 	}
 
@@ -1123,9 +1415,13 @@ int mvPp2ClsC3ScanStart()
 int mvPp2ClsC3ScanRegs()
 {
 	unsigned int prop, propVal;
-
+#ifdef CONFIG_MV_ETH_PP2_1
+	unsigned int treshHold;
+	treshHold = mvPp2RdReg(MV_PP2_CLS3_SC_TH_REG);
+#endif
 	prop = mvPp2RdReg(MV_PP2_CLS3_SC_PROP_REG);
 	propVal = mvPp2RdReg(MV_PP2_CLS3_SC_PROP_VAL_REG);
+
 
 	mvOsPrintf("%-32s: 0x%x = 0x%08x\n", "MV_PP2_CLS3_SC_PROP_REG", MV_PP2_CLS3_SC_PROP_REG, prop);
 	mvOsPrintf("%-32s: 0x%x = 0x%08x\n", "MV_PP2_CLS3_SC_PROP_VAL_REG", MV_PP2_CLS3_SC_PROP_VAL_REG, propVal);
@@ -1141,13 +1437,23 @@ int mvPp2ClsC3ScanRegs()
 
 	/* start index */
 	mvOsPrintf("START     = 0x%x\n", (MV_PP2_CLS3_SC_PROP_START_ENTRY_MASK & prop) >> MV_PP2_CLS3_SC_PROP_START_ENTRY);
-
+#ifdef CONFIG_MV_ETH_PP2_1
 	/* threshold */
-	mvOsPrintf("THRESHOLD = 0x%x\n", (MV_PP2_CLS3_SC_PROP_VAL_TH_MASK & propVal) >> MV_PP2_CLS3_SC_PROP_VAL_TH);
+	mvOsPrintf("THRESHOLD = 0x%x\n", (MV_PP2_CLS3_SC_TH_MASK & treshHold) >> MV_PP2_CLS3_SC_TH);
 
 	/* delay value */
-	mvOsPrintf("DELAY     = 0x%x\n\n", (MV_PP2_CLS3_SC_PROP_VAL_DELAY_MASK & propVal) >> MV_PP2_CLS3_SC_PROP_VAL_DELAY);
+	mvOsPrintf("DELAY     = 0x%x\n\n",
+			(MV_PP2_V1_CLS3_SC_PROP_VAL_DELAY_MASK & propVal) >> MV_PP2_V1_CLS3_SC_PROP_VAL_DELAY);
 
+#else
+	/* threshold */
+	mvOsPrintf("THRESHOLD = 0x%x\n",
+			(MV_PP2_V0_CLS3_SC_PROP_VAL_TH_MASK & propVal) >> MV_PP2_V0_CLS3_SC_PROP_VAL_TH);
+
+	/* delay value */
+	mvOsPrintf("DELAY     = 0x%x\n\n",
+			(MV_PP2_V0_CLS3_SC_PROP_VAL_DELAY_MASK & propVal) >> MV_PP2_V0_CLS3_SC_PROP_VAL_DELAY);
+#endif
 	return MV_OK;
 }
 /*-------------------------------------------------------------------------------*/
@@ -1155,23 +1461,31 @@ int mvPp2ClsC3ScanRegs()
 /*mod = 0 below th . mode = 1 above threshold*/
 int mvPp2ClsC3ScanThreshSet(int mode, int thresh)
 {
-	unsigned int prop, propVal;
+	unsigned int regVal;
 
 	POS_RANGE_VALIDATE(mode, 1); /* one bit */
-	POS_RANGE_VALIDATE(thresh, MV_PP2_CLS3_SC_PROP_VAL_TH_MAX);
+#ifdef CONFIG_MV_ETH_PP2_1
+	POS_RANGE_VALIDATE(thresh, MV_PP2_CLS3_SC_TH_MAX);
+#else
+	POS_RANGE_VALIDATE(thresh, MV_PP2_V0_CLS3_SC_PROP_VAL_TH_MAX);
+#endif
 
-	prop = mvPp2RdReg(MV_PP2_CLS3_SC_PROP_REG);
-	propVal = mvPp2RdReg(MV_PP2_CLS3_SC_PROP_VAL_REG);
+	regVal = mvPp2RdReg(MV_PP2_CLS3_SC_PROP_REG);
+	regVal &= ~MV_PP2_CLS3_SC_PROP_TH_MODE_MASK;
+	regVal |= (mode << MV_PP2_CLS3_SC_PROP_TH_MODE);
+	mvPp2WrReg(MV_PP2_CLS3_SC_PROP_REG, regVal);
 
-
-	prop &= ~MV_PP2_CLS3_SC_PROP_TH_MODE_MASK;
-	prop |= (mode << MV_PP2_CLS3_SC_PROP_TH_MODE);
-
-	propVal &= ~MV_PP2_CLS3_SC_PROP_VAL_TH_MASK;
-	propVal |= (thresh << MV_PP2_CLS3_SC_PROP_VAL_TH);
-
-	mvPp2WrReg(MV_PP2_CLS3_SC_PROP_REG, prop);
-	mvPp2WrReg(MV_PP2_CLS3_SC_PROP_VAL_REG, propVal);
+#ifdef CONFIG_MV_ETH_PP2_1
+	regVal = mvPp2RdReg(MV_PP2_CLS3_SC_TH_REG);
+	regVal &= ~MV_PP2_CLS3_SC_TH_MASK;
+	regVal |= (thresh << MV_PP2_CLS3_SC_TH);
+	mvPp2WrReg(MV_PP2_CLS3_SC_TH_REG, regVal);
+#else
+	regVal = mvPp2RdReg(MV_PP2_CLS3_SC_PROP_VAL_REG);
+	regVal &= ~MV_PP2_V0_CLS3_SC_PROP_VAL_TH_MASK;
+	regVal |= (thresh << MV_PP2_V0_CLS3_SC_PROP_VAL_TH);
+	mvPp2WrReg(MV_PP2_CLS3_SC_PROP_VAL_REG, regVal);
+#endif
 
 	return MV_OK;
 }
@@ -1240,9 +1554,13 @@ int mvPp2ClsC3ScanDelaySet(int time)
 	POS_RANGE_VALIDATE(time, MV_PP2_CLS3_SC_PROP_VAL_DELAY_MAX);
 
 	propVal = mvPp2RdReg(MV_PP2_CLS3_SC_PROP_VAL_REG);
-	propVal &= ~MV_PP2_CLS3_SC_PROP_VAL_DELAY_MASK;
-	propVal |= (time << MV_PP2_CLS3_SC_PROP_VAL_DELAY);
-
+#ifdef CONFIG_MV_ETH_PP2_1
+	propVal &= ~MV_PP2_V1_CLS3_SC_PROP_VAL_DELAY_MASK;
+	propVal |= (time << MV_PP2_V1_CLS3_SC_PROP_VAL_DELAY);
+#else
+	propVal &= ~MV_PP2_V0_CLS3_SC_PROP_VAL_DELAY_MASK;
+	propVal |= (time << MV_PP2_V0_CLS3_SC_PROP_VAL_DELAY);
+#endif
 	mvPp2WrReg(MV_PP2_CLS3_SC_PROP_VAL_REG, propVal);
 
 	return MV_OK;
@@ -1271,11 +1589,14 @@ int mvPp2ClsC3ScanResRead(int index, int *addr, int *cnt)
 	/*read date*/
 	regVal = mvPp2RdReg(MV_PP2_CLS3_SC_RES_REG);
 	addres = (regVal & MV_PP2_CLS3_SC_RES_ENTRY_MASK) >> MV_PP2_CLS3_SC_RES_ENTRY;
-	counter = (regVal & MV_PP2_CLS3_SC_RES_CTR_MASK) >> MV_PP2_CLS3_SC_RES_CTR;
-
+#ifdef CONFIG_MV_ETH_PP2_1
+	counter = (regVal & MV_PP2_V1_CLS3_SC_RES_CTR_MASK) >> MV_PP2_V1_CLS3_SC_RES_CTR;
+#else
+	counter = (regVal & MV_PP2_V0_CLS3_SC_RES_CTR_MASK) >> MV_PP2_V0_CLS3_SC_RES_CTR;
+#endif
 	/* if one of parameters is null - func call from sysfs*/
 	if ((!addr) | (!cnt))
-		mvOsPrintf("INDEX:0x%2.2x	ADDR:0x%3.3x	COUNTER VAL:0x%4.4x\n", index, addres, counter);
+		mvOsPrintf("INDEX:0x%2.2x	ADDR:0x%3.3x	COUNTER VAL:0x%6.6x\n", index, addres, counter);
 	else {
 		*addr = addres;
 		*cnt = counter;
@@ -1293,7 +1614,7 @@ int mvPp2ClsC3ScanResDump()
 	mvOsPrintf("INDEX	ADDRESS		COUNTER\n");
 	for (index = 0; index < resNum; index++) {
 		mvPp2ClsC3ScanResRead(index, &addr, &cnt);
-		mvOsPrintf("[0x%2.2x]\t[0x%3.3x]\t[0x%4.4x]\n", index, addr, cnt);
+		mvOsPrintf("[0x%2.2x]\t[0x%3.3x]\t[0x%6.6x]\n", index, addr, cnt);
 	}
 
 	return MV_OK;
@@ -1314,7 +1635,7 @@ int mvPp2ClsC3ScanNumOfResGet(int *resNum)
 		return MV_CLS3_RETRIES_EXCEEDED;
 	}
 
-	regVal = mvPp2RdReg(MV_PP2_CLS3_SC_TIMER_REG);
+	regVal = mvPp2RdReg(MV_PP2_CLS3_STATE_REG);
 	regVal &= MV_PP2_CLS3_STATE_NO_OF_SC_RES_MASK;
 	regVal >>= MV_PP2_CLS3_STATE_NO_OF_SC_RES;
 	*resNum = regVal;

@@ -387,6 +387,55 @@ int mvPp2PrsHwWrite(MV_PP2_PRS_ENTRY *pe)
 	return MV_OK;
 }
 
+/* Read tcam hit counter*/
+/* PPv2.1 MASS 3.20 new feature */
+/* return tcam entry (tid) hits counter or error if tid is out of range */
+static int mvPp2V1PrsHwTcamCntDump(int tid, unsigned int *cnt)
+{
+	unsigned int regVal;
+
+	POS_RANGE_VALIDATE(tid, MV_PP2_PRS_TCAM_SIZE - 1);
+
+	/* write index */
+	mvPp2WrReg(MV_PP2_PRS_TCAM_HIT_IDX_REG, tid);
+
+	regVal = mvPp2RdReg(MV_PP2_PRS_TCAM_HIT_CNT_REG);
+	regVal &= MV_PP2_PRS_TCAM_HIT_CNT_MASK;
+
+	if (cnt)
+		*cnt = regVal;
+	else
+		mvOsPrintf("HIT COUNTER: %d\n", regVal);
+
+	return MV_OK;
+}
+/* mvPp2PrsHwHitsDump - dump all non zeroed hit counters and the associated TCAM entries */
+/* PPv2.1 MASS 3.20 new feature */
+int mvPp2V1PrsHwHitsDump()
+{
+	int index;
+	unsigned int cnt;
+	MV_PP2_PRS_ENTRY pe;
+
+	for (index = 0; index < MV_PP2_PRS_TCAM_SIZE; index++) {
+		pe.index = index;
+		mvPp2PrsHwRead(&pe);
+		if ((pe.tcam.word[TCAM_INV_WORD] & TCAM_INV_MASK) == TCAM_VALID) {
+			mvPp2V1PrsHwTcamCntDump(index, &cnt);
+
+			if (cnt == 0)
+				continue;
+
+			mvOsPrintf("%s\n", mvPrsShadowTbl[index].text);
+			mvPp2PrsSwDump(&pe);
+			mvOsPrintf("       HITS: %d\n", cnt);
+			mvOsPrintf("-------------------------------------------------------------------------\n");
+		}
+	}
+
+	return MV_OK;
+}
+
 /* delete hw entry (set as invalid) */
 int mvPp2PrsHwInv(int tid)
 {
@@ -439,13 +488,15 @@ int mvPp2PrsHwDump()
 		if ((pe.tcam.word[TCAM_INV_WORD] & TCAM_INV_MASK) == TCAM_VALID) {
 			mvOsPrintf("%s\n", mvPrsShadowTbl[index].text);
 			mvPp2PrsSwDump(&pe);
+#ifdef MV_ETH_PPV2_1
+			mvPp2V1PrsHwTcamCntDump(index);
+#endif
 			mvOsPrintf("-------------------------------------------------------------------------\n");
 		}
 	}
 
 	return MV_OK;
 }
-
 
 int mvPp2PrsSwDump(MV_PP2_PRS_ENTRY *pe)
 {

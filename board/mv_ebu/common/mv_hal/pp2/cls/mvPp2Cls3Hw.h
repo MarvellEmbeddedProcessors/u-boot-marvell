@@ -66,6 +66,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __MV_CLS3_HW_H__
 
 #include "mvPp2ClsActHw.h"
+#include "mvPp2ClsHw.h"
 #include "../common/mvPp2ErrCode.h"
 #include "../common/mvPp2Common.h"
 #include "../gbe/mvPp2GbeRegs.h"
@@ -74,80 +75,104 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*			Classifier C3 Top Registers	    			 */
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_KEY_CTRL_REG			(MV_PP2_REG_BASE + 0x1C10)
-#define KEY_CTRL_L4					0
-#define KEY_CTRL_L4_BITS				3
-#define KEY_CTRL_L4_MAX					((1 << KEY_CTRL_L4_BITS) - 1)
-#define KEY_CTRL_L4_MASK				(((1 << KEY_CTRL_L4_BITS) - 1) << KEY_CTRL_L4)
+#define MV_PP2_CLS3_KEY_CTRL_REG		(MV_PP2_REG_BASE + 0x1C10)
+#define KEY_CTRL_L4				0
+#define KEY_CTRL_L4_BITS			3
+#define KEY_CTRL_L4_MAX				((1 << KEY_CTRL_L4_BITS) - 1)
+#define KEY_CTRL_L4_MASK			(((1 << KEY_CTRL_L4_BITS) - 1) << KEY_CTRL_L4)
+
+/*
+  PPv2.1 (feature MAS 3.16) LKP_TYPE size and offset changed
+*/
+#ifdef CONFIG_MV_ETH_PP2_1
+#define KEY_CTRL_LKP_TYPE			4
+#define KEY_CTRL_LKP_TYPE_BITS			6
+#else
+#define KEY_CTRL_LKP_TYPE			8
+#define KEY_CTRL_LKP_TYPE_BITS			4
+#endif
+
+#define KEY_CTRL_LKP_TYPE_MAX			((1 << KEY_CTRL_LKP_TYPE_BITS) - 1)
+#define KEY_CTRL_LKP_TYPE_MASK			(((1 << KEY_CTRL_LKP_TYPE_BITS) - 1) << KEY_CTRL_LKP_TYPE)
 
 
-#define KEY_CTRL_LKP_TYPE				8
-#define KEY_CTRL_LKP_TYPE_BITS				4
-#define KEY_CTRL_LKP_TYPE_MAX				((1 << KEY_CTRL_LKP_TYPE_BITS) - 1)
-#define KEY_CTRL_LKP_TYPE_MASK				(((1 << KEY_CTRL_LKP_TYPE_BITS) - 1) << KEY_CTRL_LKP_TYPE)
+#define KEY_CTRL_PRT_ID_TYPE			12
+#define KEY_CTRL_PRT_ID_TYPE_BITS		2
+#define KEY_CTRL_PRT_ID_TYPE_MAX		((1 << KEY_CTRL_PRT_ID_TYPE_BITS) - 1)
+#define KEY_CTRL_PRT_ID_TYPE_MASK		((KEY_CTRL_PRT_ID_TYPE_MAX) << KEY_CTRL_PRT_ID_TYPE)
 
+#define KEY_CTRL_PRT_ID				16
+#define KEY_CTRL_PRT_ID_BITS			8
+#define KEY_CTRL_PRT_ID_MAX			((1 << KEY_CTRL_PRT_ID_BITS) - 1)
+#define KEY_CTRL_PRT_ID_MASK			(((1 << KEY_CTRL_PRT_ID_BITS) - 1) << KEY_CTRL_PRT_ID)
 
-#define KEY_CTRL_PRT_ID_TYPE				12
-#define KEY_CTRL_PRT_ID_TYPE_BITS			2
-#define KEY_CTRL_PRT_ID_TYPE_MAX			((1<<KEY_CTRL_PRT_ID_TYPE_BITS) - 1)
-#define KEY_CTRL_PRT_ID_TYPE_MASK			(((1<<KEY_CTRL_PRT_ID_TYPE_BITS) - 1) << KEY_CTRL_PRT_ID_TYPE)
-
-#define KEY_CTRL_PRT_ID					16
-#define KEY_CTRL_PRT_ID_BITS				8
-#define KEY_CTRL_PRT_ID_MAX				((1<<KEY_CTRL_PRT_ID_BITS) - 1)
-#define KEY_CTRL_PRT_ID_MASK				(((1<<KEY_CTRL_PRT_ID_BITS) - 1) << KEY_CTRL_PRT_ID)
-
-#define KEY_CTRL_HEK_SIZE				24
-#define KEY_CTRL_HEK_SIZE_BITS				6
-#define KEY_CTRL_HEK_SIZE_MAX				36
-#define KEY_CTRL_HEK_SIZE_MASK				(((1<<KEY_CTRL_HEK_SIZE_BITS) - 1) << KEY_CTRL_HEK_SIZE)
+#define KEY_CTRL_HEK_SIZE			24
+#define KEY_CTRL_HEK_SIZE_BITS			6
+#define KEY_CTRL_HEK_SIZE_MAX			36
+#define KEY_CTRL_HEK_SIZE_MASK			(((1 << KEY_CTRL_HEK_SIZE_BITS) - 1) << KEY_CTRL_HEK_SIZE)
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_KEY_HEK_REG(reg_num)		(MV_PP2_REG_BASE + 0x1C34 - 4*(reg_num))
+#define MV_PP2_CLS3_KEY_HEK_REG(reg_num)	(MV_PP2_REG_BASE + 0x1C34 - 4*(reg_num))
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_QRY_ACT_REG				(MV_PP2_REG_BASE + 0x1C40)
-#define MV_PP2_CLS3_QRY_ACT				0
+#define MV_PP2_CLS3_QRY_ACT_REG			(MV_PP2_REG_BASE + 0x1C40)
+#define MV_PP2_CLS3_QRY_ACT			0
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_QRY_RES_HASH_REG(hash)		(MV_PP2_REG_BASE + 0x1C50 + 4*(hash))
-#define MV_PP2_CLS3_HASH_BANKS_NUM			8
+#define MV_PP2_CLS3_QRY_RES_HASH_REG(hash)	(MV_PP2_REG_BASE + 0x1C50 + 4*(hash))
+#define MV_PP2_CLS3_HASH_BANKS_NUM		8
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_HASH_OP_REG				(MV_PP2_REG_BASE + 0x1C84)
-
-#define MV_PP2_CLS3_HASH_OP_TBL_ADDR			0
-#define MV_PP2_CLS3_HASH_OP_TBL_ADDR_BITS		12
-#define MV_PP2_CLS3_HASH_OP_TBL_ADDR_MASK		(((1 << MV_PP2_CLS3_HASH_OP_TBL_ADDR_BITS) - 1) << MV_PP2_CLS3_HASH_OP_TBL_ADDR)
-#define MV_PP2_CLS3_HASH_OP_TBL_ADDR_MAX		((1 << MV_PP2_CLS3_HASH_OP_TBL_ADDR_BITS) - 1)
-
-#define MV_PP2_CLS3_HASH_OP_DEL				14
-#define MV_PP2_CLS3_HASH_OP_ADD				15
-
-#define MV_PP2_CLS3_HASH_OP_EXT_TBL_ADDR		16
-#define MV_PP2_CLS3_HASH_OP_EXT_TBL_ADDR_BITS		8
-#define MV_PP2_CLS3_HASH_OP_EXT_TBL_ADDR_MASK		(((1 << MV_PP2_CLS3_HASH_OP_EXT_TBL_ADDR_BITS) - 1) << MV_PP2_CLS3_HASH_OP_EXT_TBL_ADDR)
-#define MV_PP2_CLS3_HASH_OP_EXT_TBL_ADDR_MAX		((1 << MV_PP2_CLS3_HASH_OP_EXT_TBL_ADDR_BITS) - 1)
-
-#define MV_PP2_CLS3_HASH_OP_INIT_CTR_VAL		24
+#define MV_PP2_CLS3_INIT_HIT_CNT_REG	(MV_PP2_REG_BASE + 0x1C80)
+#define MV_PP2_CLS3_INIT_HIT_CNT_OFFS	6
+#define MV_PP2_CLS3_INIT_HIT_CNT_BITS	18
+#define MV_PP2_CLS3_INIT_HIT_CNT_MASK	(((1 << MV_PP2_CLS3_INIT_HIT_CNT_BITS) - 1) << MV_PP2_CLS3_INIT_HIT_CNT_OFFS)
+#define MV_PP2_CLS3_INIT_HIT_CNT_MAX	((1 << MV_PP2_CLS3_INIT_HIT_CNT_BITS) - 1)
 /*-------------------------------------------------------------------------------*/
-#define MV_PP2_CLS3_STATE_REG				(MV_PP2_REG_BASE + 0x1C8C)
-#define MV_PP2_CLS3_STATE_CPU_DONE			0
-#define MV_PP2_CLS3_STATE_CPU_DONE_MASK			(1 << MV_PP2_CLS3_STATE_CPU_DONE)
 
-#define MV_PP2_CLS3_STATE_CLEAR_CTR_DONE		1
-#define MV_PP2_CLS3_STATE_CLEAR_CTR_DONE_MASK		(1 << MV_PP2_CLS3_STATE_CLEAR_CTR_DONE)
+#define MV_PP2_CLS3_HASH_OP_REG			(MV_PP2_REG_BASE + 0x1C84)
 
-#define MV_PP2_CLS3_STATE_SC_DONE			2
-#define MV_PP2_CLS3_STATE_SC_DONE_MASK			(1 << MV_PP2_CLS3_STATE_SC_DONE)
+#define MV_PP2_CLS3_HASH_OP_TBL_ADDR		0
+#define MV_PP2_CLS3_HASH_OP_TBL_ADDR_BITS	12
+#define MV_PP2_CLS3_HASH_OP_TBL_ADDR_MAX	((1 << MV_PP2_CLS3_HASH_OP_TBL_ADDR_BITS) - 1)
+#define MV_PP2_CLS3_HASH_OP_TBL_ADDR_MASK	((MV_PP2_CLS3_HASH_OP_TBL_ADDR_MAX) << MV_PP2_CLS3_HASH_OP_TBL_ADDR)
 
-#define MV_PP2_CLS3_STATE_OCCIPIED			8
-#define MV_PP2_CLS3_STATE_OCCIPIED_BITS			8
-#define MV_PP2_CLS3_STATE_OCCIPIED_MASK			(((1 << MV_PP2_CLS3_STATE_OCCIPIED_BITS) - 1) << MV_PP2_CLS3_STATE_OCCIPIED)
+/*PPv2.1 (feature MAS 3.16) MISS_PTR is new field (one bit) at HASH_OP_REG */
+#define MV_PP2_CLS3_MISS_PTR			12
+#define MV_PP2_CLS3_MISS_PTR_MASK		(1 << MV_PP2_CLS3_MISS_PTR)
 
-#define MV_PP2_CLS3_STATE_SC_STATE			16
-#define MV_PP2_CLS3_STATE_SC_STATE_BITS			2
-#define MV_PP2_CLS3_STATE_SC_STATE_MASK			(((1 << MV_PP2_CLS3_STATE_SC_STATE_BITS) - 1) << MV_PP2_CLS3_STATE_SC_STATE)
+#define MV_PP2_CLS3_HASH_OP_DEL			14
+#define MV_PP2_CLS3_HASH_OP_ADD			15
+
+#define MV_PP2_CLS3_HASH_OP_EXT_TBL_ADDR	16
+#define MV_PP2_CLS3_HASH_OP_EXT_TBL_ADDR_BITS	8
+#define MV_PP2_CLS3_HASH_OP_EXT_TBL_ADDR_MAX	((1 << MV_PP2_CLS3_HASH_OP_EXT_TBL_ADDR_BITS) - 1)
+#define MV_PP2_CLS3_HASH_OP_EXT_TBL_ADDR_MASK	\
+		((MV_PP2_CLS3_HASH_OP_EXT_TBL_ADDR_MAX) << MV_PP2_CLS3_HASH_OP_EXT_TBL_ADDR)
+
+/*PPv2.1 (feature MAS 3.16) INIT_CNT_VAL field removed*/
+#define MV_PP2_CLS3_HASH_OP_INIT_CTR_VAL	24
+/*-------------------------------------------------------------------------------*/
+
+#define MV_PP2_CLS3_STATE_REG			(MV_PP2_REG_BASE + 0x1C8C)
+#define MV_PP2_CLS3_STATE_CPU_DONE		0
+#define MV_PP2_CLS3_STATE_CPU_DONE_MASK		(1 << MV_PP2_CLS3_STATE_CPU_DONE)
+
+#define MV_PP2_CLS3_STATE_CLEAR_CTR_DONE	1
+#define MV_PP2_CLS3_STATE_CLEAR_CTR_DONE_MASK	(1 << MV_PP2_CLS3_STATE_CLEAR_CTR_DONE)
+
+#define MV_PP2_CLS3_STATE_SC_DONE		2
+#define MV_PP2_CLS3_STATE_SC_DONE_MASK		(1 << MV_PP2_CLS3_STATE_SC_DONE)
+
+#define MV_PP2_CLS3_STATE_OCCIPIED		8
+#define MV_PP2_CLS3_STATE_OCCIPIED_BITS		8
+#define MV_PP2_CLS3_STATE_OCCIPIED_MASK		\
+		(((1 << MV_PP2_CLS3_STATE_OCCIPIED_BITS) - 1) << MV_PP2_CLS3_STATE_OCCIPIED)
+
+#define MV_PP2_CLS3_STATE_SC_STATE		16
+#define MV_PP2_CLS3_STATE_SC_STATE_BITS		2
+#define MV_PP2_CLS3_STATE_SC_STATE_MASK		\
+		(((1 << MV_PP2_CLS3_STATE_SC_STATE_BITS) - 1) << MV_PP2_CLS3_STATE_SC_STATE)
 /*
 SCAN STATUS
 0 - scan compleat
@@ -156,120 +181,191 @@ SCAN STATUS
 4 - scan in progress
 */
 
-#define MV_PP2_CLS3_STATE_NO_OF_SC_RES			20
-#define MV_PP2_CLS3_STATE_NO_OF_SC_RES_BITS		9
-#define MV_PP2_CLS3_STATE_NO_OF_SC_RES_MASK		(((1 << MV_PP2_CLS3_STATE_NO_OF_SC_RES_BITS) - 1) << MV_PP2_CLS3_STATE_NO_OF_SC_RES)
+#define MV_PP2_CLS3_STATE_NO_OF_SC_RES		20
+#define MV_PP2_CLS3_STATE_NO_OF_SC_RES_BITS	9
+#define MV_PP2_CLS3_STATE_NO_OF_SC_RES_MASK	\
+		(((1 << MV_PP2_CLS3_STATE_NO_OF_SC_RES_BITS) - 1) << MV_PP2_CLS3_STATE_NO_OF_SC_RES)
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_DB_INDEX_REG			(MV_PP2_REG_BASE + 0x1C90)
+#define MV_PP2_CLS3_DB_INDEX_REG		(MV_PP2_REG_BASE + 0x1C90)
+#define MV_PP2_CLS3_DB_MISS_OFFS		12
+#define MV_PP2_CLS3_DB_MISS_MASK		(1 << MV_PP2_CLS3_DB_MISS_OFFS)
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_HASH_DATA_REG(num)			(MV_PP2_REG_BASE + 0x1CA0 + 4*(num)) /* 0-3 valid val*/
-#define MV_PP2_CLS3_HASH_DATA_REG_NUM			4
-#define MV_PP2_CLS3_HASH_EXT_DATA_REG(num)		(MV_PP2_REG_BASE + 0x1CC0 + 4*(num))
-#define MV_PP2_CLS3_HASH_EXT_DATA_REG_NUM		7
+#define MV_PP2_CLS3_HASH_DATA_REG(num)		(MV_PP2_REG_BASE + 0x1CA0 + 4*(num)) /* 0-3 valid val*/
+#define MV_PP2_CLS3_HASH_DATA_REG_NUM		4
+#define MV_PP2_CLS3_HASH_EXT_DATA_REG(num)	(MV_PP2_REG_BASE + 0x1CC0 + 4*(num))
+#define MV_PP2_CLS3_HASH_EXT_DATA_REG_NUM	7
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_CLEAR_COUNTERS_REG			(MV_PP2_REG_BASE + 0x1D00)
-#define MV_PP2_CLS3_CLEAR_COUNTERS			5
-#define MV_PP2_CLS3_CLEAR_COUNTERS_BITS			5
-#define MV_PP2_CLS3_CLEAR_COUNTERS_MASK			(((1 << MV_PP2_CLS3_CLEAR_COUNTERS_BITS) - 1)  << MV_PP2_CLS3_CLEAR_COUNTERS)
-#define MV_PP2_CLS3_CLEAR_COUNTERS_MAX			0x1F
+#define MV_PP2_CLS3_CLEAR_COUNTERS_REG		(MV_PP2_REG_BASE + 0x1D00)
+#define MV_PP2_CLS3_CLEAR_COUNTERS		0
+/*
+  PPv2.1 (feature MAS 3.16)  CLEAR_COUNTERS size changed, clear all code changed from 0x1f to 0x3f
+*/
+#define MV_PP2_V1_CLS3_CLEAR_COUNTERS_BITS	7
+#define MV_PP2_V1_CLS3_CLEAR_ALL		0x3f
+#define MV_PP2_V1_CLS3_CLEAR_COUNTERS_MAX	0x3F
+#define MV_PP2_V1_CLS3_CLEAR_COUNTERS_MASK	((MV_PP2_V1_CLS3_CLEAR_COUNTERS_MAX) << MV_PP2_V1_CLS3_CLEAR_COUNTERS)
+
+#define MV_PP2_V0_CLS3_CLEAR_COUNTERS_BITS	5
+#define MV_PP2_V0_CLS3_CLEAR_ALL		0x1f
+#define MV_PP2_V0_CLS3_CLEAR_COUNTERS_MAX	0x1F
+#define MV_PP2_V0_CLS3_CLEAR_COUNTERS_MASK	((MV_PP2_V0_CLS3_CLEAR_COUNTERS_MAX)  << MV_PP2_V0_CLS3_CLEAR_COUNTERS)
+
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_HIT_COUNTER_REG			(MV_PP2_REG_BASE + 0x1D08)
-#define MV_PP2_CLS3_HIT_COUNTER				0
-#define MV_PP2_CLS3_HIT_COUNTER_BITS			14
-#define MV_PP2_CLS3_HIT_COUNTER_MASK			(((1 << MV_PP2_CLS3_HIT_COUNTER_BITS) - 1) << MV_PP2_CLS3_HIT_COUNTER)
+#define MV_PP2_CLS3_HIT_COUNTER_REG		(MV_PP2_REG_BASE + 0x1D08)
+#define MV_PP2_CLS3_HIT_COUNTER			0
+/*ppv2.1 his counter field size changed from 14 bits to 24 bits*/
+#define MV_PP2_V0_CLS3_HIT_COUNTER_BITS		14
+#define MV_PP2_V0_CLS3_HIT_COUNTER_MAX		((1 << MV_PP2_V0_CLS3_HIT_COUNTER_BITS) - 1)
+#define MV_PP2_V0_CLS3_HIT_COUNTER_MASK		((MV_PP2_V0_CLS3_HIT_COUNTER_MAX) << MV_PP2_CLS3_HIT_COUNTER)
+
+#define MV_PP2_V1_CLS3_HIT_COUNTER_BITS		24
+#define MV_PP2_V1_CLS3_HIT_COUNTER_MAX		((1 << MV_PP2_V1_CLS3_HIT_COUNTER_BITS) - 1)
+#define MV_PP2_V1_CLS3_HIT_COUNTER_MASK		((MV_PP2_V1_CLS3_HIT_COUNTER_MAX) << MV_PP2_CLS3_HIT_COUNTER)
+
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_SC_PROP_REG				(MV_PP2_REG_BASE + 0x1D10)
+#define MV_PP2_CLS3_SC_PROP_REG			(MV_PP2_REG_BASE + 0x1D10)
 
-#define MV_PP2_CLS3_SC_PROP_TH_MODE			0
-#define MV_PP2_CLS3_SC_PROP_TH_MODE_MASK		(1 << MV_PP2_CLS3_SC_PROP_TH_MODE)
+#define MV_PP2_CLS3_SC_PROP_TH_MODE		0
+#define MV_PP2_CLS3_SC_PROP_TH_MODE_MASK	(1 << MV_PP2_CLS3_SC_PROP_TH_MODE)
 
-#define MV_PP2_CLS3_SC_PROP_CLEAR			1
-#define MV_PP2_CLS3_SC_PROP_CLEAR_MASK			(1 << MV_PP2_CLS3_SC_PROP_CLEAR)
+#define MV_PP2_CLS3_SC_PROP_CLEAR		1
+#define MV_PP2_CLS3_SC_PROP_CLEAR_MASK		(1 << MV_PP2_CLS3_SC_PROP_CLEAR)
 
-#define MV_PP2_CLS3_SC_PROP_LKP_TYPE_EN			3
-#define MV_PP2_CLS3_SC_PROP_LKP_TYPE_EN_MASK		(1 << MV_PP2_CLS3_SC_PROP_LKP_TYPE_EN)
+#define MV_PP2_CLS3_SC_PROP_LKP_TYPE_EN		3
+#define MV_PP2_CLS3_SC_PROP_LKP_TYPE_EN_MASK	(1 << MV_PP2_CLS3_SC_PROP_LKP_TYPE_EN)
 
-#define MV_PP2_CLS3_SC_PROP_LKP_TYPE			4
-#define MV_PP2_CLS3_SC_PROP_LKP_TYPE_BITS		4
-#define MV_PP2_CLS3_SC_PROP_LKP_TYPE_MAX		((1 << MV_PP2_CLS3_SC_PROP_LKP_TYPE_BITS) - 1)
-#define MV_PP2_CLS3_SC_PROP_LKP_TYPE_MASK		(((1 << MV_PP2_CLS3_SC_PROP_LKP_TYPE_BITS) - 1) << MV_PP2_CLS3_SC_PROP_LKP_TYPE)
+#define MV_PP2_CLS3_SC_PROP_LKP_TYPE		4
+/*
+  PPv2.1 (feature MAS 3.16) LKP_TYPE size and offset changed
+*/
 
-#define MV_PP2_CLS3_SC_PROP_START_ENTRY			16
-#define MV_PP2_CLS3_SC_PROP_START_ENTRY_MASK		(((1 << MV_PP2_CLS3_HASH_OP_TBL_ADDR_BITS) - 1) << MV_PP2_CLS3_SC_PROP_START_ENTRY)
+#ifdef CONFIG_MV_ETH_PP2_1
+#define MV_PP2_CLS3_SC_PROP_LKP_TYPE_BITS	6
+#else
+#define MV_PP2_CLS3_SC_PROP_LKP_TYPE_BITS	4
+#endif
+
+#define MV_PP2_CLS3_SC_PROP_LKP_TYPE_MAX	((1 << MV_PP2_CLS3_SC_PROP_LKP_TYPE_BITS) - 1)
+#define MV_PP2_CLS3_SC_PROP_LKP_TYPE_MASK	((MV_PP2_CLS3_SC_PROP_LKP_TYPE_MAX) << MV_PP2_CLS3_SC_PROP_LKP_TYPE)
+
+#define MV_PP2_CLS3_SC_PROP_START_ENTRY		16
+#define MV_PP2_CLS3_SC_PROP_START_ENTRY_MASK	((MV_PP2_CLS3_HASH_OP_TBL_ADDR_MAX) << MV_PP2_CLS3_SC_PROP_START_ENTRY)
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_SC_PROP_VAL_REG			(MV_PP2_REG_BASE + 0x1D14)
+#define MV_PP2_CLS3_SC_PROP_VAL_REG		(MV_PP2_REG_BASE + 0x1D14)
 
-#define MV_PP2_CLS3_SC_PROP_VAL_TH			0
-#define MV_PP2_CLS3_SC_PROP_VAL_TH_BITS			13
-#define MV_PP2_CLS3_SC_PROP_VAL_TH_MASK			(((1 << MV_PP2_CLS3_SC_PROP_VAL_TH_BITS) - 1) << MV_PP2_CLS3_SC_PROP_VAL_TH)
-#define MV_PP2_CLS3_SC_PROP_VAL_TH_MAX			((1 << MV_PP2_CLS3_SC_PROP_VAL_TH_BITS) - 1)
+/* ppv2.1 field removed from this reg */
+#define MV_PP2_V0_CLS3_SC_PROP_VAL_TH		0
+#define MV_PP2_V0_CLS3_SC_PROP_VAL_TH_BITS	13
+#define MV_PP2_V0_CLS3_SC_PROP_VAL_TH_MAX	((1 << MV_PP2_V0_CLS3_SC_PROP_VAL_TH_BITS) - 1)
+#define MV_PP2_V0_CLS3_SC_PROP_VAL_TH_MASK	((MV_PP2_V0_CLS3_SC_PROP_VAL_TH_MAX) << MV_PP2_V0_CLS3_SC_PROP_VAL_TH)
 
-#define MV_PP2_CLS3_SC_PROP_VAL_DELAY			16
-#define MV_PP2_CLS3_SC_PROP_VAL_DELAY_BITS		16
-#define MV_PP2_CLS3_SC_PROP_VAL_DELAY_MASK		(((1 << MV_PP2_CLS3_SC_PROP_VAL_DELAY_BITS) - 1) << MV_PP2_CLS3_SC_PROP_VAL_DELAY)
-#define MV_PP2_CLS3_SC_PROP_VAL_DELAY_MAX		((1 << MV_PP2_CLS3_SC_PROP_VAL_DELAY_BITS) - 1)
+/* ppv2.1 field offsett changed */
+#define MV_PP2_V0_CLS3_SC_PROP_VAL_DELAY	16
+#define MV_PP2_V1_CLS3_SC_PROP_VAL_DELAY	0
+#define MV_PP2_CLS3_SC_PROP_VAL_DELAY_BITS	16
+#define MV_PP2_CLS3_SC_PROP_VAL_DELAY_MAX	((1 << MV_PP2_CLS3_SC_PROP_VAL_DELAY_BITS) - 1)
+#define MV_PP2_V0_CLS3_SC_PROP_VAL_DELAY_MASK	(MV_PP2_CLS3_SC_PROP_VAL_DELAY_MAX << MV_PP2_V0_CLS3_SC_PROP_VAL_DELAY)
+#define MV_PP2_V1_CLS3_SC_PROP_VAL_DELAY_MASK	(MV_PP2_CLS3_SC_PROP_VAL_DELAY_MAX << MV_PP2_V1_CLS3_SC_PROP_VAL_DELAY)
+
+
+/*-------------------------------------------------------------------------------*/
+/* PPv2.1 new reg in cls3 */
+#define MV_PP2_CLS3_SC_TH_REG			(MV_PP2_REG_BASE + 0x1D18)
+#define MV_PP2_CLS3_SC_TH			4
+#define MV_PP2_CLS3_SC_TH_BITS			20
+#define MV_PP2_CLS3_SC_TH_MAX			((1 << MV_PP2_CLS3_SC_TH_BITS) - 1)
+#define MV_PP2_CLS3_SC_TH_MASK			(((1 << MV_PP2_CLS3_SC_TH_BITS) - 1) << MV_PP2_CLS3_SC_TH)
+
+
+
+/*-------------------------------------------------------------------------------*/
+/* ppv2.1 TIMER REG ADDRESS changed */
+#define MV_PP2_V0_CLS3_SC_TIMER_REG		(MV_PP2_REG_BASE + 0x1D18)
+#define MV_PP2_V1_CLS3_SC_TIMER_REG		(MV_PP2_REG_BASE + 0x1D1c)
+
+#define MV_PP2_CLS3_SC_TIMER			0
+#define MV_PP2_CLS3_SC_TIMER_BITS		16
+#define MV_PP2_CLS3_SC_TIMER_MASK		(((1 << MV_PP2_CLS3_SC_TIMER_BITS) - 1) << MV_PP2_CLS3_SC_TIMER)
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_SC_TIMER_REG			(MV_PP2_REG_BASE + 0x1D18)
-#define MV_PP2_CLS3_SC_TIMER				0
-#define MV_PP2_CLS3_SC_TIMER_BITS			16
-#define MV_PP2_CLS3_SC_TIMER_MASK			(((1 << MV_PP2_CLS3_SC_TIMER_BITS) - 1) << MV_PP2_CLS3_SC_TIMER)
+#define MV_PP2_CLS3_SC_ACT_REG			(MV_PP2_REG_BASE + 0x1D20)
+#define MV_PP2_CLS3_SC_ACT			0
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_SC_ACT_REG				(MV_PP2_REG_BASE + 0x1D20)
-#define MV_PP2_CLS3_SC_ACT				0
+#define MV_PP2_CLS3_SC_INDEX_REG		(MV_PP2_REG_BASE + 0x1D28)
+#define MV_PP2_CLS3_SC_INDEX			0
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_SC_INDEX_REG			(MV_PP2_REG_BASE + 0x1D28)
-#define MV_PP2_CLS3_SC_INDEX				0
+#define MV_PP2_CLS3_SC_RES_REG			(MV_PP2_REG_BASE + 0x1D2C)
+#define MV_PP2_CLS3_SC_RES_ENTRY		0
+#define MV_PP2_CLS3_SC_RES_ENTRY_MASK		((MV_PP2_CLS3_HASH_OP_TBL_ADDR_MAX) << MV_PP2_CLS3_SC_RES_ENTRY)
+
+/*ppv2.1 field offset and size changed */
+#define MV_PP2_V0_CLS3_SC_RES_CTR		16
+#define MV_PP2_V0_CLS3_SC_RES_CTR_MASK		((MV_PP2_V0_CLS3_HIT_COUNTER_MAX) << MV_PP2_V0_CLS3_SC_RES_CTR)
+#define MV_PP2_V1_CLS3_SC_RES_CTR		12
+#define MV_PP2_V1_CLS3_SC_RES_CTR_MASK		((MV_PP2_V1_CLS3_HIT_COUNTER_MAX) << MV_PP2_V1_CLS3_SC_RES_CTR)
+
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_SC_RES_REG				(MV_PP2_REG_BASE + 0x1D2C)
-#define MV_PP2_CLS3_SC_RES_ENTRY			0
-#define MV_PP2_CLS3_SC_RES_ENTRY_MASK			(((1 << MV_PP2_CLS3_HASH_OP_TBL_ADDR_BITS) - 1) << MV_PP2_CLS3_SC_RES_ENTRY)
-
-#define MV_PP2_CLS3_SC_RES_CTR				16
-#define MV_PP2_CLS3_SC_RES_CTR_MASK			(((1 << MV_PP2_CLS3_HIT_COUNTER_BITS) - 1) << MV_PP2_CLS3_SC_RES_CTR)
+#define MV_PP2_CLS3_ACT_REG			(MV_PP2_REG_BASE + 0x1D40)
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_ACT_REG				(MV_PP2_REG_BASE + 0x1D40)
+#define MV_PP2_CLS3_ACT_QOS_ATTR_REG		(MV_PP2_REG_BASE + 0x1D44)
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_ACT_QOS_ATTR_REG			(MV_PP2_REG_BASE + 0x1D44)
+#define MV_PP2_CLS3_ACT_HWF_ATTR_REG		(MV_PP2_REG_BASE + 0x1D48)
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_CLS3_ACT_HWF_ATTR_REG			(MV_PP2_REG_BASE + 0x1D48)
+#define MV_PP2_CLS3_ACT_DUP_ATTR_REG		(MV_PP2_REG_BASE + 0x1D4C)
 /*-------------------------------------------------------------------------------*/
-
-#define MV_PP2_CLS3_ACT_DUP_ATTR_REG			(MV_PP2_REG_BASE + 0x1D4C)
+/*ppv2.1: 0x1D50 0x1D54 are new registers, additional fields for action table*/
+#define MV_PP2_CLS3_ACT_SEQ_L_ATTR_REG		(MV_PP2_REG_BASE + 0x1D50)
+#define MV_PP2_CLS3_ACT_SEQ_H_ATTR_REG		(MV_PP2_REG_BASE + 0x1D54)
+#define MV_PP2_CLS3_ACT_SEQ_SIZE		38
 /*-------------------------------------------------------------------------------*/
-
 
 /*-------------------------------------------------------------------------------*/
 /*		Classifier C3 offsets in hash table		    		 */
 /*-------------------------------------------------------------------------------*/
+/* PPv2.1 (feature MAS 3.16) LKP_TYPE size and offset changed */
+#ifdef CONFIG_MV_ETH_PP2_1
 
-#define KEY_OCCUPIED					114
-#define KEY_FORMAT					113
-#define KEY_PTR_EXT					105
+#define KEY_OCCUPIED				116
+#define KEY_FORMAT				115
+#define KEY_PTR_EXT				107
 
-#define KEY_PRT_ID(ext_mode)				((ext_mode == 1) ? (97) : (105))
-#define KEY_PRT_ID_MASK(ext_mode)			(((1 << KEY_CTRL_PRT_ID_BITS) - 1) << (KEY_PRT_ID(ext_mode) % 32))
+#define KEY_PRT_ID(ext_mode)			((ext_mode == 1) ? (99) : (107))
+#define KEY_PRT_ID_MASK(ext_mode)		(((1 << KEY_CTRL_PRT_ID_BITS) - 1) << (KEY_PRT_ID(ext_mode) % 32))
 
-#define KEY_PRT_ID_TYPE(ext_mode)			((ext_mode == 1) ? (95) : (103))
-#define KEY_PRT_ID_TYPE_MASK(ext_mode)			(((1 << KEY_CTRL_PRT_ID_TYPE_BITS) - 1) << (KEY_PRT_ID_TYPE(ext_mode) % 32))
+#define KEY_PRT_ID_TYPE(ext_mode)		((ext_mode == 1) ? (97) : (105))
+#define KEY_PRT_ID_TYPE_MASK(ext_mode)		((KEY_CTRL_PRT_ID_TYPE_MAX) << (KEY_PRT_ID_TYPE(ext_mode) % 32))
 
-#define KEY_LKP_TYPE(ext_mode)				((ext_mode == 1) ? (91) : (99))
-#define KEY_LKP_TYPE_MASK(ext_mode)			(((1 << KEY_CTRL_LKP_TYPE_BITS) - 1) << (KEY_LKP_TYPE(ext_mode) % 32))
+#else
 
-#define KEY_L4_INFO(ext_mode)				((ext_mode == 1) ? (88) : (96))
-#define KEY_L4_INFO_MASK(ext_mode)			(((1 << KEY_CTRL_L4_BITS) - 1) << (KEY_L4_INFO(ext_mode) % 32))
+#define KEY_OCCUPIED				114
+#define KEY_FORMAT				113
+#define KEY_PTR_EXT				105
+
+#define KEY_PRT_ID(ext_mode)			((ext_mode == 1) ? (97) : (105))
+#define KEY_PRT_ID_MASK(ext_mode)		(((1 << KEY_CTRL_PRT_ID_BITS) - 1) << (KEY_PRT_ID(ext_mode) % 32))
+
+#define KEY_PRT_ID_TYPE(ext_mode)		((ext_mode == 1) ? (95) : (103))
+#define KEY_PRT_ID_TYPE_MASK(ext_mode)		((KEY_CTRL_PRT_ID_TYPE_MAX) << (KEY_PRT_ID_TYPE(ext_mode) % 32))
+
+#endif /* CONFIG_MV_ETH_PP2_1 */
+
+#define KEY_LKP_TYPE(ext_mode)			((ext_mode == 1) ? (91) : (99))
+#define KEY_LKP_TYPE_MASK(ext_mode)		(((1 << KEY_CTRL_LKP_TYPE_BITS) - 1) << (KEY_LKP_TYPE(ext_mode) % 32))
+
+#define KEY_L4_INFO(ext_mode)			((ext_mode == 1) ? (88) : (96))
+#define KEY_L4_INFO_MASK(ext_mode)		(((1 << KEY_CTRL_L4_BITS) - 1) << (KEY_L4_INFO(ext_mode) % 32))
 
 
 /*-------------------------------------------------------------------------------*/
@@ -293,6 +389,7 @@ typedef struct {
 /*			Classifier C3 engine Public APIs	 		 */
 /*-------------------------------------------------------------------------------*/
 #define MV_PP2_CLS_C3_HASH_TBL_SIZE			(4096)
+#define MV_PP2_CLS_C3_MISS_TBL_SIZE			(64)
 #define MV_PP2_CLS_C3_EXT_HEK_WORDS			(9)
 #define MV_PP2_CLS_C3_SRAM_WORDS			(5)
 #define MV_PP2_CLS_C3_EXT_TBL_SIZE			(256)
@@ -305,7 +402,6 @@ typedef struct mvPp2ClsC3Entry {
 	unsigned int 	index;
 	unsigned int 	ext_index;
 
-	/* unsigned int ext_index; internal DB */
 	struct {
 		union {
 			MV_U32	words[MV_PP2_CLS_C3_EXT_HEK_WORDS];
@@ -320,6 +416,9 @@ typedef struct mvPp2ClsC3Entry {
 			MV_U32 qos_attr;/*0x1D44*/
 			MV_U32 hwf_attr;/*0x1D48*/
 			MV_U32 dup_attr;/*0x1D4C*/
+			/*ppv2.1: 0x1D50 0x1D54 are new registers, additional fields for action table*/
+			MV_U32 seq_l_attr;/*0x1D50*/
+			MV_U32 seq_h_attr;/*0x1D54*/
 		} regs;
 	} sram;
 } MV_PP2_CLS_C3_ENTRY;
@@ -340,7 +439,9 @@ void mvPp2C3ShadowClear(int index);
 
 int mvPp2ClsC3HwRead(MV_PP2_CLS_C3_ENTRY *c3, int index);
 int mvPp2ClsC3HwAdd(MV_PP2_CLS_C3_ENTRY *c3, int index, int ext_index);
+int mvPp2ClsC3HwMissAdd(MV_PP2_CLS_C3_ENTRY *c3, int lkp_type);
 int mvPp2ClsC3HwDump(void);
+int mvPp2ClsC3HwMissDump(void);
 int mvPp2ClsC3HwExtDump(void);
 int mvPp2ClsC3HwDel(int index);
 int mvPp2ClsC3HwDelAll(void);
@@ -349,6 +450,9 @@ void mvPp2ClsC3SwClear(MV_PP2_CLS_C3_ENTRY *c3);
 void mvPp2ClsC3HwInitCtrSet(int cntVal);
 int mvPp2ClsC3HwQuery(MV_PP2_CLS_C3_ENTRY *c3, unsigned char *occupied_bmp, int index[]);
 int mvPp2ClsC3HwQueryAdd(MV_PP2_CLS_C3_ENTRY *c3, int max_search_depth);
+
+int mvPp2ClsC3HwMissRead(MV_PP2_CLS_C3_ENTRY *c3, int lkp_type);
+int mvPp2ClsC3HwMissDump(void);
 /*-------------------------------------------------------------------------------*/
 /*		APIs for Classification C3 key fields			   	 */
 /*-------------------------------------------------------------------------------*/
@@ -367,9 +471,20 @@ int mvPp2ClsC3QueueHighSet(MV_PP2_CLS_C3_ENTRY *c3, int cmd, int q);
 int mvPp2ClsC3QueueLowSet(MV_PP2_CLS_C3_ENTRY *c3, int cmd, int q);
 int mvPp2ClsC3QueueSet(MV_PP2_CLS_C3_ENTRY *c3, int cmd, int queue);
 int mvPp2ClsC3ForwardSet(MV_PP2_CLS_C3_ENTRY *c3, int cmd);
+#ifdef CONFIG_MV_ETH_PP2_1
+int mvPp2ClsC3PolicerSet(MV_PP2_CLS_C3_ENTRY *c3, int cmd, int policerId, int bank);
+#else
 int mvPp2ClsC3PolicerSet(MV_PP2_CLS_C3_ENTRY *c3, int cmd, int policerId);
+#endif
+int mvPp2ClsC3FlowIdEn(MV_PP2_CLS_C3_ENTRY *c3, int flowid_en);
+
+/* PPv2.1 (feature MAS 3.7) mtu - new field at action table */
+int mvPp2ClsC3MtuSet(MV_PP2_CLS_C3_ENTRY *c3, int mtu_inx);
 int mvPp2ClsC3ModSet(MV_PP2_CLS_C3_ENTRY *c3, int data_ptr, int instr_offs, int l4_csum);
 int mvPp2ClsC3DupSet(MV_PP2_CLS_C3_ENTRY *c3, int dupid, int count);
+
+/* PPv2.1 (feature MAS 3.14) cls sequence */
+int mvPp2ClsC3SeqSet(MV_PP2_CLS_C3_ENTRY *c3, int id,  int bits_offs,  int bits);
 
 /*-------------------------------------------------------------------------------*/
 /*		APIs for Classification C3 Hit counters management	   	 */
@@ -378,6 +493,7 @@ int mvPp2ClsC3HitCntrsRead(int index, MV_U32 *cntr);
 int mvPp2ClsC3HitCntrsClearAll(void);
 int mvPp2ClsC3HitCntrsReadAll(void);
 int mvPp2ClsC3HitCntrsClear(int lkpType);
+int mvPp2ClsC3HitCntrsMissRead(int lkp_type, MV_U32 *cntr);
 
 
 /*-------------------------------------------------------------------------------*/

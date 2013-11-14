@@ -165,7 +165,6 @@ extern "C" {
 		MV_ETH_PORT_SPEED speed;
 		MV_ETH_PORT_DUPLEX duplex;
 		MV_ETH_PORT_FC flowControl;
-
 	} MV_ETH_PORT_STATUS;
 
 	typedef enum {

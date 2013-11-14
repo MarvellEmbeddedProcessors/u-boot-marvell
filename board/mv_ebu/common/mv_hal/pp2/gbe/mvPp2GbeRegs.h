@@ -72,9 +72,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /************************** TX General Registers ******************************/
 #define MV_PP2_TX_SNOOP_REG			(MV_PP2_REG_BASE + 0x8800)
+#define MV_PP2_TX_FIFO_THRESH_REG		(MV_PP2_REG_BASE + 0x8804)
+
+/* Indirect access */
+#define MV_PP2_TX_PKT_LEN_IDX_REG		(MV_PP2_REG_BASE + 0x8808)
+#define MV_PP2_TX_PKT_LEN_CHANGE_REG		(MV_PP2_REG_BASE + 0x880C)
+
+#define MV_PP2_TX_PORT_FLUSH_REG		(MV_PP2_REG_BASE + 0x8810)
+
+#define MV_PP2_TX_PORT_FLUSH_OFFS		0
+#define MV_PP2_TX_PORT_FLUSH_BITS		7
+#define MV_PP2_TX_PORT_FLUSH_ALL_MASK		(((1 << MV_PP2_TX_PORT_FLUSH_BITS) - 1) << MV_PP2_TX_PORT_FLUSH_OFFS)
+#define MV_PP2_TX_PORT_FLUSH_MASK(p)		((1 << (p)) << MV_PP2_TX_PORT_FLUSH_OFFS)
+
+/* Registers per egress port */
+#define MV_PP2_TXP_BAD_CRC_CNTR_REG(txp)	(MV_PP2_REG_BASE + 0x8900)
+#define MV_PP2_TXP_DROP_CNTR_REG(txp)		(MV_PP2_REG_BASE + 0x8980)
+#define MV_PP2_TXP_DEQUEUE_THRESH_REG(txp)	(MV_PP2_REG_BASE + 0x88A0)
 
 /************************** RX Fifo Registers ******************************/
-#define MV_PP2_RX_DATA_FIFO_SIZE_REG(port)	(MV_PP2_REG_BASE + 4 * (port))
+#define MV_PP2_RX_DATA_FIFO_SIZE_REG(port)	(MV_PP2_REG_BASE + 0x00 + 4 * (port))
 #define MV_PP2_RX_ATTR_FIFO_SIZE_REG(port)	(MV_PP2_REG_BASE + 0x20 + 4 * (port))
 #define MV_PP2_RX_MIN_PKT_SIZE_REG		(MV_PP2_REG_BASE + 0x60)
 #define MV_PP2_RX_FIFO_INIT_REG			(MV_PP2_REG_BASE + 0x64)
@@ -92,51 +109,97 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_PP2_DSA_EXTENDED			(0x2 << MV_PP2_DSA_EN_OFFS)
 
 /************************** RX DMA Top Registers ******************************/
+#define MV_PP2_RX_CTRL_REG(port)		(MV_PP2_REG_BASE + 0x140 + 4 * (port))
+
 #define MV_PP2_POOL_BUF_SIZE_REG(pool)		(MV_PP2_REG_BASE + 0x180 + 4 * (pool))
 
 #define MV_PP2_POOL_BUF_SIZE_OFFSET		5
 #define MV_PP2_POOL_BUF_SIZE_MASK		(0xFFFE)
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_RXQ_SNOOP_REG(rxq)		(MV_PP2_REG_BASE + 0x800 + 4 * (rxq))
+#ifdef CONFIG_MV_ETH_PP2_1 /* PPv2.1 - A0 */
 
-#define MV_PP2_SNOOP_PKT_SIZE_OFFS		5
+#define MV_PP2_RX_STATUS			(MV_PP2_REG_BASE + 0x174)
+
+#define MV_PP2_DISABLE_IN_PROG_OFFS		0
+#define MV_PP2_DISABLE_IN_PROG_MASK		(0x1 << MV_PP2_DISABLE_IN_PROG_OFFS)
+/*-------------------------------------------------------------------------------*/
+
+#define MV_PP2_RXQ_CONFIG_REG(rxq)		(MV_PP2_REG_BASE + 0x800 + 4 * (rxq))
+
+#define MV_PP2_SNOOP_PKT_SIZE_OFFS		0
 #define MV_PP2_SNOOP_PKT_SIZE_MASK		(0x1FF << MV_PP2_SNOOP_PKT_SIZE_OFFS)
 
-#define MV_PP2_SNOOP_BUF_HDR_OFFS		14
+#define MV_PP2_SNOOP_BUF_HDR_OFFS		9
 #define MV_PP2_SNOOP_BUF_HDR_MASK		(0x1 << MV_PP2_SNOOP_BUF_HDR_OFFS)
 
-#define MV_PP2_L2_DEPOSIT_PKT_SIZE_OFFS		21
+#define MV_PP2_L2_DEPOSIT_PKT_SIZE_OFFS		12
 #define MV_PP2_L2_DEPOSIT_PKT_SIZE_MASK		(0xF << MV_PP2_L2_DEPOSIT_PKT_SIZE_OFFS)
 
-#define MV_PP2_L2_DEPOSIT_BUF_HDR_OFFS		25
+#define MV_PP2_L2_DEPOSIT_BUF_HDR_OFFS		16
 #define MV_PP2_L2_DEPOSIT_BUF_HDR_MASK		(0x1 << MV_PP2_L2_DEPOSIT_BUF_HDR_OFFS)
+
+#define MV_PP2_RXQ_POOL_SHORT_OFFS		20
+#define MV_PP2_RXQ_POOL_SHORT_MASK		(0x7 << MV_PP2_RXQ_POOL_SHORT_OFFS)
+
+#define MV_PP2_RXQ_POOL_LONG_OFFS		24
+#define MV_PP2_RXQ_POOL_LONG_MASK		(0x7 << MV_PP2_RXQ_POOL_LONG_OFFS)
+
+#define MV_PP2_RXQ_PACKET_OFFSET_OFFS		28
+#define MV_PP2_RXQ_PACKET_OFFSET_MASK		(0x7 << MV_PP2_RXQ_PACKET_OFFSET_OFFS)
+
+#define MV_PP2_RXQ_DISABLE_BIT			31
+#define MV_PP2_RXQ_DISABLE_MASK			(0x1 << MV_PP2_RXQ_DISABLE_BIT)
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_RXQ_CONFIG_REG(rxq)		(MV_PP2_REG_BASE + 0xc00 + 4 * (rxq))
+#define MV_PP2_HWF_TXQ_CONFIG_REG(txq)		(MV_PP2_REG_BASE + 0xc00 + 4 * (txq))
 
-#define MV_PP2_RXQ_PACKET_OFFSET_ALL_MASK	(0xE0707)
-#define MV_PP2_RXQ_POOL_MASK			(0x707)
+#define MV_PP2_HWF_TXQ_POOL_SHORT_OFFS		0
+#define MV_PP2_HWF_TXQ_POOL_SHORT_MASK		(0x7 << MV_PP2_HWF_TXQ_POOL_SHORT_OFFS)
 
-#define MV_PP2_RXQ_POOL_SHORT_ID_OFFS		0
-#define MV_PP2_RXQ_POOL_SHORT_ID_MASK		(0x7 << MV_PP2_RXQ_POOL_SHORT_ID_OFFS)
-#define MV_PP2_RXQ_POOL_LONG_ID_OFFS		8
-#define MV_PP2_RXQ_POOL_LONG_ID_MASK		(0x7 << MV_PP2_RXQ_POOL_LONG_ID_OFFS)
-#define MV_PP2_RXQ_PACKET_OFFSET_OFFS		12
-#define MV_PP2_RXQ_PACKET_OFFSET_MASK		(0xFF << MV_PP2_RXQ_PACKET_OFFSET_OFFS)
+#define MV_PP2_HWF_TXQ_POOL_LONG_OFFS		4
+#define MV_PP2_HWF_TXQ_POOL_LONG_MASK		(0x7 << MV_PP2_HWF_TXQ_POOL_LONG_OFFS)
+
+#define MV_PP2_HWF_TXQ_DISABLE_BIT              31
+#define MV_PP2_HWF_TXQ_DISABLE_MASK             (0x1 << MV_PP2_HWF_TXQ_DISABLE_BIT)
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_PORT_HWF_CONFIG_REG(port)	(MV_PP2_REG_BASE + 0x120 + 4 * (port))
+#else /* PPv2 - Z1 */
 
-#define MV_PP2_PORT_HWF_PKT_OFFSET_ALL_MASK	(0x707)
+#define MV_PP2_V0_RXQ_SNOOP_REG(rxq)		(MV_PP2_REG_BASE + 0x800 + 4 * (rxq))
 
-#define MV_PP2_PORT_HWF_POOL_SHORT_ID_OFFS	0
-#define MV_PP2_PORT_HWF_POOL_SHORT_ID_MASK	(0x7 << MV_PP2_PORT_HWF_POOL_SHORT_ID_OFFS)
-#define MV_PP2_PORT_HWF_POOL_LONG_ID_OFFS	8
-#define MV_PP2_PORT_HWF_POOL_LONG_ID_MASK	(0x7 << MV_PP2_PORT_HWF_POOL_LONG_ID_OFFS)
+#define MV_PP2_V0_SNOOP_PKT_SIZE_OFFS		5
+#define MV_PP2_V0_SNOOP_PKT_SIZE_MASK		(0x1FF << MV_PP2_V0_SNOOP_PKT_SIZE_OFFS)
+
+#define MV_PP2_V0_SNOOP_BUF_HDR_OFFS		14
+#define MV_PP2_V0_SNOOP_BUF_HDR_MASK		(0x1 << MV_PP2_V0_SNOOP_BUF_HDR_OFFS)
+
+#define MV_PP2_V0_L2_DEPOSIT_PKT_SIZE_OFFS	21
+#define MV_PP2_V0_L2_DEPOSIT_PKT_SIZE_MASK	(0xF << MV_PP2_V0_L2_DEPOSIT_PKT_SIZE_OFFS)
+
+#define MV_PP2_V0_L2_DEPOSIT_BUF_HDR_OFFS	25
+#define MV_PP2_V0_L2_DEPOSIT_BUF_HDR_MASK	(0x1 << MV_PP2_V0_L2_DEPOSIT_BUF_HDR_OFFS)
 /*-------------------------------------------------------------------------------*/
 
-#define MV_PP2_RX_CTRL_REG(port)		(MV_PP2_REG_BASE + 0x140 + 4 * (port))
+#define MV_PP2_V0_RXQ_CONFIG_REG(rxq)		(MV_PP2_REG_BASE + 0xc00 + 4 * (rxq))
+
+#define MV_PP2_V0_RXQ_POOL_SHORT_OFFS		0
+#define MV_PP2_V0_RXQ_POOL_SHORT_MASK		(0x7 << MV_PP2_V0_RXQ_POOL_SHORT_OFFS)
+#define MV_PP2_V0_RXQ_POOL_LONG_OFFS		8
+#define MV_PP2_V0_RXQ_POOL_LONG_MASK		(0x7 << MV_PP2_V0_RXQ_POOL_LONG_OFFS)
+#define MV_PP2_V0_RXQ_PACKET_OFFSET_OFFS	17
+#define MV_PP2_V0_RXQ_PACKET_OFFSET_MASK	(0xFF << MV_PP2_V0_RXQ_PACKET_OFFSET_OFFS)
+/*-------------------------------------------------------------------------------*/
+
+#define MV_PP2_V0_PORT_HWF_CONFIG_REG(port)	(MV_PP2_REG_BASE + 0x120 + 4 * (port))
+
+#define MV_PP2_V0_PORT_HWF_POOL_SHORT_OFFS	0
+#define MV_PP2_V0_PORT_HWF_POOL_SHORT_MASK	(0x7 << MV_PP2_V0_PORT_HWF_POOL_SHORT_OFFS)
+#define MV_PP2_V0_PORT_HWF_POOL_LONG_OFFS	8
+#define MV_PP2_V0_PORT_HWF_POOL_LONG_MASK	(0x7 << MV_PP2_V0_PORT_HWF_POOL_LONG_OFFS)
+/*-------------------------------------------------------------------------------*/
+
+#endif /* PPv2 - Z1 / PPv2.1 - A0 */
 
 #define MV_PP2_RX_GEMPID_SRC_OFFS		8
 #define MV_PP2_RX_GEMPID_SRC_MASK		(0x7 << MV_PP2_RX_GEMPID_SRC_OFFS)
@@ -232,24 +295,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MV_PP2_TXQ_PREF_BUF_REG			(MV_PP2_REG_BASE + 0x209c)
 
-#define MV_PP2_PREF_BUF_PTR_OFFSET		0
-#define MV_PP2_PREF_BUF_PTR_MASK		(0xFFF << MV_PP2_PREF_BUF_PTR_OFFSET)
-#define MV_PP2_PREF_BUF_PTR(desc)		((desc) << MV_PP2_PREF_BUF_PTR_OFFSET)
+#define MV_PP2_PREF_BUF_PTR_OFFS		0
+#define MV_PP2_PREF_BUF_PTR_MASK		(0xFFFF << MV_PP2_PREF_BUF_PTR_OFFS)
+#define MV_PP2_PREF_BUF_PTR(desc)		(((desc) << MV_PP2_PREF_BUF_PTR_OFFS) & MV_PP2_PREF_BUF_PTR_MASK)
 
-#define MV_PP2_PREF_BUF_SIZE_OFFSET		12
-#define MV_PP2_PREF_BUF_SIZE_MASK		(0x7 << MV_PP2_PREF_BUF_SIZE_OFFSET)
-#define MV_PP2_PREF_BUF_SIZE_NONE		(0 << MV_PP2_PREF_BUF_SIZE_OFFSET)
-#define MV_PP2_PREF_BUF_SIZE_1			(1 << MV_PP2_PREF_BUF_SIZE_OFFSET)
-#define MV_PP2_PREF_BUF_SIZE_2			(2 << MV_PP2_PREF_BUF_SIZE_OFFSET)
-#define MV_PP2_PREF_BUF_SIZE_4			(3 << MV_PP2_PREF_BUF_SIZE_OFFSET)
-#define MV_PP2_PREF_BUF_SIZE_8			(4 << MV_PP2_PREF_BUF_SIZE_OFFSET)
-#define MV_PP2_PREF_BUF_SIZE_16			(5 << MV_PP2_PREF_BUF_SIZE_OFFSET)
-#define MV_PP2_PREF_BUF_SIZE_32			(6 << MV_PP2_PREF_BUF_SIZE_OFFSET)
-#define MV_PP2_PREF_BUF_SIZE_64			(7 << MV_PP2_PREF_BUF_SIZE_OFFSET)
+#define MV_PP2_PREF_BUF_SIZE_OFFS		12
+#define MV_PP2_PREF_BUF_SIZE_MASK		(0x7 << MV_PP2_PREF_BUF_SIZE_OFFS)
+#define MV_PP2_PREF_BUF_SIZE_NONE		(0 << MV_PP2_PREF_BUF_SIZE_OFFS)
+#define MV_PP2_PREF_BUF_SIZE_1			(1 << MV_PP2_PREF_BUF_SIZE_OFFS)
+#define MV_PP2_PREF_BUF_SIZE_2			(2 << MV_PP2_PREF_BUF_SIZE_OFFS)
+#define MV_PP2_PREF_BUF_SIZE_4			(3 << MV_PP2_PREF_BUF_SIZE_OFFS)
+#define MV_PP2_PREF_BUF_SIZE_8			(4 << MV_PP2_PREF_BUF_SIZE_OFFS)
+#define MV_PP2_PREF_BUF_SIZE_16			(5 << MV_PP2_PREF_BUF_SIZE_OFFS)
+#define MV_PP2_PREF_BUF_SIZE_32			(6 << MV_PP2_PREF_BUF_SIZE_OFFS)
+#define MV_PP2_PREF_BUF_SIZE_64			(7 << MV_PP2_PREF_BUF_SIZE_OFFS)
 
-#define MV_PP2_PREF_BUF_THRESH_OFFSET		17
-#define MV_PP2_PREF_BUF_THRESH_MASK		(0xF << MV_PP2_PREF_BUF_THRESH_OFFSET)
-#define MV_PP2_PREF_BUF_THRESH(val)		((val) << MV_PP2_PREF_BUF_THRESH_OFFSET)
+#define MV_PP2_PREF_BUF_THRESH_OFFS		17
+#define MV_PP2_PREF_BUF_THRESH_MASK		(0xF << MV_PP2_PREF_BUF_THRESH_OFFS)
+#define MV_PP2_PREF_BUF_THRESH(val)		((val) << MV_PP2_PREF_BUF_THRESH_OFFS)
+
+/* new field for PPV2.1 - A0 only */
+#define MV_PP2_TXQ_DRAIN_EN_BIT			31
+#define MV_PP2_TXQ_DRAIN_EN_MASK		(1 << MV_PP2_TXQ_DRAIN_EN_BIT)
 /*-------------------------------------------------------------------------------*/
 
 #define MV_PP2_TXQ_PENDING_REG			(MV_PP2_REG_BASE + 0x20a0)
@@ -257,11 +324,50 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_PP2_TXQ_PENDING_OFFSET		0
 #define MV_PP2_TXQ_PENDING_MASK			(0x3FFF << MV_PP2_TXQ_PENDING_OFFSET)
 
+/*
+   ppv2.1 field MV_PP2_TXQ_HWF_PENDING_OFFSET changed to MV_PP2_TXQ_RESERVED_DESC_OFFSET
+   MAS 3.16
+*/
 #define MV_PP2_TXQ_HWF_PENDING_OFFSET		16
 #define MV_PP2_TXQ_HWF_PENDING_MASK		(0x3FFF << MV_PP2_TXQ_HWF_PENDING_OFFSET)
+
+#define MV_PP2_TXQ_RSVD_DESC_OFFSET		16
+#define MV_PP2_TXQ_RSVD_DESC_MASK		(0x3FFF << MV_PP2_TXQ_RSVD_DESC_MASK)
+
 /*-------------------------------------------------------------------------------*/
 
 #define MV_PP2_TXQ_INT_STATUS_REG		(MV_PP2_REG_BASE + 0x20a4)
+/*-------------------------------------------------------------------------------*/
+/*
+   ppv2.1- new register 0x20b0, not exist ip ppv2.0
+   MAS 3.16
+*/
+#define MV_PP2_TXQ_RSVD_REQ_REG			(MV_PP2_REG_BASE + 0x20b0)
+
+#define MV_PP2_TXQ_RSVD_REQ_DESC_OFFSET		0
+#define MV_PP2_TXQ_RSVD_REQ_DESC_MASK		(0x3FFF << MV_PP2_TXQ_RSVD_REQ_DESC_OFFSET)
+
+#define MV_PP2_TXQ_RSVD_REQ_Q_OFFSET		16
+#define MV_PP2_TXQ_RSVD_REQ_Q_MASK		(0xFF << MV_PP2_TXQ_RSVD_REQ_Q_OFFSET)
+/*-------------------------------------------------------------------------------*/
+/*
+   ppv2.1- new register 0x20b4, not exist ip ppv2.0
+   MAS 3.16
+*/
+#define MV_PP2_TXQ_RSVD_RSLT_REG		(MV_PP2_REG_BASE + 0x20b4)
+
+#define MV_PP2_TXQ_RSVD_RSLT_OFFSET		0
+#define MV_PP2_TXQ_RSVD_RSLT_MASK		(0x3FFF << MV_PP2_TXQ_RSVD_RSLT_OFFSET)
+
+/*-------------------------------------------------------------------------------*/
+/*
+   ppv2.1- new register 0x20b8, not exist ip ppv2.0
+   MAS 3.22
+*/
+#define MV_PP2_TXQ_RSVD_CLR_REG			(MV_PP2_REG_BASE + 0x20b8)
+
+#define MV_PP2_TXQ_RSVD_CLR_OFFSET		16
+#define MV_PP2_TXQ_RSVD_CLR_MASK		(0xFF << MV_PP2_TXQ_RSVD_CLR_OFFSET)
 /*-------------------------------------------------------------------------------*/
 
 /* Direct access - per TXQ, per CPU */
@@ -434,14 +540,47 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_PP2_ISR_MISC_MASK_REG			(MV_PP2_REG_BASE + 0x55b4)
 /*-------------------------------------------------------------------------------*/
 
-/******************************** Port Drop counters *****************************/
 #define MV_PP2_OVERRUN_DROP_REG(port)		(MV_PP2_REG_BASE + 0x7000 + 4 * (port))
 #define MV_PP2_CLS_DROP_REG(port)			(MV_PP2_REG_BASE + 0x7020 + 4 * (port))
-#define MV_PP2_POLICER_DROP_REG(plcr)		(MV_PP2_REG_BASE + 0x7040 + 4 * (plcr))
-#define MV_PP2_TX_EARLY_DROP_REG(eport)		(MV_PP2_REG_BASE + 0x7080 + 4 * (eport))
-#define MV_PP2_TX_DESC_DROP_REG(eport)		(MV_PP2_REG_BASE + 0x7100 + 4 * (eport))
-#define MV_PP2_RX_EARLY_DROP_REG(rxq)		(MV_PP2_REG_BASE + 0x7200 + 4 * (rxq))
-#define MV_PP2_RX_DESC_DROP_REG(rxq)		(MV_PP2_REG_BASE + 0x7400 + 4 * (rxq))
+
+/******************************** Port Drop counters ppv2.0*****************************/
+
+#define MV_PP2_V0_POLICER_DROP_REG(plcr)		(MV_PP2_REG_BASE + 0x7040 + 4 * (plcr))
+#define MV_PP2_V0_TX_EARLY_DROP_REG(eport)		(MV_PP2_REG_BASE + 0x7080 + 4 * (eport))
+#define MV_PP2_V0_TX_DESC_DROP_REG(eport)		(MV_PP2_REG_BASE + 0x7100 + 4 * (eport))
+#define MV_PP2_V0_RX_EARLY_DROP_REG(rxq)		(MV_PP2_REG_BASE + 0x7200 + 4 * (rxq))
+#define MV_PP2_V0_RX_DESC_DROP_REG(rxq)			(MV_PP2_REG_BASE + 0x7400 + 4 * (rxq))
+
+/************************************ counters ppv2.1 **********************************/
+
+
+#define MV_PP2_V1_CNT_IDX_REG				(MV_PP2_REG_BASE + 0x7040)
+/* TX counters index */
+#define TX_CNT_IDX_TXP					3
+#define TX_CNT_IDX_TXQ					0
+
+#define TX_CNT_IDX(port, txp, txq)			((MV_PPV2_TXP_PHYS(port, txp) << 3) | (txq))
+
+#define MV_PP2_V1_TX_DESC_ENQ_REG			(MV_PP2_REG_BASE + 0x7100)
+#define MV_PP2_V1_TX_DESC_ENQ_TO_DRAM_REG		(MV_PP2_REG_BASE + 0x7104)
+#define MV_PP2_V1_TX_BUF_ENQ_TO_DRAM_REG		(MV_PP2_REG_BASE + 0x7108)
+#define MV_PP2_V1_TX_DESC_HWF_ENQ_REG			(MV_PP2_REG_BASE + 0x710c)
+#define MV_PP2_V1_TX_PKT_DQ_REG				(MV_PP2_REG_BASE + 0x7130)
+#define MV_PP2_V1_TX_PKT_FULLQ_DROP_REG			(MV_PP2_REG_BASE + 0x7200)
+#define MV_PP2_V1_TX_PKT_EARLY_DROP_REG			(MV_PP2_REG_BASE + 0x7204)
+#define MV_PP2_V1_TX_PKT_BM_DROP_REG			(MV_PP2_REG_BASE + 0x7208)
+#define MV_PP2_V1_TX_PKT_BM_MC_DROP_REG			(MV_PP2_REG_BASE + 0x720c)
+
+#define MV_PP2_V1_RX_PKT_FULLQ_DROP_REG			(MV_PP2_REG_BASE + 0x7220)
+#define MV_PP2_V1_RX_PKT_EARLY_DROP_REG			(MV_PP2_REG_BASE + 0x7224)
+#define MV_PP2_V1_RX_PKT_BM_DROP_REG			(MV_PP2_REG_BASE + 0x7228)
+#define MV_PP2_V1_RX_DESC_ENQ_REG			(MV_PP2_REG_BASE + 0x7120)
+
+#define MV_PP2_V1_OVERFLOW_MC_DROP_REG			(MV_PP2_REG_BASE + 0x770c)
+
+
+
+
 /*-------------------------------------------------------------------------------*/
 
 
@@ -459,13 +598,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MV_PP2_TXP_SCHED_CMD_1_REG		(MV_PP2_REG_BASE + 0x8010)
 
-#define MV_PP2_TXP_SCHED_RESET_BIT          	0
-#define MV_PP2_TXP_SCHED_RESET_MASK         	(1 << MV_PP2_TXP_SCHED_RESET_BIT)
+#define MV_PP2_TXP_SCHED_RESET_BIT		0
+#define MV_PP2_TXP_SCHED_RESET_MASK		(1 << MV_PP2_TXP_SCHED_RESET_BIT)
 
 #define MV_PP2_TXP_SCHED_PTP_SYNC_BIT		1
 #define MV_PP2_TXP_SCHED_PTP_SYNC_MASK		(1 << MV_PP2_TXP_SCHED_PTP_SYNC_BIT)
 
-#define MV_PP2_TXP_SCHED_EJP_ENABLE_BIT     	2
+#define MV_PP2_TXP_SCHED_EJP_ENABLE_BIT		2
 #define MV_PP2_TXP_SCHED_EJP_ENABLE_MASK	(1 << MV_PP2_TXP_SCHED_EJP_ENABLE_BIT)
 /*-----------------------------------------------------------------------------------------------*/
 
@@ -486,7 +625,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* Port Maximum Transmit Unit (PMTU) */
 #define MV_PP2_TXP_SCHED_MTU_REG		(MV_PP2_REG_BASE + 0x801c)
-
 #define MV_PP2_TXP_MTU_OFFS			0
 #define MV_PP2_TXP_MTU_MAX			0x7FFFF
 #define MV_PP2_TXP_MTU_ALL_MASK			(MV_PP2_TXP_MTU_MAX << MV_PP2_TXP_MTU_OFFS)
@@ -495,11 +633,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* Port Bucket Refill (PRefill) */
 #define MV_PP2_TXP_SCHED_REFILL_REG		(MV_PP2_REG_BASE + 0x8020)
-
-#define MV_PP2_TXP_REFILL_TOKENS_OFFS       	0
-#define MV_PP2_TXP_REFILL_TOKENS_MAX        	0x7FFFF
-#define MV_PP2_TXP_REFILL_TOKENS_ALL_MASK   	(MV_PP2_TXP_REFILL_TOKENS_MAX << MV_PP2_TXP_REFILL_TOKENS_OFFS)
-#define MV_PP2_TXP_REFILL_TOKENS_MASK(val)  	((val) << MV_PP2_TXP_REFILL_TOKENS_OFFS)
+#define MV_PP2_TXP_REFILL_TOKENS_OFFS		0
+#define MV_PP2_TXP_REFILL_TOKENS_MAX		0x7FFFF
+#define MV_PP2_TXP_REFILL_TOKENS_ALL_MASK	(MV_PP2_TXP_REFILL_TOKENS_MAX << MV_PP2_TXP_REFILL_TOKENS_OFFS)
+#define MV_PP2_TXP_REFILL_TOKENS_MASK(val)	((val) << MV_PP2_TXP_REFILL_TOKENS_OFFS)
 
 #define MV_PP2_TXP_REFILL_PERIOD_OFFS       	20
 #define MV_PP2_TXP_REFILL_PERIOD_MAX        	0x3FF
@@ -520,53 +657,37 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Queue Bucket Refill (QRefill) */
 #define MV_PP2_TXQ_SCHED_REFILL_REG(q)		(MV_PP2_REG_BASE + 0x8040 + ((q) << 2))
 
-#define MV_PP2_TXQ_REFILL_TOKENS_OFFS       	0
-#define MV_PP2_TXQ_REFILL_TOKENS_MAX        	0x7FFFF
-#define MV_PP2_TXQ_REFILL_TOKENS_ALL_MASK   	(MV_PP2_TXQ_REFILL_TOKENS_MAX << MV_PP2_TXQ_REFILL_TOKENS_OFFS)
-#define MV_PP2_TXQ_REFILL_TOKENS_MASK(val)  	((val) << MV_PP2_TXQ_REFILL_TOKENS_OFFS)
+#define MV_PP2_TXQ_REFILL_TOKENS_OFFS		0
+#define MV_PP2_TXQ_REFILL_TOKENS_MAX		0x7FFFF
+#define MV_PP2_TXQ_REFILL_TOKENS_ALL_MASK	(MV_PP2_TXQ_REFILL_TOKENS_MAX << MV_PP2_TXQ_REFILL_TOKENS_OFFS)
+#define MV_PP2_TXQ_REFILL_TOKENS_MASK(val)	((val) << MV_PP2_TXQ_REFILL_TOKENS_OFFS)
 
-#define MV_PP2_TXQ_REFILL_PERIOD_OFFS       	20
-#define MV_PP2_TXQ_REFILL_PERIOD_MAX        	0x3FF
-#define MV_PP2_TXQ_REFILL_PERIOD_ALL_MASK   	(MV_PP2_TXQ_REFILL_PERIOD_MAX << MV_PP2_TXQ_REFILL_PERIOD_OFFS)
-#define MV_PP2_TXQ_REFILL_PERIOD_MASK(val)  	((val) << MV_PP2_TXQ_REFILL_PERIOD_OFFS)
+#define MV_PP2_TXQ_REFILL_PERIOD_OFFS		20
+#define MV_PP2_TXQ_REFILL_PERIOD_MAX		0x3FF
+#define MV_PP2_TXQ_REFILL_PERIOD_ALL_MASK	(MV_PP2_TXQ_REFILL_PERIOD_MAX << MV_PP2_TXQ_REFILL_PERIOD_OFFS)
+#define MV_PP2_TXQ_REFILL_PERIOD_MASK(val)	((val) << MV_PP2_TXQ_REFILL_PERIOD_OFFS)
 /*-----------------------------------------------------------------------------------------------*/
 
 /* Queue Maximum Token Bucket Size (QMTBS) */
 #define MV_PP2_TXQ_SCHED_TOKEN_SIZE_REG(q)	(MV_PP2_REG_BASE + 0x8060 + ((q) << 2))
-#define MV_PP2_TXQ_TOKEN_SIZE_MAX           	0x7FFFFFFF
+#define MV_PP2_TXQ_TOKEN_SIZE_MAX		0x7FFFFFFF
 /*-----------------------------------------------------------------------------------------------*/
 
 /* Queue Token Bucket Counter (PMTBS) */
 #define MV_PP2_TXQ_SCHED_TOKEN_CNTR_REG(q)	(MV_PP2_REG_BASE + 0x8080 + ((q) << 2))
-#define MV_PP2_TXQ_TOKEN_CNTR_MAX           	0xFFFFFFFF
+#define MV_PP2_TXQ_TOKEN_CNTR_MAX		0xFFFFFFFF
 /*-----------------------------------------------------------------------------------------------*/
 
 /* Transmit Queue Arbiter Configuration (TQxAC) */
 #define MV_PP2_TXQ_SCHED_WRR_REG(q)		(MV_PP2_REG_BASE + 0x80A0 + ((q) << 2))
 
-#define MV_PP2_TXQ_WRR_WEIGHT_OFFS          	0
-#define MV_PP2_TXQ_WRR_WEIGHT_MAX           	0xFF
-#define MV_PP2_TXQ_WRR_WEIGHT_ALL_MASK      	(MV_PP2_TXQ_WRR_WEIGHT_MAX << MV_PP2_TXQ_WRR_WEIGHT_OFFS)
-#define MV_PP2_TXQ_WRR_WEIGHT_MASK(weigth)  	((weigth) << MV_PP2_TXQ_WRR_WEIGHT_OFFS)
+#define MV_PP2_TXQ_WRR_WEIGHT_OFFS		0
+#define MV_PP2_TXQ_WRR_WEIGHT_MAX		0xFF
+#define MV_PP2_TXQ_WRR_WEIGHT_ALL_MASK		(MV_PP2_TXQ_WRR_WEIGHT_MAX << MV_PP2_TXQ_WRR_WEIGHT_OFFS)
+#define MV_PP2_TXQ_WRR_WEIGHT_MASK(weigth)	((weigth) << MV_PP2_TXQ_WRR_WEIGHT_OFFS)
 
-#define MV_PP2_TXQ_WRR_BYTE_COUNT_OFFS      	8
-#define MV_PP2_TXQ_WRR_BYTE_COUNT_MASK      	(0x3FFFF << MV_PP2_TXQ_WRR_BYTE_COUNT_OFFS)
-/*-----------------------------------------------------------------------------------------------*/
-
-#if 0 /* TBD - set EJP registers */
-/* Transmission Queue IPG (TQxIPG) */
-#define MV_PP2_TXQ_EJP_IPG_REG(q)		(MV_PP2_REG_BASE + 0x80C0 + ((q) >> 2))
-
-#define MV_PP2_TXQ_EJP_IPG_OFFS             	0
-#define MV_PP2_TXQ_EJP_IPG_MASK             	(0x3FFF << MV_PP2_TXQ_EJP_IPG_OFFS)
-/*-----------------------------------------------------------------------------------------------*/
-
-#define MV_PP2_TXP_EJP_HI_LO_REG		(MV_PP2_REG_BASE + 0x80D0)
-#define MV_PP2_TXP_EJP_HI_ASYNC_REG		(MV_PP2_REG_BASE + 0x80D4)
-#define MV_PP2_TXP_EJP_LO_ASYNC_REG		(MV_PP2_REG_BASE + 0x80D8)
-#define MV_PP2_TXP_EJP_SPEED_REG		(MV_PP2_REG_BASE + 0x80DC)
-#endif /* 0 */
-/*-----------------------------------------------------------------------------------------------*/
+#define MV_PP2_TXQ_WRR_BYTE_COUNT_OFFS		8
+#define MV_PP2_TXQ_WRR_BYTE_COUNT_MASK		(0x3FFFF << MV_PP2_TXQ_WRR_BYTE_COUNT_OFFS)
 
 /************************** PPv2 HW defines ******************************/
 #define MV_PP2_RX_FIFO_PORT_DATA_SIZE		0x2000
@@ -588,7 +709,8 @@ typedef struct pp2_rx_desc {
 	MV_U32 bufCookie;
 	MV_U16 gemPortIdPktColor;
 	MV_U16 csumL4;
-	MV_U16 reserved;
+	MV_U8  bmQset;
+	MV_U8  reserved;
 	MV_U16 classifyInfo;
 	MV_U32 flowId;
 	MV_U32 reserved2;
@@ -651,35 +773,42 @@ typedef struct pp2_rx_desc {
 #define PP2_RX_L3_IS_IP4_OTHER(status)		(((status) & PP2_RX_L3_MASK) == PP2_RX_L3_IP4_OTHER)
 #define PP2_RX_L3_IS_IP6(status)		(((status) & PP2_RX_L3_MASK) == PP2_RX_L3_IP6)
 #define PP2_RX_L3_IS_IP6_EXT(status)		(((status) & PP2_RX_L3_MASK) == PP2_RX_L3_IP6_EXT)
-#define PP2_RX_L4_IS_UDP(status)      		(((status) & PP2_RX_L4_MASK) == PP2_RX_L4_UDP)
+#define PP2_RX_L4_IS_UDP(status)		(((status) & PP2_RX_L4_MASK) == PP2_RX_L4_UDP)
 #define PP2_RX_L4_IS_TCP(status)		(((status) & PP2_RX_L4_MASK) == PP2_RX_L4_TCP)
 #define PP2_RX_IP4_HDR_ERR(status)		((status) & PP2_RX_IP4_HEADER_ERR_MASK)
 #define PP2_RX_IP4_FRG(status)			((status) & PP2_RX_IP_FRAG_MASK)
 #define PP2_RX_L4_CHK_OK(status)		((status) & PP2_RX_L4_CHK_OK_MASK)
 
 /* Sub fields of "parserInfo" field */
-#define PP2_RX_LKP_ID_OFFS              	0
+#define PP2_RX_LKP_ID_OFFS			0
 #define PP2_RX_LKP_ID_BITS			6
-#define PP2_RX_LKP_ID_MASK              	(((1 << PP2_RX_LKP_ID_BITS) - 1) << PP2_RX_LKP_ID_OFFS)
+#define PP2_RX_LKP_ID_MASK			(((1 << PP2_RX_LKP_ID_BITS) - 1) << PP2_RX_LKP_ID_OFFS)
 
 #define PP2_RX_CPU_CODE_OFFS			6
 #define PP2_RX_CPU_CODE_BITS			3
 #define PP2_RX_CPU_CODE_MASK			(((1 << PP2_RX_CPU_CODE_BITS) - 1) << PP2_RX_CPU_CODE_OFFS)
 
-#define PP2_RX_PPPOE_BIT                        9
-#define PP2_RX_PPPOE_MASK                       (1 << PP2_RX_PPPOE_BIT)
+#define PP2_RX_PPPOE_BIT			9
+#define PP2_RX_PPPOE_MASK			(1 << PP2_RX_PPPOE_BIT)
 
-#define PP2_RX_L3_CAST_OFFS                     10
-#define PP2_RX_L3_CAST_BITS                     2
-#define PP2_RX_L3_CAST_MASK                     (((1 << PP2_RX_L3_CAST_BITS) - 1) << PP2_RX_L3_CAST_OFFS)
+#define PP2_RX_L3_CAST_OFFS			10
+#define PP2_RX_L3_CAST_BITS			2
+#define PP2_RX_L3_CAST_MASK			(((1 << PP2_RX_L3_CAST_BITS) - 1) << PP2_RX_L3_CAST_OFFS)
 
-#define PP2_RX_L2_CAST_OFFS                     12
-#define PP2_RX_L2_CAST_BITS                     2
-#define PP2_RX_L2_CAST_MASK                     (((1 << PP2_RX_L2_CAST_BITS) - 1) << PP2_RX_L2_CAST_OFFS)
+#define PP2_RX_L2_CAST_OFFS			12
+#define PP2_RX_L2_CAST_BITS			2
+#define PP2_RX_L2_CAST_MASK			(((1 << PP2_RX_L2_CAST_BITS) - 1) << PP2_RX_L2_CAST_OFFS)
 
-#define PP2_RX_VLAN_INFO_OFFS                   14
-#define PP2_RX_VLAN_INFO_BITS                   2
-#define PP2_RX_VLAN_INFO_MASK                   (((1 << PP2_RX_VLAN_INFO_BITS) - 1) << PP2_RX_VLAN_INFO_OFFS)
+#define PP2_RX_VLAN_INFO_OFFS			14
+#define PP2_RX_VLAN_INFO_BITS			2
+#define PP2_RX_VLAN_INFO_MASK			(((1 << PP2_RX_VLAN_INFO_BITS) - 1) << PP2_RX_VLAN_INFO_OFFS)
+
+/* Bits of "bmQset" field */
+#define PP2_RX_BUFF_QSET_NUM_OFFS		0
+#define PP2_RX_BUFF_QSET_NUM_MASK		(0x7f << PP2_RX_BUFF_QSET_NUM_OFFS)
+
+#define PP2_RX_BUFF_TYPE_OFFS			7
+#define PP2_RX_BUFF_TYPE_MASK			(0x1 << PP2_RX_BUFF_TYPE_OFFS)
 /*-------------------------------------------------------------------------------*/
 
 /* TXQ */
@@ -722,11 +851,11 @@ typedef struct pp2_tx_desc {
 #define PP2_TX_PKT_OFFS_9_BIT			20
 #define PP2_TX_PKT_OFFS_9_MASK			(1 << PP2_TX__PKT_OFFS_9_BIT)
 
-#define PP2_TX_HWF_SYNC_BIT                     21
-#define PP2_TX_HWF_SYNC_MASK	                (1 << PP2_TX_HWF_SYNC_BIT)
+#define PP2_TX_HWF_SYNC_BIT			21
+#define PP2_TX_HWF_SYNC_MASK			(1 << PP2_TX_HWF_SYNC_BIT)
 
-#define PP2_TX_HWF_BIT                          22
-#define PP2_TX_HWF_MASK	                        (1 << PP2_TX_HWF_BIT)
+#define PP2_TX_HWF_BIT				22
+#define PP2_TX_HWF_MASK				(1 << PP2_TX_HWF_BIT)
 
 #define PP2_TX_PADDING_DISABLE_BIT		23
 #define PP2_TX_PADDING_DISABLE_MASK		(1 << PP2_TX_PADDING_DISABLE_BIT)
@@ -754,69 +883,77 @@ typedef struct pp2_tx_desc {
 #define PP2_TX_BUF_HDR_MASK			(1 << PP2_TX_BUF_HDR_BIT)
 
 /* Bits of "hwCmd[0]" field - offset 0x10 */
-#define PP2_TX_GEMPID_OFFS                      0
-#define PP2_TX_GEMPID_BITS                      12
-#define PP2_TX_GEMPID_ALL_MASK                  (((1 << PP2_TX_GEMPID_BITS) - 1) << PP2_TX_GEMPID_OFFS)
-#define PP2_TX_GEMPID_MASK(gpid)                (((gpid) & PP2_TX_GEMPID_ALL_MASK) << PP2_TX_GEMPID_OFFS)
+#define PP2_TX_GEMPID_OFFS			0
+#define PP2_TX_GEMPID_BITS			12
+#define PP2_TX_GEMPID_ALL_MASK			(((1 << PP2_TX_GEMPID_BITS) - 1) << PP2_TX_GEMPID_OFFS)
+#define PP2_TX_GEMPID_MASK(gpid)		(((gpid) & PP2_TX_GEMPID_ALL_MASK) << PP2_TX_GEMPID_OFFS)
 
-#define PP2_TX_COLOR_OFFS                       12
-#define PP2_TX_COLOR_ALL_MASK                   (0x3 << PP2_TX_COLOR_OFFS)
-#define PP2_TX_COLOR_GREEN                      0
-#define PP2_TX_COLOR_YELLOW                     1
-#define PP2_TX_COLOR_MASK(col)                  (((col) & PP2_TX_COLOR_ALL_MASK) << PP2_TX_COLOR_OFFS)
+#define PP2_TX_COLOR_OFFS			12
+#define PP2_TX_COLOR_ALL_MASK			(0x3 << PP2_TX_COLOR_OFFS)
+#define PP2_TX_COLOR_GREEN			0
+#define PP2_TX_COLOR_YELLOW			1
+#define PP2_TX_COLOR_MASK(col)			(((col) & PP2_TX_COLOR_ALL_MASK) << PP2_TX_COLOR_OFFS)
 
-#define PP2_TX_DSA_OFFS                         14
-#define PP2_TX_DSA_ALL_MASK                     (0x3 << PP2_TX_DSA_OFFS)
-#define PP2_TX_DSA_NONE                         0
-#define PP2_TX_DSA_TAG                          1
-#define PP2_TX_EDSA_TAG                         2
-#define PP2_TX_DSA_MASK(dsa)                    (((dsa) & PP2_TX_DSA_ALL_MASK) << PP2_TX_DSA_OFFS)
+#define PP2_TX_DSA_OFFS				14
+#define PP2_TX_DSA_ALL_MASK			(0x3 << PP2_TX_DSA_OFFS)
+#define PP2_TX_DSA_NONE				0
+#define PP2_TX_DSA_TAG				1
+#define PP2_TX_EDSA_TAG				2
+#define PP2_TX_DSA_MASK(dsa)			(((dsa) & PP2_TX_DSA_ALL_MASK) << PP2_TX_DSA_OFFS)
 
-#define PP2_TX_L4_CSUM_INIT_OFFS                16
-#define PP2_TX_L4_CSUM_INIT_MASK                (0xffff << PP2_TX_L4_CSUM_INIT_OFFS)
+#define PP2_TX_L4_CSUM_INIT_OFFS		16
+#define PP2_TX_L4_CSUM_INIT_MASK		(0xffff << PP2_TX_L4_CSUM_INIT_OFFS)
 
 /* Bits of "hwCmd[1]" field - offset 0x14 */
 
-/* bits 0..15 are reserved */
-#define PP2_TX_MOD_DSCP_OFFS                    16
-#define PP2_TX_MOD_DSCP_BITS                    6
-#define PP2_TX_MOD_DSCP_MASK                    (((1 << PP2_TX_MOD_DSCP_BITS) - 1) << PP2_TX_MOD_DSCP_OFFS)
+#define PP2_TX_MOD_QSET_OFFS			0
+#define PP2_TX_MOD_QSET_BITS			7
+#define PP2_TX_MOD_QSET_MASK			(((1 << PP2_TX_MOD_QSET_BITS) - 1) << PP2_TX_MOD_QSET_OFFS)
 
-#define PP2_TX_MOD_PRIO_OFFS                    22
-#define PP2_TX_MOD_PRIO_BITS                    3
-#define PP2_TX_MOD_PRIO_MASK                    (((1 << PP2_TX_MOD_PRIO_BITS) - 1) << PP2_TX_MOD_PRIO_OFFS)
+#define PP2_TX_MOD_GRNTD_BIT			7
+#define PP2_TX_MOD_GRNTD_MASK			(1 <<  PP2_TX_MOD_GRNTD_BIT)
 
-#define PP2_TX_MOD_DSCP_EN_BIT                  25
-#define PP2_TX_MOD_DSCP_EN_MASK                 (1 << PP2_TX_MOD_DSCP_EN_BIT)
+/* bits 8..15 are reserved */
 
-#define PP2_TX_MOD_PRIO_EN_BIT                  26
-#define PP2_TX_MOD_PRIO_EN_MASK                 (1 << PP2_TX_MOD_PRIO_EN_BIT)
+#define PP2_TX_MOD_DSCP_OFFS			16
+#define PP2_TX_MOD_DSCP_BITS			6
+#define PP2_TX_MOD_DSCP_MASK			(((1 << PP2_TX_MOD_DSCP_BITS) - 1) << PP2_TX_MOD_DSCP_OFFS)
 
-#define PP2_TX_MOD_GEMPID_EN_BIT                27
-#define PP2_TX_MOD_GEMPID_EN_MASK               (1 << PP2_TX_MOD_GEMPID_EN_BIT)
+#define PP2_TX_MOD_PRIO_OFFS			22
+#define PP2_TX_MOD_PRIO_BITS			3
+#define PP2_TX_MOD_PRIO_MASK			(((1 << PP2_TX_MOD_PRIO_BITS) - 1) << PP2_TX_MOD_PRIO_OFFS)
+
+#define PP2_TX_MOD_DSCP_EN_BIT			25
+#define PP2_TX_MOD_DSCP_EN_MASK			(1 << PP2_TX_MOD_DSCP_EN_BIT)
+
+#define PP2_TX_MOD_PRIO_EN_BIT			26
+#define PP2_TX_MOD_PRIO_EN_MASK			(1 << PP2_TX_MOD_PRIO_EN_BIT)
+
+#define PP2_TX_MOD_GEMPID_EN_BIT		27
+#define PP2_TX_MOD_GEMPID_EN_MASK		(1 << PP2_TX_MOD_GEMPID_EN_BIT)
 
 /* Bits of "hwCmd[2]" field - offset 0x18 */
-#define PP2_TX_PME_DPTR_OFFS                    0
-#define PP2_TX_PME_DPTR_ALL_MASK                (0xffff << PP2_TX_PME_DPTR_OFFS)
-#define PP2_TX_PME_DPTR_MASK(val)               (((val) & PP2_TX_PME_DPTR_ALL_MASK) << PP2_TX_PME_DPTR_OFFS)
+#define PP2_TX_PME_DPTR_OFFS			0
+#define PP2_TX_PME_DPTR_ALL_MASK		(0xffff << PP2_TX_PME_DPTR_OFFS)
+#define PP2_TX_PME_DPTR_MASK(val)		(((val) & PP2_TX_PME_DPTR_ALL_MASK) << PP2_TX_PME_DPTR_OFFS)
 
-#define PP2_TX_PME_IPTR_OFFS                    16
-#define PP2_TX_PME_IPTR_ALL_MASK                (0xff << PP2_TX_PME_IPTR_OFFS)
-#define PP2_TX_PME_IPTR_MASK(val)               (((val) & PP2_TX_PME_IPTR_ALL_MASK) << PP2_TX_PME_IPTR_OFFS)
+#define PP2_TX_PME_IPTR_OFFS			16
+#define PP2_TX_PME_IPTR_ALL_MASK		(0xff << PP2_TX_PME_IPTR_OFFS)
+#define PP2_TX_PME_IPTR_MASK(val)		(((val) & PP2_TX_PME_IPTR_ALL_MASK) << PP2_TX_PME_IPTR_OFFS)
 
 /* Bit 24 - HWF_IDB is for HWF usage only */
 
-#define PP2_TX_GEM_OEM_BIT                      25
-#define PP2_TX_GEM_OEM_MASK                     (1 << PP2_TX_GEM_OEM_BIT)
+#define PP2_TX_GEM_OEM_BIT			25
+#define PP2_TX_GEM_OEM_MASK			(1 << PP2_TX_GEM_OEM_BIT)
 
 /* Bit 26 - ERROR_SUM is for HWF usage only */
 
-#define PP2_TX_PON_FEC_BIT                      27
-#define PP2_TX_PON_FEC_MASK                     (1 << PP2_TX_PON_FEC_BIT)
+#define PP2_TX_PON_FEC_BIT			27
+#define PP2_TX_PON_FEC_MASK			(1 << PP2_TX_PON_FEC_BIT)
 
-#define PP2_TX_CPU_MAP_OFFS                     28
-#define PP2_TX_CPU_MAP_BITS                     4
-#define PP2_TX_CPU_MAP_MASK                     (((1 << PP2_TX_CPU_MAP_BITS) - 1) << PP2_TX_CPU_MAP_OFFS)
+#define PP2_TX_CPU_MAP_OFFS			28
+#define PP2_TX_CPU_MAP_BITS			4
+#define PP2_TX_CPU_MAP_MASK			(((1 << PP2_TX_CPU_MAP_BITS) - 1) << PP2_TX_CPU_MAP_OFFS)
 
 
 /************************** Buffer Header defines ******************************/
@@ -825,8 +962,12 @@ typedef struct pp2_buff_hdr {
 	MV_U32 nextBuffVirtAddr;
 	MV_U16 byteCount;
 	MV_U16 info;
+	MV_U8  bmQset;
 } PP2_BUFF_HDR;
 
+
+
+/* info bits */
 #define PP2_BUFF_HDR_INFO_MC_ID_OFFS		0
 #define PP2_BUFF_HDR_INFO_MC_ID_MASK		(0xfff << PP2_BUFF_HDR_INFO_MC_ID_OFFS)
 #define PP2_BUFF_HDR_INFO_MC_ID(info)		((info & PP2_BUFF_HDR_INFO_MC_ID_MASK) >> PP2_BUFF_HDR_INFO_MC_ID_OFFS)
@@ -835,35 +976,42 @@ typedef struct pp2_buff_hdr {
 #define PP2_BUFF_HDR_INFO_LAST_MASK		(0x1 << PP2_BUFF_HDR_INFO_LAST_OFFS)
 #define PP2_BUFF_HDR_INFO_IS_LAST(info)		((info & PP2_BUFF_HDR_INFO_LAST_MASK) >> PP2_BUFF_HDR_INFO_LAST_OFFS)
 
+/* bmQset bits */
+#define PP2_BUFF_HDR_BM_QSET_NUM_OFFS		0
+#define PP2_BUFF_HDR_BM_QSET_NUM_MASK		(0x7f << PP2_BUFF_HDR_BM_QSET_NUM_OFFS)
+
+#define PP2_BUFF_HDR_BM_QSET_TYPE_OFFS		7
+#define PP2_BUFF_HDR_BM_QSET_TYPE_MASK		(0x1 << PP2_BUFF_HDR_BM_QSET_TYPE_OFFS)
+
 /************************** Ethernet misc ******************************/
 
-#define ETH_MAX_DECODE_WIN              	6
-#define ETH_MAX_HIGH_ADDR_REMAP_WIN     	4
+#define ETH_MAX_DECODE_WIN			6
+#define ETH_MAX_HIGH_ADDR_REMAP_WIN		4
 
 /**** Address decode registers ****/
 
-#define ETH_WIN_BASE_REG(win)         		(MV_PP2_REG_BASE + 0x4000 + ((win) << 2))
-#define ETH_WIN_SIZE_REG(win)         		(MV_PP2_REG_BASE + 0x4020 + ((win) << 2))
-#define ETH_WIN_REMAP_REG(win)        		(MV_PP2_REG_BASE + 0x4040 + ((win) << 2))
-#define ETH_BASE_ADDR_ENABLE_REG      		(MV_PP2_REG_BASE + 0x4060)
+#define ETH_WIN_BASE_REG(win)			(MV_PP2_REG_BASE + 0x4000 + ((win) << 2))
+#define ETH_WIN_SIZE_REG(win)			(MV_PP2_REG_BASE + 0x4020 + ((win) << 2))
+#define ETH_WIN_REMAP_REG(win)			(MV_PP2_REG_BASE + 0x4040 + ((win) << 2))
+#define ETH_BASE_ADDR_ENABLE_REG		(MV_PP2_REG_BASE + 0x4060)
 
 /* The target associated with this window*/
-#define ETH_WIN_TARGET_OFFS                 	0
-#define ETH_WIN_TARGET_MASK                 	(0xf << ETH_WIN_TARGET_OFFS)
+#define ETH_WIN_TARGET_OFFS			0
+#define ETH_WIN_TARGET_MASK			(0xf << ETH_WIN_TARGET_OFFS)
 /* The target attributes associated with window */
-#define ETH_WIN_ATTR_OFFS                   	8
-#define ETH_WIN_ATTR_MASK                   	(0xff << ETH_WIN_ATTR_OFFS)
+#define ETH_WIN_ATTR_OFFS			8
+#define ETH_WIN_ATTR_MASK			(0xff << ETH_WIN_ATTR_OFFS)
 
 /* The Base address associated with window */
-#define ETH_WIN_BASE_OFFS		        16
-#define ETH_WIN_BASE_MASK		        (0xFFFF << ETH_WIN_BASE_OFFS)
+#define ETH_WIN_BASE_OFFS			16
+#define ETH_WIN_BASE_MASK			(0xFFFF << ETH_WIN_BASE_OFFS)
 
-#define ETH_WIN_SIZE_OFFS		        16
-#define ETH_WIN_SIZE_MASK		        (0xFFFF << ETH_WIN_SIZE_OFFS)
+#define ETH_WIN_SIZE_OFFS			16
+#define ETH_WIN_SIZE_MASK			(0xFFFF << ETH_WIN_SIZE_OFFS)
 /*-----------------------------------------------------------------------------------------------*/
 
-#define ETH_TARGET_DEF_ADDR_REG      		(MV_PP2_REG_BASE + 0x4064)
-#define ETH_TARGET_DEF_ID_REG      			(MV_PP2_REG_BASE + 0x4068)
+#define ETH_TARGET_DEF_ADDR_REG			(MV_PP2_REG_BASE + 0x4064)
+#define ETH_TARGET_DEF_ID_REG			(MV_PP2_REG_BASE + 0x4068)
 /*-----------------------------------------------------------------------------------------------*/
 
 #endif /* __MV_PP2_GBE_REGS_H__ */

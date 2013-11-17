@@ -254,7 +254,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	DEBUG_INIT_S("Initializing USB3 port 0 \n");
 
-	MV_REG_WRITE(0x183fc,  0x4000); // Bits [14:12] =0x4.
+	MV_REG_WRITE(0x183fc,  0x0000404A); // Bits [14:12] =0x4.
 	MV_REG_WRITE(0x183A0,  0x04479804);
 	MV_REG_WRITE(0x183a4,  0x00000058);
 	MV_REG_WRITE(0x183AC,  0x0000000d);
@@ -278,7 +278,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	DEBUG_INIT_S("Initializing USB3 port 1 \n");
 
-	MV_REG_WRITE(0x183fc,  0x24000); //  Bits [17:15]=0x2.
+	MV_REG_WRITE(0x183fc,  0x0002404A); //  Bits [17:15]=0x2.
 	MV_REG_WRITE(0x183C8,  0x04479804);
 	MV_REG_WRITE(0x183CC,  0x00000058);
 	MV_REG_WRITE(0x183D4,  0x0000000d);

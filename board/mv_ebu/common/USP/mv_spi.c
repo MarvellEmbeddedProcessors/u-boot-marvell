@@ -105,7 +105,7 @@ int spi_xfer(struct spi_slave *slave, unsigned int bitlen, const void *dout,
 		spi_cs_activate(slave);
 
 	/* Verify that the SPI mode is in 8bit mode */
-	MV_REG_BIT_RESET(MV_SPI_IF_CONFIG_REG(0), MV_SPI_BYTE_LENGTH_MASK);
+	MV_REG_BIT_RESET(MV_SPI_IF_CONFIG_REG(slave->bus), MV_SPI_BYTE_LENGTH_MASK);
 
 	/* TX/RX in 8bit chanks */
 

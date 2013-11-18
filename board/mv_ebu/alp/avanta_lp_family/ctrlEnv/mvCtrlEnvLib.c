@@ -122,6 +122,8 @@ MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 
 MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
 
+static MV_VOID mvCtrlTdmModeSet(MV_VOID);
+
 MV_U32 mvCtrlGetCpuNum(MV_VOID)
 {
 	MV_U32 cpu1Enabled;
@@ -330,6 +332,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	MV_REG_BIT_RESET(SOC_DEV_MUX_REG, BIT27);
 
 #if defined(MV_INCLUDE_TDM)
+	mvCtrlTdmModeSet();
 	mvCtrlTdmClkCtrlConfig();
 #endif
 
@@ -1101,6 +1104,52 @@ MV_U32 mvCtrlSdioSupport(MV_VOID)
 #endif
 
 #if defined(MV_INCLUDE_TDM)
+/*******************************************************************************
+* mvCtrlTdmModeSet - Set TDM mode type: TDM, TDM+ISI, TDM+ZSI
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+static MV_VOID mvCtrlTdmModeSet(MV_VOID)
+{
+	MV_U32 tdmMode;
+
+	switch (mvBoardSlicUnitTypeGet()) {
+	case MV_BOARD_SLIC_DISABLED:
+	case MV_BOARD_SLIC_SSI_ID:
+		return;
+	case MV_BOARD_SLIC_ISI_ID:
+		tdmMode = ISI_MODE;
+		break;
+	case MV_BOARD_SLIC_ZSI_ID:
+		tdmMode = ZSI_MODE;
+		break;
+	case MV_BOARD_SLIC_EXTERNAL_ID:
+		tdmMode = TDM_MODE;
+		break;
+	default:
+		mvOsPrintf("%s: Error: wrong SLIC type\n", __func__);
+		return;
+	}
+
+	/* Reset TDM mode field */
+	MV_REG_WRITE(MV_TDM_CTRL_REG, (MV_REG_READ(MV_TDM_CTRL_REG) & ~(TDM_MODE_MASK)));
+
+	/* Set new TDM mode */
+	MV_REG_BIT_SET(MV_TDM_CTRL_REG, tdmMode);
+
+	return;
+}
+
 /*******************************************************************************
 * mvCtrlTdmClkCtrlSet - Set TDM Clock Out Divider Control register
 *

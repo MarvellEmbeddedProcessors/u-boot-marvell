@@ -107,12 +107,14 @@ typedef struct {
 	MV_BOOL	byteCsAsrt;
 	MV_BOOL clockPolLow;
 	MV_U32	baudRate;
+	MV_U32 clkPhase;
 } MV_SPI_TYPE_INFO;
 
 typedef enum {
 	SPI_TYPE_FLASH = 0,
 	SPI_TYPE_SLIC_ZARLINK_SILABS,
-	SPI_TYPE_SLIC_LANTIQ
+	SPI_TYPE_SLIC_LANTIQ,
+	SPI_TYPE_SLIC_ZSI
 } MV_SPI_TYPE;
 
 

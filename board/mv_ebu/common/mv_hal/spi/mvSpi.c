@@ -83,19 +83,29 @@ static MV_SPI_TYPE_INFO spiTypes[] = {
 		.en16Bit = MV_TRUE,
 		.byteCsAsrt = MV_FALSE,
 		.clockPolLow = MV_TRUE,
-		.baudRate = (20 << 20) /*  20M */
+		.baudRate = (20 << 20), /*  20M */
+		.clkPhase = SPI_CLK_BEGIN_CYC
 	},
 	{
 		.en16Bit = MV_FALSE,
 		.clockPolLow = MV_TRUE,
 		.byteCsAsrt = MV_TRUE,
-		.baudRate = _8M
+		.baudRate = _8M,
+		.clkPhase = SPI_CLK_BEGIN_CYC
 	},
 	{
 		.en16Bit = MV_FALSE,
 		.clockPolLow = MV_TRUE,
 		.byteCsAsrt = MV_FALSE,
-		.baudRate = _8M
+		.baudRate = _8M,
+		.clkPhase = SPI_CLK_BEGIN_CYC
+	},
+	{
+		.en16Bit = MV_FALSE,
+		.clockPolLow = MV_TRUE,
+		.byteCsAsrt = MV_TRUE,
+		.baudRate = _8M,
+		.clkPhase = SPI_CLK_HALF_CYC
 	}
 };
 
@@ -142,7 +152,7 @@ MV_STATUS mvSpiParamsSet(MV_U8 spiId, MV_U8 csId, MV_SPI_TYPE type)
 		mvSpiBaudRateSet(spiId, currSpiInfo->baudRate);
 
 		ifParams.clockPolLow = currSpiInfo->clockPolLow;
-		ifParams.clockPhase = SPI_CLK_BEGIN_CYC;
+		ifParams.clockPhase = currSpiInfo->clkPhase;
 		ifParams.txMsbFirst = MV_FALSE;
 		ifParams.rxMsbFirst = MV_FALSE;
 		mvSpiIfConfigSet(spiId, &ifParams);

@@ -86,6 +86,14 @@ extern "C" {
 /* CIB registers offsets */
 #define MV_CIB_CTRL_CFG_REG                     (MV_COHERENCY_FABRIC_OFFSET + 0x80)
 
+/* TDM Control Register */
+#define MV_TDM_CTRL_REG				MV_MISC_REGS_OFFSET
+#define TDM_MODE_OFFS				1
+#define TDM_MODE_MASK				(3 << TDM_MODE_OFFS)
+#define TDM_MODE				(0 << TDM_MODE_OFFS)
+#define ISI_MODE				(1 << TDM_MODE_OFFS)
+#define ZSI_MODE				(2 << TDM_MODE_OFFS)
+
 /*
  * SoC Device Multiplex Register
  */

@@ -811,6 +811,7 @@ MV_VOID mvBoardSlicUnitTypeSet(MV_U32 slicType)
 		slicType = MV_BOARD_SLIC_DISABLED;
 	}
 
+	board->boardTdmInfoIndex = slicType;
 	board->pBoardModTypeValue->boardMppSlic = slicType;
 }
 /*******************************************************************************
@@ -1740,6 +1741,7 @@ MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId)
 	if (index == -1)
 		return 0;
 
+
 	if (devId >= board->numBoardTdmInfo[index])
 		return -1;
 
@@ -1770,7 +1772,7 @@ MV_U8 mvBoardTdmSpiIdGet(MV_VOID)
 	if (index == -1)
 		return 0;
 
-	return board->pBoardTdmSpiInfo[0].spiId;
+	return board->pBoardTdmSpiInfo[index].spiId;
 }
 
 /*******************************************************************************

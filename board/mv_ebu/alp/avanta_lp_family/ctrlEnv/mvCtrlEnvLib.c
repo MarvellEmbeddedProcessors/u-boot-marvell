@@ -474,9 +474,11 @@ MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 	/* if not using Lantiq TDM, define REF_CLK_OUT (both utilize the same gpio) */
 	isRefClkOut   = !(slicDev == SLIC_LANTIQ_ID);
 
-	/*SPI1 in use: if enabled external SLI and disabled RGMII-1, or boot from SPI1*/
-	if ((slicDev == SLIC_EXTERNAL_ID && !(ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1))
-			|| mvBoardBootDeviceGet() == MSAR_0_BOOT_SPI1_FLASH)
+	/*SPI1 is in use when:
+	 * 1. Boot source is SPI1
+	 * 2. RGMII-1 is disabled (SPI-1 MPP's are shared with RGMII-1 MPP's) */
+	if (mvBoardBootDeviceGet() == MSAR_0_BOOT_SPI1_FLASH ||
+		(!(ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1)))
 		isSPI1Enabled = MV_TRUE;
 	else
 		isSPI1Enabled = MV_FALSE;

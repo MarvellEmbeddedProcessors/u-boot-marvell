@@ -28,3 +28,4 @@
 /env/fw_printenv
 /gdb/gdbcont
 /gdb/gdbsend
+/bin_hdr/src_ddr/ddr3lib/

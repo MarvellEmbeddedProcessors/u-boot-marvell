@@ -166,7 +166,7 @@ MV_U32 ddr3Init(void)
 	MV_U32 auWinBackup[16];
 	MV_STATUS status;
 
-    DEBUG_INIT_S("DDR3 training version: 2013_Q3_14T1.0\n");
+    DEBUG_INIT_S("DDR3 training version: 2013_Q3_14T1.1\n");
 	/* SoC/Board special Initializtions */
 
 	/* Set X-BAR windows for the training sequence */

@@ -68,10 +68,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _DDR3_A380_CONFIG_H
 
 #define SPEED_BIN		SPEED_BIN_DDR_1866L
-#define DDR_BUS_WIDTH   BUS_WIDTH_16
+#define DDR_BUS_WIDTH		BUS_WIDTH_8
 #define MEM_SIZE		MEM_4G
-#define CL				0
-#define CWL				0
+#define CL			11
+#define CWL			8
 
 
 //Igorp

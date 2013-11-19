@@ -61,6 +61,10 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
+
+#include "mv_os.h"
+#include "mvUart.h"
+
 void *memset(void *s, int c, int n)
 {
     unsigned char* p=s;
@@ -76,4 +80,26 @@ void *memcpy(void *dest, const void *src, int n)
     while (n--)
         *dp++ = *sp++;
     return dest;
+}
+
+MV_STATUS fullMemTest(void)
+{
+  volatile unsigned long temp;
+  volatile unsigned long addr;
+
+  putstring("memory test - 20MB: ");
+
+  for (addr = 0; addr < 20*1024*1024 ; addr+=4 )
+  {
+    if ((addr & 0xfffff) == 0x0)
+      putstring(".");
+
+    *(volatile unsigned long long *)addr = addr;
+    temp = *(volatile unsigned long long *)addr;
+    if (temp != addr){
+		return MV_FAIL;
+	}
+  }
+  putstring(" done\n");
+  return MV_OK;
 }

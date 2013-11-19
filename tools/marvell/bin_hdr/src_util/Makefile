@@ -122,7 +122,7 @@ HOSTCPPFLAGS = $(CPPFLAGS)
 TGT = utils.a
 TGT_UART = utils.uart.a
 
-CSRC= mvUart.c mv_twsi.c utils.c time.c
+CSRC= mvUart.c mv_twsi.c utils.c time.c printf.c
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))

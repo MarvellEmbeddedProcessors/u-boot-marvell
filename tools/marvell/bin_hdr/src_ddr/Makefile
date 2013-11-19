@@ -112,6 +112,7 @@ endif
 ifeq "$(CONFIG_ARMADA_38X)"  "y"
   CFLAGS += -DCONFIG_ARMADA_38X
 endif
+
 INCLUDE     = -I./  -I../inc/ -I../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
@@ -122,7 +123,7 @@ HOSTCPPFLAGS = $(CPPFLAGS)
 TGT = ddr_$(BOARD).a
 TGT_UART = ddr_$(BOARD).uart.a
 
-CSRC = ddr3_init.c ddr3_spd.c
+CSRC = ddr3_spd.c ddr3_hw_init.c ddr3_init.c
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))

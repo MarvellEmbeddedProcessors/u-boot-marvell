@@ -186,8 +186,6 @@ int mvUsbBackVoltageUpdate(int dev, MV_U8 gppNo)
 /* USB Phy init specific for 28nm (88F68XX) */
 MV_STATUS mvUsbPhy28nmInit(int dev)
 {
-	MV_U32 regVal;
-
 	/* Temporary init sequence until final init sequence is stable */
 	MV_REG_WRITE(0x18440, 0x62);
 	MV_REG_WRITE(0xC0000, 0x40605205);
@@ -831,9 +829,12 @@ MV_STATUS mvUsbUtmiPhyInit(int dev, MV_USB_HAL_DATA *usbHalData)
 			status = MV_NOT_READY;
 
 	} else if (usbHalData->ctrlFamily == MV_88F66X0) {
-		/* The below init flow is incorrect for MVF67X0 and disabled until updated */
-		/*    (usbHalData->ctrlFamily == MV_88F67X0)) */
+
 		status = mvUsbPhy40nmLpInit(dev);
+
+	} else if (usbHalData->ctrlFamily == MV_88F67X0) {
+		/* The below init flow is incorrect for MVF67X0 and disabled until updated */
+		/* status = mvUsbPhy40nmLpInit(dev); */
 
 	} else if (usbHalData->ctrlFamily == MV_88F68XX) {
 

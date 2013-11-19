@@ -10,6 +10,7 @@
 *.rej
 *.orig
 *.su
+setparams
 /bmp_logo
 /envcrc
 /gen_eth_addr

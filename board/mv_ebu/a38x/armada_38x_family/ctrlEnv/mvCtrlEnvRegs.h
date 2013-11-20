@@ -138,6 +138,8 @@ extern "C" {
 
 /* Sample at Reset */
 #define MPP_SAMPLE_AT_RESET		(0x18600)
+#define SATR_BOOT_SRC_OFFS		4
+#define SATR_BOOT_SRC_MASK		(0x3F << SATR_BOOT_SRC_OFFS)
 #define SATR_CPU_FREQ_OFFS		10
 #define SATR_CPU_FREQ_MASK		(0x1F << SATR_CPU_FREQ_OFFS)
 #define SATR_CPU1_ENABLE_OFFS		19

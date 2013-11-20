@@ -112,8 +112,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PCIE0_QUADX1_EN				(1<<7)
 #define PCIE1_QUADX1_EN				(1<<8)
 
-/* IP Configuration registers */
-#define USB_CLUSTER_CONTROL                    (MV_IP_CONFIG_REGS_BASE)
+/* USB Configuration registers */
+#define USB_CONFIG_REG				(MV_IP_CONFIG_REGS_BASE + 0x20)
 
 /* ARM Configuration register */
 /* CPU_CONFIG_REG (CCR) */

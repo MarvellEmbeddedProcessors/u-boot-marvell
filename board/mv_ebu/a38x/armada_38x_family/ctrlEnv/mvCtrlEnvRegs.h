@@ -196,6 +196,9 @@ extern "C" {
 #define GENERAL_PURPOSE_RESERVED1_REG		0x182E4
 #define GENERAL_PURPOSE_RESERVED1_DEFAULT_VALUE	(~BIT17)
 
+/* USB3 registers */
+#define MV_USB3_WIN_BASE(dev)		(MV_USB3_REGS_BASE(dev) + 0x4000)
+
 /* Extract CPU, L2, DDR clocks SAR value from
 ** SAR bits 24-27
 */
@@ -366,7 +369,6 @@ typedef enum _mvTargetId {
 	DRAM_TARGET_ID   = 0,  /* Port 0  -> DRAM interface             */
 	DEV_TARGET_ID    = 1,  /* Port 1  -> Device bus, BootROM, SPI, UART,
 				*	     GPIO, MPP, and Miscellaneous */
-	USB3_TARGET_ID   = 5,  /* Port 5  -> USB3 Unit,                 */
 	PEX_TARGET_ID_123  = 4,  /* Port 4  -> PCI Express 0 and 1        */
 	PEX_TARGET_ID_0   = 8,  /* Port 4  -> PCI Express 0 and 1        */
 	CRYPT_TARGET_ID  = 9,  /* Port 9  -> Crypto Engine SRAM         */

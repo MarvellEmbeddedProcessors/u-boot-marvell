@@ -183,7 +183,21 @@ int mvUsbBackVoltageUpdate(int dev, MV_U8 gppNo)
 }
 #endif /* MV_USB_VOLTAGE_FIX */
 
+/* USB Phy init specific for 28nm (88F68XX) */
+MV_STATUS mvUsbPhy28nmInit(int dev)
+{
+	MV_U32 regVal;
 
+	/* Temporary init sequence until final init sequence is stable */
+	MV_REG_WRITE(0x18440, 0x62);
+	MV_REG_WRITE(0xC0000, 0x40605205);
+	MV_REG_WRITE(0xC0004, 0x409);
+	MV_REG_WRITE(0xC000C, 0x1be7f6f);
+
+	mvOsPrintf("USB2 UTMI PHY initialized succesfully\n");
+
+	return MV_OK;
+}
 /* USB Phy init specific for 40nm LP (88F6660) */
 MV_STATUS mvUsbPhy40nmLpInit(int dev)
 {
@@ -820,6 +834,10 @@ MV_STATUS mvUsbUtmiPhyInit(int dev, MV_USB_HAL_DATA *usbHalData)
 		/* The below init flow is incorrect for MVF67X0 and disabled until updated */
 		/*    (usbHalData->ctrlFamily == MV_88F67X0)) */
 		status = mvUsbPhy40nmLpInit(dev);
+
+	} else if (usbHalData->ctrlFamily == MV_88F68XX) {
+
+		status = mvUsbPhy28nmInit(dev);
 
 	} else
 		mvUsbPhyInit(dev);

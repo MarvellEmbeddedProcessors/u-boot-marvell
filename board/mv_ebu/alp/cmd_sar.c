@@ -90,8 +90,8 @@ static int do_sar_list(int argc, char *const argv[])
 		goto usage;
 	cmd = argv[0];
 
-	if (strcmp(cmd, "cpufreq") == 0) {
-		printf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n");
+	if (strcmp(cmd, "freq") == 0) {
+		printf("freq options - Determines the frequency of CPU/DDR/L2:\n");
 		printf("\n| ID  | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
 		printf("---------------------------------------------------------\n");
 		for (i=0; i < maxFreqModes; i++) {
@@ -156,9 +156,9 @@ static int do_sar_read(int argc, char *const argv[])
 		dump_all=MV_TRUE;
 	cmd = argv[0];
 
-	if ((strcmp(cmd, "cpufreq") == 0) && (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode)))
+	if ((strcmp(cmd, "freq") == 0) && (MV_ERROR != mvCtrlCpuDdrL2FreqGet(&freqMode)))
 	{
-		printf("\nCurrent cpufreq configuration:\n");
+		printf("\nCurrent freq configuration:\n");
 		printf("| ID  | CPU Freq (Mhz) | DDR Freq (Mhz) | L2 Freq (Mhz) |\n");
 		printf("|  %2d |      %4d      |      %d       |      %d      | \n",
 				freqMode.id,
@@ -291,7 +291,7 @@ static int do_sar_write(int argc, char *const argv[])
 	if (argc < 2)
 		goto usage;
 
-	if (strcmp(cmd, "cpufreq") == 0) {
+	if (strcmp(cmd, "freq") == 0) {
 		if (writeVal < 0 || writeVal > FREQ_MODES_NUM)
 			goto input_error;
 		else if (GetAndVerifySatr(MV_SATR_CPU_DDR_L2_FREQ, &temp) == MV_OK )
@@ -362,7 +362,7 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	else if (strcmp(cmd, "write") == 0) {
 		if (do_sar_write(argc - 2, argv + 2) == 0) {
 			do_sar_read(argc - 2, argv + 2);
-			if (strcmp(cmd2, "cpufreq") == 0 && !mvCtrlIsValidSatR())
+			if (strcmp(cmd2, "freq") == 0 && !mvCtrlIsValidSatR())
 				printf("\n*** Selected Unsupported DDR/CPU/L2 Clock configuration ***\n\n");
 			printf("\nChanges will be applied after reset.\n");
 			return 0;
@@ -381,13 +381,13 @@ usage:
 U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"Sample At Reset sub-system\n",
 
-	"list cpufreq	- prints the S@R modes list\n"
+	"list freq		- prints the S@R modes list\n"
 	"SatR list coreclock	- prints the S@R modes list\n"
 	"SatR list cpusnum	- prints the S@R modes list\n"
 	"SatR list sscg		- prints the S@R modes list\n\n"
 
-	"SatR read		- read and print all active S@R values\n"
-	"SatR read cpufreq	- read and print the CPU frequency S@R value\n"
+	"SatR read			- read and print all active S@R values\n"
+	"SatR read freq		- read and print the CPU frequency S@R value\n"
 	"SatR read coreclock	- read and print the Core Clock frequency S@R value\n"
 	"SatR read cpusnum	- read and print the number of CPU cores S@R value\n"
 	"SatR read sscg		- read and print the SSCG S@R value (reading the I2C device)\n"	 
@@ -404,7 +404,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR read refclk	- read and print the ref clock mode S@R value \n"
 	"SatR read tester	- read and print the tester mode S@R value\n\n"
 
-	"SatR write cpufreq <val>	- write the S@R with CPU frequency value\n"
+	"SatR write freq <val>	- write the S@R with CPU frequency value\n"
 	"SatR write coreclock <val>	- write the S@R with Core Clock frequency value\n"
 	"SatR write cpusnum <val>	- write the S@R with number of CPU cores value\n"
 	"SatR write sscg <val>		- write the S@R with sscg mode value\n"

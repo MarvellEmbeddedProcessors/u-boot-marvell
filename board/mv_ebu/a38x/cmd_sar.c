@@ -85,7 +85,7 @@ int sar_cmd_get(const char *cmd)
 {
 	if (strcmp(cmd, "coreclock") == 0)
 		return MV_SATR_CORE_CLK_SELECT;
-	if (strcmp(cmd, "cpuddrfreq") == 0)
+	if (strcmp(cmd, "freq") == 0)
 		return MV_SATR_CPU_DDR_L2_FREQ;
 	if (strcmp(cmd, "cpusnum") == 0)
 		return MV_SATR_CPU1_ENABLE;
@@ -127,20 +127,20 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 
 	switch (satrInfo->satrId) {
 	case MV_SATR_CPU_DDR_L2_FREQ:
-		mvOsPrintf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n");
-		mvOsPrintf("\n| ID   | CPU Freq (MHz) | L2 Freq (MHz)  | SDRAM Freq (MHz) |\n");
-		mvOsPrintf("-------------------------------------------------------------\n");
+		mvOsPrintf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n\n");
+		mvOsPrintf("| ID | CPU Freq (MHz) | L2 Freq (MHz)  | SDRAM Freq (MHz) |\n");
+		mvOsPrintf("|----|----------------|----------------|------------------|\n");
 		for (i=0; i <= MV_SAR_FREQ_MODES_EOT; i++) {
 			if (cpuDdrClkTbl[i].id == MV_SAR_FREQ_MODES_EOT)
 				break;
 			if (cpuDdrClkTbl[i].isDisplay)
-				mvOsPrintf("| 0x%02X |      %4d      |      %d       |      %d         | \n",
+				mvOsPrintf("| %2d |      %4d      |      %d       |      %d         | \n",
 					   cpuDdrClkTbl[i].id,
 					   cpuDdrClkTbl[i].cpuFreq,
 					   cpuDdrClkTbl[i].ddrFreq,
 					   cpuDdrClkTbl[i].l2Freq);
 		}
-		mvOsPrintf("-------------------------------------------------------------\n");
+		mvOsPrintf("-----------------------------------------------------------\n");
 		break;
 	case MV_SATR_CORE_CLK_SELECT:
 		mvOsPrintf("Determines the Core clock frequency:\n");
@@ -198,7 +198,7 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		for (i = 0; i < BOOT_SRC_TABLE_SIZE; i++) {
 			if (satrBootSrcTable[i].bootSrc == -1)
 				continue;
-			mvOsPrintf("%s\n", satrBootSrcTable[i].name);
+			mvOsPrintf("| %2d |%s\n", i,  satrBootSrcTable[i].name);
 		}
 		break;
 	case MV_SATR_RD_APPS_CFG:
@@ -237,15 +237,15 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 			if (cpuDdrClkTbl[i].id == MV_SAR_FREQ_MODES_EOT)
 				break;
 			if (cpuDdrClkTbl[i].id == tmp) {
-				mvOsPrintf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n");
-				mvOsPrintf("\n| ID   | CPU Freq (MHz) | L2 Freq (MHz)  | SDRAM Freq (MHz) |\n");
-				mvOsPrintf("-------------------------------------------------------------\n");
-				mvOsPrintf("| 0x%02X |      %4d      |      %d       |      %d         | \n",
+				mvOsPrintf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n\n");
+				mvOsPrintf("| ID | CPU Freq (MHz) | L2 Freq (MHz)  | SDRAM Freq (MHz) |\n");
+				mvOsPrintf("|----|----------------|----------------|------------------|\n");
+				mvOsPrintf("| %2d |      %4d      |      %d       |      %d         | \n",
 					   cpuDdrClkTbl[i].id,
 					   cpuDdrClkTbl[i].cpuFreq,
 					   cpuDdrClkTbl[i].ddrFreq,
 					   cpuDdrClkTbl[i].l2Freq);
-				mvOsPrintf("-------------------------------------------------------------\n");
+				mvOsPrintf("-----------------------------------------------------------\n");
 				break;
 			}
 		}
@@ -287,7 +287,7 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		break;
 	case MV_SATR_BOOT_DEVICE:
 		if (tmp < BOOT_SRC_TABLE_SIZE)
-			mvOsPrintf("Boot source device: %s\n", satrBootSrcTable[tmp].name);
+			mvOsPrintf("Boot source device: %d - %s\n", tmp, satrBootSrcTable[tmp].name);
 		break;
 	case MV_SATR_RD_APPS_CFG:
 		mvOsPrintf("RD application configure to %s\n", (tmp == 0) ? "NAS" : "AP");
@@ -368,7 +368,7 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 			return 1;
 	}
 	else if (strcmp(cmd, "write") == 0) {
-		value = simple_strtoul(argv[3], NULL, 16);
+		value = simple_strtoul(argv[3], NULL, 10);
 		if (do_sar_write(&satrInfo, value) == 0){
 			mvOsDelay(100);
 			do_sar_read(mode, &satrInfo);
@@ -387,7 +387,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"Sample At Reset sub-system\n",
 
      "list coreclock	- prints the S@R modes list\n"
-"SatR list cpuddrfreq   - prints the S@R modes list\n"
+"SatR list freq         - prints the S@R modes list\n"
 "SatR list cpusnum      - prints the S@R modes list\n"
 "SatR list sscg         - prints the S@R modes list\n"
 "SatR list bootsrc	- prints the S@R modes list\n"
@@ -400,7 +400,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "SatR list rd_apps_cfg  - (RD only) prints the S@R modes list\n\n"
 
 "SatR read coreclock	- read and print the core frequency S@R value\n"
-"SatR read cpuddrfreq	- read and print the CPU DDR frequency S@R value\n"
+"SatR read freq	        - read and print the CPU DDR frequency S@R value\n"
 "SatR read cpusnum	- read and print the number of CPU cores S@R value\n"
 "SatR read sscg		- read and print the boot source from S@R value\n"
 "SatR read bootsrc	- read and print the boot source from S@R value\n"
@@ -416,7 +416,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "SatR read dump         - read and print all active S@R value\n\n"
 
 "SatR write coreclock <val>	- write the S@R with core frequency value\n"
-"SatR write cpuddrfreq <val>	- write the S@R with CPU DDR frequency value\n"
+"SatR write freq <val>	        - write the S@R with CPU DDR frequency value\n"
 "SatR write cpusnum <val>	- write the S@R with sscg mode value\n"
 "SatR write sscg <val>		- write the S@R with sscg mode value\n"
 "SatR write bootsrc <val>	- write the S@R with Boot source value\n"

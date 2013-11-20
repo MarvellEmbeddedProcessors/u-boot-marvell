@@ -225,102 +225,102 @@ typedef struct _mvSATRBootTable {
 
 #define BOOT_SRC_TABLE_SIZE 0x3A
 #define MV_SATR_BOOT_SRC_TABLE_VAL { \
-/*00*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,  0, 0, "00  |    NOR 8 bit "}, \
-/*01*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,  0, 1, "01  |    NOR 8 bit "}, \
-/*02*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,  0, 0, "02  |    NOR 8 bit "}, \
-/*03*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,  0, 1, "03  |    NOR 8 bit "}, \
-/*04*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 0, 0, "04  |    NOR 16 bit"}, \
-/*05*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 0, 1, "05  |    NOR 16 bit"}, \
-/*06*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 0, 0, "06  |    NOR 16 bit"}, \
-/*07*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 0, 1, "07  |    NOR 16 bit"}, \
+/*00*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,  0, 0, "NOR 8 bit "}, \
+/*01*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,  0, 1, "NOR 8 bit "}, \
+/*02*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,  0, 0, "NOR 8 bit "}, \
+/*03*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT,  0, 1, "NOR 8 bit "}, \
+/*04*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 0, 0, "NOR 16 bit"}, \
+/*05*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 0, 1, "NOR 16 bit"}, \
+/*06*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 0, 0, "NOR 16 bit"}, \
+/*07*/ { MSAR_0_BOOT_NOR_FLASH, MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, 0, 1, "NOR 16 bit"}, \
 /*08*/ { MSAR_0_BOOT_NAND_NEW,	MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B, 3, \
-		"08  |    NAND 8 bit |Page size 512B "}, \
+		"NAND 8 bit |Page size 512B "}, \
 /*09*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_512B, 4, \
-		"09  |    NAND 8 bit |Page size 512B "}, \
+		"NAND 8 bit |Page size 512B "}, \
 /*0A*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_4BIT , \
-		"0A  |    NAND 8 bit |Page size 2KB, ECC 4BIT "}, \
+		"NAND 8 bit |Page size 2KB, ECC 4BIT "}, \
 /*0B*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_8BIT , \
-		"0B  |    NAND 8 bit |Page size 2KB  ECC 8BIT "}, \
+		"NAND 8 bit |Page size 2KB  ECC 8BIT "}, \
 /*0C*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_12BIT, \
-		"0C  |    NAND 8 bit |Page size 2KB  ECC 12BIT "}, \
+		"NAND 8 bit |Page size 2KB  ECC 12BIT "}, \
 /*0D*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_16BIT, \
-		"0D  |    NAND 8 bit |Page size 2KB  ECC 16BIT "}, \
+		"NAND 8 bit |Page size 2KB  ECC 16BIT "}, \
 /*0E*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_4BIT , \
-		"0E  |    NAND 8 bit |Page size 4KB  ECC 4BIT "}, \
+		"NAND 8 bit |Page size 4KB  ECC 4BIT "}, \
 /*0F*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_8BIT , \
-		"0F  |    NAND 8 bit |Page size 4KB  ECC 8BIT "}, \
+		"NAND 8 bit |Page size 4KB  ECC 8BIT "}, \
 /*10*/ { MSAR_0_BOOT_NAND_NEW,	MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_12BIT, \
-		"10  |    NAND 8 bit |Page size 4KB  ECC 12BIT"}, \
+		"NAND 8 bit |Page size 4KB  ECC 12BIT"}, \
 /*11*/ { MSAR_0_BOOT_NAND_NEW,	MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_16BIT, \
-		"11  |    NAND 8 bit |Page size 4KB  ECC 16BIT"}, \
+		"NAND 8 bit |Page size 4KB  ECC 16BIT"}, \
 /*12*/ { MSAR_0_BOOT_NAND_NEW,	MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_4BIT , \
-		"12  |    NAND 8 bit |Page size 8KB  ECC 4BIT "}, \
+		"NAND 8 bit |Page size 8KB  ECC 4BIT "}, \
 /*13*/ { MSAR_0_BOOT_NAND_NEW,	MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_8BIT , \
-		"13  |    NAND 8 bit |Page size 8KB  ECC 8BIT "}, \
+		"NAND 8 bit |Page size 8KB  ECC 8BIT "}, \
 /*14*/ { MSAR_0_BOOT_NAND_NEW,	MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_12BIT, \
-		"14  |    NAND 8 bit |Page size 8KB  ECC 12BIT"}, \
+		"NAND 8 bit |Page size 8KB  ECC 12BIT"}, \
 /*15*/ { MSAR_0_BOOT_NAND_NEW,	MSAR_0_BOOT_DEV_BUS_WIDTH_8BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_16BIT, \
-		"15  |    NAND 8 bit |Page size 8KB  ECC 16BIT"}, \
+		"NAND 8 bit |Page size 8KB  ECC 16BIT"}, \
 /*16*/ { -1, -1, -1, -1},	\
 /*17*/ { -1, -1, -1, -1}, \
 /*18*/ { MSAR_0_BOOT_NAND_NEW,	MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, MSAR_0_NAND_PAGE_SZ_512B, 3		       , \
-		"18  |    NAND 16    |Page size 512B          "}, \
+		"NAND 16    |Page size 512B          "}, \
 /*19*/ { MSAR_0_BOOT_NAND_NEW,	MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, MSAR_0_NAND_PAGE_SZ_512B, 4		       , \
-		"19  |    NAND 16    |Page size 512B          "}, \
+		"NAND 16    |Page size 512B          "}, \
 /*1A*/ { MSAR_0_BOOT_NAND_NEW,	MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_4BIT , \
-		"1A  |    NAND 16    |Page size 2KB  ECC 4BIT "}, \
+		"NAND 16    |Page size 2KB  ECC 4BIT "}, \
 /*1B*/ { MSAR_0_BOOT_NAND_NEW,	MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_8BIT , \
-		"1B  |    NAND 16    |Page size 2KB  ECC 8BIT "}, \
+		"NAND 16    |Page size 2KB  ECC 8BIT "}, \
 /*1C*/ { MSAR_0_BOOT_NAND_NEW,	MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_12BIT, \
-		"1C  |    NAND 16    |Page size 2KB  ECC 12BIT"}, \
+		"NAND 16    |Page size 2KB  ECC 12BIT"}, \
 /*1D*/ { MSAR_0_BOOT_NAND_NEW,	MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, MSAR_0_NAND_PAGE_SZ_2KB, MSAR_0_NAND_ECC_16BIT, \
-		"1D  |    NAND 16    |Page size 2KB  ECC 16BIT"}, \
+		"NAND 16    |Page size 2KB  ECC 16BIT"}, \
 /*1E*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_4BIT , \
-		"1E  |    NAND 16    |Page size 4KB  ECC 4BIT "}, \
+		"NAND 16    |Page size 4KB  ECC 4BIT "}, \
 /*1F*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_8BIT , \
-		"1F  |    NAND 16    |Page size 4KB  ECC 8BIT "}, \
+		"NAND 16    |Page size 4KB  ECC 8BIT "}, \
 /*20*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_12BIT, \
-		"20  |    NAND 16    |Page size 4KB  ECC 12BIT"},\
+		"NAND 16    |Page size 4KB  ECC 12BIT"},\
 /*21*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, MSAR_0_NAND_PAGE_SZ_4KB, MSAR_0_NAND_ECC_16BIT, \
-		"21  |    NAND 16    |Page size 4KB  ECC 16BIT"},\
+		"NAND 16    |Page size 4KB  ECC 16BIT"},\
 /*22*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_4BIT , \
-		"22  |    NAND 16    |Page size 8KB  ECC 4BIT "},\
+		"NAND 16    |Page size 8KB  ECC 4BIT "},\
 /*23*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_8BIT , \
-		"23  |    NAND 16    |Page size 8KB  ECC 8BIT "},\
+		"NAND 16    |Page size 8KB  ECC 8BIT "},\
 /*24*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_12BIT, \
-		"24  |    NAND 16    |Page size 8KB  ECC 12BIT"},\
+		"NAND 16    |Page size 8KB  ECC 12BIT"},\
 /*25*/ { MSAR_0_BOOT_NAND_NEW,  MSAR_0_BOOT_DEV_BUS_WIDTH_16BIT, MSAR_0_NAND_PAGE_SZ_8KB, MSAR_0_NAND_ECC_16BIT, \
-		"25  |    NAND 16    |Page size 8KB  ECC 16BIT"},\
+		"NAND 16    |Page size 8KB  ECC 16BIT"},\
 /*26*/ { -1, -1, -1, -1}, \
 /*27*/ { -1, -1, -1, -1}, \
-/*28*/ { MSAR_0_BOOT_UART, 0,  0,  1, "28  |    UART   Port0"}, /* port, mpp, mpp */ \
-/*29*/ { MSAR_0_BOOT_UART, 1, 56, 55, "29  |    UART   Port1"}, /* port, mpp, mpp */  \
-/*2A*/ { MSAR_0_BOOT_SATA, 0,  0, -1, "2A  |    SATA   Lan0 "}, /* port, lane */  \
-/*2B*/ { MSAR_0_BOOT_SATA, 0,  1, -1, "2B  |    SATA   Lan1 "}, /* port, lane */ \
-/*2C*/ { MSAR_0_BOOT_PEX,  0,  0, -1, "2C  |    PEX0   Lan0 "}, /* port, lane */ \
-/*2D*/ { MSAR_0_BOOT_PEX,  0,  1, -1, "2D  |    PEX0   Lan1 "}, /* port, lane */ \
-/*2E*/ { MSAR_0_BOOT_I2C,  0,  3,  2, "2E  |    I2C         "}, /* port, mpp, mpp */ \
+/*28*/ { MSAR_0_BOOT_UART, 0,  0,  1, "UART   Port0"}, /* port, mpp, mpp */ \
+/*29*/ { MSAR_0_BOOT_UART, 1, 56, 55, "UART   Port1"}, /* port, mpp, mpp */  \
+/*2A*/ { MSAR_0_BOOT_SATA, 0,  0, -1, "SATA   Lan0 "}, /* port, lane */  \
+/*2B*/ { MSAR_0_BOOT_SATA, 0,  1, -1, "SATA   Lan1 "}, /* port, lane */ \
+/*2C*/ { MSAR_0_BOOT_PEX,  0,  0, -1, "PEX0   Lan0 "}, /* port, lane */ \
+/*2D*/ { MSAR_0_BOOT_PEX,  0,  1, -1, "PEX0   Lan1 "}, /* port, lane */ \
+/*2E*/ { MSAR_0_BOOT_I2C,  0,  3,  2, "I2C         "}, /* port, mpp, mpp */ \
 /*2F*/ { -1, -1, -1, -1}, \
 /*30*/ { MSAR_0_BOOT_SDIO,		0,		59,		54		, \
-		"30  |    SDIO   Port0"}, /* port, mpp, mpp */ \
+		"SDIO   Port0"}, /* port, mpp, mpp */ \
 /*31*/ { MSAR_0_BOOT_SDIO,		0,		40,		37		, \
-		"31  |    SDIO   Port0"}, /* port, mpp, mpp */ \
+		"SDIO   Port0"}, /* port, mpp, mpp */ \
 /*32*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24BIT, 25, \
-		"32  |    SPI 24 bit address"}, \
+		"SPI 24 bit address"}, \
 /*33*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 25, \
-		"33  |    SPI 32 bit address"}, \
+		"SPI 32 bit address"}, \
 /*34*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24BIT, 59, \
-		"34  |    SPI 24 bit address"}, \
+		"SPI 24 bit address"}, \
 /*35*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 59, \
-		"35  |    SPI 32 bit address"}, \
+		"SPI 32 bit address"}, \
 /*36*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24BIT, 25, \
-		"36  |    SPI 24 bit address"}, \
+		"SPI 24 bit address"}, \
 /*37*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 25, \
-		"37  |    SPI 32 bit address"}, \
+		"SPI 32 bit address"}, \
 /*38*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24BIT, 25, \
-		"38  |    SPI 24 bit address"}, \
+		"SPI 24 bit address"}, \
 /*39*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 25, \
-		"39  |    SPI 32 bit address"} \
+		"SPI 32 bit address"} \
 }
 
 typedef struct {

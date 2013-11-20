@@ -117,8 +117,8 @@ extern "C" {
 #define MV_ETH_SGMII_PHY_REGS_OFFSET(p)		(MV_ETH_REGS_OFFSET(p)+0x2000)
 
 #define MV_PEX_IF_REGS_OFFSET(pexIf)            (((pexIf) == 0) ? 0x80000 : (0x40000 + ((pexIf-1) * 0x4000)))
-#define MV_USB_REGS_OFFSET(dev)                 (0x58000 + ((dev) * 0x1000))
-#define MV_USB3_REGS_OFFSET(dev)                (0xF0000 + ((dev) * 0x1000))
+#define MV_USB_REGS_OFFSET(dev)                 (0x58000)
+#define MV_USB3_REGS_OFFSET(dev)                (0xF0000 + (dev * 0x8000))
 #define MV_XOR_REGS_OFFSET(unit)                (0x60800 + (unit)*0x100)
 #define MV_CESA_TDMA_REGS_OFFSET(chanNum)       (0x90000 + (chanNum * 0x2000))
 #define MV_CESA_REGS_OFFSET(chanNum)            (0x9D000 + (chanNum * 0x2000))
@@ -331,7 +331,6 @@ typedef enum _mvTarget {
 	SPI1_CS3,	/* 24 SPI1_CS3			*/
 	BOOT_ROM_CS,	/* 25 BOOT_ROM_CS		*/
 	DEV_BOOCS,	/* 26 DEV_BOOCS			*/
-	USB3,		/* 27 USB3                      */
 	CRYPT0_ENG,	/* 28 Crypto0 Engine		*/
 	PNC_BM,		/* 29 PNC + BM			*/
 	MAX_TARGETS
@@ -380,7 +379,6 @@ typedef enum _mvTarget {
 	{ 0xDA, DEV_TARGET_ID	},		/* SPI1_CS3               */ \
 	{ MAIN_BOOT_ATTR, DEV_TARGET_ID },	/* Main Boot device      */ \
 	{ SEC_BOOT_ATTR, DEV_TARGET_ID  },	/* Secondary Boot device */ \
-	{ 0x00, USB3_TARGET_ID },               /* USB3                  */ \
 	{ 0x01, CRYPT_TARGET_ID	},		/* CRYPT_ENG0            */ \
 	{0x00, PNC_BM_TARGET_ID },		/* PNC_BM		 */ \
 }
@@ -415,7 +413,6 @@ typedef enum _mvTarget {
 	"SPI_CS7",		/* SPI_CS7 */		\
 	"BOOT_ROM_CS",		/* BOOT_ROM_CS */	\
 	"DEV_BOOTCS",		/* DEV_BOOCS */		\
-	"USB3",                 /* USB3 */              \
 	"CRYPT1_ENG",		/* CRYPT1_ENG */	\
 	"PNC_BM"		/* PNC_BM */		\
 }

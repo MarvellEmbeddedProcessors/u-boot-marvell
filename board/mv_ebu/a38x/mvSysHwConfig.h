@@ -238,8 +238,7 @@ disclaimer.
 	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 25 SPI_CS7 */   \
 	{{0xf8000000,		0,		_1M	},			13,	DIS},	/* 26 BOOT_ROM_CS */\
 	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},			9,	 EN},	/* 27 DEV_BOOCS */  \
-	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 28 USB3 */   \
-	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},			10,	DIS},	/* 29 CRYPT_ENG */ \
+	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},			10,	DIS},	/* 28 CRYPT_ENG */ \
 	{{TBL_TERM,	TBL_TERM, 	TBL_TERM	},		TBL_TERM,	TBL_TERM}               \
 };
 

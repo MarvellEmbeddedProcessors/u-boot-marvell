@@ -438,6 +438,31 @@ MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 	return MV_ERROR;
 }
 /*******************************************************************************
+* mvCtrlbootSrcGet - Get the selected S@R boot source
+*
+* DESCRIPTION:
+*   read board BOOT configuration and return the selcted S@R boot src
+*
+* INPUT:  none
+*
+* OUTPUT: boot source value,
+*
+* RETURN:
+*	boot source value
+*
+*******************************************************************************/
+MV_U32 mvCtrlbootSrcGet(void)
+{
+	MV_U32 satrVal, bootSrc;
+
+	satrVal = MV_REG_READ(MPP_SAMPLE_AT_RESET);
+	bootSrc = (satrVal & SATR_BOOT_SRC_MASK) >> SATR_BOOT_SRC_OFFS;
+
+	DB(mvOsPrintf("%s: Read from S@R BOOTSRC = 0x%X\n", __func__, bootSrc));
+	return bootSrc;
+}
+
+/*******************************************************************************
 * mvCtrlDevFamilyIdGet - Get Device ID
 *
 * DESCRIPTION:

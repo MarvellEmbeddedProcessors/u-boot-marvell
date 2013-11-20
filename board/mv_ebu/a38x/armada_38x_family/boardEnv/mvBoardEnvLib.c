@@ -1028,14 +1028,12 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGet()
 	MV_U32 satrBootDeviceValue;
 	MV_SATR_BOOT_TABLE satrBootEntry;
 
-	satrBootDeviceValue = mvBoardSatRRead(MV_SATR_BOOT_DEVICE);
-	if (satrBootDeviceValue == MV_ERROR) {
-		mvOsPrintf("%s: Error: failed to read boot source\n", __func__);
-		mvOsPrintf("Using NAND as the default boot source\n");
-		return MSAR_0_BOOT_SPI_FLASH; /* SPI is the Default Boot source */
-	}
+	satrBootDeviceValue = mvCtrlbootSrcGet();
 
 	satrBootEntry = satrBootSrcTable[satrBootDeviceValue];
+
+	if (-1 == (MV_U32)satrBootEntry.bootSrc)	/* return default for incorrect value */
+		return MSAR_0_BOOT_SPI_FLASH;
 
 	if (satrBootEntry.bootSrc != MSAR_0_BOOT_SPI_FLASH)
 		return satrBootEntry.bootSrc;

@@ -71,7 +71,7 @@ MV_U32 _MV_REG_READ(MV_U32 regAddr)
   DEBUG_INIT_FULL_D(INTER_REGS_BASE | (regAddr), 8);
   DEBUG_INIT_FULL_S(" regData=0x");
 
-  MV_U32 regData = MV_MEMIO_LE32_READ((void *)(INTER_REGS_BASE | (regAddr)));
+  MV_U32 regData = MV_MEMIO_LE32_READ((INTER_REGS_BASE | (regAddr)));
 
   DEBUG_INIT_FULL_D(regData, 8);
   DEBUG_INIT_FULL_S(" - Done\n");

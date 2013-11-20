@@ -46,9 +46,9 @@ typedef struct _boardSatrDefault {
 #define MAX_DEFAULT_ENTRY	5
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 /* 	defauleValueForBoard[] = RD_68xx,	DB_68xx*/
-{ MV_SATR_CPU_DDR_L2_FREQ,	{8,		8}  },
+{ MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c}  },
 { MV_SATR_CORE_CLK_SELECT,	{1,		1}  },
-{ MV_SATR_CPU1_ENABLE,	  	{MV_FALSE,	MV_FALSE} },
+{ MV_SATR_CPU1_ENABLE,	  	{MV_TRUE,	MV_TRUE} },
 { MV_SATR_SSCG_DISABLE,	  	{MV_FALSE,	MV_FALSE} },
 { MV_SATR_BOOT_DEVICE,		{0x32,     	0x32} },
 /*{ MV_SATR_RD_LANE1_2_CFG,	{0,		0} },
@@ -128,19 +128,19 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 	switch (satrInfo->satrId) {
 	case MV_SATR_CPU_DDR_L2_FREQ:
 		mvOsPrintf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n");
-		mvOsPrintf("\n| ID  | CPU Freq (MHz) | L2 Freq (MHz)  | SDRAM Freq (MHz) |\n");
-		mvOsPrintf("------------------------------------------------------------\n");
+		mvOsPrintf("\n| ID   | CPU Freq (MHz) | L2 Freq (MHz)  | SDRAM Freq (MHz) |\n");
+		mvOsPrintf("-------------------------------------------------------------\n");
 		for (i=0; i <= MV_SAR_FREQ_MODES_EOT; i++) {
 			if (cpuDdrClkTbl[i].id == MV_SAR_FREQ_MODES_EOT)
 				break;
 			if (cpuDdrClkTbl[i].isDisplay)
-				mvOsPrintf("|  %2d |      %4d      |      %d       |      %d         | \n",
+				mvOsPrintf("| 0x%02X |      %4d      |      %d       |      %d         | \n",
 					   cpuDdrClkTbl[i].id,
 					   cpuDdrClkTbl[i].cpuFreq,
 					   cpuDdrClkTbl[i].ddrFreq,
 					   cpuDdrClkTbl[i].l2Freq);
 		}
-		mvOsPrintf("---------------------------------------------------------\n");
+		mvOsPrintf("-------------------------------------------------------------\n");
 		break;
 	case MV_SATR_CORE_CLK_SELECT:
 		mvOsPrintf("Determines the Core clock frequency:\n");
@@ -238,13 +238,14 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 				break;
 			if (cpuDdrClkTbl[i].id == tmp) {
 				mvOsPrintf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n");
-				mvOsPrintf("\n| ID  | CPU Freq (MHz) | L2 Freq (MHz)  | SDRAM Freq (MHz) |\n");
-				mvOsPrintf("------------------------------------------------------------\n");
-				mvOsPrintf("|  %2d |      %4d      |      %d       |      %d         | \n",
+				mvOsPrintf("\n| ID   | CPU Freq (MHz) | L2 Freq (MHz)  | SDRAM Freq (MHz) |\n");
+				mvOsPrintf("-------------------------------------------------------------\n");
+				mvOsPrintf("| 0x%02X |      %4d      |      %d       |      %d         | \n",
 					   cpuDdrClkTbl[i].id,
 					   cpuDdrClkTbl[i].cpuFreq,
 					   cpuDdrClkTbl[i].ddrFreq,
 					   cpuDdrClkTbl[i].l2Freq);
+				mvOsPrintf("-------------------------------------------------------------\n");
 				break;
 			}
 		}
@@ -256,7 +257,7 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("CPU 1 %s\n", (tmp == 0)? "Disabled" : "Enabled");
 		break;
 	case MV_SATR_SSCG_DISABLE:
-		mvOsPrintf("sscg = %d ==> %s \n", tmp, (tmp == 0)? "Disabled" : "Enabled");
+		mvOsPrintf("sscg = %d ==> %s \n", tmp, (tmp == 1)? "Disabled" : "Enabled");
 		break;
 	case MV_SATR_DDR4_SELECT:
 		mvOsPrintf("DDR%d module mounted.\n", (tmp + 3));

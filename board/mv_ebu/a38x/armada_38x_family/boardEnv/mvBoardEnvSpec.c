@@ -93,7 +93,7 @@ MV_BOARD_MPP_INFO db88f68xxInfoBoardMppConfigValue[] = {
 
 MV_BOARD_TWSI_INFO db88f68xxInfoBoardTwsiDev[] = {
 	/* {{devClass,		devClassId, twsiDevAddr, twsiDevAddrType, moreThen256}} */
-	{ BOARD_DEV_TWSI_SATR,		0,	0x54,	   ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,		0,	0x50,	   ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
 	{ BOARD_DEV_TWSI_SATR,		1,	0x4c,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_DEV_TWSI_SATR,		2,	0x4d,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_DEV_TWSI_SATR,		3,	0x4e,	   ADDR7_BIT, MV_FALSE},

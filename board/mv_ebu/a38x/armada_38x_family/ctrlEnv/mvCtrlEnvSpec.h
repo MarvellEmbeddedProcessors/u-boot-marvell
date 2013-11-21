@@ -322,15 +322,16 @@ typedef enum _mvTarget {
 	PEX3_IO,	/* 15 PCI Express 3 IO		*/
 	INTER_REGS,	/* 16 Internal registers	*/
 	DMA_UART,	/* 17 DMA based UART request	*/
-	SPI_CS0,	/* 18 SPI0_CS0			*/
+	SPI0_CS0,	/* 18 SPI0_CS0			*/
 	SPI0_CS1,	/* 19 SPI0_CS1			*/
 	SPI0_CS2,	/* 20 SPI0_CS2			*/
-	SPI1_CS0,	/* 21 SPI1_CS0			*/
-	SPI1_CS1,	/* 22 SPI1_CS1			*/
-	SPI1_CS2,	/* 23 SPI1_CS2			*/
-	SPI1_CS3,	/* 24 SPI1_CS3			*/
-	BOOT_ROM_CS,	/* 25 BOOT_ROM_CS		*/
-	DEV_BOOCS,	/* 26 DEV_BOOCS			*/
+	SPI0_CS3,	/* 21 SPI0_CS3			*/
+	SPI1_CS0,	/* 22 SPI1_CS0			*/
+	SPI1_CS1,	/* 23 SPI1_CS1			*/
+	SPI1_CS2,	/* 24 SPI1_CS2			*/
+	SPI1_CS3,	/* 25 SPI1_CS3			*/
+	BOOT_ROM_CS,	/* 26 BOOT_ROM_CS		*/
+	DEV_BOOCS,	/* 27 DEV_BOOCS			*/
 	CRYPT0_ENG,	/* 28 Crypto0 Engine		*/
 	PNC_BM,		/* 29 PNC + BM			*/
 	MAX_TARGETS
@@ -370,13 +371,14 @@ typedef enum _mvTarget {
 	{ 0x70, PEX_TARGET_ID_123 },		/* PEX3_IO               */ \
 	{ 0xFF, 0xFF		},		/* INTER_REGS            */ \
 	{ 0x01, DEV_TARGET_ID	},		/* DMA_UART              */ \
-	{ 0x1E, DEV_TARGET_ID	},		/* SPI_CS0               */ \
-	{ 0x5E, DEV_TARGET_ID	},		/* SPI0_CS1               */ \
-	{ 0x9E, DEV_TARGET_ID	},		/* SPI0_CS2               */ \
-	{ 0x1A, DEV_TARGET_ID	},		/* SPI1_CS0               */ \
-	{ 0x5A, DEV_TARGET_ID	},		/* SPI1_CS1               */ \
-	{ 0x9A, DEV_TARGET_ID	},		/* SPI1_CS2               */ \
-	{ 0xDA, DEV_TARGET_ID	},		/* SPI1_CS3               */ \
+	{ 0x1E, DEV_TARGET_ID	},		/* SPI0_CS0              */ \
+	{ 0x5E, DEV_TARGET_ID	},		/* SPI0_CS1              */ \
+	{ 0x9E, DEV_TARGET_ID	},		/* SPI0_CS2              */ \
+	{ 0xDE, DEV_TARGET_ID	},		/* SPI0_CS3              */ \
+	{ 0x1A, DEV_TARGET_ID	},		/* SPI1_CS0              */ \
+	{ 0x5A, DEV_TARGET_ID	},		/* SPI1_CS1              */ \
+	{ 0x9A, DEV_TARGET_ID	},		/* SPI1_CS2              */ \
+	{ 0xDA, DEV_TARGET_ID	},		/* SPI1_CS3              */ \
 	{ MAIN_BOOT_ATTR, DEV_TARGET_ID },	/* Main Boot device      */ \
 	{ SEC_BOOT_ATTR, DEV_TARGET_ID  },	/* Secondary Boot device */ \
 	{ 0x01, CRYPT_TARGET_ID	},		/* CRYPT_ENG0            */ \
@@ -397,20 +399,20 @@ typedef enum _mvTarget {
 	"PEX0_IO",		/* PEX0_IO */		\
 	"PEX1_MEM",		/* PEX1_MEM */		\
 	"PEX1_IO",		/* PEX1_IO */		\
-	"PEX2_MEM",		/* PEX0_MEM */		\
-	"PEX2_IO",		/* PEX0_IO */		\
-	"PEX3_MEM",		/* PEX1_MEM */		\
-	"PEX3_IO",		/* PEX1_IO */		\
+	"PEX2_MEM",		/* PEX2_MEM */		\
+	"PEX2_IO",		/* PEX2_IO */		\
+	"PEX3_MEM",		/* PEX3_MEM */		\
+	"PEX3_IO",		/* PEX3_IO */		\
 	"INTER_REGS",		/* INTER_REGS */	\
 	"DMA_UART",		/* DMA_UART */		\
-	"SPI_CS0",		/* SPI_CS0 */		\
-	"SPI_CS1",		/* SPI_CS1 */		\
-	"SPI_CS2",		/* SPI_CS2 */		\
-	"SPI_CS3",		/* SPI_CS3 */		\
-	"SPI_CS4",		/* SPI_CS4 */		\
-	"SPI_CS5",		/* SPI_CS5 */		\
-	"SPI_CS6",		/* SPI_CS6 */		\
-	"SPI_CS7",		/* SPI_CS7 */		\
+	"SPI0_CS0",		/* SPI0_CS0 */		\
+	"SPI0_CS1",		/* SPI0_CS1 */		\
+	"SPI0_CS2",		/* SPI0_CS2 */		\
+	"SPI0_CS3",		/* SPI0_CS3 */		\
+	"SPI1_CS0",		/* SPI1_CS0 */		\
+	"SPI1_CS1",		/* SPI1_CS1 */		\
+	"SPI1_CS2",		/* SPI1_CS2 */		\
+	"SPI1_CS3",		/* SPI1_CS3 */		\
 	"BOOT_ROM_CS",		/* BOOT_ROM_CS */	\
 	"DEV_BOOTCS",		/* DEV_BOOCS */		\
 	"CRYPT1_ENG",		/* CRYPT1_ENG */	\

@@ -114,7 +114,7 @@ MV_BOARD_MAC_INFO db88f68xxInfoBoardMacInfo[] = {
 MV_DEV_CS_INFO db88f68xxInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth }*/
 #if defined(MV_INCLUDE_SPI)
-	{ SPI_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
+	{ SPI0_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
 #endif
 #ifdef MV_NAND
 	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8},  /* NAND DEV */
@@ -207,7 +207,7 @@ MV_BOARD_MAC_INFO rd88F68XXInfoBoardMacInfo[] = {
 MV_DEV_CS_INFO rd88F68XXInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth }*/
 #if defined(MV_INCLUDE_SPI)
-	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 } /* SPI DEV */
+	{ SPI0_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 } /* SPI DEV */
 #endif
 };
 
@@ -301,7 +301,7 @@ MV_BOARD_MAC_INFO A380_customerInfoBoardMacInfo[] = {
 MV_DEV_CS_INFO A380_customerInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth }*/
 #if defined(MV_INCLUDE_SPI)
-	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 } /* SPI DEV */
+	{ SPI0_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 } /* SPI DEV */
 #endif
 };
 

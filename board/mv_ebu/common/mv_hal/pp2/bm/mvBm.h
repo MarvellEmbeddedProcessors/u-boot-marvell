@@ -142,7 +142,7 @@ static INLINE void mvBmPoolQsetPut(int pool, MV_U32 bufPhysAddr, MV_U32 bufVirtA
 	MV_U32 regVal, bufPhysAddrPrio;
 
 	regVal = (qset << MV_BM_RLS_QSET_NUM_OFFS) & MV_BM_RLS_QSET_NUM_MASK;
-	mvPp2WrReg(MV_BM_QSET_RLS_REG, qset);
+	mvPp2WrReg(MV_BM_QSET_RLS_REG, regVal);
 
 	bufPhysAddrPrio = bufPhysAddr | MV_BM_PHY_RLS_PRIO_EN_MASK;
 	if (isGrntd)
@@ -157,7 +157,7 @@ static INLINE void mvBmPoolQsetMcPut(int pool, MV_U32 bufPhysAddr, MV_U32 bufVir
 	MV_U32 regVal, bufPhysAddrPrio;
 
 	regVal = (qset << MV_BM_RLS_QSET_NUM_OFFS) & MV_BM_RLS_QSET_NUM_MASK;
-	mvPp2WrReg(MV_BM_QSET_RLS_REG, qset);
+	mvPp2WrReg(MV_BM_QSET_RLS_REG, regVal);
 
 	bufPhysAddrPrio = bufPhysAddr | MV_BM_PHY_RLS_PRIO_EN_MASK;
 	if (isGrntd)

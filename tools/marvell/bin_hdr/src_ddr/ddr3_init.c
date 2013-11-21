@@ -498,6 +498,15 @@ MV_U32 ddr3Init_(void)
 #endif
 	if ((uiTargetFreq == 0) || (uiHClkTimePs == 0)) {
 		DEBUG_INIT_S("DDR3 Training Sequence - FAILED - Wrong Sample at Reset Configurations \n");
+		if (uiTargetFreq == 0) {
+			DEBUG_INIT_C("uiTargetFreq", uiTargetFreq, 2);
+			DEBUG_INIT_C("uiFabOpt", uiFabOpt, 2);
+			DEBUG_INIT_C("uiCpuFreq", uiCpuFreq, 2);
+		} else if (uiHClkTimePs == 0) {
+			DEBUG_INIT_C("uiHClkTimePs", uiHClkTimePs, 2);
+			DEBUG_INIT_C("uiFabOpt", uiFabOpt, 2);
+			DEBUG_INIT_C("uiCpuFreq", uiCpuFreq, 2);
+		}
 		return MV_DDR3_TRAINING_ERR_BAD_SAR;
 	}
 

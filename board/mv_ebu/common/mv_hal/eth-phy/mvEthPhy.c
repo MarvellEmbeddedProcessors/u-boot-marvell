@@ -305,12 +305,27 @@ MV_STATUS mvEthPhyRegPrint(MV_U32 phyAddr, MV_U32 regOffs)
 	MV_STATUS   status;
 
 	status = mvEthPhyRegRead(phyAddr, regOffs, &data);
-	if (status == MV_OK)
-		mvOsPrintf("phy=0x%x, reg=0x%x: 0x%04x\n", phyAddr, regOffs, data);
-	else
-		mvOsPrintf("Read failed\n");
+	if (status != MV_OK)
+		mvOsPrintf("Read failed - status = %d\n", status);
+
+	mvOsPrintf("phy=0x%x, reg=0x%x: 0x%04x\n", phyAddr, regOffs, data);
 
 	return status;
+}
+
+void mvEthPhyRegs(int phyAddr)
+{
+	mvOsPrintf("[ETH-PHY #%d registers]\n\n", phyAddr);
+
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_CTRL_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_STATUS_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_AUTONEGO_AD_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_LINK_PARTNER_CAP_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_1000BASE_T_CTRL_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_1000BASE_T_STATUS_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_EXTENDED_STATUS_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_SPEC_CTRL_REG);
+	mvEthPhyRegPrint(phyAddr, ETH_PHY_SPEC_STATUS_REG);
 }
 
 /*******************************************************************************
@@ -524,6 +539,7 @@ MV_STATUS mvEthPhyDisableAN(MV_U32 phyAddr, int speed, int duplex)
 
 	default:
 			mvOsOutput("Unexpected duplex = %d\n", duplex);
+			return MV_FAIL;
 	}
 	/* Clear bit 12 to Disable autonegotiation of the PHY */
 	phyRegData &= ~ETH_PHY_CTRL_AN_ENABLE_MASK;
@@ -691,6 +707,7 @@ MV_STATUS	mvEthPhyPrintStatus(MV_U32 phyAddr)
 			break;
 	case ETH_PHY_SPEC_STATUS_SPEED_10MBPS:
 			mvOsOutput("Speed: 10 Mbps\n");
+			break;
 	default:
 			mvOsOutput("Speed: Uknown\n");
 			break;

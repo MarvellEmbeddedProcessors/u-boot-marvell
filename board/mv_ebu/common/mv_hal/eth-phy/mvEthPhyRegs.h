@@ -101,8 +101,11 @@ extern "C" {
 /* PHY registers and bits */
 #define ETH_PHY_CTRL_REG                0
 #define ETH_PHY_STATUS_REG              1
-#define ETH_PHY_AUTONEGO_AD_REG		    4
-#define ETH_PHY_1000BASE_T_CTRL_REG	    9
+#define ETH_PHY_AUTONEGO_AD_REG		4
+#define ETH_PHY_LINK_PARTNER_CAP_REG	5
+#define ETH_PHY_1000BASE_T_CTRL_REG	9
+#define ETH_PHY_1000BASE_T_STATUS_REG	10
+#define ETH_PHY_EXTENDED_STATUS_REG	15
 #define ETH_PHY_SPEC_CTRL_REG           16
 #define ETH_PHY_SPEC_STATUS_REG         17
 

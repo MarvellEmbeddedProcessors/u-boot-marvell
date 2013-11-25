@@ -819,6 +819,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	MV_BOARD_CONFIG_TYPE_INFO configInfo;
 	int i;
 	MV_BOARD_BOOT_SRC bootSrc;
+	MV_U32	reg;
 
 
 	/*Read all TWSI board module if exsist : */
@@ -843,6 +844,14 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	/* Update MPP group types and values according to board configuration */
 	mvBoardMppIdUpdate();
 	mvBoardEthComplexInfoUpdate();
+	/* board on test mode  */
+	reg = MV_REG_READ(MPP_SAMPLE_AT_RESET) & BIT20;
+	if (reg) {
+		/* if board on test mode reset MPP19 */
+		reg = mvBoardMppGet(2);
+		reg &= 0xffff0fff;
+		mvBoardMppSet(2, reg);
+	}
 }
 /*******************************************************************************
 * mvBoardIsModuleConnected

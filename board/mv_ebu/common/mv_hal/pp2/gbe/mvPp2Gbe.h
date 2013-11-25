@@ -393,7 +393,7 @@ static INLINE int mvPp2TxqAllocReservedDesc(int port, int txp, int txq, int num)
 	MV_U32 regVal, ptxq;
 
 	ptxq = MV_PPV2_TXQ_PHYS(port, txp, txq);
-	regVal = (ptxq << MV_PP2_TXQ_RSVD_REQ_Q_OFFSET) || (num << MV_PP2_TXQ_RSVD_REQ_DESC_OFFSET);
+	regVal = (ptxq << MV_PP2_TXQ_RSVD_REQ_Q_OFFSET) | (num << MV_PP2_TXQ_RSVD_REQ_DESC_OFFSET);
 	mvPp2WrReg(MV_PP2_TXQ_RSVD_REQ_REG, regVal);
 
 	regVal = mvPp2RdReg(MV_PP2_TXQ_RSVD_RSLT_REG);

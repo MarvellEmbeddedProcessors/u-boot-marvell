@@ -73,7 +73,7 @@ typedef struct __mvDramMcInit {
 /* DB-88F6650 (Avanta_LP_16 bit) 533MHz  */
 MV_DRAM_MC_INIT ddr3_Z0_db_88F6650_533[MV_MAX_DDR3_STATIC_SIZE] =
 {
-    {0x00001400, 0x7B005040}, 	/*DDR SDRAM Configuration Register */
+    {0x00001400, 0x7B004820}, 	/*DDR SDRAM Configuration Register */
     {0x00001404, 0x36301820}, 	/*Dunit Control Low Register */
     {0x00001408, 0x33137772}, 	/*DDR SDRAM Timing (Low) Register */
     {0x0000140C, 0x384019D5}, 	/*DDR SDRAM Timing (High) Register */
@@ -112,7 +112,7 @@ MV_DRAM_MC_INIT ddr3_Z0_db_88F6650_533[MV_MAX_DDR3_STATIC_SIZE] =
 /* RD-88F6650 (Avanta_LP_16 bit) 400MHz  */
 MV_DRAM_MC_INIT ddr3_Z0_rd_88F6650_400[MV_MAX_DDR3_STATIC_SIZE] =
 {
-    {0x00001400, 0x7B004C30}, 	/*DDR SDRAM Configuration Register */
+    {0x00001400, 0x7B004618}, 	/*DDR SDRAM Configuration Register */
     {0x00001404, 0x36300820}, 	/*Dunit Control Low Register */
     {0x00001408, 0x3303555D}, 	/*DDR SDRAM Timing (Low) Register */
     {0x0000140C, 0x384019BF}, 	/*DDR SDRAM Timing (High) Register */
@@ -151,7 +151,7 @@ MV_DRAM_MC_INIT ddr3_Z0_rd_88F6650_400[MV_MAX_DDR3_STATIC_SIZE] =
 /* DB-88F6660 (Avanta_LP_32 bit) 533MHz  */
 MV_DRAM_MC_INIT ddr3_Z0_db_88F6660_533[MV_MAX_DDR3_STATIC_SIZE] =
 {
-    {0x00001400, 0x7B00D040}, 	/*DDR SDRAM Configuration Register */
+    {0x00001400, 0x7B00C820}, 	/*DDR SDRAM Configuration Register */
     {0x00001404, 0x36301820}, 	/*Dunit Control Low Register */
     {0x00001408, 0x33137772}, 	/*DDR SDRAM Timing (Low) Register */
     {0x0000140C, 0x384019D5}, 	/*DDR SDRAM Timing (High) Register */
@@ -190,7 +190,7 @@ MV_DRAM_MC_INIT ddr3_Z0_db_88F6660_533[MV_MAX_DDR3_STATIC_SIZE] =
 /* RD-88F6660 (Avanta_LP_32 bit) 533MHz  */
 MV_DRAM_MC_INIT ddr3_Z0_rd_88F6660_533[MV_MAX_DDR3_STATIC_SIZE] =
 {
-    {0x00001400, 0x7B00D040}, 	/*DDR SDRAM Configuration Register */
+    {0x00001400, 0x7B00C820}, 	/*DDR SDRAM Configuration Register */
     {0x00001404, 0x36300820}, 	/*Dunit Control Low Register */
     {0x00001408, 0x33137772}, 	/*DDR SDRAM Timing (Low) Register */
     {0x0000140C, 0x3841199F}, 	/*DDR SDRAM Timing (High) Register */

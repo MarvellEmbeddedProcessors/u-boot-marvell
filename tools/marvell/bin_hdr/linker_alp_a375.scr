@@ -5,8 +5,8 @@ MEMORY
   {
   ram1 : ORIGIN = 0x40000030, LENGTH = 0x83d0
   ram2 : ORIGIN = 0x40008500, LENGTH = 0x47a0
-  ram3 : ORIGIN = 0x40010500, LENGTH = 34K
-  ram4 : ORIGIN = 0x4000Cca0, LENGTH = 0x3780
+  ram3 : ORIGIN = 0x4000Cca0, LENGTH = 0x3780
+  ram4 : ORIGIN = 0x40010500, LENGTH = 0x8ac0
   }
 
 SECTIONS
@@ -22,11 +22,11 @@ SECTIONS
 	.text3 : {
 		mvHighSpeedEnvSpec*.o (.text)
 		mv*.o (.text)
-	} > ram4 = 0x0
+	} > ram3 = 0x0
 
 	.text2 : {
 		*.o (.text)
-	} > ram3 = 0x0
+	} > ram4 = 0x0
         .data : {
                  *(.data)
         } > ram2 = 0x0

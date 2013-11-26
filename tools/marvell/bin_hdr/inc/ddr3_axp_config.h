@@ -149,6 +149,16 @@ Selects for DDR3/DDR3L/DDR3U RDIMM 1.5 V/1.35 V/1.25 V Applications") */
 #define DUNIT_STATIC
 #endif
 
+#if defined(MIXED_DIMM_STATIC) || defined (SPD_SUPPORT)
+/* this flag allows the user to change the dram refresh cycle in ps, only in case of SPD or MIX DIMM topology*/
+#define TREFI_USER_EN
+
+#ifdef TREFI_USER_EN
+
+#define TREFI_USER	3900000
+#endif
+#endif
+
 #ifdef SPD_SUPPORT
 /* AUTO_DETECTION_SUPPORT - relevant ONLY for Marvell DB boards. enables I2C auto detection different options */
 #if defined(DB_88F78X60) || defined(DB_88F78X60_REV2) || defined(DB_784MP_GP)

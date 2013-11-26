@@ -224,8 +224,57 @@ MV_BOARD_MPP_INFO rd88f68XXInfoBoardMppConfigValue[] = {
 	} }
 };
 
-MV_BOARD_INFO rd88f68XX_board_info = {
-	.boardName			= "RD-88F6820-DDR3",
+MV_BOARD_INFO rdNas88f68XX_board_info = {
+	.boardName			= "RD-NAS-88F6820-DDR3",
+	.numBoardMppTypeValue	= ARRSZ(rd88f68XXInfoBoardMppConfigValue),
+	.pBoardModTypeValue		= NULL,
+	.pBoardMppConfigValue	= rd88f68XXInfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(rd88F68XXInfoBoardDeCsInfo),
+	.pDevCsInfo				= rd88F68XXInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(rd88F68XXInfoBoardTwsiDev),
+	.pBoardTwsiDev			= rd88F68XXInfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(rd88F68XXInfoBoardMacInfo),
+	.pBoardMacInfo			= rd88F68XXInfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= 0,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow			= RD_88F68XX_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= RD_88F68XX_GPP_OUT_ENA_MID,
+	.gppOutValLow			= RD_88F68XX_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= RD_88F68XX_GPP_OUT_VAL_MID,
+	.gppPolarityValLow		= RD_88F68XX_GPP_POL_LOW,
+	.gppPolarityValMid		= RD_88F68XX_GPP_POL_MID,
+
+	/* TDM */
+	.numBoardTdmInfo		= {},
+	.pBoardTdmInt2CsInfo		= {},
+	.boardTdmInfoIndex		= -1,
+
+	.pBoardSpecInit			= NULL,
+
+	/* NAND init params */
+	.nandFlashReadParams		= 0,
+	.nandFlashWriteParams		= 0,
+	.nandFlashControl		= 0,
+	/* NOR init params */
+	.norFlashReadParams		= 0,
+	.norFlashWriteParams		= 0,
+	/* Enable modules auto-detection. */
+	.configAutoDetect		= MV_FALSE
+};
+MV_BOARD_INFO rdAP88f68XX_board_info = {
+	.boardName			= "RD-AP-88F6820-DDR3",
 	.numBoardMppTypeValue	= ARRSZ(rd88f68XXInfoBoardMppConfigValue),
 	.pBoardModTypeValue		= NULL,
 	.pBoardMppConfigValue	= rd88f68XXInfoBoardMppConfigValue,
@@ -372,7 +421,8 @@ MV_BOARD_INFO A380_customer_board_info = {
  * All supported A380 boards
  */
 MV_BOARD_INFO *boardInfoTbl[] = {
-	&rd88f68XX_board_info,
+	&rdNas88f68XX_board_info,
 	&db88f68xx_board_info,
+	&rdAP88f68XX_board_info,
 	&A380_customer_board_info
 };

@@ -50,12 +50,6 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 { MV_SATR_CORE_CLK_SELECT,	{1,		1}  },
 { MV_SATR_CPU1_ENABLE,	  	{MV_TRUE,	MV_TRUE} },
 { MV_SATR_SSCG_DISABLE,	  	{MV_FALSE,	MV_FALSE} },
-{ MV_SATR_BOOT_DEVICE,		{0x32,     	0x32} },
-/*{ MV_SATR_RD_LANE1_2_CFG,	{0,		0} },
-{ MV_SATR_RD_LANE4_CFG,		{0,		0} },
-{ MV_SATR_RD_LANE0_CFG,		{0,		0} },
-{ MV_SATR_RD_APPS_CFG,		{0,		0} },
-*/
 };
 int do_sar_default(void)
 {
@@ -63,7 +57,7 @@ int do_sar_default(void)
 	MV_SATR_TYPE_ID satrClassId;
 	MV_BOARD_SATR_INFO satrInfo;
 
-	if (boardId != RD_68XX_ID && boardId != DB_68XX_ID) {
+	if (boardId >= A380_CUSTOMER_ID) {
 		printf("\nError: S@R fields are readable only for current board\n");
 		return 1;
 	}
@@ -97,17 +91,6 @@ int sar_cmd_get(const char *cmd)
 		return MV_SATR_DDR_BUS_WIDTH;
 	if (strcmp(cmd, "ddreccenable") == 0)
 		return MV_SATR_DDR_ECC_ENABLE;
-/*	if (strcmp(cmd, "nanddetect") == 0)
-		return MV_SATR_NAND_DETECT;
-*/
-	if (strcmp(cmd, "rd_lane1_2_cfg") == 0)
-		return MV_SATR_RD_LANE1_2_CFG;
-	if (strcmp(cmd, "rd_lane4_cfg") == 0)
-		return MV_SATR_RD_LANE4_CFG;
-	if (strcmp(cmd, "rd_lane0_cfg") == 0)
-		return MV_SATR_RD_LANE0_CFG;
-	if (strcmp(cmd, "rd_apps_cfg") == 0)
-		return MV_SATR_RD_APPS_CFG;
 	if (strcmp(cmd, "bootsrc") == 0)
 		return MV_SATR_BOOT_DEVICE;
 	if (strcmp(cmd, "boardid") == 0)
@@ -172,27 +155,6 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("0x0 = No ECC      \n");
 		mvOsPrintf("0x1 = ECC enabled  \n ");
 		break;
-/*	case MV_SATR_NAND_DETECT:
-		mvOsPrintf("Determines NAND Device  detect:\n");
-		mvOsPrintf("0x0 = NAND device detected\n ");
-		mvOsPrintf("0x1 = No NAND      \n");
-		break;
-*/
-	case MV_SATR_RD_LANE1_2_CFG:
-		mvOsPrintf("Determines the SERDES lane 1 and 2 configuring\n");
-		mvOsPrintf("0x0 = Configuring lane 1 and lane 2 to PEX\n");
-		mvOsPrintf("0x1 = Configuring lane 1 and lane 2 to SATA\n");
-		break;
-	case MV_SATR_RD_LANE4_CFG:
-		mvOsPrintf("Determines the SERDES lane 4 configuring\n");
-		mvOsPrintf("0x0 = Configuring lane 4 USB3\n");
-		mvOsPrintf("0x1 = Configuring lane 4 SGMII\n");
-		break;
-	case MV_SATR_RD_LANE0_CFG:
-		mvOsPrintf("Determines the SERDES lane 0 configuring\n");
-		mvOsPrintf("0x0 = No configuring lane 0\n");
-		mvOsPrintf("0x1 = Configuring lane 0 to PEX0\n");
-		break;
 	case MV_SATR_BOOT_DEVICE:
 		mvOsPrintf("Determines the Boot source device:\n");
 		for (i = 0; i < BOOT_SRC_TABLE_SIZE; i++) {
@@ -201,13 +163,13 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 			mvOsPrintf("| %2d |%s\n", i,  satrBootSrcTable[i].name);
 		}
 		break;
-	case MV_SATR_RD_APPS_CFG:
-		mvOsPrintf("Determines the RD application:\n");
-		mvOsPrintf("0x0 = NAS\n");
-		mvOsPrintf("0x1 = AP\n");
-		break;
 	case MV_SATR_BOARD_ID:
-		mvOsPrintf("Determines the board ID\n");
+		if (mvBoardIdGet()== DB_68XX_ID)
+			mvOsPrintf("Determines the board ID\n");
+		else {
+			mvOsPrintf("0 - RD NAS\n");
+			mvOsPrintf("2 - RD AP\n");
+		}
 		break;
 	case MV_SATR_BOARD_ECO_VERSION:
 		mvOsPrintf("Determines the ECO version\n");
@@ -272,25 +234,9 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		else
 			mvOsPrintf("0x1 = ECC enabled  \n ");
 		break;
-/*	case MV_SATR_NAND_DETECT:
-		mvOsPrintf("NAND Device detect: %s\n", (tmp == 0) ? "0x0 = No NAND":"0x1 = NAND device detected");
-		break;
-*/
-	case MV_SATR_RD_LANE1_2_CFG:
-		mvOsPrintf("SERDES lane 1 and 2 configuring to %s\n", (tmp == 0) ? "PEX" : "SATA");
-		break;
-	case MV_SATR_RD_LANE4_CFG:
-		mvOsPrintf("SERDES lane 4 configuring to %s\n", (tmp == 0) ? "USB3" : "SGMII");
-		break;
-	case MV_SATR_RD_LANE0_CFG:
-		mvOsPrintf("SERDES lane 0 configuring to %s\n", (tmp == 0) ? "NONE" : "PEX");
-		break;
 	case MV_SATR_BOOT_DEVICE:
 		if (tmp < BOOT_SRC_TABLE_SIZE)
 			mvOsPrintf("Boot source device: %d - %s\n", tmp, satrBootSrcTable[tmp].name);
-		break;
-	case MV_SATR_RD_APPS_CFG:
-		mvOsPrintf("RD application configure to %s\n", (tmp == 0) ? "NAS" : "AP");
 		break;
 	case MV_SATR_BOARD_ID:
 		mvOsPrintf("Board ID = 0x%x\n", tmp);
@@ -324,12 +270,20 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 {
 	MV_STATUS rc = MV_TRUE;
-	if (satrInfo->status & BOARD_SATR_READ_ONLY)
-	{
+	if ((satrInfo->status & BOARD_SATR_READ_ONLY) ||
+	    ((MV_SATR_BOARD_ID == satrInfo->satrId)  && (mvBoardIdGet()== DB_68XX_ID))) {
 		mvOsPrintf("S@R ID = %d is read only\n", satrInfo->satrId);
 		mvOsPrintf("Write S@R failed!\n");
 		return 1;
 	}
+	if((MV_SATR_BOARD_ID == satrInfo->satrId)  &&
+	   ((mvBoardIdGet()== RD_NAS_68XX_ID) || (mvBoardIdGet()== RD_AP_68XX_ID)))
+		if ((value != RD_NAS_68XX_ID) && (value != RD_AP_68XX_ID)) {
+			mvOsPrintf("S@R incorrect value for board ID %d\n", value);
+			mvOsPrintf("Write S@R failed!\n");
+			return 1;
+		}
+
 	rc = mvBoardSatRWrite(satrInfo->satrId, value);
 	if (rc == MV_ERROR) {
 		mvOsPrintf("Error write to TWSI\n");
@@ -394,10 +348,6 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "SatR list ddr4select   - prints the S@R modes list\n"
 "SatR list ddrbuswidth  - prints the S@R modes list\n"
 "SatR list ddreccenable - prints the S@R modes list\n"
-"SatR list rd_lane1_2_cfg - (RD only) prints the S@R modes list\n"
-"SatR list rd_lane4_cfg - (RD only) prints the S@R modes list\n"
-"SatR list rd_lane0_cfg - (RD only) prints the S@R modes list\n"
-"SatR list rd_apps_cfg  - (RD only) prints the S@R modes list\n\n"
 
 "SatR read coreclock	- read and print the core frequency S@R value\n"
 "SatR read freq	        - read and print the CPU DDR frequency S@R value\n"
@@ -407,10 +357,6 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "SatR read ddr4select   - read and print the DDR3/4 S@R value\n"
 "SatR read ddrbuswidth  - read and print the DDR 16/32 S@R value\n"
 "SatR read ddreccenable - read and print the DDR ECC enable S@R value\n"
-"SatR read rd_lane1_2_cfg - read and print the SERDES lane 1-2 S@R value\n"
-"SatR read rd_lane4_cfg - read and print the SERDES lane 4 S@R value\n"
-"SatR read rd_lane0_cfg - read and print the SERDES lane0 S@R value\n"
-"SatR read rd_apps_cfg  - read and print the application S@R value\n"
 "SatR read boardid      - read and print the board ID S@R value\n"
 "SatR read ecoversion   - read and print the ECO version S@R value\n"
 "SatR read dump         - read and print all active S@R value\n\n"

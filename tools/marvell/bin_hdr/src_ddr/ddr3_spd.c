@@ -90,6 +90,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_a375_config.h"
 #endif
 
+#define MIN_VAL(a, b) ((a<b) ? a : b)
+
 #ifdef DUNIT_SPD
 
 static MV_STATUS ddr3SpdSumInit(MV_DIMM_INFO *pDimmInfo, MV_DIMM_INFO *pDimmSumInfo, MV_U32 uiDimm);
@@ -614,8 +616,13 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
         DEBUG_INIT_FULL_S("DDR3 - DUNIT-SET - Datawidth - 16Bits \n");
 #endif
     uiStaticVal = ddr3GetStaticMCValue(REG_SDRAM_CONFIG_ADDR, 0, REG_SDRAM_CONFIG_RFRS_MASK, 0, 0);
-    uiTemp = ddr3GetMaxValue(dimmSumInfo.refreshInterval/uiHClkTime, uiDimmNum, uiStaticVal);
-    DEBUG_INIT_FULL_C("DDR3 - DUNIT-SET - RefreshInterval/Hclk = ", uiTemp, 4);
+    uiTemp = ddr3GetMinValue(dimmSumInfo.refreshInterval/uiHClkTime, uiDimmNum, uiStaticVal);
+
+#ifdef TREFI_USER_EN
+	uiTemp = MIN_VAL(TREFI_USER/uiHClkTime, uiTemp);
+#endif
+
+	DEBUG_INIT_FULL_C("DDR3 - DUNIT-SET - RefreshInterval/Hclk = ", uiTemp, 4);
     uiReg |= uiTemp;
 
     if (uiCL != 3)

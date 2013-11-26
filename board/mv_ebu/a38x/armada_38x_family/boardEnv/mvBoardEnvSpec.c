@@ -195,13 +195,13 @@ MV_BOARD_INFO db88f68xx_board_info = {
 
 MV_BOARD_TWSI_INFO rd88F68XXInfoBoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,	0,	0x54, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,	0,	0x50, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
 	{ BOARD_DEV_TWSI_SATR,	1,	0x4C, ADDR7_BIT, MV_FALSE},
 };
 MV_BOARD_MAC_INFO rd88F68XXInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0},
-	{ BOARD_MAC_SPEED_AUTO, 0x1}
+	{ BOARD_MAC_SPEED_AUTO, 0x1},
+	{ BOARD_MAC_SPEED_AUTO, 0x0}
 };
 
 MV_DEV_CS_INFO rd88F68XXInfoBoardDeCsInfo[] = {

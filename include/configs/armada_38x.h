@@ -169,6 +169,14 @@ extern unsigned int mvTclkGet(void);
 #define CONFIG_CMD_FAT
 #define CONFIG_FS_FAT
 #define CONFIG_SUPPORT_VFAT
+
+#define CONFIG_SYS_USE_UBI
+#ifdef CONFIG_SYS_USE_UBI
+	#define CONFIG_MTD_DEVICE
+	#define CONFIG_MTD_PARTITIONS
+	#define CONFIG_CMD_MTDPARTS
+#endif /* CONFIG_SYS_USE_UBI */
+
 #endif /* MV_FS */
 /* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
 #include <config_cmd_default.h>
@@ -288,6 +296,7 @@ extern unsigned int mvTclkGet(void);
 	#define CONFIG_SYS_64BIT_VSPRINTF
 	#define CONFIG_SKIP_BAD_BLOCK
 	#undef MV_NFC_DBG
+	#define CONFIG_JFFS2_NAND
 
 /* Boot from NAND settings */
 	#if defined(MV_NAND_BOOT)

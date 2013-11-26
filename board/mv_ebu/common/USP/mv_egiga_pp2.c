@@ -408,7 +408,7 @@ error:
 		mvEgigaHalt(dev);
 
 	printf("%s: %s failed\n", __func__, dev->name);
-	return 0;
+	return -1;
 }
 
 

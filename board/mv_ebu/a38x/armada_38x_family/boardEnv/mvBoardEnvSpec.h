@@ -76,9 +76,10 @@
 /* boards ID numbers */
 #define BOARD_ID_BASE			0x0
 
-#define RD_68XX_ID			(BOARD_ID_BASE)
-#define DB_68XX_ID			(RD_68XX_ID + 1)
-#define A380_CUSTOMER_ID		(DB_68XX_ID + 1)
+#define RD_NAS_68XX_ID			(BOARD_ID_BASE)
+#define DB_68XX_ID			(BOARD_ID_BASE + 1)
+#define RD_AP_68XX_ID			(BOARD_ID_BASE + 2)
+#define A380_CUSTOMER_ID		(BOARD_ID_BASE + 3)
 #define MV_MAX_BOARD_ID			(A380_CUSTOMER_ID + 1)
 #define MV_INVALID_BOARD_ID		0xFFFFFFFF
 

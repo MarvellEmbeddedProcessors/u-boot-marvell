@@ -1208,17 +1208,13 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 {
 	int i;
 	char *moduleStr[MV_CONFIG_TYPE_MAX_MODULE] = { \
-		"SGMII",                                \
 		"MII",                                  \
 		"TDM",                                  \
-		"I2S",                                  \
-		"SPDIF",                                \
-		"SERDES PEX LANE1",                     \
-		"SERDES PEX LANE2",                     \
-		"NOR",                                  \
-		"NAND",                                 \
-		"SDIO",                                 \
-		"GIGA"
+		"AUDIO I2S",                     \
+		"AUDIO SPDIF",                   \
+		"NOR 16bit",                                  \
+		"NAND 16bit",                                 \
+		"SDIO 4bit",                                 \
 	};
 	mvOsOutput("Board configuration detected:\n");
 

@@ -27,7 +27,7 @@ sub HELP_MESSAGE
 # Main
 use Getopt::Std;
 
-getopt('f:b:o:i:v:');
+getopt('f:b:o:i:v:d:');
 
 if((!defined $opt_b) or
 	(!defined $opt_f) or
@@ -205,10 +205,10 @@ if($opt_c eq 1)
 	}
 }
 
-if($opt_d eq 1)
+if(defined $opt_d)
 {
-	system("echo \"DDR3LIB = y\" >> include/config.mk");
-	print "\n *** DDR3LIB = y *********************************\n\n";
+	system("echo \"DDR3LIB = $opt_d\" >> include/config.mk");
+	print "\n *** DDR3LIB = v$opt_d *********************************\n\n";
 }
 
 # Build !

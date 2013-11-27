@@ -131,6 +131,42 @@ static MV_U8 mvReverseBits(MV_U8 num)
 	num = (num & 0xAA) >> 1 | (num & 0x55) << 1;
 	return num;
 }
+/*******************************************************************************
+* mvBoardFreqModesNumGet
+*
+* DESCRIPTION: Return the number of supported frequency modes for this SoC
+*
+*
+* INPUT:
+*      None.
+*
+* OUTPUT:
+*      None.
+*
+* RETURN:
+*      Number of supported frequency modes
+*
+*******************************************************************************/
+MV_U32 mvBoardFreqModesNumGet()
+{
+	MV_U32 freqNum;
+
+	switch (mvCtrlModelGet()) {
+	case MV_6610_DEV_ID:
+		freqNum = FREQ_MODES_NUM_6610;
+		break;
+	case MV_6650_DEV_ID:
+		freqNum = FREQ_MODES_NUM_6650;
+		break;
+	case MV_6660_DEV_ID:
+		freqNum = FREQ_MODES_NUM_6660;
+		break;
+	default:
+		return MV_ERROR;
+	}
+
+	return freqNum;
+}
 
 /*******************************************************************************
 * mvCpuL2ClkGet - Get the CPU L2 (CPU bus clock)
@@ -145,18 +181,18 @@ static MV_U8 mvReverseBits(MV_U8 num)
 *******************************************************************************/
 MV_U32 mvCpuL2ClkGet(MV_VOID)
 {
-	MV_FREQ_MODE freqMode, freqTable[] = MV_SAR_FREQ_MODES;
-	MV_U32 freqSatR;
+	MV_FREQ_MODE freqTable[] = MV_USER_SAR_FREQ_MODES;
+	MV_U32 i, freqSatR, maxFreqModes = mvBoardFreqModesNumGet();
 
 	/* read SatR value for frequency mode */
 	freqSatR = MV_REG_READ(REG_SAMPLE_RESET_HIGH_ADDR); /* 0xE8200 */
 	freqSatR = ((freqSatR & REG_SAMPLE_RESET_CPU_FREQ_MASK) >> REG_SAMPLE_RESET_CPU_FREQ_OFFS);
 
 	/* Get mode values for CPU,L2,DDR frequency */
-	freqMode = freqTable[freqSatR];
-
-	return (MV_U32)(1000000 * freqMode.l2Freq);
-
+	for (i = 0; i < maxFreqModes; i++)
+		if (freqSatR == freqTable[i].id)
+			return (MV_U32)(1000000 * freqTable[i].l2Freq);
+	return MV_ERROR;
 }
 
 /*******************************************************************************

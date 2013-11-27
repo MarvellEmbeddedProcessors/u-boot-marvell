@@ -164,17 +164,41 @@ MV_U32 mvCtrlGetCpuNum(MV_VOID)
 *******************************************************************************/
 MV_BOOL mvCtrlIsValidSatR(MV_VOID)
 {
-	MV_U32 i, cpuFreqMode, maxFreqModes = mvBoardFreqModesNumGet();
-	MV_FREQ_MODE pFreqModes[] = MV_USER_SAR_FREQ_MODES;
+	MV_FREQ_MODE cpuFreqMode;
+	MV_U32 cpuFreqSatRMode =  mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
 
-	cpuFreqMode =  mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
+	/* Verify SatR Mode exists in user frequency modes table */
+	if (mvCtrlFreqModeGet(cpuFreqSatRMode, &cpuFreqMode) == MV_OK)
+		return MV_TRUE;
+	else
+		return MV_FALSE;
+}
+/*******************************************************************************
+* mvCtrlFreqModeGet
+*
+* DESCRIPTION: scan frequency modes table (CPU/L2/DDR) and return requested mode
+*
+* INPUT: freqModeSatRValue - Sample at reset value (represent a frequency mode)
+*
+* OUTPUT: MV_FREQ_MODE which describes the frequency mode (CPU/L2/DDR)
+*
+* RETURN:
+*        MV_OK if frequency mode is supported , else MV_ERROR
+*
+*******************************************************************************/
+MV_STATUS mvCtrlFreqModeGet(MV_U32 freqModeSatRValue, MV_FREQ_MODE *freqMode)
+{
+	MV_FREQ_MODE freqTable[] = MV_USER_SAR_FREQ_MODES;
+	MV_U32 i, maxFreqModes = mvBoardFreqModesNumGet();
 
 	for (i = 0; i < maxFreqModes; i++) {
-		if (cpuFreqMode == pFreqModes[i].id)
-			return MV_TRUE;
+		if (freqModeSatRValue == freqTable[i].id) {
+			*freqMode = freqTable[i];
+			return MV_OK;
+		}
 	}
 
-	return MV_FALSE;
+	return MV_ERROR;
 }
 
 #ifdef MV_INCLUDE_PEX
@@ -488,16 +512,19 @@ MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 *******************************************************************************/
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 {
-	MV_FREQ_MODE freqTable[] = MV_SAR_FREQ_MODES;
 	MV_U32 freqModeSatRValue = mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ);
 
-	if (MV_ERROR != freqModeSatRValue) {
-		*freqMode = freqTable[freqModeSatRValue];
-		return MV_OK;
+	if (freqMode == NULL) {
+		mvOsPrintf("%s: Error: NULL pointer parameter\n", __func__);
+		return MV_ERROR;
 	}
+
+	if (MV_ERROR != freqModeSatRValue)
+		return mvCtrlFreqModeGet(freqModeSatRValue, freqMode);
 
 	DB(mvOsPrintf("%s: Error Read from S@R fail\n", __func__));
 	return MV_ERROR;
+
 }
 
 /*******************************************************************************

@@ -230,12 +230,13 @@ static int do_sar_write(int argc, char *const argv[])
 	MV_U32 temp;
 	MV_BOOL flag;
 	MV_U8 writeVal = simple_strtoul(argv[1], NULL, 10);
+	MV_FREQ_MODE cpuFreqMode;
 
 	if (argc < 2)
 		goto usage;
 
 	if (strcmp(cmd, "cpufreq") == 0) {
-		if (writeVal < 0 || writeVal > FREQ_MODES_NUM)
+		if (mvCtrlFreqModeGet(writeVal, &cpuFreqMode) != MV_OK)
 			goto input_error;
 		else if (GetAndVerifySatr(MV_SATR_CPU_DDR_L2_FREQ, &temp) == MV_OK )
 			flag = mvCtrlSatRWrite(MV_SATR_WRITE_CPU_FREQ, MV_SATR_CPU_DDR_L2_FREQ, writeVal);

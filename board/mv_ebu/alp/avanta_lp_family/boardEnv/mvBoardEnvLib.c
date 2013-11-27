@@ -500,13 +500,15 @@ MV_U32 mvBoardL2ClkGet(MV_VOID)
 	return MV_FPGA_L2_CLK;
 #else
 	MV_U32 clkSelect;
-	MV_FREQ_MODE freq[] = MV_SAR_FREQ_MODES;
+	MV_FREQ_MODE freqMode;
 
 	clkSelect = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
 	clkSelect = clkSelect & (0x1f << 17);
 	clkSelect >>= 17;
 
-	return 1000000 * freq[clkSelect].l2Freq;
+	mvCtrlFreqModeGet(clkSelect, &freqMode);
+
+	return 1000000 * freqMode.l2Freq;
 #endif
 }
 

@@ -174,20 +174,47 @@ MV_BOOL mvCtrlIsSscgEnabled(MV_VOID)
 *******************************************************************************/
 MV_BOOL mvCtrlIsValidSatR(MV_VOID)
 {
-	MV_U32 i, cpuFreqMode, maxFreqModes = mvBoardFreqModesNumGet();
-	MV_FREQ_MODE pFreqModes[] = MV_USER_SAR_FREQ_MODES;
+	MV_U32 cpuFreqSatRMode;
+	MV_FREQ_MODE cpuFreqMode;
 
-	if (mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ, &cpuFreqMode) != MV_OK) {
+	if (mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ, &cpuFreqSatRMode) != MV_OK) {
 		mvOsPrintf("%s: Error: failed to read Frequency status\n", __func__);
 		return MV_FALSE;
 	}
 
+	/* Verify SatR Mode exists in user frequency modes table */
+	if (mvCtrlFreqModeGet(cpuFreqSatRMode, &cpuFreqMode) == MV_OK)
+		return MV_TRUE;
+	else
+		return MV_FALSE;
+}
+
+/*******************************************************************************
+* mvCtrlFreqModeGet
+*
+* DESCRIPTION: scan frequency modes table (CPU/L2/DDR) and return requested mode
+*
+* INPUT: freqModeSatRValue - Sample at reset value (represent a frequency mode)
+*
+* OUTPUT: MV_FREQ_MODE which describes the frequency mode (CPU/L2/DDR)
+*
+* RETURN:
+*        MV_OK if frequency mode is supported , else MV_ERROR
+*
+*******************************************************************************/
+MV_STATUS mvCtrlFreqModeGet(MV_U32 freqModeSatRValue, MV_FREQ_MODE *freqMode)
+{
+	MV_FREQ_MODE freqTable[] = MV_USER_SAR_FREQ_MODES;
+	MV_U32 i, maxFreqModes = mvBoardFreqModesNumGet();
+
 	for (i = 0; i < maxFreqModes; i++) {
-		if (cpuFreqMode == pFreqModes[i].id)
-			return MV_TRUE;
+		if (freqModeSatRValue == freqTable[i].id) {
+			*freqMode = freqTable[i];
+			return MV_OK;
+		}
 	}
 
-	return MV_FALSE;
+	return MV_ERROR;
 }
 
 #ifdef MV_INCLUDE_PEX
@@ -522,7 +549,6 @@ MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 *******************************************************************************/
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 {
-	MV_FREQ_MODE freqTable[] = MV_SAR_FREQ_MODES;
 	MV_U32 freqModeSatRValue;
 
 	if (freqMode == NULL) {
@@ -535,8 +561,7 @@ MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 		return MV_ERROR;
 	}
 
-	*freqMode = freqTable[freqModeSatRValue];
-	return MV_OK;
+	return mvCtrlFreqModeGet(freqModeSatRValue, freqMode);
 }
 
 /*******************************************************************************

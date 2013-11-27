@@ -282,6 +282,7 @@ static int do_sar_write(int argc, char *const argv[])
 	MV_U32 temp, boardId = mvBoardIdGet();
 	MV_BOOL flag = MV_ERROR;
 	MV_U8 writeVal = simple_strtoul(argv[1], NULL, 10);
+	MV_FREQ_MODE cpuFreqMode;
 
 	if (boardId != DB_6660_ID && boardId != DB_6650_ID) {
 		printf("\nError: S@R fields are readable only for current board\n");
@@ -292,7 +293,7 @@ static int do_sar_write(int argc, char *const argv[])
 		goto usage;
 
 	if (strcmp(cmd, "freq") == 0) {
-		if (writeVal < 0 || writeVal > FREQ_MODES_NUM)
+		if (mvCtrlFreqModeGet(writeVal, &cpuFreqMode) != MV_OK)
 			goto input_error;
 		else if (GetAndVerifySatr(MV_SATR_CPU_DDR_L2_FREQ, &temp) == MV_OK )
 			flag = mvCtrlSatRWrite(MV_SATR_CPU_DDR_L2_FREQ, writeVal, MV_FALSE);

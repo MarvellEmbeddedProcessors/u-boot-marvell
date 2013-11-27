@@ -144,13 +144,15 @@ $(TGT_UART): $(CUART_OBJ)
 	ar rcs $(TGT_UART)  $(CUART_OBJ)
 	$(CP) ./$@ ../
 
-ifeq ($(DDR3LIB),y)
-SRC_DDR_SUBDIRS = ddr3lib
-else
+ifeq ($(DDR3LIB),n)
 SRC_DDR_SUBDIRS =
 endif
-
-
+ifeq ($(DDR3LIB),1)
+SRC_DDR_SUBDIRS = ddr3lib
+endif
+ifeq ($(DDR3LIB),2)
+SRC_DDR_SUBDIRS = ddr3libv2
+endif
 
 clean:
 	$(RM) ./*.o  ./*.a

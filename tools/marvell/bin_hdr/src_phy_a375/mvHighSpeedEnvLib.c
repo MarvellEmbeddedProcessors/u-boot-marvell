@@ -120,20 +120,19 @@ MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
 *******************************************************************************/
 MV_U32 mvCpuL2ClkGet(MV_VOID)
 {
-	MV_FREQ_MODE freqMode, freqTable[] = MV_SAR_FREQ_MODES;
-	MV_U32 freqSatR;
+	MV_FREQ_MODE freqTable[] = MV_USER_SAR_FREQ_MODES;
+	MV_U32 i, freqSatR, maxFreqModes = FREQ_MODES_NUM_6720;
 
 	/* read SatR value for frequency mode */
 	freqSatR = MV_REG_READ(REG_SAMPLE_RESET_HIGH_ADDR); /* 0xE8200 */
 	freqSatR = ((freqSatR & REG_SAMPLE_RESET_CPU_FREQ_MASK) >> REG_SAMPLE_RESET_CPU_FREQ_OFFS);
 
 	/* Get mode values for CPU,L2,DDR frequency */
-	freqMode = freqTable[freqSatR];
-
-	return (MV_U32)(1000000 * freqMode.l2Freq);
-
+	for (i = 0; i < maxFreqModes; i++)
+		if (freqSatR == freqTable[i].id)
+			return (MV_U32)(1000000 * freqTable[i].l2Freq);
+	return MV_ERROR;
 }
-
 /*******************************************************************************
 * mvBoardIdGet - Get Board model
 *

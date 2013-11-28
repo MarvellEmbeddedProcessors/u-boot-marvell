@@ -185,12 +185,9 @@ void mvGmacDefaultsSet(int port)
 
 void mvGmacPortPowerDown(int port)
 {
-	return;
-/*
 	mvGmacPortDisable(port);
 	mvGmacMibCountersClear(port);
 	mvGmacPortResetSet(port, MV_TRUE);
-*/
 }
 
 MV_BOOL mvGmacPortIsLinkUp(int port)

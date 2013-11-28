@@ -329,7 +329,7 @@ static INLINE int mvPp2RxqBusyDescNumGet(int port, int rxq)
 	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
 
 	if (prxq < 0)
-		return prxq;
+		return 0;
 
 	regVal = mvPp2RdReg(MV_PP2_RXQ_STATUS_REG(prxq));
 
@@ -343,7 +343,7 @@ static INLINE int mvPp2RxqFreeDescNumGet(int port, int rxq)
 	int prxq = mvPp2LogicRxqToPhysRxq(port, rxq);
 
 	if (prxq < 0)
-		return prxq;
+		return 0;
 
 	regVal = mvPp2RdReg(MV_PP2_RXQ_STATUS_REG(prxq));
 

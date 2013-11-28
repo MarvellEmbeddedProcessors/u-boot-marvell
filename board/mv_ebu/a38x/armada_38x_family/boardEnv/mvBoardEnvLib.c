@@ -2015,6 +2015,29 @@ MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 }
 
 /*******************************************************************************
+* mvBoardIsEthActive - this routine indicate which ports can be used by U-Boot
+*
+* DESCRIPTION:
+*	This routine returns true if a certain Ethernet port is
+*	Active and usable as a regular eth interface
+*
+* INPUT:
+*	ethNum - index of the ethernet port requested
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_TRUE if the requested ethernet port is Active and usable.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsEthActive(MV_U32 ethNum)
+{
+	/* for A375, all connected ports are Active and usabe */
+	return mvBoardIsEthConnected(ethNum);
+}
+
+/*******************************************************************************
 * mvBoardIsQsgmiiModuleConnected
 *
 * DESCRIPTION:

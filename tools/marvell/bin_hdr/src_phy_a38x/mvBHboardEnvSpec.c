@@ -67,7 +67,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvBHboardEnvSpec.h"
 #include "bin_hdr_twsi.h"
 
-#define MV_DEBUG_INIT_FULL
 #include "mvUart.h"
 
 #include "util.h"

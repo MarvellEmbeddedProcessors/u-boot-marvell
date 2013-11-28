@@ -60,255 +60,359 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
+//#define SERDES_LOCAL_DEBUG
+//#define MV_DEBUG_INIT_FULL
+#include "mv_os.h"
+#include "config_marvell.h"  	/* Required to identify SOC and Board */
+#include "mvUart.h"
+#include "util.h"
 
 #include "mvHighSpeedEnvSpec.h"
 #include "mvBHboardEnvSpec.h"
-//#include "mvCtrlPex.h"
 
-MV_U32 _MV_REG_READ(MV_U32 regAddr)
-{
-  DEBUG_INIT_FULL_S(" >>>       MV_REG_READ.  regAddr=0x");
-  DEBUG_INIT_FULL_D(INTER_REGS_BASE | (regAddr), 8);
-  DEBUG_INIT_FULL_S(" regData=0x");
-
-  MV_U32 regData = MV_MEMIO_LE32_READ((INTER_REGS_BASE | (regAddr)));
-
-  DEBUG_INIT_FULL_D(regData, 8);
-  DEBUG_INIT_FULL_S(" - Done\n");
-
-  return regData;
-}
-
-MV_VOID _MV_REG_WRITE(MV_U32 regAddr, MV_U32 regData)
-{
-  DEBUG_INIT_FULL_S(" >>>       MV_REG_WRITE. regAddr=0x");
-  DEBUG_INIT_FULL_D(INTER_REGS_BASE | (regAddr), 8);
-  DEBUG_INIT_FULL_S(" regData=0x");
-  DEBUG_INIT_FULL_D(regData, 8);
-
-  MV_MEMIO_LE32_WRITE((INTER_REGS_BASE | (regAddr)), (regData));
-  DEBUG_INIT_FULL_S(" - Done \n\n");
-}
-
-//#define SERDES_LOCAL_DEBUG
+#define LINK_WAIT_CNTR	10000
+#define LINK_WAIT_SLEEP	100
 #ifdef SERDES_LOCAL_DEBUG
-#define MV_REG_WRITE 	_MV_REG_WRITE
-#define MV_REG_READ 	_MV_REG_READ
+#define MV_BH_REG_WRITE(r,v) 	{	\
+	DEBUG_INIT_S("Write Reg: 0x");  \
+	DEBUG_INIT_D((r), 8);           \
+	DEBUG_INIT_S("= ");             \
+	DEBUG_INIT_D((v), 8);           \
+	DEBUG_INIT_S("\n");             \
+	MV_REG_WRITE(r,v);               \
+}
+#define MV_BH_REG_READ(r,v)	{			\
+			v = MV_REG_READ(r);		\
+			DEBUG_INIT_S("Read  Reg: 0x");  \
+			DEBUG_INIT_D((r), 8);           \
+			DEBUG_INIT_S("= ");             \
+			DEBUG_INIT_D(v, 8);           \
+			DEBUG_INIT_S("\n");             \
+}
+#else
+#define MV_BH_REG_WRITE(r,v) 	MV_REG_WRITE(r,v)
+#define MV_BH_REG_READ(r,v)	v = MV_REG_READ(r)
 #endif
 
-#define LINK_WAIT_CNTR	100
-#define LINK_WAIT_SLEEP	100
+static const MV_U8 serdesCfg[MV_SERDES_MAX_LANES][8] = SERDES_CFG;
+
+MV_U32	pexSpeed = PEX_SPEED_GEN2;
+
+
+/*************************** Functions declarations ***************************/
+/* Local functions */
+MV_VOID	mvBhSerdesInit(MV_VOID);
+MV_VOID	mvBhPexTestLink(MV_VOID);
+MV_U32	mvBoardTclkGet(MV_VOID);
+MV_U32	mvBoardIdGet(MV_VOID);
+MV_U16	mvCtrlModelGet(MV_VOID);
+MV_STATUS mvBoardTwsiGet(MV_U8 devAddr, MV_U8 regOffset, MV_BOOL moreThen256, MV_U8 *pData);
+/*************************** Functions declarations ***************************/
 
 MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
-	MV_U32 i;
+	MV_U32 boardId;
 
-	DEBUG_INIT_S("Initializing PCIe-0 on lane 1: \n");
+	MV_TWSI_ADDR slave;
 
-	//print "Set the capabilities register"
-	MV_REG_WRITE(0x8006c, 0x7ac12);
+	mvTwsiInit(0, CONFIG_SYS_I2C_SPEED, CONFIG_SYS_TCLK, &slave, 0);
 
-	//rint "STEP-0 Configure the MUX select for PCIe-1 on Serdes Lane 2"
-	MV_REG_WRITE(0x183fc, 0x8);
+	boardId = mvBoardIdGet();
 
-	//;print "STEP-1 Set values that should be constant from beginning of sequence"
-	MV_REG_WRITE(0x18328, 0x04470004);
-	MV_REG_WRITE(0x1832c, 0x00000058);
-	MV_REG_WRITE(0x18334, 0x0000000d);
 
-	//print "STEP-2 Assert reset"
-	// Nothing to do as both bit 13, 14 are asserted to reset by default
+	switch (boardId) {
+	case RD_NAS_68XX_ID:
+/*
+Lane	Lane options		Lane settings
+L0	PCIe0			PCIe0  1
+L1	PCIe0/SATA0		SATA0  3
+L2	PCIe1/SATA1		SATA1  3
+L3	SATA3			SATA3  3
+L4	SGMII(SFP+)/USB3.0	USB3.0 4
+L5	SATA2			SATA2  2
+*/
+	//print "STEP-0 Configure the MUX select for PCIe-1 on Serdes Lane 2"
+	DEBUG_INIT_S("Initializing RD NAS: \n");
+	DEBUG_INIT_S("0- PCIe0, 1- SATA0, 2- SATA1, 3- SATA3, 4- USB3.0, 5- SATA2\n");
+	MV_BH_REG_WRITE(COMMON_PHYS_SELECTORS_REG, 0x146D9);
 
-	//print "STEP-3 Deassert reset"
-	MV_REG_WRITE(0x18328, 0x04476004);
+		break;
+	case RD_AP_68XX_ID:
+/*
+L0	PCIe0			NA      0
+L1	PCIe0/SATA0		PCIe0	1
+L2	PCIe1/SATA1		PCIe1	1
+L3	SATA3			SATA3	3
+L4	SGMII(SFP+)/USB3.0	SFP+	3
+L5	SATA2			SATA2	2
 
-	//print "STEP-6"
-	MV_REG_WRITE(0xA0F04, 0x00000025);
+*/
+	DEBUG_INIT_S("Initializing RD AP: \n");
+	DEBUG_INIT_S("0- NA, 1- PCIe(0), 2- PCIe(1), 3- SATA3, 4- USB3.0, 5- SATA2\n");
+	MV_BH_REG_WRITE(COMMON_PHYS_SELECTORS_REG, 0x14648);
+		break;
+	default:
+	DEBUG_INIT_S("Warning: BOARD ID failed init as DB!!!!!!!! \n");
 
-	//print "STEP-4"
-	MV_REG_WRITE(0xA0804, 0x0000fc60);
-
-	//print "STEP-5 PHY gen max"
-	MV_REG_WRITE(0xA0894, 0x000017ff);
-
-	//7. Irrelevent - USB device mode only
-
-	//print "STEP-8, not needed - only for simulation"
-	//data.out 0xD00A1200 %LONG 0x00001000
-
-	//print "STEP-9 "
-	MV_REG_WRITE(0xA093c, 0x0000a08a);	//bit 7 = 1.bit 6=0
-
-	//print "STEP-10, not needed - only for simulation"
-	//;data.out 0xD00A1144 %LONG 0x00000304 ; check if we need to write to this register
-
-	//print "Release phy reset"
-	MV_REG_WRITE(0xA0F04, 0x00000024);
-
-	//print "Enable PCIe interface"
-	MV_REG_WRITE(0x18204, 0x0707c0f1);
-
-	for (i=0; i<LINK_WAIT_CNTR; i++) {
-		if ((MV_REG_READ(0x81a64) & 0xFF) == 0x7E) {
-			DEBUG_INIT_S("LINK UP ;-)\n");
-			break;
-		}
-		mvOsUDelay(LINK_WAIT_SLEEP);
+	case DB_68XX_ID:
+	DEBUG_INIT_S("Initializing DB-A38x board: \n");
+	DEBUG_INIT_S("0-SATA, 1- PCIe(0), 2- PCIe(1), 3- SATA(3), 4-USB3(0), 5 USB3(1)\n");
+	MV_BH_REG_WRITE(COMMON_PHYS_SELECTORS_REG,  0x0002464A); //  Bits [17:15]=0x2.
+		break;
 	}
-
-	if (i==LINK_WAIT_CNTR)
-		DEBUG_INIT_S("NO LINK\n");
-
-	DEBUG_INIT_S("Initializing PCIe-1 on lane 2:\n");
-
-	//print "Set the capabilities register"
-	MV_REG_WRITE(0x4006c, 0x7ac12);
-
-	//rint "STEP-0 Configure the MUX select for PCIe-1 on Serdes Lane 2"
-	MV_REG_WRITE(0x183fc, 0x48); // Keeping also PCI-0
-
-	//;print "STEP-1 Set values that should be constant from beginning of sequence"
-	MV_REG_WRITE(0x18350, 0x04470004);
-	MV_REG_WRITE(0x18354, 0x00000058);
-	MV_REG_WRITE(0x1835c, 0x0000000d);
-
-	//print "STEP-2 Assert reset"
-	// Nothing to do as both bit 13, 14 are asserted to reset by default
-
-	//print "STEP-3 Deassert reset"
-	MV_REG_WRITE(0x18350, 0x04476004);
-
-	//print "STEP-4"
-	MV_REG_WRITE(0xA1004, 0x0000fc60);
-
-	//print "STEP-5 PHY gen max"
-	MV_REG_WRITE(0xA1094, 0x000017ff);
-
-	//print "STEP-6"
-	MV_REG_WRITE(0xA1704, 0x00000025);
-
-	//7. Irrelevent - USB device mode only
-
-	//print "STEP-8, not needed - only for simulation"
-	//data.out 0xD00A1200 %LONG 0x00001000
-
-	//print "STEP-9 "
-	MV_REG_WRITE(0xA113c, 0x0000a08a);	//bit 7 = 1.bit 6=0
-
-	//print "STEP-10, not needed - only for simulation"
-	//;data.out 0xD00A1144 %LONG 0x00000304 ; check if we need to write to this register
-
-	//print "Release phy reset"
-	MV_REG_WRITE(0xA1704, 0x00000024);
-
-	//print "Enable PCIe interface"
-	MV_REG_WRITE(0x18204, 0x0707c0f3); // Keeping also PCI-0
-
-	for (i=0; i<LINK_WAIT_CNTR; i++) {
-		if ((MV_REG_READ(0x41a64) & 0xFF) == 0x7E) {
-			DEBUG_INIT_S("LINK UP ;-)\n");
-			break;
-		}
-		mvOsUDelay(LINK_WAIT_SLEEP);
-	}
-
-	if (i==LINK_WAIT_CNTR)
-		DEBUG_INIT_S("NO LINK\n");
-
-	DEBUG_INIT_S("Initializing SATA:\n");
-
-	MV_REG_WRITE(0xa80a0, 0x00000000);
-	MV_REG_WRITE(0xa80a4, 0x00000000);
-	MV_REG_WRITE(0xa80a0, 0x00000000);
-	//bits [3:0] => GenI 5 ,GENII 6,GENIII - 7
-	MV_REG_WRITE(0xa80a4, 0x00000046);
-	MV_REG_WRITE(0xa80a0, 0x00000004);
-	MV_REG_WRITE(0xa80a4, 0x00000000);
-
-
-	MV_REG_WRITE(0x183fC, 0x0000004A);
-	MV_REG_WRITE(0x18300, 0x08881802);
-	MV_REG_WRITE(0x1830C, 0x0000000F);
-	MV_REG_WRITE(0x18300, 0x08886002);
-	MV_REG_WRITE(0xa0004, 0x0000FC01);
-	MV_REG_WRITE(0xa0094, 0x00001BFF);
-	MV_REG_WRITE(0xa008C, 0x00000074);
-	MV_REG_WRITE(0xa013C, 0x0000044A);
-	MV_REG_WRITE(0x18300, 0x08876002);
-
-	MV_REG_WRITE(0xa80a0, 0x00000000);
-	//bits [3:0] => GenI 5 ,GENII 6,GENIII - 7
-	MV_REG_WRITE(0xa80a4, 0x00C40006);
-
-	for (i=0; i<LINK_WAIT_CNTR; i++) {
-		if ((MV_REG_READ(0x18318) & 0xD) == 0xD) {
-			DEBUG_INIT_S("PLL READY ;-)\n");
-			break;
-		}
-		mvOsUDelay(LINK_WAIT_SLEEP);
-	}
-
-	if (i==LINK_WAIT_CNTR)
-		DEBUG_INIT_S("PLL NOT READY\n");
-
-
-	DEBUG_INIT_S("Initializing USB3 port 0 \n");
-
-	MV_REG_WRITE(0x183fc,  0x0000404A); // Bits [14:12] =0x4.
-	MV_REG_WRITE(0x183A0,  0x04479804);
-	MV_REG_WRITE(0x183a4,  0x00000058);
-	MV_REG_WRITE(0x183AC,  0x0000000d);
-	MV_REG_WRITE(0x183A0,  0x0447E004);
-	MV_REG_WRITE(0xA2704,  0x00000021);
-	MV_REG_WRITE(0xA2004,  0x0000FCA0);
-	MV_REG_WRITE(0xA2094,  0x000017ff);
-	MV_REG_WRITE(0xA213C,  0x0000a08a);
-	MV_REG_WRITE(0xA2704,  0x00000020);
-	mvOsUDelay(10000);
-
-	if( 0 != (MV_REG_READ(0xA2004) & 0x100))
-		DEBUG_INIT_S("PLL UNLOCK ;-)\n");
-	else
-		DEBUG_INIT_S("PLL LOCKED ;-|\n");
-
-	if( 0xD == (MV_REG_READ(0x183B8) & 0xD))
-		DEBUG_INIT_S("PLL READY ;-)\n");
-	else
-		DEBUG_INIT_S("PLL NOT READY ;-|\n");
-
-	DEBUG_INIT_S("Initializing USB3 port 1 \n");
-
-	MV_REG_WRITE(0x183fc,  0x0002404A); //  Bits [17:15]=0x2.
-	MV_REG_WRITE(0x183C8,  0x04479804);
-	MV_REG_WRITE(0x183CC,  0x00000058);
-	MV_REG_WRITE(0x183D4,  0x0000000d);
-	MV_REG_WRITE(0x183C8,  0x0447E004);
-	MV_REG_WRITE(0xA2F04,  0x00000021);
-	MV_REG_WRITE(0xA2804,  0x0000FCA0);
-	MV_REG_WRITE(0xA2894,  0x000017ff);
-	MV_REG_WRITE(0xA293C,  0x0000a08a);
-	MV_REG_WRITE(0xA2F04,  0x00000020);
-	mvOsUDelay(10000);
-
-	if( 0 != (MV_REG_READ(0xA2804) & 0x100))
-		DEBUG_INIT_S("PLL UNLOCK ;-)\n");
-	else
-		DEBUG_INIT_S("PLL LOCKED ;-|\n");
-
-	if( 0xD == (MV_REG_READ(0x183E0) & 0xD))
-		DEBUG_INIT_S("PLL READY ;-)\n");
-	else
-		DEBUG_INIT_S("PLL NOT READY ;-|\n");
+	mvBhSerdesInit();
+	mvBhPexTestLink();
 
 	return MV_OK;
 }
 
+/*******************************************************************************
+* mvBhSerdesInit - init serdes lans
+*
+* DESCRIPTION: read serdes selector configuration and initialize serdes lane
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*
+*******************************************************************************/
+MV_VOID	mvBhSerdesInit(MV_VOID)
+{
+	MV_U32 i, port, unit;
+	MV_U32 temp;
+	MV_U32 socCtrlreg;
+	MV_U32 commPhyConfigReg, comPhyCfg, serdesNum, serdesCongigField, maxSerdesLane;
+
+
+	maxSerdesLane = MV_SERDES_MAX_LANES;
+	if (MV_6810_DEV_ID == mvCtrlModelGet())
+		maxSerdesLane = MV_SERDES_MAX_LANES_6810;
+
+
+	MV_BH_REG_READ(COMMON_PHYS_SELECTORS_REG, commPhyConfigReg);
+	MV_BH_REG_READ(SOC_CTRL_REG, socCtrlreg);
+
+	for (serdesNum = 0; serdesNum < maxSerdesLane; serdesNum++) {
+		serdesCongigField = (commPhyConfigReg & COMPHY_SELECT_MASK(serdesNum)) >> COMPHY_SELECT_OFFS(serdesNum);
+		comPhyCfg = serdesCfg[serdesNum][serdesCongigField];
+
+		DEBUG_INIT_S("SERDES ");
+		DEBUG_INIT_D(serdesNum,1);
+		DEBUG_INIT_S(" configure as ");
+
+		port = comPhyCfg & SERDES_PORT_MASK;
+		switch (comPhyCfg & SERDES_UNIT_MASK ) {
+		case SERDES_UNIT_PEX:
+			DEBUG_INIT_S("PEX  ");
+			DEBUG_INIT_D(port,1);
+			DEBUG_INIT_S("\n");
+
+			MV_BH_REG_READ(PEX_LINK_CAPABILITIES_REG(port), temp );
+			temp &= ~(0x3FF); /*  bit 4:9 and bit 0:3    */
+			if ((port == PEX0_IF) && (commPhyConfigReg & PCIE0_X4_EN_MASK)) {
+				socCtrlreg &= ~(PEX_QUADX4_EN);
+				temp |= (MAX_LNK_WDTH_X4 << 4);
+			}
+			else {
+				socCtrlreg |= (PEX_QUADX4_EN);
+				temp |= (MAX_LNK_WDTH_X1 << 4);
+			}
+			/* Pcie CLKOUT Enable config the desire value per required chip configuration  */
+			socCtrlreg |= (PEX0_CLK_EN | PEX1_CLK_EN | PEX2_CLK_EN | PEX3_CLK_EN);
+			if (pexSpeed == PEX_SPEED_GEN2)
+				temp |= MAX_LNK_SPEED_5GBS;
+			else
+				temp |= MAX_LNK_SPEED_2_5GBS;
+
+			MV_BH_REG_WRITE(PEX_LINK_CAPABILITIES_REG(port), temp);
+			temp = socCtrlreg & ~(PEX0_EN | PEX1_EN | PEX2_EN | PEX3_EN);
+			MV_BH_REG_WRITE(SOC_CTRL_REG, temp);
+
+			MV_BH_REG_READ(PEX_LINK_CTRL_STATUS_REG(port), temp );
+			temp |= COMMON_REF_CLK;
+			MV_BH_REG_WRITE(PEX_LINK_CTRL_STATUS_REG(port), temp);
+
+/********************* SERDES INIT **************************/
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesNum), 0x04471804);
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION2_REG(serdesNum), 0x00000058);
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION4_REG(serdesNum), 0x0000000d);
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesNum), 0x04476004);
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x1c1), 0x25); 	/*  offset 1c1 */
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,1), 0x0000FC60); 	/* reference clock select and phy mode select */
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x25), 0x000017FF); 	/* [11:10]-Maximal PHY Generation Setting */
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x4F), 0xA08A); 	/*  offset 93c*/
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x52), 0xE409); 	/*  offset 948 */
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x52), 0xE008); 	/*  offset 948 */
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x1c1), 0x24); 	/*  offset 1c1 - soft reset*/
+			mvOsDelay(5);		/*wait 5ms*/
+
+/*****************************************************************************/
+			MV_BH_REG_READ(PEX_CAPABILITIES_REG(port), temp);
+			temp &= ~PEX_CFG_MODE_MASK;
+			temp |= PEX_CFG_MODE_RC_MODE;  /*  RC/EP mode Rc is decided  */
+			MV_BH_REG_WRITE(PEX_CAPABILITIES_REG(port), temp);
+#ifdef PEX_END_POINT
+			MV_BH_REG_READ(PEX_DBG_CTRL_REG(port), temp);
+			temp &= ~(BIT19 | BIT16);
+			MV_BH_REG_WRITE(PEX_DBG_CTRL_REG(port), temp);
+#endif
+			socCtrlreg |=  PEXx_EN(port);
+			break;
+		case SERDES_UNIT_SATA:
+			DEBUG_INIT_S("SATA  ");
+			DEBUG_INIT_D(port,1);
+			DEBUG_INIT_S("\n");
+			unit = port/2;
+			MV_BH_REG_WRITE((MV_SATA3_UNIT_OFFSET(port) + 0xA0), 0);
+			temp = 0xC40000 | ((port & 1) ? (1 << 14) : (1 << 6));
+			MV_BH_REG_WRITE((MV_SATA3_UNIT_OFFSET(port) + 0xA4), temp);
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesNum), 0xE1802);
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesNum), 0x88E1802);
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesNum), 0x88E6002);
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,01), 0xFC01); 	/*  offset 4*/
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x25), 0x00001BFF); 	/* [11:10]-Maximal PHY Generation Setting Configure only in SATA mode */
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x23), 0x4);
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x4F), 0xA44A);
+
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum, 0x52), 0xE409); 	/*   */
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum, 0x52), 0xE008); 	/*   */
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesNum), 0x8876002);
+			MV_BH_REG_WRITE((MV_SATA3_UNIT_OFFSET(unit) + 0xa0), 0); 	/*   */
+			MV_BH_REG_WRITE((MV_SATA3_UNIT_OFFSET(unit) + 0xA4), 0xC40000);
+			MV_BH_REG_WRITE((MV_SATA3_UNIT_OFFSET(unit) + 0xa0), 4); 	/*   */
+			MV_BH_REG_WRITE((MV_SATA3_UNIT_OFFSET(unit) + 0xA4), 0x0);
+
+			mvOsDelay(5);		/*wait 5ms*/
+			for (i=0; i<LINK_WAIT_CNTR; i++) {
+				temp = MV_REG_READ(COMMON_PHY_STATUS1_REG(serdesNum));
+				if ((temp & PHY_PLL_READY) == PHY_PLL_READY)
+					break;
+				mvOsUDelay(LINK_WAIT_SLEEP);
+
+			}
+			MV_BH_REG_READ(COMMON_PHY_STATUS1_REG(serdesNum), temp );
+			if ((temp & PHY_PLL_READY) == PHY_PLL_READY)
+				DEBUG_INIT_S(" SATA PLL ready. \n");
+			else
+				DEBUG_INIT_S(" SATA PLL not ready.\n");
+
+			break;
+		case SERDES_UNIT_GBE:
+			DEBUG_INIT_S("SGMII  ");
+			DEBUG_INIT_D(port,1);
+			DEBUG_INIT_S("\n");
+
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesNum), 0xE1802);
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesNum), 0x198E1802);
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesNum), 0x198E6002);
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,01), 0xFC81); 	/*  offset 4*/
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x26), 0x00000166);
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,23), 0x2);
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x4F), 0xA40A);
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x50), 0x1800);
+
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum, 0x52), 0xE409); 	/*   */
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum, 0x52), 0xE008); 	/*   */
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesNum), 0x19876002);
+
+			mvOsDelay(5);		/*wait 5ms*/
+			for (i=0; i<LINK_WAIT_CNTR; i++) {
+				temp = MV_REG_READ(COMMON_PHY_STATUS1_REG(serdesNum));
+				if ((temp & PHY_PLL_READY) == PHY_PLL_READY)
+					break;
+				mvOsUDelay(LINK_WAIT_SLEEP);
+			}
+			MV_BH_REG_READ(COMMON_PHY_STATUS1_REG(serdesNum), temp );
+			if ((temp & PHY_PLL_READY) == PHY_PLL_READY)
+				DEBUG_INIT_S(" SGMII PLL ready. \n");
+			else
+				DEBUG_INIT_S(" SGMII PLL not ready.\n");
+
+			break;
+		case SERDES_UNIT_USB:
+		case SERDES_UNIT_USB_H:
+			DEBUG_INIT_S("USB ");
+			DEBUG_INIT_D(port,1);
+			DEBUG_INIT_S("\n");
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesNum), 0x4479804);
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION2_REG(serdesNum), 0x00000058);
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION4_REG(serdesNum), 0x0000000d);
+			MV_BH_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesNum), 0x0447e004);
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x1c1), 0x21); 	/*  offset 1c1 */
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,1), 0x0000FCA0); 	/* reference clock select and phy mode select */
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x25), 0x000017FF); 	/* [11:10]-Maximal PHY Generation Setting */
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x4F), 0xA0CA); 	/*  offset 93c*/
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x52), 0xE409); 	/*  offset 948 */
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x52), 0xE008); 	/*  offset 948 */
+			MV_BH_REG_WRITE(COMPHY_H_PIPE3_28LP(serdesNum,0x1c1), 0x20); 	/*  offset 1c1 - soft reset*/
+			mvOsDelay(5);		/*wait 5ms*/
+
+			break;
+		case SERDES_UNIT_NA:
+			DEBUG_INIT_S("NA\n ");
+		}
+	}
+
+	MV_BH_REG_WRITE(SOC_CTRL_REG, socCtrlreg);
+
+	mvOsDelay(150);		/*wait 150ms*/
+}
+/*******************************************************************************
+* mvBhPexTestLink - test pex port if link up
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*
+*******************************************************************************/
+MV_VOID	mvBhPexTestLink(MV_VOID)
+{
+	MV_U32 port, temp;
+	MV_U32 socCtrlreg;
+	MV_U32 commPhyConfigReg, comPhyCfg, serdesNum, serdesCongigField, maxSerdesLane;
+
+	maxSerdesLane = MV_SERDES_MAX_LANES;
+	if (MV_6810_DEV_ID == mvCtrlModelGet())
+		maxSerdesLane = MV_SERDES_MAX_LANES_6810;
+
+	MV_BH_REG_READ(COMMON_PHYS_SELECTORS_REG, commPhyConfigReg );
+	MV_BH_REG_READ(SOC_CTRL_REG, socCtrlreg );
+	for (serdesNum = 0; serdesNum < maxSerdesLane; serdesNum++) {
+		serdesCongigField = (commPhyConfigReg & COMPHY_SELECT_MASK(serdesNum)) >> COMPHY_SELECT_OFFS(serdesNum);
+		comPhyCfg = serdesCfg[serdesNum][serdesCongigField];
+		port = comPhyCfg & SERDES_PORT_MASK ;
+		if ((comPhyCfg & SERDES_UNIT_MASK ) != SERDES_UNIT_PEX)
+			continue;
+		if (0 == (socCtrlreg & (1 << port))) {
+			DEBUG_INIT_S("Disconnect PCIe-");
+		}
+		else {
+			MV_BH_REG_READ(PEX_DBG_STATUS_REG(port), temp);
+			if ((temp & 0xFF) == 0x7E)
+				DEBUG_INIT_S("Link up PCIe-");
+			else
+				DEBUG_INIT_S("Link down PCIe");
+		}
+		DEBUG_INIT_D(port,1);
+		DEBUG_INIT_S("\n");
+	}
+}
 /***************************************************************************/
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
 	MV_U32 tclk;
 	tclk = (MV_REG_READ(MPP_SAMPLE_AT_RESET));
-	tclk = ((tclk & (1 << 15)) >> 15);
+	tclk = ((tclk & (CORE_CLK_FREQ_MASK)) >> CORE_CLK_FREQ_OFFS);
 	switch (tclk) {
 	case 0:
 		return MV_BOARD_TCLK_250MHZ;
@@ -317,4 +421,65 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 	default:
 		return MV_BOARD_TCLK_250MHZ;
 	}
+}
+MV_U32 mvBoardIdGet(MV_VOID)
+{
+	MV_U8 gBoardId;
+
+	if (mvBoardTwsiGet(BOARD_ID_GET_ADDR, 0, MV_TRUE, &gBoardId) != MV_OK) {
+		DEBUG_INIT_S("Error: Read from TWSI failed\n");
+		DEBUG_INIT_S("Set default board ID to DB-88F6820-BP");
+		gBoardId = DB_68XX_ID;
+	}
+	gBoardId &= MV_BOARD_ID_MASK;
+
+	if (gBoardId >= MV_MAX_BOARD_ID) {
+		DEBUG_INIT_S("Error: read wrong board ID = ");
+		DEBUG_INIT_D(gBoardId,8);
+		DEBUG_INIT_S("\n");
+		return MV_INVALID_BOARD_ID;
+	}
+	return gBoardId;
+}
+MV_STATUS mvBoardTwsiGet(MV_U8 devAddr, MV_U8 regOffset, MV_BOOL moreThen256, MV_U8 *pData)
+{
+        MV_TWSI_SLAVE twsiSlave;
+
+        twsiSlave.slaveAddr.address = devAddr;
+        twsiSlave.slaveAddr.type = ADDR7_BIT;
+        twsiSlave.validOffset = MV_TRUE;
+        twsiSlave.offset = regOffset;	        /* Use offset as command */
+        twsiSlave.moreThen256 = moreThen256;
+        if (MV_OK != mvTwsiRead(0, &twsiSlave, pData, 1)) {
+                return MV_ERROR;
+        }
+        return MV_OK;
+}
+/*******************************************************************************
+* mvCtrlModelGet - Get Marvell controller device model (Id)
+*
+* DESCRIPTION:
+*       This function returns 16bit describing the device model (ID) as defined
+*       in Vendor ID configuration register
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       16bit desscribing Marvell controller ID
+*
+*******************************************************************************/
+MV_U16 mvCtrlModelGet(MV_VOID)
+{
+	MV_U32	ctrlId = MV_REG_READ(DEV_ID_REG);
+	ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
+	if (ctrlId == 0x6820)
+		return MV_6820_DEV_ID;
+	if (ctrlId == 0x6810)
+		return MV_6810_DEV_ID;
+
+	return MV_INVALID_DEV_ID;
 }

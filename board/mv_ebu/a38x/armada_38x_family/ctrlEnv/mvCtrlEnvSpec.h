@@ -123,11 +123,14 @@ extern "C" {
 #define MV_CESA_TDMA_REGS_OFFSET(chanNum)       (0x90000 + (chanNum * 0x2000))
 #define MV_CESA_REGS_OFFSET(chanNum)            (0x9D000 + (chanNum * 0x2000))
 #define MV_SATA_REGS_OFFSET                     (0xA0000)
+#define MV_SATA3_REGS_OFFSET(u)			((u == 0) ? 0xA8000 : 0xE0000) /* sata register per unit*/
 #define MV_COMM_UNIT_REGS_OFFSET                (0xB0000)
 #define MV_BM_REGS_OFFSET                       (0xC8000)
 #define MV_NFC_REGS_OFFSET                      (0xD0000)
 #define MV_SDMMC_REGS_OFFSET                    (0xD4000)
 
+#define SATA3_NUM_OF_PORTS			2
+#define SATA3_MAX_PORTS_PER_UNIT		2
 #define MV_ETH_SMI_PORT   0
 
 /*

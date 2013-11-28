@@ -1829,7 +1829,9 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 		mvOsOutput("\tRGMII0 Module on MAC0\n");
 	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_RGMII1)
 		mvOsOutput("\tRGMII1 on MAC1\n");
-	if (ethConfig & MV_ETHCOMP_SW_P4_2_RGMII0)
+	if (ethConfig & MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY)
+		mvOsOutput("\tExternal PHY-RGMII0 Module on Switch port #4, 1G speed\n");
+	else if (ethConfig & MV_ETHCOMP_SW_P4_2_RGMII0)
 		mvOsOutput("\tRGMII0 Module on Switch port #4, 1G speed\n");
 
 	/* Internal GE Quad Phy */
@@ -1850,6 +1852,11 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 		if (ethConfig & MV_ETHCOMP_SW_P3_2_GE_PHY_P3)
 			mvOsOutput("\tGE-PHY-3 Module on Switch port #3\n");
 	}
+
+	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)
+		mvOsOutput("       PON ETH SERDES on MAC1\n");
+	if (ethConfig & MV_ETHCOMP_P2P_MAC_2_PON_ETH_SERDES)
+		mvOsOutput("       ETH SERDES on P2P MAC\n");
 
 	/* TDM / Slic configuration */
 	slicDevice = mvBoardSlicUnitTypeGet();

@@ -49,7 +49,7 @@ int do_active_units(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	/*   EGIGA	*/
 	egigaNum = mvCtrlEthMaxPortGet();
 	for (i = 0; i < egigaNum; i++) {
-		if (mvBoardIsEthConnected(i) == MV_TRUE)
+		if (mvBoardIsEthActive(i) == MV_TRUE)
 			printf(", egiga%d", i);
 	}
 

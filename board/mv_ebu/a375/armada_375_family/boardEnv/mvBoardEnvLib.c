@@ -2294,12 +2294,43 @@ MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 *	MV_TRUE if the requested ethernet port is connected.
 *
 *******************************************************************************/
-MV_U32 mvBoardIsEthConnected(MV_U32 ethNum)
+MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 {
-	if (ethNum == 0)
-		return MV_TRUE;
+	MV_U32 c = mvBoardEthComplexConfigGet();
+	MV_BOOL isActive = MV_FALSE;
 
-	return MV_FALSE;
+	if (ethNum == 0 && ((c & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0) ||
+			(c & MV_ETHCOMP_GE_MAC0_2_RGMII0)))
+			isActive = MV_TRUE;
+
+	if (ethNum == 1 && ((c & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3) ||
+			(c & MV_ETHCOMP_GE_MAC1_2_RGMII1)))
+			isActive = MV_TRUE;
+
+	return isActive;
+}
+
+/*******************************************************************************
+* mvBoardIsEthActive - this routine indicate which ports can be used by U-Boot
+*
+* DESCRIPTION:
+*	This routine returns true if a certain Ethernet port is
+*	Active and usable as a regular eth interface
+*
+* INPUT:
+*	ethNum - index of the ethernet port requested
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_TRUE if the requested ethernet port is Active and usable.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsEthActive(MV_U32 ethNum)
+{
+	/* for A375, all connected ports are Active and usabe */
+	return mvBoardIsEthConnected(ethNum);
 }
 
 /*******************************************************************************

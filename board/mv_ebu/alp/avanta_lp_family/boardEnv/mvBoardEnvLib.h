@@ -573,6 +573,7 @@ MV_VOID mvBoardMacSpeedSet(MV_U32 ethPortNum, MV_BOARD_MAC_SPEED macSpeed);
 MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx);
 MV_U32 mvBoardMacCpuPortGet(MV_VOID);
 MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum);
+MV_BOOL mvBoardIsEthActive(MV_U32 ethNum);
 MV_32 mvBoardSwitchIrqGet(MV_VOID);
 MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort);
 MV_U32 mvBoardSwitchPortsMaskGet(MV_U32 switchIdx);

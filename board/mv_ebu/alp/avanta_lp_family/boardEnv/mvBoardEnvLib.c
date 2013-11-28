@@ -2993,10 +2993,10 @@ MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 }
 
 /*******************************************************************************
-* mvBoardIsEthConnected - detect if a certain Ethernet port is active
+* mvBoardIsEthConnected - detect if a certain Ethernet port is connected
 *
 * DESCRIPTION:
-*	This routine returns true if a certain Ethernet port is active and usable
+*	This routine returns true if a certain Ethernet port is connected
 *
 * INPUT:
 *	ethNum - index of the ethernet port requested
@@ -3005,7 +3005,7 @@ MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 *	None.
 *
 * RETURN:
-*	MV_TRUE if the requested ethernet port is connected and usable.
+*	MV_TRUE if the requested ethernet port is connected.
 *
 *******************************************************************************/
 MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
@@ -3018,31 +3018,72 @@ MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 		return MV_FALSE;
 	}
 
-	/*
-	 * Determine if port is both active and usable:
-	 * 1. active : if MAC is set as active in Ethernet complex board configuration
-	 * 2. usable : - MAC always usable when connected to RGMII, COMPHY, or GE-PHY
-	 *             - if connected to switch ,a MAC is usable only as the CPU Port
-	 *               (if a 2nd MAC is connected to switch, it used for Loopback)
-	 */
-
-	if ((ethNum == 0) && ((c & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0) ||
+	/* Determine if port is connected:
+	 * If set as active in Ethernet complex board configuration */
+	if (ethNum == 0 && ((c & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0) ||
 			(c & MV_ETHCOMP_GE_MAC0_2_RGMII0) ||
 			(c & MV_ETHCOMP_GE_MAC0_2_COMPHY_2) ||
-			((c & MV_ETHCOMP_GE_MAC0_2_SW_P6) && mvBoardMacCpuPortGet() == 0)))
+			(c & MV_ETHCOMP_GE_MAC0_2_SW_P6)))
 			isConnected = MV_TRUE;
 
-	if ((ethNum == 1) && ((c & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3) ||
+	if (ethNum == 1 && ((c & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3) ||
 			(c & MV_ETHCOMP_GE_MAC1_2_RGMII1) ||
-			((c & MV_ETHCOMP_GE_MAC1_2_SW_P4) && mvBoardMacCpuPortGet() == 1)))
+			(c & MV_ETHCOMP_GE_MAC1_2_SW_P4)))
 			isConnected = MV_TRUE;
 
-	if ((ethNum == 2) && mvBoardIsPortLoopback(ethNum))
+	if (ethNum == 2 && mvBoardIsPortLoopback(ethNum))
 			isConnected = MV_TRUE;
 
 	return isConnected;
 }
 
+/*******************************************************************************
+* mvBoardIsEthActive - detect if a certain Ethernet port is Active and usable
+*
+* DESCRIPTION:
+*	This routine returns true if a certain Ethernet port is
+*	Active and usable as a regular eth interface
+*
+* INPUT:
+*	ethNum - index of the ethernet port requested
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_TRUE if the requested ethernet port is Active and usable.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsEthActive(MV_U32 ethNum)
+{
+	MV_U32 c = mvBoardEthComplexConfigGet();
+	MV_BOOL isActive = MV_FALSE;
+
+	if (ethNum >= board->numBoardMacInfo) {
+		mvOsPrintf("%s: Error: Illegal port number(%u)\n", __func__, ethNum);
+		return MV_FALSE;
+	}
+
+	/*
+	 * Determine if port is active - both connected and usable:
+	 * 1. connected : if MAC is set as connected in Ethernet complex board configuration
+	 * 2. usable    : - MAC always usable when connected to RGMII, COMPHY, or GE-PHY
+	 *                - if connected to switch ,a MAC is usable only as the CPU Port
+	 *                  (if another MAC is connected to switch, it's used for Loopback)
+	 */
+	if (ethNum == 0 && ((c & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0) ||
+			(c & MV_ETHCOMP_GE_MAC0_2_RGMII0) ||
+			(c & MV_ETHCOMP_GE_MAC0_2_COMPHY_2) ||
+			((c & MV_ETHCOMP_GE_MAC0_2_SW_P6) && mvBoardMacCpuPortGet() == 0)))
+			isActive = MV_TRUE;
+
+	if (ethNum == 1 && ((c & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3) ||
+			(c & MV_ETHCOMP_GE_MAC1_2_RGMII1) ||
+			((c & MV_ETHCOMP_GE_MAC1_2_SW_P4) && mvBoardMacCpuPortGet() == 1)))
+			isActive = MV_TRUE;
+
+	return isActive;
+}
 /*******************************************************************************
 * mvBoardMacCpuPortGet - returns the MAC CPU port connected to switch
 *

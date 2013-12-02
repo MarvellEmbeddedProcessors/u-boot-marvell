@@ -442,6 +442,7 @@ MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
 
 	case MV_78160_DEV_ID:
 	case MV_78260_DEV_ID:
+		return 9;
 	case MV_78460_DEV_ID:
 	case MV_78000_DEV_ID:
 		return MV_PEX_MAX_IF;

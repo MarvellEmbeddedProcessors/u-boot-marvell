@@ -354,4 +354,3 @@ MV_STATUS mvPp2WinEnable(MV_U32 dummy/*backward compability*/, MV_U32 winNum, MV
 
 	return MV_OK;
 }
-

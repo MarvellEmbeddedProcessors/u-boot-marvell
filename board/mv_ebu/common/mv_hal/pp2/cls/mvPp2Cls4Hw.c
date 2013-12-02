@@ -718,4 +718,3 @@ int mvPp2ClsC4ForwardSet(MV_PP2_CLS_C4_ENTRY *C4, int cmd)
 	C4->sram.regs.actions |= (cmd << ACT_FWD);
 	return MV_OK;
 }
-

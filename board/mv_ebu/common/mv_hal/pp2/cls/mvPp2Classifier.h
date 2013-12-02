@@ -100,4 +100,3 @@ int  mvPp2ClassifierPortRxq(int port, int rxq);
 */
 
 #endif /*__MV_PNC_HW_H__ */
-

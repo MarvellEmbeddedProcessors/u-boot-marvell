@@ -89,6 +89,3 @@ int mvPp2ClassifierDefInit()
 
 	return MV_OK;
 }
-
-
-

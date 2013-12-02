@@ -78,10 +78,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 
-#define	SERDES_VERION	"2.1.3"
+#define	SERDES_VERION	"2.1.4"
 #define ENDED_OK "High speed PHY - Ended Successfully\n"
 static const MV_U8 serdesCfg[][SERDES_LAST_UNIT] = BIN_SERDES_CFG;
-			   
+
 extern MV_BIN_SERDES_CFG *SerdesInfoTbl[];
 MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff);
 MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum);
@@ -134,19 +134,13 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 MV_U8 mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum)
 {
         MV_TWSI_SLAVE twsiSlave;
-        MV_TWSI_ADDR slave;
         MV_U8 data;
-
-        /* TWSI init */
-        slave.type = ADDR7_BIT;
-        slave.address = 0;
-		mvTwsiInit(0, CONFIG_SYS_I2C_SPEED, CONFIG_SYS_TCLK, &slave, 0);
 
         /* Read MPP module ID */
         twsiSlave.slaveAddr.address = 0x4D;
         twsiSlave.slaveAddr.type = ADDR7_BIT;
         twsiSlave.validOffset = MV_TRUE;
-        twsiSlave.offset = regNum;	        /* Use offset as command */ 
+        twsiSlave.offset = regNum;	        /* Use offset as command */
         twsiSlave.moreThen256 = MV_FALSE;
         if (MV_OK != mvTwsiRead(0, &twsiSlave, &data, 1)) {
                 return MV_ERROR;
@@ -184,7 +178,7 @@ MV_U32 mvBoardSerdesModulesScan(MV_U32 default_serdes)
 	FILL_TWSI_SLAVE(twsiSlave, MV_BOARD_EEPROM_MODULE_ADDR);
 	if (mvTwsiRead(0, &twsiSlave, &swCfg, 1) != MV_OK)
 	{
-		DEBUG_INIT_S("mvBoardSerdesModulesScan: mvTwsiRead erro serdes to default ****");
+		DEBUG_INIT_S("mvBoardSerdesModulesScan: mvTwsiRead error, Using default serdes configuration ****");
 		return default_serdes;
 
 	}
@@ -272,7 +266,7 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 *
 *******************************************************************************/
 MV_U32 mvCtrlSerdesMaxLinesGet(MV_VOID)
-{        
+{
       switch (mvCtrlModelGet()) {
         case MV_78130_DEV_ID:
         case MV_78230_DEV_ID:
@@ -343,27 +337,8 @@ MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
 		return 0;
 	}
 }
-/*******************************************************************************/
-MV_BIN_SERDES_CFG *mvBoardSerdesCfgGet(void)
-{
-	MV_U32 boardId;
-	MV_BIN_SERDES_CFG *pSerdes;
-	boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		DEBUG_INIT_S("mvBoardSerdesCfgGet: Board unknown.\n");
-		return NULL;
-	}
-	pSerdes =  &SerdesInfoTbl[boardId-BOARD_ID_BASE][0];
-	if (pSerdes->enableModuleScan == MV_FALSE)
-		return pSerdes;
-	pSerdes->serdesLine0_3 = mvBoardSerdesModulesScan(pSerdes->serdesLine0_3);
-	pSerdes->pexMod[0] = ((pSerdes->serdesLine0_3 & 0x0f) == 1) ? PEX_BUS_MODE_X1: PEX_BUS_DISABLED;
-	pSerdes->pexMod[1] = ((pSerdes->serdesLine0_3 & 0xf0) == 0x10) ? PEX_BUS_MODE_X1: PEX_BUS_DISABLED;
-	return pSerdes;
-}
 /*********************************************************************/
-MV_U32 get_serdesLineCfg(MV_U32 serdesLineNum,MV_BIN_SERDES_CFG *pSerdesInfo) 
+MV_U32 get_serdesLineCfg(MV_U32 serdesLineNum,MV_BIN_SERDES_CFG *pSerdesInfo)
 {
 	return (pSerdesInfo->serdesLine0_3 >> (serdesLineNum << 2)) & 0xF;
 }
@@ -374,7 +349,6 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	MV_STATUS	status = MV_OK;
 	MV_U32		serdesLineCfg;
 	MV_U8		serdesLineNum;
-	MV_U32		regAddr[16][11], regVal[16][11]; /* addr/value for each line @ every setup step */
 	MV_U8		pexUnit, pexLineNum;
 	MV_U8   	sgmiiPort = 0;
 	MV_U32		tmp;
@@ -384,40 +358,49 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	MV_U8 		satr11;
 	MV_U8   	sataPort;
 	MV_U32		rxHighImpedanceMode;
-	maxSerdesLines = mvCtrlSerdesMaxLinesGet();
+	maxSerdesLines	= mvCtrlSerdesMaxLinesGet();
 	MV_U16 ctrlMode = mvCtrlModelGet();
+	MV_U32 boardId 	= mvBoardIdGet();
 
-	MV_TWSI_ADDR slave;
-
-	/* TWSI init */
-	slave.type = ADDR7_BIT;
-	slave.address = 0;
-	mvTwsiInit(0, CONFIG_SYS_I2C_SPEED, CONFIG_SYS_TCLK, &slave, 0);
-
-	if (maxSerdesLines == 0)
+        if (maxSerdesLines == 0)
 		return MV_OK;
 
-
-	memset(regAddr, 0, sizeof(regAddr));
-	memset(regVal,  0, sizeof(regVal));
-
-	mvUartInit();
-	satr11 = mvBoardTwsiSatRGet(1, 1);
-	if (satr11 == MV_ERROR) {
-		DEBUG_INIT_S("mvBoardTwsiSatRGet(1,1) read error ************\n");
-		mvOsUDelay(1);
-		mvTwsiInit(0, CONFIG_SYS_I2C_SPEED, CONFIG_SYS_TCLK, &slave, 0);
-		  satr11 = 0;
+	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
+		DEBUG_INIT_S("mvCtrlHighSpeedSerdesPhyConfig: Board unknown.\n");
+		return MV_ERROR;
 	}
-	
+	pSerdesInfo =  &SerdesInfoTbl[boardId-BOARD_ID_BASE][0];
+
+	if (pSerdesInfo->enableModuleScan == MV_TRUE) {
+		/* TWSI init */
+		MV_TWSI_ADDR slave;
+
+		slave.type = ADDR7_BIT;
+		slave.address = 0;
+		mvTwsiInit(0, CONFIG_SYS_I2C_SPEED, CONFIG_SYS_TCLK, &slave, 0);
+
+		/* TWSI read pex capability flag */
+		satr11 = mvBoardTwsiSatRGet(1, 1);
+		if (satr11 == MV_ERROR) {
+			DEBUG_INIT_S("mvBoardTwsiSatRGet(1,1) read error ************\n");
+			satr11 = 0; /* speed GEN 1 |  width X1 */
+		}
+		pSerdesInfo->serdesLine0_3 = mvBoardSerdesModulesScan(pSerdesInfo->serdesLine0_3);
+		pSerdesInfo->pexMod[0] = ((pSerdesInfo->serdesLine0_3 & 0x0f) == 1) ? PEX_BUS_MODE_X1: PEX_BUS_DISABLED;
+		pSerdesInfo->pexMod[1] = ((pSerdesInfo->serdesLine0_3 & 0xf0) == 0x10) ? PEX_BUS_MODE_X1: PEX_BUS_DISABLED;
+
+	}
+	else
+		satr11 = 2;   /* speed GEN 2 |  width X1 */
+
 	/* Check if DRAM is already initialized  */
 	if (MV_REG_READ(REG_BOOTROM_ROUTINE_ADDR) & (1 << REG_BOOTROM_ROUTINE_DRAM_INIT_OFFS)) {
-		DEBUG_INIT_S("High speed PHY - Version: ");
+		DEBUG_INIT_S("\nHigh speed PHY - Version: ");
 		DEBUG_INIT_S(SERDES_VERION);
 		DEBUG_INIT_S(" - 2nd boot - Skip \n");
 		return MV_OK;
 	}
-	DEBUG_INIT_S("High speed PHY - Version: ");
+	DEBUG_INIT_S("\nHigh speed PHY - Version: ");
 	DEBUG_INIT_S(SERDES_VERION);
 	DEBUG_INIT_S(" (COM-PHY-V20) \n");
 
@@ -446,7 +429,6 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	}
 #endif
 /**********************************************************************************/
-	pSerdesInfo = mvBoardSerdesCfgGet();
 	if (pSerdesInfo == NULL){
 		DEBUG_INIT_S("Hight speed PHY Error #1\n");
 		return MV_ERROR;
@@ -594,10 +576,10 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 			DEBUG_RD_REG(PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), tmp );
 			tmp &= ~(0x3FF);
 			tmp |= (0x1 << 4);		/* PEX_BUS_MODE_X1 */
-			if (1 == mvBoardPexCapabilityGet(satr11))
-				tmp |= 0x1;
+			if (1 == mvBoardPexCapabilityGet(satr11)) /* speed GEN 1 ? */
+				tmp |= 0x1; /* speed GEN 1 */
 			else
-				tmp	|= 0x2;
+				tmp	|= 0x2; /* speed GEN 2 */
 			MV_REG_WRITE(PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), tmp);
 			DEBUG_WR_REG(PEX_LINK_CAPABILITIES_REG(MV_SERDES_NUM_TO_PEX_NUM(serdesLineNum)), tmp);
 		}

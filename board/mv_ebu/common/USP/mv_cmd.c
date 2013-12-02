@@ -162,9 +162,9 @@ int temperature_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 U_BOOT_CMD(
 	temp,      1,     1,      temperature_cmd,
-	"temp	- Display the device temprature.\n",
+	"temp	- Display the device temperature.\n",
 	" \n"
-	"\tDisplay the device temprature as read from the internal sensor.\n"
+	"\tDisplay the device temperature as read from the internal sensor.\n"
 );
 
 #if defined(MV_INCLUDE_PMU)
@@ -679,7 +679,7 @@ int displayMemoryMap_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv
 
 U_BOOT_CMD(
 	map,      1,     1,      displayMemoryMap_cmd,
-	"map	- Diasplay address decode windows\n",
+	"map	- Display address decode windows\n",
 	" \n"
 	"\tDisplay controller address decode windows: CPU, PCI, Gig, DMA, XOR and COMM\n"
 );
@@ -690,31 +690,31 @@ U_BOOT_CMD(
 *****************************************************************************/
 int printTempMsg(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	printf("This command allocated for monitor extintion\n");
+	printf("This command allocated for monitor extinction\n");
 	return 1;
 }
 
 U_BOOT_CMD(
 	tempCmd0,      1,     1,      printTempMsg,
-	"tempCmd - This command allocated for monitor extintion\n",
+	"tempCmd - This command allocated for monitor extinction\n",
 	" "
 );
 
 U_BOOT_CMD(
 	tempCmd1,      1,     1,      printTempMsg,
-	"tempCmd - This command allocated for monitor extintion\n",
+	"tempCmd - This command allocated for monitor extinction\n",
 	" "
 );
 
 U_BOOT_CMD(
 	tempCmd2,      1,     1,      printTempMsg,
-	"tempCmd - This command allocated for monitor extintion\n",
+	"tempCmd - This command allocated for monitor extinction\n",
 	" "
 );
 
 U_BOOT_CMD(
 	tempCmd3,      1,     1,      printTempMsg,
-	"tempCmd - This command allocated for monitor extintion\n",
+	"tempCmd - This command allocated for monitor extinction\n",
 	" "
 );
 

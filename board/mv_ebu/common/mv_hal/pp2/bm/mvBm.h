@@ -222,4 +222,3 @@ MV_STATUS mvBmPoolBuffNumSet(int pool, int buffNum);
 MV_STATUS mvBmPoolBuffCountersSet(int pool, int cntrGrntd, int cntrShared);
 
 #endif /* __mvBm_h__ */
-

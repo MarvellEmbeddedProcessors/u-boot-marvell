@@ -1207,4 +1207,3 @@ int mvPp2PrsSwSramFlowidGenGet(MV_PP2_PRS_ENTRY *pe, unsigned int *bit)
 	return mvPp2PrsSramBitGet(pe, SRAM_LU_GEN_BIT, bit);
 
 }
-

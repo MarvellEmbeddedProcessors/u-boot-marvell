@@ -272,4 +272,3 @@ extern "C" {
 #endif /* __cplusplus */
 
 #endif /* __mvBmRegs_h__ */
-

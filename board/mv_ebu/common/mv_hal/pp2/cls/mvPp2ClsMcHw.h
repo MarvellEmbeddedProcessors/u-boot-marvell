@@ -147,4 +147,3 @@ int	mvPp2McSwNext(MV_PP2_MC_ENTRY *mc, int next);
 
 
 #endif /*__MV_CLS_MC_HW_H__ */
-

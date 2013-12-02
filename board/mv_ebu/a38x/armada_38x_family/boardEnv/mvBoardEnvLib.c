@@ -2008,7 +2008,7 @@ MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 {
-	if (ethNum == 0)
+	if ((ethNum == 0) || (ethNum == 1))
 		return MV_TRUE;
 
 	return MV_FALSE;

@@ -690,7 +690,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 					while ((mvPexConfigRead(pexIf, first_busno, 0, 0, addr) & 0xFF) != 0x10) {
 						addr = (mvPexConfigRead(pexIf, first_busno, 0, 0, addr) & 0xFF00) >> 8;
 					}
-					if ((mvPexConfigRead(pexIf, first_busno, 0, 0, addr + 0xC) & 0xF) == 0x2) {
+					if ((mvPexConfigRead(pexIf, first_busno, 0, 0, addr + 0xC) & 0xF) >= 0x2) {
 						tmp = MV_REG_READ(PEX_LINK_CTRL_STATUS2_REG(pexIf));
 						DEBUG_RD_REG(PEX_LINK_CTRL_STATUS2_REG(pexIf),tmp );
 						tmp &=~(BIT0 | BIT1);

@@ -115,7 +115,7 @@ int resetenv_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 U_BOOT_CMD(
         resetenv,      1,     1,      resetenv_cmd,
-        "resetenv	- earse environment sector to reset all variables to default.\n",
+        "resetenv	- Erase environment sector to reset all variables to default.\n",
         " \n"
         "\t Erase the environemnt variable sector.\n"
 );

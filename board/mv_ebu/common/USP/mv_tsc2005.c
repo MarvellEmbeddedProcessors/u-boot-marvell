@@ -513,7 +513,7 @@ int ts_test_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 U_BOOT_CMD(
         ts_report,      2,     0,      ts_report_cmd,
-        "ts_report	- report touch screen cooridate\n",
+        "ts_report	- report touch screen coordinate\n",
         "timeout (seconds),if you don't specify,the default is 5 seconds\n"
 );
 

@@ -499,6 +499,7 @@ extern unsigned int mvTclkGet(void);
 #define PCI_HOST_AUTO    2              /* detected via arbiter enable  */
 
 #define CONFIG_UBOOT_SIZE                       0x100000
+#define CONFIG_SPARE_AREA			0x400000
 
 /* NOR-FLASH stuff	*/
 /************************/

@@ -332,7 +332,7 @@ void misc_init_r_env(void)
 	env = getenv("mtdparts");
 	if (!env) {
 #if defined(MV_NAND)
-		setenv("mtdparts", "mtdparts=armada-nand:4m(boot)ro,8m@4m(kernel),-(rootfs)");
+		setenv("mtdparts", "mtdparts=armada-nand:8m(boot)ro,8m@8m(kernel),-(rootfs)");
 #endif
 	}
 

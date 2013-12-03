@@ -325,7 +325,7 @@ void misc_init_r_env(void){
 
 #if defined(MV_NAND)
 	envSetDefault("mtdids", "nand0=armada-nand");
-	envSetDefault("mtdparts", "mtdparts=armada-nand:4m(boot),-(rootfs)");
+	envSetDefault("mtdparts", "mtdparts=armada-nand:8m(boot),-(rootfs)");
 	envSetDefault("nandEcc", "1bit");
 #endif
 	

@@ -132,23 +132,11 @@ int nand_get_env_offs(void)
 	size_t blocksize;
 	blocksize = nand_info[0].erasesize;
 
-	/* Find U-Boot start */
-	while(i * blocksize < nand_info[0].size) {
-		if (!nand_block_isbad(&nand_info[0], (i * blocksize)))
-			sum += blocksize;
-		else {
-			sum = 0;
-			offset = (i + 1) * blocksize;
-		}
-		i++;
-		if (sum >= CONFIG_UBOOT_SIZE)
-			break;
-	}
+	offset = CONFIG_UBOOT_SIZE + CONFIG_SPARE_AREA;
 
-	offset += CONFIG_UBOOT_SIZE;
-
+	/* Start searching for bad blocks from the offset */
+	i = offset/blocksize;
 	/* Find Env start */
-        sum = 0;
         while(i * blocksize < nand_info[0].size) {
                 if (!nand_block_isbad(&nand_info[0], (i * blocksize)))
                         sum += blocksize;
@@ -162,7 +150,7 @@ int nand_get_env_offs(void)
 
         }
 #else
-	offset = CONFIG_UBOOT_SIZE;
+	offset = CONFIG_UBOOT_SIZE + CONFIG_SPARE_AREA;
 #endif
 
 	/* Align U-Boot size to currently used blocksize */

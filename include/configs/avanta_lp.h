@@ -55,7 +55,7 @@
 /*
  * Version
  */
-#define CONFIG_IDENT_STRING	" Marvell version: 2013_Q3.0p1"
+#define CONFIG_IDENT_STRING	" Marvell version: 2013_Q3.0p1.1-DDR-test"
 
 /* Version number passed to kernel */
 #define VER_NUM 0x11120000              /* 2011.12 */

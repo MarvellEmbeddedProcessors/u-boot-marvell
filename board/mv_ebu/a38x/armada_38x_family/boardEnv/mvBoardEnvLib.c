@@ -980,7 +980,43 @@ MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID)
 {
 	return MV_OK;
 }
+/*******************************************************************************
+* mvBoardIoExpanderUpdate
+*
+* DESCRIPTION:
+*	Update io expander via TWSI,
+*
+** INPUT:
+*	None.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_OK - on success,
+*	MV_ERROR - wriet to twsi failed.
+*
+*******************************************************************************/
+MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
+{
+	MV_U32 i = 0;
 
+	if ((board->pIoExp == NULL) || (0 == board->numIoExp))
+		return MV_OK;
+
+	for (i = 0; i < board->numIoExp; i++) {
+		if (MV_OK != mvBoardTwsiSet(BOARD_TWSI_IO_EXPANDER, board->pIoExp[i].addr,
+					    board->pIoExp[i].offset, board->pIoExp[i].val)) {
+			mvOsPrintf("%s: Write IO expander (addr=0x%x, offset=%d, value=0x%2x to  fail\n",
+				   __func__,
+				   mvBoardTwsiAddrGet(BOARD_TWSI_IO_EXPANDER, board->pIoExp[i].addr),
+				   board->pIoExp[i].offset,
+				   board->pIoExp[i].val);
+			return MV_ERROR;
+		}
+	}
+	return MV_OK;
+}
 /*******************************************************************************
 * mvBoardBootDeviceGroupSet - test board Boot configuration and set MPP groups
 *

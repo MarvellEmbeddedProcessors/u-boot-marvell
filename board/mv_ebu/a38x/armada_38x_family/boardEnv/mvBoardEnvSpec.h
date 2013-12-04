@@ -167,7 +167,8 @@
  */
 #define RD_88F68XX_MPP0_7               0x11111111
 #define RD_88F68XX_MPP8_15              0x11111111
-#define RD_88F68XX_MPP16_23             0x11244011
+#define RD_NAS_88F68XX_MPP16_23         0x11244011
+#define RD_WAP_88F68XX_MPP16_23         0x11243011
 #define RD_88F68XX_MPP24_31             0x22222111
 #define RD_88F68XX_MPP32_39             0x22200002
 #define RD_88F68XX_MPP40_47             0x30042022

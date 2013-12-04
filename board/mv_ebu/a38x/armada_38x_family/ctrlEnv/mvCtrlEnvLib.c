@@ -356,6 +356,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	if (mvBoardConfigAutoDetectEnabled()) {
 		mvBoardInfoUpdate();
 	}
+	mvBoardIoExpanderUpdate();
 
 	mvCtrlSerdesConfigDetect();
 

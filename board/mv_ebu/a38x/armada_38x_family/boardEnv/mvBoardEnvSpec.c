@@ -185,18 +185,20 @@ MV_BOARD_INFO db88f68xx_board_info = {
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,
 	/* Enable modules auto-detection. */
-	.configAutoDetect		= MV_TRUE
+	.configAutoDetect		= MV_TRUE,
+	.numIoExp			= 0,
+	.pIoExp				= NULL
 };
 
-
 /*******************************************************************************
- * A380 RD-88F68XX board */
+ * A380 RD-NAS-88F68XX board */
 /*******************************************************************************/
-
 MV_BOARD_TWSI_INFO rd88F68XXInfoBoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
 	{ BOARD_DEV_TWSI_SATR,	0,	0x50, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
 	{ BOARD_DEV_TWSI_SATR,	1,	0x4C, ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	0,	0x20, ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	1,	0x21, ADDR7_BIT, MV_FALSE},
 };
 MV_BOARD_MAC_INFO rd88F68XXInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
@@ -207,15 +209,15 @@ MV_BOARD_MAC_INFO rd88F68XXInfoBoardMacInfo[] = {
 MV_DEV_CS_INFO rd88F68XXInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth }*/
 #if defined(MV_INCLUDE_SPI)
-	{ SPI0_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 } /* SPI DEV */
+	{ SPI0_CS0,	N_A,	BOARD_DEV_SPI_FLASH,	8,	8}  /* SPI DEV */
 #endif
 };
 
-MV_BOARD_MPP_INFO rd88f68XXInfoBoardMppConfigValue[] = {
+MV_BOARD_MPP_INFO rdNas88f68XXInfoBoardMppConfigValue[] = {
 	{ {
 		RD_88F68XX_MPP0_7,
 		RD_88F68XX_MPP8_15,
-		RD_88F68XX_MPP16_23,
+		RD_NAS_88F68XX_MPP16_23,
 		RD_88F68XX_MPP24_31,
 		RD_88F68XX_MPP32_39,
 		RD_88F68XX_MPP40_47,
@@ -224,11 +226,22 @@ MV_BOARD_MPP_INFO rd88f68XXInfoBoardMppConfigValue[] = {
 	} }
 };
 
+struct MV_BOARD_IO_EXPANDER ioExpNas[] = {
+	{0, 6, 0xF4},
+	{0, 7, 0xC3},
+	{0, 2, 0x0B},
+	{0, 3, 0x18},
+	{1, 6, 0xE7},
+	{1, 7, 0xF9},
+	{1, 2, 0x08},
+	{1, 3, 0x02}
+};
+
 MV_BOARD_INFO rdNas88f68XX_board_info = {
 	.boardName			= "RD-NAS-88F6820-DDR3",
-	.numBoardMppTypeValue	= ARRSZ(rd88f68XXInfoBoardMppConfigValue),
+	.numBoardMppTypeValue	= ARRSZ(rdNas88f68XXInfoBoardMppConfigValue),
 	.pBoardModTypeValue		= NULL,
-	.pBoardMppConfigValue	= rd88f68XXInfoBoardMppConfigValue,
+	.pBoardMppConfigValue	= rdNas88f68XXInfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
@@ -271,13 +284,41 @@ MV_BOARD_INFO rdNas88f68XX_board_info = {
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,
 	/* Enable modules auto-detection. */
-	.configAutoDetect		= MV_FALSE
+	.configAutoDetect		= MV_FALSE,
+	.numIoExp			= ARRSZ(ioExpNas),
+	.pIoExp				= ioExpNas
 };
-MV_BOARD_INFO rdAP88f68XX_board_info = {
+/*******************************************************************************
+ * A380 RD-WAP-88F68XX board */
+/*******************************************************************************/
+MV_BOARD_MPP_INFO rdWap88f68XXInfoBoardMppConfigValue[] = {
+	{ {
+		RD_88F68XX_MPP0_7,
+		RD_88F68XX_MPP8_15,
+		RD_WAP_88F68XX_MPP16_23,
+		RD_88F68XX_MPP24_31,
+		RD_88F68XX_MPP32_39,
+		RD_88F68XX_MPP40_47,
+		RD_88F68XX_MPP48_55,
+		RD_88F68XX_MPP56_63,
+	} }
+};
+
+struct MV_BOARD_IO_EXPANDER ioExpWap[] = {
+	{0, 6, 0xF4},
+	{0, 7, 0xC3},
+	{0, 2, 0x0B},
+	{0, 3, 0x18},
+	{1, 6, 0xE7},
+	{1, 7, 0xF9},
+	{1, 2, 0x18},
+	{1, 3, 0x04}
+};
+MV_BOARD_INFO rdWAP88f68XX_board_info = {
 	.boardName			= "RD-AP-88F6820-DDR3",
-	.numBoardMppTypeValue	= ARRSZ(rd88f68XXInfoBoardMppConfigValue),
+	.numBoardMppTypeValue	= ARRSZ(rdWap88f68XXInfoBoardMppConfigValue),
 	.pBoardModTypeValue		= NULL,
-	.pBoardMppConfigValue	= rd88f68XXInfoBoardMppConfigValue,
+	.pBoardMppConfigValue	= rdWap88f68XXInfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
@@ -320,7 +361,9 @@ MV_BOARD_INFO rdAP88f68XX_board_info = {
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,
 	/* Enable modules auto-detection. */
-	.configAutoDetect		= MV_FALSE
+	.configAutoDetect		= MV_FALSE,
+	.numIoExp			= ARRSZ(ioExpWap),
+	.pIoExp				= ioExpWap
 };
 
 
@@ -414,7 +457,9 @@ MV_BOARD_INFO A380_customer_board_info = {
 	.nandFlashControl		= A380_CUSTOMER_BOARD_NAND_CONTROL,
 	/* NOR init params */
 	.norFlashReadParams		= A380_CUSTOMER_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= A380_CUSTOMER_BOARD_NOR_WRITE_PARAMS
+	.norFlashWriteParams		= A380_CUSTOMER_BOARD_NOR_WRITE_PARAMS,
+	.numIoExp			= 0,
+	.pIoExp				= NULL
 };
 
 /*
@@ -423,6 +468,7 @@ MV_BOARD_INFO A380_customer_board_info = {
 MV_BOARD_INFO *boardInfoTbl[] = {
 	&rdNas88f68XX_board_info,
 	&db88f68xx_board_info,
-	&rdAP88f68XX_board_info,
+	&rdWAP88f68XX_board_info,
 	&A380_customer_board_info
 };
+

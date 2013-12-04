@@ -63,8 +63,6 @@ Copyright (C) Marvell International Ltd. and its affiliates
 *******************************************************************************/
 #include "config_marvell.h"     /* Required to identify SOC and Board */
 
-#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F67XX) || defined(MV88F78X60)
-
 #ifdef MV88F78X60
 #include <math.h>
 #include <stdlib.h>
@@ -87,6 +85,8 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_alp_vars.h"
 #elif defined(MV88F672X)
 #include "ddr3_a375_vars.h"
+#elif defined(MV88F68XX)
+#include "ddr3_a38x_vars.h"
 #endif
 
 #include "bootstrap_os.h"
@@ -102,13 +102,14 @@ static MV_VOID ddr3StaticMCInit(void);
 #if defined(DUNIT_STATIC) || defined(STATIC_TRAINING)
 static MV_U32 ddr3GetStaticDdrMode(void);
 #endif
-#if defined(MV88F66XX) || defined(MV88F672X)
+#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX)
 MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs);
 #endif
 MV_U32 mvBoardIdGet(MV_VOID);
-
+#if !defined(MV88F68XX)
 extern MV_VOID ddr3SetSwWlRlDebug(MV_U32);
 extern MV_VOID ddr3SetPbs(MV_U32);
+#endif
 extern MV_VOID ddr3SetLogLevel(MV_U32 nLogLevel);
 static MV_U32 gLogLevel = 0;
 
@@ -123,6 +124,7 @@ MV_VOID ddr3LogLevelInit(MV_VOID)
 {
 	ddr3SetLogLevel(DDR3_LOG_LEVEL);
 }
+#if !defined(MV88F68XX)
 /************************************************************************************
  * Name:     ddr3PbsInit
  * Desc:     This routine initialize the PBS as defined in dd3_axp_config
@@ -134,6 +136,7 @@ MV_VOID ddr3PbsInit(MV_VOID)
 {
 	ddr3SetPbs(DDR3_PBS);
 }
+#endif
 /************************************************************************************
  * Name:     setDdr3Log_Level
  * Desc:     This routine initialize the gLogLevel acording to nLogLevel which getting from user
@@ -195,28 +198,25 @@ MV_VOID levelLogPrintDD(MV_U32 dec_num, MV_U32 length, MV_LOG_LEVEL eLogLevel)
 	if (gLogLevel >= eLogLevel)
 		putdataDec(dec_num, length);
 }
-
+#if !defined(STATIC_TRAINING)
 static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 {
 	MV_U32 ui, uiReg, uiCs;
-    MV_U32 winCtrlReg, numOfWinRegs;
+	MV_U32 winCtrlReg, numOfWinRegs;
 	MV_U32 uiCsEna = ddr3GetCSEnaFromReg();
 
 #if defined(MV88F66XX) || defined(MV88F672X)
-    if(DDR3_FAST_PATH_EN == MV_FALSE)
-    {
-        return;
-    }
+	if(DDR3_FAST_PATH_EN == MV_FALSE)
+		return;
 #endif
 
 #if defined(MV88F66XX) || defined(MV88F672X)
-    winCtrlReg  = REG_XBAR_WIN_16_CTRL_ADDR;
-    numOfWinRegs = 8;
+	winCtrlReg  = REG_XBAR_WIN_16_CTRL_ADDR;
+	numOfWinRegs = 8;
 #else
-    winCtrlReg  = REG_XBAR_WIN_4_CTRL_ADDR;
-    numOfWinRegs = 16;
+	winCtrlReg  = REG_XBAR_WIN_4_CTRL_ADDR;
+	numOfWinRegs = 16;
 #endif
-
 	/* Return XBAR windows 4-7 or 16-19 init configuration */
 	for (ui = 0; ui < numOfWinRegs; ui++)
 		MV_REG_WRITE((winCtrlReg + 0x4 * ui), auWinBackup[ui]);
@@ -224,33 +224,30 @@ static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 	DEBUG_INIT_FULL_S("DDR3 Training Sequence - Switching XBAR Window to FastPath Window \n");
 
 #if defined(MV88F66XX) || defined(MV88F672X)
-    /* Set L2 filtering to 1G */
+	/* Set L2 filtering to 1G */
 	MV_REG_WRITE(0x8c04, 0x40000000);
 
     /* Open fast path windows */
-    for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
+	for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
 		if (uiCsEna & (1 << uiCs)) {
-            /* set fast path window control for the cs */
+		/* set fast path window control for the cs */
 			uiReg = 0x1FFFFFE1;
 			uiReg |= (uiCs << 2);
 			uiReg |= (SDRAM_CS_SIZE & 0xFFFF0000);
-            MV_REG_WRITE(REG_FASTPATH_WIN_CTRL_ADDR(uiCs), uiReg); /*Open fast path Window */
-
-            /* set fast path window base address for the cs */
-            uiReg = (((SDRAM_CS_SIZE + 1) * uiCs) & 0xFFFF0000);
-            MV_REG_WRITE(REG_FASTPATH_WIN_BASE_ADDR(uiCs), uiReg); /*Set base address */
+			MV_REG_WRITE(REG_FASTPATH_WIN_CTRL_ADDR(uiCs), uiReg); /*Open fast path Window */
+			/* set fast path window base address for the cs */
+			uiReg = (((SDRAM_CS_SIZE + 1) * uiCs) & 0xFFFF0000);
+			MV_REG_WRITE(REG_FASTPATH_WIN_BASE_ADDR(uiCs), uiReg); /*Set base address */
 		}
 	}
 #else
 	uiReg = 0x1FFFFFE1;
-
 	for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
 		if (uiCsEna & (1 << uiCs)) {
 			uiReg |= (uiCs << 2);
 			break;
 		}
 	}
-
 	MV_REG_WRITE(REG_FASTPATH_WIN_0_CTRL_ADDR, uiReg); /*Open fast path Window to - 0.5G */
 #endif
 }
@@ -259,35 +256,33 @@ static MV_VOID ddr3SaveAndSetTrainingWindows(MV_U32 *auWinBackup)
 {
 	MV_U32 uiCsEna = ddr3GetCSEnaFromReg();
 	MV_U32 uiReg, uiTempCount, uiCs, ui;
-    MV_U32 winCtrlReg, winBaseReg, winRemapReg;
-    MV_U32 numOfWinRegs, winJumpIndex;
-
+	MV_U32 winCtrlReg, winBaseReg, winRemapReg;
+	MV_U32 numOfWinRegs, winJumpIndex;
 #if defined(MV88F66XX) || defined(MV88F672X)
-    /* Disable L2 filtering */
+	/* Disable L2 filtering */
 	MV_REG_WRITE(0x8c04, 0);
 
-    winCtrlReg  = REG_XBAR_WIN_16_CTRL_ADDR;
-    winBaseReg  = REG_XBAR_WIN_16_BASE_ADDR;
-    winRemapReg = REG_XBAR_WIN_16_REMAP_ADDR;
-    winJumpIndex = 0x8;
-    numOfWinRegs = 8;
+	winCtrlReg  = REG_XBAR_WIN_16_CTRL_ADDR;
+	winBaseReg  = REG_XBAR_WIN_16_BASE_ADDR;
+	winRemapReg = REG_XBAR_WIN_16_REMAP_ADDR;
+	winJumpIndex = 0x8;
+	numOfWinRegs = 8;
 #else
-    winCtrlReg  = REG_XBAR_WIN_4_CTRL_ADDR;
-    winBaseReg  = REG_XBAR_WIN_4_BASE_ADDR;
-    winRemapReg = REG_XBAR_WIN_4_REMAP_ADDR;
-    winJumpIndex = 0x10;
-    numOfWinRegs = 16;
+	winCtrlReg  = REG_XBAR_WIN_4_CTRL_ADDR;
+	winBaseReg  = REG_XBAR_WIN_4_BASE_ADDR;
+	winRemapReg = REG_XBAR_WIN_4_REMAP_ADDR;
+	winJumpIndex = 0x10;
+	numOfWinRegs = 16;
 #endif
-
-    /*  Close XBAR Window 19 - Not needed */
-	/*{0x000200e8}  -   Open Mbus Window - 2G */
+	/*  Close XBAR Window 19 - Not needed */
+	/* {0x000200e8}  -   Open Mbus Window - 2G */
 	MV_REG_WRITE(REG_XBAR_WIN_19_CTRL_ADDR, 0);
 
 	/* Save XBAR Windows 4-19 init configurations */
 	for (ui = 0; ui < numOfWinRegs; ui++)
 		auWinBackup[ui] = MV_REG_READ(winCtrlReg + 0x4 * ui);
 
-/*  Open XBAR Windows 4-7 or 16-19 for other CS */
+	/*  Open XBAR Windows 4-7 or 16-19 for other CS */
 	uiReg = 0;
 	uiTempCount = 0;
 	for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
@@ -309,16 +304,18 @@ static MV_VOID ddr3SaveAndSetTrainingWindows(MV_U32 *auWinBackup)
 			uiReg |= (1 << 0);
 			uiReg |= (SDRAM_CS_SIZE & 0xFFFF0000);
 
-            MV_REG_WRITE(winCtrlReg + winJumpIndex * uiTempCount, uiReg);
+			MV_REG_WRITE(winCtrlReg + winJumpIndex * uiTempCount, uiReg);
 			uiReg = (((SDRAM_CS_SIZE + 1) * (uiTempCount)) & 0xFFFF0000);
 			MV_REG_WRITE(winBaseReg + winJumpIndex * uiTempCount, uiReg);
-            if(winRemapReg <= REG_XBAR_WIN_7_REMAP_ADDR) {
-                MV_REG_WRITE(winRemapReg + winJumpIndex * uiTempCount, 0);
-            }
+
+			if(winRemapReg <= REG_XBAR_WIN_7_REMAP_ADDR)
+				MV_REG_WRITE(winRemapReg + winJumpIndex * uiTempCount, 0);
+
 			uiTempCount++;
 		}
 	}
 }
+#endif /*  !defined(STATIC_TRAINING) */
 /************************************************************************************
  * Name:     ddr3Init - Main DDR3 Init function
  * Desc:     This routine initialize the DDR3 MC and runs HW training.
@@ -330,13 +327,13 @@ MV_U32 ddr3Init_(void);
 MV_STATUS ddr3Init(void)
 {
 	unsigned int status;
-
 	ddr3LogLevelInit();
+#if !defined(MV88F68XX)
 	ddr3SetPbs(DDR3_PBS);
-    ddr3SetSwWlRlDebug(DDR3_RUN_SW_WHEN_HW_FAIL);
-
+	ddr3SetSwWlRlDebug(DDR3_RUN_SW_WHEN_HW_FAIL);
+#endif
 	status = ddr3Init_();
-/*	DEBUG_INIT_S("Status = ");*/
+	/* DEBUG_INIT_S("Status = ");*/
 	if (status == MV_DDR3_TRAINING_ERR_BAD_SAR)
 		DEBUG_INIT_S("DDR3 Training Error: Bad sample at reset");
 	if (status == MV_DDR3_TRAINING_ERR_BAD_DIMM_SETUP)
@@ -355,10 +352,8 @@ MV_STATUS ddr3Init(void)
 		DEBUG_INIT_S("DDR3 Training Error: TWSI bad type");
 	if (status == MV_DDR3_TRAINING_ERR_BUS_WIDTH_NOT_MATCH)
 		DEBUG_INIT_S("DDR3 Training Error: bus width no match");
-
-	if (status > MV_DDR3_TRAINING_ERR_HW_FAIL_BASE) {
+	if (status > MV_DDR3_TRAINING_ERR_HW_FAIL_BASE)
         DEBUG_INIT_C("DDR3 Training Error: HW Failure 0x", status, 8);
-    }
 
 	return status;
 }
@@ -366,46 +361,46 @@ MV_STATUS ddr3Init(void)
 
 void printDrrTargetFreq(MV_U32 uiCpuFreq, MV_U32 uiFabOpt)
 {
-    putstring("\nDDR3 Training Sequence - Run DDR3 at ");
-    switch (uiCpuFreq) {
+	putstring("\nDDR3 Training Sequence - Run DDR3 at ");
+	switch (uiCpuFreq) {
 #if defined(MV88F66XX) || defined(MV88F672X)
-    case 21:
-        putstring("533 Mhz\n");
-        break;
+		case 21:
+			putstring("533 Mhz\n");
+			break;
 #else
-    case 1:
-        putstring("533 Mhz\n");
-        break;
-    case 2:
-        if (uiFabOpt == 5)
-            putstring("600 Mhz\n");
-        if (uiFabOpt == 9)
-            putstring("400 Mhz\n");
-        break;
-    case 3:
-        putstring("667 Mhz\n");
-        break;
-    case 4:
-        if (uiFabOpt == 5)
-            putstring("750 Mhz\n");
-        if (uiFabOpt == 9)
-            putstring("500 Mhz\n");
-        break;
-    case 0xa:
-        putstring("400 Mhz\n");
-        break;
-    case 0xb:
-        if (uiFabOpt == 5)
-            putstring("800 Mhz\n");
-        if (uiFabOpt == 9)
-            putstring("553 Mhz\n");
-        if (uiFabOpt == 0xA)
-            putstring("640 Mhz\n");
-        break;
+		case 1:
+			putstring("533 Mhz\n");
+			break;
+		case 2:
+			if (uiFabOpt == 5)
+			putstring("600 Mhz\n");
+			if (uiFabOpt == 9)
+			putstring("400 Mhz\n");
+			break;
+		case 3:
+			putstring("667 Mhz\n");
+			break;
+		case 4:
+			if (uiFabOpt == 5)
+			putstring("750 Mhz\n");
+			if (uiFabOpt == 9)
+			putstring("500 Mhz\n");
+			break;
+		case 0xa:
+			putstring("400 Mhz\n");
+			break;
+		case 0xb:
+			if (uiFabOpt == 5)
+			putstring("800 Mhz\n");
+			if (uiFabOpt == 9)
+			putstring("553 Mhz\n");
+			if (uiFabOpt == 0xA)
+			putstring("640 Mhz\n");
+			break;
 #endif
-    default:
-        putstring("NOT DEFINED FREQ\n");
-    }
+		default:
+			putstring("NOT DEFINED FREQ\n");
+	}
 }
 
 
@@ -419,13 +414,17 @@ MV_U32 ddr3Init_(void)
 #endif
 #endif
 	MV_U32 uiReg = 0;
-	MV_U32 uiCpuFreq, uiFabOpt, uiHClkTimePs, socNum, uiScrubOffs, uiScrubSize;
+	MV_U32 uiCpuFreq, uiFabOpt, uiHClkTimePs, socNum;
+	MV_BOOL bPLLWAPatch = FALSE;
+#if !defined(MV88F68XX)
 	MV_U32 auWinBackup[16];
 	MV_BOOL bDQSCLKAligned = FALSE;
-	MV_BOOL bPLLWAPatch = FALSE;
 	MV_U32 uiDdrWidth = BUS_WIDTH;
+	MV_U32 uiScrubOffs, uiScrubSize;
+#endif
+#if !defined(STATIC_TRAINING) || defined (DUNIT_SPD)
 	MV_STATUS status;
-
+#endif
 	/* SoC/Board special Initializtions */
 
 	uiFabOpt = ddr3GetFabOpt();
@@ -452,8 +451,11 @@ MV_U32 ddr3Init_(void)
 		bPLLWAPatch = TRUE;
 	}
 #endif
-
+#if defined(MV88F68XX)
+	putstring("DDR3 Training Sequence - Ver Preliminary.0.");
+#else
 	ddr3PrintVersion();
+#endif
 	DEBUG_INIT_S("0\n");
 	/* Lib version 5.5.0 */
 
@@ -475,11 +477,9 @@ MV_U32 ddr3Init_(void)
 		break;
 	}
 	/* Power down deskew PLL */
-#ifndef MV88F66XX
-#ifndef MV88F672X
+#if !defined(MV88F66XX) && !defined(MV88F672X) && !defined(MV88F68XX)
 	uiReg = (MV_REG_READ(REG_DDRPHY_APLL_CTRL_ADDR) & ~(1 << 25)); /* 0x18780 [25]  */
 	MV_REG_WRITE(REG_DDRPHY_APLL_CTRL_ADDR, uiReg);
-#endif
 #endif
 	/************************************************************************************/
 	/* Stage 0 - Set board configuration                                                */
@@ -490,7 +490,7 @@ MV_U32 ddr3Init_(void)
     if (ddr3GetLogLevel() > 0) {
         printDrrTargetFreq(uiCpuFreq, uiFabOpt);
     }
-#if defined(MV88F66XX)  || defined(MV88F672X)
+#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX)
     getTargetFreq(uiCpuFreq, &uiTargetFreq, &uiHClkTimePs);
 #else
     uiTargetFreq = s_auiCpuDdrRatios[uiFabOpt][uiCpuFreq];
@@ -509,13 +509,14 @@ MV_U32 ddr3Init_(void)
 		}
 		return MV_DDR3_TRAINING_ERR_BAD_SAR;
 	}
-
+#if !defined(MV88F68XX)
 #if defined(ECC_SUPPORT)
 	uiScrubOffs = U_BOOT_START_ADDR;
 	uiScrubSize = U_BOOT_SCRUB_SIZE;
 #else
 	uiScrubOffs = 0;
 	uiScrubSize = 0;
+#endif
 #endif
 #ifndef RD_88F6710
 #if defined(MV88F78X60) || defined(ECC_SUPPORT )  || defined(DUNIT_SPD)
@@ -610,29 +611,26 @@ MV_U32 ddr3Init_(void)
 	 */
 	uiReg &= 0xFFFC0000;
 	uiReg |= 0x36924;
-
 	MV_REG_WRITE(REG_TRAINING_DEBUG_3_ADDR, uiReg);
-#endif
-
-	/* Set X-BAR windows for the training sequence */
-    ddr3SaveAndSetTrainingWindows(auWinBackup);
 	uiReg |= 0x36024;
 	MV_REG_WRITE(REG_TRAINING_DEBUG_3_ADDR, uiReg);
 	/* Memory interface initializations */
-#if defined(MV88F66XX) || defined(MV88F672X)
+#endif
+#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX)
 	/* AxiBrespMode[8] = Compliant, AxiAddrDecodeCntrl[11] = Internal, AxiDataBusWidth[0] = 128bit */
 	MV_REG_WRITE(REG_DRAM_AXI_CTRL_ADDR, 0);                /* 0x14A8 - AXI Control Register */
 #else
 	MV_REG_WRITE(REG_DRAM_AXI_CTRL_ADDR, 0x00000100);       /* 0x14A8 - AXI Control Register */
-    MV_REG_WRITE(REG_CDI_CONFIG_ADDR, 0x00000006);
+	MV_REG_WRITE(REG_CDI_CONFIG_ADDR, 0x00000006);
 
 	if ((uiDdrWidth == 64) && (MV_REG_READ(REG_DDR_IO_ADDR) & (1 << REG_DDR_IO_CLK_RATIO_OFFS))) {
 		MV_REG_WRITE(REG_DRAM_AXI_CTRL_ADDR, 0x00000101); /* 0x14A8 - AXI Control Register */
 		MV_REG_WRITE(REG_CDI_CONFIG_ADDR, 0x00000007);
 	}
 #endif
-#if !defined(MV88F67XX)
-/* ARMADA-370 activate DLB later at the u-boot*/
+
+#if !defined(MV88F67XX) && !defined(MV88F68XX)
+/* ARMADA-370 activate DLB later at the u-boot, Armada38x - No DLB activation at this time */
 MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 #if defined(MV88F78X60)
 /* WA according to eratta GL-8672902*/
@@ -648,7 +646,6 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 	MV_REG_WRITE(FABRIC_UNITS_PRIORITY_CONTROL_REG, 0xAA);
 	MV_REG_WRITE(MBUS_UNITS_PREFETCH_CONTROL_REG, 0xffff);
 	MV_REG_WRITE(FABRIC_UNITS_PREFETCH_CONTROL_REG, 0xf0f);
-
 #if defined(MV88F78X60)
 /* WA according to eratta GL-8672902*/
 	if (mvCtrlRevGet() == MV_78XX0_B0_REV) {
@@ -664,11 +661,18 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 	/************************************************************************************/
 	/* Stage 2 - Training Values Setup                                                  */
 	/************************************************************************************/
+	/* DRAM Init - After all the D-unit values are set, its time to init the D-unit */
+	/* Wait for '0' */
+	MV_REG_WRITE(REG_SDRAM_INIT_CTRL_ADDR, 0x1);
+	do
+		uiReg = ((MV_REG_READ(REG_SDRAM_INIT_CTRL_ADDR)) & (1 << REG_SDRAM_INIT_CTRL_OFFS));
+	while (uiReg);
+
 #ifdef STATIC_TRAINING
 	/* ddr3 init using static parameters - HW training is disabled */
 	DEBUG_INIT_FULL_S("DDR3 Training Sequence - Static Training Parameters \n");
 	ddr3StaticTrainingInit();
-
+#if defined(MV88F78X60)
 	/* if ECC is enabled, need to scrub the U-Boot area memory region - Run training function with Xor bypass
 	   just to scrub the memory */
 	status = ddr3HwTraining(uiTargetFreq, uiDdrWidth,
@@ -677,7 +681,11 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 		DEBUG_INIT_FULL_S("DDR3 Training Sequence - FAILED  \n");
 		return status;
 	}
+#endif
 #else
+	/* Set X-BAR windows for the training sequence */
+	ddr3SaveAndSetTrainingWindows(auWinBackup);
+
 	/* Run DDR3 Training Sequence */
 	/* DRAM Init */
 	MV_REG_WRITE(REG_SDRAM_INIT_CTRL_ADDR, 0x1);
@@ -685,10 +693,6 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 		uiReg = ((MV_REG_READ(REG_SDRAM_INIT_CTRL_ADDR)) & (1 << REG_SDRAM_INIT_CTRL_OFFS));
 	while (uiReg);              /* Wait for '0' */
 
-#if defined(MV88F78X60_Z1)
-	/* MRS Command - required for AXP Z1 devices and A370 - only one set of MR registers */
-	ddr3MRSCommand(0, 0, ddr3GetCSNumFromReg(), ddr3GetCSEnaFromReg());
-#endif
 	/* ddr3 init using DDR3 HW training procedure */
 	DEBUG_INIT_FULL_S("DDR3 Training Sequence - HW Training Procedure \n");
 	status = ddr3HwTraining(uiTargetFreq, uiDdrWidth,
@@ -707,16 +711,15 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 	uiReg = (MV_REG_READ(REG_SDRAM_CONFIG_ADDR) & ~(1 << REG_SDRAM_CONFIG_IERR_OFFS));
 	MV_REG_WRITE(REG_SDRAM_CONFIG_ADDR, uiReg);
 #endif
-
+#if !defined(STATIC_TRAINING)
 	/* Restore and set windows */
-	//yelena - enable this function after fat path is open
 	ddr3RestoreAndSetFinalWindows(auWinBackup);
-
+#endif
 	/* Update DRAM init indication in bootROM register */
 	uiReg = MV_REG_READ(REG_BOOTROM_ROUTINE_ADDR);
 	MV_REG_WRITE(REG_BOOTROM_ROUTINE_ADDR, uiReg | (1 << REG_BOOTROM_ROUTINE_DRAM_INIT_OFFS));
 
-#if !defined(MV88F67XX)
+#if !defined(MV88F67XX) && !defined(MV88F68XX)
 #if defined(MV88F78X60)
 	if (mvCtrlRevGet() == MV_78XX0_B0_REV) {
 		uiReg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
@@ -752,7 +755,7 @@ MV_U32 ddr3GetCpuFreq(void)
 {
 	MV_U32 uiReg, uiCpuFreq;
 
-#if defined(MV88F66XX) || defined(MV88F672X)
+#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX)
 	/* Read sample at reset setting */
 	uiReg = MV_REG_READ(REG_SAMPLE_RESET_HIGH_ADDR); /* 0xE8200 */
 	uiCpuFreq = ((uiReg & REG_SAMPLE_RESET_CPU_FREQ_MASK) >> REG_SAMPLE_RESET_CPU_FREQ_OFFS);
@@ -783,11 +786,13 @@ MV_U32 ddr3GetFabOpt(void)
 {
 #ifndef MV88F66XX
 #ifndef MV88F672X
+#ifndef MV88F68XX
 	MV_U32 uiReg, uiFabOpt;
 #endif
 #endif
+#endif
 
-#if  defined(MV88F66XX) || defined(MV88F672X)
+#if  defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX)
 	return 0; /* No fabric */
 #else
 	/* Read sample at reset setting */
@@ -889,34 +894,14 @@ MV_VOID ddr3MRSCommand(MV_U32 uiMR1Value, MV_U32 uiMR2Value, MV_U32 uiCsNum, MV_
  */
 MV_VOID ddr3StaticTrainingInit()
 {
-	MV_U32 uiReg, chipId, ddrMode;
+	MV_U32 uiReg, ddrMode;
 	int j;
-
-#ifdef RD_88F78460_SERVER
-	/* Set MPP as GPIO */
-	reg = (MV_REG_READ(MPP_CONTROL_REG(2)) & 0xFFFF0000);
-	MV_REG_WRITE(MPP_CONTROL_REG(2), reg);
-
-	/* Set data out disable */
-	reg = (MV_REG_READ(GPP_DATA_OUT_EN_REG(0)) | 0xF0000);
-	MV_REG_WRITE(GPP_DATA_OUT_EN_REG(0), reg);
-#if 0
-	/* Set data in polarity */
-	reg = (MV_REG_READ(GPP_DATA_IN_POL_REG(0)) | 0xF0000);
-	MV_REG_WRITE(GPP_DATA_IN_POL_REG(0), reg);
-#endif
-	/* read chip ID */
-	chipId = ((MV_REG_READ(GPP_DATA_IN_REG(0)) >> 16) & 0xF);
-	chipBoardRev = Z1_RD_SLED;
-#else
-	chipId = 0x0;
-#endif
 
 	ddrMode = ddr3GetStaticDdrMode();
 
 	j = 0;
 	while (ddr_modes[ddrMode].vals[j].reg_addr != 0) {
-        uDelay(1000); /* haim want to delay each write */
+		mvOsDelay(10); //uDelay(1000); /* haim want to delay each write */
 		MV_REG_WRITE(ddr_modes[ddrMode].vals[j].reg_addr, ddr_modes[ddrMode].vals[j].reg_value);
 		if (ddr_modes[ddrMode].vals[j].reg_addr == REG_PHY_REGISTRY_FILE_ACCESS_ADDR)
 			do
@@ -975,6 +960,8 @@ MV_U32 ddr3GetStaticDdrMode(void)
 	chipBoardRev = A0_RD;
 #elif defined (MV88F66XX) || defined(MV88F672X)
 	chipBoardRev = mvBoardIdGet();
+#elif defined(MV88F68XX)
+	chipBoardRev = 0;
 #else
 	chipBoardRev = A0;
 #endif
@@ -1000,13 +987,18 @@ MV_U32 ddr3GetStaticDdrMode(void)
  */
 MV_VOID ddr3StaticMCInit(void)
 {
-	MV_U32 ddrMode;
+	MV_U32 ddrMode, uiReg;
 	int j;
 
 	ddrMode = ddr3GetStaticDdrMode();
 	j = 0;
 	while (ddr_modes[ddrMode].regs[j].reg_addr != 0) {
 		MV_REG_WRITE(ddr_modes[ddrMode].regs[j].reg_addr, ddr_modes[ddrMode].regs[j].reg_value);
+		if (ddr_modes[ddrMode].regs[j].reg_addr == REG_PHY_REGISTRY_FILE_ACCESS_ADDR)
+			do
+				uiReg = ((MV_REG_READ(REG_PHY_REGISTRY_FILE_ACCESS_ADDR)) &
+						REG_PHY_REGISTRY_FILE_ACCESS_OP_DONE);
+			while (uiReg);
 		j++;
 	}
 }
@@ -1266,7 +1258,7 @@ MV_VOID     printDunitSetup(MV_VOID)
 #endif
 	DEBUG_DUNIT_REG(REG_SDRAM_CONFIG_ADDR);
 	DEBUG_DUNIT_REG(REG_DUNIT_CTRL_LOW_ADDR);
-    DEBUG_DUNIT_REG(REG_SDRAM_TIMING_LOW_ADDR);
+	DEBUG_DUNIT_REG(REG_SDRAM_TIMING_LOW_ADDR);
 	DEBUG_DUNIT_REG(REG_SDRAM_TIMING_HIGH_ADDR);
 	DEBUG_DUNIT_REG(REG_SDRAM_ADDRESS_CTRL_ADDR);
 	DEBUG_DUNIT_REG(REG_SDRAM_OPEN_PAGES_ADDR);
@@ -1275,8 +1267,8 @@ MV_VOID     printDunitSetup(MV_VOID)
 	DEBUG_DUNIT_REG(REG_SDRAM_EXT_MODE_ADDR);
 	DEBUG_DUNIT_REG(REG_DDR_CONT_HIGH_ADDR);
 	DEBUG_DUNIT_REG(REG_ODT_TIME_LOW_ADDR);
-    DEBUG_DUNIT_REG(REG_SDRAM_ERROR_ADDR);
-    DEBUG_DUNIT_REG(REG_SDRAM_AUTO_PWR_SAVE_ADDR);
+	DEBUG_DUNIT_REG(REG_SDRAM_ERROR_ADDR);
+	DEBUG_DUNIT_REG(REG_SDRAM_AUTO_PWR_SAVE_ADDR);
 	DEBUG_DUNIT_REG(REG_OUDDR3_TIMING_ADDR);
 	DEBUG_DUNIT_REG(REG_ODT_TIME_HIGH_ADDR);
 	DEBUG_DUNIT_REG(REG_SDRAM_ODT_CTRL_LOW_ADDR);
@@ -1287,11 +1279,11 @@ MV_VOID     printDunitSetup(MV_VOID)
 	DEBUG_DUNIT_REG(REG_DRAM_AXI_CTRL_ADDR);
 	DEBUG_DUNIT_REG(REG_DRAM_ADDR_CTRL_DRIVE_STRENGTH_ADDR);
 	DEBUG_DUNIT_REG(REG_DRAM_DATA_DQS_DRIVE_STRENGTH_ADDR);
-    DEBUG_DUNIT_REG(REG_DRAM_VER_CAL_MACHINE_CTRL_ADDR);
-    DEBUG_DUNIT_REG(REG_DRAM_MAIN_PADS_CAL_ADDR);
-    DEBUG_DUNIT_REG(REG_DRAM_HOR_CAL_MACHINE_CTRL_ADDR);
+	DEBUG_DUNIT_REG(REG_DRAM_VER_CAL_MACHINE_CTRL_ADDR);
+	DEBUG_DUNIT_REG(REG_DRAM_MAIN_PADS_CAL_ADDR);
+	DEBUG_DUNIT_REG(REG_DRAM_HOR_CAL_MACHINE_CTRL_ADDR);
 	DEBUG_DUNIT_REG(REG_CS_SIZE_SCRATCH_ADDR);
-    DEBUG_DUNIT_REG(REG_DYNAMIC_POWER_SAVE_ADDR);
+	DEBUG_DUNIT_REG(REG_DYNAMIC_POWER_SAVE_ADDR);
 	DEBUG_DUNIT_REG(REG_READ_DATA_SAMPLE_DELAYS_ADDR);
 	DEBUG_DUNIT_REG(REG_READ_DATA_READY_DELAYS_ADDR);
 	DEBUG_DUNIT_REG(REG_DDR3_MR0_ADDR);
@@ -1305,19 +1297,19 @@ MV_VOID     printDunitSetup(MV_VOID)
 	DEBUG_DUNIT_REG(DLB_AGING_REGISTER);
 	DEBUG_DUNIT_REG(DLB_EVICTION_CONTROL_REG);
 	DEBUG_DUNIT_REG(DLB_EVICTION_TIMERS_REGISTER_REG);
-    #if defined(MV88F66XX)
+#if defined(MV88F66XX)
 	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_CTRL_ADDR(0));
-    DEBUG_DUNIT_REG(REG_FASTPATH_WIN_BASE_ADDR(0));
-    DEBUG_DUNIT_REG(REG_FASTPATH_WIN_CTRL_ADDR(1));
-    DEBUG_DUNIT_REG(REG_FASTPATH_WIN_BASE_ADDR(1));
-	#elif defined(MV88F672X)
+	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_BASE_ADDR(0));
+	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_CTRL_ADDR(1));
+	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_BASE_ADDR(1));
+#elif defined(MV88F672X) || defined(MV88F68XX)
 	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_CTRL_ADDR(0));
-    DEBUG_DUNIT_REG(REG_FASTPATH_WIN_BASE_ADDR(0));
-    DEBUG_DUNIT_REG(REG_FASTPATH_WIN_CTRL_ADDR(1));
-    DEBUG_DUNIT_REG(REG_FASTPATH_WIN_BASE_ADDR(1));
-    #else
-    DEBUG_DUNIT_REG(REG_FASTPATH_WIN_0_CTRL_ADDR);
-    #endif
+	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_BASE_ADDR(0));
+	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_CTRL_ADDR(1));
+	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_BASE_ADDR(1));
+#else
+	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_0_CTRL_ADDR);
+#endif
 	DEBUG_DUNIT_REG(REG_CDI_CONFIG_ADDR);
 #endif
 }
@@ -1325,88 +1317,108 @@ MV_VOID     printDunitSetup(MV_VOID)
 #if defined(MV88F66XX)  || defined(MV88F672X)
 MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs)
 {
-    MV_U32 tmp, hclk;
-
-    switch(uiFreqMode)
-    {
-    case CPU_333MHz_DDR_167MHz_L2_167MHz:
-        hclk = 84;
-        tmp = DDR_100;
-        break;
-    case CPU_266MHz_DDR_266MHz_L2_133MHz:
-    case CPU_333MHz_DDR_222MHz_L2_167MHz:
-    case CPU_400MHz_DDR_200MHz_L2_200MHz:
-    case CPU_400MHz_DDR_267MHz_L2_200MHz:
-    case CPU_533MHz_DDR_267MHz_L2_267MHz:
-    case CPU_500MHz_DDR_250MHz_L2_250MHz:
-    case CPU_600MHz_DDR_300MHz_L2_300MHz:
-    case CPU_800MHz_DDR_267MHz_L2_400MHz:
-    case CPU_900MHz_DDR_300MHz_L2_450MHz:
-        tmp = DDR_300;
-        hclk = 150;
-        break;
-
-    case CPU_333MHz_DDR_333MHz_L2_167MHz:
-    case CPU_500MHz_DDR_334MHz_L2_250MHz:
-    case CPU_666MHz_DDR_333MHz_L2_333MHz:
-        tmp = DDR_333;
-        hclk = 165;
-        break;
-
-    case CPU_533MHz_DDR_356MHz_L2_267MHz:
-        tmp = DDR_360;
-        hclk = 180;
-        break;
-
-    case CPU_400MHz_DDR_400MHz_L2_200MHz:
-    case CPU_600MHz_DDR_400MHz_L2_300MHz:
-    case CPU_800MHz_DDR_400MHz_L2_400MHz:
-    case CPU_400MHz_DDR_400MHz_L2_400MHz:
-        tmp = DDR_400;
-        hclk = 200;
-        break;
-
-    case CPU_666MHz_DDR_444MHz_L2_333MHz:
-    case CPU_900MHz_DDR_450MHz_L2_450MHz:
-        tmp = DDR_444;
-        hclk = 222;
-        break;
-
-    case CPU_500MHz_DDR_500MHz_L2_250MHz:
-    case CPU_1000MHz_DDR_500MHz_L2_500MHz:
-    case CPU_1000MHz_DDR_500MHz_L2_333MHz:
-        tmp = DDR_500;
-        hclk = 250;
-        break;
-
-    case CPU_533MHz_DDR_533MHz_L2_267MHz:
-    case CPU_800MHz_DDR_534MHz_L2_400MHz:
-    case CPU_1100MHz_DDR_550MHz_L2_550MHz:
-        tmp = DDR_533;
-        hclk = 267;
-        break;
-
-    case CPU_600MHz_DDR_600MHz_L2_300MHz:
-    case CPU_900MHz_DDR_600MHz_L2_450MHz:
-    case CPU_1200MHz_DDR_600MHz_L2_600MHz:
-        tmp = DDR_600;
-        hclk = 300;
-        break;
-
-    case CPU_666MHz_DDR_666MHz_L2_333MHz:
-    case CPU_1000MHz_DDR_667MHz_L2_500MHz:
-        tmp = DDR_666;
-        hclk = 333;
-        break;
-
-    default:
-        *ddrFreq = 0;
-        *hclkPs = 0;
-        break;
-    }
-    *ddrFreq = tmp; /* DDR freq define */
-    *hclkPs = 1000000/hclk; /* values are 1/HCLK in ps */
-    return;
+	MV_U32 tmp, hclk;
+	switch(uiFreqMode)
+	{
+		case CPU_333MHz_DDR_167MHz_L2_167MHz:
+			hclk = 84;
+			tmp = DDR_100;
+			break;
+		case CPU_266MHz_DDR_266MHz_L2_133MHz:
+		case CPU_333MHz_DDR_222MHz_L2_167MHz:
+		case CPU_400MHz_DDR_200MHz_L2_200MHz:
+		case CPU_400MHz_DDR_267MHz_L2_200MHz:
+		case CPU_533MHz_DDR_267MHz_L2_267MHz:
+		case CPU_500MHz_DDR_250MHz_L2_250MHz:
+		case CPU_600MHz_DDR_300MHz_L2_300MHz:
+		case CPU_800MHz_DDR_267MHz_L2_400MHz:
+		case CPU_900MHz_DDR_300MHz_L2_450MHz:
+			tmp = DDR_300;
+			hclk = 150;
+			break;
+		case CPU_333MHz_DDR_333MHz_L2_167MHz:
+		case CPU_500MHz_DDR_334MHz_L2_250MHz:
+		case CPU_666MHz_DDR_333MHz_L2_333MHz:
+			tmp = DDR_333;
+			hclk = 165;
+			break;
+		case CPU_533MHz_DDR_356MHz_L2_267MHz:
+			tmp = DDR_360;
+			hclk = 180;
+			break;
+		case CPU_400MHz_DDR_400MHz_L2_200MHz:
+		case CPU_600MHz_DDR_400MHz_L2_300MHz:
+		case CPU_800MHz_DDR_400MHz_L2_400MHz:
+		case CPU_400MHz_DDR_400MHz_L2_400MHz:
+			tmp = DDR_400;
+			hclk = 200;
+			break;
+		case CPU_666MHz_DDR_444MHz_L2_333MHz:
+		case CPU_900MHz_DDR_450MHz_L2_450MHz:
+			tmp = DDR_444;
+			hclk = 222;
+			break;
+		case CPU_500MHz_DDR_500MHz_L2_250MHz:
+		case CPU_1000MHz_DDR_500MHz_L2_500MHz:
+		case CPU_1000MHz_DDR_500MHz_L2_333MHz:
+			tmp = DDR_500;
+			hclk = 250;
+			break;
+		case CPU_533MHz_DDR_533MHz_L2_267MHz:
+		case CPU_800MHz_DDR_534MHz_L2_400MHz:
+		case CPU_1100MHz_DDR_550MHz_L2_550MHz:
+			tmp = DDR_533;
+			hclk = 267;
+			break;
+		case CPU_600MHz_DDR_600MHz_L2_300MHz:
+		case CPU_900MHz_DDR_600MHz_L2_450MHz:
+		case CPU_1200MHz_DDR_600MHz_L2_600MHz:
+			tmp = DDR_600;
+			hclk = 300;
+			break;
+		case CPU_666MHz_DDR_666MHz_L2_333MHz:
+		case CPU_1000MHz_DDR_667MHz_L2_500MHz:
+			tmp = DDR_666;
+			hclk = 333;
+			break;
+		default:
+		*ddrFreq = 0;
+		*hclkPs = 0;
+		break;
+	}
+	*ddrFreq = tmp; /* DDR freq define */
+	*hclkPs = 1000000/hclk; /* values are 1/HCLK in ps */
+	return;
 }
 #endif
+
+#if defined(MV88F68XX)
+MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs)
+{
+	MV_U32 tmp, hclk;
+
+	switch(uiFreqMode)
+	{
+		case 4:
+			tmp = 1; //DDR_400;
+			hclk = 200;
+			break;
+		case 0x8:
+			tmp = 1; //DDR_666;
+			hclk = 333;
+			break;
+		case 0xc:
+			tmp = 1; //DDR_800;
+			hclk = 400;
+			break;
+		default:
+			*ddrFreq = 0;
+			*hclkPs = 0;
+			break;
+	}
+	*ddrFreq = tmp; /* DDR freq define */
+	*hclkPs = 1000000/hclk; /* values are 1/HCLK in ps */
+		return;
+}
+
 #endif

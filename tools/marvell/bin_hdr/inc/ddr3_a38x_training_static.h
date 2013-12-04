@@ -41,17 +41,37 @@
 
 #ifndef __ddr3_a38x_training_static_H
 #define __ddr3_a38x_training_static_H
-
+#if 0
 #include <gtOs/gtGenTypes.h>
 #include <ddr3/trainingIp/mvDdr3TrainingIpStatic.h>
 #include <ddr3/trainingIp/mvDdr3TrainingIp.h>
-
+#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* STATIC_TRAINING - Set only if static parameters for training are set and required */
+/*#define STATIC_TRAINING */
+typedef struct __mvDramTrainingInit {
+	MV_U32 reg_addr;
+	MV_U32 reg_value;
+} MV_DRAM_TRAINING_INIT;
 
+MV_DRAM_TRAINING_INIT ddr3_db_a38x[MV_MAX_DDR3_STATIC_SIZE] =
+{
+    /*HW mechanizem*/
+    /* WL training*/
+	{0x000015B0, 0x80100008},
+	/* Preload training pattern to DRAM*/
+	{0x000015B0, 0x80100002},
+	/* Read Leveling using training pattern at high frequency*/
+	{0x000015B0, 0x80100040},
+	{0x000200e8, 0x0},		/* RL */
+	{0x00020184, 0x0FFFFFE1},	/* RL */
+	{0x0, 0x0}
+};
 
+#if 0
 static MV_HWS_TOPOLOGY_MAP A38xTopologyMap[] =
 {
     /* 1st board */
@@ -145,6 +165,7 @@ GT_STATUS ddr3TipInitA38x
     GT_U32  devNum,
     GT_U32  boardId
 );
+#endif
 
 #ifdef __cplusplus
 }

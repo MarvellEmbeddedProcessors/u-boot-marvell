@@ -113,6 +113,7 @@ typedef enum _devBoardClass {
 typedef enum _devTwsiBoardClass {
 	BOARD_DEV_TWSI_SATR,
 	BOARD_TWSI_MODULE_DETECT,
+	BOARD_TWSI_IO_EXPANDER,
 	BOARD_TWSI_OTHER
 } MV_BOARD_TWSI_CLASS;
 
@@ -290,6 +291,12 @@ typedef struct {
 	MV_U32 val;
 } MV_BOARD_SPEC_INIT;
 
+struct MV_BOARD_IO_EXPANDER {
+	MV_U8 addr;
+	MV_U8 offset;
+	MV_U8 val;
+};
+
 typedef struct _boardInfo {
 	char boardName[MV_BOARD_NAME_LEN];
 	MV_U8 numBoardMppTypeValue;
@@ -355,6 +362,8 @@ typedef struct _boardInfo {
 	/* Indicates if auto-detection of modules is enabled on this board. */
 	/* Set to MV_FALSE for any board that is not a DB. */
 	MV_BOOL configAutoDetect;
+	MV_U32	numIoExp;
+	struct MV_BOARD_IO_EXPANDER *pIoExp;
 } MV_BOARD_INFO;
 
 /* {{MV_CONFIG_TYPE_ID ConfigID, twsi-ID,  Offset, ID,  isActiveForBoard[]}} */
@@ -499,6 +508,7 @@ MV_U8 mvBoardCpuCoresNumGet(MV_VOID);
 MV_VOID mvBoardMppModuleTypePrint(MV_VOID);
 MV_VOID mvBoardOtherModuleTypePrint(MV_VOID);
 MV_BOOL mvBoardIsModuleConnected(MV_U32 ModuleID);
+MV_STATUS mvBoardIoExpanderUpdate(MV_VOID);
 
 MV_STATUS mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);
 MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);

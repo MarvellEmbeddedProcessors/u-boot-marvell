@@ -829,6 +829,10 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 	MV_U32 devId;
 	MV_U16 model = 0;
 	MV_U32 reg, reg2;
+	static MV_U16 modelId = 0x0;
+
+	if (modelId != 0x0)
+		return modelId;
 
 	/* if PEX0 clocks are disabled - enabled it to read */
 	reg = MV_REG_READ(POWER_MNG_CTRL_REG);
@@ -846,6 +850,7 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 
 	model = (MV_U16) ((devId >> 16) & 0xFFFF);
 
+	modelId = model;
 	return model;
 }
 

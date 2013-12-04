@@ -79,7 +79,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 
-#define	SERDES_VERION	"2.1.4"
+#define	SERDES_VERION	"2.1.5"
 #define ENDED_OK "High speed PHY - Ended Successfully\n"
 static const MV_U8 serdesCfg[][SERDES_LAST_UNIT] = BIN_SERDES_CFG;
 			   
@@ -91,13 +91,17 @@ MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
 /***************************   defined ******************************/
 #define MV_BOARD_PEX_MODULE_ADDR		0x23
 #define MV_BOARD_PEX_MODULE_ADDR_TYPE	ADDR7_BIT
-#define MV_BOARD_PEX_MODULE_ID			0
+#define MV_BOARD_PEX_MODULE_ID			1
+#define MV_BOARD_ETM_MODULE_ID			2
+
+#define	PEX_MODULE_DETECT		1
+#define	ETM_MODULE_DETECT               2
 /*******************************************************/
 #define mvBoardPexModeGet(satr) 		((satr & 0x6) >> 1)
 #define mvBoardPexCapabilityGet(satr) 	(satr & 1)
 #define MV_PEX_UNIT_TO_IF(pexUnit)	((pexUnit < 3) ? (pexUnit*4) : 9)
 /******************   Static parametes ******************************/
-MV_BOOL PexModule = 0;
+MV_BOOL configModule = 0;
 MV_BOOL SwitchModule = 0;
 
 /****************************  Local function *****************************************/
@@ -209,7 +213,7 @@ MV_STATUS mvBoardModulesScan(void)
 	/* Perform scan only for DB board */
 	if ( (boardId == DB_88F78XX0_BP_ID) || (boardId == DB_88F78XX0_BP_REV2_ID) ) {
 		/* reset modules flags */
-		PexModule = 0;
+		configModule = 0;
         /* TWSI init */
         slave.type = ADDR7_BIT;
         slave.address = 0;
@@ -223,7 +227,9 @@ MV_STATUS mvBoardModulesScan(void)
 		twsiSlave.moreThen256 = MV_FALSE;
 		if (mvTwsiRead(0, &twsiSlave, &regVal, 1) == MV_OK) {
 			if (regVal == MV_BOARD_PEX_MODULE_ID)
-				PexModule = 1;			
+				configModule = PEX_MODULE_DETECT;
+			if (regVal == MV_BOARD_ETM_MODULE_ID)
+				configModule = ETM_MODULE_DETECT;
 		}
 		
 	} else if (boardId == RD_78460_NAS_ID) {
@@ -236,7 +242,7 @@ MV_STATUS mvBoardModulesScan(void)
 /*********************************************************************/
 MV_BOOL mvBoardIsPexModuleConnected(void)
 {
-        return PexModule;
+        return configModule & (ETM_MODULE_DETECT | PEX_MODULE_DETECT);
 }
 /*******************************************************************************/
 MV_U16 mvBoardDramBusWidthGet(MV_VOID)
@@ -341,17 +347,26 @@ MV_BIN_SERDES_CFG *mvBoardSerdesCfgGet(MV_U8 pexMode)
 			serdesCfg_val = 1;
 		break;
 	case DB_88F78XX0_BP_REV2_ID:
-		if ( (!moduleConnected) && (pex0 == 1)) /*if the module is not connected the PEX1 mode is not relevant*/
-			serdesCfg_val = 0;
-		if ( (moduleConnected) && (pex0 == 1) && (pex1 == 1))
+		if (0 == moduleConnected) { /*if the module is not connected */
+			if (pex0 == 1) 		/*if the module is not connected the PEX1 mode is not relevant*/
+				serdesCfg_val = 0;
+			if (pex0 == 4)  	/*if the module is not connected the PEX1 mode is not relevant*/
+				serdesCfg_val = 2;
+			break;
+		}
+		/*if the ETM module is connected */
+		if (moduleConnected & MV_BOARD_ETM_MODULE_ID) {
+			serdesCfg_val = 5;
+			break;
+		}
+		/*if the PEX module is connected */
+		if ((pex0 == 1) && (pex1 == 1))
 			serdesCfg_val = 1;
-		if ( (!moduleConnected) && (pex0 == 4))  /*if the module is not connected the PEX1 mode is not relevant*/
-			serdesCfg_val = 2;
-		if ( (moduleConnected) && (pex0 == 4) && (pex1 == 1))
+		if ((pex0 == 4) && (pex1 == 1))
 			serdesCfg_val = 3;
-		if ( (moduleConnected) && (pex0 == 1) && (pex1 == 4))
+		if ((pex0 == 1) && (pex1 == 4))
 			serdesCfg_val = 4;
-		if ( (moduleConnected) && (pex0 == 4) && (pex1 == 4))
+		if ((pex0 == 4) && (pex1 == 4))
 			serdesCfg_val = 5;
 		break;
 	case DB_784MP_GP_ID:
@@ -604,10 +619,44 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	}
 /**********************************************************************************/
 	pSerdesInfo = mvBoardSerdesCfgGet(mvBoardPexModeGet(satr11));
+	DEBUG_INIT_FULL_S("pSerdesInfo->serdesLine0_7= 0x");
+	DEBUG_INIT_D(pSerdesInfo->serdesLine0_7, 8);
+	DEBUG_INIT_FULL_S("   pSerdesInfo->serdesLine8_15= 0x");
+	DEBUG_INIT_D(pSerdesInfo->serdesLine8_15, 8);
+	DEBUG_INIT_S("\n");
+
 	if (pSerdesInfo == NULL){
 		DEBUG_INIT_S("Hight speed PHY Error #1\n");
 		return MV_ERROR;
 	}
+	if (configModule & ETM_MODULE_DETECT) { /* step 0.9 ETM*/
+		DEBUG_INIT_FULL_S("ETM module detect Step 0.9:\n");
+		MV_REG_WRITE(SERDES_LINE_MUX_REG_0_7, 0x11111111);
+		DEBUG_WR_REG(SERDES_LINE_MUX_REG_0_7, 0x11111111);
+		pSerdesInfo->pexMod[1] = PEX_BUS_DISABLED; /* pex unit 1 is configure for ETM*/
+		mvOsDelay(100);
+		MV_REG_WRITE(PEX_PHY_ACCESS_REG(1), (0x002 << 16) | 0xf44d);	/* SETM0 - start calibration         */
+		DEBUG_WR_REG(PEX_PHY_ACCESS_REG(1), (0x002 << 16) | 0xf44d);	/* SETM0 - start calibration         */
+		MV_REG_WRITE(PEX_PHY_ACCESS_REG(1), (0x302 << 16) | 0xf44d);	/* SETM1 - start calibration         */
+		DEBUG_WR_REG(PEX_PHY_ACCESS_REG(1), (0x302 << 16) | 0xf44d);	/* SETM1 - start calibration         */
+		MV_REG_WRITE(PEX_PHY_ACCESS_REG(1), (0x001 << 16) | 0xf801);    /* SETM0 - SATA mode & 25MHz ref clk */
+		DEBUG_WR_REG(PEX_PHY_ACCESS_REG(1), (0x001 << 16) | 0xf801);    /* SETM0 - SATA mode & 25MHz ref clk */
+		MV_REG_WRITE(PEX_PHY_ACCESS_REG(1), (0x301 << 16) | 0xf801);    /* SETM1 - SATA mode & 25MHz ref clk */
+		DEBUG_WR_REG(PEX_PHY_ACCESS_REG(1), (0x301 << 16) | 0xf801);    /* SETM1 - SATA mode & 25MHz ref clk */
+		MV_REG_WRITE(PEX_PHY_ACCESS_REG(1), (0x011 << 16) | 0x0BFF);    /* SETM0 - G3 full swing AMP         */
+		DEBUG_WR_REG(PEX_PHY_ACCESS_REG(1), (0x011 << 16) | 0x0BFF);    /* SETM0 - G3 full swing AMP         */
+		MV_REG_WRITE(PEX_PHY_ACCESS_REG(1), (0x311 << 16) | 0x0BFF);    /* SETM1 - G3 full swing AMP         */
+		DEBUG_WR_REG(PEX_PHY_ACCESS_REG(1), (0x311 << 16) | 0x0BFF);    /* SETM1 - G3 full swing AMP         */
+		MV_REG_WRITE(PEX_PHY_ACCESS_REG(1), (0x023 << 16) | 0x0800);    /* SETM0 - 40 data bit width         */
+		DEBUG_WR_REG(PEX_PHY_ACCESS_REG(1), (0x023 << 16) | 0x0800);    /* SETM0 - 40 data bit width         */
+		MV_REG_WRITE(PEX_PHY_ACCESS_REG(1), (0x323 << 16) | 0x0800);    /* SETM1 - 40 data bit width         */
+		DEBUG_WR_REG(PEX_PHY_ACCESS_REG(1), (0x323 << 16) | 0x0800);    /* SETM1 - 40 data bit width         */
+		MV_REG_WRITE(PEX_PHY_ACCESS_REG(1), (0x046 << 16) | 0x0400);    /* lane0(serdes4)                    */
+		DEBUG_WR_REG(PEX_PHY_ACCESS_REG(1), (0x046 << 16) | 0x0400);    /* lane0(serdes4)                    */
+		MV_REG_WRITE(PEX_PHY_ACCESS_REG(1), (0x346 << 16) | 0x0400);    /* lane3(serdes7)                    */
+		DEBUG_WR_REG(PEX_PHY_ACCESS_REG(1), (0x346 << 16) | 0x0400);    /* lane3(serdes7)                    */
+	}
+
 	/* STEP -1 [PEX-Only] First phase of PEX-PIPE Configuration:*/
 	/*----------------------------------------------*/
 	DEBUG_INIT_FULL_S("Step 1: First phase of PEX-PIPE Configuration\n");
@@ -707,8 +756,14 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	/* Step 4 - configure SERDES MUXes */
 	/*----------------------------------------------*/
 	DEBUG_INIT_FULL_S("Step 4: Configure SERDES MUXes \n");
-	MV_REG_WRITE(SERDES_LINE_MUX_REG_0_7,  pSerdesInfo->serdesLine0_7);
-	DEBUG_WR_REG(SERDES_LINE_MUX_REG_0_7,  pSerdesInfo->serdesLine0_7);
+	if (configModule & ETM_MODULE_DETECT) {
+		MV_REG_WRITE(SERDES_LINE_MUX_REG_0_7, 0x40041111);
+		DEBUG_WR_REG(SERDES_LINE_MUX_REG_0_7, 0x40041111);
+	}
+	else {
+		MV_REG_WRITE(SERDES_LINE_MUX_REG_0_7,  pSerdesInfo->serdesLine0_7);
+		DEBUG_WR_REG(SERDES_LINE_MUX_REG_0_7,  pSerdesInfo->serdesLine0_7);
+	}
 	MV_REG_WRITE(SERDES_LINE_MUX_REG_8_15, pSerdesInfo->serdesLine8_15);
 	DEBUG_WR_REG(SERDES_LINE_MUX_REG_8_15, pSerdesInfo->serdesLine8_15);
 

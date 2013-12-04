@@ -63,7 +63,7 @@ Copyright (C) Marvell International Ltd. and its affiliates
 *******************************************************************************/
 #include "config_marvell.h"     /* Required to identify SOC and Board */
 
-#if defined(MV88F68XX) // this file is relevant for ARMADA-380 only, using new Training IP
+#if 0
 
 #include "ddr3_init.h"
 #include "ddr3_spd.h"

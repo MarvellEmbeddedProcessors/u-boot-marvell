@@ -1,4 +1,3 @@
-
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
@@ -63,22 +62,97 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
+#ifndef _INC_A375_MC_STATIC_H
+#define _INC_A375_MC_STATIC_H
 
-#ifndef _DDR3_A380_CONFIG_H
-#define _DDR3_A380_CONFIG_H
+#include "ddr3_a38x.h"
 
-#define DDR3_LOG_LEVEL				0
-#define DDR3_PBS				0
-#define DDR3_FAST_PATH_EN			1
-#define BUS_WIDTH				32
-#define DDR3_RUN_SW_WHEN_HW_FAIL		0
+typedef struct __mvDramMcInit {
+	MV_U32 reg_addr;
+	MV_U32 reg_value;
+} MV_DRAM_MC_INIT;
 
-#define TRAINING_SIZE				0x20000
-#define U_BOOT_START_ADDR			0
-#define U_BOOT_SCRUB_SIZE			0x1000000 /*- TRAINING_SIZE*/
 
-#define DRAM_ECC				FALSE
-#define DUNIT_STATIC
-#define STATIC_TRAINING
+MV_DRAM_MC_INIT ddr3_a38x_667[MV_MAX_DDR3_STATIC_SIZE] =
+{
+	{0x0001400, 0x7B00Ca28},   /* DDR SDRAM Configuration Register             */
+	{0x0001404, 0x36301820},   /* Dunit Control Low Register - kw40 bit11 high */
+	{0x0001408, 0x43149997},   /* DDR SDRAM Timing (Low) Register              */
+	{0x000140C, 0x38411bc7},   /* DDR SDRAM Timing (High) Register             */
+	{0x0001410, 0x14300000},   /* DDR SDRAM Address Control Register           */
+	{0x0001414, 0x00000700},   /* DDR SDRAM Open Pages Control Register        */
+	{0x0001424, 0x0060f3ff},   /* Dunit Control High Register ( 2 :1 - bits 15:12 = 0xD )  */
+	{0x0001428, 0x000F8830},   /* Dunit Control High Register                              */
+	{0x000142C, 0x028c50f8},   /* Dunit Control High Register  ( 2:1 -  bit 29 = '1' )     */
+	{0x000147C, 0x0000c671},   /*  */
+	{0x0001494, 0x00030000},  /* DDR SDRAM ODT Control (Low) Register  */
+	{0x000149C, 0x00000300},  /* DDR Dunit ODT Control Register  */
+	{0x00014a8, 0x00000000},
+	{0x00014cc, 0xbd09000d},
+	{0x0001474, 0x00000000},
+	{0x0001538, 0x00000009},  /* Read Data Sample Delays Register */
+	{0x000153C, 0x0000000c},  /* Read Data Ready Delay Register  */
+	{0x0001504, 0xFFFFFFF1},
+	{0x000150c, 0xFFFFFFE5},
+	{0x0001514, 0x00000000},
+	{0x000151c, 0x00000000},
+	{0x00015D0, 0x00000650},  /* MR0 */
+	{0x00015D4, 0x00000046},  /* MR1 */
+	{0x00015D8, 0x00000010},  /* MR2 */
+	{0x00015DC, 0x00000000},  /* MR3 */
+	{0x00015E0, 0x23},
+	{0x00015E4, 0x00203c18}, /* ZQC Configuration Register  */
+	{0x00015EC, 0xf8000019}, /* DDR PHY                     */
+	{0x00016A0, 0xe8243dfe},    /* ZNR / SPR                */
+	{0x00016A0, 0xe8280434},   /* disable clamp and Vref   */
+	{0x00016A0, 0x281020da},   /* Clock skew               */
+	{0x00016A0, 0xe8260cb2},
+	{0x00016A0, 0xe8290000},
+	{0x00016A0, 0xf810001f},
+	{0x00016A0, 0xCC000012},
+	{0x00016A0, 0xC803000f},
+	{0x0, 0x0}
+};
 
-#endif /* _DDR3_A380_CONFIG_H */
+MV_DRAM_MC_INIT ddr3_a38x_800[MV_MAX_DDR3_STATIC_SIZE] =
+{
+	{0x00001400, 0x7B00CC30},
+	{0x00001404, 0x36301820},
+	{0x00001408, 0x5415BAAB},
+	{0x0000140C, 0x38411DEF},
+	{0x00001410, 0x18300000},
+	{0x00001414, 0x00000700},
+	{0x00001424, 0x0060f3ff},
+	{0x00001428, 0x0011A940},
+	{0x0000142C, 0x28c5134},
+	{0x0000147C, 0x0000D771},
+	{0x00001494, 0x00030000},
+	{0x0000149C, 0x00000300},
+	{0x000014a8, 0x00000000},
+	{0x000014cc, 0xbd09000d},
+	{0x00001474, 0x00000000},
+	{0x00001538, 0x0000000b},
+	{0x0000153C, 0x0000000c},
+	{0x00001504, 0xFFFFFFF1},
+	{0x0000150c, 0xFFFFFFE5},
+	{0x00001514, 0x00000000},
+	{0x0000151c, 0x0},
+	{0x000015D0, 0x00000670},
+	{0x000015D4, 0x00000046},
+	{0x000015D8, 0x00000018},
+	{0x000015DC, 0x00000000},
+	{0x000015E0, 0x23},
+	{0x000015E4, 0x00203c18},
+	{0x000015EC, 0xf8000019},
+	{0x00016A0, 0xe8243dfe},    /* ZNR / SPR                */
+	{0x00016A0, 0xe8280434},   /* disable clamp and Vref   */
+	{0x00016A0, 0x281020da},   /* Clock skew               */
+	{0x00016A0, 0xe8260cb2},
+	{0x00016A0, 0xe8290000},
+	{0x00016A0, 0xf810001f},
+	{0x00016A0, 0xCC000012},
+	{0x00016A0, 0xC803000f},
+	{0x0, 0x0}
+};
+
+#endif /* _INC_A375_MC_STATIC_H */

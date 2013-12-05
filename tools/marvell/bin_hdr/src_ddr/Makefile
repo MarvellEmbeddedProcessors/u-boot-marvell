@@ -123,7 +123,7 @@ HOSTCPPFLAGS = $(CPPFLAGS)
 TGT = ddr_$(BOARD).a
 TGT_UART = ddr_$(BOARD).uart.a
 
-CSRC = ddr3_spd.c ddr3_hw_init.c ddr3_init.c
+CSRC = ddr3_spd.c ddr3_init.c
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))

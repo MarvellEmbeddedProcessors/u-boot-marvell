@@ -41,11 +41,7 @@
 
 #ifndef __ddr3_a38x_training_static_H
 #define __ddr3_a38x_training_static_H
-#if 0
-#include <gtOs/gtGenTypes.h>
-#include <ddr3/trainingIp/mvDdr3TrainingIpStatic.h>
-#include <ddr3/trainingIp/mvDdr3TrainingIp.h>
-#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -70,102 +66,6 @@ MV_DRAM_TRAINING_INIT ddr3_db_a38x[MV_MAX_DDR3_STATIC_SIZE] =
 	{0x00020184, 0x0FFFFFE1},	/* RL */
 	{0x0, 0x0}
 };
-
-#if 0
-static MV_HWS_TOPOLOGY_MAP A38xTopologyMap[] =
-{
-    /* 1st board */
-    {
-    0x1, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x3,0,0,0}, {0x3,0,0,0}, {0x0,0,0,0}, {0x0,0,0,0}, {0x0,0,0,0}, {0x0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_HIGH}},
-    4, /* Num Of Bus Per Interface*/
-    0  /* board number */
-    },
-    /* 2nd board */
-    {
-    0x1, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_HIGH}},
-    4, /* Num Of Bus Per Interface*/
-    1  /* board number */
-    }
-};
-
-/* this array hold the board round trip delay (DQ and CK) per <interfcae,bus> */
-TripDelayElement A38xBoardRoundTripDelayArray[] =
-{
-   /* 1st board */
-   /*interface bus DQS-delay CK-delay */
-   { 3952,5060 },
-   { 3192,4493 },
-   { 4785,6677 },
-   { 3413,7267 },
-   { 4282,6086 },	/*ECC PUP*/
-   { 3952,5134 },
-   { 3192,4567 },
-   { 4785,6751 },
-   { 3413,7341 },
-   { 4282,6160 },	/*ECC PUP*/
-
-   /* 2nd board */
-   /*interface bus DQS-delay CK-delay */
-   { 3952,5060 },
-   { 3192,4493 },
-   { 4785,6677 },
-   { 3413,7267 },
-   { 4282,6086 },	/*ECC PUP*/
-   { 3952,5134 },
-   { 3192,4567 },
-   { 4785,6751 },
-   { 3413,7341 },
-   { 4282,6160 }	/*ECC PUP*/
-};
-
-/* package trace */
-TripDelayElement A38xPackageRoundTripDelayArray[] =
-{
-     /*IF BUS DQ_DELYA CK_DELAY */
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 } ,
-    {  0,    0 }
-};
-
-
-static GT_32 A38xSiliconDelayOffset[] =
-{
-    /* board 0 */
-    0,
-    /* board 1 */
-    0,
-    /* board 2 */
-    0
-};
-
-
-GT_STATUS ddr3TipInitA38x
-(
-    GT_U32  devNum,
-    GT_U32  boardId
-);
-#endif
 
 #ifdef __cplusplus
 }

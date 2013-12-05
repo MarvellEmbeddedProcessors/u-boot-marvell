@@ -87,6 +87,7 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_a375_vars.h"
 #elif defined(MV88F68XX)
 #include "ddr3_a38x_vars.h"
+#include "ddr3_hws_hw_training.h"
 #endif
 
 #include "bootstrap_os.h"
@@ -198,6 +199,7 @@ MV_VOID levelLogPrintDD(MV_U32 dec_num, MV_U32 length, MV_LOG_LEVEL eLogLevel)
 	if (gLogLevel >= eLogLevel)
 		putdataDec(dec_num, length);
 }
+
 #if !defined(STATIC_TRAINING)
 static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 {
@@ -417,13 +419,13 @@ MV_U32 ddr3Init_(void)
 	MV_U32 uiCpuFreq, uiFabOpt, uiHClkTimePs, socNum;
 	MV_BOOL bPLLWAPatch = FALSE;
 #if !defined(MV88F68XX)
-	MV_U32 auWinBackup[16];
 	MV_BOOL bDQSCLKAligned = FALSE;
 	MV_U32 uiDdrWidth = BUS_WIDTH;
 	MV_U32 uiScrubOffs, uiScrubSize;
 #endif
 #if !defined(STATIC_TRAINING) || defined (DUNIT_SPD)
 	MV_STATUS status;
+	MV_U32 auWinBackup[16];
 #endif
 	/* SoC/Board special Initializtions */
 
@@ -661,6 +663,7 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 	/************************************************************************************/
 	/* Stage 2 - Training Values Setup                                                  */
 	/************************************************************************************/
+#ifdef STATIC_TRAINING
 	/* DRAM Init - After all the D-unit values are set, its time to init the D-unit */
 	/* Wait for '0' */
 	MV_REG_WRITE(REG_SDRAM_INIT_CTRL_ADDR, 0x1);
@@ -668,7 +671,6 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 		uiReg = ((MV_REG_READ(REG_SDRAM_INIT_CTRL_ADDR)) & (1 << REG_SDRAM_INIT_CTRL_OFFS));
 	while (uiReg);
 
-#ifdef STATIC_TRAINING
 	/* ddr3 init using static parameters - HW training is disabled */
 	DEBUG_INIT_FULL_S("DDR3 Training Sequence - Static Training Parameters \n");
 	ddr3StaticTrainingInit();
@@ -686,6 +688,14 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 	/* Set X-BAR windows for the training sequence */
 	ddr3SaveAndSetTrainingWindows(auWinBackup);
 
+#if defined(MV88F68XX)
+	/*Start New Training IP*/
+	status = ddr3HwsHwTraining();
+	if (MV_OK != status) {
+		DEBUG_INIT_FULL_S("DDR3 Training Sequence - FAILED\n");
+		return status;
+	}
+#else
 	/* Run DDR3 Training Sequence */
 	/* DRAM Init */
 	MV_REG_WRITE(REG_SDRAM_INIT_CTRL_ADDR, 0x1);
@@ -701,6 +711,7 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 		DEBUG_INIT_FULL_S("DDR3 Training Sequence - FAILED  \n");
 		return status;
 	}
+#endif
 #endif
 
 	/************************************************************************************/

@@ -318,17 +318,9 @@ typedef enum _mvTargetId {
  */
 
 typedef enum {
-	PEX0_0x4        = 0,
-	PEX0_1x4        = 1,
-	PEX0_2x4        = 2,
-	PEX0_3x4        = 3,
-	PEX1_0x4        = 4,
-	PEX1_1x4        = 5,
-	PEX1_2x4        = 6,
-	PEX1_3x4        = 7,
-	PEX2_0x4        = 8,
-	PEX3_0x4        = 9,
-	PEXIF_MAX       = 10
+	PEX_0		= 0,
+	PEX_1		= 1,
+	PEXIF_MAX	= 2
 } MV_PEXIF_INDX;
 
 #endif /* MV_ASMLANGUAGE */

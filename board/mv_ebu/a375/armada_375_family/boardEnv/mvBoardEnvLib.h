@@ -240,6 +240,7 @@ typedef struct {
 } MV_BOARD_TDM_INFO;
 
 typedef struct _boardPexInfo {
+	MV_PEXIF_INDX	pexMapping[MV_PEX_MAX_IF];
 	MV_PEX_UNIT_CFG pexUnitCfg[MV_PEX_MAX_UNIT];
 	MV_U32 boardPexIfNum;
 } MV_BOARD_PEX_INFO;

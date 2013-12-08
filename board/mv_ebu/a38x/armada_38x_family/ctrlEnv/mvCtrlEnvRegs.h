@@ -101,7 +101,7 @@ extern "C" {
 #define PMC_TDM_STOP_CLK_EN			(1 << PMC_TDM_STOP_CLK_OFFS)
 #define PMC_TDM_STOP_CLK_STOP			(0 << PMC_TDM_STOP_CLK_OFFS)
 
-#define PMC_PEX_STOP_CLK_OFFS(port)		((port) + 5)
+#define PMC_PEX_STOP_CLK_OFFS(port)		(((port) == 0) ? 8 : (4 + port))
 #define PMC_PEX_STOP_CLK_MASK(port)		(1 << PMC_PEX_STOP_CLK_OFFS(port))
 #define PMC_PEX_STOP_CLK_EN(port)		(1 << PMC_PEX_STOP_CLK_OFFS(port))
 #define PMC_PEX_STOP_CLK_STOP(port)		(0 << PMC_PEX_STOP_CLK_OFFS(port))

@@ -2025,6 +2025,15 @@ MV_VOID mvNfcReadWritePio(MV_NFC_CTRL *nfcCtrl, MV_U32 *buff, MV_U32 data_len, M
 		for (i = 0; i < data_len; i += 4) {
 			*buff = MV_LE32_TO_CPU(MV_REG_READ(NFC_DATA_BUFF_REG));
 			buff++;
+			/* For BCH ECC check if RDDREQ bit is set every 32 bytes */
+			if (((nfcCtrl->eccMode == MV_NFC_ECC_BCH_2K) ||
+			     (nfcCtrl->eccMode == MV_NFC_ECC_BCH_1K) ||
+			     (nfcCtrl->eccMode == MV_NFC_ECC_BCH_704B) ||
+			     (nfcCtrl->eccMode == MV_NFC_ECC_BCH_512B)) &&
+			     ((i & 0x1f) == 0) && (i > 0)) {
+				if (mvDfcWait4Complete(NFC_SR_RDDREQ_MASK, 10) != MV_OK)
+					break;
+			}
 		}
 		break;
 

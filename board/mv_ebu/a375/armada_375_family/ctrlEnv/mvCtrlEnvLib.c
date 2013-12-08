@@ -226,8 +226,10 @@ static MV_VOID mvCtrlPexConfig(MV_VOID)
 
 	memset(boardPexInfo, 0, sizeof(MV_BOARD_PEX_INFO));
 
-	for (pexUnit = 0; pexUnit < pexIfNum; pexUnit++)
+	for (pexUnit = 0; pexUnit < pexIfNum; pexUnit++) {
 		boardPexInfo->pexUnitCfg[pexUnit] = PEX_BUS_MODE_X1;
+		boardPexInfo->pexMapping[pexUnit] = pexUnit;
+	}
 
 	boardPexInfo->boardPexIfNum = pexIfNum;
 }

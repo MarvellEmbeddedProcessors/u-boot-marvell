@@ -83,6 +83,10 @@ void ft_board_setup(void *blob, bd_t *bd)
 	fdt_fixup_ethernet(blob);
 	mv_fdt_dprintf("DT ethernet MAC addresses updated from environment\n");
 
+	/* Update memory node */
+	fixup_memory_node(blob);
+	mv_fdt_dprintf("Memory node updated\n");
+
 	/* Get number of CPUs and update dt */
 	err = mv_fdt_update_cpus(blob);
 	if (err < 0)

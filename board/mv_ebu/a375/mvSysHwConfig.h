@@ -264,6 +264,7 @@ disclaimer.
 
 #define _1G         0x40000000
 #define _2G         0x80000000
+#define _4G         0x100000000ll
 
 #if defined(MV_BOOTSIZE_256K)
 

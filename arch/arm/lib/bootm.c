@@ -91,17 +91,28 @@ void arch_lmb_reserve(struct lmb *lmb)
 }
 
 #ifdef CONFIG_OF_LIBFDT
-static int fixup_memory_node(void *blob)
+int fixup_memory_node(void *blob)
 {
-	bd_t    *bd = gd->bd;
+#ifndef CONFIG_MARVELL
+	bd_t	*bd = gd->bd;
+#endif
 	int bank;
 	u64 start[CONFIG_NR_DRAM_BANKS];
 	u64 size[CONFIG_NR_DRAM_BANKS];
 
+#ifdef CONFIG_MARVELL
+	for (bank = 0; bank < CONFIG_NR_DRAM_BANKS; bank++) {
+		start[bank] = gd->dram_hw_info[bank].start;
+		size[bank] = gd->dram_hw_info[bank].size;
+		if ((start[bank] + size[bank]) == _4G)		/* Save 256M for IO at 4G-256M */
+			size[bank] = ((_4G - _256M) - start[bank]);
+	}
+#else
 	for (bank = 0; bank < CONFIG_NR_DRAM_BANKS; bank++) {
 		start[bank] = bd->bi_dram[bank].start;
 		size[bank] = bd->bi_dram[bank].size;
 	}
+#endif
 
 	return fdt_fixup_memory_banks(blob, start, size, CONFIG_NR_DRAM_BANKS);
 }

@@ -57,6 +57,7 @@ void do_fixup_by_compat_u32(void *fdt, const char *compat,
 int fdt_fixup_memory(void *blob, u64 start, u64 size);
 int fdt_fixup_memory_banks(void *blob, u64 start[], u64 size[], int banks);
 void fdt_fixup_ethernet(void *fdt);
+int fixup_memory_node(void *blob);
 int fdt_find_and_setprop(void *fdt, const char *node, const char *prop,
 			 const void *val, int len, int create);
 void fdt_fixup_qe_firmware(void *fdt);

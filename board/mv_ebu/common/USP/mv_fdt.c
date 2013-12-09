@@ -30,6 +30,9 @@ disclaimer.
 
 #ifdef CONFIG_OF_BOARD_SETUP
 
+#define MV_FDT_MAXDEPTH 32
+
+static int mv_fdt_find_node(void *fdt, const char *name);
 static int mv_fdt_update_l2(void *fdt);
 static int mv_fdt_update_cpus(void *fdt);
 static int mv_fdt_update_pex(void *fdt);
@@ -37,7 +40,7 @@ static int mv_fdt_update_ethnum(void *fdt);
 static int mv_fdt_remove_prop(void *fdt, const char *path,
 				const char *name, int nodeoff);
 static int mv_fdt_remove_node(void *fdt, const char *path);
-static int mv_fdt_scan_and_set_alias(void *fdt, const char *startnode,
+static int mv_fdt_scan_and_set_alias(void *fdt,
 					const char *name, const char *alias);
 static int mv_fdt_modify(void *fdt, int function);
 static int mv_fdt_debug;
@@ -74,7 +77,7 @@ void ft_board_setup(void *blob, bd_t *bd)
 		goto bs_fail;
 
 	/* Update ethernet aliases with nodes' names and update mac addresses */
-	err = mv_fdt_scan_and_set_alias(blob, "/soc", "ethernet", "ethernet");
+	err = mv_fdt_scan_and_set_alias(blob, "ethernet@", "ethernet");
 	if (err < 0)
 		goto bs_fail;
 	fdt_fixup_ethernet(blob);
@@ -103,6 +106,61 @@ bs_fail:
 	return;
 }
 
+static int mv_fdt_find_node(void *fdt, const char *name)
+{
+	int nodeoffset;		/* current node's offset from libfdt */
+	int nextoffset;		/* next node's offset from libfdt */
+	int level = 0;		/* current fdt scanning depth */
+	uint32_t tag;		/* device tree tag at given offset */
+	const char *node;	/* node name */
+
+	/* Set scanning starting point to '/' */
+	nodeoffset = fdt_path_offset(fdt, "/");
+	if (nodeoffset < 0) {
+		mv_fdt_dprintf("%s: failed to get '/' nodeoffset\n",
+			       __func__);
+		return -1;
+	}
+	/* Scan device tree for node = 'name' and return its offset */
+	while (level >= 0) {
+		tag = fdt_next_tag(fdt, nodeoffset, &nextoffset);
+		switch (tag) {
+		case FDT_BEGIN_NODE:
+			node = fdt_get_name(fdt, nodeoffset, NULL);
+			if (strncmp(node, name, strlen(name)+1) == 0)
+				return nodeoffset;
+			level++;
+			if (level >= MV_FDT_MAXDEPTH) {
+				mv_fdt_dprintf("%s: Nested too deep, "
+					       "aborting.\n", __func__);
+				return -1;
+			}
+			break;
+		case FDT_END_NODE:
+			level--;
+			if (level == 0)
+				level = -1;		/* exit the loop */
+			break;
+		case FDT_PROP:
+		case FDT_NOP:
+			break;
+		case FDT_END:
+			mv_fdt_dprintf("Device tree scanning failed - end of "
+				       "tree tag\n");
+			return -1;
+		default:
+			mv_fdt_dprintf("Device tree scanning failed - unknown "
+				       "tag\n");
+			return -1;
+		}
+		nodeoffset = nextoffset;
+	}
+
+	/* Node not found in the device tree */
+	return -1;
+
+}
+
 static int mv_fdt_update_l2(void *fdt)
 {
 	int err;			/* error number */
@@ -112,8 +170,8 @@ static int mv_fdt_update_l2(void *fdt)
 	const char *node;		/* node name */
 
 	/* If /l2-cache node doesn't exist, omit whole updating */
-	node = "/l2-cache";
-	nodeoffset = fdt_path_offset(fdt, node);
+	node = "l2-cache";
+	nodeoffset = mv_fdt_find_node(fdt, node);
 	if (nodeoffset < 0) {
 		mv_fdt_dprintf("Omit L2 properties update - /l2-cache node "
 			       "not present in fdt\n");
@@ -134,7 +192,6 @@ static int mv_fdt_update_l2(void *fdt)
 		 * exist examine setL2CacheWT variable*/
 		env = getenv("L2forceWrPolicy");
 		prop = "wt-override";
-		nodeoffset = fdt_path_offset(fdt, node);
 		if (env) {
 			if ((strncmp(env, "wt", 2) == 0) ||
 			    (strncmp(env, "WT", 2) == 0)) {
@@ -199,18 +256,18 @@ static int mv_fdt_update_cpus(void *fdt)
 	cpusnum = mvCtrlGetCpuNum() + 1;
 	mv_fdt_dprintf("Number of CPUs detected: %d\n", cpusnum);
 	if (cpusnum <= 2) {
-		err = mv_fdt_remove_node(fdt, "/cpus/cpu@3");
+		err = mv_fdt_remove_node(fdt, "cpu@3");
 		if (err < 0) {
 			mv_fdt_dprintf("Failed to remove cpu@3\n");
 			return -1;
 		}
-		err = mv_fdt_remove_node(fdt, "/cpus/cpu@2");
+		err = mv_fdt_remove_node(fdt, "cpu@2");
 		if (err < 0) {
 			mv_fdt_dprintf("Failed to remove cpu@2\n");
 			return -1;
 		}
 		if (cpusnum == 1)
-			err = mv_fdt_remove_node(fdt, "/cpus/cpu@1");
+			err = mv_fdt_remove_node(fdt, "cpu@1");
 		if (err < 0) {
 			mv_fdt_dprintf("Failed to remove cpu@1\n");
 			return -1;
@@ -243,8 +300,8 @@ static int mv_fdt_update_pex(void *fdt)
 	/* Set controller and 'pexnum' number of interfaces' status to 'okay'.
 	 * Rest of them are disabled */
 	prop = "status";
-	node = "/soc/pcie-controller";
-	nodeoffset = fdt_path_offset(fdt, node);
+	node = "pcie-controller";
+	nodeoffset = mv_fdt_find_node(fdt, node);
 	if (nodeoffset < 0) {
 		mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
 		return -1;
@@ -296,17 +353,17 @@ static int mv_fdt_update_ethnum(void *fdt)
 
 	mv_fdt_dprintf("Number of ethernet ports detected = %d\n", ethnum);
 	if (ethnum == 3) {
-		/* Get ethernet3 node path from /aliases */
-		nodeoffset = fdt_path_offset(fdt, "/aliases");
+		/* Get ethernet3 node path from 'aliases' */
+		nodeoffset = mv_fdt_find_node(fdt, "aliases");
 		if (nodeoffset < 0) {
-			mv_fdt_dprintf("Lack of /aliases node in device "
+			mv_fdt_dprintf("Lack of 'aliases' node in device "
 				       "tree\n");
 			return -1;
 		}
 		prop = "ethernet3";
 		node = fdt_getprop(fdt, nodeoffset, prop, &len);
 		if (node == NULL) {
-			mv_fdt_dprintf("Lack of '%s' property in /aliases "
+			mv_fdt_dprintf("Lack of '%s' property in 'aliases' "
 				       "node\n", prop);
 			return -1;
 		}
@@ -362,7 +419,7 @@ static int mv_fdt_remove_node(void *fdt, const char *path)
 	int error;
 	int nodeoff;
 
-	nodeoff = fdt_path_offset(fdt, path);
+	nodeoff = mv_fdt_find_node(fdt, path);
 	error = fdt_del_node(fdt, nodeoff);
 	if (error == -FDT_ERR_NOTFOUND) {
 		mv_fdt_dprintf("'%s' node already removed from device tree\n",
@@ -393,7 +450,7 @@ static int mv_fdt_modify(void *fdt, int function)
 	return err;
 }
 
-static int mv_fdt_scan_and_set_alias(void *fdt, const char *startnode,
+static int mv_fdt_scan_and_set_alias(void *fdt,
 					const char *name, const char *alias)
 {
 	int i = 0;		/* alias index */
@@ -403,12 +460,14 @@ static int mv_fdt_scan_and_set_alias(void *fdt, const char *startnode,
 	int err = 0;		/* error number */
 	int level = 0;		/* current fdt scanning depth */
 	char aliasname[16];	/* alias name to be stored in '/aliases' node */
-	char path[128];		/* path to be saved under 'aliasname' */
+	char path[128] = "";	/* full path to current node */
+	char tmp[24];		/* auxiliary char array for extended node name*/
+	char *cut;		/* auxiliary char pointer */
 	const char *node;	/* node name */
 	uint32_t tag;		/* device tree tag at given offset */
 
 	/* Check if '/aliases' node exist. Otherwise create it */
-	nodeoffset = fdt_path_offset(fdt, "/aliases");
+	nodeoffset = mv_fdt_find_node(fdt, "aliases");
 	if (nodeoffset < 0) {
 		err = mv_fdt_modify(fdt, fdt_add_subnode(fdt, 0, "aliases"));
 		if (err < 0) {
@@ -417,31 +476,22 @@ static int mv_fdt_scan_and_set_alias(void *fdt, const char *startnode,
 		}
 	}
 
-	/* Set scanning starting point to 'startnode' */
-	nodeoffset = fdt_path_offset(fdt, startnode);
-	if (nodeoffset < 0) {
-		mv_fdt_dprintf("%s: failed to find '%s' node\n", __func__,
-			       startnode);
-		return -1;
-	}
 	/* Scan device tree for nodes that that contain 'name' substring and
 	 * create their 'alias' with respective number */
+
+	nodeoffset = 0;
 	while (level >= 0) {
 		tag = fdt_next_tag(fdt, nodeoffset, &nextoffset);
 		switch (tag) {
 		case FDT_BEGIN_NODE:
-			/* Don't scan deeper than the nodes comprised directly
-			 * in 'startnode' */
-			if (level > 1) {
-				level++;
-				break;
-			}
 			node = fdt_get_name(fdt, nodeoffset, NULL);
+			sprintf(tmp, "/%s", node);
+			if (nodeoffset != 0)
+				strcat(path, tmp);
 			if (strstr(node, name) != NULL) {
 				delta = nextoffset - nodeoffset;
 				sprintf(aliasname, "%s%d", alias, i);
-				sprintf(path, "%s/%s", startnode, node);
-				nodeoffset = fdt_path_offset(fdt, "/aliases");
+				nodeoffset = mv_fdt_find_node(fdt, "aliases");
 				if (nodeoffset < 0)
 					goto alias_fail;
 				err = mv_fdt_modify(fdt, fdt_setprop(fdt,
@@ -458,6 +508,11 @@ static int mv_fdt_scan_and_set_alias(void *fdt, const char *startnode,
 				i++;
 			}
 			level++;
+			if (level >= MV_FDT_MAXDEPTH) {
+				mv_fdt_dprintf("%s: Nested too deep, "
+					       "aborting.\n", __func__);
+				return -1;
+			}
 			break;
 alias_fail:
 			mv_fdt_dprintf("Setting alias %s=%s failed\n",
@@ -465,6 +520,8 @@ alias_fail:
 			return -1;
 		case FDT_END_NODE:
 			level--;
+			cut = strrchr(path, '/');
+			*cut = '\0';
 			if (level == 0)
 				level = -1;		/* exit the loop */
 			break;

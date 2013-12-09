@@ -140,6 +140,7 @@ extern unsigned int mvTclkGet(void);
 #define CONFIG_CMD_BSP
 #define CONFIG_CMD_MEMORY
 #define CONFIG_CMD_BOOTD
+#define CONFIG_CMD_BOOTZ
 #define CONFIG_CMD_CONSOLE
 #define CONFIG_CMD_RUN
 #define CONFIG_CMD_MISC

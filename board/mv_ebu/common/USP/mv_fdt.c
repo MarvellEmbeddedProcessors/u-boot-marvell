@@ -253,30 +253,51 @@ no_l2_node:
 
 static int mv_fdt_update_cpus(void *fdt)
 {
-	MV_U8 cpusnum;		/* number of cpus */
+	int cpusnodes = 0;	/* number of cpu nodes */
+	int nodeoffset;		/* node offset from libfdt */
 	int err;		/* error number */
+	const char *node;	/* node name */
+	char *p;		/* auxiliary pointer */
+	char *lastcpu;		/* pointer to last valid cpu */
+	MV_U8 cpusnum;		/* number of cpus */
+	int depth = 2;
 
 	/* Get CPUs number and remove unnecessary nodes */
 	cpusnum = mvCtrlGetCpuNum() + 1;
 	mv_fdt_dprintf("Number of CPUs detected: %d\n", cpusnum);
-	if (cpusnum <= 2) {
-		err = mv_fdt_remove_node(fdt, "cpu@3");
-		if (err < 0) {
-			mv_fdt_dprintf("Failed to remove cpu@3\n");
-			return -1;
-		}
-		err = mv_fdt_remove_node(fdt, "cpu@2");
-		if (err < 0) {
-			mv_fdt_dprintf("Failed to remove cpu@2\n");
-			return -1;
-		}
-		if (cpusnum == 1)
-			err = mv_fdt_remove_node(fdt, "cpu@1");
-		if (err < 0) {
-			mv_fdt_dprintf("Failed to remove cpu@1\n");
-			return -1;
-		}
+	/* Find cpus node */
+	node = "cpus";
+	nodeoffset = mv_fdt_find_node(fdt, node);
+	if (nodeoffset < 0) {
+		mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+		return -1;
 	}
+	p = malloc(strlen("cpu@x")+1);
+	lastcpu = malloc(strlen("cpu@x")+1);
+	while (strncmp(node, "cpu", 3) == 0) {
+		cpusnodes++;
+		/* Remove excessive cpu nodes */
+		if (cpusnodes > cpusnum + 1) {
+			strcpy(p, node);
+			err = mv_fdt_remove_node(fdt, (const char *)p);
+				if (err < 0) {
+					mv_fdt_dprintf("Failed to remove %s\n",
+						       node);
+					free(p);
+					free(lastcpu);
+					return -1;
+				}
+			node = lastcpu;
+			nodeoffset = mv_fdt_find_node(fdt, node);
+		} else {
+			strcpy(lastcpu, node);
+		}
+		nodeoffset = fdt_next_node(fdt, nodeoffset, &depth);
+		node = fdt_get_name(fdt, nodeoffset, NULL);
+	}
+	free(p);
+	free(lastcpu);
+
 	return 0;
 }
 

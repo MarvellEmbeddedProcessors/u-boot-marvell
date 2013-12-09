@@ -366,10 +366,13 @@ static int mv_fdt_update_ethnum(void *fdt)
 	MV_U32 ethnum = 0;		/* number of interfaces */
 	int i, err;			/* error number */
 	int len = 0;			/* property length */
+	int ethcounter = 0;		/* nodes' counter */
 	int nodeoffset;			/* node offset from libfdt */
+	int aliasesoffset;		/* aliases node offset from libfdt */
 	char *prop;			/* property name */
 	char *propval;			/* property value */
-	const char *node;		/* node name */
+	const char *node = "aliases";	/* node name */
+	int depth = 1;
 
 	for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
 		if (mvBoardIsEthConnected(i) == MV_TRUE)
@@ -377,16 +380,28 @@ static int mv_fdt_update_ethnum(void *fdt)
 	}
 
 	mv_fdt_dprintf("Number of ethernet ports detected = %d\n", ethnum);
-	if (ethnum == 3) {
-		/* Get ethernet3 node path from 'aliases' */
-		nodeoffset = mv_fdt_find_node(fdt, "aliases");
-		if (nodeoffset < 0) {
-			mv_fdt_dprintf("Lack of 'aliases' node in device "
-				       "tree\n");
-			return -1;
-		}
-		prop = "ethernet3";
-		node = fdt_getprop(fdt, nodeoffset, prop, &len);
+	/* Get number of ethernet nodes */
+	aliasesoffset = mv_fdt_find_node(fdt, node);
+	if (aliasesoffset < 0) {
+		mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+		return -1;
+	}
+	nodeoffset = fdt_next_node(fdt, aliasesoffset, &depth);
+	node = fdt_get_name(fdt, nodeoffset, NULL);
+	while (node != NULL) {
+		if (strncmp(node, "ethernet@", 9) == 0)
+			ethcounter++;
+		nodeoffset = fdt_next_node(fdt, nodeoffset, &depth);
+		node = fdt_get_name(fdt, nodeoffset, NULL);
+	}
+	mv_fdt_dprintf("Number of ethernet nodes in DT = %d\n", ethcounter);
+
+	/* Disable excessive ethernet interfaces from DT regardless their
+	 * order in 'aliases' node */
+	for (i = ethnum; i < ethcounter; i++) {
+		/* Get path to ethernet node from property value */
+		sprintf(prop, "ethernet%d", i);
+		node = fdt_getprop(fdt, aliasesoffset, prop, &len);
 		if (node == NULL) {
 			mv_fdt_dprintf("Lack of '%s' property in 'aliases' "
 				       "node\n", prop);
@@ -396,7 +411,7 @@ static int mv_fdt_update_ethnum(void *fdt)
 			mv_fdt_dprintf("Empty property value\n");
 			return -1;
 		}
-		/* Set ethernet3 port status to 'disabled' */
+		/* Set ethernet port status to 'disabled' */
 		nodeoffset = fdt_path_offset(fdt, node);
 		if (nodeoffset < 0) {
 			mv_fdt_dprintf("Lack of '%s' node in device tree\n",

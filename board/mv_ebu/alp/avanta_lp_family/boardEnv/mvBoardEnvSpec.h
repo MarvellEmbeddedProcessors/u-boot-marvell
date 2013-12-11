@@ -166,7 +166,7 @@
 #define RD_88F6660_MPP32_39             0x00023330  /* SD_Stat (GPIO_input), SPI1,PON BEN, 3xGPIOs  */
 #define RD_88F6660_MPP40_47             0x44100020  /* Switch P4, PON_[XVR,TX_SD]*/
 #define RD_88F6660_MPP48_55             0x44444444  /* Switch P4 */
-#define RD_88F6660_MPP56_63             0x44004444  /* GE0 , LED, GPIO's */
+#define RD_88F6660_MPP56_63             0x44444444  /* Switch P4 , LED */
 #define RD_88F6660_MPP64_67             0x004	    /* GPIO's */
 
 #define RD_88F6660_GPP_OUT_ENA_LOW      0xFFFFFFFF

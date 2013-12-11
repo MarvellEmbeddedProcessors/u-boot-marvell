@@ -276,6 +276,49 @@ extern "C" {
 #define     	MV_S25FL_STATUS_BP_1_OF_2           	(0x07 << MV_SFLASH_STATUS_REG_WP_OFFSET)
 #define     	MV_S25FL_STATUS_BP_ALL              	(0x0F << MV_SFLASH_STATUS_REG_WP_OFFSET)
 
+
+/************************************/
+/*  WINBOND W25Q32 Device Specific  */
+/************************************/
+
+/* Manufacturer IDs and Device IDs for SFLASHs supported by the driver */
+#define	MV_WINBOND_MANF_ID			0xEF
+#define	MV_WB25Q32_DEVICE_ID			0x4016
+#define	MV_WB25Q32_MAX_SPI_FREQ			50000000	/* 50MHz */
+#define	MV_WB25Q32_MAX_FAST_SPI_FREQ		104000000	/* 104MHz */
+#define	MV_WB25Q32_FAST_READ_DUMMY_BYTES	1
+#define	MV_WB25Q32_ADDR_CYC_CNT			3
+
+/* Sector Sizes and population per device model*/
+#define	MV_WB25Q32_SECTOR_SIZE			0x1000	/* 4K */
+#define	MV_WB25Q32_SECTOR_NUMBER		1024
+#define	MV_WB25Q_PAGE_SIZE			0x100	/* 256 byte */
+
+#define	MV_WB25Q_WREN_CMND_OPCD			0x06	/* Write Enable */
+#define	MV_WB25Q_WRDI_CMND_OPCD			0x04	/* Write Disable */
+#define	MV_WB25Q_RDID_CMND_OPCD			0x9F	/* Read ID */
+#define	MV_WB25Q_RDSR_CMND_OPCD			0x05	/* Read Status Register */
+#define	MV_WB25Q_WRSR_CMND_OPCD			0x01	/* Write Status Register */
+#define	MV_WB25Q_READ_CMND_OPCD			0x03	/* Sequential Read */
+#define	MV_WB25Q_FAST_RD_CMND_OPCD		0x0B	/* Fast Read */
+#define	MV_WB25Q_PP_CMND_OPCD			0x02	/* Page Program */
+#define	MV_WB25Q_SE_CMND_OPCD			0xD8	/* Sector Erase */
+#define	MV_WB25Q_BE_CMND_OPCD			0xC7	/* Bulk Erase */
+#define	MV_WB25Q_DP_CMND_OPCD			0xB9	/* Deep Power Down */
+#define	MV_WB25Q_RES_CMND_OPCD			0xAB	/* Read Electronic Signature */
+
+/* Status Register Write Protect Bit Masks - 4bits */
+#define	MV_WB25Q_STATUS_REG_WP_MASK		(0x0F << MV_SFLASH_STATUS_REG_WP_OFFSET)
+#define	MV_WB25Q_STATUS_BP_NONE			(0x00 << MV_SFLASH_STATUS_REG_WP_OFFSET)
+#define	MV_WB25Q_STATUS_BP_1_OF_128		(0x01 << MV_SFLASH_STATUS_REG_WP_OFFSET)
+#define	MV_WB25Q_STATUS_BP_1_OF_64		(0x02 << MV_SFLASH_STATUS_REG_WP_OFFSET)
+#define	MV_WB25Q_STATUS_BP_1_OF_32		(0x03 << MV_SFLASH_STATUS_REG_WP_OFFSET)
+#define	MV_WB25Q_STATUS_BP_1_OF_16		(0x04 << MV_SFLASH_STATUS_REG_WP_OFFSET)
+#define	MV_WB25Q_STATUS_BP_1_OF_8		(0x05 << MV_SFLASH_STATUS_REG_WP_OFFSET)
+#define	MV_WB25Q_STATUS_BP_1_OF_4		(0x06 << MV_SFLASH_STATUS_REG_WP_OFFSET)
+#define	MV_WB25Q_STATUS_BP_1_OF_2		(0x07 << MV_SFLASH_STATUS_REG_WP_OFFSET)
+#define	MV_WB25Q_STATUS_BP_ALL			(0x0F << MV_SFLASH_STATUS_REG_WP_OFFSET)
+
 #ifdef __cplusplus
 }
 #endif

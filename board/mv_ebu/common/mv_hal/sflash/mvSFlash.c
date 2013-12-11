@@ -329,7 +329,32 @@ static MV_SFLASH_DEVICE_PARAMS sflash[] = {
 	    MV_MX25L257_MAX_FAST_SPI_FREQ,
 	    MV_MX25L257_FAST_READ_DUMMY_BYTES,
 	    MV_MX25L257_ADDR_CYC_CNT
-    }
+	},
+	/* Winbond W25Q32 SPI Flash, 4MB  */
+	{
+	    MV_WB25Q_WREN_CMND_OPCD,
+	    MV_WB25Q_WRDI_CMND_OPCD,
+	    MV_WB25Q_RDID_CMND_OPCD,
+	    MV_WB25Q_RDSR_CMND_OPCD,
+	    MV_WB25Q_WRSR_CMND_OPCD,
+	    MV_WB25Q_READ_CMND_OPCD,
+	    MV_WB25Q_FAST_RD_CMND_OPCD,
+	    MV_WB25Q_PP_CMND_OPCD,
+	    MV_WB25Q_SE_CMND_OPCD,
+	    MV_WB25Q_BE_CMND_OPCD,
+	    MV_WB25Q_RES_CMND_OPCD,
+	    MV_WB25Q_DP_CMND_OPCD,
+	    MV_WB25Q32_SECTOR_SIZE,
+	    MV_WB25Q32_SECTOR_NUMBER,
+	    MV_WB25Q_PAGE_SIZE,
+	    "WINBOND WB25Q32",
+	    MV_WINBOND_MANF_ID,
+	    MV_WB25Q32_DEVICE_ID,
+	    MV_WB25Q32_MAX_SPI_FREQ,
+	    MV_WB25Q32_MAX_FAST_SPI_FREQ,
+	    MV_WB25Q32_FAST_READ_DUMMY_BYTES,
+	    MV_WB25Q32_ADDR_CYC_CNT
+	}
 };
 
 /* Static Functions */
@@ -632,6 +657,8 @@ MV_STATUS mvSFlashInit(MV_SFLASH_INFO *pFlinfo)
 
     if (!detectFlag) {
 	mvOsPrintf("%s ERROR: Unknown SPI flash device!\n", __func__);
+	mvOsPrintf("%s ERROR: Manufacturer = %d Device = %d\n", __func__,
+			manf, dev);
 	return MV_FAIL;
     }
 

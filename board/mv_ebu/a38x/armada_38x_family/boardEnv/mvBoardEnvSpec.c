@@ -234,7 +234,7 @@ struct MV_BOARD_IO_EXPANDER ioExpNas[] = {
 	{1, 6, 0xE7},
 	{1, 7, 0xF9},
 	{1, 2, 0x08},
-	{1, 3, 0x02}
+	{1, 3, 0x00}
 };
 
 MV_BOARD_INFO rdNas88f68XX_board_info = {
@@ -312,7 +312,7 @@ struct MV_BOARD_IO_EXPANDER ioExpWap[] = {
 	{1, 6, 0xE7},
 	{1, 7, 0xF9},
 	{1, 2, 0x18},
-	{1, 3, 0x04}
+	{1, 3, 0x06}
 };
 MV_BOARD_INFO rdWAP88f68XX_board_info = {
 	.boardName			= "RD-AP-88F6820-DDR3",
@@ -339,7 +339,7 @@ MV_BOARD_INFO rdWAP88f68XX_board_info = {
 	.pmuPwrUpDelay			= 80000,
 
 	/* GPP values */
-	.gppOutEnValLow			= RD_88F68XX_GPP_OUT_ENA_LOW,
+	.gppOutEnValLow			= RD_WAP_88F68XX_GPP_OUT_ENA_LOW,
 	.gppOutEnValMid			= RD_88F68XX_GPP_OUT_ENA_MID,
 	.gppOutValLow			= RD_88F68XX_GPP_OUT_VAL_LOW,
 	.gppOutValMid			= RD_88F68XX_GPP_OUT_VAL_MID,

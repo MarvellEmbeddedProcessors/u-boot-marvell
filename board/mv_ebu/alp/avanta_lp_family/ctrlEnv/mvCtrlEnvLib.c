@@ -363,6 +363,9 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	mvCtrlTdmClkCtrlConfig();
 #endif
 
+	/* Disable MBUS Err Prop - inorder to avoid data aborts */
+	MV_REG_BIT_RESET(SOC_COHERENCY_FABRIC_CTRL_REG, BIT8);
+
 	return MV_OK;
 }
 

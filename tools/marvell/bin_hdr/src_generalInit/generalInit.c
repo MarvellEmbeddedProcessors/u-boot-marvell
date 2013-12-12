@@ -90,6 +90,14 @@ MV_STATUS mvGeneralInit(void)
 #ifdef MV88F68XX
         MV_U32 regData = (MV_REG_READ(MPP_CTRL_REG)  & MPP_SET_MASK) | MPP_SET_DATA;
         MV_REG_WRITE(MPP_CTRL_REG, regData);
+
+	/* Update AVS debug control register */
+        MV_REG_WRITE(AVS_DEBUG_CNTR_REG, AVS_DEBUG_CNTR_DEFAULT_VALUE);
+
+        regData = MV_REG_READ(AVS_ENABLED_CONTROL);
+        regData &= ~(AVS_LOW_VDD_LIMIT_MASK | AVS_HIGH_VDD_LIMIT_MASK);
+	regData |= (AVS_LOW_VDD_LIMIT_VAL | AVS_HIGH_VDD_LIMIT_VAL);
+        MV_REG_WRITE(AVS_ENABLED_CONTROL, regData);
 #endif
 
 #ifdef CONFIG_DB_88F6710_PCAC

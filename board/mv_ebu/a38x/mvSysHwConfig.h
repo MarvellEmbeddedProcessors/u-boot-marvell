@@ -37,7 +37,6 @@ disclaimer.
 #define MV_INCLUDE_SATA
 #define MV_INCLUDE_SDIO
 #define MV_INCLUDE_RTC
-#define MV_INCLUDE_INTEG_SATA
 
 #define MV_INCLUDE_CLK_PWR_CNTRL
 

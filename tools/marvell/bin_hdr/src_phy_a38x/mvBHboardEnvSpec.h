@@ -171,6 +171,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MPP_SET_MASK                            (~(0xFFFF))
 #define MPP_SET_DATA                            (0x1111)
 
+#define AVS_DEBUG_CNTR_REG 		0xE4124
+#define AVS_DEBUG_CNTR_DEFAULT_VALUE	0x08008073
+
+#define AVS_ENABLED_CONTROL 		0xE4130
+#define AVS_LOW_VDD_LIMIT_OFFS		4
+#define AVS_LOW_VDD_LIMIT_MASK		(0xff << AVS_LOW_VDD_LIMIT_OFFS)
+#define AVS_LOW_VDD_LIMIT_VAL		(0x23 << AVS_LOW_VDD_LIMIT_OFFS)
+
+#define AVS_HIGH_VDD_LIMIT_OFFS		12
+#define AVS_HIGH_VDD_LIMIT_MASK		(0xff << AVS_HIGH_VDD_LIMIT_OFFS)
+#define AVS_HIGH_VDD_LIMIT_VAL		(0x23 << AVS_HIGH_VDD_LIMIT_OFFS)
+
+
+
+
 /* boards ID numbers */
 /* boards ID numbers */
 #define BOARD_ID_BASE			0x0

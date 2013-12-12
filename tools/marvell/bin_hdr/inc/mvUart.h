@@ -176,8 +176,8 @@ void putdataDec (u32 dec_num,u32 length);
 #define DEBUG_INIT_FULL_S(s)		putstring(s)
 #define DEBUG_INIT_FULL_D(d, l)		putdata(d, l)
 #define DEBUG_INIT_FULL_D_10(d, l)	putdataDec(d, l)
-#define DEBUG_WR_REG(reg,val)       DEBUG_INIT_S("Write Reg: 0x"); DEBUG_INIT_D((reg), 8); DEBUG_INIT_S("= "); DEBUG_INIT_D((val), 8);DEBUG_INIT_S("\n");
-#define DEBUG_RD_REG(reg,val)       DEBUG_INIT_S("Read  Reg: 0x"); DEBUG_INIT_D((reg), 8); DEBUG_INIT_S("= "); DEBUG_INIT_D((val), 8);DEBUG_INIT_S("\n");
+#define DEBUG_WR_REG(reg,val)       {DEBUG_INIT_S("Write Reg: 0x"); DEBUG_INIT_D((reg), 8); DEBUG_INIT_S("= "); DEBUG_INIT_D((val), 8);DEBUG_INIT_S("\n");}
+#define DEBUG_RD_REG(reg,val)       {DEBUG_INIT_S("Read  Reg: 0x"); DEBUG_INIT_D((reg), 8); DEBUG_INIT_S("= "); DEBUG_INIT_D((val), 8);DEBUG_INIT_S("\n");}
 #else
 #define DEBUG_INIT_FULL_S(s)
 #define DEBUG_INIT_FULL_D(d, l)
@@ -186,10 +186,10 @@ void putdataDec (u32 dec_num,u32 length);
 #define DEBUG_RD_REG(reg,val)
 #endif
 
-#define DEBUG_INIT_FULL_C(s, d, l)    DEBUG_INIT_FULL_S(s); DEBUG_INIT_FULL_D(d, l); DEBUG_INIT_FULL_S("\n")
+#define DEBUG_INIT_FULL_C(s, d, l)    {DEBUG_INIT_FULL_S(s); DEBUG_INIT_FULL_D(d, l); DEBUG_INIT_FULL_S("\n"); }
 
 
-#define DEBUG_INIT_C(s, d, l)         DEBUG_INIT_S(s); DEBUG_INIT_D(d, l); DEBUG_INIT_S("\n")
+#define DEBUG_INIT_C(s, d, l)         { DEBUG_INIT_S(s);	DEBUG_INIT_D(d, l);	DEBUG_INIT_S("\n");	}
 
 
 #endif /* __MV_UART_H__ */

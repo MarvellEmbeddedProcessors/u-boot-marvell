@@ -401,6 +401,9 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	/* Enable arbitration between device and NAND */
 	MV_REG_BIT_SET(SOC_DEV_MUX_REG, BIT27);
 
+	/* Disable MBUS Err Prop - inorder to avoid data aborts */
+	MV_REG_BIT_RESET(SOC_COHERENCY_FABRIC_CTRL_REG, BIT8);
+
 	return MV_OK;
 }
 

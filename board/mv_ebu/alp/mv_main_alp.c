@@ -1117,8 +1117,6 @@ void reset_cpu(ulong addr)
 
 void mv_cpu_init(void)
 {
-	/* Disable MBUS Err Prop - inorder to avoid data aborts */
-	MV_REG_BIT_RESET(SOC_COHERENCY_FABRIC_CTRL_REG, BIT8);
 #if 0
 	char *env;
 	volatile unsigned int temp;

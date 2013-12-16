@@ -108,7 +108,9 @@ extern "C" {
  */
 #define MV_CPUIF_LOCAL_REGS_OFFSET              (0x21000)
 #define MV_CPUIF_REGS_OFFSET(cpu)               (0x21800 + (cpu) * 0x100)
+
 #define MV_CPU_HW_SEM_OFFSET                    (0x20500)
+#define MV_AUDIO_REGS_OFFSET(unit)		(0xE0000)
 
 /* Network units */
 #define MV_PP2_REG_BASE                         (0xF0000)

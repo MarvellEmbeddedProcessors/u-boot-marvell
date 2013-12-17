@@ -829,9 +829,9 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 	MV_U32 devId;
 	MV_U16 model = 0;
 	MV_U32 reg, reg2;
-	static MV_U16 modelId = 0x0;
+	static MV_U16 modelId = 0xffff;
 
-	if (modelId != 0x0)
+	if (modelId != 0xffff)
 		return modelId;
 
 	/* if PEX0 clocks are disabled - enabled it to read */
@@ -2034,7 +2034,7 @@ MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID)
 			else if (serdesLineNum == 5)
 				powermngmntctrlregmap |= PMC_SATASTOPCLOCK_MASK(1);
 			else
-				goto err_cfg;		
+				goto err_cfg;
 
 		} else if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII0])
 				powermngmntctrlregmap |= PMC_GESTOPCLOCK_MASK(0);

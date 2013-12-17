@@ -1757,10 +1757,6 @@ MV_VOID mvCtrlAddrDecShow(MV_VOID)
 	mvUnitAddrDecShow(mvCtrlUsbMaxGet(), USB_UNIT_ID, "USB", mvUsbWinRead);
 #endif
 
-#if defined(CONFIG_MV_ETH_PP2)
-	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvPp2WinRead);
-#endif
-
 #if defined(MV_INCLUDE_XOR)
 	mvUnitAddrDecShow(mvCtrlXorMaxChanGet(), XOR_UNIT_ID, "XOR", mvXorTargetWinRead);
 #endif

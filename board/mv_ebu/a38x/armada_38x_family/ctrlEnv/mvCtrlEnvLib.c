@@ -80,9 +80,7 @@
 #include "eth/mvEth.h"
 #elif defined(CONFIG_MV_ETH_NETA)
 #include "neta/gbe/mvNeta.h"
-#elif defined(CONFIG_MV_ETH_PP2)
-#include "pp2/gbe/mvPp2Gbe.h"
-#endif /* MV_ETH_LEGACY or MV_ETH_NETA  or PP2*/
+#endif /* MV_ETH_LEGACY or MV_ETH_NETA */
 #endif
 
 #if defined(MV_INCLUDE_XOR)
@@ -1191,8 +1189,6 @@ MV_VOID mvCtrlAddrDecShow(MV_VOID)
 	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvEthWinRead);
 #elif defined(CONFIG_MV_ETH_NETA)
 	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvNetaWinRead);
-#else
-	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvPp2WinRead);
 #endif
 #endif
 

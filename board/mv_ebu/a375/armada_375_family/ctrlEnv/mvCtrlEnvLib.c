@@ -75,12 +75,6 @@
 #include "pex/mvPex.h"
 #include "pex/mvPexRegs.h"
 
-#if defined(MV_INCLUDE_GIG_ETH)
-#if defined(CONFIG_MV_ETH_PP2)
-#include "pp2/gbe/mvPp2Gbe.h"
-#endif /* MV_ETH_PP2*/
-#endif
-
 #if defined(MV_INCLUDE_XOR)
 #include "xor/mvXor.h"
 #endif
@@ -1302,12 +1296,6 @@ MV_VOID mvCtrlAddrDecShow(MV_VOID)
 
 #if defined(MV_INCLUDE_USB)
 	mvUnitAddrDecShow(mvCtrlUsbMaxGet(), USB_UNIT_ID, "USB", mvUsbWinRead);
-#endif
-
-#if defined(MV_INCLUDE_GIG_ETH)
-#if defined(CONFIG_MV_ETH_PP2)
-	mvUnitAddrDecShow(mvCtrlEthMaxPortGet(), ETH_GIG_UNIT_ID, "ETH", mvPp2WinRead);
-#endif
 #endif
 
 #if defined(MV_INCLUDE_XOR)

@@ -70,16 +70,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /********************************* Definitions ********************************/
 
-#define MV_REG_BIT_SET(offset, bitMask)                 \
-        (MV_MEMIO32_WRITE((INTER_REGS_BASE | (offset)), \
-         (MV_MEMIO32_READ((INTER_REGS_BASE | (offset))) | \
-          MV_32BIT_LE_FAST((bitMask)))))
-
-/* Avanta LP family*/
-#define MV_6660_DEV_ID                          0x6660
-#define MV_6650_DEV_ID                          0x6650
-#define MV_6610_DEV_ID                          0x6610
-
+/* Sample at Reset */
+#define MPP_SAMPLE_AT_RESET(id)		            (0xE4200 + (id * 4))
 #define DEV_ID_REG			                    0x18238
 
 #define DEVICE_ID_OFFS			                16
@@ -89,8 +81,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SATR_DEVICE_ID_2_0_MASK		            (3 << SATR_DEVICE_ID_2_0_OFFS)
 
 /*  Power Management Clock Gating Control Register  */
-#define MV_PEX_IF_REGS_OFFSET(pexIf)            (pexIf > 0 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000) \
-						                        : 0x80000)
+#define MV_PEX_IF_REGS_OFFSET(pexIf)            (pexIf > 0 ? (0x40000 + (pexIf-1)*0x4000) : 0x80000)
 #define MV_PEX_IF_REGS_BASE(unit)               (MV_PEX_IF_REGS_OFFSET(unit))
 #define PEX_CFG_DIRECT_ACCESS(pexIf, cfgReg)    (MV_PEX_IF_REGS_BASE(pexIf) + (cfgReg))
 
@@ -118,6 +109,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PCIE0_ENABLE_MASK                       (0x1 << PCIE0_ENABLE_OFFS)
 #define PCIE1_ENABLE_OFFS                       1
 #define PCIE1_ENABLE_MASK                       (0x1 << PCIE1_ENABLE_OFFS)
+#define PCIE2_ENABLE_OFFS                       2
+#define PCIE2_ENABLE_MASK                       (0x1 << PCIE2_ENABLE_OFFS)
+#define PCIE3_ENABLE_OFFS                       3
+#define PCIE4_ENABLE_MASK                       (0x1 << PCIE3_ENABLE_OFFS)
 
 /* Controller revision info */
 #define PEX_DEVICE_AND_VENDOR_ID                0x000

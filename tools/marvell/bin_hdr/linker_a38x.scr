@@ -1,0 +1,22 @@
+OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
+OUTPUT_ARCH(arm)
+
+MEMORY
+  {
+  ram1 : ORIGIN = 0x40000030, LENGTH = 0x19000
+  ram2 : ORIGIN = 0x40020000, LENGTH = 0x8000
+  }
+
+SECTIONS
+{
+        . = 0X40000030;
+        .text1 : {
+		*(.text)
+	} > ram1 = 0x0
+        .data : {
+                *(.data)
+        } > ram1 = 0x0
+        .bss : {
+                *(.bss)
+        } > ram2 = 0x0
+}

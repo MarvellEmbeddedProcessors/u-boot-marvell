@@ -121,7 +121,11 @@ INCLUDE     = -I./ -I./../ -I./src_phy_$(BOARD)/ -I./src_ddr/  -I./inc/ -I../../
 
 ifneq ($(BOARD),alp)
 	ifneq ($(BOARD),a375)
-		LDFLAGSBIN  = -T linker.scr $(LDFLAGS)
+		ifneq ($(BOARD),a38x)
+			LDFLAGSBIN  = -T linker.scr $(LDFLAGS)
+		else
+			LDFLAGSBIN  = -T linker_a38x.scr $(LDFLAGS)
+		endif
 	else
 		LDFLAGSBIN  = -T linker_alp_a375.scr $(LDFLAGS)
 	endif

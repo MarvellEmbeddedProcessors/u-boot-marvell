@@ -458,8 +458,8 @@ MV_U32 ddr3Init_(void)
 #else
 	ddr3PrintVersion();
 #endif
-	DEBUG_INIT_S("0\n");
-	/* Lib version 5.5.0 */
+	DEBUG_INIT_S("1\n");
+	/* Lib version 5.5.1 */
 
 	uiFabOpt = ddr3GetFabOpt();
 	if (bPLLWAPatch){
@@ -585,39 +585,20 @@ MV_U32 ddr3Init_(void)
 		return status;
 	}
 #endif
-#if defined(MV88F78X60)
-	/* RL WA for B0 */
-	if (mvCtrlRevGet() == MV_78XX0_B0_REV) {
-		uiReg = MV_REG_READ(REG_TRAINING_DEBUG_3_ADDR);
-		uiReg &= ~(REG_TRAINING_DEBUG_3_MASK);
-		uiReg |= 0x4;                                           /* Phase 0 */
-		uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << REG_TRAINING_DEBUG_3_OFFS);
-		uiReg |= (0x4 << (1 * REG_TRAINING_DEBUG_3_OFFS));      /* Phase 1 */
-		uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << (3 * REG_TRAINING_DEBUG_3_OFFS));
-		uiReg |= (0x6 << (3 * REG_TRAINING_DEBUG_3_OFFS));      /* Phase 3 */
-		uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << (4 * REG_TRAINING_DEBUG_3_OFFS));
-		uiReg |= (0x6 << (4 * REG_TRAINING_DEBUG_3_OFFS));
-		uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << (5 * REG_TRAINING_DEBUG_3_OFFS));
-		uiReg |= (0x6 << (5 * REG_TRAINING_DEBUG_3_OFFS));
-		MV_REG_WRITE(REG_TRAINING_DEBUG_3_ADDR, uiReg);
-	}
-#endif
-#if defined(MV88F66XX) || defined(MV88F672X)
+	/* Fix read ready phases for all SOC in reg 0x15C8*/
 	uiReg = MV_REG_READ(REG_TRAINING_DEBUG_3_ADDR);
-	/* 0x15C8[2:0] - should be 0x4  // TrnDbgRdyIncPh0_2to1 = 4
-	   0x15C8[5:3] - should be 0x4  // TrnDbgRdyIncPh1_2to1 = 4
-	   0x15C8[8:6] - should be 0x4  // TrnDbgRdyIncPh2_2to1 = 4
-	   0x15C8[11:9] - should be 0x4  // TrnDbgRdyIncPh3_2to1 = 4
-	   0x15C8[14:12] - should be 0x6  // TrnDbgRdyIncPh4_2to1 = 6
-	   0x15C8[17:15] - should be 0x6  // TrnDbgRdyIncPh5_2to1 = 6
-	 */
-	uiReg &= 0xFFFC0000;
-	uiReg |= 0x36924;
+	uiReg &= ~(REG_TRAINING_DEBUG_3_MASK);
+	uiReg |= 0x4;                                           /* Phase 0 */
+	uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << REG_TRAINING_DEBUG_3_OFFS);
+	uiReg |= (0x4 << (1 * REG_TRAINING_DEBUG_3_OFFS));      /* Phase 1 */
+	uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << (3 * REG_TRAINING_DEBUG_3_OFFS));
+	uiReg |= (0x6 << (3 * REG_TRAINING_DEBUG_3_OFFS));      /* Phase 3 */
+	uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << (4 * REG_TRAINING_DEBUG_3_OFFS));
+	uiReg |= (0x6 << (4 * REG_TRAINING_DEBUG_3_OFFS));
+	uiReg &= ~(REG_TRAINING_DEBUG_3_MASK << (5 * REG_TRAINING_DEBUG_3_OFFS));
+	uiReg |= (0x6 << (5 * REG_TRAINING_DEBUG_3_OFFS));
 	MV_REG_WRITE(REG_TRAINING_DEBUG_3_ADDR, uiReg);
-	uiReg |= 0x36024;
-	MV_REG_WRITE(REG_TRAINING_DEBUG_3_ADDR, uiReg);
-	/* Memory interface initializations */
-#endif
+
 #if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX)
 	/* AxiBrespMode[8] = Compliant, AxiAddrDecodeCntrl[11] = Internal, AxiDataBusWidth[0] = 128bit */
 	MV_REG_WRITE(REG_DRAM_AXI_CTRL_ADDR, 0);                /* 0x14A8 - AXI Control Register */

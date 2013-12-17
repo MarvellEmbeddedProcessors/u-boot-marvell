@@ -10,37 +10,44 @@ endif
 
 # Main directory structure
 SRC_PATH           = $(TOPDIR)/board/mv_ebu
-AXP_CMN_DIR		   = $(SRC_PATH)/common
-HAL_DIR            = $(AXP_CMN_DIR)/mv_hal
+AXP_CMN_DIR	   = $(SRC_PATH)/common
 COMMON_DIR         = $(AXP_CMN_DIR)/common
 USP_DIR            = $(AXP_CMN_DIR)/USP
 
 HAL_IF_DIR	   = $(AXP_CMN_DIR)/mv_hal_if
 CONFIG_DIR         = $(AXP_CMN_DIR)/config
+HAL_DIR            = $(AXP_CMN_DIR)/mv_hal
+HAL_PP2_DIR	   = $(HAL_DIR)/pp2
+HAL_NETA_DIR	   = $(HAL_DIR)/neta
 
 ifeq ($(BOARD),alp)
 SOC_DIR            = $(SRC_PATH)/alp
 FAM_DIR            = $(SOC_DIR)/avanta_lp_family
+NET_DIR            = $(HAL_PP2_DIR)
 endif
 
 ifeq ($(BOARD),a375)
 SOC_DIR            = $(SRC_PATH)/a375
 FAM_DIR            = $(SOC_DIR)/armada_375_family
+NET_DIR            = $(HAL_PP2_DIR)
 endif
 
 ifeq ($(BOARD),a370)
 SOC_DIR            = $(SRC_PATH)/a370
 FAM_DIR            = $(SOC_DIR)/armada_370_family
+NET_DIR            = $(HAL_NETA_DIR)
 endif
 
 ifeq ($(BOARD),axp)	
 SOC_DIR            = $(SRC_PATH)/axp
 FAM_DIR            = $(SOC_DIR)/armada_xp_family
+NET_DIR            = $(HAL_NETA_DIR)
 endif
 
 ifeq ($(BOARD),a38x)
 SOC_DIR            = $(SRC_PATH)/a38x
 FAM_DIR            = $(SOC_DIR)/armada_38x_family
+NET_DIR            = $(HAL_NETA_DIR)
 endif
 
 SOC_ENV_DIR        = $(FAM_DIR)/ctrlEnv
@@ -67,9 +74,7 @@ HAL_IDMA_DIR       = $(HAL_DIR)/idma
 HAL_PEX_DIR        = $(HAL_DIR)/pex
 HAL_TWSI_DIR       = $(HAL_DIR)/twsi
 HAL_TWSI_ARCH_DIR  = $(HAL_TWSI_DIR)/Arch$(CPU_ARCH)
-HAL_NETA_DIR	   = $(HAL_DIR)/neta
 HAL_NETA_GBE_DIR   = $(HAL_NETA_DIR)/gbe
-HAL_PP2_DIR	   = $(HAL_DIR)/pp2
 HAL_PP2_GBE_DIR    = $(HAL_PP2_DIR)/gbe
 HAL_PP2_BM_DIR     = $(HAL_PP2_DIR)/bm
 HAL_PP2_CLS_DIR    = $(HAL_PP2_DIR)/cls
@@ -91,7 +96,7 @@ HAL_MMC_DIR	       = $(HAL_DIR)/sdmmc
 MV_DEFINE = -DMV_UBOOT -DMV_CPU_$(ENDIAN) -DMV_$(CPU_ARCH)
 
 # Internal include path
-HAL_PATH           = -I$(HAL_DIR) -I$(HAL_IF_DIR) -I$(HAL_SATA_CORE_DIR)
+HAL_PATH           = -I$(HAL_DIR) -I$(HAL_IF_DIR) -I$(HAL_SATA_CORE_DIR) -I$(NET_DIR)
 COMMON_PATH        = -I$(COMMON_DIR) -I$(AXP_CMN_DIR)
 OSSERVICES_PATH    = -I$(OSSERVICES_DIR)
 USP_PATH           = -I$(USP_DIR) -I$(TOPDIR) -I$(USP_ETH_SWITCH_DIR) -I$(HAL_IF_DIR)

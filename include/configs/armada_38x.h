@@ -134,6 +134,7 @@ extern unsigned int mvTclkGet(void);
 #define CONFIG_CMD_BSP
 #define CONFIG_CMD_MEMORY
 #define CONFIG_CMD_BOOTD
+#define CONFIG_CMD_BOOTZ
 #define CONFIG_CMD_CONSOLE
 #define CONFIG_CMD_RUN
 #define CONFIG_CMD_MISC
@@ -158,6 +159,12 @@ extern unsigned int mvTclkGet(void);
 #define CONFIG_MENU
 #define CONFIG_BOOTP_PXE_CLIENTARCH	0x100
 #define CONFIG_BOOTP_VCI_STRING		"U-boot.armv7.armada_38x"
+
+/* Flattened Device Tree (FDT) support */
+#define CONFIG_OF_LIBFDT               1
+#define CONFIG_OF_BOARD_SETUP
+#undef CONFIG_OF_LIBFDT_IS_DEFAULT   /* dft is the default for bootcmd */
+
 #ifdef MV_FS
 /* FS supported */
 #define CONFIG_CMD_EXT2

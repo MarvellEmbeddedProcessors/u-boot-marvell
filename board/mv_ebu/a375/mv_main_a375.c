@@ -617,16 +617,6 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 	if (!env)
 		setenv("image_name", "uImage");
 
-#if CONFIG_OF_LIBFDT
-	env = getenv("fdtaddr");
-	if (!env)
-		setenv("fdtaddr", "0x1000000");
-
-	env = getenv("fdtfile");
-	if (!env)
-		setenv("fdtfile", "armada_xp_db.dtb");
-#endif
-
 #if CONFIG_AMP_SUPPORT
 	env = getenv("amp_enable");
 	if (!env || ( ((strcmp(env, "no") == 0) || (strcmp(env, "No") == 0) )))
@@ -656,13 +646,29 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 		setenv("enaLPAE", "no");
 #endif
 
+
+#if CONFIG_OF_LIBFDT
+	char bootcmd_fdt[] = "tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;\
+setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath ip=$ipaddr: \
+$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params \
+clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootz 0x2000000 - $fdtaddr;";
+	env = getenv("fdtaddr");
+	if (!env)
+		setenv("fdtaddr", "0x1000000");
+
+	env = getenv("fdtfile");
+	if (!env)
+		setenv("fdtfile", "armada_375_db.dtb");
+	env = getenv("bootcmd_fdt");
+	if (!env)
+		setenv("bootcmd_fdt",bootcmd_fdt);
+#endif
+
 #if (CONFIG_BOOTDELAY >= 0)
 	env = getenv("bootcmd");
 	if (!env)
-#if defined(CONFIG_OF_LIBFDT)
-		setenv("bootcmd","tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000 - 0x1000000;");
+#if defined(CONFIG_OF_LIBFDT_IS_DEFAULT) && defined(CONFIG_OF_LIBFDT)
+		setenv("bootcmd",bootcmd_fdt);
 #elif defined(CONFIG_CMD_STAGE_BOOT)
 //		setenv("bootcmd","stage_boot $boot_order");
 // Temporary workaround till stage_boot gets stable.

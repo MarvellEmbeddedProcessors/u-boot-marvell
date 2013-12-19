@@ -458,8 +458,8 @@ MV_U32 ddr3Init_(void)
 #else
 	ddr3PrintVersion();
 #endif
-	DEBUG_INIT_S("1\n");
-	/* Lib version 5.5.1 */
+	DEBUG_INIT_S("2\n");
+	/* Lib version 5.5.2 */
 
 	uiFabOpt = ddr3GetFabOpt();
 	if (bPLLWAPatch){

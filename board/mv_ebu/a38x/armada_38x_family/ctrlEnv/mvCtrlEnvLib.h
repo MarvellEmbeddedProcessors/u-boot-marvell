@@ -74,20 +74,6 @@
 #include "ctrlEnv/mvCtrlEnvAddrDec.h"
 
 
-typedef enum _mvConfigTypeID {
-	MV_CONFIG_MII,			/* MII board SLM 1362	*/
-	MV_CONFIG_SLIC_TDM_DEVICE,	/* TDM board SLM 1360	*/
-	MV_CONFIG_I2S_DEVICE,		/* I2S board SLM 1360	*/
-	MV_CONFIG_SPDIF_DEVICE,		/* SPDIF board SLM 1360	*/
-	MV_CONFIG_NOR,			/* NOR board SLM 1361	*/
-	MV_CONFIG_NAND,			/* NAND board SLM 1361	*/
-	MV_CONFIG_SDIO,			/* SDIO board SLM 1361	*/
-	MV_CONFIG_TYPE_MAX_MODULE,
-	MV_CONFIG_NAND_ON_BOARD = MV_CONFIG_TYPE_MAX_MODULE,	/* ON board nand detect */
-	MV_CONFIG_TYPE_MAX_OPTION,
-} MV_CONFIG_TYPE_ID;
-
-
 /* This enumerator describes the possible SMI control options */
 typedef enum _mvSMIctrl {
 	CPU_SMI_CTRL,
@@ -205,7 +191,6 @@ typedef enum {
 /* mcspLib.h API list */
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode);
 MV_U32 mvCtrlbootSrcGet(void);
-MV_U32 mvCtrlSysConfigGet(MV_CONFIG_TYPE_ID configField);
 MV_U32 mvCtrlGetCpuNum(MV_VOID);
 MV_U32 mvCtrlGetQuadNum(MV_VOID);
 MV_STATUS mvCtrlUpdatePexId(MV_VOID);

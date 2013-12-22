@@ -169,9 +169,25 @@ typedef enum _mvSatRTypeID {
 	MV_SATR_BOOT2_DEVICE,
 	MV_SATR_BOARD_ID,
 	MV_SATR_BOARD_ECO_VERSION,
+	MV_SATR_DB_USB3_PORT0,
+	MV_SATR_DB_USB3_PORT1,
+	MV_SATR_RD_NAS_SERDES4_CFG,
 	MV_SATR_MAX_OPTION,
 } MV_SATR_TYPE_ID;
 
+typedef enum _mvConfigTypeID {
+	MV_CONFIG_NO_MODULE		= 0x000,	/* MII board SLM 1362	*/
+	MV_CONFIG_MII			= BIT0,	/* MII board SLM 1362	*/
+	MV_CONFIG_SLIC_TDM_DEVICE	= BIT1,	/* TDM board SLM 1360	*/
+	MV_CONFIG_I2S_DEVICE		= BIT2,	/* I2S board SLM 1360	*/
+	MV_CONFIG_SPDIF_DEVICE		= BIT3,	/* SPDIF board SLM 1360	*/
+	MV_CONFIG_NOR			= BIT4,	/* NOR board SLM 1361	*/
+	MV_CONFIG_NAND			= BIT5,	/* NAND board SLM 1361	*/
+	MV_CONFIG_SDIO			= BIT6,	/* SDIO board SLM 1361	*/
+	MV_CONFIG_NAND_ON_BOARD		= BIT7,	/* ON board nand detect */
+	MV_CONFIG_TYPE_MAX_MODULE	= 7,
+	MV_CONFIG_TYPE_MAX_OPTION	= 8
+} MV_CONFIG_TYPE_ID;
 
 typedef struct _devCsInfo {
 	MV_U8 deviceCS;
@@ -206,6 +222,7 @@ typedef struct _boardTwsiInfo {
 } MV_BOARD_TWSI_INFO;
 
 typedef struct _boardSatrInfo {
+	char name[20];
 	MV_SATR_TYPE_ID satrId;
 	MV_U32 mask;
 	MV_U32 bitOffset;
@@ -363,6 +380,7 @@ typedef struct _boardInfo {
 	MV_BOOL configAutoDetect;
 	MV_U32	numIoExp;
 	struct MV_BOARD_IO_EXPANDER *pIoExp;
+	MV_U32  boardOptionsConfig;
 } MV_BOARD_INFO;
 
 /* {{MV_CONFIG_TYPE_ID ConfigID, twsi-ID,  Offset, ID,  isActiveForBoard[]}} */
@@ -428,6 +446,8 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum);
+MV_VOID mvBoardModuleConfigSet(MV_U32 newCfg);
+MV_32 mvBoardModuleConfigGet(MV_VOID);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
 MV_VOID mvBoardPhyAddrSet(MV_U32 ethPortNum, MV_U32 smiAddr);
 MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo);
@@ -517,18 +537,21 @@ MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val);
 /*    SATR-ID                   Mask    bit    TWSI   Reg  board	*/
 /*    SATR-ID                   Mask  offset  devID  num  active	*/
 #define MV_SAR_INFO { \
-{ MV_SATR_CPU_DDR_L2_FREQ,	0x1F,	0,	1,	0,	{1, 1, 1, 0}, BOARD_SATR_SWAP_BIT},\
-{ MV_SATR_CORE_CLK_SELECT,	0x04,	2,	3,	0,	{0, 1, 0, 0}, 0},\
-{ MV_SATR_CPU1_ENABLE,		0x01,	0,	2,	0,	{0, 1, 0, 0}, 0},\
-{ MV_SATR_SSCG_DISABLE,		0x08,	3,	3,	0,	{0, 1, 0, 0}, 0},\
-{ MV_SATR_DDR4_SELECT,		0x20,	5,	4,	1,	{0, 1, 0, 0}, BOARD_SATR_READ_ONLY},\
-{ MV_SATR_DDR_BUS_WIDTH,	0x02,	1,	4,	0,	{0, 1, 0, 0}, BOARD_SATR_READ_ONLY},\
-{ MV_SATR_DDR_ECC_ENABLE,	0x04,	2,	4,	0,	{0, 1, 0, 0}, 0},\
-{ MV_SATR_BOOT_DEVICE,		0x3,	0,	3,	0,	{0, 1, 0, 0}, BOARD_SATR_SWAP_BIT},\
-{ MV_SATR_BOOT2_DEVICE,		0x1E,	1,	2,	0,	{0, 1, 0, 0}, BOARD_SATR_SWAP_BIT},\
-{ MV_SATR_BOARD_ID,		0x7,	0,	0,	0,	{1, 1, 1, 0}, 0},\
-{ MV_SATR_BOARD_ECO_VERSION,	0xff,	0,	0,	1,	{1, 1, 1, 0}, BOARD_SATR_READ_ONLY},\
-{ MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0, 0}, 0},\
+{ "coreclock",	MV_SATR_CORE_CLK_SELECT,	0x1F,	0,	1,	0,	{1, 1, 1, 0}, BOARD_SATR_SWAP_BIT},\
+{ "freq",	MV_SATR_CPU_DDR_L2_FREQ,	0x04,	2,	3,	0,	{0, 1, 0, 0}, 0},\
+{ "cpusnum",	MV_SATR_CPU1_ENABLE,		0x01,	0,	2,	0,	{0, 1, 0, 0}, 0},\
+{ "sscg",	MV_SATR_SSCG_DISABLE,		0x08,	3,	3,	0,	{0, 1, 0, 0}, 0},\
+{ "ddr4select",	MV_SATR_DDR4_SELECT,		0x20,	5,	4,	1,	{0, 1, 0, 0}, BOARD_SATR_READ_ONLY},\
+{ "ddrbuswidth",  MV_SATR_DDR_BUS_WIDTH,	0x02,	1,	4,	0,	{0, 1, 0, 0}, BOARD_SATR_READ_ONLY},\
+{ "ddreccenable", MV_SATR_DDR_ECC_ENABLE,	0x04,	2,	4,	0,	{0, 1, 0, 0}, 0},\
+{ "bootsrc",	MV_SATR_BOOT_DEVICE,		0x3,	0,	3,	0,	{0, 1, 0, 0}, BOARD_SATR_SWAP_BIT},\
+{ "boarsrc2",	MV_SATR_BOOT2_DEVICE,		0x1E,	1,	2,	0,	{0, 1, 0, 0}, BOARD_SATR_SWAP_BIT},\
+{ "boardid",	MV_SATR_BOARD_ID,		0x7,	0,	0,	0,	{1, 1, 1, 0}, 0},\
+{ "ecoversion",	MV_SATR_BOARD_ECO_VERSION,	0xff,	0,	0,	1,	{1, 1, 1, 0}, BOARD_SATR_READ_ONLY},\
+{ "usb3port0",	MV_SATR_DB_USB3_PORT0,		0x1,	0,	1,	1,	{0, 1, 0, 0}, 0},\
+{ "usb3port1",	MV_SATR_DB_USB3_PORT1,		0x2,	1,	1,	1,	{0, 1, 0, 0}, 0},\
+{ "rdserdes4",	MV_SATR_RD_NAS_SERDES4_CFG,	0x4,	2,	1,	1,	{1, 0, 0, 0}, 0},\
+{ "max_option",	MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0, 0}, 0},\
 };
 
 

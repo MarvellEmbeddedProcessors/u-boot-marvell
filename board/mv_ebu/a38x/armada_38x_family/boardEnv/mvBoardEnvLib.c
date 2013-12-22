@@ -98,9 +98,7 @@ MV_SATR_BOOT_TABLE satrBootSrcTable[] = MV_SATR_BOOT_SRC_TABLE_VAL;
 /* Locals */
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 static MV_BOARD_INFO *board;
-MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
-
-
+static MV_VOID mvBoardModuleAutoDetect(MV_VOID);
 /*******************************************************************************
 * mvBoardEnvInit
 *
@@ -125,12 +123,12 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 	MV_U32 syncCtrl	= 0;
 	MV_BOARD_BOOT_SRC bootSrc;
 
-	memset(&boardOptionsConfig, 0x0, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION);
-
 	board = boardInfoTbl[DB_68XX_ID];	/* init for first time get the correct twsi address */
 	mvBoardIdSet(mvBoardIdGet());
+	if (mvBoardConfigAutoDetectEnabled())
+		mvBoardModuleAutoDetect();
 	bootSrc = mvBoardBootDeviceGroupSet();
-	if (MSAR_0_BOOT_NAND_NEW == bootSrc) {
+	if (MSAR_0_BOOT_NAND_NEW == bootSrc) {	/* init NAND only if boot from NAND */
 		nandDev = boardGetDevCSNum(0, BOARD_DEV_NAND_FLASH);
 		if (nandDev != 0xFFFFFFFF) {
 			/* Set NAND interface access parameters */
@@ -140,7 +138,7 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 			/* Set Ready Polarity to Active High */
 			syncCtrl |= SYNC_CTRL_READY_POL(nandDev);
 		}
-	} else if (MSAR_0_BOOT_NOR_FLASH == bootSrc) {
+	} else if (mvBoardModuleConfigGet() & MV_CONFIG_NOR) { /* init NOR only if Module NOR is detected */
 		norDev = boardGetDevCSNum(0, BOARD_DEV_NOR_FLASH);
 		if (norDev != 0xFFFFFFFF) {
 			/* Set NOR interface access parameters */
@@ -329,6 +327,44 @@ MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum)
 		return MV_TRUE;
 	return MV_FALSE;
 }
+/*******************************************************************************
+* mvBoardModuleConfigGet - Get the module configuration
+*
+* DESCRIPTION:
+*
+* INPUT:
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit module configuration.
+*
+*******************************************************************************/
+MV_32 mvBoardModuleConfigGet(MV_VOID)
+{
+	return board->boardOptionsConfig;
+}
+/*******************************************************************************
+* mvBoardModuleConfigSet - Set the module configuration
+*
+* DESCRIPTION:
+*
+* INPUT:
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit module configuration.
+*
+*******************************************************************************/
+MV_VOID mvBoardModuleConfigSet(MV_U32 newCfg)
+{
+	board->boardOptionsConfig |= newCfg;
+}
+
+
 
 /*******************************************************************************
 * mvBoardPhyAddrGet - Get the phy address
@@ -796,6 +832,49 @@ MV_VOID mvBoardMppSet(MV_U32 mppGroupNum, MV_U32 mppValue)
 	board->pBoardMppConfigValue->mppGroup[mppGroupNum] = mppValue;
 }
 
+/*******************************************************************************
+* mvBoardModuleAutoDetect - Update Board information structures according to auto-detection.
+*
+* DESCRIPTION:
+*	Update board information according to detection using TWSI bus.
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+static MV_VOID mvBoardModuleAutoDetect(MV_VOID)
+{
+	MV_U8 readValue;
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
+	int i;
+	MV_BOARD_BOOT_SRC bootSrc;
+	/*Read all TWSI board module if exsist : */
+	/* Save values board spec struct  */
+	for (i = 0; i < MV_CONFIG_TYPE_MAX_MODULE; i++) {
+		if (mvBoardConfigTypeGet((1 << i), &configInfo) == MV_TRUE) {
+			if (mvBoardTwsiGet(BOARD_TWSI_MODULE_DETECT, configInfo.twsiAddr,
+					   configInfo.offset, &readValue) != MV_OK) {
+				DB(mvOsPrintf("%s: Error: Read from TWSI failed addr=0x%x\n",
+					   __func__, configInfo.twsiAddr));
+				continue;
+			}
+			readValue &= 0x0f;	/* only 4 bit relevant  */
+			/* twsi ID represente  module configuration ID*/
+			if (configInfo.twsiId == readValue)
+				mvBoardModuleConfigSet(configInfo.configId);
+		}
+	}
+	bootSrc = mvBoardBootDeviceGroupSet();
+	if (MSAR_0_BOOT_NAND_NEW == bootSrc)
+		mvBoardModuleConfigSet(MV_CONFIG_NAND_ON_BOARD);
+
+}
 
 /*******************************************************************************
 * mvBoardInfoUpdate - Update Board information structures according to auto-detection.
@@ -815,31 +894,7 @@ MV_VOID mvBoardMppSet(MV_U32 mppGroupNum, MV_U32 mppValue)
 *******************************************************************************/
 MV_VOID mvBoardInfoUpdate(MV_VOID)
 {
-	MV_U8 readValue;
-	MV_BOARD_CONFIG_TYPE_INFO configInfo;
-	int i;
-	MV_BOARD_BOOT_SRC bootSrc;
 	MV_U32	reg;
-
-
-	/*Read all TWSI board module if exsist : */
-	/* Save values Locally in configVal[] */
-	for (i = 0; i < MV_CONFIG_TYPE_MAX_MODULE; i++) {
-		if (mvBoardConfigTypeGet(i, &configInfo) == MV_TRUE) {
-			if (mvBoardTwsiGet(BOARD_TWSI_MODULE_DETECT, configInfo.twsiAddr,
-					   configInfo.offset, &readValue) != MV_OK) {
-				DB(mvOsPrintf("%s: Error: Read from TWSI failed addr=0x%x\n",
-					   __func__, configInfo.twsiAddr));
-				continue;
-			}
-			/* twsi ID represente  module configuration ID*/
-			if (configInfo.twsiId == readValue)
-				boardOptionsConfig[configInfo.configId] = 1;
-		}
-	}
-	bootSrc = mvBoardBootDeviceGroupSet();
-	if (MSAR_0_BOOT_NAND_NEW == bootSrc)
-		boardOptionsConfig[MV_CONFIG_NAND_ON_BOARD] = 1;
 
 	/* Update MPP group types and values according to board configuration */
 	mvBoardMppIdUpdate();
@@ -871,9 +926,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 *******************************************************************************/
 MV_BOOL mvBoardIsModuleConnected(MV_U32 ModuleID)
 {
-	if (ModuleID >= MV_CONFIG_TYPE_MAX_OPTION)
-		return MV_FALSE;
-	if (boardOptionsConfig[ModuleID] == 1)
+	if (mvBoardModuleConfigGet() & ModuleID)
 		return MV_TRUE;
 	return MV_FALSE;
 }
@@ -1042,7 +1095,7 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 	case MSAR_0_BOOT_NOR_FLASH:
 		break;
 	case MSAR_0_BOOT_NAND_NEW:
-		boardOptionsConfig[MV_CONFIG_NAND_ON_BOARD] = 1;
+		mvBoardModuleConfigSet(MV_CONFIG_NAND_ON_BOARD);
 		break;
 	case MSAR_0_BOOT_SPI_FLASH:
 		break;
@@ -1255,7 +1308,7 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 	mvOsOutput("Board configuration detected:\n");
 
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_MODULE; i++) {
-		if (mvBoardIsModuleConnected(i))
+		if (mvBoardIsModuleConnected(1 << i))
 			mvOsOutput("       %s module.\n", moduleStr[i]);
 
 	}
@@ -1657,7 +1710,7 @@ MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *s
 	 * and check if field is relevant to current running board */
 	for (i = 0; i < MV_SATR_MAX_OPTION ; i++)
 		if (boardSatrInfo[i].satrId == satrClass) {
-			*satrInfo = boardSatrInfo[i];
+			memcpy(satrInfo, &boardSatrInfo[i], sizeof(MV_BOARD_SATR_INFO));
 			if (boardSatrInfo[i].isActiveForBoard[boardId])
 				return MV_OK;
 			else

@@ -309,21 +309,21 @@ typedef struct _mvSATRBootTable {
 /*31*/ { MSAR_0_BOOT_SDIO,		0,		40,		37		, \
 		"SDIO   Port0"}, /* port, mpp, mpp */ \
 /*32*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24BIT, 25, \
-		"SPI 24 bit address"}, \
+		"SPI0 24 bit address"}, \
 /*33*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 25, \
-		"SPI 32 bit address"}, \
+		"SPI0 32 bit address"}, \
 /*34*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24BIT, 59, \
-		"SPI 24 bit address"}, \
+		"SPI1 24 bit address"}, \
 /*35*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI1, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 59, \
-		"SPI 32 bit address"}, \
+		"SPI1 32 bit address"}, \
 /*36*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24BIT, 25, \
-		"SPI 24 bit address"}, \
+		"SPI0 24 bit address"}, \
 /*37*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 25, \
-		"SPI 32 bit address"}, \
+		"SPI0 32 bit address"}, \
 /*38*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_24BIT, 25, \
-		"SPI 24 bit address"}, \
+		"SPI1 24 bit address"}, \
 /*39*/ { MSAR_0_BOOT_SPI_FLASH,     MSAR_0_SPI0, MSAR_0_BOOT_DEV_BUS_WIDTH_SPI_32BIT, 25, \
-		"SPI 32 bit address"} \
+		"SPI1 32 bit address"} \
 }
 
 typedef struct {

@@ -187,7 +187,8 @@ MV_BOARD_INFO db88f68xx_board_info = {
 	/* Enable modules auto-detection. */
 	.configAutoDetect		= MV_TRUE,
 	.numIoExp			= 0,
-	.pIoExp				= NULL
+	.pIoExp				= NULL,
+	.boardOptionsConfig		= MV_CONFIG_NO_MODULE
 };
 
 /*******************************************************************************
@@ -286,7 +287,8 @@ MV_BOARD_INFO rdNas88f68XX_board_info = {
 	/* Enable modules auto-detection. */
 	.configAutoDetect		= MV_FALSE,
 	.numIoExp			= ARRSZ(ioExpNas),
-	.pIoExp				= ioExpNas
+	.pIoExp				= ioExpNas,
+	.boardOptionsConfig		= MV_CONFIG_NO_MODULE
 };
 /*******************************************************************************
  * A380 RD-WAP-88F68XX board */
@@ -363,7 +365,8 @@ MV_BOARD_INFO rdWAP88f68XX_board_info = {
 	/* Enable modules auto-detection. */
 	.configAutoDetect		= MV_FALSE,
 	.numIoExp			= ARRSZ(ioExpWap),
-	.pIoExp				= ioExpWap
+	.pIoExp				= ioExpWap,
+	.boardOptionsConfig		= MV_CONFIG_NO_MODULE
 };
 
 
@@ -459,7 +462,8 @@ MV_BOARD_INFO A380_customer_board_info = {
 	.norFlashReadParams		= A380_CUSTOMER_BOARD_NOR_READ_PARAMS,
 	.norFlashWriteParams		= A380_CUSTOMER_BOARD_NOR_WRITE_PARAMS,
 	.numIoExp			= 0,
-	.pIoExp				= NULL
+	.pIoExp				= NULL,
+	.boardOptionsConfig		= MV_CONFIG_NO_MODULE
 };
 
 /*

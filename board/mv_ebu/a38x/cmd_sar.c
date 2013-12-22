@@ -38,6 +38,7 @@ typedef struct {
 	MV_STATUS internalFreq;
 } MV_BOOT_SRC;
 extern MV_SATR_BOOT_TABLE satrBootSrcTable[];
+extern MV_BOARD_SATR_INFO boardSatrInfo[];
 
 typedef struct _boardSatrDefault {
 	MV_SATR_TYPE_ID satrId;
@@ -77,26 +78,17 @@ int do_sar_default(void)
 
 int sar_cmd_get(const char *cmd)
 {
-	if (strcmp(cmd, "coreclock") == 0)
-		return MV_SATR_CORE_CLK_SELECT;
-	if (strcmp(cmd, "freq") == 0)
-		return MV_SATR_CPU_DDR_L2_FREQ;
-	if (strcmp(cmd, "cpusnum") == 0)
-		return MV_SATR_CPU1_ENABLE;
-	if (strcmp(cmd, "sscg") == 0)
-		return MV_SATR_SSCG_DISABLE;
-	if (strcmp(cmd, "ddr4select") == 0)
-		return MV_SATR_DDR4_SELECT;
-	if (strcmp(cmd, "ddrbuswidth,") == 0)
-		return MV_SATR_DDR_BUS_WIDTH;
-	if (strcmp(cmd, "ddreccenable") == 0)
-		return MV_SATR_DDR_ECC_ENABLE;
-	if (strcmp(cmd, "bootsrc") == 0)
-		return MV_SATR_BOOT_DEVICE;
-	if (strcmp(cmd, "boardid") == 0)
-		return MV_SATR_BOARD_ID;
-	if (strcmp(cmd, "ecoversion") == 0)
-		return MV_SATR_BOARD_ECO_VERSION;
+	int i;
+	MV_BOARD_SATR_INFO satrInfo;
+
+	for (i = MV_SATR_CPU_DDR_L2_FREQ; i < MV_SATR_MAX_OPTION; i++) {
+		if (i == MV_SATR_BOOT2_DEVICE)
+			continue;
+		if (mvBoardSatrInfoConfig(i, &satrInfo) != MV_OK)
+			continue;
+		if (strcmp(cmd, satrInfo.name) == 0)
+			return satrInfo.satrId;
+	}
 	if (strcmp(cmd, "dump") == 0)
 		return CMD_DUMP;
 	if (strcmp(cmd, "default") == 0)
@@ -175,6 +167,21 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("Determines the ECO version\n");
 		break;
 
+	case MV_SATR_DB_USB3_PORT0:
+		mvOsPrintf("Determines the USB3 Port0 Mode:\n");
+		mvOsPrintf("0 = Host.\n");
+		mvOsPrintf("1 = Device.\n ");
+		break;
+	case MV_SATR_DB_USB3_PORT1:
+		mvOsPrintf("Determines the USB3 Port1 Mode:\n");
+		mvOsPrintf("0 = Host.\n");
+		mvOsPrintf("1 = Device.\n ");
+		break;
+	case MV_SATR_RD_NAS_SERDES4_CFG:
+		mvOsPrintf("Determines the RD-NAS SERDES lane #4 configuration:\n");
+		mvOsPrintf("0 = USB3.\n");
+		mvOsPrintf("1 = SGMII. \n ");
+		break;
 	default:
 		mvOsPrintf("Usage: sar list [options] (see help) \n");
 		return 1;
@@ -243,6 +250,15 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		break;
 	case MV_SATR_BOARD_ECO_VERSION:
 		mvOsPrintf("Determines the ECO version %d.%d\n", (tmp & 0x0f), ((tmp >> 4) & 0x0f));
+		break;
+	case MV_SATR_DB_USB3_PORT0:
+		mvOsPrintf("USB3-Port0 Mode: %s\n",(tmp == 0)? "Host" : "Device");
+		break;
+	case MV_SATR_DB_USB3_PORT1:
+		mvOsPrintf("USB3-Port1 Mode: %s\n",(tmp == 0)? "Host" : "Device");
+		break;
+	case MV_SATR_RD_NAS_SERDES4_CFG:
+		mvOsPrintf("Determines the RD-NAS-SERDES Lane #4 configuration:  %s\n", (tmp == 0)? "USB3" : "SGMII");
 		break;
 
 		case CMD_DUMP:
@@ -347,7 +363,9 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "SatR list bootsrc	- prints the S@R modes list\n"
 "SatR list ddr4select   - prints the S@R modes list\n"
 "SatR list ddrbuswidth  - prints the S@R modes list\n"
-"SatR list ddreccenable - prints the S@R modes list\n"
+"SatR list usb3port0    - prints the S@R modes list\n"
+"SatR list usb3port1    - prints the S@R modes list\n"
+"SatR list rdserdes4    - prints the S@R modes list\n\n"
 
 "SatR read coreclock	- read and print the core frequency S@R value\n"
 "SatR read freq	        - read and print the CPU DDR frequency S@R value\n"
@@ -359,13 +377,19 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "SatR read ddreccenable - read and print the DDR ECC enable S@R value\n"
 "SatR read boardid      - read and print the board ID S@R value\n"
 "SatR read ecoversion   - read and print the ECO version S@R value\n"
+"SatR read usb3port0    - read and print the USB3-Port0 mode\n"
+"SatR read usb3port1    - read and print the USB3-Port1 mode\n"
+"SatR read rdserdes4    - read and print the RD-NAS SERDES lane#4 configuration\n"
 "SatR read dump         - read and print all active S@R value\n\n"
 
-"SatR write coreclock <val>	- write the S@R with core frequency value\n"
-"SatR write freq <val>	        - write the S@R with CPU DDR frequency value\n"
-"SatR write cpusnum <val>	- write the S@R with sscg mode value\n"
-"SatR write sscg <val>		- write the S@R with sscg mode value\n"
-"SatR write bootsrc <val>	- write the S@R with Boot source value\n"
-"SatR write default <val>	- write the S@R default value\n"
+"SatR write coreclock <val> - write the S@R with core frequency value\n"
+"SatR write freq <val>	    - write the S@R with CPU DDR frequency value\n"
+"SatR write cpusnum <val>   - write the S@R with sscg mode value\n"
+"SatR write sscg <val>	    - write the S@R with sscg mode value\n"
+"SatR write bootsrc <val>   - write the S@R with Boot source value\n"
+"SatR write usb3port0 <val> - write the S@R with USB3-Port0 mode\n"
+"SatR write usb3port1 <val> - write the S@R with USB3-Port1 mode\n"
+"SatR write rdserdes4 <val> - write the S@R with RD-NAS SERDES lane#4 configuration\n"
+"SatR write default <val>   - write the S@R default value\n"
 );
 #endif /*defined(CONFIG_CMD_SAR)*/

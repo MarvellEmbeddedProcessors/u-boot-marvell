@@ -19,6 +19,12 @@ trace.clock 25.0Mhz
 system.mode attach
 system.Up
 
+; set system settings according LE MMU
+Data.Set C15:1 %LONG 0x00052078
+
+BREAK.SELECT PROGRAM ONCHIP
+
+
 print "Configure PCIe interface #1 to X1"
 ;print "Set the capabilities register"
 data.out 0xD004006c %LONG 0x7ac12
@@ -293,11 +299,5 @@ data.in 0xd0040070 /LONG
 	d.s 0xD0020184 %LONG 0x0FFFFFE1 ; RL
 	d.s 0xD00182e4 %LONG 0xfffdffff ; RL
 
-;	d.load Y:\home\nadavh\work\uni-u-boot-2013.01-14t1\u-boot\u-boot
-;	d.load \work\syssw-u-boot-2013.01-14t1-internal-ddr3v2\u-boot\u-boot
-;	d.load ~/work/uni-u-boot-2013.01-14t1/u-boot/u-boot
-	d.load ~/work/syssw-u-boot-2013.01-14t1-internal-ddr3v2/u-boot/u-boot
-
-go
 
 enddo

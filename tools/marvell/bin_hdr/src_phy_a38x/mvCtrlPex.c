@@ -177,15 +177,17 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 {
 	MV_U32 pexIdx, tmp, next_busno, first_busno, tempPexReg, tempReg, addr, devId, ctrlMode;
 	SERDES_TYPE serdesType;
+	MV_U32 serdesIdx;
 
 	DEBUG_INIT_FULL_S("\n### mvHwsPexConfig ###\n");
 
-	for (pexIdx = 0; pexIdx < MAX_SERDES_LANES; pexIdx++) {
-		serdesType = serdesMap[pexIdx].serdesType;
+	for (serdesIdx = 0; serdesIdx < MAX_SERDES_LANES; serdesIdx++) {
+		serdesType = serdesMap[serdesIdx].serdesType;
 		/* configuration for PEX only */
 		if ((serdesType != PEX0) && (serdesType != PEX1) && (serdesType != PEX2) && (serdesType != PEX3))
 			continue;
 
+		pexIdx = serdesType - PEX0;
 		tmp = MV_REG_READ(PEX_CAPABILITIES_REG(pexIdx));
 		tmp &= ~(0xf << 20);
 		tmp |= (0x4 << 20);
@@ -195,8 +197,8 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 	tmp = MV_REG_READ(SOC_CTRL_REG);
 	tmp &= ~(0x03);
 
-	for (pexIdx = 0; pexIdx < MAX_SERDES_LANES; pexIdx++) {
-		serdesType = serdesMap[pexIdx].serdesType;
+	for (serdesIdx = 0; serdesIdx < MAX_SERDES_LANES; serdesIdx++) {
+		serdesType = serdesMap[serdesIdx].serdesType;
 		switch (serdesType) {
 		case PEX0:
 			tmp |= 0x1 << PCIE0_ENABLE_OFFS;
@@ -224,18 +226,20 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 #ifndef WIN32
 	mvOsDelay(150);
 #endif
-	for (pexIdx = 0; pexIdx < MAX_SERDES_LANES; pexIdx++) {
-		serdesType = serdesMap[pexIdx].serdesType;
+	for (serdesIdx = 0; serdesIdx < MAX_SERDES_LANES; serdesIdx++) {
+		serdesType = serdesMap[serdesIdx].serdesType;
 		DEBUG_INIT_FULL_S(" serdesType=0x");
 		DEBUG_INIT_FULL_D(serdesType, 8);
 		DEBUG_INIT_FULL_S("\n");
-		DEBUG_INIT_FULL_S(" pexIdx=0x");
-		DEBUG_INIT_FULL_D(pexIdx, 8);
+		DEBUG_INIT_FULL_S(" serdesIdx=0x");
+		DEBUG_INIT_FULL_D(serdesIdx, 8);
 		DEBUG_INIT_FULL_S("\n");
 
 		/* configuration for PEX only */
 		if ((serdesType != PEX0) && (serdesType != PEX1) && (serdesType != PEX2) && (serdesType != PEX3))
 			continue;
+
+		pexIdx = serdesType - PEX0;
 		tmp = MV_REG_READ(PEX_DBG_STATUS_REG(pexIdx));
 
 		first_busno = next_busno;
@@ -300,12 +304,13 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 	/* update pex DEVICE ID*/
 	ctrlMode = mvCtrlModelGet();
 
-	for (pexIdx = 0; pexIdx < 2; pexIdx++) {
-		serdesType = serdesMap[pexIdx].serdesType;
+	for (serdesIdx = 0; serdesIdx < MAX_SERDES_LANES; serdesIdx++) {
+		serdesType = serdesMap[serdesIdx].serdesType;
 		/* configuration for PEX only */
 		if ((serdesType != PEX0) && (serdesType != PEX1) && (serdesType != PEX2) && (serdesType != PEX3))
 			continue;
 
+		pexIdx = serdesType - PEX0;
 		devId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexIdx, PEX_DEVICE_AND_VENDOR_ID));
 		devId &= 0xFFFF;
 		devId |= ((ctrlMode << 16) & 0xFFFF0000);

@@ -673,10 +673,9 @@ MV_STATUS mvSerdesPowerUpCtrl
 			CHECK_STATUS(mvSeqExec(serdesNum, SGMII_TX_CONFIG_SEQ2));
 
 			/* GBE configuration */
-			regData = MV_REG_READ(GBE_CONFIGURATION_REG + (0x28 * serdesNum));
-			regData &= ~(0x3);
-			regData |= serdesType - SGMII0; /* write the SGMII index */
-			MV_REG_WRITE(GBE_CONFIGURATION_REG + (0x28 * serdesNum), regData);
+			regData = MV_REG_READ(GBE_CONFIGURATION_REG);
+			regData |= 0x1 << (serdesType - SGMII0); /* write the SGMII index */
+			MV_REG_WRITE(GBE_CONFIGURATION_REG, regData);
 
 			break;
 		default:

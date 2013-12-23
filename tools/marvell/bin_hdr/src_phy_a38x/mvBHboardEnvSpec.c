@@ -181,8 +181,8 @@ SERDES_MAP DbConfigDefault[MAX_SERDES_LANES] =
 	{ PEX0,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1		      },
 	{ PEX1,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1		      },
 	{ SATA3,     __3Gbps,		   SERDES_DEFAULT_MODE		      },
-	{ USB3_HOST, __5Gbps,		   SERDES_DEFAULT_MODE		      },
-	{ USB3_HOST, __5Gbps,		   SERDES_DEFAULT_MODE		      }
+	{ USB3_HOST0, __5Gbps,		   SERDES_DEFAULT_MODE		      },
+	{ USB3_HOST1, __5Gbps,		   SERDES_DEFAULT_MODE		      }
 };
 
 SERDES_MAP DbConfigSLM1363_C[MAX_SERDES_LANES] =
@@ -208,9 +208,9 @@ SERDES_MAP DbConfigSLM1363_D[MAX_SERDES_LANES] =
 SERDES_MAP DbConfigSLM1363_E[MAX_SERDES_LANES] =
 {
 	{ PEX0,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ USB3_HOST,	  __5Gbps,		SERDES_DEFAULT_MODE		   },
+	{ USB3_HOST0,	  __5Gbps,		SERDES_DEFAULT_MODE		   },
 	{ SATA1,	  __3Gbps,		SERDES_DEFAULT_MODE		   },
-	{ USB3_HOST,	  __5Gbps,		SERDES_DEFAULT_MODE		   },
+	{ USB3_HOST1,	  __5Gbps,		SERDES_DEFAULT_MODE		   },
 	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE		   },
 	{ SATA2,	  __3Gbps,		SERDES_DEFAULT_MODE		   }
 };
@@ -222,7 +222,7 @@ SERDES_MAP DbConfigSLM1363_F[MAX_SERDES_LANES] =
 	{ PEX1,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
 	{ PEX3,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
 	{ SATA1,	  __3Gbps,		SERDES_DEFAULT_MODE		   },
-	{ USB3_HOST,	  __5Gbps,		SERDES_DEFAULT_MODE		   }
+	{ USB3_HOST1,	  __5Gbps,		SERDES_DEFAULT_MODE		   }
 };
 
 SERDES_MAP DbConfigSLM1364_D[MAX_SERDES_LANES] =
@@ -470,7 +470,7 @@ MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
 	serdesMapArray[3].serdesMode =  SERDES_DEFAULT_MODE;
 
 	/* Lane 4 */
-	serdesMapArray[4].serdesType = USB3_HOST;
+	serdesMapArray[4].serdesType = USB3_HOST0;
 	serdesMapArray[4].serdesSpeed = __5Gbps;
 	serdesMapArray[4].serdesMode = SERDES_DEFAULT_MODE;
 

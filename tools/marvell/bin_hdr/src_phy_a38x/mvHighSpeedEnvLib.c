@@ -109,7 +109,8 @@ MV_U8 commonPhysSelectorsMap[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 	{ NA,  0x5,    0x4,	NA,	 0x3,	  NA	  },    /* SGMII1 */
 	{ NA,  NA,     NA,	0x4,	 NA,	  0x3	  },    /* SGMII2 */
 	{ NA,  0X7,    NA,	NA,	 NA,	  NA	  },    /* QSGMII */
-	{ NA,  0x6,    NA,	0x5,	 0x4,	  0x4	  },    /* USB3_HOST */
+	{ NA,  0x6,    NA,	NA,	 0x4,	  NA	  },    /* USB3_HOST0 */
+	{ NA,  NA,     NA,	0x5,	 NA,	  0x4	  },    /* USB3_HOST1 */
 	{ NA,  NA,     NA,	0x6,	 0x5,	  0x5	  },    /* USB3_DEVICE */
 	{ 0x0, 0x0,    0x0,	0x0,	 0x0,	  0x0	  } /* DEFAULT_SERDES */
 };
@@ -129,7 +130,8 @@ REF_CLOCK serdesTypeToRefClockMap[LAST_SERDES_TYPE] =
 	REF_CLOCK__25MHz,       /* SGMII1 */
 	REF_CLOCK__25MHz,       /* SGMII2 */
 	REF_CLOCK__25MHz,       /* QSGMII */
-	REF_CLOCK__100MHz,      /* USB3_HOST */
+	REF_CLOCK__100MHz,      /* USB3_HOST0 */
+	REF_CLOCK__100MHz,      /* USB3_HOST1 */
 	REF_CLOCK__25MHz,       /* USB3_DEVICE */
 	REF_CLOCK_UNSUPPORTED   /* DEFAULT_SERDES */
 };
@@ -378,7 +380,8 @@ SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
 		else if (baudRate == __5Gbps)
 			seqId = PEX__5_SPEED_CONFIG_SEQ;
 		break;
-	case USB3_HOST:
+	case USB3_HOST0:
+	case USB3_HOST1:
 		if (baudRate == __5Gbps)
 			seqId = USB3__HOST_SPEED_CONFIG_SEQ;
 		break;
@@ -586,7 +589,8 @@ MV_STATUS mvSerdesPowerUpCtrl
 #endif                  /* DB_LINK_CHECK */
 
 			break;
-		case USB3_HOST:
+		case USB3_HOST0:
+		case USB3_HOST1:
 		case USB3_DEVICE:
 			CHECK_STATUS(mvSeqExec(serdesNum, USB3_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
@@ -755,7 +759,8 @@ MV_STATUS mvHwsRefClockSet
 	case PEX1:
 	case PEX2:
 	case PEX3:
-	case USB3_HOST:
+	case USB3_HOST0:
+	case USB3_HOST1:
 	case USB3_DEVICE:
 		if (refClock == REF_CLOCK__100MHz)
 			data = 0x0;

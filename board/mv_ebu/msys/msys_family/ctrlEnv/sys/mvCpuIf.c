@@ -290,6 +290,7 @@ MV_STATUS mvCpuIfInit(MV_CPU_DEC_WIN *cpuAddrWinMap)
 *       None.
 *
 *******************************************************************************/
+int DramCount = -1;
 MV_STATUS mvCpuIfDramInit()
 {
 	MV_U64 base = 0;
@@ -297,7 +298,6 @@ MV_STATUS mvCpuIfDramInit()
 
 	for (cs = 0; cs < SDRAM_MAX_CS; cs++) {
 		size = MV_REG_READ(SDRAM_SIZE_REG(cs)) & SDRAM_ADDR_MASK;
-/*		if (size > 0 && base < SDRAM_MAX_ADDR) { */
 		if (size != 0) {
 			size |= ~(SDRAM_ADDR_MASK);
 
@@ -306,14 +306,14 @@ MV_STATUS mvCpuIfDramInit()
 			MV_REG_WRITE(SDRAM_WIN_BASE_REG(cs), temp);
 
 			/* Check if out of max window size and resize the window */
-#if 0
-			if (base+size > SDRAM_MAX_ADDR) {
-				size = SDRAM_MAX_ADDR - base - 1;
-				MV_REG_WRITE(SDRAM_SIZE_REG(cs), 0);
-			}
-#endif
 			temp = (MV_REG_READ(SDRAM_WIN_CTRL_REG(cs)) & ~(SDRAM_ADDR_MASK)) | (1<<SDRAM_WIN_CTRL_WIN_ENA_OFFS);
 			temp |= (size & SDRAM_ADDR_MASK);
+
+			temp = 0x7FFFFFE1;
+			if (DramCount++ < 0) {
+				printf("%s: TODO when ddr training is ready:\n", __func__);
+				printf("fix SDRAM_WIN_CTRL_REG (currently hard-coded value 0x7FFFFFE1)\n");
+			}
 
 			MV_REG_WRITE(SDRAM_WIN_CTRL_REG(cs), temp);
 			base += ((MV_U64)size + 1);

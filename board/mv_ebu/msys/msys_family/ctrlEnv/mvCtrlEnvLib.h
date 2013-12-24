@@ -140,6 +140,7 @@ typedef struct {
 } MV_BIOS_MODE;
 
 /* mcspLib.h API list */
+MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit);
 MV_U32 mvCtrlGetCpuNum(MV_VOID);
 MV_BOOL mvCtrlIsValidSatR(MV_VOID);
 

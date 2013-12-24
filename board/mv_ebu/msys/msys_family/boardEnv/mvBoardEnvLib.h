@@ -253,9 +253,12 @@ typedef struct _boardInfo {
 } MV_BOARD_INFO;
 
 MV_VOID mvBoardEnvInit(MV_VOID);
+MV_U32 mvBoardDfxConfig(MV_VOID);
 MV_U16 mvBoardModelGet(MV_VOID);
 MV_U16 mvBoardRevGet(MV_VOID);
 MV_STATUS mvBoardNameGet(char *pNameBuff);
+MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum);
+MV_BOOL mvBoardIsEthActive(MV_U32 ethNum);
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum);
@@ -286,7 +289,6 @@ MV_U8 mvBoardTwsiAddrTypeGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_32 mvBoardNandWidthGet(void);
 MV_U32 mvBoardIdGet(MV_VOID);
-MV_VOID mvBoardIdSet(MV_VOID);
 MV_U32 mvBoardSledCpuNumGet(MV_VOID);
 
 MV_STATUS mvBoardTwsiRead(MV_BOARD_TWSI_CLASS class1, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);

@@ -31,6 +31,11 @@ SOC_DIR            = $(SRC_PATH)/a375
 FAM_DIR            = $(SOC_DIR)/armada_375_family
 NET_DIR            = $(HAL_PP2_DIR)
 endif
+ifeq ($(BOARD),msys)
+SOC_DIR            = $(SRC_PATH)/msys
+FAM_DIR            = $(SOC_DIR)/msys_family
+NET_DIR            = $(HAL_NETA_DIR)
+endif
 
 ifeq ($(BOARD),a370)
 SOC_DIR            = $(SRC_PATH)/a370

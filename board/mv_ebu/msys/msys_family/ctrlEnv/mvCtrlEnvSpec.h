@@ -83,7 +83,7 @@ extern "C" {
  */
 #define MV_DRAM_REGS_OFFSET			(0x0)
 #define MV_AURORA_L2_REGS_OFFSET		(0x8000)
-
+#define MV_RTC_REGS_OFFSET			(0x10300)
 #define MV_DEV_BUS_REGS_OFFSET			(0x10400)
 #define MV_SPI_REGS_OFFSET(unit)		(0x10600 + (unit * 0x80))
 #define MV_TWSI_SLAVE_REGS_OFFSET(chanNum)	(0x11000 + (chanNum * 0x100))
@@ -109,12 +109,15 @@ extern "C" {
 	#define MV_ETH_BASE_ADDR		(0x70000)
 #endif
 #define MV_ETH_REGS_OFFSET(port)		(MV_ETH_BASE_ADDR + (port)* 0x40000 )
-#define MV_PEX_IF_REGS_OFFSET(pexIf)		(0x40000)
-
+#define MV_PEX_IF_REGS_OFFSET(pexIf)\
+			(pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000)\
+	: (0X42000 + ((pexIf) % 8) * 0x40000))
+#define MV_USB_REGS_OFFSET(dev)			(0x50000 + (dev * 0x1000))
 #define MV_XOR_REGS_OFFSET(unit)		(0xF0000)
 #if defined(MV_INCLUDE_IDMA)
 #define MV_IDMA_REGS_OFFSET			(0x60800)
 #endif
+#define MV_SATA_REGS_OFFSET			(0xA0000)
 #define MV_COMM_UNIT_REGS_OFFSET		(0xB0000)
 #define MV_NFC_REGS_OFFSET			(0xD0000)
 #define MV_BM_REGS_OFFSET			(0xC0000)
@@ -156,7 +159,7 @@ extern "C" {
 
 #define MV_SATA_MAX_CHAN			0
 
-#define MV_MPP_MAX_GROUP			2
+#define MV_MPP_MAX_GROUP			5
 
 #define MV_DRAM_MAX_CS				4
 #define MV_SPI_MAX_CS				8
@@ -249,16 +252,21 @@ typedef enum _mvUnitId {
 	PEX_UNIT_ID,
 	ETH_GIG_UNIT_ID,
 	USB_UNIT_ID,
+	USB3_UNIT_ID,
 	IDMA_UNIT_ID,
 	XOR_UNIT_ID,
 	SATA_UNIT_ID,
-	TDM_32CH_UNIT_ID,
+	TDM_UNIT_ID,
 	UART_UNIT_ID,
 	CESA_UNIT_ID,
 	SPI_UNIT_ID,
+	AUDIO_UNIT_ID,
 	SDIO_UNIT_ID,
+	TS_UNIT_ID,
+	XPON_UNIT_ID,
 	BM_UNIT_ID,
 	PNC_UNIT_ID,
+	I2C_UNIT_ID,
 	MAX_UNITS_ID
 } MV_UNIT_ID;
 

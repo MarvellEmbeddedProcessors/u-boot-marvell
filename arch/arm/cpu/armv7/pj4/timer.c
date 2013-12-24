@@ -45,7 +45,7 @@
 #include "cntmr/mvCntmr.h"
 #include "cntmr/mvCntmrRegs.h"
 #include "cpu/mvCpu.h"
-#if defined(MV88F78X60)
+#if defined(MV88F78X60) || defined(MV_BOBCAT2)
 #define MV_BOARD_REFCLK MV_BOARD_REFCLK_25MHZ
 #define CTCR_ARM_TIMER_FRQ_SEL(cntr) CTCR_ARM_TIMER_25MhzFRQ_EN(cntr)	 
 #else

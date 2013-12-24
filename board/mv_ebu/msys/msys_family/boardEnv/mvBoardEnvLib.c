@@ -113,7 +113,6 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 	MV_U32 boardId = mvBoardIdGet();
 	MV_U32 nandDev;
 	MV_U32 norDev;
-	MV_U32 I2C_conf;
 
 	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
 		mvOsPrintf("mvBoardEnvInit:Board unknown.\n");
@@ -149,15 +148,25 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 	mvGppTypeSet(0, 0xFFFFFFFF, BOARD_INFO(boardId)->gppOutEnValLow);
 	mvGppTypeSet(1, 0xFFFFFFFF, BOARD_INFO(boardId)->gppOutEnValMid);
 
+}
+
+MV_U32 mvBoardDfxConfig(MV_VOID)
+{
+	MV_U32 I2C_conf;
+
 	/* set acess to DFX */
 	I2C_conf = MV_REG_READ(I2C_CONFIC_DEBUG_REG);
 	I2C_conf &= ICDR_UINIT_ID_MASK;
 	I2C_conf |= 8; /* acess to DFX */
 	MV_REG_WRITE(I2C_CONFIC_DEBUG_REG,I2C_conf);
+
 	/* open windows to DFX */
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(1), 0x000f0081);
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_BASE_REG(1), DFX_REGS_BASE);
+
+	return 0;
 }
+
 /*******************************************************************************
 * mvBoardModelGet - Get Board model
 *
@@ -237,6 +246,54 @@ MV_STATUS mvBoardNameGet(char *pNameBuff)
 	mvOsSPrintf(pNameBuff, "%s", BOARD_INFO(boardId)->boardName);
 	return MV_OK;
 }
+
+/*******************************************************************************
+* mvBoardIsEthConnected - detect if a certain Ethernet port is Connected
+*
+* DESCRIPTION:
+*	This routine returns true if a certain Ethernet port is Connected
+*
+* INPUT:
+*	ethNum - index of the ethernet port requested
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_TRUE if the requested ethernet port is connected.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
+{
+	if (ethNum == 0)
+		return MV_TRUE;
+
+	return MV_FALSE;
+}
+
+/*******************************************************************************
+* mvBoardIsEthActive - this routine indicate which ports can be used by U-Boot
+*
+* DESCRIPTION:
+*	This routine returns true if a certain Ethernet port is
+*	Active and usable as a regular eth interface
+*
+* INPUT:
+*	ethNum - index of the ethernet port requested
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_TRUE if the requested ethernet port is Active and usable.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsEthActive(MV_U32 ethNum)
+{
+	/* for Msys, all connected ports are Active and usabe */
+	return mvBoardIsEthConnected(ethNum);
+}
+
 /*******************************************************************************
 * mvBoardIsPortInSgmii -
 *
@@ -448,7 +505,7 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 MV_U32 freq_tbl[] = {
 	360000000, /* 0 */
 	220000000, /* 1 */
-	250000000, /* 2 */
+	200000000, /* 2 */
 	400000000, /* 3 */
 	500000000, /* 4 */
 	520000000, /* 5 */
@@ -461,8 +518,11 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 	MV_U32  freq;
 
 	freq = MSAR_CORE_CLK(0, MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1)));
+	printf("%s: Core Clock from DFX S@R register = 0x%x\n", __func__, freq);
+	printf("%s: Using Hard-coded value instead from freq_tbl[2] = TClock @ 200 [MHz]\n", __func__);
 
-	return freq_tbl[freq];
+	return freq_tbl[2];
+
 }
 
 /*******************************************************************************
@@ -1107,28 +1167,6 @@ MV_32 mvBoardNandWidthGet(void)
 
 MV_U32 gBoardId = -1;
 /*******************************************************************************
-* mvBoardIdSet - Set Board model
-*
-* DESCRIPTION:
-*       This function sets the board ID.
-*       Board ID is 32bit word constructed of board model (16bit) and
-*       board revision (16bit) in the following way: 0xMMMMRRRR.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       void
-*
-*******************************************************************************/
-MV_VOID mvBoardIdSet(MV_VOID)
-{
-	mvOsPrintf("mvBoardIdSet: Board ID ir read only must be defined in PLD!\n");
-}
-/*******************************************************************************
 * mvBoardIdGet - Get Board model
 *
 * DESCRIPTION:
@@ -1146,19 +1184,26 @@ MV_VOID mvBoardIdSet(MV_VOID)
 *       32bit board ID number, '-1' if board is undefined.
 *
 *******************************************************************************/
+int count = -1;
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-	MV_U8 boadId;
+	MV_U8 boardId;
+
+	if (count++ < 0)
+		printf("%s: TODO fix read from TWSI of boardID (using hard-coded value RD_98DX4051_ID)\n", __func__);
+
+	return RD_98DX4051_ID;
+
 	if (gBoardId == -1) {
-		if (MV_ERROR == mvBoardTwsiRead(BOARD_DEV_TWSI_PLD, 1, 0, &boadId)) {
+		if (MV_ERROR == mvBoardTwsiRead(BOARD_DEV_TWSI_PLD, 1, 0, &boardId)) {
 			mvOsWarning();
 			return INVALID_BAORD_ID;
 		}
-		switch (boadId) {
+		switch (boardId) {
 		case 0: gBoardId = RD_98DX4051_ID; break;
 		case 1: gBoardId = DB_98DX4251_BP_ID; break;
 		default:
-			mvOsWarning();
+			mvOsPrintf("%s: Error: read un-expected board ID (%d)\n", __func__, boardId);
 			return INVALID_BAORD_ID;
 		}
 	}

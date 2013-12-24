@@ -157,16 +157,28 @@ extern "C" {
 #define GPP_OUT_SET_REG(grp)			(GPP_OUT_SET_REG_BASE + ( (grp) * 0x40 ) )
 #define GPP_64_66_DATA_OUT_SET_REG		(MV_GPP_REGS_BASE(0) + 0xA4)
 #define GPP_OUT_CLEAR_REG(grp)			(GPP_OUT_CLEAR_REG_BASE + ((grp) * 0x40))
-#define GPP_64_66_DATA_OUT_CLEAR_REG	(MV_GPP_REGS_BASE(0) + 0xB0)
+#define GPP_64_66_DATA_OUT_CLEAR_REG		(MV_GPP_REGS_BASE(0) + 0xB0)
 
 #define GPP_FUNC_SELECT_REG			(MV_GPP_REGS_BASE(0) + 0x40)
+
+/*
+ * CPU-private GPIO (aka GPIO per CPU)
+ */
+#define CPU_GPP_DATA_OUT_REG(cpu, grp)		(MV_CPU_GPP_REGS_BASE(cpu, grp) + 0x00)
+#define CPU_GPP_DATA_OUT_EN_REG(cpu, grp)	(MV_CPU_GPP_REGS_BASE(cpu, grp) + 0x04)
+#define CPU_GPP_BLINK_EN_REG(cpu, grp)		(MV_CPU_GPP_REGS_BASE(cpu, grp) + 0x08)
+#define CPU_GPP_DATA_IN_POL_REG(cpu, grp)	(MV_CPU_GPP_REGS_BASE(cpu, grp) + 0x0C)
+#define CPU_GPP_DATA_IN_REG(cpu, grp)		(MV_CPU_GPP_REGS_BASE(cpu, grp) + 0x10)
+#define CPU_GPP_INT_CAUSE_REG(cpu, grp)		(MV_CPU_GPP_REGS_BASE(cpu, grp) + 0x14)
+#define CPU_GPP_INT_MASK_REG(cpu, grp)		(MV_CPU_GPP_REGS_BASE(cpu, grp) + 0x18)
+#define CPU_GPP_INT_LVL_REG(cpu, grp)		(MV_CPU_GPP_REGS_BASE(cpu, grp) + 0x1C)
+#define CPU_GPP_BLINK_SEL_REG(cpu, grp)		(MV_CPU_GPP_REGS_BASE(cpu, grp) + 0x20)
 
 /* Relevant for MV78XX0 */
 #define GPP_DATA_OUT_SET_REG			(MV_GPP_REGS_BASE(0) + 0x20)
 #define GPP_DATA_OUT_CLEAR_REG			(MV_GPP_REGS_BASE(0) + 0x24)
 #define GPP_OUT_SET_REG_BASE			(MV_GPP_REGS_BASE(0) + 0x30)
 #define GPP_OUT_CLEAR_REG_BASE			(MV_GPP_REGS_BASE(0) + 0x34)
-
 
 #ifdef __cplusplus
 }

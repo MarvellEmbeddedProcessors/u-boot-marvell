@@ -506,7 +506,7 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	/* Generate random ip and mac address */
 	/* Read RTC to create pseudo-random data for enc */
 	unsigned int rand[4] = {0x1, 0x2, 0x3, 0x4};
-	char* addr_env="ethaddr" , *mtu_env="ethmtu";
+	char addr_env[20]="ethaddr" , mtu_env[20]="ethmtu";
 	char ethaddr_all[30];
 #if defined(MV_INCLUDE_RTC)
 	struct rtc_time tm;
@@ -526,7 +526,12 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 
 	rand[2] = (tm.tm_min * tm.tm_sec) % 254;
 	rand[3] = (tm.tm_hour * tm.tm_sec) % 254;
-#endif /* defined(MV_INCLUDE_RTC) */
+#else
+	rand[1] = (get_timer(0)) % 254;
+	rand[0] = (get_timer(0)) % 254;
+	rand[2] = (get_timer(0)) % 254;
+	rand[3] = (get_timer(0)) % 254;
+#endif
 
 	/* MAC addresses */	
 	for (i = 0; i < MV_ETH_MAX_PORTS; i++) {
@@ -573,7 +578,7 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	envSetDefault("loadaddr", RCVR_LOAD_ADDR);
 	envSetDefault("autoload", "no");
 	/* Check the recovery trigger */
-	recoveryDetection();
+/*	recoveryDetection(); */
 #endif
 	envSetDefault("eeeEnable", "no");
 
@@ -636,7 +641,6 @@ int board_mmc_init(bd_t *bis)
 int print_cpuinfo (void)
 {
 	char name[50];
-	mvBoardIdSet();
 	mvBoardNameGet(name);
 	printf("Board: %s\n",  name);
 	mvCtrlModelRevNameGet(name);
@@ -739,6 +743,7 @@ MV_U32 mvSysClkGet(void)
 }
 
 /* exported for EEMBC */
+#if defined(MV_INCLUDE_RTC) || defined(CONFIG_RTC_DS1338_DS1339)
 MV_U32 mvGetRtcSec(void)
 {
 	MV_RTC_TIME time;
@@ -749,6 +754,7 @@ MV_U32 mvGetRtcSec(void)
 #endif
 	return (time.minutes * 60) + time.seconds;
 }
+#endif
 
 void reset_cpu (ulong addr)
 {

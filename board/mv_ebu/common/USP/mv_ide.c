@@ -1098,13 +1098,16 @@ void ide_init (void)
 	memset (&sataAdapters[numOfAdapters].mvSataAdapter, 0, sizeof(MV_SATA_ADAPTER));
 	pMvSataAdapter = &sataAdapters[numOfAdapters].mvSataAdapter;
 
+#if defined(MV_INCLUDE_INTEG_SATA)
 	if (integratedSataDevice == MV_TRUE) {
 		pMvSataAdapter->adapterIoBaseAddress = INTER_REGS_BASE + MV_SATA_REGS_OFFSET - 0x20000;
 		pMvSataAdapter->pciConfigDeviceId = mvCtrlModelGet();
 		pMvSataAdapter->pciConfigRevisionId = 0;
 	}
+	else
+#endif
 #ifdef CONFIG_PCI
-	else {
+	{
 		pci_read_config_dword(devno, PCI_BASE_ADDRESS_0 ,&temp);
 		pMvSataAdapter->adapterIoBaseAddress = bus_to_phys(devno, (temp & 0xfffffff0));
 		pci_read_config_word(devno, PCI_DEVICE_ID, &stemp);

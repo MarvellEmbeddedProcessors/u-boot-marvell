@@ -108,9 +108,45 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DB(x)
 #endif
 
+
+MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][1] = {
+/* DRAM_UNIT_ID         */ { 1, },
+/* PEX_UNIT_ID          */ { 1, },
+/* ETH_GIG_UNIT_ID      */ { 2, },
+/* USB_UNIT_ID          */ { 1, },
+/* USB3_UNIT_ID          */ { 1, },
+/* IDMA_UNIT_ID         */ { 0, },
+/* XOR_UNIT_ID          */ { 2, },
+/* SATA_UNIT_ID         */ { 2, },
+/* TDM_32CH_UNIT_ID     */ { 1, },
+/* UART_UNIT_ID         */ { 2, },
+/* CESA_UNIT_ID         */ { 1, },
+/* SPI_UNIT_ID          */ { 2, },
+/* AUDIO_UNIT_ID        */ { 1, },
+/* SDIO_UNIT_ID         */ { 1, },
+/* TS_UNIT_ID           */ { 0, },
+/* XPON_UNIT_ID         */ { 1, },
+/* BM_UNIT_ID           */ { 1, },
+/* PNC_UNIT_ID          */ { 1, },
+/* I2C_UNIT_ID          */ { 2, },
+};
+
+MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit)
+{
+	MV_U32 devIdIndex;
+
+	if (unit >= MAX_UNITS_ID) {
+		mvOsPrintf("%s: Error: Wrong unit type (%u)\n", __func__, unit);
+		return 0;
+	}
+
+	devIdIndex = 0;
+	return mvCtrlSocUnitNums[unit][devIdIndex];
+}
+
 MV_U32 mvCtrlGetCpuNum(MV_VOID)
 {
-	return 2;
+	return 0;
 }
 MV_BOOL mvCtrlIsValidSatR(MV_VOID)
 {
@@ -1496,6 +1532,7 @@ void mvCtrlNandClkSet(int nClock)
 {
 	/* Set the division ratio of ECC Clock 0x00018748[13:8] (by default it's double of core clock) */
 	MV_U32 nVal = MV_DFX_REG_READ(CORE_DIV_CLK_CTRL(1));
+
 	nVal &= ~(NAND_ECC_DIVCKL_RATIO_MASK);
 	nVal |= (nClock << NAND_ECC_DIVCKL_RATIO_OFFS);
 	MV_DFX_REG_WRITE(CORE_DIV_CLK_CTRL(1), nVal);

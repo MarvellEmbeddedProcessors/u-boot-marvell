@@ -87,9 +87,6 @@ static void mvAlpBoardEgigaPhyInit(void)
 	/* Set SMI control to CPU, before initializing PHY */
 	mvCtrlSmiMasterSet(CPU_SMI_CTRL);
 
-	/* Prepare HAL data information */
-	mvSysEthPhyInit();
-
 	/* Init PHY connected to MAC0 */
 	if (ethComplex & (MV_ETHCOMP_GE_MAC0_2_RGMII0 |
 			  MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)) {
@@ -195,7 +192,28 @@ void mvBoardLedMatrixInit(void)
  ***********************************************************/
 void mvBoardEgigaPhyInit(void)
 {
-#if defined (MV88F66XX)
+
+	/* Prepare HAL data information */
+	mvSysEthPhyInit();
+
+#if defined(MV_ETH_NETA)
+	int i;
+
+	for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
+		if (MV_FALSE == mvCtrlPwrClckGet(ETH_GIG_UNIT_ID, i))
+			continue;
+		/* writing the PHY address before PHY init */
+		mvNetaPhyAddrSet(i, mvBoardPhyAddrGet(i));
+		if (MV_ERROR == mvEthPhyInit(i, MV_FALSE)) {
+			mvNetaPhyAddrPollingDisable(i);
+			mvCtrlPwrClckSet(ETH_GIG_UNIT_ID, i, MV_FALSE);
+			mvOsOutput("PHY error - shutdown port%d\n", i);
+			}
+	}
+
+#elif defined (MV88F66XX) /* Avanta-LP: dynamic PPv2 configuration */
+
+	/* Init PHYs according to eth. complex configuration */
 	mvAlpBoardEgigaPhyInit();
 
 	if (mvBoardIsInternalSwitchConnected() == MV_TRUE)
@@ -203,7 +221,8 @@ void mvBoardEgigaPhyInit(void)
 
 	mvBoardLedMatrixInit();
 
-	/*If NOT using any external RGMII/PHY connected to any MAC - RESET SMI control */
+	/* Disable external SMI control:
+	 * If NO external RGMII/PHY are connected to CPU MACs */
 	if (!(mvBoardEthComplexConfigGet() & (MV_ETHCOMP_GE_MAC0_2_RGMII0 |
 					MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0 |
 					MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY |
@@ -211,19 +230,9 @@ void mvBoardEgigaPhyInit(void)
 					MV_ETHCOMP_GE_MAC1_2_RGMII1)))
 		mvCtrlSmiMasterSet(NO_SMI_CTRL);
 
-#elif defined(MV88F68XX)
-	int i;
-	mvSysEthPhyInit();
+#elif defined(MV88F672X) /* Armada-375: static PPv2 configuration */
 
-	for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
-        /* writing the PHY address before PHY init */
-		mvNetaPhyAddrSet(i, mvBoardPhyAddrGet(i));
-		mvEthPhyInit(i, MV_FALSE);
-	}
-#elif defined(MV88F672X)
-	mvSysEthPhyInit();
-
-	/*MAC0 to RGMII, only enternal phy 0 on board.*/
+	/* MAC0 is connected to RGMII on board*/
 	mvEthPhyInit(0, MV_FALSE);
 #endif
 }

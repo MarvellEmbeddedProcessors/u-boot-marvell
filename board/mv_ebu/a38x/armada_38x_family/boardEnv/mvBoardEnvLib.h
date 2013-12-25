@@ -534,11 +534,11 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
 MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField);
 MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val);
 
-/*    SATR-ID                   Mask    bit    TWSI   Reg  board	*/
-/*    SATR-ID                   Mask  offset  devID  num  active	*/
+/*						bit    TWSI           Reg	board	*/
+/*   name		SATR-ID			Mask  offset  devID   num	active	*/
 #define MV_SAR_INFO { \
-{ "coreclock",	MV_SATR_CORE_CLK_SELECT,	0x1F,	0,	1,	0,	{1, 1, 1, 0}, BOARD_SATR_SWAP_BIT},\
-{ "freq",	MV_SATR_CPU_DDR_L2_FREQ,	0x04,	2,	3,	0,	{0, 1, 0, 0}, 0},\
+{ "freq",	MV_SATR_CPU_DDR_L2_FREQ,	0x1F,   0,      1,      0,      {1, 1, 1, 0}, BOARD_SATR_SWAP_BIT},\
+{ "coreclock",	MV_SATR_CORE_CLK_SELECT,	0x04,   2,      3,      0,      {0, 1, 0, 0}, 0},\
 { "cpusnum",	MV_SATR_CPU1_ENABLE,		0x01,	0,	2,	0,	{0, 1, 0, 0}, 0},\
 { "sscg",	MV_SATR_SSCG_DISABLE,		0x08,	3,	3,	0,	{0, 1, 0, 0}, 0},\
 { "ddr4select",	MV_SATR_DDR4_SELECT,		0x20,	5,	4,	1,	{0, 1, 0, 0}, BOARD_SATR_READ_ONLY},\

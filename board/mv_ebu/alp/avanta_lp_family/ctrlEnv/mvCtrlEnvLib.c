@@ -122,7 +122,9 @@ MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 
 MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
 
-static MV_VOID mvCtrlTdmModeSet(MV_VOID);
+#if defined(MV_INCLUDE_TDM)
+static MV_VOID mvCtrlTdmCtrlRegSet(MV_VOID);
+#endif
 
 MV_U32 mvCtrlGetCpuNum(MV_VOID)
 {
@@ -359,7 +361,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	MV_REG_BIT_RESET(SOC_DEV_MUX_REG, BIT27);
 
 #if defined(MV_INCLUDE_TDM)
-	mvCtrlTdmModeSet();
+	mvCtrlTdmCtrlRegSet();
 	mvCtrlTdmClkCtrlConfig();
 #endif
 
@@ -1135,7 +1137,7 @@ MV_U32 mvCtrlSdioSupport(MV_VOID)
 
 #if defined(MV_INCLUDE_TDM)
 /*******************************************************************************
-* mvCtrlTdmModeSet - Set TDM mode type: TDM, TDM+ISI, TDM+ZSI
+* mvCtrlTdmCtrlRegSet - Set TDM configuration register for: TDM, TDM+ISI, TDM+ZSI
 *
 * DESCRIPTION:
 *
@@ -1149,33 +1151,33 @@ MV_U32 mvCtrlSdioSupport(MV_VOID)
 *       None.
 *
 *******************************************************************************/
-static MV_VOID mvCtrlTdmModeSet(MV_VOID)
+static MV_VOID mvCtrlTdmCtrlRegSet(MV_VOID)
 {
-	MV_U32 tdmMode;
+	MV_U32 tdmCtrl;
 
 	switch (mvBoardSlicUnitTypeGet()) {
 	case MV_BOARD_SLIC_DISABLED:
 	case MV_BOARD_SLIC_SSI_ID:
 		return;
 	case MV_BOARD_SLIC_ISI_ID:
-		tdmMode = ISI_MODE;
+		tdmCtrl = (ISI_MODE | ISI_MODE_CS_DEASSERT_BIT_COUNT_VAL | SPI_B_MODE_ISI_ENABLE_MASK);
 		break;
 	case MV_BOARD_SLIC_ZSI_ID:
-		tdmMode = ZSI_MODE;
+		tdmCtrl = ZSI_MODE;
 		break;
 	case MV_BOARD_SLIC_EXTERNAL_ID:
-		tdmMode = TDM_MODE;
+		tdmCtrl = TDM_MODE;
 		break;
 	default:
 		mvOsPrintf("%s: Error: wrong SLIC type\n", __func__);
 		return;
 	}
 
-	/* Reset TDM mode field */
-	MV_REG_WRITE(MV_TDM_CTRL_REG, (MV_REG_READ(MV_TDM_CTRL_REG) & ~(TDM_MODE_MASK)));
+	/* Reset TDM Control register field/s */
+	MV_REG_WRITE(MV_TDM_CTRL_REG, (MV_REG_READ(MV_TDM_CTRL_REG) & ~TDM_MODE_MASK));
 
-	/* Set new TDM mode */
-	MV_REG_BIT_SET(MV_TDM_CTRL_REG, tdmMode);
+	/* Set updated value to TDM Control register */
+	MV_REG_BIT_SET(MV_TDM_CTRL_REG, tdmCtrl);
 
 	return;
 }
@@ -1198,6 +1200,7 @@ static MV_VOID mvCtrlTdmModeSet(MV_VOID)
 MV_VOID mvCtrlTdmClkCtrlConfig(MV_VOID)
 {
 	MV_U32 clkReg, pcmClkFreq;
+	MV_U32 dcoMask, dcoVal;
 
 #if defined(MV_TDM_PCM_CLK_8MHZ)
 	pcmClkFreq = DCO_CLK_DIV_RATIO_8M;
@@ -1231,9 +1234,10 @@ MV_VOID mvCtrlTdmClkCtrlConfig(MV_VOID)
 	mvOsUDelay(1);
 
 	/* Set DCO correction to 0PPM */
+	dcoMask = (DCO_MOD_CTRL_MASK | DCO_CTRLFS_MASK);
+	dcoVal = (DCO_MOD_CTRL_BASE_VAL | DCO_CTRLFS_24MHZ);
 	clkReg = MV_REG_READ(DCO_MOD_CTRL_REG);
-	MV_REG_WRITE(DCO_MOD_CTRL_REG,
-		     (clkReg & ~DCO_MOD_CTRL_MASK) | DCO_MOD_CTRL_BASE_VAL);
+	MV_REG_WRITE(DCO_MOD_CTRL_REG, ((clkReg & ~dcoMask) | dcoVal));
 	mvOsUDelay(1);
 
 	/* Set DCO source ratio */

@@ -126,7 +126,10 @@ MV_BOARD_TDM_INFO db88f6660Tdm880[] = { {0} };
 
 MV_BOARD_TDM_INFO db88f6660TdmZSI[] = { {2} };
 
-MV_BOARD_TDM_SPI_INFO db88f6660TdmSpiInfo[] = {{-1}, {-1}, {-1}, {1}, {1} };
+MV_BOARD_TDM_INFO db88f6660TdmISI[] = { {2} };
+
+
+MV_BOARD_TDM_SPI_INFO db88f6660TdmSpiInfo[] = {{-1}, {-1}, {1}, {1}, {1} };
 
 MV_BOARD_INFO db88f6660_board_info = {
 	.boardName			= "DB-88F6660",
@@ -165,7 +168,7 @@ MV_BOARD_INFO db88f6660_board_info = {
 
 	/* TDM */
 	.numBoardTdmInfo		= {-1, -1, -1, 1, 1},
-	.pBoardTdmInt2CsInfo		= {NULL, NULL,  NULL, db88f6660TdmZSI, db88f6660Tdm880},
+	.pBoardTdmInt2CsInfo		= {NULL, NULL,  db88f6660TdmISI, db88f6660TdmZSI, db88f6660Tdm880},
 	.boardTdmInfoIndex		= 0,
 
 	.pBoardSpecInit			= NULL,

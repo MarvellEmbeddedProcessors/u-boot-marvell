@@ -81,8 +81,8 @@ static MV_SPI_HAL_DATA	spiHalData;
 static MV_SPI_TYPE_INFO spiTypes[] = {
 	{
 		.en16Bit = MV_TRUE,
-		.byteCsAsrt = MV_FALSE,
 		.clockPolLow = MV_TRUE,
+		.byteCsAsrt = MV_FALSE,
 		.baudRate = (20 << 20), /*  20M */
 		.clkPhase = SPI_CLK_BEGIN_CYC
 	},
@@ -105,6 +105,13 @@ static MV_SPI_TYPE_INFO spiTypes[] = {
 		.clockPolLow = MV_TRUE,
 		.byteCsAsrt = MV_TRUE,
 		.baudRate = _8M,
+		.clkPhase = SPI_CLK_HALF_CYC
+	},
+	{
+		.en16Bit = MV_FALSE,
+		.clockPolLow = MV_FALSE,
+		.byteCsAsrt = MV_TRUE,
+		.baudRate = _2M,
 		.clkPhase = SPI_CLK_HALF_CYC
 	}
 };

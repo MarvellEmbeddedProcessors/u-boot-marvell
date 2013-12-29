@@ -109,6 +109,7 @@ MV_BOARD_MAC_INFO db88f68xxInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
 	{ BOARD_MAC_SPEED_AUTO, 0},
 	{ BOARD_MAC_SPEED_AUTO, 0x1},
+	{ BOARD_MAC_SPEED_AUTO, 0x0},
 };
 
 MV_DEV_CS_INFO db88f68xxInfoBoardDeCsInfo[] = {

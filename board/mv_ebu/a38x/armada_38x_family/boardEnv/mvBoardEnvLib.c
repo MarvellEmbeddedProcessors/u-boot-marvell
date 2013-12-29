@@ -270,14 +270,10 @@ MV_STATUS mvBoardNameGet(char *pNameBuff, MV_U32 size)
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 {
-	MV_U8 readValue;
-
-	if (mvBoardTwsiGet(BOARD_TWSI_MODULE_DETECT, 2, 0, &readValue) != MV_OK) {
-		DB(mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__));
-		return MV_FALSE;
-	}
-	if (readValue == 0x0d)
+	if ((mvBoardIsModuleConnected(MV_CONFIG_SGMII)) && /* when SGMII connected the SGMII ports are 1 & 2 */
+	    ((ethPortNum == 1) || (ethPortNum == 2)))
 		return MV_TRUE;
+
 	return MV_FALSE;
 }
 
@@ -301,6 +297,10 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum)
 {
+	/* On DB board currently when SGMII connected the SGMII module activet port 1 and port 2
+	   and port 0 is disabled */
+	if ((mvBoardIsModuleConnected(MV_CONFIG_MII)) && (ethPortNum == 0))
+		return MV_TRUE;
 	return MV_FALSE;
 }
 /*******************************************************************************
@@ -323,6 +323,8 @@ MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum)
 {
+	if (mvBoardIsPortInGmii(ethPortNum) || mvBoardIsPortInSgmii(ethPortNum))
+		return MV_FALSE;
 	if (ethPortNum < 2)
 		return MV_TRUE;
 	return MV_FALSE;
@@ -1304,6 +1306,7 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 		"NOR 16bit",                                  \
 		"NAND 16bit",                                 \
 		"SDIO 4bit",                                 \
+		"SGMII",                                 \
 	};
 	mvOsOutput("Board configuration detected:\n");
 
@@ -1336,6 +1339,8 @@ MV_VOID mvBoardOtherModuleTypePrint(MV_VOID)
 *******************************************************************************/
 MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum)
 {
+	if ((mvBoardIsModuleConnected(MV_CONFIG_SGMII)) && (ethPortNum == 0))
+		return MV_FALSE;
 	if (ethPortNum < mvCtrlEthMaxPortGet())
 		return MV_TRUE;
 
@@ -2097,10 +2102,7 @@ MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 {
-	if ((ethNum == 0) || (ethNum == 1))
-		return MV_TRUE;
-
-	return MV_FALSE;
+	return mvBoardIsGbEPortConnected(ethNum);
 }
 
 /*******************************************************************************
@@ -2122,29 +2124,7 @@ MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 *******************************************************************************/
 MV_BOOL mvBoardIsEthActive(MV_U32 ethNum)
 {
-	/* for A375, all connected ports are Active and usabe */
 	return mvBoardIsEthConnected(ethNum);
-}
-
-/*******************************************************************************
-* mvBoardIsQsgmiiModuleConnected
-*
-* DESCRIPTION:
-*       This routine returns whether the QSGMII module is connected or not.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE if QSGMII module is connected, MV_FALSE otherwise.
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsQsgmiiModuleConnected(MV_VOID)
-{
-	return MV_FALSE;
 }
 
 /*******************************************************************************

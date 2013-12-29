@@ -184,9 +184,10 @@ typedef enum _mvConfigTypeID {
 	MV_CONFIG_NOR			= BIT4,	/* NOR board SLM 1361	*/
 	MV_CONFIG_NAND			= BIT5,	/* NAND board SLM 1361	*/
 	MV_CONFIG_SDIO			= BIT6,	/* SDIO board SLM 1361	*/
-	MV_CONFIG_NAND_ON_BOARD		= BIT7,	/* ON board nand detect */
-	MV_CONFIG_TYPE_MAX_MODULE	= 7,
-	MV_CONFIG_TYPE_MAX_OPTION	= 8
+	MV_CONFIG_SGMII			= BIT7,	/* SDIO board SLM 1364	*/
+	MV_CONFIG_NAND_ON_BOARD		= BIT8,	/* ON board nand detect */
+	MV_CONFIG_TYPE_MAX_MODULE	= 8,
+	MV_CONFIG_TYPE_MAX_OPTION	= 9
 } MV_CONFIG_TYPE_ID;
 
 typedef struct _devCsInfo {
@@ -392,6 +393,7 @@ typedef struct _boardInfo {
 { MV_CONFIG_NOR,		0x4,	0,	 0xF,	{ 0, 1, 0, 0} }, \
 { MV_CONFIG_NAND,		0x4,	0,	 0x1,	{ 0, 1, 0, 0} }, \
 { MV_CONFIG_SDIO,		0x4,	0,	 0x2,	{ 0, 1, 0, 0} }, \
+{ MV_CONFIG_SGMII,		0x2,	0,	 0xF,	{ 0, 1, 0, 0} }, \
 };
 struct _mvBoardMppModule {
 	MV_U32 group;

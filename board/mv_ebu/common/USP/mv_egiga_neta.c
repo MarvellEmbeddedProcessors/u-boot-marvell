@@ -91,9 +91,19 @@ int mv_eth_initialize(bd_t *bis)
 	MV_8 *enet_addr;
 	MV_8 name[NAMESIZE+1];
 	MV_8 enetvar[9];
+	MV_U32 portMask = 0;
+
+	for (port = 0; port < mvCtrlEthMaxPortGet(); port++) {
+		if (MV_FALSE ==  mvBoardIsGbEPortConnected(port))
+			continue;
+
+		if (MV_FALSE == mvCtrlPwrClckGet(ETH_GIG_UNIT_ID, port))
+			continue;
+		MV_BIT_SET(portMask, port);
+	}
 
 	/* HAL init + port power up + port win init */
-	mvSysNetaInit(0xff,0xff); /* TODO: do i need to return status? what to do if failed? in Linux - void function */
+	mvSysNetaInit(portMask,0xff); /* TODO: do i need to return status? what to do if failed? in Linux - void function */
 	for (port = 0; port < mvCtrlEthMaxPortGet(); port++) {
 
 		if (MV_FALSE ==  mvBoardIsGbEPortConnected(port))

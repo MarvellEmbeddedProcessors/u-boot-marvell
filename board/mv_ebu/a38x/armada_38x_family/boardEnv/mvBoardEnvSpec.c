@@ -114,11 +114,14 @@ MV_BOARD_MAC_INFO db88f68xxInfoBoardMacInfo[] = {
 
 MV_DEV_CS_INFO db88f68xxInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth }*/
-#if defined(MV_INCLUDE_SPI)
-	{ SPI0_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
-#endif
 #ifdef MV_NAND
 	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8},  /* NAND DEV */
+#endif
+#if defined(MV_INCLUDE_NOR)
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16}, /* NOR DEV */
+	{ SPI0_CS1,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
+#else
+	{ SPI0_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
 #endif
 };
 /*
@@ -183,8 +186,9 @@ MV_BOARD_INFO db88f68xx_board_info = {
 	.pBoardTdmSpiInfo		= db88f68xxTdmSpiInfo,
 
 	/* NOR init params */
-	.norFlashReadParams		= 0,
-	.norFlashWriteParams		= 0,
+	.norFlashReadParams		= DB_88F68XX_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= DB_88F68XX_BOARD_NOR_WRITE_PARAMS,
+
 	/* Enable modules auto-detection. */
 	.configAutoDetect		= MV_TRUE,
 	.numIoExp			= 0,

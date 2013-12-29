@@ -202,6 +202,8 @@ void mvBoardEgigaPhyInit(void)
 	for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
 		if (MV_FALSE == mvCtrlPwrClckGet(ETH_GIG_UNIT_ID, i))
 			continue;
+		if (MV_FALSE ==  mvBoardIsGbEPortConnected(i))
+			continue;
 		/* writing the PHY address before PHY init */
 		mvNetaPhyAddrSet(i, mvBoardPhyAddrGet(i));
 		if (MV_ERROR == mvEthPhyInit(i, MV_FALSE)) {

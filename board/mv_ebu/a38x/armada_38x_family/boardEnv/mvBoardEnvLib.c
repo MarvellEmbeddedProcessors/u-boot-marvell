@@ -1055,9 +1055,19 @@ MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID)
 MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 {
 	MV_U32 i = 0;
+	MV_U8 ioValue;
+	MV_U32 tmp;
 
-	if ((board->pIoExp == NULL) || (0 == board->numIoExp))
-		return MV_OK;
+	if (mvBoardIoExpanderGet(0, 2, &ioValue) == MV_ERROR)
+		return MV_OK; /* ignore for boards not supported IO expander */
+	tmp = mvBoardSatRRead(MV_SATR_RD_NAS_SERDES4_CFG);
+	if (tmp != MV_ERROR) { /* ignore for none RD_NAS board */
+		if (tmp == 0) /* 0 = USB3.  1 = SGMII. */
+			ioValue |= 1 ;	/* Setting USB3.0 interface: configure IO as output '1' */
+		else
+			ioValue &= ~1 ;	/* Setting SGMII interface:  configure IO as output '0' */
+		mvBoardIoExpanderSet(0, 2, ioValue);
+	}
 
 	for (i = 0; i < board->numIoExp; i++) {
 		if (MV_OK != mvBoardTwsiSet(BOARD_TWSI_IO_EXPANDER, board->pIoExp[i].addr,
@@ -2480,4 +2490,72 @@ int mvBoardNorFlashConnect(void)
 	if (mvBoardIsModuleConnected(MV_CONFIG_NOR))
 		return MV_TRUE;
 	return MV_FALSE;
+}
+/****************************************************************************************
+* mvBoardIoExpanderGet
+*
+* DESCRIPTION:
+*	Return the IO Expander value for a given address and offset.
+*
+* INPUT:
+*	addr - IO expander address.
+*	offs - IO expander offset
+*	pValue - pointer saved value
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       if addr and offset are exist save the value in input pointer and returns  MV_OK
+*       else returns MV_ERROR
+*
+****************************************************************************************/
+MV_STATUS mvBoardIoExpanderGet(MV_U8 addr, MV_U8 offs, MV_U8 *pVal)
+{
+	int i;
+
+	if ((board->pIoExp == NULL) || (0 == board->numIoExp))
+		return MV_ERROR;
+
+	for (i = 0; i < board->numIoExp; i++) {
+		if ((board->pIoExp[i].addr == addr) &&
+		    (board->pIoExp[i].offset == offs)) {
+			*pVal = board->pIoExp[i].val;
+		    return MV_OK;
+		}
+	}
+	return MV_ERROR;
+}
+/*******************************************************************************
+* mvBoardIoExpanderSet
+*
+* DESCRIPTION:
+*	Save the IO Expander value for a given index.
+*
+* INPUT:
+*	index	  - The IO expander index
+*	val	  - The IO expander value to save
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       if addr and offset are exist save the value and returns  MV_OK
+*       else returns MV_ERROR
+*******************************************************************************/
+MV_STATUS mvBoardIoExpanderSet(MV_U8 addr, MV_U8 offs, MV_U8 val)
+{
+	int i;
+
+	if ((board->pIoExp == NULL) || (0 == board->numIoExp))
+		return MV_ERROR;
+
+	for (i = 0; i < board->numIoExp; i++) {
+		if ((board->pIoExp[i].addr == addr) &&
+		    (board->pIoExp[i].offset == offs)) {
+			board->pIoExp[i].val = val;
+			return MV_OK;
+		}
+	}
+	return MV_ERROR;
 }

@@ -819,6 +819,7 @@ U_BOOT_CMD(
 	"\tWrite to the Phy register.\n"
 );
 
+#if defined(MV_INCLUDE_SWITCH)
 #include "ethSwitch/mvSwitch.h"
 
 int switch_read_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -890,8 +891,6 @@ U_BOOT_CMD(
 	" SW_on_port Port_number Phy_offset value.\n"
 	"\tWrite to the switch register.\n"
 );
-
-#if defined(MV_INCLUDE_SWITCH)
 
 int switch_cntread_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {

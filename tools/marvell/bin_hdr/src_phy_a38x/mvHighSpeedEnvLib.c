@@ -823,8 +823,8 @@ MV_STATUS mvHwsBoardTopologyLoad(SERDES_MAP  *serdesMapArray)
 	if (boardId >= MV_MAX_BOARD_ID) {
 		DEBUG_INIT_S("mvHwsBoardTopologyLoad: board id 0x");
 		DEBUG_INIT_FULL_D(boardId, 8);
-		DEBUG_INIT_S("out of range\n");
-		return MV_OUT_OF_RANGE;
+		DEBUG_INIT_S("out of range. Use default board ID - DB\n");
+		boardId = DB_A38X_BP_ID;
 	}
 	/* getting board topology according to the board id */
 	DEBUG_INIT_FULL_S("mvHwsBoardTopologyLoad: getting board topology according to the board id\n");

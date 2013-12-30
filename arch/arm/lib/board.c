@@ -66,7 +66,11 @@ ulong monitor_flash_len;
 extern int  AT91F_DataflashInit(void);
 extern void dataflash_print_info(void);
 #endif
-
+#ifdef CONFIG_MARVELL
+#if defined(CONFIG_NOR_FLASH_AUTODETECT)
+extern int mvBoardNorFlashConnect(void);
+#endif
+#endif
 #if defined(CONFIG_HARD_I2C) ||	\
 	defined(CONFIG_SOFT_I2C)
 #include <i2c.h>
@@ -599,31 +603,43 @@ void board_init_r(gd_t *id, ulong dest_addr)
 	power_init_board();
 
 #if !defined(CONFIG_SYS_NO_FLASH)
-	puts("Flash: ");
-
-	flash_size = flash_init();
-	if (flash_size > 0) {
-# ifdef CONFIG_SYS_FLASH_CHECKSUM
-		print_size(flash_size, "");
-		/*
-		 * Compute and print flash CRC if flashchecksum is set to 'y'
-		 *
-		 * NOTE: Maybe we should add some WATCHDOG_RESET()? XXX
-		 */
-		if (getenv_yesno("flashchecksum") == 1) {
-			printf("  CRC: %08X", crc32(0,
-						    (const unsigned char*)CONFIG_SYS_FLASH_BASE,
-						    flash_size));
-		}
-		putc('\n');
-# else          /* !CONFIG_SYS_FLASH_CHECKSUM */
-		print_size(flash_size, "\n");
-# endif /* CONFIG_SYS_FLASH_CHECKSUM */
-	} else {
-		puts(failed);
-		hang();
-	}
+#ifdef CONFIG_MARVELL
+#if defined(CONFIG_NOR_FLASH_AUTODETECT)
+	if (mvBoardNorFlashConnect()) {
+#endif /* defined(CONFIG_NOR_FLASH_AUTODETECT) */
 #endif
+		puts("Flash: ");
+
+		flash_size = flash_init();
+		if (flash_size > 0) {
+# ifdef CONFIG_SYS_FLASH_CHECKSUM
+			print_size(flash_size, "");
+			/*
+			 * Compute and print flash CRC if flashchecksum is set to 'y'
+			 *
+			 * NOTE: Maybe we should add some WATCHDOG_RESET()? XXX
+			 */
+			if (getenv_yesno("flashchecksum") == 1) {
+				printf("  CRC: %08X", crc32(0,
+							    (const unsigned char*)CONFIG_SYS_FLASH_BASE,
+							    flash_size));
+			}
+			putc('\n');
+# else          	/* !CONFIG_SYS_FLASH_CHECKSUM */
+			print_size(flash_size, "\n");
+# endif /* CONFIG_SYS_FLASH_CHECKSUM */
+		} else {
+			puts(failed);
+		#ifdef CONFIG_MARVELL
+		#if !defined(CONFIG_SYS_NO_FLASH_NO_HANG)
+			hang();
+		#endif /* (CONFIG_SYS_NO_FLASH_NO_HUNG) */
+		#endif
+		}
+#endif
+#if defined(CONFIG_NOR_FLASH_AUTODETECT)
+	}
+#endif /* defined(CONFIG_NOR_FLASH_AUTODETECT) */
 
 #if defined(CONFIG_CMD_NAND)
 	puts("NAND:  ");

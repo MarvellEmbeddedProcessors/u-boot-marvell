@@ -535,6 +535,8 @@ MV_STATUS mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);
 MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
 MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField);
 MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val);
+MV_STATUS mvBoardIoExpanderGet(MV_U8 addr, MV_U8 offs, MV_U8 *pVal);
+MV_STATUS mvBoardIoExpanderSet(MV_U8 addr, MV_U8 offs, MV_U8 val);
 int mvBoardNorFlashConnect(void);
 
 /*						bit    TWSI           Reg	board	*/

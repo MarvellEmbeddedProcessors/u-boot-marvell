@@ -535,6 +535,7 @@ MV_STATUS mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);
 MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
 MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField);
 MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val);
+int mvBoardNorFlashConnect(void);
 
 /*						bit    TWSI           Reg	board	*/
 /*   name		SATR-ID			Mask  offset  devID   num	active	*/

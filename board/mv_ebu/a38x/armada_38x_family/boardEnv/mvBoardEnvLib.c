@@ -2459,3 +2459,25 @@ MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val)
 	}
 	return MV_OK;
 }
+/*******************************************************************************
+* mvBoardNorFlashConnect
+*
+* DESCRIPTION:
+*	This routine returns MV_TRUE for NOR module detected
+*
+* INPUT:
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE - port in GMII.
+*       MV_FALSE - other.
+*
+*******************************************************************************/
+int mvBoardNorFlashConnect(void)
+{
+	if (mvBoardIsModuleConnected(MV_CONFIG_NOR))
+		return MV_TRUE;
+	return MV_FALSE;
+}

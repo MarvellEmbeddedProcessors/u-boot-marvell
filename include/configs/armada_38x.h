@@ -519,6 +519,7 @@ extern unsigned int mvTclkGet(void);
 
 #if defined(MV_INCLUDE_NOR)
 
+	#define CONFIG_NOR_FLASH_AUTODETECT
 	#define CONFIG_NOR_FLASH
 	#define CONFIG_SYS_FLASH_CFI
 	#define CONFIG_SYS_FLASH_PROTECTION
@@ -551,6 +552,7 @@ extern unsigned int mvTclkGet(void);
 	#endif /* MV_NOR_BOOT */
 #else
 	#define CONFIG_SYS_NO_FLASH
+	#define CONFIG_SYS_NO_FLASH_NO_HANG	/* disable hung when NOR flash disconnected */
 	#undef CONFIG_CMD_FLASH
 	#undef CONFIG_CMD_IMLS
 #endif /* MV_INCLUDE_NOR */

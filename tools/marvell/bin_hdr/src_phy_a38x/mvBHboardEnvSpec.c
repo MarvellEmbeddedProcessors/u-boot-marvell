@@ -426,6 +426,7 @@ MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
 {
 	MV_TWSI_SLAVE twsiSlave;
 	MV_U8 mode, modeBit;
+	MV_BOOL isSgmii = MV_FALSE;
 
 	DEBUG_INIT_FULL_S("\n### loadTopologyRD ###\n");
 
@@ -449,6 +450,14 @@ MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
 	/* modeBit 0 = NAS, 1 = AP */
 	modeBit = (mode >> 1) & 0x1;
 
+	/* check if lane 4 is USB3 or SGMII */
+	twsiSlave.slaveAddr.address = RD_GET_MODE_ADDR;
+	twsiSlave.offset = 1;
+
+	if (mvTwsiRead(0, &twsiSlave, &mode, 1) == MV_OK) {
+		isSgmii = ((mode >> 2) & 0x1);
+	} /* else use the default - USB3 */
+
 	/* Lane 0 */
 	serdesMapArray[0].serdesType = (modeBit == 1) ? DEFAULT_SERDES : PEX0;
 	serdesMapArray[0].serdesSpeed = (modeBit == 1) ? LAST_SERDES_SPEED : __5Gbps;
@@ -470,9 +479,18 @@ MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
 	serdesMapArray[3].serdesMode =  SERDES_DEFAULT_MODE;
 
 	/* Lane 4 */
-	serdesMapArray[4].serdesType = USB3_HOST0;
-	serdesMapArray[4].serdesSpeed = __5Gbps;
-	serdesMapArray[4].serdesMode = SERDES_DEFAULT_MODE;
+	if (isSgmii == MV_TRUE) {
+		DEBUG_INIT_S("Serdes Lane 4 is SGMII\n");
+		serdesMapArray[4].serdesType = SGMII1;
+		serdesMapArray[4].serdesSpeed = __3_125Gbps;
+		serdesMapArray[4].serdesMode = SERDES_DEFAULT_MODE;
+	}
+	else {
+		DEBUG_INIT_S("Serdes Lane 4 is USB3\n");
+		serdesMapArray[4].serdesType = USB3_HOST0;
+		serdesMapArray[4].serdesSpeed = __5Gbps;
+		serdesMapArray[4].serdesMode = SERDES_DEFAULT_MODE;
+	}
 
 	/* Lane 5 */
 	serdesMapArray[5].serdesType =  SATA2;

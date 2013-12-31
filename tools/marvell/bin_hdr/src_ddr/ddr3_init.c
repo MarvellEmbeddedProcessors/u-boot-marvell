@@ -420,9 +420,13 @@ MV_U32 ddr3Init_(void)
 	MV_BOOL bPLLWAPatch = FALSE;
 #if !defined(MV88F68XX)
 	MV_BOOL bDQSCLKAligned = FALSE;
-	MV_U32 uiDdrWidth = BUS_WIDTH;
+	MV_U32 uiDdrWidth;
 	MV_U32 uiScrubOffs, uiScrubSize;
 #endif
+#if defined(MV88F78X60) || defined(MV88F67XX)
+	uiDdrWidth = BUS_WIDTH;
+#endif
+
 #if !defined(STATIC_TRAINING) || defined (DUNIT_SPD)
 	MV_STATUS status;
 	MV_U32 auWinBackup[16];
@@ -458,8 +462,8 @@ MV_U32 ddr3Init_(void)
 #else
 	ddr3PrintVersion();
 #endif
-	DEBUG_INIT_S("2\n");
-	/* Lib version 5.5.2 */
+	DEBUG_INIT_S("3\n");
+	/* Lib version 5.5.3 */
 
 	uiFabOpt = ddr3GetFabOpt();
 	if (bPLLWAPatch){
@@ -560,7 +564,7 @@ MV_U32 ddr3Init_(void)
 #endif
 #endif
 
-#if defined(MV88F78X60) || defined(MV88F66XX)  || defined(MV88F672X)
+#if defined(MV88F78X60) /*|| defined(MV88F66XX)  || defined(MV88F672X)*/
 #if defined(AUTO_DETECTION_SUPPORT)
 	/* Configurations for both static and dynamic MC setups */
 	/* Dynamically Set 32Bit and ECC for AXP (Relevant only for Marvell DB boards) */
@@ -569,6 +573,7 @@ MV_U32 ddr3Init_(void)
 		DEBUG_INIT_S("DDR3 Training Sequence - DRAM bus width 32Bit \n");
 	}
 #endif
+#endif
 #if defined(MV88F66XX) || defined(MV88F672X)
 	uiReg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
 	if ((uiReg >> 15) & 1)
@@ -576,7 +581,7 @@ MV_U32 ddr3Init_(void)
 	else
 		uiDdrWidth = 16;
 #endif
-#endif
+
 
 #ifdef DUNIT_SPD
 	status = ddr3DunitSetup(uiEcc, uiHClkTimePs, &uiDdrWidth);

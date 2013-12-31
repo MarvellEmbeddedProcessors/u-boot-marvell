@@ -65,79 +65,41 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _DDR3_ALP_CONFIG_H
 #define _DDR3_ALP_CONFIG_H
 
+#define DDR3_LOG_LEVEL				0
 /*DDR3_LOG_LEVEL Information
 Level 0: Provides an error code in a case of failure, RL, WL errors and other algorithm failure
 Level 1: Provides the D-Unit setup (SPD/Static configuration)
 Level 2: Provides the windows margin as a results of DQS centeralization
 Level 3: Provides the windows margin of each DQ as a results of DQS centeralization */
 
-#define DDR3_LOG_LEVEL              0
-#define DDR3_PBS                    0
-/* this flag allows the execution of SW WL/RL oppon HW failure */
-#define DDR3_RUN_SW_WHEN_HW_FAIL    1
+#define DDR3_PBS					0
+/*	1: Enable Per Bit Skew mechanism
+	0: Disable Per Bit Skew mechanism*/
 
-#define DDR3_FAST_PATH_EN           1
+#define DDR3_RUN_SW_WHEN_HW_FAIL	1
+/*	1: Enable execution of Software Write/Read leveling upon Hardware Write/Read leveling failures
+	0: Disable execution of Software Write/Read leveling upon Hardware Write/Read leveling failures*/
 
+#define DDR3_FAST_PATH_EN			1
+
+/*	1: Open Fast-Path windows after training
+	0: Open X-BAR windows after training*/
 
 #undef STATIC_TRAINING
+/*	define: Enable static training (not supported)
+	undef : Enable Dynamic training*/
+
 #define DUNIT_STATIC
+/*	define: Enable static DUNIT configurations
+	undef : Enable Dynamic DUNIT configuration using SPD (not supported)*/
 
-/* General Configurations */
-/* The following parameters are required for proper setup */
-/* DDR_TARGET_FABRIC - Set desiered fabric configuration (for sample@Reset fabfreq parameter) */
-/* DRAM_ECC - set ECC support TRUE/FALSE */
-/* BUS_WIDTH - 16/32 bit */
-/* SPD_SUPPORT - Enables auto detection of DIMMs and their timing values */
-/* DQS_CLK_ALIGNED - Set this if CLK and DQS signals are aligned on board */
-/* MIXED_DIMM_STATIC - Mixed DIMM + On board devices support (ODT registers values are taken statically) */
-/* DDR3_TRAINING_DEBUG - debug prints of internal code */
-#define DDR_TARGET_FABRIC                       5
-#define DRAM_ECC                                FALSE
+#define DDR3_TRAINING_DEBUG			FALSE
+/*	TRUE: Enable training debug sequence printing
+	FALSE : Disable training debug sequence printing*/
 
-#ifdef MV_DDR_32BIT
-#define BUS_WIDTH                               32
-#else
-#define BUS_WIDTH                               16
-#endif
+#define REG_DIMM_SKIP_WL			FALSE
+/*	TRUE: skip Write leveling stage when using registered DIMM(not supported)
+	FALSE : don't skip Write leveling*/
 
-#undef SPD_SUPPORT
-#undef DQS_CLK_ALIGNED
-#undef MIXED_DIMM_STATIC
-#define DDR3_TRAINING_DEBUG                     FALSE
-#define REG_DIMM_SKIP_WL                        FALSE
-
-/* Marvell boards specific configurations */
-
-#ifdef SPD_SUPPORT
-/* DIMM support parameters: */
-/* DRAM_2T - Set Desired 2T Mode - 0 - 1T, 0x1 - 2T, 0x2 - 3T */
-/* DIMM_CS_BITMAP - bitmap representing the optional CS in DIMMs (0xF=CS0+CS1+CS2+CS3, 0xC=CS2+CS3...) */
-#define DRAM_2T                                 0x0
-#define DIMM_CS_BITMAP                          0xF
-#define DUNIT_SPD
-#endif
-
-/* Registered DIMM Support - In case registered DIMM is attached, please supply the following values:
-(see JEDEC - JESD82-29A "Definition of the SSTE32882 Registering Clock Driver with Parity and Quad Chip
-Selects for DDR3/DDR3L/DDR3U RDIMM 1.5 V/1.35 V/1.25 V Applications") */
-/* RC0: Global Features Control Word */
-/* RC1: Clock Driver Enable Control Word */
-/* RC2: Timing Control Word */
-/* RC3-RC5 - taken from SPD */
-/* RC8: Additional IBT Setting Control Word */
-/* RC9: Power Saving Settings Control Word */
-/* RC10: Encoding for RDIMM Operating Speed */
-/* RC11: Operating Voltage VDD and VREFCA Control Word */
-#define RDIMM_RC0                               0
-#define RDIMM_RC1                               0
-#define RDIMM_RC2                               0
-#define RDIMM_RC8                               0
-#define RDIMM_RC9                               0
-#define RDIMM_RC10                              0x2
-#define RDIMM_RC11                              0x0
-
-#if defined(MIXED_DIMM_STATIC) || !defined (SPD_SUPPORT)
-#define DUNIT_STATIC
-#endif
 
 #endif /* _DDR3_ALP_CONFIG_H */

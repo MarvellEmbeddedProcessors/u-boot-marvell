@@ -678,7 +678,7 @@ static int do_mem_mtest(cmd_tbl_t *cmdtp, int flag, int argc,
 		end = (ulong *)(CONFIG_SYS_MEMTEST_END);
 
 	start =(ulong *)align_address((ulong)start, 4);
-	end = (ulong *)align_address((ulong)start, 4);
+	end = (ulong *)align_address((ulong)end, 4);
 
 	if (argc > 3)
 		pattern = (ulong)simple_strtoul(argv[3], NULL, 16);

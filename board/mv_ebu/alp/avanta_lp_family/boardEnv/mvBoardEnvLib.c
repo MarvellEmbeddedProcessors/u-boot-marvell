@@ -3029,12 +3029,15 @@ MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 	 * If set as active in Ethernet complex board configuration */
 	if (ethNum == 0 && ((c & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0) ||
 			(c & MV_ETHCOMP_GE_MAC0_2_RGMII0) ||
+			(c & MV_ETHCOMP_GE_MAC0_2_COMPHY_1) ||
 			(c & MV_ETHCOMP_GE_MAC0_2_COMPHY_2) ||
+			(c & MV_ETHCOMP_GE_MAC0_2_COMPHY_3) ||
 			(c & MV_ETHCOMP_GE_MAC0_2_SW_P6)))
 			isConnected = MV_TRUE;
 
 	if (ethNum == 1 && ((c & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3) ||
 			(c & MV_ETHCOMP_GE_MAC1_2_RGMII1) ||
+			(c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES) ||
 			(c & MV_ETHCOMP_GE_MAC1_2_SW_P4)))
 			isConnected = MV_TRUE;
 

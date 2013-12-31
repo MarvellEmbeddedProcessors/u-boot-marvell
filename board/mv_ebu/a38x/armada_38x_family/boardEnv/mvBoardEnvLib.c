@@ -1124,7 +1124,7 @@ MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 
 	if (mvBoardIoExpanderGet(0, 2, &ioValue) == MV_ERROR)
 		return MV_OK; /* ignore for boards not supported IO expander */
-	tmp = mvBoardSatRRead(MV_SATR_RD_NAS_SERDES4_CFG);
+	tmp = mvBoardSatRRead(MV_SATR_RD_SERDES4_CFG);
 	if (tmp != MV_ERROR) { /* ignore for none RD_NAS board */
 		if (tmp == 0) /* 0 = USB3.  1 = SGMII. */
 			ioValue |= 1 ;	/* Setting USB3.0 interface: configure IO as output '1' */

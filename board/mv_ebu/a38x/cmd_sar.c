@@ -177,7 +177,7 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("0 = Host.\n");
 		mvOsPrintf("1 = Device.\n ");
 		break;
-	case MV_SATR_RD_NAS_SERDES4_CFG:
+	case MV_SATR_RD_SERDES4_CFG:
 		mvOsPrintf("Determines the RD-NAS SERDES lane #4 configuration:\n");
 		mvOsPrintf("0 = USB3.\n");
 		mvOsPrintf("1 = SGMII. \n ");
@@ -257,7 +257,7 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 	case MV_SATR_DB_USB3_PORT1:
 		mvOsPrintf("USB3-Port1 Mode: %s\n",(tmp == 0)? "Host" : "Device");
 		break;
-	case MV_SATR_RD_NAS_SERDES4_CFG:
+	case MV_SATR_RD_SERDES4_CFG:
 		mvOsPrintf("Determines the RD-NAS-SERDES Lane #4 configuration:  %s\n", (tmp == 0)? "USB3" : "SGMII");
 		break;
 

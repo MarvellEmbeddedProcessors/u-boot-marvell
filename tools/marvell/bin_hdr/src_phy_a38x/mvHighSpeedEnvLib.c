@@ -241,6 +241,27 @@ MV_OP_PARAMS usb3DeviceConfigParams[] =
 };
 
 
+/*****************/
+/*    USB2       */
+/*****************/
+
+MV_OP_PARAMS usb2PowerUpParams[] =
+{
+	/* unitunitBaseReg unitOffset   mask       USB2 data  waitTime  numOfLoops */
+	{ 0x18440 ,        0x0 /*NA*/,	0xffffffff, {0x62},       0,        0}, /* Init phy 0 */
+	{ 0x18444 ,        0x0 /*NA*/,	0xffffffff, {0x62},       0,        0}, /* Init phy 1 */
+	{ 0x18448 ,        0x0 /*NA*/,	0xffffffff, {0x62},       0,        0}, /* Init phy 2 */
+	{ 0xC0000 ,        0x0 /*NA*/,	0xffffffff, {0x40605205}, 0,        0}, /* Phy offset 0x0 - PLL_CONTROL0  */
+	{ 0xC0004 ,        0x0 /*NA*/,	0x1,        {0x1},        0,        0}, /* Phy offset 0x1 - PLL_CONTROL1 */
+	{ 0xC000C ,        0x0 /*NA*/,	0x1000000,  {0x1000000},  0,        0}, /* Phy0 register 3  - TX Channel control 0 */
+	{ 0xC200C ,        0x0 /*NA*/,	0x1000000,  {0x1000000},  0,        0}, /* Phy0 register 3  - TX Channel control 0 */
+	{ 0xC400C ,        0x0 /*NA*/,	0x1000000,  {0x1000000},  0,        0}, /* Phy0 register 3  - TX Channel control 0 */
+	{ 0xC0008 ,        0x0 /*NA*/,	0x80800000, {0x80800000}, 1,     1000}, /* check PLLCAL_DONE is set and IMPCAL_DONE is set*/
+	{ 0xC0018 ,        0x0 /*NA*/,	0x80000000, {0x80000000}, 1,     1000}, /* check REG_SQCAL_DONE  is set*/
+	{ 0xC0000 ,        0x0 /*NA*/,	0x80000000, {0x80000000}, 1,     1000} /* check PLL_READY  is set*/
+};
+
+
 /* SERDES_POWER_DOWN */
 MV_OP_PARAMS serdesPowerDownParams[] =
 {
@@ -359,6 +380,11 @@ MV_VOID serdesSeqInit(MV_VOID)
 	serdesSeqDb[USB3_TX_CONFIG_SEQ].opParamsPtr = pexAndUsb3TxConfigParams;
 	serdesSeqDb[USB3_TX_CONFIG_SEQ].cfgSeqSize =  sizeof(pexAndUsb3TxConfigParams) / sizeof(MV_OP_PARAMS);
 	serdesSeqDb[USB3_TX_CONFIG_SEQ].dataArrIdx = USB3;
+
+	/* USB2_POWER_UP_SEQ sequence init */
+	serdesSeqDb[USB2_POWER_UP_SEQ].opParamsPtr = usb2PowerUpParams;
+	serdesSeqDb[USB2_POWER_UP_SEQ].cfgSeqSize =  sizeof(usb2PowerUpParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[USB2_POWER_UP_SEQ].dataArrIdx = 0;
 
 	/* USB3_DEVICE_CONFIG_SEQ sequence init */
 	serdesSeqDb[USB3_DEVICE_CONFIG_SEQ].opParamsPtr = usb3DeviceConfigParams;
@@ -559,6 +585,10 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 
 	/* PEX configuration*/
 	CHECK_STATUS(mvHwsPexConfig(serdesConfigMap));
+
+	/* USB2 configuration */
+	DEBUG_INIT_FULL_S("powerUpSerdesLanes: init USB2 Phys\n");
+	CHECK_STATUS(mvSeqExec(0 /* not relevant */, USB2_POWER_UP_SEQ));
 
 	DEBUG_INIT_FULL_S("### powerUpSerdesLanes ended successfully ###\n");
 	return MV_OK;

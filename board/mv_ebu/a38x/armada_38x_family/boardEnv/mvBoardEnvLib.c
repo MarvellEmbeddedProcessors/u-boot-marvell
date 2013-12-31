@@ -387,6 +387,18 @@ MV_32 mvBoardModuleConfigGet(MV_VOID)
 *******************************************************************************/
 MV_VOID mvBoardModuleConfigSet(MV_U32 newCfg)
 {
+	/* The MII module cannot work together with the SGMII module */
+	/* Ignore MII module if SGMII module is detected */
+	if ((newCfg == MV_CONFIG_MII) && (MV_CONFIG_SGMII & board->boardOptionsConfig)) {
+		mvOsPrintf("%s: Warning: Conflict in module detect, (SGMII & MII module), MII module is ignored\n",
+			    __func__);
+		return;
+	}
+	if ((newCfg == MV_CONFIG_SGMII) && (MV_CONFIG_MII & board->boardOptionsConfig)) {
+		mvOsPrintf("%s: Warning: Conflict in module detect, (SGMII & MII module), MII module is ignored\n",
+			   __func__);
+		board->boardOptionsConfig &= ~MV_CONFIG_MII;
+	}
 	board->boardOptionsConfig |= newCfg;
 }
 
@@ -490,6 +502,31 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 	}
 
 	return board->pBoardMacInfo[ethPortNum].boardMacSpeed;
+}
+/*******************************************************************************
+* mvBoardMacSpeedSet - Set the Mac speed
+*
+* DESCRIPTION:
+*       This routine SET the Mac speed for a given ethernet port.
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*       ethSpeed. - 10/100/1000 eth speed
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_VOID mvBoardMacSpeedSet(MV_U32 ethPortNum, MV_BOARD_MAC_SPEED ethSpeed)
+{
+	if (ethPortNum >= board->numBoardMacInfo) {
+		mvOsPrintf("%s: Error: wrong eth port (%d)\n", __func__, ethPortNum);
+		return;
+	}
+	board->pBoardMacInfo[ethPortNum].boardMacSpeed = ethSpeed;
 }
 
 /*******************************************************************************

@@ -619,7 +619,7 @@ void pci_init_board(void)
 
 		DB(printf("Initializing HAL\n"));
 
-		status = mvSysPexInit(pexHWInf, pexIfMode);
+		status = mvSysPexInit(pexHWInf, pexIfMode, pexIf);
 		if (status == MV_ERROR)
 			printf("pci_init_board:Error calling mvPexIfInit for PCI-e%d (%d)\n",
 			       pexHWInf, pexIf);

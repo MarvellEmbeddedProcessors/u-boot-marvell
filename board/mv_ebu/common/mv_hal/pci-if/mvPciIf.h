@@ -93,7 +93,7 @@ typedef enum _mvPCIIfMode {
 /* Global Functions prototypes */
 
 /* mvPciIfInit - Initialize PCI interfaces*/
-MV_STATUS mvPciIfInit(MV_U32 pciIf, PCI_IF_MODE pciIfmode);
+MV_STATUS mvPciIfInit(MV_U32 pciIf, PCI_IF_MODE pciIfmode, MV_U32 virtualIf);
 
 /* mvPciIfConfigRead - Read from configuration space */
 MV_U32 mvPciIfConfigRead(MV_U32 pciIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff);

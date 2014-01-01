@@ -117,6 +117,13 @@ typedef struct {
 	MV_U32		ctrlFamily;
 } MV_ETHPHY_HAL_DATA;
 
+#define MV_PHY_ADVERTISE_10_HALF        0x1
+#define MV_PHY_ADVERTISE_10_FULL        0x2
+#define MV_PHY_ADVERTISE_100_HALF       0x4
+#define MV_PHY_ADVERTISE_100_FULL       0x8
+#define MV_PHY_ADVERTISE_1000_HALF      0x10
+#define MV_PHY_ADVERTISE_1000_FULL      0x20
+
 MV_STATUS 	mvEthPhyHalInit(MV_ETHPHY_HAL_DATA *halData);
 MV_STATUS	mvEthPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable);
 MV_STATUS	mvEthPhyRegRead(MV_U32 phyAddr, MV_U32 regOffs, MV_U16 *data);

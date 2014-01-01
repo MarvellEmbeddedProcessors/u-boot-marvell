@@ -297,8 +297,32 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum)
 {
-	/* On DB board currently when SGMII connected the SGMII module activet port 1 and port 2
-	   and port 0 is disabled */
+	/* If module MII connected return port MII as GMII for NETA init configuration */
+	if (mvBoardIsPortInMii(ethPortNum))
+		return MV_TRUE;
+	return MV_FALSE;
+}
+/*******************************************************************************
+* mvBoardIsPortInMii
+*
+* DESCRIPTION:
+*	This routine returns MV_TRUE for port number works in MII or MV_FALSE
+*	For all other options.
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE - port in MII.
+*       MV_FALSE - other.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsPortInMii(MV_U32 ethPortNum)
+{
+	/* On DB board if MII module detected then port 0 is MII */
 	if ((mvBoardIsModuleConnected(MV_CONFIG_MII)) && (ethPortNum == 0))
 		return MV_TRUE;
 	return MV_FALSE;
@@ -897,6 +921,9 @@ static MV_VOID mvBoardModuleAutoDetect(MV_VOID)
 MV_VOID mvBoardInfoUpdate(MV_VOID)
 {
 	MV_U32	reg;
+
+	if ((mvBoardIsModuleConnected(MV_CONFIG_MII)))	/* if Module MII connected change SMI address for port 0 */
+		mvBoardPhyAddrSet(0, 8);	/*set SMI address 8 for port 0*/
 
 	/* Update MPP group types and values according to board configuration */
 	mvBoardMppIdUpdate();

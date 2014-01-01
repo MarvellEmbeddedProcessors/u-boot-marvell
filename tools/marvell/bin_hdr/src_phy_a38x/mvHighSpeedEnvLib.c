@@ -99,8 +99,8 @@ MV_U8 commonPhysSelectorsMap[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 	/* 0      1       2       3       4       5 */
 	{ 0x1, 0x1,    NA,	NA,	 NA,	  NA	  },    /* PEX0 */
 	{ NA,  0x2,    0x1,	NA,	 0x1,	  NA	  },    /* PEX1 */
-	{ NA,  NA,     0x2,	0x1,	 NA,	  0x1	  },    /* PEX2 */
-	{ NA,  NA,     NA,	0x2,	 NA,	  NA	  },    /* PEX3 */
+	{ NA,  NA,     0x2,	NA,	 NA,	  0x1	  },    /* PEX2 */
+	{ NA,  NA,     NA,	0x1,	 NA,	  NA	  },    /* PEX3 */
 	{ 0x2, 0x3,    NA,	NA,	 NA,	  NA	  },    /* SATA0 */
 	{ NA,  NA,     0x3,	NA,	 0x2,	  NA	  },    /* SATA1 */
 	{ NA,  NA,     NA,	NA,	 0x6,	  0x2	  },    /* SATA2 */

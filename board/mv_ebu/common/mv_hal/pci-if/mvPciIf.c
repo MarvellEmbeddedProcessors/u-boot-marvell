@@ -92,7 +92,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
 *******************************************************************************/
 #if !defined (MV88F66XX)
-MV_STATUS mvPciIfInit(MV_U32 pciIf, PCI_IF_MODE pciIfmode)
+MV_STATUS mvPciIfInit(MV_U32 pciIf, PCI_IF_MODE pciIfmode, MV_U32 virtualIf)
 {
 	MV_PEX_TYPE pexType;
 	if (PCI_IF_MODE_HOST == pciIfmode) {
@@ -104,7 +104,7 @@ MV_STATUS mvPciIfInit(MV_U32 pciIf, PCI_IF_MODE pciIfmode)
 			   " end point\n", __func__, pciIf, pciIfmode);
 		return MV_FAIL;
 	}
-	return mvSysPexInit(pciIf, pexType);
+	return mvSysPexInit(pciIf, pexType, virtualIf);
 }
 #endif
 

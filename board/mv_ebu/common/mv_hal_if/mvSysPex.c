@@ -84,7 +84,7 @@ MV_STATUS mvPexTargetWinGet(MV_U32 pexIf, MV_U32 winNum, MV_PEX_DEC_WIN *pAddrDe
 *       None
 *
 *******************************************************************************/
-MV_STATUS mvSysPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType)
+MV_STATUS mvSysPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_U32 virtualIf)
 {
 	MV_PEX_HAL_DATA halData;
 	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
@@ -102,6 +102,7 @@ MV_STATUS mvSysPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType)
 		halData.ctrlModel = mvCtrlModelGet();
 		halData.maxPexIf = mvCtrlPexMaxIfGet();
 		halData.ctrlFamily = mvCtrlDevFamilyIdGet(halData.ctrlModel);
+		halData.virtualIf = virtualIf;
 		status = mvPexInit(pexIf, pexType, &halData);
 	}
 

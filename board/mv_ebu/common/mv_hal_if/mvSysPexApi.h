@@ -66,6 +66,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __MV_SYS_PEX_API_H__
 #include "pex/mvPex.h"
 
-MV_STATUS mvSysPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType);
+MV_STATUS mvSysPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_U32 virtualIf);
 
 #endif

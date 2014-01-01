@@ -78,6 +78,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #else
 #define DB(x)
 #endif
+#define MV_PEX_IS_VALID(x)	(pexHalData[x].virtualIf >= pexHalData[x].maxPexIf)
 
 static MV_PEX_HAL_DATA pexHalData[MV_PEX_MAX_IF];
 
@@ -126,7 +127,7 @@ MV_STATUS mvPexInit(MV_U32 pexIf, MV_PEX_TYPE pexType, MV_PEX_HAL_DATA *halData)
 			MV_REG_WRITE(PEX_DBG_CTRL_REG(pexIf), regVal);
 
 	}
-	
+
 	return MV_OK;
 }
 
@@ -152,7 +153,7 @@ MV_U32 mvPexModeGet(MV_U32 pexIf, MV_PEX_MODE *pexMode)
 	if (pexIf >= MV_PEX_MAX_IF)
 		return MV_BAD_PARAM;
 
-	
+
 	pexData = MV_REG_READ(PEX_CTRL_REG(pexIf));
 
 	switch (pexData & PXCR_DEV_TYPE_CTRL_MASK) {
@@ -222,7 +223,7 @@ MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32
 
 	/* Parameter checking   */
 	if (PEX_DEFAULT_IF != pexIf) {
-		if (pexIf >= pexHalData[pexIf].maxPexIf) {
+		if (MV_PEX_IS_VALID(pexIf)) {
 			mvOsPrintf("mvPexConfigRead: ERR. Invalid PEX interface %d\n", pexIf);
 			return 0xFFFFFFFF;
 		}
@@ -341,7 +342,7 @@ MV_STATUS mvPexConfigWrite(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV
 
 	/* Parameter checking   */
 	if (PEX_DEFAULT_IF != pexIf) {
-		if (pexIf >= pexHalData[pexIf].maxPexIf) {
+		if (MV_PEX_IS_VALID(pexIf)) {
 			mvOsPrintf("mvPexConfigWrite: ERR. Invalid PEX interface %d\n", pexIf);
 			return MV_ERROR;
 		}
@@ -454,7 +455,7 @@ MV_STATUS mvPexMasterEnable(MV_U32 pexIf, MV_BOOL enable)
 	MV_U32 pexCommandStatus;
 
 	/* Parameter checking   */
-	if (pexIf >= pexHalData[pexIf].maxPexIf) {
+	if (MV_PEX_IS_VALID(pexIf)) {
 		mvOsPrintf("mvPexMasterEnable: ERR. Invalid PEX interface %d\n", pexIf);
 		return MV_ERROR;
 	}
@@ -498,7 +499,7 @@ MV_STATUS mvPexSlaveEnable(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_BOOL enable)
 	MV_U32 RegOffs;
 
 	/* Parameter checking   */
-	if (pexIf >= pexHalData[pexIf].maxPexIf) {
+	if (MV_PEX_IS_VALID(pexIf)) {
 		mvOsPrintf("mvPexSlaveEnable: ERR. Invalid PEX interface %d\n", pexIf);
 		return MV_BAD_PARAM;
 	}
@@ -548,7 +549,7 @@ MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum)
 	MV_U32 pexStatus;
 
 	/* Parameter checking   */
-	if (pexIf >= pexHalData[pexIf].maxPexIf) {
+	if (MV_PEX_IS_VALID(pexIf)) {
 		mvOsPrintf("mvPexLocalBusNumSet: ERR. Invalid PEX interface %d\n", pexIf);
 		return MV_BAD_PARAM;
 	}
@@ -593,7 +594,7 @@ MV_U32 mvPexLocalBusNumGet(MV_U32 pexIf)
 
 	/* Parameter checking   */
 	if (PEX_DEFAULT_IF != pexIf) {
-		if (pexIf >= pexHalData[pexIf].maxPexIf) {
+		if (MV_PEX_IS_VALID(pexIf)) {
 			mvOsPrintf("mvPexLocalBusNumGet: ERR. Invalid PEX interface %d\n", pexIf);
 			return 0xFFFFFFFF;
 		}
@@ -634,7 +635,7 @@ MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum)
 		return MV_BAD_PARAM;
 
 	/* Parameter checking   */
-	if (pexIf >= pexHalData[pexIf].maxPexIf) {
+	if (MV_PEX_IS_VALID(pexIf)) {
 		mvOsPrintf("mvPexLocalDevNumSet: ERR. Invalid PEX interface %d\n", pexIf);
 		return MV_BAD_PARAM;
 	}
@@ -677,7 +678,7 @@ MV_U32 mvPexLocalDevNumGet(MV_U32 pexIf)
 	/* Parameter checking   */
 
 	if (PEX_DEFAULT_IF != pexIf) {
-		if (pexIf >= pexHalData[pexIf].maxPexIf) {
+		if (MV_PEX_IS_VALID(pexIf)) {
 			mvOsPrintf("mvPexLocalDevNumGet: ERR. Invalid PEX interface %d\n", pexIf);
 			return 0xFFFFFFFF;
 		}
@@ -694,7 +695,7 @@ MV_VOID mvPexPhyRegRead(MV_U32 pexIf, MV_U32 regOffset, MV_U16 *value)
 {
 
 	MV_U32 regAddr;
-	if (pexIf >= pexHalData[pexIf].maxPexIf) {
+	if (MV_PEX_IS_VALID(pexIf)) {
 		mvOsPrintf("mvPexPhyRegRead: ERR. Invalid PEX interface %d\n", pexIf);
 		return;
 	}
@@ -707,7 +708,7 @@ MV_VOID mvPexPhyRegWrite(MV_U32 pexIf, MV_U32 regOffset, MV_U16 value)
 {
 
 	MV_U32 regAddr;
-	if (pexIf >= pexHalData[pexIf].maxPexIf) {
+	if (MV_PEX_IS_VALID(pexIf)) {
 		mvOsPrintf("mvPexPhyRegWrite: ERR. Invalid PEX interface %d\n", pexIf);
 		return;
 	}
@@ -736,7 +737,7 @@ MV_STATUS mvPexActiveStateLinkPMEnable(MV_U32 pexIf, MV_BOOL enable)
 {
 	MV_U32 reg;
 
-	if (pexIf >= pexHalData[pexIf].maxPexIf) {
+	if (MV_PEX_IS_VALID(pexIf)) {
 		mvOsPrintf("mvPexActiveStateLinkPMEnable: ERR. Invalid PEX interface %d\n", pexIf);
 		return MV_ERROR;
 	}
@@ -774,7 +775,7 @@ MV_STATUS mvPexActiveStateLinkPMEnable(MV_U32 pexIf, MV_BOOL enable)
 MV_U32 mvPexForceX1(MV_U32 pexIf)
 {
 	MV_U32 regData = 0;
-	if (pexIf >= pexHalData[pexIf].maxPexIf) {
+	if (MV_PEX_IS_VALID(pexIf)) {
 		mvOsPrintf("mvPexForceX1: ERR. Invalid PEX interface %d\n", pexIf);
 		return MV_BAD_PARAM;
 	}

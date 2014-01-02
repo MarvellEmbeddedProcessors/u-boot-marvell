@@ -273,13 +273,13 @@ extern "C" {
 typedef enum {
 	NAND_BOOT_V2,
 	SPI0_BOOT,
-	SPI0_BOOT_SPDIF_AUDIO,
+	SPI0_BOOT_SPDIF_I2S_AUDIO,
 } MV_GROUP_0_TYPE;
 
 #define MPP_GROUP_1_TYPE { \
 	0x22555555,     /* NAND_V2_BOOT_DEVICE  */ \
 	0x22000022,     /* SPI_BOOT_DEVICE	*/ \
-	0x22044022,     /* SPI_BOOT_DEVICE & SPDIF Audio	*/ \
+	0x22044022,     /* SPI_BOOT_DEVICE & I2S Audio*/ \
 }
 
 #define MV_GROUP_1_TYPE         MV_GROUP_0_TYPE

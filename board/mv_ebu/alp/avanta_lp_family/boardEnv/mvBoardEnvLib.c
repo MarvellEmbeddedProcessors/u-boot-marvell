@@ -1184,6 +1184,9 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 	MV_U32 groupType;
 	MV_BOARD_BOOT_SRC bootSrc = mvBoardBootDeviceGet();
 
+	/* Check conflicts between device bus module and NAND */
+	mvBoardAudioModuleConfigCheck();
+
 	switch (bootSrc) {
 	case MSAR_0_BOOT_NAND_NEW:
 		mvBoardMppTypeSet(0, NAND_BOOT_V2);
@@ -1775,6 +1778,30 @@ MV_U8 mvBoardTdmSpiIdGet(MV_VOID)
 		return 0;
 
 	return board->pBoardTdmSpiInfo[index].spiId;
+}
+
+/*******************************************************************************
+* mvBoardAudioModuleConfigCheck
+*
+* DESCRIPTION:
+*	Check if used audio modules when booting from NAND
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_VOID mvBoardAudioModuleConfigCheck(MV_VOID)
+{
+	if ((mvBoardBootDeviceGet() == MSAR_0_BOOT_NAND_NEW) &&
+		((mvCtrlSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2) ||		/* 0x2=I2S_AUDIO   */
+		(mvCtrlSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x3)))		/* 0x3=SPDIF_AUDIO */
+			mvOsPrintf("Error: Audio modules not supported when booting from NAND\n");
 }
 
 /*******************************************************************************
@@ -2781,6 +2808,9 @@ MV_STATUS mvBoardEepromWrite(MV_CONFIG_TYPE_ID configType, MV_U8 value)
 
 	/* run conflict verification sequence on MAC and SerDes configuration */
 	mvBoardEthComplexMacConfigCheck();
+
+	/* Check conflicts between device bus module and NAND */
+	mvBoardAudioModuleConfigCheck();
 
 	return MV_OK;
 }

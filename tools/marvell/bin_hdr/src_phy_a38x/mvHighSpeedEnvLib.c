@@ -434,6 +434,49 @@ MV_STATUS mvHwsTwsiInitWrapper(MV_VOID)
 	return MV_OK;
 }
 
+
+/***************************************************************************/
+#ifdef MV_DEBUG_INIT
+static const char *serdesTypeToString[] = {
+	"PEX0",
+	"PEX1",
+	"PEX2",
+	"PEX3",
+	"SATA0",
+	"SATA1",
+	"SATA2",
+	"SATA3",
+	"SGMII0",
+	"SGMII1",
+	"SGMII2",
+	"QSGMII",
+	"USB3_HOST0",
+	"USB3_HOST1",
+	"USB3_DEVICE",
+	"DEFAULT_SERDES",
+	"LAST_SERDES_TYPE"
+};
+
+MV_VOID printTopologyDetails(SERDES_MAP  *serdesMapArray)
+{
+	MV_U32 laneNum;
+
+	DEBUG_INIT_S("board topology details:\n");
+
+	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
+		if (serdesMapArray[laneNum].serdesType == DEFAULT_SERDES)
+		{
+			continue;
+		}
+		DEBUG_INIT_C("serdes num: ", laneNum, 1);
+		DEBUG_INIT_C("serdes speed: ", serdesMapArray[laneNum].serdesSpeed, 2);
+		DEBUG_INIT_S("serdes type: ");
+		DEBUG_INIT_S((char *)serdesTypeToString[serdesMapArray[laneNum].serdesType]);
+		DEBUG_INIT_S("\n");
+	}
+}
+#endif
+
 /***************************************************************************/
 MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
@@ -449,6 +492,11 @@ MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	/* Board topology load */
 	DEBUG_INIT_FULL_S("mvCtrlHighSpeedSerdesPhyConfig: Loading board topology..\n");
 	CHECK_STATUS(mvHwsBoardTopologyLoad(serdesConfigurationMap));
+
+#ifdef MV_DEBUG_INIT
+	/* print topology */
+	printTopologyDetails(serdesConfigurationMap);
+#endif
 
 	/* Power-Up sequence */
 	DEBUG_INIT_FULL_S("mvCtrlHighSpeedSerdesPhyConfig: Starting serdes power up sequence\n");

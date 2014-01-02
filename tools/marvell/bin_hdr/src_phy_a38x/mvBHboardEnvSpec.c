@@ -415,16 +415,10 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 	topologyConfigPtr = topologyConfigDB[topologyMode];
 
 	/* Updating the topology map */
-	DEBUG_INIT_FULL_S("board topology details:\n");
 	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
-		DEBUG_INIT_FULL_C("serdes num: ", laneNum, 1);
-
 		serdesMapArray[laneNum].serdesMode =  topologyConfigPtr[laneNum].serdesMode;
 		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
 		serdesMapArray[laneNum].serdesType =  topologyConfigPtr[laneNum].serdesType;
-
-		DEBUG_INIT_FULL_C("serdes speed: ", serdesMapArray[laneNum].serdesSpeed, 2);
-		DEBUG_INIT_FULL_C("serdes type: ", serdesMapArray[laneNum].serdesType, 2);
 	}
 
 	return MV_OK;

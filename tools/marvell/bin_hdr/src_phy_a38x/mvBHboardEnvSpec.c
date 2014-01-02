@@ -401,6 +401,9 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 	MV_U32 laneNum;
 	MV_U8 topologyMode;
 	SERDES_MAP* topologyConfigPtr;
+	MV_TWSI_SLAVE twsiSlave;
+	MV_U8 twsiData;
+	MV_U8 usb3Host0OrDevice, usb3Host1OrDevice;
 
 	DEBUG_INIT_FULL_S("\n### loadTopologyDB ###\n");
 
@@ -414,11 +417,43 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 
 	topologyConfigPtr = topologyConfigDB[topologyMode];
 
+	/* Read SatR usb3port0 & usb3port1 */
+	twsiSlave.slaveAddr.address = RD_GET_MODE_ADDR;
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.offset = 0;
+	twsiSlave.moreThen256 = MV_TRUE;
+	if (mvTwsiRead(0, &twsiSlave, &twsiData, 1) == MV_OK) {
+		usb3Host0OrDevice = (twsiData & 0x1);
+		if (usb3Host0OrDevice == 0)
+		{
+			/* Only one USB3 device is enabled */
+			usb3Host1OrDevice = ((twsiData >> 1) & 0x1);
+		}
+	}
+
+
 	/* Updating the topology map */
 	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
 		serdesMapArray[laneNum].serdesMode =  topologyConfigPtr[laneNum].serdesMode;
 		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
 		serdesMapArray[laneNum].serdesType =  topologyConfigPtr[laneNum].serdesType;
+
+		/* Update USB3 device if needed - relvant for lane 3,4,5 only */
+		if (laneNum >= 3)
+		{
+			if ((serdesMapArray[laneNum].serdesType == USB3_HOST0) &&
+				(usb3Host0OrDevice == 1))
+			{
+				serdesMapArray[laneNum].serdesType = USB3_DEVICE;
+			}
+
+			if ((serdesMapArray[laneNum].serdesType == USB3_HOST1) &&
+				(usb3Host1OrDevice == 1))
+			{
+				serdesMapArray[laneNum].serdesType = USB3_DEVICE;
+			}
+		}
 	}
 
 	return MV_OK;

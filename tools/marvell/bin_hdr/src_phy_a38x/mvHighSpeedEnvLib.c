@@ -235,6 +235,14 @@ MV_OP_PARAMS pexAndUsb3TxConfigParams[] =
 	{ 0x0,		   0x0,						    0x0,	     { 0x0,   0x0   }, 10,	   0			  } /* 10ms delay */
 };
 
+/* USB3 device donfig seq */
+MV_OP_PARAMS usb3DeviceConfigParams[] =
+{
+	/* unitunitBaseReg  unitOffset   mask    data        waitTime   numOfLoops */
+	{ 0xa0620,	    0x800,       0x200,	 { 0x200 },  0,	        0}
+};
+
+
 /* SERDES_POWER_DOWN */
 MV_OP_PARAMS serdesPowerDownParams[] =
 {
@@ -353,6 +361,11 @@ MV_VOID serdesSeqInit(MV_VOID)
 	serdesSeqDb[USB3_TX_CONFIG_SEQ].opParamsPtr = pexAndUsb3TxConfigParams;
 	serdesSeqDb[USB3_TX_CONFIG_SEQ].cfgSeqSize =  sizeof(pexAndUsb3TxConfigParams) / sizeof(MV_OP_PARAMS);
 	serdesSeqDb[USB3_TX_CONFIG_SEQ].dataArrIdx = USB3;
+
+	/* USB3_DEVICE_CONFIG_SEQ sequence init */
+	serdesSeqDb[USB3_DEVICE_CONFIG_SEQ].opParamsPtr = usb3DeviceConfigParams;
+	serdesSeqDb[USB3_DEVICE_CONFIG_SEQ].cfgSeqSize =  sizeof(usb3DeviceConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[USB3_DEVICE_CONFIG_SEQ].dataArrIdx = 0; /* Not relevant */
 
 	/* SERDES_POWER_DOWN_SEQ sequence init */
 	serdesSeqDb[SERDES_POWER_DOWN_SEQ].opParamsPtr = serdesPowerDownParams;
@@ -500,6 +513,7 @@ MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	/* Power-Up sequence */
 	DEBUG_INIT_FULL_S("mvCtrlHighSpeedSerdesPhyConfig: Starting serdes power up sequence\n");
+
 	CHECK_STATUS(powerUpSerdesLanes(serdesConfigurationMap));
 
 	DEBUG_INIT_FULL_S("\n### mvCtrlHighSpeedSerdesPhyConfig ended successfully ###\n");
@@ -639,7 +653,6 @@ MV_STATUS mvSerdesPowerUpCtrl
 			break;
 		case USB3_HOST0:
 		case USB3_HOST1:
-		case USB3_DEVICE:
 			CHECK_STATUS(mvSeqExec(serdesNum, USB3_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
@@ -673,6 +686,14 @@ MV_STATUS mvSerdesPowerUpCtrl
 #endif                  /* DB_LINK_CHECK */
 
 			break;
+		case USB3_DEVICE:
+			CHECK_STATUS(mvSeqExec(serdesNum, USB3_POWER_UP_SEQ));
+			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
+			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
+			CHECK_STATUS(mvSeqExec(serdesNum, USB3_DEVICE_CONFIG_SEQ));
+			CHECK_STATUS(mvSeqExec(serdesNum, USB3_TX_CONFIG_SEQ));
+			break;
+
 		case SATA0:
 		case SATA1:
 		case SATA2:

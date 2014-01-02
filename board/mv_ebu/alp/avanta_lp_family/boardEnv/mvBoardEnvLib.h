@@ -530,6 +530,7 @@ MV_32 mvBoardTdmSpiModeGet(MV_VOID);
 MV_U8 mvBoardTdmDevicesCountGet(void);
 MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId);
 MV_U8 mvBoardTdmSpiIdGet(MV_VOID);
+MV_VOID mvBoardAudioModuleConfigCheck(MV_VOID);
 MV_VOID mvBoardConfigurationPrint(MV_VOID);
 MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum);
 MV_32 mvBoardGetDevicesNumber(MV_BOARD_DEV_CLASS devClass);

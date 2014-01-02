@@ -1193,10 +1193,11 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 		mvBoardMppTypeSet(1, NAND_BOOT_V2);
 		break;
 	case MSAR_0_BOOT_SPI_FLASH:
-		/* read SPDIF_AUDIO board configuration for DB-6660 board */
+		/* read SPDIF_AUDIO/I2S_AUDIO board configuration for DB-6660 board */
 		if ((mvBoardIdGet() == DB_6660_ID) &&
-			(mvCtrlSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2))	/* 0x2=SPDIF_AUDIO */
-			groupType = SPI0_BOOT_SPDIF_AUDIO;
+			((mvCtrlSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2) ||	/* 0x2=I2S_AUDIO   */
+			 (mvCtrlSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x3)))	/* 0x3=SPDIF_AUDIO */
+			groupType = SPI0_BOOT_SPDIF_I2S_AUDIO;
 		else
 			groupType = SPI0_BOOT;
 
@@ -1209,8 +1210,8 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 			mvBoardMppTypeSet(4, SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT);
 		else    /*REF_CLK_OUT*/
 			mvBoardMppTypeSet(4, SPI1_CPU_SMI_CTRL_REF_CLK_OUT);
-		mvBoardMppTypeSet(0, SPI0_BOOT_SPDIF_AUDIO);
-		mvBoardMppTypeSet(1, SPI0_BOOT_SPDIF_AUDIO);
+		mvBoardMppTypeSet(0, SPI0_BOOT_SPDIF_I2S_AUDIO);
+		mvBoardMppTypeSet(1, SPI0_BOOT_SPDIF_I2S_AUDIO);
 		break;
 	default:
 		return MV_ERROR;

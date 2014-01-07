@@ -355,12 +355,16 @@ MV_U8 topologyConfigDBModeGet(MV_VOID)
 	if (mvTwsiRead(0, &twsiSlave, &mode, 1) == MV_OK) {
 		switch (mode & 0xF) {
 		case 0xC:
+			DEBUG_INIT_S("\nInit DB board SLM 1363 C topology\n");
 			return DB_CONFIG_SLM1363_C;
 		case 0xD:
+			DEBUG_INIT_S("\nInit DB board SLM 1363 D topology\n");
 			return DB_CONFIG_SLM1363_D;
 		case 0xE:
+			DEBUG_INIT_S("\nInit DB board SLM 1363 E topology\n");
 			return DB_CONFIG_SLM1363_E;
 		case 0xF:
+			DEBUG_INIT_S("\nInit DB board SLM 1363 F topology\n");
 			return DB_CONFIG_SLM1363_F;
 		default:    /* not the right module */
 			break;
@@ -370,16 +374,23 @@ MV_U8 topologyConfigDBModeGet(MV_VOID)
 	/* SLM1364 Module */
 	twsiSlave.slaveAddr.address = DB_GET_MODE_SLM1364_ADDR;
 	if (mvTwsiRead(0, &twsiSlave, &mode, 1) != MV_OK)
+	{
+		DEBUG_INIT_S("\nInit DB board default topology\n");
 		return DB_NO_TOPOLOGY;
+	}
 
 	switch (mode & 0xF) {
 	case 0xD:
+		DEBUG_INIT_S("\nInit DB board SLM 1364 D topology\n");
 		return DB_CONFIG_SLM1364_D;
 	case 0xE:
+		DEBUG_INIT_S("\nInit DB board SLM 1364 E topology\n");
 		return DB_CONFIG_SLM1364_E;
 	case 0xF:
+		DEBUG_INIT_S("\nInit DB board SLM 1364 F topology\n");
 		return DB_CONFIG_SLM1364_F;
 	default: /* Default configuration */
+		DEBUG_INIT_S("\nInit DB board default topology\n");
 		return DB_CONFIG_DEFAULT;
 	}
 }
@@ -430,6 +441,8 @@ MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
 
 	DEBUG_INIT_FULL_S("\n### loadTopologyRD ###\n");
 
+	DEBUG_INIT_S("\nInit RD board ");
+
 	/* Initializing twsiSlave in order to read from the TWSI address */
 	twsiSlave.slaveAddr.address = BOARD_ID_GET_ADDR;
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
@@ -449,6 +462,13 @@ MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
 
 	/* modeBit 0 = NAS, 1 = AP */
 	modeBit = (mode >> 1) & 0x1;
+
+	if (modeBit == 0) {
+		DEBUG_INIT_S("NAS topology\n");
+	}
+	else {
+		DEBUG_INIT_S("AP topology\n");
+	}
 
 	/* check if lane 4 is USB3 or SGMII */
 	twsiSlave.slaveAddr.address = RD_GET_MODE_ADDR;

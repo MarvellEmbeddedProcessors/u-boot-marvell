@@ -62,10 +62,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 #include "mvHighSpeedEnvSpec.h"
+#include "mvUart.h"
 
-MV_BIN_SERDES_UNIT_INDX boardLaneConfig[MAX_LANE_NUM]={
-	SERDES_UNIT_PEX,         /* Lane 0 */
-	SERDES_UNIT_UNCONNECTED, /* Lane 1 */
-	SERDES_UNIT_UNCONNECTED, /* Lane 2 */
-	SERDES_UNIT_UNCONNECTED  /* Lane 3 */
+/***************************   defined ******************************/
+
+/**************************** globals *****************************/
+
+MV_BOARD_TOPOLOGY_CONFIG boardTopologyConfig[] =
+{
+/*		board name					Lane 1				Lane 2					Lane3		Sgmii Speed*/
+	{"DB_88F6720_BP_ID",	    {SERDES_UNIT_PEX,	SERDES_UNIT_SATA,	SERDES_UNIT_USB3},	MV_SGMII_GEN1},
+	{"ARMADA_375_CUSTOMER_ID",	{SERDES_UNIT_PEX,	SERDES_UNIT_SATA,	SERDES_UNIT_USB3},	MV_SGMII_GEN1},
 };
+
+/****************************  function implementation *****************************************/
+
+/*****************************************************************:**************
+* mvBoardUpdateSerdesTopology
+*
+* DESCRIPTION: Updates the topology structure of a specific board according to dynamic configuration
+*
+* INPUT:  None
+*
+* OUTPUT: None
+*
+* RETURN: NONE
+*
+*******************************************************************************/
+MV_STATUS mvBoardUpdateBoardTopologyConfig(MV_U32 boardId)
+{
+	/* this routine must be implemented, in order to use dynamic Serdes /SGMII settings configuration.
+		1. scan requested configuration 2. update boardTopologyConfig[] according to config */
+	return MV_OK;
+}

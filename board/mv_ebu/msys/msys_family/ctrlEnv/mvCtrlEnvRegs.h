@@ -175,8 +175,6 @@ extern "C" {
 #define MPP_CONTROL_REG(id)			(0x18000 + (id * 4))
 
 /* Sample at Reset */
-//#define MPP_SAMPLE_AT_RESET(id)			(0x18230 + (id * 4))
-
 #define DFX_DEVICE_SAR_REG(x)			(0xf8200 +(x*4))
 
 #define MSAR_CORE_CLK(sar1, sar2)		(((sar2) >> 21) & 0x7)		/* PLL 0 config */
@@ -207,8 +205,8 @@ extern "C" {
 								DFX Server Units - BC2 specific registers/
 								Device Control 8	*/
 
-#define CORE_DIVCLK_RELOAD_RATIO_OFFS		8
-#define CORE_DIVCLK_RELOAD_RATIO_MASK		(2 << CORE_DIVCLK_RELOAD_RATIO_OFFS)
+#define CORE_DIVCLK_RELOAD_RATIO_OFFS		10
+#define CORE_DIVCLK_RELOAD_RATIO_MASK		(1 << CORE_DIVCLK_RELOAD_RATIO_OFFS)
 
 #define NAND_ECC_DIVCKL_RATIO_OFFS		6
 #define NAND_ECC_DIVCKL_RATIO_MASK		(0xF << NAND_ECC_DIVCKL_RATIO_OFFS)
@@ -245,11 +243,15 @@ extern "C" {
 #define TSEN_OTF_CALIB_OFS 	4
 #define TSEN_OTF_CALIB_MSK 	(1 << TSEN_OTF_CALIB_OFS)
 
+/*********************************/
+/* SoC Device Multiplex Register */
+/*********************************/
+#define SOC_DEV_MUX_REG				0x18208
 
-
-
-
-
+/*****************/
+/* PUP registers */
+/*****************/
+#define PUP_EN_REG				0x1864C
 
 /*****************/
 /*  registers */

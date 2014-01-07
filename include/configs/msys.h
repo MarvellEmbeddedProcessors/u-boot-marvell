@@ -107,7 +107,7 @@ disclaimer.
 /* CLKs */
 /********/
 #ifndef __ASSEMBLY__
-	extern unsigned int mvSysClkGet(void);
+	extern unsigned int mvCpuDdrClkGet(void);
 	extern unsigned int mvTclkGet(void);
 	#define UBOOT_CNTR		0		/* counter to use for uboot timer */
 	#define MV_TCLK_CNTR		1		/* counter to use for uboot timer */
@@ -117,7 +117,7 @@ disclaimer.
 
 	#define CONFIG_SYS_HZ		1000 		/*800*/
 	#define CONFIG_SYS_TCLK		mvTclkGet()
-	#define CONFIG_SYS_BUS_HZ	mvSysClkGet()
+	#define CONFIG_SYS_BUS_HZ	mvCpuDdrClkGet()
 	#define CONFIG_SYS_BUS_CLK	CONFIG_SYS_BUS_HZ
 #endif /* __ASSEMBLY__ */
 

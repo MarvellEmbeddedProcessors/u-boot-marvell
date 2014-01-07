@@ -96,11 +96,39 @@ MV_U32 mvCpuPclkGet(MV_VOID)
 {
 	MV_U32 idx;
 	MV_U32 freqMhz;
-	MV_U32 coreClockTbl[8] = MV_CORE_CLK_TBL;
+	MV_CPUDDR_MODE clockRatioTbl[8] = MV_CPU_DDR_CLK_TBL;
 	MV_U32 sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
 
-	idx = MSAR_CORE_CLK(0, sar2);
-	freqMhz = coreClockTbl[idx] * 1000000;
+	idx = MSAR_CPU_DDR_CLK(0, sar2);
+	freqMhz = clockRatioTbl[idx].cpuFreq * 1000000;
+	return freqMhz;
+}
+
+/*******************************************************************************
+* mvCpuDdrClkGet - Get the DDR clock
+*
+* DESCRIPTION:
+*       This routine extract the DDR clock.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit clock cycles in Hertz.
+*
+*******************************************************************************/
+MV_U32 mvCpuDdrClkGet(MV_VOID)
+{
+	MV_U32 idx;
+	MV_U32 freqMhz;
+	MV_CPUDDR_MODE clockRatioTbl[8] = MV_CPU_DDR_CLK_TBL;
+	MV_U32 sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
+
+	idx = MSAR_CPU_DDR_CLK(0, sar2);
+	freqMhz = clockRatioTbl[idx].ddrFreq * 1000000;
 	return freqMhz;
 }
 /*******************************************************************************
@@ -115,14 +143,14 @@ MV_U32 mvCpuPclkGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCpuL2ClkGet(MV_VOID)
 {
-	MV_U32 idx;
+/*	MV_U32 idx;
 	MV_U32 freqMhz;
 	MV_CPUDDR_MODE clockRatioTbl[8] = MV_CPU_DDR_CLK_TBL;
 	MV_U32 sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
 
 	idx = MSAR_CPU_DDR_CLK(0, sar2);
-	freqMhz = clockRatioTbl[idx].cpuFreq * 1000000;
-	return freqMhz;
+	freqMhz = clockRatioTbl[idx].cpuFreq * 1000000; */
+	return 200000000;
 }
 
 /*******************************************************************************

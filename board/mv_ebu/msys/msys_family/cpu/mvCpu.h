@@ -102,6 +102,7 @@ typedef struct _mvCpuArmClkRatio {
 } MV_CPU_ARM_CLK_RATIO;
 
 MV_U32  mvCpuPclkGet(MV_VOID);
+MV_U32 mvCpuDdrClkGet(MV_VOID);
 MV_VOID mvCpuNameGet(char *pNameBuff);
 MV_U32  mvCpuL2ClkGet(MV_VOID);
 MV_U32  mvCpuIfPrintSystemConfig(MV_8 *buffer, MV_U32 index);

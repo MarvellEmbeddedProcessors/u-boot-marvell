@@ -75,8 +75,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BOARD_ID_BASE               0x0
 
 #define DB_88F6720_BP_ID            (BOARD_ID_BASE)
-
-#define MV_MAX_BOARD_ID             (DB_88F6720_BP_ID + 1)
+#define ARMADA_375_CUSTOMER_ID		(DB_88F6720_BP_ID + 1)
+#define MV_MAX_BOARD_ID             (ARMADA_375_CUSTOMER_ID + 1)
 #define INVALID_BAORD_ID            0xFFFFFFFF
 
 /* Sample at Reset */

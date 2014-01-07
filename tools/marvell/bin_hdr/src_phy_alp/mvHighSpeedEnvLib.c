@@ -85,22 +85,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SERDES_VERION   "1.0.0"
 #define ENDED_OK "High speed PHY - Ended Successfully\n"
 
+extern MV_BOARD_TOPOLOGY_CONFIG boardTopologyConfig[];
 
-extern MV_BIN_SERDES_UNIT_INDX boardLaneConfig[];
+MV_BIN_SERDES_UNIT_INDX boardLaneConfig[MAX_LANE_NUM] = {SERDES_UNIT_UNCONNECTED,
+														 SERDES_UNIT_UNCONNECTED,
+														 SERDES_UNIT_UNCONNECTED,
+														 SERDES_UNIT_UNCONNECTED};
 
 /***************************   defined ******************************/
-#define BOARD_INFO(boardId) boardInfoTbl[boardId - BOARD_ID_BASE]
-
-#define BOARD_DEV_TWSI_EEPROM               0x55
-#define BOARD_DEV_TWSI_IO_EXPANDER          0x21
-#define BOARD_DEV_TWSI_IO_EXPANDER_JUMPER1  0x24
 
 /******************   Global parameters ******************************/
-MV_U8 configVal[MV_IO_EXP_MAX_REGS];
+
 
 /****************************  Local function *****************************************/
 MV_U16 mvCtrlModelGet(MV_VOID);
-MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);
 MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff);
 MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum);
 MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
@@ -108,29 +106,6 @@ MV_STATUS mvPexAgentReset();
 
 /****************************  function implementation *****************************************/
 
-/*******************************************************************************
-* mvReverseBits
-*
-* DESCRIPTION:
-*       This function Reverts the direction of the bits (LSB to MSB and vice versa)
-*
-* INPUT:
-*	num - MV_U8 number to revert
-*
-* OUTPUT:
-*       Reverted number
-*
-* RETURN:
-*	None
-*
-*******************************************************************************/
-static MV_U8 mvReverseBits(MV_U8 num)
-{
-	num = (num & 0xF0) >> 4 | (num & 0x0F) << 4;
-	num = (num & 0xCC) >> 2 | (num & 0x33) << 2;
-	num = (num & 0xAA) >> 1 | (num & 0x55) << 1;
-	return num;
-}
 /*******************************************************************************
 * mvBoardFreqModesNumGet
 *
@@ -223,138 +198,11 @@ MV_U32 mvBoardIdGet(MV_VOID)
      DEBUG_INIT_C("Error: read wrong board ID=0x", boardId,2);
     }
 
-#if 0
-    if (boardId == 0)
-    {
-      DEBUG_INIT_S(">>>>> boardid is zero. changing it temporarily to 3 . Giora <<<<<<<<<<<<<<<\n");
-      boardId = 3;
-    }
-#endif
 	DEBUG_INIT_FULL_C("Read board ID=0x", boardId,2);
 
     return boardId;
 }
 
-/*******************************************************************************
-* mvCtrlIsEepromEnabled - read jumper and verify if EEPROM is enabled
-*
-* DESCRIPTION:
-*       This function returns MV_TRUE if board configuration jumper is set to EEPROM.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_BOOL :  MV_TRUE if EEPROM enabled, else return MV_FALSE.
-*
-*******************************************************************************/
-MV_BOOL mvCtrlIsEepromEnabled()
-{
-    MV_U8 regVal;
-
-     if (MV_OK == mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER_JUMPER1, 0, 0, &regVal))
-		 return ((regVal & 0x80)? MV_FALSE : MV_TRUE);
-	 return MV_FALSE;
-}
-/*******************************************************************************
-* mvCtrlBoardConfigGet - read Board Configuration, from EEPROM / Dip Switch
-*
-* DESCRIPTION:
-*       This function reads all board configuration from EEPROM / Dip Switch:
-*           1. read the EEPROM enable jumper, and read from configured device
-*           2. read first 2 registers for all boards
-*           3. read specific registers for specific boards
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_BOOL :  MV_TRUE if EEPROM enabled, else return MV_FALSE.
-*
-*******************************************************************************/
-MV_STATUS mvCtrlBoardConfigGet(MV_U8 *tempVal)
-{
-    MV_STATUS rc1, rc2;
-    MV_BOOL isEepromEnabled = mvCtrlIsEepromEnabled();
-    MV_U32 address = (isEepromEnabled ? BOARD_DEV_TWSI_EEPROM : BOARD_DEV_TWSI_IO_EXPANDER);
-    MV_U8 temp;
-
-    rc1 = mvBoardTwsiGet(address, 0, 0, &tempVal[0] ); /* EEPROM/Dip Switch Reg#0 */
-    rc2 = mvBoardTwsiGet(address, 0, 1, &tempVal[1] );  /* EEPROM/Dip Switch Reg#1 */
-
-	/*
-	 * Workaround for DIP Switch IO Expander 0x21 bug in DB-6660 board
-	 * Bug: Pins at IO expander 0x21 are reversed (only on DB-6660)
-	 * Solution: after reading IO expander, reverse bits of both registers
-	 */
-	if (isEepromEnabled != MV_TRUE) {
-		/* Reverse all BITS */
-		tempVal[1] = mvReverseBits(tempVal[1]);
-
-		/* Swap field's MSB with LSB */
-		temp = (configVal[1] & 0x18) >> 3;
-		temp = mvReverseBits(temp) >> 6;
-		tempVal[1] &= ~0x18;
-		tempVal[1] |= temp << 3;
-	}
-
-    /* verify that all TWSI reads were successfully */
-    if ((rc1 != MV_OK) || (rc2 != MV_OK))
-        return MV_ERROR;
-
-    return MV_OK;
-}
-
-/*****************************************************************:**************
-* mvCtrlSatrInit
-*
-* DESCRIPTION: read relevant board configuration (using TWSI/EEPROM access)
-*
-* INPUT:  None
-*
-* OUTPUT: None
-*
-* RETURN: NONE
-*
-*******************************************************************************/
-MV_VOID mvCtrlSatrInit(void)
-{
-	MV_U8 tmp;
-
-	/*Read rest of Board Configuration, EEPROM / Dip Switch access read : */
-	if (mvCtrlBoardConfigGet(configVal) == MV_OK) {
-		tmp = ((configVal[1] & 0x18) >> 3);
-
-		switch (tmp) {
-		case 0:
-			boardLaneConfig[1] = SERDES_UNIT_PEX;
-			break;
-		case 1:
-			boardLaneConfig[1] = SERDES_UNIT_SGMII;
-			break;
-		case 2:
-			boardLaneConfig[1] = SERDES_UNIT_SATA;
-			break;
-		case 3:
-		default:
-			DEBUG_INIT_S("Error: Read board configuration (SERDES LANE1) from EEPROM/Dip Switch failed\n");
-			boardLaneConfig[1] = SERDES_UNIT_UNCONNECTED;
-			break;
-		}
-		boardLaneConfig[2] = ((configVal[1] & 0x20) >> 5)? SERDES_UNIT_SGMII:SERDES_UNIT_SATA;
-		boardLaneConfig[3] = ((configVal[1] & 0x40) >> 6)? SERDES_UNIT_SGMII:SERDES_UNIT_USB3;
-	}
-	else{
-		DEBUG_INIT_S("Error: Read board configuration from EEPROM/Dip Switch failed \n");
-		DEBUG_INIT_S("setting default Serdes lanes configuration: PCIe-0, PCIe-1 SATA2, USB3\n");
-	}
-}
 /*******************************************************************************
 * mvBoardTclkGet -
 *
@@ -402,7 +250,7 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 *                         reg value
 *
 *******************************************************************************/
-MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData)
+MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_BOOL isMoreThen256, MV_U8 *pData)
 {
      MV_TWSI_SLAVE twsiSlave;
      MV_TWSI_ADDR slave;
@@ -426,11 +274,7 @@ MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_U8 *pDat
      twsiSlave.validOffset = MV_TRUE;
      /* Use offset as command */
      twsiSlave.offset = regNum;
-
-	if (address == BOARD_DEV_TWSI_EEPROM)
-		twsiSlave.moreThen256 = MV_TRUE;
-	else
-		twsiSlave.moreThen256 = MV_FALSE;
+	 twsiSlave.moreThen256 = isMoreThen256;
 
      if (MV_OK != mvTwsiRead(0, &twsiSlave, pData, 1)) {
             DEBUG_INIT_S("TWSI Read failed\n");
@@ -624,16 +468,18 @@ MV_U32 GetLaneSelectorConfig(void)
 *       speed configuration
 *
 *******************************************************************************/
-MV_U32 getSerdesSpeedConfig(MV_BIN_SERDES_UNIT_INDX serdesLaneCfg)
+MV_U32 getSerdesSpeedConfig(MV_U32  boardId, MV_BIN_SERDES_UNIT_INDX serdesLaneCfg)
 {
 
     switch (serdesLaneCfg){
 	case SERDES_UNIT_SGMII:
-		{
-            if ((configVal[0] & 0x40)) /* 0 – 1G SGMII  1 – 2.5G SGMII*/
-                return 0x8;
-			return 0x6;
+		if(boardTopologyConfig[boardId].sgmiiSpeed == MV_SGMII_NA) {
+			DEBUG_INIT_S("Error: SGMII speed was not initialized for board ");
+			DEBUG_INIT_S(boardTopologyConfig[boardId].boardName);
+			DEBUG_INIT_S("\n");
+			return MV_BAD_VALUE;
 		}
+		return (boardTopologyConfig[boardId].sgmiiSpeed == MV_SGMII_GEN1) ? 0x6 : 0x8; /* 0x6-> GEN1, 0x8->GEN2*/
         case SERDES_UNIT_USB3:
         case SERDES_UNIT_SATA:
             return 0x1;
@@ -688,23 +534,16 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	mvUartInit();
 
+	/* update board configuration (serdes lane topology and speed), if needed */
+	mvBoardUpdateBoardTopologyConfig(boardId);
+
 	/* Initialize board configuration database */
 	boardLaneConfig[0] = SERDES_UNIT_PEX;		/* SerDes 0 is alwyas PCIe0*/
-	boardLaneConfig[1] = SERDES_UNIT_UNCONNECTED;
-	boardLaneConfig[2] = SERDES_UNIT_UNCONNECTED;
-	boardLaneConfig[3] = SERDES_UNIT_UNCONNECTED;
+	boardLaneConfig[1] = boardTopologyConfig[boardId].serdesTopology.lane1;
+	boardLaneConfig[2] = boardTopologyConfig[boardId].serdesTopology.lane2;
+	boardLaneConfig[3] = boardTopologyConfig[boardId].serdesTopology.lane3;
 
-	/* Configure SGMII speed*/
-	configVal[0] = 0x0; /* default SGMII speed is 1G */
-
-	if (boardId == DB_88F6660_BP_ID) {		 /* for DB-6660, read SerDes configuration from DIP-Switch*/
-		mvCtrlSatrInit();
-	} else if (boardId == RD_88F6660_BP_ID) {	/* use static configuration for RD-6660 */
-		boardLaneConfig[1] = SERDES_UNIT_PEX;
-		boardLaneConfig[2] = SERDES_UNIT_SATA;
-		boardLaneConfig[3] = SERDES_UNIT_USB3;
-	}
-        /* Release PEX agents reset */
+	/* Release PEX agents reset */
 	mvPexAgentReset();
 
     memset(regAddr, 0, sizeof(regAddr));
@@ -785,7 +624,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
         }
 
         /* Serdes speed config */
-        tmp = getSerdesSpeedConfig(serdesLaneCfg);
+        tmp = getSerdesSpeedConfig(boardId, serdesLaneCfg);
         uiReg &= ~(GEN_RX_MASK); /* SERDES RX Speed config */
         uiReg |= tmp<<GEN_RX_OFFS;
         uiReg &= ~(GEN_TX_MASK); /* SERDES TX Speed config */

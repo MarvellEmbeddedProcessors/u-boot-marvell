@@ -86,8 +86,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DB_88F6650_BP_ID            (RD_88F6650_BP_ID + 1)
 #define RD_88F6660_BP_ID            (DB_88F6650_BP_ID + 1)
 #define DB_88F6660_BP_ID            (RD_88F6660_BP_ID + 1)
+#define AVANTA_LP_CUSTOMER          (DB_88F6660_BP_ID + 1)
 
-#define MV_MAX_BOARD_ID             (DB_88F6660_BP_ID + 1)
+#define MV_MAX_BOARD_ID             (AVANTA_LP_CUSTOMER + 1)
 #define INVALID_BAORD_ID            0xFFFFFFFF
 
 /* Sample at Reset */

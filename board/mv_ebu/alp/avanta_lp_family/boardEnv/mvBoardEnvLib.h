@@ -393,6 +393,7 @@ typedef struct _boardInfo {
 { MV_CONFIG_LANE3,	       0X40,	6,	 0,		1,	{ 0, 0, 0, 1 } }, \
 { MV_CONFIG_MAC0_SW_SPEED,     0X80,	7,	 0,		1,	{ 0, 1, 0, 1 } }, \
 { MV_CONFIG_DEVICE_BUS_MODULE, 0x3,	0,	 1,		0,	{ 0, 0, 0, 1 } }, \
+{ MV_CONFIG_DDR_BUSWIDTH,      0x4,	2,	 1,		0,	{ 0, 0, 0, 1 } }, \
 };
 
 /* MV_CONFIG_TYPE_ID ConfigID,      MV_U32 Offset,	 expanderNum,  regNum,   }} */
@@ -531,6 +532,7 @@ MV_U8 mvBoardTdmDevicesCountGet(void);
 MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId);
 MV_U8 mvBoardTdmSpiIdGet(MV_VOID);
 MV_VOID mvBoardAudioModuleConfigCheck(MV_VOID);
+MV_VOID mvBoardDDRBusWidthCheck(MV_VOID);
 MV_VOID mvBoardConfigurationPrint(MV_VOID);
 MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum);
 MV_32 mvBoardGetDevicesNumber(MV_BOARD_DEV_CLASS devClass);

@@ -43,6 +43,7 @@ MV_BOARD_CONFIG_VALUE boardConfig[] = {
 { MV_CONFIG_MAC0_SW_SPEED,	"MAC0 to Switch Speed",		2, {"2G", "1G"} },
 { MV_CONFIG_DEVICE_BUS_MODULE,	"Device Bus Module (DB-6660)",	4, {"None", "RGMII Module", "I2S Audio Module", "SPDIF Audio Module"} },
 { MV_CONFIG_SLIC_TDM_DEVICE,	"TDM module",			5, {"None", "SSI", "ISI", "ZSI", "TDM"} },
+{ MV_CONFIG_DDR_BUSWIDTH,	"DDR bus-width (DB-6660)",	2, {"32-bit", "16-bit"} },
 };
 
 
@@ -74,6 +75,8 @@ MV_CONFIG_TYPE_ID configToEnum(char *name)
 		return MV_CONFIG_DEVICE_BUS_MODULE;
 	else if (strcmp(name, "tdm") == 0)
 		return MV_CONFIG_SLIC_TDM_DEVICE;
+	else if (strcmp(name, "ddr_buswidth") == 0)
+		return MV_CONFIG_DDR_BUSWIDTH;
 	else if (strcmp(name, "default") == 0)
 		return MV_CONFIG_TYPE_CMD_SET_DEFAULT;
 
@@ -290,6 +293,6 @@ U_BOOT_CMD(boardConfig, 6, 1, do_boardCfg,
 
 	"Options:\n"
 	"mac0, mac1, mac0_switch_speed, sgmii0capacity, sgmii1capacity,\n"
-	"serdes1, serdes2, serdes3, ponserdes, ponpolarity, devicebus, tdm\n\n"
+	"serdes1, serdes2, serdes3, ponserdes, ponpolarity, devicebus, tdm, ddr_buswidth\n\n"
 );
 #endif /*defined(CONFIG_CMD_BOARDCFG)*/

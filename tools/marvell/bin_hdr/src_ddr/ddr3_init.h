@@ -76,6 +76,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_alp.h"
 #elif defined(MV88F672X)
 #include "ddr3_a375.h"
+#elif defined(MV_MSYS)
+#include "ddr3_msys.h"
 #endif
 
 /*DRR training Error codes*/

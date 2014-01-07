@@ -88,7 +88,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif defined(MV88F66XX) || defined(MV88F68XX) || defined(MV88F672X)
 	#define RAM_TOP			0x40000000 /*  L2 cache 512KB */
 #else
-#error "SoC TYPE NOT DEFINED CORRECTLY!!!!!!"
+	#define RAM_TOP			0x40004000 /*  L2 cache 512KB */
 #endif
 
 #define HDR_BLK_OFFSET		0x00000000	/* Header is 64KB long? */

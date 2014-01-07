@@ -64,26 +64,80 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
 
-#ifndef _DDR3_A380_CONFIG_H
-#define _DDR3_A380_CONFIG_H
+#ifndef _DDR3_MSYS_CONFIG_H
+#define _DDR3_MSYS_CONFIG_H
 
-
-#define SPEED_BIN		SPEED_BIN_DDR_1866L
-#define DDR_BUS_WIDTH		BUS_WIDTH_8
+#define SPEED_BIN		SPEED_BIN_DDR_2133N
+#define DDR_BUS_WIDTH   BUS_WIDTH_16
 #define MEM_SIZE		MEM_4G
+#define CL				0
+#define CWL				0
 
-#define DDR3_LOG_LEVEL				0
-#define DDR3_PBS				0
-#define DDR3_FAST_PATH_EN			1
-#define BUS_WIDTH				32
-#define DDR3_RUN_SW_WHEN_HW_FAIL		0
+/*DDR3_LOG_LEVEL Information
+Level 0: Provides an error code in a case of failure, RL, WL errors and other algorithm failure
+Level 1: Provides the D-Unit setup (SPD/Static configuration)
+Level 2: Provides the windows margin as a results of DQS centeralization
+Level 3: Provides the windows margin of each DQ as a results of DQS centeralization */
 
-#define TRAINING_SIZE				0x20000
-#define U_BOOT_START_ADDR			0
-#define U_BOOT_SCRUB_SIZE			0x1000000 /*- TRAINING_SIZE*/
+#define	DDR3_LOG_LEVEL	0
+#define DDR3_PBS        1
+/* this flag allows the execution of SW WL/RL oppon HW failure */
+#define DDR3_RUN_SW_WHEN_HW_FAIL    1
 
-#define DRAM_ECC				FALSE
-#define DUNIT_STATIC
-#define STATIC_TRAINING
+/* General Configurations */
+/* The following parameters are required for proper setup */
+/* DDR_TARGET_FABRIC - Set desiered fabric configuration (for sample@Reset fabfreq parameter) */
+/* DRAM_ECC - set ECC support TRUE/FALSE */
+/* BUS_WIDTH - 64/32 bit */
+/* SPD_SUPPORT - Enables auto detection of DIMMs and their timing values */
+/* DQS_CLK_ALIGNED - Set this if CLK and DQS signals are aligned on board */
+/* MIXED_DIMM_STATIC - Mixed DIMM + On board devices support (ODT registers values are taken statically) */
+/* DDR3_TRAINING_DEBUG - debug prints of internal code */
+#define DDR_TARGET_FABRIC						5
+#define DRAM_ECC								FALSE
 
-#endif /* _DDR3_A380_CONFIG_H */
+#ifdef MV_DDR_32BIT
+#define BUS_WIDTH                               32
+#else
+#define BUS_WIDTH								64
+#endif
+#define SPD_SUPPORT
+#undef DQS_CLK_ALIGNED
+#undef MIXED_DIMM_STATIC
+#define DDR3_TRAINING_DEBUG						FALSE
+#define REG_DIMM_SKIP_WL						FALSE
+
+#ifdef DRAM_ECC
+/* ECC support parameters: */
+/* U_BOOT_START_ADDR, U_BOOT_SCRUB_SIZE - relevant when using ECC and need to configure the scrubbing area */
+#define TRAINING_SIZE                           0x20000
+#define U_BOOT_START_ADDR						0
+#define U_BOOT_SCRUB_SIZE                       0x1000000 /*- TRAINING_SIZE*/
+#endif
+/* Registered DIMM Support - In case registered DIMM is attached, please supply the following values:
+(see JEDEC - JESD82-29A "Definition of the SSTE32882 Registering Clock Driver with Parity and Quad Chip
+Selects for DDR3/DDR3L/DDR3U RDIMM 1.5 V/1.35 V/1.25 V Applications") */
+/* RC0: Global Features Control Word */
+/* RC1: Clock Driver Enable Control Word */
+/* RC2: Timing Control Word */
+/* RC3-RC5 - taken from SPD */
+/* RC8: Additional IBT Setting Control Word */
+/* RC9: Power Saving Settings Control Word */
+/* RC10: Encoding for RDIMM Operating Speed */
+/* RC11: Operating Voltage VDD and VREFCA Control Word */
+#define RDIMM_RC0								0
+#define RDIMM_RC1								0
+#define RDIMM_RC2								0
+#define RDIMM_RC8								0
+#define RDIMM_RC9								0
+#define RDIMM_RC10								0x2
+#define RDIMM_RC11								0x0
+
+//------------STUBS-----------------
+MV_U32 s_auiCpuFabClkToHClk[1][1];
+MV_U8 s_auiDivRatio2to1[1][1];
+MV_U16 auiODTStatic[1][1];
+MV_U8 s_auiDivRatio1to1[1][1];
+
+
+#endif /* _DDR3_MSYS_CONFIG_H */

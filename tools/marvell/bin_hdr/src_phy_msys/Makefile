@@ -65,6 +65,8 @@
 
 include ../base.mk
 sinclude ../../../../include/autoconf.mk
+#just for compilation 1 time.
+CFLAGS += -DCONFIG_DB_78x60_BP_REV2
 
 ifeq "$(MAKECMDGOALS)" "rtl"
   MVFLAGS += MV_RTL_PLATFORM=1 MV_NO_PRINT=1
@@ -108,8 +110,12 @@ endif
 ifeq "$(CONFIG_AVANTA_LP)"  "y"
   CFLAGS += -DCONFIG_AVANTA_LP
 endif
+
 ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_RD_BOBCAT2
+endif
+ifeq "$(CONFIG_DB_BOBCAT2)"  "y"
+  CFLAGS += -DCONFIG_DB_BOBCAT2
 endif
 
 INCLUDE     = -I./  -I../inc/ -I../../../../include
@@ -119,8 +125,8 @@ LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
 
-TGT = phy_alp.a
-TGT_UART = phy_alp.uart.a
+TGT = phy_msys.a
+TGT_UART = phy_msys.uart.a
 
 CSRC = mvHighSpeedEnvLib.c mvHighSpeedEnvSpec.c
 

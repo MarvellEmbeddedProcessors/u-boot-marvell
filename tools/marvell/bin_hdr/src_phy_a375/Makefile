@@ -108,6 +108,9 @@ endif
 ifeq "$(CONFIG_AVANTA_LP)"  "y"
   CFLAGS += -DCONFIG_AVANTA_LP
 endif
+ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
+  CFLAGS += -DCONFIG_RD_BOBCAT2
+endif
 
 INCLUDE     = -I./  -I../inc/ -I../../../../include
 

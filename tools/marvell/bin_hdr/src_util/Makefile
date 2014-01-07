@@ -112,6 +112,11 @@ ifeq "$(CONFIG_ARMADA_38X)"  "y"
   BOARDFLAG += -DCONFIG_ARMADA_38X
 endif
 
+ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
+  CFLAGS += -DCONFIG_RD_BOBCAT2
+endif
+
+
 CFLAGS += $(BOARDFLAG)
 INCLUDE     = -I./  -I../inc/ -I../../../../include
 

@@ -1,4 +1,3 @@
-
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
@@ -43,12 +42,12 @@ are permitted provided that the following conditions are met:
 	    this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-		notice, this list of conditions and the following disclaimer in the
-		documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-		used to endorse or promote products derived from this software without
-		specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -64,26 +63,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
 
-#ifndef _DDR3_A380_CONFIG_H
-#define _DDR3_A380_CONFIG_H
+#ifndef __INCmvBHboardEnvSpech
+#define __INCmvBHboardEnvSpech
 
 
-#define SPEED_BIN		SPEED_BIN_DDR_1866L
-#define DDR_BUS_WIDTH		BUS_WIDTH_8
-#define MEM_SIZE		MEM_4G
-
-#define DDR3_LOG_LEVEL				0
-#define DDR3_PBS				0
-#define DDR3_FAST_PATH_EN			1
-#define BUS_WIDTH				32
-#define DDR3_RUN_SW_WHEN_HW_FAIL		0
-
-#define TRAINING_SIZE				0x20000
-#define U_BOOT_START_ADDR			0
-#define U_BOOT_SCRUB_SIZE			0x1000000 /*- TRAINING_SIZE*/
-
-#define DRAM_ECC				FALSE
-#define DUNIT_STATIC
-#define STATIC_TRAINING
-
-#endif /* _DDR3_A380_CONFIG_H */
+#endif /* __INCmvBHboardEnvSpech */

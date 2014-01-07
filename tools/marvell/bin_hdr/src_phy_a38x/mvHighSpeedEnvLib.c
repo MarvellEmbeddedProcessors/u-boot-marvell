@@ -203,10 +203,6 @@ MV_OP_PARAMS sataAndSgmiiTxConfigParams2[] =
 MV_OP_PARAMS pexAndUsb3PowerUpParams[] =
 {
 	/* unitunitBaseReg                          unitOffset   mask        PEX data        USB3 data       waitTime    numOfLoops */
-	{ SOC_CONTROL_REG1,		 0x0,							  0x4000,			   { 0x4000,	NO_DATA,			 }, 0,	0		 },
-	{ 0x8006C,			 0x0,							  0x3F0,			   { 0x10,	NO_DATA,			 }, 0,	0		 },     /* Power Down Sata addr*/
-	{ 0x8006C,			 0x0,							  0xF,				   { 0x2,	NO_DATA,			 }, 0,	0		 },     /* Power Down Sata addr*/
-	{ 0x80070,			 0x0,							  0x40,				   { 0x40,	NO_DATA,			 }, 0,	0		 },     /* Power Down Sata addr*/
 	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,							  0x3FC7F806,			   { 0x4471804, 0x4479804 },	0,          0	 },
 	{ COMMON_PHY_CONFIGURATION2_REG, 0x28,							  0x5C,				   { 0x58,	0x58 },		0,          0	 },
 	{ COMMON_PHY_CONFIGURATION4_REG, 0x28,							  0x3,				   { 0x1,	0x1 },		0,          0	 },
@@ -589,7 +585,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 #ifdef DB_LINK_CHECK
 	int i;
 #endif
-	int sataIdx;
+	int sataIdx, pexIdx;
 	SERDES_SEQ speedSeqId;
 	MV_U32 regData;
 
@@ -615,6 +611,27 @@ MV_STATUS mvSerdesPowerUpCtrl
 		case PEX1:
 		case PEX2:
 		case PEX3:
+			regData = MV_REG_READ(SOC_CONTROL_REG1);
+			regData |= 0x4000;
+			MV_REG_WRITE(SOC_CONTROL_REG1, regData);
+
+			pexIdx = serdesType - PEX0;
+
+			regData = MV_REG_READ(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c));
+			regData &= ~0x3F0;
+			regData |= 0x10;
+			MV_REG_WRITE(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c), regData);
+
+			regData = MV_REG_READ(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c));
+			regData &= ~0xF;
+			regData |= 0x2;
+			MV_REG_WRITE(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c), regData);
+
+			regData = MV_REG_READ(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x70));
+			regData &= ~0x40;
+			regData |= 0x40;
+			MV_REG_WRITE(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x70), regData);
+
 			CHECK_STATUS(mvSeqExec(serdesNum, PEX_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));

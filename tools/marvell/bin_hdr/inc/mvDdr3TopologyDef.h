@@ -64,26 +64,155 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
 
-#ifndef _DDR3_A380_CONFIG_H
-#define _DDR3_A380_CONFIG_H
+#ifndef _DDR3_TOPOLOGY_CONFIG_H
+#define _DDR3_TOPOLOGY_CONFIG_H
 
 
-#define SPEED_BIN		SPEED_BIN_DDR_1866L
-#define DDR_BUS_WIDTH		BUS_WIDTH_8
-#define MEM_SIZE		MEM_4G
+#define MAX_INTERFACE_NUM  (12)
+#define MAX_BUS_NUM        (8)
 
-#define DDR3_LOG_LEVEL				0
-#define DDR3_PBS				0
-#define DDR3_FAST_PATH_EN			1
-#define BUS_WIDTH				32
-#define DDR3_RUN_SW_WHEN_HW_FAIL		0
+/*************************TOPOLOGY*******************************************/
+typedef enum
+{
+   SPEED_BIN_DDR_800D,
+   SPEED_BIN_DDR_800E,
+   SPEED_BIN_DDR_1066E,
+   SPEED_BIN_DDR_1066F,
+   SPEED_BIN_DDR_1066G,
+   SPEED_BIN_DDR_1333F,
+   SPEED_BIN_DDR_1333G,
+   SPEED_BIN_DDR_1333H,
+   SPEED_BIN_DDR_1333J,
+   SPEED_BIN_DDR_1600G,
+   SPEED_BIN_DDR_1600H,
+   SPEED_BIN_DDR_1600J,
+   SPEED_BIN_DDR_1600K,
+   SPEED_BIN_DDR_1866J,
+   SPEED_BIN_DDR_1866K,
+   SPEED_BIN_DDR_1866L,
+   SPEED_BIN_DDR_1866M,
+   SPEED_BIN_DDR_2133K,
+   SPEED_BIN_DDR_2133L,
+   SPEED_BIN_DDR_2133M,
+   SPEED_BIN_DDR_2133N
 
-#define TRAINING_SIZE				0x20000
-#define U_BOOT_START_ADDR			0
-#define U_BOOT_SCRUB_SIZE			0x1000000 /*- TRAINING_SIZE*/
+}MV_HWS_SPEED_BIN;
 
-#define DRAM_ECC				FALSE
-#define DUNIT_STATIC
-#define STATIC_TRAINING
+typedef enum
+{
+   DDR_BOARD_ETP,
+   DDR_BOARD_FUNCTIONAL,
+   DDR_BOARD_CUSTOMER,
+   DDR_BOARD_MAX
 
-#endif /* _DDR3_A380_CONFIG_H */
+} MV_HWS_DDR_BOARD;
+
+/* bus width in bits */
+typedef enum
+{
+   BUS_WIDTH_4,
+   BUS_WIDTH_8,
+   BUS_WIDTH_16,
+   BUS_WIDTH_32
+
+} MV_HWS_BUS_WIDTH;
+
+typedef enum
+{
+   MEM_512M,
+   MEM_1G,
+   MEM_2G,
+   MEM_4G,
+   MEM_8G,
+
+   MEM_SIZE_LAST
+}MV_HWS_MEM_SIZE;
+
+typedef enum
+{
+  DDR_FREQ_LOW_FREQ,
+  DDR_FREQ_400,
+  DDR_FREQ_533,
+  DDR_FREQ_667,
+  DDR_FREQ_800,
+  DDR_FREQ_933,
+  DDR_FREQ_1066,
+  DDR_FREQ_311,
+  DDR_FREQ_333,
+  DDR_FREQ_467,
+   DDR_FREQ_LIMIT
+}MV_HWS_DDR_FREQ;
+
+typedef enum
+{
+   MV_HWS_TEMP_LOW,
+   MV_HWS_TEMP_NORMAL,
+   MV_HWS_TEMP_HIGH
+
+}MV_HWS_TEMPERTURE;
+
+typedef struct
+{
+   /* Chip Select (CS) bitmask (bits 0-CS0, bit 1- CS1 ...) */
+   MV_U32      csBitmask;
+
+   /* mirror enable/disable (bits 0-CS0 mirroring, bit 1- CS1 mirroring ...)*/
+   MV_BOOL      mirrorEnableBitmask;
+
+   /* DQS Swap (polarity) - true if enable*/
+   MV_BOOL      isDqsSwap;
+
+   /* CK swap (polarity) - true if enable*/
+   MV_BOOL      isCkSwap;
+
+} BusParams;
+
+typedef struct
+{
+   /* bus configuration */
+   BusParams   asBusParams[MAX_BUS_NUM];
+
+   /* Speed Bin Table*/
+   MV_HWS_SPEED_BIN      speedBinIndex;
+
+   /* bus width of memory */
+   MV_HWS_BUS_WIDTH   busWidth;
+
+   /* Bus memory size (MBit) */
+   MV_HWS_MEM_SIZE      memorySize;
+
+   /* The DDR frequency for each interfaces */
+   MV_HWS_DDR_FREQ      memoryFreq;
+
+   /* delay CAS Write Latency - 0 for using default value (jedec suggested) */
+   MV_U32      casWL;
+
+   /* delay CAS Latency - 0 for using default value (jedec suggested) */
+   MV_U32      casL;
+
+   /* operation temperature */
+   MV_HWS_TEMPERTURE   interfaceTemp;
+
+} InterfaceParams;
+
+/***********************************/
+
+typedef struct
+{
+    /* Number of interfaces (default is 12)*/
+    MV_U32              interfaceActiveMask;
+
+   /* Controller configuration per interface */
+   InterfaceParams      interfaceParams[MAX_INTERFACE_NUM];
+
+   /* BUS per interface (default is 4)*/
+   MV_U32               numOfBusPerInterface;
+
+   /* Board type. Relevant for static configuration only */
+   MV_U32               boardId;
+
+
+} MV_HWS_TOPOLOGY_MAP;
+
+
+#endif /* _DDR3_TOPOLOGY_CONFIG_H */

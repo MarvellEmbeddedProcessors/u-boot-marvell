@@ -1,4 +1,3 @@
-
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
@@ -60,30 +59,17 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
 ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 *******************************************************************************/
 
+#include "mv_os.h"
+#include "config_marvell.h"  	/* Required to identify SOC and Board */
+#include "ddr3_msys.h"
+#include "ddr3_msys_config.h"
+#include "mvHighSpeedEnvSpec.h"
+#include "mvBHboardEnvSpec.h"
 
-#ifndef _DDR3_A380_CONFIG_H
-#define _DDR3_A380_CONFIG_H
+#include "bin_hdr_twsi.h"
+#include "mvUart.h"
+#include "util.h"
 
-
-#define SPEED_BIN		SPEED_BIN_DDR_1866L
-#define DDR_BUS_WIDTH		BUS_WIDTH_8
-#define MEM_SIZE		MEM_4G
-
-#define DDR3_LOG_LEVEL				0
-#define DDR3_PBS				0
-#define DDR3_FAST_PATH_EN			1
-#define BUS_WIDTH				32
-#define DDR3_RUN_SW_WHEN_HW_FAIL		0
-
-#define TRAINING_SIZE				0x20000
-#define U_BOOT_START_ADDR			0
-#define U_BOOT_SCRUB_SIZE			0x1000000 /*- TRAINING_SIZE*/
-
-#define DRAM_ECC				FALSE
-#define DUNIT_STATIC
-#define STATIC_TRAINING
-
-#endif /* _DDR3_A380_CONFIG_H */
+//Placeholder for future code

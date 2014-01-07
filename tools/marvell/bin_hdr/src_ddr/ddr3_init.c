@@ -88,6 +88,10 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #elif defined(MV88F68XX)
 #include "ddr3_a38x_vars.h"
 #include "ddr3_hws_hw_training.h"
+#elif defined(MV_MSYS)
+#include "ddr3_msys.h"
+#include "ddr3_msys_config.h"
+#include "ddr3_hws_hw_training.h"
 #endif
 
 #include "bootstrap_os.h"
@@ -103,11 +107,11 @@ static MV_VOID ddr3StaticMCInit(void);
 #if defined(DUNIT_STATIC) || defined(STATIC_TRAINING)
 static MV_U32 ddr3GetStaticDdrMode(void);
 #endif
-#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX)
+#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX) || defined(MV_MSYS)
 MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs);
 #endif
 MV_U32 mvBoardIdGet(MV_VOID);
-#if !defined(MV88F68XX)
+#if !defined(MV88F68XX) && !defined(MV_MSYS)
 extern MV_VOID ddr3SetSwWlRlDebug(MV_U32);
 extern MV_VOID ddr3SetPbs(MV_U32);
 #endif
@@ -125,7 +129,7 @@ MV_VOID ddr3LogLevelInit(MV_VOID)
 {
 	ddr3SetLogLevel(DDR3_LOG_LEVEL);
 }
-#if !defined(MV88F68XX)
+#if !defined(MV88F68XX) && !defined(MV_MSYS)
 /************************************************************************************
  * Name:     ddr3PbsInit
  * Desc:     This routine initialize the PBS as defined in dd3_axp_config
@@ -330,7 +334,7 @@ MV_STATUS ddr3Init(void)
 {
 	unsigned int status;
 	ddr3LogLevelInit();
-#if !defined(MV88F68XX)
+#if !defined(MV88F68XX) && !defined(MV_MSYS)
 	ddr3SetPbs(DDR3_PBS);
 	ddr3SetSwWlRlDebug(DDR3_RUN_SW_WHEN_HW_FAIL);
 #endif
@@ -410,15 +414,13 @@ MV_U32 ddr3Init_(void)
 {
 	MV_U32 uiTargetFreq;
 
-#ifndef RD_88F6710
-#if defined(MV88F78X60) || defined(ECC_SUPPORT) || defined(DUNIT_SPD)
-	MV_U32 uiEcc;
-#endif
+#if (defined(ECC_SUPPORT) || defined(DUNIT_SPD) || defined(MV88F78X60)) && !defined(MV_MSYS)
+	MV_U32 uiEcc = DRAM_ECC;
 #endif
 	MV_U32 uiReg = 0;
 	MV_U32 uiCpuFreq, uiFabOpt, uiHClkTimePs, socNum;
 	MV_BOOL bPLLWAPatch = FALSE;
-#if !defined(MV88F68XX)
+#if !defined(MV88F68XX) && !defined(MV_MSYS)
 	MV_BOOL bDQSCLKAligned = FALSE;
 	MV_U32 uiDdrWidth;
 	MV_U32 uiScrubOffs, uiScrubSize;
@@ -483,7 +485,7 @@ MV_U32 ddr3Init_(void)
 		break;
 	}
 	/* Power down deskew PLL */
-#if !defined(MV88F66XX) && !defined(MV88F672X) && !defined(MV88F68XX)
+#if !defined(MV88F66XX) && !defined(MV88F672X) && !defined(MV88F68XX) && !defined(MV_MSYS)
 	uiReg = (MV_REG_READ(REG_DDRPHY_APLL_CTRL_ADDR) & ~(1 << 25)); /* 0x18780 [25]  */
 	MV_REG_WRITE(REG_DDRPHY_APLL_CTRL_ADDR, uiReg);
 #endif
@@ -496,12 +498,15 @@ MV_U32 ddr3Init_(void)
     if (ddr3GetLogLevel() > 0) {
         printDrrTargetFreq(uiCpuFreq, uiFabOpt);
     }
-#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX)
+#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX) || defined(MV_MSYS)
     getTargetFreq(uiCpuFreq, &uiTargetFreq, &uiHClkTimePs);
 #else
+#ifndef MV_MSYS
     uiTargetFreq = s_auiCpuDdrRatios[uiFabOpt][uiCpuFreq];
     uiHClkTimePs = s_auiCpuFabClkToHClk[uiFabOpt][uiCpuFreq];
 #endif
+#endif
+#ifndef MV_MSYS
 	if ((uiTargetFreq == 0) || (uiHClkTimePs == 0)) {
 		DEBUG_INIT_S("DDR3 Training Sequence - FAILED - Wrong Sample at Reset Configurations \n");
 		if (uiTargetFreq == 0) {
@@ -515,7 +520,8 @@ MV_U32 ddr3Init_(void)
 		}
 		return MV_DDR3_TRAINING_ERR_BAD_SAR;
 	}
-#if !defined(MV88F68XX)
+#endif
+#if !defined(MV88F68XX) && !defined(MV_MSYS)
 #if defined(ECC_SUPPORT)
 	uiScrubOffs = U_BOOT_START_ADDR;
 	uiScrubSize = U_BOOT_SCRUB_SIZE;
@@ -524,10 +530,8 @@ MV_U32 ddr3Init_(void)
 	uiScrubSize = 0;
 #endif
 #endif
-#ifndef RD_88F6710
-#if defined(MV88F78X60) || defined(ECC_SUPPORT )  || defined(DUNIT_SPD)
+#if defined(ECC_SUPPORT) && defined(AUTO_DETECTION_SUPPORT)
 	uiEcc = DRAM_ECC;
-#endif
 #endif
 
 #if defined(ECC_SUPPORT) && defined(AUTO_DETECTION_SUPPORT)
@@ -564,7 +568,7 @@ MV_U32 ddr3Init_(void)
 #endif
 #endif
 
-#if defined(MV88F78X60) /*|| defined(MV88F66XX)  || defined(MV88F672X)*/
+#if defined(MV88F78X60) || defined(MV88F66XX)  || defined(MV88F672X)
 #if defined(AUTO_DETECTION_SUPPORT)
 	/* Configurations for both static and dynamic MC setups */
 	/* Dynamically Set 32Bit and ECC for AXP (Relevant only for Marvell DB boards) */
@@ -573,7 +577,6 @@ MV_U32 ddr3Init_(void)
 		DEBUG_INIT_S("DDR3 Training Sequence - DRAM bus width 32Bit \n");
 	}
 #endif
-#endif
 #if defined(MV88F66XX) || defined(MV88F672X)
 	uiReg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
 	if ((uiReg >> 15) & 1)
@@ -581,7 +584,7 @@ MV_U32 ddr3Init_(void)
 	else
 		uiDdrWidth = 16;
 #endif
-
+#endif
 
 #ifdef DUNIT_SPD
 	status = ddr3DunitSetup(uiEcc, uiHClkTimePs, &uiDdrWidth);
@@ -604,7 +607,7 @@ MV_U32 ddr3Init_(void)
 	uiReg |= (0x6 << (5 * REG_TRAINING_DEBUG_3_OFFS));
 	MV_REG_WRITE(REG_TRAINING_DEBUG_3_ADDR, uiReg);
 
-#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX)
+#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX) || defined(MV_MSYS)
 	/* AxiBrespMode[8] = Compliant, AxiAddrDecodeCntrl[11] = Internal, AxiDataBusWidth[0] = 128bit */
 	MV_REG_WRITE(REG_DRAM_AXI_CTRL_ADDR, 0);                /* 0x14A8 - AXI Control Register */
 #else
@@ -617,7 +620,7 @@ MV_U32 ddr3Init_(void)
 	}
 #endif
 
-#if !defined(MV88F67XX) && !defined(MV88F68XX)
+#if !defined(MV88F67XX) && !defined(MV88F68XX) && !defined(MV_MSYS)
 /* ARMADA-370 activate DLB later at the u-boot, Armada38x - No DLB activation at this time */
 MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 #if defined(MV88F78X60)
@@ -674,7 +677,7 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 	/* Set X-BAR windows for the training sequence */
 	ddr3SaveAndSetTrainingWindows(auWinBackup);
 
-#if defined(MV88F68XX)
+#if defined(MV88F68XX) || defined(MV_MSYS)
 	/*Start New Training IP*/
 	status = ddr3HwsHwTraining();
 	if (MV_OK != status) {
@@ -689,6 +692,7 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 		uiReg = ((MV_REG_READ(REG_SDRAM_INIT_CTRL_ADDR)) & (1 << REG_SDRAM_INIT_CTRL_OFFS));
 	while (uiReg);              /* Wait for '0' */
 
+#ifndef MV_MSYS
 	/* ddr3 init using DDR3 HW training procedure */
 	DEBUG_INIT_FULL_S("DDR3 Training Sequence - HW Training Procedure \n");
 	status = ddr3HwTraining(uiTargetFreq, uiDdrWidth,
@@ -697,6 +701,7 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 		DEBUG_INIT_FULL_S("DDR3 Training Sequence - FAILED  \n");
 		return status;
 	}
+#endif
 #endif
 #endif
 
@@ -716,7 +721,7 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 	uiReg = MV_REG_READ(REG_BOOTROM_ROUTINE_ADDR);
 	MV_REG_WRITE(REG_BOOTROM_ROUTINE_ADDR, uiReg | (1 << REG_BOOTROM_ROUTINE_DRAM_INIT_OFFS));
 
-#if !defined(MV88F67XX) && !defined(MV88F68XX)
+#if !defined(MV88F67XX) && !defined(MV88F68XX) && !defined(MV_MSYS)
 #if defined(MV88F78X60)
 	if (mvCtrlRevGet() == MV_78XX0_B0_REV) {
 		uiReg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
@@ -752,7 +757,7 @@ MV_U32 ddr3GetCpuFreq(void)
 {
 	MV_U32 uiReg, uiCpuFreq;
 
-#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX)
+#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX) || defined(MV_MSYS)
 	/* Read sample at reset setting */
 	uiReg = MV_REG_READ(REG_SAMPLE_RESET_HIGH_ADDR); /* 0xE8200 */
 	uiCpuFreq = ((uiReg & REG_SAMPLE_RESET_CPU_FREQ_MASK) >> REG_SAMPLE_RESET_CPU_FREQ_OFFS);
@@ -784,12 +789,14 @@ MV_U32 ddr3GetFabOpt(void)
 #ifndef MV88F66XX
 #ifndef MV88F672X
 #ifndef MV88F68XX
+#ifndef MV_MSYS
 	MV_U32 uiReg, uiFabOpt;
 #endif
 #endif
 #endif
+#endif
 
-#if  defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX)
+#if  defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX) || defined(MV_MSYS)
 	return 0; /* No fabric */
 #else
 	/* Read sample at reset setting */
@@ -941,6 +948,9 @@ MV_U32 ddr3GetStaticMCValue(MV_U32 regAddr, MV_U32 offset1, MV_U32 mask1, MV_U32
  */
 MV_U32 ddr3GetStaticDdrMode(void)
 {
+#ifdef MV_MSYS
+	return 0;
+#else
 	MV_U32 chipBoardRev, i;
 	MV_U32 size;
 
@@ -969,7 +979,7 @@ MV_U32 ddr3GetStaticDdrMode(void)
 		    (chipBoardRev == ddr_modes[i].chipBoardRev))
 			return i;
 	}
-
+#endif
 	return 0;
 }
 
@@ -1299,7 +1309,7 @@ MV_VOID     printDunitSetup(MV_VOID)
 	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_BASE_ADDR(0));
 	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_CTRL_ADDR(1));
 	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_BASE_ADDR(1));
-#elif defined(MV88F672X) || defined(MV88F68XX)
+#elif defined(MV88F672X) || defined(MV88F68XX) || defined(MV_MSYS)
 	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_CTRL_ADDR(0));
 	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_BASE_ADDR(0));
 	DEBUG_DUNIT_REG(REG_FASTPATH_WIN_CTRL_ADDR(1));
@@ -1389,7 +1399,7 @@ MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs)
 }
 #endif
 
-#if defined(MV88F68XX)
+#if defined(MV88F68XX) || defined(MV_MSYS)
 MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs)
 {
 	MV_U32 tmp, hclk;

@@ -112,6 +112,10 @@ endif
 ifeq "$(CONFIG_ARMADA_38X)"  "y"
   CFLAGS += -DCONFIG_ARMADA_38X
 endif
+ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
+  CFLAGS += -DCONFIG_RD_BOBCAT2
+endif
+
 SETPARAMS  = setparams
 PARAMSFILE = params
 LDSCRIPT   = linker.scr

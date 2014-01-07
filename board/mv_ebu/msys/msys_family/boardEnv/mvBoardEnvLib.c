@@ -338,6 +338,29 @@ MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum)
 {
 	return MV_FALSE;
 }
+
+/*******************************************************************************
+* mvBoardIsPortInMii
+*
+* DESCRIPTION:
+*	This routine returns MV_TRUE for port number works in MII or MV_FALSE
+*	For all other options.
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE - port in MII.
+*       MV_FALSE - other.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsPortInMii(MV_U32 ethPortNum)
+{
+	return MV_FALSE;
+}
 /*******************************************************************************
 * mvBoardSwitchCpuPortGet - Get the the Ethernet Switch CPU port
 *
@@ -515,14 +538,8 @@ MV_U32 freq_tbl[] = {
 
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
-	MV_U32  freq;
-
-	freq = MSAR_CORE_CLK(0, MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1)));
-	printf("%s: Core Clock from DFX S@R register = 0x%x\n", __func__, freq);
-	printf("%s: Using Hard-coded value instead from freq_tbl[2] = TClock @ 200 [MHz]\n", __func__);
-
-	return freq_tbl[2];
-
+	/* Tclock is constant at 200MHz (not sampled @ reset)  */
+	return 200000000;
 }
 
 /*******************************************************************************
@@ -1190,9 +1207,9 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	MV_U8 boardId;
 
 	if (count++ < 0)
-		printf("%s: TODO fix read from TWSI of boardID (using hard-coded value RD_98DX4051_ID)\n", __func__);
+		printf("%s: TODO fix read from TWSI of boardID (using hard-coded value DB_98DX4251_BP_ID)\n", __func__);
 
-	return RD_98DX4051_ID;
+	return DB_98DX4251_BP_ID;
 
 	if (gBoardId == -1) {
 		if (MV_ERROR == mvBoardTwsiRead(BOARD_DEV_TWSI_PLD, 1, 0, &boardId)) {
@@ -1354,8 +1371,7 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 satrIndex, MV_U8 devNum, MV_U8 regNum, MV_U8 
 /*******************************************************************************
 * SatR Configuration functions
 *******************************************************************************/
-//MV_U8 mvBoardFabFreqGet(MV_VOID)
-MV_U8 mvBoardCoreFreqGet(MV_VOID)
+MV_STATUS mvBoardCoreFreqGet(MV_U8 *value)
 {
 	MV_U8 sar0;
 	MV_STATUS rc1;
@@ -1364,7 +1380,8 @@ MV_U8 mvBoardCoreFreqGet(MV_VOID)
 	if (MV_ERROR == rc1)
 		return MV_ERROR;
 
-	return ( sar0 & 0x7);
+	*value = sar0 & 0x7;
+	return MV_OK;
 }
 
 /*******************************************************************************/
@@ -1390,7 +1407,7 @@ MV_STATUS mvBoardCoreFreqSet(MV_U8 freqVal)
 	return MV_OK;
 }
 /*******************************************************************************/
-MV_U8 mvBoardCpuFreqGet(MV_VOID)
+MV_STATUS mvBoardCpuFreqGet(MV_U8 *value)
 {
 	MV_U8 sar1, sar2;
 	MV_STATUS rc1;
@@ -1401,7 +1418,8 @@ MV_U8 mvBoardCpuFreqGet(MV_VOID)
 	if ((MV_ERROR == rc1) || (MV_ERROR == rc2))
 		return MV_ERROR;
 
-	return ((((sar2 & 0x1)) << 3) | ((sar1 & 0x18) >> 3));
+	*value = ((((sar2 & 0x1)) << 3) | ((sar1 & 0x18) >> 3));
+	return MV_OK;
 }
 
 /*******************************************************************************/
@@ -1433,7 +1451,7 @@ MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
 }
 
 /*******************************************************************************/
-MV_U8 mvBoardTmFreqGet(MV_VOID)
+MV_STATUS mvBoardTmFreqGet(MV_U8 *value)
 {
 	MV_U8 sar2;
 	MV_STATUS rc2;
@@ -1442,7 +1460,8 @@ MV_U8 mvBoardTmFreqGet(MV_VOID)
 	if (MV_ERROR == rc2)
 		return MV_ERROR;
 
-	return ((sar2 & 0x0E) >> 1);
+	*value = ((sar2 & 0x0E) >> 1);
+	return MV_OK;
 }
 
 /*******************************************************************************/
@@ -1466,7 +1485,7 @@ MV_STATUS mvBoardTmFreqSet(MV_U8 freqVal)
 }
 
 /*******************************************************************************/
-MV_U8 mvBoardBootDevGet(MV_VOID)
+MV_STATUS mvBoardBootDevGet(MV_U8 *value)
 {
 	MV_U8 sar;
 	MV_STATUS rc;
@@ -1475,8 +1494,10 @@ MV_U8 mvBoardBootDevGet(MV_VOID)
 	if (MV_ERROR == rc)
 		return MV_ERROR;
 
-	return (sar & 0x7);
+	*value = (sar & 0x7);
+	return MV_OK;
 }
+
 /*******************************************************************************/
 MV_STATUS mvBoardBootDevSet(MV_U8 val)
 {

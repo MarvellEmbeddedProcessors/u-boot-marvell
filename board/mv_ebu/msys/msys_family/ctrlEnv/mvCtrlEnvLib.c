@@ -219,6 +219,15 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	if (MV_OK != mvCtrlSerdesPhyConfig())
 		mvOsPrintf("mvCtrlEnvInit: Can't init some or all SERDES lanes\n");
 
+	/* Enable NAND Flash PUP (Pack-Unpack)
+	 * HW machanism to accelerate transactions (controlled by SoC register) */
+	MV_REG_BIT_SET(PUP_EN_REG, BIT4);
+
+	/* Configure NAND flush enabled */
+	MV_REG_BIT_SET(SOC_DEV_MUX_REG, BIT0);
+
+	/* Set NfArbiterEn to NAND Flash (Disable arbitration between device and NAND) */
+	MV_REG_BIT_RESET(SOC_DEV_MUX_REG, BIT27);
 
 	mvOsDelay(100);
 
@@ -1530,22 +1539,25 @@ void mvCtrlGetPexActive(MV_BOOL *pPexActive, int size)
 *******************************************************************************/
 void mvCtrlNandClkSet(int nClock)
 {
-	/* Set the division ratio of ECC Clock 0x00018748[13:8] (by default it's double of core clock) */
-	MV_U32 nVal = MV_DFX_REG_READ(CORE_DIV_CLK_CTRL(1));
+	DB(mvOsPrintf("%s: CPU (PLL_1) clock)  = %d, dividor = %d\n", __func__, mvCpuPclkGet(), nClock));
 
+	/* Set the division ratio of ECC Clock 0x000F8270[9:6] (ECC clock = CPU / dividor) */
+	MV_U32 nVal = MV_DFX_REG_READ(CORE_DIV_CLK_CTRL(2));
 	nVal &= ~(NAND_ECC_DIVCKL_RATIO_MASK);
 	nVal |= (nClock << NAND_ECC_DIVCKL_RATIO_OFFS);
-	MV_DFX_REG_WRITE(CORE_DIV_CLK_CTRL(1), nVal);
+	MV_DFX_REG_WRITE(CORE_DIV_CLK_CTRL(2), nVal);
 
-	/* Set reload force of ECC clock 0x00018740[7:0] to 0x2 (meaning you will force only the ECC clock) */
+	/* Set reload force of ECC clock 0x000F8268[27:21] to 0x40 (force the dividor only the NAND ECC clock) */
 	nVal = MV_DFX_REG_READ(CORE_DIV_CLK_CTRL(0));
 	nVal &= ~(CORE_DIVCLK_RELOAD_FORCE_MASK);
-	nVal |= CORE_DIVCLK_RELOAD_FORCE_VAL;
+	nVal |= (CORE_DIVCLK_RELOAD_FORCE_VAL << CORE_DIVCLK_RELOAD_FORCE_OFFS);
 	MV_DFX_REG_WRITE(CORE_DIV_CLK_CTRL(0), nVal);
 
-	/* Set reload ratio bit 0x00018740[8] to 1'b1 */
-	MV_DFX_REG_BIT_SET(CORE_DIV_CLK_CTRL(0), CORE_DIVCLK_RELOAD_RATIO_MASK);
+	/* Set reload ratio bit 0x000F8270[10] to 1'b1 */
+	MV_DFX_REG_BIT_SET(CORE_DIV_CLK_CTRL(2), CORE_DIVCLK_RELOAD_RATIO_MASK);
 	mvOsDelay(1); /*  msec */
-	/* Set reload ratio bit 0x00018740[8] to 0'b1 */
-	MV_DFX_REG_BIT_RESET(CORE_DIV_CLK_CTRL(0), CORE_DIVCLK_RELOAD_RATIO_MASK);
+	/* Set reload ratio bit 0x000F8270[10] to 0'b1 */
+	MV_DFX_REG_BIT_RESET(CORE_DIV_CLK_CTRL(2), CORE_DIVCLK_RELOAD_RATIO_MASK);
 }
+
+

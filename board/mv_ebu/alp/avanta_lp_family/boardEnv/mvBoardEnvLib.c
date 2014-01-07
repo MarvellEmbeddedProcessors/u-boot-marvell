@@ -965,6 +965,12 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		/* If needed, enable SFP0 TX for SGMII, for DB-6660 */
 		if (ethComplex & MV_ETHCOMP_GE_MAC0_2_COMPHY_2)
 			mvBoardSgmiiSfp0TxSet(MV_TRUE);
+
+		/* Check conflicts between device bus module and NAND */
+		mvBoardAudioModuleConfigCheck();
+
+		/* Check DDR buswidth configuration */
+		mvBoardDDRBusWidthCheck();
 	}
 }
 
@@ -1183,9 +1189,6 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 {
 	MV_U32 groupType;
 	MV_BOARD_BOOT_SRC bootSrc = mvBoardBootDeviceGet();
-
-	/* Check conflicts between device bus module and NAND */
-	mvBoardAudioModuleConfigCheck();
 
 	switch (bootSrc) {
 	case MSAR_0_BOOT_NAND_NEW:
@@ -1804,6 +1807,39 @@ MV_VOID mvBoardAudioModuleConfigCheck(MV_VOID)
 		(mvCtrlSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x3)))		/* 0x3=SPDIF_AUDIO */
 			mvOsPrintf("Error: Audio modules not supported when booting from NAND\n");
 }
+
+/*******************************************************************************
+* mvBoardDDRBusWidthCheck
+*
+* DESCRIPTION:
+*	Check if DDR buswidth is different from the board configuration
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_VOID mvBoardDDRBusWidthCheck(MV_VOID)
+{
+	MV_U32 configVar, ddrVar;
+
+	/* DDR buswidth field control relevant for MV88F6660 SoC */
+	if (mvBoardIdGet() != DB_6660_ID)
+		return;
+
+	configVar = (mvCtrlSysConfigGet(MV_CONFIG_DDR_BUSWIDTH) == 0x0) ? 32 : 16;
+	ddrVar = mvCtrlDDRBudWidth();
+
+	if (configVar != ddrVar)
+		mvOsPrintf("Error: Mismatch between DDR buswidth - %d, and board configuration DDR buswidth - %d\n",\
+				ddrVar, configVar);
+}
+
 
 /*******************************************************************************
 * mvBoardConfigurationPrint

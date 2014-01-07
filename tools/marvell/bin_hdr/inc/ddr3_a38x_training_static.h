@@ -63,7 +63,8 @@ MV_DRAM_TRAINING_INIT ddr3_db_a38x[MV_MAX_DDR3_STATIC_SIZE] =
 	/* Read Leveling using training pattern at high frequency*/
 	{0x000015B0, 0x80100040},
 	{0x000200e8, 0x0},		/* RL */
-	{0x00020184, 0x0FFFFFE1},	/* RL */
+	{0x00008c04, 0x80000000},	/* Filtering register patch(value bigger that DRAM size)*/
+	{0x00020184, 0x7FFFFFE1},	/* WIN0  2G*/
 	{0x0, 0x0}
 };
 

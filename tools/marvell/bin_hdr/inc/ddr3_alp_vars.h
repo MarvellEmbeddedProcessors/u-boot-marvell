@@ -75,8 +75,7 @@ typedef enum  {
     Z1_ALP_DB_6650,
     Z1_ALP_RD_6660,
     Z1_ALP_DB_6660,
-    A0
-
+    AVANTA_LP_CUSTOMER
 } MV_SOC_BOARD_REV;
 
 typedef struct __mvDramModes {
@@ -91,17 +90,22 @@ typedef struct __mvDramModes {
 
 MV_DRAM_MODES ddr_modes[] =
 {
+
     /*  Conf name       CPUFreq     FabFreq     Chip ID    Chip/Board          MC regs          Training Values */
+#if defined(CUSTOMER_BOARD)
+	{"rd_customer_533", 0x15,        0,          0x0,    AVANTA_LP_CUSTOMER,  ddr3_costumer_rd_88F6660_533, NULL},
+#else
     /* db board values  */
     {"db_88F6650_533",  0x15,        0,          0x0,    Z1_ALP_DB_6650,  ddr3_Z0_db_88F6650_533, NULL},
     {"db_88F6660_533",  0x15,        0,          0x0,    Z1_ALP_DB_6660,  ddr3_Z0_db_88F6660_533, ddr3_db_88F6660},
     {"db_88F6660_400",  0x14,        0,          0x0,    Z1_ALP_DB_6660,  ddr3_Z0_db_88F6660_533, ddr3_db_88F6660},
 	{"db_88F6660_533",  0x16,        0,          0x0,    Z1_ALP_DB_6660,  ddr3_Z0_db_88F6660_533, ddr3_db_88F6660},
 	{"db_88F6660_533",  0x19,        0,          0x0,    Z1_ALP_DB_6660,  ddr3_Z0_db_88F6660_533, ddr3_db_88F6660},
-    /* rd board values  */
-    {"rd_88F6650_400",  0xE,        0,          0x0,    Z1_ALP_RD_6650,  ddr3_Z0_rd_88F6650_400, ddr3_rd_88F6650},
+	/* rd board values  */
+    {"rd_88F6650_400",  0xE,         0,          0x0,    Z1_ALP_RD_6650,  ddr3_Z0_rd_88F6650_400, ddr3_rd_88F6650},
     {"rd_88F6650_400",  0x14,        0,          0x0,    Z1_ALP_RD_6650,  ddr3_Z0_rd_88F6650_400, ddr3_rd_88F6650},
     {"rd_88F6660_533",  0x15,        0,          0x0,    Z1_ALP_RD_6660,  ddr3_Z0_rd_88F6660_533, NULL},
+#endif /* #if CUSTOMER_BOARD */
 };
 
 MV_U16 auiODTStatic[ODT_OPT][MAX_CS] =

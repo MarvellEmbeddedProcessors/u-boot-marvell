@@ -368,10 +368,10 @@ typedef enum _mvTarget {
 	{ 0xE0, PEX_TARGET_ID_0	},		/* PEX0_IO               */ \
 	{ 0xE8, PEX_TARGET_ID_123 },		/* PEX1_MEM              */ \
 	{ 0xE0, PEX_TARGET_ID_123 },		/* PEX1_IO               */ \
-	{ 0xB8, PEX_TARGET_ID_123 },		/* PEX2_MEM              */ \
-	{ 0xB0, PEX_TARGET_ID_123 },		/* PEX2_IO               */ \
-	{ 0x78, PEX_TARGET_ID_123 },		/* PEX3_MEM              */ \
-	{ 0x70, PEX_TARGET_ID_123 },		/* PEX3_IO               */ \
+	{ 0xD8, PEX_TARGET_ID_123 },		/* PEX2_MEM              */ \
+	{ 0xD0, PEX_TARGET_ID_123 },		/* PEX2_IO               */ \
+	{ 0xB8, PEX_TARGET_ID_123 },		/* PEX3_MEM              */ \
+	{ 0xB0, PEX_TARGET_ID_123 },		/* PEX3_IO               */ \
 	{ 0xFF, 0xFF		},		/* INTER_REGS            */ \
 	{ 0x01, DEV_TARGET_ID	},		/* DMA_UART              */ \
 	{ 0x1E, DEV_TARGET_ID	},		/* SPI0_CS0              */ \

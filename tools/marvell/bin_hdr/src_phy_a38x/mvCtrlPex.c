@@ -74,7 +74,7 @@ static MV_U32 _MV_REG_READ(MV_U32 regAddr)
 	putstring("\n >>>       MV_REG_READ.  regAddr=0x");
 	putdata(INTER_REGS_BASE | (regAddr), 8);
 	putstring(" regData=0x");
-	MV_U32 regData = MV_MEMIO_LE32_READ((void*)(INTER_REGS_BASE | (regAddr)));
+	MV_U32 regData = MV_MEMIO_LE32_READ((INTER_REGS_BASE | (regAddr)));
 	putdata(regData, 8);
 
 	return regData;
@@ -88,6 +88,8 @@ static MV_VOID _MV_REG_WRITE(MV_U32 regAddr, MV_U32 regData)
 	putdata(regData, 8);
 	MV_MEMIO_LE32_WRITE((INTER_REGS_BASE | (regAddr)), (regData));
 }
+#undef MV_REG_WRITE
+#undef MV_REG_READ
 
 #define MV_REG_WRITE    _MV_REG_WRITE
 #define MV_REG_READ     _MV_REG_READ

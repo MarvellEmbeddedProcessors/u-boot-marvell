@@ -1658,6 +1658,8 @@ MV_U32 mvCtrlGetJuncTemp(MV_VOID)
 *******************************************************************************/
 void mvCtrlNandClkSet(int nClock)
 {
+	if (nClock == 5)     /* Temporary WA for A38x: the divider by 5 is not stable */
+		nClock = 4;   /* Temorary divider by 4  is used */
 	/* Set the division ratio of ECC Clock 0x00018748[13:8] (by default it's double of core clock) */
 	MV_U32 nVal = MV_REG_READ(CORE_DIV_CLK_CTRL(1));
 	nVal &= ~(NAND_ECC_DIVCKL_RATIO_MASK);

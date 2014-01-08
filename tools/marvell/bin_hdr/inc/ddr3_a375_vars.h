@@ -72,6 +72,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Board/Soc revisions define - DONT CHANGE ORDER */
 typedef enum  {
     A375_DB_6720 = 0,
+	A375_CUSTOMER
 } MV_SOC_BOARD_REV;
 
 typedef struct __mvDramModes {
@@ -86,11 +87,15 @@ typedef struct __mvDramModes {
 
 MV_DRAM_MODES ddr_modes[] =
 {
+#if defined(CUSTOMER_BOARD)
     /*  Conf name     CPUFreq    FabFreq  Chip ID       Chip/Board               MC regs             Training Values */
+	{"rd_customer_533", 0x15,       0,      0x0,   		A375_CUSTOMER,      ddr3_Customer_DB_6720_533,  NULL},
+#else
     /* db board values  */
     {"db_88F6720_533",  0x15,       0,      0x0,        A375_DB_6720,       ddr3_A375_DB_6720_533,      NULL},
 	{"db_88F6720_533",  0x16,       0,      0x0,        A375_DB_6720,       ddr3_A375_DB_6720_533, 		NULL},
 	{"db_88F6720_533",  0x19,       0,      0x0,        A375_DB_6720,       ddr3_A375_DB_6720_533, 		NULL},
+#endif /* #if CUSTOMER_BOARD */
 };
 
 MV_U16 auiODTStatic[ODT_OPT][MAX_CS] =

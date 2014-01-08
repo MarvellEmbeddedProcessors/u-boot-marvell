@@ -352,6 +352,10 @@ typedef struct {
 	((target >= PEX0_MEM) && (target <= PEX0_IO))
 #define MV_TARGET_IS_PEX1(target)   \
 	((target >= PEX1_MEM) && (target <= PEX1_IO))
+#define MV_TARGET_IS_PEX2(target)   \
+		((target >= PEX2_MEM) && (target <= PEX2_IO))
+#define MV_TARGET_IS_PEX3(target)   \
+		((target >= PEX3_MEM) && (target <= PEX3_IO))
 
 #define MV_TARGET_IS_PEX(target)        ((target >= PEX0_MEM) && (target <= PEX1_IO))
 

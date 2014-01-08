@@ -91,33 +91,6 @@ typedef enum {
 /* For initializing the COMMON_PHYS_SELECTORS_REG
    Maps the serdes lane num and type to the data */
 
-#ifdef REGISTER_TRACE_DEBUG
-static MV_U32 _MV_REG_READ(MV_U32 regAddr)
-{
-	DEBUG_INIT_FULL_S(" >>>       MV_REG_READ.  regAddr=0x");
-	DEBUG_INIT_FULL_D(INTER_REGS_BASE | (regAddr), 8);
-	DEBUG_INIT_FULL_S(" regData=0x");
-	MV_U32 regData = MV_MEMIO_LE32_READ((void*)(INTER_REGS_BASE | (regAddr)));
-	DEBUG_INIT_FULL_D(regData, 8);
-	DEBUG_INIT_FULL_S(" - Done\n");
-
-	return regData;
-}
-
-static MV_VOID _MV_REG_WRITE(MV_U32 regAddr, MV_U32 regData)
-{
-	DEBUG_INIT_FULL_S(" >>>       MV_REG_WRITE. regAddr=0x");
-	DEBUG_INIT_FULL_D(INTER_REGS_BASE | (regAddr), 8);
-	DEBUG_INIT_FULL_S(" regData=0x");
-	DEBUG_INIT_FULL_D(regData, 8);
-	MV_MEMIO_LE32_WRITE((INTER_REGS_BASE | (regAddr)), (regData));
-	DEBUG_INIT_FULL_S(" - Done \n\n");
-}
-
-#define MV_REG_WRITE    _MV_REG_WRITE
-#define MV_REG_READ     _MV_REG_READ
-#endif /*REGISTER_TRACE_DEBUG*/
-
 /************************* Local functions declarations ***********************/
 
 /**************************************************************************

@@ -96,6 +96,9 @@ static MV_VOID _MV_REG_WRITE(MV_U32 regAddr, MV_U32 regData)
 #define MV_REG_READ     _MV_REG_READ
 #endif /*REGISTER_TRACE_DEBUG*/
 
+#define	SERDES_VERION	"1.0"
+#define ENDED_OK "High speed PHY - Ended Successfully\n"
+
 MV_U8 commonPhysSelectorsMap[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 {
 	/* 0      1       2       3       4       5 */
@@ -519,6 +522,10 @@ MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
 	DEBUG_INIT_FULL_S("\n### mvCtrlHighSpeedSerdesPhyConfig ###\n");
 
+	DEBUG_INIT_S("High speed PHY - Version: ");
+	DEBUG_INIT_S(SERDES_VERION);
+	DEBUG_INIT_S("\n");
+
 	/* Init serdes sequences DB */
 	serdesSeqInit();
 
@@ -541,6 +548,9 @@ MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	CHECK_STATUS(powerUpSerdesLanes(serdesConfigurationMap));
 
 	DEBUG_INIT_FULL_S("\n### mvCtrlHighSpeedSerdesPhyConfig ended successfully ###\n");
+
+	DEBUG_INIT_S(ENDED_OK);
+
 	return MV_OK;
 }
 

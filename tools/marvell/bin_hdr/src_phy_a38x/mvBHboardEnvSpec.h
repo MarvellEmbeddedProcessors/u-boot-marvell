@@ -126,6 +126,13 @@
 
 #define MV_MAX_BOARD_ID                         (COSTUMER_BOARD_ID + 1) /* dummy */
 
+/* device ID */
+#define ARMADA_380_DEVIDE_ID                    0x6810
+#define ARMADA_385_DEVIDE_ID                    0x6820
+#define ARMADA_388_DEVIDE_ID                    0x6828
+#define ARMADA_390_DEVIDE_ID                    0x6920
+#define ARMADA_398_DEVIDE_ID                    0x6928
+
 /* A generic function pointer for loading the board topology map */
 typedef MV_STATUS (*loadTopologyFuncPtr)(SERDES_MAP  *serdesMapArray);
 

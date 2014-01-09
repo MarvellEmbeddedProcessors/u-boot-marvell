@@ -448,15 +448,8 @@ MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32
 /***************************************************************************/
 MV_U32 mvCtrlModelGet(MV_VOID)
 {
-	MV_U32 ctrlId, satr0;
-
 	DEBUG_INIT_FULL_S("\n### mvCtrlModelGet ###\n");
 
-	ctrlId = MV_REG_READ(DEV_ID_REG);
-	ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
-
-	satr0 = MV_REG_READ(MPP_SAMPLE_AT_RESET(0));
-	satr0 &= SATR_DEVICE_ID_2_0_MASK;
-
-	return satr0;
+	/* Temporary solution, should be update according to S@R register - currently not supported */
+	return ARMADA_388_DEVIDE_ID;
 }

@@ -1,0 +1,41 @@
+;initialize system
+AREA.CLEAR
+diag 16001
+SYStem.RESet
+SYStem
+
+SYStem.CPU 88FR581V7
+SYStem.MultiCore COREBASE 0xc2301000
+SYStem.MultiCore MEMORYACCESSPORT 0
+SYStem.MultiCore DEBUGACCESSPORT  1
+
+system.mode attach
+
+;system.Up
+break
+
+d.s C15:1 %LONG 0x00052078
+
+; Configure L@ ways 0-3 to be SRAM
+D.S SD:0xD000878C %LE %LONG 0x40000000
+D.S SD:0xD000878C %LE %LONG 0x40010001
+D.S SD:0xD000878C %LE %LONG 0x40020002
+D.S SD:0xD000878C %LE %LONG 0x40030003
+
+; Open the SRAM window 0 to the 512K SRAM
+D.S SD:0xD0020240 %LE %LONG 0x40000701
+
+R.S R13 0x4003FFFC
+
+print "Finished setting the L2 as SRAM"
+WAIT 100.ms
+
+D.LOAD C:\T32\Marvell\bin_hdr.elf
+print "Binary Header Init.."
+GO
+wait !run()
+
+print "Done ;-)... Select u-boot file:"
+D.LOAD *
+
+enddo

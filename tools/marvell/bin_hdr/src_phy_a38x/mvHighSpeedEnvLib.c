@@ -255,6 +255,9 @@ MV_OP_PARAMS usb2PowerUpParams[] =
 	{ 0x18444 ,        0x0 /*NA*/,	0xffffffff, {0x62},       0,        0}, /* Init phy 1 */
 	{ 0x18448 ,        0x0 /*NA*/,	0xffffffff, {0x62},       0,        0}, /* Init phy 2 */
 	{ 0xC0000 ,        0x0 /*NA*/,	0xffffffff, {0x40605205}, 0,        0}, /* Phy offset 0x0 - PLL_CONTROL0  */
+	{ 0xC001C ,        0x0 /*NA*/,	0xffffffff, {0x39F16CE},  0,        0},
+	{ 0xC201C ,        0x0 /*NA*/,	0xffffffff, {0x39F16CE},  0,        0},
+	{ 0xC401C ,        0x0 /*NA*/,	0xffffffff, {0x39F16CE},  0,        0},
 	{ 0xC0004 ,        0x0 /*NA*/,	0x1,        {0x1},        0,        0}, /* Phy offset 0x1 - PLL_CONTROL1 */
 	{ 0xC000C ,        0x0 /*NA*/,	0x1000000,  {0x1000000},  0,        0}, /* Phy0 register 3  - TX Channel control 0 */
 	{ 0xC200C ,        0x0 /*NA*/,	0x1000000,  {0x1000000},  0,        0}, /* Phy0 register 3  - TX Channel control 0 */

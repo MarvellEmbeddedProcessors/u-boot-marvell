@@ -50,25 +50,28 @@
 extern "C" {
 #endif
 
-static MV_HWS_TOPOLOGY_MAP A38xTopologyMap[] =
+/************************** Globals ******************************/
+
+GT_U8 debugA38x = 0;
+
+static MV_DFX_ACCESS interfaceMap[] =
 {
-    /* 1st board */
-    {
-    0x1, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x3,0,0,0}, {0x3,0,0,0}, {0x0,0,0,0}, {0x0,0,0,0}, {0x0,0,0,0}, {0x0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_HIGH}},
-    4, /* Num Of Bus Per Interface*/
-    0  /* board number */
-    },
-    /* 2nd board */
-    {
-    0x1, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_HIGH}},
-    4, /* Num Of Bus Per Interface*/
-    1  /* board number */
-    }
+	/* Pipe	Client*/
+	{   0,	 17 },
+	{   1,	 7	},
+	{   1,	 11 },
+	{   0,	 3	},
+	{   1,	 25 },
+	{   0,	 0 },
+	{   0,	 0 },
+	{   0,	 0 },
+	{   0,	 0 },
+	{   0,	 0 },
+	{   0,	 0 },
+	{   0,	 0 }
 };
+
+
 
 /* this array hold the board round trip delay (DQ and CK) per <interfcae,bus> */
 TripDelayElement A38xBoardRoundTripDelayArray[] =

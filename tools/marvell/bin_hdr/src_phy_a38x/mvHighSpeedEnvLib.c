@@ -141,6 +141,13 @@ REF_CLOCK serdesTypeToRefClockMap[LAST_SERDES_TYPE] =
 	REF_CLOCK_UNSUPPORTED   /* DEFAULT_SERDES */
 };
 
+MV_U32 mvBoardIdGet(MV_VOID)
+{
+	//TODO
+	return 0;
+}
+
+
 /******************************** Sequences DB ********************************/
 
 /******************/

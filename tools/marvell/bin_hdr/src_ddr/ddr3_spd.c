@@ -451,7 +451,7 @@ MV_STATUS ddr3SpdSumInit(MV_DIMM_INFO *pDimmInfo, MV_DIMM_INFO *pDimmSumInfo, MV
 */
 MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth)
 {
-    MV_U32 uiReg, uiTemp, uiCWL;
+    MV_U32 uiReg, uiTemp, uiCWL=0;
     MV_U32 uiDDRClkTime;
     MV_DIMM_INFO dimmInfo[2];
     MV_DIMM_INFO dimmSumInfo;
@@ -466,6 +466,7 @@ MV_STATUS ddr3DunitSetup(MV_U32 uiEccEna, MV_U32 uiHClkTime, MV_U32 *pUiDdrWidth
 #endif
 #endif
     MV_STATUS status;
+	memset(&dimmSumInfo, 0, sizeof(MV_DIMM_INFO));
 
 #if defined(DB_88F6710) || defined(DB_88F6710_PCAC) || defined(RD_88F6710)
     /* Armada 370 - SPD is not available on DIMM */

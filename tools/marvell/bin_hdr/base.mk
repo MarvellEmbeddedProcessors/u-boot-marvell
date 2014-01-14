@@ -85,7 +85,13 @@ endif
 
 CPUOPTS  = -mthumb -mthumb-interwork -march=armv7 -mlittle-endian
 
-CFLAGS   = -Wall $(INCLUDE) -g -O0 $(CPUOPTS) -msoft-float -fPIE -fno-zero-initialized-in-bss -fno-unwind-tables  -mabi=aapcs
+ifeq ($(BIN_HDR_DEBUG),1)
+DEBUG_FLAGS += -g -O0
+else
+DEBUG_FLAGS += -Os
+endif
+
+CFLAGS   = -Wall $(INCLUDE) $(DEBUG_FLAGS) $(CPUOPTS) -msoft-float -fPIE -fno-zero-initialized-in-bss -fno-unwind-tables  -mabi=aapcs
 CPPFLAGS = $(foreach FLAG, $(MVFLAGS), $(addprefix -D, $(FLAG)))
 ASFLAGS  = $(foreach FLAG, $(MVFLAGS), $(addprefix --defsym , $(FLAG)))
 LDFLAGS  = -static -nostartfiles -unwind-tables  -nostdlib

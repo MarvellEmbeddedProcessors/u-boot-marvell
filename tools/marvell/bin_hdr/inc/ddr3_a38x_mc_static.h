@@ -66,93 +66,94 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _INC_A375_MC_STATIC_H
 
 #include "ddr3_a38x.h"
+#include "mvDdr3TopologyDef.h"
 
 typedef struct __mvDramMcInit {
 	MV_U32 reg_addr;
 	MV_U32 reg_value;
+	MV_U32 reg_mask;
 } MV_DRAM_MC_INIT;
 
-
-MV_DRAM_MC_INIT ddr3_a38x_667[MV_MAX_DDR3_STATIC_SIZE] =
+static MV_DRAM_MC_INIT ddr3_a38x_800[] =
 {
-	{0x0001400, 0x7B00Ca28},   /* DDR SDRAM Configuration Register             */
-	{0x0001404, 0x36301820},   /* Dunit Control Low Register - kw40 bit11 high */
-	{0x0001408, 0x43149997},   /* DDR SDRAM Timing (Low) Register              */
-	{0x000140C, 0x38411bc7},   /* DDR SDRAM Timing (High) Register             */
-	{0x0001410, 0x14300000},   /* DDR SDRAM Address Control Register           */
-	{0x0001414, 0x00000700},   /* DDR SDRAM Open Pages Control Register        */
-	{0x0001424, 0x0060f3ff},   /* Dunit Control High Register ( 2 :1 - bits 15:12 = 0xD )  */
-	{0x0001428, 0x000F8830},   /* Dunit Control High Register                              */
-	{0x000142C, 0x028c50f8},   /* Dunit Control High Register  ( 2:1 -  bit 29 = '1' )     */
-	{0x000147C, 0x0000c671},   /*  */
-	{0x0001494, 0x00030000},  /* DDR SDRAM ODT Control (Low) Register  */
-	{0x000149C, 0x00000300},  /* DDR Dunit ODT Control Register  */
-	{0x00014a8, 0x00000000},
-	{0x00014cc, 0xbd09000d},
-	{0x0001474, 0x00000000},
-	{0x0001538, 0x00000009},  /* Read Data Sample Delays Register */
-	{0x000153C, 0x0000000c},  /* Read Data Ready Delay Register  */
-	{0x0001504, 0xFFFFFFF1},
-	{0x000150c, 0xFFFFFFE5},
-	{0x0001514, 0x00000000},
-	{0x000151c, 0x00000000},
-	{0x00015D0, 0x00000650},  /* MR0 */
-	{0x00015D4, 0x00000046},  /* MR1 */
-	{0x00015D8, 0x00000010},  /* MR2 */
-	{0x00015DC, 0x00000000},  /* MR3 */
-	{0x00015E0, 0x23},
-	{0x00015E4, 0x00203c18}, /* ZQC Configuration Register  */
-	{0x00015EC, 0xf8000019}, /* DDR PHY                     */
-	{0x00016A0, 0xe8243dfe},    /* ZNR / SPR                */
-	{0x00016A0, 0xe8280434},   /* disable clamp and Vref   */
-	{0x00016A0, 0x281020da},   /* Clock skew               */
-	{0x00016A0, 0xe8260cb2},
-	{0x00016A0, 0xe8290000},
-	{0x00016A0, 0xf810001f},
-	{0x00016A0, 0xCC000012},
-	{0x00016A0, 0xC803000f},
-	{0x0, 0x0}
+/*parameters for 800MHZ*/
+
+    {0x1400,    0x7B00CC30, 0xffffffff},
+    {0x1404,    0x36301820, 0xffffffff},
+    {0x1408,    0x5415BAAB, 0xffffffff},
+    {0x140C,    0x38411DEF, 0xffffffff},
+    {0x1410,    0x18300000, 0xffffffff},
+    {0x1414,    0x00000700, 0xffffffff},
+    {0x1424,    0x0060f3ff, 0xffffffff},
+    {0x1428,    0x0011A940, 0xffffffff},
+    {0x142C,    0x28c5134,  0xffffffff},
+	{0x1474,    0x00000000, 0xffffffff},
+    {0x147C,    0x0000D771, 0xffffffff},
+    {0x1494,    0x00030000, 0xffffffff},
+    {0x149C,    0x00000300, 0xffffffff},
+    {0x14A8,    0x00000000, 0xffffffff},
+    {0x14cc,    0xbd09000d, 0xffffffff},
+    {0x1504,    0xFFFFFFF1, 0xffffffff},
+    {0x150C,    0xFFFFFFE5, 0xffffffff},
+    {0x1514,    0x00000000, 0xffffffff},
+    {0x151C,    0x00000000, 0xffffffff},
+    {0x1538,    0xB0B,      0xffffffff},
+    {0x153C,    0xC0C,      0xffffffff},
+    {0x15D0,    0x00000670, 0xffffffff},
+    {0x15D4,    0x00000046, 0xffffffff},
+    {0x15D8,    0x00000010, 0xffffffff},
+    {0x15DC,    0x00000000, 0xffffffff},
+    {0x15E0,    0x23,       0xffffffff},
+    {0x15E4,    0x00203c18, 0xffffffff},
+	{0x15EC,    0xf8000019, 0xffffffff},
+	{0x16A0,    0xCC000012, 0xffffffff}, //  Clock Delay
+	{0xE4124,   0x08008073, 0xffffffff},  //  AVS BG default
+	{0,   0, 0}
 };
 
-MV_DRAM_MC_INIT ddr3_a38x_800[MV_MAX_DDR3_STATIC_SIZE] =
+
+static MV_DRAM_MC_INIT ddr3_a38x_667[] =
 {
-	{0x00001400, 0x7B00CC30},
-	{0x00001404, 0x36301820},
-	{0x00001408, 0x5415BAAB},
-	{0x0000140C, 0x38411DEF},
-	{0x00001410, 0x18300000},
-	{0x00001414, 0x00000700},
-	{0x00001424, 0x0060f3ff},
-	{0x00001428, 0x0011A940},
-	{0x0000142C, 0x28c5134},
-	{0x0000147C, 0x0000D771},
-	{0x00001494, 0x00030000},
-	{0x0000149C, 0x00000300},
-	{0x000014a8, 0x00000000},
-	{0x000014cc, 0xbd09000d},
-	{0x00001474, 0x00000000},
-	{0x00001538, 0x0000000b},
-	{0x0000153C, 0x0000000c},
-	{0x00001504, 0xFFFFFFF1},
-	{0x0000150c, 0xFFFFFFE5},
-	{0x00001514, 0x00000000},
-	{0x0000151c, 0x0},
-	{0x000015D0, 0x00000670},
-	{0x000015D4, 0x00000046},
-	{0x000015D8, 0x00000018},
-	{0x000015DC, 0x00000000},
-	{0x000015E0, 0x23},
-	{0x000015E4, 0x00203c18},
-	{0x000015EC, 0xf8000019},
-	{0x00016A0, 0xe8243dfe},    /* ZNR / SPR                */
-	{0x00016A0, 0xe8280434},   /* disable clamp and Vref   */
-	{0x00016A0, 0x281020da},   /* Clock skew               */
-	{0x00016A0, 0xe8260cb2},
-	{0x00016A0, 0xe8290000},
-	{0x00016A0, 0xf810001f},
-	{0x00016A0, 0xCC000012},
-	{0x00016A0, 0xC803000f},
-	{0x0, 0x0}
+	/*parameters for 667MHZ*/
+
+	{0x1400,    0x7B00Ca28, 0xffffffff}, // DDR SDRAM Configuration Register
+	{0x1404,    0x36301820, 0xffffffff}, // Dunit Control Low Register - kw28 bit12 low (disable CLK1)
+	{0x1408,    0x43149997, 0xffffffff}, // DDR SDRAM Timing (Low) Register
+	{0x140C,    0x38411bc7, 0xffffffff}, //  DDR SDRAM Timing (High) Register
+	{0x1410,    0x14300000, 0xffffffff}, //  DDR SDRAM Address Control Register
+	{0x1414,    0x00000700, 0xffffffff}, //  DDR SDRAM Open Pages Control Register
+	//{0x1418,    0x00000e00, 0xffffffff}, //  DDR SDRAM Operation Register
+	//{0x141C,    0x00000672, 0xffffffff}, //  DDR SDRAM Mode Register
+	//{0x1420,    0x00000004, 0xffffffff}, //  DDR SDRAM Extended Mode Register
+	{0x1424,    0x0060f3ff, 0xffffffff}, //  Dunit Control High Register ( 2 :1 - bits 15:12 = 0xD )
+	{0x1428,    0x000F8830, 0xffffffff}, //  Dunit Control High Register
+	{0x142C,    0x28c50f8,  0xffffffff}, //  Dunit Control High Register  ( 2:1 -  bit 29 = '1' )
+	{0x147C,    0x0000c671, 0xffffffff}, //
+	//{0x14a8,    0x00000100, 0xffffffff}, // DSMP "101"
+	//{0x20220,   0x00000006, 0xffffffff}, // DSMP 7
+	{0x1494,    0x00030000, 0xffffffff}, //  DDR SDRAM ODT Control (Low) Register
+	{0x1498,    0x00000000, 0xffffffff}, //  DDR SDRAM ODT Control (High) Register //will be configured at WL
+	//{0x149C,    0x00000003, 0xffffffff}, //  DDR Dunit ODT Control Register
+	{0x149C,    0x00000300, 0xffffffff}, //  DDR Dunit ODT Control Register
+	{0x14a8,    0x00000000, 0xffffffff}, //
+	{0x14cc,    0xbd09000d, 0xffffffff}, //
+	{0x1474,    0x00000000, 0xffffffff}, //
+	{0x1538,    0x00000009, 0xffffffff}, //  Read Data Sample Delays Register
+	{0x153C,    0x0000000c, 0xffffffff}, //  Read Data Ready Delay Register
+	{0x1504,    0xFFFFFFF1, 0xffffffff}, //
+	{0x150c,    0xFFFFFFE5, 0xffffffff}, //
+	{0x1514,    0x00000000, 0xffffffff}, //
+	{0x151c,    0x0, 		0xffffffff}, //
+	{0x15D0,    0x00000650, 0xffffffff}, //  MR0
+	{0x15D4,    0x00000046, 0xffffffff}, //  MR1
+	{0x15D8,    0x00000010, 0xffffffff}, //  MR2
+	{0x15DC,    0x00000000, 0xffffffff}, //  MR3
+	{0x15E0,    0x23, 		0xffffffff}, //
+	{0x15E4,    0x00203c18, 0xffffffff}, //  ZQC Configuration Register
+	{0x15EC,    0xf8000019, 0xffffffff}, //  DDR PHY
+	{0x16A0,    0xCC000013, 0xffffffff}, //  Clock Delay
+	{0xE4124,   0x08008073, 0xffffffff}, //  AVS BG default
+	{0,   0, 0}
 };
 
 #endif /* _INC_A375_MC_STATIC_H */

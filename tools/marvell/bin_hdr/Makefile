@@ -128,7 +128,11 @@ ifneq ($(BOARD),alp)
 		ifneq ($(BOARD),a38x)
 			LDFLAGSBIN  = -T linker.scr $(LDFLAGS)
 		else
-			LDFLAGSBIN  = -T linker_a38x.scr $(LDFLAGS)
+			ifeq ($(BIN_HDR_DEBUG),1)
+				LDFLAGSBIN  = -T linker.scr $(LDFLAGS)
+			else
+				LDFLAGSBIN  = -T linker_a38x.scr $(LDFLAGS)
+			endif
 		endif
 	else
 		LDFLAGSBIN  = -T linker_alp_a375.scr $(LDFLAGS)

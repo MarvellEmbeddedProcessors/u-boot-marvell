@@ -138,6 +138,6 @@ MV_U32 s_auiCpuFabClkToHClk[1][1];
 MV_U8 s_auiDivRatio2to1[1][1];
 MV_U16 auiODTStatic[1][1];
 MV_U8 s_auiDivRatio1to1[1][1];
-
-
 #endif /* _DDR3_MSYS_CONFIG_H */
+
+

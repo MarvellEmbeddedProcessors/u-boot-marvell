@@ -62,16 +62,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _INC_ALP_VARS_H
-#define _INC_ALP_VARS_H
+#ifndef _INC_A38X_VARS_H
+#define _INC_A38X_VARS_H
 
 #include "ddr3_a38x_config.h"
 #include "ddr3_a38x_mc_static.h"
-#include "ddr3_a38x_training_static.h"
+#include "mvDdr3TopologyDef.h"
 
 /* Board/Soc revisions define - DONT CHANGE ORDER */
 typedef enum  {
-    A38x_68X0 = 0,
+    A38X_DB = 0,
+	A38X_CUSTOMER
 } MV_SOC_BOARD_REV;
 
 typedef struct __mvDramModes {
@@ -81,16 +82,14 @@ typedef struct __mvDramModes {
     MV_U8 chipId;
     MV_SOC_BOARD_REV chipBoardRev;
     MV_DRAM_MC_INIT *regs;
-    MV_DRAM_TRAINING_INIT *vals;
 } MV_DRAM_MODES;
 
 MV_DRAM_MODES ddr_modes[] =
 {
-    /*  Conf name     CPUFreq    FabFreq  Chip ID       Chip/Board               MC regs             Training Values */
-    /* db board values  */
-	{"db_88F68x0_667",  0x8,       0,      0x0,        A38x_68X0,       ddr3_a38x_667,      ddr3_db_a38x},
-	{"db_88F68x0_800",  0xc,       0,      0x0,        A38x_68X0,       ddr3_a38x_800,      ddr3_db_a38x},
+    /*  Conf name     CPUFreq    	FabFreq  Chip ID   Chip/Board          MC regs*/
+	{"a38x_667", DDR_FREQ_667,       0,      0x0,   		A38X_DB,       ddr3_a38x_667},
+	{"a38x_800",  DDR_FREQ_800,      0,      0x0,        	A38X_DB,       ddr3_a38x_800},
 };
 
+#endif /* _INC_A38X_VARS_H */
 
-#endif /* _INC_ALP_VARS_H */

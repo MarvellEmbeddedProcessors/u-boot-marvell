@@ -376,7 +376,7 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 	SERDES_MAP* topologyConfigPtr;
 	MV_TWSI_SLAVE twsiSlave;
 	MV_U8 twsiData;
-	MV_U8 usb3Host0OrDevice, usb3Host1OrDevice;
+	MV_U8 usb3Host0OrDevice = 0, usb3Host1OrDevice = 0;
 
 	DEBUG_INIT_FULL_S("\n### loadTopologyDB ###\n");
 

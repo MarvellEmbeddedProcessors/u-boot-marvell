@@ -409,7 +409,7 @@ MV_U8 mvCtrlRevisionGet(MV_VOID)
 *******************************************************************************/
 MV_U32 GetLaneSelectorConfig(void)
 {
-    MV_U32 tmp,uiReg;
+    MV_U32 tmp = 0,uiReg;
     MV_U8 uiLan2Offs,uiLan3Offs;
 
     switch(mvCtrlRevisionGet()) {

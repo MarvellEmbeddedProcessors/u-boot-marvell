@@ -91,7 +91,7 @@ MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
 /***************************   defined ******************************/
 #define MV_BOARD_PEX_MODULE_ADDR		0x23
 #define MV_BOARD_PEX_MODULE_ADDR_TYPE	ADDR7_BIT
-#define MV_BOARD_PEX_MODULE_ID			1
+#define MV_BOARD_PEX_MODULE_ID			0
 #define MV_BOARD_ETM_MODULE_ID			2
 
 #define	PEX_MODULE_DETECT		1

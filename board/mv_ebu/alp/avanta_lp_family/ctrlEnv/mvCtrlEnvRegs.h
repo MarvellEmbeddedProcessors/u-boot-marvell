@@ -377,6 +377,7 @@ typedef enum _mvTargetId {
 	USB3_TARGET_ID   = 5,  /* Port 5  -> USB3 Unit,			*/
 	PEX_TARGET_ID    = 4,  /* Port 4  -> PCI Express 0 and 1        */
 	CRYPT_TARGET_ID  = 9,  /* Port 9  -> Crypto Engine SRAM         */
+	DFEV_TARGET_ID   = 11, /* Port 11 -> DFEV Unit			*/
 	PP2_TARGET_ID = 15,    /* Port 12 -> PP2 Unit                   */
 	MAX_TARGETS_ID
 } MV_TARGET_ID;

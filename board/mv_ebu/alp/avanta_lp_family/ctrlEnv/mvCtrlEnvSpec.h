@@ -484,6 +484,7 @@ typedef enum _mvTarget {
 	CRYPT0_ENG,	/* 25 Crypto0 Engine		*/
 	PP2_CPU0,	/* 26 PP2 - CPU 0		*/
 	PP2_CPU1,	/* 27 PP2 - CPU 1		*/
+	DFEV,		/* 28 DFEV Unit			*/
 	MAX_TARGETS
 } MV_TARGET;
 
@@ -536,6 +537,7 @@ typedef enum _mvTarget {
 	{ 0x01, CRYPT_TARGET_ID	},		/* CRYPT_ENG0            */ \
 	{ 0x00, PP2_TARGET_ID	},		/* PP2 - CPU 0           */ \
 	{ 0x01, PP2_TARGET_ID	},		/* PP2 - CPU 1           */ \
+	{ 0x00, DFEV_TARGET_ID },		/* DFEV			 */ \
 }
 
 #define CESA_TARGET_NAME_DEF	("CRYPT_ENG0", "CRYPT_ENG1")
@@ -567,7 +569,8 @@ typedef enum _mvTarget {
 	"USB3",                 /* USB3 */		\
 	"CRYPT1_ENG",		/* CRYPT1_ENG */	\
 	"PP2 - CPU 0",		/* PP2 - CPU 0 */	\
-	"PP2 - CPU 1"		/* PP2 - CPU 1 */	\
+	"PP2 - CPU 1",		/* PP2 - CPU 1 */	\
+	"DFEV"			/* DFEV */		\
 }
 
 

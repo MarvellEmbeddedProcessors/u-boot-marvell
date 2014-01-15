@@ -88,7 +88,7 @@
 #endif
 
 #if defined(MV_INCLUDE_SATA)
-#include "sata/CoreDriver/mvSata.h"
+#include "sata/sata3/mvSata3.h"
 #endif
 #if defined(MV_INCLUDE_USB)
 #include "usb/mvUsb.h"
@@ -276,7 +276,7 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 	for (serdesNum = 0; serdesNum < maxSerdesLane; serdesNum++) {
 		serdesCongigField = (commPhyConfigReg & COMPHY_SELECT_MASK(serdesNum)) >> COMPHY_SELECT_OFFS(serdesNum);
 		comPhyCfg = serdesCfg[serdesNum][serdesCongigField];
-		DB(printf("serdesCongigField=0x%x, comPhyCfg=0x%2x SERDES %d detect as ",	\
+		DB(printf("serdesCongigField=0x%x, comPhyCfg=0x%02x SERDES %d detect as ",	\
 			  serdesCongigField, comPhyCfg, serdesNum));
 		switch (comPhyCfg & 0xF0) {
 		case SERDES_UNIT_PEX:
@@ -1197,7 +1197,7 @@ MV_VOID mvCtrlAddrDecShow(MV_VOID)
 #endif
 
 #if defined(MV_INCLUDE_SATA)
-	mvUnitAddrDecShow(mvCtrlSataMaxPortGet(), SATA_UNIT_ID, "Sata", mvSataWinRead);
+	mvUnitAddrDecShow(mvCtrlSataMaxPortGet(), SATA_UNIT_ID, "Sata", mvSata3WinRead);
 #endif
 }
 

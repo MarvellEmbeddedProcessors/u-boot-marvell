@@ -67,6 +67,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_msys_config.h"
 #include "mvHighSpeedEnvSpec.h"
 #include "mvBHboardEnvSpec.h"
+#include "mvCtrlPex.h"
 
 #include "bin_hdr_twsi.h"
 #include "mvUart.h"
@@ -86,5 +87,15 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 
 MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
-	return MV_OK;
+	MV_U32 uiReg = 0;
+
+//--------------------- Do pex config --------------------------
+	uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
+	uiReg &= ~(0xF << 20);
+	uiReg |= (0x4 << 20);
+	MV_REG_WRITE(PEX_CAPABILITIES_REG(0), uiReg);
+
+	return mvHwsPexConfig();
 }
+
+

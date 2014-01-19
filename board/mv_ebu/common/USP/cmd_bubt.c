@@ -25,6 +25,15 @@ disclaimer.
 #include <net.h>
 #include <environment.h>
 
+#if defined(MV_INCLUDE_USB)
+#include <usb.h>
+#endif
+
+#if defined(CONFIG_FS_FAT)
+#include <fat.h>
+#include <fs.h>
+#endif
+
 #if defined(CONFIG_CMD_NAND)
 #include <nand.h>
 extern nand_info_t nand_info[];       /* info for NAND chips */
@@ -74,12 +83,147 @@ static unsigned int flash_in_which_sec(flash_info_t *fl,unsigned int offset)
 }
 #endif /* !defined(MV_NOR_BOOT) */
 
+#ifdef MV_INCLUDE_USB
+/*
+ * Load u-boot bin file from usb device
+ * file_name is the name of u-boot file
+ */
+int load_from_usb(const char* file_name)
+{
+	const char *addr_str;
+	unsigned long addr;
+	int filesize = 0;
+
+	usb_stop();
+	printf("(Re)start USB...\n");
+
+	if (usb_init() < 0) {
+		printf("usb_init failed\n");
+		return 0;
+	}
+
+	/* try to recognize storage devices immediately */
+	if (-1 == usb_stor_scan(1)) {
+		printf("USB storage device not found\n");
+		return 0;
+	}
+
+	/* always load from usb 0 */
+	if (fs_set_blk_dev("usb", "0", FS_TYPE_FAT))
+	{
+		printf("USB 0 not found\n");
+		return 0;
+	}
+
+	addr_str = getenv("loadaddr");
+	if (addr_str != NULL)
+		addr = simple_strtoul(addr_str, NULL, 16);
+	else
+		addr = CONFIG_SYS_LOAD_ADDR;
+
+	filesize = fs_read(file_name, addr, 0, 0);
+	return filesize;
+}
+#endif
+
+/*
+ * Extract arguments from bubt command line
+ * argc, argv are the input arguments of bubt command line
+ * loadfrom is pointer to the extracted argument: from where to load the u-boot bin file
+ */
+void fetch_bubt_cmd_args(int argc, char * const argv[], MV_U32 *loadfrom)
+{
+	*loadfrom = 0;
+	/* bubt */
+	if (argc < 2) {
+		copy_filename (BootFile, "u-boot.bin", sizeof(BootFile));
+		printf("Using default filename \"u-boot.bin\" \n");
+	}
+	/* "bubt filename" or "bubt destination"*/
+	else if (argc == 2) {
+		if ((0 == strcmp(argv[1], "spi")) || (0 == strcmp(argv[1], "nand"))
+				|| (0 == strcmp(argv[1], "nor")))
+		{
+			copy_filename (BootFile, "u-boot.bin", sizeof(BootFile));
+			printf("Using default filename \"u-boot.bin\" \n");
+		}
+		else
+		{
+			copy_filename (BootFile, argv[1], sizeof(BootFile));
+		}
+	}
+	/* "bubt filename destination" or "bubt destination source" */
+	else if (argc == 3) {
+		if ((0 == strcmp(argv[1], "spi")) || (0 == strcmp(argv[1], "nand"))
+				|| (0 == strcmp(argv[1], "nor")))
+		{
+			copy_filename (BootFile, "u-boot.bin", sizeof(BootFile));
+			printf("Using default filename \"u-boot.bin\" \n");
+#ifdef MV_INCLUDE_USB
+			if (0 == strcmp("usb", argv[2])) {
+				*loadfrom = 1;
+			}
+#endif
+		}
+		else
+		{
+			copy_filename (BootFile, argv[1], sizeof(BootFile));
+		}
+	}
+	/* "bubt filename destination source" */
+	else
+	{
+		copy_filename (BootFile, argv[1], sizeof(BootFile));
+#ifdef MV_INCLUDE_USB
+		if (0 == strcmp("usb", argv[3])) {
+			*loadfrom = 1;
+		}
+#endif
+	}
+}
+
+/*
+ * Load u-boot bin file into ram from external device: tftp, usb or other devices
+ * loadfrom specifies the source device: tftp, usb or other devices
+ * (currently only tftp and usb are supported )
+ */
+int fetch_uboot_file (int loadfrom)
+{
+	int filesize = 0;
+	switch (loadfrom) {
+#ifdef MV_INCLUDE_USB
+		case 1:
+		{
+			filesize = load_from_usb(BootFile);
+			if (filesize <= 0)
+			{
+				printf("Failed to read file %s\n", BootFile);
+				return 0;
+			}
+			break;
+		}
+#endif
+		default:
+		{
+			filesize = NetLoop(TFTPGET);
+			printf("Checking file size:");
+			if (filesize == -1)
+			{
+				printf("\t[Fail]\n");
+				return 0;
+			}
+			break;
+		}
+	}
+	return filesize;
+}
+
 #if defined(MV_NAND_BOOT)
 /* Boot from NAND flash */
 /* Write u-boot image into the nand flash */
 int nand_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	int filesize;
+	int filesize = 0;
 	MV_U32 ret = 0;
 	extern char console_buffer[];
 	nand_info_t *nand = &nand_info[0];
@@ -87,6 +231,7 @@ int nand_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 	size_t env_offset = CONFIG_ENV_OFFSET;
 	size_t size = CONFIG_UBOOT_SIZE;
 	size_t offset = 0;
+	MV_U32 loadfrom = 0; /* 0 - from tftp, 1 - from USB */
 
 	/* Align U-Boot size to currently used blocksize */
 	size = ((size + (blocksize - 1)) & (~(blocksize-1)));
@@ -108,20 +253,12 @@ int nand_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 		i++;
 	}
 #endif
-	if(argc == 2) {
-		copy_filename (BootFile, argv[1], sizeof(BootFile));
-	}
-	else {
-		copy_filename (BootFile, "u-boot.bin", sizeof(BootFile));
-		printf("Using default filename \"u-boot.bin\" \n");
-	}
-	filesize = NetLoop(TFTPGET);
-	printf("Checking file size:");
-	if (filesize == -1)
-	{
-		printf("\t[Fail]\n");
+
+	fetch_bubt_cmd_args(argc, argv, &loadfrom);
+
+	if ((filesize = fetch_uboot_file (loadfrom)) <= 0)
 		return 0;
-	}
+
 	printf("\t[Done]\n");
 	printf("Override Env parameters to default? [y/N]");
 	readline(" ");
@@ -149,10 +286,12 @@ int nand_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 }
 
 U_BOOT_CMD(
-        bubt,      2,     1,      nand_burn_uboot_cmd,
-        "bubt	- Burn an image on the Boot Nand Flash.\n",
-        " file-name \n"
-        "\tBurn a binary image on the Boot Nand Flash, default file-name is u-boot.bin .\n"
+		bubt,      4,     1,      nand_burn_uboot_cmd,
+		"bubt	- Burn an image on the Boot Nand Flash.\n",
+		"[file-name] [destination [source]] \n"
+		"\tBurn a binary image on the Boot Flash, default file-name is u-boot.bin .\n"
+		"\tdestination is nand, spi or nor.\n"
+		"\tsource can be tftp or usb, default is tftp.\n"
 );
 #endif /* defined(CONFIG_NAND_BOOT) */
 
@@ -162,18 +301,11 @@ U_BOOT_CMD(
 /* Write u-boot image into the SPI flash */
 int spi_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	int filesize;
+	int filesize = 0;
 	MV_U32 ret = 0;
 	extern char console_buffer[];
 	load_addr = CONFIG_SYS_LOAD_ADDR;
-
-	if(argc == 2) {
-		copy_filename (BootFile, argv[1], sizeof(BootFile));
-	}
-	else {
-		copy_filename (BootFile, "u-boot.bin", sizeof(BootFile));
-		printf("Using default filename \"u-boot.bin\" \n");
-	}
+	MV_U32 loadfrom = 0; /* 0 - from tftp, 1 - from USB */
 
 	if(!flash) {
 		flash = spi_flash_probe(0, 0, CONFIG_SF_DEFAULT_SPEED, CONFIG_SF_DEFAULT_MODE);
@@ -184,13 +316,11 @@ int spi_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 		}
 	}
 
-	filesize = NetLoop(TFTPGET);
-	printf("Checking file size:");
-	if (filesize == -1)
-	{
-		printf("\t\t[ERR!]\n");
+	fetch_bubt_cmd_args(argc, argv, &loadfrom);
+
+	if ((filesize = fetch_uboot_file (loadfrom)) <= 0)
 		return 0;
-	}
+
 	printf("\t\t[Done]\n");
 	printf("Override Env parameters to default? [y/N]");
 	readline(" ");
@@ -234,10 +364,13 @@ int spi_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 }
 
 U_BOOT_CMD(
-        bubt,      2,     1,      spi_burn_uboot_cmd,
-        "bubt	- Burn an image on the Boot SPI Flash.\n",
-        " file-name \n"
-        "\tBurn a binary image on the Boot SPI Flash, default file-name is u-boot.bin .\n"
+		bubt,      4,     1,      spi_burn_uboot_cmd,
+		"bubt	- Burn an image on the Boot SPI Flash.\n",
+		" file-name \n"
+		"[file-name] [destination [source]] \n"
+		"\tBurn a binary image on the Boot Flash, default file-name is u-boot.bin .\n"
+		"\tdestination is nand, spi or nor.\n"
+		"\tsource can be tftp or usb, default is tftp.\n"
 );
 #endif
 
@@ -247,7 +380,7 @@ U_BOOT_CMD(
 /* Boot from Nor flash */
 int nor_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	int filesize;
+	int filesize = 0;
 	MV_U32 ret = 0;
 	extern char console_buffer[];
 	load_addr = CONFIG_SYS_LOAD_ADDR;
@@ -260,21 +393,13 @@ int nor_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 //	s_end = flash_in_which_sec(&flash_info[0], CONFIG_SYS_MONITOR_BASE + CONFIG_SYS_MONITOR_LEN -1);
 //	env_sec = flash_in_which_sec(&flash_info[0], CONFIG_ENV_ADDR);
 
-	if(argc == 2) {
-		copy_filename (BootFile, argv[1], sizeof(BootFile));
-	}
-	else {
-		copy_filename (BootFile, "u-boot.bin", sizeof(BootFile));
-		printf("Using default filename \"u-boot.bin\" \n");
-	}
+	MV_U32 loadfrom = 0; /* 0 - from tftp, 1 - from USB */
 
-	filesize = NetLoop(TFTPGET);
-	printf("Checking file size:");
-	if (filesize == -1)
-	{
-		printf("\t[ERR!]\n");
+	fetch_bubt_cmd_args(argc, argv, &loadfrom);
+
+	if ((filesize = fetch_uboot_file (loadfrom)) <= 0)
 		return 0;
-	}
+
 	printf("\t[Done]\n");
 	printf("Override Env parameters to default? [y/N]");
 	readline(" ");
@@ -316,9 +441,12 @@ int nor_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 }
 
 U_BOOT_CMD(
-		   bubt,      2,     1,      nor_burn_uboot_cmd,
-	 "bubt	- Burn an image on the Boot Flash.\n",
-  " file-name \n"
-		  "\tBurn a binary image on the Boot Flash, default file-name is u-boot.bin .\n"
-		  );
+		bubt,      4,     1,      nor_burn_uboot_cmd,
+		"bubt	- Burn an image on the Boot Flash.\n",
+		" file-name \n"
+		"[file-name] [destination [source]] \n"
+		"\tBurn a binary image on the Boot Flash, default file-name is u-boot.bin .\n"
+		"\tdestination is nand, spi or nor.\n"
+		"\tsource can be tftp or usb, default is tftp.\n"
+);
 #endif /* MV_NOR_BOOT */

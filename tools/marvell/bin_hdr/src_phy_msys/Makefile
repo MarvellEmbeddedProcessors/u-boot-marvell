@@ -128,7 +128,7 @@ HOSTCPPFLAGS = $(CPPFLAGS)
 TGT = phy_msys.a
 TGT_UART = phy_msys.uart.a
 
-CSRC = mvHighSpeedEnvLib.c mvHighSpeedEnvSpec.c
+CSRC = mvHighSpeedEnvLib.c mvHighSpeedEnvSpec.c mvCtrlPex.c
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))

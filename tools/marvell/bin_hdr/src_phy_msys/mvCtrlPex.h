@@ -67,6 +67,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _MV_CTRL_PEX_H
 
 #include "mvBHboardEnvSpec.h"
+#include "ddr3_msys.h"
 
 /********************************* Definitions ********************************/
 
@@ -80,15 +81,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SATR_DEVICE_ID_2_0_OFFS		            21
 #define SATR_DEVICE_ID_2_0_MASK		            (3 << SATR_DEVICE_ID_2_0_OFFS)
 
-/*  Power Management Clock Gating Control Register  */
-#define MV_PEX_IF_REGS_OFFSET(pexIf)            (pexIf > 0 ? (0x40000 + (pexIf-1)*0x4000) : 0x80000)
-#define MV_PEX_IF_REGS_BASE(unit)               (MV_PEX_IF_REGS_OFFSET(unit))
-#define PEX_CFG_DIRECT_ACCESS(pexIf, cfgReg)    (MV_PEX_IF_REGS_BASE(pexIf) + (cfgReg))
-
 /* PCI Express Control and Status Registers */
 #define MAX_PEX_BUSSES                          256
 
-#define PEX_CAPABILITIES_REG(pexIf)			    ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x60)
+#define PEX_CAPABILITIES_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x60)
 #define PEX_LINK_CTRL_STATUS2_REG(pexIf)        ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x90)
 #define PEX_CTRL_REG(pexIf)                     ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A00)
 #define PEX_STATUS_REG(pexIf)                   ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A04)

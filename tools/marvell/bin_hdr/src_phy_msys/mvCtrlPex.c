@@ -67,7 +67,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvUart.h"
 #include "util.h"
 #include "mvCtrlPex.h"
-#include "ddr3_msys.h"
 
 #ifdef REGISTER_TRACE_DEBUG
 static MV_U32 _MV_REG_READ(MV_U32 regAddr)
@@ -161,7 +160,7 @@ MV_U32 mvPexConfigRead
 /*******************************************************************************
 * mvCtrlModelGet -
 *
-* DESCRIPTION:      Returns 32bit describing the device model (ID) as defined
+* DESCRIPTION:      Returns 16bit describing the device model (ID) as defined
 *                   in PCI Device and Vendor ID configuration register
 *                   offset 0x0.
 *
@@ -169,7 +168,7 @@ MV_U32 mvPexConfigRead
 * OUTPUT:           None.
 * RETURN:           16bit describing Marvell controller ID
 *******************************************************************************/
-MV_U32 mvCtrlModelGet(MV_VOID);
+MV_U16 mvCtrlModelGet(MV_VOID);
 
 /************************** Functions implementation **************************/
 
@@ -227,7 +226,7 @@ MV_STATUS mvHwsPexConfig()
 					DEBUG_INIT_FULL_C("mvPexConfigRead: return addr=0x%x", addr,4);
 					if (addr == 0xff) {
 						DEBUG_INIT_FULL_C("mvPexConfigRead: return 0xff -->PEX (%d): Detected No Link.", pexIdx,1);
-						return;
+						return MV_OK;
 					}
 					while ((mvPexConfigRead(pexIdx, first_busno, 0, 0, addr) & 0xFF) != 0x10) {
 						addr = (mvPexConfigRead(pexIdx, first_busno, 0, 0, addr) & 0xFF00) >> 8;
@@ -402,3 +401,20 @@ MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32
   return pexData;
 
 }
+
+/*******************************************************************************
+* mvCtrlModelGet -
+*
+* DESCRIPTION:      Returns 16bit describing the device model (ID) as defined
+*                   in PCI Device and Vendor ID configuration register
+*                   offset 0x0.
+*
+* INPUT:            None.
+* OUTPUT:           None.
+* RETURN:           16bit describing Marvell controller ID
+*******************************************************************************/
+MV_U16 mvCtrlModelGet(MV_VOID)
+{
+	return 0xFC00 /*MV_BOBCAT2_DEV_ID*/;
+}
+

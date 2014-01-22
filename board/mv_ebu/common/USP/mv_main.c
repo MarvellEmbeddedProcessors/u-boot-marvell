@@ -99,6 +99,8 @@ disclaimer.
 #define DB(x)
 #endif
 
+extern int display_dram_config(int print);
+int late_print_cpuinfo(void);
 /* CPU address decode table. */
 MV_CPU_DEC_WIN mvCpuAddrWinMap[] = MV_CPU_IF_ADDR_WIN_MAP_TBL;
 #if defined(CONFIG_CMD_RCVR)
@@ -286,10 +288,13 @@ int board_init (void)
 
 	/* Init the Controlloer environment module (MPP init) */
 	mvCtrlEnvInit();
+
+#if defined(CONFIG_DISPLAY_CPUINFO)
+	late_print_cpuinfo();          /* display cpu info (and speed) */
+#endif
 	mvBoardDebugLed(2);
 
 	/* Init the Controller CPU interface */
-	mvCpuIfDramInit();
 	mvCpuIfInit(mvCpuAddrWinMap);
 #if defined(MV_NOR_BOOT)
 	env_init();
@@ -640,6 +645,18 @@ int board_mmc_init(bd_t *bis)
 
 int print_cpuinfo (void)
 {
+	return 0;
+}
+
+/*
+* late_print_cpuinfo - marvell U-Boot print function - used after code relocation
+*
+* DESCRIPTION:
+*       This function is called by board_init_r (after code relocation).
+*       all global variables limitations(bss) are off at this state
+ */
+int late_print_cpuinfo(void)
+{
 	char name[50];
 	mvBoardNameGet(name);
 	printf("Board: %s\n",  name);
@@ -667,6 +684,7 @@ if (mvCtrlGetCpuNum())
 #if defined(CONFIG_ECC_SUPPORT)
 	printf("       DDR ECC %s\n", mvCtrlDDRECC()?"Enabled":"Disabled");
 #endif
+	display_dram_config(1);
 	return 0;
 }
 int misc_init_r (void)

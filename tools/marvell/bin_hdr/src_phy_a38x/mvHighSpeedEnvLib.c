@@ -243,6 +243,13 @@ MV_OP_PARAMS pexAndUsb3TxConfigParams[] =
 	{ 0x0,		   0x0,						    0x0,	     { 0x0,   0x0   }, 10,	   0			  } /* 10ms delay */
 };
 
+/* PEX by 4 config seq */
+MV_OP_PARAMS pexBy4ConfigParams[] =
+{
+	/* unitunitBaseReg  unitOffset   mask    data                   waitTime   numOfLoops */
+	{ 0xa0710,	    0x800,       0x7,	 { 0x5, 0x0, 0x0, 0x2 },  0,	        0}
+};
+
 /* USB3 device donfig seq */
 MV_OP_PARAMS usb3DeviceConfigParams[] =
 {
@@ -372,6 +379,11 @@ MV_VOID serdesSeqInit(MV_VOID)
 	serdesSeqDb[PEX_TX_CONFIG_SEQ].opParamsPtr = pexAndUsb3TxConfigParams;
 	serdesSeqDb[PEX_TX_CONFIG_SEQ].cfgSeqSize =  sizeof(pexAndUsb3TxConfigParams) / sizeof(MV_OP_PARAMS);
 	serdesSeqDb[PEX_TX_CONFIG_SEQ].dataArrIdx = PEX;
+
+	/* PEX_BY_4_CONFIG_SEQ sequence init */
+	serdesSeqDb[PEX_BY_4_CONFIG_SEQ].opParamsPtr = pexBy4ConfigParams;
+	serdesSeqDb[PEX_BY_4_CONFIG_SEQ].cfgSeqSize =  sizeof(pexBy4ConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[PEX_BY_4_CONFIG_SEQ].dataArrIdx = PEX;
 
 	/* USB3_POWER_UP_SEQ sequence init */
 	serdesSeqDb[USB3_POWER_UP_SEQ].opParamsPtr = pexAndUsb3PowerUpParams;
@@ -571,6 +583,7 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 	REF_CLOCK refClock;
 	SERDES_TYPE serdesType;
 	SERDES_SPEED serdesSpeed;
+	SERDES_MODE  serdesMode;
 
 	DEBUG_INIT_FULL_S("\n### powerUpSerdesLanes ###\n");
 
@@ -586,6 +599,7 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 
 		serdesType = serdesConfigMap[serdesLaneNum].serdesType;
 		serdesSpeed = serdesConfigMap[serdesLaneNum].serdesSpeed;
+		serdesMode = serdesConfigMap[serdesLaneNum].serdesMode;
 
 		/* serdes lane is not in use */
 		if (serdesType == DEFAULT_SERDES)
@@ -600,6 +614,7 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 						 MV_TRUE,
 						 serdesType,
 						 serdesSpeed,
+						 serdesMode,
 						 refClock));
 	}
 
@@ -631,6 +646,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 	MV_BOOL serdesPowerUp,
 	SERDES_TYPE serdesType,
 	SERDES_SPEED baudRate,
+	SERDES_MODE  serdesMode,
 	REF_CLOCK refClock
 )
 {
@@ -640,6 +656,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 	int sataIdx, pexIdx;
 	SERDES_SEQ speedSeqId;
 	MV_U32 regData;
+	MV_BOOL isPexBy1;
 
 	DEBUG_INIT_FULL_S("\n### mvSerdesPowerUpCtrl ###\n");
 
@@ -663,28 +680,51 @@ MV_STATUS mvSerdesPowerUpCtrl
 		case PEX1:
 		case PEX2:
 		case PEX3:
-			regData = MV_REG_READ(SOC_CONTROL_REG1);
-			regData |= 0x4000;
-			MV_REG_WRITE(SOC_CONTROL_REG1, regData);
 
+			isPexBy1 = (serdesMode == PEX_ROOT_COMPLEX_x1) ||
+				(serdesMode == PEX_ROOT_COMPLEX_x1);
 			pexIdx = serdesType - PEX0;
 
-			regData = MV_REG_READ(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c));
-			regData &= ~0x3F0;
-			regData |= 0x10;
-			MV_REG_WRITE(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c), regData);
+			if ((isPexBy1 == MV_TRUE) || (serdesType == PEX0))
+			{
+				/* For PEX by 4, init only the PEX 0 */
+				regData = MV_REG_READ(SOC_CONTROL_REG1);
+				if (isPexBy1 == MV_TRUE) {
+					regData |= 0x4000;
+				}
+				else{
+					regData &= ~0x4000;
+				}
+				MV_REG_WRITE(SOC_CONTROL_REG1, regData);
 
-			regData = MV_REG_READ(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c));
-			regData &= ~0xF;
-			regData |= 0x2;
-			MV_REG_WRITE(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c), regData);
+				regData = MV_REG_READ(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c));
+				regData &= ~0x3F0;
+				if (isPexBy1 == MV_TRUE) {
+					regData |= 0x10;
+				}
+				else {
+					regData |= 0x40;
+				}
+				MV_REG_WRITE(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c), regData);
 
-			regData = MV_REG_READ(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x70));
-			regData &= ~0x40;
-			regData |= 0x40;
-			MV_REG_WRITE(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x70), regData);
+				regData = MV_REG_READ(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c));
+				regData &= ~0xF;
+				regData |= 0x2;
+				MV_REG_WRITE(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c), regData);
+
+				regData = MV_REG_READ(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x70));
+				regData &= ~0x40;
+				regData |= 0x40;
+				MV_REG_WRITE(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x70), regData);
+			}
 
 			CHECK_STATUS(mvSeqExec(serdesNum, PEX_POWER_UP_SEQ));
+			if (isPexBy1 == MV_FALSE) {
+				/* for PEX by 4 - use the PEX index as the seq array index */
+				serdesSeqDb[PEX_BY_4_CONFIG_SEQ].dataArrIdx = pexIdx;
+				CHECK_STATUS(mvSeqExec(serdesNum, PEX_BY_4_CONFIG_SEQ));
+			}
+
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
 			CHECK_STATUS(mvSeqExec(serdesNum, PEX_TX_CONFIG_SEQ));
@@ -858,12 +898,18 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 			return MV_BAD_PARAM;
 		}
 
+		/* Checking if the board topology configuration includes PEXx4 - for the next step */
+		if ((serdesMode == PEX_END_POINT_x4) || (serdesMode == PEX_ROOT_COMPLEX_x4)) {
+			if (serdesType == PEX0) {
+				isPEXx4 = MV_TRUE;
+			} else {
+				/* update lane data to the 3 next SERDES lanes */
+				laneData = 2;
+			}
+		}
+
 		/* Updating the data that will be written to COMMON_PHYS_SELECTORS_REG */
 		regData |= (laneData << (3 * serdesIdx));
-
-		/* Checking if the board topology configuration includes PEXx4 - for the next step */
-		if ((serdesMode == PEX_END_POINT_x4) || (serdesMode == PEX_ROOT_COMPLEX_x4))
-			isPEXx4 = MV_TRUE;
 	}
 
 	/* Updating the 18th bit in the COMMON PHYS SELECTORS register in case there is PEXx4 */

@@ -189,6 +189,14 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 		if ((serdesType != PEX0) && (serdesType != PEX1) && (serdesType != PEX2) && (serdesType != PEX3))
 			continue;
 
+		if ((serdesType != PEX0) &&
+				((serdesMap[serdesIdx].serdesMode == PEX_ROOT_COMPLEX_x4) ||
+				 (serdesMap[serdesIdx].serdesMode == PEX_END_POINT_x4)))
+		{
+			/* for PEX by4 - relevant for the first port only */
+			continue;
+		}
+
 		pexIdx = serdesType - PEX0;
 		tmp = MV_REG_READ(PEX_CAPABILITIES_REG(pexIdx));
 		tmp &= ~(0xf << 20);
@@ -201,6 +209,13 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 
 	for (serdesIdx = 0; serdesIdx < MAX_SERDES_LANES; serdesIdx++) {
 		serdesType = serdesMap[serdesIdx].serdesType;
+		if ((serdesType != PEX0) &&
+				((serdesMap[serdesIdx].serdesMode == PEX_ROOT_COMPLEX_x4) ||
+				 (serdesMap[serdesIdx].serdesMode == PEX_END_POINT_x4)))
+		{
+			/* for PEX by4 - relevant for the first port only */
+			continue;
+		}
 		switch (serdesType) {
 		case PEX0:
 			tmp |= 0x1 << PCIE0_ENABLE_OFFS;
@@ -240,6 +255,14 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 		/* configuration for PEX only */
 		if ((serdesType != PEX0) && (serdesType != PEX1) && (serdesType != PEX2) && (serdesType != PEX3))
 			continue;
+
+		if ((serdesType != PEX0) &&
+				((serdesMap[serdesIdx].serdesMode == PEX_ROOT_COMPLEX_x4) ||
+				 (serdesMap[serdesIdx].serdesMode == PEX_END_POINT_x4)))
+		{
+			/* for PEX by4 - relevant for the first port only */
+			continue;
+		}
 
 		pexIdx = serdesType - PEX0;
 		tmp = MV_REG_READ(PEX_DBG_STATUS_REG(pexIdx));
@@ -311,6 +334,14 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 		/* configuration for PEX only */
 		if ((serdesType != PEX0) && (serdesType != PEX1) && (serdesType != PEX2) && (serdesType != PEX3))
 			continue;
+
+		if ((serdesType != PEX0) &&
+				((serdesMap[serdesIdx].serdesMode == PEX_ROOT_COMPLEX_x4) ||
+				 (serdesMap[serdesIdx].serdesMode == PEX_END_POINT_x4)))
+		{
+			/* for PEX by4 - relevant for the first port only */
+			continue;
+		}
 
 		pexIdx = serdesType - PEX0;
 		devId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexIdx, PEX_DEVICE_AND_VENDOR_ID));

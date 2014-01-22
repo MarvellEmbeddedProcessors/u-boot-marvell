@@ -168,6 +168,7 @@ typedef enum {
 	PEX__2_5_SPEED_CONFIG_SEQ,
 	PEX__5_SPEED_CONFIG_SEQ,
 	PEX_TX_CONFIG_SEQ,
+	PEX_BY_4_CONFIG_SEQ,
 
 	USB3_POWER_UP_SEQ,
 	USB3__HOST_SPEED_CONFIG_SEQ,
@@ -337,6 +338,7 @@ MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID);
  *                       serdesType      -   PEX, SATA, SGMII
  *                                           or USB3 (host or device)
  *                       baudRate        -   serdes speed
+ *                       serdesMode      -   serdes mode
  *                       refClock        -   ref clock (25 or 100)
  * OUTPUT:               None.
  * RETURNS:              MV_OK           -   for success
@@ -345,6 +347,7 @@ MV_STATUS mvSerdesPowerUpCtrl(MV_U32 serdesNum,
 			      MV_BOOL serdesPowerUp,
 			      SERDES_TYPE serdesType,
 			      SERDES_SPEED baudRate,
+			      SERDES_MODE  serdesMode,
 			      REF_CLOCK refClock);
 
 #endif /* _MV_HIGHSPEED_ENV_SPEC_H */

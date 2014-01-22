@@ -244,6 +244,7 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 			mvNetaRxqDescSwap(pDesc);
 #endif /* MV_CPU_BE */
 			mvNetaRxDescFill(pDesc, pkt->bufPhysAddr, (MV_U32)pkt);
+			mvOsCacheLineFlush(NULL, pDesc);
 		}
 		/* update number of available descriptors */
 		mvNetaRxqNonOccupDescAdd(priv->port, EGIGA_DEF_RXQ, i);

@@ -88,7 +88,11 @@ CPUOPTS  = -mthumb -mthumb-interwork -march=armv7 -mlittle-endian
 ifeq ($(BIN_HDR_DEBUG),1)
 DEBUG_FLAGS += -g -O0
 else
+ifeq ($(BOARD),a38x)
 DEBUG_FLAGS += -Os
+else
+DEBUG_FLAGS += -g -O0
+endif
 endif
 
 CFLAGS   = -Wall $(INCLUDE) $(DEBUG_FLAGS) $(CPUOPTS) -msoft-float -fPIE -fno-zero-initialized-in-bss -fno-unwind-tables  -mabi=aapcs

@@ -43,7 +43,7 @@ FAM_DIR            = $(SOC_DIR)/armada_370_family
 NET_DIR            = $(HAL_NETA_DIR)
 endif
 
-ifeq ($(BOARD),axp)	
+ifeq ($(BOARD),axp)
 SOC_DIR            = $(SRC_PATH)/axp
 FAM_DIR            = $(SOC_DIR)/armada_xp_family
 NET_DIR            = $(HAL_NETA_DIR)
@@ -73,6 +73,7 @@ HAL_PCIIF_UTIL_DIR = $(HAL_DIR)/pci-if/pci_util
 HAL_RTC_DIR        = $(HAL_DIR)/rtc/integ_rtc
 HAL_SFLASH_DIR     = $(HAL_DIR)/sflash
 HAL_SATA_CORE_DIR  = $(HAL_DIR)/sata/CoreDriver/
+HAL_SATA3_DIR	   = $(HAL_DIR)/sata/sata3/
 HAL_CNTMR_DIR      = $(HAL_DIR)/cntmr
 HAL_GPP_DIR        = $(HAL_DIR)/gpp
 HAL_IDMA_DIR       = $(HAL_DIR)/idma

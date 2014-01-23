@@ -85,6 +85,7 @@ MV_HWS_TOPOLOGY_MAP msysTopologyMap[] =  {{
     {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH}} ,
     4, /* Num Of Bus Per Interface*/
+    0xF,  /* Buses mask */
     0  /* board number */
     },
 {
@@ -103,6 +104,7 @@ MV_HWS_TOPOLOGY_MAP msysTopologyMap[] =  {{
     {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
     {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH}} ,
     4, /* Num Of Bus Per Interface*/
+    0xF,  /* Buses mask */
     1  /* board number */
     }
 };

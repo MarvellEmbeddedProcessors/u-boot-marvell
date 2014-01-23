@@ -208,6 +208,9 @@ typedef struct
    /* BUS per interface (default is 4)*/
    MV_U32               numOfBusPerInterface;
 
+   /* Bit mask for active buses*/
+   MV_U32               activeBusMask;
+
    /* Board type. Relevant for static configuration only */
    MV_U32               boardId;
 

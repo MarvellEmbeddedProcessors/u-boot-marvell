@@ -24,6 +24,7 @@ MAKE_GENERAL_U_BOOT_TOOLS = yes
 endif
 
 ifeq ($(BOARD),a38x)
+MAKE_SATA3 = yes
 MAKE_NETA = yes
 MAKE_GENERAL_U_BOOT_TOOLS = yes
 endif
@@ -150,6 +151,10 @@ HAL_OBJS +=	$(HAL_SATA_CORE_DIR)/mvSata.o		\
 		$(HAL_SATA_CORE_DIR)/mvStorageDev.o	\
 		$(HAL_SATA_CORE_DIR)/mvLog.o
 USP_OBJS +=	$(USP_DIR)/mv_ide.o
+ifdef MAKE_SATA3
+SOC_OBJS    +=	$(HAL_SATA3_DIR)/mvSata3AddrDec.o
+HAL_IF_OBJS +=	$(HAL_IF_DIR)/mvSysSata3.o
+endif
 endif
 
 

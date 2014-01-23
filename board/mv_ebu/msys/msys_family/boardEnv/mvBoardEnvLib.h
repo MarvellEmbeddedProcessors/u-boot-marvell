@@ -293,8 +293,8 @@ MV_U32 mvBoardIdGet(MV_VOID);
 MV_U32 mvBoardSledCpuNumGet(MV_VOID);
 
 MV_STATUS mvBoardTwsiRead(MV_BOARD_TWSI_CLASS class1, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);
-MV_STATUS mvBoardTwsiSatRGet(MV_U8 satrIndex, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);
-MV_STATUS mvBoardTwsiSatRSet(MV_U8 satrIndex, MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
+MV_STATUS mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);
+MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
 MV_STATUS mvBoardCpuFreqGet(MV_U8 *value);
 MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal);
 MV_U8 mvBoardCpuFreqModeGet(MV_VOID);

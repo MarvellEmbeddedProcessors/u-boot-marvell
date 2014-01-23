@@ -224,7 +224,8 @@ static int ahci_host_init(struct ahci_probe_ent *probe_ent)
 		j = 0;
 		while (j < WAIT_MS_LINKUP) {
 			tmp = readl(port_mmio + PORT_SCR_STAT);
-			if ((tmp & 0xf) == 0x3)
+			tmp &= PORT_SCR_STAT_DET_MASK;
+			if (tmp == PORT_SCR_STAT_DET_PHYRDY)
 				break;
 			udelay(1000);
 			j++;
@@ -275,7 +276,7 @@ static int ahci_host_init(struct ahci_probe_ent *probe_ent)
 		/* register linkup ports */
 		tmp = readl(port_mmio + PORT_SCR_STAT);
 		debug("SATA port %d status: 0x%x\n", i, tmp);
-		if ((tmp & 0xf) == 0x03)
+		if ((tmp & PORT_SCR_STAT_DET_MASK) == PORT_SCR_STAT_DET_PHYRDY)
 			probe_ent->link_port_map |= (0x01 << i);
 	}
 

@@ -1265,8 +1265,8 @@ MV_STATUS mvBoardTwsiRead(MV_BOARD_TWSI_CLASS class1, MV_U8 devNum, MV_U8 regNum
 	slave.address = 0;
 	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
 
-
 	if (MV_OK != mvTwsiRead(0, &twsiSlave, pData, 1)) {
+		mvOsPrintf("Board: Read S@R fail\n");
 		DB(mvOsPrintf("Board: Read S@R fail\n"));
 		return MV_ERROR;
 	}
@@ -1338,11 +1338,9 @@ MV_STATUS mvBoardTwsiWrite(MV_BOARD_TWSI_CLASS class1, MV_U8 devNum, MV_U8 regNu
 *		reg value
 *
 *******************************************************************************/
-MV_STATUS mvBoardTwsiSatRGet(MV_U8 satrIndex, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData)
+MV_STATUS mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum, MV_U8 *pData)
 {
-	MV_BOARD_TWSI_CLASS twsiClass = BOARD_DEV_TWSI_SATR + satrIndex;
-
-	return mvBoardTwsiRead(twsiClass, devNum, regNum, pData);
+	return mvBoardTwsiRead(BOARD_DEV_TWSI_SATR, devNum, regNum, pData);
 }
 
 /*******************************************************************************
@@ -1363,9 +1361,9 @@ MV_STATUS mvBoardTwsiSatRGet(MV_U8 satrIndex, MV_U8 devNum, MV_U8 regNum, MV_U8 
 *		reg value
 *
 *******************************************************************************/
-MV_STATUS mvBoardTwsiSatRSet(MV_U8 satrIndex, MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
+MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 {
-	return mvBoardTwsiWrite(BOARD_DEV_TWSI_SATR + satrIndex, devNum, regNum, regVal);
+	return mvBoardTwsiWrite(BOARD_DEV_TWSI_SATR, devNum, regNum, regVal);
 }
 
 /*******************************************************************************
@@ -1376,7 +1374,7 @@ MV_STATUS mvBoardCoreFreqGet(MV_U8 *value)
 	MV_U8 sar0;
 	MV_STATUS rc1;
 
-	rc1 = mvBoardTwsiSatRGet(1, 0, 0, &sar0);
+	rc1 = mvBoardTwsiSatRGet(1, 0, &sar0);
 	if (MV_ERROR == rc1)
 		return MV_ERROR;
 
@@ -1391,13 +1389,13 @@ MV_STATUS mvBoardCoreFreqSet(MV_U8 freqVal)
 	MV_U8 sar0;
 	MV_STATUS rc1;
 
-	rc1 = mvBoardTwsiSatRGet(1, 0, 0,&sar0);
+	rc1 = mvBoardTwsiSatRGet(1, 0, &sar0);
 	if (MV_ERROR == rc1)
 		return MV_ERROR;
 
 	sar0 &= ~(0x7);
 	sar0 |= (freqVal & 0x7);
-	if (MV_OK != mvBoardTwsiSatRSet(1, 0, 0, sar0)) {
+	if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar0)) {
 		DB1(mvOsPrintf("Board: Write core Freq S@R fail\n"));
 		return MV_ERROR;
 	}
@@ -1413,8 +1411,8 @@ MV_STATUS mvBoardCpuFreqGet(MV_U8 *value)
 	MV_STATUS rc1;
 	MV_STATUS rc2;
 
-	rc1 = mvBoardTwsiSatRGet(1, 0, 0, &sar1);
-	rc2 = mvBoardTwsiSatRGet(2, 0, 0, &sar2);
+	rc1 = mvBoardTwsiSatRGet(1, 0, &sar1);
+	rc2 = mvBoardTwsiSatRGet(2, 0, &sar2);
 	if ((MV_ERROR == rc1) || (MV_ERROR == rc2))
 		return MV_ERROR;
 
@@ -1429,8 +1427,8 @@ MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
 	MV_STATUS rc1;
 	MV_STATUS rc2;
 
-	rc1 = mvBoardTwsiSatRGet(1, 0, 0, &sar1);
-	rc2 = mvBoardTwsiSatRGet(2, 0, 0, &sar2);
+	rc1 = mvBoardTwsiSatRGet(1, 0, &sar1);
+	rc2 = mvBoardTwsiSatRGet(2, 0, &sar2);
 	if ((MV_ERROR == rc1) || (MV_ERROR == rc2))
 		return MV_ERROR;
 
@@ -1438,11 +1436,11 @@ MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
 	sar2 &= ~0x1;
 	sar1 |= ((freqVal & 0x03) << 3);
 	sar2 |= ((freqVal & 0x04) >> 2);
-	if (MV_OK != mvBoardTwsiSatRSet(1, 0, 0, sar1)) {
+	if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar1)) {
 		DB1(mvOsPrintf("Board: Write CpuFreq(1) S@R fail\n"));
 		return MV_ERROR;
 	}
-	if (MV_OK != mvBoardTwsiSatRSet(2, 0, 0, sar2)) {
+	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar2)) {
 		DB1(mvOsPrintf("Board: Write CpuFreq(2) S@R fail\n"));
 		return MV_ERROR;
 	}
@@ -1456,7 +1454,7 @@ MV_STATUS mvBoardTmFreqGet(MV_U8 *value)
 	MV_U8 sar2;
 	MV_STATUS rc2;
 
-	rc2 = mvBoardTwsiSatRGet(2, 0, 0, &sar2);
+	rc2 = mvBoardTwsiSatRGet(2, 0, &sar2);
 	if (MV_ERROR == rc2)
 		return MV_ERROR;
 
@@ -1470,13 +1468,13 @@ MV_STATUS mvBoardTmFreqSet(MV_U8 freqVal)
 	MV_U8 sar2;
 	MV_STATUS rc2;
 
-	rc2 = mvBoardTwsiSatRGet(2, 0, 0, &sar2);
+	rc2 = mvBoardTwsiSatRGet(2, 0, &sar2);
 	if (MV_ERROR == rc2)
 		return MV_ERROR;
 
 	sar2 &= ~0xE;
 	sar2 |= ((freqVal & 0x07) << 1);
-	if (MV_OK != mvBoardTwsiSatRSet(1, 0, 0, sar2)) {
+	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar2)) {
 		DB1(mvOsPrintf("Board: Write TM-Freq S@R fail\n"));
 		return MV_ERROR;
 	}
@@ -1490,7 +1488,7 @@ MV_STATUS mvBoardBootDevGet(MV_U8 *value)
 	MV_U8 sar;
 	MV_STATUS rc;
 
-	rc = mvBoardTwsiSatRGet(3, 0, 0, &sar);
+	rc = mvBoardTwsiSatRGet(3, 0, &sar);
 	if (MV_ERROR == rc)
 		return MV_ERROR;
 
@@ -1504,13 +1502,13 @@ MV_STATUS mvBoardBootDevSet(MV_U8 val)
 	MV_U8 sar;
 	MV_STATUS rc;
 
-	rc = mvBoardTwsiSatRGet(3, 0, 0, &sar);
+	rc = mvBoardTwsiSatRGet(3, 0, &sar);
 	if (MV_ERROR == rc)
 		return MV_ERROR;
 
 	sar &= ~(0x7);
 	sar |= (val & 0x7);
-	if (MV_OK != mvBoardTwsiSatRSet(3, 0, 0, sar)) {
+	if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar)) {
 		DB1(mvOsPrintf("Board: Write BootDev S@R fail\n"));
 		return MV_ERROR;
 	}

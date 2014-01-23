@@ -30,8 +30,11 @@ enum {
 	CMD_TM_FREQ,
 	CMD_BOOTSRC,
 	CMD_DUMP,
+	CMD_DEFAULT,
 	CMD_UNKNOWN
 };
+
+int defaultValue[] = { 0, 3, 3, 3 };
 
 MV_U32 coreClockTbl[] = MV_CORE_CLK_TBL;
 
@@ -69,6 +72,8 @@ static int sar_cmd_get(const char *cmd)
 		return CMD_BOOTSRC;
 	if (strcmp(cmd, "dump") == 0)
 		return CMD_DUMP;
+	if (strcmp(cmd, "default") == 0)
+		return CMD_DEFAULT;
 	return CMD_UNKNOWN;
 }
 
@@ -121,19 +126,19 @@ static int do_sar_list(int mode)
 
 static int do_sar_read(int mode)
 {
-	MV_U8 tmp;
+	MV_U8 tmp, i;
 
 	switch (mode) {
 	case CMD_CORE_CLK_FREQ:
 		if (mvBoardCoreFreqGet(&tmp) == MV_OK)
-			printf("corefreq = %d -->(%dMHz)\n", tmp, coreClockTbl[tmp]);
+			printf("corefreq = %d ==> @ %dMHz\n", tmp, coreClockTbl[tmp]);
 		else
 			printf("corefreq Error: failed reading Core Clock Frequency (PLL_0)\n");
 		break;
 
 	case CMD_CPU_DDR_REQ:
 		if (mvBoardCpuFreqGet(&tmp) == MV_OK)
-			printf("freq = %d --> CPU=%dMHz DDR=%dMHz \n", tmp,
+			printf("freq     = %d ==> CPU @ %dMHz DDR @ %dMHz \n", tmp,
 			       cpuDdrClkTbl[tmp].cpuFreq, cpuDdrClkTbl[tmp].ddrFreq);
 		else
 			printf("freq Error: failed reading CPU/DDR Clocks Frequency (PLL_1)\n");
@@ -141,46 +146,27 @@ static int do_sar_read(int mode)
 
 	case CMD_TM_FREQ:
 		if (mvBoardTmFreqGet(&tmp) == MV_OK)
-			printf("tm(core frequency) = %d --> tm=%dMHz DDR3=%dMHz \n", tmp,
+			printf("TM clock = %d ==> TM @ %dMHz DDR3 @ %dMHz \n", tmp,
 			       tmClkTbl[tmp].tmFreq, tmClkTbl[tmp].ddr3Freq);
 		else
-			printf("tm (core) Error: failed reading TM Clock Frequency (PLL_2)\n");
+			printf("TM clock Error: failed reading TM Clock Frequency (PLL_2)\n");
 		break;
 
 	case CMD_BOOTSRC:
                 if (mvBoardBootDevGet(&tmp) == MV_OK)
-			printf("bootsrc = %d ==> %s\n", tmp, bootSrcTbl[tmp].bootstr);
+			printf("bootsrc  = %d ==> %s\n", tmp, bootSrcTbl[tmp].bootstr);
 		else
 			printf("bootsrc Error: failed reading Boot Source\n");
 		break;
-
 	case CMD_DUMP:
-	{
-		MV_U32 coreClock, cpuddrFreq, tmFreq;
-		MV_U32 bootsrc, deviceMode, sar1, sar2;
-
-		sar1 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(0));
-		sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
-		coreClock = MSAR_CORE_CLK(sar1, sar2);
-		cpuddrFreq = MSAR_CPU_DDR_CLK(sar1, sar2);
-		tmFreq = MSAR_TM_CLK(sar1, sar2);
-		bootsrc = MSAR_BOOT_MODE(sar1, sar2);
-		deviceMode = MSAR_DEVICE_MODE(sar1, sar2);
-
-		printf("Core clock (PLL_0) frequency  %d ==> %dMHz\n", coreClock, coreClockTbl[coreClock]);
-		printf("CPU and DDR clock frequency = %d ==> %dMHz  %dMHz\n",
-		       cpuddrFreq, cpuDdrClkTbl[cpuddrFreq].cpuFreq, cpuDdrClkTbl[cpuddrFreq].ddrFreq);
-		printf("TM clock frequency  %d ==> %dMHz (DDR3=%dMHz)\n", tmFreq,
-		       (tmClkTbl[tmFreq].tmFreq == -1) ? coreClockTbl[coreClock] : tmClkTbl[tmFreq].tmFreq,
-		       tmClkTbl[tmFreq].ddr3Freq);
-		printf("bootsrc = %d ==> %s\n", bootsrc, bootSrcTbl[bootsrc].bootstr);
-		printf("Device Mode = 0x%x\n", deviceMode);
-	}
-	break;
-
+		for (i = 0 ; i < CMD_DUMP; i++)
+			do_sar_read(i);
+		break;
+	case CMD_DEFAULT:
+		return 0;
 	case CMD_UNKNOWN:
 	default:
-		printf("Usage: sar list [options] (see help) \n");
+		printf("Usage: sar list [options] (see help)\n");
 		return 1;
 
 	}
@@ -189,8 +175,8 @@ static int do_sar_read(int mode)
 
 static int do_sar_write(int mode, int value)
 {
-	MV_U8 tmp;
-	MV_STATUS rc = MV_TRUE;
+	MV_U8 tmp, i;
+	MV_STATUS rc = MV_OK;
 
 	tmp = (MV_U8)value;
 	switch (mode) {
@@ -205,6 +191,15 @@ static int do_sar_write(int mode, int value)
 		break;
 	case CMD_BOOTSRC:
 		rc = mvBoardBootDevSet(tmp);
+		break;
+	case CMD_DEFAULT:
+		for (i = 0 ; i < CMD_DUMP; i++) {
+			if (1 == do_sar_write(i, defaultValue[i]))
+				rc = MV_FALSE;
+			do_sar_read(i);
+		}
+		if (rc == MV_OK)
+			mvOsPrintf("\nRestored all S@R default values\n");
 		break;
 	case CMD_UNKNOWN:
 	default:
@@ -249,20 +244,21 @@ usage:
 U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"Sample At Reset sub-system\n",
 
-	"list corefreq  - prints the S@R modes list\n"
-	"SatR list freq	- prints the S@R modes list\n"
+	"list corefreq		- prints the S@R modes list\n"
+	"SatR list freq		- prints the S@R modes list\n"
 	"SatR list tmfreq	- prints the S@R modes list\n"
-	"SatR list bootsrc	- prints the S@R modes list\n"
+	"SatR list bootsrc	- prints the S@R modes list\n\n"
 
 	"SatR read corefreq	- read and print the core frequency S@R value\n"
-	"SatR read freq	- read and print the CPU DDR frequency S@R value\n"
-	"SatR read tmfreq       - read and print the TM frequency S@R value\n"
-	"SatR read bootsrc   	- read and print the Boot source S@R value\n"
-	"SatR read dump      	- read and print the SAR register \n\n"
+	"SatR read freq		- read and print the CPU DDR frequency S@R value\n"
+	"SatR read tmfreq	- read and print the TM frequency S@R value\n"
+	"SatR read bootsrc	- read and print the Boot source S@R value\n"
+	"SatR read dump		- read and print the SAR register \n\n"
 
-	"SatR write corefreq   <val>	- write the S@R with core frequency value\n"
-	"SatR write freq <val>	- write the S@R with CPU DDR frequency value\n"
-	"SatR write tmfreq     <val>	- write the S@R with TM frequency value\n"
-	"SatR write bootsrc <val>	- write the S@R with Boot source value\n"
+	"SatR write corefreq <val>	- write the S@R with core frequency value\n"
+	"SatR write freq     <val>	- write the S@R with CPU DDR frequency value\n"
+	"SatR write tmfreq   <val>	- write the S@R with TM frequency value\n"
+	"SatR write bootsrc  <val>	- write the S@R with Boot source value\n"
+	"SatR write default		- write all S@R values to their default\n"
 );
 #endif /*defined(CONFIG_CMD_SAR)*/

@@ -88,6 +88,11 @@
 	#include <pci.h>
 #endif
 
+#ifdef CONFIG_SCSI_AHCI
+	#include <ahci.h>
+	#include <scsi.h>
+	#include "mvSysSata3Api.h"
+#endif
 #include <asm/arch-armv7/vfpinstr.h>
 #include <asm/arch-armv7/vfp.h>
 
@@ -808,7 +813,11 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 		setenv("usbActive", ENV_USB_ACTIVE);
 
 #endif  /* (MV_INCLUDE_USB) */
-
+#ifdef CONFIG_SCSI_AHCI
+	env = getenv("sataActive");
+	if (!env)
+		setenv("sataActive", ENV_SATA_ACTIVE);
+#endif
 #if defined(YUK_ETHADDR)
 	env = getenv("yuk_ethaddr");
 	if (!env)
@@ -1062,6 +1071,20 @@ int misc_init_r(void)
 
 	mvBoardDebugLed(7);
 
+#ifdef CONFIG_SCSI_AHCI
+	{
+		int sataPort = 0;
+		mvSysSata3WinInit();
+		if(strcmp(getenv("sataActive"), "1") == 0)
+			sataPort = 1;
+		printf("SCSI: active port %d, offset 0x%x\n",
+		       sataPort, (INTER_REGS_BASE | MV_SATA3_REGS_OFFSET(sataPort)));
+		if (0 == ahci_init(INTER_REGS_BASE | MV_SATA3_REGS_OFFSET(sataPort)))
+			scsi_init();
+		else
+			printf("AHCI init failed!\n");
+	}
+#endif
 	char *env;
 	/* pcie fine tunning */
 	env = getenv("pcieTune");

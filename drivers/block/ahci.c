@@ -601,6 +601,9 @@ static int ahci_device_data_io(u8 port, u8 *fis, int fis_len, u8 *buf,
 	opts = (fis_len >> 2) | (sg_count << 16) | (is_write << 6);
 	ahci_fill_cmd_slot(pp, opts);
 
+	writel_with_flush(0x7FFFFFF, port_mmio + PORT_SCR_ERR);
+	writel_with_flush(0xffffffff, port_mmio + PORT_IRQ_STAT);
+	writel_with_flush(0, port_mmio + PORT_FIS_ADDR);
 	ahci_dcache_flush_sata_cmd(pp);
 	ahci_dcache_flush_range((unsigned)buf, (unsigned)buf_len);
 

@@ -33,6 +33,7 @@
 #include <scsi.h>
 #include <image.h>
 #include <pci.h>
+#include <ahci.h>
 
 #ifdef CONFIG_SCSI_DEV_LIST
 #define SCSI_DEV_LIST CONFIG_SCSI_DEV_LIST
@@ -52,7 +53,10 @@
 #elif defined CONFIG_SCSI_MV94XX
 #define SCSI_VEND_ID 0x1b4b
 #define SCSI_DEV_ID  0x9485
-/* omriii : defines reenabled because {SCSI_VEND_ID, SCSI_DEV_ID} are needed */
+
+#elif defined CONFIG_SCSI_6820
+#define SCSI_VEND_ID	0x11AB
+#define SCSI_DEV_ID     0x6820
 
 #elif !defined(CONFIG_SCSI_AHCI_PLAT)
 #error no scsi device defined
@@ -181,6 +185,10 @@ removable:
 			scsi_max_devs++;
 		} /* next LUN */
 	}
+	if(scsi_max_devs>0)
+		scsi_curr_dev=0;
+	else
+		scsi_curr_dev = -1;
 
 	printf("Found %d device(s).\n", scsi_max_devs);
 	setenv_ulong("scsidevs", scsi_max_devs);
@@ -192,22 +200,21 @@ int scsi_get_disk_count(void)
 }
 
 #ifdef CONFIG_PCI
+#if defined CONFIG_SCSI_MV94XX
 static struct pci_device_id mv94xx_pci_ids[] = {
         {0x1b4b, 0x9485},
         {0x1b4b, 0x9445},
 };
+#endif
 
 void scsi_init(void)
 {
-	int busdevfunc;
-#ifndef CONFIG_SCSI_MV94XX
-	int i;
-#endif
 	/*
 	 * Find a device from the list, this driver will support a single
 	 * controller.
 	 */
 #if defined CONFIG_SCSI_MV94XX
+	int busdevfunc;
 	if ((busdevfunc = pci_find_devices (mv94xx_pci_ids, 0)) < 0) {
 		printf("MV94XX controller not present\n");
 		return;
@@ -217,7 +224,10 @@ void scsi_init(void)
 	else
 		scsi_bus_reset(); /*mult-time "scsi init", no need re-assign resource"*/
 	scsi_scan(1);
+#elif defined CONFIG_SCSI_6820
+	scsi_scan(1);
 #else
+	int i;
 	for (i = 0; i < ARRAY_SIZE(scsi_device_list); i++) {
 		/* get PCI Device ID */
 		busdevfunc = pci_find_device(scsi_device_list[i].vendor,
@@ -250,11 +260,6 @@ void scsi_init(void)
 	scsi_low_level_init(busdevfunc);
 	scsi_scan(1);
 #endif
-
-	if(scsi_max_devs>0)
-		scsi_curr_dev = scsi_max_devs;
-	else
-		scsi_curr_dev = 0;
 }
 #endif
 
@@ -280,14 +285,14 @@ int do_scsi (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	if (argc == 2 && strcmp(argv[1], "init") == 0) {
 		scsi_init();
-		return 0; 
+		return 0;
 	}
 
 	/* If the user has not yet run `sata init`, do it now */
 	if ((argc == 2) && (scsi_curr_dev == -1) && (strncmp(argv[1],"res",3) != 0))
 		printf("please run 'scsi init' first!!!\n");
 		//scsi_init();
-	
+
 	switch (argc) {
 	case 0:
 	case 1:
@@ -315,7 +320,7 @@ int do_scsi (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				return 0;
 			}
 			if (strncmp(argv[1],"dev",3) == 0) {
-				if ((scsi_curr_dev <= 0) || (scsi_curr_dev >= CONFIG_SYS_SCSI_MAX_DEVICE)) {
+				if ((scsi_curr_dev < 0) || (scsi_curr_dev >= CONFIG_SYS_SCSI_MAX_DEVICE)) {
 					printf("\nno SCSI devices available\n");
 					return 1;
 				}

@@ -447,6 +447,9 @@ MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void);
 MV_STATUS mvBoardConfIdSet(MV_U16 conf);
 MV_U16 mvBoardPexModeGet(MV_VOID);
 MV_STATUS mvBoardPexModeSet(MV_U16 conf);
+#ifdef DB_78X60_AMC
+MV_BOOL mvBoardIsBC2(MV_VOID);
+#endif
 
 
 #ifdef __cplusplus

@@ -125,8 +125,6 @@ disclaimer.
 	#define MV_PT_BASE(cpu)  (CONFIG_SYS_MALLOC_BASE - 0x20000 - (cpu*0x20000))
 #endif /* MV_PT */
 
-
-
 /********************/
 /* AMP settings	    */
 /********************/
@@ -268,26 +266,6 @@ disclaimer.
 	#define CONFIG_SYS_SCSI_MAX_DEVICE 	(CONFIG_SYS_SCSI_MAX_SCSI_ID * CONFIG_SYS_SCSI_MAX_LUN)
 #endif /* CONFIG_SCSI_AHCI */
 
-/*
- * Staggered Spin-up support for SATA disks
- * ----------------------------------------
- * Set the following U-Boot environment variable:
- * setenv spinup_config <spinup_max>,<spinup_timeout>
- * For example: spinup_config=2,6 will config the module for 2 maximum disks spinning-up with 6 seconds timeout.
- * Parameters explanation:
- * 1. <spinup_max> - The maximum spinning-up disks(can be between 1 and 8) ֲ will be like this:
- *   a. 0 = feature off.
- *   b. 1 ג€“ 8 = number of disks
- *   c. <0,>8 = invalid parameter (will behave like feature off)
- * 2. <spinup_timeout> - The spin-up timeout (can be between 1 and 6) will be like this:
- *   a. 0 = feature off.
- *   b. 1 ג€“ 6 = in seconds
- *   c. <0,>6 = invalid parameter (will behave like feature off)
- * Any parsing error will cause an invalid parameters print and will behave as feature off.
- */
-#undef CONFIG_MV_SCATTERED_SPINUP
-
-
 /* which initialization functions to call for this board */
 #define CONFIG_MISC_INIT_R      	/* after relloc initialization*/
 #define CONFIG_ENV_OVERWRITE    	/* allow to change env parameters */
@@ -346,17 +324,11 @@ disclaimer.
  */
 #define CONFIG_BAUDRATE         	115200   /* console baudrate = 115200    */
 #define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600 }
+#define CONFIG_SYS_DUART_CHAN		1		/* channel to use for console */
 
-#if defined(RD_88F6781_AVNG) || defined(DB_88F6781Y0) || defined(RD_88F6781Y0_AVNG) || defined(DB_88F6781X0) || defined(RD_88F6781X0_PLUG) || defined(RD_88F6781X0_AVNG) || defined(DB_88AP510BP_B) || defined(DB_88AP510_PCAC)
-	#define CONFIG_SYS_DUART_CHAN		0		/* channel to use for console */
-#else
-	#define CONFIG_SYS_DUART_CHAN		1		/* channel to use for console */
-#endif
 
 #define CONFIG_SYS_INIT_CHAN1
-#if !defined(RD_88F6781_AVNG) && !defined(RD_88F6781Y0_AVNG) && !defined(RD_88F6781X0_AVNG)
-	#define CONFIG_SYS_INIT_CHAN2
-#endif
+#define CONFIG_SYS_INIT_CHAN2
 
 #define CONFIG_LOADS_ECHO       0       	/* echo off for serial download */
 #define CONFIG_SYS_LOADS_BAUD_CHANGE           /* allow baudrate changes       */
@@ -389,11 +361,7 @@ disclaimer.
 #define CONFIG_NETMASK		255.255.255.0
 #define ETHADDR			"00:00:00:00:51:81"
 #define ETH1ADDR		"00:00:00:00:51:82"
-#ifdef RD_78460_SERVER_REV2
-#define ENV_ETH_PRIME		"egiga1"
-#else
 #define ENV_ETH_PRIME		"egiga0"
-#endif
 
 /************/
 /* PCI	    */
@@ -411,23 +379,9 @@ disclaimer.
 /************/
 /* USB	    */
 /************/
-#ifdef MV_USB
-	#define MV_INCLUDE_USB
-	#define CONFIG_CMD_USB
-	#define CONFIG_USB_STORAGE
-	#define CONFIG_USB_EHCI
-	#define CONFIG_EHCI_IS_TDI
-	#define CONFIG_DOS_PARTITION
-	#define CONFIG_ISO_PARTITION
-	#define ENV_USB0_MODE		"host"
-	#define ENV_USB1_MODE		"host"
-	#define ENV_USB2_MODE		"device"
-	#define ENV_USB_ACTIVE		"0"
-#else
-	#undef MV_INCLUDE_USB
-	#undef CONFIG_CMD_USB
-	#undef CONFIG_USB_STORAGE
-#endif /* MV_USB */
+#undef MV_INCLUDE_USB
+#undef CONFIG_CMD_USB
+#undef CONFIG_USB_STORAGE
 
 /************/
 /* SDIO/MMC */
@@ -442,7 +396,6 @@ disclaimer.
 /* LINUX BOOT and other ENV PARAMETERS */
 /***************************************/
 #define MV_BOOTARGS_END		":10.4.50.254:255.255.255.0:DSMP:eth0:none"
-#define MV_BOOTARGS_END_SWITCH	":::RD88FXX81:eth0:none"
 #define RCVR_IP_ADDR		"169.254.100.100"
 #define	RCVR_LOAD_ADDR		"0x02000000"
 
@@ -686,12 +639,8 @@ disclaimer.
 #define CONFIG_STACKSIZE	(1 << 20)	/* regular stack - up to 4M (in case of exception)*/
 
 /********************* Errata & Guide lines *****************************************************/
-#define ERRATA_GL_3651961	/* Using SATA II 3.0 Gbps Host with 1.5 Gbps Device		*/
 #define ERRATA_FE_982377	/* Internal CPU Temperature Read Out Stability			*/
-#define ERRATA_FE_2747726	/* SDIO: Read Data Interrupt Indication 			*/
-#define ERRATA_FE_215660	/* USB Host May Transmit Truncated Packet with Good CRC		*/
 #define ERRATA_FE_9123155	/* Boot from NAND Flash and Bad Blocks in SLC Default Mode	*/
-#define ERRATA_GL_6572255	/* The QsgmiiSerdesRxSample Field Set to 1			*/
 /************************************************************************************************/
 
 #endif	/* __CONFIG_BOBCAT2_H */

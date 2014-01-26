@@ -73,13 +73,6 @@
 #define MV_STATIC_DRAM_ON_BOARD
 #endif
 
-#if defined(RD_88F6281)
-#define MV_INC_BOARD_QD_SWITCH
-#endif
-
-#if defined(RD_88F6180)
-#define MV_INC_BOARD_QD_SWITCH
-#endif
 /*
  *  System memory mapping
  */

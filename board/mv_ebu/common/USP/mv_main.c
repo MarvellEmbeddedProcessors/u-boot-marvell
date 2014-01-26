@@ -189,45 +189,7 @@ void misc_init_r_dec_win(void)
 {
 	char *env;
 	mvSysCntmrInit();
-#if defined(DB_78X60_PCAC) || defined(DB_78X60_PCAC_REV2)
-	/* TODO: no support for usb on PCAC board for now. */
-#else
-#if defined(MV_INCLUDE_USB)
-	{
-		char envname[10];
-		int  i;
-		for (i = 0; i < mvCtrlUsbMaxGet(); i++) {
 
-			sprintf(envname, "usb%dMode", i);
-			env = getenv(envname);
-			if((!env) || (strcmp(env,"device") == 0) || (strcmp(env,"Device") == 0) )
-			{
-				printf("USB %d: Device Mode\n", i);
-				mvSysUsbInit(i, MV_FALSE);
-			}
-			else
-			{
-				printf("USB %d: Host Mode\n", i);
-				mvSysUsbInit(i, MV_TRUE);
-			}
-		}
-	}
-#endif/* #if defined(MV_INCLUDE_USB) */
-
-#if defined(MV_INCLUDE_SATA) && defined (RD_88F6710)
-	{
-		MV_U32 bitMaskConfig = 0;
-		env = getenv("enaExtDisk");
-		if((!env) || (strcmp(env,"no") == 0))
-			bitMaskConfig &= ~(1 << 0);
-		else
-			bitMaskConfig |= (1 << 0);
-			
-		mvBoardBitMaskConfigSet(bitMaskConfig);
-	}
-#endif /*#if defined(MV_INCLUDE_SATA)*/
-
-#endif /* #else */
 #if defined(MV_INCLUDE_XOR)
 	mvSysXorInit();
 #endif
@@ -407,9 +369,6 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 		envSetDefault("netbsd_rootdev", "mgi0");
 		envSetDefault("netbsd_add", "0x800000");
 		envSetDefault("netbsd_get", "tftpboot $netbsd_add $image_name");
-#if defined(MV_INC_BOARD_QD_SWITCH)
-		envSetDefault("netbsd_netconfig", "mv_net_config=<((mgi0,00:00:11:22:33:44,0)(mgi1,00:00:11:22:33:55,1:2:3:4)),mtu=1500>");
-#endif
 		envSetDefault("netbsd_set_args", "setenv bootargs nfsroot=$netbsd_server:$rootpath fs=$netbsd_fs \
                     ip=$netbsd_ip serverip=$netbsd_server mask=$netbsd_mask gw=$netbsd_gw rootdev=$netbsd_rootdev \
                     ethaddr=$ethaddr eth1addr=$eth1addr ethmtu=$ethmtu eth1mtu=$eth1mtu $netbsd_netconfig");
@@ -444,17 +403,25 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 	if(env && ((strcmp(env,"yes") == 0) ||  (strcmp(env,"Yes") == 0)))
 		envSetDefault("bootargs_end", ":::orion:eth0:none");
 	else {
-#if defined(MV_INC_BOARD_QD_SWITCH)
-		envSetDefault("bootargs_end", MV_BOOTARGS_END_SWITCH);
-#else
 		envSetDefault("bootargs_end", MV_BOOTARGS_END);
-#endif
 	}
 	envSetDefault("image_name", "uImage");
 
 #if CONFIG_OF_LIBFDT
-	envSetDefault("fdtaddr", "0x1000000");
-	envSetDefault("fdtfile", "armada_xp_db.dtb");
+	char bootcmd_fdt[] = "tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;\
+setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath ip=$ipaddr: \
+$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params \
+clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootz 0x2000000 - $fdtaddr;";
+	env = getenv("fdtaddr");
+	if (!env)
+		setenv("fdtaddr", "0x1000000");
+
+	env = getenv("fdtfile");
+	if (!env)
+		setenv("fdtfile", "bobcat2-db.dtb");
+	env = getenv("bootcmd_fdt");
+	if (!env)
+		setenv("bootcmd_fdt",bootcmd_fdt);
 #endif
 
 #if CONFIG_AMP_SUPPORT
@@ -478,30 +445,18 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 #if (CONFIG_BOOTDELAY >= 0)
 	env = getenv("bootcmd");
 	if(!env)
-#if defined(CONFIG_OF_LIBFDT)
-		setenv("bootcmd","tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm 0x2000000 - 0x1000000;");
+#if defined(CONFIG_OF_LIBFDT) && defined (CONFIG_OF_LIBFDT_IS_DEFAULT)
+		setenv("bootcmd",bootcmd_fdt);
 #elif defined(CONFIG_CMD_STAGE_BOOT)
-		setenv("bootcmd","stage_boot $boot_order");
-#elif defined(MV_INCLUDE_TDM) || defined(MV_INC_BOARD_QD_SWITCH)
-		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$(lcd0_enable) clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
+	setenv("bootcmd","stage_boot $boot_order");
 #else
-		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
+	setenv("bootcmd","tftpboot 0x2000000 $image_name;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
 ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
 #endif
 #endif /* (CONFIG_BOOTDELAY >= 0) */
-
-#if defined(MV_INC_BOARD_QD_SWITCH)	
-	envSetDefault("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig; bootm 0x2000000;");
-#else
 	envSetDefault("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
 ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
-#endif
 
 	/* Disable PNP config of Marvell memory controller devices. */
 	envSetDefault("disaMvPnp", "no");
@@ -553,15 +508,6 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 
 #endif /*  (MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_UNM_ETH) */
 
-#if defined(MV_INCLUDE_USB)
-	/* USB Host */
-	envSetDefault("usb0Mode", ENV_USB0_MODE);
-	envSetDefault("usb1Mode", ENV_USB1_MODE);
-	envSetDefault("usb2Mode", ENV_USB2_MODE);
-	envSetDefault("usbActive", ENV_USB_ACTIVE);
-
-#endif  /* (MV_INCLUDE_USB) */
-
 #if defined(YUK_ETHADDR)
 	envSetDefault("yuk_ethaddr", YUK_ETHADDR);
 	{
@@ -598,11 +544,6 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 #ifdef BOARD_LATE_INIT
 int board_late_init (void)
 {
-/* Check if to use the LED's for debug or to use single led for init and Linux heartbeat */
-#if defined (RD_88F78460_SERVER)
-	if (mvBoardSledCpuNumGet() == 0) 
-		MV_REG_BIT_SET(GPP_DATA_OUT_REG(0), BIT28 | BIT29 | BIT30 | BIT31);
-#endif
 	mvBoardDebugLed(0);
 	return 0;
 }
@@ -718,22 +659,7 @@ int misc_init_r (void)
 	memset ((void *)CONFIG_SYS_LOAD_ADDR, 0, CONFIG_SYS_MIN_HDR_DEL_SIZE);
 	mvBoardDebugLed(6);
 
-#if !defined(RD_78460_SERVER_REV2)
-		/* Prints the modules detected */
-		mvBoardMppModuleTypePrint();
-		mvBoardOtherModuleTypePrint();
-#endif /* #if !defined(RD_78460_SERVER_REV2) */
-
 	mvBoardDebugLed(7);
-#ifdef DB_78X60_AMC
-	MV_U32 tmpOut;
-	/* Set GPP19 & 22 Out value to '0' */
-	tmpOut = MV_REG_READ(GPP_DATA_OUT_REG(0));
-	tmpOut &= 0xFFB7FFFF;
-	MV_REG_WRITE(GPP_DATA_OUT_REG(0), tmpOut);
-      	/* Set GPP19 & 22 Out Enable */
-	mvGppTypeSet(0, 0x480000, 0x0);
-#endif
 	/* pcie fine tunning */
 	env = getenv("pcieTune");
 	if(env && ((strcmp(env,"yes") == 0) || (strcmp(env,"yes") == 0)))
@@ -742,10 +668,9 @@ int misc_init_r (void)
 		setenv("pcieTune","no");
 
 #if defined(MV_INCLUDE_UNM_ETH) || defined(MV_INCLUDE_GIG_ETH)
-#if !defined(RD_78460_SERVER_REV2)
-		/* Init the PHY or Switch of the board */
-		mvBoardEgigaPhyInit();
-#endif /* #if !defined(RD_78460_SERVER_REV2) */
+
+	/* Init the PHY or Switch of the board */
+	mvBoardEgigaPhyInit();
 #endif /* #if defined(MV_INCLUDE_UNM_ETH) || defined(MV_INCLUDE_GIG_ETH) */
 
 	return 0;

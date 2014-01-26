@@ -3,7 +3,6 @@ include paths.mk
 
 
 ifneq ($(BOARD_TYPE),mv_fpga_board)
-MAKE_USB = yes
 MAKE_PEX = yes
 MAKE_SDMMC = yes
 MAKE_CNTMR = yes
@@ -14,16 +13,19 @@ MAKE_PCI = yes
 endif
 
 ifeq ($(BOARD),alp)
+MAKE_USB = yes
 MAKE_PPV2 = yes
 MAKE_GENERAL_U_BOOT_TOOLS = yes
 endif
 
 ifeq ($(BOARD),a375)
+MAKE_USB = yes
 MAKE_PPV2 = yes
 MAKE_GENERAL_U_BOOT_TOOLS = yes
 endif
 
 ifeq ($(BOARD),a38x)
+MAKE_USB = yes
 MAKE_SATA3 = yes
 MAKE_NETA = yes
 MAKE_GENERAL_U_BOOT_TOOLS = yes

@@ -64,14 +64,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvHighSpeedEnvSpec.h"
 #include "mvUart.h"
 
-/***************************   defined ******************************/
-
-#define MV_IO_EXP_MAX_REGS    3
-
-#define BOARD_DEV_TWSI_EEPROM               0x55
-#define BOARD_DEV_TWSI_IO_EXPANDER          0x21
-#define BOARD_DEV_TWSI_IO_EXPANDER_JUMPER1  0x24
-
 /**************************** globals *****************************/
 
 MV_BOARD_TOPOLOGY_CONFIG boardTopologyConfig[] =
@@ -156,14 +148,30 @@ MV_BOOL mvBoardDb6660IsEepromEnabled()
 *******************************************************************************/
 MV_STATUS mvBoardDb6660LaneConfigGet(MV_U8 *tempVal)
 {
-	MV_STATUS rc1, rc2;
+	MV_STATUS rc1, rc2, rc3;
 	MV_BOOL isEepromEnabled = mvBoardDb6660IsEepromEnabled();
-	MV_U32 address = (isEepromEnabled ? BOARD_DEV_TWSI_EEPROM : BOARD_DEV_TWSI_IO_EXPANDER);
-	MV_BOOL isMoreThen256 = (address == BOARD_DEV_TWSI_EEPROM) ? MV_TRUE : MV_FALSE;
 	MV_U8 temp0,temp1;
+	MV_U32 address, address1, devNum, regNum;
+	MV_BOOL isMoreThen256;
 
-	rc1 = mvBoardTwsiGet(address, 0, 0, isMoreThen256, &tempVal[0]); /* EEPROM/Dip Switch Reg#0 */
-	rc2 = mvBoardTwsiGet(address, 0, 1, isMoreThen256, &tempVal[1]);  /* EEPROM/Dip Switch Reg#1 */
+	if (isEepromEnabled) {
+		address = BOARD_DEV_TWSI_EEPROM;
+		address1 = BOARD_DEV_TWSI_EEPROM;
+		devNum = DEV_NUM1;
+		regNum = REG_NUM2;
+		isMoreThen256 = MV_TRUE;
+	}
+	else {
+		address = BOARD_DEV_TWSI_IO_EXPANDER;
+		address1 = BOARD_DEV_TWSI_IO_EXPANDER_SW7;
+		devNum = DEV_NUM1;
+		regNum = REG_NUM0;
+		isMoreThen256 = MV_FALSE;
+	}
+
+	rc1 = mvBoardTwsiGet(address, DEV_NUM0, REG_NUM0, isMoreThen256, &tempVal[0]); /* EEPROM/Dip Switch Reg#0 */
+	rc2 = mvBoardTwsiGet(address, DEV_NUM0, REG_NUM1, isMoreThen256, &tempVal[1]);  /* EEPROM/Dip Switch Reg#1 */
+	rc3 = mvBoardTwsiGet(address1, devNum, regNum, isMoreThen256, &tempVal[2]);  /* Dip Switch -> Reg#0, EEPROM -> Reg#2 */
 
 	/*
 	* Workaround for DIP Switch IO Expander 0x21 bug in DB-6660 board
@@ -186,7 +194,7 @@ MV_STATUS mvBoardDb6660LaneConfigGet(MV_U8 *tempVal)
 		tempVal[1] |= temp1 << 3;
 	}
 	/* verify that all TWSI reads were successfully */
-	if ((rc1 != MV_OK) || (rc2 != MV_OK))
+	if ((rc1 != MV_OK) || (rc2 != MV_OK) || (rc3 != MV_OK))
 		return MV_ERROR;
 
 	return MV_OK;

@@ -83,6 +83,7 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_a370_vars.h"
 #elif defined(MV88F66XX)
 #include "ddr3_alp_vars.h"
+#include "mvHighSpeedEnvSpec.h"
 #elif defined(MV88F672X)
 #include "ddr3_a375_vars.h"
 #elif defined(MV88F68XX)
@@ -472,8 +473,8 @@ MV_U32 ddr3Init_(void)
 	}
 #endif
 	ddr3PrintVersion();
-	DEBUG_INIT_S("0\n");
-	/* Lib version 5.5.4 */
+	DEBUG_INIT_S("5\n");
+	/* Lib version 5.5.5 */
 
 	uiFabOpt = ddr3GetFabOpt();
 	if (bPLLWAPatch){
@@ -566,6 +567,23 @@ MV_U32 ddr3Init_(void)
 	/* For Static D-Unit Setup use must set the correct static values at the ddr3_*soc*_vars.h file */
 	DEBUG_INIT_FULL_S("DDR3 Training Sequence - Static MC Init \n");
 	ddr3StaticMCInit();
+
+#if defined(MV88F66XX)
+	MV_U8 configVal[MV_IO_EXP_MAX_REGS];
+	MV_U8 chipBoardRev = mvBoardIdGet();
+	/* if the board is DB-88F6660*/
+	if (chipBoardRev == DB_88F6660_BP_ID) {
+		mvBoardDb6660LaneConfigGet(configVal);
+		if((configVal[2] & 0x4) >> 2){
+			/* change sdram bus width to X16 according to DIP switch(SW7 pin3) or EEPROM*/
+			uiReg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
+			uiReg &= ~(0x1 << REG_SDRAM_CONFIG_WIDTH_OFFS);
+			MV_REG_WRITE(REG_SDRAM_CONFIG_ADDR, uiReg);
+		}
+	}
+
+#endif
+
 #ifdef ECC_SUPPORT
 	uiEcc = DRAM_ECC;
 	if (uiEcc) {

@@ -69,7 +69,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bootstrap_os.h"
 #include "mvBHboardEnvSpec.h"
 
-/**************************** defined ******************************/
+/***************************   defined ******************************/
+
+#define MV_IO_EXP_MAX_REGS    3
+
+#define BOARD_DEV_TWSI_EEPROM               0x55
+#define BOARD_DEV_TWSI_IO_EXPANDER          0x21
+#define BOARD_DEV_TWSI_IO_EXPANDER_SW7		0x22
+#define BOARD_DEV_TWSI_IO_EXPANDER_JUMPER1  0x24
+#define DEV_NUM0							0x0
+#define DEV_NUM1							0x1
+#define REG_NUM0							0x0
+#define REG_NUM1							0x1
+#define REG_NUM2							0x2
+
 
 #define MAX_LANE_NUM      		4
 #define MAX_BOARD_CONFIG_OPTION 4
@@ -159,6 +172,7 @@ typedef struct {
 
 MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_BOOL isMoreThen256, MV_U8 *pData);
 MV_STATUS mvBoardUpdateBoardTopologyConfig(MV_U32  boardId);
+MV_STATUS mvBoardDb6660LaneConfigGet(MV_U8 *tempVal);
 
 #if 0
 typedef struct _boardTwsiInfo {

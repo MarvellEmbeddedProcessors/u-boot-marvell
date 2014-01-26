@@ -687,6 +687,17 @@ if (mvCtrlGetCpuNum())
 	display_dram_config(1);
 	return 0;
 }
+
+int board_early_init_f (void)
+{
+	/* Open window to DFX registers
+	 * DFX registers are needed in early stage of U-Boot boot sequence
+	 * This is done here once, before U-Boot sets its window configuration*/
+	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(1), 0x000f0081);
+	MV_REG_WRITE(AHB_TO_MBUS_WIN_BASE_REG(1), DFX_REGS_BASE);
+	return 0;
+}
+
 int misc_init_r (void)
 {
 	char *env;

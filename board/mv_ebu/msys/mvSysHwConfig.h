@@ -112,21 +112,18 @@
 #define PEX0_IO_SIZE                    _1M
 /*****************  DFX base address ***********************/
 #define DFX_REGS_BASE   0xF5000000
+#define DFX_REGS_SIZE   _1M
 
 #define MV_DFX_REG_READ(offset)		\
-	mvBoardDfxConfig() |		\
 	(MV_MEMIO_LE32_READ(DFX_REGS_BASE | (offset)))	\
-
 
 #define MV_DFX_REG_WRITE(offset, val)	\
 {					\
-	mvBoardDfxConfig();		\
 	MV_MEMIO_LE32_WRITE((DFX_REGS_BASE | (offset)), (val));	\
 }
 
 #define MV_DFX_REG_BIT_SET(offset, bitMask)	\
 {						\
-	mvBoardDfxConfig();			\
         (MV_MEMIO32_WRITE((DFX_REGS_BASE | (offset)), \
          (MV_MEMIO32_READ(DFX_REGS_BASE | (offset)) | \
           MV_32BIT_LE_FAST(bitMask))));		\
@@ -134,7 +131,6 @@
 
 #define MV_DFX_REG_BIT_RESET(offset,bitMask)	\
 {						\
-	mvBoardDfxConfig(); 			\
         (MV_MEMIO32_WRITE((DFX_REGS_BASE | (offset)), \
          (MV_MEMIO32_READ(DFX_REGS_BASE | (offset)) & \
           MV_32BIT_LE_FAST(~bitMask))));		\
@@ -256,6 +252,7 @@
 		{ { PEX0_MEM_BASE,        0,      PEX0_MEM_SIZE   },      0,              EN },         /* PEX0_MEM */	\
 		{ { PEX0_IO_BASE,         0,      PEX0_IO_SIZE    },      TBL_UNUSED,     DIS },        /* PEX0_IO */	\
 		{ { INTER_REGS_BASE,      0, INTER_REGS_SIZE }, MV_AHB_TO_MBUS_INTREG_WIN, EN },        /* INTER_REGS */ \
+		{ { DFX_REGS_BASE,        0,      DFX_REGS_SIZE   },      1,               EN },        /* DFX_REGS */ \
 		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* DMA_UART   */ \
 		{ { SPI_CS_BASE,          0,      SPI_CS_SIZE     },      8,               EN },        /* SPI_CS0 */	\
 		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* SPI_CS1 */	\

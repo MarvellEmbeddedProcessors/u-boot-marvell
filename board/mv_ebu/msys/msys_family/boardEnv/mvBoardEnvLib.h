@@ -253,7 +253,6 @@ typedef struct _boardInfo {
 } MV_BOARD_INFO;
 
 MV_VOID mvBoardEnvInit(MV_VOID);
-MV_U32 mvBoardDfxConfig(MV_VOID);
 MV_U16 mvBoardModelGet(MV_VOID);
 MV_U16 mvBoardRevGet(MV_VOID);
 MV_STATUS mvBoardNameGet(char *pNameBuff);

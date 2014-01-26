@@ -150,23 +150,6 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 
 }
 
-MV_U32 mvBoardDfxConfig(MV_VOID)
-{
-	MV_U32 I2C_conf;
-
-	/* set acess to DFX */
-	I2C_conf = MV_REG_READ(I2C_CONFIC_DEBUG_REG);
-	I2C_conf &= ICDR_UINIT_ID_MASK;
-	I2C_conf |= 8; /* acess to DFX */
-	MV_REG_WRITE(I2C_CONFIC_DEBUG_REG,I2C_conf);
-
-	/* open windows to DFX */
-	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(1), 0x000f0081);
-	MV_REG_WRITE(AHB_TO_MBUS_WIN_BASE_REG(1), 0xF5000000);
-
-	return 0;
-}
-
 /*******************************************************************************
 * mvBoardModelGet - Get Board model
 *

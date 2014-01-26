@@ -77,6 +77,7 @@ disclaimer.
 #define MV_DDR_64BIT
 #define MV_MEM_FASTPATH
 #define MV_BOOTROM
+#define CONFIG_BOARD_EARLY_INIT_F
 
 /*********/
 /* Debug */

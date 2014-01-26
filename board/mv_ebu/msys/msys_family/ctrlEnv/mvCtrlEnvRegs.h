@@ -276,12 +276,13 @@ extern "C" {
 
 /* This enumerator defines the Marvell controller target ID  (see Address map) */
 typedef enum _mvTargetId {
-    DRAM_TARGET_ID	= 0,	/* Port 0 -> DRAM interface		*/
-    DEV_TARGET_ID	= 1,	/* Port 1 -> Device port, BootROM, SPI	*/
-    PEX0_TARGET_ID	= 4,	/* Port 4 -> PCI Express 0 		*/
-    CRYPT_TARGET_ID	= 9,	/* Port 9 --> Crypto Engine SRAM	*/
-    PNC_BM_TARGET_ID	= 12,  	/* Port 12 -> PNC + BM Unit		*/
-    MAX_TARGETS_ID
+	DRAM_TARGET_ID   = 0,	/* Port 0 -> DRAM interface		*/
+	DEV_TARGET_ID    = 1,	/* Port 1 -> Device port, BootROM, SPI	*/
+	PEX0_TARGET_ID   = 4,	/* Port 4 -> PCI Express 0		*/
+	DFX_TARGET_ID    = 8,	/* Port 8 -> DFX Server			*/
+	CRYPT_TARGET_ID  = 9,	/* Port 9 --> Crypto Engine SRAM	*/
+	PNC_BM_TARGET_ID = 12,	/* Port 12 -> PNC + BM Unit		*/
+	MAX_TARGETS_ID
 } MV_TARGET_ID;
 
 

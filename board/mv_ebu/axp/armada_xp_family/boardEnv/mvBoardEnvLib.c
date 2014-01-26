@@ -1802,7 +1802,7 @@ MV_U8 mvBoardBootDevWidthGet(MV_VOID)
 	rc1 = mvBoardTwsiSatRGet(0, 0, &sar);
 	if (MV_ERROR == rc1)
 		return MV_ERROR;
-	if (DB_784MP_GP_ID == boardId) 
+	if (DB_784MP_GP_ID == boardId)
 		return (sar & 1);
 
 	return (sar & 0x18) >> 3;
@@ -2059,7 +2059,7 @@ MV_U16 mvBoardPexCapabilityGet(MV_VOID)
 		break;
 	}
 	gPexCap = sar & 0x1;
-	
+
 	return (gPexCap);
 }
 /*******************************************************************************/
@@ -2713,3 +2713,48 @@ MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 		return NULL;
 	}
 }
+#ifdef DB_78X60_AMC
+#define	MV_BOARD_DEVID_ADDR	0x4c
+#define TWSI_CHANNEL_BC2    1
+#define TWSI_SPEED_BC2    20000 /* wa for bits 1,2 in 0x4c. Mmust lower 100000 -> 20000 . adiy, erez*/
+/*******************************************************************************
+* mvBoardIsBC2 - detect via TWSI (addr=4c)if AMC board is connected to BC2
+*
+* DESCRIPTION:
+*
+* INPUT:
+*
+* OUTPUT:
+*       None.
+*
+* RETURN: TRUE if connected to BC2
+*******************************************************************************/
+MV_BOOL mvBoardIsBC2(MV_VOID)
+{
+	MV_TWSI_SLAVE twsiSlave;
+	MV_TWSI_ADDR slave;
+	MV_U8 data;
+
+	/* Read MPP module ID */
+	twsiSlave.slaveAddr.address = MV_BOARD_DEVID_ADDR;
+	if (0xFF == twsiSlave.slaveAddr.address)
+		return MV_FALSE;
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+
+	/* Use offset as command */
+	twsiSlave.offset = 0;
+	twsiSlave.moreThen256 = MV_FALSE;
+	twsiSlave.validOffset = MV_TRUE;
+
+	/* TWSI init */
+	slave.type = ADDR7_BIT;
+	slave.address = 0;
+	mvTwsiInit(TWSI_CHANNEL_BC2, TWSI_SPEED_BC2, CONFIG_SYS_TCLK, &slave, 0);
+
+
+	if (MV_OK != mvTwsiRead(TWSI_CHANNEL_BC2, &twsiSlave, &data, 1))
+		return MV_FALSE;
+
+	return MV_TRUE;
+}
+#endif

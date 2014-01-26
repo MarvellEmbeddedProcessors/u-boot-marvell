@@ -1201,25 +1201,27 @@ MV_U32 gBoardId = -1;
 *       32bit board ID number, '-1' if board is undefined.
 *
 *******************************************************************************/
-int count = -1;
 MV_U32 mvBoardIdGet(MV_VOID)
 {
 	MV_U8 boardId;
 
-	if (count++ < 0)
-		printf("%s: TODO fix read from TWSI of boardID (using hard-coded value DB_98DX4251_BP_ID)\n", __func__);
-
-	return DB_98DX4251_BP_ID;
-
 	if (gBoardId == -1) {
-		if (MV_ERROR == mvBoardTwsiRead(BOARD_DEV_TWSI_PLD, 1, 0, &boardId)) {
+		/* Set temp board ID, so board structures can be accessed - to get I2C TWSI addresses */
+		gBoardId = DB_98DX4251_BP_ID;
+		if (MV_ERROR == mvBoardTwsiRead(BOARD_DEV_TWSI_SATR, 0, 0, &boardId)) {
 			mvOsWarning();
 			return INVALID_BAORD_ID;
 		}
+
 		switch (boardId) {
-		case 0: gBoardId = RD_98DX4051_ID; break;
-		case 1: gBoardId = DB_98DX4251_BP_ID; break;
+		case 0:
+			gBoardId = DB_98DX4251_BP_ID;
+			break;
+		case 1:
+			gBoardId = RD_98DX4051_ID;
+			break;
 		default:
+			gBoardId = -1; /* reset gBoardId , in case of TWSI read failure */
 			mvOsPrintf("%s: Error: read un-expected board ID (%d)\n", __func__, boardId);
 			return INVALID_BAORD_ID;
 		}

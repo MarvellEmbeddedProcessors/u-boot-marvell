@@ -312,7 +312,7 @@ typedef enum _mvTarget {
 	{0xE8, PEX0_TARGET_ID	},		/*  8 PEX0_LANE0_MEM */	\
 	{0xE0, PEX0_TARGET_ID	},		/*  9 PEX0_LANE0_IO */	\
 	{0xFF, 0xFF             },		/* 10 INTER_REGS */	\
-	{0x00, 8		},		/* 11 DFX_INTER_REGS */	\
+	{0x00, DFX_TARGET_ID	},		/* 11 DFX_INTER_REGS */	\
 	{0x01, DEV_TARGET_ID    },		/* 12 DMA_UART */	\
 	{0x1E, DEV_TARGET_ID    },		/* 13 SPI_CS0 */	\
 	{0x5E, DEV_TARGET_ID    },		/* 14 SPI_CS1 */	\

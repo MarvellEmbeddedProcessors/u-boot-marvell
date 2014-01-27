@@ -60,6 +60,11 @@ u16 *ataid[AHCI_MAX_PORTS];
 #define WAIT_MS_FLUSH	5000
 #define WAIT_MS_LINKUP	4
 
+#ifdef  CONFIG_SCSI_6820
+#define VENDOR_SPECIFIC_0_ADDR  0xa0
+#define VENDOR_SPECIFIC_0_DATA  0xa4
+#endif
+
 static inline u32 ahci_port_base(u32 base, u32 port)
 {
 	return base + 0x100 + (port * 0x80);
@@ -601,9 +606,11 @@ static int ahci_device_data_io(u8 port, u8 *fis, int fis_len, u8 *buf,
 	opts = (fis_len >> 2) | (sg_count << 16) | (is_write << 6);
 	ahci_fill_cmd_slot(pp, opts);
 
+#ifdef  CONFIG_SCSI_6820
 	writel_with_flush(0x7FFFFFF, port_mmio + PORT_SCR_ERR);
 	writel_with_flush(0xffffffff, port_mmio + PORT_IRQ_STAT);
 	writel_with_flush(0, port_mmio + PORT_FIS_ADDR);
+#endif
 	ahci_dcache_flush_sata_cmd(pp);
 	ahci_dcache_flush_range((unsigned)buf, (unsigned)buf_len);
 
@@ -928,6 +935,12 @@ int ahci_init(u32 base)
 	probe_ent->mmio_base = base;
 
 	/* initialize adapter */
+#ifdef  CONFIG_SCSI_6820
+	/* Enabling regret bit */
+	writel(0x4, base + VENDOR_SPECIFIC_0_ADDR);
+	writel(0x80, base + VENDOR_SPECIFIC_0_DATA);
+#endif
+
 	rc = ahci_host_init(probe_ent);
 	if (rc)
 		goto err_out;

@@ -311,7 +311,6 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 	}
 	mvCtrlSocUnitInfoNumSet(PEX_UNIT_ID, boardPexInfo->boardPexIfNum);
 	mvCtrlSocUnitInfoNumSet(SATA_UNIT_ID , sataIfCount);
-	mvCtrlSocUnitInfoNumSet(USB_UNIT_ID , usbIfCount);
 	mvCtrlSocUnitInfoNumSet(USB3_UNIT_ID, usbHIfCount);
 	if (ethIfCount) /* if serdes configuration found SGMII ports replace the existing RGMII gonfiguration*/
 		mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, ethIfCount);
@@ -322,6 +321,7 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 	DB(printf("mvCtrlSocUnitGet[SATA]= %d,\n", mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID)));
 	DB(printf("mvCtrlSocUnitGet[USBH]= %d,\n", mvCtrlSocUnitInfoNumGet(USB_UNIT_ID)));
 	DB(printf("mvCtrlSocUnitGet[USB3]= %d,\n", mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID)));
+	DB(printf("mvCtrlSocUnitGet[USB2]= %d,\n", mvCtrlSocUnitInfoNumGet(USB_UNIT_ID)));
 }
 
 /*******************************************************************************

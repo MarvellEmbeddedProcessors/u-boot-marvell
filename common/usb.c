@@ -107,6 +107,11 @@ int usb_init(void)
 			puts("lowlevel init failed\n");
 			continue;
 		}
+
+#if defined (MV88F68XX) && defined (MV_USB3)
+		/* Temp WA for timing issue with Armada 38x USB3 */
+		mdelay(10);
+#endif
 		/*
 		 * lowlevel init is OK, now scan the bus for devices
 		 * i.e. search HUBs and configure them

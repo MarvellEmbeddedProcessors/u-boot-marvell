@@ -86,7 +86,7 @@ extern "C" {
 #define MV_DEV_BUS_REGS_OFFSET                  (0x10400)
 #define MV_SPI_REGS_OFFSET(unit)                (0x10600 + (unit * 0x80))
 #define MV_TWSI_SLAVE_REGS_OFFSET(chanNum)      (0x11000 + (chanNum * 0x100))
-#define MV_UART_REGS_OFFSET(chanNum)            (0x12000 + (chanNum * 0x100))	
+#define MV_UART_REGS_OFFSET(chanNum)            (0x12000 + (chanNum * 0x100))
 #define MV_MPP_REGS_OFFSET                      (0x18000)
 #define MV_GPP_REGS_OFFSET(unit)                (0x18100 + ((unit) * 0x40))
 #define MV_MISC_REGS_OFFSET                     (0x18200)
@@ -136,6 +136,8 @@ extern "C" {
 #define MV_SDMMC_REGS_OFFSET                    (0xD4000)
 
 #define MV_ETH_SMI_PORT   0
+
+#define MV_USB3_WIN_BASE(unitId)		MV_USB3_REGS_OFFSET(unitId)
 
 /*
  * Miscellanuous Controller Configurations

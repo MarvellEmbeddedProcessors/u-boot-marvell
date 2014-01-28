@@ -23,6 +23,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <malloc.h>
 #include "part_iso.h"
 
 #if defined(CONFIG_CMD_IDE) || \
@@ -44,7 +45,7 @@
 #undef CHECK_FOR_POWERPC_PLATTFORM
 #define CD_SECTSIZE 2048
 
-static unsigned char tmpbuf[CD_SECTSIZE];
+static unsigned char *tmpbuf;
 
 /* Convert char[4] in little endian format to the host format integer
  */
@@ -73,10 +74,19 @@ int get_partition_info_iso_verb(block_dev_desc_t * dev_desc, int part_num, disk_
 	unsigned short *chksumbuf;
 	unsigned short chksum;
 	unsigned long newblkaddr,blkaddr,lastsect,bootaddr;
-	iso_boot_rec_t *pbr = (iso_boot_rec_t	*)tmpbuf; /* boot record */
-	iso_pri_rec_t *ppr = (iso_pri_rec_t	*)tmpbuf;	/* primary desc */
-	iso_val_entry_t *pve = (iso_val_entry_t *)tmpbuf;
+	iso_boot_rec_t *pbr;	/* boot record */
+	iso_pri_rec_t *ppr;	/* primary desc */
+	iso_val_entry_t *pve;
 	iso_init_def_entry_t *pide;
+
+	if (tmpbuf == NULL) {
+		tmpbuf = memalign(ARCH_DMA_MINALIGN, CD_SECTSIZE);
+		if (tmpbuf == NULL)
+			return -1;
+	}
+	pbr = (iso_boot_rec_t *)tmpbuf;
+	ppr = (iso_pri_rec_t *)tmpbuf;
+	pve = (iso_val_entry_t *)tmpbuf;
 
 	/* the first sector (sector 0x10) must be a primary volume desc */
 	blkaddr=PVD_OFFSET;

@@ -34,6 +34,7 @@
 #include <image.h>
 #include <pci.h>
 #include <ahci.h>
+#include <malloc.h>
 
 #ifdef CONFIG_SCSI_DEV_LIST
 #define SCSI_DEV_LIST CONFIG_SCSI_DEV_LIST
@@ -69,7 +70,7 @@ const struct pci_device_id scsi_device_list[] = { SCSI_DEV_LIST };
 #endif
 static ccb tempccb;	/* temporary scsi command buffer */
 
-static unsigned char tempbuff[512]; /* temporary data buffer */
+static unsigned char *tempbuff; /* temporary data buffer */
 
 static int scsi_max_devs; /* number of highest available scsi device */
 
@@ -110,6 +111,16 @@ void scsi_scan(int mode)
 	if(mode==1) {
 		printf("scanning bus for devices...\n");
 	}
+
+	if (tempbuff == NULL) {
+		tempbuff = memalign(ARCH_DMA_MINALIGN, 512);
+		if (tempbuff == NULL) {
+			if (mode == 1)
+				printf("error: cannot allocate buffer\n");
+			return;
+		}
+	}
+
 	for(i=0;i<CONFIG_SYS_SCSI_MAX_DEVICE;i++) {
 		scsi_dev_desc[i].target=0xff;
 		scsi_dev_desc[i].lun=0xff;
@@ -133,7 +144,7 @@ void scsi_scan(int mode)
 		pccb->target=i;
 		for(lun=0;lun<CONFIG_SYS_SCSI_MAX_LUN;lun++) {
 			pccb->lun=lun;
-			pccb->pdata=(unsigned char *)&tempbuff;
+			pccb->pdata = (unsigned char *)tempbuff;
 			pccb->datalen=512;
 			scsi_setup_inquiry(pccb);
 			if(scsi_exec(pccb)!=TRUE) {

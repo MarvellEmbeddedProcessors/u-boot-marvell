@@ -482,9 +482,7 @@ MV_U32 mvCtrlbootSrcGet(void)
 *******************************************************************************/
 MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel)
 {
-	MV_U32 devFamilyId = ctrlModel & 0xFF00;
-
-	return devFamilyId;
+	return MV_88F68XX;
 }
 
 /*******************************************************************************

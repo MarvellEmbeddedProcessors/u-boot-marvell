@@ -36,6 +36,7 @@
 #include <ahci.h>
 #include <malloc.h>
 
+
 #ifdef CONFIG_SCSI_DEV_LIST
 #define SCSI_DEV_LIST CONFIG_SCSI_DEV_LIST
 #else
@@ -54,19 +55,24 @@
 #elif defined CONFIG_SCSI_MV94XX
 #define SCSI_VEND_ID 0x1b4b
 #define SCSI_DEV_ID  0x9485
-
 #elif defined CONFIG_SCSI_6820
-#define SCSI_VEND_ID	0x11AB
+#define SCSI_VEND_ID   0x11AB
 #define SCSI_DEV_ID     0x6820
 
 #elif !defined(CONFIG_SCSI_AHCI_PLAT)
 #error no scsi device defined
 #endif
-#define SCSI_DEV_LIST {SCSI_VEND_ID, SCSI_DEV_ID}
+#define SCSI_DEV_LIST {SCSI_VEND_ID, SCSI_DEV_ID}, {0, 0}
 #endif
 
 #ifdef CONFIG_PCI
-const struct pci_device_id scsi_device_list[] = { SCSI_DEV_LIST };
+#if defined CONFIG_SCSI_MV94XX
+static struct pci_device_id mv94xx_pci_ids[] = {
+        {0x1b4b, 0x9485},
+        {0x1b4b, 0x9445},
+};
+#else
+static struct pci_device_id scsi_device_list[] = { SCSI_DEV_LIST };
 #endif
 static ccb tempccb;	/* temporary scsi command buffer */
 
@@ -121,7 +127,7 @@ void scsi_scan(int mode)
 		}
 	}
 
-	for(i=0;i<CONFIG_SYS_SCSI_MAX_DEVICE;i++) {
+	for(i = 0; i < CONFIG_SYS_SCSI_MAX_DEVICE; i++) {
 		scsi_dev_desc[i].target=0xff;
 		scsi_dev_desc[i].lun=0xff;
 		scsi_dev_desc[i].lba=0;
@@ -200,8 +206,8 @@ removable:
 			scsi_max_devs++;
 		} /* next LUN */
 	}
-	if(scsi_max_devs>0)
-		scsi_curr_dev=0;
+	if (scsi_max_devs > 0)
+		scsi_curr_dev = 0;
 	else
 		scsi_curr_dev = -1;
 
@@ -214,13 +220,6 @@ int scsi_get_disk_count(void)
 	return scsi_max_devs;
 }
 
-#ifdef CONFIG_PCI
-#if defined CONFIG_SCSI_MV94XX
-static struct pci_device_id mv94xx_pci_ids[] = {
-        {0x1b4b, 0x9485},
-        {0x1b4b, 0x9445},
-};
-#endif
 
 void scsi_init(void)
 {
@@ -238,44 +237,35 @@ void scsi_init(void)
 		scsi_low_level_init(busdevfunc);
 	else
 		scsi_bus_reset(); /*mult-time "scsi init", no need re-assign resource"*/
-	scsi_scan(1);
-#elif defined CONFIG_SCSI_6820
-	scsi_scan(1);
 #else
-	int busdevfunc;
-	int i;
-	for (i = 0; i < ARRAY_SIZE(scsi_device_list); i++) {
-		/* get PCI Device ID */
-		busdevfunc = pci_find_device(scsi_device_list[i].vendor,
-					     scsi_device_list[i].device,
-					     0);
-		if (busdevfunc != -1)
+	int i, busdevfunc, index = 0;
+	for (;;) {
+		busdevfunc = pci_find_devices(scsi_device_list, index);
+		if (busdevfunc == -1) {
+			if (index == 0) {
+				printf("Error: SCSI Controller(s) ");
+				for (i = 0; i < ARRAY_SIZE(scsi_device_list) - 1; i++) {
+					printf("%04X:%04X ",
+					       scsi_device_list[i].vendor,
+					       scsi_device_list[i].device);
+				}
+				printf("not found\n");
+			}
 			break;
-	}
-
-	if (busdevfunc == -1) {
-		printf("Error: SCSI Controller(s) ");
-		for (i = 0; i < ARRAY_SIZE(scsi_device_list); i++) {
-			printf("%04X:%04X ",
-			       scsi_device_list[i].vendor,
-			       scsi_device_list[i].device);
 		}
-		printf("not found\n");
-		return;
-	}
 #ifdef DEBUG
-	else {
-		printf("SCSI Controller (%04X,%04X) found (%d:%d:%d)\n",
-		       scsi_device_list[i].vendor,
-		       scsi_device_list[i].device,
-		       (busdevfunc >> 16) & 0xFF,
-		       (busdevfunc >> 11) & 0x1F,
-		       (busdevfunc >> 8) & 0x7);
+		else {
+			printf("SCSI Controller found (%d:%d:%d)\n",
+			       (busdevfunc >> 16) & 0xFF,
+			       (busdevfunc >> 11) & 0x1F,
+			       (busdevfunc >> 8) & 0x7);
+		}
+#endif
+		scsi_low_level_init(busdevfunc);
+		index++;
 	}
 #endif
-	scsi_low_level_init(busdevfunc);
 	scsi_scan(1);
-#endif
 }
 #endif
 

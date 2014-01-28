@@ -88,12 +88,14 @@ MV_BOARD_TWSI_INFO db88f6720InfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO db88f6720InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x0									}
+	{ BOARD_MAC_SPEED_AUTO, 0x0									},
+	{ BOARD_MAC_SPEED_AUTO, 0x3									},
+	{ N_A,			N_A									}
 };
 MV_BOARD_MPP_TYPE_INFO db88f6720InfoBoardModTypeInfo[] = {
 	{
 		.boardMppSlic = MV_BOARD_SLIC_DISABLED,
-		.ethSataComplexOpt = MV_ETHCOMP_GE_MAC0_2_RGMII0,
+		.ethSataComplexOpt = (MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3 | MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0),
 		.ethPortsMode = 0x0
 	}
 };

@@ -245,7 +245,9 @@ void mvBoardEgigaPhyInit(void)
 
 #elif defined(MV88F672X) /* Armada-375: static PPv2 configuration */
 
-	/* MAC0 is connected to RGMII on board*/
+	/* MAC0 is GE-PHY#0 on board*/
+	/* MAC1 is GE-PHY#3 on board*/
 	mvEthPhyInit(0, MV_FALSE);
+	mvEthPhyInit(1, MV_FALSE);
 #endif
 }

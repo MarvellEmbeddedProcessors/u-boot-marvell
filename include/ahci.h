@@ -171,6 +171,7 @@ struct ahci_probe_ent {
 	u32	cap;	/* cache of HOST_CAP register */
 	u32	port_map; /* cache of HOST_PORTS_IMPL reg */
 	u32	link_port_map; /*linkup port map*/
+	u16	*ataid[AHCI_MAX_PORTS];
 };
 
 int ahci_init(u32 base);

@@ -51,7 +51,7 @@
 /*
  * Version
  */
-#define CONFIG_IDENT_STRING	" Marvell version: 2014_T1.0"
+#define CONFIG_IDENT_STRING	" Marvell version: 2014_T1.0.p001"
 
 /* Version number passed to kernel */
 #define VER_NUM 0x13010000              /* 2013.01 */
@@ -66,7 +66,13 @@
 #define MV_DDR_64BIT
 #define MV_BOOTROM
 
+#define MV_USB2
+#undef MV_USB3
+
+#if defined (MV_USB3) || defined (MV_USB2)
 #define MV_USB
+#endif
+
 #define MV_FS
 #define CONFIG_CMD_DATE
 #define CONFIG_BOARD_EARLY_INIT_F
@@ -413,13 +419,17 @@ extern unsigned int mvTclkGet(void);
 /*
  * USB
  */
+#ifdef MV_USB2
+	#define CONFIG_USB_EHCI
+#elif defined MV_USB3
+	#define CONFIG_USB_XHCI
+	#define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS  1
+#endif
+
 #ifdef MV_USB
 	#define MV_INCLUDE_USB
 	#define CONFIG_CMD_USB
 	#define CONFIG_USB_STORAGE
-	#define CONFIG_USB_EHCI
-/*  FIX-ME : disabled CONFIG_USB_EHCI_MARVELL : break compilation
- #define CONFIG_USB_EHCI_MARVELL */
 	#define CONFIG_EHCI_IS_TDI
 	#define CONFIG_DOS_PARTITION
 	#define CONFIG_ISO_PARTITION

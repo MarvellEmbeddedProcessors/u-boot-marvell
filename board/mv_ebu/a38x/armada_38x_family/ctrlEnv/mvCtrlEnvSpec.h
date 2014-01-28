@@ -134,6 +134,9 @@ extern "C" {
 #define SATA3_MAX_PORTS_PER_UNIT		2
 #define MV_ETH_SMI_PORT   0
 
+/* USB3 registers */
+#define USB3_REGS_PHYS_BASE(dev)		(INTER_REGS_BASE + MV_USB3_REGS_BASE(dev))
+
 /*
  * Miscellanuous Controller Configurations
  */

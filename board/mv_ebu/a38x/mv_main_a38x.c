@@ -216,6 +216,7 @@ void misc_init_r_dec_win(void)
 #else
 #if defined(MV_INCLUDE_USB)
 	{
+#ifdef CONFIG_USB_EHCI
 		char envname[10];
 		int i;
 
@@ -224,12 +225,13 @@ void misc_init_r_dec_win(void)
 			env = getenv(envname);
 			if ((!env) || (strcmp(env, "device") == 0) || (strcmp(env, "Device") == 0) ) {
 				printf("USB %d: Device Mode\n", i);
-				mvSysUsbInit(i, MV_FALSE);
+				mvSysUsbInit(i, MV_FALSE, MV_FALSE);
 			}else  {
 				printf("USB %d: Host Mode\n", i);
-				mvSysUsbInit(i, MV_TRUE);
+				mvSysUsbInit(i, MV_TRUE, MV_FALSE);
 			}
 		}
+#endif
 	}
 #endif  /* MV_INCLUDE_USB */
 #endif
@@ -1077,7 +1079,7 @@ int misc_init_r(void)
 		mvSysSata3WinInit();
 		if(strcmp(getenv("sataActive"), "1") == 0)
 			sataPort = 1;
-		printf("SCSI: active port %d, offset 0x%x\n",
+		printf("SCSI: active SATA unit %d, offset 0x%x\n",
 		       sataPort, (INTER_REGS_BASE | MV_SATA3_REGS_OFFSET(sataPort)));
 		if (0 == ahci_init(INTER_REGS_BASE | MV_SATA3_REGS_OFFSET(sataPort)))
 			scsi_init();

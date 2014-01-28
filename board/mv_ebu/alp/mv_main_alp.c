@@ -220,10 +220,10 @@ void misc_init_r_dec_win(void)
 			env = getenv(envname);
 			if ((!env) || (strcmp(env, "device") == 0) || (strcmp(env, "Device") == 0) ) {
 				printf("USB %d: Device Mode\n", i);
-				mvSysUsbInit(i, MV_FALSE);
+				mvSysUsbInit(i, MV_FALSE, MV_TRUE);
 			}else  {
 				printf("USB %d: Host Mode\n", i);
-				mvSysUsbInit(i, MV_TRUE);
+				mvSysUsbInit(i, MV_TRUE, MV_TRUE);
 			}
 		}
 	}

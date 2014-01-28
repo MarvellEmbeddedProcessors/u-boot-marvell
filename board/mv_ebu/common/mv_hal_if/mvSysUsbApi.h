@@ -65,6 +65,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __MV_SYS_USB_API_H__
 #define __MV_SYS_USB_API_H__
 
-MV_STATUS   mvSysUsbInit(MV_U32 dev, MV_BOOL isHost);
+MV_STATUS mvSysUsbInit(MV_U32 dev, MV_BOOL isHost, MV_BOOL isUsb3);
 
 #endif

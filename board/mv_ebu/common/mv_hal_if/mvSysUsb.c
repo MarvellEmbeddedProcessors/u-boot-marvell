@@ -83,32 +83,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *       None
 *
 *******************************************************************************/
-MV_STATUS   mvSysUsbInit(MV_U32 dev, MV_BOOL isHost)
+MV_STATUS mvSysUsbInit(MV_U32 dev, MV_BOOL isHost, MV_BOOL isUsb3)
 {
 	MV_USB_HAL_DATA halData;
 	MV_STATUS status = MV_OK;
-#if defined (CONFIG_USB_EHCI)
 	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
-#endif
 
 	halData.ctrlModel = mvCtrlModelGet();
 	halData.ctrlRev = mvCtrlRevGet();
 	halData.ctrlFamily = mvCtrlDevFamilyIdGet(halData.ctrlModel);
 
-#if defined (CONFIG_USB_XHCI)
-	/* for USB3.0 only UTMI Phy Init is needed from usb HAL */
-	status = mvUsbUtmiPhyInit(dev, &halData);
+	/*
+	 * For USB3 initialize only the UTMI PHY
+	 * For USB2 initialize the PHY and the controller
+	 */
+	if (isUsb3)
+		status = mvUsbUtmiPhyInit(dev, &halData);
+	else {
+		status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
+		if (status == MV_OK)
+			status = mvUsbWinInit(dev, addrWinMap);
 
-#elif defined (CONFIG_USB_EHCI)
-	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
-	if (status == MV_OK)
-		status = mvUsbWinInit(dev, addrWinMap);
-
-	if (dev == 0)
-		mvUsbPllInit();
-	if (status == MV_OK)
-		status = mvUsbHalInit(dev, isHost, &halData);
-#endif
+		/* Pll init is not relevant to Armada 38x */
+		if ((dev == 0) && (halData.ctrlFamily != MV_88F68XX))
+			mvUsbPllInit();
+		if (status == MV_OK)
+			status = mvUsbHalInit(dev, isHost, &halData);
+	}
 
 	return status;
 }

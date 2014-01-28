@@ -69,6 +69,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /****************************************/
 /* ARM Control and Status Registers Map */
 /****************************************/
+#include "mvTypes.h"
 #include "ctrlEnv/mvCtrlEnvSpec.h"
 #include "ctrlEnv/mvCtrlEnvRegs.h"
 

@@ -162,28 +162,12 @@ MV_U32	mvCtrlPciMaxIfGet(MV_VOID);
 
 MV_U32	  mvCtrlEthMaxPortGet(MV_VOID);
 MV_U8	  mvCtrlEthMaxCPUsGet(MV_VOID);
-#if defined(MV_INCLUDE_IDMA)
-MV_U32 mvCtrlIdmaMaxUnitGet(MV_VOID);
-MV_U32 mvCtrlIdmaMaxChanGet(MV_VOID);
-#endif
 #if defined(MV_INCLUDE_XOR)
 MV_U32 mvCtrlXorMaxChanGet(MV_VOID);
 MV_U32 mvCtrlXorMaxUnitGet(MV_VOID);
 #endif
-#if defined(MV_INCLUDE_USB)
-MV_U32 	  mvCtrlUsbMaxGet(MV_VOID);
-#endif
-#if defined(MV_INCLUDE_LEGACY_NAND)
-MV_U32	  mvCtrlNandSupport(MV_VOID);
-#endif
 #if defined(MV_INCLUDE_SDIO)
 MV_U32	  mvCtrlSdioSupport(MV_VOID);
-#endif
-#if defined(MV_INCLUDE_TDM)
-MV_U32	  mvCtrlTdmSupport(MV_VOID);
-MV_U32	  mvCtrlTdmMaxGet(MV_VOID);
-MV_UNIT_ID mvCtrlTdmUnitTypeGet(MV_VOID);
-MV_U32    mvCtrlTdmUnitIrqGet(MV_VOID);
 #endif
 MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel);
 MV_U16    mvCtrlModelGet(MV_VOID);

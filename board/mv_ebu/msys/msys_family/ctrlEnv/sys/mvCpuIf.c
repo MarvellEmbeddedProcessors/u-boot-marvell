@@ -192,10 +192,6 @@ MV_STATUS mvCpuIfInitForCpu(MV_U32 cpu, MV_CPU_DEC_WIN *cpuAddrWinMap)
 	for (target = 0; cpuAddrWinMap[target].enable != TBL_TERM; target++) {
 		if ((MV_TARGET_IS_DRAM(target)) || (target == INTER_REGS))
 			continue;
-#ifdef CONFIG_MV_AMP_ENABLE
-		if(target == BOOT_ROM_CS)
-			continue;
-#endif
 
 #if defined(MV_MEM_OVER_PEX_WA) || defined(MV_UART_OVER_PEX_WA)
 		/* If the target PEX or PCI and memory is over PEX or PCI we don't touch this CPU windows */
@@ -297,8 +293,8 @@ MV_STATUS mvCpuIfDramInit()
 
 	for (cs = 0; cs < SDRAM_MAX_CS; cs++) {
 		if (cs == 0) {
-			printf("%s: TODO when ddr training is ready:\n", __func__);
-			printf("fix SDRAM_SIZE_REG(%d) (currently hard-coded value is 0x3FFFFFE1)\n", cs);
+			mvOsPrintf("%s: TODO when ddr training is ready:\n", __func__);
+			mvOsPrintf("fix SDRAM_SIZE_REG(%d) (currently hard-coded value is 0x3FFFFFE1)\n", cs);
 			MV_REG_WRITE(SDRAM_SIZE_REG(cs), 0x3FFFFFE1 | ((cs << SDRAMWCR_CS_OFFS) & SDRAMWCR_CS_MASK));
 		} else
 			MV_REG_WRITE(SDRAM_SIZE_REG(cs), 0x00FFFFE0 | ((cs << SDRAMWCR_CS_OFFS) & SDRAMWCR_CS_MASK));

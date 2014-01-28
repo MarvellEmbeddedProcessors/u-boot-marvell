@@ -79,9 +79,6 @@ extern "C" {
 #define PCCRIR_REVID_OFFS			0		/* Revision ID */
 #define PCCRIR_REVID_MASK			(0xff << PCCRIR_REVID_OFFS)
 
-/* Controler environment registers offsets */
-#define MV_TDM_IRQ_NUM				56
-
 
 /* Coherent Fabric Control and Status */
 #define MV_COHERENCY_FABRIC_CTRL_REG		(MV_COHERENCY_FABRIC_OFFSET + 0x0)
@@ -122,21 +119,6 @@ extern "C" {
 #define PMC_CPUSTOPMEM_MASK(id)			(7 << PMC_CPUSTOPMEM_OFFS(id))
 #define PMC_CPUSTOPMEM_EN(id)			(0 << PMC_CPUSTOPMEM_OFFS(id))
 #define PMC_CPUSTOPMEM_STOP(id)			(1 << PMC_CPUSTOPMEM_OFFS(id))
-
-#define PMC_IDMASTOPMEM_OFFS			12
-#define PMC_IDMASTOPMEM_MASK			(7 << PMC_IDMASTOPMEM_OFFS)
-#define PMC_IDMASTOPMEM_EN			(0 << PMC_IDMASTOPMEM_OFFS)
-#define PMC_IDMASTOPMEM_STOP			(1 << PMC_IDMASTOPMEM_OFFS)
-
-#define PMC_LCDSTOPMEM_OFFS			0
-#define PMC_LCDSTOPMEM_MASK			(7 << PMC_LCDSTOPMEM_OFFS)
-#define PMC_LCDSTOPMEM_EN			(0 << PMC_LCDSTOPMEM_OFFS)
-#define PMC_LCDSTOPMEM_STOP			(1 << PMC_LCDSTOPMEM_OFFS)
-
-#define PMC_PMUSTOPMEM_OFFS			0
-#define PMC_PMUSTOPMEM_MASK			(7 << PMC_PMUSTOPMEM_OFFS)
-#define PMC_PMUSTOPMEM_EN			(0 << PMC_PMUSTOPMEM_OFFS)
-#define PMC_PMUSTOPMEM_STOP			(1 << PMC_PMUSTOPMEM_OFFS)
 
 
 /*  Power Management Clock Gating Control Register	*/
@@ -256,7 +238,7 @@ extern "C" {
 /*****************/
 /*  registers */
 /*****************/
-#define  I2C_CONFIC_DEBUG_REG	0x1180c
+#define I2C_CONFIC_DEBUG_REG	0x1108c
 #define	ICDR_UINIT_ID_MASK	0x0F
 #define ICDR_UNIT_ID_4_DFX	0x0f
 

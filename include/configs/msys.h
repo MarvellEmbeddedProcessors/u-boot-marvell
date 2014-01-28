@@ -78,13 +78,6 @@ disclaimer.
 #define MV_MEM_FASTPATH
 #define MV_BOOTROM
 
-#define MV_USB2
-#undef MV_USB3
-
-#if defined (MV_USB3) || defined (MV_USB2)
-#define MV_USB
-#endif
-
 /*********/
 /* Debug */
 /*********/

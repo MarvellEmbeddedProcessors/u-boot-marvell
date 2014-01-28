@@ -162,7 +162,7 @@ MV_U32 mvBoardDfxConfig(MV_VOID)
 
 	/* open windows to DFX */
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(1), 0x000f0081);
-	MV_REG_WRITE(AHB_TO_MBUS_WIN_BASE_REG(1), DFX_REGS_BASE);
+	MV_REG_WRITE(AHB_TO_MBUS_WIN_BASE_REG(1), 0xF5000000);
 
 	return 0;
 }
@@ -1267,8 +1267,8 @@ MV_STATUS mvBoardTwsiRead(MV_BOARD_TWSI_CLASS class1, MV_U8 devNum, MV_U8 regNum
 	slave.address = 0;
 	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
 
+
 	if (MV_OK != mvTwsiRead(0, &twsiSlave, pData, 1)) {
-		mvOsPrintf("Board: Read S@R fail\n");
 		DB(mvOsPrintf("Board: Read S@R fail\n"));
 		return MV_ERROR;
 	}
@@ -1329,7 +1329,6 @@ MV_STATUS mvBoardTwsiWrite(MV_BOARD_TWSI_CLASS class1, MV_U8 devNum, MV_U8 regNu
 * DESCRIPTION:
 *
 * INPUT:
-*	SatR bios index - 0,1,2
 *	device num - one of three devices
 *	reg num - 0 or 1
 *
@@ -1385,7 +1384,6 @@ MV_STATUS mvBoardCoreFreqGet(MV_U8 *value)
 }
 
 /*******************************************************************************/
-//MV_STATUS mvBoardFabFreqSet(MV_U8 freqVal)
 MV_STATUS mvBoardCoreFreqSet(MV_U8 freqVal)
 {
 	MV_U8 sar0;

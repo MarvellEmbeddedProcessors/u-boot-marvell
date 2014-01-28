@@ -96,6 +96,8 @@ extern "C" {
 #define MV_MISC_REGS_OFFSET			(0x18200)
 #define MV_MBUS_REGS_OFFSET			(0x20000)
 #define MV_COHERENCY_FABRIC_OFFSET		(0x20200)
+#define MV_COHERENCY_FABRIC_CTRL_REG		(MV_COHERENCY_FABRIC_OFFSET + 0x0)
+#define MV_COHERENCY_FABRIC_CFG_REG		(MV_COHERENCY_FABRIC_OFFSET + 0x4)
 #define MV_CIB_CTRL_STATUS_OFFSET		(0x20280)
 #define MV_CNTMR_REGS_OFFSET			(0x20300)
 #define MV_CPUIF_LOCAL_REGS_OFFSET		(0x21000)
@@ -134,7 +136,6 @@ extern "C" {
 #define AVS_LOW_VDD_LIMIT			0x20860
 
 #define INTER_REGS_SIZE				_1M
-#define DFX_REGS_SIZE				_1M
 
 /* This define describes the TWSI interrupt bit and location */
 #define TWSI_CPU_MAIN_INT_CAUSE_REG(cpu)	CPU_MAIN_INT_CAUSE_REG(1, (cpu))
@@ -145,19 +146,11 @@ extern "C" {
 #define MV_GPP_MAX_GROUP    			2 	/* group == configuration register? */
 #define MV_CNTMR_MAX_COUNTER 			8 	/* 4 global + 1 global WD + 2 current private CPU + 1 private CPU WD*/
 
-
 #define MV_UART_MAX_CHAN			2
 
 #define MV_XOR_MAX_UNIT				1 /* XOR unit == XOR engine */
 #define MV_XOR_MAX_CHAN         		2 /* total channels for all units together*/
 #define MV_XOR_MAX_CHAN_PER_UNIT		2 /* channels for units */
-
-#if defined(MV_INCLUDE_IDMA)
-#define MV_IDMA_MAX_UNIT			0 /* IDMA unit == IDMA engine */
-#define MV_IDMA_MAX_CHAN			0 /* total channels for all units together */
-#endif
-
-#define MV_SATA_MAX_CHAN			0
 
 #define MV_MPP_MAX_GROUP			5
 
@@ -191,15 +184,9 @@ extern "C" {
 #define PCI_IO(pciIf)				(PEX0_IO + 2 * (pciIf))
 #define PCI_MEM(pciIf, memNum)			(PEX0_MEM0 + 2 * (pciIf))
 /* This define describes the maximum number of supported PCI Interfaces 	*/
-#define MV_IDMA_MAX_CHAN			2
-#define BC2_MAX_USB_PORTS			0
 #define BC2_NAND				1
 #define BC2_SDIO				1
 #define MV_DEVICE_MAX_CS      			4
-
-#ifndef MV_USB_MAX_PORTS
-#define MV_USB_MAX_PORTS 			BC2_MAX_USB_PORTS
-#endif
 
 
 /* This define describes the maximum number of supported Ethernet ports */
@@ -210,7 +197,6 @@ extern "C" {
 #define MV_ETH_MAX_RXQ              		8
 #define MV_ETH_MAX_TXQ              		8
 #define MV_ETH_TX_CSUM_MAX_SIZE 		9800
-#define MV_PNC_TCAM_LINES			1024	/* TCAM num of entries */
 #define BOARD_ETH_SWITCH_PORT_NUM		2
 
 /* New GMAC module is used */
@@ -219,15 +205,8 @@ extern "C" {
 #define MV_ETH_WRR_NEW
 /* IPv6 parsing support for Legacy parser */
 #define MV_ETH_LEGACY_PARSER_IPV6
-/* New PNC module - extra fields */
-#define MV_ETH_PNC_NEW
-/* PNC Load Balancing support */
-#define MV_ETH_PNC_LB
 
 #define MV_MV_98DX_ETH_MAX_PORT			2
-
-/* This define describes the the support of USB */
-#define MV_USB_VERSION  			1
 
 #define MV_SPI_VERSION				2
 
@@ -251,21 +230,10 @@ typedef enum _mvUnitId {
 	DRAM_UNIT_ID,
 	PEX_UNIT_ID,
 	ETH_GIG_UNIT_ID,
-	USB_UNIT_ID,
-	USB3_UNIT_ID,
-	IDMA_UNIT_ID,
 	XOR_UNIT_ID,
-	SATA_UNIT_ID,
-	TDM_UNIT_ID,
 	UART_UNIT_ID,
-	CESA_UNIT_ID,
 	SPI_UNIT_ID,
-	AUDIO_UNIT_ID,
 	SDIO_UNIT_ID,
-	TS_UNIT_ID,
-	XPON_UNIT_ID,
-	BM_UNIT_ID,
-	PNC_UNIT_ID,
 	I2C_UNIT_ID,
 	MAX_UNITS_ID
 } MV_UNIT_ID;
@@ -317,8 +285,6 @@ typedef enum _mvTarget {
 	SPI_CS7,	/* 20 SPI_CS7			*/
 	BOOT_ROM_CS, 	/* 21 BOOT_ROM_CS		*/
 	DEV_BOOCS,	/* 22 DEV_BOOCS			*/
-	PMU_SCRATCHPAD,	/* 23 PMU Scratchpad		*/
-	PNC_BM,		/* 24 PNC + BM 		        */
 	MAX_TARGETS
 } MV_TARGET;
 
@@ -346,7 +312,7 @@ typedef enum _mvTarget {
 	{0xE8, PEX0_TARGET_ID	},		/*  8 PEX0_LANE0_MEM */	\
 	{0xE0, PEX0_TARGET_ID	},		/*  9 PEX0_LANE0_IO */	\
 	{0xFF, 0xFF             },		/* 10 INTER_REGS */	\
-	{0x81, DEV_TARGET_ID    },		/* 11 DFX_INTER_REGS */	\
+	{0x00, 8		},		/* 11 DFX_INTER_REGS */	\
 	{0x01, DEV_TARGET_ID    },		/* 12 DMA_UART */	\
 	{0x1E, DEV_TARGET_ID    },		/* 13 SPI_CS0 */	\
 	{0x5E, DEV_TARGET_ID    },		/* 14 SPI_CS1 */	\
@@ -358,8 +324,6 @@ typedef enum _mvTarget {
 	{0xDF, DEV_TARGET_ID    },		/* 20 SPI_CS7 */	\
 	{0x1D, DEV_TARGET_ID    },		/* 21 BOOT_ROM_CS (Main Boot device )*/	\
 	{0x2F, DEV_TARGET_ID    },		/* 22 DEV_BOOT_CS (Secondary Boot device,)*/	\
-	{0x2D, DEV_TARGET_ID    },		/* 23 PMU_SCRATCHPAD */	\
-	{0x00, PNC_BM_TARGET_ID },		/* 24 PNC_BM */		\
 }
 
 #define TARGETS_NAME_ARRAY	{			\
@@ -372,7 +336,7 @@ typedef enum _mvTarget {
 	"DEVICE_CS2",		/*  6 DEVICE_CS2 */	\
 	"DEVICE_CS3",		/*  7 DEVICE_CS3 */	\
 	"PEX0_MEM",		/*  8 PEX0_MEM */	\
-	"PEX0_IO",		/*  9 PEX0_IO */	\
+	"PEX0_IO",		/*  9 PEX0_IO */		\
 	"INTER_REGS",		/* 10 INTER_REGS */	\
 	"DFX_INTER_REGS",	/* 11 INTER_REGS */	\
 	"DMA_UART",		/* 12 DMA_UART */	\
@@ -386,8 +350,6 @@ typedef enum _mvTarget {
 	"SPI_CS7",		/* 20 SPI_CS7 */	\
 	"BOOT_ROM_CS",		/* 21 BOOT_ROM_CS */	\
 	"DEV_BOOTCS",		/* 22 DEV_BOOCS */	\
-	"PMU_SCRATCHPAD",	/* 23 PMU_SCRATCHPAD */	\
-	"PNC_BM"		/* 24 PNC_BM */		\
 }
 
 

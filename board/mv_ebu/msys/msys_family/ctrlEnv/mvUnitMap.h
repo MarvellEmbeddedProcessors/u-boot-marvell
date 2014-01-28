@@ -107,22 +107,12 @@ typedef enum
 /*#define UART0_T0_CPU1	0x0001
 #define UART1_TO_CPU1	0x0002
 #define PEX0_TO_CPU1	0x0004
-#define PEX1_TO_CPU1	0x0008
 #define GIGA0_TO_CPU1	0x0010
 #define GIGA1_TO_CPU1	0x0020
-#define GIGA2_TO_CPU1	0x0040
-#define GIGA3_TO_CPU1	0x0080
-#define SATA_TO_CPU1	0x0100
 #define XOR_TO_CPU1		0x0200
-#define IDMA_TO_CPU1	0x0400
-#define USB0_TO_CPU1	0x0800
-#define USB1_TO_CPU1    0x1000
-#define USB2_TO_CPU1    0x2000
-#define CESA_TO_CPU1	0x4000
 #define NOR_TO_CPU1		0x8000
 #define NAND_TO_CPU1	0x10000
 #define SPI_TO_CPU1		0x20000
-#define TDM_TO_CPU1		0x40000
 
 #define CPU1_DEFAULT_INTERFACE (UART1_TO_CPU1 | PEX1_TO_CPU1 | GIGA2_TO_CPU1 | GIGA3_TO_CPU1 | IDMA_TO_CPU1 | USB1_TO_CPU1)*/
 
@@ -134,17 +124,6 @@ typedef struct __MV_RES_MAP
 
 typedef char *(*STRSTR_FUNCPTR)(const char *s1, const char *s2);
 
-#ifdef CONFIG_MV_AMP_ENABLE
-
-MV_BOOL mvUnitMapIsMine(MV_SOC_UNIT unitIdx);
-MV_BOOL mvUnitMapIsPexMine(int pciIf);
-MV_VOID mvUnitMapSetMine(MV_SOC_UNIT unitIdx);
-MV_BOOL mvUnitMapSetup(char* p, STRSTR_FUNCPTR strstr_func);
-MV_VOID mvUnitMapSetAllMine(void);
-MV_VOID mvUnitMapPrint(void);
-MV_BOOL mvUnitMapIsRsrcLimited(void);
-MV_VOID mvUnitMapSetRsrcLimited(MV_BOOL isLimited);
-#else /* CONFIG_MV_AMP_ENABLE */
 #define mvUnitMapIsMine(rsrc) 		MV_TRUE
 #define mvUnitMapIsPexMine(pciIf) 	MV_TRUE
 #define mvUnitMapIsRsrcLimited 	  	MV_TRUE
@@ -153,6 +132,5 @@ MV_VOID mvUnitMapSetRsrcLimited(MV_BOOL isLimited);
 #define mvUnitMapSetAllMine
 #define mvUnitMapPrint
 #define mvUnitMapSetup(str, strstr_func) MV_TRUE
-#endif /* CONFIG_MV_AMP_ENABLE */
 
 #endif /* mvUnitMap_h */

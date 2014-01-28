@@ -87,17 +87,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "xor/mvXor.h"
 #endif
 
-#if defined(MV_INCLUDE_SATA)
-#include "sata/CoreDriver/mvSata.h"
-#endif
-#if defined(MV_INCLUDE_USB)
-#include "usb/mvUsb.h"
-#endif
-
-#if defined(MV_INCLUDE_TDM)
-#include "mvSysTdmConfig.h"
-#endif
-
 #include "ddr2_3/mvDramIfRegs.h"
 
 /* defines  */
@@ -113,21 +102,10 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][1] = {
 /* DRAM_UNIT_ID         */ { 1, },
 /* PEX_UNIT_ID          */ { 1, },
 /* ETH_GIG_UNIT_ID      */ { 2, },
-/* USB_UNIT_ID          */ { 1, },
-/* USB3_UNIT_ID          */ { 1, },
-/* IDMA_UNIT_ID         */ { 0, },
 /* XOR_UNIT_ID          */ { 2, },
-/* SATA_UNIT_ID         */ { 2, },
-/* TDM_32CH_UNIT_ID     */ { 1, },
 /* UART_UNIT_ID         */ { 2, },
-/* CESA_UNIT_ID         */ { 1, },
 /* SPI_UNIT_ID          */ { 2, },
-/* AUDIO_UNIT_ID        */ { 1, },
 /* SDIO_UNIT_ID         */ { 1, },
-/* TS_UNIT_ID           */ { 0, },
-/* XPON_UNIT_ID         */ { 1, },
-/* BM_UNIT_ID           */ { 1, },
-/* PNC_UNIT_ID          */ { 1, },
 /* I2C_UNIT_ID          */ { 2, },
 };
 
@@ -352,74 +330,6 @@ MV_U8 mvCtrlEthMaxCPUsGet(MV_VOID)
 	return 2;
 }
 
-
-#if defined(MV_INCLUDE_SATA)
-/*******************************************************************************
-* mvCtrlSataMaxPortGet - Get Marvell controller number of Sata ports.
-*
-* DESCRIPTION:
-*       This function returns Marvell controller number of Sata ports.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       Marvell controller number of Sata ports.
-*
-*******************************************************************************/
-MV_U32 mvCtrlSataMaxPortGet(MV_VOID)
-{
-	return 0;
-}
-#endif
-
-#if defined(MV_INCLUDE_IDMA)
-/*******************************************************************************
-* mvCtrlIdmaMaxChanGet - Get Marvell controller number of IDMA channels.
-*
-* DESCRIPTION:
-*       This function returns Marvell controller number of IDMA channels.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       Marvell controller number of IDMA channels.
-*
-*******************************************************************************/
-MV_U32 mvCtrlIdmaMaxChanGet(MV_VOID)
-{
-	return MV_IDMA_MAX_CHAN;
-}
-
-/*******************************************************************************
-* mvCtrlIdmaMaxUnitGet - Get Marvell controller number of IDMA units.
-*
-* DESCRIPTION:
-*       This function returns Marvell controller number of IDMA units.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       Marvell controller number of IDMA units.
-*
-*******************************************************************************/
-MV_U32 mvCtrlIdmaMaxUnitGet(MV_VOID)
-{
-	return MV_IDMA_MAX_UNIT;
-}
-#endif /* MV_INCLUDE_IDMA */
-
 #if defined(MV_INCLUDE_XOR)
 /*******************************************************************************
 * mvCtrlXorMaxChanGet - Get Marvell controller number of XOR channels.
@@ -465,50 +375,6 @@ MV_U32 mvCtrlXorMaxUnitGet(MV_VOID)
 
 #endif
 
-#if defined(MV_INCLUDE_USB)
-/*******************************************************************************
-* mvCtrlUsbHostMaxGet - Get number of Marvell Usb  controllers
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       returns number of Marvell USB  controllers.
-*
-*******************************************************************************/
-MV_U32 mvCtrlUsbMaxGet(void)
-{
-	return BC2_MAX_USB_PORTS;
-}
-#endif
-
-#if defined(MV_INCLUDE_LEGACY_NAND)
-/*******************************************************************************
-* mvCtrlNandSupport - Return if this controller has integrated NAND flash support
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE if NAND is supported and MV_FALSE otherwise
-*
-*******************************************************************************/
-MV_U32 mvCtrlNandSupport(MV_VOID)
-{
-	return BC2_NAND;
-}
-#endif
-
 #if defined(MV_INCLUDE_SDIO)
 /*******************************************************************************
 * mvCtrlSdioSupport - Return if this controller has integrated SDIO flash support
@@ -530,91 +396,6 @@ MV_U32 mvCtrlSdioSupport(MV_VOID)
 	return BC2_SDIO;
 }
 #endif
-
-#if defined(MV_INCLUDE_TDM)
-/*******************************************************************************
-* mvCtrlTdmSupport - Return if this controller has integrated TDM flash support
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE if TDM is supported and MV_FALSE otherwise
-*
-*******************************************************************************/
-MV_U32 mvCtrlTdmSupport(MV_VOID)
-{
-	return BC2_TDM;
-}
-
-/*******************************************************************************
-* mvCtrlTdmMaxGet - Return the maximum number of TDM ports.
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       The number of TDM ports in device.
-*
-*******************************************************************************/
-MV_U32 mvCtrlTdmMaxGet(MV_VOID)
-{
-	return BC2_MAX_TDM_PORTS;
-}
-
-/*******************************************************************************
-* mvCtrlTdmTypeGet
-*
-* DESCRIPTION:
-*	Return the TDM unit type being compiled in.
-*
-* INPUT:
-*       None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*	The TDM unit type.
-*
-*******************************************************************************/
-MV_UNIT_ID mvCtrlTdmUnitTypeGet(MV_VOID)
-{
-	return TDM_UNIT_32CH;
-}
-
-/*******************************************************************************
-* mvCtrlTdmUnitIrqGet
-*
-* DESCRIPTION:
-*	Return the TDM unit IRQ number depending on the TDM unit compilation
-*	options.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	None.
-******************************************************************************/
-MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID)
-{
-	return MV_TDM_IRQ_NUM;
-}
-
-#endif /* if defined(MV_INCLUDE_TDM) */
 
 /*******************************************************************************
 * mvCtrlModelGet - Get Marvell controller device model (Id)
@@ -788,6 +569,7 @@ const MV_8 *mvCtrlTargetNameGet(MV_TARGET target)
 	return cntrlName[target];
 }
 
+#if defined(MV_INCLUDE_PEX)
 /*******************************************************************************
 * mvCtrlPexAddrDecShow - Print the PEX address decode map (BARs and windows).
 *
@@ -881,7 +663,9 @@ static MV_VOID mvCtrlPexAddrDecShow(MV_VOID)
 		}
 	}
 }
+#endif
 
+#if defined(MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_XOR)
 /*******************************************************************************
 * mvUnitAddrDecShow - Print the Unit's address decode map.
 *
@@ -937,6 +721,7 @@ static void mvUnitAddrDecShow(MV_U8 numUnits, MV_UNIT_ID unitId, const char *nam
 	}
 	return;
 }
+#endif
 
 /*******************************************************************************
 * mvCtrlAddrDecShow - Print the Controller units address decode map.
@@ -961,9 +746,6 @@ MV_VOID mvCtrlAddrDecShow(MV_VOID)
 #if defined(MV_INCLUDE_PEX)
 	mvCtrlPexAddrDecShow();
 #endif
-#if defined(MV_INCLUDE_USB)
-	mvUnitAddrDecShow(mvCtrlUsbMaxGet(), USB_UNIT_ID, "USB", mvUsbWinRead);
-#endif
 
 #if defined(MV_INCLUDE_GIG_ETH)
 #if defined(MV_ETH_LEGACY)
@@ -975,9 +757,6 @@ MV_VOID mvCtrlAddrDecShow(MV_VOID)
 
 #if defined(MV_INCLUDE_XOR)
 	mvUnitAddrDecShow(mvCtrlXorMaxChanGet(), XOR_UNIT_ID, "XOR", mvXorTargetWinRead);
-#endif
-#if defined(MV_INCLUDE_SATA)
-	mvUnitAddrDecShow(mvCtrlSataMaxPortGet(), SATA_UNIT_ID, "Sata", mvSataWinRead);
 #endif
 }
 
@@ -1290,7 +1069,9 @@ MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
 ******************************************************************************/
 MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 {
+#if defined(MV_INCLUDE_PEX) || defined(MV_INCLUDE_PEX) || defined(MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_SDIO)
 	MV_U32 reg = MV_REG_READ(POWER_MNG_CTRL_REG);
+#endif
 	MV_BOOL state = MV_TRUE;
 
 	switch (unitId) {
@@ -1539,10 +1320,11 @@ void mvCtrlGetPexActive(MV_BOOL *pPexActive, int size)
 *******************************************************************************/
 void mvCtrlNandClkSet(int nClock)
 {
+	MV_U32 nVal = MV_DFX_REG_READ(CORE_DIV_CLK_CTRL(2));
+
 	DB(mvOsPrintf("%s: CPU (PLL_1) clock)  = %d, dividor = %d\n", __func__, mvCpuPclkGet(), nClock));
 
 	/* Set the division ratio of ECC Clock 0x000F8270[9:6] (ECC clock = CPU / dividor) */
-	MV_U32 nVal = MV_DFX_REG_READ(CORE_DIV_CLK_CTRL(2));
 	nVal &= ~(NAND_ECC_DIVCKL_RATIO_MASK);
 	nVal |= (nClock << NAND_ECC_DIVCKL_RATIO_OFFS);
 	MV_DFX_REG_WRITE(CORE_DIV_CLK_CTRL(2), nVal);

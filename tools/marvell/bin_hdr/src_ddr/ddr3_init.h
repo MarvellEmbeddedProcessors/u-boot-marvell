@@ -137,5 +137,6 @@ MV_VOID     levelLogPrintDD(MV_U32 dec_num,MV_U32 length,MV_LOG_LEVEL eLogLevel)
 MV_VOID     printDunitSetup(void);
 MV_VOID ddr3SetDqsResultsPrintStatus(MV_U32 status);
 MV_U32      ddr3GetLogLevel(void);
+MV_VOID		ddr3NewTipDlbConfig(void);
 
 #endif /* _INC_DDR_H */

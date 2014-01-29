@@ -451,51 +451,6 @@ MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 }
 
 /*******************************************************************************
-* mvCtrlSmiMasterSet - alter Group 4 MPP type, between CPU SMI control and SWITCH SMI control
-*
-* DESCRIPTION: Read board configuration which is relevant to MPP group 4 interfaces,
-* 		to derive the correct group type, and according to input SMI conrtol,
-* 		write the correct MPP value.
-*
-* INPUT: smiCtrl - enum to select between SWITCH/CPU SMI controll
-*
-* OUTPUT: None
-*
-* RETURN: None
-*
-*******************************************************************************/
-MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
-{
-	MV_BOOL isSwSMICtrl   = (smiCtrl == SWITCH_SMI_CTRL ? MV_TRUE : MV_FALSE);
-	MV_BOOL isBootDevSPI1 = (MSAR_0_BOOT_SPI1_FLASH == mvBoardBootDeviceGet());
-	MV_BOOL isRefClkOut   = !( mvBoardSlicUnitTypeGet() == SLIC_LANTIQ_ID ); 	/* if not using Lantiq TDM, define REF_CLK_OUT */
-	MV_U8 groupTypeSelect = 0;
-
-	if (! ((smiCtrl == SWITCH_SMI_CTRL) || (smiCtrl == CPU_SMI_CTRL)) ) {
-		DB(mvOsPrintf("mvCtrlSMISet: SMI ctrl initialize failed\n"));
-		return;
-	}
-
-	/* MPP settings :
-	 * Test board configuration relevant to MPP group 4, and derive the correct group type */
-
-	if (isRefClkOut)	/* add first REF_CLK_OUT group type */
-		groupTypeSelect += GE1_CPU_SMI_CTRL_REF_CLK_OUT;
-
-	if (isSwSMICtrl)	/* add first SW_SMI group type */
-		groupTypeSelect += GE1_SW_SMI_CTRL_TDM_LQ_UNIT;
-
-	if (isBootDevSPI1)	/* add first SPI1 group type */
-		groupTypeSelect += SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT;
-
-	mvBoardMppTypeSet(4, groupTypeSelect);	/* Set MPP value according to group type */
-	MV_REG_WRITE(mvCtrlMppRegGet(4), mvBoardMppGet(4));
-
-	/* Mux settings :
-	 * Add mux configuration setup here ! */
-}
-
-/*******************************************************************************
 * mvCtrlCpuDdrL2FreqGet - Get the selected S@R Frequency mode
 *
 * DESCRIPTION:

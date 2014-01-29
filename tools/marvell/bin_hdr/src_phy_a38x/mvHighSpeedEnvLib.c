@@ -141,12 +141,24 @@ REF_CLOCK serdesTypeToRefClockMap[LAST_SERDES_TYPE] =
 	REF_CLOCK_UNSUPPORTED   /* DEFAULT_SERDES */
 };
 
+MV_U32 a38xBoardId = -1;
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-	//TODO
-	return 0;
-}
+	if (a38xBoardId != -1) {
+		return a38xBoardId;
+	}
 
+	a38xBoardId = mvHwsBoardIdGet();
+
+	if (a38xBoardId >= MV_MAX_BOARD_ID) {
+		DEBUG_INIT_S("mvHwsBoardTopologyLoad: board id 0x");
+		DEBUG_INIT_FULL_D(a38xBoardId, 8);
+		DEBUG_INIT_S("out of range. Use default board ID - DB\n");
+		a38xBoardId = DB_A38X_BP_ID;
+	}
+
+	return a38xBoardId;
+}
 
 /******************************** Sequences DB ********************************/
 
@@ -179,6 +191,16 @@ MV_OP_PARAMS sataAndSgmiiSpeedConfigParams[] =
 	{ ISOLATE_REG,	 0x800,		       0xFF,	       { NO_DATA, 0x66	  }, 0,	    0		     }, /* Phy Gen RX and TX */
 	{ LOOPBACK_REG,	 0x800,		       0xE,	       { 0x4,	  0x2	  }, 0,	    0		     } /* Bus Width */
 };
+
+MV_OP_PARAMS sataDBTxAmpParams[] =
+{
+	/* unitunitBaseReg  unitOffset   mask      SATA data   waitTime  numOfLoops */
+	{ 0xa0018,          0x800,       0xFF,	  { 0xDF},      0,	 0		 },
+	{ 0xa0188,          0x800,       0x1FF,	  { 0x1DD},     0,	 0		 },
+	{ 0xa0188,          0x800,       0x100,	  { 0x0},       0,	 0		 },
+	{ 0x1830C,          0x28,        0x8,	  { 0x0},       0,	 0		 }
+};
+
 
 /* SATA and SGMII - TX config seq */
 MV_OP_PARAMS sataAndSgmiiTxConfigParams1[] =
@@ -319,6 +341,11 @@ MV_VOID serdesSeqInit(MV_VOID)
 	serdesSeqDb[SATA__6_SPEED_CONFIG_SEQ].opParamsPtr = sataAndSgmiiSpeedConfigParams;
 	serdesSeqDb[SATA__6_SPEED_CONFIG_SEQ].cfgSeqSize =  sizeof(sataAndSgmiiSpeedConfigParams) / sizeof(MV_OP_PARAMS);
 	serdesSeqDb[SATA__6_SPEED_CONFIG_SEQ].dataArrIdx = SATA;
+
+	/* SATA_DB_TX_AMP_SEQ sequence init */
+	serdesSeqDb[SATA_DB_TX_AMP_SEQ].opParamsPtr = sataDBTxAmpParams;
+	serdesSeqDb[SATA_DB_TX_AMP_SEQ].cfgSeqSize =  sizeof(sataDBTxAmpParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SATA_DB_TX_AMP_SEQ].dataArrIdx = SATA;
 
 	/* SATA_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[SATA_TX_CONFIG_SEQ1].opParamsPtr = sataAndSgmiiTxConfigParams1;
@@ -813,7 +840,11 @@ MV_STATUS mvSerdesPowerUpCtrl
 			CHECK_STATUS(mvSeqExec(serdesNum, SATA_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
-
+			if (mvBoardIdGet() == DB_A38X_BP_ID)
+			{
+				/* relevant to DB board only */
+				CHECK_STATUS(mvSeqExec(serdesNum, SATA_DB_TX_AMP_SEQ));
+			}
 			CHECK_STATUS(mvSeqExec(serdesNum, SATA_TX_CONFIG_SEQ1));
 			CHECK_STATUS(mvSeqExec(sataIdx, SATA_ONLY_TX_CONFIG_SEQ));
 			CHECK_STATUS(mvSeqExec(serdesNum, SATA_TX_CONFIG_SEQ2));
@@ -1002,14 +1033,8 @@ MV_STATUS mvHwsBoardTopologyLoad(SERDES_MAP  *serdesMapArray)
 	//DEBUG_INIT_FULL_S("\n### mvHwsBoardTopologyLoad ###\n");
 	DEBUG_INIT_FULL_S("\n### mvHwsBoardTopologyLoad ###\n");
 
-	boardId = mvHwsBoardIdGet();
+	boardId = mvBoardIdGet();
 
-	if (boardId >= MV_MAX_BOARD_ID) {
-		DEBUG_INIT_S("mvHwsBoardTopologyLoad: board id 0x");
-		DEBUG_INIT_FULL_D(boardId, 8);
-		DEBUG_INIT_S("out of range. Use default board ID - DB\n");
-		boardId = DB_A38X_BP_ID;
-	}
 	/* getting board topology according to the board id */
 	DEBUG_INIT_FULL_S("mvHwsBoardTopologyLoad: getting board topology according to the board id\n");
 	CHECK_STATUS(loadTopologyFuncArr[boardId](serdesMapArray));

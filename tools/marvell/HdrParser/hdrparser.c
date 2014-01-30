@@ -97,10 +97,10 @@ char	*buf_in = NULL;
 /*
  * 8 bit checksum
  */
-MV_U8 checksum8(MV_U32 start, MV_U32 len, MV_U8 csum)
+MV_U8 checksum8(void *start, MV_U32 len, MV_U8 csum)
 {
 	register MV_U8	sum = csum;
-	volatile MV_U8*	startp = (volatile MV_U8*)start;
+	MV_U8 *startp = (MV_U8 *)start;
 
 	do {
 		sum += *startp;
@@ -114,13 +114,13 @@ MV_U8 checksum8(MV_U32 start, MV_U32 len, MV_U8 csum)
 /*
  * 32 bit checksum
  */
-MV_U32 checksum32(MV_U32 start, MV_U32 len, MV_U32 csum)
+MV_U32 checksum32(void *start, MV_U32 len, MV_U32 csum)
 {
 	register MV_U32	sum = csum;
-	volatile MV_U32	*startp = (volatile MV_U32*)start;
+	MV_U32	*startp = (MV_U32 *)start;
 
 	do {
-		sum += *(MV_U32*)startp;
+		sum += *startp;
 		startp++;
 		len -= 4;
 
@@ -217,7 +217,7 @@ int parse_main_header(pBHR_t	pHdr)
 
 	tmp8 = pHdr->checkSum;
 	pHdr->checkSum = 0;
-	chksum = checksum8((MV_U32)pHdr, MAIN_HDR_GET_LEN(pHdr), 0);
+	chksum = checksum8((void *)pHdr, MAIN_HDR_GET_LEN(pHdr), 0);
 	fprintf(stdout, " (%s)\n", tmp8 == chksum ? "GOOD" : "BAD");
 
 	return 0;
@@ -513,7 +513,7 @@ int main (int argc, char** argv)
 		tailExtBHR_t	*pTail;
 
 		for(;pHead != 0;) {
-			pTail = (tailExtBHR_t*)((MV_U32)pHead +
+			pTail = (tailExtBHR_t *)((MV_U8 *)pHead +
 					EXT_HDR_GET_LEN(pHead) -
 					sizeof(tailExtBHR_t));
 
@@ -552,9 +552,9 @@ int main (int argc, char** argv)
 
 	chksum = *(MV_U32*)(buf_in + fs_stat.st_size - 4);
 	if (pHdr->blockID == IBR_HDR_SATA_ID)
-		chksum2 = checksum32((MV_U32)(buf_in + pHdr->sourceAddr * 512),  pHdr->blockSize - 4, 0);
+		chksum2 = checksum32((void *)(buf_in + pHdr->sourceAddr * 512),  pHdr->blockSize - 4, 0);
 	else
-		chksum2 = checksum32((MV_U32)(buf_in + pHdr->sourceAddr),  pHdr->blockSize - 4, 0);
+		chksum2 = checksum32((void *)(buf_in + pHdr->sourceAddr),  pHdr->blockSize - 4, 0);
 
 	fprintf(stdout, "Binary image checksum = 0x%08X (%s)\n", chksum,
 	       chksum == chksum2 ? "GOOD" : "BAD");

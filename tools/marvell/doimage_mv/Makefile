@@ -75,6 +75,8 @@ LIB_INCLUDE = $(LIB_ROOT)/include
 CFLAGS  = -g -O1 -I./../inc -I$(LIB_INCLUDE) -DMV_CPU_LE
 LDFLAGS = -L$(LIB_PATH) -lpolarssl
 
+all: doimage hdrparser
+
 doimage: doimage.o  $(LIB_PATH)/libpolarssl.a
 	$(HOSTCC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 	$(CP) doimage ../

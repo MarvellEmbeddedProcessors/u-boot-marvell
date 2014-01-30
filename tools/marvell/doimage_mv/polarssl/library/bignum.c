@@ -47,7 +47,7 @@
 #include "polarssl/bignum.h"
 #include "polarssl/bn_mul.h"
 
-#define NO_HEAP
+#undef NO_HEAP
 
 #ifdef NO_HEAP
 #include "polarssl/mvMemPool.h"

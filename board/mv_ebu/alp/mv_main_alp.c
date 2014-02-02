@@ -790,6 +790,9 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	if (!env)
 		setenv("usbActive", ENV_USB_ACTIVE);
 
+	env = getenv("usbType");
+	if (!env)
+		setenv("usbType", ENV_USB_MODE);
 #endif  /* (MV_INCLUDE_USB) */
 
 #if defined(YUK_ETHADDR)

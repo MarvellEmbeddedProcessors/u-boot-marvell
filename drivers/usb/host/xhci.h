@@ -121,7 +121,7 @@ struct xhci_hccr {
 
 /* hc_capbase bitmasks */
 /* bits 7:0 - how long is the Capabilities register */
-#define HC_LENGTH(p)		XHCI_HC_LENGTH(p)
+/* #define HC_LENGTH(p)		XHCI_HC_LENGTH(p) */
 /* bits 31:16	*/
 #define HC_VERSION(p)		(((p) >> 16) & 0xffff)
 
@@ -164,7 +164,7 @@ struct xhci_hccr {
 /* true: HC has port power switches */
 #define HCC_PPC(p)		((p) & (1 << 3))
 /* true: HC has port indicators */
-#define HCS_INDICATOR(p)	((p) & (1 << 4))
+#define XHCI_HCS_INDICATOR(p)	((p) & (1 << 4))
 /* true: HC has Light HC Reset Capability */
 #define HCC_LIGHT_RESET(p)	((p) & (1 << 5))
 /* true: HC supports latency tolerance messaging */
@@ -209,7 +209,7 @@ struct xhci_hcor {
 
 /* USBCMD - USB command - command bitmasks */
 /* start/stop HC execution - do not write unless HC is halted*/
-#define CMD_RUN		XHCI_CMD_RUN
+/* #define CMD_RUN		XHCI_CMD_RUN */
 /* Reset HC - resets internal HC state machine and all registers (except
  * PCI config regs).  HC does NOT drive a USB reset on the downstream ports.
  * The xHCI driver must reinitialize the xHC after setting this bit.
@@ -237,7 +237,7 @@ struct xhci_hcor {
 
 /* USBSTS - USB status - status bitmasks */
 /* HC not running - set to 1 when run/stop bit is cleared. */
-#define STS_HALT	XHCI_STS_HALT
+/* #define STS_HALT	XHCI_STS_HALT */
 /* serious error, e.g. PCI parity error.  The HC will clear the run/stop bit. */
 #define STS_FATAL	(1 << 2)
 /* event interrupt - clear this prior to clearing any IP flags in IR set*/
@@ -1159,7 +1159,15 @@ static inline void xhci_writeq(__le64 volatile *regs, const u64 val)
 int xhci_hcd_init(int index, struct xhci_hccr **ret_hccr,
 					struct xhci_hcor **ret_hcor);
 void xhci_hcd_stop(int index);
-
+int xhci_usb_lowlevel_init(int index, void **controller);
+int xhci_usb_lowlevel_stop(int index);
+int xhci_submit_bulk_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
+		int length);
+int xhci_submit_control_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
+		   int length, struct devrequest *setup);
+int xhci_submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
+	       int length, int interval);
+int xhci_usb_alloc_device(struct usb_device *udev);
 
 /*************************************************************
 	EXTENDED CAPABILITY DEFINITIONS

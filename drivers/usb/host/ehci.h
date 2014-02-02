@@ -251,5 +251,13 @@ struct QH {
 /* Low level init functions */
 int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor);
 int ehci_hcd_stop(int index);
+int ehci_usb_lowlevel_init(int index, void **controller);
+int ehci_usb_lowlevel_stop(int index);
+int ehci_submit_bulk_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
+		int length);
+int ehci_submit_control_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
+		   int length, struct devrequest *setup);
+int ehci_submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
+	       int length, int interval);
 
 #endif /* USB_EHCI_H */

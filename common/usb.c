@@ -108,9 +108,12 @@ int usb_init(void)
 			continue;
 		}
 
-#if defined (MV88F68XX) && defined (MV_USB3)
-		/* Temp WA for timing issue with Armada 38x USB3 */
-		mdelay(10);
+
+#if defined(MV88F68XX)
+	/* Temp WA for timing issue with Armada 38x and xHCI */
+	/* Check if currently using xHCI stack (usbType = 3) */
+	if (simple_strtoul(getenv("usbType"), NULL, 10) == 3)
+		mdelay(20);
 #endif
 		/*
 		 * lowlevel init is OK, now scan the bus for devices
@@ -914,15 +917,16 @@ int usb_new_device(struct usb_device *dev)
 	dev->epmaxpacketin[0] = 64;
 	dev->epmaxpacketout[0] = 64;
 
-#ifndef CONFIG_USB_XHCI
-	err = usb_get_descriptor(dev, USB_DT_DEVICE, 0, desc, 64);
-	if (err < 0) {
-		USB_PRINTF("usb_new_device: usb_get_descriptor() failed\n");
-		return 1;
-	}
+	/* Check if currently using eHCI stack (usbType = 2) */
+	if (simple_strtoul(getenv("usbType"), NULL, 10) == 2) {
+		err = usb_get_descriptor(dev, USB_DT_DEVICE, 0, desc, 64);
+		if (err < 0) {
+			USB_PRINTF("usb_new_device: usb_get_descriptor() failed\n");
+			return 1;
+		}
 
-	dev->descriptor.bMaxPacketSize0 = desc->bMaxPacketSize0;
-#endif
+		dev->descriptor.bMaxPacketSize0 = desc->bMaxPacketSize0;
+	}
 
 	if (parent) {
 		int j;

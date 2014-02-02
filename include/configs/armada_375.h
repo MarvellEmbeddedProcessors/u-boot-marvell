@@ -66,13 +66,7 @@
 #define MV_DDR_64BIT
 #define MV_BOOTROM
 
-#define MV_USB3
-#undef MV_USB2
-
-#if defined (MV_USB3) || defined (MV_USB2)
 #define MV_USB
-#endif
-
 #define MV_FS
 #define CONFIG_CMD_DATE
 
@@ -409,15 +403,10 @@ extern unsigned int mvTclkGet(void);
 /*
  * USB
  */
-
-#ifdef MV_USB2
+#ifdef MV_USB
 	#define CONFIG_USB_EHCI
-#elif defined MV_USB3
 	#define CONFIG_USB_XHCI
 	#define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS  1
-#endif
-
-#ifdef MV_USB
 	#define MV_INCLUDE_USB
 	#define CONFIG_CMD_USB
 	#define CONFIG_USB_STORAGE
@@ -425,8 +414,8 @@ extern unsigned int mvTclkGet(void);
 	#define CONFIG_DOS_PARTITION
 	#define CONFIG_ISO_PARTITION
 	#define ENV_USB0_MODE   "host"
-	#define ENV_USB1_MODE   "host"
-	#define ENV_USB_ACTIVE          "0"
+	#define ENV_USB_ACTIVE        "0"
+	#define ENV_USB_MODE          "3"	/* 3 = USB3.0 | 2 = USB2.0 */
 #else
 	#undef MV_INCLUDE_USB
 	#undef CONFIG_CMD_USB

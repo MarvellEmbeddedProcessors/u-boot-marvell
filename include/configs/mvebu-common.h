@@ -17,55 +17,16 @@
  * ***************************************************************************
  */
 
-/* #define DEBUG*/
-
-#include <common.h>
-#include <malloc.h>
-#include <errno.h>
-#include <netdev.h>
-#include <asm/io.h>
-#include <asm/arch-armada8k/armada8k.h>
-#include <linux/compiler.h>
-
-DECLARE_GLOBAL_DATA_PTR;
-
-int board_init(void)
-{
-	debug("Start Armada8021-pxp board init\n");
-
-	a8k_init();
-
-	return 0;
-}
-
-int dram_init(void)
-{
-	/*
-	 * Clear spin table so that secondary processors
-	 * observe the correct value after waken up from wfe.
-	 */
-	*(unsigned long *)CPU_RELEASE_ADDR = 0;
-
-	gd->ram_size = PHYS_SDRAM_1_SIZE;
-	return 0;
-}
-
-int timer_init(void)
-{
-	return 0;
-}
+#ifndef _MVEBU_COMMON_H_
+#define _MVEBU_COMMON_H_
+#include <asm/sizes.h>
+#include <linux/stringify.h>
 
 /*
- * Board specific reset that is system reset.
+ * High Level Configuration Options
  */
-void reset_cpu(ulong addr)
-{
-}
+#define CONFIG_MVEBU			/* an mvebu generic machine */
 
-/*
- * Board specific ethernet initialization routine.
- */
-int board_eth_init(bd_t *bis)
-{
-	return 0;
-}
+#define CONFIG_SYS_PROMPT		"Marvell>> "
+
+#endif /* _MVEBU_COMMON_H_ */

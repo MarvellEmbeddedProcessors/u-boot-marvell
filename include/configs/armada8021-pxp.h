@@ -1,12 +1,26 @@
 /*
- * Configuration for Versatile Express. Parts were derived from other ARM
- *   configurations.
+ * ***************************************************************************
+ * Copyright (C) Marvell International Ltd. and its affiliates
+ * ***************************************************************************
+ * Marvell GPL License Option
+ * If you received this File from Marvell, you may opt to use, redistribute
+ * and/or modify this File in accordance with the terms and conditions of the
+ * General Public License Version 2, June 1991 (the "GPL License"), a copy of
+ * which is available along with the File in the license.txt file or by writing
+ * to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+ * MA 02111-1307 or on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE
+ * EXPRESSLY DISCLAIMED. The GPL License provides additional details about this
+ * warranty disclaimer.
+ * ***************************************************************************
  */
 
 #ifndef __ARMADA8021_PXP_H
 #define __ARMADA8021_PXP_H
+
+#include "mvebu-common.h"
 
 #define DEBUG
 
@@ -15,6 +29,9 @@
 /*#define CONFIG_ARMV8_SWITCH_TO_EL1*/
 
 /*#define CONFIG_SYS_GENERIC_BOARD*/
+
+/* Has ADEC address decode unit */
+#define CONFIG_ADEC
 
 #define CONFIG_SYS_NO_FLASH
 
@@ -113,7 +130,7 @@
 					 (void *)CONFIG_SYS_SERIAL1}
 #define CONFIG_CONS_INDEX		0
 
-#define CONFIG_BAUDRATE			115200
+#define CONFIG_BAUDRATE			38400
 #define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
 #define CONFIG_SYS_SERIAL0		V2M_UART0
 #define CONFIG_SYS_SERIAL1		V2M_UART1
@@ -176,7 +193,6 @@
 
 /* Monitor Command Prompt */
 #define CONFIG_SYS_CBSIZE		512	/* Console I/O Buffer Size */
-#define CONFIG_SYS_PROMPT		"VExpress64# "
 #define CONFIG_SYS_PBSIZE		(CONFIG_SYS_CBSIZE + \
 					sizeof(CONFIG_SYS_PROMPT) + 16)
 #define CONFIG_SYS_HUSH_PARSER

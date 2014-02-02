@@ -17,55 +17,15 @@
  * ***************************************************************************
  */
 
-/* #define DEBUG*/
-
 #include <common.h>
-#include <malloc.h>
-#include <errno.h>
-#include <netdev.h>
 #include <asm/io.h>
-#include <asm/arch-armada8k/armada8k.h>
-#include <linux/compiler.h>
+#include <asm/arch-mvebu/adec.h>
 
-DECLARE_GLOBAL_DATA_PTR;
+struct adec_win memory_map[] = {
+	{0x0,     0x40000000, DRAM_0_TID, 0},
+	{0x40000000, 0x20000000, IO_0_TID, 0},
+	/* Invalid entry closes the array */
+	{0x0, 0x0, INVALID_TID, 0}
+};
 
-int board_init(void)
-{
-	debug("Start Armada8021-pxp board init\n");
 
-	a8k_init();
-
-	return 0;
-}
-
-int dram_init(void)
-{
-	/*
-	 * Clear spin table so that secondary processors
-	 * observe the correct value after waken up from wfe.
-	 */
-	*(unsigned long *)CPU_RELEASE_ADDR = 0;
-
-	gd->ram_size = PHYS_SDRAM_1_SIZE;
-	return 0;
-}
-
-int timer_init(void)
-{
-	return 0;
-}
-
-/*
- * Board specific reset that is system reset.
- */
-void reset_cpu(ulong addr)
-{
-}
-
-/*
- * Board specific ethernet initialization routine.
- */
-int board_eth_init(bd_t *bis)
-{
-	return 0;
-}

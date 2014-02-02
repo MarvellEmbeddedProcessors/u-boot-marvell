@@ -17,55 +17,22 @@
  * ***************************************************************************
  */
 
-/* #define DEBUG*/
-
+#include <config.h>
 #include <common.h>
-#include <malloc.h>
-#include <errno.h>
-#include <netdev.h>
-#include <asm/io.h>
-#include <asm/arch-armada8k/armada8k.h>
-#include <linux/compiler.h>
+#include <command.h>
 
-DECLARE_GLOBAL_DATA_PTR;
+#include <asm/arch-mvebu/adec.h>
 
-int board_init(void)
+int dump_memory_map_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
+			char * const argv[])
 {
-	debug("Start Armada8021-pxp board init\n");
-
-	a8k_init();
-
+	adec_dump();
 	return 0;
 }
 
-int dram_init(void)
-{
-	/*
-	 * Clear spin table so that secondary processors
-	 * observe the correct value after waken up from wfe.
-	 */
-	*(unsigned long *)CPU_RELEASE_ADDR = 0;
-
-	gd->ram_size = PHYS_SDRAM_1_SIZE;
-	return 0;
-}
-
-int timer_init(void)
-{
-	return 0;
-}
-
-/*
- * Board specific reset that is system reset.
- */
-void reset_cpu(ulong addr)
-{
-}
-
-/*
- * Board specific ethernet initialization routine.
- */
-int board_eth_init(bd_t *bis)
-{
-	return 0;
-}
+U_BOOT_CMD(
+	map,      1,     1,      dump_memory_map_cmd,
+	"map	- Display address decode windows\n",
+	"\n"
+	"\tDisplay address decode windows\n"
+);

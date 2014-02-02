@@ -17,55 +17,43 @@
  * ***************************************************************************
  */
 
-/* #define DEBUG*/
+#ifndef _ADEC_H_
+#define _ADEC_H_
 
-#include <common.h>
-#include <malloc.h>
-#include <errno.h>
-#include <netdev.h>
-#include <asm/io.h>
-#include <asm/arch-armada8k/armada8k.h>
-#include <linux/compiler.h>
+#define RAR_EN_OFFSET		(13)
+#define RAR_EN_MASK		(1)
+#define TARGET_ID_OFFSET	(8)
+#define TARGET_ID_MASK		(0x1F)
+#define WIN_ENABLE_BIT		(0x1)
 
-DECLARE_GLOBAL_DATA_PTR;
+#define ADDRESS_SHIFT		(20)
+#define ADDRESS_MASK		(0xFFFFFFF0)
 
-int board_init(void)
-{
-	debug("Start Armada8021-pxp board init\n");
+#define MAX_AP_WINDOWS		(8)
+#define MAX_CP_WINDOWS		(16)
 
-	a8k_init();
+#define CCU_WIN_CR_OFFSET(win)	(0 + (12 * win))
+#define CCU_WIN_ALR_OFFSET(win)	(4 + (12 * win))
+#define CCU_WIN_AHR_OFFSET(win)	(8 + (12 * win))
 
-	return 0;
-}
+enum adec_target_ids_ap {
+	IO_0_TID    = 0x0,
+	DRAM_0_TID  = 0x3,
+	DRAM_1_TID  = 0x6,
+	IO_1_TID    = 0x9,
+	CFG_REG_TID = 0x10,
+	INVALID_TID = 0x1F
+};
 
-int dram_init(void)
-{
-	/*
-	 * Clear spin table so that secondary processors
-	 * observe the correct value after waken up from wfe.
-	 */
-	*(unsigned long *)CPU_RELEASE_ADDR = 0;
+struct adec_win {
+	uintptr_t base_addr;
+	uintptr_t win_size;
+	u8 target_id;
+	bool rar_enable;
+};
 
-	gd->ram_size = PHYS_SDRAM_1_SIZE;
-	return 0;
-}
 
-int timer_init(void)
-{
-	return 0;
-}
+void adec_dump(void);
+int adec_ap_init(struct adec_win *windows, void __iomem *ap_base);
 
-/*
- * Board specific reset that is system reset.
- */
-void reset_cpu(ulong addr)
-{
-}
-
-/*
- * Board specific ethernet initialization routine.
- */
-int board_eth_init(bd_t *bis)
-{
-	return 0;
-}
+#endif /* _ADEC_H_ */

@@ -161,16 +161,16 @@ static int xhci_start(struct xhci_hcor *hcor)
 	u32 temp;
 	int ret;
 
-	printf("Starting the controller\n");
+	debug("Starting the controller\n");
 	temp = xhci_readl(&hcor->or_usbcmd);
-	temp |= (CMD_RUN);
+	temp |= (XHCI_CMD_RUN);
 	xhci_writel(&hcor->or_usbcmd, temp);
 
 	/*
 	 * Wait for the HCHalted Status bit to be 0 to indicate the host is
 	 * running.
 	 */
-	ret = handshake(&hcor->or_usbsts, STS_HALT, 0, XHCI_MAX_HALT_USEC);
+	ret = handshake(&hcor->or_usbsts, XHCI_STS_HALT, 0, XHCI_MAX_HALT_USEC);
 	if (ret)
 		debug("Host took too long to start, "
 				"waited %u microseconds.\n",
@@ -192,15 +192,15 @@ int xhci_reset(struct xhci_hcor *hcor)
 
 	/* Halting the Host first */
 	debug("// Halt the HC\n");
-	state = xhci_readl(&hcor->or_usbsts) & STS_HALT;
+	state = xhci_readl(&hcor->or_usbsts) & XHCI_STS_HALT;
 	if (!state) {
 		cmd = xhci_readl(&hcor->or_usbcmd);
-		cmd &= ~CMD_RUN;
+		cmd &= ~XHCI_CMD_RUN;
 		xhci_writel(&hcor->or_usbcmd, cmd);
 	}
 
 	ret = handshake(&hcor->or_usbsts,
-			STS_HALT, STS_HALT, XHCI_MAX_HALT_USEC);
+			XHCI_STS_HALT, XHCI_STS_HALT, XHCI_MAX_HALT_USEC);
 	if (ret) {
 		printf("Host not halted after %u microseconds.\n",
 				XHCI_MAX_HALT_USEC);
@@ -473,7 +473,7 @@ static int xhci_address_device(struct usb_device *udev)
  * @param udev	pointer to the Device Data Structure
  * @return Returns 0 on succes else return -1 on failure
  */
-int usb_alloc_device(struct usb_device *udev)
+int xhci_usb_alloc_device(struct usb_device *udev)
 {
 	union xhci_trb *event;
 	struct xhci_ctrl *ctrl = udev->controller;
@@ -869,7 +869,7 @@ unknown:
  * @return 0
  */
 int
-submit_int_msg(struct usb_device *udev, unsigned long pipe, void *buffer,
+xhci_submit_int_msg(struct usb_device *udev, unsigned long pipe, void *buffer,
 						int length, int interval)
 {
 	/*
@@ -889,7 +889,7 @@ submit_int_msg(struct usb_device *udev, unsigned long pipe, void *buffer,
  * @return returns 0 if successful else -1 on failure
  */
 int
-submit_bulk_msg(struct usb_device *udev, unsigned long pipe, void *buffer,
+xhci_submit_bulk_msg(struct usb_device *udev, unsigned long pipe, void *buffer,
 								int length)
 {
 	if (usb_pipetype(pipe) != PIPE_BULK) {
@@ -911,7 +911,7 @@ submit_bulk_msg(struct usb_device *udev, unsigned long pipe, void *buffer,
  * @return returns 0 if successful else -1 on failure
  */
 int
-submit_control_msg(struct usb_device *udev, unsigned long pipe, void *buffer,
+xhci_submit_control_msg(struct usb_device *udev, unsigned long pipe, void *buffer,
 					int length, struct devrequest *setup)
 {
 	struct xhci_ctrl *ctrl = udev->controller;
@@ -946,7 +946,7 @@ submit_control_msg(struct usb_device *udev, unsigned long pipe, void *buffer,
  * @param index	index to the host controller data structure
  * @return pointer to the intialised controller
  */
-int usb_lowlevel_init(int index, void **controller)
+int xhci_usb_lowlevel_init(int index, void **controller)
 {
 	uint32_t val;
 	uint32_t val2;
@@ -982,11 +982,11 @@ int usb_lowlevel_init(int index, void **controller)
 	reg = xhci_readl(&hccr->cr_hcsparams1);
 	descriptor.hub.bNbrPorts = ((reg & HCS_MAX_PORTS_MASK) >>
 						HCS_MAX_PORTS_SHIFT);
-	printf("Register %x NbrPorts %d\n", reg, descriptor.hub.bNbrPorts);
+	debug("Register %x NbrPorts %d\n", reg, descriptor.hub.bNbrPorts);
 
 	/* Port Indicators */
 	reg = xhci_readl(&hccr->cr_hccparams);
-	if (HCS_INDICATOR(reg))
+	if (XHCI_HCS_INDICATOR(reg))
 		put_unaligned(get_unaligned(&descriptor.hub.wHubCharacteristics)
 				| 0x80, &descriptor.hub.wHubCharacteristics);
 
@@ -1019,7 +1019,7 @@ int usb_lowlevel_init(int index, void **controller)
  * @param index	index to the host controller data structure
  * @return none
  */
-int usb_lowlevel_stop(int index)
+int xhci_usb_lowlevel_stop(int index)
 {
 	struct xhci_ctrl *ctrl = (xhcic + index);
 	u32 temp;

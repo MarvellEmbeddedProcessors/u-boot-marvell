@@ -27,28 +27,22 @@
 #include "boardEnv/mvBoardEnvLib.h"
 #include "ctrlEnv/mvCtrlEnvSpec.h"
 #include "ctrlEnv/sys/mvCpuIf.h"
-#if defined (CONFIG_USB_XHCI)
+#if defined(CONFIG_USB_XHCI)
 #include "drivers/usb/host/xhci.h"
-#elif defined (CONFIG_USB_EHCI)
+#endif
+#if defined(CONFIG_USB_EHCI)
 #include "drivers/usb/host/ehci.h"
 #endif
 #include "mvSysUsbConfig.h"
 
-
-#if defined (CONFIG_USB_XHCI)
-
-#define USB3_WIN_CTRL(w)	(0x0 + ((w) * 8))
-#define USB3_WIN_BASE(w)	(0x4 + ((w) * 8))
-#define USB3_MAX_WINDOWS	4
-#define USB3_XHCI_REGS_SIZE	_64K
-
 /*******************************************************************************
-* getUsbActive -
+* getUsbActive - read 'usbActive' env variable and set active port
 *
 * INPUT:
-* MV_BOOL isUsb3 - Boolean indicating requested interface
+* 	MV_U32 usbUnitId - USB interface indication (USB2.0 / USB3.0)
 *
 * OUTPUT:
+* 	prints selected active port number, and selected interface
 *
 * RETURN:
 *       Num of requested interface USB2/3
@@ -60,13 +54,15 @@ MV_STATUS getUsbActive(MV_U32 usbUnitId)
 	int usbActive = simple_strtoul(env, NULL, 10);
 	int maxUsbPorts = (usbUnitId == USB3_UNIT_ID ? mvCtrlUsb3MaxGet() : mvCtrlUsbMaxGet());
 
-	printf("Active port:\t");
+	mvOsPrintf("Port (usbActive) : ");
 	if (usbActive >= maxUsbPorts) {
-		printf("invalid port number %d, switching to port 0\n", usbActive);
+		mvOsPrintf("\n'usbActive' Error: invalid port number %d, switching to port 0\n", usbActive);
 		usbActive=0;
 	} else {
-		printf("%d\n", usbActive);
+		mvOsPrintf("%d\t", usbActive);
 	}
+
+	mvOsPrintf("Interface (usbType = %d) : ", ((usbUnitId == USB3_UNIT_ID) ? 3 : 2));
 
 	return usbActive;
 }
@@ -82,6 +78,9 @@ MV_STATUS getUsbActive(MV_U32 usbUnitId)
 *       MV_ERROR if register parameters are invalid.
 *
 *******************************************************************************/
+#define USB3_WIN_CTRL(w)	(0x0 + ((w) * 8))
+#define USB3_WIN_BASE(w)	(0x4 + ((w) * 8))
+#define USB3_MAX_WINDOWS	4
 MV_STATUS mvUsb3WinInit(MV_U32 unitId)
 {
 	MV_U32 win, winCtrlValue;
@@ -126,7 +125,10 @@ MV_STATUS mvUsb3WinInit(MV_U32 unitId)
 
 }
 
-
+#if defined (CONFIG_USB_XHCI)
+/*********************************************************************************/
+/**********************      xHCI Stack registration layer  **********************/
+/*********************************************************************************/
 /*
  * initialize USB3 :
  * - Set UTMI PHY Selector
@@ -188,22 +190,20 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 		break;
 	default:
 	/* USB 3.0 is currently supported only for ALP DB-6660 and A375 board */
-		printf("%s: Error: USB 3.0 is not supported on current soc\n" ,__func__);
+		mvOsPrintf("%s: Error: USB 3.0 is not supported on current soc\n", __func__);
 		return -1;
 	}
-
-	index = getUsbActive(USB3_UNIT_ID);
 
 	mv_xhci_core_init(index);
 
 	/* Set operational xHCI register base*/
 	*hccr = (struct xhci_hccr *)(USB3_REGS_PHYS_BASE(index));
 	/* Set host controller operation register base */
-	*hcor = (struct xhci_hcor *)((uint32_t) (*hccr) + HC_LENGTH(xhci_readl(&(*hccr)->cr_capbase)));
+	*hcor = (struct xhci_hcor *)((uint32_t) (*hccr) + XHCI_HC_LENGTH(xhci_readl(&(*hccr)->cr_capbase)));
 
 	debug("marvell-xhci: init hccr %x and hcor %x hc_length %d\n",
 		(uint32_t)*hccr, (uint32_t)*hcor,
-		(uint32_t)HC_LENGTH(xhci_readl(&(*hccr)->cr_capbase)));
+		(uint32_t)XHCI_HC_LENGTH(xhci_readl(&(*hccr)->cr_capbase)));
 
 	return 0;
 }
@@ -213,14 +213,18 @@ void xhci_hcd_stop(int index)
 	return;
 }
 
-#elif defined (CONFIG_USB_EHCI)
-/*
- * Create the appropriate control structures to manage
- * a new EHCI host controller.
+#endif /* CONFIG_USB_XHCI */
+
+#if defined(CONFIG_USB_EHCI)
+/*********************************************************************************/
+/**********************      eHCI Stack registration layer  **********************/
+/*********************************************************************************/
+/* ehci_hcd_init:
+ *	Create the appropriate control structures to manage new EHCI host controller.
  */
 int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 {
-	*hccr = (struct ehci_hccr *)(INTER_REGS_BASE + MV_USB_REGS_OFFSET(getUsbActive(USB_UNIT_ID)) + 0x100);
+	*hccr = (struct ehci_hccr *)(INTER_REGS_BASE + MV_USB_REGS_OFFSET(index) + 0x100);
 	*hcor = (struct ehci_hcor *)((uint32_t) (*hccr) + HC_LENGTH(ehci_readl(&(*hccr)->cr_capbase)));
 
 	debug ("Marvell init hccr %x and hcor %x hc_length %d\n",
@@ -229,13 +233,157 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 	return 0;
 }
 
-/*
- * Destroy the appropriate control structures corresponding
- * the the EHCI host controller.
+/* ehci_hcd_stop:
+ *	Destroy the appropriate control structures corresponding the the EHCI host controller.
  */
 int ehci_hcd_stop(int index)
 {
 	return 0;
 }
+
+int ehci_usb_alloc_device(struct usb_device *udev)
+{
+	return 0;
+}
 #endif /* CONFIG_USB_EHCI */
+
+
+/*********************************************************************************/
+/******************** Host Controller stack replacement-layer ********************/
+/*********************************************************************************/
+/* Stack pointers*/
+struct hc_interface {
+	MV_BOOL interface_supported;
+	int	(*hc_usb_lowlevel_init)(int index, void **controller);
+	int	(*hc_usb_lowlevel_stop)(int index);
+	int	(*hc_submit_int_msg)(struct usb_device *dev, unsigned long pipe, void *buffer,
+			int length, int interval);
+	int	(*hc_submit_bulk_msg)(struct usb_device *dev, unsigned long pipe, void *buffer,
+			int length);
+	int	(*hc_submit_control_msg)(struct usb_device *dev, unsigned long pipe, void *buffer,
+		   int length, struct devrequest *setup);
+	int	(*hc_usb_alloc_device)(struct usb_device *udev);
+};
+
+/* hc is the Host Controller struct for xHCI/eHCI routine's pointers */
+struct hc_interface *hc;
+
+struct hc_interface hc_ehci = {
+#if defined(CONFIG_USB_EHCI)
+	.interface_supported = MV_TRUE,
+	.hc_usb_lowlevel_init	= ehci_usb_lowlevel_init,
+	.hc_usb_lowlevel_stop	= ehci_usb_lowlevel_stop,
+	.hc_submit_int_msg	= ehci_submit_int_msg,
+	.hc_submit_bulk_msg	= ehci_submit_bulk_msg,
+	.hc_submit_control_msg	= ehci_submit_control_msg,
+	.hc_usb_alloc_device	= ehci_usb_alloc_device
+#else
+	.interface_supported = MV_FALSE
+#endif
+};
+
+struct hc_interface hc_xhci = {
+#if defined(CONFIG_USB_XHCI)
+	.interface_supported = MV_TRUE,
+	.hc_usb_lowlevel_init	= xhci_usb_lowlevel_init,
+	.hc_usb_lowlevel_stop	= xhci_usb_lowlevel_stop,
+	.hc_submit_int_msg	= xhci_submit_int_msg,
+	.hc_submit_bulk_msg	= xhci_submit_bulk_msg,
+	.hc_submit_control_msg	= xhci_submit_control_msg,
+	.hc_usb_alloc_device	= xhci_usb_alloc_device
+#else
+	.interface_supported = MV_FALSE
+#endif
+};
+
+/* usb_lowlevel_init:
+*	this routine navigate between currently selected stack (eHCI/xHCI)
+*	- Read 'usbType' env variable to select requested interface:
+*	  usbType = 2 -- > eHCI
+*	  usbType = 3 -- > xHCI
+*	- Call usb_lowlevel_init from selected stack
+*/
+int usb_lowlevel_init(int index, void **controller)
+{
+	int usbType, usbActive = 0;
+
+	usbType = simple_strtoul(getenv("usbType"), NULL, 10);
+
+	switch (usbType) {
+	case 2:
+		if (hc_ehci.interface_supported == MV_TRUE) {
+			usbActive = getUsbActive(USB_UNIT_ID); /* read requested active port */
+			hc = &hc_ehci; /* set Host Controller struct for function pointers  */
+		} else
+			goto input_error;
+		break;
+	case 3:
+		if (hc_xhci.interface_supported == MV_TRUE) {
+			usbActive = getUsbActive(USB3_UNIT_ID); /* read requested active port */
+			hc = &hc_xhci; /* set Host Controller struct for function pointers  */
+		} else
+			goto input_error;
+		break;
+	default:
+		goto input_error;
+	}
+
+	return hc->hc_usb_lowlevel_init(usbActive, controller);
+
+input_error:
+	mvOsPrintf("'usbType' Error: Type %d is not valid. Supported types:\n", usbType);
+	if (hc_ehci.interface_supported == MV_TRUE)
+		mvOsPrintf("\tusbType = 2 --> EHCI Stack will be used\n");
+	if (hc_xhci.interface_supported == MV_TRUE)
+		mvOsPrintf("\tusbType = 3 --> XHCI Stack will be used\n");
+	return -1;
+}
+
+int usb_lowlevel_stop(int index)
+{
+	if (!hc) {
+		mvOsPrintf("%s: Error: run 'usb reset' to set host controller interface.\n", __func__);
+		return -1;
+	}
+	return hc->hc_usb_lowlevel_stop(index);
+}
+
+int submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
+			int length, int interval)
+{
+	if (!hc) {
+		mvOsPrintf("%s: Error: run 'usb reset' to set host controller interface.\n", __func__);
+		return -1;
+	}
+	return hc->hc_submit_int_msg(dev, pipe, buffer, length, interval);
+}
+
+int submit_bulk_msg(struct usb_device *dev, unsigned long pipe, void *buffer, int length)
+{
+	if (!hc) {
+		mvOsPrintf("%s: Error: run 'usb reset' to set host controller interface.\n", __func__);
+		return -1;
+	}
+	return hc->hc_submit_bulk_msg(dev, pipe, buffer, length);
+}
+
+int submit_control_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
+			int length, struct devrequest *setup)
+{
+	if (!hc) {
+		mvOsPrintf("%s: Error: run 'usb reset' to set host controller interface.\n", __func__);
+		return -1;
+	}
+	return hc->hc_submit_control_msg(dev, pipe, buffer, length, setup);
+}
+
+int usb_alloc_device(struct usb_device *udev)
+{
+	if (!hc) {
+		mvOsPrintf("%s: Error: run 'usb reset' to set host controller interface.\n", __func__);
+		return -1;
+	}
+	return hc->hc_usb_alloc_device(udev);
+}
+
 #endif /* CONFIG_CMD_USB */

@@ -847,12 +847,12 @@ unknown:
 	return -1;
 }
 
-int usb_lowlevel_stop(int index)
+int ehci_usb_lowlevel_stop(int index)
 {
 	return ehci_hcd_stop(index);
 }
 
-int usb_lowlevel_init(int index, void **controller)
+int ehci_usb_lowlevel_init(int index, void **controller)
 {
 	uint32_t reg;
 	uint32_t cmd;
@@ -922,7 +922,7 @@ int usb_lowlevel_init(int index, void **controller)
 }
 
 int
-submit_bulk_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
+ehci_submit_bulk_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 		int length)
 {
 
@@ -934,7 +934,7 @@ submit_bulk_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 }
 
 int
-submit_control_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
+ehci_submit_control_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 		   int length, struct devrequest *setup)
 {
 	struct ehci_ctrl *ctrl = dev->controller;
@@ -953,7 +953,7 @@ submit_control_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 }
 
 int
-submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
+ehci_submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 	       int length, int interval)
 {
 	debug("dev=%p, pipe=%lu, buffer=%p, length=%d, interval=%d",

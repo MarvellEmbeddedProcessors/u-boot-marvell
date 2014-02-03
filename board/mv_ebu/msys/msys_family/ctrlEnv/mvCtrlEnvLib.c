@@ -100,7 +100,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][1] = {
 /* DRAM_UNIT_ID         */ { 1, },
 /* PEX_UNIT_ID          */ { 1, },
 /* ETH_GIG_UNIT_ID      */ { 2, },
-/* XOR_UNIT_ID          */ { 2, },
+/* XOR_UNIT_ID          */ { 1, },
 /* UART_UNIT_ID         */ { 2, },
 /* SPI_UNIT_ID          */ { 2, },
 /* SDIO_UNIT_ID         */ { 1, },

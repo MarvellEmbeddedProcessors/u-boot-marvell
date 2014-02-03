@@ -110,7 +110,7 @@ extern "C" {
 			(pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000)\
 	: (0X42000 + ((pexIf) % 8) * 0x40000))
 #define MV_USB_REGS_OFFSET(dev)			(0x50000 + (dev * 0x1000))
-#define MV_XOR_REGS_OFFSET(unit)		(0xF0000)
+#define MV_XOR_REGS_OFFSET(unit)		(0xF0800)
 #if defined(MV_INCLUDE_IDMA)
 #define MV_IDMA_REGS_OFFSET			(0x60800)
 #endif

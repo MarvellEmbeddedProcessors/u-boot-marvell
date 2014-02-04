@@ -106,11 +106,11 @@ extern MV_STATUS ddr3TipInitSpecificRegConfig
 );
 extern MV_U32 ddr3TipGetInitFreq();
 #else
-#define SUB_VERSION	8
+#define SUB_VERSION	9
 #endif
 
 #include "bootstrap_os.h"
-#if defined(MV88F78X60_Z1)
+#if defined(MV88F67XX)
 static MV_VOID ddr3MRSCommand(MV_U32 uiMR1Value, MV_U32 uiMR2Value, MV_U32 uiCsNum, MV_U32 uiCsEna);
 #endif
 #ifdef STATIC_TRAINING
@@ -750,6 +750,11 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 		uiReg = ((MV_REG_READ(REG_SDRAM_INIT_CTRL_ADDR)) & (1 << REG_SDRAM_INIT_CTRL_OFFS));
 	while (uiReg);              /* Wait for '0' */
 
+#if defined (MV88F67XX)
+	/* MRS Command - required for A370 - only one set of MR registers */
+	ddr3MRSCommand(0, 0, ddr3GetCSNumFromReg(), ddr3GetCSEnaFromReg());
+#endif
+
 #ifndef MV_NEW_TIP
 	/* ddr3 init using DDR3 HW training procedure */
 	DEBUG_INIT_FULL_S("DDR3 Training Sequence - HW Training Procedure \n");
@@ -911,7 +916,7 @@ MV_U32 ddr3GetVCOFreq(void)
 	return uiVCOFreq;
 }
 
-#if defined(MV88F78X60_Z1)
+#if defined(MV88F67XX)
 /************************************************************************************
  * Name:     ddr3MRSCommand - Set MR register values to DRAM devices
  * Desc:
@@ -934,6 +939,8 @@ MV_VOID ddr3MRSCommand(MV_U32 uiMR1Value, MV_U32 uiMR2Value, MV_U32 uiCsNum, MV_
 				uiReg = (uiMR1Value & REG_DDR3_MR1_ODT_MASK);
 
 			uiReg |= auiODTStatic[uiCsEna][uiCs];
+			if (uiCsNum > 1)
+				uiReg |= BIT1;/*DIC enable*/
 
 			MV_REG_WRITE(REG_DDR3_MR1_ADDR, uiReg); /* 0x15D0 - DDR3 MR0 Register */
 			/* Issue MRS Command to current uiCs */

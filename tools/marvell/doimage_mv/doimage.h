@@ -67,8 +67,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/types.h>
 
 /* use the same version as in "bootrom.inc" file */
-#define VERSION_NUMBER	"2.00"
+#define VERSION_NUMBER	"2.01"
 #define PRODUCT_SUPPORT "Marvell Armada series"
+
+#define RSA_KEY_SIZE	2048
+#define RSA_EXPONENT	65537
+#define AES_KEY_SIZE	128
+
 
 #define T_OPTION_MASK	0x1	/* image type */
 #define D_OPTION_MASK	0x2	/* image destination */

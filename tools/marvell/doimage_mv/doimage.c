@@ -39,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -75,14 +75,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _HOST_COMPILER
 #include "bootstrap_def.h"
 
+#include "polarssl/havege.h"
 #include "polarssl/sha2.h"
 #include "polarssl/rsa.h"
 #include "polarssl/aes.h"
 #include "doimage.h"
 
-#undef MV_SEC_HDR_DBG /* print SHA-256 digest of RSA public key */
-
 #include "polarssl/mvMemPool.h"
+
+#undef DEBUG
+
+#ifdef DEBUG
+#define DB(x...)		fprintf(stdout, x);
+#else
+#define DB(x...)
+#endif
 
 /* Global variables */
 
@@ -107,10 +114,10 @@ unsigned char	IV[16] = {0};
 *          0 on success
 *******************************************************************************/
 int create_rsa_signature (
-	unsigned char	*input,
-	int 		ilen,
-	unsigned char	*signature,
-	char		*print_val)
+			unsigned char	*input,
+			int 		ilen,
+			unsigned char	*signature,
+			char		*print_val)
 {
 	unsigned char	sha_256[32];
 	int i;
@@ -185,10 +192,8 @@ int pre_load_image (USER_OPTIONS *opt, char *buf_in)
 		offset = opt->prepadding_size;
 	}
 
-	if ((opt->post_padding) && (opt->postpadding_size)) {
-		memset(opt->image_buf + opt->image_sz - 4 - opt->postpadding_size,
-			   0xA, opt->postpadding_size);
-	}
+	if ((opt->post_padding) && (opt->postpadding_size))
+		memset(opt->image_buf + opt->image_sz - 4 - opt->postpadding_size, 0xA, opt->postpadding_size);
 
 	memcpy(opt->image_buf + offset, buf_in, fs_stat.st_size);
 
@@ -237,9 +242,9 @@ int build_twsi_header (USER_OPTIONS *opt)
 			break;
 
 		/* Swap Enianess */
-		*twsi_reg = ( ((*twsi_reg >> 24) & 0xFF)     |
-				((*twsi_reg >> 8)  & 0xFF00)   |
-				((*twsi_reg << 8)  & 0xFF0000) |
+		*twsi_reg = ( ((*twsi_reg >> 24) & 0xFF)	|
+				((*twsi_reg >> 8)  & 0xFF00)	|
+				((*twsi_reg << 8)  & 0xFF0000)	|
 				((*twsi_reg << 24) & 0xFF000000) );
 		twsi_reg++;
 	}
@@ -284,7 +289,7 @@ int build_reg_header (char *fname, MV_U8 *buffer, MV_U32 current_size)
 		fprintf(stderr,"Maximum number of extentions reached!\n");
 		return 0;
 	}
-	
+
 	/* Indicate next header in previous extention if any */
 	if (mainHdr->ext != 0) {
 		prevExtHdrTail = (tailExtBHR_t*)(buffer + current_size - sizeof(tailExtBHR_t));
@@ -296,7 +301,7 @@ int build_reg_header (char *fname, MV_U8 *buffer, MV_U32 current_size)
 
 	headExtHdr->type = EXT_HDR_TYP_REGISTER;
 	max_bytes_to_write = MAX_HEADER_SIZE - current_size - EXT_HDR_BASE_SIZE;
-	
+
 	if ((f_dram = fopen(fname, "r")) == NULL) {
 		fprintf(stderr,"Failed to open file '%s'\n", fname);
 		perror("Error:");
@@ -322,7 +327,7 @@ int build_reg_header (char *fname, MV_U8 *buffer, MV_U32 current_size)
 	tmp_len = EXT_HDR_BASE_SIZE + i * 4;
 	/* Write total length into the current header fields */
 	EXT_HDR_SET_LEN(headExtHdr, tmp_len);
-	
+
 	return tmp_len;
 } /* end of build_reg_header() */
 
@@ -353,7 +358,7 @@ int build_bin_header (char *fname, MV_U8 *buffer, MV_U32 current_size)
 		fprintf(stderr,"Maximum number of extentions reached!\n");
 		return 0;
 	}
-	
+
 	/* Indicate next header in previous extention if any */
 	if (mainHdr->ext != 0) {
 		prevExtHdrTail = (tailExtBHR_t*)(buffer + current_size - sizeof(tailExtBHR_t));
@@ -596,7 +601,7 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 
 				/* strip trailing LF/CR symbols */
 				last = strlen(fname) - 1;
-				while ((strncmp(fname + last, "\n", 1) == 0) || 
+				while ((strncmp(fname + last, "\n", 1) == 0) ||
 					(strncmp(fname + last, "\r", 1) == 0)) {
 					fname[last] = 0;
 					last--;
@@ -662,11 +667,11 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 			hdr->ext, header_size, opt->img_gap);
 
 	/* If not UART/TWSI image, an extra word for boot image checksum is needed */
-	if ((opt->image_type == IMG_FLASH) ||
-	    (opt->image_type == IMG_NAND)  ||
-	    (opt->image_type == IMG_MMC)  ||
-	    (opt->image_type == IMG_SATA)  ||
-	    (opt->image_type == IMG_PEX)   ||
+	if ((opt->image_type == IMG_FLASH)	||
+	    (opt->image_type == IMG_NAND)	||
+	    (opt->image_type == IMG_MMC)	||
+	    (opt->image_type == IMG_SATA)	||
+	    (opt->image_type == IMG_PEX)	||
 	    (opt->image_type == IMG_I2C))
 		hdr->blockSize += 4;
 
@@ -692,11 +697,10 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 		MV_U16		rsa_exp_len;
 		MV_U16		rsa_key_len;
 		unsigned char	rsa_signature[RSA_MAX_KEY_LEN_BYTES];
-#ifdef MV_SEC_HDR_DBG
 		FILE		*f_sha;
 		unsigned char	rsa_digest[32];
 		int		k;
-#endif
+
 		if(opt->flags & B_OPTION_MASK)
 			secExtHdr->boxId = opt->boxId;
 
@@ -704,7 +708,7 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 			secExtHdr->flashId = opt->flashId;
 
 		if(opt->flags & J_OPTION_MASK)
-			secExtHdr->jtagEn = 1;
+			secExtHdr->jtagEn = opt->jtagDelay;
 
 		/* Security header has a constant length */
 		secExtHdr->head.lenLsb = sizeof(secExtBHR_t);
@@ -738,27 +742,21 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 			fprintf(stderr, "Failed to write RSA key to security header\n");
 			goto header_error;
 		}
-#ifdef MV_SEC_HDR_DBG
+
 		sha2((unsigned char *)secExtHdr->pubKey, rsa_key_len + 4, rsa_digest, 0);
-		if ((f_sha = fopen("./sha256.txt", "w")) == NULL)
-			fprintf(stderr, "Error opening SHA-256 digest file ./sha256.txt\n");
+		if ((f_sha = fopen("./sha2_pub.txt", "w")) == NULL)
+			fprintf(stderr, "Error opening SHA-256 digest file ./sha2_pub.txt\n");
 
-		fprintf(stdout, "SHA-256 digest of the RSA public key is:\n");
-		fprintf(f_sha, "SHA256: ");
+		fprintf(f_sha, "SHA256 = ");
 
-		for (k = 0; k < 32; k++) {
-			if (0 == (k % 8))
-				fprintf(stdout, "\n");
-
-			fprintf(stdout, "0x%02X, ", rsa_digest[k]);
+		for (k = 0; k < 32; k++)
 			fprintf(f_sha, "%02X", rsa_digest[k]);
-		}
-		fprintf(stdout, "\n\n");
+
 		fprintf(f_sha, "\n");
 		fclose(f_sha);
-		fprintf(stdout, "Box ID = 0x%08X, Flash ID = 0x%04X, JTAG %s\n",
+
+		DB(stdout, "Box ID = 0x%08X, Flash ID = 0x%04X, JTAG %s\n",
 				opt->boxId, opt->flashId, opt->jtagDelay == 0 ? "DISABLED" : "ENABLED");
-#endif /* MV_SEC_HDR_DBG */
 
 		/* Encrypt boot image using AES-128-CBC if required */
 		if (opt->flags & A_OPTION_MASK) {
@@ -774,7 +772,6 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 				goto header_error;
 			}
 			/* 16 bytes at tail - IV, followed by 4 bytes of CHKSUM */
-//			chsum32 = checksum32((MV_U32)(opt->image_buf), opt->image_sz - 20, 0);
 			chsum32 = checksum32((void*)(opt->image_buf), opt->image_sz - 20, 0);
 			fprintf(stdout, "The image (plain img. CHKSUM = %08X) is encrypted using AES-128.\n", chsum32);
 
@@ -790,46 +787,50 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 		} /* AES-128 encryption */
 
 		/* Create RSA signature for the boot image file (checksum is not included) */
-		if (0 != create_rsa_signature(opt->image_buf, opt->image_sz - 4, secExtHdr->imgSign, "IMG SHA256: ")) {
-			fprintf(stderr, "Failed to create boot image RSA signature\n");
+		error = create_rsa_signature(opt->image_buf, opt->image_sz - 4, secExtHdr->imgSign, "IMG SHA256: ");
+		if (0 != error) {
+			fprintf(stderr, "Failed to create boot image RSA signature, error %d\n", error);
 			goto header_error;
 		}
-#ifdef MV_MEMPOOL_STAT
+#if defined MV_MEMPOOL_STAT && defined NO_HEAP
+
 		fprintf(stdout, "Boot Image signature creation\n");
 		mpool_print_stat();
 		mpool_reset_stat();
 #endif
-
-		if (0 != verify_rsa_signature(opt->image_buf, opt->image_sz - 4, secExtHdr->imgSign)) {
-			fprintf(stderr, "Failed to verify boot image RSA signature\n");
+		error = verify_rsa_signature(opt->image_buf, opt->image_sz - 4, secExtHdr->imgSign);
+		if (0 != error) {
+			fprintf(stderr, "Failed to verify boot image RSA signature, error %d\n", error);
 			goto header_error;
 		}
 
-#ifdef MV_MEMPOOL_STAT
+#if defined MV_MEMPOOL_STAT && defined NO_HEAP
 		fprintf(stdout, "Boot Image signature verification\n");
 		mpool_print_stat();
 		mpool_reset_stat();
 #endif
 
 		/* the RSA signature is now can be created for the entire headers block */
-		if (0 != create_rsa_signature(tmpHeader, header_size, rsa_signature, 0)) {
-			fprintf(stderr, "Failed to create header RSA signature\n");
+		error = create_rsa_signature(tmpHeader, header_size, rsa_signature, "HDR SHA256: ");
+		if (0 != error) {
+			fprintf(stderr, "Failed to create header RSA signature, error %d\n", error);
 			goto header_error;
 		}
 
-#ifdef MV_MEMPOOL_STAT
+#if defined MV_MEMPOOL_STAT && defined NO_HEAP
 		fprintf(stdout, "Header signature creation\n");
 		mpool_print_stat();
 		mpool_reset_stat();
 #endif
 
 		/* Header signature MUST be checked when it's placeholder in the heqader is zeroed */
-		if (0 != verify_rsa_signature(tmpHeader, header_size, rsa_signature)) {
-			fprintf(stderr, "Failed to verify header RSA signature\n");
+		error = verify_rsa_signature(tmpHeader, header_size, rsa_signature);
+		if (0 != error) {
+			fprintf(stderr, "Failed to verify header RSA signature, error %d\n", error);
 			goto header_error;
 		}
 
-#ifdef MV_MEMPOOL_STAT
+#if defined MV_MEMPOOL_STAT && defined NO_HEAP
 		fprintf(stdout, "Header signature verification\n");
 		mpool_print_stat();
 		mpool_reset_stat();
@@ -842,7 +843,6 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 	/* Now the headers block checksum should be calculated and wrote in the header */
 	/* This checksum value should be valid for both secure and unsecure boot modes */
 	/* This value will be checked first before RSA key and signature verification */
-//	hdr->checkSum = checksum8((MV_U32)hdr, MAIN_HDR_GET_LEN(hdr), 0);
 	hdr->checkSum = checksum8((void*)hdr, MAIN_HDR_GET_LEN(hdr), 0);
 
 	/* Write to file(s) */
@@ -1243,7 +1243,6 @@ int build_regular_img (USER_OPTIONS	*opt, char *buf_in)
 	}
 
 	/* Calculate checksum and copy it to the image tail */
-//	chsum32 = checksum32((MV_U32)opt->image_buf, opt->image_sz - 4, 0);
 	chsum32 = checksum32((void*)opt->image_buf, opt->image_sz - 4, 0);
 	memcpy(opt->image_buf + opt->image_sz - 4, &chsum32, 4);
 
@@ -1261,6 +1260,219 @@ int build_regular_img (USER_OPTIONS	*opt, char *buf_in)
 } /* end of build_other_img() */
 
 /*******************************************************************************
+*    read_rsa_key
+*          read RSA key from file
+*    INPUT:
+*          fname      private key file name
+*          rsa        RSA context
+*    OUTPUT:
+*          rsa        RSA context
+*    RETURN:
+*          0 on success
+*******************************************************************************/
+int read_rsa_key(char *fname)
+{
+	FILE	*f_prkey;
+	int	ret;
+
+	if ((f_prkey = fopen(fname, "r")) == NULL) {
+		fprintf(stderr, "Error opening RSA private key file %s\n", fname);
+		return -1;
+	}
+
+	rsa_init(&rsa, RSA_PKCS_V15, 0, NULL, NULL);
+
+	ret  = mpi_read_file(&rsa.N , 16, f_prkey);
+	ret += mpi_read_file(&rsa.E , 16, f_prkey);
+	ret += mpi_read_file(&rsa.D , 16, f_prkey);
+	ret += mpi_read_file(&rsa.P , 16, f_prkey);
+	ret += mpi_read_file(&rsa.Q , 16, f_prkey);
+	ret += mpi_read_file(&rsa.DP, 16, f_prkey);
+	ret += mpi_read_file(&rsa.DQ, 16, f_prkey);
+	ret += mpi_read_file(&rsa.QP, 16, f_prkey);
+
+	fclose(f_prkey);
+
+	return ret;
+}
+
+/*******************************************************************************
+*    generate_rsa_key
+*          generate RSA key pair and save new keys into text files
+*    INPUT:
+*          rsa        RSA context
+*    OUTPUT:
+*          rsa        RSA context
+*    RETURN:
+*          0 on success
+*******************************************************************************/
+int generate_rsa_key(void)
+{
+	int		ret;
+	havege_state	hs;
+	FILE		*fpub  = NULL;
+	FILE		*fpriv = NULL;
+
+	havege_init(&hs);
+
+	rsa_init(&rsa, RSA_PKCS_V15, 0, havege_rand, &hs);
+
+	if (rsa_gen_key(&rsa, RSA_KEY_SIZE, RSA_EXPONENT) != 0) {
+		fprintf(stderr, "Failed to generate RSA key\n");
+		return -1;
+	}
+
+	fpub = fopen("rsa_pub.txt", "w+");
+	if (fpub == NULL) {
+		fprintf(stderr, "Could not open rsa_pub.txt file for writing\n");
+		return -1;
+	}
+
+	ret  = mpi_write_file("N = ", &rsa.N, 16, fpub);
+	ret += mpi_write_file("E = ", &rsa.E, 16, fpub);
+	fclose(fpub);
+	if (ret != 0) {
+		fprintf(stderr, "Failed to write into rsa_pub.txt file!\n");
+		return -1;
+	}
+
+	fpriv = fopen("rsa_priv.txt", "w+");
+	if (fpriv == NULL) {
+		fprintf(stderr, "Could not open rsa_priv.txt file for writing\n");
+		return -1;
+	}
+
+	ret  = mpi_write_file("N = " , &rsa.N , 16, fpriv);
+	ret += mpi_write_file("E = " , &rsa.E , 16, fpriv);
+	ret += mpi_write_file("D = " , &rsa.D , 16, fpriv);
+	ret += mpi_write_file("P = " , &rsa.P , 16, fpriv);
+	ret += mpi_write_file("Q = " , &rsa.Q , 16, fpriv);
+	ret += mpi_write_file("DP = ", &rsa.DP, 16, fpriv);
+	ret += mpi_write_file("DQ = ", &rsa.DQ, 16, fpriv);
+	ret += mpi_write_file("QP = ", &rsa.QP, 16, fpriv);
+	if (ret != 0)
+		fprintf(stderr, "Failed to write into rsa_priv.txt file!\n");
+
+	return ret;
+}
+
+/*******************************************************************************
+*    read_aes_key
+*          read AES key from file
+*    INPUT:
+*          fname      AES key file name
+*          aes_key    AES key
+*          init_vect  AES IV
+*    OUTPUT:
+*          aes_key    AES key
+*          init_vect  AES IV
+*    RETURN:
+*          0 on success
+*******************************************************************************/
+int read_aes_key(char *fname, unsigned char *aes_key, unsigned char *init_vect)
+{
+	int		ret = -1;
+	size_t		num;
+	FILE		*fkey = NULL;
+	char		line[120] = {0};
+	unsigned char	*curr_val = NULL;
+	char		*num_str = NULL;
+
+	fkey = fopen(fname, "r");
+	if (fkey == NULL) {
+		fprintf(stderr, "Could not open AES key file %s\n", fname);
+		return -1;
+	}
+
+	/* Read and parse every string in file */
+	while (fgets(line, 120, fkey) != NULL) {
+
+		if (strncmp("AES = ", line, 6) == 0) {
+			num_str = line + 6;
+			curr_val = aes_key;
+		} else if (strncmp("IV = ", line, 5) == 0) {
+			num_str = line + 5;
+			curr_val = init_vect;
+		} else
+			continue;
+
+		num = strlen(num_str);
+		if ((num_str[num - 1] == '\n') || (num_str[num - 1] == '\r')) {
+			num_str[num - 1] = '\0';
+			num--;
+		}
+
+		/* The row should contain 2 characters per key digit */
+		if (strlen(num_str) != (AES_KEY_SIZE >> 2)) {
+			fprintf(stderr, "Badly formed string [%s] in file %s\n", line, fname);
+			goto aes_read_end;
+		}
+
+		for (; num > 0; num -= 2) {
+			if (sscanf(num_str, "%02hhx", curr_val) == EOF) {
+				fprintf(stderr, "Conversion error starting %s\n", num_str);
+				goto aes_read_end;
+			}
+			curr_val++;
+			num_str += 2;
+		}
+
+	} /* for each line in file */
+
+	ret = 0;
+
+aes_read_end:
+
+	fclose(fkey);
+	return ret;
+}
+
+/*******************************************************************************
+*    generate_rsa_key
+*          generate AES key and IV and save them into text files
+*    INPUT:
+*          aes        AES context
+*    OUTPUT:
+*          aes        AES context
+*    RETURN:
+*          0 on success
+*******************************************************************************/
+int generate_aes_key(unsigned char *aes_key, unsigned char *init_vect)
+{
+	int		ret = 0, i, k;
+	havege_state	hs;
+	FILE		*fkey = NULL;
+	unsigned char	*curr_val = aes_key;
+	char		*rname[2] = {"AES", "IV"};
+
+	havege_init(&hs);
+
+	fkey = fopen("aes_key.txt", "w");
+	if (fkey == NULL) {
+		fprintf(stderr, "Could not open AES key file aes_key.txt\n");
+		return -1;
+	}
+
+	/* Fill AES key and IV with random numbers generated by HAVEGE */
+	for (i = 0; i < 2; i++) {
+
+		fprintf(fkey, "%s = ", rname[i]);
+
+		for (k = 0; k < 16; k++) {
+			curr_val[k] = (unsigned char)havege_rand(&hs);
+			fprintf(fkey, "%02X", curr_val[k]);
+		}
+
+		fprintf(fkey, "\n");
+
+		curr_val = init_vect;
+	}
+
+	fclose(fkey);
+	return ret;
+}
+
+/*******************************************************************************
 *    process_image
 *          handle input and output file options, read and verify RSA and AES keys.
 *    INPUT:
@@ -1270,7 +1482,7 @@ int build_regular_img (USER_OPTIONS	*opt, char *buf_in)
 *    RETURN:
 *          0 on success
 ******************************************************************************/
-int process_image (USER_OPTIONS	*opt)
+int process_image(USER_OPTIONS	*opt)
 {
 	int			i;
 	int 		override[2];
@@ -1362,33 +1574,22 @@ int process_image (USER_OPTIONS	*opt)
 
 	/* secure boot support - read RSA private key */
 	if (opt->flags & Z_OPTION_MASK) {
-		FILE	*f_prkey;
-		int	ret;
 
-		if ((f_prkey = fopen(opt->fname_prkey, "rb")) == NULL) {
-			fprintf(stderr, "Error opening RSA private key file %s\n",
-					opt->fname_prkey);
-			goto end;
-		}
-
-		rsa_init(&rsa, RSA_PKCS_V15, 0, NULL, NULL);
-
-		if( (ret = mpi_read_file(&rsa.N , 16, f_prkey ) ) != 0 ||
-			(ret = mpi_read_file(&rsa.E , 16, f_prkey ) ) != 0 ||
-			(ret = mpi_read_file(&rsa.D , 16, f_prkey ) ) != 0 ||
-			(ret = mpi_read_file(&rsa.P , 16, f_prkey ) ) != 0 ||
-			(ret = mpi_read_file(&rsa.Q , 16, f_prkey ) ) != 0 ||
-			(ret = mpi_read_file(&rsa.DP, 16, f_prkey ) ) != 0 ||
-			(ret = mpi_read_file(&rsa.DQ, 16, f_prkey ) ) != 0 ||
-			(ret = mpi_read_file(&rsa.QP, 16, f_prkey ) ) != 0 ) {
-			fprintf(stderr, "Cannot read RSA private key file\n\n", ret);
-			fclose(f_prkey);
-			goto end;
+		if (strncmp(opt->fname_prkey, "@@", 2) != 0) { /* private key file supplied */
+			if (read_rsa_key(opt->fname_prkey) != 0) {
+				fprintf(stderr, "Cannot read RSA private key file %s\n\n", opt->fname_prkey);
+				goto end;
+			}
+		} else { /* new key pair is required */
+			DB("Generating new RSA key pair...");
+			if (generate_rsa_key() != 0) {
+				fprintf(stderr, "Cannot generate RSA key pair\n\n");
+				goto end;
+			}
+			DB("OK\n");
 		}
 
 		rsa.len = (mpi_msb(&rsa.N) + 7) >> 3; /* key lenght in bytes */
-
-		fclose(f_prkey);
 
 		if (RSA_MAX_KEY_LEN_BYTES < rsa.len) {
 			fprintf(stderr, "Wrong RSA key length - %d bytes!"
@@ -1396,48 +1597,31 @@ int process_image (USER_OPTIONS	*opt)
 					rsa.len, RSA_MAX_KEY_LEN_BYTES);
 			goto end;
 		} else
-			fprintf(stdout, "Given RSA private key is %d bit long\n", rsa.len * 8);
+			fprintf(stdout, "The RSA private key is %d bit long\n", rsa.len * 8);
 
 		/* Use AES-128 encryption - read the key and generate IV vector */
 		if (opt->flags & A_OPTION_MASK) {
-			FILE		*f_aeskey;
-			struct timeval 	tv;
-			char		*pTmp = (char *)&tv;
 			unsigned char	aes_key[16];
-			unsigned char	digest[32];
-			int		k;
 
-
-			if ((f_aeskey = fopen(opt->fname_aeskey, "rb")) == NULL) {
-				fprintf(stderr, "Error opening AES-128 key file %s\n",
-						opt->fname_aeskey);
-				goto end;
+			if (strncmp(opt->fname_aeskey, "@@", 2) != 0) { /* AES key file supplied */
+				if (read_aes_key(opt->fname_aeskey, aes_key, IV) != 0) {
+					fprintf(stderr, "Cannot read AES key file\n\n");
+					goto end;
+				}
+			} else { /* new key is required */
+				DB("Generating new AES key ...");
+				if (generate_aes_key(aes_key, IV) != 0) {
+					fprintf(stderr, "Cannot generate AES key\n\n");
+					goto end;
+				}
+				DB("OK\n");
 			}
 
-			if (fread (aes_key, 1, 16, f_aeskey) != 16) {
-				fprintf(stderr, "Error reading AES-128 key from file %s\n",
-						opt->fname_aeskey);
-				fclose(f_aeskey);
-				goto end;
-			}
-
-			fclose(f_aeskey);
-
-			/* Generate initialization vector and init the AES engine */
-			/* Use file name XOR current time and finaly SHA-256 [0...15] */
-			memcpy(IV, opt->fname.in, 16);
-			gettimeofday(&tv);
-
-			for (i = 0, k = 0; i < 16; i++, k = (k+1) % sizeof(struct timeval))
-				IV[i] ^= pTmp[k];
-
-			/* compute SHA-256 digest and use it as the init vector */
-			sha2(IV, 16, digest, 0);
-			memcpy(IV, digest, 16);
 			aes_setkey_enc(&aes, aes_key, 128);
-		}
 
-	}
+		} /* AES-128 encryption */
+
+	} /* secure boot options */
 
 	/* Image Header(s)  */
 	if (opt->header_mode != IMG_ONLY) {
@@ -1500,7 +1684,9 @@ void print_usage(void)
 	printf("\n");
 	printf("Usage: \n");
 	printf("doimage <mandatory_opt> [other_options] <image_in> <image_out> [header_out]\n\n");
+
 	printf("<mandatory_opt> - can be one or more of the following:\n\n");
+
 	printf("-T image_type:   sata\\uart\\flash\\bootrom\\nand\\hex\\bin\\pex\n");
 	printf("-D image_dest:   image destination in dram (in hex)\n");
 	printf("-E image_exec:   execution address in dram (in hex)\n");
@@ -1513,19 +1699,30 @@ void print_usage(void)
 	printf("-W hex_width :   HEX file width, can be 8,16,32,64 \n");
 	printf("-M twsi_file:    ascii file name that contains the I2C init regs set by h/w.\n");
 	printf("                 this is used in i2c boot only\n");
+
 	printf("\nThe following options are mandatory for NAND image type:\n\n");
+
 	printf("-L nand_blk_size:NAND block size in KBytes (decimal int in range 64-16320)\n");
 	printf("                 This parameter is ignored for flashes with  512B pages\n");
 	printf("                 Such small page flashes always use 16K block sizes\n");
 	printf("-N nand_cell_typ:NAND cell technology type (char: M for MLC, S for SLC)\n");
 	printf("-P nand_pg_size: NAND page size: (decimal 512, 2048, 4096 or 8192)\n");
-	printf("\nSecure boot mode options - all options are mandatory once secure mode is selected:\n");
-	printf("-Z prv_key_file: Create image with RSA signature for secure boot mode\n");
-	printf("-A aes_key_file: Encrypt boot image using AES-128-CBC algorythm\n");
+
+	printf("\nSecure boot mode options - all options are mandatory once secure mode is selected by Z switch:\n");
+
+	printf("-Z [prv_key_file]: Create image with RSA signature for secure boot mode\n");
+	printf("                   If the private key file name is missing, a new key pair will be generated\n");
+	printf("                   and saved in files named rsa_prv.key and rsa_pub.key\n");
+	printf("                   A new file named sha2_pub.txt will be generated for a public key\n");
 	printf("-J jtag_delay:   Enable JTAG and delay boot execution by \"N\" ms\n");
 	printf("-B hex_box_id:   Box ID (hex) - from 0 to 0xffffffff\n");
 	printf("-F hex_flash_id: Flash ID (hex) - from 0 to 0xffff \n\n");
+
 	printf("\n<other_options> - optional and can be one or more of the following:\n\n");
+
+	printf("-A [aes_key_file]: Valid in secure mode only. Encrypt the boot image using AES-128 key\n");
+	printf("                   If the aes key file name is missing, a new AES-128 key will be generated\n");
+	printf("                   and saved in file named aes_key.txt suitable for eFuse storage\n");
 	printf("-G exec_file:    ascii file name that contains binary routine (ARM 5TE THUMB)\n");
 	printf("                 to run before the bootloader image execution.\n");
 	printf("                 The routine must contain an appropriate code for saving \n");
@@ -1540,7 +1737,9 @@ void print_usage(void)
 	printf("   -H 2 :will create two files, (image_out) for image , (header_out) for header\n");
 	printf("   -H 3 :will create one file (image_out) for header only \n");
 	printf("   -H 4 :will create one file (image_out) for image only \n");
+
 	printf("\nCommand examples: \n\n");
+
 	printf("doimage -T hex -W width image_in image_out\n");
 	printf("doimage -T bootrom image_in image_out\n");
 	printf("doimage -T resume image_in image_out\n");
@@ -1573,7 +1772,6 @@ void print_usage(void)
 *    RETURN:
 *          8-bit buffer checksum
 *******************************************************************************/
-//MV_U8 checksum8(MV_U32 start, MV_U32 len, MV_U8 csum)
 MV_U8 checksum8(void* start, MV_U32 len, MV_U8 csum)
 {
 	register MV_U8 sum = csum;
@@ -1601,7 +1799,6 @@ MV_U8 checksum8(void* start, MV_U32 len, MV_U8 csum)
 *    RETURN:
 *          32-bit buffer checksum
 *******************************************************************************/
-//MV_U32 checksum32(MV_U32 start, MV_U32 len, MV_U32 csum)
 MV_U32 checksum32(void* start, MV_U32 len, MV_U32 csum)
 {
 	register MV_U32 sum = csum;
@@ -1708,7 +1905,7 @@ int select_image (char *img_name, USER_OPTIONS *opt)
 	{ IMG_SATA,	"sata",		D_OPTION_MASK|T_OPTION_MASK|E_OPTION_MASK },
 	{ IMG_UART, 	"uart",		D_OPTION_MASK|T_OPTION_MASK|E_OPTION_MASK },
 	{ IMG_FLASH, 	"flash",	D_OPTION_MASK|T_OPTION_MASK|E_OPTION_MASK },
-	{ IMG_MMC,	"mmc",	D_OPTION_MASK|T_OPTION_MASK|E_OPTION_MASK },
+	{ IMG_MMC,	"mmc",		D_OPTION_MASK|T_OPTION_MASK|E_OPTION_MASK },
 	{ IMG_BOOTROM, 	"bootrom",	T_OPTION_MASK },
 	{ IMG_NAND,	"nand",		D_OPTION_MASK|T_OPTION_MASK|E_OPTION_MASK|
 					L_OPTION_MASK|N_OPTION_MASK|P_OPTION_MASK },
@@ -1752,136 +1949,175 @@ int main (int argc, char** argv)
 		char	*endptr = NULL;
 
 		switch (optch) {
-			case 'T': /* image type */
-				if ((select_image(optarg, &options) != 0) ||
-					(options.flags & T_OPTION_MASK)) goto parse_error;
-				options.flags |= T_OPTION_MASK;
-				break;
-
-			case 'D': /* image destination  */
-				options.image_dest = strtoul(optarg, &endptr, 16);
-				if (*endptr || (options.flags & D_OPTION_MASK)) goto parse_error;
-				options.flags |= D_OPTION_MASK;
-				break;
-
-			case 'E': /* image execution  */
-				options.image_exec = strtoul(optarg, &endptr, 16);
-				if (*endptr || (options.flags & E_OPTION_MASK)) goto parse_error;
-				options.flags |= E_OPTION_MASK;
-				break;
-
-			case 'X': /* Pre - Padding */
-				options.prepadding_size = strtoul(optarg, &endptr, 16);
-				if (*endptr || (options.flags & X_OPTION_MASK)) goto parse_error;
-				options.pre_padding = 1;
-				options.flags |= X_OPTION_MASK;
-				break;
-
-			case 'Y': /* Post - Padding */
-				options.postpadding_size = strtoul(optarg, &endptr, 16);
-				if (*endptr || (options.flags & Y_OPTION_MASK)) goto parse_error;
-				options.post_padding = 1;
-				options.flags |= Y_OPTION_MASK;
-				break;
-
-			case 'S': /* starting sector */
-				options.image_source = strtoul(optarg, &endptr, 16);
-				if (*endptr || (options.flags & S_OPTION_MASK)) goto parse_error;
-				options.flags |= S_OPTION_MASK;
-				break;
-
-			case 'P': /* NAND Page Size */
-				options.nandPageSize = strtoul (optarg, &endptr, 10);
-				if (*endptr || (options.flags & P_OPTION_MASK)) goto parse_error;
-				options.flags |= P_OPTION_MASK;
-				break;
-
-			case 'C': /* headers definition filename */
-				options.fname_list = optarg;
-				if (options.flags & C_OPTION_MASK) goto parse_error;
-				options.flags |= C_OPTION_MASK;
-				break;
-
-			case 'W': /* HEX file width */
-				options.hex_width = strtoul(optarg, &endptr, 10);
-				if (*endptr || (options.flags & W_OPTION_MASK)) goto parse_error;
-				options.flags |= W_OPTION_MASK;
-				break;
-
-			case 'H': /* Header file mode */
-				options.header_mode = strtoul(optarg, &endptr, 10);
-				if (*endptr || (options.flags & H_OPTION_MASK)) goto parse_error;
-				options.flags |= H_OPTION_MASK;
-				break;
-
-			case 'R': /* dram file */
-				options.fname_dram = optarg;
-				if (options.flags & R_OPTION_MASK) goto parse_error;
-				options.flags |= R_OPTION_MASK;
-				break;
-
-			case 'M': /* TWSI file */
-				options.fname_twsi = optarg;
-				if (options.flags & M_OPTION_MASK) goto parse_error;
-				options.flags |= M_OPTION_MASK;
-				break;
-
-			case 'G': /* binary file */
-				options.fname_bin = optarg;
-				if (options.flags & G_OPTION_MASK) goto parse_error;
-				options.flags |= G_OPTION_MASK;
-				break;
-
-			case 'Z': /* secure boot - private key */
-				options.fname_prkey = optarg;
-				if (options.flags & Z_OPTION_MASK) goto parse_error;
-				options.flags |= Z_OPTION_MASK;
-				break;
-
-			case 'J': /* JTAG Enabled */
-				options.jtagDelay = strtoul(optarg, &endptr, 10);
-				if (*endptr || (options.flags & J_OPTION_MASK)) goto parse_error;
-				options.flags |= J_OPTION_MASK;
-				break;
-
-			case 'B': /* Box ID */
-				options.boxId = strtoul(optarg, &endptr, 16);
-				if (*endptr || (options.flags & B_OPTION_MASK)) goto parse_error;
-				options.flags |= B_OPTION_MASK;
-				break;
-
-			case 'F': /* Flash ID */
-				options.flashId = strtoul(optarg, &endptr, 16);
-				if (*endptr || (options.flags & F_OPTION_MASK)) goto parse_error;
-				options.flags |= F_OPTION_MASK;
-				break;
-
-			case 'A': /* secure boot - encrypt with AES-128 key */
-				options.fname_aeskey = optarg;
-				if (options.flags & A_OPTION_MASK) goto parse_error;
-				options.flags |= A_OPTION_MASK;
-				break;
-
-			case 'L': /* NAND block size */
-				options.nandBlkSize = strtoul(optarg, &endptr, 10) / 64;
-				if (*endptr || (options.flags & L_OPTION_MASK)) goto parse_error;
-				options.flags |= L_OPTION_MASK;
-				break;
-
-			case 'N': /* NAND cell technology */
-				options.nandCellTech = optarg[0];
-				if (options.flags & N_OPTION_MASK) goto parse_error;
-				options.flags |= N_OPTION_MASK;
-				break;
-
-			default:
+		case 'T': /* image type */
+			if ((select_image(optarg, &options) != 0) || (options.flags & T_OPTION_MASK))
 				goto parse_error;
+			options.flags |= T_OPTION_MASK;
+			break;
+
+		case 'D': /* image destination  */
+			options.image_dest = strtoul(optarg, &endptr, 16);
+			if (*endptr || (options.flags & D_OPTION_MASK))
+				goto parse_error;
+			options.flags |= D_OPTION_MASK;
+			DB("Image destination address %#x\n", options.image_dest);
+			break;
+
+		case 'E': /* image execution  */
+			options.image_exec = strtoul(optarg, &endptr, 16);
+			if (*endptr || (options.flags & E_OPTION_MASK))
+				goto parse_error;
+			options.flags |= E_OPTION_MASK;
+			DB("Image execution address %#x\n", options.image_exec);
+			break;
+
+		case 'X': /* Pre - Padding */
+			options.prepadding_size = strtoul(optarg, &endptr, 16);
+			if (*endptr || (options.flags & X_OPTION_MASK))
+				goto parse_error;
+			options.pre_padding = 1;
+			options.flags |= X_OPTION_MASK;
+			DB("Pre-pad image by %#x bytes\n", options.prepadding_size);
+			break;
+
+		case 'Y': /* Post - Padding */
+			options.postpadding_size = strtoul(optarg, &endptr, 16);
+			if (*endptr || (options.flags & Y_OPTION_MASK))
+				goto parse_error;
+			options.post_padding = 1;
+			options.flags |= Y_OPTION_MASK;
+			DB("Post-pad image by %#x bytes\n", options.postpadding_size);
+			break;
+
+		case 'S': /* starting sector */
+			options.image_source = strtoul(optarg, &endptr, 16);
+			if (*endptr || (options.flags & S_OPTION_MASK))
+				goto parse_error;
+			options.flags |= S_OPTION_MASK;
+			DB("Image start sector (image source) %#x\n", options.image_source);
+			break;
+
+		case 'P': /* NAND Page Size */
+			options.nandPageSize = strtoul (optarg, &endptr, 10);
+			if (*endptr || (options.flags & P_OPTION_MASK))
+				goto parse_error;
+			options.flags |= P_OPTION_MASK;
+			DB("NAND page size %d bytes\n", options.nandPageSize);
+			break;
+
+		case 'C': /* headers definition filename */
+			options.fname_list = optarg;
+			if (options.flags & C_OPTION_MASK)
+				goto parse_error;
+			options.flags |= C_OPTION_MASK;
+			DB("Headers definition file name %s\n", options.fname_list);
+			break;
+
+		case 'W': /* HEX file width */
+			options.hex_width = strtoul(optarg, &endptr, 10);
+			if (*endptr || (options.flags & W_OPTION_MASK))
+				goto parse_error;
+			options.flags |= W_OPTION_MASK;
+			DB("HEX file width %d bytes\n", options.hex_width);
+			break;
+
+		case 'H': /* Header file mode */
+			options.header_mode = strtoul(optarg, &endptr, 10);
+			if (*endptr || (options.flags & H_OPTION_MASK))
+				goto parse_error;
+			options.flags |= H_OPTION_MASK;
+			DB("Header file mode is %d\n", options.header_mode);
+			break;
+
+		case 'R': /* dram file */
+			options.fname_dram = optarg;
+			if (options.flags & R_OPTION_MASK)
+				goto parse_error;
+			options.flags |= R_OPTION_MASK;
+			DB("Registers header file name %s\n", options.fname_dram);
+			break;
+
+		case 'M': /* TWSI file */
+			options.fname_twsi = optarg;
+			if (options.flags & M_OPTION_MASK)
+				goto parse_error;
+			options.flags |= M_OPTION_MASK;
+			DB("TWSI header file name %s\n", options.fname_twsi);
+			break;
+
+		case 'G': /* binary file */
+			options.fname_bin = optarg;
+			if (options.flags & G_OPTION_MASK)
+				goto parse_error;
+			options.flags |= G_OPTION_MASK;
+			DB("Binary header file name %s\n", options.fname_bin);
+			break;
+
+		case 'Z': /* secure boot - private key */
+			options.fname_prkey = optarg;
+			if (options.flags & Z_OPTION_MASK)
+				goto parse_error;
+			options.flags |= Z_OPTION_MASK;
+			DB("RSA private Key file name %s\n", options.fname_prkey);
+			break;
+
+		case 'J': /* JTAG Enabled */
+			options.jtagDelay = strtoul(optarg, &endptr, 10);
+			if (*endptr || (options.flags & J_OPTION_MASK))
+				goto parse_error;
+			options.flags |= J_OPTION_MASK;
+			DB("JTAG delay %d ms\n", options.jtagDelay);
+			break;
+
+		case 'B': /* Box ID */
+			options.boxId = strtoul(optarg, &endptr, 16);
+			if (*endptr || (options.flags & B_OPTION_MASK))
+				goto parse_error;
+			options.flags |= B_OPTION_MASK;
+			DB("Box ID %#x\n", options.boxId);
+			break;
+
+		case 'F': /* Flash ID */
+			options.flashId = strtoul(optarg, &endptr, 16);
+			if (*endptr || (options.flags & F_OPTION_MASK))
+				goto parse_error;
+			options.flags |= F_OPTION_MASK;
+			DB("Flash ID %#x\n", options.flashId);
+			break;
+
+		case 'A': /* secure boot - encrypt with AES-128 key */
+			options.fname_aeskey = optarg;
+			if (options.flags & A_OPTION_MASK)
+				goto parse_error;
+			options.flags |= A_OPTION_MASK;
+			DB("AES file name %s\n", options.fname_aeskey);
+			break;
+
+		case 'L': /* NAND block size */
+			options.nandBlkSize = strtoul(optarg, &endptr, 10) / 64;
+			if (*endptr || (options.flags & L_OPTION_MASK))
+				goto parse_error;
+			options.flags |= L_OPTION_MASK;
+			DB("NAND block size %d\n", options.nandBlkSize);
+			break;
+
+		case 'N': /* NAND cell technology */
+			options.nandCellTech = optarg[0];
+			if (options.flags & N_OPTION_MASK)
+				goto parse_error;
+			options.flags |= N_OPTION_MASK;
+			DB("NAND cell technology %c\n", options.nandCellTech);
+			break;
+
+		default:
+			goto parse_error;
 		}
 	} /* parse command-line options */
 
 	/* assign file names */
 	for (i = 0; (optind < argc) && (i < ARRAY_SIZE(options.fname_arr)); ++optind, i++) {
 		options.fname_arr[i] = argv[optind];
+		DB("File @ array index %d is %s (option index is %d)\n", i, argv[optind], optind);
 		/* verify that all file names are different */
 		for (k = 0; k < i; k++) {
 			if (0 == strcmp(options.fname_arr[i], options.fname_arr[k])) {
@@ -1921,8 +2157,8 @@ int main (int argc, char** argv)
 	}
 
 	if ((options.flags & L_OPTION_MASK) &&
-		    ((options.nandBlkSize > 255) ||
-		    ((options.nandBlkSize == 0) && (options.nandPageSize != 512)))) {
+	    ((options.nandBlkSize > 255) ||
+	    ((options.nandBlkSize == 0) && (options.nandPageSize != 512)))) {
 		fprintf(stderr,"Error: wrong NAND block size %d!\n\n\n\n\n", 64*options.nandBlkSize);
 		goto parse_error;
 	}

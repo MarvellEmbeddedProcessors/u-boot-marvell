@@ -73,6 +73,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pex/mvPex.h"
 #include "device/mvDevice.h"
 #include "neta/gbe/mvEthRegs.h"
+
+#if defined(CONFIG_MV_ETH_NETA)
+#include "neta/gbe/mvEthRegs.h"
+#endif
+
 #include "gpp/mvGppRegs.h"
 
 /* defines  */

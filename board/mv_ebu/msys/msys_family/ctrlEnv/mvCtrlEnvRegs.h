@@ -151,6 +151,8 @@ extern "C" {
 #define PMC_GESTOPCLOCK_EN(port)		(1 << PMC_GESTOPCLOCK_OFFS(port))
 #define PMC_GESTOPCLOCK_STOP(port)		(0 << PMC_GESTOPCLOCK_OFFS(port))
 
+/* dummy defenition, used for SGMII capable interfaces */
+#define SGMII_SERDES_CFG_REG(port)		(0)
 
 /* Controler environment registers offsets */
 

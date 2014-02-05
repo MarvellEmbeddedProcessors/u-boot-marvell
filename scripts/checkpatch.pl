@@ -39,7 +39,7 @@ my %ignore_type = ();
 my @ignore = ();
 my $help = 0;
 my $configuration_file = ".checkpatch.conf";
-my $max_line_length = 80;
+my $max_line_length = 120;
 my $ignore_perl_version = 0;
 my $minimum_perl_version = 5.10.0;
 

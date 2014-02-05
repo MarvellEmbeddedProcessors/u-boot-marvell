@@ -995,22 +995,30 @@ MV_VOID mvBoardVerifySerdesCofig(MV_VOID)
 {
 	MV_U32 i, laneConfig, laneSelector, selector = MV_REG_READ(MV_COMMON_PHY_REGS_OFFSET);
 	MV_CONFIG_TYPE_ID configID = MV_CONFIG_LANE1;
+	MV_U32 revID = mvCtrlRevGet();
 
 	/* Lane 1 & Lane 3 use the same values for SerDes config and selector,
 	 * Lane2 values  are reversed:
 	 * | Value  | board Config | Selector |
 	 * | 0x0    | SATA0        | SGMII-0  |
 	 * | 0x1    | SGMII-0      | SATA0    | */
-	for (i = 1; i < 4; i++) {
-		laneConfig = mvCtrlSysConfigGet(configID);
-		laneSelector = (selector & SERDES_LANE_MASK(i)) >> SERDES_LANE_OFFS(i);
+	for (i = 0; i < 4; i++) {
+		if (i == 0) /* lane0 is hard-coded to PCIe0 - not selected by board configuration */
+			laneConfig = 1;
+		else /* lane 1-3 are selected at board configuration */
+			laneConfig = mvCtrlSysConfigGet(configID++);
+		/* using different Mask/Offset, since SATA1 option at lane1 was
+		** not supported in Z1, Z2, Z3 */
+		if (revID <= MV_88F66X0_Z3_ID)
+			laneSelector = (selector & SERDES_LANE_MASK_Z_REV(i)) >> SERDES_LANE_OFFS_Z_REV(i);
+		else
+			laneSelector = (selector & SERDES_LANE_MASK(i)) >> SERDES_LANE_OFFS(i);
 		if ((i != 2 && laneSelector != laneConfig) || /* lanes 1,3 use the same value */
 			(i == 2 && laneSelector == laneConfig)) { /* lane 2 use opposite values */
 			mvOsPrintf("Error: board configuration conflicts with SerDes configuration\n");
 			mvOsPrintf("SerDes#%d: Board configuration= %x  SerDes Selector = %x\n" \
 			, i, laneConfig, laneSelector);
 		}
-		configID++;
 	}
 }
 

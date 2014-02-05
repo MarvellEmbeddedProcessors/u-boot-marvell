@@ -182,8 +182,11 @@ extern "C" {
 #define CORE_DIVCLK_RELOAD_RATIO_MASK		(1 << CORE_DIVCLK_RELOAD_RATIO_OFFS)
 
 /* Common PHY selector (MV_COMMON_PHY_REGS_OFFSET) */
-#define SERDES_LANE_OFFS(num)			num
-#define SERDES_LANE_MASK(num)			(2 << (num - 1))
+#define SERDES_LANE_OFFS_Z_REV(num)	num
+#define SERDES_LANE_MASK_Z_REV(num)	(1 << num)
+
+#define SERDES_LANE_OFFS(num)		(num <= 1 ? num : (num + 1))
+#define SERDES_LANE_MASK(num)		((num == 1 ? 3 : 1) << SERDES_LANE_OFFS(num))
 
 #define EEPROM_VERIFICATION_PATTERN	0xfadecafe
 

@@ -132,6 +132,22 @@ static inline void __raw_readsl(unsigned long addr, void *data, int longlen)
 #define __raw_readl(a)		__arch_getl(a)
 #define __raw_readq(a)		__arch_getq(a)
 
+#if defined(DEBUG_REG) && defined(CONFIG_MVEBU)
+#define dbg_wb(v,c)	printf("writeb: 0x%02x >> 0x%08x\n", v, c)
+#define dbg_ww(v,c)	printf("writew: 0x%04x >> 0x%08x\n", v, c)
+#define dbg_wl(v,c)	printf("writel: 0x%08x >> 0x%08x\n", v, c)
+#define dbg_rb(v,c)	printf("readb:  0x%02x << 0x%08x\n", v, c)
+#define dbg_rw(v,c)	printf("readw:  0x%04x << 0x%08x\n", v, c)
+#define dbg_rl(v,c)	printf("readl:  0x%08x << 0x%08x\n", v, c)
+#else
+#define dbg_wb(v,c)
+#define dbg_ww(v,c)
+#define dbg_wl(v,c)
+#define dbg_rb(v,c)
+#define dbg_rw(v,c)
+#define dbg_rl(v,c)
+#endif /* DEBUG_REG && CONFIG_MVEBU */
+
 /*
  * TODO: The kernel offers some more advanced versions of barriers, it might
  * have some advantages to use them instead of the simple one here.
@@ -141,14 +157,14 @@ static inline void __raw_readsl(unsigned long addr, void *data, int longlen)
 #define __iormb()	dmb()
 #define __iowmb()	dmb()
 
-#define writeb(v,c)	({ u8  __v = v; __iowmb(); __arch_putb(__v,c); __v; })
-#define writew(v,c)	({ u16 __v = v; __iowmb(); __arch_putw(__v,c); __v; })
-#define writel(v,c)	({ u32 __v = v; __iowmb(); __arch_putl(__v,c); __v; })
+#define writeb(v,c)	({ u8  __v = v; __iowmb(); __arch_putb(__v,c); __v; dbg_wb(__v,c);})
+#define writew(v,c)	({ u16 __v = v; __iowmb(); __arch_putw(__v,c); __v; dbg_ww(__v,c);})
+#define writel(v,c)	({ u32 __v = v; __iowmb(); __arch_putl(__v,c); __v; dbg_wl(__v,c);})
 #define writeq(v,c)	({ u64 __v = v; __iowmb(); __arch_putq(__v,c); __v; })
 
-#define readb(c)	({ u8  __v = __arch_getb(c); __iormb(); __v; })
-#define readw(c)	({ u16 __v = __arch_getw(c); __iormb(); __v; })
-#define readl(c)	({ u32 __v = __arch_getl(c); __iormb(); __v; })
+#define readb(c)	({ u8  __v = __arch_getb(c); __iormb();  dbg_rb(__v,c); __v; })
+#define readw(c)	({ u16 __v = __arch_getw(c); __iormb();  dbg_rw(__v,c); __v; })
+#define readl(c)	({ u32 __v = __arch_getl(c); __iormb();  dbg_rl(__v,c); __v; })
 #define readq(c)	({ u64 __v = __arch_getq(c); __iormb(); __v; })
 
 /*

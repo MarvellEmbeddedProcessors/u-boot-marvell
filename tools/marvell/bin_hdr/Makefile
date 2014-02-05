@@ -116,32 +116,16 @@ ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_RD_BOBCAT2
 endif
 
-SETPARAMS  = setparams
-PARAMSFILE = params
-LDSCRIPT   = linker.scr
-DRAMREGS   = ./dramregs.txt
+SETPARAMS   = setparams
+PARAMSFILE  = params
+LDSCRIPT    = linker.scr
+LDSECSCRIPT = linker_sec.scr
+DRAMREGS    = ./dramregs.txt
 
-INCLUDE     = -I./ -I./../ -I./src_phy_$(BOARD)/ -I./src_ddr/  -I./inc/ -I../../../include
+INCLUDE       = -I./ -I./../ -I./src_phy_$(BOARD)/ -I./src_ddr/  -I./inc/ -I../../../include
 
-ifneq ($(BOARD),alp)
-	ifneq ($(BOARD),a375)
-		ifneq ($(BOARD),a38x)
-			LDFLAGSBIN  = -T linker.scr $(LDFLAGS)
-		else
-			ifeq ($(BIN_HDR_DEBUG),1)
-				LDFLAGSBIN  = -T linker.scr $(LDFLAGS)
-			else
-				LDFLAGSBIN  = -T linker_a38x.scr $(LDFLAGS)
-			endif
-		endif
-	else
-		LDFLAGSBIN  = -T linker_alp_a375.scr $(LDFLAGS)
-	endif
-else
-	LDFLAGSBIN  = -T linker_alp_a375.scr $(LDFLAGS)
-endif
-
-
+LDFLAGSBIN    = -T $(LDSCRIPT) $(LDFLAGS)
+LDSECFLAGSBIN = -T $(LDSECSCRIPT) $(LDFLAGS)
 
 HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
@@ -182,7 +166,7 @@ HDR_COMPONENTS_UART = $(LIB_GENERAL_INIT_UART) $(LIB_PHY_UART) $(LIB_DDR_UART) $
 #CFLAGS += -DCONFIG_EXAMPLE_COMPONENT
 #endif
 
-all:   subdirs $(TGT).bin $(TGT).uart.bin  $(TGT).dis $(TGT).uart.dis $(TGT).srec $(TGT).uart.srec
+all:   subdirs $(TGT).bin $(TGT)_sec.bin $(TGT).uart.bin  $(TGT).dis $(TGT)_sec.dis $(TGT).uart.dis $(TGT).srec $(TGT)_sec.srec $(TGT).uart.srec
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
@@ -195,6 +179,11 @@ $(TGT).bin: $(TGT).elf
 	$(CAT) $(PARAMSFILE).raw $(addsuffix .tmp, $@) > $@
 	$(RM) $(addsuffix .tmp, $@)
 
+$(TGT)_sec.bin: $(TGT)_sec.elf
+	$(OBJCOPY) -S -O binary $< $(addsuffix .tmp, $@)
+	$(CAT) $(PARAMSFILE)_sec.raw $(addsuffix .tmp, $@) > $@
+	$(RM) $(addsuffix .tmp, $@)
+
 $(TGT).uart.bin: $(TGT).uart.elf
 	$(OBJCOPY) -S -O binary $< $(addsuffix .tmp, $@)
 	$(CAT) $(PARAMSFILE).raw $(addsuffix .tmp, $@) > $@
@@ -203,7 +192,13 @@ $(TGT).uart.bin: $(TGT).uart.elf
 $(TGT).srec: $(TGT).elf
 	$(OBJCOPY) -O srec $< $@
 
+$(TGT)_sec.srec: $(TGT)_sec.elf
+	$(OBJCOPY) -O srec $< $@
+
 $(TGT).dis:  $(TGT).elf
+	$(OBJDUMP) -lhaD -S $<  > $@
+
+$(TGT)_sec.dis:  $(TGT)_sec.elf
 	$(OBJDUMP) -lhaD -S $<  > $@
 
 $(TGT).uart.srec: $(TGT).uart.elf
@@ -215,11 +210,17 @@ $(TGT).uart.dis:  $(TGT).uart.elf
 $(TGT).elf: subdirs  $(AOBJ) $(COBJ) $(SETPARAM) $(LDSCRIPT)
 	$(CC) $(LDFLAGSBIN) $(AOBJ) $(COBJ) $(HDR_COMPONENTS) $(LIB_UTILS) libgcc.lib -o $@
 
+$(TGT)_sec.elf: subdirs  $(AOBJ) $(COBJ) $(SETPARAM) $(LDSECSCRIPT)
+	$(CC) $(LDSECFLAGSBIN) $(AOBJ) $(COBJ) $(HDR_COMPONENTS) $(LIB_UTILS) libgcc.lib -o $@
+
 $(TGT).uart.elf: $(AOBJ) $(CUART_OBJ) subdirs
 	$(CC) $(LDFLAGSBIN) $(AOBJ) $(CUART_OBJ) $(HDR_COMPONENTS_UART) $(LIB_UTIL_UART) libgcc.lib -o $@
 
 $(LDSCRIPT): $(SETPARAMS)
-	./$(SETPARAMS) -P $(PARAMSFILE).txt -R $(DRAMREGS) $(PARAMSFILE).raw $@
+	./$(SETPARAMS) -B $(BOARD) -P $(PARAMSFILE).txt -R $(DRAMREGS) $(PARAMSFILE).raw $@
+
+$(LDSECSCRIPT): $(SETPARAMS)
+	./$(SETPARAMS) -S -B $(BOARD) -P $(PARAMSFILE).txt -R $(DRAMREGS) $(PARAMSFILE)_sec.raw $@
 
 $(SETPARAMS):
 	$(MAKE) $(SETPARAMS) BOARD="$(BOARD)"  HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)"  -C ./src_util
@@ -236,7 +237,7 @@ subdirs:
 	done
 
 clean:
-	$(RM) *.raw *.elf *.srec *.dis *.bin *.a *.uart.bin *.uart.elf ./src/*.o  $(LDSCRIPT) $(SETPARAMS)
+	$(RM) *.raw *.elf *.srec *.dis *.bin *.a *.uart.bin *.uart.elf ./src/*.o  $(LDSCRIPT) $(LDSECSCRIPT) $(SETPARAMS)
 	@for dir in $(COMPONENT_SUBDIRS) ; do \
 	    $(MAKE) clean -s -C $$dir || exit 1 ; \
 	done

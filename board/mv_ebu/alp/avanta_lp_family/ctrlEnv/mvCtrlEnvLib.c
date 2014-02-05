@@ -1448,6 +1448,7 @@ MV_U32 mvCtrlRevGet(MV_VOID)
 	case MV_88F66X0_Z1_ID:
 	case MV_88F66X0_Z2_ID:
 	case MV_88F66X0_Z3_ID:
+	case MV_88F66XX_A0_ID:
 			return value;
 	default:
 			mvOsPrintf("%s: Error: Failed to read Revision ID\n", __func__);
@@ -1495,7 +1496,7 @@ MV_VOID mvCtrlNameGet(char *pNameBuff)
 MV_VOID mvCtrlRevNameGet(char *pNameBuff)
 {
 	MV_U32 revId;
-	char *revArray[] = MV_88FX66X0_ID_ARRAY;
+	char *revArray[] = MV_88F66X0_ID_ARRAY;
 
 	revId = mvCtrlRevGet();
 
@@ -1503,6 +1504,7 @@ MV_VOID mvCtrlRevNameGet(char *pNameBuff)
 	case MV_88F66X0_Z1_ID:
 	case MV_88F66X0_Z2_ID:
 	case MV_88F66X0_Z3_ID:
+	case MV_88F66XX_A0_ID:
 			mvOsSPrintf(pNameBuff, " Rev %s", revArray[revId]);
 			return;
 	default:

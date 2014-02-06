@@ -273,6 +273,7 @@ MV_U32 mvBoardSysClkGet(MV_VOID);
 MV_32 mvBoarGpioPinNumGet(MV_BOARD_GPP_CLASS class, MV_U32 index);
 MV_VOID mvBoardReset(MV_VOID);
 MV_32 mvBoardResetGpioPinGet(MV_VOID);
+MV_32 mvBoardSDIOGpioPinGet(MV_BOARD_GPP_CLASS type);
 MV_U32 mvBoardGpioIntMaskGet(MV_U32 gppGrp);
 MV_32 mvBoardMppGet(MV_U32 mppGroupNum);
 MV_U32 mvBoardGppConfigGet(void);

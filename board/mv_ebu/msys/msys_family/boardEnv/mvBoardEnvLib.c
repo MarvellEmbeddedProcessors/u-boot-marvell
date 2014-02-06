@@ -646,6 +646,29 @@ MV_32 mvBoardResetGpioPinGet(MV_VOID)
 }
 
 /*******************************************************************************
+* mvBoardSDIOGpioPinGet - mvBoardSDIOGpioPinGet
+*
+* DESCRIPTION:
+*	used for hotswap detection
+* INPUT:
+*	type - Type of SDIO GPP to get.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*       GPIO pin number. The function return -1 for bad parameters.
+*
+*******************************************************************************/
+MV_32 mvBoardSDIOGpioPinGet(MV_BOARD_GPP_CLASS type)
+{
+	if ((type != BOARD_GPP_SDIO_POWER) && (type != BOARD_GPP_SDIO_DETECT) && (type != BOARD_GPP_SDIO_WP))
+		return MV_FAIL;
+
+	return mvBoarGpioPinNumGet(type, 0);
+}
+
+/*******************************************************************************
 * mvBoardGpioIntMaskGet - Get GPIO mask for interrupt pins
 *
 * DESCRIPTION:

@@ -20,8 +20,5 @@
 #ifndef _MVEBU_H_
 #define _MVEBU_H_
 
-#define MVEBU_CFG_BASE	(0x90000000)
-
-#define MVEBU_ADEC_AP_BASE (MVEBU_CFG_BASE + 0x0)
 
 #endif	/* MVEBU_H */

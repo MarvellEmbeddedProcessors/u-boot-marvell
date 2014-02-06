@@ -18,3 +18,5 @@
 #
 
 obj-$(CONFIG_ADEC) += adec.o
+obj-y += unit-info.o
+obj-y += soc-init.o

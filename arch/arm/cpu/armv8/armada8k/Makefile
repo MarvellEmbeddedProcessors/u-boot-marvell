@@ -18,4 +18,4 @@
 #
 
 obj-y += soc-init.o
-obj-y += memory-map.o
+obj-y += tables.o

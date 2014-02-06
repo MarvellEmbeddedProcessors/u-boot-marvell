@@ -17,43 +17,35 @@
  * ***************************************************************************
  */
 
-#ifndef _ADEC_H_
-#define _ADEC_H_
+#ifndef _SOC_H_
+#define _SOC_H_
 
-#define RAR_EN_OFFSET		(13)
-#define RAR_EN_MASK		(1)
-#define TARGET_ID_OFFSET	(8)
-#define TARGET_ID_MASK		(0x1F)
-#define WIN_ENABLE_BIT		(0x1)
+#include <asm/arch-mvebu/unit-info.h>
+#include <asm/arch-mvebu/adec.h>
 
-#define ADDRESS_SHIFT		(20)
-#define ADDRESS_MASK		(0xFFFFFFF0)
+#define MAX_SOC_NAME	   (32)
 
-#define MAX_AP_WINDOWS		(8)
-#define MAX_CP_WINDOWS		(16)
-
-#define CCU_WIN_CR_OFFSET(win)	(0 + (12 * win))
-#define CCU_WIN_ALR_OFFSET(win)	(4 + (12 * win))
-#define CCU_WIN_AHR_OFFSET(win)	(8 + (12 * win))
-
-enum adec_target_ids_ap {
-	IO_0_TID    = 0x0,
-	DRAM_0_TID  = 0x3,
-	DRAM_1_TID  = 0x6,
-	IO_1_TID    = 0x9,
-	CFG_REG_TID = 0x10,
-	INVALID_TID = 0x1F
+struct mvebu_soc_family {
+	char name[MAX_SOC_NAME];
+	int	 id;
+	u16	*base_unit_info;
+	struct mvebu_soc_info *soc_table;
+	struct mvebu_soc_info *curr_soc;
+	int adec_type;
 };
 
-struct adec_win {
-	uintptr_t base_addr;
-	uintptr_t win_size;
-	u8 target_id;
-	bool rar_enable;
+struct mvebu_soc_info {
+	char name[MAX_SOC_NAME];
+	int	 id;
+	u16	*unit_disable;
+	struct adec_win *memory_map;
 };
 
+int common_soc_init(struct mvebu_soc_family *soc_family_info);
 
-void adec_dump(void);
-int adec_ap_init(struct adec_win *windows);
+/* API required from all SOCs */
+int soc_get_rev(void);
+int soc_get_id(void);
+u16 *soc_get_unit_mask_table(void);
 
-#endif /* _ADEC_H_ */
+#endif /* _SOC_H_ */

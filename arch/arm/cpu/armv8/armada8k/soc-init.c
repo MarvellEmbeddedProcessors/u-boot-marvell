@@ -21,16 +21,25 @@
 
 #include <common.h>
 #include <asm/io.h>
-#include <asm/arch-mvebu/adec.h>
+#include <asm/arch-mvebu/soc.h>
+#include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-armada8k/armada8k.h>
 
-extern struct adec_win memory_map[];
+int soc_get_rev(void)
+{
+	/* This should read the soc rev from some register*/
+	return 0;
+}
+
+int soc_get_id(void)
+{
+	/* This should read the soc id from some register*/
+	return 8022;
+}
 
 int a8k_init(void)
 {
-	debug("Initialixing A8K\n");
-
-	adec_ap_init(memory_map, (void *)MVEBU_ADEC_AP_BASE);
+	common_soc_init(&a8k_family_info);
 
 	return 0;
 }

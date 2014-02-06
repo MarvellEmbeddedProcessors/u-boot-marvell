@@ -17,15 +17,12 @@
  * ***************************************************************************
  */
 
-#include <common.h>
-#include <asm/io.h>
-#include <asm/arch-mvebu/adec.h>
+#ifndef _REGS_BASE_H_
+#define _REGS_BASE_H_
 
-struct adec_win memory_map[] = {
-	{0x0,     0x40000000, DRAM_0_TID, 0},
-	{0x40000000, 0x20000000, IO_0_TID, 0},
-	/* Invalid entry closes the array */
-	{0x0, 0x0, INVALID_TID, 0}
-};
+#define MVEBU_REGS_BASE	(0x90000000)
 
+/* List of register base for all units */
+#define MVEBU_ADEC_AP_BASE (MVEBU_REGS_BASE + 0x0)
 
+#endif	/* _ARMADA8K_H_ */

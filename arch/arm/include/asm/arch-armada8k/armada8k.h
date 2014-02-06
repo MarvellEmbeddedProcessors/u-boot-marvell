@@ -23,5 +23,6 @@
 #include <asm/arch-mvebu/mvebu.h>
 
 int a8k_init(void);
+extern struct mvebu_soc_family a8k_family_info;
 
 #endif	/* _ARMADA8K_H_ */

@@ -23,6 +23,7 @@
 #include <common.h>
 #include <asm/system.h>
 #include <asm/io.h>
+#include <asm/arch/regs-base.h>
 #include <asm/arch-mvebu/adec.h>
 
 void __iomem *ap_adec_base;
@@ -80,12 +81,12 @@ void adec_dump(void)
 	return;
 }
 
-int adec_ap_init(struct adec_win *windows, void __iomem *ap_base)
+int adec_ap_init(struct adec_win *windows)
 {
 	int win_id;
 
 	debug("Initialzing AP ADEC unit\n");
-	ap_adec_base = ap_base;
+	ap_adec_base = (void *)MVEBU_ADEC_AP_BASE;
 
 	for (win_id = 0; win_id < MAX_AP_WINDOWS; win_id++) {
 		if (windows->target_id == INVALID_TID)

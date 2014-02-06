@@ -1011,11 +1011,13 @@ MV_U32 mvCtrlEthMaxPortGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlSataMaxPortGet(MV_VOID)
 {
-	/* Typical HW setup for DB-6660 is is with 1 SATA only*/
-	if (mvBoardIdGet() == DB_6660_ID)
-		return 1;
+	MV_U32 sata_ports = mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID);
+	MV_U32 revID = mvCtrlRevGet();
+	/* Z1, Z2, Z3 support 1 SATA port */
+	if (revID <= MV_88F66X0_Z3_ID)
+		return sata_ports - 1;
 	else
-		return mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID);
+		return sata_ports;
 }
 
 #endif

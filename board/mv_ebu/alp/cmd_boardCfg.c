@@ -37,9 +37,9 @@ MV_BOARD_CONFIG_VALUE boardConfig[] = {
 { MV_CONFIG_PON_BEN_POLARITY,	"PON POLARITY (DB-6660)",	2, {"BEN active low", "BEN active low"} },
 { MV_CONFIG_SGMII0_CAPACITY,	"SGMII-0 Capacity",		2, {"1G", "2.5G"} },
 { MV_CONFIG_SGMII1_CAPACITY,	"SGMII-1 Capacity",		2, {"1G", "2.5G"} },
-{ MV_CONFIG_LANE1,		"SerDes Lane#1 (DB-6660)",	3, {"PCIe-1", "SGMII-0", "SATA-1"} },
+{ MV_CONFIG_LANE1,		"SerDes Lane#1 (DB-6660)",	4, {"PCIe-1", "SGMII-0", "SATA-1", "Unconnected"} },
 { MV_CONFIG_LANE2,		"SerDes Lane#2 (DB-6660)",	2, {"SATA-0", "SGMII-0"} },
-{ MV_CONFIG_LANE3,		"SerDes Lane#3 (DB-6660)",	3, {"USB3.0", "SGMII-0", "SATA-1"} },
+{ MV_CONFIG_LANE3,		"SerDes Lane#3 (DB-6660)",	2, {"USB3.0", "SGMII-0"} },
 { MV_CONFIG_MAC0_SW_SPEED,	"MAC0 to Switch Speed",		2, {"2G", "1G"} },
 { MV_CONFIG_DEVICE_BUS_MODULE,	"Device Bus Module (DB-6660)",	4, {"None", "RGMII Module", "I2S Audio Module", "SPDIF Audio Module"} },
 { MV_CONFIG_SLIC_TDM_DEVICE,	"TDM module",			5, {"None", "SSI", "ISI", "ZSI", "TDM"} },
@@ -177,36 +177,21 @@ static int do_boardCfg_read(MV_CONFIG_TYPE_ID field)
  */
 static int do_boardCfg_write(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
 {
-	MV_U32 rev;
-
 	if (writeVal >= boardConfig[field].numOfValues) {
 		printf("Error: write value is invalid - See 'boardConfig list <field>'\n\n");
 		goto error;
 	}
-
-	/* SATA-1 support:
-	 * - change lanes possibilites in Dip-Switch/EEPROM (move serdes field to 3rd configuration byte
-	 * - add support for lane selector more bits
-	 * - (see cider differences between common phy selector bits regarding SATA-1, @0x18300)
-	 */
-	if ((field == MV_CONFIG_LANE1 || field == MV_CONFIG_LANE3) && writeVal == 0x2) {
-		rev = mvCtrlRevGet();
-		if (rev == MV_88F66X0_Z1_ID || rev == MV_88F66X0_Z2_ID || rev == MV_88F66X0_Z3_ID)
-			printf("Error: SATA-1 is not supported in Z stepping revision\n");
-		else
-			printf("SATA-1 support is not implemented yet\n");
+	/* 0x2 = SATA1, 0x3 = Unconnected are supported only for A0 */
+	if ((field == MV_CONFIG_LANE1 && (writeVal == 0x2 || writeVal == 0x3)) \
+			&& (mvCtrlRevGet() <= MV_88F66X0_Z3_ID)) {
+		mvOsPrintf("Error: this option is not supported in Z stepping revision\n");
 		goto error;
 	}
-
 	if (mvBoardEepromWrite(field, writeVal) == MV_OK)
 		return 0;
-
 error:
 	printf("Error: failed writing board configuration - See 'help boardConfig'\n");
 	return -1;
-
-
-
 }
 
 int isEepromEnabledFlag = -1;
@@ -236,6 +221,7 @@ int do_boardCfg(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (argc < 2) {
 		printf("argc <= 2\n");
 		goto usage;
+
 	}
 	cmd = argv[1];
 

@@ -69,7 +69,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrlEnv/mvCtrlEnvAddrDec.h"
 #include "usb/mvUsbRegs.h"
 
-
 /*******************************************************************************
 * mvSysUsbHalInit - Initialize the USB subsystem
 *
@@ -83,33 +82,62 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *       None
 *
 *******************************************************************************/
-MV_STATUS mvSysUsbInit(MV_U32 dev, MV_BOOL isHost, MV_BOOL isUsb3)
+MV_STATUS mvSysUsbInit(MV_VOID)
 {
 	MV_USB_HAL_DATA halData;
 	MV_STATUS status = MV_OK;
+	MV_U32 dev, reg;
 	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
 
 	halData.ctrlModel = mvCtrlModelGet();
 	halData.ctrlRev = mvCtrlRevGet();
 	halData.ctrlFamily = mvCtrlDevFamilyIdGet(halData.ctrlModel);
 
-	/*
-	 * For USB3 initialize only the UTMI PHY
-	 * For USB2 initialize the PHY and the controller
-	 */
-	if (isUsb3)
-		status = mvUsbUtmiPhyInit(dev, &halData);
-	else {
-		status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
-		if (status == MV_OK)
-			status = mvUsbWinInit(dev, addrWinMap);
 
-		/* Pll init is not relevant to Armada 38x */
-		if ((dev == 0) && (halData.ctrlFamily != MV_88F68XX))
-			mvUsbPllInit();
-		if (status == MV_OK)
-			status = mvUsbHalInit(dev, isHost, &halData);
-	}
+	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
 
+#ifdef CONFIG_USB_EHCI
+		MV_BOOL isHost;
+		char envname[10], *env;
+		for (dev = 0; dev < mvCtrlUsbMaxGet(); dev++) {
+			sprintf(envname, "usb%dMode", dev);
+			env = getenv(envname);
+			if ((!env) || (strcmp(env, "device") == 0) || (strcmp(env, "Device") == 0))
+				isHost = MV_FALSE;
+			else
+				isHost = MV_TRUE;
+
+			if (status == MV_OK)	/* Map DDR windows to EHCI */
+				status = mvUsbWinInit(dev, addrWinMap, MV_FALSE);
+			/* Pll init is not relevant to Armada 38x */
+			if ((dev == 0) && (halData.ctrlFamily != MV_88F68XX))
+				mvUsbPllInit();
+			if (status == MV_OK)
+				status = mvUsbHalInit(dev, isHost, &halData);
+			if (status == MV_OK)
+				printf("USB2.0 %d: %s Mode\n", dev, (isHost == MV_TRUE ? "Host" : "Device"));
+			else
+				mvOsPrintf("%s: Error: USB2.0 initialization failed (port %d).\n", __func__, dev);
+		}
+#endif
+#ifdef CONFIG_USB_XHCI
+		for (dev = 0; dev < mvCtrlUsb3MaxGet(); dev++) {
+			status = mvUsbUtmiPhyInit(dev, &halData);
+			if (halData.ctrlFamily == MV_88F66X0 || halData.ctrlFamily == MV_88F67X0) {
+				/* ALP/A375: Set UTMI PHY Selector:
+				 * - Connect UTMI PHY to USB2 port of USB3 Host
+				 * - Powers down the other unit (so USB3.0 unit's registers are accessible) */
+				reg = MV_REG_READ(USB_CLUSTER_CONTROL);
+				reg = (reg & (~0x1)) | 0x1;
+				MV_REG_WRITE(USB_CLUSTER_CONTROL, reg);
+			}
+			if (status == MV_OK)	/* Map DDR windows to XHCI */
+				status = mvUsbWinInit(dev, addrWinMap, MV_TRUE);
+			if (status == MV_OK)
+				printf("USB3.0 %d: Host Mode\n", dev);
+			else
+				mvOsPrintf("%s: Error: USB3.0 initialization failed (port %d).\n", __func__, dev);
+		}
+#endif
 	return status;
 }

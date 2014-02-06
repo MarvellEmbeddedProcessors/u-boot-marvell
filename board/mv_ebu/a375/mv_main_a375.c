@@ -205,27 +205,8 @@ void misc_init_r_dec_win(void)
 {
 	char *env;
 
-#if defined(DB_78X60_PCAC) || defined(DB_78X60_PCAC_REV2)
-	/* TODO: no support for usb on PCAC board for now. */
-#else
 #if defined(MV_INCLUDE_USB)
-	{
-		char envname[10];
-		int i;
-
-		for (i = 0; i < mvCtrlUsbMaxGet(); i++) {
-			sprintf(envname, "usb%dMode", i);
-			env = getenv(envname);
-			if ((!env) || (strcmp(env, "device") == 0) || (strcmp(env, "Device") == 0) ) {
-				printf("USB %d: Device Mode\n", i);
-				mvSysUsbInit(i, MV_FALSE, MV_TRUE);
-			}else  {
-				printf("USB %d: Host Mode\n", i);
-				mvSysUsbInit(i, MV_TRUE, MV_TRUE);
-			}
-		}
-	}
-#endif  /* MV_INCLUDE_USB */
+	mvSysUsbInit();	/* initialize USB2.0 / USB3.0 */
 #endif
 
 #if defined(MV_INCLUDE_XOR)

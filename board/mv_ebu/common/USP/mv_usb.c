@@ -34,7 +34,6 @@
 #include "drivers/usb/host/ehci.h"
 #endif
 #include "mvSysUsbConfig.h"
-
 /*******************************************************************************
 * getUsbActive - read 'usbActive' env variable and set active port
 *
@@ -67,64 +66,6 @@ MV_STATUS getUsbActive(MV_U32 usbUnitId)
 	return usbActive;
 }
 
-/*******************************************************************************
-* mvUsb3WinInit -
-*
-* INPUT:
-*
-* OUTPUT:
-*
-* RETURN:
-*       MV_ERROR if register parameters are invalid.
-*
-*******************************************************************************/
-#define USB3_WIN_CTRL(w)	(0x0 + ((w) * 8))
-#define USB3_WIN_BASE(w)	(0x4 + ((w) * 8))
-#define USB3_MAX_WINDOWS	4
-MV_STATUS mvUsb3WinInit(MV_U32 unitId)
-{
-	MV_U32 win, winCtrlValue;
-	MV_TARGET_ATTRIB targetAttrib;
-	MV_CPU_DEC_WIN cpuAddrDecWin;
-	MV_U64 baseAddr;
-
-	/* Clear all existing windows */
-	for (win = 0; win < USB3_MAX_WINDOWS; win++) {
-		MV_REG_WRITE(MV_USB3_WIN_BASE(unitId) + USB3_WIN_CTRL(win), 0);
-		MV_REG_WRITE(MV_USB3_WIN_BASE(unitId) + USB3_WIN_BASE(win), 0);
-	}
-
-	/* Program each DRAM CS in a seperate window */
-	for (win = 0; win < CONFIG_NR_DRAM_BANKS; win++) {
-		/* Get CS attribute and target ID */
-		if (mvCtrlAttribGet(win, &targetAttrib) != MV_OK) {
-			mvOsPrintf("%s: Error - mvCtrlAttribGet() failed.\n", __func__);
-			return MV_ERROR;
-		}
-
-		/* Get CS base and size */
-		if (mvCpuIfTargetWinGet(win, &cpuAddrDecWin) != MV_OK) {
-			mvOsPrintf("%s: Error - mvCpuIfTargetWinGet() failed.\n", __func__);
-			return MV_ERROR;
-		}
-
-		if (cpuAddrDecWin.enable != MV_TRUE)
-			continue;
-
-		/* prepare CTRL and BASE values */
-		winCtrlValue = ((((MV_U32)cpuAddrDecWin.addrWin.size - 1) & 0xffff0000) |
-				(targetAttrib.attrib << 8) | (targetAttrib.targetId << 4) | 1);
-		baseAddr = (MV_U64)((((MV_U64)cpuAddrDecWin.addrWin.baseHigh << 32ll)) +
-				(MV_U64)cpuAddrDecWin.addrWin.baseLow);
-
-		MV_REG_WRITE(MV_USB3_WIN_BASE(unitId) + USB3_WIN_CTRL(win), winCtrlValue);
-		MV_REG_WRITE(MV_USB3_WIN_BASE(unitId) + USB3_WIN_BASE(win), (MV_U32)(baseAddr & 0xffff0000));
-	}
-
-	return MV_OK;
-
-}
-
 #if defined (CONFIG_USB_XHCI)
 /*********************************************************************************/
 /**********************      xHCI Stack registration layer  **********************/
@@ -141,19 +82,6 @@ static int mv_xhci_core_init(MV_U32 unitId)
 	MV_U32 rev = mvCtrlRevGet();
 	MV_U32 family = mvCtrlDevFamilyIdGet(0);
 
-
-	/* Set UTMI PHY Selector:
-	 * - Connect UTMI PHY to USB2 port of USB3 Host
-	 * - Powers down the other unit (so unit's registers aren't accessible) */
-	reg = MV_REG_READ(USB_CLUSTER_CONTROL);
-	reg = (reg & (~0x1)) | 0x1;
-	MV_REG_WRITE(USB_CLUSTER_CONTROL, reg);
-
-	/* Map the DDR address space to the XHCI */
-	if (mvUsb3WinInit(unitId) != MV_OK) {
-		mvOsPrintf("%s: Error - mvUsb3WinInit() failed.\n", __func__);
-		return MV_ERROR;
-	}
 	/* LFPS FREQUENCY WA for alp/a375 Z revisions (Should be fixed for A0) */
 	if (((family == MV_88F67X0) || (family == MV_88F66X0)) &&
 		(rev == MV_88F66X0_Z1_ID || rev == MV_88F66X0_Z2_ID

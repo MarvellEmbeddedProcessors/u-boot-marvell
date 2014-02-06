@@ -197,8 +197,19 @@ extern "C" {
 /*******************************************/
 #define MV_USB_MAX_ADDR_DECODE_WIN  4
 
-#define MV_USB_WIN_CTRL_REG(dev, win)        (MV_USB_REGS_BASE(dev) + 0x320 + ((win)<<4))
-#define MV_USB_WIN_BASE_REG(dev, win)        (MV_USB_REGS_BASE(dev) + 0x324 + ((win)<<4))
+#if defined(CONFIG_USB_XHCI_HCD)
+#define MV_USB_WIN_CTRL_REG(isUsb3, dev, win)	(isUsb3 == MV_TRUE ? \
+						(MV_USB3_WIN_BASE(dev) + ((win) * 8)) : \
+						(MV_USB_REGS_BASE(dev) + 0x320 + ((win)<<4)))
+#define MV_USB_WIN_BASE_REG(isUsb3, dev, win)	(isUsb3 == MV_TRUE ? \
+						(MV_USB3_WIN_BASE(dev) + ((win) * 8) + 0x4) : \
+						(MV_USB_REGS_BASE(dev) + 0x324 + ((win)<<4)))
+#else
+#define MV_USB_WIN_CTRL_REG(isUsb3, dev, win)	(MV_USB_REGS_BASE(dev) + 0x320 + ((win)<<4))
+#define MV_USB_WIN_BASE_REG(isUsb3, dev, win)	(MV_USB_REGS_BASE(dev) + 0x324 + ((win)<<4))
+#endif
+
+
 
 /* BITs in Windows 0-3 Control and Base Registers */
 #define MV_USB_WIN_ENABLE_BIT               0

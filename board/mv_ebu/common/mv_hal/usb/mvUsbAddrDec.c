@@ -96,6 +96,10 @@ MV_TARGET usbAddrDecPrioTab[] = {
 	TBL_TERM
 };
 
+/* some routines API's can not be modified since they are using as a standard API for windows read routines
+ * So, we indicate USB3 usage with global (for mvUsbWinRead usage ) */
+MV_BOOL gIsUsb3 = MV_FALSE;
+
 /*******************************************************************************
 * usbWinOverlapDetect - Detect USB address windows overlapping
 *
@@ -185,6 +189,7 @@ MV_STATUS mvUsbWinWrite(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pDecWin)
 	}
 
 	/* Check if the requested window overlapps with current windows         */
+
 	if (MV_TRUE == usbWinOverlapDetect(dev, winNum, &pDecWin->addrWin)) {
 		mvOsPrintf("%s: ERR. Window %d overlap\n", __func__, winNum);
 		return MV_ERROR;
@@ -231,8 +236,8 @@ MV_STATUS mvUsbWinWrite(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pDecWin)
 	/* Update Base value  */
 	baseReg = (pDecWin->addrWin.baseLow & MV_USB_WIN_BASE_MASK);
 
-	MV_REG_WRITE(MV_USB_WIN_CTRL_REG(dev, winNum), sizeReg);
-	MV_REG_WRITE(MV_USB_WIN_BASE_REG(dev, winNum), baseReg);
+	MV_REG_WRITE(MV_USB_WIN_CTRL_REG(gIsUsb3, dev, winNum), sizeReg);
+	MV_REG_WRITE(MV_USB_WIN_BASE_REG(gIsUsb3, dev, winNum), baseReg);
 
 	return MV_OK;
 }
@@ -263,8 +268,8 @@ MV_STATUS mvUsbWinRead(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pDecWin)
 		return MV_NOT_SUPPORTED;
 	}
 
-	baseReg = MV_REG_READ(MV_USB_WIN_BASE_REG(dev, winNum));
-	sizeReg = MV_REG_READ(MV_USB_WIN_CTRL_REG(dev, winNum));
+	baseReg = MV_REG_READ(MV_USB_WIN_BASE_REG(gIsUsb3, dev, winNum));
+	sizeReg = MV_REG_READ(MV_USB_WIN_CTRL_REG(gIsUsb3, dev, winNum));
 
 	/* Check if window is enabled   */
 	if (sizeReg & MV_USB_WIN_ENABLE_MASK) {
@@ -287,23 +292,30 @@ MV_STATUS mvUsbWinRead(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pDecWin)
 * mvUsbWinInit -
 *
 * INPUT:
-*
+*	isUsb3 - indicate which interface's windows to configure
+*		 Used when compiled with XHCI support only
 * OUTPUT:
 *
 * RETURN:
 *       MV_ERROR if register parameters are invalid.
 *
 *******************************************************************************/
+#ifdef CONFIG_USB_XHCI_HCD
+MV_STATUS mvUsbWinInit(MV_U32 dev, MV_UNIT_WIN_INFO *addrWinMap, MV_BOOL isUsb3)
+#else
 MV_STATUS mvUsbWinInit(MV_U32 dev, MV_UNIT_WIN_INFO *addrWinMap)
+#endif
 {
 	MV_UNIT_WIN_INFO *addrDecWin;
-	MV_U32 winNum;
-	MV_U32 winPrioIndex = 0;
+	MV_U32 winNum, winPrioIndex = 0;
+
+#ifdef CONFIG_USB_XHCI_HCD
+	gIsUsb3 = isUsb3; /* if XHCI is in use, read Boolean to indicate requested interface */
+#endif
 
 	/* First disable all address decode windows */
 	for (winNum = 0; winNum < MV_USB_MAX_ADDR_DECODE_WIN; winNum++)
-		MV_REG_BIT_RESET(MV_USB_WIN_CTRL_REG(dev, winNum), MV_USB_WIN_ENABLE_MASK);
-
+		MV_REG_BIT_RESET(MV_USB_WIN_CTRL_REG(isUsb3, dev, winNum), MV_USB_WIN_ENABLE_MASK);
 
 	/* Go through all windows in user table until table terminator          */
 	winNum = 0;
@@ -314,12 +326,13 @@ MV_STATUS mvUsbWinInit(MV_U32 dev, MV_UNIT_WIN_INFO *addrWinMap)
 			/* Get the default attributes for that target window */
 			mvCtrlDefAttribGet(usbWin.target, &usbWin.addrWinAttr);
 #endif /* MV645xx || MV646xx */
-
 			if (MV_OK != mvUsbWinWrite(dev, winNum, addrDecWin))
 				return MV_ERROR;
 			winNum++;
+
 		}
 		winPrioIndex++;
 	}
+	gIsUsb3 = MV_FALSE;
 	return MV_OK;
 }

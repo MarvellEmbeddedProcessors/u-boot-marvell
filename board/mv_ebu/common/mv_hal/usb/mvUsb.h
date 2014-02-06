@@ -98,7 +98,11 @@ void        mvUsbPowerUp(int port);
 void        mvUsbRegs(int dev);
 void        mvUsbCoreRegs(int dev, MV_BOOL isHost);
 
-MV_STATUS   mvUsbWinInit(MV_U32 dev, MV_UNIT_WIN_INFO *addrWinMap);
+#ifdef CONFIG_USB_XHCI_HCD
+MV_STATUS mvUsbWinInit(MV_U32 dev, MV_UNIT_WIN_INFO *addrWinMap, MV_BOOL isUsb3);
+#else
+MV_STATUS mvUsbWinInit(MV_U32 dev, MV_UNIT_WIN_INFO *addrWinMap);
+#endif
 MV_STATUS   mvUsbWinRead(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pDecWin);
 MV_STATUS   mvUsbWinWrite(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pDecWin);
 

@@ -585,7 +585,7 @@ MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
 MV_STATUS mvBoardConfIdSet(MV_U16 conf);
 MV_U16 mvBoardPexModeGet(MV_VOID);
 MV_STATUS mvBoardPexModeSet(MV_U16 conf);
-
+MV_U32 mvBoardLaneSelectorGet(MV_U32 laneNum);
 #ifdef __cplusplus
 }
 #endif  /* __cplusplus */

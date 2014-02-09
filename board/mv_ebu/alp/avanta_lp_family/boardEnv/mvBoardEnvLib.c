@@ -993,9 +993,8 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 *******************************************************************************/
 MV_VOID mvBoardVerifySerdesCofig(MV_VOID)
 {
-	MV_U32 i, laneConfig, laneSelector, selector = MV_REG_READ(MV_COMMON_PHY_REGS_OFFSET);
+	MV_U32 i, laneConfig, laneSelector;
 	MV_CONFIG_TYPE_ID configID = MV_CONFIG_LANE1;
-	MV_U32 revID = mvCtrlRevGet();
 
 	/* Lane 1 & Lane 3 use the same values for SerDes config and selector,
 	 * Lane2 values  are reversed:
@@ -1009,10 +1008,7 @@ MV_VOID mvBoardVerifySerdesCofig(MV_VOID)
 			laneConfig = mvCtrlSysConfigGet(configID++);
 		/* using different Mask/Offset, since SATA1 option at lane1 was
 		** not supported in Z1, Z2, Z3 */
-		if (revID <= MV_88F66X0_Z3_ID)
-			laneSelector = (selector & SERDES_LANE_MASK_Z_REV(i)) >> SERDES_LANE_OFFS_Z_REV(i);
-		else
-			laneSelector = (selector & SERDES_LANE_MASK(i)) >> SERDES_LANE_OFFS(i);
+		laneSelector = mvBoardLaneSelectorGet(i);
 		if ((i != 2 && laneSelector != laneConfig) || /* lanes 1,3 use the same value */
 			(i == 2 && laneSelector == laneConfig)) { /* lane 2 use opposite values */
 			mvOsPrintf("Error: board configuration conflicts with SerDes configuration\n");
@@ -1633,12 +1629,16 @@ MV_U32 mvBoardFreqModesNumGet()
 
 	switch (mvCtrlModelGet()) {
 	case MV_6610_DEV_ID:
+	case MV_6610F_DEV_ID:
 		freqNum = FREQ_MODES_NUM_6610;
 		break;
 	case MV_6650_DEV_ID:
+	case MV_6650F_DEV_ID:
+	case MV_6658_DEV_ID:
 		freqNum = FREQ_MODES_NUM_6650;
 		break;
 	case MV_6660_DEV_ID:
+	case MV_6665_DEV_ID:
 		freqNum = FREQ_MODES_NUM_6660;
 		break;
 	default:
@@ -1867,9 +1867,10 @@ MV_VOID mvBoardDDRBusWidthCheck(MV_VOID)
 *******************************************************************************/
 MV_VOID mvBoardConfigurationPrint(MV_VOID)
 {
-	char *lane1[] = {"PCIe1", "SGMII-0", "SATA-1", "Invalid Configuration" };
+	char *lane1[] = {"PCIe1", "SGMII-0", "SATA-1", "Unconnected" };
 	char *tdmSlic[] = {"None", "SSI", "ISI", "ZSI", "TDM"};
-	MV_U32 slicDevice, laneSelector, ethConfig = mvBoardEthComplexConfigGet();
+	MV_U32 slicDevice, ethConfig = mvBoardEthComplexConfigGet();
+	MV_U16 modelID = mvCtrlModelGet();
 
 	mvOsOutput("\nBoard configuration:\n");
 
@@ -1941,15 +1942,42 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 	mvOsOutput("\nSERDES configuration:\n");
 	mvOsOutput("\tLane #0: PCIe0\n");	/* Lane 0 is always PCIe0 */
 
-	/* SERDES lanes #1,#2,#3 are relevant only to MV88F6660 SoC*/
-	if (mvCtrlModelGet() != MV_6660_DEV_ID)
+	/* Dynamic config for SerDes lanes is relevant only to MV88F6660/65/58 */
+	if (modelID != MV_6660_DEV_ID && modelID != MV_6665_DEV_ID && modelID != MV_6658_DEV_ID)
 		return;
-
 	/* Read Common Phy selectors to determine SerDes configuration */
-	laneSelector = MV_REG_READ(MV_COMMON_PHY_REGS_OFFSET);
-	mvOsOutput("\tLane #1: %s\n", lane1[(laneSelector & BIT1) >> 1]);
-	mvOsOutput("\tLane #2: %s\n", (laneSelector & BIT2) >> 2 ? "SATA-0" : "SGMII-0");
-	mvOsOutput("\tLane #3: %s\n", (laneSelector & BIT3) >> 3 ? "SGMII-0" : "USB3");
+	mvOsOutput("\tLane #1: %s\n", lane1[mvBoardLaneSelectorGet(1)]);
+	/* SERDES lanes #2,#3 are relevant only to MV88F6660/65 SoC */
+	if (modelID != MV_6660_DEV_ID && modelID != MV_6665_DEV_ID)
+		return;
+	mvOsOutput("\tLane #2: %s\n", (mvBoardLaneSelectorGet(2) ? "SATA-0" : "SGMII-0"));
+	mvOsOutput("\tLane #3: %s\n", (mvBoardLaneSelectorGet(3) ? "SGMII-0" : "USB3"));
+}
+
+/*******************************************************************************
+* mvBoardLaneSelectorGet
+*
+*  DESCRIPTION:
+*       Get Lane Selector
+*
+* INPUT:
+*       Lane number
+*
+* OUTPUT:
+*
+* RETURN:
+*	Lane selector
+*
+*******************************************************************************/
+MV_U32 mvBoardLaneSelectorGet(MV_U32 laneNum)
+{
+	MV_U32 revID = mvCtrlRevGet();
+	MV_U32 laneSelector, selector = MV_REG_READ(MV_COMMON_PHY_REGS_OFFSET);
+	if (revID <= MV_88F66X0_Z3_ID)
+		laneSelector = (selector & SERDES_LANE_MASK_Z_REV(laneNum)) >> SERDES_LANE_OFFS_Z_REV(laneNum);
+	else
+		laneSelector = (selector & SERDES_LANE_MASK(laneNum)) >> SERDES_LANE_OFFS(laneNum);
+	return laneSelector;
 }
 
 /*******************************************************************************

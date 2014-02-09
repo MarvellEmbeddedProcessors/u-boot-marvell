@@ -229,9 +229,11 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 
 /* Avanta LP family linear id */
 #define MV_6660_INDEX		0
-#define MV_6650_INDEX		1
-#define MV_6610_INDEX		2
-#define MV_66xx_INDEX_MAX	3
+#define MV_6650_INDEX		1 /* used also for MV6650F */
+#define MV_6610_INDEX		2 /* used also for MV6610F */
+#define MV_6665_INDEX		3
+#define MV_6658_INDEX		4
+#define MV_66xx_INDEX_MAX	5
 
 static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
 {
@@ -242,11 +244,17 @@ static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
 		index = MV_6660_INDEX;
 		break;
 	case MV_6650_DEV_ID:
+	case MV_6650F_DEV_ID:
 		index = MV_6650_INDEX;
 		break;
 	case MV_6610_DEV_ID:
+	case MV_6610F_DEV_ID:
 		index = MV_6610_INDEX;
 		break;
+	case MV_6665_DEV_ID:
+		index = MV_6665_INDEX;
+	case MV_6658_DEV_ID:
+		index = MV_6658_INDEX;
 	default:
 		index = MV_6650_INDEX;
 	}
@@ -255,26 +263,26 @@ static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
 }
 
 MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_66xx_INDEX_MAX] = {
-/*                           6660               6650            6610 */
-/* DRAM_UNIT_ID         */ { 1,                 1,              1, },
-/* PEX_UNIT_ID          */ { 2,                 1,              0, },
-/* ETH_GIG_UNIT_ID      */ { 2,                 2,              2, },
-/* USB_UNIT_ID          */ { 1,                 1,              0, },
-/* USB3_UNIT_ID         */ { 1,                 0,              0, },
-/* IDMA_UNIT_ID         */ { 0,                 0,              0, },
-/* XOR_UNIT_ID          */ { 2,                 0,              0, },
-/* SATA_UNIT_ID         */ { 2,                 0,              0, },
-/* TDM_UNIT_ID		*/ { 1,                 1,              1, },
-/* UART_UNIT_ID         */ { 2,                 2,              2, },
-/* CESA_UNIT_ID         */ { 1,                 0,              0, },
-/* SPI_UNIT_ID          */ { 2,                 2,              2, },
-/* AUDIO_UNIT_ID        */ { 1,                 0,              0, },
-/* SDIO_UNIT_ID         */ { 1,                 0,              0, },
-/* TS_UNIT_ID           */ { 0,                 0,              0, },
-/* XPON_UNIT_ID         */ { 1,                 1,              1, },
-/* BM_UNIT_ID           */ { 1,                 1,              1, },
-/* PNC_UNIT_ID          */ { 1,                 1,              1, },
-/* I2C_UNIT_ID          */ { 2,                 1,              1, },
+/*                        6660      650/650F 610/610F  6665   6658 */
+/* DRAM_UNIT_ID         */ { 1,		1,	1,	1,	1, },
+/* PEX_UNIT_ID          */ { 2,		1,	0,	2,	2, },
+/* ETH_GIG_UNIT_ID      */ { 2,		2,	2,	2,	2, },
+/* USB_UNIT_ID          */ { 1,		2,	0,	0,	2, },
+/* USB3_UNIT_ID         */ { 1,		0,	0,	1,	0, },
+/* IDMA_UNIT_ID         */ { 0,		0,	0,	0,	0, },
+/* XOR_UNIT_ID          */ { 2,		2,	0,	2,	2, },
+/* SATA_UNIT_ID         */ { 2,		0,	0,	2,	0, },
+/* TDM_UNIT_ID          */ { 1,		1,	1,	1,	1, },
+/* UART_UNIT_ID         */ { 2,		2,	2,	2,	2, },
+/* CESA_UNIT_ID         */ { 2,		0,	0,	2,	0, },
+/* SPI_UNIT_ID          */ { 2,		2,	2,	2,	2, },
+/* AUDIO_UNIT_ID        */ { 1,		0,	0,	1,	0, },
+/* SDIO_UNIT_ID         */ { 1,		1,	1,	1,	1, },
+/* TS_UNIT_ID           */ { 0,		0,	0,	0,	0, },
+/* XPON_UNIT_ID         */ { 1,		1,	1,	1,	1, },
+/* BM_UNIT_ID           */ { 1,		1,	1,	1,	1, },
+/* PNC_UNIT_ID          */ { 1,		1,	1,	1,	1, },
+/* I2C_UNIT_ID          */ { 2,		2,	1,	2,	1, },
 };
 
 MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit)
@@ -1085,7 +1093,11 @@ MV_U32 mvCtrlXorMaxUnitGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlUsbMaxGet(void)
 {
-	return mvCtrlSocUnitInfoNumGet(USB_UNIT_ID);
+	MV_U32 usbNums = mvCtrlSocUnitInfoNumGet(USB_UNIT_ID);
+	/* Z1, Z2, and Z3 revisions support 1 USB unit port in 6650 boards */
+	if (mvCtrlRevGet() <= MV_88F66X0_Z3_ID && mvCtrlModelGet() == MV_6650_DEV_ID)
+		return usbNums - 1;
+	return usbNums;
 }
 
 /*******************************************************************************
@@ -1128,11 +1140,11 @@ MV_U32 mvCtrlUsb3MaxGet(void)
 *******************************************************************************/
 MV_U32 mvCtrlSdioSupport(MV_VOID)
 {
-	/* default HW setup is with SDIO only for RD-6660*/
-	if (mvBoardIdGet() == RD_6660_ID)
-		return mvCtrlSocUnitInfoNumGet(SDIO_UNIT_ID) ? MV_TRUE : MV_FALSE;
-	else
+	/* In Z1, Z2, and Z3 default HW setup is with SDIO only for RD-6660*/
+	if (mvCtrlRevGet() <= MV_88F66X0_Z3_ID)
 		return 0;
+	else
+		return mvCtrlSocUnitInfoNumGet(SDIO_UNIT_ID);
 }
 
 #endif
@@ -1382,6 +1394,7 @@ MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID)
 {
 	return MV_TDM_IRQ_NUM;
 }
+#endif /* MV_INCLUDE_TDM */
 
 /*******************************************************************************
 * mvCtrlModelGet - Get Marvell controller device model (Id)
@@ -1400,25 +1413,53 @@ MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID)
 *       16bit desscribing Marvell controller ID
 *
 *******************************************************************************/
-#endif /* MV_INCLUDE_TDM */
-
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
 #ifdef CONFIG_MACH_AVANTA_LP_FPGA
 	return MV_88F66X0;
 #else
 	MV_U32 ctrlId, satr0;
+	MV_U32 rev = mvCtrlRevGet();
 
 	ctrlId = MV_REG_READ(DEV_ID_REG);
 	ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
-	if (ctrlId == 0x6660)
-		return MV_6660_DEV_ID;
-
 	satr0 = MV_REG_READ(MPP_SAMPLE_AT_RESET(0));
 	satr0 &= SATR_DEVICE_ID_2_0_MASK;
-	if (satr0 == 0)
-		return MV_6650_DEV_ID;
-	return MV_6610_DEV_ID;
+	/* Device ID mapping differs between Z1-Z3 and A0, since new flavors
+	** are added for A0 */
+	if (rev <= MV_88F66X0_Z3_ID) {
+		if (ctrlId == 0x6660)
+			return MV_6660_DEV_ID;
+		if (satr0 == 0)
+			return MV_6650_DEV_ID;
+		return MV_6610_DEV_ID;
+	}
+	switch (satr0) {
+	case 0:
+		if (ctrlId == 0x6660)
+			return  MV_6660_DEV_ID;
+		else if (ctrlId == 0x6610)
+			return  MV_6650_DEV_ID;
+		break;
+	case 1:
+		if (ctrlId == 0x6660)
+			return  MV_6658_DEV_ID;
+		else if (ctrlId == 0x6610)
+			return  MV_6650F_DEV_ID;
+		break;
+	case 2:
+		if (ctrlId == 0x6610)
+			return  MV_6610_DEV_ID;
+		break;
+	case 3:
+		if (ctrlId == 0x6660)
+			return  MV_6665_DEV_ID;
+		else if (ctrlId == 0x6610)
+			return  MV_6610F_DEV_ID;
+		break;
+	}
+	mvOsPrintf("%s: Error: Failed to Ctrl model ID\n", __func__);
+	return MV_6660_DEV_ID;
 #endif
 }
 

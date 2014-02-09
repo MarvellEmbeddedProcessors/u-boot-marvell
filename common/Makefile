@@ -253,7 +253,7 @@ obj-$(CONFIG_FIT_SIGNATURE) += image-sig.o
 obj-$(CONFIG_IO_TRACE) += iotrace.o
 obj-y += memsize.o
 obj-y += stdio.o
-obj-$(CONFIG_MVEBU) += cmd_mvebu.o
+obj-$(CONFIG_MVEBU) += mvebu/
 
 # This option is not just y/n - it can have a numeric value
 ifdef CONFIG_FASTBOOT_FLASH_MMC_DEV

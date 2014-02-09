@@ -149,7 +149,7 @@ void dump_unit_info(void)
 	for (unit_id = 0; unit_id < MAX_UNIT_ID; unit_id++) {
 		if (*unit_mask) {
 			unit_mask_to_list(*unit_mask, active_list);
-			printf("%.10s %s\n", unit_info_get_name(unit_id), active_list);
+			printf("%-8s %s\n", unit_info_get_name(unit_id), active_list);
 		}
 		unit_mask++;
 	}

@@ -88,7 +88,6 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_a375_vars.h"
 #elif defined(MV88F68XX)
 #include "ddr3_a38x.h"
-#include "ddr3_a38x_config.h"
 #include "ddr3_a38x_vars.h"
 #elif defined(MV_MSYS)
 #include "ddr3_msys.h"
@@ -130,6 +129,8 @@ extern MV_VOID ddr3SetPbs(MV_U32);
 #endif
 extern MV_VOID ddr3SetLogLevel(MV_U32 nLogLevel);
 static MV_U32 gLogLevel = 0;
+
+MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize);
 
 /************************************************************************************
  * Name:     ddr3LogLevelInit
@@ -259,6 +260,34 @@ static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 			MV_REG_WRITE(REG_FASTPATH_WIN_BASE_ADDR(uiCs), uiReg); /*Set base address */
 		}
 	}
+#elif defined(MV88F68XX)
+{
+    MV_U32 uiMemTotalSize = 0;
+    MV_U32 uiCsMemSize = 0;
+    /* Open fast path windows */
+    for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
+        if (uiCsEna & (1 << uiCs)) {
+            /* get CS size */
+
+            if (ddr3CalcMemCsSize(uiCs, &uiCsMemSize) != MV_OK)
+                return;
+
+            /* set fast path window control for the cs */
+            uiReg = 0x1FFFFFE1;
+            uiReg |= (uiCs << 2);
+            uiReg |= (uiCsMemSize - 1) & 0xFFFF0000;
+            MV_REG_WRITE(REG_FASTPATH_WIN_CTRL_ADDR(uiCs), uiReg); /*Open fast path Window */
+            /* set fast path window base address for the cs */
+            uiReg = ((uiCsMemSize) * uiCs) & 0xFFFF0000;
+            MV_REG_WRITE(REG_FASTPATH_WIN_BASE_ADDR(uiCs), uiReg); /*Set base address */
+            uiMemTotalSize += uiCsMemSize;
+			break;
+        }
+    }
+    /* Set L2 filtering to Max Memory size */
+    MV_REG_WRITE(0x8c04, uiMemTotalSize);
+
+}
 #else
 	uiReg = 0x1FFFFFE1;
 	for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
@@ -773,6 +802,12 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 	DEBUG_INIT_S("DDR3 Training Sequence - Ended Successfully (S) \n");
 #else
 	DEBUG_INIT_S("DDR3 Training Sequence - Ended Successfully \n");
+#endif
+
+#if defined(MV88F68XX)
+	if( MV_TRUE == ddr3IfEccEnabled()){
+		ddr3NewTipEccScrub();
+	}
 #endif
 
 	return MV_OK;
@@ -1465,6 +1500,7 @@ MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs)
 	*hclkPs = 1000000/hclk; /* values are 1/HCLK in ps */
 		return;
 }
+
 MV_VOID ddr3NewTipDlbConfig()
 {
 	MV_U32 uiReg;
@@ -1485,5 +1521,79 @@ MV_VOID ddr3NewTipDlbConfig()
 	uiReg |= (DLB_ENABLE | DLB_WRITE_COALESING | DLB_AXI_PREFETCH_EN | DLB_MBUS_PREFETCH_EN | PreFetchNLnSzTr);
 	MV_REG_WRITE(REG_STATIC_DRAM_DLB_CONTROL, uiReg);
 }
+
+MV_U32 ddr3GetBusWidth(void) {
+
+    MV_U32 uiBusWidth;
+
+    uiBusWidth = (MV_REG_READ(REG_SDRAM_CONFIG_ADDR) & 0x8000) >> REG_SDRAM_CONFIG_WIDTH_OFFS;
+
+    return (uiBusWidth == 0) ? 16 : 32;
+}
+
+MV_U32 ddr3GetDeviceWidth(MV_U32 uiCs) {
+
+    MV_U32 uiDeviceWidth;
+    uiDeviceWidth = (MV_REG_READ(REG_SDRAM_ADDRESS_CTRL_ADDR) & (0x3 << (REG_SDRAM_ADDRESS_CTRL_STRUCT_OFFS * uiCs))) >> (REG_SDRAM_ADDRESS_CTRL_STRUCT_OFFS * uiCs);
+
+    return (uiDeviceWidth == 0) ? 8 : 16;
+}
+
+MV_FLOAT ddr3GetDeviceSize(MV_U32 uiCs) {
+
+    MV_U32 uiDeviceSizeLow, uiDeviceSizeHigh, uiDeviceSize;
+    MV_U32 uiRegData, uiCsLowOffset, uiCsHighOffset;
+
+    uiCsLowOffset = REG_SDRAM_ADDRESS_SIZE_OFFS + uiCs * 4;
+    uiCsHighOffset = REG_SDRAM_ADDRESS_SIZE_OFFS + REG_SDRAM_ADDRESS_SIZE_HIGH_OFFS + uiCs;
+
+    uiRegData = MV_REG_READ(REG_SDRAM_ADDRESS_CTRL_ADDR);
+
+    uiDeviceSizeLow = (uiRegData >> uiCsLowOffset) & 0x3;
+    uiDeviceSizeHigh = (uiRegData >> uiCsHighOffset) & 0x1;
+
+    uiDeviceSize = uiDeviceSizeLow | (uiDeviceSizeHigh << 2);
+
+    switch(uiDeviceSize)
+    {
+        case 0:
+            return 2;
+        case 2:
+            return 0.5;
+        case 3:
+            return 1;
+        case 4:
+            return 4;
+        case 5:
+            return 8;
+        case 1:
+        default:
+            DEBUG_INIT_C("Error: Wrong device size of Cs: ", uiCs, 1);
+            return 0.01; /* small value will give wrong emem size in ddr3CalcMemCsSize */
+    }
+}
+
+MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize){
+
+    MV_FLOAT uiCsMemSize;
+
+    uiCsMemSize = ((ddr3GetBusWidth() / ddr3GetDeviceWidth(uiCs)) * ddr3GetDeviceSize(uiCs)) / 8;/*calculate in Gbyte*/;
+
+    if (uiCsMemSize == 0.25) {
+        *puiCsSize = _256M;
+    } else if (uiCsMemSize == 0.5) {
+        *puiCsSize = _512M;
+    } else if (uiCsMemSize == 1) {
+        *puiCsSize = _1G;
+    } else if (uiCsMemSize == 2) {
+        *puiCsSize = _2G;
+    } else {
+        DEBUG_INIT_C("Error: Wrong Memory size of Cs: ", uiCs, 1);
+        return MV_BAD_VALUE;
+    }
+    return MV_OK;
+}
+
+
 #endif
 

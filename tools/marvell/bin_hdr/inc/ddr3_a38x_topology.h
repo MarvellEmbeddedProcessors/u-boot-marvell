@@ -68,9 +68,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_a38x_config.h"
 #include "mvDdr3TopologyDef.h"
 
-/*Actual defintions used in toplology struct*/
+/*Bus mask variants*/
+#define BUS_MASK_32BIT				0xF
+#define BUS_MASK_32BIT_ECC			0x1F
+#define BUS_MASK_16BIT				0x3
+#define BUS_MASK_16BIT_ECC			0x13
+#define BUS_MASK_16BIT_ECC_PUP3		0xB
+
+/*Change Me!
+	Actual defintions used in topolology struct*/
+#define ACTUAL_BUS_MASK 	BUS_MASK_32BIT
+
+/*Bus Width used by Bus mask definition*/
+#if (ACTUAL_BUS_MASK == BUS_MASK_32BIT) || (ACTUAL_BUS_MASK == BUS_MASK_32BIT_ECC)
 #define ACTUAL_BUS_WIDTH 	BUS_WIDTH_32
-#define ACTUAL_BUS_MASK 	0xF
+#else
+#define ACTUAL_BUS_WIDTH 	BUS_WIDTH_16
+#endif
+
 
 /*Topology struct*/
 MV_HWS_TOPOLOGY_MAP a38xTopologyMap[] =

@@ -28,5 +28,7 @@ MV_STATUS ddr3HwsHwTraining(void);
 MV_STATUS ddr3SiliconPreInit(void);
 MV_STATUS ddr3SiliconPostInit(void);
 MV_STATUS ddr3PostRunAlg(void);
+MV_BOOL ddr3IfEccEnabled(void);
+MV_STATUS ddr3NewTipEccScrub(void);
 
 #endif /* _DDR3_HWS_HW_TRAINING_H */

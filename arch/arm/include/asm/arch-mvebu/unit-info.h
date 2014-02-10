@@ -22,6 +22,7 @@
 
 enum mvebu_unit_id {
 	DRAM_UNIT_ID,
+	CPU_UNIT_ID,
 	PEX_UNIT_ID,
 	PEX_IF_UNIT_ID,
 	PCI_UNIT_ID,

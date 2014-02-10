@@ -5,5 +5,4 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 
-obj-y	:= armada8021-pxp.o
-obj-y	+= board-info.o
+obj-y	:= board-common.o

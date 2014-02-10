@@ -17,60 +17,11 @@
  * ***************************************************************************
  */
 
-/* #define DEBUG*/
+#ifndef _BOARD_INFO_H_
+#define _BOARD_INFO_H_
 
-#include <common.h>
-#include <malloc.h>
-#include <errno.h>
-#include <netdev.h>
-#include <asm/io.h>
-#include <asm/arch-armada8k/armada8k.h>
-#include <linux/compiler.h>
-#include "board-info.h"
+#include "../common/board.h"
 
-DECLARE_GLOBAL_DATA_PTR;
+extern struct mvebu_board_family a8k_board_family;
 
-int board_init(void)
-{
-	debug("Start Armada8021-pxp board init\n");
-
-	a8k_init();
-
-	common_board_init(&a8k_board_family);
-
-	/* a8k specific board init goes here */
-
-	return 0;
-}
-
-int dram_init(void)
-{
-	/*
-	 * Clear spin table so that secondary processors
-	 * observe the correct value after waken up from wfe.
-	 */
-	*(unsigned long *)CPU_RELEASE_ADDR = 0;
-
-	gd->ram_size = PHYS_SDRAM_1_SIZE;
-	return 0;
-}
-
-int timer_init(void)
-{
-	return 0;
-}
-
-/*
- * Board specific reset that is system reset.
- */
-void reset_cpu(ulong addr)
-{
-}
-
-/*
- * Board specific ethernet initialization routine.
- */
-int board_eth_init(bd_t *bis)
-{
-	return 0;
-}
+#endif /* _BOARD_INFO_H_ */

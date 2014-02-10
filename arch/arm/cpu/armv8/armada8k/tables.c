@@ -31,7 +31,7 @@ struct adec_win memory_map[] = {
 };
 
 /* List the maximum amount of units for all devices and boards */
-u16 base_unit_mask_table[MAX_UNIT_ID + 1] = {
+u16 base_unit_mask_table[MAX_UNIT_ID] = {
 	[PEX_UNIT_ID]		=  cnt_to_mask(3),
 	[SATA_UNIT_ID]		=  cnt_to_mask(4),
 	[ETH_GIG_UNIT_ID]	=  cnt_to_mask(4),
@@ -46,12 +46,12 @@ u16 base_unit_mask_table[MAX_UNIT_ID + 1] = {
 };
 
 /* Per device unit info. List which units are disabled for this device */
-u16 armada8021_unit_disable[MAX_UNIT_ID + 1] = {
+u16 armada8021_unit_disable[MAX_UNIT_ID] = {
 	[PEX_UNIT_ID]		=  id_to_mask(0) | id_to_mask(2),
 	[SATA_UNIT_ID]		=  id_to_mask(2) | id_to_mask(3)
 };
 
-u16 armada8022_unit_disable[MAX_UNIT_ID + 1] = {
+u16 armada8022_unit_disable[MAX_UNIT_ID] = {
 	[ETH_GIG_UNIT_ID]	= id_to_mask(3),
 	[USB3_UNIT_ID]		= id_to_mask(1)
 };

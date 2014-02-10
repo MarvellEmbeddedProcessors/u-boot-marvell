@@ -28,29 +28,28 @@
 #include <asm/arch-mvebu/soc.h>
 
 const char *mvebu_unit_names[MAX_UNIT_ID + 1] = {
-	[DRAM_UNIT_ID] =	"DRAM",
-	[PEX_UNIT_ID] =		"PCIe",
-	[PEX_IF_UNIT_ID] =	"PCIe I/F",
-	[PCI_UNIT_ID] =		"PCI",
-	[PCI_IF_UNIT_ID] =	"PCI I/F",
-	[ETH_GIG_UNIT_ID] =	"ETH",
-	[USB_UNIT_ID] =		"USB2",
-	[USB3_UNIT_ID] =	"USB3",
-	[IDMA_UNIT_ID] =	"IDMA",
-	[IDMA_CHAN_UNIT_ID] =	"IDMA Channel",
-	[XOR_UNIT_ID] =		"XOR",
-	[XOR_CHAN_UNIT_ID] =	"XOR Channel",
-	[SATA_UNIT_ID] =	"SATA",
-	[TDM_32CH_UNIT_ID] =	"TDM32",
-	[TDM_PORTS_UNIT_ID] =	"TDM",
-	[UART_UNIT_ID] =	"UART",
-	[CESA_UNIT_ID] =	"CESA",
-	[SPI_UNIT_ID] =		"SPI",
-	[SDIO_UNIT_ID] =	"SDIO",
-	[BM_UNIT_ID] =		"BM",
-	[PNC_UNIT_ID] =		"PNC",
-	[NAND_UNIT_ID] =	"NAND",
-	[SERDES_LANES_UNIT_ID] =	"SERDES Lane",
+	[DRAM_UNIT_ID] =	"dram",
+	[CPU_UNIT_ID] =		"cpu",
+	[PEX_UNIT_ID] =		"pex",
+	[PCI_UNIT_ID] =		"pci",
+	[ETH_GIG_UNIT_ID] =	"eth",
+	[USB_UNIT_ID] =		"usb2",
+	[USB3_UNIT_ID] =	"usb3",
+	[IDMA_UNIT_ID] =	"idma",
+	[IDMA_CHAN_UNIT_ID] =	"idma channel",
+	[XOR_UNIT_ID] =		"xor",
+	[XOR_CHAN_UNIT_ID] =	"xor channel",
+	[SATA_UNIT_ID] =	"sata",
+	[TDM_32CH_UNIT_ID] =	"tdm32",
+	[TDM_PORTS_UNIT_ID] =	"tdm",
+	[UART_UNIT_ID] =	"uart",
+	[CESA_UNIT_ID] =	"cesa",
+	[SPI_UNIT_ID] =		"spi",
+	[SDIO_UNIT_ID] =	"sdio",
+	[BM_UNIT_ID] =		"bm",
+	[PNC_UNIT_ID] =		"pnc",
+	[NAND_UNIT_ID] =	"nand",
+	[SERDES_LANES_UNIT_ID] =	"serdes-lane",
 	[MAX_UNIT_ID] =		"NA"
 };
 
@@ -159,6 +158,8 @@ void update_unit_info(u16 *unit_mask, u16 *new_mask,
 		      enum unit_update_mode update_mode)
 {
 	int unit_id;
+
+	debug("Updating unit info\n");
 
 	for (unit_id = 0; unit_id < MAX_UNIT_ID; unit_id++) {
 		if (update_mode == UNIT_INFO_OVERRIDE)

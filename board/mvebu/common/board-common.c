@@ -24,53 +24,47 @@
 #include <errno.h>
 #include <netdev.h>
 #include <asm/io.h>
-#include <asm/arch-armada8k/armada8k.h>
 #include <linux/compiler.h>
-#include "board-info.h"
+#include <asm/arch-mvebu/unit-info.h>
+#include <asm/arch-mvebu/soc.h>
+#include "board.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
-int board_init(void)
+struct mvebu_board_family *brd;
+
+int board_get_id(void)
 {
-	debug("Start Armada8021-pxp board init\n");
+	/* Stub to implement generic board id read */
+	return 1;
+}
+/* this function is weak so non standard boards can iplement their own */
+/*void board_get_id(void) __attribute__((weak, alias("__board_get_id")));*/
 
-	a8k_init();
+int common_board_init(struct mvebu_board_family *board_family)
+{
+	int board_id = board_get_id();
+	struct mvebu_board_info *curr_board;
+	u16 *unit_mask = soc_get_unit_mask_table();
 
-	common_board_init(&a8k_board_family);
+	brd = board_family;
 
-	/* a8k specific board init goes here */
+	if ((board_id < 0) || (board_id > brd->board_cnt)) {
+		printf("ERROR: %s: unidentified board id %d. Using default %d\n",
+		       __func__, board_id, brd->default_id);
+		board_id = brd->default_id;
+	}
+
+	brd->curr_board = brd->boards_info[board_id];
+	curr_board = brd->curr_board;
+
+	printf("Board: %s\n", curr_board->name);
+
+	if (curr_board->unit_mask)
+		update_unit_info(unit_mask, curr_board->unit_mask,
+				 curr_board->unit_update_mode);
 
 	return 0;
 }
 
-int dram_init(void)
-{
-	/*
-	 * Clear spin table so that secondary processors
-	 * observe the correct value after waken up from wfe.
-	 */
-	*(unsigned long *)CPU_RELEASE_ADDR = 0;
 
-	gd->ram_size = PHYS_SDRAM_1_SIZE;
-	return 0;
-}
-
-int timer_init(void)
-{
-	return 0;
-}
-
-/*
- * Board specific reset that is system reset.
- */
-void reset_cpu(ulong addr)
-{
-}
-
-/*
- * Board specific ethernet initialization routine.
- */
-int board_eth_init(bd_t *bis)
-{
-	return 0;
-}

@@ -17,60 +17,44 @@
  * ***************************************************************************
  */
 
-/* #define DEBUG*/
-
 #include <common.h>
-#include <malloc.h>
-#include <errno.h>
-#include <netdev.h>
-#include <asm/io.h>
-#include <asm/arch-armada8k/armada8k.h>
 #include <linux/compiler.h>
+#include <asm/arch-mvebu/unit-info.h>
 #include "board-info.h"
 
-DECLARE_GLOBAL_DATA_PTR;
+enum a8k_board_types {
+	ARMADA_8021_DB_ID,
+	ARMADA_8021_RD_ID,
+	ARMADA_8022_DB_ID,
+	ARMADA_8022_RD_ID,
+	MAX_BOARD_ID
+};
 
-int board_init(void)
-{
-	debug("Start Armada8021-pxp board init\n");
+u16 a8021_rd_unit_disable[MAX_UNIT_ID] = {
+	[NAND_UNIT_ID] = id_to_mask(0),
+	[SDIO_UNIT_ID] = id_to_mask(0)
+};
 
-	a8k_init();
+struct mvebu_board_info a8021_db_info = {
+	.name = "DB-MV8021",
+	.id = ARMADA_8021_DB_ID,
+};
 
-	common_board_init(&a8k_board_family);
+struct mvebu_board_info a8021_rd_info = {
+	.name = "RD-MV8021",
+	.id = ARMADA_8021_RD_ID,
+	.unit_mask = a8021_rd_unit_disable,
+	.unit_update_mode = UNIT_INFO_DISABLE,
+};
 
-	/* a8k specific board init goes here */
+struct mvebu_board_info *a8k_board_lookup[MAX_BOARD_ID] = {
+	[ARMADA_8021_DB_ID] = &a8021_db_info,
+	[ARMADA_8021_RD_ID] = &a8021_rd_info
+};
 
-	return 0;
-}
+struct mvebu_board_family a8k_board_family = {
+	.default_id = ARMADA_8021_DB_ID,
+	.board_cnt = MAX_BOARD_ID,
+	.boards_info = a8k_board_lookup,
+};
 
-int dram_init(void)
-{
-	/*
-	 * Clear spin table so that secondary processors
-	 * observe the correct value after waken up from wfe.
-	 */
-	*(unsigned long *)CPU_RELEASE_ADDR = 0;
-
-	gd->ram_size = PHYS_SDRAM_1_SIZE;
-	return 0;
-}
-
-int timer_init(void)
-{
-	return 0;
-}
-
-/*
- * Board specific reset that is system reset.
- */
-void reset_cpu(ulong addr)
-{
-}
-
-/*
- * Board specific ethernet initialization routine.
- */
-int board_eth_init(bd_t *bis)
-{
-	return 0;
-}

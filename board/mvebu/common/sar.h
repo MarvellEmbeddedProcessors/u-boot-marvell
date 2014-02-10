@@ -17,49 +17,51 @@
  * ***************************************************************************
  */
 
+#ifndef _SAR_H_
+#define _SAR_H_
+
 #include <common.h>
+#include <asm/arch-mvebu/mvebu.h>
 #include <linux/compiler.h>
-#include <asm/arch-mvebu/unit-info.h>
-#include "board-info.h"
+#include "var.h"
 
-#define SATR_EEPROM0_ADDR	0x22
+#define MAX_SAR_CHIPS	4
 
-/* Define all SAR variables available for SOC */
-/* Assuming their location is equal on all boards */
-struct sar_var a8k_sar_lookup[MAX_SAR] = {
-	[CPUS_NUM_SAR] = {0, 2, 3,
-		{{0x0, "Single CPU", 0},
-		 {0x2, "Dual CPU", 0},
-		 {0x3, "Quad CPU", VAR_IS_DEFUALT} },
-	},
-	[FREQ_SAR] = {2, 5, 2,
-		{{0x0, "800 / 400 / 400"},
-		 {0x5, "1200 / 600 / 600"} },
-	},
-	[BOOT_SRC_SAR] = {7, 2, 3,
-		{{0x0, "NAND boot", 0},
-		 {0x2, "SPI boot", VAR_IS_DEFUALT},
-		 {0x3, "NOR boot", 0} },
-	}
+struct sar_var {
+	u8 start_bit;
+	u8 bit_length;
+	u8 option_cnt;
+	struct var_opts option_desc[MAX_VAR_OPTIONS];
 };
 
-/* Define general SAR information */
-struct sar_data a8k_sar = {
-	.chip_addr    = {0x4c, 0x4d, 0x4e, 0x4f},
-	.chip_count   = 4,
-	.bit_width    = 5,
-	.sar_lookup   = a8k_sar_lookup
+struct sar_data {
+	u32	chip_addr[MAX_SAR_CHIPS];
+	u8	chip_count;
+	u8	bit_width;
+	struct sar_var *sar_lookup;
 };
 
-struct mvebu_board_info *a8k_board_lookup[MAX_BOARD_ID] = {
-	[ARMADA_8021_DB_ID] = &a8021_db_info,
-	[ARMADA_8021_RD_ID] = &a8021_rd_info
+enum sar_variables {
+	CPUS_NUM_SAR = 0,
+	CPU0_ENDIANES_SAR,
+	FREQ_SAR,
+	CPU_FREQ_SAR,
+	FAB_REQ_SAR,
+	BOOT_SRC_SAR,
+	BOOT_WIDTH_SAR,
+	PEX_MODE_SAR,
+	L2_SIZE_SAR,
+	DRAM_ECC_SAR,
+	DRAM_BUS_WIDTH_SAR,
+	MAX_SAR
 };
 
-struct mvebu_board_family a8k_board_family = {
-	.default_id = ARMADA_8021_DB_ID,
-	.board_cnt = MAX_BOARD_ID,
-	.boards_info = a8k_board_lookup,
-	.sar = &a8k_sar,
-};
+int  sar_default_key(const char *key);
+int  sar_defualt_all(void);
+int  sar_write_key(const char *key, int val);
+int  sar_print_key(const char *key);
+void sar_list_keys(void);
+int  sar_list_key_opts(const char *key);
+int  sar_is_avaialble(void);
 
+#endif /* _SAR_H_ */

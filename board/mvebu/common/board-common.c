@@ -60,11 +60,29 @@ int common_board_init(struct mvebu_board_family *board_family)
 
 	printf("Board: %s\n", curr_board->name);
 
+	/* Update active units list for board */
 	if (curr_board->unit_mask)
 		update_unit_info(unit_mask, curr_board->unit_mask,
 				 curr_board->unit_update_mode);
 
+	/* Update sar tables */
+	if (curr_board->configurable) {
+		if (curr_board->config_data->sar_override)
+			/* update_sar_table();*/
+	}
+
 	return 0;
 }
 
+struct sar_data *board_get_sar(void)
+{
+	return brd->sar;
+}
 
+struct sar_var *board_get_sar_table(void)
+{
+	if (brd->sar)
+		return brd->sar->sar_lookup;
+	else
+		return NULL;
+}

@@ -18,3 +18,4 @@
 #
 
 obj-y += cmd_misc.o
+obj-y += cmd_sar.o

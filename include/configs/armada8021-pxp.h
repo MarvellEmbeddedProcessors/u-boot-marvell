@@ -120,8 +120,8 @@
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + 128 * 1024)
 
 /* SMSC91C111 Ethernet Configuration */
-#define CONFIG_SMC91111			1
-#define CONFIG_SMC91111_BASE		(0x01A000000)
+/*#define CONFIG_SMC91111			1
+#define CONFIG_SMC91111_BASE		(0x01A000000)*/
 
 /* PL011 Serial Configuration */
 #define CONFIG_PL011_SERIAL

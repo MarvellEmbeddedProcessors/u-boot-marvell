@@ -21,6 +21,7 @@
 #define _BOARD_INFO_H_
 
 #include "../common/board.h"
+#include "../common/sar.h"
 
 enum a8k_board_types {
 	ARMADA_8021_DB_ID,

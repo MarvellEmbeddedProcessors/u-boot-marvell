@@ -22,8 +22,15 @@
 #include <asm/arch-mvebu/unit-info.h>
 #include "board-info.h"
 
+struct mvebu_board_config a8021_db_config = {
+	.sar_cnt = 2,
+	.supported_sar = {BOOT_SRC_SAR, CPUS_NUM_SAR},
+};
+
 struct mvebu_board_info a8021_db_info = {
 	.name = "DB-MV8021",
 	.id = ARMADA_8021_DB_ID,
+	.configurable = 1,
+	.config_data = &a8021_db_config,
 };
 

@@ -17,21 +17,21 @@
  * ***************************************************************************
  */
 
-#ifndef _BOARD_INFO_H_
-#define _BOARD_INFO_H_
+#include <common.h>
+#include <linux/compiler.h>
+#include <asm/arch-mvebu/unit-info.h>
+#include "board-info.h"
 
-#include "../common/board.h"
 
-enum a8k_board_types {
-	ARMADA_8021_DB_ID,
-	ARMADA_8021_RD_ID,
-	ARMADA_8022_DB_ID,
-	ARMADA_8022_RD_ID,
-	MAX_BOARD_ID
+u16 a8021_rd_unit_disable[MAX_UNIT_ID] = {
+	[NAND_UNIT_ID] = id_to_mask(0),
+	[SDIO_UNIT_ID] = id_to_mask(0)
 };
 
-extern struct mvebu_board_info a8021_db_info;
-extern struct mvebu_board_info a8021_rd_info;
-extern struct mvebu_board_family a8k_board_family;
+struct mvebu_board_info a8021_rd_info = {
+	.name = "RD-MV8021",
+	.id = ARMADA_8021_RD_ID,
+	.unit_mask = a8021_rd_unit_disable,
+	.unit_update_mode = UNIT_INFO_DISABLE,
+};
 
-#endif /* _BOARD_INFO_H_ */

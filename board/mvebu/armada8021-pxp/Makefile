@@ -7,3 +7,5 @@
 
 obj-y	:= armada8021-pxp.o
 obj-y	+= board-info.o
+obj-y	+= db-8210-info.o
+obj-y	+= rd-8210-info.o

@@ -17,21 +17,13 @@
  * ***************************************************************************
  */
 
-#ifndef _BOARD_INFO_H_
-#define _BOARD_INFO_H_
+#include <common.h>
+#include <linux/compiler.h>
+#include <asm/arch-mvebu/unit-info.h>
+#include "board-info.h"
 
-#include "../common/board.h"
-
-enum a8k_board_types {
-	ARMADA_8021_DB_ID,
-	ARMADA_8021_RD_ID,
-	ARMADA_8022_DB_ID,
-	ARMADA_8022_RD_ID,
-	MAX_BOARD_ID
+struct mvebu_board_info a8021_db_info = {
+	.name = "DB-MV8021",
+	.id = ARMADA_8021_DB_ID,
 };
 
-extern struct mvebu_board_info a8021_db_info;
-extern struct mvebu_board_info a8021_rd_info;
-extern struct mvebu_board_family a8k_board_family;
-
-#endif /* _BOARD_INFO_H_ */

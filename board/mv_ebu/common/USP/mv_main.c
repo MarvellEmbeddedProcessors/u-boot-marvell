@@ -448,8 +448,8 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootz 0x2000000 - $fdt
 #if defined(CONFIG_OF_LIBFDT) && defined (CONFIG_OF_LIBFDT_IS_DEFAULT)
 		setenv("bootcmd",bootcmd_fdt);
 #elif defined(CONFIG_CMD_STAGE_BOOT)
-	setenv("bootcmd","stage_boot $boot_order");
-#else
+//	setenv("bootcmd","stage_boot $boot_order");
+// Temporary workaround till stage_boot gets stable.
 	setenv("bootcmd","tftpboot 0x2000000 $image_name;\
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
 ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");

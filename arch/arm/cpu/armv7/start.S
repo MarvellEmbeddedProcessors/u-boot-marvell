@@ -188,6 +188,21 @@ not_z_revision:
 	ldr  r0, =0xD0020080
 	str  r1, [r0]
 
+	/* align CP15 SCU base with internal reg base (scanned initially at Sample@Reset) */
+#if defined (MV_BOBCAT2)
+	/* PJ4: [0:18] - Shift right Register Base before updating CP15 */
+	lsr  r1, r1, #13
+	mcr  15, 4, r1, c15, c0, 0
+#else
+	/* CA9:[13:31] -  write full register base address */
+	ldr r2, = 0xFFFFE000
+	and  r1, r1, r2 		/* Save SCU Reg base BITS [13:31] 	*/
+	mrc p15, 4, r0, c15, c0, 0	/* read current SCU Reg Base 		*/
+	ldr r2, = 0x1fff
+	and r0, r0, r2			/* Reset SCU reg base BITS [0:13]	*/
+	orr r1, r0, r1			/* Modify 				*/
+	mcr p15, 4, r1, c15, c0, 0 	/* Write SCU base register */
+#endif
 
 #ifdef MV88F78X60
 /*

@@ -83,7 +83,6 @@ static void mvAlpBoardEgigaPhyInit(void)
 {
 	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
 
-
 	/* Set SMI control to CPU, before initializing PHY */
 	mvCtrlSmiMasterSet(CPU_SMI_CTRL);
 
@@ -151,6 +150,15 @@ static void mvAlpBoardEgigaPhyInit(void)
 #endif /* MV88F66XX */
 
 #if defined (MV88F66XX) || defined (MV88F672X)
+void mvBoardPhyShutDown(MV_U16 phyAddr)
+{
+	MV_U16  phyRegData;
+	mvEthPhyRegRead(phyAddr, 0x0, &phyRegData);
+	mvEthPhyRegWrite(phyAddr, 0x0, phyRegData | BIT11);
+	mvEthPhyRegRead(phyAddr, 0x10, &phyRegData);
+	mvEthPhyRegWrite(phyAddr, 0x10, phyRegData | BIT2);
+}
+
 void mvBoardLedMatrixPhyInit(MV_U16 smiAddr, MV_BOOL internalPhy)
 {
 	MV_U16 value = (internalPhy == MV_TRUE ? 0x1791 : 0x1771);
@@ -248,12 +256,22 @@ void mvBoardEgigaPhyInit(void)
 	}
 
 #elif defined (MV88F66XX) /* Avanta-LP: dynamic PPv2 configuration */
-
+        MV_U32 ethComplex = mvBoardEthComplexConfigGet();
 	/* Init PHYs according to eth. complex configuration */
 	mvAlpBoardEgigaPhyInit();
 
 	if (mvBoardIsInternalSwitchConnected() == MV_TRUE)
 		mvAlpBoardSwitchBasicInit(mvBoardSwitchPortsMaskGet(0));
+
+	/* Close unnecessary internal phys */
+	if(!(ethComplex & (MV_ETHCOMP_SW_P0_2_GE_PHY_P0 | MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)))
+		mvBoardPhyShutDown(0x0);
+	if(!(ethComplex & MV_ETHCOMP_SW_P1_2_GE_PHY_P1))
+		mvBoardPhyShutDown(0x1);
+	if(!(ethComplex & MV_ETHCOMP_SW_P2_2_GE_PHY_P2))
+		mvBoardPhyShutDown(0x2);
+	if(!(ethComplex & (MV_ETHCOMP_SW_P3_2_GE_PHY_P3 | MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3)))
+		mvBoardPhyShutDown(0x3);
 
 	mvBoardLedMatrixInit();
 
@@ -268,10 +286,14 @@ void mvBoardEgigaPhyInit(void)
 
 #elif defined(MV88F672X) /* Armada-375: static PPv2 configuration */
 
-	/* MAC0 is GE-PHY#0 on board*/
-	/* MAC1 is GE-PHY#3 on board*/
+	/* MAC0 is GE-PHY#0 on board - initialize phy through MAC0*/
+	/* MAC1 is GE-PHY#3 on board - initialize phy through MAC1*/
 	mvEthPhyInit(0, MV_FALSE);
 	mvEthPhyInit(1, MV_FALSE);
+
+	/* Internal GE-PHY#1,2 are not used - close unnecessary internal phys */
+	mvBoardPhyShutDown(0x1);
+	mvBoardPhyShutDown(0x2);
 
 	mvBoardLedMatrixInit();
 #endif

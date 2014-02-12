@@ -148,6 +148,22 @@ static void mvAlpBoardEgigaPhyInit(void)
 	*/
 #endif
 }
+#endif /* MV88F66XX */
+
+#if defined (MV88F66XX) || defined (MV88F672X)
+void mvBoardLedMatrixPhyInit(MV_U16 smiAddr, MV_BOOL internalPhy)
+{
+	MV_U16 value = (internalPhy == MV_TRUE ? 0x1791 : 0x1771);
+
+	mvEthPhyRegWrite(smiAddr, 0x16, 0x3);
+	mvOsDelay(10);
+	mvEthPhyRegWrite(smiAddr, 0x10, value);
+	mvOsDelay(10);
+	mvEthPhyRegWrite(smiAddr, 0x11, 0x8801);
+	mvOsDelay(10);
+	mvEthPhyRegWrite(smiAddr, 0x16, 0x0);
+	mvOsDelay(10);
+}
 
 /*******************************************************************************
 * switchPhyRegWrite 0 0 16 0 - Initialize LEDS Matrix
@@ -156,36 +172,43 @@ void mvBoardLedMatrixInit(void)
 {
 	MV_U8 i;
 
-	/* Enable Matrix, Set Mode B signals assignment, invert C1-C3 in Matrix*/
-	MV_REG_WRITE(LED_MATRIX_CONTROL_REG(0), BIT0 | BIT2 | BIT5);
-	/* initialize LEDS general configuration */
-	MV_REG_WRITE(LED_MATRIX_CONTROL_REG(1), 0x2db6db6d);
-	/* Use an internal device signal to drive the LED Matrix Control */
-	MV_REG_WRITE(LED_MATRIX_CONTROL_REG(2), BIT0 | BIT2 | BIT3 | BIT5);
+	if (mvCtrlDevFamilyIdGet(0) == MV_88F67X0)
+		/* Led matrix mode in 7Bit */
+		MV_REG_WRITE(LED_MATRIX_CONTROL_REG(0), BIT0 | BIT1);
+	else {
+		/* Led matrix mode in 12Bit */
+		/* Enable Matrix, Set Mode B signals assignment, invert C1-C3 in Matrix*/
+		MV_REG_WRITE(LED_MATRIX_CONTROL_REG(0), BIT0 | BIT2 | BIT5);
+		/* initialize LEDS general configuration */
+		MV_REG_WRITE(LED_MATRIX_CONTROL_REG(1), 0x2db6db6d);
+		/* Use an internal device signal to drive the LED Matrix Control */
+		MV_REG_WRITE(LED_MATRIX_CONTROL_REG(2), BIT0 | BIT2 | BIT3 | BIT5);
 
-	/* initialize internal PHYs controlled by switch */
-	if (mvBoardIsInternalSwitchConnected() == MV_TRUE) {
-		for (i = 0; i < 4; i++) {
-			mvOsDelay(10);
-			mvEthSwitchPhyRegWrite(0x0, i, 0x16, 0x3);
-			mvOsDelay(10);
-			mvEthSwitchPhyRegWrite(0x0, i, 0x10, 0x1791);
-			mvOsDelay(10);
-			mvEthSwitchPhyRegWrite(0x0, i, 0x11, 0x8801);
-			mvOsDelay(10);
-			mvEthSwitchPhyRegWrite(0x0, i, 0x16, 0x0);
+		/* initialize internal PHYs controlled by switch */
+		if (mvBoardIsInternalSwitchConnected() == MV_TRUE) {
+			for (i = 0; i < 4; i++) {
+				mvOsDelay(10);
+				mvEthSwitchPhyRegWrite(0x0, i, 0x16, 0x3);
+				mvOsDelay(10);
+				mvEthSwitchPhyRegWrite(0x0, i, 0x10, 0x1791);
+				mvOsDelay(10);
+				mvEthSwitchPhyRegWrite(0x0, i, 0x11, 0x8801);
+				mvOsDelay(10);
+				mvEthSwitchPhyRegWrite(0x0, i, 0x16, 0x0);
+			}
 		}
 	}
 
 	/* initialize External RGMII-0 PHY (SMI controlled by MAC0 @address 0x1) */
-	if(mvBoardEthComplexConfigGet() & MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY) {
-		mvEthPhyRegWrite(0x1, 0x16, 0x3);
-		mvEthPhyRegWrite(0x1, 0x10, 0x1771);
-		mvEthPhyRegWrite(0x1, 0x11, 0x8801);
-		mvEthPhyRegWrite(0x1, 0x16, 0x0);
-	}
+	if(mvBoardEthComplexConfigGet() & MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY)
+		mvBoardLedMatrixPhyInit(0x1, MV_FALSE);
+        if(mvBoardEthComplexConfigGet() & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)
+		mvBoardLedMatrixPhyInit(0x0, MV_TRUE);
+	if(mvBoardEthComplexConfigGet() & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3)
+		mvBoardLedMatrixPhyInit(0x3, MV_TRUE);
+
 }
-#endif /* MV88F66XX */
+#endif /* MV88F66XX || MV88F672X*/
 
 /***********************************************************
  * Init the PHY of the board                               *
@@ -249,5 +272,7 @@ void mvBoardEgigaPhyInit(void)
 	/* MAC1 is GE-PHY#3 on board*/
 	mvEthPhyInit(0, MV_FALSE);
 	mvEthPhyInit(1, MV_FALSE);
+
+	mvBoardLedMatrixInit();
 #endif
 }

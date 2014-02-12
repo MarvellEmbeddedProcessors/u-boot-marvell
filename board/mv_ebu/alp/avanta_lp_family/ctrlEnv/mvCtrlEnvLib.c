@@ -1171,8 +1171,10 @@ static MV_VOID mvCtrlTdmCtrlRegSet(MV_VOID)
 
 	switch (mvBoardSlicUnitTypeGet()) {
 	case MV_BOARD_SLIC_DISABLED:
-	case MV_BOARD_SLIC_SSI_ID:
 		return;
+	case MV_BOARD_SLIC_SSI_ID:
+		tdmCtrl = TDM_TYPE_SSI_LANTIQ;
+		break;
 	case MV_BOARD_SLIC_ISI_ID:
 		tdmCtrl = (ISI_MODE | ISI_MODE_CS_DEASSERT_BIT_COUNT_VAL | SPI_B_MODE_ISI_ENABLE_MASK);
 		break;

@@ -87,7 +87,8 @@ typedef struct __mvDramModes {
 MV_DRAM_MODES ddr_modes[] =
 {
     /*  Conf name     CPUFreq    	FabFreq  Chip ID   Chip/Board          MC regs*/
-	{"a38x_667", DDR_FREQ_667,       0,      0x0,   		A38X_DB,       ddr3_a38x_667},
+	{"a38x_533",  DDR_FREQ_533,      0,      0x0,   		A38X_DB,       ddr3_a38x_533},
+	{"a38x_667",  DDR_FREQ_667,      0,      0x0,   		A38X_DB,       ddr3_a38x_667},
 	{"a38x_800",  DDR_FREQ_800,      0,      0x0,        	A38X_DB,       ddr3_a38x_800},
 };
 

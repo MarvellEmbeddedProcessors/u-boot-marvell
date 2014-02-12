@@ -156,4 +156,43 @@ static MV_DRAM_MC_INIT ddr3_a38x_667[] =
 	{0,   0, 0}
 };
 
+static MV_DRAM_MC_INIT ddr3_a38x_533[] =
+{
+	/*parameters for 533MHZ*/
+
+	{0x1400,    0x7B00D040, 0xffffffff}, // DDR SDRAM Configuration Register
+	{0x1404,    0x36301820, 0xffffffff}, // Dunit Control Low Register - kw28 bit12 low (disable CLK1)
+	{0x1408,    0x33137772, 0xffffffff}, // DDR SDRAM Timing (Low) Register
+	{0x140C,    0x3841199F, 0xffffffff}, //  DDR SDRAM Timing (High) Register
+	{0x1410,    0x10300000, 0xffffffff}, //  DDR SDRAM Address Control Register
+	{0x1414,    0x00000700, 0xffffffff}, //  DDR SDRAM Open Pages Control Register
+	{0x1424,    0x0060F3FF, 0xffffffff}, //  Dunit Control High Register ( 2 :1 - bits 15:12 = 0xD )
+	{0x1428,    0x000D6720, 0xffffffff}, //  Dunit Control High Register
+	{0x142C,    0x028C50C3,  0xffffffff}, //  Dunit Control High Register  ( 2:1 -  bit 29 = '1' )
+	{0x147C,    0x0000B571, 0xffffffff}, //
+	{0x1494,    0x00030000, 0xffffffff}, //  DDR SDRAM ODT Control (Low) Register
+	{0x1498,    0x00000000, 0xffffffff}, //  DDR SDRAM ODT Control (High) Register //will be configured at WL
+	{0x149C,    0x00000003, 0xffffffff}, //  DDR Dunit ODT Control Register
+	{0x14a8,    0x00000000, 0xffffffff}, //
+	{0x14cc,    0xbd09000d, 0xffffffff}, //
+	{0x1474,    0x00000000, 0xffffffff}, //
+	{0x1538,    0x00000707, 0xffffffff}, //  Read Data Sample Delays Register
+	{0x153C,    0x00000707, 0xffffffff}, //  Read Data Ready Delay Register
+	{0x1504,    0xFFFFFFE1, 0xffffffff}, //
+	{0x150c,    0xFFFFFFE5, 0xffffffff}, //
+	{0x1514,    0x00000000, 0xffffffff}, //
+	{0x151c,    0x00000000,	0xffffffff}, //
+	{0x15D0,    0x00000630, 0xffffffff}, //  MR0
+	{0x15D4,    0x00000046, 0xffffffff}, //  MR1
+	{0x15D8,    0x00000008, 0xffffffff}, //  MR2
+	{0x15DC,    0x00000000, 0xffffffff}, //  MR3
+	{0x15E0,    0x00000023,	0xffffffff}, //
+	{0x15E4,    0x00203c18, 0xffffffff}, //  ZQC Configuration Register
+	{0x15EC,    0xF8000019, 0xffffffff}, //  DDR PHY
+	{0x16A0,    0xCC000015, 0xffffffff}, //  Clock Delay
+	{0xE4124,   0x08008073, 0xffffffff}, //  AVS BG default
+	{0,   0, 0}
+};
+
 #endif /* _INC_A375_MC_STATIC_H */
+

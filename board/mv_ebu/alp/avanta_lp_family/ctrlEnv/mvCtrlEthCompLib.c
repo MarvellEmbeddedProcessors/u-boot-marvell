@@ -71,6 +71,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pp2/gmac/mvEthGmacRegs.h"
 #include "pp2/gbe/mvPp2Gbe.h"
 
+static void mvEthComplexGbeClockControlSet(void)
+{
+	MV_U32 reg;
+	/* Thus fields are not exists in ZX revision */
+	if (mvCtrlRevGet() <= MV_88F66X0_Z3_ID)
+		return;
+
+	/* Change default value of Bit 22, and 28 to NegEdge(0) */
+	reg = MV_REG_READ(MV_ETHCOMP_GBE_PHY_CLOCK_CTRL_REG);
+	/* Field - Switch Port4 To MPP Data Sample */
+	reg &= ~(ETHCC_GBE_PHY_MPP_TO_SW_P4_EDGE_MASK);
+	/* Field - GbE Port 0 To MPP Data Sample */
+	reg &= ~(ETHCC_GBE_PHY_GBE_P0_TO_MPP_EDGE_MASK);
+
+	MV_REG_WRITE(MV_ETHCOMP_GBE_PHY_CLOCK_CTRL_REG, reg);
+}
+
 static void mvEthComplexGbePhySrcSet(MV_U32 phy, MV_U32 src)
 {
 	MV_U32 reg;
@@ -381,6 +398,8 @@ MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig)
 	MV_U32 c = ethCompConfig;
 
 	mvEthComplexGopDevEnable();
+
+	mvEthComplexGbeClockControlSet();
 
 	if (c & MV_ETHCOMP_GE_MAC0_2_SW_P6)
 		mvEthComplexMacToSwPort(0, 6, mvBoardMacSpeedGet(0));

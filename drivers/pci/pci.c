@@ -59,11 +59,8 @@ int pci_##rw##_config_##size(pci_dev_t dev, int offset, type value)	\
 	{								\
 		error_code;						\
 		return -1;						\
-	}									 \
-	if ( (PCI_BUS(dev)>>8) == 0xff )					 \
-		dev = PCI_BDF((PCI_BUS(dev)>>8), PCI_DEV(dev), PCI_FUNC(dev));   \
-	else									 \
-		dev = PCI_BDF((PCI_BUS(dev)& 0xFF), PCI_DEV(dev), PCI_FUNC(dev));\
+	}								\
+									\
 	return pci_hose_##rw##_config_##size(hose, dev, offset, value);	\
 }
 
@@ -157,7 +154,7 @@ void pci_register_hose(struct pci_controller* hose)
 struct pci_controller *pci_bus_to_hose(int bus)
 {
 	struct pci_controller *hose;
-	bus = bus & 0xFF;
+
 	for (hose = hose_head; hose; hose = hose->next) {
 		if (bus >= hose->first_busno && bus <= hose->last_busno)
 			return hose;
@@ -596,7 +593,7 @@ int __pci_skip_dev(struct pci_controller *hose, pci_dev_t dev)
 	/*
 	 * Check if pci device should be skipped in configuration
 	 */
-	if (dev == PCI_BDF(0xFF, 0, 0)) {
+	if (dev == PCI_BDF(hose->first_busno, 0, 0)) {
 #if defined(CONFIG_PCI_CONFIG_HOST_BRIDGE) /* don't skip host bridge */
 		/*
 		 * Only skip configuration if "pciconfighost" is not set

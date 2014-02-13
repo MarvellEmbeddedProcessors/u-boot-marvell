@@ -69,8 +69,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvSysEthConfig.h"
 
 /*******************************************************************************
- * Ports Group Control and Status
- */
+ * Ports Group Control and Status */
 #define MV_ETHCOMP_GOP_CTRL_STAT_REG			MV_ETH_COMPLEX_BASE
 
 #define     ETHCGCS_PORT_DP_CLK_SRC_OFFSET(port)	((port == 0) ? 13 : 14)
@@ -80,8 +79,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define     ETHCGCS_GOP_ENABLE_DEV_MASK			(0x1 << ETHCGCS_GOP_ENABLE_DEV_OFFSET)
 
 /*******************************************************************************
- * Ethernet Complex Control 0
- */
+* Ports Group Control and Status */
+#define MV_ETHCOMP_GBE_PHY_CLOCK_CTRL_REG		(MV_ETH_COMPLEX_BASE + 0x1C)
+
+#define     ETHCC_GBE_PHY_MPP_TO_SW_P4_EDGE_OFFSET	22
+#define     ETHCC_GBE_PHY_MPP_TO_SW_P4_EDGE_MASK        (0x1 << ETHCC_GBE_PHY_MPP_TO_SW_P4_EDGE_OFFSET)
+
+#define     ETHCC_GBE_PHY_GBE_P0_TO_MPP_EDGE_OFFSET	28
+#define     ETHCC_GBE_PHY_GBE_P0_TO_MPP_EDGE_MASK	(0x1 << ETHCC_GBE_PHY_MPP_TO_SW_P4_EDGE_OFFSET)
+
+/*******************************************************************************
+ * Ethernet Complex Control 0 */
 #define MV_ETHCOMP_CTRL_REG				(MV_ETH_COMPLEX_BASE + 0x10)
 
 #define     ETHCC_SW_PORT_SRC_OFFSET(port)		(port == 0 ? 4 : (port == 3 ? 5 : \

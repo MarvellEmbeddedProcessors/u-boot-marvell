@@ -58,7 +58,6 @@ void pciinfo(int BusNum, int ShortPCIListing)
 {
 	int Device;
 	int Function;
-	int LocalBus;
 	unsigned char HeaderType;
 	unsigned short VendorID;
 	pci_dev_t dev;
@@ -66,11 +65,10 @@ void pciinfo(int BusNum, int ShortPCIListing)
 	printf("Scanning PCI devices on bus %d\n", BusNum);
 
 	if (ShortPCIListing) {
-		printf("LocalbusBusDevFun  VendorId   DeviceId   Device Class       Sub-Class\n");
-		printf("______________________________________________________________________\n");
+		printf("BusDevFun  VendorId   DeviceId   Device Class       Sub-Class\n");
+		printf("_____________________________________________________________\n");
 	}
-	LocalBus = (0xFF00 | BusNum);
-	while (BusNum <= LocalBus) {
+
 	for (Device = 0; Device < PCI_MAX_PCI_DEVICES; Device++) {
 		HeaderType = 0;
 		VendorID = 0;
@@ -91,7 +89,7 @@ void pciinfo(int BusNum, int ShortPCIListing)
 
 			if (ShortPCIListing)
 			{
-					printf("%02x %02x.%02x.%02x   ",(BusNum>>8), (BusNum&0xFF), Device, Function);
+				printf("%02x.%02x.%02x   ", BusNum, Device, Function);
 				pci_header_show_brief(dev);
 			}
 			else
@@ -102,12 +100,6 @@ void pciinfo(int BusNum, int ShortPCIListing)
 			}
 	    }
     }
-		if (BusNum !=LocalBus )
-			BusNum = LocalBus;
-		else {
-			BusNum++;
-		}
-	}
 }
 
 

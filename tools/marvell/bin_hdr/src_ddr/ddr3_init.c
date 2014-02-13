@@ -502,7 +502,7 @@ MV_U32 ddr3Init_(void)
 	}
 #endif
 	ddr3PrintVersion();
-	DEBUG_INIT_S("5\n");
+	DEBUG_INIT_S("0\n");
 	/* Lib version 5.5.5 */
 
 	uiFabOpt = ddr3GetFabOpt();

@@ -337,6 +337,7 @@ extern unsigned int mvTclkGet(void);
 /*
  * Cache
  */
+#define CONFIG_SYS_DCACHE_OFF
 #define CONFIG_SYS_CACHELINE_SIZE       32
 
 /*

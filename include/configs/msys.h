@@ -272,6 +272,7 @@ disclaimer.
 #undef	CONFIG_WATCHDOG			/* watchdog disabled		*/
 
 /* Cache */
+#define CONFIG_SYS_DCACHE_OFF
 #define CONFIG_SYS_CACHELINE_SIZE	32
 
 /* global definitions. */

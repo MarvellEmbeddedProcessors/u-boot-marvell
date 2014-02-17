@@ -71,6 +71,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pp2/gmac/mvEthGmacRegs.h"
 #include "pp2/gbe/mvPp2Gbe.h"
 
+static void mvEthComplexGphyPortSmiSrcSet(MV_U32 phy, MV_U32 src)
+{
+	MV_U32 reg;
+	/* In A0 added Phy Smi source configuration for ports 0 and 3.
+	** In Zx, only Phy Smi source for 1,2 are configurable, but no
+	** need to modify the default values. */
+	if (mvCtrlRevGet() <= MV_88F66X0_Z3_ID)
+		return;
+
+	reg = MV_REG_READ(MV_ETHCOMP_CTRL_REG);
+	reg &= ~ETHCC_GBE_PHY_PORT_SMI_SRC_MASK(phy);
+
+	src <<= ETHCC_GBE_PHY_PORT_SMI_SRC_OFFSET(phy);
+	src &= ETHCC_GBE_PHY_PORT_SMI_SRC_MASK(phy);
+
+	reg |= src;
+
+	MV_REG_WRITE(MV_ETHCOMP_CTRL_REG, reg);
+}
 static void mvEthComplexGbeClockControlSet(void)
 {
 	MV_U32 reg;
@@ -359,6 +378,9 @@ static void mvEthComplexMacToGbePhy(MV_U32 port, MV_U32 phy, MV_U32 phyAddr)
 	mvEthComplexGbePhySrcSet(phy, 0x0);
 	mvEthComplexGbePortSrcSet(port, 0x2);
 
+	/* Set SMI source for PHY: 0x0 = MAC is smi master, 0x1 = Switch is smi master */
+	mvEthComplexGphyPortSmiSrcSet(phy, 0x0);
+
 	if (port == 0)
 		mvEthComplexSwPortSrcSet(6, 0x0);
 
@@ -392,6 +414,8 @@ static void mvEthComplexSwPortToGbePhy(MV_U32 swPort, MV_U32 phy)
 		mvEthComplexSwPortSrcSet(swPort, 0x1);
 		mvEthComplexGbePhySrcSet(phy, 0x1);
 	}
+	/* Set SMI source for PHY: 0x0 = MAC is smi master, 0x1 = Switch is smi master */
+	mvEthComplexGphyPortSmiSrcSet(phy, 0x1);
 	mvEthComplexGbePhyResetSet(MV_FALSE);
 	mvEthComplexGbePhyPowerCycle(phy);
 }

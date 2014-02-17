@@ -924,6 +924,7 @@ skip_pio:
 	dev_desc->type = DEV_TYPE_HARDDISK;
 	dev_desc->blksz = ATA_BLOCKSIZE;
 	dev_desc->lun = 0; /* just to fill something in... */
+	dev_desc->log2blksz = LOG2(dev_desc->blksz);
 	dev_desc->priv = priv; /* save info on disk in the priv pointer */
 
 	return MV_TRUE;
@@ -1057,6 +1058,8 @@ void ide_init (void)
 		ide_dev_desc[j].dev=j;
 		ide_dev_desc[j].part_type=PART_TYPE_UNKNOWN;
 		ide_dev_desc[j].blksz=0;
+		ide_dev_desc[j].log2blksz =
+			LOG2_INVALID(typeof(ide_dev_desc[j].log2blksz));
 		ide_dev_desc[j].lba=0;
 		ide_dev_desc[j].block_read=ide_read;
 	}

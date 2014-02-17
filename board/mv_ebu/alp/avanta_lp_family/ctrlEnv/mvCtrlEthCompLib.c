@@ -93,10 +93,10 @@ static void mvEthComplexGbePhySrcSet(MV_U32 phy, MV_U32 src)
 	MV_U32 reg;
 
 	reg = MV_REG_READ(MV_ETHCOMP_CTRL_REG);
-	reg &= ~ETHCC_GBE_PHY_PORT_SMI_SRC_MASK(phy);
+	reg &= ~ETHCC_GBE_PHY_PORT_SRC_MASK(phy);
 
-	src <<= ETHCC_GBE_PHY_PORT_SMI_SRC_OFFSET(phy);
-	src &= ETHCC_GBE_PHY_PORT_SMI_SRC_MASK(phy);
+	src <<= ETHCC_GBE_PHY_PORT_SRC_OFFSET(phy);
+	src &= ETHCC_GBE_PHY_PORT_SRC_MASK(phy);
 
 	reg |= src;
 

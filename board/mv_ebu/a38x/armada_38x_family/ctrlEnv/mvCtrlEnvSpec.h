@@ -340,7 +340,8 @@ typedef enum _mvTarget {
 	BOOT_ROM_CS,	/* 26 BOOT_ROM_CS		*/
 	DEV_BOOCS,	/* 27 DEV_BOOCS			*/
 	CRYPT0_ENG,	/* 28 Crypto0 Engine		*/
-	PNC_BM,		/* 29 PNC + BM			*/
+	CRYPT1_ENG,	/* 29 Crypto1 Engine		*/
+	PNC_BM,		/* 30 PNC + BM			*/
 	MAX_TARGETS
 } MV_TARGET;
 
@@ -389,6 +390,7 @@ typedef enum _mvTarget {
 	{ MAIN_BOOT_ATTR, DEV_TARGET_ID },	/* Main Boot device      */ \
 	{ SEC_BOOT_ATTR, DEV_TARGET_ID  },	/* Secondary Boot device */ \
 	{ 0x01, CRYPT_TARGET_ID	},		/* CRYPT_ENG0            */ \
+	{ 0x05, CRYPT_TARGET_ID	},		/* CRYPT_ENG1            */ \
 	{0x00, PNC_BM_TARGET_ID },		/* PNC_BM		 */ \
 }
 
@@ -423,6 +425,7 @@ typedef enum _mvTarget {
 	"BOOT_ROM_CS",		/* BOOT_ROM_CS */	\
 	"DEV_BOOTCS",		/* DEV_BOOCS */		\
 	"CRYPT1_ENG",		/* CRYPT1_ENG */	\
+	"CRYPT2_ENG",		/* CRYPT2_ENG */	\
 	"PNC_BM"		/* PNC_BM */		\
 }
 

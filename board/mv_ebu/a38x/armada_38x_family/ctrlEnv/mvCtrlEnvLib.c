@@ -130,7 +130,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_68xx_INDEX_MAX] = {
 /* SATA_UNIT_ID         */ { MV_SATA_MAX_CHAN,		MV_SATA_MAX_CHAN},
 /* TDM_32CH_UNIT_ID     */ { 1,				1},
 /* UART_UNIT_ID         */ { MV_UART_MAX_CHAN,		MV_UART_MAX_CHAN},
-/* CESA_UNIT_ID         */ { 1,				1},
+/* CESA_UNIT_ID         */ { 2,				2},
 /* SPI_UNIT_ID          */ { 1,				1},
 /* AUDIO_UNIT_ID        */ { 1,				1},
 /* SDIO_UNIT_ID         */ { 1,				1},

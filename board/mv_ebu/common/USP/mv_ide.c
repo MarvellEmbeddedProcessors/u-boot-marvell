@@ -155,17 +155,17 @@ static void ident_cpy (unsigned char *dest, unsigned char *src, unsigned int len
 static ulong pio_read_write (MV_SATA_ADAPTER *pSataAdapter,
 			     unsigned int channelIndex,
 			     MV_U8 port,
-			     lbaint_t blknr, ulong blkcnt, ulong *buffer, int read);
+			     lbaint_t blknr, lbaint_t blkcnt, ulong *buffer, int read);
 static
 ulong dma_read_write (MV_SATA_ADAPTER *pSataAdapter,
 		      unsigned int channelIndex,
 		      MV_U8 port,
-		      lbaint_t blknr, ulong blkcnt, ulong *buffer, int read);
+		      lbaint_t blknr, lbaint_t blkcnt, ulong *buffer, int read);
 static
 ulong dma_read_write_cmd (MV_SATA_ADAPTER *pSataAdapter,
 			  unsigned int channelIndex,
 			  MV_U8 port,
-			  lbaint_t blknr, ulong blkcnt, ulong *buffer, int read);
+			  lbaint_t blknr, lbaint_t blkcnt, ulong *buffer, int read);
 /* ------------------------------------------------------------------------- */
 
 #ifdef CONFIG_PCI
@@ -310,15 +310,15 @@ int do_ide (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			printf ("\n\nIDE device not available\n");
 			return 1;
 		}
-#ifdef CFG_64BIT_STRTOUL
+#ifdef CONFIG_SYS_64BIT_LBA
 		lbaint_t blk  = simple_strtoull(argv[3], NULL, 16);
 
-		printf ("\nIDE read: device %x block # %qd, count %ld ... ",
+		printf("\nIDE read: device %d block # " LBAF ", count %ld ... ",
 			curr_device, blk, cnt);
 #else
 		lbaint_t blk  = simple_strtoul(argv[3], NULL, 16);
 
-		printf ("\nIDE read: device %x block # %ld, count %ld ... ",
+		printf ("\nIDE read: device %x block # " LBAF ", count %ld ... ",
 			curr_device, blk, cnt);
 #endif
 
@@ -345,15 +345,15 @@ int do_ide (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			printf ("\n\nIDE device not available\n");
 			return 1;
 		}
-#ifdef CFG_64BIT_STRTOUL
+#ifdef CONFIG_SYS_64BIT_LBA
 		lbaint_t blk  = simple_strtoull(argv[3], NULL, 16);
 
-		printf ("\nIDE write: device %x block # %qd, count %ld ... ",
+		printf ("\nIDE write: device %x block # " LBAF ", count %ld ... ",
 			curr_device, blk, cnt);
 #else
 		lbaint_t blk  = simple_strtoul(argv[3], NULL, 16);
 
-		printf ("\nIDE write: device %x block # %ld, count %ld ... ",
+		printf ("\nIDE write: device %x block # " LBAF ", count %ld ... ",
 			curr_device, blk, cnt);
 #endif
 
@@ -1227,7 +1227,7 @@ block_dev_desc_t * ide_get_dev(int dev)
 
 /* ------------------------------------------------------------------------- */
 
-ulong ide_read_write (int device, lbaint_t blknr, ulong blkcnt, ulong *buffer, int read)
+ulong ide_read_write (int device, lbaint_t blknr, lbaint_t blkcnt, ulong *buffer, int read)
 {
 	MV_SATA_ADAPTER *pSataAdapter = NULL;
 	MV_SATA_DISK_PRIV *priv = ide_dev_desc[device].priv;
@@ -1243,8 +1243,8 @@ ulong ide_read_write (int device, lbaint_t blknr, ulong blkcnt, ulong *buffer, i
 		return 0;
 	}
 
-	DP("ide %s: device %x, blknr %x blkcnt %x, buffer %x\n",
-		((read)?"read":"write"),device, (unsigned int)blknr, blkcnt, (unsigned int)buffer);
+	DP("ide %s: device %x, blknr %x blkcnt %lx, buffer %x\n",
+		((read)?"read":"write"),device, blknr, blkcnt, (unsigned int)buffer);
 
 	pSataAdapter = &(sataAdapters[priv->adapterId].mvSataAdapter);
 
@@ -1260,7 +1260,7 @@ static
 ulong pio_read_write (MV_SATA_ADAPTER *pSataAdapter,
 		      unsigned int channelIndex,
 		      MV_U8 port,
-		      lbaint_t blknr, ulong blkcnt, ulong *buffer, int read)
+		      lbaint_t blknr, lbaint_t blkcnt, ulong *buffer, int read)
 {
 	MV_STORAGE_DEVICE_REGISTERS inATARegs;
 	MV_STORAGE_DEVICE_REGISTERS outATARegs;
@@ -1334,7 +1334,7 @@ MV_BOOLEAN cmd_callback(struct mvSataAdapter *pSataAdapter,
 ulong dma_read_write (MV_SATA_ADAPTER *pSataAdapter,
 		      unsigned int channelIndex,
 		      MV_U8 port,
-		      lbaint_t blknr, ulong blkcnt, ulong *buffer, int read)
+		      lbaint_t blknr, lbaint_t blkcnt, ulong *buffer, int read)
 {
 	int res = 0;
 	int transfered_blks = 0;
@@ -1361,7 +1361,7 @@ static
 ulong dma_read_write_cmd (MV_SATA_ADAPTER *pSataAdapter,
 			  unsigned int channelIndex,
 			  MV_U8 port,
-			  lbaint_t blknr, ulong blkcnt, ulong *buffer, int read)
+			  lbaint_t blknr, lbaint_t blkcnt, ulong *buffer, int read)
 {
 	MV_QUEUE_COMMAND_INFO q_cmd_info;
 	MV_UDMA_COMMAND_PARAMS      *udmaCommand = &q_cmd_info.commandParams.udmaCommand;
@@ -1370,7 +1370,7 @@ ulong dma_read_write_cmd (MV_SATA_ADAPTER *pSataAdapter,
 	MV_U32 buffer_addr = (MV_U32) buffer;
 
 	if ( blkcnt > 128){
-		printf("error in %s: blk count %ld exceeded max limit\n",
+		printf("error in %s: blk count %llx exceeded max limit\n",
 		       __func__, blkcnt);
 	}
 
@@ -1467,11 +1467,11 @@ void swapATABuffer(unsigned short *buffer, ulong count)
 }
 #endif
 
-ulong ide_read(int device, ulong blknr, lbaint_t blkcnt, void *buffer)
+ulong ide_read(int device, lbaint_t blknr, lbaint_t blkcnt, void *buffer)
 {
 	return ide_read_write (device, blknr, blkcnt, buffer, MV_TRUE);
 }
-ulong ide_write(int device, ulong blknr, lbaint_t blkcnt, const void *buffer)
+ulong ide_write(int device, lbaint_t blknr, lbaint_t blkcnt,const void *buffer)
 {
 	return ide_read_write (device, blknr, blkcnt, (ulong *)buffer, MV_FALSE);
 }

@@ -387,8 +387,12 @@ static void mvEthComplexMacToRgmii(MV_U32 port, MV_U32 phy)
 
 static void mvEthComplexSwPortToGbePhy(MV_U32 swPort, MV_U32 phy)
 {
-	mvEthComplexSwPortSrcSet(swPort, 0x1);
-	mvEthComplexGbePhySrcSet(phy, 0x1);
+	/* For Phy 1 and 2, Sw port source and phy source are hardcoded */
+	if (phy == 0 || phy == 3)
+	{
+		mvEthComplexSwPortSrcSet(swPort, 0x1);
+		mvEthComplexGbePhySrcSet(phy, 0x1);
+	}
 	mvEthComplexGbePhyResetSet(MV_FALSE);
 	mvEthComplexGbePhyPowerCycle(phy);
 }
@@ -435,10 +439,10 @@ MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig)
 		mvEthComplexSwPortToGbePhy(0, 0);
 
 	if (c & MV_ETHCOMP_SW_P1_2_GE_PHY_P1)
-		mvEthComplexSwPortToGbePhy(0, 0);
+		mvEthComplexSwPortToGbePhy(1, 1);
 
 	if (c & MV_ETHCOMP_SW_P2_2_GE_PHY_P2)
-		mvEthComplexSwPortToGbePhy(0, 0);
+		mvEthComplexSwPortToGbePhy(2, 2);
 
 	if (c & MV_ETHCOMP_SW_P3_2_GE_PHY_P3)
 		mvEthComplexSwPortToGbePhy(3, 3);

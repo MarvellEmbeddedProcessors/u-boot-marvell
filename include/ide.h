@@ -44,7 +44,6 @@ extern ulong ide_bus_offset[];
 #ifdef CONFIG_SYS_64BIT_LBA
 typedef uint64_t lbaint_t;
 #define LBAF "%llx"
-#define LBAF_10D "%10lld"
 #define IDE_BLOCK_NUMBER_MASK 0x0000fffff0000000
 #define LBA_LOW_REG_SHIFT	24
 #define LBA_MID_REG_SHIFT	32
@@ -52,7 +51,6 @@ typedef uint64_t lbaint_t;
 #else
 typedef ulong lbaint_t;
 #define LBAF "%lx"
-#define LBAF_10D "%10ld"
 #define IDE_BLOCK_NUMBER_MASK 0xf0000000
 #define LBA_LOW_REG_SHIFT	24
 #define LBA_MID_REG_SHIFT	0

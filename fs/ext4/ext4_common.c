@@ -1480,7 +1480,7 @@ int ext4fs_read_inode(struct ext2_data *data, int ino, struct ext2_inode *inode)
 	struct ext2_sblock *sblock = &data->sblock;
 	struct ext_filesystem *fs = get_fs();
 	int inodes_per_block, status;
-	lbaint_t blkno;
+	long int blkno;
 	unsigned int blkoff;
 
 	/* It is easier to calculate if the first inode is 0. */
@@ -1509,10 +1509,10 @@ long int read_allocated_block(struct ext2_inode *inode, int fileblock)
 	int blksz;
 	int log2_blksz;
 	int status;
-	lbaint_t rblock;
-	lbaint_t perblock_parent;
-	lbaint_t perblock_child;
-	lbaint_t start;
+	long int rblock;
+	long int perblock_parent;
+	long int perblock_child;
+	unsigned long long start;
 	/* get the blocksize of the filesystem */
 	blksz = EXT2_BLOCK_SIZE(ext4fs_root);
 	log2_blksz = LOG2_EXT2_BLOCK_SIZE(ext4fs_root);
@@ -2203,7 +2203,7 @@ fail:
 	return -1;
 }
 
-int ext4fs_mount(lbaint_t part_length)
+int ext4fs_mount(unsigned part_length)
 {
 	struct ext2_data *data;
 	int status;

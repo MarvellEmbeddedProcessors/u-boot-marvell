@@ -55,21 +55,16 @@ void ext4fs_set_blk_dev(block_dev_desc_t *rbdd, disk_partition_t *info)
 	get_fs()->dev_desc = rbdd;
 }
 
-int ext4fs_devread(lbaint_t sector, int byte_offset, int byte_len, char *buf)
+int ext4fs_devread(int sector, int byte_offset, int byte_len, char *buf)
 {
 	ALLOC_CACHE_ALIGN_BUFFER(char, sec_buf, SECTOR_SIZE);
 	unsigned block_len;
 
 	/* Check partition boundaries */
-#ifdef CONFIG_SYS_64BIT_LBA
-	if (((sector + ((byte_offset + byte_len - 1) >> SECTOR_BITS)) >=
+	if ((sector < 0)
+	    || ((sector + ((byte_offset + byte_len - 1) >> SECTOR_BITS)) >=
 		part_info->size)) {
-#else
-	if ((sector < 0) ||
-	    ((sector + ((byte_offset + byte_len - 1) >> SECTOR_BITS)) >=
-		part_info->size)) {
-#endif
-		printf("%s read outside partition " LBAF_10D "\n", __func__, sector);
+		printf("%s read outside partition %d\n", __func__, sector);
 		return 0;
 	}
 
@@ -77,7 +72,7 @@ int ext4fs_devread(lbaint_t sector, int byte_offset, int byte_len, char *buf)
 	sector += byte_offset >> SECTOR_BITS;
 	byte_offset &= SECTOR_SIZE - 1;
 
-	debug(" <" LBAF_10D ", %d, %d>\n", sector, byte_offset, byte_len);
+	debug(" <%d, %d, %d>\n", sector, byte_offset, byte_len);
 
 	if (ext4fs_block_dev_desc == NULL) {
 		printf("** Invalid Block Device Descriptor (NULL)\n");

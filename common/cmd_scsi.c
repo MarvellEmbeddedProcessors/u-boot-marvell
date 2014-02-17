@@ -227,6 +227,7 @@ void scsi_init(void)
 #elif defined CONFIG_SCSI_6820
 	scsi_scan(1);
 #else
+	int busdevfunc;
 	int i;
 	for (i = 0; i < ARRAY_SIZE(scsi_device_list); i++) {
 		/* get PCI Device ID */

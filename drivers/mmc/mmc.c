@@ -623,7 +623,7 @@ static int mmc_send_ext_csd(struct mmc *mmc, u8 *ext_csd)
 
 	data.dest = (char *)ext_csd;
 	data.blocks = 1;
-	data.blocksize = 512;
+	data.blocksize = MMC_MAX_BLOCK_LEN;
 	data.flags = MMC_DATA_READ;
 
 	err = mmc_send_cmd(mmc, &cmd, &data);
@@ -656,7 +656,7 @@ static int mmc_switch(struct mmc *mmc, u8 set, u8 index, u8 value)
 
 static int mmc_change_freq(struct mmc *mmc)
 {
-	ALLOC_CACHE_ALIGN_BUFFER(u8, ext_csd, 512);
+	ALLOC_CACHE_ALIGN_BUFFER(u8, ext_csd, MMC_MAX_BLOCK_LEN);
 	char cardtype;
 	int err;
 
@@ -921,8 +921,8 @@ static int mmc_startup(struct mmc *mmc)
 	uint mult, freq;
 	u64 cmult, csize, capacity;
 	struct mmc_cmd cmd;
-	ALLOC_CACHE_ALIGN_BUFFER(u8, ext_csd, 512);
-	ALLOC_CACHE_ALIGN_BUFFER(u8, test_csd, 512);
+	ALLOC_CACHE_ALIGN_BUFFER(u8, ext_csd, MMC_MAX_BLOCK_LEN);
+	ALLOC_CACHE_ALIGN_BUFFER(u8, test_csd, MMC_MAX_BLOCK_LEN);
 	int timeout = 1000;
 
 #ifdef CONFIG_MMC_SPI_CRC_ON
@@ -1038,11 +1038,11 @@ static int mmc_startup(struct mmc *mmc)
 	mmc->capacity = (csize + 1) << (cmult + 2);
 	mmc->capacity *= mmc->read_bl_len;
 
-	if (mmc->read_bl_len > 512)
-		mmc->read_bl_len = 512;
+	if (mmc->read_bl_len > MMC_MAX_BLOCK_LEN)
+		mmc->read_bl_len = MMC_MAX_BLOCK_LEN;
 
-	if (mmc->write_bl_len > 512)
-		mmc->write_bl_len = 512;
+	if (mmc->write_bl_len > MMC_MAX_BLOCK_LEN)
+		mmc->write_bl_len = MMC_MAX_BLOCK_LEN;
 
 	/* Select the card, and put it into Transfer Mode */
 	if (!mmc_host_is_spi(mmc)) { /* cmd not supported in spi */
@@ -1073,7 +1073,7 @@ static int mmc_startup(struct mmc *mmc)
 					| ext_csd[EXT_CSD_SEC_CNT + 1] << 8
 					| ext_csd[EXT_CSD_SEC_CNT + 2] << 16
 					| ext_csd[EXT_CSD_SEC_CNT + 3] << 24;
-			capacity *= 512;
+			capacity *= MMC_MAX_BLOCK_LEN;
 			if ((capacity >> 20) > 2 * 1024)
 				mmc->capacity = capacity;
 		}
@@ -1101,10 +1101,11 @@ static int mmc_startup(struct mmc *mmc)
 		 * group size from ext_csd directly, or calculate
 		 * the group size from the csd value.
 		 */
-		if (ext_csd[EXT_CSD_ERASE_GROUP_DEF])
+		if (ext_csd[EXT_CSD_ERASE_GROUP_DEF]) {
 			mmc->erase_grp_size =
-			      ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE] * 512 * 1024;
-		else {
+				ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE] *
+					MMC_MAX_BLOCK_LEN * 1024;
+		} else {
 			int erase_gsz, erase_gmul;
 			erase_gsz = (mmc->csd[2] & 0x00007c00) >> 10;
 			erase_gmul = (mmc->csd[2] & 0x000003e0) >> 5;

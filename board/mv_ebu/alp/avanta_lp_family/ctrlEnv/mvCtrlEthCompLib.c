@@ -388,8 +388,7 @@ static void mvEthComplexMacToRgmii(MV_U32 port, MV_U32 phy)
 static void mvEthComplexSwPortToGbePhy(MV_U32 swPort, MV_U32 phy)
 {
 	/* For Phy 1 and 2, Sw port source and phy source are hardcoded */
-	if (phy == 0 || phy == 3)
-	{
+	if (phy == 0 || phy == 3) {
 		mvEthComplexSwPortSrcSet(swPort, 0x1);
 		mvEthComplexGbePhySrcSet(phy, 0x1);
 	}

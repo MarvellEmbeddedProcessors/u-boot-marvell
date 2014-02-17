@@ -266,6 +266,27 @@ int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return 0;
 	}
 
+	else if (argc == 3 && strcmp(argv[1], "setdsr") == 0) {
+		struct mmc *mmc = find_mmc_device(curr_device);
+		u32 val = simple_strtoul(argv[2], NULL, 16);
+		int ret;
+
+		if (!mmc) {
+			printf("no mmc device at slot %x\n", curr_device);
+			return 1;
+		}
+		ret = mmc_set_dsr(mmc, val);
+		printf("set dsr %s\n", (!ret) ? "OK, force rescan" : "ERROR");
+		if (!ret) {
+			mmc->has_init = 0;
+			if (mmc_init(mmc))
+				return 1;
+			else
+				return 0;
+		}
+		return ret;
+	}
+
 	state = MMC_INVALID;
 	if (argc == 5 && strcmp(argv[1], "read") == 0)
 		state = MMC_READ;
@@ -340,5 +361,7 @@ U_BOOT_CMD(
 	"mmc rescan\n"
 	"mmc part - lists available partition on current mmc device\n"
 	"mmc dev [dev] [part] - show or set current mmc device [partition]\n"
-	"mmc list - lists available devices");
+	"mmc list - lists available devices"
+	"mmc setdsr - set DSR register value\n"
+	);
 #endif

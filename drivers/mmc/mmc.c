@@ -75,14 +75,10 @@ int board_mmc_getcd(struct mmc *mmc)__attribute__((weak,
 static int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 			struct mmc_data *data)
 {
-	struct mmc_data backup;
 	char *aligned_dest;
 	char *temp = NULL;
 	char *ptr  = NULL;
 	int ret;
-
-	memset(&backup, 0, sizeof(backup));
-
 
 	/* got a read commnand, alloc aligned buffer for the DMA to write to */
 	if ((data) && (data->flags & MMC_DATA_READ)) {

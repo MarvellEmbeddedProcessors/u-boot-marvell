@@ -205,7 +205,7 @@ int get_partition_info_efi(block_dev_desc_t * dev_desc, int part,
 	uuid_string(gpt_pte[part - 1].unique_partition_guid.b, info->uuid);
 #endif
 
-	debug("%s: start " LBAF ", size 0x" LBAF_10D ", name %s", __func__,
+	debug("%s: start 0x%lX, size 0x%lX, name %s", __func__,
 		info->start, info->size, info->name);
 
 	/* Remember to free pte */
@@ -432,7 +432,7 @@ int gpt_fill_pte(gpt_header *gpt_h, gpt_entry *gpt_e,
 			gpt_e[i].partition_name[k] =
 				(efi_char16_t)(partitions[i].name[k]);
 
-		debug("%s: name: %s offset[%d]: 0x%x size[%d]:" LBAF_10D "\n",
+		debug("%s: name: %s offset[%d]: 0x%x size[%d]: 0x%lx\n",
 		      __func__, partitions[i].name, i,
 		      offset, i, partitions[i].size);
 	}
@@ -508,16 +508,10 @@ err:
  *
  * Returns: 1 if EFI GPT partition type is found.
  */
-static inline unsigned long le32_to_int1(unsigned char *le32)
-{
-	return ((le32[3] << 24) + (le32[2] << 16) + (le32[1] << 8) + le32[0]);
-}
-
 static int pmbr_part_valid(struct partition *part)
 {
 	if (part->sys_ind == EFI_PMBR_OSTYPE_EFI_GPT &&
-		le32_to_cpu(le32_to_int1((unsigned char *)&part->start_sect)) == 1UL) {
-//		le32_to_cpu(part->start_sect) == 1UL) {
+		le32_to_cpu(part->start_sect) == 1UL) {
 		return 1;
 	}
 

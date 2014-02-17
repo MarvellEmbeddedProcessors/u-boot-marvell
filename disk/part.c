@@ -78,7 +78,7 @@ DECLARE_GLOBAL_DATA_PTR;
 block_dev_desc_t *get_dev(const char *ifname, int dev)
 {
 	const struct block_drvr *drvr = block_drvr;
-	block_dev_desc_t* (*reloc_get_dev)(int dev), *dev_desc;
+	block_dev_desc_t* (*reloc_get_dev)(int dev);
 	char *name;
 
 	if (!ifname)
@@ -95,14 +95,8 @@ block_dev_desc_t *get_dev(const char *ifname, int dev)
 		name += gd->reloc_off;
 		reloc_get_dev += gd->reloc_off;
 #endif
-		if (strncmp(ifname, name, strlen(name)) == 0) {
-			dev_desc = reloc_get_dev(dev);
-			if (dev_desc && dev_desc->dev_init &&
-				dev_desc->dev_init(dev_desc->dev))
-				dev_desc = NULL;
-
-			return dev_desc;
-		}
+		if (strncmp(ifname, name, strlen(name)) == 0)
+			return reloc_get_dev(dev);
 		drvr++;
 	}
 	return NULL;

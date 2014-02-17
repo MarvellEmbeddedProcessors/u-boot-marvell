@@ -44,11 +44,13 @@ int mv_sdh_init(u32 regbase, u32 max_clk, u32 min_clk, u32 quirks)
 	host->quirks = quirks;
 #ifdef CONFIG_MMC_SDHCI_IO_ACCESSORS
 	memset(&mv_ops, 0, sizeof(struct sdhci_ops));
-	if (mv_sdhci_writeb != NULL)
-		mv_ops.write_b = mv_sdhci_writeb;
+	mv_ops.write_b = mv_sdhci_writeb;
 	host->ops = &mv_ops;
 #endif
-	host->version = sdhci_readw(host, SDHCI_HOST_VERSION);
+	if (quirks & SDHCI_QUIRK_REG32_RW)
+		host->version = sdhci_readl(host, SDHCI_HOST_VERSION - 2) >> 16;
+	else
+		host->version = sdhci_readw(host, SDHCI_HOST_VERSION);
 	add_sdhci(host, max_clk, min_clk);
 	return 0;
 }

@@ -41,7 +41,6 @@ typedef struct block_dev_desc {
 	char		vendor [40+1];	/* IDE model, SCSI Vendor */
 	char		product[20+1];	/* IDE Serial no, SCSI product */
 	char		revision[8+1];	/* firmware revision */
-	int		(*dev_init)(int dev);
 	unsigned long	(*block_read)(int dev,
 				      unsigned long start,
 				      lbaint_t blkcnt,

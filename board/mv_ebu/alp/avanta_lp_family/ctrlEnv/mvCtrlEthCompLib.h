@@ -106,8 +106,8 @@ enum mvSwPortSrc {
 #define     ETHCC_GBE_MAC_SRC_OFFSET(port)		(port == 0 ? 10 : (port == 1 ? 12 : 10))
 #define     ETHCC_GBE_MAC_SRC_MASK(port)		(0x3 << ETHCC_GBE_MAC_SRC_OFFSET(port))
 
-#define     ETHCC_GBE_PHY_PORT_SMI_SRC_OFFSET(phy)	((phy >= 0 && phy <= 3) ? 14 + phy : 14)
-#define     ETHCC_GBE_PHY_PORT_SMI_SRC_MASK(phy)	(0x1 << ETHCC_GBE_PHY_PORT_SMI_SRC_OFFSET(phy))
+#define     ETHCC_GBE_PHY_PORT_SRC_OFFSET(phy)		((phy >= 0 && phy <= 3) ? 14 + phy : 14)
+#define     ETHCC_GBE_PHY_PORT_SRC_MASK(phy)		(0x1 << ETHCC_GBE_PHY_PORT_SRC_OFFSET(phy))
 
 #define     ETHCC_GE_MAC0_SW_PORT_6_SPEED_OFFSET	18
 #define     ETHCC_GE_MAC0_SW_PORT_6_SPEED_MASK		(0x1 << ETHCC_GE_MAC0_SW_PORT_6_SPEED_OFFSET)

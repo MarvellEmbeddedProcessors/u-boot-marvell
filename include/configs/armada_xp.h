@@ -319,9 +319,6 @@ disclaimer.
 #define CONFIG_DOS_PARTITION
 #define CONFIG_EFI_PARTITION
 
-
-#define CONFIG_SYS_64BIT_LBA			/*    Support disk over 2TB        */
-
 #define CONFIG_LBA48
 //#define CONFIG_SCSI_AHCI
 #ifdef  CONFIG_SCSI_AHCI

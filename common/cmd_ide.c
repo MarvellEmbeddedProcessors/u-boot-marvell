@@ -832,7 +832,7 @@ static void ide_ident(block_dev_desc_t *dev_desc)
 
 /* ------------------------------------------------------------------------- */
 
-ulong ide_read(int device, ulong blknr, lbaint_t blkcnt, void *buffer)
+ulong ide_read(int device, lbaint_t blknr, lbaint_t blkcnt, void *buffer)
 {
 	ulong n = 0;
 	unsigned char c;
@@ -846,7 +846,7 @@ ulong ide_read(int device, ulong blknr, lbaint_t blkcnt, void *buffer)
 		lba48 = 1;
 	}
 #endif
-	debug("ide_read dev %d start %lX, blocks " LBAF " buffer at %lX\n",
+	debug("ide_read dev %d start " LBAF ", blocks " LBAF " buffer at %lX\n",
 	      device, blknr, blkcnt, (ulong) buffer);
 
 	ide_led(DEVICE_LED(device), 1);	/* LED on       */
@@ -936,8 +936,8 @@ ulong ide_read(int device, ulong blknr, lbaint_t blkcnt, void *buffer)
 
 		if ((c & (ATA_STAT_DRQ | ATA_STAT_BUSY | ATA_STAT_ERR)) !=
 		    ATA_STAT_DRQ) {
-			printf("Error (no IRQ) dev %d blk %ld: status %#02x\n",
-				device, blknr, c);
+			printf("Error (no IRQ) dev %d blk " LBAF ": status "
+			       "%#02x\n", device, blknr, c);
 			break;
 		}
 
@@ -956,7 +956,7 @@ IDE_READ_E:
 /* ------------------------------------------------------------------------- */
 
 
-ulong ide_write(int device, ulong blknr, lbaint_t blkcnt, const void *buffer)
+ulong ide_write(int device, lbaint_t blknr, lbaint_t blkcnt, const void *buffer)
 {
 	ulong n = 0;
 	unsigned char c;
@@ -1024,8 +1024,8 @@ ulong ide_write(int device, ulong blknr, lbaint_t blkcnt, const void *buffer)
 
 		if ((c & (ATA_STAT_DRQ | ATA_STAT_BUSY | ATA_STAT_ERR)) !=
 		    ATA_STAT_DRQ) {
-			printf("Error (no IRQ) dev %d blk %ld: status %#02x\n",
-				device, blknr, c);
+			printf("Error (no IRQ) dev %d blk " LBAF ": status "
+				"%#02x\n", device, blknr, c);
 			goto WR_OUT;
 		}
 

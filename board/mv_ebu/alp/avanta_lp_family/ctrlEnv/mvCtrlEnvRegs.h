@@ -105,10 +105,16 @@ extern "C" {
 #define SPI_B_MODE_ISI_ENABLE_OFFS		14
 #define SPI_B_MODE_ISI_ENABLE_MASK		(1 << SPI_B_MODE_ISI_ENABLE_OFFS)
 
-#define TDM_TYPE_OFFS				0
-#define TDM_TYPE_MASK				(1 << TDM_TYPE_OFFS)
-#define TDM_TYPE_TDM_VUNIT			(0 << TDM_TYPE_OFFS)
+#define TDM_TYPE_OFFS_Z_REV			0
+#define TDM_TYPE_MASK_Z_REV			(1 << TDM_TYPE_OFFS_Z_REV)
+#define TDM_TYPE_TDM_VUNIT_Z_REV		(0 << TDM_TYPE_OFFS_Z_REV)
+#define TDM_TYPE_SSI_LANTIQ_Z_REV		(1 << TDM_TYPE_OFFS_Z_REV)
+
+#define TDM_TYPE_OFFS				26
+#define TDM_TYPE_MASK				(3 << TDM_TYPE_OFFS)
+#define TDM_TYPE_VUNIT				(0 << TDM_TYPE_OFFS)
 #define TDM_TYPE_SSI_LANTIQ			(1 << TDM_TYPE_OFFS)
+#define TDM_TYPE_COMMUNIT			(2 << TDM_TYPE_OFFS)
 
 /*
  * SoC Device Multiplex Register

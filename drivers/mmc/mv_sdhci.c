@@ -38,7 +38,7 @@ int mv_sdh_init(u32 regbase, u32 max_clk, u32 min_clk, u32 quirks)
 		printf("sdh_host malloc fail!\n");
 		return 1;
 	}
-
+	memset(host, 0 ,sizeof(struct sdhci_host));
 	host->name = MVSDH_NAME;
 	host->ioaddr = (void *)regbase;
 	host->quirks = quirks;

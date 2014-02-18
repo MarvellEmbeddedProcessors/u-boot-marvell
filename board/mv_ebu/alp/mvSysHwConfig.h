@@ -29,6 +29,7 @@ disclaimer.
 #ifndef CONFIG_MACH_AVANTA_LP_FPGA
 #define MV_INCLUDE_PEX
 #define MV_INCLUDE_GIG_ETH
+#define MV_INCLUDE_SWITCH
 #define OLD_CESA_HAL
 #define MV_INCLUDE_USB
 #define MV_INCLUDE_TWSI

@@ -60,6 +60,10 @@ static int do_sar_list(int argc, char *const argv[])
 		printf("Determines the SSCG  mode:\n");
 		printf("\t0x0 = SSCG Enabled\n");
 		printf("\t0x1 = SSCG Disabled\n");
+	} else if (strcmp(cmd, "ddr_buswidth") == 0) {
+		printf("Determines the DDR bus width mode:\n");
+		printf("\t0x0 = 32 Bit\n");
+		printf("\t0x1 = 16 Bit\n");
 	}
 	else {
 		goto usage;
@@ -128,6 +132,10 @@ static int do_sar_read(int argc, char *const argv[])
 		if (GetAndVerifySatr(MV_SATR_SSCG_DISABLE, &temp) == MV_OK)
 			printf("\nsscg = %d  ==> %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
 	}
+	else if (strcmp(cmd, "ddr_buswidth") == 0) {
+		if (GetAndVerifySatr(MV_SATR_DDR_BUS_WIDTH, &temp) == MV_OK)
+			printf("\nDDR Bus width = %d  ==> %s Bit\n",temp, (temp == 0) ? "32" : "16");
+	}
 	else if (strcmp(cmd, "i2c0") == 0) {
 		if (GetAndVerifySatr(MV_SATR_I2C0_SERIAL_ROM, &temp) == MV_OK)
 		printf("\ni2c0 = %d  ==> %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
@@ -192,6 +200,8 @@ static int do_sar_read(int argc, char *const argv[])
 		printf("cpusnum \t= %3d  ==>   %s CPU \n", temp, (temp == 0) ? "Single" : "Dual");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_SSCG_DISABLE)))
 			printf("sscg \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
+		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_DDR_BUS_WIDTH)))
+			printf("DDR Bus width = %d  ==> %s Bit\n",temp, (temp == 0) ? "32" : "16");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_I2C0_SERIAL_ROM)))
 			printf("i2c0 \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_EXTERNAL_CORE_RESET)))
@@ -259,6 +269,12 @@ static int do_sar_write(int argc, char *const argv[])
 		else if (GetAndVerifySatr(MV_SATR_SSCG_DISABLE, &temp) == MV_OK )
 			flag = mvCtrlSatRWrite(MV_SATR_WRITE_SSCG_DISABLE,MV_SATR_SSCG_DISABLE, writeVal);
 	}
+	else if (strcmp(cmd, "ddr_buswidth") == 0) {
+		if (writeVal != 0 && writeVal != 1)
+			goto input_error;
+		else if (GetAndVerifySatr(MV_SATR_DDR_BUS_WIDTH, &temp) == MV_OK )
+			flag = mvCtrlSatRWrite(MV_SATR_WRITE_DDR_BUS_WIDTH,MV_SATR_DDR_BUS_WIDTH, writeVal);
+	}
 
 /* the first 4 S@R fields are writeable using S@R commands - rest  values are edited using Jumpers/DIP switch/DPR (resistors) */
 	else goto usage;
@@ -317,12 +333,14 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR list coreclock	- prints the S@R modes list\n"
 	"SatR list cpusnum	- prints the S@R modes list\n"
 	"SatR list sscg		- prints the S@R modes list\n\n"
+	"SatR list ddr_buswidth	- prints the S@R modes list\n\n"
 
 	"SatR read 		- read and print all active S@R values\n"
 	"SatR read freq		- read and print the CPU frequency S@R value\n"
 	"SatR read coreclock	- read and print the Core Clock frequency S@R value\n"
 	"SatR read cpusnum	- read and print the number of CPU cores S@R value\n"
 	"SatR read sscg		- read and print the SSCG S@R value (reading the I2C device)\n"
+	"SatR read ddr_buswidth	- read and print the ddr_buswidth S@R value (reading the I2C device)\n"
 	"SatR read i2c0		- read and print the i2c0 S@R value (reading the I2C device)\n"
 	"SatR read cpureset	- read and print the CPU reset mode S@R value (reading the I2C device)\n"
 	"SatR read corereset	- read and print the Core reset mode S@R value (reading the I2C device)\n"
@@ -339,6 +357,8 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR write freq <val>	- write the S@R with CPU frequency value\n"
 	"SatR write coreclock <val>	- write the S@R with Core Clock frequency value\n"
 	"SatR write cpusnum <val>	- write the S@R with number of CPU cores value\n"
-	"SatR write sscg <val>		- write the S@R with sscg mode value\n"	/* omriii : explain the field */
+	"SatR write sscg <val>		- write the S@R with sscg mode value\n"
+	"SatR write ddr_buswidth <val>	- write the S@R with ddr bus width mode value\n"
 );
 #endif /*defined(CONFIG_CMD_SAR)*/
+

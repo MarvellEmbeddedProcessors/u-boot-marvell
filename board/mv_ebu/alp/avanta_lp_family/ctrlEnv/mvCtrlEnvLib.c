@@ -1075,6 +1075,33 @@ MV_U32 mvCtrlXorMaxUnitGet(MV_VOID)
 
 #endif
 
+#if defined(MV_INCLUDE_CESA)
+/*******************************************************************************
+* mvCtrlCesaMaxChanGet - Get Marvell engine number of CESA channels.
+*
+* DESCRIPTION:
+*       This function returns Marvell engine number of CESA channels.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Marvell engine number of CESA channels.
+*
+*******************************************************************************/
+MV_U32 mvCtrlCesaMaxChanGet(MV_VOID)
+{
+	if (mvCtrlRevGet() <= MV_88F66X0_Z3_ID)
+		return 0;
+
+	return mvCtrlSocUnitInfoNumGet(CESA_UNIT_ID);
+}
+#endif
+
+
 #if defined(MV_INCLUDE_USB)
 /*******************************************************************************
 * mvCtrlUsbMaxGet - Get number of Marvell USB controllers
@@ -1991,6 +2018,11 @@ MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
 	switch (unitId) {
 #if defined(MV_INCLUDE_PEX)
 	case PEX_UNIT_ID:
+		if ((index + 1) > mvCtrlPexMaxIfGet()) {
+			mvOsPrintf("%s: Error: Rev %d doesn't support more than %d PEX interfaces\n",
+						__func__, mvCtrlRevGet(), mvCtrlPexMaxIfGet());
+			break;
+		}
 		if (enable == MV_FALSE)
 			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_PEX_STOP_CLK_MASK(index));
 		else
@@ -2000,19 +2032,36 @@ MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
 #endif
 #if defined(MV_INCLUDE_INTEG_SATA)
 	case SATA_UNIT_ID:
+		if ((index + 1) > mvCtrlSataMaxPortGet()) {
+			mvOsPrintf("%s: Error: Rev %d doesn't support more than %d SATA interfaces\n",
+						__func__, mvCtrlRevGet(), mvCtrlSataMaxPortGet());
+			break;
+		}
 		if (enable == MV_FALSE)
-			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_SATA_STOP_CLK_MASK);
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_SATA_STOP_CLK_MASK(index));
 		else
-			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_SATA_STOP_CLK_MASK);
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_SATA_STOP_CLK_MASK(index));
 
 		break;
 #endif
 #if defined(MV_INCLUDE_USB)
 	case USB_UNIT_ID:
+		if ((index + 1) > mvCtrlUsbMaxGet()) {
+			mvOsPrintf("%s: Error: Rev %d doesn't support more than %d USB interfaces\n",
+						__func__, mvCtrlRevGet(), mvCtrlUsbMaxGet());
+			break;
+		}
 		if (enable == MV_FALSE)
-			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_USB_STOP_CLK_MASK);
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_USB_STOP_CLK_MASK(index));
 		else
-			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_USB_STOP_CLK_MASK);
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_USB_STOP_CLK_MASK(index));
+
+		break;
+	case USB3_UNIT_ID:
+		if (enable == MV_FALSE)
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_USB3_STOP_CLK_MASK);
+		else
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_USB3_STOP_CLK_MASK);
 
 		break;
 #endif
@@ -2025,12 +2074,28 @@ MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
 
 		break;
 #endif
+#if defined(MV_INCLUDE_TDM)
 	case TDM_UNIT_ID:
 		if (enable == MV_FALSE)
 			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_TDM_STOP_CLK_MASK);
 		else
 			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_TDM_STOP_CLK_MASK);
 		break;
+#endif
+#if defined(MV_INCLUDE_CESA)
+	case CESA_UNIT_ID:
+		if ((index + 1) > mvCtrlCesaMaxChanGet()) {
+			mvOsPrintf("%s: Error: Rev %d doesn't support more than %d CESA engines\n",
+						__func__, mvCtrlRevGet(), mvCtrlCesaMaxChanGet());
+			break;
+		}
+		if (enable == MV_FALSE)
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_CESA_STOP_CLK_MASK(index));
+		else
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_CESA_STOP_CLK_MASK(index));
+		break;
+#endif
+
 	default:
 		break;
 	}
@@ -2059,6 +2124,11 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 	switch (unitId) {
 #if defined(MV_INCLUDE_PEX)
 	case PEX_UNIT_ID:
+		if ((index + 1) > mvCtrlPexMaxIfGet()) {
+			mvOsPrintf("%s: Error: Rev %d doesn't support more than %d PEX interfaces\n",
+						__func__, mvCtrlRevGet(), mvCtrlPexMaxIfGet());
+			break;
+		}
 		if ((reg & PMC_PEX_STOP_CLK_MASK(index)) == PMC_PEX_STOP_CLK_STOP(index))
 			state = MV_FALSE;
 		else
@@ -2067,7 +2137,12 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 #endif
 #if defined(MV_INCLUDE_SATA)
 	case SATA_UNIT_ID:
-		if ((reg & PMC_SATA_STOP_CLK_MASK) == PMC_SATA_STOP_CLK_STOP)
+		if ((index + 1) > mvCtrlSataMaxPortGet()) {
+			mvOsPrintf("%s: Error: Rev %d doesn't support more than %d SATA interfaces\n",
+						__func__, mvCtrlRevGet(), mvCtrlSataMaxPortGet());
+			break;
+		}
+		if ((reg & PMC_SATA_STOP_CLK_MASK(index)) == PMC_SATA_STOP_CLK_STOP(index))
 			state = MV_FALSE;
 		else
 			state = MV_TRUE;
@@ -2075,7 +2150,18 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 #endif
 #if defined(MV_INCLUDE_USB)
 	case USB_UNIT_ID:
-		if ((reg & PMC_USB_STOP_CLK_MASK) == PMC_USB_STOP_CLK_STOP)
+		if ((index + 1) > mvCtrlUsbMaxGet()) {
+			mvOsPrintf("%s: Error: Rev %d doesn't support more than %d USB interfaces\n",
+						__func__, mvCtrlRevGet(), mvCtrlUsbMaxGet());
+			break;
+		}
+		if ((reg & PMC_USB_STOP_CLK_MASK(index)) == PMC_USB_STOP_CLK_STOP(index))
+			state = MV_FALSE;
+		else
+			state = MV_TRUE;
+		break;
+	case USB3_UNIT_ID:
+		if ((reg & PMC_USB3_STOP_CLK_MASK) == PMC_USB3_STOP_CLK_STOP)
 			state = MV_FALSE;
 		else
 			state = MV_TRUE;
@@ -2092,6 +2178,19 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 #if defined(MV_INCLUDE_TDM)
 	case TDM_UNIT_ID:
 		if ((reg & PMC_TDM_STOP_CLK_MASK) == PMC_TDM_STOP_CLK_STOP)
+			state = MV_FALSE;
+		else
+			state = MV_TRUE;
+		break;
+#endif
+#if defined(MV_INCLUDE_CESA)
+	case CESA_UNIT_ID:
+		if ((index + 1) > mvCtrlCesaMaxChanGet()) {
+			mvOsPrintf("%s: Error: Rev %d doesn't support more than %d CESA engines\n",
+						__func__, mvCtrlRevGet(), mvCtrlCesaMaxChanGet());
+			break;
+		}
+		if ((reg & PMC_CESA_STOP_CLK_STOP(index)) == PMC_CESA_STOP_CLK_STOP(index))
 			state = MV_FALSE;
 		else
 			state = MV_TRUE;

@@ -368,7 +368,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrReadField, MV_U8 val)
 {
 	MV_BOARD_SATR_INFO satrInfo;
-	MV_U8 readValue, verifyValue;
+	MV_U8 readValue, verifyValue, i2cRegNum = 0;
 
 	if (satrReadField >= MV_SATR_READ_MAX_OPTION ||
 		satrWriteField >= MV_SATR_WRITE_MAX_OPTION) {
@@ -381,8 +381,12 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 		return MV_ERROR;
 	}
 
+	/* ddr bus width field is the only sample at reset field saved on the 2nd I2C register */
+	if (satrWriteField == MV_SATR_WRITE_DDR_BUS_WIDTH)
+		i2cRegNum = 1;
+
 	/* read */
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, &readValue) != MV_OK) {
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, i2cRegNum, &readValue) != MV_OK) {
 		mvOsPrintf("%s: Error: Read from S@R failed\n", __func__);
 		return MV_ERROR;
 	}
@@ -400,13 +404,13 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 	readValue |= (val <<  satrInfo.offset);    /* save new value */
 
 	/* write */
-	if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, readValue) != MV_OK) {
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, i2cRegNum, readValue) != MV_OK) {
 		mvOsPrintf("%s: Error: Write to S@R failed\n", __func__);
 		return MV_ERROR;
 	}
 
 	/* verify */
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, &verifyValue) != MV_OK) {
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, i2cRegNum, &verifyValue) != MV_OK) {
 		mvOsPrintf("%s: Error: 2nd Read from S@R failed\n", __func__);
 		return MV_ERROR;
 	}
@@ -534,6 +538,7 @@ MV_VOID mvCtrlSatrInit(void)
 	MV_U32 satrVal[2];
 	MV_BOARD_SATR_INFO satrInfo;
 	MV_U32 i;
+	MV_U8 readValue;
 
 	/* initialize all S@R & Board configuration fields to -1 (MV_ERROR) */
 	memset(&satrOptionsConfig, 0x0, sizeof(MV_U32) * MV_SATR_READ_MAX_OPTION );
@@ -546,6 +551,17 @@ MV_VOID mvCtrlSatrInit(void)
 		if (mvBoardSatrInfoConfig(i, &satrInfo, MV_TRUE) == MV_OK)
 			satrOptionsConfig[satrInfo.satrId] = ((satrVal[satrInfo.regNum]  & (satrInfo.mask)) >> (satrInfo.offset));
 
+	/* Read DDR Bus width configuration:
+	   - DDR_BUS_WIDTH - only S@R field which is not sampled at reset to any internal register
+	   - Need to read it separately from S@R I2C	*/
+	if (mvBoardSatrInfoConfig(MV_SATR_WRITE_DDR_BUS_WIDTH, &satrInfo, MV_FALSE) != MV_OK)
+		mvOsPrintf("%s: Error: DDR_BUS_WIDTH field is not relevant for this board\n", __func__);
+
+	/* read DDR_BUS_WIDTH from 2nd register (regNum = 1) */
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 1, &readValue) != MV_OK)
+		mvOsPrintf("%s: Error: Read DDR_BUS_WIDTH from S@R failed\n", __func__);
+
+	satrOptionsConfig[MV_SATR_DDR_BUS_WIDTH] = ((readValue  & (satrInfo.mask)) >> (satrInfo.offset));
 }
 
 /*******************************************************************************

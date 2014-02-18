@@ -101,7 +101,10 @@
 #include <command.h>
 #include "mvCommon.h"
 #include "uart/mvUart.h"
-
+#ifdef CONFIG_MV_SDHCI
+#include <sdhci.h>
+int mv_sdh_init(u32 regbase, u32 max_clk, u32 min_clk, u32 quirks);
+#endif
 /* #define MV_DEBUG */
 #ifdef MV_DEBUG
 #define DB(x) x
@@ -958,6 +961,9 @@ int board_mmc_init(bd_t *bis)
 {
 #ifdef CONFIG_MRVL_MMC
 	mrvl_mmc_initialize(bis);
+#endif
+#ifdef CONFIG_MV_SDHCI
+	mv_sdh_init(CONFIG_SYS_MMC_BASE, 0, 0, SDHCI_QUIRK_32BIT_DMA_ADDR);
 #endif
 	return 0;
 }

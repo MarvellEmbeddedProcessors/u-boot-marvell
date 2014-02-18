@@ -456,7 +456,7 @@ int add_sdhci(struct sdhci_host *host, u32 max_clk, u32 min_clk)
 		printf("%s: mmc malloc fail!\n", __func__);
 		return -1;
 	}
-
+	memset(mmc, 0, (sizeof(struct mmc)));
 	mmc->priv = host;
 	host->mmc = mmc;
 

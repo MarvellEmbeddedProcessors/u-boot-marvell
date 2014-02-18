@@ -389,10 +389,13 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	 */
 	MV_REG_BIT_SET(PUP_EN_REG, BIT4);
 
-#ifdef MV_NOR_BOOT
-	/*Enable PUP bit for NOR*/
+	/*SDIO PUP Enable (BIT6) */
 	MV_REG_BIT_SET(PUP_EN_REG, BIT6);
-#endif
+
+	/* Sdio_jtag_cell_oe_smp_en */
+	MV_REG_BIT_SET(PUP_EN_REG, BIT14);
+
+
 	/* XXX: Following setting should be configured by u-boot */
 	MV_REG_BIT_SET(SOC_DEV_MUX_REG, BIT0); /* Configure NAND flush enabled */
 

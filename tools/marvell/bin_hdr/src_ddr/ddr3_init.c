@@ -104,6 +104,8 @@ extern MV_STATUS ddr3TipInitSpecificRegConfig
 	MV_DRAM_MC_INIT		*regConfigArr
 );
 extern MV_U32 ddr3TipGetInitFreq();
+#else
+#define SUB_VERSION	5
 #endif
 
 #include "bootstrap_os.h"
@@ -501,9 +503,11 @@ MV_U32 ddr3Init_(void)
 		bPLLWAPatch = TRUE;
 	}
 #endif
+
+	/*Get version from internal library*/
 	ddr3PrintVersion();
-	DEBUG_INIT_S("0\n");
-	/* Lib version 5.5.5 */
+	/*Add sub_version string*/
+	DEBUG_INIT_C("",SUB_VERSION,1);
 
 	uiFabOpt = ddr3GetFabOpt();
 	if (bPLLWAPatch){

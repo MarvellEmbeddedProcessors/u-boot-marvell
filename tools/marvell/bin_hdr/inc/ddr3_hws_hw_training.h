@@ -31,4 +31,6 @@ MV_STATUS ddr3PostRunAlg(void);
 MV_BOOL ddr3IfEccEnabled(void);
 MV_STATUS ddr3NewTipEccScrub(void);
 
+#define SUB_VERSION	0
+
 #endif /* _DDR3_HWS_HW_TRAINING_H */

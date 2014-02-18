@@ -70,9 +70,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MV_SDMMC_MAX_ADDR_DECODE_WIN 4
 
+#ifdef MV_MMC_SDIO3
+#define MV_SDMMC_WIN_CTRL_REG(dev, win)        (MV_SDMMC_WINDOWS_REGS_OFFSET + 0x80 + ((win)<<3))
+#define MV_SDMMC_WIN_BASE_REG(dev, win)        (MV_SDMMC_WINDOWS_REGS_OFFSET + 0x84 + ((win)<<3))
+#else
 #define MV_SDMMC_WIN_CTRL_REG(dev, win)        (MV_SDMMC_REGS_BASE + 0x108 + ((win)<<3))
 #define MV_SDMMC_WIN_BASE_REG(dev, win)        (MV_SDMMC_REGS_BASE + 0x10c + ((win)<<3))
-
+#endif
 /* BITs in Windows 0-3 Control and Base Registers */
 #define MV_SDMMC_WIN_ENABLE_BIT               0
 #define MV_SDMMC_WIN_ENABLE_MASK              (1<<MV_SDMMC_WIN_ENABLE_BIT)
@@ -104,8 +108,10 @@ MV_TARGET sdmmcAddrDecPrioTab[] = {
 #if defined(MV_INCLUDE_SDRAM_CS3)
 	SDRAM_CS3,
 #endif
+#ifndef MV_MMC_SDIO3
 #if defined(MV_INCLUDE_PEX)
 	PEX0_MEM,
+#endif
 #endif
 	TBL_TERM
 };

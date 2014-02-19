@@ -691,7 +691,12 @@ static MV_STATUS ahbToMbusRemapRegOffsGet(MV_U32 winNum, AHB_TO_MBUS_REMAP_REG_O
 			(ctrlMode == MV_78260_DEV_ID) ||
 			(ctrlMode == MV_78460_DEV_ID) ||
 			(ctrlMode == MV_6660_DEV_ID) ||
+			(ctrlMode == MV_6665_DEV_ID) ||
 			(ctrlMode == MV_6650_DEV_ID) ||
+			(ctrlMode == MV_6650F_DEV_ID) ||
+			(ctrlMode == MV_6658_DEV_ID) ||
+			(ctrlMode == MV_6610_DEV_ID) ||
+			(ctrlMode == MV_6610F_DEV_ID) ||
 			(ctrlMode == MV_78000_DEV_ID)) {
 			pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
 			pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);
@@ -719,7 +724,12 @@ static MV_STATUS ahbToMbusRemapRegOffsGet(MV_U32 winNum, AHB_TO_MBUS_REMAP_REG_O
 			(ctrlMode == MV_78260_DEV_ID) ||
 			(ctrlMode == MV_78460_DEV_ID) ||
 			(ctrlMode == MV_6660_DEV_ID) ||
+			(ctrlMode == MV_6665_DEV_ID) ||
 			(ctrlMode == MV_6650_DEV_ID) ||
+			(ctrlMode == MV_6650F_DEV_ID) ||
+			(ctrlMode == MV_6658_DEV_ID) ||
+			(ctrlMode == MV_6610_DEV_ID) ||
+			(ctrlMode == MV_6610F_DEV_ID) ||
 			(ctrlMode == MV_78000_DEV_ID)) {
 			pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
 			pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);

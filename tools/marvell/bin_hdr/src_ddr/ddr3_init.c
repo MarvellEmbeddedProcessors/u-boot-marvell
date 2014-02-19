@@ -86,6 +86,7 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "mvHighSpeedEnvSpec.h"
 #elif defined(MV88F672X)
 #include "ddr3_a375_vars.h"
+#include "mvHighSpeedEnvSpec.h"
 #elif defined(MV88F68XX)
 #include "ddr3_a38x.h"
 #include "ddr3_a38x_vars.h"
@@ -105,7 +106,7 @@ extern MV_STATUS ddr3TipInitSpecificRegConfig
 );
 extern MV_U32 ddr3TipGetInitFreq();
 #else
-#define SUB_VERSION	6
+#define SUB_VERSION	7
 #endif
 
 #include "bootstrap_os.h"
@@ -602,19 +603,10 @@ MV_U32 ddr3Init_(void)
 	ddr3StaticMCInit();
 
 #if defined(MV88F66XX)
-	MV_U8 configVal[MV_IO_EXP_MAX_REGS];
-	MV_U8 chipBoardRev = mvBoardIdGet();
-	/* if the board is DB-88F6660*/
-	if (chipBoardRev == DB_88F6660_BP_ID) {
-		mvBoardDb6660LaneConfigGet(configVal);
-		if((configVal[2] & 0x4) >> 2){
-			/* change sdram bus width to X16 according to DIP switch(SW7 pin3) or EEPROM*/
-			uiReg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
-			uiReg &= ~(0x1 << REG_SDRAM_CONFIG_WIDTH_OFFS);
-			MV_REG_WRITE(REG_SDRAM_CONFIG_ADDR, uiReg);
-		}
-	}
-
+	ddr3GetAlpBusWidth();
+#endif
+#if defined(MV88F672X)
+	ddr3GetA375BusWidth();
 #endif
 
 #ifdef ECC_SUPPORT
@@ -1598,7 +1590,48 @@ MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize){
     }
     return MV_OK;
 }
-
-
 #endif
 
+#if defined(MV88F66XX)
+MV_VOID ddr3GetAlpBusWidth(void){
+
+	MV_U8 configVal[MV_IO_EXP_MAX_REGS];
+	MV_U32 uiReg;
+	MV_U8 chipBoardRev = mvBoardIdGet();
+
+	/* if the board is DB-88F6660*/
+	if (chipBoardRev == DB_88F6660_BP_ID) {
+		mvBoardDb6660LaneConfigGet(configVal);
+		if((configVal[2] & 0x4) >> 2){
+			/* change sdram bus width to X16 according to DIP switch(SW7 pin3) or EEPROM*/
+			uiReg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
+			uiReg &= ~(0x1 << REG_SDRAM_CONFIG_WIDTH_OFFS);
+			MV_REG_WRITE(REG_SDRAM_CONFIG_ADDR, uiReg);
+		}
+	}
+}
+#endif
+
+#if defined(MV88F672X)
+MV_VOID ddr3GetA375BusWidth(void){
+
+	MV_U8 configVal;
+	MV_STATUS status;
+	MV_U32 uiReg;
+
+	/* DDR bus width configuration fields is located at:
+	   S@R I2c = 0x4c , regNum = 1 , Bit0 */
+	status = mvBoardTwsiGet(0x4C, 0x0, 0x1, &configVal);
+	/* verify that all TWSI reads were successfully */
+	if (MV_OK != status) {
+		DEBUG_INIT_S("Error reading from TWSI\n");
+		return;
+	}
+	/* check 1st bit for DDR bus width: 0x0 = 32 Bit, 0x1 = 16 Bit*/
+	if((configVal & 0x1)){
+		uiReg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
+		uiReg &= ~(0x1 << REG_SDRAM_CONFIG_WIDTH_OFFS);
+		MV_REG_WRITE(REG_SDRAM_CONFIG_ADDR, uiReg);
+	}
+}
+#endif

@@ -138,5 +138,6 @@ MV_VOID     printDunitSetup(void);
 MV_VOID ddr3SetDqsResultsPrintStatus(MV_U32 status);
 MV_U32      ddr3GetLogLevel(void);
 MV_VOID		ddr3NewTipDlbConfig(void);
-
+MV_VOID		ddr3GetAlpBusWidth(void);
+MV_VOID		ddr3GetA375BusWidth(void);
 #endif /* _INC_DDR_H */

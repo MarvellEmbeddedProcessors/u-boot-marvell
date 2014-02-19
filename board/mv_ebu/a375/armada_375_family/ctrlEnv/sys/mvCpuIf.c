@@ -155,6 +155,14 @@ MV_STATUS mvCpuIfInitForCpu(MV_U32 cpu, MV_CPU_DEC_WIN *cpuAddrWinMap)
 
 	/* Set IO Bypass base address and size according to the cpuAddrWinMap */
 	for (target = 0; cpuAddrWinMap[target].enable != TBL_TERM; target++) {
+		/* Window number 8 is opened by kernel to the cesa, as a WA to
+		** initialize CPU1 (For Z revisions only) This window can not
+		** be assigned to any interface in U-Boot, since it conflicts
+		** with the CESA window in kernel */
+		if ((EN == cpuAddrWinMap[target].enable) && (8 == cpuAddrWinMap[target].winNum)
+				&& (mvCtrlRevGet() == 0))
+			mvOsPrintf("%s: Error: win #8 is configured as enabled: Win #8 can not be enabled by U-Boot, "
+					"since allocated to CPU1 initialization sequence in kernel\n", __func__);
 		if ((MV_TARGET_IS_DRAM(target)) || (DIS == cpuAddrWinMap[target].enable))
 			continue;
 		if (cpuAddrWinMap[target].addrWin.baseLow == 0)

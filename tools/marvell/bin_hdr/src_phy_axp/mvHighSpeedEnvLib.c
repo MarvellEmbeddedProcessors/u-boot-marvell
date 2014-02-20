@@ -79,7 +79,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 
-#define	SERDES_VERION	"2.1.5"
+#define	SERDES_VERION	"2.1.6"
 #define ENDED_OK "High speed PHY - Ended Successfully\n"
 static const MV_U8 serdesCfg[][SERDES_LAST_UNIT] = BIN_SERDES_CFG;
 
@@ -103,6 +103,8 @@ MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
 #define mvBoardPexModeGet(satr) 		((satr & 0x6) >> 1)
 #define mvBoardPexCapabilityGet(satr) 	(satr & 1)
 #define MV_PEX_UNIT_TO_IF(pexUnit)	((pexUnit < 3) ? (pexUnit*4) : 9)
+/*********************************************************************/
+#define mvBoardIsModuleConnected(x)     (configModule & (x))
 /******************   Static parametes ******************************/
 MV_BOOL configModule = 0;
 MV_BOOL SwitchModule = 0;
@@ -267,8 +269,6 @@ MV_BOOL mvBoardIsBC2(MV_VOID)
 
 	/* Read MPP module ID */
 	twsiSlave.slaveAddr.address = MV_BOARD_DEVID_ADDR;
-	if (0xFF == twsiSlave.slaveAddr.address)
-		return MV_FALSE;
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 
 	/* Use offset as command */
@@ -278,7 +278,7 @@ MV_BOOL mvBoardIsBC2(MV_VOID)
 
 	/* TWSI init */
 	slave.type = ADDR7_BIT;
-	slave.address = 0;
+	slave.address = MV_BOARD_DEVID_ADDR;
 	mvTwsiInit(TWSI_CHANNEL_BC2, TWSI_SPEED_BC2, CONFIG_SYS_TCLK, &slave, 0);
 
 
@@ -289,11 +289,6 @@ MV_BOOL mvBoardIsBC2(MV_VOID)
 	return MV_TRUE;
 }
 #endif
-/*********************************************************************/
-MV_BOOL mvBoardIsPexModuleConnected(void)
-{
-        return configModule & (ETM_MODULE_DETECT | PEX_MODULE_DETECT);
-}
 /*******************************************************************************/
 MV_U16 mvBoardDramBusWidthGet(MV_VOID)
 {
@@ -364,7 +359,6 @@ MV_BIN_SERDES_CFG *mvBoardSerdesCfgGet(MV_U8 pexMode)
 	MV_U32 serdesCfg_val = 0; /* default */
 	int pex0 = 1;
 	int pex1 = 1;
-	MV_BOOL moduleConnected = mvBoardIsPexModuleConnected();
 
 	switch (pexMode) {
 	case 0:
@@ -388,7 +382,7 @@ MV_BIN_SERDES_CFG *mvBoardSerdesCfgGet(MV_U8 pexMode)
 
 	switch (boardId) {
 	case DB_88F78XX0_BP_ID:
-		if (moduleConnected)
+		if (mvBoardIsModuleConnected(PEX_MODULE_DETECT))
 			serdesCfg_val = 1;
 		break;
 	case RD_78460_SERVER_ID:
@@ -397,7 +391,8 @@ MV_BIN_SERDES_CFG *mvBoardSerdesCfgGet(MV_U8 pexMode)
 			serdesCfg_val = 1;
 		break;
 	case DB_88F78XX0_BP_REV2_ID:
-		if (0 == moduleConnected) { /*if the module is not connected */
+		/*if the module is not connected */
+		if (0 == mvBoardIsModuleConnected(PEX_MODULE_DETECT | ETM_MODULE_DETECT )) {
 			if (pex0 == 1) 		/*if the module is not connected the PEX1 mode is not relevant*/
 				serdesCfg_val = 0;
 			if (pex0 == 4)  	/*if the module is not connected the PEX1 mode is not relevant*/
@@ -405,7 +400,7 @@ MV_BIN_SERDES_CFG *mvBoardSerdesCfgGet(MV_U8 pexMode)
 			break;
 		}
 		/*if the ETM module is connected */
-		if (moduleConnected & MV_BOARD_ETM_MODULE_ID) {
+		if (mvBoardIsModuleConnected(ETM_MODULE_DETECT)) {
 			serdesCfg_val = 5;
 			break;
 		}

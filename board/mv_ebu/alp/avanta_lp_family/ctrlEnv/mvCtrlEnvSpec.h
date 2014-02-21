@@ -495,10 +495,11 @@ typedef enum _mvTarget {
 	DEV_BOOCS,	/* 23 DEV_BOOCS			*/
 	USB3,		/* 24 USB3			*/
 	CRYPT0_ENG,	/* 25 Crypto0 Engine		*/
-	PP2_CPU0,	/* 26 PP2 - CPU 0		*/
-	PP2_CPU1,	/* 27 PP2 - CPU 1		*/
-	DFEV,		/* 28 DFEV Unit			*/
-	DRAGONITE,	/* 29 Dragonite co-processor	*/
+	CRYPT1_ENG,	/* 26 Crypto1 Engine		*/
+	PP2_CPU0,	/* 27 PP2 - CPU 0		*/
+	PP2_CPU1,	/* 28 PP2 - CPU 1		*/
+	DFEV,		/* 29 DFEV Unit			*/
+	DRAGONITE,	/* 30 Dragonite co-processor	*/
 	MAX_TARGETS
 } MV_TARGET;
 
@@ -548,7 +549,8 @@ typedef enum _mvTarget {
 	{ MAIN_BOOT_ATTR, DEV_TARGET_ID	},	/* Main Boot device      */ \
 	{ SEC_BOOT_ATTR, DEV_TARGET_ID	},	/* Secondary Boot device */ \
 	{ 0x00, USB3_TARGET_ID },               /* USB3                  */ \
-	{ 0x01, CRYPT_TARGET_ID	},		/* CRYPT_ENG0            */ \
+	{ 0x09, CRYPT_TARGET_ID	},		/* CRYPT_ENG0            */ \
+	{ 0x05, CRYPT_TARGET_ID	},		/* CRYPT_ENG1            */ \
 	{ 0x00, PP2_TARGET_ID	},		/* PP2 - CPU 0           */ \
 	{ 0x01, PP2_TARGET_ID	},		/* PP2 - CPU 1           */ \
 	{ 0x00, DFEV_TARGET_ID },		/* DFEV			 */ \
@@ -582,6 +584,7 @@ typedef enum _mvTarget {
 	"BOOT_ROM_CS",		/* BOOT_ROM_CS */	\
 	"DEV_BOOTCS",		/* DEV_BOOCS */		\
 	"USB3",                 /* USB3 */		\
+	"CRYPT0_ENG",		/* CRYPT0_ENG */	\
 	"CRYPT1_ENG",		/* CRYPT1_ENG */	\
 	"PP2 - CPU 0",		/* PP2 - CPU 0 */	\
 	"PP2 - CPU 1",		/* PP2 - CPU 1 */	\

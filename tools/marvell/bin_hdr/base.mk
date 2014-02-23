@@ -87,11 +87,14 @@ CPUOPTS  = -mthumb -mthumb-interwork -march=armv7 -mlittle-endian
 
 ifeq ($(BIN_HDR_DEBUG),1)
 DEBUG_FLAGS += -g -O0
+DEBUG_MODE_FLAG = yes
 else
 ifeq ($(BOARD),a38x)
 DEBUG_FLAGS += -Os
+DEBUG_MODE_FLAG = no
 else
 DEBUG_FLAGS += -g -O0
+DEBUG_MODE_FLAG = no
 endif
 endif
 

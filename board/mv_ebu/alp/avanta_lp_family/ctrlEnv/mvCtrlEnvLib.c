@@ -1022,7 +1022,7 @@ MV_U32 mvCtrlSataMaxPortGet(MV_VOID)
 	MV_U32 sata_ports = mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID);
 	MV_U32 revID = mvCtrlRevGet();
 	/* Z1, Z2, Z3 support 1 SATA port */
-	if (revID <= MV_88F66X0_Z3_ID)
+	if (revID <= MV_88F66X0_Z3_ID && mvCtrlModelGet() == MV_6660_DEV_ID)
 		return sata_ports - 1;
 	else
 		return sata_ports;

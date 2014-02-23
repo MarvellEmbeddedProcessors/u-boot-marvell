@@ -66,16 +66,6 @@
 include ../base.mk
 sinclude ../../../../include/autoconf.mk
 
-ifeq "$(MAKECMDGOALS)" "rtl"
-	MVFLAGS += MV_RTL_PLATFORM=1 MV_NO_PRINT=1
-endif
-ifeq "$(MAKECMDGOALS)" "test"
-	MVFLAGS += MV_TEST_PLATFORM=1 MV_NO_REAL_HW=1
-endif
-ifeq "$(MAKECMDGOALS)" "fpga"
-	MVFLAGS += MV_FPGA_HW=1 MV_NO_REAL_HW=1
-endif
-
 ifeq "$(CONFIG_DB_78x60_BP_REV2)"  "y"
 	CFLAGS += -DCONFIG_DB_78x60_BP_REV2
 endif

@@ -162,6 +162,7 @@ void printusage(char *name)
 	printf("-		alp  - Avanta LP.\n");
 	printf("-		a375 - Armada 375.\n");
 	printf("-		a38x - Armada 38x family.\n");
+	printf("-d yes	Build the bin_hdr.elf using default linker.scr \n");
 }
 
 int main(int argc, char **argv)
@@ -177,8 +178,9 @@ int main(int argc, char **argv)
 	FILE		*f_reg = NULL, *f_param = NULL;
 	char		*board_name = NULL;
 	int 		optch; /* command-line option char */
-	static char	optstring[] = "SR:P:B:";
+	static char	optstring[] = "SR:P:B:d:";
 	int		bIdx;
+	int debug_mode_flag = 0;
 
 	offset  = HDR_BLK_OFFSET;
 
@@ -208,6 +210,11 @@ int main(int argc, char **argv)
 			board_name = optarg;
 			break;
 
+		case 'd': /* Debug Mode */
+			if(!strcmp(optarg,"yes")){
+				debug_mode_flag = 1;
+			}
+			break;
 
 		default:
 			goto parse_error;
@@ -283,6 +290,8 @@ int main(int argc, char **argv)
 
 	/* Seek for the board in parameters array */
 	for (bIdx = 0; bIdx < ARRAY_SIZE(boards); bIdx++) {
+		if(debug_mode_flag == 1)
+			break; /*Use generic linker.scr anyway*/
 		if ((strcmp(boards[bIdx].bdName, board_name) == 0) ||
 		     /* alp should use the same parameters as a375 */
 		    ((strcmp(boards[bIdx].bdName, "a375") == 0) && (strcmp(board_name, "alp") == 0)))

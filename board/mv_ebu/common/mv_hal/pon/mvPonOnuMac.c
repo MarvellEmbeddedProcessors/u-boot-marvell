@@ -1738,6 +1738,67 @@ MV_STATUS mvOnuGponMacUtmFlushGet(MV_U32 tcontNum, MV_U32 *value)
 
 /*******************************************************************************
 **
+**  mvOnuGponMacUtmGeneralSet
+**  ____________________________________________________________________________
+**
+**  DESCRIPTION: The function sets the UTM TX general
+**
+**  PARAMETERS:  MV_U32 latencyMode   - UTM latency mode
+**               MV_U32 latencyThresh - UTM latency threshold
+**               MV_U32 latencyIpg    - UTM latency IPG
+**
+**  OUTPUTS:     None
+**
+**  RETURNS:     MV_OK or error
+**
+*******************************************************************************/
+MV_STATUS mvOnuGponMacUtmGeneralSet(MV_U32 latencyMode, MV_U32 latencyThresh, MV_U32 latencyIpg)
+{
+	MV_U32 regVal;
+	MV_STATUS status;
+
+	regVal = ((latencyMode & 0x1) << 24) |
+		 ((latencyThresh & 0x1ff) << 8) |
+		 (latencyIpg & 0xff);
+
+	status = asicOntGlbRegWrite(mvAsicReg_GPON_UTM_FLUSH, regVal, 0);
+
+	return status;
+}
+
+/*******************************************************************************
+**
+**  mvOnuGponMacUtmGeneralGet
+**  ____________________________________________________________________________
+**
+**  DESCRIPTION: The function sets the UTM TX general
+**
+**  PARAMETERS:  MV_U32 latencyMode   - UTM latency mode
+**               MV_U32 latencyThresh - UTM latency threshold
+**               MV_U32 latencyIpg    - UTM latency IPG
+**
+**  OUTPUTS:     None
+**
+**  RETURNS:     MV_OK or error
+**
+*******************************************************************************/
+MV_STATUS mvOnuGponMacUtmGeneralGet(MV_U32 *latencyMode, MV_U32 *latencyThresh, MV_U32 *latencyIpg)
+{
+	MV_U32 regVal;
+	MV_STATUS status;
+	status = asicOntGlbRegRead(mvAsicReg_GPON_UTM_FLUSH, &regVal, 0);
+	if (status)
+		return status;
+
+	*latencyMode   = ((regVal >> 24) & 0x1);
+	*latencyThresh = ((regVal >> 8) & 0x1ff);
+	*latencyIpg    = ((regVal >> 0) & 0xff);
+
+	return status;
+}
+
+/*******************************************************************************
+**
 **  mvOnuGponMacUtmDebugGet
 **  ____________________________________________________________________________
 **
@@ -5912,7 +5973,7 @@ MV_STATUS mvOnuEponMacGenOpcodeSet(MV_U32 opcodeType,
 	return status;
 }
 
-#ifndef PON_Z1
+#ifdef PON_A0
 /*******************************************************************************
 **
 **  mvOnuEponMacGenTimestampConfig
@@ -6608,6 +6669,114 @@ MV_STATUS mvOnuEponMacRxpPacketFilterGet(MV_U32 *ignoreLlidCrcError,
 	return status;
 }
 
+#ifdef PON_A0
+/*******************************************************************************
+**
+**  mvOnuEponMacRxpPacketForwardSet
+**  ____________________________________________________________________________
+**
+**  DESCRIPTION: The function set packet forwarding
+**
+**  PARAMETERS:  MV_U32 ctrlFrameToDataQueue
+**               MV_U32 ctrlFrameToCtrlQueue
+**               MV_U32 rprtFrameToDataQueue
+**               MV_U32 rprtFrameToRprtQueue
+**               MV_U32 slowFrameToRprtQueue
+**               MV_U32 slowFrameToCtrlQueue
+**               MV_U32 rxpTsUpdateFcsError
+**               MV_U32 rxpTsUpdateGmiiError
+**               MV_U32 rxpTsUpdateLengthError
+**               MV_U32 rxpTsUpdateCrcError
+**
+**  OUTPUTS:     None
+**
+**  RETURNS:     MV_OK or MV_ERROR
+**
+*******************************************************************************/
+MV_STATUS mvOnuEponMacRxpPacketForwardSet(MV_U32 ctrlFrameToDataQueue,
+					  MV_U32 ctrlFrameToCtrlQueue,
+					  MV_U32 rprtFrameToDataQueue,
+					  MV_U32 rprtFrameToRprtQueue,
+					  MV_U32 slowFrameToRprtQueue,
+					  MV_U32 slowFrameToCtrlQueue,
+					  MV_U32 rxpTsUpdateFcsError,
+					  MV_U32 rxpTsUpdateGmiiError,
+					  MV_U32 rxpTsUpdateLengthError,
+					  MV_U32 rxpTsUpdateCrcError)
+{
+	MV_STATUS status;
+	MV_U32 forward;
+
+	forward = ((rxpTsUpdateCrcError    & 0x0001) << 9) |
+		  ((rxpTsUpdateLengthError & 0x0001) << 8) |
+		  ((rxpTsUpdateGmiiError   & 0x0001) << 7) |
+		  ((rxpTsUpdateFcsError    & 0x0001) << 6) |
+		  ((slowFrameToCtrlQueue   & 0x0001) << 5) |
+		  ((slowFrameToRprtQueue   & 0x0001) << 4) |
+		  ((rprtFrameToRprtQueue   & 0x0001) << 3) |
+		  ((rprtFrameToDataQueue   & 0x0001) << 2) |
+		  ((ctrlFrameToCtrlQueue   & 0x0001) << 1) |
+		  (ctrlFrameToDataQueue    & 0x0001);
+
+	status = asicOntGlbRegWrite(mvAsicReg_EPON_RXP_CTRL_FRAME_FORWARD, forward, 0);
+
+	return status;
+}
+
+/*******************************************************************************
+**
+**  mvOnuEponMacRxpPacketForwardGet
+**  ____________________________________________________________________________
+**
+**  DESCRIPTION: The function return packet forwarding
+**
+**  PARAMETERS:  MV_U32 *ctrlFrameToDataQueue
+**               MV_U32 *ctrlFrameToCtrlQueue
+**               MV_U32 *rprtFrameToDataQueue
+**               MV_U32 *rprtFrameToRprtQueue
+**               MV_U32 *slowFrameToRprtQueue
+**               MV_U32 *slowFrameToCtrlQueue
+**               MV_U32 *rxpTsUpdateFcsError
+**               MV_U32 *rxpTsUpdateGmiiError
+**               MV_U32 *rxpTsUpdateLengthError
+**               MV_U32 *rxpTsUpdateCrcError
+**
+**  OUTPUTS:     None
+**
+**  RETURNS:     MV_OK or MV_ERROR
+**
+*******************************************************************************/
+MV_STATUS mvOnuEponMacRxpPacketForwardGet(MV_U32 *ctrlFrameToDataQueue,
+					  MV_U32 *ctrlFrameToCtrlQueue,
+					  MV_U32 *rprtFrameToDataQueue,
+					  MV_U32 *rprtFrameToRprtQueue,
+					  MV_U32 *slowFrameToRprtQueue,
+					  MV_U32 *slowFrameToCtrlQueue,
+					  MV_U32 *rxpTsUpdateFcsError,
+					  MV_U32 *rxpTsUpdateGmiiError,
+					  MV_U32 *rxpTsUpdateLengthError,
+					  MV_U32 *rxpTsUpdateCrcError)
+{
+	MV_STATUS status;
+	MV_U32 forward;
+
+	status = asicOntGlbRegRead(mvAsicReg_EPON_RXP_CTRL_FRAME_FORWARD, &forward, 0);
+
+	*rxpTsUpdateCrcError    = ((forward >> 9) & 0x0001);
+	*rxpTsUpdateLengthError = ((forward >> 8) & 0x0001);
+	*rxpTsUpdateGmiiError   = ((forward >> 7) & 0x0001);
+	*rxpTsUpdateFcsError    = ((forward >> 6) & 0x0001);
+	*slowFrameToCtrlQueue   = ((forward >> 5) & 0x0001);
+	*slowFrameToRprtQueue   = ((forward >> 4) & 0x0001);
+	*rprtFrameToRprtQueue   = ((forward >> 3) & 0x0001);
+	*rprtFrameToDataQueue   = ((forward >> 2) & 0x0001);
+	*ctrlFrameToCtrlQueue   = ((forward >> 1) & 0x0001);
+	*ctrlFrameToDataQueue   = (forward       & 0x0001);
+
+	return status;
+}
+
+#else
 /*******************************************************************************
 **
 **  mvOnuEponMacRxpPacketForwardSet
@@ -6689,6 +6858,7 @@ MV_STATUS mvOnuEponMacRxpPacketForwardGet(MV_U32 *ctrlFrameToDataQueue,
 
 	return status;
 }
+#endif
 
 /*******************************************************************************
 **
@@ -8051,7 +8221,8 @@ MV_STATUS mvOnuEponMacTxmCppReportFecConfig(MV_U32 fecConst1, MV_U32 fecConst2)
 **
 **  DESCRIPTION: The function set RPM report configuration
 **
-**  PARAMETERS:  MV_U32 bitmap - bitmap order
+**  PARAMETERS:  MV_U32 packetIndication - report packet generation indication
+**               MV_U32 bitmap - bitmap order
 **               MV_U32 qset   - qset order
 **               MV_U32 mode   - report generation mode
 **
@@ -8060,13 +8231,15 @@ MV_STATUS mvOnuEponMacTxmCppReportFecConfig(MV_U32 fecConst1, MV_U32 fecConst2)
 **  RETURNS:     MV_OK or MV_ERROR
 **
 *******************************************************************************/
-MV_STATUS mvOnuEponMacTxmCppRpmReportConfigSet(MV_U32 bitmap,
+MV_STATUS mvOnuEponMacTxmCppRpmReportConfigSet(MV_U32 packetIndication,
+					       MV_U32 bitmap,
 					       MV_U32 qset,
 					       MV_U32 mode)
 {
 	MV_U32 config;
 
-	config = ((bitmap & 0x1) << 3) |
+	config = ((packetIndication & 0x1) << 4) |
+		 ((bitmap & 0x1) << 3) |
 		 ((qset & 0x1)   << 2) |
 		 (mode & 0x3);
 
@@ -8095,9 +8268,9 @@ MV_STATUS mvOnuEponMacTxmCppRpmFifoDbaConfig(MV_U32 fifoEnable,
 {
 	MV_U32 config;
 
-	config = ((fifoEnable & 0x1) << 1) |
-		 ((dbaQueue & 0x7)   << 2) |
-		 ((dbaOverhead & 0x7f) << 5 );
+	config = ((fifoEnable & 0x1) << 0) |
+		 ((dbaQueue & 0x7)   << 1) |
+		 ((dbaOverhead & 0x7f) << 4);
 
 	return asicOntGlbRegWrite(mvAsicReg_EPON_TXM_CPP_RPM_CTRL_FIFO_DBA, config, 0);
 }

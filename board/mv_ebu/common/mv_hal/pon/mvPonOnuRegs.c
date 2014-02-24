@@ -277,6 +277,7 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_GPON_TX_STAT_TCONT_i_8_15_GEM_FRAME]   =  { mvAsicReg_GPON_TX_STAT_TCONT_i_8_15_GEM_FRAME,   MV_ASIC_ONT_GLB_ADDR + 0x1190,   0x1190,   asicRO,     0xFFFFFFFF,     0,      8,     1,      0,     "Num of gem frames trans via tcont i (8-15)"},
 	[mvAsicReg_GPON_TX_STAT_TCONT_i_8_15_IDLE_GEM]    =  { mvAsicReg_GPON_TX_STAT_TCONT_i_8_15_IDLE_GEM,    MV_ASIC_ONT_GLB_ADDR + 0x11B8,   0x11B8,   asicRO,     0xFFFFFFFF,     0,      8,     1,      0,     "Num of idle gem frames trans via tcont i (8-15)"},
 	[mvAsicReg_GPON_TX_HIGH_PRI_CONFIG_EN]            =  { mvAsicReg_GPON_TX_HIGH_PRI_CONFIG_EN,            MV_ASIC_ONT_GLB_ADDR + 0x11E0,   0x11E0,   asicRW,     0x00000001,     31,     0,     0,      0,     "Enable or disable GPON high priority TX feature"},
+	[mvAsicReg_GPON_TX_HIGH_PRI_FOR_FRAGMENT]         =  { mvAsicReg_GPON_TX_HIGH_PRI_FOR_FRAGMENT,         MV_ASIC_ONT_GLB_ADDR + 0x11E0,   0x11E0,   asicRW,     0x00000001,     30,     0,     0,      0,     "Enable or disable high priority for fragment packet"},
 	[mvAsicReg_GPON_TX_HIGH_PRI_VALID_BITMAP]         =  { mvAsicReg_GPON_TX_HIGH_PRI_VALID_BITMAP,         MV_ASIC_ONT_GLB_ADDR + 0x11E0,   0x11E0,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "Bitmap of allowed low priority T-CONT"},
 	[mvAsicReg_GPON_TX_HIGH_PRI_MAP_0]                =  { mvAsicReg_GPON_TX_HIGH_PRI_MAP_0,                MV_ASIC_ONT_GLB_ADDR + 0x11E4,   0x11E4,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "GPON high priority mapping 0"},
 	[mvAsicReg_GPON_TX_HIGH_PRI_MAP_1]                =  { mvAsicReg_GPON_TX_HIGH_PRI_MAP_1,                MV_ASIC_ONT_GLB_ADDR + 0x11E8,   0x11E8,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "GPON high priority mapping 1"},
@@ -291,7 +292,11 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_GPON_UTM_ACTIVE_TX_BITMAP]             =  { mvAsicReg_GPON_UTM_ACTIVE_TX_BITMAP,             MV_ASIC_ONT_GLB_ADDR + 0x1410,   0x1410,   asicRW,     0x000000FF,     0,      0,     0,      0,     "Active TX bitmap"},
 	[mvAsicReg_GPON_UTM_ACTIVE_TX_BITMAP_VALID]       =  { mvAsicReg_GPON_UTM_ACTIVE_TX_BITMAP_VALID,       MV_ASIC_ONT_GLB_ADDR + 0x1414,   0x1414,   asicRW,     0x00000001,     0,      0,     0,      0,     "Active TX bitmap valid"},
 	[mvAsicReg_GPON_UTM_FLUSH]                        =  { mvAsicReg_GPON_UTM_FLUSH,                        MV_ASIC_ONT_GLB_ADDR + 0x1418,   0x1418,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "UTM flush"},
+	[mvAsicReg_GPON_UTM_GENERAL]                      =  { mvAsicReg_GPON_UTM_GENERAL,                      MV_ASIC_ONT_GLB_ADDR + 0x141C,   0x141C,   asicRW,     0x01FFFFFF,     0,      0,     0,      0,     "UTM general"},
 	[mvAsicReg_GPON_UTM_DEBUG]                        =  { mvAsicReg_GPON_UTM_DEBUG,                        MV_ASIC_ONT_GLB_ADDR + 0x1420,   0x1420,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "UTM debug"},
+	[mvAsicReg_GPON_UTM_REPORT_CONFIG]                =  { mvAsicReg_GPON_UTM_REPORT_CONFIG,                MV_ASIC_ONT_GLB_ADDR + 0x1424,   0x1424,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "UTM report configuration"},
+	[mvAsicReg_GPON_UTM_REPORT_MAP_0]                 =  { mvAsicReg_GPON_UTM_REPORT_MAP_0,                 MV_ASIC_ONT_GLB_ADDR + 0x1428,   0x1428,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "UTM report bitmap 0"},
+	[mvAsicReg_GPON_UTM_REPORT_MAP_0]                 =  { mvAsicReg_GPON_UTM_REPORT_MAP_0,                 MV_ASIC_ONT_GLB_ADDR + 0x142C,   0x142C,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "UTM report bitmap 1"},
 
 	/* =========================== */
 	/*  SGL Registers              */
@@ -315,72 +320,79 @@ S_asicGlobalRegDb asicGlbDb[] =
 	/* =========================== */
 	/*  GEM Port MIB Counters      */
 	/* =========================== */
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_0 ]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_0,               0x03000,                         0x03000,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #0"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_1 ]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_1,               0x03080,                         0x03080,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #1"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_2 ]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_2,               0x03100,                         0x03100,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #2"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_3 ]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_3,               0x03180,                         0x03180,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #3"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_4 ]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_4,               0x03200,                         0x03200,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #4"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_5 ]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_5,               0x03280,                         0x03280,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #5"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_6 ]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_6,               0x03300,                         0x03300,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #6"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_7 ]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_7,               0x03380,                         0x03380,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #7"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_8 ]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_8,               0x03400,                         0x03400,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #8"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_9 ]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_9,               0x03480,                         0x03480,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #9"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_10]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_10,              0x03500,                         0x03500,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #10"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_11]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_11,              0x03580,                         0x03580,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #11"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_12]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_12,              0x03600,                         0x03600,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #12"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_13]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_13,              0x03680,                         0x03680,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #13"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_14]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_14,              0x03700,                         0x03700,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #14"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_15]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_15,              0x03780,                         0x03780,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #15"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_16]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_16,              0x03800,                         0x03800,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #16"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_17]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_17,              0x03880,                         0x03880,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #17"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_18]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_18,              0x03900,                         0x03900,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #18"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_19]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_19,              0x03980,                         0x03980,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #19"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_20]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_20,              0x03A00,                         0x03A00,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #20"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_21]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_21,              0x03A80,                         0x03A80,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #21"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_22]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_22,              0x03B00,                         0x03B00,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #22"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_23]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_23,              0x03B80,                         0x03B80,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #23"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_24]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_24,              0x03C00,                         0x03C00,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #24"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_25]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_25,              0x03C80,                         0x03C80,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #25"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_26]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_26,              0x03D00,                         0x03D00,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #26"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_27]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_27,              0x03D80,                         0x03D80,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #27"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_28]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_28,              0x03E00,                         0x03E00,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #28"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_29]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_29,              0x03E80,                         0x03E80,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #29"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_30]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_30,              0x03F00,                         0x03F00,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #30"},
-	[mvAsicReg_PON_MAC_MIB_COUNTERS_31]                = { mvAsicReg_PON_MAC_MIB_COUNTERS_31,              0x03F80,                         0x03F80,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #31"},
+#ifdef PON_A0
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_START]            =  {mvAsicReg_PON_MAC_MIB_COUNTERS_START,           0xCB000,                         0xCB000,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #0"},
 
-	[mvAsicReg_PON_MIB_DEFAULT]                        = { mvAsicReg_PON_MIB_DEFAULT,                      0x03FD8,                         0x03FD8,  asicRW,     0xFFFFFFFF,     0,      0,      0,      0,     "PON MIB Default"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_0 ]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_0,                0x03050,                         0x03050,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #0"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_1 ]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_1,                0x030D0,                         0x030D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #1"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_2 ]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_2,                0x03150,                         0x03150,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #2"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_3 ]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_3,                0x031D0,                         0x031D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #3"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_4 ]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_4,                0x03250,                         0x03250,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #4"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_5 ]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_5,                0x032D0,                         0x032D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #5"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_6 ]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_6,                0x03350,                         0x03350,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #6"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_7 ]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_7,                0x033D0,                         0x033D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #7"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_8 ]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_8,                0x03450,                         0x03450,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #8"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_9 ]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_9,                0x034D0,                         0x034D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #9"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_10]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_10,               0x03550,                         0x03550,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #10"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_11]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_11,               0x035D0,                         0x035D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #11"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_12]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_12,               0x03650,                         0x03650,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #12"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_13]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_13,               0x036D0,                         0x036D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #13"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_14]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_14,               0x03750,                         0x03750,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #14"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_15]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_15,               0x037D0,                         0x037D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #15"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_16]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_16,               0x58850,                         0x58050,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #16"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_17]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_17,               0x588D0,                         0x588D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #17"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_18]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_18,               0x59950,                         0x59050,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #18"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_19]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_19,               0x039D0,                         0x039D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #19"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_20]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_20,               0x03A50,                         0x03A50,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #20"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_21]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_21,               0x03AD0,                         0x03AD0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #21"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_22]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_22,               0x03B50,                         0x03B50,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #22"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_23]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_23,               0x03BD0,                         0x03BD0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #23"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_24]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_24,               0x03C50,                         0x03C50,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #24"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_25]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_25,               0x03CD0,                         0x03CD0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #25"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_26]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_26,               0x03D50,                         0x03D50,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #26"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_27]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_27,               0x03DD0,                         0x03DD0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #27"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_28]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_28,               0x03E50,                         0x03E50,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #28"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_29]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_29,               0x03ED0,                         0x03ED0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #29"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_30]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_30,               0x03F50,                         0x03F50,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #30"},
-	[mvAsicReg_PON_MAC_MIB_CONTROL_31]                 = { mvAsicReg_PON_MAC_MIB_CONTROL_31,               0x03FD0,                         0x03FD0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #31"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_START]             =  {mvAsicReg_PON_MAC_MIB_CONTROL_START,            0xCB800,                         0xCB800,  asicRW,     0xFFFFFFFF,     0,       2,     1,      0,     "PON MAC MIB CONTROL #0"},
+
+#else
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_0]                =  {mvAsicReg_PON_MAC_MIB_COUNTERS_0,               0xCB000,                         0xCB000,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #0"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_1]                =  {mvAsicReg_PON_MAC_MIB_COUNTERS_1,               0xCB080,                         0xCB080,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #1"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_2]                =  {mvAsicReg_PON_MAC_MIB_COUNTERS_2,               0xCB100,                         0xCB100,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #2"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_3]                =  {mvAsicReg_PON_MAC_MIB_COUNTERS_3,               0xCB180,                         0xCB180,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #3"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_4]                =  {mvAsicReg_PON_MAC_MIB_COUNTERS_4,               0xCB200,                         0xCB200,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #4"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_5]                =  {mvAsicReg_PON_MAC_MIB_COUNTERS_5,               0xCB280,                         0xCB280,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #5"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_6]                =  {mvAsicReg_PON_MAC_MIB_COUNTERS_6,               0xCB300,                         0xCB300,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #6"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_7]                =  {mvAsicReg_PON_MAC_MIB_COUNTERS_7,               0xCB380,                         0xCB380,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #7"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_8]                =  {mvAsicReg_PON_MAC_MIB_COUNTERS_8,               0xCB400,                         0xCB400,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #8"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_9]                =  {mvAsicReg_PON_MAC_MIB_COUNTERS_9,               0xCB480,                         0xCB480,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #9"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_10]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_10,              0xCB500,                         0xCB500,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #10"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_11]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_11,              0xCB580,                         0xCB580,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #11"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_12]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_12,              0xCB600,                         0xCB600,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #12"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_13]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_13,              0xCB680,                         0xCB680,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #13"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_14]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_14,              0xCB700,                         0xCB700,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #14"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_15]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_15,              0xCB780,                         0xCB780,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #15"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_16]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_16,              0xCB800,                         0xCB800,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #16"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_17]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_17,              0xCB880,                         0xCB880,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #17"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_18]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_18,              0xCB900,                         0xCB900,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #18"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_19]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_19,              0xCB980,                         0xCB980,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #19"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_20]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_20,              0xCBA00,                         0xCBA00,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #20"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_21]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_21,              0xCBA80,                         0xCBA80,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #21"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_22]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_22,              0xCBB00,                         0xCBB00,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #22"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_23]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_23,              0xCBB80,                         0xCBB80,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #23"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_24]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_24,              0xCBC00,                         0xCBC00,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #24"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_25]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_25,              0xCBC80,                         0xCBC80,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #25"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_26]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_26,              0xCBD00,                         0xCBD00,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #26"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_27]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_27,              0xCBD80,                         0xCBD80,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #27"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_28]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_28,              0xCBE00,                         0xCBE00,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #28"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_29]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_29,              0xCBE80,                         0xCBE80,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #29"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_30]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_30,              0xCBF00,                         0xCBF00,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #30"},
+	[mvAsicReg_PON_MAC_MIB_COUNTERS_31]               =  {mvAsicReg_PON_MAC_MIB_COUNTERS_31,              0xCBF80,                         0xCBF80,  asicRO,     0xFFFFFFFF,     0,      32,     1,      0,     "PON MAC MIB Counter Set #31"},
+
+	[mvAsicReg_PON_MIB_DEFAULT]                       =  {mvAsicReg_PON_MIB_DEFAULT,                      0xCBFD8,                         0xCBFD8,  asicRW,     0xFFFFFFFF,     0,      0,      0,      0,     "PON MIB Default"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_0]                 =  {mvAsicReg_PON_MAC_MIB_CONTROL_0,                0xCB050,                         0xCB050,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #0"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_1]                 =  {mvAsicReg_PON_MAC_MIB_CONTROL_1,                0xCB0D0,                         0xCB0D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #1"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_2]                 =  {mvAsicReg_PON_MAC_MIB_CONTROL_2,                0xCB150,                         0xCB150,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #2"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_3]                 =  {mvAsicReg_PON_MAC_MIB_CONTROL_3,                0xCB1D0,                         0xCB1D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #3"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_4]                 =  {mvAsicReg_PON_MAC_MIB_CONTROL_4,                0xCB250,                         0xCB250,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #4"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_5]                 =  {mvAsicReg_PON_MAC_MIB_CONTROL_5,                0xCB2D0,                         0xCB2D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #5"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_6]                 =  {mvAsicReg_PON_MAC_MIB_CONTROL_6,                0xCB350,                         0xCB350,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #6"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_7]                 =  {mvAsicReg_PON_MAC_MIB_CONTROL_7,                0xCB3D0,                         0xCB3D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #7"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_8]                 =  {mvAsicReg_PON_MAC_MIB_CONTROL_8,                0xCB450,                         0xCB450,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #8"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_9]                 =  {mvAsicReg_PON_MAC_MIB_CONTROL_9,                0xCB4D0,                         0xCB4D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #9"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_10]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_10,               0xCB550,                         0xCB550,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #10"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_11]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_11,               0xCB5D0,                         0xCB5D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #11"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_12]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_12,               0xCB650,                         0xCB650,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #12"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_13]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_13,               0xCB6D0,                         0xCB6D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #13"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_14]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_14,               0xCB750,                         0xCB750,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #14"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_15]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_15,               0xCB7D0,                         0xCB7D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #15"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_16]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_16,               0xCB850,                         0x58050,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #16"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_17]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_17,               0xCB8D0,                         0x588D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #17"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_18]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_18,               0xCB950,                         0x59050,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #18"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_19]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_19,               0xCB9D0,                         0xCB9D0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #19"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_20]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_20,               0xCBA50,                         0xCBA50,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #20"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_21]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_21,               0xCBAD0,                         0xCBAD0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #21"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_22]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_22,               0xCBB50,                         0xCBB50,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #22"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_23]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_23,               0xCBBD0,                         0xCBBD0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #23"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_24]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_24,               0xCBC50,                         0xCBC50,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #24"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_25]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_25,               0xCBCD0,                         0xCBCD0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #25"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_26]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_26,               0xCBD50,                         0xCBD50,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #26"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_27]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_27,               0xCBDD0,                         0xCBDD0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #27"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_28]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_28,               0xCBE50,                         0xCBE50,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #28"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_29]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_29,               0xCBED0,                         0xCBED0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #29"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_30]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_30,               0xCBF50,                         0xCBF50,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #30"},
+	[mvAsicReg_PON_MAC_MIB_CONTROL_31]                =  {mvAsicReg_PON_MAC_MIB_CONTROL_31,               0xCBFD0,                         0xCBFD0,  asicRW,     0xFFFFFFFF,     0,      2,      1,      0,     "PON MAC MIB CONTROL #31"},
+#endif
 
 /******************************************************************************/
 /******************************************************************************/
@@ -420,18 +432,17 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_GEN_ONT_ENABLE]                   =  { mvAsicReg_EPON_GEN_ONT_ENABLE,                   MV_ASIC_ONT_GLB_ADDR + 0x040C,   0x040C,   asicRW,     0x0000FF01,     0,      0,     0,      0,     "ONU Rx/Tx Enable"},
 	[mvAsicReg_EPON_GEN_ONT_RX_ENABLE]                =  { mvAsicReg_EPON_GEN_ONT_RX_ENABLE,                MV_ASIC_ONT_GLB_ADDR + 0x040C,   0x040C,   asicRW,     0x00000001,     0,      0,     0,      0,     "ONU Rx Enable"},
 	[mvAsicReg_EPON_GEN_ONT_TX_ENABLE]                =  { mvAsicReg_EPON_GEN_ONT_TX_ENABLE,                MV_ASIC_ONT_GLB_ADDR + 0x040C,   0x040C,   asicRW,     0x000000FF,     8,      0,     0,      0,     "ONU Tx Enable"},
-#ifdef PON_Z1
-	[mvAsicReg_EPON_GEN_ONT_STATE]                    =  { mvAsicReg_EPON_GEN_ONT_STATE,                    MV_ASIC_ONT_GLB_ADDR + 0x0410,   0x0410,   asicRW,     0x00000003,     0,      0,     0,      0,     "ONU State"},
-	[mvAsicReg_EPON_GEN_ONT_STATE_REG_AUTO_EN]        =  { mvAsicReg_EPON_GEN_ONT_STATE_REG_AUTO_EN,        MV_ASIC_ONT_GLB_ADDR + 0x0410,   0x0410,   asicRW,     0x00000001,     1,      0,     0,      0,     "ONU Register State Auto Enable"},
-	[mvAsicReg_EPON_GEN_ONT_STATE_REG]                =  { mvAsicReg_EPON_GEN_ONT_STATE_REG,                MV_ASIC_ONT_GLB_ADDR + 0x0410,   0x0410,   asicRW,     0x00000001,     0,      0,     0,      0,     "ONU Register State"},
-#else   /* Z2,A0 or later */
+#ifdef PON_A0
+	[mvAsicReg_EPON_GEN_ONT_STATE]                    =  { mvAsicReg_EPON_GEN_ONT_STATE,                    MV_ASIC_ONT_GLB_ADDR + 0x0410,   0x0410,   asicRW,     0x00001FFF,     0,      0,     0,      0,     "ONU State"},
+#else /* PON_Z1 */
 	[mvAsicReg_EPON_GEN_ONT_STATE]                    =  { mvAsicReg_EPON_GEN_ONT_STATE,                    MV_ASIC_ONT_GLB_ADDR + 0x0410,   0x0410,   asicRW,     0x00000FFF,     0,      0,     0,      0,     "ONU State"},
+#endif
 	[mvAsicReg_EPON_GEN_ONT_STATE_REG]                =  { mvAsicReg_EPON_GEN_ONT_STATE_REG,                MV_ASIC_ONT_GLB_ADDR + 0x0410,   0x0410,   asicRW,     0x000000FF,     0,      0,     0,      0,     "ONU Register State"},
 	[mvAsicReg_EPON_GEN_ONT_STATE_REG_AUTO_EN]        =  { mvAsicReg_EPON_GEN_ONT_STATE_REG_AUTO_EN,        MV_ASIC_ONT_GLB_ADDR + 0x0410,   0x0410,   asicRW,     0x00000001,     8,      0,     0,      0,     "ONU Register State Auto Enable"},
-#endif  /* Z2,A0 or later */
 	[mvAsicReg_EPON_GEN_ONT_STATE_REREG_AUTO_EN]      =  { mvAsicReg_EPON_GEN_ONT_STATE_REREG_AUTO_EN,      MV_ASIC_ONT_GLB_ADDR + 0x0410,   0x0410,   asicRW,     0x00000001,     9,      0,     0,      0,     "ONU ReRegister State Auto Enable"},
 	[mvAsicReg_EPON_GEN_ONT_STATE_DEREG_AUTO_EN]      =  { mvAsicReg_EPON_GEN_ONT_STATE_DEREG_AUTO_EN,      MV_ASIC_ONT_GLB_ADDR + 0x0410,   0x0410,   asicRW,     0x00000001,    10,      0,     0,      0,     "ONU DeRegister State Auto Enable"},
 	[mvAsicReg_EPON_GEN_ONT_STATE_NACK_AUTO_EN]       =  { mvAsicReg_EPON_GEN_ONT_STATE_NACK_AUTO_EN,       MV_ASIC_ONT_GLB_ADDR + 0x0410,   0x0410,   asicRW,     0x00000001,    11,      0,     0,      0,     "ONU Nack State Auto Enable"},
+	[mvAsicReg_EPON_GEN_ONT_UP_RX_LLID_PAD]           =  { mvAsicReg_EPON_GEN_ONT_UP_RX_LLID_PAD,           MV_ASIC_ONT_GLB_ADDR + 0x0410,   0x0410,   asicRW,     0x00000001,    12,      0,     0,      0,     "ONU UP RX LLID Padding"},
 	[mvAsicReg_EPON_GEN_TQ_SIZE]                      =  { mvAsicReg_EPON_GEN_TQ_SIZE,                      MV_ASIC_ONT_GLB_ADDR + 0x0414,   0x0414,   asicRW,     0x000000FF,     0,      0,     0,      0,     "TQ Size"},
 	[mvAsicReg_EPON_GEN_LASER_PARAM]                  =  { mvAsicReg_EPON_GEN_LASER_PARAM,                  MV_ASIC_ONT_GLB_ADDR + 0x0418,   0x0418,   asicRW,     0x01FFFFFF,     0,      0,     0,      0,     "Laser Params"},
 	[mvAsicReg_EPON_GEN_TAIL_GUARD]                   =  { mvAsicReg_EPON_GEN_TAIL_GUARD,                   MV_ASIC_ONT_GLB_ADDR + 0x0420,   0x0420,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "Tail Guard"},
@@ -440,12 +451,12 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_GEN_BROADCAST_ADDR_HIGH]          =  { mvAsicReg_EPON_GEN_BROADCAST_ADDR_HIGH,          MV_ASIC_ONT_GLB_ADDR + 0x042C,   0x042C,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "Broadcast Address High"},
 #ifdef PON_Z1
 	[mvAsicReg_EPON_GEN_CONFIGURATION]                =  { mvAsicReg_EPON_GEN_CONFIGURATION,                MV_ASIC_ONT_GLB_ADDR + 0x0430,   0x0430,   asicRW,     0x00000073,     0,      0,     0,      0,     "Gen Configuration"},
-#else   /* Z2,A0 or later */
+#else  /* PON_A0 */
 	[mvAsicReg_EPON_GEN_CONFIGURATION]                =  { mvAsicReg_EPON_GEN_CONFIGURATION,                MV_ASIC_ONT_GLB_ADDR + 0x0430,   0x0430,   asicRW,     0x0000FF73,     0,      0,     0,      0,     "Gen Configuration"},
 	[mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_REPORT]    =  { mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_REPORT,    MV_ASIC_ONT_GLB_ADDR + 0x0430,   0x0430,   asicRW,     0x00000001,     4,      0,     0,      0,     "Gen Configuration Auto Report"},
 	[mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_ACK]       =  { mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_ACK,       MV_ASIC_ONT_GLB_ADDR + 0x0430,   0x0430,   asicRW,     0x00000001,     5,      0,     0,      0,     "Gen Configuration Auto Ack"},
 	[mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_REQUEST]   =  { mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_REQUEST,   MV_ASIC_ONT_GLB_ADDR + 0x0430,   0x0430,   asicRW,     0x00000001,     6,      0,     0,      0,     "Gen Configuration Auto Request"},
-#endif  /* Z2,A0 or later */
+#endif
 	[mvAsicReg_EPON_GEN_SLD]                          =  { mvAsicReg_EPON_GEN_SLD,                          MV_ASIC_ONT_GLB_ADDR + 0x0434,   0x0434,   asicRW,     0x000000FF,     0,      0,     0,      0,     "Sld"},
 	[mvAsicReg_EPON_GEN_MAC_CONTROL_TYPE]             =  { mvAsicReg_EPON_GEN_MAC_CONTROL_TYPE,             MV_ASIC_ONT_GLB_ADDR + 0x0438,   0x0438,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "Mac Control type"},
 	[mvAsicReg_EPON_GEN_LOCAL_TIMESTAMP]              =  { mvAsicReg_EPON_GEN_LOCAL_TIMESTAMP,              MV_ASIC_ONT_GLB_ADDR + 0x043C,   0x043C,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "Local TimeStamp"},
@@ -462,19 +473,19 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_GEN_DRIFT_THRESHOLD]              =  { mvAsicReg_EPON_GEN_DRIFT_THRESHOLD,              MV_ASIC_ONT_GLB_ADDR + 0x0470,   0x0470,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "Drift Threshold"},
 	[mvAsicReg_EPON_GEN_TIMESTAMP_VAL_FOR_INTR]       =  { mvAsicReg_EPON_GEN_TIMESTAMP_VAL_FOR_INTR,       MV_ASIC_ONT_GLB_ADDR + 0x0474,   0x0474,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "Timestamp valuer for interrupt"},
 	[mvAsicReg_EPON_GEN_ADDITIONAL_OPCODE3]           =  { mvAsicReg_EPON_GEN_ADDITIONAL_OPCODE3,           MV_ASIC_ONT_GLB_ADDR + 0x0478,   0x0478,   asicRW,     0x001FFFFF,     0,      0,     0,      0,     "Additional Opcode 03"},
-#ifndef PON_Z1
+#ifdef PON_A0
 	[mvAsicReg_EPON_GEN_LLID_CRC_CONFIG]              =  { mvAsicReg_EPON_GEN_LLID_CRC_CONFIG,              MV_ASIC_ONT_GLB_ADDR + 0x047C,   0x047C,   asicRW,     0x000003FF,     0,      0,     0,      0,     "LLID configuration"},
 	[mvAsicReg_EPON_GEN_TIMESTAMP_CONFIG]             =  { mvAsicReg_EPON_GEN_TIMESTAMP_CONFIG,             MV_ASIC_ONT_GLB_ADDR + 0x0480,   0x0480,   asicRW,     0x87FFC7FF,     0,      0,     0,      0,     "Timestamp configuration"},
 	[mvAsicReg_EPON_GEN_ONT_RX_TIMESTAMP_CONFIG]      =  { mvAsicReg_EPON_GEN_ONT_RX_TIMESTAMP_CONFIG,      MV_ASIC_ONT_GLB_ADDR + 0x0484,   0x0484,   asicRW,     0x00008FFF,     0,      0,     0,      0,     "ONT Rx Timestamp configuration"},
 	[mvAsicReg_EPON_GEN_ONT_REGISTER_PACKET_PADDING]  =  { mvAsicReg_EPON_GEN_ONT_REGISTER_PACKET_PADDING,  MV_ASIC_ONT_GLB_ADDR + 0x0488,   0x0488,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "ONT Register packet pading"},
-#endif  /* PON_Z1 */
+#endif
 #ifdef PON_Z1
 	[mvAsicReg_EPON_GEN_MAC_ADDR_LOW]                 =  { mvAsicReg_EPON_GEN_MAC_ADDR_LOW,                 MV_ASIC_ONT_GLB_ADDR + 0x0440,   0x0440,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "MAC address low part"},
 	[mvAsicReg_EPON_GEN_MAC_ADDR_HIGH]                =  { mvAsicReg_EPON_GEN_MAC_ADDR_HIGH,                MV_ASIC_ONT_GLB_ADDR + 0x0444,   0x0444,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "MAC address high part"},
-#else   /* Z2,A0 or later */
+#else /* PON_A0 */
 	[mvAsicReg_EPON_GEN_MAC_ADDR_LOW]                 =  { mvAsicReg_EPON_GEN_MAC_ADDR_LOW,                 MV_ASIC_ONT_GLB_ADDR + 0x04A0,   0x04A0,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "MAC address low part"},
 	[mvAsicReg_EPON_GEN_MAC_ADDR_HIGH]                =  { mvAsicReg_EPON_GEN_MAC_ADDR_HIGH,                MV_ASIC_ONT_GLB_ADDR + 0x04C8,   0x04C8,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "MAC address high part"},
-#endif  /* Z2,A0 or later */
+#endif
 	[mvAsicReg_EPON_GEN_UTM_TC_PERIOD]                =  { mvAsicReg_EPON_GEN_UTM_TC_PERIOD,                MV_ASIC_ONT_GLB_ADDR + 0x0720,   0x0720,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "UTM TC Period"},
 	[mvAsicReg_EPON_GEN_UTM_TC_PERIOD_VALID]          =  { mvAsicReg_EPON_GEN_UTM_TC_PERIOD_VALID,          MV_ASIC_ONT_GLB_ADDR + 0x0724,   0x0724,   asicRW,     0x00000001,     0,      0,     0,      0,     "UTM TC Period valid"},
 	[mvAsicReg_EPON_GEN_GEM_IPG_VAL]                  =  { mvAsicReg_EPON_GEN_GEM_IPG_VAL,                  MV_ASIC_ONT_GLB_ADDR + 0x0728,   0x0728,   asicRW,     0x000000FF,     0,      0,     0,      0,     "IPG Value"},
@@ -482,6 +493,8 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_GEN_ACT_TX_BITMAP]                =  { mvAsicReg_EPON_GEN_ACT_TX_BITMAP,                MV_ASIC_ONT_GLB_ADDR + 0x0730,   0x0730,   asicRW,     0x000000FF,     0,      0,     0,      0,     "UTM Active TX Bitmap"},
 	[mvAsicReg_EPON_GEN_ACT_TX_VALID]                 =  { mvAsicReg_EPON_GEN_ACT_TX_VALID,                 MV_ASIC_ONT_GLB_ADDR + 0x0734,   0x0734,   asicRW,     0x00000001,     0,      0,     0,      0,     "UTM Active TX Valid"},
 	[mvAsicReg_EPON_GEN_TOD_INT_WIDTH]                =  { mvAsicReg_EPON_GEN_TOD_INT_WIDTH,                MV_ASIC_ONT_GLB_ADDR + 0x0738,   0x0738,   asicRW,     0x1FFFFFFF,     0,      0,     0,      0,     "Time of Day Interrupt Width and Polarity"},
+	[mvAsicReg_EPON_UTM_DEBUG]                        =  { mvAsicReg_EPON_UTM_DEBUG,                        MV_ASIC_ONT_GLB_ADDR + 0x0740,   0x0740,   asicRO,     0xFFFFFFFF,     0,      0,     0,      0,     "UTM debug"},
+	[mvAsicReg_EPON_UTM_GENERAL]                      =  { mvAsicReg_EPON_UTM_GENERAL,                      MV_ASIC_ONT_GLB_ADDR + 0x0748,   0x0748,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "UTM general"},
 	[mvAsicReg_EPON_TXM_EXT_REPORT_STATE]             =  { mvAsicReg_EPON_TXM_EXT_REPORT_STATE,             MV_ASIC_ONT_GLB_ADDR + 0x074C,   0x074C,   asicRW,     0x00000001,     31,     0,     0,      0,     "Extend report enable"},
 	[mvAsicReg_EPON_TXM_EXT_REPORT_STATE_PER_TX]      =  { mvAsicReg_EPON_TXM_EXT_REPORT_STATE_PER_TX,      MV_ASIC_ONT_GLB_ADDR + 0x074C,   0x074C,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "Extend report enable bitmap"},
 	[mvAsicReg_EPON_TXM_EXT_REPORT_MAP_0]             =  { mvAsicReg_EPON_TXM_EXT_REPORT_MAP_0,             MV_ASIC_ONT_GLB_ADDR + 0x0750,   0x0750,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "Extend report mapping 0"},
@@ -493,10 +506,14 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_RXP_PACKET_SIZE_LIMIT]            =  { mvAsicReg_EPON_RXP_PACKET_SIZE_LIMIT,            MV_ASIC_ONT_GLB_ADDR + 0x0810,   0x0810,   asicRW,     0x0FFF0FFF,     0,      0,     0,      0,     "Rxp packet limit size"},
 #ifdef PON_Z1
 	[mvAsicReg_EPON_RXP_PACKET_FILTER]                =  { mvAsicReg_EPON_RXP_PACKET_FILTER,                MV_ASIC_ONT_GLB_ADDR + 0x0814,   0x0814,   asicRW,     0x000000FF,     0,      0,     0,      0,     "Rxp packet filter"},
-#else   /* Z2,A0 or later */
+#else /* PON_A0 */
 	[mvAsicReg_EPON_RXP_PACKET_FILTER]                =  { mvAsicReg_EPON_RXP_PACKET_FILTER,                MV_ASIC_ONT_GLB_ADDR + 0x0814,   0x0814,   asicRW,     0x000001FF,     0,      0,     0,      0,     "Rxp packet filter"},
-#endif /* Z2,A0 or later */
+#endif
+#ifdef PON_Z1
 	[mvAsicReg_EPON_RXP_CTRL_FRAME_FORWARD]           =  { mvAsicReg_EPON_RXP_CTRL_FRAME_FORWARD,           MV_ASIC_ONT_GLB_ADDR + 0x0818,   0x0818,   asicRW,     0x0000003F,     0,      0,     0,      0,     "Rxp ctrl frame forward"},
+#else /* PON_A0 */
+	[mvAsicReg_EPON_RXP_CTRL_FRAME_FORWARD]           =  { mvAsicReg_EPON_RXP_CTRL_FRAME_FORWARD,           MV_ASIC_ONT_GLB_ADDR + 0x0818,   0x0818,   asicRW,     0x000003FF,     0,      0,     0,      0,     "Rxp ctrl frame forward"},
+#endif
 	[mvAsicReg_EPON_RXP_LLT_LLID_DATA]                =  { mvAsicReg_EPON_RXP_LLT_LLID_DATA,                MV_ASIC_ONT_GLB_ADDR + 0x081C,   0x081C,   asicRW,     0x000FFFFF,     0,     10,     1,      0,     "Rxp LLID data"},
 	[mvAsicReg_EPON_RXP_LLT_LLID_DATA_VALUE]          =  { mvAsicReg_EPON_RXP_LLT_LLID_DATA_VALUE,          MV_ASIC_ONT_GLB_ADDR + 0x081C,   0x081C,   asicRW,     0x00007FFF,     0,     10,     1,      0,     "Rxp LLID data value"},
 	[mvAsicReg_EPON_RXP_LLT_LLID_DATA_INDEX]          =  { mvAsicReg_EPON_RXP_LLT_LLID_DATA_INDEX,          MV_ASIC_ONT_GLB_ADDR + 0x081C,   0x081C,   asicRW,     0x0000000F,    15,     10,     1,      0,     "Rxp LLID data index"},
@@ -505,10 +522,10 @@ S_asicGlobalRegDb asicGlbDb[] =
 #ifdef PON_Z1
 	[mvAsicReg_EPON_RXP_ENCRYPTION_KEY0]              =  { mvAsicReg_EPON_RXP_ENCRYPTION_KEY0,              MV_ASIC_ONT_GLB_ADDR + 0x0848,   0x0848,   asicRW,     0x00FFFFFF,     0,      0,     0,      0,     "Rxp Enctyption Key 0"},
 	[mvAsicReg_EPON_RXP_ENCRYPTION_KEY1]              =  { mvAsicReg_EPON_RXP_ENCRYPTION_KEY1,              MV_ASIC_ONT_GLB_ADDR + 0x084C,   0x084C,   asicRW,     0x00FFFFFF,     0,      0,     0,      0,     "Rxp Enctyption Key 1"},
-#else   /* Z2,A0 or later */
+#else  /* PON_A0 */
 	[mvAsicReg_EPON_RXP_ENCRYPTION_KEY0]              =  { mvAsicReg_EPON_RXP_ENCRYPTION_KEY0,              MV_ASIC_ONT_GLB_ADDR + 0x0850,   0x0850,   asicRW,     0x00FFFFFF,     0,      8,     1,      0,     "Rxp Enctyption Key 0"},
 	[mvAsicReg_EPON_RXP_ENCRYPTION_KEY1]              =  { mvAsicReg_EPON_RXP_ENCRYPTION_KEY1,              MV_ASIC_ONT_GLB_ADDR + 0x0878,   0x0878,   asicRW,     0x00FFFFFF,     0,      8,     1,      0,     "Rxp Enctyption Key 1"},
-#endif  /* Z2,A0 or later */
+#endif
 	[mvAsicReg_EPON_RXP_DATA_FIFO_THRESH]             =  { mvAsicReg_EPON_RXP_DATA_FIFO_THRESH,             MV_ASIC_ONT_GLB_ADDR + 0x08C0,   0x08C0,   asicRW,     0x00000FFF,     0,      8,     1,      0,     "Rxp FIFO Threshold"},
 
 	/* =========================== */
@@ -517,9 +534,9 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_GPM_MAX_FUTURE_GRANT_TIME]        =  { mvAsicReg_EPON_GPM_MAX_FUTURE_GRANT_TIME,        MV_ASIC_ONT_GLB_ADDR + 0x0C10,   0x0C10,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "Max future grant time"},
 #ifdef PON_Z1
 	[mvAsicReg_EPON_GPM_MIN_PROCESSING_TIME]          =  { mvAsicReg_EPON_GPM_MIN_PROCESSING_TIME,          MV_ASIC_ONT_GLB_ADDR + 0x0C14,   0x0C14,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "Min processing time"},
-#else   /* Z2,A0 or later */
+#else /* PON_A0 */
 	[mvAsicReg_EPON_GPM_MIN_PROCESSING_TIME]          =  { mvAsicReg_EPON_GPM_MIN_PROCESSING_TIME,          MV_ASIC_ONT_GLB_ADDR + 0x0C14,   0x0C14,   asicRW,     0x00FFFFFF,     0,      0,     0,      0,     "Min processing time"},
-#endif /* Z2,A0 or later */
+#endif
 	[mvAsicReg_EPON_GPM_DISCOVERY_GRANT_LENGTH]       =  { mvAsicReg_EPON_GPM_DISCOVERY_GRANT_LENGTH,       MV_ASIC_ONT_GLB_ADDR + 0x0C18,   0x0C18,   asicRW,     0x0FFFFFFF,     0,      0,     0,      0,     "Discovery grant length"},
 	[mvAsicReg_EPON_GPM_RX_SYNC_TIME]                 =  { mvAsicReg_EPON_GPM_RX_SYNC_TIME,                 MV_ASIC_ONT_GLB_ADDR + 0x0C1C,   0x0C1C,   asicRW,     0x0001FFFF,     0,      0,     0,      0,     "Rx sync time"},
 	[mvAsicReg_EPON_GPM_GRANT_VALID]                  =  { mvAsicReg_EPON_GPM_GRANT_VALID,                  MV_ASIC_ONT_GLB_ADDR + 0x0C50,   0x0C50,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "Grant valid counter"},
@@ -542,12 +559,12 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_TXM_DEFAULT_OVERHEAD]             =  { mvAsicReg_EPON_TXM_DEFAULT_OVERHEAD,             MV_ASIC_ONT_GLB_ADDR + 0x1010,   0x1010,   asicRW,     0x000000FF,     0,      0,     0,      0,     "Default overhead"},
 	[mvAsicReg_EPON_TXM_CONFIGURATION]                =  { mvAsicReg_EPON_TXM_CONFIGURATION,                MV_ASIC_ONT_GLB_ADDR + 0x1018,   0x1018,   asicRW,     0x00000007,     0,      0,     0,      0,     "Tx Configuration"},
 	[mvAsicReg_EPON_TXM_TX_LLID]                      =  { mvAsicReg_EPON_TXM_TX_LLID,                      MV_ASIC_ONT_GLB_ADDR + 0x1014,   0x1014,   asicRW,     0x00007FFF,     0,      0,     0,      0,     "Tx LLID"},
-#else   /* Z2,A0 or later */
+#else /* PON_A0 */
 	[mvAsicReg_EPON_TXM_DEFAULT_OVERHEAD]             =  { mvAsicReg_EPON_TXM_DEFAULT_OVERHEAD,             MV_ASIC_ONT_GLB_ADDR + 0x1010,   0x1010,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "Default overhead"},
 	[mvAsicReg_EPON_TXM_CONFIGURATION]                =  { mvAsicReg_EPON_TXM_CONFIGURATION,                MV_ASIC_ONT_GLB_ADDR + 0x1018,   0x1018,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "Tx Configuration"},
 	[mvAsicReg_EPON_TXM_POWER_UP]                     =  { mvAsicReg_EPON_TXM_POWER_UP,                     MV_ASIC_ONT_GLB_ADDR + 0x1020,   0x1020,   asicRW,     0x00001FFF,     0,      0,     0,      0,     "Tx MUX Power UP"},
 	[mvAsicReg_EPON_TXM_TX_LLID]                      =  { mvAsicReg_EPON_TXM_TX_LLID,                      MV_ASIC_ONT_GLB_ADDR + 0x1050,   0x1050,   asicRW,     0x00007FFF,     0,      8,     1,      0,     "Tx LLID"},
-#endif  /* Z2,A0 or later */
+#endif
 #ifdef PON_Z1
 	[mvAsicReg_EPON_TXM_CPP_RPRT_CONFIG]              =  { mvAsicReg_EPON_TXM_CPP_RPRT_CONFIG,              MV_ASIC_ONT_GLB_ADDR + 0x1078,   0x1078,   asicRW,     0x000003FF,     0,      8,     1,      0,     "Cpp report configuration"},
 	[mvAsicReg_EPON_TXM_CPP_RPRT_BIT_MAP]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_BIT_MAP,             MV_ASIC_ONT_GLB_ADDR + 0x1098,   0x1098,   asicRW,     0x000000FF,     0,      8,     1,      0,     "Cpp report bit map"},
@@ -561,7 +578,7 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_6]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_6,             MV_ASIC_ONT_GLB_ADDR + 0x1198,   0x1198,   asicRW,     0x0000FFFF,     0,      8,     1,      0,     "Cpp report queue6"},
 	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_7]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_7,             MV_ASIC_ONT_GLB_ADDR + 0x11B8,   0x11B8,   asicRW,     0x0000FFFF,     0,      8,     1,      0,     "Cpp report queue7"},
 	[mvAsicReg_EPON_TXM_CPP_RPRT_FEC_CONFIG]          =  { mvAsicReg_EPON_TXM_CPP_RPRT_FEC_CONFIG,          MV_ASIC_ONT_GLB_ADDR + 0x11DC,   0x11DC,   asicRW,     0x00FFFFFF,     0,      8,     1,      0,     "Cpp report fec config"},
-#else   /* Z2,A0 or later */
+#else /* PON_A0 */
 	[mvAsicReg_EPON_TXM_CPP_RPRT_CONFIG]              =  { mvAsicReg_EPON_TXM_CPP_RPRT_CONFIG,              MV_ASIC_ONT_GLB_ADDR + 0x1078,   0x1078,   asicRW,     0x03FD03FF,     0,      8,     1,      0,     "Cpp report configuration"},
 	[mvAsicReg_EPON_TXM_CPP_RPRT_BIT_MAP]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_BIT_MAP,             MV_ASIC_ONT_GLB_ADDR + 0x1098,   0x1098,   asicRW,     0x0000FFFF,     0,      8,     1,      0,     "Cpp report bit map"},
 	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_SET]           =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_SET,           MV_ASIC_ONT_GLB_ADDR + 0x10B8,   0x10B8,   asicRW,     0x0000003F,     0,      8,     1,      0,     "Cpp report queue sets"},
@@ -574,10 +591,10 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_6]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_6,             MV_ASIC_ONT_GLB_ADDR + 0x1198,   0x1198,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "Cpp report queue6"},
 	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_7]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_7,             MV_ASIC_ONT_GLB_ADDR + 0x11B8,   0x11B8,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "Cpp report queue7"},
 	[mvAsicReg_EPON_TXM_CPP_RPRT_FEC_CONFIG]          =  { mvAsicReg_EPON_TXM_CPP_RPRT_FEC_CONFIG,          MV_ASIC_ONT_GLB_ADDR + 0x11DC,   0x11DC,   asicRW,     0x00FFFFFF,     0,      8,     1,      0,     "Cpp report fec config"},
-#endif  /* Z2,A0 or later */
+#endif
 
-	[mvAsicReg_EPON_TXM_CPP_RPM_REPORT_CONFIG]        =  { mvAsicReg_EPON_TXM_CPP_RPM_REPORT_CONFIG,        MV_ASIC_ONT_GLB_ADDR + 0x11E0,   0x11E0,   asicRW,     0x0000000F,     0,      0,     0,      0,     "RPM Report config"},
-	[mvAsicReg_EPON_TXM_CPP_RPM_CTRL_FIFO_DBA]        =  { mvAsicReg_EPON_TXM_CPP_RPM_CTRL_FIFO_DBA,        MV_ASIC_ONT_GLB_ADDR + 0x11E0,   0x11E0,   asicRW,     0x00000FFF,     4,      0,     0,      0,     "RPM contrl FIFO DBA config"},
+	[mvAsicReg_EPON_TXM_CPP_RPM_REPORT_CONFIG]        =  { mvAsicReg_EPON_TXM_CPP_RPM_REPORT_CONFIG,        MV_ASIC_ONT_GLB_ADDR + 0x11E0,   0x11E0,   asicRW,     0x0000001F,     0,      0,     0,      0,     "RPM Report config"},
+	[mvAsicReg_EPON_TXM_CPP_RPM_CTRL_FIFO_DBA]        =  { mvAsicReg_EPON_TXM_CPP_RPM_CTRL_FIFO_DBA,        MV_ASIC_ONT_GLB_ADDR + 0x11E0,   0x11E0,   asicRW,     0x000007FF,     5,      0,     0,      0,     "RPM contrl FIFO DBA config"},
 	[mvAsicReg_EPON_TXM_CPP_RPM_ADX_REPORT_TBL]       =  { mvAsicReg_EPON_TXM_CPP_RPM_ADX_REPORT_TBL,       MV_ASIC_ONT_GLB_ADDR + 0x11E4,   0x11E4,   asicRW,     0x003F00FF,     0,      0,     0,      0,     "RPM Index Report Table"},
 	[mvAsicReg_EPON_TXM_CTRL_FIFO_FLUSH]              =  { mvAsicReg_EPON_TXM_CTRL_FIFO_FLUSH,              MV_ASIC_ONT_GLB_ADDR + 0x11F0,   0x11F0,   asicRW,     0x000000FF,     0,      0,     0,      0,     "TX control FIFO flush"},
 	[mvAsicReg_EPON_TXM_HIGH_PRI_TX_STATE_BITMAP]     =  { mvAsicReg_EPON_TXM_HIGH_PRI_TX_STATE_BITMAP,     MV_ASIC_ONT_GLB_ADDR + 0x11F4,   0x11F4,   asicRW,     0x000000FF,     0,      0,     0,      0,     "High priority TX valid bitmap"},
@@ -619,7 +636,7 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_STAT_TXP_CTRL_REPORT_FRAMES_CNT]  =  { mvAsicReg_EPON_STAT_TXP_CTRL_REPORT_FRAMES_CNT,  MV_ASIC_ONT_GLB_ADDR + 0x184C,   0x184C,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "TXP ctrl report frame counter"},
 	[mvAsicReg_EPON_STAT_TXP_DATA_FRAMES_CNT]         =  { mvAsicReg_EPON_STAT_TXP_DATA_FRAMES_CNT,         MV_ASIC_ONT_GLB_ADDR + 0x1850,   0x1850,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "TXP data frame counter"},
 	[mvAsicReg_EPON_STAT_TXP_TX_ALLOWED_BYTE_CNT]     =  { mvAsicReg_EPON_STAT_TXP_TX_ALLOWED_BYTE_CNT,     MV_ASIC_ONT_GLB_ADDR + 0x1854,   0x1854,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "TXP tx allowed byte counter"},
-#else   /* Z2,A0 or later */
+#else /* PON_A0 */
 	[mvAsicReg_EPON_STAT_RXP_FCS_ERROR_CNT]           =  { mvAsicReg_EPON_STAT_RXP_FCS_ERROR_CNT,           MV_ASIC_ONT_GLB_ADDR + 0x1828,   0x1828,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "RXP fcs error counter"},
 	[mvAsicReg_EPON_STAT_RXP_SHORT_ERROR_CNT]         =  { mvAsicReg_EPON_STAT_RXP_SHORT_ERROR_CNT,         MV_ASIC_ONT_GLB_ADDR + 0x1848,   0x1848,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "RXP short error counter"},
 	[mvAsicReg_EPON_STAT_RXP_LONG_ERROR_CNT]          =  { mvAsicReg_EPON_STAT_RXP_LONG_ERROR_CNT,          MV_ASIC_ONT_GLB_ADDR + 0x1868,   0x1868,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "RXP long error counter"},
@@ -632,7 +649,7 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_STAT_TXP_CTRL_REPORT_FRAMES_CNT]  =  { mvAsicReg_EPON_STAT_TXP_CTRL_REPORT_FRAMES_CNT,  MV_ASIC_ONT_GLB_ADDR + 0x1948,   0x1948,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "TXP ctrl report frame counter"},
 	[mvAsicReg_EPON_STAT_TXP_DATA_FRAMES_CNT]         =  { mvAsicReg_EPON_STAT_TXP_DATA_FRAMES_CNT,         MV_ASIC_ONT_GLB_ADDR + 0x1968,   0x1968,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "TXP data frame counter"},
 	[mvAsicReg_EPON_STAT_TXP_TX_ALLOWED_BYTE_CNT]     =  { mvAsicReg_EPON_STAT_TXP_TX_ALLOWED_BYTE_CNT,     MV_ASIC_ONT_GLB_ADDR + 0x1988,   0x1988,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "TXP tx allowed byte counter"},
-#endif  /* Z2,A0 or later */
+#endif
 
 	/* ===================================== */
 	/*  EPON Control Packet queue Registers  */
@@ -647,20 +664,19 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_CPQ_RX_RPRT_HQ_READ_L]            =  { mvAsicReg_EPON_CPQ_RX_RPRT_HQ_READ_L,            MV_ASIC_ONT_GLB_ADDR + 0x1C2C,   0x1C2C,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "CPQ rx report header queue read L"},
 	[mvAsicReg_EPON_CPQ_RX_RPRT_HQ_READ_H]            =  { mvAsicReg_EPON_CPQ_RX_RPRT_HQ_READ_H,            MV_ASIC_ONT_GLB_ADDR + 0x1C30,   0x1C30,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "CPQ rx report header queue read H"},
 	[mvAsicReg_EPON_CPQ_RX_RPRT_HQ_USED]              =  { mvAsicReg_EPON_CPQ_RX_RPRT_HQ_USED,              MV_ASIC_ONT_GLB_ADDR + 0x1C34,   0x1C34,   asicRW,     0x0000001F,     0,      0,     0,      0,     "CPQ rx report header queue read used"},
+	[mvAsicReg_EPON_CPQ_TX_CTRL_Q_WRITE]              =  { mvAsicReg_EPON_CPQ_TX_CTRL_Q_WRITE,              MV_ASIC_ONT_GLB_ADDR + 0x1C78,   0x1C78,   asicWO,     0x000000FF,     0,      8,     1,      0,     "CPQ tx ctrl queue write"},
 #ifdef PON_Z1
-	[mvAsicReg_EPON_CPQ_TX_CTRL_Q_WRITE]              =  { mvAsicReg_EPON_CPQ_TX_CTRL_Q_WRITE,              MV_ASIC_ONT_GLB_ADDR + 0x1C38,   0x1C38,   asicRW,     0x000000FF,     0,      0,     0,      0,     "CPQ tx ctrl queue write"},
-	[mvAsicReg_EPON_CPQ_TX_CTRL_Q_FREE]               =  { mvAsicReg_EPON_CPQ_TX_CTRL_Q_FREE,               MV_ASIC_ONT_GLB_ADDR + 0x1C3C,   0x1C3C,   asicRW,     0x000001FF,     0,      0,     0,      0,     "CPQ tx ctrl queue free"},
-#else   /* Z2,A0 or later */
-	[mvAsicReg_EPON_CPQ_TX_CTRL_Q_WRITE]              =  { mvAsicReg_EPON_CPQ_TX_CTRL_Q_WRITE,              MV_ASIC_ONT_GLB_ADDR + 0x1C78,   0x1C78,   asicRW,     0x000000FF,     0,      8,     1,      0,     "CPQ tx ctrl queue write"},
-	[mvAsicReg_EPON_CPQ_TX_CTRL_Q_FREE]               =  { mvAsicReg_EPON_CPQ_TX_CTRL_Q_FREE,               MV_ASIC_ONT_GLB_ADDR + 0x1C98,   0x1C98,   asicRW,     0x00000FFF,     0,      8,     1,      0,     "CPQ tx ctrl queue free"},
-#endif  /* Z2,A0 or later */
+	[mvAsicReg_EPON_CPQ_TX_CTRL_Q_FREE]               =  { mvAsicReg_EPON_CPQ_TX_CTRL_Q_FREE,               MV_ASIC_ONT_GLB_ADDR + 0x1C98,   0x1C98,   asicRO,     0x000001FF,     0,      8,     1,      0,     "CPQ tx ctrl queue free"},
+#else /* PON_A0 */
+	[mvAsicReg_EPON_CPQ_TX_CTRL_Q_FREE]               =  { mvAsicReg_EPON_CPQ_TX_CTRL_Q_FREE,               MV_ASIC_ONT_GLB_ADDR + 0x1C98,   0x1C98,   asicRO,     0x00000FFF,     0,      8,     1,      0,     "CPQ tx ctrl queue free"},
+#endif
 #ifdef PON_Z1
 	[mvAsicReg_EPON_CPQ_TX_CTRL_HQ_WRITE]             =  { mvAsicReg_EPON_CPQ_TX_CTRL_HQ_WRITE,             MV_ASIC_ONT_GLB_ADDR + 0x1C48,   0x1C48,   asicRW,     0x00FFFFFF,     0,      0,     0,      0,     "CPQ tx ctrl header queue write"},
 	[mvAsicReg_EPON_CPQ_TX_CTRL_HQ_FREE]              =  { mvAsicReg_EPON_CPQ_TX_CTRL_HQ_FREE,              MV_ASIC_ONT_GLB_ADDR + 0x1C4C,   0x1C4C,   asicRW,     0x00FFFFFF,     0,      0,     0,      0,     "CPQ tx ctrl header queue free"},
-#else   /* Z2,A0 or later */
+#else /* PON_A0 */
 	[mvAsicReg_EPON_CPQ_TX_CTRL_HQ_WRITE]             =  { mvAsicReg_EPON_CPQ_TX_CTRL_HQ_WRITE,             MV_ASIC_ONT_GLB_ADDR + 0x1CB8,   0x1CB8,   asicRW,     0x00FFFFFF,     0,      8,     1,      0,     "CPQ tx ctrl header queue write"},
 	[mvAsicReg_EPON_CPQ_TX_CTRL_HQ_FREE]              =  { mvAsicReg_EPON_CPQ_TX_CTRL_HQ_FREE,              MV_ASIC_ONT_GLB_ADDR + 0x1CD8,   0x1CD8,   asicRW,     0x00FFFFFF,     0,      8,     1,      0,     "CPQ tx ctrl header queue free"},
-#endif  /* Z2,A0 or later */
+#endif
 
 	/* =========================== */
 	/*  P2P Registers              */
@@ -668,78 +684,6 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_P2P_GEN_ONT_MODE]                      =  { mvAsicReg_P2P_GEN_ONT_MODE,                      MV_ASIC_ONT_GLB_ADDR + 0x040C,   0x040C,   asicRW,     0x00000001,    31,      0,     0,      0,     "ONU mode"},
 	[mvAsicReg_P2P_PCS_CONFIGURATION]                 =  { mvAsicReg_P2P_PCS_CONFIGURATION,                 MV_ASIC_ONT_GLB_ADDR + 0x1414,   0x1414,   asicRW,     0x00000613,    16,      0,     0,      0,     "P2P PCS configuration"},
 	[mvAsicReg_P2P_TXM_CFG_MODE]                      =  { mvAsicReg_P2P_TXM_CFG_MODE,                      MV_ASIC_ONT_GLB_ADDR + 0x1018,   0x1018,   asicRW,     0x00000003,     3,      0,     0,      0,     "Tx Configuration mode"},
-
-#ifndef PON_FPGA
-#ifdef DISABLE_DG_FOR_AVANTA_LP
-	[mvAsicReg_PON_MPP_00]                            =  { mvAsicReg_PON_MPP_00,                            0x18000,                         0x18000,  asicRW,     0x0000000F,     0,      0,     0,      0,     "Gpon MMP 00"},
-	[mvAsicReg_PON_MPP_01]                            =  { mvAsicReg_PON_MPP_01,                            0x18000,                         0x18000,  asicRW,     0x0000000F,     4,      0,     0,      0,     "Gpon MMP 01"},
-	[mvAsicReg_PON_MPP_02]                            =  { mvAsicReg_PON_MPP_02,                            0x18000,                         0x18000,  asicRW,     0x0000000F,     8,      0,     0,      0,     "Gpon MMP 02"},
-	[mvAsicReg_PON_MPP_03]                            =  { mvAsicReg_PON_MPP_03,                            0x18000,                         0x18000,  asicRW,     0x0000000F,    12,      0,     0,      0,     "Gpon MMP 03"},
-	[mvAsicReg_PON_MPP_04]                            =  { mvAsicReg_PON_MPP_04,                            0x18000,                         0x18000,  asicRW,     0x0000000F,    16,      0,     0,      0,     "Gpon MMP 04"},
-	[mvAsicReg_PON_MPP_05]                            =  { mvAsicReg_PON_MPP_05,                            0x18000,                         0x18000,  asicRW,     0x0000000F,    20,      0,     0,      0,     "Gpon MMP 05"},
-	[mvAsicReg_PON_MPP_06]                            =  { mvAsicReg_PON_MPP_06,                            0x18000,                         0x18000,  asicRW,     0x0000000F,    24,      0,     0,      0,     "Gpon MMP 06"},
-	[mvAsicReg_PON_MPP_07]                            =  { mvAsicReg_PON_MPP_07,                            0x18000,                         0x18000,  asicRW,     0x0000000F,    28,      0,     0,      0,     "Gpon MMP 07"},
-	[mvAsicReg_PON_MPP_08]                            =  { mvAsicReg_PON_MPP_08,                            0x18004,                         0x18004,  asicRW,     0x0000000F,     0,      0,     0,      0,     "Gpon MMP 08"},
-	[mvAsicReg_PON_MPP_09]                            =  { mvAsicReg_PON_MPP_09,                            0x18004,                         0x18004,  asicRW,     0x0000000F,     4,      0,     0,      0,     "Gpon MMP 09"},
-	[mvAsicReg_PON_MPP_10]                            =  { mvAsicReg_PON_MPP_10,                            0x18004,                         0x18004,  asicRW,     0x0000000F,     8,      0,     0,      0,     "Gpon MMP 10"},
-	[mvAsicReg_PON_MPP_11]                            =  { mvAsicReg_PON_MPP_11,                            0x18004,                         0x18004,  asicRW,     0x0000000F,    12,      0,     0,      0,     "Gpon MMP 11"},
-	[mvAsicReg_PON_MPP_12]                            =  { mvAsicReg_PON_MPP_12,                            0x18004,                         0x18004,  asicRW,     0x0000000F,    16,      0,     0,      0,     "Gpon MMP 12"},
-	[mvAsicReg_PON_MPP_13]                            =  { mvAsicReg_PON_MPP_13,                            0x18004,                         0x18004,  asicRW,     0x0000000F,    20,      0,     0,      0,     "Gpon MMP 13"},
-	[mvAsicReg_PON_MPP_14]                            =  { mvAsicReg_PON_MPP_14,                            0x18004,                         0x18004,  asicRW,     0x0000000F,    24,      0,     0,      0,     "Gpon MMP 14"},
-	[mvAsicReg_PON_MPP_15]                            =  { mvAsicReg_PON_MPP_15,                            0x18004,                         0x18004,  asicRW,     0x0000000F,    28,      0,     0,      0,     "Gpon MMP 15"},
-	[mvAsicReg_PON_MPP_16]                            =  { mvAsicReg_PON_MPP_16,                            0x18008,                         0x18008,  asicRW,     0x0000000F,     0,      0,     0,      0,     "Gpon MMP 16"},
-	[mvAsicReg_PON_MPP_17]                            =  { mvAsicReg_PON_MPP_17,                            0x18008,                         0x18008,  asicRW,     0x0000000F,     4,      0,     0,      0,     "Gpon MMP 17"},
-	[mvAsicReg_PON_MPP_18]                            =  { mvAsicReg_PON_MPP_18,                            0x18008,                         0x18008,  asicRW,     0x0000000F,     8,      0,     0,      0,     "Gpon MMP 18"},
-	[mvAsicReg_PON_MPP_19]                            =  { mvAsicReg_PON_MPP_19,                            0x18008,                         0x18008,  asicRW,     0x0000000F,    12,      0,     0,      0,     "Gpon MMP 19, TDM RST"},
-	[mvAsicReg_PON_MPP_20]                            =  { mvAsicReg_PON_MPP_20,                            0x18008,                         0x18008,  asicRW,     0x0000000F,    16,      0,     0,      0,     "Gpon MMP 20"},
-	[mvAsicReg_PON_MPP_21]                            =  { mvAsicReg_PON_MPP_21,                            0x18008,                         0x18008,  asicRW,     0x0000000F,    20,      0,     0,      0,     "Gpon MMP 21"},
-	[mvAsicReg_PON_MPP_22]                            =  { mvAsicReg_PON_MPP_22,                            0x18008,                         0x18008,  asicRW,     0x0000000F,    24,      0,     0,      0,     "Gpon MMP 22"},
-	[mvAsicReg_PON_MPP_23]                            =  { mvAsicReg_PON_MPP_23,                            0x18008,                         0x18008,  asicRW,     0x0000000F,    28,      0,     0,      0,     "Gpon MMP 23"},
-	[mvAsicReg_PON_MPP_24]                            =  { mvAsicReg_PON_MPP_24,                            0x1800C,                         0x1800C,  asicRW,     0x0000000F,     0,      0,     0,      0,     "Gpon MMP 24"},
-	[mvAsicReg_PON_MPP_25]                            =  { mvAsicReg_PON_MPP_25,                            0x1800C,                         0x1800C,  asicRW,     0x0000000F,     4,      0,     0,      0,     "Gpon MMP 25"},
-	[mvAsicReg_PON_MPP_26]                            =  { mvAsicReg_PON_MPP_26,                            0x1800C,                         0x1800C,  asicRW,     0x0000000F,     8,      0,     0,      0,     "Gpon MMP 26"},
-	[mvAsicReg_PON_MPP_27]                            =  { mvAsicReg_PON_MPP_27,                            0x1800C,                         0x1800C,  asicRW,     0x0000000F,    12,      0,     0,      0,     "Gpon MMP 27"},
-	[mvAsicReg_PON_MPP_28]                            =  { mvAsicReg_PON_MPP_28,                            0x1800C,                         0x1800C,  asicRW,     0x0000000F,    16,      0,     0,      0,     "Gpon MMP 28"},
-	[mvAsicReg_PON_MPP_29]                            =  { mvAsicReg_PON_MPP_29,                            0x1800C,                         0x1800C,  asicRW,     0x0000000F,    20,      0,     0,      0,     "Gpon MMP 29"},
-	[mvAsicReg_PON_MPP_30]                            =  { mvAsicReg_PON_MPP_30,                            0x1800C,                         0x1800C,  asicRW,     0x0000000F,    24,      0,     0,      0,     "Gpon MMP 30"},
-	[mvAsicReg_PON_MPP_31]                            =  { mvAsicReg_PON_MPP_31,                            0x1800C,                         0x1800C,  asicRW,     0x0000000F,    28,      0,     0,      0,     "Gpon MMP 31"},
-	[mvAsicReg_PON_MPP_32]                            =  { mvAsicReg_PON_MPP_32,                            0x18010,                         0x18010,  asicRW,     0x0000000F,     0,      0,     0,      0,     "Gpon MMP 32"},
-	[mvAsicReg_PON_MPP_33]                            =  { mvAsicReg_PON_MPP_33,                            0x18010,                         0x18010,  asicRW,     0x0000000F,     4,      0,     0,      0,     "Gpon MMP 33"},
-	[mvAsicReg_PON_MPP_34]                            =  { mvAsicReg_PON_MPP_34,                            0x18010,                         0x18010,  asicRW,     0x0000000F,     8,      0,     0,      0,     "Gpon MMP 34"},
-	[mvAsicReg_PON_MPP_35]                            =  { mvAsicReg_PON_MPP_35,                            0x18010,                         0x18010,  asicRW,     0x0000000F,    12,      0,     0,      0,     "Gpon MMP 35"},
-	[mvAsicReg_PON_MPP_36]                            =  { mvAsicReg_PON_MPP_36,                            0x18010,                         0x18010,  asicRW,     0x0000000F,    16,      0,     0,      0,     "Gpon MMP 36"},
-	[mvAsicReg_PON_MPP_37]                            =  { mvAsicReg_PON_MPP_37,                            0x18010,                         0x18010,  asicRW,     0x0000000F,    20,      0,     0,      0,     "Gpon MMP 37"},
-	[mvAsicReg_PON_MPP_38]                            =  { mvAsicReg_PON_MPP_38,                            0x18010,                         0x18010,  asicRW,     0x0000000F,    24,      0,     0,      0,     "Gpon MMP 38"},
-	[mvAsicReg_PON_MPP_39]                            =  { mvAsicReg_PON_MPP_39,                            0x18010,                         0x18010,  asicRW,     0x0000000F,    28,      0,     0,      0,     "Gpon MMP 39"},
-	[mvAsicReg_PON_MPP_40]                            =  { mvAsicReg_PON_MPP_40,                            0x18014,                         0x18014,  asicRW,     0x0000000F,     0,      0,     0,      0,     "Gpon MMP 40"},
-	[mvAsicReg_PON_MPP_41]                            =  { mvAsicReg_PON_MPP_41,                            0x18014,                         0x18014,  asicRW,     0x0000000F,     4,      0,     0,      0,     "Gpon MMP 41"},
-	[mvAsicReg_PON_MPP_42]                            =  { mvAsicReg_PON_MPP_42,                            0x18014,                         0x18014,  asicRW,     0x0000000F,     8,      0,     0,      0,     "Gpon MMP 42"},
-	[mvAsicReg_PON_MPP_43]                            =  { mvAsicReg_PON_MPP_43,                            0x18014,                         0x18014,  asicRW,     0x0000000F,    12,      0,     0,      0,     "Gpon MMP 43"},
-	[mvAsicReg_PON_MPP_44]                            =  { mvAsicReg_PON_MPP_44,                            0x18014,                         0x18014,  asicRW,     0x0000000F,    16,      0,     0,      0,     "Gpon MMP 44"},
-	[mvAsicReg_PON_MPP_45]                            =  { mvAsicReg_PON_MPP_45,                            0x18014,                         0x18014,  asicRW,     0x0000000F,    20,      0,     0,      0,     "Gpon MMP 45"},
-	[mvAsicReg_PON_MPP_46]                            =  { mvAsicReg_PON_MPP_46,                            0x18014,                         0x18014,  asicRW,     0x0000000F,    24,      0,     0,      0,     "Gpon MMP 46"},
-	[mvAsicReg_PON_MPP_47]                            =  { mvAsicReg_PON_MPP_47,                            0x18014,                         0x18014,  asicRW,     0x0000000F,    28,      0,     0,      0,     "Gpon MMP 47"},
-	[mvAsicReg_PON_MPP_48]                            =  { mvAsicReg_PON_MPP_48,                            0x18018,                         0x18018,  asicRW,     0x0000000F,     0,      0,     0,      0,     "Gpon MMP 48"},
-	[mvAsicReg_PON_MPP_49]                            =  { mvAsicReg_PON_MPP_49,                            0x18018,                         0x18018,  asicRW,     0x0000000F,     4,      0,     0,      0,     "Gpon MMP 49"},
-	[mvAsicReg_PON_MPP_50]                            =  { mvAsicReg_PON_MPP_50,                            0x18018,                         0x18018,  asicRW,     0x0000000F,     8,      0,     0,      0,     "Gpon MMP 50, RD Board Dying Gasp"},
-	[mvAsicReg_PON_MPP_51]                            =  { mvAsicReg_PON_MPP_51,                            0x18018,                         0x18018,  asicRW,     0x0000000F,    12,      0,     0,      0,     "Gpon MMP 51"},
-	[mvAsicReg_PON_MPP_52]                            =  { mvAsicReg_PON_MPP_52,                            0x18018,                         0x18018,  asicRW,     0x0000000F,    16,      0,     0,      0,     "Gpon MMP 52"},
-	[mvAsicReg_PON_MPP_53]                            =  { mvAsicReg_PON_MPP_53,                            0x18018,                         0x18018,  asicRW,     0x0000000F,    20,      0,     0,      0,     "Gpon MMP 53"},
-	[mvAsicReg_PON_MPP_54]                            =  { mvAsicReg_PON_MPP_54,                            0x18018,                         0x18018,  asicRW,     0x0000000F,    24,      0,     0,      0,     "Gpon MMP 54"},
-	[mvAsicReg_PON_MPP_55]                            =  { mvAsicReg_PON_MPP_55,                            0x18018,                         0x18018,  asicRW,     0x0000000F,    28,      0,     0,      0,     "Gpon MMP 55"},
-	[mvAsicReg_PON_MPP_56]                            =  { mvAsicReg_PON_MPP_56,                            0x1801C,                         0x1801C,  asicRW,     0x0000000F,     0,      0,     0,      0,     "Gpon MMP 56"},
-	[mvAsicReg_PON_MPP_57]                            =  { mvAsicReg_PON_MPP_57,                            0x1801C,                         0x1801C,  asicRW,     0x0000000F,     4,      0,     0,      0,     "Gpon MMP 57"},
-	[mvAsicReg_PON_MPP_58]                            =  { mvAsicReg_PON_MPP_58,                            0x1801C,                         0x1801C,  asicRW,     0x0000000F,     8,      0,     0,      0,     "Gpon MMP 58"},
-	[mvAsicReg_PON_MPP_59]                            =  { mvAsicReg_PON_MPP_59,                            0x1801C,                         0x1801C,  asicRW,     0x0000000F,    12,      0,     0,      0,     "Gpon MMP 59"},
-	[mvAsicReg_PON_MPP_60]                            =  { mvAsicReg_PON_MPP_60,                            0x1801C,                         0x1801C,  asicRW,     0x0000000F,    16,      0,     0,      0,     "Gpon MMP 60"},
-	[mvAsicReg_PON_MPP_61]                            =  { mvAsicReg_PON_MPP_61,                            0x1801C,                         0x1801C,  asicRW,     0x0000000F,    20,      0,     0,      0,     "Gpon MMP 61"},
-	[mvAsicReg_PON_MPP_62]                            =  { mvAsicReg_PON_MPP_62,                            0x1801C,                         0x1801C,  asicRW,     0x0000000F,    24,      0,     0,      0,     "Gpon MMP 62"},
-	[mvAsicReg_PON_MPP_63]                            =  { mvAsicReg_PON_MPP_63,                            0x1801C,                         0x1801C,  asicRW,     0x0000000F,    28,      0,     0,      0,     "Gpon MMP 63"},
-	[mvAsicReg_PON_MPP_64]                            =  { mvAsicReg_PON_MPP_64,                            0x18020,                         0x18020,  asicRW,     0x0000000F,     0,      0,     0,      0,     "Gpon MMP 64"},
-	[mvAsicReg_PON_MPP_65]                            =  { mvAsicReg_PON_MPP_65,                            0x18020,                         0x18020,  asicRW,     0x0000000F,     4,      0,     0,      0,     "Gpon MMP 65"},
-	[mvAsicReg_PON_MPP_66]                            =  { mvAsicReg_PON_MPP_66,                            0x18020,                         0x18020,  asicRW,     0x0000000F,     8,      0,     0,      0,     "Gpon MMP 66"},
-#endif
-#endif
 
 	/* =========================== */
 	/*  SERDES Registers           */

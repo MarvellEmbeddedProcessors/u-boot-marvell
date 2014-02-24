@@ -264,9 +264,10 @@ typedef enum {
 	mvAsicReg_GPON_TX_STAT_TCONT_i_8_15_GEM_FRAME = 143,    /* GtxStatTcontiGemFrames          */
 	mvAsicReg_GPON_TX_STAT_TCONT_i_8_15_IDLE_GEM  = 144,    /* GtxStatTcontiIdleGem            */
 	mvAsicReg_GPON_TX_HIGH_PRI_CONFIG_EN          = 145,    /* GtxHighPriConfigEn              */
-	mvAsicReg_GPON_TX_HIGH_PRI_VALID_BITMAP       = 146,    /* GtxHighPriValidBm               */
-	mvAsicReg_GPON_TX_HIGH_PRI_MAP_0              = 147,    /* GtxHighPriMap0                  */
-	mvAsicReg_GPON_TX_HIGH_PRI_MAP_1              = 148,    /* GtxHighPriMap1                  */
+	mvAsicReg_GPON_TX_HIGH_PRI_FOR_FRAGMENT       = 146,    /* GtxHighPriForFragment           */
+	mvAsicReg_GPON_TX_HIGH_PRI_VALID_BITMAP       = 147,    /* GtxHighPriValidBm               */
+	mvAsicReg_GPON_TX_HIGH_PRI_MAP_0              = 148,    /* GtxHighPriMap0                  */
+	mvAsicReg_GPON_TX_HIGH_PRI_MAP_1              = 149,    /* GtxHighPriMap1                  */
 
 	/* UTM Registers */
 	/* ============= */
@@ -277,7 +278,12 @@ typedef enum {
 	mvAsicReg_GPON_UTM_ACTIVE_TX_BITMAP           = 191,    /* UtmActiveTxBitmap               */
 	mvAsicReg_GPON_UTM_ACTIVE_TX_BITMAP_VALID     = 192,    /* UtmActiveTxBitmapValid          */
 	mvAsicReg_GPON_UTM_FLUSH                      = 193,    /* UtmFlush                        */
-	mvAsicReg_GPON_UTM_DEBUG                      = 194,    /* UtmDebug                        */
+	mvAsicReg_GPON_UTM_GENERAL                    = 194,    /* UtmGeneral                      */
+	mvAsicReg_GPON_UTM_DEBUG                      = 195,    /* UtmDebug                        */
+	mvAsicReg_GPON_UTM_REPORT_CONFIG              = 196,    /* UtmReportConfig                 */
+	mvAsicReg_GPON_UTM_REPORT_MAP_0               = 197,    /* UtmReportMap0                   */
+	mvAsicReg_GPON_UTM_REPORT_MAP_1               = 198,    /* UtmReportMap1                   */
+
 
 	/* SGL Registers */
 	/* ============= */
@@ -366,6 +372,9 @@ typedef enum {
 	mvAsicReg_PON_MAC_MIB_CONTROL_30              = 275,
 	mvAsicReg_PON_MAC_MIB_CONTROL_31              = 276,
 
+	mvAsicReg_PON_MAC_MIB_COUNTERS_START          = 280,
+	mvAsicReg_PON_MAC_MIB_CONTROL_START           = 281,
+
 /******************************************************************************/
 /******************************************************************************/
 /* ========================================================================== */
@@ -408,110 +417,113 @@ typedef enum {
 	mvAsicReg_EPON_GEN_ONT_STATE_REREG_AUTO_EN         = 321,
 	mvAsicReg_EPON_GEN_ONT_STATE_DEREG_AUTO_EN         = 322,
 	mvAsicReg_EPON_GEN_ONT_STATE_NACK_AUTO_EN          = 323,
-	mvAsicReg_EPON_GEN_TQ_SIZE                         = 324,
-	mvAsicReg_EPON_GEN_LASER_PARAM                     = 325,
-	mvAsicReg_EPON_GEN_TAIL_GUARD                      = 326,
-	mvAsicReg_EPON_GEN_SYNC_TIME                       = 327,
-	mvAsicReg_EPON_GEN_BROADCAST_ADDR_LOW              = 328,
-	mvAsicReg_EPON_GEN_BROADCAST_ADDR_HIGH             = 329,
-	mvAsicReg_EPON_GEN_CONFIGURATION                   = 330,
-	mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_REPORT       = 331,
-	mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_ACK          = 332,
-	mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_REQUEST      = 333,
-	mvAsicReg_EPON_GEN_SLD                             = 334,
-	mvAsicReg_EPON_GEN_MAC_CONTROL_TYPE                = 335,
-	mvAsicReg_EPON_GEN_LOCAL_TIMESTAMP                 = 336,
-	mvAsicReg_EPON_GEN_NUM_OF_PENDING_GRANTS           = 337,
-	mvAsicReg_EPON_GEN_SGL_STATUS                      = 338,
-	mvAsicReg_EPON_GEN_PON_PHY_DEBUG                   = 339,
-	mvAsicReg_EPON_GEN_SGL_SW_RESET                    = 340,
-	mvAsicReg_EPON_GEN_SGL_CONFIG                      = 341,
-	mvAsicReg_EPON_GEN_SGL_DEBOUNCE_CONFIG             = 342,
-	mvAsicReg_EPON_GEN_SGL_DEBOUNCE_ENABLE             = 343,
-	mvAsicReg_EPON_GEN_TCH_CHURNING_KEY                = 344,
-	mvAsicReg_EPON_GEN_ADDITIONAL_OPCODE1              = 345,
-	mvAsicReg_EPON_GEN_ADDITIONAL_OPCODE2              = 346,
-	mvAsicReg_EPON_GEN_DRIFT_THRESHOLD                 = 347,
-	mvAsicReg_EPON_GEN_TIMESTAMP_VAL_FOR_INTR          = 348,
-	mvAsicReg_EPON_GEN_ADDITIONAL_OPCODE3              = 349,
+	mvAsicReg_EPON_GEN_ONT_UP_RX_LLID_PAD              = 324,
+	mvAsicReg_EPON_GEN_TQ_SIZE                         = 325,
+	mvAsicReg_EPON_GEN_LASER_PARAM                     = 326,
+	mvAsicReg_EPON_GEN_TAIL_GUARD                      = 327,
+	mvAsicReg_EPON_GEN_SYNC_TIME                       = 328,
+	mvAsicReg_EPON_GEN_BROADCAST_ADDR_LOW              = 329,
+	mvAsicReg_EPON_GEN_BROADCAST_ADDR_HIGH             = 330,
+	mvAsicReg_EPON_GEN_CONFIGURATION                   = 331,
+	mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_REPORT       = 332,
+	mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_ACK          = 333,
+	mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_REQUEST      = 334,
+	mvAsicReg_EPON_GEN_SLD                             = 335,
+	mvAsicReg_EPON_GEN_MAC_CONTROL_TYPE                = 336,
+	mvAsicReg_EPON_GEN_LOCAL_TIMESTAMP                 = 337,
+	mvAsicReg_EPON_GEN_NUM_OF_PENDING_GRANTS           = 338,
+	mvAsicReg_EPON_GEN_SGL_STATUS                      = 339,
+	mvAsicReg_EPON_GEN_PON_PHY_DEBUG                   = 340,
+	mvAsicReg_EPON_GEN_SGL_SW_RESET                    = 341,
+	mvAsicReg_EPON_GEN_SGL_CONFIG                      = 342,
+	mvAsicReg_EPON_GEN_SGL_DEBOUNCE_CONFIG             = 343,
+	mvAsicReg_EPON_GEN_SGL_DEBOUNCE_ENABLE             = 344,
+	mvAsicReg_EPON_GEN_TCH_CHURNING_KEY                = 345,
+	mvAsicReg_EPON_GEN_ADDITIONAL_OPCODE1              = 346,
+	mvAsicReg_EPON_GEN_ADDITIONAL_OPCODE2              = 347,
+	mvAsicReg_EPON_GEN_DRIFT_THRESHOLD                 = 348,
+	mvAsicReg_EPON_GEN_TIMESTAMP_VAL_FOR_INTR          = 349,
+	mvAsicReg_EPON_GEN_ADDITIONAL_OPCODE3              = 350,
 #ifndef PON_Z1
-	mvAsicReg_EPON_GEN_LLID_CRC_CONFIG                 = 350,
-	mvAsicReg_EPON_GEN_TIMESTAMP_CONFIG                = 351,
-	mvAsicReg_EPON_GEN_ONT_RX_TIMESTAMP_CONFIG         = 352,
-	mvAsicReg_EPON_GEN_ONT_REGISTER_PACKET_PADDING     = 353,
+	mvAsicReg_EPON_GEN_LLID_CRC_CONFIG                 = 351,
+	mvAsicReg_EPON_GEN_TIMESTAMP_CONFIG                = 352,
+	mvAsicReg_EPON_GEN_ONT_RX_TIMESTAMP_CONFIG         = 353,
+	mvAsicReg_EPON_GEN_ONT_REGISTER_PACKET_PADDING     = 354,
 #endif
-	mvAsicReg_EPON_GEN_MAC_ADDR_LOW                    = 354,
-	mvAsicReg_EPON_GEN_MAC_ADDR_HIGH                   = 355,
-	mvAsicReg_EPON_GEN_UTM_TC_PERIOD                   = 356,
-	mvAsicReg_EPON_GEN_UTM_TC_PERIOD_VALID             = 357,
-	mvAsicReg_EPON_GEN_GEM_IPG_VAL                     = 358,
-	mvAsicReg_EPON_GEN_GEM_IPG_VAL_VALID               = 359,
-	mvAsicReg_EPON_GEN_ACT_TX_BITMAP                   = 360,
-	mvAsicReg_EPON_GEN_ACT_TX_VALID                    = 361,
-	mvAsicReg_EPON_GEN_TOD_INT_WIDTH                   = 362, /* General_ToD_Interrupt_Width */
-	mvAsicReg_EPON_TXM_EXT_REPORT_STATE                = 363,
-	mvAsicReg_EPON_TXM_EXT_REPORT_STATE_PER_TX         = 364,
-	mvAsicReg_EPON_TXM_EXT_REPORT_MAP_0                = 365,
-	mvAsicReg_EPON_TXM_EXT_REPORT_MAP_1                = 366,
+	mvAsicReg_EPON_GEN_MAC_ADDR_LOW                    = 355,
+	mvAsicReg_EPON_GEN_MAC_ADDR_HIGH                   = 356,
+	mvAsicReg_EPON_GEN_UTM_TC_PERIOD                   = 357,
+	mvAsicReg_EPON_GEN_UTM_TC_PERIOD_VALID             = 358,
+	mvAsicReg_EPON_GEN_GEM_IPG_VAL                     = 359,
+	mvAsicReg_EPON_GEN_GEM_IPG_VAL_VALID               = 360,
+	mvAsicReg_EPON_GEN_ACT_TX_BITMAP                   = 361,
+	mvAsicReg_EPON_GEN_ACT_TX_VALID                    = 362,
+	mvAsicReg_EPON_GEN_TOD_INT_WIDTH                   = 363, /* General_ToD_Interrupt_Width */
+	mvAsicReg_EPON_UTM_DEBUG                           = 364,
+	mvAsicReg_EPON_UTM_GENERAL                         = 365,
+	mvAsicReg_EPON_TXM_EXT_REPORT_STATE                = 366,
+	mvAsicReg_EPON_TXM_EXT_REPORT_STATE_PER_TX         = 367,
+	mvAsicReg_EPON_TXM_EXT_REPORT_MAP_0                = 368,
+	mvAsicReg_EPON_TXM_EXT_REPORT_MAP_1                = 369,
 
 	/*  EPON RXP Registers         */
 	/* =========================== */
-	mvAsicReg_EPON_RXP_PACKET_SIZE_LIMIT               = 368,
-	mvAsicReg_EPON_RXP_PACKET_FILTER                   = 369,
-	mvAsicReg_EPON_RXP_CTRL_FRAME_FORWARD              = 370,
-	mvAsicReg_EPON_RXP_LLT_LLID_DATA                   = 371,
-	mvAsicReg_EPON_RXP_LLT_LLID_DATA_VALUE             = 372,
-	mvAsicReg_EPON_RXP_LLT_LLID_DATA_INDEX             = 373,
-	mvAsicReg_EPON_RXP_LLT_LLID_DATA_VALID             = 374,
-	mvAsicReg_EPON_RXP_ENCRYPTION_CONFIG               = 375,
-	mvAsicReg_EPON_RXP_ENCRYPTION_KEY0                 = 376,
-	mvAsicReg_EPON_RXP_ENCRYPTION_KEY1                 = 377,
-	mvAsicReg_EPON_RXP_DATA_FIFO_THRESH                = 378,
+	mvAsicReg_EPON_RXP_PACKET_SIZE_LIMIT               = 374,
+	mvAsicReg_EPON_RXP_PACKET_FILTER                   = 375,
+	mvAsicReg_EPON_RXP_CTRL_FRAME_FORWARD              = 376,
+	mvAsicReg_EPON_RXP_LLT_LLID_DATA                   = 377,
+	mvAsicReg_EPON_RXP_LLT_LLID_DATA_VALUE             = 378,
+	mvAsicReg_EPON_RXP_LLT_LLID_DATA_INDEX             = 379,
+	mvAsicReg_EPON_RXP_LLT_LLID_DATA_VALID             = 380,
+	mvAsicReg_EPON_RXP_ENCRYPTION_CONFIG               = 381,
+	mvAsicReg_EPON_RXP_ENCRYPTION_KEY0                 = 382,
+	mvAsicReg_EPON_RXP_ENCRYPTION_KEY1                 = 383,
+	mvAsicReg_EPON_RXP_DATA_FIFO_THRESH                = 384,
 
 	/*  EPON GPM Registers         */
 	/* =========================== */
-	mvAsicReg_EPON_GPM_MAX_FUTURE_GRANT_TIME           = 380,
-	mvAsicReg_EPON_GPM_MIN_PROCESSING_TIME             = 381,
-	mvAsicReg_EPON_GPM_DISCOVERY_GRANT_LENGTH          = 382,
-	mvAsicReg_EPON_GPM_RX_SYNC_TIME                    = 383,
-	mvAsicReg_EPON_GPM_GRANT_VALID                     = 384,
-	mvAsicReg_EPON_GPM_GRANT_MAX_FUTURE_TIME_ERR       = 385,
-	mvAsicReg_EPON_GPM_MIN_PROC_TIME_ERR               = 386,
-	mvAsicReg_EPON_GPM_LENGTH_ERR                      = 387,
-	mvAsicReg_EPON_GPM_DISCOVERY_AND_REGISTERED_ERR    = 388,
-	mvAsicReg_EPON_GPM_FIFO_FULL_ERR                   = 389,
-	mvAsicReg_EPON_GPM_OPC_DISC_NOT_REG_BCAST          = 390,
-	mvAsicReg_EPON_GPM_OPC_REG_NOT_DISC                = 391,
-	mvAsicReg_EPON_GPM_OPC_DISC_NOT_REG_NOT_BCAST      = 392,
-	mvAsicReg_EPON_GPM_OPC_DROPED_GRANT                = 393,
-	mvAsicReg_EPON_GPM_OPC_HIDDEN_GRANT                = 394,
-	mvAsicReg_EPON_GPM_OPC_BACK_TO_BACK_GRANT          = 395,
+	mvAsicReg_EPON_GPM_MAX_FUTURE_GRANT_TIME           = 385,
+	mvAsicReg_EPON_GPM_MIN_PROCESSING_TIME             = 386,
+	mvAsicReg_EPON_GPM_DISCOVERY_GRANT_LENGTH          = 387,
+	mvAsicReg_EPON_GPM_RX_SYNC_TIME                    = 388,
+	mvAsicReg_EPON_GPM_GRANT_VALID                     = 389,
+	mvAsicReg_EPON_GPM_GRANT_MAX_FUTURE_TIME_ERR       = 390,
+	mvAsicReg_EPON_GPM_MIN_PROC_TIME_ERR               = 391,
+	mvAsicReg_EPON_GPM_LENGTH_ERR                      = 392,
+	mvAsicReg_EPON_GPM_DISCOVERY_AND_REGISTERED_ERR    = 393,
+	mvAsicReg_EPON_GPM_FIFO_FULL_ERR                   = 394,
+	mvAsicReg_EPON_GPM_OPC_DISC_NOT_REG_BCAST          = 395,
+	mvAsicReg_EPON_GPM_OPC_REG_NOT_DISC                = 396,
+	mvAsicReg_EPON_GPM_OPC_DISC_NOT_REG_NOT_BCAST      = 397,
+	mvAsicReg_EPON_GPM_OPC_DROPED_GRANT                = 398,
+	mvAsicReg_EPON_GPM_OPC_HIDDEN_GRANT                = 399,
+	mvAsicReg_EPON_GPM_OPC_BACK_TO_BACK_GRANT          = 400,
 
 	/*  EPON TXM Registers         */
 	/* =========================== */
-	mvAsicReg_EPON_TXM_DEFAULT_OVERHEAD                = 396,
-	mvAsicReg_EPON_TXM_CONFIGURATION                   = 397,
-	mvAsicReg_EPON_TXM_POWER_UP                        = 398, /* Tx_Multiplexer_Power_Up */
-	mvAsicReg_EPON_TXM_TX_LLID                         = 399,
-	mvAsicReg_EPON_TXM_CPP_RPRT_CONFIG                 = 400,
-	mvAsicReg_EPON_TXM_CPP_RPRT_BIT_MAP                = 401,
-	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_SET              = 402,
-	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_0                = 403,
-	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_1                = 404,
-	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_2                = 405,
-	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_3                = 406,
-	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_4                = 407,
-	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_5                = 408,
-	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_6                = 409,
-	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_7                = 410,
-	mvAsicReg_EPON_TXM_CPP_RPRT_FEC_CONFIG             = 411,
-	mvAsicReg_EPON_TXM_CPP_RPM_REPORT_CONFIG           = 412,
-	mvAsicReg_EPON_TXM_CPP_RPM_CTRL_FIFO_DBA           = 413,
-	mvAsicReg_EPON_TXM_CPP_RPM_ADX_REPORT_TBL          = 414,
-	mvAsicReg_EPON_TXM_CTRL_FIFO_FLUSH                 = 415,
-	mvAsicReg_EPON_TXM_HIGH_PRI_TX_STATE_BITMAP        = 420,
-	mvAsicReg_EPON_TXM_HIGH_PRI_TX_MAP_0               = 421,
-	mvAsicReg_EPON_TXM_HIGH_PRI_TX_MAP_1               = 422,
+	mvAsicReg_EPON_TXM_DEFAULT_OVERHEAD                = 403,
+	mvAsicReg_EPON_TXM_CONFIGURATION                   = 404,
+	mvAsicReg_EPON_TXM_POWER_UP                        = 405, /* Tx_Multiplexer_Power_Up */
+	mvAsicReg_EPON_TXM_TX_LLID                         = 406,
+	mvAsicReg_EPON_TXM_CPP_RPRT_CONFIG                 = 407,
+	mvAsicReg_EPON_TXM_CPP_RPRT_BIT_MAP                = 408,
+	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_SET              = 409,
+	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_0                = 410,
+	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_1                = 411,
+	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_2                = 412,
+	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_3                = 413,
+	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_4                = 414,
+	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_5                = 415,
+	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_6                = 416,
+	mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_7                = 417,
+	mvAsicReg_EPON_TXM_CPP_RPRT_FEC_CONFIG             = 418,
+	mvAsicReg_EPON_TXM_CPP_RPM_REPORT_CONFIG           = 419,
+	mvAsicReg_EPON_TXM_CPP_RPM_CTRL_FIFO_DBA           = 420,
+	mvAsicReg_EPON_TXM_CPP_RPM_ADX_REPORT_TBL          = 421,
+	mvAsicReg_EPON_TXM_CTRL_FIFO_FLUSH                 = 425,
+	mvAsicReg_EPON_TXM_HIGH_PRI_TX_STATE_BITMAP        = 426,
+	mvAsicReg_EPON_TXM_HIGH_PRI_TX_MAP_0               = 427,
+	mvAsicReg_EPON_TXM_HIGH_PRI_TX_MAP_1               = 428,
 
 	/*  EPON PCS Registers         */
 	/* =========================== */

@@ -384,6 +384,8 @@ MV_STATUS mvOnuGponMacUtmActiveTxBitmapValidSet(MV_U32 valid);
 MV_STATUS mvOnuGponMacUtmActiveTxBitmapConfigGet(MV_U32 *bitmap, MV_U32 *valid);
 MV_STATUS mvOnuGponMacUtmFlushSet(MV_U32 tcontNum, MV_U32 value);
 MV_STATUS mvOnuGponMacUtmFlushGet(MV_U32 tcontNum, MV_U32 *value);
+MV_STATUS mvOnuGponMacUtmGeneralSet(MV_U32 latencyMode, MV_U32 latencyThresh, MV_U32 latencyIpg);
+MV_STATUS mvOnuGponMacUtmGeneralGet(MV_U32 *latencyMode, MV_U32 *latencyThresh, MV_U32 *latencyIpg);
 MV_STATUS mvOnuGponMacUtmDebugGet(MV_U32 tcontNum, MV_U32 *state);
 
 /* ========================================================================== */
@@ -524,6 +526,8 @@ void      mvOnuGponMacFifoSupportSet(MV_32 value);
 #define ADDITIONAL_OPCODE_3                 (3)
 
 /*RPM Module configuration*/
+#define EPON_RPM_PACKET_GEN_INDICATE_DATA   (0)
+#define EPON_RPM_PACKET_GEN_INDICATE_HEAD   (1)
 #define EPON_RPM_BITMAP_ORDER_HW            (0)
 #define EPON_RPM_BITMAP_ORDER_SW            (0)
 #define EPON_RPM_QSET_ORDER_HW              (1)
@@ -672,12 +676,35 @@ MV_STATUS mvOnuEponMacRxpPacketFilterGet(MV_U32 *ignoreLlidCrcError, MV_U32 *ign
 					 MV_U32 *ignoreGmiiError, MV_U32 *ignoreLengthError,
 					 MV_U32 *forwardAllLlid, MV_U32 *forwardBc0FFF,
 					 MV_U32 *forwardBc1FFF, MV_U32 *forwardBc1xxx, MV_U32 *dropBc1nnn);
+#ifdef PON_A0
+MV_STATUS mvOnuEponMacRxpPacketForwardSet(MV_U32 ctrlFrameToDataQueue,
+					  MV_U32 ctrlFrameToCtrlQueue,
+					  MV_U32 rprtFrameToDataQueue,
+					  MV_U32 rprtFrameToRprtQueue,
+					  MV_U32 slowFrameToRprtQueue,
+					  MV_U32 slowFrameToCtrlQueue,
+					  MV_U32 rxpTsUpdateFcsError,
+					  MV_U32 rxpTsUpdateGmiiError,
+					  MV_U32 rxpTsUpdateLengthError,
+					  MV_U32 rxpTsUpdateCrcError);
+MV_STATUS mvOnuEponMacRxpPacketForwardGet(MV_U32 *ctrlFrameToDataQueue,
+					  MV_U32 *ctrlFrameToCtrlQueue,
+					  MV_U32 *rprtFrameToDataQueue,
+					  MV_U32 *rprtFrameToRprtQueue,
+					  MV_U32 *slowFrameToRprtQueue,
+					  MV_U32 *slowFrameToCtrlQueue,
+					  MV_U32 *rxpTsUpdateFcsError,
+					  MV_U32 *rxpTsUpdateGmiiError,
+					  MV_U32 *rxpTsUpdateLengthError,
+					  MV_U32 *rxpTsUpdateCrcError);
+#else
 MV_STATUS mvOnuEponMacRxpPacketForwardSet(MV_U32 ctrlFrameToDataQueue, MV_U32 ctrlFrameToCtrlQueue,
 					  MV_U32 rprtFrameToDataQueue, MV_U32 rprtFrameToRprtQueue,
 					  MV_U32 slowFrameToRprtQueue, MV_U32 slowFrameToCtrlQueue);
 MV_STATUS mvOnuEponMacRxpPacketForwardGet(MV_U32 *ctrlFrameToDataQueue, MV_U32 *ctrlFrameToCtrlQueue,
 					  MV_U32 *rprtFrameToDataQueue, MV_U32 *rprtFrameToRprtQueue,
 					  MV_U32 *slowFrameToRprtQueue, MV_U32 *slowFrameToCtrlQueue);
+#endif
 MV_STATUS mvOnuEponMacRxpLlidDataSet(MV_U32 llid, MV_U32 index);
 MV_STATUS mvOnuEponMacRxpLlidDataGet(MV_U32 *llid, MV_U32 index);
 MV_STATUS mvOnuEponMacRxpEncConfigSet(MV_U32 config);
@@ -740,7 +767,7 @@ MV_STATUS mvOnuEponMacTxmCppReportQueueSet(MV_U32 queueSet, MV_U32 macId);
 MV_STATUS mvOnuEponMacTxmCppReportQueueSetGet(MV_U32 *queueSet, MV_U32 macId);
 MV_STATUS mvOnuEponMacTxmCppReportQueueX(MV_U32 queueNum, MV_U32 queueCfg, MV_U32 macId);
 MV_STATUS mvOnuEponMacTxmCppReportUpdate(MV_U32 validQueueReport, MV_U32 highestReportQueue, MV_U32 macId);
-MV_STATUS mvOnuEponMacTxmCppRpmReportConfigSet(MV_U32 bitmap, MV_U32 qset, MV_U32 mode);
+MV_STATUS mvOnuEponMacTxmCppRpmReportConfigSet(MV_U32 packetIndication, MV_U32 bitmap, MV_U32 qset, MV_U32 mode);
 MV_STATUS mvOnuEponMacTxmCppRpmFifoDbaConfig(MV_U32 fifoEnable, MV_U32 dbaQueue, MV_U32 dbaOverhead);
 MV_STATUS mvOnuEponMacTxmCppRpmIdxReportTableSet(MV_U32 llid, MV_U32 data, MV_U32 addr);
 MV_STATUS mvOnuEponMacTxmTxCtrlFiFoFlush(MV_U32 llid);

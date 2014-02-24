@@ -132,7 +132,7 @@ extern "C" {
 
 #define MV_PEX_IF_REGS_OFFSET(pexIf)            (0x40000 + (pexIf * 0x4000))
 #define MV_USB_REGS_OFFSET(dev)                 (0x50000)
-#define MV_USB3_REGS_OFFSET(dev)                (0x5FF80)
+#define MV_USB3_REGS_OFFSET(dev)                ((mvCtrlRevGet() <= MV_88F66X0_Z3_ID) ? 0x5ff80 : 0x5b880)
 #define MV_XOR_REGS_OFFSET(unit)                (0x60800)
 #define MV_CESA_TDMA_REGS_OFFSET(chanNum)       (0x90000 + (chanNum * 0x2000))
 #define MV_CESA_REGS_OFFSET(chanNum)            (0x9D000 + (chanNum * 0x2000))

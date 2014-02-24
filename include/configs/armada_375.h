@@ -178,10 +178,15 @@ extern unsigned int mvTclkGet(void);
 
 #define CONFIG_SYS_USE_UBI
 #ifdef CONFIG_SYS_USE_UBI
+	#define CONFIG_CMD_UBI
+	#define CONFIG_CMD_UBIFS
 	#define CONFIG_MTD_DEVICE
 	#define CONFIG_MTD_PARTITIONS
 	#define CONFIG_CMD_MTDPARTS
+	#define CONFIG_RBTREE
+	#define CONFIG_LZO
 #endif /* CONFIG_SYS_USE_UBI */
+
 #endif /* MV_FS */
 /* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
 #include <config_cmd_default.h>

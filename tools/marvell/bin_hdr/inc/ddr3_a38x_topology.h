@@ -107,6 +107,15 @@ MV_HWS_TOPOLOGY_MAP a38xTopologyMap[] =
     5, /* Num Of Bus Per Interface*/
     ACTUAL_BUS_MASK,  /* Buses mask */
     1  /* board number */
+    },
+    /* 3rd board */
+    {
+    0x1, /* active interfaces */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
+	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+    5, /* Num Of Bus Per Interface*/
+    ACTUAL_BUS_MASK,  /* Buses mask */
+    2  /* board number */
     }
 };
 

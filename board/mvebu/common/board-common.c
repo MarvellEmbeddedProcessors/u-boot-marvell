@@ -66,10 +66,10 @@ int common_board_init(struct mvebu_board_family *board_family)
 				 curr_board->unit_update_mode);
 
 	/* Update sar tables */
-	if (curr_board->configurable) {
+	/*if (curr_board->configurable) {
 		if (curr_board->config_data->sar_override)
-			/* update_sar_table();*/
-	}
+			update_sar_table();
+	}*/
 
 	return 0;
 }

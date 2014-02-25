@@ -20,6 +20,7 @@
 
 .globl	_start
 _start:
+	b .
 	b	reset
 
 	.align 3

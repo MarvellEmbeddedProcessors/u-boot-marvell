@@ -45,7 +45,7 @@
 #define CONFIG_BOOTP_VCI_STRING		"U-boot.armv8.armada8021-pxp"
 
 /* Link Definitions */
-#define CONFIG_SYS_TEXT_BASE		0x80000000
+#define CONFIG_SYS_TEXT_BASE		0x00000000
 #define CONFIG_SYS_INIT_SP_ADDR         (CONFIG_SYS_SDRAM_BASE + 0x7fff0)
 
 /* Flat Device Tree Definitions */
@@ -69,7 +69,7 @@
 #define V2M_SYSCTL			(V2M_PA_CS3 + V2M_PERIPH_OFFSET(2))
 #define V2M_SERIAL_BUS_PCI		(V2M_PA_CS3 + V2M_PERIPH_OFFSET(3))
 
-#define V2M_BASE			0x80000000
+#define V2M_BASE			0x00000000
 
 /*
  * Physical addresses, offset from V2M_PA_CS0-3
@@ -171,7 +171,7 @@
 /* Physical Memory Map */
 #define CONFIG_NR_DRAM_BANKS		1
 #define PHYS_SDRAM_1			(V2M_BASE)	/* SDRAM Bank #1 */
-#define PHYS_SDRAM_1_SIZE		0x80000000	/* 2048 MB */
+#define PHYS_SDRAM_1_SIZE		0x20000000	/* 2048 MB */
 #define CONFIG_SYS_SDRAM_BASE		PHYS_SDRAM_1
 
 /* Initial environment variables */

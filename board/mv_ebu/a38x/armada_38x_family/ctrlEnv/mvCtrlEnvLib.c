@@ -140,6 +140,32 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_68xx_INDEX_MAX] = {
 /* PNC_UNIT_ID          */ { 0,				0},
 /* I2C_UNIT_ID          */ { 2,				2},
 };
+#define ON_BOARD_RGMII(x)	(1 << x)
+#define SERDES_SGMII(x)		(4 << x)
+
+/* ethComPhy will be updated by mvCtrlSerdesConfigDetect in case SGMII is set */
+static MV_U32	ethComPhy = ON_BOARD_RGMII(0) | ON_BOARD_RGMII(1);
+/*******************************************************************************
+* mvCtrlPortIsSerdesSgmii
+*
+* DESCRIPTION:
+*       Check if serdes configuration for input port is SGMII
+*
+* INPUT:
+*	eth port.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE if SERDES configure for input port is SGMII
+*******************************************************************************/
+MV_BOOL mvCtrlPortIsSerdesSgmii(MV_U32 ethPort)
+{
+	if (ethComPhy & SERDES_SGMII(ethPort))
+		return MV_TRUE;
+	return MV_FALSE;
+}
 /*******************************************************************************
 * mvCtrlGetCpuNum
 *
@@ -258,7 +284,7 @@ MV_U32 mvCtrlSocUnitInfoNumSet(MV_UNIT_ID unit, MV_U32 maxValue)
 *******************************************************************************/
 MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 {
-	MV_U32 pexIf, commPhyConfigReg, comPhyCfg, serdesNum, serdesCongigField, maxSerdesLane;
+	MV_U32 ifNo, commPhyConfigReg, comPhyCfg, serdesNum, serdesCongigField, maxSerdesLane;
 	MV_U32 ethIfCount = 0;
 	MV_U32 sataIfCount = 0;
 	MV_U32 usbIfCount = 0;
@@ -278,31 +304,34 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 		comPhyCfg = serdesCfg[serdesNum][serdesCongigField];
 		DB(printf("serdesCongigField=0x%x, comPhyCfg=0x%02x SERDES %d detect as ",	\
 			  serdesCongigField, comPhyCfg, serdesNum));
+		ifNo = comPhyCfg & 0x0f;
 		switch (comPhyCfg & 0xF0) {
 		case SERDES_UNIT_PEX:
-			pexIf = comPhyCfg & 0x0f;
-			if ((pexIf == PEX0_IF) && (commPhyConfigReg & PCIE0_X4_EN_MASK))
-				boardPexInfo->pexUnitCfg[pexIf] = PEX_BUS_MODE_X4;
+			if ((ifNo == PEX0_IF) && (commPhyConfigReg & PCIE0_X4_EN_MASK))
+				boardPexInfo->pexUnitCfg[ifNo] = PEX_BUS_MODE_X4;
 			else
-				boardPexInfo->pexUnitCfg[pexIf] = PEX_BUS_MODE_X1;
-			boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = pexIf;
+				boardPexInfo->pexUnitCfg[ifNo] = PEX_BUS_MODE_X1;
+			boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = ifNo;
 			boardPexInfo->boardPexIfNum++;
-			DB(printf("PEX, if=%d\n", pexIf));
+			DB(printf("PEX, if=%d\n", ifNo));
 			break;
 		case SERDES_UNIT_SATA:
-			DB(printf("SATA, if=%d\n", (comPhyCfg & 0x0f)));
+			DB(printf("SATA, if=%d\n", ifNo));
 			sataIfCount++;
 			break;
 		case SERDES_UNIT_GBE:
-			DB(printf("SGMII, if=%d\n", (comPhyCfg & 0x0f)));
+			if (ifNo < 2) /* detected SGMII will replace the same Ob-Board compatible port */
+				ethComPhy &= ON_BOARD_RGMII(ifNo);
+			ethComPhy |= SERDES_SGMII(ifNo);
+			DB(printf("SGMII, if=%d\n", ifNo));
 			ethIfCount++;
 			break;
 		case SERDES_UNIT_USB_H:
-		DB(printf("USB_H, if=%d\n", (comPhyCfg & 0x0f)));
+		DB(printf("USB_H, if=%d\n", ifNo));
 			usbHIfCount++;
 			break;
 		case SERDES_UNIT_USB:
-			DB(printf("USB, if=%d\n", (comPhyCfg & 0x0f)));
+			DB(printf("USB, if=%d\n", ifNo));
 			usbIfCount++;
 			break;
 		case SERDES_UNIT_NA:
@@ -312,7 +341,9 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 	mvCtrlSocUnitInfoNumSet(PEX_UNIT_ID, boardPexInfo->boardPexIfNum);
 	mvCtrlSocUnitInfoNumSet(SATA_UNIT_ID , sataIfCount);
 	mvCtrlSocUnitInfoNumSet(USB3_UNIT_ID, usbHIfCount);
-	if (ethIfCount) /* if serdes configuration found SGMII ports replace the existing RGMII gonfiguration*/
+	/* only if found more serdes eth interfaces than on-board ports,than update max eth count.
+	   (needed by phy + giga init sequence)				*/
+	if (ethIfCount > MV_ETH_MAX_ON_BOARD_PORTS)
 		mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, ethIfCount);
 	else
 		mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, MV_ETH_MAX_ON_BOARD_PORTS);

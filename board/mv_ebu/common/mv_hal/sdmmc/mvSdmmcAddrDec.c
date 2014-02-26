@@ -70,7 +70,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MV_SDMMC_MAX_ADDR_DECODE_WIN 4
 
-#ifdef MV_MMC_SDIO3
+#ifdef CONFIG_MV_SDHCI
 #define MV_SDMMC_WIN_CTRL_REG(dev, win)        (MV_SDMMC_WINDOWS_REGS_OFFSET + 0x80 + ((win)<<3))
 #define MV_SDMMC_WIN_BASE_REG(dev, win)        (MV_SDMMC_WINDOWS_REGS_OFFSET + 0x84 + ((win)<<3))
 #else
@@ -108,7 +108,7 @@ MV_TARGET sdmmcAddrDecPrioTab[] = {
 #if defined(MV_INCLUDE_SDRAM_CS3)
 	SDRAM_CS3,
 #endif
-#ifndef MV_MMC_SDIO3
+#ifndef CONFIG_MV_SDHCI
 #if defined(MV_INCLUDE_PEX)
 	PEX0_MEM,
 #endif

@@ -270,11 +270,7 @@ MV_STATUS mvBoardNameGet(char *pNameBuff, MV_U32 size)
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 {
-	if ((mvBoardIsModuleConnected(MV_CONFIG_SGMII)) && /* when SGMII connected the SGMII ports are 1 & 2 */
-	    ((ethPortNum == 1) || (ethPortNum == 2)))
-		return MV_TRUE;
-
-	return MV_FALSE;
+	return mvCtrlPortIsSerdesSgmii(ethPortNum);
 }
 
 /*******************************************************************************

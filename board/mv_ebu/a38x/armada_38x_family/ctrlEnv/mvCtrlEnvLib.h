@@ -185,6 +185,7 @@ typedef enum {
 /* mcspLib.h API list */
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode);
 MV_U32 mvCtrlbootSrcGet(void);
+MV_BOOL mvCtrlPortIsSerdesSgmii(MV_U32 ethPort);
 MV_U32 mvCtrlGetCpuNum(MV_VOID);
 MV_U32 mvCtrlGetQuadNum(MV_VOID);
 MV_STATUS mvCtrlUpdatePexId(MV_VOID);

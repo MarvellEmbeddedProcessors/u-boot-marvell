@@ -90,10 +90,12 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #elif defined(MV88F68XX)
 #include "ddr3_a38x.h"
 #include "ddr3_a38x_vars.h"
+#include "ddr3_a38x_topology.h"
 #elif defined(MV_MSYS)
 #include "ddr3_msys.h"
 #include "ddr3_msys_config.h"
 #include "ddr3_msys_vars.h"
+#include "ddr3_msys_topology.h"
 #endif
 
 #if defined(MV88F68XX) || defined(MV_MSYS)
@@ -104,7 +106,13 @@ extern MV_STATUS ddr3TipInitSpecificRegConfig
     MV_U32              devNum,
 	MV_DRAM_MC_INIT		*regConfigArr
 );
+extern MV_STATUS    mvHwsDdr3TipLoadTopologyMap
+(
+    MV_U32                  devNum,
+    MV_HWS_TOPOLOGY_MAP     *topology
+);
 extern MV_U32 ddr3TipGetInitFreq();
+MV_STATUS ddr3LoadTopologyMap(void);
 #else
 #define SUB_VERSION	9
 #endif
@@ -735,6 +743,12 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 #if defined DUNIT_STATIC
 		ddr3TipInitSpecificRegConfig(0, ddr_modes[ddr3GetStaticDdrMode()].regs);
 #endif
+	/*Load topology for New Training IP*/
+	status = ddr3LoadTopologyMap();
+	if (MV_OK != status) {
+		DEBUG_INIT_FULL_S("DDR3 Training Sequence topology load - FAILED\n");
+		return status;
+	}
 
 	/*Start New Training IP*/
 	status = ddr3HwsHwTraining();
@@ -1478,6 +1492,51 @@ MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs)
 #endif
 
 #if defined(MV_NEW_TIP)
+
+#if defined(MV88F68XX)
+/*****************************************************************************/
+MV_HWS_TOPOLOGY_MAP* ddr3SiliconGetTopologyMap(MV_U32 boardId)
+{
+	if (sizeof(a38xTopologyMap)/sizeof(MV_HWS_TOPOLOGY_MAP) <= boardId){
+		DEBUG_INIT_FULL_S("Detected not supported board ID\n");
+		return NULL;
+	}
+	return &a38xTopologyMap[boardId];
+}
+#endif
+
+#if defined(MV_MSYS)
+/*****************************************************************************/
+MV_HWS_TOPOLOGY_MAP* ddr3SiliconGetTopologyMap(MV_U32 boardId)
+{
+	if (sizeof(msysTopologyMap)/sizeof(MV_HWS_TOPOLOGY_MAP*) <= boardId){
+		DEBUG_INIT_FULL_S("Detected not supported board ID\n");
+		return NULL;
+	}
+
+	return &msysTopologyMap[boardId];
+}
+#endif
+
+/*******************************************************************************/
+MV_STATUS ddr3LoadTopologyMap(void)
+{
+	MV_HWS_TOPOLOGY_MAP* topologyMap;
+	MV_U8 	devNum = 0;
+	MV_U32 boardId = mvBoardIdGet();
+
+	topologyMap = ddr3SiliconGetTopologyMap(boardId);
+	if (NULL == topologyMap) {
+		DEBUG_INIT_FULL_S("DDR3 Load Topology map - FAILED\n");
+		return MV_FAIL;
+	}
+
+	if(MV_OK != mvHwsDdr3TipLoadTopologyMap(devNum, topologyMap))
+		return MV_FAIL;
+
+	return MV_OK;
+}
+
 MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs)
 {
 	MV_U32 tmp, hclk = 200;

@@ -9,7 +9,7 @@ sub HELP_MESSAGE
 	print "\n";
 	print "Options:\n";
 	print "\t-f\tBoot device. Accepts spi, nor, nand\n";
-	print "\t-b\tBoard type. Accepts: avanta_lp, armada_375, armada_38x, bobcat2\n";
+	print "\t-b\tBoard type. Accepts: avanta_lp, armada_375, armada_38x, bobcat2_db\n";
 	print "\t-c\tClean build. calls make mrproper\n";
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
@@ -59,7 +59,7 @@ if($opt_c eq 1)
 		($opt_b eq "avanta_lp") or
                 ($opt_b eq "armada_375") or
 		($opt_b eq "armada_38x") or
-		($opt_b eq "bobcat2") )
+		($opt_b eq "bobcat2_db") )
 	{
 		$board = $opt_b;
 		if( (substr $board,7 , 3) eq "370" ) {
@@ -80,7 +80,8 @@ if($opt_c eq 1)
 			$boardID="a38x";
 		}
 		elsif ( (substr $board,0 , 7) eq "bobcat2" ) {
-				$boardID="msys";
+			$boardID="msys";
+			$targetBoard = substr $board, 8;
 		}
 	}
 	else
@@ -225,7 +226,6 @@ if($fail){
 
 if( ($boardID eq "alp") or
     ($boardID eq "a375") or
-    ($boardID eq "msys") or
     ($boardID eq "a38x") ) {
 	$targetBoard = "";
 }

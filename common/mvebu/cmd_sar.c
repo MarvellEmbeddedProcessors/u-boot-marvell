@@ -32,7 +32,7 @@ int do_sar_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 	const char *key = NULL;
 	int value = 0;
 
-	if (sar_is_avaialble() == 0) {
+	if (sar_is_available() == 0) {
 		printf("Error: SAR variables not available for this board\n");
 		return 1;
 	}

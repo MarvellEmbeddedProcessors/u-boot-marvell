@@ -220,7 +220,7 @@ struct sar_var *sar_id_to_var(int id)
 
 
 /* Interface to SatR command */
-int sar_is_avaialble(void)
+int sar_is_available(void)
 {
 	if (board_get_sar_table() == NULL)
 		return 0;

@@ -62,6 +62,6 @@ int  sar_write_key(const char *key, int val);
 int  sar_print_key(const char *key);
 void sar_list_keys(void);
 int  sar_list_key_opts(const char *key);
-int  sar_is_avaialble(void);
+int  sar_is_available(void);
 
 #endif /* _SAR_H_ */

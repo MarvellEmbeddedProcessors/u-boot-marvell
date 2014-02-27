@@ -114,7 +114,7 @@ extern MV_STATUS    mvHwsDdr3TipLoadTopologyMap
 extern MV_U32 ddr3TipGetInitFreq();
 MV_STATUS ddr3LoadTopologyMap(void);
 #else
-#define SUB_VERSION	9
+#define SUB_VERSION	0
 #endif
 
 #include "bootstrap_os.h"

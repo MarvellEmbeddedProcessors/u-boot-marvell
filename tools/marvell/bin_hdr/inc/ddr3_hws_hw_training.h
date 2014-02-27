@@ -23,6 +23,7 @@
 #define _DDR3_HWS_HW_TRAINING_H
 
 #include "mv_os.h"
+#include "mvDdr3TopologyDef.h"
 
 MV_STATUS ddr3HwsHwTraining(void);
 MV_STATUS ddr3SiliconPreInit(void);
@@ -30,6 +31,7 @@ MV_STATUS ddr3SiliconPostInit(void);
 MV_STATUS ddr3PostRunAlg(void);
 MV_BOOL ddr3IfEccEnabled(void);
 MV_STATUS ddr3NewTipEccScrub(void);
+MV_HWS_TOPOLOGY_MAP* ddr3SiliconGetTopologyMap(MV_U32 boardId);
 
 #define SUB_VERSION	0
 

@@ -920,7 +920,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	if (ethComplex & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)
 		smiAddress = 0x0;
 	else if (ethComplex & MV_ETHCOMP_GE_MAC0_2_RGMII0)
-		smiAddress = 0x4;
+		smiAddress = 0x8;
 	else {				/* else MAC0 is connected to SW port 6 */
 		smiAddress = -1;	/* no SMI address if connected to switch */
 		if (ethComplex & MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G)

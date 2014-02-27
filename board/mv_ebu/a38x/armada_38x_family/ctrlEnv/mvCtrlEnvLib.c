@@ -143,8 +143,8 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_68xx_INDEX_MAX] = {
 #define ON_BOARD_RGMII(x)	(1 << x)
 #define SERDES_SGMII(x)		(4 << x)
 
-/* ethComPhy will be updated by mvCtrlSerdesConfigDetect in case SGMII is set */
-static MV_U32	ethComPhy = ON_BOARD_RGMII(0) | ON_BOARD_RGMII(1);
+/* ethComPhy will be initialize by mvCtrlEnvInit and  updated by mvCtrlSerdesConfigDetect in case SGMII is set */
+static MV_U32	ethComPhy;
 /*******************************************************************************
 * mvCtrlPortIsSerdesSgmii
 *
@@ -285,7 +285,6 @@ MV_U32 mvCtrlSocUnitInfoNumSet(MV_UNIT_ID unit, MV_U32 maxValue)
 MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 {
 	MV_U32 ifNo, commPhyConfigReg, comPhyCfg, serdesNum, serdesCongigField, maxSerdesLane;
-	MV_U32 ethIfCount = 0;
 	MV_U32 sataIfCount = 0;
 	MV_U32 usbIfCount = 0;
 	MV_U32 usbHIfCount = 0;
@@ -320,11 +319,10 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 			sataIfCount++;
 			break;
 		case SERDES_UNIT_GBE:
-			if (ifNo < 2) /* detected SGMII will replace the same Ob-Board compatible port */
-				ethComPhy &= ON_BOARD_RGMII(ifNo);
+			if (ON_BOARD_RGMII(ifNo)) /* detected SGMII will replace the same Ob-Board compatible port */
+				ethComPhy &= ~(ON_BOARD_RGMII(ifNo));
 			ethComPhy |= SERDES_SGMII(ifNo);
 			DB(printf("SGMII, if=%d\n", ifNo));
-			ethIfCount++;
 			break;
 		case SERDES_UNIT_USB_H:
 		DB(printf("USB_H, if=%d\n", ifNo));
@@ -343,10 +341,7 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 	mvCtrlSocUnitInfoNumSet(USB3_UNIT_ID, usbHIfCount);
 	/* only if found more serdes eth interfaces than on-board ports,than update max eth count.
 	   (needed by phy + giga init sequence)				*/
-	if (ethIfCount > MV_ETH_MAX_ON_BOARD_PORTS)
-		mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, ethIfCount);
-	else
-		mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, MV_ETH_MAX_ON_BOARD_PORTS);
+	mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, mvCountMaskBits(ethComPhy));
 	DB(printf("mvCtrlSocUnitGet[PEX] = %d,\n", mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID)));
 	DB(printf("mvCtrlSocUnitGet[ETH] = %d,\n", mvCtrlSocUnitInfoNumGet(ETH_GIG_UNIT_ID)));
 	DB(printf("mvCtrlSocUnitGet[SATA]= %d,\n", mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID)));
@@ -386,6 +381,12 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvBoardInfoUpdate();
 	}
 	mvBoardIoExpanderUpdate();
+	if (mvBoardIsModuleConnected(MV_CONFIG_NOR) ||
+	    mvBoardIsModuleConnected(MV_CONFIG_NAND) ||
+	    mvBoardIsModuleConnected(MV_CONFIG_NAND_ON_BOARD))
+		ethComPhy = ON_BOARD_RGMII(0); /* NOR/NAND modules overides RGMII-1 MPP's */
+	else
+		ethComPhy = ON_BOARD_RGMII(0) | ON_BOARD_RGMII(1);
 
 	mvCtrlSerdesConfigDetect();
 

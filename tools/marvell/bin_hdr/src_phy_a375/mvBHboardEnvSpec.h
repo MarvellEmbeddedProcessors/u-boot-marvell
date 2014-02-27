@@ -93,6 +93,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DEVICE_ID_REG_DEV_ID_OFFS   16
 #define DEVICE_ID_REG_DEV_ID_MASK   0xFFFF0000
 
+#define TSMC_Z1                0
+#define UMC_Z1                 1
+#define TSMC_Z1_GPON_METAL_FIX 2
+#define UMC_A0                 3
+
+#define DEV_VERSION_ID_REG      0x1823C
+#define REVISON_ID_OFFS         8
+#define REVISON_ID_MASK         0xF00
 
 #define COMMON_PHY_SELECTOR_REG     0x18300
 #define COMPHY0_SELCTOR_OFFS        0
@@ -230,4 +238,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PCIE0_ENABLE_MASK           (0x1 << PCIE0_ENABLE_OFFS)
 #define PCIE1_ENABLE_OFFS           1
 #define PCIE1_ENABLE_MASK           (0x1 << PCIE1_ENABLE_OFFS)
+
+/****************************  function Declerations *****************************************/
+MV_U8 mvCtrlRevisionGet(MV_VOID);
+
 #endif /* __INCmvBHboardEnvSpech */
+

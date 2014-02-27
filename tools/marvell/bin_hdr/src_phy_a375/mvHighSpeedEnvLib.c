@@ -278,6 +278,30 @@ MV_U32 mvCtrlSerdesMaxLanesGet(MV_VOID){
 	return 4;
 }
 /*******************************************************************************
+* mvCtrlRevGet - Get Marvell controller device revision number
+*
+* DESCRIPTION:
+*       This function returns 8bit describing the device revision as defined
+*       Revision ID Register.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       8bit desscribing Marvell controller revision number
+*
+*******************************************************************************/
+MV_U8 mvCtrlRevisionGet(MV_VOID)
+{
+             MV_U8 value;
+
+             value = MV_REG_READ(DEV_VERSION_ID_REG);
+             return  ((value & (REVISON_ID_MASK) ) >> REVISON_ID_OFFS);
+}
+/*******************************************************************************
 * mvGetSerdesLaneCfg
 *
 * DESCRIPTION: This function returns the serdes unit index from the boardLaneConfig

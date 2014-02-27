@@ -257,4 +257,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PCIE0_ENABLE_MASK           (0x1 << PCIE0_ENABLE_OFFS)
 #define PCIE1_ENABLE_OFFS           1
 #define PCIE1_ENABLE_MASK           (0x1 << PCIE1_ENABLE_OFFS)
+
+/****************************  function Declerations *****************************************/
+MV_U8 mvCtrlRevisionGet(MV_VOID);
+
 #endif /* __INCmvBHboardEnvSpech */
+

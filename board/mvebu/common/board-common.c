@@ -76,13 +76,36 @@ int common_board_init(struct mvebu_board_family *board_family)
 
 struct sar_data *board_get_sar(void)
 {
-	return brd->sar;
+	if (brd->curr_board->configurable &&
+	    brd->curr_board->config_data->sar_cnt)
+		return brd->sar;
+	else
+		return NULL;
 }
 
 struct sar_var *board_get_sar_table(void)
 {
-	if (brd->sar)
+	if (brd->curr_board->configurable &&
+	    brd->curr_board->config_data->sar_cnt)
 		return brd->sar->sar_lookup;
+	else
+		return NULL;
+}
+
+struct cfg_data *board_get_cfg(void)
+{
+	if (brd->curr_board->configurable &&
+	    brd->curr_board->config_data->cfg_cnt)
+		return brd->cfg;
+	else
+		return NULL;
+}
+
+struct cfg_var *board_get_cfg_table(void)
+{
+	if (brd->curr_board->configurable &&
+	    brd->curr_board->config_data->cfg_cnt)
+		return brd->cfg->cfg_lookup;
 	else
 		return NULL;
 }

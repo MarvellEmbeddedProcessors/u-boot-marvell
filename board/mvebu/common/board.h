@@ -25,6 +25,7 @@
 #include <asm/arch-mvebu/unit-info.h>
 #include <linux/compiler.h>
 #include "sar.h"
+#include "config.h"
 
 #define MAX_BOARD_NAME		16
 
@@ -39,8 +40,9 @@ struct mvebu_board_config {
 	int sar_cnt;
 	enum sar_variables supported_sar[MAX_SAR];
 	struct sar_var *sar_override;
+	int cfg_cnt;
+	enum cfg_variables supported_cfg[MAX_SAR];
 };
-
 
 /*
  * mvebu_board_info - Describes board specific features
@@ -82,11 +84,14 @@ struct mvebu_board_family {
 	struct mvebu_board_info *curr_board;
 	struct mvebu_board_info **boards_info;
 	struct sar_data *sar;
+	struct cfg_data *cfg;
 };
 
 
 int common_board_init(struct mvebu_board_family *board_family);
 struct sar_data *board_get_sar(void);
 struct sar_var  *board_get_sar_table(void);
+struct cfg_data *board_get_cfg(void);
+struct cfg_var  *board_get_cfg_table(void);
 
 #endif /* _BOARD_H_ */

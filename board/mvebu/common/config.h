@@ -17,22 +17,42 @@
  * ***************************************************************************
  */
 
-#ifndef _BOARD_INFO_H_
-#define _BOARD_INFO_H_
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
 
-#include "../common/board.h"
-#include "../common/sar.h"
+#include <common.h>
+#include <asm/arch-mvebu/mvebu.h>
+#include <linux/compiler.h>
+#include "var.h"
 
-enum a8k_board_types {
-	ARMADA_8021_DB_ID = 0,
-	ARMADA_8021_RD_ID,
-	ARMADA_8022_DB_ID,
-	ARMADA_8022_RD_ID,
-	MAX_BOARD_ID
+
+struct cfg_var {
+	u8 reg_offset;
+	u8 start_bit;
+	u8 bit_length;
+	u8 option_cnt;
+	struct var_opts option_desc[MAX_VAR_OPTIONS];
 };
 
-extern struct mvebu_board_info a8021_db_info;
-extern struct mvebu_board_info a8021_rd_info;
-extern struct mvebu_board_family a8k_board_family;
+struct cfg_data {
+	u32	chip_addr;
+	struct cfg_var *cfg_lookup;
+};
 
-#endif /* _BOARD_INFO_H_ */
+enum cfg_variables {
+	BOARD_ID_CFG = 0,
+	SERDES_0_CFG,
+	SERDES_1_CFG,
+	MAX_CFG
+};
+
+int  cfg_default_all(void);
+int  cfg_default_var(int id);
+int  cfg_write_var(int id, int val);
+int  cfg_read_var(int id, int *val);
+int  cfg_is_available(void);
+int  cfg_is_var_active(int id);
+
+struct var_opts *cfg_get_var_opts(int id, int *cnt);
+
+#endif /* _CONFIG_H_ */

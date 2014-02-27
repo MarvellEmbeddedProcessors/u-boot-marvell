@@ -19,3 +19,4 @@
 
 obj-y += cmd_misc.o
 obj-y += cmd_sar.o
+obj-y += cmd_config.o

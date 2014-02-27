@@ -19,3 +19,4 @@
 
 obj-y	+= board-common.o
 obj-y	+= sar.o
+obj-y	+= config.o

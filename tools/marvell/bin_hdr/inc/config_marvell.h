@@ -140,11 +140,11 @@
 	#define MV88F68XX
 
 /*********************************/
-/* defines for RD-BOBCAT2    */
+/* defines for DB-BOBCAT2    */
 /*********************************/
-#elif defined(CONFIG_RD_BOBCAT2)
+#elif defined(CONFIG_DB_BOBCAT2)
 	#define MV_MSYS		/* SOC NAME BOBCAT2 */
-	#define RD_BOBCAT2
+	#define DB_BOBCAT2
 
 #endif  // CONFIG_RD_78460_GP
 

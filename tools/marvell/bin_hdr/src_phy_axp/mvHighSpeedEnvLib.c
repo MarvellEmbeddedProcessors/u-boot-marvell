@@ -79,7 +79,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 
-#define	SERDES_VERION	"2.1.6"
+#define	SERDES_VERION	"2.1.8  (COM-PHY-V22)\n"
 #define ENDED_OK "High speed PHY - Ended Successfully\n"
 static const MV_U8 serdesCfg[][SERDES_LAST_UNIT] = BIN_SERDES_CFG;
 
@@ -618,7 +618,6 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	}
 	DEBUG_INIT_S("High speed PHY - Version: ");
 	DEBUG_INIT_S(SERDES_VERION);
-	DEBUG_INIT_S(" (COM-PHY-V20) \n");
 
 /**********************************************************************************/
 	/*   AVS :  disable AVS for frequency less than 1333*/
@@ -1403,23 +1402,77 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 							addr = (mvPexConfigRead(pexIf, first_busno, 0, 0, addr) & 0xFF00) >> 8;
 						}
 						if ((mvPexConfigRead(pexIf, first_busno, 0, 0, addr + 0xC) & 0xF) >= 0x2) {
+							int i, timeout = 1000;
 							tmp = MV_REG_READ(PEX_LINK_CTRL_STATUS2_REG(pexIf));
 							DEBUG_RD_REG(PEX_LINK_CTRL_STATUS2_REG(pexIf),tmp );
 							tmp &=~(BIT0 | BIT1);
 							tmp |= BIT1;
 							MV_REG_WRITE(PEX_LINK_CTRL_STATUS2_REG(pexIf),tmp);
 							DEBUG_WR_REG(PEX_LINK_CTRL_STATUS2_REG(pexIf),tmp);
-
-							tmp = MV_REG_READ(PEX_CTRL_REG(pexIf));
-							DEBUG_RD_REG(PEX_CTRL_REG(pexIf), tmp );
-							tmp |= BIT10;
-							MV_REG_WRITE(PEX_CTRL_REG(pexIf),tmp);
-							DEBUG_WR_REG(PEX_CTRL_REG(pexIf),tmp);
-							mvOsUDelay(10000);/* We need to wait 10ms before reading the PEX_DBG_STATUS_REG in order not to read the status of the former state*/
-							DEBUG_INIT_FULL_S("Gen2 client!\n");
-							}else {
-								DEBUG_INIT_FULL_S("GEN1 client!\n");
+							for (i = 0; i < 5; i++) {
+								tmp = MV_REG_READ(PEX_CTRL_REG(pexIf));
+								DEBUG_RD_REG(PEX_CTRL_REG(pexIf), tmp );
+								tmp |= BIT10;
+								MV_REG_WRITE(PEX_CTRL_REG(pexIf),tmp);
+								DEBUG_WR_REG(PEX_CTRL_REG(pexIf),tmp);
+								mvOsUDelay(10000);/* We need to wait 10ms before reading the PEX_DBG_STATUS_REG in order not to read the status of the former state*/
+								/* WA for GEN2 configuration is hung in long run test (lexmark */
+								tmp = MV_REG_READ(PEX_DBG_STATUS_REG(pexIf));
+								DEBUG_RD_REG(PEX_DBG_STATUS_REG(pexIf), tmp);
+								if ((tmp & 0x7f) == 0x7E)
+									break;
+								DEBUG_INIT_FULL_S("****** LEXMARK WA ****\n");
+								/* Training disable */
+								tmp = MV_REG_READ(SOC_CTRL_REG);
+								DEBUG_RD_REG(SOC_CTRL_REG, tmp );
+								tmp &= ~(1 << pexUnit);
+								MV_REG_WRITE(SOC_CTRL_REG, tmp);
+								DEBUG_WR_REG(SOC_CTRL_REG, tmp);
+								/* soft reset MAC port*/
+								tmp = MV_REG_READ(PEX_DBG_CTRL_REG(MV_PEX_UNIT_TO_IF(pexUnit)));
+								DEBUG_RD_REG(PEX_DBG_CTRL_REG(MV_PEX_UNIT_TO_IF(pexUnit)), tmp );
+								tmp |= BIT20;
+								MV_REG_WRITE(PEX_DBG_CTRL_REG(MV_PEX_UNIT_TO_IF(pexUnit)),tmp);
+								DEBUG_WR_REG(PEX_DBG_CTRL_REG(MV_PEX_UNIT_TO_IF(pexUnit)),tmp);
+								/* disabled speed change */
+								tmp = MV_REG_READ(PEX_CTRL_REG(pexIf));
+								DEBUG_RD_REG(PEX_CTRL_REG(pexIf), tmp );
+								tmp &= ~BIT10;
+								MV_REG_WRITE(PEX_CTRL_REG(pexIf),tmp);
+								DEBUG_WR_REG(PEX_CTRL_REG(pexIf),tmp);
+								/* release soft reset MAC port*/
+								tmp = MV_REG_READ(PEX_DBG_CTRL_REG(MV_PEX_UNIT_TO_IF(pexUnit)));
+								DEBUG_RD_REG(PEX_DBG_CTRL_REG(MV_PEX_UNIT_TO_IF(pexUnit)), tmp );
+								tmp &= ~BIT20;
+								MV_REG_WRITE(PEX_DBG_CTRL_REG(MV_PEX_UNIT_TO_IF(pexUnit)),tmp);
+								DEBUG_WR_REG(PEX_DBG_CTRL_REG(MV_PEX_UNIT_TO_IF(pexUnit)),tmp);
+								/* Training  enable */
+								tmp = MV_REG_READ(SOC_CTRL_REG);
+								DEBUG_RD_REG(SOC_CTRL_REG, tmp );
+								tmp |= (0x1<<pexUnit);
+								MV_REG_WRITE(SOC_CTRL_REG, tmp);
+								DEBUG_WR_REG(SOC_CTRL_REG, tmp);
+								tmp = MV_REG_READ(PEX_DBG_STATUS_REG(pexIf));
+								DEBUG_RD_REG(PEX_DBG_STATUS_REG(pexIf), tmp);
+								while ((timeout--) && (tmp != 0x7e)) {
+									tmp = MV_REG_READ(PEX_DBG_STATUS_REG(pexIf));
+									DEBUG_RD_REG(PEX_DBG_STATUS_REG(pexIf), tmp);
+									mvOsUDelay(1000);
+								}
+								if (tmp != 0x7e) {
+									DEBUG_INIT_C("*********  NO link in GEN1 pexif=", tmp,2);
+									DEBUG_INIT_S(" ******\n");
+									break;
+								}
 							}
+							if (i == 5) {
+								DEBUG_INIT_C("*********  change to GEN2 failed stay in GEN1 for pexif=", tmp,2);
+								DEBUG_INIT_S(" ******\n");
+							}
+							else
+								DEBUG_INIT_FULL_S("Gen2 client!\n");
+						}else
+							DEBUG_INIT_FULL_S("GEN1 client!\n");
 					}
 				}
 			}else{
@@ -1459,7 +1512,10 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	}
 	tmp = MV_REG_READ(PEX_DBG_STATUS_REG(0));
 	DEBUG_RD_REG(PEX_DBG_STATUS_REG(0), tmp);
-
+#ifdef MV_DEBUG_INIT_FULL
+	tmp = MV_REG_READ(PEX_DBG_STATUS_REG(9));
+	DEBUG_RD_REG(PEX_DBG_STATUS_REG(9), tmp);
+#endif
 	DEBUG_INIT_S(ENDED_OK);
 	return MV_OK;
 }

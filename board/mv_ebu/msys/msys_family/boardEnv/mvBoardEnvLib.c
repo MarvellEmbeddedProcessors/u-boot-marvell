@@ -1214,30 +1214,19 @@ MV_U32 gBoardId = -1;
 *******************************************************************************/
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-	MV_U8 boardId;
-
 	if (gBoardId == -1) {
-		/* Set temp board ID, so board structures can be accessed - to get I2C TWSI addresses */
+#if defined(DB_BOBCAT2)
 		gBoardId = DB_98DX4251_BP_ID;
-		if (MV_ERROR == mvBoardTwsiRead(BOARD_DEV_TWSI_SATR, 0, 0, &boardId)) {
-			mvOsWarning();
-			return INVALID_BAORD_ID;
-		}
-
-		switch (boardId) {
-		case 0:
-			gBoardId = DB_98DX4251_BP_ID;
-			break;
-		case 1:
-			gBoardId = RD_98DX4051_ID;
-			break;
-		default:
-			gBoardId = -1; /* reset gBoardId , in case of TWSI read failure */
-			mvOsPrintf("%s: Error: read un-expected board ID (%d)\n", __func__, boardId);
-			return INVALID_BAORD_ID;
-		}
+#elif defined(RD_BOBCAT2)
+		gBoardId = RD_98DX4051_ID;
+#else
+		mvOsPrintf("mvBoardIdSet: Board ID must be defined!\n");
+		while (1)
+			continue;
+#endif
 	}
 	return gBoardId;
+
 }
 /*******************************************************************************
 * mvBoardTwsiRead -

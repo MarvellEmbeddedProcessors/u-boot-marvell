@@ -48,12 +48,12 @@ void envSetDefault(char* envName, char* defaultValue);
 int mv_get_arch_number(void)
 {
 	switch (mvBoardIdGet()) {
-	case RD_98DX4051_ID:    return 3035;
-	case DB_98DX4251_BP_ID: return 3035;
+	case RD_98DX4051_ID:
+	case DB_98DX4251_BP_ID:
+		return 3035;
 	default:
-		break;
+		return 3036;
 	}
-	return 3036;
 }
 
 void setBoardEnv(void)
@@ -215,35 +215,7 @@ void mv_cpu_init(void)
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)
 void mv_set_power_scheme(void)
 {
-	char name[30];
-
-	mvBoardNameGet(name);
-
-	/*start with shutting the power to any unused cores
-	   this is done via mpps on the DB board*/
-	if (strcmp(name, "DB-78460-BP") == 0) {
-		//MV_U32 soc_type=mvCtrlModelRevGet();
-		switch (mvCtrlGetCpuNum() + 1) {
-		case 1:
-			/*in the DB board GPIO 40 * 57 control the power to CPU1 & CPU 2&3 */
-			/*make sure GPIO40 & 57 are enabled as output first*/
-			printf(" shutting the power to CORES 1,2 & 3\n");
-			mvGppTypeSet(1, (BIT8 | BIT25), ((MV_GPP_OUT & BIT8) | (MV_GPP_OUT & BIT25)) );
-			mvGppValueSet(1, (BIT8 | BIT25), (BIT8 | BIT25));
-			break;
-
-		case 2:
-			/*turn off the power to core 2&3 - GPIO 57*/
-			printf("shutting the power to CORES 2 & 3\n");
-			mvGppTypeSet(1, BIT25, ( MV_GPP_OUT & BIT25 ) );
-			mvGppValueSet(1, BIT25, BIT25);
-			break;
-		case 3:         /*core 2 &3 are tied togther and can't be seperated*/
-		case 4:
-		default:
-			break;
-		}
-	}
+	return;
 }
 
 #endif /* defined(MV_INCLUDE_CLK_PWR_CNTRL) */

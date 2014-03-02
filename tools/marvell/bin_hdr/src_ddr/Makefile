@@ -105,6 +105,9 @@ endif
 ifeq "$(CONFIG_DB_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_DB_BOBCAT2
 endif
+ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
+  CFLAGS += -DCONFIG_RD_BOBCAT2
+endif
 
 INCLUDE     = -I./  -I../inc/ -I../../../../include -I../src_phy_$(BOARD)
 

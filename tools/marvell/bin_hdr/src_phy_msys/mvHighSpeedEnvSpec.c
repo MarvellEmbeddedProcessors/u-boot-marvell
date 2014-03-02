@@ -75,8 +75,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-	//TODO Add RD/DB detection. Currently set to DB.
-	return 0;
+#if defined(CONFIG_DB_BOBCAT2)
+	return DB_98DX4251_BP_ID;
+#elif defined(CONFIG_RD_BOBCAT2)
+	return RD_98DX4051_ID;
+#else
+#error Invalid Board is configured
+#endif
 }
 
 MV_U32 mvBoardTclkGet(MV_VOID)

@@ -103,7 +103,7 @@ static boardDef boards[] = {
 			"\t.text : { *(.text) }\n"
 			"\t.data : { *(.data) }\n",
 	},
-	{ "a375",	/* Used also for board=alp */
+	{ "a375_alp_zx",	/* Used for Zx revision */
 		"\tram1 : ORIGIN = %#08x, LENGTH = %#x\n"
 		"\tram2 : ORIGIN = 0x40008500, LENGTH = 0x47a0\n"
 		"\tram3 : ORIGIN = 0x4000Cca0, LENGTH = 0x3780\n"
@@ -221,8 +221,12 @@ int main(int argc, char **argv)
 		}
 	}
 
-	printf("Building linker script for board %s, %s mode\n", board_name, secure == 1 ? "Secure" : "Non-secure");
-
+	printf("Building linker script for board %s", board_name);
+#ifdef CONFIG_ALP_A375_ZX_REV
+	board_name = "a375_alp_zx";
+	printf("-Zx");
+#endif
+	printf(", %s mode\n", secure == 1 ? "Secure" : "Non-secure");
 	f_outparm = fopen(argv[optind], "w");
 	if (f_outparm == NULL) {
 		printf("Error opening output parameters file - %s!\n", argv[optind]);

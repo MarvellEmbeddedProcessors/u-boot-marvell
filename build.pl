@@ -214,7 +214,13 @@ if(defined $opt_d)
 	system("echo \"DDR3LIB = $opt_d\" >> include/config.mk");
 	print "\n *** DDR3LIB = v$opt_d *********************************\n\n";
 }
-
+if($opt_z eq 1)
+{
+	if ($boardID eq "alp" or $boardID eq "a375"){
+		print "\n\nBuild U-Boot $boardID for Zx revision\n\n";
+		system("echo \"#define CONFIG_ALP_A375_ZX_REV 1\" >> include/config.h");
+	}
+}
 # Build !
 print "\n**** [Building U-BOOT]\t*****\n\n";
 $fail = system("make -j6 -s");
@@ -229,6 +235,9 @@ if( ($boardID eq "alp") or
     ($boardID eq "a375") or
     ($boardID eq "a38x") ) {
 	$targetBoard = "";
+	if (($boardID eq "alp" or $boardID eq "a375") and $opt_z eq 1){
+		$targetBoard = "-Z";
+	}
 }
 else {
 	$targetBoard = "-$targetBoard";

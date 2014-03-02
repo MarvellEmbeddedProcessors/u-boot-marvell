@@ -961,3 +961,31 @@ MV_STATUS mvCpuIfLvdsPadsEnable(MV_BOOL enable)
 
 	return MV_OK;
 }
+/*******************************************************************************
+* mvCpuIfMbusWindowSet
+*
+* DESCRIPTION:
+*	Set Mbus Bridge Window register
+*
+* INPUT:
+*	Windows Base Address
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_VOID mvCpuIfMbusWindowSet(MV_U32 base, MV_U32 size)
+{
+	MV_U32 reg;
+
+	MV_REG_WRITE(MBUS_BRIDGE_WIN_BASE_REG, base);
+	/* Align window size to 64KB */
+	size = ((size / _64K) - 1) << BRIDGWCR_SIZE_OFFS;
+	reg = MV_REG_READ(MBUS_BRIDGE_WIN_CTRL_REG);
+	reg &= ~BRIDGWCR_SIZE_MASK;
+	reg |= (size & BRIDGWCR_SIZE_MASK);
+	MV_REG_WRITE(MBUS_BRIDGE_WIN_CTRL_REG, reg);
+}

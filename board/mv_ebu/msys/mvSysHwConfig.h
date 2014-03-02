@@ -257,8 +257,6 @@
 		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* SPI_CS7 */	\
 		{ { 0xf8000000,           0,      _1M             },      13,             EN },         /* BOOT_ROM_CS */ \
 		{ { NOR_CS_BASE,          0,      NOR_CS_SIZE     },      9,              EN },         /* DEV_BOOCS */	  \
-		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* PMU_SCRATCHPAD */   \
-		{ { PNC_BM_PHYS_BASE,     0,      PNC_BM_SIZE     },      TBL_UNUSED,     DIS },        /* PNC_BM */	\
 		{ { TBL_TERM,             TBL_TERM, TBL_TERM      },      TBL_TERM,       TBL_TERM }		   \
 };
 //{{BOOTDEV_CS_BASE,	0,	BOOTDEV_CS_SIZE	},	0x4,		DIS},	/* DEV_BOOCS */

@@ -169,7 +169,6 @@ MV_BOARD_INFO db98DX4251Info = {
 	.pSwitchInfo = NULL,
 	.switchInfoNum = 0,
 
-
 	/* NAND init params */
 	.nandFlashReadParams		= DB_98DX4251_BOARD_NAND_READ_PARAMS,
 	.nandFlashWriteParams		= DB_98DX4251_BOARD_NAND_WRITE_PARAMS,
@@ -215,50 +214,48 @@ MV_BOARD_MPP_INFO rd98DX4051InfoBoardMppConfigValue[] = {
 		RD_98DX4051_MPP32_39,
 	} }
 };
-MV_U8	rd98DX4051InfoBoardDebugLedIf[] = {17, 18, 19};
 
 MV_BOARD_INFO rd98DX4051Info = {
- .boardName				= "RD-98DX4051-SERVER",
- .numBoardMppTypeValue			= ARRSZ(rd98DX4051InfoBoardModTypeInfo),
- .pBoardModTypeValue			= rd98DX4051InfoBoardModTypeInfo,
- .numBoardMppConfigValue		= ARRSZ(rd98DX4051InfoBoardMppConfigValue),
- .pBoardMppConfigValue			= rd98DX4051InfoBoardMppConfigValue,
- .intsGppMaskLow			= 0,
- .intsGppMaskMid			= 0,
- .intsGppMaskHigh			= 0,
- .numBoardDeviceIf			= ARRSZ(rd98DX4051InfoBoardDeCsInfo),
- .pDevCsInfo				= rd98DX4051InfoBoardDeCsInfo,
- .numBoardTwsiDev			= 0,
- .pBoardTwsiDev				= NULL,
- .numBoardMacInfo			= ARRSZ(rd98DX4051InfoBoardMacInfo),
- .pBoardMacInfo				= rd98DX4051InfoBoardMacInfo,
- .numBoardGppInfo			= 0,
- .pBoardGppInfo				= NULL,
-	.activeLedsNumber		= ARRSZ(rd98DX4051InfoBoardDebugLedIf),
- .pLedGppPin				= rd98DX4051InfoBoardDebugLedIf,
- .ledsPolarity				= 0,
+	.boardName			= "RD-98DX4051-SERVER",
+	.numBoardMppTypeValue		= ARRSZ(rd98DX4051InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= rd98DX4051InfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(rd98DX4051InfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= rd98DX4051InfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(rd98DX4051InfoBoardDeCsInfo),
+	.pDevCsInfo			= rd98DX4051InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= 0,
+	.pBoardTwsiDev			= NULL,
+	.numBoardMacInfo		= ARRSZ(rd98DX4051InfoBoardMacInfo),
+	.pBoardMacInfo			= rd98DX4051InfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= NULL,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
 
- /* GPP values */
- .gppOutEnValLow			= RD_98DX4051_GPP_OUT_ENA_LOW,
- .gppOutEnValMid			= RD_98DX4051_GPP_OUT_ENA_MID,
- .gppOutEnValHigh			= 0,
- .gppOutValLow				= RD_98DX4051_GPP_OUT_VAL_LOW,
- .gppOutValMid				= RD_98DX4051_GPP_OUT_VAL_MID,
- .gppOutValHigh				= 0,
- .gppPolarityValLow			= RD_98DX4051_GPP_POL_LOW,
- .gppPolarityValMid			= RD_98DX4051_GPP_POL_MID,
- .gppPolarityValHigh			= 0,
+	/* GPP values */
+	.gppOutEnValLow			= RD_98DX4051_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= RD_98DX4051_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= 0,
+	.gppOutValLow			= RD_98DX4051_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= RD_98DX4051_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= 0,
+	.gppPolarityValLow		= RD_98DX4051_GPP_POL_LOW,
+	.gppPolarityValMid		= RD_98DX4051_GPP_POL_MID,
+	.gppPolarityValHigh		= 0,
 
 	/* External Switch Configuration */
-	.pSwitchInfo = NULL,
-	.switchInfoNum = 0,
+	.pSwitchInfo			= NULL,
+	.switchInfoNum			= 0,
 
- /* NAND init params */
- .nandFlashReadParams			= RD_98DX4051_BOARD_NAND_READ_PARAMS,
- .nandFlashWriteParams			= RD_98DX4051_BOARD_NAND_WRITE_PARAMS,
- .nandFlashControl			= RD_98DX4051_BOARD_NAND_CONTROL
+	 /* NAND init params */
+	.nandFlashReadParams		= RD_98DX4051_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= RD_98DX4051_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= RD_98DX4051_BOARD_NAND_CONTROL
 };
-
 
 /*********************************************************************************/
 

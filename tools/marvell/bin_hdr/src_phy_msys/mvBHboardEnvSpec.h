@@ -66,5 +66,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __INCmvBHboardEnvSpech
 #define __INCmvBHboardEnvSpech
 
+/* New board ID numbers */
+#define BOARD_ID_BASE				0x0
+#define DB_98DX4251_BP_ID			(BOARD_ID_BASE)
+#define RD_98DX4051_ID				(DB_98DX4251_BP_ID + 1)
 
 #endif /* __INCmvBHboardEnvSpech */
+

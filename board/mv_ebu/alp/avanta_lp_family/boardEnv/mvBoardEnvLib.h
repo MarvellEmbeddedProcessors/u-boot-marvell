@@ -586,6 +586,7 @@ MV_STATUS mvBoardConfIdSet(MV_U16 conf);
 MV_U16 mvBoardPexModeGet(MV_VOID);
 MV_STATUS mvBoardPexModeSet(MV_U16 conf);
 MV_U32 mvBoardLaneSelectorGet(MV_U32 laneNum);
+MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal);
 #ifdef __cplusplus
 }
 #endif  /* __cplusplus */

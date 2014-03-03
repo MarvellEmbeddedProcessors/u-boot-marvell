@@ -3258,3 +3258,33 @@ MV_BOOL mvBoardConfigAutoDetectEnabled()
 {
 	return board->configAutoDetect;
 }
+
+/*******************************************************************************
+* mvBoardConfigurationConflicts
+*
+* DESCRIPTION:
+*       Check if there is any conflicts with the board configurations
+*
+* INPUT:
+*	field = Field name of configuration
+*	writeVal = option number
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	MV_OK: if there is no conflicts
+*	MV_ERROR: conflict in one configuration
+*
+*******************************************************************************/
+MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
+{
+	/* 0x2 = SATA1, 0x3 = Unconnected are supported only for A0 */
+	if ((field == MV_CONFIG_LANE1 && (writeVal == 0x2 || writeVal == 0x3)) \
+			&& (mvCtrlRevGet() <= MV_88F66X0_Z3_ID)) {
+		mvOsPrintf("Error: this option is not supported in Z stepping revision\n");
+		return MV_ERROR;
+	}
+	return MV_OK;
+
+}

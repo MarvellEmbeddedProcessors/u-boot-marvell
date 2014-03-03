@@ -181,12 +181,8 @@ static int do_boardCfg_write(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
 		printf("Error: write value is invalid - See 'boardConfig list <field>'\n\n");
 		goto error;
 	}
-	/* 0x2 = SATA1, 0x3 = Unconnected are supported only for A0 */
-	if ((field == MV_CONFIG_LANE1 && (writeVal == 0x2 || writeVal == 0x3)) \
-			&& (mvCtrlRevGet() <= MV_88F66X0_Z3_ID)) {
-		mvOsPrintf("Error: this option is not supported in Z stepping revision\n");
+	if (mvBoardConfigVerify(field, writeVal) == MV_ERROR)
 		goto error;
-	}
 	if (mvBoardEepromWrite(field, writeVal) == MV_OK)
 		return 0;
 error:

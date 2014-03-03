@@ -209,10 +209,6 @@ typedef struct
    /* Bit mask for active buses*/
    MV_U32               activeBusMask;
 
-   /* Board type. Relevant for static configuration only */
-   MV_U32               boardId;
-
-
 } MV_HWS_TOPOLOGY_MAP;
 
 

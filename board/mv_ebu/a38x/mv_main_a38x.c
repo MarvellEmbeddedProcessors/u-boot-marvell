@@ -633,9 +633,9 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 
 #if CONFIG_OF_LIBFDT
 	char bootcmd_fdt[] = "tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath ip=$ipaddr: \
+setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath ip=$ipaddr:\
 $serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params \
-clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootz 0x2000000 - $fdtaddr;";
+clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel; bootz 0x2000000 - $fdtaddr;";
 	env = getenv("fdtaddr");
 	if (!env)
 		setenv("fdtaddr", "0x1000000");

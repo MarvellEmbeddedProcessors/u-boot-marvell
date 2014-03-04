@@ -48,8 +48,8 @@ void envSetDefault(char* envName, char* defaultValue);
 int mv_get_arch_number(void)
 {
 	switch (mvBoardIdGet()) {
-	case RD_98DX4051_ID:
-	case DB_98DX4251_BP_ID:
+	case RD_DX_BC2_ID:
+	case DB_DX_BC2_ID:
 		return 3035;
 	default:
 		return 3036;

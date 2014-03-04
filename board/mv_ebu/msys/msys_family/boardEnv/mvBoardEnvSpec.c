@@ -69,18 +69,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define ARRSZ(x)	(sizeof(x)/sizeof(x[0]))
 
-/**********************/
-/* BOBCAT2-DB BOARD */
-/**********************/
-#define DB_98DX4251_BOARD_NAND_READ_PARAMS	0x000C0282
-#define DB_98DX4251_BOARD_NAND_WRITE_PARAMS	0x00010305
+/***********************/
+/* BOBCAT2-DB-DX BOARD */
+/***********************/
+#define DB_DX_BC2_BOARD_NAND_READ_PARAMS	0x000C0282
+#define DB_DX_BC2_BOARD_NAND_WRITE_PARAMS	0x00010305
 /*NAND care support for small page chips*/
-#define DB_98DX4251_BOARD_NAND_CONTROL		0x01c00543
+#define DB_DX_BC2_BOARD_NAND_CONTROL		0x01c00543
 
-#define DB_98DX4251_BOARD_NOR_READ_PARAMS	0x403E07CF
-#define DB_98DX4251_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
+#define DB_DX_BC2_BOARD_NOR_READ_PARAMS	0x403E07CF
+#define DB_DX_BC2_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
 
-MV_BOARD_TWSI_INFO	db98DX4251InfoBoardTwsiDev[] = {
+MV_BOARD_TWSI_INFO	db_dx_bc2InfoBoardTwsiDev[] = {
 /* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
 	{BOARD_DEV_TWSI_PLD, 0x30, ADDR7_BIT},		/* Access to control PLD reg file */
 	{BOARD_DEV_TWSI_ZARLINK, 0x18, ADDR7_BIT},		/* Access to Zarlink 	*/
@@ -95,25 +95,25 @@ MV_BOARD_TWSI_INFO	db98DX4251InfoBoardTwsiDev[] = {
 	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x75, ADDR7_BIT}          /* PCA9548 I2C mux 2	*/
 };
 
-MV_BOARD_MAC_INFO db98DX4251InfoBoardMacInfo[] = {
+MV_BOARD_MAC_INFO db_dx_bc2InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
 	{BOARD_MAC_SPEED_AUTO, 0x0,0x0 	  , 0x0 },
 	{BOARD_MAC_SPEED_AUTO, 0x1,0x0	  , 0x1 },
 };
 
-MV_BOARD_MODULE_TYPE_INFO db98DX4251InfoBoardModTypeInfo[] = {
+MV_BOARD_MODULE_TYPE_INFO db_dx_bc2InfoBoardModTypeInfo[] = {
 	{
 		.boardMppMod		= MV_BOARD_AUTO,
 	}
 };
 
-MV_BOARD_GPP_INFO db98DX4251InfoBoardGppInfo[] = {
+MV_BOARD_GPP_INFO db_dx_bc2InfoBoardGppInfo[] = {
 	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
 	{BOARD_GPP_USB_VBUS,    24} /* from MPP map */
 	/*{BOARD_GPP_RESET,       47},*/
 };
 
-MV_DEV_CS_INFO db98DX4251InfoBoardDeCsInfo[] = {
+MV_DEV_CS_INFO db_dx_bc2InfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth }*/
 #if defined(MV_INCLUDE_SPI)
 	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
@@ -123,46 +123,46 @@ MV_DEV_CS_INFO db98DX4251InfoBoardDeCsInfo[] = {
 #endif
 };
 
-MV_BOARD_MPP_INFO db98DX4251InfoBoardMppConfigValue[] = {
+MV_BOARD_MPP_INFO db_dx_bc2InfoBoardMppConfigValue[] = {
 	{ {
-	DB_98DX4251_MPP0_7,
-	DB_98DX4251_MPP8_15,
-	DB_98DX4251_MPP16_23,
-	DB_98DX4251_MPP24_31,
-	DB_98DX4251_MPP32_39,
+	DB_DX_BC2_MPP0_7,
+	DB_DX_BC2_MPP8_15,
+	DB_DX_BC2_MPP16_23,
+	DB_DX_BC2_MPP24_31,
+	DB_DX_BC2_MPP32_39,
 	} },
 };
 
-MV_BOARD_INFO db98DX4251Info = {
-	.boardName			= "DB-98DX4251-BP",
-	.numBoardMppTypeValue		= ARRSZ(db98DX4251InfoBoardModTypeInfo),
-	.pBoardModTypeValue		= db98DX4251InfoBoardModTypeInfo,
-	.numBoardMppConfigValue		= ARRSZ(db98DX4251InfoBoardMppConfigValue),
-	.pBoardMppConfigValue		= db98DX4251InfoBoardMppConfigValue,
+MV_BOARD_INFO db_dx_bc2Info = {
+	.boardName			= "DB-DXBC2-MM",
+	.numBoardMppTypeValue		= ARRSZ(db_dx_bc2InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= db_dx_bc2InfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(db_dx_bc2InfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= db_dx_bc2InfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
-	.numBoardDeviceIf		= ARRSZ(db98DX4251InfoBoardDeCsInfo),
-	.pDevCsInfo			= db98DX4251InfoBoardDeCsInfo,
-	.numBoardTwsiDev		= ARRSZ(db98DX4251InfoBoardTwsiDev),
-	.pBoardTwsiDev			= db98DX4251InfoBoardTwsiDev,
-	.numBoardMacInfo		= ARRSZ(db98DX4251InfoBoardMacInfo),
-	.pBoardMacInfo			= db98DX4251InfoBoardMacInfo,
-	.numBoardGppInfo		= ARRSZ(db98DX4251InfoBoardGppInfo),
-	.pBoardGppInfo			= db98DX4251InfoBoardGppInfo,
+	.numBoardDeviceIf		= ARRSZ(db_dx_bc2InfoBoardDeCsInfo),
+	.pDevCsInfo			= db_dx_bc2InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(db_dx_bc2InfoBoardTwsiDev),
+	.pBoardTwsiDev			= db_dx_bc2InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(db_dx_bc2InfoBoardMacInfo),
+	.pBoardMacInfo			= db_dx_bc2InfoBoardMacInfo,
+	.numBoardGppInfo		= ARRSZ(db_dx_bc2InfoBoardGppInfo),
+	.pBoardGppInfo			= db_dx_bc2InfoBoardGppInfo,
 	.activeLedsNumber		= 0,
 	.pLedGppPin			= NULL,
 	.ledsPolarity			= 0,
 
 	/* GPP values */
-	.gppOutEnValLow			= DB_98DX4251_GPP_OUT_ENA_LOW,
-	.gppOutEnValMid			= DB_98DX4251_GPP_OUT_ENA_MID,
+	.gppOutEnValLow			= DB_DX_BC2_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= DB_DX_BC2_GPP_OUT_ENA_MID,
 	.gppOutEnValHigh		= 0,
-	.gppOutValLow			= DB_98DX4251_GPP_OUT_VAL_LOW,
-	.gppOutValMid			= DB_98DX4251_GPP_OUT_VAL_MID,
+	.gppOutValLow			= DB_DX_BC2_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= DB_DX_BC2_GPP_OUT_VAL_MID,
 	.gppOutValHigh			= 0,
-	.gppPolarityValLow		= DB_98DX4251_GPP_POL_LOW,
-	.gppPolarityValMid		= DB_98DX4251_GPP_POL_MID,
+	.gppPolarityValLow		= DB_DX_BC2_GPP_POL_LOW,
+	.gppPolarityValMid		= DB_DX_BC2_GPP_POL_MID,
 	.gppPolarityValHigh		= 0,
 
 	/* External Switch Configuration */
@@ -170,66 +170,66 @@ MV_BOARD_INFO db98DX4251Info = {
 	.switchInfoNum = 0,
 
 	/* NAND init params */
-	.nandFlashReadParams		= DB_98DX4251_BOARD_NAND_READ_PARAMS,
-	.nandFlashWriteParams		= DB_98DX4251_BOARD_NAND_WRITE_PARAMS,
-	.nandFlashControl		= DB_98DX4251_BOARD_NAND_CONTROL,
+	.nandFlashReadParams		= DB_DX_BC2_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_DX_BC2_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= DB_DX_BC2_BOARD_NAND_CONTROL,
 	/* NOR init params */
-	.norFlashReadParams		= DB_98DX4251_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= DB_98DX4251_BOARD_NOR_WRITE_PARAMS
+	.norFlashReadParams		= DB_DX_BC2_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= DB_DX_BC2_BOARD_NOR_WRITE_PARAMS
 };
 
-/*****************************/
-/* BobCat2 RD 98DX4051 BOARD */
-/*****************************/
-#define RD_98DX4051_BOARD_NAND_READ_PARAMS		0x000C0282
-#define RD_98DX4051_BOARD_NAND_WRITE_PARAMS	0x00010305
+/***********************/
+/* BOBCAT2-RD-DX BOARD */
+/***********************/
+#define RD_DX_BC2_BOARD_NAND_READ_PARAMS		0x000C0282
+#define RD_DX_BC2_BOARD_NAND_WRITE_PARAMS	0x00010305
 /*NAND care support for small page chips*/
-#define RD_98DX4051_BOARD_NAND_CONTROL			0x01c00543
+#define RD_DX_BC2_BOARD_NAND_CONTROL			0x01c00543
 
-MV_BOARD_MAC_INFO rd98DX4051InfoBoardMacInfo[] = {
+MV_BOARD_MAC_INFO rd_dx_bc2InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
 	{BOARD_MAC_SPEED_1000M, 0x0, 0x0, 0x0},
 	{BOARD_MAC_SPEED_1000M, 0x1, 0x0, 0x1},
 };
 
-MV_BOARD_MODULE_TYPE_INFO rd98DX4051InfoBoardModTypeInfo[] = {
+MV_BOARD_MODULE_TYPE_INFO rd_dx_bc2InfoBoardModTypeInfo[] = {
 	{
 		.boardMppMod		= MV_BOARD_AUTO,
 	}
 };
 
-MV_DEV_CS_INFO rd98DX4051InfoBoardDeCsInfo[] = {
+MV_DEV_CS_INFO rd_dx_bc2InfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth}*/
 #if defined(MV_INCLUDE_SPI)
 	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8} /* SPI DEV */
 #endif
 };
 
-MV_BOARD_MPP_INFO rd98DX4051InfoBoardMppConfigValue[] = {
+MV_BOARD_MPP_INFO rd_dx_bc2InfoBoardMppConfigValue[] = {
 	{ {
-		RD_98DX4051_MPP0_7,
-		RD_98DX4051_MPP8_15,
-		RD_98DX4051_MPP16_23,
-		RD_98DX4051_MPP24_31,
-		RD_98DX4051_MPP32_39,
+		RD_DX_BC2_MPP0_7,
+		RD_DX_BC2_MPP8_15,
+		RD_DX_BC2_MPP16_23,
+		RD_DX_BC2_MPP24_31,
+		RD_DX_BC2_MPP32_39,
 	} }
 };
 
-MV_BOARD_INFO rd98DX4051Info = {
-	.boardName			= "RD-98DX4051-SERVER",
-	.numBoardMppTypeValue		= ARRSZ(rd98DX4051InfoBoardModTypeInfo),
-	.pBoardModTypeValue		= rd98DX4051InfoBoardModTypeInfo,
-	.numBoardMppConfigValue		= ARRSZ(rd98DX4051InfoBoardMppConfigValue),
-	.pBoardMppConfigValue		= rd98DX4051InfoBoardMppConfigValue,
+MV_BOARD_INFO rd_dx_bc2Info = {
+	.boardName			= "RD-DXBC2-48G-12XG2XLG",
+	.numBoardMppTypeValue		= ARRSZ(rd_dx_bc2InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= rd_dx_bc2InfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(rd_dx_bc2InfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= rd_dx_bc2InfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
-	.numBoardDeviceIf		= ARRSZ(rd98DX4051InfoBoardDeCsInfo),
-	.pDevCsInfo			= rd98DX4051InfoBoardDeCsInfo,
+	.numBoardDeviceIf		= ARRSZ(rd_dx_bc2InfoBoardDeCsInfo),
+	.pDevCsInfo			= rd_dx_bc2InfoBoardDeCsInfo,
 	.numBoardTwsiDev		= 0,
 	.pBoardTwsiDev			= NULL,
-	.numBoardMacInfo		= ARRSZ(rd98DX4051InfoBoardMacInfo),
-	.pBoardMacInfo			= rd98DX4051InfoBoardMacInfo,
+	.numBoardMacInfo		= ARRSZ(rd_dx_bc2InfoBoardMacInfo),
+	.pBoardMacInfo			= rd_dx_bc2InfoBoardMacInfo,
 	.numBoardGppInfo		= 0,
 	.pBoardGppInfo			= NULL,
 	.activeLedsNumber		= 0,
@@ -237,14 +237,14 @@ MV_BOARD_INFO rd98DX4051Info = {
 	.ledsPolarity			= 0,
 
 	/* GPP values */
-	.gppOutEnValLow			= RD_98DX4051_GPP_OUT_ENA_LOW,
-	.gppOutEnValMid			= RD_98DX4051_GPP_OUT_ENA_MID,
+	.gppOutEnValLow			= RD_DX_BC2_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= RD_DX_BC2_GPP_OUT_ENA_MID,
 	.gppOutEnValHigh		= 0,
-	.gppOutValLow			= RD_98DX4051_GPP_OUT_VAL_LOW,
-	.gppOutValMid			= RD_98DX4051_GPP_OUT_VAL_MID,
+	.gppOutValLow			= RD_DX_BC2_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= RD_DX_BC2_GPP_OUT_VAL_MID,
 	.gppOutValHigh			= 0,
-	.gppPolarityValLow		= RD_98DX4051_GPP_POL_LOW,
-	.gppPolarityValMid		= RD_98DX4051_GPP_POL_MID,
+	.gppPolarityValLow		= RD_DX_BC2_GPP_POL_LOW,
+	.gppPolarityValMid		= RD_DX_BC2_GPP_POL_MID,
 	.gppPolarityValHigh		= 0,
 
 	/* External Switch Configuration */
@@ -252,14 +252,14 @@ MV_BOARD_INFO rd98DX4051Info = {
 	.switchInfoNum			= 0,
 
 	 /* NAND init params */
-	.nandFlashReadParams		= RD_98DX4051_BOARD_NAND_READ_PARAMS,
-	.nandFlashWriteParams		= RD_98DX4051_BOARD_NAND_WRITE_PARAMS,
-	.nandFlashControl		= RD_98DX4051_BOARD_NAND_CONTROL
+	.nandFlashReadParams		= RD_DX_BC2_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= RD_DX_BC2_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= RD_DX_BC2_BOARD_NAND_CONTROL
 };
 
 /*********************************************************************************/
 
 MV_BOARD_INFO *boardInfoTbl[] = {
-	&db98DX4251Info,
-	&rd98DX4051Info
+	&db_dx_bc2Info,
+	&rd_dx_bc2Info
 };

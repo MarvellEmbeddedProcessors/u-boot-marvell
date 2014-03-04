@@ -257,9 +257,90 @@ MV_BOARD_INFO rd_dx_bc2Info = {
 	.nandFlashControl		= RD_DX_BC2_BOARD_NAND_CONTROL
 };
 
+/*****************************/
+/* BobCat2 RD BC2_MTL BOARD */
+/*****************************/
+#define RD_MTL_BC2_BOARD_NAND_READ_PARAMS		0x000C0282
+#define RD_MTL_BC2_BOARD_NAND_WRITE_PARAMS	0x00010305
+/*NAND care support for small page chips*/
+#define RD_MTL_BC2_BOARD_NAND_CONTROL			0x01c00543
+
+MV_BOARD_MAC_INFO bc2_rd_mtlInfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
+	{BOARD_MAC_SPEED_1000M, 0x0, 0x0, 0x0},
+	{BOARD_MAC_SPEED_1000M, 0x1, 0x0, 0x1},
+};
+
+MV_BOARD_MODULE_TYPE_INFO bc2_rd_mtlInfoBoardModTypeInfo[] = {
+	{
+		.boardMppMod		= MV_BOARD_AUTO,
+	}
+};
+
+MV_DEV_CS_INFO bc2_rd_mtlInfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth}*/
+#if defined(MV_INCLUDE_SPI)
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8} /* SPI DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO bc2_rd_mtlInfoBoardMppConfigValue[] = {
+	{ {
+		RD_MTL_BC2_MPP0_7,
+		RD_MTL_BC2_MPP8_15,
+		RD_MTL_BC2_MPP16_23,
+		RD_MTL_BC2_MPP24_31,
+		RD_MTL_BC2_MPP32_39,
+	} }
+};
+
+MV_BOARD_INFO bc2_rd_mtlInfo = {
+	.boardName			= "RD-BC2-MTL-PoE-2QSFP-6SFP",
+	.numBoardMppTypeValue		= ARRSZ(bc2_rd_mtlInfoBoardModTypeInfo),
+	.pBoardModTypeValue		= bc2_rd_mtlInfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(bc2_rd_mtlInfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= bc2_rd_mtlInfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(bc2_rd_mtlInfoBoardDeCsInfo),
+	.pDevCsInfo			= bc2_rd_mtlInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= 0,
+	.pBoardTwsiDev			= NULL,
+	.numBoardMacInfo		= ARRSZ(bc2_rd_mtlInfoBoardMacInfo),
+	.pBoardMacInfo			= bc2_rd_mtlInfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= NULL,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* GPP values */
+	.gppOutEnValLow			= RD_MTL_BC2_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= RD_MTL_BC2_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= 0,
+	.gppOutValLow			= RD_MTL_BC2_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= RD_MTL_BC2_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= 0,
+	.gppPolarityValLow		= RD_MTL_BC2_GPP_POL_LOW,
+	.gppPolarityValMid		= RD_MTL_BC2_GPP_POL_MID,
+	.gppPolarityValHigh		= 0,
+
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+
+	/* NAND init params */
+	.nandFlashReadParams		= RD_MTL_BC2_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= RD_MTL_BC2_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= RD_MTL_BC2_BOARD_NAND_CONTROL
+};
+
 /*********************************************************************************/
 
 MV_BOARD_INFO *boardInfoTbl[] = {
 	&db_dx_bc2Info,
-	&rd_dx_bc2Info
+	&rd_dx_bc2Info,
+	&bc2_rd_mtlInfo
 };
+

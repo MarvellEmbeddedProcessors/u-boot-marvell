@@ -80,6 +80,8 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	return DB_DX_BC2_ID;
 #elif defined(CONFIG_RD_BOBCAT2)
 	return RD_DX_BC2_ID;
+#elif defined(CONFIG_RD_MTL_BOBCAT2)
+	return RD_MTL_BC2;
 #else
 #error Invalid Board is configured
 #endif

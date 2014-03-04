@@ -57,15 +57,13 @@ disclaimer.
 /*********************************/
 #ifdef CONFIG_DB_BOBCAT2
 	#define DB_BOBCAT2
-
-#endif // CONFIG_DB_BOBCAT2
-/*********************************/
-/* defines for rd-BOBCAT2    */
-/*********************************/
+#endif
 #ifdef CONFIG_RD_BOBCAT2
 	#define RD_BOBCAT2
-
-#endif // CONFIG_RD_BOBCAT2
+#endif
+#ifdef CONFIG_RD_MTL_BOBCAT2
+	#define RD_MTL_BOBCAT2
+#endif
 
 /***********/
 /* General */

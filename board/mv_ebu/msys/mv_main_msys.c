@@ -50,6 +50,7 @@ int mv_get_arch_number(void)
 	switch (mvBoardIdGet()) {
 	case RD_DX_BC2_ID:
 	case DB_DX_BC2_ID:
+	case RD_MTL_BC2:
 		return 3035;
 	default:
 		return 3036;

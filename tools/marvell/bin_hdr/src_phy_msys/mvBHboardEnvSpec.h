@@ -70,6 +70,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BOARD_ID_BASE		0x0
 #define DB_DX_BC2_ID		(BOARD_ID_BASE)
 #define RD_DX_BC2_ID		(DB_DX_BC2_ID + 1)
+#define RD_MTL_BC2		(RD_DX_BC2_ID + 1)
 
 #endif /* __INCmvBHboardEnvSpech */
 

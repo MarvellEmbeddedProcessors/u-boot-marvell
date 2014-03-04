@@ -78,8 +78,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* New board ID numbers */
 #define DB_DX_BC2_ID		(BOARD_ID_BASE)
 #define RD_DX_BC2_ID		(DB_DX_BC2_ID + 1)
+#define RD_MTL_BC2		(RD_DX_BC2_ID + 1)
 
-#define MV_MAX_BOARD_ID		(RD_DX_BC2_ID + 1)
+#define MV_MAX_BOARD_ID		(RD_MTL_BC2 + 1)
 #define INVALID_BAORD_ID	0xFFFF
 
 /******************/
@@ -144,11 +145,11 @@ MPP#	NAME			IN/OUT
 /*******************/
 /* RD_DX_BC2 */
 /*******************/
-#define RD_DX_BC2_MPP0_7			0x22242222
-#define RD_DX_BC2_MPP8_15			0x11022222
-#define RD_DX_BC2_MPP16_23			0x44440004
-#define RD_DX_BC2_MPP24_31			0x34444444
-#define RD_DX_BC2_MPP32_39			0x00000003
+#define RD_DX_BC2_MPP0_7		0x22242222
+#define RD_DX_BC2_MPP8_15		0x11022222
+#define RD_DX_BC2_MPP16_23		0x44440004
+#define RD_DX_BC2_MPP24_31		0x34444444
+#define RD_DX_BC2_MPP32_39		0x00000003
 
 /* GPPs
 MPP#	NAME		IN/OUT
@@ -200,4 +201,25 @@ MPP#	NAME		IN/OUT
 #define RD_DX_BC2_GPP_POL_LOW		0x0
 #define RD_DX_BC2_GPP_POL_MID		0x0
 
+/*******************/
+/* RD_MTL_BC2 */
+/*******************/
+#define RD_MTL_BC2_MPP0_7		0x22242222
+#define RD_MTL_BC2_MPP8_15		0x11022222
+#define RD_MTL_BC2_MPP16_23		0x44440004
+#define RD_MTL_BC2_MPP24_31		0x34444444
+#define RD_MTL_BC2_MPP32_39		0x00000003
+
+#define RD_MTL_BC2_GPP_OUT_ENA_LOW	(~(BIT1 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12\
+					| BIT16 | BIT20 | BIT29 | BIT30 | BIT31))
+#define RD_MTL_BC2_GPP_OUT_ENA_MID		(~(0))
+
+#define RD_MTL_BC2_GPP_OUT_VAL_LOW	(BIT1 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12\
+					| BIT16 | BIT20 | BIT29 | BIT30 | BIT31)
+#define RD_MTL_BC2_GPP_OUT_VAL_MID	(0)
+
+#define RD_MTL_BC2_GPP_POL_LOW		0x0
+#define RD_MTL_BC2_GPP_POL_MID		0x0
+
 #endif /* __INCmvBoardEnvSpech */
+

@@ -280,6 +280,7 @@ extern "C" {
 typedef enum _mvTargetId {
 	DRAM_TARGET_ID   = 0,	/* Port 0 -> DRAM interface		*/
 	DEV_TARGET_ID    = 1,	/* Port 1 -> Device port, BootROM, SPI	*/
+	SWITCH_TARGET_ID = 3,	/* Port 3 -> Switching Core Adapter/units */
 	PEX0_TARGET_ID   = 4,	/* Port 4 -> PCI Express 0		*/
 	DFX_TARGET_ID    = 8,	/* Port 8 -> DFX Server			*/
 	CRYPT_TARGET_ID  = 9,	/* Port 9 --> Crypto Engine SRAM	*/

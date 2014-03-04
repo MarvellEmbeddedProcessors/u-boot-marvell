@@ -444,12 +444,10 @@ typedef enum {
 	mvAsicReg_EPON_GEN_DRIFT_THRESHOLD                 = 348,
 	mvAsicReg_EPON_GEN_TIMESTAMP_VAL_FOR_INTR          = 349,
 	mvAsicReg_EPON_GEN_ADDITIONAL_OPCODE3              = 350,
-#ifndef PON_Z1
 	mvAsicReg_EPON_GEN_LLID_CRC_CONFIG                 = 351,
 	mvAsicReg_EPON_GEN_TIMESTAMP_CONFIG                = 352,
 	mvAsicReg_EPON_GEN_ONT_RX_TIMESTAMP_CONFIG         = 353,
 	mvAsicReg_EPON_GEN_ONT_REGISTER_PACKET_PADDING     = 354,
-#endif
 	mvAsicReg_EPON_GEN_MAC_ADDR_LOW                    = 355,
 	mvAsicReg_EPON_GEN_MAC_ADDR_HIGH                   = 356,
 	mvAsicReg_EPON_GEN_UTM_TC_PERIOD                   = 357,

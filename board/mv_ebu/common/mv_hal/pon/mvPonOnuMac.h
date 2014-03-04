@@ -637,7 +637,6 @@ MV_STATUS mvOnuEponMacGenSglDebounceEnable(MV_U32 enable);
 MV_STATUS mvOnuEponMacGenChurningKeySet(MV_U32 key);
 MV_STATUS mvOnuEponMacGenOpcodeSet(MV_U32 opcodeType, MV_U32 value, MV_U32 index,
 				   MV_U32 timestamp, MV_U32 valid);
-#ifndef PON_Z1
 MV_STATUS mvOnuEponMacGenTimestampConfig(MV_U32 gpmAddSyncTimeToTimestamp, MV_U32 gpmAimestampOffset,
 					 MV_U32 txmAddSyncTimeToTimestamp, MV_U32 txmUseTimestampImage,
 					 MV_U32 txmTimestampOffset);
@@ -647,7 +646,6 @@ MV_STATUS mvOnuEponMacGenRxTimestampConfigGet(MV_U32 *rxpTimestampSelect, MV_U32
 					      MV_U32 *rxpTimestampOffset);
 MV_STATUS mvOnuEponMacGenRegPacketPaddingSet(MV_U32 regAckPadding, MV_U32 regReqPadding);
 MV_STATUS mvOnuEponMacGenRegPacketPaddingGet(MV_U32 *regAckPadding, MV_U32 *regReqPadding);
-#endif /* PON_Z1 */
 MV_STATUS mvOnuEponMacGenDriftThresholdSet(MV_U32 threshold);
 MV_STATUS mvOnuEponMacGenTimeStampForIntrSet(MV_U32 timestamp);
 MV_STATUS mvOnuEponMacGenTimeStampForIntrGet(MV_U32 *timestamp);
@@ -719,11 +717,7 @@ MV_STATUS mvOnuEponMacRxpDataFifoThresholdGet(MV_U32 *threshold);
 /* ========================================================================== */
 MV_STATUS mvOnuEponMacGpmMacFutureGrantTimeSet(MV_U32 grant);
 MV_STATUS mvOnuEponMacGpmMinProcessingTimeSet(MV_U32 processingTime, MV_U32 effectiveLength);
-#ifdef PON_Z1
-MV_STATUS mvOnuEponMacGpmDiscoveryGrantLengthSet(MV_U32 grantLength, MV_U32 grantLengthMultiTq);
-#else /* Z2,A0 or later */
 MV_STATUS mvOnuEponMacGpmDiscoveryGrantLengthSet(MV_U32 grantLength, MV_U32 addOffsetForCalc, MV_U32 grantLengthMultiTq);
-#endif /* Z2,A0 or later */
 MV_STATUS mvOnuEponMacGpmRxSyncGet(MV_U32 *syncTime, MV_U32 *syncTimeUpdateInd);
 MV_STATUS mvOnuEponMacGpmGrantValidCounterGet(MV_U32 *counter, MV_U32 macId);
 MV_STATUS mvOnuEponMacGpmGrantMaxFutureTimeErrorCounterGet(MV_U32 *counter, MV_U32 macId);
@@ -743,24 +737,16 @@ MV_STATUS mvOnuEponMacGpmOpcBackToBackCounterGet(MV_U32 *counter, MV_U32 macId);
 /* ========================================================================== */
 MV_STATUS mvOnuEponMacTxmOverheadSet(MV_U32 overhead);
 MV_STATUS mvOnuEponMacTxmOverheadGet(MV_U32 *overhead);
-#ifdef PON_Z1
-MV_STATUS mvOnuEponMacTxmConfigSet(MV_U32 mode, MV_U32 alignment, MV_U32 priority);
-#else /* Z2,A0 or later */
 MV_STATUS mvOnuEponMacTxmConfigSet(MV_U32 tFec1Cfg, MV_U32 tFec2Cfg, MV_U32 ctrlFifoDisFcs,
 				   MV_U32 maskGmiiSignal, MV_U32 blockDataFromDataPath,
 				   MV_U32 addIpgToLenCalc, MV_U32 mode, MV_U32 alignment,
 				   MV_U32 priority);
-#endif /* Z2,A0 or later */
 MV_STATUS mvOnuEponMacTxmPowerUpIndSet(MV_U32 time);
 MV_STATUS mvOnuEponMacTxmPowerUpIndGet(MV_U32 *time);
 MV_STATUS mvOnuEponMacTxmLlidSet(MV_U32 llid, MV_U32 macId);
-#ifdef PON_Z1
-MV_STATUS mvOnuEponMacTxmCppReportConfig(MV_U32 config, MV_U32 macId);
-#else /* Z2,A0 or later */
 MV_STATUS mvOnuEponMacTxmCppReportConfig(MV_U32 queueReportQ2, MV_U32 reportBitmapQ2,
 					 MV_U32 queueReport, MV_U32 queueSet,
 					 MV_U32 reportBitmap, MV_U32 macId);
-#endif /* Z2,A0 or later */
 MV_STATUS mvOnuEponMacTxmCppReportBitMap(MV_U32 bitMap, MV_U32 macId);
 MV_STATUS mvOnuEponMacTxmCppReportBitMapGet(MV_U32 *bitMap, MV_U32 macId);
 MV_STATUS mvOnuEponMacTxmCppReportQueueSet(MV_U32 queueSet, MV_U32 macId);
@@ -790,12 +776,8 @@ MV_STATUS mvOnuEponMacPcsFrameSizeLimitsGet(MV_U32 *size, MV_U32 *latency);
 /*                        DDM Functions Section                               */
 /* ========================================================================== */
 MV_STATUS mvOnuEponMacDdmDelaySet(MV_U32 delay);
-#ifdef PON_Z1
-MV_STATUS mvOnuEponMacDdmTxPolaritySet(MV_U32 polarity);
-#else /* Z2,A0 or later */
 MV_STATUS mvOnuEponMacDdmTxPolaritySet(MV_U32 txEnable, MV_U32 txPolarity, MV_U32 serdesPolarity,
 				       MV_U32 xvrPolarity, MV_U32 burstEnable);
-#endif /* Z2,A0 or later */
 /* ========================================================================== */
 /*                        Statistics Functions Section                        */
 /* ========================================================================== */

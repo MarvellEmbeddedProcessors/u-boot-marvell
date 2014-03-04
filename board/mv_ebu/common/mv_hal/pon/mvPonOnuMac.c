@@ -5973,7 +5973,6 @@ MV_STATUS mvOnuEponMacGenOpcodeSet(MV_U32 opcodeType,
 	return status;
 }
 
-#ifdef PON_A0
 /*******************************************************************************
 **
 **  mvOnuEponMacGenTimestampConfig
@@ -6134,8 +6133,6 @@ MV_STATUS mvOnuEponMacGenRegPacketPaddingSet(MV_U32 regAckPadding, MV_U32 regReq
 
 	return asicOntGlbRegWrite(mvAsicReg_EPON_GEN_ONT_REGISTER_PACKET_PADDING, paddingConfig, 0);
 }
-
-#endif
 
 /*******************************************************************************
 **
@@ -7111,36 +7108,6 @@ MV_STATUS mvOnuEponMacGpmMinProcessingTimeSet(MV_U32 processingTime, MV_U32 effe
 	return status;
 }
 
-#ifdef PON_Z1
-/*******************************************************************************
-**
-**  mvOnuEponMacGpmDiscoveryGrantLengthSet
-**  ____________________________________________________________________________
-**
-**  DESCRIPTION: The function set discovery grant length
-**
-**  PARAMETERS:  MV_U32 grantLength
-**               MV_U32 grantLengthMultiTq
-**
-**  OUTPUTS:     None
-**
-**  RETURNS:     MV_OK or MV_ERROR
-**
-*******************************************************************************/
-MV_STATUS mvOnuEponMacGpmDiscoveryGrantLengthSet(MV_U32 grantLength, MV_U32 grantLengthMultiTq)
-{
-	MV_STATUS status;
-	MV_U32 discoveryGrantLength;
-
-	discoveryGrantLength = ((grantLengthMultiTq & 0x0FFF) << 16) |
-			       (grantLength  & 0x0FFF);
-
-	status = asicOntGlbRegWrite(mvAsicReg_EPON_GPM_DISCOVERY_GRANT_LENGTH, discoveryGrantLength, 0);
-
-	return status;
-}
-
-#else /* Z2,A0 or later */
 /*******************************************************************************
 **
 **  mvOnuEponMacGpmDiscoveryGrantLengthSet
@@ -7172,8 +7139,6 @@ MV_STATUS mvOnuEponMacGpmDiscoveryGrantLengthSet(MV_U32 grantLength,
 
 	return status;
 }
-
-#endif /* Z2,A0 or later */
 
 /*******************************************************************************
 **
@@ -7577,38 +7542,6 @@ MV_STATUS mvOnuEponMacTxmOverheadGet(MV_U32 *overhead)
 	return status;
 }
 
-#ifdef PON_Z1
-/*******************************************************************************
-**
-**  mvOnuEponMacTxmConfigSet
-**  ____________________________________________________________________________
-**
-**  DESCRIPTION: The function set TX configuration
-**
-**  PARAMETERS:  MV_U32 mode
-**               MV_U32 alignment
-**               MV_U32 priority
-**
-**  OUTPUTS:     None
-**
-**  RETURNS:     MV_OK or MV_ERROR
-**
-*******************************************************************************/
-MV_STATUS mvOnuEponMacTxmConfigSet(MV_U32 mode, MV_U32 alignment, MV_U32 priority)
-{
-	MV_STATUS status;
-	MV_U32 config;
-
-	config =      ((mode & 0x0003) << 3) |
-		 ((alignment & 0x0003) << 1) |
-		 (priority & 0x0001);
-
-	status = asicOntGlbRegWrite(mvAsicReg_EPON_TXM_CONFIGURATION, config, 0);
-
-	return status;
-}
-
-#else /* Z2,A0 or later */
 /*******************************************************************************
 **
 **  mvOnuEponMacTxmConfigSet
@@ -7647,8 +7580,6 @@ MV_STATUS mvOnuEponMacTxmConfigSet(MV_U32 tFec1Cfg, MV_U32 tFec2Cfg, MV_U32 ctrl
 
 	return status;
 }
-
-#endif /* Z2,A0 or later */
 
 /*******************************************************************************
 **
@@ -7715,35 +7646,6 @@ MV_STATUS mvOnuEponMacTxmLlidSet(MV_U32 llid, MV_U32 macId)
 	return status;
 }
 
-#ifdef PON_Z1
-/*******************************************************************************
-**
-**  mvOnuEponMacTxmCppReportConfig
-**  ____________________________________________________________________________
-**
-**  DESCRIPTION: The function set TX CPP Report configuration
-**
-**  PARAMETERS:  MV_U32 config
-**               MV_U32 macId
-**
-**  OUTPUTS:     None
-**
-**  RETURNS:     MV_OK or MV_ERROR
-**
-*******************************************************************************/
-MV_STATUS mvOnuEponMacTxmCppReportConfig(MV_U32 config, MV_U32 macId)
-{
-	MV_STATUS status;
-
-	if (macId >= EPON_MAX_MAC_NUM)
-		return MV_ERROR;
-
-	status = asicOntGlbRegWrite(mvAsicReg_EPON_TXM_CPP_RPRT_CONFIG, config, macId);
-
-	return status;
-}
-
-#else /* Z2,A0 or later */
 /*******************************************************************************
 **
 **  mvOnuEponMacTxmCppReportConfig
@@ -7779,8 +7681,6 @@ MV_STATUS mvOnuEponMacTxmCppReportConfig(MV_U32 queueReportQ2, MV_U32 reportBitm
 
 	return status;
 }
-
-#endif /* Z2,A0 or later */
 
 /*******************************************************************************
 **
@@ -8617,31 +8517,6 @@ MV_STATUS mvOnuEponMacDdmDelaySet(MV_U32 delay)
 	return status;
 }
 
-#ifdef PON_Z1
-/*******************************************************************************
-**
-**  mvOnuEponMacDdmTxPolaritySet
-**  ____________________________________________________________________________
-**
-**  DESCRIPTION: The function set DDM polarity
-**
-**  PARAMETERS:  MV_U32 polarity
-**
-**  OUTPUTS:     None
-**
-**  RETURNS:     MV_OK or MV_ERROR
-**
-*******************************************************************************/
-MV_STATUS mvOnuEponMacDdmTxPolaritySet(MV_U32 polarity)
-{
-	MV_STATUS status;
-
-	status = asicOntGlbRegWrite(mvAsicReg_EPON_DDM_TX_POLARITY, polarity, 0);
-
-	return status;
-}
-
-#else /* Z2,A0 or later */
 /*******************************************************************************
 **
 **  mvOnuEponMacDdmTxPolaritySet
@@ -8676,8 +8551,6 @@ MV_STATUS mvOnuEponMacDdmTxPolaritySet(MV_U32 txEnable,
 
 	return asicOntGlbRegWrite(mvAsicReg_EPON_DDM_TX_POLARITY, config, 0);
 }
-
-#endif /* Z2,A0 or later */
 
 /* ========================================================================== */
 /*                        Statistics Functions Section                        */

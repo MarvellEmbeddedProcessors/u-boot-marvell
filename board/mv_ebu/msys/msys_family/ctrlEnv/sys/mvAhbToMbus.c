@@ -198,7 +198,6 @@ MV_STATUS mvAhbToMbusWinSet(MV_U32 winNum, MV_AHB_TO_MBUS_DEC_WIN *pAddrDecWin)
 	else
 		MV_REG_WRITE(AHB_TO_MBUS_WIN_INTEREG_REG, decRegs.baseReg);
 
-
 	/* Internal register space have no size */
 	/* register. Do not perform size register assigment for those targets   */
 	if (winNum != MV_AHB_TO_MBUS_INTREG_WIN) {
@@ -643,66 +642,26 @@ static MV_STATUS ahbToMbusRemapRegOffsGet(MV_U32 winNum, AHB_TO_MBUS_REMAP_REG_O
 	switch (winNum) {
 	case 0:
 	case 1:
-		pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
-		pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);
-		break;
 	case 2:
 	case 3:
-		if ((mvCtrlModelGet() == MV_5281_DEV_ID) ||
-			(mvCtrlModelGet() == MV_1281_DEV_ID) ||
-			(mvCtrlModelGet() == MV_6183_DEV_ID) ||
-			(mvCtrlModelGet() == MV_6183L_DEV_ID) ||
-			(mvCtrlModelGet() == MV_6710_DEV_ID) ||
-			(mvCtrlModelGet() == MV_78130_DEV_ID) ||
-			(mvCtrlModelGet() == MV_78160_DEV_ID) ||
-			(mvCtrlModelGet() == MV_78230_DEV_ID) ||
-			(mvCtrlModelGet() == MV_78260_DEV_ID) ||
-			(mvCtrlModelGet() == MV_78460_DEV_ID) ||
-			(mvCtrlModelGet() == MV_78000_DEV_ID)) {
-			pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
-			pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);
-			break;
-		} else {
-			pRemapRegs->lowRegOffs = 0;
-			pRemapRegs->highRegOffs = 0;
-
-			DB(mvOsPrintf("ahbToMbusRemapRegOffsGet: ERR. Invalid winNum %d\n", winNum));
-			return MV_NO_SUCH;
-		}
-		break;
 	case 4:
 	case 5:
 	case 6:
 	case 7:
-		if ((mvCtrlModelGet() == MV_5281_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_1281_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_6183_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_6183L_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_6710_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_78130_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_78160_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_78230_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_78260_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_78460_DEV_ID) ||
-			   (mvCtrlModelGet() == MV_78000_DEV_ID)) {
-			pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
-			pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);
-			break;
-		} else {
-			pRemapRegs->lowRegOffs = 0;
-			pRemapRegs->highRegOffs = 0;
-
-			DB(mvOsPrintf("ahbToMbusRemapRegOffsGet: ERR. Invalid winNum %d\n", winNum));
-			return MV_NO_SUCH;
-		}
+		pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
+		pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);
 		break;
+
 	default:
 		pRemapRegs->lowRegOffs = 0;
 		pRemapRegs->highRegOffs = 0;
 
-		DB(mvOsPrintf("ahbToMbusRemapRegOffsGet: ERR. Invalid winNum %d\n", winNum));
+		DB(mvOsPrintf("%s: ERR. Invalid winNum %d\n", __func__, winNum));
 		return MV_NO_SUCH;
 	}
+
+	DB(mvOsPrintf("%s: winNum %d pRemapRegs->lowRegOffs 0x%x pRemapRegs->highRegOffs 0x%x\n",
+		__func__, winNum, pRemapRegs->lowRegOffs, pRemapRegs->highRegOffs));
 
 	return MV_OK;
 }

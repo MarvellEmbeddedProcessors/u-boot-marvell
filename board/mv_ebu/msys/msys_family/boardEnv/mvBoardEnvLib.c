@@ -1216,9 +1216,9 @@ MV_U32 mvBoardIdGet(MV_VOID)
 {
 	if (gBoardId == -1) {
 #if defined(DB_BOBCAT2)
-		gBoardId = DB_98DX4251_BP_ID;
+		gBoardId = DB_DX_BC2_ID;
 #elif defined(RD_BOBCAT2)
-		gBoardId = RD_98DX4051_ID;
+		gBoardId = DB_DX_BC2_ID;
 #else
 		mvOsPrintf("mvBoardIdSet: Board ID must be defined!\n");
 		while (1)

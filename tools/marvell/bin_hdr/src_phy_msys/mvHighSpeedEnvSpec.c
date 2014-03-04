@@ -76,9 +76,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 MV_U32 mvBoardIdGet(MV_VOID)
 {
 #if defined(CONFIG_DB_BOBCAT2)
-	return DB_98DX4251_BP_ID;
+	return DB_DX_BC2_ID;
 #elif defined(CONFIG_RD_BOBCAT2)
-	return RD_98DX4051_ID;
+	return RD_DX_BC2_ID;
 #else
 #error Invalid Board is configured
 #endif

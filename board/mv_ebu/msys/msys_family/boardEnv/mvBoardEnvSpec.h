@@ -73,129 +73,131 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* ============================ */
 
 /* boards ID numbers */
-#define BOARD_ID_BASE				0x0
+#define BOARD_ID_BASE		0x0
 
 /* New board ID numbers */
-#define DB_98DX4251_BP_ID			(BOARD_ID_BASE)
-#define RD_98DX4051_ID				(DB_98DX4251_BP_ID + 1)
+#define DB_DX_BC2_ID		(BOARD_ID_BASE)
+#define RD_DX_BC2_ID		(DB_DX_BC2_ID + 1)
 
-#define MV_MAX_BOARD_ID				(RD_98DX4051_ID + 1)
-#define INVALID_BAORD_ID			0xFFFF
+#define MV_MAX_BOARD_ID		(RD_DX_BC2_ID + 1)
+#define INVALID_BAORD_ID	0xFFFF
 
 /******************/
-/* DB-98DX4251-BP */
+/*   RD_DX_BC2    */
 /******************/
-#define DB_98DX4251_MPP0_7			0x22242222
-#define DB_98DX4251_MPP8_15			0x11122222
-#define DB_98DX4251_MPP16_23			0x44444044
-#define DB_98DX4251_MPP24_31			0x14444444
-#define DB_98DX4251_MPP32_39			0x00000001
+#define DB_DX_BC2_MPP0_7	0x22242222
+#define DB_DX_BC2_MPP8_15	0x11122222
+#define DB_DX_BC2_MPP16_23	0x44444044
+#define DB_DX_BC2_MPP24_31	0x14444444
+#define DB_DX_BC2_MPP32_39	0x00000001
 
 /* GPPs
 MPP#	NAME			IN/OUT
 ----------------------------------------------
-0       SPI_MOSI 		(out)
-1       SPI_MISO 		(in)
-2       SPI_SCK 		(out)
-3       SPI_CS0n 		(out)
-4       DEV_CSn[0] 		(out) NF CS (Boot)
-5       SD_CMD 			(in/out)
-6       SD_CLK 			(out)
-7       SD_D[0] 		(in/out)
-8       SD_D[1] 		(in/out)
-9       SD_D[2] 		(in/out)
-10      SD_D[3] 		(in/out)
-11      UART1_RXD 		(in)
-12      UART1_TXD 		(out)
-13      INTERRUPT_OUTn		(out)
-14      I2C_SCL 		(in/out)
-15      I2C_SDA 		(in/out)
+0	SPI_MOSI		(out)
+1	SPI_MISO		(in)
+2	SPI_SCK			(out)
+3	SPI_CS0n		(out)
+4	DEV_CSn[0]		(out) NF CS (Boot)
+5	SD_CMD			(in/out)
+6	SD_CLK			(out)
+7	SD_D[0]			(in/out)
+8	SD_D[1]			(in/out)
+9	SD_D[2]			(in/out)
+10	SD_D[3]			(in/out)
+11	UART1_RXD		(in)
+12	UART1_TXD		(out)
+13	INTERRUPT_OUTn		(out)
+14	I2C_SCL			(in/out)
+15	I2C_SDA			(in/out)
 
-16      DEV_Oen_NF_Ren 		(out)
-17      DEV_CLK_OUT 		(out) Test point
-18      GPIO[18] 		(in/out) INT_in / SD_WP / VC2_GPP
-19      NF_RBn 			(in)
-20      DEV_WEn[0]		(out)
-21      DEV_AD[0] 		(in/out)
-22      DEV_AD[1] 		(in/out)
-23      DEV_AD[2] 		(in/out)
-24      DEV_AD[3] 		(in/out)
-25      DEV_AD[4] 		(in/out)
-26      DEV_AD[5] 		(in/out)
-27      DEV_AD[6] 		(in/out)
-28      DEV_AD[7] 		(in/out)
-29      NF_CLE_DEV_A[0] 	(out)
-30      NF_ALE_DEV_A[1] 	(out)
-31      SLV_SMI_MDC 		(in)
-32      SLV_SMI_MDIO 		(in/out)
-
-
+16	DEV_Oen_NF_Ren		(out)
+17	DEV_CLK_OUT		(out) Test point
+18	GPIO[18]		(in/out) INT_in / SD_WP / VC2_GPP
+19	NF_RBn			(in)
+20	DEV_WEn[0]		(out)
+21	DEV_AD[0]		(in/out)
+22	DEV_AD[1]		(in/out)
+23	DEV_AD[2]		(in/out)
+24	DEV_AD[3]		(in/out)
+25	DEV_AD[4]		(in/out)
+26	DEV_AD[5]		(in/out)
+27	DEV_AD[6]		(in/out)
+28	DEV_AD[7]		(in/out)
+29	NF_CLE_DEV_A[0]		(out)
+30	NF_ALE_DEV_A[1]		(out)
+31	SLV_SMI_MDC		(in)
+32	SLV_SMI_MDIO		(in/out)
 
 */
-#define DB_98DX4251_GPP_OUT_ENA_LOW		(~(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12 | BIT13 | BIT16 | BIT17 | BIT20 | BIT29  | BIT30 ))
-#define DB_98DX4251_GPP_OUT_ENA_MID		(~(0))
+#define DB_DX_BC2_GPP_OUT_ENA_LOW	(~(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12\
+					| BIT13 | BIT16 | BIT17 | BIT20 | BIT29  | BIT30))
+#define DB_DX_BC2_GPP_OUT_ENA_MID	(~(0))
 
-#define DB_98DX4251_GPP_OUT_VAL_LOW		(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12 | BIT13 | BIT16 | BIT17 | BIT20 | BIT29  | BIT30 )
-#define DB_98DX4251_GPP_OUT_VAL_MID		0x0
+#define DB_DX_BC2_GPP_OUT_VAL_LOW	(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12\
+					| BIT13 | BIT16 | BIT17 | BIT20 | BIT29  | BIT30)
+#define DB_DX_BC2_GPP_OUT_VAL_MID	0x0
 
-#define DB_98DX4251_GPP_POL_LOW			0x0
-#define DB_98DX4251_GPP_POL_MID			0x0
+#define DB_DX_BC2_GPP_POL_LOW		0x0
+#define DB_DX_BC2_GPP_POL_MID		0x0
 
 /*******************/
-/* RD-98DX4051 */
+/* RD_DX_BC2 */
 /*******************/
-#define RD_98DX4051_MPP0_7			0x22242222
-#define RD_98DX4051_MPP8_15			0x11022222
-#define RD_98DX4051_MPP16_23			0x44440004
-#define RD_98DX4051_MPP24_31			0x34444444
-#define RD_98DX4051_MPP32_39			0x00000003
+#define RD_DX_BC2_MPP0_7			0x22242222
+#define RD_DX_BC2_MPP8_15			0x11022222
+#define RD_DX_BC2_MPP16_23			0x44440004
+#define RD_DX_BC2_MPP24_31			0x34444444
+#define RD_DX_BC2_MPP32_39			0x00000003
 
 /* GPPs
-MPP#	NAME	 	IN/OUT
+MPP#	NAME		IN/OUT
 ----------------------------------------------
-0	SPI_MOSI 	(out)
-1	SPI_MISO 	(in)
-2	SPI_SCK  	(out)
-3	SPI_CS0n 	(out)
-4	DEV_CSn[0] 	(out)
-5	SD_CMD 		(in/out)
-6	SD_CLK 		(out)
-7	SD_D[0] 	(in/out)
-8	SD_D[1] 	(in/out)
-9	SD_D[2] 	(in/out)
-10	SD_D[3] 	(in/out)
-11	UART1_RXD 	(in)
-12	UART1_TXD 	(out)
+0	SPI_MOSI	(out)
+1	SPI_MISO	(in)
+2	SPI_SCK		(out)
+3	SPI_CS0n	(out)
+4	DEV_CSn[0]	(out)
+5	SD_CMD		(in/out)
+6	SD_CLK		(out)
+7	SD_D[0]		(in/out)
+8	SD_D[1]		(in/out)
+9	SD_D[2]		(in/out)
+10	SD_D[3]		(in/out)
+11	UART1_RXD	(in)
+12	UART1_TXD	(out)
 13	GPIO[13]	(in/out)
-14	I2C_SCL 	(in/out)
-15	I2C_SDA 	(in/out)
+14	I2C_SCL		(in/out)
+15	I2C_SDA		(in/out)
 
 16	DEV_Oen_NF_Ren	(out)
-17	GPIO[17] 	(in/out)
-18	GPIO[18] 	(in/out)
-19	GPIO[19] 	(in/out)
+17	GPIO[17]	(in/out)
+18	GPIO[18]	(in/out)
+19	GPIO[19]	(in/out)
 20	DEV_WEn[0]	(out)
-21	DEV_AD[0] 	(in/out)
-22      DEV_AD[1] 	(in/out)
-23      DEV_AD[2] 	(in/out)
-24      DEV_AD[3] 	(in/out)
-25      DEV_AD[4] 	(in/out)
-26      DEV_AD[5] 	(in/out)
-27      DEV_AD[6] 	(in/out)
-28      DEV_AD[7] 	(in/out)
-29      NF_CLE_DEV_A[0] (out)
-30      NF_ALE_DEV_A[1] (out)
-31      MST_SMI_MDC 	(out)
-32	MST_SMI_MDIO 	(in/out)
+21	DEV_AD[0]	(in/out)
+22	DEV_AD[1]	(in/out)
+23	DEV_AD[2]	(in/out)
+24	DEV_AD[3]	(in/out)
+25	DEV_AD[4]	(in/out)
+26	DEV_AD[5]	(in/out)
+27	DEV_AD[6]	(in/out)
+28	DEV_AD[7]	(in/out)
+29	NF_CLE_DEV_A[0] (out)
+30	NF_ALE_DEV_A[1] (out)
+31	MST_SMI_MDC	(out)
+32	MST_SMI_MDIO	(in/out)
 */
 
-#define RD_98DX4051_GPP_OUT_ENA_LOW		(~(BIT1 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12 | BIT16 | BIT20 | BIT29 | BIT30 | BIT31))
-#define RD_98DX4051_GPP_OUT_ENA_MID		(~(0))
+#define RD_DX_BC2_GPP_OUT_ENA_LOW	(~(BIT1 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12\
+					| BIT16 | BIT20 | BIT29 | BIT30 | BIT31))
+#define RD_DX_BC2_GPP_OUT_ENA_MID	(~(0))
 
-#define RD_98DX4051_GPP_OUT_VAL_LOW		(BIT1 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12 | BIT16 | BIT20 | BIT29 | BIT30 | BIT31)
-#define RD_98DX4051_GPP_OUT_VAL_MID		(0)
+#define RD_DX_BC2_GPP_OUT_VAL_LOW	(BIT1 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12\
+					| BIT16 | BIT20 | BIT29 | BIT30 | BIT31)
+#define RD_DX_BC2_GPP_OUT_VAL_MID	(0)
 
-#define RD_98DX4051_GPP_POL_LOW			0x0
-#define RD_98DX4051_GPP_POL_MID			0x0
+#define RD_DX_BC2_GPP_POL_LOW		0x0
+#define RD_DX_BC2_GPP_POL_MID		0x0
 
 #endif /* __INCmvBoardEnvSpech */

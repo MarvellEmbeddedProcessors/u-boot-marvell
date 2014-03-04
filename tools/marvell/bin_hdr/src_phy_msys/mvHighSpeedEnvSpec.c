@@ -73,34 +73,4 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvUart.h"
 #include "util.h"
 
-MV_U32 mvBoardIdGet(MV_VOID)
-{
-#if defined(CONFIG_DB_BOBCAT2)
-	return DB_DX_BC2_ID;
-#elif defined(CONFIG_RD_BOBCAT2)
-	return RD_DX_BC2_ID;
-#else
-#error Invalid Board is configured
-#endif
-}
-
-MV_U32 mvBoardTclkGet(MV_VOID)
-{
-	//TODO Add RD/DB detection. Currently set to DB.
-	return MV_BOARD_TCLK_200MHZ;
-}
-
-MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
-{
-	MV_U32 uiReg = 0;
-
-//--------------------- Do pex config --------------------------
-	uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
-	uiReg &= ~(0xF << 20);
-	uiReg |= (0x4 << 20);
-	MV_REG_WRITE(PEX_CAPABILITIES_REG(0), uiReg);
-
-	return mvHwsPexConfig();
-}
-
-
+//Placeholder for future code

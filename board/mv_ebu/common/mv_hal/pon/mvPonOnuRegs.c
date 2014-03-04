@@ -449,14 +449,10 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_GEN_SYNC_TIME]                    =  { mvAsicReg_EPON_GEN_SYNC_TIME,                    MV_ASIC_ONT_GLB_ADDR + 0x0424,   0x0424,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "Sync Time"},
 	[mvAsicReg_EPON_GEN_BROADCAST_ADDR_LOW]           =  { mvAsicReg_EPON_GEN_BROADCAST_ADDR_LOW,           MV_ASIC_ONT_GLB_ADDR + 0x0428,   0x0428,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "Broadcast Address Low"},
 	[mvAsicReg_EPON_GEN_BROADCAST_ADDR_HIGH]          =  { mvAsicReg_EPON_GEN_BROADCAST_ADDR_HIGH,          MV_ASIC_ONT_GLB_ADDR + 0x042C,   0x042C,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "Broadcast Address High"},
-#ifdef PON_Z1
-	[mvAsicReg_EPON_GEN_CONFIGURATION]                =  { mvAsicReg_EPON_GEN_CONFIGURATION,                MV_ASIC_ONT_GLB_ADDR + 0x0430,   0x0430,   asicRW,     0x00000073,     0,      0,     0,      0,     "Gen Configuration"},
-#else  /* PON_A0 */
 	[mvAsicReg_EPON_GEN_CONFIGURATION]                =  { mvAsicReg_EPON_GEN_CONFIGURATION,                MV_ASIC_ONT_GLB_ADDR + 0x0430,   0x0430,   asicRW,     0x0000FF73,     0,      0,     0,      0,     "Gen Configuration"},
 	[mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_REPORT]    =  { mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_REPORT,    MV_ASIC_ONT_GLB_ADDR + 0x0430,   0x0430,   asicRW,     0x00000001,     4,      0,     0,      0,     "Gen Configuration Auto Report"},
 	[mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_ACK]       =  { mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_ACK,       MV_ASIC_ONT_GLB_ADDR + 0x0430,   0x0430,   asicRW,     0x00000001,     5,      0,     0,      0,     "Gen Configuration Auto Ack"},
 	[mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_REQUEST]   =  { mvAsicReg_EPON_GEN_CONFIGURATION_AUTO_REQUEST,   MV_ASIC_ONT_GLB_ADDR + 0x0430,   0x0430,   asicRW,     0x00000001,     6,      0,     0,      0,     "Gen Configuration Auto Request"},
-#endif
 	[mvAsicReg_EPON_GEN_SLD]                          =  { mvAsicReg_EPON_GEN_SLD,                          MV_ASIC_ONT_GLB_ADDR + 0x0434,   0x0434,   asicRW,     0x000000FF,     0,      0,     0,      0,     "Sld"},
 	[mvAsicReg_EPON_GEN_MAC_CONTROL_TYPE]             =  { mvAsicReg_EPON_GEN_MAC_CONTROL_TYPE,             MV_ASIC_ONT_GLB_ADDR + 0x0438,   0x0438,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "Mac Control type"},
 	[mvAsicReg_EPON_GEN_LOCAL_TIMESTAMP]              =  { mvAsicReg_EPON_GEN_LOCAL_TIMESTAMP,              MV_ASIC_ONT_GLB_ADDR + 0x043C,   0x043C,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "Local TimeStamp"},
@@ -473,19 +469,12 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_GEN_DRIFT_THRESHOLD]              =  { mvAsicReg_EPON_GEN_DRIFT_THRESHOLD,              MV_ASIC_ONT_GLB_ADDR + 0x0470,   0x0470,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "Drift Threshold"},
 	[mvAsicReg_EPON_GEN_TIMESTAMP_VAL_FOR_INTR]       =  { mvAsicReg_EPON_GEN_TIMESTAMP_VAL_FOR_INTR,       MV_ASIC_ONT_GLB_ADDR + 0x0474,   0x0474,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "Timestamp valuer for interrupt"},
 	[mvAsicReg_EPON_GEN_ADDITIONAL_OPCODE3]           =  { mvAsicReg_EPON_GEN_ADDITIONAL_OPCODE3,           MV_ASIC_ONT_GLB_ADDR + 0x0478,   0x0478,   asicRW,     0x001FFFFF,     0,      0,     0,      0,     "Additional Opcode 03"},
-#ifdef PON_A0
 	[mvAsicReg_EPON_GEN_LLID_CRC_CONFIG]              =  { mvAsicReg_EPON_GEN_LLID_CRC_CONFIG,              MV_ASIC_ONT_GLB_ADDR + 0x047C,   0x047C,   asicRW,     0x000003FF,     0,      0,     0,      0,     "LLID configuration"},
 	[mvAsicReg_EPON_GEN_TIMESTAMP_CONFIG]             =  { mvAsicReg_EPON_GEN_TIMESTAMP_CONFIG,             MV_ASIC_ONT_GLB_ADDR + 0x0480,   0x0480,   asicRW,     0x87FFC7FF,     0,      0,     0,      0,     "Timestamp configuration"},
 	[mvAsicReg_EPON_GEN_ONT_RX_TIMESTAMP_CONFIG]      =  { mvAsicReg_EPON_GEN_ONT_RX_TIMESTAMP_CONFIG,      MV_ASIC_ONT_GLB_ADDR + 0x0484,   0x0484,   asicRW,     0x00008FFF,     0,      0,     0,      0,     "ONT Rx Timestamp configuration"},
 	[mvAsicReg_EPON_GEN_ONT_REGISTER_PACKET_PADDING]  =  { mvAsicReg_EPON_GEN_ONT_REGISTER_PACKET_PADDING,  MV_ASIC_ONT_GLB_ADDR + 0x0488,   0x0488,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "ONT Register packet pading"},
-#endif
-#ifdef PON_Z1
-	[mvAsicReg_EPON_GEN_MAC_ADDR_LOW]                 =  { mvAsicReg_EPON_GEN_MAC_ADDR_LOW,                 MV_ASIC_ONT_GLB_ADDR + 0x0440,   0x0440,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "MAC address low part"},
-	[mvAsicReg_EPON_GEN_MAC_ADDR_HIGH]                =  { mvAsicReg_EPON_GEN_MAC_ADDR_HIGH,                MV_ASIC_ONT_GLB_ADDR + 0x0444,   0x0444,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "MAC address high part"},
-#else /* PON_A0 */
 	[mvAsicReg_EPON_GEN_MAC_ADDR_LOW]                 =  { mvAsicReg_EPON_GEN_MAC_ADDR_LOW,                 MV_ASIC_ONT_GLB_ADDR + 0x04A0,   0x04A0,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "MAC address low part"},
 	[mvAsicReg_EPON_GEN_MAC_ADDR_HIGH]                =  { mvAsicReg_EPON_GEN_MAC_ADDR_HIGH,                MV_ASIC_ONT_GLB_ADDR + 0x04C8,   0x04C8,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "MAC address high part"},
-#endif
 	[mvAsicReg_EPON_GEN_UTM_TC_PERIOD]                =  { mvAsicReg_EPON_GEN_UTM_TC_PERIOD,                MV_ASIC_ONT_GLB_ADDR + 0x0720,   0x0720,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "UTM TC Period"},
 	[mvAsicReg_EPON_GEN_UTM_TC_PERIOD_VALID]          =  { mvAsicReg_EPON_GEN_UTM_TC_PERIOD_VALID,          MV_ASIC_ONT_GLB_ADDR + 0x0724,   0x0724,   asicRW,     0x00000001,     0,      0,     0,      0,     "UTM TC Period valid"},
 	[mvAsicReg_EPON_GEN_GEM_IPG_VAL]                  =  { mvAsicReg_EPON_GEN_GEM_IPG_VAL,                  MV_ASIC_ONT_GLB_ADDR + 0x0728,   0x0728,   asicRW,     0x000000FF,     0,      0,     0,      0,     "IPG Value"},
@@ -519,13 +508,8 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_RXP_LLT_LLID_DATA_INDEX]          =  { mvAsicReg_EPON_RXP_LLT_LLID_DATA_INDEX,          MV_ASIC_ONT_GLB_ADDR + 0x081C,   0x081C,   asicRW,     0x0000000F,    15,     10,     1,      0,     "Rxp LLID data index"},
 	[mvAsicReg_EPON_RXP_LLT_LLID_DATA_VALID]          =  { mvAsicReg_EPON_RXP_LLT_LLID_DATA_VALID,          MV_ASIC_ONT_GLB_ADDR + 0x081C,   0x081C,   asicRW,     0x00000001,    19,     10,     1,      0,     "Rxp LLID data valid"},
 	[mvAsicReg_EPON_RXP_ENCRYPTION_CONFIG]            =  { mvAsicReg_EPON_RXP_ENCRYPTION_CONFIG,            MV_ASIC_ONT_GLB_ADDR + 0x0844,   0x0844,   asicRW,     0x00000031,     0,      0,     0,      0,     "Rxp Enctyption Config"},
-#ifdef PON_Z1
-	[mvAsicReg_EPON_RXP_ENCRYPTION_KEY0]              =  { mvAsicReg_EPON_RXP_ENCRYPTION_KEY0,              MV_ASIC_ONT_GLB_ADDR + 0x0848,   0x0848,   asicRW,     0x00FFFFFF,     0,      0,     0,      0,     "Rxp Enctyption Key 0"},
-	[mvAsicReg_EPON_RXP_ENCRYPTION_KEY1]              =  { mvAsicReg_EPON_RXP_ENCRYPTION_KEY1,              MV_ASIC_ONT_GLB_ADDR + 0x084C,   0x084C,   asicRW,     0x00FFFFFF,     0,      0,     0,      0,     "Rxp Enctyption Key 1"},
-#else  /* PON_A0 */
 	[mvAsicReg_EPON_RXP_ENCRYPTION_KEY0]              =  { mvAsicReg_EPON_RXP_ENCRYPTION_KEY0,              MV_ASIC_ONT_GLB_ADDR + 0x0850,   0x0850,   asicRW,     0x00FFFFFF,     0,      8,     1,      0,     "Rxp Enctyption Key 0"},
 	[mvAsicReg_EPON_RXP_ENCRYPTION_KEY1]              =  { mvAsicReg_EPON_RXP_ENCRYPTION_KEY1,              MV_ASIC_ONT_GLB_ADDR + 0x0878,   0x0878,   asicRW,     0x00FFFFFF,     0,      8,     1,      0,     "Rxp Enctyption Key 1"},
-#endif
 	[mvAsicReg_EPON_RXP_DATA_FIFO_THRESH]             =  { mvAsicReg_EPON_RXP_DATA_FIFO_THRESH,             MV_ASIC_ONT_GLB_ADDR + 0x08C0,   0x08C0,   asicRW,     0x00000FFF,     0,      8,     1,      0,     "Rxp FIFO Threshold"},
 
 	/* =========================== */
@@ -555,30 +539,11 @@ S_asicGlobalRegDb asicGlbDb[] =
 	/* =========================== */
 	/*  EPON TXM Registers         */
 	/* =========================== */
-#ifdef PON_Z1
-	[mvAsicReg_EPON_TXM_DEFAULT_OVERHEAD]             =  { mvAsicReg_EPON_TXM_DEFAULT_OVERHEAD,             MV_ASIC_ONT_GLB_ADDR + 0x1010,   0x1010,   asicRW,     0x000000FF,     0,      0,     0,      0,     "Default overhead"},
-	[mvAsicReg_EPON_TXM_CONFIGURATION]                =  { mvAsicReg_EPON_TXM_CONFIGURATION,                MV_ASIC_ONT_GLB_ADDR + 0x1018,   0x1018,   asicRW,     0x00000007,     0,      0,     0,      0,     "Tx Configuration"},
-	[mvAsicReg_EPON_TXM_TX_LLID]                      =  { mvAsicReg_EPON_TXM_TX_LLID,                      MV_ASIC_ONT_GLB_ADDR + 0x1014,   0x1014,   asicRW,     0x00007FFF,     0,      0,     0,      0,     "Tx LLID"},
-#else /* PON_A0 */
 	[mvAsicReg_EPON_TXM_DEFAULT_OVERHEAD]             =  { mvAsicReg_EPON_TXM_DEFAULT_OVERHEAD,             MV_ASIC_ONT_GLB_ADDR + 0x1010,   0x1010,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "Default overhead"},
 	[mvAsicReg_EPON_TXM_CONFIGURATION]                =  { mvAsicReg_EPON_TXM_CONFIGURATION,                MV_ASIC_ONT_GLB_ADDR + 0x1018,   0x1018,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "Tx Configuration"},
 	[mvAsicReg_EPON_TXM_POWER_UP]                     =  { mvAsicReg_EPON_TXM_POWER_UP,                     MV_ASIC_ONT_GLB_ADDR + 0x1020,   0x1020,   asicRW,     0x00001FFF,     0,      0,     0,      0,     "Tx MUX Power UP"},
 	[mvAsicReg_EPON_TXM_TX_LLID]                      =  { mvAsicReg_EPON_TXM_TX_LLID,                      MV_ASIC_ONT_GLB_ADDR + 0x1050,   0x1050,   asicRW,     0x00007FFF,     0,      8,     1,      0,     "Tx LLID"},
-#endif
-#ifdef PON_Z1
-	[mvAsicReg_EPON_TXM_CPP_RPRT_CONFIG]              =  { mvAsicReg_EPON_TXM_CPP_RPRT_CONFIG,              MV_ASIC_ONT_GLB_ADDR + 0x1078,   0x1078,   asicRW,     0x000003FF,     0,      8,     1,      0,     "Cpp report configuration"},
-	[mvAsicReg_EPON_TXM_CPP_RPRT_BIT_MAP]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_BIT_MAP,             MV_ASIC_ONT_GLB_ADDR + 0x1098,   0x1098,   asicRW,     0x000000FF,     0,      8,     1,      0,     "Cpp report bit map"},
-	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_SET]           =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_SET,           MV_ASIC_ONT_GLB_ADDR + 0x10B8,   0x10B8,   asicRW,     0x0000003F,     0,      8,     1,      0,     "Cpp report queue sets"},
-	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_0]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_0,             MV_ASIC_ONT_GLB_ADDR + 0x10D8,   0x10D8,   asicRW,     0x0000FFFF,     0,      8,     1,      0,     "Cpp report queue0"},
-	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_1]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_1,             MV_ASIC_ONT_GLB_ADDR + 0x10F8,   0x10F8,   asicRW,     0x0000FFFF,     0,      8,     1,      0,     "Cpp report queue1"},
-	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_2]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_2,             MV_ASIC_ONT_GLB_ADDR + 0x1118,   0x1118,   asicRW,     0x0000FFFF,     0,      8,     1,      0,     "Cpp report queue2"},
-	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_3]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_3,             MV_ASIC_ONT_GLB_ADDR + 0x1138,   0x1138,   asicRW,     0x0000FFFF,     0,      8,     1,      0,     "Cpp report queue3"},
-	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_4]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_4,             MV_ASIC_ONT_GLB_ADDR + 0x1158,   0x1158,   asicRW,     0x0000FFFF,     0,      8,     1,      0,     "Cpp report queue4"},
-	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_5]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_5,             MV_ASIC_ONT_GLB_ADDR + 0x1178,   0x1178,   asicRW,     0x0000FFFF,     0,      8,     1,      0,     "Cpp report queue5"},
-	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_6]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_6,             MV_ASIC_ONT_GLB_ADDR + 0x1198,   0x1198,   asicRW,     0x0000FFFF,     0,      8,     1,      0,     "Cpp report queue6"},
-	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_7]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_7,             MV_ASIC_ONT_GLB_ADDR + 0x11B8,   0x11B8,   asicRW,     0x0000FFFF,     0,      8,     1,      0,     "Cpp report queue7"},
-	[mvAsicReg_EPON_TXM_CPP_RPRT_FEC_CONFIG]          =  { mvAsicReg_EPON_TXM_CPP_RPRT_FEC_CONFIG,          MV_ASIC_ONT_GLB_ADDR + 0x11DC,   0x11DC,   asicRW,     0x00FFFFFF,     0,      8,     1,      0,     "Cpp report fec config"},
-#else /* PON_A0 */
+
 	[mvAsicReg_EPON_TXM_CPP_RPRT_CONFIG]              =  { mvAsicReg_EPON_TXM_CPP_RPRT_CONFIG,              MV_ASIC_ONT_GLB_ADDR + 0x1078,   0x1078,   asicRW,     0x03FD03FF,     0,      8,     1,      0,     "Cpp report configuration"},
 	[mvAsicReg_EPON_TXM_CPP_RPRT_BIT_MAP]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_BIT_MAP,             MV_ASIC_ONT_GLB_ADDR + 0x1098,   0x1098,   asicRW,     0x0000FFFF,     0,      8,     1,      0,     "Cpp report bit map"},
 	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_SET]           =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_SET,           MV_ASIC_ONT_GLB_ADDR + 0x10B8,   0x10B8,   asicRW,     0x0000003F,     0,      8,     1,      0,     "Cpp report queue sets"},
@@ -591,8 +556,6 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_6]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_6,             MV_ASIC_ONT_GLB_ADDR + 0x1198,   0x1198,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "Cpp report queue6"},
 	[mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_7]             =  { mvAsicReg_EPON_TXM_CPP_RPRT_QUEUE_7,             MV_ASIC_ONT_GLB_ADDR + 0x11B8,   0x11B8,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "Cpp report queue7"},
 	[mvAsicReg_EPON_TXM_CPP_RPRT_FEC_CONFIG]          =  { mvAsicReg_EPON_TXM_CPP_RPRT_FEC_CONFIG,          MV_ASIC_ONT_GLB_ADDR + 0x11DC,   0x11DC,   asicRW,     0x00FFFFFF,     0,      8,     1,      0,     "Cpp report fec config"},
-#endif
-
 	[mvAsicReg_EPON_TXM_CPP_RPM_REPORT_CONFIG]        =  { mvAsicReg_EPON_TXM_CPP_RPM_REPORT_CONFIG,        MV_ASIC_ONT_GLB_ADDR + 0x11E0,   0x11E0,   asicRW,     0x0000001F,     0,      0,     0,      0,     "RPM Report config"},
 	[mvAsicReg_EPON_TXM_CPP_RPM_CTRL_FIFO_DBA]        =  { mvAsicReg_EPON_TXM_CPP_RPM_CTRL_FIFO_DBA,        MV_ASIC_ONT_GLB_ADDR + 0x11E0,   0x11E0,   asicRW,     0x000007FF,     5,      0,     0,      0,     "RPM contrl FIFO DBA config"},
 	[mvAsicReg_EPON_TXM_CPP_RPM_ADX_REPORT_TBL]       =  { mvAsicReg_EPON_TXM_CPP_RPM_ADX_REPORT_TBL,       MV_ASIC_ONT_GLB_ADDR + 0x11E4,   0x11E4,   asicRW,     0x003F00FF,     0,      0,     0,      0,     "RPM Index Report Table"},
@@ -623,20 +586,6 @@ S_asicGlobalRegDb asicGlbDb[] =
 	/* =========================== */
 	[mvAsicReg_EPON_DDM_DELAY_CONFIG]                 =  { mvAsicReg_EPON_DDM_DELAY_CONFIG,                 MV_ASIC_ONT_GLB_ADDR + 0x1814,   0x1814,   asicRW,     0x0000FFFF,     0,      0,     0,      0,     "DDM delay config"},
 	[mvAsicReg_EPON_DDM_TX_POLARITY]                  =  { mvAsicReg_EPON_DDM_TX_POLARITY,                  MV_ASIC_ONT_GLB_ADDR + 0x1818,   0x1818,   asicRW,     0x0000003F,     0,      0,     0,      0,     "DDM tx ploarity"},
-#ifdef PON_Z1
-	[mvAsicReg_EPON_STAT_RXP_FCS_ERROR_CNT]           =  { mvAsicReg_EPON_STAT_RXP_FCS_ERROR_CNT,           MV_ASIC_ONT_GLB_ADDR + 0x1828,   0x1828,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "RXP fcs error counter"},
-	[mvAsicReg_EPON_STAT_RXP_SHORT_ERROR_CNT]         =  { mvAsicReg_EPON_STAT_RXP_SHORT_ERROR_CNT,         MV_ASIC_ONT_GLB_ADDR + 0x182c,   0x182c,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "RXP short error counter"},
-	[mvAsicReg_EPON_STAT_RXP_LONG_ERROR_CNT]          =  { mvAsicReg_EPON_STAT_RXP_LONG_ERROR_CNT,          MV_ASIC_ONT_GLB_ADDR + 0x1830,   0x1830,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "RXP long error counter"},
-	[mvAsicReg_EPON_STAT_RXP_DATA_FRAMES_CNT]         =  { mvAsicReg_EPON_STAT_RXP_DATA_FRAMES_CNT,         MV_ASIC_ONT_GLB_ADDR + 0x1834,   0x1834,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "RXP data frame counter"},
-	[mvAsicReg_EPON_STAT_RXP_CTRL_FRAMES_CNT]         =  { mvAsicReg_EPON_STAT_RXP_CTRL_FRAMES_CNT,         MV_ASIC_ONT_GLB_ADDR + 0x1838,   0x1838,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "RXP ctrl frame counter"},
-	[mvAsicReg_EPON_STAT_RXP_REPORT_FRAMES_CNT]       =  { mvAsicReg_EPON_STAT_RXP_REPORT_FRAMES_CNT,       MV_ASIC_ONT_GLB_ADDR + 0x183C,   0x183C,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "RXP report frame counter"},
-	[mvAsicReg_EPON_STAT_RXP_GATE_FRAMES_CNT]         =  { mvAsicReg_EPON_STAT_RXP_GATE_FRAMES_CNT,         MV_ASIC_ONT_GLB_ADDR + 0x1840,   0x1840,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "RXP gate frame counter"},
-	[mvAsicReg_EPON_STAT_TXP_CTRL_REG_REQ_FRAMES_CNT] =  { mvAsicReg_EPON_STAT_TXP_CTRL_REG_REQ_FRAMES_CNT, MV_ASIC_ONT_GLB_ADDR + 0x1844,   0x1844,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "TXP ctrl register req frame counter"},
-	[mvAsicReg_EPON_STAT_TXP_CTRL_REG_ACK_FRAMES_CNT] =  { mvAsicReg_EPON_STAT_TXP_CTRL_REG_ACK_FRAMES_CNT, MV_ASIC_ONT_GLB_ADDR + 0x1848,   0x1848,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "TXP ctrl register ack frame counter"},
-	[mvAsicReg_EPON_STAT_TXP_CTRL_REPORT_FRAMES_CNT]  =  { mvAsicReg_EPON_STAT_TXP_CTRL_REPORT_FRAMES_CNT,  MV_ASIC_ONT_GLB_ADDR + 0x184C,   0x184C,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "TXP ctrl report frame counter"},
-	[mvAsicReg_EPON_STAT_TXP_DATA_FRAMES_CNT]         =  { mvAsicReg_EPON_STAT_TXP_DATA_FRAMES_CNT,         MV_ASIC_ONT_GLB_ADDR + 0x1850,   0x1850,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "TXP data frame counter"},
-	[mvAsicReg_EPON_STAT_TXP_TX_ALLOWED_BYTE_CNT]     =  { mvAsicReg_EPON_STAT_TXP_TX_ALLOWED_BYTE_CNT,     MV_ASIC_ONT_GLB_ADDR + 0x1854,   0x1854,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "TXP tx allowed byte counter"},
-#else /* PON_A0 */
 	[mvAsicReg_EPON_STAT_RXP_FCS_ERROR_CNT]           =  { mvAsicReg_EPON_STAT_RXP_FCS_ERROR_CNT,           MV_ASIC_ONT_GLB_ADDR + 0x1828,   0x1828,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "RXP fcs error counter"},
 	[mvAsicReg_EPON_STAT_RXP_SHORT_ERROR_CNT]         =  { mvAsicReg_EPON_STAT_RXP_SHORT_ERROR_CNT,         MV_ASIC_ONT_GLB_ADDR + 0x1848,   0x1848,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "RXP short error counter"},
 	[mvAsicReg_EPON_STAT_RXP_LONG_ERROR_CNT]          =  { mvAsicReg_EPON_STAT_RXP_LONG_ERROR_CNT,          MV_ASIC_ONT_GLB_ADDR + 0x1868,   0x1868,   asicRW,     0xFFFFFFFF,     0,      0,     0,      0,     "RXP long error counter"},
@@ -649,7 +598,6 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_EPON_STAT_TXP_CTRL_REPORT_FRAMES_CNT]  =  { mvAsicReg_EPON_STAT_TXP_CTRL_REPORT_FRAMES_CNT,  MV_ASIC_ONT_GLB_ADDR + 0x1948,   0x1948,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "TXP ctrl report frame counter"},
 	[mvAsicReg_EPON_STAT_TXP_DATA_FRAMES_CNT]         =  { mvAsicReg_EPON_STAT_TXP_DATA_FRAMES_CNT,         MV_ASIC_ONT_GLB_ADDR + 0x1968,   0x1968,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "TXP data frame counter"},
 	[mvAsicReg_EPON_STAT_TXP_TX_ALLOWED_BYTE_CNT]     =  { mvAsicReg_EPON_STAT_TXP_TX_ALLOWED_BYTE_CNT,     MV_ASIC_ONT_GLB_ADDR + 0x1988,   0x1988,   asicRW,     0xFFFFFFFF,     0,      8,     1,      0,     "TXP tx allowed byte counter"},
-#endif
 
 	/* ===================================== */
 	/*  EPON Control Packet queue Registers  */

@@ -23,6 +23,13 @@
 #include "board-info.h"
 
 
+struct mvebu_board_config rd_a8021_config = {
+	.sar_cnt = 1,
+	.active_sar = {CPUS_NUM_SAR},
+	.cfg_cnt = 1,
+	.active_cfg = {BOARD_ID_CFG}
+};
+
 u16 a8021_rd_unit_disable[MAX_UNIT_ID] = {
 	[NAND_UNIT_ID] = id_to_mask(0),
 	[SDIO_UNIT_ID] = id_to_mask(0)
@@ -33,5 +40,7 @@ struct mvebu_board_info a8021_rd_info = {
 	.id = ARMADA_8021_RD_ID,
 	.unit_mask = a8021_rd_unit_disable,
 	.unit_update_mode = UNIT_INFO_DISABLE,
+	.configurable = 1,
+	.config_data = &rd_a8021_config,
 };
 

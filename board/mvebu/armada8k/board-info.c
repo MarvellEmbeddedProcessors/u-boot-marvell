@@ -27,16 +27,16 @@
 /* Define all SAR variables available for SOC */
 /* Assuming their location is equal on all boards */
 struct sar_var a8k_sar_lookup[MAX_SAR] = {
-	[CPUS_NUM_SAR] = {0, 2, 3,
+	[CPUS_NUM_SAR] = {0, 2, 3, 0,
 		{{0x0, "Single CPU", 0},
 		 {0x2, "Dual CPU", 0},
 		 {0x3, "Quad CPU", VAR_IS_DEFUALT} },
 	},
-	[FREQ_SAR] = {2, 5, 2,
+	[FREQ_SAR] = {2, 5, 2, 0,
 		{{0x0, "800 / 400 / 400"},
 		 {0x5, "1200 / 600 / 600"} },
 	},
-	[BOOT_SRC_SAR] = {7, 2, 3,
+	[BOOT_SRC_SAR] = {7, 2, 3, 0,
 		{{0x0, "NAND boot", 0},
 		 {0x2, "SPI boot", VAR_IS_DEFUALT},
 		 {0x3, "NOR boot", 0} },
@@ -54,17 +54,17 @@ struct sar_data a8k_sar = {
 /* Define all board configuration variables */
 /* Assuming their location is equal on all boards */
 struct cfg_var a8k_cfg_lookup[MAX_CFG] = {
-	[BOARD_ID_CFG] = {0, 0, 3, 4,
+	[BOARD_ID_CFG] = {0, 0, 3, 4, 0,
 		{{ARMADA_8021_DB_ID, "DB-8021", VAR_IS_DEFUALT},
 		 {ARMADA_8021_RD_ID, "RD-8021", 0},
 		 {ARMADA_8022_DB_ID, "DB-8022", 0},
 		 {ARMADA_8022_RD_ID, "RD-8022", 0} },
 	},
-	[SERDES_0_CFG] = {1, 0, 3, 2,
+	[SERDES_0_CFG] = {1, 0, 3, 2, 0,
 		{{0x0, "pcie 0", VAR_IS_DEFUALT},
 		 {0x1, "sata 0", 0} },
 	},
-	[SERDES_1_CFG] = {1, 3, 3, 3,
+	[SERDES_1_CFG] = {1, 3, 3, 3, 0,
 		{{0x0, "pcie 1", 0},
 		 {0x1, "sata 1", VAR_IS_DEFUALT},
 		 {0x2, "usb3 1", 0} },

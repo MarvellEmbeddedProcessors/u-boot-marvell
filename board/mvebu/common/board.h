@@ -38,10 +38,10 @@
  */
 struct mvebu_board_config {
 	int sar_cnt;
-	enum sar_variables supported_sar[MAX_SAR];
+	enum sar_variables active_sar[MAX_SAR];
 	struct sar_var *sar_override;
 	int cfg_cnt;
-	enum cfg_variables supported_cfg[MAX_SAR];
+	enum cfg_variables active_cfg[MAX_SAR];
 };
 
 /*

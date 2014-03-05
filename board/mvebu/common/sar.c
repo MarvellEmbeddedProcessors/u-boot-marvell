@@ -184,7 +184,7 @@ int sar_get_key_id(const char *key)
 int sar_is_var_active(int id)
 {
 	struct sar_var *sar_table = board_get_sar_table();
-	return ((sar_table[id].option_cnt > 0) ? 1 : 0);
+	return sar_table[id].active;
 }
 
 struct var_opts *sar_get_var_opts(int id, int *cnt)

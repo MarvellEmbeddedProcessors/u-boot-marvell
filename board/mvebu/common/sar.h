@@ -31,6 +31,7 @@ struct sar_var {
 	u8 start_bit;
 	u8 bit_length;
 	u8 option_cnt;
+	u8 active;
 	struct var_opts option_desc[MAX_VAR_OPTIONS];
 };
 

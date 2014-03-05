@@ -49,7 +49,7 @@ static int i2c_read_dummy(uchar chip, uint addr, int alen, uchar *buffer, int le
 int cfg_is_var_active(int id)
 {
 	struct cfg_var *cfg_table = board_get_cfg_table();
-	return ((cfg_table[id].option_cnt > 0) ? 1 : 0);
+	return cfg_table[id].active;
 }
 
 struct var_opts *cfg_get_var_opts(int id, int *cnt)

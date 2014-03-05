@@ -46,6 +46,7 @@ int common_board_init(struct mvebu_board_family *board_family)
 	int board_id = board_get_id();
 	struct mvebu_board_info *curr_board;
 	u16 *unit_mask = soc_get_unit_mask_table();
+	int sar_id, cfg_id, idx;
 
 	brd = board_family;
 
@@ -65,11 +66,26 @@ int common_board_init(struct mvebu_board_family *board_family)
 		update_unit_info(unit_mask, curr_board->unit_mask,
 				 curr_board->unit_update_mode);
 
-	/* Update sar tables */
-	/*if (curr_board->configurable) {
-		if (curr_board->config_data->sar_override)
-			update_sar_table();
-	}*/
+	/* Update SAR and CFG for board */
+	if (curr_board->configurable) {
+		struct mvebu_board_config *brd_cfg = curr_board->config_data;
+
+		/* Deactivate all SAR entries */
+		for (sar_id = 0; sar_id < MAX_SAR; sar_id++)
+			brd->sar->sar_lookup[sar_id].active = 0;
+
+		/* Activate board entries */
+		for (idx = 0; idx < brd_cfg->sar_cnt; idx++)
+			brd->sar->sar_lookup[brd_cfg->active_sar[idx]].active = 1;
+
+		/* Deactivate all CFG entries */
+		for (cfg_id = 0; cfg_id < MAX_CFG; cfg_id++)
+			brd->sar->sar_lookup[cfg_id].active = 0;
+
+		/* Activate board entries */
+		for (idx = 0; idx < brd_cfg->cfg_cnt; idx++)
+			brd->sar->sar_lookup[brd_cfg->active_cfg[idx]].active = 1;
+	}
 
 	return 0;
 }

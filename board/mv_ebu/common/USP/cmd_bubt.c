@@ -259,6 +259,10 @@ int nand_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 	if ((filesize = fetch_uboot_file (loadfrom)) <= 0)
 		return 0;
 
+	if (filesize > CONFIG_UBOOT_SIZE) {
+		printf("Boot image is too big. Maximum size is %d bytes\n", CONFIG_UBOOT_SIZE);
+		return 0;
+	}
 	printf("\t[Done]\n");
 	printf("Override Env parameters to default? [y/N]");
 	readline(" ");

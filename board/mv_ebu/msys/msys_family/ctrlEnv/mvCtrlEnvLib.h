@@ -191,7 +191,7 @@ MV_BOOL	  mvCtrlIsBootFromSPI(MV_VOID);
 MV_BOOL	  mvCtrlIsBootFromNAND(MV_VOID);
 MV_BOOL	  mvCtrlPwrMemGet(MV_UNIT_ID unitId, MV_U32 index);
 MV_STATUS mvCtrlSerdesPhyConfig(MV_VOID);
-
+MV_BOOL mvCtrlIsDLBEnabled(MV_VOID);
 MV_U32 mvCtrlDDRBudWidth(MV_VOID);
 MV_BOOL mvCtrlDDRThruXbar(MV_VOID);
 MV_BOOL mvCtrlDDRECC(MV_VOID);

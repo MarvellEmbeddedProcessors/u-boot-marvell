@@ -1000,9 +1000,14 @@ static int orion_nfc_do_cmd_pio(struct orion_nfc_info *info)
 				goto fail_stop;
 			}
 		}
-
+		/* Bug fix SYSTEMSW-295, poll  NFC_CTRL_ND_RUN_MASK for 10ms */
+		for (j = 0; j < 100; j++) {
+			udelay(100);
+			ndcr = MV_REG_READ(NFC_CONTROL_REG);
+			if ((ndcr & NFC_CTRL_ND_RUN_MASK) == 0)
+				break;
+		}
 		/* Fallback - in case the NFC did not reach the idle state */
-		ndcr = MV_REG_READ(NFC_CONTROL_REG);
 		if (ndcr & NFC_CTRL_ND_RUN_MASK) {
 			//printk(KERN_DEBUG "WRONG NFC STAUS: command %d, NDCR=0x%08x, NDSR=0x%08x, NDECCCTRL=0x%08x)\n",
 		    //   	info->cmd, MV_REG_READ(NFC_CONTROL_REG), MV_REG_READ(NFC_STATUS_REG), MV_REG_READ(NFC_ECC_CONTROL_REG));

@@ -1014,7 +1014,9 @@ int late_print_cpuinfo(void)
 	printf("       L2     @ %d [MHz]\n", mvCpuL2ClkGet()/1000000);
 	printf("       TClock @ %d [MHz]\n", mvTclkGet()/1000000);
 	printf("       DDR    @ %d [MHz]\n", CONFIG_SYS_BUS_CLK/1000000);
-	printf("       DDR %dBit Width, %s Memory Access\n", mvCtrlDDRBudWidth(), mvCtrlDDRThruXbar() ? "XBAR" : "FastPath");
+	printf("       DDR %dBit Width, %s Memory Access, DLB %s\n",
+			mvCtrlDDRBudWidth(), mvCtrlDDRThruXbar() ? "XBAR" : "FastPath",
+			mvCtrlIsDLBEnabled() ? "Enabled" : "Disabled");
 
 	display_dram_config(1);
 	return 0;

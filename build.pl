@@ -54,12 +54,12 @@ ERROR:
 
 sub usage
 {
-	print "\nUsage  : build -f \"Flash type\" -b \"board name\" [-c] [-o \"Output file\"]\n";
-	print "Example: build -f spi -b armada8k -c\n";
+	print "\nUsage  : build.pl -f \"Flash type\" -b \"board name\" [-c] [-o \"Output file\"]\n";
+	print "Example: build.pl -f spi -b armada8k -c\n";
 	print "\n";
 	print "Options:\n";
 	print "\t-f\tBoot device. Accepts spi, nor, nand\n";
-	print "\t-b\tBoard type. Accepts: armada8k, armada8021-pxp";
+	print "\t-b\tBoard type. Accepts: armada8k, armada8021-pxp\n";
 	print "\t-c\tClean build. calls \"make mrproper\"\n";
 	print "\t-o\tOutput directory. Build products will be copied to here\n";
 	print "\t-h\tPrints this help message\n";

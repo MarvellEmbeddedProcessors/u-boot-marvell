@@ -125,14 +125,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define COMMON_PHY_CONFIGURATION1_REG(phy)   (0x18310 + (phy * 4))
 
 /* COMMON_PHYn_CONFIGURATION1_REG fields */
-#define PIPE_SELECT_OFFS                2
-#define PIPE_SELECT_MASK                (1 << PIPE_SELECT_OFFS)
+
+#define REF_CLK_DIS_OFFS             	0
+#define REF_CLK_DIS_MASK				(1 << REF_CLK_DIS_OFFS)
 #define POWER_UP_IVREF_OFFS             1
 #define POWER_UP_IVREF_MASK             (1 << POWER_UP_IVREF_OFFS)
-#define GEN_RX_OFFS                     22
-#define GEN_RX_MASK                     (0xF << GEN_RX_OFFS)
-#define GEN_TX_OFFS                     26
-#define GEN_TX_MASK                     (0xF << GEN_TX_OFFS)
+#define PIPE_SELECT_OFFS                2
+#define PIPE_SELECT_MASK                (1 << PIPE_SELECT_OFFS)
 #define PHY_SOFTWARE_RESET_OFFS         11
 #define PHY_SOFTWARE_RESET_MASK         (1 << PHY_SOFTWARE_RESET_OFFS)
 #define PHY_RESET_CORE_OFFS             12
@@ -143,13 +142,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PHY_POWER_ON_RESET_MASK         (1 << PHY_POWER_ON_RESET_OFFS)
 #define PHY_MODE_OFFS                   15
 #define PHY_MODE_MASK                   (1 << PHY_MODE_OFFS)
-
 #define PHY_POWER_UP_PLL_OFFS           16
 #define PHY_POWER_UP_PLL_MASK           (1 << PHY_POWER_UP_PLL_OFFS)
 #define PHY_POWER_UP_RX_OFFS            17
 #define PHY_POWER_UP_RX_MASK            (1 << PHY_POWER_UP_RX_OFFS)
 #define PHY_POWER_UP_TX_OFFS            18
 #define PHY_POWER_UP_TX_MASK            (1 << PHY_POWER_UP_TX_OFFS)
+#define PIN_TX_IDLE_OFFS				19
+#define PIN_TX_IDLE_MASK				(1 << PIN_TX_IDLE_OFFS)
+#define GEN_RX_OFFS                     22
+#define GEN_RX_MASK                     (0xF << GEN_RX_OFFS)
+#define GEN_TX_OFFS                     26
+#define GEN_TX_MASK                     (0xF << GEN_TX_OFFS)
+
+#define COMMON_PHY_STATUS1_REG(phy)   (0x18340 + (phy * 4))
 
 #define MPP_CONTROL_REG(id)			(0x18000 + (id * 4))
 
@@ -160,9 +166,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define KVCO_CALOBRATION_CONTROL_REG(comphy)    (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x2))
 #define GENERETION_2_SETTINGS_1_REG(comphy)     (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x10))
 #define DIGITAL_LOOPBACK_ENABLE_REG(comphy)     (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x23))
+#define INTERFACE_REG1_REG(comphy)				(COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x25))
 #define PHY_ISOLATION_MODE_CONTROL_REG(comphy)  (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x26))
+#define DIGITAL_RESERVED0_REG(comphy)			(COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x3A))
 #define RESERVED_46_REG(comphy)                 (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x46))
-#define MISCELLANEOUS_CONTROL0_REG(comphy)      (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x4f))
+#define MISCELLANEOUS_CONTROL0_REG(comphy)      (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x4F))
+#define POWER_REG1_REG(comphy)					(COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x52))
+#define LANE_CONFIGURATION_4_REG(comphy)		(COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x88))
 #define RESET_AND_CLOCK_CONTROL_REG(comphy)     (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0xC1))
 
 

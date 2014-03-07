@@ -91,6 +91,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error ERROR: Invalid Init Params - #num of T-Conts < #num of LLID
 #endif
 
+#define DISABLE_SERDES_FOR_AVANTA_LP
+#define DISABLE_ADMIN_FOR_AVANTA_LP
+#define DISABLE_PRBS_FOR_AVANTA_LP
+#define DISABLE_DG_FOR_AVANTA_LP /* enable PON dying gasp feature */
+
 #ifdef CONFIG_MV_GPON
 
 #ifdef CONFIG_MV_GPON_STATIC_GEM_PORT

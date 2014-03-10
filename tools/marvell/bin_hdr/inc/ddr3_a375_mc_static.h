@@ -105,7 +105,11 @@ MV_DRAM_MC_INIT ddr3_A375_DB_6720_533[MV_MAX_DDR3_STATIC_SIZE] =
 
     {0x000015E0, 0x00000023}, 	/*DDR3 Rank Control Register */
     {0x000015E4, 0x00203c18}, 	/*ZQC Configuration Register */
+#ifdef CONFIG_ALP_A375_ZX_REV
     {0x000015EC, 0xF8000f25}, 	/*DDR PHY */
+#else
+	{0x000015EC, 0xF8000025}, 	/*DDR PHY */
+#endif
 
     {0x000014C0, 0x192434E9}, 	/*DRAM address and Control Driving Strenght */
     {0x000014C4, 0x192434E9}, 	/*DRAM Data and DQS Driving Strenght */
@@ -144,7 +148,11 @@ MV_DRAM_MC_INIT ddr3_Customer_DB_6720_533[MV_MAX_DDR3_STATIC_SIZE] =
 
     {0x000015E0, 0x00000023}, 	/*DDR3 Rank Control Register */
     {0x000015E4, 0x00203c18}, 	/*ZQC Configuration Register */
+#ifdef CONFIG_ALP_A375_ZX_REV
     {0x000015EC, 0xF8000f25}, 	/*DDR PHY */
+#else
+	{0x000015EC, 0xF8000025}, 	/*DDR PHY */
+#endif
 
     {0x000014C0, 0x192434E9}, 	/*DRAM address and Control Driving Strenght */
     {0x000014C4, 0x192434E9}, 	/*DRAM Data and DQS Driving Strenght */

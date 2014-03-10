@@ -97,10 +97,10 @@ static void mvEthComplexGbeClockControlSet(void)
 	if (mvCtrlRevGet() <= MV_88F66X0_Z3_ID)
 		return;
 
-	/* Change default value of Bit 22, and 28 to NegEdge(0) */
+	/* Change default value of Bit 23, and 28 to NegEdge(0) */
 	reg = MV_REG_READ(MV_ETHCOMP_GBE_PHY_CLOCK_CTRL_REG);
 	/* Field - Switch Port4 To MPP Data Sample */
-	reg &= ~(ETHCC_GBE_PHY_MPP_TO_SW_P4_EDGE_MASK);
+	reg &= ~(ETHCC_GBE_PHY_P4_SW_TO_MPP_EDGE_MASK);
 	/* Field - GbE Port 0 To MPP Data Sample */
 	reg &= ~(ETHCC_GBE_PHY_GBE_P0_TO_MPP_EDGE_MASK);
 

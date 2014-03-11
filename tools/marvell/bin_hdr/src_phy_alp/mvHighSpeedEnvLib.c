@@ -112,6 +112,9 @@ MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32
 MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum);
 MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
 MV_STATUS mvPexAgentReset();
+#ifndef CONFIG_ALP_A375_ZX_REV
+MV_STATUS mvUsb2PhyInit(MV_U32 dev);
+#endif
 
 /****************************  function implementation *****************************************/
 
@@ -522,6 +525,7 @@ MV_U32 getSerdesSpeedConfig(MV_U32  boardId, MV_BIN_SERDES_UNIT_INDX serdesLaneC
 MV_VOID resetPhyAndPipe(MV_U32	serdesLaneNum, MV_BOOL bReset)
 {
 	MV_U32 uiReg;
+
 	uiReg = MV_REG_READ(COMMON_PHY_CONFIGURATION1_REG(serdesLaneNum));
 	if(bReset) {
 		uiReg |= PHY_SOFTWARE_RESET_MASK;    /* PHY Software Reset = Reset Mode */
@@ -739,6 +743,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 					MV_REG_WRITE(GENERETION_2_SETTINGS_1_REG(serdesLaneNum),0x149); /* Mulitiple frequency setup */
 #endif
                 MV_REG_WRITE(RESET_AND_CLOCK_CONTROL_REG(serdesLaneNum),0x20); /* Release soft_reset */
+
                 break;
             case SERDES_UNIT_SATA:
                 MV_REG_WRITE(POWER_AND_PLL_CONTROL_REG(serdesLaneNum),0xFC01); /* PHY Mode = SATA */
@@ -800,6 +805,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 					DEBUG_INIT_S("Phy Power up did't finished\n");
 					return MV_ERROR;
 				}
+				break;
 	    case SERDES_UNIT_UNCONNECTED:
 	    default:
 			break;
@@ -923,6 +929,12 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 		DEBUG_INIT_FULL_D(ctrlMode,4);
 		DEBUG_INIT_FULL_S("\n");
 	}
+
+#ifndef CONFIG_ALP_A375_ZX_REV
+	mvUsb2PhyInit(0);
+	mvUsb2PhyInit(1);
+#endif
+
 
 	DEBUG_INIT_S(ENDED_OK);
 	DEBUG_INIT_S("\n");
@@ -1130,3 +1142,62 @@ MV_STATUS mvPexAgentReset()
 	}
 	return MV_OK;
 }
+
+#ifndef CONFIG_ALP_A375_ZX_REV
+/* USB Phy init specific for 40nm LP (88F6660) */
+MV_STATUS mvUsb2PhyInit(MV_U32 dev)
+{
+	MV_U32 regVal;
+
+	/*Set USB PHY config selector to USB 2.0*/
+	regVal = MV_REG_READ(USB_CLUSTER_CONTROL_REG);
+	regVal &= ~0x1;
+	MV_REG_WRITE(USB_CLUSTER_CONTROL_REG, regVal);
+
+	/* Set the PLL clocks to 450 MHz. Our ref clock is 25 Mhz so to
+	 * achieve 480 MHz we set divider = 5 multiplier = 96 */
+	regVal = MV_REG_READ(MV_USB2_PHY_CHANNEL_REG(dev, 1));
+	regVal = (regVal & (~0x1FF)) | (96);
+	regVal = (regVal & (~0x1E00)) | (5 << 9);
+	MV_REG_WRITE(MV_USB2_PHY_CHANNEL_REG(dev, 1), regVal);
+
+	/* Turn on the PLL and wait 200 usec */
+	regVal = MV_REG_READ(MV_USB2_PHY_CHANNEL_REG(dev, 2));
+	regVal |= BIT13;
+	MV_REG_WRITE(MV_USB2_PHY_CHANNEL_REG(dev, 2), regVal);
+	mvOsUDelay(2);
+
+	/* Enable the analog part of the PHY */
+	regVal = MV_REG_READ(MV_USB2_PHY_CHANNEL_REG(dev, 13));
+	regVal |= BIT14;
+	MV_REG_WRITE(MV_USB2_PHY_CHANNEL_REG(dev, 13), regVal);
+	mvOsUDelay(2);
+
+	/* Turn on the VCO calibration */
+	regVal = MV_REG_READ(MV_USB2_PHY_CHANNEL_REG(dev, 2));
+	regVal |= BIT2;
+	MV_REG_WRITE(MV_USB2_PHY_CHANNEL_REG(dev, 2), regVal);
+	mvOsUDelay(10);
+
+	/* Perform Impedance calibration for 40 usec */
+	regVal = MV_REG_READ(MV_USB2_PHY_CHANNEL_REG(dev, 4));
+	regVal |= BIT13;
+	MV_REG_WRITE(MV_USB2_PHY_CHANNEL_REG(dev, 4), regVal);
+	mvOsUDelay(1);
+
+	regVal = MV_REG_READ(MV_USB2_PHY_CHANNEL_REG(dev, 4));
+	regVal &= ~BIT13;
+	MV_REG_WRITE(MV_USB2_PHY_CHANNEL_REG(dev, 4), regVal);
+	mvOsUDelay(400);
+
+	/* Check if the PHY is ready */
+	regVal = MV_REG_READ(MV_USB2_PHY_CHANNEL_REG(dev, 2));
+	if ((regVal & BIT15) == 0) {
+		DEBUG_INIT_S("Error: USB2 UTMI PHY not ready\n");
+		return MV_NOT_READY;
+	}
+
+	DEBUG_INIT_S("USB2 UTMI PHY initialized succesfully\n");
+
+	return MV_OK;}
+#endif

@@ -266,7 +266,9 @@ void mvBoardEgigaPhyInit(void)
 	/* Close unnecessary internal phys */
 	if(!(ethComplex & (MV_ETHCOMP_SW_P0_2_GE_PHY_P0 | MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)))
 		mvBoardPhyShutDown(0x0);
-	if(!(ethComplex & MV_ETHCOMP_SW_P1_2_GE_PHY_P1))
+	/* If RGMII-1 is enabled, internal PHY #1 cannot be disabled, since
+	** GE-Phy-P1 and RGMII-1 have the same SMI-Addresses (0x1) */
+	if(!(ethComplex & (MV_ETHCOMP_SW_P1_2_GE_PHY_P1 | MV_ETHCOMP_GE_MAC1_2_RGMII1)))
 		mvBoardPhyShutDown(0x1);
 	if(!(ethComplex & MV_ETHCOMP_SW_P2_2_GE_PHY_P2))
 		mvBoardPhyShutDown(0x2);

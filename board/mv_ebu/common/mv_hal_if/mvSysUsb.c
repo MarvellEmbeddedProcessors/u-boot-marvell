@@ -109,9 +109,9 @@ MV_STATUS mvSysUsbInit(MV_VOID)
 
 			if (status == MV_OK)	/* Map DDR windows to EHCI */
 				status = mvUsbWinInit(dev, addrWinMap, MV_FALSE);
-			/* Pll init is not relevant to Armada 38x */
-			if ((dev == 0) && (halData.ctrlFamily != MV_88F68XX))
-				mvUsbPllInit();
+			/* Pll init is relevant to Armada 375 only */
+			if ((dev == 0) && (halData.ctrlFamily == MV_88F67X0))
+					mvUsbPllInit();
 			if (status == MV_OK)
 				status = mvUsbHalInit(dev, isHost, &halData);
 			if (status == MV_OK)

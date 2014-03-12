@@ -187,6 +187,14 @@ extern "C" {
 #define	SYS_SOFT_RESET_REG			0x18258
 #define ISI_SOFT_RST_OFFS			14
 #define ISI_SOFT_RST_MASK			(1 << ISI_SOFT_RST_OFFS)
+#define DRAGONITE_SOFT_RST			(1 << 23)
+
+/*
+ * Dragonite Register
+ */
+#define DRAGONITE_CTRL_REG			0x18270
+#define DRAGONITE_XBRIDGE_BASE			0xE4320
+#define DRAGONITE_DEBUGGER_REG			0xE82A0
 
 /* SSCG Registers */
 #define	SSCG_CONF_REG				0x184D8
@@ -417,6 +425,7 @@ typedef enum _mvTargetId {
 	PEX_TARGET_ID    = 4,  /* Port 4  -> PCI Express 0 and 1        */
 	CRYPT_TARGET_ID  = 9,  /* Port 9  -> Crypto Engine SRAM         */
 	DFEV_TARGET_ID   = 11, /* Port 11 -> DFEV Unit			*/
+	DRAGONITE_TARGET_ID = 14, /* Port 14 -> Dragonite co-processor	*/
 	PP2_TARGET_ID = 15,    /* Port 12 -> PP2 Unit                   */
 	MAX_TARGETS_ID
 } MV_TARGET_ID;

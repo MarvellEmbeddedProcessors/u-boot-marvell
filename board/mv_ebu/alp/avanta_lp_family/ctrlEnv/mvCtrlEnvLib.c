@@ -2261,26 +2261,43 @@ MV_BOOL mvCtrlDDRECC(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlGetJuncTemp(MV_VOID)
 {
-	/*Used Hard Coded values, TODO sync with Spec*/
 	MV_32 reg = 0;
 
-	/* init the TSEN sensor once */
-	if ((MV_REG_READ(TSEN_STATE_REG) & TSEN_STATE_MASK) == 0) {
-		MV_REG_BIT_RESET(TSEN_STATE_REG, TSEN_STATE_MASK);
-
-		MV_REG_WRITE(TSEN_STATE_REG, 0x8011E214);
-
-		reg = MV_REG_READ(TSEN_CONF_REG);
-
-		reg = 0x00a80909;
-		MV_REG_WRITE(TSEN_CONF_REG, reg);
-		mvOsDelay(10);
+	/* WA for Zx - write the default value to the register */
+	if (mvCtrlRevGet() <= MV_88F66X0_Z3_ID) {
+		reg = TSEN_CTRL_LSB_DEFAULT_VALUE;
+		MV_REG_WRITE(TSEN_CTRL_LSB_REG_Z_REV, reg);
+		mvOsDelay(20);
+		reg = TSEN_CTRL_MSB_DEFAULT_VALUE;
+		MV_REG_WRITE(TSEN_CTRL_MSB_REG, reg);
+		mvOsDelay(20);
 	}
 
+	/* Initialize TSEN CTRL MSB REG */
+	reg = MV_REG_READ(TSEN_CTRL_MSB_REG);
+	/* Set Temp sensor 0 to read */
+	reg &= ~TSEN_CTRL_UNIT_CTRL_MASK;
+	reg |= (0x0 << TSEN_CTRL_UNIT_CTRL_OFFSET);
+	/* Disable (0x0) readout invert */
+	reg &= ~TSEN_CTRL_READOUT_INVERT_MASK;
+	reg |= (0x0 << TSEN_CTRL_READOUT_INVERT_OFFSET);
+	/* Disable soft reset */
+	reg &= ~TSEN_CTRL_SOFT_RST_MASK;
+	reg |= (0x0 << TSEN_CTRL_SOFT_RST_OFFSET);
+	MV_REG_WRITE(TSEN_CTRL_MSB_REG, reg);
+	mvOsDelay(20);
+	/* Enable soft reset */
+	reg &= ~TSEN_CTRL_SOFT_RST_MASK;
+	reg |= (0x1 << TSEN_CTRL_SOFT_RST_OFFSET);
+	MV_REG_WRITE(TSEN_CTRL_MSB_REG, reg);
+
+	mvOsDelay(50);
+	/* Read temperature sensor status */
 	reg = MV_REG_READ(TSEN_STATUS_REG);
 	reg = (reg & TSEN_STATUS_TEMP_OUT_MASK) >> TSEN_STATUS_TEMP_OUT_OFFSET;
 
-	return (3171900 - (10000 * reg)) / 13553;
+	/* formula values taken from SPIC */
+	return (3239600 - (10000 * reg)) / 13616;
 }
 
 /*******************************************************************************

@@ -24,11 +24,23 @@
 #include "ctrlEnv/mvCtrlEnvLib.h"
 #include "boardEnv/mvBoardEnvLib.h"
 
+/*
+   bc2 sample and reset register
+#     4f       #     4e       #     4d       #      4c      #
+#              #              #              #              #
+#--|--|--|--|--#--|--|--|--|--#--|--|--|--|--#--|--|--|--|--#
+#  |  |  |  |  #  |  |  |  |  #  |  |  |  |  #  |  |  |  |  #
+#--|--|--|--|--#--|--|--|--|--#--|--|--|--|--#--|--|--|--|--#
+#  |           #  |        |  #     |        #              #
+#-P|-R|bootsel-#-R|-TM-f---|-CPU-f--|-CORE-f-#-----devid----#
+*/
+
 enum {
 	CMD_CORE_CLK_FREQ = 0,
 	CMD_CPU_DDR_REQ,
 	CMD_TM_FREQ,
 	CMD_BOOTSRC,
+	CMD_DEVICE_ID,
 	CMD_DUMP,
 	CMD_DEFAULT,
 	CMD_UNKNOWN
@@ -70,6 +82,8 @@ static int sar_cmd_get(const char *cmd)
 		return CMD_TM_FREQ;
 	if (strcmp(cmd, "bootsrc") == 0)
 		return CMD_BOOTSRC;
+	if (strcmp(cmd, "deviceid") == 0)
+		return CMD_DEVICE_ID;
 	if (strcmp(cmd, "dump") == 0)
 		return CMD_DUMP;
 	if (strcmp(cmd, "default") == 0)
@@ -116,6 +130,9 @@ static int do_sar_list(int mode)
 			printf("\t| 0x%d =  %s\n", i, bootSrcTbl[i].bootstr);
 		}
 		break;
+	case CMD_DEVICE_ID:
+		printf("Determines the device ID (0-31):\n");
+		break;
 	case CMD_UNKNOWN:
 	default:
 		printf("Usage: sar list [options] (see help) \n");
@@ -158,6 +175,13 @@ static int do_sar_read(int mode)
 		else
 			printf("bootsrc Error: failed reading Boot Source\n");
 		break;
+	case CMD_DEVICE_ID:
+                if (mvBoardDeviceIdGet(&tmp) == MV_OK)
+			printf("deviceid = %d \n", tmp);
+		else
+			printf("deviceid Error: failed reading deviceid\n");
+		break;
+
 	case CMD_DUMP:
 		for (i = 0 ; i < CMD_DUMP; i++)
 			do_sar_read(i);
@@ -191,6 +215,9 @@ static int do_sar_write(int mode, int value)
 		break;
 	case CMD_BOOTSRC:
 		rc = mvBoardBootDevSet(tmp);
+		break;
+	case CMD_DEVICE_ID:
+                rc = mvBoardDeviceIdSet(tmp);
 		break;
 	case CMD_DEFAULT:
 		for (i = 0 ; i < CMD_DUMP; i++) {
@@ -247,18 +274,21 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"list corefreq		- prints the S@R modes list\n"
 	"SatR list freq		- prints the S@R modes list\n"
 	"SatR list tmfreq	- prints the S@R modes list\n"
-	"SatR list bootsrc	- prints the S@R modes list\n\n"
+	"SatR list bootsrc	- prints the S@R modes list\n"
+	"SatR list deviceid	- prints the S@R modes list\n\n"
 
 	"SatR read corefreq	- read and print the core frequency S@R value\n"
 	"SatR read freq		- read and print the CPU DDR frequency S@R value\n"
 	"SatR read tmfreq	- read and print the TM frequency S@R value\n"
 	"SatR read bootsrc	- read and print the Boot source S@R value\n"
+	"SatR read deviceid	- read and print the deviceid S@R value\n\n"
 	"SatR read dump		- read and print the SAR register \n\n"
 
 	"SatR write corefreq <val>	- write the S@R with core frequency value\n"
 	"SatR write freq     <val>	- write the S@R with CPU DDR frequency value\n"
 	"SatR write tmfreq   <val>	- write the S@R with TM frequency value\n"
 	"SatR write bootsrc  <val>	- write the S@R with Boot source value\n"
+	"SatR write deviceid <val>	- write the S@R with device ID value\n"
 	"SatR write default		- write all S@R values to their default\n"
 );
 #endif /*defined(CONFIG_CMD_SAR)*/

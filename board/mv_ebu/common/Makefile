@@ -33,6 +33,7 @@ endif
 
 ifeq ($(BOARD),msys)
 MAKE_NETA = yes
+MAKE_SWITCH_SERVICES = yes
 endif
 
 ifeq ($(BOARD_TYPE),mv_fpga_board)
@@ -101,6 +102,9 @@ ETH_OBJS =	$(HAL_IF_DIR)/mvSysPp2.o 		\
 USP_OBJS +=	$(USP_ETH_SWITCH_DIR)/mvSwitch.o
 endif
 
+ifdef MAKE_SWITCH_SERVICES
+USP_OBJS +=     $(USP_DIR)/switchingServices/switchingServices.o
+endif
 
 ifdef MAKE_NETA
 ETH_OBJS =	$(HAL_IF_DIR)/mvSysNeta.o		\

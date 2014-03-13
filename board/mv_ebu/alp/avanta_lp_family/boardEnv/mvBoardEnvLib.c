@@ -1653,7 +1653,10 @@ MV_U32 mvBoardFreqModesNumGet()
 		break;
 	case MV_6660_DEV_ID:
 	case MV_6665_DEV_ID:
-		freqNum = FREQ_MODES_NUM_6660;
+		if (mvCtrlRevGet() <= MV_88F66X0_Z3_ID)
+			freqNum = FREQ_MODES_NUM_6660_Z_REV;
+		else
+			freqNum = FREQ_MODES_NUM_6660;
 		break;
 	default:
 		mvOsPrintf("%s: Error: failed to read ctrlModel (SoC ID)\n", __func__);

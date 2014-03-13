@@ -1518,6 +1518,40 @@ MV_STATUS mvBoardBootDevSet(MV_U8 val)
 	DB(mvOsPrintf("Board: Write BootDev S@R succeeded\n"));
 	return MV_OK;
 }
+/*******************************************************************************/
+MV_STATUS mvBoardDeviceIdGet(MV_U8 *value)
+{
+	MV_U8 sar;
+	MV_STATUS rc;
+
+	rc = mvBoardTwsiSatRGet(0, 0, &sar);
+	if (MV_ERROR == rc)
+		return MV_ERROR;
+
+	*value = (sar & 0x1F);
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_STATUS mvBoardDeviceIdSet(MV_U8 val)
+{
+	MV_U8 sar;
+	MV_STATUS rc;
+
+	rc = mvBoardTwsiSatRGet(0, 0, &sar);
+	if (MV_ERROR == rc)
+		return MV_ERROR;
+
+	sar &= ~(0x1F);
+	sar |= (val & 0x1F);
+	if (MV_OK != mvBoardTwsiSatRSet(0, 0, sar)) {
+		DB1(mvOsPrintf("Board: Write device-id S@R fail\n"));
+		return MV_ERROR;
+	}
+
+	DB(mvOsPrintf("Board: Write deviceid S@R succeeded\n"));
+	return MV_OK;
+}
 /*******************************************************************************
 * End of SatR Configuration functions
 *******************************************************************************/

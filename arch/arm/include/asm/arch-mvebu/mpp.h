@@ -17,14 +17,14 @@
  * ***************************************************************************
  */
 
-#ifndef _REGS_BASE_H_
-#define _REGS_BASE_H_
+#ifndef _MPP_H_
+#define _MPP_H_
 
-#define MVEBU_REGS_BASE	(0x90000000)
+#include  <asm/arch/soc-info.h>
 
-#define MPP_REGS_BASE	(MVEBU_REGS_BASE + 0x1000)
+#define		MAX_MPP_NAME	32
 
-/* List of register base for all units */
-#define MVEBU_ADEC_AP_BASE (MVEBU_REGS_BASE + 0x0)
+char *mpp_get_desc(void);
 
-#endif	/* _ARMADA8K_H_ */
+
+#endif /* _MPP_H_ */

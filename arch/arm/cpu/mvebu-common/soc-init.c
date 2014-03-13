@@ -58,6 +58,12 @@ u16 *soc_get_unit_mask_table(void)
 	return soc_family->base_unit_info;
 }
 
+char *soc_get_mpp_desc_table(void)
+{
+	return soc_family->mpp_desc;
+}
+
+
 static int update_soc_units(int soc_id)
 {
 	struct mvebu_soc_info *soc = get_soc_info(soc_id);

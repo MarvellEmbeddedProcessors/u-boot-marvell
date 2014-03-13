@@ -17,14 +17,16 @@
  * ***************************************************************************
  */
 
-#ifndef _REGS_BASE_H_
-#define _REGS_BASE_H_
+#ifndef _SOC_INFO_H_
+#define _SOC_INFO_H_
 
-#define MVEBU_REGS_BASE	(0x90000000)
+/* General MPP definitions */
+#define MAX_MPP_OPTS		7
+#define MAX_MPP_ID		69
 
-#define MPP_REGS_BASE	(MVEBU_REGS_BASE + 0x1000)
+#define MPP_BIT_CNT		4
+#define MPP_FIELD_MASK		0x7
+#define MPP_FIELD_BITS		3
+#define MPP_VAL_MASK		0xF
 
-/* List of register base for all units */
-#define MVEBU_ADEC_AP_BASE (MVEBU_REGS_BASE + 0x0)
-
-#endif	/* _ARMADA8K_H_ */
+#endif	/* _SOC_INFO_H_ */

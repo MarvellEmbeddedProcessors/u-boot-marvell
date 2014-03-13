@@ -233,17 +233,26 @@ typedef struct _boardSerdesConf {
 	                           SGMII        1.25 Gbps		3.125 Gbps	*/
 } MV_SERDES_CFG;
 
+/* Termal Sensor values */
+#define TSEN_CTRL_LSB_DEFAULT_VALUE			0x8011E214
+#define TSEN_CTRL_MSB_DEFAULT_VALUE			0x00a80809
+
 /* Termal Sensor Registers */
-#define TSEN_STATE_REG							0xE8070
-#define TSEN_STATE_OFFSET						31
-#define TSEN_STATE_MASK							(0x1 << TSEN_STATE_OFFSET)
+#define TSEN_CTRL_LSB_REG_Z_REV				0xE8070
+#define TSEN_CTRL_MSB_REG				((mvCtrlRevGet() <= MV_88F66X0_Z3_ID) ? 0xE8074 : 0xE8080)
 
-#define TSEN_CONF_REG							0xE8074
-#define TSEN_CONF_OTF_CALIB_MASK				(0x1 << 8)
+#define TSEN_CTRL_UNIT_CTRL_OFFSET			27
+#define TSEN_CTRL_UNIT_CTRL_MASK			(6 << TSEN_CTRL_UNIT_CTRL_OFFSET)
 
-#define TSEN_STATUS_REG							0xE8078
-#define TSEN_STATUS_TEMP_OUT_OFFSET				0
-#define TSEN_STATUS_TEMP_OUT_MASK				(0x1FF << TSEN_STATUS_TEMP_OUT_OFFSET)
+#define TSEN_CTRL_READOUT_INVERT_OFFSET			15
+#define TSEN_CTRL_READOUT_INVERT_MASK			(1 << TSEN_CTRL_READOUT_INVERT_OFFSET)
+
+#define TSEN_CTRL_SOFT_RST_OFFSET			8
+#define TSEN_CTRL_SOFT_RST_MASK				(1 << TSEN_CTRL_SOFT_RST_OFFSET)
+
+#define TSEN_STATUS_REG					0xE8078
+#define TSEN_STATUS_TEMP_OUT_OFFSET			0
+#define TSEN_STATUS_TEMP_OUT_MASK			(0x1FF << TSEN_STATUS_TEMP_OUT_OFFSET)
 
 /* BIOS Modes related defines */
 #define SAR_CPU_FAB_GET(cpu, fab)       (((cpu & 0x7) << 21) | ((fab & 0xF) << 24))

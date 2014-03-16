@@ -766,6 +766,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	/*------------------------------------------*/
 	for (serdesLaneNum = 0; serdesLaneNum < maxSerdesLanes; serdesLaneNum++) {
 		uiReg=MV_REG_READ(COMMON_PHY_CONFIGURATION1_REG(serdesLaneNum));
+		uiReg &= ~PIN_TX_IDLE_MASK;
 		uiReg |= (PHY_POWER_UP_PLL_MASK | PHY_POWER_UP_RX_MASK | PHY_POWER_UP_TX_MASK);
 		MV_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesLaneNum),uiReg);
 	}

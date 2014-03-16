@@ -816,8 +816,8 @@ MV_STATUS mvUsbUtmiPhyInit(int dev, MV_USB_HAL_DATA *usbHalData)
 			status = MV_NOT_READY;
 
 	} else if (usbHalData->ctrlFamily == MV_88F66X0) {
-
-		status = mvUsbPhy40nmLpInit(dev);
+		if (usbHalData->ctrlRev <= MV_88F66X0_Z3_ID)
+			status = mvUsbPhy40nmLpInit(dev);
 
 	} else if (usbHalData->ctrlFamily == MV_88F67X0) {
 		/* The below init flow is incorrect for MVF67X0 and disabled until updated */

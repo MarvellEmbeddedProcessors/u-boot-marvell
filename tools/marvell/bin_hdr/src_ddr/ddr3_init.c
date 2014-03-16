@@ -417,6 +417,32 @@ MV_STATUS ddr3Init(void)
 	return status;
 }
 
+void printA370DrrTargetFreq(MV_U32 uiCpuFreq, MV_U32 uiFabOpt)
+{
+	putstring("\nDDR3 Training Sequence - Run DDR3 at ");
+	switch (uiCpuFreq) {
+		case 3:
+			putstring("400 Mhz\n");
+			break;
+		case 4:
+			putstring("500 Mhz\n");
+			break;
+		case 5:
+			putstring("533 Mhz\n");
+			break;
+		case 6:
+			if (uiFabOpt == 5)
+			putstring("600 Mhz\n");
+			if (uiFabOpt == 9)
+			putstring("400 Mhz\n");
+			break;
+		case 7:
+			putstring("667 Mhz\n");
+			break;
+		default:
+			putstring("NOT DEFINED FREQ\n");
+	}
+}
 
 void printDrrTargetFreq(MV_U32 uiCpuFreq, MV_U32 uiFabOpt)
 {
@@ -547,7 +573,11 @@ MV_U32 ddr3Init_(void)
 	if (uiFabOpt > FAB_OPT)
 		uiFabOpt = FAB_OPT - 1;
     if (ddr3GetLogLevel() > 0) {
+#if defined(MV88F67XX)
+		printA370DrrTargetFreq(uiCpuFreq, uiFabOpt);
+#else
         printDrrTargetFreq(uiCpuFreq, uiFabOpt);
+#endif
     }
 #if defined(MV88F66XX) || defined(MV88F672X) || defined(MV_NEW_TIP)
     getTargetFreq(uiCpuFreq, &uiTargetFreq, &uiHClkTimePs);

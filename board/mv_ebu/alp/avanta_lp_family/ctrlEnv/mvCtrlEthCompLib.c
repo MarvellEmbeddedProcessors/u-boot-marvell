@@ -390,9 +390,13 @@ static void mvEthComplexMacToGbePhy(MV_U32 port, MV_U32 phy, MV_U32 phyAddr)
 	mvEthComplexGbePhyResetSet(MV_FALSE);
 }
 
-static void mvEthComplexMacToComPhy(MV_U32 port, MV_U32 comPhy)
+static void mvEthComplexMacToComPhy(MV_U32 port, MV_U32 comPhy, MV_U32 ethComplexOptions)
 {
-	/* Not implemented */
+	/* 0x1 for 1Gbps, 0x0 for 2.5Gbps */
+	if (ethComplexOptions & MV_ETHCOMP_GE_MAC0_2_COMPHY_SPEED_2G)
+		mvEthComplexPortDpClkSrcSet(port, 0x0);
+	else
+		mvEthComplexPortDpClkSrcSet(port, 0x1);
 }
 
 static void mvEthComplexMac1ToPonSerdes(MV_U32 port)
@@ -438,13 +442,13 @@ MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig)
 		mvEthComplexMacToRgmii(0, mvBoardPhyAddrGet(0));
 
 	if (c & MV_ETHCOMP_GE_MAC0_2_COMPHY_1)
-		mvEthComplexMacToComPhy(0, 1);
+		mvEthComplexMacToComPhy(0, 1, c);
 
 	if (c & MV_ETHCOMP_GE_MAC0_2_COMPHY_2)
-		mvEthComplexMacToComPhy(0, 2);
+		mvEthComplexMacToComPhy(0, 2, c);
 
 	if (c & MV_ETHCOMP_GE_MAC0_2_COMPHY_3)
-		mvEthComplexMacToComPhy(0, 3);
+		mvEthComplexMacToComPhy(0, 3, c);
 
 	if (c & MV_ETHCOMP_GE_MAC1_2_SW_P4)
 		mvEthComplexMacToSwPort(1, 4, mvBoardMacSpeedGet(1));

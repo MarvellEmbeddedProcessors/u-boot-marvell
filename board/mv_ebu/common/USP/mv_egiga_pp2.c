@@ -298,7 +298,7 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 			}
 
 			mvGmacPortPowerUp(priv->port,
-				MV_FALSE/*mvBoardIsPortInSgmii(priv->port)*/,
+				mvBoardIsPortInSgmii(priv->port),
 				MV_FALSE/*mvBoardIsPortInRgmii(priv->port)*/);
 		}
 

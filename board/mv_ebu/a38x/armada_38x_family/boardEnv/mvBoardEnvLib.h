@@ -550,7 +550,7 @@ int mvBoardNorFlashConnect(void);
 { "sscg",	MV_SATR_SSCG_DISABLE,		0x08,	3,	3,	0,	{0, 1, 0, 0}, 0},\
 { "ddr4select",	MV_SATR_DDR4_SELECT,		0x20,	5,	4,	1,	{0, 1, 0, 0}, BOARD_SATR_READ_ONLY},\
 { "ddrbuswidth",  MV_SATR_DDR_BUS_WIDTH,	0x02,	1,	4,	0,	{0, 1, 0, 0}, BOARD_SATR_READ_ONLY},\
-{ "ddreccenable", MV_SATR_DDR_ECC_ENABLE,	0x04,	2,	4,	0,	{0, 1, 0, 0}, 0},\
+{ "ddreccenable", MV_SATR_DDR_ECC_ENABLE,	0x04,	2,	4,	0,	{0, 1, 0, 0}, BOARD_SATR_READ_ONLY},\
 { "bootsrc",	MV_SATR_BOOT_DEVICE,		0x3,	0,	3,	0,	{0, 1, 0, 0}, BOARD_SATR_SWAP_BIT},\
 { "boarsrc2",	MV_SATR_BOOT2_DEVICE,		0x1E,	1,	2,	0,	{0, 1, 0, 0}, BOARD_SATR_SWAP_BIT},\
 { "boardid",	MV_SATR_BOARD_ID,		0x7,	0,	0,	0,	{1, 1, 1, 0}, 0},\

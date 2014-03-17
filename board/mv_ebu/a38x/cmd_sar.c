@@ -363,6 +363,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "SatR list bootsrc	- prints the S@R modes list\n"
 "SatR list ddr4select   - prints the S@R modes list\n"
 "SatR list ddrbuswidth  - prints the S@R modes list\n"
+"SatR list ddreccenable - prints the S@R modes list\n"
 "SatR list usb3port0    - prints the S@R modes list\n"
 "SatR list usb3port1    - prints the S@R modes list\n"
 "SatR list rdserdes4    - prints the S@R modes list\n\n"

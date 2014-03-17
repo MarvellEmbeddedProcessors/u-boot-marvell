@@ -148,11 +148,11 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("0x1 = ECC enabled  \n ");
 		break;
 	case MV_SATR_BOOT_DEVICE:
-		mvOsPrintf("Determines the Boot source device:\n");
+		mvOsPrintf("Determines the Boot source device (BootROM is Enabled if not stated the opposite):\n");
 		for (i = 0; i < BOOT_SRC_TABLE_SIZE; i++) {
 			if (satrBootSrcTable[i].bootSrc == -1)
 				continue;
-			mvOsPrintf("| %2d |%s\n", i,  satrBootSrcTable[i].name);
+			mvOsPrintf(" %02d (%#04x), Boot from %s\n", i, i, satrBootSrcTable[i].name);
 		}
 		break;
 	case MV_SATR_BOARD_ID:

@@ -253,10 +253,15 @@ MV_STATUS mvBoardNameGet(char *pNameBuff, MV_U32 size)
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 {
+	MV_U32 ethComplex;
 #if defined(CONFIG_MACH_AVANTA_LP_FPGA)
 	return ethPortNum == 2;
 #endif
-
+	ethComplex = mvBoardEthComplexConfigGet();
+	if ((ethPortNum == 0 && (ethComplex & MV_ETHCOMP_GE_MAC0_2_COMPHY_1 ||
+		ethComplex & MV_ETHCOMP_GE_MAC0_2_COMPHY_2 || ethComplex & MV_ETHCOMP_GE_MAC0_2_COMPHY_3)) ||
+		(ethPortNum == 1 && (ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)))
+		return MV_TRUE;
 	return MV_FALSE;
 }
 
@@ -1122,6 +1127,9 @@ MV_STATUS mvBoardEthComplexInfoUpdate()
 	/* read if using 2G speed for MAC0 to Switch*/
 	if (mvCtrlSysConfigGet(MV_CONFIG_MAC0_SW_SPEED) == 0x0)
 		ethComplexOptions |= MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G;
+
+	if (mvCtrlSysConfigGet(MV_CONFIG_SGMII0_CAPACITY) == 0x1)
+		ethComplexOptions |= MV_ETHCOMP_GE_MAC0_2_COMPHY_SPEED_2G;
 
 	/* if MAC1 is NOT connected to PON SerDes --> connect PON MAC to to PON SerDes */
 	if ((ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES) == MV_FALSE)

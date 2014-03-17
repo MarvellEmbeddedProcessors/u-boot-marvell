@@ -119,6 +119,9 @@ enum mvSwPortSrc {
 #define     ETHCC_LOOPBACK_PORT_SPEED_OFFSET		19
 #define     ETHCC_LOOPBACK_PORT_SPEED_MASK		(0x1 << ETHCC_LOOPBACK_PORT_SPEED_OFFSET)
 
+#define     ETHCC_SW_OUT_CLOCK_IN_SRC_OFFSET		26
+#define     ETHCC_SW_OUT_CLOCK_IN_SRC_MASK		(0x1 << ETHCC_SW_OUT_CLOCK_IN_SRC_OFFSET)
+
 /*******************************************************************************
  * Switch Configuration and Reset Control
  */

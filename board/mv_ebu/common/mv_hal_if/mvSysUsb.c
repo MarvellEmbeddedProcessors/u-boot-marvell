@@ -99,7 +99,18 @@ MV_STATUS mvSysUsbInit(MV_VOID)
 #ifdef CONFIG_USB_EHCI
 		MV_BOOL isHost;
 		char envname[10], *env;
-		for (dev = 0; dev < mvCtrlUsbMaxGet(); dev++) {
+		int maxUsbPorts = mvCtrlUsbMaxGet();
+		/* for ALP/A375: if using single usb2 port, use Virtual MAC ID since
+		 MAC ID0 (usbActive =0) is connected to Physical MAC ID1 */
+		int id, mac_id[2] = {1, 0};
+
+		for (id = 0; id < mvCtrlUsbMaxGet(); id++) {
+			if (maxUsbPorts == 1 && (halData.ctrlFamily == MV_88F67X0 ||
+					(halData.ctrlRev == MV_88F66XX_A0_ID && halData.ctrlFamily == MV_88F66X0)))
+				dev = mac_id[id];
+			else
+				dev = id;
+
 			sprintf(envname, "usb%dMode", dev);
 			env = getenv(envname);
 			if ((!env) || (strcmp(env, "device") == 0) || (strcmp(env, "Device") == 0))

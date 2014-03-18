@@ -34,6 +34,26 @@
 #include "drivers/usb/host/ehci.h"
 #endif
 #include "mvSysUsbConfig.h"
+
+/* setUtmiPhySelector - This routine configures the shared MAC access between USB2/3:
+  When using USB3 simultaneously with USB2, the USB2 port is sharing MAC with the USB3 port.
+  in order to address the USB2 registers on the shared MAC, we need to set the UTMI Phy Selector:
+  0x0 = UTMI PHY connected to USB2.0
+  0x1 = UTMI PHY disconnected from USB2.0 */
+void setUtmiPhySelector(MV_U32 usbUnitId){
+	MV_U32 reg;
+	MV_BOOL utmiToUsb2;
+
+	if (usbUnitId == USB_UNIT_ID)
+		utmiToUsb2 = MV_TRUE;
+	else
+		utmiToUsb2 = MV_FALSE;
+
+	reg = MV_REG_READ(USB_CLUSTER_CONTROL);
+	reg = (reg & (~0x1)) | (utmiToUsb2 ? 0x0 : 0x1);
+	MV_REG_WRITE(USB_CLUSTER_CONTROL, reg);
+}
+
 /*******************************************************************************
 * getUsbActive - read 'usbActive' env variable and set active port
 *
@@ -52,6 +72,9 @@ MV_STATUS getUsbActive(MV_U32 usbUnitId)
 	char *env = getenv("usbActive");
 	int usbActive = simple_strtoul(env, NULL, 10);
 	int maxUsbPorts = (usbUnitId == USB3_UNIT_ID ? mvCtrlUsb3MaxGet() : mvCtrlUsbMaxGet());
+	MV_U32 family = mvCtrlDevFamilyIdGet(0);
+	int mac_id[2] = {1, 0};
+
 
 	mvOsPrintf("Port (usbActive) : ");
 	if (usbActive >= maxUsbPorts) {
@@ -62,7 +85,12 @@ MV_STATUS getUsbActive(MV_U32 usbUnitId)
 	}
 
 	mvOsPrintf("Interface (usbType = %d) : ", ((usbUnitId == USB3_UNIT_ID) ? 3 : 2));
-
+	/* for ALP/A375: if using single usb2 port, use Virtual MAC ID since MAC ID0 (usbActive =0)
+	 is connected to Physical MAC ID1 */
+	if (maxUsbPorts == 1 && usbUnitId == USB_UNIT_ID &&
+			((family == MV_88F66X0 && mvCtrlRevGet() == MV_88F66XX_A0_ID) || family == MV_88F67X0)) {
+		usbActive = mac_id[usbActive];
+	}
 	return usbActive;
 }
 
@@ -109,6 +137,7 @@ static int mv_xhci_core_init(MV_U32 unitId)
 int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 {
 	MV_U32 ctrlModel = mvCtrlModelGet();
+	MV_U32 family = mvCtrlDevFamilyIdGet(0);
 
 	switch (ctrlModel) {
 	case MV_6820_DEV_ID:
@@ -121,6 +150,10 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 		mvOsPrintf("%s: Error: USB 3.0 is not supported on current soc\n", __func__);
 		return -1;
 	}
+
+	/* USB2 port 0 is sharing MAC with USB3, and requires UTMI Phy selection */
+	if (family == MV_88F66X0 || family == MV_88F67X0)
+		setUtmiPhySelector(USB3_UNIT_ID);
 
 	mv_xhci_core_init(index);
 
@@ -152,6 +185,12 @@ void xhci_hcd_stop(int index)
  */
 int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 {
+	MV_U32 family = mvCtrlDevFamilyIdGet(0);
+
+        /* only USB2 port 0 is sharing MAC with USB3, and requires UTMI Phy selection */
+	if (index == 0 && (family == MV_88F66X0 || family == MV_88F67X0))
+		setUtmiPhySelector(USB_UNIT_ID);
+
 	*hccr = (struct ehci_hccr *)(INTER_REGS_BASE + MV_USB_REGS_OFFSET(index) + 0x100);
 	*hcor = (struct ehci_hcor *)((uint32_t) (*hccr) + HC_LENGTH(ehci_readl(&(*hccr)->cr_capbase)));
 

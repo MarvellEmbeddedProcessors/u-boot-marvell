@@ -71,6 +71,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pp2/gmac/mvEthGmacRegs.h"
 #include "pp2/gbe/mvPp2Gbe.h"
 
+static void mvEthComplexGponPhySrcSet(MV_U32 src)
+{
+	MV_U32 reg;
+
+	reg = MV_REG_READ(MV_GPON_PHY_CTRL1_REG);
+	reg &= ~GPON_PHY_CTRL1_MASK;
+
+	src <<= GPON_PHY_CTRL1_OFFSET;
+	src &= GPON_PHY_CTRL1_MASK;
+
+	reg |= src;
+
+	MV_REG_WRITE(MV_GPON_PHY_CTRL1_REG, reg);
+}
 static void mvEthComplexGphyPortSmiSrcSet(MV_U32 phy, MV_U32 src)
 {
 	MV_U32 reg;
@@ -90,6 +104,7 @@ static void mvEthComplexGphyPortSmiSrcSet(MV_U32 phy, MV_U32 src)
 
 	MV_REG_WRITE(MV_ETHCOMP_CTRL_REG, reg);
 }
+
 static void mvEthComplexGbeClockControlSet(void)
 {
 	MV_U32 reg;
@@ -370,7 +385,8 @@ static void mvEthComplexSwPortToRgmii(MV_U32 swPort, MV_U32 port)
 
 static void mvEthComplexXponMacToPonSerdes(void)
 {
-	/* Not implemented */
+	/* 0x0 = XPON Mac is source for GponPhy */
+	mvEthComplexGponPhySrcSet(0);
 }
 
 static void mvEthComplexMacToGbePhy(MV_U32 port, MV_U32 phy, MV_U32 phyAddr)
@@ -401,7 +417,8 @@ static void mvEthComplexMacToComPhy(MV_U32 port, MV_U32 comPhy, MV_U32 ethComple
 
 static void mvEthComplexMac1ToPonSerdes(MV_U32 port)
 {
-	/* Not implemented */
+	/* 0x1 = Mac#1 is source for GponPhy */
+	mvEthComplexGponPhySrcSet(0x1);
 }
 
 static void mvEthComplexMacToRgmii(MV_U32 port, MV_U32 phy)

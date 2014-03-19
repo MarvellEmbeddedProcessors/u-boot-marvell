@@ -945,7 +945,8 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	macSpeed = BOARD_MAC_SPEED_AUTO; /*if Mac is not connected to switch, auto-negotiate speed*/
 	if (ethComplex & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3)
 		smiAddress = 0x3;
-	else if (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1)
+	/* MAC1 to RGMII, or MAC1 to SGMII: both configs use the same SMI address (0x1) */
+	else if (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1 || ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)
 		smiAddress = 0x1;
 	else {
 		smiAddress = -1; /* no SMI address if connected to switch */
@@ -1063,7 +1064,8 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 
 	/* Groups 3-4  - (only if not Booting from SPI1)*/
 	if (bootDev != MSAR_0_BOOT_SPI1_FLASH) {
-		if (ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_RGMII1) {
+		if (ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_RGMII1 ||
+				ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES) {
 			mvBoardMppTypeSet(3, GE1_UNIT);
 			if (slicDev == SLIC_LANTIQ_ID)
 				mvBoardMppTypeSet(4, GE1_CPU_SMI_CTRL_TDM_LQ_UNIT);
@@ -3209,6 +3211,7 @@ MV_BOOL mvBoardIsEthActive(MV_U32 ethNum)
 
 	if (ethNum == 1 && ((c & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3) ||
 			(c & MV_ETHCOMP_GE_MAC1_2_RGMII1) ||
+			(c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES) ||
 			((c & MV_ETHCOMP_GE_MAC1_2_SW_P4) && mvBoardMacCpuPortGet() == 1)))
 			isActive = MV_TRUE;
 
@@ -3290,10 +3293,15 @@ MV_BOOL mvBoardConfigAutoDetectEnabled()
 *******************************************************************************/
 MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
 {
+	MV_U32 c = mvBoardEthComplexConfigGet();
 	/* 0x2 = SATA1, 0x3 = Unconnected are supported only for A0 */
 	if ((field == MV_CONFIG_LANE1 && (writeVal == 0x2 || writeVal == 0x3)) \
 			&& (mvCtrlRevGet() <= MV_88F66X0_Z3_ID)) {
 		mvOsPrintf("Error: this option is not supported in Z stepping revision\n");
+		return MV_ERROR;
+	}
+	if (field == MV_CONFIG_MAC1 && (c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)) {
+		mvOsPrintf("Warning: MAC1 is connected to PON Serdes\n");
 		return MV_ERROR;
 	}
 	return MV_OK;

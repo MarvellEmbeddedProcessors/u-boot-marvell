@@ -238,6 +238,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define GPON_TOD_INT_MODE_SFC_INTERRUPT     (1)
 #define GPON_TOD_INT_DEFAULT_WIDTH          (5)
 
+/* Internal dyinggasp option */
+#define DYINGASP_INTERNAL_ENABLE            (1)
+#define DYINGASP_INTERNAL_DISABLE           (0)
+#define DYINGASP_INTERNAL_ONDIE             (0)
+#define DYINGASP_INTERNAL_ONBOARD           (1)
+#define DYINGASP_INTERNAL_VOLTAGE_1V        (0x2)
+
 /* Typedefs
    ------------------------------------------------------------------------------*/
 typedef MV_STATUS (*MACTXPLOAMCTRFUNC)(MV_U8 msgId, MV_BOOL status);
@@ -481,6 +488,7 @@ MV_STATUS mvOnuGponMacIpgValidGet(MV_BOOL *enable);
 MV_STATUS mvOnuGponMacGemInit(void);
 MV_STATUS mvOnuGponMacPortIdValidSet(MV_U32 portId, MV_BOOL status);
 MV_BOOL   mvOnuGponMacPortIdValidGet(MV_U32 portId);
+MV_STATUS mvOnuEponMacInternalDyingGaspSet(MV_U32 enable, MV_U32 onDie, MV_U32 voltage);
 MV_STATUS mvOnuGponMacXvrReset(MV_U32 xvrType);
 MV_STATUS mvOnuGponMacXvrActivate(void);
 MV_STATUS mvOnuGponMacAsicVersionGet(MV_U32 *asicVer);

@@ -118,7 +118,7 @@
 #define DB_88F6660_MPP16_23             0x00000022
 #define DB_88F6660_MPP24_31             0x22222222  /* RGMII-1*/
 #define DB_88F6660_MPP32_39             0x04422222  /* GE_SMI ,GE1, PON */
-#define DB_88F6660_MPP40_47             0x22100220  /* PON , GE0 */
+#define DB_88F6660_MPP40_47             0x22100020  /* PON , GE0 */
 #define DB_88F6660_MPP48_55             0x22222222  /* GE0*/
 #define DB_88F6660_MPP56_63             0x44224422  /* UART1, GE0 , LED */
 #define DB_88F6660_MPP64_67             0x004

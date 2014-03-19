@@ -265,7 +265,7 @@ typedef struct _boardSerdesConf {
 MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrReadField, MV_U8 val);
 MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField);
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode);
-MV_VOID mvCtrlSatrInit(MV_VOID);
+MV_VOID mvCtrlSatrInit(MV_U32 early);
 MV_VOID mvCtrlSysConfigInit(MV_VOID);
 MV_U32 mvCtrlSysConfigGet(MV_CONFIG_TYPE_ID configField);
 MV_U32 mvCtrlGetCpuNum(MV_VOID);

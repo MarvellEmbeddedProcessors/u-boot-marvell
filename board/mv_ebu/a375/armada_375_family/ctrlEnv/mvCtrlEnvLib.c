@@ -115,6 +115,7 @@ CTRL_ENV_INFO ctrlEnvInfo = {};
 
 MV_U32 satrOptionsConfig[MV_SATR_READ_MAX_OPTION];
 MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
+MV_32 satrOptionsInitialized = -1; /* -1 - uninitialized, 1 - after early init, 2 - all fields initialized */
 
 MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
 
@@ -295,7 +296,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	/* Set I2C MPP's(MPP Group 1), before reading board configuration, using TWSI read */
 	MV_REG_WRITE(mvCtrlMppRegGet(1), GROUP1_DEFAULT_MPP_SPI_I2C);
 
-	mvCtrlSatrInit();
+	mvCtrlSatrInit(0);
 
 	/* If set to Auto detect, read board config info, update MPP group types*/
 	if (mvBoardConfigAutoDetectEnabled()) {
@@ -368,6 +369,9 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 {
 	MV_BOARD_SATR_INFO satrInfo;
 	MV_U8 readValue, verifyValue, i2cRegNum = 0;
+
+	if (satrOptionsInitialized < 2)
+		return MV_ERROR;
 
 	if (satrReadField >= MV_SATR_READ_MAX_OPTION ||
 		satrWriteField >= MV_SATR_WRITE_MAX_OPTION) {
@@ -446,6 +450,12 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_SATR_TYPE_ID satrRe
 MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 {
 	MV_BOARD_SATR_INFO satrInfo;
+
+	if (satrOptionsInitialized < 1)
+		mvCtrlSatrInit(1);
+	if ((satrField == MV_SATR_DDR_BUS_WIDTH) && (satrOptionsInitialized < 2))
+		return MV_ERROR;
+
 	if (satrField < MV_SATR_READ_MAX_OPTION &&
 			mvBoardSatrInfoConfig(satrField, &satrInfo, MV_TRUE) == MV_OK)
 		return satrOptionsConfig[satrField];
@@ -525,30 +535,40 @@ MV_U32 mvCtrlSysConfigGet(MV_CONFIG_TYPE_ID configField)
 *               2. read relevant S@R fields (direct memory access)
 *               **from this point, all reads from S@R will use mvCtrlSatRRead/Write functions**
 *
-* INPUT:  None
+* INPUT:
+*	early - set to initialize only safe values (before board MPP configuration)
 *
 * OUTPUT: None
 *
 * RETURN: NONE
 *
 *******************************************************************************/
-MV_VOID mvCtrlSatrInit(void)
+MV_VOID mvCtrlSatrInit(MV_U32 early)
 {
 	MV_U32 satrVal[2];
 	MV_BOARD_SATR_INFO satrInfo;
 	MV_U32 i;
 	MV_U8 readValue;
 
-	/* initialize all S@R & Board configuration fields to -1 (MV_ERROR) */
-	memset(&satrOptionsConfig, 0x0, sizeof(MV_U32) * MV_SATR_READ_MAX_OPTION );
+	if (satrOptionsInitialized < 1) {
+		/* initialize all S@R & Board configuration fields to -1 (MV_ERROR) */
+		memset(&satrOptionsConfig, 0x0, sizeof(MV_U32) * MV_SATR_READ_MAX_OPTION);
 
-	/* Read Sample @ Reset configuration, memory access read : */
-	satrVal[0] = MV_REG_READ(MPP_SAMPLE_AT_RESET(0));
-	satrVal[1] = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
+		/* Read Sample @ Reset configuration, memory access read : */
+		satrVal[0] = MV_REG_READ(MPP_SAMPLE_AT_RESET(0));
+		satrVal[1] = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
 
-	for (i = 0; i < MV_SATR_READ_MAX_OPTION; i++)
-		if (mvBoardSatrInfoConfig(i, &satrInfo, MV_TRUE) == MV_OK)
-			satrOptionsConfig[satrInfo.satrId] = ((satrVal[satrInfo.regNum]  & (satrInfo.mask)) >> (satrInfo.offset));
+		for (i = 0; i < MV_SATR_READ_MAX_OPTION; i++)
+			if (mvBoardSatrInfoConfig(i, &satrInfo, MV_TRUE) == MV_OK)
+				satrOptionsConfig[satrInfo.satrId] =
+					((satrVal[satrInfo.regNum]  & (satrInfo.mask)) >> (satrInfo.offset));
+
+		satrOptionsInitialized = 1;
+	}
+
+	/* Cannot access S@R I2C before board config (early initialization) */
+	if (early)
+		return;
 
 	/* Read DDR Bus width configuration:
 	   - DDR_BUS_WIDTH - only S@R field which is not sampled at reset to any internal register
@@ -561,6 +581,8 @@ MV_VOID mvCtrlSatrInit(void)
 		mvOsPrintf("%s: Error: Read DDR_BUS_WIDTH from S@R failed\n", __func__);
 
 	satrOptionsConfig[MV_SATR_DDR_BUS_WIDTH] = ((readValue  & (satrInfo.mask)) >> (satrInfo.offset));
+
+	satrOptionsInitialized = 2;
 }
 
 /*******************************************************************************

@@ -32,7 +32,7 @@ typedef struct _boardConfig {
 /* MV_SATR_TYPE_ID,		 Name,		numOfValues,	Possible Values */
 MV_BOARD_CONFIG_VALUE boardConfig[] = {
 { MV_CONFIG_MAC0,		"MAC0",				4, {"Switch port 6", "GBE PHY#0", "RGMII-0", "SGMII(DB-6660)"} },
-{ MV_CONFIG_MAC1,		"MAC1",				3, {"RGMII-1", "Switch port 4", "GBE PHY#3"} },
+{ MV_CONFIG_MAC1,		"MAC1",				4, {"RGMII-1", "Switch port 4", "GBE PHY#3", "RGMII-0"} },
 { MV_CONFIG_PON_SERDES,		"PON SERDES",			2, {"PON MAC", "MAC1"} },
 { MV_CONFIG_PON_BEN_POLARITY,	"PON POLARITY (DB-6660)",	2, {"BEN active low", "BEN active low"} },
 { MV_CONFIG_SGMII0_CAPACITY,	"SGMII-0 Capacity",		2, {"1G", "2.5G"} },

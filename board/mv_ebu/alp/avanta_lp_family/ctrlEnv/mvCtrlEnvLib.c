@@ -530,10 +530,10 @@ MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 		* Test board configuration relevant to MPP group 4, and derive the correct group type */
 
 		if (isRefClkOut)	/* add first REF_CLK_OUT group type */
-			groupTypeSelect += GE1_CPU_SMI_CTRL_REF_CLK_OUT;
+			groupTypeSelect += GE1_RGMII1_CPU_SMI_CTRL_REF_CLK_OUT;
 
 		if (smiCtrl == SWITCH_SMI_CTRL)	/* add first SW_SMI group type */
-			groupTypeSelect += GE1_SW_SMI_CTRL_TDM_LQ_UNIT;
+			groupTypeSelect += GE1_RGMII1_SW_SMI_CTRL_TDM_LQ_UNIT;
 
 		if (isSPI1Enabled)	/* add first SPI1 group type */
 			groupTypeSelect += SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT;

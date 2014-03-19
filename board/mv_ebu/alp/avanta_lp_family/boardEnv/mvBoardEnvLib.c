@@ -927,7 +927,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	else if (ethComplex & MV_ETHCOMP_GE_MAC0_2_RGMII0) {
 		/* External PHY SMI address (extenal module) for Zx revision is
 		** 0x8, for A0 the module is on board with address 0x5 */
-		if (mvCtrlRevGet() < MV_88F66X0_Z3_ID)
+		if (mvCtrlRevGet() <= MV_88F66X0_Z3_ID)
 			smiAddress = 0x8;
 		else
 			smiAddress = 0x5;
@@ -946,8 +946,10 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	if (ethComplex & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3)
 		smiAddress = 0x3;
 	/* MAC1 to RGMII, or MAC1 to SGMII: both configs use the same SMI address (0x1) */
-	else if (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1 || ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)
+	else if (ethComplex & (MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES))
 		smiAddress = 0x1;
+	else if (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII0)
+		smiAddress = 0x5;
 	else {
 		smiAddress = -1; /* no SMI address if connected to switch */
 		macSpeed = BOARD_MAC_SPEED_1000M;
@@ -1053,6 +1055,7 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 	MV_BOARD_BOOT_SRC bootDev;
 	MV_SLIC_UNIT_TYPE slicDev;
 	MV_U32 ethComplexOptions = mvBoardEthComplexConfigGet();
+	MV_BOOL singleCpu, tdmLqUnit;
 
 	/* MPP Groups initialization : */
 	/* Set Group 0-1 - Boot device (else if booting from SPI1: Set Groups 3-4) */
@@ -1064,37 +1067,32 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 
 	/* Groups 3-4  - (only if not Booting from SPI1)*/
 	if (bootDev != MSAR_0_BOOT_SPI1_FLASH) {
-		if (ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_RGMII1 ||
-				ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES) {
-			mvBoardMppTypeSet(3, GE1_UNIT);
-			if (slicDev == SLIC_LANTIQ_ID)
-				mvBoardMppTypeSet(4, GE1_CPU_SMI_CTRL_TDM_LQ_UNIT);
-			else /* REF_CLK_OUT */
-				mvBoardMppTypeSet(4, GE1_CPU_SMI_CTRL_REF_CLK_OUT);
+		tdmLqUnit = (slicDev == SLIC_LANTIQ_ID);
+		if (ethComplexOptions & (MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)) {
+			mvBoardMppTypeSet(3, GE1_RGMII1_UNIT);
+			mvBoardMppTypeSet(4, (tdmLqUnit ? GE1_RGMII1_CPU_SMI_CTRL_TDM_LQ_UNIT : \
+						GE1_RGMII1_CPU_SMI_CTRL_REF_CLK_OUT));
 		} else { /* if RGMII-1 isn't used, set SPI1 MPP's */
 			mvBoardMppTypeSet(3, SDIO_SPI1_UNIT);
-			if (slicDev == SLIC_LANTIQ_ID)
-				mvBoardMppTypeSet(4, SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT);
-			else /* REF_CLK_OUT */
-				mvBoardMppTypeSet(4, SPI1_CPU_SMI_CTRL_REF_CLK_OUT);
+			mvBoardMppTypeSet(4, (tdmLqUnit ? SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT : \
+						SPI1_CPU_SMI_CTRL_REF_CLK_OUT));
 		}
 	}
 
-	/* Groups 5-6-7 Set GE0 or Switch port 4 */
+	/* Groups 5-6-7 Set GE0, GE1_RGMII0, or Switch port 4 */
+	singleCpu = (mvCtrlGetCpuNum() == 0); /* if using Dual CPU ,set UART1 */
 	if (ethComplexOptions & MV_ETHCOMP_GE_MAC0_2_RGMII0) {
 		mvBoardMppTypeSet(5, GE0_UNIT_PON_TX_FAULT);
 		mvBoardMppTypeSet(6, GE0_UNIT);
-		if (mvCtrlGetCpuNum() == 0) /* if using Dual CPU ,set UART1 */
-			mvBoardMppTypeSet(7, GE0_UNIT_LED_MATRIX);
-		else
-			mvBoardMppTypeSet(7, GE0_UNIT_UA1_PTP);
+		mvBoardMppTypeSet(7, (singleCpu ? GE0_UNIT_LED_MATRIX : GE0_UNIT_UA1_PTP));
 	} else if (ethComplexOptions & MV_ETHCOMP_SW_P4_2_RGMII0) {
 		mvBoardMppTypeSet(5, SWITCH_P4_PON_TX_FAULT);
 		mvBoardMppTypeSet(6, SWITCH_P4);
-		if (mvCtrlGetCpuNum() == 0) /* if using Dual CPU ,set UART1 */
-			mvBoardMppTypeSet(7, SWITCH_P4_LED_MATRIX);
-		else
-			mvBoardMppTypeSet(7, SWITCH_P4_UA1_PTP);
+		mvBoardMppTypeSet(7, (singleCpu ? SWITCH_P4_LED_MATRIX : SWITCH_P4_UA1_PTP));
+	} else if (ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_RGMII0) {
+		mvBoardMppTypeSet(5, GE1_RGMII0_UNIT_PON_TX_FAULT);
+		mvBoardMppTypeSet(6, GE1_RGMII0_UNIT);
+		mvBoardMppTypeSet(7, (singleCpu ? GE1_RGMII0_UNIT_LED_MATRIX : GE1_RGMII0_UNIT_UA1_PTP));
 	}
 }
 
@@ -1431,6 +1429,9 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet()
 		break;
 	case 0x2:
 		return MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3;
+		break;
+	case 0x3:
+		return MV_ETHCOMP_GE_MAC1_2_RGMII0;
 		break;
 	default:
 		mvOsPrintf("%s: Error: Configuration conflict for MAC1 connection.\n", __func__);
@@ -1920,7 +1921,9 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_RGMII0)
 		mvOsOutput("\tRGMII0 Module on MAC0\n");
 	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_RGMII1)
-		mvOsOutput("\tRGMII1 on MAC1\n");
+		mvOsOutput("\tRGMII1 Module on MAC1\n");
+	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_RGMII0)
+		mvOsOutput("\tRGMII0 Module on MAC1\n");
 	if (ethConfig & MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY)
 		mvOsOutput("\tExternal PHY-RGMII0 Module on Switch port #4, 1G speed\n");
 	else if (ethConfig & MV_ETHCOMP_SW_P4_2_RGMII0)
@@ -3159,6 +3162,7 @@ MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 
 	if (ethNum == 1 && ((c & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3) ||
 			(c & MV_ETHCOMP_GE_MAC1_2_RGMII1) ||
+			(c & MV_ETHCOMP_GE_MAC1_2_RGMII0) ||
 			(c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES) ||
 			(c & MV_ETHCOMP_GE_MAC1_2_SW_P4)))
 			isConnected = MV_TRUE;
@@ -3211,6 +3215,7 @@ MV_BOOL mvBoardIsEthActive(MV_U32 ethNum)
 
 	if (ethNum == 1 && ((c & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3) ||
 			(c & MV_ETHCOMP_GE_MAC1_2_RGMII1) ||
+			(c & MV_ETHCOMP_GE_MAC1_2_RGMII0) ||
 			(c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES) ||
 			((c & MV_ETHCOMP_GE_MAC1_2_SW_P4) && mvBoardMacCpuPortGet() == 1)))
 			isActive = MV_TRUE;
@@ -3294,9 +3299,11 @@ MV_BOOL mvBoardConfigAutoDetectEnabled()
 MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
 {
 	MV_U32 c = mvBoardEthComplexConfigGet();
-	/* 0x2 = SATA1, 0x3 = Unconnected are supported only for A0 */
-	if ((field == MV_CONFIG_LANE1 && (writeVal == 0x2 || writeVal == 0x3)) \
-			&& (mvCtrlRevGet() <= MV_88F66X0_Z3_ID)) {
+	/* Config Lane1: 0x2 = SATA1, 0x3 = Unconnected are supported only for A0
+	** config MAC1 to RGMII0 are supported only for A0 */
+	if (((field == MV_CONFIG_LANE1 && (writeVal == 0x2 || writeVal == 0x3)) ||
+			(field == MV_CONFIG_MAC1 && writeVal == 0x3)) &&
+			(mvCtrlRevGet() <= MV_88F66X0_Z3_ID)) {
 		mvOsPrintf("Error: this option is not supported in Z stepping revision\n");
 		return MV_ERROR;
 	}
@@ -3304,6 +3311,17 @@ MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
 		mvOsPrintf("Warning: MAC1 is connected to PON Serdes\n");
 		return MV_ERROR;
 	}
+	/* 0x3 = RGMII0, check if MAC0 is connected to RGMII0 */
+	if (field == MV_CONFIG_MAC1 && writeVal == 0x3 && (c & MV_ETHCOMP_GE_MAC0_2_RGMII0)) {
+		mvOsPrintf("Warning: MAC0 is connected to RGMII0 Module\n");
+		return MV_ERROR;
+	}
+	/* 0x2 = RGMII0, check if MAC1 is connected to RGMII0 */
+	if (field == MV_CONFIG_MAC0 && writeVal == 0x2 && (c & MV_ETHCOMP_GE_MAC1_2_RGMII0)) {
+		mvOsPrintf("Warning: MAC1 is connected to RGMII0 Module\n");
+		return MV_ERROR;
+	}
+
 	return MV_OK;
 
 }

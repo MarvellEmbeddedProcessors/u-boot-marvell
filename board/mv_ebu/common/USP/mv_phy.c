@@ -100,7 +100,7 @@ static void mvAlpBoardEgigaPhyInit(void)
 		mvEthPhyInit(0, MV_FALSE);
 
 	/* Init PHY connected to MAC1 */
-	if (ethComplex & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3) {
+	if (ethComplex & (MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3 | MV_ETHCOMP_GE_MAC1_2_RGMII0)) {
 		mvEthPhyInit(1, MV_FALSE);
 	}
 
@@ -284,6 +284,7 @@ void mvBoardEgigaPhyInit(void)
 					MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY |
 					MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3 |
 					MV_ETHCOMP_GE_MAC1_2_RGMII1 |
+					MV_ETHCOMP_GE_MAC1_2_RGMII0 |
 					MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)))
 		mvCtrlSmiMasterSet(NO_SMI_CTRL);
 

@@ -168,6 +168,14 @@ enum mvSwPortSrc {
 #define     ETHQPCS_DPLL_RESET_OFFSET			4
 #define     ETHQPCS_DPLL_RESET_MASK			(0x1 << ETHQPCS_DPLL_RESET_OFFSET)
 
+/*******************************************************************************
+ * GPON PHY Contol 1
+ */
+#define MV_GPON_PHY_CTRL1_REG				(MV_IP_CONFIG_REGS_OFFSET + 0xF8)
+
+#define GPON_PHY_CTRL1_OFFSET				0
+#define GPON_PHY_CTRL1_MASK				(0x1 << GPON_PHY_CTRL1_OFFSET)
+
 #ifdef CONFIG_MV_ETH_PP2
 MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig);
 #else

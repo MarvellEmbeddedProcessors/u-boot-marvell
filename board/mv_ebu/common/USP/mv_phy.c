@@ -105,7 +105,7 @@ static void mvAlpBoardEgigaPhyInit(void)
 	}
 
 	/* if MAC-1 is connected to RGMII-1 && SW_P4 is not connected RGMII-0 */
-	if ((ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1) &&
+	if ((ethComplex & (MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)) &&
 		!(ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY)) {
 
 		/* enable external phy cpu ctrl - MAC1 is polling this phy */
@@ -268,7 +268,7 @@ void mvBoardEgigaPhyInit(void)
 		mvBoardPhyShutDown(0x0);
 	/* If RGMII-1 is enabled, internal PHY #1 cannot be disabled, since
 	** GE-Phy-P1 and RGMII-1 have the same SMI-Addresses (0x1) */
-	if(!(ethComplex & (MV_ETHCOMP_SW_P1_2_GE_PHY_P1 | MV_ETHCOMP_GE_MAC1_2_RGMII1)))
+	if(!(ethComplex & (MV_ETHCOMP_SW_P1_2_GE_PHY_P1 | MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)))
 		mvBoardPhyShutDown(0x1);
 	if(!(ethComplex & MV_ETHCOMP_SW_P2_2_GE_PHY_P2))
 		mvBoardPhyShutDown(0x2);
@@ -283,7 +283,8 @@ void mvBoardEgigaPhyInit(void)
 					MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0 |
 					MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY |
 					MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3 |
-					MV_ETHCOMP_GE_MAC1_2_RGMII1)))
+					MV_ETHCOMP_GE_MAC1_2_RGMII1 |
+					MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)))
 		mvCtrlSmiMasterSet(NO_SMI_CTRL);
 
 #elif defined(MV88F672X) /* Armada-375: static PPv2 configuration */

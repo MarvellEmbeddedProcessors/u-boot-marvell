@@ -795,6 +795,7 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_PON_DG_THRESHOLD]                      =  { mvAsicReg_PON_DG_THRESHOLD,                      0x18274,                         0x18274,  asicRW,     0x00000000,     0,      0,     0,      0,     "ONU Dying Gasp threshold"},
 #endif
 #endif
+	[mvAsicReg_PON_INTERNAL_DG]                       =  { mvAsicReg_PON_INTERNAL_DG,                       0x182E4,                         0x182E4,  asicRW,     0x0000007F,     0,      0,     0,      0,     "ONU internal Dying Gasp support"},
 	[mvAsicReg_PT_PATTERN_SELECT]                     =  { mvAsicReg_PT_PATTERN_SELECT,                     0xA2E54,                         0xA2E54,  asicRW,     0x00000007,     5,      0,     0,      0,     "PHY test pattern select"},
 	[mvAsicReg_PT_PATTERN_ENABLED]                    =  { mvAsicReg_PT_PATTERN_ENABLED,                    0xA2E54,                         0xA2E54,  asicRW,     0x00000001,     15,     0,     0,      0,     "PHY test pattern enabled"},
 	[mvAsicReg_PT_PATTERN_DATA]                       =  { mvAsicReg_PT_PATTERN_DATA,                       0xA2E6C,                         0xA2E6C,  asicRW,     0x000000FF,     0,      0,     0,      0,     "PHY test pattern data / user pattern [15:0]"},

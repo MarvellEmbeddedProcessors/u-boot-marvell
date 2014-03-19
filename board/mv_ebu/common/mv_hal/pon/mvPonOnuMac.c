@@ -4535,6 +4535,40 @@ MV_STATUS mvOnuGponMacDyingGaspConfigSet(MV_U32 id,
 
 /*******************************************************************************
 **
+**  mvOnuEponMacInternalDyingGaspSet
+**  ____________________________________________________________________________
+**
+**  DESCRIPTION: The function set internal dying gasp
+**
+**  PARAMETERS:  MV_U32 enable
+**               MV_U32 onDie
+**               MV_U32 voltage
+**
+**  OUTPUTS:     None
+**
+**  RETURNS:     MV_OK or MV_ERROR
+**
+*******************************************************************************/
+MV_STATUS mvOnuEponMacInternalDyingGaspSet(MV_U32 enable, MV_U32 onDie, MV_U32 voltage)
+{
+	MV_STATUS status;
+	MV_U32 value;
+
+	status = asicOntMiscRegRead(mvAsicReg_PON_INTERNAL_DG, &value, 0);
+	if (status == MV_OK) {
+		value &= ~0x67;
+		value |= ((enable & 0x1) << 5);
+		value |= ((onDie & 0x1) << 6);
+		value |= ((voltage & 0x7) << 0);
+		return asicOntMiscRegWrite(mvAsicReg_PON_INTERNAL_DG, value, 0);
+	}
+
+	return status;
+}
+
+
+/*******************************************************************************
+**
 **  mvOnuGponMacXvrReset
 **  ____________________________________________________________________________
 **

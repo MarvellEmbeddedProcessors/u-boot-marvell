@@ -55,9 +55,6 @@
 #elif defined CONFIG_SCSI_MV94XX
 #define SCSI_VEND_ID 0x1b4b
 #define SCSI_DEV_ID  0x9485
-#elif defined CONFIG_SCSI_6820
-#define SCSI_VEND_ID   0x11AB
-#define SCSI_DEV_ID     0x6820
 
 #elif !defined(CONFIG_SCSI_AHCI_PLAT)
 #error no scsi device defined

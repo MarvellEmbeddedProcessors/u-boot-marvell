@@ -1062,12 +1062,10 @@ int misc_init_r(void)
 	{
 		int sataPort = 0;
 		mvSysSata3WinInit();
-		if(strcmp(getenv("sataActive"), "1") == 0)
-			sataPort = 1;
-		printf("SCSI: active SATA unit %d, offset 0x%x\n",
-		       sataPort, (INTER_REGS_BASE | MV_SATA3_REGS_OFFSET(sataPort)));
-		if (0 != ahci_init(INTER_REGS_BASE | MV_SATA3_REGS_OFFSET(sataPort)))
-			printf("AHCI init failed!\n");
+		for(sataPort = 0; sataPort < mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID); sataPort++) {
+			if (0 != ahci_init(INTER_REGS_BASE | MV_SATA3_REGS_OFFSET(sataPort)))
+				printf("AHCI init failed!\n");
+		}
 	}
 #endif
 	char *env;

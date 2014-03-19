@@ -161,11 +161,9 @@ int __weak ahci_link_up(struct ahci_probe_ent *probe_ent, u8 port)
 
 static int ahci_host_init(struct ahci_probe_ent *probe_ent)
 {
-#ifndef CONFIG_SCSI_AHCI_PLAT
 	pci_dev_t pdev = probe_ent->dev;
 	u16 tmp16;
 	unsigned short vendor;
-#endif
 	volatile u8 *mmio = (volatile u8 *)probe_ent->mmio_base;
 	u32 tmp, cap_save, cmd;
 	int i, j, ret;
@@ -200,16 +198,16 @@ static int ahci_host_init(struct ahci_probe_ent *probe_ent)
 	writel(cap_save, mmio + HOST_CAP);
 	writel_with_flush(0xf, mmio + HOST_PORTS_IMPL);
 
-#ifndef CONFIG_SCSI_AHCI_PLAT
-	pci_read_config_word(pdev, PCI_VENDOR_ID, &vendor);
+	if(pdev != -1 ) {
+		pci_read_config_word(pdev, PCI_VENDOR_ID, &vendor);
 
-	if (vendor == PCI_VENDOR_ID_INTEL) {
-		u16 tmp16;
-		pci_read_config_word(pdev, 0x92, &tmp16);
-		tmp16 |= 0xf;
-		pci_write_config_word(pdev, 0x92, tmp16);
+		if (vendor == PCI_VENDOR_ID_INTEL) {
+			u16 tmp16;
+			pci_read_config_word(pdev, 0x92, &tmp16);
+			tmp16 |= 0xf;
+			pci_write_config_word(pdev, 0x92, tmp16);
+		}
 	}
-#endif
 	probe_ent->cap = readl(mmio + HOST_CAP);
 	probe_ent->port_map = readl(mmio + HOST_PORTS_IMPL);
 	port_map = probe_ent->port_map;
@@ -320,21 +318,19 @@ static int ahci_host_init(struct ahci_probe_ent *probe_ent)
 	writel(tmp | HOST_IRQ_EN, mmio + HOST_CTL);
 	tmp = readl(mmio + HOST_CTL);
 	debug("HOST_CTL 0x%x\n", tmp);
-#ifndef CONFIG_SCSI_AHCI_PLAT
-	pci_read_config_word(pdev, PCI_COMMAND, &tmp16);
-	tmp |= PCI_COMMAND_MASTER;
-	pci_write_config_word(pdev, PCI_COMMAND, tmp16);
-#endif
+	if(pdev != -1 ) {
+		pci_read_config_word(pdev, PCI_COMMAND, &tmp16);
+		tmp |= PCI_COMMAND_MASTER;
+		pci_write_config_word(pdev, PCI_COMMAND, tmp16);
+	}
 	return 0;
 }
 
 
 static void ahci_print_info(struct ahci_probe_ent *probe_ent)
 {
-#ifndef CONFIG_SCSI_AHCI_PLAT
 	pci_dev_t pdev = probe_ent->dev;
 	u16 cc;
-#endif
 	volatile u8 *mmio = (volatile u8 *)probe_ent->mmio_base;
 	u32 vers, cap, cap2, impl, speed;
 	const char *speed_s;
@@ -355,19 +351,19 @@ static void ahci_print_info(struct ahci_probe_ent *probe_ent)
 	else
 		speed_s = "?";
 
-#ifdef CONFIG_SCSI_AHCI_PLAT
-	scc_s = "SATA";
-#else
-	pci_read_config_word(pdev, 0x0a, &cc);
-	if (cc == 0x0101)
-		scc_s = "IDE";
-	else if (cc == 0x0106)
+	if(pdev == -1 )
 		scc_s = "SATA";
-	else if (cc == 0x0104)
-		scc_s = "RAID";
-	else
-		scc_s = "unknown";
-#endif
+	else {
+		pci_read_config_word(pdev, 0x0a, &cc);
+		if (cc == 0x0101)
+			scc_s = "IDE";
+		else if (cc == 0x0106)
+			scc_s = "SATA";
+		else if (cc == 0x0104)
+			scc_s = "RAID";
+		else
+			scc_s = "unknown";
+	}
 	printf("AHCI %02x%02x.%02x%02x "
 	       "%u slots %u ports %s Gbps 0x%x impl %s mode\n",
 	       (vers >> 24) & 0xff,
@@ -402,7 +398,6 @@ static void ahci_print_info(struct ahci_probe_ent *probe_ent)
 	       cap2 & (1 << 0) ? "boh " : "");
 }
 
-#ifndef CONFIG_SCSI_AHCI_PLAT
 static int ahci_init_one(pci_dev_t pdev)
 {
 	u16 vendor;
@@ -463,7 +458,6 @@ static int ahci_init_one(pci_dev_t pdev)
       err_out:
 	return rc;
 }
-#endif
 
 #define MAX_DATA_BYTE_COUNT  (4*1024*1024)
 
@@ -630,11 +624,9 @@ static int ahci_device_data_io(struct ahci_probe_ent *probe_ent, u8 port,
 	opts = (fis_len >> 2) | (sg_count << 16) | (is_write << 6);
 	ahci_fill_cmd_slot(pp, opts);
 
-#ifdef  CONFIG_SCSI_6820
 	writel_with_flush(0x7FFFFFF, port_mmio + PORT_SCR_ERR);
 	writel_with_flush(0xffffffff, port_mmio + PORT_IRQ_STAT);
 	writel_with_flush(0, port_mmio + PORT_FIS_ADDR);
-#endif
 	ahci_dcache_flush_sata_cmd(pp);
 	ahci_dcache_flush_range((unsigned)buf, (unsigned)buf_len);
 
@@ -664,8 +656,6 @@ static char *ata_id_strcpy(u16 *target, u16 *src, int len)
 /*
  * SCSI INQUIRY command operation.
  */
-static int ata_scsiop_inquiry(ccb *pccb)
-{
 	static const u8 hdr[] = {
 		0,
 		0,
@@ -673,6 +663,9 @@ static int ata_scsiop_inquiry(ccb *pccb)
 		2,
 		95 - 4,
 	};
+
+static int ata_scsiop_inquiry(ccb *pccb)
+{
 	u8 fis[20];
 	ALLOC_CACHE_ALIGN_BUFFER(u16, tmpid, ATA_ID_WORDS);
 	struct ahci_probe_ent *probe_ent = ahci_targets[pccb->target].probe_ent;
@@ -696,6 +689,7 @@ static int ata_scsiop_inquiry(ccb *pccb)
 	fis[2] = ATA_CMD_ID_ATA; /* Command byte. */
 
 	/* Read id from sata */
+
 	if (ahci_device_data_io(probe_ent, port, (u8 *) &fis, sizeof(fis),
 				(u8 *)tmpid, ATA_ID_WORDS * 2, 0)) {
 		debug("scsi_ahci: SCSI inquiry command failure.\n");
@@ -933,40 +927,37 @@ int scsi_exec(ccb *pccb)
 }
 
 
-void scsi_low_level_init(int busdevfunc)
-{
-	int i;
-	u32 linkmap;
-	struct ahci_probe_ent *probe_ent;
+void scsi_low_level_init(int busdevfunc) {
+		int i;
+		u32 linkmap;
+		struct ahci_probe_ent *probe_ent;
 
-#ifndef CONFIG_SCSI_AHCI_PLAT
-	if (ahci_init_one(busdevfunc) != 0)
-		return;
-#else
-	ahci_max_devs = 1;
-#endif
-	probe_ent = ahci_ent[ahci_max_devs - 1];
-	if (probe_ent == NULL)
-		return;
-	linkmap = probe_ent->link_port_map;
+		if(busdevfunc != -1 ) {
+				if(ahci_init_one(busdevfunc) != 0)
+						return;
+		} else
+				ahci_max_devs = 1;
+		probe_ent = ahci_ent[ahci_max_devs - 1];
+		if(probe_ent == NULL)
+				return;
+		linkmap = probe_ent->link_port_map;
 
-	for (i = 0; i < CONFIG_SYS_SCSI_MAX_SCSI_ID; i++) {
-		if (((linkmap >> i) & 0x01)) {
-			if (ahci_port_start(probe_ent, (u8) i)) {
-				printf("Can not start port %d\n", i);
-				continue;
-			}
+		for(i = 0; i < CONFIG_SYS_SCSI_MAX_SCSI_ID; i++) {
+				if(((linkmap >> i) & 0x01)) {
+						if(ahci_port_start(probe_ent, (u8) i)) {
+								printf("Can not start port %d\n", i);
+								continue;
+						}
 #ifdef CONFIG_AHCI_SETFEATURES_XFER
-			ahci_set_feature(probe_ent, (u8) i);
+						ahci_set_feature(probe_ent, (u8) i);
 #endif
+				}
 		}
-	}
 }
 
-#ifdef CONFIG_SCSI_AHCI_PLAT
 int ahci_init(u32 base)
 {
-	int i, rc = 0, dev;
+	int rc, dev, i, fp;
 	u32 linkmap;
 
 	if (ahci_max_devs >= CONFIG_SCSI_MAX_CONTROLLERS)
@@ -989,7 +980,7 @@ int ahci_init(u32 base)
 	ahci_ent[dev]->udma_mask = 0x7f;	/*Fixme,assume to support UDMA6 */
 
 	ahci_ent[dev]->mmio_base = base;
-
+	ahci_ent[dev]->dev = -1;      /* not PCI-e controller */
 	/* initialize adapter */
 #ifdef  CONFIG_SCSI_6820
 	/* Enabling regret bit */
@@ -1002,6 +993,22 @@ int ahci_init(u32 base)
 		goto err_out;
 
 	ahci_print_info(ahci_ent[dev]);
+
+	/* setup scsi targets */
+	for (i = 0; i < CONFIG_SYS_SCSI_MAX_SCSI_ID; i++)
+		if (ahci_targets[i].probe_ent == NULL)
+			break;
+	if (i >= CONFIG_SYS_SCSI_MAX_SCSI_ID) {
+		rc = -1;
+		goto err_out;
+	}
+	fp = i;
+	for (; i < CONFIG_SYS_SCSI_MAX_SCSI_ID; i++) {
+		ahci_targets[i].probe_ent = ahci_ent[dev];
+		ahci_targets[i].first_port = fp;
+		if (i - fp + 1 == ahci_ent[dev]->n_ports)
+			break;
+	}
 
 	linkmap = ahci_ent[dev]->link_port_map;
 
@@ -1019,7 +1026,6 @@ int ahci_init(u32 base)
 err_out:
 	return rc;
 }
-#endif
 
 /*
  * In the general case of generic rotating media it makes sense to have a

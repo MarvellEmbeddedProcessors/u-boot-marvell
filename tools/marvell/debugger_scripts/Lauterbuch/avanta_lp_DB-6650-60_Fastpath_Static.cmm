@@ -17,7 +17,7 @@ SYStem.MultiCore MEMORYACCESSPORT 0
 SYStem.MultiCore DEBUGACCESSPORT  1
 ; SYStem.MultiCore JTAGACCESSPORT 2
 
-SYStem.MultiCore ETMBASE 0xc2323000
+SYStem.MultiCore ETMBASE 0xc231c000
 SYStem.MultiCore ETBBASE 0xc2324000
 etm.cycleaccurate on
 trace.clock 25.0Mhz

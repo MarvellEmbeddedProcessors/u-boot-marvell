@@ -82,7 +82,7 @@ static MV_DRAM_MC_INIT ddr3_a38x_800[] =
     {0x1404,    0x36301820, 0xffffffff},
     {0x1408,    0x5415BAAB, 0xffffffff},
     {0x140C,    0x38411DEF, 0xffffffff},
-    {0x1410,    0x18300000, 0xffffffff},
+    {0x1410,    0x18330000, 0xffffffff},
     {0x1414,    0x00000700, 0xffffffff},
     {0x1424,    0x0060f3ff, 0xffffffff},
     {0x1428,    0x0011A940, 0xffffffff},
@@ -120,7 +120,7 @@ static MV_DRAM_MC_INIT ddr3_a38x_667[] =
 	{0x1404,    0x36301820, 0xffffffff}, // Dunit Control Low Register - kw28 bit12 low (disable CLK1)
 	{0x1408,    0x43149997, 0xffffffff}, // DDR SDRAM Timing (Low) Register
 	{0x140C,    0x38411bc7, 0xffffffff}, //  DDR SDRAM Timing (High) Register
-	{0x1410,    0x14300000, 0xffffffff}, //  DDR SDRAM Address Control Register
+	{0x1410,    0x14330000, 0xffffffff}, //  DDR SDRAM Address Control Register
 	{0x1414,    0x00000700, 0xffffffff}, //  DDR SDRAM Open Pages Control Register
 	//{0x1418,    0x00000e00, 0xffffffff}, //  DDR SDRAM Operation Register
 	//{0x141C,    0x00000672, 0xffffffff}, //  DDR SDRAM Mode Register
@@ -164,7 +164,7 @@ static MV_DRAM_MC_INIT ddr3_a38x_533[] =
 	{0x1404,    0x36301820, 0xffffffff}, // Dunit Control Low Register - kw28 bit12 low (disable CLK1)
 	{0x1408,    0x33137772, 0xffffffff}, // DDR SDRAM Timing (Low) Register
 	{0x140C,    0x3841199F, 0xffffffff}, //  DDR SDRAM Timing (High) Register
-	{0x1410,    0x10300000, 0xffffffff}, //  DDR SDRAM Address Control Register
+	{0x1410,    0x10330000, 0xffffffff}, //  DDR SDRAM Address Control Register
 	{0x1414,    0x00000700, 0xffffffff}, //  DDR SDRAM Open Pages Control Register
 	{0x1424,    0x0060F3FF, 0xffffffff}, //  Dunit Control High Register ( 2 :1 - bits 15:12 = 0xD )
 	{0x1428,    0x000D6720, 0xffffffff}, //  Dunit Control High Register

@@ -147,6 +147,11 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("0x0 = No ECC      \n");
 		mvOsPrintf("0x1 = ECC enabled  \n ");
 		break;
+	case MV_SATR_DDR_ECC_PUP_SEL:
+		mvOsPrintf("Determines the DDR ECC PUP selection:\n");
+		mvOsPrintf("0x0 = PUP 3 \n");
+		mvOsPrintf("0x1 = PUP 4 \n ");
+		break;
 	case MV_SATR_BOOT_DEVICE:
 		mvOsPrintf("Determines the Boot source device (BootROM is Enabled if not stated the opposite):\n");
 		for (i = 0; i < BOOT_SRC_TABLE_SIZE; i++) {
@@ -232,14 +237,13 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("DDR%d module mounted.\n", (tmp + 3));
 		break;
 	case MV_SATR_DDR_BUS_WIDTH:
-		mvOsPrintf("Select DDR BUS width %d bit :\n", ((tmp+1) * 16) );
+		mvOsPrintf("Select DDR BUS width %d bit\n", ((tmp+1) * 16) );
 		break;
 	case MV_SATR_DDR_ECC_ENABLE:
-		mvOsPrintf("DDR ECC: ");
-		if (tmp)
-			mvOsPrintf("0x0 = No ECC      \n");
-		else
-			mvOsPrintf("0x1 = ECC enabled  \n ");
+		mvOsPrintf("DDR ECC: \n0x%x = %s\n", tmp, (tmp == 1) ? "ECC enabled" : "No ECC");
+		break;
+	case MV_SATR_DDR_ECC_PUP_SEL:
+		mvOsPrintf("DDR ECC PUP select:\n0x%x = PUP %s\n", tmp, (tmp == 1) ? "4" : "3");
 		break;
 	case MV_SATR_BOOT_DEVICE:
 		if (tmp < BOOT_SRC_TABLE_SIZE)
@@ -356,32 +360,34 @@ usage:
 U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"Sample At Reset sub-system\n",
 
-     "list coreclock	- prints the S@R modes list\n"
-"SatR list freq         - prints the S@R modes list\n"
-"SatR list cpusnum      - prints the S@R modes list\n"
-"SatR list sscg         - prints the S@R modes list\n"
-"SatR list bootsrc	- prints the S@R modes list\n"
-"SatR list ddr4select   - prints the S@R modes list\n"
-"SatR list ddrbuswidth  - prints the S@R modes list\n"
-"SatR list ddreccenable - prints the S@R modes list\n"
-"SatR list usb3port0    - prints the S@R modes list\n"
-"SatR list usb3port1    - prints the S@R modes list\n"
-"SatR list rdserdes4    - prints the S@R modes list\n\n"
+     "list coreclock	   - prints the S@R modes list\n"
+"SatR list freq            - prints the S@R modes list\n"
+"SatR list cpusnum         - prints the S@R modes list\n"
+"SatR list sscg            - prints the S@R modes list\n"
+"SatR list bootsrc         - prints the S@R modes list\n"
+"SatR list ddr4select      - prints the S@R modes list\n"
+"SatR list ddrbuswidth     - prints the S@R modes list\n"
+"SatR list ddreccenable    - prints the S@R modes list\n"
+"SatR list ddreccpupselect - prints the S@R modes list\n"
+"SatR list usb3port0       - prints the S@R modes list\n"
+"SatR list usb3port1       - prints the S@R modes list\n"
+"SatR list rdserdes4       - prints the S@R modes list\n\n"
 
-"SatR read coreclock	- read and print the core frequency S@R value\n"
-"SatR read freq	        - read and print the CPU DDR frequency S@R value\n"
-"SatR read cpusnum	- read and print the number of CPU cores S@R value\n"
-"SatR read sscg		- read and print the sscg mode from S@R value\n"
-"SatR read bootsrc	- read and print the boot source from S@R value\n"
-"SatR read ddr4select   - read and print the DDR3/4 S@R value\n"
-"SatR read ddrbuswidth  - read and print the DDR 16/32 S@R value\n"
-"SatR read ddreccenable - read and print the DDR ECC enable S@R value\n"
-"SatR read boardid      - read and print the board ID S@R value\n"
-"SatR read ecoversion   - read and print the ECO version S@R value\n"
-"SatR read usb3port0    - read and print the USB3-Port0 mode\n"
-"SatR read usb3port1    - read and print the USB3-Port1 mode\n"
-"SatR read rdserdes4    - read and print the RD-NAS SERDES lane#4 configuration\n"
-"SatR read dump         - read and print all active S@R value\n\n"
+"SatR read coreclock       - read and print the core frequency S@R value\n"
+"SatR read freq	           - read and print the CPU DDR frequency S@R value\n"
+"SatR read cpusnum         - read and print the number of CPU cores S@R value\n"
+"SatR read sscg	           - read and print the sscg mode from S@R value\n"
+"SatR read bootsrc         - read and print the boot source from S@R value\n"
+"SatR read ddr4select      - read and print the DDR3/4 S@R value\n"
+"SatR read ddrbuswidth     - read and print the DDR 16/32 S@R value\n"
+"SatR read ddreccenable    - read and print the DDR ECC enable S@R value\n"
+"SatR read ddreccpupselect - read and print the DDR ECC PUP select S@R value\n"
+"SatR read boardid         - read and print the board ID S@R value\n"
+"SatR read ecoversion      - read and print the ECO version S@R value\n"
+"SatR read usb3port0       - read and print the USB3-Port0 mode\n"
+"SatR read usb3port1       - read and print the USB3-Port1 mode\n"
+"SatR read rdserdes4       - read and print the RD-NAS SERDES lane#4 configuration\n"
+"SatR read dump            - read and print all active S@R value\n\n"
 
 "SatR write coreclock <val> - write the S@R with core frequency value\n"
 "SatR write freq <val>	    - write the S@R with CPU DDR frequency value\n"
@@ -389,6 +395,9 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "SatR write sscg <val>	    - write the S@R with sscg mode value\n"
 "SatR write bootsrc <val>   - write the S@R with Boot source value\n"
 "SatR write boardid  <val>  - write the board ID S@R value (for RD board only)\n"
+"SatR write ddrbuswidth <val>     - write the DDR 16/32 S@R value\n"
+"SatR write ddreccenable <val>    - write the DDR ECC enable S@R value\n"
+"SatR write ddreccpupselect <val> - write the DDR ECC PUP select S@R value\n"
 "SatR write usb3port0 <val> - write the S@R with USB3-Port0 mode\n"
 "SatR write usb3port1 <val> - write the S@R with USB3-Port1 mode\n"
 "SatR write rdserdes4 <val> - write the S@R with RD-NAS SERDES lane#4 configuration\n"

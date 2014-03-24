@@ -1656,6 +1656,14 @@ MV_BOOL mvCtrlDDRECC(MV_VOID)
 	return (reg & (0x1 << REG_SDRAM_CONFIG_ECC_OFFS)) ? MV_TRUE : MV_FALSE;
 }
 
+MV_BOOL mvCtrlDDRECCPUP3(MV_VOID)
+{
+	MV_U32 reg;
+
+	reg = MV_REG_READ(REG_DRAM_PIN_MUXING_ADDR);
+
+	return (reg & DRAM_PIN_MUXING_PUP3_EN) ? MV_TRUE : MV_FALSE;
+}
 
 /*******************************************************************************
 * mvCtrlGetJuncTemp

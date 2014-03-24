@@ -180,6 +180,10 @@ extern "C" {
 #define EvictBlockWinLow ( 0x1f << 10)
 #define EvictBlockWinLow_MASK ( 0x1F << 10)
 
+#define REG_DRAM_PIN_MUXING_ADDR				0x19D4
+#define DRAM_PIN_MUXING_PUP3_EN					(1 << 8)
+
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

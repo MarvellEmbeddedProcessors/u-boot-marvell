@@ -280,9 +280,7 @@ void mvBoardEgigaPhyInit(void)
 	/* Disable external SMI control:
 	 * If NO external RGMII/PHY are connected to CPU MACs */
 	if (!(mvBoardEthComplexConfigGet() & (MV_ETHCOMP_GE_MAC0_2_RGMII0 |
-					MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0 |
 					MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY |
-					MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3 |
 					MV_ETHCOMP_GE_MAC1_2_RGMII1 |
 					MV_ETHCOMP_GE_MAC1_2_RGMII0 |
 					MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)))

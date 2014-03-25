@@ -431,10 +431,18 @@ MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig)
 		mvEthComplexSwPortToGbePhy(0, 0);
 
 	if (c & MV_ETHCOMP_SW_P1_2_GE_PHY_P1)
-		mvEthComplexSwPortToGbePhy(0, 0);
+		mvEthComplexSwPortToGbePhy(1, 1);
+	else
+		/* Set SMI sourse of PHY-1 to CPU (and not Switch)
+		 to access and shutdown the PHY */
+		mvEthComplexGbePhySrcSet(1, 0);
 
 	if (c & MV_ETHCOMP_SW_P2_2_GE_PHY_P2)
-		mvEthComplexSwPortToGbePhy(0, 0);
+		mvEthComplexSwPortToGbePhy(2, 2);
+	else
+		/* Set SMI sourse of PHY-1 to CPU (and not Switch)
+		 to access and shutdown the PHY */
+		mvEthComplexGbePhySrcSet(2, 0);
 
 	if (c & MV_ETHCOMP_SW_P3_2_GE_PHY_P3)
 		mvEthComplexSwPortToGbePhy(3, 3);

@@ -67,8 +67,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_axp.h"
 #elif defined(MV88F6710)
 #include "ddr3_a370.h"
-#elif defined(MV88F66XX)
-#include "ddr3_alp.h"
 #elif defined(MV88F672X)
 #include "ddr3_a375.h"
 #else
@@ -96,6 +94,15 @@ MV_BIN_SERDES_UNIT_INDX boardLaneConfig[MAX_LANE_NUM] = {SERDES_UNIT_UNCONNECTED
 
 /******************   Global parameters ******************************/
 
+/******************   Macros ******************************/
+#define A375_A0_COMMON_PHY_CONFIG(regData) \
+	regData |= POWER_UP_IVREF_MASK;	/* Power UP IVREF = Power Up */		\
+	regData &= ~(REF_CLK_DIS_MASK);	/* Request to disable the PHY digital reference clock */		\
+	regData |= PIN_TX_IDLE_MASK;	/* to keep phyTxP/N output to idle during Phy init */
+
+#define A375_A0_RESET_DFE_SEQUENCE(serdesLaneNum) \
+	MV_REG_WRITE(POWER_REG1_REG(serdesLaneNum),0xE409); /* Reset DFE sequence */ \
+	MV_REG_WRITE(POWER_REG1_REG(serdesLaneNum),0xE008); /* Unreset DFE sequence  */
 
 /****************************  Local function *****************************************/
 MV_U16 mvCtrlModelGet(MV_VOID);
@@ -296,10 +303,9 @@ MV_U32 mvCtrlSerdesMaxLanesGet(MV_VOID){
 *******************************************************************************/
 MV_U8 mvCtrlRevisionGet(MV_VOID)
 {
-             MV_U8 value;
-
-             value = MV_REG_READ(DEV_VERSION_ID_REG);
-             return  ((value & (REVISON_ID_MASK) ) >> REVISON_ID_OFFS);
+	MV_U32 value;
+	value = MV_REG_READ(DEV_VERSION_ID_REG);
+	return  ((value & (REVISON_ID_MASK) ) >> REVISON_ID_OFFS);
 }
 /*******************************************************************************
 * mvGetSerdesLaneCfg
@@ -334,8 +340,7 @@ MV_U8 mvCtrlRevisionGet(MV_VOID)
 *       Register value
 *
 *******************************************************************************/
-#define	ARMADA_375_Z1
-#ifdef ARMADA_375_Z1
+#ifdef CONFIG_ALP_A375_ZX_REV
 #define	SERDES_LAN2_OFFS	2
 #define	SERDES_LAN3_OFFS	3
 #else
@@ -352,15 +357,20 @@ MV_U32 GetLaneSelectorConfig(void)
 	default:
 	case SERDES_UNIT_PEX:	tmp = 0;	break;
 	case SERDES_UNIT_SGMII: tmp = 1;	break;
-#ifndef AVANTA_Z1
 	case SERDES_UNIT_SATA:	tmp = 2;	break;
-#endif
 	}
 	uiReg |= (tmp << 1); /* lane 1  */
 
+	switch (mvGetSerdesLaneCfg(2)) {
+	default:
+	case SERDES_UNIT_PEX:	tmp = 0;	break;
+	case SERDES_UNIT_SGMII: tmp = 1;	break;
+	case SERDES_UNIT_SATA:	tmp = 2;	break;
+	}
+	uiReg |= (tmp << 2); /* lane 2  */
+
 	uiReg |= (((mvGetSerdesLaneCfg(2) == SERDES_UNIT_SGMII) ? 0 : 1)  << SERDES_LAN2_OFFS); /* lane 2  */
 	uiReg |= (((mvGetSerdesLaneCfg(3) == SERDES_UNIT_SGMII) ? 1 : 0)  << SERDES_LAN3_OFFS); /* lane 3  */
-
 
     DEBUG_INIT_FULL_S(">>>>>>> after  GetLaneSelectorConfig, uiReg=0x");
     DEBUG_INIT_FULL_D(uiReg, 8);
@@ -401,6 +411,42 @@ MV_U32 getSerdesSpeedConfig(MV_U32  boardId, MV_BIN_SERDES_UNIT_INDX serdesLaneC
             return 0;
     }
 }
+
+/*******************************************************************************
+* resetPhyAndPipe
+*
+* DESCRIPTION:  This function reset or un-reset the phy and pipe as a result of
+*               device revision ID
+*
+* INPUT:
+*       serdesLaneNum
+*
+* OUTPUT:
+*
+*
+* RETURN:
+*
+*
+*******************************************************************************/
+MV_VOID resetPhyAndPipe(MV_U32	serdesLaneNum, MV_BOOL bReset)
+{
+	MV_U32 uiReg;
+	uiReg = MV_REG_READ(COMMON_PHY_CONFIGURATION1_REG(serdesLaneNum));
+	if(bReset) {
+		uiReg |= PHY_SOFTWARE_RESET_MASK;    /* PHY Software Reset = Reset Mode */
+		uiReg |= PHY_RESET_CORE_MASK;    /* PHY Reset Core = 0x1 */
+		uiReg &= ~(PHY_CORE_RST_MASK);     /* PHY Core RSTn = Reset */
+		uiReg &= ~(PHY_POWER_ON_RESET_MASK);   /* PHY Power On Reset = Reset */
+	} else {
+		uiReg &= ~(PHY_SOFTWARE_RESET_MASK);    /* PHY Software Reset = Normal Mode */
+		uiReg &= ~(PHY_RESET_CORE_MASK);    /* PHY Reset Core = 0x0 */
+		uiReg |= PHY_CORE_RST_MASK;     /* PHY Core RSTn = Normal */
+		uiReg |= PHY_POWER_ON_RESET_MASK;   /* PHY Power On Reset = Normal */
+	}
+	MV_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesLaneNum),uiReg);
+}
+
+
 /*******************************************************************************
 * mvCtrlHighSpeedSerdesPhyConfig
 *
@@ -477,27 +523,30 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	DEBUG_INIT_FULL_C("SERDES 3=",boardLaneConfig[3],2);
 
     /*------------------------------------------*/
-    /* STEP - 1 Power Down PLL, RX, TX all phys */
+    /* STEP - 1.5 Power Down PLL, RX, TX all phys */
     /*------------------------------------------*/
 
     for (serdesLaneNum = 0; serdesLaneNum < maxSerdesLanes; serdesLaneNum++)
     {
       uiReg=MV_REG_READ(COMMON_PHY_CONFIGURATION1_REG(serdesLaneNum));
+	  uiReg &= ~PIN_TX_IDLE_MASK;
       uiReg &= ~(PHY_POWER_UP_PLL_MASK | PHY_POWER_UP_RX_MASK | PHY_POWER_UP_TX_MASK);
       MV_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesLaneNum),uiReg);
     }
 
     mvOsUDelay(10000);
 
-    for (serdesLaneNum = 0; serdesLaneNum < maxSerdesLanes; serdesLaneNum++)
-    {
-      uiReg=MV_REG_READ(COMMON_PHY_CONFIGURATION1_REG(serdesLaneNum));
-      uiReg &= ~(PHY_SOFTWARE_RESET_MASK);    /* PHY Software Reset = Normal Mode */
-      uiReg &= ~(PHY_RESET_CORE_MASK);    /* PHY Reset Core = 0x0 */
-      uiReg |= PHY_CORE_RST_MASK;     /* PHY Core RSTn = Normal */
-      uiReg |= PHY_POWER_ON_RESET_MASK;   /* PHY Power On Reset = Normal */
-      MV_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesLaneNum),uiReg);
-    }
+    /*--------------------------------------------------------*/
+    /* STEP - 2 Reset PHY and PIPE (Zx: Un-reset, Ax: Reset)*/
+    /*--------------------------------------------------------*/
+	for (serdesLaneNum = 0; serdesLaneNum < maxSerdesLanes; serdesLaneNum++)
+	{
+#ifndef CONFIG_ALP_A375_ZX_REV
+			resetPhyAndPipe(serdesLaneNum, MV_TRUE);
+#else
+			resetPhyAndPipe(serdesLaneNum, MV_FALSE);
+#endif
+	}
 
 
     /*--------------------------------*/
@@ -510,38 +559,57 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
     /* STEP - 3 Configuration 1       */
     /*--------------------------------*/
 
-    for (serdesLaneNum = 0; serdesLaneNum < maxSerdesLanes; serdesLaneNum++) {
-        serdesLaneCfg = mvGetSerdesLaneCfg(serdesLaneNum);
-        if(serdesLaneCfg >= SERDES_LAST_UNIT){
-            return MV_ERROR;
-        }
-        uiReg=MV_REG_READ(COMMON_PHY_CONFIGURATION1_REG(serdesLaneNum));
-        switch(serdesLaneCfg){
-            case SERDES_UNIT_USB3:
-                uiReg |= PHY_MODE_MASK;  /* PHY Mode = USB */
-                uiReg |= PIPE_SELECT_MASK ; /* Select USB3_PEX */
-                break;
-            case SERDES_UNIT_PEX:
-                uiReg |= PIPE_SELECT_MASK ; /* Select USB3_PEX */
-                break;
-            case SERDES_UNIT_SGMII:
-            case SERDES_UNIT_SATA:
-                uiReg &= ~(PIPE_SELECT_MASK); /* Select SATA_SGMII */
-                uiReg |= POWER_UP_IVREF_MASK;  /* Power UP IVREF = Power Up */
-                break;
-		case SERDES_UNIT_UNCONNECTED:
-		default:
+	for (serdesLaneNum = 0; serdesLaneNum < maxSerdesLanes; serdesLaneNum++) {
+		serdesLaneCfg = mvGetSerdesLaneCfg(serdesLaneNum);
+		if(serdesLaneCfg >= SERDES_LAST_UNIT){
+			return MV_ERROR;
+		}
+		uiReg = MV_REG_READ(COMMON_PHY_CONFIGURATION1_REG(serdesLaneNum));
+		switch(serdesLaneCfg){
+			case SERDES_UNIT_USB3:
+#ifndef CONFIG_ALP_A375_ZX_REV
+				A375_A0_COMMON_PHY_CONFIG(uiReg);
+#endif
+				uiReg |= PHY_MODE_MASK;	/* PHY Mode = USB */
+				uiReg |= PIPE_SELECT_MASK ;	/* Select USB3_PEX */
+				break;
+			case SERDES_UNIT_PEX:
+				uiReg |= PIPE_SELECT_MASK ;	/* Select USB3_PEX */
+#ifndef CONFIG_ALP_A375_ZX_REV
+					uiReg &= ~(PHY_MODE_MASK);	/* PHY Mode = PEX */
+					A375_A0_COMMON_PHY_CONFIG(uiReg);
+#endif
+				break;
+			case SERDES_UNIT_SGMII:
+			case SERDES_UNIT_SATA:
+#ifndef CONFIG_ALP_A375_ZX_REV
+					A375_A0_COMMON_PHY_CONFIG(uiReg);
+#endif
+				uiReg &= ~(PIPE_SELECT_MASK);	/* Select SATA_SGMII */
+				uiReg |= POWER_UP_IVREF_MASK;  /* Power UP IVREF = Power Up */
+				break;
+			case SERDES_UNIT_UNCONNECTED:
+			default:
 			break;
-        }
+		}
 
-        /* Serdes speed config */
-        tmp = getSerdesSpeedConfig(boardId, serdesLaneCfg);
-        uiReg &= ~(GEN_RX_MASK); /* SERDES RX Speed config */
-        uiReg |= tmp<<GEN_RX_OFFS;
-        uiReg &= ~(GEN_TX_MASK); /* SERDES TX Speed config */
-        uiReg |= tmp<<GEN_TX_OFFS;
-        MV_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesLaneNum),uiReg);
-    }
+		/* Serdes speed config */
+		tmp = getSerdesSpeedConfig(boardId, serdesLaneCfg);
+		uiReg &= ~(GEN_RX_MASK); /* SERDES RX Speed config */
+		uiReg |= tmp<<GEN_RX_OFFS;
+		uiReg &= ~(GEN_TX_MASK); /* SERDES TX Speed config */
+		uiReg |= tmp<<GEN_TX_OFFS;
+		MV_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesLaneNum),uiReg);
+	}
+
+#ifndef CONFIG_ALP_A375_ZX_REV
+	/*------------------------------------------*/
+	/*	STEP - 3.5 Unreset PHY and PIPE(only Ax)*/
+	/*------------------------------------------*/
+		for (serdesLaneNum = 0; serdesLaneNum < maxSerdesLanes; serdesLaneNum++) {
+			resetPhyAndPipe(serdesLaneNum, MV_FALSE);
+		}
+#endif
 
     /*----------------------------------------*/
     /* STEP - 4 COMPHY register configuration */
@@ -555,27 +623,54 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
             case SERDES_UNIT_PEX:
                 MV_REG_WRITE(RESET_AND_CLOCK_CONTROL_REG(serdesLaneNum),0x25); /* Enable soft_reset*/
                 MV_REG_WRITE(POWER_AND_PLL_CONTROL_REG(serdesLaneNum),0xFC60); /* PHY Mode = PEX */
-                MV_REG_WRITE(KVCO_CALOBRATION_CONTROL_REG(serdesLaneNum),0x40); /* use_max_pll_rate=0x0, ext_force_cal_done=0x0 */
+#ifndef CONFIG_ALP_A375_ZX_REV
+					MV_REG_WRITE(MISCELLANEOUS_CONTROL0_REG(serdesLaneNum),0x6017); /* REFCLK SEL =0x0 (100Mhz) */
+					MV_REG_WRITE(INTERFACE_REG1_REG(serdesLaneNum),0x1400); /* PHY_Gen_Max = 5G */
+					MV_REG_WRITE(DIGITAL_LOOPBACK_ENABLE_REG(serdesLaneNum),0x400); /* SEL_Bits = 20-Bit */
+					A375_A0_RESET_DFE_SEQUENCE(serdesLaneNum);
+#else
+					MV_REG_WRITE(KVCO_CALOBRATION_CONTROL_REG(serdesLaneNum),0x40); /* use_max_pll_rate=0x0, ext_force_cal_done=0x0 */
+#endif
                 MV_REG_WRITE(RESET_AND_CLOCK_CONTROL_REG(serdesLaneNum),0x24); /* Release soft_reset */
             break;
             case SERDES_UNIT_USB3:
                 MV_REG_WRITE(RESET_AND_CLOCK_CONTROL_REG(serdesLaneNum),0x21); /* Enable soft_reset*/
-                MV_REG_WRITE(POWER_AND_PLL_CONTROL_REG(serdesLaneNum),0xFCA0); /* PHY Mode = USB3 */
-                MV_REG_WRITE(KVCO_CALOBRATION_CONTROL_REG(serdesLaneNum),0x40); /* use_max_pll_rate=0x0, ext_force_cal_done=0x0 */
+				MV_REG_WRITE(POWER_AND_PLL_CONTROL_REG(serdesLaneNum),0xFCA0); /* PHY Mode = USB3 */
+#ifndef CONFIG_ALP_A375_ZX_REV
+					MV_REG_WRITE(LANE_CONFIGURATION_4_REG(serdesLaneNum),0x13); /* Ref_Clk =100Mhz */
+					MV_REG_WRITE(MISCELLANEOUS_CONTROL0_REG(serdesLaneNum),0x6017); /* REFCLK SEL =0x0 (100Mhz) */
+					MV_REG_WRITE(INTERFACE_REG1_REG(serdesLaneNum),0x1400); /* PHY_Gen_Max = 5G */
+					MV_REG_WRITE(DIGITAL_LOOPBACK_ENABLE_REG(serdesLaneNum),0x400); /* SEL_Bits = 20-Bit */
+					A375_A0_RESET_DFE_SEQUENCE(serdesLaneNum);
+#else
+					MV_REG_WRITE(KVCO_CALOBRATION_CONTROL_REG(serdesLaneNum),0x40); /* use_max_pll_rate=0x0, ext_force_cal_done=0x0 */
+					MV_REG_WRITE(GENERETION_2_SETTINGS_1_REG(serdesLaneNum),0x149); /* Mulitiple frequency setup */
+#endif
                 MV_REG_WRITE(RESET_AND_CLOCK_CONTROL_REG(serdesLaneNum),0x20); /* Release soft_reset */
-		MV_REG_WRITE(GENERETION_2_SETTINGS_1_REG(serdesLaneNum),0x149); /* Mulitiple frequency setup */
                 break;
             case SERDES_UNIT_SATA:
-                MV_REG_WRITE(RESERVED_46_REG(serdesLaneNum),0xFF00);
                 MV_REG_WRITE(POWER_AND_PLL_CONTROL_REG(serdesLaneNum),0xFC01); /* PHY Mode = SATA */
-                MV_REG_WRITE(MISCELLANEOUS_CONTROL0_REG(serdesLaneNum),0x6417); /* REFCLK SEL =0x0 (the ref_clk comes from the group 1 pins) */
+				MV_REG_WRITE(MISCELLANEOUS_CONTROL0_REG(serdesLaneNum),0x6417); /* REFCLK SEL =0x1 (25Mhz) */
+#ifndef CONFIG_ALP_A375_ZX_REV
+					MV_REG_WRITE(INTERFACE_REG1_REG(serdesLaneNum),0x1400); /* PHY_Gen_Max = 5G */
+					MV_REG_WRITE(DIGITAL_LOOPBACK_ENABLE_REG(serdesLaneNum),0x400); /* SEL_Bits = 20-Bit */
+					MV_REG_WRITE(DIGITAL_RESERVED0_REG(serdesLaneNum),0xE); /* Reg_sq_de_glitch_en */
+					A375_A0_RESET_DFE_SEQUENCE(serdesLaneNum);
+#else
+					MV_REG_WRITE(RESERVED_46_REG(serdesLaneNum),0xFF00);
+#endif
                 break;
             case SERDES_UNIT_SGMII:
-                MV_REG_WRITE(RESERVED_46_REG(serdesLaneNum),0xFF00); /* Enable soft_reset*/
                 MV_REG_WRITE(POWER_AND_PLL_CONTROL_REG(serdesLaneNum),0xFC81); /* PHY Mode = SGMII */ /*moti need to change offset*/
-                MV_REG_WRITE(PHY_ISOLATION_MODE_CONTROL_REG(serdesLaneNum),0x166); /* Set PHY_GEN_TX/RX to 1.25Gbps */
                 MV_REG_WRITE(DIGITAL_LOOPBACK_ENABLE_REG(serdesLaneNum),0x0); /* SEL_BITS = 0x0 (10-bits mode) */
-                MV_REG_WRITE(MISCELLANEOUS_CONTROL0_REG(serdesLaneNum),0x6417); /* REFCLK SEL =0x1 (the ref_clk comes from the group 1 pins) */
+				MV_REG_WRITE(MISCELLANEOUS_CONTROL0_REG(serdesLaneNum),0x6417); /* REFCLK SEL =0x1 (25Mhz) */
+#ifndef CONFIG_ALP_A375_ZX_REV
+					MV_REG_WRITE(DIGITAL_RESERVED0_REG(serdesLaneNum),0xE); /* Reg_sq_de_glitch_en */
+					A375_A0_RESET_DFE_SEQUENCE(serdesLaneNum);
+#else
+                MV_REG_WRITE(RESERVED_46_REG(serdesLaneNum),0xFF00); /* Enable soft_reset*/
+#endif
+                MV_REG_WRITE(PHY_ISOLATION_MODE_CONTROL_REG(serdesLaneNum),0x166); /* Set PHY_GEN_TX/RX to 1.25Gbps */
                 break;
 	    case SERDES_UNIT_UNCONNECTED:
 	    default:
@@ -593,6 +688,32 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
       uiReg |= (PHY_POWER_UP_PLL_MASK | PHY_POWER_UP_RX_MASK | PHY_POWER_UP_TX_MASK);
       MV_REG_WRITE(COMMON_PHY_CONFIGURATION1_REG(serdesLaneNum),uiReg);
     }
+
+#ifndef CONFIG_ALP_A375_ZX_REV
+	mvOsUDelay(5000);
+
+    /*--------------------------------------------------------------------*/
+    /* STEP - 4.6 (Only SGMII/SATA): WAIT for PHY Power up sequence to finish */
+    /*--------------------------------------------------------------------*/
+	for (serdesLaneNum = 0; serdesLaneNum < maxSerdesLanes; serdesLaneNum++) {
+        serdesLaneCfg = mvGetSerdesLaneCfg(serdesLaneNum);
+        if(serdesLaneCfg >= SERDES_LAST_UNIT){
+            return MV_ERROR;
+        }
+        switch(serdesLaneCfg){
+            case SERDES_UNIT_SATA:
+			case SERDES_UNIT_SGMII:
+                uiReg = MV_REG_READ(COMMON_PHY_STATUS1_REG(serdesLaneNum));
+				if ((uiReg & 0x6) != 0x6) {
+					DEBUG_INIT_S("Phy Power up did't finished\n");
+					return MV_ERROR;
+				}
+	    case SERDES_UNIT_UNCONNECTED:
+	    default:
+			break;
+        }
+    }
+#endif
 
     /*----------------------------------------*/
     /* STEP - 5 PEX Only                      */
@@ -624,7 +745,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	mvOsDelay(150);
 
-    for (pexIf = 0; pexIf < 2; pexIf++)  // only pexIf 0 on avanta_lp
+    for (pexIf = 0; pexIf < 2; pexIf++)  // only pexIf 0 on
     {
 		if (boardLaneConfig[pexIf] != SERDES_UNIT_PEX)
 			continue;

@@ -97,6 +97,9 @@ endif
 
 ifeq "$(CONFIG_ARMADA_375)"  "y"
   CFLAGS += -DCONFIG_ARMADA_375
+  ifeq "$(CONFIG_ALP_A375_ZX_REV)" "y"
+    CFLAGS += -DCONFIG_ALP_A375_ZX_REV
+  endif
 endif
 ifeq "$(CONFIG_AVANTA_LP)"  "y"
   CFLAGS += -DCONFIG_AVANTA_LP

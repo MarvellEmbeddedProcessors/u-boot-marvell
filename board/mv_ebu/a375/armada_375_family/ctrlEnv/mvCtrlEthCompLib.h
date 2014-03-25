@@ -69,8 +69,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvSysEthConfig.h"
 
 /*******************************************************************************
- * Ports Group Control and Status
- */
+ * Ports Group Control and Status */
 #define MV_ETHCOMP_GOP_CTRL_STAT_REG			MV_ETH_COMPLEX_BASE
 
 #define     ETHCGCS_PORT_DP_CLK_SRC_OFFSET(port)	((port == 0) ? 13 : 14)
@@ -80,8 +79,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define     ETHCGCS_GOP_ENABLE_DEV_MASK			(0x1 << ETHCGCS_GOP_ENABLE_DEV_OFFSET)
 
 /*******************************************************************************
- * Ethernet Complex Control 0
- */
+* Ports Group Control and Status */
+#define MV_ETHCOMP_GBE_PHY_CLOCK_CTRL_REG		(MV_ETH_COMPLEX_BASE + 0x1C)
+
+#define     ETHCC_GBE_PHY_P4_SW_TO_MPP_EDGE_OFFSET	23
+#define     ETHCC_GBE_PHY_P4_SW_TO_MPP_EDGE_MASK        (0x1 << ETHCC_GBE_PHY_P4_SW_TO_MPP_EDGE_OFFSET)
+
+#define     ETHCC_GBE_PHY_GBE_P0_TO_MPP_EDGE_OFFSET	28
+#define     ETHCC_GBE_PHY_GBE_P0_TO_MPP_EDGE_MASK	(0x1 << ETHCC_GBE_PHY_GBE_P0_TO_MPP_EDGE_OFFSET)
+
+/*******************************************************************************
+ * Ethernet Complex Control 0 */
 #define MV_ETHCOMP_CTRL_REG				(MV_ETH_COMPLEX_BASE + 0x10)
 
 #define     ETHCC_SW_PORT_SRC_OFFSET(port)		(port == 0 ? 4 : (port == 3 ? 5 : \
@@ -98,14 +106,21 @@ enum mvSwPortSrc {
 #define     ETHCC_GBE_MAC_SRC_OFFSET(port)		(port == 0 ? 10 : (port == 1 ? 12 : 10))
 #define     ETHCC_GBE_MAC_SRC_MASK(port)		(0x3 << ETHCC_GBE_MAC_SRC_OFFSET(port))
 
-#define     ETHCC_GBE_PHY_PORT_SMI_SRC_OFFSET(phy)	((phy >= 0 && phy <= 3) ? 14 + phy : 14)
-#define     ETHCC_GBE_PHY_PORT_SMI_SRC_MASK(phy)	(0x1 << ETHCC_GBE_PHY_PORT_SMI_SRC_OFFSET(phy))
+#define     ETHCC_GBE_PHY_PORT_SMI_SRC_OFFSET(port)	(port == 0 ? 20 : (port == 1 ? 15 : \
+							(port == 2 ? 16 : (port == 3 ? 21 : 4))))
+#define     ETHCC_GBE_PHY_PORT_SMI_SRC_MASK(port)	(0x1 << ETHCC_GBE_PHY_PORT_SMI_SRC_OFFSET(port))
+
+#define     ETHCC_GBE_PHY_PORT_SRC_OFFSET(phy)		((phy >= 0 && phy <= 3) ? 14 + phy : 14)
+#define     ETHCC_GBE_PHY_PORT_SRC_MASK(phy)		(0x1 << ETHCC_GBE_PHY_PORT_SRC_OFFSET(phy))
 
 #define     ETHCC_GE_MAC0_SW_PORT_6_SPEED_OFFSET	18
 #define     ETHCC_GE_MAC0_SW_PORT_6_SPEED_MASK		(0x1 << ETHCC_GE_MAC0_SW_PORT_6_SPEED_OFFSET)
 
 #define     ETHCC_LOOPBACK_PORT_SPEED_OFFSET		19
 #define     ETHCC_LOOPBACK_PORT_SPEED_MASK		(0x1 << ETHCC_LOOPBACK_PORT_SPEED_OFFSET)
+
+#define     ETHCC_SW_OUT_CLOCK_IN_SRC_OFFSET		26
+#define     ETHCC_SW_OUT_CLOCK_IN_SRC_MASK		(0x1 << ETHCC_SW_OUT_CLOCK_IN_SRC_OFFSET)
 
 /*******************************************************************************
  * Switch Configuration and Reset Control
@@ -154,13 +169,17 @@ enum mvSwPortSrc {
 #define     ETHQPCS_DPLL_RESET_MASK			(0x1 << ETHQPCS_DPLL_RESET_OFFSET)
 
 /*******************************************************************************
- * Common PHYs Selectors
+ * GPON PHY Contol 1
  */
-#define MV_COMMON_PHY_SELECTORS_REG			MV_COMMON_PHY_REGS_OFFSET
+#define MV_GPON_PHY_CTRL1_REG				(MV_IP_CONFIG_REGS_OFFSET + 0xF8)
 
-#define     ETHCPS_COMPHY_SELECTOR_OFFSET(phy)		(phy)
-#define     ETHCPS_COMPHY_SELECTOR_MASK(phy)		(0x1 << ETHCPS_COMPHY_SELECTOR_OFFSET(phy))
+#define GPON_PHY_CTRL1_OFFSET				0
+#define GPON_PHY_CTRL1_MASK				(0x1 << GPON_PHY_CTRL1_OFFSET)
 
+#ifdef CONFIG_MV_ETH_PP2
 MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig);
+#else
+MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig) { /* empty */ }
+#endif
 
 #endif /* __INCmvCtrlEthCompLibh */

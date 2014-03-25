@@ -71,15 +71,66 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pp2/gmac/mvEthGmacRegs.h"
 #include "pp2/gbe/mvPp2Gbe.h"
 
-static void mvEthComplexGbePhySrcSet(MV_U32 phy, MV_U32 src)
+static void mvEthComplexGponPhySrcSet(MV_U32 src)
 {
 	MV_U32 reg;
+
+	reg = MV_REG_READ(MV_GPON_PHY_CTRL1_REG);
+	reg &= ~GPON_PHY_CTRL1_MASK;
+
+	src <<= GPON_PHY_CTRL1_OFFSET;
+	src &= GPON_PHY_CTRL1_MASK;
+
+	reg |= src;
+
+	MV_REG_WRITE(MV_GPON_PHY_CTRL1_REG, reg);
+}
+static void mvEthComplexGphyPortSmiSrcSet(MV_U32 phy, MV_U32 src)
+{
+	MV_U32 reg;
+	/* In A0 added Phy Smi source configuration for ports 0 and 3.
+	** In Zx, only Phy Smi source for 1,2 are configurable, but no
+	** need to modify the default values. */
+	if (mvCtrlRevGet() <= MV_88F6720_Z3_ID)
+		return;
 
 	reg = MV_REG_READ(MV_ETHCOMP_CTRL_REG);
 	reg &= ~ETHCC_GBE_PHY_PORT_SMI_SRC_MASK(phy);
 
 	src <<= ETHCC_GBE_PHY_PORT_SMI_SRC_OFFSET(phy);
 	src &= ETHCC_GBE_PHY_PORT_SMI_SRC_MASK(phy);
+
+	reg |= src;
+
+	MV_REG_WRITE(MV_ETHCOMP_CTRL_REG, reg);
+}
+
+static void mvEthComplexGbeClockControlSet(void)
+{
+	MV_U32 reg;
+	/* Thus fields are not exists in ZX revision */
+	if (mvCtrlRevGet() <= MV_88F6720_Z3_ID)
+		return;
+
+	/* Change default value of Bit 23, and 28 to NegEdge(0) */
+	reg = MV_REG_READ(MV_ETHCOMP_GBE_PHY_CLOCK_CTRL_REG);
+	/* Field - Switch Port4 To MPP Data Sample */
+	reg &= ~(ETHCC_GBE_PHY_P4_SW_TO_MPP_EDGE_MASK);
+	/* Field - GbE Port 0 To MPP Data Sample */
+	reg &= ~(ETHCC_GBE_PHY_GBE_P0_TO_MPP_EDGE_MASK);
+
+	MV_REG_WRITE(MV_ETHCOMP_GBE_PHY_CLOCK_CTRL_REG, reg);
+}
+
+static void mvEthComplexGbePhySrcSet(MV_U32 phy, MV_U32 src)
+{
+	MV_U32 reg;
+
+	reg = MV_REG_READ(MV_ETHCOMP_CTRL_REG);
+	reg &= ~ETHCC_GBE_PHY_PORT_SRC_MASK(phy);
+
+	src <<= ETHCC_GBE_PHY_PORT_SRC_OFFSET(phy);
+	src &= ETHCC_GBE_PHY_PORT_SRC_MASK(phy);
 
 	reg |= src;
 
@@ -166,11 +217,11 @@ static void mvEthComplexGbePortSrcSet(MV_U32 port, MV_U32 src)
 /*
  * Set speed Gbe Port 0 when it is connected to switch port 6
  */
-static void mvEthComplexGbeToSwitchSpeedSet(MV_ETH_PORT_SPEED speed)
+static void mvEthComplexGbeToSwitchSpeedSet(MV_BOARD_MAC_SPEED speed)
 {
 	MV_U32 reg;
 
-	if (speed != MV_ETH_SPEED_1000 && speed != MV_ETH_SPEED_2000) {
+	if (speed != BOARD_MAC_SPEED_1000M && speed != BOARD_MAC_SPEED_2000M) {
 		mvOsPrintf("%s: wrong speed (%d)\n", __func__, speed);
 		return;
 	}
@@ -178,14 +229,12 @@ static void mvEthComplexGbeToSwitchSpeedSet(MV_ETH_PORT_SPEED speed)
 	reg = MV_REG_READ(MV_ETHCOMP_CTRL_REG);
 	reg &= ~ETHCC_GE_MAC0_SW_PORT_6_SPEED_MASK;
 
-	if (speed == MV_ETH_SPEED_2000)
+	if (speed == BOARD_MAC_SPEED_2000M)
 		reg |= (0x1 << ETHCC_GE_MAC0_SW_PORT_6_SPEED_OFFSET);
-	else
-		reg |= (0x0 << ETHCC_GE_MAC0_SW_PORT_6_SPEED_OFFSET);
 
 	MV_REG_WRITE(MV_ETHCOMP_CTRL_REG, reg);
 
-	if (speed == MV_ETH_SPEED_2000) {
+	if (speed == BOARD_MAC_SPEED_2000M) {
 		reg = MV_REG_READ(MV_ETHCOMP_SW_CONFIG_RESET_CTRL);
 		reg &= ~ETHSCRC_PORT_2G_SELECT_MASK;
 		reg |= (0x1 << ETHSCRC_PORT_2G_SELECT_OFFSET);
@@ -232,21 +281,6 @@ static void mvEthComplexSwResetSet(MV_BOOL setReset)
 		reg |= (0x1 << ETHSCRC_SWITCH_RESET_OFFSET);
 
 	MV_REG_WRITE(MV_ETHCOMP_SW_CONFIG_RESET_CTRL, reg);
-}
-
-static void mvEthComplexComPhySelectorSet(MV_U32 phy, MV_U32 val)
-{
-	MV_U32 reg;
-
-	reg = MV_REG_READ(MV_COMMON_PHY_SELECTORS_REG);
-	reg &= ~ETHCPS_COMPHY_SELECTOR_MASK(phy);
-
-	val <<= ETHCPS_COMPHY_SELECTOR_OFFSET(phy);
-	val &= ETHCPS_COMPHY_SELECTOR_MASK(phy);
-
-	reg |= val;
-
-	MV_REG_WRITE(MV_COMMON_PHY_SELECTORS_REG, reg);
 }
 
 static void mvEthComplexGbePhyPowerSet(MV_U32 phy, MV_BOOL setPowerUp)
@@ -322,7 +356,7 @@ static void mvEthComplexGbePhyResetSet(MV_BOOL setReset)
 }
 
 static void mvEthComplexMacToSwPort(MV_U32 port, MV_U32 swPort,
-				    MV_ETH_PORT_SPEED speed)
+				   MV_BOARD_MAC_SPEED speed)
 {
 	MV_U32 src;
 
@@ -333,28 +367,35 @@ static void mvEthComplexMacToSwPort(MV_U32 port, MV_U32 swPort,
 	mvEthComplexSwPortSrcSet(swPort, src);
 	mvEthComplexGbePortSrcSet(port, 0x1);
 
-	if (port == 0 && swPort == 6)
+	/* GE MAC #0 - Switch Port6 2G Speed */
+	if (port == 0 && swPort == 6 && speed == BOARD_MAC_SPEED_2000M) {
 		mvEthComplexGbeToSwitchSpeedSet(speed);
-	else
+		mvEthComplexPortDpClkSrcSet(port, 0x0);
+	} else
 		mvEthComplexPortDpClkSrcSet(port, 0x1);
-
-	mvEthComplexComPhySelectorSet(2, 0x1);
 }
 
 static void mvEthComplexSwPortToRgmii(MV_U32 swPort, MV_U32 port)
 {
-	/* Not implemented */
+	MV_U32 src;
+
+	src = mvEthComplexSwPortSrcCalc(swPort, ETHC_SW_PORT_SRC_MPP);
+	mvEthComplexSwPortSrcSet(swPort, src);
 }
 
 static void mvEthComplexXponMacToPonSerdes(void)
 {
-	/* Not implemented */
+	/* 0x0 = XPON Mac is source for GponPhy */
+	mvEthComplexGponPhySrcSet(0);
 }
 
 static void mvEthComplexMacToGbePhy(MV_U32 port, MV_U32 phy, MV_U32 phyAddr)
 {
 	mvEthComplexGbePhySrcSet(phy, 0x0);
 	mvEthComplexGbePortSrcSet(port, 0x2);
+
+	/* Set SMI source for PHY: 0x0 = MAC is smi master, 0x1 = Switch is smi master */
+	mvEthComplexGphyPortSmiSrcSet(phy, 0x0);
 
 	if (port == 0)
 		mvEthComplexSwPortSrcSet(6, 0x0);
@@ -363,20 +404,21 @@ static void mvEthComplexMacToGbePhy(MV_U32 port, MV_U32 phy, MV_U32 phyAddr)
 	mvEthComplexGbePhyPdConfigEdetASet(phy, 0x0);
 	mvEthComplexGbePhyPsEnaXcSSet(phy, 0x0);
 	mvEthComplexGbePhyResetSet(MV_FALSE);
-	mvEthComplexComPhySelectorSet(2, 0x1);
 }
 
-static void mvEthComplexMacToComPhy(MV_U32 port, MV_U32 comPhy)
+static void mvEthComplexMacToComPhy(MV_U32 port, MV_U32 comPhy, MV_U32 ethComplexOptions)
 {
-	/* Not implemented */
+	/* 0x1 for 1Gbps, 0x0 for 2.5Gbps */
+	mvEthComplexPortDpClkSrcSet(port, 0x0);
 }
 
 static void mvEthComplexMac1ToPonSerdes(MV_U32 port)
 {
-	/* Not implemented */
+	/* 0x1 = Mac#1 is source for GponPhy */
+	mvEthComplexGponPhySrcSet(0x1);
 }
 
-static void mvEthComplexMacToRgmii(MV_U32 port, MV_U32 phy)
+static void mvEthComplexMacToRgmii(MV_U32 port)
 {
 	mvEthComplexGbePortSrcSet(port, 0x0);
 	mvEthComplexPortDpClkSrcSet(port, 0x1);
@@ -385,8 +427,13 @@ static void mvEthComplexMacToRgmii(MV_U32 port, MV_U32 phy)
 
 static void mvEthComplexSwPortToGbePhy(MV_U32 swPort, MV_U32 phy)
 {
-	mvEthComplexSwPortSrcSet(swPort, 0x1);
-	mvEthComplexGbePhySrcSet(phy, 0x1);
+	/* For Phy 1 and 2, Sw port source and phy source are hardcoded */
+	if (phy == 0 || phy == 3) {
+		mvEthComplexSwPortSrcSet(swPort, 0x1);
+		mvEthComplexGbePhySrcSet(phy, 0x1);
+	}
+	/* Set SMI source for PHY: 0x0 = MAC is smi master, 0x1 = Switch is smi master */
+	mvEthComplexGphyPortSmiSrcSet(phy, 0x1);
 	mvEthComplexGbePhyResetSet(MV_FALSE);
 	mvEthComplexGbePhyPowerCycle(phy);
 }
@@ -397,32 +444,34 @@ MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig)
 
 	mvEthComplexGopDevEnable();
 
+	mvEthComplexGbeClockControlSet();
+
 	if (c & MV_ETHCOMP_GE_MAC0_2_SW_P6)
-		mvEthComplexMacToSwPort(0, 6, MV_ETH_SPEED_1000);
+		mvEthComplexMacToSwPort(0, 6, mvBoardMacSpeedGet(0));
 
 	if (c & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)
 		mvEthComplexMacToGbePhy(0, 0, mvBoardPhyAddrGet(0));
 
 	if (c & MV_ETHCOMP_GE_MAC0_2_RGMII0)
-		mvEthComplexMacToRgmii(0, mvBoardPhyAddrGet(0));
+		mvEthComplexMacToRgmii(0);
 
 	if (c & MV_ETHCOMP_GE_MAC0_2_COMPHY_1)
-		mvEthComplexMacToComPhy(0, 1);
+		mvEthComplexMacToComPhy(0, 1, c);
 
 	if (c & MV_ETHCOMP_GE_MAC0_2_COMPHY_2)
-		mvEthComplexMacToComPhy(0, 2);
+		mvEthComplexMacToComPhy(0, 2, c);
 
 	if (c & MV_ETHCOMP_GE_MAC0_2_COMPHY_3)
-		mvEthComplexMacToComPhy(0, 3);
+		mvEthComplexMacToComPhy(0, 3, c);
 
 	if (c & MV_ETHCOMP_GE_MAC1_2_SW_P4)
-		mvEthComplexMacToSwPort(1, 4, MV_ETH_SPEED_1000);
+		mvEthComplexMacToSwPort(1, 4, mvBoardMacSpeedGet(1));
 
 	if (c & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3)
 		mvEthComplexMacToGbePhy(1, 3, mvBoardPhyAddrGet(1));
 
 	if (c & MV_ETHCOMP_GE_MAC1_2_RGMII1)
-		mvEthComplexMacToRgmii(1, mvBoardPhyAddrGet(1));
+		mvEthComplexMacToRgmii(1);
 
 	if (c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)
 		mvEthComplexMac1ToPonSerdes(1);
@@ -435,14 +484,14 @@ MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig)
 	else
 		/* Set SMI sourse of PHY-1 to CPU (and not Switch)
 		 to access and shutdown the PHY */
-		mvEthComplexGbePhySrcSet(1, 0);
+		mvEthComplexGphyPortSmiSrcSet(1, 0);
 
 	if (c & MV_ETHCOMP_SW_P2_2_GE_PHY_P2)
 		mvEthComplexSwPortToGbePhy(2, 2);
 	else
 		/* Set SMI sourse of PHY-1 to CPU (and not Switch)
 		 to access and shutdown the PHY */
-		mvEthComplexGbePhySrcSet(2, 0);
+		mvEthComplexGphyPortSmiSrcSet(2, 0);
 
 	if (c & MV_ETHCOMP_SW_P3_2_GE_PHY_P3)
 		mvEthComplexSwPortToGbePhy(3, 3);

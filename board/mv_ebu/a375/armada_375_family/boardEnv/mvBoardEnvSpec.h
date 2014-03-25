@@ -94,8 +94,8 @@
 #define DB_88F6720_MPP0_7               0x00020020  /* SPI */
 #define DB_88F6720_MPP8_15              0x22000022  /* SPI , I2C */
 #define DB_88F6720_MPP16_23             0x22222222	/* UART, TDM*/
-#define DB_88F6720_MPP24_31             0x33333333  /* SDIO*/
-#define DB_88F6720_MPP32_39             0x00003330  /* NO SMI */
+#define DB_88F6720_MPP24_31             0x33333333  /* SDIO, SPI1*/
+#define DB_88F6720_MPP32_39             0x04403330  /* SPI1, External SMI */
 #define DB_88F6720_MPP40_47             0x22002044  /* UART1, GE0  */
 #define DB_88F6720_MPP48_55             0x22222222  /*GE0*/
 #define DB_88F6720_MPP56_63             0x04444422  /* GE0 , LED_MATRIX, GPIO */

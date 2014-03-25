@@ -75,7 +75,6 @@ MV_STATUS getUsbActive(MV_U32 usbUnitId)
 	MV_U32 family = mvCtrlDevFamilyIdGet(0);
 	int mac_id[2] = {1, 0};
 
-
 	mvOsPrintf("Port (usbActive) : ");
 	if (usbActive >= maxUsbPorts) {
 		mvOsPrintf("\n'usbActive' Error: invalid port number %d, switching to port 0\n", usbActive);
@@ -88,9 +87,9 @@ MV_STATUS getUsbActive(MV_U32 usbUnitId)
 	/* for ALP/A375: if using single usb2 port, use Virtual MAC ID since MAC ID0 (usbActive =0)
 	 is connected to Physical MAC ID1 */
 	if (maxUsbPorts == 1 && usbUnitId == USB_UNIT_ID &&
-			((family == MV_88F66X0 && mvCtrlRevGet() == MV_88F66XX_A0_ID) || family == MV_88F67X0)) {
+	    ((family == MV_88F66X0 && mvCtrlRevGet() == MV_88F66XX_A0_ID) || family == MV_88F67X0))
 		usbActive = mac_id[usbActive];
-	}
+
 	return usbActive;
 }
 
@@ -111,9 +110,8 @@ static int mv_xhci_core_init(MV_U32 unitId)
 	MV_U32 family = mvCtrlDevFamilyIdGet(0);
 
 	/* LFPS FREQUENCY WA for alp/a375 Z revisions (Should be fixed for A0) */
-	if (((family == MV_88F67X0) || (family == MV_88F66X0)) &&
-		(rev == MV_88F66X0_Z1_ID || rev == MV_88F66X0_Z2_ID
-			|| rev == MV_88F66X0_Z3_ID || rev == MV_88F6720_Z1_ID)) {
+	if ((family == MV_88F66X0) && (rev == MV_88F66X0_Z1_ID ||
+		rev == MV_88F66X0_Z2_ID || rev == MV_88F66X0_Z3_ID )) {
 		/*
 		 * All defines below are used for a temporary workaround, and therefore
 		 * placed inside the code and not in an include file
@@ -152,7 +150,7 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 	}
 
 	/* USB2 port 0 is sharing MAC with USB3, and requires UTMI Phy selection */
-	if (family == MV_88F66X0 || family == MV_88F67X0)
+	if (family == MV_88F66X0)
 		setUtmiPhySelector(USB3_UNIT_ID);
 
 	mv_xhci_core_init(index);
@@ -188,7 +186,7 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 	MV_U32 family = mvCtrlDevFamilyIdGet(0);
 
         /* only USB2 port 0 is sharing MAC with USB3, and requires UTMI Phy selection */
-	if (index == 0 && (family == MV_88F66X0 || family == MV_88F67X0))
+	if (index == 0 && family == MV_88F66X0)
 		setUtmiPhySelector(USB_UNIT_ID);
 
 	*hccr = (struct ehci_hccr *)(INTER_REGS_BASE + MV_USB_REGS_OFFSET(index) + 0x100);
@@ -213,7 +211,6 @@ int ehci_usb_alloc_device(struct usb_device *udev)
 	return 0;
 }
 #endif /* CONFIG_USB_EHCI */
-
 
 /*********************************************************************************/
 /******************** Host Controller stack replacement-layer ********************/

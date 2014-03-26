@@ -256,8 +256,9 @@ disclaimer.
 	{{0xf8000000,		0,		_1M	},		13,	DIS},	/* 22 BOOT_ROM_CS */\
 	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},		 9,	 EN},	/* 23 DEV_BOOCS */   \
 	{{USB3_REGS_PHYS_BASE(0), 0,	USB3_REGS_SIZE	},		14, 	DIS},	/* 24 USB3.0	*/ \
-	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},		11,	DIS},	/* 25 CRYPT_ENG */ \
-	{{PP2_CPU0_PHYS_BASE,	0,	PP2_SIZE	},		12,	 EN},	/* 26 PP2 */    \
+	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},		11,	DIS},	/* 25 CRYPT_ENG0 */ \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* 26 CRYPT_ENG1 */   \
+	{{PP2_CPU0_PHYS_BASE,	0,	PP2_SIZE	},		12,	 EN},	/* 27 PP2 */    \
 	{{TBL_TERM,		TBL_TERM, TBL_TERM	},	TBL_TERM,	TBL_TERM}               \
 };
 #define MV_CPU_IF_ADDR_WIN_MAP_88F6650_TBL {									\
@@ -287,8 +288,9 @@ disclaimer.
 	{{0xf8000000,		0,	_1M		},		13,	DIS},	/* 22 BOOT_ROM_CS */\
 	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},		 9,	 EN},	/* 23 DEV_BOOCS */   \
 	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* 24 USB3	 */\
-	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},		10,	DIS},	/* 25 CRYPT_ENG */ \
-	{{PP2_CPU0_PHYS_BASE,	0,	PP2_SIZE	},		12,	 EN},	/* 26 PP2 */    \
+	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},		10,	DIS},	/* 25 CRYPT_ENG0 */ \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* 26 CRYPT_ENG1 */   \
+	{{PP2_CPU0_PHYS_BASE,	0,	PP2_SIZE	},		12,	 EN},	/* 27 PP2 */    \
 	{{TBL_TERM,		TBL_TERM, TBL_TERM	},	TBL_TERM,  TBL_TERM}               \
 };
 
@@ -319,8 +321,9 @@ disclaimer.
 	{{0xf8000000,		0,		_1M	},		13,	DIS},	/* 22 BOOT_ROM_CS */\
 	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},		 9,	 EN},	/* 23 DEV_BOOCS */   \
 	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* 24 USB3	 */\
-	{{CRYPT_ENG_BASE,	0,CRYPT_ENG_SIZE	},		10,	DIS},	/* 25 CRYPT_ENG */ \
-	{{PP2_CPU0_PHYS_BASE,	0,	PP2_SIZE	},		12,	 EN},	/* 26 PP2 */    \
+	{{CRYPT_ENG_BASE,	0,CRYPT_ENG_SIZE	},		10,	DIS},	/* 25 CRYPT_ENG0 */ \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},	TBL_UNUSED,	DIS},	/* 26 CRYPT_ENG1 */\
+	{{PP2_CPU0_PHYS_BASE,	0,	PP2_SIZE	},		12,	 EN},	/* 27 PP2 */    \
 	{{TBL_TERM,		TBL_TERM, TBL_TERM	},	TBL_TERM,  TBL_TERM}               \
 };
 #define mvCpuAddrWinMapGet(x)   ((x == MV_6660_DEV_ID)? 	\

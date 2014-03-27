@@ -90,6 +90,7 @@ MV_DRAM_MODES ddr_modes[] =
 	{"a38x_533",  DDR_FREQ_533,      0,      0x0,   		A38X_DB,       ddr3_a38x_533},
 	{"a38x_667",  DDR_FREQ_667,      0,      0x0,   		A38X_DB,       ddr3_a38x_667},
 	{"a38x_800",  DDR_FREQ_800,      0,      0x0,        	A38X_DB,       ddr3_a38x_800},
+	{"a38x_933",  DDR_FREQ_933,      0,      0x0,   		A38X_DB,       ddr3_a38x_933},
 };
 
 #endif /* _INC_A38X_VARS_H */

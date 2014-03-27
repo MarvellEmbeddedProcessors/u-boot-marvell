@@ -143,7 +143,7 @@ static MV_DRAM_MC_INIT ddr3_a38x_800[] =
 	{0x15E0,	0x00000023, 0xffffffff},
 	{0x15E4,	0x00203c18, 0xffffffff},
 	{0x15EC,	0xf8000019, 0xffffffff},
-	{0x16A0,	0xCC000012, 0xffffffff}, //  Clock Delay
+	{0x16A0,	0xCC000006, 0xffffffff}, //  Clock Delay
 	{0xE4124,   0x08008073, 0xffffffff},  //  AVS BG default
 	{0,   0, 0}
 };
@@ -188,7 +188,7 @@ static MV_DRAM_MC_INIT ddr3_a38x_667[] =
 	{0x15E0,    0x23, 		0xffffffff}, //
 	{0x15E4,    0x00203c18, 0xffffffff}, //  ZQC Configuration Register
 	{0x15EC,    0xf8000019, 0xffffffff}, //  DDR PHY
-	{0x16A0,    0xCC000013, 0xffffffff}, //  Clock Delay
+	{0x16A0,    0xCC000006, 0xffffffff}, //  Clock Delay
 	{0xE4124,   0x08008073, 0xffffffff}, //  AVS BG default
 	{0,   0, 0}
 };
@@ -226,7 +226,7 @@ static MV_DRAM_MC_INIT ddr3_a38x_533[] =
 	{0x15E0,    0x00000023,	0xffffffff}, //
 	{0x15E4,    0x00203c18, 0xffffffff}, //  ZQC Configuration Register
 	{0x15EC,    0xF8000019, 0xffffffff}, //  DDR PHY
-	{0x16A0,    0xCC000015, 0xffffffff}, //  Clock Delay
+	{0x16A0,    0xCC000006, 0xffffffff}, //  Clock Delay
 	{0xE4124,   0x08008073, 0xffffffff}, //  AVS BG default
 	{0,   0, 0}
 };

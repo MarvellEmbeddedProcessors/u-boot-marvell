@@ -135,8 +135,11 @@ static MV_VOID ddr3StaticTrainingInit(void);
 #if defined(DUNIT_STATIC) && !defined(MV_NEW_TIP)
 static MV_VOID ddr3StaticMCInit(void);
 #endif
-#if defined(DUNIT_STATIC) || defined(STATIC_TRAINING)
+#if defined(DUNIT_STATIC) || defined(STATIC_TRAINING) || defined(MV_NEW_TIP)
 static MV_U32 ddr3GetStaticDdrMode(void);
+/*Set 1 to use dynamic DUNIT configuration,
+	set 0(supported for A380 only) to configure DUNIT in values set by ddr3TipInitSpecificRegConfig*/
+MV_U8 genericInitController = 1;
 #endif
 #if defined(MV88F66XX) || defined(MV88F672X) || defined(MV_NEW_TIP)
 MV_VOID		getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs);
@@ -744,9 +747,9 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 
 #if defined(MV_NEW_TIP)
 
-#if defined DUNIT_STATIC
+	if( genericInitController == 0){
 		ddr3TipInitSpecificRegConfig(0, ddr_modes[ddr3GetStaticDdrMode()].regs);
-#endif
+	}
 
 	/*Load topology for New Training IP*/
 	status = ddr3LoadTopologyMap();

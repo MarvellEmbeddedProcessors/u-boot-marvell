@@ -3,6 +3,7 @@
 use Cwd qw();
 
 our @supported_boards = ("armada8k", "armada8021-pxp", "armada38x");
+our @supported_flash = ("spi", "nand", "nor");
 
 sub bin2hex
 {
@@ -122,6 +123,12 @@ if($opt_c eq 1)
 		exit 1;
 	}
 
+	unless($flash ~~ @supported_flash) {
+		print "\nError: Unsupported flash \"$flash\"\n\n";
+		usage();
+		exit 1;
+	}
+
 	# Clean U-Boot
 	print "\n**** [Cleaning U-Boot]\t*****\n\n";
 	if (system("make mrproper")) {
@@ -141,52 +148,21 @@ if($opt_c eq 1)
 		exit 1;
 	}
 
-	# Set pre processors
-#	print "\n**** [Setting Macros]\t*****\n\n";
-#	if($opt_f eq "spi")      {
-#		system("echo \"#define MV_SPI_BOOT\" >> include/config.h");
-#		system("echo \"#define MV_INCLUDE_SPI\" >> include/config.h");
-#		print "Boot from SPI\n";
-#		$img_opts   = "";
-#		$flash_name = "spi";
-#		$img_type   = "flash";
-#	}
-#	elsif ($opt_f eq "nor")  {
-#		system("echo \"#define MV_NOR_BOOT\" >> include/config.h");
-#                print "Boot from NOR\n";
-#		$img_opts   = "";
-#		$flash_name = "nor";
-#		$img_type   = "flash";
-#	}
-#	elsif  ($opt_f eq "nand"){
-#		system("echo \"#define MV_NAND_BOOT\" >> include/config.h");
-#		print "Boot from NAND\n";
-#		$flash_name = "nand";
-#		$img_type   = "nand";
-#		if( ($boardID eq "axp") or
-#			($boardID eq "a375") or
-#			($boardID eq "msys") or
-#                        ($boardID eq "a38x")) {
-#			$img_opts   = "-P 4096 -L 128 -N MLC";
-#		}
-#		elsif($boardID eq "alp") {
-#			$img_opts   = "-P 2048 -L 128 -N SLC";
-#		}
-#		print "Image options =  $img_opts\n\n";
-#	}
-#	else
-#	{
-#		if (defined $opt_f) {
-#			print "\n *** Error: Bad flash type $opt_f specified\n\n";
-#		}
-#		else {
-#			print "\n *** Error: Flash type unspecified\n\n";
-#		}
-#		usage();
-#		exit 1;
-#	}
-#
-
+	if($flash eq "spi")      {
+		$img_opts   = "";
+		$flash_name = "spi";
+		$img_type   = "flash";
+	}
+	elsif ($flash eq "nor")  {
+		$img_opts   = "";
+		$flash_name = "nor";
+		$img_type   = "flash";
+	}
+	elsif  ($flash eq "nand"){
+		$img_opts   = "-P 4096 -L 128 -N MLC";
+		$flash_name = "nand";
+		$img_type   = "nand";
+	}
 }
 
 #if(defined $opt_d)
@@ -205,13 +181,11 @@ if (system("make -j6 -s")) {
 print "\n**** [Creating Image]\t*****\n\n";
 unless ($board eq "armada8021-pxp") 
 {
-	exit 0;
-
-	if (system("./tools/marvell/doimage -T uart -D 0 -E 0 -G ./tools/marvell/bin_hdr/bin_hdr.uart.bin u-boot.bin u-boot-$flash_name-uart.bin")) {
+	if (system("./tools/marvell/doimage -T uart -D 0 -E 0 -G ./tools/marvell/bin_hdr.uart u-boot.bin u-boot-$flash_name-uart.bin")) {
 		print "\nError: doimage failed creating UART image \n\n";
 		exit 1;
 	}
-	if(system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-$flash_name.bin")) {
+	if(system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/marvell/bin_hdr u-boot.bin u-boot-$flash_name.bin")) {
 		print "\nError: doimage failed creating image\n\n";
 		exit 1;
 	}	

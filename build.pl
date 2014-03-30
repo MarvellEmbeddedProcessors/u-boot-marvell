@@ -131,10 +131,12 @@ if($opt_c eq 1)
 		$flash_name = "nand";
 		$img_type   = "nand";
 		if( ($boardID eq "axp") or
-			($boardID eq "a375") or
 			($boardID eq "msys") or
                         ($boardID eq "a38x")) {
 			$img_opts   = "-P 4096 -L 128 -N MLC";
+		}
+		elsif($boardID eq "a375") {
+			$img_opts   = "-P 4096 -L 256 -N MLC";
 		}
 		elsif($boardID eq "alp") {
 			$img_opts   = "-P 2048 -L 128 -N SLC";

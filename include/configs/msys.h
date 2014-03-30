@@ -390,7 +390,9 @@ disclaimer.
 #define CONFIG_GENERIC_MMC
 #define CONFIG_MRVL_MMC
 #define CONFIG_SYS_MMC_BASE 		(INTER_REGS_BASE + 0xd4000)
-#define CONFIG_SYS_MMC_MAX_DEVICE 1
+#define CONFIG_SYS_MMC_MAX_DEVICE 	1
+#define CONFIG_SYS_MMC_MAX_BLK_COUNT 	10000
+
 /***************************************/
 /* LINUX BOOT and other ENV PARAMETERS */
 /***************************************/

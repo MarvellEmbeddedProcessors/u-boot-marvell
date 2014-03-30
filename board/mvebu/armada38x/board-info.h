@@ -24,10 +24,8 @@
 #include "../common/sar.h"
 
 enum a38x_board_types {
-	ARMADA_8021_DB_ID = 0,
-	ARMADA_8021_RD_ID,
-	ARMADA_8022_DB_ID,
-	ARMADA_8022_RD_ID,
+	ARMADA_38X_DB_ID = 0,
+	ARMADA_38X_RD_ID,
 	MAX_BOARD_ID
 };
 

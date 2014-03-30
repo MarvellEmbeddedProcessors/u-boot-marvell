@@ -55,10 +55,8 @@ struct sar_data a38x_sar = {
 /* Assuming their location is equal on all boards */
 struct cfg_var a38x_cfg_lookup[MAX_CFG] = {
 	[BOARD_ID_CFG] = {0, 0, 3, 4, 0,
-		{{ARMADA_8021_DB_ID, "DB-8021", VAR_IS_DEFUALT},
-		 {ARMADA_8021_RD_ID, "RD-8021", 0},
-		 {ARMADA_8022_DB_ID, "DB-8022", 0},
-		 {ARMADA_8022_RD_ID, "RD-8022", 0} },
+		{{ARMADA_38X_DB_ID, "DB-88F6820-BP", VAR_IS_DEFUALT},
+		 {ARMADA_38X_RD_ID, "DB-88F6820-RD", 0} }
 	},
 	[SERDES_0_CFG] = {1, 0, 3, 2, 0,
 		{{0x0, "pcie 0", VAR_IS_DEFUALT},
@@ -77,15 +75,13 @@ struct cfg_data a38x_cfg = {
 	.cfg_lookup   = a38x_cfg_lookup
 };
 
-
-
 struct mvebu_board_info *a38x_board_lookup[MAX_BOARD_ID] = {
-	[ARMADA_8021_DB_ID] = &a38x_db_info,
-	[ARMADA_8021_RD_ID] = &a38x_rd_info
+	[ARMADA_38X_DB_ID] = &a38x_db_info,
+	[ARMADA_38X_RD_ID] = &a38x_rd_info
 };
 
 struct mvebu_board_family a38x_board_family = {
-	.default_id = ARMADA_8021_DB_ID,
+	.default_id = ARMADA_38X_DB_ID,
 	.board_cnt = MAX_BOARD_ID,
 	.boards_info = a38x_board_lookup,
 	.sar = &a38x_sar,

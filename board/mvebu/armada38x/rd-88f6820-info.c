@@ -36,8 +36,8 @@ u16 a38x_rd_unit_disable[MAX_UNIT_ID] = {
 };
 
 struct mvebu_board_info a38x_rd_info = {
-	.name = "RD-MV8021",
-	.id = ARMADA_8021_RD_ID,
+	.name = "RD-88F6820-GP",
+	.id = ARMADA_38X_RD_ID,
 	.unit_mask = a38x_rd_unit_disable,
 	.unit_update_mode = UNIT_INFO_DISABLE,
 	.configurable = 1,

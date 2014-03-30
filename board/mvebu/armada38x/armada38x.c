@@ -29,10 +29,9 @@
 #include "board-info.h"
 
 
-/*
- * Board specific ethernet initialization routine.
- */
-int board_eth_init(bd_t *bis)
+struct mvebu_board_family *board_init_family(void)
 {
-	return 0;
+	/* Board family specific init goes here */
+
+	return &a38x_board_family;
 }

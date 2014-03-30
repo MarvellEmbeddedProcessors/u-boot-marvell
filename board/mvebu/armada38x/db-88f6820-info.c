@@ -30,8 +30,8 @@ struct mvebu_board_config db_a38x_config = {
 };
 
 struct mvebu_board_info a38x_db_info = {
-	.name = "DB-MV8021",
-	.id = ARMADA_8021_DB_ID,
+	.name = "DB-88F6820-BP",
+	.id = ARMADA_38X_DB_ID,
 	.configurable = 1,
 	.config_data = &db_a38x_config,
 };

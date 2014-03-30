@@ -128,7 +128,7 @@ void __assert_fail(const char *assertion, const char *file, unsigned line,
 		__assert_fail(#x, __FILE__, __LINE__, __func__); })
 
 #define error(fmt, args...) do {					\
-		printf("ERROR: " pr_fmt(fmt) "\nat %s:%d/%s()\n",	\
+		printf("\nERROR: " pr_fmt(fmt) "\nat %s:%d/%s()\n",	\
 			##args, __FILE__, __LINE__, __func__);		\
 } while (0)
 

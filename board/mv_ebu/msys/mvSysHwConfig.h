@@ -104,7 +104,7 @@
 #define PEX0_IO_BASE                    0xF1100000
 #define PEX0_IO_SIZE                    _1M
 /*****************  DFX base address ***********************/
-#define DFX_REGS_BASE   0xF5000000
+#define DFX_REGS_BASE   0xF6000000
 #define DFX_REGS_SIZE   _1M
 
 #define MV_DFX_REG_READ(offset)		\
@@ -146,7 +146,7 @@
 #define NOR_CS_SIZE _16M
 
 #define SPI_CS_BASE 0xf4000000 /*0xf8000000*/
-#define SPI_CS_SIZE _8M
+#define SPI_CS_SIZE _32M
 
 #define PNC_BM_PHYS_BASE 0xf2100000 /*0xF5000000*/
 #define PNC_BM_SIZE      _1M

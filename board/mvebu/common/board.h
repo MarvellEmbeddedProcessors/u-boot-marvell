@@ -87,11 +87,17 @@ struct mvebu_board_family {
 	struct cfg_data *cfg;
 };
 
+/* APIs required from all board families */
+struct mvebu_board_family *board_init_family(void);
 
-int common_board_init(struct mvebu_board_family *board_family);
-struct sar_data *board_get_sar(void);
-struct sar_var  *board_get_sar_table(void);
-struct cfg_data *board_get_cfg(void);
-struct cfg_var  *board_get_cfg_table(void);
+/* Common board API */
+int board_get_id(void);
+
+
+DECLARE_GLOBAL_DATA_PTR;
+#define get_board_family()	(struct mvebu_board_family *)(gd->arch.board_family)
+#define set_board_family(x)	(gd->arch.board_family = x)
+#define get_board_info()	(struct mvebu_board_info *)(gd->arch.board_family->curr_board)
+#define set_board_info(x)	(gd->arch.board_family->curr_board = x)
 
 #endif /* _BOARD_H_ */

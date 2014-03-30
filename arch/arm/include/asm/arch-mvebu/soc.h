@@ -57,6 +57,7 @@ struct mvebu_soc_family *soc_init(void);
 
 /* Common SOC API */
 int mvebu_soc_init(void);
+void mvebu_print_soc_info(void);
 
 u16 *soc_get_unit_mask_table(void);
 

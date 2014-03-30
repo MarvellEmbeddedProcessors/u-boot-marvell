@@ -112,6 +112,13 @@
 #define CONFIG_CMD_ELF
 #define CONFIG_CMD_STAGE_BOOT
 
+/* MVEBU Generic commands */
+#define CONFIG_CMD_MVEBU_MAP
+#ifdef CONFIG_MVEBU_DEVEL_BOARD
+#define CONFIG_CMD_MVEBU_SAR
+#define CONFIG_CMD_MVEBU_CONFIG
+#endif
+
 
 /* No flash setup */
 #if !defined(MV_INCLUDE_NOR) && !defined(MV_INCLUDE_NAND) && !defined(MV_INCLUDE_SPI)

@@ -20,5 +20,9 @@
 obj-y	+= board-common.o
 obj-y	+= entry.o
 obj-y	+= init.o
+
+ifdef CONFIG_MVEBU_DEVEL_BOARD
 obj-y	+= sar.o
 obj-y	+= config.o
+obj-y	+= devel-board.o
+endif

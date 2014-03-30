@@ -17,29 +17,18 @@
  * ***************************************************************************
  */
 
-/* #define DEBUG*/
+#ifndef _DEVEL_BOARD_H_
+#define _DEVEL_BOARD_H_
 
 #include <common.h>
-#include <malloc.h>
-#include <errno.h>
-#include <netdev.h>
-#include <asm/io.h>
-#include <linux/compiler.h>
-#include <asm/arch-mvebu/unit-info.h>
-#include <asm/arch-mvebu/soc.h>
 #include "board.h"
 
-DECLARE_GLOBAL_DATA_PTR;
+int mvebu_devel_board_init(struct mvebu_board_family *brd_fam);
 
-struct mvebu_board_family *brd;
-
-/* Generic board id function. Each board family can make his own */
-int __board_get_id(void)
-{
-	/* Stub to implement generic board id read */
-	return 1;
-}
-int board_get_id(void) __attribute__((weak, alias("__board_get_id")));
+struct sar_data *board_get_sar(void);
+struct sar_var  *board_get_sar_table(void);
+struct cfg_data *board_get_cfg(void);
+struct cfg_var  *board_get_cfg_table(void);
 
 
-
+#endif /* _DEVEL_BOARD_H_ */

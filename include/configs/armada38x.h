@@ -40,7 +40,7 @@
 #define CONFIG_IDENT_STRING	" Marvell version: 2014_T2.0"
 
 /* Configurable boards */
-#define CONFIG_MVEBU_DEV_BOARD      /* Turn this off for Customer boards */
+#define CONFIG_MVEBU_DEVEL_BOARD      /* Turn this off for Customer boards */
 
 /* Platform */
 #define CONFIG_MVEBU_CA9

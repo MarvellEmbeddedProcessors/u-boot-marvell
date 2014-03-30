@@ -24,7 +24,7 @@
 #include <asm/io.h>
 #include <asm/bitops.h>
 #include <linux/compiler.h>
-#include "board.h"
+#include "devel-board.h"
 #include "config.h"
 
 DECLARE_GLOBAL_DATA_PTR;

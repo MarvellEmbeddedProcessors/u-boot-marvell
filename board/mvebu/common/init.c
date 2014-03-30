@@ -27,10 +27,13 @@
 #include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/soc.h>
 #include "board.h"
+#ifdef CONFIG_MVEBU_DEVEL_BOARD
+#include "devel-board.h"
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
-struct mvebu_board_family *board_family;
+struct mvebu_brd_fam *brd_fam;
 
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
@@ -85,11 +88,53 @@ int mvebu_io_init(void)
 	return 0;
 }
 
+int mvebu_print_info(char *board_name)
+{
+	printf("Board: %s\n", board_name);
+	mvebu_print_soc_info();
+
+	return 0;
+}
+
 int mvebu_board_init(void)
 {
+	int board_id;
+	struct mvebu_board_family *brd_fam;
+	struct mvebu_board_info *brd;
+	u16 *unit_mask = soc_get_unit_mask_table();
+
 	debug("Initializing board\n");
 
-	/*board_family = board_init_family();*/
+	brd_fam = board_init_family();
+	if (!brd_fam) {
+		error("Failed to get board family structure");
+		return 0;
+	}
+
+	set_board_family(board_init_family());
+
+	/* Identify the specific board */
+	board_id = board_get_id();
+	if ((board_id < 0) || (board_id > brd_fam->board_cnt)) {
+		error("Unidentified board id %d. Using default %d",
+		      board_id, brd_fam->default_id);
+		board_id = brd_fam->default_id;
+	}
+
+	brd_fam->curr_board = brd_fam->boards_info[board_id];
+	brd = brd_fam->curr_board;
+
+	mvebu_print_info(brd->name);
+
+	/* Update active units list for board */
+	if (brd->unit_mask)
+		update_unit_info(unit_mask, brd->unit_mask, brd->unit_update_mode);
+
+#ifdef CONFIG_MVEBU_DEVEL_BOARD
+	mvebu_devel_board_init(brd_fam);
+#endif
+
+	/* mpp_set */
 
 	return 0;
 }
@@ -113,10 +158,4 @@ int dram_init(void)
 	return 0;
 }
 
-/*
- * Board specific reset that is system reset.
- */
-void reset_cpu(ulong addr)
-{
-}
 

@@ -23,4 +23,3 @@ obj-y += misc.o
 obj-$(CONFIG_AURORA_TIMER) += timer_aurora.o
 obj-$(CONFIG_MVEBU_CA9) += platform.o
 obj-$(CONFIG_ADEC) += adec.o
-obj-$(CONFIG_DISPLAY_CPUINFO) += cpuinfo.o

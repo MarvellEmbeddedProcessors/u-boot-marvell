@@ -17,22 +17,22 @@
  * ***************************************************************************
  */
 
-#ifndef _BOARD_INFO_H_
-#define _BOARD_INFO_H_
+#include <common.h>
+#include <linux/compiler.h>
+#include <asm/arch-mvebu/unit-info.h>
+#include "board-info.h"
 
-#include "../common/board.h"
-#include "../common/sar.h"
-
-enum a38x_board_types {
-	ARMADA_38X_DB_ID = 0,
-	ARMADA_38X_RD_ID,
-	ARMADA_38X_CUSTOMER_ID,
-	MAX_BOARD_ID
+struct mvebu_board_config db_a38x_config = {
+	.sar_cnt = 2,
+	.active_sar = {BOOT_SRC_SAR, CPUS_NUM_SAR},
+	.cfg_cnt = 2,
+	.active_cfg = {BOARD_ID_CFG, SERDES_0_CFG}
 };
 
-extern struct mvebu_board_info a38x_db_info;
-extern struct mvebu_board_info a38x_rd_info;
-extern struct mvebu_board_info a38x_customer_info;
-extern struct mvebu_board_family a38x_board_family;
+struct mvebu_board_info a38x_db_info = {
+	.name = "DB-88F6820-BP",
+	.id = ARMADA_38X_DB_ID,
+	.configurable = 1,
+	.config_data = &db_a38x_config,
+};
 
-#endif /* _BOARD_INFO_H_ */

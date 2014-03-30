@@ -17,22 +17,24 @@
  * ***************************************************************************
  */
 
-#ifndef _BOARD_INFO_H_
-#define _BOARD_INFO_H_
+#include <common.h>
+#include <linux/compiler.h>
+#include <asm/arch-mvebu/unit-info.h>
+#include "board-info.h"
 
-#include "../common/board.h"
-#include "../common/sar.h"
-
-enum a38x_board_types {
-	ARMADA_38X_DB_ID = 0,
-	ARMADA_38X_RD_ID,
-	ARMADA_38X_CUSTOMER_ID,
-	MAX_BOARD_ID
+/* Optionaly define which units to disable */
+u16 a38x_customer_unit_disable[MAX_UNIT_ID] = {
+	[NAND_UNIT_ID] = id_to_mask(0),
+	[SDIO_UNIT_ID] = id_to_mask(0)
 };
 
-extern struct mvebu_board_info a38x_db_info;
-extern struct mvebu_board_info a38x_rd_info;
-extern struct mvebu_board_info a38x_customer_info;
-extern struct mvebu_board_family a38x_board_family;
+struct mvebu_board_info a38x_customer_info = {
+	.name = "CUSTOMER-BOARD",
+	.id = ARMADA_38X_CUSTOMER_ID,
+	.unit_mask = a38x_customer_unit_disable,
+	.unit_update_mode = UNIT_INFO_DISABLE,
+	.mpp_regs = {0x22222222, 0x00000000, 0x52230044, 0x00334200,
+		     0x00004444, 0x52230044, 0x00334200, 0x22222222, 0x52230044},
+	.configurable = 0,
+};
 
-#endif /* _BOARD_INFO_H_ */

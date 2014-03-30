@@ -21,4 +21,5 @@ obj-y	+= armada38x.o
 obj-y	+= board-info.o
 obj-y	+= db-88f6820-info.o
 obj-y	+= rd-88f6820-info.o
+obj-y	+= customer-board.o
 #obj-y	+= platform.o

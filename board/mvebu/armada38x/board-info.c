@@ -77,7 +77,8 @@ struct cfg_data a38x_cfg = {
 
 struct mvebu_board_info *a38x_board_lookup[MAX_BOARD_ID] = {
 	[ARMADA_38X_DB_ID] = &a38x_db_info,
-	[ARMADA_38X_RD_ID] = &a38x_rd_info
+	[ARMADA_38X_RD_ID] = &a38x_rd_info,
+	[ARMADA_38X_CUSTOMER_ID] = &a38x_customer_info
 };
 
 struct mvebu_board_family a38x_board_family = {

@@ -18,5 +18,5 @@
 #
 
 obj-y += cmd_misc.o
-obj-y += cmd_sar.o
-obj-y += cmd_config.o
+obj-$(CONFIG_CMD_MVEBU_SAR) += cmd_sar.o
+obj-$(CONFIG_CMD_MVEBU_CONFIG) += cmd_config.o

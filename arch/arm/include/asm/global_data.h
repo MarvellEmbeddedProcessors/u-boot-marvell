@@ -48,6 +48,11 @@ struct arch_global_data {
 #ifdef CONFIG_OMAP
 	struct omap_boot_parameters omap_boot_params;
 #endif
+#ifdef CONFIG_MVEBU
+	void *soc_family;
+	void *board_family;
+#endif
+
 };
 
 #include <asm-generic/global_data.h>

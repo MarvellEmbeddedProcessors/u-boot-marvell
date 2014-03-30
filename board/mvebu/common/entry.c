@@ -17,51 +17,8 @@
  * ***************************************************************************
  */
 
-#ifndef _SOC_H_
-#define _SOC_H_
+/* #define DEBUG*/
 
-#include <asm/arch-mvebu/unit-info.h>
-#include <asm/arch-mvebu/adec.h>
-#include <asm/arch-mvebu/mpp.h>
-#include <asm/arch/soc-info.h>
-
-#define MAX_SOC_NAME	32
-#define MAX_SOC_REVS	8
-#define MAX_REV_NAME	4
-
-struct mvebu_soc_info {
-	char	name[MAX_SOC_NAME];
-	int	id;
-	u16	*unit_disable;
-	struct adec_win *memory_map;
-};
-
-struct mvebu_soc_family {
-	int	id;
-	char	name[MAX_SOC_NAME];
-	char	rev_name[MAX_SOC_REVS][MAX_REV_NAME];
-	u16	*base_unit_info;
-	char	**mpp_desc;
-	struct	mvebu_soc_info *soc_table;
-	struct	mvebu_soc_info *curr_soc;
-	enum adec_types adec_type;
-};
+#include <common.h>
 
 
-int common_soc_init(struct mvebu_soc_family *soc_family_info);
-
-/* API required from all SOCs */
-int soc_get_rev(void);
-int soc_get_id(void);
-struct mvebu_soc_family *soc_init(void);
-
-/* Common SOC API */
-int mvebu_soc_init(void);
-
-u16 *soc_get_unit_mask_table(void);
-
-DECLARE_GLOBAL_DATA_PTR;
-#define get_soc_family()  (struct mvebu_soc_family *)(gd->arch.soc_family)
-#define set_soc_family(x) (gd->arch.soc_family = (struct mvebu_soc_family *)(x))
-
-#endif /* _SOC_H_ */

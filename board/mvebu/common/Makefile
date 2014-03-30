@@ -18,5 +18,7 @@
 #
 
 obj-y	+= board-common.o
+obj-y	+= entry.o
+obj-y	+= init.o
 obj-y	+= sar.o
 obj-y	+= config.o

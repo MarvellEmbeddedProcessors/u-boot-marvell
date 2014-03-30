@@ -17,56 +17,40 @@
  * ***************************************************************************
  */
 
-#define DEBUG
-
 #include <config.h>
 #include <common.h>
 #include <errno.h>
 #include <asm/system.h>
 #include <asm/bitops.h>
+#include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/adec.h>
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/tables.h>
 
-struct mvebu_soc_family *soc_family;
 
-static struct mvebu_soc_info *get_soc_info(int soc_id)
+/* Weak function for boards who need specific init seqeunce */
+int __soc_late_init(void)
 {
-	struct mvebu_soc_info *soc = soc_family->soc_table;
-
-	/* Avoid searching on each access */
-	if (soc_family->curr_soc)
-		return soc_family->curr_soc;
-
-	while (soc->id != 0) {
-		if (soc->id == soc_id) {
-			soc_family->curr_soc = soc;
-			break;
-		}
-		soc++;
-	}
-
-	if (soc_family->curr_soc == NULL)
-		printf("Error: %s: Can't find soc info %d\n", __func__, soc_id);
-
-	return soc_family->curr_soc;
+	return 0;
 }
+int soc_late_init(void) __attribute__((weak, alias("__soc_late_init")));
 
 u16 *soc_get_unit_mask_table(void)
 {
+	struct mvebu_soc_family *soc_family = get_soc_family();
 	return soc_family->base_unit_info;
 }
 
-char *soc_get_mpp_desc_table(void)
+char **soc_get_mpp_desc_table(void)
 {
+	struct mvebu_soc_family *soc_family = get_soc_family();
 	return soc_family->mpp_desc;
 }
 
 
-static int update_soc_units(int soc_id)
+static int update_soc_units(struct mvebu_soc_info *soc)
 {
-	struct mvebu_soc_info *soc = get_soc_info(soc_id);
 	u16 *unit_mask = soc_get_unit_mask_table();
 
 	if (soc->unit_disable)
@@ -75,33 +59,73 @@ static int update_soc_units(int soc_id)
 	return 0;
 }
 
-static int soc_init_memory_map(int soc_id)
+static int soc_init_memory_map(struct mvebu_soc_info *soc)
 {
-	struct mvebu_soc_info *soc_info = get_soc_info(soc_id);
-	struct adec_win *memory_map = soc_info->memory_map;
+	struct mvebu_soc_family *soc_family = get_soc_family();
+	struct adec_win *memory_map = soc->memory_map;
 
-	if (soc_family->adec_type == 0) {
+	if (soc_family->adec_type == ADEC_CCU) {
 		adec_ap_init(memory_map);
-	} else if (soc_family->adec_type == 1) {
-		printf(" Error: No MBUS support yet\n");
+	} else if (soc_family->adec_type == ADEC_MBUS) {
+		error("No MBUS support yet");
 		return -EINVAL;
 	}
 
 	return 0;
 }
 
-int common_soc_init(struct mvebu_soc_family *soc_family_info)
+int mvebu_soc_init()
 {
-	int soc_id = soc_get_id();
+	struct mvebu_soc_info *soc;
+	struct mvebu_soc_family *soc_family;
+	int soc_id, soc_rev;
 	int ret;
 
-	soc_family = soc_family_info;
+	debug_enter();
 
-	update_soc_units(soc_id);
+	set_soc_family(soc_init());
+	soc_family = get_soc_family();
+	if (!soc_family)
+		printf("Error: Failed to get SOC Family info\n");
 
-	ret = soc_init_memory_map(soc_id);
+	soc_id  = soc_get_id();
+	soc_rev = soc_get_rev();
+	debug("Current device ID  = %x\n", soc_id);
+	debug("Current device Rev = %x\n", soc_rev);
+
+	/* Find the exact SOC out of the family */
+	soc = soc_family->soc_table;
+	while (soc->id != 0) {
+		if (soc->id == soc_id) {
+			soc_family->curr_soc = soc;
+			break;
+		}
+		soc++;
+	}
+
+	if (soc_family->curr_soc == NULL) {
+		error("Can't find soc info %d", soc_id);
+		return -ENODEV;
+	}
+
+	/* Store global variable to SOC */
+	debug("Current device name = %s %s\n", soc->name, soc_family->rev_name[soc_rev]);
+
+	/* Update SOC info according to family */
+	update_soc_units(soc);
+
+	/* Initialize physical memory map */
+	ret = soc_init_memory_map(soc);
 	if (ret)
-		return ret;
+		error("Failed to initialize memory map");
+
+	/* Soc specific init */
+	ret = soc_late_init();
+	if (ret)
+		error("SOC late init failed");
+
+	debug_exit();
 
 	return 0;
 }
+

@@ -13,6 +13,9 @@
 #include <watchdog.h>
 #include <linux/types.h>
 #include <asm/io.h>
+#ifdef CONFIG_MVEBU
+#include <asm/arch-mvebu/clock.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -118,7 +121,9 @@ int ns16550_calc_divisor(NS16550_t port, int clock, int baudrate)
 	}
 	port->osc_12m_sel = 0;			/* clear if previsouly set */
 #endif
-
+#ifdef CONFIG_MVEBU
+	return (soc_tclk_get() / 16) / gd->baudrate;
+#endif
 	return DIV_ROUND_CLOSEST(clock, mode_x_div * baudrate);
 }
 

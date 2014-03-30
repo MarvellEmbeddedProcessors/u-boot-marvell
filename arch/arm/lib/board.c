@@ -45,6 +45,7 @@
 #include <miiphy.h>
 #endif
 
+
 DECLARE_GLOBAL_DATA_PTR;
 
 ulong monitor_flash_len;
@@ -93,8 +94,16 @@ static int init_baudrate(void)
 	return 0;
 }
 
+#ifdef CONFIG_MVEBU
+void print_mv_banner(void);
+#endif
+
 static int display_banner(void)
 {
+#ifdef CONFIG_MVEBU
+	print_mv_banner();
+#endif
+
 	printf("\n\n%s\n\n", version_string);
 	debug("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n",
 	       (ulong)&_start,

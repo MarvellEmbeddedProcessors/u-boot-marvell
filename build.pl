@@ -2,6 +2,8 @@
 
 use Cwd qw();
 
+our @supported_boards = ("armada8k", "armada8021-pxp", "armada38x");
+
 sub bin2hex
 {
 	system ("\${CROSS_COMPILE}objcopy -O verilog -I binary u-boot.bin u-boot.tmp");
@@ -59,7 +61,7 @@ sub usage
 	print "\n";
 	print "Options:\n";
 	print "\t-f\tBoot device. Accepts spi, nor, nand\n";
-	print "\t-b\tBoard type. Accepts: armada8k, armada8021-pxp\n";
+	print "\t-b\tBoard type. Accepts: armada8k, armada8021-pxp, armada38x\n";
 	print "\t-c\tClean build. calls \"make mrproper\"\n";
 	print "\t-o\tOutput directory. Build products will be copied to here\n";
 	print "\t-h\tPrints this help message\n";
@@ -114,8 +116,7 @@ my $flash = $opt_f;
 # Handle clean build
 if($opt_c eq 1)
 {
-	unless(($board eq "armada8021-pxp") or 
-	       ($board eq "armada8k")) {
+	unless($board ~~ @supported_boards) {
 		print "\nError: Unsupported board \"$opt_b\"\n\n";
 		usage();
 		exit 1;

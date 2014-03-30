@@ -115,16 +115,11 @@ int print_cpuinfo(void)
 
 void __reset_cpu(ulong addr)
 {
-	u32 reg;
 	/* Enable global system reset */
-	reg = readl(MVEBU_RESET_MASK_REG);
-	reg |= 1;
-	writel(reg, MVEBU_RESET_MASK_REG);
+	setbits_le32(MVEBU_RESET_MASK_REG, 0x1);
 
 	/* Trigger reset */
-	reg = readl(MVEBU_SOFT_RESET_REG);
-	reg |= 1;
-	writel(reg, MVEBU_SOFT_RESET_REG);
+	setbits_le32(MVEBU_SOFT_RESET_REG, 0x1);
 }
 
 void reset_cpu(ulong addr) __attribute__((weak, alias("__reset_cpu")));

@@ -323,13 +323,8 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvGppPolaritySet(i, gppMask, (MV_GPP_IN_INVERT & gppMask));
 	}
 
-	/*Disabled for kernel compilation*/
-	/*mvEthComplexInit(mvBoardEthComplexConfigGet());*/
-
-	/*
-	 * Enable NAND Flash PUP (Pack-Unpack)
-	 * HW machanism to accelerate transactions (controlled by SoC register)
-	 */
+	/* Enable NAND Flash PUP (Pack-Unpack)
+	 * HW machanism to accelerate transactions (controlled by SoC register) */
 	MV_REG_BIT_SET(PUP_EN_REG, BIT4);
 
 #ifdef MV_NOR_BOOT
@@ -345,6 +340,9 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 
 	/* Disable MBUS Err Prop - inorder to avoid data aborts */
 	MV_REG_BIT_RESET(SOC_COHERENCY_FABRIC_CTRL_REG, BIT8);
+
+	/* invert SATA LED polarity, so SATA activity will be indicated with LED ON*/
+	MV_REG_BIT_SET(SATAHC_LED_CONFIGURATION_REG, BIT3);
 
 	return MV_OK;
 }

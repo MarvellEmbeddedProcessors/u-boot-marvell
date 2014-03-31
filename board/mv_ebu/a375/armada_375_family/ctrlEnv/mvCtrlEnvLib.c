@@ -234,7 +234,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_67xx_INDEX_MAX] = {
 /* DRAM_UNIT_ID         */ { 1, },
 /* PEX_UNIT_ID          */ { 2, },
 /* ETH_GIG_UNIT_ID      */ { 2, },
-/* USB_UNIT_ID          */ { 1, },
+/* USB_UNIT_ID          */ { 2, },
 /* USB3_UNIT_ID          */ { 1, },
 /* IDMA_UNIT_ID         */ { 0, },
 /* XOR_UNIT_ID          */ { 2, },

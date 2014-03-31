@@ -75,8 +75,8 @@
 #define COMMON_PHY_CONFIGURATION4_REG           0x1830C
 #define COMMON_PHY_STATUS1_REG                  0x18318
 #define COMMON_PHYS_SELECTORS_REG               0x183FC
-#define SOC_CONTROL_REG1                                                0x18204
-
+#define SOC_CONTROL_REG1                        0x18204
+#define GENERAL_PURPOSE_RESERVED0_REG		0x182E0
 #define GBE_CONFIGURATION_REG                   0x18460
 #define DEVICE_SAMPLE_AT_RESET1_REG             0xE4204
 

@@ -665,6 +665,39 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 #define LINK_WAIT_CNTR  100
 #define LINK_WAIT_SLEEP 100
+
+/***************************************************************************/
+static MV_STATUS mvSerdesPexUsb3PipeDelayWA(MV_U32 serdesNum, MV_U8 serdesType)
+{
+	MV_U32 regData;
+
+	/* WA for A380 Z1 relevant for lanes 3,4,5 only*/
+	if (serdesNum >= 3)
+	{
+		regData = MV_REG_READ(GENERAL_PURPOSE_RESERVED0_REG);
+		/* set delay on pipe -
+		 * When lane 3 is connected to a MAC of Pex -> set bit 7 to 1.
+		 * When lane 3 is connected to a MAC of USB3 -> set bit 7 to 0.
+		 * When lane 4 is connected to a MAC of Pex -> set bit 8 to 1.
+		 * When lane 4 is connected to a MAC of USB3 -> set bit 8 to 0.
+		 * When lane 5 is connected to a MAC of Pex -> set bit 8 to 1.
+		 * When lane 5 is connected to a MAC of USB3 -> set bit 8 to 0.
+		 */
+		if (serdesType == PEX)
+		{
+			regData |= 1 << (7 + (serdesNum - 3));
+		}
+		if (serdesType == USB3)
+		{
+			/* USB3 */
+			regData &= ~(1 << (7 + (serdesNum - 3)));
+		}
+		MV_REG_WRITE(GENERAL_PURPOSE_RESERVED0_REG, regData);
+	}
+
+	return MV_OK;
+}
+
 /***************************************************************************/
 
 MV_STATUS mvSerdesPowerUpCtrl
@@ -707,6 +740,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 		case PEX1:
 		case PEX2:
 		case PEX3:
+			CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, PEX));
 
 			isPexBy1 = (serdesMode == PEX_ROOT_COMPLEX_x1) ||
 				(serdesMode == PEX_END_POINT_x1);
@@ -789,6 +823,8 @@ MV_STATUS mvSerdesPowerUpCtrl
 			break;
 		case USB3_HOST0:
 		case USB3_HOST1:
+			CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, USB3));
+
 			CHECK_STATUS(mvSeqExec(serdesNum, USB3_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
@@ -823,6 +859,8 @@ MV_STATUS mvSerdesPowerUpCtrl
 
 			break;
 		case USB3_DEVICE:
+			CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, USB3));
+
 			CHECK_STATUS(mvSeqExec(serdesNum, USB3_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));

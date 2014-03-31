@@ -70,6 +70,13 @@
 #include <net.h>
 #include <spi_flash.h>
 #include <bzlib.h>
+#include <fs.h>
+#ifdef MV_INCLUDE_USB
+#include <usb.h>
+#endif
+#ifdef CONFIG_MMC
+#include <mmc.h>
+#endif
 
 #include "mvCommon.h"
 #include "ctrlEnv/mvCtrlEnvLib.h"
@@ -104,6 +111,60 @@
 
 #include "cntmr/mvCntmrRegs.h"
 #include "switchingServices.h"
+
+
+int mvLoadFile4cpss(int loadfrom, const char* file_name, char * devPart, int fstype)
+{
+	MV_U32 filesize;
+	char interface[4] = "mmc";
+
+	switch(loadfrom) {
+	case 0:
+		if ((filesize = NetLoop(TFTPGET)) < 0)
+			return 0;
+		return filesize;;
+	case 1:
+#ifdef MV_INCLUDE_USB
+		usb_stop();
+		printf("(Re)start USB...\n");
+
+		if (usb_init() < 0) {
+			printf("usb_init failed\n");
+			return 0;
+		}
+
+		/* try to recognize storage devices immediately */
+		if (-1 == usb_stor_scan(1)) {
+			printf("USB storage device not found\n");
+			return 0;
+		}
+		strcpy(interface, "usb");
+
+		break;
+#else
+		printf("USB is not supported\n");
+		return 0;
+#endif
+	case 2:
+#ifdef CONFIG_MMC
+		run_command("mmc rescan", 0);
+		break;
+#else
+		printf("MMC is not supported\n");
+		return 0;
+#endif
+	}
+
+
+	/* always load from usb 0 */
+	if (fs_set_blk_dev(interface, devPart, fstype))
+	{
+		printf("%s %s not found\n", interface, (devPart != NULL) ? devPart: "0");
+		return 0;
+	}
+
+	return (fs_read(file_name, load_addr, 0, 0));
+}
 /*******************************************************************************
 * mv_print_appl_partitions - Print u-boot partitions on SPI flash
 *
@@ -125,48 +186,26 @@ static void mv_print_appl_partitions(void)
 		printf("--------------------------------------\n\n");
 		printf("Spi flash Address (rx)   : 0x%08x\n", CFG_APPL_SPI_FLASH_START_DIRECT);
 		printf("Spi flash size           : %dMB\n", CFG_APPL_SPI_FLASH_SIZE/(1<<20));
-		printf("u-boot               : offset=0x%08x, size=0x%08x (%dK)\n",
+		printf("u-boot               : offset=0x%08x, size=0x%08x (%dMB)\n",
 			   CFG_APPL_SPI_FLASH_PART_UBOOT_START,
 			   CFG_APPL_SPI_FLASH_PART_UBOOT_SIZE,
-			   CFG_APPL_SPI_FLASH_PART_UBOOT_SIZE/(1<<10));
+			   CFG_APPL_SPI_FLASH_PART_UBOOT_SIZE/(_1M));
 
-		printf("kernel/vxWorks-image : offset=0x%08x, size=0x%08x (%dK)\n",
+		printf("kernel/vxWorks-image : offset=0x%08x, size=0x%08x (%dMB)\n",
 			   CFG_APPL_SPI_FLASH_PART_KERNEL_START,
 			   CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE,
-			   CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE/(1<<10));
+			   CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE/(_1M));
 
-		printf("Linux rootfs         : offset=0x%08x, size=0x%08x (%dK)\n",
+		printf("Linux rootfs         : offset=0x%08x, size=0x%08x (%dMB)\n",
 			   CFG_APPL_SPI_FLASH_PART_ROOTFS_START,
 			   CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE,
-			   CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE/(1<<10));
+			   CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE/(_1M));
 
 		printf("\n");
-		printf("Single Image         : offset=0x%08x, size=0x%08x (%dK)\n",
+		printf("Single Image         : offset=0x%08x, size=0x%08x (%dMB)\n",
 			   CFG_APPL_SPI_FLASH_PART_KERNEL_START,
 			   CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE + CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE,
-			   (CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE + CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE)/(1<<10));
-
-		run_command("nand info", 0);
-		printf("\n");
-		printf("%s partitions on nand flash\n", CFG_APPL_SPI_FLASH_PARTITIONS_NAME);
-		printf("--------------------------------------\n\n");
-		printf("Nand flash size           : %dMB\n", CFG_APPL_NAND_FLASH_SIZE/(1<<20));
-
-		printf("kernel/vxWorks-image : offset=0x%08x, size=0x%08x (%dK)\n",
-			   CFG_APPL_NAND_FLASH_PART_KERNEL_START,
-			   CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE,
-			   CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE/(1<<10));
-
-		printf("Linux rootfs         : offset=0x%08x, size=0x%08x (%dK)\n",
-			   CFG_APPL_NAND_FLASH_PART_ROOTFS_START,
-			   CFG_APPL_NAND_FLASH_PART_ROOTFS_SIZE,
-			   CFG_APPL_NAND_FLASH_PART_ROOTFS_SIZE/(1<<10));
-
-		printf("\n");
-		printf("Single Image         : offset=0x%08x, size=0x%08x (%dK)\n",
-			   CFG_APPL_NAND_FLASH_PART_KERNEL_START,
-			   CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE + CFG_APPL_NAND_FLASH_PART_ROOTFS_SIZE,
-			   (CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE + CFG_APPL_NAND_FLASH_PART_ROOTFS_SIZE)/(1<<10));
+			   (CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE + CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE)/(_1M));
 
 		printf("\n");
 }
@@ -177,8 +216,8 @@ static int do_print_spi_part ( cmd_tbl_t *cmdtp, int flag, int argc, char * cons
 }
 
 U_BOOT_CMD(
-	print_spi_part,    2,    1,    do_print_spi_part,
-	"print_spi_part  - print SPI FLASH memory information\n",
+	spi_part_print,    2,    1,    do_print_spi_part,
+	"spi_part_print  - print SPI FLASH memory information\n",
 	"\n    - print information for all SPI FLASH memory banks\n"
 );
 
@@ -195,70 +234,43 @@ U_BOOT_CMD(
 *	None
 *
 *******************************************************************************/
-static int do_cpss_env( cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[] ) {
-		char buf[1024];
-		char buf1[512];
+static int do_cpss_env( cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[] )
+{
+       char buf[1024];
 
-		printf("Saving cpss environment variable\n");
-		setenv("setenv standalone", "");
-		setenv("bootcmd", "run standalone_mtd");
-		setenv("consoledev","ttyS0");
-		setenv("linux_loadaddr","0x2000000");
-		setenv("netdev","eth0");
-		setenv("rootpath","/tftpboot/rootfs_arm-mv7sft");
-		setenv("othbootargs","null=null");
+       printf("Saving cpss environment variable\n");
+       setenv("setenv standalone", "");
+       setenv("bootcmd", "run standalone_mtd");
+       setenv("consoledev","ttyS0");
+       setenv("linux_loadaddr","0x2000000");
+       setenv("netdev","eth0");
+       setenv("rootpath","/tftpboot/rootfs_arm-mv7sft");
+       setenv("othbootargs","null=null");
 
-		setenv("nfsboot","setenv bootargs root=/dev/nfs rw nfsroot=$serverip:$rootpath ip=$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netdev:off console=$consoledev,$baudrate $othbootargs $linux_parts; tftp $linux_loadaddr $image_name;bootm $linux_loadaddr");
+       setenv("nfsboot","setenv bootargs root=/dev/nfs rw nfsroot=$serverip:$rootpath ip=$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netdev:off console=$consoledev,$baudrate $othbootargs $linux_parts; tftp $linux_loadaddr $image_name;bootm $linux_loadaddr");
 
-		sprintf(buf, "spi_flash:0x%08x(spi_uboot)ro,"
-				"0x%08x(spi_kernel),0x%08x(spi_rootfs)\%%armada-nand:0x%08x(nand_kernel),0x%08x(nand_rootfs)",
-				CFG_APPL_SPI_FLASH_PART_UBOOT_SIZE,
-				CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE,
-				CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE,
-				CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE,
-				CFG_APPL_NAND_FLASH_PART_ROOTFS_SIZE);
 
-		setenv("mtdparts",buf);
-		sprintf(buf1, "mtdparts=%s", buf);
-		setenv("linux_parts",buf1);
+       sprintf(buf,"spi_flash:%dm(spi_uboot)ro,%dm(spi_kernel),%dm(spi_rootfs),-(remainder)",
+	       CFG_APPL_SPI_FLASH_PART_UBOOT_SIZE / _1M,
+	       CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE / _1M,
+	       CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE / _1M);
 
-		sprintf(buf,
-				"setenv bootargs ubi.mtd=4 root=ubi0:rootfs_nand "
-				"rw rootfstype=ubifs "
-				"ip=$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netdev:off "
-				"console=$consoledev,$baudrate $othbootargs $linux_parts; "
-				"nand read $linux_loadaddr 0x%08x 0x%08x; bootm $linux_loadaddr ",
-				CFG_APPL_NAND_FLASH_PART_KERNEL_START,
-				CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE);
+       setenv("mtdparts", buf);
+	printf("mtdparts = %s\n", buf);
+       setenv("linux_parts", buf);
+       sprintf(buf,
+	       "sf probe; sf read ${loadaddr} 0x%x 0x%x; setenv bootargs mem=500M ${console} "
+	       "root=/dev/mtdblock2 rw init=/linuxrc rootfstype=jffs2 rootwait mtdparts=${mtdparts} "
+	       "${mvNetConfig}; bootm ${loadaddr} ",
+	       CFG_APPL_SPI_FLASH_PART_KERNEL_START,
+	       CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE);
 
-		setenv("standalone_mtd_nand", buf);
+	setenv("standalone_mtd", buf);
+	printf("standalone_mtd = %s\n", buf);
 
-		sprintf(buf,
-				"setenv bootargs ubi.mtd=2 root=ubi0:rootfs_spi "
-				"rw rootfstype=ubifs "
-				"ip=$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netdev:off "
-				"console=$consoledev,$baudrate $othbootargs $linux_parts; "
-				"bootm 0x%08x ",
-				CFG_APPL_SPI_FLASH_START_DIRECT +
-				CFG_APPL_SPI_FLASH_PART_KERNEL_START);
+	run_command("saveenv", 0);
 
-		setenv("standalone_mtd_spi", buf);
-
-		sprintf(buf,
-				"setenv bootargs root=/dev/mtdblock2 "
-				"rw rootfstype=jffs2 "
-				"ip=$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netdev:off "
-				"console=$consoledev,$baudrate $othbootargs $linux_parts; "
-				"bootm 0x%08x ",
-				CFG_APPL_SPI_FLASH_START_DIRECT +
-				CFG_APPL_SPI_FLASH_PART_KERNEL_START);
-
-		setenv("standalone_mtd", buf);
-
-		setenv("image_name","uImage_armadaxp");
-		run_command("saveenv", 0);
-
-		return 1;
+	return 1;
 }
 
 U_BOOT_CMD(
@@ -271,372 +283,188 @@ extern struct spi_flash *flash;
 
 static int do_spi_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-		int filesize;
-		ulong addr, src_addr, dest_addr;
-		uint kernel_unc_len, rootfs_unc_len = 0, unc_len, src_len;
-		uint kernel_addr = 0x6000000;
-		uint rootfs_addr = 0x7000000;
-		uint total_in;
-		int rc;
-		int single_file = 0;
-		ulong erase_end_offset;
-		int bz2_file = 0;
+	MV_U32 filesize, loadfrom, fsys;
+	MV_U32 addr, src_addr, dest_addr;
+	MV_U32 kernel_unc_len, rootfs_unc_len = 0, unc_len, src_len;
+	MV_U32 kernel_addr = 0x6000000;
+	MV_U32 rootfs_addr = 0x7000000;
+	MV_U32 total_in;
+	MV_U32 rc, single_file = 0;
+	MV_U32 erase_end_offset;
+	MV_U32 bz2_file = 0;
+	char * devPart;
 
-		addr = load_addr = 0x5000000;
+	addr = load_addr = 0x5000000;
 
+	if (!flash) {
+		flash = spi_flash_probe(0, 0, CONFIG_SF_DEFAULT_SPEED, CONFIG_SF_DEFAULT_MODE);
 		if (!flash) {
-				flash = spi_flash_probe(0, 0, CONFIG_SF_DEFAULT_SPEED, CONFIG_SF_DEFAULT_MODE);
-				if (!flash) {
-						printf("Failed to probe SPI Flash\n");
-						return 0;
-				}
+			printf("Failed to probe SPI Flash\n");
+			return 0;
 		}
+	}
 
+	loadfrom = 0;
+	fsys = FS_TYPE_FAT;
+	devPart= NULL;
 
-		if (argc == 2) {
-				copy_filename (BootFile, argv[1], sizeof(BootFile));
-		} else {
-				copy_filename (BootFile, "ubifs_arm_spi.image", sizeof(BootFile));
-				printf("\nUsing default file \"ubifs_arm_spi.image\" \n");
+	switch(argc) {
+	case 5:
+		copy_filename (BootFile, argv[4], sizeof(BootFile));
+		/* fall to 4*/
+	case 4:
+		if(strcmp(argv[3], "EXT2") == 0)
+			fsys = FS_TYPE_EXT;
+		/* fall to 3*/
+	case 3:
+		devPart = argv[2];
+		/* fall to 2*/
+	case 2:
+		if(strcmp(argv[1], "usb") == 0)
+			loadfrom = 1;
+		else if(strcmp(argv[1], "mmc") == 0)
+			loadfrom = 2;
+		/* fall to 1*/
+	case 1:    /* no parameter all default */
+		if(argc < 4) {
+			copy_filename (BootFile, "ubifs_arm_spi.image", sizeof(BootFile));
+			printf("\nUsing default file \"ubifs_arm_spi.image\" \n");
 		}
-
-		if ((filesize = NetLoop(TFTPGET)) < 0)
-				return 0;
-
-		if (filesize > CFG_APPL_SPI_FLASH_SIZE) {
-				printf("file too big\n");
-				return 0;
-		}
-
-		printf("\nTrying separation of kernel/vxWorks-image and root_fs. "
-			   "Work areas=0x%08x,0x%08x\n",
-			   kernel_addr, rootfs_addr);
-
-		dest_addr = kernel_addr; // uncompress the kernel here.
-		src_addr = addr;
-		src_len = unc_len = 0x1000000*3; //16MB*3 = max+
-
-		rc = BZ2_bzBuffToBuffDecompress_extended (
-												 (char*)dest_addr,
-												 &unc_len, (char *)src_addr, src_len, &total_in,
-												 0, 0);
-		printf("\n");
-		kernel_unc_len = unc_len;
-
-		if (rc == 0) {
-				printf("kernel separation ended ok. unc_len=%d, total_in=%d\n",
-					   unc_len, total_in);
-				bz2_file++;
-		}
-
-		else if (rc == -5) {
-				printf("Not a bz2 file, assuming plain single image file\n");
-				single_file = 1;
-				kernel_unc_len = filesize;
-				kernel_addr = load_addr;
-		}
-
-		else {
-				printf("Uncompress of kernel ended with error. rc=%d\n", rc);
-				return 0;
-		}
-
-		if (!single_file) {
-				//
-				// now try to separate the rootfs. If we get -5 then we have a single file.
-				//
-				dest_addr = rootfs_addr; // uncompress the rootfs here.
-				src_addr += total_in;
-				src_len = unc_len = 0x1000000*3; //16MB*3 = max+
-
-				rc = BZ2_bzBuffToBuffDecompress_extended (
-														 (char*)dest_addr,
-														 &unc_len, (char *)src_addr, src_len, &total_in,
-														 0, 0);
-				printf("\n");
-				rootfs_unc_len = unc_len;
-				if (rc == 0) {
-						bz2_file++;
-
-						printf("rootfs separation ended ok. unc_len=%d, total_in=%d\n",
-							   unc_len, total_in);
-						if (unc_len > CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE) {
-								printf("rootfs too big\n");
-								return 0;
-						}
-				}
-
-				else if (rc == -5) {
-						printf("One single bz2 file detected\n");
-						single_file = 1;
-				}
-
-				else {
-						printf("Uncompress of rootfs ended with error. rc=%d\n", rc);
-						return 0;
-				}
-		}
-
-		if (!single_file && kernel_unc_len > CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE) {
-				printf("kernel too big to fit in flash\n");
-				return 0;
-		} else if (kernel_unc_len > (CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE + CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE)) {
-				// we are now dealing with single file
-				printf("Single image too big to fit in flash\n");
-
-				if (bz2_file) {
-						printf("Trying to fit the compressed image on flash\n");
-						if (filesize  > (CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE + CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE)) {
-								printf("Single image compressed format too big to fit in flash\n");
-								return 0;
-						}
-
-						// point to the bz2 image in memory
-						kernel_unc_len = filesize;
-						kernel_addr = load_addr;
-				}
-
-				else {
-						return 0;
-				}
-		}
-
-		printf("\nBurning %s on flash at 0x%08x, length=%dK\n",
-			   (single_file) ? "single image" : "kernel",
-			   CFG_APPL_SPI_FLASH_PART_KERNEL_START, kernel_unc_len/(1<<10));
-
-		erase_end_offset =  CFG_APPL_SPI_FLASH_PART_KERNEL_START +
-							(kernel_unc_len & 0xfff00000) + 0x100000;
-
-		printf("Erasing 0x%x - 0x%lx: ", CFG_APPL_SPI_FLASH_PART_KERNEL_START, erase_end_offset);
-		spi_flash_erase(flash, CFG_APPL_SPI_FLASH_PART_KERNEL_START,
-						(erase_end_offset - CFG_APPL_SPI_FLASH_PART_KERNEL_START));
-		printf("\t\t[Done]\n");
-
-		printf("Copy to Flash... ");
-
-		spi_flash_write(flash, CFG_APPL_SPI_FLASH_PART_KERNEL_START,
-						kernel_unc_len, (const void *)kernel_addr);
-
-		printf("\n");
-
-		if (!single_file) {
-				printf("\nBurning ubifs rootfs on flash at 0x%08x\n",
-					   CFG_APPL_SPI_FLASH_PART_ROOTFS_START);
-
-				erase_end_offset =  CFG_APPL_SPI_FLASH_PART_ROOTFS_START +
-									(rootfs_unc_len & 0xfff00000) + 0x100000;
-
-				printf("Erasing 0x%x - 0x%lx: ", CFG_APPL_SPI_FLASH_PART_ROOTFS_START, erase_end_offset);
-				spi_flash_erase(flash, CFG_APPL_SPI_FLASH_PART_ROOTFS_START,
-								(erase_end_offset - CFG_APPL_SPI_FLASH_PART_ROOTFS_START));
-
-				printf("Copy to Flash... ");
-
-				spi_flash_write(flash, CFG_APPL_SPI_FLASH_PART_ROOTFS_START,
-								rootfs_unc_len, (const void *)rootfs_addr);
-
-		}
-		return 1;
-}
-
-static int do_spi_mtdburn_legacy(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
-{
-		char buf[128];
-		if (argc == 2) {
-				copy_filename (BootFile, argv[1], sizeof(BootFile));
-		} else {
-				copy_filename (BootFile, "jffs2_arm.image", sizeof(BootFile));
-				printf("\nUsing default file \"jffs2_arm.image\" \n");
-		}
-
-		sprintf(buf, "mtdburn_spi %s", BootFile);
-		run_command(buf, 0);
+		break;
+	default:
 		return 0;
-}
+	}
+	filesize = mvLoadFile4cpss(loadfrom, BootFile, devPart, fsys);
+	if(filesize <=0 )
+		return 0;
 
-U_BOOT_CMD(
-		  mtdburn_spi,      2,     1,      do_spi_mtdburn,
-		  "Burn a Linux/VxWorks image image on the spi flash.\n",
-		  " file-name \n"
-		  "\tburn a Linux/Vxworks image the flash.\n\tdefault file-name is ubifs_arm.image.\n"
-		  );
+	if (filesize > CFG_APPL_SPI_FLASH_SIZE) {
+		printf("file too big\n");
+		return 0;
+	}
 
-U_BOOT_CMD(
-		  mtdburn,      2,     1,      do_spi_mtdburn_legacy,
-		  "Burn a Linux/VxWorks image image on the spi flash.\n",
-		  " file-name \n"
-		  "\tburn a Linux/Vxworks image the flash.\n\tdefault file-name is jffs2_arm.image.\n"
-		  );
+	printf("\nTrying separation of kernel/vxWorks-image and root_fs. Work areas=0x%08x,0x%08x\n",
+	       kernel_addr, rootfs_addr);
 
+	dest_addr = kernel_addr; // uncompress the kernel here.
+	src_addr = addr;
+	src_len = unc_len = 0x1000000*3; //16MB*3 = max+
 
-static int do_nand_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
-{
-		char buf[1024];
-		int filesize;
-		ulong addr, src_addr, dest_addr;
-		uint kernel_unc_len, rootfs_unc_len = 0, unc_len, src_len;
-		uint kernel_addr = 0x6000000;
-		uint rootfs_addr = 0x7000000;
-		uint total_in;
-		int rc;
-		int single_file = 0;
-		int bz2_file = 0;
+	rc = BZ2_bzBuffToBuffDecompress_extended ((char*)dest_addr, &unc_len,
+						  (char *)src_addr, src_len,
+						  &total_in, 0, 0);
+	printf("\n");
+	kernel_unc_len = unc_len;
 
-		addr = load_addr = 0x5000000;
+	if (rc == 0) {
+		printf("kernel separation ended ok. unc_len=%d, total_in=%d\n",unc_len, total_in);
+		bz2_file++;
+	} else if (rc == -5) {
+		printf("Not a bz2 file, assuming plain single image file\n");
+		single_file = 1;
+		kernel_unc_len = filesize;
+		kernel_addr = load_addr;
+	} else {
+		printf("Uncompress of kernel ended with error. rc=%d\n", rc);
+		return 0;
+	}
 
-		if (argc == 2) {
-				copy_filename (BootFile, argv[1], sizeof(BootFile));
-		} else {
-				copy_filename (BootFile, "ubifs_arm_nand.image", sizeof(BootFile));
-				printf("\nUsing default file \"ubifs_arm_nand.image\" \n");
-		}
-
-		if ((filesize = NetLoop(TFTPGET)) < 0)
-				return 0;
-
-		if (filesize > CFG_APPL_NAND_FLASH_SIZE) {
-				printf("file too big\n");
-				return 0;
-		}
-
-		printf("\nTrying separation of kernel/vxWorks-image and root_fs. "
-			   "Work areas=0x%08x,0x%08x\n",
-			   kernel_addr, rootfs_addr);
-
-		dest_addr = kernel_addr; // uncompress the kernel here.
-		src_addr = addr;
+	if (!single_file) {
+	/* now try to separate the rootfs. If we get -5 then we have a single file. */
+		dest_addr = rootfs_addr; // uncompress the rootfs here.
+		src_addr += total_in;
 		src_len = unc_len = 0x1000000*3; //16MB*3 = max+
 
-		rc = BZ2_bzBuffToBuffDecompress_extended (
-												 (char*)dest_addr,
-												 &unc_len, (char *)src_addr, src_len, &total_in,
-												 0, 0);
+		rc = BZ2_bzBuffToBuffDecompress_extended ((char*)dest_addr, &unc_len, (char *)src_addr,
+							  src_len, &total_in, 0, 0);
 		printf("\n");
-		kernel_unc_len = unc_len;
-
+		rootfs_unc_len = unc_len;
 		if (rc == 0) {
-				printf("kernel separation ended ok. unc_len=%d, total_in=%d\n",
-					   unc_len, total_in);
-				bz2_file++;
-		}
+			bz2_file++;
 
-		else if (rc == -5) {
-				printf("Not a bz2 file, assuming plain single image file\n");
-				single_file = 1;
-				kernel_unc_len = filesize;
-				kernel_addr = load_addr;
-		}
-
-		else {
-				printf("Uncompress of kernel ended with error. rc=%d\n", rc);
+			printf("rootfs separation ended ok. unc_len=%d, total_in=%d\n", unc_len, total_in);
+			if (unc_len > CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE) {
+				printf("rootfs too big\n");
 				return 0;
+			}
+		} else if (rc == -5) {
+			printf("One single bz2 file detected\n");
+			single_file = 1;
+		} else {
+			printf("Uncompress of rootfs ended with error. rc=%d\n", rc);
+			return 0;
 		}
+	}
 
-		if (!single_file) {
-				//
-				// now try to separate the rootfs. If we get -5 then we have a single file.
-				//
-				dest_addr = rootfs_addr; // uncompress the rootfs here.
-				src_addr += total_in;
-				src_len = unc_len = 0x1000000*3; //16MB*3 = max+
-
-				rc = BZ2_bzBuffToBuffDecompress_extended (
-														 (char*)dest_addr,
-														 &unc_len, (char *)src_addr, src_len, &total_in,
-														 0, 0);
-				printf("\n");
-				rootfs_unc_len = unc_len;
-				if (rc == 0) {
-						bz2_file++;
-
-						printf("rootfs separation ended ok. unc_len=%d, total_in=%d\n",
-							   unc_len, total_in);
-						if (unc_len > CFG_APPL_NAND_FLASH_PART_ROOTFS_SIZE) {
-								printf("rootfs too big\n");
-								return 0;
-						}
-				}
-
-				else if (rc == -5) {
-						printf("One single bz2 file detected\n");
-						single_file = 1;
-				}
-
-				else {
-						printf("Uncompress of rootfs ended with error. rc=%d\n", rc);
-						return 0;
-				}
-		}
-
-		if (!single_file && kernel_unc_len > CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE) {
-				printf("kernel too big to fit in flash\n");
+	if (!single_file && kernel_unc_len > CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE) {
+		printf("kernel too big to fit in flash\n");
+		return 0;
+	} else if (kernel_unc_len > (CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE + CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE)) {
+		// we are now dealing with single file
+		printf("Single image too big to fit in flash\n");
+		if (bz2_file) {
+			printf("Trying to fit the compressed image on flash\n");
+			if (filesize  > (CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE + CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE)) {
+				printf("Single image compressed format too big to fit in flash\n");
 				return 0;
-		} else if (kernel_unc_len > (CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE + CFG_APPL_NAND_FLASH_PART_ROOTFS_SIZE)) {
-				// we are now dealing with single file
-				printf("Single image too big to fit in flash\n");
+			}
+			/* point to the bz2 image in memory */
+			kernel_unc_len = filesize;
+			kernel_addr = load_addr;
+		} else
+			return 0;
+	}
 
-				if (bz2_file) {
-						printf("Trying to fit the compressed image on flash\n");
-						if (filesize  > (CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE + CFG_APPL_NAND_FLASH_PART_ROOTFS_SIZE)) {
-								printf("Single image compressed format too big to fit in flash\n");
-								return 0;
-						}
+	printf("\nBurning %s on flash at 0x%08x, length=%dK\n",
+	       (single_file) ? "single image" : "kernel",
+	       CFG_APPL_SPI_FLASH_PART_KERNEL_START, kernel_unc_len/_1K);
 
-						// point to the bz2 image in memory
-						kernel_unc_len = filesize;
-						kernel_addr = load_addr;
-				}
+	erase_end_offset =  CFG_APPL_SPI_FLASH_PART_KERNEL_START + \
+		((kernel_unc_len + CFG_APPL_SPI_FLASH_BLOCK_ALIMENT) & ~(CFG_APPL_SPI_FLASH_BLOCK_ALIMENT-1));
 
-				else {
-						return 0;
-				}
-		}
+	printf("Erasing 0x%x - 0x%x: ", CFG_APPL_SPI_FLASH_PART_KERNEL_START, erase_end_offset);
+	spi_flash_erase(flash, CFG_APPL_SPI_FLASH_PART_KERNEL_START,
+			(erase_end_offset - CFG_APPL_SPI_FLASH_PART_KERNEL_START));
+	printf("\t\t[Done]\n");
 
-		printf("\nBurning %s on flash at 0x%08x, length=%dK\n",
-			   (single_file) ? "single image" : "kernel",
-			   CFG_APPL_NAND_FLASH_PART_KERNEL_START, kernel_unc_len/(1<<10));
+	printf("\nCopy to Flash");
 
-		sprintf(buf, "nand erase 0x%08x 0x%08x",
-				CFG_APPL_NAND_FLASH_PART_KERNEL_START,
-				CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE);
-		printf("Erasing kernel partition: %s\n", buf);
-		run_command(buf, 0);
+	spi_flash_write(flash, CFG_APPL_SPI_FLASH_PART_KERNEL_START,
+			kernel_unc_len, (const void *)kernel_addr);
 
-		sprintf(buf, "nand write 0x%08x 0x%08x 0x%08x",
-				kernel_addr,
-				CFG_APPL_NAND_FLASH_PART_KERNEL_START,
-				CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE);
-		printf("Copy to Flash: %s \n", buf);
-		run_command(buf, 0);
+	printf("\n");
 
-		if (!single_file) {
-				printf("\nBurning ubifs rootfs on flash at 0x%08x\n",
-					   CFG_APPL_NAND_FLASH_PART_ROOTFS_START);
+	if (!single_file) {
 
-				sprintf(buf, "nand erase 0x%08x 0x%08x",
-						CFG_APPL_NAND_FLASH_PART_ROOTFS_START,
-						CFG_APPL_NAND_FLASH_PART_ROOTFS_SIZE);
-				printf("Erasing rootfs partition: %s\n", buf);
-				run_command(buf, 0);
+		erase_end_offset =  CFG_APPL_SPI_FLASH_PART_ROOTFS_START + \
+			((rootfs_unc_len + CFG_APPL_SPI_FLASH_BLOCK_ALIMENT) & ~(CFG_APPL_SPI_FLASH_BLOCK_ALIMENT-1));
 
-				sprintf(buf, "nand write 0x%08x 0x%08x 0x%08x",
-						rootfs_addr,
-						CFG_APPL_NAND_FLASH_PART_ROOTFS_START,
-						rootfs_unc_len);
-				printf("Copy to Flash: %s \n", buf);
-				run_command(buf, 0);
-		}
-		return 1;
+		printf("Erasing 0x%x - 0x%x: (%dMB).", CFG_APPL_SPI_FLASH_PART_ROOTFS_START, erase_end_offset,
+				(erase_end_offset - CFG_APPL_SPI_FLASH_PART_ROOTFS_START) / _1M);
+
+		spi_flash_erase(flash, CFG_APPL_SPI_FLASH_PART_ROOTFS_START,
+				(erase_end_offset - CFG_APPL_SPI_FLASH_PART_ROOTFS_START));
+
+		printf("\nBurning rootfs on flash at 0x%08x, length=%dK\n",
+		       CFG_APPL_SPI_FLASH_PART_ROOTFS_START, (rootfs_unc_len / _1K));
+		printf("\nCopy to Flash");
+
+		spi_flash_write(flash, CFG_APPL_SPI_FLASH_PART_ROOTFS_START,
+				rootfs_unc_len, (const void *)rootfs_addr);
+
+		printf("\n");
+	}
+	return 1;
 }
 
 U_BOOT_CMD(
-		  mtdburn_nand,      2,     1,      do_nand_mtdburn,
-		  "Burn a Linux/VxWorks image image on the nand flash.\n",
-		  " file-name \n"
-		  "\tburn a Linux/Vxworks image the flash.\n\tdefault file-name is ubifs_arm.image.\n"
-		  );
-
+	mtdburn,      5,     1,      do_spi_mtdburn,
+	"Burn a Linux/VxWorks image image on the spi flash.\n",
+	"[interface [<dev[:part]>  [File system [filename]]]]\n"
+	"\tinterface can be tftp, mmc or usb, default is tftp.\n"
+	"\tFile system can be FAT or EXT2, default is FAT.\n"
+	"\tdefault file-name is ubifs_arm.image.\n"
+);
 
 #define  SMI_WRITE_ADDRESS_MSB_REGISTER   (0x00)
 #define  SMI_WRITE_ADDRESS_LSB_REGISTER   (0x01)

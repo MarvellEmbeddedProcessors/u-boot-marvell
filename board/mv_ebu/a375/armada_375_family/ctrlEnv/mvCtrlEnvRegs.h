@@ -91,6 +91,8 @@ extern "C" {
  */
 #define SOC_DEV_MUX_REG				0x18208
 
+#define SATAHC_LED_CONFIGURATION_REG		(MV_SATA_REGS_OFFSET + 0x2c)
+
 /*
  * Power Management Clock (PMC) Gating Control Register
  */

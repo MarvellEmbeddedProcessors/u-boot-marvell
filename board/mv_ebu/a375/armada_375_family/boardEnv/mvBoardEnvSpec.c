@@ -128,7 +128,7 @@ MV_BOARD_MPP_INFO db88f6720InfoBoardMppConfigValue[] = {
 };
 
 MV_BOARD_INFO db88f6720_board_info = {
-	.boardName			= "DB-88F6720",
+	.boardName			= "DB-88F6720-V2",
 	.numBoardMppTypeValue		= ARRSZ(db88f6720InfoBoardModTypeInfo),
 	.pBoardModTypeValue		= db88f6720InfoBoardModTypeInfo,
 	.pBoardMppConfigValue		= db88f6720InfoBoardMppConfigValue,

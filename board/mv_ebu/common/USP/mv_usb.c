@@ -150,7 +150,7 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 	}
 
 	/* USB2 port 0 is sharing MAC with USB3, and requires UTMI Phy selection */
-	if (family == MV_88F66X0)
+	if (family == MV_88F66X0 || family == MV_88F67X0)
 		setUtmiPhySelector(USB3_UNIT_ID);
 
 	mv_xhci_core_init(index);
@@ -185,8 +185,8 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 {
 	MV_U32 family = mvCtrlDevFamilyIdGet(0);
 
-        /* only USB2 port 0 is sharing MAC with USB3, and requires UTMI Phy selection */
-	if (index == 0 && family == MV_88F66X0)
+        /* ALP/A375: only USB2 port 0 is sharing MAC with USB3, and requires UTMI Phy selection */
+	if (index == 0 && (family == MV_88F66X0 || family == MV_88F67X0))
 		setUtmiPhySelector(USB_UNIT_ID);
 
 	*hccr = (struct ehci_hccr *)(INTER_REGS_BASE + MV_USB_REGS_OFFSET(index) + 0x100);

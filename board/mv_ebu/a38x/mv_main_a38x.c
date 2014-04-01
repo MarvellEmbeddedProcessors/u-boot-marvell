@@ -88,9 +88,7 @@
 	#include <pci.h>
 #endif
 
-#ifdef CONFIG_SCSI_AHCI
-	#include <ahci.h>
-	#include <scsi.h>
+#ifdef CONFIG_SCSI_6820
 	#include "mvSysSata3Api.h"
 #endif
 #include <asm/arch-armv7/vfpinstr.h>
@@ -970,6 +968,7 @@ int board_mmc_init(bd_t *bis)
 
 #endif
 
+
 /*
 * print_cpuinfo - original U-Boot print function - used before code relocation
 *
@@ -1065,15 +1064,8 @@ int misc_init_r(void)
 
 	mvBoardDebugLed(7);
 
-#ifdef CONFIG_SCSI_AHCI
-	{
-		int sataPort = 0;
-		mvSysSata3WinInit();
-		for(sataPort = 0; sataPort < mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID); sataPort++) {
-			if (0 != ahci_init(INTER_REGS_BASE | MV_SATA3_REGS_OFFSET(sataPort)))
-				printf("AHCI init failed!\n");
-		}
-	}
+#ifdef CONFIG_SCSI_6820
+	mvSysSata3WinInit();
 #endif
 	char *env;
 	/* pcie fine tunning */

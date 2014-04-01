@@ -992,7 +992,7 @@ int ahci_init(u32 base)
 	if (rc)
 		goto err_out;
 
-	ahci_print_info(ahci_ent[dev]);
+	/* ahci_print_info(ahci_ent[dev]); */
 
 	/* setup scsi targets */
 	for (i = 0; i < CONFIG_SYS_SCSI_MAX_SCSI_ID; i++)

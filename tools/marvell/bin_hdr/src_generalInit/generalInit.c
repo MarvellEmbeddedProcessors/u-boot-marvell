@@ -72,6 +72,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef MV88F68XX
 #include "../src_phy_a38x/mvBHboardEnvSpec.h"
 #endif
+#ifdef MV88F66XX
+#include "../src_phy_alp/mvBHboardEnvSpec.h"
+#endif
+#ifdef MV88F672X
+#include "../src_phy_a375/mvBHboardEnvSpec.h"
+#endif
 
 #if defined(DB_88F6710_PCAC)
 #include "mvBHboardEnvSpec.h"
@@ -99,6 +105,23 @@ MV_STATUS mvGeneralInit(void)
 	regData |= (AVS_LOW_VDD_LIMIT_VAL | AVS_HIGH_VDD_LIMIT_VAL);
         MV_REG_WRITE(AVS_ENABLED_CONTROL, regData);
 #endif
+
+#if defined(MV88F672X) || defined(MV88F66XX)
+#ifndef CONFIG_ALP_A375_ZX_REV
+/* * Peripheral Clock WA - for A375/ALP A0
+ * The bug is related to the Peripheral clock of the CPU.
+ * This clock generated from divide of the CPU clock.(Configurable divider)
+
+ * At A0 it close to 200MHz due to Timing issue.  (divide by 4 Default value).
+ * There is a functional bug in this mode at the GIC <> CPU interface.
+ * We want to change it to divide by 2 (400 MHz).
+ */
+	MV_U32 regData = MV_REG_READ(SOC_PERI_CLK_CTRL);
+	regData &= (~SOC_PERIL_CLK_CTRL_CLK_DIV_MASK);
+	regData &= (~SOC_PERIL_CLK_CTRL_CLK_SMP_MASK);
+	MV_REG_WRITE(SOC_PERI_CLK_CTRL, regData);
+#endif /* (MV88F672X) || (MV88F66XX) */
+#endif /* CONFIG_ALP_A375_ZX_REV */
 
 #ifdef CONFIG_DB_88F6710_PCAC
     /*Set MPP0 and MPP1 to be UART mode*/

@@ -315,7 +315,7 @@ MV_U16 mvCtrlModelGet(MV_VOID);
 MV_U8 mvCtrlRevGet(MV_VOID);
 MV_STATUS mvCtrlNameGet(char *pNameBuff);
 MV_U32 mvCtrlModelRevGet(MV_VOID);
-MV_STATUS mvCtrlModelRevNameGet(char *pNameBuff);
+MV_VOID mvCtrlModelRevNameGet(char *pNameBuff);
 MV_VOID mvCtrlAddrDecShow(MV_VOID);
 const MV_8 *mvCtrlTargetNameGet(MV_TARGET target);
 MV_U32    ctrlSizeToReg(MV_U32 size, MV_U32 alignment);

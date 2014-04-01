@@ -407,6 +407,10 @@ static int ahci_init_one(pci_dev_t pdev)
 		return -1;
 	dev = ahci_max_devs++;
 	ahci_ent[dev] = malloc(sizeof(struct ahci_probe_ent));
+	if (!ahci_ent[dev]) {
+		printf("%s: No memory for probe_ent\n", __func__);
+		return -ENOMEM;
+	}
 	memset(ahci_ent[dev], 0, sizeof(struct ahci_probe_ent));
 	ahci_ent[dev]->dev = pdev;
 
@@ -667,6 +671,7 @@ static char *ata_id_strcpy(u16 *target, u16 *src, int len)
 static int ata_scsiop_inquiry(ccb *pccb)
 {
 	u8 fis[20];
+	u16 *idbuf;
 	ALLOC_CACHE_ALIGN_BUFFER(u16, tmpid, ATA_ID_WORDS);
 	struct ahci_probe_ent *probe_ent = ahci_targets[pccb->target].probe_ent;
 	u8 port = pccb->target - ahci_targets[pccb->target].first_port;
@@ -696,17 +701,23 @@ static int ata_scsiop_inquiry(ccb *pccb)
 		return -EIO;
 	}
 
-	if (probe_ent->ataid[port])
-		free(probe_ent->ataid[port]);
-	probe_ent->ataid[port] = tmpid;
-	ata_swap_buf_le16(tmpid, ATA_ID_WORDS);
+	if (probe_ent->ataid[port] == NULL) {
+		probe_ent->ataid[port] = malloc(ATA_ID_WORDS * 2);
+		if (!probe_ent->ataid[port]) {
+			printf("%s: No memory for tmpid\n", __func__);
+			return -ENOMEM;
+	       }
+	}
+	idbuf = probe_ent->ataid[port];
+	memcpy(idbuf, tmpid, ATA_ID_WORDS * 2);
+	ata_swap_buf_le16(idbuf, ATA_ID_WORDS);
 
 	memcpy(&pccb->pdata[8], "ATA     ", 8);
-	ata_id_strcpy((u16 *) &pccb->pdata[16], &tmpid[ATA_ID_PROD], 16);
-	ata_id_strcpy((u16 *) &pccb->pdata[32], &tmpid[ATA_ID_FW_REV], 4);
+	ata_id_strcpy((u16 *) &pccb->pdata[16], &idbuf[ATA_ID_PROD], 16);
+	ata_id_strcpy((u16 *) &pccb->pdata[32], &idbuf[ATA_ID_FW_REV], 4);
 
 #ifdef DEBUG
-	ata_dump_id(tmpid);
+	ata_dump_id(idbuf);
 #endif
 	return 0;
 }

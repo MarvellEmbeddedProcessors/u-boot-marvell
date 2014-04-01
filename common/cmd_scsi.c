@@ -36,7 +36,9 @@
 #include <ahci.h>
 #include <malloc.h>
 
-
+#ifdef CONFIG_SCSI_6820
+void board_ahci_init(void);
+#endif
 #ifdef CONFIG_SCSI_DEV_LIST
 #define SCSI_DEV_LIST CONFIG_SCSI_DEV_LIST
 #else
@@ -224,6 +226,10 @@ void scsi_init(void)
 	 * Find a device from the list, this driver will support a single
 	 * controller.
 	 */
+
+#ifdef	CONFIG_SCSI_6820
+	board_ahci_init();
+#endif
 #if defined CONFIG_SCSI_MV94XX
 	int busdevfunc;
 	if ((busdevfunc = pci_find_devices (mv94xx_pci_ids, 0)) < 0) {

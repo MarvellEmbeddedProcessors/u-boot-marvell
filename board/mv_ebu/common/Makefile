@@ -160,6 +160,7 @@ USP_OBJS +=	$(USP_DIR)/mv_ide.o
 ifdef MAKE_SATA3
 SOC_OBJS    +=	$(HAL_SATA3_DIR)/mvSata3AddrDec.o
 HAL_IF_OBJS +=	$(HAL_IF_DIR)/mvSysSata3.o
+USP_OBJS    +=  $(USP_DIR)/mv_scsi.o
 endif
 endif
 

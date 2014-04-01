@@ -79,6 +79,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_MAX_BOARD_ID             (ARMADA_375_CUSTOMER_ID + 1)
 #define INVALID_BAORD_ID            0xFFFFFFFF
 
+#define INTER_REGS_BASE                                     0xD0000000
+
 /* Sample at Reset */
 #define MPP_SAMPLE_AT_RESET(id)     (0xE8200 + (id * 4))
 #define PEX_CLK_100MHZ_MASK         0x00000004
@@ -192,7 +194,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_MISC_REGS_BASE           (MV_MISC_REGS_OFFSET)
 #define SOC_CTRL_REG                (MV_MISC_REGS_BASE + 0x4)
 
-
+#define SOC_PERI_CLK_CTRL		(0x2085C)
+#define SOC_PERIL_CLK_CTRL_CLK_DIV_MASK	(0xF)
+#define SOC_PERIL_CLK_CTRL_CLK_SMP_MASK	(0xF00)
 
 /********************************************/
 /* PCI Express Control and Status Registers */

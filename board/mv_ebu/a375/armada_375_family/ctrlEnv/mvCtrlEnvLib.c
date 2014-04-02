@@ -250,6 +250,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_67xx_INDEX_MAX] = {
 /* BM_UNIT_ID           */ { 1, },
 /* PNC_UNIT_ID          */ { 1, },
 /* I2C_UNIT_ID          */ { 2, },
+/* SGMII_UNIT_ID        */ { 1, },
 };
 
 MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit)
@@ -610,6 +611,38 @@ MV_U32 mvCtrlMppRegGet(MV_U32 mppGroup)
 	return ret;
 }
 
+/*******************************************************************************
+* mvCtrlLaneSelectorGet
+*
+*  DESCRIPTION:
+*       Get Lane Selector
+*
+* INPUT:
+*       Lane number
+*
+* OUTPUT:
+*
+* RETURN:
+*	Lane Selector Unit ENUM
+*
+*******************************************************************************/
+MV_U32 mvCtrlLaneSelectorGet(MV_U32 laneNum)
+{
+	MV_U32 laneUnits[4][4] = {{ PEX_UNIT_ID },
+				  { PEX_UNIT_ID, SGMII_UNIT_ID, SATA_UNIT_ID },
+				  { SGMII_UNIT_ID, SATA_UNIT_ID },
+				  { USB3_UNIT_ID, SGMII_UNIT_ID } };
+
+	/* lane#0 is pre-defined to be PCIe0 , no selector value */
+	MV_U32  selector = (laneNum == 0 ? 0 : MV_REG_READ(MV_COMMON_PHY_REGS_OFFSET));
+
+	if (laneNum >= 4)
+		return MV_ERROR;
+
+	selector = (selector & SERDES_LANE_MASK(laneNum)) >> SERDES_LANE_OFFS(laneNum);
+	return laneUnits[laneNum][selector];
+}
+
 #if defined(MV_INCLUDE_PEX)
 /*******************************************************************************
 * mvCtrlPexMaxIfGet
@@ -630,7 +663,13 @@ MV_U32 mvCtrlMppRegGet(MV_U32 mppGroup)
 *******************************************************************************/
 MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
 {
-	return mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
+	MV_U32 pexMaxIfNum = mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
+
+	/* Detect if SerDes lane #1 is set to PCIe1 */
+	if (mvCtrlRevGet() >= MV_88F672X_A0_ID && mvCtrlLaneSelectorGet(1) != PEX_UNIT_ID)
+		pexMaxIfNum--;
+
+	return pexMaxIfNum;
 }
 
 #endif
@@ -746,7 +785,17 @@ MV_U32 mvCtrlEthMaxPortGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlSataMaxPortGet(MV_VOID)
 {
-	return mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID);
+	MV_U32 sataMaxNum = mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID);
+
+	/* Detect if SerDes lane #2 is set to SATA0 */
+	if (mvCtrlRevGet() >= MV_88F672X_A0_ID && mvCtrlLaneSelectorGet(2) != SATA_UNIT_ID)
+		sataMaxNum--;
+
+	/* Detect if SerDes lane #1 is set to SATA1 */
+	if (mvCtrlRevGet() >= MV_88F672X_A0_ID && mvCtrlLaneSelectorGet(1) != SATA_UNIT_ID)
+		sataMaxNum--;
+
+	return sataMaxNum;
 }
 
 #endif
@@ -834,9 +883,14 @@ MV_U32 mvCtrlUsbMaxGet(void)
 *******************************************************************************/
 MV_U32 mvCtrlUsb3MaxGet(void)
 {
-	return mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID);
-}
+	MV_U32 usb3MaxNum = mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID);
 
+	/* Detect if SerDes lane #3 is set to USB3 */
+	if (mvCtrlRevGet() >= MV_88F672X_A0_ID && mvCtrlLaneSelectorGet(3) != USB3_UNIT_ID)
+		usb3MaxNum--;
+
+	return usb3MaxNum;
+}
 #endif
 
 #if defined(MV_INCLUDE_SDIO)

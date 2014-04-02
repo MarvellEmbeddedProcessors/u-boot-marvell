@@ -551,7 +551,8 @@ void pci_init_board(void)
 	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
 #endif
 
-	if (mvCtrlPexMaxIfGet() == 0)
+	activePexCount = mvCtrlPexMaxIfGet();
+	if (activePexCount == 0)
 		return;
 
 	env = getenv("disaMvPnp");
@@ -559,7 +560,6 @@ void pci_init_board(void)
 	if (env && ( (strcmp(env, "yes") == 0) || (strcmp(env, "Yes") == 0) ) )
 		printf("Warning: skip configuration of Marvell devices!!!\n");
 
-	activePexCount = mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
 	DB(printf("Start scan of %d PEX interfaces\n", activePexCount));
 
 	/* Initialize and scan all PEX interfaces */

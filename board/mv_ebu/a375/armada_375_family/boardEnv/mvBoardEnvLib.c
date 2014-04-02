@@ -1383,61 +1383,57 @@ MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId)
 *******************************************************************************/
 MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 {
-	MV_U32 ethConfig = mvBoardEthComplexConfigGet();
+	MV_U32 i, ethConfig = mvBoardEthComplexConfigGet();
 
 	mvOsOutput("Board configuration detected:\n");
 
-	/* TDM */
-	if (mvBoardTdmDevicesCountGet() > 0)
-		mvOsOutput("       TDM module.\n");
-
-	/* LCD DVI Module */
-	if (mvBoardIsLcdDviModuleConnected())
-		mvOsOutput("       LCD DVI module.\n");
-
-	/* Switch Module */
-	if ((ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6) &&
-		!(ethConfig & MV_ETHCOMP_GE_MAC1_2_SW_P4))
-		mvOsOutput("       Ethernet Switch port 6 on MAC0 [Default]\n");
-	else if ((ethConfig & MV_ETHCOMP_GE_MAC1_2_SW_P4) &&
-		!(ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6))
-		mvOsOutput("       Ethernet Switch port 4 on MAC1 [Default]\n");
-	else if ((ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6) &&
-		(ethConfig & MV_ETHCOMP_GE_MAC1_2_SW_P4)) {
-		mvOsOutput("       Ethernet Switch port 6 on MAC0 [Default]\n");
-		mvOsOutput("       Ethernet Switch port 4 on MAC1\n");
-	}
-
 	/* RGMII */
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_RGMII0)
-		mvOsOutput("       RGMII0 Module on MAC0\n");
+		mvOsOutput("\tRGMII0 Module on MAC0\n");
 	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_RGMII1)
-		mvOsOutput("       RGMII1 on MAC1\n");
+		mvOsOutput("\tRGMII1 on MAC1\n");
 	if (ethConfig & MV_ETHCOMP_SW_P4_2_RGMII0)
-		mvOsOutput("       RGMII0 Module on Switch port #4\n");
+		mvOsOutput("\tRGMII0 Module on Switch port #4\n");
 
 	/* Internal GE Quad Phy */
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)
-			mvOsOutput("       GE-PHY-0 on MAC0\n");
+			mvOsOutput("\tGE-PHY-0 on MAC0\n");
 	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3)
-			mvOsOutput("       GE-PHY-3 on MAC1\n");
+			mvOsOutput("\tGE-PHY-3 on MAC1\n");
 	if ((ethConfig & MV_ETHCOMP_SW_P0_2_GE_PHY_P0) && (ethConfig & MV_ETHCOMP_SW_P1_2_GE_PHY_P1)
 		&& (ethConfig & MV_ETHCOMP_SW_P2_2_GE_PHY_P2) && (ethConfig & MV_ETHCOMP_SW_P3_2_GE_PHY_P3))
-			mvOsOutput("       4xGE-PHY Module on 4 Switch ports\n");
+			mvOsOutput("\t4xGE-PHY Module on 4 Switch ports\n");
 	else {
 		if (ethConfig & MV_ETHCOMP_SW_P0_2_GE_PHY_P0)
-			mvOsOutput("       GE-PHY-0 Module on Switch port #0\n");
+			mvOsOutput("\tGE-PHY-0 Module on Switch port #0\n");
 		if (ethConfig & MV_ETHCOMP_SW_P1_2_GE_PHY_P1)
-			mvOsOutput("       GE-PHY-1 Module on Switch port #1\n");
+			mvOsOutput("\tGE-PHY-1 Module on Switch port #1\n");
 		if (ethConfig & MV_ETHCOMP_SW_P2_2_GE_PHY_P2)
-			mvOsOutput("       GE-PHY-2 Module on Switch port #2\n");
+			mvOsOutput("\tGE-PHY-2 Module on Switch port #2\n");
 		if (ethConfig & MV_ETHCOMP_SW_P3_2_GE_PHY_P3)
-			mvOsOutput("       GE-PHY-3 Module on Switch port #3\n");
+			mvOsOutput("\tGE-PHY-3 Module on Switch port #3\n");
 	}
 
-
-
-
+	/* SERDES Lanes*/
+	mvOsOutput("SERDES configuration:\n");
+	for (i = 0; i < 4; i++) {
+		switch (mvCtrlLaneSelectorGet(i)) {
+		case PEX_UNIT_ID:
+			mvOsOutput("\tLane #%d: PCIe%d\n", i, i);
+			break;
+		case USB3_UNIT_ID:
+			mvOsOutput("\tLane #%d: USB3\n", i);
+			break;
+		case SATA_UNIT_ID:
+			mvOsOutput("\tLane #%d: SATA%d\n", i, (i == 1 ? 1 : 0));
+			break;
+		case SGMII_UNIT_ID:
+			mvOsOutput("\tLane #%d: SGMII\n", i);
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 MV_VOID mvBoardOtherModuleTypePrint(MV_VOID)

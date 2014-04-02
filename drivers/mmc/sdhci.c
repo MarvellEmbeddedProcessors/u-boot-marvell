@@ -198,7 +198,7 @@ int sdhci_send_command(struct mmc *mmc, struct mmc_cmd *cmd,
 		flags |= SDHCI_CMD_DATA;
 
 	/* Set Transfer mode regarding to data flag */
-	if (data != 0) {
+	if (data != NULL) {
 		sdhci_writeb(host, 0xe, SDHCI_TIMEOUT_CONTROL);
 		mode = SDHCI_TRNS_BLK_CNT_EN;
 		trans_bytes = data->blocks * data->blocksize;
@@ -268,7 +268,7 @@ int sdhci_send_command(struct mmc *mmc, struct mmc_cmd *cmd,
 	stat = sdhci_readl(host, SDHCI_INT_STATUS);
 	sdhci_writel(host, SDHCI_INT_ALL_MASK, SDHCI_INT_STATUS);
 	if (!ret) {
-		if ((host->quirks & SDHCI_QUIRK_32BIT_DMA_ADDR) &&
+		if (data && (host->quirks & SDHCI_QUIRK_32BIT_DMA_ADDR) &&
 				!is_aligned && (data->flags == MMC_DATA_READ))
 			memcpy(data->dest, aligned_buffer, trans_bytes);
 		return 0;

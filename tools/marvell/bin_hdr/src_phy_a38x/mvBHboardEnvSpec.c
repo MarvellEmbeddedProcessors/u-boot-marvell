@@ -130,6 +130,39 @@ MV_U8 topologyConfigDBModeGet(MV_VOID);
 MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray);
 
 /**************************************************************************
+ * loadTopologyRDNas -
+ *
+ * DESCRIPTION:          Loads the board topology for RD NAS board
+ * INPUT:                serdesMapArray  -   The struct that will contain
+ *                                           the board topology map
+ * OUTPUT:               The board topology.
+ * RETURNS:              MV_OK           -   for success
+ ***************************************************************************/
+MV_STATUS loadTopologyRDNas(SERDES_MAP  *serdesMapArray);
+
+/**************************************************************************
+ * loadTopologyRDAp -
+ *
+ * DESCRIPTION:          Loads the board topology for RD AP board
+ * INPUT:                serdesMapArray  -   The struct that will contain
+ *                                           the board topology map
+ * OUTPUT:               The board topology.
+ * RETURNS:              MV_OK           -   for success
+ ***************************************************************************/
+MV_STATUS loadTopologyRDAp(SERDES_MAP  *serdesMapArray);
+
+/**************************************************************************
+ * loadTopologyRDSgmiiUsb -
+ *
+ * DESCRIPTION:          For RD board check if lane 4 is USB3 or SGMII
+ * INPUT:                None
+ * OUTPUT:               isSgmii - return MV_TRUE if lane 4 is SGMII
+ * 				   return MV_FALSE if lane 4 is USB.
+ * RETURNS:              MV_OK           -   for success
+ ***************************************************************************/
+MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii);
+
+/**************************************************************************
  * loadTopologyDefault -
  *
  * DESCRIPTION:          this function is called when a wrong topology load
@@ -438,8 +471,7 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
 {
 	MV_TWSI_SLAVE twsiSlave;
-	MV_U8 mode, modeBit;
-	MV_BOOL isSgmii = MV_FALSE;
+	MV_U8 mode;
 
 	DEBUG_INIT_FULL_S("\n### loadTopologyRD ###\n");
 
@@ -462,38 +494,105 @@ MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
 	/* Updating the topology map */
 	DEBUG_INIT_FULL_S("loadTopologyRD: Loading board topology details\n");
 
-	/* modeBit 0 = NAS, 1 = AP */
-	modeBit = (mode >> 1) & 0x1;
+	/* RD mode: 0 = NAS, 1 = AP */
+	if (((mode >> 1) & 0x1) == 0) {
+		CHECK_STATUS(loadTopologyRDNas(serdesMapArray));
 
-	if (modeBit == 0) {
-		DEBUG_INIT_S("NAS topology\n");
 	}
 	else {
-		DEBUG_INIT_S("AP topology\n");
+		CHECK_STATUS(loadTopologyRDAp(serdesMapArray));
 	}
 
-	/* check if lane 4 is USB3 or SGMII */
-	twsiSlave.slaveAddr.address = RD_GET_MODE_ADDR;
-	twsiSlave.offset = 1;
 
-	if (mvTwsiRead(0, &twsiSlave, &mode, 1) == MV_OK) {
-		isSgmii = ((mode >> 2) & 0x1);
-	} /* else use the default - USB3 */
+	return MV_OK;
+}
+
+/***************************************************************************/
+MV_STATUS loadTopologyRDNas(SERDES_MAP  *serdesMapArray)
+{
+	MV_BOOL isSgmii = MV_FALSE;
+
+	DEBUG_INIT_S("\nInit RD NAS topology ");
+
+	/* check if lane 4 is USB3 or SGMII */
+
+	if (loadTopologyRDSgmiiUsb(&isSgmii) != MV_OK) {
+		DEBUG_INIT_S("loadTopologyRD NAS: TWSI Read failed\n");
+		return MV_FAIL;
+	}
 
 	/* Lane 0 */
-	serdesMapArray[0].serdesType = (modeBit == 1) ? DEFAULT_SERDES : PEX0;
-	serdesMapArray[0].serdesSpeed = (modeBit == 1) ? LAST_SERDES_SPEED : __5Gbps;
-	serdesMapArray[0].serdesMode = (modeBit == 1) ? SERDES_DEFAULT_MODE : PEX_ROOT_COMPLEX_x1;
+	serdesMapArray[0].serdesType = PEX0;
+	serdesMapArray[0].serdesSpeed = __5Gbps;
+	serdesMapArray[0].serdesMode = PEX_ROOT_COMPLEX_x1;
 
 	/* Lane 1 */
-	serdesMapArray[1].serdesType = (modeBit == 1) ? PEX0 : SATA0;
-	serdesMapArray[1].serdesSpeed = (modeBit == 1) ? __5Gbps : __3Gbps;
-	serdesMapArray[1].serdesMode = (modeBit == 1) ? PEX_ROOT_COMPLEX_x1 : SERDES_DEFAULT_MODE;
+	serdesMapArray[1].serdesType = SATA0;
+	serdesMapArray[1].serdesSpeed = __3Gbps;
+	serdesMapArray[1].serdesMode = SERDES_DEFAULT_MODE;
 
 	/* Lane 2 */
-	serdesMapArray[2].serdesType = (modeBit == 1) ? PEX1 : SATA1;
-	serdesMapArray[2].serdesSpeed = (modeBit == 1) ? __5Gbps : __3Gbps;
-	serdesMapArray[2].serdesMode = (modeBit == 1) ? PEX_ROOT_COMPLEX_x1 : SERDES_DEFAULT_MODE;
+	serdesMapArray[2].serdesType = SATA1;
+	serdesMapArray[2].serdesSpeed = __3Gbps;
+	serdesMapArray[2].serdesMode = SERDES_DEFAULT_MODE;
+
+
+	/* Lane 3 */
+	serdesMapArray[3].serdesType =  SATA3;
+	serdesMapArray[3].serdesSpeed = __3Gbps;
+	serdesMapArray[3].serdesMode =  SERDES_DEFAULT_MODE;
+
+	/* Lane 4 */
+	if (isSgmii == MV_TRUE) {
+		DEBUG_INIT_S("Serdes Lane 4 is SGMII\n");
+		serdesMapArray[4].serdesType = SGMII1;
+		serdesMapArray[4].serdesSpeed = __3_125Gbps;
+		serdesMapArray[4].serdesMode = SERDES_DEFAULT_MODE;
+	}
+	else {
+		DEBUG_INIT_S("Serdes Lane 4 is USB3\n");
+		serdesMapArray[4].serdesType = USB3_HOST0;
+		serdesMapArray[4].serdesSpeed = __5Gbps;
+		serdesMapArray[4].serdesMode = SERDES_DEFAULT_MODE;
+	}
+
+	/* Lane 5 */
+	serdesMapArray[5].serdesType =  SATA2;
+	serdesMapArray[5].serdesSpeed = __3Gbps;
+
+	serdesMapArray[5].serdesMode =  SERDES_DEFAULT_MODE;
+
+	return MV_OK;
+}
+
+
+/***************************************************************************/
+MV_STATUS loadTopologyRDAp(SERDES_MAP  *serdesMapArray)
+{
+	MV_BOOL isSgmii = MV_FALSE;
+
+	DEBUG_INIT_S("\nInit RD AP topology ");
+
+	/* check if lane 4 is USB3 or SGMII */
+	if (loadTopologyRDSgmiiUsb(&isSgmii) != MV_OK) {
+		DEBUG_INIT_S("loadTopologyRD AP: TWSI Read failed\n");
+		return MV_FAIL;
+	}
+
+	/* Lane 0 */
+	serdesMapArray[0].serdesType = DEFAULT_SERDES;
+	serdesMapArray[0].serdesSpeed = LAST_SERDES_SPEED;
+	serdesMapArray[0].serdesMode = SERDES_DEFAULT_MODE;
+
+	/* Lane 1 */
+	serdesMapArray[1].serdesType = PEX0;
+	serdesMapArray[1].serdesSpeed = __5Gbps;
+	serdesMapArray[1].serdesMode = PEX_ROOT_COMPLEX_x1;
+
+	/* Lane 2 */
+	serdesMapArray[2].serdesType = PEX1;
+	serdesMapArray[2].serdesSpeed = __5Gbps;
+	serdesMapArray[2].serdesMode = PEX_ROOT_COMPLEX_x1;
 
 	/* Lane 3 */
 	serdesMapArray[3].serdesType =  SATA3;
@@ -518,6 +617,32 @@ MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
 	serdesMapArray[5].serdesType =  SATA2;
 	serdesMapArray[5].serdesSpeed = __3Gbps;
 	serdesMapArray[5].serdesMode =  SERDES_DEFAULT_MODE;
+
+	return MV_OK;
+}
+
+/***************************************************************************/
+MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii)
+{
+	MV_TWSI_SLAVE twsiSlave;
+	MV_U8 mode;
+
+	/* Initializing twsiSlave in order to read from the TWSI address */
+	twsiSlave.slaveAddr.address = RD_GET_MODE_ADDR;
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.offset = 1;
+	twsiSlave.moreThen256 = MV_TRUE;
+
+	/* check if lane 4 is USB3 or SGMII */
+	if (mvTwsiRead(0, &twsiSlave, &mode, 1) == MV_OK) {
+		*isSgmii = ((mode >> 2) & 0x1);
+	}
+	else
+	{
+		/* else use the default - USB3 */
+		*isSgmii = MV_FALSE;
+	}
 
 	return MV_OK;
 }

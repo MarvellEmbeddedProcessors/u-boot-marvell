@@ -709,7 +709,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 		case PEX3:
 
 			isPexBy1 = (serdesMode == PEX_ROOT_COMPLEX_x1) ||
-				(serdesMode == PEX_ROOT_COMPLEX_x1);
+				(serdesMode == PEX_END_POINT_x1);
 			pexIdx = serdesType - PEX0;
 
 			if ((isPexBy1 == MV_TRUE) || (serdesType == PEX0))

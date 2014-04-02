@@ -67,11 +67,10 @@ void setUtmiPhySelector(MV_U32 usbUnitId){
 *       Num of requested interface USB2/3
 *
 *******************************************************************************/
-MV_STATUS getUsbActive(MV_U32 usbUnitId)
+MV_STATUS getUsbActive(MV_U32 usbUnitId, MV_U32 maxUsbPorts)
 {
 	char *env = getenv("usbActive");
 	int usbActive = simple_strtoul(env, NULL, 10);
-	int maxUsbPorts = (usbUnitId == USB3_UNIT_ID ? mvCtrlUsb3MaxGet() : mvCtrlUsbMaxGet());
 	MV_U32 family = mvCtrlDevFamilyIdGet(0);
 	int mac_id[2] = {1, 0};
 
@@ -269,21 +268,23 @@ struct hc_interface hc_xhci = {
 */
 int usb_lowlevel_init(int index, void **controller)
 {
-	int usbType, usbActive = 0;
+	int usb2UnitNum, usb3UnitNum, usbType, usbActive = 0;
 
 	usbType = simple_strtoul(getenv("usbType"), NULL, 10);
+	usb3UnitNum = mvCtrlUsb3MaxGet();
+	usb2UnitNum = mvCtrlUsbMaxGet();
 
 	switch (usbType) {
 	case 2:
-		if (hc_ehci.interface_supported == MV_TRUE) {
-			usbActive = getUsbActive(USB_UNIT_ID); /* read requested active port */
+		if (hc_ehci.interface_supported == MV_TRUE && usb2UnitNum > 0) {
+			usbActive = getUsbActive(USB_UNIT_ID, usb2UnitNum); /* read requested active port */
 			hc = &hc_ehci; /* set Host Controller struct for function pointers  */
 		} else
 			goto input_error;
 		break;
 	case 3:
-		if (hc_xhci.interface_supported == MV_TRUE) {
-			usbActive = getUsbActive(USB3_UNIT_ID); /* read requested active port */
+		if (hc_xhci.interface_supported == MV_TRUE && usb3UnitNum > 0) {
+			usbActive = getUsbActive(USB3_UNIT_ID, usb3UnitNum); /* read requested active port */
 			hc = &hc_xhci; /* set Host Controller struct for function pointers  */
 		} else
 			goto input_error;
@@ -296,9 +297,9 @@ int usb_lowlevel_init(int index, void **controller)
 
 input_error:
 	mvOsPrintf("'usbType' Error: Type %d is not valid. Supported types:\n", usbType);
-	if (hc_ehci.interface_supported == MV_TRUE)
+	if (hc_ehci.interface_supported == MV_TRUE && usb2UnitNum > 0)
 		mvOsPrintf("\tusbType = 2 --> EHCI Stack will be used\n");
-	if (hc_xhci.interface_supported == MV_TRUE)
+	if (hc_xhci.interface_supported == MV_TRUE && usb3UnitNum > 0)
 		mvOsPrintf("\tusbType = 3 --> XHCI Stack will be used\n");
 	return -1;
 }

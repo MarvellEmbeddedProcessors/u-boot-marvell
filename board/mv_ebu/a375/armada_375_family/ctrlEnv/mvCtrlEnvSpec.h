@@ -374,6 +374,7 @@ typedef enum _mvUnitId {
 	BM_UNIT_ID,
 	PNC_UNIT_ID,
 	I2C_UNIT_ID,
+	SGMII_UNIT_ID,
 	MAX_UNITS_ID
 } MV_UNIT_ID;
 

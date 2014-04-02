@@ -148,6 +148,8 @@ extern "C" {
 #define CORE_DIVCLK_RELOAD_RATIO_OFFS		8
 #define CORE_DIVCLK_RELOAD_RATIO_MASK		(1 << CORE_DIVCLK_RELOAD_RATIO_OFFS)
 
+#define SERDES_LANE_OFFS(num)		(num <= 1 ? num : (num + 1))
+#define SERDES_LANE_MASK(num)		((num == 1 ? 3 : 1) << SERDES_LANE_OFFS(num))
 
 #define DEV_ID_REG			0x18238
 #define VENDOR_ID_OFFS			0

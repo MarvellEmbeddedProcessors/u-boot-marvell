@@ -122,9 +122,10 @@
 
 #define RD_A38X_DDR3_ID                         (BOARD_ID_BASE)
 #define DB_A38X_BP_ID                           (RD_A38X_DDR3_ID + 1)
-#define COSTUMER_BOARD_ID                       (DB_A38X_BP_ID + 1)
+#define RD_AP_A38X_DDR3_ID                      (DB_A38X_BP_ID + 1)
+#define CUSTOMER_BOARD_ID                       (RD_AP_A38X_DDR3_ID + 1)
 
-#define MV_MAX_BOARD_ID                         (COSTUMER_BOARD_ID + 1) /* dummy */
+#define MV_MAX_BOARD_ID                         (CUSTOMER_BOARD_ID + 1) /* dummy */
 
 /* device ID */
 #define ARMADA_380_DEVIDE_ID                    0x6810

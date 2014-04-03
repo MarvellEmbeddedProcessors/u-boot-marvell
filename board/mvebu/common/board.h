@@ -23,6 +23,7 @@
 #include <common.h>
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/unit-info.h>
+#include <asm/arch/soc-info.h>
 #include <linux/compiler.h>
 #include "sar.h"
 #include "config.h"
@@ -64,6 +65,9 @@ struct mvebu_board_info {
 	u32  id;
 	u16  *unit_mask;
 	enum unit_update_mode unit_update_mode;
+	u32 mpp_regs[MAX_MPP_REGS];
+
+	/* Only for development boards */
 	bool configurable;
 	struct mvebu_board_config *config_data;
 };
@@ -83,6 +87,8 @@ struct mvebu_board_family {
 	int  board_cnt;
 	struct mvebu_board_info *curr_board;
 	struct mvebu_board_info **boards_info;
+
+	/* Only for development boards */
 	struct sar_data *sar;
 	struct cfg_data *cfg;
 };

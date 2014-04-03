@@ -22,11 +22,14 @@
 
 /* General MPP definitions */
 #define MAX_MPP_OPTS		7
-#define MAX_MPP_ID		69
+#define MAX_MPP_ID		59
 
 #define MPP_BIT_CNT		4
 #define MPP_FIELD_MASK		0x7
 #define MPP_FIELD_BITS		3
 #define MPP_VAL_MASK		0xF
+
+#define MPPS_PER_REG		(32 / MPP_BIT_CNT)
+#define MAX_MPP_REGS		((MAX_MPP_ID + MPPS_PER_REG) / MPPS_PER_REG)
 
 #endif	/* _SOC_INFO_H_ */

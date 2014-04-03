@@ -20,6 +20,7 @@
 obj-y += unit-info.o
 obj-y += soc-init.o
 obj-y += misc.o
+obj-y += mpp.o
 obj-$(CONFIG_AURORA_TIMER) += timer_aurora.o
 obj-$(CONFIG_MVEBU_CA9) += platform.o
 obj-$(CONFIG_ADEC) += adec.o

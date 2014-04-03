@@ -114,10 +114,7 @@
 
 /* MVEBU Generic commands */
 #define CONFIG_CMD_MVEBU_MAP
-#ifdef CONFIG_MVEBU_DEVEL_BOARD
-#define CONFIG_CMD_MVEBU_SAR
-#define CONFIG_CMD_MVEBU_CONFIG
-#endif
+#define CONFIG_CMD_MVEBU_MPP
 
 
 /* No flash setup */
@@ -154,8 +151,10 @@
 
 /* I2C */
 #if defined(MV_INCLUDE_I2C)
-	#define CONFIG_CMD_MVEBU_SAR
-	#define CONFIG_CMD_MVEBU_CONFIG
+	#ifdef CONFIG_MVEBU_DEVEL_BOARD
+		#define CONFIG_CMD_MVEBU_SAR
+		#define CONFIG_CMD_MVEBU_CONFIG
+	#endif
 	#define CONFIG_CMD_EEPROM
 	#define CONFIG_CMD_I2C
 	#define CONFIG_I2C_MVEBU

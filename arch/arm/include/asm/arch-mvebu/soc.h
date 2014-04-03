@@ -45,6 +45,11 @@ struct mvebu_soc_family {
 	struct	mvebu_soc_info *soc_table;
 	struct	mvebu_soc_info *curr_soc;
 	enum adec_types adec_type;
+
+	struct mpp_bus *mpp_buses;
+	u32 mpp_protect[MAX_MPP_REGS];
+	u32 mpp_update[MAX_MPP_REGS];
+	u32 mpp_mask[MAX_MPP_REGS];
 };
 
 
@@ -61,8 +66,15 @@ void mvebu_print_soc_info(void);
 
 u16 *soc_get_unit_mask_table(void);
 
+/* MPP API */
+char **soc_get_mpp_desc_table(void);
+u32 *soc_get_mpp_update_mask(void);
+u32 *soc_get_mpp_update_val(void);
+u32 *soc_get_mpp_protect_mask(void);
+
 DECLARE_GLOBAL_DATA_PTR;
 #define get_soc_family()  (struct mvebu_soc_family *)(gd->arch.soc_family)
 #define set_soc_family(x) (gd->arch.soc_family = (struct mvebu_soc_family *)(x))
+#define get_soc_info()  (struct mvebu_soc_info *)(gd->arch.soc_family->curr_soc)
 
 #endif /* _SOC_H_ */

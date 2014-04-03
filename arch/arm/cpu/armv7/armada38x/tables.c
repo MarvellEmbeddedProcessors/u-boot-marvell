@@ -59,12 +59,22 @@ u16 armada6285_unit_disable[MAX_UNIT_ID] = {
 
 /* MPP description table. Informative only */
 char *a38x_mpp_desc[MAX_MPP_ID + 1][MAX_MPP_OPTS] = {
-/* 0 */	{"GPIO_0", "NF_IO_2", "SPI_0_CSn",	"SPI_1_CSn",	"NA",           "ND_IO_2", "NA"},
-/* 1 */	{"GPIO_1", "NF_IO_3", "SPI_0_MOSI",	"SPI_1_MOSI",	"NA",	        "ND_IO_3", "NA"},
-/* 2 */	{"GPIO_2", "NF_IO_4", "PTP_EVENT_REQ",  "C0_LED",	"AU_I2S_DI",	"ND_IO_4", "SPI_1_MOSI"},
-/* 3 */	{"GPIO_3", "NF_IO_5", "PTP_TRIG_GEN",	"P3_LED",	"AU_I2S_MCLK",	"ND_IO_5", "SPI_1_MISO"},
+/*	0x0        0x1         0x2              0x3             0x4             0x5             0x6 */
+/* 0 */	{"GPIO_0", "UA_0_RXD", "NA",		"NA",		"NA",           "NA",		"NA"},
+/* 1 */	{"GPIO_1", "UA_0_TXD", "NA",		"NA",		"NA",		"NA",		"NA"},
+/* 2 */	{"GPIO_2", "I2C_0_SCK", "NA",		"NA",		"NA",		"NA",		"NA"},
+/* 3 */	{"GPIO_3", "I2C_0_SDA", "NA",		"NA",		"NA",		"NA",		"NA"},
+/* 4 */	{"GPIO_4", "GE_MDC",    "UA_1_RXD",	"UA_0_RTS",	"NA",		"NA",		"NA"},
+/* 5 */	{"GPIO_5", "GE_MDIO",   "UA_1_TXD",	"UA_0_CTS",	"NA",		"NA",		"NA"},
 };
 
+/* Describe the available MPP buses */
+struct mpp_bus a38x_mpp_buses[MAX_MPP_BUS] = {
+	[UART_0_MPP_BUS] = {"UART 0", 2, 1, {{{0, 0x1}, {1, 0x1} } } },
+	[UART_1_MPP_BUS] = {"UART 1", 2, 1, {{{4, 0x2}, {5, 0x2} } } },
+	[SPI_0_MPP_BUS]  = {"SPI 0", 4, 1, {{{0, 0x1}, {1, 0x1} } } },
+	[SPI_1_MPP_BUS]  = {"SPI 1", 4, 1, {{{0, 0x1}, {1, 0x1} } } },
+};
 
 struct mvebu_soc_info a38x_soc_info[] = {
 	/* Armda 380 */
@@ -100,4 +110,5 @@ struct mvebu_soc_family a38x_family_info = {
 	.soc_table = a38x_soc_info,
 	.mpp_desc  = (char **)a38x_mpp_desc,
 	.adec_type = ADEC_MBUS,
+	.mpp_buses = a38x_mpp_buses,
 };

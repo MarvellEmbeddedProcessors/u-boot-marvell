@@ -22,9 +22,41 @@
 
 #include  <asm/arch/soc-info.h>
 
-#define		MAX_MPP_NAME	32
+#define		MAX_MPP_NAME		32
+#define		MAX_BUS_NAME		32
+#define		MAX_PINS_PER_BUS	8
+#define		MAX_BUS_OPTS		2
 
-char *mpp_get_desc(void);
+char **mpp_get_desc_table(void);
 
+enum mpp_bus_id {
+	UART_0_MPP_BUS,
+	UART_1_MPP_BUS,
+	SPI_0_MPP_BUS,
+	SPI_1_MPP_BUS,
+	NAND_0_MPP_BUS,
+	RGMII_0_MPP_BUS,
+	MAX_MPP_BUS
+};
+
+struct mpp_pin {
+	u8 id;
+	u8 val;
+};
+
+struct mpp_bus {
+	char name[MAX_BUS_NAME];
+	int pin_cnt;
+	int bus_cnt;
+	struct mpp_pin pin_data[MAX_BUS_OPTS][MAX_PINS_PER_BUS];
+};
+
+u8   mpp_get_pin(int mpp_id);
+void mpp_set_pin(int mpp_id, int value);
+int  mpp_enable_bus(int bus_id, int bus_alt);
+int  mpp_is_bus_valid(struct mpp_bus *bus);
+int  mpp_is_bus_enabled(struct mpp_bus *bus);
+void mpp_set_and_update(u32 *mpp_reg);
+struct mpp_bus *soc_get_mpp_bus(int bus_id);
 
 #endif /* _MPP_H_ */

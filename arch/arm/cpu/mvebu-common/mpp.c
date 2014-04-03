@@ -23,62 +23,162 @@
 #include <common.h>
 #include <asm/system.h>
 #include <asm/bitops.h>
+#include <asm/io.h>
 #include <asm/arch-mvebu/mpp.h>
+#include <asm/arch-mvebu/soc.h>
 
-char *mpp_get_desc_table(void)
+char **mpp_get_desc_table(void)
 {
 	return soc_get_mpp_desc_table();
 }
 
-void set_mpp(int mpp_id, int value)
+static void set_field(int mpp_id, int value, u32 *base_ptr)
 {
 	int reg_offset;
 	int field_offset;
 	u32 reg, mask;
 
-	if (value > MAX_MPP_OPTS)
-		printf("Warning: MPP value %d > max value %d\n", value, MAX_MPP_OPTS);
-
 	/* Calculate register address and bit in register */
-	reg_offset   = mpp_id >> (MPP_FIELD_BITS);
+	reg_offset   = 4 * (mpp_id >> (MPP_FIELD_BITS));
 	field_offset = (MPP_BIT_CNT) * (mpp_id & MPP_FIELD_MASK);
-	mask = (MPP_VAL_MASK << field_offset);
+	mask = ~(MPP_VAL_MASK << field_offset);
 
 	/* Clip value to bit resolution */
 	value &= MPP_VAL_MASK;
 
-	reg = readl(MPP_REGS_BASE + reg_offset);
+	reg = readl(base_ptr + reg_offset);
 	reg = (reg & mask) | (value << field_offset);
-	writel(reg, MPP_REGS_BASE + reg_offset);
+	writel(reg, base_ptr + reg_offset);
 }
 
-u8 get_mpp(int mpp_id)
+static u8 get_field(int mpp_id, u32 *base_ptr)
 {
 	int reg_offset;
 	int field_offset;
-	u32 reg, mask;
+	u32 reg;
 	u8 value;
 
 	/* Calculate register address and bit in register */
-	reg_offset   = mpp_id >> (MPP_FIELD_BITS);
+	reg_offset   = 4 * (mpp_id >> (MPP_FIELD_BITS));
 	field_offset = (MPP_BIT_CNT) * (mpp_id & MPP_FIELD_MASK);
 
-	reg = readl(MPP_REGS_BASE + reg_offset);
-	val = (reg >> field_offset) & MPP_VAL_MASK;
+	reg = readl(base_ptr + reg_offset);
+	value = (reg >> field_offset) & MPP_VAL_MASK;
 
-	if (value > MAX_MPP_OPTS)
-		printf("Warning: MPP value %d > max value %d\n", val, MAX_MPP_OPTS);
-
-	return val;
+	return value;
 }
 
-void set_mpp_reg(u32 *mpp_reg, int first_reg, int last_reg)
+void mpp_set_pin(int mpp_id, int value)
 {
-	int reg_offset;
-	int field_offset;
-	int reg, mask;
+	if (value > MAX_MPP_OPTS)
+		printf("Warning: MPP value %d > max value %d\n", value, MAX_MPP_OPTS);
 
-	while (reg = first_reg; reg < last_reg; reg++; mpp_reg++)
+	/* Set the new MPP to HW registers */
+	set_field(mpp_id, value, (u32 *)MPP_REGS_BASE);
+}
+
+u8 mpp_get_pin(int mpp_id)
+{
+	u8 value;
+
+	/* Calculate register address and bit in register */
+	value = get_field(mpp_id, (u32 *)MPP_REGS_BASE);
+
+	if (value > MAX_MPP_OPTS)
+		printf("Warning: MPP value %d > max value %d\n", value, MAX_MPP_OPTS);
+
+	return value;
+}
+
+void mpp_set_reg(u32 *mpp_reg, int first_reg, int last_reg)
+{
+	int reg;
+
+	for (reg = first_reg; reg < last_reg; reg++, mpp_reg++)
 		writel(*mpp_reg, MPP_REGS_BASE + reg);
+}
+
+void mpp_set_and_update(u32 *mpp_reg)
+{
+	int i;
+	u32 *update_mask = soc_get_mpp_update_mask();
+	u32 *update_val = soc_get_mpp_update_val();
+	u32 *protect_mask = soc_get_mpp_protect_mask();
+
+	for (i = 0; i < MAX_MPP_REGS; i++) {
+		/* Disable modifying protected MPPs */
+		update_mask[i] &= ~protect_mask[i];
+		update_val[i]  &= ~protect_mask[i];
+
+		/* Make sure the mask and val are synced */
+		update_val[i] &= update_mask[i];
+
+		/* Now update the required MPP fields */
+		mpp_reg[i] &= ~update_mask[i];
+		mpp_reg[i] |= update_val[i];
+
+		debug("Set mpp reg 0x%08x\n", mpp_reg[i]);
+
+		/* Write to register */
+		writel(mpp_reg[i], MPP_REGS_BASE + (4 * i));
+	}
+}
+
+int mpp_is_bus_enabled(struct mpp_bus *bus)
+{
+	int bus_alt;
+	int pin;
+
+	for (bus_alt = 0; bus_alt < bus->bus_cnt; bus_alt++) {
+		for (pin = 0; pin < bus->pin_cnt; pin++) {
+			u8 id = bus->pin_data[bus_alt][pin].id;
+			u8 val = bus->pin_data[bus_alt][pin].val;
+			if (mpp_get_pin(id) != val)
+				return 0;
+		}
+	}
+
+	return 1;
+}
+
+int mpp_is_bus_valid(struct mpp_bus *bus)
+{
+	int valid = (bus->pin_cnt > 0);
+	return valid;
+}
+
+int mpp_enable_bus(int bus_id, int bus_alt)
+{
+	int i;
+	struct mpp_pin *pin;
+	struct mpp_bus *bus = soc_get_mpp_bus(bus_id);
+	u32 *update_mask = soc_get_mpp_update_mask();
+	u32 *update_val = soc_get_mpp_update_val();
+
+	debug("Enabling MPP bus %s\n", bus->name);
+
+	if (bus_alt < (bus->bus_cnt - 1)) {
+		error("Bus alternative %d doesn't exist for bus %s\n", bus_alt, bus->name);
+		return 1;
+	}
+
+	/* Check if someone already modified one of the pins */
+	for (i = 0; i < bus->pin_cnt; i++) {
+		pin = &bus->pin_data[bus_alt][i];
+		if (get_field(pin->id, update_mask) == MPP_VAL_MASK) {
+			error("Pin %d of Bus %s already modified\n", pin->id, bus->name);
+			return 1;
+		}
+	}
+
+	/* Update the mask and value */
+	for (i = 0; i < bus->pin_cnt; i++) {
+		pin = &bus->pin_data[bus_alt][i];
+		debug("Setting [pin, val] = [%d, 0x%x]\n", pin->id, pin->val);
+		set_field(pin->id, MPP_VAL_MASK, update_mask);
+		set_field(pin->id, pin->val, update_val);
+	}
+
+	return 0;
 }
 

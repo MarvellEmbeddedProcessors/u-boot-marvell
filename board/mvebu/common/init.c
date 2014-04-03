@@ -135,6 +135,9 @@ int mvebu_board_init(void)
 #endif
 
 	/* mpp_set */
+	mpp_enable_bus(UART_1_MPP_BUS, 0);
+	mpp_set_and_update(brd->mpp_regs);
+
 
 	return 0;
 }

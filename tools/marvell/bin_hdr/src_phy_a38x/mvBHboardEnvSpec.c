@@ -163,16 +163,14 @@ MV_STATUS loadTopologyRDAp(SERDES_MAP  *serdesMapArray);
 MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii);
 
 /**************************************************************************
- * loadTopologyDefault -
+ * loadTopologyCustomer -
  *
- * DESCRIPTION:          this function is called when a wrong topology load
- *                       method was read from the board
+ * DESCRIPTION:          Loads the board topology for customer board
  * INPUT:                serdesMapArray  -   Not relevant
  * OUTPUT:               The board topology.
- * RETURNS:              MV_OUT_OF_RANGE -   Because this function should
- *                                           not be called at all
+ * RETURNS:              MV_OK           -   for success
  ***************************************************************************/
-MV_STATUS loadTopologyDefault(SERDES_MAP  *serdesMapArray);
+MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray);
 
 /*********************************** Globals **********************************/
 
@@ -277,6 +275,21 @@ SERDES_MAP* topologyConfigDB[] =
 	DbConfigDefault
 };
 
+/****************************************/
+/** Load topology - for customer board **/
+/****************************************/
+
+SERDES_MAP CustomerConfig[MAX_SERDES_LANES] =
+{
+	{ SATA0,     __3Gbps,		   SERDES_DEFAULT_MODE		      },
+	{ PEX0,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1		      },
+	{ PEX1,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1		      },
+	{ SATA3,     __3Gbps,		   SERDES_DEFAULT_MODE		      },
+	{ USB3_HOST0, __5Gbps,		   SERDES_DEFAULT_MODE		      },
+	{ USB3_HOST1, __5Gbps,		   SERDES_DEFAULT_MODE		      }
+};
+
+
 /********************************************************/
 /* Load topology functions ******************************/
 /* (the board id is the index to the relevant function) */
@@ -286,7 +299,7 @@ loadTopologyFuncPtr loadTopologyFuncArr[] =
 	loadTopologyRD,         /* RD NAS */
 	loadTopologyDB,
 	loadTopologyRD,         /* RD AP */
-	loadTopologyDefault     /* A place for the costumer load topology function */
+	loadTopologyCustomer    /* A place for the costumer load topology function */
 };
 
 /*************************** Functions implementation *************************/
@@ -647,11 +660,21 @@ MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii)
 	return MV_OK;
 }
 
-/************************* Load topology - default ****************************/
+/************************* Load topology - customer ****************************/
 
 /***************************************************************************/
-MV_STATUS loadTopologyDefault(SERDES_MAP  *serdesMapArray)
+MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray)
 {
-	DEBUG_INIT_S("loadTopology: board id out of range\n");
-	return MV_OUT_OF_RANGE;
+	MV_U32 laneNum;
+
+	DEBUG_INIT_S("\nInit Customer board ");
+
+	/* Updating the topology map */
+	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
+		serdesMapArray[laneNum].serdesMode =  CustomerConfig[laneNum].serdesMode;
+		serdesMapArray[laneNum].serdesSpeed =  CustomerConfig[laneNum].serdesSpeed;
+		serdesMapArray[laneNum].serdesType =  CustomerConfig[laneNum].serdesType;
+	}
+
+	return MV_OK;
 }

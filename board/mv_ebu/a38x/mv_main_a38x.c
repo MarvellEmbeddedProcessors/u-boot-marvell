@@ -793,11 +793,6 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	if (!env)
 		setenv("usbType", ENV_USB_MODE);
 #endif  /* (MV_INCLUDE_USB) */
-#ifdef CONFIG_SCSI_AHCI
-	env = getenv("sataActive");
-	if (!env)
-		setenv("sataActive", ENV_SATA_ACTIVE);
-#endif
 #if defined(YUK_ETHADDR)
 	env = getenv("yuk_ethaddr");
 	if (!env)

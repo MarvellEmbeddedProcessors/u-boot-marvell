@@ -113,6 +113,10 @@ extern MV_STATUS    mvHwsDdr3TipLoadTopologyMap
 );
 extern MV_U32 ddr3TipGetInitFreq();
 MV_STATUS ddr3LoadTopologyMap(void);
+extern MV_VOID ddr3HwsSetLogLevel(
+	MV_LIBV2_DEBUG_BLOCK 	block,
+	MV_U8					level
+);
 #else
 #define SUB_VERSION	1
 #endif
@@ -145,6 +149,7 @@ static MV_U32 gLogLevel = 0;
 
 MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize);
 
+#if !defined(MV_NEW_TIP)
 /************************************************************************************
  * Name:     ddr3LogLevelInit
  * Desc:     This routine initialize the gLogLevel as defined in dd3_axp_config
@@ -156,7 +161,7 @@ MV_VOID ddr3LogLevelInit(MV_VOID)
 {
 	ddr3SetLogLevel(DDR3_LOG_LEVEL);
 }
-#if !defined(MV_NEW_TIP)
+
 /************************************************************************************
  * Name:     ddr3PbsInit
  * Desc:     This routine initialize the PBS as defined in dd3_axp_config
@@ -350,8 +355,8 @@ MV_U32 ddr3Init_(void);
 MV_STATUS ddr3Init(void)
 {
 	unsigned int status;
-	ddr3LogLevelInit();
 #if !defined(MV_NEW_TIP)
+	ddr3LogLevelInit();
 	ddr3SetPbs(DDR3_PBS);
 	ddr3SetSwWlRlDebug(DDR3_RUN_SW_WHEN_HW_FAIL);
 #endif
@@ -744,6 +749,9 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 		DEBUG_INIT_FULL_S("DDR3 Training Sequence topology load - FAILED\n");
 		return status;
 	}
+
+	/*Set log level for training lib*/
+	ddr3HwsSetLogLevel(MV_DEBUG_BLOCK_ALL, DEBUG_LEVEL_ERROR);
 
 	/*Start New Training IP*/
 	status = ddr3HwsHwTraining();

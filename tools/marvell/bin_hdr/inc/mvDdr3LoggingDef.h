@@ -62,153 +62,29 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#ifndef _DDR3_TOPOLOGY_CONFIG_H
-#define _DDR3_TOPOLOGY_CONFIG_H
+#ifndef _DDR3_LOGGING_CONFIG_H
+#define _DDR3_LOGGING_CONFIG_H
 
-#define MAX_INTERFACE_NUM  		(12)
-#define MAX_BUS_NUM        		(8)
-
-/*************************TOPOLOGY*******************************************/
-typedef enum
-{
-   SPEED_BIN_DDR_800D,
-   SPEED_BIN_DDR_800E,
-   SPEED_BIN_DDR_1066E,
-   SPEED_BIN_DDR_1066F,
-   SPEED_BIN_DDR_1066G,
-   SPEED_BIN_DDR_1333F,
-   SPEED_BIN_DDR_1333G,
-   SPEED_BIN_DDR_1333H,
-   SPEED_BIN_DDR_1333J,
-   SPEED_BIN_DDR_1600G,
-   SPEED_BIN_DDR_1600H,
-   SPEED_BIN_DDR_1600J,
-   SPEED_BIN_DDR_1600K,
-   SPEED_BIN_DDR_1866J,
-   SPEED_BIN_DDR_1866K,
-   SPEED_BIN_DDR_1866L,
-   SPEED_BIN_DDR_1866M,
-   SPEED_BIN_DDR_2133K,
-   SPEED_BIN_DDR_2133L,
-   SPEED_BIN_DDR_2133M,
-   SPEED_BIN_DDR_2133N
-
-}MV_HWS_SPEED_BIN;
+/**********Logging defines***************/
+#define DEBUG_LEVEL_TRACE (1)
+#define DEBUG_LEVEL_INFO  (2)
+#define DEBUG_LEVEL_ERROR (3)
 
 typedef enum
 {
-   DDR_BOARD_ETP,
-   DDR_BOARD_FUNCTIONAL,
-   DDR_BOARD_CUSTOMER,
-   DDR_BOARD_MAX
+    MV_DEBUG_BLOCK_STATIC,
+    MV_DEBUG_BLOCK_TRAINING_MAIN,
+    MV_DEBUG_BLOCK_LEVELING,
+    MV_DEBUG_BLOCK_CENTRALIZATION,
+    MV_DEBUG_BLOCK_PBS,
+    MV_DEBUG_BLOCK_IP,
+    MV_DEBUG_BLOCK_BIST,
+    MV_DEBUG_BLOCK_ALG,
+	MV_DEBUG_BLOCK_DEVICE,
+	MV_DEBUG_BLOCK_ACCESS,
+	MV_DEBUG_STAGES_REG_DUMP,
+    MV_DEBUG_BLOCK_ALL /*All, excluding IP and REG_DUMP, may be enabled separatelly*/
+}MV_LIBV2_DEBUG_BLOCK;
+/***************************************/
 
-} MV_HWS_DDR_BOARD;
-
-/* bus width in bits */
-typedef enum
-{
-   BUS_WIDTH_4,
-   BUS_WIDTH_8,
-   BUS_WIDTH_16,
-   BUS_WIDTH_32
-
-} MV_HWS_BUS_WIDTH;
-
-typedef enum
-{
-   MEM_512M,
-   MEM_1G,
-   MEM_2G,
-   MEM_4G,
-   MEM_8G,
-
-   MEM_SIZE_LAST
-}MV_HWS_MEM_SIZE;
-
-typedef enum
-{
-  DDR_FREQ_LOW_FREQ,
-  DDR_FREQ_400,
-  DDR_FREQ_533,
-  DDR_FREQ_667,
-  DDR_FREQ_800,
-  DDR_FREQ_933,
-  DDR_FREQ_1066,
-  DDR_FREQ_311,
-  DDR_FREQ_333,
-  DDR_FREQ_467,
-   DDR_FREQ_LIMIT
-}MV_HWS_DDR_FREQ;
-
-typedef enum
-{
-   MV_HWS_TEMP_LOW,
-   MV_HWS_TEMP_NORMAL,
-   MV_HWS_TEMP_HIGH
-
-}MV_HWS_TEMPERTURE;
-
-typedef struct
-{
-   /* Chip Select (CS) bitmask (bits 0-CS0, bit 1- CS1 ...) */
-   MV_U32      csBitmask;
-
-   /* mirror enable/disable (bits 0-CS0 mirroring, bit 1- CS1 mirroring ...)*/
-   MV_BOOL      mirrorEnableBitmask;
-
-   /* DQS Swap (polarity) - true if enable*/
-   MV_BOOL      isDqsSwap;
-
-   /* CK swap (polarity) - true if enable*/
-   MV_BOOL      isCkSwap;
-
-} BusParams;
-
-typedef struct
-{
-   /* bus configuration */
-   BusParams   asBusParams[MAX_BUS_NUM];
-
-   /* Speed Bin Table*/
-   MV_HWS_SPEED_BIN      speedBinIndex;
-
-   /* bus width of memory */
-   MV_HWS_BUS_WIDTH   busWidth;
-
-   /* Bus memory size (MBit) */
-   MV_HWS_MEM_SIZE      memorySize;
-
-   /* The DDR frequency for each interfaces */
-   MV_HWS_DDR_FREQ      memoryFreq;
-
-   /* delay CAS Write Latency - 0 for using default value (jedec suggested) */
-   MV_U32      casWL;
-
-   /* delay CAS Latency - 0 for using default value (jedec suggested) */
-   MV_U32      casL;
-
-   /* operation temperature */
-   MV_HWS_TEMPERTURE   interfaceTemp;
-
-} InterfaceParams;
-
-/***********************************/
-
-typedef struct
-{
-    /* Number of interfaces (default is 12)*/
-    MV_U32              interfaceActiveMask;
-
-   /* Controller configuration per interface */
-   InterfaceParams      interfaceParams[MAX_INTERFACE_NUM];
-
-   /* BUS per interface (default is 4)*/
-   MV_U32               numOfBusPerInterface;
-
-   /* Bit mask for active buses*/
-   MV_U32               activeBusMask;
-
-} MV_HWS_TOPOLOGY_MAP;
-
-
-#endif /* _DDR3_TOPOLOGY_CONFIG_H */
+#endif /* _DDR3_LOGGING_CONFIG_H */

@@ -67,6 +67,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ddr3_msys_config.h"
 #include "mvDdr3TopologyDef.h"
+#include "mvDdr3LoggingDef.h"
 
 #define ACTUAL_BUS_WIDTH	BUS_WIDTH_32
 

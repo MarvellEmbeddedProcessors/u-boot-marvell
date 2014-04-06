@@ -47,6 +47,8 @@ int mv_sdh_init(u32 regbase, u32 max_clk, u32 min_clk, u32 quirks)
 	mv_ops.write_b = mv_sdhci_writeb;
 	host->ops = &mv_ops;
 #endif
+	host->host_caps |= MMC_MODE_HC;
+
 	if (quirks & SDHCI_QUIRK_REG32_RW)
 		host->version = sdhci_readl(host, SDHCI_HOST_VERSION - 2) >> 16;
 	else

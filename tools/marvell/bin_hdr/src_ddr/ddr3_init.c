@@ -114,7 +114,7 @@ extern MV_STATUS    mvHwsDdr3TipLoadTopologyMap
 extern MV_U32 ddr3TipGetInitFreq();
 MV_STATUS ddr3LoadTopologyMap(void);
 #else
-#define SUB_VERSION	2
+#define SUB_VERSION	1
 #endif
 
 #include "bootstrap_os.h"
@@ -131,11 +131,11 @@ static MV_VOID ddr3StaticMCInit(void);
 static MV_U32 ddr3GetStaticDdrMode(void);
 #endif
 #if defined(MV88F66XX) || defined(MV88F672X) || defined(MV_NEW_TIP)
-MV_VOID	getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs);
+MV_VOID		getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs);
+MV_VOID		ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna);
+MV_VOID		ddr3FastPathStaticCsSizeConfig(MV_U32 uiCsEna);
 #endif
-MV_VOID	ddr3OpenFastPathWindows(MV_U32 uiCsEna);
-MV_VOID	ddr3OpenXBarWindows(MV_U32 uiCsEna);
-MV_U32 	mvBoardIdGet(MV_VOID);
+MV_U32 mvBoardIdGet(MV_VOID);
 #if !defined(MV_NEW_TIP)
 extern MV_VOID ddr3SetSwWlRlDebug(MV_U32);
 extern MV_VOID ddr3SetPbs(MV_U32);
@@ -234,8 +234,13 @@ MV_VOID levelLogPrintDD(MV_U32 dec_num, MV_U32 length, MV_LOG_LEVEL eLogLevel)
 #if !defined(STATIC_TRAINING)
 static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 {
+	MV_U32 winCtrlReg, numOfWinRegs;
 	MV_U32 uiCsEna = ddr3GetCSEnaFromReg();
-	MV_U32 winCtrlReg, numOfWinRegs, ui;
+
+#if defined(MV88F66XX) || defined(MV88F672X)
+	if(DDR3_FAST_PATH_EN == MV_FALSE)
+		return;
+#endif
 
 #if defined(MV88F66XX) || defined(MV88F672X)
 	winCtrlReg  = REG_XBAR_WIN_16_CTRL_ADDR;
@@ -244,27 +249,52 @@ static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 	winCtrlReg  = REG_XBAR_WIN_4_CTRL_ADDR;
 	numOfWinRegs = 16;
 #endif
-
+	MV_U32 ui;
 	/* Return XBAR windows 4-7 or 16-19 init configuration */
 	for (ui = 0; ui < numOfWinRegs; ui++)
 		MV_REG_WRITE((winCtrlReg + 0x4 * ui), auWinBackup[ui]);
 
-	if(DDR3_FAST_PATH_EN == MV_TRUE) {
-		ddr3OpenFastPathWindows(uiCsEna);
+	DEBUG_INIT_FULL_S("DDR3 Training Sequence - Switching XBAR Window to FastPath Window \n");
+
+#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV88F68XX)
+#ifdef CONFIG_ALP_A375_ZX_REV
+	ddr3FastPathStaticCsSizeConfig(uiCsEna);
+#else
+	ddr3FastPathDynamicCsSizeConfig(uiCsEna);
+#endif
+#else
+	MV_U32 uiReg, uiCs;
+	uiReg = 0x1FFFFFE1;
+	for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
+		if (uiCsEna & (1 << uiCs)) {
+			uiReg |= (uiCs << 2);
+			break;
+		}
 	}
+	MV_REG_WRITE(REG_FASTPATH_WIN_0_CTRL_ADDR, uiReg); /*Open fast path Window to - 0.5G */
+#endif
 }
 
 static MV_VOID ddr3SaveAndSetTrainingWindows(MV_U32 *auWinBackup)
 {
-	MV_U32 ui, winCtrlReg, numOfWinRegs;
 	MV_U32 uiCsEna = ddr3GetCSEnaFromReg();
+	MV_U32 uiReg, uiTempCount, uiCs, ui;
+	MV_U32 winCtrlReg, winBaseReg, winRemapReg;
+	MV_U32 numOfWinRegs, winJumpIndex;
 #if defined(MV88F66XX) || defined(MV88F672X)
 	/* Disable L2 filtering */
 	MV_REG_WRITE(0x8c04, 0);
+
 	winCtrlReg  = REG_XBAR_WIN_16_CTRL_ADDR;
+	winBaseReg  = REG_XBAR_WIN_16_BASE_ADDR;
+	winRemapReg = REG_XBAR_WIN_16_REMAP_ADDR;
+	winJumpIndex = 0x8;
 	numOfWinRegs = 8;
 #else
 	winCtrlReg  = REG_XBAR_WIN_4_CTRL_ADDR;
+	winBaseReg  = REG_XBAR_WIN_4_BASE_ADDR;
+	winRemapReg = REG_XBAR_WIN_4_REMAP_ADDR;
+	winJumpIndex = 0x10;
 	numOfWinRegs = 16;
 #endif
 	/*  Close XBAR Window 19 - Not needed */
@@ -275,8 +305,38 @@ static MV_VOID ddr3SaveAndSetTrainingWindows(MV_U32 *auWinBackup)
 	for (ui = 0; ui < numOfWinRegs; ui++)
 		auWinBackup[ui] = MV_REG_READ(winCtrlReg + 0x4 * ui);
 
-	/*Open X-BAR windows with calculated CS size*/
-	ddr3OpenXBarWindows(uiCsEna);
+	/*  Open XBAR Windows 4-7 or 16-19 for other CS */
+	uiReg = 0;
+	uiTempCount = 0;
+	for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
+		if (uiCsEna & (1 << uiCs)) {
+			switch (uiCs) {
+			case 0:
+				uiReg = 0x0E00;
+				break;
+			case 1:
+				uiReg = 0x0D00;
+				break;
+			case 2:
+				uiReg = 0x0B00;
+				break;
+			case 3:
+				uiReg = 0x0700;
+				break;
+			}
+			uiReg |= (1 << 0);
+			uiReg |= (SDRAM_CS_SIZE & 0xFFFF0000);
+
+			MV_REG_WRITE(winCtrlReg + winJumpIndex * uiTempCount, uiReg);
+			uiReg = (((SDRAM_CS_SIZE + 1) * (uiTempCount)) & 0xFFFF0000);
+			MV_REG_WRITE(winBaseReg + winJumpIndex * uiTempCount, uiReg);
+
+			if(winRemapReg <= REG_XBAR_WIN_7_REMAP_ADDR)
+				MV_REG_WRITE(winRemapReg + winJumpIndex * uiTempCount, 0);
+
+			uiTempCount++;
+		}
+	}
 }
 #endif /*  !defined(STATIC_TRAINING) */
 /************************************************************************************
@@ -1521,22 +1581,30 @@ MV_VOID ddr3NewTipDlbConfig()
 }
 #endif
 
-#if defined(MV88F78X60) || defined(MV88F67XX) || defined(MV_MSYS)
-MV_VOID ddr3OpenFastPathWindows(MV_U32 uiCsEna) {
+#if defined(MV_NEW_TIP) || defined(MV88F66XX) || defined(MV88F672X)
+#ifdef CONFIG_ALP_A375_ZX_REV
+MV_VOID ddr3FastPathStaticCsSizeConfig(MV_U32 uiCsEna) {
 
 	MV_U32 uiReg, uiCs;
+	/* Set L2 filtering to 1G */
+	MV_REG_WRITE(0x8c04, 0x40000000);
 
-	uiReg = 0x1FFFFFE1;
+    /* Open fast path windows */
 	for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
 		if (uiCsEna & (1 << uiCs)) {
+		/* set fast path window control for the cs */
+			uiReg = 0x1FFFFFE1;
 			uiReg |= (uiCs << 2);
-			break;
+			uiReg |= (SDRAM_CS_SIZE & 0xFFFF0000);
+			MV_REG_WRITE(REG_FASTPATH_WIN_CTRL_ADDR(uiCs), uiReg); /*Open fast path Window */
+			/* set fast path window base address for the cs */
+			uiReg = (((SDRAM_CS_SIZE + 1) * uiCs) & 0xFFFF0000);
+			MV_REG_WRITE(REG_FASTPATH_WIN_BASE_ADDR(uiCs), uiReg); /*Set base address */
 		}
 	}
-	MV_REG_WRITE(REG_FASTPATH_WIN_0_CTRL_ADDR, uiReg); /*Open fast path Window to - 0.5G */
 }
 #else
-MV_VOID ddr3OpenFastPathWindows(MV_U32 uiCsEna) {
+MV_VOID ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
 
 	MV_U32 uiReg, uiCs;
     MV_U32 uiMemTotalSize = 0;
@@ -1544,22 +1612,20 @@ MV_VOID ddr3OpenFastPathWindows(MV_U32 uiCsEna) {
     /* Open fast path windows */
     for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
         if (uiCsEna & (1 << uiCs)) {
-#if defined(CONFIG_ALP_A375_ZX_REV)
-			uiCsMemSize = SDRAM_CS_SIZE + 1;
-#else
-			/* get CS size from Regs */
+            /* get CS size */
+
             if (ddr3CalcMemCsSize(uiCs, &uiCsMemSize) != MV_OK)
-				return;
-#endif
-			/* set fast path window control for the cs */
-			uiReg = 0x1FFFFFE1;
+                return;
+
+            /* set fast path window control for the cs */
+            uiReg = 0x1FFFFFE1;
             uiReg |= (uiCs << 2);
-            uiReg |= (uiCsMemSize - 1)  & 0xFFFF0000;
+            uiReg |= (uiCsMemSize - 1) & 0xFFFF0000;
             MV_REG_WRITE(REG_FASTPATH_WIN_CTRL_ADDR(uiCs), uiReg); /*Open fast path Window */
             /* set fast path window base address for the cs */
-            uiReg = (uiCsMemSize * uiCs) & 0xFFFF0000;
+            uiReg = ((uiCsMemSize) * uiCs) & 0xFFFF0000;
             MV_REG_WRITE(REG_FASTPATH_WIN_BASE_ADDR(uiCs), uiReg); /*Set base address */
-            uiMemTotalSize += (uiCsMemSize + 1);
+            uiMemTotalSize += uiCsMemSize;
 #if defined(MV88F68XX)
 			break;/*KW28 works with single CS*/
 #endif
@@ -1568,70 +1634,7 @@ MV_VOID ddr3OpenFastPathWindows(MV_U32 uiCsEna) {
     /* Set L2 filtering to Max Memory size */
     MV_REG_WRITE(0x8c04, uiMemTotalSize);
 }
-#endif
 
-MV_VOID	ddr3OpenXBarWindows(MV_U32 uiCsEna) {
-
-	MV_U32 uiCsMemSize = 0;
-	MV_U32 uiReg, uiTempCount, uiCs;
-	MV_U32 winCtrlReg, winBaseReg;
-	MV_U32 winJumpIndex;
-#if defined(MV88F66XX) || defined(MV88F672X)
-	/* Disable L2 filtering */
-	MV_REG_WRITE(0x8c04, 0);
-
-	winCtrlReg  = REG_XBAR_WIN_16_CTRL_ADDR;
-	winBaseReg  = REG_XBAR_WIN_16_BASE_ADDR;
-	winJumpIndex = 0x8;
-#else
-	MV_U32 winRemapReg;
-	winCtrlReg  = REG_XBAR_WIN_4_CTRL_ADDR;
-	winBaseReg  = REG_XBAR_WIN_4_BASE_ADDR;
-	winRemapReg = REG_XBAR_WIN_4_REMAP_ADDR;
-	winJumpIndex = 0x10;
-#endif
-	/*  Open XBAR Windows 4-7 or 16-19 for other CS */
-	uiReg = 0;
-	uiTempCount = 0;
-	for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
-		if (uiCsEna & (1 << uiCs)) {
-#if defined(CONFIG_ALP_A375_ZX_REV) || defined(MV_NEW_TIP)
-			uiCsMemSize = SDRAM_CS_SIZE;
-#else
-			/* get CS size from Regs */
-            if (ddr3CalcMemCsSize(uiCs, &uiCsMemSize) != MV_OK)
-				return;
-#endif
-
-			switch (uiCs) {
-			case 0:
-				uiReg = 0x0E00;
-				break;
-			case 1:
-				uiReg = 0x0D00;
-				break;
-			case 2:
-				uiReg = 0x0B00;
-				break;
-			case 3:
-				uiReg = 0x0700;
-				break;
-			}
-			uiReg |= (1 << 0);
-			uiReg |= (uiCsMemSize & 0xFFFF0000);
-			MV_REG_WRITE(winCtrlReg + winJumpIndex * uiTempCount, uiReg);
-			uiReg = (((uiCsMemSize + 1) * uiTempCount) & 0xFFFF0000);
-			MV_REG_WRITE(winBaseReg + winJumpIndex * uiTempCount, uiReg);
-#if !defined(MV88F66XX) && !defined(MV88F672X)
-			if(winRemapReg <= REG_XBAR_WIN_7_REMAP_ADDR)
-				MV_REG_WRITE(winRemapReg + winJumpIndex * uiTempCount, 0);
-#endif
-			uiTempCount++;
-		}
-	}
-}
-
-#ifndef CONFIG_ALP_A375_ZX_REV
 MV_U32 ddr3GetBusWidth(void) {
 
     MV_U32 uiBusWidth;
@@ -1704,7 +1707,7 @@ MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize){
     return MV_OK;
 }
 #endif
-
+#endif
 #if defined(MV88F66XX)
 MV_VOID ddr3GetAlpBusWidth(void){
 

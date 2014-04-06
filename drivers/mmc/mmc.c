@@ -427,9 +427,12 @@ int mmc_send_op_cond(struct mmc *mmc)
 		if (err)
 			return err;
 
-		/* exit if not busy (flag seems to be inverted) */
-		if (mmc->op_cond_response & OCR_BUSY)
+		/* exit if not busy (flag seems to be inverted) and it is not the first command*/
+		if (i && mmc->op_cond_response & OCR_BUSY) {
+			mmc->op_cond_pending = 0; /* op_cond compilted */
 			return 0;
+		}
+		udelay(1000);
 	}
 	return IN_PROGRESS;
 }

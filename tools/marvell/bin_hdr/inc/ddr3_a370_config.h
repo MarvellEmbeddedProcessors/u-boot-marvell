@@ -76,11 +76,6 @@ Level 3: Provides the windows margin of each DQ as a results of DQS centeralizat
 /* this flag allows the execution of SW WL/RL oppon HW failure */
 #define DDR3_RUN_SW_WHEN_HW_FAIL    1
 
-#define DDR3_FAST_PATH_EN			1
-
-/*	1: Open Fast-Path windows after training
-	0: Open X-BAR windows after training*/
-
 /* General Configurations */
 /* The following parameters are required for proper setup */
 /* DRAM_ECC - Must be set to FALSE */

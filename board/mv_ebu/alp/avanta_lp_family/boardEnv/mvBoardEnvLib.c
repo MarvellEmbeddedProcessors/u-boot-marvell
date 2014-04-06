@@ -1907,11 +1907,11 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 
 	/* Switch configuration */
 	if (ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6)
-		mvOsOutput("\tEthernet Switch port 6 on MAC0, %s Speed [Default]\n"
+		mvOsOutput("\tEthernet Switch port 6 on MAC0 [CPU Port], %s Speed\n"
 				, (ethConfig & MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G) ? "2G" : "1G");
 	else if ((ethConfig & MV_ETHCOMP_GE_MAC1_2_SW_P4) &&
 		!(ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6))
-		mvOsOutput("\tEthernet Switch port 4 on MAC1, 1G Speed [Default]\n");
+		mvOsOutput("\tEthernet Switch port 4 on MAC1 [CPU Port], 1G Speed\n");
 	if ((ethConfig & MV_ETHCOMP_GE_MAC0_2_SW_P6) &&
 		(ethConfig & MV_ETHCOMP_GE_MAC1_2_SW_P4)) {
 		mvOsOutput("\tEthernet Switch port 4 on MAC1, 1G Speed\n");

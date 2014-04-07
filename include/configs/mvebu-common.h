@@ -37,7 +37,9 @@
 /* #define CONFIG_MV_DEBUG_PUTS */
 
 /* Global definitions */
+#ifndef CONFIG_SYS_TEXT_BASE
 #define CONFIG_SYS_TEXT_BASE            0x00000000
+#endif
 #define CONFIG_SYS_SDRAM_BASE           0x00000000
 #define CONFIG_SYS_RESET_ADDRESS        0xffff0000
 #define CONFIG_SYS_MALLOC_BASE          (CONFIG_SYS_TEXT_BASE + (3 << 20))  /* TEXT_BASE + 3M */

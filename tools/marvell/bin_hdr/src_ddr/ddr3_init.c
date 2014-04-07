@@ -737,6 +737,7 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 #if defined DUNIT_STATIC
 		ddr3TipInitSpecificRegConfig(0, ddr_modes[ddr3GetStaticDdrMode()].regs);
 #endif
+
 	/*Load topology for New Training IP*/
 	status = ddr3LoadTopologyMap();
 	if (MV_OK != status) {
@@ -1055,7 +1056,11 @@ MV_U32 ddr3GetStaticDdrMode(void)
 #elif defined (MV88F66XX) || defined(MV88F672X)
 	chipBoardRev = mvBoardIdGet();
 #elif defined (MV_NEW_TIP)
+	/*Valid only for A380 only, MSYS using dynamic controller config*/
 	chipBoardRev = 0;
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	chipBoardRev = mvBoardIdGet();
+#endif
 #else
 	chipBoardRev = A0;
 #endif
@@ -1519,12 +1524,14 @@ MV_STATUS ddr3LoadTopologyMap(void)
 	MV_U8 	devNum = 0;
 	MV_U32 boardId = mvBoardIdGet();
 
+	/*Get topology data by board ID*/
 	topologyMap = ddr3SiliconGetTopologyMap(boardId);
 	if (NULL == topologyMap) {
 		DEBUG_INIT_FULL_S("DDR3 Load Topology map - FAILED\n");
 		return MV_FAIL;
 	}
 
+	/*Set topology data for internal DDR training usage*/
 	if(MV_OK != mvHwsDdr3TipLoadTopologyMap(devNum, topologyMap))
 		return MV_FAIL;
 

@@ -93,9 +93,10 @@ u8 mpp_get_pin(int mpp_id)
 void mpp_set_reg(u32 *mpp_reg, int first_reg, int last_reg)
 {
 	int reg;
+	u32 *base = (u32 *)MPP_REGS_BASE;
 
 	for (reg = first_reg; reg < last_reg; reg++, mpp_reg++)
-		writel(*mpp_reg, MPP_REGS_BASE + reg);
+		writel(*mpp_reg, base + reg);
 }
 
 void mpp_set_and_update(u32 *mpp_reg)
@@ -104,6 +105,7 @@ void mpp_set_and_update(u32 *mpp_reg)
 	u32 *update_mask = soc_get_mpp_update_mask();
 	u32 *update_val = soc_get_mpp_update_val();
 	u32 *protect_mask = soc_get_mpp_protect_mask();
+	u32 *base = (u32 *)MPP_REGS_BASE;
 
 	for (i = 0; i < MAX_MPP_REGS; i++) {
 		/* Disable modifying protected MPPs */
@@ -120,7 +122,7 @@ void mpp_set_and_update(u32 *mpp_reg)
 		debug("Set mpp reg 0x%08x\n", mpp_reg[i]);
 
 		/* Write to register */
-		writel(mpp_reg[i], MPP_REGS_BASE + (4 * i));
+		writel(mpp_reg[i], base + i);
 	}
 }
 

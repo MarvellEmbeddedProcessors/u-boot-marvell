@@ -58,7 +58,7 @@ u16 armada8022_unit_disable[MAX_UNIT_ID] = {
 };
 
 /* MPP description table. Informative only */
-char a8k_mpp_desc[MAX_MPP_ID + 1][MAX_MPP_OPTS][MAX_MPP_NAME] = {
+char *a8k_mpp_desc[MAX_MPP_ID + 1][MAX_MPP_OPTS] = {
 	{"GPIO_0", "NF_IO_2", "SPI_0_CSn",	"SPI_1_CSn",	"NA",           "ND_IO_2", "NA"},	/* 0  */
 	{"GPIO_1", "NF_IO_3", "SPI_0_MOSI",	"SPI_1_MOSI",	"NA",	        "ND_IO_3", "NA"},	 /* 1  */
 	{"GPIO_2", "NF_IO_4", "PTP_EVENT_REQ",  "C0_LED",	"AU_I2S_DI",	"ND_IO_4", "SPI_1_MOSI"}, /* 2  */
@@ -90,6 +90,6 @@ struct mvebu_soc_family a8k_family_info = {
 	.id   = 8000,
 	.base_unit_info = base_unit_mask_table,
 	.soc_table = a8k_soc_info,
-	.mpp_desc  = a8k_mpp_desc,
+	.mpp_desc  = (char **)a8k_mpp_desc,
 	.adec_type = 0,
 };

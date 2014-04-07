@@ -17,27 +17,10 @@
  * ***************************************************************************
  */
 
-#define DEBUG
-
 #include <common.h>
-#include <asm/io.h>
-#include <asm/arch-mvebu/soc.h>
-#include <asm/arch-mvebu/unit-info.h>
-#include <asm/arch-armada8k/armada8k.h>
 
-int soc_get_rev(void)
+/* Currently timer is not needed for ARMv8 */
+int timer_init(void)
 {
-	/* This should read the soc rev from some register*/
 	return 0;
-}
-
-int soc_get_id(void)
-{
-	/* This should read the soc id from some register*/
-	return 8022;
-}
-
-struct mvebu_soc_family *soc_init(void)
-{
-	return &a8k_family_info;
 }

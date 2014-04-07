@@ -28,49 +28,10 @@
 #include <linux/compiler.h>
 #include "board-info.h"
 
-DECLARE_GLOBAL_DATA_PTR;
 
-int board_init(void)
+struct mvebu_board_family *board_init_family(void)
 {
-	debug("Start Armada8021-pxp board init\n");
+	/* Board family specific init goes here */
 
-	a8k_init();
-
-	common_board_init(&a8k_board_family);
-
-	/* a8k specific board init goes here */
-
-	return 0;
-}
-
-int dram_init(void)
-{
-	/*
-	 * Clear spin table so that secondary processors
-	 * observe the correct value after waken up from wfe.
-	 */
-	*(unsigned long *)CPU_RELEASE_ADDR = 0;
-
-	gd->ram_size = PHYS_SDRAM_1_SIZE;
-	return 0;
-}
-
-int timer_init(void)
-{
-	return 0;
-}
-
-/*
- * Board specific reset that is system reset.
- */
-void reset_cpu(ulong addr)
-{
-}
-
-/*
- * Board specific ethernet initialization routine.
- */
-int board_eth_init(bd_t *bis)
-{
-	return 0;
+	return &a8k_board_family;
 }

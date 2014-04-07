@@ -97,7 +97,7 @@ void mvebu_print_soc_info(void)
 #endif
 #endif
 
-	__print_soc_specific_info();
+	print_soc_specific_info();
 
 }
 
@@ -126,8 +126,8 @@ void reset_cpu(ulong addr) __attribute__((weak, alias("__reset_cpu")));
 
 
 
-void enable_caches(void)
+void _enable_caches(void)
 {
 	/* Nothing to be done */
 }
-
+void enable_caches(void) __attribute__((weak, alias("_enable_caches")));

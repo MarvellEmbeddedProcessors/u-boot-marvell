@@ -27,16 +27,16 @@
 /* Define all SAR variables available for SOC */
 /* Assuming their location is equal on all boards */
 struct sar_var a8k_sar_lookup[MAX_SAR] = {
-	[CPUS_NUM_SAR] = {0, 2, 3,
+	[CPUS_NUM_SAR] = {0, 2, 3, 0,
 		{{0x0, "Single CPU", 0},
 		 {0x2, "Dual CPU", 0},
 		 {0x3, "Quad CPU", VAR_IS_DEFUALT} },
 	},
-	[FREQ_SAR] = {2, 5, 2,
+	[FREQ_SAR] = {2, 5, 2, 0,
 		{{0x0, "800 / 400 / 400"},
 		 {0x5, "1200 / 600 / 600"} },
 	},
-	[BOOT_SRC_SAR] = {7, 2, 3,
+	[BOOT_SRC_SAR] = {7, 2, 3, 0,
 		{{0x0, "NAND boot", 0},
 		 {0x2, "SPI boot", VAR_IS_DEFUALT},
 		 {0x3, "NOR boot", 0} },

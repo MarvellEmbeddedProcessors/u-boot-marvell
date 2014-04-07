@@ -22,6 +22,14 @@
 
 #include "mvebu-common.h"
 
+#undef CONFIG_SYS_INIT_SP_ADDR
+#undef CONFIG_SYS_MALLOC_LEN
+#undef CONFIG_SYS_LOAD_ADDR
+#undef CONFIG_SYS_SDRAM_BASE
+#undef CONFIG_ENV_IS_NOWHERE
+
+#define CONFIG_AURORA_2_TIMER
+
 #define DEBUG
 
 #define CONFIG_REMAKE_ELF
@@ -185,14 +193,11 @@
 #define CONFIG_BOOTARGS			"console=ttyAMA0 root=/dev/ram0"
 #define CONFIG_BOOTCOMMAND		"bootm $kernel_addr " \
 					"$initrd_addr:$initrd_size $fdt_addr"
-#define CONFIG_BOOTDELAY		-1
 
 /* Do not preserve environment */
 #define CONFIG_ENV_IS_NOWHERE		1
-#define CONFIG_ENV_SIZE			0x1000
 
 /* Monitor Command Prompt */
-#define CONFIG_SYS_CBSIZE		512	/* Console I/O Buffer Size */
 #define CONFIG_SYS_PBSIZE		(CONFIG_SYS_CBSIZE + \
 					sizeof(CONFIG_SYS_PROMPT) + 16)
 #define CONFIG_SYS_HUSH_PARSER
@@ -200,6 +205,5 @@
 #define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_CMDLINE_EDITING		1
-#define CONFIG_SYS_MAXARGS		64	/* max command args */
 
 #endif /* __ARMADA8021_PXP_H */

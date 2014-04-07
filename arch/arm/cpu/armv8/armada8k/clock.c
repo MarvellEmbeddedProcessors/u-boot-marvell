@@ -17,27 +17,30 @@
  * ***************************************************************************
  */
 
-#define DEBUG
-
 #include <common.h>
-#include <asm/io.h>
-#include <asm/arch-mvebu/soc.h>
-#include <asm/arch-mvebu/unit-info.h>
-#include <asm/arch-armada8k/armada8k.h>
+#include <asm/arch-mvebu/clock.h>
 
-int soc_get_rev(void)
+u32 soc_tclk_get(void)
 {
-	/* This should read the soc rev from some register*/
-	return 0;
+	return 200000000;
 }
 
-int soc_get_id(void)
+u32 soc_cpu_clk_get(void)
 {
-	/* This should read the soc id from some register*/
-	return 8022;
+	return 200000000;
 }
 
-struct mvebu_soc_family *soc_init(void)
+u32 soc_ddr_clk_get(void)
 {
-	return &a8k_family_info;
+	return 200000000;
+}
+
+u32 soc_l2_clk_get(void)
+{
+	return 800000000;
+}
+
+u32 soc_timer_clk_get(void)
+{
+	return 800000000;
 }

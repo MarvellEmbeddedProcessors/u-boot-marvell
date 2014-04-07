@@ -29,4 +29,7 @@
 #define MPP_FIELD_BITS		3
 #define MPP_VAL_MASK		0xF
 
+#define MPPS_PER_REG		(32 / MPP_BIT_CNT)
+#define MAX_MPP_REGS		((MAX_MPP_ID + MPPS_PER_REG) / MPPS_PER_REG)
+
 #endif	/* _SOC_INFO_H_ */

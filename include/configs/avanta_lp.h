@@ -164,6 +164,8 @@ extern unsigned int mvTclkGet(void);
 	#define CONFIG_CMD_PCI
 #endif
 
+#define CONFIG_ENV_MIN_ENTRIES 128
+
 #ifdef MV_FS
 /* FS supported */
 #define CONFIG_CMD_EXT2

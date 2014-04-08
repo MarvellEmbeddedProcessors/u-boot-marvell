@@ -146,11 +146,12 @@ extern unsigned int mvTclkGet(void);
 #define CONFIG_CMD_BOOT_MENU
 #define CONFIG_CMD_SYS_RESTORE
 
-
 #if defined(MV_INCLUDE_PEX) || defined(MV_INCLUDE_PCI)
 	#define CONFIG_PCI
 	#define CONFIG_CMD_PCI
 #endif
+
+#define CONFIG_ENV_MIN_ENTRIES 128
 
 /* Pre eXecution Environment (PXE) support*/
 #define CONFIG_CMD_PXE

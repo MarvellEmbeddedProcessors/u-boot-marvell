@@ -290,7 +290,7 @@ void misc_init_r_env(void){
 
 	envSetDefault("console", "console=ttyS0,115200");
 #if defined(MV_NAND) && defined(MV_INCLUDE_SPI)
-	envSetDefault("mtdparts", "mtdparts=mvebu-nand:8m(boot)ro,8m@8m(kernel),-(rootfs);mtdparts=spi_flash:4m(boot),-(spi-rootfs)");
+	envSetDefault("mtdparts", "'mtdparts=mvebu-nand:8m(boot)ro,8m@8m(kernel),-(rootfs);mtdparts=spi_flash:4m(boot),-(spi-rootfs)'");
 	envSetDefault("mtdids", "nand0=mvebu-nand;spi0=spi_flash");
 #elif defined(MV_NAND)
 	envSetDefault("mtdparts", "mtdparts=mvebu-nand:8m(boot)ro,8m@8m(kernel),-(rootfs)");

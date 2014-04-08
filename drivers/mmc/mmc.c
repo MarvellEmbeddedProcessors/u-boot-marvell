@@ -29,6 +29,7 @@
 #include <mmc.h>
 #include <part.h>
 #include <malloc.h>
+#include <asm/errno.h>
 #include <linux/list.h>
 #include <div64.h>
 #include "mmc_private.h"
@@ -81,14 +82,17 @@ int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 	int ret;
 
 	/* got a read commnand, alloc aligned buffer for the DMA to write to */
-	if ((data) && (data->flags & MMC_DATA_READ)) {
-		ptr = malloc((data->blocks * data->blocksize) + ALIGN_SIZE-1);
-		if (!ptr)
-			return 0;
-
-		aligned_dest = (char *) (((uintptr_t)ptr + ALIGN_SIZE-1) & ~(ALIGN_SIZE-1));
-		temp = data->dest;
-		data->dest = aligned_dest;
+	if ((data) && (data->flags & MMC_DATA_READ) && (data->dest)) {
+		if (((unsigned int)data->dest) & (ALIGN_SIZE - 1)) {
+			ptr = malloc((data->blocks * data->blocksize) + ALIGN_SIZE-1);
+			if (!ptr) {
+				printf("%s: mmc malloc fail!\n", __func__);
+				return -ENOMEM;
+			}
+			aligned_dest = (char *) (((uintptr_t)ptr + ALIGN_SIZE-1) & ~(ALIGN_SIZE-1));
+			temp = data->dest;
+			data->dest = aligned_dest;
+		}
 	}
 
 
@@ -99,7 +103,7 @@ int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 #endif
 	ret = mmc->send_cmd(mmc, cmd, data);
 	/* copy back to original dest address */
-	if ((data) && (data->flags & MMC_DATA_READ)) {
+	if ((data) && (data->flags & MMC_DATA_READ) && ptr) {
 		memcpy(temp, data->dest, (data->blocks * data->blocksize));
 		data->dest = temp;
 		free(ptr);

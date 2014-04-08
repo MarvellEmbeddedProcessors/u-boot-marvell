@@ -323,7 +323,7 @@ void misc_init_r_env(void)
 	env = getenv("mtdparts");
 	if (!env) {
 #if defined(MV_NAND) && defined(MV_INCLUDE_SPI)
-		setenv("mtdparts", "mtdparts=mvebu-nand:8m(boot)ro,8m@8m(kernel),-(rootfs);mtdparts=spi_flash:4m(boot),-(spi-rootfs)");
+		setenv("mtdparts", "'mtdparts=mvebu-nand:8m(boot)ro,8m@8m(kernel),-(rootfs);mtdparts=spi_flash:4m(boot),-(spi-rootfs)'");
 #elif defined(MV_NAND)
 		setenv("mtdparts", "mtdparts=mvebu-nand:8m(boot)ro,8m@8m(kernel),-(rootfs)");
 #elif defined(MV_INCLUDE_SPI)

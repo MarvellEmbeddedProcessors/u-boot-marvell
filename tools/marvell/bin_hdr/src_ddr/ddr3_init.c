@@ -88,10 +88,12 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_a375_vars.h"
 #include "mvHighSpeedEnvSpec.h"
 #elif defined(MV88F68XX)
+#include "mvBHboardEnvSpec.h"
 #include "ddr3_a38x.h"
 #include "ddr3_a38x_vars.h"
 #include "ddr3_a38x_topology.h"
 #elif defined(MV_MSYS)
+#include "mvBHboardEnvSpec.h"
 #include "ddr3_msys.h"
 #include "ddr3_msys_config.h"
 #include "ddr3_msys_vars.h"
@@ -139,6 +141,7 @@ MV_VOID		getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs);
 MV_VOID		ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna);
 MV_VOID		ddr3FastPathStaticCsSizeConfig(MV_U32 uiCsEna);
 #endif
+MV_U32 	mvBoardIdIndexGet(MV_U32 boardId);
 MV_U32 mvBoardIdGet(MV_VOID);
 #if !defined(MV_NEW_TIP)
 extern MV_VOID ddr3SetSwWlRlDebug(MV_U32);
@@ -1064,11 +1067,12 @@ MV_U32 ddr3GetStaticDdrMode(void)
 #elif defined (MV88F66XX) || defined(MV88F672X)
 	chipBoardRev = mvBoardIdGet();
 #elif defined (MV_NEW_TIP)
-	/*Valid only for A380 only, MSYS using dynamic controller config*/
-	chipBoardRev = 0;
+/*Valid only for A380 only, MSYS using dynamic controller config*/
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-	chipBoardRev = mvBoardIdGet();
-#endif
+	chipBoardRev = mvBoardIdGet();	/* Customer boards select DDR mode according to board ID & Sample@Reset*/
+#else
+	chipBoardRev = MARVELL_BOARD;	/* Marvell boards select DDR mode according to Sample@Reset only */
+#endif /* MV_NEW_TIP */
 #else
 	chipBoardRev = A0;
 #endif
@@ -1502,20 +1506,25 @@ MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs)
 
 #if defined(MV88F68XX)
 /*****************************************************************************/
-MV_HWS_TOPOLOGY_MAP* ddr3SiliconGetTopologyMap(MV_U32 boardId)
+MV_HWS_TOPOLOGY_MAP* ddr3SiliconGetTopologyMap(void)
 {
-	if (sizeof(a38xTopologyMap)/sizeof(MV_HWS_TOPOLOGY_MAP) <= boardId){
-		DEBUG_INIT_FULL_S("Detected not supported board ID\n");
-		return NULL;
-	}
-	return &a38xTopologyMap[boardId];
+	MV_U32 boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
+
+
+	if (sizeof(a38xTopologyMap)/sizeof(MV_HWS_TOPOLOGY_MAP) > boardIdIndex)
+			return &a38xTopologyMap[boardIdIndex];
+
+	DEBUG_INIT_FULL_S("ddr3SiliconGetTopologyMap: Detected not supported board ID\n");
+	return NULL;
 }
 #endif
 
 #if defined(MV_MSYS)
 /*****************************************************************************/
-MV_HWS_TOPOLOGY_MAP* ddr3SiliconGetTopologyMap(MV_U32 boardId)
+MV_HWS_TOPOLOGY_MAP* ddr3SiliconGetTopologyMap(void)
 {
+	MV_U32 boardId = mvBoardIdGet();
+
 	if (sizeof(msysTopologyMap)/sizeof(MV_HWS_TOPOLOGY_MAP*) <= boardId){
 		DEBUG_INIT_FULL_S("Detected not supported board ID\n");
 		return NULL;
@@ -1530,10 +1539,9 @@ MV_STATUS ddr3LoadTopologyMap(void)
 {
 	MV_HWS_TOPOLOGY_MAP* topologyMap;
 	MV_U8 	devNum = 0;
-	MV_U32 boardId = mvBoardIdGet();
 
 	/*Get topology data by board ID*/
-	topologyMap = ddr3SiliconGetTopologyMap(boardId);
+	topologyMap = ddr3SiliconGetTopologyMap();
 	if (NULL == topologyMap) {
 		DEBUG_INIT_FULL_S("DDR3 Load Topology map - FAILED\n");
 		return MV_FAIL;

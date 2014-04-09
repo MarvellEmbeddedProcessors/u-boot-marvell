@@ -90,7 +90,8 @@
 #define DB(x)
 #endif
 
-extern MV_BOARD_INFO *boardInfoTbl[];
+extern MV_BOARD_INFO *marvellBoardInfoTbl[];
+extern MV_BOARD_INFO *customerBoardInfoTbl[];
 MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_BOARD_CONFIG_INFO;
 MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
 MV_SATR_BOOT_TABLE satrBootSrcTable[] = MV_SATR_BOOT_SRC_TABLE_VAL;
@@ -99,6 +100,31 @@ MV_SATR_BOOT_TABLE satrBootSrcTable[] = MV_SATR_BOOT_SRC_TABLE_VAL;
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 static MV_BOARD_INFO *board;
 static MV_VOID mvBoardModuleAutoDetect(MV_VOID);
+
+
+
+/*******************************************************************************
+* mvBoardIdIndexGet
+*
+* DESCRIPTION:
+*	returns an index for board arrays with direct memory access, according to board id
+*
+* INPUT:
+*       boardId.
+*
+* OUTPUT:
+*       direct access index for board arrays
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
+{
+/* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
+	return boardId & (MARVELL_BOARD_ID_BASE - 1);
+}
+
 /*******************************************************************************
 * mvBoardEnvInit
 *
@@ -123,8 +149,7 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 	MV_U32 syncCtrl	= 0;
 	MV_BOARD_BOOT_SRC bootSrc;
 
-	board = boardInfoTbl[DB_68XX_ID];	/* init for first time get the correct twsi address */
-	mvBoardIdSet(mvBoardIdGet());
+	mvBoardSet(mvBoardIdGet());
 	if (mvBoardConfigAutoDetectEnabled())
 		mvBoardModuleAutoDetect();
 	bootSrc = mvBoardBootDeviceGroupSet();
@@ -192,7 +217,7 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 *******************************************************************************/
 MV_U16 mvBoardModelGet(MV_VOID)
 {
-	return mvBoardIdGet() >> 16;
+	return mvBoardIdIndexGet(mvBoardIdGet()) >> 16;
 }
 /*******************************************************************************
 * mbBoardRevlGet - Get Board revision
@@ -1115,12 +1140,16 @@ MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID)
 MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 {
 	MV_U32 i = 0;
-	MV_U8 ioValue;
-	MV_U32 tmp;
+	MV_U8 ioValue, boardId = mvBoardIdGet();
+	MV_U32 tmp = MV_ERROR;
 
 	if (mvBoardIoExpanderGet(0, 2, &ioValue) == MV_ERROR)
 		return MV_OK; /* ignore for boards not supported IO expander */
-	tmp = mvBoardSatRRead(MV_SATR_RD_SERDES4_CFG);
+
+	/* if RD board: detect SerDes Lane #4 configuration*/
+	if (boardId == RD_NAS_68XX_ID || boardId == RD_AP_68XX_ID)
+		tmp = mvBoardSatRRead(MV_SATR_RD_SERDES4_CFG);
+
 	if (tmp != MV_ERROR) { /* ignore for none RD_NAS board */
 		if (tmp == 0) /* 0 = USB3.  1 = SGMII. */
 			ioValue |= 1 ;	/* Setting USB3.0 interface: configure IO as output '1' */
@@ -1779,7 +1808,7 @@ MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig)
 MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo)
 {
 	int i;
-	MV_U32 boardId = mvBoardIdGet();
+	MV_U32 boardId = mvBoardIdIndexGet(mvBoardIdGet());
 
 	/* verify existence of requested SATR type, pull its data,
 	 * and check if field is relevant to current running board */
@@ -1814,7 +1843,7 @@ MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *s
 MV_BOOL mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo)
 {
 	int i;
-	MV_U32 boardId = mvBoardIdGet();
+	MV_U32 boardId = mvBoardIdIndexGet(mvBoardIdGet());
 
 	/* verify existence of requested config type, pull its data,
 	 * and check if field is relevant to current running board */
@@ -1898,12 +1927,18 @@ MV_32 mvBoardNandWidthGet(void)
 *       void
 *
 *******************************************************************************/
-MV_VOID mvBoardIdSet(MV_U32 boardId)
+static MV_U32 gBoardId = -1;
+MV_VOID mvBoardSet(MV_U32 boardId)
 {
-	if (boardId >= MV_MAX_BOARD_ID)
+	/* board ID's >0x10 are for Marvell Boards */
+	if (boardId >= MARVELL_BOARD_ID_BASE && boardId < MV_MAX_MARVELL_BOARD_ID) { /* Marvell Board */
+		board = marvellBoardInfoTbl[mvBoardIdIndexGet(boardId)];
+		gBoardId = boardId;
+	} else if (boardId >= CUTOMER_BOARD_ID_BASE && boardId < MV_MAX_CUSTOMER_BOARD_ID) { /* Customer Board */
+		board = customerBoardInfoTbl[mvBoardIdIndexGet(boardId)];
+		gBoardId = boardId;
+	} else
 		mvOsPrintf("%s: Error: wrong boardId (%d)\n", __func__, boardId);
-
-	board = boardInfoTbl[boardId];
 }
 
 /*******************************************************************************
@@ -1924,24 +1959,36 @@ MV_VOID mvBoardIdSet(MV_U32 boardId)
 *       32bit board ID number, '-1' if board is undefined.
 *
 *******************************************************************************/
-static MV_U32 gBoardId = -1;
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-	MV_U8 readValue;
 	if (gBoardId != -1)
 		return gBoardId;
 
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	#ifdef CONFIG_CUSTOMER_BOARD_0
+		gBoardId = ARMADA_38x_CUSTOMER_BOARD_ID0;
+	#elif CONFIG_CUSTOMER_BOARD_1
+		gBoardId = ARMADA_38x_CUSTOMER_BOARD_ID1;
+	#endif
+#else
+	/* For Marvell Boards: Set generic board struct pointer to use S@R TWSI address, and read board ID */
+	board = marvellBoardInfoTbl[mvBoardIdIndexGet(DB_68XX_ID)];
+	MV_U8 readValue;
 	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, 0, &readValue) != MV_OK) {
 		mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);
-		mvOsPrintf("%s: Set default board ID to DB-88F6820-BP", __func__);
+		mvOsPrintf("%s: Set default board ID to DB-88F6820-BP\n", __func__);
 		readValue = DB_68XX_ID;
 	}
-	gBoardId = readValue & 0x07;
+	readValue = readValue & 0x07;
 
-	if (gBoardId >= MV_MAX_BOARD_ID) {
-		mvOsPrintf("%s: Error: read wrong board (%d)\n", __func__, gBoardId);
+	if (readValue < MV_MARVELL_BOARD_NUM && readValue >= 0) {
+		gBoardId = MARVELL_BOARD_ID_BASE + readValue;
+	} else {
+		mvOsPrintf("%s: Error: read wrong board (%d)\n", __func__, readValue);
 		return MV_INVALID_BOARD_ID;
 	}
+#endif
+
 	return gBoardId;
 }
 
@@ -2430,7 +2477,7 @@ MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField)
 	}
 
 	if (mvBoardSatrInfoConfig(satrField, &satrInfo) != MV_OK) {
-		mvOsPrintf("%s: Error: Requested S@R field is not relevant for this board\n", __func__);
+		mvOsPrintf("%s: Error: Requested S@R field (%d) is not relevant for this board\n", __func__, satrField);
 		return MV_ERROR;
 	}
 

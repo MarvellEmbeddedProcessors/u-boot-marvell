@@ -69,7 +69,67 @@
 #ifdef WIN32
 #define mvPrintf    printf
 #endif
-/********************************* Definitions ********************************/
+
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+/**************************************************************************
+ * loadTopologyCustomer -
+ *
+ * DESCRIPTION:          Loads the board topology for customer board
+ * INPUT:                serdesMapArray  -   Not relevant
+ * OUTPUT:               The board topology.
+ * RETURNS:              MV_OK           -   for success
+ ***************************************************************************/
+MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray);
+
+/************************* Load Topology - Customer Boards ****************************/
+SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
+{
+{		/* Customer Board 0 Toplogy */
+	{ PEX0,		__5Gbps,	PEX_ROOT_COMPLEX_x1 },
+	{ SATA0,	__3Gbps,	SERDES_DEFAULT_MODE },
+	{ SATA1,	__3Gbps,	SERDES_DEFAULT_MODE },
+	{ SATA3,	__3Gbps,	SERDES_DEFAULT_MODE },
+	{ USB3_HOST0,	__5Gbps,	SERDES_DEFAULT_MODE },
+	{ SATA2,	__3Gbps,	SERDES_DEFAULT_MODE }
+},
+{		/* Customer Board 1 Toplogy */
+	{ SATA0,	__3Gbps,	SERDES_DEFAULT_MODE },
+	{ PEX0,		__5Gbps,	PEX_ROOT_COMPLEX_x1 },
+	{ PEX1,		__5Gbps,	PEX_ROOT_COMPLEX_x1 },
+	{ SATA3,	__3Gbps,	SERDES_DEFAULT_MODE },
+	{ USB3_HOST0,	__5Gbps,	SERDES_DEFAULT_MODE },
+	{ SATA2,	__3Gbps,	SERDES_DEFAULT_MODE }
+}};
+
+
+/***************************************************************************/
+MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray)
+{
+	MV_U32 laneNum;
+	MV_U32 boardId = mvBoardIdGet();
+	DEBUG_INIT_S("\nInit Customer board ");
+
+	/* Updating the topology map */
+	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
+		serdesMapArray[laneNum].serdesMode  =  CustomerBoardTopologyConfig[boardId][laneNum].serdesMode;
+		serdesMapArray[laneNum].serdesSpeed =  CustomerBoardTopologyConfig[boardId][laneNum].serdesSpeed;
+		serdesMapArray[laneNum].serdesType  =  CustomerBoardTopologyConfig[boardId][laneNum].serdesType;
+	}
+
+	return MV_OK;
+}
+
+/**********************************************************************/
+/* Load topology functions - Board ID is the index for function array */
+/**********************************************************************/
+
+loadTopologyFuncPtr loadTopologyFuncArr[] =
+{
+	loadTopologyCustomer,         /* Customer Board 0 */
+	loadTopologyCustomer,         /* Customer Board 1*/
+};
+
+#else /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 
 /*********************************** Enums ************************************/
 
@@ -86,13 +146,7 @@ typedef enum {
 	DB_NO_TOPOLOGY
 } TOPOLOGY_CONFIG_DB;
 
-/*********************************** Globals **********************************/
-
-/* For initializing the COMMON_PHYS_SELECTORS_REG
-   Maps the serdes lane num and type to the data */
-
 /************************* Local functions declarations ***********************/
-
 /**************************************************************************
  * loadTopologyDB -
  *
@@ -162,21 +216,17 @@ MV_STATUS loadTopologyRDAp(SERDES_MAP  *serdesMapArray);
  ***************************************************************************/
 MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii);
 
-/**************************************************************************
- * loadTopologyCustomer -
- *
- * DESCRIPTION:          Loads the board topology for customer board
- * INPUT:                serdesMapArray  -   Not relevant
- * OUTPUT:               The board topology.
- * RETURNS:              MV_OK           -   for success
- ***************************************************************************/
-MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray);
+loadTopologyFuncPtr loadTopologyFuncArr[] =
+{
+	loadTopologyRD,         /* RD NAS */
+	loadTopologyDB,
+	loadTopologyRD,         /* RD AP */
+};
 
 /*********************************** Globals **********************************/
-
-/************************/
-/** Load topology - DB **/
-/************************/
+/********************************/
+/** Load topology - Marvell DB **/
+/********************************/
 
 /* Configuration options */
 SERDES_MAP DbConfigDefault[MAX_SERDES_LANES] =
@@ -275,35 +325,7 @@ SERDES_MAP* topologyConfigDB[] =
 	DbConfigDefault
 };
 
-/****************************************/
-/** Load topology - for customer board **/
-/****************************************/
-
-SERDES_MAP CustomerConfig[MAX_SERDES_LANES] =
-{
-	{ SATA0,     __3Gbps,		   SERDES_DEFAULT_MODE		      },
-	{ PEX0,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1		      },
-	{ PEX1,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1		      },
-	{ SATA3,     __3Gbps,		   SERDES_DEFAULT_MODE		      },
-	{ USB3_HOST0, __5Gbps,		   SERDES_DEFAULT_MODE		      },
-	{ USB3_HOST1, __5Gbps,		   SERDES_DEFAULT_MODE		      }
-};
-
-
-/********************************************************/
-/* Load topology functions ******************************/
-/* (the board id is the index to the relevant function) */
-/********************************************************/
-loadTopologyFuncPtr loadTopologyFuncArr[] =
-{
-	loadTopologyRD,         /* RD NAS */
-	loadTopologyDB,
-	loadTopologyRD,         /* RD AP */
-	loadTopologyCustomer    /* A place for the costumer load topology function */
-};
-
 /*************************** Functions implementation *************************/
-
 /***************************************************************************/
 MV_U8 mvHwsBoardIdGet(MV_VOID)
 {
@@ -322,35 +344,17 @@ MV_U8 mvHwsBoardIdGet(MV_VOID)
 	DEBUG_INIT_FULL_S("mvHwsBoardIdGet: getting board id\n");
 	if (mvTwsiRead(0, &twsiSlave, &boardId, 1) != MV_OK) {
 		DEBUG_INIT_S("mvHwsBoardIdGet: TWSI Read failed\n");
-		return MV_MAX_BOARD_ID;
+		return (MV_U8)MV_INVALID_BOARD_ID;
 	}
 
-	DEBUG_INIT_FULL_S("+++++++++++++++++++++++++++++++++++++++++++++ boardId=0x");
+	DEBUG_INIT_FULL_S("boardId from HW = 0x");
 	DEBUG_INIT_FULL_D(boardId, 2);
 	DEBUG_INIT_FULL_S("\n");
 
 	return boardId & 0x7; /* bits 0-2 */
 }
 
-/***************************************************************************/
-MV_U32 mvBoardTclkGet(MV_VOID)
-{
-	MV_U32 value;
-
-	value = MV_MEMIO_LE32_READ((INTER_REGS_BASE | DEVICE_SAMPLE_AT_RESET1_REG)) & (0x3 << 22);
-
-	switch (value) {
-	case 0:
-		return MV_BOARD_TCLK_250MHZ;
-	case (0x1 << 22):
-		return MV_BOARD_TCLK_200MHZ;
-	default:
-		return MV_BOARD_TCLK_ERROR;
-	}
-}
-
-/************************** Load topology - DB ********************************/
-
+/************************** Load topology - Marvell DB ********************************/
 /***************************************************************************/
 MV_U8 topologyConfigDBModeGet(MV_VOID)
 {
@@ -478,7 +482,7 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 	return MV_OK;
 }
 
-/************************** Load topology - RD ********************************/
+/************************** Load topology - Marvell RD boards********************************/
 
 /***************************************************************************/
 MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
@@ -660,21 +664,20 @@ MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii)
 	return MV_OK;
 }
 
-/************************* Load topology - customer ****************************/
-
+#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 /***************************************************************************/
-MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray)
+MV_U32 mvBoardTclkGet(MV_VOID)
 {
-	MV_U32 laneNum;
+	MV_U32 value;
 
-	DEBUG_INIT_S("\nInit Customer board ");
+	value = MV_MEMIO_LE32_READ((INTER_REGS_BASE | DEVICE_SAMPLE_AT_RESET1_REG)) & (0x3 << 22);
 
-	/* Updating the topology map */
-	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
-		serdesMapArray[laneNum].serdesMode =  CustomerConfig[laneNum].serdesMode;
-		serdesMapArray[laneNum].serdesSpeed =  CustomerConfig[laneNum].serdesSpeed;
-		serdesMapArray[laneNum].serdesType =  CustomerConfig[laneNum].serdesType;
+	switch (value) {
+	case 0:
+		return MV_BOARD_TCLK_250MHZ;
+	case (0x1 << 22):
+		return MV_BOARD_TCLK_200MHZ;
+	default:
+		return MV_BOARD_TCLK_ERROR;
 	}
-
-	return MV_OK;
 }

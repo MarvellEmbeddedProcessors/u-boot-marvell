@@ -66,6 +66,16 @@
 include ../base.mk
 sinclude ../../../../include/autoconf.mk
 
+ifeq "$(CONFIG_CUSTOMER_BOARD_SUPPORT)" "y"
+  CFLAGS += -DCONFIG_CUSTOMER_BOARD_SUPPORT
+endif
+ifeq "$(CONFIG_CUSTOMER_BOARD_0)"  "y"
+  CFLAGS += -DCONFIG_CUSTOMER_BOARD_0
+endif
+ifeq "$(CONFIG_CUSTOMER_BOARD_1)"  "y"
+  CFLAGS += -DCONFIG_CUSTOMER_BOARD_1
+endif
+
 ifeq "$(CONFIG_DB_78x60_BP_REV2)"  "y"
   CFLAGS += -DCONFIG_DB_78x60_BP_REV2
 endif

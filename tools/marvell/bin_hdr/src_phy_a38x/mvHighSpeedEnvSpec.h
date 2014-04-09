@@ -351,4 +351,6 @@ MV_STATUS mvSerdesPowerUpCtrl(MV_U32 serdesNum,
 			      SERDES_MODE  serdesMode,
 			      REF_CLOCK refClock);
 
+MV_U32 mvBoardIdGet(MV_VOID);
+
 #endif /* _MV_HIGHSPEED_ENV_SPEC_H */

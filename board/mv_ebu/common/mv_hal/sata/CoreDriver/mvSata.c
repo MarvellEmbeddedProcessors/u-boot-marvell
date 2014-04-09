@@ -4799,7 +4799,6 @@ MV_BOOLEAN mvSataInitAdapter(MV_SATA_ADAPTER *pAdapter)
 		pAdapter->mainCauseOffset = 0x20020;
 		pAdapter->chipIs66XXX0 = MV_TRUE;
 		break;
-	case MV_SATA_DEVICE_ID_6820:
 	case MV_SATA_DEVICE_ID_6720:
 		pAdapter->numberOfChannels = 2;
 		pAdapter->numberOfUnits = 1;

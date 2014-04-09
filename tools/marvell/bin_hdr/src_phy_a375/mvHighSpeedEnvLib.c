@@ -356,25 +356,21 @@ MV_U32 GetLaneSelectorConfig(void)
     uiReg = 0x1; /* lane 0 is always PEX */
 
 	switch (mvGetSerdesLaneCfg(1)) {
-	default:
-	case SERDES_UNIT_PEX:	tmp = 0;	break;
-	case SERDES_UNIT_SGMII: tmp = 1;	break;
-	case SERDES_UNIT_SATA:	tmp = 2;	break;
+		default:
+		case SERDES_UNIT_PEX:	tmp = 0;	break;
+		case SERDES_UNIT_SGMII: tmp = 1;	break;
+		case SERDES_UNIT_SATA:	tmp = 2;	break;
 	}
 	uiReg |= (tmp << 1); /* lane 1  */
 
-/* SATA1 is not supported in Zx revision */
-#ifndef CONFIG_ALP_A375_ZX_REV
 	switch (mvGetSerdesLaneCfg(2)) {
-	default:
-	case SERDES_UNIT_PEX:	tmp = 0;	break;
-	case SERDES_UNIT_SGMII: tmp = 1;	break;
-	case SERDES_UNIT_SATA:	tmp = 2;	break;
+		default:
+		case SERDES_UNIT_PEX:	tmp = 0;	break;
+		case SERDES_UNIT_SGMII: tmp = 1;	break;
+		case SERDES_UNIT_SATA:	tmp = 2;	break;
 	}
 	uiReg |= (tmp << 2); /* lane 2  */
-#endif
 
-	uiReg |= (((mvGetSerdesLaneCfg(2) == SERDES_UNIT_SGMII) ? 0 : 1)  << SERDES_LAN2_OFFS); /* lane 2  */
 	uiReg |= (((mvGetSerdesLaneCfg(3) == SERDES_UNIT_SGMII) ? 1 : 0)  << SERDES_LAN3_OFFS); /* lane 3  */
 
     DEBUG_INIT_FULL_S(">>>>>>> after  GetLaneSelectorConfig, uiReg=0x");

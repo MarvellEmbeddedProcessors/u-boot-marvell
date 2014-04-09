@@ -141,23 +141,55 @@ REF_CLOCK serdesTypeToRefClockMap[LAST_SERDES_TYPE] =
 	REF_CLOCK_UNSUPPORTED   /* DEFAULT_SERDES */
 };
 
-MV_U32 a38xBoardId = -1;
+MV_U32 gBoardId = -1;
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-	if (a38xBoardId != -1) {
-		return a38xBoardId;
-	}
+	if (gBoardId != -1)
+		return gBoardId;
 
-	a38xBoardId = mvHwsBoardIdGet();
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	#ifdef CONFIG_CUSTOMER_BOARD_0
+		gBoardId = ARMADA_38x_CUSTOMER_BOARD_ID0;
+	#elif CONFIG_CUSTOMER_BOARD_1
+		gBoardId = ARMADA_38x_CUSTOMER_BOARD_ID1;
+	#endif
+#else
+	/* For Marvell Boards: read board ID from TWSI*/
+	MV_U8 readValue;
+	readValue = mvHwsBoardIdGet();
 
-	if (a38xBoardId >= MV_MAX_BOARD_ID) {
+	if (readValue < MV_MARVELL_BOARD_NUM && readValue >= 0)
+		gBoardId = MARVELL_BOARD_ID_BASE + readValue;
+	else {
 		DEBUG_INIT_S("mvHwsBoardTopologyLoad: board id 0x");
-		DEBUG_INIT_FULL_D(a38xBoardId, 8);
-		DEBUG_INIT_S("out of range. Use default board ID - DB\n");
-		a38xBoardId = DB_A38X_BP_ID;
+		DEBUG_INIT_FULL_D(readValue, 8);
+		DEBUG_INIT_S("is out of range. Using default board ID (DB-88F6820-BP)\n");
+		gBoardId = DB_68XX_ID;
 	}
+#endif
+	return gBoardId;
+}
 
-	return a38xBoardId;
+/*******************************************************************************
+* mvBoardIdIndexGet
+*
+* DESCRIPTION:
+*	returns an index for board arrays with direct memory access, according to board id
+*
+* INPUT:
+*       boardId.
+*
+* OUTPUT:
+*       direct access index for board arrays
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
+{
+/* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
+	return boardId & (MARVELL_BOARD_ID_BASE - 1);
 }
 
 /******************************** Sequences DB ********************************/
@@ -878,7 +910,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 			CHECK_STATUS(mvSeqExec(serdesNum, SATA_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
-			if (mvBoardIdGet() == DB_A38X_BP_ID)
+			if (mvBoardIdGet() == DB_68XX_ID)
 			{
 				/* relevant to DB board only */
 				CHECK_STATUS(mvSeqExec(serdesNum, SATA_DB_TX_AMP_SEQ));
@@ -1066,16 +1098,14 @@ MV_STATUS mvHwsRefClockSet
 /***************************************************************************/
 MV_STATUS mvHwsBoardTopologyLoad(SERDES_MAP  *serdesMapArray)
 {
-	MV_U8 boardId;
+	MV_U32 boardId = mvBoardIdGet();
+	MV_U32 boardIdIndex = mvBoardIdIndexGet(boardId);
 
-	//DEBUG_INIT_FULL_S("\n### mvHwsBoardTopologyLoad ###\n");
 	DEBUG_INIT_FULL_S("\n### mvHwsBoardTopologyLoad ###\n");
-
-	boardId = mvBoardIdGet();
-
 	/* getting board topology according to the board id */
-	DEBUG_INIT_FULL_S("mvHwsBoardTopologyLoad: getting board topology according to the board id\n");
-	CHECK_STATUS(loadTopologyFuncArr[boardId](serdesMapArray));
+	DEBUG_INIT_FULL_S("Getting board topology according to the board id\n");
+
+	CHECK_STATUS(loadTopologyFuncArr[boardIdIndex](serdesMapArray));
 
 	return MV_OK;
 }

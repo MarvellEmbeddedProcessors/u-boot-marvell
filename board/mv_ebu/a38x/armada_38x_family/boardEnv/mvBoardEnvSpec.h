@@ -67,21 +67,54 @@
 
 #include "mvSysHwConfig.h"
 
-
 /* Board specific configuration */
 /* ============================ */
 #ifndef MV_ASMLANGUAGE
-/* New board ID numbers */
+/* Board ID numbers */
 
-/* boards ID numbers */
-#define BOARD_ID_BASE			0x0
+/* Customer boards */
+#define CUTOMER_BOARD_ID_BASE		0x0
+#define ARMADA_38x_CUSTOMER_BOARD_ID0	(CUTOMER_BOARD_ID_BASE + 0)
+#define ARMADA_38x_CUSTOMER_BOARD_ID1	(CUTOMER_BOARD_ID_BASE + 1)
+#define MV_MAX_CUSTOMER_BOARD_ID	(CUTOMER_BOARD_ID_BASE + 2)
+#define MV_CUSTOMER_BOARD_NUM		(MV_MAX_CUSTOMER_BOARD_ID - CUTOMER_BOARD_ID_BASE + 1)
 
-#define RD_NAS_68XX_ID			(BOARD_ID_BASE)
-#define DB_68XX_ID			(BOARD_ID_BASE + 1)
-#define RD_AP_68XX_ID			(BOARD_ID_BASE + 2)
-#define A380_CUSTOMER_ID		(BOARD_ID_BASE + 3)
-#define MV_MAX_BOARD_ID			(A380_CUSTOMER_ID + 1)
+/* Marvell boards */
+#define MARVELL_BOARD_ID_BASE		0x10
+#define RD_NAS_68XX_ID			(MARVELL_BOARD_ID_BASE + 0)
+#define DB_68XX_ID			(MARVELL_BOARD_ID_BASE + 1)
+#define RD_AP_68XX_ID			(MARVELL_BOARD_ID_BASE + 2)
+#define MV_MAX_MARVELL_BOARD_ID		(MARVELL_BOARD_ID_BASE + 3)
+#define MV_MARVELL_BOARD_NUM		(MV_MAX_MARVELL_BOARD_ID - MARVELL_BOARD_ID_BASE + 1)
+
 #define MV_INVALID_BOARD_ID		0xFFFFFFFF
+
+/****************************** Customer Boards *******************************/
+
+/*******************************************************************************
+ * A38x Customer Board 0 - Based on RD-AP
+ *******************************************************************************/
+#define A38x_CUSTOMER_BOARD_0_MPP0_7		0x11111111
+#define A38x_CUSTOMER_BOARD_0_MPP8_15		0x11111111
+#define A38x_CUSTOMER_BOARD_0_MPP16_23		0x11203011
+#define A38x_CUSTOMER_BOARD_0_MPP24_31		0x22222111
+#define A38x_CUSTOMER_BOARD_0_MPP32_39		0x22200002
+#define A38x_CUSTOMER_BOARD_0_MPP40_47		0x30042022
+#define A38x_CUSTOMER_BOARD_0_MPP48_55		0x55550555
+#define A38x_CUSTOMER_BOARD_0_MPP56_63		0x00005550
+
+#define A38x_CUSTOMER_BOARD_0_GPP_OUT_ENA_LOW	(~(BIT1  | BIT4  | BIT6  | BIT7  | BIT8  | BIT9  | BIT10 | \
+						   BIT11 | BIT19 | BIT20 | BIT22 | BIT23 | BIT25 | BIT26 | \
+						   BIT27 | BIT29 | BIT30 | BIT31))
+#define A38x_CUSTOMER_BOARD_0_GPP_OUT_ENA_MID	(~(BIT0 | BIT1 | BIT2 | BIT3 | BIT4 | BIT15 | BIT16 | BIT17 | BIT18))
+#define A38x_CUSTOMER_BOARD_0_GPP_OUT_VAL_LOW	(~(BIT1  | BIT4  | BIT6  | BIT7  | BIT8  | BIT9  | BIT10 | \
+						   BIT11 | BIT19 | BIT22 | BIT23 | BIT25 | BIT26 | \
+						   BIT27 | BIT29 | BIT30 | BIT31))
+#define A38x_CUSTOMER_BOARD_0_GPP_OUT_VAL_MID	0x0
+#define A38x_CUSTOMER_BOARD_0_GPP_POL_LOW	0x0
+#define A38x_CUSTOMER_BOARD_0_GPP_POL_MID	0x0
+
+/******************************* Marvell Boards *******************************/
 
 /*******************************************************************************
  * A380 DB-88F6810 board */
@@ -132,7 +165,6 @@
 #define DB_88F68XX_GPP_POL_LOW          0x0
 #define DB_88F68XX_GPP_POL_MID          0x0
 #define DB_88F68XX_GPP_POL_HIGH         0x0
-
 
 /*******************************************************************************
 * A380 RD-68XX board
@@ -186,32 +218,6 @@
 #define RD_88F68XX_GPP_OUT_VAL_MID	0x0
 #define RD_88F68XX_GPP_POL_LOW		0x0
 #define RD_88F68XX_GPP_POL_MID		0x0
-
-
-/*******************************************************************************
-* A380_CUSTOMER_ID - customer board
-*******************************************************************************/
-#define A380_CUSTOMER_MPP0_7		0x11111111
-#define A380_CUSTOMER_MPP8_15		0x11111111
-#define A380_CUSTOMER_MPP16_23		0x11244011
-#define A380_CUSTOMER_MPP24_31		0x22222111
-#define A380_CUSTOMER_MPP32_39		0x22200002
-#define A380_CUSTOMER_MPP40_47		0x30042022
-#define A380_CUSTOMER_MPP48_55		0x55550555
-#define A380_CUSTOMER_MPP56_63		0x00005550
-
-/* GPPs
-MPP#	NAME			IN/OUT
---------------------------------------
-19	TDM_reset		OUT
-25	Ethernet Reset		OUT			   29	PCIe0_RSTOUTn		OUT
-*/
-#define A380_CUSTOMER_GPP_OUT_ENA_LOW      (~(BIT19 | BIT25 | BIT29))
-#define A380_CUSTOMER_GPP_OUT_ENA_MID      0xFFFFFFFF
-#define A380_CUSTOMER_GPP_OUT_VAL_LOW      0x0
-#define A380_CUSTOMER_GPP_OUT_VAL_MID      0x0
-#define A380_CUSTOMER_GPP_POL_LOW          0x0
-#define A380_CUSTOMER_GPP_POL_MID          0x0
 
 #endif  /* MV_ASMLANGUAGE */
 

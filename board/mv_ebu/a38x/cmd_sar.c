@@ -42,7 +42,7 @@ extern MV_BOARD_SATR_INFO boardSatrInfo[];
 
 typedef struct _boardSatrDefault {
 	MV_SATR_TYPE_ID satrId;
-	MV_U32 defauleValueForBoard[MV_MAX_BOARD_ID];
+	MV_U32 defauleValueForBoard[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_SATR_DEFAULT;
 #define MAX_DEFAULT_ENTRY	4
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
@@ -54,11 +54,11 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 };
 int do_sar_default(void)
 {
-	MV_U32 i, rc, defaultValue, boardId = mvBoardIdGet();
+	MV_U32 i, rc, defaultValue, boardId = mvBoardIdIndexGet(mvBoardIdGet());
 	MV_SATR_TYPE_ID satrClassId;
 	MV_BOARD_SATR_INFO satrInfo;
 
-	if (boardId >= A380_CUSTOMER_ID) {
+	if (!(boardId >= 0 && boardId < MV_MARVELL_BOARD_NUM)) {
 		printf("\nError: S@R fields are readable only for current board\n");
 		return 1;
 	}
@@ -290,15 +290,19 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 {
 	MV_STATUS rc = MV_TRUE;
+	MV_U32 boardId = mvBoardIdGet();
+
 	if ((satrInfo->status & BOARD_SATR_READ_ONLY) ||
 	    ((MV_SATR_BOARD_ID == satrInfo->satrId)  && (mvBoardIdGet()== DB_68XX_ID))) {
 		mvOsPrintf("S@R ID = %d is read only\n", satrInfo->satrId);
 		mvOsPrintf("Write S@R failed!\n");
 		return 1;
 	}
-	if((MV_SATR_BOARD_ID == satrInfo->satrId)  &&
-	   ((mvBoardIdGet()== RD_NAS_68XX_ID) || (mvBoardIdGet()== RD_AP_68XX_ID)))
-		if ((value != RD_NAS_68XX_ID) && (value != RD_AP_68XX_ID)) {
+	/* only RD-AP/RD-NAS boards support modifying board id value */
+	if ((MV_SATR_BOARD_ID == satrInfo->satrId) && ((boardId == RD_NAS_68XX_ID) || (boardId == RD_AP_68XX_ID)))
+		/* Adding MARVELL_BOARD_ID_BASE, since Marvell board IDs are virtually shifted by MARVELL_BOARD_ID_BASE */
+		if ((value + MARVELL_BOARD_ID_BASE != RD_NAS_68XX_ID)
+			&& (value + MARVELL_BOARD_ID_BASE != RD_AP_68XX_ID)) {
 			mvOsPrintf("S@R incorrect value for board ID %d\n", value);
 			mvOsPrintf("Write S@R failed!\n");
 			return 1;

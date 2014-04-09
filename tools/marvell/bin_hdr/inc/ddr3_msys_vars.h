@@ -76,17 +76,14 @@ typedef struct __mvDramMcInit {
 } MV_DRAM_MC_INIT;
 
 /* Board/Soc revisions define - DONT CHANGE ORDER */
-typedef enum  {
-    MSYS_DB = 0,
-	MSYS_CUSTOMER
-} MV_SOC_BOARD_REV;
+#define MARVELL_BOARD 0x10
 
 typedef struct __mvDramModes {
     char *mode_name;
     MV_U8 cpuFreq;
     MV_U8 fabFreq;
     MV_U8 chipId;
-    MV_SOC_BOARD_REV chipBoardRev;
+    MV_U8 chipBoardRev;
     MV_DRAM_MC_INIT *regs;
 } MV_DRAM_MODES;
 

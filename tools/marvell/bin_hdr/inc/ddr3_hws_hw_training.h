@@ -31,7 +31,7 @@ MV_STATUS ddr3SiliconPostInit(void);
 MV_STATUS ddr3PostRunAlg(void);
 MV_BOOL ddr3IfEccEnabled(void);
 MV_STATUS ddr3NewTipEccScrub(void);
-MV_HWS_TOPOLOGY_MAP* ddr3SiliconGetTopologyMap(MV_U32 boardId);
+MV_HWS_TOPOLOGY_MAP* ddr3SiliconGetTopologyMap(void);
 
 #define SUB_VERSION	0
 

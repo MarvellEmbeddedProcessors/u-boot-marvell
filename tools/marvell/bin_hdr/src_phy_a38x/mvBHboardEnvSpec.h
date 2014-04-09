@@ -117,15 +117,23 @@
 #define AVS_HIGH_VDD_LIMIT_MASK         (0xff << AVS_HIGH_VDD_LIMIT_OFFS)
 #define AVS_HIGH_VDD_LIMIT_VAL          (0x27 << AVS_HIGH_VDD_LIMIT_OFFS)
 
-/* boards ID numbers */
-#define BOARD_ID_BASE                           0x0
+/* Board ID numbers */
+/* Customer boards */
+#define CUTOMER_BOARD_ID_BASE		0x0
+#define ARMADA_38x_CUSTOMER_BOARD_ID0	(CUTOMER_BOARD_ID_BASE + 0)
+#define ARMADA_38x_CUSTOMER_BOARD_ID1	(CUTOMER_BOARD_ID_BASE + 1)
+#define MV_MAX_CUSTOMER_BOARD_ID	(CUTOMER_BOARD_ID_BASE + 2)
+#define MV_CUSTOMER_BOARD_NUM		(MV_MAX_CUSTOMER_BOARD_ID - CUTOMER_BOARD_ID_BASE + 1)
 
-#define RD_A38X_DDR3_ID                         (BOARD_ID_BASE)
-#define DB_A38X_BP_ID                           (RD_A38X_DDR3_ID + 1)
-#define RD_AP_A38X_DDR3_ID                      (DB_A38X_BP_ID + 1)
-#define CUSTOMER_BOARD_ID                       (RD_AP_A38X_DDR3_ID + 1)
+/* Marvell boards */
+#define MARVELL_BOARD_ID_BASE		0x10
+#define RD_NAS_68XX_ID			(MARVELL_BOARD_ID_BASE + 0)
+#define DB_68XX_ID			(MARVELL_BOARD_ID_BASE + 1)
+#define RD_AP_68XX_ID			(MARVELL_BOARD_ID_BASE + 2)
+#define MV_MAX_MARVELL_BOARD_ID		(MARVELL_BOARD_ID_BASE + 3)
+#define MV_MARVELL_BOARD_NUM		(MV_MAX_MARVELL_BOARD_ID - MARVELL_BOARD_ID_BASE + 1)
 
-#define MV_MAX_BOARD_ID                         (CUSTOMER_BOARD_ID + 1) /* dummy */
+#define MV_INVALID_BOARD_ID		0xFFFFFFFF
 
 /* device ID */
 #define ARMADA_380_DEVIDE_ID                    0x6810

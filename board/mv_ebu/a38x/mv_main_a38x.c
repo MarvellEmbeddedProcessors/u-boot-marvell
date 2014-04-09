@@ -642,14 +642,19 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath ip=$ipaddr:\
 $serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params \
 clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel; bootz 0x2000000 - $fdtaddr;";
-	char *fdtfiles[] = {"armada-388-rd.dtb", "armada-385-db.dtb", "armada-385-rd.dtb"};
 	env = getenv("fdtaddr");
 	if (!env)
 		setenv("fdtaddr", "0x1000000");
 
 	env = getenv("fdtfile");
-	if (!env)
-		setenv("fdtfile", fdtfiles[mvBoardIdGet()]);
+	if (!env) {
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+		setenv("fdtfile", "armada-38x.dtb");
+#else
+		char *fdtfiles[] = {"armada-388-rd.dtb", "armada-385-db.dtb", "armada-385-rd.dtb"};
+		setenv("fdtfile", fdtfiles[mvBoardIdIndexGet(mvBoardIdGet())]);
+#endif
+	}
 	env = getenv("bootcmd_fdt");
 	if (!env)
 		setenv("bootcmd_fdt",bootcmd_fdt);

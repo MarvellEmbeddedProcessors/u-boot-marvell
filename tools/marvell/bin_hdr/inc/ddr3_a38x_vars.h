@@ -69,29 +69,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_a38x_mc_static.h"
 #include "mvDdr3TopologyDef.h"
 
-/* Board/Soc revisions define - DONT CHANGE ORDER */
-typedef enum  {
-    A38X_DB = 0,
-	A38X_CUSTOMER
-} MV_SOC_BOARD_REV;
+#define MARVELL_BOARD MARVELL_BOARD_ID_BASE
 
 typedef struct __mvDramModes {
     char *mode_name;
     MV_U8 cpuFreq;
     MV_U8 fabFreq;
     MV_U8 chipId;
-    MV_SOC_BOARD_REV chipBoardRev;
+    MV_U8 chipBoardRev;
     MV_DRAM_MC_INIT *regs;
 } MV_DRAM_MODES;
 
 MV_DRAM_MODES ddr_modes[] =
 {
-    /*  Conf name     CPUFreq    	FabFreq  Chip ID   Chip/Board ID         	MC regs*/
-	{"a38x_533",  DDR_FREQ_533,      0,      0x0,   		A38X_DB,       	ddr3_a38x_533},
-	{"a38x_667",  DDR_FREQ_667,      0,      0x0,   		A38X_DB,       	ddr3_a38x_667},
-	{"a38x_800",  DDR_FREQ_800,      0,      0x0,        	A38X_DB,       	ddr3_a38x_800},
-	{"a38x_933",  DDR_FREQ_933,      0,      0x0,   		A38X_DB,       	ddr3_a38x_933},
-	{"Customer",  DDR_FREQ_933,      0,      0x0,   		0/*CUSTOMER_BOARD*/,	ddr3_customer_800},
+/*	Conf name		CPUFreq	     FabFreq   Chip ID		Chip/Board		MC regs*/
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	{"a38x_customer_0_800",	DDR_FREQ_800,	0,	0x0,	ARMADA_38x_CUSTOMER_BOARD_ID0,	ddr3_customer_800},
+	{"a38x_customer_1_800",	DDR_FREQ_800,	0,	0x0,	ARMADA_38x_CUSTOMER_BOARD_ID1,	ddr3_customer_800},
+#else
+	{"a38x_533",		DDR_FREQ_533,	0,	0x0,		MARVELL_BOARD,		ddr3_a38x_533},
+	{"a38x_667",		DDR_FREQ_667,	0,	0x0,		MARVELL_BOARD,		ddr3_a38x_667},
+	{"a38x_800",		DDR_FREQ_800,	0,	0x0,		MARVELL_BOARD,		ddr3_a38x_800},
+	{"a38x_933",		DDR_FREQ_933,	0,	0x0,		MARVELL_BOARD,		ddr3_a38x_933},
+#endif
 };
 
 #endif /* _INC_A38X_VARS_H */

@@ -5,15 +5,16 @@ use Cwd qw();
 sub HELP_MESSAGE
 {
 	print "\nUsage  : build -f \"Flash type\" -v X.X.X -b \"board name\" [-c] [-o \"Output file\"]\n";
-	print "Example: build -f spi -v 13T3 -b avanta_lp -c\n";
+	print "Example: ./build -f spi -v 13T3 -b avanta_lp -c\n";
 	print "\n";
 	print "Options:\n";
 	print "\t-f\tBoot device. Accepts spi, nor, nand\n";
-	print "\t-b\tBoard type. Accepts: avanta_lp, armada_375, armada_38x, bobcat2_db, bobcat2_rd, bobcat2_rd_mtl\n";
+	print "\t-b\tBoard type. Accepts:\tavanta_lp, armada_375, bobcat2_db, bobcat2_rd,\n";
+	print "\t-b\t\t\t\tarmada_38x, armada_38x_customer0, armada_38x_customer1\n";
 	print "\t-c\tClean build. calls make mrproper\n";
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
-	print "\t-i\tSupported interfaces. A \":\" seperated list of\n";
+	print "\t-i\tSupported interfaces, seperated by \":\" -  Accepts [spi:nor:nand]\n";
 	print "\t-v\tSW version (add to binary file name u-boot-alp-X.X.X-spi.bin)\n";
 	print "\t\tinterfaces. Supports spi, nor, nand. the boot \n";
 	print "\t\tinterface will always be suppored\n";
@@ -57,8 +58,10 @@ if($opt_c eq 1)
 	if(($opt_b eq "armada_xp_dbgp") or
 		($opt_b eq "avanta_lp_fpga") or
 		($opt_b eq "avanta_lp") or
-                ($opt_b eq "armada_375") or
+		($opt_b eq "armada_375") or
 		($opt_b eq "armada_38x") or
+		($opt_b eq "armada_38x_customer0") or
+		($opt_b eq "armada_38x_customer1") or
 		($opt_b eq "bobcat2_db") or
 		($opt_b eq "bobcat2_rd_mtl") or
 		($opt_b eq "bobcat2_rd") )
@@ -84,6 +87,11 @@ if($opt_c eq 1)
 		elsif ( (substr $board,0 , 7) eq "bobcat2" ) {
 			$boardID="msys";
 			$targetBoard = substr $board, 8;
+		}
+
+		# if board string contains "customer", use customer define for binary_header
+		if (index($board, "customer") != -1){
+			system("echo \"#define CONFIG_CUSTOMER_BOARD_SUPPORT 1\" >> include/config.h");
 		}
 	}
 	else

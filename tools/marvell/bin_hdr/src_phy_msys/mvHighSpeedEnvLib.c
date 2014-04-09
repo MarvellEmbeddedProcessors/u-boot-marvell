@@ -87,6 +87,27 @@ MV_U32 mvBoardIdGet(MV_VOID)
 #endif
 }
 
+/*******************************************************************************
+* mvBoardIdIndexGet
+*
+* DESCRIPTION:
+*	returns an index for board arrays with direct memory access, according to board id
+*
+* INPUT:
+*       boardId.
+*
+* OUTPUT:
+*       direct access index for board arrays
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
+{
+	return mvBoardIdGet();
+}
+
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
 	//TODO Add RD/DB detection. Currently set to DB.

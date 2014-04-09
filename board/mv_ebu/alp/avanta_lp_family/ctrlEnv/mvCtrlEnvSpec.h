@@ -619,6 +619,8 @@ typedef enum _mvTarget {
 { MV_SATR_WRITE_CORE_CLK_SELECT, 0x00000001,	0,	1, {0, 1, 0, 1} },\
 { MV_SATR_WRITE_CPU1_ENABLE,	 0x00000002,	1,	1, {0, 1, 0, 1} },\
 { MV_SATR_WRITE_SSCG_DISABLE,	 0x00000004,	2,	1, {0, 1, 0, 1} },\
+{ MV_SATR_WRITE_PEX0_CLOCK,	 0x00000008,	3,	1, {0, 1, 0, 1} },\
+{ MV_SATR_WRITE_PEX1_CLOCK,	 0x00000010,	4,	1, {0, 0, 0, 1} },\
 };
 
 #endif /* MV_ASMLANGUAGE */

@@ -37,6 +37,8 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[] = {
 { MV_SATR_WRITE_CORE_CLK_SELECT,  {_200MHz,	_200MHz,	_200MHz,	_200MHz}  },
 { MV_SATR_WRITE_CPU1_ENABLE,	  {MV_FALSE,	MV_FALSE,	MV_TRUE,	MV_TRUE} },
 { MV_SATR_WRITE_SSCG_DISABLE,	  {MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE} },
+{ MV_SATR_WRITE_PEX0_CLOCK,	  {MV_FALSE,	MV_TRUE,	MV_FALSE,	MV_TRUE} },
+{ MV_SATR_WRITE_PEX1_CLOCK,	  {MV_FALSE,	MV_TRUE,	MV_FALSE,	MV_TRUE} },
 };
 
 static int do_sar_default(void)
@@ -76,6 +78,22 @@ static int do_sar_default(void)
 	if (mvCtrlSatRRead(MV_SATR_SSCG_DISABLE, &temp) == MV_OK )
 			mvCtrlSatRWrite(MV_SATR_SSCG_DISABLE, defaultValue, MV_TRUE);
 
+	defaultValue = boardSatrDefault[MV_SATR_PEX0_CLOCK].defauleValueForBoard[boardId];
+	if (defaultValue == MV_TRUE)
+		defaultValue = 0x1;
+	else
+		defaultValue = 0x0;
+	if (mvCtrlSatRRead(MV_SATR_PEX0_CLOCK, &temp) == MV_OK )
+			mvCtrlSatRWrite(MV_SATR_PEX0_CLOCK, defaultValue, MV_TRUE);
+
+	defaultValue = boardSatrDefault[MV_SATR_PEX1_CLOCK].defauleValueForBoard[boardId];
+	if (defaultValue == MV_TRUE)
+		defaultValue = 0x1;
+	else
+		defaultValue = 0x0;
+	if (mvCtrlSatRRead(MV_SATR_PEX1_CLOCK, &temp) == MV_OK )
+			mvCtrlSatRWrite(MV_SATR_PEX1_CLOCK, defaultValue, MV_TRUE);
+
 	printf("\nSample at Reset values were restored to default.\n");
 	return 0;
 }
@@ -114,6 +132,10 @@ static int do_sar_list(int argc, char *const argv[])
 		printf("Determines the SSCG  mode:\n");
 		printf("\t0x0 = SSCG Enabled\n");
 		printf("\t0x1 = SSCG Disabled\n");
+	} else if (strcmp(cmd, "pcimode") == 0) {
+		printf("Determines the PEX0/1 clock input/output mode:\n");
+		printf("\t0x0 = PEX clock input enabled\n");
+		printf("\t0x1 = PEX clock output enabled\n");
 	}
 	else goto usage;
 	return 0;
@@ -211,10 +233,12 @@ static int do_sar_read(int argc, char *const argv[])
 	else if (strcmp(cmd, "cputhumb") == 0) {
 		if (GetAndVerifySatr(MV_SATR_CPU0_THUMB, &temp) == MV_OK)
 			printf("\ncputhumb = %d  ==> %s mode \n", temp, (temp == 0) ? "ARM" : "Thumb");
-	}
-	else if (strcmp(cmd, "pcimode0") == 0) {
+	} else if (strcmp(cmd, "pcimode0") == 0) {
 		if (GetAndVerifySatr(MV_SATR_PEX0_CLOCK, &temp) == MV_OK)
-		printf("\npcimode0 = %d  ==> %s mode\n",temp, (temp == 0) ? "Root Complex" : "Clock");
+		printf("\npcimode0 = %d  ==> %s mode\n", temp, (temp == 0) ? "input" : "output");
+	} else if (strcmp(cmd, "pcimode1") == 0) {
+		if (GetAndVerifySatr(MV_SATR_PEX1_CLOCK, &temp) == MV_OK)
+		printf("\npcimode1 = %d  ==> %s mode\n", temp, (temp == 0) ? "input" : "output");
 	}
 	else if (strcmp(cmd, "refclk") == 0) {
 		if (GetAndVerifySatr(MV_SATR_REF_CLOCK_ENABLE, &temp) == MV_OK)
@@ -261,9 +285,9 @@ static int do_sar_read(int argc, char *const argv[])
 		if (mvCtrlSatRRead(MV_SATR_CPU0_THUMB, &temp) == MV_OK)
 			printf("cputhumb \t= %3d  ==>   %s mode \n", temp, (temp == 0) ? "ARM" : "Thumb");
 		if (mvCtrlSatRRead(MV_SATR_PEX0_CLOCK, &temp) == MV_OK)
-			printf("pcimode0 \t= %3d  ==>   PEX0 clock %s enable\n",temp, (temp == 0) ? "Input" : "Output");
+			printf("pcimode0 \t= %3d  ==>   PEX0 clock %s enable\n", temp, (temp == 0) ? "Input" : "Output");
 		if (mvCtrlSatRRead(MV_SATR_PEX1_CLOCK, &temp) == MV_OK)
-			printf("pcimode1 \t= %3d  ==>   PEX1 clock %s enable\n",temp, (temp == 0) ? "Input" : "Output");
+			printf("pcimode1 \t= %3d  ==>   PEX1 clock %s enable\n", temp, (temp == 0) ? "Input" : "Output");
 		if (mvCtrlSatRRead(MV_SATR_REF_CLOCK_ENABLE, &temp) == MV_OK)
 			printf("refclk \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
 		if (mvCtrlSatRRead(MV_SATR_TESTER_OPTIONS, &temp) == MV_OK)
@@ -315,6 +339,16 @@ static int do_sar_write(int argc, char *const argv[])
 			goto input_error;
 		else if (GetAndVerifySatr(MV_SATR_SSCG_DISABLE, &temp) == MV_OK )
 			flag = mvCtrlSatRWrite(MV_SATR_SSCG_DISABLE, writeVal, MV_FALSE);
+	} else if (strcmp(cmd, "pcimode0") == 0) {
+		if (writeVal != 0 && writeVal != 1)
+			goto input_error;
+		else if (GetAndVerifySatr(MV_SATR_PEX0_CLOCK, &temp) == MV_OK)
+			flag = mvCtrlSatRWrite(MV_SATR_PEX0_CLOCK, writeVal, MV_FALSE);
+	} else if (strcmp(cmd, "pcimode1") == 0) {
+		if (writeVal != 0 && writeVal != 1)
+			goto input_error;
+		else if (GetAndVerifySatr(MV_SATR_PEX1_CLOCK, &temp) == MV_OK)
+			flag = mvCtrlSatRWrite(MV_SATR_PEX1_CLOCK, writeVal, MV_FALSE);
 	}
 	else
 		goto usage;
@@ -327,7 +361,7 @@ static int do_sar_write(int argc, char *const argv[])
 	return 0;
 
 input_error:
-	printf("\nError: value is not valid for \"%s\" (%d)\n\n",cmd , writeVal);
+	printf("\nError: value is not valid for \"%s\" (%d)\n\n", cmd , writeVal);
 	do_sar_list(1, argv);
 	return 1;
 
@@ -385,9 +419,10 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"list freq		- prints the S@R modes list\n"
 	"SatR list coreclock	- prints the S@R modes list\n"
 	"SatR list cpusnum	- prints the S@R modes list\n"
-	"SatR list sscg		- prints the S@R modes list\n\n"
+	"SatR list sscg		- prints the S@R modes list\n"
+	"SatR list pcimode	- prints the S@R modes list\n\n"
 
-	"SatR read			- read and print all active S@R values\n"
+	"SatR read		- read and print all active S@R values\n"
 	"SatR read freq		- read and print the CPU frequency S@R value\n"
 	"SatR read coreclock	- read and print the Core Clock frequency S@R value\n"
 	"SatR read cpusnum	- read and print the number of CPU cores S@R value\n"
@@ -401,14 +436,16 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR read cpunmfi	- read and print the CPU FIQ mask mode (Little/Big) S@R value (reading the I2C device)\n"
 	"SatR read cputhumb	- read and print the CPU Thumb mode (ARM/ Thumb) S@R value (reading the I2C device)\n"
 	"SatR read pcimode0	- read and print the pci0 clock mode (input/output) from S@R value (reading the I2C device)\n"
-	"SatR read pcimode1	- read and print the pci0 clock mode (input/output) from S@R value (reading the I2C device)\n"
+	"SatR read pcimode1	- read and print the pci1 clock mode (input/output) from S@R value (reading the I2C device)\n"
 	"SatR read refclk	- read and print the ref clock mode S@R value \n"
 	"SatR read tester	- read and print the tester mode S@R value\n\n"
 
-	"SatR write freq <val>	- write the S@R with CPU frequency value\n"
+	"SatR write freq <val>		- write the S@R with CPU frequency value\n"
 	"SatR write coreclock <val>	- write the S@R with Core Clock frequency value\n"
 	"SatR write cpusnum <val>	- write the S@R with number of CPU cores value\n"
 	"SatR write sscg <val>		- write the S@R with sscg mode value\n"
+	"SatR write pcimode0 <val>	- write the S@R with pci0 clock mode (0:input/1:output)\n"
+	"SatR write pcimode1 <val>	- write the S@R with pci1 clock mode (0:input/1:output)\n"
 
 	"SatR write default		- restore writeable S@R values to their default value\n"
 );

@@ -114,7 +114,7 @@ extern MV_STATUS    mvHwsDdr3TipLoadTopologyMap
 extern MV_U32 ddr3TipGetInitFreq();
 MV_STATUS ddr3LoadTopologyMap(void);
 extern MV_VOID ddr3HwsSetLogLevel(
-	MV_LIBV2_DEBUG_BLOCK 	block,
+	MV_DDR_LIB_DEBUG_BLOCK 	block,
 	MV_U8					level
 );
 #else

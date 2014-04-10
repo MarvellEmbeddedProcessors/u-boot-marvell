@@ -83,8 +83,8 @@ typedef enum
 	MV_DEBUG_BLOCK_DEVICE,
 	MV_DEBUG_BLOCK_ACCESS,
 	MV_DEBUG_STAGES_REG_DUMP,
-    MV_DEBUG_BLOCK_ALL /*All, excluding IP and REG_DUMP, may be enabled separatelly*/
-}MV_LIBV2_DEBUG_BLOCK;
+    MV_DEBUG_BLOCK_ALL /*All excluding IP and REG_DUMP, should be enabled separatelly*/
+}MV_DDR_LIB_DEBUG_BLOCK;
 /***************************************/
 
 #endif /* _DDR3_LOGGING_CONFIG_H */

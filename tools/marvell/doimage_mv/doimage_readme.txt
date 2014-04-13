@@ -45,6 +45,7 @@ Supported boot media types:
 - SATA disk
 - PCI-e (PEX)
 - UART
+- MMC (eMMC/SD/SDHC)
 
 In addition to a regular boot mode, doimage supports image build for a special
 secure boot mode.

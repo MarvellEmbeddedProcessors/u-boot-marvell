@@ -625,7 +625,7 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 	if (opt->image_type == IMG_NAND) {
 		/* ... NAND page size */
 		header_size += opt->nandPageSize - (header_size & (opt->nandPageSize - 1));
-	} else if (opt->image_type == IMG_SATA) {
+	} else if ((opt->image_type == IMG_SATA) || (opt->image_type == IMG_MMC)) {
 		/* ... disk logical block size */
 		header_size += 512 - (header_size & 0x1FF);
 	} else if (opt->image_type == IMG_UART) {
@@ -652,7 +652,7 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 			   The headers size is always  alighed to 4 byte boundary */
 			int boundary = 32;
 
-			if (opt->image_type == IMG_NAND)
+			if ((opt->image_type == IMG_NAND) || (opt->image_type == IMG_MMC))
 				boundary = 512;
 
 			if (header_size & (boundary - 1))
@@ -1687,7 +1687,7 @@ void print_usage(void)
 
 	printf("<mandatory_opt> - can be one or more of the following:\n\n");
 
-	printf("-T image_type:   sata\\uart\\flash\\bootrom\\nand\\hex\\bin\\pex\n");
+	printf("-T image_type:   sata\\uart\\flash\\bootrom\\nand\\hex\\bin\\pex\\mmc\n");
 	printf("-D image_dest:   image destination in dram (in hex)\n");
 	printf("-E image_exec:   execution address in dram (in hex)\n");
 	printf("                 if image_type is 'flash' and image_dest is 0xffffffff\n");

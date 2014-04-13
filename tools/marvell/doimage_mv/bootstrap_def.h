@@ -167,8 +167,8 @@ typedef struct secExtBHR_t
 #define IBR_HDR_NAND_ID     	0x8B
 #define IBR_HDR_SATA_ID     	0x78
 #define IBR_HDR_PEX_ID			0x9C
+#define IBR_HDR_MMC_ID			0xAE
 #define IBR_HDR_UART_ID     	0x69
-#define IBR_HDR_MMC_ID			0x3E
 #define IBR_DEF_ATTRIB      	0x00
 
 #endif /* MV_ASMLANGUAGE */

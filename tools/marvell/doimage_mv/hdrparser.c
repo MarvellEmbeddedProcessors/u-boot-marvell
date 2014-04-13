@@ -173,6 +173,9 @@ int parse_main_header(pBHR_t	pHdr)
 		case IBR_HDR_UART_ID:
 			fprintf(stdout, "UART\n");
 			break;
+		case IBR_HDR_MMC_ID:
+			fprintf(stdout, "MMC\n");
+			break;
 		default:
 			fprintf(stdout, "UNKNOWN\n");
 			return -1;

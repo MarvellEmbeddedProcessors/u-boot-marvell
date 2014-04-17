@@ -200,19 +200,36 @@ MV_U32 mvCpuL2ClkGet(MV_VOID)
 *       32bit board ID number, '-1' if board is undefined.
 *
 *******************************************************************************/
+static MV_U32 gBoardId = -1;
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-    MV_U32 boardId, value;
+	if (gBoardId != -1)
+		return gBoardId;
 
-    value = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
-    boardId = ((value & (0xF0)) >> 4);
-    if (boardId >= MV_MAX_BOARD_ID) {
-     DEBUG_INIT_C("Error: read wrong board ID=0x", boardId,2);
-    }
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	#ifdef CONFIG_CUSTOMER_BOARD_0
+		gBoardId = AVANTA_LP_CUSTOMER_BOARD_ID0;
+	#elif CONFIG_CUSTOMER_BOARD_1
+		gBoardId = AVANTA_LP_CUSTOMER_BOARD_ID1;
+	#endif
+#else
 
-	DEBUG_INIT_FULL_C("Read board ID=0x", boardId,2);
+	MV_U32 readValue;
 
-    return boardId;
+	readValue = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
+	readValue = ((readValue & (0xF0)) >> 4);
+
+	if (readValue < MV_MARVELL_BOARD_NUM && readValue >= 0)
+		gBoardId = MARVELL_BOARD_ID_BASE + readValue;
+	else {
+		DEBUG_INIT_S("mvBoardIdGet: board id 0x");
+		DEBUG_INIT_FULL_D(readValue, 8);
+		DEBUG_INIT_S("is out of range.\n");
+		return MV_INVALID_BOARD_ID;
+	}
+#endif
+
+	return gBoardId;
 }
 
 /*******************************************************************************
@@ -354,7 +371,7 @@ MV_U32 mvCtrlSerdesMaxLanesGet(MV_VOID){
         case MV_6650_DEV_ID:
                 return 1;
         case MV_6610_DEV_ID:
-                if (mvBoardIdGet() == DB_88F6650_BP_ID)
+                if (mvBoardIdGet() == DB_6650_ID)
                   return 1;
                 else
                   return 0;
@@ -486,18 +503,18 @@ MV_U32 GetLaneSelectorConfig(void)
 *       speed configuration
 *
 *******************************************************************************/
-MV_U32 getSerdesSpeedConfig(MV_U32  boardId, MV_BIN_SERDES_UNIT_INDX serdesLaneCfg)
+MV_U32 getSerdesSpeedConfig(MV_U32  boardIdIndex, MV_BIN_SERDES_UNIT_INDX serdesLaneCfg)
 {
 
     switch (serdesLaneCfg){
 	case SERDES_UNIT_SGMII:
-		if(boardTopologyConfig[boardId].sgmiiSpeed == MV_SGMII_NA) {
+		if(boardTopologyConfig[boardIdIndex].sgmiiSpeed == MV_SGMII_NA) {
 			DEBUG_INIT_S("Error: SGMII speed was not initialized for board ");
-			DEBUG_INIT_S(boardTopologyConfig[boardId].boardName);
+			DEBUG_INIT_S(boardTopologyConfig[boardIdIndex].boardName);
 			DEBUG_INIT_S("\n");
 			return MV_BAD_VALUE;
 		}
-		return (boardTopologyConfig[boardId].sgmiiSpeed == MV_SGMII_GEN1) ? 0x6 : 0x8; /* 0x6-> GEN1, 0x8->GEN2*/
+		return (boardTopologyConfig[boardIdIndex].sgmiiSpeed == MV_SGMII_GEN1) ? 0x6 : 0x8; /* 0x6-> GEN1, 0x8->GEN2*/
         case SERDES_UNIT_USB3:
         case SERDES_UNIT_SATA:
             return 0x1;
@@ -559,19 +576,14 @@ MV_VOID resetPhyAndPipe(MV_U32	serdesLaneNum, MV_BOOL bReset)
 *******************************************************************************/
 MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
-	MV_U32      serdesLaneNum, pexUnit;
-	MV_U32      uiReg;
 	MV_BIN_SERDES_UNIT_INDX     serdesLaneCfg;
+	MV_U32	serdesLaneNum, pexUnit, uiReg, tmp, tempReg, tempPexReg, first_busno, next_busno, addr ,pexIf=0;
 	MV_U32	regAddr[16][11], regVal[16][11]; /* addr/value for each line @ every setup step */
-	MV_U8	maxSerdesLanes;
-	MV_U32	tmp;
-	MV_U32	tempReg, tempPexReg;
-	MV_U32	pexIf=0;
-	MV_U32  first_busno, next_busno;
-	MV_U32	addr;
 	MV_TWSI_ADDR slave;
-	MV_U32  boardId = mvBoardIdGet();
-	maxSerdesLanes = mvCtrlSerdesMaxLanesGet();
+	MV_U32  boardIdIndex, boardId = mvBoardIdGet();
+	MV_U8 maxSerdesLanes = mvCtrlSerdesMaxLanesGet();
+
+	boardIdIndex = mvBoardIdIndexGet(boardId);
 
 	if (maxSerdesLanes == 0)
 		return MV_OK;
@@ -592,9 +604,9 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	/* Initialize board configuration database */
 	boardLaneConfig[0] = SERDES_UNIT_PEX;		/* SerDes 0 is alwyas PCIe0*/
-	boardLaneConfig[1] = boardTopologyConfig[boardId].serdesTopology.lane1;
-	boardLaneConfig[2] = boardTopologyConfig[boardId].serdesTopology.lane2;
-	boardLaneConfig[3] = boardTopologyConfig[boardId].serdesTopology.lane3;
+	boardLaneConfig[1] = boardTopologyConfig[boardIdIndex].serdesTopology.lane1;
+	boardLaneConfig[2] = boardTopologyConfig[boardIdIndex].serdesTopology.lane2;
+	boardLaneConfig[3] = boardTopologyConfig[boardIdIndex].serdesTopology.lane3;
 
 	/* Release PEX agents reset */
 	mvPexAgentReset();
@@ -679,7 +691,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 		}
 
 		/* Serdes speed config */
-		tmp = getSerdesSpeedConfig(boardId, serdesLaneCfg);
+		tmp = getSerdesSpeedConfig(boardIdIndex, serdesLaneCfg);
 		uiReg &= ~(GEN_RX_MASK); /* SERDES RX Speed config */
 		uiReg |= tmp<<GEN_RX_OFFS;
 		uiReg &= ~(GEN_TX_MASK); /* SERDES TX Speed config */
@@ -1093,11 +1105,11 @@ MV_STATUS mvPexAgentReset()
 	MV_U32  uiReg, reNum, bitNum;
 	MV_U32  boardId = mvBoardIdGet();
 
-	if ((boardId == RD_88F6650_BP_ID) || (boardId == RD_88F6660_BP_ID)) {
-		if (boardId == RD_88F6650_BP_ID) {
+	if ((boardId == RD_6650_ID) || (boardId == RD_6660_ID)) {
+		if (boardId == RD_6650_ID) {
 			reNum = 0;
 			bitNum = 0x20000000;
-		} else if (boardId == RD_88F6660_BP_ID) {
+		} else if (boardId == RD_6660_ID) {
 			reNum = 2;
 			bitNum = 0x4;
 		}

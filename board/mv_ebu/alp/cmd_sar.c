@@ -28,7 +28,7 @@ extern int do_sar(cmd_tbl_t * cmdtb, int flag, int argc, char * const argv[]);
 
 typedef struct _boardSatrDefault {
 	MV_SATR_TYPE_ID satrId;
-	MV_U32 defauleValueForBoard[MV_MAX_BOARD_ID];
+	MV_U32 defauleValueForBoard[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_SATR_DEFAULT;
 
 MV_BOARD_SATR_DEFAULT boardSatrDefault[] = {
@@ -43,18 +43,20 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[] = {
 
 static int do_sar_default(void)
 {
-	MV_U32 temp, defaultValue, boardId = mvBoardIdGet();
+	MV_U32 temp, defaultValue, boardIdIndex, boardId = mvBoardIdGet();
 
 	if (boardId != DB_6660_ID && boardId != DB_6650_ID) {
 		printf("\nError: S@R fields are readable only for current board\n");
 		return 1;
 	}
 
-	defaultValue = boardSatrDefault[MV_SATR_CPU_DDR_L2_FREQ].defauleValueForBoard[boardId];
+	boardIdIndex = mvBoardIdIndexGet(boardId);
+
+	defaultValue = boardSatrDefault[MV_SATR_CPU_DDR_L2_FREQ].defauleValueForBoard[boardIdIndex];
 	if (mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ, &temp) == MV_OK )
 			mvCtrlSatRWrite(MV_SATR_CPU_DDR_L2_FREQ, defaultValue, MV_TRUE);
 
-	defaultValue = boardSatrDefault[MV_SATR_CORE_CLK_SELECT].defauleValueForBoard[boardId];
+	defaultValue = boardSatrDefault[MV_SATR_CORE_CLK_SELECT].defauleValueForBoard[boardIdIndex];
 	if (defaultValue == _200MHz)
 		defaultValue = 0x1;
 	else
@@ -62,7 +64,7 @@ static int do_sar_default(void)
 	if (mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT, &temp) == MV_OK )
 			mvCtrlSatRWrite(MV_SATR_CORE_CLK_SELECT, defaultValue, MV_TRUE);
 
-	defaultValue = boardSatrDefault[MV_SATR_CPU1_ENABLE].defauleValueForBoard[boardId];
+	defaultValue = boardSatrDefault[MV_SATR_CPU1_ENABLE].defauleValueForBoard[boardIdIndex];
 	if (defaultValue == MV_TRUE)
 		defaultValue = 0x1;
 	else
@@ -70,7 +72,7 @@ static int do_sar_default(void)
 	if (mvCtrlSatRRead(MV_SATR_CPU1_ENABLE, &temp) == MV_OK )
 			mvCtrlSatRWrite(MV_SATR_CPU1_ENABLE, defaultValue, MV_TRUE);
 
-	defaultValue = boardSatrDefault[MV_SATR_SSCG_DISABLE].defauleValueForBoard[boardId];
+	defaultValue = boardSatrDefault[MV_SATR_SSCG_DISABLE].defauleValueForBoard[boardIdIndex];
 	if (defaultValue == MV_TRUE)
 		defaultValue = 0x1;
 	else

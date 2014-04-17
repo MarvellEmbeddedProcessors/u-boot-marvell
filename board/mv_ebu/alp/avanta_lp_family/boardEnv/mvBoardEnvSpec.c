@@ -67,6 +67,126 @@
 #include "twsi/mvTwsi.h"
 #include "pex/mvPexRegs.h"
 
+/***************************************** Customer Boards ****************************************/
+/*******************************************************************************
+	Avanata LP Customer board - Based on RD-88F6660
+*******************************************************************************/
+MV_BOARD_TWSI_INFO avanta_lp_customer_board_0_InfoBoardTwsiDev[] = {
+	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{ BOARD_DEV_TWSI_IO_EXPANDER,	0,	0x20,	ADDR7_BIT },
+};
+
+/* When Switch Port 4 is connected to external PHY through RGMII-0,
+ * this external PHY is managed through MAC-0 SMI lines.
+ * The 'boardEthSmiAddr' variable is used only for PHY init. */
+MV_BOARD_MAC_INFO avanta_lp_customer_board_0_InfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
+	{ BOARD_MAC_SPEED_2000M, -1},
+	{ BOARD_MAC_SPEED_AUTO,  0x1},
+	{ BOARD_MAC_SPEED_1000M, -1},
+	{ BOARD_MAC_SPEED_1000M, -1},
+};
+MV_BOARD_MPP_TYPE_INFO avanta_lp_customer_board_0_InfoBoardModTypeInfo[] = {
+	{
+		.boardMppSlic = MV_BOARD_SLIC_EXTERNAL_ID,
+		.ethSataComplexOpt = MV_ETHCOMP_SW_P0_2_GE_PHY_P0 |
+				     MV_ETHCOMP_SW_P1_2_GE_PHY_P1 |
+				     MV_ETHCOMP_SW_P2_2_GE_PHY_P2 |
+				     MV_ETHCOMP_SW_P3_2_GE_PHY_P3 |
+				     MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G |
+				     MV_ETHCOMP_SW_P4_2_RGMII0   |
+				     MV_ETHCOMP_GE_MAC0_2_SW_P6,
+		.ethPortsMode = 0x0
+	}
+};
+
+MV_DEV_CS_INFO avanta_lp_customer_board_0_InfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 } /* SPI DEV */
+#endif
+};
+
+MV_BOARD_TDM_INFO avanta_lp_customer_board_0_Tdm886[] = { {0} };
+
+MV_BOARD_TDM_SPI_INFO avanta_lp_customer_board_0_TdmSpiInfo[] = { {1} };
+
+MV_BOARD_MPP_INFO avanta_lp_customer_board_0_InfoBoardMppConfigValue[] = {
+	{ {
+		AVANTA_LP_CUSTOMER_MPP0_7,
+		AVANTA_LP_CUSTOMER_MPP8_15,
+		AVANTA_LP_CUSTOMER_MPP16_23,
+		AVANTA_LP_CUSTOMER_MPP24_31,
+		AVANTA_LP_CUSTOMER_MPP32_39,
+		AVANTA_LP_CUSTOMER_MPP40_47,
+		AVANTA_LP_CUSTOMER_MPP48_55,
+		AVANTA_LP_CUSTOMER_MPP56_63,
+		AVANTA_LP_CUSTOMER_MPP64_67,
+	} }
+};
+
+MV_BOARD_INFO avanta_lp_customer_board_0_info = {
+	.boardName			= "AVANTA-LP-Customer-Board-0",
+	.numBoardMppTypeValue		= ARRSZ(avanta_lp_customer_board_0_InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= avanta_lp_customer_board_0_InfoBoardModTypeInfo,
+	.pBoardMppConfigValue		= avanta_lp_customer_board_0_InfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(avanta_lp_customer_board_0_InfoBoardDeCsInfo),
+	.pDevCsInfo			= avanta_lp_customer_board_0_InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(avanta_lp_customer_board_0_InfoBoardTwsiDev),
+	.pBoardTwsiDev			= avanta_lp_customer_board_0_InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(avanta_lp_customer_board_0_InfoBoardMacInfo),
+	.pBoardMacInfo			= avanta_lp_customer_board_0_InfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= 0,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow			= AVANTA_LP_CUSTOMER_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= AVANTA_LP_CUSTOMER_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= AVANTA_LP_CUSTOMER_GPP_OUT_ENA_HIGH,
+	.gppOutValLow			= AVANTA_LP_CUSTOMER_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= AVANTA_LP_CUSTOMER_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= AVANTA_LP_CUSTOMER_GPP_OUT_VAL_HIGH,
+	.gppPolarityValLow		= AVANTA_LP_CUSTOMER_GPP_POL_LOW,
+	.gppPolarityValMid		= AVANTA_LP_CUSTOMER_GPP_POL_MID,
+	.gppPolarityValHigh		= AVANTA_LP_CUSTOMER_GPP_POL_HIGH,
+
+	/* TDM */
+	.numBoardTdmInfo		= {1},
+	.pBoardTdmInt2CsInfo		= {avanta_lp_customer_board_0_Tdm886},
+	.boardTdmInfoIndex		= 0,
+
+	.pBoardSpecInit			= NULL,
+
+	/* NAND init params */
+	.nandFlashReadParams		= 0,
+	.nandFlashWriteParams		= 0,
+	.nandFlashControl		= 0,
+
+	.pBoardTdmSpiInfo		= avanta_lp_customer_board_0_TdmSpiInfo,
+
+	/* NOR init params */
+	.norFlashReadParams		= 0,
+	.norFlashWriteParams		= 0,
+	/* Enable modules auto-detection. */
+	.configAutoDetect		= MV_FALSE
+};
+
+MV_BOARD_INFO *customerBoardInfoTbl[] = {
+	&avanta_lp_customer_board_0_info,
+	&avanta_lp_customer_board_0_info,
+};
+
+/***************************************** Marvell Boards *****************************************/
 /*******************************************************************************
  * AvantaLP DB-88F6660 board */
 /*******************************************************************************/
@@ -524,7 +644,6 @@ MV_BOARD_INFO rd88f6660_board_info = {
 	.configAutoDetect		= MV_FALSE
 };
 
-
 /*******************************************************************************
  * AvantaLP FPGA board
 *******************************************************************************/
@@ -574,129 +693,14 @@ MV_BOARD_INFO avanta_lp_fpga_board_info = {
 	.nandFlashControl		= 0,
 };
 
-/*******************************************************************************
-* AvanataLP customer board
-*******************************************************************************/
-
-#define AVANTA_LP_CUSTOMER_BOARD_NAND_READ_PARAMS       0x000C0282
-#define AVANTA_LP_CUSTOMER_BOARD_NAND_WRITE_PARAMS      0x00010305
-/*NAND care support for small page chips*/
-#define AVANTA_LP_CUSTOMER_BOARD_NAND_CONTROL           0x01c00543
-
-#define AVANTA_LP_CUSTOMER_BOARD_NOR_READ_PARAMS        0x403E07CF
-#define AVANTA_LP_CUSTOMER_BOARD_NOR_WRITE_PARAMS       0x000F0F0F
-
-MV_BOARD_TWSI_INFO avanta_lp_customerInfoBoardTwsiDev[] = {
-	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,		0,	0x4C,	   ADDR7_BIT	},
-	{ BOARD_DEV_TWSI_SATR,		1,	0x4D,	   ADDR7_BIT	},
-	{ BOARD_DEV_TWSI_EEPROM,	0,	0x54,	   ADDR7_BIT	},
-};
-
-MV_BOARD_MAC_INFO avanta_lp_customerInfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x10},
-	{ BOARD_MAC_SPEED_AUTO, 0x11},
-	{ BOARD_MAC_SPEED_AUTO, 0x12},
-	{ BOARD_MAC_SPEED_AUTO, 0x13},
-};
-
-MV_BOARD_MPP_TYPE_INFO avanta_lp_customerInfoBoardModTypeInfo[] = {
-	{
-		.boardMppSlic = MV_BOARD_SLIC_DISABLED,
-		.ethSataComplexOpt = MV_ETHCOMP_SW_P0_2_GE_PHY_P0 |
-				     MV_ETHCOMP_SW_P1_2_GE_PHY_P1 |
-				     MV_ETHCOMP_SW_P2_2_GE_PHY_P2 |
-				     MV_ETHCOMP_SW_P3_2_GE_PHY_P3 |
-				     MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G |
-				     MV_ETHCOMP_GE_MAC1_2_SW_P4   |
-				     MV_ETHCOMP_GE_MAC0_2_SW_P6,
-		.ethPortsMode = 0x0
-	}
-};
-
-MV_DEV_CS_INFO avanta_lp_customerInfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
-#if defined(MV_INCLUDE_SPI)
-	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 } /* SPI DEV */
-#endif
-};
-
-MV_BOARD_TDM_INFO avanta_lp_customerTdm880[] = { {0} };
-
-MV_BOARD_TDM_SPI_INFO avanta_lp_customerTdmSpiInfo[] = { {1} };
-
-MV_BOARD_MPP_INFO avanta_lp_customerInfoBoardMppConfigValue[] = {
-	{ {
-		  AVANTA_LP_CUSTOMER_MPP0_7,
-		  AVANTA_LP_CUSTOMER_MPP8_15,
-		  AVANTA_LP_CUSTOMER_MPP16_23,
-		  AVANTA_LP_CUSTOMER_MPP24_31,
-		  AVANTA_LP_CUSTOMER_MPP32_39,
-		  AVANTA_LP_CUSTOMER_MPP40_47,
-		  AVANTA_LP_CUSTOMER_MPP48_55,
-		  AVANTA_LP_CUSTOMER_MPP56_63,
-		  AVANTA_LP_CUSTOMER_MPP64_67,
-	 } }
-};
-
-MV_BOARD_INFO avanta_lp_customer_board_info = {
-	.boardName			= "AvantaLP-CUSTOMER",
-	.numBoardMppTypeValue		= ARRSZ(avanta_lp_customerInfoBoardModTypeInfo),
-	.pBoardModTypeValue		= avanta_lp_customerInfoBoardModTypeInfo,
-	.pBoardMppConfigValue		= avanta_lp_customerInfoBoardMppConfigValue,
-	.intsGppMaskLow			= 0,
-	.intsGppMaskMid			= 0,
-	.intsGppMaskHigh		= 0,
-	.numBoardDeviceIf		= ARRSZ(avanta_lp_customerInfoBoardDeCsInfo),
-	.pDevCsInfo			= avanta_lp_customerInfoBoardDeCsInfo,
-	.numBoardTwsiDev		= ARRSZ(avanta_lp_customerInfoBoardTwsiDev),
-	.pBoardTwsiDev			= avanta_lp_customerInfoBoardTwsiDev,
-	.numBoardMacInfo		= ARRSZ(avanta_lp_customerInfoBoardMacInfo),
-	.pBoardMacInfo			= avanta_lp_customerInfoBoardMacInfo,
-	.numBoardGppInfo		= 0,
-	.pBoardGppInfo			= NULL,
-	.activeLedsNumber		= 0,
-	.pLedGppPin			= NULL,
-	.ledsPolarity			= 0,
-
-	/* PMU Power */
-	.pmuPwrUpPolarity		= 0,
-	.pmuPwrUpDelay			= 80000,
-
-	/* GPP values */
-	.gppOutEnValLow			= AVANTA_LP_CUSTOMER_GPP_OUT_ENA_LOW,
-	.gppOutEnValMid			= AVANTA_LP_CUSTOMER_GPP_OUT_ENA_MID,
-	.gppOutEnValHigh		= AVANTA_LP_CUSTOMER_GPP_OUT_ENA_HIGH,
-	.gppOutValLow			= AVANTA_LP_CUSTOMER_GPP_OUT_VAL_LOW,
-	.gppOutValMid			= AVANTA_LP_CUSTOMER_GPP_OUT_VAL_MID,
-	.gppOutValHigh			= AVANTA_LP_CUSTOMER_GPP_OUT_VAL_HIGH,
-	.gppPolarityValLow		= AVANTA_LP_CUSTOMER_GPP_POL_LOW,
-	.gppPolarityValMid		= AVANTA_LP_CUSTOMER_GPP_POL_MID,
-	.gppPolarityValHigh		= AVANTA_LP_CUSTOMER_GPP_POL_HIGH,
-
-	/* TDM */
-	.numBoardTdmInfo		= {1},
-	.pBoardTdmInt2CsInfo		= {avanta_lp_customerTdm880},
-	.boardTdmInfoIndex		= 0,
-
-	/* NAND init params */
-	.nandFlashReadParams		= AVANTA_LP_CUSTOMER_BOARD_NAND_READ_PARAMS,
-	.nandFlashWriteParams		= AVANTA_LP_CUSTOMER_BOARD_NAND_WRITE_PARAMS,
-	.nandFlashControl		= AVANTA_LP_CUSTOMER_BOARD_NAND_CONTROL,
-	/* NOR init params */
-	.norFlashReadParams		= AVANTA_LP_CUSTOMER_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams		= AVANTA_LP_CUSTOMER_BOARD_NOR_WRITE_PARAMS
-};
-
 /*
  * All supported avanta boards
  */
-MV_BOARD_INFO *boardInfoTbl[] = {
+MV_BOARD_INFO *marvellBoardInfoTbl[] = {
 	&rd88f6650_board_info,
 	&db88f6650_board_info,
 	&rd88f6660_board_info,
 	&db88f6660_board_info,
-	&avanta_lp_customer_board_info,
 	&avanta_lp_fpga_board_info,
 };
+

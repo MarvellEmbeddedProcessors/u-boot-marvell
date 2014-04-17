@@ -70,6 +70,11 @@
 #define MV_DDR_64BIT
 #define MV_BOOTROM
 
+#if defined (CONFIG_CUSTOMER_BOARD_0) || defined (CONFIG_CUSTOMER_BOARD_1)
+#define CONFIG_AVANTA_LP
+#define CONFIG_CUSTOMER_BOARD_SUPPORT
+#endif
+
 #ifndef CONFIG_MACH_AVANTA_LP_FPGA
 
 #define MV_USB

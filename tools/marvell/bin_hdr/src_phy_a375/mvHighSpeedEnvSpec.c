@@ -68,12 +68,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**************************** globals *****************************/
 
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+/************************* Topology - Customer Boards ****************************/
 MV_BOARD_TOPOLOGY_CONFIG boardTopologyConfig[] =
 {
-/*		board name					Lane 1				Lane 2					Lane3		Sgmii Speed*/
-	{"DB_88F6720_BP_ID",	    {SERDES_UNIT_SATA,	SERDES_UNIT_SATA,	SERDES_UNIT_USB3},	MV_SGMII_GEN1},
-	{"ARMADA_375_CUSTOMER_ID",	{SERDES_UNIT_SATA,	SERDES_UNIT_SATA,	SERDES_UNIT_USB3},	MV_SGMII_GEN1},
+/*	board name			Lane 1			Lane 2			Lane3			Sgmii Speed*/
+	{"ARMADA_375_CUSTOMER_0",	{SERDES_UNIT_SATA,	SERDES_UNIT_SATA,	SERDES_UNIT_USB3},	MV_SGMII_GEN1},
+	{"ARMADA_375_CUSTOMER_1",	{SERDES_UNIT_PEX,	SERDES_UNIT_SATA,	SERDES_UNIT_USB3},	MV_SGMII_GEN1},
 };
+#else
+/************************* Topology - Marvell Boards ****************************/
+MV_BOARD_TOPOLOGY_CONFIG boardTopologyConfig[] =
+{
+/*	board name			Lane 1			Lane 2			Lane3			Sgmii Speed*/
+	{"DB_88F6720_BP_ID",		{SERDES_UNIT_SATA,	SERDES_UNIT_SATA,	SERDES_UNIT_USB3},	MV_SGMII_GEN1},
+};
+#endif
 
 /****************************  function implementation *****************************************/
 

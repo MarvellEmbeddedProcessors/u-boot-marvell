@@ -65,10 +65,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _DDR3_ALP_CONFIG_H
 #define _DDR3_ALP_CONFIG_H
 
-#undef CUSTOMER_BOARD
-/*	define: Using Customer board only
-	undef : Using Marvell board only*/
-
 #define DDR3_LOG_LEVEL				0
 /*DDR3_LOG_LEVEL Information
 Level 0: Provides an error code in a case of failure, RL, WL errors and other algorithm failure

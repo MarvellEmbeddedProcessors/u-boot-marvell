@@ -570,19 +570,22 @@ MV_VOID mvCtrlSatrInit(MV_U32 early)
 	if (early)
 		return;
 
-	/* Read DDR Bus width configuration:
-	   - DDR_BUS_WIDTH - only S@R field which is not sampled at reset to any internal register
-	   - Need to read it separately from S@R I2C	*/
-	if (mvBoardSatrInfoConfig(MV_SATR_WRITE_DDR_BUS_WIDTH, &satrInfo, MV_FALSE) != MV_OK)
-		mvOsPrintf("%s: Error: DDR_BUS_WIDTH field is not relevant for this board\n", __func__);
+	/* Rest of S@R values are virtual: scanned using i2c and not from HW, SW usage only on DB boards */
+	if (mvBoardIdGet() == DB_6720_ID) {
+		/* Read DDR Bus width configuration:
+		   - DDR_BUS_WIDTH - only S@R field which is not sampled at reset to any internal register
+		   - Need to read it separately from S@R I2C	*/
+		if (mvBoardSatrInfoConfig(MV_SATR_WRITE_DDR_BUS_WIDTH, &satrInfo, MV_FALSE) != MV_OK)
+			mvOsPrintf("%s: Error: DDR_BUS_WIDTH field is not relevant for this board\n", __func__);
 
-	/* read DDR_BUS_WIDTH from 2nd register (regNum = 1) */
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 1, &readValue) != MV_OK)
-		mvOsPrintf("%s: Error: Read DDR_BUS_WIDTH from S@R failed\n", __func__);
+		/* read DDR_BUS_WIDTH from 2nd register (regNum = 1) */
+		if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 1, &readValue) != MV_OK)
+			mvOsPrintf("%s: Error: Read DDR_BUS_WIDTH from S@R failed\n", __func__);
 
-	satrOptionsConfig[MV_SATR_DDR_BUS_WIDTH] = ((readValue  & (satrInfo.mask)) >> (satrInfo.offset));
+		satrOptionsConfig[MV_SATR_DDR_BUS_WIDTH] = ((readValue  & (satrInfo.mask)) >> (satrInfo.offset));
 
-	satrOptionsInitialized = 2;
+		satrOptionsInitialized = 2;
+	}
 }
 
 /*******************************************************************************

@@ -69,33 +69,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_a375_mc_static.h"
 #include "ddr3_a375_training_static.h"
 
-/* Board/Soc revisions define - DONT CHANGE ORDER */
-typedef enum  {
-    A375_DB_6720 = 0,
-	A375_CUSTOMER
-} MV_SOC_BOARD_REV;
-
 typedef struct __mvDramModes {
     char *mode_name;
     MV_U8 cpuFreq;
     MV_U8 fabFreq;
     MV_U8 chipId;
-    MV_SOC_BOARD_REV chipBoardRev;
+    MV_U8 chipBoardRev;
     MV_DRAM_MC_INIT *regs;
     MV_DRAM_TRAINING_INIT *vals;
 } MV_DRAM_MODES;
 
 MV_DRAM_MODES ddr_modes[] =
 {
-#if defined(CUSTOMER_BOARD)
-    /*  Conf name     CPUFreq    FabFreq  Chip ID       Chip/Board               MC regs             Training Values */
-	{"rd_customer_533", 0x15,       0,      0x0,   		A375_CUSTOMER,      ddr3_Customer_DB_6720_533,  NULL},
+/*	Conf name	     CPUFreq  FabFreq  Chip ID  Chip/Board			MC regs			Training Values */
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	{"a375_customer_0_533",	0x15,	0,	0x0,	ARMADA_375_CUSTOMER_BOARD_ID0,	ddr3_Customer_0_533,	NULL},
+	{"a375_customer_1_533",	0x15,	0,	0x0,	ARMADA_375_CUSTOMER_BOARD_ID1,	ddr3_Customer_0_533,	NULL},
 #else
-    /* db board values  */
-    {"db_88F6720_533",  0x15,       0,      0x0,        A375_DB_6720,       ddr3_A375_DB_6720_533,      NULL},
-	{"db_88F6720_533",  0x16,       0,      0x0,        A375_DB_6720,       ddr3_A375_DB_6720_533, 		NULL},
-	{"db_88F6720_533",  0x19,       0,      0x0,        A375_DB_6720,       ddr3_A375_DB_6720_533, 		NULL},
-#endif /* #if CUSTOMER_BOARD */
+	{"db_88F6720_533",	0x15,	0,	0x0,	DB_6720_ID,			ddr3_A375_DB_6720_533,	NULL},
+	{"db_88F6720_533",	0x16,	0,	0x0,	DB_6720_ID,			ddr3_A375_DB_6720_533,	NULL},
+	{"db_88F6720_533",	0x19,	0,	0x0,	DB_6720_ID,			ddr3_A375_DB_6720_533,	NULL},
+#endif
 };
 
 MV_U16 auiODTStatic[ODT_OPT][MAX_CS] =

@@ -69,17 +69,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Board specific configuration */
 /* ============================ */
 
-#define MV_6720_DEV_ID 0x6720
+#define MV_6720_DEV_ID			0x6720
 
-/* boards ID numbers */
-#define BOARD_ID_BASE               0x0
+/* Customer boards */
+#define CUTOMER_BOARD_ID_BASE		0x0
+#define ARMADA_375_CUSTOMER_BOARD_ID0	(CUTOMER_BOARD_ID_BASE + 0)
+#define ARMADA_375_CUSTOMER_BOARD_ID1	(CUTOMER_BOARD_ID_BASE + 1)
+#define MV_MAX_CUSTOMER_BOARD_ID	(CUTOMER_BOARD_ID_BASE + 2)
+#define MV_CUSTOMER_BOARD_NUM		(MV_MAX_CUSTOMER_BOARD_ID - CUTOMER_BOARD_ID_BASE + 1)
 
-#define DB_88F6720_BP_ID            (BOARD_ID_BASE)
-#define ARMADA_375_CUSTOMER_ID		(DB_88F6720_BP_ID + 1)
-#define MV_MAX_BOARD_ID             (ARMADA_375_CUSTOMER_ID + 1)
-#define INVALID_BAORD_ID            0xFFFFFFFF
+/* Marvell boards */
+#define MARVELL_BOARD_ID_BASE		0x10
+#define DB_6720_ID			(MARVELL_BOARD_ID_BASE + 0)
+#define MV_MAX_MARVELL_BOARD_ID		(MARVELL_BOARD_ID_BASE + 1)
+#define MV_MARVELL_BOARD_NUM		(MV_MAX_MARVELL_BOARD_ID - MARVELL_BOARD_ID_BASE + 1)
 
-#define INTER_REGS_BASE                                     0xD0000000
+#define MV_INVALID_BOARD_ID		0xFFFFFFFF
+
+#define INTER_REGS_BASE			0xD0000000
 
 /* Sample at Reset */
 #define MPP_SAMPLE_AT_RESET(id)     (0xE8200 + (id * 4))

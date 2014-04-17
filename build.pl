@@ -11,6 +11,7 @@ sub HELP_MESSAGE
 	print "\t-f\tBoot device. Accepts spi, nor, nand\n";
 	print "\t-b\tBoard type. Accepts:\tavanta_lp, armada_375, bobcat2_db, bobcat2_rd,\n";
 	print "\t-b\t\t\t\tarmada_38x, armada_38x_customer0, armada_38x_customer1\n";
+	print "\t-b\t\t\t\armada_375, armada_375_customer0, armada_375_customer1\n";
 	print "\t-c\tClean build. calls make mrproper\n";
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
@@ -59,6 +60,8 @@ if($opt_c eq 1)
 		($opt_b eq "avanta_lp_fpga") or
 		($opt_b eq "avanta_lp") or
 		($opt_b eq "armada_375") or
+		($opt_b eq "armada_375_customer0") or
+		($opt_b eq "armada_375_customer1") or
 		($opt_b eq "armada_38x") or
 		($opt_b eq "armada_38x_customer0") or
 		($opt_b eq "armada_38x_customer1") or

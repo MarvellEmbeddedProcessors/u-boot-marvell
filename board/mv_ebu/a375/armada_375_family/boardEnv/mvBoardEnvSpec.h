@@ -68,73 +68,81 @@
 #include "mvSysHwConfig.h"
 
 /* I2C bus addresses */
-#define MV_BOARD_DIMM0_I2C_ADDR                 0x56
-#define MV_BOARD_DIMM0_I2C_ADDR_TYPE            ADDR7_BIT
-#define MV_BOARD_DIMM1_I2C_ADDR                 0x57
-#define MV_BOARD_DIMM1_I2C_ADDR_TYPE            ADDR7_BIT
-#define MV_BOARD_DIMM_I2C_CHANNEL               0x0
+#define MV_BOARD_DIMM0_I2C_ADDR		0x56
+#define MV_BOARD_DIMM0_I2C_ADDR_TYPE	ADDR7_BIT
+#define MV_BOARD_DIMM1_I2C_ADDR		0x57
+#define MV_BOARD_DIMM1_I2C_ADDR_TYPE	ADDR7_BIT
+#define MV_BOARD_DIMM_I2C_CHANNEL	0x0
 
 /* Board specific configuration */
 /* ============================ */
 #ifndef MV_ASMLANGUAGE
 /* New board ID numbers */
 
-/* boards ID numbers */
-#define BOARD_ID_BASE                   0x0
-#define DB_6720_ID                      (BOARD_ID_BASE)
-#define A375_CUSTOMER_ID                (DB_6720_ID + 1)
-#define MV_MAX_BOARD_ID                 (A375_CUSTOMER_ID + 1)
-#define MV_INVALID_BOARD_ID             0xFFFFFFFF
+/* Customer boards */
+#define CUTOMER_BOARD_ID_BASE		0x0
+#define ARMADA_375_CUSTOMER_BOARD_ID0	(CUTOMER_BOARD_ID_BASE + 0)
+#define ARMADA_375_CUSTOMER_BOARD_ID1	(CUTOMER_BOARD_ID_BASE + 1)
+#define MV_MAX_CUSTOMER_BOARD_ID	(CUTOMER_BOARD_ID_BASE + 2)
+#define MV_CUSTOMER_BOARD_NUM		(MV_MAX_CUSTOMER_BOARD_ID - CUTOMER_BOARD_ID_BASE + 1)
+
+/* Marvell boards */
+#define MARVELL_BOARD_ID_BASE		0x10
+#define DB_6720_ID			(MARVELL_BOARD_ID_BASE + 0)
+#define MV_MAX_MARVELL_BOARD_ID		(MARVELL_BOARD_ID_BASE + 1)
+#define MV_MARVELL_BOARD_NUM		(MV_MAX_MARVELL_BOARD_ID - MARVELL_BOARD_ID_BASE + 1)
+
+#define MV_INVALID_BOARD_ID		0xFFFFFFFF
+
+/*******************************************************************************
+ * ARMADA 375 Customer board - Based on DB_88F6720 */
+/******************************************************************************/
+/*SPI, NAND cases*/
+#define GROUP1_DEFAULT_MPP_SPI_I2C		0x22000022	/* SPI , I2C */
+#define A375_CUSTOMER_BOARD_0_MPP0_7		0x00020020	/* SPI */
+#define A375_CUSTOMER_BOARD_0_MPP8_15		0x22000022	/* SPI , I2C */
+#define A375_CUSTOMER_BOARD_0_MPP16_23		0x22222222	/* UART, TDM*/
+#define A375_CUSTOMER_BOARD_0_MPP24_31		0x33333333	/* SDIO*/
+#define A375_CUSTOMER_BOARD_0_MPP32_39		0x04403330	/* SPI, SMI */
+#define A375_CUSTOMER_BOARD_0_MPP40_47		0x22002044	/* UART1, GE0  */
+#define A375_CUSTOMER_BOARD_0_MPP48_55		0x22222222	/*GE0*/
+#define A375_CUSTOMER_BOARD_0_MPP56_63		0x04444422	/* GE0 , LED_MATRIX */
+#define A375_CUSTOMER_BOARD_0_MPP64_67		0x014		/* LED_MATRIX */
+
+#define A375_CUSTOMER_BOARD_0_GPP_OUT_ENA_LOW	0xFFFFFFFF
+#define A375_CUSTOMER_BOARD_0_GPP_OUT_ENA_MID	0x7FFFFFFF
+#define A375_CUSTOMER_BOARD_0_GPP_OUT_ENA_HIGH	0xFFFFFFFF
+#define A375_CUSTOMER_BOARD_0_GPP_OUT_VAL_LOW	0x0
+#define A375_CUSTOMER_BOARD_0_GPP_OUT_VAL_MID	BIT31		/* SATA Power output enable */
+#define A375_CUSTOMER_BOARD_0_GPP_OUT_VAL_HIGH	0x0
+#define A375_CUSTOMER_BOARD_0_GPP_POL_LOW	0x0
+#define A375_CUSTOMER_BOARD_0_GPP_POL_MID	0x0
+#define A375_CUSTOMER_BOARD_0_GPP_POL_HIGH	0x0
 
 /*******************************************************************************
  * Armada 375 DB-88F6720 board */
 /******************************************************************************/
 /*SPI, NAND cases*/
-#define GROUP1_DEFAULT_MPP_SPI_I2C         0x22000022  /* SPI , I2C */
-#define DB_88F6720_MPP0_7               0x00020020  	/* SPI */
-#define DB_88F6720_MPP8_15              0x22000022  	/* SPI , I2C */
-#define DB_88F6720_MPP16_23             0x22222222  	/* UART, TDM*/
-#define DB_88F6720_MPP24_31             0x33333333  	/* SDIO, SPI1*/
-#define DB_88F6720_MPP32_39             0x04403330  	/* SPI1, External SMI */
-#define DB_88F6720_MPP40_47             0x22002044  	/* UART1, GE0, SATA0 LED */
-#define DB_88F6720_MPP48_55             0x22222222  	/*GE0*/
-#define DB_88F6720_MPP56_63             0x04444422  	/* GE0 , LED_MATRIX, GPIO */
-#define DB_88F6720_MPP64_67             0x014	    	/* LED_MATRIX, SATA1 LED*/
+#define GROUP1_DEFAULT_MPP_SPI_I2C	0x22000022	/* SPI , I2C */
+#define DB_88F6720_MPP0_7		0x00020020	/* SPI */
+#define DB_88F6720_MPP8_15		0x22000022	/* SPI , I2C */
+#define DB_88F6720_MPP16_23		0x22222222	/* UART, TDM*/
+#define DB_88F6720_MPP24_31		0x33333333	/* SDIO, SPI1*/
+#define DB_88F6720_MPP32_39		0x04403330	/* SPI1, External SMI */
+#define DB_88F6720_MPP40_47		0x22002044	/* UART1, GE0, SATA0 LED */
+#define DB_88F6720_MPP48_55		0x22222222	/*GE0*/
+#define DB_88F6720_MPP56_63		0x04444422	/* GE0 , LED_MATRIX, GPIO */
+#define DB_88F6720_MPP64_67		0x014		/* LED_MATRIX, SATA1 LED*/
 
-#define DB_88F6720_GPP_OUT_ENA_LOW      0xFFFFFFFF
-#define DB_88F6720_GPP_OUT_ENA_MID      0x7FFFFFFF
-#define DB_88F6720_GPP_OUT_ENA_HIGH     0xFFFFFFFF
-#define DB_88F6720_GPP_OUT_VAL_LOW      0x0
-#define DB_88F6720_GPP_OUT_VAL_MID      BIT31		/* SATA Power output enable */
-#define DB_88F6720_GPP_OUT_VAL_HIGH     0x0
-#define DB_88F6720_GPP_POL_LOW          0x0
-#define DB_88F6720_GPP_POL_MID          0x0
-#define DB_88F6720_GPP_POL_HIGH         0x0
-
-/*******************************************************************************
- * Armada 375 Customer board */
-/******************************************************************************/
-/*SPI, NAND cases*/
-#define GROUP1_DEFAULT_MPP_SPI_I2C         0x22000022  /* SPI , I2C */
-#define A375_CUSTOMER_BOARD_MPP0_7               0x00020020  /* SPI */
-#define A375_CUSTOMER_BOARD_MPP8_15              0x22000022  /* SPI , I2C */
-#define A375_CUSTOMER_BOARD_MPP16_23             0x22222222	/* UART, TDM*/
-#define A375_CUSTOMER_BOARD_MPP24_31             0x33333333  /* SDIO*/
-#define A375_CUSTOMER_BOARD_MPP32_39             0x04403330  /* SPI, SMI */
-#define A375_CUSTOMER_BOARD_MPP40_47             0x22002044  /* UART1, GE0  */
-#define A375_CUSTOMER_BOARD_MPP48_55             0x22222222  /*GE0*/
-#define A375_CUSTOMER_BOARD_MPP56_63             0x44444422  /* GE0 , LED_MATRIX */
-#define A375_CUSTOMER_BOARD_MPP64_67				0x004		/* LED_MATRIX */
-
-#define A375_CUSTOMER_BOARD_GPP_OUT_ENA_LOW      0xFFFFFFFF
-#define A375_CUSTOMER_BOARD_GPP_OUT_ENA_MID      0xFFFFFFFF
-#define A375_CUSTOMER_BOARD_GPP_OUT_ENA_HIGH     0xFFFFFFFF
-#define A375_CUSTOMER_BOARD_GPP_OUT_VAL_LOW      0x0
-#define A375_CUSTOMER_BOARD_GPP_OUT_VAL_MID      0x0
-#define A375_CUSTOMER_BOARD_GPP_OUT_VAL_HIGH     0x0
-#define A375_CUSTOMER_BOARD_GPP_POL_LOW          0x0
-#define A375_CUSTOMER_BOARD_GPP_POL_MID          0x0
-#define A375_CUSTOMER_BOARD_GPP_POL_HIGH         0x0
+#define DB_88F6720_GPP_OUT_ENA_LOW	0xFFFFFFFF
+#define DB_88F6720_GPP_OUT_ENA_MID	0x7FFFFFFF
+#define DB_88F6720_GPP_OUT_ENA_HIGH	0xFFFFFFFF
+#define DB_88F6720_GPP_OUT_VAL_LOW	0x0
+#define DB_88F6720_GPP_OUT_VAL_MID	BIT31		/* SATA Power output enable */
+#define DB_88F6720_GPP_OUT_VAL_HIGH	0x0
+#define DB_88F6720_GPP_POL_LOW		0x0
+#define DB_88F6720_GPP_POL_MID		0x0
+#define DB_88F6720_GPP_POL_HIGH		0x0
 
 
 #endif  /* MV_ASMLANGUAGE */

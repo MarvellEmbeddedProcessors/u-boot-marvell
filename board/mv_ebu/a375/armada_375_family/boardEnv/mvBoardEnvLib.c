@@ -90,7 +90,8 @@
 #define DB(x)
 #endif
 
-extern MV_BOARD_INFO *boardInfoTbl[];
+extern MV_BOARD_INFO *marvellBoardInfoTbl[];
+extern MV_BOARD_INFO *customerBoardInfoTbl[];
 extern MV_BOARD_SATR_INFO boardSatrInfo[];
 MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_BOARD_CONFIG_INFO;
 
@@ -98,6 +99,27 @@ MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_BOARD_CONFIG_INFO;
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 static MV_BOARD_INFO *board = NULL;
 
+/*******************************************************************************
+* mvBoardIdIndexGet
+*
+* DESCRIPTION:
+*	returns an index for board arrays with direct memory access, according to board id
+*
+* INPUT:
+*       boardId.
+*
+* OUTPUT:
+*       direct access index for board arrays
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
+{
+/* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
+	return boardId & (MARVELL_BOARD_ID_BASE - 1);
+}
 
 /*******************************************************************************
 * mvBoardEnvInit
@@ -121,7 +143,7 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 	MV_U32 nandDev;
 	MV_U32 norDev;
 
-	mvBoardIdSet(mvBoardIdGet());
+	mvBoardSet(mvBoardIdGet());
 	MV_U32 syncCtrl = 0;
 
 	nandDev = boardGetDevCSNum(0, BOARD_DEV_NAND_FLASH);
@@ -186,7 +208,7 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 *******************************************************************************/
 MV_U16 mvBoardModelGet(MV_VOID)
 {
-	return mvBoardIdGet() >> 16;
+	return mvBoardIdIndexGet(mvBoardIdGet()) >> 16;
 }
 
 /*******************************************************************************
@@ -211,7 +233,7 @@ MV_U16 mvBoardModelGet(MV_VOID)
 *******************************************************************************/
 MV_U16 mvBoardRevGet(MV_VOID)
 {
-	return mvBoardIdGet() & 0xFFFF;
+	return mvBoardIdIndexGet(mvBoardIdGet()) & 0xFFFF;
 }
 
 /*******************************************************************************
@@ -1805,7 +1827,7 @@ MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig)
 MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo, MV_BOOL read)
 {
 	int i, start, end;
-	MV_U32 boardId = mvBoardIdGet();
+	MV_U32 boardId = mvBoardIdIndexGet(mvBoardIdGet());
 
 	if (read == MV_TRUE) {	/* if read request, check read SATR fields */
 		start = 0;
@@ -1820,7 +1842,8 @@ MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *s
 	for (i = start; i < end ; i++)
 		if (boardSatrInfo[i].satrId == satrClass) {
 			*satrInfo = boardSatrInfo[i];
-			if (boardSatrInfo[i].isActiveForBoard[boardId])
+			/* if read sequence, or an authorized write sequence -> return OK */
+			if (read == MV_TRUE || boardSatrInfo[i].isActiveForBoard[boardId])
 				return MV_OK;
 			else
 				return MV_ERROR;
@@ -1848,7 +1871,7 @@ MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *s
 MV_BOOL mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo)
 {
 	int i;
-	MV_U32 boardId = mvBoardIdGet();
+	MV_U32 boardId = mvBoardIdIndexGet(mvBoardIdGet());
 
 	/* verify existence of requested config type, pull its data,
 	 * and check if field is relevant to current running board */
@@ -1915,7 +1938,7 @@ MV_32 mvBoardNandWidthGet(void)
 }
 
 /*******************************************************************************
-* mvBoardIdSet - Set Board model
+* mvBoardSet - Set Board model
 *
 * DESCRIPTION:
 *       This function sets the board ID.
@@ -1932,12 +1955,18 @@ MV_32 mvBoardNandWidthGet(void)
 *       void
 *
 *******************************************************************************/
-MV_VOID mvBoardIdSet(MV_U32 boardId)
+static MV_U32 gBoardId = -1;
+MV_VOID mvBoardSet(MV_U32 boardId)
 {
-	if (boardId >= MV_MAX_BOARD_ID)
+	/* board ID's >0x10 are for Marvell Boards */
+	if (boardId >= MARVELL_BOARD_ID_BASE && boardId < MV_MAX_MARVELL_BOARD_ID) { /* Marvell Board */
+		board = marvellBoardInfoTbl[mvBoardIdIndexGet(boardId)];
+		gBoardId = boardId;
+	} else if (boardId >= CUTOMER_BOARD_ID_BASE && boardId < MV_MAX_CUSTOMER_BOARD_ID) { /* Customer Board */
+		board = customerBoardInfoTbl[mvBoardIdIndexGet(boardId)];
+		gBoardId = boardId;
+	} else
 		mvOsPrintf("%s: Error: wrong boardId (%d)\n", __func__, boardId);
-
-	board = boardInfoTbl[boardId];
 }
 
 /*******************************************************************************
@@ -1960,18 +1989,35 @@ MV_VOID mvBoardIdSet(MV_U32 boardId)
 *******************************************************************************/
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-	MV_U32 boardId, value;
-	/*Fake board ID, TODO fix*/
-	return 0x0;
+	if (gBoardId != -1)
+		return gBoardId;
 
-	value = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
-	boardId = ((value & (0xF0)) >> 4);
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	#ifdef CONFIG_CUSTOMER_BOARD_0
+		gBoardId = ARMADA_375_CUSTOMER_BOARD_ID0;
+	#elif CONFIG_CUSTOMER_BOARD_1
+		gBoardId = ARMADA_375_CUSTOMER_BOARD_ID1;
+	#endif
+#else
 
-	if (boardId >= MV_MAX_BOARD_ID) {
-		mvOsPrintf("%s: Error: read wrong board (%d)\n", __func__, boardId);
+	MV_U32 readValue;
+
+	readValue = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
+	readValue = ((readValue & (0xF0)) >> 4);
+
+	/* A375 DB board ID is 0xc - align it to be 1st board */
+	if (readValue == DB_6720_HW_ID)
+		readValue = 0x0;
+
+	if (readValue < MV_MARVELL_BOARD_NUM && readValue >= 0) {
+		gBoardId = MARVELL_BOARD_ID_BASE + readValue;
+	} else {
+		mvOsPrintf("%s: Error: read wrong board (%d)\n", __func__, readValue);
 		return MV_INVALID_BOARD_ID;
 	}
-	return boardId;
+#endif
+
+	return gBoardId;
 }
 
 /*******************************************************************************

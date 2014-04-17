@@ -646,7 +646,11 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel; bootz 0x2000000 - $fdta
 
 	env = getenv("fdtfile");
 	if (!env)
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+		setenv("fdtfile", "armada-375.dtb");
+#else
 		setenv("fdtfile", "armada-375-db.dtb");
+#endif
 	env = getenv("bootcmd_fdt");
 	if (!env)
 		setenv("bootcmd_fdt",bootcmd_fdt);

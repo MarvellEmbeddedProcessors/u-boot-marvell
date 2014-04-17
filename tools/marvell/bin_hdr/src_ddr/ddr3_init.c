@@ -77,6 +77,10 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "bin_hdr_twsi.h"
 #include "mvUart.h"
 
+#if defined(MV88F672X)|| defined(MV_MSYS) || defined(MV88F68XX)
+#include "mvBHboardEnvSpec.h"
+#endif
+
 #if defined(MV88F78X60)
 #include "ddr3_axp_vars.h"
 #elif defined(MV88F67XX)
@@ -88,12 +92,10 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_a375_vars.h"
 #include "mvHighSpeedEnvSpec.h"
 #elif defined(MV88F68XX)
-#include "mvBHboardEnvSpec.h"
 #include "ddr3_a38x.h"
 #include "ddr3_a38x_vars.h"
 #include "ddr3_a38x_topology.h"
 #elif defined(MV_MSYS)
-#include "mvBHboardEnvSpec.h"
 #include "ddr3_msys.h"
 #include "ddr3_msys_config.h"
 #include "ddr3_msys_vars.h"

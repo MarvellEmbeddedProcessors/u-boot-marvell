@@ -66,6 +66,11 @@
 #define MV_DDR_64BIT
 #define MV_BOOTROM
 
+#if defined (CONFIG_CUSTOMER_BOARD_0) || defined (CONFIG_CUSTOMER_BOARD_1)
+#define CONFIG_ARMADA_375
+#define CONFIG_CUSTOMER_BOARD_SUPPORT
+#endif
+
 #define MV_USB
 #define MV_FS
 #define CONFIG_CMD_DATE

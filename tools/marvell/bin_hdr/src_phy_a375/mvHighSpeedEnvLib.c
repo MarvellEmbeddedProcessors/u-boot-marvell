@@ -158,9 +158,60 @@ MV_U32 mvCpuL2ClkGet(MV_VOID)
 *       32bit board ID number, '-1' if board is undefined.
 *
 *******************************************************************************/
+static MV_U32 gBoardId = -1;
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-	return DB_88F6720_BP_ID;
+	if (gBoardId != -1)
+		return gBoardId;
+
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	#ifdef CONFIG_CUSTOMER_BOARD_0
+		gBoardId = ARMADA_375_CUSTOMER_BOARD_ID0;
+	#elif CONFIG_CUSTOMER_BOARD_1
+		gBoardId = ARMADA_375_CUSTOMER_BOARD_ID1;
+	#endif
+#else
+
+	MV_U32 readValue;
+
+	readValue = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
+	readValue = ((readValue & (0xF0)) >> 4);
+
+	readValue = 0x0;	/*HW returns 11 instead of 0 for some reason - using temp fake board ID */
+
+	if (readValue < MV_MARVELL_BOARD_NUM && readValue >= 0)
+		gBoardId = MARVELL_BOARD_ID_BASE + readValue;
+	else {
+		DEBUG_INIT_S("mvBoardIdGet: board id 0x");
+		DEBUG_INIT_FULL_D(readValue, 8);
+		DEBUG_INIT_S("is out of range. Using default board ID (DB-DB_6720_ID-BP)\n");
+		return MV_INVALID_BOARD_ID;
+	}
+#endif
+
+	return gBoardId;
+}
+
+/*******************************************************************************
+* mvBoardIdIndexGet
+*
+* DESCRIPTION:
+*	returns an index for board arrays with direct memory access, according to board id
+*
+* INPUT:
+*       boardId.
+*
+* OUTPUT:
+*       direct access index for board arrays
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
+{
+/* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
+	return boardId & (MARVELL_BOARD_ID_BASE - 1);
 }
 
 /*******************************************************************************
@@ -477,7 +528,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	MV_U32  first_busno, next_busno;
     MV_U32	addr;
 	MV_TWSI_ADDR slave;
-	MV_U32  boardId = mvBoardIdGet();
+	MV_U32  boardId = mvBoardIdIndexGet(mvBoardIdGet());
     maxSerdesLanes = mvCtrlSerdesMaxLanesGet();
 
     if (maxSerdesLanes == 0)
@@ -842,9 +893,6 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
     return MV_OK;
 }
-
-
-
 
 /*******************************************************************************
 * mvPexConfigRead - Read from configuration space

@@ -755,7 +755,6 @@ MV_VOID mvCtrlSysConfigInit()
 *******************************************************************************/
 MV_STATUS mvCtrlBoardConfigGet(MV_U8 *config)
 {
-	MV_U32 boardId = mvBoardIdGet();
 	MV_STATUS status1, status2;
 	MV_BOOL isEepromEnabled = (mvBoardEepromInit() == MV_OK) ? MV_TRUE : MV_FALSE;
 
@@ -770,7 +769,7 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *config)
 		DB(mvOsPrintf("%s: Error: mvBoardTwsiGet from EEPROM/Dip Switch failed\n", __func__));
 		return MV_ERROR;
 	}
-	if (boardId == DB_6660_ID) { /* DB-6660 has another register for board configuration */
+	if (mvBoardIdGet() == DB_6660_ID) { /* DB-6660 has another register for board configuration */
 		if (isEepromEnabled == MV_TRUE)
 			status1 = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 2, &config[2]);	/* EEPROM Reg#2 */
 		else {

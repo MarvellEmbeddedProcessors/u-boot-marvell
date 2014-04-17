@@ -202,7 +202,7 @@ typedef struct _boardSatrInfo {
 	MV_U32 mask;
 	MV_U32 offset;
 	MV_U32 regNum;
-	MV_U32 isWriteable[MV_MAX_BOARD_ID];
+	MV_U32 isWriteable[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_SATR_INFO;
 
 typedef struct _boardConfigTypesInfo {
@@ -211,7 +211,7 @@ typedef struct _boardConfigTypesInfo {
 	MV_U32 offset;
 	MV_U32 expanderNum;
 	MV_U32 regNum;
-	MV_U32 isActiveForBoard[MV_MAX_BOARD_ID];
+	MV_U32 isActiveForBoard[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_CONFIG_TYPE_INFO;
 
 typedef enum _boardMacSpeed {
@@ -544,8 +544,9 @@ MV_U8 mvBoardTwsiAddrTypeGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_U32 mvBoardEthComplexConfigGet(MV_VOID);
 MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig);
+MV_U32 mvBoardIdIndexGet(MV_U32 boardId);
 MV_U32 mvBoardIdGet(MV_VOID);
-MV_VOID mvBoardIdSet(MV_U32 boardId);
+MV_VOID mvBoardSet(MV_U32 boardId);
 MV_U32 mvBoardSledCpuNumGet(MV_VOID);
 MV_VOID mvBoardInfoUpdate(MV_VOID);
 MV_VOID mvBoardVerifySerdesCofig(MV_VOID);

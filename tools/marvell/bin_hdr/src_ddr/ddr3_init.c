@@ -77,7 +77,7 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "bin_hdr_twsi.h"
 #include "mvUart.h"
 
-#if defined(MV88F672X)|| defined(MV_MSYS) || defined(MV88F68XX)
+#if defined(MV88F672X)|| defined (MV88F66XX) || defined(MV_MSYS) || defined(MV88F68XX)
 #include "mvBHboardEnvSpec.h"
 #endif
 
@@ -1741,10 +1741,9 @@ MV_VOID ddr3GetAlpBusWidth(void){
 
 	MV_U8 configVal[MV_IO_EXP_MAX_REGS];
 	MV_U32 uiReg;
-	MV_U8 chipBoardRev = mvBoardIdGet();
 
 	/* if the board is DB-88F6660*/
-	if (chipBoardRev == DB_88F6660_BP_ID) {
+	if (mvBoardIdGet() == DB_6660_ID) {
 		mvBoardDb6660LaneConfigGet(configVal);
 		if((configVal[2] & 0x4) >> 2){
 			/* change sdram bus width to X16 according to DIP switch(SW7 pin3) or EEPROM*/

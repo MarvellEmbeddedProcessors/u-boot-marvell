@@ -173,6 +173,7 @@ typedef struct {
 MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_BOOL isMoreThen256, MV_U8 *pData);
 MV_STATUS mvBoardUpdateBoardTopologyConfig(MV_U32  boardId);
 MV_STATUS mvBoardDb6660LaneConfigGet(MV_U8 *tempVal);
+MV_U32 mvBoardIdIndexGet(MV_U32 boardId);
 
 #if 0
 typedef struct _boardTwsiInfo {

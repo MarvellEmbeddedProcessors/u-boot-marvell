@@ -68,15 +68,41 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 MV_BOARD_TOPOLOGY_CONFIG boardTopologyConfig[] =
 {
-/*  board name					Lane 1				Lane 2					    Lane3     				Sgmii Speed*/
-	{"RD_88F6650_BP",		{SERDES_UNIT_PEX,	SERDES_UNIT_UNCONNECTED,	SERDES_UNIT_UNCONNECTED},	MV_SGMII_NA},
-	{"DB_88F6650_BP",		{SERDES_UNIT_PEX,	SERDES_UNIT_UNCONNECTED,	SERDES_UNIT_UNCONNECTED},	MV_SGMII_NA},
-	{"RD_88F6660_BP",		{SERDES_UNIT_PEX,	SERDES_UNIT_SATA,			SERDES_UNIT_USB3},			MV_SGMII_NA},
-	{"DB_88F6660_BP",		{SERDES_UNIT_PEX,	SERDES_UNIT_UNCONNECTED,	SERDES_UNIT_UNCONNECTED},	MV_SGMII_NA},/*Lane 2 and Lane 3 configuration is set in run time*/
-	{"AVANTA_LP_CUSTOMER",	{SERDES_UNIT_PEX,	SERDES_UNIT_SATA,			SERDES_UNIT_USB3	   },	MV_SGMII_GEN1},
+/*	board name			Lane 1,		  Lane 2		Lane3		Sgmii Speed*/
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	{"AVANTA_LP_CUSTOMER_0",	{SERDES_UNIT_PEX, SERDES_UNIT_SATA, SERDES_UNIT_USB3 }, MV_SGMII_GEN1},
+	{"AVANTA_LP_CUSTOMER_1",	{SERDES_UNIT_PEX, SERDES_UNIT_SATA, SERDES_UNIT_USB3 }, MV_SGMII_GEN1},
+#else
+	{"RD_88F6650_BP",		{SERDES_UNIT_PEX, SERDES_UNIT_UNCONNECTED, SERDES_UNIT_UNCONNECTED},	MV_SGMII_NA},
+	{"DB_88F6650_BP",		{SERDES_UNIT_PEX, SERDES_UNIT_UNCONNECTED, SERDES_UNIT_UNCONNECTED},	MV_SGMII_NA},
+	{"RD_88F6660_BP",		{SERDES_UNIT_PEX, SERDES_UNIT_SATA,        SERDES_UNIT_USB3       },	MV_SGMII_NA},
+	{"DB_88F6660_BP",		{SERDES_UNIT_PEX, SERDES_UNIT_UNCONNECTED, SERDES_UNIT_UNCONNECTED},	MV_SGMII_NA},/*Lane 2 and Lane 3 configuration is set in run time*/
+#endif
 };
 
 /****************************  function implementation *****************************************/
+
+/*******************************************************************************
+* mvBoardIdIndexGet
+*
+* DESCRIPTION:
+*	returns an index for board arrays with direct memory access, according to board id
+*
+* INPUT:
+*       boardId.
+*
+* OUTPUT:
+*       direct access index for board arrays
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
+{
+/* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
+	return boardId & (MARVELL_BOARD_ID_BASE - 1);
+}
 
 /*******************************************************************************
 * mvReverseBits
@@ -215,7 +241,7 @@ MV_STATUS mvBoardDb6660LaneConfigGet(MV_U8 *tempVal)
 MV_STATUS mvDb6660UpdateBoardTopologyConfig(void)
 {
 	MV_U8 configVal[MV_IO_EXP_MAX_REGS];
-	MV_U8 tmp;
+	MV_U8 tmp, boardIdIndex = mvBoardIdIndexGet(DB_6660_ID);
 
 	/*Read rest of Board Configuration, EEPROM / Dip Switch access read : */
 
@@ -225,13 +251,13 @@ MV_STATUS mvDb6660UpdateBoardTopologyConfig(void)
 
 		switch (tmp) {
 		case 0:
-			boardTopologyConfig[DB_88F6660_BP_ID].serdesTopology.lane1 = SERDES_UNIT_PEX;
+			boardTopologyConfig[boardIdIndex].serdesTopology.lane1 = SERDES_UNIT_PEX;
 			break;
 		case 1:
-			boardTopologyConfig[DB_88F6660_BP_ID].serdesTopology.lane1 = SERDES_UNIT_SGMII;
+			boardTopologyConfig[boardIdIndex].serdesTopology.lane1 = SERDES_UNIT_SGMII;
 			break;
 		case 2:
-			boardTopologyConfig[DB_88F6660_BP_ID].serdesTopology.lane1 = SERDES_UNIT_SATA;
+			boardTopologyConfig[boardIdIndex].serdesTopology.lane1 = SERDES_UNIT_SATA;
 			break;
 		case 3:
 		default:
@@ -241,10 +267,10 @@ MV_STATUS mvDb6660UpdateBoardTopologyConfig(void)
 		}
 
 		/* lane 2 config */
-		boardTopologyConfig[DB_88F6660_BP_ID].serdesTopology.lane2 = ((configVal[1] & 0x20) >> 5)? SERDES_UNIT_SGMII:SERDES_UNIT_SATA;
+		boardTopologyConfig[boardIdIndex].serdesTopology.lane2 = ((configVal[1] & 0x20) >> 5)? SERDES_UNIT_SGMII:SERDES_UNIT_SATA;
 
 		/* lane 3 config */
-		boardTopologyConfig[DB_88F6660_BP_ID].serdesTopology.lane3 = ((configVal[1] & 0x40) >> 6)? SERDES_UNIT_SGMII:SERDES_UNIT_USB3;
+		boardTopologyConfig[boardIdIndex].serdesTopology.lane3 = ((configVal[1] & 0x40) >> 6)? SERDES_UNIT_SGMII:SERDES_UNIT_USB3;
 	}
 	else{
 		DEBUG_INIT_S("Error: Read board configuration from EEPROM/Dip Switch failed \n");
@@ -252,7 +278,7 @@ MV_STATUS mvDb6660UpdateBoardTopologyConfig(void)
 	}
 
 	/* update SGMII speed config */
-	boardTopologyConfig[DB_88F6660_BP_ID].sgmiiSpeed = (configVal[0] & 0x40) ? MV_SGMII_GEN2 : MV_SGMII_GEN1;
+	boardTopologyConfig[boardIdIndex].sgmiiSpeed = (configVal[0] & 0x40) ? MV_SGMII_GEN2 : MV_SGMII_GEN1;
 
 	return MV_OK;
 }
@@ -274,9 +300,10 @@ MV_STATUS mvBoardUpdateBoardTopologyConfig(MV_U32 boardId)
 	/* this routine must be implemented, in order to use dynamic Serdes /SGMII settings configuration.
 		1. scan requested configuration 2. update boardTopologyConfig[] according to config */
 	switch(boardId) {
-	case DB_88F6660_BP_ID:
+	case DB_6660_ID:
 		return mvDb6660UpdateBoardTopologyConfig();
-	case AVANTA_LP_CUSTOMER:
+	case AVANTA_LP_CUSTOMER_BOARD_ID0:
+	case AVANTA_LP_CUSTOMER_BOARD_ID1:
 		return MV_OK;
 	default:
 		return MV_OK;

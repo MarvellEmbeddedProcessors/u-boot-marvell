@@ -289,6 +289,7 @@ MV_U32 boardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_U8 mvBoardTwsiAddrTypeGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_32 mvBoardNandWidthGet(void);
+MV_VOID mvBoardSet(MV_U32 boardId);
 MV_U32 mvBoardIdGet(MV_VOID);
 MV_U32 mvBoardSledCpuNumGet(MV_VOID);
 

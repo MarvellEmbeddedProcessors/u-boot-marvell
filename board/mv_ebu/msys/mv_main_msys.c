@@ -51,9 +51,12 @@ int mv_get_arch_number(void)
 	case RD_DX_BC2_ID:
 	case DB_DX_BC2_ID:
 	case RD_MTL_BC2:
+	case BOBCAT2_CUSTOMER_BOARD_ID0:
+	case BOBCAT2_CUSTOMER_BOARD_ID1:
 		return 3035;
 	default:
-		return 3036;
+		mvOsPrintf("%s: Error: wrong board Id (%d)\n", __func__, mvBoardIdGet());
+		return 3035;
 	}
 }
 

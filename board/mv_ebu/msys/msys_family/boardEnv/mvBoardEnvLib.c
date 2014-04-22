@@ -90,11 +90,34 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DB1(x)
 #endif
 
-extern MV_BOARD_INFO *boardInfoTbl[];
-#define BOARD_INFO(boardId)	boardInfoTbl[boardId - BOARD_ID_BASE]
+extern MV_BOARD_INFO *marvellBoardInfoTbl[];
+extern MV_BOARD_INFO *customerBoardInfoTbl[];
+static MV_BOARD_INFO *board;
 
 /* Locals */
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
+
+/*******************************************************************************
+* mvBoardIdIndexGet
+*
+* DESCRIPTION:
+*	returns an index for board arrays with direct memory access, according to board id
+*
+* INPUT:
+*       boardId.
+*
+* OUTPUT:
+*       direct access index for board arrays
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
+{
+/* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
+	return boardId & (MARVELL_BOARD_ID_BASE - 1);
+}
 
 /*******************************************************************************
 * mvBoardEnvInit - Init board
@@ -115,43 +138,39 @@ static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClas
 *******************************************************************************/
 MV_VOID mvBoardEnvInit(MV_VOID)
 {
-	MV_U32 boardId = mvBoardIdGet();
 	MV_U32 nandDev;
 	MV_U32 norDev;
 
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mvBoardEnvInit:Board unknown.\n");
-		return;
-	}
+	mvBoardSet(mvBoardIdGet());
 
 	nandDev = boardGetDevCSNum(0, BOARD_DEV_NAND_FLASH);
 	if (nandDev != 0xFFFFFFFF) {
 		/* Set NAND interface access parameters */
 		nandDev = BOOT_CS;
-		MV_REG_WRITE(DEV_BANK_PARAM_REG(nandDev), BOARD_INFO(boardId)->nandFlashReadParams);
-		MV_REG_WRITE(DEV_BANK_PARAM_REG_WR(nandDev), BOARD_INFO(boardId)->nandFlashWriteParams);
-		MV_REG_WRITE(DEV_NAND_CTRL_REG, BOARD_INFO(boardId)->nandFlashControl);
+		MV_REG_WRITE(DEV_BANK_PARAM_REG(nandDev), board->nandFlashReadParams);
+		MV_REG_WRITE(DEV_BANK_PARAM_REG_WR(nandDev), board->nandFlashWriteParams);
+		MV_REG_WRITE(DEV_NAND_CTRL_REG, board->nandFlashControl);
 	}
 
 	norDev = boardGetDevCSNum(0, BOARD_DEV_NOR_FLASH);
 	if (norDev != 0xFFFFFFFF) {
 		/* Set NOR interface access parameters */
-		MV_REG_WRITE(DEV_BANK_PARAM_REG(norDev), BOARD_INFO(boardId)->norFlashReadParams);
-		MV_REG_WRITE(DEV_BANK_PARAM_REG_WR(norDev), BOARD_INFO(boardId)->norFlashWriteParams);
+		MV_REG_WRITE(DEV_BANK_PARAM_REG(norDev), board->norFlashReadParams);
+		MV_REG_WRITE(DEV_BANK_PARAM_REG_WR(norDev), board->norFlashWriteParams);
 		MV_REG_WRITE(DEV_BUS_SYNC_CTRL, 0x11);
 	}
 
 	/* Set GPP Out value */
-	MV_REG_WRITE(GPP_DATA_OUT_REG(0), BOARD_INFO(boardId)->gppOutValLow);
-	MV_REG_WRITE(GPP_DATA_OUT_REG(1), BOARD_INFO(boardId)->gppOutValMid);
+	MV_REG_WRITE(GPP_DATA_OUT_REG(0), board->gppOutValLow);
+	MV_REG_WRITE(GPP_DATA_OUT_REG(1), board->gppOutValMid);
 
 	/* set GPP polarity */
-	mvGppPolaritySet(0, 0xFFFFFFFF, BOARD_INFO(boardId)->gppPolarityValLow);
-	mvGppPolaritySet(1, 0xFFFFFFFF, BOARD_INFO(boardId)->gppPolarityValMid);
+	mvGppPolaritySet(0, 0xFFFFFFFF, board->gppPolarityValLow);
+	mvGppPolaritySet(1, 0xFFFFFFFF, board->gppPolarityValMid);
 
 	/* Set GPP Out Enable */
-	mvGppTypeSet(0, 0xFFFFFFFF, BOARD_INFO(boardId)->gppOutEnValLow);
-	mvGppTypeSet(1, 0xFFFFFFFF, BOARD_INFO(boardId)->gppOutEnValMid);
+	mvGppTypeSet(0, 0xFFFFFFFF, board->gppOutEnValLow);
+	mvGppTypeSet(1, 0xFFFFFFFF, board->gppOutEnValMid);
 
 }
 
@@ -204,14 +223,14 @@ MV_U16 mvBoardModelGet(MV_VOID)
 *******************************************************************************/
 MV_U16 mvBoardRevGet(MV_VOID)
 {
-	return (mvBoardIdGet() & 0xFFFF);
+	return mvBoardIdIndexGet(mvBoardIdGet()) & 0xFFFF;
 }
 /*******************************************************************************
 * mvBoardNameGet - Get Board name
 *
 * DESCRIPTION:
 *       This function returns a string describing the board model and revision.
-*       String is extracted from board I2C EEPROM.
+*       String is extracted from board I2C EEPROMboard.
 *
 * INPUT:
 *       None.
@@ -225,13 +244,7 @@ MV_U16 mvBoardRevGet(MV_VOID)
 *******************************************************************************/
 MV_STATUS mvBoardNameGet(char *pNameBuff)
 {
-	MV_U32 boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsSPrintf(pNameBuff, "Board unknown.\n");
-		return MV_ERROR;
-	}
-	mvOsSPrintf(pNameBuff, "%s", BOARD_INFO(boardId)->boardName);
+	mvOsSPrintf(pNameBuff, "%s", board->boardName);
 	return MV_OK;
 }
 
@@ -367,16 +380,10 @@ MV_BOOL mvBoardIsPortInMii(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 {
-	MV_U32 boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mvBoardSwitchCpuPortGet: Board unknown.\n");
-		return -1;
-	}
-	if ((BOARD_INFO(boardId)->switchInfoNum == 0) || (switchIdx >= BOARD_INFO(boardId)->switchInfoNum))
+	if ((board->switchInfoNum == 0) || (switchIdx >= board->switchInfoNum))
 		return -1;
 
-	return BOARD_INFO(boardId)->pSwitchInfo[switchIdx].cpuPort;
+	return board->pSwitchInfo[switchIdx].cpuPort;
 }
 
 /*******************************************************************************
@@ -397,14 +404,7 @@ MV_32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum)
 {
-	MV_U32 boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mvBoardPhyAddrGet: Board unknown.\n");
-		return MV_ERROR;
-	}
-
-	return BOARD_INFO(boardId)->pBoardMacInfo[ethPortNum].boardEthSmiAddr;
+	return board->pBoardMacInfo[ethPortNum].boardEthSmiAddr;
 }
 /*******************************************************************************
 * mvBoardQuadPhyAddr0Get - Get the phy address
@@ -424,14 +424,7 @@ MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum)
 {
-	MV_U32 boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mvBoardQuadPhyAddr0Get: Board unknown.\n");
-		return MV_ERROR;
-	}
-
-	return BOARD_INFO(boardId)->pBoardMacInfo[ethPortNum].boardEthSmiAddr0;
+	return board->pBoardMacInfo[ethPortNum].boardEthSmiAddr0;
 }
 
 /*******************************************************************************
@@ -452,14 +445,7 @@ MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_32 mvBoardPhyLinkCryptPortAddrGet(MV_U32 ethPortNum)
 {
-	MV_U32 boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mvBoardPhyLinkCryptPortAddrGet: Board unknown.\n");
-		return MV_ERROR;
-	}
-
-	return BOARD_INFO(boardId)->pBoardMacInfo[ethPortNum].LinkCryptPortAddr;
+	return board->pBoardMacInfo[ethPortNum].LinkCryptPortAddr;
 }
 
 MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum)
@@ -485,13 +471,7 @@ MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 {
-	MV_U32 boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mvBoardMacSpeedGet: Board unknown.\n");
-		return MV_ERROR;
-	}
-	return BOARD_INFO(boardId)->pBoardMacInfo[ethPortNum].boardMacSpeed;
+	return board->pBoardMacInfo[ethPortNum].boardMacSpeed;
 }
 
 /*******************************************************************************
@@ -573,20 +553,12 @@ MV_U32 mvBoardSysClkGet(MV_VOID)
 *******************************************************************************/
 MV_32 mvBoarGpioPinNumGet(MV_BOARD_GPP_CLASS gppClass, MV_U32 index)
 {
-	MV_U32 boardId, i;
-	MV_U32 indexFound = 0;
+	MV_U32 i, indexFound = 0;
 
-	boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mvBoardRTCGpioPinGet:Board unknown.\n");
-		return MV_ERROR;
-	}
-
-	for (i = 0; i < BOARD_INFO(boardId)->numBoardGppInfo; i++) {
-		if (BOARD_INFO(boardId)->pBoardGppInfo[i].devClass == gppClass) {
+	for (i = 0; i < board->numBoardGppInfo; i++) {
+		if (board->pBoardGppInfo[i].devClass == gppClass) {
 			if (indexFound == index)
-				return (MV_U32) BOARD_INFO(boardId)->pBoardGppInfo[i].gppPinNum;
+				return (MV_U32) board->pBoardGppInfo[i].gppPinNum;
 			else
 				indexFound++;
 		}
@@ -690,24 +662,15 @@ MV_32 mvBoardSDIOGpioPinGet(MV_BOARD_GPP_CLASS type)
 *******************************************************************************/
 MV_U32 mvBoardGpioIntMaskGet(MV_U32 gppGrp)
 {
-	MV_U32 boardId;
-
-	boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mvBoardGpioIntMaskGet:Board unknown.\n");
-		return MV_ERROR;
-	}
-
 	switch (gppGrp) {
 	case (0):
-		return BOARD_INFO(boardId)->intsGppMaskLow;
+		return board->intsGppMaskLow;
 		break;
 	case (1):
-		return BOARD_INFO(boardId)->intsGppMaskMid;
+		return board->intsGppMaskMid;
 		break;
 	case (2):
-		return BOARD_INFO(boardId)->intsGppMaskHigh;
+		return board->intsGppMaskHigh;
 		break;
 	default:
 		return MV_ERROR;
@@ -735,21 +698,13 @@ MV_U32 mvBoardGpioIntMaskGet(MV_U32 gppGrp)
 *******************************************************************************/
 MV_32 mvBoardMppGet(MV_U32 mppGroupNum)
 {
-	MV_U32 boardId;
 	MV_U32 mppMod;
 
-	boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mvBoardMppGet:Board unknown.\n");
-		return MV_ERROR;
-	}
-
-	mppMod = BOARD_INFO(boardId)->pBoardModTypeValue->boardMppMod;
-	if (mppMod >= BOARD_INFO(boardId)->numBoardMppConfigValue)
+	mppMod = board->pBoardModTypeValue->boardMppMod;
+	if (mppMod >= board->numBoardMppConfigValue)
 		mppMod = 0; /* default */
 
-	return BOARD_INFO(boardId)->pBoardMppConfigValue[mppMod].mppGroup[mppGroupNum];
+	return board->pBoardMppConfigValue[mppMod].mppGroup[mppGroupNum];
 }
 
 /*******************************************************************************
@@ -770,20 +725,11 @@ MV_32 mvBoardMppGet(MV_U32 mppGroupNum)
 *******************************************************************************/
 MV_U32 mvBoardGppConfigGet(void)
 {
-	MV_U32 boardId, i;
-	MV_U32 result = 0;
-	MV_U32 gpp;
+	MV_U32 gpp, i, result = 0;
 
-	boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mvBoardGppConfigGet: Board unknown.\n");
-		return 0;
-	}
-
-	for (i = 0; i < BOARD_INFO(boardId)->numBoardGppInfo; i++) {
-		if (BOARD_INFO(boardId)->pBoardGppInfo[i].devClass == BOARD_GPP_CONF) {
-			gpp = BOARD_INFO(boardId)->pBoardGppInfo[i].gppPinNum;
+	for (i = 0; i < board->numBoardGppInfo; i++) {
+		if (board->pBoardGppInfo[i].devClass == BOARD_GPP_CONF) {
+			gpp = board->pBoardGppInfo[i].gppPinNum;
 			result <<= 1;
 			result |= (mvGppValueGet(gpp >> 5, 1 << (gpp & 0x1F)) >> (gpp & 0x1F));
 		}
@@ -870,15 +816,9 @@ MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum)
 MV_32 mvBoardGetDevicesNumber(MV_BOARD_DEV_CLASS devClass)
 {
 	MV_U32 foundIndex = 0, devNum;
-	MV_U32 boardId = mvBoardIdGet();
 
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("mvBoardGetDeviceNumber:Board unknown.\n");
-		return 0xFFFFFFFF;
-	}
-
-	for (devNum = START_DEV_CS; devNum < BOARD_INFO(boardId)->numBoardDeviceIf; devNum++) {
-		if (BOARD_INFO(boardId)->pDevCsInfo[devNum].devClass == devClass)
+	for (devNum = START_DEV_CS; devNum < board->numBoardDeviceIf; devNum++) {
+		if (board->pDevCsInfo[devNum].devClass == devClass)
 			foundIndex++;
 	}
 
@@ -935,12 +875,6 @@ MV_32 mvBoardGetDeviceBaseAddr(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 MV_32 mvBoardGetDeviceBusWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
 	MV_DEV_CS_INFO *devEntry;
-	MV_U32 boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("Board unknown.\n");
-		return 0xFFFFFFFF;
-	}
 
 	devEntry = boardGetDevEntry(devNum, devClass);
 	if (devEntry != NULL)
@@ -970,12 +904,6 @@ MV_32 mvBoardGetDeviceBusWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 MV_32 mvBoardGetDeviceWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
 	MV_DEV_CS_INFO *devEntry;
-	MV_U32 boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("Board unknown.\n");
-		return 0xFFFFFFFF;
-	}
 
 	devEntry = boardGetDevEntry(devNum, devClass);
 	if (devEntry != NULL)
@@ -1005,12 +933,6 @@ MV_32 mvBoardGetDeviceWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 MV_32 mvBoardGetDeviceWinSize(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
 	MV_DEV_CS_INFO *devEntry;
-	MV_U32 boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("Board unknown.\n");
-		return 0xFFFFFFFF;
-	}
 
 	devEntry = boardGetDevEntry(devNum, devClass);
 	if (devEntry != NULL)
@@ -1039,17 +961,11 @@ MV_32 mvBoardGetDeviceWinSize(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
 	MV_U32 foundIndex = 0, devIndex;
-	MV_U32 boardId = mvBoardIdGet();
 
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("boardGetDevEntry: Board unknown.\n");
-		return NULL;
-	}
-
-	for (devIndex = START_DEV_CS; devIndex < BOARD_INFO(boardId)->numBoardDeviceIf; devIndex++) {
-		if (BOARD_INFO(boardId)->pDevCsInfo[devIndex].devClass == devClass) {
+	for (devIndex = START_DEV_CS; devIndex < board->numBoardDeviceIf; devIndex++) {
+		if (board->pDevCsInfo[devIndex].devClass == devClass) {
 			if (foundIndex == devNum)
-				return &(BOARD_INFO(boardId)->pDevCsInfo[devIndex]);
+				return &(board->pDevCsInfo[devIndex]);
 			foundIndex++;
 		}
 	}
@@ -1079,12 +995,6 @@ static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClas
 MV_U32 boardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
 	MV_DEV_CS_INFO *devEntry;
-	MV_U32 boardId = mvBoardIdGet();
-
-	if (!((boardId >= BOARD_ID_BASE) && (boardId < MV_MAX_BOARD_ID))) {
-		mvOsPrintf("Board unknown.\n");
-		return 0xFFFFFFFF;
-	}
 
 	devEntry = boardGetDevEntry(devNum, devClass);
 	if (devEntry != NULL)
@@ -1115,12 +1025,11 @@ MV_U8 mvBoardTwsiAddrTypeGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index)
 {
 	int i;
 	MV_U32 indexFound = 0;
-	MV_U32 boardId = mvBoardIdGet();
 
-	for (i = 0; i < BOARD_INFO(boardId)->numBoardTwsiDev; i++) {
-		if (BOARD_INFO(boardId)->pBoardTwsiDev[i].devClass == twsiClass) {
+	for (i = 0; i < board->numBoardTwsiDev; i++) {
+		if (board->pBoardTwsiDev[i].devClass == twsiClass) {
 			if (indexFound == index)
-				return BOARD_INFO(boardId)->pBoardTwsiDev[i].twsiDevAddrType;
+				return board->pBoardTwsiDev[i].twsiDevAddrType;
 			else
 				indexFound++;
 		}
@@ -1150,12 +1059,11 @@ MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index)
 {
 	int i;
 	MV_U32 indexFound = 0;
-	MV_U32 boardId = mvBoardIdGet();
 
-	for (i = 0; i < BOARD_INFO(boardId)->numBoardTwsiDev; i++) {
-		if (BOARD_INFO(boardId)->pBoardTwsiDev[i].devClass == twsiClass) {
+	for (i = 0; i < board->numBoardTwsiDev; i++) {
+		if (board->pBoardTwsiDev[i].devClass == twsiClass) {
 			if (indexFound == index)
-				return BOARD_INFO(boardId)->pBoardTwsiDev[i].twsiDevAddr;
+				return board->pBoardTwsiDev[i].twsiDevAddr;
 			else
 				indexFound++;
 		}
@@ -1181,9 +1089,8 @@ MV_32 mvBoardNandWidthGet(void)
 {
 	MV_U32 devNum;
 	MV_U32 devWidth;
-	MV_U32 boardId = mvBoardIdGet();
 
-	for (devNum = START_DEV_CS; devNum < BOARD_INFO(boardId)->numBoardDeviceIf; devNum++) {
+	for (devNum = START_DEV_CS; devNum < board->numBoardDeviceIf; devNum++) {
 		devWidth = mvBoardGetDeviceWidth(devNum, BOARD_DEV_NAND_FLASH);
 		if (devWidth != MV_ERROR)
 			return (devWidth / 8);
@@ -1193,7 +1100,42 @@ MV_32 mvBoardNandWidthGet(void)
 	return MV_ERROR;
 }
 
-MV_U32 gBoardId = -1;
+/*******************************************************************************
+* mvBoardSet - Set Board model
+*
+* DESCRIPTION:
+*       This function sets the board ID.
+*       Board ID is 32bit word constructed of board model (16bit) and
+*       board revision (16bit) in the following way: 0xMMMMRRRR.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       void
+*
+*******************************************************************************/
+static MV_U32 gBoardId = -1;
+MV_VOID mvBoardSet(MV_U32 boardId)
+{
+	/* board ID's >0x10 are for Marvell Boards */
+	if (boardId >= MARVELL_BOARD_ID_BASE && boardId < MV_MAX_MARVELL_BOARD_ID) { /* Marvell Board */
+		board = marvellBoardInfoTbl[mvBoardIdIndexGet(boardId)];
+		gBoardId = boardId;
+	} else if (boardId >= CUTOMER_BOARD_ID_BASE && boardId < MV_MAX_CUSTOMER_BOARD_ID) { /* Customer Board */
+		board = customerBoardInfoTbl[mvBoardIdIndexGet(boardId)];
+		gBoardId = boardId;
+	} else {
+		mvOsPrintf("%s: Error: wrong board Id (%d)\n", __func__, boardId);
+		gBoardId = 0;
+		board = customerBoardInfoTbl[gBoardId];
+		mvOsPrintf("Applying default board ID (%d: %s)\n", gBoardId, board->boardName);
+	}
+}
+
 /*******************************************************************************
 * mvBoardIdGet - Get Board model
 *
@@ -1214,21 +1156,30 @@ MV_U32 gBoardId = -1;
 *******************************************************************************/
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-	if (gBoardId == -1) {
-#if defined(DB_BOBCAT2)
-		gBoardId = DB_DX_BC2_ID;
-#elif defined(RD_BOBCAT2)
-		gBoardId = RD_DX_BC2_ID;
-#elif defined(RD_MTL_BOBCAT2)
-		gBoardId = RD_MTL_BC2;
+	if (gBoardId != -1)
+		return gBoardId;
+
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	#ifdef CONFIG_CUSTOMER_BOARD_0
+		gBoardId = BOBCAT2_CUSTOMER_BOARD_ID0;
+	#elif CONFIG_CUSTOMER_BOARD_1
+		gBoardId = BOBCAT2_CUSTOMER_BOARD_ID1;
+	#endif
 #else
-		mvOsPrintf("mvBoardIdSet: Board ID must be defined!\n");
+	#if defined(DB_BOBCAT2)
+		gBoardId = DB_DX_BC2_ID;
+	#elif defined(RD_BOBCAT2)
+		gBoardId = RD_DX_BC2_ID;
+	#elif defined(RD_MTL_BOBCAT2)
+		gBoardId = RD_MTL_BC2;
+	#else
+		mvOsPrintf("%s: Board ID must be defined!\n", __func__);
 		while (1)
 			continue;
+	#endif
 #endif
-	}
-	return gBoardId;
 
+	return gBoardId;
 }
 /*******************************************************************************
 * mvBoardTwsiRead -
@@ -1631,11 +1582,7 @@ MV_BOOL mvBoardIsSwitchModuleConnected(void)
 *******************************************************************************/
 MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void)
 {
-	MV_U32 boardId;
-
-	boardId = mvBoardIdGet();
-
-	return &BOARD_INFO(boardId)->boardPexInfo;
+	return &board->boardPexInfo;
 }
 
 /*******************************************************************************
@@ -1660,15 +1607,14 @@ MV_VOID mvBoardDebugLed(MV_U32 hexNum)
 	MV_U32 mask[MV_GPP_MAX_GROUP] = {0};
 	MV_U32 digitMask;
 	MV_U32 i, pinNum, gppGroup;
-	MV_U32 boardId = mvBoardIdGet();
 
-	if (BOARD_INFO(boardId)->pLedGppPin == NULL)
+	if (board->pLedGppPin == NULL)
 		return;
 
-	hexNum &= (1 << BOARD_INFO(boardId)->activeLedsNumber) - 1;
+	hexNum &= (1 << board->activeLedsNumber) - 1;
 
-	for (i = 0, digitMask = 1; i < BOARD_INFO(boardId)->activeLedsNumber; i++, digitMask <<= 1) {
-			pinNum = BOARD_INFO(boardId)->pLedGppPin[i];
+	for (i = 0, digitMask = 1; i < board->activeLedsNumber; i++, digitMask <<= 1) {
+			pinNum = board->pLedGppPin[i];
 			gppGroup = pinNum / 32;
 			if (hexNum & digitMask)
 				val[gppGroup]  |= (1 << (pinNum - gppGroup * 32));
@@ -1678,7 +1624,7 @@ MV_VOID mvBoardDebugLed(MV_U32 hexNum)
 	for (gppGroup = 0; gppGroup < MV_GPP_MAX_GROUP; gppGroup++) {
 		/* If at least one bit is set in the mask, update the whole GPP group */
 		if (mask[gppGroup])
-			mvGppValueSet(gppGroup, mask[gppGroup], BOARD_INFO(boardId)->ledsPolarity == 0 ?
+			mvGppValueSet(gppGroup, mask[gppGroup], board->ledsPolarity == 0 ?
 					val[gppGroup] : ~val[gppGroup]);
 	}
 

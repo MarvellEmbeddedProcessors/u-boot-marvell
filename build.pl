@@ -9,10 +9,10 @@ sub HELP_MESSAGE
 	print "\n";
 	print "Options:\n";
 	print "\t-f\tBoot device. Accepts spi, nor, nand\n";
-	print "\t-b\tBoard type. Accepts:\tbobcat2_db, bobcat2_rd,\n";
-	print "\t-b\t\t\t\tarmada_38x, armada_38x_customer0, armada_38x_customer1\n";
-	print "\t-b\t\t\t\tarmada_375, armada_375_customer0, armada_375_customer1\n";
-	print "\t-b\t\t\t\tavanta_lp,  avanta_lp_customer0,  avanta_lp_customer1\n";
+	print "\t-b\tBoard type. Accepts:\tavanta_lp , avanta_lp_customer0 , avanta_lp_customer1\n";
+	print "\t\t\t\t\tarmada_38x, armada_38x_customer0, armada_38x_customer1\n";
+	print "\t\t\t\t\tarmada_375, armada_375_customer0, armada_375_customer1\n";
+	print "\t\t\t\t\tbobcat2_db, bobcat2_rd, bobcat2_customer0, bobcat2_customer1\n";
 	print "\t-c\tClean build. calls make mrproper\n";
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
@@ -70,7 +70,9 @@ if($opt_c eq 1)
 		($opt_b eq "armada_38x_customer1") or
 		($opt_b eq "bobcat2_db") or
 		($opt_b eq "bobcat2_rd_mtl") or
-		($opt_b eq "bobcat2_rd") )
+		($opt_b eq "bobcat2_rd") or
+		($opt_b eq "bobcat2_customer0") or
+		($opt_b eq "bobcat2_customer1") )
 	{
 		$board = $opt_b;
 		if( (substr $board,7 , 3) eq "370" ) {

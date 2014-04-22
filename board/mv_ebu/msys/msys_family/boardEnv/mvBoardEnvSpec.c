@@ -69,6 +69,122 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define ARRSZ(x)	(sizeof(x)/sizeof(x[0]))
 
+/***************************************** Customer Boards ****************************************/
+/*******************************************************************************
+	Bobcat2 board - Based on BOBCAT2-DB-DX
+*******************************************************************************/
+#define BOBCAT2_CUSTOMER_0_BOARD_NAND_READ_PARAMS	0x000C0282
+#define BOBCAT2_CUSTOMER_0_BOARD_NAND_WRITE_PARAMS	0x00010305
+/*NAND care support for small page chips*/
+#define BOBCAT2_CUSTOMER_0_BOARD_NAND_CONTROL		0x01c00543
+
+#define BOBCAT2_CUSTOMER_0_BOARD_NOR_READ_PARAMS	0x403E07CF
+#define BOBCAT2_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
+
+MV_BOARD_TWSI_INFO	bobcat2_customer_board_0_InfoBoardTwsiDev[] = {
+/* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{BOARD_DEV_TWSI_PLD, 0x30, ADDR7_BIT},		/* Access to control PLD reg file */
+	{BOARD_DEV_TWSI_ZARLINK, 0x18, ADDR7_BIT},		/* Access to Zarlink */
+	{BOARD_DEV_TWSI_SATR, 0x4C, ADDR7_BIT},         /* SatR bios 0		*/
+	{BOARD_DEV_TWSI_SATR, 0x4D, ADDR7_BIT},         /* SatR bios 1		*/
+	{BOARD_DEV_TWSI_SATR, 0x4E, ADDR7_BIT},          /* SatR bios 2		*/
+	{BOARD_DEV_TWSI_SATR, 0x4F, ADDR7_BIT},          /* SatR bios 3		*/
+	{BOARD_DEV_TWSI_INIT_EPROM, 0x50, ADDR7_BIT},          /* Serial Ini EPROM	*/
+	{BOARD_DEV_TWSI_PCA9555_IO_EXPANDER, 0x20, ADDR7_BIT},          /* Qsgmii/sfp mux control PCA9555 IO expander */
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x70, ADDR7_BIT},          /* PCA9548 I2C mux 0	*/
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x71, ADDR7_BIT},          /* PCA9548 I2C mux 1	*/
+	{BOARD_DEV_TWSI_PCA9548_IO_MUX, 0x75, ADDR7_BIT}          /* PCA9548 I2C mux 2	*/
+};
+
+MV_BOARD_MAC_INFO bobcat2_customer_board_0_InfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
+	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0, 0x0 },
+	{BOARD_MAC_SPEED_AUTO, 0x1, 0x0, 0x1 },
+};
+
+MV_BOARD_MODULE_TYPE_INFO bobcat2_customer_board_0_InfoBoardModTypeInfo[] = {
+	{
+		.boardMppMod		= MV_BOARD_AUTO,
+	}
+};
+
+MV_BOARD_GPP_INFO bobcat2_customer_board_0_InfoBoardGppInfo[] = {
+	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
+	{BOARD_GPP_USB_VBUS,    24} /* from MPP map */
+	/*{BOARD_GPP_RESET,       47},*/
+};
+
+MV_DEV_CS_INFO bobcat2_customer_board_0_InfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
+#endif
+#if defined(MV_INCLUDE_NOR)
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16} /* NOR DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO bobcat2_customer_board_0_InfoBoardMppConfigValue[] = {
+	{ {
+	BOBCAT2_CUSTOMER_0_MPP0_7,
+	BOBCAT2_CUSTOMER_0_MPP8_15,
+	BOBCAT2_CUSTOMER_0_MPP16_23,
+	BOBCAT2_CUSTOMER_0_MPP24_31,
+	BOBCAT2_CUSTOMER_0_MPP32_39,
+	} },
+};
+
+MV_BOARD_INFO bobcat2_customer_board_0_Info = {
+	.boardName			= "BOBCAT2-Customer-Board-0",
+	.numBoardMppTypeValue		= ARRSZ(bobcat2_customer_board_0_InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= bobcat2_customer_board_0_InfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(bobcat2_customer_board_0_InfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= bobcat2_customer_board_0_InfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(bobcat2_customer_board_0_InfoBoardDeCsInfo),
+	.pDevCsInfo			= bobcat2_customer_board_0_InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(bobcat2_customer_board_0_InfoBoardTwsiDev),
+	.pBoardTwsiDev			= bobcat2_customer_board_0_InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(bobcat2_customer_board_0_InfoBoardMacInfo),
+	.pBoardMacInfo			= bobcat2_customer_board_0_InfoBoardMacInfo,
+	.numBoardGppInfo		= ARRSZ(bobcat2_customer_board_0_InfoBoardGppInfo),
+	.pBoardGppInfo			= bobcat2_customer_board_0_InfoBoardGppInfo,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* GPP values */
+	.gppOutEnValLow			= BOBCAT2_CUSTOMER_0_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= BOBCAT2_CUSTOMER_0_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= 0,
+	.gppOutValLow			= BOBCAT2_CUSTOMER_0_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= BOBCAT2_CUSTOMER_0_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= 0,
+	.gppPolarityValLow		= BOBCAT2_CUSTOMER_0_GPP_POL_LOW,
+	.gppPolarityValMid		= BOBCAT2_CUSTOMER_0_GPP_POL_MID,
+	.gppPolarityValHigh		= 0,
+
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+
+	/* NAND init params */
+	.nandFlashReadParams		= BOBCAT2_CUSTOMER_0_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= BOBCAT2_CUSTOMER_0_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= BOBCAT2_CUSTOMER_0_BOARD_NAND_CONTROL,
+	/* NOR init params */
+	.norFlashReadParams		= BOBCAT2_CUSTOMER_0_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= BOBCAT2_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS
+};
+
+MV_BOARD_INFO *customerBoardInfoTbl[] = {
+	&bobcat2_customer_board_0_Info,
+	&bobcat2_customer_board_0_Info,
+};
+
+/***************************************** Marvell Boards *****************************************/
 /***********************/
 /* BOBCAT2-DB-DX BOARD */
 /***********************/
@@ -338,9 +454,8 @@ MV_BOARD_INFO bc2_rd_mtlInfo = {
 
 /*********************************************************************************/
 
-MV_BOARD_INFO *boardInfoTbl[] = {
+MV_BOARD_INFO *marvellBoardInfoTbl[] = {
 	&db_dx_bc2Info,
 	&rd_dx_bc2Info,
 	&bc2_rd_mtlInfo
 };
-

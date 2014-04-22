@@ -85,7 +85,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 /************************************* Customer Boards Topology *************************************/
-MV_HWS_TOPOLOGY_MAP a38xTopologyMap[] =
+MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 {
     /* 1st Customer board */
     {
@@ -107,7 +107,7 @@ MV_HWS_TOPOLOGY_MAP a38xTopologyMap[] =
 
 #else /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 /************************************* Marvell Boards Topology *************************************/
-MV_HWS_TOPOLOGY_MAP a38xTopologyMap[] =
+MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 {
     /* 1st Marvell board */
     {

@@ -1508,47 +1508,18 @@ MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs)
 #endif
 
 #if defined(MV_NEW_TIP)
-
-#if defined(MV88F68XX)
-/*****************************************************************************/
-MV_HWS_TOPOLOGY_MAP* ddr3SiliconGetTopologyMap(void)
-{
-	MV_U32 boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
-
-
-	if (sizeof(a38xTopologyMap)/sizeof(MV_HWS_TOPOLOGY_MAP) > boardIdIndex)
-			return &a38xTopologyMap[boardIdIndex];
-
-	DEBUG_INIT_FULL_S("ddr3SiliconGetTopologyMap: Detected not supported board ID\n");
-	return NULL;
-}
-#endif
-
-#if defined(MV_MSYS)
-/*****************************************************************************/
-MV_HWS_TOPOLOGY_MAP* ddr3SiliconGetTopologyMap(void)
-{
-	MV_U32 boardId = mvBoardIdGet();
-
-	if (sizeof(msysTopologyMap)/sizeof(MV_HWS_TOPOLOGY_MAP*) <= boardId){
-		DEBUG_INIT_FULL_S("Detected not supported board ID\n");
-		return NULL;
-	}
-
-	return &msysTopologyMap[boardId];
-}
-#endif
-
 /*******************************************************************************/
 MV_STATUS ddr3LoadTopologyMap(void)
 {
 	MV_HWS_TOPOLOGY_MAP* topologyMap;
 	MV_U8 	devNum = 0;
+	MV_U32 boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
 
 	/*Get topology data by board ID*/
-	topologyMap = ddr3SiliconGetTopologyMap();
-	if (NULL == topologyMap) {
-		DEBUG_INIT_FULL_S("DDR3 Load Topology map - FAILED\n");
+	if (sizeof(TopologyMap)/sizeof(MV_HWS_TOPOLOGY_MAP*) > boardIdIndex)
+		topologyMap = &TopologyMap[boardIdIndex];
+	else {
+		DEBUG_INIT_FULL_S("Failed loading DDR3 Topology map (invalid board ID)\n");
 		return MV_FAIL;
 	}
 

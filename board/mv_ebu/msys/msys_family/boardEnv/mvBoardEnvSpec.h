@@ -72,16 +72,44 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Board specific configuration */
 /* ============================ */
 
-/* boards ID numbers */
-#define BOARD_ID_BASE		0x0
+/* Customer boards */
+#define CUTOMER_BOARD_ID_BASE		0x0
+#define BOBCAT2_CUSTOMER_BOARD_ID0	(CUTOMER_BOARD_ID_BASE + 0)
+#define BOBCAT2_CUSTOMER_BOARD_ID1	(CUTOMER_BOARD_ID_BASE + 1)
+#define MV_MAX_CUSTOMER_BOARD_ID	(CUTOMER_BOARD_ID_BASE + 2)
+#define MV_CUSTOMER_BOARD_NUM		(MV_MAX_CUSTOMER_BOARD_ID - CUTOMER_BOARD_ID_BASE)
 
-/* New board ID numbers */
-#define DB_DX_BC2_ID		(BOARD_ID_BASE)
-#define RD_DX_BC2_ID		(DB_DX_BC2_ID + 1)
-#define RD_MTL_BC2		(RD_DX_BC2_ID + 1)
+/* Marvell boards */
+#define MARVELL_BOARD_ID_BASE		0x10
+#define DB_DX_BC2_ID			(MARVELL_BOARD_ID_BASE + 0)
+#define RD_DX_BC2_ID			(MARVELL_BOARD_ID_BASE + 1)
+#define RD_MTL_BC2			(MARVELL_BOARD_ID_BASE + 2)
+#define MV_MAX_MARVELL_BOARD_ID		(MARVELL_BOARD_ID_BASE + 3)
+#define MV_MARVELL_BOARD_NUM		(MV_MAX_MARVELL_BOARD_ID - MARVELL_BOARD_ID_BASE)
 
-#define MV_MAX_BOARD_ID		(RD_MTL_BC2 + 1)
-#define INVALID_BAORD_ID	0xFFFF
+#define INVALID_BAORD_ID		0xFFFF
+
+/*******************************************************************************
+* Bobcat2 Customer board - Based on DB_DX_BC2
+*******************************************************************************/
+
+#define BOBCAT2_CUSTOMER_0_MPP0_7		0x22242222
+#define BOBCAT2_CUSTOMER_0_MPP8_15		0x11122222
+#define BOBCAT2_CUSTOMER_0_MPP16_23		0x44444044
+#define BOBCAT2_CUSTOMER_0_MPP24_31		0x14444444
+#define BOBCAT2_CUSTOMER_0_MPP32_39		0x00000001
+
+#define BOBCAT2_CUSTOMER_0_GPP_OUT_ENA_LOW	(~(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12\
+						 | BIT13 | BIT16 | BIT17 | BIT20 | BIT29  | BIT30))
+#define BOBCAT2_CUSTOMER_0_GPP_OUT_ENA_MID	(~(0))
+
+#define BOBCAT2_CUSTOMER_0_GPP_OUT_VAL_LOW	(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12\
+						| BIT13 | BIT16 | BIT17 | BIT20 | BIT29  | BIT30)
+#define BOBCAT2_CUSTOMER_0_GPP_OUT_VAL_MID	0x0
+
+#define BOBCAT2_CUSTOMER_0_GPP_POL_LOW		0x0
+#define BOBCAT2_CUSTOMER_0_GPP_POL_MID		0x0
+
 
 /******************/
 /*   RD_DX_BC2    */

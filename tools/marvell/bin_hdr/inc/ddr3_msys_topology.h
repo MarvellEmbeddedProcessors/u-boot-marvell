@@ -71,8 +71,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define ACTUAL_BUS_WIDTH	BUS_WIDTH_32
 
-MV_HWS_TOPOLOGY_MAP msysTopologyMap[] =  {{
-    /* 1st board */
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+/************************************* Customer Boards Topology *************************************/
+MV_HWS_TOPOLOGY_MAP TopologyMap[] =  {{
+    /* 1st Customer board */
     0x10, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                         speed_bin           memory_width  mem_size  frequency  casL casWL      temperature */
  {  {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
@@ -90,7 +92,49 @@ MV_HWS_TOPOLOGY_MAP msysTopologyMap[] =  {{
     4, /* Num Of Bus Per Interface*/
     0xF  /* Buses mask */
     },
-    /* 2nd board */
+    /* 2nd Customer board */
+{
+    0x10, /* active interfaces #1*/
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
+ {  {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0,    0 , MV_HWS_TEMP_HIGH} ,
+    {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH}} ,
+    4, /* Num Of Bus Per Interface*/
+    0xF  /* Buses mask */
+    },
+};
+
+#else /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+/************************************* Marvell Boards Topology *************************************/
+MV_HWS_TOPOLOGY_MAP TopologyMap[] =  {{
+    /* 1st Marvell board */
+    0x10, /* active interfaces */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                         speed_bin           memory_width  mem_size  frequency  casL casWL      temperature */
+ {  {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0,    0 , MV_HWS_TEMP_HIGH} ,
+    {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0},   {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH}} ,
+    4, /* Num Of Bus Per Interface*/
+    0xF  /* Buses mask */
+    },
+    /* 2nd Marvell board */
 {
     0x10, /* active interfaces #1*/
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
@@ -111,4 +155,7 @@ MV_HWS_TOPOLOGY_MAP msysTopologyMap[] =  {{
     }
 };
 
+#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+
 #endif /* _INC_MSYS_TOPOLOGY_H */
+

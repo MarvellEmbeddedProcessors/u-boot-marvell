@@ -142,6 +142,9 @@
 /*********************************/
 /* defines for BOBCAT2    */
 /*********************************/
+#elif defined(CONFIG_BOBCAT2)
+	#define MV_MSYS		/* SOC NAME BOBCAT2 */
+
 #elif defined(CONFIG_DB_BOBCAT2)
 	#define MV_MSYS		/* SOC NAME BOBCAT2 */
 	#define DB_BOBCAT2

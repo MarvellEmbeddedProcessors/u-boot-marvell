@@ -55,6 +55,11 @@ disclaimer.
 /*********************************/
 /* defines for DB-BOBCAT2       */
 /*********************************/
+#if defined (CONFIG_CUSTOMER_BOARD_0) || defined (CONFIG_CUSTOMER_BOARD_1)
+#define CONFIG_BOBCAT2
+#define CONFIG_CUSTOMER_BOARD_SUPPORT
+#endif
+
 #ifdef CONFIG_DB_BOBCAT2
 	#define DB_BOBCAT2
 #endif

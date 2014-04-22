@@ -74,17 +74,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 #include "printf.h"
 
+static MV_U32 gBoardId = -1;
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-#if defined(CONFIG_DB_BOBCAT2)
-	return DB_DX_BC2_ID;
-#elif defined(CONFIG_RD_BOBCAT2)
-	return RD_DX_BC2_ID;
-#elif defined(CONFIG_RD_MTL_BOBCAT2)
-	return RD_MTL_BC2;
+	if (gBoardId != -1)
+		return gBoardId;
+
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	#ifdef CONFIG_CUSTOMER_BOARD_0
+		gBoardId = BOBCAT2_CUSTOMER_BOARD_ID0;
+	#elif CONFIG_CUSTOMER_BOARD_1
+		gBoardId = BOBCAT2_CUSTOMER_BOARD_ID1;
+	#endif
 #else
-#error Invalid Board is configured
+	#if defined(DB_BOBCAT2)
+		gBoardId = DB_DX_BC2_ID;
+	#elif defined(RD_BOBCAT2)
+		gBoardId = RD_DX_BC2_ID;
+	#elif defined(RD_MTL_BOBCAT2)
+		gBoardId = RD_MTL_BC2;
+	#else
+		#error Invalid Board is configured
+	#endif
 #endif
+
+	return gBoardId;
 }
 
 /*******************************************************************************
@@ -105,7 +119,8 @@ MV_U32 mvBoardIdGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
 {
-	return mvBoardIdGet();
+/* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
+	return boardId & (MARVELL_BOARD_ID_BASE - 1);
 }
 
 MV_U32 mvBoardTclkGet(MV_VOID)

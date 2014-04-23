@@ -1619,7 +1619,7 @@ MV_VOID ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
                 return;
 
             /* set fast path window control for the cs */
-            uiReg = 0x1FFFFFE1;
+            uiReg = 0xFFFFE1;
             uiReg |= (uiCs << 2);
             uiReg |= (uiCsMemSize - 1) & 0xFFFF0000;
             MV_REG_WRITE(REG_FASTPATH_WIN_CTRL_ADDR(uiCs), uiReg); /*Open fast path Window */
@@ -1693,7 +1693,9 @@ MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize){
 
     uiCsMemSize = ((ddr3GetBusWidth() / ddr3GetDeviceWidth(uiCs)) * ddr3GetDeviceSize(uiCs)) / 8;/*calculate in Gbyte*/;
 
-    if (uiCsMemSize == 0.25) {
+	if (uiCsMemSize == 0.125) {
+        *puiCsSize = _128M;
+    } else if (uiCsMemSize == 0.25) {
         *puiCsSize = _256M;
     } else if (uiCsMemSize == 0.5) {
         *puiCsSize = _512M;

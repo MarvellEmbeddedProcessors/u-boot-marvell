@@ -2711,10 +2711,7 @@ static void _fixPhyParams(MV_SATA_ADAPTER *pAdapter, MV_U8 channelIndex)
 		}
 	}
 	if ((pAdapter->sataAdapterGeneration >= MV_SATA_GEN_II) &&
-	    (pAdapter->chipIs62X1Z0 == MV_FALSE) &&
-	    (pAdapter->chipIs66XXX0 == MV_FALSE) &&
-	    (pAdapter->chipIs672XX0 == MV_FALSE) &&
-	    (pAdapter->chipIs65XXZ0 == MV_FALSE)) {
+	    (pAdapter->chipIs62X1Z0 == MV_FALSE) && (pAdapter->chipIs65XXZ0 == MV_FALSE)) {
 		MV_U32 phyMode2Offset = getEdmaRegOffset(channelIndex) + MV_SATA_II_PHY_MODE_2_REG_OFFSET;
 		if ((pAdapter->chipIs60X1B2 == MV_TRUE) || (pAdapter->chipIs60X1C0 == MV_TRUE)) {
 			/* Fix for 88SX60X1 FEr SATA #23 */
@@ -2816,9 +2813,8 @@ static void _fixPhyParams(MV_SATA_ADAPTER *pAdapter, MV_U8 channelIndex)
 			 pAdapter->adapterId, channelIndex,
 			 MV_REG_READ_DWORD(pAdapter->adapterIoBaseAddress, phyMode2Offset));
 	}
-	if ((pAdapter->chipIs62X1Z0 == MV_TRUE) ||
-		(pAdapter->chipIs66XXX0 == MV_TRUE) ||
-		(pAdapter->chipIs672XX0 == MV_TRUE)) {
+	if (pAdapter->chipIs62X1Z0 == MV_TRUE) {
+
 		regVal = MV_REG_READ_DWORD(pAdapter->adapterIoBaseAddress,
 					   getEdmaRegOffset(channelIndex) + MV_SATA_II_PHY_MODE_3_REG_OFFSET);
 
@@ -4480,8 +4476,6 @@ MV_BOOLEAN mvSataInitAdapter(MV_SATA_ADAPTER *pAdapter)
 	pAdapter->chipIs60X1C0 = MV_FALSE;
 	pAdapter->chipIs62X1Z0 = MV_FALSE;
 	pAdapter->chipIs65XXZ0 = MV_FALSE;
-	pAdapter->chipIs66XXX0 = MV_FALSE;
-	pAdapter->chipIs672XX0 = MV_FALSE;
 	pAdapter->numberOfChannels = MV_SATA_CHANNELS_NUM;
 	pAdapter->numberOfUnits = MV_SATA_UNITS_NUM;
 	pAdapter->portsPerUnit = MV_SATA_PORT_PER_UNIT;
@@ -4768,6 +4762,8 @@ MV_BOOLEAN mvSataInitAdapter(MV_SATA_ADAPTER *pAdapter)
 	case MV_SATA_DEVICE_ID_6710:
 	case MV_SATA_DEVICE_ID_6707:
 	case MV_SATA_DEVICE_ID_7888:
+	case MV_SATA_DEVICE_ID_6660:
+	case MV_SATA_DEVICE_ID_6720:
 		pAdapter->numberOfChannels = 2;
 		pAdapter->numberOfUnits = 1;
 		pAdapter->portsPerUnit = 2;
@@ -4788,26 +4784,6 @@ MV_BOOLEAN mvSataInitAdapter(MV_SATA_ADAPTER *pAdapter)
 		pAdapter->mainMaskOffset = 0x20024;
 		pAdapter->mainCauseOffset = 0x20020;
 		pAdapter->chipIs62X1Z0 = MV_TRUE;
-		break;
-	case MV_SATA_DEVICE_ID_6660:
-		pAdapter->numberOfChannels = 2;
-		pAdapter->numberOfUnits = 1;
-		pAdapter->portsPerUnit = 2;
-		pAdapter->sataAdapterGeneration = MV_SATA_GEN_IIE;
-		pAdapter->hostInterface = MV_HOST_IF_INTEGRATED;
-		pAdapter->mainMaskOffset = 0x20024;
-		pAdapter->mainCauseOffset = 0x20020;
-		pAdapter->chipIs66XXX0 = MV_TRUE;
-		break;
-	case MV_SATA_DEVICE_ID_6720:
-		pAdapter->numberOfChannels = 2;
-		pAdapter->numberOfUnits = 1;
-		pAdapter->portsPerUnit = 2;
-		pAdapter->sataAdapterGeneration = MV_SATA_GEN_IIE;
-		pAdapter->hostInterface = MV_HOST_IF_INTEGRATED;
-		pAdapter->mainMaskOffset = 0x20024;
-		pAdapter->mainCauseOffset = 0x20020;
-		pAdapter->chipIs672XX0 = MV_TRUE;
 		break;
 
 	default:
@@ -5283,13 +5259,9 @@ MV_BOOLEAN mvSataIsStorageDeviceConnected(MV_SATA_ADAPTER *pAdapter, MV_U8 chann
 			break;
 		}
 	case MV_PHY_DET_STATE_DEVICE_AND_PHY_COM:
-		/*for Avanta LP 6660 check HD type GEN1 or GEN2*/
-		if ((pAdapter->chipIs66XXX0 == MV_TRUE) ||
 #ifdef ERRATA_GL_3651961
     /* Using SATA II 3.0 Gbps Host with 1.5 Gbps Device */
-		    (pAdapter->chipIs62X1Z0 == MV_TRUE) ||
-#endif
-		    (pAdapter->chipIs672XX0 == MV_TRUE)) {
+		if (pAdapter->chipIs62X1Z0 == MV_TRUE) {
 			det = (MV_REG_READ_DWORD(pAdapter->adapterIoBaseAddress, SStatusOffset) & 0xf0)>>4;
 			if ((det == 1) && (pAdapter->sataAdapterGeneration >= MV_SATA_GEN_II)) {
 				/* HD deteced to GEN1 --> set SATA speed configuration from GEN2 to GEN1 */
@@ -5303,14 +5275,6 @@ MV_BOOLEAN mvSataIsStorageDeviceConnected(MV_SATA_ADAPTER *pAdapter, MV_U8 chann
 						getEdmaRegOffset(channelIndex) +
 						MV_SATA_II_SATA_CONFIG_REG_OFFSET,
 						regVal);
-				if ((pAdapter->chipIs66XXX0 == MV_TRUE) ||
-					(pAdapter->chipIs672XX0 == MV_TRUE)) {
-					/* SStatusOffset get base address */
-					SStatusOffset = pAdapter->adapterIoBaseAddress & 0xff000000;
-					det = MV_REG_READ_DWORD(SStatusOffset, COMMON_PHY_CONFIGURATION1_REG_OFFSET);
-					det &= ~(0xFF << 22); /* set SERDES lan2 configuration to GEN1  */
-					MV_REG_WRITE_DWORD(SStatusOffset, COMMON_PHY_CONFIGURATION1_REG_OFFSET, det);
-				}
 				if (pAdapter->chipIs62X1Z0 == MV_TRUE) {
 					det = MV_REG_READ_DWORD(pAdapter->adapterIoBaseAddress,
 							getEdmaRegOffset(channelIndex) +
@@ -5328,6 +5292,7 @@ MV_BOOLEAN mvSataIsStorageDeviceConnected(MV_SATA_ADAPTER *pAdapter, MV_U8 chann
 				mvOsSemRelease(&pAdapter->semaphore);
 			}
 		}
+#endif
 		return MV_TRUE;
 	case MV_PHY_DET_STATE_PHY_OFFLINE:
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_ERROR, " %d %d: WARNING: SATA PHY is "
@@ -6057,10 +6022,7 @@ MV_BOOLEAN mvSataSetChannelPhyParams(MV_SATA_ADAPTER *pAdapter, MV_U8 channelInd
 		return MV_FALSE;
 	}
 
-	if ((pAdapter->chipIs62X1Z0 == MV_TRUE) ||
-	    (pAdapter->chipIs66XXX0 == MV_TRUE) ||
-	    (pAdapter->chipIs672XX0 == MV_TRUE) ||
-	    (pAdapter->chipIs65XXZ0 == MV_TRUE)) {
+	if ((pAdapter->chipIs62X1Z0 == MV_TRUE) || (pAdapter->chipIs65XXZ0 == MV_TRUE)) {
 		mvLogMsg(MV_CORE_DRIVER_LOG_ID, MV_DEBUG_FATAL_ERROR, "%d  : mvSataSetChannelPhyPara\
 m" "s Failed, This function not supported for this adapter\n", pAdapter->adapterId);
 		return MV_FALSE;

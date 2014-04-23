@@ -410,8 +410,6 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvGppPolaritySet(i, gppMask, (MV_GPP_IN_INVERT & gppMask));
 	}
 
-	MV_REG_BIT_SET(TSEN_CONF_REG, BIT8); /* init Tsen */
-
 	/* change default because Egiga0 is not alive by default */
 	MV_REG_WRITE(GENERAL_PURPOSE_RESERVED1_REG, GENERAL_PURPOSE_RESERVED1_DEFAULT_VALUE);
 
@@ -1682,25 +1680,22 @@ MV_BOOL mvCtrlDDRECCPUP3(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlGetJuncTemp(MV_VOID)
 {
-	/*Used Hard Coded values, TODO sync with Spec*/
-	MV_32 reg = 0, temp, i;
+	MV_32 reg = 0;
 
-	/* init the TSEN sensor once */
-	for (i = 0 ; i < 20; i++) {
-		reg = MV_REG_READ(TSEN_STATUS_REG);
-		if (reg & BIT10)
-			break;
-		mvOsDelay(10);
-	}
-	if ((reg & BIT10) == 0) {
+	/* Initiates TSEN hardware reset once */
+	if ((MV_REG_READ(TSEN_CONF_REG) & TSEN_CONF_RST_MASK) == 0)
+		MV_REG_BIT_SET(TSEN_CONF_REG, TSEN_CONF_RST_MASK);
+	mvOsDelay(10);
+
+	/* Check if the readout field is valid */
+	if ((MV_REG_READ(TSEN_STATUS_REG) & TSEN_STATUS_READOUT_VALID_MASK) == 0) {
 		mvOsPrintf("%s: TSEN not ready\n", __func__);
 		return 0;
 	}
-
+	reg = MV_REG_READ(TSEN_STATUS_REG);
 	reg = (reg & TSEN_STATUS_TEMP_OUT_MASK) >> TSEN_STATUS_TEMP_OUT_OFFSET;
-	temp = (((((10000 * reg) / 21445) * 1000) - 272674) / 1000);
 
-	return temp;
+	return ((((10000 * reg) / 21445) * 1000) - 272674) / 1000;
 }
 /*******************************************************************************
 * mvCtrlNandClkSet

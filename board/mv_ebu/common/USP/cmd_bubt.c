@@ -29,10 +29,7 @@ disclaimer.
 #include <usb.h>
 #endif
 
-#if defined(CONFIG_FS_FAT)
-#include <fat.h>
 #include <fs.h>
-#endif
 
 #if defined(CONFIG_CMD_NAND)
 #include <nand.h>
@@ -109,7 +106,7 @@ int load_from_usb(const char* file_name)
 	}
 
 	/* always load from usb 0 */
-	if (fs_set_blk_dev("usb", "0", FS_TYPE_FAT))
+	if (fs_set_blk_dev("usb", "0", FS_TYPE_ANY))
 	{
 		printf("USB 0 not found\n");
 		return 0;

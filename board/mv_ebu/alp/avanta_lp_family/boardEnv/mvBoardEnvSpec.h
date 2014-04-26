@@ -102,7 +102,7 @@
 *******************************************************************************/
 #define AVANTA_LP_CUSTOMER_MPP0_7               0x55555555  /* NAND */
 #define AVANTA_LP_CUSTOMER_MPP8_15              0x22555555  /* NAND , I2C */
-#define AVANTA_LP_CUSTOMER_MPP16_23             0x22222222  /* UA0, TDM */
+#define AVANTA_LP_CUSTOMER_MPP16_23             0x55555522  /* UA0, TDMMC */
 #define AVANTA_LP_CUSTOMER_MPP24_31             0x33333333  /* SDIO, SPI1 */
 #define AVANTA_LP_CUSTOMER_MPP32_39             0x00023330  /* SD_Stat (GPIO_input), SPI1,PON BEN, 3xGPIOs  */
 #define AVANTA_LP_CUSTOMER_MPP40_47             0x44100020  /* Switch P4, PON_[XVR,TX_SD]*/
@@ -190,7 +190,7 @@
 *******************************************************************************/
 #define RD_88F6660_MPP0_7               0x55555555  /* NAND */
 #define RD_88F6660_MPP8_15              0x22555555  /* NAND , I2C */
-#define RD_88F6660_MPP16_23             0x22222222  /* UA0, TDM */
+#define RD_88F6660_MPP16_23             0x55555522  /* UA0, TDMMC */
 #define RD_88F6660_MPP24_31             0x33333333  /* SDIO, SPI1 */
 #define RD_88F6660_MPP32_39             0x00023330  /* SD_Stat (GPIO_input), SPI1,PON BEN, 3xGPIOs  */
 #define RD_88F6660_MPP40_47             0x44100020  /* Switch P4, PON_[XVR,TX_SD]*/

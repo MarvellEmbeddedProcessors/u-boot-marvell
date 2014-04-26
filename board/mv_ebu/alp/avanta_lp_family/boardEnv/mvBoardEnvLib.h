@@ -90,7 +90,8 @@ typedef enum _devBoardSlicType {
 	MV_BOARD_SLIC_SSI_ID, /* Lantiq Integrated SLIC */
 	MV_BOARD_SLIC_ISI_ID, /* Silicon Labs ISI Bus */
 	MV_BOARD_SLIC_ZSI_ID, /* Zarlink ZSI Bus */
-	MV_BOARD_SLIC_EXTERNAL_ID, /* Cross vendor external SLIC */
+	MV_BOARD_SLIC_TDM2C_ID, /* Cross vendor external SLIC for TDM2C */
+	MV_BOARD_SLIC_TDMMC_ID, /* Cross vendor external SLIC for TDMMC */
 	MV_BOARD_SLIC_MAX_OPTION
 } MV_BOARD_SLIC_TYPE;
 

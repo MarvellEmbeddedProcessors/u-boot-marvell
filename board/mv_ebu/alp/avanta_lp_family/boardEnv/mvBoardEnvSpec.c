@@ -88,7 +88,7 @@ MV_BOARD_MAC_INFO avanta_lp_customer_board_0_InfoBoardMacInfo[] = {
 };
 MV_BOARD_MPP_TYPE_INFO avanta_lp_customer_board_0_InfoBoardModTypeInfo[] = {
 	{
-		.boardMppSlic = MV_BOARD_SLIC_EXTERNAL_ID,
+		.boardMppSlic = MV_BOARD_SLIC_TDMMC_ID,
 		.ethSataComplexOpt = MV_ETHCOMP_SW_P0_2_GE_PHY_P0 |
 				     MV_ETHCOMP_SW_P1_2_GE_PHY_P1 |
 				     MV_ETHCOMP_SW_P2_2_GE_PHY_P2 |
@@ -443,7 +443,7 @@ MV_BOARD_MAC_INFO rd88f6650InfoBoardMacInfo[] = {
 };
 MV_BOARD_MPP_TYPE_INFO rd88f6650InfoBoardModTypeInfo[] = {
 	{
-		.boardMppSlic = MV_BOARD_SLIC_EXTERNAL_ID,
+		.boardMppSlic = MV_BOARD_SLIC_TDM2C_ID,
 		.ethSataComplexOpt = MV_ETHCOMP_SW_P0_2_GE_PHY_P0 |
 				     MV_ETHCOMP_SW_P1_2_GE_PHY_P1 |
 				     MV_ETHCOMP_SW_P2_2_GE_PHY_P2 |
@@ -551,7 +551,7 @@ MV_BOARD_MAC_INFO rd88f6660InfoBoardMacInfo[] = {
 };
 MV_BOARD_MPP_TYPE_INFO rd88f6660InfoBoardModTypeInfo[] = {
 	{
-		.boardMppSlic = MV_BOARD_SLIC_EXTERNAL_ID,
+		.boardMppSlic = MV_BOARD_SLIC_TDMMC_ID,
 		.ethSataComplexOpt = MV_ETHCOMP_SW_P0_2_GE_PHY_P0 |
 				     MV_ETHCOMP_SW_P1_2_GE_PHY_P1 |
 				     MV_ETHCOMP_SW_P2_2_GE_PHY_P2 |

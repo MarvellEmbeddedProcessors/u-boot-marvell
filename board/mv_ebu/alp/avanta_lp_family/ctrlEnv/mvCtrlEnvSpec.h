@@ -289,11 +289,12 @@ typedef enum {
 #define MV_GROUP_1_TYPE         MV_GROUP_0_TYPE
 
 #define MPP_GROUP_2_TYPE { \
-	0x00002222,     /* SLIC_DISABLED  */ \
-	0x11112222,     /* SLIC_SSI_DEV  */ \
-	0x33030222,     /* SLIC_ISI_DEV  */ \
-	0x44442222,     /* SLIC_ZSI_DEV  */ \
-	0x22222222,     /* SLIC_EXTERNAL_DEV	*/ \
+	0x00000022,     /* SLIC_DISABLED  */ \
+	0x11110022,     /* SLIC_SSI_DEV  */ \
+	0x33030022,     /* SLIC_ISI_DEV  */ \
+	0x44440022,     /* SLIC_ZSI_DEV  */ \
+	0x22222222,     /* SLIC_TDM2C_DEV  */ \
+	0x55555522,     /* SLIC_TDMMC_DEV  */ \
 }
 
 typedef enum {
@@ -301,7 +302,8 @@ typedef enum {
 	SLIC_SSI_DEV,
 	SLIC_ISI_DEV,
 	SLIC_ZSI_DEV,
-	SLIC_EXTERNAL_DEV
+	SLIC_TDM2C_DEV,
+	SLIC_TDMMC_DEV
 } MV_GROUP_2_TYPE;
 
 #define MPP_GROUP_3_TYPE { \
@@ -415,7 +417,8 @@ typedef enum {
 	SLIC_LANTIQ_ID,
 	SLIC_SILABS_ID,
 	SLIC_ZARLINK_ID,
-	SLIC_EXTERNAL_ID
+	SLIC_TDM2C_ID,
+	SLIC_TDMMC_ID
 } MV_SLIC_UNIT_TYPE;
 
 typedef enum {

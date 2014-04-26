@@ -1210,20 +1210,22 @@ static MV_VOID mvCtrlTdmCtrlRegSet(MV_VOID)
 	case MV_BOARD_SLIC_ZSI_ID:
 		tdmCtrl = ZSI_MODE;
 		break;
-	case MV_BOARD_SLIC_EXTERNAL_ID:
+	case MV_BOARD_SLIC_TDM2C_ID:
 		tdmCtrl = TDM_MODE;
+		/* TDM VUNIT new field supported from A0 only */
+		if (mvCtrlRevGet() > MV_88F66X0_Z3_ID)
+			tdmCtrl |= TDM_TYPE_VUNIT;
+		break;
+	case MV_BOARD_SLIC_TDMMC_ID:
+		tdmCtrl = TDM_MODE;
+		/* TDM Multi Channel supported from A0 only */
+		if (mvCtrlRevGet() > MV_88F66X0_Z3_ID)
+			tdmCtrl |= TDM_TYPE_COMMUNIT;
 		break;
 	default:
 		mvOsPrintf("%s: Error: wrong SLIC type\n", __func__);
 		return;
 	}
-/* This configuration needs to be modified only by Kernel -
-** 2/multi channel is decided on kernel compilation time */
-#if defined(MV_COMM_UNIT_SUPPORT)
-	/* TDM Multi Channel supported from A0 only */
-	if (mvCtrlRevGet() > MV_88F66X0_Z3_ID)
-		tdmCtrl |= TDM_TYPE_COMMUNIT;
-#endif
 
 	/* Reset TDM Control register field/s */
 	MV_REG_WRITE(MV_TDM_CTRL_REG, (MV_REG_READ(MV_TDM_CTRL_REG) & ~TDM_MODE_MASK));

@@ -26,7 +26,7 @@ typedef struct _boardConfig {
 	MV_SATR_TYPE_ID ID;
 	char *Name;
 	MV_U8 numOfValues;
-	char *Value[5];
+	char *Value[6];
 } MV_BOARD_CONFIG_VALUE;
 
 /* MV_SATR_TYPE_ID,		 Name,		numOfValues,	Possible Values */
@@ -42,7 +42,7 @@ MV_BOARD_CONFIG_VALUE boardConfig[] = {
 { MV_CONFIG_LANE3,		"SerDes Lane#3 (DB-6660)",	2, {"USB3.0", "SGMII-0"} },
 { MV_CONFIG_MAC0_SW_SPEED,	"MAC0 to Switch Speed",		2, {"2G", "1G"} },
 { MV_CONFIG_DEVICE_BUS_MODULE,	"Device Bus Module (DB-6660)",	4, {"None", "RGMII Module", "I2S Audio Module", "SPDIF Audio Module"} },
-{ MV_CONFIG_SLIC_TDM_DEVICE,	"TDM module",			5, {"None", "SSI", "ISI", "ZSI", "TDM"} },
+{ MV_CONFIG_SLIC_TDM_DEVICE,	"TDM module",			6, {"None", "SSI", "ISI", "ZSI", "TDM2C", "TDMMC"} },
 { MV_CONFIG_DDR_BUSWIDTH,	"DDR bus-width (DB-6660)",	2, {"32-bit", "16-bit"} },
 };
 

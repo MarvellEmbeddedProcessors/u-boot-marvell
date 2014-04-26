@@ -979,7 +979,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 
 	/* Update SLIC device configuration */
 	slicDev = mvCtrlSysConfigGet(MV_CONFIG_SLIC_TDM_DEVICE);
-	if (slicDev == SLIC_EXTERNAL_ID && (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1))
+	if ((slicDev == SLIC_TDM2C_ID || slicDev == SLIC_TDMMC_ID) && (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1))
 		mvOsPrintf("%s: Error: board configuration conflict between MAC1 to RGMII-1, " \
 				"and External TDM - using RGMII-1 (disabled External TDM)\n\n", __func__);
 
@@ -1908,7 +1908,7 @@ MV_VOID mvBoardDDRBusWidthCheck(MV_VOID)
 MV_VOID mvBoardConfigurationPrint(MV_VOID)
 {
 	char *lane1[] = {"PCIe1", "SGMII-0", "SATA-1", "Unconnected" };
-	char *tdmSlic[] = {"None", "SSI", "ISI", "ZSI", "TDM"};
+	char *tdmSlic[] = {"None", "SSI", "ISI", "ZSI", "TDM2C", "TDMMC"};
 	MV_U32 slicDevice, ethConfig = mvBoardEthComplexConfigGet();
 	MV_U16 modelID = mvCtrlModelGet();
 
@@ -1969,9 +1969,9 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 	}
 
 	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)
-		mvOsOutput("       PON ETH SERDES on MAC1\n");
+		mvOsOutput("\tPON ETH SERDES on MAC1\n");
 	if (ethConfig & MV_ETHCOMP_P2P_MAC_2_PON_ETH_SERDES)
-		mvOsOutput("       ETH SERDES on P2P MAC\n");
+		mvOsOutput("\tETH SERDES on P2P MAC\n");
 
 	/* TDM / Slic configuration */
 	slicDevice = mvBoardSlicUnitTypeGet();

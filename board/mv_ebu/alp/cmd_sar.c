@@ -80,7 +80,7 @@ static int do_sar_default(void)
 	if (mvCtrlSatRRead(MV_SATR_SSCG_DISABLE, &temp) == MV_OK )
 			mvCtrlSatRWrite(MV_SATR_SSCG_DISABLE, defaultValue, MV_TRUE);
 
-	defaultValue = boardSatrDefault[MV_SATR_PEX0_CLOCK].defauleValueForBoard[boardId];
+	defaultValue = boardSatrDefault[MV_SATR_PEX0_CLOCK].defauleValueForBoard[boardIdIndex];
 	if (defaultValue == MV_TRUE)
 		defaultValue = 0x1;
 	else
@@ -88,7 +88,7 @@ static int do_sar_default(void)
 	if (mvCtrlSatRRead(MV_SATR_PEX0_CLOCK, &temp) == MV_OK )
 			mvCtrlSatRWrite(MV_SATR_PEX0_CLOCK, defaultValue, MV_TRUE);
 
-	defaultValue = boardSatrDefault[MV_SATR_PEX1_CLOCK].defauleValueForBoard[boardId];
+	defaultValue = boardSatrDefault[MV_SATR_PEX1_CLOCK].defauleValueForBoard[boardIdIndex];
 	if (defaultValue == MV_TRUE)
 		defaultValue = 0x1;
 	else

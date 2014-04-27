@@ -13,4 +13,3 @@ In order to operate SMP mode with the LauterBach, the following steps should be 
 6. To break on a specific routine, set an "onChip" breakpoint at the address needed.
 7. Perform few single-step jumps to pass the reset vector zone then press go.
 8. The debugger should break at the address specified when hitting it by either CPUs. Both CPUs are breaked.
-

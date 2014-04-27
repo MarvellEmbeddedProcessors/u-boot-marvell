@@ -46,11 +46,11 @@ typedef struct _boardSatrDefault {
 } MV_BOARD_SATR_DEFAULT;
 #define MAX_DEFAULT_ENTRY	4
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
-/* 	defauleValueForBoard[] = RD_NAS_68xx,	DB_68xx,	RD_WAP_68xx	A380_CUSTOMER_ID*/
-{ MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		0x0c,		0x0c    }},
-{ MV_SATR_CORE_CLK_SELECT,	{1,		1,		1,		1       }},
-{ MV_SATR_CPU1_ENABLE,	  	{MV_TRUE,	MV_TRUE,	MV_TRUE,	MV_TRUE }},
-{ MV_SATR_SSCG_DISABLE,	  	{MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE}},
+/* 	defauleValueForBoard[] = RD_NAS_68xx,	DB_68xx,	RD_WAP_68xx */
+{ MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		0x0c	}},
+{ MV_SATR_CORE_CLK_SELECT,	{1,		1,		1	}},
+{ MV_SATR_CPU1_ENABLE,	  	{MV_TRUE,	MV_TRUE,	MV_TRUE	}},
+{ MV_SATR_SSCG_DISABLE,	  	{MV_FALSE,	MV_FALSE,	MV_FALSE}},
 };
 int do_sar_default(void)
 {
@@ -58,10 +58,6 @@ int do_sar_default(void)
 	MV_SATR_TYPE_ID satrClassId;
 	MV_BOARD_SATR_INFO satrInfo;
 
-	if (!(boardId >= 0 && boardId < MV_MARVELL_BOARD_NUM)) {
-		printf("\nError: S@R fields are readable only for current board\n");
-		return 1;
-	}
 	for (i = 0; i < MAX_DEFAULT_ENTRY; i++) {
 		satrClassId = boardSatrDefault[i].satrId;
 		if (mvBoardSatrInfoConfig(satrClassId, &satrInfo) != MV_OK)
@@ -321,12 +317,20 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	const char *cmd;
 	int mode, value;
 	MV_BOARD_SATR_INFO satrInfo;
+	MV_U32 boardId = mvBoardIdGet();
 
 	/* need at least two arguments */
 	if (argc < 2)
 		goto usage;
 
 	cmd = argv[1];
+
+	/* SatR write/list/default are supported only on Marvell boards */
+	if (boardId != RD_NAS_68XX_ID && boardId != DB_68XX_ID && boardId != RD_AP_68XX_ID) {
+		printf("\nError: S@R configuration is not supported on current board\n");
+		return 1;
+	}
+
 	mode = sar_cmd_get(argv[2]);
 	if (mode == CMD_UNKNOWN)
 		goto usage;
@@ -334,6 +338,7 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 		if (mvBoardSatrInfoConfig(mode, &satrInfo) != MV_OK)
 			goto usage;
 	}
+
 	if (strcmp(cmd, "list") == 0)
 		return do_sar_list(&satrInfo);
 	else if ((strcmp(cmd, "write") == 0) && (mode == CMD_DEFAULT)) {
@@ -362,7 +367,7 @@ usage:
 }
 
 U_BOOT_CMD(SatR, 6, 1, do_sar,
-	"Sample At Reset sub-system\n",
+	"Sample At Reset sub-system",
 
      "list coreclock	   - prints the S@R modes list\n"
 "SatR list freq            - prints the S@R modes list\n"

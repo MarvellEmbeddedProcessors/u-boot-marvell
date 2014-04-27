@@ -6,16 +6,16 @@ diag 16001
 entry &ddrSpeed
 local &ddrSpeed
 
-SYStem.RESet 
+SYStem.RESet
 SYStem.CPU 88FR581V7
-SYStem.MultiCore COREBASE 0xc2301000 
-SYStem.MultiCore MEMORYACCESSPORT 0 
+SYStem.MultiCore COREBASE 0xc2301000
+SYStem.MultiCore MEMORYACCESSPORT 0
 SYStem.MultiCore DEBUGACCESSPORT  1
 system.mode attach
 system.Up
- 
+
 ; set system settings according LE MMU
-d.s C15:1 %LONG 0x00052078 
+d.s C15:1 %LONG 0x00052078
 
 if ("&ddrSpeed"=="")
 (
@@ -24,7 +24,7 @@ if ("&ddrSpeed"=="")
 	area.s select
 	w.area select
 	screen.always
-	
+
 	; user selects ddr speed
 	print ""
 	print ""
@@ -88,7 +88,7 @@ else if &ddrSpeed==2
 	d.s 0xD000142C %LONG 0x214C2F38 ;  Dunit Control High Register  ( 2:1 -  bit 29 = '1' )
 	d.s 0xD000147C %LONG 0x0000c871 ;
 
-	; 2:1 
+	; 2:1
 	d.s 0xD00014a8 %LONG 0x00000101 ;
 	d.s 0xD0020220 %LONG 0x00000007 ;
 
@@ -111,21 +111,21 @@ else if &ddrSpeed==2
 
 	d.s 0xD0001524 %LONG 0x0000C800 ;  DDR I/O register
 
-	d.s 0xD0001538 %LONG 0x0000000b ;  Read Data Sample Delays Register  
-	d.s 0xD000153C %LONG 0x0000000d ;  Read Data Ready Delay Register 
+	d.s 0xD0001538 %LONG 0x0000000b ;  Read Data Sample Delays Register
+	d.s 0xD000153C %LONG 0x0000000d ;  Read Data Ready Delay Register
 
 	;d.s 0xD0001538 %LONG 0x0000000c ;  Read Data Sample Delays Register CL=10
 	;d.s 0xD000153C %LONG 0x0000000e ;  Read Data Ready Delay Register    CL=10
 
-	d.s 0xD00015D0 %LONG 0x00000a50 ;  MR0 
+	d.s 0xD00015D0 %LONG 0x00000a50 ;  MR0
 	;d.s 0xD00015D0 %LONG 0x00000a60 ;  MR0 CL=10
 	d.s 0xD00015D4 %LONG 0x00008044 ;  MR1
 	d.s 0xD00015D8 %LONG 0x00010210 ;  MR2
 	d.s 0xD00015DC %LONG 0x00018000 ;  MR3
 
 
-	d.s 0xD00015E4 %LONG 0x00203c18;  ZQC Configuration Register 
-	;d.s 0xD00015EC %LONG 0xDE000025;  DDR PHY 
+	d.s 0xD00015E4 %LONG 0x00203c18;  ZQC Configuration Register
+	;d.s 0xD00015EC %LONG 0xDE000025;  DDR PHY
 	d.s 0xD00015EC %LONG 0xF800AA25;
 
 	print " [Done]"
@@ -150,11 +150,11 @@ else if &ddrSpeed==2
 	d.s 0xD00016A0 %LONG 0xC0020103
 	;d.s 0xD00016A0 %LONG 0xC0020108
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
 	WHILE (&status>0)
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
@@ -163,11 +163,11 @@ else if &ddrSpeed==2
 	;d.s 0xD00016A0 %LONG 0xC042001C
 
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
 	WHILE (&status>0)
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
@@ -175,11 +175,11 @@ else if &ddrSpeed==2
 	d.s 0xD00016A0 %LONG 0xC0820113
 	;d.s 0xD00016A0 %LONG 0xC082020b
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
@@ -187,11 +187,11 @@ else if &ddrSpeed==2
 	d.s 0xD00016A0 %LONG 0xC0C20012
 	;d.s 0xD00016A0 %LONG 0xC0C2001C
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
@@ -199,11 +199,11 @@ else if &ddrSpeed==2
 	d.s 0xD00016A0 %LONG 0xC1020100
 	;d.s 0xD00016A0 %LONG 0xC1020106
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
@@ -211,11 +211,11 @@ else if &ddrSpeed==2
 	d.s 0xD00016A0 %LONG 0xC1420016
 	;d.s 0xD00016A0 %LONG 0xC142001E
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
@@ -223,11 +223,11 @@ else if &ddrSpeed==2
 	d.s 0xD00016A0 %LONG 0xC1820109
 	;d.s 0xD00016A0 %LONG 0xC182010D
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
@@ -235,22 +235,22 @@ else if &ddrSpeed==2
 	d.s 0xD00016A0 %LONG 0xC1C20010
 	;d.s 0xD00016A0 %LONG 0xC1C20018
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
 	;8		2		0		28
 	d.s 0xD00016A0 %LONG 0xC2020112
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
@@ -263,112 +263,112 @@ else if &ddrSpeed==2
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-	;PUP	
-	;0		
+	;PUP
+	;0
 
 	d.s 0xD00016A0 %LONG 0xC000b11F
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
-	;1		
+	;1
 
 	d.s 0xD00016A0 %LONG 0xC040690D
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
-	;2	
+	;2
 
 	d.s 0xD00016A0 %LONG 0xC0803600
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
 	;3
-	
+
 	d.s 0xD00016A0 %LONG 0xC0C0a81D
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
 	;4
-	
+
 	d.s 0xD00016A0 %LONG 0xC1009919
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
 	;5
-		
+
 	d.s 0xD00016A0 %LONG 0xC1407911
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
 	;6
-		
+
 	d.s 0xD00016A0 %LONG 0xC180ad1e
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
 	;7
-		
+
 	d.s 0xD00016A0 %LONG 0xC1C04d06
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
 	;8
-		
+
 	d.s 0xD00016A0 %LONG 0xC2008514
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
@@ -377,11 +377,11 @@ else if &ddrSpeed==2
 	; center DQS on read cycle
 	d.s 0xD00016A0 %LONG 0xC803000F
 
-	&status=Data.Long(SD:0xD00016A0) 
+	&status=Data.Long(SD:0xD00016A0)
 	&status=&status&(1<<31)
-	WHILE (&status>0) 
-	( 
-		&status=Data.Long(SD:0xD00016A0) 
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
 		&status=&status&(1<<31)
 	)
 
@@ -398,6 +398,3 @@ else if &ddrSpeed==2
 ; Register.Set pc 0xffff0000
 ; R.S PC 670000
 enddo
-
-
-

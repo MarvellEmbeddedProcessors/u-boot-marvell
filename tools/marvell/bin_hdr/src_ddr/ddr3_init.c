@@ -1088,6 +1088,8 @@ MV_U32 ddr3GetStaticDdrMode(void)
 		    (chipBoardRev == ddr_modes[i].chipBoardRev))
 			return i;
 	}
+
+	DEBUG_INIT_S("\n*** Error: ddr3GetStaticDdrMode: No match for requested DDR mode. ***\n\n");
 	return 0;
 }
 

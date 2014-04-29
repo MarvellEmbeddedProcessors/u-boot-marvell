@@ -73,6 +73,9 @@ extern "C" {
 #include "ctrlEnv/mvCtrlEnvSpec.h"
 #include "mvSysSpiConfig.h"
 
+#define SPI_CONFIG_1_BYTE_LEN	0
+#define SPI_CONFIG_2_BYTE_LEN	1
+
 typedef struct {
 	MV_U16		ctrlModel;
 	MV_U32		tclk;
@@ -151,6 +154,7 @@ MV_STATUS mvSpiParamsSet(MV_U8 spiId, MV_U8 csId, MV_SPI_TYPE type);
 MV_STATUS mvSpiCsSet(MV_U8 spiId, MV_U8 csId);
 MV_STATUS mvSpiIfConfigSet(MV_U8 spiId, MV_SPI_IF_PARAMS *ifParams);
 MV_STATUS mvSpiTimingParamsSet(MV_U8 spiId, MV_SPI_TIMING_PARAMS *tmngParams);
+MV_VOID mvSpiIfByteLenSet(MV_U8 spiId, MV_U32 byteLen);
 
 #endif
 

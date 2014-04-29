@@ -852,4 +852,30 @@ MV_STATUS mvSpiReadWrite(MV_U8 spiId, MV_U8 *pRxBuff, MV_U8* pTxBuff, MV_U32 buf
 	return MV_OK;
 }
 
+/*******************************************************************************
+* mvSpiIfByteLenSet - Number of bytes in each serial flash I/O transfer.
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       spiId: The SPI controller ID to setup.
+*	byteLen : 0 = 1Byte, 1 = 2Byte
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*
+*******************************************************************************/
+MV_VOID mvSpiIfByteLenSet(MV_U8 spiId, MV_U32 byteLen)
+{
+	MV_U32	ctrlReg;
+
+	ctrlReg = MV_REG_READ(MV_SPI_IF_CONFIG_REG(spiId));
+	ctrlReg &= ~(MV_SPI_BYTE_LENGTH_MASK);
+	if (byteLen == SPI_CONFIG_2_BYTE_LEN)
+		ctrlReg |= MV_SPI_BYTE_LENGTH_MASK;
+
+	MV_REG_WRITE(MV_SPI_IF_CONFIG_REG(spiId), ctrlReg);
+}
 

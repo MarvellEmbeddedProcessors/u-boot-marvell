@@ -537,21 +537,25 @@ SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
 }
 
 /***************************************************************************/
+/* Use flagTwsiInit global flag to init the Twsi once */
+static int flagTwsiInit = -1;
 MV_STATUS mvHwsTwsiInitWrapper(MV_VOID)
 {
 	MV_TWSI_ADDR slave;
 	MV_U32 tClock;
+	if (flagTwsiInit == -1) {
+		DEBUG_INIT_FULL_S("\n### mvHwsTwsiInitWrapper ###\n");
+		slave.type = ADDR7_BIT;
+		slave.address = 0;
+		tClock = mvBoardTclkGet();
+		if (tClock == MV_BOARD_TCLK_ERROR) {
+			DEBUG_INIT_FULL_S("mvHwsTwsiInitWrapper: TClk read from the board is not supported\n");
+			return MV_NOT_SUPPORTED;
+		}
 
-	DEBUG_INIT_FULL_S("\n### mvHwsTwsiInitWrapper ###\n");
-	slave.type = ADDR7_BIT;
-	slave.address = 0;
-	tClock = mvBoardTclkGet();
-	if (tClock == MV_BOARD_TCLK_ERROR) {
-		DEBUG_INIT_FULL_S("mvHwsTwsiInitWrapper: TClk read from the board is not supported\n");
-		return MV_NOT_SUPPORTED;
+		mvTwsiInit(0, TWSI_SPEED, tClock, &slave, 0);
+		flagTwsiInit = 1;
 	}
-
-	mvTwsiInit(0, TWSI_SPEED, tClock, &slave, 0);
 	return MV_OK;
 }
 

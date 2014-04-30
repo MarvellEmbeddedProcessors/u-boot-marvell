@@ -387,14 +387,14 @@ typedef struct _boardInfo {
 
 /* {{MV_CONFIG_TYPE_ID ConfigID, twsi-ID,  Offset, ID,  isActiveForBoard[]}} */
 #define MV_BOARD_CONFIG_INFO { \
-{ MV_CONFIG_MII,		0x1,	0,	 0x4,	{ 0, 1, 0} }, \
-{ MV_CONFIG_SLIC_TDM_DEVICE,	0x0,	0,	 0x1,	{ 0, 1, 0} }, \
-{ MV_CONFIG_I2S_DEVICE,		0x1,	0,	 0x3,	{ 0, 1, 0} }, \
-{ MV_CONFIG_SPDIF_DEVICE,	0x1,	0,	 0x2,	{ 0, 1, 0} }, \
-{ MV_CONFIG_NOR,		0x4,	0,	 0xF,	{ 0, 1, 0} }, \
-{ MV_CONFIG_NAND,		0x4,	0,	 0x1,	{ 0, 1, 0} }, \
-{ MV_CONFIG_SDIO,		0x4,	0,	 0x2,	{ 0, 1, 0} }, \
-{ MV_CONFIG_SGMII,		0x2,	0,	 0xF,	{ 0, 1, 0} }, \
+{ MV_CONFIG_MII,		0x1,	0,	 0x4,	{ 0, 1, 0, 0} }, \
+{ MV_CONFIG_SLIC_TDM_DEVICE,	0x0,	0,	 0x1,	{ 0, 1, 0, 0} }, \
+{ MV_CONFIG_I2S_DEVICE,		0x1,	0,	 0x3,	{ 0, 1, 0, 0} }, \
+{ MV_CONFIG_SPDIF_DEVICE,	0x1,	0,	 0x2,	{ 0, 1, 0, 0} }, \
+{ MV_CONFIG_NOR,		0x4,	0,	 0xF,	{ 0, 1, 0, 0} }, \
+{ MV_CONFIG_NAND,		0x4,	0,	 0x1,	{ 0, 1, 0, 0} }, \
+{ MV_CONFIG_SDIO,		0x4,	0,	 0x2,	{ 0, 1, 0, 0} }, \
+{ MV_CONFIG_SGMII,		0x2,	0,	 0xF,	{ 0, 1, 0, 0} }, \
 };
 struct _mvBoardMppModule {
 	MV_U32 group;
@@ -541,6 +541,7 @@ MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField);
 MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val);
 MV_STATUS mvBoardIoExpanderGet(MV_U8 addr, MV_U8 offs, MV_U8 *pVal);
 MV_STATUS mvBoardIoExpanderSet(MV_U8 addr, MV_U8 offs, MV_U8 val);
+MV_U32 mvBoardUartPortGet(MV_VOID);
 int mvBoardNorFlashConnect(void);
 
 /*						bit    TWSI           Reg	board	*/

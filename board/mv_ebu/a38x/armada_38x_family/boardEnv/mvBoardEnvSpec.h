@@ -84,7 +84,8 @@
 #define RD_NAS_68XX_ID			(MARVELL_BOARD_ID_BASE + 0)
 #define DB_68XX_ID			(MARVELL_BOARD_ID_BASE + 1)
 #define RD_AP_68XX_ID			(MARVELL_BOARD_ID_BASE + 2)
-#define MV_MAX_MARVELL_BOARD_ID		(MARVELL_BOARD_ID_BASE + 3)
+#define DB_AP_68XX_ID			(MARVELL_BOARD_ID_BASE + 3)
+#define MV_MAX_MARVELL_BOARD_ID		(MARVELL_BOARD_ID_BASE + 4)
 #define MV_MARVELL_BOARD_NUM		(MV_MAX_MARVELL_BOARD_ID - MARVELL_BOARD_ID_BASE)
 
 #define MV_INVALID_BOARD_ID		0xFFFFFFFF
@@ -218,6 +219,28 @@
 #define RD_88F68XX_GPP_OUT_VAL_MID	0x0
 #define RD_88F68XX_GPP_POL_LOW		0x0
 #define RD_88F68XX_GPP_POL_MID		0x0
+
+/*******************************************************************************
+* A380 DB-AP-68xx board
+*******************************************************************************/
+#define DB_AP_88F68XX_MPP0_7            0x11111111
+#define DB_AP_88F68XX_MPP8_15           0x11111111
+#define DB_AP_88F68XX_MPP16_23          0x55066011
+#define DB_AP_88F68XX_MPP24_31          0x05050050
+#define DB_AP_88F68XX_MPP32_39          0x05055555
+#define DB_AP_88F68XX_MPP40_47          0x01100565
+#define DB_AP_88F68XX_MPP48_55          0x00000000
+#define DB_AP_88F68XX_MPP56_63          0x00004444
+
+#define DB_AP_88F68XX_GPP_OUT_ENA_LOW	0xFFFFFFFF
+#define DB_AP_88F68XX_GPP_OUT_ENA_MID	(~(0x0E))
+#define DB_AP_88F68XX_GPP_OUT_ENA_HIGH	(~(BIT1))
+#define DB_AP_88F68XX_GPP_OUT_VAL_LOW	0x0
+#define DB_AP_88F68XX_GPP_OUT_VAL_MID	0x0
+#define DB_AP_88F68XX_GPP_OUT_VAL_HIGH	0x0
+#define DB_AP_88F68XX_GPP_POL_LOW	0x0
+#define DB_AP_88F68XX_GPP_POL_MID	0x0
+#define DB_AP_88F68XX_GPP_POL_HIGH	0x0
 
 #endif  /* MV_ASMLANGUAGE */
 

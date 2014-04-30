@@ -651,6 +651,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* UART */
 /********/
 #define UART0_REG_OFFSET			0x12000
+#define UART1_REG_OFFSET                        0x12100
 
 /********/
 /* GPIO */

@@ -80,6 +80,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #else
 #error "No SOC define for uart in binary header."
 #endif
+#ifdef MV88F68XX
+#include "../src_phy_a38x/mvBHboardEnvSpec.h"
+#endif
 
 #include "mvUart.h"
 
@@ -103,27 +106,44 @@ extern MV_U32 mvBoardTclkGet(MV_VOID);
 *   None.
 *
 *******************************************************************************/
+#if !defined(MV_NO_PRINT)
+MV_U32 uartOffset = UART0_REG_OFFSET;
+#endif
 
 MV_VOID mvUartInit(void)
 {
 #if !defined(MV_NO_PRINT)
-	volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + UART0_REG_OFFSET);
-    MV_U32  tmpTClkRate;
-    MV_U32 baudDivisor = 0;
+	MV_U32  tmpTClkRate;
+	MV_U32 baudDivisor = 0;
 
-    tmpTClkRate = mvBoardTclkGet();
+	tmpTClkRate = mvBoardTclkGet();
 
+#ifdef MV88F68XX
+	/* This section enable UART-1 for board DB-AP-68xx
+		- set  MPP's 19 and 20 to 0x6 to config UA1_RXD and UA_TXD
+		- init the TWSI to read the board ID from the EEPROM
+		- update the global struct to use UART1 register offset
+		  if the board ID is DB_AP_68XX */
+	MV_U32 regData = MV_REG_READ(MPP_CONTROL_REG(2));
+	regData |= 0x00066000;
+	MV_REG_WRITE(MPP_CONTROL_REG(2), regData);
 
-    /*  UART Init */
-    switch (tmpTClkRate)
-    {
-        case _25MHZ:
-            baudDivisor =  13; /* actually 13.5 */
-            break;
-        case _166MHZ:
-            baudDivisor =  90;
-            break;
-        case _200MHZ:
+	DEBUG_INIT_FULL_S("mvHwsTwsiInitWrapper: Init TWSI interface.\n");
+	mvHwsTwsiInitWrapper();
+
+	if( mvBoardIdGet() == DB_AP_68XX_ID)
+		uartOffset = UART1_REG_OFFSET;
+#endif
+	volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + uartOffset);
+	/*  UART Init */
+	switch (tmpTClkRate) {
+		case _25MHZ:
+			baudDivisor =  13; /* actually 13.5 */
+			break;
+		case _166MHZ:
+			baudDivisor =  90;
+			break;
+		case _200MHZ:
             baudDivisor = 108;
             break;
         case _250MHZ:
@@ -164,7 +184,7 @@ MV_VOID mvUartInit(void)
 MV_VOID mvUartPutc(MV_U8 c)
 {
 #if !defined(MV_NO_PRINT)
-    volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + UART0_REG_OFFSET);
+    volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + uartOffset);
     while ((pUartPort->lsr & LSR_THRE) == 0) ;
     pUartPort->thr = c;
 #endif
@@ -306,7 +326,7 @@ void putdataDec (u32 dec_num,u32 length)
 MV_U8   mvUartGetc()
 {
 #if !defined(MV_NO_INPUT)
-    volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + UART0_REG_OFFSET);
+	 volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + uartOffset);
     while ((pUartPort->lsr & LSR_DR) == 0) ;
     return (pUartPort->rbr);
 #else
@@ -334,7 +354,7 @@ MV_U8   mvUartGetc()
 MV_BOOL mvUartTstc()
 {
 #if !defined(MV_NO_INPUT)
-    volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + UART0_REG_OFFSET);
+    volatile MV_UART_PORT *pUartPort = (volatile MV_UART_PORT *)(INTER_REGS_BASE + uartOffset);
     return ((pUartPort->lsr & LSR_DR) != 0);
 #else
     return FALSE;

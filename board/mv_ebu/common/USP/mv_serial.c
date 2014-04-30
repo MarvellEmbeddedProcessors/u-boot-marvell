@@ -28,10 +28,20 @@ disclaimer.
 #include "uart/mvUart.h"
 #include "cpu/mvCpu.h"
 #include <serial.h>
+#include "boardEnv/mvBoardEnvLib.h"
 
 extern unsigned int whoAmI(void);
 
 extern void print_mvBanner(void);
+
+/* mvBoardUartPortGet:
+ * This routine can be overriden at board environment code.
+ * required in case that UART port number is not aligned with CPU number. (e.g : CPU0 uses UART1)
+ */
+__weak MV_U32 mvBoardUartPortGet(void)
+{
+	return whoAmI();
+}
 
 int mv_serial_init (void)
 {
@@ -40,7 +50,7 @@ int mv_serial_init (void)
 	int clock_divisor = (CONFIG_SYS_TCLK / 16)/gd->baudrate;
 
 	/* muti-core support, initiate each Uart to each cpu */
-	mvUartInit(whoAmI(), clock_divisor, mvUartBase(whoAmI()));
+	mvUartInit(whoAmI(), clock_divisor, mvUartBase(mvBoardUartPortGet()));
 
 	console_init_f();
 
@@ -76,7 +86,7 @@ void mv_serial_setbrg (void)
 	int clock_divisor = (CONFIG_SYS_TCLK / 16)/gd->baudrate;
 
 	/* muti-core support, initiate each Uart to each cpu */
-	mvUartInit(whoAmI(), clock_divisor, mvUartBase(whoAmI()));
+	mvUartInit(whoAmI(), clock_divisor, mvUartBase(mvBoardUartPortGet()));
 }
 
 void mv_serial_puts (const char *s)

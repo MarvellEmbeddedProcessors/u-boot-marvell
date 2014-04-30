@@ -1971,7 +1971,8 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		gBoardId = ARMADA_38x_CUSTOMER_BOARD_ID1;
 	#endif
 #else
-	/* For Marvell Boards: Set generic board struct pointer to use S@R TWSI address, and read board ID */
+	/* For Marvell Boards: Temporarily set generic board struct pointer to
+	   use S@R TWSI address, and read board ID */
 	board = marvellBoardInfoTbl[mvBoardIdIndexGet(DB_68XX_ID)];
 	MV_U8 readValue;
 	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, 0, &readValue) != MV_OK) {
@@ -1988,7 +1989,6 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		return MV_INVALID_BOARD_ID;
 	}
 #endif
-
 	return gBoardId;
 }
 
@@ -2665,4 +2665,28 @@ MV_STATUS mvBoardIoExpanderSet(MV_U8 addr, MV_U8 offs, MV_U8 val)
 		}
 	}
 	return MV_ERROR;
+}
+
+/*******************************************************************************
+* mvBoardUartPortGet
+*
+* DESCRIPTION:
+*       Return the UART port
+*
+* INPUT:
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       return 1 if detect DB-AP-68xx board
+*
+*******************************************************************************/
+
+MV_U32 mvBoardUartPortGet()
+{
+	if (mvBoardIdGet() != DB_AP_68XX_ID)
+		return whoAmI();
+
+	return (whoAmI() == 0 ? 1 : 0); /* CPU0 uses UART1 on DB-AP */
 }

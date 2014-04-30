@@ -250,14 +250,6 @@ MV_DEV_CS_INFO db88f68xxInfoBoardDeCsInfo[] = {
 	{ SPI0_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
 #endif
 };
-/*
-MV_BOARD_MPP_TYPE_INFO db88f68XXInfoBoardModTypeInfo[] = {
-	{
-		.externalModule = MV_BOARD_NONE,
-		.ModuleMpp = 0,
-	}
-};
-*/
 
 MV_BOARD_TDM_INFO db88f68xxTdm880[] = { {0} };
 
@@ -500,9 +492,113 @@ MV_BOARD_INFO rdWAP88f68XX_board_info = {
 	.boardOptionsConfig		= MV_CONFIG_NO_MODULE
 };
 
+/*******************************************************************************
+* A380 DB-AP-88F6660 board */
+/*******************************************************************************/
+#define DB_AP_88F68XX_BOARD_NAND_READ_PARAMS       0x000C0282
+#define DB_AP_88F68XX_BOARD_NAND_WRITE_PARAMS      0x00010305
+/*NAND care support for small page chips*/
+#define DB_AP_88F68XX_BOARD_NAND_CONTROL           0x01c00543
+
+MV_BOARD_MPP_INFO dbAP88f68xxInfoBoardMppConfigValue[] = {
+	{ {
+		  DB_AP_88F68XX_MPP0_7,
+		  DB_AP_88F68XX_MPP8_15,
+		  DB_AP_88F68XX_MPP16_23,
+		  DB_AP_88F68XX_MPP24_31,
+		  DB_AP_88F68XX_MPP32_39,
+		  DB_AP_88F68XX_MPP40_47,
+		  DB_AP_88F68XX_MPP48_55,
+		  DB_AP_88F68XX_MPP56_63
+	  } }
+};
+
+MV_BOARD_TWSI_INFO dbAP88f68xxInfoBoardTwsiDev[] = {
+	/* {{devClass,          devClassId, twsiDevAddr, twsiDevAddrType, moreThen256}} */
+	{ BOARD_DEV_TWSI_SATR,          0,      0x50,      ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,          1,      0x4c,      ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,          2,      0x4d,      ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,          3,      0x4e,      ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,          4,      0x21,      ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,     0,      0x20,      ADDR7_BIT, MV_FALSE},   /* modules */
+	{ BOARD_TWSI_MODULE_DETECT,     1,      0x23,      ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,     2,      0x24,      ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,     3,      0x25,      ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,     4,      0x26,      ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,     5,      0x27,      ADDR7_BIT, MV_FALSE},
+};
+
+MV_BOARD_MAC_INFO dbAP88f68xxInfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x1},
+	{ BOARD_MAC_SPEED_AUTO, 0x2},
+	{ BOARD_MAC_SPEED_AUTO, 0x0},
+};
+
+MV_DEV_CS_INFO dbAP88f68xxInfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#ifdef MV_NAND
+	{ DEVICE_CS0,   N_A, BOARD_DEV_NAND_FLASH,      8,      8},  /* NAND DEV */
+#endif
+#if defined(MV_INCLUDE_NOR)
+	{ DEV_BOOCS,    N_A, BOARD_DEV_NOR_FLASH,       16,     16}, /* NOR DEV */
+	{ SPI0_CS1,     N_A, BOARD_DEV_SPI_FLASH,       8,      8 } /* SPI DEV */
+#else
+	{ SPI0_CS0,     N_A, BOARD_DEV_SPI_FLASH,       8,      8 } /* SPI DEV */
+#endif
+};
+
+MV_BOARD_TDM_INFO dbAP88f68xxTdm880[] = { {0} };
+
+MV_BOARD_TDM_SPI_INFO dbAP88f68xxTdmSpiInfo[] = { {1} };
+
+MV_BOARD_INFO dbAP88f68xx_board_info = {
+	.boardName              = "DB-88F6820-AP",
+	.numBoardMppTypeValue   = 0,            /* ARRSZ(db88f68XXInfoBoardModTypeInfo), */
+	.pBoardModTypeValue     = NULL,         /* db88f68XXInfoBoardModTypeInfo, */
+	.pBoardMppConfigValue   = dbAP88f68xxInfoBoardMppConfigValue,
+	.intsGppMaskLow         = 0,
+	.intsGppMaskMid         = 0,
+	.intsGppMaskHigh        = 0,
+	.numBoardDeviceIf       = ARRSZ(dbAP88f68xxInfoBoardDeCsInfo),
+	.pDevCsInfo             = dbAP88f68xxInfoBoardDeCsInfo,
+	.numBoardTwsiDev        = ARRSZ(dbAP88f68xxInfoBoardTwsiDev),
+	.pBoardTwsiDev          = dbAP88f68xxInfoBoardTwsiDev,
+	.numBoardMacInfo        = ARRSZ(dbAP88f68xxInfoBoardMacInfo),
+	.pBoardMacInfo          = dbAP88f68xxInfoBoardMacInfo,
+	.numBoardGppInfo        = 0,
+	.pBoardGppInfo          = 0,
+	.activeLedsNumber       = 0,
+	.pLedGppPin             = NULL,
+	.ledsPolarity           = 0,	/* PMU Power */
+	.pmuPwrUpPolarity       = 0,
+	.pmuPwrUpDelay          = 80000,	/* GPP values */
+	.gppOutEnValLow         = DB_AP_88F68XX_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid         = DB_AP_88F68XX_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh        = DB_AP_88F68XX_GPP_OUT_ENA_HIGH,
+	.gppOutValLow           = DB_AP_88F68XX_GPP_OUT_VAL_LOW,
+	.gppOutValMid           = DB_AP_88F68XX_GPP_OUT_VAL_MID,
+	.gppOutValHigh          = DB_AP_88F68XX_GPP_OUT_VAL_HIGH,
+	.gppPolarityValLow      = DB_AP_88F68XX_GPP_POL_LOW,
+	.gppPolarityValMid      = DB_AP_88F68XX_GPP_POL_MID,
+	.gppPolarityValHigh     = DB_AP_88F68XX_GPP_POL_HIGH,
+
+	/* TDM */
+	.numBoardTdmInfo                = {1},
+	.pBoardTdmInt2CsInfo            = {dbAP88f68xxTdm880},
+	.boardTdmInfoIndex              = 0,
+	.pBoardSpecInit                 = NULL,
+
+	/* Enable modules auto-detection. */
+	.configAutoDetect               = MV_FALSE,
+	.numIoExp                       = 0,
+	.pIoExp                         = NULL,
+	.boardOptionsConfig             = MV_CONFIG_NO_MODULE
+};
 
 MV_BOARD_INFO *marvellBoardInfoTbl[] = {
 	&rdNas88f68XX_board_info,
 	&db88f68xx_board_info,
-	&rdWAP88f68XX_board_info
+	&rdWAP88f68XX_board_info,
+	&dbAP88f68xx_board_info
 };

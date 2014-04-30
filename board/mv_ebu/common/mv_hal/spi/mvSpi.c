@@ -76,6 +76,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DB(x)
 #endif
 
+
+#ifndef MV_SPI_REG_BIT_SET
+#define MV_SPI_REG_BIT_SET	MV_REG_BIT_SET
+#endif
+#ifndef MV_SPI_REG_BIT_RESET
+#define MV_SPI_REG_BIT_RESET	MV_REG_BIT_RESET
+#endif
+
+#ifndef MV_SPI_REG_WRITE
+#define MV_SPI_REG_WRITE	MV_REG_WRITE
+#endif
+
+#ifndef MV_SPI_REG_READ
+#define MV_SPI_REG_READ		MV_REG_READ
+#endif
+
 static MV_SPI_HAL_DATA	spiHalData;
 
 static MV_SPI_TYPE_INFO spiTypes[] = {
@@ -178,29 +194,29 @@ MV_STATUS mvSpiParamsSet(MV_U8 spiId, MV_U8 csId, MV_SPI_TYPE type)
 ********************************************************************************/
 MV_STATUS mvSpi16bitDataTxRx(MV_U8 spiId, MV_U16 txData, MV_U16 *pRxData)
 {
-    MV_U32 i;
-    MV_BOOL ready = MV_FALSE;
+	MV_U32 i;
+	MV_BOOL ready = MV_FALSE;
 
 
-    /* First clear the bit in the interrupt cause register */
-    MV_REG_WRITE(MV_SPI_INT_CAUSE_REG(spiId), 0x0);
+	/* First clear the bit in the interrupt cause register */
+	MV_SPI_REG_WRITE(MV_SPI_INT_CAUSE_REG(spiId), 0x0);
 
-    /* Transmit data */
-    MV_REG_WRITE(MV_SPI_DATA_OUT_REG(spiId), MV_16BIT_LE(txData));
+	/* Transmit data */
+	MV_SPI_REG_WRITE(MV_SPI_DATA_OUT_REG(spiId), MV_16BIT_LE(txData));
 
-    /* wait with timeout for memory ready */
-    for (i = 0; i < MV_SPI_WAIT_RDY_MAX_LOOP; i++) {
-	if (MV_REG_READ(MV_SPI_INT_CAUSE_REG(spiId))) {
-		ready = MV_TRUE;
-		break;
-	}
+	/* wait with timeout for memory ready */
+	for (i = 0; i < MV_SPI_WAIT_RDY_MAX_LOOP; i++) {
+		if (MV_SPI_REG_READ(MV_SPI_INT_CAUSE_REG(spiId))) {
+			ready = MV_TRUE;
+			break;
+		}
 #ifdef MV_SPI_SLEEP_ON_WAIT
 	mvOsSleep(1);
 #endif /* MV_SPI_SLEEP_ON_WAIT */
-    }
+	}
 
-    if (!ready)
-	return MV_TIMEOUT;
+	if (!ready)
+		return MV_TIMEOUT;
 
     /* check that the RX data is needed */
     if (pRxData) {
@@ -208,7 +224,7 @@ MV_STATUS mvSpi16bitDataTxRx(MV_U8 spiId, MV_U16 txData, MV_U16 *pRxData)
 #if defined(MV_CPU_LE)
 		/* perform the data write to the buffer in two stages with 8bit each */
 		MV_U8 *bptr = (MV_U8 *)pRxData;
-		MV_U16 data = MV_16BIT_LE(MV_REG_READ(MV_SPI_DATA_IN_REG(spiId)));
+		MV_U16 data = MV_16BIT_LE(MV_SPI_REG_READ(MV_SPI_DATA_IN_REG(spiId)));
 		*bptr = (data & 0xFF);
 		++bptr;
 		*bptr = ((data >> 8) & 0xFF);
@@ -217,7 +233,7 @@ MV_STATUS mvSpi16bitDataTxRx(MV_U8 spiId, MV_U16 txData, MV_U16 *pRxData)
 
 		/* perform the data write to the buffer in two stages with 8bit each */
 		MV_U8 *bptr = (MV_U8 *)pRxData;
-		MV_U16 data = MV_16BIT_LE(MV_REG_READ(MV_SPI_DATA_IN_REG(spiId)));
+		MV_U16 data = MV_16BIT_LE(MV_SPI_REG_READ(MV_SPI_DATA_IN_REG(spiId)));
 		*bptr = ((data >> 8) & 0xFF);
 		++bptr;
 		*bptr = (data & 0xFF);
@@ -227,7 +243,7 @@ MV_STATUS mvSpi16bitDataTxRx(MV_U8 spiId, MV_U16 txData, MV_U16 *pRxData)
 #endif
 
 	} else
-		*pRxData = MV_16BIT_LE(MV_REG_READ(MV_SPI_DATA_IN_REG(spiId)));
+		*pRxData = MV_16BIT_LE(MV_SPI_REG_READ(MV_SPI_DATA_IN_REG(spiId)));
     }
 
     return MV_OK;
@@ -250,14 +266,14 @@ MV_STATUS mvSpi8bitDataTxRx(MV_U8 spiId, MV_U8 txData, MV_U8 *pRxData)
 		mvSpiCsAssert(spiId);
 
 	/* First clear the bit in the interrupt cause register */
-	MV_REG_WRITE(MV_SPI_INT_CAUSE_REG(spiId), 0x0);
+	MV_SPI_REG_WRITE(MV_SPI_INT_CAUSE_REG(spiId), 0x0);
 
 	/* Transmit data */
-	MV_REG_WRITE(MV_SPI_DATA_OUT_REG(spiId), txData);
+	MV_SPI_REG_WRITE(MV_SPI_DATA_OUT_REG(spiId), txData);
 
 	/* wait with timeout for memory ready */
 	for (i = 0; i < MV_SPI_WAIT_RDY_MAX_LOOP; i++) {
-		if (MV_REG_READ(MV_SPI_INT_CAUSE_REG(spiId))) {
+		if (MV_SPI_REG_READ(MV_SPI_INT_CAUSE_REG(spiId))) {
 			ready = MV_TRUE;
 			break;
 		}
@@ -277,7 +293,7 @@ MV_STATUS mvSpi8bitDataTxRx(MV_U8 spiId, MV_U8 txData, MV_U8 *pRxData)
 
 	/* check that the RX data is needed */
 	if (pRxData)
-		*pRxData = MV_REG_READ(MV_SPI_DATA_IN_REG(spiId));
+		*pRxData = MV_SPI_REG_READ(MV_SPI_DATA_IN_REG(spiId));
 
 	if (currSpiInfo->byteCsAsrt) {
 		mvSpiCsDeassert(spiId);
@@ -322,10 +338,10 @@ MV_STATUS mvSpiCsSet(MV_U8 spiId, MV_U8 csId)
 	if (lastCsId == csId)
 		return MV_OK;
 
-	ctrlReg = MV_REG_READ(MV_SPI_IF_CTRL_REG(spiId));
+	ctrlReg = MV_SPI_REG_READ(MV_SPI_IF_CTRL_REG(spiId));
 	ctrlReg &= ~MV_SPI_CS_NUM_MASK;
 	ctrlReg |= (csId << MV_SPI_CS_NUM_OFFSET);
-	MV_REG_WRITE(MV_SPI_IF_CTRL_REG(spiId), ctrlReg);
+	MV_SPI_REG_WRITE(MV_SPI_IF_CTRL_REG(spiId), ctrlReg);
 
 	lastCsId = csId;
 
@@ -354,7 +370,7 @@ MV_STATUS mvSpiIfConfigSet(MV_U8 spiId, MV_SPI_IF_PARAMS *ifParams)
 {
 	MV_U32	ctrlReg;
 
-	ctrlReg = MV_REG_READ(MV_SPI_IF_CONFIG_REG(spiId));
+	ctrlReg = MV_SPI_REG_READ(MV_SPI_IF_CONFIG_REG(spiId));
 
 	/* Set Clock Polarity */
 	ctrlReg &= ~(MV_SPI_CPOL_MASK | MV_SPI_CPHA_MASK |
@@ -371,7 +387,7 @@ MV_STATUS mvSpiIfConfigSet(MV_U8 spiId, MV_SPI_IF_PARAMS *ifParams)
 	if (ifParams->rxMsbFirst)
 		ctrlReg |= MV_SPI_RXLSBF_MASK;
 
-	MV_REG_WRITE(MV_SPI_IF_CONFIG_REG(spiId), ctrlReg);
+	MV_SPI_REG_WRITE(MV_SPI_IF_CONFIG_REG(spiId), ctrlReg);
 
 	return MV_OK;
 }
@@ -398,7 +414,7 @@ MV_STATUS mvSpiTimingParamsSet(MV_U8 spiId, MV_SPI_TIMING_PARAMS *tmngParams)
 {
 	MV_U32	ctrlReg;
 
-	ctrlReg = MV_REG_READ(MV_SPI_TMNG_PARAMS_REG(spiId));
+	ctrlReg = MV_SPI_REG_READ(MV_SPI_TMNG_PARAMS_REG(spiId));
 
 	/* Set Clock Polarity */
 	ctrlReg &= ~(MV_SPI_TCSH_MASK | MV_SPI_TMISO_SAMPLE_MASK | MV_SPI_TCS_SETUP_MASK
@@ -408,7 +424,7 @@ MV_STATUS mvSpiTimingParamsSet(MV_U8 spiId, MV_SPI_TIMING_PARAMS *tmngParams)
 			(tmngParams->tcsSetup << MV_SPI_TCS_SETUP_OFFSET) |
 			(tmngParams->tcsHold << MV_SPI_TCS_HOLD_OFFSET));
 
-	MV_REG_WRITE(MV_SPI_TMNG_PARAMS_REG(spiId), ctrlReg);
+	MV_SPI_REG_WRITE(MV_SPI_TMNG_PARAMS_REG(spiId), ctrlReg);
 
 	return MV_OK;
 }
@@ -436,17 +452,17 @@ MV_STATUS mvSpiTimingParamsSet(MV_U8 spiId, MV_SPI_TIMING_PARAMS *tmngParams)
 *******************************************************************************/
 MV_STATUS mvSpiInit(MV_U8 spiId, MV_U32 serialBaudRate, MV_SPI_HAL_DATA *halData)
 {
-    MV_STATUS ret;
+	MV_STATUS ret;
 
-    mvOsMemcpy(&spiHalData, halData, sizeof(MV_SPI_HAL_DATA));
+	mvOsMemcpy(&spiHalData, halData, sizeof(MV_SPI_HAL_DATA));
 
-    /* Set the serial clock */
-    ret = mvSpiBaudRateSet(spiId, serialBaudRate);
-    if (ret != MV_OK)
-	return ret;
+	/* Set the serial clock */
+	ret = mvSpiBaudRateSet(spiId, serialBaudRate);
+	if (ret != MV_OK)
+		return ret;
 
 	/* Configure the default SPI mode to be 16bit */
-    MV_REG_BIT_SET(MV_SPI_IF_CONFIG_REG(spiId), MV_SPI_BYTE_LENGTH_MASK);
+	MV_SPI_REG_BIT_SET(MV_SPI_IF_CONFIG_REG(spiId), MV_SPI_BYTE_LENGTH_MASK);
 
 	/* Fix ac timing on SPI in 6183, 6183L and 78x00 only */
     if ((spiHalData.ctrlModel == MV_6183_DEV_ID) ||
@@ -457,7 +473,7 @@ MV_STATUS mvSpiInit(MV_U8 spiId, MV_U32 serialBaudRate, MV_SPI_HAL_DATA *halData
 		(spiHalData.ctrlModel == MV_6323_DEV_ID) ||
 		(spiHalData.ctrlModel == MV_6322_DEV_ID) ||
 		(spiHalData.ctrlModel == MV_6321_DEV_ID))
-			MV_REG_BIT_SET(MV_SPI_IF_CONFIG_REG(spiId), BIT14);
+			MV_SPI_REG_BIT_SET(MV_SPI_IF_CONFIG_REG(spiId), BIT14);
 
     /* Verify that the CS is deasserted */
     mvSpiCsDeassert(spiId);
@@ -520,13 +536,13 @@ MV_STATUS mvSpiBaudRateSet(MV_U8 spiId, MV_U32 serialBaudRate)
 	}
 
 	/* configure the Prescale */
-	tempReg = MV_REG_READ(MV_SPI_IF_CONFIG_REG(spiId));
+	tempReg = MV_SPI_REG_READ(MV_SPI_IF_CONFIG_REG(spiId));
 	tempReg = ((tempReg & ~MV_SPI_CLK_PRESCALE_MASK) | (bestPrescaleIndx + 0x12));
 
 	if (bestPrescaleIndx == 0) /* if we're using the highest clock, enable fast read. */
 		tempReg |= MV_SPI_DIRECT_READ_MASK;
 
-	MV_REG_WRITE(MV_SPI_IF_CONFIG_REG(spiId), tempReg);
+	MV_SPI_REG_WRITE(MV_SPI_IF_CONFIG_REG(spiId), tempReg);
 
 	return MV_OK;
 }
@@ -577,12 +593,12 @@ MV_STATUS mvSpiBaudRateSet(MV_U8 spiId, MV_U32 serialBaudRate)
 	}
 
 	/* configure the Prescale */
-	tempReg = MV_REG_READ(MV_SPI_IF_CONFIG_REG(spiId)) & ~(MV_SPI_SPR_MASK | MV_SPI_SPPR_0_MASK |
+	tempReg = MV_SPI_REG_READ(MV_SPI_IF_CONFIG_REG(spiId)) & ~(MV_SPI_SPR_MASK | MV_SPI_SPPR_0_MASK |
 			MV_SPI_SPPR_HI_MASK);
 	tempReg |= ((bestSpr << MV_SPI_SPR_OFFSET) |
 			((bestSppr & 0x1) << MV_SPI_SPPR_0_OFFSET) |
 			((bestSppr >> 1) << MV_SPI_SPPR_HI_OFFSET));
-	MV_REG_WRITE(MV_SPI_IF_CONFIG_REG(spiId), tempReg);
+	MV_SPI_REG_WRITE(MV_SPI_IF_CONFIG_REG(spiId), tempReg);
 
 	return MV_OK;
 }
@@ -614,7 +630,7 @@ MV_VOID mvSpiCsAssert(MV_U8 spiId)
 	/* For devices in which the SPI is muxed on the MPP with other interfaces*/
 	mvSysSpiMppConfig(SYS_SPI_MPP_ENABLE);
 	mvOsUDelay(1);
-	MV_REG_BIT_SET(MV_SPI_IF_CTRL_REG(spiId), MV_SPI_CS_ENABLE_MASK);
+	MV_SPI_REG_BIT_SET(MV_SPI_IF_CTRL_REG(spiId), MV_SPI_CS_ENABLE_MASK);
 }
 
 /*******************************************************************************
@@ -636,7 +652,7 @@ MV_VOID mvSpiCsAssert(MV_U8 spiId)
 ********************************************************************************/
 MV_VOID mvSpiCsDeassert(MV_U8 spiId)
 {
-	MV_REG_BIT_RESET(MV_SPI_IF_CTRL_REG(spiId), MV_SPI_CS_ENABLE_MASK);
+	MV_SPI_REG_BIT_RESET(MV_SPI_IF_CTRL_REG(spiId), MV_SPI_CS_ENABLE_MASK);
 
 	/* For devices in which the SPI is muxed on the MPP with other interfaces*/
 	mvSysSpiMppConfig(SYS_SPI_MPP_DEFAULT);
@@ -677,7 +693,7 @@ MV_STATUS mvSpiRead(MV_U8 spiId, MV_U8 *pRxBuff, MV_U32 buffSize)
     /* Check that the buffer pointer and the buffer size are 16bit aligned */
     if ((currSpiInfo->en16Bit) && (((MV_U32)buffSize & 1) == 0) && (((MV_U32)pRxBuff & 1) == 0)) {
 	/* Verify that the SPI mode is in 16bit mode */
-	MV_REG_BIT_SET(MV_SPI_IF_CONFIG_REG(spiId), MV_SPI_BYTE_LENGTH_MASK);
+	MV_SPI_REG_BIT_SET(MV_SPI_IF_CONFIG_REG(spiId), MV_SPI_BYTE_LENGTH_MASK);
 
 	/* TX/RX as long we have complete 16bit chunks */
 	while (bytesLeft >= MV_SPI_16_BIT_CHUNK_SIZE) {
@@ -693,7 +709,7 @@ MV_STATUS mvSpiRead(MV_U8 spiId, MV_U8 *pRxBuff, MV_U32 buffSize)
 
     } else {
 	/* Verify that the SPI mode is in 8bit mode */
-	MV_REG_BIT_RESET(MV_SPI_IF_CONFIG_REG(spiId), MV_SPI_BYTE_LENGTH_MASK);
+	MV_SPI_REG_BIT_RESET(MV_SPI_IF_CONFIG_REG(spiId), MV_SPI_BYTE_LENGTH_MASK);
 
 	/* TX/RX in 8bit chanks */
 	while (bytesLeft > 0) {
@@ -748,7 +764,7 @@ MV_STATUS mvSpiWrite(MV_U8 spiId, MV_U8 *pTxBuff, MV_U32 buffSize)
 	&& (((MV_U32)buffSize & 1) == 0)
 	&& (((MV_U32)pTxBuff & 1) == 0)) {
 	/* Verify that the SPI mode is in 16bit mode */
-	MV_REG_BIT_SET(MV_SPI_IF_CONFIG_REG(spiId), MV_SPI_BYTE_LENGTH_MASK);
+	MV_SPI_REG_BIT_SET(MV_SPI_IF_CONFIG_REG(spiId), MV_SPI_BYTE_LENGTH_MASK);
 
 	/* TX/RX as long we have complete 16bit chunks */
 	while (bytesLeft >= MV_SPI_16_BIT_CHUNK_SIZE) {
@@ -762,7 +778,7 @@ MV_STATUS mvSpiWrite(MV_U8 spiId, MV_U8 *pTxBuff, MV_U32 buffSize)
 	}
     } else {
 	/* Verify that the SPI mode is in 8bit mode */
-	MV_REG_BIT_RESET(MV_SPI_IF_CONFIG_REG(spiId), MV_SPI_BYTE_LENGTH_MASK);
+	MV_SPI_REG_BIT_RESET(MV_SPI_IF_CONFIG_REG(spiId), MV_SPI_BYTE_LENGTH_MASK);
 
 	/* TX/RX in 8bit chanks */
 	while (bytesLeft > 0) {
@@ -820,7 +836,7 @@ MV_STATUS mvSpiReadWrite(MV_U8 spiId, MV_U8 *pRxBuff, MV_U8* pTxBuff, MV_U32 buf
 		&& (((MV_U32)pTxBuff & 1) == 0)
 		&& (((MV_U32)pRxBuff & 1) == 0)) {
 		/* Verify that the SPI mode is in 16bit mode */
-		MV_REG_BIT_SET(MV_SPI_IF_CONFIG_REG(spiId), MV_SPI_BYTE_LENGTH_MASK);
+		MV_SPI_REG_BIT_SET(MV_SPI_IF_CONFIG_REG(spiId), MV_SPI_BYTE_LENGTH_MASK);
 
 		/* TX/RX as long we have complete 16bit chunks */
 		while (bytesLeft >= MV_SPI_16_BIT_CHUNK_SIZE) {
@@ -835,7 +851,7 @@ MV_STATUS mvSpiReadWrite(MV_U8 spiId, MV_U8 *pRxBuff, MV_U8* pTxBuff, MV_U32 buf
 		}
 	} else {
 		/* Verify that the SPI mode is in 8bit mode */
-		MV_REG_BIT_RESET(MV_SPI_IF_CONFIG_REG(spiId), MV_SPI_BYTE_LENGTH_MASK);
+		MV_SPI_REG_BIT_RESET(MV_SPI_IF_CONFIG_REG(spiId), MV_SPI_BYTE_LENGTH_MASK);
 
 		/* TX/RX in 8bit chanks */
 		while (bytesLeft > 0) {
@@ -871,11 +887,12 @@ MV_VOID mvSpiIfByteLenSet(MV_U8 spiId, MV_U32 byteLen)
 {
 	MV_U32	ctrlReg;
 
-	ctrlReg = MV_REG_READ(MV_SPI_IF_CONFIG_REG(spiId));
+	ctrlReg = MV_SPI_REG_READ(MV_SPI_IF_CONFIG_REG(spiId));
 	ctrlReg &= ~(MV_SPI_BYTE_LENGTH_MASK);
 	if (byteLen == SPI_CONFIG_2_BYTE_LEN)
 		ctrlReg |= MV_SPI_BYTE_LENGTH_MASK;
 
-	MV_REG_WRITE(MV_SPI_IF_CONFIG_REG(spiId), ctrlReg);
+	MV_SPI_REG_WRITE(MV_SPI_IF_CONFIG_REG(spiId), ctrlReg);
 }
+
 

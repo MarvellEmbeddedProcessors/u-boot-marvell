@@ -2189,10 +2189,12 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 						__func__, mvCtrlRevGet(), mvCtrlCesaMaxChanGet());
 			break;
 		}
-		if ((reg & PMC_CESA_STOP_CLK_STOP(index)) == PMC_CESA_STOP_CLK_STOP(index))
-			state = MV_FALSE;
-		else
+
+		/* Check if both CESA clocks are enabled -> Compare to mask*/
+		if ((reg & PMC_CESA_STOP_CLK_MASK(index)) == PMC_CESA_STOP_CLK_MASK(index))
 			state = MV_TRUE;
+		else
+			state = MV_FALSE;
 		break;
 #endif
 	default:

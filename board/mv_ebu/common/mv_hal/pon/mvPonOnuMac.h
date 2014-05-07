@@ -350,6 +350,7 @@ MV_STATUS mvOnuGponHighPriTxMap0Set(MV_U32 map0);
 MV_STATUS mvOnuGponHighPriTxMap0Get(MV_U32 *map0);
 MV_STATUS mvOnuGponHighPriTxMap1Set(MV_U32 map1);
 MV_STATUS mvOnuGponHighPriTxMap1Get(MV_U32 *map1);
+MV_STATUS mvOnuGponQueueOverheadSet(MV_U32 tcontNum, MV_U32 queue, MV_U32 overhead);
 /* ========================================================================== */
 /*                        General Functions Section                           */
 /* ========================================================================== */

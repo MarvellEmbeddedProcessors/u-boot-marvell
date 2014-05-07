@@ -4535,40 +4535,6 @@ MV_STATUS mvOnuGponMacDyingGaspConfigSet(MV_U32 id,
 
 /*******************************************************************************
 **
-**  mvOnuEponMacInternalDyingGaspSet
-**  ____________________________________________________________________________
-**
-**  DESCRIPTION: The function set internal dying gasp
-**
-**  PARAMETERS:  MV_U32 enable
-**               MV_U32 onDie
-**               MV_U32 voltage
-**
-**  OUTPUTS:     None
-**
-**  RETURNS:     MV_OK or MV_ERROR
-**
-*******************************************************************************/
-MV_STATUS mvOnuEponMacInternalDyingGaspSet(MV_U32 enable, MV_U32 onDie, MV_U32 voltage)
-{
-	MV_STATUS status;
-	MV_U32 value;
-
-	status = asicOntMiscRegRead(mvAsicReg_PON_INTERNAL_DG, &value, 0);
-	if (status == MV_OK) {
-		value &= ~0x67;
-		value |= ((enable & 0x1) << 5);
-		value |= ((onDie & 0x1) << 6);
-		value |= ((voltage & 0x7) << 0);
-		return asicOntMiscRegWrite(mvAsicReg_PON_INTERNAL_DG, value, 0);
-	}
-
-	return status;
-}
-
-
-/*******************************************************************************
-**
 **  mvOnuGponMacXvrReset
 **  ____________________________________________________________________________
 **
@@ -4825,6 +4791,44 @@ MV_STATUS mvOnuGponHighPriTxMap1Get(MV_U32 *map1)
 	MV_STATUS status;
 
 	status = asicOntGlbRegRead(mvAsicReg_GPON_TX_HIGH_PRI_MAP_1, map1, 0);
+
+	return status;
+}
+
+/*******************************************************************************
+**
+**  mvOnuGponQueueOverheadSet
+**  ____________________________________________________________________________
+**
+**  DESCRIPTION: The function set Tx number of new bytes
+**
+**  PARAMETERS:  MV_U32 tcontNum
+**               MV_U32 byteNum
+**               MV_U32 color
+**
+**  OUTPUTS:     None
+**
+**  RETURNS:     MV_OK
+**
+*******************************************************************************/
+MV_STATUS mvOnuGponQueueOverheadSet(MV_U32 tcontNum, MV_U32 queue, MV_U32 overhead)
+{
+	MV_STATUS status;
+	MV_U32 index;
+
+	if (tcontNum >= ONU_GPON_MAX_NUM_OF_T_CONTS)
+		return MV_ERROR;
+
+	if (queue >= ONU_DBA_MAX_QUEUE)
+		return MV_ERROR;
+
+	index = (tcontNum << 3) | queue;
+	status = asicOntMiscRegWrite(mvAsicReg_PON_BYTE_CNT_IDX, index, 0);
+
+	if (status != MV_OK)
+		return status;
+
+	status = asicOntMiscRegWrite(mvAsicReg_PON_BYTE_CNT_CFG, overhead & 0xFF, 0);
 
 	return status;
 }
@@ -9360,6 +9364,39 @@ MV_STATUS mvOnuEponMacSerdesPuRxWrite(MV_U32 enable)
 	status = asicOntMiscRegWrite(mvAsicReg_PON_SERDES_PHY_CTRL_0_PU_RX, enable, 0);
 #endif
 #endif  /* PON_FPGA */
+	return status;
+}
+
+/*******************************************************************************
+**
+**  mvOnuEponMacInternalDyingGaspSet
+**  ____________________________________________________________________________
+**
+**  DESCRIPTION: The function set internal dying gasp
+**
+**  PARAMETERS:  MV_U32 enable
+**               MV_U32 onDie
+**               MV_U32 voltage
+**
+**  OUTPUTS:     None
+**
+**  RETURNS:     MV_OK or MV_ERROR
+**
+*******************************************************************************/
+MV_STATUS mvOnuEponMacInternalDyingGaspSet(MV_U32 enable, MV_U32 onDie, MV_U32 voltage)
+{
+	MV_STATUS status;
+	MV_U32 value;
+
+	status = asicOntMiscRegRead(mvAsicReg_PON_INTERNAL_DG, &value, 0);
+	if (status == MV_OK) {
+		value &= ~0x67;
+		value |= ((enable & 0x1) << 5);
+		value |= ((onDie & 0x1) << 6);
+		value |= ((voltage & 0x7) << 0);
+		return asicOntMiscRegWrite(mvAsicReg_PON_INTERNAL_DG, value, 0);
+	}
+
 	return status;
 }
 

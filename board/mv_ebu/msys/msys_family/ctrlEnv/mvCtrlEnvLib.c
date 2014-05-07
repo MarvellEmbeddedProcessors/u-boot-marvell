@@ -128,6 +128,72 @@ MV_BOOL mvCtrlIsValidSatR(MV_VOID)
 {
 	return MV_TRUE;
 }
+
+/*******************************************************************************
+* mvCtrlDevBusInit - Initialize Marvell device bus controller.
+*
+* DESCRIPTION:
+*       This function initializes device bus controller for configured devices
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_VOID mvCtrlDevBusInit(MV_VOID)
+{
+#if defined(MV_INCLUDE_NOR)
+	MV_U32	numOfDevices;
+	MV_U32	deviceId;
+	MV_U32	busWidth;
+	MV_U32	deviceCS;
+	MV_U32	regVal;
+	MV_U32	regAddr;
+
+	/* Enable NOR Flash PUP */
+	MV_REG_BIT_SET(PUP_EN_REG, BIT3);
+
+	/* Configure NAND flush disabled */
+	MV_REG_BIT_RESET(SOC_DEV_MUX_REG, BIT0);
+
+	/* Set NfArbiterEn to device bus */
+	MV_REG_BIT_SET(SOC_DEV_MUX_REG, BIT27);
+
+	/* Configure NOR bus width */
+	numOfDevices = mvBoardGetDevicesNumber(BOARD_DEV_NOR_FLASH);
+	for (deviceId = 0; deviceId < numOfDevices; deviceId++) {
+		deviceCS = boardGetDevCSNum(deviceId, BOARD_DEV_NOR_FLASH);
+		if (deviceCS != 0xFFFFFFFF) {
+			busWidth = mvBoardGetDeviceBusWidth(deviceId, BOARD_DEV_NOR_FLASH);
+
+			if (deviceCS == DEV_BOOCS)
+				regAddr = MV_DEV_BUS_REGS_OFFSET;
+			else
+				regAddr = MV_DEV_BUS_REGS_OFFSET + 8 + (deviceCS - DEVICE_CS0) * 8;
+
+			regVal = MV_REG_READ(regAddr);
+			regVal &= ~(BIT30|BIT31);
+			regVal |= (busWidth >> 4); /* 8b = 0, 16b = 1, 32b = 2 */
+			MV_REG_WRITE(regAddr, regVal);
+		}
+	}
+#else
+	/* Enable NAND Flash PUP (Pack-Unpack)
+	 * HW machanism to accelerate transactions (controlled by SoC register) */
+	MV_REG_BIT_SET(PUP_EN_REG, BIT4);
+
+	/* Configure NAND flush enabled */
+	MV_REG_BIT_SET(SOC_DEV_MUX_REG, BIT0);
+
+	/* Set NfArbiterEn to NAND Flash (Disable arbitration between device and NAND) */
+	MV_REG_BIT_RESET(SOC_DEV_MUX_REG, BIT27);
+#endif
+}
 /*******************************************************************************
 * mvCtrlEnvInit - Initialize Marvell controller environment.
 *
@@ -195,15 +261,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	if (MV_OK != mvCtrlSerdesPhyConfig())
 		mvOsPrintf("mvCtrlEnvInit: Can't init some or all SERDES lanes\n");
 
-	/* Enable NAND Flash PUP (Pack-Unpack)
-	 * HW machanism to accelerate transactions (controlled by SoC register) */
-	MV_REG_BIT_SET(PUP_EN_REG, BIT4);
-
-	/* Configure NAND flush enabled */
-	MV_REG_BIT_SET(SOC_DEV_MUX_REG, BIT0);
-
-	/* Set NfArbiterEn to NAND Flash (Disable arbitration between device and NAND) */
-	MV_REG_BIT_RESET(SOC_DEV_MUX_REG, BIT27);
+	mvCtrlDevBusInit();
 
 	mvOsDelay(100);
 

@@ -235,14 +235,19 @@ MV_DEV_CS_INFO db_dx_bc2InfoBoardDeCsInfo[] = {
 	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
 #endif
 #if defined(MV_INCLUDE_NOR)
-	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16} /* NOR DEV */
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 8, 8} /* NOR DEV */
 #endif
 };
 
 MV_BOARD_MPP_INFO db_dx_bc2InfoBoardMppConfigValue[] = {
 	{ {
+#if defined(MV_INCLUDE_NOR)
+	DB_DX_BC2_NOR_MPP0_7,
+	DB_DX_BC2_NOR_MPP8_15,
+#else
 	DB_DX_BC2_MPP0_7,
 	DB_DX_BC2_MPP8_15,
+#endif
 	DB_DX_BC2_MPP16_23,
 	DB_DX_BC2_MPP24_31,
 	DB_DX_BC2_MPP32_39,

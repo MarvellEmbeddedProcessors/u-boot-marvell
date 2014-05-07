@@ -288,13 +288,6 @@ void misc_init_r_env(void){
 	unsigned int malloc_len;
 	int i;
 
-	/* temp WA for new porting approach:
-	 * if using new U-Boot, and and old kernel, U-Boot can't pass new board ID's
-	 * Added environment variable 'new_board_id' to select new/old approach */
-	env = getenv("new_board_id");
-	if( !env || ( ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) )))
-		setenv("new_board_id", "no");
-
 	envSetDefault("console", "console=ttyS0,115200");
 #if defined(MV_NAND) && defined(MV_INCLUDE_SPI)
 	envSetDefault("mtdparts", "'mtdparts=mvebu-nand:8m(boot)ro,8m@8m(kernel),-(rootfs);mtdparts=spi_flash:4m(boot),-(spi-rootfs)'");

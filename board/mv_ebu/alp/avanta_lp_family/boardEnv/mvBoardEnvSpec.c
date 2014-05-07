@@ -570,7 +570,7 @@ MV_DEV_CS_INFO rd88f6660InfoBoardDeCsInfo[] = {
 #endif
 };
 
-MV_BOARD_TDM_INFO rd88f6660Tdm886[] = { {0} };
+MV_BOARD_TDM_INFO rd88f6660Tdm886[] = { {0}, {1} };
 
 MV_BOARD_TDM_SPI_INFO rd88f6660TdmSpiInfo[] = { {1} };
 
@@ -624,7 +624,7 @@ MV_BOARD_INFO rd88f6660_board_info = {
 	.gppPolarityValHigh		= RD_88F6660_GPP_POL_HIGH,
 
 	/* TDM */
-	.numBoardTdmInfo		= {1},
+	.numBoardTdmInfo		= {2},
 	.pBoardTdmInt2CsInfo		= {rd88f6660Tdm886},
 	.boardTdmInfoIndex		= 0,
 

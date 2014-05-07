@@ -658,7 +658,7 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel; bootz 0x2000000 - $fdta
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 		setenv("fdtfile", "armada-38x.dtb");
 #else
-		char *fdtfiles[] = {"armada-388-rd.dtb", "armada-385-db.dtb", "armada-385-rd.dtb"};
+		char *fdtfiles[] = {"armada-388-rd.dtb", "armada-385-db.dtb", "armada-385-rd.dtb", "armada-385-db-ap.dtb"};
 		setenv("fdtfile", fdtfiles[mvBoardIdIndexGet(mvBoardIdGet())]);
 #endif
 	}

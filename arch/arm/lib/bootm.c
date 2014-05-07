@@ -289,14 +289,6 @@ static void setup_marvell_tag(void)
 		params->u.mv_uboot.nand_ecc = 1;
 
 	boardId = mvBoardIdGet();
-
-	/* temp WA for new porting approach:
-	 * if using new U-Boot, and and old kernel, U-Boot can't pass new board ID's
-	 * Added environment variable 'new_board_id' to select new/old approach */
-	env = getenv("new_board_id");
-	if( !env || ( ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) )))
-		boardId -= 0x10; /* decrease board ID virtual shift, aligned with legacy approach*/
-
 	params->u.mv_uboot.uboot_version |= boardId;
 	params->u.mv_uboot.tclk = CONFIG_SYS_TCLK;
 	params->u.mv_uboot.sysclk = CONFIG_SYS_BUS_CLK;

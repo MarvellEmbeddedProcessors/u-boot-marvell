@@ -558,8 +558,8 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 U_BOOT_CMD(
 	mtdburn,      6,     1,      do_mtdburn,
-	"Burn a Linux/VxWorks image image on the NAND flash.\n",
-	"[interface [<dev[:part]>  [File system [filename]]]]\n"
+	"Burn a Linux image and Filesystem` on the NAND/SPI flash.\n",
+	"[interface [<dev[:part]>  [File system [filename]]] [flash destination]]\n"
 	"\tinterface  : tftp, mmc/usb <interface_num> (default is tftp)\n"
 	"\tFile system: FAT or EXT2 (default is FAT).\n"
 	"\tNAND default file-name is ubifs_arm_nand.image.\n"

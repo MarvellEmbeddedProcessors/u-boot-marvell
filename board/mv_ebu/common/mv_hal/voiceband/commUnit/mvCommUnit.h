@@ -197,6 +197,8 @@ extern "C" {
 	MV_VOID mvCommUnitRelease(MV_VOID);
 	MV_VOID mvCommUnitIntEnable(MV_U8 deviceId);
 	MV_VOID mvCommUnitIntDisable(MV_U8 deviceId);
+	MV_STATUS mvCommUnitSyncBitCountSet(MV_32 count);
+	MV_STATUS mvCommUnitResetSlic(MV_VOID);
 
 #ifdef __cplusplus
 }

@@ -2904,7 +2904,7 @@ MV_STATUS mvOnuGponMacTxEthBytesTcontiCounterGet(MV_U32 tcontNum, MV_U32 *counte
 	if (tcontNum < 8)
 		status = asicOntGlbRegRead(mvAsicReg_GPON_TX_STAT_TCONT_i_ETH_BYTES, counter, tcontNum);
 	else
-		status = asicOntGlbRegRead(mvAsicReg_GPON_TX_STAT_TCONT_i_8_15_ETH_BYTES, counter, tcontNum);
+		status = asicOntGlbRegRead(mvAsicReg_GPON_TX_STAT_TCONT_i_8_15_ETH_BYTES, counter, tcontNum - 8);
 
 	return status;
 }

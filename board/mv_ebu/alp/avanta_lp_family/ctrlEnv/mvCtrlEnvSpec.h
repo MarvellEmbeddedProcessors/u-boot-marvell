@@ -138,6 +138,7 @@ extern "C" {
 #define MV_CESA_REGS_OFFSET(chanNum)            (0x9D000 + (chanNum * 0x2000))
 #define MV_SATA_REGS_OFFSET                     (0xA0000)
 #define MV_TDM_REGS_OFFSET			(0xB0000)
+#define MV_COMM_UNIT_REGS_OFFSET		(0xB0000)
 #define MV_NFC_REGS_OFFSET                      (0xD0000)
 #define MV_SDMMC_REGS_OFFSET                    (0xD4000)
 

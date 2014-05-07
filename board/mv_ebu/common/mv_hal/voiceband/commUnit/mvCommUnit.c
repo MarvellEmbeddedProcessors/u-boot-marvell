@@ -74,7 +74,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NEXT_BUFF(buff)		((buff + 1) % TOTAL_CHAINS)
 #define PREV_BUFF(buff)		(buff == 0 ? (TOTAL_CHAINS-1) : (buff-1))
 #define MAX_POLL_USEC		100000	/* 100ms */
-#define IS_KW2_A0(model, rev)	((((model & 0xff00) == 0x6500) && (rev > 1)) ? 1 : 0)
 #define COMM_UNIT_SW_RST	(1 << 5)
 #define OLD_INT_WA_BIT		(1 << 15)
 
@@ -106,8 +105,9 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 {
 	MV_U16 pcmSlot, index;
 	MV_U32 buffSize, chan;
-	MV_U32 totalRxDescSize, totalTxDescSize, chMask;
+	MV_U32 totalRxDescSize, totalTxDescSize;
 	MV_U32 maxPoll, clkSyncCtrlReg;
+	MV_U32 chMask;
 	MV_TDM_DPRAM_ENTRY actDpramEntry, *pActDpramEntry;
 
 	MV_TRC_REC("->%s\n", __func__);
@@ -139,7 +139,8 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	buffSize = (sampleSize * MV_TDM_TOTAL_CH_SAMPLES * samplingCoeff);
 
 	/* Allocate cached data buffers for all channels */
-	TRC_REC("%s: allocate %dB for data buffers\n", __func__, (buffSize * totalChannels));
+	TRC_REC("%s: allocate %dB for data buffers totalChannels=%d\n",
+		__func__, (buffSize * totalChannels), totalChannels);
 	for (index = 0; index < TOTAL_CHAINS; index++) {
 		rxBuffVirt[index] =
 		    (MV_U8 *) mvOsIoCachedMalloc(NULL, ((buffSize * totalChannels) + CPU_D_CACHE_LINE_SIZE),
@@ -245,16 +246,14 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	/**********************/
 	/* MCSC Configuration */
 	/**********************/
-	if (IS_KW2_A0(ctrlModel, ctrlRev)) {
-		/* Disable Rx/Tx channel balancing & Linear mode fix */
-		MV_REG_BIT_SET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_TCBD_MASK);
+	/* Disable Rx/Tx channel balancing & Linear mode fix */
+	MV_REG_BIT_SET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_TCBD_MASK);
 #if 0
-		/* Unmask Rx/Tx channel balancing */
-		chMask = (0xffffffff & ~((MV_U32)((1 << totalChannels) - 1)));
-		MV_REG_WRITE(MCSC_RX_CHANNEL_BALANCING_MASK_REG, chMask);
-		MV_REG_WRITE(MCSC_TX_CHANNEL_BALANCING_MASK_REG, chMask);
+	/* Unmask Rx/Tx channel balancing */
+	chMask = (0xffffffff & ~((MV_U32)((1 << totalChannels) - 1)));
+	MV_REG_WRITE(MCSC_RX_CHANNEL_BALANCING_MASK_REG, chMask);
+	MV_REG_WRITE(MCSC_TX_CHANNEL_BALANCING_MASK_REG, chMask);
 #endif
-	}
 
 	for (chan = 0; chan < totalChannels; chan++) {
 		MV_REG_WRITE(MCSC_CHx_RECEIVE_CONFIG_REG(chan), CONFIG_MRCRx);
@@ -455,10 +454,8 @@ MV_VOID mvCommUnitRelease(MV_VOID)
 
 		mvCommUnitMcdmaMcscAbort();
 
-		if (IS_KW2_A0(ctrlModel, ctrlRev)) {
-			mvOsUDelay(10);
-			MV_REG_BIT_RESET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_MAI_MASK);
-		}
+		mvOsUDelay(10);
+		MV_REG_BIT_RESET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_MAI_MASK);
 
 		/* Disable TDM */
 		MV_REG_BIT_RESET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
@@ -593,7 +590,7 @@ MV_VOID mvCommUnitPcmStart(MV_VOID)
 
 static MV_VOID mvCommUnitMcdmaMcscAbort(MV_VOID)
 {
-	MV_U32 chan, maxPoll;
+	MV_U32 chan;
 
 	MV_TRC_REC("->%s\n", __func__);
 
@@ -745,11 +742,9 @@ static MV_VOID mvCommUnitMcdmaStop(MV_VOID)
 	/* Wait at least 1 frame */
 	mvOsUDelay(200);
 
-	if (IS_KW2_A0(ctrlModel, ctrlRev)) {
-		/* Manual reset to channel-balancing mechanism */
-		MV_REG_BIT_SET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_MAI_MASK);
-		mvOsUDelay(1);
-	}
+	/* Manual reset to channel-balancing mechanism */
+	MV_REG_BIT_SET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_MAI_MASK);
+	mvOsUDelay(1);
 
 	MV_TRC_REC("<-%s\n", __func__);
 }
@@ -1020,4 +1015,23 @@ MV_VOID mvCommUnitShow(MV_VOID)
 			   (MV_U32) mcdmaTxDescPtr[index], (MV_U32) mcdmaTxDescPhys[index]);
 
 	}
+}
+
+MV_STATUS mvCommUnitSyncBitCountSet(MV_32 count)
+{
+	MV_REG_WRITE(TDM_OUTPUT_SYNC_BIT_COUNT_REG, (count << TDM_SYNC_BIT_OFFS) & TDM_SYNC_BIT_MASK);
+	return MV_OK;
+}
+
+MV_STATUS mvCommUnitResetSlic(MV_VOID)
+{
+	/* Enable SLIC reset */
+	MV_REG_BIT_RESET(TDM_CLK_AND_SYNC_CONTROL_REG, TDM_PROG_TDM_SLIC_RESET_MASK);
+
+	mvOsUDelay(60);
+
+	/* Release SLIC reset */
+	MV_REG_BIT_SET(TDM_CLK_AND_SYNC_CONTROL_REG, TDM_PROG_TDM_SLIC_RESET_MASK);
+
+	return MV_OK;
 }

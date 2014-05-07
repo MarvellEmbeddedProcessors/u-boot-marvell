@@ -197,12 +197,18 @@ if($opt_c eq 1)
 	{
 		@interfaces = split(':', $opt_i);
 
-		if (($boardID eq "a370") and
-			(grep{$_ eq 'nor'} @interfaces)  and
-			(grep{$_ eq 'nand'} @interfaces))
+		if ((grep{$_ eq 'nor'} @interfaces)  and (grep{$_ eq 'nand'} @interfaces))
 		{
-			print"\n *** Error: Armada-370 does not Support nand and nor interfaces together\n";
+			print"\n *** Error: The device does not support simultaneous access to nand and nor interfaces\n";
 			exit 1;
+		}
+
+		if ($boardID eq "msys") {
+			if ((grep{$_ eq 'nor'} @interfaces)  and (grep{$_ eq 'spi'} @interfaces))
+			{
+				print"\n *** Error: MSYS does not support simultaneous access to spi and nor interfaces\n";
+				exit 1;
+			}
 		}
 
 		print "Support flash: ";

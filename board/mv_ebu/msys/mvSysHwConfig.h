@@ -234,29 +234,30 @@
 /* winNum which is represent by DEVICE_CS0 enumerator (4).                  */
 #define MV_CPU_IF_ADDR_WIN_MAP_TBL {									\
 		/* base low        base high    size                    WinNum       enable */			   \
-		{ { SDRAM_CS0_BASE,       0,      SDRAM_CS0_SIZE  },      0xFFFFFFFF,     DIS },        /* SDRAM_CS0 */	\
-		{ { SDRAM_CS1_BASE,       0,      SDRAM_CS1_SIZE  },      0xFFFFFFFF,     DIS },        /* SDRAM_CS1 */	\
-		{ { SDRAM_CS2_BASE,       0,      SDRAM_CS2_SIZE  },      0xFFFFFFFF,     DIS },        /* SDRAM_CS2 */	\
-		{ { SDRAM_CS3_BASE,       0,      SDRAM_CS3_SIZE  },      0xFFFFFFFF,     DIS },        /* SDRAM_CS3 */	\
-		{ { NOR_CS_BASE,          0,      NOR_CS_SIZE     },      10,             DIS },        /* DEVICE_CS0 */ \
-		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* DEVICE_CS1 */ \
-		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* DEVICE_CS2 */ \
-		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* DEVICE_CS3 */ \
-		{ { PEX0_MEM_BASE,        0,      PEX0_MEM_SIZE   },      0,              EN },         /* PEX0_MEM */	\
-		{ { PEX0_IO_BASE,         0,      PEX0_IO_SIZE    },      TBL_UNUSED,     DIS },        /* PEX0_IO */	\
-		{ { INTER_REGS_BASE,      0, INTER_REGS_SIZE }, MV_AHB_TO_MBUS_INTREG_WIN, EN },        /* INTER_REGS */ \
-		{ { DFX_REGS_BASE,        0,      DFX_REGS_SIZE   },      1,               EN },        /* DFX_REGS */ \
-		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* DMA_UART   */ \
-		{ { SPI_CS_BASE,          0,      SPI_CS_SIZE     },      8,               EN },        /* SPI_CS0 */	\
-		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* SPI_CS1 */	\
-		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* SPI_CS2 */	\
-		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* SPI_CS3 */	\
-		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* SPI_CS4 */	\
-		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* SPI_CS5 */	\
-		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* SPI_CS6 */	\
-		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* SPI_CS7 */	\
-		{ { 0xf8000000,           0,      _1M             },      13,             EN },         /* BOOT_ROM_CS */ \
-		{ { NOR_CS_BASE,          0,      NOR_CS_SIZE     },      9,              EN },         /* DEV_BOOCS */	  \
+		{ { SDRAM_CS0_BASE,       0,      SDRAM_CS0_SIZE  },      0xFFFFFFFF,     DIS },        /*  0 SDRAM_CS0 */	\
+		{ { SDRAM_CS1_BASE,       0,      SDRAM_CS1_SIZE  },      0xFFFFFFFF,     DIS },        /*  1 SDRAM_CS1 */	\
+		{ { SDRAM_CS2_BASE,       0,      SDRAM_CS2_SIZE  },      0xFFFFFFFF,     DIS },        /*  2 SDRAM_CS2 */	\
+		{ { SDRAM_CS3_BASE,       0,      SDRAM_CS3_SIZE  },      0xFFFFFFFF,     DIS },        /*  3 SDRAM_CS3 */	\
+		{ { NOR_CS_BASE,          0,      NOR_CS_SIZE     },      10,             DIS },        /*  4 DEVICE_CS0 */ \
+		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /*  5 DEVICE_CS1 */ \
+		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /*  6 DEVICE_CS2 */ \
+		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /*  7 DEVICE_CS3 */ \
+		{ { PEX0_MEM_BASE,        0,      PEX0_MEM_SIZE   },      0,              EN },         /*  8 PEX0_MEM */	\
+		{ { PEX0_IO_BASE,         0,      PEX0_IO_SIZE    },      TBL_UNUSED,     DIS },        /*  9 PEX0_IO */	\
+		{ { INTER_REGS_BASE,      0, INTER_REGS_SIZE }, MV_AHB_TO_MBUS_INTREG_WIN, EN },        /* 10 INTER_REGS */ \
+		{ { DFX_REGS_BASE,        0,      DFX_REGS_SIZE   },      1,               EN },        /* 11 DFX_REGS */ \
+		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* 12 SWITCH   */ \
+		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* 13 DMA_UART   */ \
+		{ { SPI_CS_BASE,          0,      SPI_CS_SIZE     },      8,               EN },        /* 14 SPI_CS0 */	\
+		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* 15 SPI_CS1 */	\
+		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* 16 SPI_CS2 */	\
+		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* 17 SPI_CS3 */	\
+		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* 18 SPI_CS4 */	\
+		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* 19 SPI_CS5 */	\
+		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* 20 SPI_CS6 */	\
+		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* 21 SPI_CS7 */	\
+		{ { 0xf8000000,           0,      _1M             },      13,             EN },         /* 22 BOOT_ROM_CS */ \
+		{ { NOR_CS_BASE,          0,      NOR_CS_SIZE     },      9,              EN },         /* 23 DEV_BOOCS */	  \
 		{ { TBL_TERM,             TBL_TERM, TBL_TERM      },      TBL_TERM,       TBL_TERM }		   \
 };
 //{{BOOTDEV_CS_BASE,	0,	BOOTDEV_CS_SIZE	},	0x4,		DIS},	/* DEV_BOOCS */

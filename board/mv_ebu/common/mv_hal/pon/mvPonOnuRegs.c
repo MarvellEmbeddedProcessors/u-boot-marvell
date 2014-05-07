@@ -843,6 +843,8 @@ S_asicGlobalRegDb asicGlbDb[] =
 	[mvAsicReg_GMAC1_AUTONEG_DUPLEX_MODE]             =  { mvAsicReg_GMAC1_AUTONEG_DUPLEX_MODE,             0xC500C,                         0xC500C,  asicRW,     0x00000001,     12,     0,     0,      0,     "GMAC1 autoneg duplex mode"},
 	[mvAsicReg_GMAC1_AUTONEG_DUPLEX_ENABLE]           =  { mvAsicReg_GMAC1_AUTONEG_DUPLEX_ENABLE,           0xC500C,                         0xC500C,  asicRW,     0x00000001,     13,     0,     0,      0,     "GMAC1 autoneg duplex enable"},
 
+	[mvAsicReg_PON_BYTE_CNT_IDX]                      =  { mvAsicReg_PON_BYTE_CNT_IDX,                      0xF8100,                         0xF8100,  asicRW,     0x0000003F,     0,      0,     0,      0,     "PON byte counter index for T-CONT/LLID and queue"},
+	[mvAsicReg_PON_BYTE_CNT_CFG]                      =  { mvAsicReg_PON_BYTE_CNT_CFG,                      0xF8104,                         0xF8104,  asicRW,     0x000000FF,     0,      0,     0,      0,     "PON byte counter configuration"},
 };
 
 /* Export Functions

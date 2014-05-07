@@ -707,6 +707,9 @@ typedef enum {
 	mvAsicReg_GMAC1_AUTONEG_DUPLEX_MODE                = 624,
 	mvAsicReg_GMAC1_AUTONEG_DUPLEX_ENABLE              = 625,
 
+	mvAsicReg_PON_BYTE_CNT_IDX                         = 630,
+	mvAsicReg_PON_BYTE_CNT_CFG                         = 631,
+
 	/*  MPP Registers                         */
 	/* =====================================  */
 	mvAsicReg_PON_MPP_00                               = 700,

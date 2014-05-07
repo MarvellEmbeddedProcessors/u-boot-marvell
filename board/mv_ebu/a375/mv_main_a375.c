@@ -300,6 +300,13 @@ void misc_init_r_env(void)
 	char tmp_buf[10];
 	unsigned int malloc_len;
 
+	/* temp WA for new porting approach:
+	 * if using new U-Boot, and and old kernel, U-Boot can't pass new board ID's
+	 * Added environment variable 'new_board_id' to select new/old approach */
+	env = getenv("new_board_id");
+	if( !env || ( ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) )))
+		setenv("new_board_id", "no");
+
 	env = getenv("console");
 	if (!env)
 		setenv("console", "console=ttyS0,115200");

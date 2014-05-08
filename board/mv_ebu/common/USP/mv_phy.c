@@ -104,9 +104,12 @@ static void mvAlpBoardEgigaPhyInit(void)
 		mvEthPhyInit(1, MV_FALSE);
 	}
 
-	/* if MAC-1 is connected to RGMII-1 && SW_P4 is not connected RGMII-0 */
+	/* if MAC-1 is connected to RGMII-1 or PON serdes via SGMII,
+	 * and SW_P4 is not connected RGMII-0,
+	 * and MAC-1 is not connected to PON serdes via SFP, no need to init the PHY */
 	if ((ethComplex & (MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)) &&
-		!(ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY)) {
+		!(ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY) &&
+		!(ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)) {
 
 		/* enable external phy cpu ctrl - MAC1 is polling this phy */
 		mvBoardExtPhyBufferSelect(MV_TRUE);

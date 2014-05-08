@@ -384,7 +384,7 @@ typedef struct _boardInfo {
 #define MV_BOARD_CONFIG_INFO { \
 { MV_CONFIG_MAC0,	       0x3,	0,	 0,		0,	{ 0, 1, 1, 1 } }, \
 { MV_CONFIG_MAC1,	       0xC,	2,	 0,		0,	{ 0, 1, 1, 1 } }, \
-{ MV_CONFIG_PON_SERDES,	       0x10,	4,	 0,		0,	{ 0, 1, 1, 1 } }, \
+{ MV_CONFIG_MAC0_SW_SPEED,     0x10,	4,	 0,		0,	{ 0, 1, 0, 1 } }, \
 { MV_CONFIG_PON_BEN_POLARITY,  0x20,	5,	 0,		0,	{ 0, 0, 1, 1 } }, \
 { MV_CONFIG_SGMII0_CAPACITY,   0x40,	6,	 0,		0,	{ 0, 1, 0, 1 } }, \
 { MV_CONFIG_SGMII1_CAPACITY,   0x80,	7,	 0,		0,	{ 0, 1, 1, 1 } }, \
@@ -392,9 +392,9 @@ typedef struct _boardInfo {
 { MV_CONFIG_LANE1,	       0x18,	3,	 0,		1,	{ 0, 0, 0, 1 } }, \
 { MV_CONFIG_LANE2,	       0x20,	5,	 0,		1,	{ 0, 0, 0, 1 } }, \
 { MV_CONFIG_LANE3,	       0X40,	6,	 0,		1,	{ 0, 0, 0, 1 } }, \
-{ MV_CONFIG_MAC0_SW_SPEED,     0X80,	7,	 0,		1,	{ 0, 1, 0, 1 } }, \
 { MV_CONFIG_DEVICE_BUS_MODULE, 0x3,	0,	 1,		0,	{ 0, 0, 0, 1 } }, \
 { MV_CONFIG_DDR_BUSWIDTH,      0x4,	2,	 1,		0,	{ 0, 0, 0, 1 } }, \
+{ MV_CONFIG_PON_SERDES,        0x18,	3,	 0,		1,	{ 0, 1, 0, 1 } }, \
 };
 
 /* MV_CONFIG_TYPE_ID ConfigID,      MV_U32 Offset,	 expanderNum,  regNum,   }} */
@@ -507,6 +507,7 @@ MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TY
 MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass, MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo);
 MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable);
 MV_STATUS mvBoardSgmiiSfp0TxSet(MV_BOOL enable);
+MV_STATUS mvBoardSgmiiSfp1TxSet(MV_BOOL enable);
 MV_STATUS mvBoardHddExtSet(MV_BOOL enable);
 MV_STATUS mvBoardHDDPowerSet(MV_BOOL enable);
 MV_STATUS mvBoardUsbSsEnSet(MV_BOOL enable);

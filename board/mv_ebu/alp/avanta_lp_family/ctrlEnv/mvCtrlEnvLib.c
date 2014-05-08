@@ -518,7 +518,8 @@ MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 	 * 1. Boot source is SPI1
 	 * 2. RGMII-1 is disabled (SPI-1 MPP's are shared with RGMII-1 MPP's) */
 	if (mvBoardBootDeviceGet() == MSAR_0_BOOT_SPI1_FLASH ||
-		(!(ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1) && !(ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)))
+		(!(ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1) && !(ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)
+		 && !(ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)))
 		isSPI1Enabled = MV_TRUE;
 	else
 		isSPI1Enabled = MV_FALSE;

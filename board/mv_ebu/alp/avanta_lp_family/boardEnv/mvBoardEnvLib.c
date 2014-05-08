@@ -280,7 +280,8 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 	ethComplex = mvBoardEthComplexConfigGet();
 	if ((ethPortNum == 0 && (ethComplex & MV_ETHCOMP_GE_MAC0_2_COMPHY_1 ||
 		ethComplex & MV_ETHCOMP_GE_MAC0_2_COMPHY_2 || ethComplex & MV_ETHCOMP_GE_MAC0_2_COMPHY_3)) ||
-		(ethPortNum == 1 && (ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)))
+			(ethPortNum == 1 && (ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES ||
+			 ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)))
 		return MV_TRUE;
 	return MV_FALSE;
 }
@@ -999,7 +1000,9 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		/* If needed, enable SFP0 TX for SGMII, for DB-6660 */
 		if (ethComplex & MV_ETHCOMP_GE_MAC0_2_COMPHY_2)
 			mvBoardSgmiiSfp0TxSet(MV_TRUE);
-
+		/* If needed, enable SFP1 TX for SGMII, for DB-6660 */
+		if (ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)
+			mvBoardSgmiiSfp1TxSet(MV_TRUE);
 		/* Check conflicts between device bus module and NAND */
 		mvBoardAudioModuleConfigCheck();
 
@@ -1088,7 +1091,8 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 	/* Groups 3-4  - (only if not Booting from SPI1)*/
 	if (bootDev != MSAR_0_BOOT_SPI1_FLASH) {
 		tdmLqUnit = (slicDev == SLIC_LANTIQ_ID);
-		if (ethComplexOptions & (MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)) {
+		if (ethComplexOptions & (MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES |
+					MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)) {
 			mvBoardMppTypeSet(3, GE1_RGMII1_UNIT);
 			mvBoardMppTypeSet(4, (tdmLqUnit ? GE1_RGMII1_CPU_SMI_CTRL_TDM_LQ_UNIT : \
 						GE1_RGMII1_CPU_SMI_CTRL_REF_CLK_OUT));
@@ -1151,8 +1155,9 @@ MV_STATUS mvBoardEthComplexInfoUpdate()
 	if (mvCtrlSysConfigGet(MV_CONFIG_SGMII0_CAPACITY) == 0x1)
 		ethComplexOptions |= MV_ETHCOMP_GE_MAC0_2_COMPHY_SPEED_2G;
 
-	/* if MAC1 is NOT connected to PON SerDes --> connect PON MAC to to PON SerDes */
-	if ((ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES) == MV_FALSE)
+	/* if MAC1 is NOT connected to PON SerDes using SGMII or SFP --> connect PON MAC to to PON SerDes */
+	if ((ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES) == MV_FALSE &&
+			(ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP) == MV_FALSE)
 		ethComplexOptions |= MV_ETHCOMP_P2P_MAC_2_PON_ETH_SERDES;
 
 	/* Switch Ports*/
@@ -1439,6 +1444,8 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet()
 {
 	if (mvCtrlSysConfigGet(MV_CONFIG_PON_SERDES) == 0x1)
 		return MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES;
+	if (mvCtrlSysConfigGet(MV_CONFIG_PON_SERDES) == 0x2)
+		return MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP;
 	/* else Scan MAC1 config to decide its connection */
 	switch (mvCtrlSysConfigGet(MV_CONFIG_MAC1)) {
 	case 0x0:
@@ -1969,9 +1976,11 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 	}
 
 	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)
-		mvOsOutput("\tPON ETH SERDES on MAC1\n");
+		mvOsOutput("\tPON ETH SERDES on MAC1 [SGMII1]\n");
+	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)
+		mvOsOutput("\tPON ETH SERDES on MAC1 [SFP]\n");
 	if (ethConfig & MV_ETHCOMP_P2P_MAC_2_PON_ETH_SERDES)
-		mvOsOutput("\tETH SERDES on P2P MAC\n");
+		mvOsOutput("\tPON ETH SERDES on P2P MAC\n");
 
 	/* TDM / Slic configuration */
 	slicDevice = mvBoardSlicUnitTypeGet();
@@ -2613,6 +2622,34 @@ MV_STATUS mvBoardSgmiiSfp0TxSet(MV_BOOL enable)
 }
 
 /*******************************************************************************
+* mvBoardSgmiiSfp1TxSet - enable/disable SGMII_SFP1_TX_DISABLE status
+*
+* DESCRIPTION:
+*       This function enables/disables the field status.
+*
+* INPUT:
+*       enable - Boolean to indicate requested status
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+********************************************************************************/
+MV_STATUS mvBoardSgmiiSfp1TxSet(MV_BOOL enable)
+{
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
+
+	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_SFP1_TX_DIS, &ioInfo) != MV_OK) {
+		mvOsPrintf("%s: Error: Write to IO expander failed (SFP1_TX_DIS)\n", __func__);
+		return MV_ERROR;
+	}
+
+	return mvBoardIoExpValSet(&ioInfo, (enable ? 0x0 : 0x1));
+}
+
+/*******************************************************************************
 * mvBoardHDDSelecteExternal - Select External / Internal HDD
 *
 * DESCRIPTION:
@@ -2920,7 +2957,11 @@ MV_STATUS mvBoardEepromWrite(MV_CONFIG_TYPE_ID configType, MV_U8 value)
 		mvOsPrintf("%s: Error: Write configuration to EEPROM failed\n", __func__);
 		return MV_ERROR;
 	}
-
+	 /* check if value is bigger then field's limit */
+	if (value > configInfo.mask >> configInfo.offset) {
+		mvOsPrintf("%s: Error: Requested write value is not valid (%d)\n", __func__, value);
+		return MV_ERROR;
+	}
 	/* reg num is according to DIP-switch mapping (each Expander conatins 2 registers) */
 	regNum = configInfo.expanderNum * 2 + configInfo.regNum;
 
@@ -3206,6 +3247,7 @@ MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 			(c & MV_ETHCOMP_GE_MAC1_2_RGMII1) ||
 			(c & MV_ETHCOMP_GE_MAC1_2_RGMII0) ||
 			(c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES) ||
+			(c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP) ||
 			(c & MV_ETHCOMP_GE_MAC1_2_SW_P4)))
 			isConnected = MV_TRUE;
 
@@ -3259,6 +3301,7 @@ MV_BOOL mvBoardIsEthActive(MV_U32 ethNum)
 			(c & MV_ETHCOMP_GE_MAC1_2_RGMII1) ||
 			(c & MV_ETHCOMP_GE_MAC1_2_RGMII0) ||
 			(c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES) ||
+			(c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP) ||
 			((c & MV_ETHCOMP_GE_MAC1_2_SW_P4) && mvBoardMacCpuPortGet() == 1)))
 			isActive = MV_TRUE;
 
@@ -3349,8 +3392,10 @@ MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
 		mvOsPrintf("Error: this option is not supported in Z stepping revision\n");
 		return MV_ERROR;
 	}
-	if (field == MV_CONFIG_MAC1 && (c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)) {
-		mvOsPrintf("Warning: MAC1 is connected to PON Serdes\n");
+	if (field == MV_CONFIG_MAC1 && (c & (MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES |
+					MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP))) {
+		mvOsPrintf("Warning: MAC1 is connected to PON Serdes\n"
+				"To alter MAC1 settings, please update 'ponserdes' field first\n");
 		return MV_ERROR;
 	}
 	/* 0x3 = RGMII0, check if MAC0 is connected to RGMII0 */

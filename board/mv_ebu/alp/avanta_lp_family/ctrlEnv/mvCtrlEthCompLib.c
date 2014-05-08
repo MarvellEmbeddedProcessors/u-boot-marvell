@@ -476,7 +476,7 @@ MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig)
 	if (c & (MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC1_2_RGMII0))
 		mvEthComplexMacToRgmii(1);
 
-	if (c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)
+	if (c & (MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP))
 		mvEthComplexMac1ToPonSerdes(1);
 
 	if (c & MV_ETHCOMP_SW_P0_2_GE_PHY_P0)

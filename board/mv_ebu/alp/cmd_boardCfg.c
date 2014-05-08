@@ -33,7 +33,7 @@ typedef struct _boardConfig {
 MV_BOARD_CONFIG_VALUE boardConfig[] = {
 { MV_CONFIG_MAC0,		"MAC0",				4, {"Switch port 6", "GBE PHY#0", "RGMII-0", "SGMII(DB-6660)"} },
 { MV_CONFIG_MAC1,		"MAC1",				4, {"RGMII-1", "Switch port 4", "GBE PHY#3", "RGMII-0"} },
-{ MV_CONFIG_PON_SERDES,		"PON SERDES",			2, {"PON MAC", "MAC1"} },
+{ MV_CONFIG_PON_SERDES,		"PON SERDES",			3, {"PON MAC", "MAC1[SGMII]", "MAC1[SFP]"} },
 { MV_CONFIG_PON_BEN_POLARITY,	"PON POLARITY (DB-6660)",	2, {"BEN active low", "BEN active low"} },
 { MV_CONFIG_SGMII0_CAPACITY,	"SGMII-0 Capacity",		2, {"1G", "2.5G"} },
 { MV_CONFIG_SGMII1_CAPACITY,	"SGMII-1 Capacity",		2, {"1G", "2.5G"} },

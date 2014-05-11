@@ -76,8 +76,8 @@ extern MV_U32 mvCpuL2ClkGet(MV_VOID);
 #elif defined(MV88F672X)
 #include "ddr3_a375.h"
 extern MV_U32 mvCpuL2ClkGet(MV_VOID);
-#elif defined(MV_MSYS)
-#include "ddr3_msys.h"
+#elif defined(MV_MSYS_BC2) || defined(MV_MSYS_AC3)
+#include "ddr3_msys_bc2.h"
 #else
 #error "No SOC define for uart in binary header."
 #endif

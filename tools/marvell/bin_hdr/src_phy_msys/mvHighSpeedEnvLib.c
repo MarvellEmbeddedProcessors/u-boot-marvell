@@ -63,8 +63,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mv_os.h"
 #include "config_marvell.h"  	/* Required to identify SOC and Board */
-#include "ddr3_msys.h"
-#include "ddr3_msys_config.h"
+#include "ddr3_msys_bc2.h"
+#include "ddr3_msys_bc2_config.h"
 #include "mvHighSpeedEnvSpec.h"
 #include "mvBHboardEnvSpec.h"
 #include "mvCtrlPex.h"
@@ -80,19 +80,24 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	if (gBoardId != -1)
 		return gBoardId;
 
+/* Customer board ID's */
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 	#ifdef CONFIG_CUSTOMER_BOARD_0
-		gBoardId = BOBCAT2_CUSTOMER_BOARD_ID0;
+		gBoardId = MSYS_CUSTOMER_BOARD_ID0;
 	#elif CONFIG_CUSTOMER_BOARD_1
-		gBoardId = BOBCAT2_CUSTOMER_BOARD_ID1;
+		gBoardId = MSYS_CUSTOMER_BOARD_ID1;
 	#endif
 #else
+/* BobCat2 Board ID's */
 	#if defined(DB_BOBCAT2)
 		gBoardId = DB_DX_BC2_ID;
 	#elif defined(RD_BOBCAT2)
 		gBoardId = RD_DX_BC2_ID;
 	#elif defined(RD_MTL_BOBCAT2)
 		gBoardId = RD_MTL_BC2;
+/* AlleyCat3 Board ID's */
+	#elif defined(DB_AC3)
+		gBoardId = DB_AC3_ID;
 	#else
 		#error Invalid Board is configured
 	#endif

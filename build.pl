@@ -72,7 +72,10 @@ if($opt_c eq 1)
 		($opt_b eq "bobcat2_rd_mtl") or
 		($opt_b eq "bobcat2_rd") or
 		($opt_b eq "bobcat2_customer0") or
-		($opt_b eq "bobcat2_customer1") )
+		($opt_b eq "bobcat2_customer1") or
+		($opt_b eq "ac3_db") or
+		($opt_b eq "ac3_customer0") or
+		($opt_b eq "ac3_customer1") )
 	{
 		$board = $opt_b;
 		if( (substr $board,7 , 3) eq "370" ) {
@@ -93,7 +96,11 @@ if($opt_c eq 1)
 			$boardID="a38x";
 		}
 		elsif ( (substr $board,0 , 7) eq "bobcat2" ) {
-			$boardID="msys";
+			$boardID="msys-bc2";
+			$targetBoard = substr $board, 8;
+		}
+		elsif ( (substr $board,0 , 3) eq "ac3" ) {
+			$boardID="msys-ac3";
 			$targetBoard = substr $board, 8;
 		}
 
@@ -120,7 +127,11 @@ if($opt_c eq 1)
 
 	my $path = Cwd::cwd();
 	chdir  ("./tools/marvell");
-	system("make clean BOARD=$boardID -s");
+	if( ($boardID eq "msys-ac3") or ($boardID eq "msys-bc2")) {
+		system("make clean BOARD=msys -s");
+	} else {
+		system("make clean BOARD=$boardID -s");
+	}
 	chdir  ("$path");
 	system("make ${board}_config");
 
@@ -147,7 +158,8 @@ if($opt_c eq 1)
 		$flash_name = "nand";
 		$img_type   = "nand";
 		if( ($boardID eq "axp") or
-			($boardID eq "msys") or
+			($boardID eq "msys-bc2") or
+			($boardID eq "msys-ac3") or
                         ($boardID eq "a38x")) {
 			$img_opts   = "-P 4096 -L 128 -N MLC";
 		}
@@ -257,6 +269,7 @@ if($fail){
 
 
 if( ($boardID eq "alp") or
+    ($boardID eq "msys-ac3") or
     ($boardID eq "a375") or
     ($boardID eq "a38x") ) {
 	$targetBoard = "";

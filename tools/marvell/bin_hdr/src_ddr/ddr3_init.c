@@ -77,7 +77,7 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "bin_hdr_twsi.h"
 #include "mvUart.h"
 
-#if defined(MV88F672X)|| defined (MV88F66XX) || defined(MV_MSYS) || defined(MV88F68XX)
+#if defined(MV88F672X)|| defined (MV88F66XX) || defined(MV_MSYS_BC2) || defined(MV_MSYS_AC3) || defined(MV88F68XX)
 #include "mvBHboardEnvSpec.h"
 #endif
 
@@ -95,14 +95,14 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_a38x.h"
 #include "ddr3_a38x_vars.h"
 #include "ddr3_a38x_topology.h"
-#elif defined(MV_MSYS)
-#include "ddr3_msys.h"
-#include "ddr3_msys_config.h"
-#include "ddr3_msys_vars.h"
-#include "ddr3_msys_topology.h"
+#elif defined(MV_MSYS_BC2) || defined(MV_MSYS_AC3)
+#include "ddr3_msys_bc2.h"
+#include "ddr3_msys_bc2_config.h"
+#include "ddr3_msys_bc2_vars.h"
+#include "ddr3_msys_bc2_topology.h"
 #endif
 
-#if defined(MV88F68XX) || defined(MV_MSYS)
+#if defined(MV88F68XX) || defined(MV_MSYS_BC2) || defined(MV_MSYS_AC3)
 #include "ddr3_hws_hw_training.h"
 #define MV_NEW_TIP
 extern MV_STATUS ddr3TipInitSpecificRegConfig

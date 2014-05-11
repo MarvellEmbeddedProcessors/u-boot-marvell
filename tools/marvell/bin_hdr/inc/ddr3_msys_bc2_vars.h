@@ -65,7 +65,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _INC_MSYS_VARS_H
 #define _INC_MSYS_VARS_H
 
-#include "ddr3_msys_config.h"
+#include "ddr3_msys_bc2_config.h"
 #include "mvDdr3TopologyDef.h"
 
 
@@ -92,4 +92,3 @@ MV_DRAM_MODES ddr_modes[] =
 };
 
 #endif /* _INC_MSYS_VARS_H */
-

@@ -142,16 +142,22 @@
 /*********************************/
 /* defines for BOBCAT2    */
 /*********************************/
-#elif defined(CONFIG_BOBCAT2)
-	#define MV_MSYS		/* SOC NAME BOBCAT2 */
-
 #elif defined(CONFIG_DB_BOBCAT2)
-	#define MV_MSYS		/* SOC NAME BOBCAT2 */
+	#define MV_MSYS_BC2
 	#define DB_BOBCAT2
-
 #elif defined(CONFIG_RD_BOBCAT2)
-	#define MV_MSYS		/* SOC NAME BOBCAT2 */
+	#define MV_MSYS_BC2
 	#define RD_BOBCAT2
-#endif  // CONFIG_RD_78460_GP
+#elif defined(CONFIG_BOBCAT2) /* general define for customer compilation */
+	#define MV_MSYS_BC2
+/*********************************/
+/* defines for AlleyCat3        */
+/*********************************/
+#elif defined(CONFIG_DB_AC3)
+	#define MV_MSYS_AC3
+	#define DB_AC3
+#elif defined(CONFIG_ALLEYCAT3) /* general define for customer compilation */
+	#define MV_MSYS_AC3
+#endif
 
 #endif  /* __CONFIG_MARVELL_H */

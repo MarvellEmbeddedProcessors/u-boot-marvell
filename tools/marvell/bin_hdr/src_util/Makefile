@@ -130,6 +130,12 @@ endif
 ifeq "$(CONFIG_RD_MTL_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_RD_BOBCAT2
 endif
+ifeq "$(CONFIG_ALLEYCAT3)"  "y"
+  CFLAGS += -DCONFIG_DB_AC3
+endif
+ifeq "$(CONFIG_DB_AC3)"  "y"
+  CFLAGS += -DCONFIG_DB_AC3
+endif
 
 CFLAGS += $(BOARDFLAG)
 INCLUDE     = -I./  -I../inc/ -I../../../../include

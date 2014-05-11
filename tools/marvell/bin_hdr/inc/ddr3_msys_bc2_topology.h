@@ -65,7 +65,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _INC_MSYS_TOPOLOGY_H
 #define _INC_MSYS_TOPOLOGY_H
 
-#include "ddr3_msys_config.h"
+#include "ddr3_msys_bc2_config.h"
 #include "mvDdr3TopologyDef.h"
 #include "mvDdr3LoggingDef.h"
 
@@ -158,4 +158,3 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =  {{
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 
 #endif /* _INC_MSYS_TOPOLOGY_H */
-

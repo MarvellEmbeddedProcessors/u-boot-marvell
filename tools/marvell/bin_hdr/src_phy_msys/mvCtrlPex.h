@@ -67,7 +67,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _MV_CTRL_PEX_H
 
 #include "mvBHboardEnvSpec.h"
-#include "ddr3_msys.h"
+#include "ddr3_msys_bc2.h"
 
 /********************************* Definitions ********************************/
 

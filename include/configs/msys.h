@@ -53,22 +53,27 @@ disclaimer.
 #endif // MV_NAND
 
 /*********************************/
-/* defines for DB-BOBCAT2       */
+/* defines for Customer Boards   */
 /*********************************/
 #if defined (CONFIG_CUSTOMER_BOARD_0) || defined (CONFIG_CUSTOMER_BOARD_1)
-#define CONFIG_BOBCAT2
 #define CONFIG_CUSTOMER_BOARD_SUPPORT
 #endif
 
+/* Defines for Binary Header linkage @ config_marvell.h */
 #ifdef CONFIG_DB_BOBCAT2
-	#define DB_BOBCAT2
+       #define DB_BOBCAT2
 #endif
 #ifdef CONFIG_RD_BOBCAT2
-	#define RD_BOBCAT2
+       #define RD_BOBCAT2
 #endif
 #ifdef CONFIG_RD_MTL_BOBCAT2
-	#define RD_MTL_BOBCAT2
+       #define RD_MTL_BOBCAT2
 #endif
+#ifdef CONFIG_DB_AC3
+       #define DB_AC3
+#endif
+
+
 
 /***********/
 /* General */

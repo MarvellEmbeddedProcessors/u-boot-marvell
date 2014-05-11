@@ -63,8 +63,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 #include "mv_os.h"
 #include "config_marvell.h"  	/* Required to identify SOC and Board */
-#include "ddr3_msys.h"
-#include "ddr3_msys_config.h"
+#include "ddr3_msys_bc2.h"
+#include "ddr3_msys_bc2_config.h"
 #include "mvHighSpeedEnvSpec.h"
 #include "mvBHboardEnvSpec.h"
 #include "mvCtrlPex.h"

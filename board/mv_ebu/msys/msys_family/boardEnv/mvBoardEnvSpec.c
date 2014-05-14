@@ -179,9 +179,14 @@ MV_BOARD_INFO bobcat2_customer_board_0_Info = {
 	.norFlashWriteParams		= BOBCAT2_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS
 };
 
-MV_BOARD_INFO *customerBoardInfoTbl[] = {
+MV_BOARD_INFO *customerBC2BoardInfoTbl[] = {
 	&bobcat2_customer_board_0_Info,
 	&bobcat2_customer_board_0_Info,
+};
+
+MV_BOARD_INFO *customerAC3BoardInfoTbl[] = {
+	&bobcat2_customer_board_0_Info,		/* Place holder for AC3 board, must be replaced */
+	&bobcat2_customer_board_0_Info,		/* Place holder for AC3 board, must be replaced */
 };
 
 /***************************************** Marvell Boards *****************************************/
@@ -459,8 +464,12 @@ MV_BOARD_INFO bc2_rd_mtlInfo = {
 
 /*********************************************************************************/
 
-MV_BOARD_INFO *marvellBoardInfoTbl[] = {
+MV_BOARD_INFO *marvellBC2BoardInfoTbl[] = {
 	&db_dx_bc2Info,
 	&rd_dx_bc2Info,
 	&bc2_rd_mtlInfo
+};
+
+MV_BOARD_INFO *marvellAC3BoardInfoTbl[] = {
+	&db_dx_bc2Info		/* Place holder for AC3 boards, must be replaced */
 };

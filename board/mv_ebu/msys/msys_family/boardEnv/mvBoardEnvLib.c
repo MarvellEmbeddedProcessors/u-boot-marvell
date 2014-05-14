@@ -90,8 +90,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DB1(x)
 #endif
 
-extern MV_BOARD_INFO *marvellBoardInfoTbl[];
-extern MV_BOARD_INFO *customerBoardInfoTbl[];
+extern MV_BOARD_INFO *marvellBC2BoardInfoTbl[];
+extern MV_BOARD_INFO *customerBC2BoardInfoTbl[];
+extern MV_BOARD_INFO *marvellAC3BoardInfoTbl[];
+extern MV_BOARD_INFO *customerAC3BoardInfoTbl[];
 static MV_BOARD_INFO *board;
 
 /* Locals */
@@ -116,7 +118,7 @@ static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClas
 MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
 {
 /* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
-	return boardId & (MARVELL_BOARD_ID_BASE - 1);
+	return boardId & (BOARD_ID_INDEX_MASK - 1);
 }
 
 /*******************************************************************************
@@ -1104,35 +1106,51 @@ MV_32 mvBoardNandWidthGet(void)
 * mvBoardSet - Set Board model
 *
 * DESCRIPTION:
-*       This function sets the board ID.
-*       Board ID is 32bit word constructed of board model (16bit) and
-*       board revision (16bit) in the following way: 0xMMMMRRRR.
+*	Sets the global board structures and global board ID, according to boardId value
+*	1. Detect correct MSYS family(Bobcat2/Alleycat3)
+*	2. Detect Marvell/Customer board
 *
 * INPUT:
-*       None.
+*	boardId :
+*	- U-Boot : set boardID via mvBoardIdGet() - according to pre-compilation flag.
+*	- Kernel : set boardID via tags received from U-Boot .
 *
 * OUTPUT:
-*       None.
+*	None.
 *
 * RETURN:
-*       void
+*	void
 *
 *******************************************************************************/
 static MV_U32 gBoardId = -1;
 MV_VOID mvBoardSet(MV_U32 boardId)
 {
-	/* board ID's >0x10 are for Marvell Boards */
-	if (boardId >= MARVELL_BOARD_ID_BASE && boardId < MV_MAX_MARVELL_BOARD_ID) { /* Marvell Board */
-		board = marvellBoardInfoTbl[mvBoardIdIndexGet(boardId)];
+	/* Marvell Bobcat2 Boards */
+	if (boardId >= BC2_MARVELL_BOARD_ID_BASE && boardId < BC2_MARVELL_MAX_BOARD_ID) { /* Marvell Board */
+		board = marvellBC2BoardInfoTbl[mvBoardIdIndexGet(boardId)];
 		gBoardId = boardId;
-	} else if (boardId >= CUTOMER_BOARD_ID_BASE && boardId < MV_MAX_CUSTOMER_BOARD_ID) { /* Customer Board */
-		board = customerBoardInfoTbl[mvBoardIdIndexGet(boardId)];
+	/* Marvell AlleyCat3 Boards */
+	} else if (boardId >= AC3_MARVELL_BOARD_ID_BASE && boardId < AC3_MARVELL_MAX_BOARD_ID) { /* Marvell Board */
+		board = marvellAC3BoardInfoTbl[mvBoardIdIndexGet(boardId)];
+		gBoardId = boardId;
+	/* Customer Bobcat2 Boards */
+	} else if (boardId >= BC2_CUTOMER_BOARD_ID_BASE && boardId < BC2_CUSTOMER_MAX_BOARD_ID) { /* Customer Board */
+		board = customerBC2BoardInfoTbl[mvBoardIdIndexGet(boardId)];
+		gBoardId = boardId;
+	/* Customer AlleyCat3 Boards */
+	} else if (boardId >= AC3_CUTOMER_BOARD_ID_BASE && boardId < AC3_CUSTOMER_MAX_BOARD_ID) { /* Customer Board */
+		board = customerAC3BoardInfoTbl[mvBoardIdIndexGet(boardId)];
 		gBoardId = boardId;
 	} else {
 		mvOsPrintf("%s: Error: wrong board Id (%d)\n", __func__, boardId);
-		gBoardId = 0;
-		board = customerBoardInfoTbl[gBoardId];
-		mvOsPrintf("Applying default board ID (%d: %s)\n", gBoardId, board->boardName);
+#ifdef CONFIG_ALLEYCAT3
+		gBoardId = AC3_CUSTOMER_BOARD_ID0;
+		board = customerAC3BoardInfoTbl[gBoardId];
+#else
+		gBoardId = BC2_CUSTOMER_BOARD_ID0;
+		board = customerBC2BoardInfoTbl[gBoardId];
+#endif
+		mvOsPrintf("Applying default Customer board ID (%d: %s)\n", gBoardId, board->boardName);
 	}
 }
 
@@ -1160,18 +1178,29 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		return gBoardId;
 
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-	#ifdef CONFIG_CUSTOMER_BOARD_0
-		gBoardId = BOBCAT2_CUSTOMER_BOARD_ID0;
-	#elif CONFIG_CUSTOMER_BOARD_1
-		gBoardId = BOBCAT2_CUSTOMER_BOARD_ID1;
+	#ifdef CONFIG_BOBCAT2
+		#ifdef CONFIG_CUSTOMER_BOARD_0
+			gBoardId = BC2_CUSTOMER_BOARD_ID0;
+		#elif CONFIG_CUSTOMER_BOARD_1
+			gBoardId = BC2_CUSTOMER_BOARD_ID1;
+		#endif
+	#elif defined CONFIG_ALLEYCAT3
+		#ifdef CONFIG_CUSTOMER_BOARD_0
+			gBoardId = AC3_CUSTOMER_BOARD_ID0;
+		#elif CONFIG_CUSTOMER_BOARD_1
+			gBoardId = AC3_CUSTOMER_BOARD_ID1;
+		#endif
 	#endif
-#else
+#else	/* !CONFIG_CUSTOMER_BOARD_SUPPORT */
 	#if defined(DB_BOBCAT2)
 		gBoardId = DB_DX_BC2_ID;
 	#elif defined(RD_BOBCAT2)
 		gBoardId = RD_DX_BC2_ID;
 	#elif defined(RD_MTL_BOBCAT2)
 		gBoardId = RD_MTL_BC2;
+	/* AlleyCat3 Board ID's */
+	#elif defined(DB_AC3)
+		gBoardId = DB_AC3_ID;
 	#else
 		mvOsPrintf("%s: Board ID must be defined!\n", __func__);
 		while (1)

@@ -13,6 +13,7 @@ sub HELP_MESSAGE
 	print "\t\t\t\t\tarmada_38x, armada_38x_customer0, armada_38x_customer1\n";
 	print "\t\t\t\t\tarmada_375, armada_375_customer0, armada_375_customer1\n";
 	print "\t\t\t\t\tbobcat2_db, bobcat2_rd, bobcat2_customer0, bobcat2_customer1\n";
+	print "\t\t\t\t\tac3_db, ac3_customer0, ac3_customer1\n";
 	print "\t-c\tClean build. calls make mrproper\n";
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";

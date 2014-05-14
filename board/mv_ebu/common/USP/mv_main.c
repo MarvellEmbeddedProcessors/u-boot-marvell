@@ -467,7 +467,7 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 
 	/* Disable PNP config of Marvell memory controller devices. */
 	envSetDefault("disaMvPnp", "no");
-	envSetDefault("bootdelay", "3");
+	envSetDefault("bootdelay", "-1");
 
 #if (defined(MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_UNM_ETH))
 	/* Generate random ip and mac address */

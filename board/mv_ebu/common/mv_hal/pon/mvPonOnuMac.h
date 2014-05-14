@@ -124,7 +124,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* TX Delay Register - const */
 #define GPON_TX_DELAY_TD_622                (0x0AA1)            /* Const Delay */
-#define GPON_TX_DELAY_TD_1244               (0x1542)            /* Const Delay */
+#define GPON_TX_DELAY_TD_1244               (0x15E9)            /* Const Delay */
 
 /* TX Delay Register - equilization */
 #define GPON_TX_EQUAL_DELAY_TD              (0x0000)            /* Equilization Delay */

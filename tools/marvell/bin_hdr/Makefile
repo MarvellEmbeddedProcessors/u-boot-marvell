@@ -121,18 +121,34 @@ ifeq "$(CONFIG_ARMADA_38X)"  "y"
 endif
 ifeq "$(CONFIG_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_BOBCAT2
+  BC2_SOC = yes
 endif
 ifeq "$(CONFIG_DB_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_DB_BOBCAT2
+  BC2_SOC = yes
 endif
 ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_RD_BOBCAT2
+  BC2_SOC = yes
 endif
 ifeq "$(CONFIG_ALLEYCAT3)"  "y"
   CFLAGS += -DCONFIG_DB_AC3
+  AC3_SOC = yes
 endif
 ifeq "$(CONFIG_DB_AC3)"  "y"
   CFLAGS += -DCONFIG_DB_AC3
+  AC3_SOC = yes
+endif
+
+# prepare board name for MSYS SoC (rest of SoCs use $BOARD as board name)
+ifdef BC2_SOC
+	BOARDNAME = msys_bc2
+else
+	ifdef AC3_SOC
+		BOARDNAME = msys_ac3
+	else
+		BOARDNAME = $(BOARD)
+	endif
 endif
 
 SETPARAMS   = setparams
@@ -170,7 +186,7 @@ LIB_UTIL_UART = utils.uart.a
 LIB_SWUP_UART = suspendWUP.uart.a
 LIB_GENERAL_INIT_UART = generalInit.uart.a
 
-TLIB = ./src_ddr/ddr3_training_$(BOARD).lib
+TLIB = ./src_ddr/ddr3_training_$(BOARDNAME).lib
 
 COMPONENT_SUBDIRS = src_util src_phy_$(BOARD) src_ddr src_suspendWUP src_generalInit
 HDR_COMPONENTS = $(LIB_GENERAL_INIT) $(LIB_PHY) $(LIB_DDR) $(TLIB) $(LIB_SWUP)

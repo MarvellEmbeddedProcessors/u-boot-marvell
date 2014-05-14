@@ -82,10 +82,18 @@ MV_U32 mvBoardIdGet(MV_VOID)
 
 /* Customer board ID's */
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	#ifdef CONFIG_BOBCAT2
 	#ifdef CONFIG_CUSTOMER_BOARD_0
-		gBoardId = MSYS_CUSTOMER_BOARD_ID0;
-	#elif CONFIG_CUSTOMER_BOARD_1
-		gBoardId = MSYS_CUSTOMER_BOARD_ID1;
+			gBoardId = BC2_CUSTOMER_BOARD_ID0;
+		#elif CONFIG_CUSTOMER_BOARD_1
+			gBoardId = BC2_CUSTOMER_BOARD_ID1;
+		#endif
+	#elif defined CONFIG_ALLEYCAT3
+		#ifdef CONFIG_CUSTOMER_BOARD_0
+			gBoardId = AC3_CUSTOMER_BOARD_ID0;
+		#elif CONFIG_CUSTOMER_BOARD_1
+			gBoardId = AC3_CUSTOMER_BOARD_ID1;
+		#endif
 	#endif
 #else
 /* BobCat2 Board ID's */
@@ -125,7 +133,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
 {
 /* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
-	return boardId & (MARVELL_BOARD_ID_BASE - 1);
+	return boardId & (BOARD_ID_INDEX_MASK - 1);
 }
 
 MV_U32 mvBoardTclkGet(MV_VOID)

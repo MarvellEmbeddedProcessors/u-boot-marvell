@@ -75,7 +75,7 @@ typedef struct __mvDramMcInit {
 	MV_U32 reg_mask;
 } MV_DRAM_MC_INIT;
 
-#define MARVELL_BOARD MARVELL_BOARD_ID_BASE
+#define MARVELL_BOARD BC2_MARVELL_BOARD_ID_BASE
 
 typedef struct __mvDramModes {
     char *mode_name;

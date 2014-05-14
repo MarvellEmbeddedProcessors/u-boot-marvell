@@ -62,8 +62,8 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#ifndef _DDR3_MSYS_H
-#define _DDR3_MSYS_H
+#ifndef _DDR3_MSYS_BC2_H
+#define _DDR3_MSYS_BC2_H
 
 #include "ddr3_hws_hw_training_def.h"
 
@@ -179,4 +179,5 @@ typedef enum
 
 #define ACTIVE_INTERFACE_MASK			  0x10
 
-#endif /* _DDR3_MSYS_H */
+#endif /* _DDR3_MSYS_BC2_H */
+

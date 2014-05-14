@@ -64,8 +64,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
 
-#ifndef _DDR3_MSYS_CONFIG_H
-#define _DDR3_MSYS_CONFIG_H
+#ifndef _DDR3_MSYS_BC2_CONFIG_H
+#define _DDR3_MSYS_BC2_CONFIG_H
 
 #define SPEED_BIN		SPEED_BIN_DDR_2133N
 #define DDR_BUS_WIDTH   BUS_WIDTH_16
@@ -138,4 +138,6 @@ MV_U32 s_auiCpuFabClkToHClk[1][1];
 MV_U8 s_auiDivRatio2to1[1][1];
 MV_U16 auiODTStatic[1][1];
 MV_U8 s_auiDivRatio1to1[1][1];
-#endif /* _DDR3_MSYS_CONFIG_H */
+#endif /* _DDR3_MSYS_BC2_CONFIG_H */
+
+

@@ -62,8 +62,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _INC_MSYS_VARS_H
-#define _INC_MSYS_VARS_H
+#ifndef _INC_MSYS_BC2_VARS_H
+#define _INC_MSYS_BC2_VARS_H
 
 #include "ddr3_msys_bc2_config.h"
 #include "mvDdr3TopologyDef.h"

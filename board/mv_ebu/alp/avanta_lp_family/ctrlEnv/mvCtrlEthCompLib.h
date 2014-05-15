@@ -176,6 +176,21 @@ enum mvSwPortSrc {
 #define GPON_PHY_CTRL1_OFFSET				0
 #define GPON_PHY_CTRL1_MASK				(0x1 << GPON_PHY_CTRL1_OFFSET)
 
+/*******************************************************************************
+* Port Auto-Negotiation Configuration
+*/
+#define MV_ETH_IN_BAND_AN_EN_OFFSET		2
+#define MV_ETH_IN_BAND_AN_EN_MASK		(1 << MV_ETH_IN_BAND_AN_EN_OFFSET)
+
+#define MV_ETH_SPEED_AUTO_NEG_OFFSET		7
+#define MV_ETH_SPEED_AUTO_NEG_MASK		(1 << MV_ETH_SPEED_AUTO_NEG_OFFSET)
+
+#define MV_ETH_FLOW_CTRL_AUTO_NEG_OFFSET	11
+#define MV_ETH_FLOW_CTRL_AUTO_NEG_MASK		(1 << MV_ETH_FLOW_CTRL_AUTO_NEG_OFFSET)
+
+#define MV_ETH_DUPLEX_AUTO_NEG_OFFSET		13
+#define MV_ETH_DUPLEX_AUTO_NEG_MASK		(1 << MV_ETH_DUPLEX_AUTO_NEG_OFFSET)
+
 #ifdef CONFIG_MV_ETH_PP2
 MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig);
 #else

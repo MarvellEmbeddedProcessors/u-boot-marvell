@@ -2874,7 +2874,7 @@ MV_STATUS mvOnuGponMacTxEthFramesTcontiCounterGet(MV_U32 tcontNum, MV_U32 *count
 	if (tcontNum < 8)
 		status = asicOntGlbRegRead(mvAsicReg_GPON_TX_STAT_TCONT_i_ETH_FRAMES, counter, tcontNum);
 	else
-		status = asicOntGlbRegRead(mvAsicReg_GPON_TX_STAT_TCONT_i_8_15_ETH_FRAME, counter, (tcontNum - 8));
+		status = asicOntGlbRegRead(mvAsicReg_GPON_TX_STAT_TCONT_i_8_15_ETH_FRAME, counter, tcontNum - 8);
 
 	return status;
 }
@@ -2934,7 +2934,7 @@ MV_STATUS mvOnuGponMacTxGemFramesTcontiCounterGet(MV_U32 tcontNum, MV_U32 *count
 	if (tcontNum < 8)
 		status = asicOntGlbRegRead(mvAsicReg_GPON_TX_STAT_TCONT_i_GEM_FRAMES, counter, tcontNum);
 	else
-		status = asicOntGlbRegRead(mvAsicReg_GPON_TX_STAT_TCONT_i_8_15_GEM_FRAME, counter, tcontNum);
+		status = asicOntGlbRegRead(mvAsicReg_GPON_TX_STAT_TCONT_i_8_15_GEM_FRAME, counter, tcontNum - 8);
 
 	return status;
 }
@@ -2964,7 +2964,7 @@ MV_STATUS mvOnuGponMacTxIdleGemFramesTcontiCounterGet(MV_U32 tcontNum, MV_U32 *c
 	if (tcontNum < 8)
 		status = asicOntGlbRegRead(mvAsicReg_GPON_TX_STAT_TCONT_i_IDLE_GEM, counter, tcontNum);
 	else
-		status = asicOntGlbRegRead(mvAsicReg_GPON_TX_STAT_TCONT_i_8_15_IDLE_GEM, counter, tcontNum);
+		status = asicOntGlbRegRead(mvAsicReg_GPON_TX_STAT_TCONT_i_8_15_IDLE_GEM, counter, tcontNum - 8);
 
 	return status;
 }

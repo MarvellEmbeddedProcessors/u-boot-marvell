@@ -281,7 +281,7 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 	if ((ethPortNum == 0 && (ethComplex & MV_ETHCOMP_GE_MAC0_2_COMPHY_1 ||
 		ethComplex & MV_ETHCOMP_GE_MAC0_2_COMPHY_2 || ethComplex & MV_ETHCOMP_GE_MAC0_2_COMPHY_3)) ||
 			(ethPortNum == 1 && (ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES ||
-			 ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)))
+					     (ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP))))
 		return MV_TRUE;
 	return MV_FALSE;
 }
@@ -952,14 +952,16 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			smiAddress = 0x8;
 		else
 			smiAddress = 0x5;
+	} else { /* else if MAC0 is connected to SW port 6 */
+		smiAddress = -1;
+		if (ethComplex & MV_ETHCOMP_GE_MAC0_2_SW_P6) {
+			if (ethComplex & MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G) /* else if MAC0 is connected to SW port 6 */
+				macSpeed = BOARD_MAC_SPEED_2000M;
+			else
+				macSpeed = BOARD_MAC_SPEED_1000M;
+		}
 	}
-	else {				/* else MAC0 is connected to SW port 6 */
-		smiAddress = -1;	/* no SMI address if connected to switch */
-		if (ethComplex & MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G)
-			macSpeed = BOARD_MAC_SPEED_2000M;
-		else
-			macSpeed = BOARD_MAC_SPEED_1000M;
-	}
+
 	mvBoardPhyAddrSet(0, smiAddress);
 	mvBoardMacSpeedSet(0, macSpeed);
 

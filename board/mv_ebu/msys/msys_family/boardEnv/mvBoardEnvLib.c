@@ -199,9 +199,10 @@ MV_U16 mvBoardModelGet(MV_VOID)
 	MV_U8 modelId;
 	if (MV_ERROR == mvBoardTwsiRead(BOARD_DEV_TWSI_PLD, 0, 0, &modelId)) {
 		mvOsWarning();
-		return INVALID_BAORD_ID;
+		return INVALID_BOARD_ID;
 	}
-        return (MV_U16)modelId;
+
+	return (MV_U16)modelId;
 }
 /*******************************************************************************
 * mbBoardRevlGet - Get Board revision
@@ -495,17 +496,6 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 *       32bit clock cycles in Hertz.
 *
 *******************************************************************************/
-MV_U32 freq_tbl[] = {
-	360000000, /* 0 */
-	220000000, /* 1 */
-	200000000, /* 2 */
-	400000000, /* 3 */
-	500000000, /* 4 */
-	520000000, /* 5 */
-	450000000, /* 6 */
-	0xFFFFFFFF /* 7  reserved */
-};
-
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
 	/* Tclock is constant at 200MHz (not sampled @ reset)  */
@@ -530,12 +520,22 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvBoardSysClkGet(MV_VOID)
 {
-	MV_U32 idx;
+	MV_U32		idx;
+	MV_U32		freq_tbl_bc2[] = MV_CORE_CLK_TBL_BC2;
+	MV_U32		freq_tbl_ac3[] = MV_CORE_CLK_TBL_AC3;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
-	idx = MSAR_CORE_CLK(MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(0)),
-			    MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1)));
+	idx = MSAR_CORE_CLK(MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(0)), MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1)));
 
-	return freq_tbl[idx];
+	if (idx >= 7)
+		return 0xFFFFFFFF;
+
+	if (family == MV_BOBCAT2_DEV_ID)
+		return freq_tbl_bc2[idx] * 1000000;
+	else if (family == MV_ALLEYCAT3_DEV_ID)
+		return freq_tbl_ac3[idx] * 1000000;
+	else
+		return 0xFFFFFFFF;
 }
 
 /*******************************************************************************
@@ -591,8 +591,7 @@ MV_VOID mvBoardReset(MV_VOID)
 	resetPin = mvBoardResetGpioPinGet();
 	if (resetPin != MV_ERROR)
 		MV_REG_BIT_RESET(GPP_DATA_OUT_REG((int)(resetPin/32)), (1 << (resetPin % 32)));
-	else
-	{
+	else {
 		/* No gpp reset pin was found, try to reset using system reset out */
 		MV_REG_BIT_SET( CPU_RSTOUTN_MASK_REG , BIT0);
 		MV_REG_BIT_SET( CPU_SYS_SOFT_RST_REG , BIT0);
@@ -1134,11 +1133,11 @@ MV_VOID mvBoardSet(MV_U32 boardId)
 		board = marvellAC3BoardInfoTbl[mvBoardIdIndexGet(boardId)];
 		gBoardId = boardId;
 	/* Customer Bobcat2 Boards */
-	} else if (boardId >= BC2_CUTOMER_BOARD_ID_BASE && boardId < BC2_CUSTOMER_MAX_BOARD_ID) { /* Customer Board */
+	} else if (boardId >= BC2_CUSTOMER_BOARD_ID_BASE && boardId < BC2_CUSTOMER_MAX_BOARD_ID) { /* Customer Board */
 		board = customerBC2BoardInfoTbl[mvBoardIdIndexGet(boardId)];
 		gBoardId = boardId;
 	/* Customer AlleyCat3 Boards */
-	} else if (boardId >= AC3_CUTOMER_BOARD_ID_BASE && boardId < AC3_CUSTOMER_MAX_BOARD_ID) { /* Customer Board */
+	} else if (boardId >= AC3_CUSTOMER_BOARD_ID_BASE && boardId < AC3_CUSTOMER_MAX_BOARD_ID) { /* Customer Board */
 		board = customerAC3BoardInfoTbl[mvBoardIdIndexGet(boardId)];
 		gBoardId = boardId;
 	} else {
@@ -1297,7 +1296,7 @@ MV_STATUS mvBoardTwsiWrite(MV_BOARD_TWSI_CLASS class1, MV_U8 devNum, MV_U8 regNu
 	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
 
 	if (MV_OK != mvTwsiWrite(0, &twsiSlave, &regVal, 1)) {
-		DB1(mvOsPrintf("Board: Write S@R fail\n"));
+		DB(mvOsPrintf("Board: Write S@R fail\n"));
 		return MV_ERROR;
 	}
 	DB(mvOsPrintf("Board: Write S@R succeded\n"));
@@ -1354,31 +1353,47 @@ MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
 *******************************************************************************/
 MV_STATUS mvBoardCoreFreqGet(MV_U8 *value)
 {
-	MV_U8 sar0;
-	MV_STATUS rc1;
+	MV_U8		sar0;
+	MV_STATUS	rc1;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+	MV_U32		fieldOffs = (family == MV_BOBCAT2_DEV_ID) ? 0 : 2;
+
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
+		return MV_ERROR;
+	}
 
 	rc1 = mvBoardTwsiSatRGet(1, 0, &sar0);
 	if (MV_ERROR == rc1)
 		return MV_ERROR;
 
-	*value = sar0 & 0x7;
+	*value = (sar0 & (0x7 << fieldOffs)) >> fieldOffs;
+
 	return MV_OK;
 }
 
 /*******************************************************************************/
 MV_STATUS mvBoardCoreFreqSet(MV_U8 freqVal)
 {
-	MV_U8 sar0;
-	MV_STATUS rc1;
+	MV_U8		sar0;
+	MV_STATUS	rc1;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+	MV_U32		fieldOffs = (family == MV_BOBCAT2_DEV_ID) ? 0 : 2;
+
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
+		return MV_ERROR;
+	}
 
 	rc1 = mvBoardTwsiSatRGet(1, 0, &sar0);
 	if (MV_ERROR == rc1)
 		return MV_ERROR;
 
-	sar0 &= ~(0x7);
-	sar0 |= (freqVal & 0x7);
+	sar0 &= ~(0x7 << fieldOffs);
+	sar0 |= (freqVal & 0x7) << fieldOffs;
+
 	if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar0)) {
-		DB1(mvOsPrintf("Board: Write core Freq S@R fail\n"));
+		DB(mvOsPrintf("Board: Write core Freq S@R fail\n"));
 		return MV_ERROR;
 	}
 
@@ -1389,43 +1404,81 @@ MV_STATUS mvBoardCoreFreqSet(MV_U8 freqVal)
 /*******************************************************************************/
 MV_STATUS mvBoardCpuFreqGet(MV_U8 *value)
 {
-	MV_U8 sar1, sar2;
-	MV_STATUS rc1;
-	MV_STATUS rc2;
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
-	rc1 = mvBoardTwsiSatRGet(1, 0, &sar1);
-	rc2 = mvBoardTwsiSatRGet(2, 0, &sar2);
-	if ((MV_ERROR == rc1) || (MV_ERROR == rc2))
+	if (family == MV_BOBCAT2_DEV_ID) {
+		MV_U8		sar2;
+
+		/* BC2 */
+		if ((MV_ERROR == mvBoardTwsiSatRGet(1, 0, &sar)) ||
+			(MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar2)))
+			return MV_ERROR;
+
+		*value = ((((sar2 & 0x1)) << 3) | ((sar & 0x18) >> 3));
+
+	} else if (family == MV_ALLEYCAT3_DEV_ID) {
+
+		/* AC3 */
+		if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+			return MV_ERROR;
+
+		*value = sar & 0x7;
+
+	} else {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
 		return MV_ERROR;
+	}
 
-	*value = ((((sar2 & 0x1)) << 3) | ((sar1 & 0x18) >> 3));
 	return MV_OK;
 }
 
 /*******************************************************************************/
 MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
 {
-	MV_U8 sar1, sar2;
-	MV_STATUS rc1;
-	MV_STATUS rc2;
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
-	rc1 = mvBoardTwsiSatRGet(1, 0, &sar1);
-	rc2 = mvBoardTwsiSatRGet(2, 0, &sar2);
-	if ((MV_ERROR == rc1) || (MV_ERROR == rc2))
-		return MV_ERROR;
+	if (family == MV_BOBCAT2_DEV_ID) {
+		MV_U8		sar2;
+		/* BC2 */
+		if ((MV_ERROR == mvBoardTwsiSatRGet(1, 0, &sar)) ||
+			(MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar2)))
+			return MV_ERROR;
 
-	sar1 &= ~0x18;
-	sar2 &= ~0x1;
-	sar1 |= ((freqVal & 0x03) << 3);
-	sar2 |= ((freqVal & 0x04) >> 2);
-	if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar1)) {
-		DB1(mvOsPrintf("Board: Write CpuFreq(1) S@R fail\n"));
+		sar  &= ~0x18;
+		sar2 &= ~0x1;
+		sar  |= ((freqVal & 0x03) << 3);
+		sar2 |= ((freqVal & 0x04) >> 2);
+
+		if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar)) {
+			DB(mvOsPrintf("Board: Write CpuFreq(1) S@R fail\n"));
+			return MV_ERROR;
+		}
+		if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar2)) {
+			DB(mvOsPrintf("Board: Write CpuFreq(2) S@R fail\n"));
+			return MV_ERROR;
+		}
+
+	} else if (family == MV_ALLEYCAT3_DEV_ID) {
+
+		/* AC3 */
+		if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+			return MV_ERROR;
+
+		sar  &= ~(0x7 << 2);
+		sar  |= (freqVal & 0x7) << 2;
+
+		if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar)) {
+			DB(mvOsPrintf("Board: Write CpuFreq S@R fail\n"));
+			return MV_ERROR;
+		}
+
+	} else {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
 		return MV_ERROR;
 	}
-	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar2)) {
-		DB1(mvOsPrintf("Board: Write CpuFreq(2) S@R fail\n"));
-		return MV_ERROR;
-	}
+
 	DB(mvOsPrintf("Board: Write CpuFreq S@R succeeded\n"));
 	return MV_OK;
 }
@@ -1433,65 +1486,90 @@ MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
 /*******************************************************************************/
 MV_STATUS mvBoardTmFreqGet(MV_U8 *value)
 {
-	MV_U8 sar2;
-	MV_STATUS rc2;
+	MV_U8		sar2;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
-	rc2 = mvBoardTwsiSatRGet(2, 0, &sar2);
-	if (MV_ERROR == rc2)
+	if (family != MV_BOBCAT2_DEV_ID) {
+		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
+		return MV_ERROR; /* AC3 */
+	}
+
+	/* BC2 */
+	if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar2))
 		return MV_ERROR;
 
 	*value = ((sar2 & 0x0E) >> 1);
+
 	return MV_OK;
 }
 
 /*******************************************************************************/
 MV_STATUS mvBoardTmFreqSet(MV_U8 freqVal)
 {
-	MV_U8 sar2;
-	MV_STATUS rc2;
+	MV_U8		sar2;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
-	rc2 = mvBoardTwsiSatRGet(2, 0, &sar2);
-	if (MV_ERROR == rc2)
+	if (family != MV_BOBCAT2_DEV_ID) {
+		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
+		return MV_ERROR; /* AC3 */
+	}
+
+	/* BC2 */
+	if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar2))
 		return MV_ERROR;
 
 	sar2 &= ~0xE;
 	sar2 |= ((freqVal & 0x07) << 1);
+
 	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar2)) {
-		DB1(mvOsPrintf("Board: Write TM-Freq S@R fail\n"));
+		DB(mvOsPrintf("Board: Write TM-Freq S@R fail\n"));
 		return MV_ERROR;
 	}
 	DB(mvOsPrintf("Board: Write TM-Freq S@R succeeded\n"));
+
 	return MV_OK;
 }
 
 /*******************************************************************************/
 MV_STATUS mvBoardBootDevGet(MV_U8 *value)
 {
-	MV_U8 sar;
-	MV_STATUS rc;
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+	MV_U8		twsiDevice = (family == MV_BOBCAT2_DEV_ID) ? 3 : 2;
 
-	rc = mvBoardTwsiSatRGet(3, 0, &sar);
-	if (MV_ERROR == rc)
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
+		return MV_ERROR;
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(twsiDevice, 0, &sar))
 		return MV_ERROR;
 
 	*value = (sar & 0x7);
+
 	return MV_OK;
 }
 
 /*******************************************************************************/
 MV_STATUS mvBoardBootDevSet(MV_U8 val)
 {
-	MV_U8 sar;
-	MV_STATUS rc;
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+	MV_U8		twsiDevice = (family == MV_BOBCAT2_DEV_ID) ? 3 : 2;
 
-	rc = mvBoardTwsiSatRGet(3, 0, &sar);
-	if (MV_ERROR == rc)
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
+		return MV_ERROR;
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(twsiDevice, 0, &sar))
 		return MV_ERROR;
 
 	sar &= ~(0x7);
 	sar |= (val & 0x7);
-	if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar)) {
-		DB1(mvOsPrintf("Board: Write BootDev S@R fail\n"));
+
+	if (MV_OK != mvBoardTwsiSatRSet(twsiDevice, 0, sar)) {
+		DB(mvOsPrintf("Board: Write BootDev S@R fail\n"));
 		return MV_ERROR;
 	}
 
@@ -1501,37 +1579,204 @@ MV_STATUS mvBoardBootDevSet(MV_U8 val)
 /*******************************************************************************/
 MV_STATUS mvBoardDeviceIdGet(MV_U8 *value)
 {
-	MV_U8 sar;
-	MV_STATUS rc;
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
-	rc = mvBoardTwsiSatRGet(0, 0, &sar);
-	if (MV_ERROR == rc)
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
+		return MV_ERROR;
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(0, 0, &sar))
 		return MV_ERROR;
 
 	*value = (sar & 0x1F);
+
+	if (family == MV_ALLEYCAT3_DEV_ID) {
+		/* AC3 - 2 additional bits in device ID */
+		if (MV_ERROR == mvBoardTwsiSatRGet(1, 0, &sar))
+			return MV_ERROR;
+
+		*value |= (sar & 0x3) << 4;
+	}
+
 	return MV_OK;
 }
 
 /*******************************************************************************/
 MV_STATUS mvBoardDeviceIdSet(MV_U8 val)
 {
-	MV_U8 sar;
-	MV_STATUS rc;
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
-	rc = mvBoardTwsiSatRGet(0, 0, &sar);
-	if (MV_ERROR == rc)
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
+		return MV_ERROR;
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(0, 0, &sar))
 		return MV_ERROR;
 
 	sar &= ~(0x1F);
 	sar |= (val & 0x1F);
+
 	if (MV_OK != mvBoardTwsiSatRSet(0, 0, sar)) {
-		DB1(mvOsPrintf("Board: Write device-id S@R fail\n"));
+		DB(mvOsPrintf("Board: Write device-id S@R fail\n"));
 		return MV_ERROR;
+	}
+
+	if (family == MV_ALLEYCAT3_DEV_ID) {
+		/* AC3 - 2 additional bits in device ID */
+		if (MV_ERROR == mvBoardTwsiSatRGet(1, 0, &sar))
+			return MV_ERROR;
+
+		sar &= ~(0x3);
+		sar |= (val & (0x3 << 4)) >> 4;
+
+		if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar)) {
+			DB(mvOsPrintf("Board: Write device-id(MSB) S@R fail\n"));
+			return MV_ERROR;
+		}
 	}
 
 	DB(mvOsPrintf("Board: Write deviceid S@R succeeded\n"));
 	return MV_OK;
 }
+
+/*******************************************************************************/
+MV_STATUS mvBoardPcieModeGet(MV_U8 *val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: BC2 controller family is not supported\n", __func__));
+		return MV_ERROR; /* Not supported on BC2 */
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar))
+		return MV_ERROR;
+
+	*val = (sar & (0x1 << 3)) >> 3;
+
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_STATUS mvBoardPcieModeSet(MV_U8 val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: BC2 controller family is not supported\n", __func__));
+		return MV_ERROR; /* Not supported on BC2 */
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar))
+		return MV_ERROR;
+
+	sar &= ~(0x1 << 3);
+	sar |= (val & 0x1) << 3;
+
+	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar)) {
+		DB(mvOsPrintf("Board: Write pcimode S@R fail\n"));
+		return MV_ERROR;
+	}
+
+	DB(mvOsPrintf("Board: Write pcimode S@R succeeded\n"));
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_STATUS mvBoardPcieClockGet(MV_U8 *val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: BC2 controller family is not supported\n", __func__));
+		return MV_ERROR; /* Not supported on BC2 */
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar))
+		return MV_ERROR;
+
+	*val = (sar & (0x1 << 4)) >> 4;
+
+	return MV_OK;
+}
+/*******************************************************************************/
+MV_STATUS mvBoardPcieClockSet(MV_U8 val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: BC2 controller family is not supported\n", __func__));
+		return MV_ERROR; /* Not supported on BC2 */
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar))
+		return MV_ERROR;
+
+	sar &= ~(0x1 << 4);
+	sar |= (val & 0x1) << 4;
+
+	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar)) {
+		DB(mvOsPrintf("Board: Write pciclock S@R fail\n"));
+		return MV_ERROR;
+	}
+
+	DB(mvOsPrintf("Board: Write pciclock S@R succeeded\n"));
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_STATUS mvBoardPllClockGet(MV_U8 *val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: BC2 controller family is not supported\n", __func__));
+		return MV_ERROR; /* Not supported on BC2 */
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+		return MV_ERROR;
+
+	*val = (sar & (0x1 << 3)) >> 3;
+
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_STATUS mvBoardPllClockSet(MV_U8 val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: BC2 controller family is not supported\n", __func__));
+		return MV_ERROR; /* Not supported on BC2 */
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+		return MV_ERROR;
+
+	sar &= ~(0x1 << 3);
+	sar |= (val & 0x1) << 3;
+
+	if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar)) {
+		DB(mvOsPrintf("Board: Write pllclock S@R fail\n"));
+		return MV_ERROR;
+	}
+
+	DB(mvOsPrintf("Board: Write pcllclock S@R succeeded\n"));
+	return MV_OK;
+}
+
 /*******************************************************************************
 * End of SatR Configuration functions
 *******************************************************************************/

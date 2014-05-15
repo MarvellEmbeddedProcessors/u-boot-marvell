@@ -111,6 +111,12 @@ endif
 ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_RD_BOBCAT2
 endif
+ifeq "$(CONFIG_ALLEYCAT3)"  "y"
+  CFLAGS += -DCONFIG_ALLEYCAT3
+endif
+ifeq "$(CONFIG_DB_AC3)"  "y"
+  CFLAGS += -DCONFIG_DB_AC3
+endif
 
 INCLUDE     = -I./  -I../inc/ -I../../../../include
 

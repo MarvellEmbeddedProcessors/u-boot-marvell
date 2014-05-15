@@ -132,7 +132,7 @@ ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
   BC2_SOC = yes
 endif
 ifeq "$(CONFIG_ALLEYCAT3)"  "y"
-  CFLAGS += -DCONFIG_DB_AC3
+  CFLAGS += -DCONFIG_ALLEYCAT3
   AC3_SOC = yes
 endif
 ifeq "$(CONFIG_DB_AC3)"  "y"

@@ -160,3 +160,4 @@ $(TGT_UART): $(CUART_OBJ)
 
 clean:
 	$(RM) ./*.o  ./*.a
+

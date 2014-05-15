@@ -5,7 +5,7 @@ use Cwd qw();
 sub HELP_MESSAGE
 {
 	print "\nUsage  : build -f \"Flash type\" -v X.X.X -b \"board name\" [-c] [-o \"Output file\"]\n";
-	print "Example: ./build -f spi -v 13T3 -b avanta_lp -c\n";
+	print "Example: ./build.pl -f spi -v 14T2 -b avanta_lp -i spi:nand -c\n";
 	print "\n";
 	print "Options:\n";
 	print "\t-f\tBoot device. Accepts spi, nor, nand\n";

@@ -305,6 +305,13 @@ MV_STATUS mvBoardBootDevGet(MV_U8 *value);
 MV_STATUS mvBoardBootDevSet(MV_U8 val);
 MV_STATUS mvBoardDeviceIdGet(MV_U8 *value);
 MV_STATUS mvBoardDeviceIdSet(MV_U8 val);
+MV_STATUS mvBoardPcieModeGet(MV_U8 *val);
+MV_STATUS mvBoardPcieModeSet(MV_U8 val);
+MV_STATUS mvBoardPcieClockGet(MV_U8 *val);
+MV_STATUS mvBoardPcieClockSet(MV_U8 val);
+MV_STATUS mvBoardPllClockGet(MV_U8 *val);
+MV_STATUS mvBoardPllClockSet(MV_U8 val);
+
 MV_U8 mvBoardCpuCoresNumGet(MV_VOID);
 MV_STATUS mvBoardCpuCoresNumSet(MV_U8 val);
 MV_STATUS mvBoardConIdSet(MV_U16 conf);

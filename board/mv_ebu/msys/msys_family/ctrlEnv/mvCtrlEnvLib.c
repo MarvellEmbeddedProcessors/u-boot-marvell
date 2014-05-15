@@ -472,7 +472,9 @@ MV_U32 mvCtrlSdioSupport(MV_VOID)
 *******************************************************************************/
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
-	return MV_BOBCAT2_DEV_ID;
+	/* Currently the controller ID is derived from board according to msys family (BC2/AC3)
+	   It must be updated in case of new flavours of AC3 or BC2 */
+	return mvCtrlDevFamilyIdGet(0);
 }
 
 /*******************************************************************************
@@ -597,7 +599,16 @@ MV_STATUS mvCtrlModelRevNameGet(char *pNameBuff)
 *******************************************************************************/
 MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel)
 {
-	return MV_BOBCAT2_DEV_ID;
+	MV_U32	boardId = mvBoardIdGet();
+
+	if ((boardId >= BC2_CUSTOMER_BOARD_ID_BASE) && (boardId < BC2_MARVELL_MAX_BOARD_ID))
+		return MV_BOBCAT2_DEV_ID;
+	else if ((boardId >= AC3_CUSTOMER_BOARD_ID_BASE) && (boardId < AC3_MARVELL_MAX_BOARD_ID))
+		return MV_ALLEYCAT3_DEV_ID;
+	else {
+		DB(mvOsPrintf("%s: ERR. Invalid Board ID (%d) ,Using BC2 as default family\n", __func__, boardId));
+		return MV_BOBCAT2_DEV_ID;
+	}
 }
 
 static const char *cntrlName[] = TARGETS_NAME_ARRAY;

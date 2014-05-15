@@ -162,10 +162,10 @@ extern "C" {
 #define DFX_DEVICE_SAR_REG(x)			(0xf8200 +(x*4))
 
 #define MSAR_CORE_CLK(sar1, sar2)		(((sar2) >> 21) & 0x7)		/* PLL 0 config */
-#define MSAR_CPU_DDR_CLK(sar1, sar2)		(((sar2) >> 18) & 0x7)		/* PLL 1 config */
+#define MSAR_CPU_DDR_CLK(sar1, sar2)	(((sar2) >> 18) & 0x7)		/* PLL 1 config */
 #define MSAR_TM_CLK(sar1, sar2)			(((sar2) >> 15) & 0x7)		/* PLL 2 config */
 #define MSAR_BOOT_MODE(sar1, sar2)		(((sar1) >> 13) & 0x7)		/* boot from */
-#define MSAR_DEVICE_MODE(sar1, sar2)		(((sar1) >>  0) & 0xFF)		/* DEVICE ID field */
+#define MSAR_DEVICE_MODE(sar1, sar2)	(((sar1) >>  0) & 0xFF)		/* DEVICE ID field */
 
 #define SAR1_BOOT_FROM_NOR			0
 #define SAR1_BOOT_FROM_NAND			1
@@ -300,41 +300,60 @@ typedef enum {
 } MV_PEXIF_INDX;
 
 typedef struct {
-	MV_U32 	cpuFreq;
-	MV_U32 	ddrFreq;
-	MV_STATUS internalFreq;
+	MV_U32		cpuFreq;
+	MV_U32		ddrFreq;
+	MV_STATUS	internalFreq;
 } MV_CPUDDR_MODE;
 
 typedef struct {
-	MV_U32 	tmFreq;
-	MV_U32 	ddr3Freq;
-	MV_STATUS internalFreq;
+	MV_U32		tmFreq;
+	MV_U32		ddr3Freq;
+	MV_STATUS	internalFreq;
 } MV_TM_MODE;
 
-#define MV_CORE_CLK_TBL	{	\
-	360, 220, 		\
-	250, 400,               \
-	500, 520,               \
-	450                     \
+#define MV_CORE_CLK_TBL_BC2	{	\
+		360, 220,			\
+		250, 400,			\
+		500, 520,			\
+		450					\
+	}
+
+#define MV_CORE_CLK_TBL_AC3	{	\
+		290, 250,			\
+		222, 167,			\
+		200, 133,			\
+		360					\
+	}
+
+
+#define MV_CPU_DDR_CLK_TBL_BC2 {	\
+		{ 400, 400, MV_FALSE},	\
+		{ 533, 533, MV_TRUE},	\
+		{ 667, 667, MV_FALSE},	\
+		{ 800, 800, MV_FALSE},	\
+		{1000, 500, MV_TRUE},	\
+		{1200, 600, MV_TRUE},	\
+		{1333, 666, MV_TRUE}	\
 }
 
-#define MV_CPU_DDR_CLK_TBL {	\
-	{ 400, 400, MV_FALSE},  \
-	{ 533, 533, MV_TRUE},   \
-	{ 667, 667, MV_FALSE},  \
-	{ 800, 800, MV_FALSE},  \
-	{1000, 500, MV_TRUE},   \
-	{1200, 600, MV_TRUE},   \
-	{1333, 666, MV_TRUE}    \
+#define MV_CPU_DDR_CLK_TBL_AC3 {	\
+		{ 400, 400, MV_FALSE},	\
+		{ 533, 533, MV_TRUE},	\
+		{ 667, 667, MV_FALSE},	\
+		{ 800, 800, MV_FALSE},	\
+		{   0,   0, MV_TRUE},	\
+		{ 800, 400, MV_FALSE},	\
+		{ 800, 400, MV_TRUE},	\
 }
-#define MV_TM_CLK_TBL	{ 	\
-	{   0,   0, MV_TRUE},   \
-	{ 400, 800, MV_FALSE},  \
-	{ 466, 933, MV_FALSE},  \
-	{ 333, 667, MV_FALSE},  \
-	{   0,   0, MV_TRUE},   \
-	{ -1, 800, MV_TRUE},    \
-	{ -1, 933, MV_TRUE}     \
+
+#define MV_TM_CLK_TBL	{	\
+	{   0,   0, MV_TRUE},	\
+	{ 400, 800, MV_FALSE},	\
+	{ 466, 933, MV_FALSE},	\
+	{ 333, 667, MV_FALSE},	\
+	{   0,   0, MV_TRUE},	\
+	{  -1, 800, MV_TRUE},	\
+	{  -1, 933, MV_TRUE}	\
 }
 
 #endif /* MV_ASMLANGUAGE */
@@ -343,4 +362,4 @@ typedef struct {
 }
 #endif /* __cplusplus */
 
-#endif
+#endif /* __INCmvCtrlEnvRegsh */

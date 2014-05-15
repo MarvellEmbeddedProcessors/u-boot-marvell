@@ -94,13 +94,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 MV_U32 mvCpuPclkGet(MV_VOID)
 {
-	MV_U32 idx;
-	MV_U32 freqMhz;
-	MV_CPUDDR_MODE clockRatioTbl[8] = MV_CPU_DDR_CLK_TBL;
-	MV_U32 sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
+	MV_U32			idx;
+	MV_U32			freqMhz;
+	MV_CPUDDR_MODE	bc2ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BC2;
+	MV_CPUDDR_MODE	ac3ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_AC3;
+	MV_U16			family = mvCtrlDevFamilyIdGet(0);
+	MV_U32			sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
 
 	idx = MSAR_CPU_DDR_CLK(0, sar2);
-	freqMhz = clockRatioTbl[idx].cpuFreq * 1000000;
+	if (family == MV_BOBCAT2_DEV_ID)
+		freqMhz = bc2ClockRatioTbl[idx].cpuFreq * 1000000;
+	else if (family == MV_ALLEYCAT3_DEV_ID)
+		freqMhz = ac3ClockRatioTbl[idx].cpuFreq * 1000000;
+	else
+		return 0xFFFFFFFF;
+
 	return freqMhz;
 }
 
@@ -122,13 +130,21 @@ MV_U32 mvCpuPclkGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCpuDdrClkGet(MV_VOID)
 {
-	MV_U32 idx;
-	MV_U32 freqMhz;
-	MV_CPUDDR_MODE clockRatioTbl[8] = MV_CPU_DDR_CLK_TBL;
-	MV_U32 sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
+	MV_U32			idx;
+	MV_U32			freqMhz;
+	MV_CPUDDR_MODE	bc2ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BC2;
+	MV_CPUDDR_MODE	ac3ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_AC3;
+	MV_U16			family = mvCtrlDevFamilyIdGet(0);
+	MV_U32			sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
 
 	idx = MSAR_CPU_DDR_CLK(0, sar2);
-	freqMhz = clockRatioTbl[idx].ddrFreq * 1000000;
+	if (family == MV_BOBCAT2_DEV_ID)
+		freqMhz = bc2ClockRatioTbl[idx].ddrFreq * 1000000;
+	else if (family == MV_ALLEYCAT3_DEV_ID)
+		freqMhz = ac3ClockRatioTbl[idx].ddrFreq * 1000000;
+	else
+		return 0xFFFFFFFF;
+
 	return freqMhz;
 }
 /*******************************************************************************

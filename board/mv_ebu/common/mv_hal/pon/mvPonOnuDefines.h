@@ -353,36 +353,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* MIB Counters - the follow are element numbers in array
  *******************************************************************************/
-#define ONU_MIB_PM_GoodOctetsReceived_low           0           // (0x0)
-#define ONU_MIB_PM_GoodOctetsReceived_high          1           // (0x4)
-#define ONU_MIB_PM_BadOctetsReceived                2           // (0x8)
-#define ONU_MIB_PM_MACTransError                    3           // (0xC)
-#define ONU_MIB_PM_GoodFramesReceived               4           // (0x10)
-#define ONU_MIB_PM_BadFramesReceived                5           // (0x14)
-#define ONU_MIB_PM_BroadcastFramesReceived          6           // (0x18)
-#define ONU_MIB_PM_MulticastFramesReceived          7           // (0x1C)
-#define ONU_MIB_PM_Frames64Octets                   8           // (0x20)
-#define ONU_MIB_PM_Frames65to127Octets              9           // (0x24)
-#define ONU_MIB_PM_Frames128to255Octets             10          // (0x28)
-#define ONU_MIB_PM_Frames256to511Octets             11          // (0x2C)
-#define ONU_MIB_PM_Frames512to1023Octets            12          // (0x30)
-#define ONU_MIB_PM_Frames1024toMaxOctets            13          // (0x34)
-#define ONU_MIB_PM_GoodOctetsSent_low               14          // (0x38)
-#define ONU_MIB_PM_GoodOctetsSent_high              15          // (0x3C)
-#define ONU_MIB_PM_GoodFramesSent                   16          // (0x40)
-#define ONU_MIB_PM_MulticastFramesSent              18          // (0x48)
-#define ONU_MIB_PM_BroadcastFramesSent              19          // (0x4C)
-
-/* MIB Counters - the follow are element numbers in array
- *******************************************************************************/
-#define ONU_MIB_PM_RX_MIB_Control                   0           // (0x0)
-#define ONU_MIB_PM_TX_MIB_Control                   1           // (0x4)
+#define ONU_MIB_PM_RX_MIB_Control                   0           /* (0x0) */
+#define ONU_MIB_PM_TX_MIB_Control                   1           /* (0x4) */
+#define ONU_MIB_PM_DISABLE                          0           /* disable PM */
+#define ONU_MIB_PM_ENABLE                           1           /* enable PM */
 
 /* MIB Counter Control - valid,counterset,gemport
  *******************************************************************************/
 #define MIB_COUNTER_CONTROL_VALID_BIT           (1)
 #define MIB_COUNTER_CONTROL_INVALID_BIT         (0)
-#define MAKE_MIB_COUNTER_CONTROL(v, c, g)         ((((v) & 0x1) << 17) | (((c) & 0x1F) << 12) | ((g) & 0xFFF))
+#define MAKE_MIB_COUNTER_CONTROL(v, c, g)       ((((v) & 0x1) << 16) | (((c) & 0xF)  << 12) | ((g) & 0xFFF))
+#define MAKE_MIB_COUNTER_DEFAULT(v, c)          ((((v) & 0x1) << 4) | ((c) & 0xF))
 
 /* Enums
    ------------------------------------------------------------------------------*/

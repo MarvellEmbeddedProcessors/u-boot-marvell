@@ -1,3 +1,4 @@
+
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
@@ -59,119 +60,123 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
 ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 *******************************************************************************/
+#ifndef _DDR3_MSYS_AC3_H
+#define _DDR3_MSYS_AC3_H
 
-#include "mv_os.h"
-#include "config_marvell.h"  	/* Required to identify SOC and Board */
-#include "mvHighSpeedEnvSpec.h"
-#include "mvBHboardEnvSpec.h"
-#include "mvCtrlPex.h"
+#include "ddr3_hws_hw_training_def.h"
 
-#if defined(MV_MSYS_BC2)
-#include "ddr3_msys_bc2.h"
-#include "ddr3_msys_bc2_config.h"
-#elif defined(MV_MSYS_AC3)
-#include "ddr3_msys_ac3.h"
-#include "ddr3_msys_ac3_config.h"
-#endif
+/* MISC */
+#define INTER_REGS_BASE								0xD0000000
 
-#include "bin_hdr_twsi.h"
-#include "mvUart.h"
-#include "util.h"
-#include "printf.h"
+#define REG_DEVICE_SAR1_ADDR                        0xE4204
+#define RST2_CPU_DDR_CLOCK_SELECT_IN_OFFSET         17
+#define RST2_CPU_DDR_CLOCK_SELECT_IN_MASK           0x1F
 
-static MV_U32 gBoardId = -1;
-MV_U32 mvBoardIdGet(MV_VOID)
+#define REG_DEVICE_SAR0_ADDR                        0x18224
+#define REG_DEVICE_SAR0_PLL_CONFIG_OFFSET           16
+#define REG_DEVICE_SAR0_PLL_CONFIG_MASK             0x3
+
+/* DRAM Windows */
+#define REG_XBAR_WIN_5_CTRL_ADDR					0x20050
+#define REG_XBAR_WIN_5_BASE_ADDR					0x20054
+
+#define MV_78XX0_Z1_REV		0x0
+#define MV_78XX0_A0_REV		0x1
+#define MV_78XX0_B0_REV		0x2
+
+/********************/
+/* Registers offset */
+/********************/
+
+#define REG_SAMPLE_RESET_LOW_ADDR				0x18230
+#define REG_SAMPLE_RESET_HIGH_ADDR				0x18234
+#define	REG_SAMPLE_RESET_FAB_OFFS				24
+#define	REG_SAMPLE_RESET_FAB_MASK				0xF000000
+#define	REG_SAMPLE_RESET_TCLK_OFFS				28
+#define	REG_SAMPLE_RESET_CPU_ARCH_OFFS			31
+#define	REG_SAMPLE_RESET_HIGH_CPU_FREQ_OFFS		20
+
+#define MV_BOARD_REFCLK			250000000
+
+/* DDR3 Frequencies: */
+#define DDR_100									0
+#define DDR_300									1
+#define DDR_333									1
+#define DDR_360									2
+#define DDR_400									3
+#define DDR_444									4
+#define DDR_500									5
+#define DDR_533									6
+#define DDR_600									7
+#define DDR_640									8
+#define DDR_666									8
+#define DDR_720									9
+#define DDR_750									9
+#define DDR_800									10
+#define DDR_833									11
+#define DDR_HCLK								20
+#define DDR_S									12
+#define DDR_S_1TO1								13
+#define MARGIN_FREQ 							DDR_400
+#define DFS_MARGIN								DDR_100
+/* #define DFS_MARGIN								DDR_400 */
+
+#define ODT_OPT									16
+#define ODT20									0x200
+#define ODT30									0x204
+#define ODT40									0x44
+#define ODT120									0x40
+#define ODT120D									0x400
+
+#define MRS_DELAY								100
+
+#define SDRAM_WL_SW_OFFS						0x100
+#define SDRAM_RL_OFFS							0x0
+#define SDRAM_PBS_I_OFFS						0x140
+#define SDRAM_PBS_II_OFFS						0x180
+#define SDRAM_PBS_NEXT_OFFS						(SDRAM_PBS_II_OFFS - SDRAM_PBS_I_OFFS)
+#define SDRAM_PBS_TX_OFFS						0x180
+#define SDRAM_PBS_TX_DM_OFFS					576
+#define SDRAM_DQS_RX_OFFS						1024
+#define SDRAM_DQS_TX_OFFS						2048
+#define SDRAM_DQS_RX_SPECIAL_OFFS				5120
+
+#define LEN_STD_PATTERN							16
+#define LEN_KILLER_PATTERN						128
+#define LEN_SPECIAL_PATTERN						128
+#define LEN_PBS_PATTERN							16
+
+/********************/
+/* Registers offset */
+/********************/
+
+#define REG_SAMPLE_RESET_LOW_ADDR				0x18230
+#define REG_SAMPLE_RESET_HIGH_ADDR				0x18234
+#define	REG_SAMPLE_RESET_CPU_FREQ_OFFS			21
+#define	REG_SAMPLE_RESET_CPU_FREQ_MASK			0x00E00000
+#define	REG_SAMPLE_RESET_FAB_OFFS				24
+#define	REG_SAMPLE_RESET_FAB_MASK				0xF000000
+#define	REG_SAMPLE_RESET_TCLK_OFFS				28
+#define	REG_SAMPLE_RESET_CPU_ARCH_OFFS			31
+#define	REG_SAMPLE_RESET_HIGH_CPU_FREQ_OFFS		20
+
+#define REG_FASTPATH_WIN_BASE_ADDR(win)         (0x20180 + (0x8 * win))
+#define REG_FASTPATH_WIN_CTRL_ADDR(win)         (0x20184 + (0x8 * win))
+
+typedef enum
 {
-	if (gBoardId != -1)
-		return gBoardId;
+    CPU_400MHz_DDR_400MHz,
+    CPU_RESERVED_DDR_RESERVED0,
+    CPU_667MHz_DDR_667MHz,
+    CPU_800MHz_DDR_800MHz,
+    CPU_RESERVED_DDR_RESERVED1,
+    CPU_RESERVED_DDR_RESERVED2,
+    CPU_RESERVED_DDR_RESERVED3,
+    LAST_FREQ
+}MSYS_DDR3_CPU_FREQ;
 
-/* Customer board ID's */
-#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-	#ifdef CONFIG_BOBCAT2
-	#ifdef CONFIG_CUSTOMER_BOARD_0
-			gBoardId = BC2_CUSTOMER_BOARD_ID0;
-		#elif CONFIG_CUSTOMER_BOARD_1
-			gBoardId = BC2_CUSTOMER_BOARD_ID1;
-		#endif
-	#elif defined CONFIG_ALLEYCAT3
-		#ifdef CONFIG_CUSTOMER_BOARD_0
-			gBoardId = AC3_CUSTOMER_BOARD_ID0;
-		#elif CONFIG_CUSTOMER_BOARD_1
-			gBoardId = AC3_CUSTOMER_BOARD_ID1;
-		#endif
-	#endif
-#else
-/* BobCat2 Board ID's */
-	#if defined(DB_BOBCAT2)
-		gBoardId = DB_DX_BC2_ID;
-	#elif defined(RD_BOBCAT2)
-		gBoardId = RD_DX_BC2_ID;
-	#elif defined(RD_MTL_BOBCAT2)
-		gBoardId = RD_MTL_BC2;
-/* AlleyCat3 Board ID's */
-	#elif defined(DB_AC3)
-		gBoardId = DB_AC3_ID;
-	#else
-		#error Invalid Board is configured
-	#endif
-#endif
+#define ACTIVE_INTERFACE_MASK			  0x10
 
-	return gBoardId;
-}
-
-/*******************************************************************************
-* mvBoardIdIndexGet
-*
-* DESCRIPTION:
-*	returns an index for board arrays with direct memory access, according to board id
-*
-* INPUT:
-*       boardId.
-*
-* OUTPUT:
-*       direct access index for board arrays
-*
-* RETURN:
-*       None.
-*
-*******************************************************************************/
-MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
-{
-/* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
-	return boardId & (BOARD_ID_INDEX_MASK - 1);
-}
-
-MV_U32 mvBoardTclkGet(MV_VOID)
-{
-	//TODO Add RD/DB detection. Currently set to DB.
-	return MV_BOARD_TCLK_200MHZ;
-}
-
-MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
-{
-	MV_U32 uiReg = 0;
-
-	/*Read SatR configuration(bit16)*/
-	uiReg = MV_REG_READ(REG_DEVICE_SAR1_ADDR);
-
-	if( 0 == (uiReg & 0x10000)) {
-		/*Do End Point pex config*/
-		uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
-		uiReg &= ~(0xF << 20);
-		uiReg |= (0x1 << 20);
-		MV_REG_WRITE(PEX_CAPABILITIES_REG(0), uiReg);
-		MV_REG_WRITE(0x41a60, 0xF63F0C0);
-		mvPrintf("EP detected.\n");
-		return MV_OK;
-	}else {
-		/*Do Root Complex pex config*/
-		uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
-		uiReg &= ~(0xF << 20);
-		uiReg |= (0x4 << 20);
-		MV_REG_WRITE(PEX_CAPABILITIES_REG(0), uiReg);
-		mvPrintf("RC detected.\n");
-		return mvHwsPexConfig();
-	}
-}
-
+#endif /* _DDR3_MSYS_AC3_H */

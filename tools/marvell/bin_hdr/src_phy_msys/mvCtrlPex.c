@@ -61,12 +61,23 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
+#include "config_marvell.h"     /* Required to identify SOC and Board */
+
 #include "mv_os.h"
 #include "mvBHboardEnvSpec.h"
 #include "bin_hdr_twsi.h"
 #include "mvUart.h"
 #include "util.h"
 #include "mvCtrlPex.h"
+#include "ddr3_hws_hw_training_def.h"
+
+#if defined(MV_MSYS_BC2)
+#include "ddr3_msys_bc2.h"
+#elif defined(MV_MSYS_AC3)
+#include "ddr3_msys_ac3.h"
+#else
+#error "No MSYS device was defined"
+#endif
 
 #ifdef REGISTER_TRACE_DEBUG
 static MV_U32 _MV_REG_READ(MV_U32 regAddr)

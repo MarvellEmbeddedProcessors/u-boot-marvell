@@ -1,0 +1,303 @@
+; other 946 cpu bug fix seen also on 926
+sys.option MULTIPLESFIX on
+
+; First it is very importate to select the CPU first and then set the options,
+; otherwise important options are cleared again
+SYStem.RESet
+SYStem.CPU CortexA9MPCore ; or CortexA9
+SYStem.JtagClock 10Mhz
+SYStem.MultiCore COREBASE 0xc2310000
+SYStem.MultiCore MEMORYACCESSPORT 0
+SYStem.MultiCore DEBUGACCESSPORT  1
+; SYStem.MultiCore JTAGACCESSPORT 2
+
+SYStem.MultiCore ETMBASE 0xc231c000
+SYStem.MultiCore ETBBASE 0xc2324000
+etm.cycleaccurate on
+trace.clock 25.0Mhz
+
+system.mode attach
+system.Up
+
+; set system settings according LE MMU
+Data.Set C15:1 %LONG 0x00052078
+
+BREAK.SELECT PROGRAM ONCHIP
+
+
+print "Configure PCIe interface #1 to X1"
+;print "Set the capabilities register"
+data.out 0xD004006c %LONG 0x7ac12
+
+;print "STEP-0 Configure the MUX select for PCIe-1 on Serdes Lane 2"
+data.out 0xD00183fc %LONG 0x40
+
+;print "STEP-1 Set values that should be constant from beginning of sequence"
+data.out 0xD0018350 %LONG 0x04470004
+data.out 0xD0018354 %LONG 0x00000058
+data.out 0xD001835c %LONG 0x0000000d
+
+;print "STEP-2 Assert reset"
+; Nothing to do as both bit 13, 14 are asserted to reset by default
+
+;print "STEP-3 Deassert reset"
+data.out 0xD0018350 %LONG 0x04476004
+
+;print "STEP-4"
+data.out 0xD00A1004 %LONG 0x0000fc60
+
+;print "STEP-5 PHY gen max"
+data.out 0xD00A1094 %LONG 0x000017ff
+
+;print "STEP-6"
+data.out 0xD00A1704 %LONG 0x00000025
+
+;7. Irrelevent - USB device mode only
+
+;print "STEP-8, not needed - only for simulation"
+;data.out 0xD00A1200 %LONG 0x00001000
+
+;print "STEP-9 "
+data.out 0xD00A113c %LONG 0x0000a08a ; bit 7 = 1.bit 6=0
+
+;print "STEP-10, not needed - only for simulation"
+;data.out 0xD00A1144 %LONG 0x00000304 ; check if we need to write to this register
+
+;print "Release phy reset"
+data.out 0xD00A1704 %LONG 0x00000024
+
+;print "Enable PCIe interface"
+data.out 0xD0018204 %LONG 0x0707c0f2
+wait 1.s
+data.in 0xd00a1004 /LONG
+data.in 0xd0041a64 /LONG
+data.in 0xd0040070 /LONG
+
+;print "Move to Gen2"
+;data.out 0xD0041a00 %LONG 0x4014062E
+;wait 1.s
+;data.in 0xd00a1004 /LONG
+;data.in 0xd0041a64 /LONG
+;data.in 0xd0040070 /LONG
+
+;print "Configure MPP43 to show the debug clock"
+;data.out 0xd0018014 %LONG 0xf000
+;data.out 0xd00186c4 %LONG 0x52
+
+;data.in 0xd00183fc /LONG
+;data.in 0xd0018350 /LONG
+;data.in 0xd0018354 /LONG
+;data.in 0xd0018358 /LONG
+;data.in 0xd001835c /LONG
+;data.in 0xd0018360 /LONG
+;data.in 0xd0018364 /LONG
+;data.in 0xd0018368 /LONG
+;data.in 0xd001836c /LONG
+;data.in 0xd0018370 /LONG
+;data.in 0xd0018374 /LONG
+
+
+	; 667 MHZ DDR
+	print ""
+	print "Starting DRAM initialization:"
+	; dram init
+	d.s 0xD0001400 %LONG 0x7B004a28 ;  DDR SDRAM Configuration Register
+	d.s 0xD0001404 %LONG 0x36301820 ;  Dunit Control Low Register - kw40 bit11 high
+	d.s 0xD0001408 %LONG 0x43149997 ;  DDR SDRAM Timing (Low) Register
+	d.s 0xD000140C %LONG 0x38411bc7 ;  DDR SDRAM Timing (High) Register
+	d.s 0xD0001410 %LONG 0x14300000 ;  DDR SDRAM Address Control Register
+	d.s 0xD0001414 %LONG 0x00000700 ;  DDR SDRAM Open Pages Control Register
+	;d.s 0xD0001418 %LONG 0x00000e00 ;  DDR SDRAM Operation Register
+	;d.s 0xD000141C %LONG 0x00000672 ;  DDR SDRAM Mode Register
+	;d.s 0xD0001420 %LONG 0x00000004 ;  DDR SDRAM Extended Mode Register
+	d.s 0xD0001424 %LONG 0x0060f3ff ;  Dunit Control High Register ( 2 :1 - bits 15:12 = 0xD )
+	d.s 0xD0001428 %LONG 0x000F8830 ;  Dunit Control High Register
+	d.s 0xD000142C %LONG 0x28c50f8 ;  Dunit Control High Register  ( 2:1 -  bit 29 = '1' )
+	d.s 0xD000147C %LONG 0x0000c671 ;
+
+	; 2:1
+	;d.s 0xD00014a8 %LONG 0x00000100 ; DSMP "101"
+	;d.s 0xD0020220 %LONG 0x00000006 ; DSMP 7
+
+	d.s 0xD0001494 %LONG 0x00030000 ;  DDR SDRAM ODT Control (Low) Register
+	;d.s 0xD0001498 %LONG 0x00000000 ;  DDR SDRAM ODT Control (High) Register
+	;d.s 0xD000149C %LONG 0x00000003 ;  DDR Dunit ODT Control Register
+	d.s 0xD000149C %LONG 0x00000300 ;  DDR Dunit ODT Control Register
+
+	d.s 0xD00014a8 %LONG 0x00000000 ;
+        d.s 0xD00014cc %LONG 0xbd09000d ;
+        d.s 0xD0001474 %LONG 0x00000000 ;
+
+	d.s 0xD0001538 %LONG 0x00000009 ;  Read Data Sample Delays Register
+	d.s 0xD000153C %LONG 0x0000000c ;  Read Data Ready Delay Register
+
+	d.s 0xD0001504 %LONG 0xFFFFFFF1 ;
+        d.s 0xD000150c %LONG 0xFFFFFFE5 ;
+	d.s 0xD0001514 %LONG 0x00000000 ;
+        d.s 0xD000151c %LONG 0x0;
+
+	d.s 0xD00015D0 %LONG 0x00000650 ;  MR0
+	d.s 0xD00015D4 %LONG 0x00000046 ;  MR1
+	d.s 0xD00015D8 %LONG 0x00000010 ;  MR2
+	d.s 0xD00015DC %LONG 0x00000000 ;  MR3
+
+        d.s 0xD00015E0 %LONG 0x23 ;
+	d.s 0xD00015E4 %LONG 0x00203c18;  ZQC Configuration Register
+	d.s 0xD00015EC %LONG 0xf8000019;  DDR PHY
+
+	print " [Done]"
+	LOCAL &status
+	LOCAL &bit
+
+	LOCAL &readlvl
+	&readlvl=1
+
+        d.s 0xD00016A0 %LONG 0xe8243dfe ; ZNR / SPR
+	d.s 0xD00016A0 %LONG 0xe8280434 ; disable clamp	and Vref
+
+	d.s 0xD00016A0 %LONG 0x281020da ; Clock skew
+	d.s 0xD00016A0 %LONG 0xe8260cb2
+	d.s 0xD00016A0 %LONG 0xe8290000
+	d.s 0xD00016A0 %LONG 0xf810001f
+
+	d.s 0xD00016A0 %LONG 0xC0005847
+
+	&status=Data.Long(SD:0xD00016A0)
+	&status=&status&(1<<31)
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
+		&status=&status&(1<<31)
+	)
+
+	d.s 0xD00016A0 %LONG 0xC0406049
+	&status=Data.Long(SD:0xD00016A0)
+	&status=&status&(1<<31)
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
+		&status=&status&(1<<31)
+	)
+
+	d.s 0xD00016A0 %LONG 0xC080704d
+
+	&status=Data.Long(SD:0xD00016A0)
+	&status=&status&(1<<31)
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
+		&status=&status&(1<<31)
+	)
+
+	d.s 0xD00016A0 %LONG 0xC0C0a85b
+
+	&status=Data.Long(SD:0xD00016A0)
+	&status=&status&(1<<31)
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
+		&status=&status&(1<<31)
+	)
+
+
+
+	d.s 0xD00016A0 %LONG 0xC002008d
+
+	&status=Data.Long(SD:0xD00016A0)
+	&status=&status&(1<<31)
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
+		&status=&status&(1<<31)
+	)
+
+
+	d.s 0xD00016A0 %LONG 0xC0420084
+
+	&status=Data.Long(SD:0xD00016A0)
+	&status=&status&(1<<31)
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
+		&status=&status&(1<<31)
+	)
+
+	d.s 0xD00016A0 %LONG 0xC082009f
+
+	&status=Data.Long(SD:0xD00016A0)
+	&status=&status&(1<<31)
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
+		&status=&status&(1<<31)
+	)
+
+	d.s 0xD00016A0 %LONG 0xC0c20099
+
+	&status=Data.Long(SD:0xD00016A0)
+	&status=&status&(1<<31)
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
+		&status=&status&(1<<31)
+	)
+
+	d.s 0xD00016A0 %LONG 0xC003000F
+
+	&status=Data.Long(SD:0xD00016A0)
+	&status=&status&(1<<31)
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
+		&status=&status&(1<<31)
+	)
+
+	d.s 0xD00016A0 %LONG 0xC043000f
+
+	&status=Data.Long(SD:0xD00016A0)
+	&status=&status&(1<<31)
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
+		&status=&status&(1<<31)
+	)
+
+	d.s 0xD00016A0 %LONG 0xC083000f
+
+	&status=Data.Long(SD:0xD00016A0)
+	&status=&status&(1<<31)
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
+		&status=&status&(1<<31)
+	)
+
+	d.s 0xD00016A0 %LONG 0xC0C3000f
+
+	&status=Data.Long(SD:0xD00016A0)
+	&status=&status&(1<<31)
+	WHILE (&status>0)
+	(
+		&status=Data.Long(SD:0xD00016A0)
+		&status=&status&(1<<31)
+	)
+
+	d.s 0xD0001480 %LONG 0x00000001 ;  DDR SDRAM Initialization Control Register
+	WAIT 2.s
+
+
+
+	print "Init Done ;-)"
+
+	d.s 0xD00015B0 %LONG 0x80100008 ; WL
+	d.s 0xD00015B0 %LONG 0x80100002 ; Load pattern ;
+	d.s 0xD00015B0 %LONG 0x80100040 ; RL
+
+	d.s 0xD0018000 %LONG 0x11 ; RL
+
+	d.s 0xD00200e8 %LONG 0x0; RL
+	d.s 0xD0020184 %LONG 0x0FFFFFE1 ; RL
+	d.s 0xD00182e4 %LONG 0xfffdffff ; RL
+
+
+enddo

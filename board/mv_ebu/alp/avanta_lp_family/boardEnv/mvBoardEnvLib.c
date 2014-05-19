@@ -3084,8 +3084,10 @@ MV_STATUS mvBoardEepromInit()
 			mvOsPrintf("%s: Error: Read pattern from EEPROM failed\n", __func__);
 			return MV_ERROR;
 		}
+		readValue = MV_32BIT_LE_FAST(readValue);
 		/* shift byte to correct location in 32bit pattern */
 		pattern |= (readValue & 0x000000FF) << (32 - 8*(i+1));
+		readValue = 0;
 	}
 
 	/* If EEPROM is initialized with magic pattern, continue and exit*/

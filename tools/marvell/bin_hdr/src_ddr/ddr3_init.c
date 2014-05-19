@@ -72,8 +72,6 @@ Copyright (C) Marvell International Ltd. and its affiliates
 
 #include "ddr3_init.h"
 #include "ddr3_spd.h"
-
-#include "ddr3_spd.h"
 #include "bin_hdr_twsi.h"
 #include "mvUart.h"
 
@@ -95,16 +93,27 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_a38x.h"
 #include "ddr3_a38x_vars.h"
 #include "ddr3_a38x_topology.h"
-#elif defined(MV_MSYS_BC2) || defined(MV_MSYS_AC3)
+#elif defined(MV_MSYS_BC2)
 #include "ddr3_msys_bc2.h"
 #include "ddr3_msys_bc2_config.h"
 #include "ddr3_msys_bc2_vars.h"
 #include "ddr3_msys_bc2_topology.h"
+#elif defined(MV_MSYS_AC3)
+#include "ddr3_msys_ac3.h"
+#include "ddr3_msys_ac3_config.h"
+#include "ddr3_msys_ac3_vars.h"
+#include "ddr3_msys_ac3_topology.h"
 #endif
 
 #if defined(MV88F68XX) || defined(MV_MSYS_BC2) || defined(MV_MSYS_AC3)
 #include "ddr3_hws_hw_training.h"
 #define MV_NEW_TIP
+#if defined(MV_MSYS_BC2)
+#define MARVELL_BOARD	BC2_MARVELL_BOARD_ID_BASE
+#elif defined(MV_MSYS_AC3)
+#define MARVELL_BOARD	AC3_MARVELL_BOARD_ID_BASE
+#endif
+
 extern MV_STATUS ddr3TipInitSpecificRegConfig
 (
     MV_U32              devNum,

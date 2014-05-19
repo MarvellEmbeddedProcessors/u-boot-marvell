@@ -76,8 +76,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_a375.h"
 #elif defined(MV88F68XX)
 #include "ddr3_a38x.h"
-#elif defined(MV_MSYS_BC2) || defined(MV_MSYS_AC3)
+#elif defined(MV_MSYS_BC2)
 #include "ddr3_msys_bc2.h"
+#elif defined(MV_MSYS_AC3)
+#include "ddr3_msys_ac3.h"
 #else
 #error "No SOC define for uart in binary header."
 #endif

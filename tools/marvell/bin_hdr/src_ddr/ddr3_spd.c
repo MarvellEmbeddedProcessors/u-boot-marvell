@@ -90,9 +90,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_a375_config.h"
 #endif
 
-#if defined(MV_MSYS_BC2) || defined(MV_MSYS_AC3)
+#if defined(MV_MSYS_BC2)
 #include "ddr3_msys_bc2_config.h"
+#elif defined(MV_MSYS_AC3)
+#include "ddr3_msys_ac3_config.h"
 #endif
+
 #define MIN_VAL(a, b) ((a<b) ? a : b)
 
 #ifdef DUNIT_SPD

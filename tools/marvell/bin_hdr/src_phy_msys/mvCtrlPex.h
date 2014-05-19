@@ -67,7 +67,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _MV_CTRL_PEX_H
 
 #include "mvBHboardEnvSpec.h"
-#include "ddr3_msys_bc2.h"
 
 /********************************* Definitions ********************************/
 
@@ -84,7 +83,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* PCI Express Control and Status Registers */
 #define MAX_PEX_BUSSES                          256
 
-#define PEX_CAPABILITIES_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x60)
+#define PEX_CAPABILITIES_REG(pexIf)				((MV_PEX_IF_REGS_BASE(pexIf)) + 0x60)
 #define PEX_LINK_CTRL_STATUS2_REG(pexIf)        ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x90)
 #define PEX_CTRL_REG(pexIf)                     ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A00)
 #define PEX_STATUS_REG(pexIf)                   ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A04)

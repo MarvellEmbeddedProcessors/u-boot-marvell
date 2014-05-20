@@ -73,12 +73,10 @@ disclaimer.
        #define DB_AC3
 #endif
 
-
-
 /***********/
 /* General */
 /***********/
-#define MV_BOBCAT2
+#define MV_MSYS
 #define MV_SEC_64K
 #define MV_BOOTSIZE_512K
 #define MV_LARGE_PAGE

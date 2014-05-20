@@ -188,19 +188,15 @@ not_z_revision:
 	ldr  r0, =0xD0020080
 	str  r1, [r0]
 
-	/* align CP15 SCU base with internal reg base (scanned initially at Sample@Reset) */
+	/* align CP15 SCU (peripheral) base with internal reg base (scanned initially at Sample@Reset) */
 #if defined (MV_MSYS)
 	/* PJ4: [0:18] - Shift right Register Base before updating CP15 */
 	lsr  r1, r1, #13
 	mcr  15, 4, r1, c15, c0, 0
 #else
-	/* CA9:[13:31] -  write full register base address */
-	ldr r2, = 0xFFFFE000
-	and  r1, r1, r2 		/* Save SCU Reg base BITS [13:31] 	*/
-	mrc p15, 4, r0, c15, c0, 0	/* read current SCU Reg Base 		*/
-	ldr r2, = 0x1fff
-	and r0, r0, r2			/* Reset SCU reg base BITS [0:13]	*/
-	orr r1, r0, r1			/* Modify 				*/
+	/* Update SCU (peripheral) register Base address with correct INTER_REG_BASE */
+	ldr r2, = 0xC000		/* SCU offset = 0xC000 */
+	add r1, r1, r2			/* r1 = INTER_REG_BASE + SCU_OFFSET */
 	mcr p15, 4, r1, c15, c0, 0 	/* Write SCU base register */
 #endif
 

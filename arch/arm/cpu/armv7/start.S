@@ -189,7 +189,7 @@ not_z_revision:
 	str  r1, [r0]
 
 	/* align CP15 SCU base with internal reg base (scanned initially at Sample@Reset) */
-#if defined (MV_BOBCAT2)
+#if defined (MV_MSYS)
 	/* PJ4: [0:18] - Shift right Register Base before updating CP15 */
 	lsr  r1, r1, #13
 	mcr  15, 4, r1, c15, c0, 0
@@ -675,7 +675,7 @@ fiq:
 
 #endif /* CONFIG_USE_IRQ */
 #endif /* CONFIG_SPL_BUILD */
-	.align 5	
+	.align 5
 .global armv7_mmu_cache_flush
 armv7_mmu_cache_flush:
 		mrc	p15, 0, r10, c0, c1, 5	@ read ID_MMFR1

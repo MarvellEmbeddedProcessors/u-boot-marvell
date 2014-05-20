@@ -45,12 +45,12 @@
 #include "cntmr/mvCntmr.h"
 #include "cntmr/mvCntmrRegs.h"
 #include "cpu/mvCpu.h"
-#if defined(MV88F78X60) || defined(MV_BOBCAT2)
+#if defined(MV88F78X60) || defined(MV_MSYS)
 #define MV_BOARD_REFCLK MV_BOARD_REFCLK_25MHZ
-#define CTCR_ARM_TIMER_FRQ_SEL(cntr) CTCR_ARM_TIMER_25MhzFRQ_EN(cntr)	 
+#define CTCR_ARM_TIMER_FRQ_SEL(cntr) CTCR_ARM_TIMER_25MhzFRQ_EN(cntr)
 #else
 #define MV_BOARD_REFCLK mvCpuL2ClkGet()
-#define CTCR_ARM_TIMER_FRQ_SEL(cntr) 0	
+#define CTCR_ARM_TIMER_FRQ_SEL(cntr) 0
 #endif
 #define READ_TIMER (mvCntmrRead(UBOOT_CNTR)/(MV_BOARD_REFCLK/1000))
 
@@ -143,9 +143,9 @@ void __udelay (unsigned long usec)
 	/* In case udelay is called before timier was initialized */
 	if (!timer_init_done)
 		timer_init();
-	
+
 	delayticks = (usec * (MV_BOARD_REFCLK/ 1000000));
-	
+
 	current = mvCntmrRead(UBOOT_CNTR);
 	if(current < delayticks)
 	{

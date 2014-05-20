@@ -599,7 +599,7 @@ MV_STATUS mvPexTargetWinEnable(MV_U32 pexIf, MV_U32 winNum, MV_BOOL enable)
 		if (winRegInfo.sizeRegOffs) {
 			if ((MV_PEX_WIN_DEFAULT != winNum) && (MV_PEX_WIN_EXP_ROM != winNum)) {
 				MV_REG_BIT_SET(winRegInfo.sizeRegOffs, PXWCR_WIN_EN);
-#ifdef MV_BOBCAT2
+#ifdef CONFIG_BOBCAT2
 				/* TODO: remove this WA once PCi to DRAM access fixed - JIRA BOBCAT2-348 */
 				MV_REG_BIT_SET(winRegInfo.sizeRegOffs, 0x1UL << (PXWCR_ATTRIB_OFFS + 4));
 #endif

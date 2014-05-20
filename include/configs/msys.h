@@ -416,7 +416,7 @@ disclaimer.
 #undef	CONFIG_BOOTARGS
 
 /* auto boot*/
-#define CONFIG_BOOTDELAY		-1 			/* by default no autoboot */
+#define CONFIG_BOOTDELAY		3 			/* by default no autoboot */
 #define CONFIG_ROOTPATH			"/srv/nfs/"		/* Default Dir for NFS */
 #define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE	/* Boot Argument Buffer Size	*/
 

@@ -112,6 +112,20 @@
 #include "cntmr/mvCntmrRegs.h"
 #include "switchingServices.h"
 
+MV_BOOL mvVerifyRequest(void)
+{
+	printf("\nDo you want to continue ? [Y/n]");
+	readline(" ");
+	if(strlen(console_buffer) == 0 || /* if pressed Enter */
+		strcmp(console_buffer,"y") == 0 ||
+		strcmp(console_buffer,"Yes") == 0 ||
+		strcmp(console_buffer,"Y") == 0 ) {
+		printf("\n");
+		return MV_TRUE;
+	}
+
+	return MV_FALSE;
+}
 
 int mvLoadFile4cpss(int loadfrom, const char* file_name, char * devPart, int fstype)
 {
@@ -360,13 +374,14 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	MV_U32 rootfs_addr = 0x7000000;
 	MV_U32  total_in, rc, single_file = 0;
 	MV_U32  erase_end_offset, bz2_file = 0;
-	char *from[] = {"tftp","usb","mmc"};
+	char *from[] = {"tftp","usb","mmc", "ram"};
 	struct partitionInformation *partitionInfo = &nandInfo;	/* default destination = NAND */
 	MV_U32 loadfrom = 0;					/* Default source = tftp */
 	char * devPart = NULL;
 	MV_U32 fsys = FS_TYPE_FAT;				/* default FS = FAT */
 	MV_BOOL isNand = MV_TRUE;				/* default destination = NAND */
 	addr = load_addr = 0x5000000;
+	int fileSizeFromRam = -1;
 
 	/* scan for flash destination in arguments (allowing usage of only 'mtdburn spi') */
 	for (i = 1 ; i < argc ; i++) {
@@ -380,6 +395,8 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	}
 
 	switch(argc) {
+	case 7:
+		fileSizeFromRam = simple_strtoul(argv[6], NULL, 16);
 	case 6:/* arg#6 is flash destination, scanned previously --> fall to 5*/
 	case 5:
 		copy_filename (BootFile, argv[4], sizeof(BootFile));
@@ -396,8 +413,15 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			loadfrom = 1;
 		else if(strcmp(argv[1], "mmc") == 0)
 			loadfrom = 2;
-		if (loadfrom > 0 && devPart == NULL)	/* if using usb/mmc, and not selected interface num */
-			devPart = "0";			/* default interface number is 0 */
+		else if(strcmp(argv[1], "ram") == 0) {
+			loadfrom = 3;
+			if (devPart == NULL)
+				devPart = "5000000"; /*if source location not specified, use default load_addr */
+			else
+				addr = load_addr = (unsigned int)simple_strtoul(devPart, NULL, 16);
+		}
+		if ((loadfrom == 1 || loadfrom == 2) && devPart == NULL) /* if using USB/MMC, and not selected interface num */
+			devPart = "0";					 /* default interface number is 0 */
 		/* fall to 1*/
 	case 1:    /* no parameter all default */
 		if(argc < 4)
@@ -409,22 +433,21 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	printf(" - Load from device \t: %s", from[loadfrom]);
 	if (devPart != NULL) {
-		printf(", Interface :%s" ,devPart);
-		if (fsys == FS_TYPE_FAT)
-			printf("\n - File System \t\t: FAT");
-		else if (fsys == FS_TYPE_EXT)
-			printf("\n - File System \t\t: EXT2");
+		if (loadfrom == 3)	/* source = DRAM */
+			printf(", load from :%s" ,devPart);
+		else {			/* source = USB/MMC */
+			printf(", Interface :%s" ,devPart);
+			if (fsys == FS_TYPE_FAT)
+				printf("\n - File System \t\t: FAT");
+			else if (fsys == FS_TYPE_EXT)
+				printf("\n - File System \t\t: EXT2");
+		}
 	}
 	printf("\n - Filename\t\t: %s \n" ,BootFile);
 	printf(" - Flash destination\t: %s\n" , isNand == MV_TRUE ? "NAND" : "SPI");
 
-	printf("\nDo you want to continue ? [Y/n]");
-	readline(" ");
-	if( strcmp(console_buffer,"n") == 0 ||
-		strcmp(console_buffer,"No") == 0 ||
-		strcmp(console_buffer,"N") == 0 )
+	if (mvVerifyRequest() == MV_FALSE)
 		return 0;
-	printf("\n");
 
 	if (isNand == MV_FALSE && !flash) {
 		flash = spi_flash_probe(0, 0, CONFIG_SF_DEFAULT_SPEED, CONFIG_SF_DEFAULT_MODE);
@@ -434,8 +457,14 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		}
 	}
 
-	/* Fetch requested file */
-	filesize = mvLoadFile4cpss(loadfrom, BootFile, devPart, fsys);
+	/* Fetch requested file, filesize is needed for single image only */
+	if (loadfrom < 3) /* if Source is not RAM, fetch file (if source = RAM, file should be ready */
+		filesize = mvLoadFile4cpss(loadfrom, BootFile, devPart, fsys);
+	else if (fileSizeFromRam != -1) /* if specified a specific file size for single image file on ram */
+		filesize = fileSizeFromRam;
+	else 	/* if filesize not specified, try maximum limit for single image */
+		filesize = partitionInfo->KERNEL_SIZE + partitionInfo->ROOTFS_SIZE;
+
 	if(filesize <=0 )
 		return 0;
 
@@ -461,7 +490,10 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		printf("kernel separation ended ok. unc_len=%d, total_in=%d\n",unc_len, total_in);
 		bz2_file++;
 	} else if (rc == -5) {
-		printf("Not a bz2 file, assuming plain single image file\n");
+		printf("Not a valid bz2 file, assume plain single image file ?");
+		if (mvVerifyRequest() == MV_FALSE)
+			return 0;
+
 		single_file = 1;
 		kernel_unc_len = filesize;
 		kernel_addr = load_addr;
@@ -548,9 +580,7 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 
 	printf("\nDo you want to prepare CPSS environment variables (mtdparts & bootcmd) ? [y/N]");
-	readline(" ");
-	if( strcmp(console_buffer,"y") == 0 || strcmp(console_buffer,"Yes") == 0 ||
-		strcmp(console_buffer,"Y") == 0 )
+	if (mvVerifyRequest() == MV_TRUE)
 		run_command("cpss_env", 0);
 
 	return 1;
@@ -559,13 +589,15 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 U_BOOT_CMD(
 	mtdburn,      6,     1,      do_mtdburn,
 	"Burn a Linux image and Filesystem` on the NAND/SPI flash.\n",
-	"[interface [<dev[:part]>  [File system [filename]]] [flash destination]]\n"
-	"\tinterface  : tftp, mmc/usb <interface_num> (default is tftp)\n"
+	"[interface [<dev[:part]>  [File system [filename]]]] [flash destination] [single file size on RAM]\n"
+	"\tinterface  : ram <load address>, tftp, or mmc/usb <interface_num> (default is tftp)\n"
 	"\tFile system: FAT or EXT2 (default is FAT).\n"
 	"\tNAND default file-name is ubifs_arm_nand.image.\n"
 	"\tSPI default file-name is jffs2_arm.image.\n"
 	"\tFlash Destination: nand or spi (default is nand). \n"
-	"\te.g. 'mtdburn mmc 0 FAT ubifs_arm_nand.image nand'\n"
+	"\te.g. MMC: 'mtdburn mmc 0 FAT ubifs_arm_nand.image nand'\n"
+	"\te.g. RAM: 'mtdburn ram 5000000 nand'\n"
+
 );
 
 #define  SMI_WRITE_ADDRESS_MSB_REGISTER   (0x00)

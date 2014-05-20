@@ -761,7 +761,7 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	/* Set mvNetConfig env parameter */
 	env = getenv("mvNetConfig");
 	if (!env)
-		setenv("mvNetConfig", "mv_switch_config=none");
+		setenv("mvNetConfig", "switch_config=none");
 
 #endif  /*  (MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_UNM_ETH) */
 

@@ -203,6 +203,7 @@ typedef enum {
 typedef enum {
 	SATA,
 	SGMII,
+	SGMII_3_125,
 	LAST_SATA_SGMII_SEQ_TYPE
 } SATA_SGMII_SEQ_TYPES;
 

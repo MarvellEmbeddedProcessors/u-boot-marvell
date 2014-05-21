@@ -200,28 +200,28 @@ MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
 
 MV_OP_PARAMS sataPowerUpParams[] =
 {
-	/* unitunitBaseReg                          unitOffset   mask        SATA data       SGMII data      waitTime    numOfLoops */
-	{ SATA_CTRL_REG_INDIRECT, 0x38000,				       0xFFFFFFFF,	  { 0x0,      NO_DATA,	     }, 0,	0		 }, /* Power Down Sata addr*/
-	{ SATA_CTRL_REG,	  0x38000,				       0xFFFFFFFF,	  { 0xC44040, NO_DATA,	     }, 0,	0		 } /* Power Down Sata */
+	/* unitunitBaseReg       unitOffset   mask        SATA data   SGMII data  waitTime    numOfLoops */
+	{ SATA_CTRL_REG_INDIRECT, 0x38000,	0xFFFFFFFF,	  { 0x0,      NO_DATA,}, 0,	0		 }, /* Power Down Sata addr*/
+	{ SATA_CTRL_REG,	      0x38000,	0xFFFFFFFF,	  { 0xC44040, NO_DATA,}, 0,	0		 } /* Power Down Sata */
 };
 
 /* SATA and SGMII - power up seq */
 MV_OP_PARAMS sataAndSgmiiPowerUpParams[] =
 {
-	/* unitunitBaseReg                          unitOffset   mask        SATA data       SGMII data      waitTime    numOfLoops */
-	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,		   0x90006,		   { 0x80002,	0x80002	       }, 0,		   0			},      /* Power Up */
-	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,		   0x3FC00000,		   { 0x8800000, 0x19800000     }, 0,		   0			},      /* Baud Rate */
-	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,		   0x7800,		   { 0x6000,	0x6000	       }, 0,		   0			},      /* Unreset */
-	{ POWER_AND_PLL_CTRL_REG,	 0x800,		   0x0E0,		   { 0x0,	0x80	       }, 0,		   0			} /* Phy Selector */
+	/* unitBaseReg                 unitOffset   	mask         SATA data       SGMII data    waitTime  numOfLoops */
+	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,		   0x90006,		{ 0x80002,		0x80002 }, 		0,		   0 },  /* Power Up */
+	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,		   0x7800,		{ 0x6000,		0x6000 }, 		0,		   0 },  /* Unreset */
+	{ POWER_AND_PLL_CTRL_REG,	 	 0x800,		   0x0E0,		{ 0x0,			0x80 }, 		0,		   0}    /* Phy Selector */
 };
 
 /* SATA and SGMII - speed config seq */
 MV_OP_PARAMS sataAndSgmiiSpeedConfigParams[] =
 {
-	/* unitunitBaseReg                  unitOffset   mask     SATA data  SGMII data   waitTime    numOfLoops */
-	{ INTERFACE_REG, 0x800,		       0xC00,	       { 0x800,	  NO_DATA }, 0,	    0		     }, /* Select Baud Rate for SATA only*/
-	{ ISOLATE_REG,	 0x800,		       0xFF,	       { NO_DATA, 0x66	  }, 0,	    0		     }, /* Phy Gen RX and TX */
-	{ LOOPBACK_REG,	 0x800,		       0xE,	       { 0x4,	  0x2	  }, 0,	    0		     } /* Bus Width */
+	/* unitBaseReg  				unitOffset   	mask     	 SATA data      SGMII (1.25G)  SGMII (3.125G) waitTime  numOfLoops */
+    { COMMON_PHY_CONFIGURATION1_REG, 	0x28,		0x3FC00000,	{ 0x8800000, 	0x19800000,		0x22000000 }, 	0,		   0 }, /* Baud Rate */
+	{ INTERFACE_REG, 					0x800,	    0xC00,	 	{ 0x800,	  	NO_DATA,        NO_DATA    }, 	0,	       0 }, /* Select Baud Rate for SATA only*/
+	{ ISOLATE_REG,	 					0x800,	    0xFF,	 	{ NO_DATA, 		0x66,           0x66       }, 	0,	       0 }, /* Phy Gen RX and TX */
+	{ LOOPBACK_REG,	 					0x800,	    0xE,	    { 0x4,	  		0x2,   			0x2        }, 	0,	       0 }  /* Bus Width */
 };
 
 MV_OP_PARAMS sataDBTxAmpParams[] =
@@ -407,7 +407,7 @@ MV_VOID serdesSeqInit(MV_VOID)
 	/* SGMII__3_125_SPEED_CONFIG_SEQ sequence init */
 	serdesSeqDb[SGMII__3_125_SPEED_CONFIG_SEQ].opParamsPtr = sataAndSgmiiSpeedConfigParams;
 	serdesSeqDb[SGMII__3_125_SPEED_CONFIG_SEQ].cfgSeqSize =  sizeof(sataAndSgmiiSpeedConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SGMII__3_125_SPEED_CONFIG_SEQ].dataArrIdx = SGMII;
+	serdesSeqDb[SGMII__3_125_SPEED_CONFIG_SEQ].dataArrIdx = SGMII_3_125;
 
 	/* SGMII_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[SGMII_TX_CONFIG_SEQ1].opParamsPtr = sataAndSgmiiTxConfigParams1;

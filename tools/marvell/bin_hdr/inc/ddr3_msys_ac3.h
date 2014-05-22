@@ -70,9 +70,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* MISC */
 #define INTER_REGS_BASE								0xD0000000
 
-#define REG_DEVICE_SAR1_ADDR                        0xE4204
-#define RST2_CPU_DDR_CLOCK_SELECT_IN_OFFSET         17
-#define RST2_CPU_DDR_CLOCK_SELECT_IN_MASK           0x1F
+#define REG_DEVICE_SAR1_ADDR                        0xF82D4
+#define PLL0_CNFIG_OFFSET         					21
+#define PLL0_CNFIG_MASK           					0x7
+#define PLL1_CNFIG_OFFSET         					18
+#define PLL1_CNFIG_MASK           					0x7
 
 #define REG_DEVICE_SAR0_ADDR                        0x18224
 #define REG_DEVICE_SAR0_PLL_CONFIG_OFFSET           16

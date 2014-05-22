@@ -66,6 +66,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvHighSpeedEnvSpec.h"
 #include "mvBHboardEnvSpec.h"
 #include "mvCtrlPex.h"
+#include "mv_seq_exec.h"
 
 #if defined(MV_MSYS_BC2)
 #include "ddr3_msys_bc2.h"
@@ -148,14 +149,114 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 	return MV_BOARD_TCLK_200MHZ;
 }
 
-MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
+#if defined MV_MSYS_AC3
+
+/*****************/
+/*    USB2       */
+/*****************/
+
+MV_OP_PARAMS usb2PowerUpParams[] =
+{
+	/* unitunitBaseReg unitOffset   mask       USB2 data  waitTime  numOfLoops */
+	{ 0x804 ,          0x0 /*NA*/,	0x3,        {0x2},        0,        0}, /* Phy offset 0x1 - PLL_CONTROL1  */
+	{ 0x80C ,          0x0 /*NA*/,	0x3000000,  {0x2000000},  0,        0}, /* Phy offset 0x3 - TX Channel control 0  */
+	{ 0x800 ,          0x0 /*NA*/,	0x1FF007F,  {0x600005},   0,        0}, /* Phy offset 0x0 - PLL_CONTROL0  */
+	{ 0x80C ,          0x0 /*NA*/,	0x3000000,  {0x3000000},  0,        0}, /* Phy offset 0x3 - TX Channel control 0  */
+	{ 0x804 ,          0x0 /*NA*/,	0x3,        {0x3},        0,        0}, /* Phy offset 0x1 - PLL_CONTROL1  */
+	{ 0x808 ,          0x0 /*NA*/,	0x80800000, {0x80800000}, 1,     1000}, /* check PLLCAL_DONE is set and IMPCAL_DONE is set*/
+	{ 0x818 ,          0x0 /*NA*/,	0x80000000, {0x80000000}, 1,     1000}, /* check REG_SQCAL_DONE  is set*/
+	{ 0x800 ,          0x0 /*NA*/,	0x80000000, {0x80000000}, 1,     1000} /* check PLL_READY  is set*/
+};
+
+
+MV_VOID serdesSeqInit(MV_VOID)
+{
+	DEBUG_INIT_FULL_S("\n### serdesSeqInit ###\n");
+
+	/* SATA_ONLY_POWER_UP_SEQ sequence init */
+	serdesSeqDb[USB2_POWER_UP_SEQ].opParamsPtr = usb2PowerUpParams;
+	serdesSeqDb[USB2_POWER_UP_SEQ].cfgSeqSize  = sizeof(usb2PowerUpParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[USB2_POWER_UP_SEQ].dataArrIdx  = 0; /* Only USB2 uses these configurations */
+}
+
+MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
+{
+	return  MV_FALSE; /*moti b - TBD will be impemented at nex patch*/
+}
+/* AC3: set PCIe mode as End Point */
+MV_STATUS mvCtrlPexEndPointConfig(MV_VOID)
+{
+	return MV_OK; /*no EP config for AC3*/
+}
+/* AC3: set PCIe mode as Root Complex */
+MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
 {
 	MV_U32 uiReg = 0;
+	/* Reg 0x18204, Set PCIe0nEn[0] to 0x0*/
+	uiReg = MV_REG_READ(SOC_CTRL_REG);
+	uiReg &= ~(0x1 << 0);
+	uiReg |= (0x0 << 0);
+	MV_REG_WRITE(SOC_CTRL_REG, uiReg);
 
+	/* Reg 0x40060, Set DevType[23:20] to 0x4(Root Complex)*/
+	uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
+	uiReg &= ~(0xF << 20);
+	uiReg |= (0x4 << 20);
+	MV_REG_WRITE(PEX_CAPABILITIES_REG(0), uiReg);
+
+	/* Reg 0x41a60, Assert soft_reset[20] to 0x1,
+					Set DisLinkRestartRegRst[19] to 0x1,
+					Set ConfMskLnkRestart[16] to 0x1*/
+	uiReg = MV_REG_READ(PEX_DBG_CTRL_REG(0));
+	uiReg &= 0xFFE6FFFF;
+	uiReg |= 190000;
+	MV_REG_WRITE(PEX_DBG_CTRL_REG(0), uiReg);
+
+	/* Reg 0x41a00, Set ConfRoot_Complex to 0x1*/
+	uiReg = MV_REG_READ(PEX_CTRL_REG(0));
+	uiReg &= ~(0x1 << 1);
+	uiReg |= (0x1 << 1);
+	MV_REG_WRITE(PEX_CTRL_REG(0), uiReg);
+
+	/* Reg 0x41a60, Deassert soft_reset[20] to 0x0*/
+	uiReg = MV_REG_READ(PEX_DBG_CTRL_REG(0));
+	uiReg &= ~(0x1 << 20);
+	MV_REG_WRITE(PEX_DBG_CTRL_REG(0), uiReg);
+
+	/* Reg 0x18204, Set PCIe0nEn[0] to 0x1*/
+	uiReg = MV_REG_READ(SOC_CTRL_REG);
+	uiReg &= ~(0x1 << 0);
+	uiReg |= (0x1 << 0);
+	MV_REG_WRITE(SOC_CTRL_REG, uiReg);
+	return mvHwsPexConfig();
+}
+
+MV_STATUS mvCtrlUsb2Config(MV_VOID)
+{
+	/* USB2 configuration */
+	DEBUG_INIT_FULL_S("init USB2 Phys\n");
+	CHECK_STATUS(mvSeqExec(0 /* not relevant */, USB2_POWER_UP_SEQ));
+	return MV_OK;
+}
+
+#elif defined MV_MSYS_BC2
+
+MV_VOID serdesSeqInit(MV_VOID)
+{
+
+}
+
+MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
+{
+	MV_U32 uiReg = 0;
 	/*Read SatR configuration(bit16)*/
 	uiReg = MV_REG_READ(REG_DEVICE_SAR1_ADDR);
-
-	if( 0 == (uiReg & 0x10000)) {
+	return  ((uiReg & 0x10000) == 0);
+}
+/* BC2: set PCIe mode as End Point */
+MV_STATUS mvCtrlPexEndPointConfig(MV_VOID)
+{
+	MV_U32 uiReg = 0;
 		/*Do End Point pex config*/
 		uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
 		uiReg &= ~(0xF << 20);
@@ -164,14 +265,45 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 		MV_REG_WRITE(0x41a60, 0xF63F0C0);
 		mvPrintf("EP detected.\n");
 		return MV_OK;
+}
+/* BC2: set PCIe mode as Root Complex */
+MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
+{
+	MV_U32 uiReg = 0;
+	/*Do Root Complex pex config*/
+	uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
+	uiReg &= ~(0xF << 20);
+	uiReg |= (0x4 << 20);
+	MV_REG_WRITE(PEX_CAPABILITIES_REG(0), uiReg);
+	mvPrintf("RC detected.\n");
+	return mvHwsPexConfig();
+}
+
+MV_STATUS mvCtrlUsb2Config(MV_VOID)
+{
+	/* no USB2 in BC2 */
+	return MV_OK;
+}
+#endif
+
+
+
+MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
+{
+	/* Init serdes sequences DB */
+	serdesSeqInit();
+
+	if(mvCtrlIsPexEndPointMode() == MV_TRUE) {
+		/*PCI-E End Point configuration*/
+		mvCtrlPexEndPointConfig();
 	}else {
-		/*Do Root Complex pex config*/
-		uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
-		uiReg &= ~(0xF << 20);
-		uiReg |= (0x4 << 20);
-		MV_REG_WRITE(PEX_CAPABILITIES_REG(0), uiReg);
-		mvPrintf("RC detected.\n");
-		return mvHwsPexConfig();
+		/*PCI-E Root Complex configuration*/
+		mvCtrlPexRootComplexConfig();
 	}
+
+	/*USB2 configuration*/
+	mvCtrlUsb2Config();
+
+	return MV_OK;
 }
 

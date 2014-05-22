@@ -83,6 +83,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvBHboardEnvSpec.h"
 #endif
 
+#if defined(MV_MSYS_AC3)
+#include "ddr3_msys_ac3.h"
+#endif
+
 MV_STATUS mvGeneralInit(void)
 {
 #ifdef DB_88F6710_PCAC
@@ -132,5 +136,9 @@ MV_STATUS mvGeneralInit(void)
 	mvUartInit();
 	DEBUG_INIT_S("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
 #endif
+#if defined(MV_MSYS_AC3)
+	MV_REG_WRITE(REG_XBAR_WIN_5_CTRL_ADDR, 0xF0081);/*Open DFX server window*/
+#endif
 	return MV_OK;
 }
+

@@ -68,6 +68,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvCtrlPex.h"
 #include "mv_seq_exec.h"
 
+
 #if defined(MV_MSYS_BC2)
 #include "ddr3_msys_bc2.h"
 #include "ddr3_msys_bc2_config.h"
@@ -121,6 +122,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	return gBoardId;
 }
 
+
 /*******************************************************************************
 * mvBoardIdIndexGet
 *
@@ -143,13 +145,44 @@ MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
 	return boardId & (BOARD_ID_INDEX_MASK - 1);
 }
 
-MV_U32 mvBoardTclkGet(MV_VOID)
-{
-	//TODO Add RD/DB detection. Currently set to DB.
-	return MV_BOARD_TCLK_200MHZ;
-}
 
 #if defined MV_MSYS_AC3
+
+MV_U32 mvBoardTclkGet(MV_VOID)
+{
+	MV_U32 uiReg, serverBaseAddr;
+
+	serverBaseAddr = MV_REG_READ(REG_XBAR_WIN_5_BASE_ADDR);
+
+	uiReg = MV_REG_READ(serverBaseAddr + REG_DEVICE_SAR1_ADDR) & (PLL0_CNFIG_MASK << PLL0_CNFIG_OFFSET);
+
+	switch (uiReg) {
+	case 0:
+		return MV_BOARD_TCLK_290MHZ;
+		break;
+	case 1:
+		return MV_BOARD_TCLK_250MHZ;
+		break;
+	case 2:
+		return MV_BOARD_TCLK_222MHZ;
+		break;
+	case 3:
+		return MV_BOARD_TCLK_166MHZ;
+		break;
+	case 4:
+		return MV_BOARD_TCLK_200MHZ;
+		break;
+	case 5:
+		return MV_BOARD_TCLK_133MHZ;
+		break;
+	case 6:
+		return MV_BOARD_TCLK_360MHZ;
+		break;
+	default:
+		return MV_BOARD_TCLK_ERROR;
+		break;
+	}
+}
 
 /*****************/
 /*    USB2       */
@@ -241,6 +274,13 @@ MV_STATUS mvCtrlUsb2Config(MV_VOID)
 
 #elif defined MV_MSYS_BC2
 
+MV_U32 mvBoardTclkGet(MV_VOID)
+{
+	//TODO Add RD/DB detection. Currently set to DB.
+
+	return MV_BOARD_TCLK_200MHZ;
+}
+
 MV_VOID serdesSeqInit(MV_VOID)
 {
 
@@ -290,19 +330,20 @@ MV_STATUS mvCtrlUsb2Config(MV_VOID)
 
 MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
-	/* Init serdes sequences DB */
-	serdesSeqInit();
+  /* Init serdes sequences DB */
+  serdesSeqInit();
 
-	if(mvCtrlIsPexEndPointMode() == MV_TRUE) {
-		/*PCI-E End Point configuration*/
-		mvCtrlPexEndPointConfig();
-	}else {
-		/*PCI-E Root Complex configuration*/
-		mvCtrlPexRootComplexConfig();
-	}
+  if(mvCtrlIsPexEndPointMode() == MV_TRUE) {
+	  /*PCI-E End Point configuration*/
+	  mvCtrlPexEndPointConfig();
+  }else {
+	  /*PCI-E Root Complex configuration*/
+	  mvCtrlPexRootComplexConfig();
+  }
 
-	/*USB2 configuration*/
-	mvCtrlUsb2Config();
+  /*USB2 configuration*/
+  mvCtrlUsb2Config();
+
 
 	return MV_OK;
 }

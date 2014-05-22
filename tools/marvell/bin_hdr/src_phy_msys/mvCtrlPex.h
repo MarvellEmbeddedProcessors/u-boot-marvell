@@ -87,6 +87,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PEX_LINK_CTRL_STATUS2_REG(pexIf)        ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x90)
 #define PEX_CTRL_REG(pexIf)                     ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A00)
 #define PEX_STATUS_REG(pexIf)                   ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A04)
+#define PEX_DBG_CTRL_REG(pexIf)                 ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A60)
 #define PEX_DBG_STATUS_REG(pexIf)               ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A64)
 #define PEX_LINK_CAPABILITY_REG                 0x6C
 #define PEX_LINK_CTRL_STAT_REG                  0x70

@@ -242,7 +242,7 @@ MV_STATUS mvHwsPexConfig()
 					while ((mvPexConfigRead(pexIdx, first_busno, 0, 0, addr) & 0xFF) != 0x10) {
 						addr = (mvPexConfigRead(pexIdx, first_busno, 0, 0, addr) & 0xFF00) >> 8;
 					}
-					if ((mvPexConfigRead(pexIdx, first_busno, 0, 0, addr + 0xC) & 0xF) == 0x2) {
+					if ((mvPexConfigRead(pexIdx, first_busno, 0, 0, addr + 0xC) & 0xF) >= 0x2) {
 						tmp = MV_REG_READ(PEX_LINK_CTRL_STATUS2_REG(pexIdx));
 						DEBUG_RD_REG(PEX_LINK_CTRL_STATUS2_REG(pexIdx),tmp );
 						tmp &=~(BIT0 | BIT1);

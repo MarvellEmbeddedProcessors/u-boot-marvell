@@ -66,5 +66,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _MV_HIGHSPEED_ENV_SPEC_H
 #define _MV_HIGHSPEED_ENV_SPEC_H
 #include "bootstrap_os.h"
+#include "mv_seq_exec.h"
+
+/********************************* Definitions ********************************/
+
+/* For checking function return values */
+#define CHECK_STATUS(origFunc) \
+	{ \
+		MV_STATUS mvStatus; \
+		mvStatus = origFunc; \
+		if (MV_OK != mvStatus) \
+		{ \
+			return mvStatus; \
+		} \
+	}
+
+/********************************* Enum ********************************/
+/* Serdes sequences */
+typedef enum {
+	USB2_POWER_UP_SEQ,
+	SERDES_LAST_SEQ
+} SERDES_SEQ;
+
+/*********************************** Globals **********************************/
+
+/* serdesSeqDb - holds all serdes sequences, their size and the relevant index in the data array
+   initialized in serdesSeqInit */
+MV_CFG_SEQ serdesSeqDb[SERDES_LAST_SEQ];
 
 #endif /* _MV_HIGHSPEED_ENV_SPEC_H */
+

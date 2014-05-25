@@ -343,6 +343,7 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 			speed = MV_ETH_SPEED_100;
 			break;
 		case BOARD_MAC_SPEED_1000M:
+		case BOARD_MAC_SPEED_2000M:
 			speed = MV_ETH_SPEED_1000;
 			break;
 		default:

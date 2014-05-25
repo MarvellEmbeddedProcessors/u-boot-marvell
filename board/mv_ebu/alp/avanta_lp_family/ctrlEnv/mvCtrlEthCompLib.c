@@ -439,8 +439,10 @@ static void mvEthComplexMacToComPhy(MV_U32 port, MV_U32 comPhy, MV_U32 ethComple
 		mvEthComplexPortDpClkSrcSet(port, 0x1);
 }
 
-static void mvEthComplexMac1ToPonSerdes(MV_U32 port)
+static void mvEthComplexMac1ToPonSerdes(MV_U32 port, MV_U32 ethComplexOptions)
 {
+	if (ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)
+		mvEthComplexPortInBandAnEnable(port, MV_TRUE);
 	/* 0x1 = Mac#1 is source for GponPhy */
 	mvEthComplexGponPhySrcSet(0x1);
 }
@@ -501,7 +503,7 @@ MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig)
 		mvEthComplexMacToRgmii(1);
 
 	if (c & (MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP))
-		mvEthComplexMac1ToPonSerdes(1);
+		mvEthComplexMac1ToPonSerdes(1, c);
 
 	if (c & MV_ETHCOMP_SW_P0_2_GE_PHY_P0)
 		mvEthComplexSwPortToGbePhy(0, 0);

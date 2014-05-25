@@ -975,7 +975,8 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		smiAddress = 0x5;
 	else {
 		smiAddress = -1; /* no SMI address if connected to switch */
-		macSpeed = BOARD_MAC_SPEED_1000M;
+		if (!(ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP))
+			macSpeed = BOARD_MAC_SPEED_1000M;
 	}
 	mvBoardPhyAddrSet(1, smiAddress);
 	mvBoardMacSpeedSet(1, macSpeed);

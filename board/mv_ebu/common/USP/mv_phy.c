@@ -261,7 +261,12 @@ void mvBoardEgigaPhyInit(void)
 #elif defined (MV88F66XX) /* Avanta-LP: dynamic PPv2 configuration */
         MV_U32 ethComplex = mvBoardEthComplexConfigGet();
 	/* Init PHYs according to eth. complex configuration */
-	mvAlpBoardEgigaPhyInit();
+	if (ethComplex & (MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0 | MV_ETHCOMP_GE_MAC0_2_RGMII0 |
+				MV_ETHCOMP_GE_MAC0_2_COMPHY_1 | MV_ETHCOMP_GE_MAC0_2_COMPHY_2 |
+				MV_ETHCOMP_GE_MAC0_2_COMPHY_3 | MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3 |
+				MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES |
+				MV_ETHCOMP_GE_MAC1_2_RGMII0 | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP))
+		mvAlpBoardEgigaPhyInit();
 
 	if (mvBoardIsInternalSwitchConnected() == MV_TRUE)
 		mvAlpBoardSwitchBasicInit(mvBoardSwitchPortsMaskGet(0));

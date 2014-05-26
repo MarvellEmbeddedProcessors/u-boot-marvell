@@ -63,18 +63,8 @@
 #;*******************************************************************************/
 #.SECONDARY:
 
-include ../base.mk
-sinclude ../../../../include/autoconf.mk
-
-ifeq "$(CONFIG_CUSTOMER_BOARD_SUPPORT)" "y"
-  CFLAGS += -DCONFIG_CUSTOMER_BOARD_SUPPORT
-endif
-ifeq "$(CONFIG_CUSTOMER_BOARD_0)"  "y"
-  CFLAGS += -DCONFIG_CUSTOMER_BOARD_0
-endif
-ifeq "$(CONFIG_CUSTOMER_BOARD_1)"  "y"
-  CFLAGS += -DCONFIG_CUSTOMER_BOARD_1
-endif
+include ../../base.mk
+sinclude ../../../../../include/autoconf.mk
 
 ifeq "$(CONFIG_DB_78x60_BP_REV2)"  "y"
   CFLAGS += -DCONFIG_DB_78x60_BP_REV2
@@ -101,6 +91,9 @@ endif
 ifeq "$(CONFIG_RD_88F6710)"  "y"
   CFLAGS += -DCONFIG_RD_88F6710
 endif
+ifeq "$(CONFIG_DB_88F6710_PCAC )"  "y"
+  CFLAGS += -DCONFIG_DB_88F6710_PCAC
+endif
 
 ifeq "$(CONFIG_ARMADA_375)"  "y"
   CFLAGS += -DCONFIG_ARMADA_375
@@ -108,16 +101,11 @@ ifeq "$(CONFIG_ARMADA_375)"  "y"
     CFLAGS += -DCONFIG_ALP_A375_ZX_REV
   endif
 endif
-
 ifeq "$(CONFIG_AVANTA_LP)"  "y"
   CFLAGS += -DCONFIG_AVANTA_LP
   ifeq "$(CONFIG_ALP_A375_ZX_REV)" "y"
     CFLAGS += -DCONFIG_ALP_A375_ZX_REV
   endif
-endif
-
-ifeq "$(CONFIG_ARMADA_38X)"  "y"
-  CFLAGS += -DCONFIG_ARMADA_38X
 endif
 ifeq "$(CONFIG_DB_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_DB_BOBCAT2
@@ -126,18 +114,17 @@ ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_RD_BOBCAT2
 endif
 
-INCLUDE     = -I./  -I../inc/ -I../../../../include
+INCLUDE     = -I./  -I../../inc/ -I../../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
 HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
 
-TGT = phy_a38x.a
-TGT_UART = phy_a38x.uart.a
+TGT = phy_a370.a
+TGT_UART = phy_a370.uart.a
 
-#CSRC =  mvBHboardEnvSpec.c mvHighSpeedEnvLib.c
-CSRC = mvBHboardEnvSpec.c mvCtrlPex.c mvHighSpeedEnvLib.c
+CSRC = mvHighSpeedEnvLib.c mvHighSpeedEnvSpec.c
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
@@ -146,18 +133,17 @@ all:   $(TGT) $(TGT_UART)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
-#	echo 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 %.uart.o: %.c
 	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) -c -o  $@ $<
 
 $(TGT): $(COBJ)
 	ar rcs $(TGT)  $(COBJ)
-	$(CP) ./$@ ../
+	$(CP) ./$@ ../../
 
 $(TGT_UART): $(CUART_OBJ)
 	ar rcs $(TGT_UART)  $(CUART_OBJ)
-	$(CP) ./$@ ../
+	$(CP) ./$@ ../../
 
 clean:
 	$(RM) ./*.o  ./*.a

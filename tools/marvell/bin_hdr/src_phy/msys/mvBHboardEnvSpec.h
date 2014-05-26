@@ -101,4 +101,3 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BOARD_ID_INDEX_MASK		0x10	/* Mask used to return board index via board Id */
 
 #endif /* __INCmvBHboardEnvSpech */
-

@@ -157,7 +157,7 @@ LDSCRIPT    = linker.scr
 LDSECSCRIPT = linker_sec.scr
 DRAMREGS    = ./dramregs.txt
 
-INCLUDE       = -I./ -I./../ -I./src_phy_$(BOARD)/ -I./src_ddr/  -I./inc/ -I../../../include
+INCLUDE       = -I./ -I./../ -I./src_phy/$(BOARD)/ -I./src_ddr/  -I./inc/ -I../../../include
 
 LDFLAGSBIN    = -T $(LDSCRIPT) $(LDFLAGS)
 LDSECFLAGSBIN = -T $(LDSECSCRIPT) $(LDFLAGS)
@@ -188,7 +188,7 @@ LIB_GENERAL_INIT_UART = generalInit.uart.a
 
 TLIB = ./src_ddr/ddr3_training_$(BOARDNAME).lib
 
-COMPONENT_SUBDIRS = src_util src_phy_$(BOARD) src_ddr src_suspendWUP src_generalInit
+COMPONENT_SUBDIRS = src_util src_phy/$(BOARD) src_ddr src_suspendWUP src_generalInit
 HDR_COMPONENTS = $(LIB_GENERAL_INIT) $(LIB_PHY) $(LIB_DDR) $(TLIB) $(LIB_SWUP)
 HDR_COMPONENTS_UART = $(LIB_GENERAL_INIT_UART) $(LIB_PHY_UART) $(LIB_DDR_UART) $(TLIB) $(LIB_SWUP_UART)
 

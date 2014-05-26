@@ -457,7 +457,7 @@ MV_U32 mvCtrlSerdesMaxLinesGet(MV_VOID)
 		  return 4;
 
         default:
-  			break;
+			break;
 	}
                 return 0;
 	}
@@ -1707,5 +1707,3 @@ MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum)
 
 	return MV_OK;
 }
-
-

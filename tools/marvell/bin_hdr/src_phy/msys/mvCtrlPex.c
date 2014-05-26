@@ -428,4 +428,3 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 {
 	return 0xFC00 /*MV_BOBCAT2_DEV_ID*/;
 }
-

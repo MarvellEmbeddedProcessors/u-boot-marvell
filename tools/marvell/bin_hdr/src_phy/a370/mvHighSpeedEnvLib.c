@@ -405,7 +405,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	DEBUG_INIT_S(" (COM-PHY-V20) \n");
 
 /**********************************************************************************/
-#if 0 /*   for B0 only */ 
+#if 0 /*   for B0 only */
 	{
 		MV_U8		freq;
 		/*   AVS :  disable AVS for frequency less than 799*/
@@ -452,7 +452,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	DEBUG_INIT_FULL_S("Step 2: Configure the desire PIN_PHY_GEN\n");
 	for (serdesLineNum = 0; serdesLineNum < maxSerdesLines; serdesLineNum++) {
 		serdesLineCfg = get_serdesLineCfg(serdesLineNum,pSerdesInfo);
-		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_UNCONNECTED]) 
+		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_UNCONNECTED])
 			continue;
 		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_PEX])
 			continue;
@@ -472,7 +472,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 			tmp = MV_REG_READ(SATA_LP_PHY_EXT_CTRL_REG(sataPort));
 			DEBUG_RD_REG(SATA_LP_PHY_EXT_CTRL_REG(sataPort), tmp);
 			tmp &= ~ ((0x1ff<<5) | 0x7);
-			tmp |= ((pSerdesInfo->busSpeed & (1 << serdesLineNum)) != 0) ? (0x11 << 5) : 0x0; 
+			tmp |= ((pSerdesInfo->busSpeed & (1 << serdesLineNum)) != 0) ? (0x11 << 5) : 0x0;
 
 			MV_REG_WRITE(SATA_LP_PHY_EXT_CTRL_REG(sataPort) , tmp);
 			DEBUG_WR_REG(SATA_LP_PHY_EXT_CTRL_REG(sataPort) , tmp);
@@ -480,7 +480,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
         if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII0]) {
 			if ((serdesLineNum == 1) || (serdesLineNum == 2))
 					sgmiiPort = 0;
-			else 
+			else
 					sgmiiPort = 1;
 			tmp = MV_REG_READ(SGMII_SERDES_CFG_REG(sgmiiPort));
 			DEBUG_RD_REG(SGMII_SERDES_CFG_REG(sgmiiPort), tmp);
@@ -506,7 +506,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	for (serdesLineNum = 0; serdesLineNum < maxSerdesLines; serdesLineNum++) {
 		/* for each serdes lane*/
 		serdesLineCfg = get_serdesLineCfg(serdesLineNum,pSerdesInfo);
-		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_UNCONNECTED]) 
+		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_UNCONNECTED])
 			continue;
 		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_PEX]) {
 			pexUnit    = serdesLineNum;
@@ -514,8 +514,8 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 			if (pSerdesInfo->pexMod[pexUnit] == PEX_BUS_DISABLED)
 				continue;
-			/*  8)	Activate the RX High Impedance Mode field (bit [2]) in register /PCIe_USB Control (Each MAC contain different Access to reach its Serdes-Regfile). 
-					[PEX-Only] Set bit[12]: The analog part latches idle if PU_TX = 1 and PU_PLL =1. */ 
+			/*  8)	Activate the RX High Impedance Mode field (bit [2]) in register /PCIe_USB Control (Each MAC contain different Access to reach its Serdes-Regfile).
+					[PEX-Only] Set bit[12]: The analog part latches idle if PU_TX = 1 and PU_PLL =1. */
 
 			/* Termination enable */
 			in_direct  = (0x48 << 16) | (pexLineNum << 24) | 0x1000 | rxHighImpedanceMode; /* x1 */
@@ -533,7 +533,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
         if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_SGMII0]) {
 			if ((serdesLineNum == 1) || (serdesLineNum == 2))
 					sgmiiPort = 0;
-			else 
+			else
 					sgmiiPort = 1;
 			MV_REG_WRITE(SGMII_COMPHY_CTRL_REG(sgmiiPort), rxHighImpedanceMode);
 			DEBUG_WR_REG(SGMII_COMPHY_CTRL_REG(sgmiiPort), rxHighImpedanceMode);
@@ -625,7 +625,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 			sataPort =  serdesLineNum & 1; /* port 0 for serdes lines 4,6,  and port 1 for serdes lines 5*/
 
-			/* 8) Configure the desire PHY_MODE (bits [7:5]) and REF_FREF_SEL (bits[4:0]) in the register 
+			/* 8) Configure the desire PHY_MODE (bits [7:5]) and REF_FREF_SEL (bits[4:0]) in the register
 				  Power and PLL Control (Each MAC contain different Access to reach its Serdes-Regfile). */
 			MV_REG_WRITE(SATA_PWR_PLL_CTRL_REG(sataPort), 0xF801);
 			DEBUG_WR_REG(SATA_PWR_PLL_CTRL_REG(sataPort), 0xF801);
@@ -643,7 +643,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 			tmp = MV_REG_READ(SATA_LP_PHY_EXT_CTRL_REG(sataPort));
 			DEBUG_RD_REG(SATA_LP_PHY_EXT_CTRL_REG(sataPort), tmp );
-			tmp |= 7; 
+			tmp |= 7;
 			MV_REG_WRITE(SATA_LP_PHY_EXT_CTRL_REG(sataPort) , tmp);
 			DEBUG_WR_REG(SATA_LP_PHY_EXT_CTRL_REG(sataPort) , tmp);
 
@@ -733,7 +733,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 				continue;
 			}
 		}
-		if (status == MV_OK) 
+		if (status == MV_OK)
 			break;
 		mvOsDelay(5);
 		tmp--;
@@ -755,7 +755,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 		MV_REG_WRITE(PEX_CAPABILITIES_REG(MV_PEX_UNIT_TO_IF(pexUnit)),tmp);
 		DEBUG_WR_REG(PEX_CAPABILITIES_REG(MV_PEX_UNIT_TO_IF(pexUnit)),tmp);
 	}
-		
+
 	/* step 15 [PEX-Only] Only for EP mode set to Zero bits 19 and 16 of register 0x1a60 */
 	/*----------------------------------------------*/
 	DEBUG_INIT_FULL_S("Steps 15: [PEX-Only]  In order to configure\n");
@@ -785,7 +785,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 			while (pSserdesMphyChange->serdesType != SERDES_UNIT_UNCONNECTED) {
 				switch (pSserdesMphyChange->serdesType) {
 				case SERDES_UNIT_PEX:
-					if (serdesLineCfg != serdesCfg[serdesLineNum][SERDES_UNIT_PEX]) 
+					if (serdesLineCfg != serdesCfg[serdesLineNum][SERDES_UNIT_PEX])
 						break;
 					pexUnit    = serdesLineNum;
 					pexLineNum = 0;
@@ -815,17 +815,17 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 					break;
 				case SERDES_UNIT_SGMII0:
 				case SERDES_UNIT_SGMII1:
-					if (serdesLineCfg != serdesCfg[serdesLineNum][SERDES_UNIT_SGMII0]) 
+					if (serdesLineCfg != serdesCfg[serdesLineNum][SERDES_UNIT_SGMII0])
 						break;
 					if ((serdesLineNum == 1) || (serdesLineNum == 2))
 							sgmiiPort = 0;
-					else 
+					else
 							sgmiiPort = 1;
 					if (busSpeed) {
 						MV_REG_WRITE(MV_ETH_REGS_BASE(sgmiiPort) | pSserdesMphyChange->serdesRegHiSpeed  ,pSserdesMphyChange->serdesValueLowSpeed);
 						DEBUG_WR_REG(MV_ETH_REGS_BASE(sgmiiPort) | pSserdesMphyChange->serdesRegHiSpeed  ,pSserdesMphyChange->serdesValueLowSpeed);
-					}                                                                                                                       
-					else {                                                                                                                  
+					}
+					else {
 						MV_REG_WRITE(MV_ETH_REGS_BASE(sgmiiPort) | pSserdesMphyChange->serdesRegLowSpeed ,pSserdesMphyChange->serdesValueLowSpeed);
 						DEBUG_WR_REG(MV_ETH_REGS_BASE(sgmiiPort) | pSserdesMphyChange->serdesRegLowSpeed ,pSserdesMphyChange->serdesValueLowSpeed);
 					}
@@ -923,7 +923,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 					if (tempReg == 0x1) {
 						mvPexLocalBusNumSet(pexIf, first_busno);
 						mvPexLocalDevNumSet(pexIf, 1);
-						
+
 
 						DEBUG_INIT_FULL_S("** Link is Gen1, check the EP capability \n");
 						/* link is Gen1, check the EP capability */

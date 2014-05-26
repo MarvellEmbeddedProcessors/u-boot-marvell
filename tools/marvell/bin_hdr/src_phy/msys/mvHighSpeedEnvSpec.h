@@ -95,4 +95,3 @@ typedef enum {
 MV_CFG_SEQ serdesSeqDb[SERDES_LAST_SEQ];
 
 #endif /* _MV_HIGHSPEED_ENV_SPEC_H */
-

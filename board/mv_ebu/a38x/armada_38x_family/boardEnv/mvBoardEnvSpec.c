@@ -408,7 +408,7 @@ MV_BOARD_INFO rdNas88f68XX_board_info = {
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,
 	/* Enable modules auto-detection. */
-	.configAutoDetect		= MV_FALSE,
+	.configAutoDetect		= MV_TRUE,
 	.numIoExp			= ARRSZ(ioExpNas),
 	.pIoExp				= ioExpNas,
 	.boardOptionsConfig		= MV_CONFIG_NO_MODULE
@@ -486,7 +486,7 @@ MV_BOARD_INFO rdWAP88f68XX_board_info = {
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,
 	/* Enable modules auto-detection. */
-	.configAutoDetect		= MV_FALSE,
+	.configAutoDetect		= MV_TRUE,
 	.numIoExp			= ARRSZ(ioExpWap),
 	.pIoExp				= ioExpWap,
 	.boardOptionsConfig		= MV_CONFIG_NO_MODULE

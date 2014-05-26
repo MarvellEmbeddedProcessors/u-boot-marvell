@@ -980,19 +980,32 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 {
 	MV_U32	reg;
 
-	if ((mvBoardIsModuleConnected(MV_CONFIG_MII)))	/* if Module MII connected change SMI address for port 0 */
-		mvBoardPhyAddrSet(0, 8);	/*set SMI address 8 for port 0*/
+	switch (mvBoardIdGet()) {
+	case RD_NAS_68XX_ID:
+	case RD_AP_68XX_ID:
+		mvBoardIoExpanderUpdate();
+		/* SGMII utilizes in-Band SMI access, no SMI address is used (set -1 to disable MAC SMI polling)*/
+		if (mvBoardSatRRead(MV_SATR_RD_SERDES4_CFG) == 1) /* 0 = USB3.  1 = SGMII. */
+			mvBoardPhyAddrSet(1, -1);
+		break;
+	case DB_68XX_ID:
+		if ((mvBoardIsModuleConnected(MV_CONFIG_MII)))	/* MII Module uses different PHY address */
+			mvBoardPhyAddrSet(0, 8);	/*set SMI address 8 for port 0*/
 
-	/* Update MPP group types and values according to board configuration */
-	mvBoardMppIdUpdate();
-	mvBoardEthComplexInfoUpdate();
-	/* board on test mode  */
-	reg = MV_REG_READ(MPP_SAMPLE_AT_RESET) & BIT20;
-	if (reg) {
-		/* if board on test mode reset MPP19 */
-		reg = mvBoardMppGet(2);
-		reg &= 0xffff0fff;
-		mvBoardMppSet(2, reg);
+		/* Update MPP group types and values according to board configuration */
+		mvBoardMppIdUpdate();
+		mvBoardEthComplexInfoUpdate();
+		/* board on test mode  */
+		reg = MV_REG_READ(MPP_SAMPLE_AT_RESET) & BIT20;
+		if (reg) {
+			/* if board on test mode reset MPP19 */
+			reg = mvBoardMppGet(2);
+			reg &= 0xffff0fff;
+			mvBoardMppSet(2, reg);
+		}
+		break;
+	default:
+		mvOsPrintf("%s: Error: Auto detection update sequence is not supported by current board.\n" , __func__);
 	}
 }
 /*******************************************************************************
@@ -1095,7 +1108,6 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 
 	if (mvBoardIsModuleConnected(MV_CONFIG_NAND_ON_BOARD))
 		mvModuleMppUpdate(4, nandOnBoard);
-
 }
 
 /*******************************************************************************
@@ -1140,21 +1152,26 @@ MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID)
 MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 {
 	MV_U32 i = 0;
-	MV_U8 ioValue, boardId = mvBoardIdGet();
-	MV_U32 tmp = MV_ERROR;
+	MV_U8 ioValue, ioValue2, boardId = mvBoardIdGet();
+	MV_U32 rdSerdes4cfg = MV_ERROR;
 
-	if (mvBoardIoExpanderGet(0, 2, &ioValue) == MV_ERROR)
-		return MV_OK; /* ignore for boards not supported IO expander */
+	/* Verify existence of IO expander on board, and fetch 1st IO expander value to modify */
+	if (mvBoardIoExpanderGet(0, 2, &ioValue) == MV_ERROR ||
+		mvBoardIoExpanderGet(1, 6, &ioValue2) == MV_ERROR)
+		return MV_OK;
 
 	/* if RD board: detect SerDes Lane #4 configuration*/
 	if (boardId == RD_NAS_68XX_ID || boardId == RD_AP_68XX_ID)
-		tmp = mvBoardSatRRead(MV_SATR_RD_SERDES4_CFG);
+		rdSerdes4cfg = mvBoardSatRRead(MV_SATR_RD_SERDES4_CFG);
 
-	if (tmp != MV_ERROR) { /* ignore for none RD_NAS board */
-		if (tmp == 0) /* 0 = USB3.  1 = SGMII. */
+	if (rdSerdes4cfg != MV_ERROR) { /* ignore for none RD_NAS board */
+		if (rdSerdes4cfg == 0) /* 0 = USB3.  1 = SGMII. */
 			ioValue |= 1 ;	/* Setting USB3.0 interface: configure IO as output '1' */
-		else
-			ioValue &= ~1 ;	/* Setting SGMII interface:  configure IO as output '0' */
+		else {
+			ioValue &= ~1;		/* Setting SGMII interface:  configure IO as output '0' */
+			ioValue2 &= ~BIT5;	/* Set Tx disable for SGMII */
+		}
+		mvBoardIoExpanderSet(1, 6, ioValue2);
 		mvBoardIoExpanderSet(0, 2, ioValue);
 	}
 

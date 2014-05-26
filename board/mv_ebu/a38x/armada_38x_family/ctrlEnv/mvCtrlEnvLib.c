@@ -380,7 +380,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	if (mvBoardConfigAutoDetectEnabled()) {
 		mvBoardInfoUpdate();
 	}
-	mvBoardIoExpanderUpdate();
+
 	if (mvBoardIsModuleConnected(MV_CONFIG_NOR) ||
 	    mvBoardIsModuleConnected(MV_CONFIG_NAND) ||
 	    mvBoardIsModuleConnected(MV_CONFIG_NAND_ON_BOARD))

@@ -1112,4 +1112,3 @@ MV_STATUS mvUsb2PhyInit(MV_U32 dev)
 	return MV_OK;
 }
 #endif
-

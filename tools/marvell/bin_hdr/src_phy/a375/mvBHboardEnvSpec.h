@@ -39,7 +39,7 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-        this list of conditions and the following disclaimer.
+		this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
     notice, this list of conditions and the following disclaimer in the
@@ -69,60 +69,47 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Board specific configuration */
 /* ============================ */
 
-
-/* Avanta LP family*/
-#define MV_6660_DEV_ID			0x6660
-#define MV_6650_DEV_ID			0x6650
-#define MV_6610_DEV_ID			0x6610
-
-/* SGMII speed */
-#define SGMII0_CAPACITY_2_5G		BIT7
-#define SGMII1_CAPACITY_2_5G		BIT8
+#define MV_6720_DEV_ID			0x6720
 
 /* Customer boards */
 #define CUTOMER_BOARD_ID_BASE		0x0
-#define AVANTA_LP_CUSTOMER_BOARD_ID0	(CUTOMER_BOARD_ID_BASE + 0)
-#define AVANTA_LP_CUSTOMER_BOARD_ID1	(CUTOMER_BOARD_ID_BASE + 1)
+#define ARMADA_375_CUSTOMER_BOARD_ID0	(CUTOMER_BOARD_ID_BASE + 0)
+#define ARMADA_375_CUSTOMER_BOARD_ID1	(CUTOMER_BOARD_ID_BASE + 1)
 #define MV_MAX_CUSTOMER_BOARD_ID	(CUTOMER_BOARD_ID_BASE + 2)
-#define MV_CUSTOMER_BOARD_NUM		(MV_MAX_CUSTOMER_BOARD_ID - CUTOMER_BOARD_ID_BASE)
+#define MV_CUSTOMER_BOARD_NUM		(MV_MAX_CUSTOMER_BOARD_ID - CUTOMER_BOARD_ID_BASE + 1)
 
 /* Marvell boards */
 #define MARVELL_BOARD_ID_BASE		0x10
-#define RD_6650_ID			(MARVELL_BOARD_ID_BASE + 0)
-#define DB_6650_ID			(MARVELL_BOARD_ID_BASE + 1)
-#define RD_6660_ID			(MARVELL_BOARD_ID_BASE + 2)
-#define DB_6660_ID			(MARVELL_BOARD_ID_BASE + 3)
-#define MV_MAX_MARVELL_BOARD_ID		(MARVELL_BOARD_ID_BASE + 4)
-#define MV_MARVELL_BOARD_NUM		(MV_MAX_MARVELL_BOARD_ID - MARVELL_BOARD_ID_BASE)
+#define DB_6720_ID			(MARVELL_BOARD_ID_BASE + 0)
+#define MV_MAX_MARVELL_BOARD_ID		(MARVELL_BOARD_ID_BASE + 1)
+#define MV_MARVELL_BOARD_NUM		(MV_MAX_MARVELL_BOARD_ID - MARVELL_BOARD_ID_BASE + 1)
 
 #define MV_INVALID_BOARD_ID		0xFFFFFFFF
 
 #define INTER_REGS_BASE			0xD0000000
 
 /* Sample at Reset */
-#define MPP_SAMPLE_AT_RESET(id)		(0xE8200 + (id * 4))
-#define PEX_CLK_100MHZ_MASK		0x00000004
-#define PEX_CLK_100MHZ_OFFSET		2
-#define SATR_DEVICE_ID_2_0_OFFS		21
-#define SATR_DEVICE_ID_2_0_MASK		(3 << SATR_DEVICE_ID_2_0_OFFS)
+#define MPP_SAMPLE_AT_RESET(id)     (0xE8200 + (id * 4))
+#define PEX_CLK_100MHZ_MASK         0x00000004
+#define PEX_CLK_100MHZ_OFFSET       2
 
-#define MSAR_TCLK_OFFS			22
-#define MSAR_TCLK_MASK			(0x1 << MSAR_TCLK_OFFS)
+#define MSAR_TCLK_OFFS              22
+#define MSAR_TCLK_MASK              (0x1 << MSAR_TCLK_OFFS)
 
-#define DEV_ID_REG			0x18238
-#define VENDOR_ID_OFFS			0
-#define VENDOR_ID_MASK			0xFFFF
-#define DEVICE_ID_OFFS			16
-#define DEVICE_ID_MASK			0xFFFF0000
-
-#define DEV_VERSION_ID_REG      0x1823C
-#define REVISON_ID_OFFS         8
-#define REVISON_ID_MASK         0xF00
+#define DEVICE_ID_REG               0x18238
+#define DEVICE_ID_REG_VEND_ID_OFFS  0
+#define DEVICE_ID_REG_VEND_ID_MASK  0xFFFF
+#define DEVICE_ID_REG_DEV_ID_OFFS   16
+#define DEVICE_ID_REG_DEV_ID_MASK   0xFFFF0000
 
 #define TSMC_Z1                0
 #define UMC_Z1                 1
 #define TSMC_Z1_GPON_METAL_FIX 2
 #define UMC_A0                 3
+
+#define DEV_VERSION_ID_REG      0x1823C
+#define REVISON_ID_OFFS         8
+#define REVISON_ID_MASK         0xF00
 
 #define COMMON_PHY_SELECTOR_REG     0x18300
 #define COMPHY0_SELCTOR_OFFS        0
@@ -133,7 +120,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define COMMON_PHY_CONFIGURATION1_REG(phy)   (0x18310 + (phy * 4))
 
 /* COMMON_PHYn_CONFIGURATION1_REG fields */
-
 #define REF_CLK_DIS_OFFS             	0
 #define REF_CLK_DIS_MASK				(1 << REF_CLK_DIS_OFFS)
 #define POWER_UP_IVREF_OFFS             1
@@ -150,6 +136,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PHY_POWER_ON_RESET_MASK         (1 << PHY_POWER_ON_RESET_OFFS)
 #define PHY_MODE_OFFS                   15
 #define PHY_MODE_MASK                   (1 << PHY_MODE_OFFS)
+
 #define PHY_POWER_UP_PLL_OFFS           16
 #define PHY_POWER_UP_PLL_MASK           (1 << PHY_POWER_UP_PLL_OFFS)
 #define PHY_POWER_UP_RX_OFFS            17
@@ -174,19 +161,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define KVCO_CALOBRATION_CONTROL_REG(comphy)    (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x2))
 #define GENERETION_2_SETTINGS_1_REG(comphy)     (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x10))
 #define DIGITAL_LOOPBACK_ENABLE_REG(comphy)     (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x23))
-#define INTERFACE_REG1_REG(comphy)				(COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x25))
 #define PHY_ISOLATION_MODE_CONTROL_REG(comphy)  (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x26))
-#define DIGITAL_RESERVED0_REG(comphy)			(COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x3A))
 #define RESERVED_46_REG(comphy)                 (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x46))
+#define RESET_AND_CLOCK_CONTROL_REG(comphy)     (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0xC1))
+#define INTERFACE_REG1_REG(comphy)				(COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x25))
+#define DIGITAL_RESERVED0_REG(comphy)			(COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x3A))
 #define MISCELLANEOUS_CONTROL0_REG(comphy)      (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x4F))
 #define POWER_REG1_REG(comphy)					(COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x52))
 #define LANE_CONFIGURATION_4_REG(comphy)		(COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0x88))
-#define RESET_AND_CLOCK_CONTROL_REG(comphy)     (COMPHY_REGS_CONFIGURATION_REG(comphy) + (4 * 0xC1))
 
 #define USB_CLUSTER_CONTROL_REG				0x18400
 #define USB2_REGS_CONFIGURATION_REG(dev)  	(0x50800 + dev*0x4000)
 #define MV_USB2_PHY_CHANNEL_REG(dev, reg)	(USB2_REGS_CONFIGURATION_REG(dev) | (reg << 2))
-
 
 /* SOC_CTRL_REG fields */
 #define SCR_PEX_ENA_OFFS(pex)       ((pex) & 0x3)
@@ -215,11 +201,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_MISC_REGS_BASE           (MV_MISC_REGS_OFFSET)
 #define SOC_CTRL_REG                (MV_MISC_REGS_BASE + 0x4)
 
-#define GPIO_DATA_OUT_REG_BASE          0x18100
-#define GPIO_DATA_OUT_REG(Num)          (GPIO_DATA_OUT_REG_BASE + (0x40*Num))
-#define GPIO_DATA_OUT_ENABLE_REG_BASE   0x18104
-#define GPIO_DATA_OUT_ENABLE_REG(Num)   (GPIO_DATA_OUT_ENABLE_REG_BASE + (0x40*Num))
-
 #define SOC_PERI_CLK_CTRL		(0x2085C)
 #define SOC_PERIL_CLK_CTRL_CLK_DIV_MASK	(0xF)
 #define SOC_PERIL_CLK_CTRL_CLK_SMP_MASK	(0xF00)
@@ -233,7 +214,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PEX_CAPABILITIES_REG(pexIf)			((MV_PEX_IF_REGS_BASE(pexIf)) + 0x60)
 #define PEX_CTRL_REG(pexIf)         ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A00)
 #define PEX_LINK_CTRL_STATUS2_REG(pexIf)  ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x90)
-#define PEX_DBG_STATUS_REG(pexIf)         ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A64)
+#define PEX_DBG_STATUS_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A64)
 #define PEX_STATUS_REG(pexIf)       ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A04)
 #define PEX_LINK_CAPABILITY_REG     0x6C
 #define PEX_LINK_CTRL_STAT_REG      0x70
@@ -286,4 +267,3 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 MV_U8 mvCtrlRevisionGet(MV_VOID);
 
 #endif /* __INCmvBHboardEnvSpech */
-

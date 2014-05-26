@@ -65,16 +65,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 MV_SERDES_CHANGE_M_PHY db88f78XX0BoardSerdesChangeMphy[]={
 	/*  SERDES TYPE    Low REG OFFSET      Low REG VALUE,Hi REG OFS,      Hi REG VALUE      */
-	{SERDES_UNIT_PEX, 	   	   0x0, (0x0F << 16)| 0x2a21,       0x0, (0x0F << 16)| 0x2a21},   /* PEX: Change of Slew Rate port0   */ 
-	{SERDES_UNIT_PEX, 	   	   0x0, (0x4F << 16)| 0x6219,       0x0, (0x4F << 16)| 0x6219},   /* PEX: Change PLL BW port0    		*/ 
-	{SERDES_UNIT_SATA,	   0x0083C,				  0x8a31,   0x0083C, 			   0x8a31},   /* SATA: Slew rate change port 0 	*/ 
-	{SERDES_UNIT_SATA,	   0x00834,				  0xc928,   0x00834, 			   0xc928},   /* SATA: Slew rate change port 0 	*/ 
-	{SERDES_UNIT_SATA,	   0x00838,				  0x30f0,   0x00838,               0x30f0},   /* SATA: Slew rate change port 0 	*/ 
-	{SERDES_UNIT_SATA,	   0x00840,				  0x30f5,   0x00840,               0x30f5},   /* SATA: Slew rate change port 0 	*/ 
-	{SERDES_UNIT_SGMII0,   0x00E18, 			  0x989F,   0x00E18, 			   0x989F},   /* SGMII: FFE setting Port0         */ 
-	{SERDES_UNIT_SGMII0,   0x00E38, 			  0x10FA,   0x00E38, 			   0x10FA},   /* SGMII: SELMUP and SELMUF Port0   */ 
+	{SERDES_UNIT_PEX, 	   	   0x0, (0x0F << 16)| 0x2a21,       0x0, (0x0F << 16)| 0x2a21},   /* PEX: Change of Slew Rate port0   */
+	{SERDES_UNIT_PEX, 	   	   0x0, (0x4F << 16)| 0x6219,       0x0, (0x4F << 16)| 0x6219},   /* PEX: Change PLL BW port0    		*/
+	{SERDES_UNIT_SATA,	   0x0083C,				  0x8a31,   0x0083C, 			   0x8a31},   /* SATA: Slew rate change port 0 	*/
+	{SERDES_UNIT_SATA,	   0x00834,				  0xc928,   0x00834, 			   0xc928},   /* SATA: Slew rate change port 0 	*/
+	{SERDES_UNIT_SATA,	   0x00838,				  0x30f0,   0x00838,               0x30f0},   /* SATA: Slew rate change port 0 	*/
+	{SERDES_UNIT_SATA,	   0x00840,				  0x30f5,   0x00840,               0x30f5},   /* SATA: Slew rate change port 0 	*/
+	{SERDES_UNIT_SGMII0,   0x00E18, 			  0x989F,   0x00E18, 			   0x989F},   /* SGMII: FFE setting Port0         */
+	{SERDES_UNIT_SGMII0,   0x00E38, 			  0x10FA,   0x00E38, 			   0x10FA},   /* SGMII: SELMUP and SELMUF Port0   */
 	{SERDES_UNIT_SGMII0,   0x00E34, 			  0xC968,   0x00E34, 			   0xC66C},   /* SGMII: Amplitude new setting gen2 Port3 */
-	{SERDES_UNIT_QSGMII,   0x72E34, 			  0xaa58,   0x72E34, 			   0xaa58},   /* QSGMII: Amplitude and slew rate change  */ 
+	{SERDES_UNIT_QSGMII,   0x72E34, 			  0xaa58,   0x72E34, 			   0xaa58},   /* QSGMII: Amplitude and slew rate change  */
 	{SERDES_UNIT_QSGMII,   0x72e38, 			  0x10aF,   0x72e38, 			   0x10aF},   /* QSGMII: SELMUP and SELMUF               */
 	{SERDES_UNIT_QSGMII,   0x72e18, 			  0x98AC,   0x72e18, 			   0x98AC},   /* QSGMII: 0x72e18                         */
 	{SERDES_UNIT_UNCONNECTED, 0,0}		/* Null terminated */
@@ -180,4 +180,3 @@ MV_BIN_SERDES_CFG* SerdesInfoTbl[] = {
 
 MV_U8 rd78460gpInfoBoardTwsiDev[] = {0x4C,0x4D,0x4E};
 MV_U8 db88f78XX0rev2InfoBoardTwsiDev[] = {0x4C,0x4D,0x4E,0x4F};
-

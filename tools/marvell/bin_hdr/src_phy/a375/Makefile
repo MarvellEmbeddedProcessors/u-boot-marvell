@@ -63,8 +63,8 @@
 #;*******************************************************************************/
 #.SECONDARY:
 
-include ../base.mk
-sinclude ../../../../include/autoconf.mk
+include ../../base.mk
+sinclude ../../../../../include/autoconf.mk
 
 ifeq "$(CONFIG_CUSTOMER_BOARD_SUPPORT)" "y"
   CFLAGS += -DCONFIG_CUSTOMER_BOARD_SUPPORT
@@ -118,7 +118,7 @@ ifeq "$(CONFIG_DB_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_DB_BOBCAT2
 endif
 
-INCLUDE     = -I./  -I../inc/ -I../../../../include
+INCLUDE     = -I./  -I../../inc/ -I../../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
@@ -143,11 +143,11 @@ all:   $(TGT) $(TGT_UART)
 
 $(TGT): $(COBJ)
 	ar rcs $(TGT)  $(COBJ)
-	$(CP) ./$@ ../
+	$(CP) ./$@ ../../
 
 $(TGT_UART): $(CUART_OBJ)
 	ar rcs $(TGT_UART)  $(CUART_OBJ)
-	$(CP) ./$@ ../
+	$(CP) ./$@ ../../
 
 clean:
 	$(RM) ./*.o  ./*.a

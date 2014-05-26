@@ -63,49 +63,21 @@
 #;*******************************************************************************/
 #.SECONDARY:
 
-include ../base.mk
-sinclude ../../../../include/autoconf.mk
+include ../../base.mk
+sinclude ../../../../../include/autoconf.mk
 
-ifeq "$(CONFIG_DB_78x60_BP_REV2)"  "y"
-  CFLAGS += -DCONFIG_DB_78x60_BP_REV2
+ifeq "$(CONFIG_CUSTOMER_BOARD_SUPPORT)" "y"
+  CFLAGS += -DCONFIG_CUSTOMER_BOARD_SUPPORT
 endif
-ifeq "$(CONFIG_DB_78X60_PCAC_REV2)"  "y"
-  CFLAGS += -DCONFIG_DB_78X60_PCAC_REV2
+ifeq "$(CONFIG_CUSTOMER_BOARD_0)"  "y"
+  CFLAGS += -DCONFIG_CUSTOMER_BOARD_0
 endif
-ifeq "$(CONFIG_RD_78460_SERVER_REV2)"  "y"
-  CFLAGS += -DCONFIG_RD_78460_SERVER_REV2
-endif
-ifeq "$(CONFIG_DB_784MP_GP)"  "y"
-  CFLAGS += -DCONFIG_DB_784MP_GP
-endif
-ifeq "$(CONFIG_DB_78X60_AMC)"  "y"
-  CFLAGS += -DCONFIG_DB_78X60_AMC
-endif
-ifeq "$(CONFIG_RD_78460_CUSTOMER)"  "y"
-  CFLAGS += -DCONFIG_RD_78460_CUSTOMER
+ifeq "$(CONFIG_CUSTOMER_BOARD_1)"  "y"
+  CFLAGS += -DCONFIG_CUSTOMER_BOARD_1
 endif
 
-ifeq "$(CONFIG_DB_88F6710_BP)"  "y"
-  CFLAGS += -DCONFIG_DB_88F6710_BP
-endif
-ifeq "$(CONFIG_RD_88F6710)"  "y"
-  CFLAGS += -DCONFIG_RD_88F6710
-endif
-ifeq "$(CONFIG_DB_88F6710_PCAC )"  "y"
-  CFLAGS += -DCONFIG_DB_88F6710_PCAC
-endif
-
-ifeq "$(CONFIG_ARMADA_375)"  "y"
-  CFLAGS += -DCONFIG_ARMADA_375
-  ifeq "$(CONFIG_ALP_A375_ZX_REV)" "y"
-    CFLAGS += -DCONFIG_ALP_A375_ZX_REV
-  endif
-endif
-ifeq "$(CONFIG_AVANTA_LP)"  "y"
-  CFLAGS += -DCONFIG_AVANTA_LP
-  ifeq "$(CONFIG_ALP_A375_ZX_REV)" "y"
-    CFLAGS += -DCONFIG_ALP_A375_ZX_REV
-  endif
+ifeq "$(CONFIG_BOBCAT2)"  "y"
+  CFLAGS += -DCONFIG_BOBCAT2
 endif
 ifeq "$(CONFIG_DB_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_DB_BOBCAT2
@@ -113,18 +85,27 @@ endif
 ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_RD_BOBCAT2
 endif
+ifeq "$(CONFIG_RD_MTL_BOBCAT2)"  "y"
+  CFLAGS += -DCONFIG_RD_BOBCAT2
+endif
+ifeq "$(CONFIG_ALLEYCAT3)"  "y"
+  CFLAGS += -DCONFIG_ALLEYCAT3
+endif
+ifeq "$(CONFIG_DB_AC3)"  "y"
+  CFLAGS += -DCONFIG_DB_AC3
+endif
 
-INCLUDE     = -I./  -I../inc/ -I../../../../include
+INCLUDE     = -I./  -I../../inc/ -I../../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
 HOSTCFLAGS   = -Wall $(INCLUDE)
 HOSTCPPFLAGS = $(CPPFLAGS)
 
-TGT = phy_a370.a
-TGT_UART = phy_a370.uart.a
+TGT = phy_msys.a
+TGT_UART = phy_msys.uart.a
 
-CSRC = mvHighSpeedEnvLib.c mvHighSpeedEnvSpec.c
+CSRC = mvHighSpeedEnvLib.c mvHighSpeedEnvSpec.c mvCtrlPex.c
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
@@ -139,11 +120,11 @@ all:   $(TGT) $(TGT_UART)
 
 $(TGT): $(COBJ)
 	ar rcs $(TGT)  $(COBJ)
-	$(CP) ./$@ ../
+	$(CP) ./$@ ../../
 
 $(TGT_UART): $(CUART_OBJ)
 	ar rcs $(TGT_UART)  $(CUART_OBJ)
-	$(CP) ./$@ ../
+	$(CP) ./$@ ../../
 
 clean:
 	$(RM) ./*.o  ./*.a

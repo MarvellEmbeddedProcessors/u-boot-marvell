@@ -70,13 +70,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "generalInit.h"
 
 #ifdef MV88F68XX
-#include "../src_phy_a38x/mvBHboardEnvSpec.h"
+#include "../src_phy/a38x/mvBHboardEnvSpec.h"
 #endif
 #ifdef MV88F66XX
-#include "../src_phy_alp/mvBHboardEnvSpec.h"
+#include "../src_phy/alp/mvBHboardEnvSpec.h"
 #endif
 #ifdef MV88F672X
-#include "../src_phy_a375/mvBHboardEnvSpec.h"
+#include "../src_phy/a375/mvBHboardEnvSpec.h"
 #endif
 
 #if defined(DB_88F6710_PCAC)

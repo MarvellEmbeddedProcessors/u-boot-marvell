@@ -347,4 +347,3 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	return MV_OK;
 }
-

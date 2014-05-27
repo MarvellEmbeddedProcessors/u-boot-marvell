@@ -166,6 +166,9 @@ static MV_U32 gLogLevel = 0;
 
 MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize);
 
+#if defined(MV88F78X60)
+MV_U32 gTrefi;
+#endif
 #if !defined(MV_NEW_TIP)
 /************************************************************************************
  * Name:     ddr3LogLevelInit
@@ -667,6 +670,10 @@ MV_U32 ddr3Init_(void)
 		DEBUG_INIT_S("DDR3 Training Sequence - FAILED (ddr3 Dunit Setup) \n");
 		return status;
 	}
+#else
+#if defined (MV88F78X60)
+	gTrefi = (MV_REG_READ(REG_SDRAM_CONFIG_ADDR) & REG_SDRAM_CONFIG_RFRS_MASK) * uiHClkTimePs;/*initiate gTrefi for static D-Unit*/
+#endif
 #endif
 	/* Fix read ready phases for all SOC in reg 0x15C8*/
 	uiReg = MV_REG_READ(REG_TRAINING_DEBUG_3_ADDR);

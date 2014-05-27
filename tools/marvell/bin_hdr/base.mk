@@ -101,4 +101,4 @@ endif
 CFLAGS   = -Wall $(INCLUDE) $(DEBUG_FLAGS) $(CPUOPTS) -msoft-float -fPIE -fno-zero-initialized-in-bss -fno-unwind-tables  -mabi=aapcs
 CPPFLAGS = $(foreach FLAG, $(MVFLAGS), $(addprefix -D, $(FLAG)))
 ASFLAGS  = $(foreach FLAG, $(MVFLAGS), $(addprefix --defsym , $(FLAG)))
-LDFLAGS  = -static -nostartfiles -unwind-tables  -nostdlib
+LDFLAGS  = -static -nostartfiles -unwind-tables  -nostdlib -Wl,--build-id=none

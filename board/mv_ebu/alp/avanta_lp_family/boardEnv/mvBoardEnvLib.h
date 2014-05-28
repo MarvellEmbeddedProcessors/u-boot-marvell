@@ -92,7 +92,8 @@ typedef enum _devBoardSlicType {
 	MV_BOARD_SLIC_ZSI_ID, /* Zarlink ZSI Bus */
 	MV_BOARD_SLIC_TDM2C_ID, /* Cross vendor external SLIC for TDM2C */
 	MV_BOARD_SLIC_TDMMC_ID, /* Cross vendor external SLIC for TDMMC */
-	MV_BOARD_SLIC_MAX_OPTION
+	BOARD_TDM_SLIC_COUNT,
+	MV_BOARD_SLIC_MAX_OPTION = BOARD_TDM_SLIC_COUNT,
 } MV_BOARD_SLIC_TYPE;
 
 typedef enum _devBoardOtherTypeClass {
@@ -251,15 +252,6 @@ typedef struct _boardPexInfo {
 typedef struct {
 	MV_U8 spiId;
 } MV_BOARD_TDM_SPI_INFO;
-
-typedef enum {
-	BOARD_SLIC_880 = 0,
-	BOARD_SLIC_792,
-	BOARD_SLIC_SSI,
-	BOARD_SLIC_ISI,
-	BOARD_SLIC_ZSI,
-	BOARD_TDM_SLIC_COUNT
-} MV_BOARD_TDM_SLIC_TYPE;
 
 /* Board specific initialization. Performed before initializing the SoC. */
 typedef struct {

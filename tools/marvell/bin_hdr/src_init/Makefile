@@ -127,7 +127,7 @@ ifeq "$(CONFIG_DB_AC3)"  "y"
   CFLAGS += -DCONFIG_DB_AC3
 endif
 
-INCLUDE     = -I./  -I../inc/ -I../../../../include
+INCLUDE     = -I./$(BOARD)/  -I../inc/ -I../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
@@ -137,7 +137,14 @@ HOSTCPPFLAGS = $(CPPFLAGS)
 TGT = generalInit.a
 TGT_UART = generalInit.uart.a
 
-CSRC = generalInit.c bin_sramcfg.c
+CSRC = $(BOARD)/generalInit.c
+
+ifeq "$(CONFIG_DB_88F6710_BP)"  "y"
+  CSRC += $(BOARD)/bin_sramcfg.c
+endif
+ifeq "$(CONFIG_RD_88F6710)"  "y"
+  CSRC += $(BOARD)/bin_sramcfg.c
+endif
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
@@ -159,5 +166,4 @@ $(TGT_UART): $(CUART_OBJ)
 	$(CP) ./$@ ../
 
 clean:
-	$(RM) ./*.o  ./*.a
-
+	$(RM) $(BOARD)/*.o ./*.a

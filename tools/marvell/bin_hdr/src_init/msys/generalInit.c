@@ -69,89 +69,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 #include "generalInit.h"
 
-#ifdef MV88F68XX
-#include "../src_phy/a38x/mvBHboardEnvSpec.h"
-#endif
-#ifdef MV88F66XX
-#include "../src_phy/alp/mvBHboardEnvSpec.h"
-#endif
-#ifdef MV88F672X
-#include "../src_phy/a375/mvBHboardEnvSpec.h"
-#endif
-
-#if defined(DB_88F6710_PCAC)
-#include "mvBHboardEnvSpec.h"
-#endif
-
 #if defined(MV_MSYS_AC3)
 #include "ddr3_msys_ac3.h"
 #endif
 
 /* mvUartConfig() prepares UART configuration (MPP's and UART interface selection) */
-MV_VOID mvUartConfig()
+static inline MV_VOID mvUartConfig()
 {
-#ifdef MV88F68XX
-	/* UART0 & I2C MPP's (MPP[0:3] = 0x1) */
-        MV_U32 regData = (MV_REG_READ(MPP_CONTROL_REG(0))  & MPP_SET_MASK) | MPP_SET_DATA;
-        MV_REG_WRITE(MPP_CTRL_REG, regData);
-
-	/* UART1 MPP's (MPP[19:20] = 0x6) - UART1 is the default UART interface on DB-AP-68xx */
-	regData = (MV_REG_READ(MPP_CONTROL_REG(2))  & MPP_UART1_SET_MASK) | MPP_UART1_SET_DATA;
-	MV_REG_WRITE(MPP_CONTROL_REG(2), regData);
-#elif defined(MV_MSYS_AC3)
-	/* open DFX server window - required to derive Tclk for UART init (mvBoardTclkGet) */
-	MV_REG_WRITE(REG_XBAR_WIN_5_CTRL_ADDR, 0xF0081);
-	/* UART0 does not use MPP lines: no other configuration required */
-#elif defined CONFIG_DB_88F6710_PCAC
-	/* UART0 & I2C MPP's (MPP[0:1] = 0x1 */
-	uiReg = (MV_REG_READ(MPP_CONTROL_REG(0)) & 0xFFFFFF00) | 0x11;
-	MV_REG_WRITE(MPP_CONTROL_REG(0), uiReg);
+#if defined(MV_MSYS_AC3)
+        /* open DFX server window - required to derive Tclk for UART init (mvBoardTclkGet) */
+        MV_REG_WRITE(REG_XBAR_WIN_5_CTRL_ADDR, 0xF0081);
+        /* UART0 does not use MPP lines: no other configuration required */
 #endif
 }
 
 MV_STATUS mvGeneralInit(void)
 {
-#ifdef DB_88F6710_PCAC
-	MV_U32 uiReg = 0;
-#endif
-#ifdef MV88F67XX /* A370 */
-	/* Check is its A370 A0 */
-	if (mvCtrlRevGet() == 0)
-		sramConfig();  /* Armada 370 - Must Run the sram reconfig WA */
-#endif
-#ifdef MV88F68XX /* A38x */
-	/* Update AVS debug control register */
-	MV_U32 regData;
-        MV_REG_WRITE(AVS_DEBUG_CNTR_REG, AVS_DEBUG_CNTR_DEFAULT_VALUE);
-
-        regData = MV_REG_READ(AVS_ENABLED_CONTROL);
-        regData &= ~(AVS_LOW_VDD_LIMIT_MASK | AVS_HIGH_VDD_LIMIT_MASK);
-	regData |= (AVS_LOW_VDD_LIMIT_VAL | AVS_HIGH_VDD_LIMIT_VAL);
-        MV_REG_WRITE(AVS_ENABLED_CONTROL, regData);
-#endif
-
-#if defined(MV88F672X) || defined(MV88F66XX) /* A375 || ALP */
-#ifndef CONFIG_ALP_A375_ZX_REV
-/* * Peripheral Clock WA - for A375/ALP A0
- * The bug is related to the Peripheral clock of the CPU.
- * This clock generated from divide of the CPU clock.(Configurable divider)
-
- * At A0 it close to 200MHz due to Timing issue.  (divide by 4 Default value).
- * There is a functional bug in this mode at the GIC <> CPU interface.
- * We want to change it to divide by 2 (400 MHz).
- */
-	MV_U32 regData = MV_REG_READ(SOC_PERI_CLK_CTRL);
-	regData &= (~SOC_PERIL_CLK_CTRL_CLK_DIV_MASK);
-	regData &= (~SOC_PERIL_CLK_CTRL_CLK_SMP_MASK);
-	MV_REG_WRITE(SOC_PERI_CLK_CTRL, regData);
-#endif /* (MV88F672X) || (MV88F66XX) */
-#endif /* CONFIG_ALP_A375_ZX_REV */
-
 #if !defined(MV_NO_PRINT)
-	mvUartConfig(); /* prepare UART configuration (MPP's & interface selection) */
+	mvUartConfig();
 	mvUartInit();
 	DEBUG_INIT_S("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
 #endif
+
 	return MV_OK;
 }
-

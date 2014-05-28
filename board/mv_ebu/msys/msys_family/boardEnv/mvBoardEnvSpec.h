@@ -69,7 +69,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvSysHwConfig.h"
 
 
-/* Board specific configuration */
+/* Board specific ID configuration */
 /* ============================ */
 /* Bobcat2 Customer Boards */
 #define BC2_CUSTOMER_BOARD_ID_BASE	0x0
@@ -104,6 +104,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define BOARD_ID_INDEX_MASK		0x10	/* Mask used to return board index via board Id */
 
+/********************************************
+*		Bobcat2 Boards
+*********************************************/
 /*******************************************************************************
 * Bobcat2 Customer board - Based on DB_DX_BC2
 *******************************************************************************/
@@ -125,28 +128,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BOBCAT2_CUSTOMER_0_GPP_POL_LOW		0x0
 #define BOBCAT2_CUSTOMER_0_GPP_POL_MID		0x0
 
-/*******************************************************************************
-* Alleycat3 Customer board - Based on DB_DX_BC2
-*******************************************************************************/
-
-#define ALLEYCAT3_CUSTOMER_0_MPP0_7			0x22242222
-#define ALLEYCAT3_CUSTOMER_0_MPP8_15		0x11122222
-#define ALLEYCAT3_CUSTOMER_0_MPP16_23		0x44444044
-#define ALLEYCAT3_CUSTOMER_0_MPP24_31		0x14444444
-#define ALLEYCAT3_CUSTOMER_0_MPP32_39		0x00000001
-
-#define ALLEYCAT3_CUSTOMER_0_GPP_OUT_ENA_LOW	(~(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12\
-						 | BIT13 | BIT16 | BIT17 | BIT20 | BIT29  | BIT30))
-#define ALLEYCAT3_CUSTOMER_0_GPP_OUT_ENA_MID	(~(0))
-
-#define ALLEYCAT3_CUSTOMER_0_GPP_OUT_VAL_LOW	(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12\
-						| BIT13 | BIT16 | BIT17 | BIT20 | BIT29  | BIT30)
-#define ALLEYCAT3_CUSTOMER_0_GPP_OUT_VAL_MID	0x0
-
-#define ALLEYCAT3_CUSTOMER_0_GPP_POL_LOW		0x0
-#define ALLEYCAT3_CUSTOMER_0_GPP_POL_MID		0x0
-
-
 /******************/
 /*   RD_DX_BC2    */
 /******************/
@@ -158,7 +139,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define DB_DX_BC2_NOR_MPP0_7	0x44444444
 #define DB_DX_BC2_NOR_MPP8_15	0x11122244
-
 
 /* GPPs
 MPP#	NAME			IN/OUT
@@ -289,19 +269,43 @@ MPP#	NAME		IN/OUT
 #define RD_MTL_BC2_GPP_POL_LOW		0x0
 #define RD_MTL_BC2_GPP_POL_MID		0x0
 
-/******************/
-/*   RD_DX_AC3    */
-/******************/
-#define DB_DX_AC3_MPP0_7		0x00142222
-#define DB_DX_AC3_MPP8_15		0x11122000
-#define DB_DX_AC3_MPP16_23		0x44444004
-#define DB_DX_AC3_MPP24_31		0x14444444
-#define DB_DX_AC3_MPP32_39		0x00000001
+/********************************************
+*		AlleyCat3 Boards
+*********************************************/
+/*******************************************************************************
+* Alleycat3 Customer board - Based on DB_DX_AC3
+*******************************************************************************/
 
-#define DB_DX_AC3_NOR_MPP0_7	0x44444444
-#define DB_DX_AC3_NOR_MPP8_15	0x11444444
-#define DB_DX_AC3_NOR_MPP16_23	0x44443344
+#define ALLEYCAT3_CUSTOMER_0_MPP0_7		0x22242222
+#define ALLEYCAT3_CUSTOMER_0_MPP8_15		0x11122222
+#define ALLEYCAT3_CUSTOMER_0_MPP16_23		0x44444044
+#define ALLEYCAT3_CUSTOMER_0_MPP24_31		0x14444444
+#define ALLEYCAT3_CUSTOMER_0_MPP32_39		0x00000001
 
+#define ALLEYCAT3_CUSTOMER_0_GPP_OUT_ENA_LOW	(~(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12\
+						 | BIT13 | BIT16 | BIT17 | BIT20 | BIT29  | BIT30))
+#define ALLEYCAT3_CUSTOMER_0_GPP_OUT_ENA_MID	(~(0))
+
+#define ALLEYCAT3_CUSTOMER_0_GPP_OUT_VAL_LOW	(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12\
+						| BIT13 | BIT16 | BIT17 | BIT20 | BIT29  | BIT30)
+#define ALLEYCAT3_CUSTOMER_0_GPP_OUT_VAL_MID	0x0
+
+#define ALLEYCAT3_CUSTOMER_0_GPP_POL_LOW	0x0
+#define ALLEYCAT3_CUSTOMER_0_GPP_POL_MID	0x0
+
+/******************/
+/*   DB_DX_AC3    */
+/******************/
+#define DB_DX_AC3_MPP0_7		0x00142222 /* 0-3:SPI, 4:NF_CEn, 5:PEX_RSTOUT, 6-7:GPIO */
+#define DB_DX_AC3_MPP8_15		0x11122000 /* 8-10:GPIO, 11-12:UART1, 13:INTERRUPT_OUT, 14-15:I2C*/
+#define DB_DX_AC3_MPP16_23		0x44444004 /* 16:NF_REn, 17-18:GPIO, 19-23:NF_[RBn,EWn,IO[0,2,3]]*/
+#define DB_DX_AC3_MPP24_31		0x14444444 /* 24-30: NF_[IO{4,5,6,7],CLE,ALE], 31: SLV_MDC(SMI) */
+#define DB_DX_AC3_MPP32_39		0x00000001 /* 31: SLV_MDIO(SMI) */
+
+#define DB_DX_AC3_NOR_MPP0_7		0x44442222 /* 0-3:SPI, 4-7:DEV_xx (NOR)	 */
+#define DB_DX_AC3_NOR_MPP8_15		0x11122044 /* 8-9:DEV_xx(NOR),10:GPIO, 11-12:UART1, 13:INT_OUT, 14-15:I2C */
+#define DB_DX_AC3_NOR_MPP16_23		0x44443344 /* 16-17:DEV_xx (NOR),18:GPIO, 20-23:DEV_xx (NOR) */
+#define DB_DX_AC3_NOR_MPP24_31		0x14444444 /* 24-30:DEV_xx (NOR),31: SLV_MDC(SMI) */
 
 /* GPPs
 MPP#	NAME			IN/OUT

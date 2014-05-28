@@ -118,7 +118,7 @@ ifeq "$(CONFIG_DB_AC3)"  "y"
   CFLAGS += -DCONFIG_DB_AC3
 endif
 
-INCLUDE     = -I./  -I../inc/ -I../../../../include
+INCLUDE     = -I$(BOARD)/  -I../inc/ -I../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
@@ -128,7 +128,7 @@ HOSTCPPFLAGS = $(CPPFLAGS)
 TGT = suspendWUP.a
 TGT_UART = suspendWUP.uart.a
 
-CSRC = suspendWakeup.c
+CSRC = $(BOARD)/suspendWakeup.c
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
@@ -150,5 +150,4 @@ $(TGT_UART): $(CUART_OBJ)
 	$(CP) ./$@ ../
 
 clean:
-	$(RM) ./*.o  ./*.a
-
+	$(RM) $(BOARD)/*.o  ./*.a

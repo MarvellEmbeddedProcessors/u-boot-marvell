@@ -1808,7 +1808,6 @@ MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId)
 	if (index == -1)
 		return 0;
 
-
 	if (devId >= board->numBoardTdmInfo[index])
 		return -1;
 

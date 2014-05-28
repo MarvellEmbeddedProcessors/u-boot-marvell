@@ -121,15 +121,9 @@ MV_VOID mvUartInit(void)
 	tmpTClkRate = mvBoardTclkGet();
 
 #ifdef MV88F68XX
-	/* This section enable UART-1 for board DB-AP-68xx
-		- set  MPP's 19 and 20 to 0x6 to config UA1_RXD and UA_TXD
-		- init the TWSI to read the board ID from the EEPROM
-		- update the global struct to use UART1 register offset
-		  if the board ID is DB_AP_68XX */
-	MV_U32 regData = MV_REG_READ(MPP_CONTROL_REG(2));
-	regData |= 0x00066000;
-	MV_REG_WRITE(MPP_CONTROL_REG(2), regData);
-
+	/* UART1 on DB-AP board is the default UART interface
+	 - Init the TWSI to read the board ID from the EEPROM
+	 - Update the global Uart interface to use UART1 register offset */
 	DEBUG_INIT_FULL_S("mvHwsTwsiInitWrapper: Init TWSI interface.\n");
 	mvHwsTwsiInitWrapper();
 
@@ -146,13 +140,13 @@ MV_VOID mvUartInit(void)
 			baudDivisor =  90;
 			break;
 		case _200MHZ:
-            baudDivisor = 108;
-            break;
-        case _250MHZ:
-        default:
-            baudDivisor =  135;
-            break;
-    }
+			baudDivisor = 108;
+			break;
+		case _250MHZ:
+		default:
+			baudDivisor =  135;
+			break;
+	}
 
     pUartPort->ier = 0x00;
     pUartPort->lcr = LCR_DIVL_EN;           /* Access baud rate */

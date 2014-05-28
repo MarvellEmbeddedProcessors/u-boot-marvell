@@ -104,6 +104,8 @@
 #define MPP_CTRL_REG                            0x18000
 #define MPP_SET_MASK                            (~(0xFFFF))
 #define MPP_SET_DATA                            (0x1111)
+#define MPP_UART1_SET_MASK                      (~(0xFF000))
+#define MPP_UART1_SET_DATA                      (0x66000)
 
 #define AVS_DEBUG_CNTR_REG              0xE4124
 #define AVS_DEBUG_CNTR_DEFAULT_VALUE    0x08008073

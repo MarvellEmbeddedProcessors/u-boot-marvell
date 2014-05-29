@@ -307,9 +307,9 @@ void misc_init_r_env(void)
 	env = getenv("mtdids");
 	if (!env) {
 #if defined(MV_NAND) && defined(MV_INCLUDE_SPI)
-		setenv("mtdids", "nand0=mvebu-nand;spi0=spi_flash");
+		setenv("mtdids", "nand0=armada-nand;spi0=spi_flash");
 #elif defined(MV_NAND)
-		setenv("mtdids", "nand0=mvebu-nand");
+		setenv("mtdids", "nand0=armada-nand");
 #elif defined(MV_INCLUDE_SPI)
 		setenv("mtdids", "spi0=spi_flash");
 #endif
@@ -317,9 +317,9 @@ void misc_init_r_env(void)
 	env = getenv("mtdparts");
 	if (!env) {
 #if defined(MV_NAND) && defined(MV_INCLUDE_SPI)
-		setenv("mtdparts", "'mtdparts=mvebu-nand:8m(boot)ro,8m@8m(kernel),-(rootfs);mtdparts=spi_flash:4m(boot),-(spi-rootfs)'");
+		setenv("mtdparts", "'mtdparts=armada-nand:8m(boot)ro,8m@8m(kernel),-(rootfs);mtdparts=spi_flash:4m(boot),-(spi-rootfs)'");
 #elif defined(MV_NAND)
-		setenv("mtdparts", "mtdparts=mvebu-nand:8m(boot)ro,8m@8m(kernel),-(rootfs)");
+		setenv("mtdparts", "mtdparts=armada-nand:8m(boot)ro,8m@8m(kernel),-(rootfs)");
 #elif defined(MV_INCLUDE_SPI)
 		setenv("mtparts", "mtdparts=spi_flash:4m(boot),-(spi-rootfs)");
 #endif

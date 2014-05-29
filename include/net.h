@@ -183,6 +183,8 @@ static inline __attribute__((always_inline)) void eth_halt_state_only(void)
  */
 int eth_write_hwaddr(struct eth_device *dev, const char *base_name,
 		     int eth_number);
+int eth_setenv_enetaddr_by_index(const char *base_name, int index,
+		 uchar *enetaddr);
 
 #ifdef CONFIG_MCAST_TFTP
 int eth_mcast_join(IPaddr_t mcast_addr, u8 join);

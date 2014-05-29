@@ -269,7 +269,7 @@ MV_STATUS mvBoardNameGet(char *pNameBuff)
 *******************************************************************************/
 MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 {
-	if (ethNum == 0)
+	if (ethNum <= mvCtrlEthMaxPortGet())
 		return MV_TRUE;
 
 	return MV_FALSE;
@@ -453,7 +453,7 @@ MV_32 mvBoardPhyLinkCryptPortAddrGet(MV_U32 ethPortNum)
 
 MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum)
 {
-	return !mvBoardIsPortInGmii(ethPortNum);
+	return !mvBoardIsPortInGmii(ethPortNum) && !mvBoardIsPortInSgmii(ethPortNum);
 }
 
 /*******************************************************************************
@@ -498,7 +498,13 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
-	/* Tclock is constant at 200MHz (not sampled @ reset)  */
+	MV_U16 family = mvCtrlDevFamilyIdGet(0);
+	MV_U8 tclkValue;
+
+	if (family == MV_ALLEYCAT3_DEV_ID && mvBoardCoreFreqGet(&tclkValue) == MV_OK)
+		return tclkValue;
+
+	/* BC2 use constant Tclock@200MHz (not sampled @ reset)  */
 	return 200000000;
 }
 

@@ -179,8 +179,6 @@ extern "C" {
 #define PCI_IO(pciIf)				(PEX0_IO + 2 * (pciIf))
 #define PCI_MEM(pciIf, memNum)			(PEX0_MEM0 + 2 * (pciIf))
 /* This define describes the maximum number of supported PCI Interfaces 	*/
-#define BC2_NAND				1
-#define BC2_SDIO				1
 #define MV_DEVICE_MAX_CS      			4
 
 
@@ -230,6 +228,7 @@ typedef enum _mvUnitId {
 	SPI_UNIT_ID,
 	SDIO_UNIT_ID,
 	I2C_UNIT_ID,
+	USB_UNIT_ID,
 	MAX_UNITS_ID
 } MV_UNIT_ID;
 

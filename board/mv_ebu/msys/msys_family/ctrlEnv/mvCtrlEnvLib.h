@@ -149,7 +149,7 @@ MV_U32    mvCtrlMppRegGet(MV_U32 mppGroup);
 
 #if defined(MV_INCLUDE_PEX)
 MV_U32	mvCtrlPexMaxIfGet(MV_VOID);
-MV_U32	mvCtrlPexMaxUnitGet(MV_VOID);
+MV_U32 mvCtrlPexActiveUnitNumGet(MV_VOID);
 #else
 #define mvCtrlPexMaxIfGet()	(0)
 #endif
@@ -162,6 +162,9 @@ MV_U32	mvCtrlPciMaxIfGet(MV_VOID);
 
 MV_U32	  mvCtrlEthMaxPortGet(MV_VOID);
 MV_U8	  mvCtrlEthMaxCPUsGet(MV_VOID);
+#if defined(MV_INCLUDE_USB)
+MV_U32 mvCtrlUsbMaxGet(MV_VOID);
+#endif
 #if defined(MV_INCLUDE_XOR)
 MV_U32 mvCtrlXorMaxChanGet(MV_VOID);
 MV_U32 mvCtrlXorMaxUnitGet(MV_VOID);

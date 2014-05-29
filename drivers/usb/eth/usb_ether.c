@@ -103,6 +103,10 @@ static void probe_valid_drivers(struct usb_device *dev)
 			 * relies on it
 			 */
 			eth_register(eth);
+
+			/* update eth[X]addr environment variable with actual MAC address from device */
+			eth_setenv_enetaddr_by_index("eth", eth->index, eth->enetaddr);
+
 			if (eth_write_hwaddr(eth, "usbeth",
 					usb_max_eth_dev - 1))
 				puts("Warning: failed to set MAC address\n");

@@ -95,17 +95,41 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DB(x)
 #endif
 
+/* MSYS family linear id */
+#define MV_MSYS_BC2_INDEX		0
+#define MV_MSYS_AC3_INDEX		1
+#define MV_MSYS_INDEX_MAX		2
 
-MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][1] = {
-/* DRAM_UNIT_ID         */ { 1, },
-/* PEX_UNIT_ID          */ { 1, },
-/* ETH_GIG_UNIT_ID      */ { 2, },
-/* XOR_UNIT_ID          */ { 1, },
-/* UART_UNIT_ID         */ { 2, },
-/* SPI_UNIT_ID          */ { 2, },
-/* SDIO_UNIT_ID         */ { 1, },
-/* I2C_UNIT_ID          */ { 2, },
+MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_MSYS_INDEX_MAX] = {
+/*			    BC2		AC3 */
+/* DRAM_UNIT_ID         */ { 1,		1, },
+/* PEX_UNIT_ID          */ { 1,		2, },
+/* ETH_GIG_UNIT_ID      */ { 2,		1, },
+/* XOR_UNIT_ID          */ { 1,		1, },
+/* UART_UNIT_ID         */ { 2,		2, },
+/* SPI_UNIT_ID          */ { 2,		1, },
+/* SDIO_UNIT_ID         */ { 1,		1, },
+/* I2C_UNIT_ID          */ { 2,		2, },
+/* USB_UNIT_ID          */ { 0,		1, },
 };
+
+static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
+{
+	MV_U32 index;
+
+	switch (devId) {
+	case MV_BOBCAT2_DEV_ID:
+		index = MV_MSYS_BC2_INDEX;
+		break;
+	case MV_ALLEYCAT3_DEV_ID:
+		index = MV_MSYS_AC3_INDEX;
+		break;
+	default:
+		index = MV_MSYS_AC3_INDEX;
+	}
+
+	return index;
+}
 
 MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit)
 {
@@ -116,7 +140,7 @@ MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit)
 		return 0;
 	}
 
-	devIdIndex = 0;
+	devIdIndex = mvCtrlDevIdIndexGet(mvCtrlModelGet());
 	return mvCtrlSocUnitNums[unit][devIdIndex];
 }
 
@@ -315,7 +339,28 @@ MV_U32 mvCtrlMppRegGet(MV_U32 mppGroup)
 *******************************************************************************/
 MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
 {
-	return MV_PEX_MAX_IF;
+	return mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
+}
+
+/*******************************************************************************
+* mvCtrlPexActiveUnitNumGet
+*
+* DESCRIPTION:
+*       This function returns Marvell controller number of PEX units.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Marvell controller number of PEX units.
+*
+*******************************************************************************/
+MV_U32 mvCtrlPexActiveUnitNumGet(MV_VOID)
+{
+	return mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
 }
 #endif
 
@@ -362,7 +407,7 @@ MV_U32 mvCtrlPciMaxIfGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlEthMaxPortGet(MV_VOID)
 {
-	return MV_ETH_MAX_PORTS;
+	return mvCtrlSocUnitInfoNumGet(ETH_GIG_UNIT_ID);
 }
 
 /*******************************************************************************
@@ -386,6 +431,26 @@ MV_U8 mvCtrlEthMaxCPUsGet(MV_VOID)
 	return 2;
 }
 
+/*******************************************************************************
+* mvCtrlUsbMaxGet - Get number of Marvell USB controllers
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       returns number of Marvell USB controllers.
+*
+*******************************************************************************/
+MV_U32 mvCtrlUsbMaxGet(void)
+{
+	return mvCtrlSocUnitInfoNumGet(USB_UNIT_ID);
+}
+
 #if defined(MV_INCLUDE_XOR)
 /*******************************************************************************
 * mvCtrlXorMaxChanGet - Get Marvell controller number of XOR channels.
@@ -405,7 +470,7 @@ MV_U8 mvCtrlEthMaxCPUsGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlXorMaxChanGet(MV_VOID)
 {
-	return MV_XOR_MAX_CHAN;
+	return mvCtrlSocUnitInfoNumGet(XOR_UNIT_ID);
 }
 
 /*******************************************************************************
@@ -426,7 +491,7 @@ MV_U32 mvCtrlXorMaxChanGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlXorMaxUnitGet(MV_VOID)
 {
-	return MV_XOR_MAX_UNIT;
+	return mvCtrlSocUnitInfoNumGet(XOR_UNIT_ID);
 }
 
 #endif
@@ -449,7 +514,7 @@ MV_U32 mvCtrlXorMaxUnitGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlSdioSupport(MV_VOID)
 {
-	return BC2_SDIO;
+	return mvCtrlSocUnitInfoNumGet(SDIO_UNIT_ID);
 }
 #endif
 
@@ -606,7 +671,7 @@ MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel)
 	else if ((boardId >= AC3_CUSTOMER_BOARD_ID_BASE) && (boardId < AC3_MARVELL_MAX_BOARD_ID))
 		return MV_ALLEYCAT3_DEV_ID;
 	else {
-		DB(mvOsPrintf("%s: ERR. Invalid Board ID (%d) ,Using BC2 as default family\n", __func__, boardId));
+		mvOsPrintf("%s: ERR. Invalid Board ID (%d) ,Using BC2 as default family\n", __func__, boardId);
 		return MV_BOBCAT2_DEV_ID;
 	}
 }

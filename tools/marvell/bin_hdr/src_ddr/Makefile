@@ -138,7 +138,7 @@ ifeq "$(CONFIG_DB_AC3)"  "y"
 endif
 
 
-INCLUDE     = -I./  -I../inc/ -I../../../../include -I../src_phy/$(BOARD)
+INCLUDE     = -I./ -I../inc/common -I../inc/ddr3_soc/$(BOARD) -I../../../../include -I../src_phy/$(BOARD)
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 

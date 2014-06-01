@@ -145,4 +145,3 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 
 #endif /* _INC_A38X_TOPOLOGY_H */
-

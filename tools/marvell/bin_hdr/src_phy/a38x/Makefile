@@ -126,7 +126,7 @@ ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_RD_BOBCAT2
 endif
 
-INCLUDE     = -I./  -I../../inc/ -I../../../../../include
+INCLUDE     = -I./ -I../../inc/common -I../../inc/ddr3_soc/$(BOARD) -I../../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 

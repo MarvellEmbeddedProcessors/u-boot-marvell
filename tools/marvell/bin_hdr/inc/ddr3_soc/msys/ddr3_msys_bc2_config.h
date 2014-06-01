@@ -62,122 +62,80 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#ifndef _DDR3_MSYS_BC2_H
-#define _DDR3_MSYS_BC2_H
 
-#include "ddr3_hws_hw_training_def.h"
 
-/* MISC */
-#define INTER_REGS_BASE								0xD0000000
+#ifndef _DDR3_MSYS_BC2_CONFIG_H
+#define _DDR3_MSYS_BC2_CONFIG_H
 
-#define REG_DEVICE_SAR1_ADDR                        0xF8200
-#define REG_DEVICE_SAR1_MSYS_TM_SDRAM_SEL_OFFSET    11
-#define REG_DEVICE_SAR1_MSYS_TM_SDRAM_SEL_MASK      0x1
+#define SPEED_BIN		SPEED_BIN_DDR_2133N
+#define DDR_BUS_WIDTH   BUS_WIDTH_16
+#define MEM_SIZE		MEM_4G
+#define CL				0
+#define CWL				0
 
-#define REG_DEVICE_SAR0_ADDR                        0x18224
-#define REG_DEVICE_SAR0_PLL_CONFIG_OFFSET           16
-#define REG_DEVICE_SAR0_PLL_CONFIG_MASK             0x3
+/*DDR3_LOG_LEVEL Information
+Level 0: Provides an error code in a case of failure, RL, WL errors and other algorithm failure
+Level 1: Provides the D-Unit setup (SPD/Static configuration)
+Level 2: Provides the windows margin as a results of DQS centeralization
+Level 3: Provides the windows margin of each DQ as a results of DQS centeralization */
 
-/* DRAM Windows */
-#define REG_XBAR_WIN_5_CTRL_ADDR					0x20050
-#define REG_XBAR_WIN_5_BASE_ADDR					0x20054
+#define	DDR3_LOG_LEVEL	0
+#define DDR3_PBS        1
+/* this flag allows the execution of SW WL/RL oppon HW failure */
+#define DDR3_RUN_SW_WHEN_HW_FAIL    1
 
-#define MV_78XX0_Z1_REV		0x0
-#define MV_78XX0_A0_REV		0x1
-#define MV_78XX0_B0_REV		0x2
+/* General Configurations */
+/* The following parameters are required for proper setup */
+/* DDR_TARGET_FABRIC - Set desiered fabric configuration (for sample@Reset fabfreq parameter) */
+/* DRAM_ECC - set ECC support TRUE/FALSE */
+/* BUS_WIDTH - 64/32 bit */
+/* SPD_SUPPORT - Enables auto detection of DIMMs and their timing values */
+/* DQS_CLK_ALIGNED - Set this if CLK and DQS signals are aligned on board */
+/* MIXED_DIMM_STATIC - Mixed DIMM + On board devices support (ODT registers values are taken statically) */
+/* DDR3_TRAINING_DEBUG - debug prints of internal code */
+#define DDR_TARGET_FABRIC						5
+#define DRAM_ECC								FALSE
 
-/********************/
-/* Registers offset */
-/********************/
+#ifdef MV_DDR_32BIT
+#define BUS_WIDTH                               32
+#else
+#define BUS_WIDTH								64
+#endif
+#define SPD_SUPPORT
+#undef DQS_CLK_ALIGNED
+#undef MIXED_DIMM_STATIC
+#define DDR3_TRAINING_DEBUG						FALSE
+#define REG_DIMM_SKIP_WL						FALSE
 
-#define REG_SAMPLE_RESET_LOW_ADDR				0x18230
-#define REG_SAMPLE_RESET_HIGH_ADDR				0x18234
-#define	REG_SAMPLE_RESET_FAB_OFFS				24
-#define	REG_SAMPLE_RESET_FAB_MASK				0xF000000
-#define	REG_SAMPLE_RESET_TCLK_OFFS				28
-#define	REG_SAMPLE_RESET_CPU_ARCH_OFFS			31
-#define	REG_SAMPLE_RESET_HIGH_CPU_FREQ_OFFS		20
+#ifdef DRAM_ECC
+/* ECC support parameters: */
+/* U_BOOT_START_ADDR, U_BOOT_SCRUB_SIZE - relevant when using ECC and need to configure the scrubbing area */
+#define TRAINING_SIZE                           0x20000
+#define U_BOOT_START_ADDR						0
+#define U_BOOT_SCRUB_SIZE                       0x1000000 /*- TRAINING_SIZE*/
+#endif
+/* Registered DIMM Support - In case registered DIMM is attached, please supply the following values:
+(see JEDEC - JESD82-29A "Definition of the SSTE32882 Registering Clock Driver with Parity and Quad Chip
+Selects for DDR3/DDR3L/DDR3U RDIMM 1.5 V/1.35 V/1.25 V Applications") */
+/* RC0: Global Features Control Word */
+/* RC1: Clock Driver Enable Control Word */
+/* RC2: Timing Control Word */
+/* RC3-RC5 - taken from SPD */
+/* RC8: Additional IBT Setting Control Word */
+/* RC9: Power Saving Settings Control Word */
+/* RC10: Encoding for RDIMM Operating Speed */
+/* RC11: Operating Voltage VDD and VREFCA Control Word */
+#define RDIMM_RC0								0
+#define RDIMM_RC1								0
+#define RDIMM_RC2								0
+#define RDIMM_RC8								0
+#define RDIMM_RC9								0
+#define RDIMM_RC10								0x2
+#define RDIMM_RC11								0x0
 
-#define MV_BOARD_REFCLK			250000000
-
-/* DDR3 Frequencies: */
-#define DDR_100									0
-#define DDR_300									1
-#define DDR_333									1
-#define DDR_360									2
-#define DDR_400									3
-#define DDR_444									4
-#define DDR_500									5
-#define DDR_533									6
-#define DDR_600									7
-#define DDR_640									8
-#define DDR_666									8
-#define DDR_720									9
-#define DDR_750									9
-#define DDR_800									10
-#define DDR_833									11
-#define DDR_HCLK								20
-#define DDR_S									12
-#define DDR_S_1TO1								13
-#define MARGIN_FREQ 							DDR_400
-#define DFS_MARGIN								DDR_100
-/* #define DFS_MARGIN								DDR_400 */
-
-#define ODT_OPT									16
-#define ODT20									0x200
-#define ODT30									0x204
-#define ODT40									0x44
-#define ODT120									0x40
-#define ODT120D									0x400
-
-#define MRS_DELAY								100
-
-#define SDRAM_WL_SW_OFFS						0x100
-#define SDRAM_RL_OFFS							0x0
-#define SDRAM_PBS_I_OFFS						0x140
-#define SDRAM_PBS_II_OFFS						0x180
-#define SDRAM_PBS_NEXT_OFFS						(SDRAM_PBS_II_OFFS - SDRAM_PBS_I_OFFS)
-#define SDRAM_PBS_TX_OFFS						0x180
-#define SDRAM_PBS_TX_DM_OFFS					576
-#define SDRAM_DQS_RX_OFFS						1024
-#define SDRAM_DQS_TX_OFFS						2048
-#define SDRAM_DQS_RX_SPECIAL_OFFS				5120
-
-#define LEN_STD_PATTERN							16
-#define LEN_KILLER_PATTERN						128
-#define LEN_SPECIAL_PATTERN						128
-#define LEN_PBS_PATTERN							16
-
-/********************/
-/* Registers offset */
-/********************/
-
-#define REG_SAMPLE_RESET_LOW_ADDR				0x18230
-#define REG_SAMPLE_RESET_HIGH_ADDR				0x18234
-#define	REG_SAMPLE_RESET_CPU_FREQ_OFFS			21
-#define	REG_SAMPLE_RESET_CPU_FREQ_MASK			0x00E00000
-#define	REG_SAMPLE_RESET_FAB_OFFS				24
-#define	REG_SAMPLE_RESET_FAB_MASK				0xF000000
-#define	REG_SAMPLE_RESET_TCLK_OFFS				28
-#define	REG_SAMPLE_RESET_CPU_ARCH_OFFS			31
-#define	REG_SAMPLE_RESET_HIGH_CPU_FREQ_OFFS		20
-
-#define REG_FASTPATH_WIN_BASE_ADDR(win)         (0x20180 + (0x8 * win))
-#define REG_FASTPATH_WIN_CTRL_ADDR(win)         (0x20184 + (0x8 * win))
-
-typedef enum
-{
-    CPU_400MHz_DDR_400MHz,
-    CPU_RESERVED_DDR_RESERVED0,
-    CPU_667MHz_DDR_667MHz,
-    CPU_800MHz_DDR_800MHz,
-    CPU_RESERVED_DDR_RESERVED1,
-    CPU_RESERVED_DDR_RESERVED2,
-    CPU_RESERVED_DDR_RESERVED3,
-    LAST_FREQ
-}MSYS_DDR3_CPU_FREQ;
-
-#define ACTIVE_INTERFACE_MASK			  0x10
-
-#endif /* _DDR3_MSYS_BC2_H */
-
+//------------STUBS-----------------
+MV_U32 s_auiCpuFabClkToHClk[1][1];
+MV_U8 s_auiDivRatio2to1[1][1];
+MV_U16 auiODTStatic[1][1];
+MV_U8 s_auiDivRatio1to1[1][1];
+#endif /* _DDR3_MSYS_BC2_CONFIG_H */

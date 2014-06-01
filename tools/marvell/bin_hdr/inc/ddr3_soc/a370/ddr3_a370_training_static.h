@@ -42,12 +42,12 @@ are permitted provided that the following conditions are met:
 	    this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-	notice, this list of conditions and the following disclaimer in the
-	documentation and/or other materials provided with the distribution.
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-	used to endorse or promote products derived from this software without
-	specific prior written permission.
+		used to endorse or promote products derived from this software without
+		specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -62,44 +62,93 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-/* includes */
-#include "mv_os.h"
-#include "config_marvell.h"  	/* Required to identify SOC and Board */
-#include "mvUart.h"
-#include "util.h"
-#include "generalInit.h"
+#ifndef _INC_AXP_TRAINING_STATIC_H
+#define _INC_AXP_TRAINING_STATIC_H
 
-#include "mvBHboardEnvSpec.h"
+/* STATIC_TRAINING - Set only if static parameters for training are set and required */
+/*#define STATIC_TRAINING */
 
-/* mvUartConfig() prepares UART configuration (MPP's and UART interface selection) */
-static inline MV_VOID mvUartConfig()
+typedef struct __mvDramTrainingInit {
+	MV_U32 reg_addr;
+	MV_U32 reg_value;
+} MV_DRAM_TRAINING_INIT;
+
+/* DDR3 Training static parameters - relevant only if STATIC_TRAINING is defined */
+MV_DRAM_TRAINING_INIT ddr3_db_400[MV_MAX_DDR3_STATIC_SIZE] =
 {
-	/* TBD */
-}
+	/* Read Leveling */
+	/*PUP	RdSampleDly (+CL)	Phase	RL ADLL value */
+	/*0		2		3		1 */
+	{0x000016A0, 0xC0020015},
+ /*1		2		2		6 */
+ {0x000016A0, 0xC0420019},
 
-MV_STATUS mvGeneralInit(void)
+ /* Write Leveling */
+ /*0 */
+ {0x000016A0, 0xC0006C0E},
+ /*1 */
+ {0x000016A0, 0xC0409418},
+
+ /*center DQS on read cycle */
+ {0x000016A0, 0xC803000F},
+
+ {0x00001538, 0x00000007}, 	/*Read Data Sample Delays Register */
+ {0x0000153C, 0x00000009}, 	/*Read Data Ready Delay Register */
+ /*init DRAM */
+ {0x00001480, 0x00000001},
+ {0x0, 0x0}
+};
+
+/* DDR3 Training static parameters - relevant only if STATIC_TRAINING is defined */
+MV_DRAM_TRAINING_INIT ddr3_db_600[MV_MAX_DDR3_STATIC_SIZE] =
 {
+	/* Read Leveling */
+	/*PUP	RdSampleDly (+CL)	Phase	RL ADLL value */
+	/*0		2		3		1 */
+	{0x000016A0, 0xC0020119},
+ /*1		2		2		6 */
+ {0x000016A0, 0xC042011E},
 
-#ifndef CONFIG_ALP_A375_ZX_REV
-/* * Peripheral Clock WA - for A375/ALP A0
- * The bug is related to the Peripheral clock of the CPU.
- * This clock generated from divide of the CPU clock.(Configurable divider)
+ /* Write Leveling */
+ /*0 */
+ {0x000016A0, 0xC0005508},
+ /*1 */
+ {0x000016A0, 0xC0409117},
 
- * At A0 it close to 200MHz due to Timing issue.  (divide by 4 Default value).
- * There is a functional bug in this mode at the GIC <> CPU interface.
- * We want to change it to divide by 2 (400 MHz).
- */
-	MV_U32 regData = MV_REG_READ(SOC_PERI_CLK_CTRL);
-	regData &= (~SOC_PERIL_CLK_CTRL_CLK_DIV_MASK);
-	regData &= (~SOC_PERIL_CLK_CTRL_CLK_SMP_MASK);
-	MV_REG_WRITE(SOC_PERI_CLK_CTRL, regData);
-#endif /* CONFIG_ALP_A375_ZX_REV */
+ /*center DQS on read cycle */
+ {0x000016A0, 0xC803000F},
 
-#if !defined(MV_NO_PRINT)
-	mvUartConfig();
-	mvUartInit();
-	DEBUG_INIT_S("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
-#endif
+ {0x00001538, 0x0000000B}, 	/*Read Data Sample Delays Register */
+ {0x0000153C, 0x0000000F}, 	/*Read Data Ready Delay Register */
+ /*init DRAM */
+ {0x00001480, 0x00000001},
+ {0x0, 0x0}
+};
 
-	return MV_OK;
-}
+/* DDR3 Training static parameters - relevant only if STATIC_TRAINING is defined */
+MV_DRAM_TRAINING_INIT ddr3_pcac_600[MV_MAX_DDR3_STATIC_SIZE] =
+{
+	/* Read Leveling */
+	/*PUP	RdSampleDly (+CL)	Phase	RL ADLL value */
+	/*0		2		3		1 */
+	{0x000016A0, 0xC0020006},
+ /*1		2		2		6 */
+	{0x000016A0, 0xC0420009},
+
+ /* Write Leveling */
+ /*0 */
+ {0x000016A0, 0xC0005809},
+ /*1 */
+ {0x000016A0, 0xC040680D},
+
+ /*center DQS on read cycle */
+ {0x000016A0, 0xC803000F},
+
+ {0x00001538, 0x0000000A}, 	/*Read Data Sample Delays Register */
+ {0x0000153C, 0x0000000C}, 	/*Read Data Ready Delay Register */
+ /*init DRAM */
+ {0x00001480, 0x00000001},
+ {0x0, 0x0}
+};
+
+#endif /* _INC_AXP_TRAINING_STATIC_H */

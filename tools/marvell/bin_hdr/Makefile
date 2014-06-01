@@ -157,7 +157,7 @@ LDSCRIPT    = linker.scr
 LDSECSCRIPT = linker_sec.scr
 DRAMREGS    = ./dramregs.txt
 
-INCLUDE       = -I./ -I./../ -I./src_phy/$(BOARD)/ -I./src_ddr/  -I./inc/ -I../../../include
+INCLUDE       = -I./ -I./../ -I./src_phy/$(BOARD)/ -I./src_ddr/ -I./inc/common -I./inc/ddr3_soc/$(BOARD) -I../../../include
 
 LDFLAGSBIN    = -T $(LDSCRIPT) $(LDFLAGS)
 LDSECFLAGSBIN = -T $(LDSECSCRIPT) $(LDFLAGS)

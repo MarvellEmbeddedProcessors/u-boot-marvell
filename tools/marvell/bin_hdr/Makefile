@@ -156,6 +156,7 @@ PARAMSFILE  = params
 LDSCRIPT    = linker.scr
 LDSECSCRIPT = linker_sec.scr
 DRAMREGS    = ./dramregs.txt
+MAIN = main
 
 INCLUDE       = -I./ -I./../ -I./src_phy/$(BOARD)/ -I./src_ddr/ -I./inc/common -I./inc/ddr3_soc/$(BOARD) -I../../../include
 
@@ -167,8 +168,8 @@ HOSTCPPFLAGS = $(CPPFLAGS)
 
 TGT = bin_hdr
 
-ASRC = bin_entry.s
-CSRC = mvdispacher.c
+ASRC = $(MAIN)/bin_entry.s
+CSRC = $(MAIN)/mvdispacher.c
 
 AOBJ = $(subst .s,.o,$(ASRC))
 COBJ = $(subst .c,.o,$(CSRC))
@@ -176,19 +177,20 @@ CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
 
 LIB_PHY = phy_$(BOARD).a
 LIB_DDR = ddr_$(BOARD).a
-LIB_UTILS = utils.a
+LIB_PLAT = plat.a
 LIB_SWUP = suspendWUP.a
 LIB_GENERAL_INIT = generalInit.a
 
 LIB_PHY_UART = phy_$(BOARD).uart.a
 LIB_DDR_UART = ddr_$(BOARD).uart.a
-LIB_UTIL_UART = utils.uart.a
+LIB_PLAT_UART = plat.uart.a
 LIB_SWUP_UART = suspendWUP.uart.a
 LIB_GENERAL_INIT_UART = generalInit.uart.a
 
+LIBGCC = $(MAIN)/libgcc.lib
 TLIB = ./src_ddr/ddr3_training_$(BOARDNAME).lib
 
-COMPONENT_SUBDIRS = src_util src_phy/$(BOARD) src_ddr src_pm src_init
+COMPONENT_SUBDIRS = platform src_phy/$(BOARD) src_ddr src_pm src_init
 HDR_COMPONENTS = $(LIB_GENERAL_INIT) $(LIB_PHY) $(LIB_DDR) $(TLIB) $(LIB_SWUP)
 HDR_COMPONENTS_UART = $(LIB_GENERAL_INIT_UART) $(LIB_PHY_UART) $(LIB_DDR_UART) $(TLIB) $(LIB_SWUP_UART)
 
@@ -243,13 +245,13 @@ $(TGT).uart.dis:  $(TGT).uart.elf
 	$(OBJDUMP) -lhaD -S $<  > $@
 
 $(TGT).elf: subdirs  $(AOBJ) $(COBJ) $(SETPARAM) $(LDSCRIPT)
-	$(CC) $(LDFLAGSBIN) $(AOBJ) $(COBJ) $(HDR_COMPONENTS) $(LIB_UTILS) libgcc.lib -o $@
+	$(CC) $(LDFLAGSBIN) $(AOBJ) $(COBJ) $(HDR_COMPONENTS) $(LIB_PLAT) $(LIBGCC) -o $@
 
 $(TGT)_sec.elf: subdirs  $(AOBJ) $(COBJ) $(SETPARAM) $(LDSECSCRIPT)
-	$(CC) $(LDSECFLAGSBIN) $(AOBJ) $(COBJ) $(HDR_COMPONENTS) $(LIB_UTILS) libgcc.lib -o $@
+	$(CC) $(LDSECFLAGSBIN) $(AOBJ) $(COBJ) $(HDR_COMPONENTS) $(LIB_PLAT) $(LIBGCC) -o $@
 
 $(TGT).uart.elf: $(AOBJ) $(CUART_OBJ) subdirs
-	$(CC) $(LDFLAGSBIN) $(AOBJ) $(CUART_OBJ) $(HDR_COMPONENTS_UART) $(LIB_UTIL_UART) libgcc.lib -o $@
+	$(CC) $(LDFLAGSBIN) $(AOBJ) $(CUART_OBJ) $(HDR_COMPONENTS_UART) $(LIB_PLAT_UART) $(LIBGCC) -o $@
 
 $(LDSCRIPT): $(SETPARAMS)
 	./$(SETPARAMS) -B $(BOARD) -P $(PARAMSFILE).txt -R $(DRAMREGS) -d $(DEBUG_MODE_FLAG) $(PARAMSFILE).raw $@
@@ -258,7 +260,7 @@ $(LDSECSCRIPT): $(SETPARAMS)
 	./$(SETPARAMS) -S -B $(BOARD) -P $(PARAMSFILE).txt -R $(DRAMREGS) -d $(DEBUG_MODE_FLAG) $(PARAMSFILE)_sec.raw $@
 
 $(SETPARAMS):
-	$(MAKE) $(SETPARAMS) BOARD="$(BOARD)"  HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)"  -C ./src_util
+	$(MAKE) $(SETPARAMS) BOARD="$(BOARD)"  HOSTOS=$(HOSTOS) HOSTARCH=$(HOSTARCH) HOSTCFLAGS="$(HOSTCFLAGS)" HOST_LDFLAGS="$(HOST_LDFLAGS)"  -C ./platform
 
 subdirs:
 	@for dir in $(COMPONENT_SUBDIRS) ; do \

@@ -144,10 +144,18 @@ LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
 HOSTCPPFLAGS = $(CPPFLAGS)
 
-TGT = utils.a
-TGT_UART = utils.uart.a
+TGT = plat.a
+TGT_UART = plat.uart.a
 
-CSRC= mvUart.c mv_twsi.c utils.c time.c printf.c mv_seq_exec.c
+DRV = drivers
+UTILS = utils
+SYS_ENV = sys_env
+
+CSRC_DRV = $(DRV)/mv_uart.c $(DRV)/mv_twsi.c $(DRV)/mv_time.c
+CSRC_UTILS = $(UTILS)/utils.c $(UTILS)/printf.c $(UTILS)/mv_seq_exec.c
+CSRC_SYS_ENV =
+
+CSRC = $(CSRC_DRV) $(CSRC_UTILS) $(CSRC_SYS_ENV)
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
@@ -169,9 +177,8 @@ $(TGT_UART): $(CUART_OBJ)
 	$(CP) ./$@ ../
 
 setparams:
-	$(HOSTCC) $(BOARDFLAG) -Wall $(INCLUDE) $(HOSTCPPFLAGS) -o $@  $(addsuffix .c, $@)
+	$(HOSTCC) $(BOARDFLAG) -Wall $(INCLUDE) $(HOSTCPPFLAGS) -o $@  $(addsuffix .c, $(UTILS)/$@)
 	$(CP) $@ ../
 
 clean:
 	$(RM) setparams *.raw  ./*.o  ./*.a
-

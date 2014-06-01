@@ -356,6 +356,3 @@ MV_BOOL mvUartTstc()
     return FALSE;
 #endif /* #if !defined(MV_NO_INPUT) */
 }
-
-
-

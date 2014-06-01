@@ -146,4 +146,3 @@ void __timerDisable(void)
     cntmrCtrl &= ~CTCR_ARM_TIMER_EN(UBOOT_CNTR);
     MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
 }
-

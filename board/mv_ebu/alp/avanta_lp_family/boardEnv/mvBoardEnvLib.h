@@ -386,7 +386,7 @@ typedef struct _boardInfo {
 { MV_CONFIG_LANE3,	       0X40,	6,	 0,		1,	{ 0, 0, 0, 1 } }, \
 { MV_CONFIG_DEVICE_BUS_MODULE, 0x3,	0,	 1,		0,	{ 0, 0, 0, 1 } }, \
 { MV_CONFIG_DDR_BUSWIDTH,      0x4,	2,	 1,		0,	{ 0, 0, 0, 1 } }, \
-{ MV_CONFIG_PON_SERDES,        0x18,	3,	 0,		1,	{ 0, 1, 0, 1 } }, \
+{ MV_CONFIG_PON_SERDES,        0x18,	3,	 1,		0,	{ 0, 1, 0, 1 } }, \
 };
 
 /* MV_CONFIG_TYPE_ID ConfigID,      MV_U32 Offset,	 expanderNum,  regNum,   }} */

@@ -93,6 +93,3 @@ MV_STATUS componentExample(void);
 					{NULL,NULL}
 
 #endif /* __INCmvBinHdrComponentsh */
-
-
-

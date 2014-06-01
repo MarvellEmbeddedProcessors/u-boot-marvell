@@ -93,17 +93,17 @@ MV_DRAM_MODES ddr_modes[MV_DDR3_MODES_NUMBER] =
 	/*	Conf name		CPUFreq		FabFreq		Chip ID	Chip/Board	MC regs			Training Values */
 	/* db board values: */
 	{"db_800-400",		0xA,		0x5,		0x0,	A0,			ddr3_A0_db_400,	NULL},
-	{"db_1200-300",		0x2,		0xC,		0x0,	A0,			ddr3_A0_db_400,	NULL},	
+	{"db_1200-300",		0x2,		0xC,		0x0,	A0,			ddr3_A0_db_400,	NULL},
 	{"db_1200-600",		0x2,		0x5,		0x0,	A0,			NULL,			NULL},
 	{"db_1333-667",		0x3,		0x5,		0x0,	A0,			ddr3_A0_db_667,	ddr3_db_rev2_667},
 	{"db_1600-800",		0xB,		0x5,		0x0,	A0,			ddr3_A0_db_667,	ddr3_db_rev2_800},
 	{"amc_1333-667",	0x3,		0x5,		0x0,	A0_AMC,		ddr3_A0_AMC_667,NULL},
-	{"db_667-667",		0x9,		0x13,		0x0,	Z1,			ddr3_Z1_db_600,	ddr3_db_667},	
+	{"db_667-667",		0x9,		0x13,		0x0,	Z1,			ddr3_Z1_db_600,	ddr3_db_667},
 	{"db_800-400",		0xA,		0x1,		0x0,	Z1,			ddr3_Z1_db_300,	ddr3_db_400},
 	{"db_1066-533",		0x1,		0x1,		0x0,	Z1,			ddr3_Z1_db_300,	ddr3_db_533},
-	{"db_1200-300",		0x2,		0xC,		0x0,	Z1,			ddr3_Z1_db_300,	ddr3_db_667},	
+	{"db_1200-300",		0x2,		0xC,		0x0,	Z1,			ddr3_Z1_db_300,	ddr3_db_667},
 	{"db_1200-600",		0x2,		0x5,		0x0,	Z1,			ddr3_Z1_db_600,	NULL},
-	{"db_1333-333",		0x3,		0xC,		0x0,	Z1,			ddr3_Z1_db_300,	ddr3_db_400},	
+	{"db_1333-333",		0x3,		0xC,		0x0,	Z1,			ddr3_Z1_db_300,	ddr3_db_400},
 	{"db_1333-667",		0x3,		0x5,		0x0,	Z1,			ddr3_Z1_db_600,	ddr3_db_667},
 	/* pcac board values (Z1 device): */
 	{"pcac_1200-600",	0x2,		0x5,		0x0,	Z1_PCAC,	ddr3_Z1_db_600,	ddr3_pcac_600},
@@ -162,9 +162,9 @@ MV_U32 auiODTConfig[ODT_OPT] = {
 };
 
 /*	User can manually set SPD values (in case SPD is not available on DIMM/System).
-	SPD Values can simplify calculating the DUNIT registers values */	
-MV_U8 ucData[SPD_SIZE] = 
-{ 
+	SPD Values can simplify calculating the DUNIT registers values */
+MV_U8 ucData[SPD_SIZE] =
+{
 	/* AXP DB Board DIMM SPD Values - manually set */
 	0x92, 0x10, 0x0B, 0x2, 0x3, 0x19, 0x0, 0x9, 0x09, 0x52, 0x1, 0x8, 0x0C, 0x0, 0x7E, 0x0, 0x69, 0x78,
 	0x69, 0x30, 0x69, 0x11, 0x20, 0x89, 0x0, 0x5, 0x3C, 0x3C, 0x0, 0xF0, 0x82, 0x5, 0x80, 0x0, 0x0, 0x0,
@@ -280,7 +280,7 @@ MV_U32 s_auiCpuDdrRatios[FAB_OPT][CLK_CPU] =
 	{0		, 0		, DDR_400, 0	, DDR_500, 0	, 0		, 0		, 0		, 0		, 0		, DDR_533 },
 	{DDR_400, 0		, 0		, DDR_533, DDR_600, 0	, 0		, 0		, 0		, 0		, 0		, DDR_640 },
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
- 	{0		, 0		, DDR_300, DDR_333, 0	, 0		, 0		, 0		, 0		, 0		, 0		, DDR_400 },
+	{0		, 0		, DDR_300, DDR_333, 0	, 0		, 0		, 0		, 0		, 0		, 0		, DDR_400 },
     {0      , 0     , 0     , 0     , 0     , 0     , DDR_600, DDR_666, 0   , 0     , 0     , DDR_533 },
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
@@ -306,7 +306,7 @@ MV_U8 s_auiDivRatio1to1[CLK_VCO][CLK_DDR] =
 	{0x6,	2,	0,	2,	0,	0,	0,	0,	0,	0,	0,	0},	/*	1:1 CLK_CPU_600   */
 	{0x6,	2,	0,	2,	0,	0,	0,	0,	0,	0,	0,	0},	/*	1:1	CLK_CPU_667   */
 	{0x8,	2,	0,	2,	0,	0,	0,	0,	0,	0,	0,	0},	/*	1:1 CLK_CPU_800   */
- 	{0x10,	5,	0,	4,	0,	0,	0,	0,	0,	0,	0,	0},	/*	1:1 CLK_CPU_1600   */
+	{0x10,	5,	0,	4,	0,	0,	0,	0,	0,	0,	0,	0},	/*	1:1 CLK_CPU_1600   */
 	{0x14,	0,	0,	5,	0,	0,	0,	0,	0,	0,	0,	0}, /*	1:1	CLK_CPU_1000 VCO_2000 */
 	{0x15,	0,	0,	6,	0,	0,	0,	0,	0,	0,	0,	0}, /*	1:1	CLK_CPU_1066 VCO_2133 */
 	{0x18,	0,	0,	6,	0,	0,	0,	0,	0,	0,	0,	0}, /*	1:1	CLK_CPU_1200 VCO_2400 */
@@ -351,4 +351,3 @@ MV_U8 s_auiDivRatio2to1[CLK_VCO][CLK_DDR] =
 };
 
 #endif /* _INC_AXP_VARS_H */
-

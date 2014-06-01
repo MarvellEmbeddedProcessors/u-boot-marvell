@@ -1,4 +1,3 @@
-
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
@@ -25,7 +24,7 @@ modify this File in accordance with the terms and conditions of the General
 Public License Version 2, June 1991 (the "GPL License"), a copy of which is
 available along with the File in the license.txt file or by writing to the Free
 Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
-on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
+on the worldwide web_http://www.gnu.org/licenses/gpl.txt.
 
 THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
 WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
@@ -40,15 +39,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-	    this list of conditions and the following disclaimer.
+        this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-		notice, this list of conditions and the following disclaimer in the
-		documentation and/or other materials provided with the distribution.
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-		used to endorse or promote products derived from this software without
-		specific prior written permission.
+        used to endorse or promote products derived from this software without
+        specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -63,17 +62,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
+#ifndef _INC_A38X_VARS_H
+#define _INC_A38X_VARS_H
 
-#ifndef _DDR3_A380_CONFIG_H
-#define _DDR3_A380_CONFIG_H
+#include "ddr3_a38x_config.h"
+#include "ddr3_a38x_mc_static.h"
+#include "mvDdr3TopologyDef.h"
 
+#define MARVELL_BOARD MARVELL_BOARD_ID_BASE
 
-#define DDR3_LOG_LEVEL				0
-#define DDR3_PBS				0
-#define DDR3_FAST_PATH_EN			1
-#define BUS_WIDTH				32
-#define DDR3_RUN_SW_WHEN_HW_FAIL		0
+typedef struct __mvDramModes {
+    char *mode_name;
+    MV_U8 cpuFreq;
+    MV_U8 fabFreq;
+    MV_U8 chipId;
+    MV_U8 chipBoardRev;
+    MV_DRAM_MC_INIT *regs;
+} MV_DRAM_MODES;
 
-#endif /* _DDR3_A380_CONFIG_H */
+MV_DRAM_MODES ddr_modes[] =
+{
+/*	Conf name		CPUFreq	     FabFreq   Chip ID		Chip/Board		MC regs*/
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	{"a38x_customer_0_800",	DDR_FREQ_800,	0,	0x0,	ARMADA_38x_CUSTOMER_BOARD_ID0,	ddr3_customer_800},
+	{"a38x_customer_1_800",	DDR_FREQ_800,	0,	0x0,	ARMADA_38x_CUSTOMER_BOARD_ID1,	ddr3_customer_800},
+#else
+	{"a38x_533",		DDR_FREQ_533,	0,	0x0,		MARVELL_BOARD,		ddr3_a38x_533},
+	{"a38x_667",		DDR_FREQ_667,	0,	0x0,		MARVELL_BOARD,		ddr3_a38x_667},
+	{"a38x_800",		DDR_FREQ_800,	0,	0x0,		MARVELL_BOARD,		ddr3_a38x_800},
+	{"a38x_933",		DDR_FREQ_933,	0,	0x0,		MARVELL_BOARD,		ddr3_a38x_933},
+#endif
+};
 
-
+#endif /* _INC_A38X_VARS_H */

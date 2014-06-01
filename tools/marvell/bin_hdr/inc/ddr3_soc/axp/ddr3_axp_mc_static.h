@@ -195,7 +195,7 @@ MV_DRAM_MC_INIT ddr3_A0_db_400[MV_MAX_DDR3_STATIC_SIZE] =
 	{0x00001400, 0x73004C30}, 	/*DDR SDRAM Configuration Register */
 #else /*MV_DDR_64BIT */
  {0x00001400, 0x7300CC30}, 	/*DDR SDRAM Configuration Register */
- /*{0x00001400, 0x7304CC30},  */  /*DDR SDRAM Configuration Register */ 
+ /*{0x00001400, 0x7304CC30},  */  /*DDR SDRAM Configuration Register */
 #endif
 {0x00001404, 0x3630B840},	/*Dunit Control Low Register */
 {0x00001408, 0x33137663},	/*DDR SDRAM Timing (Low) Register */
@@ -308,7 +308,7 @@ MV_DRAM_MC_INIT ddr3_Z1_db_300[MV_MAX_DDR3_STATIC_SIZE] =
 	{0x00001400, 0x73004C30}, 	/*DDR SDRAM Configuration Register */
 #else /*MV_DDR_64BIT */
  {0x00001400, 0x7300CC30}, 	/*DDR SDRAM Configuration Register */
- /*{0x00001400, 0x7304CC30},  */  /*DDR SDRAM Configuration Register */ 
+ /*{0x00001400, 0x7304CC30},  */  /*DDR SDRAM Configuration Register */
 #endif
  {0x00001404, 0x3630B840},	/*Dunit Control Low Register */
  {0x00001408, 0x33137663},	/*DDR SDRAM Timing (Low) Register */
@@ -354,4 +354,3 @@ MV_DRAM_MC_INIT ddr3_Z1_db_300[MV_MAX_DDR3_STATIC_SIZE] =
 
 
 #endif /* _INC_AXP_MC_STATIC_H */
-

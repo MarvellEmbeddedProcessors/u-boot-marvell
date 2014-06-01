@@ -142,9 +142,9 @@ MV_U32 auiODTConfig[ODT_OPT] = {
 };
 
 /*	User can manually set SPD values (in case SPD is not available on DIMM/System).
-	SPD Values can simplify calculating the DUNIT registers values */	
-MV_U8 ucData[SPD_SIZE] = 
-{ 
+	SPD Values can simplify calculating the DUNIT registers values */
+MV_U8 ucData[SPD_SIZE] =
+{
 	/* A370 DB Board DIMM SPD Values - manually set */
 /* 2 CS */
 	0x92, 0x10, 0x0B, 0x2, 0x3, 0x19, 0x0, 0x9, 0x09, 0x52, 0x1, 0x8, 0x0C, 0x0, 0x7E, 0x0, 0x69, 0x78,
@@ -177,7 +177,7 @@ MV_U32 s_auiCpuFabClkToHClk[FAB_OPT][CLK_CPU] =
 	{0		, 0		, 0		, 0		, 0		, 0		, 2500	, 0		},
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
- 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
+	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
@@ -195,16 +195,16 @@ MV_U32 s_auiCpuDdrRatios[FAB_OPT][CLK_CPU] =
 	400		533		667		800		1000	1067	1200	1333	Fabric */
 {
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
-	{0		, 0		, DDR_333, DDR_400, 0	, 0		, 0		, 0		},	
- 	{0		, 0		, 0		, 0		,0		, 0		, 0		, 0		},
+	{0		, 0		, DDR_333, DDR_400, 0	, 0		, 0		, 0		},
+	{0		, 0		, 0		, 0		,0		, 0		, 0		, 0		},
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
- 	{0		, 0		, 0		, 0		, DDR_500, DDR_533, DDR_600, DDR_666 },
+	{0		, 0		, 0		, 0		, DDR_500, DDR_533, DDR_600, DDR_666 },
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
- 	{0		, 0		, 0		, 0		, 0		, 0		, DDR_400, 0	},
+	{0		, 0		, 0		, 0		, 0		, 0		, DDR_400, 0	},
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
- 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
- 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
+	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
+	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
 	{0		, 0		, 0		, 0		, 0		, 0		, 0		, 0		},
@@ -260,4 +260,3 @@ MV_U8 s_auiDivRatio2to1[CLK_VCO][CLK_DDR] =
 };
 
 #endif /* _INC_A370_VARS_H */
-

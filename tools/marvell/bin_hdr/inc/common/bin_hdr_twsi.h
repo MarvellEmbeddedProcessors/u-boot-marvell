@@ -251,4 +251,3 @@ MV_STATUS mvTwsiWrite(MV_U8 chanNum, MV_TWSI_SLAVE *twsiSlave, MV_U8 *pBlock, MV
 
 
 #endif /* __INCmvTwsiH */
-

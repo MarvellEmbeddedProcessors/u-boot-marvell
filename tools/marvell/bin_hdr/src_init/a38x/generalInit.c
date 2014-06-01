@@ -69,7 +69,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 #include "generalInit.h"
 
-#include "../src_phy/a38x/mvBHboardEnvSpec.h"
+#include "mvBHboardEnvSpec.h"
 
 /* mvUartConfig() prepares UART configuration (MPP's and UART interface selection) */
 static inline MV_VOID mvUartConfig()

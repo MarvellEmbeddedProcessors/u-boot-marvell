@@ -1072,9 +1072,12 @@ MV_U32 ctrlSizeRegRoundUp(MV_U32 size, MV_U32 alignment)
 *******************************************************************************/
 MV_BOOL mvCtrlIsBootFromNOR(MV_VOID)
 {
-	MV_U32 satr;
+	MV_U32 satr = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(0));
 
-	satr = MSAR_BOOT_MODE(MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(0)), 0);
+	if (mvCtrlDevFamilyIdGet(0) == MV_BOBCAT2_DEV_ID)
+		satr = MSAR_BC2_BOOT_MODE(satr, 0);
+	else
+		satr = MSAR_AC3_BOOT_MODE(satr, 0);
 
 	if (satr == SAR1_BOOT_FROM_NOR)
 		return MV_TRUE;
@@ -1100,9 +1103,12 @@ MV_BOOL mvCtrlIsBootFromNOR(MV_VOID)
 *******************************************************************************/
 MV_BOOL mvCtrlIsBootFromSPI(MV_VOID)
 {
-	MV_U32 satr;
+	MV_U32 satr = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(0));
 
-	satr = MSAR_BOOT_MODE(MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(0)), 0);
+	if (mvCtrlDevFamilyIdGet(0) == MV_BOBCAT2_DEV_ID)
+		satr = MSAR_BC2_BOOT_MODE(satr, 0);
+	else
+		satr = MSAR_AC3_BOOT_MODE(satr, 0);
 
 	if (satr == SAR1_BOOT_FROM_SPI)
 		return MV_TRUE;
@@ -1128,9 +1134,12 @@ MV_BOOL mvCtrlIsBootFromSPI(MV_VOID)
 *******************************************************************************/
 MV_BOOL mvCtrlIsBootFromNAND(MV_VOID)
 {
-	MV_U32 satr;
+	MV_U32 satr = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(0));
 
-	satr = MSAR_BOOT_MODE(MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(0)), 0);
+	if (mvCtrlDevFamilyIdGet(0) == MV_BOBCAT2_DEV_ID)
+		satr = MSAR_BC2_BOOT_MODE(satr, 0);
+	else
+		satr = MSAR_AC3_BOOT_MODE(satr, 0);
 
 	if (satr == SAR1_BOOT_FROM_NAND)
 		return MV_TRUE;

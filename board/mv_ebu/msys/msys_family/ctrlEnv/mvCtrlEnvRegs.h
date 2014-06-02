@@ -161,11 +161,15 @@ extern "C" {
 /* Sample at Reset */
 #define DFX_DEVICE_SAR_REG(x)			(0xf8200 +(x*4))
 
-#define MSAR_CORE_CLK(sar1, sar2)		(((sar2) >> 21) & 0x7)		/* PLL 0 config */
+#define MSAR_CORE_CLK(sar1, sar2)	(((sar2) >> 21) & 0x7)		/* PLL 0 config */
 #define MSAR_CPU_DDR_CLK(sar1, sar2)	(((sar2) >> 18) & 0x7)		/* PLL 1 config */
-#define MSAR_TM_CLK(sar1, sar2)			(((sar2) >> 15) & 0x7)		/* PLL 2 config */
-#define MSAR_BOOT_MODE(sar1, sar2)		(((sar1) >> 13) & 0x7)		/* boot from */
 #define MSAR_DEVICE_MODE(sar1, sar2)	(((sar1) >>  0) & 0xFF)		/* DEVICE ID field */
+
+#define MSAR_BC2_BOOT_MODE(sar1, sar2)	(((sar1) >> 13) & 0x7)		/* boot from */
+#define MSAR_BC2_TM_CLK(sar1, sar2)	(((sar2) >> 15) & 0x7)		/* PLL 2 config */
+
+#define MSAR_AC3_BOOT_MODE(sar1, sar2)	(((sar1) >> 11) & 0x7)		/* boot from */
+#define MSAR_AC3_TM_CLK(sar1, sar2)	(((sar2) >> 17) & 0x1)		/* PLL 2 config */
 
 #define SAR1_BOOT_FROM_NOR			0
 #define SAR1_BOOT_FROM_NAND			1

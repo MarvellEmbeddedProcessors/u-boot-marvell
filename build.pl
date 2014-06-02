@@ -4,7 +4,7 @@ use Cwd qw();
 
 sub HELP_MESSAGE
 {
-	print "\nUsage  : build -f \"Flash type\" -v X.X.X -b \"board name\" [-m \"DDR type\"] [-c] [-o \"Output file\"]\n";
+	print "\nUsage  : build -f \"Flash type\" -v X.X.X -b \"board name\" [-m \"DDR type\"] [-o \"Output file\"]\n";
 	print "Example: ./build.pl -f spi -v 14T2 -b avanta_lp -i spi:nand -c\n";
 	print "\n";
 	print "Options:\n";
@@ -14,7 +14,6 @@ sub HELP_MESSAGE
 	print "\t\t\t\t\tarmada_375, armada_375_customer0, armada_375_customer1\n";
 	print "\t\t\t\t\tbobcat2_db, bobcat2_rd, bobcat2_customer0, bobcat2_customer1\n";
 	print "\t\t\t\t\tac3_db, ac3_customer0, ac3_customer1\n";
-	print "\t-c\tClean build. calls make mrproper\n";
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
 	print "\t-m\tDDR type(default: DDR3). Accepts: 3 for DDR3, 4 for DDR4\n";
@@ -56,65 +55,61 @@ if(!defined $cross_bh){
 	exit 1;
 }
 
-# Handle clean build
-if($opt_c eq 1)
+if(($opt_b eq "armada_xp_dbgp") or
+	($opt_b eq "avanta_lp_fpga") or
+	($opt_b eq "avanta_lp") or
+	($opt_b eq "avanta_lp_customer0") or
+	($opt_b eq "avanta_lp_customer1") or
+	($opt_b eq "armada_375") or
+	($opt_b eq "armada_375_customer0") or
+	($opt_b eq "armada_375_customer1") or
+	($opt_b eq "armada_38x") or
+	($opt_b eq "armada_38x_customer0") or
+	($opt_b eq "armada_38x_customer1") or
+	($opt_b eq "bobcat2_db") or
+	($opt_b eq "bobcat2_rd_mtl") or
+	($opt_b eq "bobcat2_rd") or
+	($opt_b eq "bobcat2_customer0") or
+	($opt_b eq "bobcat2_customer1") or
+	($opt_b eq "ac3_db") or
+	($opt_b eq "ac3_customer0") or
+	($opt_b eq "ac3_customer1") )
 {
-	if(($opt_b eq "armada_xp_dbgp") or
-		($opt_b eq "avanta_lp_fpga") or
-		($opt_b eq "avanta_lp") or
-		($opt_b eq "avanta_lp_customer0") or
-		($opt_b eq "avanta_lp_customer1") or
-		($opt_b eq "armada_375") or
-		($opt_b eq "armada_375_customer0") or
-		($opt_b eq "armada_375_customer1") or
-		($opt_b eq "armada_38x") or
-		($opt_b eq "armada_38x_customer0") or
-		($opt_b eq "armada_38x_customer1") or
-		($opt_b eq "bobcat2_db") or
-		($opt_b eq "bobcat2_rd_mtl") or
-		($opt_b eq "bobcat2_rd") or
-		($opt_b eq "bobcat2_customer0") or
-		($opt_b eq "bobcat2_customer1") or
-		($opt_b eq "ac3_db") or
-		($opt_b eq "ac3_customer0") or
-		($opt_b eq "ac3_customer1") )
-	{
-		$board = $opt_b;
-		if( (substr $board,7 , 3) eq "370" ) {
-			$boardID="a370";
-			$targetBoard = substr $board, 11;
-		}
-		elsif ( (substr $board,7 , 2) eq "xp" ) {
-			$boardID="axp";
-			$targetBoard = substr $board, 10;
-		}
-		elsif ( (substr $board,7 , 2) eq "lp" ) {
-			$boardID="alp";
-		}
-		elsif ( (substr $board,7 , 3) eq "375" ) {
-			$boardID="a375";
-		}
-		elsif ( (substr $board,7 , 3) eq "38x" ) {
-			$boardID="a38x";
-		}
-		elsif ( (substr $board,0 , 7) eq "bobcat2" ) {
-			$boardID="msys-bc2";
-			$targetBoard = substr $board, 8;
-		}
-		elsif ( (substr $board,0 , 3) eq "ac3" ) {
-			$boardID="msys-ac3";
-			$targetBoard = substr $board, 8;
-		}
-
-		# if board string contains "customer", use customer define for binary_header
-		if (index($board, "customer") != -1){
-			system("echo \"#define CONFIG_CUSTOMER_BOARD_SUPPORT 1\" >> include/config.h");
-		}
+	$board = $opt_b;
+	if( (substr $board,7 , 3) eq "370" ) {
+		$boardID="a370";
+		$targetBoard = substr $board, 11;
 	}
-	else
-	{
-		if (defined) {
-			print "\n *** Error: Bad board type $opt_b specified\n\n";
+	elsif ( (substr $board,7 , 2) eq "xp" ) {
+		$boardID="axp";
+		$targetBoard = substr $board, 10;
+	}
+	elsif ( (substr $board,7 , 2) eq "lp" ) {
+		$boardID="alp";
+	}
+	elsif ( (substr $board,7 , 3) eq "375" ) {
+		$boardID="a375";
+	}
+	elsif ( (substr $board,7 , 3) eq "38x" ) {
+		$boardID="a38x";
+	}
+	elsif ( (substr $board,0 , 7) eq "bobcat2" ) {
+		$boardID="msys-bc2";
+		$targetBoard = substr $board, 8;
+	}
+	elsif ( (substr $board,0 , 3) eq "ac3" ) {
+		$boardID="msys-ac3";
+		$targetBoard = substr $board, 8;
+	}
+		# if board string contains "customer", use customer define for binary_header
+	if (index($board, "customer") != -1){
+		system("echo \"#define CONFIG_CUSTOMER_BOARD_SUPPORT 1\" >> include/config.h");
+	}
+}
+else
+{
+	if (defined) {
+		print "\n *** Error: Bad board type $opt_b specified\n\n";
 		}
 		else {
 			print "\n *** Error: Board type unspecified\n\n";
@@ -123,71 +118,70 @@ if($opt_c eq 1)
 		exit 1;
 	}
 
-	# Configure Make
-	system("make mrproper");
-	print "\n**** [Cleaning Make]\t*****\n\n";
+# Configure Make
+system("make mrproper");
+print "\n**** [Cleaning Make]\t*****\n\n";
 
-	my $path = Cwd::cwd();
-	chdir  ("./tools/marvell");
-	if( ($boardID eq "msys-ac3") or ($boardID eq "msys-bc2")) {
-		system("make clean BOARD=msys -s");
-	} else {
-		system("make clean BOARD=$boardID -s");
-	}
-	chdir  ("$path");
-	system("make ${board}_config");
+my $path = Cwd::cwd();
+chdir  ("./tools/marvell");
+if( ($boardID eq "msys-ac3") or ($boardID eq "msys-bc2")) {
+	system("make clean BOARD=msys -s");
+} else {
+	system("make clean BOARD=$boardID -s");
+}
+chdir  ("$path");
+system("make ${board}_config");
 
-	# Set pre processors
-	print "\n**** [Setting Macros]\t*****\n\n";
-	if($opt_f eq "spi")      {
-		system("echo \"#define MV_SPI_BOOT\" >> include/config.h");
-		system("echo \"#define MV_INCLUDE_SPI\" >> include/config.h");
-		print "Boot from SPI\n";
-		$img_opts   = "";
-		$flash_name = "spi";
-		$img_type   = "flash";
+# Set pre processors
+print "\n**** [Setting Macros]\t*****\n\n";
+if($opt_f eq "spi")      {
+	system("echo \"#define MV_SPI_BOOT\" >> include/config.h");
+	system("echo \"#define MV_INCLUDE_SPI\" >> include/config.h");
+	print "Boot from SPI\n";
+	$img_opts   = "";
+	$flash_name = "spi";
+	$img_type   = "flash";
+}
+elsif ($opt_f eq "nor")  {
+	system("echo \"#define MV_NOR_BOOT\" >> include/config.h");
+	print "Boot from NOR\n";
+	$img_opts   = "";
+	$flash_name = "nor";
+	$img_type   = "flash";
+}
+elsif  ($opt_f eq "nand"){
+	system("echo \"#define MV_NAND_BOOT\" >> include/config.h");
+	print "Boot from NAND\n";
+	$flash_name = "nand";
+	$img_type   = "nand";
+	if( ($boardID eq "axp") or
+		($boardID eq "msys-bc2") or
+		($boardID eq "msys-ac3") or
+                       ($boardID eq "a38x")) {
+		$img_opts   = "-P 4096 -L 128 -N MLC";
 	}
-	elsif ($opt_f eq "nor")  {
-		system("echo \"#define MV_NOR_BOOT\" >> include/config.h");
-                print "Boot from NOR\n";
-		$img_opts   = "";
-		$flash_name = "nor";
-		$img_type   = "flash";
+	elsif($boardID eq "a375") {
+		$img_opts   = "-P 4096 -L 256 -N MLC";
 	}
-	elsif  ($opt_f eq "nand"){
-		system("echo \"#define MV_NAND_BOOT\" >> include/config.h");
-		print "Boot from NAND\n";
-		$flash_name = "nand";
-		$img_type   = "nand";
-		if( ($boardID eq "axp") or
-			($boardID eq "msys-bc2") or
-			($boardID eq "msys-ac3") or
-                        ($boardID eq "a38x")) {
-			$img_opts   = "-P 4096 -L 128 -N MLC";
-		}
-		elsif($boardID eq "a375") {
-			$img_opts   = "-P 4096 -L 256 -N MLC";
-		}
-		elsif($boardID eq "alp") {
-			$img_opts   = "-P 2048 -L 128 -N SLC";
-		}
-		print "Image options =  $img_opts\n\n";
+	elsif($boardID eq "alp") {
+		$img_opts   = "-P 2048 -L 128 -N SLC";
 	}
-	else
-	{
-		if (defined $opt_f) {
-			print "\n *** Error: Bad flash type $opt_f specified\n\n";
-		}
-		else {
-			print "\n *** Error: Flash type unspecified\n\n";
-		}
-		HELP_MESSAGE();
-		exit 1;
+	print "Image options =  $img_opts\n\n";
+}
+else
+{
+	if (defined $opt_f) {
+		print "\n *** Error: Bad flash type $opt_f specified\n\n";
 	}
+	else {
+		print "\n *** Error: Flash type unspecified\n\n";
+	}
+	HELP_MESSAGE();
+	exit 1;
+}
 
-	# Big endian place holder
-	if(defined $opt_e) {
-
+# Big endian place holder
+if(defined $opt_e) {
 	$endian = "be";
 	system("echo \"#define __BE\" >> include/config.h");
 	system("echo \"BIG_ENDIAN = y\" >> include/config.mk");
@@ -200,52 +194,50 @@ if($opt_c eq 1)
 	system("echo \"CPPFLAGS += -falign-labels=4\" >> include/config.mk");
 	system("echo \"CFLAGS += -mno-tune-ldrd\" >> include/config.mk");
 	print "** BIG ENDIAN ** \n";
-	}
-	else {
-		$endian = "le";
-		print "** Little ENDIAN ** \n";
-	}
+}
+else {
+	$endian = "le";
+	print "** Little ENDIAN ** \n";
+}
 
-	#Interface support
-	if(defined $opt_i)
+#Interface support
+if(defined $opt_i)
+{
+	@interfaces = split(':', $opt_i);
+	if ((grep{$_ eq 'nor'} @interfaces)  and (grep{$_ eq 'nand'} @interfaces))
 	{
-		@interfaces = split(':', $opt_i);
+		print"\n *** Error: The device does not support simultaneous access to nand and nor interfaces\n";
+		exit 1;
+	}
 
-		if ((grep{$_ eq 'nor'} @interfaces)  and (grep{$_ eq 'nand'} @interfaces))
+	if ($boardID eq "msys") {
+		if ((grep{$_ eq 'nor'} @interfaces)  and (grep{$_ eq 'spi'} @interfaces))
 		{
-			print"\n *** Error: The device does not support simultaneous access to nand and nor interfaces\n";
+			print"\n *** Error: MSYS does not support simultaneous access to spi and nor interfaces\n";
 			exit 1;
 		}
-
-		if ($boardID eq "msys") {
-			if ((grep{$_ eq 'nor'} @interfaces)  and (grep{$_ eq 'spi'} @interfaces))
-			{
-				print"\n *** Error: MSYS does not support simultaneous access to spi and nor interfaces\n";
-				exit 1;
-			}
-		}
-
-		print "Support flash: ";
-		foreach $if (@interfaces)
-		{
-			if($if eq "spi"){
-				system("echo \"#define MV_INCLUDE_SPI\" >> include/config.h");
-				print "SPI ";
-			}
-			elsif($if eq "nor"){
-				system("echo \"#define MV_INCLUDE_NOR\" >> include/config.h");
-				print "NOR ";
-			}
-			elsif($if eq "nand"){
-				system("echo \"#define MV_NAND\" >> include/config.h");
-				print "NAND ";
-			}
-			else {
-				print " *** Warning: Ignoring unrecognized interface - $if";
-			}
-		}
-		print "\n";
 	}
+
+	print "Support flash: ";
+	foreach $if (@interfaces)
+	{
+		if($if eq "spi"){
+			system("echo \"#define MV_INCLUDE_SPI\" >> include/config.h");
+			print "SPI ";
+		}
+		elsif($if eq "nor"){
+			system("echo \"#define MV_INCLUDE_NOR\" >> include/config.h");
+			print "NOR ";
+		}
+		elsif($if eq "nand"){
+			system("echo \"#define MV_NAND\" >> include/config.h");
+			print "NAND ";
+		}
+		else {
+			print " *** Warning: Ignoring unrecognized interface - $if";
+		}
+	}
+	print "\n";
 }
 
 if(defined $opt_d)
@@ -257,12 +249,12 @@ if(defined $opt_d)
 if(defined $opt_m)
 {
 	system("echo \"DDRTYPE = ddr$opt_m\" >> include/config.mk");
-	print "\n *** DDRTYPE = DDR$opt_m *********************************\n\n";
+	print "** DDRTYPE = DDR$opt_m **\n";
 }
 else {
 	# Set default to DDR3
 	system("echo \"DDRTYPE = ddr3\" >> include/config.mk");
-	print "\n *** DDRTYPE = DDR3 *********************************\n\n";
+	print "** DDRTYPE = DDR3 ** \n";
 }
 
 if($opt_z eq 1)
@@ -281,7 +273,7 @@ if($fail){
 	exit 1;
 }
 
-
+# ALP/A38x/A375 use a single image for all boards (no specific compilation for each board)
 if( ($boardID eq "alp") or
     ($boardID eq "msys-ac3") or
     ($boardID eq "a375") or

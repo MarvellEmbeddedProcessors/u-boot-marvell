@@ -86,7 +86,7 @@ MV_STATUS mvSysUsbInit(MV_VOID)
 {
 	MV_USB_HAL_DATA halData;
 	MV_STATUS status = MV_OK;
-	MV_U32 dev, reg;
+	MV_U32 dev;
 	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
 
 	halData.ctrlModel = mvCtrlModelGet();
@@ -119,7 +119,13 @@ MV_STATUS mvSysUsbInit(MV_VOID)
 				isHost = MV_TRUE;
 
 			if (status == MV_OK)	/* Map DDR windows to EHCI */
+#ifdef CONFIG_USB_XHCI_HCD
+/* CONFIG_USB_XHCI_HCD indicate that both xHCI and eHCI are compiled:
+ * Last Boolean argument is used to indicate the HAL layer which unit is currently initiated */
 				status = mvUsbWinInit(dev, addrWinMap, MV_FALSE);
+#else
+				status = mvUsbWinInit(dev, addrWinMap);
+#endif
 			if (status == MV_OK)
 				status = mvUsbHalInit(dev, isHost, &halData);
 			if (status == MV_OK)
@@ -129,6 +135,7 @@ MV_STATUS mvSysUsbInit(MV_VOID)
 		}
 #endif
 #ifdef CONFIG_USB_XHCI
+		MV_U32 reg;
 		for (dev = 0; dev < mvCtrlUsb3MaxGet(); dev++) {
 			status = mvUsbUtmiPhyInit(dev, &halData);
 			if (halData.ctrlFamily == MV_88F66X0 || halData.ctrlFamily == MV_88F67X0) {

@@ -85,6 +85,10 @@ disclaimer.
 #define MV_BOOTROM
 #define CONFIG_BOARD_EARLY_INIT_F
 
+#ifdef CONFIG_ALLEYCAT3
+#define MV_USB
+#endif
+
 /*********/
 /* Debug */
 /*********/
@@ -386,9 +390,24 @@ disclaimer.
 /************/
 /* USB	    */
 /************/
-#undef MV_INCLUDE_USB
-#undef CONFIG_CMD_USB
-#undef CONFIG_USB_STORAGE
+#ifdef MV_USB
+	#define CONFIG_USB_EHCI
+	#define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS  1
+	#define MV_INCLUDE_USB
+	#define CONFIG_CMD_USB
+	#define CONFIG_USB_STORAGE
+	#define CONFIG_EHCI_IS_TDI
+	#define CONFIG_DOS_PARTITION
+	#define CONFIG_ISO_PARTITION
+	#define ENV_USB0_MODE   "host"
+	#define ENV_USB1_MODE   "host"
+	#define ENV_USB_ACTIVE        "0"
+	#define ENV_USB_MODE          "2" /* 3 = USB3.0 | 2 = USB2.0 */
+#else
+	#undef MV_INCLUDE_USB
+	#undef CONFIG_CMD_USB
+	#undef CONFIG_USB_STORAGE
+#endif /* MV_USB */
 
 /************/
 /* SDIO/MMC */

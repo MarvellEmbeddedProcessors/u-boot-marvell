@@ -34,6 +34,9 @@ endif
 ifeq ($(BOARD),msys)
 MAKE_NETA = yes
 MAKE_SWITCH_SERVICES = yes
+ifdef CONFIG_ALLEYCAT3
+MAKE_USB = yes
+endif
 endif
 
 ifeq ($(BOARD_TYPE),mv_fpga_board)

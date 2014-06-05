@@ -111,6 +111,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_MSYS_INDEX_MAX] = {
 /* SDIO_UNIT_ID         */ { 1,		1, },
 /* I2C_UNIT_ID          */ { 2,		2, },
 /* USB_UNIT_ID          */ { 0,		1, },
+/* USB3_UNIT_ID         */ { 0,		0, },
 };
 
 static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
@@ -449,6 +450,11 @@ MV_U8 mvCtrlEthMaxCPUsGet(MV_VOID)
 MV_U32 mvCtrlUsbMaxGet(void)
 {
 	return mvCtrlSocUnitInfoNumGet(USB_UNIT_ID);
+}
+
+MV_U32 mvCtrlUsb3MaxGet(void)
+{
+	return 0; /* no USB3.0 */
 }
 
 /*******************************************************************************

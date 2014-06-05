@@ -82,8 +82,8 @@ MV_DRAM_MODES ddr_modes[] =
 {
 /*	Conf name		CPUFreq	     FabFreq   Chip ID		Chip/Board		MC regs*/
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-	{"ac3_customer_0_800",	DDR_FREQ_800,	0,	0x0,	ARMADA_AC3_CUSTOMER_BOARD_ID0,	ddr3_customer_800},
-	{"ac3_customer_1_800",	DDR_FREQ_800,	0,	0x0,	ARMADA_AC3_CUSTOMER_BOARD_ID1,	ddr3_customer_800},
+	{"ac3_customer_0_800",	DDR_FREQ_800,	0,	0x0,	AC3_CUSTOMER_BOARD_ID0,	ddr3_customer_800},
+	{"ac3_customer_1_800",	DDR_FREQ_800,	0,	0x0,	AC3_CUSTOMER_BOARD_ID1,	ddr3_customer_800},
 #else
 	{"ac3_533",		DDR_FREQ_533,	0,	0x0,		AC3_MARVELL_BOARD_ID_BASE,		ddr3_msys_ac3_533},
 	{"ac3_667",		DDR_FREQ_667,	0,	0x0,		AC3_MARVELL_BOARD_ID_BASE,		ddr3_msys_ac3_667},

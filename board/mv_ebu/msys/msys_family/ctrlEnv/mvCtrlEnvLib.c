@@ -451,6 +451,26 @@ MV_U32 mvCtrlUsbMaxGet(void)
 	return mvCtrlSocUnitInfoNumGet(USB_UNIT_ID);
 }
 
+/*******************************************************************************
+* mvCtrlUtmiPhySelectorSet - configures the shared MAC access between USB2/3
+*
+* DESCRIPTION:
+*	MSYS doesn't utilize UTMI PHY selection
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*
+*******************************************************************************/
+MV_VOID mvCtrlUtmiPhySelectorSet(MV_U32 usbUnitId)
+{
+	return;
+}
+
 #if defined(MV_INCLUDE_XOR)
 /*******************************************************************************
 * mvCtrlXorMaxChanGet - Get Marvell controller number of XOR channels.

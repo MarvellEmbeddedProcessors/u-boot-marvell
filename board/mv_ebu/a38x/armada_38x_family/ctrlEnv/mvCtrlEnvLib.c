@@ -778,6 +778,26 @@ MV_U32 mvCtrlUsb3MaxGet(void)
 	return mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID);
 }
 
+/*******************************************************************************
+* mvCtrlUtmiPhySelectorSet - configures the shared MAC access between USB2/3
+*
+* DESCRIPTION:
+*	A38x doesn't utilize UTMI PHY selection
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*
+*******************************************************************************/
+MV_VOID mvCtrlUtmiPhySelectorSet(MV_U32 usbUnitId)
+{
+	return;
+}
+
 #endif
 
 #if defined(MV_INCLUDE_SDIO)

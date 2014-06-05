@@ -1147,6 +1147,39 @@ MV_U32 mvCtrlUsb3MaxGet(void)
 	return mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID);
 }
 
+/*******************************************************************************
+* mvCtrlUtmiPhySelectorSet - configures the shared MAC access between USB2/3
+*
+* DESCRIPTION:
+*	When using USB3 simultaneously with USB2, the USB2 port is sharing MAC with the USB3 port.
+*	in order to address the USB2 registers on the shared MAC, we need to set the UTMI Phy Selector:
+*	0x0 = UTMI PHY connected to USB2.0
+*	0x1 = UTMI PHY disconnected from USB2.0
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*
+*******************************************************************************/
+MV_VOID mvCtrlUtmiPhySelectorSet(MV_U32 usbUnitId)
+{
+	MV_U32 reg;
+	MV_BOOL utmiToUsb2;
+
+	if (usbUnitId == USB_UNIT_ID)
+		utmiToUsb2 = MV_TRUE;
+	else
+		utmiToUsb2 = MV_FALSE;
+
+	reg = MV_REG_READ(USB_CLUSTER_CONTROL);
+	reg = (reg & (~0x1)) | (utmiToUsb2 ? 0x0 : 0x1);
+	MV_REG_WRITE(USB_CLUSTER_CONTROL, reg);
+}
+
 #endif
 
 #if defined(MV_INCLUDE_SDIO)

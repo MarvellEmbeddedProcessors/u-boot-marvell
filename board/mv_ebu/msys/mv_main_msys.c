@@ -53,11 +53,10 @@ int mv_get_arch_number(void)
 	case RD_MTL_BC2:
 	case BC2_CUSTOMER_BOARD_ID0:
 	case BC2_CUSTOMER_BOARD_ID1:
-		return 3035;
 	case DB_AC3_ID:
 	case AC3_CUSTOMER_BOARD_ID0:
 	case AC3_CUSTOMER_BOARD_ID1:
-		mvOsPrintf("%s: Error: AlleyCat3 Arch number not defined (using Bobcat2 Arch number = 3035)\n", __func__);
+		return 3035;
 	default:
 		mvOsPrintf("%s: Error: wrong board Id (%d)\n", __func__, mvBoardIdGet());
 		return 3035;

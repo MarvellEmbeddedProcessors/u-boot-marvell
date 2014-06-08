@@ -498,14 +498,7 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
-	MV_U16 family = mvCtrlDevFamilyIdGet(0);
-	MV_U8 tclkValue;
-
-	if (family == MV_ALLEYCAT3_DEV_ID && mvBoardCoreFreqGet(&tclkValue) == MV_OK)
-		return tclkValue;
-
-	/* BC2 use constant Tclock@200MHz (not sampled @ reset)  */
-	return 200000000;
+	return 200000000; /* constant Tclock @ 200MHz (not Sampled@Reset)  */
 }
 
 /*******************************************************************************

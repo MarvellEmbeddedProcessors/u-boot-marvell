@@ -409,47 +409,6 @@ MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum)
 {
 	return board->pBoardMacInfo[ethPortNum].boardEthSmiAddr;
 }
-/*******************************************************************************
-* mvBoardQuadPhyAddr0Get - Get the phy address
-*
-* DESCRIPTION:
-*       This routine returns the Phy address of a given ethernet port.
-*
-* INPUT:
-*       ethPortNum - Ethernet port number.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       32bit describing Phy address, -1 if the port number is wrong.
-*
-*******************************************************************************/
-MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum)
-{
-	return board->pBoardMacInfo[ethPortNum].boardEthSmiAddr0;
-}
-
-/*******************************************************************************
-* mvBoardPhyLinkCryptPortAddrGet - Get the phy gbe address
-*
-* DESCRIPTION:
-*       This routine returns the Phy address of a given ethernet port.
-*
-* INPUT:
-*       ethPortNum - Ethernet port number.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       32bit describing Phy address, -1 if the port number is wrong.
-*
-*******************************************************************************/
-MV_32 mvBoardPhyLinkCryptPortAddrGet(MV_U32 ethPortNum)
-{
-	return board->pBoardMacInfo[ethPortNum].LinkCryptPortAddr;
-}
 
 MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum)
 {

@@ -98,20 +98,14 @@ MV_BOARD_TWSI_INFO	bobcat2_customer_board_0_InfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO bobcat2_customer_board_0_InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0, 0x0 },
-	{BOARD_MAC_SPEED_AUTO, 0x1, 0x0, 0x1 },
+	{BOARD_MAC_SPEED_AUTO, 0x0 },
+	{BOARD_MAC_SPEED_AUTO, 0x1 },
 };
 
 MV_BOARD_MODULE_TYPE_INFO bobcat2_customer_board_0_InfoBoardModTypeInfo[] = {
 	{
 		.boardMppMod		= MV_BOARD_AUTO,
 	}
-};
-
-MV_BOARD_GPP_INFO bobcat2_customer_board_0_InfoBoardGppInfo[] = {
-	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
-	{BOARD_GPP_USB_VBUS,    24} /* from MPP map */
-	/*{BOARD_GPP_RESET,       47},*/
 };
 
 MV_DEV_CS_INFO bobcat2_customer_board_0_InfoBoardDeCsInfo[] = {
@@ -149,8 +143,8 @@ MV_BOARD_INFO bobcat2_customer_board_0_Info = {
 	.pBoardTwsiDev			= bobcat2_customer_board_0_InfoBoardTwsiDev,
 	.numBoardMacInfo		= ARRSZ(bobcat2_customer_board_0_InfoBoardMacInfo),
 	.pBoardMacInfo			= bobcat2_customer_board_0_InfoBoardMacInfo,
-	.numBoardGppInfo		= ARRSZ(bobcat2_customer_board_0_InfoBoardGppInfo),
-	.pBoardGppInfo			= bobcat2_customer_board_0_InfoBoardGppInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= NULL,
 	.activeLedsNumber		= 0,
 	.pLedGppPin			= NULL,
 	.ledsPolarity			= 0,
@@ -213,20 +207,14 @@ MV_BOARD_TWSI_INFO	alleycat3_customer_board_0_InfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO alleycat3_customer_board_0_InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0, 0x0 },
-	{BOARD_MAC_SPEED_AUTO, 0x1, 0x0, 0x1 },
+	{BOARD_MAC_SPEED_AUTO, 0x0 },
+	{BOARD_MAC_SPEED_AUTO, 0x1 },
 };
 
 MV_BOARD_MODULE_TYPE_INFO alleycat3_customer_board_0_InfoBoardModTypeInfo[] = {
 	{
 		.boardMppMod		= MV_BOARD_AUTO,
 	}
-};
-
-MV_BOARD_GPP_INFO alleycat3_customer_board_0_InfoBoardGppInfo[] = {
-	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
-	{BOARD_GPP_USB_VBUS,    24} /* from MPP map */
-	/*{BOARD_GPP_RESET,       47},*/
 };
 
 MV_DEV_CS_INFO alleycat3_customer_board_0_InfoBoardDeCsInfo[] = {
@@ -252,34 +240,34 @@ MV_BOARD_MPP_INFO alleycat3_customer_board_0_InfoBoardMppConfigValue[] = {
 MV_BOARD_INFO alleycat3_customer_board_0_Info = {
 	.boardName			= "ALLEYCAT3-Customer-Board-0",
 	.numBoardMppTypeValue		= ARRSZ(alleycat3_customer_board_0_InfoBoardModTypeInfo),
-	.pBoardModTypeValue			= alleycat3_customer_board_0_InfoBoardModTypeInfo,
+	.pBoardModTypeValue		= alleycat3_customer_board_0_InfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(alleycat3_customer_board_0_InfoBoardMppConfigValue),
 	.pBoardMppConfigValue		= alleycat3_customer_board_0_InfoBoardMppConfigValue,
-	.intsGppMaskLow				= 0,
-	.intsGppMaskMid				= 0,
-	.intsGppMaskHigh			= 0,
-	.numBoardDeviceIf			= ARRSZ(alleycat3_customer_board_0_InfoBoardDeCsInfo),
-	.pDevCsInfo					= alleycat3_customer_board_0_InfoBoardDeCsInfo,
-	.numBoardTwsiDev			= ARRSZ(alleycat3_customer_board_0_InfoBoardTwsiDev),
-	.pBoardTwsiDev				= alleycat3_customer_board_0_InfoBoardTwsiDev,
-	.numBoardMacInfo			= ARRSZ(alleycat3_customer_board_0_InfoBoardMacInfo),
-	.pBoardMacInfo				= alleycat3_customer_board_0_InfoBoardMacInfo,
-	.numBoardGppInfo			= ARRSZ(alleycat3_customer_board_0_InfoBoardGppInfo),
-	.pBoardGppInfo				= alleycat3_customer_board_0_InfoBoardGppInfo,
-	.activeLedsNumber			= 0,
-	.pLedGppPin					= NULL,
-	.ledsPolarity				= 0,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(alleycat3_customer_board_0_InfoBoardDeCsInfo),
+	.pDevCsInfo			= alleycat3_customer_board_0_InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(alleycat3_customer_board_0_InfoBoardTwsiDev),
+	.pBoardTwsiDev			= alleycat3_customer_board_0_InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(alleycat3_customer_board_0_InfoBoardMacInfo),
+	.pBoardMacInfo			= alleycat3_customer_board_0_InfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= NULL,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
 
 	/* GPP values */
-	.gppOutEnValLow				= ALLEYCAT3_CUSTOMER_0_GPP_OUT_ENA_LOW,
-	.gppOutEnValMid				= ALLEYCAT3_CUSTOMER_0_GPP_OUT_ENA_MID,
-	.gppOutEnValHigh			= 0,
-	.gppOutValLow				= ALLEYCAT3_CUSTOMER_0_GPP_OUT_VAL_LOW,
-	.gppOutValMid				= ALLEYCAT3_CUSTOMER_0_GPP_OUT_VAL_MID,
-	.gppOutValHigh				= 0,
-	.gppPolarityValLow			= ALLEYCAT3_CUSTOMER_0_GPP_POL_LOW,
-	.gppPolarityValMid			= ALLEYCAT3_CUSTOMER_0_GPP_POL_MID,
-	.gppPolarityValHigh			= 0,
+	.gppOutEnValLow			= ALLEYCAT3_CUSTOMER_0_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= ALLEYCAT3_CUSTOMER_0_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= 0,
+	.gppOutValLow			= ALLEYCAT3_CUSTOMER_0_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= ALLEYCAT3_CUSTOMER_0_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= 0,
+	.gppPolarityValLow		= ALLEYCAT3_CUSTOMER_0_GPP_POL_LOW,
+	.gppPolarityValMid		= ALLEYCAT3_CUSTOMER_0_GPP_POL_MID,
+	.gppPolarityValHigh		= 0,
 
 	/* External Switch Configuration */
 	.pSwitchInfo = NULL,
@@ -288,9 +276,9 @@ MV_BOARD_INFO alleycat3_customer_board_0_Info = {
 	/* NAND init params */
 	.nandFlashReadParams		= ALLEYCAT3_CUSTOMER_0_BOARD_NAND_READ_PARAMS,
 	.nandFlashWriteParams		= ALLEYCAT3_CUSTOMER_0_BOARD_NAND_WRITE_PARAMS,
-	.nandFlashControl			= ALLEYCAT3_CUSTOMER_0_BOARD_NAND_CONTROL,
+	.nandFlashControl		= ALLEYCAT3_CUSTOMER_0_BOARD_NAND_CONTROL,
 	/* NOR init params */
-	.norFlashReadParams			= ALLEYCAT3_CUSTOMER_0_BOARD_NOR_READ_PARAMS,
+	.norFlashReadParams		= ALLEYCAT3_CUSTOMER_0_BOARD_NOR_READ_PARAMS,
 	.norFlashWriteParams		= ALLEYCAT3_CUSTOMER_0_BOARD_NOR_WRITE_PARAMS
 };
 
@@ -328,20 +316,14 @@ MV_BOARD_TWSI_INFO	db_dx_bc2InfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO db_dx_bc2InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x0,0x0 	  , 0x0 },
-	{BOARD_MAC_SPEED_AUTO, 0x1,0x0	  , 0x1 },
+	{BOARD_MAC_SPEED_AUTO, 0x0 },
+	{BOARD_MAC_SPEED_AUTO, 0x1 },
 };
 
 MV_BOARD_MODULE_TYPE_INFO db_dx_bc2InfoBoardModTypeInfo[] = {
 	{
 		.boardMppMod		= MV_BOARD_AUTO,
 	}
-};
-
-MV_BOARD_GPP_INFO db_dx_bc2InfoBoardGppInfo[] = {
-	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
-	{BOARD_GPP_USB_VBUS,    24} /* from MPP map */
-	/*{BOARD_GPP_RESET,       47},*/
 };
 
 MV_DEV_CS_INFO db_dx_bc2InfoBoardDeCsInfo[] = {
@@ -384,8 +366,8 @@ MV_BOARD_INFO db_dx_bc2Info = {
 	.pBoardTwsiDev			= db_dx_bc2InfoBoardTwsiDev,
 	.numBoardMacInfo		= ARRSZ(db_dx_bc2InfoBoardMacInfo),
 	.pBoardMacInfo			= db_dx_bc2InfoBoardMacInfo,
-	.numBoardGppInfo		= ARRSZ(db_dx_bc2InfoBoardGppInfo),
-	.pBoardGppInfo			= db_dx_bc2InfoBoardGppInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= NULL,
 	.activeLedsNumber		= 0,
 	.pLedGppPin			= NULL,
 	.ledsPolarity			= 0,
@@ -425,8 +407,8 @@ MV_BOARD_INFO db_dx_bc2Info = {
 
 MV_BOARD_MAC_INFO rd_dx_bc2InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_1000M, 0x0, 0x0, 0x0},
-	{BOARD_MAC_SPEED_1000M, 0x1, 0x0, 0x1},
+	{BOARD_MAC_SPEED_1000M, 0x0 },
+	{BOARD_MAC_SPEED_1000M, 0x1 },
 };
 
 MV_BOARD_MODULE_TYPE_INFO rd_dx_bc2InfoBoardModTypeInfo[] = {
@@ -505,8 +487,8 @@ MV_BOARD_INFO rd_dx_bc2Info = {
 
 MV_BOARD_MAC_INFO bc2_rd_mtlInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_1000M, 0x0, 0x0, 0x0},
-	{BOARD_MAC_SPEED_1000M, 0x1, 0x0, 0x1},
+	{BOARD_MAC_SPEED_1000M, 0x0 },
+	{BOARD_MAC_SPEED_1000M, 0x1 },
 };
 
 MV_BOARD_MODULE_TYPE_INFO bc2_rd_mtlInfoBoardModTypeInfo[] = {
@@ -603,20 +585,14 @@ MV_BOARD_TWSI_INFO	db_dx_ac3InfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO db_dx_ac3InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, -1, 0x0, 0x0},
-	{BOARD_MAC_SPEED_AUTO, -1, 0x0, 0x1}
+	{BOARD_MAC_SPEED_AUTO, -1 },
+	{BOARD_MAC_SPEED_AUTO, -1 }
 };
 
 MV_BOARD_MODULE_TYPE_INFO db_dx_ac3InfoBoardModTypeInfo[] = {
 	{
 		.boardMppMod		= MV_BOARD_AUTO,
 	}
-};
-
-MV_BOARD_GPP_INFO db_dx_ac3InfoBoardGppInfo[] = {
-	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
-	{BOARD_GPP_USB_VBUS,    24} /* from MPP map */
-	/*{BOARD_GPP_RESET,       47},*/
 };
 
 MV_DEV_CS_INFO db_dx_ac3InfoBoardDeCsInfo[] = {
@@ -640,36 +616,36 @@ MV_BOARD_MPP_INFO db_dx_ac3InfoBoardMppConfigValue[] = {
 };
 
 MV_BOARD_INFO db_dx_ac3Info = {
-	.boardName					= "DB-DXAC3-MM",
+	.boardName			= "DB-DXAC3-MM",
 	.numBoardMppTypeValue		= ARRSZ(db_dx_ac3InfoBoardModTypeInfo),
-	.pBoardModTypeValue			= db_dx_ac3InfoBoardModTypeInfo,
+	.pBoardModTypeValue		= db_dx_ac3InfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(db_dx_ac3InfoBoardMppConfigValue),
 	.pBoardMppConfigValue		= db_dx_ac3InfoBoardMppConfigValue,
-	.intsGppMaskLow				= 0,
-	.intsGppMaskMid				= 0,
-	.intsGppMaskHigh			= 0,
-	.numBoardDeviceIf			= ARRSZ(db_dx_ac3InfoBoardDeCsInfo),
-	.pDevCsInfo					= db_dx_ac3InfoBoardDeCsInfo,
-	.numBoardTwsiDev			= ARRSZ(db_dx_ac3InfoBoardTwsiDev),
-	.pBoardTwsiDev				= db_dx_ac3InfoBoardTwsiDev,
-	.numBoardMacInfo			= ARRSZ(db_dx_ac3InfoBoardMacInfo),
-	.pBoardMacInfo				= db_dx_ac3InfoBoardMacInfo,
-	.numBoardGppInfo			= ARRSZ(db_dx_ac3InfoBoardGppInfo),
-	.pBoardGppInfo				= db_dx_ac3InfoBoardGppInfo,
-	.activeLedsNumber			= 0,
-	.pLedGppPin					= NULL,
-	.ledsPolarity				= 0,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(db_dx_ac3InfoBoardDeCsInfo),
+	.pDevCsInfo			= db_dx_ac3InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(db_dx_ac3InfoBoardTwsiDev),
+	.pBoardTwsiDev			= db_dx_ac3InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(db_dx_ac3InfoBoardMacInfo),
+	.pBoardMacInfo			= db_dx_ac3InfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= NULL,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
 
 	/* GPP values */
-	.gppOutEnValLow				= DB_DX_AC3_GPP_OUT_ENA_LOW,
-	.gppOutEnValMid				= DB_DX_AC3_GPP_OUT_ENA_MID,
-	.gppOutEnValHigh			= 0,
-	.gppOutValLow				= DB_DX_AC3_GPP_OUT_VAL_LOW,
-	.gppOutValMid				= DB_DX_AC3_GPP_OUT_VAL_MID,
-	.gppOutValHigh				= 0,
-	.gppPolarityValLow			= DB_DX_AC3_GPP_POL_LOW,
-	.gppPolarityValMid			= DB_DX_AC3_GPP_POL_MID,
-	.gppPolarityValHigh			= 0,
+	.gppOutEnValLow			= DB_DX_AC3_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= DB_DX_AC3_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= 0,
+	.gppOutValLow			= DB_DX_AC3_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= DB_DX_AC3_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= 0,
+	.gppPolarityValLow		= DB_DX_AC3_GPP_POL_LOW,
+	.gppPolarityValMid		= DB_DX_AC3_GPP_POL_MID,
+	.gppPolarityValHigh		= 0,
 
 	/* External Switch Configuration */
 	.pSwitchInfo = NULL,
@@ -678,9 +654,9 @@ MV_BOARD_INFO db_dx_ac3Info = {
 	/* NAND init params */
 	.nandFlashReadParams		= DB_DX_AC3_BOARD_NAND_READ_PARAMS,
 	.nandFlashWriteParams		= DB_DX_AC3_BOARD_NAND_WRITE_PARAMS,
-	.nandFlashControl			= DB_DX_AC3_BOARD_NAND_CONTROL,
+	.nandFlashControl		= DB_DX_AC3_BOARD_NAND_CONTROL,
 	/* NOR init params */
-	.norFlashReadParams			= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
+	.norFlashReadParams		= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
 	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS
 };
 

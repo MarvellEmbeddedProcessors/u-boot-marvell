@@ -66,32 +66,39 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _MV_HIGHSPEED_ENV_SPEC_H
 #define _MV_HIGHSPEED_ENV_SPEC_H
 #include "bootstrap_os.h"
-#include "mv_seq_exec.h"
+#include "mv_seq_exec_ext.h"
 
 /********************************* Definitions ********************************/
 
-/* For checking function return values */
-#define CHECK_STATUS(origFunc) \
-	{ \
-		MV_STATUS mvStatus; \
-		mvStatus = origFunc; \
-		if (MV_OK != mvStatus) \
-		{ \
-			return mvStatus; \
-		} \
-	}
 
 /********************************* Enum ********************************/
 /* Serdes sequences */
 typedef enum {
+	REF_CLOCK__25MHz,
+	REF_CLOCK__100MHz,
+	REF_CLOCK_UNSUPPORTED
+} REF_CLOCK;
+
+/* Serdes sequences */
+typedef enum {
+	SGMII_EXT_SPEED_CONFIG_SEQ,
+	SGMII_INT_SPEED_CONFIG_SEQ,
+	SGMII_SD_RESET_SEQ,
+	SGMII_SD_UNRESET_SEQ,
+	SGMII_RF_RESET_SEQ,
+	SGMII_RF_UNRESET_SEQ,
+	SGMII_CORE_RESET_SEQ,
+	SGMII_CORE_UNRESET_SEQ,
+	SGMII_SYNCE_RESET_SEQ,
+	SGMII_SYNCE_UNRESET_SEQ,
+	SGMII_POWER_UP_SEQ,
+	SGMII_POWER_DOWN_SEQ,
+
 	USB2_POWER_UP_SEQ,
 	SERDES_LAST_SEQ
 } SERDES_SEQ;
 
 /*********************************** Globals **********************************/
 
-/* serdesSeqDb - holds all serdes sequences, their size and the relevant index in the data array
-   initialized in serdesSeqInit */
-MV_CFG_SEQ serdesSeqDb[SERDES_LAST_SEQ];
-
 #endif /* _MV_HIGHSPEED_ENV_SPEC_H */
+

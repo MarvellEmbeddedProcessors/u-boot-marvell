@@ -79,6 +79,146 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvUart.h"
 #include "util.h"
 
+/**************************************************************************
+ * boardTopologyLoad -
+ *
+ * DESCRIPTION:          Loads the board topology for the DB_A38X_BP board
+ * INPUT:                serdesMapArray  -   The struct that will contain
+ *                                           the board topology map
+ * OUTPUT:               The board topology map.
+ * RETURNS:              MV_OK           -   for success
+ *                       MV_FAIL         -   for failure (a wrong
+ *                                           topology mode was read
+ *                                           from the board)
+ ***************************************************************************/
+MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray);
 
+
+/***************************************************************************/
+MV_U8 mvHwsBoardIdGet(MV_VOID)
+{
+	return 0;
+}
+
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+
+/************************* Load Topology - Customer Boards ****************************/
+SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
+{
+{	/* Customer Board 0 Toplogy */
+	/* Type		Serdes		Speed/			Mode	*/
+	/*			Number		index					*/
+	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE },
+},
+{	/* Customer Board 1 Toplogy */
+	/* Type		Serdes		Speed/			Mode	*/
+	/*			Number		index					*/
+	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE },
+}};
+
+
+/**********************************************************************/
+/* Load topology functions - Board ID is the index for function array */
+/**********************************************************************/
+
+loadTopologyFuncPtr loadTopologyFuncArr[] =
+{
+	boardTopologyLoad,         /* Customer Board 0 */
+	boardTopologyLoad,         /* Customer Board 1*/
+};
+
+#else /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+
+/*********************************** Enums ************************************/
+
+
+/************************* Local functions declarations ***********************/
+
+loadTopologyFuncPtr loadTopologyFuncArr[] =
+{
+	boardTopologyLoad,
+	boardTopologyLoad,
+};
+
+/*********************************** Globals **********************************/
+/********************************/
+/** Load topology - Marvell DB/RD **/
+/********************************/
+
+/* Configuration options */
+SERDES_MAP serdesDbTopology[MAX_SERDES_LANES] =
+{
+	/* Type		Serdes		Speed			Mode	*/
+	/*			Number							*/
+	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE },
+};
+
+SERDES_MAP serdesRdTopology[MAX_SERDES_LANES] =
+{
+	/* Type		Serdes		Speed			Mode	*/
+	/*			Number							*/
+	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE },
+};
+
+SERDES_MAP* marvellBoardSerdesTopology[] =
+{
+	serdesDbTopology,
+	serdesRdTopology,
+};
+
+/*************************** Functions implementation *************************/
+
+
+#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+
+/**************************************************************************
+ * boardTopologyLoad -
+ *
+ * DESCRIPTION:          Loads the board topology for the DB_A38X_BP board
+ * INPUT:                serdesMapArray  -   The struct that will contain
+ *                                           the board topology map
+ * OUTPUT:               The board topology map.
+ * RETURNS:              MV_OK           -   for success
+ *                       MV_FAIL         -   for failure (a wrong
+ *                                           topology mode was read
+ *                                           from the board)
+ ***************************************************************************/
+MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray)
+{
+	MV_U32		laneNum;
+	MV_U32		boardId;
+	SERDES_MAP	*topologyConfigPtr;
+
+	DEBUG_INIT_FULL_S("\n### loadTopologyDB ###\n");
+
+	boardId = mvHwsBoardIdGet();
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	topologyConfigPtr = CustomerBoardTopologyConfig[boardId];
+#else
+	topologyConfigPtr = marvellBoardSerdesTopology[boardId];
+#endif
+	/* Updating the topology map */
+	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
+		if (laneNum == topologyConfigPtr[laneNum].serdesNum) {
+			serdesMapArray[laneNum].serdesMode  =  topologyConfigPtr[laneNum].serdesMode;
+			serdesMapArray[laneNum].serdesNum   =  topologyConfigPtr[laneNum].serdesNum;
+			serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
+			serdesMapArray[laneNum].serdesType  =  topologyConfigPtr[laneNum].serdesType;
+		} else {
+			serdesMapArray[laneNum].serdesNum  = laneNum;
+			serdesMapArray[laneNum].serdesType = DEFAULT_SERDES;
+		}
+	}
+
+	return MV_OK;
+}
 
 //Placeholder for future code

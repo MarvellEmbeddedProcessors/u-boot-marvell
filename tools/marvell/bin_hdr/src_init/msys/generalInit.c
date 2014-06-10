@@ -67,6 +67,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "config_marvell.h"  	/* Required to identify SOC and Board */
 #include "mvUart.h"
 #include "util.h"
+#include "mvSiliconIf.h"
 #include "generalInit.h"
 
 #if defined(MV_MSYS_AC3)
@@ -74,19 +75,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 /* mvUartConfig() prepares UART configuration (MPP's and UART interface selection) */
-static inline MV_VOID mvUartConfig()
+static inline MV_VOID mvMbusWinConfig()
 {
 #if defined(MV_MSYS_AC3)
         /* open DFX server window - required to derive Tclk for UART init (mvBoardTclkGet) */
-        MV_REG_WRITE(REG_XBAR_WIN_5_CTRL_ADDR, 0xF0081);
+	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(SERVER_WIN_ID), SERVER_MBUS_WIN_CTRL_VAL);
+	/* UART0 does not use MPP lines: no other configuration required */
+
+	/* Configure memory window for SERDES switch access */
+	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(SWITCH_WIN_ID),  SWITCH_MBUS_WIN_CTRL_VAL);
         /* UART0 does not use MPP lines: no other configuration required */
 #endif
 }
 
 MV_STATUS mvGeneralInit(void)
 {
+	mvMbusWinConfig();
 #if !defined(MV_NO_PRINT)
-	mvUartConfig();
 	mvUartInit();
 	DEBUG_INIT_S("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
 #endif

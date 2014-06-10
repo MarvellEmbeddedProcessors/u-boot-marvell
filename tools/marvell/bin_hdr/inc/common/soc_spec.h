@@ -596,7 +596,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PEX_TL_CTRL_CMP_BUFF_NUM_MASK		(0xF << PEX_TL_CTRL_CMP_BUFF_NUM_OFFS)
 #define PEX_TL_CTRL_CMP_BUFF_NUM_ROOT_CMPLX	(0x4 << PEX_TL_CTRL_CMP_BUFF_NUM_OFFS)
 #define PEX_TL_CTRL_CMP_BUFF_NUM_END_POINT	(0x1 << PEX_TL_CTRL_CMP_BUFF_NUM_OFFS)
-
+#if 0 /* PEX_DBG_CTRL_REG redefined for accepting unit as parameter */
 #define PEX_DBG_CTRL_REG			0x41A60
 #define PEX_MSK_SOFT_RST_OFFS			12
 #define PEX_MSK_SOFT_RST_MASK			(0x1 << PEX_MSK_SOFT_RST_OFFS)
@@ -616,7 +616,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PEX_DIS_LF_REG_RST_MASK			(0x1 << PEX_DIS_LF_REG_RST_OFFS)
 #define PEX_DIS_REG_RST_HOT_RST_OFFS		21
 #define PEX_DIS_REG_RST_HOT_RST_MASK		(0x1 << PEX_DIS_REG_RST_HOT_RST_OFFS)
-
+#endif
 #define PEX_CAPABILITY_REG			0x40060
 #define	PEX_DEVICE_TYPE_OFFS			20
 #define PEX_DEVICE_TYPE_MASK			(0xF << PEX_DEVICE_TYPE_OFFS)
@@ -787,7 +787,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CPU_INT_SOURCE_CONTROL_ENA_MASK		(1 << CPU_INT_SOURCE_CONTROL_ENA_OFFS)
 #define CPU_MAIN_INT_TWSI_OFFS(i)			(2 + i)
 #define CPU_MAIN_INT_CAUSE_TWSI(i)			(31 + i)
-#define MV_MBUS_REGS_OFFSET					(0x20000)
 #define MV_CPUIF_SHARED_REGS_BASE			(MV_MBUS_REGS_OFFSET)
 #define CPU_INT_SOURCE_CONTROL_REG(i)		(MV_CPUIF_SHARED_REGS_BASE + 0xB00 + (i * 0x4))
 
@@ -837,6 +836,32 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TWSI0_CPU_MAIN_INT_BIT(ch)		((ch) + 3)
 
 #endif
+
+
+#define MV_MBUS_REGS_OFFSET					(0x20000)
+#define MAX_AHB_TO_MBUS_REMAP_WINS			8
+#define AHB_TO_MBUS_WIN_CTRL_REG(winNum)	(((winNum) < MAX_AHB_TO_MBUS_REMAP_WINS) ? \
+											(MV_MBUS_REGS_OFFSET + (winNum) * 0x10) : \
+                                            (MV_MBUS_REGS_OFFSET + 0x90 + ((winNum) - 8) * 0x08))
+
+#define ATMWCR_WIN_ENABLE                   1
+#define ATMWCR_WIN_TARGET_OFFS              4
+#define ATMWCR_WIN_TARGET_MASK              (0xf << ATMWCR_WIN_TARGET_OFFS)
+#define ATMWCR_WIN_ATTR_OFFS                8
+#define ATMWCR_WIN_ATTR_MASK                (0xff << ATMWCR_WIN_ATTR_OFFS)
+#define ATMWCR_WIN_SIZE_OFFS                16
+#define ATMWCR_WIN_SIZE_MASK                (0xffff << ATMWCR_WIN_SIZE_OFFS)
+#define ATMWCR_WIN_SIZE_ALIGNMENT           0x10000
+
+/* Window-X Base Register */
+#define AHB_TO_MBUS_WIN_BASE_REG(winNum)	(((winNum) < MAX_AHB_TO_MBUS_REMAP_WINS) ? \
+                                            (MV_MBUS_REGS_OFFSET + 0x4 + (winNum) * 0x10) : \
+                                            (MV_MBUS_REGS_OFFSET + 0x94 + ((winNum) - 8) * 0x08))
+/* Window-X Base Register */
+#define AHB_TO_MBUS_WIN_REMAP_REG(winNum)	(((winNum) < MAX_AHB_TO_MBUS_REMAP_WINS) ? \
+                                            (MV_MBUS_REGS_OFFSET + 0x8 + (winNum) * 0x10) : \
+                                            (MV_MBUS_REGS_OFFSET + 0x98 + ((winNum) - 8) * 0x08))
+
 /************/
 /* Security */
 /************/

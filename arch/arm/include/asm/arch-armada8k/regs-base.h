@@ -20,7 +20,7 @@
 #ifndef _REGS_BASE_H_
 #define _REGS_BASE_H_
 
-#define MVEBU_REGS_BASE	(0x90000000)
+#define MVEBU_REGS_BASE	(0xF1000000)
 
 #define MPP_REGS_BASE	(MVEBU_REGS_BASE + 0x1000)
 

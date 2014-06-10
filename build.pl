@@ -2,7 +2,7 @@
 
 use Cwd qw();
 
-our @supported_boards = ("armada8k", "armada8021-pxp", "armada38x");
+our @supported_boards = ("armada8k", "armada8k-pxp", "armada38x");
 our @supported_flash = ("spi", "nand", "nor");
 
 sub bin2hex
@@ -62,7 +62,7 @@ sub usage
 	print "\n";
 	print "Options:\n";
 	print "\t-f\tBoot device. Accepts spi, nor, nand\n";
-	print "\t-b\tBoard type. Accepts: armada8k, armada8021-pxp, armada38x\n";
+	print "\t-b\tBoard type. Accepts: armada8k, armada8k-pxp, armada38x\n";
 	print "\t-c\tClean build. calls \"make mrproper\"\n";
 	print "\t-o\tOutput directory. Build products will be copied to here\n";
 	print "\t-h\tPrints this help message\n";
@@ -178,9 +178,9 @@ if (system("make -j6 -s")) {
 	exit 1;
 }
 
-print "\n**** [Creating Image]\t*****\n\n";
-unless ($board eq "armada8021-pxp") 
+unless ($board eq "armada8k-pxp")
 {
+	print "\n**** [Creating flash Image]\t*****\n\n";
 	if (system("./tools/marvell/doimage -T uart -D 0 -E 0 -G ./tools/marvell/bin_hdr.uart u-boot.bin u-boot-$flash_name-uart.bin")) {
 		print "\nError: doimage failed creating UART image \n\n";
 		exit 1;
@@ -191,6 +191,7 @@ unless ($board eq "armada8021-pxp")
 	}	
 } else {
 
+	print "\n**** [Creating HEX Image]\t*****\n\n";
 	# Create palladium compatible hex file #
 	if(bin2hex()) {
 		print "\nError: failed creating palladium image\n\n";

@@ -152,8 +152,16 @@ UTILS = utils
 SYS_ENV = sys_env
 
 CSRC_DRV = $(DRV)/mv_uart.c $(DRV)/mv_twsi.c $(DRV)/mv_time.c
-CSRC_UTILS = $(UTILS)/utils.c $(UTILS)/printf.c $(UTILS)/mv_seq_exec.c
+CSRC_UTILS = $(UTILS)/utils.c $(UTILS)/printf.c $(UTILS)/mvHwsSiliconIf.c
 CSRC_SYS_ENV =
+
+ifeq "$(CONFIG_ALLEYCAT3)"  "y"
+  CSRC_UTILS += $(UTILS)/mv_seq_exec_ext.c
+else ifeq "$(CONFIG_BOBCAT2)"  "y"
+  CSRC_UTILS += $(UTILS)/mv_seq_exec_ext.c
+else
+  CSRC_UTILS += $(UTILS)/mv_seq_exec.c
+endif
 
 CSRC = $(CSRC_DRV) $(CSRC_UTILS) $(CSRC_SYS_ENV)
 

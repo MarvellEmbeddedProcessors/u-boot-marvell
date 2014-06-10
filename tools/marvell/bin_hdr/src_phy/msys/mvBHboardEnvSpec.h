@@ -69,6 +69,43 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Board specific configuration */
 /* ============================ */
 /* Bobcat2 Customer Boards */
+typedef enum {
+	PEX0,
+	SGMII0,
+	SGMII1,
+	DEFAULT_SERDES,
+	LAST_SERDES_TYPE
+} SERDES_TYPE;
+
+/* Serdes baud rates */
+typedef enum {
+	__1_25Gbps,
+
+	LAST_SERDES_SPEED
+} SERDES_SPEED;
+
+/* Serdes modes */
+typedef enum {
+	PEX_ROOT_COMPLEX_x1,
+	PEX_END_POINT_x1,
+
+	SERDES_DEFAULT_MODE, /* not pex */
+
+	SERDES_LAST_MODE
+} SERDES_MODE;
+
+/************************************ structures ******************************/
+
+typedef struct {
+	SERDES_TYPE  serdesType;
+	MV_U32		 serdesNum;
+	SERDES_SPEED serdesSpeed;
+	SERDES_MODE  serdesMode;
+} SERDES_MAP;
+
+/* Board specific configuration */
+/* ============================ */
+/* Bobcat2 Customer Boards */
 #define BC2_CUSTOMER_BOARD_ID_BASE	0x0
 #define BC2_CUSTOMER_BOARD_ID0		(BC2_CUSTOMER_BOARD_ID_BASE + 0)
 #define BC2_CUSTOMER_BOARD_ID1		(BC2_CUSTOMER_BOARD_ID_BASE + 1)
@@ -100,4 +137,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define INVALID_BOARD_ID		0xFFFF
 #define BOARD_ID_INDEX_MASK		0x10	/* Mask used to return board index via board Id */
 
+/* A generic function pointer for loading the board topology map */
+typedef MV_STATUS (*loadTopologyFuncPtr)(SERDES_MAP  *serdesMapArray);
+
+
+/*************************** Functions declarations ***************************/
+
+MV_U8 mvHwsBoardIdGet(MV_VOID);
+
 #endif /* __INCmvBHboardEnvSpech */
+

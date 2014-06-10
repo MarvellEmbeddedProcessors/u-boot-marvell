@@ -101,7 +101,8 @@ static boardDef boards[] = {
 		0,
 			"\t. = %#08x;\n"
 			"\t.text : { *(.text) }\n"
-			"\t.data : { *(.data) }\n",
+			"\t.data : { *(.data) }\n"
+			"\t.bss : { *(.bss) }\n",
 	},
 	{ "a375_alp_zx",	/* Used for Zx revision */
 		"\tram1 : ORIGIN = %#08x, LENGTH = %#x\n"

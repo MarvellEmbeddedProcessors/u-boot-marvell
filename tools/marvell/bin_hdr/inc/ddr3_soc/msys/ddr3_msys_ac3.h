@@ -70,15 +70,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* MISC */
 #define INTER_REGS_BASE								0xD0000000
 
-#define REG_DEVICE_SAR1_ADDR                        0xF82D4
+#define REG_DEVICE_SAR0_ADDR                        0xF8200
+#define REG_DEVICE_SAR1_ADDR                        0xF8204
 #define PLL0_CNFIG_OFFSET         					21
 #define PLL0_CNFIG_MASK           					0x7
 #define PLL1_CNFIG_OFFSET         					18
 #define PLL1_CNFIG_MASK           					0x7
-
-#define REG_DEVICE_SAR0_ADDR                        0x18224
-#define REG_DEVICE_SAR0_PLL_CONFIG_OFFSET           16
-#define REG_DEVICE_SAR0_PLL_CONFIG_MASK             0x3
 
 /* DRAM Windows */
 #define REG_XBAR_WIN_5_CTRL_ADDR					0x20050

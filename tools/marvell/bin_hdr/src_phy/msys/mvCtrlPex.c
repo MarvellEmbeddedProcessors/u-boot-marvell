@@ -209,22 +209,21 @@ MV_STATUS mvHwsPexConfig()
 		DEBUG_INIT_FULL_D(pexIdx, 8);
 		DEBUG_INIT_FULL_S("\n");
 
+	mvOsDelay(50);
+
         tmp = MV_REG_READ(PEX_DBG_STATUS_REG(pexIdx));
 
 	    first_busno = next_busno;
-        if((tmp & 0x7f) == 0x7E)
-        {
+	if((tmp & 0x7f) == 0x7E) {
 		    next_busno++;
 		    tempPexReg = MV_REG_READ((PEX_CFG_DIRECT_ACCESS(pexIdx, PEX_LINK_CAPABILITY_REG)));
 		    tempPexReg &= (0xF);
-		    if(tempPexReg == 0x2)
-            {
+		if(tempPexReg == 0x2) {
 			    tempReg = (MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexIdx, PEX_LINK_CTRL_STAT_REG)) & 0xF0000) >> 16;
 
 				/* check if the link established is GEN1 */
                 DEBUG_INIT_FULL_S("Checking if the link established is gen1\n");
-				if (tempReg == 0x1)
-                {
+			if (tempReg == 0x1) {
 					mvPexLocalBusNumSet(pexIdx, first_busno);
 					mvPexLocalDevNumSet(pexIdx, 1);
 					DEBUG_INIT_FULL_S("PEX: pexIdx ");
@@ -239,10 +238,12 @@ MV_STATUS mvHwsPexConfig()
 						DEBUG_INIT_FULL_C("mvPexConfigRead: return 0xff -->PEX (%d): Detected No Link.", pexIdx,1);
 						return MV_OK;
 					}
-					while ((mvPexConfigRead(pexIdx, first_busno, 0, 0, addr) & 0xFF) != 0x10) {
+
+				while ((mvPexConfigRead(pexIdx, first_busno, 0, 0, addr) & 0xFF) != 0x10)
 						addr = (mvPexConfigRead(pexIdx, first_busno, 0, 0, addr) & 0xFF00) >> 8;
-					}
+
 					if ((mvPexConfigRead(pexIdx, first_busno, 0, 0, addr + 0xC) & 0xF) >= 0x2) {
+
 						tmp = MV_REG_READ(PEX_LINK_CTRL_STATUS2_REG(pexIdx));
 						DEBUG_RD_REG(PEX_LINK_CTRL_STATUS2_REG(pexIdx),tmp );
 						tmp &=~(BIT0 | BIT1);
@@ -255,21 +256,24 @@ MV_STATUS mvHwsPexConfig()
 						tmp |= BIT10;
 						MV_REG_WRITE(PEX_CTRL_REG(pexIdx),tmp);
 						DEBUG_WR_REG(PEX_CTRL_REG(pexIdx),tmp);
-						mvOsUDelay(10000);/* We need to wait 10ms before reading the PEX_DBG_STATUS_REG in order not to read the status of the former state*/
+					mvOsDelay(10);/* We need to wait 10ms before reading the PEX_DBG_STATUS_REG
+									in order not to read the status of the former state */
 
 						DEBUG_INIT_S("PEX: pexIdx ");
 						DEBUG_INIT_D(pexIdx, 1);
 						DEBUG_INIT_S(", Link upgraded to Gen2 based on client cpabilities \n");
+
 					} else {
+
 						DEBUG_INIT_S("PEX: pexIdx ");
 						DEBUG_INIT_D(pexIdx, 1);
 						DEBUG_INIT_S(", remains Gen1\n");
 					}
 				}
 		    }
-        }
-        else
-        {
+
+	} else {
+
             DEBUG_INIT_S("PEX: pexIdx ");
             DEBUG_INIT_D(pexIdx, 1);
             DEBUG_INIT_S(", detected no link\n");

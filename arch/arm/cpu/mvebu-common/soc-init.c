@@ -83,6 +83,7 @@ static int update_soc_units(struct mvebu_soc_info *soc)
 
 static int soc_init_memory_map(struct mvebu_soc_info *soc)
 {
+#ifndef CONFIG_PALLADIUM
 	struct mvebu_soc_family *soc_family = get_soc_family();
 	struct adec_win *memory_map = soc->memory_map;
 
@@ -92,6 +93,7 @@ static int soc_init_memory_map(struct mvebu_soc_info *soc)
 		error("No MBUS support yet");
 		return -EINVAL;
 	}
+#endif
 
 	return 0;
 }

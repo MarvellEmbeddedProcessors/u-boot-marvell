@@ -20,7 +20,9 @@
 
 .globl	_start
 _start:
+#ifdef CONFIG_PALLADIUM
 	b .
+#endif
 	b	reset
 
 	.align 3
@@ -74,6 +76,12 @@ reset:
 	 * tlb is invalidated before mmu is enabled in dcache_enable()
 	 * d-cache is invalidated before enabled in dcache_enable()
 	 */
+#ifndef CONFIG_PALLADIUM
+	/* Cache/BPB/TLB Invalidate */
+	bl	__asm_flush_dcache_all		/* dCache clean&invalidate */
+	bl	__asm_invalidate_icache_all	/* iCache invalidate */
+	bl	__asm_invalidate_tlb_all	/* invalidate TLBs */
+#endif
 
 	/* Processor specific initialization */
 	bl	lowlevel_init

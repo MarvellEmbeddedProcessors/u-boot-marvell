@@ -85,6 +85,7 @@ MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
 #ifndef CONFIG_ALP_A375_ZX_REV
 MV_STATUS mvUsb2PhyInit(MV_U32 dev);
 #endif
+MV_STATUS mvPONPhyInit();
 
 /**************************** globals *****************************/
 
@@ -657,6 +658,9 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 		DEBUG_INIT_FULL_S("\n");
 	}
 
+	/* Step 8: Configure PON on lane3 */
+	mvPONPhyInit();
+
 #ifndef CONFIG_ALP_A375_ZX_REV
 	mvUsb2PhyInit(0);
 	mvUsb2PhyInit(1);
@@ -905,3 +909,28 @@ MV_STATUS mvBoardUpdateBoardTopologyConfig(MV_U32 boardId)
 		1. scan requested configuration 2. update boardTopologyConfig[] according to config */
 	return MV_OK;
 }
+
+MV_STATUS mvPONPhyInit()
+{
+	/*TBD - make the sequence clear*/
+	MV_REG_WRITE(0x184f4, 0x53000238);
+	MV_REG_WRITE(0x184f8, 0x1);
+	MV_REG_WRITE(0x184f4, 0x53000210);
+	MV_REG_WRITE(0x184f4, 0x53001210);
+	MV_REG_WRITE(0x18754, 0x8);
+	MV_REG_WRITE(0x18754, 0xA);
+	MV_REG_WRITE(0x18754, 0xE);
+	MV_REG_WRITE(0x32004, 0xf400);
+	MV_REG_WRITE(0x32144, 0x104);
+	MV_REG_WRITE(0x320f4, 0x400);
+	MV_REG_WRITE(0x3208c, 0x0000);
+	MV_REG_WRITE(0x184f4, 0x53001217);
+	MV_REG_WRITE(0x184f4, 0x52001247);
+	MV_REG_WRITE(0x184f4, 0x52001207);
+	MV_REG_WRITE(0x32098, 0x0);
+
+	return MV_OK;
+}
+
+
+

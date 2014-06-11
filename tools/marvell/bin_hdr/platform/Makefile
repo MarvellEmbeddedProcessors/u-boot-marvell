@@ -138,7 +138,7 @@ ifeq "$(CONFIG_DB_AC3)"  "y"
 endif
 
 CFLAGS += $(BOARDFLAG)
-INCLUDE     = -I./ -I../inc/common -I../inc/ddr3_soc/$(BOARD) -I../../../../include
+INCLUDE     = -I./ -I../inc/common -I../inc/ddr3_soc/$(BOARD) -I../src_phy/$(BOARD) -I./sysEnv/$(BOARD) -I../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
@@ -149,11 +149,11 @@ TGT_UART = plat.uart.a
 
 DRV = drivers
 UTILS = utils
-SYS_ENV = sys_env
+SYS_ENV = sysEnv/$(BOARD)
 
 CSRC_DRV = $(DRV)/mv_uart.c $(DRV)/mv_twsi.c $(DRV)/mv_time.c
 CSRC_UTILS = $(UTILS)/utils.c $(UTILS)/printf.c $(UTILS)/mvHwsSiliconIf.c
-CSRC_SYS_ENV =
+CSRC_SYS_ENV = $(SYS_ENV)/mvBHboardEnvSpec.c
 
 ifeq "$(CONFIG_ALLEYCAT3)"  "y"
   CSRC_UTILS += $(UTILS)/mv_seq_exec_ext.c

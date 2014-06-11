@@ -66,8 +66,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _MV_HIGHSPEED_ENV_SPEC_H
 #define _MV_HIGHSPEED_ENV_SPEC_H
 
-#include "bootstrap_os.h"
 #include "mvBHboardEnvSpec.h"
+#include "bootstrap_os.h"
 
 /***************************   defined ******************************/
 
@@ -88,18 +88,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MAX_BOARD_CONFIG_OPTION 4
 #define MV_IO_EXP_MAX_REGS    	3
 
-#define FREQ_MODES_NUM_6610		0
-#define FREQ_MODES_NUM_6650		4
-#define FREQ_MODES_NUM_6660		5
 
-
-#define MV_USER_SAR_FREQ_MODES { \
-		{ 6,  400,  400, 200 }, \
-		{ 14, 600,  400, 300 }, \
-		{ 20, 800,  400, 400 }, \
-		{ 21, 800,  534, 400 }, \
-		{ 25, 1000, 500, 500 }, \
-};
 
 /**************************** enums ********************************/
 
@@ -160,13 +149,6 @@ typedef struct mvBoardTopologyConfig {
 	MV_SGMII_SPEED sgmiiSpeed;
 
 } MV_BOARD_TOPOLOGY_CONFIG;
-
-typedef struct {
-	MV_U8 id;
-	MV_U32 cpuFreq;
-	MV_U32 ddrFreq;
-	MV_U32 l2Freq;
-} MV_FREQ_MODE;
 
 /**************************** functions ***************************/
 

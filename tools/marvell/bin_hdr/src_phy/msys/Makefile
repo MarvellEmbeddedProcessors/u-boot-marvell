@@ -95,7 +95,7 @@ ifeq "$(CONFIG_DB_AC3)"  "y"
   CFLAGS += -DCONFIG_DB_AC3
 endif
 
-INCLUDE     = -I./ -I../../inc/common -I../../inc/ddr3_soc/$(BOARD) -I../../../../../include
+INCLUDE     = -I./ -I../../inc/common -I../../inc/ddr3_soc/$(BOARD) -I../../platform/sysEnv/$(BOARD) -I../../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
@@ -105,7 +105,7 @@ HOSTCPPFLAGS = $(CPPFLAGS)
 TGT = phy_msys.a
 TGT_UART = phy_msys.uart.a
 
-CSRC = mvHighSpeedEnvLib.c mvHighSpeedEnvSpec.c mvCtrlPex.c
+CSRC = mvHighSpeedEnvSpec.c mvCtrlPex.c
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))

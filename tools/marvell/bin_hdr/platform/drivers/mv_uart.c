@@ -83,7 +83,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error "No SOC define for uart in binary header."
 #endif
 #ifdef MV88F68XX
-#include "../src_phy/a38x/mvBHboardEnvSpec.h"
+#include "mvBHboardEnvSpec.h"
 #endif
 
 #include "mvUart.h"

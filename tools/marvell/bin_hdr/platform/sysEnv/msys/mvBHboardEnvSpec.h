@@ -146,4 +146,3 @@ typedef MV_STATUS (*loadTopologyFuncPtr)(SERDES_MAP  *serdesMapArray);
 MV_U8 mvHwsBoardIdGet(MV_VOID);
 
 #endif /* __INCmvBHboardEnvSpech */
-

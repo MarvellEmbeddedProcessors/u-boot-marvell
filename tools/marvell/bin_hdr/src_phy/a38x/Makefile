@@ -126,7 +126,7 @@ ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_RD_BOBCAT2
 endif
 
-INCLUDE     = -I./ -I../../inc/common -I../../inc/ddr3_soc/$(BOARD) -I../../../../../include
+INCLUDE     = -I./ -I../../inc/common -I../../inc/ddr3_soc/$(BOARD) -I../../platform/sysEnv/$(BOARD) -I../../../../../include
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 
@@ -136,8 +136,7 @@ HOSTCPPFLAGS = $(CPPFLAGS)
 TGT = phy_a38x.a
 TGT_UART = phy_a38x.uart.a
 
-#CSRC =  mvBHboardEnvSpec.c mvHighSpeedEnvLib.c
-CSRC = mvBHboardEnvSpec.c mvCtrlPex.c mvHighSpeedEnvLib.c
+CSRC = mvCtrlPex.c mvHighSpeedEnvLib.c
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))

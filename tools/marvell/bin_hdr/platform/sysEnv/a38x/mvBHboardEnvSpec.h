@@ -64,7 +64,7 @@
 #ifndef __INCmvBHboardEnvSpech
 #define __INCmvBHboardEnvSpech
 
-#include "mvHighSpeedEnvSpec.h"
+//#include "mvHighSpeedEnvSpec.h"
 
 /********************************* Definitions ********************************/
 
@@ -147,16 +147,6 @@
 
 #define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
 
-/* A generic function pointer for loading the board topology map */
-typedef MV_STATUS (*loadTopologyFuncPtr)(SERDES_MAP  *serdesMapArray);
-
-/*********************************** Structs **********************************/
-
-/*********************************** Globals **********************************/
-
-/*************************** Functions declarations ***************************/
-
-MV_U8 mvHwsBoardIdGet(MV_VOID);
 
 /**************************************************************************
  * mvBoardTclkGet -
@@ -168,65 +158,44 @@ MV_U8 mvHwsBoardIdGet(MV_VOID);
  ***************************************************************************/
 MV_U32 mvBoardTclkGet(MV_VOID);
 
-/**************************************************************************
- * mvHwsBoardTopologyLoad -
- *
- * DESCRIPTION:          Loads the board topology
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology.
- * RETURNS:              MV_OK           -   for success
- ***************************************************************************/
-MV_STATUS mvHwsBoardTopologyLoad(SERDES_MAP  *serdesMapArray);
 
 /**************************************************************************
- * mvHwsBoardTclkGet -
+ * mvBoardIdGet -
  *
- * DESCRIPTION:          Returns the board Tclk
+ * DESCRIPTION:          Returns the board ID
  * INPUT:                None.
  * OUTPUT:               None.
  * RETURNS:              Tclk
  ***************************************************************************/
-MV_U32 mvBoardTclkGet(MV_VOID);
+MV_U32 mvBoardIdGet(MV_VOID);
+
+/*******************************************************************************
+* mvBoardIdIndexGet
+*
+* DESCRIPTION:
+*	returns an index for board arrays with direct memory access, according to board id
+*
+* INPUT:
+*       boardId.
+*
+* OUTPUT:
+*       direct access index for board arrays
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_U32 mvBoardIdIndexGet(MV_U32 boardId);
 
 /**************************************************************************
- * mvHwsRefClockSet -
+ * mvHwsTwsiInitWrapper -
  *
- * DESCRIPTION:          Sets the refClock according to the serdes type
- *                       and ref clock given as input.
- * INPUT:                serdesNum       - serdes lane number.
- *                                         needed for calculating the
- *                                         address where the ref clock will
- *                                         be set.
- *                       serdesType      - PEX, USB3, SATA or SGMII.
- *                       refClock        - 25MHz or 100MHz
- * OUTPUT:               Sets the refclock in the relevant address.
- * RETURNS:              MV_OK           - for success
- *                       MV_BAD_PARAMS   - if one or more of the input
- *                                         parameters were bad
+ * DESCRIPTION:          Wrapper for initializing the TWSI unit
+ * INPUT:                None.
+ * OUTPUT:               None.
+ * RETURNS:              None.
  ***************************************************************************/
-MV_STATUS mvHwsRefClockSet
-(
-	MV_U32 serdesNum,
-	SERDES_TYPE serdesType,
-	REF_CLOCK refClock
-);
+MV_STATUS mvHwsTwsiInitWrapper(MV_VOID);
 
-/**************************************************************************
- * mvUpdateSerdesPhySelectors -
- *
- * DESCRIPTION:          Sets the bits 0-18 in the COMMON PHYS SELECTORS
- *                       register according to the topology map loaded from
- *                       the board, using commonPhysSelectorsMap
- *
- * INPUT:                serdesConfigMap -   the serdes configuration map
- *                                           loaded from the board
- * OUTPUT:               Sets the bits 0-18 in the COMMON PHYS SELECTORS
- *                       register
- * RETURNS:              MV_OK           - for success
- *                       MV_BAD_PARAM    - for a bad combination of serdes num
- *                                         and serdes type
- ***************************************************************************/
-MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP  *serdesConfigMap);
 
 #endif

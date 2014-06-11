@@ -446,11 +446,6 @@ static __inline MV_U32 MV_MEMIO_LE32_READ(void* addr)
           MV_32BIT_LE_FAST(~(bitMask)))))
 
 
-#define mvOsUDelay         uDelay
-#define mvOsMDelay(msec)   uDelay(msec*1000)
-#define mvOsDelay(sec)     mvOsMDelay(sec*1000)
-
-
 #define u32 MV_U32
 #define u16 MV_U16
 #define u8  MV_U8

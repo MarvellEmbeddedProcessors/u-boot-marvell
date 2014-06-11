@@ -66,8 +66,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _MV_HIGHSPEED_ENV_SPEC_H
 #define _MV_HIGHSPEED_ENV_SPEC_H
 
-#include "bootstrap_os.h"
 #include "mvBHboardEnvSpec.h"
+#include "bootstrap_os.h"
 
 /**************************** defined ******************************/
 
@@ -150,8 +150,6 @@ typedef struct {
 } MV_FREQ_MODE;
 
 /**************************** functions ***************************/
-
-MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);
 MV_STATUS mvBoardUpdateBoardTopologyConfig(MV_U32  boardId);
 
 

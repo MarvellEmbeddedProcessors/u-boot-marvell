@@ -64,8 +64,6 @@
 #ifndef __INCmvBHboardEnvSpech
 #define __INCmvBHboardEnvSpech
 
-//#include "mvHighSpeedEnvSpec.h"
-
 /********************************* Definitions ********************************/
 
 #define INTER_REGS_BASE                                     0xD0000000

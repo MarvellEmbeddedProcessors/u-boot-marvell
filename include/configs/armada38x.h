@@ -86,7 +86,6 @@
 #define CONFIG_OF_BOARD_SETUP	1
 */
 
-
 /* Clock */
 #ifndef __ASSEMBLY__
 	#define CONFIG_SYS_HZ                   1000
@@ -97,12 +96,8 @@
 /* DRAM detection stuff */
 #define MV_DRAM_AUTO_SIZE
 #define CONFIG_SYS_DRAM_BANKS           1
-#define CONFIG_NR_DRAM_BANKS            1
-#define CONFIG_SYS_MEMTEST_START        0x00400000
-#define CONFIG_SYS_MEMTEST_END          0x007fffff
 
 /* Include AFTER since it is affected by defines above */
 #include "mvebu-common.h"
-
 
 #endif /* __CONFIG_H */

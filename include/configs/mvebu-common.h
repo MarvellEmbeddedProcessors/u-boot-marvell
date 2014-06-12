@@ -44,7 +44,9 @@
 #define CONFIG_SYS_RESET_ADDRESS        0xffff0000
 #define CONFIG_SYS_MALLOC_BASE          (CONFIG_SYS_TEXT_BASE + (3 << 20))  /* TEXT_BASE + 3M */
 #define CONFIG_SYS_MALLOC_LEN           (5 << 20)    /* Reserve 5MB for malloc*/
-#define CONFIG_SYS_INIT_SP_ADDR         0x00FF0000   /* End of 16M scrubbed by training in bootrom */
+#define CONFIG_NR_DRAM_BANKS		(4)
+/* maybe need to set back to 0x7fff0 */
+#define CONFIG_SYS_INIT_SP_ADDR         (CONFIG_SYS_TEXT_BASE + 0xFF0000)   /* End of 16M scrubbed by training in bootrom */
 #define CONFIG_SYS_GBL_DATA_SIZE        128          /* Size in bytes reserved for init data */
 #define CONFIG_SYS_MAXARGS		32      /* Max number of command argg */
 #define CONFIG_UBOOT_SIZE		0x100000
@@ -53,6 +55,10 @@
 /* Memory reserve */
 #define CONFIG_UBOOT_MAX_MEM_SIZE	(3ll << 30)	/* Limit u-boot to 3GB */
 #define MVEBU_IO_RESERVE_BASE		0xC0000000ll
+
+/* memtest definition */
+#define CONFIG_SYS_MEMTEST_START        (CONFIG_SYS_SDRAM_BASE)
+#define CONFIG_SYS_MEMTEST_END          (CONFIG_SYS_SDRAM_BASE + 0x10000000)
 
 /* Board init functions */
 #define CONFIG_BOARD_EARLY_INIT_F	/* pre relloc board init */
@@ -63,6 +69,7 @@
 #undef  CONFIG_WATCHDOG                 /* watchdog disabled */
 
 /* Cache */
+#define CONFIG_SYS_DCACHE_OFF
 #define CONFIG_SYS_CACHELINE_SIZE       32
 
 /*
@@ -128,6 +135,15 @@
 	#define CONFIG_SYS_NO_FLASH
 #endif
 
+/* Generic Interrupt Controller Definitions */
+#define GICD_BASE                       MVEBU_GICD_BASE
+#define GICC_BASE                       MVEBU_GICC_BASE
+
+/* Flat Device Tree Definitions */
+#define CONFIG_OF_LIBFDT
+
+/* SMP Spin Table Definitions */
+#define CPU_RELEASE_ADDR               (CONFIG_SYS_SDRAM_BASE + 0x7fff0)
 
 /*********  IO Definitions **********/
 

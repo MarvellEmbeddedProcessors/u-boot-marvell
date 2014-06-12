@@ -124,6 +124,7 @@
 /* MVEBU Generic commands */
 #define CONFIG_CMD_MVEBU_MAP
 #define CONFIG_CMD_MVEBU_MPP
+#define CONFIG_CMD_MVEBU_IR
 
 
 /* No flash setup */

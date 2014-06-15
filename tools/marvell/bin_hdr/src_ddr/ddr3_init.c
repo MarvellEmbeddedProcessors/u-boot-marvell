@@ -145,7 +145,9 @@ static MV_VOID ddr3StaticTrainingInit(void);
 static MV_VOID ddr3StaticMCInit(void);
 #endif
 #if defined(DUNIT_STATIC) || defined(STATIC_TRAINING) || defined(MV_NEW_TIP)
+#ifndef MV_MSYS_BC2
 static MV_U32 ddr3GetStaticDdrMode(void);
+#endif
 /*Set 1 to use dynamic DUNIT configuration,
 	set 0(supported for A380 only) to configure DUNIT in values set by ddr3TipInitSpecificRegConfig*/
 MV_U8 genericInitController = 1;
@@ -480,13 +482,16 @@ void printDrrTargetFreq(MV_U32 uiCpuFreq, MV_U32 uiFabOpt)
 
 MV_U32 ddr3Init_(void)
 {
-	MV_U32 uiTargetFreq;
+#ifndef MV_NEW_TIP
+	MV_U32 uiTargetFreq, uiHClkTimePs, uiCpuFreq;
+#endif
 
 #if (defined(ECC_SUPPORT) || defined(DUNIT_SPD) || defined(MV88F78X60)) && !defined(MV_NEW_TIP)
 	MV_U32 uiEcc = DRAM_ECC;
 #endif
+
 	MV_U32 uiReg = 0;
-	MV_U32 uiCpuFreq, uiFabOpt, uiHClkTimePs, socNum;
+	MV_U32 uiFabOpt, socNum;
 	MV_BOOL bPLLWAPatch = FALSE;
 #if !defined(MV_NEW_TIP)
 	MV_BOOL bDQSCLKAligned = FALSE;
@@ -558,9 +563,11 @@ MV_U32 ddr3Init_(void)
 	/************************************************************************************/
 	/* Stage 0 - Set board configuration                                                */
 	/************************************************************************************/
-	uiCpuFreq = ddr3GetCpuFreq();
 	if (uiFabOpt > FAB_OPT)
 		uiFabOpt = FAB_OPT - 1;
+
+#ifndef MV_NEW_TIP
+	uiCpuFreq = ddr3GetCpuFreq();
     if (ddr3GetLogLevel() > 0) {
 #if defined(MV88F67XX)
 		printA370DrrTargetFreq(uiCpuFreq, uiFabOpt);
@@ -568,7 +575,9 @@ MV_U32 ddr3Init_(void)
         printDrrTargetFreq(uiCpuFreq, uiFabOpt);
 #endif
     }
-#if defined(MV88F66XX) || defined(MV88F672X) || defined(MV_NEW_TIP)
+#endif
+
+#if defined(MV88F66XX) || defined(MV88F672X)
     getTargetFreq(uiCpuFreq, &uiTargetFreq, &uiHClkTimePs);
 #else
 #ifndef MV_NEW_TIP
@@ -664,7 +673,7 @@ MV_U32 ddr3Init_(void)
 #endif
 #endif
 
-#ifdef DUNIT_SPD
+#if defined(DUNIT_SPD)
 	status = ddr3DunitSetup(uiEcc, uiHClkTimePs, &uiDdrWidth);
 	if (MV_OK != status) {
 		DEBUG_INIT_S("DDR3 Training Sequence - FAILED (ddr3 Dunit Setup) \n");
@@ -762,11 +771,11 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 	ddr3SaveAndSetTrainingWindows(auWinBackup);
 
 #if defined(MV_NEW_TIP)
-
+#ifndef MV_MSYS_BC2
 	if( genericInitController == 0){
 		ddr3TipInitSpecificRegConfig(0, ddr_modes[ddr3GetStaticDdrMode()].regs);
 	}
-
+#endif
 	/*Load topology for New Training IP*/
 	status = ddr3LoadTopologyMap();
 	if (MV_OK != status) {
@@ -776,6 +785,8 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 
 	/*Set log level for training lib*/
 	ddr3HwsSetLogLevel(MV_DEBUG_BLOCK_ALL, DEBUG_LEVEL_ERROR);
+
+
 
 	/*Start New Training IP*/
 	status = ddr3HwsHwTraining();

@@ -93,8 +93,13 @@ ifeq ($(BOARD),a38x)
 DEBUG_FLAGS += -Os
 DEBUG_MODE_FLAG = no
 else
+ifeq ($(BOARD),msys)
+DEBUG_FLAGS += -Os
+DEBUG_MODE_FLAG = no
+else
 DEBUG_FLAGS += -g -O0
 DEBUG_MODE_FLAG = no
+endif
 endif
 endif
 

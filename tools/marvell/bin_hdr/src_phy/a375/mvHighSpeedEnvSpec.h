@@ -66,7 +66,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _MV_HIGHSPEED_ENV_SPEC_H
 #define _MV_HIGHSPEED_ENV_SPEC_H
 
-#include "mvBHboardEnvSpec.h"
+#include "mvSysEnvLib.h"
 #include "bootstrap_os.h"
 
 /**************************** defined ******************************/

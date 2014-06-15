@@ -66,7 +66,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _MV_CTRL_PEX_H
 #define _MV_CTRL_PEX_H
 
-#include "mvBHboardEnvSpec.h"
+#include "mvSysEnvLib.h"
 
 /********************************* Definitions ********************************/
 

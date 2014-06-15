@@ -61,7 +61,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 #include "mv_os.h"
-#include "mvBHboardEnvSpec.h"
+#include "mvSysEnvLib.h"
 #include "bin_hdr_twsi.h"
 #include "mvUart.h"
 #include "util.h"

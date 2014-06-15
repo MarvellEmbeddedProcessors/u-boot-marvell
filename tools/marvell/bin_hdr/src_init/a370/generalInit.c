@@ -71,7 +71,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #if defined(DB_88F6710_PCAC)
-#include "mvBHboardEnvSpec.h"
+#include "mvSysEnvLib.h"
 #endif
 
 /* mvUartConfig() prepares UART configuration (MPP's and UART interface selection) */

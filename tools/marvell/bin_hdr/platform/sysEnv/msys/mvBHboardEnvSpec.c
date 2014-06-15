@@ -769,6 +769,7 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 /****************************************************************************/
 MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
+
 	SERDES_MAP serdesConfigurationMap[MAX_SERDES_LANES];
 	mvPrintf("mvSiliconInit\n");
 

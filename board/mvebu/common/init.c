@@ -42,10 +42,18 @@ int board_late_init(void)
 }
 #endif
 
+int __soc_early_init_f(void)
+{
+	return 0;
+}
+int soc_early_init_f(void)
+		__attribute__((weak, alias("__soc_early_init_f")));
+
 #ifdef CONFIG_BOARD_EARLY_INIT_F
 /* Do very basic stuff like board and soc detection */
 int board_early_init_f(void)
 {
+	soc_early_init_f();
 	return 0;
 }
 #endif

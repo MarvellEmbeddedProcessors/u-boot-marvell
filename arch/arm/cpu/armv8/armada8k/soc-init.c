@@ -25,6 +25,11 @@
 #include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-armada8k/armada8k.h>
 
+int soc_early_init_f(void)
+{
+	return 0;
+}
+
 int soc_get_rev(void)
 {
 	/* This should read the soc rev from some register*/

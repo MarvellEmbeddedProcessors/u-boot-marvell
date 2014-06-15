@@ -72,7 +72,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error "No SOC define for uart in binary header."
 #endif
 #include "mvHighSpeedEnvSpec.h"
-#include "mvBHboardEnvSpec.h"
+#include "mvSysEnvLib.h"
 
 #include "bin_hdr_twsi.h"
 #include "mvUart.h"

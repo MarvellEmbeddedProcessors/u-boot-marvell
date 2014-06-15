@@ -61,17 +61,23 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
-#include "mvBHboardEnvSpec.h"
+#include "mvSysEnvLib.h"
 
-#define FREQ_MODES_NUM_6720	4
+/***************************   defined ******************************/
+#define FREQ_MODES_NUM_6610		0
+#define FREQ_MODES_NUM_6650		4
+#define FREQ_MODES_NUM_6660		5
+
 
 #define MV_USER_SAR_FREQ_MODES { \
 		{ 6,  400,  400, 200 }, \
 		{ 14, 600,  400, 300 }, \
+		{ 20, 800,  400, 400 }, \
 		{ 21, 800,  534, 400 }, \
 		{ 25, 1000, 500, 500 }, \
 };
 
+/******************   Structures  ******************************/
 typedef struct {
 	MV_U8 id;
 	MV_U32 cpuFreq;
@@ -79,7 +85,46 @@ typedef struct {
 	MV_U32 l2Freq;
 } MV_FREQ_MODE;
 
+/****************************  Local function *****************************************/
+
 /****************************  function implementation *****************************************/
+
+/*******************************************************************************
+* mvBoardFreqModesNumGet
+*
+* DESCRIPTION: Return the number of supported frequency modes for this SoC
+*
+*
+* INPUT:
+*      None.
+*
+* OUTPUT:
+*      None.
+*
+* RETURN:
+*      Number of supported frequency modes
+*
+*******************************************************************************/
+MV_U32 mvBoardFreqModesNumGet(MV_VOID)
+{
+	MV_U32 freqNum;
+
+	switch (mvCtrlModelGet()) {
+	case MV_6610_DEV_ID:
+		freqNum = FREQ_MODES_NUM_6610;
+		break;
+	case MV_6650_DEV_ID:
+		freqNum = FREQ_MODES_NUM_6650;
+		break;
+	case MV_6660_DEV_ID:
+		freqNum = FREQ_MODES_NUM_6660;
+		break;
+	default:
+		return MV_ERROR;
+	}
+
+	return freqNum;
+}
 
 /*******************************************************************************
 * mvCpuL2ClkGet - Get the CPU L2 (CPU bus clock)
@@ -95,7 +140,7 @@ typedef struct {
 MV_U32 mvCpuL2ClkGet(MV_VOID)
 {
 	MV_FREQ_MODE freqTable[] = MV_USER_SAR_FREQ_MODES;
-	MV_U32 i, freqSatR, maxFreqModes = FREQ_MODES_NUM_6720;
+	MV_U32 i, freqSatR, maxFreqModes = mvBoardFreqModesNumGet();
 
 	/* read SatR value for frequency mode */
 	freqSatR = MV_REG_READ(REG_SAMPLE_RESET_HIGH_ADDR); /* 0xE8200 */
@@ -107,6 +152,7 @@ MV_U32 mvCpuL2ClkGet(MV_VOID)
 			return (MV_U32)(1000000 * freqTable[i].l2Freq);
 	return MV_ERROR;
 }
+
 /*******************************************************************************
 * mvBoardIdGet - Get Board model
 *
@@ -133,9 +179,9 @@ MV_U32 mvBoardIdGet(MV_VOID)
 
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 	#ifdef CONFIG_CUSTOMER_BOARD_0
-		gBoardId = ARMADA_375_CUSTOMER_BOARD_ID0;
+		gBoardId = AVANTA_LP_CUSTOMER_BOARD_ID0;
 	#elif CONFIG_CUSTOMER_BOARD_1
-		gBoardId = ARMADA_375_CUSTOMER_BOARD_ID1;
+		gBoardId = AVANTA_LP_CUSTOMER_BOARD_ID1;
 	#endif
 #else
 
@@ -144,41 +190,17 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	readValue = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
 	readValue = ((readValue & (0xF0)) >> 4);
 
-	readValue = 0x0;	/*HW returns 11 instead of 0 for some reason - using temp fake board ID */
-
 	if (readValue < MV_MARVELL_BOARD_NUM && readValue >= 0)
 		gBoardId = MARVELL_BOARD_ID_BASE + readValue;
 	else {
 		DEBUG_INIT_S("mvBoardIdGet: board id 0x");
 		DEBUG_INIT_FULL_D(readValue, 8);
-		DEBUG_INIT_S("is out of range. Using default board ID (DB-DB_6720_ID-BP)\n");
+		DEBUG_INIT_S("is out of range.\n");
 		return MV_INVALID_BOARD_ID;
 	}
 #endif
 
 	return gBoardId;
-}
-
-/*******************************************************************************
-* mvBoardIdIndexGet
-*
-* DESCRIPTION:
-*	returns an index for board arrays with direct memory access, according to board id
-*
-* INPUT:
-*       boardId.
-*
-* OUTPUT:
-*       direct access index for board arrays
-*
-* RETURN:
-*       None.
-*
-*******************************************************************************/
-MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
-{
-/* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
-	return boardId & (MARVELL_BOARD_ID_BASE - 1);
 }
 
 /*******************************************************************************
@@ -228,7 +250,7 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 *                         reg value
 *
 *******************************************************************************/
-MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData)
+MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_BOOL isMoreThen256, MV_U8 *pData)
 {
      MV_TWSI_SLAVE twsiSlave;
      MV_TWSI_ADDR slave;
@@ -252,7 +274,7 @@ MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_U8 *pDat
      twsiSlave.validOffset = MV_TRUE;
      /* Use offset as command */
      twsiSlave.offset = regNum;
-     twsiSlave.moreThen256 = MV_FALSE;
+	 twsiSlave.moreThen256 = isMoreThen256;
 
      if (MV_OK != mvTwsiRead(0, &twsiSlave, pData, 1)) {
             DEBUG_INIT_S("TWSI Read failed\n");
@@ -281,7 +303,19 @@ MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_U8 *pDat
 *******************************************************************************/
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
-	return MV_6720_DEV_ID;
+    MV_U32 ctrlId, satr0;
+
+    ctrlId = MV_REG_READ(DEV_ID_REG);
+    ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
+
+    if (ctrlId == 0x6660)
+	return MV_6660_DEV_ID;
+
+    satr0 = MV_REG_READ(MPP_SAMPLE_AT_RESET(0));
+    satr0 &= SATR_DEVICE_ID_2_0_MASK;
+    if (satr0 == 0)
+	return MV_6650_DEV_ID;
+    return MV_6610_DEV_ID;
 }
 
 /*******************************************************************************
@@ -303,7 +337,36 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 *******************************************************************************/
 MV_U8 mvCtrlRevisionGet(MV_VOID)
 {
+	static MV_U8 ctrlRev = 0xFF;
 	MV_U32 value;
+
+	if(ctrlRev != 0xFF) {
+		return ctrlRev;
+	}
+
 	value = MV_REG_READ(DEV_VERSION_ID_REG);
-	return  ((value & (REVISON_ID_MASK) ) >> REVISON_ID_OFFS);
+	ctrlRev = ((value & (REVISON_ID_MASK) ) >> REVISON_ID_OFFS);
+	return ctrlRev;
+}
+
+/*******************************************************************************
+* mvBoardIdIndexGet
+*
+* DESCRIPTION:
+*	returns an index for board arrays with direct memory access, according to board id
+*
+* INPUT:
+*       boardId.
+*
+* OUTPUT:
+*       direct access index for board arrays
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
+{
+/* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
+	return boardId & (MARVELL_BOARD_ID_BASE - 1);
 }

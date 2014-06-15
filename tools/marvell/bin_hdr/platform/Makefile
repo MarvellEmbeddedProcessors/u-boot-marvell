@@ -153,7 +153,7 @@ SYS_ENV = sysEnv/$(BOARD)
 
 CSRC_DRV = $(DRV)/mv_uart.c $(DRV)/mv_twsi.c $(DRV)/mv_time.c
 CSRC_UTILS = $(UTILS)/utils.c $(UTILS)/printf.c $(UTILS)/mvHwsSiliconIf.c
-CSRC_SYS_ENV = $(SYS_ENV)/mvBHboardEnvSpec.c
+CSRC_SYS_ENV = $(SYS_ENV)/mvSysEnvLib.c
 
 ifeq "$(CONFIG_ALLEYCAT3)"  "y"
   CSRC_UTILS += $(UTILS)/mv_seq_exec_ext.c

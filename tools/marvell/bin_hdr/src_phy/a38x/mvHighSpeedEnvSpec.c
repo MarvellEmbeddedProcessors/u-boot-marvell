@@ -61,7 +61,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 #include "mvHighSpeedEnvSpec.h"
-#include "mvBHboardEnvSpec.h"
+#include "mvSysEnvLib.h"
 #include "mvCtrlPex.h"
 #include "mv_seq_exec.h"
 

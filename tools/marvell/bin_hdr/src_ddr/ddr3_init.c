@@ -76,7 +76,7 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "mvUart.h"
 
 #if defined(MV88F672X)|| defined (MV88F66XX) || defined(MV_MSYS_BC2) || defined(MV_MSYS_AC3) || defined(MV88F68XX)
-#include "mvBHboardEnvSpec.h"
+#include "mvSysEnvLib.h"
 #endif
 
 #if defined(MV88F78X60)

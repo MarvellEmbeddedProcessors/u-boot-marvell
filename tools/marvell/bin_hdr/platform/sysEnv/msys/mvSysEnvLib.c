@@ -64,7 +64,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mv_os.h"
 #include "config_marvell.h"  	/* Required to identify SOC and Board */
 #include "mvHighSpeedEnvSpec.h"
-#include "mvBHboardEnvSpec.h"
+#include "mvSysEnvLib.h"
 #include "mvCtrlPex.h"
 #include "mv_seq_exec_ext.h"
 

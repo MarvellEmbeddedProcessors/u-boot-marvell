@@ -112,7 +112,7 @@ extern "C" {
 #define MV_PEX_IF_REGS_OFFSET(pexIf)\
 			(pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000)\
 	: (0X42000 + ((pexIf) % 8) * 0x40000))
-#define MV_USB_REGS_OFFSET(dev)			(0x50000 + (dev * 0x1000))
+#define MV_USB_REGS_OFFSET(dev)			(USB_XBAR_REG_BASE + 0x50000) /* USB registers through XBAR port 5 */
 #define MV_XOR_REGS_OFFSET(unit)		(0xF0800)
 #if defined(MV_INCLUDE_IDMA)
 #define MV_IDMA_REGS_OFFSET			(0x60800)
@@ -124,6 +124,7 @@ extern "C" {
 #define MV_PNC_REGS_OFFSET			(0xC8000)
 #define MV_SDMMC_REGS_OFFSET			(0xD4000)
 
+#define MV_USB2_CAPLENGTH_OFFSET(index)		(MV_USB_REGS_OFFSET(index) + 0x100)
 
 #define MV_ETH_SMI_PORT   0
 /*
@@ -284,6 +285,7 @@ typedef enum _mvTarget {
 	SPI_CS7,	/* 21 SPI_CS7			*/
 	BOOT_ROM_CS,	/* 22 BOOT_ROM_CS		*/
 	DEV_BOOCS,	/* 23 DEV_BOOCS			*/
+	USB_REGS,	/* 24 USB Internal registers	*/
 	MAX_TARGETS
 } MV_TARGET;
 
@@ -324,6 +326,7 @@ typedef enum _mvTarget {
 	{0xDF, DEV_TARGET_ID	},		/* 21 SPI_CS7 */	\
 	{0x1D, DEV_TARGET_ID	},		/* 22 BOOT_ROM_CS (Main Boot device )*/	\
 	{0x2F, DEV_TARGET_ID	},		/* 23 DEV_BOOT_CS (Secondary Boot device,)*/	\
+	{0x00, USB_TARGET_ID	},		/* 24 USB_TARGET_REGS */\
 }
 
 #define TARGETS_NAME_ARRAY	{			\
@@ -338,7 +341,7 @@ typedef enum _mvTarget {
 	"PEX0_MEM",		/*  8 PEX0_MEM */	\
 	"PEX0_IO",		/*  9 PEX0_IO */	\
 	"INTER_REGS",		/* 10 INTER_REGS */	\
-	"DFX_INTER_REGS",	/* 11 INTER_REGS */	\
+	"DFX_INTER_REGS",	/* 11 DFX_REGS */	\
 	"SWITCH_REGS",		/* 12 SWITCH_REGS */	\
 	"DMA_UART",		/* 13 DMA_UART */	\
 	"SPI_CS0",		/* 14 SPI_CS0 */	\
@@ -348,9 +351,10 @@ typedef enum _mvTarget {
 	"SPI_CS4",		/* 18 SPI_CS4 */	\
 	"SPI_CS5",		/* 19 SPI_CS5 */	\
 	"SPI_CS6",		/* 20 SPI_CS6 */	\
-	"SPI_CS7",		/* 22 SPI_CS7 */	\
-	"BOOT_ROM_CS",		/* 23 BOOT_ROM_CS */	\
-	"DEV_BOOTCS",		/* 24 DEV_BOOCS */	\
+	"SPI_CS7",		/* 21 SPI_CS7 */	\
+	"BOOT_ROM_CS",		/* 22 BOOT_ROM_CS */	\
+	"DEV_BOOTCS",		/* 23 DEV_BOOCS */	\
+	"USB_REGS",		/* 24 USB_REGS */	\
 }
 
 

@@ -286,6 +286,7 @@ typedef enum _mvTargetId {
 	DEV_TARGET_ID    = 1,	/* Port 1 -> Device port, BootROM, SPI	*/
 	SWITCH_TARGET_ID = 3,	/* Port 3 -> Switching Core Adapter/units */
 	PEX0_TARGET_ID   = 4,	/* Port 4 -> PCI Express 0		*/
+	USB_TARGET_ID    = 5,	/* Port 5 -> USB unit			*/
 	DFX_TARGET_ID    = 8,	/* Port 8 -> DFX Server			*/
 	CRYPT_TARGET_ID  = 9,	/* Port 9 --> Crypto Engine SRAM	*/
 	PNC_BM_TARGET_ID = 12,	/* Port 12 -> PNC + BM Unit		*/

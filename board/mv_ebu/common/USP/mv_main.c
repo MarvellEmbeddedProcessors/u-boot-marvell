@@ -190,6 +190,10 @@ void misc_init_r_dec_win(void)
 	char *env;
 	mvSysCntmrInit();
 
+#if defined(MV_INCLUDE_USB)
+	mvSysUsbInit();	/* initialize USB2.0 */
+#endif
+
 #if defined(MV_INCLUDE_XOR)
 	mvSysXorInit();
 #endif

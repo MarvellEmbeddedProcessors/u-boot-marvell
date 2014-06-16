@@ -145,7 +145,7 @@ extern "C" {
 #define MV_ETH_SMI_PORT   0
 
 #define MV_USB3_WIN_BASE(unitId)		MV_USB3_REGS_OFFSET(unitId)
-
+#define MV_USB2_CAPLENGTH_OFFSET(index)		(INTER_REGS_BASE + MV_USB_REGS_OFFSET(index) + 0x100)
 /*
  * Miscellanuous Controller Configurations
  */

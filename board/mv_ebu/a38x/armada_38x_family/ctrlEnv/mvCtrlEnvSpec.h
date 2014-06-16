@@ -136,6 +136,7 @@ extern "C" {
 
 /* USB3 registers */
 #define USB3_REGS_PHYS_BASE(dev)		(INTER_REGS_BASE + MV_USB3_REGS_BASE(dev))
+#define MV_USB2_CAPLENGTH_OFFSET(index)		(INTER_REGS_BASE + MV_USB_REGS_OFFSET(index) + 0x100)
 
 /*
  * Miscellanuous Controller Configurations

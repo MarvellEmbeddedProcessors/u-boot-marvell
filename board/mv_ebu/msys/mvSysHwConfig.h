@@ -128,7 +128,9 @@
          (MV_MEMIO32_READ(DFX_REGS_BASE | (offset)) & \
           MV_32BIT_LE_FAST(~bitMask))));		\
 }
-
+/*****************  USB base address ***********************/
+#define USB_XBAR_REG_BASE   0xF7000000
+#define USB_XBAR_REGS_SIZE   _1M
 /************************************************************/
 /* Device: CS0 - NOR or NAND, CS1 - SPI, CS2 - Boot ROM, CS3 - Boot device */
 /* NOR and NAND are configure to CS0 but it is posible to load
@@ -258,6 +260,7 @@
 		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* 21 SPI_CS7 */	\
 		{ { 0xf8000000,           0,      _1M             },      13,             EN },         /* 22 BOOT_ROM_CS */ \
 		{ { NOR_CS_BASE,          0,      NOR_CS_SIZE     },      9,              EN },         /* 23 DEV_BOOCS */	  \
+		{ { USB_XBAR_REG_BASE,    0,      USB_XBAR_REGS_SIZE   }, 2,              EN },        /* 24 USB_XBAR_REGS_BASE */ \
 		{ { TBL_TERM,             TBL_TERM, TBL_TERM      },      TBL_TERM,       TBL_TERM }		   \
 };
 //{{BOOTDEV_CS_BASE,	0,	BOOTDEV_CS_SIZE	},	0x4,		DIS},	/* DEV_BOOCS */

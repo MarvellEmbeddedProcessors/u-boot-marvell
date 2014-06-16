@@ -165,7 +165,7 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 	if (index == 0)
 		mvCtrlUtmiPhySelectorSet(USB_UNIT_ID);
 
-	*hccr = (struct ehci_hccr *)(INTER_REGS_BASE + MV_USB_REGS_OFFSET(index) + 0x100);
+	*hccr = (struct ehci_hccr *)(MV_USB2_CAPLENGTH_OFFSET(index));
 	*hcor = (struct ehci_hcor *)((uint32_t) (*hccr) + HC_LENGTH(ehci_readl(&(*hccr)->cr_capbase)));
 
 	debug ("Marvell init hccr %x and hcor %x hc_length %d\n",

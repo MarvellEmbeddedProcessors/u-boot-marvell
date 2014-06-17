@@ -64,68 +64,6 @@
 #.SECONDARY:
 
 include ../base.mk
-sinclude ../../../../include/autoconf.mk
-
-ifeq "$(CONFIG_DB_78x60_BP_REV2)"  "y"
-	CFLAGS += -DCONFIG_DB_78x60_BP_REV2
-endif
-ifeq "$(CONFIG_DB_78X60_PCAC_REV2)"  "y"
-	CFLAGS += -DCONFIG_DB_78X60_PCAC_REV2
-endif
-ifeq "$(CONFIG_RD_78460_SERVER_REV2)"  "y"
-	CFLAGS += -DCONFIG_RD_78460_SERVER_REV2
-endif
-ifeq "$(CONFIG_DB_784MP_GP)"  "y"
-	CFLAGS += -DCONFIG_DB_784MP_GP
-endif
-ifeq "$(CONFIG_DB_78X60_AMC)"  "y"
-	CFLAGS += -DCONFIG_DB_78X60_AMC
-endif
-ifeq "$(CONFIG_RD_78460_CUSTOMER)"  "y"
-	CFLAGS += -DCONFIG_RD_78460_CUSTOMER
-endif
-
-ifeq "$(CONFIG_DB_88F6710_BP)"  "y"
-	CFLAGS += -DCONFIG_DB_88F6710_BP
-endif
-ifeq "$(CONFIG_RD_88F6710)"  "y"
-	CFLAGS += -DCONFIG_RD_88F6710
-endif
-ifeq "$(CONFIG_DB_88F6710_PCAC )"  "y"
-	CFLAGS += -DCONFIG_DB_88F6710_PCAC
-endif
-
-ifeq "$(CONFIG_ARMADA_375)"  "y"
-  CFLAGS += -DCONFIG_ARMADA_375
-  ifeq "$(CONFIG_ALP_A375_ZX_REV)" "y"
-    CFLAGS += -DCONFIG_ALP_A375_ZX_REV
-  endif
-endif
-
-ifeq "$(CONFIG_AVANTA_LP)"  "y"
-  CFLAGS += -DCONFIG_AVANTA_LP
-  ifeq "$(CONFIG_ALP_A375_ZX_REV)" "y"
-    CFLAGS += -DCONFIG_ALP_A375_ZX_REV
-  endif
-endif
-ifeq "$(CONFIG_ARMADA_38X)"  "y"
-  CFLAGS += -DCONFIG_ARMADA_38X
-endif
-ifeq "$(CONFIG_BOBCAT2)"  "y"
-  CFLAGS += -DCONFIG_BOBCAT2
-endif
-ifeq "$(CONFIG_DB_BOBCAT2)"  "y"
-  CFLAGS += -DCONFIG_DB_BOBCAT2
-endif
-ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
-  CFLAGS += -DCONFIG_RD_BOBCAT2
-endif
-ifeq "$(CONFIG_ALLEYCAT3)"  "y"
-  CFLAGS += -DCONFIG_ALLEYCAT3
-endif
-ifeq "$(CONFIG_DB_AC3)"  "y"
-  CFLAGS += -DCONFIG_DB_AC3
-endif
 
 INCLUDE     = -I./$(BOARD) -I ../src_phy/$(BOARD) -I../inc/common -I../inc/ddr3_soc/$(BOARD) -I../platform/sysEnv/$(BOARD) -I../../../../include
 

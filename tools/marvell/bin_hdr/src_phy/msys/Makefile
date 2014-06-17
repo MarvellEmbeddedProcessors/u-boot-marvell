@@ -64,36 +64,6 @@
 #.SECONDARY:
 
 include ../../base.mk
-sinclude ../../../../../include/autoconf.mk
-
-ifeq "$(CONFIG_CUSTOMER_BOARD_SUPPORT)" "y"
-  CFLAGS += -DCONFIG_CUSTOMER_BOARD_SUPPORT
-endif
-ifeq "$(CONFIG_CUSTOMER_BOARD_0)"  "y"
-  CFLAGS += -DCONFIG_CUSTOMER_BOARD_0
-endif
-ifeq "$(CONFIG_CUSTOMER_BOARD_1)"  "y"
-  CFLAGS += -DCONFIG_CUSTOMER_BOARD_1
-endif
-
-ifeq "$(CONFIG_BOBCAT2)"  "y"
-  CFLAGS += -DCONFIG_BOBCAT2
-endif
-ifeq "$(CONFIG_DB_BOBCAT2)"  "y"
-  CFLAGS += -DCONFIG_DB_BOBCAT2
-endif
-ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
-  CFLAGS += -DCONFIG_RD_BOBCAT2
-endif
-ifeq "$(CONFIG_RD_MTL_BOBCAT2)"  "y"
-  CFLAGS += -DCONFIG_RD_BOBCAT2
-endif
-ifeq "$(CONFIG_ALLEYCAT3)"  "y"
-  CFLAGS += -DCONFIG_ALLEYCAT3
-endif
-ifeq "$(CONFIG_DB_AC3)"  "y"
-  CFLAGS += -DCONFIG_DB_AC3
-endif
 
 INCLUDE     = -I./ -I../../inc/common -I../../inc/ddr3_soc/$(BOARD) -I../../platform/sysEnv/$(BOARD) -I../../../../../include
 

@@ -207,15 +207,10 @@ MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray)
 #endif
 	/* Updating the topology map */
 	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
-		if (laneNum == topologyConfigPtr[laneNum].serdesNum) {
-			serdesMapArray[laneNum].serdesMode  =  topologyConfigPtr[laneNum].serdesMode;
-			serdesMapArray[laneNum].serdesNum   =  topologyConfigPtr[laneNum].serdesNum;
-			serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
-			serdesMapArray[laneNum].serdesType  =  topologyConfigPtr[laneNum].serdesType;
-		} else {
-			serdesMapArray[laneNum].serdesNum  = laneNum;
-			serdesMapArray[laneNum].serdesType = DEFAULT_SERDES;
-		}
+		serdesMapArray[laneNum].serdesMode  =  topologyConfigPtr[laneNum].serdesMode;
+		serdesMapArray[laneNum].serdesNum   =  topologyConfigPtr[laneNum].serdesNum;
+		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
+		serdesMapArray[laneNum].serdesType  =  topologyConfigPtr[laneNum].serdesType;
 	}
 
 	return MV_OK;

@@ -116,7 +116,7 @@ static MV_STATUS writeOpExecuteExt(
 	data   = params->data[dataArrIdx];
 	mask   = params->mask;
 
-	if (unitNum >= MAX_SERDES_LANES) {
+	if (unitNum >= MAX_SERDES_UNITS) {
 		DEBUG_INIT_S("writeOpExecuteExt: bad serdes number\n");
 		return MV_BAD_PARAM;
 	}
@@ -163,7 +163,7 @@ static MV_STATUS pollOpExecuteExt(
 	numOfLoops = params->numOfLoops;
 	waitTime   = params->waitTime;
 
-	if (unitNum >= MAX_SERDES_LANES) {
+	if (unitNum >= MAX_SERDES_UNITS) {
 		DEBUG_INIT_S("pollOpExecuteExt: bad serdes number\n");
 		return MV_BAD_PARAM;
 	}

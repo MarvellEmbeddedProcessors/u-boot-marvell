@@ -641,7 +641,7 @@ MV_STATUS mvHwsComH28nmSerdesPowerCtrl
 		regData = (1 << 2);
 		CHECK_STATUS(mvGenUnitRegisterSet(SERDES_PHY_UNIT, serdesNum, 0x15C, regData, (1 << 2)));
 
-		mvOsUDelay(1000);
+		mvOsDelay(1);
 
 		/* VDD calibration end (pulse) */
 		regData = 0;
@@ -660,6 +660,7 @@ MV_STATUS mvHwsComH28nmSerdesPowerCtrl
 			return MV_ERROR;
 
   } else {
+
 	  /*PCI-E Root Complex configuration*/
 		DEBUG_INIT_FULL_S("mvSerdesPowerUpCtrl: executing power down.. ");
 
@@ -697,11 +698,12 @@ MV_STATUS mvSerdesPowerUpCtrl(
 	switch (serdesType) {
 	case SGMII0:
 	case SGMII1:
-		return MV_OK;
+		DEBUG_INIT_FULL_C("== Init SGMII\n", (serdesType == SGMII0 ? 0 :1), 1);
 		CHECK_STATUS(mvHwsComH28nmSerdesPowerCtrl(serdesNum, serdesPowerUp));
 		return mvHwsComH28nmSerdesTxIfSelect(serdesNum, serdesTxIfNum);
 
 	case PEX0:
+		DEBUG_INIT_FULL_S("== Init PEX0\n");
 		if(mvCtrlIsPexEndPointMode() == MV_TRUE)
 			return mvCtrlPexEndPointConfig(); /*PCI-E End Point configuration*/
 		else
@@ -730,6 +732,7 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 	DEBUG_INIT_FULL_S("\n### powerUpSerdesLanes ###\n");
 
 #ifndef MV_MSYS_AC3
+	DEBUG_INIT_FULL_S("Skipping powerUpSerdesLanes\n");
 	return MV_OK;
 #endif
 	/* per Serdes Power Up */
@@ -771,22 +774,20 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
 
 	SERDES_MAP serdesConfigurationMap[MAX_SERDES_LANES];
-	mvPrintf("mvSiliconInit\n");
+
+	mvPrintf("Serdes initialization - Version: 1.0.1\n");
 
 	/* init silicon related configurations */
 	mvSiliconInit();
 
-	mvPrintf("mvSerdesSeqInit\n");
-
 	/* Init serdes sequences DB */
 	mvSerdesSeqInit();
 
-	mvPrintf("boardTopologyLoad\n");
 	CHECK_STATUS(boardTopologyLoad(serdesConfigurationMap));
 
 	CHECK_STATUS(powerUpSerdesLanes(serdesConfigurationMap));
-	/*USB2 configuration*/
-	mvPrintf("Skip USB2 Config\n");
+
+	/*USB2 configuration - TBD: re-enable it */
 	//mvCtrlUsb2Config();
 
 	DEBUG_INIT_FULL_S("### powerUpSerdesLanes ended successfully ###\n");

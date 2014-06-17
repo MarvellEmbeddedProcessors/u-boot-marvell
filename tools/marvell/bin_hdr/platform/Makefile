@@ -66,13 +66,7 @@
 
 include ../base.mk
 
-INCLUDE     = -I./ -I../inc/common -I../inc/ddr3_soc/$(BOARD) -I../src_phy/$(BOARD) -I./sysEnv/$(BOARD) -I../../../../include
-
 BOARDFLAG = $(filter -DCONFIG_%, $(CFLAGS))
-
-LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
-
-HOSTCPPFLAGS = $(CPPFLAGS)
 
 TGT = plat.a
 TGT_UART = plat.uart.a
@@ -115,7 +109,7 @@ $(TGT_UART): $(CUART_OBJ)
 	$(CP) ./$@ ../
 
 setparams:
-	$(HOSTCC) $(BOARDFLAG) -Wall $(INCLUDE) $(HOSTCPPFLAGS) -o $@  $(addsuffix .c, $(UTILS)/$@)
+	$(HOSTCC) $(BOARDFLAG) -Wall $(INCLUDE) $(CPPFLAGS) -o $@  $(addsuffix .c, $(UTILS)/$@)
 	$(CP) $@ ../
 
 clean:

@@ -65,13 +65,6 @@
 
 include ../base.mk
 
-INCLUDE     = -I$(BOARD)/  -I../inc/common -I../inc/ddr3_soc/$(BOARD) -I../../../../include
-
-LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
-
-HOSTCFLAGS   = -Wall $(INCLUDE)
-HOSTCPPFLAGS = $(CPPFLAGS)
-
 TGT = suspendWUP.a
 TGT_UART = suspendWUP.uart.a
 

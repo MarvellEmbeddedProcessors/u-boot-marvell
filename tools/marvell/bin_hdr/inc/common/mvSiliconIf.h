@@ -36,8 +36,8 @@ extern "C" {
 #undef CHECK_STATUS
 #endif
 
-#define SERVER_WIN_ID					5
-#define SWITCH_WIN_ID					4
+#define SERVER_WIN_ID					1
+#define SWITCH_WIN_ID					5
 #define SWITCH_REGS_BASE_ADDR_MASK		0xFC000000
 
 static __inline MV_U32 SWITCH_WIN_BASE_ADDR_GET(MV_VOID)
@@ -54,9 +54,6 @@ static __inline MV_U32 SWITCH_WIN_BASE_ADDR_GET(MV_VOID)
 #define SWITCH_ADDR_COMPL_SHIFT(addr)	(((addr >> 24) & 0x3) << 3)
 #define SWITCH_BUS_ADDR(addr)			((~SWITCH_REGS_BASE_ADDR_MASK & addr) |\
 										(SWITCH_WIN_BASE_ADDR_GET() & SWITCH_REGS_BASE_ADDR_MASK))
-
-#define SWITCH_MBUS_WIN_CTRL_VAL		((0x3FF << 16) | (0x3 << 4) | 0x1) /* 64MN window, Target = Switching core */
-#define SERVER_MBUS_WIN_CTRL_VAL		(0xF0081)
 
 static __inline MV_STATUS SWITCH_ADDR_COMPL_SET(MV_U32 addr)
 {

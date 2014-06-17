@@ -78,13 +78,62 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static inline MV_VOID mvMbusWinConfig()
 {
 #if defined(MV_MSYS_AC3)
-        /* open DFX server window - required to derive Tclk for UART init (mvBoardTclkGet) */
+	const MV_U32	mmuTableBase = 0x40000000;
+	MV_U32			idx, mmuTableEntry, mmuTableEntryAddr;
+
+	/* open DFX server window - required to derive Tclk for UART init (mvBoardTclkGet)
+	   The server window base has been already configured by BootROM and should not be changed */
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(SERVER_WIN_ID), SERVER_MBUS_WIN_CTRL_VAL);
-	/* UART0 does not use MPP lines: no other configuration required */
+
 
 	/* Configure memory window for SERDES switch access */
+	MV_REG_WRITE(AHB_TO_MBUS_WIN_BASE_REG(SWITCH_WIN_ID),  SWITCH_MBUS_WIN_BASE_VAL);
+	if (AHB_TO_MBUS_WIN_REMAP_LOW_REG(SWITCH_WIN_ID)) {
+		MV_REG_WRITE(AHB_TO_MBUS_WIN_REMAP_LOW_REG(SWITCH_WIN_ID),  SWITCH_MBUS_WIN_RMAP_VAL);
+		MV_REG_WRITE(AHB_TO_MBUS_WIN_REMAP_HIGH_REG(SWITCH_WIN_ID), 0);
+	}
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(SWITCH_WIN_ID),  SWITCH_MBUS_WIN_CTRL_VAL);
-        /* UART0 does not use MPP lines: no other configuration required */
+
+
+	/* Configure MMU translation table (see VMSAv7 documentation for details)
+	   The MSYS BootROM uses 1 translation table entry (4 bytes) per 1MB of memory section
+	   with the following address distribution:
+
+	   0x00000000 - 0x3FFFFFFF - DRAM, 1024 descriptors (1GB)
+	   0x40000000 - 0x400FFFFF - SRAM, one descriptor (1MB)
+	   0x40100000 - 0x7FFFFFFF - Reserved1, 1023MB
+	   0x80000000 - 0xA7FFFFFF - PCI, 640MB
+	   0xA8000000 - 0xC7FFFFFF - Reserved2, 512MB
+	   0xC8000000 - 0xC80FFFFF - CESA SRAM, 1MB
+	   0xC8100000 - 0xCFFFFFFF - Reserved3, 127MB
+	   0xD0000000 - 0xD00FFFFF - Internal registers, 1MB
+	   0xD0100000 - 0xD01FFFFF - DFX server, 1MB
+	   0xD0200000 - 0xD37FFFFF - Reserved4, 55MB
+	   0xD3800000 - 0xFFEFFFFF - Device bus, 711MB
+	   0xFFF00000 - 0xFFFFFFFF - BootROM, 1MB
+
+	   The Switch memory window fits the Reserved2 region (started from 2688th descriptor),
+	   which has to be switched from "not accessible" memory type to "strongly ordered, priviledged RW access" one
+	   */
+	mmuTableEntryAddr = mmuTableBase + 2688 * 4; /* Start of Reserved2 region */
+	/* Fill in 64 descriptors for 64MB switch window */
+	for (idx = 0; idx < 64; idx++) {
+		mmuTableEntry = MV_MEMIO_LE32_READ(mmuTableEntryAddr);
+		mmuTableEntry &= ~0xFFF;
+		mmuTableEntry |= 0x402; /* Set section access permissions for priviledged access */
+		MV_MEMIO_LE32_WRITE(mmuTableEntryAddr, mmuTableEntry);
+		mmuTableEntryAddr +=  4;
+	}
+	/* Invalidate the TLB for re-loading the translation table */
+	asm (
+		"mov	r1, #0\n\t"
+		"mcr	p15, 0, r1, c8, c7, 0\n\t"
+		"nop\n\t"
+		"nop\n\t"
+		"nop\n\t"
+		"nop\n\t"
+		"nop"
+	);
 #endif
 }
 

@@ -858,9 +858,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                                             (MV_MBUS_REGS_OFFSET + 0x4 + (winNum) * 0x10) : \
                                             (MV_MBUS_REGS_OFFSET + 0x94 + ((winNum) - 8) * 0x08))
 /* Window-X Base Register */
-#define AHB_TO_MBUS_WIN_REMAP_REG(winNum)	(((winNum) < MAX_AHB_TO_MBUS_REMAP_WINS) ? \
-                                            (MV_MBUS_REGS_OFFSET + 0x8 + (winNum) * 0x10) : \
-                                            (MV_MBUS_REGS_OFFSET + 0x98 + ((winNum) - 8) * 0x08))
+#define AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum)	((winNum < MAX_AHB_TO_MBUS_REMAP_WINS) ? \
+												(MV_MBUS_REGS_OFFSET + 0x8 + (winNum) * 0x10) : \
+												 (0))
+/* Window-X Remap Hi Register */
+#define AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum)	((winNum < MAX_AHB_TO_MBUS_REMAP_WINS) ? \
+												 (MV_MBUS_REGS_OFFSET + 0xC + (winNum) * 0x10) : \
+												 (0))
+
+#define SWITCH_MBUS_WIN_CTRL_VAL			((0x3FF << 16) | (0x3 << 4) | 0x1) /* 64MN window, Target = Switching core */
+#define SWITCH_MBUS_WIN_BASE_VAL			0xA8000000
+#define SWITCH_MBUS_WIN_RMAP_VAL			0x0
+
+#define SERVER_MBUS_WIN_CTRL_VAL			(0xF0081)
 
 /************/
 /* Security */

@@ -65,13 +65,6 @@
 
 include ../base.mk
 
-INCLUDE     = -I./$(BOARD) -I ../src_phy/$(BOARD) -I../inc/common -I../inc/ddr3_soc/$(BOARD) -I../platform/sysEnv/$(BOARD) -I../../../../include
-
-LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
-
-HOSTCFLAGS   = -Wall $(INCLUDE)
-HOSTCPPFLAGS = $(CPPFLAGS)
-
 TGT = generalInit.a
 TGT_UART = generalInit.uart.a
 

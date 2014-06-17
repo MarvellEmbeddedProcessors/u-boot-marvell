@@ -65,13 +65,6 @@
 
 include ../base.mk
 
-INCLUDE     = -I./ -I../inc/common -I../inc/ddr3_soc/$(BOARD) -I../../../../include -I../src_phy/$(BOARD) -I../platform/sysEnv/$(BOARD)
-
-LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
-
-HOSTCFLAGS   = -Wall $(INCLUDE)
-HOSTCPPFLAGS = $(CPPFLAGS)
-
 TGT = ddr_$(BOARD).a
 TGT_UART = ddr_$(BOARD).uart.a
 

@@ -181,6 +181,11 @@ endif
 
 CPUOPTS  = -mthumb -mthumb-interwork -march=armv7 -mlittle-endian
 
+BH_ROOT_DIR  = $(TOPDIR)/tools/marvell/bin_hdr
+INCLUDE      = -I$(BH_ROOT_DIR)/src_ddr -I$(BH_ROOT_DIR)/src_phy/$(BOARD) -I$(BH_ROOT_DIR)/inc/common \
+	       -I$(BH_ROOT_DIR)/inc/ddr3_soc/$(BOARD) -I$(BH_ROOT_DIR)/platform/sysEnv/$(BOARD) -I$(TOPDIR)/include
+HOSTCFLAGS   = -Wall $(INCLUDE)
+
 ifeq ($(BIN_HDR_DEBUG),1)
 DEBUG_FLAGS += -g -O0
 DEBUG_MODE_FLAG = yes

@@ -65,80 +65,10 @@
 #.SECONDARY:
 
 include ../base.mk
-sinclude ../../../../include/autoconf.mk
 
-ifeq "$(CONFIG_CUSTOMER_BOARD_SUPPORT)" "y"
-  CFLAGS += -DCONFIG_CUSTOMER_BOARD_SUPPORT
-endif
-ifeq "$(CONFIG_CUSTOMER_BOARD_0)"  "y"
-  CFLAGS += -DCONFIG_CUSTOMER_BOARD_0
-endif
-ifeq "$(CONFIG_CUSTOMER_BOARD_1)"  "y"
-  CFLAGS += -DCONFIG_CUSTOMER_BOARD_1
-endif
-
-ifeq "$(CONFIG_DB_78x60_BP_REV2)"  "y"
-  BOARDFLAG += -DCONFIG_DB_78x60_BP_REV2
-endif
-ifeq "$(CONFIG_DB_78X60_PCAC_REV2)"  "y"
-  BOARDFLAG += -DCONFIG_DB_78X60_PCAC_REV2
-endif
-ifeq "$(CONFIG_RD_78460_SERVER_REV2)"  "y"
-  BOARDFLAG += -DCONFIG_RD_78460_SERVER_REV2
-endif
-ifeq "$(CONFIG_DB_784MP_GP)"  "y"
-  BOARDFLAG += -DCONFIG_DB_784MP_GP
-endif
-ifeq "$(CONFIG_DB_78X60_AMC)"  "y"
-  BOARDFLAG += -DCONFIG_DB_78X60_AMC
-endif
-ifeq "$(CONFIG_RD_78460_CUSTOMER)"  "y"
-  BOARDFLAG += -DCONFIG_RD_78460_CUSTOMER
-endif
-
-ifeq "$(CONFIG_DB_88F6710_BP)"  "y"
-  BOARDFLAG += -DCONFIG_DB_88F6710_BP
-endif
-ifeq "$(CONFIG_RD_88F6710)"  "y"
-  BOARDFLAG += -DCONFIG_RD_88F6710
-endif
-
-ifeq "$(CONFIG_ARMADA_375)"  "y"
-  BOARDFLAG += -DCONFIG_ARMADA_375
-  ifeq "$(CONFIG_ALP_A375_ZX_REV)" "y"
-    BOARDFLAG += -DCONFIG_ALP_A375_ZX_REV
-  endif
-endif
-ifeq "$(CONFIG_AVANTA_LP)"  "y"
-  BOARDFLAG += -DCONFIG_AVANTA_LP
-  ifeq "$(CONFIG_ALP_A375_ZX_REV)" "y"
-    BOARDFLAG += -DCONFIG_ALP_A375_ZX_REV
-  endif
-endif
-ifeq "$(CONFIG_ARMADA_38X)"  "y"
-  BOARDFLAG += -DCONFIG_ARMADA_38X
-endif
-ifeq "$(CONFIG_BOBCAT2)"  "y"
-  CFLAGS += -DCONFIG_BOBCAT2
-endif
-ifeq "$(CONFIG_DB_BOBCAT2)"  "y"
-  CFLAGS += -DCONFIG_DB_BOBCAT2
-endif
-ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
-  CFLAGS += -DCONFIG_RD_BOBCAT2
-endif
-ifeq "$(CONFIG_RD_MTL_BOBCAT2)"  "y"
-  CFLAGS += -DCONFIG_RD_BOBCAT2
-endif
-ifeq "$(CONFIG_ALLEYCAT3)"  "y"
-  CFLAGS += -DCONFIG_ALLEYCAT3
-endif
-ifeq "$(CONFIG_DB_AC3)"  "y"
-  CFLAGS += -DCONFIG_DB_AC3
-endif
-
-CFLAGS += $(BOARDFLAG)
 INCLUDE     = -I./ -I../inc/common -I../inc/ddr3_soc/$(BOARD) -I../src_phy/$(BOARD) -I./sysEnv/$(BOARD) -I../../../../include
+
+BOARDFLAG = $(filter -DCONFIG_%, $(CFLAGS))
 
 LDFLAGSBIN  = -T $(LDSCRIPT) $(LDFLAGS)
 

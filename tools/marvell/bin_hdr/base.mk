@@ -61,6 +61,102 @@
 #;SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #;
 #;*******************************************************************************/
+
+sinclude $(TOPDIR)/include/autoconf.mk
+
+CFLAGS =
+
+# CUSTOMER
+ifeq "$(CONFIG_CUSTOMER_BOARD_SUPPORT)" "y"
+  CFLAGS += -DCONFIG_CUSTOMER_BOARD_SUPPORT
+endif
+ifeq "$(CONFIG_CUSTOMER_BOARD_0)"  "y"
+  CFLAGS += -DCONFIG_CUSTOMER_BOARD_0
+endif
+ifeq "$(CONFIG_CUSTOMER_BOARD_1)"  "y"
+  CFLAGS += -DCONFIG_CUSTOMER_BOARD_1
+endif
+
+# AXP
+ifeq "$(CONFIG_DB_78x60_BP_REV2)"  "y"
+  CFLAGS += -DCONFIG_DB_78x60_BP_REV2
+endif
+ifeq "$(CONFIG_DB_78X60_PCAC_REV2)"  "y"
+  CFLAGS += -DCONFIG_DB_78X60_PCAC_REV2
+endif
+ifeq "$(CONFIG_RD_78460_SERVER_REV2)"  "y"
+  CFLAGS += -DCONFIG_RD_78460_SERVER_REV2
+endif
+ifeq "$(CONFIG_DB_784MP_GP)"  "y"
+  CFLAGS += -DCONFIG_DB_784MP_GP
+endif
+ifeq "$(CONFIG_DB_78X60_AMC)"  "y"
+  CFLAGS += -DCONFIG_DB_78X60_AMC
+endif
+ifeq "$(CONFIG_RD_78460_CUSTOMER)"  "y"
+  CFLAGS += -DCONFIG_RD_78460_CUSTOMER
+endif
+
+# A370
+ifeq "$(CONFIG_DB_88F6710_BP)"  "y"
+  CFLAGS += -DCONFIG_DB_88F6710_BP
+endif
+ifeq "$(CONFIG_RD_88F6710)"  "y"
+  CFLAGS += -DCONFIG_RD_88F6710
+endif
+ifeq "$(CONFIG_DB_88F6710_PCAC)"  "y"
+  CFLAGS += -DCONFIG_DB_88F6710_PCAC
+endif
+
+# A375
+ifeq "$(CONFIG_ARMADA_375)"  "y"
+  CFLAGS += -DCONFIG_ARMADA_375
+  ifeq "$(CONFIG_ALP_A375_ZX_REV)" "y"
+    CFLAGS += -DCONFIG_ALP_A375_ZX_REV
+  endif
+endif
+
+# ALP
+ifeq "$(CONFIG_AVANTA_LP)"  "y"
+  CFLAGS += -DCONFIG_AVANTA_LP
+  ifeq "$(CONFIG_ALP_A375_ZX_REV)" "y"
+    CFLAGS += -DCONFIG_ALP_A375_ZX_REV
+  endif
+endif
+
+# A38x
+ifeq "$(CONFIG_ARMADA_38X)"  "y"
+  CFLAGS += -DCONFIG_ARMADA_38X
+endif
+
+# BOBCAT2
+ifeq "$(CONFIG_BOBCAT2)"  "y"
+  CFLAGS += -DCONFIG_BOBCAT2
+  BC2_SOC = yes
+endif
+ifeq "$(CONFIG_DB_BOBCAT2)"  "y"
+  CFLAGS += -DCONFIG_DB_BOBCAT2
+  BC2_SOC = yes
+endif
+ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
+  CFLAGS += -DCONFIG_RD_BOBCAT2
+  BC2_SOC = yes
+endif
+ifeq "$(CONFIG_RD_MTL_BOBCAT2)"  "y"
+  CFLAGS += -DCONFIG_RD_BOBCAT2
+  BC2_SOC = yes
+endif
+
+# ALLEYCAT3
+ifeq "$(CONFIG_ALLEYCAT3)"  "y"
+  CFLAGS += -DCONFIG_ALLEYCAT3
+  AC3_SOC = yes
+endif
+ifeq "$(CONFIG_DB_AC3)"  "y"
+  CFLAGS += -DCONFIG_DB_AC3
+  AC3_SOC = yes
+endif
+
 CROSS    = $(CROSS_COMPILE_BH)
 LD       = $(CROSS)ld
 CC       = $(CROSS)gcc
@@ -103,7 +199,7 @@ endif
 endif
 endif
 
-CFLAGS   = -Wall $(INCLUDE) $(DEBUG_FLAGS) $(CPUOPTS) -msoft-float -fPIE -fno-zero-initialized-in-bss -fno-unwind-tables  -mabi=aapcs
+CFLAGS   += -Wall $(INCLUDE) $(DEBUG_FLAGS) $(CPUOPTS) -msoft-float -fPIE -fno-zero-initialized-in-bss -fno-unwind-tables  -mabi=aapcs
 CPPFLAGS = $(foreach FLAG, $(MVFLAGS), $(addprefix -D, $(FLAG)))
 ASFLAGS  = $(foreach FLAG, $(MVFLAGS), $(addprefix --defsym , $(FLAG)))
 LDFLAGS  = -static -nostartfiles -unwind-tables  -nostdlib -Wl,--build-id=none

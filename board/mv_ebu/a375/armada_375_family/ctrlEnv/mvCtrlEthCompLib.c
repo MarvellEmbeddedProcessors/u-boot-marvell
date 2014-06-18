@@ -71,6 +71,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pp2/gmac/mvEthGmacRegs.h"
 #include "pp2/gbe/mvPp2Gbe.h"
 
+static void mvEthComplexPortInBandAnEnable(MV_U32 port, MV_BOOL enable)
+{
+	MV_U32 reg;
+	reg = MV_REG_READ(ETH_GMAC_AN_CTRL_REG(port));
+
+	/* Enable AnBandAnEn */
+	reg &= ~MV_ETH_IN_BAND_AN_EN_MASK;
+	reg |= (0x1 << MV_ETH_IN_BAND_AN_EN_OFFSET);
+
+	/* Disable AnDuplex, AnSpeedEn, AnFcEn */
+	if (enable == MV_FALSE) {
+		reg &= ~MV_ETH_SPEED_AUTO_NEG_MASK;
+		reg |= (0x0 << MV_ETH_SPEED_AUTO_NEG_OFFSET);
+		reg &= ~MV_ETH_FLOW_CTRL_AUTO_NEG_MASK;
+		reg |= (0x0 << MV_ETH_FLOW_CTRL_AUTO_NEG_OFFSET);
+		reg &= ~MV_ETH_DUPLEX_AUTO_NEG_MASK;
+		reg |= (0x0 << MV_ETH_DUPLEX_AUTO_NEG_OFFSET);
+	}
+	MV_REG_WRITE(ETH_GMAC_AN_CTRL_REG(port), reg);
+}
+
 static void mvEthComplexGponPhySrcSet(MV_U32 src)
 {
 	MV_U32 reg;
@@ -408,12 +429,19 @@ static void mvEthComplexMacToGbePhy(MV_U32 port, MV_U32 phy, MV_U32 phyAddr)
 
 static void mvEthComplexMacToComPhy(MV_U32 port, MV_U32 comPhy, MV_U32 ethComplexOptions)
 {
+	/* Set port as SGMII Auto-Negotiation */
+	mvEthComplexPortInBandAnEnable(port, MV_TRUE);
 	/* 0x1 for 1Gbps, 0x0 for 2.5Gbps */
-	mvEthComplexPortDpClkSrcSet(port, 0x0);
+	if (ethComplexOptions & MV_ETHCOMP_GE_MAC0_2_COMPHY_SPEED_2G)
+		mvEthComplexPortDpClkSrcSet(port, 0x0);
+	else
+		mvEthComplexPortDpClkSrcSet(port, 0x1);
 }
 
-static void mvEthComplexMac1ToPonSerdes(MV_U32 port)
+static void mvEthComplexMac1ToPonSerdes(MV_U32 port, MV_U32 ethComplexOptions)
 {
+	if (ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)
+		mvEthComplexPortInBandAnEnable(port, MV_TRUE);
 	/* 0x1 = Mac#1 is source for GponPhy */
 	mvEthComplexGponPhySrcSet(0x1);
 }
@@ -470,11 +498,11 @@ MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig)
 	if (c & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3)
 		mvEthComplexMacToGbePhy(1, 3, mvBoardPhyAddrGet(1));
 
-	if (c & MV_ETHCOMP_GE_MAC1_2_RGMII1)
+	if (c & (MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC1_2_RGMII0))
 		mvEthComplexMacToRgmii(1);
 
-	if (c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)
-		mvEthComplexMac1ToPonSerdes(1);
+	if (c & (MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP))
+		mvEthComplexMac1ToPonSerdes(1, c);
 
 	if (c & MV_ETHCOMP_SW_P0_2_GE_PHY_P0)
 		mvEthComplexSwPortToGbePhy(0, 0);

@@ -193,6 +193,7 @@ enum mvSwPortSrc {
 
 #ifdef CONFIG_MV_ETH_PP2
 MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig);
+void mvEthComplexGphyPortSmiSrcSet(MV_U32 phy, MV_U32 src);
 #else
 MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig) { /* empty */ }
 #endif

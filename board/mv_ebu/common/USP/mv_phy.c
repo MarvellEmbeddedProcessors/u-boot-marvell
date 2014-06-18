@@ -72,6 +72,7 @@
 #elif defined (MV_ETH_PP2)
 #include "pp2/gmac/mvEthGmacRegs.h"
 #include "pp2/gmac/mvEthGmacApi.h"
+#include "ctrlEnv/mvCtrlEthCompLib.h"
 #else
 #include "eth/gbe/mvEthRegs.h"
 #endif
@@ -279,8 +280,21 @@ void mvBoardEgigaPhyInit(void)
 	/* Close unnecessary internal phys */
 	if(!(ethComplex & (MV_ETHCOMP_SW_P0_2_GE_PHY_P0 | MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)))
 		mvBoardPhyShutDown(0x0);
-	/* If RGMII-1 is enabled, internal PHY #1 cannot be disabled, since
-	** GE-Phy-P1 and RGMII-1 have the same SMI-Addresses (0x1) */
+	/* Shutdown GE-PHY#1:
+	 * 1. RGMII-1 enabled & GE-PHY#1 disabled (both use same SMI address = 0x1)
+		- set NO external SMI (to avoid mismatch when accessing SMI address 0x1)
+		- shutdown GE-PHY#1 (CPU SMI access)
+		- set GE-PHY#1 SMI source as switch (to avoid future conflicts
+			when CPU access the RGMII with SMI address 0x1)
+		- restore external SMI to CPU control */
+	if((!(ethComplex & MV_ETHCOMP_SW_P1_2_GE_PHY_P1)) && (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1)) {
+		mvCtrlSmiMasterSet(NO_SMI_CTRL);
+		mvBoardPhyShutDown(0x1);
+		mvEthComplexGphyPortSmiSrcSet(1, 1);
+		mvCtrlSmiMasterSet(CPU_SMI_CTRL);
+	}
+	/* 2. RGMII-1/GE-PHY#1/PON Serdes is not connected
+		- shutdown GE-PHY#1 (CPU SMI access) */
 	if(!(ethComplex & (MV_ETHCOMP_SW_P1_2_GE_PHY_P1 | MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)))
 		mvBoardPhyShutDown(0x1);
 	if(!(ethComplex & MV_ETHCOMP_SW_P2_2_GE_PHY_P2))

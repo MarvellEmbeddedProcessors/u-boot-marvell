@@ -279,6 +279,11 @@ MV_STATUS mvBoardNameGet(char *pNameBuff, MV_U32 size)
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 {
+	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
+	if (ethPortNum == 1 && (ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES ||
+			     (ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)))
+		return MV_TRUE;
+
 	return MV_FALSE;
 }
 
@@ -1435,6 +1440,8 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 		if (ethConfig & MV_ETHCOMP_SW_P3_2_GE_PHY_P3)
 			mvOsOutput("\tGE-PHY-3 Module on Switch port #3\n");
 	}
+	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)
+		mvOsOutput("\tPON ETH SERDES on MAC1 [SFP]\n");
 
 	/* SERDES Lanes*/
 	mvOsOutput("SERDES configuration:\n");
@@ -1694,7 +1701,6 @@ MV_U32 boardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 
 	return 0xFFFFFFFF;
 }
-
 /*******************************************************************************
 * mvBoardTwsiAddrTypeGet
 *
@@ -2354,7 +2360,8 @@ MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 			isActive = MV_TRUE;
 
 	if (ethNum == 1 && ((c & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3) ||
-			(c & MV_ETHCOMP_GE_MAC1_2_RGMII1)))
+			    (c & MV_ETHCOMP_GE_MAC1_2_RGMII1) ||
+			    (c & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)))
 			isActive = MV_TRUE;
 
 	return isActive;

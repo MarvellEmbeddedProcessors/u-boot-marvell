@@ -1793,6 +1793,27 @@ MV_U32 boardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 	return 0xFFFFFFFF;
 }
 /*******************************************************************************
+* mvBoardSgmiiSfp1TxSet - enable/disable SGMII_SFP1_TX_DISABLE status
+*
+* DESCRIPTION:
+*       This function enables/disables the field status.
+*
+* INPUT:
+*       enable - Boolean to indicate requested status
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+********************************************************************************/
+MV_STATUS mvBoardSgmiiSfp1TxSet(MV_BOOL enable)
+{
+	return mvBoardIoExpValSet(0, 0, 1 , (enable ? 0x0 : 0x1));
+}
+
+/*******************************************************************************
 * mvBoardTwsiAddrTypeGet
 *
 * DESCRIPTION:

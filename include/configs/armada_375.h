@@ -74,7 +74,7 @@
 #define MV_USB
 #define MV_FS
 #define CONFIG_CMD_DATE
-
+#undef CONFIG_MAC1_2_PON_ETH_SERDES_SFP
 /*
  * Debug
  */

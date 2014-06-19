@@ -394,6 +394,7 @@ MV_VOID mvBoardPhyAddrSet(MV_U32 ethPortNum, MV_U32 smiAddr);
 MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo, MV_BOOL read);
 MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo);
 MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable);
+MV_STATUS mvBoardSgmiiSfp1TxSet(MV_BOOL enable);
 MV_U32 mvBoardTclkGet(MV_VOID);
 MV_U32 mvBoardSysClkGet(MV_VOID);
 MV_U32 mvBoardDebugLedNumGet(MV_U32 boardId);

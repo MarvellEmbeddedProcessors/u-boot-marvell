@@ -108,7 +108,7 @@ extern "C" {
 #define MV_PMU_NFABRIC_UNIT_SERV_OFFSET		(0x22000)
 #define MV_CPU_PMU_UNIT_SERV_OFFSET(cpu)	(0x22100 + (cpu) * 0x100)
 #define MV_ETH_BASE_ADDR			(0x70000)
-#define MV_ETH_REGS_OFFSET(port)		(MV_ETH_BASE_ADDR + (port)* 0x40000 )
+#define MV_ETH_REGS_OFFSET(port)		(MV_ETH_BASE_ADDR + (port) * 0x4000)
 #define MV_PEX_IF_REGS_OFFSET(pexIf)\
 			(pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000)\
 	: (0X42000 + ((pexIf) % 8) * 0x40000))

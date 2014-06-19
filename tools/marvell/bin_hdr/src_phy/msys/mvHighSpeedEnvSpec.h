@@ -68,10 +68,32 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bootstrap_os.h"
 #include "mv_seq_exec_ext.h"
 
-/********************************* Definitions ********************************/
-
-
 /********************************* Enum ********************************/
+typedef enum {
+	PEX0,
+	SGMII0,
+	SGMII1,
+	DEFAULT_SERDES,
+	LAST_SERDES_TYPE
+} SERDES_TYPE;
+
+/* Serdes baud rates */
+typedef enum {
+	__1_25Gbps,
+
+	LAST_SERDES_SPEED
+} SERDES_SPEED;
+
+/* Serdes modes */
+typedef enum {
+	PEX_ROOT_COMPLEX_x1,
+	PEX_END_POINT_x1,
+
+	SERDES_DEFAULT_MODE, /* not pex */
+
+	SERDES_LAST_MODE
+} SERDES_MODE;
+
 /* Serdes sequences */
 typedef enum {
 	REF_CLOCK__25MHz,
@@ -98,7 +120,17 @@ typedef enum {
 	SERDES_LAST_SEQ
 } SERDES_SEQ;
 
+/************************************ structures ******************************/
+typedef struct {
+	SERDES_TYPE  serdesType;
+	MV_U32		 serdesNum;
+	SERDES_SPEED serdesSpeed;
+	SERDES_MODE  serdesMode;
+} SERDES_MAP;
+
 /*********************************** Globals **********************************/
+/* A generic function pointer for loading the board topology map */
+typedef MV_STATUS (*loadTopologyFuncPtr)(SERDES_MAP  *serdesMapArray);
 
 #endif /* _MV_HIGHSPEED_ENV_SPEC_H */
 

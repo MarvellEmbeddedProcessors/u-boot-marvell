@@ -63,12 +63,24 @@
 #;*******************************************************************************/
 #.SECONDARY:
 
-include ../../base.mk
+include ../base.mk
 
-TGT = phy_msys.a
-TGT_UART = phy_msys.uart.a
+TGT = phy_$(BOARD).a
+TGT_UART = phy_$(BOARD).uart.a
 
-CSRC = mvHighSpeedEnvSpec.c mvCtrlPex.c
+CSRC = $(BOARD)/mvHighSpeedEnvSpec.c
+
+ifeq "$(CONFIG_ARMADA_38X)"  "y"
+  CSRC += $(BOARD)/mvCtrlPex.c
+endif
+
+ifeq "$(CONFIG_BOBCAT2)"  "y"
+  CSRC += $(BOARD)/mvCtrlPex.c
+endif
+
+ifeq "$(CONFIG_ALLEYCAT3)"  "y"
+  CSRC += $(BOARD)/mvCtrlPex.c
+endif
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
@@ -83,11 +95,11 @@ all:   $(TGT) $(TGT_UART)
 
 $(TGT): $(COBJ)
 	ar rcs $(TGT)  $(COBJ)
-	$(CP) ./$@ ../../
+	$(CP) ./$@ ../
 
 $(TGT_UART): $(CUART_OBJ)
 	ar rcs $(TGT_UART)  $(CUART_OBJ)
-	$(CP) ./$@ ../../
+	$(CP) ./$@ ../
 
 clean:
-	$(RM) ./*.o  ./*.a
+	$(RM) $(BOARD)/*.o  ./*.a

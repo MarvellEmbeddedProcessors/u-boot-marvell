@@ -299,7 +299,9 @@ void mvBoardEgigaPhyInit(void)
 	/* MAC0 <-> RGMII-0 on board - initialize phy through MAC0*/
 	/* MAC1 <-> GE-PHY#3 on board - initialize phy through MAC1*/
 	mvEthPhyInit(0, MV_FALSE);
+#ifndef CONFIG_MAC1_2_PON_ETH_SERDES_SFP
 	mvEthPhyInit(1, MV_FALSE);
+#endif
 
 	/* Internal GE-PHY#1,2 are not used - close unnecessary internal phys */
 	mvBoardPhyShutDown(0x1);

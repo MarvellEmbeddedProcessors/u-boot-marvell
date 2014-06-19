@@ -309,6 +309,10 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	/* write MPP's config and Board general config */
 	mvBoardConfigWrite();
 
+	/* enable SFP1 TX for SGMII */
+	if (mvBoardEthComplexConfigGet() & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)
+		mvBoardSgmiiSfp1TxSet(MV_TRUE);
+
 	/* disable all GPIO interrupts */
 	for (i = 0; i < MV_GPP_MAX_GROUP; i++) {
 		MV_REG_WRITE(GPP_INT_MASK_REG(i), 0x0);

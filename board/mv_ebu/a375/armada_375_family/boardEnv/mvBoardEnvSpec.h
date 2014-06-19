@@ -94,11 +94,12 @@
 
 #define MV_INVALID_BOARD_ID		0xFFFFFFFF
 
+#define GROUP1_DEFAULT_MPP8_15_I2C		0x22000022	/* SPI , I2C-0 */
+#define GROUP1_DEFAULT_MPP56_63_I2C		0x01144422	/* GE0 , LED_MATRIX, I2C-1 */
 /*******************************************************************************
  * ARMADA 375 Customer board - Based on DB_88F6720 */
 /******************************************************************************/
 /*SPI, NAND cases*/
-#define GROUP1_DEFAULT_MPP_SPI_I2C		0x22000022	/* SPI , I2C */
 #define A375_CUSTOMER_BOARD_0_MPP0_7		0x00020020	/* SPI */
 #define A375_CUSTOMER_BOARD_0_MPP8_15		0x22000022	/* SPI , I2C */
 #define A375_CUSTOMER_BOARD_0_MPP16_23		0x22222222	/* UART, TDM*/
@@ -123,7 +124,6 @@
  * Armada 375 DB-88F6720 board */
 /******************************************************************************/
 /*SPI, NAND cases*/
-#define GROUP1_DEFAULT_MPP_SPI_I2C	0x22000022	/* SPI , I2C */
 #define DB_88F6720_MPP0_7		0x00020020	/* SPI */
 #define DB_88F6720_MPP8_15		0x22000022	/* SPI , I2C */
 #define DB_88F6720_MPP16_23		0x22222222	/* UART, TDM*/

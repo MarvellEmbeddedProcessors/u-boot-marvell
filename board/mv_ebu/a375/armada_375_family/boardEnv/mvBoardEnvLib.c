@@ -756,6 +756,97 @@ MV_VOID mvBoardSlicUnitTypeSet(MV_U32 slicType)
 {
 	board->pBoardModTypeValue->boardMppSlic = slicType;
 }
+
+/*******************************************************************************
+* mvBoardIoExpValGet - read a specified value of a bit from IO Expanders
+*
+* DESCRIPTION:
+*       This function returns specified bit value from IO Expanders
+*
+* INPUT:
+*	regNum		- IO.exp register number
+*	expanderNum	- IO.exp number
+*	offset		- requested bit offset
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_U8  :return requested bit value , if TWSI read was succesfull, else 0xFF.
+*
+*******************************************************************************/
+MV_U8 mvBoardIoExpValGet(MV_U8 regNum, MV_U8 expanderNum, MV_U8 offset)
+{
+	MV_U8 val, mask;
+
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, expanderNum, regNum, &val) != MV_OK) {
+		mvOsPrintf("%s: Error: Read from IO Expander at 0x%x failed\n", __func__
+			   , mvBoardTwsiAddrGet(BOARD_DEV_TWSI_IO_EXPANDER, expanderNum));
+		return (MV_U8)MV_ERROR;
+	}
+
+	mask = (1 << offset);
+	return (val & mask) >> offset;
+}
+
+/*******************************************************************************
+* mvBoardIoExpValSet - write a specified bit value to IO Expanders
+*
+* DESCRIPTION:
+*       This function writes specified bit value to IO Expanders
+*
+* INPUT:
+*	regNum		- IO.exp register number
+*	expanderNum	- IO.exp number
+*	offset		- requested bit offset
+*	value		- requested bit new value
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_STATUS: MV_OK if succeeded, MV_ERROR else.
+*
+*******************************************************************************/
+MV_STATUS mvBoardIoExpValSet(MV_U8 regNum, MV_U8 expanderNum, MV_U8 offset, MV_U8 value)
+{
+	MV_U8 readVal, configVal;
+
+	/* Read Value */
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, expanderNum,
+					regNum, &readVal) != MV_OK) {
+		mvOsPrintf("%s: Error: Read from IO Expander failed\n", __func__);
+		return MV_ERROR;
+	}
+
+	/* Read Configuration Value */
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, expanderNum,
+					regNum + 6, &configVal) != MV_OK) {
+		mvOsPrintf("%s: Error: Read Configuration from IO Expander failed\n", __func__);
+		return MV_ERROR;
+	}
+
+	/* Modify Configuration value to Enable write for requested bit */
+	configVal &= ~(1 << offset);	/* clean bit of old value  */
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_IO_EXPANDER, expanderNum,
+					regNum + 6, configVal) != MV_OK) {
+		mvOsPrintf("%s: Error: Enable Write to IO Expander at 0x%x failed\n", __func__
+			   , mvBoardTwsiAddrGet(BOARD_DEV_TWSI_IO_EXPANDER, expanderNum));
+		return MV_ERROR;
+	}
+
+	/* Modify */
+	readVal &= ~(1 << offset);	/* clean bit of old value  */
+	readVal |= (value << offset);
+
+	/* Write */
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_IO_EXPANDER, expanderNum,
+					regNum + 2, readVal) != MV_OK) {
+		mvOsPrintf("%s: Error: Write to IO Expander at 0x%x failed\n", __func__
+			   , mvBoardTwsiAddrGet(BOARD_DEV_TWSI_IO_EXPANDER, expanderNum));
+		return MV_ERROR;
+	}
+
+	return MV_OK;
+}
 /*******************************************************************************
 * mvBoardMppGet - Get board dependent MPP register value
 *
@@ -2006,6 +2097,11 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	#endif
 #else
 
+/*
+ * Disabled S@R board ID read, and use static DB6720 init (there is only 1 A375 Marvell board)
+ * Motivation: Dedicated MPP's for Board ID conflicts with i2c bus #1 pull up pin
+ */
+#if 0
 	MV_U32 readValue;
 
 	readValue = MV_REG_READ(MPP_SAMPLE_AT_RESET(1));
@@ -2021,6 +2117,9 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		mvOsPrintf("%s: Error: read wrong board (%d)\n", __func__, readValue);
 		return MV_INVALID_BOARD_ID;
 	}
+#endif /* if 0 */
+
+	gBoardId = DB_6720_ID;
 #endif
 
 	return gBoardId;
@@ -2046,23 +2145,28 @@ MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 {
 	MV_TWSI_SLAVE twsiSlave;
 	MV_TWSI_ADDR slave;
-	MV_U8 data;
+	MV_U8 data, chanNum = 0;
 
 	/* TWSI init */
 	slave.type = ADDR7_BIT;
 	slave.address = 0;
-	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
 
 	DB(mvOsPrintf("Board: TWSI Read device\n"));
 	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(twsiClass, devNum);
 	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(twsiClass, devNum);
+
+	/* for A375, IO expander is on i2c bus #1 */
+	if (twsiClass == BOARD_DEV_TWSI_IO_EXPANDER)
+		chanNum = 1;
+
+	mvTwsiInit(chanNum, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
 
 	twsiSlave.validOffset = MV_TRUE;
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
 	twsiSlave.moreThen256 = MV_FALSE;
 
-	if (MV_OK != mvTwsiRead(0, &twsiSlave, &data, 1)) {
+	if (MV_OK != mvTwsiRead(chanNum, &twsiSlave, &data, 1)) {
 		mvOsPrintf("%s: Twsi Read fail\n", __func__);
 		return MV_ERROR;
 	}
@@ -2094,22 +2198,29 @@ MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 {
 	MV_TWSI_SLAVE twsiSlave;
 	MV_TWSI_ADDR slave;
+	MV_U8 chanNum = 0;
 
 	/* TWSI init */
 	slave.type = ADDR7_BIT;
 	slave.address = 0;
-	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
 
 	/* Read MPP module ID */
 	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(twsiClass, devNum);
 	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(twsiClass, devNum);
 	twsiSlave.validOffset = MV_TRUE;
+
+	/* for A375, IO expander is on i2c bus #1 */
+	if (twsiClass == BOARD_DEV_TWSI_IO_EXPANDER)
+		chanNum = 1;
+
+	mvTwsiInit(chanNum, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
+
 	DB(mvOsPrintf("%s: TWSI Write addr %x, type %x, data %x\n", __func__,
 		      twsiSlave.slaveAddr.address, twsiSlave.slaveAddr.type, regVal));
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
 	twsiSlave.moreThen256 = MV_FALSE;
-	if (MV_OK != mvTwsiWrite(0, &twsiSlave, &regVal, 1)) {
+	if (MV_OK != mvTwsiWrite(chanNum, &twsiSlave, &regVal, 1)) {
 		DB(mvOsPrintf("%s: Write S@R fail\n", __func__));
 		return MV_ERROR;
 	}

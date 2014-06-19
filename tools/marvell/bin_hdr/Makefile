@@ -112,7 +112,7 @@ LIB_GENERAL_INIT_UART = generalInit.uart.a
 LIBGCC = $(MAIN)/libgcc.lib
 TLIB = ./src_ddr/lib/ddr3_training_$(BOARDNAME).lib
 
-COMPONENT_SUBDIRS = platform src_phy/$(BOARD) src_ddr src_pm src_init
+COMPONENT_SUBDIRS = platform src_phy src_ddr src_pm src_init
 HDR_COMPONENTS = $(LIB_PLAT) $(LIB_GENERAL_INIT) $(LIB_PHY) $(LIB_DDR) $(TLIB) $(LIB_SWUP)
 HDR_COMPONENTS_UART = $(LIB_PLAT_UART) $(LIB_GENERAL_INIT_UART) $(LIB_PHY_UART) $(LIB_DDR_UART) $(TLIB) $(LIB_SWUP_UART)
 

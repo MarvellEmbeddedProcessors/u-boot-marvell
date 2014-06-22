@@ -250,7 +250,7 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 		mvNetaRxqNonOccupDescAdd(priv->port, EGIGA_DEF_RXQ, i);
 
 		/* Set  Phy & MAC addr */ /* Copy to AXP as is */
-		if (mvBoardPhyAddrGet(priv->port) != 0xFF)
+		if (mvBoardPhyAddrGet(priv->port) != -1)
 			mvNetaPhyAddrSet(priv->port, mvBoardPhyAddrGet(priv->port));
 
 		/* set new addr in hw */

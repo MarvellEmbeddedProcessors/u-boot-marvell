@@ -184,7 +184,7 @@ typedef enum _boardMacSpeed {
 
 typedef struct _boardMacInfo {
 	MV_BOARD_MAC_SPEED boardMacSpeed;
-	MV_U8	boardEthSmiAddr;
+	MV_U32	boardEthSmiAddr;
 	MV_U16	LinkCryptPortAddr;
 	MV_U8	boardEthSmiAddr0;
 } MV_BOARD_MAC_INFO;

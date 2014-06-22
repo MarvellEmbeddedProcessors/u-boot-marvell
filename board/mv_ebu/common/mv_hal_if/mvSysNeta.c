@@ -141,7 +141,10 @@ void 	mvSysNetaInit(MV_U32 portMask, MV_U32 cpuMask)
 		if (mvCtrlPwrClckGet(ETH_GIG_UNIT_ID, port) == MV_FALSE)
 			continue;
 
-		mvNetaPortPowerUp(port, mvBoardIsPortInSgmii(port), !mvBoardIsPortInGmii(port));
+		mvNetaPortPowerUp(port,
+						  mvBoardIsPortInSgmii(port),
+						  !mvBoardIsPortInGmii(port),
+						  (mvBoardPhyAddrGet(port) == 0xFF));
 		status = mvNetaWinInit(port, addrWinMap);
 		if (status != MV_OK)
 			continue;

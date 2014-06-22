@@ -215,7 +215,7 @@ extern "C" {
 #define MV_ETH_MAX_TXQ                          8
 #define MV_ETH_RXQ_TOTAL_NUM                    32      /* Total number of RXQs for usage by all ports */
 #define MV_ETH_MAX_TCONT                        16      /* Maximum number of TCONTs supported by PON port */
-#define MV_ETH_TX_CSUM_MAX_SIZE                 9800
+#define MV_ETH_TX_CSUM_MAX_SIZE                 1790
 
 /* This define describes the the support of USB */
 #define MV_USB_VERSION                          1

@@ -1465,8 +1465,8 @@ MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal)
 		if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
 			return MV_ERROR;
 
-		sar  &= ~(0x7 << 2);
-		sar  |= (freqVal & 0x7) << 2;
+		sar  &= ~(0x7);
+		sar  |= (freqVal & 0x7);
 
 		if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar)) {
 			DB(mvOsPrintf("Board: Write CpuFreq S@R fail\n"));

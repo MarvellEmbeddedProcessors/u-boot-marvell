@@ -349,6 +349,7 @@ typedef struct {
 		{   0,   0, MV_TRUE},	\
 		{ 800, 400, MV_FALSE},	\
 		{ 800, 400, MV_TRUE},	\
+		{ 0,     0, MV_TRUE}	\
 }
 
 #define MV_TM_CLK_TBL	{	\

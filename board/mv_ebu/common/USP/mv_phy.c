@@ -241,20 +241,25 @@ void mvBoardEgigaPhyInit(void)
 		if (MV_FALSE ==  mvBoardIsGbEPortConnected(i))
 			continue;
 		phyAddr = mvBoardPhyAddrGet(i);
-		/* writing the PHY address before PHY init */
-		mvNetaPhyAddrSet(i, phyAddr);
-		if (MV_ERROR == mvEthPhyInit(i, MV_FALSE)) {
-			mvNetaPhyAddrPollingDisable(i);
-			mvCtrlPwrClckSet(ETH_GIG_UNIT_ID, i, MV_FALSE);
-			mvOsOutput("PHY error - shutdown port%d\n", i);
-		}
-		else if (mvBoardIsPortInMii(i)) {
-			/* if port is MII the speed is les the 1Gbps need too change the phy advertisment */
-			mvEthPhyAdvertiseSet(phyAddr, MV_PHY_ADVERTISE_100_FULL);
-			/* after PHY advertisment change must reset PHY is needed*/
-			status = mvEthPhyReset(phyAddr, 1000);
-			if (status != MV_OK)
-				mvOsPrintf("mvEthPhyReset(port=%d) failed: status=0x%x\n", i, status);
+		if (phyAddr != 0xFF) {
+			/* writing the PHY address before PHY init */
+			mvNetaPhyAddrSet(i, phyAddr);
+			if (MV_ERROR == mvEthPhyInit(i, MV_FALSE)) {
+				mvNetaPhyAddrPollingDisable(i);
+				mvCtrlPwrClckSet(ETH_GIG_UNIT_ID, i, MV_FALSE);
+				mvOsOutput("PHY error - shutdown port%d\n", i);
+			}
+			else if (mvBoardIsPortInMii(i)) {
+				/* if port is MII the speed is les the 1Gbps need too change the phy advertisment */
+				mvEthPhyAdvertiseSet(phyAddr, MV_PHY_ADVERTISE_100_FULL);
+				/* after PHY advertisment change must reset PHY is needed*/
+				status = mvEthPhyReset(phyAddr, 1000);
+				if (status != MV_OK)
+					mvOsPrintf("mvEthPhyReset(port=%d) failed: status=0x%x\n", i, status);
+			}
+		} else {
+			/* Inband PHY control - disable PHY polling */
+			 mvNetaPhyAddrPollingDisable(i);
 		}
 	}
 

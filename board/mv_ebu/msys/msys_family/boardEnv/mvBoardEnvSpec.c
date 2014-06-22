@@ -603,8 +603,8 @@ MV_BOARD_TWSI_INFO	db_dx_ac3InfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO db_dx_ac3InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0xFF, 0x0, 0x0},
-	{BOARD_MAC_SPEED_AUTO, 0xFF, 0x0, 0x1}
+	{BOARD_MAC_SPEED_AUTO, -1, 0x0, 0x0},
+	{BOARD_MAC_SPEED_AUTO, -1, 0x0, 0x1}
 };
 
 MV_BOARD_MODULE_TYPE_INFO db_dx_ac3InfoBoardModTypeInfo[] = {

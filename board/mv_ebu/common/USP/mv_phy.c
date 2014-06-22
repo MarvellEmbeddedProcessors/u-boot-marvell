@@ -241,7 +241,7 @@ void mvBoardEgigaPhyInit(void)
 		if (MV_FALSE ==  mvBoardIsGbEPortConnected(i))
 			continue;
 		phyAddr = mvBoardPhyAddrGet(i);
-		if (phyAddr != 0xFF) {
+		if (phyAddr != -1) {
 			/* writing the PHY address before PHY init */
 			mvNetaPhyAddrSet(i, phyAddr);
 			if (MV_ERROR == mvEthPhyInit(i, MV_FALSE)) {

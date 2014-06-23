@@ -77,6 +77,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PLL1_CNFIG_OFFSET         					18
 #define PLL1_CNFIG_MASK           					0x7
 
+/* DRAM Windows */
+#define REG_XBAR_WIN_5_CTRL_ADDR					0x20050
+#define REG_XBAR_WIN_5_BASE_ADDR					0x20054
+
 #define MV_78XX0_Z1_REV		0x0
 #define MV_78XX0_A0_REV		0x1
 #define MV_78XX0_B0_REV		0x2

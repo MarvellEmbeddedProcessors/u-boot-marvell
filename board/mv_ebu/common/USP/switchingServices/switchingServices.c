@@ -264,15 +264,18 @@ static int do_cpss_env( cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[]
 	char buf[1024];
 
 	printf("Saving cpss environment variable\n");
-	setenv("setenv standalone", "");
-	setenv("bootcmd", "$standalone_mtd");
+	setenv("standalone", "");
+	setenv("bootcmd", "run standalone_mtd");
 	setenv("consoledev","ttyS0");
 	setenv("linux_loadaddr","0x2000000");
 	setenv("netdev","eth0");
 	setenv("rootpath","/tftpboot/rootfs_arm-mv7sft");
 	setenv("othbootargs","null=null");
 
-	setenv("nfsboot","setenv bootargs root=/dev/nfs rw nfsroot=$serverip:$rootpath ip=$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netdev:off console=$consoledev,$baudrate $othbootargs $linux_parts; tftp $linux_loadaddr $image_name;bootm $linux_loadaddr");
+	setenv("nfsboot","setenv bootargs root=/dev/nfs rw nfsroot=${serverip}:${rootpath} "
+					 "ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${netdev}:off "
+					 "console=${consoledev},${baudrate} ${othbootargs} ${linux_parts}; tftp ${linux_loadaddr} "
+					 "${image_name};bootm ${linux_loadaddr}");
 
 	sprintf(buf,"'spi_flash:%dm(spi_uboot)ro,%dm(spi_kernel),%dm(spi_rootfs),-(remainder)"
 		";armada-nand:%dm(nand_kernel),-(nand_rootfs)'", CFG_APPL_FLASH_PART_UBOOT_SIZE / _1M,
@@ -285,8 +288,8 @@ static int do_cpss_env( cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[]
 
 #ifdef MV_INCLUDE_SPI
 	sprintf(buf,
-		"sf probe; sf read ${loadaddr} 0x%x 0x%x; setenv bootargs mem=500M ${console} "
-		"root=/dev/mtdblock2 rw init=/linuxrc rootfstype=jffs2 rootwait mtdparts=$mtdparts "
+		"sf probe; sf read ${loadaddr} 0x%x 0x%x; setenv bootargs ${console} "
+		"root=/dev/mtdblock2 rw init=/linuxrc rootfstype=jffs2 rootwait mtdparts=${mtdparts} "
 		"${mvNetConfig}; bootm ${loadaddr} ",
 		CFG_APPL_SPI_FLASH_PART_KERNEL_START, CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE);
 #ifndef MV_NAND
@@ -300,7 +303,7 @@ static int do_cpss_env( cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[]
 
 #ifdef MV_NAND
 	sprintf(buf,
-		"nand read ${loadaddr} 0x%x 0x%x; setenv bootargs mem=500M $console mtdparts=$mtdparts "
+		"nand read ${loadaddr} 0x%x 0x%x; setenv bootargs ${console} mtdparts=${mtdparts} "
 		"ubi.mtd=5 root=ubi0:rootfs_nand rw rootfstype=ubifs ${mvNetConfig}; bootm 0x2000000;" ,
 		CFG_APPL_NAND_FLASH_PART_KERNEL_START,
 		CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE);

@@ -1134,35 +1134,59 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	if (gBoardId != -1)
 		return gBoardId;
 
-#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-	#ifdef CONFIG_BOBCAT2
-		#ifdef CONFIG_CUSTOMER_BOARD_0
-			gBoardId = BC2_CUSTOMER_BOARD_ID0;
-		#elif CONFIG_CUSTOMER_BOARD_1
-			gBoardId = BC2_CUSTOMER_BOARD_ID1;
-		#endif
-	#elif defined CONFIG_ALLEYCAT3
+#if defined CONFIG_ALLEYCAT3
+
+	#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 		#ifdef CONFIG_CUSTOMER_BOARD_0
 			gBoardId = AC3_CUSTOMER_BOARD_ID0;
 		#elif CONFIG_CUSTOMER_BOARD_1
 			gBoardId = AC3_CUSTOMER_BOARD_ID1;
 		#endif
-	#endif
-#else	/* !CONFIG_CUSTOMER_BOARD_SUPPORT */
-	#if defined(DB_BOBCAT2)
-		gBoardId = DB_DX_BC2_ID;
-	#elif defined(RD_BOBCAT2)
-		gBoardId = RD_DX_BC2_ID;
-	#elif defined(RD_MTL_BOBCAT2)
-		gBoardId = RD_MTL_BC2;
-	/* AlleyCat3 Board ID's */
-	#elif defined(DB_AC3)
-		gBoardId = DB_AC3_ID;
-	#else
-		mvOsPrintf("%s: Board ID must be defined!\n", __func__);
-		while (1)
-			continue;
-	#endif
+	#else	/* !CONFIG_CUSTOMER_BOARD_SUPPORT */
+
+	/* For Marvell Boards: Temporarily set generic board struct pointer to
+	   use S@R TWSI address, and read board ID */
+	board = marvellAC3BoardInfoTbl[mvBoardIdIndexGet(DB_AC3_ID)];
+	gBoardId = DB_AC3_ID; /* Terporary for usage by mvCtrlDevFamilyIdGet */
+	MV_U8 readValue;
+
+	if (mvBoardSarBoardIdGet(&readValue) != MV_OK) {
+		mvOsPrintf("%s: Error obtaining Board ID\n", __func__);
+		mvOsPrintf("%s: Set default board ID to DB-DXAC3-MM\n", __func__);
+		readValue = DB_AC3_ID;
+	}
+
+	if (readValue < AC3_MARVELL_BOARD_NUM)
+		gBoardId = AC3_MARVELL_BOARD_ID_BASE + readValue;
+	else {
+		mvOsPrintf("%s: Error: read wrong Board ID (%d)\n", __func__, readValue);
+		return INVALID_BOARD_ID;
+	}
+
+	#endif	/* CONFIG_CUSTOMER_BOARD_SUPPORT */
+
+#else /* CONFIG_BOBCAT2 */
+
+	#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+		#ifdef CONFIG_CUSTOMER_BOARD_0
+			gBoardId = BC2_CUSTOMER_BOARD_ID0;
+		#elif CONFIG_CUSTOMER_BOARD_1
+			gBoardId = BC2_CUSTOMER_BOARD_ID1;
+		#endif
+	#else	/* !CONFIG_CUSTOMER_BOARD_SUPPORT */
+		#if defined(DB_BOBCAT2)
+			gBoardId = DB_DX_BC2_ID;
+		#elif defined(RD_BOBCAT2)
+			gBoardId = RD_DX_BC2_ID;
+		#elif defined(RD_MTL_BOBCAT2)
+			gBoardId = RD_MTL_BC2;
+		#else
+			mvOsPrintf("%s: Board ID must be defined!\n", __func__);
+			while (1)
+				continue;
+		#endif
+	#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+
 #endif
 
 	return gBoardId;
@@ -1732,6 +1756,55 @@ MV_STATUS mvBoardPllClockSet(MV_U8 val)
 	}
 
 	DB(mvOsPrintf("Board: Write pcllclock S@R succeeded\n"));
+	return MV_OK;
+}
+/*******************************************************************************/
+MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
+		return MV_ERROR;
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(1, 1, &sar))
+		return MV_ERROR;
+
+	*value = (sar & 0x7);
+
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_STATUS mvBoardSarBoardIdSet(MV_U8 val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
+		return MV_ERROR;
+	}
+
+	if (val >= AC3_MARVELL_BOARD_NUM) {
+		mvOsPrintf("%s: Error: Unsupported board ID (%d)\n", __func__, val);
+		return MV_ERROR;
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(1, 1, &sar))
+		return MV_ERROR;
+
+	sar &= ~(0x7);
+	sar |= (val & 0x7);
+
+	if (MV_OK != mvBoardTwsiSatRSet(1, 1, sar)) {
+		DB(mvOsPrintf("Board: Write boardid S@R fail\n"));
+		return MV_ERROR;
+	}
+
+	DB(mvOsPrintf("Board: Write boardid S@R succeeded\n"));
 	return MV_OK;
 }
 

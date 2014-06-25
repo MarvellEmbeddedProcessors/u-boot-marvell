@@ -44,6 +44,7 @@ enum {
 	CMD_PCIE_MODE,
 	CMD_PCIE_CLOCK,
 	CMD_PLL_CLOCK,
+	CMD_BOARD_ID,
 #endif
 	CMD_BOOTSRC,
 	CMD_DEVICE_ID,
@@ -58,7 +59,7 @@ enum {
 	MV_U32 coreClockTbl[] = MV_CORE_CLK_TBL_BC2;
 	MV_CPUDDR_MODE cpuDdrClkTbl[] = MV_CPU_DDR_CLK_TBL_BC2;
 #elif defined(CONFIG_ALLEYCAT3)
-int defaultValue[] = { 4, 0, 1, 0, 1, 3 }; /* Core clock, CPU/DDR, PCIe mode, PCIe clock, PLL clock, BootSRC*/
+int defaultValue[] = { 4, 0, 1, 0, 1, 0, 3 }; /* Core clock, CPU/DDR, PCIe mode, PCIe clock, PLL clock, Board ID, BootSRC*/
 	MV_U32 coreClockTbl[] = MV_CORE_CLK_TBL_AC3;
 	MV_CPUDDR_MODE cpuDdrClkTbl[] = MV_CPU_DDR_CLK_TBL_AC3;
 #else
@@ -101,6 +102,8 @@ static int sar_cmd_get(const char *cmd)
 		return CMD_PCIE_CLOCK;
 	if (strcmp(cmd, "pllclock") == 0)
 		return CMD_PLL_CLOCK;
+	if (strcmp(cmd, "boardid") == 0)
+		return CMD_BOARD_ID;
 #endif
 	if (strcmp(cmd, "bootsrc") == 0)
 		return CMD_BOOTSRC;
@@ -176,6 +179,9 @@ static int do_sar_list(int mode)
 		printf("\t|  0  |          1       |\n");
 		printf("\t|  1  |         2.5      |\n");
 		printf("\t--------------------------\n");
+		break;
+	case CMD_BOARD_ID:
+		printf("Determines the board ID (0-7)\n");
 		break;
 #endif
 	case CMD_BOOTSRC:
@@ -253,6 +259,13 @@ static int do_sar_read(int mode)
 			printf("PLL VCO clock Error: failed reading PLL VCO clock\n");
 		break;
 
+	case CMD_BOARD_ID:
+		if (mvBoardSarBoardIdGet(&tmp) == MV_OK)
+			printf("boardid  = %d \n", tmp);
+		else
+			printf("boardid Error: failed reading boardid\n");
+		break;
+
 #endif
 
 	case CMD_BOOTSRC:
@@ -269,12 +282,12 @@ static int do_sar_read(int mode)
 		break;
 
 	case CMD_DUMP:
+	case CMD_UNKNOWN:
 		for (i = 0 ; i < CMD_DUMP; i++)
 			do_sar_read(i);
 		break;
 	case CMD_DEFAULT:
 		return 0;
-	case CMD_UNKNOWN:
 	default:
 		printf("Usage: sar list [options] (see help)\n");
 		return 1;
@@ -310,6 +323,9 @@ static int do_sar_write(int mode, int value)
 	case CMD_PLL_CLOCK:
 		rc = mvBoardPllClockSet(tmp);
 		break;
+	case CMD_BOARD_ID:
+		rc = mvBoardSarBoardIdSet(tmp);
+		break;
 #endif
 	case CMD_BOOTSRC:
 		rc = mvBoardBootDevSet(tmp);
@@ -319,6 +335,15 @@ static int do_sar_write(int mode, int value)
 		break;
 	case CMD_DEFAULT:
 		for (i = 0 ; i < CMD_DUMP; i++) {
+#if defined CONFIG_ALLEYCAT3
+			if (i == CMD_BOARD_ID) {
+				MV_U32 brdId = mvBoardIdGet();
+				if ((brdId < AC3_MARVELL_BOARD_ID_BASE) || (brdId >= AC3_MARVELL_MAX_BOARD_ID))
+					mvOsPrintf("Bad Board ID returned - %d! Assigning default value!\n", brdId);
+				else
+					defaultValue[i] = brdId - AC3_MARVELL_BOARD_ID_BASE; /* Update default value with real board ID*/
+			}
+#endif /* CONFIG_ALLEYCAT3 */
 			if (1 == do_sar_write(i, defaultValue[i]))
 				rc = MV_FALSE;
 			do_sar_read(i);
@@ -377,6 +402,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR list pcimode	- prints the S@R modes list\n"
 	"SatR list pciclock	- prints the S@R modes list\n"
 	"SatR list pllclock	- prints the S@R modes list\n"
+	"SatR list boardid	- prints the S@R modes list\n"
 #endif
 	"SatR list bootsrc	- prints the S@R modes list\n"
 	"SatR list deviceid	- prints the S@R modes list\n\n"
@@ -389,9 +415,10 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR read pcimode	- read and print the PCIe mode (EP/RC) S@R value\n"
 	"SatR read pciclock	- read and print the PCIe reference clock source S@R value\n"
 	"SatR read pllclock	- read and print the PLL VCO clock frequency S@R value\n"
+	"SatR read boardid	- read and print the Board ID S@R value\n"
 #endif
 	"SatR read bootsrc	- read and print the Boot source S@R value\n"
-	"SatR read deviceid	- read and print the Deviceid S@R value\n"
+	"SatR read deviceid	- read and print the Device ID S@R value\n"
 	"SatR read dump		- read and print the SAR register \n\n"
 
 	"SatR write coreclock <val>	- write the S@R with core frequency value\n"
@@ -402,9 +429,10 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR write pcimode <val>	- write the S@R with PCIe mode (EP/RC) value\n"
 	"SatR write pciclock <val>	- write the S@R with PCIe reference clock source value\n"
 	"SatR write pllclock <val>	- write the S@R with PLL VCO clock frequency value\n"
+	"SatR write boardid <val>	- write the S@R with Board ID value\n"
 #endif
 	"SatR write bootsrc  <val>	- write the S@R with Boot source value\n"
 	"SatR write deviceid <val>	- write the S@R with Device ID value\n"
-	"SatR write default		- write all S@R values to their default\n"
+	"SatR write default			- write all S@R values to their default\n"
 );
 #endif /*defined(CONFIG_CMD_SAR)*/

@@ -306,6 +306,8 @@ MV_STATUS mvBoardPcieClockGet(MV_U8 *val);
 MV_STATUS mvBoardPcieClockSet(MV_U8 val);
 MV_STATUS mvBoardPllClockGet(MV_U8 *val);
 MV_STATUS mvBoardPllClockSet(MV_U8 val);
+MV_STATUS mvBoardSarBoardIdGet(MV_U8 *val);
+MV_STATUS mvBoardSarBoardIdSet(MV_U8 val);
 
 MV_U8 mvBoardCpuCoresNumGet(MV_VOID);
 MV_STATUS mvBoardCpuCoresNumSet(MV_U8 val);

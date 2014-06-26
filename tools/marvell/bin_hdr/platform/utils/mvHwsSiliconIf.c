@@ -213,7 +213,7 @@ MV_STATUS genRegisterGet
 	MV_U32			mask
 )
 {
-	*data = MV_REG_READ(address);
+	*data = MV_MEMIO_LE32_READ(address) & mask;
 
 	return MV_OK;
 }
@@ -246,12 +246,12 @@ MV_STATUS genRegisterSet
 	MV_U32 regData;
 
 	if (mask != 0xFFFFFFFF) {
-		regData = MV_REG_READ(address);
+		regData = MV_MEMIO_LE32_READ(address);
 		regData = (regData & ~mask) | (data & mask);
 	} else
 		regData = data;
 
-	MV_REG_WRITE(address, regData);
+	MV_MEMIO_LE32_WRITE(address, regData);
 
 	return MV_OK;
 }
@@ -291,15 +291,27 @@ MV_STATUS mvGenUnitRegisterSet
 
 	/* get unit base address and unit index for current device */
 	mvUnitInfoGet(unitId, unitNum, &unitAddr, &unitIndexOffset);
-	if (unitIndexOffset == 0)
+	if ((unitNum != 0) && (unitIndexOffset == 0))
 		return MV_BAD_PARAM;
 
 	address = unitAddr + unitIndexOffset * unitNum + regOffset;
 
-	if (unitId == INTERNAL_REG_UNIT)
-		CHECK_STATUS(genRegisterSet(address, data, mask));
-	else
+	switch (unitId) {
+	case MG_UNIT:
+	case SERDES_UNIT:
+	case SERDES_PHY_UNIT:
+		/* Units requre address completion */
 		CHECK_STATUS(genSwitchRegisterSet(address, data, mask));
+		break;
+	case INTERNAL_REG_UNIT:
+	case USB_REG_UNIT:
+	case SERVER_REG_UNIT:
+		/* Direct memory access units */
+		CHECK_STATUS(genRegisterSet(address, data, mask));
+		break;
+	default:
+		return MV_BAD_PARAM;
+	}
 
 	return MV_OK;
 }
@@ -338,93 +350,29 @@ MV_STATUS mvGenUnitRegisterGet
 
 	/* get unit base address and unit index for current device */
 	mvUnitInfoGet(unitId, unitNum, &unitAddr, &unitIndexOffset);
-	if ((unitAddr == 0) || (unitIndexOffset == 0))
+	if ((unitAddr == 0) ||
+		((unitNum != 0) && (unitIndexOffset == 0)))
 		return MV_BAD_PARAM;
 
 	address = unitAddr + unitIndexOffset * unitNum + regOffset;
 
-	if (unitId == INTERNAL_REG_UNIT)
-		CHECK_STATUS(genRegisterGet(address, data, mask));
-	else
+	switch (unitId) {
+	case MG_UNIT:
+	case SERDES_UNIT:
+	case SERDES_PHY_UNIT:
+		/* Units requre address completion */
 		CHECK_STATUS(genSwitchRegisterGet(address, data, mask));
+		break;
+	case INTERNAL_REG_UNIT:
+	case USB_REG_UNIT:
+	case SERVER_REG_UNIT:
+		/* Direct memory access units */
+		CHECK_STATUS(genRegisterGet(address, data, mask));
+		break;
+	default:
+		return MV_BAD_PARAM;
+	}
 
 	return MV_OK;
 }
 
-/*******************************************************************************
-* mvServerRegisterGet
-*
-* DESCRIPTION:
-*       Read access to server registers.
-*
-* INPUTS:
-*       regOffset    -
-*       mask         -
-*
-* OUTPUTS:
-*       data      - read data
-*
-* RETURNS:
-*       0  - on success
-*       1  - on error
-*
-*******************************************************************************/
-MV_STATUS mvServerRegisterGet
-(
-	MV_U32			regOffset,
-	MV_U32			*data,
-	MV_U32			mask
-)
-{
-	static MV_U32	baseAddr = 0;
-
-	if (baseAddr == 0)
-		baseAddr = MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID));
-
-	*data = MV_MEMIO_LE32_READ(baseAddr | regOffset) & mask;
-
-	return MV_OK;
-
-}
-
-/*******************************************************************************
-* mvServerRegisterSet
-*
-* DESCRIPTION:
-*       Read access to server registers.
-*
-* INPUTS:
-*       regOffset    -
-*       data         - write data
-*       mask         -
-*
-* OUTPUTS:
-*
-* RETURNS:
-*       0  - on success
-*       1  - on error
-*
-*******************************************************************************/
-MV_STATUS mvServerRegisterSet
-(
-	MV_U32			regOffset,
-	MV_U32			data,
-	MV_U32			mask
-)
-{
-	static MV_U32	baseAddr = 0;
-	MV_U32 regData;
-
-	if (baseAddr == 0)
-		baseAddr = MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID));
-
-	if (mask != 0xFFFFFFFF) {
-		mvServerRegisterGet(regOffset, &regData, ~mask);
-		regData |= (data & mask);
-	} else
-		regData = data;
-
-	MV_MEMIO_LE32_WRITE((baseAddr | regOffset), regData);
-
-	return MV_OK;
-}

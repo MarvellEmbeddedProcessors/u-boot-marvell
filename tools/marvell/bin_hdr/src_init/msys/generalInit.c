@@ -74,7 +74,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_msys_ac3.h"
 #endif
 
-/* mvUartConfig() prepares UART configuration (MPP's and UART interface selection) */
+#define SWITCH_MBUS_WIN_CTRL_VAL			((0x3FF << 16) | (0x3 << 4) | 0x1) /* 64MB window, Target = Switching core */
+#define SWITCH_MBUS_WIN_BASE_VAL			0xA8000000
+#define SWITCH_MBUS_WIN_RMAP_VAL			0x0
+
+#define USB_MBUS_WIN_CTRL_VAL				((0xF << 16) | (0x5 << 4) | 0x1) /* 1MB window, Target = USB */
+#define USB_MBUS_WIN_BASE_VAL				0xAF000000
+#define USB_MBUS_WIN_RMAP_VAL				0
+
+#define SERVER_MBUS_WIN_CTRL_VAL			(0xF0081)
+
+
+/*****************************************************************************/
 static inline MV_VOID mvMbusWinConfig()
 {
 #if defined(MV_MSYS_AC3)
@@ -93,6 +104,14 @@ static inline MV_VOID mvMbusWinConfig()
 		MV_REG_WRITE(AHB_TO_MBUS_WIN_REMAP_HIGH_REG(SWITCH_WIN_ID), 0);
 	}
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(SWITCH_WIN_ID),  SWITCH_MBUS_WIN_CTRL_VAL);
+
+	/* Configure memory window for USB registers access */
+	MV_REG_WRITE(AHB_TO_MBUS_WIN_BASE_REG(USB_WIN_ID),  USB_MBUS_WIN_BASE_VAL);
+	if (AHB_TO_MBUS_WIN_REMAP_LOW_REG(USB_WIN_ID)) {
+		MV_REG_WRITE(AHB_TO_MBUS_WIN_REMAP_LOW_REG(USB_WIN_ID),  USB_MBUS_WIN_RMAP_VAL);
+		MV_REG_WRITE(AHB_TO_MBUS_WIN_REMAP_HIGH_REG(USB_WIN_ID), 0);
+	}
+	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(USB_WIN_ID),  USB_MBUS_WIN_CTRL_VAL);
 
 
 	/* Configure MMU translation table (see VMSAv7 documentation for details)
@@ -115,7 +134,7 @@ static inline MV_VOID mvMbusWinConfig()
 	   The Switch memory window fits the Reserved2 region (started from 2688th descriptor),
 	   which has to be switched from "not accessible" memory type to "strongly ordered, priviledged RW access" one
 	   */
-	mmuTableEntryAddr = mmuTableBase + 2688 * 4; /* Start of Reserved2 region */
+	mmuTableEntryAddr = mmuTableBase + (SWITCH_MBUS_WIN_BASE_VAL >> 18); /* Should be inside the Reserved2 region */
 	/* Fill in 64 descriptors for 64MB switch window */
 	for (idx = 0; idx < 64; idx++) {
 		mmuTableEntry = MV_MEMIO_LE32_READ(mmuTableEntryAddr);
@@ -124,6 +143,14 @@ static inline MV_VOID mvMbusWinConfig()
 		MV_MEMIO_LE32_WRITE(mmuTableEntryAddr, mmuTableEntry);
 		mmuTableEntryAddr +=  4;
 	}
+
+	/* Fill in single descriptor for 1MB USB window */
+	mmuTableEntryAddr = mmuTableBase + (USB_MBUS_WIN_BASE_VAL >> 18); /* Should be inside the Reserved2 region */
+	mmuTableEntry = MV_MEMIO_LE32_READ(mmuTableEntryAddr);
+	mmuTableEntry &= ~0xFFF;
+	mmuTableEntry |= 0x402; /* Set section access permissions for priviledged access */
+	MV_MEMIO_LE32_WRITE(mmuTableEntryAddr, mmuTableEntry);
+
 	/* Invalidate the TLB for re-loading the translation table */
 	asm (
 		"mov	r1, #0\n\t"
@@ -137,6 +164,7 @@ static inline MV_VOID mvMbusWinConfig()
 #endif
 }
 
+/*****************************************************************************/
 MV_STATUS mvGeneralInit(void)
 {
 	mvMbusWinConfig();

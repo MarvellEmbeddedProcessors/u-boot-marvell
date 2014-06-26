@@ -242,7 +242,7 @@ MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
 {
 	MV_U32 uiReg = 0;
 	/*Read AC3 SatR configuration SAR0[14]*/
-	CHECK_STATUS(mvServerRegisterGet(REG_DEVICE_SAR0_ADDR, &uiReg, BIT14));
+	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, REG_DEVICE_SAR0_ADDR, &uiReg, BIT14));
 	return  (uiReg == 0);
 }
 
@@ -252,15 +252,15 @@ MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
 
 MV_OP_EXT_PARAMS usb2PowerUpParams[] =
 {
-	/* unitunitBaseReg unitOffset   mask       USB2 data  waitTime  numOfLoops */
-	{ INTERNAL_REG_UNIT, 0x804,   0x3,        { 0x2        }, 0,        0 }, /* Phy offset 0x1 - PLL_CONTROL1  */
-	{ INTERNAL_REG_UNIT, 0x80C,   0x3000000,  { 0x2000000  }, 0,        0 }, /* Phy offset 0x3 - TX Channel control 0  */
-	{ INTERNAL_REG_UNIT, 0x800,   0x1FF007F,  { 0x600005   }, 0,        0 }, /* Phy offset 0x0 - PLL_CONTROL0  */
-	{ INTERNAL_REG_UNIT, 0x80C,   0x3000000,  { 0x3000000  }, 0,        0 }, /* Phy offset 0x3 - TX Channel control 0  */
-	{ INTERNAL_REG_UNIT, 0x804,   0x3,        { 0x3        }, 0,        0 }, /* Phy offset 0x1 - PLL_CONTROL1  */
-	{ INTERNAL_REG_UNIT, 0x808,   0x80800000, { 0x80800000 }, 1,     1000 }, /* check PLLCAL_DONE is set and IMPCAL_DONE is set*/
-	{ INTERNAL_REG_UNIT, 0x818,   0x80000000, { 0x80000000 }, 1,     1000 }, /* check REG_SQCAL_DONE  is set*/
-	{ INTERNAL_REG_UNIT, 0x800,   0x80000000, { 0x80000000 }, 1,     1000 }  /* check PLL_READY  is set*/
+	/* unitunitBaseReg unitOffset   mask       USB2 data     waitTime  numOfLoops */
+	{ USB_REG_UNIT,    0x50804,     0x3,        { 0x2        }, 0,        0 }, /* Phy offset 0x1 - PLL_CONTROL1  */
+	{ USB_REG_UNIT,    0x5080C,     0x3000000,  { 0x2000000  }, 0,        0 }, /* Phy offset 0x3 - TX Channel control 0  */
+	{ USB_REG_UNIT,    0x50800,     0x1FF007F,  { 0x600005   }, 0,        0 }, /* Phy offset 0x0 - PLL_CONTROL0  */
+	{ USB_REG_UNIT,    0x5080C,     0x3000000,  { 0x3000000  }, 0,        0 }, /* Phy offset 0x3 - TX Channel control 0  */
+	{ USB_REG_UNIT,    0x50804,     0x3,        { 0x3        }, 0,        0 }, /* Phy offset 0x1 - PLL_CONTROL1  */
+	{ USB_REG_UNIT,    0x50808,     0x80800000, { 0x80800000 }, 1,     1000 }, /* check PLLCAL_DONE is set and IMPCAL_DONE is set*/
+	{ USB_REG_UNIT,    0x50818,     0x80000000, { 0x80000000 }, 1,     1000 }, /* check REG_SQCAL_DONE  is set*/
+	{ USB_REG_UNIT,    0x50800,     0x80000000, { 0x80000000 }, 1,     1000 }  /* check PLL_READY  is set*/
 };
 
 
@@ -415,6 +415,8 @@ MV_STATUS mvSiliconInit(MV_VOID)
 	mvUnitInfoSet(MG_UNIT,				0,						AC3_INTERNAL_OFFSET);
 	mvUnitInfoSet(SERDES_UNIT,			AC3_SERDES_BASE,		AC3_SERDES_OFFSET);
 	mvUnitInfoSet(SERDES_PHY_UNIT,		AC3_SERDES_PHY_BASE,	AC3_SERDES_OFFSET);
+	mvUnitInfoSet(USB_REG_UNIT,			MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(USB_WIN_ID)) & 0xFFFF0000,		0);
+	mvUnitInfoSet(SERVER_REG_UNIT,		MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID)) & 0xFFFF0000,	0);
 
 	/* Set legacy mode address completion */
 	mvGenUnitRegisterSet(MG_UNIT, 0, 0x140, (1 << 16), (1 << 16));
@@ -549,10 +551,9 @@ MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
 MV_STATUS mvCtrlUsb2Config(MV_VOID)
 {
 	/* USB2 configuration */
-	DEBUG_INIT_FULL_S("init USB2 Phys\n");
-#if 0 /* TODO - open USB unit memory window prior to calling this */
+	DEBUG_INIT_FULL_S("init USB2 PHYs\n");
 	CHECK_STATUS(mvSeqExecExt(0 /* not relevant */, USB2_POWER_UP_SEQ));
-#endif
+
 	return MV_OK;
 }
 
@@ -604,7 +605,7 @@ MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
 {
 	MV_U32 uiReg = 0;
 	/*Read BC2 SatR configuration SAR1[16]*/
-	CHECK_STATUS(mvServerRegisterGet(REG_DEVICE_SAR1_ADDR, &uiReg, BIT16));
+	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, REG_DEVICE_SAR1_ADDR, &uiReg, BIT16));
 	return  (uiReg == 0);
 }
 
@@ -833,7 +834,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	SERDES_MAP serdesConfigurationMap[MAX_SERDES_LANES];
 
-	mvPrintf("Serdes initialization - Version: 1.0.1\n");
+	mvPrintf("Serdes initialization - Version: 1.0.2\n");
 
 	/* init silicon related configurations */
 	mvSiliconInit();
@@ -845,8 +846,8 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	CHECK_STATUS(powerUpSerdesLanes(serdesConfigurationMap));
 
-	/*USB2 configuration - TBD: re-enable it */
-	//mvCtrlUsb2Config();
+	/* USB2 configuration */
+	mvCtrlUsb2Config();
 
 	DEBUG_INIT_FULL_S("### powerUpSerdesLanes ended successfully ###\n");
 

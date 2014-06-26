@@ -38,6 +38,7 @@ extern "C" {
 
 #define SERVER_WIN_ID					1
 #define SWITCH_WIN_ID					5
+#define USB_WIN_ID						6
 #define SWITCH_REGS_BASE_ADDR_MASK		0xFC000000
 
 static __inline MV_U32 SWITCH_WIN_BASE_ADDR_GET(MV_VOID)
@@ -83,6 +84,8 @@ typedef enum
 	MG_UNIT,
 	SERDES_UNIT,
 	SERDES_PHY_UNIT,
+	USB_REG_UNIT,
+	SERVER_REG_UNIT,
 
 	LAST_UNIT
 
@@ -207,55 +210,6 @@ MV_STATUS mvGenUnitRegisterGet
 	MV_U32			mask
 );
 
-/*******************************************************************************
-* serverRegisterGet
-*
-* DESCRIPTION:
-*       Read access to server registers.
-*
-* INPUTS:
-*       regOffset    -
-*       mask         -
-*
-* OUTPUTS:
-*       data      - read data
-*
-* RETURNS:
-*       0  - on success
-*       1  - on error
-*
-*******************************************************************************/
-MV_STATUS mvServerRegisterGet
-(
-	MV_U32			regOffset,
-	MV_U32			*data,
-	MV_U32			mask
-);
-
-/*******************************************************************************
-* mvServerRegisterSet
-*
-* DESCRIPTION:
-*       Read access to server registers.
-*
-* INPUTS:
-*       regOffset    -
-*       data         - write data
-*       mask         -
-*
-* OUTPUTS:
-*
-* RETURNS:
-*       0  - on success
-*       1  - on error
-*
-*******************************************************************************/
-MV_STATUS mvServerRegisterSet
-(
-	MV_U32			regOffset,
-	MV_U32			data,
-	MV_U32			mask
-);
 
 #ifdef __cplusplus
 }

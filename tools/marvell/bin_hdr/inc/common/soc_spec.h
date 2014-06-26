@@ -866,12 +866,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 												 (MV_MBUS_REGS_OFFSET + 0xC + (winNum) * 0x10) : \
 												 (0))
 
-#define SWITCH_MBUS_WIN_CTRL_VAL			((0x3FF << 16) | (0x3 << 4) | 0x1) /* 64MN window, Target = Switching core */
-#define SWITCH_MBUS_WIN_BASE_VAL			0xA8000000
-#define SWITCH_MBUS_WIN_RMAP_VAL			0x0
-
-#define SERVER_MBUS_WIN_CTRL_VAL			(0xF0081)
-
 /************/
 /* Security */
 /************/

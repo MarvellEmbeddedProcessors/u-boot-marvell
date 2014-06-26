@@ -139,6 +139,14 @@
 	#define MV88F682X
 	#define MV88F68XX
 
+#elif defined(CONFIG_ARMADA_39X)
+/**********************************/
+/* defines for DB-6920  */
+/**********************************/
+
+/* currently using a38x define for temporary compilation support */
+	#define MV88F68XX
+
 /*********************************/
 /* defines for BOBCAT2    */
 /*********************************/

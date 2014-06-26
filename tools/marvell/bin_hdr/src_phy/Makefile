@@ -74,6 +74,10 @@ ifeq "$(CONFIG_ARMADA_38X)"  "y"
   CSRC += $(BOARD)/mvCtrlPex.c
 endif
 
+ifeq "$(CONFIG_ARMADA_39X)"  "y"
+  CSRC += $(BOARD)/mvCtrlPex.c
+endif
+
 ifeq "$(CONFIG_BOBCAT2)"  "y"
   CSRC += $(BOARD)/mvCtrlPex.c
 endif

@@ -59,7 +59,12 @@
 /*
  * General
  */
-#define MV88F68XX
+#ifdef CONFIG_ARMADA_38X
+	#define MV88F68XX
+#endif
+#ifdef CONFIG_ARMADA_39X
+	#define MV88F69XX
+#endif
 #define MV_SEC_64K
 #define MV_BOOTSIZE_512K
 #define MV_LARGE_PAGE
@@ -67,7 +72,6 @@
 #define MV_BOOTROM
 
 #if defined (CONFIG_CUSTOMER_BOARD_0) || defined (CONFIG_CUSTOMER_BOARD_1)
-#define CONFIG_ARMADA_38X
 #define CONFIG_CUSTOMER_BOARD_SUPPORT
 #endif
 
@@ -163,7 +167,11 @@ extern unsigned int mvTclkGet(void);
 #define CONFIG_BOOTP_PXE
 #define CONFIG_MENU
 #define CONFIG_BOOTP_PXE_CLIENTARCH	0x100
+#ifdef CONFIG_ARMADA_38X
 #define CONFIG_BOOTP_VCI_STRING		"U-boot.armv7.armada_38x"
+#elif defined CONFIG_ARMADA_39X
+#define CONFIG_BOOTP_VCI_STRING         "U-boot.armv7.armada_39x"
+#endif
 
 /* Flattened Device Tree (FDT) support */
 #define CONFIG_OF_LIBFDT               1
@@ -478,8 +486,13 @@ extern unsigned int mvTclkGet(void);
 /*
  * Linux boot and other
  */
+#ifdef CONFIG_ARMADA_38X
 #define MV_BOOTARGS_END         ":10.4.50.254:255.255.255.0:Armada38x:eth0:none"
 #define MV_BOOTARGS_END_SWITCH  ":::Armada38x:eth0:none"
+#elif defined CONFIG_ARMADA_39X
+#define MV_BOOTARGS_END         ":10.4.50.254:255.255.255.0:Armada39x:eth0:none"
+#define MV_BOOTARGS_END_SWITCH  ":::Armada39x:eth0:none"
+#endif
 #define RCVR_IP_ADDR            "169.254.100.100"
 	#define RCVR_LOAD_ADDR          "0x02000000"
 

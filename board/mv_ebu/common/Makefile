@@ -49,7 +49,12 @@ OSSERVICES_OBJS = $(OSSERVICES_DIR)/mvOs.o
 ifdef MAKE_SATA
 OSSERVICES_OBJS+= $(OSSERVICES_DIR)/mvOsSata.o
 endif
-BOARD_OBJS      = $(BOARD_ENV_DIR)/mvBoardEnvLib.o $(BOARD_ENV_DIR)/mvBoardEnvSpec.o
+
+BOARD_OBJS-y      = $(BOARD_ENV_DIR)/mvBoardEnvSpec.o
+BOARD_OBJS-$(CONFIG_ARMADA_39X) = $(BOARD_ENV_DIR)/mvBoardEnvSpec39x.o
+BOARD_OBJS-$(CONFIG_ARMADA_38X) = $(BOARD_ENV_DIR)/mvBoardEnvSpec38x.o
+BOARD_OBJS-y      += $(BOARD_ENV_DIR)/mvBoardEnvLib.o
+BOARD_OBJS += $(sort $(BOARD_OBJS-y))
 
 HAL_IF_OBJS =	$(HAL_IF_DIR)/mvSysSpi.o	\
 		$(HAL_IF_DIR)/mvSysNfc.o	\

@@ -77,6 +77,12 @@ extern "C" {
 #include "boardEnv/mvBoardEnvSpec.h"
 #include "twsi/mvTwsi.h"
 
+#ifdef CONFIG_ARMADA_38X
+#include "boardEnv/mvBoardEnvLib38x.h"
+#elif defined CONFIG_ARMADA_39X
+#include "boardEnv/mvBoardEnvLib39x.h"
+#endif
+
 #define ARRSZ(x)                (sizeof(x) / sizeof(x[0]))
 #define BOARD_ETH_SWITCH_PORT_NUM       7
 #define BOARD_ETH_SWITCH_SMI_SCAN_MODE	1	/* Use manual scanning mode */
@@ -385,17 +391,6 @@ typedef struct _boardInfo {
 	MV_U32  boardOptionsConfig;
 } MV_BOARD_INFO;
 
-/* {{MV_CONFIG_TYPE_ID ConfigID, twsi-ID,  Offset, ID,  isActiveForBoard[]}} */
-#define MV_BOARD_CONFIG_INFO { \
-{ MV_CONFIG_MII,		0x1,	0,	 0x4,	{ 0, 1, 0, 0} }, \
-{ MV_CONFIG_SLIC_TDM_DEVICE,	0x0,	0,	 0x1,	{ 0, 1, 0, 0} }, \
-{ MV_CONFIG_I2S_DEVICE,		0x1,	0,	 0x3,	{ 0, 1, 0, 0} }, \
-{ MV_CONFIG_SPDIF_DEVICE,	0x1,	0,	 0x2,	{ 0, 1, 0, 0} }, \
-{ MV_CONFIG_NOR,		0x4,	0,	 0xF,	{ 0, 1, 0, 0} }, \
-{ MV_CONFIG_NAND,		0x4,	0,	 0x1,	{ 0, 1, 0, 0} }, \
-{ MV_CONFIG_SDIO,		0x4,	0,	 0x2,	{ 0, 1, 0, 0} }, \
-{ MV_CONFIG_SGMII,		0x2,	0,	 0xF,	{ 0, 1, 0, 0} }, \
-};
 struct _mvBoardMppModule {
 	MV_U32 group;
 	MV_U32 mppValue;
@@ -543,27 +538,6 @@ MV_STATUS mvBoardIoExpanderGet(MV_U8 addr, MV_U8 offs, MV_U8 *pVal);
 MV_STATUS mvBoardIoExpanderSet(MV_U8 addr, MV_U8 offs, MV_U8 val);
 MV_U32 mvBoardUartPortGet(MV_VOID);
 int mvBoardNorFlashConnect(void);
-
-/*						bit    TWSI           Reg	board	*/
-/*   name		SATR-ID			Mask  offset  devID   num	active	*/
-#define MV_SAR_INFO { \
-{ "freq",	MV_SATR_CPU_DDR_L2_FREQ,	0x1F,   0,      1,      0,      {1, 1, 1}, BOARD_SATR_SWAP_BIT},\
-{ "coreclock",	MV_SATR_CORE_CLK_SELECT,	0x04,   2,      3,      0,      {0, 1, 0}, 0},\
-{ "cpusnum",	MV_SATR_CPU1_ENABLE,		0x01,	0,	2,	0,	{0, 1, 0}, 0},\
-{ "sscg",	MV_SATR_SSCG_DISABLE,		0x08,	3,	3,	0,	{0, 1, 0}, 0},\
-{ "ddr4select",	MV_SATR_DDR4_SELECT,		0x20,	5,	4,	1,	{0, 1, 0}, BOARD_SATR_READ_ONLY},\
-{ "ddrbuswidth",     MV_SATR_DDR_BUS_WIDTH,	0x08,	3,	0,	0,	{0, 1, 0}, 0},\
-{ "ddreccenable",    MV_SATR_DDR_ECC_ENABLE,	0x10,	4,	0,	0,	{0, 1, 0}, 0},\
-{ "ddreccpupselect", MV_SATR_DDR_ECC_PUP_SEL,	0x20,	5,	0,	0,	{0, 1, 0}, 0},\
-{ "bootsrc",	MV_SATR_BOOT_DEVICE,		0x3,	0,	3,	0,	{0, 1, 0}, BOARD_SATR_SWAP_BIT},\
-{ "boarsrc2",	MV_SATR_BOOT2_DEVICE,		0x1E,	1,	2,	0,	{0, 1, 0}, BOARD_SATR_SWAP_BIT},\
-{ "boardid",	MV_SATR_BOARD_ID,		0x7,	0,	0,	0,	{1, 1, 1}, 0},\
-{ "ecoversion",	MV_SATR_BOARD_ECO_VERSION,	0xff,	0,	0,	1,	{1, 1, 1}, BOARD_SATR_READ_ONLY},\
-{ "usb3port0",	MV_SATR_DB_USB3_PORT0,		0x1,	0,	1,	1,	{0, 1, 0}, 0},\
-{ "usb3port1",	MV_SATR_DB_USB3_PORT1,		0x2,	1,	1,	1,	{0, 1, 0}, 0},\
-{ "rdserdes4",	MV_SATR_RD_SERDES4_CFG,		0x4,	2,	1,	1,	{1, 0, 1}, 0},\
-{ "max_option",	MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0}, 0},\
-};
 
 
 #ifdef __cplusplus

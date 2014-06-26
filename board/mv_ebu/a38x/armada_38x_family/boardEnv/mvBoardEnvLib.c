@@ -122,7 +122,7 @@ static MV_VOID mvBoardModuleAutoDetect(MV_VOID);
 MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
 {
 /* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
-	return boardId & (MARVELL_BOARD_ID_BASE - 1);
+	return boardId & (BOARD_ID_INDEX_MASK - 1);
 }
 
 /*******************************************************************************
@@ -1983,19 +1983,19 @@ MV_U32 mvBoardIdGet(MV_VOID)
 
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 	#ifdef CONFIG_CUSTOMER_BOARD_0
-		gBoardId = ARMADA_38x_CUSTOMER_BOARD_ID0;
+		gBoardId = CUSTOMER_BOARD_ID0;
 	#elif CONFIG_CUSTOMER_BOARD_1
-		gBoardId = ARMADA_38x_CUSTOMER_BOARD_ID1;
+		gBoardId = CUSTOMER_BOARD_ID1;
 	#endif
-#else
+#else /* !CONFIG_CUSTOMER_BOARD_SUPPORT */
 	/* For Marvell Boards: Temporarily set generic board struct pointer to
 	   use S@R TWSI address, and read board ID */
-	board = marvellBoardInfoTbl[mvBoardIdIndexGet(DB_68XX_ID)];
+	board = marvellBoardInfoTbl[mvBoardIdIndexGet(MV_DEFAULT_BOARD_ID)];
 	MV_U8 readValue;
 	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, 0, &readValue) != MV_OK) {
 		mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);
-		mvOsPrintf("%s: Set default board ID to DB-88F6820-BP\n", __func__);
-		readValue = DB_68XX_ID;
+		mvOsPrintf("%s: Set default board ID to %s\n", __func__, board->boardName);
+		readValue = MV_DEFAULT_BOARD_ID;
 	}
 	readValue = readValue & 0x07;
 
@@ -2005,7 +2005,8 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		mvOsPrintf("%s: Error: read wrong board (%d)\n", __func__, readValue);
 		return MV_INVALID_BOARD_ID;
 	}
-#endif
+#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+
 	return gBoardId;
 }
 

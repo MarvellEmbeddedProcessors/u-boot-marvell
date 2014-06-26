@@ -11,6 +11,7 @@ sub HELP_MESSAGE
 	print "\t-f\tBoot device. Accepts spi, nor, nand\n";
 	print "\t-b\tBoard type. Accepts:\tavanta_lp , avanta_lp_customer0 , avanta_lp_customer1\n";
 	print "\t\t\t\t\tarmada_38x, armada_38x_customer0, armada_38x_customer1\n";
+	print "\t\t\t\t\tarmada_39x, armada_39x_customer0, armada_39x_customer1\n";
 	print "\t\t\t\t\tarmada_375, armada_375_customer0, armada_375_customer1\n";
 	print "\t\t\t\t\tbobcat2_db, bobcat2_rd, bobcat2_customer0, bobcat2_customer1\n";
 	print "\t\t\t\t\tac3_db, ac3_rd, ac3_customer0, ac3_customer1\n";
@@ -66,6 +67,9 @@ if(($opt_b eq "armada_xp_dbgp") or
 	($opt_b eq "armada_38x") or
 	($opt_b eq "armada_38x_customer0") or
 	($opt_b eq "armada_38x_customer1") or
+	($opt_b eq "armada_39x") or
+	($opt_b eq "armada_39x_customer0") or
+	($opt_b eq "armada_39x_customer1") or
 	($opt_b eq "bobcat2_db") or
 	($opt_b eq "bobcat2_rd_mtl") or
 	($opt_b eq "bobcat2_rd") or
@@ -93,6 +97,9 @@ if(($opt_b eq "armada_xp_dbgp") or
 	}
 	elsif ( (substr $board,7 , 3) eq "38x" ) {
 		$boardID="a38x";
+	}
+	elsif ( (substr $board,7 , 3) eq "39x" ) {
+		$boardID="a39x";
 	}
 	elsif ( (substr $board,0 , 7) eq "bobcat2" ) {
 		$boardID="msys-bc2";
@@ -158,7 +165,8 @@ elsif  ($opt_f eq "nand"){
 	if( ($boardID eq "axp") or
 		($boardID eq "msys-bc2") or
 		($boardID eq "msys-ac3") or
-		($boardID eq "a38x")) {
+		($boardID eq "a38x") or
+		($boardID eq "a39x")) {
 			$img_opts   = "-P 4096 -L 128 -N MLC";
 	}
 	elsif($boardID eq "a375") {
@@ -278,6 +286,7 @@ if($fail){
 if( ($boardID eq "alp") or
     ($boardID eq "msys-ac3") or
     ($boardID eq "a375") or
+    ($boardID eq "a39x") or
     ($boardID eq "a38x") ) {
 	$targetBoard = "";
 	if (($boardID eq "alp" or $boardID eq "a375") and $opt_z eq 1){

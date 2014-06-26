@@ -39,15 +39,15 @@
    are permitted provided that the following conditions are met:
 
 *   Redistributions of source code must retain the above copyright notice,
-            this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
 
 *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
 *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -62,58 +62,43 @@
 
 *******************************************************************************/
 
-/* Board specific configuration */
-/* ============================ */
-#ifndef __INCmvBoardEnvSpech
-#define __INCmvBoardEnvSpech
-
-#include "mvSysHwConfig.h"
-#ifdef CONFIG_ARMADA_38X
-#include "boardEnv/mvBoardEnvSpec38x.h"
-#elif defined CONFIG_ARMADA_39X
-#include "boardEnv/mvBoardEnvSpec39x.h"
-#endif
-
-/* Board specific configuration */
-/* ============================ */
-#ifndef MV_ASMLANGUAGE
-/* Board ID numbers */
-
-/* Armada-38x Customer boards */
-#define A38X_CUTOMER_BOARD_ID_BASE		0x0
-#define A38X_CUSTOMER_BOARD_ID0			(A38X_CUTOMER_BOARD_ID_BASE + 0)
-#define A38X_CUSTOMER_BOARD_ID1			(A38X_CUTOMER_BOARD_ID_BASE + 1)
-#define A38X_MV_MAX_CUSTOMER_BOARD_ID		(A38X_CUTOMER_BOARD_ID_BASE + 2)
-#define A38X_MV_CUSTOMER_BOARD_NUM		(A38X_MV_MAX_CUSTOMER_BOARD_ID - A38X_CUTOMER_BOARD_ID_BASE)
-
-/* Armada-38x Marvell boards */
-#define A38X_MARVELL_BOARD_ID_BASE		0x10
-#define RD_NAS_68XX_ID				(A38X_MARVELL_BOARD_ID_BASE + 0)
-#define DB_68XX_ID				(A38X_MARVELL_BOARD_ID_BASE + 1)
-#define RD_AP_68XX_ID				(A38X_MARVELL_BOARD_ID_BASE + 2)
-#define DB_AP_68XX_ID				(A38X_MARVELL_BOARD_ID_BASE + 3)
-#define A38X_MV_MAX_MARVELL_BOARD_ID		(A38X_MARVELL_BOARD_ID_BASE + 4)
-#define A38X_MV_MARVELL_BOARD_NUM		(A38X_MV_MAX_MARVELL_BOARD_ID - A38X_MARVELL_BOARD_ID_BASE)
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 
-/* Armada-39x Customer boards */
-#define A39X_CUTOMER_BOARD_ID_BASE		0x20
-#define A39X_CUSTOMER_BOARD_ID0			(A39X_CUTOMER_BOARD_ID_BASE + 0)
-#define A39X_CUSTOMER_BOARD_ID1			(A39X_CUTOMER_BOARD_ID_BASE + 1)
-#define A39X_MV_MAX_CUSTOMER_BOARD_ID		(A39X_CUTOMER_BOARD_ID_BASE + 2)
-#define A39X_MV_CUSTOMER_BOARD_NUM		(A39X_MV_MAX_CUSTOMER_BOARD_ID - A39X_CUTOMER_BOARD_ID_BASE)
+#define MV_BOARD_CONFIG_INFO { \
+{ MV_CONFIG_MII,		0x1,	0,	 0x4,	{ 0, 1 } }, \
+{ MV_CONFIG_SLIC_TDM_DEVICE,	0x0,	0,	 0x1,	{ 0, 1 } }, \
+{ MV_CONFIG_I2S_DEVICE,		0x1,	0,	 0x3,	{ 0, 1 } }, \
+{ MV_CONFIG_SPDIF_DEVICE,	0x1,	0,	 0x2,	{ 0, 1 } }, \
+{ MV_CONFIG_NOR,		0x4,	0,	 0xF,	{ 0, 1 } }, \
+{ MV_CONFIG_NAND,		0x4,	0,	 0x1,	{ 0, 1 } }, \
+{ MV_CONFIG_SDIO,		0x4,	0,	 0x2,	{ 0, 1 } }, \
+{ MV_CONFIG_SGMII,		0x2,	0,	 0xF,	{ 0, 1 } }, \
+};
 
-/* Armada-39x Marvell boards */
-#define A39X_MARVELL_BOARD_ID_BASE		0x30
-#define A39X_RD_69XX_ID				(A39X_MARVELL_BOARD_ID_BASE + 0)
-#define A39X_DB_69XX_ID				(A39X_MARVELL_BOARD_ID_BASE + 1)
-#define A39X_MV_MAX_MARVELL_BOARD_ID		(A39X_MARVELL_BOARD_ID_BASE + 2)
-#define A39X_MV_MARVELL_BOARD_NUM		(A39X_MV_MAX_MARVELL_BOARD_ID - A39X_MARVELL_BOARD_ID_BASE)
+/*						bit    TWSI           Reg	board	*/
+/*   name		SATR-ID			Mask  offset  devID   num	active	*/
+#define MV_SAR_INFO { \
+{ "freq",		MV_SATR_CPU_DDR_L2_FREQ,	0x1F,	0, 1, 0, {1, 1}, BOARD_SATR_SWAP_BIT},\
+{ "coreclock",		MV_SATR_CORE_CLK_SELECT,	0x04,	2, 3, 0, {0, 1}, 0},\
+{ "cpusnum",		MV_SATR_CPU1_ENABLE,		0x01,	0, 2, 0, {0, 1}, 0},\
+{ "sscg",		MV_SATR_SSCG_DISABLE,		0x08,	3, 3, 0, {0, 1}, 0},\
+{ "ddr4select",		MV_SATR_DDR4_SELECT,		0x20,	5, 4, 1, {0, 1}, BOARD_SATR_READ_ONLY},\
+{ "ddrbuswidth",	MV_SATR_DDR_BUS_WIDTH,		0x08,	3, 0, 0, {0, 1}, 0},\
+{ "ddreccenable",	MV_SATR_DDR_ECC_ENABLE,		0x10,	4, 0, 0, {0, 1}, 0},\
+{ "ddreccpupselect",	MV_SATR_DDR_ECC_PUP_SEL,	0x20,	5, 0, 0, {0, 1}, 0},\
+{ "bootsrc",		MV_SATR_BOOT_DEVICE,		0x3,	0, 3, 0, {0, 1}, BOARD_SATR_SWAP_BIT},\
+{ "boarsrc2",		MV_SATR_BOOT2_DEVICE,		0x1E,	1, 2, 0, {0, 1}, BOARD_SATR_SWAP_BIT},\
+{ "boardid",		MV_SATR_BOARD_ID,		0x7,	0, 0, 0, {1, 1}, 0},\
+{ "ecoversion",		MV_SATR_BOARD_ECO_VERSION,	0xff,	0, 0, 1, {1, 1}, BOARD_SATR_READ_ONLY},\
+{ "usb3port0",		MV_SATR_DB_USB3_PORT0,		0x1,	0, 1, 1, {0, 1}, 0},\
+{ "usb3port1",		MV_SATR_DB_USB3_PORT1,		0x2,	1, 1, 1, {0, 1}, 0},\
+{ "rdserdes4",		MV_SATR_RD_SERDES4_CFG,		0x4,	2, 1, 1, {1, 0}, 0},\
+{ "max_option",		MV_SATR_MAX_OPTION,		0x0,	0, 0, 0, {0, 0}, 0},\
+};
 
-#define MV_INVALID_BOARD_ID			0xFFFFFFFF
-
-#define BOARD_ID_INDEX_MASK			0x10 /* Mask used to return board index via board Id */
-
-#endif  /* MV_ASMLANGUAGE */
-
-#endif  /* __INCmvBoardEnvSpech */
+#ifdef __cplusplus
+}
+#endif  /* __cplusplus */

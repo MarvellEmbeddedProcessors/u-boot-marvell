@@ -90,6 +90,10 @@ void setBoardEnv(void)
 	}
 	envVerifyAndSet("enaFPU", "no", "yes", 2);
 	envSetDefault("pxe_files_load", ":default.arm-armadaxp-db:default.arm-armadaxp:default.arm");
+	if (mvCtrlDevFamilyIdGet(0) == MV_ALLEYCAT3_DEV_ID) {
+		envSetDefault("usbType", "2");
+		envSetDefault("usb0Mode", "Host");
+	}
 }
 
 void mv_cpu_init(void)

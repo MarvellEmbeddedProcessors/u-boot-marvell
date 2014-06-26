@@ -211,9 +211,9 @@ MV_U32 mvCtrlPexMaxUnitGet(MV_VOID);
 MV_U32 mvCtrlPexActiveUnitNumGet(MV_VOID);
 
 #if defined(MV_INCLUDE_PCI)
-#define mvCtrlPciIfMaxIfGet()           3
+#define mvCtrlPciIfMaxIfGet()           1
 #else
-#define mvCtrlPciIfMaxIfGet()           3
+#define mvCtrlPciIfMaxIfGet()           (mvCtrlPexMaxIfGet())
 #endif
 
 MV_U32 mvCtrlEthMaxPortGet(MV_VOID);

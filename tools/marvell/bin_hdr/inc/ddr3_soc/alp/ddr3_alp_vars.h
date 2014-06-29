@@ -90,6 +90,8 @@ MV_DRAM_MODES ddr_modes[] =
 #else
     /* db board values  */
     {"db_88F6650_533",     0x15,    0,  0x0, DB_6650_ID,  ddr3_Z0_db_88F6650_533, NULL},
+    {"db_88F6660_400",     0x6,     0,  0x0, DB_6660_ID,  ddr3_Z0_db_88F6660_533, ddr3_db_88F6660},
+    {"db_88F6660_400",     0xE,     0,  0x0, DB_6660_ID,  ddr3_Z0_db_88F6660_533, ddr3_db_88F6660},
     {"db_88F6660_533",     0x15,    0,  0x0, DB_6660_ID,  ddr3_Z0_db_88F6660_533, ddr3_db_88F6660},
     {"db_88F6660_400",     0x14,    0,  0x0, DB_6660_ID,  ddr3_Z0_db_88F6660_533, ddr3_db_88F6660},
     {"db_88F6660_533",     0x16,    0,  0x0, DB_6660_ID,  ddr3_Z0_db_88F6660_533, ddr3_db_88F6660},

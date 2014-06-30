@@ -44,6 +44,7 @@ enum {
 	CMD_PCIE_MODE,
 	CMD_PCIE_CLOCK,
 	CMD_PLL_CLOCK,
+	CMD_DEVICE_NUM,
 	CMD_BOARD_ID,
 #endif
 	CMD_BOOTSRC,
@@ -55,11 +56,13 @@ enum {
 
 
 #ifdef CONFIG_BOBCAT2
-	int defaultValue[] = { 0, 3, 3, 3 }; /* Core clock, CPU/DDR, TM, BootSRC*/
+	/* Core clock, CPU/DDR, TM, BootSRC*/
+	int defaultValue[] = { 0, 3, 3, 3 };
 	MV_U32 coreClockTbl[] = MV_CORE_CLK_TBL_BC2;
 	MV_CPUDDR_MODE cpuDdrClkTbl[] = MV_CPU_DDR_CLK_TBL_BC2;
 #elif defined(CONFIG_ALLEYCAT3)
-int defaultValue[] = { 4, 0, 1, 0, 1, 0, 3 }; /* Core clock, CPU/DDR, PCIe mode, PCIe clock, PLL clock, Board ID, BootSRC*/
+	/* Core clock, CPU/DDR, PCIe mode, PCIe clock, PLL clock, Device Num, BootSRC*/
+	int defaultValue[] = { 4, 0, 1, 0, 1, 0, 3 };
 	MV_U32 coreClockTbl[] = MV_CORE_CLK_TBL_AC3;
 	MV_CPUDDR_MODE cpuDdrClkTbl[] = MV_CPU_DDR_CLK_TBL_AC3;
 #else
@@ -102,6 +105,8 @@ static int sar_cmd_get(const char *cmd)
 		return CMD_PCIE_CLOCK;
 	if (strcmp(cmd, "pllclock") == 0)
 		return CMD_PLL_CLOCK;
+	if (strcmp(cmd, "devicenum") == 0)
+		return CMD_DEVICE_NUM;
 	if (strcmp(cmd, "boardid") == 0)
 		return CMD_BOARD_ID;
 #endif
@@ -183,6 +188,9 @@ static int do_sar_list(int mode)
 	case CMD_BOARD_ID:
 		printf("Determines the board ID (0-7)\n");
 		break;
+	case CMD_DEVICE_NUM:
+		printf("Determines the device number (0-3)\n");
+		break;
 #endif
 	case CMD_BOOTSRC:
 		printf("Determines the Boot source device:\n");
@@ -258,6 +266,12 @@ static int do_sar_read(int mode)
 		else
 			printf("PLL VCO clock Error: failed reading PLL VCO clock\n");
 		break;
+	case CMD_DEVICE_NUM:
+		if (mvBoardDeviceNumGet(&tmp) == MV_OK)
+			printf("devicenum  = %d \n", tmp);
+		else
+			printf("devicenum Error: failed reading devicenum\n");
+		break;
 
 	case CMD_BOARD_ID:
 		if (mvBoardSarBoardIdGet(&tmp) == MV_OK)
@@ -325,6 +339,9 @@ static int do_sar_write(int mode, int value)
 		break;
 	case CMD_BOARD_ID:
 		rc = mvBoardSarBoardIdSet(tmp);
+		break;
+	case CMD_DEVICE_NUM:
+		rc = mvBoardDeviceNumSet(tmp);
 		break;
 #endif
 	case CMD_BOOTSRC:
@@ -402,6 +419,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR list pcimode	- prints the S@R modes list\n"
 	"SatR list pciclock	- prints the S@R modes list\n"
 	"SatR list pllclock	- prints the S@R modes list\n"
+	"SatR list devicenum	- prints the S@R modes list\n\n"
 	"SatR list boardid	- prints the S@R modes list\n"
 #endif
 	"SatR list bootsrc	- prints the S@R modes list\n"
@@ -415,6 +433,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR read pcimode	- read and print the PCIe mode (EP/RC) S@R value\n"
 	"SatR read pciclock	- read and print the PCIe reference clock source S@R value\n"
 	"SatR read pllclock	- read and print the PLL VCO clock frequency S@R value\n"
+	"SatR read devicenum	- read and print the Devicenum S@R value\n"
 	"SatR read boardid	- read and print the Board ID S@R value\n"
 #endif
 	"SatR read bootsrc	- read and print the Boot source S@R value\n"
@@ -429,6 +448,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR write pcimode <val>	- write the S@R with PCIe mode (EP/RC) value\n"
 	"SatR write pciclock <val>	- write the S@R with PCIe reference clock source value\n"
 	"SatR write pllclock <val>	- write the S@R with PLL VCO clock frequency value\n"
+	"SatR write devicenum <val>	- write the S@R with Device Num. value\n"
 	"SatR write boardid <val>	- write the S@R with Board ID value\n"
 #endif
 	"SatR write bootsrc  <val>	- write the S@R with Boot source value\n"

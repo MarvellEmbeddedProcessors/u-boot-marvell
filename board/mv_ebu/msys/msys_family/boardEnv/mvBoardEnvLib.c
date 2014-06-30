@@ -1574,14 +1574,6 @@ MV_STATUS mvBoardDeviceIdGet(MV_U8 *value)
 
 	*value = (sar & 0x1F);
 
-	if (family == MV_ALLEYCAT3_DEV_ID) {
-		/* AC3 - 2 additional bits in device ID */
-		if (MV_ERROR == mvBoardTwsiSatRGet(1, 0, &sar))
-			return MV_ERROR;
-
-		*value |= (sar & 0x3) << 4;
-	}
-
 	return MV_OK;
 }
 
@@ -1607,18 +1599,49 @@ MV_STATUS mvBoardDeviceIdSet(MV_U8 val)
 		return MV_ERROR;
 	}
 
-	if (family == MV_ALLEYCAT3_DEV_ID) {
-		/* AC3 - 2 additional bits in device ID */
-		if (MV_ERROR == mvBoardTwsiSatRGet(1, 0, &sar))
-			return MV_ERROR;
+	DB(mvOsPrintf("Board: Write deviceid S@R succeeded\n"));
+	return MV_OK;
+}
 
-		sar &= ~(0x3);
-		sar |= (val & (0x3 << 4)) >> 4;
+/*******************************************************************************/
+MV_STATUS mvBoardDeviceNumGet(MV_U8 *value)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
-		if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar)) {
-			DB(mvOsPrintf("Board: Write device-id(MSB) S@R fail\n"));
-			return MV_ERROR;
-		}
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
+		return MV_ERROR;
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(1, 0, &sar))
+		return MV_ERROR;
+
+	*value = (sar & 0x3);
+
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_STATUS mvBoardDeviceNumSet(MV_U8 val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
+		return MV_ERROR;
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(1, 0, &sar))
+		return MV_ERROR;
+
+	sar &= ~(0x3);
+	sar |= (val & 0x3);
+
+	if (MV_OK != mvBoardTwsiSatRSet(1, 0, sar)) {
+		DB(mvOsPrintf("Board: Write device-id S@R fail\n"));
+		return MV_ERROR;
 	}
 
 	DB(mvOsPrintf("Board: Write deviceid S@R succeeded\n"));

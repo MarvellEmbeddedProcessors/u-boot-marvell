@@ -300,6 +300,8 @@ MV_STATUS mvBoardBootDevGet(MV_U8 *value);
 MV_STATUS mvBoardBootDevSet(MV_U8 val);
 MV_STATUS mvBoardDeviceIdGet(MV_U8 *value);
 MV_STATUS mvBoardDeviceIdSet(MV_U8 val);
+MV_STATUS mvBoardDeviceNumGet(MV_U8 *value);
+MV_STATUS mvBoardDeviceNumSet(MV_U8 val);
 MV_STATUS mvBoardPcieModeGet(MV_U8 *val);
 MV_STATUS mvBoardPcieModeSet(MV_U8 val);
 MV_STATUS mvBoardPcieClockGet(MV_U8 *val);

@@ -39,6 +39,7 @@ typedef struct {
 } MV_BOOT_SRC;
 extern MV_SATR_BOOT_TABLE satrBootSrcTable[];
 extern MV_BOARD_SATR_INFO boardSatrInfo[];
+extern MV_BOARD_INFO *marvellBoardInfoTbl[];
 
 typedef struct _boardSatrDefault {
 	MV_SATR_TYPE_ID satrId;
@@ -115,54 +116,54 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		break;
 	case MV_SATR_CORE_CLK_SELECT:
 		mvOsPrintf("Determines the Core clock frequency:\n");
-		mvOsPrintf("0x0 - 250MHz\n");
-		mvOsPrintf("0x1 - 200MHz\n");
+		mvOsPrintf("\t0 = 250MHz\n");
+		mvOsPrintf("\t1 = 200MHz\n");
 		break;
 	case MV_SATR_CPU1_ENABLE:
 		mvOsPrintf("cpusnum options - Determines the number of CPU cores:\n");
-		mvOsPrintf("\t0x0 = Single CPU\n");
-		mvOsPrintf("\t0x1 = Dual CPU\n");
+		mvOsPrintf("\t0 = Single CPU\n");
+		mvOsPrintf("\t1 = Dual CPU\n");
 		break;
 	case MV_SATR_SSCG_DISABLE:
 		printf("Determines the SSCG  mode:\n");
-		printf("\t0x0 = SSCG Enabled\n");
-		printf("\t0x1 = SSCG Disabled\n");
+		printf("\t0 = SSCG Enabled\n");
+		printf("\t1 = SSCG Disabled\n");
 		break;
 	case MV_SATR_DDR4_SELECT:
 		mvOsPrintf("Determines the DDR3 DDR4  :\n");
-		mvOsPrintf("0 = DDR3 module mounted.\n");
-		mvOsPrintf("1 = DDR4 module mounted. \n ");
+		mvOsPrintf("\t0 = DDR3 module mounted.\n");
+		mvOsPrintf("\t1 = DDR4 module mounted.\n ");
 		break;
 	case MV_SATR_DDR_BUS_WIDTH:
 		mvOsPrintf("Determines the DDR BUS width 16/32 bit :\n");
-		mvOsPrintf("0x0 = 16 bit \n");
-		mvOsPrintf("0x1 = 32 bit \n ");
+		mvOsPrintf("\t0 = 16 bit\n");
+		mvOsPrintf("\t1 = 32 bit\n");
 		break;
 	case MV_SATR_DDR_ECC_ENABLE:
 		mvOsPrintf("Determines the DDR ECC:\n");
-		mvOsPrintf("0x0 = No ECC      \n");
-		mvOsPrintf("0x1 = ECC enabled  \n ");
+		mvOsPrintf("\t0 = No ECC\n");
+		mvOsPrintf("\t1 = ECC enabled\n ");
 		break;
 	case MV_SATR_DDR_ECC_PUP_SEL:
 		mvOsPrintf("Determines the DDR ECC PUP selection:\n");
-		mvOsPrintf("0x0 = PUP 3 \n");
-		mvOsPrintf("0x1 = PUP 4 \n ");
+		mvOsPrintf("\t0 = PUP 3\n");
+		mvOsPrintf("\t1 = PUP 4\n ");
 		break;
 	case MV_SATR_BOOT_DEVICE:
 		mvOsPrintf("Determines the Boot source device (BootROM is Enabled if not stated the opposite):\n");
 		for (i = 0; i < BOOT_SRC_TABLE_SIZE; i++) {
 			if (satrBootSrcTable[i].bootSrc == -1)
 				continue;
-			mvOsPrintf(" %02d (%#04x), Boot from %s\n", i, i, satrBootSrcTable[i].name);
+			mvOsPrintf("\t%02d (%#04x), Boot from %s\n", i, i, satrBootSrcTable[i].name);
 		}
 		break;
 	case MV_SATR_BOARD_ID:
-		if (mvBoardIdGet()== DB_68XX_ID)
+		if (mvBoardIdGet() == RD_NAS_68XX_ID || mvBoardIdGet() == RD_AP_68XX_ID) {
 			mvOsPrintf("Determines the board ID\n");
-		else {
-			mvOsPrintf("0 - RD NAS\n");
-			mvOsPrintf("2 - RD AP\n");
-		}
+			mvOsPrintf("\t0 - %s\n", marvellBoardInfoTbl[0]->boardName);
+			mvOsPrintf("\t2 - %s\n", marvellBoardInfoTbl[2]->boardName);
+		} else
+			mvOsPrintf("board Id modification is not supported for current board\n");
 		break;
 	case MV_SATR_BOARD_ECO_VERSION:
 		mvOsPrintf("Determines the ECO version\n");
@@ -170,21 +171,21 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 
 	case MV_SATR_DB_USB3_PORT0:
 		mvOsPrintf("Determines the USB3 Port0 Mode:\n");
-		mvOsPrintf("0 = Host.\n");
-		mvOsPrintf("1 = Device.\n ");
+		mvOsPrintf("\t0 = Host\n");
+		mvOsPrintf("\t1 = Device\n ");
 		break;
 	case MV_SATR_DB_USB3_PORT1:
 		mvOsPrintf("Determines the USB3 Port1 Mode:\n");
-		mvOsPrintf("0 = Host.\n");
-		mvOsPrintf("1 = Device.\n ");
+		mvOsPrintf("\t0 = Host\n");
+		mvOsPrintf("\t1 = Device\n ");
 		break;
 	case MV_SATR_RD_SERDES4_CFG:
 		mvOsPrintf("Determines the RD-NAS SERDES lane #4 configuration:\n");
-		mvOsPrintf("0 = USB3.\n");
-		mvOsPrintf("1 = SGMII. \n ");
+		mvOsPrintf("\t0 = USB3\n");
+		mvOsPrintf("\t1 = SGMII\n ");
 		break;
 	default:
-		mvOsPrintf("Usage: sar list [options] (see help) \n");
+		mvOsPrintf("Usage: sar list [options] (see help)\n");
 		return 1;
 	}
 	return 0;
@@ -207,10 +208,10 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 			if (cpuDdrClkTbl[i].id == MV_SAR_FREQ_MODES_EOT)
 				break;
 			if (cpuDdrClkTbl[i].id == tmp) {
-				mvOsPrintf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n\n");
+				mvOsPrintf("\nCurrent freq configuration:\n");
 				mvOsPrintf("| ID | CPU Freq (MHz) | L2 Freq (MHz)  | SDRAM Freq (MHz) |\n");
 				mvOsPrintf("|----|----------------|----------------|------------------|\n");
-				mvOsPrintf("| %2d |      %4d      |      %d       |      %d         | \n",
+				mvOsPrintf("| %2d |      %4d      |      %d       |      %d         |\n",
 					   cpuDdrClkTbl[i].id,
 					   cpuDdrClkTbl[i].cpuFreq,
 					   cpuDdrClkTbl[i].ddrFreq,
@@ -221,44 +222,44 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		}
 		break;
 	case MV_SATR_CORE_CLK_SELECT:
-		mvOsPrintf("Core clock frequency= %sMHz\n", (tmp == 0)? "0x0 - 250" : "0x1 - 200");
+		mvOsPrintf("\ncoreclock\t= %d  ==> %sMhz\n", tmp, (tmp == 0x0) ? "250" : "200");
 		break;
 	case MV_SATR_CPU1_ENABLE:
-		mvOsPrintf("CPU 1 %s\n", (tmp == 0)? "Disabled" : "Enabled");
+		mvOsPrintf("cpusnum\t\t\t= %d  ==> %s CPU\n", tmp, (tmp == 0) ? "Single" : "Dual");
 		break;
 	case MV_SATR_SSCG_DISABLE:
-		mvOsPrintf("sscg = %d ==> %s \n", tmp, (tmp == 1)? "Disabled" : "Enabled");
+		mvOsPrintf("sscg \t\t\t= %d  ==> %s\n", tmp, (tmp == 1) ? "Disabled" : "Enabled");
 		break;
 	case MV_SATR_DDR4_SELECT:
-		mvOsPrintf("DDR%d module mounted.\n", (tmp + 3));
+		mvOsPrintf("ddr4select\t= %d  ==> DDR%d module\n", tmp, (tmp == 0) ? 3 : 4);
 		break;
 	case MV_SATR_DDR_BUS_WIDTH:
-		mvOsPrintf("Select DDR BUS width %d bit\n", ((tmp+1) * 16) );
+		mvOsPrintf("ddrbuswidth\t= %d  ==> DDR BUS width %d bit\n", tmp, (tmp == 0) ? 16 : 32);
 		break;
 	case MV_SATR_DDR_ECC_ENABLE:
-		mvOsPrintf("DDR ECC: \n0x%x = %s\n", tmp, (tmp == 1) ? "ECC enabled" : "No ECC");
+		mvOsPrintf("ddreccenable\t= %d  ==> ECC %s\n", tmp, (tmp == 0) ? "Disabled" : "Enabled");
 		break;
 	case MV_SATR_DDR_ECC_PUP_SEL:
-		mvOsPrintf("DDR ECC PUP select:\n0x%x = PUP %s\n", tmp, (tmp == 1) ? "4" : "3");
+		mvOsPrintf("ddreccpupselect\t= %d  ==> PUP %d\n", tmp, (tmp == 0) ? 3 : 4);
 		break;
 	case MV_SATR_BOOT_DEVICE:
 		if (tmp < BOOT_SRC_TABLE_SIZE)
-			mvOsPrintf("Boot source device: %d - %s\n", tmp, satrBootSrcTable[tmp].name);
+			mvOsPrintf("bootsrc\t\t\t= %d ==> Boot From %s\n", tmp, satrBootSrcTable[tmp].name);
 		break;
 	case MV_SATR_BOARD_ID:
-		mvOsPrintf("Board ID = 0x%x\n", tmp);
+		mvOsPrintf("boardid\t\t\t= %d  ==> %s\n", tmp, marvellBoardInfoTbl[tmp]->boardName);
 		break;
 	case MV_SATR_BOARD_ECO_VERSION:
-		mvOsPrintf("Determines the ECO version %d.%d\n", (tmp & 0x0f), ((tmp >> 4) & 0x0f));
+		mvOsPrintf("ecoversion\t= %d  ==> ECO v%d.%d\n", tmp, (tmp & 0x0f), ((tmp >> 4) & 0x0f));
 		break;
 	case MV_SATR_DB_USB3_PORT0:
-		mvOsPrintf("USB3-Port0 Mode: %s\n",(tmp == 0)? "Host" : "Device");
+		mvOsPrintf("usb3port0\t= %d  ==> USB3.0 port0: %s Mode\n", tmp, (tmp == 0) ? "Host" : "Device");
 		break;
 	case MV_SATR_DB_USB3_PORT1:
-		mvOsPrintf("USB3-Port1 Mode: %s\n",(tmp == 0)? "Host" : "Device");
+		mvOsPrintf("usb3port1\t= %d  ==> USB3.0 port0: %s Mode\n", tmp, (tmp == 0) ? "Host" : "Device");
 		break;
 	case MV_SATR_RD_SERDES4_CFG:
-		mvOsPrintf("Determines the RD-NAS-SERDES Lane #4 configuration:  %s\n", (tmp == 0)? "USB3" : "SGMII");
+		mvOsPrintf("rdserdes4\t\t= %d  ==> RD SERDES Lane #4: %s\n", tmp, (tmp == 0) ? "USB3" : "SGMII");
 		break;
 
 		case CMD_DUMP:
@@ -288,14 +289,15 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 	MV_STATUS rc = MV_TRUE;
 	MV_U32 boardId = mvBoardIdGet();
 
-	if ((satrInfo->status & BOARD_SATR_READ_ONLY) ||
-	    ((MV_SATR_BOARD_ID == satrInfo->satrId)  && (mvBoardIdGet()== DB_68XX_ID))) {
-		mvOsPrintf("S@R ID = %d is read only\n", satrInfo->satrId);
+	/* if field is read only, or field is board id for DB boards - modification not supported */
+	if (satrInfo->status & BOARD_SATR_READ_ONLY ||
+	    (MV_SATR_BOARD_ID == satrInfo->satrId  && (boardId != RD_NAS_68XX_ID && boardId != RD_AP_68XX_ID))) {
+		mvOsPrintf("S@R ID = %d is read only for this board\n", satrInfo->satrId);
 		mvOsPrintf("Write S@R failed!\n");
 		return 1;
 	}
 	/* only RD-AP/RD-NAS boards support modifying board id value */
-	if ((MV_SATR_BOARD_ID == satrInfo->satrId) && ((boardId == RD_NAS_68XX_ID) || (boardId == RD_AP_68XX_ID)))
+	if ((MV_SATR_BOARD_ID == satrInfo->satrId) && (boardId == RD_NAS_68XX_ID || boardId == RD_AP_68XX_ID))
 		/* Adding MARVELL_BOARD_ID_BASE, since Marvell board IDs are virtually shifted by MARVELL_BOARD_ID_BASE */
 		if ((value + MARVELL_BOARD_ID_BASE != RD_NAS_68XX_ID)
 			&& (value + MARVELL_BOARD_ID_BASE != RD_AP_68XX_ID)) {
@@ -315,25 +317,29 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 {
 	const char *cmd;
-	int mode, value;
+	int value, mode = -1;
 	MV_BOARD_SATR_INFO satrInfo;
 	MV_U32 boardId = mvBoardIdGet();
-
-	/* need at least two arguments */
-	if (argc < 2)
-		goto usage;
 
 	cmd = argv[1];
 
 	/* SatR write/list/default are supported only on Marvell boards */
-	if (boardId != RD_NAS_68XX_ID && boardId != DB_68XX_ID && boardId != RD_AP_68XX_ID) {
+	if (!(boardId >= MARVELL_BOARD_ID_BASE && boardId <= MV_MAX_MARVELL_BOARD_ID)) {
 		printf("\nError: S@R configuration is not supported on current board\n");
 		return 1;
 	}
 
-	mode = sar_cmd_get(argv[2]);
+	/* is requested 'SatR read' --> Dump all */
+	if (argc > 1 && argc < 3 && strcmp(cmd, "read") == 0)
+		mode = CMD_DUMP;
+	else if (argc < 2)	/* need at least two arguments */
+		goto usage;
+	else
+		mode = sar_cmd_get(argv[2]);
+
 	if (mode == CMD_UNKNOWN)
 		goto usage;
+
 	if ((mode != CMD_DUMP)  && (mode != CMD_DEFAULT)) {
 		if (mvBoardSatrInfoConfig(mode, &satrInfo) != MV_OK)
 			goto usage;
@@ -382,6 +388,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "SatR list usb3port1       - prints the S@R modes list\n"
 "SatR list rdserdes4       - prints the S@R modes list\n\n"
 
+"SatR read                 - read and print all active S@R value\n"
 "SatR read coreclock       - read and print the core frequency S@R value\n"
 "SatR read freq	           - read and print the CPU DDR frequency S@R value\n"
 "SatR read cpusnum         - read and print the number of CPU cores S@R value\n"
@@ -395,8 +402,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "SatR read ecoversion      - read and print the ECO version S@R value\n"
 "SatR read usb3port0       - read and print the USB3-Port0 mode\n"
 "SatR read usb3port1       - read and print the USB3-Port1 mode\n"
-"SatR read rdserdes4       - read and print the RD-NAS SERDES lane#4 configuration\n"
-"SatR read dump            - read and print all active S@R value\n\n"
+"SatR read rdserdes4       - read and print the RD-NAS SERDES lane#4 configuration\n\n"
 
 "SatR write coreclock <val> - write the S@R with core frequency value\n"
 "SatR write freq <val>	    - write the S@R with CPU DDR frequency value\n"

@@ -410,6 +410,9 @@ MV_OP_EXT_PARAMS sgmiiPowerDownCtrlParams[] =
 /****************************************************************************/
 MV_STATUS mvSiliconInit(MV_VOID)
 {
+	MV_TWSI_ADDR slave;
+	MV_U32 tClock;
+
 	/* Prepare data to be used by access functions for varous SOC regions */
 	mvUnitInfoSet(INTERNAL_REG_UNIT,	INTER_REGS_BASE,		AC3_INTERNAL_OFFSET);
 	mvUnitInfoSet(MG_UNIT,				0,						AC3_INTERNAL_OFFSET);
@@ -420,6 +423,19 @@ MV_STATUS mvSiliconInit(MV_VOID)
 
 	/* Set legacy mode address completion */
 	mvGenUnitRegisterSet(MG_UNIT, 0, 0x140, (1 << 16), (1 << 16));
+
+	/* TWSI init */
+	DEBUG_INIT_FULL_S("mvSiliconInit: Init TWSI interface.\n");
+	slave.type = ADDR7_BIT;
+	slave.address = 0;
+	tClock = mvBoardTclkGet();
+	if (tClock == MV_BOARD_TCLK_ERROR) {
+		DEBUG_INIT_FULL_S("mvSiliconInit: TClk read from the board is not supported\n");
+		return MV_NOT_SUPPORTED;
+	}
+
+	mvTwsiInit(0, TWSI_SPEED, tClock, &slave, 0);
+
 	return MV_OK;
 }
 
@@ -735,6 +751,28 @@ MV_STATUS mvHwsComH28nmSerdesPowerCtrl
 	return MV_OK;
 }
 
+/***************************************************************************/
+MV_STATUS mvCtrlPexPolaritySet(MV_VOID)
+{
+#ifdef MV_MSYS_AC3
+	MV_TWSI_SLAVE	twsiSlave;
+	MV_U8			polarity;
+
+	/* Initializing twsiSlave in order to read from the TWSI address */
+	twsiSlave.slaveAddr.address = 0x18;	/* Address of AC3 CPLD */
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.offset = 0x1A;			/* Address of PEX polarity register */
+	twsiSlave.moreThen256 = MV_FALSE;
+
+	polarity = (mvCtrlIsPexEndPointMode() == MV_TRUE) ? 0 : 1;
+
+	DEBUG_INIT_FULL_S("mvCtrlPexPolaritySet: Setting PEX polarity in CPLD\n");
+	if (mvTwsiWrite(0, &twsiSlave, &polarity, 1) != MV_OK)
+		DEBUG_INIT_S("mvCtrlPexPolaritySet: TWSI Write failed, leaving PEX polarity in EP mode\n");
+#endif
+	return MV_OK;
+}
 
 /***************************************************************************/
 MV_STATUS mvSerdesPowerUpCtrl(
@@ -763,6 +801,7 @@ MV_STATUS mvSerdesPowerUpCtrl(
 
 	case PEX0:
 		DEBUG_INIT_FULL_S("== Init PEX0\n");
+		CHECK_STATUS(mvCtrlPexPolaritySet());
 		if(mvCtrlIsPexEndPointMode() == MV_TRUE)
 			return mvCtrlPexEndPointConfig(); /*PCI-E End Point configuration*/
 		else

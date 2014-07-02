@@ -130,7 +130,7 @@ TripDelayElement A38xPackageRoundTripDelayArray[] =
 };
 
 
-static GT_32 A38xSiliconDelayOffset[] =
+GT_32 A38xSiliconDelayOffset[] =
 {
     /* board 0 */
     0,

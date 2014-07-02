@@ -74,6 +74,8 @@ typedef struct __mvDramMcInit {
 	MV_U32 reg_mask;
 } MV_DRAM_MC_INIT;
 
+#ifdef SUPPORT_STATIC_DUNIT_CONFIG
+
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 static MV_DRAM_MC_INIT ddr3_customer_800[] =
 {
@@ -272,4 +274,7 @@ static MV_DRAM_MC_INIT ddr3_a38x_533[] =
 
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 
+#endif /*SUPPORT_STATIC_DUNIT_CONFIG*/
+
 #endif /* _INC_A375_MC_STATIC_H */
+

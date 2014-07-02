@@ -208,7 +208,13 @@ endif
 endif
 endif
 
-CFLAGS   += -Wall $(INCLUDE) $(DEBUG_FLAGS) $(CPUOPTS) -msoft-float -fPIE -fno-zero-initialized-in-bss -fno-unwind-tables  -mabi=aapcs
+CFLAGS   += -Wall $(INCLUDE) $(DEBUG_FLAGS) $(CPUOPTS) -msoft-float -mabi=aapcs
+ifeq ($(BOARD),a38x)
+CFLAGS   += -fdata-sections -ffunction-sections
+else
+CFLAGS   += -fPIE -fno-zero-initialized-in-bss -fno-unwind-tables
+endif
+
 CPPFLAGS = $(foreach FLAG, $(MVFLAGS), $(addprefix -D, $(FLAG)))
 ASFLAGS  = $(foreach FLAG, $(MVFLAGS), $(addprefix --defsym , $(FLAG)))
 LDFLAGS  = -static -nostartfiles -unwind-tables  -nostdlib -Wl,--build-id=none

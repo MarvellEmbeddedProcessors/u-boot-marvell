@@ -145,7 +145,7 @@ static MV_VOID ddr3StaticTrainingInit(void);
 static MV_VOID ddr3StaticMCInit(void);
 #endif
 #if defined(DUNIT_STATIC) || defined(STATIC_TRAINING) || defined(MV_NEW_TIP)
-#ifndef MV_MSYS_BC2
+#ifdef SUPPORT_STATIC_DUNIT_CONFIG
 static MV_U32 ddr3GetStaticDdrMode(void);
 #endif
 /*Set 1 to use dynamic DUNIT configuration,
@@ -774,8 +774,8 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 	ddr3SaveAndSetTrainingWindows(auWinBackup);
 
 #if defined(MV_NEW_TIP)
-#ifndef MV_MSYS_BC2
-	if( genericInitController == 0){
+#ifdef SUPPORT_STATIC_DUNIT_CONFIG
+if( genericInitController == 0){
 		ddr3TipInitSpecificRegConfig(0, ddr_modes[ddr3GetStaticDdrMode()].regs);
 	}
 #endif

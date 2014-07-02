@@ -82,6 +82,7 @@ typedef struct __mvDramModes {
 
 MV_DRAM_MODES ddr_modes[] =
 {
+#ifdef SUPPORT_STATIC_DUNIT_CONFIG
 /*	Conf name		CPUFreq	     FabFreq   Chip ID		Chip/Board		MC regs*/
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 	{"a38x_customer_0_800",	DDR_FREQ_800,	0,	0x0,	ARMADA_38x_CUSTOMER_BOARD_ID0,	ddr3_customer_800},
@@ -91,6 +92,7 @@ MV_DRAM_MODES ddr_modes[] =
 	{"a38x_667",		DDR_FREQ_667,	0,	0x0,		MARVELL_BOARD,		ddr3_a38x_667},
 	{"a38x_800",		DDR_FREQ_800,	0,	0x0,		MARVELL_BOARD,		ddr3_a38x_800},
 	{"a38x_933",		DDR_FREQ_933,	0,	0x0,		MARVELL_BOARD,		ddr3_a38x_933},
+#endif
 #endif
 };
 

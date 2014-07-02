@@ -302,7 +302,7 @@ extern "C" {
 #define	MV_WB25Q_READ_CMND_OPCD			0x03	/* Sequential Read */
 #define	MV_WB25Q_FAST_RD_CMND_OPCD		0x0B	/* Fast Read */
 #define	MV_WB25Q_PP_CMND_OPCD			0x02	/* Page Program */
-#define	MV_WB25Q_SE_CMND_OPCD			0xD8	/* Sector Erase */
+#define	MV_WB25Q_SE_CMND_OPCD			0x20	/* Sector Erase */
 #define	MV_WB25Q_BE_CMND_OPCD			0xC7	/* Bulk Erase */
 #define	MV_WB25Q_DP_CMND_OPCD			0xB9	/* Deep Power Down */
 #define	MV_WB25Q_RES_CMND_OPCD			0xAB	/* Read Electronic Signature */

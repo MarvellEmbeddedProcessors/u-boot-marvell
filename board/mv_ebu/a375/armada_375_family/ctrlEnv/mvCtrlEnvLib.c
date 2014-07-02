@@ -242,7 +242,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_67xx_INDEX_MAX] = {
 /* SATA_UNIT_ID         */ { 2, },
 /* TDM_32CH_UNIT_ID     */ { 1, },
 /* UART_UNIT_ID         */ { 2, },
-/* CESA_UNIT_ID         */ { 1, },
+/* CESA_UNIT_ID         */ { 2, },
 /* SPI_UNIT_ID          */ { 2, },
 /* AUDIO_UNIT_ID        */ { 1, },
 /* SDIO_UNIT_ID         */ { 1, },
@@ -1735,6 +1735,14 @@ MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
 		else
 			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_TDM_STOP_CLK_MASK);
 		break;
+#if defined(MV_INCLUDE_CESA)
+	case CESA_UNIT_ID:
+		if (enable == MV_FALSE)
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_CESA_STOP_CLK_MASK(index));
+		else
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_CESA_STOP_CLK_MASK(index));
+		break;
+#endif
 	default:
 		break;
 	}
@@ -1799,6 +1807,14 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 			state = MV_FALSE;
 		else
 			state = MV_TRUE;
+		break;
+#endif
+#if defined(MV_INCLUDE_CESA)
+	case CESA_UNIT_ID:
+		if ((reg & PMC_CESA_STOP_CLK_MASK(index)) == PMC_CESA_STOP_CLK_MASK(index))
+			state = MV_TRUE;
+		else
+			state = MV_FALSE;
 		break;
 #endif
 	default:

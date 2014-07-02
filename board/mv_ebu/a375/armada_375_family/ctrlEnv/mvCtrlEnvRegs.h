@@ -128,6 +128,11 @@ extern "C" {
 #define PMC_SATA_STOP_CLK_EN			(3 << PMC_SATA_STOP_CLK_OFFS)
 #define PMC_SATA_STOP_CLK_STOP			(0 << PMC_SATA_STOP_CLK_OFFS)
 
+#define PMC_CESA_STOP_CLK_OFFS(port)		(port == 0 ? 28 : 29)
+#define PMC_CESA_STOP_CLK_MASK(port)		(0x5 << PMC_CESA_STOP_CLK_OFFS(port))
+#define PMC_CESA_STOP_CLK_EN(port)		(0x5 << PMC_CESA_STOP_CLK_OFFS(port))
+#define PMC_CESA_STOP_CLK_STOP(port)		(0 << PMC_CESASTOPMEM_OFFS)
+
 #define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
 
 /* Sample at Reset */

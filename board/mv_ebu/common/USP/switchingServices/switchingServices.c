@@ -383,7 +383,7 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	char * devPart = NULL;
 	MV_U32 fsys = FS_TYPE_FAT;				/* default FS = FAT */
 	MV_BOOL isNand = MV_TRUE;				/* default destination = NAND */
-	addr = load_addr = 0x5000000;
+	addr = load_addr = 0x2000000;
 	int fileSizeFromRam = -1;
 
 	/* scan for flash destination in arguments (allowing usage of only 'mtdburn spi') */
@@ -419,7 +419,7 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		else if(strcmp(argv[1], "ram") == 0) {
 			loadfrom = 3;
 			if (devPart == NULL)
-				devPart = "5000000"; /*if source location not specified, use default load_addr */
+				devPart = "2000000"; /*if source location not specified, use default load_addr */
 			else
 				addr = load_addr = (unsigned int)simple_strtoul(devPart, NULL, 16);
 		}
@@ -481,7 +481,7 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	dest_addr = kernel_addr; // uncompress the kernel here.
 	src_addr = addr;
-	src_len = unc_len = 0x1000000*3; //16MB*3 = max+
+	src_len = unc_len = kernel_addr - addr;
 
 	rc = BZ2_bzBuffToBuffDecompress_extended ((char*)dest_addr, &unc_len,
 						  (char *)src_addr, src_len,
@@ -509,7 +509,7 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	/* now try to separate the rootfs. If we get -5 then we have a single file. */
 		dest_addr = rootfs_addr; // uncompress the rootfs here.
 		src_addr += total_in;
-		src_len = unc_len = 0x1000000*3; //16MB*3 = max+
+		src_len = unc_len = kernel_addr - addr - total_in;
 
 		rc = BZ2_bzBuffToBuffDecompress_extended ((char*)dest_addr, &unc_len, (char *)src_addr,
 							  src_len, &total_in, 0, 0);

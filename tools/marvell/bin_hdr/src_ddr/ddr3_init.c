@@ -739,8 +739,11 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 	}
 #endif /* end defined(MV88F78X60) */
 #endif /* end !defined(MV88F67XX) */
+
+#if !defined(MV_NEW_TIP)
 	if (ddr3GetLogLevel() >= MV_LOG_LEVEL_1)
 		printDunitSetup();
+#endif
 
 	/************************************************************************************/
 	/* Stage 2 - Training Values Setup                                                  */
@@ -785,8 +788,6 @@ MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x18C01E);
 
 	/*Set log level for training lib*/
 	ddr3HwsSetLogLevel(MV_DEBUG_BLOCK_ALL, DEBUG_LEVEL_ERROR);
-
-
 
 	/*Start New Training IP*/
 	status = ddr3HwsHwTraining();
@@ -1386,6 +1387,7 @@ MV_U8 mvCtrlRevGet(MV_VOID)
 
 #endif
 
+#if !defined(MV_NEW_TIP)
 MV_VOID     printDunitSetup(MV_VOID)
 {
 	MV_32 uiReg;
@@ -1457,6 +1459,7 @@ MV_VOID     printDunitSetup(MV_VOID)
 	DEBUG_DUNIT_REG(REG_CDI_CONFIG_ADDR);
 #endif
 }
+#endif
 
 #if defined(MV88F66XX)  || defined(MV88F672X)
 MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs)

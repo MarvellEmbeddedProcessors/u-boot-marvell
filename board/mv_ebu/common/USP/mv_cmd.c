@@ -952,17 +952,19 @@ int training_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[] )
 #define REG_PHY_OP_OFFS							31
 #define REG_PHY_CS_OFFS							16
 #define REG_PHY_PUP_OFFS						22
+#define CENTRAL_RESULTS_PUP0					0x1504
+#define CENTRAL_RESULTS_PUP1					0x150C
+#define CENTRAL_RESULTS_PUP2					0x1514
+#define CENTRAL_RESULTS_PUP3					0x151C
 
-	MV_U32 uiCsEna,uiCs,uiReg,uiPup,uiPhase,uiDelay,uiDQS,uiRdRdyDly,uiRdSmplDly,uiDq;
+	MV_U32 uiCsEna,uiCs,uiReg,uiPup,uiPhase,uiDelay,
+			uiDQS,uiRdRdyDly,uiRdSmplDly,uiDq, uiCentralTxRes, uiCentralRxRes,i;
 	MV_U32 uiPupNum;
 
 	uiCsEna = MV_REG_READ(REG_DDR3_RANK_CTRL_ADDR) & 0xF;
 	printf("DDR3 Training results: \n");
 
-	if (MV_REG_READ(REG_SDRAM_CONFIG_ADDR) & (1 << 18))
-		uiPupNum = 9;
-	else
-		uiPupNum = 8;
+	uiPupNum = 4;
 
 	for (uiCs = 0; uiCs < 4; uiCs++) {
 		if (uiCsEna & (1 << uiCs)) {
@@ -976,7 +978,7 @@ int training_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[] )
 				} while (uiReg);				/* Wait for '0' to mark the end of the transaction */
 
 				uiReg = MV_REG_READ(REG_PHY_REGISTRY_FILE_ACCESS_ADDR);  /* 0x16A0 */
-				uiPhase = (uiReg >> 8) & 0x7;
+				uiPhase = (uiReg >> 6) & 0x7;
 				uiDelay = uiReg & 0x1F;
 
 				uiReg = (1 << REG_PHY_OP_OFFS) | (uiPup << REG_PHY_PUP_OFFS) | ((0x4*uiCs+0x1) << REG_PHY_CS_OFFS);
@@ -1001,7 +1003,7 @@ int training_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[] )
 				} while (uiReg);				/* Wait for '0' to mark the end of the transaction */
 
 				uiReg = MV_REG_READ(REG_PHY_REGISTRY_FILE_ACCESS_ADDR);  /* 0x16A0 */
-				uiPhase = (uiReg >> 8) & 0x7;
+				uiPhase = (uiReg >> 6) & 0x7;
 				uiDelay = uiReg & 0x1F;
 
 				uiReg = (1 << REG_PHY_OP_OFFS) | (uiPup << REG_PHY_PUP_OFFS) | ((0x4*uiCs+0x3) << REG_PHY_CS_OFFS);
@@ -1071,6 +1073,17 @@ int training_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[] )
 			}
 		}
 	}
+
+
+	/*Read Centralization windows sizes for Scratch Pad registers*/
+	for(i = 0; i < uiPupNum; i++)
+	{
+		uiReg = MV_REG_READ(CENTRAL_RESULTS_PUP0 + i*8);
+		uiCentralRxRes = uiReg >> 27;
+		uiCentralTxRes = (uiReg & 0xF) | ((uiReg >> 24)&0x1)<<4;
+		printf("Central window size for PUP %d is %d(RX) and %d(TX)\n", i, uiCentralRxRes, uiCentralTxRes);
+	}
+
 	return 1;
 }
 

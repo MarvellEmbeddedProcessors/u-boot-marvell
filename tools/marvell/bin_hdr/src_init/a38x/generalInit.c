@@ -71,8 +71,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mvSysEnvLib.h"
 
-/* mvUartConfig() prepares UART configuration (MPP's and UART interface selection) */
-static inline MV_VOID mvUartConfig()
+/* mvMppConfig() prepares UART and I2C configuration (MPP's and UART interface selection) */
+static inline MV_VOID mvMppConfig()
 {
         /* UART0 & I2C MPP's (MPP[0:3] = 0x1) */
         MV_U32 regData = (MV_REG_READ(MPP_CONTROL_REG(0))  & MPP_SET_MASK) | MPP_SET_DATA;
@@ -95,8 +95,9 @@ MV_STATUS mvGeneralInit(void)
 	regData |= (AVS_LOW_VDD_LIMIT_VAL | AVS_HIGH_VDD_LIMIT_VAL);
         MV_REG_WRITE(AVS_ENABLED_CONTROL, regData);
 
+	mvMppConfig();
+
 #if !defined(MV_NO_PRINT)
-	mvUartConfig();
 	mvUartInit();
 	DEBUG_INIT_S("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
 #endif

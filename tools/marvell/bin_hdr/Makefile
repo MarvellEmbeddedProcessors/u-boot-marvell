@@ -110,7 +110,12 @@ LIB_SWUP_UART = suspendWUP.uart.a
 LIB_GENERAL_INIT_UART = generalInit.uart.a
 
 LIBGCC = $(MAIN)/libgcc.lib
-TLIB = ./src_ddr/lib/ddr3_training_$(BOARDNAME).lib
+
+ifeq ($(DDRTYPE),)
+DDRTYPE = ddr3
+endif
+
+TLIB = ./src_ddr/lib/$(DDRTYPE)_training_$(BOARDNAME).lib
 
 COMPONENT_SUBDIRS = platform src_phy src_ddr src_pm src_init
 HDR_COMPONENTS = $(LIB_PLAT) $(LIB_GENERAL_INIT) $(LIB_PHY) $(LIB_DDR) $(TLIB) $(LIB_SWUP)

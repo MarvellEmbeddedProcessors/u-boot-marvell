@@ -4,7 +4,7 @@ use Cwd qw();
 
 sub HELP_MESSAGE
 {
-	print "\nUsage  : build -f \"Flash type\" -v X.X.X -b \"board name\" [-c] [-o \"Output file\"]\n";
+	print "\nUsage  : build -f \"Flash type\" -v X.X.X -b \"board name\" [-m \"DDR type\"] [-c] [-o \"Output file\"]\n";
 	print "Example: ./build.pl -f spi -v 14T2 -b avanta_lp -i spi:nand -c\n";
 	print "\n";
 	print "Options:\n";
@@ -17,6 +17,7 @@ sub HELP_MESSAGE
 	print "\t-c\tClean build. calls make mrproper\n";
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
+	print "\t-m\tDDR type(default: DDR3). Accepts: 3 for DDR3, 4 for DDR4\n";
 	print "\t-i\tSupported interfaces, seperated by \":\" -  Accepts [spi:nor:nand]\n";
 	print "\t-v\tSW version (add to binary file name u-boot-alp-X.X.X-spi.bin)\n";
 	print "\t\tinterfaces. Supports spi, nor, nand. the boot \n";
@@ -31,7 +32,7 @@ sub HELP_MESSAGE
 # Main
 use Getopt::Std;
 
-getopt('f:b:o:i:v:d:');
+getopt('f:b:o:i:v:d:m:');
 
 if((!defined $opt_b) or
 	(!defined $opt_f) or
@@ -252,6 +253,18 @@ if(defined $opt_d)
 	system("echo \"DDR3LIB = $opt_d\" >> include/config.mk");
 	print "\n *** DDR3LIB = v$opt_d *********************************\n\n";
 }
+
+if(defined $opt_m)
+{
+	system("echo \"DDRTYPE = ddr$opt_m\" >> include/config.mk");
+	print "\n *** DDRTYPE = DDR$opt_m *********************************\n\n";
+}
+else {
+	# Set default to DDR3
+	system("echo \"DDRTYPE = ddr3\" >> include/config.mk");
+	print "\n *** DDRTYPE = DDR3 *********************************\n\n";
+}
+
 if($opt_z eq 1)
 {
 	if ($boardID eq "alp" or $boardID eq "a375"){

@@ -1153,7 +1153,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	if (mvBoardSarBoardIdGet(&readValue) != MV_OK) {
 		mvOsPrintf("%s: Error obtaining Board ID\n", __func__);
 		mvOsPrintf("%s: Set default board ID to DB-DXAC3-MM\n", __func__);
-		readValue = DB_AC3_ID;
+		readValue = DB_AC3_ID - AC3_MARVELL_BOARD_ID_BASE;
 	}
 
 	if (readValue < AC3_MARVELL_BOARD_NUM)
@@ -1784,7 +1784,7 @@ MV_STATUS mvBoardPllClockSet(MV_U8 val)
 /*******************************************************************************/
 MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value)
 {
-	MV_U8		sar;
+	MV_U8		boardId;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
 	if (family != MV_ALLEYCAT3_DEV_ID) {
@@ -1792,10 +1792,15 @@ MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value)
 		return MV_ERROR;
 	}
 
-	if (MV_ERROR == mvBoardTwsiSatRGet(1, 1, &sar))
+	/* The Board Id is taken from the first address-value pair of the EEPROM initalization sequnce
+	   In order to support normal TWSI init sequnce flow, the first pair of DWORDS on EEPROM
+	   should contain an address (bytes 0-3) of some scratch pad register (for instance an UART SCR)
+	   and a value (bytes 4-7), which will be partially interpreted as Board ID (bits[7:0] of byte 7)
+	*/
+	if (MV_ERROR == mvBoardTwsiRead(BOARD_DEV_TWSI_INIT_EPROM, 0, 7, &boardId))
 		return MV_ERROR;
 
-	*value = (sar & 0x7);
+	*value = (boardId & 0x7);
 
 	return MV_OK;
 }
@@ -1803,7 +1808,7 @@ MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value)
 /*******************************************************************************/
 MV_STATUS mvBoardSarBoardIdSet(MV_U8 val)
 {
-	MV_U8		sar;
+	MV_U8		boardId;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
 	if (family != MV_ALLEYCAT3_DEV_ID) {
@@ -1816,13 +1821,18 @@ MV_STATUS mvBoardSarBoardIdSet(MV_U8 val)
 		return MV_ERROR;
 	}
 
-	if (MV_ERROR == mvBoardTwsiSatRGet(1, 1, &sar))
+	/* The Board Id is taken from the first address-value pair of the EEPROM initalization sequnce
+	   In order to support normal TWSI init sequnce flow, the first pair of DWORDS on EEPROM
+	   should contain an address (bytes 0-3) of some scratch pad register (for instance an UART SCR)
+	   and a value (bytes 4-7), which will be partially interpreted as Board ID (bits[7:0] of byte 7)
+	*/
+	if (MV_ERROR == mvBoardTwsiRead(BOARD_DEV_TWSI_INIT_EPROM, 0, 7, &boardId))
 		return MV_ERROR;
 
-	sar &= ~(0x7);
-	sar |= (val & 0x7);
+	boardId &= ~(0x7);
+	boardId |= (val & 0x7);
 
-	if (MV_OK != mvBoardTwsiSatRSet(1, 1, sar)) {
+	if (MV_OK != mvBoardTwsiWrite(BOARD_DEV_TWSI_INIT_EPROM, 0, 7, boardId)) {
 		DB(mvOsPrintf("Board: Write boardid S@R fail\n"));
 		return MV_ERROR;
 	}

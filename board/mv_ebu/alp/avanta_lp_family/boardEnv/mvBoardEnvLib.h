@@ -389,6 +389,36 @@ typedef struct _boardInfo {
 { MV_CONFIG_PON_SERDES,        0x18,	3,	 1,		0,	{ 0, 1, 0, 1 } }, \
 };
 
+/*MV_CMD_TYPE_ID,		command name,		Name,			numOfValues,	Possible Values */
+#define MV_BOARD_CONFIG_CMD_INFO {\
+{MV_CONFIG_MAC0,		"mac0",			"MAC0",				4, \
+	{"Switch port 6", "GBE PHY#0", "RGMII-0", "SGMII(DB-6660)"} }		,\
+{MV_CONFIG_MAC1,		"mac1",			"MAC1",				4, \
+	{"RGMII-1", "Switch port 4", "GBE PHY#3", "RGMII-0"} }			,\
+{MV_CONFIG_PON_SERDES,		"ponserdes",		"PON SERDES",			3, \
+	{"PON MAC", "MAC1[SGMII]", "MAC1[SFP]"} }				,\
+{MV_CONFIG_PON_BEN_POLARITY,	"ponpolarity",		"PON POLARITY (DB-6660)",	2, \
+	{"BEN active low", "BEN active low"} }					,\
+{MV_CONFIG_SGMII0_CAPACITY,	"sgmii0capacity",	"SGMII-0 Capacity",		2, \
+	{"1G", "2.5G"} }							,\
+{MV_CONFIG_SGMII1_CAPACITY,	"sgmii1capacity",	"SGMII-1 Capacity",		2, \
+	{"1G", "2.5G"} }							,\
+{MV_CONFIG_LANE1,		"serdes1",		"SerDes Lane#1 (DB-6660)",	4, \
+	{"PCIe-1", "SGMII-0", "SATA-1", "Unconnected"} }			,\
+{MV_CONFIG_LANE2,		"serdes2",		"SerDes Lane#2 (DB-6660)",	2, \
+	{"SATA-0", "SGMII-0"} }							,\
+{MV_CONFIG_LANE3,		"serdes3",		"SerDes Lane#3 (DB-6660)",	2, \
+	{"USB3.0", "SGMII-0"} }							,\
+{MV_CONFIG_MAC0_SW_SPEED,	"mac0_switch_speed",	"MAC0 to Switch Speed",		2, \
+	{"2G", "1G"} }								,\
+{MV_CONFIG_DEVICE_BUS_MODULE,	"devicebus",		"Device Bus Module (DB-6660)",	4, \
+	{"None", "RGMII Module", "I2S Audio Module", "SPDIF Audio Module"} }	,\
+{MV_CONFIG_SLIC_TDM_DEVICE,	"tdm",			"TDM module",			6, \
+	{"None", "SSI", "ISI", "ZSI", "TDM2C", "TDMMC"} }			,\
+{MV_CONFIG_DDR_BUSWIDTH,	"ddr_buswidth",		"DDR bus-width (DB-6660)",	2, \
+	{"32-bit", "16-bit"} }						,\
+};
+
 /* MV_CONFIG_TYPE_ID ConfigID,      MV_U32 Offset,	 expanderNum,  regNum,   }} */
 #define MV_BOARD_IO_EXP_DB6650_INFO { \
 	/* 2nd IO Expander Register*/ \

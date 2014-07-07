@@ -24,67 +24,31 @@ disclaimer.
 
 typedef struct _boardConfig {
 	MV_SATR_TYPE_ID ID;
+	char *cmdName;
 	char *Name;
 	MV_U8 numOfValues;
 	char *Value[6];
 } MV_BOARD_CONFIG_VALUE;
 
-/* MV_SATR_TYPE_ID,		 Name,		numOfValues,	Possible Values */
-MV_BOARD_CONFIG_VALUE boardConfig[] = {
-{ MV_CONFIG_MAC0,		"MAC0",				4, {"Switch port 6", "GBE PHY#0", "RGMII-0", "SGMII(DB-6660)"} },
-{ MV_CONFIG_MAC1,		"MAC1",				4, {"RGMII-1", "Switch port 4", "GBE PHY#3", "RGMII-0"} },
-{ MV_CONFIG_PON_SERDES,		"PON SERDES",			3, {"PON MAC", "MAC1[SGMII]", "MAC1[SFP]"} },
-{ MV_CONFIG_PON_BEN_POLARITY,	"PON POLARITY (DB-6660)",	2, {"BEN active low", "BEN active low"} },
-{ MV_CONFIG_SGMII0_CAPACITY,	"SGMII-0 Capacity",		2, {"1G", "2.5G"} },
-{ MV_CONFIG_SGMII1_CAPACITY,	"SGMII-1 Capacity",		2, {"1G", "2.5G"} },
-{ MV_CONFIG_LANE1,		"SerDes Lane#1 (DB-6660)",	4, {"PCIe-1", "SGMII-0", "SATA-1", "Unconnected"} },
-{ MV_CONFIG_LANE2,		"SerDes Lane#2 (DB-6660)",	2, {"SATA-0", "SGMII-0"} },
-{ MV_CONFIG_LANE3,		"SerDes Lane#3 (DB-6660)",	2, {"USB3.0", "SGMII-0"} },
-{ MV_CONFIG_MAC0_SW_SPEED,	"MAC0 to Switch Speed",		2, {"2G", "1G"} },
-{ MV_CONFIG_DEVICE_BUS_MODULE,	"Device Bus Module (DB-6660)",	4, {"None", "RGMII Module", "I2S Audio Module", "SPDIF Audio Module"} },
-{ MV_CONFIG_SLIC_TDM_DEVICE,	"TDM module",			6, {"None", "SSI", "ISI", "ZSI", "TDM2C", "TDMMC"} },
-{ MV_CONFIG_DDR_BUSWIDTH,	"DDR bus-width (DB-6660)",	2, {"32-bit", "16-bit"} },
-};
-
+MV_BOARD_CONFIG_VALUE boardConfig[] = MV_BOARD_CONFIG_CMD_INFO;
 
 MV_CONFIG_TYPE_ID configToEnum(char *name)
 {
+	MV_CONFIG_TYPE_ID i;
+
 	if (name == NULL)
 		goto error;
-	else if (strcmp(name, "mac0") == 0)
-		return MV_CONFIG_MAC0;
-	else if (strcmp(name, "mac1") == 0)
-		return MV_CONFIG_MAC1;
-	else if (strcmp(name, "ponserdes") == 0)
-		return MV_CONFIG_PON_SERDES;
-	else if (strcmp(name, "ponpolarity") == 0)
-		return MV_CONFIG_PON_BEN_POLARITY;
-	else if (strcmp(name, "sgmii0capacity") == 0)
-		return MV_CONFIG_SGMII0_CAPACITY;
-	else if (strcmp(name, "sgmii1capacity") == 0)
-		return MV_CONFIG_SGMII1_CAPACITY;
-	else if (strcmp(name, "serdes1") == 0)
-		return MV_CONFIG_LANE1;
-	else if (strcmp(name, "serdes2") == 0)
-		return MV_CONFIG_LANE2;
-	else if (strcmp(name, "serdes3") == 0)
-		return MV_CONFIG_LANE3;
-	else if (strcmp(name, "mac0_switch_speed") == 0)
-		return MV_CONFIG_MAC0_SW_SPEED;
-	else if (strcmp(name, "devicebus") == 0)
-		return MV_CONFIG_DEVICE_BUS_MODULE;
-	else if (strcmp(name, "tdm") == 0)
-		return MV_CONFIG_SLIC_TDM_DEVICE;
-	else if (strcmp(name, "ddr_buswidth") == 0)
-		return MV_CONFIG_DDR_BUSWIDTH;
-	else if (strcmp(name, "default") == 0)
+
+	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++)
+		if (strcmp(name, boardConfig[i].cmdName) == 0)
+			return boardConfig[i].ID;
+	if (strcmp(name, "default") == 0)
 		return MV_CONFIG_TYPE_CMD_SET_DEFAULT;
 
 error:
-	printf("Error: there is not board configuration named '%s'\n", name);
+	printf("Error: there is no board configuration named '%s'\n", name);
 	return MV_ERROR;
 }
-
 
 /* Description:
  *	reset all configuration fields to it's default setup (0x0 for all fields)
@@ -195,15 +159,9 @@ int isEepromEnabledFlag = -1;
 int do_boardCfg(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	const char *cmd;
-	MV_U32 boardId = mvBoardIdGet();
 	MV_U8 value;
 	MV_CONFIG_TYPE_ID field;
 	int status = 0;
-
-	if (boardId != DB_6650_ID && boardId != DB_6660_ID) {
-		printf("Error: EEPROM is available only on Development boards (DB-6650/60)\n");
-		return 0;
-	}
 
 	if (isEepromEnabledFlag == -1)
 		isEepromEnabledFlag = (mvBoardIsEepromEnabled() == MV_TRUE) ? 1 : 0;
@@ -214,11 +172,9 @@ int do_boardCfg(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	}
 
 	/* need at least another argument 'write'/ 'list' /'read' */
-	if (argc < 2) {
-		printf("argc <= 2\n");
+	if (argc < 2)
 		goto usage;
 
-	}
 	cmd = argv[1];
 
 	/* if requested to dump all fields - ('boardConfig read') */

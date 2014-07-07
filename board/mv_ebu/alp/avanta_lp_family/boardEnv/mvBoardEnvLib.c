@@ -3135,6 +3135,12 @@ MV_BOOL mvBoardIsEepromEnabled()
 {
 	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
 	MV_U8 value, addr = mvBoardTwsiAddrGet(BOARD_DEV_TWSI_EEPROM, 0);
+	MV_U32 boardId = mvBoardIdGet();
+
+	if (boardId != DB_6650_ID && boardId != DB_6660_ID) {
+		mvOsPrintf("Error: EEPROM is available only on Development boards (DB-6650/60)\n");
+		return MV_FALSE;
+	}
 
 	if (addr == 0xFF)
 		return MV_FALSE;

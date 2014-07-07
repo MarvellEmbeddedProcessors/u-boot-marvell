@@ -72,6 +72,9 @@ disclaimer.
 #ifdef CONFIG_DB_AC3
        #define DB_AC3
 #endif
+#ifdef CONFIG_RD_AC3
+       #define RD_AC3
+#endif
 
 /***********/
 /* General */

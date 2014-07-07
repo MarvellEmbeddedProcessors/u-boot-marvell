@@ -97,7 +97,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* AlleyCat3 Marvell boards */
 #define AC3_MARVELL_BOARD_ID_BASE	0x30
 #define DB_AC3_ID					(AC3_MARVELL_BOARD_ID_BASE + 0)
-#define AC3_MARVELL_MAX_BOARD_ID	(AC3_MARVELL_BOARD_ID_BASE + 1)
+#define RD_AC3_ID					(AC3_MARVELL_BOARD_ID_BASE + 1)
+#define AC3_MARVELL_MAX_BOARD_ID	(AC3_MARVELL_BOARD_ID_BASE + 2)
 #define AC3_MARVELL_BOARD_NUM		(AC3_MARVELL_MAX_BOARD_ID - AC3_MARVELL_BOARD_ID_BASE)
 
 #define INVALID_BOARD_ID			0xFFFF
@@ -357,6 +358,64 @@ MPP#	NAME			IN/OUT
 #define DB_DX_AC3_GPP_POL_LOW		0x0
 #define DB_DX_AC3_GPP_POL_MID		0x0
 
+/******************/
+/*   RD_DX_AC3    */
+/******************/
+#define RD_DX_AC3_MPP0_7		0x00042222 /* 0-3:SPI, 4:NF_CEn, 5:CPU Awake, 6-7:GPIO */
+#define RD_DX_AC3_MPP8_15		0x11122000 /* 8-12:GPIO, TODO: set to 0 bits 11-12 13:INTERRUPT_OUT, 14-15:I2C*/
+#define RD_DX_AC3_MPP16_23		0x44444004 /* 16:NF_REn, 17-18:GPIO, 19-23:NF_[RBn,EWn,IO[0,2,3]]*/
+#define RD_DX_AC3_MPP24_31		0x14444444 /* 24-30: NF_[IO{4,5,6,7],CLE,ALE], 31: SLV_MDC(SMI) */
+#define RD_DX_AC3_MPP32_39		0x00000001 /* 31: SLV_MDIO(SMI) */
+
+/* GPPs
+MPP#	NAME			IN/OUT
+----------------------------------------------
+0	SPI_MOSI		(out)
+1	SPI_MISO		(in)
+2	SPI_SCK			(out)
+3	SPI_CS0n		(out)
+4	NF_CEn			(out) DEV_CSn[0]
+5	PEX_RSTOUTn		(out) DEV_BOOTCSn
+6	GPIO[6]			(in/out)
+7	GPIO[7]			(in/out)
+8	GPIO[8]			(in/out)
+9	GPIO[9]			(in/out)
+10	GPIO[10]		(in/out)
+11	UART1_RXD		(in)
+12	UART1_TXD		(out)
+13	INTERRUPT_OUTn	(out)
+14	I2C_SCL			(in/out)
+15	I2C_SDA			(in/out)
+
+16	DEV_Oen_NF_Ren	(out)
+17	GPIO[17]		(out) DEV_CLK_OUT
+18	GPIO[18]		(in/out) INT_in / SD_WP / VC2_GPP
+19	NF_RBn			(in)
+20	NF_WEn			(out)    DEV_WEn[0]
+21	NF_IO[0]		(in/out) DEV_AD[0]
+22	NF_IO[1]		(in/out) DEV_AD[1]
+23	NF_IO[2]		(in/out) DEV_AD[2]
+24	NF_IO[3]		(in/out) DEV_AD[3]
+25	NF_IO[4]		(in/out) DEV_AD[4]
+26	NF_IO[5]		(in/out) DEV_AD[5]
+27	NF_IO[6]		(in/out) DEV_AD[6]
+28	NF_IO[7]		(in/out) DEV_AD[7]
+29	NF_CLE			(out) DEV_A[0]
+30	NF_ALE			(out) DEV_A[1]
+31	SLV_SMI_MDC		(in)
+32	SLV_SMI_MDIO	(in/out)
+
+*/
+#define RD_DX_AC3_GPP_OUT_ENA_LOW	(~(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12 \
+		| BIT13 | BIT16 | BIT17 | BIT20 | BIT29  | BIT30))
+#define RD_DX_AC3_GPP_OUT_ENA_MID	(~(0))
+
+#define RD_DX_AC3_GPP_OUT_VAL_LOW	(BIT0 | BIT2 | BIT3 | BIT4 | BIT6 | BIT12 \
+		| BIT13 | BIT16 | BIT17 | BIT20 | BIT29  | BIT30)
+#define RD_DX_AC3_GPP_OUT_VAL_MID	0x0
+
+#define RD_DX_AC3_GPP_POL_LOW		0x0
+#define RD_DX_AC3_GPP_POL_MID		0x0
 
 #endif /* __INCmvBoardEnvSpech */
 

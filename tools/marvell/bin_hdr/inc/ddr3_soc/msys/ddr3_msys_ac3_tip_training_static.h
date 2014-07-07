@@ -42,9 +42,9 @@
 #ifndef __ddr3_msys_ac3_training_static_H
 #define __ddr3_msys_ac3_training_static_H
 
-#include <gtOs/gtGenTypes.h>
-#include <ddr3/trainingIp/mvDdr3TrainingIpStatic.h>
-#include <ddr3/trainingIp/mvDdr3TrainingIp.h>
+#include <gtGenTypes.h>
+#include <mvDdr3TrainingIpStatic.h>
+#include <mvDdr3TrainingIp.h>
 
 #ifdef __cplusplus
 extern "C" {

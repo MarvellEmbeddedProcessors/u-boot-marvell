@@ -108,6 +108,7 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	MV_U32 totalRxDescSize, totalTxDescSize;
 	MV_U32 maxPoll, clkSyncCtrlReg;
 	MV_U32 chMask;
+	MV_U32 count;
 	MV_TDM_DPRAM_ENTRY actDpramEntry, *pActDpramEntry;
 
 	MV_TRC_REC("->%s\n", __func__);
@@ -399,6 +400,17 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	MV_REG_WRITE(MCSC_EXTENDED_INT_MASK_REG, 0);
 	MV_REG_WRITE(MCSC_GLOBAL_INT_CAUSE_REG, MCSC_GLOBAL_INT_CAUSE_INIT_DONE_MASK);
 	MV_REG_WRITE(MCSC_EXTENDED_INT_CAUSE_REG, 0);
+
+	/* Set output sync counter bits for FS */
+#if defined(MV_TDM_PCM_CLK_8MHZ)
+	count = MV_FRAME_128TS * 8;
+#elif defined(MV_TDM_PCM_CLK_4MHZ)
+	count = MV_FRAME_64TS * 8;
+#else /* MV_TDM_PCM_CLK_2MHZ */
+	count = MV_FRAME_32TS * 8;
+#endif
+	MV_REG_WRITE(TDM_OUTPUT_SYNC_BIT_COUNT_REG,
+		((count << TDM_SYNC_BIT_RX_OFFS) & TDM_SYNC_BIT_RX_MASK) | (count & TDM_SYNC_BIT_TX_MASK));
 
 #ifdef MV_COMM_UNIT_DEBUG
 	mvCommUnitShow();
@@ -1022,12 +1034,6 @@ MV_VOID mvCommUnitShow(MV_VOID)
 			   (MV_U32) mcdmaTxDescPtr[index], (MV_U32) mcdmaTxDescPhys[index]);
 
 	}
-}
-
-MV_STATUS mvCommUnitSyncBitCountSet(MV_32 count)
-{
-	MV_REG_WRITE(TDM_OUTPUT_SYNC_BIT_COUNT_REG, (count << TDM_SYNC_BIT_OFFS) & TDM_SYNC_BIT_MASK);
-	return MV_OK;
 }
 
 MV_STATUS mvCommUnitResetSlic(MV_VOID)

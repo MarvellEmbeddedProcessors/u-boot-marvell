@@ -156,6 +156,10 @@ ifeq "$(CONFIG_DB_AC3)"  "y"
   CFLAGS += -DCONFIG_DB_AC3
   AC3_SOC = yes
 endif
+ifeq "$(CONFIG_RD_AC3)"  "y"
+  CFLAGS += -DCONFIG_RD_AC3
+  AC3_SOC = yes
+endif
 
 CROSS    = $(CROSS_COMPILE_BH)
 LD       = $(CROSS)ld

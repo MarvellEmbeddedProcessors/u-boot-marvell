@@ -85,6 +85,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static MV_U32 gBoardId = -1;
 MV_U32 mvBoardIdGet(MV_VOID)
 {
+#if defined(CONFIG_ALLEYCAT3)
+	MV_U8 readValue = 0;
+#endif
 	if (gBoardId != -1)
 		return gBoardId;
 
@@ -111,11 +114,21 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		gBoardId = RD_DX_BC2_ID;
 	#elif defined(RD_MTL_BOBCAT2)
 		gBoardId = RD_MTL_BC2;
-/* AlleyCat3 Board ID's */
-	#elif defined(DB_AC3)
-		gBoardId = DB_AC3_ID;
 	#else
-		#error Invalid Board is configured
+		/* AlleyCat3 Board ID's */
+		if (mvBoardSarBoardIdGet(&readValue) != MV_OK) {
+			mvPrintf("%s: Error obtaining Board ID\n", __func__);
+			mvPrintf("%s: Set default board ID to DB-DXAC3-MM\n", __func__);
+			readValue = DB_AC3_ID - AC3_MARVELL_BOARD_ID_BASE;
+		}
+
+		if (readValue < AC3_MARVELL_BOARD_NUM)
+			gBoardId = AC3_MARVELL_BOARD_ID_BASE + readValue;
+		else {
+			mvPrintf("%s: Error: read wrong Board ID (%d)\n", __func__, readValue);
+			mvPrintf("%s: Set default board ID to DB-DXAC3-MM\n", __func__);
+			gBoardId = DB_AC3_ID;
+		}
 	#endif
 #endif
 
@@ -145,12 +158,36 @@ MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
 }
 
 
+/*******************************************************************************/
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
 	return MV_BOARD_TCLK_200MHZ;
 }
 
+/*******************************************************************************/
 MV_U8 mvHwsBoardIdGet(MV_VOID)
 {
 	return 0;
 }
+
+/*******************************************************************************/
+MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value)
+{
+	MV_U8			boardId;
+	MV_TWSI_SLAVE	twsiSlave;
+
+	/* Initializing twsiSlave in order to read from the TWSI address */
+	twsiSlave.slaveAddr.address = 0x4D;	/* TODO - change to 0x50 - address of init EEPROM */
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.offset = 1;	/* TODO change to 7 - the LSB of the first address-value pair) */
+	twsiSlave.moreThen256 = MV_FALSE;
+
+	if (MV_ERROR == mvTwsiRead(0, &twsiSlave, &boardId, 1))
+		return MV_ERROR;
+
+	*value = (boardId & 0x7);
+
+	return MV_OK;
+}
+

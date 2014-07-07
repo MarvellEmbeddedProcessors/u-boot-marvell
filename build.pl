@@ -13,7 +13,7 @@ sub HELP_MESSAGE
 	print "\t\t\t\t\tarmada_38x, armada_38x_customer0, armada_38x_customer1\n";
 	print "\t\t\t\t\tarmada_375, armada_375_customer0, armada_375_customer1\n";
 	print "\t\t\t\t\tbobcat2_db, bobcat2_rd, bobcat2_customer0, bobcat2_customer1\n";
-	print "\t\t\t\t\tac3_db, ac3_customer0, ac3_customer1\n";
+	print "\t\t\t\t\tac3_db, ac3_rd, ac3_customer0, ac3_customer1\n";
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
 	print "\t-m\tDDR type(default: DDR3). Accepts: 3 for DDR3, 4 for DDR4\n";
@@ -72,6 +72,7 @@ if(($opt_b eq "armada_xp_dbgp") or
 	($opt_b eq "bobcat2_customer0") or
 	($opt_b eq "bobcat2_customer1") or
 	($opt_b eq "ac3_db") or
+	($opt_b eq "ac3_rd") or
 	($opt_b eq "ac3_customer0") or
 	($opt_b eq "ac3_customer1") )
 {
@@ -101,7 +102,7 @@ if(($opt_b eq "armada_xp_dbgp") or
 		$boardID="msys-ac3";
 		$targetBoard = substr $board, 8;
 	}
-		# if board string contains "customer", use customer define for binary_header
+	# if board string contains "customer", use customer define for binary_header
 	if (index($board, "customer") != -1){
 		system("echo \"#define CONFIG_CUSTOMER_BOARD_SUPPORT 1\" >> include/config.h");
 	}
@@ -109,7 +110,7 @@ if(($opt_b eq "armada_xp_dbgp") or
 else
 {
 	if (defined) {
-		print "\n *** Error: Bad board type $opt_b specified\n\n";
+			print "\n *** Error: Bad board type $opt_b specified\n\n";
 		}
 		else {
 			print "\n *** Error: Board type unspecified\n\n";
@@ -157,8 +158,8 @@ elsif  ($opt_f eq "nand"){
 	if( ($boardID eq "axp") or
 		($boardID eq "msys-bc2") or
 		($boardID eq "msys-ac3") or
-                       ($boardID eq "a38x")) {
-		$img_opts   = "-P 4096 -L 128 -N MLC";
+		($boardID eq "a38x")) {
+			$img_opts   = "-P 4096 -L 128 -N MLC";
 	}
 	elsif($boardID eq "a375") {
 		$img_opts   = "-P 4096 -L 256 -N MLC";
@@ -166,10 +167,10 @@ elsif  ($opt_f eq "nand"){
 	elsif($boardID eq "alp") {
 		$img_opts   = "-P 2048 -L 128 -N SLC";
 	}
-	print "Image options =  $img_opts\n\n";
-}
-else
-{
+		print "Image options =  $img_opts\n\n";
+	}
+	else
+	{
 	if (defined $opt_f) {
 		print "\n *** Error: Bad flash type $opt_f specified\n\n";
 	}

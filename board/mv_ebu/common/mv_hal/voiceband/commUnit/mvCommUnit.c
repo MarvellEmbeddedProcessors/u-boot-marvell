@@ -260,6 +260,10 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 		MV_REG_WRITE(MCSC_CHx_TRANSMIT_CONFIG_REG(chan), CONFIG_MTCRx);
 	}
 
+	/* Enable RX/TX linear byte swap */
+	MV_REG_WRITE(MCSC_GLOBAL_CONFIG_EXTENDED_REG,
+		    (MV_REG_READ(MCSC_GLOBAL_CONFIG_EXTENDED_REG) | CONFIG_LINEAR_BYTE_SWAP));
+
 	/***********************************************/
 	/* Shared Bus to Crossbar Bridge Configuration */
 	/***********************************************/
@@ -799,6 +803,7 @@ MV_STATUS mvCommUnitTx(MV_U8 *pTdmTxBuff)
 	/* Calculate total Tx buffer size */
 	buffSize = (sampleSize * MV_TDM_TOTAL_CH_SAMPLES * samplingCoeff * totalChannels);
 
+#ifndef CONFIG_AVANTA_LP
 	if (sampleSize > MV_PCM_FORMAT_1BYTE) {
 		TRC_REC("Linear mode(Tx): swapping bytes\n");
 			for (index = 0; index < buffSize; index += 2) {
@@ -808,6 +813,7 @@ MV_STATUS mvCommUnitTx(MV_U8 *pTdmTxBuff)
 			}
 		TRC_REC("Linear mode(Tx): swapping bytes...done.\n");
 	}
+#endif
 
 	/* Flush+Invalidate the next Tx buffer */
 	mvOsCacheFlush(NULL, pTdmTxBuff, buffSize);
@@ -830,6 +836,7 @@ MV_STATUS mvCommUnitRx(MV_U8 *pTdmRxBuff)
 	/* Invalidate current received buffer from cache */
 	mvOsCacheInvalidate(NULL, pTdmRxBuff, buffSize);
 
+#ifndef CONFIG_AVANTA_LP
 	if (sampleSize > MV_PCM_FORMAT_1BYTE) {
 		TRC_REC("  -> Linear mode(Rx): swapping bytes\n");
 			for (index = 0; index < buffSize; index += 2) {
@@ -839,7 +846,7 @@ MV_STATUS mvCommUnitRx(MV_U8 *pTdmRxBuff)
 			}
 		TRC_REC("  <- Linear mode(Rx): swapping bytes...done.\n");
 	}
-
+#endif
 	MV_TRC_REC("<-%s\n", __func__);
 	return MV_OK;
 }

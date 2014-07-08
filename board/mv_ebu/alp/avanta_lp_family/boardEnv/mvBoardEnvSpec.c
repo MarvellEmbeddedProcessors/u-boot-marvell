@@ -247,7 +247,7 @@ MV_BOARD_TDM_INFO db88f6660TdmISI[] = { {2} };
 
 MV_BOARD_TDM_INFO db88f6660Tdm2c[] = { {0} };
 
-MV_BOARD_TDM_INFO db88f6660Tdmmc[] = { {0}, {1}, {2} };
+MV_BOARD_TDM_INFO db88f6660Tdmmc[] = { {0}, {1}, {2}, {3} };
 
 MV_BOARD_TDM_SPI_INFO db88f6660TdmSpiInfo[] = { {-1}, {-1}, {1}, {1}, {1}, {1} };
 
@@ -287,7 +287,7 @@ MV_BOARD_INFO db88f6660_board_info = {
 	.gppPolarityValHigh		= DB_88F6660_GPP_POL_HIGH,
 
 	/* TDM */
-	.numBoardTdmInfo		= {-1, -1, -1, 1, 1, 3},
+	.numBoardTdmInfo		= {-1, -1, -1, 1, 1, 4},
 	.pBoardTdmInt2CsInfo		= {NULL, NULL, db88f6660TdmISI, db88f6660TdmZSI, db88f6660Tdm2c,
 						db88f6660Tdmmc},
 	.boardTdmInfoIndex		= 0,

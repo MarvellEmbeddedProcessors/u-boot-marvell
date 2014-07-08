@@ -987,6 +987,19 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		mvOsPrintf("%s: Error: board configuration conflict between MAC1 to RGMII-1, " \
 				"and External TDM - using RGMII-1 (disabled External TDM)\n\n", __func__);
 
+	if (slicDev == SLIC_TDMMC_ID) {
+		if (ethComplex & MV_ETHCOMP_GE_MAC0_2_RGMII0)
+			mvOsPrintf("%s: Error: board configuration conflict between MAC0 to RGMII-0, " \
+					"and External TDM - using External TDM (disabled RGMII-0)\n\n", __func__);
+
+		if (ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0)
+			mvOsPrintf("%s: Error: board configuration conflict between SW P4 to RGMII-0, " \
+					"and External TDM - using External TDM (disabled RGMII-0)\n\n", __func__);
+
+		if (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII0)
+			mvOsPrintf("%s: Error: board configuration conflict between MAC1 to RGMII-0, " \
+					"and External TDM - using External TDM (disabled RGMII-0)\n\n", __func__);
+	}
 	mvBoardSlicUnitTypeSet(slicDev);
 
 	/* Update MPP group types and values according to board configuration */
@@ -1082,6 +1095,7 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 	MV_SLIC_UNIT_TYPE slicDev;
 	MV_U32 ethComplexOptions = mvBoardEthComplexConfigGet();
 	MV_BOOL singleCpu, tdmLqUnit;
+	MV_U32 tdmmcType;
 
 	/* MPP Groups initialization : */
 	/* Set Group 0-1 - Boot device (else if booting from SPI1: Set Groups 3-4) */
@@ -1108,17 +1122,19 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 
 	/* Groups 5-6-7 Set GE0, GE1_RGMII0, or Switch port 4 */
 	singleCpu = (mvCtrlGetCpuNum() == 0); /* if using Dual CPU ,set UART1 */
+	/* If TDMMC is enabled, set proper MPP for chip selection and interrupt */
+	tdmmcType = (mvBoardSlicUnitTypeGet() == SLIC_TDMMC_ID);
 	if (ethComplexOptions & MV_ETHCOMP_GE_MAC0_2_RGMII0) {
 		mvBoardMppTypeSet(5, GE0_UNIT_PON_TX_FAULT);
-		mvBoardMppTypeSet(6, GE0_UNIT);
+		mvBoardMppTypeSet(6, tdmmcType ? GE0_UNIT_TDMMC : GE0_UNIT);
 		mvBoardMppTypeSet(7, (singleCpu ? GE0_UNIT_LED_MATRIX : GE0_UNIT_UA1_PTP));
 	} else if (ethComplexOptions & MV_ETHCOMP_SW_P4_2_RGMII0) {
 		mvBoardMppTypeSet(5, SWITCH_P4_PON_TX_FAULT);
-		mvBoardMppTypeSet(6, SWITCH_P4);
+		mvBoardMppTypeSet(6, tdmmcType ? SWITCH_P4_TDMMC : SWITCH_P4);
 		mvBoardMppTypeSet(7, (singleCpu ? SWITCH_P4_LED_MATRIX : SWITCH_P4_UA1_PTP));
 	} else if (ethComplexOptions & MV_ETHCOMP_GE_MAC1_2_RGMII0) {
 		mvBoardMppTypeSet(5, GE1_RGMII0_UNIT_PON_TX_FAULT);
-		mvBoardMppTypeSet(6, GE1_RGMII0_UNIT);
+		mvBoardMppTypeSet(6, tdmmcType ? GE1_RGMII0_UNIT_TDMMC : GE1_RGMII0_UNIT);
 		mvBoardMppTypeSet(7, (singleCpu ? GE1_RGMII0_UNIT_LED_MATRIX : GE1_RGMII0_UNIT_UA1_PTP));
 	}
 }

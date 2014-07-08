@@ -181,7 +181,7 @@ MV_BOARD_INFO armada_375_customer_board_0_info = {
 	.norFlashReadParams		= A375_CUSTOMER_BOARD_0_NOR_READ_PARAMS,
 	.norFlashWriteParams		= A375_CUSTOMER_BOARD_0_NOR_WRITE_PARAMS,
 	/* Enable modules auto-detection. */
-	.configAutoDetect		= MV_TRUE
+	.configAutoDetect		= MV_FALSE
 };
 
 MV_BOARD_INFO *customerBoardInfoTbl[] = {

@@ -429,8 +429,11 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	/* Restore old periodic interrupt mechanism WA */
 	/* MV_REG_BIT_SET(TDM_DATA_DELAY_AND_CLK_CTRL_REG, OLD_INT_WA_BIT); */
 
+	/* Keep the software workaround to enable TEN while set Fsync for none-ALP chips */
+#ifndef CONFIG_AVANTA_LP
 	/* Enable TDM */
 	MV_REG_BIT_SET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
+#endif
 
 #if 0
 	/* Poll for Enter Hunt Execution Status */
@@ -473,8 +476,10 @@ MV_VOID mvCommUnitRelease(MV_VOID)
 		mvOsUDelay(10);
 		MV_REG_BIT_RESET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_MAI_MASK);
 
+#ifndef CONFIG_AVANTA_LP
 		/* Disable TDM */
 		MV_REG_BIT_RESET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
+#endif
 
 		/* Disable PCLK */
 		MV_REG_BIT_RESET(TDM_DATA_DELAY_AND_CLK_CTRL_REG, (TX_CLK_OUT_ENABLE_MASK | RX_CLK_OUT_ENABLE_MASK));
@@ -599,6 +604,11 @@ MV_VOID mvCommUnitPcmStart(MV_VOID)
 		maskReg = MV_REG_READ(TDM_MASK_REG);
 		MV_REG_WRITE(TDM_MASK_REG, (maskReg | CONFIG_TDM_CAUSE));
 		MV_REG_WRITE(COMM_UNIT_TOP_MASK_REG, CONFIG_COMM_UNIT_TOP_MASK);
+
+#ifdef CONFIG_AVANTA_LP
+		/* Enable TDM */
+		MV_REG_BIT_SET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
+#endif
 	}
 
 	MV_TRC_REC("<-%s\n", __func__);
@@ -800,6 +810,10 @@ MV_VOID mvCommUnitPcmStop(MV_VOID)
 			mvOsCacheFlushInv(NULL, txBuffVirt[index], buffSize);
 		}
 
+#ifdef CONFIG_AVANTA_LP
+		/* Disable TDM */
+		MV_REG_BIT_RESET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
+#endif
 	}
 
 	MV_TRC_REC("<-%s\n", __func__);

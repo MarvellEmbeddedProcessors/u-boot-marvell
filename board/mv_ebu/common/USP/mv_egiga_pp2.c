@@ -201,7 +201,7 @@ int mv_eth_initialize(bd_t *bis)
 	}
 
 	for (port = 0; port < mvCtrlEthMaxPortGet(); port++) {
-		if (MV_PON_PORT(port) || mvBoardIsPortLoopback(port))
+		if (MV_PP2_IS_PON_PORT(port) || mvBoardIsPortLoopback(port))
 			continue;
 
 		if (mvBoardIsEthActive(port) == MV_FALSE)
@@ -290,7 +290,7 @@ static int mvEgigaInit(struct eth_device *dev, bd_t *p)
 	/* init each port only once */
 	if (priv->devInit != MV_TRUE) {
 		/* port power up - release from reset */
-		if (!MV_PON_PORT(priv->port)) {
+		if (!MV_PP2_IS_PON_PORT(priv->port)) {
 			phy_addr = mvBoardPhyAddrGet(priv->port);
 			if (phy_addr != -1) {
 				mvGmacPhyAddrSet(priv->port, phy_addr);

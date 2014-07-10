@@ -61,6 +61,10 @@ disclaimer.
 #define CONFIG_MV_ETH_RXQ   8
 #define CONFIG_MV_ETH_RXQ_DEF 0
 #define CONFIG_MV_PON
+#define CONFIG_MV_PP2_TXQ   8
+#define CONFIG_MV_PP2_RXQ   8
+#define CONFIG_MV_PP2_RXQ_DEF 0
+#define CONFIG_MV_PP2_PON
 #define CONFIG_MV_PON_TCONTS 1
 #elif defined CONFIG_MV_PON
 #define MV_PON_PORT(p)		((p) == MV_PON_PORT_ID)

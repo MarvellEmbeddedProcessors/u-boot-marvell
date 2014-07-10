@@ -122,16 +122,16 @@ extern "C" {
 #define GOP_REG_BASE(port)                      (MV_ETH_BASE_ADDR + 0x4000 + ((port) / 2) * 0x3000 + ((port) % 2) * 0x1000)
 #define MV_PON_REGS_OFFSET                      (MV_ETH_BASE_ADDR + 0x8000)
 
-#define MV_PON_EXIST
-#define MV_ETH_MAX_TCONT                        16
-#define MV_PON_PORT_ID                          7
-#define MV_ETH_RXQ_TOTAL_NUM                    32
+#define MV_PP2_PON_EXIST
+#define MV_PP2_MAX_TCONT                        16
+#define MV_PP2_PON_PORT_ID                      7
+#define MV_PP2_RXQ_TOTAL_NUM                    32
 #define MV_VLAN_1_TYPE                          0x88A8
 
 #define MV_ETH_MAX_PORTS                        4
-#define MV_ETH_MAX_RXQ                          16      /* Maximum number of RXQs can be mapped to each port */
-#define MV_ETH_MAX_TXQ                          8
-#define MV_ETH_TX_CSUM_MAX_SIZE                 1790
+#define MV_PP2_MAX_RXQ                          16      /* Maximum number of RXQs can be mapped to each port */
+#define MV_PP2_MAX_TXQ                          8
+#define MV_PP2_TX_CSUM_MAX_SIZE                 1790
 
 #define MV_ETH_REGS_OFFSET(port)                (MV_ETH_BASE_ADDR - ((port) / 2) * 0x40000 + ((port) % 2) * 0x4000)
 

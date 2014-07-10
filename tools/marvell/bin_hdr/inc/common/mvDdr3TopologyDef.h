@@ -68,6 +68,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MAX_INTERFACE_NUM  		(12)
 #define MAX_BUS_NUM        		(8)
 
+
 /*************************TOPOLOGY*******************************************/
 typedef enum
 {
@@ -92,6 +93,7 @@ typedef enum
    SPEED_BIN_DDR_2133L,
    SPEED_BIN_DDR_2133M,
    SPEED_BIN_DDR_2133N,
+
    SPEED_BIN_DDR_1333H_EXT,
    SPEED_BIN_DDR_1600K_EXT,
    SPEED_BIN_DDR_1866M_EXT
@@ -156,7 +158,7 @@ typedef enum
 typedef struct
 {
    /* Chip Select (CS) bitmask (bits 0-CS0, bit 1- CS1 ...) */
-   MV_U32      csBitmask;
+   MV_U8      csBitmask;
 
    /* mirror enable/disable (bits 0-CS0 mirroring, bit 1- CS1 mirroring ...)*/
    MV_BOOL      mirrorEnableBitmask;
@@ -187,10 +189,10 @@ typedef struct
    MV_HWS_DDR_FREQ      memoryFreq;
 
    /* delay CAS Write Latency - 0 for using default value (jedec suggested) */
-   MV_U32      casWL;
+   MV_U8      casWL;
 
    /* delay CAS Latency - 0 for using default value (jedec suggested) */
-   MV_U32      casL;
+   MV_U8      casL;
 
    /* operation temperature */
    MV_HWS_TEMPERTURE   interfaceTemp;
@@ -202,16 +204,16 @@ typedef struct
 typedef struct
 {
     /* Number of interfaces (default is 12)*/
-    MV_U32              interfaceActiveMask;
+    MV_U8              interfaceActiveMask;
 
    /* Controller configuration per interface */
    InterfaceParams      interfaceParams[MAX_INTERFACE_NUM];
 
    /* BUS per interface (default is 4)*/
-   MV_U32               numOfBusPerInterface;
+   MV_U8               numOfBusPerInterface;
 
    /* Bit mask for active buses*/
-   MV_U32               activeBusMask;
+   MV_U8               activeBusMask;
 
 } MV_HWS_TOPOLOGY_MAP;
 

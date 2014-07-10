@@ -119,7 +119,7 @@ extern "C" {
 #define GOP_REG_BASE(port)                      (MV_ETH_BASE_ADDR + 0x4000 + ((port) / 2) * 0x3000 + ((port) % 2) * 0x1000)
 #define MV_PON_REGS_OFFSET                      (MV_ETH_BASE_ADDR + 0x8000)
 
-#define MV_PON_EXIST
+#define MV_PP2_PON_EXIST
 #define MV_ETH_MAX_TCONT                        16
 #define MV_ETH_RXQ_TOTAL_NUM                    32
 
@@ -209,13 +209,13 @@ extern "C" {
 #define MV_CESA_SRAM_SIZE                       (2 * 1024)
 
 /* This define describes the maximum number of supported Ethernet ports */
-#define MV_PON_PORT_ID				7
+#define MV_PP2_PON_PORT_ID			7
 #define MV_ETH_MAX_PORTS                        4
-#define MV_ETH_MAX_RXQ                          16/* Maximum number of RXQs can be mapped to each port */
-#define MV_ETH_MAX_TXQ                          8
-#define MV_ETH_RXQ_TOTAL_NUM                    32      /* Total number of RXQs for usage by all ports */
-#define MV_ETH_MAX_TCONT                        16      /* Maximum number of TCONTs supported by PON port */
-#define MV_ETH_TX_CSUM_MAX_SIZE                 1790
+#define MV_PP2_MAX_RXQ                          16/* Maximum number of RXQs can be mapped to each port */
+#define MV_PP2_MAX_TXQ                          8
+#define MV_PP2_RXQ_TOTAL_NUM                    32      /* Total number of RXQs for usage by all ports */
+#define MV_PP2_MAX_TCONT                        16      /* Maximum number of TCONTs supported by PON port */
+#define MV_PP2_TX_CSUM_MAX_SIZE                 1790
 
 /* This define describes the the support of USB */
 #define MV_USB_VERSION                          1

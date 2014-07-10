@@ -4,7 +4,7 @@ use Cwd qw();
 
 sub HELP_MESSAGE
 {
-	print "\nUsage  : build -f \"Flash type\" -v X.X.X -b \"board name\" [-m \"DDR type\"] [-o \"Output file\"]\n";
+	print "\nUsage  : build -f \"Flash type\" -b \"board name\" [-v X.X.X] [-m \"DDR type\"] [-o \"Output file\"]\n";
 	print "Example: ./build.pl -f spi -v 14T2 -b avanta_lp -i spi:nand -c\n";
 	print "\n";
 	print "Options:\n";
@@ -19,7 +19,7 @@ sub HELP_MESSAGE
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
 	print "\t-m\tDDR type(default: DDR3). Accepts: 3 for DDR3, 4 for DDR4\n";
 	print "\t-i\tSupported interfaces, seperated by \":\" -  Accepts [spi:nor:nand]\n";
-	print "\t-v\tSW version (add to binary file name u-boot-alp-X.X.X-spi.bin)\n";
+	print "\t-v\tSW version (in file name: u-boot-alp-X.X.X-spi.bin, else using date by default)\n";
 	print "\t\tinterfaces. Supports spi, nor, nand. the boot \n";
 	print "\t\tinterface will always be suppored\n";
 	print "\n";
@@ -35,16 +35,24 @@ use Getopt::Std;
 getopt('f:b:o:i:v:d:m:');
 
 if((!defined $opt_b) or
-	(!defined $opt_f) or
-	(!defined $opt_v)) {
-	printf "\n *** Error: Please set required compilation options\n";
+	(!defined $opt_f)) {
+	if(!defined $opt_b){
+		printf "\n *** Error: Please set board type\n";
+	}
+	if(!defined $opt_f){
+		printf "\n *** Error: Please set boot device\n";
+	}
 	HELP_MESSAGE();
 	exit 1;
 }
 
 $cross    = $ENV{'CROSS_COMPILE'};
 $cross_bh = $ENV{'CROSS_COMPILE_BH'};
-
+if(!defined $opt_v){
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
+	$month = $mon + 1;
+	$opt_v = "$month-$mday";
+}
 if(!defined $cross){
 	printf " *** Error: Please set environment variables CROSS_COMPILE\n";
 	HELP_MESSAGE();

@@ -119,7 +119,7 @@ extern MV_STATUS ddr3TipInitSpecificRegConfig
     MV_U32              devNum,
 	MV_DRAM_MC_INIT		*regConfigArr
 );
-extern MV_STATUS    mvHwsDdr3TipLoadTopologyMap
+extern MV_STATUS    ddr3TipSetTopologyMap
 (
     MV_U32                  devNum,
     MV_HWS_TOPOLOGY_MAP     *topology
@@ -1556,7 +1556,7 @@ MV_STATUS ddr3LoadTopologyMap(void)
 	}
 
 	/*Set topology data for internal DDR training usage*/
-	if(MV_OK != mvHwsDdr3TipLoadTopologyMap(devNum, topologyMap))
+	if(MV_OK != ddr3TipSetTopologyMap(devNum, topologyMap))
 		return MV_FAIL;
 
 	return MV_OK;

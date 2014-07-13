@@ -65,6 +65,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _DDR3_A38X_H
 #define _DDR3_A38X_H
 
+#define MAX_INTERFACE_NUM  		(2)
+#define MAX_BUS_NUM        		(5)
+
 #include "ddr3_hws_hw_training_def.h"
 
 #define REG_DEVICE_SAR1_ADDR                        0xE4204

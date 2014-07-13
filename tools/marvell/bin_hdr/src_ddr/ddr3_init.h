@@ -80,6 +80,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_msys_bc2.h"
 #elif defined(MV_MSYS_AC3)
 #include "ddr3_msys_ac3.h"
+#elif defined(MV88F68XX)
+#include "ddr3_a38x.h"
 #endif
 
 /*DRR training Error codes*/

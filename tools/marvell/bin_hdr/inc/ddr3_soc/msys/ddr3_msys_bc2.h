@@ -65,6 +65,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _DDR3_MSYS_BC2_H
 #define _DDR3_MSYS_BC2_H
 
+#define MAX_INTERFACE_NUM  		(12)
+#define MAX_BUS_NUM        		(8)
+
 #include "ddr3_hws_hw_training_def.h"
 
 /* MISC */

@@ -65,10 +65,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _DDR3_TOPOLOGY_CONFIG_H
 #define _DDR3_TOPOLOGY_CONFIG_H
 
-#define MAX_INTERFACE_NUM  		(12)
-#define MAX_BUS_NUM        		(8)
-
-
 /*************************TOPOLOGY*******************************************/
 typedef enum
 {

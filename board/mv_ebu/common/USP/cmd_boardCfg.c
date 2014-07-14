@@ -19,7 +19,6 @@ disclaimer.
 *******************************************************************************/
 #include <common.h>
 #if defined(CONFIG_CMD_BOARDCFG)
-#include "ctrlEnv/mvCtrlEnvLib.h"
 #include "boardEnv/mvBoardEnvLib.h"
 
 typedef struct _boardConfig {
@@ -75,7 +74,7 @@ static int do_boardCfg_default(void)
 
 	/* Reset local array data to default as well */
 	for (i = 0; i <	MV_CONFIG_TYPE_MAX_OPTION; i++)
-		mvCtrlSysConfigSet(i, 0);
+		mvBoardSysConfigSet(i, 0);
 
 	return 0;
 
@@ -120,7 +119,7 @@ static int do_boardCfg_read(MV_CONFIG_TYPE_ID field)
 
 	/* else loop and dump all fields */
 	for (; i < loopEnd; i++) {
-		val = mvCtrlSysConfigGet(i);
+		val = mvBoardSysConfigGet(i);
 		if (val != MV_ERROR)
 			printf("%-26s= %d ==> %s\n", boardConfig[i].Name, val, boardConfig[i].Value[val]);
 		else { /* don't print error on unused fields when dump all */

@@ -127,6 +127,8 @@ endif
 # A38x
 ifeq "$(CONFIG_ARMADA_38X)"  "y"
   CFLAGS += -DCONFIG_ARMADA_38X
+  A38X_SOC = yes
+  NEW_TIP = yes
 endif
 
 # A39X
@@ -138,32 +140,39 @@ endif
 ifeq "$(CONFIG_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_BOBCAT2
   BC2_SOC = yes
+  NEW_TIP = yes
 endif
 ifeq "$(CONFIG_DB_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_DB_BOBCAT2
   BC2_SOC = yes
+  NEW_TIP = yes
 endif
 ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_RD_BOBCAT2
   BC2_SOC = yes
+  NEW_TIP = yes
 endif
 ifeq "$(CONFIG_RD_MTL_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_RD_BOBCAT2
   BC2_SOC = yes
+  NEW_TIP = yes
 endif
 
 # ALLEYCAT3
 ifeq "$(CONFIG_ALLEYCAT3)"  "y"
   CFLAGS += -DCONFIG_ALLEYCAT3
   AC3_SOC = yes
+  NEW_TIP = yes
 endif
 ifeq "$(CONFIG_DB_AC3)"  "y"
   CFLAGS += -DCONFIG_DB_AC3
   AC3_SOC = yes
+  NEW_TIP = yes
 endif
 ifeq "$(CONFIG_RD_AC3)"  "y"
   CFLAGS += -DCONFIG_RD_AC3
   AC3_SOC = yes
+  NEW_TIP = yes
 endif
 
 CROSS    = $(CROSS_COMPILE_BH)

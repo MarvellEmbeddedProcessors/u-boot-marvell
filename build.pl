@@ -160,6 +160,7 @@ if($opt_f eq "spi")      {
 }
 elsif ($opt_f eq "nor")  {
 	system("echo \"#define MV_NOR_BOOT\" >> include/config.h");
+	system("echo \"#define MV_INCLUDE_NOR\" >> include/config.h");
 	print "Boot from NOR\n";
 	$img_opts   = "";
 	$flash_name = "nor";
@@ -167,6 +168,7 @@ elsif ($opt_f eq "nor")  {
 }
 elsif  ($opt_f eq "nand"){
 	system("echo \"#define MV_NAND_BOOT\" >> include/config.h");
+	system("echo \"#define MV_NAND\" >> include/config.h");
 	print "Boot from NAND\n";
 	$flash_name = "nand";
 	$img_type   = "nand";

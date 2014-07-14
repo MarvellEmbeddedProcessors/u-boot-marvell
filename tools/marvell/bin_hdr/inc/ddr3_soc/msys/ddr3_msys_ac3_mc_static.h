@@ -66,7 +66,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _INC_MSYS_AC3_MC_STATIC_H
 
 #include "ddr3_msys_ac3.h"
-#include "mvDdr3TopologyDef.h"
 
 typedef struct __mvDramMcInit {
 	MV_U32 reg_addr;

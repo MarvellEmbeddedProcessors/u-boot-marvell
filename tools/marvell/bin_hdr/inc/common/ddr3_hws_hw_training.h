@@ -23,7 +23,6 @@
 #define _DDR3_HWS_HW_TRAINING_H
 
 #include "mv_os.h"
-#include "mvDdr3TopologyDef.h"
 
 MV_STATUS ddr3HwsHwTraining(void);
 MV_STATUS ddr3SiliconPreInit(void);

@@ -66,7 +66,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _INC_MSYS_BC2_TOPOLOGY_H
 
 #include "ddr3_msys_bc2_config.h"
-#include "mvDdr3TopologyDef.h"
 #include "mvDdr3LoggingDef.h"
 
 #define ACTUAL_BUS_WIDTH	BUS_WIDTH_32

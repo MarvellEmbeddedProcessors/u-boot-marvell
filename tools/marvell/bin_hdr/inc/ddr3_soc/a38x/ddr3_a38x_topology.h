@@ -66,7 +66,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _INC_A38X_TOPOLOGY_H
 
 #include "ddr3_a38x_config.h"
-#include "mvDdr3TopologyDef.h"
 #include "mvDdr3LoggingDef.h"
 
 /*Bus mask variants*/

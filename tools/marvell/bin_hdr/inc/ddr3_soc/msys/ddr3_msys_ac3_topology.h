@@ -66,7 +66,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _INC_MSYS_AC3_TOPOLOGY_H
 
 #include "ddr3_msys_ac3_config.h"
-#include "mvDdr3TopologyDef.h"
 #include "mvDdr3LoggingDef.h"
 
 /*Bus mask variants*/

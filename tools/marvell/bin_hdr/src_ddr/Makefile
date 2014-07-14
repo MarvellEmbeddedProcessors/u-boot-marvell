@@ -70,6 +70,10 @@ TGT_UART = ddr_$(BOARD).uart.a
 
 CSRC = ddr3_spd.c ddr3_init.c
 
+ifeq ($(NEW_TIP),yes)
+CSRC = ddr3_spd.c ddr3_init_tipv2.c
+endif
+
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
 

@@ -116,19 +116,13 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		gBoardId = RD_MTL_BC2;
 	#else
 		/* AlleyCat3 Board ID's */
-		if (mvBoardSarBoardIdGet(&readValue) != MV_OK) {
-			mvPrintf("%s: Error obtaining Board ID\n", __func__);
-			mvPrintf("%s: Set default board ID to DB-DXAC3-MM\n", __func__);
+		if (mvBoardSarBoardIdGet(&readValue) != MV_OK || readValue >= AC3_MARVELL_BOARD_NUM) {
+			mvPrintf("%s: Error obtaining Board ID from EEPROM (%d)\n", __func__, readValue);
+			mvPrintf("%s: Setting default board: DB-DXAC3-MM\n", __func__);
 			readValue = DB_AC3_ID - AC3_MARVELL_BOARD_ID_BASE;
 		}
 
-		if (readValue < AC3_MARVELL_BOARD_NUM)
-			gBoardId = AC3_MARVELL_BOARD_ID_BASE + readValue;
-		else {
-			mvPrintf("%s: Error: read wrong Board ID (%d)\n", __func__, readValue);
-			mvPrintf("%s: Set default board ID to DB-DXAC3-MM\n", __func__);
-			gBoardId = DB_AC3_ID;
-		}
+		gBoardId = AC3_MARVELL_BOARD_ID_BASE + readValue;
 	#endif
 #endif
 
@@ -170,18 +164,27 @@ MV_U8 mvHwsBoardIdGet(MV_VOID)
 	return 0;
 }
 
-/*******************************************************************************/
+/* The Board Id is taken from the first address-value pair of the EEPROM initialization sequence
+ * In order to support normal TWSI init sequence flow, the first pair of DWORDS on EEPROM
+ * should contain an address (bytes 0-3) of some scratch pad register (for instance an UART SCR)
+ * and a value (bytes 4-7), which will be partially interpreted as Board ID (bits[7:0] of byte 7)
+ */
 MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value)
 {
 	MV_U8			boardId;
 	MV_TWSI_SLAVE	twsiSlave;
 
 	/* Initializing twsiSlave in order to read from the TWSI address */
-	twsiSlave.slaveAddr.address = 0x4D;	/* TODO - change to 0x50 - address of init EEPROM */
+	twsiSlave.slaveAddr.address = 0x50;	/* 0x50: address of init EEPROM */
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
-	twsiSlave.offset = 1;	/* TODO change to 7 - the LSB of the first address-value pair) */
-	twsiSlave.moreThen256 = MV_FALSE;
+	twsiSlave.offset = 7;
+
+	/* in case the offset should be set to a TWSI slave which support
+	 * 2 bytes offset, the offset setting will be done in 2 transactions.
+	 * For accessing EEPROM, always using 2 bytes address offset
+	 */
+	twsiSlave.moreThen256 = MV_TRUE;
 
 	if (MV_ERROR == mvTwsiRead(0, &twsiSlave, &boardId, 1))
 		return MV_ERROR;

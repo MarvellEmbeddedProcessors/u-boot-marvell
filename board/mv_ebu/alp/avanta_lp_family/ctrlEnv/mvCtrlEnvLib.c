@@ -118,7 +118,6 @@ typedef struct _ctrlEnvInfo {
 CTRL_ENV_INFO ctrlEnvInfo = {};
 
 MV_U32 satrOptionsConfig[MV_SATR_READ_MAX_OPTION];
-MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 
 MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
 
@@ -331,7 +330,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	/* If set to Auto detect, read board config information,
 	 * Accordingly update Eth-Complex config, MPP group types and switch info */
 	if (mvBoardConfigAutoDetectEnabled()) {
-		mvCtrlSysConfigInit();
+		mvBoardSysConfigInit();
 		mvBoardInfoUpdate();
 	}
 
@@ -579,68 +578,6 @@ MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode)
 }
 
 /*******************************************************************************
-* mvCtrlSysConfigGet
-*
-* DESCRIPTION: Read Board configuration Field
-*
-* INPUT: configField - Field description enum
-*
-* OUTPUT: None
-*
-* RETURN:
-*	if field is valid - returns requested Board configuration field value
-*
-*******************************************************************************/
-MV_U32 mvCtrlSysConfigGet(MV_CONFIG_TYPE_ID configField)
-{
-	MV_BOARD_CONFIG_TYPE_INFO configInfo;
-
-	if (!mvBoardConfigAutoDetectEnabled()) {
-		mvOsPrintf("%s: Error  Failed to read board config (Auto detection disabled)\n", __func__);
-		return MV_ERROR;
-	}
-
-	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
-		mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
-		DB(mvOsPrintf("%s: Error: Requested board config is invalid for this board" \
-				" (%d)\n", __func__, configField));
-		return MV_ERROR;
-	}
-
-	return boardOptionsConfig[configField];
-
-}
-
-/*******************************************************************************
-* mvCtrlSysConfigSet
-*
-* DESCRIPTION: Write Board configuration Field to local array
-*
-* INPUT: configField - Field description enum
-*
-* OUTPUT: None
-*
-* RETURN:
-*	Write requested Board configuration field value to local array
-*
-*******************************************************************************/
-MV_STATUS mvCtrlSysConfigSet(MV_CONFIG_TYPE_ID configField, MV_U8 value)
-{
-	MV_BOARD_CONFIG_TYPE_INFO configInfo;
-
-	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
-		mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
-		DB(mvOsPrintf("Error: Requested board config is invalid for this board" \
-				" (%d)\n", configField));
-		return MV_ERROR;
-	}
-
-	boardOptionsConfig[configField] = value;
-
-	return MV_OK;
-}
-
-/*******************************************************************************
 * mvCtrlSatrInit
 * DESCRIPTION: Initialize S@R configuration
 *               1. initialize all S@R and fields
@@ -671,68 +608,6 @@ MV_VOID mvCtrlSatrInit(void)
 		if (mvBoardSatrInfoConfig(i, &satrInfo, MV_TRUE) == MV_OK)
 			satrOptionsConfig[satrInfo.satrId] = ((satrVal[satrInfo.regNum]  & (satrInfo.mask)) >> (satrInfo.offset));
 
-}
-
-/*******************************************************************************
-* mvCtrlSysConfigInit
-*
-* DESCRIPTION: Initialize S@R configuration
-*               1. initialize all board configuration fields
-*               3. read relevant board configuration (using TWSI/EEPROM access)
-*               **from this point, all reads from S@R & board config will use mvCtrlSatRRead/Write functions**
-*
-* INPUT:  None
-*
-* OUTPUT: None
-*
-* RETURN: NONE
-*
-*******************************************************************************/
-MV_VOID mvCtrlSysConfigInit()
-{
-	MV_U8 regNum, i, configVal[MV_IO_EXP_MAX_REGS], readValue, bitsNum;
-	MV_BOARD_CONFIG_TYPE_INFO configInfo;
-	MV_BOOL readSuccess = MV_FALSE;
-	MV_BOOL isEepromEnabled = mvBoardIsEepromEnabled();
-
-	memset(&boardOptionsConfig, 0x0, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION );
-
-	/*Read rest of Board Configuration, EEPROM / Dip Switch access read : */
-	if (mvCtrlBoardConfigGet(configVal) != MV_OK) {
-		mvOsPrintf("%s: Error: mvCtrlBoardConfigGet failed\n", __func__);
-		return;
-	}
-
-	/* Save values Locally in configVal[] */
-	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
-		/* Get board configuration field information (Mask, offset, etc..) */
-		if (mvBoardConfigTypeGet(i, &configInfo) != MV_TRUE)
-			continue;
-
-		/* each Expander conatins 2 registers */
-		regNum = configInfo.expanderNum * 2 + configInfo.regNum;
-		readValue = (configVal[regNum] & configInfo.mask) >> configInfo.offset;
-
-		/*
-		 * Workaround for DIP Switch IO Expander 0x21 bug in DB-6660 board
-		 * Bug: Pins at IO expander 0x21 are reversed (only on DB-6660)
-		 * example : instead of reading 00000110, we read 01100000
-		 * WA step 1 (mvCtrlBoardConfigGet)
-		 *  after reading IO expander, reverse bits of both registers
-		 * WA step 2 (in mvCtrlSysConfigInit):
-		 *  after reversing bits, swap MSB and LSB - due to Dip-Switch reversed mapping
-		 */
-		if (!isEepromEnabled && configInfo.expanderNum == 0)  {
-			bitsNum = mvCountMaskBits(configInfo.mask);
-			readValue = mvReverseBits(readValue) >> (8-bitsNum);
-		}
-
-		boardOptionsConfig[configInfo.configId] =  readValue;
-		readSuccess = MV_TRUE;
-	}
-
-	if (readSuccess == MV_FALSE)
-		mvOsPrintf("%s: Error: Read board configuration from EEPROM/Dip Switch failed\n", __func__);
 }
 
 /*******************************************************************************
@@ -940,7 +815,7 @@ MV_U32 mvCtrlPexActiveUnitNumGet(MV_VOID)
 	/* check board configuration for DB-6660:
 	 * if PEX1 is disabled , only PEX0 is active (return constant 1)
 	 * (only if MV_CONFIG_LANE1=0 --> then LANE1=PEX) */
-	if (mvBoardIdGet() == DB_6660_ID && mvCtrlSysConfigGet(MV_CONFIG_LANE1) != 0x0)
+	if (mvBoardIdGet() == DB_6660_ID && mvBoardSysConfigGet(MV_CONFIG_LANE1) != 0x0)
 		return 1;
 
 	/* else, all PEX interfaces are active */

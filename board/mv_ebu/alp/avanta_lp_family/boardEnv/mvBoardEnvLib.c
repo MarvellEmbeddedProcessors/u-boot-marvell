@@ -98,6 +98,7 @@ MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_BOARD_CONFIG_INFO;
 /* Locals */
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 static MV_BOARD_INFO *board = NULL;
+MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 
 /*******************************************************************************
 * mvBoardIdIndexGet
@@ -982,7 +983,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	mvBoardMacSpeedSet(1, macSpeed);
 
 	/* Update SLIC device configuration */
-	slicDev = mvCtrlSysConfigGet(MV_CONFIG_SLIC_TDM_DEVICE);
+	slicDev = mvBoardSysConfigGet(MV_CONFIG_SLIC_TDM_DEVICE);
 	if ((slicDev == SLIC_TDM2C_ID || slicDev == SLIC_TDMMC_ID) && (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1))
 		mvOsPrintf("%s: Error: board configuration conflict between MAC1 to RGMII-1, " \
 				"and External TDM - using RGMII-1 (disabled External TDM)\n\n", __func__);
@@ -1058,7 +1059,7 @@ MV_VOID mvBoardVerifySerdesCofig(MV_VOID)
 		if (i == 0) /* lane0 is hard-coded to PCIe0 - not selected by board configuration */
 			laneConfig = 1;
 		else /* lane 1-3 are selected at board configuration */
-			laneConfig = mvCtrlSysConfigGet(configID++);
+			laneConfig = mvBoardSysConfigGet(configID++);
 		/* using different Mask/Offset, since SATA1 option at lane1 was
 		** not supported in Z1, Z2, Z3 */
 		laneSelector = mvBoardLaneSelectorGet(i);
@@ -1168,10 +1169,10 @@ MV_STATUS mvBoardEthComplexInfoUpdate()
 		return MV_ERROR;
 
 	/* read if using 2G speed for MAC0 to Switch*/
-	if (mvCtrlSysConfigGet(MV_CONFIG_MAC0_SW_SPEED) == 0x0)
+	if (mvBoardSysConfigGet(MV_CONFIG_MAC0_SW_SPEED) == 0x0)
 		ethComplexOptions |= MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G;
 
-	if (mvCtrlSysConfigGet(MV_CONFIG_SGMII0_CAPACITY) == 0x1)
+	if (mvBoardSysConfigGet(MV_CONFIG_SGMII0_CAPACITY) == 0x1)
 		ethComplexOptions |= MV_ETHCOMP_GE_MAC0_2_COMPHY_SPEED_2G;
 
 	/* if MAC1 is NOT connected to PON SerDes using SGMII or SFP --> connect PON MAC to to PON SerDes */
@@ -1260,8 +1261,8 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 	case MSAR_0_BOOT_SPI_FLASH:
 		/* read SPDIF_AUDIO/I2S_AUDIO board configuration for DB-6660 board */
 		if ((mvBoardIdGet() == DB_6660_ID) &&
-			((mvCtrlSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2) ||	/* 0x2=I2S_AUDIO   */
-			 (mvCtrlSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x3)))	/* 0x3=SPDIF_AUDIO */
+			((mvBoardSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2) ||	/* 0x2=I2S_AUDIO   */
+			 (mvBoardSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x3)))	/* 0x3=SPDIF_AUDIO */
 			groupType = SPI0_BOOT_SPDIF_I2S_AUDIO;
 		else
 			groupType = SPI0_BOOT;
@@ -1400,7 +1401,7 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet()
 {
 	MV_ETH_COMPLEX_TOPOLOGY sgmiiLane;
 	MV_STATUS isSgmiiLaneEnabled = MV_FALSE;
-	MV_U32 mac0Config = mvCtrlSysConfigGet(MV_CONFIG_MAC0);
+	MV_U32 mac0Config = mvBoardSysConfigGet(MV_CONFIG_MAC0);
 
 	if (mac0Config == MV_ERROR) {
 		mvOsPrintf("%s: Error: failed reading MAC0 board configuration\n", __func__);
@@ -1461,12 +1462,12 @@ MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet()
 *******************************************************************************/
 MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet()
 {
-	if (mvCtrlSysConfigGet(MV_CONFIG_PON_SERDES) == 0x1)
+	if (mvBoardSysConfigGet(MV_CONFIG_PON_SERDES) == 0x1)
 		return MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES;
-	if (mvCtrlSysConfigGet(MV_CONFIG_PON_SERDES) == 0x2)
+	if (mvBoardSysConfigGet(MV_CONFIG_PON_SERDES) == 0x2)
 		return MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP;
 	/* else Scan MAC1 config to decide its connection */
-	switch (mvCtrlSysConfigGet(MV_CONFIG_MAC1)) {
+	switch (mvBoardSysConfigGet(MV_CONFIG_MAC1)) {
 	case 0x0:
 		return MV_ETHCOMP_GE_MAC1_2_RGMII1;
 		break;
@@ -1519,7 +1520,7 @@ MV_BOOL mvBoardLaneSGMIIGet(MV_ETH_COMPLEX_TOPOLOGY *sgmiiConfig)
 
 	for (i = 0; i < 3; i++) {
 		/* if not set to SGMII, check next lane*/
-		if (mvCtrlSysConfigGet(configID[i]) != 0x1)
+		if (mvBoardSysConfigGet(configID[i]) != 0x1)
 			continue;
 
 		/* if no Lane already set to SGMII */
@@ -1876,8 +1877,8 @@ MV_U8 mvBoardTdmSpiIdGet(MV_VOID)
 MV_VOID mvBoardAudioModuleConfigCheck(MV_VOID)
 {
 	if ((mvBoardBootDeviceGet() == MSAR_0_BOOT_NAND_NEW) &&
-		((mvCtrlSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2) ||		/* 0x2=I2S_AUDIO   */
-		(mvCtrlSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x3)))		/* 0x3=SPDIF_AUDIO */
+		((mvBoardSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x2) ||		/* 0x2=I2S_AUDIO   */
+		(mvBoardSysConfigGet(MV_CONFIG_DEVICE_BUS_MODULE) == 0x3)))		/* 0x3=SPDIF_AUDIO */
 			mvOsPrintf("Error: Audio modules not supported when booting from NAND\n");
 }
 
@@ -1905,7 +1906,7 @@ MV_VOID mvBoardDDRBusWidthCheck(MV_VOID)
 	if (mvBoardIdGet() != DB_6660_ID)
 		return;
 
-	configVar = (mvCtrlSysConfigGet(MV_CONFIG_DDR_BUSWIDTH) == 0x0) ? 32 : 16;
+	configVar = (mvBoardSysConfigGet(MV_CONFIG_DDR_BUSWIDTH) == 0x0) ? 32 : 16;
 	ddrVar = mvCtrlDDRBudWidth();
 
 	if (configVar != ddrVar)
@@ -3000,7 +3001,7 @@ MV_STATUS mvBoardEepromWrite(MV_CONFIG_TYPE_ID configType, MV_U8 value)
 	}
 
 	/* Update local array information */
-	mvCtrlSysConfigSet(configInfo.configId, value);
+	mvBoardSysConfigSet(configInfo.configId, value);
 
 	/* run conflict verification sequence on MAC and SerDes configuration */
 	mvBoardEthComplexMacConfigCheck();
@@ -3437,4 +3438,127 @@ MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
 
 	return MV_OK;
 
+}
+/*******************************************************************************
+* mvBoardSysConfigInit
+*
+* DESCRIPTION: Initialize S@R configuration
+*               1. initialize all board configuration fields
+*               3. read relevant board configuration (using TWSI/EEPROM access)
+*               **from this point, all reads from S@R & board config will use mvCtrlSatRRead/Write functions**
+*
+* INPUT:  None
+*
+* OUTPUT: None
+*
+* RETURN: NONE
+*
+*******************************************************************************/
+MV_VOID mvBoardSysConfigInit()
+{
+	MV_U8 regNum, i, configVal[MV_IO_EXP_MAX_REGS], readValue, bitsNum;
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
+	MV_BOOL readSuccess = MV_FALSE;
+	MV_BOOL isEepromEnabled = mvBoardIsEepromEnabled();
+
+	memset(&boardOptionsConfig, 0x0, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION);
+
+	/*Read rest of Board Configuration, EEPROM / Dip Switch access read : */
+	if (mvCtrlBoardConfigGet(configVal) != MV_OK) {
+		mvOsPrintf("%s: Error: mvCtrlBoardConfigGet failed\n", __func__);
+		return;
+	}
+
+	/* Save values Locally in configVal[] */
+	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
+		/* Get board configuration field information (Mask, offset, etc..) */
+		if (mvBoardConfigTypeGet(i, &configInfo) != MV_TRUE)
+			continue;
+
+		/* each Expander conatins 2 registers */
+		regNum = configInfo.expanderNum * 2 + configInfo.regNum;
+		readValue = (configVal[regNum] & configInfo.mask) >> configInfo.offset;
+
+		/*
+		 * Workaround for DIP Switch IO Expander 0x21 bug in DB-6660 board
+		 * Bug: Pins at IO expander 0x21 are reversed (only on DB-6660)
+		 * example : instead of reading 00000110, we read 01100000
+		 * WA step 1 (mvCtrlBoardConfigGet)
+		 *  after reading IO expander, reverse bits of both registers
+		 * WA step 2 (in mvCtrlSysConfigInit):
+		 *  after reversing bits, swap MSB and LSB - due to Dip-Switch reversed mapping
+		 */
+		if (!isEepromEnabled && configInfo.expanderNum == 0)  {
+			bitsNum = mvCountMaskBits(configInfo.mask);
+			readValue = mvReverseBits(readValue) >> (8-bitsNum);
+		}
+
+		boardOptionsConfig[configInfo.configId] =  readValue;
+		readSuccess = MV_TRUE;
+	}
+
+	if (readSuccess == MV_FALSE)
+		mvOsPrintf("%s: Error: Read board configuration from EEPROM/Dip Switch failed\n", __func__);
+}
+
+/*******************************************************************************
+* mvBoardSysConfigGet
+*
+* DESCRIPTION: Read Board configuration Field
+*
+* INPUT: configField - Field description enum
+*
+* OUTPUT: None
+*
+* RETURN:
+*	if field is valid - returns requested Board configuration field value
+*
+*******************************************************************************/
+MV_U32 mvBoardSysConfigGet(MV_CONFIG_TYPE_ID configField)
+{
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
+
+	if (!mvBoardConfigAutoDetectEnabled()) {
+		mvOsPrintf("%s: Error  Failed to read board config (Auto detection disabled)\n", __func__);
+		return MV_ERROR;
+	}
+
+	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
+		mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
+		DB(mvOsPrintf("%s: Error: Requested board config is invalid for this board" \
+				" (%d)\n", __func__, configField));
+		return MV_ERROR;
+	}
+
+	return boardOptionsConfig[configField];
+
+}
+
+/*******************************************************************************
+* mvBoardSysConfigSet
+*
+* DESCRIPTION: Write Board configuration Field to local array
+*
+* INPUT: configField - Field description enum
+*
+* OUTPUT: None
+*
+* RETURN:
+*	Write requested Board configuration field value to local array
+*
+*******************************************************************************/
+MV_STATUS mvBoardSysConfigSet(MV_CONFIG_TYPE_ID configField, MV_U8 value)
+{
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
+
+	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
+		mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
+		DB(mvOsPrintf("Error: Requested board config is invalid for this board" \
+				" (%d)\n", configField));
+		return MV_ERROR;
+	}
+
+	boardOptionsConfig[configField] = value;
+
+	return MV_OK;
 }

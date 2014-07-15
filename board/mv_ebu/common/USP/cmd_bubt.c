@@ -341,7 +341,7 @@ int spi_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 	}
 	if (filesize > CONFIG_ENV_OFFSET)
 	{
-		printf("Error Image size(%x) bigger than CONFIG_ENV_OFFSET=%x ",filesize,CONFIG_ENV_OFFSET);
+		printf("Error: Image size (%x) exceeds environment variables offset (%x). ",filesize,CONFIG_ENV_OFFSET);
 		return 0;
 	}
 	printf("Erasing 0x%x - 0x%x: ",0, 0 + CONFIG_ENV_OFFSET);

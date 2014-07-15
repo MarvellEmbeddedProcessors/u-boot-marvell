@@ -106,7 +106,7 @@ static void mvEthComplexGponPhySrcSet(MV_U32 src)
 
 	MV_REG_WRITE(MV_GPON_PHY_CTRL1_REG, reg);
 }
-static void mvEthComplexGphyPortSmiSrcSet(MV_U32 phy, MV_U32 src)
+void mvEthComplexGphyPortSmiSrcSet(MV_U32 phy, MV_U32 src)
 {
 	MV_U32 reg;
 	/* In A0 added Phy Smi source configuration for ports 0 and 3.

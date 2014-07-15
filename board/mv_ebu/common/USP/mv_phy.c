@@ -319,17 +319,39 @@ void mvBoardEgigaPhyInit(void)
 		mvCtrlSmiMasterSet(NO_SMI_CTRL);
 
 #elif defined(MV88F672X) /* Armada-375: static PPv2 configuration */
+	MV_U32 ethComplex = mvBoardEthComplexConfigGet();
 
-	/* MAC0 <-> RGMII-0 on board - initialize phy through MAC0*/
-	/* MAC1 <-> GE-PHY#3 on board - initialize phy through MAC1*/
-	mvEthPhyInit(0, MV_FALSE);
-#ifndef CONFIG_MAC1_2_PON_ETH_SERDES_SFP
-	mvEthPhyInit(1, MV_FALSE);
-#endif
+	/* Set external CPU SMI control */
+	mvCtrlSmiMasterSet(CPU_SMI_CTRL);
+
+	/* Init PHY connected to MAC0 */
+	if (ethComplex & (MV_ETHCOMP_GE_MAC0_2_RGMII0 | MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0))
+		mvEthPhyInit(0, MV_FALSE);
+
+	/* Init PHY connected to MAC1 */
+	if (ethComplex & (MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3 | MV_ETHCOMP_GE_MAC1_2_RGMII1))
+		mvEthPhyInit(1, MV_FALSE);
+
+	/* Shutdown GE-PHYs:
+	 * - disable external CPU SMI control
+	 *   (avoid mismatch with equal SMI addresses between internal PHY and external RGMII PHY)
+	 * - shutdown GE-PHY (CPU SMI access)
+	 * - enable external CPU SMI control
+	 */
+	mvCtrlSmiMasterSet(NO_SMI_CTRL);
+
+	if(!(ethComplex & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0))
+		mvBoardPhyShutDown(0x0);
 
 	/* Internal GE-PHY#1,2 are not used - close unnecessary internal phys */
 	mvBoardPhyShutDown(0x1);
 	mvBoardPhyShutDown(0x2);
+
+	if(!(ethComplex & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3))
+		mvBoardPhyShutDown(0x3);
+
+	/* Restore external CPU SMI control */
+	mvCtrlSmiMasterSet(CPU_SMI_CTRL);
 
 	mvBoardLedMatrixInit();
 #endif

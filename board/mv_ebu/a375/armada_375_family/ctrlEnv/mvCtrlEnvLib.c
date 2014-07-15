@@ -469,6 +469,40 @@ MV_U32 mvCtrlSatRRead(MV_SATR_TYPE_ID satrField)
 }
 
 /*******************************************************************************
+* mvCtrlSmiMasterSet - alter Group 4 MPP Value, between CPU/SWITCH/NO external SMI control
+**
+* INPUT: smiCtrl - enum to select between SWITCH/CPU/NO SMI controll
+*
+* OUTPUT: None
+*
+* RETURN: None
+*
+*******************************************************************************/
+MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
+{
+	MV_U32 smiCtrlValue, mppValue = MV_REG_READ(mvCtrlMppRegGet(4));
+
+	switch (smiCtrl) {
+	case SWITCH_SMI_CTRL:
+		smiCtrlValue = A375_MPP32_39_SWITCH_SMI_CTRL_VAL;
+		break;
+	case NO_SMI_CTRL:
+		smiCtrlValue = A375_MPP32_39_NO_SMI_CTRL_VAL;
+		break;
+	case CPU_SMI_CTRL:
+	default:
+		smiCtrlValue = A375_MPP32_39_CPU_SMI_CTRL_VAL;
+		break;
+	}
+
+	mppValue &= ~A375_MPP32_39_EXT_SMI_MASK;
+	mppValue |= smiCtrlValue;
+
+	MV_REG_WRITE(mvCtrlMppRegGet(4), mppValue);
+}
+
+
+/*******************************************************************************
 * mvCtrlCpuDdrL2FreqGet - Get the selected S@R Frequency mode
 *
 * DESCRIPTION:

@@ -213,16 +213,16 @@ SERDES_MAP* marvellBoardSerdesTopology[] =
 MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray)
 {
 	MV_U32		laneNum;
-	MV_U32		boardId;
+	MV_U32		boardIdIndex;
 	SERDES_MAP	*topologyConfigPtr;
 
 	DEBUG_INIT_FULL_S("\n### loadTopologyDB ###\n");
 
-	boardId = mvHwsBoardIdGet();
+	boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-	topologyConfigPtr = CustomerBoardTopologyConfig[boardId];
+	topologyConfigPtr = CustomerBoardTopologyConfig[boardIdIndex];
 #else
-	topologyConfigPtr = marvellBoardSerdesTopology[boardId];
+	topologyConfigPtr = marvellBoardSerdesTopology[boardIdIndex];
 #endif
 	/* Updating the topology map */
 	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
@@ -870,7 +870,6 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 /****************************************************************************/
 MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
-
 	SERDES_MAP serdesConfigurationMap[MAX_SERDES_LANES];
 
 	mvPrintf("Serdes initialization - Version: 1.0.2\n");
@@ -889,6 +888,5 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	mvCtrlUsb2Config();
 
 	DEBUG_INIT_FULL_S("### powerUpSerdesLanes ended successfully ###\n");
-
 	return MV_OK;
 }

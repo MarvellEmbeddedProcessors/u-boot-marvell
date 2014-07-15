@@ -147,7 +147,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
 {
-/* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
+/* Marvell Boards use 0x10 (BC2) and 0x30 (AC3) as base for Board ID mask MSB to receive index for board ID*/
 	return boardId & (BOARD_ID_INDEX_MASK - 1);
 }
 
@@ -159,11 +159,6 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 }
 
 /*******************************************************************************/
-MV_U8 mvHwsBoardIdGet(MV_VOID)
-{
-	return 0;
-}
-
 /* The Board Id is taken from the first address-value pair of the EEPROM initialization sequence
  * In order to support normal TWSI init sequence flow, the first pair of DWORDS on EEPROM
  * should contain an address (bytes 0-3) of some scratch pad register (for instance an UART SCR)

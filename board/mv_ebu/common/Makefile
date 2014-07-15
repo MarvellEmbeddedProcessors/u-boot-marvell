@@ -75,7 +75,8 @@ HAL_OBJS =	$(HAL_SPI_DIR)/mvSpi.o		\
 		$(HAL_UART_DIR)/mvUart.o	\
 		$(HAL_PCIIF_DIR)/mvPciIf.o	\
 		$(HAL_PCIIF_UTIL_DIR)/mvPciUtils.o
-
+HAL_OBJS-$(CONFIG_ARMADA_39X) = $(HAL_ETHPHY_DIR)/mvEthPhyXsmi.o
+HAL_OBJS += $(sort $(HAL_OBJS-y))
 
 USP_OBJS =	$(USP_DIR)/mv_spi.o		\
 		$(USP_DIR)/nand_nfc.o		\

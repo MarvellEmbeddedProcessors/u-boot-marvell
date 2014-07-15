@@ -73,6 +73,7 @@ extern "C" {
 
 /* defines */
 #define ETH_PHY_TIMEOUT		    10000
+#define ETH_PHY_XSMI_TIMEOUT	10000
 
 /* registers offsetes defines */
 
@@ -97,6 +98,37 @@ extern "C" {
 
 #define ETH_PHY_SMI_BUSY_BIT		    28  /* Busy */
 #define ETH_PHY_SMI_BUSY_MASK		    (1 << ETH_PHY_SMI_BUSY_BIT)
+
+/* XSMI managment register fields (ETH_PHY_XSMI_REG) */
+#define ETH_PHY_XSMI_MANAGEMENT			0x0	/* Offset of the management register */
+#define ETH_PHY_XSMI_DATA_OFFS			0	/* Data */
+#define ETH_PHY_XSMI_DATA_MASK			(0xffff << ETH_PHY_XSMI_DATA_OFFS)
+
+#define ETH_PHY_XSMI_PHY_ADDR_OFFS		16	/* PHY device address */
+#define ETH_PHY_XSMI_PHY_ADDR_MASK		(0x1f << ETH_PHY_XSMI_PHY_ADDR_OFFS)
+
+#define ETH_PHY_XSMI_DEV_ADDR_OFFS		21	/* PHY device register address */
+#define ETH_PHY_XSMI_DEV_ADDR_MASK		(0x1f << ETH_PHY_XSMI_DEV_ADDR_OFFS)
+
+#define ETH_PHY_XSMI_OPCODE_OFFS		26	/* opcode options*/
+#define ETH_PHY_XSMI_OPCODE_MASK		(7 << ETH_PHY_XSMI_OPCODE_OFFS)
+#define ETH_PHY_XSMI_OPCODE_WRITE		(1 << ETH_PHY_XSMI_OPCODE_OFFS)
+#define ETH_PHY_XSMI_OPCODE_INC_READ		(2 << ETH_PHY_XSMI_OPCODE_OFFS)
+#define ETH_PHY_XSMI_OPCODE_READ		(3 << ETH_PHY_XSMI_OPCODE_OFFS)
+#define ETH_PHY_XSMI_OPCODE_ADDR_WRITE		(5 << ETH_PHY_XSMI_OPCODE_OFFS)
+#define ETH_PHY_XSMI_OPCODE_ADDR_INC_READ	(6 << ETH_PHY_XSMI_OPCODE_OFFS)
+#define ETH_PHY_XSMI_OPCODE_ADDR_READ		(7 << ETH_PHY_XSMI_OPCODE_OFFS)
+
+#define ETH_PHY_XSMI_READ_VALID_BIT		29	/* Read Valid  */
+#define ETH_PHY_XSMI_READ_VALID_MASK		(1 << ETH_PHY_XSMI_READ_VALID_BIT)
+
+#define ETH_PHY_XSMI_BUSY_BIT			30	/* Busy */
+#define ETH_PHY_XSMI_BUSY_MASK			(1 << ETH_PHY_XSMI_BUSY_BIT)
+
+/* XSMI address register */
+#define ETH_PHY_XSMI_REG_ADDR			0x8	/* Offset of the register address */
+#define ETH_PHY_XSMI_REG_ADDR_OFFS		0
+#define ETH_PHY_XSMI_REG_ADDR_MASK		(0xffff << ETH_PHY_XSMI_REG_ADDR_OFFS)
 
 /* PHY registers and bits */
 #define ETH_PHY_CTRL_REG                0

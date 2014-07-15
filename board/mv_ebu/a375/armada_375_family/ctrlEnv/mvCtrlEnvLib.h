@@ -152,6 +152,13 @@ typedef enum _mvIoExpanderTypeID {
 /* typedefs */
 typedef MV_STATUS (*MV_WIN_GET_FUNC_PTR)(MV_U32, MV_U32, MV_UNIT_WIN_INFO*);
 
+/* This enumerator describes the possible SMI control options */
+typedef enum _mvSMIctrl {
+	CPU_SMI_CTRL,
+	SWITCH_SMI_CTRL,
+	NO_SMI_CTRL,
+} MV_SMI_CTRL;
+
 /* This enumerator describes the possible HW cache coherency policies the
  * controllers supports.
  */
@@ -333,6 +340,7 @@ MV_U32    ctrlSizeRegRoundUp(MV_U32 size, MV_U32 alignment);
 MV_U32 mvCtrlSysRstLengthCounterGet(MV_VOID);
 MV_STATUS ctrlWinOverlapTest(MV_ADDR_WIN *pAddrWin1, MV_ADDR_WIN *pAddrWin2);
 MV_STATUS ctrlWinWithinWinTest(MV_ADDR_WIN *pAddrWin1, MV_ADDR_WIN *pAddrWin2);
+MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl);
 MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable);
 MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index);
 MV_BOOL mvCtrlIsBootFromNOR(MV_VOID);

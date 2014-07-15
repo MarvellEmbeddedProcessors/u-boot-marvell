@@ -157,10 +157,18 @@ static void mvAlpBoardEgigaPhyInit(void)
 void mvBoardPhyShutDown(MV_U16 phyAddr)
 {
 	MV_U16  phyRegData;
+
+	/* Set GE-PHY SMI source as CPU MAC (CPU is shutting down the PHY) */
+	mvEthComplexGphyPortSmiSrcSet(phyAddr, 0);
+
 	mvEthPhyRegRead(phyAddr, 0x0, &phyRegData);
 	mvEthPhyRegWrite(phyAddr, 0x0, phyRegData | BIT11);
 	mvEthPhyRegRead(phyAddr, 0x10, &phyRegData);
 	mvEthPhyRegWrite(phyAddr, 0x10, phyRegData | BIT2);
+
+	/* set GE-PHY SMI source as switch
+	 * (avoid future conflicts when CPU access external PHYs with same SMI address) */
+	mvEthComplexGphyPortSmiSrcSet(phyAddr, 1);
 }
 
 void mvBoardLedMatrixPhyInit(MV_U16 smiAddr, MV_BOOL internalPhy)
@@ -284,13 +292,10 @@ void mvBoardEgigaPhyInit(void)
 	 * 1. RGMII-1 enabled & GE-PHY#1 disabled (both use same SMI address = 0x1)
 		- set NO external SMI (to avoid mismatch when accessing SMI address 0x1)
 		- shutdown GE-PHY#1 (CPU SMI access)
-		- set GE-PHY#1 SMI source as switch (to avoid future conflicts
-			when CPU access the RGMII with SMI address 0x1)
 		- restore external SMI to CPU control */
 	if((!(ethComplex & MV_ETHCOMP_SW_P1_2_GE_PHY_P1)) && (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1)) {
 		mvCtrlSmiMasterSet(NO_SMI_CTRL);
 		mvBoardPhyShutDown(0x1);
-		mvEthComplexGphyPortSmiSrcSet(1, 1);
 		mvCtrlSmiMasterSet(CPU_SMI_CTRL);
 	}
 	/* 2. RGMII-1/GE-PHY#1/PON Serdes is not connected

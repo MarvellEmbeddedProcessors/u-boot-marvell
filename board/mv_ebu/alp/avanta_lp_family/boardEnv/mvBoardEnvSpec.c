@@ -559,6 +559,7 @@ MV_BOARD_MPP_TYPE_INFO rd88f6660InfoBoardModTypeInfo[] = {
 				     MV_ETHCOMP_SW_P3_2_GE_PHY_P3 |
 				     MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G |
 				     MV_ETHCOMP_SW_P4_2_RGMII0   |
+				     MV_ETHCOMP_P2P_MAC_2_PON_ETH_SERDES |
 				     MV_ETHCOMP_GE_MAC0_2_SW_P6,
 		.ethPortsMode = 0x0
 	}

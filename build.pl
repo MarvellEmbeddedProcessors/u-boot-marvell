@@ -57,8 +57,8 @@ ERROR:
 
 sub usage
 {
-	print "\nUsage  : build.pl -f \"Flash type\" -b \"board name\" [-c] [-o \"Output file\"]\n";
-	print "Example: build.pl -f spi -b armada8k -c\n";
+	print "\nUsage  : build.pl -f \"Flash type\" -b \"board name\" [-o \"Output file\"]\n";
+	print "Example: build.pl -f spi -b armada8k\n";
 	print "\n";
 	print "Options:\n";
 	print "\t-f\tBoot device. Accepts spi, nor, nand\n";

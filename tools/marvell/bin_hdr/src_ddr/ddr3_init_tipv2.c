@@ -100,7 +100,7 @@ extern MV_STATUS ddr3TipInitSpecificRegConfig
     MV_U32              devNum,
 	MV_DRAM_MC_INIT		*regConfigArr
 );
-extern MV_STATUS    mvHwsDdr3TipLoadTopologyMap
+extern MV_STATUS    ddr3TipSetTopologyMap
 (
     MV_U32                  devNum,
     MV_HWS_TOPOLOGY_MAP     *topology
@@ -254,10 +254,8 @@ static MV_VOID ddr3SaveAndSetTrainingWindows(MV_U32 *auWinBackup)
  */
 MV_U32 ddr3Init(void)
 {
-	MV_U32 uiTargetFreq;
-
 	MV_U32 uiReg = 0;
-	MV_U32 uiCpuFreq, uiHClkTimePs, socNum;
+	MV_U32 socNum;
 	MV_STATUS status;
 	MV_U32 auWinBackup[16];
 
@@ -285,9 +283,6 @@ MV_U32 ddr3Init(void)
 	/************************************************************************************/
 	/* Stage 0 - Set board configuration                                                */
 	/************************************************************************************/
-	uiCpuFreq = ddr3GetCpuFreq();
-
-	getTargetFreq(uiCpuFreq, &uiTargetFreq, &uiHClkTimePs);
 
 	/* Check if DRAM is already initialized  */
 	if (MV_REG_READ(REG_BOOTROM_ROUTINE_ADDR) & (1 << REG_BOOTROM_ROUTINE_DRAM_INIT_OFFS)) {
@@ -498,7 +493,7 @@ MV_STATUS ddr3LoadTopologyMap(void)
 	}
 
 	/*Set topology data for internal DDR training usage*/
-	if(MV_OK != mvHwsDdr3TipLoadTopologyMap(devNum, topologyMap))
+	if(MV_OK != ddr3TipSetTopologyMap(devNum, topologyMap))
 		return MV_FAIL;
 
 	return MV_OK;

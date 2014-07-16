@@ -97,6 +97,11 @@
 
 #define MV_INVALID_BOARD_ID		0xFFFFFFFF
 
+#define ALP_MPP32_39_EXT_SMI_MASK		0x0ff00000
+#define ALP_MPP32_39_SWITCH_SMI_CTRL_VAL	0x05500000
+#define ALP_MPP32_39_CPU_SMI_CTRL_VAL		0x04400000
+#define ALP_MPP32_39_NO_SMI_CTRL_VAL		0x0
+
 /*******************************************************************************
 * Avanata LP Customer board - Based on RD-88F6660
 *******************************************************************************/

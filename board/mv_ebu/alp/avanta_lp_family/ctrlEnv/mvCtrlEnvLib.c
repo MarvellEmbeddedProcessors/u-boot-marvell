@@ -489,13 +489,11 @@ MV_STATUS mvCtrlSatRRead(MV_SATR_TYPE_ID satrField, MV_U32 *value)
 }
 
 /*******************************************************************************
-* mvCtrlSmiMasterSet - alter Group 4 MPP type, between CPU SMI control and SWITCH SMI control
+* mvCtrlSmiMasterSet - alter Group 4 MPP value, between CPU/SWITCH/NO SMI control
 *
-* DESCRIPTION: Read board configuration which is relevant to MPP group 4 interfaces,
-* 		to derive the correct group type, and according to input SMI conrtol,
-* 		write the correct MPP value.
+* DESCRIPTION:
 *
-* INPUT: smiCtrl - enum to select between SWITCH/CPU SMI controll
+* INPUT: smiCtrl - enum to select between SWITCH/CPU/NO SMI controll
 *
 * OUTPUT: None
 *
@@ -504,43 +502,24 @@ MV_STATUS mvCtrlSatRRead(MV_SATR_TYPE_ID satrField, MV_U32 *value)
 *******************************************************************************/
 MV_VOID mvCtrlSmiMasterSet(MV_SMI_CTRL smiCtrl)
 {
-	MV_BOOL isSPI1Enabled, isRefClkOut;
-	MV_U32 slicDev, ethComplex, groupTypeSelect = 0;
+	MV_U32 smiCtrlValue, mppValue = MV_REG_READ(mvCtrlMppRegGet(4));
 
-	ethComplex = mvBoardEthComplexConfigGet();
-	slicDev = mvBoardSlicUnitTypeGet();
-
-	/* if not using Lantiq TDM, define REF_CLK_OUT (both utilize the same gpio) */
-	isRefClkOut   = !(slicDev == SLIC_LANTIQ_ID);
-
-	/*SPI1 is in use when:
-	 * 1. Boot source is SPI1
-	 * 2. RGMII-1 is disabled (SPI-1 MPP's are shared with RGMII-1 MPP's) */
-	if (mvBoardBootDeviceGet() == MSAR_0_BOOT_SPI1_FLASH ||
-		(!(ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1) && !(ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES)
-		 && !(ethComplex & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)))
-		isSPI1Enabled = MV_TRUE;
-	else
-		isSPI1Enabled = MV_FALSE;
-
-	if (smiCtrl == NO_SMI_CTRL)
-		groupTypeSelect = NO_SW_SMI_CTRL_REF_CLK_OUT;
-	else {
-		/* MPP settings :
-		* Test board configuration relevant to MPP group 4, and derive the correct group type */
-
-		if (isRefClkOut)	/* add first REF_CLK_OUT group type */
-			groupTypeSelect += GE1_RGMII1_CPU_SMI_CTRL_REF_CLK_OUT;
-
-		if (smiCtrl == SWITCH_SMI_CTRL)	/* add first SW_SMI group type */
-			groupTypeSelect += GE1_RGMII1_SW_SMI_CTRL_TDM_LQ_UNIT;
-
-		if (isSPI1Enabled)	/* add first SPI1 group type */
-			groupTypeSelect += SPI1_CPU_SMI_CTRL_TDM_LQ_UNIT;
+	switch (smiCtrl) {
+	case SWITCH_SMI_CTRL:
+		smiCtrlValue = ALP_MPP32_39_SWITCH_SMI_CTRL_VAL;
+		break;
+	case NO_SMI_CTRL:
+		smiCtrlValue = ALP_MPP32_39_NO_SMI_CTRL_VAL;
+		break;
+	case CPU_SMI_CTRL:
+	default:
+		smiCtrlValue = ALP_MPP32_39_CPU_SMI_CTRL_VAL;
+		break;
 	}
+	mppValue &= ~ALP_MPP32_39_EXT_SMI_MASK;
+	mppValue |= smiCtrlValue;
 
-	mvBoardMppTypeSet(4, groupTypeSelect);	/* Set MPP value according to group type */
-	MV_REG_WRITE(mvCtrlMppRegGet(4), mvBoardMppGet(4));
+	MV_REG_WRITE(mvCtrlMppRegGet(4), mppValue);
 
 	/* Mux settings :
 	 * Add mux configuration setup here ! */

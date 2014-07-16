@@ -160,6 +160,7 @@ extern "C" {
 
 /* Dragonite Register */
 #define DRAGONITE_CTRL_REG			0x1c
+#define DRAGONITE_HOST2POE_IRQ_REG		0x6c
 #define DRAGONITE_DEBUGGER_REG			0xF8290
 
 /* Sample at Reset */

@@ -21,8 +21,8 @@
 #define __ARMADA_8K_H
 
 /* Version */
-#define CONFIG_IDENT_STRING             " armada8021-pxp"
-#define CONFIG_BOOTP_VCI_STRING         "U-boot.armv8.armada8021-pxp"
+#define CONFIG_IDENT_STRING             " Armada8k"
+#define CONFIG_BOOTP_VCI_STRING         "U-boot.armv8.armada8k"
 
 /* Enable IO drivers */
 #define MV_INCLUDE_UART
@@ -46,28 +46,28 @@
 
 #define CONFIG_AURORA_2_TIMER
 #define CONFIG_REMAKE_ELF
-#define CONFIG_SYS_ICACHE_OFF
-/* Generic Timer Definitions */
+
+/* Clock Definitions */
 #define COUNTER_FREQUENCY               (1008000)     /* 24MHz */
 
+/*
+ * Include the generic MVEBU configuration file.
+ * The generic file is affected by the defines above.
+ */
 #include "mvebu-common.h"
 
+/*
+ * SOC specific overrides
+ * Add here all config values that differ
+ * from the generic value in mvebu-common.h
+ */
 #undef CONFIG_BOOTDELAY
 #define CONFIG_BOOTDELAY                -1
 
 #undef CONFIG_BAUDRATE
 #define CONFIG_BAUDRATE                 63000
 
-/* Initial environment variables */
-#define CONFIG_EXTRA_ENV_SETTINGS	\
-					"kernel_addr=0x200000\0"	\
-					"initrd_addr=0xa00000\0"	\
-					"initrd_size=0x2000000\0"	\
-					"fdt_addr=0x100000\0"		\
-					"fdt_high=0xa0000000\0"
-
-#define CONFIG_BOOTARGS			"console=ttyAMA0 root=/dev/ram0"
-#define CONFIG_BOOTCOMMAND		"bootm $kernel_addr " \
-					"$initrd_addr:$initrd_size $fdt_addr"
+#undef CONFIG_BOOTARGS
+#define CONFIG_BOOTARGS			"console=ttyS0,63000 earlyprintk root=/dev/ram0"
 
 #endif /* __ARMADA_8K_H */

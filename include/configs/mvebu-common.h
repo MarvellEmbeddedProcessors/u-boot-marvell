@@ -70,6 +70,7 @@
 
 /* Cache */
 #define CONFIG_SYS_DCACHE_OFF
+#define CONFIG_SYS_ICACHE_OFF
 #define CONFIG_SYS_CACHELINE_SIZE       32
 
 /*
@@ -87,7 +88,6 @@
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 #define CONFIG_SYS_LOAD_ADDR		0x02000000      /* default load address	*/
 #define CONFIG_SYS_MIN_HDR_DEL_SIZE	0x100
-#undef  CONFIG_BOOTARGS
 
 /* Recovery */
 #ifdef MV_INCLUDE_RCVR
@@ -112,6 +112,16 @@
 #define CONFIG_SYS_BARGSIZE             CONFIG_SYS_CBSIZE       /* Boot Argument Buffer Size */
 #define CONFIG_BOOTDELAY                3
 #define CONFIG_ROOTPATH                 "/srv/nfs/"             /* Default Dir for NFS */
+#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x200000\0"	\
+					"initrd_addr=0xa00000\0"	\
+					"initrd_size=0x2000000\0"	\
+					"fdt_addr=0x100000\0"		\
+					"fdt_high=0xa0000000\0"
+
+#define CONFIG_BOOTARGS			"console=ttyS0,115200 earlyprintk root=/dev/ram0"
+#define CONFIG_BOOTCOMMAND		"bootm $kernel_addr $initrd_addr:$initrd_size $fdt_addr"
+
+/* Marvell specific env*/
 #define MV_BOOTARGS_END			":10.4.50.254:255.255.255.0:Marvell:eth0:none"
 #define MV_BOOTARGS_END_SWITCH		":::Marvell:eth0:none"
 

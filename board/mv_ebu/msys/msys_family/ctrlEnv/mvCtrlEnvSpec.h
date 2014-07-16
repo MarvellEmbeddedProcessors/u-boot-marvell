@@ -286,6 +286,7 @@ typedef enum _mvTarget {
 	BOOT_ROM_CS,	/* 22 BOOT_ROM_CS		*/
 	DEV_BOOCS,	/* 23 DEV_BOOCS			*/
 	USB_REGS,	/* 24 USB Internal registers	*/
+	DRAGONITE,	/* 25 Dragonite co-processor	*/
 	MAX_TARGETS
 } MV_TARGET;
 
@@ -327,6 +328,7 @@ typedef enum _mvTarget {
 	{0x1D, DEV_TARGET_ID	},		/* 22 BOOT_ROM_CS (Main Boot device )*/	\
 	{0x2F, DEV_TARGET_ID	},		/* 23 DEV_BOOT_CS (Secondary Boot device,)*/	\
 	{0x00, USB_TARGET_ID	},		/* 24 USB_TARGET_REGS */\
+	{0x00, DRAGONITE_TARGET_ID },		/* 25 DRAGONITE */	\
 }
 
 #define TARGETS_NAME_ARRAY	{			\
@@ -355,6 +357,7 @@ typedef enum _mvTarget {
 	"BOOT_ROM_CS",		/* 22 BOOT_ROM_CS */	\
 	"DEV_BOOTCS",		/* 23 DEV_BOOCS */	\
 	"USB_REGS",		/* 24 USB_REGS */	\
+	"DRAGONITE",		/* 25 DRAGONITE*/	\
 }
 
 

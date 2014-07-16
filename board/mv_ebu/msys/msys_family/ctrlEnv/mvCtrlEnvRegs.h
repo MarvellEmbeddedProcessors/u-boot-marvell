@@ -158,6 +158,10 @@ extern "C" {
 
 #define MPP_CONTROL_REG(id)			(0x18000 + (id * 4))
 
+/* Dragonite Register */
+#define DRAGONITE_CTRL_REG			0x1c
+#define DRAGONITE_DEBUGGER_REG			0xF8290
+
 /* Sample at Reset */
 #define DFX_DEVICE_SAR_REG(x)			(0xf8200 +(x*4))
 
@@ -289,6 +293,7 @@ typedef enum _mvTargetId {
 	USB_TARGET_ID    = 5,	/* Port 5 -> USB unit			*/
 	DFX_TARGET_ID    = 8,	/* Port 8 -> DFX Server			*/
 	CRYPT_TARGET_ID  = 9,	/* Port 9 --> Crypto Engine SRAM	*/
+	DRAGONITE_TARGET_ID = 10, /* Port 10 -> Dragonite co-processor	*/
 	PNC_BM_TARGET_ID = 12,	/* Port 12 -> PNC + BM Unit		*/
 	MAX_TARGETS_ID
 } MV_TARGET_ID;

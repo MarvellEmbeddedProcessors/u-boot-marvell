@@ -323,7 +323,7 @@ void misc_init_r_env(void)
 #elif defined(MV_NAND)
 		setenv("mtdparts", "mtdparts=armada-nand:8m(boot)ro,8m@8m(kernel),-(rootfs)");
 #elif defined(MV_INCLUDE_SPI)
-		setenv("mtparts", "mtdparts=spi_flash:4m(boot),-(spi-rootfs)");
+		setenv("mtdparts", "mtdparts=spi_flash:4m(boot),-(spi-rootfs)");
 #endif
 	}
 

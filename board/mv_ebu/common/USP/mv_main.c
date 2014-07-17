@@ -300,7 +300,7 @@ void misc_init_r_env(void){
 	envSetDefault("mtdparts", "mtdparts=armada-nand:8m(boot)ro,8m@8m(kernel),-(rootfs)");
 	envSetDefault("mtdids", "nand0=armada-nand");
 #elif defined(MV_INCLUDE_SPI)
-	envSetDefault("mtparts", "mtdparts=spi_flash:4m(boot),-(spi-rootfs)");
+	envSetDefault("mtdparts", "mtdparts=spi_flash:4m(boot),-(spi-rootfs)");
 	envSetDefault("mtdids", "spi0=spi_flash");
 #endif
 #if defined(MV_NAND)

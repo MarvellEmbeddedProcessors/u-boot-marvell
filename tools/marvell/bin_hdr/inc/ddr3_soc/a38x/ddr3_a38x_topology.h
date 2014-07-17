@@ -109,15 +109,15 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 /************************************* Marvell Boards Topology *************************************/
 MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 {
-    /* 1st Marvell board */
+    /* 1st Marvell board - RD_NAS */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x3,0,0,0}, {0x3,0,0,0}, {0x0,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
     ACTUAL_BUS_MASK  /* Buses mask */
     },
-    /* 2nd Marvell board */
+    /* 2nd Marvell board - DB */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
@@ -125,7 +125,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     5, /* Num Of Bus Per Interface*/
     ACTUAL_BUS_MASK  /* Buses mask */
     },
-    /* 3rd Marvell board */
+    /* 3rd Marvell board - RD_AP */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
@@ -133,7 +133,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     5, /* Num Of Bus Per Interface*/
     ACTUAL_BUS_MASK  /* Buses mask */
     },
-    /* 4rd Marvell board */
+    /* 4rd Marvell board - DB_AP */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */

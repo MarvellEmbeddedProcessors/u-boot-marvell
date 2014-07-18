@@ -66,7 +66,7 @@ struct {
 #define WAIT_MS_SPINUP	20000
 #define WAIT_MS_DATAIO	5000
 #define WAIT_MS_FLUSH	5000
-#define WAIT_MS_LINKUP	4
+#define WAIT_MS_LINKUP	200
 
 #ifdef  CONFIG_SCSI_6820
 #define VENDOR_SPECIFIC_0_ADDR  0xa0

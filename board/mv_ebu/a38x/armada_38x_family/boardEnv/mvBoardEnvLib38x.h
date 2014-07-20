@@ -86,8 +86,8 @@ extern "C" {
 { "cpusnum",	MV_SATR_CPU1_ENABLE,		0x01,	0,	2,	0,	{0, 1, 0}, 0},\
 { "sscg",	MV_SATR_SSCG_DISABLE,		0x08,	3,	3,	0,	{0, 1, 0}, 0},\
 { "ddr4select",	MV_SATR_DDR4_SELECT,		0x20,	5,	4,	1,	{0, 1, 0}, BOARD_SATR_READ_ONLY},\
-{ "ddrbuswidth",     MV_SATR_DDR_BUS_WIDTH,	0x08,	3,	0,	0,	{0, 1, 0}, 0},\
-{ "ddreccenable",    MV_SATR_DDR_ECC_ENABLE,	0x10,	4,	0,	0,	{0, 1, 0}, 0},\
+{ "ddrbuswidth",     MV_SATR_DDR_BUS_WIDTH,	0x08,	3,	0,	0,	{1, 1, 1}, 0},\
+{ "ddreccenable",    MV_SATR_DDR_ECC_ENABLE,	0x10,	4,	0,	0,	{1, 1, 1}, 0},\
 { "ddreccpupselect", MV_SATR_DDR_ECC_PUP_SEL,	0x20,	5,	0,	0,	{0, 1, 0}, 0},\
 { "sgmiispeed", MV_SATR_SGMII_SPEED,		0x40,	6,	0,	0,	{1, 1, 1}, 0},\
 { "bootsrc",	MV_SATR_BOOT_DEVICE,		0x3,	0,	3,	0,	{0, 1, 0}, BOARD_SATR_SWAP_BIT},\

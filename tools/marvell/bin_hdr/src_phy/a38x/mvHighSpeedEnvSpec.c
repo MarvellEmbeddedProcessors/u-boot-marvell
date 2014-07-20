@@ -1036,6 +1036,7 @@ MV_STATUS mvHwsBoardTopologyLoad(SERDES_MAP  *serdesMapArray)
 
 	CHECK_STATUS(loadTopologyFuncArr[boardIdIndex](serdesMapArray));
 
+
 	return MV_OK;
 }
 
@@ -1389,6 +1390,45 @@ MV_U8 topologyConfigDBModeGet(MV_VOID)
 	}
 }
 
+MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray)
+{
+	MV_U32 serdesType;
+	MV_U32 laneNum;
+
+	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
+		serdesType = serdesMapArray[laneNum].serdesType;
+
+		/*Read SatR configuration for SGMII speed*/
+		if((serdesType == SGMII0) || (serdesType == SGMII1) || (serdesType == SGMII2) ){
+			MV_U8	configVal;
+			MV_TWSI_SLAVE twsiSlave;
+
+			/*Fix the topology for A380 by SatR values*/
+			twsiSlave.slaveAddr.address = 0x50;
+			twsiSlave.slaveAddr.type = ADDR7_BIT;
+			twsiSlave.validOffset = MV_TRUE;
+			twsiSlave.offset = 0;
+			twsiSlave.moreThen256 = MV_TRUE;
+
+			/* Reading SatR value */
+			if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
+				DEBUG_INIT_S("powerUpSerdesLanes: TWSI Read failed\n");
+				return MV_FAIL;
+			}
+
+			if( 0 == (configVal & 0x40)){
+				serdesMapArray[laneNum].serdesSpeed = __1_25Gbps;
+			}
+			else{
+				serdesMapArray[laneNum].serdesSpeed = __3_125Gbps;
+			}
+		}
+	}
+
+	return MV_OK;
+}
+
+
 /***************************************************************************/
 MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 {
@@ -1450,6 +1490,8 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 		}
 	}
 
+	updateTopologySatR(serdesMapArray);
+
 	return MV_OK;
 }
 
@@ -1468,6 +1510,8 @@ MV_STATUS loadTopologyDBAp(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
 		serdesMapArray[laneNum].serdesType =  topologyConfigPtr[laneNum].serdesType;
 	}
+
+	updateTopologySatR(serdesMapArray);
 
 	return MV_OK;
 }
@@ -1510,6 +1554,7 @@ MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
 		CHECK_STATUS(loadTopologyRDAp(serdesMapArray));
 	}
 
+	updateTopologySatR(serdesMapArray);
 
 	return MV_OK;
 }

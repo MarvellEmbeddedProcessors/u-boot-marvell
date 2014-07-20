@@ -149,6 +149,11 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("\t0 = PUP 3\n");
 		mvOsPrintf("\t1 = PUP 4\n ");
 		break;
+	case MV_SATR_SGMII_SPEED:
+		mvOsPrintf("Determines the SGMII Speed configuration:\n");
+		mvOsPrintf("\t0 = 1G\n");
+		mvOsPrintf("\t1 = 2.5G\n");
+		break;
 	case MV_SATR_BOOT_DEVICE:
 		mvOsPrintf("Determines the Boot source device (BootROM is Enabled if not stated the opposite):\n");
 		for (i = 0; i < BOOT_SRC_TABLE_SIZE; i++) {
@@ -241,6 +246,9 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		break;
 	case MV_SATR_DDR_ECC_PUP_SEL:
 		mvOsPrintf("ddreccpupselect\t= %d  ==> PUP %d\n", tmp, (tmp == 0) ? 3 : 4);
+		break;
+	case MV_SATR_SGMII_SPEED:
+		mvOsPrintf("sgmiispeed\t= %d  ==> %s\n", tmp, (tmp == 0) ? "1G" : "2.5G");
 		break;
 	case MV_SATR_BOOT_DEVICE:
 		if (tmp < BOOT_SRC_TABLE_SIZE)
@@ -384,6 +392,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "SatR list ddrbuswidth     - prints the S@R modes list\n"
 "SatR list ddreccenable    - prints the S@R modes list\n"
 "SatR list ddreccpupselect - prints the S@R modes list\n"
+"SatR list sgmiispeed      - prints the S@R modes list\n"
 "SatR list usb3port0       - prints the S@R modes list\n"
 "SatR list usb3port1       - prints the S@R modes list\n"
 "SatR list rdserdes4       - prints the S@R modes list\n\n"
@@ -398,6 +407,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "SatR read ddrbuswidth     - read and print the DDR 16/32 S@R value\n"
 "SatR read ddreccenable    - read and print the DDR ECC enable S@R value\n"
 "SatR read ddreccpupselect - read and print the DDR ECC PUP select S@R value\n"
+"SatR read sgmiispeed      - read and print the SGMII speed configuration S@R value\n"
 "SatR read boardid         - read and print the board ID S@R value\n"
 "SatR read ecoversion      - read and print the ECO version S@R value\n"
 "SatR read usb3port0       - read and print the USB3-Port0 mode\n"
@@ -413,6 +423,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "SatR write ddrbuswidth <val>     - write the DDR 16/32 S@R value\n"
 "SatR write ddreccenable <val>    - write the DDR ECC enable S@R value\n"
 "SatR write ddreccpupselect <val> - write the DDR ECC PUP select S@R value\n"
+"SatR write sgmiispeed <val>- write the SGMII speed configuration S@R value\n"
 "SatR write usb3port0 <val> - write the S@R with USB3-Port0 mode\n"
 "SatR write usb3port1 <val> - write the S@R with USB3-Port1 mode\n"
 "SatR write rdserdes4 <val> - write the S@R with RD-NAS SERDES lane#4 configuration\n"

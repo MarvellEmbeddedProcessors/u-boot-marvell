@@ -48,7 +48,7 @@
 #define CONFIG_REMAKE_ELF
 
 /* Clock Definitions */
-#define COUNTER_FREQUENCY               (1008000)     /* 24MHz */
+#define COUNTER_FREQUENCY               (125000)     /* 24MHz */
 
 /*
  * Include the generic MVEBU configuration file.
@@ -65,7 +65,7 @@
 #define CONFIG_BOOTDELAY                -1
 
 #undef CONFIG_BAUDRATE
-#define CONFIG_BAUDRATE                 63000
+#define CONFIG_BAUDRATE                 4000
 
 #undef CONFIG_BOOTARGS
 #define CONFIG_BOOTARGS			"console=ttyS0,63000 earlyprintk root=/dev/ram0"

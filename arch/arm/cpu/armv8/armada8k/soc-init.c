@@ -27,6 +27,20 @@
 
 int soc_early_init_f(void)
 {
+#if CONFIG_PALLADIUM
+	/* Temporary configs. remove in future models */
+
+	/* Define the mapping inside register space */
+	writel(0xf0500201, 0xf00040a0);
+	writel(0xf0100201, 0xf00040a4);
+	writel(0xf0400201, 0xf00040a8);
+	writel(0xf0600201, 0xf00040ac);
+
+	/* Define the address of RFU within MSS */
+	writel(0x0, 0xf0513f00);
+	writel(0x910000, 0xf0513f04);
+	writel(0x11, 0xf0513f00);
+#endif
 	return 0;
 }
 

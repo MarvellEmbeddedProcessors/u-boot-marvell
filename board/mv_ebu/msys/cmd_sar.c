@@ -63,8 +63,8 @@ enum {
 	MV_U32 coreClockTbl[] = MV_CORE_CLK_TBL_BC2;
 	MV_CPUDDR_MODE cpuDdrClkTbl[] = MV_CPU_DDR_CLK_TBL_BC2;
 #elif defined(CONFIG_ALLEYCAT3)
-	/* Core clock, CPU/DDR, PCIe mode, PCIe clock, PLL clock, Device Num, BootSRC*/
-	int defaultValue[] = { 4, 0, 1, 0, 1, 0, 3 };
+	/* Core clock, CPU/DDR, PCIe mode, PCIe clock, PLL clock, Device Num, Board ID, BootSRC*/
+	int defaultValue[] = { 4, 3, 1, 0, 1, 0, 0, 3};
 	MV_U32 coreClockTbl[] = MV_CORE_CLK_TBL_AC3;
 	MV_CPUDDR_MODE cpuDdrClkTbl[] = MV_CPU_DDR_CLK_TBL_AC3;
 #else

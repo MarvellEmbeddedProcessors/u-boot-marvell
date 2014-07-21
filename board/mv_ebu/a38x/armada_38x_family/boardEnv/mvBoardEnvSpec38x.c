@@ -87,9 +87,9 @@ MV_BOARD_TWSI_INFO armada_38x_customer_0_BoardTwsiDev[] = {
 	{ BOARD_TWSI_IO_EXPANDER,	1,	0x21, ADDR7_BIT, MV_FALSE},
 };
 MV_BOARD_MAC_INFO armada_38x_customer_0_BoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x1},
-	{ BOARD_MAC_SPEED_AUTO, 0x0}
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x1, 0x1},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0}
 };
 
 MV_DEV_CS_INFO armada_38x_customer_0_BoardDeCsInfo[] = {
@@ -232,10 +232,10 @@ MV_BOARD_TWSI_INFO db88f68xxInfoBoardTwsiDev[] = {
 	{ BOARD_TWSI_MODULE_DETECT,	5,	0x27,	   ADDR7_BIT, MV_FALSE},
 };
 MV_BOARD_MAC_INFO db88f68xxInfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0},
-	{ BOARD_MAC_SPEED_AUTO, 0x1},
-	{ BOARD_MAC_SPEED_AUTO, 0x0},
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
+	{ BOARD_MAC_SPEED_AUTO, 0x1, 0x1},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
 };
 
 MV_DEV_CS_INFO db88f68xxInfoBoardDeCsInfo[] = {
@@ -325,9 +325,9 @@ MV_BOARD_TWSI_INFO rd88F68XXInfoBoardTwsiDev[] = {
 	{ BOARD_TWSI_IO_EXPANDER,	1,	0x21, ADDR7_BIT, MV_FALSE},
 };
 MV_BOARD_MAC_INFO rd88F68XXInfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x1},
-	{ BOARD_MAC_SPEED_AUTO, 0x0}
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x1, 0x1},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0}
 };
 
 MV_DEV_CS_INFO rd88F68XXInfoBoardDeCsInfo[] = {
@@ -529,10 +529,10 @@ MV_BOARD_TWSI_INFO dbAP88f68xxInfoBoardTwsiDev[] = {
 };
 
 MV_BOARD_MAC_INFO dbAP88f68xxInfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x1},
-	{ BOARD_MAC_SPEED_AUTO, 0x6},
-	{ BOARD_MAC_SPEED_AUTO, 0x4},
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x1, 0x1},
+	{ BOARD_MAC_SPEED_AUTO, 0x6, 0x4},
+	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4},
 };
 
 MV_DEV_CS_INFO dbAP88f68xxInfoBoardDeCsInfo[] = {

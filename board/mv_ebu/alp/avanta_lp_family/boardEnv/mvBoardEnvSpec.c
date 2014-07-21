@@ -80,11 +80,11 @@ MV_BOARD_TWSI_INFO avanta_lp_customer_board_0_InfoBoardTwsiDev[] = {
  * this external PHY is managed through MAC-0 SMI lines.
  * The 'boardEthSmiAddr' variable is used only for PHY init. */
 MV_BOARD_MAC_INFO avanta_lp_customer_board_0_InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_2000M, -1},
-	{ BOARD_MAC_SPEED_AUTO,  0x1},
-	{ BOARD_MAC_SPEED_1000M, -1},
-	{ BOARD_MAC_SPEED_1000M, -1},
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_2000M, -1,  -1 },
+	{ BOARD_MAC_SPEED_AUTO,  0x1, 0x1},
+	{ BOARD_MAC_SPEED_1000M, -1,  -1 },
+	{ BOARD_MAC_SPEED_1000M, -1,  -1 },
 };
 MV_BOARD_MPP_TYPE_INFO avanta_lp_customer_board_0_InfoBoardModTypeInfo[] = {
 	{
@@ -201,11 +201,11 @@ MV_BOARD_TWSI_INFO db88f6660InfoBoardTwsiDev[] = {
 	{ BOARD_DEV_TWSI_IO_EXPANDER,	2,	0x24,	   ADDR7_BIT	},
 };
 MV_BOARD_MAC_INFO db88f6660InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_1000M, -1},
-	{ BOARD_MAC_SPEED_AUTO, 0x1},
-	{ BOARD_MAC_SPEED_1000M, -1},
-	{ BOARD_MAC_SPEED_1000M, -1},
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_1000M, -1, -1 },
+	{ BOARD_MAC_SPEED_AUTO, 0x1, 0x1},
+	{ BOARD_MAC_SPEED_1000M, -1, -1 },
+	{ BOARD_MAC_SPEED_1000M, -1, -1 },
 };
 MV_BOARD_MPP_TYPE_INFO db88f6660InfoBoardModTypeInfo[] = {
 	{
@@ -321,11 +321,11 @@ MV_BOARD_TWSI_INFO db88f6650InfoBoardTwsiDev[] = {
 };
 
 MV_BOARD_MAC_INFO db88f6650InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x0},
-	{ BOARD_MAC_SPEED_AUTO, 0x3},
-	{ BOARD_MAC_SPEED_1000M, -1},
-	{ BOARD_MAC_SPEED_1000M, -1},
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
+	{ BOARD_MAC_SPEED_AUTO, 0x3, 0x3},
+	{ BOARD_MAC_SPEED_1000M, -1, -1 },
+	{ BOARD_MAC_SPEED_1000M, -1, -1 },
 };
 
 MV_BOARD_MPP_TYPE_INFO db88f6650InfoBoardModTypeInfo[] = {
@@ -436,11 +436,11 @@ MV_BOARD_TWSI_INFO rd88f6650InfoBoardTwsiDev[] = {
  * this external PHY is managed through MAC-0 SMI lines.
  * The 'boardEthSmiAddr' variable is used only for PHY init. */
 MV_BOARD_MAC_INFO rd88f6650InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_2000M, 0x1},
-	{ BOARD_MAC_SPEED_AUTO,  0x1},
-	{ BOARD_MAC_SPEED_1000M, -1},
-	{ BOARD_MAC_SPEED_1000M, -1},
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_2000M, 0x1, 0x1},
+	{ BOARD_MAC_SPEED_AUTO,  0x1, 0x1},
+	{ BOARD_MAC_SPEED_1000M,  -1, -1 },
+	{ BOARD_MAC_SPEED_1000M,  -1, -1 },
 };
 MV_BOARD_MPP_TYPE_INFO rd88f6650InfoBoardModTypeInfo[] = {
 	{
@@ -544,11 +544,11 @@ MV_BOARD_TWSI_INFO rd88f6660InfoBoardTwsiDev[] = {
  * this external PHY is managed through MAC-0 SMI lines.
  * The 'boardEthSmiAddr' variable is used only for PHY init. */
 MV_BOARD_MAC_INFO rd88f6660InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_2000M, -1},
-	{ BOARD_MAC_SPEED_AUTO,  0x1},
-	{ BOARD_MAC_SPEED_1000M, -1},
-	{ BOARD_MAC_SPEED_1000M, -1},
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_2000M,  -1, -1 },
+	{ BOARD_MAC_SPEED_AUTO,  0x1, 0x1},
+	{ BOARD_MAC_SPEED_1000M,  -1, -1 },
+	{ BOARD_MAC_SPEED_1000M,  -1, -1 },
 };
 MV_BOARD_MPP_TYPE_INFO rd88f6660InfoBoardModTypeInfo[] = {
 	{

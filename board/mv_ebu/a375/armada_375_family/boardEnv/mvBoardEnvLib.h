@@ -225,6 +225,7 @@ typedef enum _boardMacSpeed {
 typedef struct _boardMacInfo {
 	MV_BOARD_MAC_SPEED boardMacSpeed;
 	MV_32 boardEthSmiAddr;
+	MV_32 boardEthSmiAddr0;
 } MV_BOARD_MAC_INFO;
 
 typedef struct _boardMppInfo {
@@ -391,6 +392,7 @@ MV_32 mvBoardSwitchPortMap(MV_U32 switchIdx, MV_U32 switchPortNum);
 MV_BOOL mvBoardIsPortLoopback(MV_U32 ethPortNum);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
 MV_VOID mvBoardPhyAddrSet(MV_U32 ethPortNum, MV_U32 smiAddr);
+MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum);
 MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo, MV_BOOL read);
 MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo);
 MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable);

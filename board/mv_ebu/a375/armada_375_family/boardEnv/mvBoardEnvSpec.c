@@ -88,10 +88,10 @@ MV_BOARD_TWSI_INFO armada_375_customer_board_0_BoardTwsiDev[] = {
 };
 
 MV_BOARD_MAC_INFO armada_375_customer_board_0_BoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x0	},
-	{ BOARD_MAC_SPEED_AUTO, 0x3	},
-	{ N_A,			N_A	}
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
+	{ BOARD_MAC_SPEED_AUTO, 0x3, 0x3},
+	{ N_A,			N_A, N_A}
 };
 MV_BOARD_MPP_TYPE_INFO armada_375_customer_board_0_BoardModTypeInfo[] = {
 	{
@@ -209,14 +209,14 @@ MV_BOARD_TWSI_INFO db88f6720InfoBoardTwsiDev[] = {
 };
 
 MV_BOARD_MAC_INFO db88f6720InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x0	},
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0 },
 #ifndef CONFIG_MAC1_2_PON_ETH_SERDES_SFP
-	{ BOARD_MAC_SPEED_AUTO, 0x3	},
+	{ BOARD_MAC_SPEED_AUTO, 0x3, 0x3 },
 #else
-	{ BOARD_MAC_SPEED_AUTO, -1	},
+	{ BOARD_MAC_SPEED_AUTO, -1,  -1  },
 #endif
-	{ N_A,			N_A	},
+	{ N_A,			N_A, N_A },
 };
 MV_BOARD_MPP_TYPE_INFO db88f6720InfoBoardModTypeInfo[] = {
 	{

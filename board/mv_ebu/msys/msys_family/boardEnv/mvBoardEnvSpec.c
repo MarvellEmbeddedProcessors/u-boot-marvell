@@ -97,9 +97,9 @@ MV_BOARD_TWSI_INFO	bobcat2_customer_board_0_InfoBoardTwsiDev[] = {
 };
 
 MV_BOARD_MAC_INFO bobcat2_customer_board_0_InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x0 },
-	{BOARD_MAC_SPEED_AUTO, 0x1 },
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0 },
+	{BOARD_MAC_SPEED_AUTO, 0x1, 0x1 },
 };
 
 MV_BOARD_MODULE_TYPE_INFO bobcat2_customer_board_0_InfoBoardModTypeInfo[] = {
@@ -206,9 +206,9 @@ MV_BOARD_TWSI_INFO	alleycat3_customer_board_0_InfoBoardTwsiDev[] = {
 };
 
 MV_BOARD_MAC_INFO alleycat3_customer_board_0_InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x0 },
-	{BOARD_MAC_SPEED_AUTO, 0x1 },
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0 },
+	{BOARD_MAC_SPEED_AUTO, 0x1, 0x1 },
 };
 
 MV_BOARD_MODULE_TYPE_INFO alleycat3_customer_board_0_InfoBoardModTypeInfo[] = {
@@ -315,9 +315,9 @@ MV_BOARD_TWSI_INFO	db_dx_bc2InfoBoardTwsiDev[] = {
 };
 
 MV_BOARD_MAC_INFO db_dx_bc2InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0x0 },
-	{BOARD_MAC_SPEED_AUTO, 0x1 },
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0 },
+	{BOARD_MAC_SPEED_AUTO, 0x1, 0x1 },
 };
 
 MV_BOARD_MODULE_TYPE_INFO db_dx_bc2InfoBoardModTypeInfo[] = {
@@ -406,9 +406,9 @@ MV_BOARD_INFO db_dx_bc2Info = {
 #define RD_DX_BC2_BOARD_NAND_CONTROL			0x01c00543
 
 MV_BOARD_MAC_INFO rd_dx_bc2InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_1000M, 0x0 },
-	{BOARD_MAC_SPEED_1000M, 0x1 },
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{BOARD_MAC_SPEED_1000M, 0x0, 0x0 },
+	{BOARD_MAC_SPEED_1000M, 0x1, 0x1 },
 };
 
 MV_BOARD_MODULE_TYPE_INFO rd_dx_bc2InfoBoardModTypeInfo[] = {
@@ -486,9 +486,9 @@ MV_BOARD_INFO rd_dx_bc2Info = {
 #define RD_MTL_BC2_BOARD_NAND_CONTROL			0x01c00543
 
 MV_BOARD_MAC_INFO bc2_rd_mtlInfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_1000M, 0x0 },
-	{BOARD_MAC_SPEED_1000M, 0x1 },
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{BOARD_MAC_SPEED_1000M, 0x0, 0x0 },
+	{BOARD_MAC_SPEED_1000M, 0x1, 0x1 },
 };
 
 MV_BOARD_MODULE_TYPE_INFO bc2_rd_mtlInfoBoardModTypeInfo[] = {
@@ -584,9 +584,9 @@ MV_BOARD_TWSI_INFO	db_dx_ac3InfoBoardTwsiDev[] = {
 };
 
 MV_BOARD_MAC_INFO db_dx_ac3InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, -1 },
-	{BOARD_MAC_SPEED_AUTO, -1 }
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{BOARD_MAC_SPEED_AUTO, -1, -1 },
+	{BOARD_MAC_SPEED_AUTO, -1, -1 }
 };
 
 MV_BOARD_MODULE_TYPE_INFO db_dx_ac3InfoBoardModTypeInfo[] = {
@@ -688,8 +688,8 @@ MV_BOARD_TWSI_INFO	rd_dx_ac3InfoBoardTwsiDev[] = {
 };
 
 MV_BOARD_MAC_INFO rd_dx_ac3InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
-	{BOARD_MAC_SPEED_AUTO, 0 },
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0 },
 };
 
 MV_BOARD_MODULE_TYPE_INFO rd_dx_ac3InfoBoardModTypeInfo[] = {

@@ -230,6 +230,12 @@ else
 CFLAGS   += -fPIE -fno-zero-initialized-in-bss -fno-unwind-tables
 endif
 
+ifeq ($(DDRTYPE),ddr4)
+CFLAGS += -DCONFIG_DDR4
+else
+CFLAGS += -DCONFIG_DDR3
+endif
+
 CPPFLAGS = $(foreach FLAG, $(MVFLAGS), $(addprefix -D, $(FLAG)))
 ASFLAGS  = $(foreach FLAG, $(MVFLAGS), $(addprefix --defsym , $(FLAG)))
 LDFLAGS  = -static -nostartfiles -unwind-tables  -nostdlib -Wl,--build-id=none $(EXTRA_LD_FLAGS)

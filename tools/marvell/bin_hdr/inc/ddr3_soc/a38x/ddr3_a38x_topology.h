@@ -116,6 +116,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     5, /* Num Of Bus Per Interface*/
     ACTUAL_BUS_MASK  /* Buses mask */
     },
+#ifdef CONFIG_DDR3
     /* 2nd Marvell board - DB */
     {
     0x1, /* active interfaces */
@@ -124,6 +125,16 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     5, /* Num Of Bus Per Interface*/
     ACTUAL_BUS_MASK  /* Buses mask */
     },
+#else
+    /* 2nd Marvell board - DB (DDR4) */
+    {
+    0x1, /* active interfaces */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
+    {{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x1,0,0,0},{ 0x1,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_LOW}},
+    5, /* Num Of Bus Per Interface*/
+    ACTUAL_BUS_MASK  /* Buses mask */
+    },
+#endif
     /* 3rd Marvell board - RD_AP */
     {
     0x1, /* active interfaces */

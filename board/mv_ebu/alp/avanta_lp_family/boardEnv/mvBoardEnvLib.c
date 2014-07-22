@@ -972,15 +972,13 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	ethComplex = mvBoardEthComplexConfigGet();
 	if (ethComplex & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)
 		smiAddress = 0x0;
-	else if (ethComplex & MV_ETHCOMP_GE_MAC0_2_RGMII0) {
-		/* External PHY SMI address (extenal module) for Zx revision is
-		** 0x8, for A0 the module is on board with address 0x5 */
-		if (mvCtrlRevGet() <= MV_88F66X0_Z3_ID)
-			smiAddress = 0x8;
-		else
+	else if (ethComplex & MV_ETHCOMP_GE_MAC0_2_RGMII0)
 			smiAddress = 0x5;
-	} else { /* else if MAC0 is connected to SW port 6 */
-		smiAddress = -1;
+	else { /* else if MAC0 is connected to SW port 6 */
+		if (ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0)
+			smiAddress = 0x5;
+		else
+			smiAddress = -1;
 		if (ethComplex & MV_ETHCOMP_GE_MAC0_2_SW_P6) {
 			if (ethComplex & MV_ETHCOMP_P2P_MAC0_2_SW_SPEED_2G) /* else if MAC0 is connected to SW port 6 */
 				macSpeed = BOARD_MAC_SPEED_2000M;

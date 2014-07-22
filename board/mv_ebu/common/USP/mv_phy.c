@@ -89,21 +89,19 @@ static void mvAlpBoardEgigaPhyInit(void)
 
 	/* Init PHY connected to MAC0 */
 	if (ethComplex & (MV_ETHCOMP_GE_MAC0_2_RGMII0 |
-			  MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)) {
+			  MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0))
 		mvEthPhyInit(0, MV_FALSE);
-	}
 
-	/* for RD-6650 board, RGMII-0 is connected to switch port 4
-	 * to avoid address conflicts between 1512 PHY with internal PHY (0x1),
-	 * the 1512 PHY is also SMI controlled and initialized by MAC0
-	 */
+	/* Initialize PHY through MAC0, even though that PHY is not connected
+	 * to MAC1. This external PHY is connected to the switch, but the
+	 * external SMI control is granted to the CPU, and that why MAC0 is
+	 * initializing this PHY, even though it's connected to the switch */
 	if (ethComplex & MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY)
 		mvEthPhyInit(0, MV_FALSE);
 
 	/* Init PHY connected to MAC1 */
-	if (ethComplex & (MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3 | MV_ETHCOMP_GE_MAC1_2_RGMII0)) {
+	if (ethComplex & (MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3 | MV_ETHCOMP_GE_MAC1_2_RGMII0))
 		mvEthPhyInit(1, MV_FALSE);
-	}
 
 	/* if MAC-1 is connected to RGMII-1 or PON serdes via SGMII,
 	 * and SW_P4 is not connected RGMII-0,
@@ -279,7 +277,8 @@ void mvBoardEgigaPhyInit(void)
 				MV_ETHCOMP_GE_MAC0_2_COMPHY_1 | MV_ETHCOMP_GE_MAC0_2_COMPHY_2 |
 				MV_ETHCOMP_GE_MAC0_2_COMPHY_3 | MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3 |
 				MV_ETHCOMP_GE_MAC1_2_RGMII1 | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES |
-				MV_ETHCOMP_GE_MAC1_2_RGMII0 | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP))
+				MV_ETHCOMP_GE_MAC1_2_RGMII0 | MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP |
+				MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY))
 		mvAlpBoardEgigaPhyInit();
 
 	if (mvBoardIsInternalSwitchConnected() == MV_TRUE)

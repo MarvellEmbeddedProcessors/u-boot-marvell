@@ -388,6 +388,7 @@ typedef struct _boardInfo {
 { MV_CONFIG_DEVICE_BUS_MODULE, 0x3,	0,	 1,		0,	{ 0, 0, 0, 1 } }, \
 { MV_CONFIG_DDR_BUSWIDTH,      0x4,	2,	 1,		0,	{ 0, 0, 0, 1 } }, \
 { MV_CONFIG_PON_SERDES,        0x18,	3,	 1,		0,	{ 0, 1, 0, 1 } }, \
+{ MV_CONFIG_SW_P4,             0x20,	5,	 1,		0,	{ 0, 0, 0, 1 } }, \
 };
 
 /*MV_CMD_TYPE_ID,		command name,		Name,			numOfValues,	Possible Values */
@@ -417,7 +418,9 @@ typedef struct _boardInfo {
 {MV_CONFIG_SLIC_TDM_DEVICE,	"tdm",			"TDM module",			6, \
 	{"None", "SSI", "ISI", "ZSI", "TDM2C", "TDMMC"} }			,\
 {MV_CONFIG_DDR_BUSWIDTH,	"ddr_buswidth",		"DDR bus-width (DB-6660)",	2, \
-	{"32-bit", "16-bit"} }						,\
+	{"32-bit", "16-bit"} }							,\
+{MV_CONFIG_SW_P4,		"switch_p4",		"SW-Port4",			2, \
+	{"None", "RGMII0"} }							,\
 };
 
 /* MV_CONFIG_TYPE_ID ConfigID,      MV_U32 Offset,	 expanderNum,  regNum,   }} */

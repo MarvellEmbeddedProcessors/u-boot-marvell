@@ -1218,6 +1218,10 @@ MV_STATUS mvBoardEthComplexInfoUpdate()
 		/* connect Switch ports 2/3 to QUAD_PHY_P2/3 */
 		ethComplexOptions |= (MV_ETHCOMP_SW_P1_2_GE_PHY_P1 | MV_ETHCOMP_SW_P2_2_GE_PHY_P2);
 	}
+	if (mvBoardSysConfigGet(MV_CONFIG_SW_P4) == 0x1) {
+		ethComplexOptions |= MV_ETHCOMP_SW_P4_2_RGMII0;
+		ethComplexOptions |= MV_ETHCOMP_SW_P4_2_RGMII0_EXT_PHY;
+	}
 
 	mvBoardEthComplexConfigSet(ethComplexOptions);
 	return MV_OK;
@@ -3459,6 +3463,14 @@ MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
 		mvOsPrintf("Warning: MAC1 is connected to RGMII0 Module\n");
 		return MV_ERROR;
 	}
+	if (field == MV_CONFIG_SW_P4 && writeVal == 0x1 && (!(c & MV_ETHCOMP_GE_MAC1_2_RGMII1) ||
+					!(c & MV_ETHCOMP_GE_MAC0_2_SW_P6))) {
+		mvOsPrintf("Warning: Connect Switch port 4 to RGMII0 enabled only with MAC1->RGMII1, "\
+				"and MAC0->SW-P6\n");
+		return MV_ERROR;
+	}
+
+
 
 	return MV_OK;
 

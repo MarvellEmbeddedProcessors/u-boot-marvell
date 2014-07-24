@@ -177,11 +177,15 @@ int image_check_hcrc(const image_header_t *hdr)
 
 int image_check_dcrc(const image_header_t *hdr)
 {
+#ifndef CONFIG_PALLADIUM
 	ulong data = image_get_data(hdr);
 	ulong len = image_get_data_size(hdr);
 	ulong dcrc = crc32_wd(0, (unsigned char *)data, len, CHUNKSZ_CRC32);
 
 	return (dcrc == image_get_dcrc(hdr));
+#else
+	return 1;
+#endif
 }
 
 /**

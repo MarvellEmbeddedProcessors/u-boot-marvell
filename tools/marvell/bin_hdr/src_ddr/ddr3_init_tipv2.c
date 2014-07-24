@@ -134,6 +134,8 @@ static MV_U32 gLogLevel = 0;
 
 MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize);
 
+MV_STATUS ddr3UpdateTopologyMap(MV_HWS_TOPOLOGY_MAP* topologyMap);
+
 /************************************************************************************
  * Name:     levelLogPrintD
  * Desc:     This routine printing data in hex-decimal if gLogLevel>=eLogLevel
@@ -482,12 +484,19 @@ MV_U32 ddr3GetCSEnaFromReg(void)
 	return MV_REG_READ(REG_DDR3_RANK_CTRL_ADDR) & REG_DDR3_RANK_CTRL_CS_ENA_MASK;
 }
 
-/*******************************************************************************/
+/******************************************************************************
+ * Name:     ddr3LoadTopologyMap
+ * Desc:
+ * Args:
+ * Notes:
+ * Returns:
+ */
 MV_STATUS ddr3LoadTopologyMap(void)
 {
 	MV_HWS_TOPOLOGY_MAP* topologyMap;
 	MV_U8 	devNum = 0;
 	MV_U32 boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
+
 
 	/*Get topology data by board ID*/
 	if (sizeof(TopologyMap)/sizeof(MV_HWS_TOPOLOGY_MAP*) > boardIdIndex)
@@ -496,6 +505,12 @@ MV_STATUS ddr3LoadTopologyMap(void)
 		DEBUG_INIT_FULL_S("Failed loading DDR3 Topology map (invalid board ID)\n");
 		return MV_FAIL;
 	}
+
+#if defined(MV88F68XX) && !defined(CONFIG_CUSTOMER_BOARD_SUPPORT)
+	/*Update topology data*/
+	if(MV_OK != ddr3UpdateTopologyMap(topologyMap))
+		DEBUG_INIT_FULL_S("Failed update of DDR3 Topology map\n");
+#endif
 
 	/*Set topology data for internal DDR training usage*/
 	if(MV_OK != ddr3TipSetTopologyMap(devNum, topologyMap))
@@ -657,3 +672,64 @@ MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize){
     }
     return MV_OK;
 }
+
+#if defined(MV88F68XX) && !defined(CONFIG_CUSTOMER_BOARD_SUPPORT)
+/******************************************************************************
+ * Name:     ddr3UpdateTopologyMap
+ * Desc:
+ * Args:
+ * Notes: Update topology map by SatR values
+ * Returns:
+ */
+MV_STATUS ddr3UpdateTopologyMap(MV_HWS_TOPOLOGY_MAP* topologyMap)
+{
+	MV_U8	configVal;
+	MV_TWSI_SLAVE twsiSlave;
+	/*Fix the topology for A380 by SatR values*/
+	twsiSlave.slaveAddr.address = 0x50;
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.offset = 0;
+	twsiSlave.moreThen256 = MV_TRUE;
+
+	/* Reading board id */
+	if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
+		DEBUG_INIT_S("mvHwsBoardIdGet: TWSI Read failed\n");
+		return MV_FAIL;
+	}
+
+	/*Read 3 bits, 0 is 16/32 mode, 1 is ECC mode, 2 is special ECC mode*/
+	switch( (configVal & DDR_SATR_CONFIG_MASK) >> DDR_SATR_CONFIG_OFFSET ){
+		case DDR_SATR_16BIT_VALUE:
+			topologyMap->activeBusMask = BUS_MASK_16BIT;
+			break;
+		case DDR_SATR_16BIT_NOT_VALID_ECC_VALUE:
+			topologyMap->activeBusMask = BUS_MASK_16BIT;
+			DEBUG_INIT_S("The ECC DRAM mode not valid, configured 16bit mode no ECC\n");
+			break;
+		case DDR_SATR_16BIT_ECC_PUP3_VALUE:
+		case DDR_SATR_16BIT_ECC_PUP4_VALUE:
+			topologyMap->activeBusMask = BUS_MASK_16BIT;
+			DEBUG_INIT_S("The ECC DRAM mode not supported, ECC disabled for 16bit mode\n");
+			break;
+
+		case DDR_SATR_32BIT_VALUE:
+			topologyMap->activeBusMask = BUS_MASK_32BIT;
+			break;
+		case DDR_SATR_32BIT_ECC_VALUE:
+			topologyMap->activeBusMask = BUS_MASK_32BIT;
+			DEBUG_INIT_S("The ECC DRAM mode not supported, ECC disabled for 32bit mode\n");
+			break;
+		case DDR_SATR_32BIT_NOT_VALID_NO_ECC_VALUE:
+		case DDR_SATR_32BIT_NOT_VALID_ECC_VALUE:
+			topologyMap->activeBusMask = BUS_MASK_32BIT;
+			DEBUG_INIT_S("The ECC DRAM mode not valid, configured 32bit mode no ECC\n");
+			break;
+		default:
+			break;
+	}
+
+	return MV_OK;
+}
+#endif
+

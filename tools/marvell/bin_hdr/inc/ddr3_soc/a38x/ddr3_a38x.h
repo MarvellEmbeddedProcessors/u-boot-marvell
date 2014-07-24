@@ -91,6 +91,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define REG_FASTPATH_WIN_BASE_ADDR(win)         (0x20180 + (0x8 * win))
 #define REG_FASTPATH_WIN_CTRL_ADDR(win)         (0x20184 + (0x8 * win))
 
+/*SatR defined too change topology busWidth and ECC configuration*/
+#define DDR_SATR_CONFIG_MASK 						0x38
+#define DDR_SATR_CONFIG_OFFSET 						3
+#define DDR_SATR_16BIT_VALUE 						0b000
+#define DDR_SATR_16BIT_ECC_PUP3_VALUE 				0b110
+#define DDR_SATR_16BIT_ECC_PUP4_VALUE 				0b010
+#define DDR_SATR_16BIT_NOT_VALID_ECC_VALUE 			0b100
+#define DDR_SATR_32BIT_VALUE 						0b001
+#define DDR_SATR_32BIT_ECC_VALUE 					0b011
+#define DDR_SATR_32BIT_NOT_VALID_NO_ECC_VALUE 		0b101
+#define DDR_SATR_32BIT_NOT_VALID_ECC_VALUE 			0b111
+
 /********************/
 /* Registers offset */
 /********************/

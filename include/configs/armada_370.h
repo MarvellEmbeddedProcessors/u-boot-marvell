@@ -498,6 +498,12 @@ extern unsigned int mvTclkGet(void);
 	#ifndef CONFIG_SF_DEFAULT_MODE
 	# define CONFIG_SF_DEFAULT_MODE		SPI_MODE_3
 	#endif
+	#ifndef CONFIG_SF_DEFAULT_CS
+	# define CONFIG_SF_DEFAULT_CS		CONFIG_ENV_SPI_CS
+	#endif
+	#ifndef CONFIG_SF_DEFAULT_BUS
+	#define CONFIG_SF_DEFAULT_BUS		CONFIG_ENV_SPI_BUS
+	#endif
 	//#define MV_SPI_CONN_TO_EXT_FLASH
 
 	/* Boot from SPI settings */

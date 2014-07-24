@@ -309,7 +309,8 @@ int spi_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 	MV_U32 loadfrom = 0; /* 0 - from tftp, 1 - from USB */
 
 	if(!flash) {
-		flash = spi_flash_probe(0, 0, CONFIG_SF_DEFAULT_SPEED, CONFIG_SF_DEFAULT_MODE);
+		flash = spi_flash_probe(CONFIG_ENV_SPI_BUS, CONFIG_ENV_SPI_CS,
+								CONFIG_SF_DEFAULT_SPEED, CONFIG_SF_DEFAULT_MODE);
 		if (!flash) {
 			printf("Failed to probe SPI Flash\n");
 			set_default_env("!spi_flash_probe() failed");

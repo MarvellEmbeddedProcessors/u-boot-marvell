@@ -166,6 +166,15 @@ static const struct stmicro_spi_flash_params stmicro_spi_flash_table[] = {
 		.addr_cycles = 3,
 		.name = "N25Q256",
 	},
+	{
+		.id = 0xba17,
+		.protected = 1,
+		.page_size = 256,
+		.pages_per_sector = 256,
+		.nr_sectors = 128,
+		.addr_cycles = 3,
+		.name = "N25Q64",
+	},
 };
 
 static int stmicro_protect(struct spi_flash *flash, int enable)

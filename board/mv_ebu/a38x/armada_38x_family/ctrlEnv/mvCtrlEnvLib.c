@@ -269,7 +269,7 @@ MV_U32 mvCtrlSocUnitInfoNumSet(MV_UNIT_ID unit, MV_U32 maxValue)
 }
 
 /*******************************************************************************
-* mvCtrlSerdesConfig
+* mvCtrlSerdesConfigDetect
 *
 * DESCRIPTION: auto detect serdes configuration and Set the max interface detected for
 *		SERDES units
@@ -515,7 +515,13 @@ MV_U32 mvCtrlbootSrcGet(void)
 *******************************************************************************/
 MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel)
 {
+#ifdef CONFIG_ARMADA_38X
 	return MV_88F68XX;
+#elif defined CONFIG_ARMADA_39X
+	return MV_88F69XX;
+#else
+	#error "no SoC selected at compilation"
+#endif
 }
 
 /*******************************************************************************
@@ -932,6 +938,8 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 		return MV_6820_DEV_ID;
 	if (ctrlId == 0x6810)
 		return MV_6810_DEV_ID;
+	if (ctrlId == 0x6920)
+		return MV_6920_DEV_ID;
 
 	return MV_INVALID_DEV_ID;
 }

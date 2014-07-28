@@ -44,7 +44,7 @@
 #define MV_INCLUDE_PEX
 */
 
-#define CONFIG_AURORA_2_TIMER
+#define CONFIG_GENERIC_TIMER
 #define CONFIG_REMAKE_ELF
 
 /* Clock Definitions */

@@ -17,26 +17,22 @@
  * ***************************************************************************
  */
 
-#ifndef _REGS_BASE_H_
-#define _REGS_BASE_H_
+#include <common.h>
+#include <asm/io.h>
 
-#define MVEBU_REGS_BASE	(0xF0000000)
+#define GTC_CNTCR		0x0
+#define GTC_ENABLE_BIT		0x1
 
-#define MPP_REGS_BASE	(MVEBU_REGS_BASE + 0x1000)
+/* Currently timer is not needed for ARMv8 */
+int timer_init(void)
+{
+	u32 gtc_cntcr = readl(MVEBU_GENERIC_TIMER_BASE + GTC_CNTCR);
 
-/* List of register base for all units */
-#define MVEBU_ADEC_AP_BASE (MVEBU_REGS_BASE + 0x0)
+	/* Check if earlier SW enabled the generic timer */
+	if ((gtc_cntcr & GTC_ENABLE_BIT) == 0x0) {
+		gtc_cntcr |= GTC_ENABLE_BIT;
+		writel(gtc_cntcr, MVEBU_GENERIC_TIMER_BASE + GTC_CNTCR);
+	}
 
-#define MVEBU_UART_BASE(x)	(MVEBU_REGS_BASE + 0x512000 + (0x100 * x))
-#define MVEBU_MISC_REGS_BASE	(MVEBU_REGS_BASE + 0x18200)
-#define MVEBU_DEVICE_ID_REG	(MVEBU_MISC_REGS_BASE + 0x38)
-#define MVEBU_DEVICE_REV_REG	(MVEBU_MISC_REGS_BASE + 0x3C)
-#define MVEBU_RESET_MASK_REG	(MVEBU_MISC_REGS_BASE + 0x60)
-#define MVEBU_SOFT_RESET_REG	(MVEBU_MISC_REGS_BASE + 0x64)
-
-#define MVEBU_GICD_BASE		(MVEBU_REGS_BASE + 210000)
-#define MVEBU_GICC_BASE		(MVEBU_REGS_BASE + 220000)
-
-#define MVEBU_GENERIC_TIMER_BASE	(MVEBU_REGS_BASE + 0x581000)
-
-#endif	/* _REGS_BASE_H_ */
+	return 0;
+}

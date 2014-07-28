@@ -63,12 +63,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 #include "config_marvell.h"  	/* Required to identify SOC and Board */
 #include "mv_os.h"
-
+#include "soc_spec.h"
+#include "mvUart.h"
+#include "mvSysEnvLib.h"
 
 /************************************************************************************
-* Name:		suspendWakeup -
-* Desc:	 	Detectes suspend to RAM state, reads the return PC
-* 		and performs registers write according to a list.
+* Name:		suspendWakeup:
+* Desc:		- Detects suspend to RAM state
+* 		- reads the return PC
+* 		- performs registers write according to a list.
+*
 * 		The data is stored in the following format
 * 		boot_info_addr + 0x0 = magic word
 * 		boot_info_addr + 0x4 = resume pc
@@ -78,8 +82,45 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * Notes:
 * Returns:	None.
 */
-
+#define BOOT_INFO_ADDR				(0x3000)
+#define SUSPEND_MAGIC_WORD			(0xDEADB002)
+#define REGISTER_LIST_END			(0xFFFFFFFF)
 MV_STATUS suspendWakeup(void)
 {
+	int *boot_info = (int*)(BOOT_INFO_ADDR);
+	int  magic_word;
+	void (*resumeFunc)(void) = NULL;
+	int *reg_addr, reg_value;
+
+	/* Check Suspend Wakeup support and Wakeup indication*/
+	if (!mvSysEnvSuspendWakeupCheck())
+		return MV_OK;
+
+	DEBUG_INIT_S("Detected suspend to RAM indication\n");
+	/* Read and clear magic word to avoid successive resumes */
+	magic_word =  *(boot_info);
+	(*boot_info++) =  0x0; /* boot_info -> return pc */
+
+	if(!(magic_word == SUSPEND_MAGIC_WORD)) {
+		DEBUG_INIT_S("Detected magic word error!\n");
+		return MV_OK;
+	}
+
+	resumeFunc = (void *)(*boot_info++);
+	/* boot_info now points to the 1st register address*/
+	reg_addr = (int *)(*boot_info++);
+
+	/* Restore registers */
+	while (reg_addr != (int *)REGISTER_LIST_END) {
+		reg_value = (*boot_info++);
+		*reg_addr = reg_value;
+		reg_addr = (int *)(*boot_info++);
+	}
+
+	/* Jump back to OS */
+	DEBUG_INIT_S("Returning to OS\n");
+	resumeFunc();
+
 	return MV_OK;
 }
+

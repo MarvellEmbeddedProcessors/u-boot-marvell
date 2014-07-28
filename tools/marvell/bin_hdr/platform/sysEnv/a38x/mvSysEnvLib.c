@@ -165,3 +165,41 @@ MV_STATUS mvHwsTwsiInitWrapper(MV_VOID)
 	}
 	return MV_OK;
 }
+
+/************************************************************************************
+* mvSysEnvSuspendWakeupCheck
+* DESCRIPTION:	 	Reads GPIO input for suspend-wakeup indication.
+* INPUT:	 	None.
+* OUTPUT:
+* RRETURNS:	MV_U32 indicating suspend wakeup status:
+* 		0 - normal initialization, otherwise - suspend wakeup.
+ ***************************************************************************/
+MV_U32 mvSysEnvSuspendWakeupCheck(void)
+{
+	MV_U32 reg, boardIdIndex, gpio;
+	MV_BOARD_WAKEUP_GPIO boardGpio[] = MV_BOARD_WAKEUP_GPIO_INFO;
+
+	/* - Detect if Suspend-Wakeup is supported on current board
+	 * - Fetch the GPIO number for wakeup status input indication */
+	boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
+	if (boardGpio[boardIdIndex].gpioNum == -1)
+		return 0;
+	else
+		gpio = boardGpio[boardIdIndex].gpioNum;
+
+
+	/* Initialize MPP for GPIO (set MPP = 0x0) */
+	reg = MV_REG_READ(MPP_CONTROL_REG(MPP_REG_NUM(gpio)));
+	reg &= ~MPP_MASK(gpio);		/* reset MPP21 to 0x0, keep rest of MPP settings*/
+	MV_REG_WRITE(MPP_CONTROL_REG(MPP_REG_NUM(gpio)), reg);
+
+	/* Initialize GPIO as input */
+	reg = MV_REG_READ(GPP_DATA_OUT_EN_REG(GPP_REG_NUM(gpio)));
+	reg |= GPP_MASK(gpio);
+	MV_REG_WRITE(GPP_DATA_OUT_EN_REG(GPP_REG_NUM(gpio)), reg);
+
+	/* Check GPP for input status from PIC: 0 - regular init, 1 - suspend wakeup */
+	reg = MV_REG_READ(GPP_DATA_IN_REG(GPP_REG_NUM(gpio)));
+
+	return reg & GPP_MASK(gpio);
+}

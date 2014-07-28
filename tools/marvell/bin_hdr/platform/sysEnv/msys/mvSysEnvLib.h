@@ -109,6 +109,6 @@ MV_U32 mvBoardIdGet(MV_VOID);
 MV_U32 mvBoardIdIndexGet(MV_U32 boardId);
 MV_U32 mvBoardTclkGet(MV_VOID);
 MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value);
-
+MV_U32 mvSysEnvSuspendWakeupCheck(MV_VOID);
 #endif /* __INCmvBHboardEnvSpech */
 

@@ -61,6 +61,8 @@
  * Add here all config values that differ
  * from the generic value in mvebu-common.h
  */
+#ifdef CONFIG_PALLADIUM
+
 #undef CONFIG_BOOTDELAY
 #define CONFIG_BOOTDELAY                -1
 
@@ -68,6 +70,13 @@
 #define CONFIG_BAUDRATE                 4000
 
 #undef CONFIG_BOOTARGS
-#define CONFIG_BOOTARGS			"console=ttyS0,63000 earlyprintk root=/dev/ram0"
+#define CONFIG_BOOTARGS			"console=ttyS0,4000 earlyprintk root=/dev/ram0"
+
+#undef  CONFIG_EXTRA_ENV_SETTINGS
+#define CONFIG_EXTRA_ENV_SETTINGS	"kernel_addr=0x107ffc0\0"	\
+					"fdt_addr=0x1000000\0"		\
+					"fdt_high=0xa0000000\0"
+#endif /*CONFIG_PALLADIUM*/
+
 
 #endif /* __ARMADA_8K_H */

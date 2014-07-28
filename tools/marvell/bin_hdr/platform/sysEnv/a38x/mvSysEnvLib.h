@@ -144,8 +144,38 @@
 #define ARMADA_398_DEVIDE_ID                    0x6928
 
 #define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
+#define GPP_DATA_OUT_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x00)
+#define GPP_DATA_OUT_EN_REG(grp)		(MV_GPP_REGS_BASE(grp) + 0x04)
+#define GPP_DATA_IN_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x10)
+#define MV_GPP_REGS_BASE(unit) 			(0x18100 + ((unit) * 0x40))
 
+#define MPP_REG_NUM(GPIO_NUM)		(GPIO_NUM / 8)
+#define MPP_MASK(GPIO_NUM)		(0xf << 4 * (GPIO_NUM - (MPP_REG_NUM(GPIO_NUM) * 8)));
+#define GPP_REG_NUM(GPIO_NUM)		(GPIO_NUM / 32)
+#define GPP_MASK(GPIO_NUM)		(1 << GPIO_NUM % 32)
 
+typedef struct boardWakeupGPIO {
+	MV_U32 boardId;
+	MV_32 gpioNum;
+} MV_BOARD_WAKEUP_GPIO;
+
+/* GPIO status indication for Suspend Wakeup:
+ * this array defines the indication GPIO per board, if exist (else -1 if disabled) */
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+#define MV_BOARD_WAKEUP_GPIO_INFO {\
+{ARMADA_38x_CUSTOMER_BOARD_ID0,	-1 },\
+{ARMADA_38x_CUSTOMER_BOARD_ID1,	-1 },\
+};
+
+#else
+
+#define MV_BOARD_WAKEUP_GPIO_INFO {\
+{RD_NAS_68XX_ID, -1 },\
+{DB_68XX_ID,	 -1 },\
+{RD_AP_68XX_ID,	 -1 },\
+{DB_AP_68XX_ID,	 21 },\
+};
+#endif
 /**************************************************************************
  * mvBoardTclkGet -
  *
@@ -195,5 +225,14 @@ MV_U32 mvBoardIdIndexGet(MV_U32 boardId);
  ***************************************************************************/
 MV_STATUS mvHwsTwsiInitWrapper(MV_VOID);
 
+/************************************************************************************
+* mvSysEnvSuspendWakeupCheck
+* DESCRIPTION:	 	Reads GPIO input for suspend-wakeup indication.
+* INPUT:	 	None.
+* OUTPUT:
+* RRETURNS:	MV_U32 indicating suspend wakeup status:
+* 		0 - normal initialization, otherwise - suspend wakeup.
+ ***************************************************************************/
+MV_U32 mvSysEnvSuspendWakeupCheck(MV_VOID);
 
 #endif

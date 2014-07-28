@@ -189,3 +189,16 @@ MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value)
 	return MV_OK;
 }
 
+/************************************************************************************
+* mvSysEnvSuspendWakeupCheck
+* DESCRIPTION:	 	Reads suspend-wakeup indication
+* INPUT:	 	None.
+* OUTPUT:
+* RRETURNS:	MV_U32 indicating suspend wakeup status:
+* 		0 - normal initialization, otherwise - suspend wakeup.
+ ***************************************************************************/
+MV_U32 mvSysEnvSuspendWakeupCheck(void)
+{
+	/* TBD */
+	return 0;
+}

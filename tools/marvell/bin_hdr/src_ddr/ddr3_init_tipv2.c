@@ -280,6 +280,11 @@ MV_U32 ddr3Init(void)
 		break;
 	}
 
+	/* Set DRAM Reset Mask in case of wakeup from suspend
+	 * i.e the DRAM values will not be overwritten / reset when waking from suspend*/
+	if (mvSysEnvSuspendWakeupCheck())
+		MV_REG_BIT_SET(REG_SDRAM_INIT_CTRL_ADDR, 1 << REG_SDRAM_INIT_RESET_MASK_OFFS);
+
 	/************************************************************************************/
 	/* Stage 0 - Set board configuration                                                */
 	/************************************************************************************/

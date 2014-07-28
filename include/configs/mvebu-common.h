@@ -29,7 +29,7 @@
 /* Temp */
 #define CONFIG_ADEC
 
-/* Udefull Debug */
+/* Usefull Debug */
 #define DEBUG
 #define CONFIG_BOOTSTAGE
 #define CONFIG_BOOTSTAGE_REPORT
@@ -43,7 +43,7 @@
 #define CONFIG_SYS_SDRAM_BASE           0x00000000
 #define CONFIG_SYS_RESET_ADDRESS        0xffff0000
 #define CONFIG_SYS_MALLOC_BASE          (CONFIG_SYS_TEXT_BASE + (3 << 20))  /* TEXT_BASE + 3M */
-#define CONFIG_SYS_MALLOC_LEN           (5 << 20)    /* Reserve 5MB for malloc*/
+#define CONFIG_SYS_MALLOC_LEN           (1 << 20)    /* Reserve 1MB for malloc*/
 #define CONFIG_NR_DRAM_BANKS		(4)
 /* maybe need to set back to 0x7fff0 */
 #define CONFIG_SYS_INIT_SP_ADDR         (CONFIG_SYS_TEXT_BASE + 0xFF0000)   /* End of 16M scrubbed by training in bootrom */
@@ -119,7 +119,7 @@
 					"fdt_high=0xa0000000\0"
 
 #define CONFIG_BOOTARGS			"console=ttyS0,115200 earlyprintk root=/dev/ram0"
-#define CONFIG_BOOTCOMMAND		"bootm $kernel_addr $initrd_addr:$initrd_size $fdt_addr"
+#define CONFIG_BOOTCOMMAND		"bootm $kernel_addr - $fdt_addr"
 
 /* Marvell specific env*/
 #define MV_BOOTARGS_END			":10.4.50.254:255.255.255.0:Marvell:eth0:none"
@@ -155,6 +155,9 @@
 
 /* SMP Spin Table Definitions */
 #define CPU_RELEASE_ADDR               (CONFIG_SYS_SDRAM_BASE + 0x7fff0)
+
+/* Exception level */
+/* define CONFIG_ARMV8_SWITCH_TO_EL1 */
 
 /*********  IO Definitions **********/
 

@@ -1729,15 +1729,12 @@ int board_nand_init(struct nand_chip *nand)
 	#error "no access mode defined! (DMA/PIO)"
 #endif
 
-#if defined(MV_NAND_4BIT_MODE)
-	info->ecc_type	= MV_NFC_ECC_BCH_2K;
-#elif defined(MV_NAND_8BIT_MODE)
-	info->ecc_type	= MV_NFC_ECC_BCH_1K;
-#elif defined(MV_NAND_12BIT_MODE)
-	info->ecc_type	= MV_NFC_ECC_BCH_704B;
-#else
-	#error ECC Mode must be defined!
-#endif
+	info->ecc_type = mvBoardNandECCModeGet();
+	if (info->ecc_type >= MV_NFC_ECC_DISABLE) {
+		dev_err(&pdev->dev, "NAND ECC mode is not defined!\n");
+		ret = -ENODEV;
+		goto fail_free_orion;
+	}
 
 	info->mmio_phys_base = MV_NFC_REGS_BASE;
 

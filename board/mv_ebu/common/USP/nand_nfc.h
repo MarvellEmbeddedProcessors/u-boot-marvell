@@ -10,6 +10,7 @@
 #endif
 #include "mvSysNfcApi.h"
 #include "nfc/mvNfcRegs.h"
+#include "boardEnv/mvBoardEnvLib.h"
 
 enum nfc_page_size
 {

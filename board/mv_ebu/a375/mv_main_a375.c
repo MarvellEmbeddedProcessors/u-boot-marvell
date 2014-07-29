@@ -322,6 +322,28 @@ void misc_init_r_env(void)
 #endif
 	}
 
+	env = getenv("nandEcc");
+	if (!env) {
+#if defined(MV_NAND)
+		MV_NFC_ECC_MODE nandEccMode = mvBoardNandECCModeGet();
+		switch (nandEccMode) {
+		case MV_NFC_ECC_BCH_1K:			/* 8 bit */
+			setenv("nandEcc", "nfcConfig=8bitecc");
+			break;
+		case MV_NFC_ECC_BCH_704B:		/* 12 bit */
+			setenv("nandEcc", "nfcConfig=12bitecc");
+			break;
+		case MV_NFC_ECC_BCH_512B:		/* 16 bit */
+			setenv("nandEcc", "nfcConfig=16bitecc");
+			break;
+		case MV_NFC_ECC_BCH_2K:			/* 4 bit */
+		default:
+			setenv("nandEcc", "nfcConfig=4bitecc");
+			break;
+		}
+#endif
+	}
+
 	/* update the CASset env parameter */
 	env = getenv("CASset");
 	if (!env) {
@@ -478,9 +500,9 @@ void misc_init_r_env(void)
 		setenv("script_addr_r", "3000000");
 	env = getenv("bootargs_dflt");
 	if (!env)
-		setenv("bootargs_dflt", "$console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params \
-clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
+		setenv("bootargs_dflt", "$console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
+			   "ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
+			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 	env = getenv("bootcmd_auto");
 	if (!env)
 		setenv("bootcmd_auto", "stage_boot $boot_order");
@@ -540,13 +562,14 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 #if defined(MV_INC_BOARD_QD_SWITCH)
 		env = getenv("netbsd_netconfig");
 		if (!env)
-			setenv("netbsd_netconfig", "mv_net_config=<((mgi0,00:00:11:22:33:44,0)(mgi1,00:00:11:22:33:55,1:2:3:4)),mtu=1500>");
+			setenv("netbsd_netconfig", "mv_net_config=<((mgi0,00:00:11:22:33:44,0)"
+									   "(mgi1,00:00:11:22:33:55,1:2:3:4)),mtu=1500>");
 #endif
 		env = getenv("netbsd_set_args");
 		if (!env)
-			setenv("netbsd_set_args", "setenv bootargs nfsroot=$netbsd_server:$rootpath fs=$netbsd_fs \
-                    ip=$netbsd_ip serverip=$netbsd_server mask=$netbsd_mask gw=$netbsd_gw rootdev=$netbsd_rootdev \
-                    ethaddr=$ethaddr eth1addr=$eth1addr ethmtu=$ethmtu eth1mtu=$eth1mtu $netbsd_netconfig");
+			setenv("netbsd_set_args", "setenv bootargs nfsroot=$netbsd_server:$rootpath fs=$netbsd_fs "
+				   "ip=$netbsd_ip serverip=$netbsd_server mask=$netbsd_mask gw=$netbsd_gw rootdev=$netbsd_rootdev "
+				   "ethaddr=$ethaddr eth1addr=$eth1addr ethmtu=$ethmtu eth1mtu=$eth1mtu $netbsd_netconfig");
 
 		env = getenv("netbsd_boot");
 		if (!env)
@@ -633,10 +656,10 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 #endif
 
 #if CONFIG_OF_LIBFDT
-	char bootcmd_fdt[] = "tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath ip=$ipaddr:\
-$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params \
-clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel; bootz 0x2000000 - $fdtaddr;";
+	char bootcmd_fdt[] = "tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;"
+		"setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath ip=$ipaddr:"
+		"$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
+		"clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel; bootz 0x2000000 - $fdtaddr;";
 	env = getenv("fdtaddr");
 	if (!env)
 		setenv("fdtaddr", "0x1000000");
@@ -661,35 +684,38 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel; bootz 0x2000000 - $fdta
 #elif defined(CONFIG_CMD_STAGE_BOOT)
 //		setenv("bootcmd","stage_boot $boot_order");
 // Temporary workaround till stage_boot gets stable.
-		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
+		setenv("bootcmd", "tftpboot 0x2000000 $image_name;"
+			   "setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
+			   "ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params "
+			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
 
 #elif defined(MV_INCLUDE_TDM) || defined(MV_INC_BOARD_QD_SWITCH)
-		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$(lcd0_enable) clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
+		setenv("bootcmd", "tftpboot 0x2000000 $image_name;"
+			   "setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
+			   "ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
+			   "clcd.lcd0_enable=$(lcd0_enable) clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
 #else
-		setenv("bootcmd","tftpboot 0x2000000 $image_name;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
+		setenv("bootcmd", "tftpboot 0x2000000 $image_name;"
+			   "setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
+			   "ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params "
+			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
 #endif
 #endif  /* (CONFIG_BOOTDELAY >= 0) */
 
 	env = getenv("standalone");
 	if (!env)
 #if defined(MV_INCLUDE_TDM) && defined(MV_INC_BOARD_QD_SWITCH)
-		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig; bootm 0x2000000;");
+		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts "
+			   "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end $mvNetConfig; bootm 0x2000000;");
 #elif defined(MV_INC_BOARD_QD_SWITCH)
-		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig; bootm 0x2000000;");
+		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts "
+			   "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end $mvNetConfig; bootm 0x2000000;");
 #elif defined(MV_INCLUDE_TDM)
-		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
-ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
+		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts "
+			   "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 #else
-		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
-ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
+		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts "
+			   "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 #endif
 
 	/* Set boodelay to 3 sec, if Monitor extension are disabled */
@@ -819,12 +845,6 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	}
 #endif  /* defined(YUK_ETHADDR) */
 
-#if defined(MV_NAND)
-	env = getenv("nandEcc");
-	if (!env)
-		setenv("nandEcc", "1bit");
-
-#endif
 #if defined(CONFIG_CMD_RCVR)
 	env = getenv("netretry");
 	if (!env)

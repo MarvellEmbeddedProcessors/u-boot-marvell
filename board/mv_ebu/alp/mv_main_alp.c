@@ -331,6 +331,28 @@ void misc_init_r_env(void)
 #endif
 	}
 
+	env = getenv("nandEcc");
+	if (!env) {
+#if defined(MV_NAND)
+		MV_NFC_ECC_MODE nandEccMode = mvBoardNandECCModeGet();
+		switch (nandEccMode) {
+		case MV_NFC_ECC_BCH_1K:			/* 8 bit */
+			setenv("nandEcc", "nfcConfig=8bitecc");
+			break;
+		case MV_NFC_ECC_BCH_704B:		/* 12 bit */
+			setenv("nandEcc", "nfcConfig=12bitecc");
+			break;
+		case MV_NFC_ECC_BCH_512B:		/* 16 bit */
+			setenv("nandEcc", "nfcConfig=16bitecc");
+			break;
+		case MV_NFC_ECC_BCH_2K:			/* 4 bit */
+		default:
+			 setenv("nandEcc", "nfcConfig=4bitecc");
+			 break;
+		}
+#endif
+	}
+
 	/* update the CASset env parameter */
 	env = getenv("CASset");
 	if (!env) {
@@ -487,9 +509,9 @@ void misc_init_r_env(void)
 		setenv("script_addr_r", "3000000");
 	env = getenv("bootargs_dflt");
 	if (!env)
-		setenv("bootargs_dflt", "$console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params \
-clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
+		setenv("bootargs_dflt", "$console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
+			   "ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
+			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 
 #endif
 	env = getenv("pxe_files_load");
@@ -649,25 +671,26 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 #if (CONFIG_BOOTDELAY >= 0)
 	env = getenv("bootcmd");
 	if (!env)
-		setenv("bootcmd", "tftpboot 2000000 $image_name ; setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig;  bootm 0x2000000;");
+		setenv("bootcmd", "tftpboot 2000000 $image_name ; setenv bootargs $console $nandEcc $mtdparts "
+						  "$bootargs_root nfsroot=$serverip:$rootpath ip=$ipaddr:$serverip$bootargs_end "
+						  "$mvNetConfig;  bootm 0x2000000;");
 
 #endif  /* (CONFIG_BOOTDELAY >= 0) */
 
 	env = getenv("standalone");
 	if (!env)
 #if defined(MV_INCLUDE_TDM) && defined(MV_INC_BOARD_QD_SWITCH)
-		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig; bootm 0x2000000;");
+		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts "
+			   "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end $mvNetConfig; bootm 0x2000000;");
 #elif defined(MV_INC_BOARD_QD_SWITCH)
-		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig; bootm 0x2000000;");
+		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts "
+			   "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end $mvNetConfig; bootm 0x2000000;");
 #elif defined(MV_INCLUDE_TDM)
-		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
-ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
+		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts "
+			   "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 #else
-		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
-ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
+		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts "
+			   "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 #endif
 
 	/* Set boodelay to 3 sec, if Monitor extension are disabled */
@@ -802,12 +825,6 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	}
 #endif  /* defined(YUK_ETHADDR) */
 
-#if defined(MV_NAND)
-	env = getenv("nandEcc");
-	if (!env)
-		setenv("nandEcc", "1bit");
-
-#endif
 #if defined(CONFIG_CMD_RCVR)
 	env = getenv("netretry");
 	if (!env)

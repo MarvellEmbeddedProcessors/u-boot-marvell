@@ -75,6 +75,7 @@ extern "C" {
 #include "mvSysHwConfig.h"
 #include "boardEnv/mvBoardEnvSpec.h"
 #include "twsi/mvTwsi.h"
+#include "nfc/mvNfc.h"
 
 /* DUART stuff for Tclk detection only */
 #define DUART_BAUD_RATE			115200
@@ -340,6 +341,7 @@ MV_STATUS mvBoardConfIdSet(MV_U16 conf);
 MV_U16 mvBoardPexModeGet(MV_VOID);
 MV_STATUS mvBoardPexModeSet(MV_U16 conf);
 MV_VOID mvBoardDebugLed(MV_U32 hexNum);
+MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
 
 #ifdef __cplusplus
 }

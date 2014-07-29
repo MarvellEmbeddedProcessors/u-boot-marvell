@@ -306,7 +306,15 @@ extern unsigned int mvTclkGet(void);
 #ifdef MV_NAND
 	#define MV_NAND_PIO_MODE
 	#define MV_NAND_1CS_MODE
-	#define MV_NAND_4BIT_MODE
+	/*
+	The following defines are masked for a375:
+	ECC mode is being detected by mvBoardNandECCModeGet from
+	Sample at Reset boot device selection.
+	To statically override ECC mode, unmask one of the following ECC modes:
+		#define MV_NAND_4BIT_MODE
+		#define MV_NAND_8BIT_MODE
+		#define MV_NAND_12BIT_MODE
+	*/
 	#define MTD_NAND_NFC_INIT_RESET
 
 	#define CONFIG_SYS_MAX_NAND_DEVICE 1

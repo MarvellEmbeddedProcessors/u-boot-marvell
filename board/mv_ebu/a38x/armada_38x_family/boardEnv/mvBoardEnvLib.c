@@ -2728,11 +2728,58 @@ MV_STATUS mvBoardIoExpanderSet(MV_U8 addr, MV_U8 offs, MV_U8 val)
 *       return 1 if detect DB-AP-68xx board
 *
 *******************************************************************************/
-
 MV_U32 mvBoardUartPortGet()
 {
 	if (mvBoardIdGet() != DB_AP_68XX_ID)
 		return whoAmI();
 
 	return (whoAmI() == 0 ? 1 : 0); /* CPU0 uses UART1 on DB-AP */
+}
+
+/*******************************************************************************
+* mvBoardNandECCModeGet
+*
+* DESCRIPTION:
+*	Obtain NAND ECC mode
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_NFC_ECC_MODE type
+*
+*******************************************************************************/
+MV_NFC_ECC_MODE mvBoardNandECCModeGet()
+{
+#if defined(MV_NAND_4BIT_MODE)
+	return MV_NFC_ECC_BCH_2K;
+#elif defined(MV_NAND_8BIT_MODE)
+	return MV_NFC_ECC_BCH_1K;
+#elif defined(MV_NAND_12BIT_MODE)
+	return MV_NFC_ECC_BCH_704B;
+#elif defined(MV_NAND_16BIT_MODE)
+	return MV_NFC_ECC_BCH_512B;
+#else
+	MV_U32 satrBootDeviceValue = mvCtrlbootSrcGet();
+
+	if (satrBootSrcTable[satrBootDeviceValue].bootSrc == MSAR_0_BOOT_NAND_NEW) {
+		switch (satrBootSrcTable[satrBootDeviceValue].attr3) {
+		case MSAR_0_NAND_ECC_4BIT:
+			return MV_NFC_ECC_BCH_2K;
+		case MSAR_0_NAND_ECC_8BIT:
+			return MV_NFC_ECC_BCH_1K;
+		case MSAR_0_NAND_ECC_12BIT:
+			return MV_NFC_ECC_BCH_704B;
+		case MSAR_0_NAND_ECC_16BIT:
+			return MV_NFC_ECC_BCH_512B;
+		default:
+			break;
+		}
+	}
+
+	return MV_NFC_ECC_DISABLE;
+#endif
 }

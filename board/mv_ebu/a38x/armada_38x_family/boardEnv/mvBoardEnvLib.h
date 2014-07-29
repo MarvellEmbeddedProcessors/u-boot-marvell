@@ -76,6 +76,7 @@ extern "C" {
 #include "mvSysHwConfig.h"
 #include "boardEnv/mvBoardEnvSpec.h"
 #include "twsi/mvTwsi.h"
+#include "nfc/mvNfc.h"
 
 #ifdef CONFIG_ARMADA_38X
 #include "boardEnv/mvBoardEnvLib38x.h"
@@ -541,6 +542,7 @@ MV_STATUS mvBoardIoExpanderGet(MV_U8 addr, MV_U8 offs, MV_U8 *pVal);
 MV_STATUS mvBoardIoExpanderSet(MV_U8 addr, MV_U8 offs, MV_U8 val);
 MV_U32 mvBoardUartPortGet(MV_VOID);
 int mvBoardNorFlashConnect(void);
+MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
 
 
 #ifdef __cplusplus

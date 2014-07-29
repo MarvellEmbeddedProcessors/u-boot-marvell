@@ -269,13 +269,13 @@ int board_init (void)
 	/* Init the GPIO sub-system */
 	gppHalData.ctrlRev = mvCtrlRevGet();
 	mvGppInit(&gppHalData);
-	
+
 	/* arch number of Integrator Board */
 	gd->bd->bi_arch_number=mv_get_arch_number();
-	
+
 	/* adress of boot parameters */
 	gd->bd->bi_boot_params = 0x00000100;
-	
+
 	/* relocate the exception vectors */
 	/* U-Boot is running from DRAM at this stage */
 	for(i = 0; i < 0x100; i+=4) {
@@ -303,14 +303,33 @@ void misc_init_r_env(void){
 	envSetDefault("mtdparts", "mtdparts=spi_flash:4m(boot),-(spi-rootfs)");
 	envSetDefault("mtdids", "spi0=spi_flash");
 #endif
+
+	env = getenv("nandEcc");
+	if (!env) {
 #if defined(MV_NAND)
-	envSetDefault("nandEcc", "1bit");
+		MV_NFC_ECC_MODE nandEccMode = mvBoardNandECCModeGet();
+		switch (nandEccMode) {
+		case MV_NFC_ECC_BCH_1K:			/* 8 bit */
+			setenv("nandEcc", "nfcConfig=8bitecc");
+			break;
+		case MV_NFC_ECC_BCH_704B:		/* 12 bit */
+			setenv("nandEcc", "nfcConfig=12bitecc");
+			break;
+		case MV_NFC_ECC_BCH_512B:		/* 16 bit */
+			setenv("nandEcc", "nfcConfig=16bitecc");
+			break;
+		case MV_NFC_ECC_BCH_2K:			/* 4 bit */
+		default:
+			setenv("nandEcc", "nfcConfig=4bitecc");
+			break;
+		}
 #endif
-	
+	}
+
 	/* update the CASset env parameter */
 #ifdef MV_MIN_CAL
 	envSetDefault("CASset", "min");
-#else	
+#else
 	envSetDefault("CASset", "max");
 #endif
 
@@ -328,9 +347,9 @@ void misc_init_r_env(void){
 	/* Clock Gating */
 	envVerifyAndSet("enaClockGating", "no", "yes",1);
 #endif
-	envSetDefault("pxefile_addr_r", "3100000"); 
-	envSetDefault("initrd_name", "uInitrd"); 
-	
+	envSetDefault("pxefile_addr_r", "3100000");
+	envSetDefault("initrd_name", "uInitrd");
+
 
 	envVerifyAndSet("sata_dma_mode", "no", "yes",2);
 	envSetDefault("sata_delay_reset", "0");
@@ -348,20 +367,20 @@ void misc_init_r_env(void){
 
 	/* primary network interface */
 	envSetDefault("ethprime", ENV_ETH_PRIME);
-	
+
 	/* image/script addr */
 #if defined (CONFIG_CMD_STAGE_BOOT)
 	envSetDefault("fdt_addr", "2040000");
-	envSetDefault("kernel_addr_r", "2080000"); 
+	envSetDefault("kernel_addr_r", "2080000");
 	envSetDefault("ramdisk_addr_r", "2880000");
 	envSetDefault("device_partition", "0:1");
 	envSetDefault("boot_order", "hd_scr usb_scr mmc_scr hd_img usb_img mmc_img pxe net_img net_scr");
 	envSetDefault("script_name", "boot.scr");
 	envSetDefault("ide_path", "/");
 	envSetDefault("script_addr_r", "3000000");
-	envSetDefault("bootargs_dflt", "$console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params \
-clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
+	envSetDefault("bootargs_dflt", "$console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
+				  "ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
+				  "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 	envSetDefault("bootcmd_auto", "stage_boot $boot_order");
 	envSetDefault("bootcmd_lgcy", "tftpboot 0x2000000 $image_name; setenv bootargs $bootargs_dflt; bootm 0x2000000; ");
 #endif /* #if defined (CONFIG_CMD_STAGE_BOOT) */
@@ -419,10 +438,10 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 	envSetDefault("image_name", "uImage");
 
 #if CONFIG_OF_LIBFDT
-	char bootcmd_fdt[] = "tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath ip=$ipaddr: \
-$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params \
-clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootz 0x2000000 - $fdtaddr;";
+	char bootcmd_fdt[] = "tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;"
+		"setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
+		"ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
+		"clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootz 0x2000000 - $fdtaddr;";
 	env = getenv("fdtaddr");
 	if (!env)
 		setenv("fdtaddr", "0x1000000");
@@ -461,13 +480,14 @@ clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootz 0x2000000 - $fdt
 #elif defined(CONFIG_CMD_STAGE_BOOT)
 //	setenv("bootcmd","stage_boot $boot_order");
 // Temporary workaround till stage_boot gets stable.
-	setenv("bootcmd","tftpboot 0x2000000 $image_name;\
-setenv bootargs $console $mtdparts $bootargs_root nfsroot=$serverip:$rootpath \
-ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
+	setenv("bootcmd", "tftpboot 0x2000000 $image_name;"
+		   "setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
+		   "ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params "
+		   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
 #endif
 #endif /* (CONFIG_BOOTDELAY >= 0) */
-	envSetDefault("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $mtdparts root=/dev/mtdblock0 rw \
-ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
+	envSetDefault("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts "
+				  "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 
 	/* Disable PNP config of Marvell memory controller devices. */
 	envSetDefault("disaMvPnp", "no");
@@ -482,7 +502,7 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 #if defined(MV_INCLUDE_RTC)
 	struct rtc_time tm;
 	rtc_get(&tm);
-	
+
 	rand[0] = ((tm.tm_yday + tm.tm_sec) % 254);
 	/* No valid ip with one of the fileds has the value 0 */
 	if (rand[0] == 0)
@@ -504,7 +524,7 @@ ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 	rand[3] = (get_timer(0)) % 254;
 #endif
 
-	/* MAC addresses */	
+	/* MAC addresses */
 	for (i = 0; i < MV_ETH_MAX_PORTS; i++) {
 		sprintf(ethaddr_all, "00:50:43:%02x:%02x:%02x", rand[(0 + i) % 4], rand[(1 + i) % 4], rand[(2 + i) % 4]);
 		envSetDefault(addr_env, ethaddr_all);
@@ -728,7 +748,7 @@ void reset_cpu (ulong addr)
 	mvBoardReset();
 }
 
-void envSetDefault(char* envName, char* defaultValue) 
+void envSetDefault(char *envName, char *defaultValue)
 {
 	char *env;
 	env = getenv(envName);
@@ -736,28 +756,28 @@ void envSetDefault(char* envName, char* defaultValue)
 		setenv(envName,defaultValue);
 }
 
-void envVerifyAndSet(char* envName, char* value1, char* value2, int defaultValue) 
+void envVerifyAndSet(char *envName, char *value1, char *value2, int defaultValue)
 {
-	char *val1=strToLower(value1), *val2=strToLower(value2);
-	char *env=strToLower(getenv(envName));
-	if(!env) {
-		if(defaultValue==1) 
+	char *val1 = strToLower(value1), *val2 = strToLower(value2);
+	char *env = strToLower(getenv(envName));
+	if (!env) {
+		if (defaultValue == 1)
 			setenv(envName,val1);
 		else
 			setenv(envName,val2);
 		return;
 	}
-		
-	if(strcmp(env,val1) == 0) 
-		setenv(envName,val1);
+
+	if (strcmp(env, val1) == 0)
+		setenv(envName, val1);
 	else
-		setenv(envName,val2);
+		setenv(envName, val2);
 }
 
-char* strToLower(char * st)
+char *strToLower(char *st)
 {
 	int i;
-	for (i= 0; st[i]!='\0'; i++)
+	for (i = 0; st[i] != '\0'; i++)
 		st[i] = tolower(st[i]);
 	return st;
 }

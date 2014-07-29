@@ -2045,7 +2045,7 @@ MV_VOID mvBoardConfigurationPrint(MV_VOID)
 	/* Dynamic config for SerDes lanes is relevant only to MV88F6660/65/58 */
 	if (modelID != MV_6660_DEV_ID && modelID != MV_6665_DEV_ID && modelID != MV_6658_DEV_ID)
 		return;
-	/* Read Common Phy selectors to determine SerDes configuration */
+
 	mvOsOutput("\tLane #1: %s\n", lane1[mvBoardLaneSelectorGet(1)]);
 	/* SERDES lanes #2,#3 are relevant only to MV88F6660/65 SoC */
 	if (modelID != MV_6660_DEV_ID && modelID != MV_6665_DEV_ID)
@@ -3599,4 +3599,36 @@ MV_STATUS mvBoardSysConfigSet(MV_CONFIG_TYPE_ID configField, MV_U8 value)
 	boardOptionsConfig[configField] = value;
 
 	return MV_OK;
+}
+
+
+/*******************************************************************************
+* mvBoardNandECCModeGet
+*
+* DESCRIPTION:
+*	Obtain NAND ECC mode
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_NFC_ECC_MODE type
+*
+*******************************************************************************/
+MV_NFC_ECC_MODE mvBoardNandECCModeGet()
+{
+#if defined(MV_NAND_4BIT_MODE)
+	return MV_NFC_ECC_BCH_2K;
+#elif defined(MV_NAND_8BIT_MODE)
+	return MV_NFC_ECC_BCH_1K;
+#elif defined(MV_NAND_12BIT_MODE)
+	return MV_NFC_ECC_BCH_704B;
+#elif defined(MV_NAND_16BIT_MODE)
+	return MV_NFC_ECC_BCH_512B;
+#else
+	return MV_NFC_ECC_DISABLE;
+#endif
 }

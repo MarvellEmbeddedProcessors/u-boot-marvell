@@ -76,6 +76,7 @@ extern "C" {
 #include "mvSysHwConfig.h"
 #include "boardEnv/mvBoardEnvSpec.h"
 #include "twsi/mvTwsi.h"
+#include "nfc/mvNfc.h"
 
 #define BOARD_ETH_SWITCH_PORT_NUM       7
 #define BOARD_ETH_SWITCH_SMI_SCAN_MODE	1	/* Use manual scanning mode */
@@ -480,6 +481,7 @@ MV_STATUS mvBoardConfIdSet(MV_U16 conf);
 MV_U16 mvBoardPexModeGet(MV_VOID);
 MV_STATUS mvBoardPexModeSet(MV_U16 conf);
 MV_U32 mvBoardFreqModesNumGet(void);
+MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
 
 #ifdef __cplusplus
 }

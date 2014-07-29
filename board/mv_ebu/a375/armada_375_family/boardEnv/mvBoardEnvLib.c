@@ -2768,3 +2768,52 @@ MV_BOOL mvBoardConfigAutoDetectEnabled()
 {
 	return board->configAutoDetect;
 }
+
+/*******************************************************************************
+* mvBoardNandECCModeGet
+*
+* DESCRIPTION:
+*	Obtain NAND ECC mode
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_NFC_ECC_MODE type
+*
+*******************************************************************************/
+MV_NFC_ECC_MODE mvBoardNandECCModeGet()
+{
+#if defined(MV_NAND_4BIT_MODE)
+	return MV_NFC_ECC_BCH_2K;
+#elif defined(MV_NAND_8BIT_MODE)
+	return MV_NFC_ECC_BCH_1K;
+#elif defined(MV_NAND_12BIT_MODE)
+	return MV_NFC_ECC_BCH_704B;
+#elif defined(MV_NAND_16BIT_MODE)
+	return MV_NFC_ECC_BCH_512B;
+#else
+	MV_U32 satrBootDeviceValue;
+	MV_SATR_BOOT_TABLE satrTable[] = MV_SATR_TABLE_VAL;
+
+	if (mvBoardBootDeviceGet() == MSAR_0_BOOT_NAND_NEW) {
+		satrBootDeviceValue = mvCtrlSatRRead(MV_SATR_BOOT_DEVICE);
+		switch (satrTable[satrBootDeviceValue].attr3) {
+		case MSAR_0_NAND_ECC_4BIT:
+			return MV_NFC_ECC_BCH_2K;
+		case MSAR_0_NAND_ECC_8BIT:
+			return MV_NFC_ECC_BCH_1K;
+		case MSAR_0_NAND_ECC_12BIT:
+			return MV_NFC_ECC_BCH_704B;
+		case MSAR_0_NAND_ECC_16BIT:
+			return MV_NFC_ECC_BCH_512B;
+		default:
+			break;
+		}
+	}
+	return MV_NFC_ECC_DISABLE;
+#endif
+}

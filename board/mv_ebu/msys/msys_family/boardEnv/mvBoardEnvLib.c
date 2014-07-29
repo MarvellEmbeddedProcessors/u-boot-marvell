@@ -2028,3 +2028,35 @@ MV_U8 mvBoardCpuCoresNumGet(MV_VOID)
 {
 	return 0;
 }
+
+/*******************************************************************************
+* mvBoardNandECCModeGet
+*
+* DESCRIPTION:
+*	Obtain NAND ECC mode
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_NFC_ECC_MODE value
+*
+*******************************************************************************/
+MV_NFC_ECC_MODE mvBoardNandECCModeGet()
+{
+#if defined(MV_NAND_4BIT_MODE)
+	return MV_NFC_ECC_BCH_2K;
+#elif defined(MV_NAND_8BIT_MODE)
+	return MV_NFC_ECC_BCH_1K;
+#elif defined(MV_NAND_12BIT_MODE)
+	return MV_NFC_ECC_BCH_704B;
+#elif defined(MV_NAND_16BIT_MODE)
+	return MV_NFC_ECC_BCH_512B;
+#else
+	return MV_NFC_ECC_DISABLE;
+#endif
+}
+

@@ -76,6 +76,7 @@ extern "C" {
 #include "mvSysHwConfig.h"
 #include "boardEnv/mvBoardEnvSpec.h"
 #include "twsi/mvTwsi.h"
+#include "nfc/mvNfc.h"
 
 #define ARRSZ(x)                (sizeof(x) / sizeof(x[0]))
 #define BOARD_ETH_SWITCH_PORT_NUM       7
@@ -622,6 +623,8 @@ MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal);
 MV_VOID mvBoardSysConfigInit(void);
 MV_STATUS mvBoardSysConfigSet(MV_CONFIG_TYPE_ID configField, MV_U8 value);
 MV_U32 mvBoardSysConfigGet(MV_CONFIG_TYPE_ID configField);
+MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
+
 #ifdef __cplusplus
 }
 #endif  /* __cplusplus */

@@ -92,6 +92,7 @@ int mv_eth_initialize(bd_t *bis)
 	MV_8 name[NAMESIZE+1];
 	MV_8 enetvar[9];
 	MV_U32 portMask = 0;
+	MV_U32 family = mvCtrlDevFamilyIdGet(0);
 
 	for (port = 0; port < mvCtrlEthMaxPortGet(); port++) {
 		if (MV_FALSE ==  mvBoardIsGbEPortConnected(port))
@@ -105,12 +106,15 @@ int mv_eth_initialize(bd_t *bis)
 	/* HAL init + port power up + port win init */
 	mvSysNetaInit(portMask,0xff); /* TODO: do i need to return status? what to do if failed? in Linux - void function */
 	for (port = 0; port < mvCtrlEthMaxPortGet(); port++) {
-
 		if (MV_FALSE ==  mvBoardIsGbEPortConnected(port))
 			continue;
 
 		if (MV_FALSE == mvCtrlPwrClckGet(ETH_GIG_UNIT_ID, port))
 			continue;
+
+		/* AC3 GMAC over SGMII WA - needed for bringing the link on SFP UP */
+		if (family == MV_ALLEYCAT3_DEV_ID)
+			MV_REG_BIT_RESET(NETA_GMAC_SERIAL_REG(port), 1 << 5);
 
 		/* interface name */
 		sprintf(name, "egiga%d", port);

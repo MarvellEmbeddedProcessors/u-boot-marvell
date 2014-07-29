@@ -295,6 +295,7 @@ void mvBoardEgigaPhyInit(void)
 	if((!(ethComplex & MV_ETHCOMP_SW_P1_2_GE_PHY_P1)) && (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1)) {
 		mvCtrlSmiMasterSet(NO_SMI_CTRL);
 		mvBoardPhyShutDown(0x1);
+		udelay(30);
 		mvCtrlSmiMasterSet(CPU_SMI_CTRL);
 	}
 	/* 2. RGMII-1/GE-PHY#1/PON Serdes is not connected
@@ -350,6 +351,7 @@ void mvBoardEgigaPhyInit(void)
 		mvBoardPhyShutDown(0x3);
 
 	/* Restore external CPU SMI control */
+	udelay(30);
 	mvCtrlSmiMasterSet(CPU_SMI_CTRL);
 
 	mvBoardLedMatrixInit();

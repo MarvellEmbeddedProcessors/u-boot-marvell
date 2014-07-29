@@ -25,10 +25,15 @@
 #include <asm/arch-mvebu/mpp.h>
 
 struct adec_win memory_map[] = {
-	{0x0,     0x40000000, DRAM_0_TID, 0},
-	{0x40000000, 0x20000000, IO_0_TID, 0},
+	{DRAM_0_TID,	DRAM_0_BASE_ADDR,	DRAM_0_SIZE,	ADEC_AP_WIN,	1},
+#ifndef CONFIG_PALLADIUM
+	{IO_0_TID,	IO_0_BASE_ADDR,		IO_0_SIZE,	ADEC_AP_WIN,	1},
+	{PEX0_TID,	PEX_BASE_ADDR(0),	PEX_SIZE(0),	ADEC_IOB_WIN,	1},
+	{PEX1_TID,	PEX_BASE_ADDR(1),	PEX_SIZE(1),	ADEC_IOB_WIN,	1},
+	{NSS_TID,	NSS_BASE_ADDR,		NSS_SIZE,	ADEC_IOB_WIN,	1},
+#endif
 	/* Delimiter */
-	{0x0, 0x0, INVALID_TID, 0}
+	{INVALID_TID,	0x0,			0x0,		0x0,		0},
 };
 
 /* List the maximum amount of units for all devices and boards */

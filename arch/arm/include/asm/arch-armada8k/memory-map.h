@@ -17,5 +17,24 @@
  * ***************************************************************************
  */
 
-#define MVEBU_REGS_BASE	(0xF0000000)
-#define MVEBU_REGS_SIZE (0x100000)
+/* Memory Map */
+/* 0x00000000 - 0x40000000 - DRAM */
+/* 0x40000000 - 0x60000000 - IO-0 */
+/* 0x60000000 - 0x61000000 - PEX-0 */
+/* 0x61000000 - 0x62000000 - PEX-1 */
+/* 0x62000000 - 0x63000000 - NSS */
+
+#define MVEBU_REGS_BASE		(0xF0000000)
+#define MVEBU_REGS_SIZE 	(0x100000)
+
+#define DRAM_0_BASE_ADDR	0x0
+#define DRAM_0_SIZE		0x40000000
+
+#define IO_0_BASE_ADDR		0x40000000
+#define IO_0_SIZE		0x20000000
+
+#define PEX_BASE_ADDR(id)	(0x60000000 + (0x1000000 * id))
+#define PEX_SIZE(id)		(0x1000000)
+
+#define NSS_BASE_ADDR		(0x62000000)
+#define NSS_SIZE		(0x1000000)

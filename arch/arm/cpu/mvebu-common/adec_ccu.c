@@ -23,80 +23,194 @@
 #include <common.h>
 #include <asm/system.h>
 #include <asm/io.h>
-#include <asm/arch/regs-base.h>
+#include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/adec.h>
 
-void __iomem *ap_adec_base;
-
-static void adec_win_to_range(uintptr_t base_addr, uintptr_t win_size,
-			u32 *alr, u32 *ahr)
+static void adec_win_check(struct adec_win *win, u32 win_num)
 {
-	uintptr_t end = (base_addr + win_size - 1);
-
-	(*alr) = (u32)((base_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
-	(*ahr) = (u32)((end >> ADDRESS_SHIFT) & ADDRESS_MASK);
+	/* check if address is aligned to the size */
+	if(IS_NOT_ALIGN(win->base_addr, win->win_size)) {
+		win->base_addr = ALIGN_UP(win->base_addr, win->win_size);
+		error("\n**********\nwindow number %d: base address is not aligned with the window size. "\
+				"Align up the base address to 0x%lx\n**********",\
+				win_num, win->base_addr);
+	}
+	/* size parameter validity check */
+	if(IS_NOT_ALIGN(win->win_size, CR_WIN_SIZE_ALIGNMENT)) {
+		win->win_size = ALIGN_UP(win->win_size, CR_WIN_SIZE_ALIGNMENT);
+		error("\n**********\nwindow number %d: window size is not aligned to 0x%x. "\
+				"Align up the size to 0x%lx\n**********",
+				win_num, CR_WIN_SIZE_ALIGNMENT, win->win_size);
+	}
 }
 
-static void adec_enable_ap_win(struct adec_win *win, int win_id)
+static void adec_enable_rfu_win(struct adec_win *win, u32 win_id)
 {
-	u32 ccu_win_cr;
 	u32 alr, ahr;
+	uintptr_t end_addr;
 
-	ccu_win_cr = WIN_ENABLE_BIT;
-	ccu_win_cr |= (win->target_id & TARGET_ID_MASK) << TARGET_ID_OFFSET;
-	ccu_win_cr |= (win->rar_enable & RAR_EN_MASK) << RAR_EN_OFFSET;
+	end_addr = (win->base_addr + win->win_size - 1);
+	alr = (u32)((win->base_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
+	alr |= WIN_ENABLE_BIT;
+	writel(alr, (unsigned long)RFU_WIN_ALR_OFFSET(win_id));
 
-	writel(ccu_win_cr, ap_adec_base + CCU_WIN_CR_OFFSET(win_id));
+	/* there's no ahr for bootrom window */
+	if (win_id == BOOTROM_RFU_WINDOW_NUM)
+		return ;
 
-	adec_win_to_range(win->base_addr, win->win_size, &alr, &ahr);
+	ahr = (u32)((end_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
+	writel(ahr, (unsigned long)RFU_WIN_AHR_OFFSET(win_id));
+}
 
-	writel(alr, ap_adec_base + CCU_WIN_ALR_OFFSET(win_id));
-	writel(ahr, ap_adec_base + CCU_WIN_AHR_OFFSET(win_id));
+static void adec_enable_iob_win(struct adec_win *win, u32 win_id)
+{
+	u32 iob_win_reg;
+	u32 alr, ahr;
+	uintptr_t end_addr;
+
+	iob_win_reg = WIN_ENABLE_BIT;
+	iob_win_reg |= (win->target_id & IOB_TARGET_ID_MASK) << IOB_TARGET_ID_OFFSET;
+	writel(iob_win_reg, (unsigned long)IOB_WIN_CR_OFFSET(win_id));
+
+	end_addr = (win->base_addr + win->win_size - 1);
+	alr = (u32)((win->base_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
+	ahr = (u32)((end_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
+
+	writel(alr, (unsigned long)IOB_WIN_ALR_OFFSET(win_id));
+	writel(ahr, (unsigned long)IOB_WIN_AHR_OFFSET(win_id));
+}
+
+static void adec_enable_ap_win(struct adec_win *win, u32 win_id)
+{
+	u32 ap_win_reg;
+	u32 alr, ahr;
+	uintptr_t end_addr;
+
+	ap_win_reg = WIN_ENABLE_BIT;
+	ap_win_reg |= (win->target_id & AP_TARGET_ID_MASK) << AP_TARGET_ID_OFFSET;
+	writel(ap_win_reg, (unsigned long)AP_WIN_CR_OFFSET(win_id));
+
+	end_addr = (win->base_addr + win->win_size - 1);
+	alr = (u32)((win->base_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
+	ahr = (u32)((end_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
+
+	writel(alr, (unsigned long)AP_WIN_ALR_OFFSET(win_id));
+	writel(ahr, (unsigned long)AP_WIN_AHR_OFFSET(win_id));
 }
 
 void adec_dump(void)
 {
-	int win_id;
-	u32 ccu_win_cr;
+	u32 win_id;
+	u32 win_cr;
 	u32 alr, ahr;
 	u8 target_id;
 	uintptr_t start, end;
 
+	/* Dump all AP windows */
 	printf("id target  start              end\n");
 	printf("----------------------------------------------\n");
-
-	/* Dump all AP windows */
 	for (win_id = 0; win_id < MAX_AP_WINDOWS; win_id++) {
-		ccu_win_cr = readl(ap_adec_base + CCU_WIN_CR_OFFSET(win_id));
-		if (ccu_win_cr & WIN_ENABLE_BIT) {
-			target_id = (ccu_win_cr >> TARGET_ID_OFFSET) & TARGET_ID_MASK;
-			alr = readl(ap_adec_base + CCU_WIN_ALR_OFFSET(win_id));
-			ahr = readl(ap_adec_base + CCU_WIN_AHR_OFFSET(win_id));
+		win_cr = readl((unsigned long)AP_WIN_CR_OFFSET(win_id));
+		if (win_cr & WIN_ENABLE_BIT) {
+			target_id = (win_cr >> AP_TARGET_ID_OFFSET) & AP_TARGET_ID_MASK;
+			alr = readl((unsigned long)AP_WIN_ALR_OFFSET(win_id));
+			ahr = readl((unsigned long)AP_WIN_AHR_OFFSET(win_id));
 			start = (uintptr_t)(alr << ADDRESS_SHIFT);
 			end = (uintptr_t)((ahr + 0x10) << ADDRESS_SHIFT);
 			printf("%02d %02d      0x%016lx 0x%016lx\n", win_id, target_id, start, end);
 		}
 	}
-
-	return;
+	/* Dump all RFU windows */
+	for (win_id = 0; win_id < MAX_RFU_WINDOWS; win_id++) {
+		alr = readl((unsigned long)RFU_WIN_ALR_OFFSET(win_id));
+		if (alr & WIN_ENABLE_BIT) {
+			alr = readl((unsigned long)RFU_WIN_ALR_OFFSET(win_id));
+			ahr = readl((unsigned long)RFU_WIN_AHR_OFFSET(win_id));
+			start = (uintptr_t)(alr << ADDRESS_SHIFT);
+			end = (uintptr_t)((ahr + 0x10) << ADDRESS_SHIFT);
+			printf("%02d         0x%016lx 0x%016lx\n", win_id, start, end);
+		}
+	}
+	/* Dump all IOB windows */
+	for (win_id = 0; win_id < MAX_IOB_WINDOWS; win_id++) {
+		win_cr = readl((unsigned long)IOB_WIN_CR_OFFSET(win_id));
+		if (win_cr & WIN_ENABLE_BIT) {
+			target_id = (win_cr >> IOB_TARGET_ID_OFFSET) & IOB_TARGET_ID_MASK;
+			alr = readl((unsigned long)IOB_WIN_ALR_OFFSET(win_id));
+			ahr = readl((unsigned long)IOB_WIN_AHR_OFFSET(win_id));
+			start = (uintptr_t)(alr << ADDRESS_SHIFT);
+			end = (uintptr_t)((ahr + 0x10) << ADDRESS_SHIFT);
+			printf("%02d %02d      0x%016lx 0x%016lx\n", win_id, target_id, start, end);
+		}
+	}
+	printf("\nnote: unmapped addresses will go to GCR\n");
+	return ;
 }
 
 int adec_init(struct adec_win *windows)
 {
-	int win_id;
+	u32 win_id;
+	u32 win_reg, target_id;
 
-	debug("Initializing CCU ADEC unit for AP\n");
-	ap_adec_base = (void *)MVEBU_ADEC_BASE;
+	debug_enter();
+	debug("Initializing CCU Address decoding\n");
 
-	for (win_id = 0; win_id < MAX_AP_WINDOWS; win_id++) {
-		if (windows->target_id == INVALID_TID)
-			break;
-
-		adec_enable_ap_win(windows, win_id);
-		windows++;
+	/* disable all RFU windows */
+	for (win_id = 0; win_id < MAX_RFU_WINDOWS; win_id++) {
+		win_reg = readl((unsigned long)RFU_WIN_ALR_OFFSET(win_id));
+		win_reg &= ~WIN_ENABLE_BIT;
+		writel(win_reg, (unsigned long)RFU_WIN_ALR_OFFSET(win_id));
 	}
-//TODO: add call initializing the windows of the CP
-	debug("Done AP ADEC init\n");
+
+	/* disable all AP windows */
+	for (win_id = 0; win_id < MAX_AP_WINDOWS; win_id++) {
+		win_reg = readl((unsigned long)AP_WIN_CR_OFFSET(win_id));
+		target_id = (win_reg >> AP_TARGET_ID_OFFSET) & AP_TARGET_ID_MASK;
+		/* disable all the windows except DRAM and CFG_SPACE windows */
+		if (target_id == DRAM_0_TID || target_id == DRAM_1_TID || target_id == CFG_REG_TID)
+			continue;
+		win_reg &= ~WIN_ENABLE_BIT;
+		writel(win_reg, (unsigned long)AP_WIN_CR_OFFSET(win_id));
+
+		win_reg = ~AP_WIN_ENA_READ_SECURE;
+		win_reg |= ~AP_WIN_ENA_WRITE_SECURE;
+		writel(win_reg, (unsigned long)AP_WIN_SCR_OFFSET(win_id));
+	}
+
+	/* disable all IOB windows, start from win_id = 1 because can't disable internal register window */
+	for (win_id = 1; win_id < MAX_IOB_WINDOWS; win_id++) {
+		win_reg = readl((unsigned long)IOB_WIN_CR_OFFSET(win_id));
+		win_reg &= ~WIN_ENABLE_BIT;
+		writel(win_reg, (unsigned long)IOB_WIN_CR_OFFSET(win_id));
+
+		win_reg = ~IOB_WIN_ENA_CTRL_WRITE_SECURE;
+		win_reg |= ~IOB_WIN_ENA_CTRL_READ_SECURE;
+		win_reg |= ~IOB_WIN_ENA_WRITE_SECURE;
+		win_reg |= ~IOB_WIN_ENA_READ_SECURE;
+		writel(win_reg, (unsigned long)IOB_WIN_SCR_OFFSET(win_id));
+	}
+
+	for (win_id = 0; windows[win_id].target_id != INVALID_TID; win_id++) {
+		if (windows[win_id].enabled) {
+			adec_win_check(&windows[win_id], win_id);
+			switch (windows[win_id].win_type) {
+			case ADEC_IOB_WIN:
+				adec_enable_iob_win(&windows[win_id], win_id);
+				break;
+			case ADEC_AP_WIN:
+				adec_enable_ap_win(&windows[win_id], win_id);
+				break;
+			case ADEC_RFU_WIN:
+				adec_enable_rfu_win(&windows[win_id], win_id);
+				break;
+			default:
+				error("Wrong window type, window number = %d, type number = %d\n", win_id, windows[win_id].win_type);
+			}
+		}
+	}
+
+	debug("Done CCU Address decoding Initializing\n");
+	debug_exit();
 
 	return 0;
 }

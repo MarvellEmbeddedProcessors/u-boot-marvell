@@ -17,21 +17,20 @@
  * ***************************************************************************
  */
 
-#ifndef _REGS_BASE_H_
-#define _REGS_BASE_H_
+/* Memory Map */
+/* 0x00000000 - 0xE0000000 - DRAM */
+/* 0xE0000000 - 0xE2000000 - PCI-0 */
+/* 0xE2000000 - 0xE4000000 - PCI-1 */
+/* 0xE4000000 - 0xE6000000 - PCI-2 */
+/* 0xE6000000 - 0xE8000000 - PCI-3 */
+/* 0xF1000000 - 0xF1100000 - INTERNAL_REG */
+/* 0xFD000000 - 0xFD100000 - NOR_CS */
 
-#include <asm/arch/memory-map.h>
+#define MVEBU_REGS_BASE			(0xF1000000)
+#define MVEBU_REGS_SIZE			(0x100000)
 
-#define MPP_REGS_BASE		(MVEBU_REGS_BASE + 0x18000)
-#define MVEBU_ADEC_BASE		(MVEBU_REGS_BASE + 0x20000)
+#define PEX_MEM_BASE(id)		(0xE0000000 + (id * 0x2000000))
+#define PEX_MEM_SIZE(id)		(0x2000000)
 
-#define MVEBU_UART_BASE(x)	(MVEBU_REGS_BASE + 0x12000 + (0x100 * x))
-#define MVEBU_GLOBAL_TIMER_BASE	(MVEBU_REGS_BASE + 0x20300)
-
-#define MVEBU_MISC_REGS_BASE	(MVEBU_REGS_BASE + 0x18200)
-#define MVEBU_DEVICE_ID_REG	(MVEBU_MISC_REGS_BASE + 0x38)
-#define MVEBU_DEVICE_REV_REG	(MVEBU_MISC_REGS_BASE + 0x3C)
-#define MVEBU_RESET_MASK_REG	(MVEBU_MISC_REGS_BASE + 0x60)
-#define MVEBU_SOFT_RESET_REG	(MVEBU_MISC_REGS_BASE + 0x64)
-
-#endif	/* _REGS_BASE_H_ */
+#define NOR_CS_BASE				(0xfd000000)
+#define NOR_CS_SIZE				(0x1000000)

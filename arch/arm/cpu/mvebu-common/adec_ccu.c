@@ -81,12 +81,12 @@ void adec_dump(void)
 	return;
 }
 
-int adec_ap_init(struct adec_win *windows)
+int adec_init(struct adec_win *windows)
 {
 	int win_id;
 
-	debug("Initialzing AP ADEC unit\n");
-	ap_adec_base = (void *)MVEBU_ADEC_AP_BASE;
+	debug("Initializing CCU ADEC unit for AP\n");
+	ap_adec_base = (void *)MVEBU_ADEC_BASE;
 
 	for (win_id = 0; win_id < MAX_AP_WINDOWS; win_id++) {
 		if (windows->target_id == INVALID_TID)
@@ -95,7 +95,7 @@ int adec_ap_init(struct adec_win *windows)
 		adec_enable_ap_win(windows, win_id);
 		windows++;
 	}
-
+//TODO: add call initializing the windows of the CP
 	debug("Done AP ADEC init\n");
 
 	return 0;

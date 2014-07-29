@@ -81,23 +81,6 @@ static int update_soc_units(struct mvebu_soc_info *soc)
 	return 0;
 }
 
-static int soc_init_memory_map(struct mvebu_soc_info *soc)
-{
-#ifndef CONFIG_PALLADIUM
-	struct mvebu_soc_family *soc_family = get_soc_family();
-	struct adec_win *memory_map = soc->memory_map;
-
-	if (soc_family->adec_type == ADEC_CCU) {
-		adec_ap_init(memory_map);
-	} else if (soc_family->adec_type == ADEC_MBUS) {
-		error("No MBUS support yet");
-		return -EINVAL;
-	}
-#endif
-
-	return 0;
-}
-
 int mvebu_soc_init()
 {
 	struct mvebu_soc_info *soc;
@@ -139,9 +122,9 @@ int mvebu_soc_init()
 	update_soc_units(soc);
 
 	/* Initialize physical memory map */
-	ret = soc_init_memory_map(soc);
-	if (ret)
-		error("Failed to initialize memory map");
+#ifndef CONFIG_PALLADIUM
+	adec_init(soc->memory_map);
+#endif
 
 	/* Soc specific init */
 	ret = soc_late_init();

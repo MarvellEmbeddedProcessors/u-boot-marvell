@@ -17,21 +17,5 @@
  * ***************************************************************************
  */
 
-#ifndef _REGS_BASE_H_
-#define _REGS_BASE_H_
-
-#include <asm/arch/memory-map.h>
-
-#define MPP_REGS_BASE		(MVEBU_REGS_BASE + 0x18000)
-#define MVEBU_ADEC_BASE		(MVEBU_REGS_BASE + 0x20000)
-
-#define MVEBU_UART_BASE(x)	(MVEBU_REGS_BASE + 0x12000 + (0x100 * x))
-#define MVEBU_GLOBAL_TIMER_BASE	(MVEBU_REGS_BASE + 0x20300)
-
-#define MVEBU_MISC_REGS_BASE	(MVEBU_REGS_BASE + 0x18200)
-#define MVEBU_DEVICE_ID_REG	(MVEBU_MISC_REGS_BASE + 0x38)
-#define MVEBU_DEVICE_REV_REG	(MVEBU_MISC_REGS_BASE + 0x3C)
-#define MVEBU_RESET_MASK_REG	(MVEBU_MISC_REGS_BASE + 0x60)
-#define MVEBU_SOFT_RESET_REG	(MVEBU_MISC_REGS_BASE + 0x64)
-
-#endif	/* _REGS_BASE_H_ */
+#define MVEBU_REGS_BASE	(0xF0000000)
+#define MVEBU_REGS_SIZE (0x100000)

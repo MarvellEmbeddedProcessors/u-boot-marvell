@@ -17,21 +17,47 @@
  * ***************************************************************************
  */
 
-#ifndef _REGS_BASE_H_
-#define _REGS_BASE_H_
+struct adec_win {
+	uintptr_t base_addr;
+	uintptr_t win_size;
+	u8 target_id;
+	void *attribute;
+	u8 rar_enable;
+};
 
-#include <asm/arch/memory-map.h>
+enum adec_target_ids_ap {
+	IO_0_TID    = 0x0,
+	DRAM_0_TID  = 0x3,
+	DRAM_1_TID  = 0x6,
+	IO_1_TID    = 0x9,
+	CFG_REG_TID = 0x10,
+	INVALID_TID = 0x1F
+};
 
-#define MPP_REGS_BASE		(MVEBU_REGS_BASE + 0x18000)
-#define MVEBU_ADEC_BASE		(MVEBU_REGS_BASE + 0x20000)
+#define RAR_EN_OFFSET		(13)
+#define RAR_EN_MASK		(1)
+#define TARGET_ID_OFFSET	(8)
+#define TARGET_ID_MASK		(0x1F)
+#define WIN_ENABLE_BIT		(0x1)
 
-#define MVEBU_UART_BASE(x)	(MVEBU_REGS_BASE + 0x12000 + (0x100 * x))
-#define MVEBU_GLOBAL_TIMER_BASE	(MVEBU_REGS_BASE + 0x20300)
+#define ADDRESS_SHIFT		(20)
+#define ADDRESS_MASK		(0xFFFFFFF0)
 
-#define MVEBU_MISC_REGS_BASE	(MVEBU_REGS_BASE + 0x18200)
-#define MVEBU_DEVICE_ID_REG	(MVEBU_MISC_REGS_BASE + 0x38)
-#define MVEBU_DEVICE_REV_REG	(MVEBU_MISC_REGS_BASE + 0x3C)
-#define MVEBU_RESET_MASK_REG	(MVEBU_MISC_REGS_BASE + 0x60)
-#define MVEBU_SOFT_RESET_REG	(MVEBU_MISC_REGS_BASE + 0x64)
+#define MAX_AP_WINDOWS		(8)
+#define MAX_CP_WINDOWS		(16)
 
-#endif	/* _REGS_BASE_H_ */
+//TODO: split this file to be scisific for a38x and a8k
+#define MAX_MBUS_WINDOWS	(21)
+#define MBUS_INTREG_WIN		(20)
+#define MAX_MBUS_REMAP_WINS	(8)
+
+#define MBUS_WIN_OFFSET(win)	((win < MAX_MBUS_REMAP_WINS) ? \
+				(win * 0x10) : (0x90 + (win-8)*0x08))
+#define TARGET_IS_DRAM(target)	(target == DRAM_0_TID) && (target == DRAM_1_TID)
+
+#define CCU_WIN_CR_OFFSET(win)	(0 + (12 * win))
+#define CCU_WIN_ALR_OFFSET(win)	(4 + (12 * win))
+#define CCU_WIN_AHR_OFFSET(win)	(8 + (12 * win))
+
+void adec_dump(void);
+int adec_init(struct adec_win *windows);

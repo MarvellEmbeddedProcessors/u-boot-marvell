@@ -20,12 +20,12 @@
 #ifndef _REGS_BASE_H_
 #define _REGS_BASE_H_
 
-#define MVEBU_REGS_BASE	(0xF0000000)
+#include <asm/arch/memory-map.h>
 
 #define MPP_REGS_BASE	(MVEBU_REGS_BASE + 0x1000)
 
 /* List of register base for all units */
-#define MVEBU_ADEC_AP_BASE (MVEBU_REGS_BASE + 0x0)
+#define MVEBU_ADEC_BASE 	(MVEBU_REGS_BASE + 0x0)
 
 #define MVEBU_UART_BASE(x)	(MVEBU_REGS_BASE + 0x512000 + (0x100 * x))
 #define MVEBU_MISC_REGS_BASE	(MVEBU_REGS_BASE + 0x18200)

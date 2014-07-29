@@ -91,5 +91,4 @@ struct mvebu_soc_family a8k_family_info = {
 	.base_unit_info = base_unit_mask_table,
 	.soc_table = a8k_soc_info,
 	.mpp_desc  = (char **)a8k_mpp_desc,
-	.adec_type = 0,
 };

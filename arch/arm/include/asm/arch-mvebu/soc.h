@@ -44,7 +44,6 @@ struct mvebu_soc_family {
 	char	**mpp_desc;
 	struct	mvebu_soc_info *soc_table;
 	struct	mvebu_soc_info *curr_soc;
-	enum adec_types adec_type;
 
 	struct mpp_bus *mpp_buses;
 	u32 mpp_protect[MAX_MPP_REGS];

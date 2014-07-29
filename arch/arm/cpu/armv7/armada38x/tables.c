@@ -19,16 +19,20 @@
 
 #include <common.h>
 #include <asm/io.h>
+#include <asm/arch/regs-base.h>
 #include <asm/arch-mvebu/adec.h>
 #include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/mpp.h>
 
 struct adec_win memory_map[] = {
-	{0x0,     0x40000000, DRAM_0_TID, 0},
-	{0x40000000, 0x20000000, IO_0_TID, 0},
-	/* Delimiter */
-	{0x0, 0x0, INVALID_TID, 0}
+	/* target		base			size			attribute	remapped	enable */
+	{PEX_0_TARGET_ID,	PEX_MEM_BASE(0),	PEX_MEM_SIZE(0),	PCI_0_MEM_ATTR,	1,		1},
+	{PEX_1_3_TARGET_ID,	PEX_MEM_BASE(1),	PEX_MEM_SIZE(1),	PCI_1_MEM_ATTR,	0,		1},
+	{PEX_1_3_TARGET_ID,	PEX_MEM_BASE(2),	PEX_MEM_SIZE(2),	PCI_2_MEM_ATTR,	0,		1},
+	{PEX_1_3_TARGET_ID,	PEX_MEM_BASE(3),	PEX_MEM_SIZE(3),	PCI_3_MEM_ATTR,	1,		1},
+	{DEV_TARGET_ID,		NOR_CS_BASE,		NOR_CS_SIZE,		BOOT_CS_ATTR,	0,		1},
+	{TBL_TERM,		TBL_TERM,		TBL_TERM,		TBL_TERM,	TBL_TERM,	TBL_TERM},
 };
 
 /* List the maximum amount of units for all devices and boards */
@@ -109,6 +113,5 @@ struct mvebu_soc_family a38x_family_info = {
 	.base_unit_info = base_unit_mask_table,
 	.soc_table = a38x_soc_info,
 	.mpp_desc  = (char **)a38x_mpp_desc,
-	.adec_type = ADEC_MBUS,
 	.mpp_buses = a38x_mpp_buses,
 };

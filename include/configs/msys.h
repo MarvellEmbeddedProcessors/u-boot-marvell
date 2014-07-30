@@ -535,12 +535,16 @@ disclaimer.
 	#define CONFIG_SPI_FLASH
 	#define CONFIG_SPI_FLASH_STMICRO
 	#define CONFIG_SPI_FLASH_MACRONIX
-	#define CONFIG_ENV_SPI_MAX_HZ		10000000	/*Max 50Mhz- will sattle on SPI bus max 41.5Mhz */
+#ifndef MV_BOBCAT2
+	#define CONFIG_ENV_SPI_MAX_HZ		50000000
+#else
+	#define CONFIG_ENV_SPI_MAX_HZ		10000000	/* Temporarely reduce to 10MHz due to BC2 DB HW issue */
+#endif
 	#define CONFIG_ENV_SPI_CS		0
 	#define CONFIG_ENV_SPI_BUS		0
 
 #ifndef CONFIG_SF_DEFAULT_SPEED
-# define CONFIG_SF_DEFAULT_SPEED	1000000
+# define CONFIG_SF_DEFAULT_SPEED	CONFIG_ENV_SPI_MAX_HZ
 #endif
 #ifndef CONFIG_SF_DEFAULT_MODE
 # define CONFIG_SF_DEFAULT_MODE		SPI_MODE_3

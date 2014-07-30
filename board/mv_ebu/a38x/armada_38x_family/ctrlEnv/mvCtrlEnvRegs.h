@@ -179,12 +179,21 @@ extern "C" {
 #define CHIP_BOND_REG                           0x18238
 #define PCKG_OPT_MASK                           0x3
 
-	/* common PHys Selectors register */
+/* common PHys Selectors register */
 #define COMM_PHY_SELECTOR_REG			0x183fc
+
+#ifdef CONFIG_ARMADA_38X
 #define COMPHY_SELECT_OFFS(x)			(x * 3)
 #define COMPHY_SELECT_MASK(x)			(0x07 << COMPHY_SELECT_OFFS(x))
 #define	PCIE0_X4_EN_OFFS			18
 #define	PCIE0_X4_EN_MASK			(1 << PCIE0_X4_EN_OFFS)
+#elif defined CONFIG_ARMADA_39X
+#define COMPHY_SELECT_OFFS(x)                   (x * 4)
+#define COMPHY_SELECT_MASK(x)                   (0x0F << COMPHY_SELECT_OFFS(x))
+#define PCIE0_X4_EN_OFFS                        31
+#define PCIE0_X4_EN_MASK                        (1 << PCIE0_X4_EN_OFFS)
+#endif
+
 
 /*****************/
 /* PUP registers */

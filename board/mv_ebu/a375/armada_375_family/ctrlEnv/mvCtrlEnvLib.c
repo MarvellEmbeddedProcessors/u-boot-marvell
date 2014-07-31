@@ -330,6 +330,9 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvGppPolaritySet(i, gppMask, (MV_GPP_IN_INVERT & gppMask));
 	}
 
+	/*Init the board network module*/
+	mvEthComplexInit(mvBoardEthComplexConfigGet());
+
 	/* Enable NAND Flash PUP (Pack-Unpack)
 	 * HW machanism to accelerate transactions (controlled by SoC register) */
 	MV_REG_BIT_SET(PUP_EN_REG, BIT4);

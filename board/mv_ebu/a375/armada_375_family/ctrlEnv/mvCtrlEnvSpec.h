@@ -268,26 +268,21 @@ typedef enum {
 } MV_GROUP_2_TYPE;
 
 #define MPP_GROUP_3_TYPE { \
-	0x33333333,     /* SDIO */ \
-	0x33333333,     /* SDIO	*/ \
+	0x33333333,     /* MAC1 -> GE-PHY#3 */ \
+	0x22222222,     /* MAC1 -> SGMII-SFP */ \
 }
 
 typedef enum {
-	GE1_UNIT,
-	SDIO_UNIT,
-	SPI1_UNIT,
-	SDIO_SPI1_UNIT,
+	GE1_PHY3_UNIT,
+	GE1_SGMII_UNIT,
 } MV_GROUP_3_TYPE;
 
 #define MPP_GROUP_4_TYPE { \
-	0x00003330,     /* NO SMI CONTROL, SD_Stat */ \
-	0x00003330,     /* NO SMI CONTROL, SD_Stat */ \
+	0x04403330,     /* MAC1 -> GE-PHY#3 */ \
+	0x44422222,     /* MAC1 -> SGMII-SFP */ \
 }
 
-typedef enum {
-	GE1_CPU_SMI_CTRL_TDM_LQ_UNIT,
-	GE1_CPU_SMI_CTRL_REF_CLK_OUT,
-} MV_GROUP_4_TYPE;
+#define MV_GROUP_4_TYPE         MV_GROUP_3_TYPE
 
 #define MPP_GROUP_5_TYPE { \
 	0x22002044,     /* UART1, GE0 */ \
@@ -311,15 +306,13 @@ typedef enum {
 } MV_GROUP_6_TYPE;
 
 #define MPP_GROUP_7_TYPE { \
-	0x00000022,     /* GE0 , LED  */ \
-	0x00000022,     /* GE0 , LED  */ \
+	0x04444422,     /* GE0 , LED  */ \
+	0x01144422,     /* GE0 , LED, I2C-1  */ \
 }
 
 typedef enum {
-	SWITCH_P4_LED_MATRIX,
-	GE0_UNIT_LED_MATRIX,
-	SWITCH_P4_UA1_PTP,
-	GE0_UNIT_UA1_PTP,
+	GE0_LED_UNIT,
+	GE0_LED_I2C1_UNIT,
 } MV_GROUP_7_TYPE;
 
 #define MPP_GROUP_8_TYPE { \

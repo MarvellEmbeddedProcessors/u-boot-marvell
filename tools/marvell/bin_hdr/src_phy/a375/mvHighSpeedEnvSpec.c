@@ -66,7 +66,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /***************************   defined ******************************/
 #define SERDES_VERION   "0.1.1"
 #define ENDED_OK "High speed PHY - Ended Successfully\n"
-#undef CONFIG_MAC1_2_PON_ETH_SERDES_SFP
 
 /******************   Macros ******************************/
 #define A375_A0_COMMON_PHY_CONFIG(regData) \
@@ -660,9 +659,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	}
 
 	/* Step 8: Configure PON on lane3 */
-#ifdef CONFIG_MAC1_2_PON_ETH_SERDES_SFP
 	mvPONPhyInit();
-#endif
 
 #ifndef CONFIG_ALP_A375_ZX_REV
 	mvUsb2PhyInit(0);

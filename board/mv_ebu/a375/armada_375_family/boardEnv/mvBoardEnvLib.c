@@ -968,25 +968,37 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 {
 	MV_U32 ethComplex;
 
-	/* Update SMI phy address for MAC0/1 */
 	ethComplex = mvBoardEthComplexConfigGet();
+
+	if (mvBoardIsMac1Sgmii() == MV_TRUE) {
+		/* disable GE-PHY#3, and enable SGMII */
+		ethComplex &= ~MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3;
+		ethComplex |= MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP;
+	} else {
+		/* disable SGMII, and enable GE-PHY#3 */
+		ethComplex &= ~MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP;
+		ethComplex |= MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3;
+	}
+
+	mvBoardEthComplexConfigSet(ethComplex);
+
+	/* Update SMI phy address for MAC0/1 */
 	if (ethComplex & MV_ETHCOMP_GE_MAC0_2_GE_PHY_P0)
 		mvBoardPhyAddrSet(0, 0x0);
 	else if (ethComplex & MV_ETHCOMP_GE_MAC0_2_RGMII0)
 		mvBoardPhyAddrSet(0, 0x0);
 	else
-		mvBoardPhyAddrSet(0, -1); /* no SMI address if connected to switch */
+		mvBoardPhyAddrSet(0, -1); /* SMI address is specified only for a PHY, else inBand SGMII/Switch*/
 
 	if (ethComplex & MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3)
 		mvBoardPhyAddrSet(1, 0x3);
 	else if (ethComplex & MV_ETHCOMP_GE_MAC1_2_RGMII1)
 		mvBoardPhyAddrSet(1, 0x1);
 	else
-		mvBoardPhyAddrSet(1, -1); /* no SMI address if connected to switch */
+		mvBoardPhyAddrSet(1, -1); /* SMI address is specified only for a PHY, else inBand SGMII/Switch*/
 
 	/* Update MPP group types and values according to board configuration */
 	mvBoardMppIdUpdate();
-
 }
 
 /*******************************************************************************
@@ -1011,6 +1023,20 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 	/* MPP Groups initialization : */
 	/* Set Group 0-1 - Boot device (else if booting from SPI1: Set Groups 3-4) */
 	mvBoardBootDeviceGroupSet();
+
+	/* Groups 3,4: GE1 settings (internal GE-PHY / SGMII)
+	 * Group  7  : I2C-1 needed for SGMII, to set sfpTXdisable via IO expander */
+	if (mvBoardIsMac1Sgmii() == MV_TRUE) {
+		/* disable GE-PHY#3, and enable SGMII */
+		mvBoardMppTypeSet(3, GE1_SGMII_UNIT);
+		mvBoardMppTypeSet(4, GE1_SGMII_UNIT);
+		mvBoardMppTypeSet(7, GE0_LED_I2C1_UNIT);
+	} else {
+		/* disable SGMII, and enable GE-PHY#3 */
+		mvBoardMppTypeSet(3, GE1_PHY3_UNIT);
+		mvBoardMppTypeSet(4, GE1_PHY3_UNIT);
+		mvBoardMppTypeSet(7, GE0_LED_UNIT);
+	}
 }
 
 
@@ -1139,6 +1165,49 @@ MV_U32 mvBoardBootAttrGet(MV_U32 satrBootDeviceValue, MV_U8 attrNum)
 	default:
 		return MV_ERROR;
 	}
+}
+
+/*******************************************************************************
+* mvBoardMac1ConfigGet
+*
+* DESCRIPTION: Read MAC configuration for S@R
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*        MV_U32 describing MAC1 settings : 0 = Internal PHY , 1 = SGMII (via ETH SerDes)
+*
+*******************************************************************************/
+MV_U32 mvBoardMac1ConfigGet(MV_VOID)
+{
+	MV_U32 mac1Config;
+
+	mac1Config = mvCtrlSatRRead(MV_SATR_MAC1);
+	if (mac1Config == MV_ERROR) {
+		DB(mvOsPrintf("%s: Error: MV_SATR_MAC1 is not active for board (using default)\n", __func__));
+		return 0;
+	} else
+		return mac1Config;
+}
+
+/*******************************************************************************
+* mvBoardIsMac1Sgmii
+*
+* DESCRIPTION: return True if MAC is configured to be SGMII (S@R)
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*        MV_BOOL : MV_TRUE if MAC1 is configured at S@R to be SGMII
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsMac1Sgmii(MV_VOID)
+{
+	return (mvBoardMac1ConfigGet() == 1 ? MV_TRUE : MV_FALSE);
 }
 
 /*******************************************************************************
@@ -1558,7 +1627,7 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 			mvOsOutput("\tGE-PHY-3 Module on Switch port #3\n");
 	}
 	if (ethConfig & MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP)
-		mvOsOutput("\tPON ETH SERDES on MAC1 [SFP]\n");
+		mvOsOutput("\tETH SERDES on MAC1 [SFP]\n");
 
 	/* SERDES Lanes*/
 	mvOsOutput("SERDES configuration:\n");

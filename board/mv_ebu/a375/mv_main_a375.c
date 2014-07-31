@@ -250,9 +250,6 @@ int board_init(void)
 	/* Init the Board environment module (device bank params init) */
 	mvBoardEnvInit();
 
-	/*Init the board network module*/
-	mvEthComplexInit(mvBoardEthComplexConfigGet());
-
 
 #if defined(MV_INCLUDE_TWSI)
 	slave.type = ADDR7_BIT;

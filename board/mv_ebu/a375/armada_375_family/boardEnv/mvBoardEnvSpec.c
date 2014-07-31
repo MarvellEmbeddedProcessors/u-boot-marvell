@@ -211,21 +211,13 @@ MV_BOARD_TWSI_INFO db88f6720InfoBoardTwsiDev[] = {
 MV_BOARD_MAC_INFO db88f6720InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
 	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0 },
-#ifndef CONFIG_MAC1_2_PON_ETH_SERDES_SFP
 	{ BOARD_MAC_SPEED_AUTO, 0x3, 0x3 },
-#else
-	{ BOARD_MAC_SPEED_AUTO, -1,  -1  },
-#endif
 	{ N_A,			N_A, N_A },
 };
 MV_BOARD_MPP_TYPE_INFO db88f6720InfoBoardModTypeInfo[] = {
 	{
 		.boardMppSlic = MV_BOARD_SLIC_DISABLED,
-#ifdef CONFIG_MAC1_2_PON_ETH_SERDES_SFP
-		.ethSataComplexOpt = (MV_ETHCOMP_GE_MAC1_2_PON_ETH_SERDES_SFP | MV_ETHCOMP_GE_MAC0_2_RGMII0),
-#else
 		.ethSataComplexOpt = (MV_ETHCOMP_GE_MAC1_2_GE_PHY_P3 | MV_ETHCOMP_GE_MAC0_2_RGMII0),
-#endif
 		.ethPortsMode = 0x0
 	}
 };

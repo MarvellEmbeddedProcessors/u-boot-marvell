@@ -424,7 +424,7 @@ static void mvEthComplexMacToGbePhy(MV_U32 port, MV_U32 phy, MV_U32 phyAddr)
 
 	mvEthComplexPortDpClkSrcSet(port, 0x1);
 	mvEthComplexGbePhyPdConfigEdetASet(phy, 0x0);
-	mvEthComplexGbePhyPsEnaXcSSet(phy, 0x0);
+	mvEthComplexGbePhyPsEnaXcSSet(phy, 0x3);
 	mvEthComplexGbePhyResetSet(MV_FALSE);
 }
 

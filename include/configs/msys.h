@@ -406,6 +406,9 @@ disclaimer.
 	#define ENV_USB1_MODE   "host"
 	#define ENV_USB_ACTIVE        "0"
 	#define ENV_USB_MODE          "2" /* 3 = USB3.0 | 2 = USB2.0 */
+
+	#define CONFIG_USB_HOST_ETHER
+	#define CONFIG_USB_ETHER_ASIX
 #else
 	#undef MV_INCLUDE_USB
 	#undef CONFIG_CMD_USB

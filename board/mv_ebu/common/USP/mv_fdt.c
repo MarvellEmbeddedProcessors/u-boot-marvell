@@ -42,12 +42,21 @@ static int mv_fdt_remove_prop(void *fdt, const char *path,
 static int mv_fdt_remove_node(void *fdt, const char *path);
 static int mv_fdt_scan_and_set_alias(void *fdt,
 					const char *name, const char *alias);
-static int mv_fdt_modify(void *fdt, int function);
 static int mv_fdt_debug;
 
 #define mv_fdt_dprintf(...)		\
 	if (mv_fdt_debug)		\
 		printf(__VA_ARGS__);
+
+#define mv_fdt_modify(fdt, err, function)				\
+	do {								\
+		err = function; /* Try requested routine */		\
+		while (err == -FDT_ERR_NOSPACE) {			\
+			mv_fdt_dprintf("Resize fdt...\n");		\
+			fdt_resize(fdt);				\
+			err = function; /* Retry requested routine*/	\
+		}							\
+	} while (0)
 
 void ft_board_setup(void *blob, bd_t *bd)
 {
@@ -64,7 +73,7 @@ void ft_board_setup(void *blob, bd_t *bd)
 	/* Update dt information for all SoCs */
 	/* Update dt bootargs from commandline */
 	fdt_resize(blob);
-	err = mv_fdt_modify(blob, fdt_chosen(blob, 1));
+	mv_fdt_modify(blob, err, fdt_chosen(blob, 1));
 	if (err < 0) {
 		mv_fdt_dprintf("Updating DT bootargs failed\n");
 		goto bs_fail;
@@ -199,7 +208,7 @@ static int mv_fdt_update_l2(void *fdt)
 		if (env) {
 			if ((strncmp(env, "wt", 2) == 0) ||
 			    (strncmp(env, "WT", 2) == 0)) {
-				err = mv_fdt_modify(fdt, fdt_setprop(fdt,
+				mv_fdt_modify(fdt, err, fdt_setprop(fdt,
 						nodeoffset, prop, NULL, 0));
 				if (err < 0) {
 					mv_fdt_dprintf("Adding '%s' to '%s' "
@@ -223,7 +232,7 @@ static int mv_fdt_update_l2(void *fdt)
 		} else {
 			env = getenv("setL2CacheWT");
 			if (env && ((strncmp(env, "yes", 3) == 0))) {
-				err = mv_fdt_modify(fdt, fdt_setprop(fdt,
+				mv_fdt_modify(fdt, err, fdt_setprop(fdt,
 						nodeoffset, prop, NULL, 0));
 				if (err < 0) {
 					mv_fdt_dprintf("Adding '%s' to '%s' "
@@ -341,7 +350,7 @@ static int mv_fdt_update_pex(void *fdt)
 pex_ok:
 		if (strncmp(node, "pcie-controller", 15) != 0)
 			i++;
-		err = mv_fdt_modify(fdt, fdt_setprop(fdt, nodeoffset, prop,
+		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
 						propval, strlen(propval)+1));
 		if (err < 0) {
 			mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n",
@@ -420,7 +429,7 @@ static int mv_fdt_update_ethnum(void *fdt)
 		}
 		prop = "status";
 		propval = "disabled";
-		err = mv_fdt_modify(fdt, fdt_setprop(fdt, nodeoffset, prop,
+		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
 						propval, strlen(propval)+1));
 		if (err < 0) {
 			mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n",
@@ -476,20 +485,6 @@ static int mv_fdt_remove_node(void *fdt, const char *path)
 	}
 }
 
-static int mv_fdt_modify(void *fdt, int function)
-{
-	int err;		/* error number */
-
-	err = function;
-	while (err == -FDT_ERR_NOSPACE) {
-		mv_fdt_dprintf("Resize fdt...\n");
-		fdt_resize(fdt);
-		err = function;
-	}
-
-	return err;
-}
-
 static int mv_fdt_scan_and_set_alias(void *fdt,
 					const char *name, const char *alias)
 {
@@ -509,7 +504,7 @@ static int mv_fdt_scan_and_set_alias(void *fdt,
 	/* Check if '/aliases' node exist. Otherwise create it */
 	nodeoffset = mv_fdt_find_node(fdt, "aliases");
 	if (nodeoffset < 0) {
-		err = mv_fdt_modify(fdt, fdt_add_subnode(fdt, 0, "aliases"));
+		mv_fdt_modify(fdt, err, fdt_add_subnode(fdt, 0, "aliases"));
 		if (err < 0) {
 			mv_fdt_dprintf("Creating '/aliases' node failed\n");
 			return -1;
@@ -534,7 +529,7 @@ static int mv_fdt_scan_and_set_alias(void *fdt,
 				nodeoffset = mv_fdt_find_node(fdt, "aliases");
 				if (nodeoffset < 0)
 					goto alias_fail;
-				err = mv_fdt_modify(fdt, fdt_setprop(fdt,
+				mv_fdt_modify(fdt, err, fdt_setprop(fdt,
 							nodeoffset, aliasname,
 							path, strlen(path)+1));
 				if (err < 0)

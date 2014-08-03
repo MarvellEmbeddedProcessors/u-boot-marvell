@@ -143,6 +143,9 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_68xx_INDEX_MAX] = {
 #define ON_BOARD_RGMII(x)	(1 << x)
 #define SERDES_SGMII(x)		(4 << x)
 
+/* Only the first unit, only the second unit or both can be active on the specific board */
+static MV_BOOL sataUnitActive[MV_SATA_MAX_UNIT] = {MV_FALSE, MV_FALSE};
+
 /* ethComPhy will be initialize by mvCtrlEnvInit and  updated by mvCtrlSerdesConfigDetect in case SGMII is set */
 static MV_U32	ethComPhy;
 /*******************************************************************************
@@ -317,6 +320,10 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 		case SERDES_UNIT_SATA:
 			DB(printf("SATA, if=%d\n", ifNo));
 			sataIfCount++;
+			if (serdesNum > 2) /* SerdDes 1 and 2 - unit 0, 3 and 5 - unit 1 */
+				sataUnitActive[1] = MV_TRUE;
+			else
+				sataUnitActive[0] = MV_TRUE;
 			break;
 		case SERDES_UNIT_GBE:
 			if (ON_BOARD_RGMII(ifNo)) /* detected SGMII will replace the same Ob-Board compatible port */
@@ -696,6 +703,50 @@ MV_U32 mvCtrlSataMaxPortGet(MV_VOID)
 	return mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID);
 }
 
+
+/*******************************************************************************
+* mvCtrlSataMaxUnitGet
+*
+* DESCRIPTION:
+*       This function returns max number of SATA units for A38x/A39x chip.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Marvell controller number of SATA units.
+*
+*******************************************************************************/
+MV_U32 mvCtrlSataMaxUnitGet(MV_VOID)
+{
+	return MV_SATA_MAX_UNIT;
+}
+
+/*******************************************************************************
+* mvCtrlIsActiveSataUnit
+*
+* DESCRIPTION:
+*       This function checks state of SATA units.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE if SATA unit exists and active - MV_FALSE in any other case.
+*
+*******************************************************************************/
+MV_BOOL mvCtrlIsActiveSataUnit(MV_U32 unitNumber)
+{
+	if (unitNumber >= mvCtrlSataMaxUnitGet())
+		return MV_FALSE;
+	return sataUnitActive[unitNumber];
+}
 #endif
 
 #if defined(MV_INCLUDE_XOR)

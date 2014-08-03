@@ -163,7 +163,9 @@ extern "C" {
 #define MV_XOR_MAX_CHAN                         4       /* total channels for all units together*/
 #define MV_XOR_MAX_CHAN_PER_UNIT                2       /* channels for units */
 
-#define MV_SATA_MAX_CHAN                        2
+#define MV_SATA_MAX_UNIT                        2
+#define MV_SATA_MAX_CHAN                        4	/* total channels (ports) for all units together */
+#define MV_SATA_MAX_CHAN_PER_UNIT               2       /* channels (ports) per unit */
 
 #define MV_MPP_MAX_GROUP                        9
 

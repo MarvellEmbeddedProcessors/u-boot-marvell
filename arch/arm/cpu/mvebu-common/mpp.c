@@ -130,17 +130,22 @@ int mpp_is_bus_enabled(struct mpp_bus *bus)
 {
 	int bus_alt;
 	int pin;
+	int bus_active = 0;
 
 	for (bus_alt = 0; bus_alt < bus->bus_cnt; bus_alt++) {
 		for (pin = 0; pin < bus->pin_cnt; pin++) {
 			u8 id = bus->pin_data[bus_alt][pin].id;
 			u8 val = bus->pin_data[bus_alt][pin].val;
 			if (mpp_get_pin(id) != val)
-				return 0;
+				break;
+		}
+		if (pin == bus->pin_cnt) {
+			bus_active = 1;
+			break;
 		}
 	}
 
-	return 1;
+	return bus_active;
 }
 
 int mpp_is_bus_valid(struct mpp_bus *bus)

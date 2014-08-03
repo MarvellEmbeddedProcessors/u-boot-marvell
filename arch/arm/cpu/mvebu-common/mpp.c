@@ -53,13 +53,13 @@ static void set_field(int mpp_id, int value, u32 *base_ptr)
 
 static u8 get_field(int mpp_id, u32 *base_ptr)
 {
-	int reg_offset;
+	u32 reg_offset;
 	int field_offset;
 	u32 reg;
 	u8 value;
 
 	/* Calculate register address and bit in register */
-	reg_offset   = 4 * (mpp_id >> (MPP_FIELD_BITS));
+	reg_offset   = mpp_id >> (MPP_FIELD_BITS);
 	field_offset = (MPP_BIT_CNT) * (mpp_id & MPP_FIELD_MASK);
 
 	reg = readl(base_ptr + reg_offset);

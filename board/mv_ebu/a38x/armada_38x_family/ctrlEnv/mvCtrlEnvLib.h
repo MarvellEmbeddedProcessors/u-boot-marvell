@@ -219,7 +219,11 @@ MV_U32 mvCtrlPexActiveUnitNumGet(MV_VOID);
 MV_U32 mvCtrlEthMaxPortGet(MV_VOID);
 MV_U8 mvCtrlEthMaxCPUsGet(MV_VOID);
 
+#if defined(MV_INCLUDE_SATA)
 MV_U32 mvCtrlSataMaxPortGet(MV_VOID);
+MV_U32 mvCtrlSataMaxUnitGet(MV_VOID);
+MV_BOOL mvCtrlIsActiveSataUnit(MV_U32 unitNumber);
+#endif
 #if defined(MV_INCLUDE_XOR)
 MV_U32 mvCtrlXorMaxChanGet(MV_VOID);
 MV_U32 mvCtrlXorMaxUnitGet(MV_VOID);

@@ -44,15 +44,16 @@
 static int boardIntegratedSataInit = -1;
 void board_ahci_init(void)
 {
-	int sataPort = 0;
+	int sataUnit = 0;
 	if(boardIntegratedSataInit == 1)
 		return;
 	boardIntegratedSataInit = 1;
-	printf ("ahci init: ");
-	for(sataPort = 0; sataPort < mvCtrlSataMaxPortGet(); sataPort++) {
-		printf ("port%d ", sataPort);
-		if (0 != ahci_init(INTER_REGS_BASE | MV_SATA3_REGS_OFFSET(sataPort)))
-			printf("AHCI init failed for port%d!\n", sataPort);
+	for(sataUnit = 0; sataUnit < mvCtrlSataMaxUnitGet(); sataUnit++) {
+		if (MV_FALSE == mvCtrlIsActiveSataUnit(sataUnit))
+			continue;
+		printf ("AHCI init for unit%d\n", sataUnit);
+		if (0 != ahci_init(INTER_REGS_BASE | MV_SATA3_REGS_OFFSET(sataUnit)))
+			printf("AHCI init failed for unit%d!\n", sataUnit);
 	}
 	printf ("\n");
 }

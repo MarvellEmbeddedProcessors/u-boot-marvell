@@ -86,6 +86,8 @@ MV_DRAM_MODES ddr_modes[] =
 	{"a375_customer_0_533",	0x15,	0,	0x0,	ARMADA_375_CUSTOMER_BOARD_ID0,	ddr3_Customer_0_533,	NULL},
 	{"a375_customer_1_533",	0x15,	0,	0x0,	ARMADA_375_CUSTOMER_BOARD_ID1,	ddr3_Customer_0_533,	NULL},
 #else
+	{"db_88F6720_400",	0x6,	0,	0x0,	DB_6720_ID,			ddr3_A375_DB_6720_533,	NULL},
+	{"db_88F6720_400",	0xE,	0,	0x0,	DB_6720_ID,			ddr3_A375_DB_6720_533,	NULL},
 	{"db_88F6720_533",	0x15,	0,	0x0,	DB_6720_ID,			ddr3_A375_DB_6720_533,	NULL},
 	{"db_88F6720_533",	0x16,	0,	0x0,	DB_6720_ID,			ddr3_A375_DB_6720_533,	NULL},
 	{"db_88F6720_533",	0x19,	0,	0x0,	DB_6720_ID,			ddr3_A375_DB_6720_533,	NULL},

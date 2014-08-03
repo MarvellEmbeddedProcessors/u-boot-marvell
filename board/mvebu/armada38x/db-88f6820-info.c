@@ -32,8 +32,8 @@ struct mvebu_board_config db_a38x_config = {
 struct mvebu_board_info a38x_db_info = {
 	.name = "DB-88F6820-BP",
 	.id = ARMADA_38X_DB_ID,
-	.mpp_regs = {0x11111111, 0x11111111, 0x55266011, 0x25252051,
-		     0x25255555, 0x40042565, 0x55550555, 0x00005550},
+	.mpp_regs = {0x11111111, 0x11111111, 0x11266011, 0x22222011,
+		     0x22200002, 0x40042022, 0x55550555, 0x00005550},
 	.configurable = 1,
 	.config_data = &db_a38x_config,
 };

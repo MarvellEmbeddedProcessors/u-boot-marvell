@@ -40,8 +40,8 @@ struct mvebu_board_info a38x_rd_info = {
 	.id = ARMADA_38X_RD_ID,
 	.unit_mask = a38x_rd_unit_disable,
 	.unit_update_mode = UNIT_INFO_DISABLE,
-	.mpp_regs = {0x11111111, 0x11111111, 0x55266011, 0x25252051,
-		     0x25255555, 0x40042565, 0x55550555, 0x00005550},
+        .mpp_regs = {0x11111111, 0x11111111, 0x11266011, 0x22222011,
+		     0x22200002, 0x40042022, 0x55550555, 0x00005550},
 	.configurable = 1,
 	.config_data = &rd_a38x_config,
 };

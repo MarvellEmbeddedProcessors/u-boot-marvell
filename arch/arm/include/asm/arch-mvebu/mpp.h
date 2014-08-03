@@ -24,7 +24,7 @@
 
 #define		MAX_MPP_NAME		32
 #define		MAX_BUS_NAME		32
-#define		MAX_PINS_PER_BUS	8
+#define		MAX_PINS_PER_BUS	14
 #define		MAX_BUS_OPTS		2
 
 char **mpp_get_desc_table(void);
@@ -36,6 +36,11 @@ enum mpp_bus_id {
 	SPI_1_MPP_BUS,
 	NAND_0_MPP_BUS,
 	RGMII_0_MPP_BUS,
+	I2C_0_MPP_BUS,
+	GE_0_MPP_BUS,
+	GE_1_MPP_BUS,
+	M_VTT_0_MPP_BUS,
+	SDIO_0_MPP_BUS,
 	MAX_MPP_BUS
 };
 

@@ -560,6 +560,7 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	MV_U32		boardId = mvBoardIdGet();
 	MV_U32		pexIf;
 	MV_U32 		pexIfNum;
+	MV_8 		pcieUnitInitialized[MV_PEX_MAX_UNIT] = {MV_FALSE, MV_FALSE, MV_FALSE, MV_FALSE};
 
 	/* TWSI init */
 	slave.type = ADDR7_BIT;
@@ -1130,9 +1131,10 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 		if (serdesLineCfg == serdesCfg[serdesLineNum][SERDES_UNIT_PEX]) {
 			pexUnit    = serdesLineNum >> 2;
 			pexLineNum = serdesLineNum % 4;
-			if (0 == pexLineNum){
+			if (pcieUnitInitialized[pexUnit] == MV_FALSE) {
 				MV_REG_WRITE(PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0x24);
 				DEBUG_WR_REG(PEX_PHY_ACCESS_REG(pexUnit), (0xC1 << 16) | 0x24);
+				pcieUnitInitialized[pexUnit] = MV_TRUE;
 			}
 		}
 	}

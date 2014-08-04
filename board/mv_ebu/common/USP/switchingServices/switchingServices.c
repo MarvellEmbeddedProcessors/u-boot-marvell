@@ -373,10 +373,8 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U32 i, filesize, addr, src_addr, dest_addr;
 	MV_U32 kernel_unc_len, rootfs_unc_len = 0, unc_len, src_len;
-	MV_U32 kernel_addr = 0x6000000;
-	MV_U32 rootfs_addr = 0x7000000;
-	MV_U32  total_in, rc, single_file = 0;
-	MV_U32  erase_end_offset, bz2_file = 0;
+	MV_U32 kernel_addr = 0x6000000, rootfs_addr = 0x7000000;
+	MV_U32 total_in, rc, single_file = 0, bz2_file = 0;
 	char *from[] = {"tftp","usb","mmc", "ram"};
 	struct partitionInformation *partitionInfo = &nandInfo;	/* default destination = NAND */
 	MV_U32 loadfrom = 0;					/* Default source = tftp */
@@ -555,11 +553,10 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		(single_file) ? "single image" : "kernel",
 		partitionInfo->KERNEL_START, kernel_unc_len/_1K);
 
-	erase_end_offset =  partitionInfo->KERNEL_START + \
-		((kernel_unc_len + partitionInfo->BLOCK_ALIMENT) & ~(partitionInfo->BLOCK_ALIMENT-1));
-
-	printf("Erasing 0x%x - 0x%x: \n", partitionInfo->KERNEL_START, erase_end_offset);
-	flashErase(partitionInfo->KERNEL_START, (erase_end_offset - partitionInfo->KERNEL_START), isNand);
+	printf("Erasing 0x%x - 0x%x: (%dMB)\n", partitionInfo->KERNEL_START,
+			partitionInfo->KERNEL_START + partitionInfo->KERNEL_SIZE,
+			partitionInfo->KERNEL_SIZE / _1M);
+	flashErase(partitionInfo->KERNEL_START, partitionInfo->KERNEL_SIZE, isNand);
 	printf("\t\t[Done]\n");
 
 	printf("\nCopy to Flash\n");
@@ -567,12 +564,10 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	printf("\n");
 
 	if (!single_file) {
-		erase_end_offset =  partitionInfo->ROOTFS_START + \
-			((rootfs_unc_len + partitionInfo->BLOCK_ALIMENT) & ~(partitionInfo->BLOCK_ALIMENT-1));
-
-		printf("Erasing 0x%x - 0x%x: (%dMB).\n", partitionInfo->ROOTFS_START, erase_end_offset,
-				(erase_end_offset - partitionInfo->ROOTFS_START) / _1M);
-		flashErase(partitionInfo->ROOTFS_START, (erase_end_offset - partitionInfo->ROOTFS_START), isNand);
+		printf("Erasing 0x%x - 0x%x: (%dMB)\n", partitionInfo->ROOTFS_START,
+				partitionInfo->ROOTFS_START + partitionInfo->ROOTFS_SIZE,
+				partitionInfo->ROOTFS_SIZE / _1M);
+		flashErase(partitionInfo->ROOTFS_START, partitionInfo->ROOTFS_SIZE, isNand);
 
 		printf("\nBurning rootfs on flash at 0x%08x, length=%dK\n",
 		       partitionInfo->ROOTFS_START, (rootfs_unc_len / _1K));

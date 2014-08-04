@@ -304,7 +304,7 @@ static int do_cpss_env( cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[]
 #ifdef MV_NAND
 	sprintf(buf,
 		"nand read ${loadaddr} 0x%x 0x%x; setenv bootargs ${console} mtdparts=${mtdparts} "
-		"ubi.mtd=5 root=ubi0:rootfs_nand rw rootfstype=ubifs ${mvNetConfig}; bootm 0x2000000;" ,
+		"ubi.mtd=5 root=ubi0:rootfs_nand ro rootfstype=ubifs ${mvNetConfig}; bootm 0x2000000;" ,
 		CFG_APPL_NAND_FLASH_PART_KERNEL_START,
 		CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE);
 

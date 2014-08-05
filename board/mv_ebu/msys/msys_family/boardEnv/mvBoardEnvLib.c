@@ -1691,16 +1691,17 @@ MV_STATUS mvBoardPcieModeGet(MV_U8 *val)
 {
 	MV_U8		sar;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+	MV_U8		bitOffset = (family == MV_BOBCAT2_DEV_ID) ? 4 : 3;
 
-	if (family != MV_ALLEYCAT3_DEV_ID) {
-		DB(mvOsPrintf("%s: BC2 controller family is not supported\n", __func__));
-		return MV_ERROR; /* Not supported on BC2 */
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
+		return MV_ERROR;
 	}
 
 	if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar))
 		return MV_ERROR;
 
-	*val = (sar & (0x1 << 3)) >> 3;
+	*val = (sar & (0x1 << bitOffset)) >> bitOffset;
 
 	return MV_OK;
 }
@@ -1710,17 +1711,18 @@ MV_STATUS mvBoardPcieModeSet(MV_U8 val)
 {
 	MV_U8		sar;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+	MV_U8		bitOffset = (family == MV_BOBCAT2_DEV_ID) ? 4 : 3;
 
-	if (family != MV_ALLEYCAT3_DEV_ID) {
-		DB(mvOsPrintf("%s: BC2 controller family is not supported\n", __func__));
-		return MV_ERROR; /* Not supported on BC2 */
+	if ((family != MV_ALLEYCAT3_DEV_ID) && (family != MV_BOBCAT2_DEV_ID)) {
+		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
+		return MV_ERROR;
 	}
 
 	if (MV_ERROR == mvBoardTwsiSatRGet(2, 0, &sar))
 		return MV_ERROR;
 
-	sar &= ~(0x1 << 3);
-	sar |= (val & 0x1) << 3;
+	sar &= ~(0x1 << bitOffset);
+	sar |= (val & 0x1) << bitOffset;
 
 	if (MV_OK != mvBoardTwsiSatRSet(2, 0, sar)) {
 		DB(mvOsPrintf("Board: Write pcimode S@R fail\n"));

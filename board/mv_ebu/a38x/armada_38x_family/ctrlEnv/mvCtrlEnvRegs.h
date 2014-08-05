@@ -121,10 +121,10 @@ extern "C" {
 #define PMC_XOR_STOP_CLK_EN(xor_id)		(1 << PMC_XOR_STOP_CLK_OFFS(xor_id))
 #define PMC_XOR_STOP_CLK_STOP(xor_id)		(0 << PMC_XOR_STOP_CLK_OFFS(xor_id))
 
-#define PMC_SATA_STOP_CLK_OFFS			14
-#define PMC_SATA_STOP_CLK_MASK			(3 << PMC_SATA_STOP_CLK_OFFS)
-#define PMC_SATA_STOP_CLK_EN			(3 << PMC_SATA_STOP_CLK_OFFS)
-#define PMC_SATA_STOP_CLK_STOP			(0 << PMC_SATA_STOP_CLK_OFFS)
+#define PMC_SATA_STOP_CLK_OFFS(index)		(index == 0 ? 15 : 30)
+#define PMC_SATA_STOP_CLK_MASK(index)		(1 << PMC_SATA_STOP_CLK_OFFS(index))
+#define PMC_SATA_STOP_CLK_EN(index)		(1 << PMC_SATA_STOP_CLK_OFFS(index))
+#define PMC_SATA_STOP_CLK_STOP(index)		(0 << PMC_SATA_STOP_CLK_OFFS(index))
 
 #define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
 

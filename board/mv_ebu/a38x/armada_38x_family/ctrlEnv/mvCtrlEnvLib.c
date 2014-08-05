@@ -1621,9 +1621,9 @@ MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
 #if defined(MV_INCLUDE_INTEG_SATA)
 	case SATA_UNIT_ID:
 		if (enable == MV_FALSE)
-			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_SATA_STOP_CLK_MASK);
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_SATA_STOP_CLK_MASK(index));
 		else
-			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_SATA_STOP_CLK_MASK);
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_SATA_STOP_CLK_MASK(index));
 
 		break;
 #endif
@@ -1687,7 +1687,7 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 #endif
 #if defined(MV_INCLUDE_SATA)
 	case SATA_UNIT_ID:
-		if ((reg & PMC_SATA_STOP_CLK_MASK) == PMC_SATA_STOP_CLK_STOP)
+		if ((reg & PMC_SATA_STOP_CLK_MASK(index)) == PMC_SATA_STOP_CLK_STOP(index))
 			state = MV_FALSE;
 		else
 			state = MV_TRUE;

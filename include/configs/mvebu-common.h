@@ -138,7 +138,7 @@
 
 
 /* No flash setup */
-#if !defined(MV_INCLUDE_NOR) && !defined(MV_INCLUDE_NAND) && !defined(MV_INCLUDE_SPI)
+#if !defined(MV_INCLUDE_NOR) && !defined(MV_INCLUDE_NAND) && !defined(MV_SPI_BOOT)
 	#undef CONFIG_CMD_FLASH
 	#undef CONFIG_CMD_IMLS
 	#define CONFIG_ENV_IS_NOWHERE
@@ -386,11 +386,11 @@
 #endif /* MV_INCLUDE_NAND */
 
 /* SPI Flash */
-#ifdef MV_INCLUDE_SPI
-	#define CONFIG_MVEBU_SPI
+#ifdef CONFIG_MVEBU_SPI
 	#define CONFIG_CMD_SPI
 	#define CONFIG_CMD_SF
 	#define CONFIG_SPI_FLASH
+	#define CONFIG_SPI_FLASH_WINBOND
 	#define CONFIG_SPI_FLASH_STMICRO
 	#define CONFIG_SPI_FLASH_MACRONIX
 	#define CONFIG_ENV_SPI_MAX_HZ           10000000        /*Max 50Mhz- will sattle on SPI bus max 41.5Mhz */
@@ -416,7 +416,6 @@
 	#elif defined(MV_SEC_256K)
 	#define CONFIG_ENV_SECT_SIZE            0x40000
 	#endif
-
 	#define CONFIG_ENV_SIZE		CONFIG_ENV_SECT_SIZE    /* environment takes one sector */
 	#define CONFIG_ENV_OFFSET	0x100000    /* (1MB For Image) environment starts here  */
 	#define CONFIG_ENV_ADDR		CONFIG_ENV_OFFSET
@@ -472,6 +471,11 @@
 	#define CONFIG_SYS_MONITOR_BASE		(0 + CONFIG_ENV_SECT_SIZE)
 	#define CONFIG_SYS_MONITOR_END		(CONFIG_SYS_MONITOR_BASE + CONFIG_SYS_MONITOR_LEN)
 	#endif /* MV_NOR_BOOT */
-#endif /* MV_INCLUDE_NOR */
+#else /* MV_INCLUDE_NOR */
+	#define CONFIG_SYS_NO_FLASH
+	#undef CONFIG_CMD_FLASH
+	#undef CONFIG_CMD_IMLS
+#endif
+
 
 #endif /* _MVEBU_COMMON_H_ */

@@ -48,6 +48,7 @@
 
 /* Enable IO drivers */
 #define MV_INCLUDE_UART
+#define CONFIG_MVEBU_SPI
 /*
 #define MV_INCLUDE_SDIO
 #define MV_INCLUDE_INTEG_SATA
@@ -55,7 +56,6 @@
 
 #define MV_INCLUDE_RCVR
 #define MV_INCLUDE_NAND
-#define MV_INCLUDE_SPI
 #define MV_INCLUDE_XOR
 #define MV_INCLUDE_SATA
 #define MV_INCLUDE_USB

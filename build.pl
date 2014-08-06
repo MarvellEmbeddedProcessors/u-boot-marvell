@@ -172,23 +172,16 @@ elsif  ($opt_f eq "nand"){
 	print "Boot from NAND\n";
 	$flash_name = "nand";
 	$img_type   = "nand";
-	if( ($boardID eq "axp") or
-		($boardID eq "msys-bc2") or
-		($boardID eq "msys-ac3") or
-		($boardID eq "a38x") or
-		($boardID eq "a39x")) {
-			$img_opts   = "-P 4096 -L 128 -N MLC";
-	}
-	elsif($boardID eq "a375") {
-		$img_opts   = "-P 4096 -L 256 -N MLC";
-	}
-	elsif($boardID eq "alp") {
+	if($boardID eq "alp") {
 		$img_opts   = "-P 2048 -L 128 -N SLC";
 	}
-		print "Image options =  $img_opts\n\n";
+	else {
+		$img_opts   = "-P 4096 -L 256 -N SLC";
 	}
-	else
-	{
+	print "Image options =  $img_opts\n\n";
+}
+else
+{
 	if (defined $opt_f) {
 		print "\n *** Error: Bad flash type $opt_f specified\n\n";
 	}

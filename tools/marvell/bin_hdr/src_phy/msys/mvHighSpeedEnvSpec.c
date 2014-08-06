@@ -140,28 +140,11 @@ SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
 }};
 
 
-/**********************************************************************/
-/* Load topology functions - Board ID is the index for function array */
-/**********************************************************************/
-
-loadTopologyFuncPtr loadTopologyFuncArr[] =
-{
-	boardTopologyLoad,         /* Customer Board 0 */
-	boardTopologyLoad,         /* Customer Board 1*/
-};
-
 #else /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 
 /*********************************** Enums ************************************/
 
-
 /************************* Local functions declarations ***********************/
-
-loadTopologyFuncPtr loadTopologyFuncArr[] =
-{
-	boardTopologyLoad,
-	boardTopologyLoad,
-};
 
 /*********************************** Globals **********************************/
 /********************************/

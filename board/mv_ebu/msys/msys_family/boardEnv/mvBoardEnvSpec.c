@@ -616,7 +616,7 @@ MV_BOARD_MPP_INFO db_dx_ac3InfoBoardMppConfigValue[] = {
 };
 
 MV_BOARD_INFO db_dx_ac3Info = {
-	.boardName			= "DB-DXAC3-MM",
+	.boardName			= "DB-XC3-24G4XG",
 	.numBoardMppTypeValue		= ARRSZ(db_dx_ac3InfoBoardModTypeInfo),
 	.pBoardModTypeValue		= db_dx_ac3InfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(db_dx_ac3InfoBoardMppConfigValue),
@@ -717,7 +717,7 @@ MV_BOARD_MPP_INFO rd_dx_ac3InfoBoardMppConfigValue[] = {
 };
 
 MV_BOARD_INFO rd_dx_ac3Info = {
-	.boardName				= "RD-DXAC3-MM",
+	.boardName				= "RD-XC3-48G4XG-A",
 	.numBoardMppTypeValue	= ARRSZ(rd_dx_ac3InfoBoardModTypeInfo),
 	.pBoardModTypeValue		= rd_dx_ac3InfoBoardModTypeInfo,
 	.numBoardMppConfigValue	= ARRSZ(rd_dx_ac3InfoBoardMppConfigValue),

@@ -109,40 +109,37 @@
 /******************************************************************************
    MPP#			DEFAULT UNIT		        MPP Values (respectively)
    -----------------------------------------------------------------------------------
-   0-1			UART				1
+   0-1			UART0				1
    2-3			I2C0				1
-   4-5			SMI ( MDC/MDIO )		1
-   6-17			GE0				1
-   18			SGMII , GIGA0			0
-   19-20		Uart1				6
-   21, 27-32
-   37-41	GE1					2
-   22-25	SPI					1
-   33-35	7 segment				0
-   26		USB Device detect			0  (USB3_0)
-   36,42	Spare Inputs				0
-   43		M_VTT_CTRL (out)			2
-   44		SATA3_PRESENT_ACTIVEn			4
-45,46,56	Inputs( PIC outputs )			0
-	47		SATA1_PRESENT_ACTIVEn		4
-   48-50
-   52-55
-   57-59	SDIO 8 Bit				5
-    51		USB Device detect0			0
+   4-5			SMI1				7
+   6-7			XSMI				7
+   8-10			NSS_PTP				7
+   11-13		LED_DRV				7
+   15			PCIe0_RSTOUTn (out)		3
+   16			PCIe0_CLKREQ (in)		5
+   19-20		UA1				6
+   22-23,25,28,30,
+   32-36,38,40-42	NAND				5
+   43			M_VTT_CTRL (out)		2
+   44			SATA2_PRESENT_ACTIVEn (out)	3
+   45			TEF_CLK_OUT[0] (out)		1
+   46			REF_CLK_OUT[1] (out)		1
+   47			SATA3_PRESENT_ACTIVEn (out)	5
+   56-59		SPI1				4
 */
 #define GROUP0_DEFAULT_MPP_TWSI_I2C         0x1111  /* TWSI , I2C */
 #define GROUP0_DEFAULT_MPP_TWSI_I2C_MASK    0xFFFF  /* TWSI , I2C */
 /*******************************************************************************
 * A39x DB-69xx board
 *******************************************************************************/
-#define DB_88F69XX_MPP0_7               0x11111111
-#define DB_88F69XX_MPP8_15              0x11111111
-#define DB_88F69XX_MPP16_23             0x11266011
-#define DB_88F69XX_MPP24_31             0x22222011
-#define DB_88F69XX_MPP32_39             0x22200002
-#define DB_88F69XX_MPP40_47             0x40042022
-#define DB_88F69XX_MPP48_55             0x55550555
-#define DB_88F69XX_MPP56_63             0x00005550
+#define DB_88F69XX_MPP0_7               0x77771111
+#define DB_88F69XX_MPP8_15              0x30777777
+#define DB_88F69XX_MPP16_23             0x55066005
+#define DB_88F69XX_MPP24_31             0x05050050
+#define DB_88F69XX_MPP32_39             0x05055555
+#define DB_88F69XX_MPP40_47             0x51132565
+#define DB_88F69XX_MPP48_55             0x00000000
+#define DB_88F69XX_MPP56_63             0x00004444
 
 #define DB_88F69XX_GPP_OUT_ENA_LOW      0xFFFFFFFF
 #define DB_88F69XX_GPP_OUT_ENA_MID      (~(0x0E))

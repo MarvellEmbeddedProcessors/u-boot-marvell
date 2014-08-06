@@ -25,7 +25,7 @@
 #define CONFIG_BOOTP_VCI_STRING         "U-boot.armv8.armada8k"
 
 /* Enable IO drivers */
-#define MV_INCLUDE_UART
+#define CONFIG_MVEBU_UART
 /*
 #define MV_INCLUDE_SDIO
 #define MV_INCLUDE_INTEG_SATA

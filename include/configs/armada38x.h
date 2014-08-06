@@ -47,7 +47,7 @@
 #define CONFIG_AURORA_TIMER
 
 /* Enable IO drivers */
-#define MV_INCLUDE_UART
+#define CONFIG_MVEBU_UART
 #define CONFIG_MVEBU_SPI
 /*
 #define MV_INCLUDE_SDIO

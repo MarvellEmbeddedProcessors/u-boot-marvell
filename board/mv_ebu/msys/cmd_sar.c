@@ -397,10 +397,12 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	cmd = argv[1];
 	mode = sar_cmd_get(argv[2]);
 
+#if defined CONFIG_ALLEYCAT3
 	if(mvBoardIdGet() != DB_AC3_ID && mode != CMD_BOARD_ID) {
 		mvOsPrintf("Error: Sample at reset supports modifying only 'boardid' field for current board\n\n");
 		goto usage;
 	}
+#endif
 
 	if (strcmp(cmd, "list") == 0)
 		return do_sar_list(mode);

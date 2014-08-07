@@ -184,20 +184,20 @@ typedef enum _mvSatRTypeID {
 	MV_SATR_MAX_OPTION,
 } MV_SATR_TYPE_ID;
 
-typedef enum _mvConfigTypeID {
-	MV_CONFIG_NO_MODULE		= 0x000,	/* MII board SLM 1362	*/
-	MV_CONFIG_MII			= BIT0,	/* MII board SLM 1362	*/
-	MV_CONFIG_SLIC_TDM_DEVICE	= BIT1,	/* TDM board SLM 1360	*/
-	MV_CONFIG_I2S_DEVICE		= BIT2,	/* I2S board SLM 1360	*/
-	MV_CONFIG_SPDIF_DEVICE		= BIT3,	/* SPDIF board SLM 1360	*/
-	MV_CONFIG_NOR			= BIT4,	/* NOR board SLM 1361	*/
-	MV_CONFIG_NAND			= BIT5,	/* NAND board SLM 1361	*/
-	MV_CONFIG_SDIO			= BIT6,	/* SDIO board SLM 1361	*/
-	MV_CONFIG_SGMII			= BIT7,	/* SDIO board SLM 1364	*/
-	MV_CONFIG_NAND_ON_BOARD		= BIT8,	/* ON board nand detect */
-	MV_CONFIG_TYPE_MAX_MODULE	= 8,
-	MV_CONFIG_TYPE_MAX_OPTION	= 9
-} MV_CONFIG_TYPE_ID;
+typedef enum _mvModuleTypeID {
+	MV_MODULE_NO_MODULE		= 0x000,	/* MII board SLM 1362	*/
+	MV_MODULE_MII			= BIT0,	/* MII board SLM 1362	*/
+	MV_MODULE_SLIC_TDM_DEVICE	= BIT1,	/* TDM board SLM 1360	*/
+	MV_MODULE_I2S_DEVICE		= BIT2,	/* I2S board SLM 1360	*/
+	MV_MODULE_SPDIF_DEVICE		= BIT3,	/* SPDIF board SLM 1360	*/
+	MV_MODULE_NOR			= BIT4,	/* NOR board SLM 1361	*/
+	MV_MODULE_NAND			= BIT5,	/* NAND board SLM 1361	*/
+	MV_MODULE_SDIO			= BIT6,	/* SDIO board SLM 1361	*/
+	MV_MODULE_SGMII			= BIT7,	/* SDIO board SLM 1364	*/
+	MV_MODULE_NAND_ON_BOARD		= BIT8,	/* ON board nand detect */
+	MV_MODULE_TYPE_MAX_MODULE	= 8,
+	MV_MODULE_TYPE_MAX_OPTION	= 9
+} MV_MODULE_TYPE_ID;
 
 typedef struct _devCsInfo {
 	MV_U8 deviceCS;
@@ -242,13 +242,13 @@ typedef struct _boardSatrInfo {
 	MV_BOARD_SATR_STATUS status;
 } MV_BOARD_SATR_INFO;
 
-typedef struct _boardConfigTypesInfo {
-	MV_CONFIG_TYPE_ID configId;
+typedef struct _moudleTypesInfo {
+	MV_MODULE_TYPE_ID configId;
 	MV_U32 twsiAddr;
 	MV_U32 offset;
 	MV_U32 twsiId;
 	MV_U32 isActiveForBoard[MV_MARVELL_BOARD_NUM];
-} MV_BOARD_CONFIG_TYPE_INFO;
+} MV_MODULE_TYPE_INFO;
 
 typedef enum _boardMacSpeed {
 	BOARD_MAC_SPEED_10M,
@@ -454,7 +454,7 @@ MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
 MV_VOID mvBoardPhyAddrSet(MV_U32 ethPortNum, MV_U32 smiAddr);
 MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum);
 MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo);
-MV_STATUS mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo);
+MV_STATUS mvBoardConfigTypeGet(MV_MODULE_TYPE_ID configClass, MV_MODULE_TYPE_INFO *configInfo);
 MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable);
 MV_STATUS mvBoardSgmiiSfp0TxSet(MV_BOOL enable);
 MV_U32 mvBoardTclkGet(MV_VOID);

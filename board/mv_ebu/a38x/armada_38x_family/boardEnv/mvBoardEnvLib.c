@@ -92,7 +92,7 @@
 
 extern MV_BOARD_INFO *marvellBoardInfoTbl[];
 extern MV_BOARD_INFO *customerBoardInfoTbl[];
-MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_BOARD_CONFIG_INFO;
+MV_MODULE_TYPE_INFO boardConfigTypesInfo[] = MV_MODULE_INFO;
 MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
 MV_SATR_BOOT_TABLE satrBootSrcTable[] = MV_SATR_BOOT_SRC_TABLE_VAL;
 
@@ -165,7 +165,7 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 			/* Set Ready Polarity to Active High */
 			syncCtrl |= SYNC_CTRL_READY_POL(nandDev);
 		}
-	} else if (mvBoardModuleConfigGet() & MV_CONFIG_NOR) { /* init NOR only if Module NOR is detected */
+	} else if (mvBoardModuleConfigGet() & MV_MODULE_NOR) { /* init NOR only if Module NOR is detected */
 		norDev = boardGetDevCSNum(0, BOARD_DEV_NOR_FLASH);
 		if (norDev != 0xFFFFFFFF) {
 			/* Set NOR interface access parameters */
@@ -346,7 +346,7 @@ MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum)
 MV_BOOL mvBoardIsPortInMii(MV_U32 ethPortNum)
 {
 	/* On DB board if MII module detected then port 0 is MII */
-	if ((mvBoardIsModuleConnected(MV_CONFIG_MII)) && (ethPortNum == 0))
+	if ((mvBoardIsModuleConnected(MV_MODULE_MII)) && (ethPortNum == 0))
 		return MV_TRUE;
 	return MV_FALSE;
 }
@@ -412,15 +412,15 @@ MV_VOID mvBoardModuleConfigSet(MV_U32 newCfg)
 {
 	/* The MII module cannot work together with the SGMII module */
 	/* Ignore MII module if SGMII module is detected */
-	if ((newCfg == MV_CONFIG_MII) && (MV_CONFIG_SGMII & board->boardOptionsConfig)) {
+	if ((newCfg == MV_MODULE_MII) && (MV_MODULE_SGMII & board->boardOptionsConfig)) {
 		mvOsPrintf("%s: Warning: Conflict in module detect, (SGMII & MII module), MII module is ignored\n",
 			    __func__);
 		return;
 	}
-	if ((newCfg == MV_CONFIG_SGMII) && (MV_CONFIG_MII & board->boardOptionsConfig)) {
+	if ((newCfg == MV_MODULE_SGMII) && (MV_MODULE_MII & board->boardOptionsConfig)) {
 		mvOsPrintf("%s: Warning: Conflict in module detect, (SGMII & MII module), MII module is ignored\n",
 			   __func__);
-		board->boardOptionsConfig &= ~MV_CONFIG_MII;
+		board->boardOptionsConfig &= ~MV_MODULE_MII;
 	}
 	board->boardOptionsConfig |= newCfg;
 }
@@ -963,12 +963,12 @@ MV_VOID mvBoardMppSet(MV_U32 mppGroupNum, MV_U32 mppValue)
 static MV_VOID mvBoardModuleAutoDetect(MV_VOID)
 {
 	MV_U8 readValue;
-	MV_BOARD_CONFIG_TYPE_INFO configInfo;
+	MV_MODULE_TYPE_INFO configInfo;
 	int i;
 	MV_BOARD_BOOT_SRC bootSrc;
 	/*Read all TWSI board module if exsist : */
 	/* Save values board spec struct  */
-	for (i = 0; i < MV_CONFIG_TYPE_MAX_MODULE; i++) {
+	for (i = 0; i < MV_MODULE_TYPE_MAX_MODULE; i++) {
 		if (mvBoardConfigTypeGet((1 << i), &configInfo) == MV_TRUE) {
 			if (mvBoardTwsiGet(BOARD_TWSI_MODULE_DETECT, configInfo.twsiAddr,
 					   configInfo.offset, &readValue) != MV_OK) {
@@ -984,7 +984,7 @@ static MV_VOID mvBoardModuleAutoDetect(MV_VOID)
 	}
 	bootSrc = mvBoardBootDeviceGroupSet();
 	if (MSAR_0_BOOT_NAND_NEW == bootSrc)
-		mvBoardModuleConfigSet(MV_CONFIG_NAND_ON_BOARD);
+		mvBoardModuleConfigSet(MV_MODULE_NAND_ON_BOARD);
 
 }
 
@@ -1017,7 +1017,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			mvBoardPhyAddrSet(1, -1);
 		break;
 	case DB_68XX_ID:
-		if ((mvBoardIsModuleConnected(MV_CONFIG_MII)))	/* MII Module uses different PHY address */
+		if ((mvBoardIsModuleConnected(MV_MODULE_MII)))	/* MII Module uses different PHY address */
 			mvBoardPhyAddrSet(0, 8);	/*set SMI address 8 for port 0*/
 
 		/* Update MPP group types and values according to board configuration */
@@ -1113,28 +1113,28 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 	struct _mvBoardMppModule spdifModule = MPP_SPDIF_MODULE;
 	struct _mvBoardMppModule nandOnBoard[4] = MPP_NAND_ON_BOARD;
 
-	if (mvBoardIsModuleConnected(MV_CONFIG_MII))
+	if (mvBoardIsModuleConnected(MV_MODULE_MII))
 		mvModuleMppUpdate(3, miiModule);
 
-	if (mvBoardIsModuleConnected(MV_CONFIG_NOR))
+	if (mvBoardIsModuleConnected(MV_MODULE_NOR))
 		mvModuleMppUpdate(6, norModule);
 
-	if (mvBoardIsModuleConnected(MV_CONFIG_NAND))
+	if (mvBoardIsModuleConnected(MV_MODULE_NAND))
 		mvModuleMppUpdate(6, nandModule);
 
-	if (mvBoardIsModuleConnected(MV_CONFIG_SDIO))
+	if (mvBoardIsModuleConnected(MV_MODULE_SDIO))
 		mvModuleMppUpdate(4, sdioModule);
 
-	if (mvBoardIsModuleConnected(MV_CONFIG_SLIC_TDM_DEVICE))
+	if (mvBoardIsModuleConnected(MV_MODULE_SLIC_TDM_DEVICE))
 		mvModuleMppUpdate(2, tdmModule);
 
-	if (mvBoardIsModuleConnected(MV_CONFIG_I2S_DEVICE))
+	if (mvBoardIsModuleConnected(MV_MODULE_I2S_DEVICE))
 		mvModuleMppUpdate(1, &i2sModule);
 
-	if (mvBoardIsModuleConnected(MV_CONFIG_SPDIF_DEVICE))
+	if (mvBoardIsModuleConnected(MV_MODULE_SPDIF_DEVICE))
 		mvModuleMppUpdate(1, &spdifModule);
 
-	if (mvBoardIsModuleConnected(MV_CONFIG_NAND_ON_BOARD))
+	if (mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD))
 		mvModuleMppUpdate(4, nandOnBoard);
 }
 
@@ -1241,7 +1241,7 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 	case MSAR_0_BOOT_NOR_FLASH:
 		break;
 	case MSAR_0_BOOT_NAND_NEW:
-		mvBoardModuleConfigSet(MV_CONFIG_NAND_ON_BOARD);
+		mvBoardModuleConfigSet(MV_MODULE_NAND_ON_BOARD);
 		break;
 	case MSAR_0_BOOT_SPI_FLASH:
 		break;
@@ -1442,7 +1442,7 @@ MV_VOID mvBoardConfigWrite(void)
 MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 {
 	int i;
-	char *moduleStr[MV_CONFIG_TYPE_MAX_MODULE] = { \
+	char *moduleStr[MV_MODULE_TYPE_MAX_MODULE] = { \
 		"MII",                                  \
 		"TDM",                                  \
 		"AUDIO I2S",                     \
@@ -1454,7 +1454,7 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 	};
 	mvOsOutput("Board configuration detected:\n");
 
-	for (i = 0; i < MV_CONFIG_TYPE_MAX_MODULE; i++) {
+	for (i = 0; i < MV_MODULE_TYPE_MAX_MODULE; i++) {
 		if (mvBoardIsModuleConnected(1 << i))
 			mvOsOutput("       %s module.\n", moduleStr[i]);
 
@@ -1483,7 +1483,7 @@ MV_VOID mvBoardOtherModuleTypePrint(MV_VOID)
 *******************************************************************************/
 MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum)
 {
-	if ((mvBoardIsModuleConnected(MV_CONFIG_SGMII)) && (ethPortNum == 0))
+	if ((mvBoardIsModuleConnected(MV_MODULE_SGMII)) && (ethPortNum == 0))
 		return MV_FALSE;
 	if (ethPortNum < mvCtrlEthMaxPortGet())
 		return MV_TRUE;
@@ -1882,17 +1882,17 @@ MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *s
 *       None.
 *
 * RETURN:
-*	MV_BOARD_CONFIG_TYPE_INFO struct with mask, offset and register number.
+*	MV_MODULE_TYPE_INFO struct with mask, offset and register number.
 *
 *******************************************************************************/
-MV_BOOL mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo)
+MV_BOOL mvBoardConfigTypeGet(MV_MODULE_TYPE_ID configClass, MV_MODULE_TYPE_INFO *configInfo)
 {
 	int i;
 	MV_U32 boardId = mvBoardIdIndexGet(mvBoardIdGet());
 
 	/* verify existence of requested config type, pull its data,
 	 * and check if field is relevant to current running board */
-	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION ; i++)
+	for (i = 0; i < MV_MODULE_TYPE_MAX_OPTION ; i++)
 		if (boardConfigTypesInfo[i].configId == configClass) {
 			*configInfo = boardConfigTypesInfo[i];
 			if (boardConfigTypesInfo[i].isActiveForBoard[boardId])
@@ -1900,7 +1900,7 @@ MV_BOOL mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE
 			else
 				return MV_FALSE;
 		}
-	mvOsPrintf("%s: Error: requested MV_CONFIG_TYPE_ID was not found (%d)\n", __func__, configClass);
+	mvOsPrintf("%s: Error: requested MV_MODULE_TYPE_ID was not found (%d)\n", __func__, configClass);
 	return MV_FALSE;
 }
 
@@ -2161,7 +2161,7 @@ MV_U8 mvBoardCpuCoresNumGet(MV_VOID)
 *******************************************************************************/
 MV_BOOL mvBoardIsSetmModuleConnected(void)
 {
-	return mvBoardIsModuleConnected(MV_CONFIG_SLIC_TDM_DEVICE);
+	return mvBoardIsModuleConnected(MV_MODULE_SLIC_TDM_DEVICE);
 }
 
 /*******************************************************************************
@@ -2640,7 +2640,7 @@ MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val)
 *******************************************************************************/
 int mvBoardNorFlashConnect(void)
 {
-	if (mvBoardIsModuleConnected(MV_CONFIG_NOR))
+	if (mvBoardIsModuleConnected(MV_MODULE_NOR))
 		return MV_TRUE;
 	return MV_FALSE;
 }

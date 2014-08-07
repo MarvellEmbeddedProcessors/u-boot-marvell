@@ -67,15 +67,15 @@ extern "C" {
 #endif /* __cplusplus */
 
 
-#define MV_BOARD_CONFIG_INFO { \
-{ MV_CONFIG_MII,		0x1,	0,	 0x4,	{ 0, 1 } }, \
-{ MV_CONFIG_SLIC_TDM_DEVICE,	0x0,	0,	 0x1,	{ 0, 1 } }, \
-{ MV_CONFIG_I2S_DEVICE,		0x1,	0,	 0x3,	{ 0, 1 } }, \
-{ MV_CONFIG_SPDIF_DEVICE,	0x1,	0,	 0x2,	{ 0, 1 } }, \
-{ MV_CONFIG_NOR,		0x4,	0,	 0xF,	{ 0, 1 } }, \
-{ MV_CONFIG_NAND,		0x4,	0,	 0x1,	{ 0, 1 } }, \
-{ MV_CONFIG_SDIO,		0x4,	0,	 0x2,	{ 0, 1 } }, \
-{ MV_CONFIG_SGMII,		0x2,	0,	 0xF,	{ 0, 1 } }, \
+#define MV_MODULE_INFO { \
+{ MV_MODULE_MII,		0x1,	0,	 0x4,	{ 0, 1 } }, \
+{ MV_MODULE_SLIC_TDM_DEVICE,	0x0,	0,	 0x1,	{ 0, 1 } }, \
+{ MV_MODULE_I2S_DEVICE,		0x1,	0,	 0x3,	{ 0, 1 } }, \
+{ MV_MODULE_SPDIF_DEVICE,	0x1,	0,	 0x2,	{ 0, 1 } }, \
+{ MV_MODULE_NOR,		0x4,	0,	 0xF,	{ 0, 1 } }, \
+{ MV_MODULE_NAND,		0x4,	0,	 0x1,	{ 0, 1 } }, \
+{ MV_MODULE_SDIO,		0x4,	0,	 0x2,	{ 0, 1 } }, \
+{ MV_MODULE_SGMII,		0x2,	0,	 0xF,	{ 0, 1 } }, \
 };
 
 /*						bit    TWSI           Reg	board	*/

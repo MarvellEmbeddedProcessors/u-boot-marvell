@@ -179,7 +179,7 @@ MV_BOARD_INFO armada_39x_customer_board_0_info = {
 	.configAutoDetect		= MV_FALSE,
 	.numIoExp			= ARRSZ(armada_39x_customer_0_IoExpanderInfo),
 	.pIoExp				= armada_39x_customer_0_IoExpanderInfo,
-	.boardOptionsConfig		= MV_CONFIG_NO_MODULE
+	.boardOptionsConfig		= MV_MODULE_NO_MODULE
 };
 
 /*
@@ -311,7 +311,7 @@ MV_BOARD_INFO db88f69xx_board_info = {
 	.configAutoDetect		= MV_TRUE,
 	.numIoExp			= 0,
 	.pIoExp				= NULL,
-	.boardOptionsConfig		= MV_CONFIG_NO_MODULE
+	.boardOptionsConfig		= MV_MODULE_NO_MODULE
 };
 
 MV_BOARD_INFO *marvellBoardInfoTbl[] = {

@@ -98,7 +98,9 @@ MV_SATR_BOOT_TABLE satrBootSrcTable[] = MV_SATR_BOOT_SRC_TABLE_VAL;
 
 /* Locals */
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
-static MV_BOARD_INFO *board;
+/* Global variables should be removed from BSS (set to a non-zero value)
+   for avoiding memory corruption during early access upon code relocation */
+static MV_BOARD_INFO *board = (MV_BOARD_INFO *)-1;
 static MV_VOID mvBoardModuleAutoDetect(MV_VOID);
 
 

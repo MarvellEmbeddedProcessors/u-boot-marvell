@@ -94,7 +94,9 @@ extern MV_BOARD_INFO *marvellBC2BoardInfoTbl[];
 extern MV_BOARD_INFO *customerBC2BoardInfoTbl[];
 extern MV_BOARD_INFO *marvellAC3BoardInfoTbl[];
 extern MV_BOARD_INFO *customerAC3BoardInfoTbl[];
-static MV_BOARD_INFO *board;
+/* Global variables should be removed from BSS (set to a non-zero value)
+   for avoiding memory corruption during early access upon code relocation */
+static MV_BOARD_INFO *board = (MV_BOARD_INFO *)-1;
 
 /* Locals */
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);

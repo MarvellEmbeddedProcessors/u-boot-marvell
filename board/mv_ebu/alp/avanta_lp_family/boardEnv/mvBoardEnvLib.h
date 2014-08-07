@@ -391,6 +391,8 @@ typedef struct _boardInfo {
 { MV_CONFIG_SW_P4,             0x20,	5,	 1,		0,	{ 0, 0, 0, 1 } }, \
 };
 
+#define MV_BOARD_CONFIG_CMD_STR "mac0, mac1, mac0_switch_speed, sgmii0capacity, sgmii1capacity, sw_port4\n" \
+				"serdes1, serdes2, serdes3, ponserdes, ponpolarity, devicebus, tdm, ddr_buswidth\n\n"
 /*MV_CMD_TYPE_ID,		command name,		Name,			numOfValues,	Possible Values */
 #define MV_BOARD_CONFIG_CMD_INFO {\
 {MV_CONFIG_MAC0,		"mac0",			"MAC0",				4, \

@@ -66,6 +66,11 @@ sinclude $(TOPDIR)/include/autoconf.mk
 
 CFLAGS =
 
+# LIBNAME and SILNAME may be overriden in SoC cases bellow
+BOARDNAME = $(BOARD)
+SILNAME = $(BOARD)
+LIBNAME = $(BOARD)
+
 # CUSTOMER
 ifeq "$(CONFIG_CUSTOMER_BOARD_SUPPORT)" "y"
   CFLAGS += -DCONFIG_CUSTOMER_BOARD_SUPPORT
@@ -127,52 +132,49 @@ endif
 # A38x
 ifeq "$(CONFIG_ARMADA_38X)"  "y"
   CFLAGS += -DCONFIG_ARMADA_38X
-  A38X_SOC = yes
   NEW_TIP = yes
 endif
 
 # A39X
 ifeq "$(CONFIG_ARMADA_39X)"  "y"
   CFLAGS += -DCONFIG_ARMADA_39X
+  NEW_TIP = yes
+  LIBNAME = a39x
 endif
 
 # BOBCAT2
 ifeq "$(CONFIG_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_BOBCAT2
-  BC2_SOC = yes
   NEW_TIP = yes
-endif
+  SILNAME = Bc2
+  LIBNAME = msys_bc2
+  BOARDNAME = msys_bc2
 ifeq "$(CONFIG_DB_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_DB_BOBCAT2
-  BC2_SOC = yes
-  NEW_TIP = yes
 endif
 ifeq "$(CONFIG_RD_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_RD_BOBCAT2
-  BC2_SOC = yes
-  NEW_TIP = yes
 endif
 ifeq "$(CONFIG_RD_MTL_BOBCAT2)"  "y"
   CFLAGS += -DCONFIG_RD_BOBCAT2
-  BC2_SOC = yes
-  NEW_TIP = yes
+endif
 endif
 
 # ALLEYCAT3
 ifeq "$(CONFIG_ALLEYCAT3)"  "y"
-  CFLAGS += -DCONFIG_ALLEYCAT3
-  AC3_SOC = yes
   NEW_TIP = yes
+  SILNAME = Ac3
+  LIBNAME = msys_ac3
+  BOARDNAME = msys_ac3
+endif
+ifeq "$(CONFIG_ALLEYCAT3)"  "y"
+  CFLAGS += -DCONFIG_ALLEYCAT3
 endif
 ifeq "$(CONFIG_DB_AC3)"  "y"
   CFLAGS += -DCONFIG_DB_AC3
-  AC3_SOC = yes
-  NEW_TIP = yes
 endif
 ifeq "$(CONFIG_RD_AC3)"  "y"
   CFLAGS += -DCONFIG_RD_AC3
-  AC3_SOC = yes
-  NEW_TIP = yes
 endif
 
 CROSS    = $(CROSS_COMPILE_BH)
@@ -208,17 +210,12 @@ ifeq ($(BIN_HDR_DEBUG),1)
 DEBUG_FLAGS += -g -O0
 DEBUG_MODE_FLAG = yes
 else
-ifeq ($(BOARD),a38x)
-DEBUG_FLAGS += -Os
-DEBUG_MODE_FLAG = no
-else
-ifeq ($(BOARD),msys)
+ifeq ($(NEW_TIP),yes)
 DEBUG_FLAGS += -Os
 DEBUG_MODE_FLAG = no
 else
 DEBUG_FLAGS += -g -O0
 DEBUG_MODE_FLAG = no
-endif
 endif
 endif
 

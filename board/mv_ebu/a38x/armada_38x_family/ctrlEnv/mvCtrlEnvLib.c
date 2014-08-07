@@ -429,9 +429,9 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvBoardInfoUpdate();
 	}
 
-	if (mvBoardIsModuleConnected(MV_CONFIG_NOR) ||
-	    mvBoardIsModuleConnected(MV_CONFIG_NAND) ||
-	    mvBoardIsModuleConnected(MV_CONFIG_NAND_ON_BOARD))
+	if (mvBoardIsModuleConnected(MV_MODULE_NOR) ||
+	    mvBoardIsModuleConnected(MV_MODULE_NAND) ||
+	    mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD))
 		ethComPhy = ON_BOARD_RGMII(0); /* NOR/NAND modules overides RGMII-1 MPP's */
 	else
 		ethComPhy = ON_BOARD_RGMII(0) | ON_BOARD_RGMII(1);

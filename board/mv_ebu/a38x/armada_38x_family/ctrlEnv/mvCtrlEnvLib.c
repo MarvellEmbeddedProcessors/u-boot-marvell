@@ -334,8 +334,17 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 		case SERDES_UNIT_SATA:
 			DB(printf("SATA, if=%d\n", ifNo));
 			sataIfCount++;
-			if (serdesNum > 2) /* SerdDes 1 and 2 - unit 0, 3 and 5 - unit 1 */
+			if (serdesNum > 2)
+#if defined CONFIG_ARMADA_38X
+				/* SerDes 0,1,2 - Unit 0. SerDes 3,5 - Unit 1.
+				   SerDes 4 can be Unit 0 if serdesConfigField is set to 0x2, or Unit 1 if set to 0x6 */
+				if ((serdesNum == 4) && (serdesConfigField == 0x2))
+					sataUnitActive[0] = MV_TRUE;
+				else
+					sataUnitActive[1] = MV_TRUE;
+#elif defined CONFIG_ARMADA_39X		/* SerDes 0,1,2 - unit 0, 3,4,5 - unit 1 */
 				sataUnitActive[1] = MV_TRUE;
+#endif
 			else
 				sataUnitActive[0] = MV_TRUE;
 			break;

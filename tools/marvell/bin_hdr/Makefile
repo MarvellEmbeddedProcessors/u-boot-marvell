@@ -65,17 +65,6 @@
 
 include ./base.mk
 
-# prepare board name for MSYS SoC (rest of SoCs use $BOARD as board name)
-ifdef BC2_SOC
-	BOARDNAME = msys_bc2
-else
-	ifdef AC3_SOC
-		BOARDNAME = msys_ac3
-	else
-		BOARDNAME = $(BOARD)
-	endif
-endif
-
 SETPARAMS   = setparams
 PARAMSFILE  = params
 LDSCRIPT    = linker.scr
@@ -115,7 +104,7 @@ ifeq ($(DDRTYPE),)
 DDRTYPE = ddr3
 endif
 
-TLIB = ./src_ddr/lib/$(DDRTYPE)_training_$(BOARDNAME).lib
+TLIB = ./src_ddr/lib/$(DDRTYPE)_training_$(LIBNAME).lib
 
 COMPONENT_SUBDIRS = platform src_phy src_ddr src_pm src_init
 HDR_COMPONENTS = $(LIB_PLAT) $(LIB_GENERAL_INIT) $(LIB_PHY) $(LIB_DDR) $(TLIB) $(LIB_SWUP)

@@ -229,7 +229,7 @@ U_BOOT_CMD(boardConfig, 6, 1, do_boardCfg,
 	"boardConfig write <option> <val>	- write the requested field with a specified value\n\n"
 
 	"Options:\n"
-	"mac0, mac1, mac0_switch_speed, sgmii0capacity, sgmii1capacity,\n"
-	"serdes1, serdes2, serdes3, ponserdes, ponpolarity, devicebus, tdm, ddr_buswidth\n\n"
+	MV_BOARD_CONFIG_CMD_STR
 );
 #endif /*defined(CONFIG_CMD_BOARDCFG)*/
+

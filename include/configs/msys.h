@@ -535,7 +535,7 @@ disclaimer.
 	#define CONFIG_SPI_FLASH
 	#define CONFIG_SPI_FLASH_STMICRO
 	#define CONFIG_SPI_FLASH_MACRONIX
-#ifndef MV_BOBCAT2
+#ifndef CONFIG_BOBCAT2
 	#define CONFIG_ENV_SPI_MAX_HZ		50000000
 #else
 	#define CONFIG_ENV_SPI_MAX_HZ		10000000	/* Temporarely reduce to 10MHz due to BC2 DB HW issue */

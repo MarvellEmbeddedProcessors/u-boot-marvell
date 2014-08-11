@@ -54,6 +54,19 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 { MV_SATR_SSCG_DISABLE,	  	{MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE}},
 { MV_SATR_SGMII_SPEED,		{0,		0,		0,		0}},
 };
+
+MV_BOOL mvVerifyRequest(void)
+{
+	readline(" ");
+	if(strlen(console_buffer) == 0 || /* if pressed Enter */
+		strcmp(console_buffer,"n") == 0 ||
+		strcmp(console_buffer,"N") == 0 ) {
+		printf("\n");
+		return MV_FALSE;
+	}
+	return MV_TRUE;
+}
+
 int do_sar_default(void)
 {
 	MV_U32 i, rc, defaultValue, boardId = mvBoardIdIndexGet(mvBoardIdGet());
@@ -306,7 +319,7 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 		return 1;
 	}
 	/* only RD-AP/RD-NAS boards support modifying board id value */
-	if ((MV_SATR_BOARD_ID == satrInfo->satrId) && (boardId == RD_NAS_68XX_ID || boardId == RD_AP_68XX_ID))
+	if ((MV_SATR_BOARD_ID == satrInfo->satrId) && (boardId == RD_NAS_68XX_ID || boardId == RD_AP_68XX_ID)) {
 		/* Adding MARVELL_BOARD_ID_BASE, since Marvell board IDs are virtually shifted by MARVELL_BOARD_ID_BASE */
 		if ((value + MARVELL_BOARD_ID_BASE != RD_NAS_68XX_ID)
 			&& (value + MARVELL_BOARD_ID_BASE != RD_AP_68XX_ID)) {
@@ -315,10 +328,19 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 			return 1;
 		}
 
+	}
+
 	rc = mvBoardSatRWrite(satrInfo->satrId, value);
 	if (rc == MV_ERROR) {
 		mvOsPrintf("Error write to TWSI\n");
 		return 1;
+	}
+
+	if (MV_SATR_BOARD_ID == satrInfo->satrId) {
+		mvOsPrintf("\nBoard ID update requires new default environment variables.\n");
+		mvOsPrintf(" Reset environment for %s ? [y/N]" ,marvellBoardInfoTbl[value]->boardName);
+		if (mvVerifyRequest() == MV_TRUE)
+			run_command("resetenv", 0);
 	}
 	return 0;
 }

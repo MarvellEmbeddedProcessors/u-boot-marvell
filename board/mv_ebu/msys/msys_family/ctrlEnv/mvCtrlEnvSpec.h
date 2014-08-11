@@ -124,7 +124,7 @@ extern "C" {
 #define MV_PNC_REGS_OFFSET			(0xC8000)
 #define MV_SDMMC_REGS_OFFSET			(0xD4000)
 
-#define MV_USB2_CAPLENGTH_OFFSET(index)		(MV_USB_REGS_OFFSET(index) + 0x100)
+#define MV_USB2_CAPLENGTH_OFFSET(index)		(INTER_REGS_BASE + MV_USB_REGS_OFFSET(index) + 0x100)
 
 #define MV_ETH_SMI_PORT   0
 /*

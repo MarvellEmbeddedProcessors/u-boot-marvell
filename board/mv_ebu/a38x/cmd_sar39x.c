@@ -53,6 +53,19 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 { MV_SATR_CPU1_ENABLE,	  	{MV_TRUE,	MV_TRUE,	}},
 { MV_SATR_SSCG_DISABLE,	  	{MV_FALSE,	MV_FALSE,	}},
 };
+
+MV_BOOL mvVerifyRequest(void)
+{
+	readline(" ");
+	if(strlen(console_buffer) == 0 || /* if pressed Enter */
+		strcmp(console_buffer,"n") == 0 ||
+		strcmp(console_buffer,"N") == 0 ) {
+		printf("\n");
+		return MV_FALSE;
+	}
+	return MV_TRUE;
+}
+
 int do_sar_default(void)
 {
 	MV_U32 i, rc, defaultValue, boardId = mvBoardIdIndexGet(mvBoardIdGet());
@@ -311,6 +324,14 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 		mvOsPrintf("Error write to TWSI\n");
 		return 1;
 	}
+
+	if (MV_SATR_BOARD_ID == satrInfo->satrId) {
+		printf("\nBoard ID update requires new default environment variables.\n\
+			Reset environment for %s ? [y/N]" ,marvellBoardInfoTbl[value + MARVELL_BOARD_ID_BASE]->boardName);
+		if (mvVerifyRequest() == MV_TRUE)
+			run_command("resetenv", 0);
+	}
+
 	return 0;
 }
 

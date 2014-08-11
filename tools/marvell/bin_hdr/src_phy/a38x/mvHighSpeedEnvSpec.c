@@ -488,10 +488,10 @@ SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
 /***************************************************************************/
 #ifdef MV_DEBUG_INIT
 static const char *serdesTypeToString[] = {
-	"PEX0",
-	"PEX1",
-	"PEX2",
-	"PEX3",
+	"PCIe0",
+	"PCIe1",
+	"PCIe2",
+	"PCIe3",
 	"SATA0",
 	"SATA1",
 	"SATA2",
@@ -500,10 +500,10 @@ static const char *serdesTypeToString[] = {
 	"SGMII1",
 	"SGMII2",
 	"QSGMII",
-	"USB3_HOST0",
-	"USB3_HOST1",
-	"USB3_DEVICE",
-	"DEFAULT_SERDES",
+	"USB3 HOST0",
+	"USB3 HOST1",
+	"USB3 DEVICE",
+	"DEFAULT SERDES",
 	"LAST_SERDES_TYPE"
 };
 
@@ -511,19 +511,24 @@ MV_VOID printTopologyDetails(SERDES_MAP  *serdesMapArray)
 {
 	MV_U32 laneNum;
 
-	DEBUG_INIT_S("board topology details:\n");
+	DEBUG_INIT_S("board SerDes lanes topology details:\n");
 
+	DEBUG_INIT_S(" | Number | Speed |  Type       |\n");
+	DEBUG_INIT_S(" --------------------------------\n");
 	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
 		if (serdesMapArray[laneNum].serdesType == DEFAULT_SERDES)
 		{
 			continue;
 		}
-		DEBUG_INIT_C("serdes num: ", laneNum, 1);
-		DEBUG_INIT_C("serdes speed: ", serdesMapArray[laneNum].serdesSpeed, 2);
-		DEBUG_INIT_S("serdes type: ");
+		DEBUG_INIT_S(" |   ");
+		DEBUG_INIT_D(laneNum, 1);
+		DEBUG_INIT_S("    |  ");
+		DEBUG_INIT_D(serdesMapArray[laneNum].serdesSpeed, 2);
+		DEBUG_INIT_S("   |  ");
 		DEBUG_INIT_S((char *)serdesTypeToString[serdesMapArray[laneNum].serdesType]);
-		DEBUG_INIT_S("\n");
+		DEBUG_INIT_S("\t|\n");
 	}
+	DEBUG_INIT_S(" --------------------------------\n");
 }
 #endif
 
@@ -758,26 +763,26 @@ MV_STATUS mvSerdesPowerUpCtrl
 				MV_REG_WRITE(SOC_CONTROL_REG1, 0x0707C0F1);
 				for (i = 0; i < LINK_WAIT_CNTR; i++) {
 					if ((MV_REG_READ(0x81a64) & 0xFF) == 0x7E) {
-						DEBUG_INIT_S("PEX0 LINK UP ;-)\n");
+						DEBUG_INIT_S("PCIe0 LINK UP ;-)\n");
 						break;
 					}
 					mvOsUDelay(LINK_WAIT_SLEEP);
 				}
 
 				if (i == LINK_WAIT_CNTR)
-					DEBUG_INIT_S("PEX0 NO LINK ;-|\n");
+					DEBUG_INIT_S("PCIe0 NO LINK ;-|\n");
 			}else{
 				MV_REG_WRITE(SOC_CONTROL_REG1, 0x0707C0F3);
 				for (i = 0; i < LINK_WAIT_CNTR; i++) {
 					if ((MV_REG_READ(0x41a64) & 0xFF) == 0x7E) {
-						DEBUG_INIT_S("PEX1 LINK UP ;-)\n");
+						DEBUG_INIT_S("PCIe1 LINK UP ;-)\n");
 						break;
 					}
 					mvOsUDelay(LINK_WAIT_SLEEP);
 				}
 
 				if (i == LINK_WAIT_CNTR)
-					DEBUG_INIT_S("PEX1 NO LINK ;-|\n");
+					DEBUG_INIT_S("PCIe1 NO LINK ;-|\n");
 			}
 #endif                  /* DB_LINK_CHECK */
 

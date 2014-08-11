@@ -280,15 +280,15 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 				if (tempReg == 0x1) {
 					mvPexLocalBusNumSet(pexIdx, first_busno);
 					mvPexLocalDevNumSet(pexIdx, 1);
-					DEBUG_INIT_FULL_S("PEX: pexIdx ");
+					DEBUG_INIT_FULL_S("PCIe, Idx ");
 					DEBUG_INIT_FULL_D(pexIdx, 1);
 
-					DEBUG_INIT_S("** Link is Gen1, check the EP capability \n");
+					DEBUG_INIT_S(":** Link is Gen1, check the EP capability \n");
 					/* link is Gen1, check the EP capability */
 					addr = mvPexConfigRead(pexIdx, first_busno, 0, 0, 0x34) & 0xFF;
 					DEBUG_INIT_FULL_C("mvPexConfigRead: return addr=0x%x", addr, 4);
 					if (addr == 0xff) {
-						DEBUG_INIT_FULL_C("mvPexConfigRead: return 0xff -->PEX (%d): Detected No Link.", pexIdx, 1);
+						DEBUG_INIT_FULL_C("mvPexConfigRead: return 0xff -->PCIe (%d): Detected No Link.", pexIdx, 1);
 						continue;
 					}
 					while ((mvPexConfigRead(pexIdx, first_busno, 0, 0, addr) & 0xFF) != 0x10)
@@ -309,20 +309,20 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 						DEBUG_WR_REG(PEX_CTRL_REG(pexIdx), tmp);
 						mvOsUDelay(10000); /* We need to wait 10ms before reading the PEX_DBG_STATUS_REG in order not to read the status of the former state*/
 
-						DEBUG_INIT_S("PEX: pexIdx ");
+						DEBUG_INIT_S("PCIe, Idx ");
 						DEBUG_INIT_D(pexIdx, 1);
-						DEBUG_INIT_S(", Link upgraded to Gen2 based on client cpabilities \n");
+						DEBUG_INIT_S(": Link upgraded to Gen2 based on client cpabilities \n");
 					} else {
-						DEBUG_INIT_S("PEX: pexIdx ");
+						DEBUG_INIT_S("PCIe, Idx ");
 						DEBUG_INIT_D(pexIdx, 1);
-						DEBUG_INIT_S(", remains Gen1\n");
+						DEBUG_INIT_S(": remains Gen1\n");
 					}
 				}
 			}
 		}else {
-			DEBUG_INIT_S("PEX: pexIdx ");
+			DEBUG_INIT_S("PCIe, Idx ");
 			DEBUG_INIT_D(pexIdx, 1);
-			DEBUG_INIT_S(", detected no link\n");
+			DEBUG_INIT_S(": detected no link\n");
 		}
 	}
 

@@ -220,7 +220,7 @@ MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray)
 
 #if defined MV_MSYS_AC3
 
-/****************************************************************************/
+/*AC3: check S@R for PCIe mode (EP/RC****************************************/
 MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
 {
 	MV_U32 uiReg = 0;
@@ -390,7 +390,7 @@ MV_OP_EXT_PARAMS sgmiiPowerDownCtrlParams[] =
 };
 
 
-/****************************************************************************/
+/* AC3: init silicon related configurations *********************************/
 MV_STATUS mvSiliconInit(MV_VOID)
 {
 	MV_TWSI_ADDR slave;
@@ -422,7 +422,7 @@ MV_STATUS mvSiliconInit(MV_VOID)
 	return MV_OK;
 }
 
-/****************************************************************************/
+/* AC3: Init serdes sequences DB ********************************************/
 MV_VOID mvSerdesSeqInit(MV_VOID)
 {
 	DEBUG_INIT_FULL_S("\n### serdesSeqInit ###\n");
@@ -546,7 +546,7 @@ MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
 }
 
 
-/****************************************************************************/
+/*AC3: initialize USB2.0 UTMI PHY**********************************************/
 MV_STATUS mvCtrlUsb2Config(MV_VOID)
 {
 	/* USB2 configuration */
@@ -557,14 +557,30 @@ MV_STATUS mvCtrlUsb2Config(MV_VOID)
 }
 
 #elif defined MV_MSYS_BC2
-
-	//TODO Add RD/DB detection. Currently set to DB.
+/* BC2: init silicon related configurations *********************************/
 MV_STATUS mvSiliconInit(MV_VOID)
 {
+	MV_TWSI_ADDR slave;
+	MV_U32 tClock;
+
+	/* Enable DFX Server window via XBAR */
+	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(SERVER_WIN_ID), 0xF0081);
+
+	/* initialize TWSI interface */
+	DEBUG_INIT_FULL_S("mvSiliconInit: Init TWSI interface.\n");
+	slave.type = ADDR7_BIT;
+	slave.address = 0;
+	tClock = mvBoardTclkGet();
+	if (tClock == MV_BOARD_TCLK_ERROR) {
+		DEBUG_INIT_FULL_S("mvSiliconInit: TClk read from the board is not supported\n");
+		return MV_NOT_SUPPORTED;
+	}
+
+	mvTwsiInit(0, TWSI_SPEED, tClock, &slave, 0);
 	return MV_OK;
 }
 
-/****************************************************************************/
+/* BC2: Init serdes sequences DB ********************************************/
 MV_VOID mvSerdesSeqInit(MV_VOID)
 {
 
@@ -599,16 +615,24 @@ MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
 	return mvHwsPexConfig();
 }
 
-/****************************************************************************/
+/*BC2: check S@R for PCIe mode (EP/RC****************************************/
 MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
 {
 	MV_U32 uiReg = 0;
-	/*Read BC2 SatR configuration SAR1[16]*/
-	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, REG_DEVICE_SAR1_ADDR, &uiReg, BIT16));
-	return  (uiReg == 0);
+	/*Read DFX Server Reg base from XBAR window configuration */
+	MV_U32 serverBaseAddr = MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID));
+
+	/*Read SatR configuration(bit16)*/
+	uiReg = MV_REG_READ(serverBaseAddr + REG_DEVICE_SAR1_ADDR);
+
+	/* check BIT16 for PCIe mode status: 0 = RC , 1 = EP */
+	if(0 == (uiReg & BIT16))
+		return MV_TRUE;
+
+	return MV_FALSE;
 }
 
-/****************************************************************************/
+/*BC2: initialize USB2.0 UTMI PHY**********************************************/
 MV_STATUS mvCtrlUsb2Config(MV_VOID)
 {
 	/* no USB2 in BC2 */
@@ -735,11 +759,9 @@ MV_STATUS mvHwsComH28nmSerdesPowerCtrl
 }
 
 /***************************************************************************/
-MV_STATUS mvCtrlPexPolaritySet(MV_VOID)
+MV_STATUS mvCtrlPexPolaritySet(MV_PCIE_POLARITY polarity)
 {
-#ifdef MV_MSYS_AC3
 	MV_TWSI_SLAVE	twsiSlave;
-	MV_U8			polarity;
 
 	/* Initializing twsiSlave in order to read from the TWSI address */
 	twsiSlave.slaveAddr.address = 0x18;	/* Address of AC3 CPLD */
@@ -748,12 +770,10 @@ MV_STATUS mvCtrlPexPolaritySet(MV_VOID)
 	twsiSlave.offset = 0x1A;			/* Address of PEX polarity register */
 	twsiSlave.moreThen256 = MV_FALSE;
 
-	polarity = (mvCtrlIsPexEndPointMode() == MV_TRUE) ? 0 : 1;
-
 	DEBUG_INIT_FULL_S("mvCtrlPexPolaritySet: Setting PEX polarity in CPLD\n");
 	if (mvTwsiWrite(0, &twsiSlave, &polarity, 1) != MV_OK)
 		DEBUG_INIT_S("mvCtrlPexPolaritySet: TWSI Write failed, leaving PEX polarity in EP mode\n");
-#endif
+
 	return MV_OK;
 }
 
@@ -784,12 +804,13 @@ MV_STATUS mvSerdesPowerUpCtrl(
 
 	case PEX0:
 		DEBUG_INIT_FULL_S("== Init PEX0\n");
-		CHECK_STATUS(mvCtrlPexPolaritySet());
-		if(mvCtrlIsPexEndPointMode() == MV_TRUE)
+		if(mvCtrlIsPexEndPointMode() == MV_TRUE) {
+			CHECK_STATUS(mvCtrlPexPolaritySet(MV_PCIE_POLARITY_EP));
 			return mvCtrlPexEndPointConfig(); /*PCI-E End Point configuration*/
-		else
+		} else {
+			CHECK_STATUS(mvCtrlPexPolaritySet(MV_PCIE_POLARITY_RC));
 			return mvCtrlPexRootComplexConfig(); /*PCI-E Root Complex configuration*/
-
+		}
 	default:
 		DEBUG_INIT_S("mvSerdesPowerUpCtrl: bad serdesType parameter\n");
 		return MV_BAD_PARAM;
@@ -813,6 +834,15 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 	DEBUG_INIT_FULL_S("\n### powerUpSerdesLanes ###\n");
 
 #ifndef MV_MSYS_AC3
+	DEBUG_INIT_FULL_S("== Init PCIe0\n");
+	if(mvCtrlIsPexEndPointMode() == MV_TRUE) {
+		CHECK_STATUS(mvCtrlPexPolaritySet(MV_PCIE_POLARITY_EP));
+		return mvCtrlPexEndPointConfig(); /*PCI-E End Point configuration*/
+	} else {
+		CHECK_STATUS(mvCtrlPexPolaritySet(MV_PCIE_POLARITY_RC));
+		return mvCtrlPexRootComplexConfig(); /*PCI-E Root Complex configuration*/
+	}
+
 	DEBUG_INIT_FULL_S("Skipping powerUpSerdesLanes\n");
 	return MV_OK;
 #endif

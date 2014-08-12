@@ -139,6 +139,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PEX_STATUS_AND_COMMAND                  0x004
 #define PXSAC_MABORT                            BIT29 /* Recieved Master Abort */
 
+typedef enum {
+	MV_PCIE_POLARITY_EP = 0,
+	MV_PCIE_POLARITY_RC
+} MV_PCIE_POLARITY;
+
 /*************************** Functions declarations ***************************/
 
 /**************************************************************************

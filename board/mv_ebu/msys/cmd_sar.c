@@ -37,7 +37,7 @@ extern MV_BOARD_INFO *marvellAC3BoardInfoTbl[];
 #-P|-R|bootsel-#-R|-TM-f---|-CPU-f--|-CORE-f-#-----devid----#
 */
 
-enum {
+enum { /* Update defaultValue[] if any change to this enum has made!*/
 	CMD_CORE_CLK_FREQ = 0,
 	CMD_CPU_DDR_REQ,
 #ifdef CONFIG_BOBCAT2
@@ -58,13 +58,25 @@ enum {
 
 
 #ifdef CONFIG_BOBCAT2
-	/* Core clock, CPU/DDR, TM, BootSRC*/
-	int defaultValue[] = { 0, 3, 3, 3 };
+	int defaultValue[] = { 0,	/* Core clock */
+						   3,	/* CPU/DDR clock */
+						   3,	/* TM frequency */
+						   1,	/* PCIe mode */
+						   3,	/* Boot source */
+						   0 };	/* Device ID */
 	MV_U32 coreClockTbl[] = MV_CORE_CLK_TBL_BC2;
 	MV_CPUDDR_MODE cpuDdrClkTbl[] = MV_CPU_DDR_CLK_TBL_BC2;
 #elif defined(CONFIG_ALLEYCAT3)
-	/* Core clock, CPU/DDR, PCIe mode, PCIe clock, PLL clock, Device Num, Board ID, BootSRC*/
-	int defaultValue[] = { 4, 3, 1, 0, 1, 0, 0, 3};
+	int defaultValue[] = { 4,	/* Core clock */
+						   3,	/* CPU/DDR clock */
+						   0,	/* PCIe clock */
+						   1,	/* PLL clock */
+						   0,	/* Device number */
+						   0,	/* Board ID */
+						   0,	/* PCIe mode */
+						   3,	/* Boot source */
+						   0 };	/* Device ID */
+
 	MV_U32 coreClockTbl[] = MV_CORE_CLK_TBL_AC3;
 	MV_CPUDDR_MODE cpuDdrClkTbl[] = MV_CPU_DDR_CLK_TBL_AC3;
 #else

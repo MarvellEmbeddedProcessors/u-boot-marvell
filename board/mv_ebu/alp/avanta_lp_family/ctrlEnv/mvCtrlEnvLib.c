@@ -418,7 +418,7 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrReadField, MV_U8 val, MV_BOOL rest
 	}
 
 	/* read */
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, &readValue) != MV_OK) {
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, &readValue, 1) != MV_OK) {
 		mvOsPrintf("%s: Error: Read from S@R failed\n", __func__);
 		return MV_ERROR;
 	}
@@ -436,13 +436,13 @@ MV_STATUS mvCtrlSatRWrite(MV_SATR_TYPE_ID satrReadField, MV_U8 val, MV_BOOL rest
 	readValue |= (val <<  satrInfo.offset);    /* save new value */
 
 	/* write */
-	if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, readValue) != MV_OK) {
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, &readValue, 1) != MV_OK) {
 		mvOsPrintf("%s: Error: Write to S@R failed\n", __func__);
 		return MV_ERROR;
 	}
 
 	/* verify */
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, &verifyValue) != MV_OK) {
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, satrInfo.regNum, 0, &verifyValue, 1) != MV_OK) {
 		mvOsPrintf("%s: Error: 2nd Read from S@R failed\n", __func__);
 		return MV_ERROR;
 	}
@@ -617,8 +617,8 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *config)
 
 	MV_BOARD_TWSI_CLASS twsiClass = (isEepromEnabled ? BOARD_DEV_TWSI_EEPROM : BOARD_DEV_TWSI_IO_EXPANDER);
 
-	status1 = mvBoardTwsiGet(twsiClass, 0, 0, &config[0]);		/* EEPROM/Dip Switch Reg#0 */
-	status2 = mvBoardTwsiGet(twsiClass, 0, 1, &config[1]);		/* EEPROM/Dip Switch Reg#1 */
+	status1 = mvBoardTwsiGet(twsiClass, 0, 0, &config[0], 1);		/* EEPROM/Dip Switch Reg#0 */
+	status2 = mvBoardTwsiGet(twsiClass, 0, 1, &config[1], 1);		/* EEPROM/Dip Switch Reg#1 */
 
 	if (status1 != MV_OK || status2 != MV_OK) {
 		DB(mvOsPrintf("%s: Error: mvBoardTwsiGet from EEPROM/Dip Switch failed\n", __func__));
@@ -626,9 +626,9 @@ MV_STATUS mvCtrlBoardConfigGet(MV_U8 *config)
 	}
 	if (mvBoardIdGet() == DB_6660_ID) { /* DB-6660 has another register for board configuration */
 		if (isEepromEnabled == MV_TRUE)
-			status1 = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 2, &config[2]);	/* EEPROM Reg#2 */
+			status1 = mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 2, &config[2], 1);	/* EEPROM Reg#2 */
 		else {
-			status1 = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 1, 0, &config[2]);	/* Dip Switch Reg#1 */
+			status1 = mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, 1, 0, &config[2], 1); /* Dip-Sw Reg#1 */
 			/*
 			 * Workaround for DIP Switch IO Expander 0x21 bug in DB-6660 board
 			 * Bug: Pins at IO expander 0x21 are reversed (only on DB-6660)

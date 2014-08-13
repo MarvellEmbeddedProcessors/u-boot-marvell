@@ -2299,7 +2299,7 @@ MV_U8 mvBoardIoExpValGet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo)
 	if (ioInfo==NULL)
 		return (MV_U8)MV_ERROR;
 
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum, ioInfo->regNum, &val) != MV_OK) {
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum, ioInfo->regNum, &val, 1) != MV_OK) {
 		mvOsPrintf("%s: Error: Read from IO Expander at 0x%x failed\n", __func__
 			   , mvBoardTwsiAddrGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum));
 		return (MV_U8)MV_ERROR;
@@ -2335,14 +2335,14 @@ MV_STATUS mvBoardIoExpValSet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo, MV_U8 value
 	}
 	/* Read Value */
 	if (mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum,
-					ioInfo->regNum, &readVal) != MV_OK) {
+					ioInfo->regNum, &readVal, 1) != MV_OK) {
 		mvOsPrintf("%s: Error: Read from IO Expander failed\n", __func__);
 		return MV_ERROR;
 	}
 
 	/* Read Configuration Value */
 	if (mvBoardTwsiGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum,
-					ioInfo->regNum + 6, &configVal) != MV_OK) {
+					ioInfo->regNum + 6, &configVal, 1) != MV_OK) {
 		mvOsPrintf("%s: Error: Read Configuration from IO Expander failed\n", __func__);
 		return MV_ERROR;
 	}
@@ -2350,7 +2350,7 @@ MV_STATUS mvBoardIoExpValSet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo, MV_U8 value
 	/* Modify Configuration value to Enable write for requested bit */
 	configVal &= ~(1 << ioInfo->offset);	/* clean bit of old value  */
 	if (mvBoardTwsiSet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum,
-					ioInfo->regNum + 6, configVal) != MV_OK) {
+					ioInfo->regNum + 6, &configVal, 1) != MV_OK) {
 		mvOsPrintf("%s: Error: Enable Write to IO Expander at 0x%x failed\n", __func__
 			   , mvBoardTwsiAddrGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum));
 		return MV_ERROR;
@@ -2362,7 +2362,7 @@ MV_STATUS mvBoardIoExpValSet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo, MV_U8 value
 
 	/* Write */
 	if (mvBoardTwsiSet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum,
-					ioInfo->regNum + 2, readVal) != MV_OK) {
+					ioInfo->regNum + 2, &readVal, 1) != MV_OK) {
 		mvOsPrintf("%s: Error: Write to IO Expander at 0x%x failed\n", __func__
 			   , mvBoardTwsiAddrGet(BOARD_DEV_TWSI_IO_EXPANDER, ioInfo->expanderNum));
 		return MV_ERROR;
@@ -2881,6 +2881,9 @@ MV_U32 mvBoardIdGet(MV_VOID)
 * INPUT:
 *	device num - one of three devices
 *	reg num - 0 or 1
+*	byteCnt - how many bytes to read/write
+*	pData - type must correspond with byteCnt
+*		(for example, if byteCnt = 4, pData must be a pointer for 32bit var)
 *
 * OUTPUT:
 *		None.
@@ -2889,11 +2892,10 @@ MV_U32 mvBoardIdGet(MV_VOID)
 *		reg value
 *
 *******************************************************************************/
-MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData)
+MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData, MV_U32 byteCnt)
 {
 	MV_TWSI_SLAVE twsiSlave;
 	MV_TWSI_ADDR slave;
-	MV_U8 data;
 
 	/* TWSI init */
 	slave.type = ADDR7_BIT;
@@ -2903,7 +2905,8 @@ MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 	DB(mvOsPrintf("Board: TWSI Read device\n"));
 	twsiSlave.slaveAddr.address = mvBoardTwsiAddrGet(twsiClass, devNum);
 	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(twsiClass, devNum);
-
+	DB(mvOsPrintf("%s: TWSI Read addr %x, type %x\n", __func__,
+			twsiSlave.slaveAddr.address, twsiSlave.slaveAddr.type));
 	twsiSlave.validOffset = MV_TRUE;
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
@@ -2913,13 +2916,12 @@ MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 	else
 		twsiSlave.moreThen256 = MV_FALSE;
 
-	if (MV_OK != mvTwsiRead(0, &twsiSlave, &data, 1)) {
+	if (MV_OK != mvTwsiRead(0, &twsiSlave, pData, byteCnt)) {
 		mvOsPrintf("%s: Twsi Read fail\n", __func__);
 		return MV_ERROR;
 	}
 	DB(mvOsPrintf("Board: Read S@R succeded\n"));
 
-	*pData = data;
 	return MV_OK;
 }
 
@@ -2931,8 +2933,10 @@ MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 * INPUT:
 *	devNum - one of three devices
 *	regNum - 0 or 1
-*	regVal - value
-*
+*	regVal - valuei
+*	byteCnt - how many bytes to read/write
+*	regVal - type must correspond with byteCnt
+*		(for example, if byteCnt = 4, regVal must be a pointer for 32bit var)
 *
 * OUTPUT:
 *	None.
@@ -2941,7 +2945,7 @@ MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 *	reg value
 *
 *******************************************************************************/
-MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
+MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 *regVal, MV_U32 byteCnt)
 {
 	MV_TWSI_SLAVE twsiSlave;
 	MV_TWSI_ADDR slave;
@@ -2956,7 +2960,7 @@ MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(twsiClass, devNum);
 	twsiSlave.validOffset = MV_TRUE;
 	DB(mvOsPrintf("%s: TWSI Write addr %x, type %x, data %x\n", __func__,
-		      twsiSlave.slaveAddr.address, twsiSlave.slaveAddr.type, regVal));
+			twsiSlave.slaveAddr.address, twsiSlave.slaveAddr.type, *regVal));
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
 
@@ -2967,7 +2971,7 @@ MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 		twsiSlave.moreThen256 = MV_FALSE; /* use  1 address byte */
 
 
-	if (MV_OK != mvTwsiWrite(0, &twsiSlave, &regVal, 1)) {
+	if (MV_OK != mvTwsiWrite(0, &twsiSlave, regVal, byteCnt)) {
 		DB(mvOsPrintf("%s: Write S@R fail\n", __func__));
 		return MV_ERROR;
 	}
@@ -3015,7 +3019,7 @@ MV_STATUS mvBoardEepromWrite(MV_CONFIG_TYPE_ID configType, MV_U8 value)
 	regNum = configInfo.expanderNum * 2 + configInfo.regNum;
 
 	/* Read */
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, regNum , &readValue) != MV_OK) {
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, regNum , &readValue, 1) != MV_OK) {
 		mvOsPrintf("%s: Error: Read configuration from EEPROM failed\n", __func__);
 		return MV_ERROR;
 	}
@@ -3025,7 +3029,7 @@ MV_STATUS mvBoardEepromWrite(MV_CONFIG_TYPE_ID configType, MV_U8 value)
 	readValue |= (value << configInfo.offset);
 
 	/* Write */
-	if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, regNum, readValue) != MV_OK) {
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, regNum, &readValue, 1) != MV_OK) {
 			mvOsPrintf("%s: Error: Write configuration to EEPROM failed\n", __func__);
 			return MV_ERROR;
 	}
@@ -3118,7 +3122,7 @@ MV_STATUS mvBoardTwsiProbe(MV_U32 chip)
 MV_STATUS mvBoardEepromInit()
 {
 	MV_U32 readValue, i, pattern = 0;
-	MV_U8 patternByte;
+	MV_U32 patternByte = be32_to_cpu(EEPROM_VERIFICATION_PATTERN), defaultByte = 0x0;
 
 	if (mvBoardIsEepromEnabled() != MV_TRUE) {
 		DB(printf("%s: EEPROM doesn't exists on board\n" , __func__));
@@ -3127,7 +3131,7 @@ MV_STATUS mvBoardEepromInit()
 
 	/* verify EEPROM: read 4 bytes at address 0x4 (read magic pattern) */
 	for (i = 0; i < 4; i++) {
-		if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 0x4 + i, (MV_U8 *)&readValue) != MV_OK) {
+		if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 0x4 + i, (MV_U8 *)&readValue, 1) != MV_OK) {
 			mvOsPrintf("%s: Error: Read pattern from EEPROM failed\n", __func__);
 			return MV_ERROR;
 		}
@@ -3142,19 +3146,16 @@ MV_STATUS mvBoardEepromInit()
 		return MV_OK;
 
 	/* Else write default configuration and set magic pattern */
-	for (i = 0x0; i < 4; i++) {
-		/* write default board configuration (default value for all fields is 0x0) */
-		if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, i, 0x0) != MV_OK) {
-			mvOsPrintf("%s: Error: Write configuration to EEPROM failed\n", __func__);
-			return MV_ERROR;
-		}
+	/* write default board configuration (default value for all fields is 0x0) */
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, 0, (MV_U8 *)&defaultByte, 4) != MV_OK) {
+		mvOsPrintf("%s: Error: Write configuration to EEPROM failed\n", __func__);
+		return MV_ERROR;
+	}
 
-		/* shift bytes to correct location from 32bit pattern to 1 byte chunks*/
-		patternByte = ((EEPROM_VERIFICATION_PATTERN) >> (32 - 8*(i+1))) & 0x000000FF;
-		if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, 0x4+i, patternByte) != MV_OK) {
-			mvOsPrintf("%s: Error: Write configuration to EEPROM failed\n", __func__);
-			return MV_ERROR;
-		}
+	/* shift bytes to correct location from 32bit pattern to 1 byte chunks*/
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, 4, (MV_U8 *)&patternByte, 4) != MV_OK) {
+		mvOsPrintf("%s: Error: Write configuration to EEPROM failed\n", __func__);
+		return MV_ERROR;
 	}
 
 	mvOsPrintf("\n%s: Initialized EEPROM with default board ", __func__);

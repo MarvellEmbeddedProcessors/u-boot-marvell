@@ -246,7 +246,7 @@ MV_U32 mvBoardRevGet(MV_VOID)
 	MV_U32 boardECO;
 	MV_U8 readValue;
 
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, 1, &readValue) != MV_OK) {
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, 1, &readValue, 1) != MV_OK) {
 		mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);
 		return MV_ERROR;
 	}
@@ -971,7 +971,7 @@ static MV_VOID mvBoardModuleAutoDetect(MV_VOID)
 	for (i = 0; i < MV_MODULE_TYPE_MAX_MODULE; i++) {
 		if (mvBoardConfigTypeGet((1 << i), &configInfo) == MV_TRUE) {
 			if (mvBoardTwsiGet(BOARD_TWSI_MODULE_DETECT, configInfo.twsiAddr,
-					   configInfo.offset, &readValue) != MV_OK) {
+					   configInfo.offset, &readValue, 1) != MV_OK) {
 				DB(mvOsPrintf("%s: Error: Read from TWSI failed addr=0x%x\n",
 					   __func__, configInfo.twsiAddr));
 				continue;
@@ -1205,7 +1205,7 @@ MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 
 	for (i = 0; i < board->numIoExp; i++) {
 		if (MV_OK != mvBoardTwsiSet(BOARD_TWSI_IO_EXPANDER, board->pIoExp[i].addr,
-					    board->pIoExp[i].offset, board->pIoExp[i].val)) {
+					    board->pIoExp[i].offset, &board->pIoExp[i].val, 1)) {
 			mvOsPrintf("%s: Write IO expander (addr=0x%x, offset=%d, value=0x%2x to  fail\n",
 				   __func__,
 				   mvBoardTwsiAddrGet(BOARD_TWSI_IO_EXPANDER, board->pIoExp[i].addr),
@@ -2020,7 +2020,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	   use S@R TWSI address, and read board ID */
 	board = marvellBoardInfoTbl[mvBoardIdIndexGet(MV_DEFAULT_BOARD_ID)];
 	MV_U8 readValue;
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, 0, &readValue) != MV_OK) {
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, 0, &readValue, 1) != MV_OK) {
 		mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);
 		mvOsPrintf("%s: Set default board ID to %s\n", __func__, board->boardName);
 		readValue = MV_DEFAULT_BOARD_ID;
@@ -2046,6 +2046,9 @@ MV_U32 mvBoardIdGet(MV_VOID)
 * INPUT:
 *	device num - one of three devices
 *	reg num - 0 or 1
+*	byteCnt - how many bytes to read/write
+*       pData - type must correspond with byteCnt
+*               (for example, if byteCnt = 4, pData must be a pointer for 32bit var)
 *
 * OUTPUT:
 *		None.
@@ -2054,11 +2057,10 @@ MV_U32 mvBoardIdGet(MV_VOID)
 *		reg value
 *
 *******************************************************************************/
-MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData)
+MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData, MV_U32 byteCnt)
 {
 	MV_TWSI_SLAVE twsiSlave;
 	MV_TWSI_ADDR slave;
-	MV_U8 data;
 
 	/* TWSI init */
 	slave.type = ADDR7_BIT;
@@ -2074,13 +2076,12 @@ MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
 
-	if (MV_OK != mvTwsiRead(0, &twsiSlave, &data, 1)) {
+	if (MV_OK != mvTwsiRead(0, &twsiSlave, pData, byteCnt)) {
 		DB(mvOsPrintf("%s: Twsi Read fail\n", __func__));
 		return MV_ERROR;
 	}
 	DB(mvOsPrintf("Board: Read S@R succeded\n"));
 
-	*pData = data;
 	return MV_OK;
 }
 
@@ -2093,7 +2094,9 @@ MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 *	devNum - one of three devices
 *	regNum - 0 or 1
 *	regVal - value
-*
+*	byteCnt - how many bytes to read/write
+*	regVal - type must correspond with byteCnt
+*		(for example, if byteCnt = 4, regVal must be a pointer for 32bit var)
 *
 * OUTPUT:
 *	None.
@@ -2102,7 +2105,7 @@ MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 *	reg value
 *
 *******************************************************************************/
-MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 regVal)
+MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 *regVal, MV_U32 byteCnt)
 {
 	MV_TWSI_SLAVE twsiSlave;
 	MV_TWSI_ADDR slave;
@@ -2117,11 +2120,12 @@ MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 	twsiSlave.slaveAddr.type = mvBoardTwsiAddrTypeGet(twsiClass, devNum);
 	twsiSlave.validOffset = MV_TRUE;
 	DB(mvOsPrintf("%s: TWSI Write addr %x, type %x, data %x\n", __func__,
-		      twsiSlave.slaveAddr.address, twsiSlave.slaveAddr.type, regVal));
+		twsiSlave.slaveAddr.address, twsiSlave.slaveAddr.type, *regVal));
 	/* Use offset as command */
 	twsiSlave.offset = regNum;
 	twsiSlave.moreThen256 = mvBoardTwsiIsMore256Get(twsiClass, devNum);
-	if (MV_OK != mvTwsiWrite(0, &twsiSlave, &regVal, 1)) {
+
+	if (MV_OK != mvTwsiWrite(0, &twsiSlave, regVal, byteCnt)) {
 		DB(mvOsPrintf("%s: Write S@R fail\n", __func__));
 		return MV_ERROR;
 	}

@@ -62,14 +62,13 @@ error:
 static int do_boardCfg_default(void)
 {
 	MV_U8 i;
+	MV_U32 defaultValue = 0x0;
 
 	/* 0x0 is the default value for all configuration fields */
-	for (i = 0x0; i < 4; i++) {
-		/* write default board configuration (default value for all fields is 0x0) */
-		if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, i, 0x0) != MV_OK) {
-			mvOsPrintf("%s: Error: Set default configuration to EEPROM failed\n", __func__);
-			goto error;
-		}
+	/* write default board configuration (default value for all fields is 0x0) */
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, 0, (MV_U8 *)&defaultValue, 4) != MV_OK) {
+		mvOsPrintf("%s: Error: Set default configuration to EEPROM failed\n", __func__);
+		goto error;
 	}
 
 	/* Reset local array data to default as well */

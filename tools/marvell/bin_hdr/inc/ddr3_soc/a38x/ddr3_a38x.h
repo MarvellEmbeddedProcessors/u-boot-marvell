@@ -70,6 +70,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ddr3_hws_hw_training_def.h"
 
+/* Debug defines*/
+/*#define SUPPORT_STATIC_DUNIT_CONFIG*/
+
 #define REG_DEVICE_SAR1_ADDR                        0xE4204
 #define RST2_CPU_DDR_CLOCK_SELECT_IN_OFFSET         17
 #define RST2_CPU_DDR_CLOCK_SELECT_IN_MASK           0x1F

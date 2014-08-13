@@ -1,3 +1,4 @@
+
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
@@ -24,7 +25,7 @@ modify this File in accordance with the terms and conditions of the General
 Public License Version 2, June 1991 (the "GPL License"), a copy of which is
 available along with the File in the license.txt file or by writing to the Free
 Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
-on the worldwide web_http://www.gnu.org/licenses/gpl.txt.
+on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
 
 THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
 WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
@@ -39,15 +40,15 @@ Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
     *   Redistributions of source code must retain the above copyright notice,
-        this list of conditions and the following disclaimer.
+	    this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+		used to endorse or promote products derived from this software without
+		specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -61,50 +62,9 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
+#ifndef _DDR3_A39X_H
+#define _DDR3_A39X_H
 
-#ifndef _INC_MSYS_BC2_VARS_H
-#define _INC_MSYS_BC2_VARS_H
+#include "ddr3_a38x.h"
 
-#include "ddr3_msys_bc2_config.h"
-#include "mvDdr3TopologyDef.h"
-
-
-typedef struct __mvDramMcInit {
-	MV_U32 reg_addr;
-	MV_U32 reg_value;
-	MV_U32 reg_mask;
-} MV_DRAM_MC_INIT;
-
-#define MARVELL_BOARD BC2_MARVELL_BOARD_ID_BASE
-
-typedef struct __mvDramModes {
-    char *mode_name;
-    MV_U8 cpuFreq;
-    MV_U8 fabFreq;
-    MV_U8 chipId;
-    MV_U8 chipBoardRev;
-    MV_DRAM_MC_INIT *regs;
-} MV_DRAM_MODES;
-
-MV_DRAM_MODES ddr_modes[] =
-{
-    /*  Conf name     CPUFreq    	FabFreq  Chip ID   Chip/Board          MC regs*/
-};
-
-MV_DRAM_DLB_CONFIG ddr3DlbConfigTable[] =
-{
-	{REG_STATIC_DRAM_DLB_CONTROL, 		0x2000005C},
-	{DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 	0x0008C19E},
-	{DLB_AGING_REGISTER, 				0x0F7F007F},
-	{DLB_EVICTION_CONTROL_REG, 			0x00000209},
-	{DLB_EVICTION_TIMERS_REGISTER_REG, 	0x00FF0000},
-	{DLB_USER_COMMAND_REG, 				0x00000000},
-	{MBUS_UNITS_PRIORITY_CONTROL_REG, 	0x55555555},
-	{FABRIC_UNITS_PRIORITY_CONTROL_REG, 0xA},
-	{MBUS_UNITS_PREFETCH_CONTROL_REG, 	0xffff},
-	{FABRIC_UNITS_PREFETCH_CONTROL_REG, 0xf0f},
-	{0x0, 0x0}
-};
-
-#endif /* _INC_MSYS_VARS_H */
-
+#endif /* _DDR3_A39X_H */

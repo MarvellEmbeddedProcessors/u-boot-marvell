@@ -31,6 +31,12 @@ MV_STATUS ddr3PostRunAlg(void);
 MV_BOOL ddr3IfEccEnabled(void);
 MV_STATUS ddr3NewTipEccScrub(void);
 
+/*struct used for DLB configuration array*/
+typedef struct __mvDramDLBConfig {
+	MV_U32 regAddr;
+	MV_U32 regData;
+} MV_DRAM_DLB_CONFIG;
+
 #define SUB_VERSION	0
 
 #endif /* _DDR3_HWS_HW_TRAINING_H */

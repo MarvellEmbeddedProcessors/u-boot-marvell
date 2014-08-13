@@ -67,12 +67,14 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_spd.h"
 #include "bin_hdr_twsi.h"
 #include "mvUart.h"
-
-#if defined(MV_MSYS_BC2) || defined(MV_MSYS_AC3) || defined(MV88F68XX)
 #include "mvSysEnvLib.h"
-#endif
+#include "ddr3_hws_hw_training.h"
 
-#if defined(MV88F68XX)
+#if defined(MV88F69XX)
+#include "ddr3_a39x.h"
+#include "ddr3_a39x_vars.h"
+#include "ddr3_a39x_topology.h"
+#elif defined(MV88F68XX)
 #include "ddr3_a38x.h"
 #include "ddr3_a38x_vars.h"
 #include "ddr3_a38x_topology.h"
@@ -88,7 +90,6 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_msys_ac3_topology.h"
 #endif
 
-#include "ddr3_hws_hw_training.h"
 #if defined(MV_MSYS_BC2)
 #define MARVELL_BOARD	BC2_MARVELL_BOARD_ID_BASE
 #elif defined(MV_MSYS_AC3)
@@ -361,7 +362,6 @@ MV_U32 ddr3Init(void)
 	/* DLB config */
 	ddr3NewTipDlbConfig();
 
-
 	DEBUG_INIT_S("DDR3 Training Sequence - Ended Successfully \n");
 
 #if defined(MV88F68XX)
@@ -549,19 +549,15 @@ MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs)
 
 MV_VOID ddr3NewTipDlbConfig()
 {
-	MV_U32 uiReg;
+	MV_U32 uiReg, i = 0;
 
-	MV_REG_WRITE(REG_STATIC_DRAM_DLB_CONTROL, 0x2000005C);
-	MV_REG_WRITE(DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 0x0008C19E);
-	MV_REG_WRITE(DLB_AGING_REGISTER, 0x0F7F007F);
-	MV_REG_WRITE(DLB_EVICTION_CONTROL_REG, 0x00000209);
-	MV_REG_WRITE(DLB_EVICTION_TIMERS_REGISTER_REG, 0x00FF0000);
-	MV_REG_WRITE(DLB_USER_COMMAND_REG, 0x0);
+	/*Write the configuration*/
+	while(ddr3DlbConfigTable[i].regAddr != 0)
+	{
+		MV_REG_WRITE(ddr3DlbConfigTable[i].regAddr, ddr3DlbConfigTable[i].regData);
+		i++;
+	}
 
-	MV_REG_WRITE(MBUS_UNITS_PRIORITY_CONTROL_REG, 0x55555555);
-	MV_REG_WRITE(FABRIC_UNITS_PRIORITY_CONTROL_REG, 0xA);
-	MV_REG_WRITE(MBUS_UNITS_PREFETCH_CONTROL_REG, 0xffff);
-	MV_REG_WRITE(FABRIC_UNITS_PREFETCH_CONTROL_REG, 0xf0f);
 	/*Enable DLB*/
 	uiReg = MV_REG_READ(REG_STATIC_DRAM_DLB_CONTROL);
 	uiReg |= (DLB_ENABLE | DLB_WRITE_COALESING | DLB_AXI_PREFETCH_EN | DLB_MBUS_PREFETCH_EN | PreFetchNLnSzTr);

@@ -62,8 +62,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _INC_A38X_TOPOLOGY_H
-#define _INC_A38X_TOPOLOGY_H
+#ifndef _INC_A39X_TOPOLOGY_H
+#define _INC_A39X_TOPOLOGY_H
 
 #include "mvDdr3LoggingDef.h"
 
@@ -100,50 +100,15 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 /************************************* Marvell Boards Topology *************************************/
 MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 {
-    /* 1st Marvell board - RD_NAS */
+    /* 1st Marvell board - TBD */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
-    BUS_MASK_32BIT  /* Buses mask */
-    },
-#ifdef CONFIG_DDR3
-    /* 2nd Marvell board - DB */
-    {
-    0x1, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
-    BUS_MASK_32BIT  /* Buses mask */
-    },
-#else
-    /* 2nd Marvell board - DB (DDR4) */
-    {
-    0x1, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-    {{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x1,0,0,0},{ 0x1,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_2133N, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
-    BUS_MASK_32BIT  /* Buses mask */
-    },
-#endif
-    /* 3rd Marvell board - RD_AP */
-    {
-    0x1, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
-    BUS_MASK_32BIT  /* Buses mask */
-    },
-    /* 4rd Marvell board - DB_AP */
-    {
-    0x1, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_32BIT  /* Buses mask */
     }
 };
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 
-#endif /* _INC_A38X_TOPOLOGY_H */
+#endif /* _INC_A39X_TOPOLOGY_H */

@@ -1,4 +1,3 @@
-
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
@@ -63,12 +62,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-
-#ifndef _DDR3_A380_CONFIG_H
-#define _DDR3_A380_CONFIG_H
-
-/*#define SUPPORT_STATIC_DUNIT_CONFIG*/
-
-#endif /* _DDR3_A380_CONFIG_H */
+#ifndef _INC_A39x_MC_STATIC_H
+#define _INC_A39x_MC_STATIC_H
 
 
+#endif /* _INC_A39x_MC_STATIC_H*/

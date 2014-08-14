@@ -128,7 +128,7 @@ int load_from_usb(const char* file_name)
  * argc, argv are the input arguments of bubt command line
  * loadfrom is pointer to the extracted argument: from where to load the u-boot bin file
  */
-void fetch_bubt_cmd_args(int argc, char * const argv[], MV_U32 *loadfrom)
+MV_STATUS fetch_bubt_cmd_args(int argc, char * const argv[], MV_U32 *loadfrom)
 {
 	*loadfrom = 0;
 	/* bubt */
@@ -156,11 +156,16 @@ void fetch_bubt_cmd_args(int argc, char * const argv[], MV_U32 *loadfrom)
 		{
 			copy_filename (BootFile, "u-boot.bin", sizeof(BootFile));
 			printf("Using default filename \"u-boot.bin\" \n");
-#ifdef MV_INCLUDE_USB
+
 			if (0 == strcmp("usb", argv[2])) {
+#ifdef MV_INCLUDE_USB
 				*loadfrom = 1;
-			}
+#else
+				printf("Error: USB is not supported on current machine\n");
+				return MV_ERROR;
 #endif
+			}
+
 		}
 		else
 		{
@@ -171,12 +176,17 @@ void fetch_bubt_cmd_args(int argc, char * const argv[], MV_U32 *loadfrom)
 	else
 	{
 		copy_filename (BootFile, argv[1], sizeof(BootFile));
-#ifdef MV_INCLUDE_USB
+
 		if (0 == strcmp("usb", argv[3])) {
+#ifdef MV_INCLUDE_USB
 			*loadfrom = 1;
-		}
+#else
+			printf("Error: USB is not supported on current machine\n");
+			return MV_ERROR;
 #endif
+		}
 	}
+	return MV_OK;
 }
 
 /*
@@ -251,7 +261,9 @@ int nand_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 	}
 #endif
 
-	fetch_bubt_cmd_args(argc, argv, &loadfrom);
+	/* verify requested source is valid */
+	if (fetch_bubt_cmd_args(argc, argv, &loadfrom) != MV_OK)
+		return 0;
 
 	if ((filesize = fetch_uboot_file (loadfrom)) <= 0)
 		return 0;
@@ -318,7 +330,9 @@ int spi_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 		}
 	}
 
-	fetch_bubt_cmd_args(argc, argv, &loadfrom);
+	/* verify requested source is valid */
+	if (fetch_bubt_cmd_args(argc, argv, &loadfrom) != MV_OK)
+		return 0;
 
 	if ((filesize = fetch_uboot_file (loadfrom)) <= 0)
 		return 0;
@@ -397,7 +411,9 @@ int nor_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 
 	MV_U32 loadfrom = 0; /* 0 - from tftp, 1 - from USB */
 
-	fetch_bubt_cmd_args(argc, argv, &loadfrom);
+	/* verify requested source is valid */
+	if (fetch_bubt_cmd_args(argc, argv, &loadfrom) != MV_OK)
+		return 0;
 
 	if ((filesize = fetch_uboot_file (loadfrom)) <= 0)
 		return 0;

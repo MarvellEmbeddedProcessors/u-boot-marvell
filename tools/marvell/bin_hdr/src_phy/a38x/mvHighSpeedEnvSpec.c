@@ -1058,16 +1058,16 @@ MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray);
 
 /************************* Load Topology - Customer Boards ****************************/
 SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
-{
-{		/* Customer Board 0 Toplogy */
-	{ SATA0,	__3Gbps,	SERDES_DEFAULT_MODE },
-	{ PEX0,		__5Gbps,	PEX_ROOT_COMPLEX_x1 },
-	{ PEX1,		__5Gbps,	PEX_ROOT_COMPLEX_x1 },
-	{ SATA3,	__3Gbps,	SERDES_DEFAULT_MODE },
-	{ USB3_HOST0,	__5Gbps,	SERDES_DEFAULT_MODE },
-	{ SATA2,	__3Gbps,	SERDES_DEFAULT_MODE }
+{{
+	/* Customer Board 0 Toplogy - reference from DB */
+	{ SATA0,     __3Gbps,		   SERDES_DEFAULT_MODE },
+	{ PEX0,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
+	{ PEX1,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
+	{ SATA3,     __3Gbps,		   SERDES_DEFAULT_MODE },
+	{ USB3_HOST0, __5Gbps,		   SERDES_DEFAULT_MODE },
+	{ USB3_HOST1, __5Gbps,		   SERDES_DEFAULT_MODE }
 },
-{		/* Customer Board 1 Toplogy */
+{	/* Customer Board 1 Toplogy */
 	{ PEX0,		__5Gbps,	PEX_ROOT_COMPLEX_x1 },
 	{ SATA0,	__3Gbps,	SERDES_DEFAULT_MODE },
 	{ SATA1,	__3Gbps,	SERDES_DEFAULT_MODE },

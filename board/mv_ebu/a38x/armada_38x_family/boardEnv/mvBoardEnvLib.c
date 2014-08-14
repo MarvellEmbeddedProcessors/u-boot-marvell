@@ -92,7 +92,7 @@
 
 extern MV_BOARD_INFO *marvellBoardInfoTbl[];
 extern MV_BOARD_INFO *customerBoardInfoTbl[];
-MV_MODULE_TYPE_INFO boardConfigTypesInfo[] = MV_MODULE_INFO;
+MV_MODULE_TYPE_INFO boardModuleTypesInfo[] = MV_MODULE_INFO;
 MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
 MV_SATR_BOOT_TABLE satrBootSrcTable[] = MV_SATR_BOOT_SRC_TABLE_VAL;
 
@@ -392,7 +392,7 @@ MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_32 mvBoardModuleConfigGet(MV_VOID)
 {
-	return board->boardOptionsConfig;
+	return board->boardOptionsModule;
 }
 /*******************************************************************************
 * mvBoardModuleConfigSet - Set the module configuration
@@ -412,17 +412,17 @@ MV_VOID mvBoardModuleConfigSet(MV_U32 newCfg)
 {
 	/* The MII module cannot work together with the SGMII module */
 	/* Ignore MII module if SGMII module is detected */
-	if ((newCfg == MV_MODULE_MII) && (MV_MODULE_SGMII & board->boardOptionsConfig)) {
+	if ((newCfg == MV_MODULE_MII) && (MV_MODULE_SGMII & board->boardOptionsModule)) {
 		mvOsPrintf("%s: Warning: Conflict in module detect, (SGMII & MII module), MII module is ignored\n",
 			    __func__);
 		return;
 	}
-	if ((newCfg == MV_MODULE_SGMII) && (MV_MODULE_MII & board->boardOptionsConfig)) {
+	if ((newCfg == MV_MODULE_SGMII) && (MV_MODULE_MII & board->boardOptionsModule)) {
 		mvOsPrintf("%s: Warning: Conflict in module detect, (SGMII & MII module), MII module is ignored\n",
 			   __func__);
-		board->boardOptionsConfig &= ~MV_MODULE_MII;
+		board->boardOptionsModule &= ~MV_MODULE_MII;
 	}
-	board->boardOptionsConfig |= newCfg;
+	board->boardOptionsModule |= newCfg;
 }
 
 
@@ -969,7 +969,7 @@ static MV_VOID mvBoardModuleAutoDetect(MV_VOID)
 	/*Read all TWSI board module if exsist : */
 	/* Save values board spec struct  */
 	for (i = 0; i < MV_MODULE_TYPE_MAX_MODULE; i++) {
-		if (mvBoardConfigTypeGet((1 << i), &configInfo) == MV_TRUE) {
+		if (mvBoardModuleTypeGet((1 << i), &configInfo) == MV_TRUE) {
 			if (mvBoardTwsiGet(BOARD_TWSI_MODULE_DETECT, configInfo.twsiAddr,
 					   configInfo.offset, &readValue, 1) != MV_OK) {
 				DB(mvOsPrintf("%s: Error: Read from TWSI failed addr=0x%x\n",
@@ -1885,7 +1885,7 @@ MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *s
 *	MV_MODULE_TYPE_INFO struct with mask, offset and register number.
 *
 *******************************************************************************/
-MV_BOOL mvBoardConfigTypeGet(MV_MODULE_TYPE_ID configClass, MV_MODULE_TYPE_INFO *configInfo)
+MV_BOOL mvBoardModuleTypeGet(MV_MODULE_TYPE_ID configClass, MV_MODULE_TYPE_INFO *configInfo)
 {
 	int i;
 	MV_U32 boardId = mvBoardIdIndexGet(mvBoardIdGet());
@@ -1893,9 +1893,9 @@ MV_BOOL mvBoardConfigTypeGet(MV_MODULE_TYPE_ID configClass, MV_MODULE_TYPE_INFO 
 	/* verify existence of requested config type, pull its data,
 	 * and check if field is relevant to current running board */
 	for (i = 0; i < MV_MODULE_TYPE_MAX_OPTION ; i++)
-		if (boardConfigTypesInfo[i].configId == configClass) {
-			*configInfo = boardConfigTypesInfo[i];
-			if (boardConfigTypesInfo[i].isActiveForBoard[boardId])
+		if (boardModuleTypesInfo[i].configId == configClass) {
+			*configInfo = boardModuleTypesInfo[i];
+			if (boardModuleTypesInfo[i].isActiveForBoard[boardId])
 				return MV_TRUE;
 			else
 				return MV_FALSE;

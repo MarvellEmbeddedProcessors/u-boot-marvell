@@ -391,7 +391,7 @@ typedef struct _boardInfo {
 	MV_BOOL configAutoDetect;
 	MV_U32	numIoExp;
 	struct MV_BOARD_IO_EXPANDER *pIoExp;
-	MV_U32  boardOptionsConfig;
+	MV_U32  boardOptionsModule;
 } MV_BOARD_INFO;
 
 struct _mvBoardMppModule {
@@ -454,7 +454,7 @@ MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
 MV_VOID mvBoardPhyAddrSet(MV_U32 ethPortNum, MV_U32 smiAddr);
 MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum);
 MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo);
-MV_STATUS mvBoardConfigTypeGet(MV_MODULE_TYPE_ID configClass, MV_MODULE_TYPE_INFO *configInfo);
+MV_STATUS mvBoardModuleTypeGet(MV_MODULE_TYPE_ID configClass, MV_MODULE_TYPE_INFO *configInfo);
 MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable);
 MV_STATUS mvBoardSgmiiSfp0TxSet(MV_BOOL enable);
 MV_U32 mvBoardTclkGet(MV_VOID);

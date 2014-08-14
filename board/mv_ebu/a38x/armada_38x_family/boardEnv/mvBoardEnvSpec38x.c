@@ -179,7 +179,7 @@ MV_BOARD_INFO armada_38x_customer_board_0_info = {
 	.configAutoDetect		= MV_FALSE,
 	.numIoExp			= ARRSZ(armada_38x_customer_0_IoExpanderInfo),
 	.pIoExp				= armada_38x_customer_0_IoExpanderInfo,
-	.boardOptionsConfig		= MV_MODULE_NO_MODULE
+	.boardOptionsModule		= MV_MODULE_NO_MODULE
 };
 
 /*
@@ -311,7 +311,7 @@ MV_BOARD_INFO db88f68xx_board_info = {
 	.configAutoDetect		= MV_TRUE,
 	.numIoExp			= 0,
 	.pIoExp				= NULL,
-	.boardOptionsConfig		= MV_MODULE_NO_MODULE
+	.boardOptionsModule		= MV_MODULE_NO_MODULE
 };
 
 /*******************************************************************************
@@ -411,7 +411,7 @@ MV_BOARD_INFO rdNas88f68XX_board_info = {
 	.configAutoDetect		= MV_TRUE,
 	.numIoExp			= ARRSZ(ioExpNas),
 	.pIoExp				= ioExpNas,
-	.boardOptionsConfig		= MV_MODULE_NO_MODULE
+	.boardOptionsModule		= MV_MODULE_NO_MODULE
 };
 /*******************************************************************************
  * A380 RD-WAP-88F68XX board */
@@ -489,7 +489,7 @@ MV_BOARD_INFO rdWAP88f68XX_board_info = {
 	.configAutoDetect		= MV_TRUE,
 	.numIoExp			= ARRSZ(ioExpWap),
 	.pIoExp				= ioExpWap,
-	.boardOptionsConfig		= MV_MODULE_NO_MODULE
+	.boardOptionsModule		= MV_MODULE_NO_MODULE
 };
 
 /*******************************************************************************
@@ -593,7 +593,7 @@ MV_BOARD_INFO dbAP88f68xx_board_info = {
 	.configAutoDetect               = MV_FALSE,
 	.numIoExp                       = 0,
 	.pIoExp                         = NULL,
-	.boardOptionsConfig             = MV_MODULE_NO_MODULE
+	.boardOptionsModule             = MV_MODULE_NO_MODULE
 };
 
 MV_BOARD_INFO *marvellBoardInfoTbl[] = {

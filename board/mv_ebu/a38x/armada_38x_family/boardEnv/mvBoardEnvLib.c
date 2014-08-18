@@ -103,8 +103,6 @@ static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClas
 static MV_BOARD_INFO *board = (MV_BOARD_INFO *)-1;
 static MV_VOID mvBoardModuleAutoDetect(MV_VOID);
 
-
-
 /*******************************************************************************
 * mvBoardIdIndexGet
 *
@@ -1870,7 +1868,7 @@ MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *s
 }
 
 /*******************************************************************************
-* mvBoardConfigTypeGet
+* mvBoardModuleTypeGet
 *
 * DESCRIPTION:
 *	Return the Config type fields information for a given Config type class.
@@ -2787,3 +2785,399 @@ MV_NFC_ECC_MODE mvBoardNandECCModeGet()
 	return MV_NFC_ECC_DISABLE;
 #endif
 }
+
+#ifdef CONFIG_CMD_BOARDCFG
+MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_EEPROM_CONFIG_INFO;
+MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
+
+/*******************************************************************************
+* mvBoardEepromInit - Verify if the EEPROM have been initialized
+*
+* DESCRIPTION:
+*       Verify if the EEPROM have been initialized (if not, initialize it):
+*       EEPROM expected mapping:
+*       [0x0-0x7](64bits) - board configuration
+*       [0x8-0xB](32bits) - pattern
+* INPUT:
+*       None
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Returns MV_TRUE if a chip responded, MV_FALSE on failure
+*
+*******************************************************************************/
+MV_STATUS mvBoardEepromInit(void)
+{
+	MV_U32 pattern = 0, i;
+	MV_U32 defaultCfg[2] = {0x19000000, 0x0 };
+
+	if (mvBoardIsEepromEnabled() != MV_TRUE) {
+		DB(printf("%s: EEPROM doesn't exists on board\n" , __func__));
+		return MV_ERROR;
+	}
+
+	/* verify EEPROM: read 4 bytes at address 0x8 (read magic pattern) */
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 8, (MV_U8 *)&pattern, 4) != MV_OK) {
+		mvOsPrintf("%s: Error: Read pattern from EEPROM failed\n", __func__);
+		return MV_ERROR;
+	}
+	/* Swap byte's order to be from LSB to MSB:
+		- When reading 32bit variables, the I2C commands display the bytes from LSB to MSB
+		- mvBoardTwsiSet/Get writes/reads bytes according to their actual address location
+		- in order to keep I2C output aligned with original written data
+			we reverse the byte order to be from LSB to MSB before each read/write */
+	pattern = cpu_to_be32(pattern);
+	/* If EEPROM is initialized with magic pattern, continue and exit*/
+	if (pattern == EEPROM_VERIFICATION_PATTERN)
+		return MV_OK;
+
+	/* Else write default configuration and set magic pattern */
+	/* write default board configuration */
+	for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4 ; i++) {
+		defaultCfg[i] = cpu_to_be32(defaultCfg[i]);
+		if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, i * 4, (MV_U8 *)&defaultCfg[i], 4) != MV_OK) {
+			mvOsPrintf("%s: Error: Write default configuration to EEPROM failed\n", __func__);
+			return MV_ERROR;
+		}
+	}
+
+	pattern = be32_to_cpu(EEPROM_VERIFICATION_PATTERN);
+	/* shift bytes to correct location from 32bit pattern to 1 byte chunks*/
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, 8, (MV_U8 *)&pattern, 4) != MV_OK) {
+		mvOsPrintf("%s: Error: Write magic pattern to EEPROM failed\n", __func__);
+		return MV_ERROR;
+	}
+
+	mvOsPrintf("\n%s: Initialized EEPROM with default board ", __func__);
+	mvOsPrintf("configuration (1st use of EEPROM)\n\n");
+	return MV_OK;
+}
+
+/*******************************************************************************
+* mvBoardSysConfigInit
+*
+* DESCRIPTION: Initialize EEPROM configuration
+*       1. initialize all board configuration fields
+*       2. read relevant board configuration (using TWSI/EEPROM access)
+*       EEPROM expected mapping:
+*       [0x0-0x7](64bits) - board configuration
+*       [0x8-0xB](32bits) - pattern
+*
+* INPUT:  None
+*
+* OUTPUT: None
+*
+* RETURN: NONE
+*
+*******************************************************************************/
+MV_VOID mvBoardSysConfigInit(void)
+{
+	MV_U8 i, readValue;
+	MV_U32 configVal[2] = {0x0, 0x0};
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
+	MV_BOOL readSuccess = MV_FALSE;
+
+	memset(&boardOptionsConfig, 0x0, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION);
+
+	if (mvBoardEepromInit() != MV_OK) {
+		DB(mvOsPrintf("%s: Error: mvBoardEepromInit failed\n", __func__));
+		/* TODO: init the array with default values */
+		return;
+	}
+	/* Read configuration data: 1st 8 bytes in  EEPROM, (read twice: each read of 4 bytes(32bit)) */
+	for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4; i++) {
+		if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, i * 4, (MV_U8 *)&configVal[i], 4) != MV_OK) {
+			DB(mvOsPrintf("%s: Error: mvBoardTwsiGet from EEPROM failed\n", __func__));
+			/* TODO: init the array with default values */
+			return;
+		}
+		/* Swap byte's order to be from LSB to MSB:
+			- When reading 32bit variables, the I2C commands display the bytes from LSB to MSB
+			- mvBoardTwsiSet/Get writes/reads bytes according to their actual address location
+			- in order to keep I2C output aligned with original written data
+				we reverse the byte order to be from LSB to MSB before each read/write */
+		configVal[i] = be32_to_cpu(configVal[i]);
+	}
+
+	/* Save values Locally in configVal[] */
+	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
+		/* Get board configuration field information (Mask, offset, etc..) */
+		if (mvBoardConfigTypeGet(i, &configInfo) != MV_TRUE)
+			continue;
+
+		readValue = (configVal[configInfo.byteNum/4] & configInfo.mask) >> configInfo.offset;
+		boardOptionsConfig[configInfo.configId] =  readValue;
+		readSuccess = MV_TRUE;
+	}
+
+	if (readSuccess == MV_FALSE)
+		mvOsPrintf("%s: Error: Read board configuration from EEPROM failed\n", __func__);
+
+}
+/*******************************************************************************
+* mvBoardTwsiProbe - Probe the given I2C chip address
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       chip - i2c chip address to probe
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Returns MV_TRUE if a chip responded, MV_FALSE on failure
+*
+*******************************************************************************/
+MV_STATUS mvBoardTwsiProbe(MV_U32 chip)
+{
+	MV_TWSI_ADDR eepromAddress, slave;
+	MV_U32 status = 0;
+
+	/* TWSI init */
+	slave.type = ADDR7_BIT;
+	slave.address = 0;
+
+	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
+
+	status = mvTwsiStartBitSet(0);
+
+	if (status) {
+		mvOsPrintf("%s: Transaction start failed: 0x%02x\n", __func__, status);
+		mvTwsiStopBitSet(0);
+		return MV_FALSE;
+	}
+
+	eepromAddress.type = ADDR7_BIT;
+	eepromAddress.address = chip;
+
+	status = mvTwsiAddrSet(0, &eepromAddress, MV_TWSI_WRITE); /* send the slave address */
+	if (status) {
+		mvOsPrintf("%s: Failed to set slave address: 0x%02x\n", __func__, status);
+		mvTwsiStopBitSet(0);
+		return MV_FALSE;
+	}
+	DB(mvOsPrintf("address %#x returned %#x\n", chip,
+	MV_REG_READ(TWSI_STATUS_BAUDE_RATE_REG(i2c_current_bus))));
+
+	/* issue a stop bit */
+	mvTwsiStopBitSet(0);
+
+	DB(mvOsPrintf("%s: successful I2C probe\n", __func__));
+	return MV_TRUE; /* successful completion */
+}
+
+/*******************************************************************************
+* mvBoardIsEepromEnabled - read EEPROM and verify if EEPROM exists
+*
+* DESCRIPTION:
+*       This function returns MV_TRUE if board configuration EEPROM exists on board.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_BOOL :  MV_TRUE if EEPROM exists, else return MV_FALSE.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsEepromEnabled(void)
+{
+	MV_U8 addr = mvBoardTwsiAddrGet(BOARD_DEV_TWSI_EEPROM, 0);
+
+	if (addr == 0xFF)
+		return MV_FALSE;
+
+	/* TBD - check if jumper exists */
+	/* by default EEPROM is enabled */
+	DB(mvOsPrintf("%s: EEPROM Jumper is enabled\n", __func__));
+
+	DB(mvOsPrintf("%s probing for i2c chip 0x%x\n", __func__, addr));
+	if (mvBoardTwsiProbe((MV_U32)addr) == MV_TRUE)
+		return MV_TRUE;  /* EEPROM enabled */
+	else
+		return MV_FALSE; /* EEPROM disabled */
+}
+
+/*******************************************************************************
+* mvBoardConfigTypeGet
+*
+* DESCRIPTION:
+*       Return the Config type fields information for a given Config type class.
+*
+* INPUT:
+*       configClass - The Config type field to return the information for.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_BOARD_CONFIG_TYPE_INFO struct with mask, offset and register number.
+*
+*******************************************************************************/
+MV_BOOL mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo)
+{
+	int i;
+	MV_U32 boardId = mvBoardIdIndexGet(mvBoardIdGet());
+
+	/* verify existence of requested config type, pull its data,
+	 * and check if field is relevant to current running board */
+	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION ; i++)
+		if (boardConfigTypesInfo[i].configId == configClass) {
+			*configInfo = boardConfigTypesInfo[i];
+			if (boardConfigTypesInfo[i].isActiveForBoard[boardId])
+				return MV_TRUE;
+			else
+				return MV_FALSE;
+		}
+
+	mvOsPrintf("%s: Error: requested MV_CONFIG_TYPE_ID was not found (%d)\n", __func__, configClass);
+	return MV_FALSE;
+}
+
+/*******************************************************************************
+* mvBoardSysConfigGet
+*
+* DESCRIPTION: Read Board configuration Field
+*
+* INPUT: configField - Field description enum
+*
+* OUTPUT: None
+*
+* RETURN:
+*       if field is valid - returns requested Board configuration field value
+*
+*******************************************************************************/
+MV_U32 mvBoardSysConfigGet(MV_CONFIG_TYPE_ID configField)
+{
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
+
+	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
+		mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
+		DB(mvOsPrintf("%s: Error: Requested board config is invalid for this board" \
+						" (%d)\n", __func__, configField));
+		return MV_ERROR;
+	}
+
+	return boardOptionsConfig[configField];
+}
+
+/*******************************************************************************
+* mvBoardSysConfigSet
+*
+* DESCRIPTION: Write Board configuration Field to local array
+*
+* INPUT: configField - Field description enum
+*
+* OUTPUT: None
+*
+* RETURN:
+*       Write requested Board configuration field value to local array
+*
+*******************************************************************************/
+MV_STATUS mvBoardSysConfigSet(MV_CONFIG_TYPE_ID configField, MV_U8 value)
+{
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
+
+	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
+		mvBoardConfigTypeGet(configField, &configInfo) != MV_TRUE) {
+		DB(mvOsPrintf("Error: Requested board config is invalid for this board" \
+						" (%d)\n", configField));
+		return MV_ERROR;
+	}
+
+	boardOptionsConfig[configField] = value;
+
+	return MV_OK;
+}
+
+/*******************************************************************************
+* mvBoardEepromWrite - Write a new configuration value for a specific field
+*
+* DESCRIPTION:
+*       Write configuration to EEPROM
+*       EEPROM expected mapping:
+*       [0x0-0x7](64bits) - board configuration
+*       [0x8-0xB](32bits) - pattern
+*
+* INPUT:
+*       None
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Returns MV_TRUE if a chip responded, MV_FALSE on failure
+*
+*******************************************************************************/
+MV_STATUS mvBoardEepromWrite(MV_CONFIG_TYPE_ID configType, MV_U8 value)
+{
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
+	MV_U32 readValue;
+
+	if (mvBoardConfigTypeGet(configType, &configInfo) != MV_TRUE) {
+		mvOsPrintf("%s: Error: Write configuration to EEPROM failed\n", __func__);
+		return MV_ERROR;
+	}
+	/* check if value is bigger then field's limit */
+	if (value > configInfo.mask >> configInfo.offset) {
+		mvOsPrintf("%s: Error: Requested write value is not valid (%d)\n", __func__, value);
+		return MV_ERROR;
+	}
+
+	/* Read */
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, configInfo.byteNum, (MV_U8 *)&readValue, 4) != MV_OK) {
+		mvOsPrintf("%s: Error: Read configuration from EEPROM failed\n", __func__);
+		return MV_ERROR;
+	}
+	/* Swap byte's order to be from LSB to MSB:
+		- When reading 32bit variables, the I2C commands display the bytes from LSB to MSB
+		- mvBoardTwsiSet/Get writes/reads bytes according to their actual address location
+		- in order to keep I2C output aligned with original written data
+			we reverse the byte order to be from LSB to MSB before each read/write */
+	readValue = cpu_to_be32(readValue);
+
+	/* Modify */
+	readValue &= ~configInfo.mask;
+	readValue |= (value << configInfo.offset);
+
+	readValue = be32_to_cpu(readValue);
+	/* Write */
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, configInfo.byteNum, (MV_U8 *)&readValue, 4) != MV_OK) {
+		mvOsPrintf("%s: Error: Write configuration to EEPROM failed\n", __func__);
+		return MV_ERROR;
+	}
+
+	/* Update local array information */
+	mvBoardSysConfigSet(configInfo.configId, value);
+
+	return MV_OK;
+}
+
+/*******************************************************************************
+* mvBoardConfigurationConflicts
+*
+* DESCRIPTION:
+*       Check if there is any conflicts with the board configurations
+*
+* INPUT:
+*       field = Field name of configuration
+*       writeVal = option number
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_OK: if there is no conflicts
+*       MV_ERROR: conflict in one configuration
+*
+*******************************************************************************/
+MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
+{
+	return MV_OK;
+}
+#endif /* CONFIG_CMD_BOARDCFG */

@@ -761,15 +761,26 @@ S_asicGlobalRegDb asicGlbDb[] =
 #endif
 #endif
 	[mvAsicReg_PON_INTERNAL_DG]                       =  { mvAsicReg_PON_INTERNAL_DG,                       0x182E4,                         0x182E4,  asicRW,     0x0000007F,     0,      0,     0,      0,     "ONU internal Dying Gasp support"},
+
+#ifdef CONFIG_AVANTA_LP
+	[mvAsicReg_PT_PATTERN_SELECT]                     =  { mvAsicReg_PT_PATTERN_SELECT,                     0xA2E54,                         0x32054,  asicRW,     0x0000000F,     4,      0,     0,      0,     "PHY test pattern select"},
+	[mvAsicReg_PT_PATTERN_ENABLED]                    =  { mvAsicReg_PT_PATTERN_ENABLED,                    0xA2E54,                         0x32054,  asicRW,     0x00000001,     15,     0,     0,      0,     "PHY test pattern enabled"},
+	[mvAsicReg_PT_PATTERN_DATA]                       =  { mvAsicReg_PT_PATTERN_DATA,                       0xA2E6C,                         0x3206C,  asicRW,     0x0000FFFF,     0,      0,     0,      0,     "PHY test pattern data / user pattern [15:0]"},
+	[mvAsicReg_PT_PATTERN_USER_DATA_01]               =  { mvAsicReg_PT_PATTERN_USER_DATA_01,               0xA2E68,                         0x32068,  asicRW,     0x0000FFFF,     0,      0,     0,      0,     "PHY test user pattern [31:16]"},
+	[mvAsicReg_PT_PATTERN_USER_DATA_02]               =  { mvAsicReg_PT_PATTERN_USER_DATA_02,               0xA2E64,                         0x32064,  asicRW,     0x0000FFFF,     0,      0,     0,      0,     "PHY test user pattern [47:32]"},
+	[mvAsicReg_PT_PATTERN_USER_DATA_03]               =  { mvAsicReg_PT_PATTERN_USER_DATA_03,               0xA2E60,                         0x32060,  asicRW,     0x0000FFFF,     0,      0,     0,      0,     "PHY test user pattern [63:48]"},
+	[mvAsicReg_PT_PATTERN_USER_DATA_04]               =  { mvAsicReg_PT_PATTERN_USER_DATA_04,               0xA2E5C,                         0x3205C,  asicRW,     0x0000FFFF,     0,      0,     0,      0,     "PHY test user pattern [79:64]"},
+	[mvAsicReg_PT_PATTERN_USER_DATA_05]               =  { mvAsicReg_PT_PATTERN_USER_DATA_05,               0xA2E58,                         0x32058,  asicRW,     0x0000FFFF,     0,      0,     0,      0,     "PHY test user pattern [96:80]"},
+#else
 	[mvAsicReg_PT_PATTERN_SELECT]                     =  { mvAsicReg_PT_PATTERN_SELECT,                     0xA2E54,                         0xA2E54,  asicRW,     0x00000007,     5,      0,     0,      0,     "PHY test pattern select"},
 	[mvAsicReg_PT_PATTERN_ENABLED]                    =  { mvAsicReg_PT_PATTERN_ENABLED,                    0xA2E54,                         0xA2E54,  asicRW,     0x00000001,     15,     0,     0,      0,     "PHY test pattern enabled"},
-	[mvAsicReg_PT_PATTERN_DATA]                       =  { mvAsicReg_PT_PATTERN_DATA,                       0xA2E6C,                         0xA2E6C,  asicRW,     0x000000FF,     0,      0,     0,      0,     "PHY test pattern data / user pattern [15:0]"},
+	[mvAsicReg_PT_PATTERN_DATA]			  =  { mvAsicReg_PT_PATTERN_DATA,			0xA2E6C,			 0xA2E6C,  asicRW,     0x0000FFFF,     0,      0,     0,      0,     "PHY test pattern data / user pattern [15:0]"},
 	[mvAsicReg_PT_PATTERN_USER_DATA_01]               =  { mvAsicReg_PT_PATTERN_USER_DATA_01,               0xA2E68,                         0xA2E68,  asicRW,     0x0000FFFF,     0,      0,     0,      0,     "PHY test user pattern [31:16]"},
 	[mvAsicReg_PT_PATTERN_USER_DATA_02]               =  { mvAsicReg_PT_PATTERN_USER_DATA_02,               0xA2E64,                         0xA2E64,  asicRW,     0x0000FFFF,     0,      0,     0,      0,     "PHY test user pattern [47:32]"},
 	[mvAsicReg_PT_PATTERN_USER_DATA_03]               =  { mvAsicReg_PT_PATTERN_USER_DATA_03,               0xA2E60,                         0xA2E60,  asicRW,     0x0000FFFF,     0,      0,     0,      0,     "PHY test user pattern [63:48]"},
 	[mvAsicReg_PT_PATTERN_USER_DATA_04]               =  { mvAsicReg_PT_PATTERN_USER_DATA_04,               0xA2E5C,                         0xA2E5C,  asicRW,     0x0000FFFF,     0,      0,     0,      0,     "PHY test user pattern [79:64]"},
 	[mvAsicReg_PT_PATTERN_USER_DATA_05]               =  { mvAsicReg_PT_PATTERN_USER_DATA_05,               0xA2E58,                         0xA2E58,  asicRW,     0x0000FFFF,     0,      0,     0,      0,     "PHY test user pattern [96:80]"},
-
+#endif
 	[mvAsicReg_GUNIT_TX_0_PKT_MOD_MAX_HEAD_SIZE_CFG]  =  { mvAsicReg_GUNIT_TX_0_PKT_MOD_MAX_HEAD_SIZE_CFG,  0xA59D0,                         0xA59D0,  asicRW,     0x000000FE,     1,      0,     0,      0,     "GPON GUNIT Pkt Mod Mac Head Size for TX 0"},
 	[mvAsicReg_GUNIT_TX_1_PKT_MOD_MAX_HEAD_SIZE_CFG]  =  { mvAsicReg_GUNIT_TX_1_PKT_MOD_MAX_HEAD_SIZE_CFG,  0xA5DD0,                         0xA5DD0,  asicRW,     0x000000FE,     1,      0,     0,      0,     "GPON GUNIT Pkt Mod Mac Head Size for TX 1"},
 	[mvAsicReg_GUNIT_TX_2_PKT_MOD_MAX_HEAD_SIZE_CFG]  =  { mvAsicReg_GUNIT_TX_2_PKT_MOD_MAX_HEAD_SIZE_CFG,  0xA79D0,                         0xA79D0,  asicRW,     0x000000FE,     1,      0,     0,      0,     "GPON GUNIT Pkt Mod Mac Head Size for TX 2"},

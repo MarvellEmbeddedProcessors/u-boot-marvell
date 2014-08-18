@@ -66,7 +66,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-
 #define MV_MODULE_INFO { \
 { MV_MODULE_MII,		0x1,	0,	 0x4,	{ 0, 1 } }, \
 { MV_MODULE_SLIC_TDM_DEVICE,	0x0,	0,	 0x1,	{ 0, 1 } }, \
@@ -98,6 +97,75 @@ extern "C" {
 { "rdserdes4",		MV_SATR_RD_SERDES4_CFG,		0x4,	2, 1, 1, {1, 0}, 0},\
 { "max_option",		MV_SATR_MAX_OPTION,		0x0,	0, 0, 0, {0, 0}, 0},\
 };
+
+#ifdef CONFIG_CMD_BOARDCFG
+#define MV_BOARD_CONFIG_MAX_BYTE_COUNT  8
+
+typedef enum _mvConfigTypeID {
+	MV_CONFIG_BOARDID,
+	MV_CONFIG_LANE0,
+	MV_CONFIG_LANE1,
+	MV_CONFIG_LANE2,
+	MV_CONFIG_LANE3,
+	MV_CONFIG_LANE4,
+	MV_CONFIG_LANE5,
+	MV_CONFIG_LANE6,
+	MV_CONFIG_NSS_EN,
+	MV_CONFIG_DDR_BUSWIDTH,
+	MV_CONFIG_DDR_ECC_EN,
+	MV_CONFIG_TYPE_MAX_OPTION,
+	MV_CONFIG_TYPE_CMD_DUMP_ALL,
+	MV_CONFIG_TYPE_CMD_SET_DEFAULT
+} MV_CONFIG_TYPE_ID;
+
+/* {{MV_CONFIG_TYPE_ID ConfigID, MV_U32 Mask,  Offset, byteNum,    isActiveForBoard[]}} */
+#define MV_EEPROM_CONFIG_INFO { \
+{ MV_CONFIG_BOARDID,		0xFF000000,	24,	0,	{1 } }, \
+{ MV_CONFIG_LANE0,		0x7,		0,	0,	{1 } }, \
+{ MV_CONFIG_LANE1,		0x78,		3,	0,	{1 } }, \
+{ MV_CONFIG_LANE2,		0x380,		7,	0,	{1 } }, \
+{ MV_CONFIG_LANE3,		0x3C00,		10,	0,	{1 } }, \
+{ MV_CONFIG_LANE4,		0x3C000,	14,	0,	{1 } }, \
+{ MV_CONFIG_LANE5,		0x3C0000,	18,	0,	{1 } }, \
+{ MV_CONFIG_LANE6,		0x7,		0,	4,	{1 } }, \
+{ MV_CONFIG_NSS_EN,		0x8,		3,	4,	{1 } }, \
+{ MV_CONFIG_DDR_BUSWIDTH,	0x10,		4,	4,	{1 } }, \
+{ MV_CONFIG_DDR_ECC_EN,		0x20,		5,	4,	{1 } }, \
+};
+
+#define MV_BOARD_CONFIG_CMD_STR "serdes0, serdes1, serdes2, serdes3, serdes4, serdes5, serdes6, nss_en,\n"	\
+				"\tddr_buswidth, ddr_ecc\n\n"
+#define MV_BOARD_CONFIG_CMD_MAX_OPTS 10
+
+/*MV_CMD_TYPE_ID,		command name,		Name,			numOfValues,	Possible Values */
+#define MV_BOARD_CONFIG_CMD_INFO {										\
+{MV_CONFIG_LANE0,	"serdes0",	"SerDes Lane #0",	5,						\
+	{"UnConnected", "PCI-e#0", "SATA3 #0", "SGMII #0", "SGMII(v3) #0"} },					\
+{MV_CONFIG_LANE1,	"serdes1",	"SerDes Lane #1",	10,						\
+	{"UnConnected", "PCI-e#0", "PCI-e#0-1", "SATA3 #0", "SGMII #0", "SGMII #1", "USB3-Host #0", "QSGMII",	\
+	"SGMII(v3) #0", "SGMII(v3) #1"} },									\
+{MV_CONFIG_LANE2,	"serdes2",	"SerDes Lane #2",	6,						\
+	{"UnConnected", "PCI-e#1", "PCI-e#0-2", "SATA3 #1", "SGMII #1", "SGMII(v3) #1"} },			\
+{MV_CONFIG_LANE3,	"serdes3",	"SerDes Lane #3",	9,						\
+	{"UnConnected", "PCI-e#3", "PCI-e#0-3", "SATA3 #3", "SGMII #2", "USB3-Host #0", "USB-Device",		\
+	"SGMII(v3) #2", "XAUI #3"} },										\
+{MV_CONFIG_LANE4,	"serdes4",	"SerDes Lane #4",	10,						\
+	{"UnConnected", "PCI-e#1", "UnConnected 1", "SGMII #3", "USB3-Host #0", "USB-Device", "SATA3 #2",	\
+	"PCI-e#2", "SGMII(v3) #3", "XAUI #2"} },								\
+{MV_CONFIG_LANE5,	"serdes5",	"SerDes Lane #5",	9,						\
+	{"UnConnected", "PCI-e#2", "SATA3 #2", "SGMII #2", "USB3-Host #1", "USB-Device", "SGMII(v3) #2",	\
+	"Reserved", "XAUI #1" } },										\
+{MV_CONFIG_LANE6,	"serdes6",	"SerDes Lane #6",	5,						\
+	{"UnConnected", "PCI-e#1", "SGMII(v3) #3", "Reserved", "XAUI #1"} },					\
+{MV_CONFIG_NSS_EN,	"nss_en",	"NSS enable",		2,						\
+	{"Disable", "Enable"} },										\
+{MV_CONFIG_DDR_BUSWIDTH,	"ddr_buswidth",	"Buswidth enable",		2,				\
+	{"Disable", "Enable"} },										\
+{MV_CONFIG_DDR_ECC_EN,	"ddr_ecc",	"Dram ECC enable",		2,					\
+	{"32bit", "16bit"} },											\
+};
+
+#endif /* CONFIG_CMD_BOARDCFG */
 
 #ifdef __cplusplus
 }

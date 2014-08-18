@@ -26,7 +26,7 @@ typedef struct _boardConfig {
 	char *cmdName;
 	char *Name;
 	MV_U8 numOfValues;
-	char *Value[6];
+	char *Value[MV_BOARD_CONFIG_CMD_MAX_OPTS];
 } MV_BOARD_CONFIG_VALUE;
 
 MV_BOARD_CONFIG_VALUE boardConfig[] = MV_BOARD_CONFIG_CMD_INFO;
@@ -165,7 +165,7 @@ int do_boardCfg(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		isEepromEnabledFlag = (mvBoardIsEepromEnabled() == MV_TRUE) ? 1 : 0;
 
 	if (isEepromEnabledFlag == 0) {
-		printf("Error: EEPROM is currently not accessible on board'\n");
+		printf("Error: EEPROM is currently not accessible on board\n");
 		return 0;
 	}
 

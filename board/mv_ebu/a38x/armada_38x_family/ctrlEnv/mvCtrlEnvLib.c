@@ -426,6 +426,9 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 
 	/* If set to Auto detect, read board config info, update MPP group types*/
 	if (mvBoardConfigAutoDetectEnabled()) {
+#ifdef CONFIG_CMD_BOARDCFG
+		mvBoardSysConfigInit();
+#endif
 		mvBoardInfoUpdate();
 	}
 

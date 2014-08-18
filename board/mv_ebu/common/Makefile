@@ -93,7 +93,7 @@ USP_OBJS =	$(USP_DIR)/mv_spi.o		\
 		$(USP_DIR)/mv_fdt.o		\
 		$(USP_DIR)/cmd_ddr.o		\
 		$(USP_DIR)/mv_phy.o
-USP_OBJS-$(CONFIG_AVANTA_LP) = $(USP_DIR)/cmd_boardCfg.o
+USP_OBJS-$(CONFIG_CMD_BOARDCFG) = $(USP_DIR)/cmd_boardCfg.o
 USP_OBJS += $(sort $(USP_OBJS-y))
 
 ifdef MAKE_PPV2

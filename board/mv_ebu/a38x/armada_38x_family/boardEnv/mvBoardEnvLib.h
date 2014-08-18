@@ -84,6 +84,8 @@ extern "C" {
 #include "boardEnv/mvBoardEnvLib39x.h"
 #endif
 
+#define EEPROM_VERIFICATION_PATTERN     0xfadecafe
+
 #define ARRSZ(x)                (sizeof(x) / sizeof(x[0]))
 #define BOARD_ETH_SWITCH_PORT_NUM       7
 #define BOARD_ETH_SWITCH_SMI_SCAN_MODE	1	/* Use manual scanning mode */
@@ -121,6 +123,7 @@ typedef enum _devTwsiBoardClass {
 	BOARD_DEV_TWSI_SATR,
 	BOARD_TWSI_MODULE_DETECT,
 	BOARD_TWSI_IO_EXPANDER,
+	BOARD_DEV_TWSI_EEPROM,
 	BOARD_TWSI_OTHER
 } MV_BOARD_TWSI_CLASS;
 
@@ -544,6 +547,25 @@ MV_U32 mvBoardUartPortGet(MV_VOID);
 int mvBoardNorFlashConnect(void);
 MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
 
+#ifdef CONFIG_CMD_BOARDCFG
+typedef struct _boardConfigTypesInfo {
+	MV_CONFIG_TYPE_ID configId;
+	MV_U32 mask;
+	MV_U32 offset;
+	MV_U32 byteNum;
+	MV_U32 isActiveForBoard[MV_MARVELL_BOARD_NUM];
+} MV_BOARD_CONFIG_TYPE_INFO;
+
+MV_STATUS mvBoardEepromInit(void);
+MV_BOOL mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo);
+MV_STATUS mvBoardConfigGet(MV_U32 *config);
+MV_VOID mvBoardSysConfigInit(void);
+MV_BOOL mvBoardIsEepromEnabled(void);
+MV_STATUS mvBoardEepromWrite(MV_CONFIG_TYPE_ID configType, MV_U8 value);
+MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal);
+MV_U32 mvBoardSysConfigGet(MV_CONFIG_TYPE_ID configField);
+MV_STATUS mvBoardSysConfigSet(MV_CONFIG_TYPE_ID configField, MV_U8 value);
+#endif /* CONFIG_CMD_BOARDCFG */
 
 #ifdef __cplusplus
 }

@@ -100,6 +100,30 @@ extern "C" {
 { "max_option",	MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0, 0}, 0},\
 };
 
+#ifdef CONFIG_CMD_BOARDCFG
+#define MV_BOARD_CONFIG_MAX_BYTE_COUNT  8
+
+typedef enum _mvConfigTypeID {
+	MV_CONFIG_EXAMPLE0,
+	MV_CONFIG_TYPE_MAX_OPTION,
+	MV_CONFIG_TYPE_CMD_DUMP_ALL,
+	MV_CONFIG_TYPE_CMD_SET_DEFAULT
+} MV_CONFIG_TYPE_ID;
+
+#define MV_EEPROM_CONFIG_INFO { \
+{ MV_CONFIG_EXAMPLE0,	0x7,		0,	0,	{1, 1, 1, 1} }, \
+};
+
+#define MV_BOARD_CONFIG_CMD_STR "example0\n\n"
+#define MV_BOARD_CONFIG_CMD_MAX_OPTS 5
+
+#define MV_BOARD_CONFIG_CMD_INFO {\
+{MV_CONFIG_EXAMPLE0,	"example0",	"Example #0",	5,					\
+	{"Option0", "Option1", "Option2", "Option3", "Option4"} },				\
+};
+
+#endif /* CONFIG_CMD_BOARDCFG */
+
 #ifdef __cplusplus
 }
 #endif  /* __cplusplus */

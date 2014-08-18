@@ -235,4 +235,53 @@ MV_STATUS mvHwsTwsiInitWrapper(MV_VOID);
  ***************************************************************************/
 MV_U32 mvSysEnvSuspendWakeupCheck(MV_VOID);
 
+#ifdef CONFIG_CMD_BOARDCFG
+#define MV_INFO_TWSI_EEPROM_DEV     0x50
+#define EEPROM_VERIFICATION_PATTERN     0xfadecafe
+#define MV_BOARD_CONFIG_MAX_BYTE_COUNT  8
+
+#ifdef CONFIG_ARMADA_39X
+/* tables below are relevant for A390 SoC */
+typedef enum _mvConfigTypeID {
+	MV_CONFIG_BOARDID,
+	MV_CONFIG_LANE0,
+	MV_CONFIG_LANE1,
+	MV_CONFIG_LANE2,
+	MV_CONFIG_LANE3,
+	MV_CONFIG_LANE4,
+	MV_CONFIG_LANE5,
+	MV_CONFIG_LANE6,
+	MV_CONFIG_NSS_EN,
+	MV_CONFIG_DDR_BUSWIDTH,
+	MV_CONFIG_DDR_ECC_EN,
+	MV_CONFIG_TYPE_MAX_OPTION,
+	MV_CONFIG_TYPE_CMD_DUMP_ALL,
+	MV_CONFIG_TYPE_CMD_SET_DEFAULT
+} MV_CONFIG_TYPE_ID;
+
+#define MV_EEPROM_CONFIG_INFO { \
+{ MV_CONFIG_BOARDID,		0xFF000000,	24,	0,	{1} }, \
+{ MV_CONFIG_LANE0,		0x7,		0,	0,	{1} }, \
+{ MV_CONFIG_LANE1,		0x78,		3,	0,	{1} }, \
+{ MV_CONFIG_LANE2,		0x380,		7,	0,	{1} }, \
+{ MV_CONFIG_LANE3,		0x3C00,		10,	0,	{1} }, \
+{ MV_CONFIG_LANE4,		0x3C000,	14,	0,	{1} }, \
+{ MV_CONFIG_LANE5,		0x3C0000,	18,	0,	{1} }, \
+{ MV_CONFIG_LANE6,		0x7,		0,	4,	{1} }, \
+{ MV_CONFIG_NSS_EN,		0x8,		3,	4,	{1} }, \
+{ MV_CONFIG_DDR_BUSWIDTH,	0x10,		4,	4,	{1} }, \
+{ MV_CONFIG_DDR_ECC_EN,		0x20,		5,	4,	{1} }, \
+};
+
+typedef struct _boardConfigTypesInfo {
+	MV_CONFIG_TYPE_ID configId;
+	MV_U32 mask;
+	MV_U32 offset;
+	MV_U32 byteNum;
+	MV_U32 isActiveForBoard[MV_MARVELL_BOARD_NUM];
+} MV_BOARD_CONFIG_TYPE_INFO;
+
+#endif /* CONFIG_ARMADA_39X */
+#endif /* CONFIG_CMD_BOARDCFG */
+
 #endif

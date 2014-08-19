@@ -26,6 +26,58 @@ disclaimer.
 
 extern int do_sar(cmd_tbl_t *cmdtb, int flag, int argc, char *const argv[]);
 
+typedef struct _boardSatrDefault {
+	MV_SATR_TYPE_ID satrId;
+	MV_U32 defauleValueForBoard[MV_MARVELL_BOARD_NUM];
+} MV_BOARD_SATR_DEFAULT;
+
+MV_BOARD_SATR_DEFAULT boardSatrDefault[] = {
+/* 	defauleValueForBoard[] ={ DB_6720	 }*/
+{ MV_SATR_WRITE_CPU_FREQ,	{ 0x15 		}},
+{ MV_SATR_WRITE_CORE_CLK_SELECT,{ _200MHz	}},
+{ MV_SATR_WRITE_CPU1_ENABLE,	{ 1		}},
+{ MV_SATR_WRITE_SSCG_DISABLE,	{ 0		}},
+{ MV_SATR_WRITE_DDR_BUS_WIDTH,	{ 0		}},
+};
+static int do_sar_default(void)
+{
+	MV_U32 temp, defaultValue, boardIdIndex, boardId = mvBoardIdGet();
+
+	boardIdIndex = mvBoardIdIndexGet(boardId);
+
+	/* Frequency mode */
+	defaultValue = boardSatrDefault[MV_SATR_CPU_DDR_L2_FREQ].defauleValueForBoard[boardIdIndex];
+	if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU_DDR_L2_FREQ)))
+		mvCtrlSatRWrite(MV_SATR_WRITE_CPU_FREQ, MV_SATR_CPU_DDR_L2_FREQ, defaultValue);
+
+	/* Core Clock */
+	defaultValue = boardSatrDefault[MV_SATR_CORE_CLK_SELECT].defauleValueForBoard[boardIdIndex];
+	if (defaultValue == _200MHz)
+		defaultValue = 0x1; /* 0x1: 200MHz */
+	else
+		defaultValue = 0x0; /* 0x0: 166MHz */
+
+	if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CORE_CLK_SELECT)))
+		mvCtrlSatRWrite(MV_SATR_WRITE_CORE_CLK_SELECT, MV_SATR_CORE_CLK_SELECT, defaultValue);
+
+	/* Single / Dual CPU */
+	defaultValue = boardSatrDefault[MV_SATR_CPU1_ENABLE].defauleValueForBoard[boardIdIndex];
+	if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_CPU1_ENABLE)))
+		mvCtrlSatRWrite(MV_SATR_WRITE_CPU1_ENABLE, MV_SATR_CPU1_ENABLE, defaultValue);
+
+	/* SSCG */
+	defaultValue = boardSatrDefault[MV_SATR_SSCG_DISABLE].defauleValueForBoard[boardIdIndex];
+	if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_SSCG_DISABLE)))
+		mvCtrlSatRWrite(MV_SATR_WRITE_SSCG_DISABLE, MV_SATR_SSCG_DISABLE, defaultValue);
+
+	/* MV_SATR_DDR_BUS_WIDTH */
+	defaultValue = boardSatrDefault[MV_SATR_DDR_BUS_WIDTH].defauleValueForBoard[boardIdIndex];
+	if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_SSCG_DISABLE)))
+		mvCtrlSatRWrite(MV_SATR_WRITE_DDR_BUS_WIDTH, MV_SATR_DDR_BUS_WIDTH, defaultValue);
+
+	printf("\nSample at Reset values were restored to default.\n");
+	return 0;
+}
 static int do_sar_list(int argc, char *const argv[])
 {
 	const char *cmd;
@@ -161,7 +213,7 @@ static int do_sar_read(int argc, char *const argv[])
 	}
 	else if (strcmp(cmd, "cpubypass") == 0) {
 		if (GetAndVerifySatr(MV_SATR_CPU_PLL_XTAL_BYPASS, &temp) == MV_OK)
-		printf("\nsscg = %d  ==> %s Bypass\n",temp, (temp == 0) ? "PLL" : "XTAL");
+		printf("\ncpubypass = %d  ==> %s Bypass\n",temp, (temp == 0) ? "PLL" : "XTAL");
 	}
 	else if (strcmp(cmd, "cpuendi") == 0) {
 		if (GetAndVerifySatr(MV_SATR_CPU0_ENDIANESS, &temp) == MV_OK)
@@ -174,10 +226,9 @@ static int do_sar_read(int argc, char *const argv[])
 	else if (strcmp(cmd, "cputhumb") == 0) {
 		if (GetAndVerifySatr(MV_SATR_CPU0_THUMB, &temp) == MV_OK)
 			printf("\ncputhumb = %d  ==> %s mode \n", temp, (temp == 0) ? "ARM" : "Thumb");
-	}
-	else if (strcmp(cmd, "pcimode0") == 0) {
+	} else if (strcmp(cmd, "pcimode0") == 0) {
 		if (GetAndVerifySatr(MV_SATR_PEX0_CLOCK, &temp) == MV_OK)
-		printf("\npcimode0 = %d  ==> %s mode\n",temp, (temp == 0) ? "Root Complex" : "Clock");
+		printf("\npcimode0 = %d  ==> %s mode\n", temp, (temp == 0) ? "input" : "output");
 	}
 	else if (strcmp(cmd, "refclk") == 0) {
 		if (GetAndVerifySatr(MV_SATR_REF_CLOCK_ENABLE, &temp) == MV_OK)
@@ -208,9 +259,9 @@ static int do_sar_read(int argc, char *const argv[])
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_SSCG_DISABLE)))
 			printf("sscg \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_DDR_BUS_WIDTH)))
-			printf("DDR Bus width \t= %3d  ==> %s Bit\n",temp, (temp == 0) ? "32" : "16");
+			printf("DDR Bus width \t= %3d  ==>   %s Bit\n",temp, (temp == 0) ? "32" : "16");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_MAC1)))
-			printf("MAC1 \t\t= %3d  ==> %s Bit\n",temp, (temp == 0) ? "Internal GE-PHY" : "SGMII (via ETH SerDes)");
+			printf("MAC1 \t\t= %3d  ==>   %s Bit\n",temp, (temp == 0) ? "Internal GE-PHY" : "SGMII (via ETH SerDes)");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_I2C0_SERIAL_ROM)))
 			printf("i2c0 \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_EXTERNAL_CORE_RESET)))
@@ -229,8 +280,6 @@ static int do_sar_read(int argc, char *const argv[])
 			printf("cputhumb \t= %3d  ==>   %s mode \n", temp, (temp == 0) ? "ARM" : "Thumb");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_PEX0_CLOCK)))
 			printf("pcimode0 \t= %3d  ==>   PEX0 clock %s enable\n",temp, (temp == 0) ? "Input" : "Output");
-		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_PEX1_CLOCK)))
-			printf("pcimode1 \t= %3d  ==>   PEX1 clock %s enable\n",temp, (temp == 0) ? "Input" : "Output");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_REF_CLOCK_ENABLE)))
 			printf("refclk \t\t= %3d  ==>   %s\n",temp, (temp == 0) ? "Disabled" : "Enabled");
 		if (MV_ERROR != (temp=mvCtrlSatRRead(MV_SATR_TESTER_OPTIONS)))
@@ -312,7 +361,7 @@ usage:
 
 int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 {
-	const char *cmd, *cmd2;
+	const char *cmd, *cmd2 = NULL;
 
 	/* need at least two arguments */
 	if (argc < 2)
@@ -325,13 +374,25 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 
 	if (strcmp(cmd, "list") == 0)
 		return do_sar_list(argc - 2, argv + 2);
+	else if ((strcmp(cmd, "write") == 0) && (strcmp(cmd2, "default") == 0)) {
+		if (do_sar_default() == 0) {
+			do_sar_read(argc - 3, argv + 3);
+			printf("\nChanges will be applied after reset.\n\n");
+			return 0;
+		}
+		else
+			return 1;
+	}
 	else if (strcmp(cmd, "write") == 0) {
 		if (do_sar_write(argc - 2, argv + 2) == 0) {
 			do_sar_read(argc - 2, argv + 2);
 			if (strcmp(cmd2, "freq") == 0 && !mvCtrlIsValidSatR())
 				printf("\n*** Selected Unsupported DDR/CPU/L2 Clock configuration ***\n\n");
+			printf("\nChanges will be applied after reset.\n");
+			return 0;
 		}
-		return 0;
+		else
+			return 1;
 
 	} else if (strcmp(cmd, "read") == 0)
 		return do_sar_read(argc - 2, argv + 2);
@@ -367,7 +428,6 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR read cpunmfi	- read and print the CPU FIQ mask mode (Little/Big) S@R value (reading the I2C device)\n"
 	"SatR read cputhumb	- read and print the CPU Thumb mode (ARM/ Thumb) S@R value (reading the I2C device)\n"
 	"SatR read pcimode0	- read and print the pci0 clock mode (input/output) from S@R value (reading the I2C device)\n"
-	"SatR read pcimode1	- read and print the pci0 clock mode (input/output) from S@R value (reading the I2C device)\n"
 	"SatR read refclk	- read and print the ref clock mode S@R value \n"
 	"SatR read tester	- read and print the tester mode S@R value\n\n"
 
@@ -376,6 +436,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 	"SatR write cpusnum      <val> - write the S@R with number of CPU cores value\n"
 	"SatR write sscg         <val> - write the S@R with sscg mode value\n"
 	"SatR write ddr_buswidth <val> - write the S@R with ddr bus width mode value\n"
+	"SatR write default		- restore writeable S@R values to their default value\n"
 );
 #endif /*defined(CONFIG_CMD_SAR)*/
 

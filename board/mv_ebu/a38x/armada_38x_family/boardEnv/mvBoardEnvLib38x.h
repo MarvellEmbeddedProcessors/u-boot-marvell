@@ -101,7 +101,8 @@ extern "C" {
 };
 
 #ifdef CONFIG_CMD_BOARDCFG
-#define MV_BOARD_CONFIG_MAX_BYTE_COUNT  8
+#define MV_BOARD_CONFIG_MAX_BYTE_COUNT	8
+#define MV_BOARD_CONFIG_DEFAULT_VALUE	{0x1921d0a1, 0x4 }
 
 typedef enum _mvConfigTypeID {
 	MV_CONFIG_EXAMPLE0,
@@ -117,6 +118,7 @@ typedef enum _mvConfigTypeID {
 #define MV_BOARD_CONFIG_CMD_STR "example0\n\n"
 #define MV_BOARD_CONFIG_CMD_MAX_OPTS 5
 
+/*MV_CMD_TYPE_ID,		command name,		Name,			numOfValues,	Possible Values */
 #define MV_BOARD_CONFIG_CMD_INFO {\
 {MV_CONFIG_EXAMPLE0,	"example0",	"Example #0",	5,					\
 	{"Option0", "Option1", "Option2", "Option3", "Option4"} },				\

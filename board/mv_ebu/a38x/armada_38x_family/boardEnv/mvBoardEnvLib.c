@@ -2791,6 +2791,45 @@ MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_EEPROM_CONFIG_INFO;
 MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 
 /*******************************************************************************
+* mvBoardEepromWriteDefaultCfg - Write default configuration to EEPROM
+*
+* DESCRIPTION:
+*       Write default configuration to EEPROM
+*       EEPROM expected mapping:
+*       [0x0-0x7](64bits) - board configuration
+*       [0x8-0xB](32bits) - pattern
+* INPUT:
+*       None
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Returns MV_TRUE if a chip responded, MV_FALSE on failure
+*
+*******************************************************************************/
+MV_STATUS mvBoardEepromWriteDefaultCfg(void)
+{
+	MV_U8 i;
+	MV_U32 defaultValue[2] = MV_BOARD_CONFIG_DEFAULT_VALUE;
+	/* write default board configuration, chunk of 4 bytes*/
+	for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4; i++) {
+		/* Swap byte's order to be from LSB to MSB:
+			- When reading 32bit variables, the I2C commands display the bytes from LSB to MSB
+			- mvBoardTwsiSet/Get writes/reads bytes according to their actual address location
+			- in order to keep I2C output aligned with original written data
+			we reverse the byte order to be from LSB to MSB before each read/write */
+		defaultValue[i] = cpu_to_be32(defaultValue[i]);
+		if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, i * 4, (MV_U8 *)&defaultValue[i], 4) != MV_OK) {
+			mvOsPrintf("%s: Error: Set default configuration to EEPROM failed\n", __func__);
+			return MV_ERROR;
+		}
+	}
+
+	return MV_OK;
+}
+
+/*******************************************************************************
 * mvBoardEepromInit - Verify if the EEPROM have been initialized
 *
 * DESCRIPTION:
@@ -2810,8 +2849,7 @@ MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 *******************************************************************************/
 MV_STATUS mvBoardEepromInit(void)
 {
-	MV_U32 pattern = 0, i;
-	MV_U32 defaultCfg[2] = {0x19000000, 0x0 };
+	MV_U32 pattern = 0;
 
 	if (mvBoardIsEepromEnabled() != MV_TRUE) {
 		DB(printf("%s: EEPROM doesn't exists on board\n" , __func__));
@@ -2834,13 +2872,9 @@ MV_STATUS mvBoardEepromInit(void)
 		return MV_OK;
 
 	/* Else write default configuration and set magic pattern */
-	/* write default board configuration */
-	for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4 ; i++) {
-		defaultCfg[i] = cpu_to_be32(defaultCfg[i]);
-		if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, i * 4, (MV_U8 *)&defaultCfg[i], 4) != MV_OK) {
-			mvOsPrintf("%s: Error: Write default configuration to EEPROM failed\n", __func__);
-			return MV_ERROR;
-		}
+	if (mvBoardEepromWriteDefaultCfg() != MV_OK) {
+		mvOsPrintf("%s: Error: Write default configuration to EEPROM failed\n", __func__);
+		return MV_ERROR;
 	}
 
 	pattern = be32_to_cpu(EEPROM_VERIFICATION_PATTERN);
@@ -2875,23 +2909,22 @@ MV_STATUS mvBoardEepromInit(void)
 MV_VOID mvBoardSysConfigInit(void)
 {
 	MV_U8 i, readValue;
-	MV_U32 configVal[2] = {0x0, 0x0};
+	MV_U32 defaultVal[2] = MV_BOARD_CONFIG_DEFAULT_VALUE;
+	MV_U32 configVal[2] = MV_BOARD_CONFIG_DEFAULT_VALUE;
 	MV_BOARD_CONFIG_TYPE_INFO configInfo;
-	MV_BOOL readSuccess = MV_FALSE;
+	MV_BOOL readSuccess = MV_FALSE, readFlagError = MV_TRUE;
 
 	memset(&boardOptionsConfig, 0x0, sizeof(MV_U32) * MV_CONFIG_TYPE_MAX_OPTION);
 
 	if (mvBoardEepromInit() != MV_OK) {
 		DB(mvOsPrintf("%s: Error: mvBoardEepromInit failed\n", __func__));
-		/* TODO: init the array with default values */
-		return;
+		readFlagError = MV_FALSE;
 	}
 	/* Read configuration data: 1st 8 bytes in  EEPROM, (read twice: each read of 4 bytes(32bit)) */
 	for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4; i++) {
 		if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, i * 4, (MV_U8 *)&configVal[i], 4) != MV_OK) {
 			DB(mvOsPrintf("%s: Error: mvBoardTwsiGet from EEPROM failed\n", __func__));
-			/* TODO: init the array with default values */
-			return;
+			readFlagError = MV_FALSE;
 		}
 		/* Swap byte's order to be from LSB to MSB:
 			- When reading 32bit variables, the I2C commands display the bytes from LSB to MSB
@@ -2901,6 +2934,11 @@ MV_VOID mvBoardSysConfigInit(void)
 		configVal[i] = be32_to_cpu(configVal[i]);
 	}
 
+	if (readFlagError == MV_FALSE) {
+		mvOsPrintf("%s: Warning Failed to init/read from EEPROM, set default configurations\n", __func__);
+		for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4; i++)
+			configVal[i] = defaultVal[i];
+	}
 	/* Save values Locally in configVal[] */
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
 		/* Get board configuration field information (Mask, offset, etc..) */

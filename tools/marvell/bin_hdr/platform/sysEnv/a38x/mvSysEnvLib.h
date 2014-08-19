@@ -239,9 +239,9 @@ MV_U32 mvSysEnvSuspendWakeupCheck(MV_VOID);
 #define MV_INFO_TWSI_EEPROM_DEV     0x50
 #define EEPROM_VERIFICATION_PATTERN     0xfadecafe
 #define MV_BOARD_CONFIG_MAX_BYTE_COUNT  8
+#define MV_BOARD_CONFIG_DEFAULT_VALUE		{0x1921d0a1, 0x4 }
 
-#ifdef CONFIG_ARMADA_39X
-/* tables below are relevant for A390 SoC */
+#ifdef CONFIG_ARMADA_39X /* tables below are relevant for A390 SoC */
 typedef enum _mvConfigTypeID {
 	MV_CONFIG_BOARDID,
 	MV_CONFIG_LANE0,

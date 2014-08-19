@@ -50,26 +50,16 @@ error:
 }
 
 /* Description:
- *	reset all configuration fields to it's default setup (0x0 for all fields)
+ *	reset all configuration fields to it's default setup
  * Usage:
  *	'boardConfig write default
-
- *	EEPROM expected mapping:
- *	[0x0] - configuration 1st byte
- *	[0x1] - configuration 2nd byte
- *	[0x2] - configuration 3rd byte
- *	[0x4-0x7] - 32bit pattern to detect if EEPROM is initialized */
+*/
 static int do_boardCfg_default(void)
 {
 	MV_U8 i;
-	MV_U32 defaultValue = 0x0;
 
-	/* 0x0 is the default value for all configuration fields */
-	/* write default board configuration (default value for all fields is 0x0) */
-	if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, 0, (MV_U8 *)&defaultValue, 4) != MV_OK) {
-		mvOsPrintf("%s: Error: Set default configuration to EEPROM failed\n", __func__);
+	if (mvBoardEepromWriteDefaultCfg() != MV_OK)
 		goto error;
-	}
 
 	/* Reset local array data to default as well */
 	for (i = 0; i <	MV_CONFIG_TYPE_MAX_OPTION; i++)

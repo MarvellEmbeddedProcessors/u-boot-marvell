@@ -1,0 +1,35 @@
+
+-- Source File:
+
+   (1) Makefile
+   (2) eccToolMain.cpp
+	--> Main Entry of ECC Image Tool
+   (3) mrvlFlashBCH.h
+	--> Header File for Marvell Flash LDPC Library
+   (4) buildEccImage.cpp/h
+	--> Image Encoding Handler
+   (5) ndPageInfo.cpp/h
+	--> Flash Page Allocation Descriptor
+
+-- Build:
+
+   (1) Run 'make' Command in Root Directory
+   (2) Check Build Target in './OBJ/' Directory
+
+-- Run Tool:
+
+   (1) Export Path to 'libmrvlFlashBCH.so'
+	--> 'export LD_LIBRARY_PATH=<OBJ-dir>:$LD_LIBRARY_PATH'
+   (2) Enter './OBJ' Directory
+   (3) Run './ecc_tool -i <input_file>' Command
+	--> Default page_size=2048, 4-bit ECC
+   (4) Check more option by './ecc_tool -h'
+
+-- Support New page_size & x-bit Ecc:
+
+   (1) Modify Page Allocation Table 'nandFlashDbTbl' in File 'ndPageInfo.cpp'
+  --> SHOULD Align to 'orion_nfc_naked_info_lkup' in NFC Driver
+
+-- BCH Parameter:
+
+   (1) BCH T is set to '16'.

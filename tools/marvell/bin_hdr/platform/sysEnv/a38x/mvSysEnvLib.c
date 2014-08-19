@@ -428,9 +428,10 @@ static int flagConfigInit = -1;
 static MV_VOID mvSysEnvConfigInit(void)
 {
 	MV_U8 i, readValue;
-	MV_U32 configVal[2] = {0x0, 0x0};
+	MV_U32 defaultVal[2] = MV_BOARD_CONFIG_DEFAULT_VALUE;
+	MV_U32 configVal[2] = MV_BOARD_CONFIG_DEFAULT_VALUE;
 	MV_BOARD_CONFIG_TYPE_INFO configInfo;
-	MV_BOOL readSuccess = MV_FALSE;
+	MV_BOOL readSuccess = MV_FALSE, readFlagError = MV_TRUE;
 
 	if (flagConfigInit != -1)
 		return;
@@ -439,16 +440,21 @@ static MV_VOID mvSysEnvConfigInit(void)
 	/* Read Board Configuration*/
 	if (mvSysEnvEepromInit() != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvConfigInit: Error: mvSysEnvEepromInit failed\n");
-		return;
+		readFlagError = MV_FALSE;
 	}
 
 	/* Read configuration data: 1st 8 bytes in  EEPROM, (read twice: each read of 4 bytes(32bit)) */
 	for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4 ; i++)
 		if (mvSysEnvEpromRead(i * 4, &configVal[i], 4, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
 			DEBUG_INIT_S("mvSysEnvConfigInit: Error: Read pattern from EEPROM failed\n");
-			return;
+			readFlagError = MV_FALSE;
 		}
 
+	if (readFlagError == MV_FALSE) {
+		DEBUG_INIT_S("mvSysEnvConfigInit: Warning Failed to init/read from EEPROM, set default configurations\n");
+		for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4; i++)
+			configVal[i] = defaultVal[i];
+	}
 	/* Save values Locally in configVal[] */
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
 		/* Get board configuration field information (Mask, offset, etc..) */

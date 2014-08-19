@@ -395,6 +395,9 @@ typedef struct _boardInfo {
 #define MV_BOARD_CONFIG_CMD_STR "mac0, mac1, mac0_switch_speed, sgmii0capacity, sgmii1capacity, sw_port4\n" \
 				"serdes1, serdes2, serdes3, ponserdes, ponpolarity, devicebus, tdm, ddr_buswidth\n\n"
 #define MV_BOARD_CONFIG_CMD_MAX_OPTS 6
+#define MV_BOARD_CONFIG_MAX_BYTE_COUNT		4
+#define MV_BOARD_CONFIG_DEFAULT_VALUE		{0x0 }
+
 /*MV_CMD_TYPE_ID,		command name,		Name,			numOfValues,	Possible Values */
 #define MV_BOARD_CONFIG_CMD_INFO {\
 {MV_CONFIG_MAC0,		"mac0",			"MAC0",				4, \
@@ -625,6 +628,7 @@ MV_VOID mvBoardSysConfigInit(void);
 MV_STATUS mvBoardSysConfigSet(MV_CONFIG_TYPE_ID configField, MV_U8 value);
 MV_U32 mvBoardSysConfigGet(MV_CONFIG_TYPE_ID configField);
 MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
+MV_STATUS mvBoardEepromWriteDefaultCfg(void);
 
 #ifdef __cplusplus
 }

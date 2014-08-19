@@ -3100,6 +3100,45 @@ MV_STATUS mvBoardTwsiProbe(MV_U32 chip)
 }
 
 /*******************************************************************************
+* mvBoardEepromWriteDefaultCfg - Write default configuration to EEPROM
+*
+* DESCRIPTION:
+*       Write default configuration to EEPROM
+*       EEPROM expected mapping:
+*       [0x0-0x3](32bits) - board configuration
+*       [0x4-0x7](32bits) - pattern
+* INPUT:
+*       None
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Returns MV_TRUE if a chip responded, MV_FALSE on failure
+*
+*******************************************************************************/
+MV_STATUS mvBoardEepromWriteDefaultCfg(void)
+{
+	MV_U8 i;
+	MV_U32 defaultValue[1] = MV_BOARD_CONFIG_DEFAULT_VALUE;
+	/* write default board configuration */
+	for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4; i++) {
+		/* Swap byte's order to be from LSB to MSB:
+			- When reading 32bit variables, the I2C commands display the bytes from LSB to MSB
+			- mvBoardTwsiSet/Get writes/reads bytes according to their actual address location
+			- in order to keep I2C output aligned with original written data
+			we reverse the byte order to be from LSB to MSB before each read/write */
+		defaultValue[i] = cpu_to_be32(defaultValue[i]);
+		if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, i * 4, (MV_U8 *)&defaultValue[i], 4) != MV_OK) {
+			mvOsPrintf("%s: Error: Set default configuration to EEPROM failed\n", __func__);
+			return MV_ERROR;
+		}
+	}
+
+	return MV_OK;
+}
+
+/*******************************************************************************
 * mvBoardEepromInit - Verify if the EEPROM have been initialized
 *
 * DESCRIPTION:
@@ -3122,7 +3161,7 @@ MV_STATUS mvBoardTwsiProbe(MV_U32 chip)
 MV_STATUS mvBoardEepromInit()
 {
 	MV_U32 readValue, i, pattern = 0;
-	MV_U32 patternByte = be32_to_cpu(EEPROM_VERIFICATION_PATTERN), defaultByte = 0x0;
+	MV_U32 patternByte = be32_to_cpu(EEPROM_VERIFICATION_PATTERN);
 
 	if (mvBoardIsEepromEnabled() != MV_TRUE) {
 		DB(printf("%s: EEPROM doesn't exists on board\n" , __func__));
@@ -3146,8 +3185,7 @@ MV_STATUS mvBoardEepromInit()
 		return MV_OK;
 
 	/* Else write default configuration and set magic pattern */
-	/* write default board configuration (default value for all fields is 0x0) */
-	if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, 0, (MV_U8 *)&defaultByte, 4) != MV_OK) {
+	if (mvBoardEepromWriteDefaultCfg() != MV_OK) {
 		mvOsPrintf("%s: Error: Write configuration to EEPROM failed\n", __func__);
 		return MV_ERROR;
 	}

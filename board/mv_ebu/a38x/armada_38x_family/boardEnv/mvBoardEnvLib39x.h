@@ -99,7 +99,8 @@ extern "C" {
 };
 
 #ifdef CONFIG_CMD_BOARDCFG
-#define MV_BOARD_CONFIG_MAX_BYTE_COUNT  8
+#define MV_BOARD_CONFIG_MAX_BYTE_COUNT	8
+#define MV_BOARD_CONFIG_DEFAULT_VALUE	{0x1921d0a1, 0x4 }
 
 typedef enum _mvConfigTypeID {
 	MV_CONFIG_BOARDID,
@@ -139,6 +140,7 @@ typedef enum _mvConfigTypeID {
 
 /*MV_CMD_TYPE_ID,		command name,		Name,			numOfValues,	Possible Values */
 #define MV_BOARD_CONFIG_CMD_INFO {										\
+{MV_CONFIG_BOARDID, "boardid",	"Board ID",			1,	{"DB Board"} },	\
 {MV_CONFIG_LANE0,	"serdes0",	"SerDes Lane #0",	5,						\
 	{"UnConnected", "PCI-e#0", "SATA3 #0", "SGMII #0", "SGMII(v3) #0"} },					\
 {MV_CONFIG_LANE1,	"serdes1",	"SerDes Lane #1",	10,						\

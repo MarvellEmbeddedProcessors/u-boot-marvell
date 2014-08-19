@@ -556,6 +556,7 @@ typedef struct _boardConfigTypesInfo {
 	MV_U32 isActiveForBoard[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_CONFIG_TYPE_INFO;
 
+MV_STATUS mvBoardEepromWriteDefaultCfg(void);
 MV_STATUS mvBoardEepromInit(void);
 MV_BOOL mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo);
 MV_STATUS mvBoardConfigGet(MV_U32 *config);

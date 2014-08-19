@@ -1,0 +1,23 @@
+
+-- Files:
+
+   (1) Makefile
+   (2) driver_mrvlFlashBCH_linuxCHG.cpp
+	--> C code main()
+   (3) mrvlFlashBCH.h
+	--> header included by the driver
+   (4) bchEncInput.txt
+	--> input file taken by the driver
+
+-- To run:
+
+   (0) (make sure bchEncInput.txt is under the dir)
+   (1) % make
+	--> create bch_test
+   (2) % bch_test
+	--> read in "bchEncInput.txt" and output "encodedOut.txt" which includes data and parity
+
+-- modify driver_mrvlFlashBCH_linuxCHG.cpp for different codeword size and T value:
+
+   (1) modify "codeword_length_bch" for codeword size (number of bits input to the encoder)
+   (2) modify "t_bch" for BCH T value

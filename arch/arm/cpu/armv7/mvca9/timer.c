@@ -44,11 +44,7 @@
 #include "cntmr/mvCntmr.h"
 #include "cntmr/mvCntmrRegs.h"
 /* Global timer source clock is the Punit clock (which is L2 clock divided by 2) */
-#ifdef MV88F68XX
 #define MV_BOARD_REFCLK MV_BOARD_REFCLK_25MHZ
-#else
-#define MV_BOARD_REFCLK (mvCpuL2ClkGet() / 2)
-#endif
 #define READ_TIMER (mvCntmrRead(UBOOT_CNTR) / (MV_BOARD_REFCLK / 1000))
 
 extern MV_U32 mvCpuL2ClkGet(MV_VOID);
@@ -76,11 +72,7 @@ int timer_init(void)
 	cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
 	cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
 	cntmrCtrl |= CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-#ifdef MV88F68XX
 	cntmrCtrl |= (1 << CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(UBOOT_CNTR));
-#else
-	cntmrCtrl &= ~(1 << (CTCR_ARM_TIMER_25MhzFRQ_ENABLE_OFFS(UBOOT_CNTR)));
-#endif
 
 	MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR), cntmrCtrl);
 	/* init the timestamp and lastdec value */

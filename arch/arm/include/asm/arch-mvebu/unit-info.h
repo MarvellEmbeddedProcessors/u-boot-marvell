@@ -23,10 +23,7 @@
 enum mvebu_unit_id {
 	DRAM_UNIT_ID,
 	CPU_UNIT_ID,
-	PEX_UNIT_ID,
-	PEX_IF_UNIT_ID,
-	PCI_UNIT_ID,
-	PCI_IF_UNIT_ID,
+	PCIE_UNIT_ID,
 	ETH_GIG_UNIT_ID,
 	USB_UNIT_ID,
 	USB3_UNIT_ID,
@@ -67,6 +64,7 @@ void dump_unit_info(void);
 void update_unit_info(u16 *unit_mask, u16 *new_mask, enum unit_update_mode);
 int  unit_info_get_count(enum mvebu_unit_id id);
 bool unit_info_is_active(enum mvebu_unit_id id, int index);
+u16  unit_info_get_mask(enum mvebu_unit_id id);
 void unit_info_disable_units(enum mvebu_unit_id id, u16 mask);
 void unit_info_disable_unit_instance(enum mvebu_unit_id id, int index);
 

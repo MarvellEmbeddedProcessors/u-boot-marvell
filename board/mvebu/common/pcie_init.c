@@ -17,20 +17,16 @@
  * ***************************************************************************
  */
 
-/* Memory Map */
-/* 0x00000000 - 0xE0000000 - DRAM */
-/* 0xE0000000 - 0xE2000000 - PCI-0 */
-/* 0xE2000000 - 0xE4000000 - PCI-1 */
-/* 0xE4000000 - 0xE6000000 - PCI-2 */
-/* 0xE6000000 - 0xE8000000 - PCI-3 */
-/* 0xF1000000 - 0xF1100000 - INTERNAL_REG */
-/* 0xFD000000 - 0xFD100000 - NOR_CS */
+#include <common.h>
+#include <errno.h>
+#include <pci.h>
+#include <asm/arch-mvebu/unit-info.h>
+#include <asm/arch-mvebu/driver_interface.h>
 
-#define MVEBU_REGS_BASE			(0xF1000000)
-#define MVEBU_REGS_SIZE			(0x100000)
+void pci_init_board(void)
+{
+	int host_cnt = unit_info_get_count(PCIE_UNIT_ID);
+	u16 active_mask = unit_info_get_mask(PCIE_UNIT_ID);
 
-#define MVEBU_PCIE_MEM_BASE(id)		(0xE0000000 + (id * 0x2000000))
-#define MVEBU_PCIE_MEM_SIZE(id)		(0x2000000)
-
-#define NOR_CS_BASE				(0xfd000000)
-#define NOR_CS_SIZE				(0x1000000)
+	mvebu_pcie_init_board(host_cnt, active_mask);
+}

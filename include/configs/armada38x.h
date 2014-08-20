@@ -49,6 +49,7 @@
 /* Enable IO drivers */
 #define CONFIG_MVEBU_UART
 #define CONFIG_MVEBU_SPI
+#define CONFIG_MVEBU_PCI
 /*
 #define MV_INCLUDE_SDIO
 #define MV_INCLUDE_INTEG_SATA

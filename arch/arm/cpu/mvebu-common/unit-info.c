@@ -30,8 +30,7 @@
 const char *mvebu_unit_names[MAX_UNIT_ID + 1] = {
 	[DRAM_UNIT_ID] =	"dram",
 	[CPU_UNIT_ID] =		"cpu",
-	[PEX_UNIT_ID] =		"pex",
-	[PCI_UNIT_ID] =		"pci",
+	[PCIE_UNIT_ID] =	"pcie",
 	[ETH_GIG_UNIT_ID] =	"eth",
 	[USB_UNIT_ID] =		"usb2",
 	[USB3_UNIT_ID] =	"usb3",
@@ -63,7 +62,7 @@ const char *unit_info_get_name(enum mvebu_unit_id id)
 	return mvebu_unit_names[id];
 }
 
-static u16 *unit_info_get_mask(enum mvebu_unit_id id)
+static u16 *unit_info_get_mask_ref(enum mvebu_unit_id id)
 {
 	u16 *unit_mask;
 
@@ -78,11 +77,16 @@ static u16 *unit_info_get_mask(enum mvebu_unit_id id)
 	return unit_mask;
 }
 
+u16 unit_info_get_mask(enum mvebu_unit_id id)
+{
+	return *unit_info_get_mask_ref(id);
+}
+
 void unit_info_disable_units(enum mvebu_unit_id id, u16 mask)
 {
 	u16 *unit_mask;
 
-	unit_mask = unit_info_get_mask(id);
+	unit_mask = unit_info_get_mask_ref(id);
 	if (!unit_mask)
 		return;
 
@@ -99,7 +103,7 @@ bool unit_info_is_active(enum mvebu_unit_id id, int index)
 	u16 *unit_mask;
 	bool active;
 
-	unit_mask = unit_info_get_mask(id);
+	unit_mask = unit_info_get_mask_ref(id);
 	if (!unit_mask)
 		return -1;
 
@@ -112,7 +116,7 @@ int unit_info_get_count(enum mvebu_unit_id id)
 {
 	u16 *unit_mask;
 
-	unit_mask = unit_info_get_mask(id);
+	unit_mask = unit_info_get_mask_ref(id);
 	if (!unit_mask)
 		return -1;
 

@@ -231,8 +231,8 @@
 	#define  CONFIG_SYS_MMC_MAX_DEVICE
 #endif
 
-/* PCI */
-#ifdef MV_INCLUDE_PEX
+/* PCI-E */
+#ifdef CONFIG_MVEBU_PCI
 	#define CONFIG_PCI
 	#define CONFIG_CMD_PCI
 	#define CONFIG_PCI_HOST PCI_HOST_FORCE  /* select pci host function     */
@@ -250,7 +250,7 @@
 	#define PCI_HOST_FORCE   1      /* configure as pci host        */
 	#define PCI_HOST_AUTO    2      /* detected via arbiter enable  */
 
-#endif /* MV_INCLUDE_PEX */
+#endif /* CONFIG_MVEBU_PCI */
 
 
 /* Network */

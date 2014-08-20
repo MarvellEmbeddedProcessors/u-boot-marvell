@@ -26,18 +26,17 @@
 #include <asm/arch-mvebu/mpp.h>
 
 struct adec_win memory_map[] = {
-	/* target		base			size			attribute	remapped	enable */
-	{PEX_0_TARGET_ID,	PEX_MEM_BASE(0),	PEX_MEM_SIZE(0),	PCI_0_MEM_ATTR,	1,		1},
-	{PEX_1_3_TARGET_ID,	PEX_MEM_BASE(1),	PEX_MEM_SIZE(1),	PCI_1_MEM_ATTR,	0,		1},
-	{PEX_1_3_TARGET_ID,	PEX_MEM_BASE(2),	PEX_MEM_SIZE(2),	PCI_2_MEM_ATTR,	0,		1},
-	{PEX_1_3_TARGET_ID,	PEX_MEM_BASE(3),	PEX_MEM_SIZE(3),	PCI_3_MEM_ATTR,	1,		1},
-	{DEV_TARGET_ID,		NOR_CS_BASE,		NOR_CS_SIZE,		BOOT_CS_ATTR,	0,		1},
-	{TBL_TERM,		TBL_TERM,		TBL_TERM,		TBL_TERM,	TBL_TERM,	TBL_TERM},
+	{PEX_0_TARGET_ID,	MVEBU_PCIE_MEM_BASE(0),	MVEBU_PCIE_MEM_SIZE(0), PCI_0_MEM_ATTR, 1, 1},
+	{PEX_1_3_TARGET_ID,	MVEBU_PCIE_MEM_BASE(1),	MVEBU_PCIE_MEM_SIZE(1), PCI_1_MEM_ATTR, 1, 1},
+	{PEX_1_3_TARGET_ID,	MVEBU_PCIE_MEM_BASE(2),	MVEBU_PCIE_MEM_SIZE(2), PCI_2_MEM_ATTR, 1, 1},
+	{PEX_1_3_TARGET_ID,	MVEBU_PCIE_MEM_BASE(3),	MVEBU_PCIE_MEM_SIZE(3), PCI_3_MEM_ATTR, 1, 1},
+	{DEV_TARGET_ID,		NOR_CS_BASE,		NOR_CS_SIZE,	 BOOT_CS_ATTR,   0, 1},
+	{TBL_TERM, TBL_TERM, TBL_TERM, TBL_TERM, TBL_TERM, TBL_TERM},
 };
 
 /* List the maximum amount of units for all devices and boards */
 u16 base_unit_mask_table[MAX_UNIT_ID] = {
-	[PEX_UNIT_ID]		=  cnt_to_mask(3),
+	[PCIE_UNIT_ID]		=  cnt_to_mask(4),
 	[SATA_UNIT_ID]		=  cnt_to_mask(4),
 	[ETH_GIG_UNIT_ID]	=  cnt_to_mask(4),
 	[UART_UNIT_ID]		=  cnt_to_mask(2),
@@ -52,7 +51,6 @@ u16 base_unit_mask_table[MAX_UNIT_ID] = {
 
 /* Per device unit info. List which units are disabled for this device */
 u16 armada6280_unit_disable[MAX_UNIT_ID] = {
-	[PEX_UNIT_ID]		=  id_to_mask(0) | id_to_mask(2),
 	[SATA_UNIT_ID]		=  id_to_mask(2) | id_to_mask(3)
 };
 

@@ -19,3 +19,4 @@
 
 struct spi_slave *mvebu_spi_setup_slave(unsigned int bus, unsigned int cs,
 		unsigned int max_hz, unsigned int mode, u32 cpu_clk);
+void mvebu_pcie_init_board(int max_hosts, u16 active_mask);

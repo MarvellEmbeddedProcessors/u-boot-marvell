@@ -165,6 +165,7 @@ extern unsigned int mvTclkGet(void);
 #if defined(MV_INCLUDE_PEX) || defined(MV_INCLUDE_PCI)
 	#define CONFIG_PCI
 	#define CONFIG_CMD_PCI
+	#define CONFIG_PCIE_IF_MAPPING
 #endif
 
 /* Pre eXecution Environment (PXE) support*/

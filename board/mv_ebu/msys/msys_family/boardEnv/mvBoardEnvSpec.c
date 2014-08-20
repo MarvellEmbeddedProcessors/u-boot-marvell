@@ -568,7 +568,7 @@ MV_BOARD_INFO bc2_rd_mtlInfo = {
 #define DB_DX_AC3_BOARD_NOR_READ_PARAMS		0x403E07CF
 #define DB_DX_AC3_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
 
-MV_BOARD_TWSI_INFO	db_dx_ac3InfoBoardTwsiDev[] = {
+MV_BOARD_TWSI_INFO db_dx_ac3InfoBoardTwsiDev[] = {
 /* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
 	{BOARD_DEV_TWSI_PLD, 0x30, ADDR7_BIT},			/* Access to control PLD reg file */
 	{BOARD_DEV_TWSI_ZARLINK, 0x18, ADDR7_BIT},		/* Access to Zarlink	*/
@@ -664,48 +664,6 @@ MV_BOARD_INFO db_dx_ac3Info = {
 /***********************/
 /* ALLEYCAT3-RD-DX BOARD */
 /***********************/
-#define RD_DX_AC3_BOARD_NAND_READ_PARAMS	0x000C0282
-#define RD_DX_AC3_BOARD_NAND_WRITE_PARAMS	0x00010305
-/*NAND care support for small page chips*/
-#define RD_DX_AC3_BOARD_NAND_CONTROL		0x01c00543
-
-#define RD_DX_AC3_BOARD_NOR_READ_PARAMS		0x403E07CF
-#define RD_DX_AC3_BOARD_NOR_WRITE_PARAMS	0x000F0F0F
-
-MV_BOARD_TWSI_INFO	rd_dx_ac3InfoBoardTwsiDev[] = {
-/* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{BOARD_DEV_TWSI_PLD, 0x30, ADDR7_BIT},	/* Access to control PLD reg file */
-	{BOARD_DEV_TWSI_ZARLINK, 0x18, ADDR7_BIT},	/* Access to Zarlink	*/
-	{BOARD_DEV_TWSI_SATR, 0x4C, ADDR7_BIT},	/* SatR bios 0		*/
-	{BOARD_DEV_TWSI_SATR, 0x4D, ADDR7_BIT},	/* SatR bios 1		*/
-	{BOARD_DEV_TWSI_SATR, 0x4E, ADDR7_BIT},	/* SatR bios 2		*/
-	{BOARD_DEV_TWSI_SATR, 0x4F, ADDR7_BIT},	/* SatR bios 3		*/
-	{BOARD_DEV_TWSI_INIT_EPROM, 0x50, ADDR7_BIT},	/* Serial Ini EPROM	*/
-	{BOARD_DEV_TWSI_PCA9555_IO_EXPANDER, 0x20, ADDR7_BIT},	/* Qsgmii/sfp mux control PCA9555 IO expander */
-	{BOARD_DEV_TWSI_PCA9548_IO_MUX,	0x70, ADDR7_BIT},	/* PCA9548 I2C mux 0	*/
-	{BOARD_DEV_TWSI_PCA9548_IO_MUX,	0x71, ADDR7_BIT},	/* PCA9548 I2C mux 1	*/
-	{BOARD_DEV_TWSI_PCA9548_IO_MUX,	0x75, ADDR7_BIT}	/* PCA9548 I2C mux 2	*/
-};
-
-MV_BOARD_MAC_INFO rd_dx_ac3InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
-	{BOARD_MAC_SPEED_AUTO, -1, -1 },
-	{BOARD_MAC_SPEED_AUTO, -1, -1 }
-};
-
-MV_BOARD_MODULE_TYPE_INFO rd_dx_ac3InfoBoardModTypeInfo[] = {
-	{
-		.boardMppMod		= MV_BOARD_AUTO,
-	}
-};
-
-MV_DEV_CS_INFO rd_dx_ac3InfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
-#if defined(MV_INCLUDE_SPI)
-	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
-#endif
-};
-
 MV_BOARD_MPP_INFO rd_dx_ac3InfoBoardMppConfigValue[] = {
 	{ {
 	RD_DX_AC3_MPP0_7,
@@ -717,20 +675,20 @@ MV_BOARD_MPP_INFO rd_dx_ac3InfoBoardMppConfigValue[] = {
 };
 
 MV_BOARD_INFO rd_dx_ac3Info = {
-	.boardName				= "RD-XC3-48G4XG-A",
-	.numBoardMppTypeValue	= ARRSZ(rd_dx_ac3InfoBoardModTypeInfo),
-	.pBoardModTypeValue		= rd_dx_ac3InfoBoardModTypeInfo,
-	.numBoardMppConfigValue	= ARRSZ(rd_dx_ac3InfoBoardMppConfigValue),
-	.pBoardMppConfigValue	= rd_dx_ac3InfoBoardMppConfigValue,
+	.boardName			= "RD-XC3-48G4XG-A",
+	.numBoardMppTypeValue		= ARRSZ(db_dx_ac3InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= db_dx_ac3InfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(rd_dx_ac3InfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= rd_dx_ac3InfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
-	.numBoardDeviceIf		= ARRSZ(rd_dx_ac3InfoBoardDeCsInfo),
-	.pDevCsInfo				= rd_dx_ac3InfoBoardDeCsInfo,
-	.numBoardTwsiDev		= ARRSZ(rd_dx_ac3InfoBoardTwsiDev),
-	.pBoardTwsiDev			= rd_dx_ac3InfoBoardTwsiDev,
-	.numBoardMacInfo		= ARRSZ(rd_dx_ac3InfoBoardMacInfo),
-	.pBoardMacInfo			= rd_dx_ac3InfoBoardMacInfo,
+	.numBoardDeviceIf		= ARRSZ(db_dx_ac3InfoBoardDeCsInfo),
+	.pDevCsInfo				= db_dx_ac3InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(db_dx_ac3InfoBoardTwsiDev),
+	.pBoardTwsiDev			= db_dx_ac3InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(db_dx_ac3InfoBoardMacInfo),
+	.pBoardMacInfo			= db_dx_ac3InfoBoardMacInfo,
 	.numBoardGppInfo		= 0,
 	.pBoardGppInfo			= NULL,
 	.activeLedsNumber		= 0,
@@ -753,12 +711,12 @@ MV_BOARD_INFO rd_dx_ac3Info = {
 	.switchInfoNum = 0,
 
 	/* NAND init params */
-	.nandFlashReadParams	= RD_DX_AC3_BOARD_NAND_READ_PARAMS,
-	.nandFlashWriteParams	= RD_DX_AC3_BOARD_NAND_WRITE_PARAMS,
-	.nandFlashControl		= RD_DX_AC3_BOARD_NAND_CONTROL,
+	.nandFlashReadParams		= DB_DX_AC3_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_DX_AC3_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= DB_DX_AC3_BOARD_NAND_CONTROL,
 	/* NOR init params */
-	.norFlashReadParams		= RD_DX_AC3_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams	= RD_DX_AC3_BOARD_NOR_WRITE_PARAMS
+	.norFlashReadParams		= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS
 };
 
 /*********************************************************************************/

@@ -122,10 +122,12 @@ typedef enum {
 
 /************************************ structures ******************************/
 typedef struct {
-	SERDES_TYPE  serdesType;
-	MV_U32		 serdesNum;
-	SERDES_SPEED serdesSpeed;
-	SERDES_MODE  serdesMode;
+	SERDES_TYPE		serdesType;
+	MV_U32			serdesNum;
+	SERDES_SPEED	serdesSpeed;
+	SERDES_MODE		serdesMode;
+	MV_BOOL			swapRx;
+	MV_BOOL			swapTx;
 } SERDES_MAP;
 
 /*********************************** Globals **********************************/

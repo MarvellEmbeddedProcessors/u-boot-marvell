@@ -29,6 +29,8 @@
 
 void __iomem *mbus_adec_base;
 
+DECLARE_GLOBAL_DATA_PTR;
+
 static void adec_win_check(struct adec_win *win, u32 win_num)
 {
 	/* check if address is aligned to the size */
@@ -142,3 +144,38 @@ int adec_init(struct adec_win *windows)
 
 	return 0;
 }
+
+
+int dram_init(void)
+{
+	int cs;
+	u32 ctrl, size, base;
+
+	gd->ram_size = 0;
+	/*
+	* We assume the DDR training code has configured
+	* The SDRAM adec windows so we pull our info from there
+	*/
+
+	for (cs = 0; cs < CONFIG_NR_DRAM_BANKS; cs++) {
+		ctrl = readl(MBUS_SDRAM_CTRL_REG(cs));
+		if (ctrl & MBUS_CR_WIN_ENABLE) {
+			base = readl(MBUS_SDRAM_BASE_REG(cs));
+			size = (ctrl & MBUS_SDRAM_SIZE_MASK) + MBUS_SDRAM_SIZE_ALIGN;
+			gd->bd->bi_dram[cs].start = base;
+			gd->bd->bi_dram[cs].size = size;
+
+			gd->ram_size += size;
+
+			debug("DRAM bank %d base 0x%08x size 0x%x\n", cs, base, size);
+		}
+	}
+
+	if (gd->ram_size == 0) {
+		error("No DRAM banks detected");
+		return 1;
+	}
+
+	return 0;
+}
+

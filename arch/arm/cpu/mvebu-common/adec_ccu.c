@@ -26,6 +26,8 @@
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/adec.h>
 
+DECLARE_GLOBAL_DATA_PTR;
+
 static void adec_win_check(struct adec_win *win, u32 win_num)
 {
 	/* check if address is aligned to the size */
@@ -211,6 +213,34 @@ int adec_init(struct adec_win *windows)
 
 	debug("Done CCU Address decoding Initializing\n");
 	debug_exit();
+
+	return 0;
+}
+
+int dram_init(void)
+{
+#ifdef CONFIG_PALLADIUM
+	gd->ram_size = 0x20000000;
+#else
+	u32 alr, ahr;
+	u32 target_id, ctrl;
+	u32 win;
+
+	for (win = 0; win < MAX_AP_WINDOWS; win++) {
+		ctrl = readl((unsigned long)AP_WIN_CR_OFFSET(win));
+		target_id = (ctrl >> AP_TARGET_ID_OFFSET) & AP_TARGET_ID_MASK;
+
+		if (target_id == DRAM_0_TID) {
+			alr = readl((unsigned long)AP_WIN_ALR_OFFSET(win)) << ADDRESS_SHIFT;
+			ahr = readl((unsigned long)AP_WIN_AHR_OFFSET(win)) << ADDRESS_SHIFT;
+			gd->ram_size = ahr - alr + 1;
+			gd->bd->bi_dram[0].size = gd->ram_size;
+			gd->bd->bi_dram[0].start = alr;
+
+			debug("DRAM base 0x%08x size 0x%x\n", alr, (uint)gd->ram_size);
+		}
+	}
+#endif
 
 	return 0;
 }

@@ -164,11 +164,3 @@ int board_init(void)
 	return 0;
 }
 
-int dram_init(void)
-{
-
-	gd->ram_size = 0x20000000;
-	return 0;
-}
-
-

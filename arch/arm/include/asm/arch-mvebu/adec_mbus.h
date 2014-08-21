@@ -113,3 +113,9 @@ enum mbus_attribute {
 #define MBUS_RHR_REMAP_HIGH_MASK		(0xffffffff << MBUS_RHR_REMAP_HIGH_OFFS)
 
 #define MBUS_WIN_INTEREG_REG			(0x80)
+
+#define MBUS_SDRAM_BASE_REG(win)		(MVEBU_ADEC_BASE + 0x180 + (win * 0x8))
+#define MBUS_SDRAM_CTRL_REG(win)		(MVEBU_ADEC_BASE + 0x184 + (win * 0x8))
+#define MBUS_SDRAM_SIZE_MASK			(0xFF << 24)
+#define MBUS_SDRAM_SIZE_ALIGN			(1 << 24)
+

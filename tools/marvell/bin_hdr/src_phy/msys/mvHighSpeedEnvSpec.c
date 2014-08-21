@@ -125,18 +125,18 @@ MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray);
 SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
 {
 {	/* Customer Board 0 Toplogy */
-	/* Type		Serdes		Speed/			Mode	*/
-	/*			Number		index					*/
-	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE },
+	/* Type		Serdes		Speed			Mode				Swap		Swap */
+	/*			Number											RX			TX   */
+	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 },
 {	/* Customer Board 1 Toplogy */
-	/* Type		Serdes		Speed/			Mode	*/
-	/*			Number		index					*/
-	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE },
+	/* Type		Serdes		Speed			Mode				Swap		Swap */
+	/*			Number											RX			TX   */
+	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 }};
 
 
@@ -154,20 +154,20 @@ SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
 /* Configuration options */
 SERDES_MAP serdesDbTopology[MAX_SERDES_LANES] =
 {
-	/* Type		Serdes		Speed			Mode	*/
-	/*			Number							*/
-	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE },
+	/* Type		Serdes		Speed			Mode				Swap		Swap */
+	/*			Number											RX			TX   */
+	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 };
 
 SERDES_MAP serdesRdTopology[MAX_SERDES_LANES] =
 {
-	/* Type		Serdes		Speed			Mode	*/
-	/*			Number							*/
-	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE },
+	/* Type		Serdes		Speed			Mode				Swap		Swap */
+	/*			Number											RX			TX   */
+	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_TRUE,	MV_FALSE },
 };
 
 SERDES_MAP* marvellBoardSerdesTopology[] =
@@ -213,6 +213,8 @@ MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[laneNum].serdesNum   =  topologyConfigPtr[laneNum].serdesNum;
 		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
 		serdesMapArray[laneNum].serdesType  =  topologyConfigPtr[laneNum].serdesType;
+		serdesMapArray[laneNum].swapRx      =  topologyConfigPtr[laneNum].swapRx;
+		serdesMapArray[laneNum].swapTx      =  topologyConfigPtr[laneNum].swapTx;
 	}
 
 	return MV_OK;
@@ -682,6 +684,18 @@ MV_STATUS mvHwsComH28nmSerdesTxIfSelect(MV_U32 serdesNum, MV_U8 serdesTxIfNum)
 }
 
 /****************************************************************************/
+MV_STATUS mvHwsComH28nmSerdesPolaritySwap(MV_U32 serdesNum, MV_BOOL isRx, MV_BOOL doSwap)
+{
+	/* bit[10] swaps TX polarity, bit[11] - RX polarity */
+	MV_U16	polarityBit = (isRx == MV_TRUE) ? (1 << 11) : (1 << 10);
+	MV_U16	data        = (doSwap == MV_TRUE) ? polarityBit : 0;
+
+	CHECK_STATUS(mvGenUnitRegisterSet(SERDES_PHY_UNIT, serdesNum, 0x90, data, polarityBit));
+
+	return MV_OK;
+}
+
+/****************************************************************************/
 MV_STATUS mvHwsComH28nmSerdesPowerCtrl
 (
 	MV_U32	serdesNum,
@@ -784,7 +798,9 @@ MV_STATUS mvSerdesPowerUpCtrl(
 	SERDES_TYPE		serdesType,
 	SERDES_SPEED	baudRate,
 	SERDES_MODE		serdesMode,
-	REF_CLOCK		refClock
+	REF_CLOCK		refClock,
+	MV_BOOL			swapRx,
+	MV_BOOL			swapTx
 )
 {
 	MV_U8	serdesTxIfNum = (serdesNum == 10) ? 3 : 1; /* OOB port MSYS0/MSYS1 */
@@ -800,6 +816,8 @@ MV_STATUS mvSerdesPowerUpCtrl(
 	case SGMII1:
 		DEBUG_INIT_FULL_C("== Init SGMII\n", (serdesType == SGMII0 ? 0 :1), 1);
 		CHECK_STATUS(mvHwsComH28nmSerdesPowerCtrl(serdesNum, serdesPowerUp));
+		CHECK_STATUS(mvHwsComH28nmSerdesPolaritySwap(serdesNum, MV_TRUE, swapRx));
+		CHECK_STATUS(mvHwsComH28nmSerdesPolaritySwap(serdesNum, MV_FALSE, swapTx));
 		return mvHwsComH28nmSerdesTxIfSelect(serdesNum, serdesTxIfNum);
 
 	case PEX0:
@@ -830,6 +848,8 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 	SERDES_TYPE		serdesType;
 	SERDES_SPEED	serdesSpeed;
 	SERDES_MODE		serdesMode;
+	MV_BOOL			swapRx;
+	MV_BOOL			swapTx;
 
 	DEBUG_INIT_FULL_S("\n### powerUpSerdesLanes ###\n");
 
@@ -857,6 +877,8 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 		serdesNum   = serdesConfigMap[serdesId].serdesNum;
 		serdesSpeed = serdesConfigMap[serdesId].serdesSpeed;
 		serdesMode  = serdesConfigMap[serdesId].serdesMode;
+		swapRx      = serdesConfigMap[serdesId].swapRx;
+		swapTx      = serdesConfigMap[serdesId].swapTx;
 
 		/* serdes lane is not in use */
 		if (serdesType == DEFAULT_SERDES)
@@ -874,7 +896,9 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 										 serdesType,
 										 serdesSpeed,
 										 serdesMode,
-										 refClock));
+										 refClock,
+										 swapRx,
+										 swapTx));
 	}
 
 	return MV_OK;

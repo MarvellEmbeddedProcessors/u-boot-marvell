@@ -234,41 +234,40 @@
 #ifdef CONFIG_MVEBU_PCI
 	#define CONFIG_PCI
 	#define CONFIG_CMD_PCI
-	#define CONFIG_PCI_HOST PCI_HOST_FORCE  /* select pci host function     */
-	#define CONFIG_PCI_PNP                  /* do pci plug-and-play         */
+	#define CONFIG_PCI_PNP  /* Enable plug-and-play */
 
-	/* PnP PCI Network cards */
-	#define CONFIG_EEPRO100 /* Support for Intel 82557/82559/82559ER chips */
-	#define CONFIG_E1000
-	/*#define CONFIG_SK98
-	#define YUK_ETHADDR                     "00:00:00:EE:51:81"*/
-
-	#undef MV_MEM_OVER_PEX_WA
-
-	#define PCI_HOST_ADAPTER 0      /* configure ar pci adapter     */
-	#define PCI_HOST_FORCE   1      /* configure as pci host        */
-	#define PCI_HOST_AUTO    2      /* detected via arbiter enable  */
+	/* Enable PCIE NIC for devel boards */
+	#ifdef CONFIG_MVEBU_DEVEL_BOARD
+		#define CONFIG_EEPRO100
+		#define CONFIG_E1000
+		#define CONFIG_MVEBU_NET
+	#endif
 
 #endif /* CONFIG_MVEBU_PCI */
 
-
-/* Network */
+/* Neta */
 #ifdef CONFIG_MV_ETH_NETA
-	#define CONFIG_CMD_NET
-	#define CONFIG_CMD_DHCP
-	#define CONFIG_CMD_PING
+	#define CONFIG_MVEBU_NET
 	#define MV_INCLUDE_GIG_ETH
 	#define CONFIG_MV_INCLUDE_GIG_ETH
 	#define MV_ETH_NETA
-	#define CONFIG_NET_MULTI
+#endif /* CONFIG_MV_ETH_NETA */
+
+/* General Networking */
+#ifdef CONFIG_MVEBU_NET
+	/* Commands */
+	#define CONFIG_CMD_NET
+	#define CONFIG_CMD_DHCP
+	#define CONFIG_CMD_PING
+
+	/* Environment */
 	#define CONFIG_IPADDR           10.4.50.154
 	#define CONFIG_SERVERIP         10.4.50.3
 	#define CONFIG_NETMASK          255.255.255.0
 	#define ETHADDR                 "00:00:00:00:51:81"
-	#define ENV_ETH_PRIME           "egiga0"
-#else
-	#undef CONFIG_CMD_NET
-#endif /* CONFIG_MV_ETH_NETA */
+	#define ENV_ETH_PRIME           "e1000#0"
+
+#endif /* CONFIG_MVEBU_NET */
 
 /* IDE / SATA */
 #ifdef MV_INCLUDE_SATA

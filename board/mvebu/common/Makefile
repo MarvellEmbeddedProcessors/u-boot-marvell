@@ -22,6 +22,7 @@ obj-y	+= entry.o
 obj-y	+= init.o
 obj-$(CONFIG_MVEBU_SPI) += spi_init.o
 obj-$(CONFIG_MVEBU_PCI)	+= pcie_init.o
+obj-$(CONFIG_CMD_NET)	+= eth_init.o
 
 ifdef CONFIG_MVEBU_DEVEL_BOARD
 obj-y	+= sar.o

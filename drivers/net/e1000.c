@@ -33,7 +33,11 @@ tested on both gig copper and gig fiber boards
 
 #define TOUT_LOOP   100000
 
+#ifdef CONFIG_MVEBU
+#define virt_to_bus(devno, v)	(pci_addr_t)(v)
+#else
 #define virt_to_bus(devno, v)	pci_virt_to_mem(devno, (void *) (v))
+#endif
 #define bus_to_phys(devno, a)	pci_mem_to_phys(devno, a)
 
 #define E1000_DEFAULT_PCI_PBA	0x00000030

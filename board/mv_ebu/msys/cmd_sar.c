@@ -193,11 +193,11 @@ static int do_sar_list(int mode)
 		break;
 	case CMD_BOARD_ID:
 		printf("Determines the board ID (0-7)\n");
-		printf("\t| ID  |      Board      |\n");
-		printf("\t-------------------------\n");
+		printf("\t| ID  |      Board               |\n");
+		printf("\t----------------------------------\n");
 		for (i = 0; i < AC3_MARVELL_BOARD_NUM ; i++)
-			printf("\t|  %d  |  %12s   |\n", i, marvellAC3BoardInfoTbl[i]->boardName );
-		printf("\t-------------------------\n");
+			printf("\t|  %d  |  %-22s  |\n", i, marvellAC3BoardInfoTbl[i]->boardName );
+		printf("\t----------------------------------\n");
 		break;
 	case CMD_DEVICE_NUM:
 		printf("Determines the device number (0-3)\n");

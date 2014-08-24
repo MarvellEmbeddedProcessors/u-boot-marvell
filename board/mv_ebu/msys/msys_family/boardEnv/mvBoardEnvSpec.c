@@ -661,25 +661,25 @@ MV_BOARD_INFO db_dx_ac3Info = {
 };
 
 /*********************************************************************************/
-/***********************/
-/* ALLEYCAT3-RD-DX BOARD */
-/***********************/
-MV_BOARD_MPP_INFO rd_dx_ac3InfoBoardMppConfigValue[] = {
+/******************************/
+/* ALLEYCAT3-RD-MTL-4XG BOARD */
+/******************************/
+MV_BOARD_MPP_INFO rd_mtl_4xg_ac3InfoBoardMppConfigValue[] = {
 	{ {
-	RD_DX_AC3_MPP0_7,
-	RD_DX_AC3_MPP8_15,
-	RD_DX_AC3_MPP16_23,
-	RD_DX_AC3_MPP24_31,
-	RD_DX_AC3_MPP32_39,
+	RD_MTL_4XG_AC3_MPP0_7,
+	RD_MTL_4XG_AC3_MPP8_15,
+	RD_MTL_4XG_AC3_MPP16_23,
+	RD_MTL_4XG_AC3_MPP24_31,
+	RD_MTL_4XG_AC3_MPP32_39,
 	} },
 };
 
-MV_BOARD_INFO rd_dx_ac3Info = {
+MV_BOARD_INFO rd_mtl_4xg_ac3Info = {
 	.boardName			= "RD-XC3-48G4XG-A",
 	.numBoardMppTypeValue		= ARRSZ(db_dx_ac3InfoBoardModTypeInfo),
 	.pBoardModTypeValue		= db_dx_ac3InfoBoardModTypeInfo,
-	.numBoardMppConfigValue		= ARRSZ(rd_dx_ac3InfoBoardMppConfigValue),
-	.pBoardMppConfigValue		= rd_dx_ac3InfoBoardMppConfigValue,
+	.numBoardMppConfigValue		= ARRSZ(rd_mtl_4xg_ac3InfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= rd_mtl_4xg_ac3InfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
@@ -696,14 +696,131 @@ MV_BOARD_INFO rd_dx_ac3Info = {
 	.ledsPolarity			= 0,
 
 	/* GPP values */
-	.gppOutEnValLow			= RD_DX_AC3_GPP_OUT_ENA_LOW,
-	.gppOutEnValMid			= RD_DX_AC3_GPP_OUT_ENA_MID,
+	.gppOutEnValLow			= RD_MTL_4XG_AC3_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= RD_MTL_4XG_AC3_GPP_OUT_ENA_MID,
 	.gppOutEnValHigh		= 0,
-	.gppOutValLow			= RD_DX_AC3_GPP_OUT_VAL_LOW,
-	.gppOutValMid			= RD_DX_AC3_GPP_OUT_VAL_MID,
+	.gppOutValLow			= RD_MTL_4XG_AC3_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= RD_MTL_4XG_AC3_GPP_OUT_VAL_MID,
 	.gppOutValHigh			= 0,
-	.gppPolarityValLow		= RD_DX_AC3_GPP_POL_LOW,
-	.gppPolarityValMid		= RD_DX_AC3_GPP_POL_MID,
+	.gppPolarityValLow		= RD_MTL_4XG_AC3_GPP_POL_LOW,
+	.gppPolarityValMid		= RD_MTL_4XG_AC3_GPP_POL_MID,
+	.gppPolarityValHigh		= 0,
+
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+
+	/* NAND init params */
+	.nandFlashReadParams		= DB_DX_AC3_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_DX_AC3_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= DB_DX_AC3_BOARD_NAND_CONTROL,
+	/* NOR init params */
+	.norFlashReadParams		= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS
+};
+/*********************************************************************************/
+/***********************************/
+/* ALLEYCAT3-RD-MTL-2XXG-2XG BOARD */
+/***********************************/
+MV_BOARD_MPP_INFO rd_mtl_2xxg_2xg_ac3InfoBoardMppConfigValue[] = {
+	{ {
+	RD_MTL_4XG_AC3_MPP0_7,
+	RD_MTL_4XG_AC3_MPP8_15,
+	RD_MTL_4XG_AC3_MPP16_23,
+	RD_MTL_4XG_AC3_MPP24_31,
+	RD_MTL_4XG_AC3_MPP32_39,
+	} },
+};
+
+MV_BOARD_INFO rd_mtl_2xxg_2xg_ac3Info = {
+	.boardName			= "RD-XC3-48G2XG2XXG-A",
+	.numBoardMppTypeValue		= ARRSZ(db_dx_ac3InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= db_dx_ac3InfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(rd_mtl_2xxg_2xg_ac3InfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= rd_mtl_2xxg_2xg_ac3InfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(db_dx_ac3InfoBoardDeCsInfo),
+	.pDevCsInfo				= db_dx_ac3InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(db_dx_ac3InfoBoardTwsiDev),
+	.pBoardTwsiDev			= db_dx_ac3InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(db_dx_ac3InfoBoardMacInfo),
+	.pBoardMacInfo			= db_dx_ac3InfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= NULL,
+	.activeLedsNumber		= 0,
+	.pLedGppPin				= NULL,
+	.ledsPolarity			= 0,
+
+	/* GPP values */
+	.gppOutEnValLow			= RD_MTL_4XG_AC3_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= RD_MTL_4XG_AC3_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= 0,
+	.gppOutValLow			= RD_MTL_4XG_AC3_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= RD_MTL_4XG_AC3_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= 0,
+	.gppPolarityValLow		= RD_MTL_4XG_AC3_GPP_POL_LOW,
+	.gppPolarityValMid		= RD_MTL_4XG_AC3_GPP_POL_MID,
+	.gppPolarityValHigh		= 0,
+
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+
+	/* NAND init params */
+	.nandFlashReadParams		= DB_DX_AC3_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_DX_AC3_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= DB_DX_AC3_BOARD_NAND_CONTROL,
+	/* NOR init params */
+	.norFlashReadParams		= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS
+};
+
+/*********************************************************************************/
+/***********************************/
+/* ALLEYCAT3-RD-MTL-2XXG-2XG BOARD */
+/***********************************/
+MV_BOARD_MPP_INFO db_misl_24G_46_ac3InfoBoardMppConfigValue[] = {
+	{ {
+	RD_MISL_24G46_AC3_MPP0_7,
+	RD_MISL_24G46_AC3_MPP8_15,
+	RD_MISL_24G46_AC3_MPP16_23,
+	RD_MISL_24G46_AC3_MPP24_31,
+	RD_MISL_24G46_AC3_MPP32_39,
+	} },
+};
+
+MV_BOARD_INFO db_misl_24G_4xg_ac3Info = {
+	.boardName			= "DB-XC3-24G-4XG",
+	.numBoardMppTypeValue		= ARRSZ(db_dx_ac3InfoBoardModTypeInfo),
+	.pBoardModTypeValue		= db_dx_ac3InfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(db_misl_24G_46_ac3InfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= db_misl_24G_46_ac3InfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(db_dx_ac3InfoBoardDeCsInfo),
+	.pDevCsInfo				= db_dx_ac3InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(db_dx_ac3InfoBoardTwsiDev),
+	.pBoardTwsiDev			= db_dx_ac3InfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(db_dx_ac3InfoBoardMacInfo),
+	.pBoardMacInfo			= db_dx_ac3InfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= NULL,
+	.activeLedsNumber		= 0,
+	.pLedGppPin				= NULL,
+	.ledsPolarity			= 0,
+
+	/* GPP values */
+	.gppOutEnValLow			= RD_MISL_24G46_AC3_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= RD_MISL_24G46_AC3_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= 0,
+	.gppOutValLow			= RD_MISL_24G46_AC3_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= RD_MISL_24G46_AC3_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= 0,
+	.gppPolarityValLow		= RD_MISL_24G46_AC3_GPP_POL_LOW,
+	.gppPolarityValMid		= RD_MISL_24G46_AC3_GPP_POL_MID,
 	.gppPolarityValHigh		= 0,
 
 	/* External Switch Configuration */
@@ -729,5 +846,7 @@ MV_BOARD_INFO *marvellBC2BoardInfoTbl[] = {
 
 MV_BOARD_INFO *marvellAC3BoardInfoTbl[] = {
 	&db_dx_ac3Info,
-	&rd_dx_ac3Info
+	&rd_mtl_4xg_ac3Info,
+	&rd_mtl_2xxg_2xg_ac3Info,
+	&db_misl_24G_4xg_ac3Info
 };

@@ -306,7 +306,6 @@ static void setup_marvell_tag(void)
 	}
 #endif  /*#if defined(MV_INCLUDE_USB)*/
 #if defined(MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_UNM_ETH) || defined (CONFIG_MACH_AVANTA_LP_FPGA)
-	extern unsigned int mvCtrlEthMaxPortGet(void);
 	extern int mvMacStrToHex(const char* macStr, unsigned char* macHex);
 
 	for (i = 0; i < 4; i++) {
@@ -314,10 +313,8 @@ static void setup_marvell_tag(void)
 		params->u.mv_uboot.mtu[i] = 0;
 	}
 
-	for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
+	for (i = 0; i < MV_UBOOT_MAX_PORTS; i++) {
 		sprintf(temp, (i ? "eth%daddr" : "ethaddr"), i);
-		if (i == 3)
-			sprintf(temp, "mv_pon_addr");
 
 		env = getenv(temp);
 		if (env)

@@ -108,7 +108,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 /************************************* Marvell Boards Topology *************************************/
 MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 {
-    /* 1st Marvell board - DB - No ECC (BoardId = 0x0) */
+    /* 1st Marvell board - DB_MISL - No ECC (BoardId = 0x0) */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
@@ -116,7 +116,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     5, /* Num Of Bus Per Interface*/
     ACTUAL_BUS_MASK  /* Buses mask */
     },
-	/* 2rd Marvell board - RD - MTL - No ECC (BoardId = 0x1) */
+	/* 2rd Marvell board - RD_MTL_4XG  (BoardId = 0x1) */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
@@ -124,7 +124,24 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     5, /* Num Of Bus Per Interface*/
     ACTUAL_BUS_MASK  /* Buses mask */
     },
-    /* 3nd Marvell board - DB + ECC (BoardId = TBD)*/
+	/* 3rd Marvell board - RD_MTL_2XXG_2XG: No ECC (BoardId = 0x2) */
+    {
+    0x1, /* active interfaces */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
+	{{{{0x1,0,0,0},{ 0x1,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
+    5, /* Num Of Bus Per Interface*/
+    ACTUAL_BUS_MASK  /* Buses mask */
+    },
+    /* 4th Marvell board - RD_MISL - No ECC (BoardId = 0x3) */
+    {
+    0x1, /* active interfaces */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
+	{{{{0x3,0,0,0}, {0x3,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
+    5, /* Num Of Bus Per Interface*/
+    ACTUAL_BUS_MASK  /* Buses mask */
+    },
+
+    /* XX Marvell board - DB + ECC (BoardId = TBD)*/
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs   speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
@@ -132,7 +149,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_16BIT_ECC  /* Buses mask */
     },
-    /* 4rd Marvell board - RD - No ECC (BoardId = TBD)*/
+    /* XX Marvell board - RD - No ECC (BoardId = TBD)*/
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */

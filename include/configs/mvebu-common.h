@@ -30,7 +30,7 @@
 #define CONFIG_ADEC
 
 /* Usefull Debug */
-#define DEBUG
+/* #define DEBUG */
 #define CONFIG_BOOTSTAGE
 #define CONFIG_BOOTSTAGE_REPORT
 #define CONFIG_MVEBU_DEBUG_FUNC_IN_OUT

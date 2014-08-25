@@ -342,6 +342,7 @@ MV_U16 mvBoardPexModeGet(MV_VOID);
 MV_STATUS mvBoardPexModeSet(MV_U16 conf);
 MV_VOID mvBoardDebugLed(MV_U32 hexNum);
 MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
+MV_U32 mvBoardCpssBoardIdSet(MV_U8);
 
 #ifdef __cplusplus
 }

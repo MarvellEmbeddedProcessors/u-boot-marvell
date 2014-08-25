@@ -1185,7 +1185,6 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	}
 
 	gBoardId = AC3_MARVELL_BOARD_ID_BASE + readValue;
-
 	#endif	/* CONFIG_CUSTOMER_BOARD_SUPPORT */
 
 #else /* CONFIG_BOBCAT2 */
@@ -1197,6 +1196,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 			gBoardId = BC2_CUSTOMER_BOARD_ID1;
 		#endif
 	#else	/* !CONFIG_CUSTOMER_BOARD_SUPPORT */
+
 		#if defined(DB_BOBCAT2)
 			gBoardId = DB_DX_BC2_ID;
 		#elif defined(RD_BOBCAT2)
@@ -1212,8 +1212,46 @@ MV_U32 mvBoardIdGet(MV_VOID)
 
 #endif
 
+	if (mvBoardCpssBoardIdSet(gBoardId) != MV_OK)
+		mvOsPrintf("%s: Error: Failed to set Board ID for CPSS!\n", __func__);
+
 	return gBoardId;
 }
+
+/*******************************************************************************
+* mvBoardCpssBoardIdSet - Copy Board ID into Switch register for CPSS usage
+*
+* DESCRIPTION:
+*       This function sets board ID in Switch register for CPSS
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_OK in success
+*
+*******************************************************************************/
+MV_U32 mvBoardCpssBoardIdSet(MV_U8 boardId)
+{
+	const MV_U32	swBrdIdRegOffset = 0x7C; /* User defined register # 3 */
+	const MV_U32	swBrdIdMask = 0xFF;
+	MV_U32			swReg;
+
+	if ((boardId & swBrdIdMask) != boardId) {
+		mvOsPrintf("%s: Error: Board ID is too large!\n", __func__);
+		return MV_ERROR;
+	}
+
+	swReg = MV_MEMIO_LE32_READ(SWITCH_REGS_VIRT_BASE | swBrdIdRegOffset);
+	swReg |= (boardId & swBrdIdMask);
+	MV_MEMIO_LE32_WRITE((SWITCH_REGS_VIRT_BASE | swBrdIdRegOffset), swReg);
+
+	return MV_OK;
+}
+
 /*******************************************************************************
 * mvBoardTwsiRead -
 *

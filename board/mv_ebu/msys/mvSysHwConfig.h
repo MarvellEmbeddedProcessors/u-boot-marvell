@@ -131,6 +131,10 @@
 /*****************  USB base address ***********************/
 #define USB_XBAR_REG_BASE   0xF7000000
 #define USB_XBAR_REGS_SIZE   _1M
+/*****************  Switch base address ***********************/
+#define SWITCH_REGS_BASE		0xA8000000
+#define SWITCH_REGS_SIZE		_64M
+#define SWITCH_REGS_VIRT_BASE	SWITCH_REGS_BASE
 /************************************************************/
 /* Device: CS0 - NOR or NAND, CS1 - SPI, CS2 - Boot ROM, CS3 - Boot device */
 /* NOR and NAND are configure to CS0 but it is posible to load
@@ -248,7 +252,7 @@
 		{ { PEX0_IO_BASE,         0,      PEX0_IO_SIZE    },      TBL_UNUSED,     DIS },        /*  9 PEX0_IO */	\
 		{ { INTER_REGS_BASE,      0, INTER_REGS_SIZE }, MV_AHB_TO_MBUS_INTREG_WIN, EN },        /* 10 INTER_REGS */ \
 		{ { DFX_REGS_BASE,        0,      DFX_REGS_SIZE   },      1,               EN },        /* 11 DFX_REGS */ \
-		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* 12 SWITCH   */ \
+		{ { SWITCH_REGS_BASE,     0,     SWITCH_REGS_SIZE },      5,               EN },        /* 12 SWITCH   */ \
 		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* 13 DMA_UART   */ \
 		{ { SPI_CS_BASE,          0,      SPI_CS_SIZE     },      8,               EN },        /* 14 SPI_CS0 */	\
 		{ { TBL_UNUSED,           0,      TBL_UNUSED      },      TBL_UNUSED,     DIS },        /* 15 SPI_CS1 */	\

@@ -334,6 +334,10 @@ extern unsigned int mvTclkGet(void);
 		#define MV_NBOOT_BASE                   0
 		#define MV_NBOOT_LEN                    (4 << 10)       /* Reserved 4KB for boot strap */
 	#endif /* MV_NAND_BOOT */
+
+	#if defined(MV_INCLUDE_SPI)
+		#define MV_NAND_SPI
+	#endif
 #endif /* MV_NAND */
 /*
  * Board init

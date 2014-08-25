@@ -34,4 +34,7 @@ struct nfc_platform_data {
 	struct mtd_partition *	parts;
 	unsigned int		nr_parts;
 };
+
+int board_nand_nfc_init(struct nand_chip *nand);
+
 #endif /* __ASM_ARCH_ORION_NFC_H */

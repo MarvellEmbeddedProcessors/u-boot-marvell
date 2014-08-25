@@ -2817,3 +2817,22 @@ MV_NFC_ECC_MODE mvBoardNandECCModeGet()
 	return MV_NFC_ECC_DISABLE;
 #endif
 }
+
+MV_NAND_IF_MODE mvBoardNandIfGet()
+{
+	MV_BOARD_BOOT_SRC boot_src = mvBoardBootDeviceGet();
+	switch (boot_src) {
+	case MSAR_0_BOOT_NAND_NEW:
+		return NAND_IF_NFC;
+	case MSAR_0_BOOT_NAND_SPI:
+#ifdef MV_NAND_SPI
+		return NAND_IF_SPI;
+#else
+			mvOsPrintf("%s: Error: NAND_IF_SPI isn't defined while " \
+					"MSAR configured to MSAR_0_BOOT_NAND_SPI\n", __func__);
+		return NAND_IF_NONE;
+#endif
+	default:
+		return board->nandIfMode;
+	}
+}

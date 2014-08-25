@@ -1692,7 +1692,7 @@ fail_free_mtd:
 	return ret;
 }
 #else /* defined UBOOT_CODE */
-int board_nand_init(struct nand_chip *nand)
+int board_nand_nfc_init(struct nand_chip *nand)
 {
 	struct orion_nfc_info *info;
 	int ret = 0;

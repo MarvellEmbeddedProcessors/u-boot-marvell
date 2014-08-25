@@ -16,12 +16,14 @@ ifeq ($(BOARD),alp)
 MAKE_USB = yes
 MAKE_PPV2 = yes
 MAKE_GENERAL_U_BOOT_TOOLS = yes
+MAKE_SPI_NAND = yes
 endif
 
 ifeq ($(BOARD),a375)
 MAKE_USB = yes
 MAKE_PPV2 = yes
 MAKE_GENERAL_U_BOOT_TOOLS = yes
+MAKE_SPI_NAND = yes
 endif
 
 ifeq ($(BOARD),a38x)
@@ -29,6 +31,7 @@ MAKE_USB = yes
 MAKE_SATA3 = yes
 MAKE_NETA = yes
 MAKE_GENERAL_U_BOOT_TOOLS = yes
+MAKE_SPI_NAND = yes
 endif
 
 ifeq ($(BOARD),msys)
@@ -83,6 +86,7 @@ HAL_OBJS += $(sort $(HAL_OBJS-y))
 USP_OBJS =	$(USP_DIR)/mv_spi.o		\
 		$(USP_DIR)/nand_nfc.o		\
 		$(USP_DIR)/mv_flash.o		\
+		$(USP_DIR)/mv_nand.o		\
 		$(USP_DIR)/mv_serial.o 		\
 		$(USP_DIR)/mv_i2c.o		\
 		$(USP_DIR)/mv_tsc2005.o		\
@@ -218,6 +222,10 @@ SOBJS = $(USP_DIR)/platform.o
 ifdef CONFIG_AMP_SUPPORT
 USP_OBJS +=	$(USP_DIR)/mv_amp.o
 SOBJS +=	$(USP_DIR)/mv_micro_loader.o
+endif
+
+ifdef MAKE_SPI_NAND
+USP_OBJS +=	$(USP_DIR)/nand_spi.o
 endif
 
 COBJS = $(COMMON_OBJS)		\

@@ -204,6 +204,12 @@ typedef struct _boardPexInfo {
 	MV_U32			boardPexIfNum;
 } MV_BOARD_PEX_INFO;
 
+typedef enum {
+	NAND_IF_NFC,
+	NAND_IF_SPI,
+	NAND_IF_NONE
+} MV_NAND_IF_MODE;
+
 typedef struct _boardInfo {
 	char boardName[MV_BOARD_NAME_LEN];
 	MV_U8 numBoardMppTypeValue;
@@ -344,6 +350,7 @@ MV_STATUS mvBoardPexModeSet(MV_U16 conf);
 MV_VOID mvBoardDebugLed(MV_U32 hexNum);
 MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
 MV_U32 mvBoardCpssBoardIdSet(MV_U8);
+MV_NAND_IF_MODE mvBoardNandIfGet(void);
 
 #ifdef __cplusplus
 }

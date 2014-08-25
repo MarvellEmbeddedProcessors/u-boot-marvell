@@ -2154,3 +2154,8 @@ MV_NFC_ECC_MODE mvBoardNandECCModeGet()
 #endif
 }
 
+MV_NAND_IF_MODE mvBoardNandIfGet()
+{
+	return NAND_IF_NFC;
+}
+

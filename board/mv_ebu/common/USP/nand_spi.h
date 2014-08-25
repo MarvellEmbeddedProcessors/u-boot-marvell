@@ -40,4 +40,6 @@ struct nand_spi {
 	int ecc_status;
 };
 
+int board_nand_spi_init(struct nand_chip *nand);
+
 #endif /* NAND_SPI_H_ */

@@ -66,7 +66,7 @@ const struct nand_flash_dev nand_flash_ids[] = {
 	{"NAND 128MiB 3,3V 16-bit",	0x59, 512, 128, 0x4000, NAND_BUSWIDTH_16},
 
 	{"NAND 256MiB 3,3V 8-bit",	0x71, 512, 256, 0x4000, 0},
-
+	{"SPI-NAND 256MiB 3,3V 8-bit",	0xc8, 2048, 128, 131072, 0},/*SPI_NAND*/
 	/*
 	 * These are the new chips with large page size. The pagesize and the
 	 * erasesize is determined from the extended id bytes

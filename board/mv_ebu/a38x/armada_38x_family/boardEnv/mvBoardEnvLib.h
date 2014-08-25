@@ -327,6 +327,12 @@ struct MV_BOARD_IO_EXPANDER {
 	MV_U8 val;
 };
 
+typedef enum {
+	NAND_IF_NFC,
+	NAND_IF_SPI,
+	NAND_IF_NONE
+} MV_NAND_IF_MODE;
+
 typedef struct _boardInfo {
 	char boardName[MV_BOARD_NAME_LEN];
 	MV_U8 numBoardNetComplexValue;
@@ -384,6 +390,8 @@ typedef struct _boardInfo {
 	MV_U32 nandFlashReadParams;
 	MV_U32 nandFlashWriteParams;
 	MV_U32 nandFlashControl;
+	MV_NAND_IF_MODE nandIfMode;
+
 	MV_BOARD_TDM_SPI_INFO *pBoardTdmSpiInfo;
 	MV_BOARD_PEX_INFO boardPexInfo;         /* filled in runtime */
 	MV_U32 norFlashReadParams;
@@ -564,6 +572,7 @@ MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal);
 MV_U32 mvBoardSysConfigGet(MV_CONFIG_TYPE_ID configField);
 MV_STATUS mvBoardSysConfigSet(MV_CONFIG_TYPE_ID configField, MV_U8 value);
 #endif /* CONFIG_CMD_BOARDCFG */
+MV_NAND_IF_MODE mvBoardNandIfGet(void);
 
 #ifdef __cplusplus
 }

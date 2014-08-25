@@ -269,6 +269,12 @@ typedef struct {
 	MV_U32 val;
 } MV_BOARD_SPEC_INIT;
 
+typedef enum {
+	NAND_IF_NFC,
+	NAND_IF_SPI,
+	NAND_IF_NONE
+} MV_NAND_IF_MODE;
+
 typedef struct _boardInfo {
 	char boardName[MV_BOARD_NAME_LEN];
 	MV_U8 numBoardMppTypeValue;
@@ -329,6 +335,7 @@ typedef struct _boardInfo {
 	MV_U32 nandFlashReadParams;
 	MV_U32 nandFlashWriteParams;
 	MV_U32 nandFlashControl;
+	MV_NAND_IF_MODE nandIfMode;
 	MV_BOARD_TDM_SPI_INFO *pBoardTdmSpiInfo;
 	MV_BOARD_PEX_INFO boardPexInfo;         /* filled in runtime */
 	MV_U32 norFlashReadParams;
@@ -482,6 +489,7 @@ MV_U16 mvBoardPexModeGet(MV_VOID);
 MV_STATUS mvBoardPexModeSet(MV_U16 conf);
 MV_U32 mvBoardFreqModesNumGet(void);
 MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
+MV_NAND_IF_MODE mvBoardNandIfGet(void);
 
 #ifdef __cplusplus
 }

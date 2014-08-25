@@ -172,6 +172,8 @@ MV_BOARD_INFO armada_38x_customer_board_0_info = {
 	.nandFlashReadParams		= A38x_CUSTOMER_BOARD_0_NAND_READ_PARAMS,
 	.nandFlashWriteParams		= A38x_CUSTOMER_BOARD_0_NAND_WRITE_PARAMS,
 	.nandFlashControl		= A38x_CUSTOMER_BOARD_0_NAND_CONTROL,
+	.nandIfMode				= NAND_IF_NFC,
+
 	/* NOR init params */
 	.norFlashReadParams		= A38x_CUSTOMER_BOARD_0_NOR_READ_PARAMS,
 	.norFlashWriteParams		= A38x_CUSTOMER_BOARD_0_NOR_WRITE_PARAMS,
@@ -302,6 +304,8 @@ MV_BOARD_INFO db88f68xx_board_info = {
 	.nandFlashReadParams		= DB_88F68XX_BOARD_NAND_READ_PARAMS,
 	.nandFlashWriteParams		= DB_88F68XX_BOARD_NAND_WRITE_PARAMS,
 	.nandFlashControl		= DB_88F68XX_BOARD_NAND_CONTROL,
+	.nandIfMode				= NAND_IF_NFC,
+
 	.pBoardTdmSpiInfo		= db88f68xxTdmSpiInfo,
 
 	/* NOR init params */
@@ -405,6 +409,7 @@ MV_BOARD_INFO rdNas88f68XX_board_info = {
 	.nandFlashReadParams		= 0,
 	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
+	.nandIfMode				= NAND_IF_NFC,
 	/* NOR init params */
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,
@@ -483,6 +488,7 @@ MV_BOARD_INFO rdWAP88f68XX_board_info = {
 	.nandFlashReadParams		= 0,
 	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
+	.nandIfMode				= NAND_IF_NFC,
 	/* NOR init params */
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,

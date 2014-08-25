@@ -198,7 +198,8 @@ typedef enum {
 	MSAR_0_BOOT_PEX,
 	MSAR_0_BOOT_SATA,
 	MSAR_0_BOOT_PROMPT,
-	MSAR_0_BOOT_SPI1_FLASH
+	MSAR_0_BOOT_SPI1_FLASH,
+	MSAR_0_BOOT_NAND_SPI
 } MV_BOARD_BOOT_SRC;
 
 typedef struct _mvSATRBootTable {
@@ -253,7 +254,7 @@ typedef struct _mvSATRBootTable {
 /*41*/ { 0,           2,            6,            3              }, \
 /*42*/ { 0,           4,            10,          5              }, \
 /*43*/ { 0,           3,            6,            6              }, \
-/*44*/ { 0,           2,            4,            4              }, \
+/*44*/ { MSAR_0_BOOT_NAND_SPI,           2,            4,            4              }, \
 /*45*/ { 0,           3,            6,            3              }, \
 /*46*/ { 0,           2,            5,            5              }, \
 /*47*/ { MSAR_0_BOOT_PROMPT,         2,            5,            5              }, \

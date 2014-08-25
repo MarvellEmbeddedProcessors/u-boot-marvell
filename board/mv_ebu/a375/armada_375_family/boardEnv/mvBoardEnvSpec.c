@@ -177,6 +177,7 @@ MV_BOARD_INFO armada_375_customer_board_0_info = {
 	.nandFlashReadParams		= A375_CUSTOMER_BOARD_0_NAND_READ_PARAMS,
 	.nandFlashWriteParams		= A375_CUSTOMER_BOARD_0_NAND_WRITE_PARAMS,
 	.nandFlashControl		= 0,
+	.nandIfMode				= NAND_IF_NFC,
 	/* NOR init params */
 	.norFlashReadParams		= A375_CUSTOMER_BOARD_0_NOR_READ_PARAMS,
 	.norFlashWriteParams		= A375_CUSTOMER_BOARD_0_NOR_WRITE_PARAMS,

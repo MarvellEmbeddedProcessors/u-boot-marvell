@@ -171,6 +171,7 @@ MV_BOARD_INFO avanta_lp_customer_board_0_info = {
 	.nandFlashReadParams		= 0,
 	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
+	.nandIfMode             = NAND_IF_NFC,
 
 	.pBoardTdmSpiInfo		= avanta_lp_customer_board_0_TdmSpiInfo,
 
@@ -298,6 +299,7 @@ MV_BOARD_INFO db88f6660_board_info = {
 	.nandFlashReadParams		= 0,
 	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
+	.nandIfMode             = NAND_IF_NFC,
 	.pBoardTdmSpiInfo		= db88f6660TdmSpiInfo,
 
 	/* NOR init params */
@@ -413,6 +415,7 @@ MV_BOARD_INFO db88f6650_board_info = {
 	.nandFlashReadParams		= 0,
 	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
+	.nandIfMode             = NAND_IF_NFC,
 	.pBoardTdmSpiInfo		= db88f6650TdmSpiInfo,
 
 	/* NOR init params */
@@ -525,6 +528,7 @@ MV_BOARD_INFO rd88f6650_board_info = {
 	.nandFlashReadParams		= 0,
 	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
+	.nandIfMode             = NAND_IF_NFC,
 	/* NOR init params */
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,
@@ -636,6 +640,7 @@ MV_BOARD_INFO rd88f6660_board_info = {
 	.nandFlashReadParams		= 0,
 	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
+	.nandIfMode             = NAND_IF_NFC,
 
 	.pBoardTdmSpiInfo		= rd88f6660TdmSpiInfo,
 
@@ -693,6 +698,7 @@ MV_BOARD_INFO avanta_lp_fpga_board_info = {
 	.nandFlashReadParams		= 0,
 	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
+	.nandIfMode             = NAND_IF_NFC,
 };
 
 /*

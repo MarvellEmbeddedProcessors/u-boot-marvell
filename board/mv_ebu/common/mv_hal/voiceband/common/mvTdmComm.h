@@ -61,33 +61,39 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#ifndef __MV_SYS_TDM_SPI_H__
-#define __MV_SYS_TDM_SPI_H__
 
-#include "mvOs.h"
+#ifndef __INCmvTdmComm
+#define __INCmvTdmComm
 
-/* Enumerators */
-typedef enum {
-	MV_NARROW_BAND = 0,
-	MV_WIDE_BAND,
-} MV_BAND_MODE;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-typedef enum {
-	MV_PCM_FORMAT_1BYTE = 1,
-	MV_PCM_FORMAT_2BYTES = 2,
-	MV_PCM_FORMAT_4BYTES = 4
-} MV_PCM_FORMAT;
+typedef struct {
+	MV_U8 *tdmRxBuff;
+	MV_U8 *tdmTxBuff;
+	MV_U32 intType;
+	MV_U8 cs;
+	MV_U8 data;
+} MV_TDM_INT_INFO;
 
-typedef enum {
-	MV_FRAME_32TS = 32,
-	MV_FRAME_64TS = 64,
-	MV_FRAME_128TS = 128
-} MV_FRAME_TS;
+typedef struct {
+	MV_PCM_FORMAT pcmFormat;
+	MV_U16 pcmSlot[32];
+	MV_U8 samplingPeriod;
+	MV_U16 totalChannels;
+} MV_TDM_PARAMS;
 
-/* APIs */
-MV_VOID mvSysTdmSpiWrite(MV_U16 lineId, MV_U8 *cmdBuff, MV_U8 cmdSize, MV_U8 *dataBuff, MV_U8 dataSize, MV_U32 spiType);
-MV_VOID mvSysTdmSpiRead(MV_U16 lineId, MV_U8 *cmdBuff, MV_U8 cmdSize, MV_U8 *dataBuff, MV_U8 dataSize, MV_U32 spiType);
-MV_VOID mvSysTdmIntEnable(MV_U8 deviceId);
-MV_VOID mvSysTdmIntDisable(MV_U8 deviceId);
+typedef struct {
+	MV_U8 spiMode;
+	MV_U8 maxCs;
+	MV_U16 familyId;
+	MV_U16 model;
+	MV_U16 ctrlRev;
+	MV_FRAME_TS frameTs;
+} MV_TDM_HAL_DATA;
 
-#endif /* __MV_SYS_TDM_SPI_H__ */
+#ifdef __cplusplus
+}
+#endif
+#endif /* __INCmvTdmComm */

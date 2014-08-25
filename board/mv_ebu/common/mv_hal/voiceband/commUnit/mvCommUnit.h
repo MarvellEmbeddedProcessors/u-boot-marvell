@@ -71,22 +71,28 @@ extern "C" {
 
 #include "voiceband/commUnit/mvCommUnitRegs.h"
 #include "voiceband/mvSysTdmSpi.h"
+#include "voiceband/common/mvTdmComm.h"
 #include "mvSysTdmConfig.h"
 
 /* Defines */
-#define MV_TDM_TOTAL_CHANNELS		32
-#define MV_TDM_MAX_HALF_DPRAM_ENTRIES	128
-#define MV_TDM_MAX_SAMPLING_PERIOD	30	/* ms */
-#define MV_TDM_BASE_SAMPLING_PERIOD	10	/* ms */
-#define MV_TDM_TOTAL_CH_SAMPLES		80	/* samples */
+#define MV_TDMMC_TOTAL_CHANNELS			32
+#define MV_TDM_MAX_HALF_DPRAM_ENTRIES		128
+#define MV_TDM_MAX_SAMPLING_PERIOD		30	/* ms */
+#define MV_TDM_BASE_SAMPLING_PERIOD		10	/* ms */
+#define MV_TDM_TOTAL_CH_SAMPLES			80	/* samples */
+
+typedef enum {
+	MV_COMMUNIT_IP_VER_ORIGIN   = 0,
+	MV_COMMUNIT_IP_VER_REVISE_1,
+} MV_COMMUNIT_IP_VERSION_T;
 
 /* IRQ types */
 #define MV_EMPTY_INT			0
-#define MV_RX_INT 			BIT0
-#define	MV_TX_INT 			BIT1
-#define	MV_PHONE_INT 			BIT2
-#define	MV_RX_ERROR_INT 		BIT3
-#define	MV_TX_ERROR_INT 		BIT4
+#define MV_RX_INT			BIT0
+#define	MV_TX_INT			BIT1
+#define	MV_PHONE_INT			BIT2
+#define	MV_RX_ERROR_INT			BIT3
+#define	MV_TX_ERROR_INT			BIT4
 #define MV_DMA_ERROR_INT		BIT5
 #define MV_ERROR_INT			(MV_RX_ERROR_INT | MV_TX_ERROR_INT | MV_DMA_ERROR_INT)
 
@@ -124,15 +130,12 @@ extern "C" {
 #define CONFIG_TDM_CLK_AND_SYNC_CONTROL	(TDM_REFCLK_DIVIDER_BYPASS_MASK | TDM_OUT_CLK_SRC_CTRL_AFTER_DIV)
 #endif				/* MV_TDM_USE_EXTERNAL_PCLK_SOURCE */
 
-#ifdef CONFIG_AVANTA_LP
 #define CONFIG_VOICE_PERIODICAL_INT_CONTROL (((MV_TDM_TOTAL_CH_SAMPLES) << RX_VOICE_INT_CNT_REF_OFFS) | \
 					     ((MV_TDM_TOTAL_CH_SAMPLES) << TX_VOICE_INT_CNT_REF_OFFS) | \
 					     (1 << RX_FIRST_DELAY_REF_OFFS) | (4 << TX_FIRST_DELAY_REF_OFFS))
-#else
-#define CONFIG_VOICE_PERIODICAL_INT_CONTROL (((MV_TDM_TOTAL_CH_SAMPLES - 1) << RX_VOICE_INT_CNT_REF_OFFS) | \
+#define CONFIG_VOICE_PERIODICAL_INT_CONTROL_WA (((MV_TDM_TOTAL_CH_SAMPLES - 1) << RX_VOICE_INT_CNT_REF_OFFS) | \
 					     ((MV_TDM_TOTAL_CH_SAMPLES - 1) << TX_VOICE_INT_CNT_REF_OFFS) | \
 					     (1 << RX_FIRST_DELAY_REF_OFFS) | (4 << TX_FIRST_DELAY_REF_OFFS))
-#endif
 #define CONFIG_TDM_CAUSE    		    (TDM_RX_INT | TDM_TX_INT /*| TDM_ERROR_INT*/)
 #define CONFIG_COMM_UNIT_TOP_MASK	    (TDM_SUM_INT_MASK | MCSC_SUM_INT_MASK)
 #define CONFIG_FLEX_TDM_CONFIG		    (TDM_SE_MASK | TDM_COMMON_RX_TX_MASK | TSD_NO_DELAY | RSD_NO_DELAY)
@@ -141,57 +144,35 @@ extern "C" {
 #define CONFIG_TDM_PLUS_MINUS_DELAY_CTRL_FSYNC_IN	(TX_SYNC_DELAY_IN_MINUS | RX_SYNC_DELAY_IN_MINUS)
 
 /* Structures */
-	typedef struct {
-		MV_U8 *tdmRxBuff;
-		MV_U8 *tdmTxBuff;
-		MV_U32 intType;
-		MV_U8 cs;
-	} MV_TDM_INT_INFO;
+typedef struct {
+	MV_U32 cmdStatus;
+	MV_U16 byteCnt;
+	MV_U16 buffSize;
+	MV_U32 physBuffPtr;
+	MV_U32 physNextDescPtr;
+} MV_TDM_MCDMA_RX_DESC;
 
-	typedef struct {
-		MV_PCM_FORMAT pcmFormat;
-		MV_U16 pcmSlot[MV_TDM_TOTAL_CHANNELS];
-		MV_U8 samplingPeriod;
-		MV_U16 totalChannels;
-	} MV_TDM_PARAMS;
+typedef struct {
+	MV_U32 cmdStatus;
+	MV_U16 shadowByteCnt;
+	MV_U16 byteCnt;
+	MV_U32 physBuffPtr;
+	MV_U32 physNextDescPtr;
+} MV_TDM_MCDMA_TX_DESC;
 
-	typedef struct {
-		MV_U8 spiMode;
-		MV_U8 maxCs;
-		MV_U16 model;
-		MV_U16 ctrlRev;
-		MV_FRAME_TS frameTs;
-	} MV_TDM_HAL_DATA;
-
-	typedef struct {
-		MV_U32 cmdStatus;
-		MV_U16 byteCnt;
-		MV_U16 buffSize;
-		MV_U32 physBuffPtr;
-		MV_U32 physNextDescPtr;
-	} MV_TDM_MCDMA_RX_DESC;
-
-	typedef struct {
-		MV_U32 cmdStatus;
-		MV_U16 shadowByteCnt;
-		MV_U16 byteCnt;
-		MV_U32 physBuffPtr;
-		MV_U32 physNextDescPtr;
-	} MV_TDM_MCDMA_TX_DESC;
-
-	typedef struct {
-		MV_U32 mask:8;
-		MV_U32 ch:8;
-		MV_U32 mgs:2;
-		MV_U32 byte:1;
-		MV_U32 strb:2;
-		MV_U32 elpb:1;
-		MV_U32 tbs:1;
-		MV_U32 rpt:2;
-		MV_U32 last:1;
-		MV_U32 ftint:1;
-		MV_U32 reserved31_27:5;
-	} MV_TDM_DPRAM_ENTRY;
+typedef struct {
+	MV_U32 mask:8;
+	MV_U32 ch:8;
+	MV_U32 mgs:2;
+	MV_U32 byte:1;
+	MV_U32 strb:2;
+	MV_U32 elpb:1;
+	MV_U32 tbs:1;
+	MV_U32 rpt:2;
+	MV_U32 last:1;
+	MV_U32 ftint:1;
+	MV_U32 reserved31_27:5;
+} MV_TDM_DPRAM_ENTRY;
 
 /* CommUnit APIs */
 	MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *pTdmParams, MV_TDM_HAL_DATA *halData);

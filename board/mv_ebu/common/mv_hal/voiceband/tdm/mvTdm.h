@@ -67,6 +67,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "voiceband/tdm/mvTdmRegs.h"
 #include "voiceband/mvSysTdmSpi.h"
+#include "voiceband/common/mvTdmComm.h"
 #include "mvSysTdmConfig.h"
 
 /* Defines */
@@ -78,16 +79,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 						  SAMPLES_BUFF_SIZE(bandMode, factor))
 
 #define MV_TDM_AGGR_BUFF_SIZE(pcmFormat, bandMode, factor)	(2 * MV_TDM_CH_BUFF_SIZE(pcmFormat, bandMode, factor))
-#define MV_TDM_TOTAL_CHANNELS					2
-#define MV_TDM_INT_COUNTER					2
-#define MV_TDM_MAX_SAMPLING_PERIOD				30	/* ms */
-#define MV_TDM_BASE_SAMPLING_PERIOD				10	/* ms */
-#define MV_TDM_TOTAL_CH_SAMPLES					80	/* samples */
+#define MV_TDM2C_TOTAL_CHANNELS			2
+#define MV_TDM_INT_COUNTER				2
+#define MV_TDM_MAX_SAMPLING_PERIOD		30	/* ms */
+#define MV_TDM_BASE_SAMPLING_PERIOD		10	/* ms */
+#define MV_TDM_TOTAL_CH_SAMPLES			80	/* samples */
 
 /* TDM IRQ types */
 #define MV_EMPTY_INT		0
-#define MV_RX_INT 		BIT0
-#define	MV_TX_INT 		BIT1
+#define MV_RX_INT			BIT0
+#define	MV_TX_INT			BIT1
 #define	MV_PHONE_INT 		BIT2
 #define	MV_RX_ERROR_INT 	BIT3
 #define	MV_TX_ERROR_INT 	BIT4
@@ -143,29 +144,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Enumerators */
 
 /* Structures */
-typedef struct {
-	MV_U8 *tdmRxBuff;
-	MV_U8 *tdmTxBuff;
-	MV_U32 intType;
-	MV_U8 cs;
-	MV_U8 data;
-} MV_TDM_INT_INFO;
-
-typedef struct {
-	MV_PCM_FORMAT pcmFormat;
-	MV_U16 pcmSlot[32];
-	MV_U8 samplingPeriod;
-	MV_U16 totalChannels;
-} MV_TDM_PARAMS;
-
-typedef struct {
-	MV_U8 spiMode;
-	MV_U8 maxCs;
-	MV_U16 model;
-	MV_U16 ctrlRev;
-	MV_FRAME_TS frameTs;
-} MV_TDM_HAL_DATA;
-
 #ifdef MV_TDM_EXT_STATS
 typedef struct {
 	MV_U32 intRxCount;

@@ -406,8 +406,10 @@ typedef enum {
 } MV_SLIC_UNIT_TYPE;
 
 typedef enum {
-	TDM_UNIT_2CH,
-	TDM_UNIT_8CH
+	MV_TDM_UNIT_NONE = 0,
+	MV_TDM_UNIT_TDM2C,
+	MV_TDM_UNIT_TDMMC,
+	MV_TDM_UNIT_DFEV
 } MV_TDM_UNIT_TYPE;
 
 typedef enum _mvUnitId {

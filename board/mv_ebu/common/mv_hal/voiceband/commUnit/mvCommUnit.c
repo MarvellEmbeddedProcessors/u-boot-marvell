@@ -92,6 +92,7 @@ static MV_TDM_MCDMA_RX_DESC *mcdmaRxDescPtr[TOTAL_CHAINS];
 static MV_TDM_MCDMA_TX_DESC *mcdmaTxDescPtr[TOTAL_CHAINS];
 static MV_ULONG mcdmaRxDescPhys[TOTAL_CHAINS], mcdmaTxDescPhys[TOTAL_CHAINS];
 static MV_TDM_DPRAM_ENTRY defDpramEntry = { 0, 0, 0x1, 0x1, 0, 0, 0x1, 0, 0, 0, 0 };
+static MV_U16 ctrlFamilyId;
 static MV_U16 ctrlModel;
 static MV_U16 ctrlRev;
 
@@ -101,13 +102,29 @@ static MV_VOID mvCommUnitMcdmaMcscStart(MV_VOID);
 static MV_VOID mvCommUnitMcdmaStop(MV_VOID);
 static MV_VOID mvCommUnitMcdmaMcscAbort(MV_VOID);
 
+static MV_COMMUNIT_IP_VERSION_T mvCommUnitIpVerGet(MV_U16 ctrlFamilyId)
+{
+	switch (ctrlFamilyId) {
+	case MV_65XX_DEV_ID:
+		return MV_COMMUNIT_IP_VER_ORIGIN;
+	case MV_78XX0:
+	case MV_88F66X0:
+	case MV_88F67X0:
+		return MV_COMMUNIT_IP_VER_REVISE_1;
+	default:
+		return MV_COMMUNIT_IP_VER_ORIGIN;
+	}
+}
+
 MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 {
 	MV_U16 pcmSlot, index;
 	MV_U32 buffSize, chan;
 	MV_U32 totalRxDescSize, totalTxDescSize;
 	MV_U32 maxPoll, clkSyncCtrlReg;
+#if 0
 	MV_U32 chMask;
+#endif
 	MV_U32 count;
 	MV_TDM_DPRAM_ENTRY actDpramEntry, *pActDpramEntry;
 
@@ -121,11 +138,12 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	totalChannels = tdmParams->totalChannels;
 	prevRxBuff = 0;
 	nextTxBuff = 0;
+	ctrlFamilyId = halData->familyId;
 	ctrlModel = halData->model;
 	ctrlRev = halData->ctrlRev;
 
 	/* Check parameters */
-	if ((tdmParams->totalChannels > MV_TDM_TOTAL_CHANNELS) ||
+	if ((tdmParams->totalChannels > MV_TDMMC_TOTAL_CHANNELS) ||
 	    (tdmParams->samplingPeriod > MV_TDM_MAX_SAMPLING_PERIOD)) {
 		mvOsPrintf("%s: Error, bad parameters\n", __func__);
 		return MV_ERROR;
@@ -430,10 +448,9 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	/* MV_REG_BIT_SET(TDM_DATA_DELAY_AND_CLK_CTRL_REG, OLD_INT_WA_BIT); */
 
 	/* Keep the software workaround to enable TEN while set Fsync for none-ALP chips */
-#ifndef CONFIG_AVANTA_LP
 	/* Enable TDM */
-	MV_REG_BIT_SET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
-#endif
+	if (MV_COMMUNIT_IP_VER_ORIGIN == mvCommUnitIpVerGet(ctrlFamilyId))
+		MV_REG_BIT_SET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
 
 #if 0
 	/* Poll for Enter Hunt Execution Status */
@@ -476,10 +493,9 @@ MV_VOID mvCommUnitRelease(MV_VOID)
 		mvOsUDelay(10);
 		MV_REG_BIT_RESET(MCSC_GLOBAL_CONFIG_REG, MCSC_GLOBAL_CONFIG_MAI_MASK);
 
-#ifndef CONFIG_AVANTA_LP
 		/* Disable TDM */
-		MV_REG_BIT_RESET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
-#endif
+		if (MV_COMMUNIT_IP_VER_ORIGIN == mvCommUnitIpVerGet(ctrlFamilyId))
+			MV_REG_BIT_RESET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
 
 		/* Disable PCLK */
 		MV_REG_BIT_RESET(TDM_DATA_DELAY_AND_CLK_CTRL_REG, (TX_CLK_OUT_ENABLE_MASK | RX_CLK_OUT_ENABLE_MASK));
@@ -537,7 +553,10 @@ static MV_VOID mvCommUnitMcdmaMcscStart(MV_VOID)
 	}
 
 	/* Set Rx/Tx periodical interrupts */
-	MV_REG_WRITE(VOICE_PERIODICAL_INT_CONTROL_REG, CONFIG_VOICE_PERIODICAL_INT_CONTROL);
+	if (MV_COMMUNIT_IP_VER_ORIGIN == mvCommUnitIpVerGet(ctrlFamilyId))
+		MV_REG_WRITE(VOICE_PERIODICAL_INT_CONTROL_REG, CONFIG_VOICE_PERIODICAL_INT_CONTROL_WA);
+	else
+		MV_REG_WRITE(VOICE_PERIODICAL_INT_CONTROL_REG, CONFIG_VOICE_PERIODICAL_INT_CONTROL);
 
 	/* MCSC Global Tx Enable */
 	if (tdmEnable == MV_FALSE)
@@ -605,10 +624,9 @@ MV_VOID mvCommUnitPcmStart(MV_VOID)
 		MV_REG_WRITE(TDM_MASK_REG, (maskReg | CONFIG_TDM_CAUSE));
 		MV_REG_WRITE(COMM_UNIT_TOP_MASK_REG, CONFIG_COMM_UNIT_TOP_MASK);
 
-#ifdef CONFIG_AVANTA_LP
 		/* Enable TDM */
-		MV_REG_BIT_SET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
-#endif
+		if (MV_COMMUNIT_IP_VER_REVISE_1 == mvCommUnitIpVerGet(ctrlFamilyId))
+			MV_REG_BIT_SET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
 	}
 
 	MV_TRC_REC("<-%s\n", __func__);
@@ -810,10 +828,9 @@ MV_VOID mvCommUnitPcmStop(MV_VOID)
 			mvOsCacheFlushInv(NULL, txBuffVirt[index], buffSize);
 		}
 
-#ifdef CONFIG_AVANTA_LP
 		/* Disable TDM */
-		MV_REG_BIT_RESET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
-#endif
+		if (MV_COMMUNIT_IP_VER_REVISE_1 == mvCommUnitIpVerGet(ctrlFamilyId))
+			MV_REG_BIT_RESET(FLEX_TDM_CONFIG_REG, TDM_TEN_MASK);
 	}
 
 	MV_TRC_REC("<-%s\n", __func__);
@@ -821,25 +838,26 @@ MV_VOID mvCommUnitPcmStop(MV_VOID)
 
 MV_STATUS mvCommUnitTx(MV_U8 *pTdmTxBuff)
 {
-	MV_U32 buffSize, index;
+	MV_U32 buffSize;
 	MV_U8 tmp;
+	MV_U32 index;
 
 	MV_TRC_REC("->%s\n", __func__);
 
 	/* Calculate total Tx buffer size */
 	buffSize = (sampleSize * MV_TDM_TOTAL_CH_SAMPLES * samplingCoeff * totalChannels);
 
-#ifndef CONFIG_AVANTA_LP
-	if (sampleSize > MV_PCM_FORMAT_1BYTE) {
-		TRC_REC("Linear mode(Tx): swapping bytes\n");
+	if (MV_COMMUNIT_IP_VER_ORIGIN == mvCommUnitIpVerGet(ctrlFamilyId)) {
+		if (sampleSize > MV_PCM_FORMAT_1BYTE) {
+			TRC_REC("Linear mode(Tx): swapping bytes\n");
 			for (index = 0; index < buffSize; index += 2) {
 				tmp = pTdmTxBuff[index];
 				pTdmTxBuff[index] = pTdmTxBuff[index+1];
 				pTdmTxBuff[index+1] = tmp;
 			}
-		TRC_REC("Linear mode(Tx): swapping bytes...done.\n");
+			TRC_REC("Linear mode(Tx): swapping bytes...done.\n");
+		}
 	}
-#endif
 
 	/* Flush+Invalidate the next Tx buffer */
 	mvOsCacheFlush(NULL, pTdmTxBuff, buffSize);
@@ -851,8 +869,9 @@ MV_STATUS mvCommUnitTx(MV_U8 *pTdmTxBuff)
 
 MV_STATUS mvCommUnitRx(MV_U8 *pTdmRxBuff)
 {
-	MV_U32 buffSize, index;
+	MV_U32 buffSize;
 	MV_U8 tmp;
+	MV_U32 index;
 
 	MV_TRC_REC("->%s\n", __func__);
 
@@ -862,17 +881,17 @@ MV_STATUS mvCommUnitRx(MV_U8 *pTdmRxBuff)
 	/* Invalidate current received buffer from cache */
 	mvOsCacheInvalidate(NULL, pTdmRxBuff, buffSize);
 
-#ifndef CONFIG_AVANTA_LP
-	if (sampleSize > MV_PCM_FORMAT_1BYTE) {
-		TRC_REC("  -> Linear mode(Rx): swapping bytes\n");
+	if (MV_COMMUNIT_IP_VER_ORIGIN == mvCommUnitIpVerGet(ctrlFamilyId)) {
+		if (sampleSize > MV_PCM_FORMAT_1BYTE) {
+			TRC_REC("  -> Linear mode(Rx): swapping bytes\n");
 			for (index = 0; index < buffSize; index += 2) {
 				tmp = pTdmRxBuff[index];
 				pTdmRxBuff[index] = pTdmRxBuff[index+1];
 				pTdmRxBuff[index+1] = tmp;
 			}
-		TRC_REC("  <- Linear mode(Rx): swapping bytes...done.\n");
+			TRC_REC("  <- Linear mode(Rx): swapping bytes...done.\n");
+		}
 	}
-#endif
 	MV_TRC_REC("<-%s\n", __func__);
 	return MV_OK;
 }

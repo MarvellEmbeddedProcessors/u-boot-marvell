@@ -1298,7 +1298,24 @@ MV_U32 mvCtrlTdmMaxGet(MV_VOID)
 *******************************************************************************/
 MV_TDM_UNIT_TYPE mvCtrlTdmUnitTypeGet(MV_VOID)
 {
-	return TDM_UNIT_2CH;
+	MV_U32 slicDevice;
+
+	slicDevice = mvBoardSlicUnitTypeGet();
+
+	switch (slicDevice) {
+	case SLIC_NONE_ID:
+		return MV_TDM_UNIT_NONE;
+	case SLIC_LANTIQ_ID:
+		return MV_TDM_UNIT_DFEV;
+	case SLIC_SILABS_ID:
+	case SLIC_ZARLINK_ID:
+	case SLIC_TDM2C_ID:
+		return MV_TDM_UNIT_TDM2C;
+	case SLIC_TDMMC_ID:
+		return MV_TDM_UNIT_TDMMC;
+	default:
+		return MV_TDM_UNIT_NONE;
+	}
 }
 
 

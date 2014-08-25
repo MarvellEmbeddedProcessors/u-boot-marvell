@@ -105,7 +105,7 @@ static MV_U8 spiMode;
 static MV_U8 factor;
 static MV_PCM_FORMAT pcmFormat;
 static MV_BAND_MODE tdmBandMode;
-static MV_TDM_CH_INFO *tdmChInfo[MV_TDM_TOTAL_CHANNELS] = { NULL, NULL };
+static MV_TDM_CH_INFO *tdmChInfo[MV_TDM2C_TOTAL_CHANNELS] = { NULL, NULL };
 static volatile MV_U8 chanStopCount;
 
 static MV_U8 intLock;
@@ -172,7 +172,7 @@ MV_STATUS mvTdmHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	memset(txAggrBuffVirt, 0, MV_TDM_AGGR_BUFF_SIZE(pcmFormat, tdmBandMode, factor));
 
 	/* Calculate CH(0/1) Delay Control for narrow/wideband modes */
-	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
+	for (ch = 0; ch < MV_TDM2C_TOTAL_CHANNELS; ch++) {
 		nbDelay = ((tdmParams->pcmSlot[ch] * PCM_SLOT_PCLK) + 1);
 		wbDelay = (nbDelay + ((halData->frameTs / 2) * PCM_SLOT_PCLK)); /* Offset required by ZARLINK VE880 SLIC */
 		chDelay[ch] = ((nbDelay << CH_RX_DELAY_OFFS) | (nbDelay << CH_TX_DELAY_OFFS));
@@ -222,7 +222,7 @@ MV_STATUS mvTdmHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 	}
 
 	/* Initialize all HW units */
-	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
+	for (ch = 0; ch < MV_TDM2C_TOTAL_CHANNELS; ch++) {
 		if (mvTdmChInit(ch) != MV_OK) {
 			mvOsPrintf("mvTdmChInit(%d) failed !\n", ch);
 			return MV_ERROR;
@@ -243,8 +243,8 @@ static MV_STATUS mvTdmChInit(MV_U8 ch)
 
 	MV_TRC_REC("->%s ch%d\n", __func__, ch);
 
-	if (ch >= MV_TDM_TOTAL_CHANNELS) {
-		mvOsPrintf("%s: error, channel(%d) exceeds maximum(%d)\n", __func__, ch, MV_TDM_TOTAL_CHANNELS);
+	if (ch >= MV_TDM2C_TOTAL_CHANNELS) {
+		mvOsPrintf("%s: error, channel(%d) exceeds maximum(%d)\n", __func__, ch, MV_TDM2C_TOTAL_CHANNELS);
 		return MV_BAD_PARAM;
 	}
 
@@ -297,7 +297,7 @@ MV_VOID mvTdmRelease(MV_VOID)
 			 txAggrBuffVirt, 0);
 
 	/* Release HW channel resources */
-	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++)
+	for (ch = 0; ch < MV_TDM2C_TOTAL_CHANNELS; ch++)
 		mvTdmChRemove(ch);
 
 	MV_TRC_REC("<-%s\n", __func__);
@@ -310,8 +310,8 @@ static MV_STATUS mvTdmChRemove(MV_U8 ch)
 
 	MV_TRC_REC("->%s ch%d\n", __func__, ch);
 
-	if (ch >= MV_TDM_TOTAL_CHANNELS) {
-		mvOsPrintf("%s: error, channel(%d) exceeds maximum(%d)\n", __func__, ch, MV_TDM_TOTAL_CHANNELS);
+	if (ch >= MV_TDM2C_TOTAL_CHANNELS) {
+		mvOsPrintf("%s: error, channel(%d) exceeds maximum(%d)\n", __func__, ch, MV_TDM2C_TOTAL_CHANNELS);
 		return MV_BAD_PARAM;
 	}
 
@@ -341,7 +341,7 @@ static MV_VOID mvTdmReset(MV_VOID)
 	rxInt = txInt = 0;
 	rxFull = txEmpty = BUFF_INVALID;
 
-	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
+	for (ch = 0; ch < MV_TDM2C_TOTAL_CHANNELS; ch++) {
 		chInfo = tdmChInfo[ch];
 		chInfo->rxFirst = FIRST_INT;
 		chInfo->txCurrBuff = chInfo->rxCurrBuff = 0;
@@ -368,7 +368,7 @@ MV_VOID mvTdmPcmStart(MV_VOID)
 	chanStopCount = 0;
 	mvTdmReset();
 
-	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
+	for (ch = 0; ch < MV_TDM2C_TOTAL_CHANNELS; ch++) {
 		chInfo = tdmChInfo[ch];
 
 		/* Set Tx buff */
@@ -437,7 +437,7 @@ MV_STATUS mvTdmTx(MV_U8 *tdmTxBuff)
 		return MV_NOT_READY;
 	}
 
-	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
+	for (ch = 0; ch < MV_TDM2C_TOTAL_CHANNELS; ch++) {
 		chInfo = tdmChInfo[ch];
 		MV_TRC_REC("ch%d: fill buf %d with %d bytes\n", ch, txEmpty,
 			   MV_TDM_CH_BUFF_SIZE(pcmFormat, tdmBandMode, factor));
@@ -478,7 +478,7 @@ MV_STATUS mvTdmRx(MV_U8 *tdmRxBuff)
 		return MV_NOT_READY;
 	}
 
-	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
+	for (ch = 0; ch < MV_TDM2C_TOTAL_CHANNELS; ch++) {
 		chInfo = tdmChInfo[ch];
 		chInfo->rxBuffFull[rxFull] = BUFF_IS_EMPTY;
 		MV_TRC_REC("%s get Rx buffer(%d) for channel(%d)\n", __func__, rxFull, ch);
@@ -536,7 +536,7 @@ MV_32 mvTdmIntLow(MV_TDM_INT_INFO *tdmIntInfo)
 		tdmIntInfo->intType |= MV_DMA_ERROR_INT;
 	}
 
-	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
+	for (ch = 0; ch < MV_TDM2C_TOTAL_CHANNELS; ch++) {
 
 		/* Give next buff to TDM and set curr buff as empty */
 		if ((statusAndMask & TX_BIT(ch)) && tdmEnable && !intLock) {
@@ -566,7 +566,7 @@ MV_32 mvTdmIntLow(MV_TDM_INT_INFO *tdmIntInfo)
 		}
 	}
 
-	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
+	for (ch = 0; ch < MV_TDM2C_TOTAL_CHANNELS; ch++) {
 
 		if ((statusAndMask & RX_BIT(ch)) && tdmEnable && !intLock) {
 			MV_TRC_REC("Rx interrupt(ch%d) !!!\n", ch);
@@ -595,7 +595,7 @@ MV_32 mvTdmIntLow(MV_TDM_INT_INFO *tdmIntInfo)
 		}
 	}
 
-	for (ch = 0; ch < MV_TDM_TOTAL_CHANNELS; ch++) {
+	for (ch = 0; ch < MV_TDM2C_TOTAL_CHANNELS; ch++) {
 
 		if (statusAndMask & TX_UNDERFLOW_BIT(ch)) {
 
@@ -968,7 +968,7 @@ MV_VOID mvTdmRegsDump(MV_VOID)
 	mvOsRegDump(DUMMY_RX_WRITE_DATA_REG);
 	mvOsRegDump(MISC_CTRL_REG);
 	mvOsPrintf("TDM Channel Control:\n");
-	for (i = 0; i < MV_TDM_TOTAL_CHANNELS; i++) {
+	for (i = 0; i < MV_TDM2C_TOTAL_CHANNELS; i++) {
 		mvOsRegDump(CH_DELAY_CTRL_REG(i));
 		mvOsRegDump(CH_SAMPLE_REG(i));
 		mvOsRegDump(CH_DBG_REG(i));
@@ -983,7 +983,7 @@ MV_VOID mvTdmRegsDump(MV_VOID)
 	mvOsRegDump(INT_EVENT_MASK_REG);
 	mvOsRegDump(INT_STATUS_MASK_REG);
 	mvOsRegDump(INT_STATUS_REG);
-	for (i = 0; i < MV_TDM_TOTAL_CHANNELS; i++) {
+	for (i = 0; i < MV_TDM2C_TOTAL_CHANNELS; i++) {
 		mvOsPrintf("ch%d info:\n", i);
 		chInfo = tdmChInfo[i];
 		mvOsPrintf("RX buffs:\n");

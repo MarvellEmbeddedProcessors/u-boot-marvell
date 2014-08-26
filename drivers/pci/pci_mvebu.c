@@ -25,6 +25,12 @@
 #include <errno.h>
 
 /* #define DEBUG */
+/* #define DEBUG_CFG_CYCLE */
+#ifdef DEBUG_CFG_CYCLE
+#define debug_cfg(fmt, args...) printf(fmt, ##args)
+#else
+#define debug_cfg(fmt, args...)
+#endif
 
 /*
  * PCIe unit register offsets.
@@ -92,8 +98,8 @@ static int mvebu_pcie_read_config(struct pci_controller *hose, pci_dev_t bdf,
 				  int where, u32 *val)
 {
 	if (!mvebu_pcie_addr_valid(bdf, hose->first_busno)) {
-		debug("CFG address out of range (%d,%d,%d)\n",
-		      PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf));
+		debug_cfg("CFG read: address out of range (%d,%d,%d)\n",
+			  PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf));
 		*val = 0xFFFFFFFF;
 		return 1;
 	}
@@ -101,8 +107,8 @@ static int mvebu_pcie_read_config(struct pci_controller *hose, pci_dev_t bdf,
 
 	*val = readl(hose->cfg_data);
 
-	debug("PCIE CFG read:  (b,d,f)=(%2d,%2d,%2d) (addr,val)=(0x%04x, 0x%08x)\n",
-	      PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf), where, (*val));
+	debug_cfg("PCIE CFG read:  (b,d,f)=(%2d,%2d,%2d) (addr,val)=(0x%04x, 0x%08x)\n",
+		  PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf), where, (*val));
 
 	return 0;
 }
@@ -111,16 +117,16 @@ static int mvebu_pcie_write_config(struct pci_controller *hose, pci_dev_t bdf,
 				   int where, u32 val)
 {
 	if (!mvebu_pcie_addr_valid(bdf, hose->first_busno)) {
-		debug("CFG address out of range (%d,%d,%d)\n",
-		      PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf));
+		debug_cfg("CFG write: address out of range (%d,%d,%d)\n",
+			  PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf));
 		return 1;
 	}
 
 	writel(PCIE_CONF_ADDR(bdf, where), hose->cfg_addr);
 	writel(val, hose->cfg_data);
 
-	debug("PCIE CFG write: (b,d,f)=(%2d,%2d,%2d) (addr,val)=(0x%04x, 0x%08x)\n",
-	      PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf), where, val);
+	debug_cfg("PCIE CFG write: (b,d,f)=(%2d,%2d,%2d) (addr,val)=(0x%04x, 0x%08x)\n",
+		  PCI_BUS(bdf), PCI_DEV(bdf), PCI_FUNC(bdf), where, val);
 
 	return 0;
 }

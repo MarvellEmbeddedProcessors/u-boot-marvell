@@ -62,8 +62,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _INC_ALP_H
-#define _INC_ALP_H
+#ifndef _INC_A375_H
+#define _INC_A375_H
 
 #define SAR_DDR3_FREQ_MASK          0xFE00000
 #define SAR_CPU_FAB_GET(cpu, fab)   (((cpu & 0x7) << 21) | ((fab & 0xF) << 24))
@@ -563,4 +563,4 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LEN_SPECIAL_PATTERN                     128
 #define LEN_PBS_PATTERN                         16
 
-#endif /* _INC_ALP_H */
+#endif /* _INC_A375_H */

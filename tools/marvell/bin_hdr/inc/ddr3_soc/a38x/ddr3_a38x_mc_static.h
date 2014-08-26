@@ -62,8 +62,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _INC_A375_MC_STATIC_H
-#define _INC_A375_MC_STATIC_H
+#ifndef _INC_A38x_MC_STATIC_H
+#define _INC_A38x_MC_STATIC_H
 
 #include "ddr3_a38x.h"
 
@@ -275,5 +275,5 @@ static MV_DRAM_MC_INIT ddr3_a38x_533[] =
 
 #endif /*SUPPORT_STATIC_DUNIT_CONFIG*/
 
-#endif /* _INC_A375_MC_STATIC_H */
+#endif /* _INC_A38x_MC_STATIC_H*/
 

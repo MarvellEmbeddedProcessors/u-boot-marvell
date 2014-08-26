@@ -62,8 +62,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _INC_ALP_TRAINING_STATIC_H
-#define _INC_ALP_TRAINING_STATIC_H
+#ifndef _INC_A375_TRAINING_STATIC_H
+#define _INC_A375_TRAINING_STATIC_H
 
 /* STATIC_TRAINING - Set only if static parameters for training are set and required */
 /*#define STATIC_TRAINING */
@@ -157,4 +157,4 @@ MV_DRAM_TRAINING_INIT ddr3_db_88F6660[MV_MAX_DDR3_STATIC_SIZE] =
 
 
 
-#endif /* _INC_ALP_TRAINING_STATIC_H */
+#endif /* _INC_A375_TRAINING_STATIC_H */

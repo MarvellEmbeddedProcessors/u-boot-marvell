@@ -201,22 +201,29 @@ if(defined $opt_o)
 	print "\n**** [Copying output] *****\n\n";
 
 	system("mkdir -p $opt_o/");
-	system("mkdir -p $opt_o/bin_hdr");
 
-	# Copy images
-	system("cp u-boot-$flash_name.bin $opt_o/u-boot.bin");
-	system("cp u-boot-$flash_name.bin      $opt_o/");
-	system("cp u-boot-$flash_name-uart.bin $opt_o/");
+	unless ($board eq "armada8k-pxp") {
+		system("mkdir -p $opt_o/bin_hdr");
 
-	# Copy meta data
-	system("cp u-boot $opt_o/u-boot-$flash_name");
-	system("cp u-boot.srec $opt_o/u-boot-$flash_name.srec");
+		# Copy images
+		system("cp u-boot-$flash_name.bin $opt_o/u-boot.bin");
+		system("cp u-boot-$flash_name.bin      $opt_o/");
+		system("cp u-boot-$flash_name-uart.bin $opt_o/");
 
-	# Copy bin header images 
-	system("cp tools/marvell/bin_hdr/bin_hdr.bin $opt_o/bin_hdr/");
-	system("cp tools/marvell/bin_hdr/bin_hdr.elf $opt_o/bin_hdr/");
-	system("cp tools/marvell/bin_hdr/bin_hdr.dis $opt_o/bin_hdr/");
-	system("cp tools/marvell/bin_hdr/bin_hdr.srec $opt_o/bin_hdr/");
+		# Copy meta data
+		system("cp u-boot $opt_o/u-boot-$flash_name");
+		system("cp u-boot.srec $opt_o/u-boot-$flash_name.srec");
+
+		# Copy bin header images
+		system("cp tools/marvell/bin_hdr/bin_hdr.bin $opt_o/bin_hdr/");
+		system("cp tools/marvell/bin_hdr/bin_hdr.elf $opt_o/bin_hdr/");
+		system("cp tools/marvell/bin_hdr/bin_hdr.dis $opt_o/bin_hdr/");
+		system("cp tools/marvell/bin_hdr/bin_hdr.srec $opt_o/bin_hdr/");
+	} else {
+		system("cp u-boot $opt_o/.");
+		system("cp u-boot.bin $opt_o/.");
+		system("cp u-boot.hex $opt_o/.");
+	}
 }
 
 exit 0;

@@ -24,7 +24,11 @@
 /* 0x61000000 - 0x62000000 - PEX-1 */
 /* 0x62000000 - 0x63000000 - NSS */
 
+#ifdef __ASSEMBLY__
 #define MVEBU_REGS_BASE		(0xF0000000)
+#else
+#define MVEBU_REGS_BASE		(0xF0000000UL)
+#endif
 #define MVEBU_REGS_SIZE 	(0x100000)
 
 #define DRAM_0_BASE_ADDR	0x0

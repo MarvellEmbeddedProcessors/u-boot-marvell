@@ -54,14 +54,14 @@ static void adec_enable_rfu_win(struct adec_win *win, u32 win_id)
 	end_addr = (win->base_addr + win->win_size - 1);
 	alr = (u32)((win->base_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
 	alr |= WIN_ENABLE_BIT;
-	writel(alr, (unsigned long)RFU_WIN_ALR_OFFSET(win_id));
+	writel(alr, RFU_WIN_ALR_OFFSET(win_id));
 
 	/* there's no ahr for bootrom window */
 	if (win_id == BOOTROM_RFU_WINDOW_NUM)
 		return ;
 
 	ahr = (u32)((end_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
-	writel(ahr, (unsigned long)RFU_WIN_AHR_OFFSET(win_id));
+	writel(ahr, RFU_WIN_AHR_OFFSET(win_id));
 }
 
 static void adec_enable_iob_win(struct adec_win *win, u32 win_id)
@@ -72,14 +72,14 @@ static void adec_enable_iob_win(struct adec_win *win, u32 win_id)
 
 	iob_win_reg = WIN_ENABLE_BIT;
 	iob_win_reg |= (win->target_id & IOB_TARGET_ID_MASK) << IOB_TARGET_ID_OFFSET;
-	writel(iob_win_reg, (unsigned long)IOB_WIN_CR_OFFSET(win_id));
+	writel(iob_win_reg, IOB_WIN_CR_OFFSET(win_id));
 
 	end_addr = (win->base_addr + win->win_size - 1);
 	alr = (u32)((win->base_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
 	ahr = (u32)((end_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
 
-	writel(alr, (unsigned long)IOB_WIN_ALR_OFFSET(win_id));
-	writel(ahr, (unsigned long)IOB_WIN_AHR_OFFSET(win_id));
+	writel(alr, IOB_WIN_ALR_OFFSET(win_id));
+	writel(ahr, IOB_WIN_AHR_OFFSET(win_id));
 }
 
 static void adec_enable_ap_win(struct adec_win *win, u32 win_id)
@@ -90,14 +90,14 @@ static void adec_enable_ap_win(struct adec_win *win, u32 win_id)
 
 	ap_win_reg = WIN_ENABLE_BIT;
 	ap_win_reg |= (win->target_id & AP_TARGET_ID_MASK) << AP_TARGET_ID_OFFSET;
-	writel(ap_win_reg, (unsigned long)AP_WIN_CR_OFFSET(win_id));
+	writel(ap_win_reg, AP_WIN_CR_OFFSET(win_id));
 
 	end_addr = (win->base_addr + win->win_size - 1);
 	alr = (u32)((win->base_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
 	ahr = (u32)((end_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
 
-	writel(alr, (unsigned long)AP_WIN_ALR_OFFSET(win_id));
-	writel(ahr, (unsigned long)AP_WIN_AHR_OFFSET(win_id));
+	writel(alr, AP_WIN_ALR_OFFSET(win_id));
+	writel(ahr, AP_WIN_AHR_OFFSET(win_id));
 }
 
 void adec_dump(void)
@@ -112,11 +112,11 @@ void adec_dump(void)
 	printf("id target  start              end\n");
 	printf("----------------------------------------------\n");
 	for (win_id = 0; win_id < MAX_AP_WINDOWS; win_id++) {
-		win_cr = readl((unsigned long)AP_WIN_CR_OFFSET(win_id));
+		win_cr = readl(AP_WIN_CR_OFFSET(win_id));
 		if (win_cr & WIN_ENABLE_BIT) {
 			target_id = (win_cr >> AP_TARGET_ID_OFFSET) & AP_TARGET_ID_MASK;
-			alr = readl((unsigned long)AP_WIN_ALR_OFFSET(win_id));
-			ahr = readl((unsigned long)AP_WIN_AHR_OFFSET(win_id));
+			alr = readl(AP_WIN_ALR_OFFSET(win_id));
+			ahr = readl(AP_WIN_AHR_OFFSET(win_id));
 			start = (uintptr_t)(alr << ADDRESS_SHIFT);
 			end = (uintptr_t)((ahr + 0x10) << ADDRESS_SHIFT);
 			printf("%02d %02d      0x%016lx 0x%016lx\n", win_id, target_id, start, end);
@@ -124,10 +124,10 @@ void adec_dump(void)
 	}
 	/* Dump all RFU windows */
 	for (win_id = 0; win_id < MAX_RFU_WINDOWS; win_id++) {
-		alr = readl((unsigned long)RFU_WIN_ALR_OFFSET(win_id));
+		alr = readl(RFU_WIN_ALR_OFFSET(win_id));
 		if (alr & WIN_ENABLE_BIT) {
-			alr = readl((unsigned long)RFU_WIN_ALR_OFFSET(win_id));
-			ahr = readl((unsigned long)RFU_WIN_AHR_OFFSET(win_id));
+			alr = readl(RFU_WIN_ALR_OFFSET(win_id));
+			ahr = readl(RFU_WIN_AHR_OFFSET(win_id));
 			start = (uintptr_t)(alr << ADDRESS_SHIFT);
 			end = (uintptr_t)((ahr + 0x10) << ADDRESS_SHIFT);
 			printf("%02d         0x%016lx 0x%016lx\n", win_id, start, end);
@@ -135,11 +135,11 @@ void adec_dump(void)
 	}
 	/* Dump all IOB windows */
 	for (win_id = 0; win_id < MAX_IOB_WINDOWS; win_id++) {
-		win_cr = readl((unsigned long)IOB_WIN_CR_OFFSET(win_id));
+		win_cr = readl(IOB_WIN_CR_OFFSET(win_id));
 		if (win_cr & WIN_ENABLE_BIT) {
 			target_id = (win_cr >> IOB_TARGET_ID_OFFSET) & IOB_TARGET_ID_MASK;
-			alr = readl((unsigned long)IOB_WIN_ALR_OFFSET(win_id));
-			ahr = readl((unsigned long)IOB_WIN_AHR_OFFSET(win_id));
+			alr = readl(IOB_WIN_ALR_OFFSET(win_id));
+			ahr = readl(IOB_WIN_AHR_OFFSET(win_id));
 			start = (uintptr_t)(alr << ADDRESS_SHIFT);
 			end = (uintptr_t)((ahr + 0x10) << ADDRESS_SHIFT);
 			printf("%02d %02d      0x%016lx 0x%016lx\n", win_id, target_id, start, end);
@@ -159,37 +159,37 @@ int adec_init(struct adec_win *windows)
 
 	/* disable all RFU windows */
 	for (win_id = 0; win_id < MAX_RFU_WINDOWS; win_id++) {
-		win_reg = readl((unsigned long)RFU_WIN_ALR_OFFSET(win_id));
+		win_reg = readl(RFU_WIN_ALR_OFFSET(win_id));
 		win_reg &= ~WIN_ENABLE_BIT;
-		writel(win_reg, (unsigned long)RFU_WIN_ALR_OFFSET(win_id));
+		writel(win_reg, RFU_WIN_ALR_OFFSET(win_id));
 	}
 
 	/* disable all AP windows */
 	for (win_id = 0; win_id < MAX_AP_WINDOWS; win_id++) {
-		win_reg = readl((unsigned long)AP_WIN_CR_OFFSET(win_id));
+		win_reg = readl(AP_WIN_CR_OFFSET(win_id));
 		target_id = (win_reg >> AP_TARGET_ID_OFFSET) & AP_TARGET_ID_MASK;
 		/* disable all the windows except DRAM and CFG_SPACE windows */
 		if (target_id == DRAM_0_TID || target_id == DRAM_1_TID || target_id == CFG_REG_TID)
 			continue;
 		win_reg &= ~WIN_ENABLE_BIT;
-		writel(win_reg, (unsigned long)AP_WIN_CR_OFFSET(win_id));
+		writel(win_reg, AP_WIN_CR_OFFSET(win_id));
 
 		win_reg = ~AP_WIN_ENA_READ_SECURE;
 		win_reg |= ~AP_WIN_ENA_WRITE_SECURE;
-		writel(win_reg, (unsigned long)AP_WIN_SCR_OFFSET(win_id));
+		writel(win_reg, AP_WIN_SCR_OFFSET(win_id));
 	}
 
 	/* disable all IOB windows, start from win_id = 1 because can't disable internal register window */
 	for (win_id = 1; win_id < MAX_IOB_WINDOWS; win_id++) {
-		win_reg = readl((unsigned long)IOB_WIN_CR_OFFSET(win_id));
+		win_reg = readl(IOB_WIN_CR_OFFSET(win_id));
 		win_reg &= ~WIN_ENABLE_BIT;
-		writel(win_reg, (unsigned long)IOB_WIN_CR_OFFSET(win_id));
+		writel(win_reg, IOB_WIN_CR_OFFSET(win_id));
 
 		win_reg = ~IOB_WIN_ENA_CTRL_WRITE_SECURE;
 		win_reg |= ~IOB_WIN_ENA_CTRL_READ_SECURE;
 		win_reg |= ~IOB_WIN_ENA_WRITE_SECURE;
 		win_reg |= ~IOB_WIN_ENA_READ_SECURE;
-		writel(win_reg, (unsigned long)IOB_WIN_SCR_OFFSET(win_id));
+		writel(win_reg, IOB_WIN_SCR_OFFSET(win_id));
 	}
 
 	for (win_id = 0; windows[win_id].target_id != INVALID_TID; win_id++) {
@@ -227,12 +227,12 @@ int dram_init(void)
 	u32 win;
 
 	for (win = 0; win < MAX_AP_WINDOWS; win++) {
-		ctrl = readl((unsigned long)AP_WIN_CR_OFFSET(win));
+		ctrl = readl(AP_WIN_CR_OFFSET(win));
 		target_id = (ctrl >> AP_TARGET_ID_OFFSET) & AP_TARGET_ID_MASK;
 
 		if (target_id == DRAM_0_TID) {
-			alr = readl((unsigned long)AP_WIN_ALR_OFFSET(win)) << ADDRESS_SHIFT;
-			ahr = readl((unsigned long)AP_WIN_AHR_OFFSET(win)) << ADDRESS_SHIFT;
+			alr = readl(AP_WIN_ALR_OFFSET(win)) << ADDRESS_SHIFT;
+			ahr = readl(AP_WIN_AHR_OFFSET(win)) << ADDRESS_SHIFT;
 			gd->ram_size = ahr - alr + 1;
 			gd->bd->bi_dram[0].size = gd->ram_size;
 			gd->bd->bi_dram[0].start = alr;

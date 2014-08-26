@@ -570,8 +570,7 @@ MV_BOARD_INFO bc2_rd_mtlInfo = {
 
 MV_BOARD_TWSI_INFO db_dx_ac3InfoBoardTwsiDev[] = {
 /* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{BOARD_DEV_TWSI_PLD, 0x30, ADDR7_BIT},			/* Access to control PLD reg file */
-	{BOARD_DEV_TWSI_ZARLINK, 0x18, ADDR7_BIT},		/* Access to Zarlink	*/
+	{BOARD_DEV_TWSI_PLD, 0x18, ADDR7_BIT},			/* Access to control PLD reg file */
 	{BOARD_DEV_TWSI_SATR, 0x4C, ADDR7_BIT},			/* SatR bios 0		*/
 	{BOARD_DEV_TWSI_SATR, 0x4D, ADDR7_BIT},			/* SatR bios 1		*/
 	{BOARD_DEV_TWSI_SATR, 0x4E, ADDR7_BIT},			/* SatR bios 2		*/

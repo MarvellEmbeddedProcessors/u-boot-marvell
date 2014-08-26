@@ -255,6 +255,10 @@ extern "C" {
 #define	ICDR_UINIT_ID_MASK	0x0F
 #define ICDR_UNIT_ID_4_DFX	0x0f
 
+#define CPLD_BOARD_REV_REG	1
+#define CPLD_BOARD_REV_MASK	0x7
+#define CPLD_REV_REG		2
+#define CPLD_REV_MASK		0x1f
 
 /* Extract CPU, L2, DDR clocks SAR value from
 ** SAR bits 24-27

@@ -106,7 +106,7 @@ MV_STATUS mvTwsiAddrSet(MV_U8 chanNum, MV_TWSI_ADDR *twsiAddr, MV_TWSI_CMD comma
 MV_U32 mvTwsiInit(MV_U8 chanNum, MV_KHZ frequency, MV_U32 Tclk, MV_TWSI_ADDR *twsiAddr, MV_BOOL generalCallEnable);
 MV_STATUS mvTwsiRead(MV_U8 chanNum, MV_TWSI_SLAVE *twsiSlave, MV_U8 *pBlock, MV_U32 blockSize);
 MV_STATUS mvTwsiWrite(MV_U8 chanNum, MV_TWSI_SLAVE *twsiSlave, MV_U8 *pBlock, MV_U32 blockSize);
-
+MV_STATUS mvTwsiProbe(MV_U32 chip, MV_U32 Tclk);
 
 #ifdef __cplusplus
 }

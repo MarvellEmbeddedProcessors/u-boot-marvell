@@ -2954,58 +2954,6 @@ MV_VOID mvBoardSysConfigInit(void)
 		mvOsPrintf("%s: Error: Read board configuration from EEPROM failed\n", __func__);
 
 }
-/*******************************************************************************
-* mvBoardTwsiProbe - Probe the given I2C chip address
-*
-* DESCRIPTION:
-*
-* INPUT:
-*       chip - i2c chip address to probe
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       Returns MV_TRUE if a chip responded, MV_FALSE on failure
-*
-*******************************************************************************/
-MV_STATUS mvBoardTwsiProbe(MV_U32 chip)
-{
-	MV_TWSI_ADDR eepromAddress, slave;
-	MV_U32 status = 0;
-
-	/* TWSI init */
-	slave.type = ADDR7_BIT;
-	slave.address = 0;
-
-	mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
-
-	status = mvTwsiStartBitSet(0);
-
-	if (status) {
-		mvOsPrintf("%s: Transaction start failed: 0x%02x\n", __func__, status);
-		mvTwsiStopBitSet(0);
-		return MV_FALSE;
-	}
-
-	eepromAddress.type = ADDR7_BIT;
-	eepromAddress.address = chip;
-
-	status = mvTwsiAddrSet(0, &eepromAddress, MV_TWSI_WRITE); /* send the slave address */
-	if (status) {
-		mvOsPrintf("%s: Failed to set slave address: 0x%02x\n", __func__, status);
-		mvTwsiStopBitSet(0);
-		return MV_FALSE;
-	}
-	DB(mvOsPrintf("address %#x returned %#x\n", chip,
-	MV_REG_READ(TWSI_STATUS_BAUDE_RATE_REG(i2c_current_bus))));
-
-	/* issue a stop bit */
-	mvTwsiStopBitSet(0);
-
-	DB(mvOsPrintf("%s: successful I2C probe\n", __func__));
-	return MV_TRUE; /* successful completion */
-}
 
 /*******************************************************************************
 * mvBoardIsEepromEnabled - read EEPROM and verify if EEPROM exists
@@ -3035,7 +2983,7 @@ MV_BOOL mvBoardIsEepromEnabled(void)
 	DB(mvOsPrintf("%s: EEPROM Jumper is enabled\n", __func__));
 
 	DB(mvOsPrintf("%s probing for i2c chip 0x%x\n", __func__, addr));
-	if (mvBoardTwsiProbe((MV_U32)addr) == MV_TRUE)
+	if (mvTwsiProbe((MV_U32)addr, mvBoardTclkGet()) == MV_TRUE)
 		return MV_TRUE;  /* EEPROM enabled */
 	else
 		return MV_FALSE; /* EEPROM disabled */

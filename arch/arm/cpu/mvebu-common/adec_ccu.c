@@ -31,18 +31,16 @@ DECLARE_GLOBAL_DATA_PTR;
 static void adec_win_check(struct adec_win *win, u32 win_num)
 {
 	/* check if address is aligned to the size */
-	if(IS_NOT_ALIGN(win->base_addr, win->win_size)) {
+	if (IS_NOT_ALIGN(win->base_addr, win->win_size)) {
 		win->base_addr = ALIGN_UP(win->base_addr, win->win_size);
-		error("\n**********\nwindow number %d: base address is not aligned with the window size. "\
-				"Align up the base address to 0x%lx\n**********",\
-				win_num, win->base_addr);
+		error("Window %d: base address unaligned to window size\n", win_num);
+		printf("Align up the base address to 0x%lx\n", win->base_addr);
 	}
 	/* size parameter validity check */
-	if(IS_NOT_ALIGN(win->win_size, CR_WIN_SIZE_ALIGNMENT)) {
+	if (IS_NOT_ALIGN(win->win_size, CR_WIN_SIZE_ALIGNMENT)) {
 		win->win_size = ALIGN_UP(win->win_size, CR_WIN_SIZE_ALIGNMENT);
-		error("\n**********\nwindow number %d: window size is not aligned to 0x%x. "\
-				"Align up the size to 0x%lx\n**********",
-				win_num, CR_WIN_SIZE_ALIGNMENT, win->win_size);
+		error("Window %d: window size unaligned to 0x%x\n", win_num, CR_WIN_SIZE_ALIGNMENT);
+		printf("Aligning size to 0x%lx\n", win->win_size);
 	}
 }
 
@@ -58,7 +56,7 @@ static void adec_enable_rfu_win(struct adec_win *win, u32 win_id)
 
 	/* there's no ahr for bootrom window */
 	if (win_id == BOOTROM_RFU_WINDOW_NUM)
-		return ;
+		return;
 
 	ahr = (u32)((end_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
 	writel(ahr, RFU_WIN_AHR_OFFSET(win_id));
@@ -146,7 +144,7 @@ void adec_dump(void)
 		}
 	}
 	printf("\nnote: unmapped addresses will go to GCR\n");
-	return ;
+	return;
 }
 
 int adec_init(struct adec_win *windows)
@@ -206,7 +204,7 @@ int adec_init(struct adec_win *windows)
 				adec_enable_rfu_win(&windows[win_id], win_id);
 				break;
 			default:
-				error("Wrong window type, window number = %d, type number = %d\n", win_id, windows[win_id].win_type);
+				error("Window %d: Bad window type %d\n", win_id, windows[win_id].win_type);
 			}
 		}
 	}

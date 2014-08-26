@@ -726,31 +726,6 @@ MV_U32 mvBoardGppConfigGet(void)
 }
 
 /*******************************************************************************
-* mvBoardModuleTypePrint
-*
-* DESCRIPTION:
-*	Print on-board detected modules.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*	None.
-*
-*******************************************************************************/
-MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
-{
-	return;
-}
-MV_VOID mvBoardOtherModuleTypePrint(MV_VOID)
-{
-	return;
-}
-
-/*******************************************************************************
 * mvBoardIsGbEPortConnected
 *
 * DESCRIPTION:
@@ -779,6 +754,51 @@ MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum)
 	}
 
 	return MV_TRUE;
+}
+
+/*******************************************************************************
+* mvBoardCpldConfigurationGet
+*
+* DESCRIPTION:
+*	build a string with CPLD configuration: Board and CPLD revision.
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	string in the following format: ", Rev <BOARD_REV>, CPLD Rev <CPLD_REV>"
+*
+*******************************************************************************/
+MV_VOID mvBoardCpldConfigurationGet(char *str)
+{
+	MV_U8 cpldTwsiDev, cpldConfig;
+
+	/* CPLD board configuration print for AC3 */
+	if (mvCtrlDevFamilyIdGet(0) != MV_ALLEYCAT3_DEV_ID)
+		return;
+	cpldTwsiDev = mvBoardTwsiAddrGet(BOARD_DEV_TWSI_PLD, 0);
+
+	/* verify that CPLD device is available on current board, else return*/
+	if (cpldTwsiDev == 0xff || mvTwsiProbe(cpldTwsiDev, mvBoardTclkGet()) != MV_TRUE)
+		return;
+
+	/* Read Board Revision */
+	if (MV_ERROR == mvBoardTwsiRead(BOARD_DEV_TWSI_PLD, 0, CPLD_BOARD_REV_REG, &cpldConfig)) {
+		mvOsPrintf("\n%s: Error: failed reading board Revision from CPLD.\n", __func__);
+		return;
+	}
+	sprintf(str, ", Rev %d" , cpldConfig & CPLD_BOARD_REV_MASK);
+
+	/* Read CPLD Revision */
+	if (MV_ERROR == mvBoardTwsiRead(BOARD_DEV_TWSI_PLD, 0, CPLD_REV_REG, &cpldConfig)) {
+		mvOsPrintf("\n%s: Error: failed reading CPLD Revision from CPLD.\n", __func__);
+		return;
+	}
+
+	sprintf(str, "%s, CPLD Rev %d", str, cpldConfig & CPLD_BOARD_REV_MASK);
 }
 
 /* Board devices API managments */

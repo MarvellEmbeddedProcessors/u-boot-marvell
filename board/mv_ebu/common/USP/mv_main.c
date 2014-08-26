@@ -631,9 +631,11 @@ int late_print_cpuinfo(void)
 {
 	char name[50];
 	mvBoardNameGet(name);
-	printf("Board: %s\n",  name);
+	printf("Board: %s",  name);
+	mvBoardCpldConfigurationGet(name);
+	printf("%s",  name);
 	mvCtrlModelRevNameGet(name);
-	printf("SoC:   %s\n", name);
+	printf("\nSoC:   %s\n", name);
 	if (mvCtrlGetCpuNum())
 		printf("       running %d CPUs\n", mvCtrlGetCpuNum()+1);
 	if (!mvCtrlIsValidSatR())
@@ -691,7 +693,6 @@ int misc_init_r (void)
 	/* Clear old kernel images which remained stored in memory */
 	memset ((void *)CONFIG_SYS_LOAD_ADDR, 0, CONFIG_SYS_MIN_HDR_DEL_SIZE);
 	mvBoardDebugLed(6);
-
 	mvBoardDebugLed(7);
 	/* pcie fine tunning */
 	env = getenv("pcieTune");

@@ -62,8 +62,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _DDR3_ALP_CONFIG_H
-#define _DDR3_ALP_CONFIG_H
+#ifndef _DDR3_A375_CONFIG_H
+#define _DDR3_A375_CONFIG_H
 
 #define DDR3_LOG_LEVEL				0
 /*DDR3_LOG_LEVEL Information
@@ -101,4 +101,4 @@ Level 3: Provides the windows margin of each DQ as a results of DQS centeralizat
 /*	TRUE: skip Write leveling stage when using registered DIMM(not supported)
 	FALSE : don't skip Write leveling*/
 
-#endif /* _DDR3_ALP_CONFIG_H */
+#endif /* _DDR3_A375_CONFIG_H */

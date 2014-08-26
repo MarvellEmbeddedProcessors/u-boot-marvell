@@ -1102,3 +1102,56 @@ MV_STATUS mvTwsiWrite(MV_U8 chanNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *pBlock, M
 
 	return MV_OK;
 }
+
+/*******************************************************************************
+* mvBoardTwsiProbe - Probe the given I2C chip address
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       chip - i2c chip address to probe
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Returns MV_TRUE if a chip responded, MV_FALSE on failure
+*
+*******************************************************************************/
+MV_STATUS mvTwsiProbe(MV_U32 chip, MV_U32 Tclk)
+{
+	MV_TWSI_ADDR eepromAddress, slave;
+	MV_U32 status = 0;
+
+	/* TWSI init */
+	slave.type = ADDR7_BIT;
+	slave.address = 0;
+
+	mvTwsiInit(0, TWSI_SPEED, Tclk, &slave, 0);
+
+	status = mvTwsiStartBitSet(0);
+
+	if (status) {
+		DB(mvOsPrintf("%s: Transaction start failed: 0x%02x\n", __func__, status));
+		mvTwsiStopBitSet(0);
+		return MV_FALSE;
+	}
+
+	eepromAddress.type = ADDR7_BIT;
+	eepromAddress.address = chip;
+
+	status = mvTwsiAddrSet(0, &eepromAddress, MV_TWSI_WRITE); /* send the slave address */
+	if (status) {
+		DB(mvOsPrintf("%s: Failed to set slave address: 0x%02x\n", __func__, status));
+		mvTwsiStopBitSet(0);
+		return MV_FALSE;
+	}
+	DB(mvOsPrintf("address %#x returned %#x\n", chip,
+				MV_REG_READ(TWSI_STATUS_BAUDE_RATE_REG(i2c_current_bus))));
+
+	/* issue a stop bit */
+	mvTwsiStopBitSet(0);
+
+	DB(mvOsPrintf("%s: successful I2C probe\n", __func__));
+	return MV_TRUE; /* successful completion */
+}

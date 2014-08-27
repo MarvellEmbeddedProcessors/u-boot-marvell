@@ -34,18 +34,16 @@ DECLARE_GLOBAL_DATA_PTR;
 static void adec_win_check(struct adec_win *win, u32 win_num)
 {
 	/* check if address is aligned to the size */
-	if(IS_NOT_ALIGN(win->base_addr, win->win_size)) {
+	if (IS_NOT_ALIGN(win->base_addr, win->win_size)) {
 		win->base_addr = ALIGN_UP(win->base_addr, win->win_size);
-		error("\n**********\nwindow number %d: base address is not aligned with the window size. "\
-				"Align up the base address to 0x%lx\n**********",\
-				win_num, win->base_addr);
+		error("Window %d: base address unaligned to size\n", win_num);
+		printf("Align up base address to 0x%lx\n", win->base_addr);
 	}
 	/* size parameter validity check */
-	if(IS_NOT_ALIGN(win->win_size, MBUS_CR_WIN_SIZE_ALIGNMENT)) {
+	if (IS_NOT_ALIGN(win->win_size, MBUS_CR_WIN_SIZE_ALIGNMENT)) {
 		win->win_size = ALIGN_UP(win->win_size, MBUS_CR_WIN_SIZE_ALIGNMENT);
-		error("\n**********\nwindow number %d: window size is not aligned to 0x%x. "\
-				"Align up the size to 0x%lx\n**********",
-				win_num, MBUS_CR_WIN_SIZE_ALIGNMENT, win->win_size);
+		error("Window %d: window size unaligned to 0x%x\n", win_num, MBUS_CR_WIN_SIZE_ALIGNMENT);
+		printf("Align up the size to 0x%lx\n", win->win_size);
 	}
 }
 
@@ -87,14 +85,16 @@ void adec_dump(void)
 		if (mbus_win_cr & MBUS_CR_WIN_ENABLE) {
 			target_id = (mbus_win_cr & MBUS_CR_WIN_TARGET_MASK) >> MBUS_CR_WIN_TARGET_OFFS;
 			attribute = (mbus_win_cr & MBUS_CR_WIN_ATTR_MASK) >> MBUS_CR_WIN_ATTR_OFFS;
-			size = (mbus_win_cr & MBUS_CR_WIN_SIZE_MASK) >> MBUS_CR_WIN_SIZE_OFFS ;
+			size = (mbus_win_cr & MBUS_CR_WIN_SIZE_MASK) >> MBUS_CR_WIN_SIZE_OFFS;
 			mbus_win_br = readl(mbus_adec_base + MBUS_WIN_BASE_REG(win_id));
 			size = (size + 1) * MBUS_CR_WIN_SIZE_ALIGNMENT;
-			printf("%02d    0x%02x      0x%08x  0x%08x  0x%02x\n", win_id, target_id, mbus_win_br, mbus_win_br + size, attribute);
+			printf("%02d    0x%02x      0x%08x  0x%08x  0x%02x\n",
+			       win_id, target_id, mbus_win_br, mbus_win_br + size, attribute);
 		}
 	}
 	mbus_win_br = readl(mbus_adec_base + MBUS_WIN_INTEREG_REG);
-	printf("%02d    0x%02x      0x%08x  0x%08x  0x%02x\n", INTERNAL_REG_WIN_NUM, INVALID_TARGET_ID, mbus_win_br, mbus_win_br + MVEBU_REGS_SIZE, 0xFF);
+	printf("%02d    0x%02x      0x%08x  0x%08x  0x%02x\n",
+	       INTERNAL_REG_WIN_NUM, INVALID_TARGET_ID, mbus_win_br, mbus_win_br + MVEBU_REGS_SIZE, 0xFF);
 
 	return;
 }
@@ -117,24 +117,30 @@ int adec_init(struct adec_win *windows)
 	/* enable the remapped windows first, the remap windows is at the first 8 windows */
 	for (index = 0, win_id = 0; windows[index].enabled != TBL_TERM; index++) {
 		if ((windows[index].win_size == 0) ||
-				(windows[index].enabled == 0) ||
-				(windows[index].remapped == 0))
+		    (windows[index].enabled == 0) ||
+		    (windows[index].remapped == 0))
 			continue;
+
 		adec_win_check(&windows[index], win_id);
-		debug("set window number %d: target id = %d, base = 0x%lx, size = 0x%lx, attribute = 0x%x, remapped\n",
-			win_id, windows[index].target, windows[index].base_addr, windows[index].win_size, windows[index].attribute);
+		debug("set window %d: target %d, base = 0x%lx, size = 0x%lx, attribute = 0x%x, remapped\n",
+		      win_id, windows[index].target, windows[index].base_addr,
+			windows[index].win_size, windows[index].attribute);
+
 		adec_win_set(&windows[index], win_id);
 		win_id++;
 	}
 	/* enable the rest of the windows */
 	for (index = 0; windows[index].enabled != TBL_TERM; index++) {
 		if ((windows[index].win_size == 0) ||
-				(windows[index].enabled == 0) ||
-				(windows[index].remapped))
+		    (windows[index].enabled == 0) ||
+		    (windows[index].remapped))
 			continue;
+
 		adec_win_check(&windows[index], win_id);
-		debug("set window number %d: target id = %d, base = 0x%lx, size = 0x%lx, attribute = 0x%x\n",
-			win_id, windows[index].target, windows[index].base_addr, windows[index].win_size, windows[index].attribute);
+		debug("set window %d: target = %d, base = 0x%lx, size = 0x%lx, attribute = 0x%x\n",
+		      win_id, windows[index].target, windows[index].base_addr,
+		      windows[index].win_size, windows[index].attribute);
+
 		adec_win_set(&windows[index], win_id);
 		win_id++;
 	}

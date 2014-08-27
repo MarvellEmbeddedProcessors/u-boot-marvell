@@ -61,13 +61,12 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 #include "mvHighSpeedEnvSpec.h"
+#include "mvHighSpeedTopologySpec.h"
 #include "mvSysEnvLib.h"
 #include "mvCtrlPex.h"
 #include "mv_seq_exec.h"
 
 #define SLOWDOWN  mvOsUDelay(50);
-extern loadTopologyFuncPtr loadTopologyFuncArr[];
-extern REF_CLOCK serdesTypeToRefClockMap[LAST_SERDES_TYPE];
 
 #ifdef REGISTER_TRACE_DEBUG
 static MV_U32 _MV_REG_READ(MV_U32 regAddr)
@@ -89,6 +88,7 @@ static MV_VOID _MV_REG_WRITE(MV_U32 regAddr, MV_U32 regData)
 	putdata(regData, 8);
 	MV_MEMIO_LE32_WRITE((INTER_REGS_BASE | (regAddr)), (regData));
 }
+
 #undef MV_REG_WRITE
 #undef MV_REG_READ
 
@@ -96,29 +96,39 @@ static MV_VOID _MV_REG_WRITE(MV_U32 regAddr, MV_U32 regData)
 #define MV_REG_READ     _MV_REG_READ
 #endif /*REGISTER_TRACE_DEBUG*/
 
-#define	SERDES_VERION	"1.0"
+#define	SERDES_VERION	"2.0"
 #define ENDED_OK "High speed PHY - Ended Successfully\n"
+
+#define LINK_WAIT_CNTR  100
+#define LINK_WAIT_SLEEP 100
 
 MV_U8 commonPhysSelectorsMap[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 {
-	/* 0      1       2       3       4       5 */
-	{ 0x1, 0x1,    NA,	NA,	 NA,	  NA	  },    /* PEX0 */
-	{ NA,  0x2,    0x1,	NA,	 0x1,	  NA	  },    /* PEX1 */
-	{ NA,  NA,     0x2,	NA,	 NA,	  0x1	  },    /* PEX2 */
-	{ NA,  NA,     NA,	0x1,	 NA,	  NA	  },    /* PEX3 */
-	{ 0x2, 0x3,    NA,	NA,	 NA,	  NA	  },    /* SATA0 */
-	{ NA,  NA,     0x3,	NA,	 0x2,	  NA	  },    /* SATA1 */
-	{ NA,  NA,     NA,	NA,	 0x6,	  0x2	  },    /* SATA2 */
-	{ NA,  NA,     NA,	0x3,	 NA,	  NA	  },    /* SATA3 */
-	{ 0x3, 0x4,    NA,	NA,	 NA,	  NA	  },    /* SGMII0 */
-	{ NA,  0x5,    0x4,	NA,	 0x3,	  NA	  },    /* SGMII1 */
-	{ NA,  NA,     NA,	0x4,	 NA,	  0x3	  },    /* SGMII2 */
-	{ NA,  0X7,    NA,	NA,	 NA,	  NA	  },    /* QSGMII */
-	{ NA,  0x6,    NA,	NA,	 0x4,	  NA	  },    /* USB3_HOST0 */
-	{ NA,  NA,     NA,	0x5,	 NA,	  0x4	  },    /* USB3_HOST1 */
-	{ NA,  NA,     NA,	0x6,	 0x5,	  0x5	  },    /* USB3_DEVICE */
-	{ 0x0, 0x0,    0x0,	0x0,	 0x0,	  0x0	  } /* DEFAULT_SERDES */
+	/* 0      1      2       3       4       5       6 */
+	{ 0x1,   0x1,    NA,	 NA,	 NA,	 NA,     NA   },  /* PEX0 */
+	{ NA,    NA,     0x1,	 NA,	 0x1,	 NA,     0x1  },  /* PEX1 */
+	{ NA,    NA,     NA,	 NA,	 0x7,	 0x1,    NA	  },  /* PEX2 */
+	{ NA,    NA,     NA,	 0x1,	 NA,	 NA,     NA	  },  /* PEX3 */
+    { 0x2,   0x3,    NA,	 NA,	 NA,	 NA,     NA	  },  /* SATA0 */
+	{ NA,    NA,     0x3,	 NA,	 NA,	 NA,     NA	  },  /* SATA1 */
+	{ NA,    NA,     NA,	 NA,	 0x6,	 0x2,    NA	  },  /* SATA2 */
+	{ NA,    NA,     NA,	 0x3,	 NA,	 NA,     NA	  },  /* SATA3 */
+    { 0x4,   0x8,    NA,	 NA,	 NA,	 NA,     NA	  },  /* SGMII0 */
+    { NA,    0x9,    0x5,	 NA,	 NA,	 NA,     NA	  },  /* SGMII1 */
+    { NA,    NA,     NA,	 0x7,	 NA,	 0x6,    NA	  },  /* SGMII2 */
+	{ NA,    0x7,    NA,	 NA,	 NA,	 NA,     NA	  },  /* QSGMII */
+	{ NA,    0x6,    NA,	 NA,	 0x4,	 NA,     NA	  },  /* USB3_HOST0 */
+	{ NA,    NA,     NA,	 0x5,	 NA,	 0x4,    NA	  },  /* USB3_HOST1 */
+	{ NA,    NA,     NA,	 0x6,	 0x5,	 0x5,    NA	  },  /* USB3_DEVICE */
+#ifdef CONFIG_ARMADA_39X
+    { NA,    NA,     NA,	 NA,	 0x8,	 NA,     0x2  },  /* SGMII3 */
+    { NA,    NA,     NA,	 0x8,	 0x9,	 0x8,    0x4  },  /* XAUI */
+    { NA,    NA,     NA,	 NA,	 NA,	 0x8,    0x4  },  /* RXAUI */
+#endif
+	{ 0x0,   0x0,    0x0,	 0x0,	 0x0,	 0x0,    NA	  }   /* DEFAULT_SERDES */
 };
+
+MV_U8 commonPhysSelectorsPex4Lanes[] = { 0x1, 0x2, 0x2, 0x2 };
 
 /* Serdes type to ref clock map */
 REF_CLOCK serdesTypeToRefClockMap[LAST_SERDES_TYPE] =
@@ -134,12 +144,40 @@ REF_CLOCK serdesTypeToRefClockMap[LAST_SERDES_TYPE] =
 	REF_CLOCK__25MHz,       /* SGMII0 */
 	REF_CLOCK__25MHz,       /* SGMII1 */
 	REF_CLOCK__25MHz,       /* SGMII2 */
+    REF_CLOCK__25MHz,       /* SGMII3 */
 	REF_CLOCK__25MHz,       /* QSGMII */
-	REF_CLOCK__100MHz,      /* USB3_HOST0 */
-	REF_CLOCK__100MHz,      /* USB3_HOST1 */
+	REF_CLOCK__25MHz,       /* USB3_HOST0 */
+	REF_CLOCK__25MHz,       /* USB3_HOST1 */
 	REF_CLOCK__25MHz,       /* USB3_DEVICE */
+    REF_CLOCK__25MHz,       /* XAUI */
+    REF_CLOCK__25MHz,       /* RXAUI */
 	REF_CLOCK_UNSUPPORTED   /* DEFAULT_SERDES */
 };
+
+#ifdef MV_DEBUG_INIT
+static const char *serdesTypeToString[] = {
+	"PCIe0",
+	"PCIe1",
+	"PCIe2",
+	"PCIe3",
+	"SATA0",
+	"SATA1",
+	"SATA2",
+	"SATA3",
+	"SGMII0",
+	"SGMII1",
+	"SGMII2",
+	"QSGMII",
+	"USB3 HOST0",
+	"USB3 HOST1",
+	"USB3 DEVICE",
+    "SGMII3",
+    "XAUI",
+    "RXAUI",
+	"DEFAULT SERDES",
+	"LAST_SERDES_TYPE"
+};
+#endif
 
 /******************************** Sequences DB ********************************/
 
@@ -294,140 +332,140 @@ MV_OP_PARAMS serdesPowerDownParams[] =
 
 /************************* Local functions declarations ***********************/
 
-MV_VOID serdesSeqInit(MV_VOID)
+MV_VOID mvHwsSerdesSeqDbInit(MV_VOID)
 {
-	DEBUG_INIT_FULL_S("\n### serdesSeqInit ###\n");
+	DEBUG_INIT_FULL_S("\n### serdesSeq38xInit ###\n");
 
 	/* SATA_ONLY_POWER_UP_SEQ sequence init */
 	serdesSeqDb[SATA_ONLY_POWER_UP_SEQ].opParamsPtr = sataPowerUpParams;
-	serdesSeqDb[SATA_ONLY_POWER_UP_SEQ].cfgSeqSize =  sizeof(sataPowerUpParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SATA_ONLY_POWER_UP_SEQ].dataArrIdx = SATA;
+	serdesSeqDb[SATA_ONLY_POWER_UP_SEQ].cfgSeqSize  = sizeof(sataPowerUpParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SATA_ONLY_POWER_UP_SEQ].dataArrIdx  = SATA;
 
 	/* SATA_POWER_UP_SEQ sequence init */
 	serdesSeqDb[SATA_POWER_UP_SEQ].opParamsPtr = sataAndSgmiiPowerUpParams;
-	serdesSeqDb[SATA_POWER_UP_SEQ].cfgSeqSize =  sizeof(sataAndSgmiiPowerUpParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SATA_POWER_UP_SEQ].dataArrIdx = SATA;
+	serdesSeqDb[SATA_POWER_UP_SEQ].cfgSeqSize  = sizeof(sataAndSgmiiPowerUpParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SATA_POWER_UP_SEQ].dataArrIdx  = SATA;
 
 	/* SATA__1_5_SPEED_CONFIG_SEQ sequence init */
 	serdesSeqDb[SATA__1_5_SPEED_CONFIG_SEQ].opParamsPtr = sataAndSgmiiSpeedConfigParams;
-	serdesSeqDb[SATA__1_5_SPEED_CONFIG_SEQ].cfgSeqSize =  sizeof(sataAndSgmiiSpeedConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SATA__1_5_SPEED_CONFIG_SEQ].dataArrIdx = SATA;
+	serdesSeqDb[SATA__1_5_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(sataAndSgmiiSpeedConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SATA__1_5_SPEED_CONFIG_SEQ].dataArrIdx  = SATA;
 
 	/* SATA__3_SPEED_CONFIG_SEQ sequence init */
 	serdesSeqDb[SATA__3_SPEED_CONFIG_SEQ].opParamsPtr = sataAndSgmiiSpeedConfigParams;
-	serdesSeqDb[SATA__3_SPEED_CONFIG_SEQ].cfgSeqSize =  sizeof(sataAndSgmiiSpeedConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SATA__3_SPEED_CONFIG_SEQ].dataArrIdx = SATA;
+	serdesSeqDb[SATA__3_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(sataAndSgmiiSpeedConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SATA__3_SPEED_CONFIG_SEQ].dataArrIdx  = SATA;
 
 	/* SATA__6_SPEED_CONFIG_SEQ sequence init */
 	serdesSeqDb[SATA__6_SPEED_CONFIG_SEQ].opParamsPtr = sataAndSgmiiSpeedConfigParams;
-	serdesSeqDb[SATA__6_SPEED_CONFIG_SEQ].cfgSeqSize =  sizeof(sataAndSgmiiSpeedConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SATA__6_SPEED_CONFIG_SEQ].dataArrIdx = SATA;
+	serdesSeqDb[SATA__6_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(sataAndSgmiiSpeedConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SATA__6_SPEED_CONFIG_SEQ].dataArrIdx  = SATA;
 
 	/* SATA_DB_TX_AMP_SEQ sequence init */
 	serdesSeqDb[SATA_DB_TX_AMP_SEQ].opParamsPtr = sataDBTxAmpParams;
-	serdesSeqDb[SATA_DB_TX_AMP_SEQ].cfgSeqSize =  sizeof(sataDBTxAmpParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SATA_DB_TX_AMP_SEQ].dataArrIdx = SATA;
+	serdesSeqDb[SATA_DB_TX_AMP_SEQ].cfgSeqSize  = sizeof(sataDBTxAmpParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SATA_DB_TX_AMP_SEQ].dataArrIdx  = SATA;
 
 	/* SATA_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[SATA_TX_CONFIG_SEQ1].opParamsPtr = sataAndSgmiiTxConfigParams1;
-	serdesSeqDb[SATA_TX_CONFIG_SEQ1].cfgSeqSize =  sizeof(sataAndSgmiiTxConfigParams1) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SATA_TX_CONFIG_SEQ1].dataArrIdx = SATA;
+	serdesSeqDb[SATA_TX_CONFIG_SEQ1].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigParams1) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SATA_TX_CONFIG_SEQ1].dataArrIdx  = SATA;
 
 	/* SATA_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[SATA_ONLY_TX_CONFIG_SEQ].opParamsPtr = sataTxConfigParams;
-	serdesSeqDb[SATA_ONLY_TX_CONFIG_SEQ].cfgSeqSize =  sizeof(sataTxConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SATA_ONLY_TX_CONFIG_SEQ].dataArrIdx = SATA;
+	serdesSeqDb[SATA_ONLY_TX_CONFIG_SEQ].cfgSeqSize  = sizeof(sataTxConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SATA_ONLY_TX_CONFIG_SEQ].dataArrIdx  = SATA;
 
 	/* SATA_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[SATA_TX_CONFIG_SEQ2].opParamsPtr = sataAndSgmiiTxConfigParams2;
-	serdesSeqDb[SATA_TX_CONFIG_SEQ2].cfgSeqSize =  sizeof(sataAndSgmiiTxConfigParams2) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SATA_TX_CONFIG_SEQ2].dataArrIdx = SATA;
+	serdesSeqDb[SATA_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigParams2) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SATA_TX_CONFIG_SEQ2].dataArrIdx  = SATA;
 
 	/* SGMII_POWER_UP_SEQ sequence init */
 	serdesSeqDb[SGMII_POWER_UP_SEQ].opParamsPtr = sataAndSgmiiPowerUpParams;
-	serdesSeqDb[SGMII_POWER_UP_SEQ].cfgSeqSize =  sizeof(sataAndSgmiiPowerUpParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SGMII_POWER_UP_SEQ].dataArrIdx = SGMII;
+	serdesSeqDb[SGMII_POWER_UP_SEQ].cfgSeqSize  = sizeof(sataAndSgmiiPowerUpParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SGMII_POWER_UP_SEQ].dataArrIdx  = SGMII;
 
 	/* SGMII__1_25_SPEED_CONFIG_SEQ sequence init */
 	serdesSeqDb[SGMII__1_25_SPEED_CONFIG_SEQ].opParamsPtr = sataAndSgmiiSpeedConfigParams;
-	serdesSeqDb[SGMII__1_25_SPEED_CONFIG_SEQ].cfgSeqSize =  sizeof(sataAndSgmiiSpeedConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SGMII__1_25_SPEED_CONFIG_SEQ].dataArrIdx = SGMII;
+	serdesSeqDb[SGMII__1_25_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(sataAndSgmiiSpeedConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SGMII__1_25_SPEED_CONFIG_SEQ].dataArrIdx  = SGMII;
 
 	/* SGMII__3_125_SPEED_CONFIG_SEQ sequence init */
 	serdesSeqDb[SGMII__3_125_SPEED_CONFIG_SEQ].opParamsPtr = sataAndSgmiiSpeedConfigParams;
-	serdesSeqDb[SGMII__3_125_SPEED_CONFIG_SEQ].cfgSeqSize =  sizeof(sataAndSgmiiSpeedConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SGMII__3_125_SPEED_CONFIG_SEQ].dataArrIdx = SGMII_3_125;
+	serdesSeqDb[SGMII__3_125_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(sataAndSgmiiSpeedConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SGMII__3_125_SPEED_CONFIG_SEQ].dataArrIdx  = SGMII_3_125;
 
 	/* SGMII_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[SGMII_TX_CONFIG_SEQ1].opParamsPtr = sataAndSgmiiTxConfigParams1;
-	serdesSeqDb[SGMII_TX_CONFIG_SEQ1].cfgSeqSize =  sizeof(sataAndSgmiiTxConfigParams1) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SGMII_TX_CONFIG_SEQ1].dataArrIdx = SGMII;
+	serdesSeqDb[SGMII_TX_CONFIG_SEQ1].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigParams1) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SGMII_TX_CONFIG_SEQ1].dataArrIdx  = SGMII;
 
 	/* SGMII_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[SGMII_TX_CONFIG_SEQ2].opParamsPtr = sataAndSgmiiTxConfigParams2;
-	serdesSeqDb[SGMII_TX_CONFIG_SEQ2].cfgSeqSize =  sizeof(sataAndSgmiiTxConfigParams2) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SGMII_TX_CONFIG_SEQ2].dataArrIdx = SGMII;
+	serdesSeqDb[SGMII_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigParams2) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SGMII_TX_CONFIG_SEQ2].dataArrIdx  = SGMII;
 
 	/* PEX_POWER_UP_SEQ sequence init */
 	serdesSeqDb[PEX_POWER_UP_SEQ].opParamsPtr = pexAndUsb3PowerUpParams;
-	serdesSeqDb[PEX_POWER_UP_SEQ].cfgSeqSize =  sizeof(pexAndUsb3PowerUpParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[PEX_POWER_UP_SEQ].dataArrIdx = PEX;
+	serdesSeqDb[PEX_POWER_UP_SEQ].cfgSeqSize  = sizeof(pexAndUsb3PowerUpParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[PEX_POWER_UP_SEQ].dataArrIdx  = PEX;
 
 	/* PEX__2_5_SPEED_CONFIG_SEQ sequence init */
 	serdesSeqDb[PEX__2_5_SPEED_CONFIG_SEQ].opParamsPtr = pexAndUsb3SpeedConfigParams;
 	serdesSeqDb[PEX__2_5_SPEED_CONFIG_SEQ].cfgSeqSize =  sizeof(pexAndUsb3SpeedConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[PEX__2_5_SPEED_CONFIG_SEQ].dataArrIdx = PEX__2_5Gbps;
+	serdesSeqDb[PEX__2_5_SPEED_CONFIG_SEQ].dataArrIdx =  PEX__2_5Gbps;
 
 	/* PEX__5_SPEED_CONFIG_SEQ sequence init */
 	serdesSeqDb[PEX__5_SPEED_CONFIG_SEQ].opParamsPtr = pexAndUsb3SpeedConfigParams;
-	serdesSeqDb[PEX__5_SPEED_CONFIG_SEQ].cfgSeqSize =  sizeof(pexAndUsb3SpeedConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[PEX__5_SPEED_CONFIG_SEQ].dataArrIdx = PEX__5Gbps;
+	serdesSeqDb[PEX__5_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(pexAndUsb3SpeedConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[PEX__5_SPEED_CONFIG_SEQ].dataArrIdx  = PEX__5Gbps;
 
 	/* PEX_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[PEX_TX_CONFIG_SEQ].opParamsPtr = pexAndUsb3TxConfigParams;
-	serdesSeqDb[PEX_TX_CONFIG_SEQ].cfgSeqSize =  sizeof(pexAndUsb3TxConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[PEX_TX_CONFIG_SEQ].dataArrIdx = PEX;
+	serdesSeqDb[PEX_TX_CONFIG_SEQ].cfgSeqSize  = sizeof(pexAndUsb3TxConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[PEX_TX_CONFIG_SEQ].dataArrIdx  = PEX;
 
 	/* PEX_BY_4_CONFIG_SEQ sequence init */
 	serdesSeqDb[PEX_BY_4_CONFIG_SEQ].opParamsPtr = pexBy4ConfigParams;
-	serdesSeqDb[PEX_BY_4_CONFIG_SEQ].cfgSeqSize =  sizeof(pexBy4ConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[PEX_BY_4_CONFIG_SEQ].dataArrIdx = PEX;
+	serdesSeqDb[PEX_BY_4_CONFIG_SEQ].cfgSeqSize  = sizeof(pexBy4ConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[PEX_BY_4_CONFIG_SEQ].dataArrIdx  = PEX;
 
 	/* USB3_POWER_UP_SEQ sequence init */
 	serdesSeqDb[USB3_POWER_UP_SEQ].opParamsPtr = pexAndUsb3PowerUpParams;
-	serdesSeqDb[USB3_POWER_UP_SEQ].cfgSeqSize =  sizeof(pexAndUsb3PowerUpParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[USB3_POWER_UP_SEQ].cfgSeqSize  = sizeof(pexAndUsb3PowerUpParams) / sizeof(MV_OP_PARAMS);
 
 	serdesSeqDb[USB3_POWER_UP_SEQ].dataArrIdx = USB3;
 
 	/* USB3__HOST_SPEED_CONFIG_SEQ sequence init */
 	serdesSeqDb[USB3__HOST_SPEED_CONFIG_SEQ].opParamsPtr = pexAndUsb3SpeedConfigParams;
-	serdesSeqDb[USB3__HOST_SPEED_CONFIG_SEQ].cfgSeqSize =  sizeof(pexAndUsb3SpeedConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[USB3__HOST_SPEED_CONFIG_SEQ].dataArrIdx = USB3__5Gbps_HOST;
+	serdesSeqDb[USB3__HOST_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(pexAndUsb3SpeedConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[USB3__HOST_SPEED_CONFIG_SEQ].dataArrIdx  = USB3__5Gbps_HOST;
 
 	/* USB3__DEVICE_SPEED_CONFIG_SEQ sequence init */
 	serdesSeqDb[USB3__DEVICE_SPEED_CONFIG_SEQ].opParamsPtr = pexAndUsb3SpeedConfigParams;
-	serdesSeqDb[USB3__DEVICE_SPEED_CONFIG_SEQ].cfgSeqSize =  sizeof(pexAndUsb3SpeedConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[USB3__DEVICE_SPEED_CONFIG_SEQ].dataArrIdx = USB3__5Gbps_DEVICE;
+	serdesSeqDb[USB3__DEVICE_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(pexAndUsb3SpeedConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[USB3__DEVICE_SPEED_CONFIG_SEQ].dataArrIdx  = USB3__5Gbps_DEVICE;
 
 	/* USB3_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[USB3_TX_CONFIG_SEQ].opParamsPtr = pexAndUsb3TxConfigParams;
-	serdesSeqDb[USB3_TX_CONFIG_SEQ].cfgSeqSize =  sizeof(pexAndUsb3TxConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[USB3_TX_CONFIG_SEQ].dataArrIdx = USB3;
+	serdesSeqDb[USB3_TX_CONFIG_SEQ].cfgSeqSize  = sizeof(pexAndUsb3TxConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[USB3_TX_CONFIG_SEQ].dataArrIdx  = USB3;
 
 	/* USB2_POWER_UP_SEQ sequence init */
 	serdesSeqDb[USB2_POWER_UP_SEQ].opParamsPtr = usb2PowerUpParams;
-	serdesSeqDb[USB2_POWER_UP_SEQ].cfgSeqSize =  sizeof(usb2PowerUpParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[USB2_POWER_UP_SEQ].dataArrIdx = 0;
+	serdesSeqDb[USB2_POWER_UP_SEQ].cfgSeqSize  = sizeof(usb2PowerUpParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[USB2_POWER_UP_SEQ].dataArrIdx  = 0;
 
 	/* USB3_DEVICE_CONFIG_SEQ sequence init */
 	serdesSeqDb[USB3_DEVICE_CONFIG_SEQ].opParamsPtr = usb3DeviceConfigParams;
-	serdesSeqDb[USB3_DEVICE_CONFIG_SEQ].cfgSeqSize =  sizeof(usb3DeviceConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[USB3_DEVICE_CONFIG_SEQ].dataArrIdx = 0; /* Not relevant */
+	serdesSeqDb[USB3_DEVICE_CONFIG_SEQ].cfgSeqSize  = sizeof(usb3DeviceConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[USB3_DEVICE_CONFIG_SEQ].dataArrIdx  = 0; /* Not relevant */
 
 	/* SERDES_POWER_DOWN_SEQ sequence init */
 	serdesSeqDb[SERDES_POWER_DOWN_SEQ].opParamsPtr = serdesPowerDownParams;
-	serdesSeqDb[SERDES_POWER_DOWN_SEQ].cfgSeqSize =  sizeof(serdesPowerDownParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SERDES_POWER_DOWN_SEQ].dataArrIdx = FIRST_CELL;
+	serdesSeqDb[SERDES_POWER_DOWN_SEQ].cfgSeqSize  = sizeof(serdesPowerDownParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[SERDES_POWER_DOWN_SEQ].dataArrIdx  = FIRST_CELL;
 }
 
 /***************************************************************************/
@@ -473,11 +511,25 @@ SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
 	case SGMII0:
 	case SGMII1:
 	case SGMII2:
-		if (baudRate == __1_25Gbps)
+#ifdef CONFIG_ARMADA_39X
+    case SGMII3:
+#endif
+        if (baudRate == __1_25Gbps)
 			seqId = SGMII__1_25_SPEED_CONFIG_SEQ;
 		else if (baudRate == __3_125Gbps)
 			seqId = SGMII__3_125_SPEED_CONFIG_SEQ;
 		break;
+#ifdef CONFIG_ARMADA_39X
+    case QSGMII:
+        seqId = QSGMII__5_SPEED_CONFIG_SEQ;
+        break;
+    case XAUI:
+        seqId = XAUI__3_125_SPEED_CONFIG_SEQ;
+        break;
+    case RXAUI:
+        seqId = RXAUI__6_25_SPEED_CONFIG_SEQ;
+        break;
+#endif
 	default:
 		return SERDES_LAST_SEQ;
 	}
@@ -487,25 +539,6 @@ SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
 
 /***************************************************************************/
 #ifdef MV_DEBUG_INIT
-static const char *serdesTypeToString[] = {
-	"PCIe0",
-	"PCIe1",
-	"PCIe2",
-	"PCIe3",
-	"SATA0",
-	"SATA1",
-	"SATA2",
-	"SATA3",
-	"SGMII0",
-	"SGMII1",
-	"SGMII2",
-	"QSGMII",
-	"USB3 HOST0",
-	"USB3 HOST1",
-	"USB3 DEVICE",
-	"DEFAULT SERDES",
-	"LAST_SERDES_TYPE"
-};
 
 MV_VOID printTopologyDetails(SERDES_MAP  *serdesMapArray)
 {
@@ -515,7 +548,7 @@ MV_VOID printTopologyDetails(SERDES_MAP  *serdesMapArray)
 
 	DEBUG_INIT_S(" | Number | Speed |  Type       |\n");
 	DEBUG_INIT_S(" --------------------------------\n");
-	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
+	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
 		if (serdesMapArray[laneNum].serdesType == DEFAULT_SERDES)
 		{
 			continue;
@@ -542,7 +575,7 @@ MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	DEBUG_INIT_S("\n");
 
 	/* Init serdes sequences DB */
-	serdesSeqInit();
+	mvHwsSerdesSeqInit();
 
 	/* TWSI init */
 	DEBUG_INIT_FULL_S("mvHwsTwsiInitWrapper: Init TWSI interface.\n");
@@ -585,7 +618,7 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 	CHECK_STATUS(mvHwsUpdateSerdesPhySelectors(serdesConfigurationMap));
 
 	/* per Serdes Power Up */
-	for (serdesLaneNum = 0; serdesLaneNum < MAX_SERDES_LANES; serdesLaneNum++) {
+	for (serdesLaneNum = 0; serdesLaneNum < mvHwsSerdesGetMaxLane(); serdesLaneNum++) {
 		DEBUG_INIT_FULL_S("calling serdesPowerUpCtrl: serdes lane number ");
 		DEBUG_INIT_FULL_D_10(serdesLaneNum, 1);
 		DEBUG_INIT_FULL_S("\n");
@@ -598,7 +631,7 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 		if (serdesType == DEFAULT_SERDES)
 			continue;
 
-		refClock = serdesTypeToRefClockMap[serdesType];
+		refClock = mvHwsSerdesGetRefClockVal(serdesType);
 		if (refClock == REF_CLOCK_UNSUPPORTED) {
 			DEBUG_INIT_S("powerUpSerdesLanes: unsupported ref clock\n");
 			return MV_NOT_SUPPORTED;
@@ -628,9 +661,6 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
 	return mvHwsCtrlHighSpeedSerdesPhyConfig(); // stub
 }
-
-#define LINK_WAIT_CNTR  100
-#define LINK_WAIT_SLEEP 100
 
 /***************************************************************************/
 static MV_STATUS mvSerdesPexUsb3PipeDelayWA(MV_U32 serdesNum, MV_U8 serdesType)
@@ -705,7 +735,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 		case PEX0:
 		case PEX1:
 		case PEX2:
-		case PEX3:
+        case PEX3:
 			CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, PEX));
 
 			isPexBy1 = (serdesMode == PEX_ROOT_COMPLEX_x1) ||
@@ -895,6 +925,12 @@ MV_STATUS mvSerdesPowerUpCtrl
 			MV_REG_WRITE(GBE_CONFIGURATION_REG, regData);
 
 			break;
+        case SGMII3:
+        case QSGMII:
+        case XAUI:
+        case RXAUI:
+            CHECK_STATUS(mvSerdesPowerUpCtrlExt(serdesNum, serdesPowerUp, serdesType, baudRate, serdesMode, refClock));
+            break;
 		default:
 			DEBUG_INIT_S("mvSerdesPowerUpCtrl: bad serdesType parameter\n");
 			return MV_BAD_PARAM;
@@ -923,10 +959,10 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 	DEBUG_INIT_FULL_S("Updating the COMMON PHYS SELECTORS register with the serdes types\n");
 
 	/* Updating bits 0-17 in the COMMON PHYS SELECTORS register according to the serdes types */
-	for (serdesIdx = 0; serdesIdx < MAX_SERDES_LANES; serdesIdx++) {
+	for (serdesIdx = 0; serdesIdx < mvHwsSerdesGetMaxLane(); serdesIdx++) {
 		serdesType = serdesConfigMap[serdesIdx].serdesType;
 		serdesMode = serdesConfigMap[serdesIdx].serdesMode;
-		laneData = commonPhysSelectorsMap[serdesType][serdesIdx];
+		laneData = mvHwsSerdesGetPhySelectorVal(serdesIdx, serdesType);
 
 		if (laneData == NA) {
 			DEBUG_INIT_S("mvUpdateSerdesSelectPhyModeSeq: serdes number and type are not supported together\n");
@@ -935,11 +971,10 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 
 		/* Checking if the board topology configuration includes PEXx4 - for the next step */
 		if ((serdesMode == PEX_END_POINT_x4) || (serdesMode == PEX_ROOT_COMPLEX_x4)) {
+            /* update lane data to the 3 next SERDES lanes */
+            laneData = commonPhysSelectorsPex4Lanes[serdesIdx];
 			if (serdesType == PEX0) {
 				isPEXx4 = MV_TRUE;
-			} else {
-				/* update lane data to the 3 next SERDES lanes */
-				laneData = 2;
 			}
 		}
 
@@ -968,7 +1003,7 @@ MV_STATUS mvHwsRefClockSet
 
 	DEBUG_INIT_FULL_S("\n### mvHwsRefClockSet ###\n");
 
-	if (serdesNum >= MAX_SERDES_LANES) {
+	if (serdesNum >= mvHwsSerdesGetMaxLane()) {
 		DEBUG_INIT_S("mvHwsRefClockSet: bad serdes number\n");
 		return MV_BAD_PARAM;
 	}
@@ -1015,7 +1050,21 @@ MV_STATUS mvHwsRefClockSet
 			return MV_BAD_PARAM;
 		}
 		break;
-	default:
+#ifdef CONFIG_ARMADA_39X
+    case SGMII3:
+        data = 0x0; /* TBD */
+        break;
+    case QSGMII:
+        data = 0x0; /* TBD */
+        break;
+    case XAUI:
+        data = 0x0; /* TBD */
+        break;
+    case RXAUI:
+        data = 0x0; /* TBD */
+        break;
+#endif
+    default:
 		DEBUG_INIT_S("mvHwsRefClockSet: bad serdes type\n");
 		return MV_BAD_PARAM;
 	}
@@ -1029,680 +1078,3 @@ MV_STATUS mvHwsRefClockSet
 	return MV_OK;
 }
 
-/***************************************************************************/
-MV_STATUS mvHwsBoardTopologyLoad(SERDES_MAP  *serdesMapArray)
-{
-	MV_U32 boardId = mvBoardIdGet();
-	MV_U32 boardIdIndex = mvBoardIdIndexGet(boardId);
-
-	DEBUG_INIT_FULL_S("\n### mvHwsBoardTopologyLoad ###\n");
-	/* getting board topology according to the board id */
-	DEBUG_INIT_FULL_S("Getting board topology according to the board id\n");
-
-	CHECK_STATUS(loadTopologyFuncArr[boardIdIndex](serdesMapArray));
-
-
-	return MV_OK;
-}
-
-#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-/**************************************************************************
- * loadTopologyCustomer -
- *
- * DESCRIPTION:          Loads the board topology for customer board
- * INPUT:                serdesMapArray  -   Not relevant
- * OUTPUT:               The board topology.
- * RETURNS:              MV_OK           -   for success
- ***************************************************************************/
-MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray);
-
-/************************* Load Topology - Customer Boards ****************************/
-SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
-{{
-	/* Customer Board 0 Toplogy - reference from DB */
-	{ SATA0,     __3Gbps,		   SERDES_DEFAULT_MODE },
-	{ PEX0,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
-	{ PEX1,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
-	{ SATA3,     __3Gbps,		   SERDES_DEFAULT_MODE },
-	{ USB3_HOST0, __5Gbps,		   SERDES_DEFAULT_MODE },
-	{ USB3_HOST1, __5Gbps,		   SERDES_DEFAULT_MODE }
-},
-{	/* Customer Board 1 Toplogy */
-	{ PEX0,		__5Gbps,	PEX_ROOT_COMPLEX_x1 },
-	{ SATA0,	__3Gbps,	SERDES_DEFAULT_MODE },
-	{ SATA1,	__3Gbps,	SERDES_DEFAULT_MODE },
-	{ SATA3,	__3Gbps,	SERDES_DEFAULT_MODE },
-	{ USB3_HOST0,	__5Gbps,	SERDES_DEFAULT_MODE },
-	{ SATA2,	__3Gbps,	SERDES_DEFAULT_MODE }
-}};
-
-
-/***************************************************************************/
-MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray)
-{
-	MV_U32 laneNum;
-	MV_U32 boardId = mvBoardIdGet();
-	DEBUG_INIT_S("\nInit Customer board ");
-
-	/* Updating the topology map */
-	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
-		serdesMapArray[laneNum].serdesMode  =  CustomerBoardTopologyConfig[boardId][laneNum].serdesMode;
-		serdesMapArray[laneNum].serdesSpeed =  CustomerBoardTopologyConfig[boardId][laneNum].serdesSpeed;
-		serdesMapArray[laneNum].serdesType  =  CustomerBoardTopologyConfig[boardId][laneNum].serdesType;
-	}
-
-	return MV_OK;
-}
-
-/**********************************************************************/
-/* Load topology functions - Board ID is the index for function array */
-/**********************************************************************/
-
-loadTopologyFuncPtr loadTopologyFuncArr[] =
-{
-	loadTopologyCustomer,         /* Customer Board 0 */
-	loadTopologyCustomer,         /* Customer Board 1*/
-};
-
-#else /* CONFIG_CUSTOMER_BOARD_SUPPORT */
-
-/*********************************** Enums ************************************/
-
-/* Topology map options for the DB_A38X_BP board */
-typedef enum {
-	DB_CONFIG_SLM1363_C,
-	DB_CONFIG_SLM1363_D,
-	DB_CONFIG_SLM1363_E,
-	DB_CONFIG_SLM1363_F,
-	DB_CONFIG_SLM1364_D,
-	DB_CONFIG_SLM1364_E,
-	DB_CONFIG_SLM1364_F,
-	DB_CONFIG_DEFAULT,
-	DB_NO_TOPOLOGY
-} TOPOLOGY_CONFIG_DB;
-
-/************************* Local functions declarations ***********************/
-/**************************************************************************
- * loadTopologyDB -
- *
- * DESCRIPTION:          Loads the board topology for the DB_A38X_BP board
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology map.
- * RETURNS:              MV_OK           -   for success
- *                       MV_FAIL         -   for failure (a wrong
- *                                           topology mode was read
- *                                           from the board)
- ***************************************************************************/
-MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray);
-
-/**************************************************************************
- * topologyConfigDBModeGet -
- *
- * DESCRIPTION:          Gets the relevant topology mode (index).
- *                       for loadTopologyDB use only.
- * INPUT:                None.
- * OUTPUT:               None.
- * RETURNS:              the topology mode
- ***************************************************************************/
-/**************************************************************************
- * loadTopologyDBAp -
- *
- * DESCRIPTION:          Loads the board topology for the DB_A38X_-AP board
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology map.
- * RETURNS:              MV_OK           -   for success
- *                       MV_FAIL         -   for failure (a wrong
- *                                           topology mode was read
- *                                           from the board)
- ***************************************************************************/
-MV_STATUS loadTopologyDBAp(SERDES_MAP  *serdesMapArray);
-
-MV_U8 topologyConfigDBModeGet(MV_VOID);
-
-/**************************************************************************
- * loadTopologyRD -
- *
- * DESCRIPTION:          Loads the board topology from RD
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology.
- * RETURNS:              MV_OK           -   for success
- ***************************************************************************/
-MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray);
-
-/**************************************************************************
- * loadTopologyRDNas -
- *
- * DESCRIPTION:          Loads the board topology for RD NAS board
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology.
- * RETURNS:              MV_OK           -   for success
- ***************************************************************************/
-MV_STATUS loadTopologyRDNas(SERDES_MAP  *serdesMapArray);
-
-/**************************************************************************
- * loadTopologyRDAp -
- *
- * DESCRIPTION:          Loads the board topology for RD AP board
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology.
- * RETURNS:              MV_OK           -   for success
- ***************************************************************************/
-MV_STATUS loadTopologyRDAp(SERDES_MAP  *serdesMapArray);
-
-/**************************************************************************
- * loadTopologyRDSgmiiUsb -
- *
- * DESCRIPTION:          For RD board check if lane 4 is USB3 or SGMII
- * INPUT:                None
- * OUTPUT:               isSgmii - return MV_TRUE if lane 4 is SGMII
- * 				   return MV_FALSE if lane 4 is USB.
- * RETURNS:              MV_OK           -   for success
- ***************************************************************************/
-MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii);
-
-loadTopologyFuncPtr loadTopologyFuncArr[] =
-{
-	loadTopologyRD,         /* RD NAS */
-	loadTopologyDB,		/* DB BP */
-	loadTopologyRD,         /* RD AP */
-	loadTopologyDBAp,	/* DB AP */
-};
-
-/*********************************** Globals **********************************/
-/*************************************/
-/** Load topology - Marvell DB - BP **/
-/*************************************/
-
-/* Configuration options */
-SERDES_MAP DbConfigDefault[MAX_SERDES_LANES] =
-{
-	{ SATA0,     __3Gbps,		   SERDES_DEFAULT_MODE		      },
-	{ PEX0,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1		      },
-	{ PEX1,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1		      },
-	{ SATA3,     __3Gbps,		   SERDES_DEFAULT_MODE		      },
-	{ USB3_HOST0, __5Gbps,		   SERDES_DEFAULT_MODE		      },
-	{ USB3_HOST1, __5Gbps,		   SERDES_DEFAULT_MODE		      }
-};
-
-SERDES_MAP DbConfigSLM1363_C[MAX_SERDES_LANES] =
-{
-	{ PEX0,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE		   },
-	{ PEX1,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ PEX3,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ SATA1,	  __3Gbps,		SERDES_DEFAULT_MODE		   },
-	{ SATA2,	  __3Gbps,		SERDES_DEFAULT_MODE		   }
-};
-
-SERDES_MAP DbConfigSLM1363_D[MAX_SERDES_LANES] =
-{
-	{ PEX0,		  __5Gbps,		PEX_ROOT_COMPLEX_x4		   },
-	{ PEX1,		  __5Gbps,		PEX_ROOT_COMPLEX_x4		   },
-	{ PEX2,		  __5Gbps,		PEX_ROOT_COMPLEX_x4		   },
-	{ PEX3,		  __5Gbps,		PEX_ROOT_COMPLEX_x4		   },
-	{ SATA1,	  __3Gbps,		SERDES_DEFAULT_MODE		   },
-	{ SATA2,	  __3Gbps,		SERDES_DEFAULT_MODE		   }
-};
-
-SERDES_MAP DbConfigSLM1363_E[MAX_SERDES_LANES] =
-{
-	{ PEX0,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ USB3_HOST0,	  __5Gbps,		SERDES_DEFAULT_MODE		   },
-	{ SATA1,	  __3Gbps,		SERDES_DEFAULT_MODE		   },
-	{ USB3_HOST1,	  __5Gbps,		SERDES_DEFAULT_MODE		   },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE		   },
-	{ SATA2,	  __3Gbps,		SERDES_DEFAULT_MODE		   }
-};
-
-SERDES_MAP DbConfigSLM1363_F[MAX_SERDES_LANES] =
-{
-	{ PEX0,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE		   },
-	{ PEX1,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ PEX3,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ SATA1,	  __3Gbps,		SERDES_DEFAULT_MODE		   },
-	{ USB3_HOST1,	  __5Gbps,		SERDES_DEFAULT_MODE		   }
-};
-
-SERDES_MAP DbConfigSLM1364_D[MAX_SERDES_LANES] =
-{
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE		 },
-	{ SGMII0,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		 },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE		 },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE		 },
-	{ SGMII1,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		 },
-	{ SGMII2,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		 }
-};
-
-SERDES_MAP DbConfigSLM1364_E[MAX_SERDES_LANES] =
-{
-	{ SGMII0,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		     },
-	{ SGMII1,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		     },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE		     },
-	{ SGMII2,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		     },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE		     },
-	{ PEX2,		  __5Gbps,		  PEX_ROOT_COMPLEX_x1		     }
-};
-
-SERDES_MAP DbConfigSLM1364_F[MAX_SERDES_LANES] =
-{
-	{ SGMII0,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		     },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE		     },
-	{ SGMII1,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		     },
-	{ SGMII2,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		     },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE		     },
-	{ PEX2,		  __5Gbps,		  PEX_ROOT_COMPLEX_x1		     }
-};
-
-/*******************************************************/
-/* Configuration options DB ****************************/
-/* mapping from TWSI address data to configuration map */
-/*******************************************************/
-SERDES_MAP* topologyConfigDB[] =
-{
-	DbConfigSLM1363_C,
-	DbConfigSLM1363_D,
-	DbConfigSLM1363_E,
-	DbConfigSLM1363_F,
-	DbConfigSLM1364_D,
-	DbConfigSLM1364_E,
-	DbConfigSLM1364_F,
-	DbConfigDefault
-};
-
-/*************************************/
-/** Load topology - Marvell DB - AP **/
-/*************************************/
-SERDES_MAP DbApConfigDefault[MAX_SERDES_LANES] =
-{
-	{ PEX0,		__5Gbps,		PEX_ROOT_COMPLEX_x1	},
-	{ SGMII1,	__3_125Gbps,		SERDES_DEFAULT_MODE	},
-	{ PEX1,		__5Gbps,		PEX_ROOT_COMPLEX_x1	},
-	{ SGMII2,	__3_125Gbps,		SERDES_DEFAULT_MODE	},
-	{ USB3_HOST0,	__5Gbps,		SERDES_DEFAULT_MODE	},
-	{ PEX2,		__5Gbps,		PEX_ROOT_COMPLEX_x1	}
-};
-
-/*************************** Functions implementation *************************/
-/***************************************************************************/
-
-/************************** Load topology - Marvell DB ********************************/
-/***************************************************************************/
-MV_U8 topologyConfigDBModeGet(MV_VOID)
-{
-	MV_TWSI_SLAVE twsiSlave;
-	MV_U8 mode;
-
-	DEBUG_INIT_FULL_S("\n### topologyConfigDBModeGet ###\n");
-
-	/* Default - return DB_CONFIG_DEFAULT */
-
-	/* Initializing twsiSlave in order to read from the TWSI address */
-	twsiSlave.slaveAddr.type = ADDR7_BIT;
-	twsiSlave.validOffset = MV_TRUE;
-	twsiSlave.offset = 0;
-	twsiSlave.moreThen256 = MV_FALSE;
-
-	DEBUG_INIT_FULL_S("topologyConfigDBModeGet: getting mode\n");
-
-	/* SLM1363 Module */
-	twsiSlave.slaveAddr.address = DB_GET_MODE_SLM1363_ADDR;
-	if (mvTwsiRead(0, &twsiSlave, &mode, 1) == MV_OK) {
-		switch (mode & 0xF) {
-		case 0xC:
-			DEBUG_INIT_S("\nInit DB board SLM 1363 C topology\n");
-			return DB_CONFIG_SLM1363_C;
-		case 0xD:
-			DEBUG_INIT_S("\nInit DB board SLM 1363 D topology\n");
-			return DB_CONFIG_SLM1363_D;
-		case 0xE:
-			DEBUG_INIT_S("\nInit DB board SLM 1363 E topology\n");
-			return DB_CONFIG_SLM1363_E;
-		case 0xF:
-			DEBUG_INIT_S("\nInit DB board SLM 1363 F topology\n");
-			return DB_CONFIG_SLM1363_F;
-		default:    /* not the right module */
-			break;
-		}
-	}
-
-	/* SLM1364 Module */
-	twsiSlave.slaveAddr.address = DB_GET_MODE_SLM1364_ADDR;
-	if (mvTwsiRead(0, &twsiSlave, &mode, 1) != MV_OK)
-	{
-		DEBUG_INIT_S("\nInit DB board default topology\n");
-		return DB_NO_TOPOLOGY;
-	}
-
-	switch (mode & 0xF) {
-	case 0xD:
-		DEBUG_INIT_S("\nInit DB board SLM 1364 D topology\n");
-		return DB_CONFIG_SLM1364_D;
-	case 0xE:
-		DEBUG_INIT_S("\nInit DB board SLM 1364 E topology\n");
-		return DB_CONFIG_SLM1364_E;
-	case 0xF:
-		DEBUG_INIT_S("\nInit DB board SLM 1364 F topology\n");
-		return DB_CONFIG_SLM1364_F;
-	default: /* Default configuration */
-		DEBUG_INIT_S("\nInit DB board default topology\n");
-		return DB_CONFIG_DEFAULT;
-	}
-}
-
-MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray)
-{
-	MV_U32 serdesType;
-	MV_U32 laneNum;
-
-	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
-		serdesType = serdesMapArray[laneNum].serdesType;
-
-		/*Read SatR configuration for SGMII speed*/
-		if((serdesType == SGMII0) || (serdesType == SGMII1) || (serdesType == SGMII2) ){
-			MV_U8	configVal;
-			MV_TWSI_SLAVE twsiSlave;
-
-			/*Fix the topology for A380 by SatR values*/
-			twsiSlave.slaveAddr.address = 0x50;
-			twsiSlave.slaveAddr.type = ADDR7_BIT;
-			twsiSlave.validOffset = MV_TRUE;
-			twsiSlave.offset = 0;
-			twsiSlave.moreThen256 = MV_TRUE;
-
-			/* Reading SatR value */
-			if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
-				DEBUG_INIT_S("powerUpSerdesLanes: TWSI Read failed\n");
-				return MV_FAIL;
-			}
-
-			if( 0 == (configVal & 0x40)){
-				serdesMapArray[laneNum].serdesSpeed = __1_25Gbps;
-			}
-			else{
-				serdesMapArray[laneNum].serdesSpeed = __3_125Gbps;
-			}
-		}
-	}
-
-	return MV_OK;
-}
-
-
-/***************************************************************************/
-MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
-{
-	MV_U32 laneNum;
-	MV_U8 topologyMode;
-	SERDES_MAP* topologyConfigPtr;
-	MV_TWSI_SLAVE twsiSlave;
-	MV_U8 twsiData;
-	MV_U8 usb3Host0OrDevice = 0, usb3Host1OrDevice = 0;
-
-	DEBUG_INIT_FULL_S("\n### loadTopologyDB ###\n");
-
-	/* Getting the relevant topology mode (index) */
-	DEBUG_INIT_FULL_S("loadTopologyDB: calling topologyConfigDBModeGet\n");
-
-	topologyMode = topologyConfigDBModeGet();
-
-	if (topologyMode == DB_NO_TOPOLOGY)
-		topologyMode = DB_CONFIG_DEFAULT;
-
-	topologyConfigPtr = topologyConfigDB[topologyMode];
-
-	/* Read SatR usb3port0 & usb3port1 */
-	twsiSlave.slaveAddr.address = RD_GET_MODE_ADDR;
-	twsiSlave.slaveAddr.type = ADDR7_BIT;
-	twsiSlave.validOffset = MV_TRUE;
-	twsiSlave.offset = 0;
-	twsiSlave.moreThen256 = MV_TRUE;
-	if (mvTwsiRead(0, &twsiSlave, &twsiData, 1) == MV_OK) {
-		usb3Host0OrDevice = (twsiData & 0x1);
-		if (usb3Host0OrDevice == 0)
-		{
-			/* Only one USB3 device is enabled */
-			usb3Host1OrDevice = ((twsiData >> 1) & 0x1);
-		}
-	}
-
-
-	/* Updating the topology map */
-	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
-		serdesMapArray[laneNum].serdesMode =  topologyConfigPtr[laneNum].serdesMode;
-		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
-		serdesMapArray[laneNum].serdesType =  topologyConfigPtr[laneNum].serdesType;
-
-		/* Update USB3 device if needed - relvant for lane 3,4,5 only */
-		if (laneNum >= 3)
-		{
-			if ((serdesMapArray[laneNum].serdesType == USB3_HOST0) &&
-				(usb3Host0OrDevice == 1))
-			{
-				serdesMapArray[laneNum].serdesType = USB3_DEVICE;
-			}
-
-			if ((serdesMapArray[laneNum].serdesType == USB3_HOST1) &&
-				(usb3Host1OrDevice == 1))
-			{
-				serdesMapArray[laneNum].serdesType = USB3_DEVICE;
-			}
-		}
-	}
-
-	updateTopologySatR(serdesMapArray);
-
-	return MV_OK;
-}
-
-MV_STATUS loadTopologyDBAp(SERDES_MAP  *serdesMapArray)
-{
-	MV_U32 laneNum;
-	SERDES_MAP* topologyConfigPtr;
-
-	DEBUG_INIT_FULL_S("\n### loadTopologyDBAp ###\n");
-
-	topologyConfigPtr = DbApConfigDefault;
-
-	/* Updating the topology map */
-	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
-		serdesMapArray[laneNum].serdesMode =  topologyConfigPtr[laneNum].serdesMode;
-		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
-		serdesMapArray[laneNum].serdesType =  topologyConfigPtr[laneNum].serdesType;
-	}
-
-	updateTopologySatR(serdesMapArray);
-
-	return MV_OK;
-}
-
-/************************** Load topology - Marvell RD boards********************************/
-
-/***************************************************************************/
-MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
-{
-	MV_TWSI_SLAVE twsiSlave;
-	MV_U8 mode;
-
-	DEBUG_INIT_FULL_S("\n### loadTopologyRD ###\n");
-
-	DEBUG_INIT_S("\nInit RD board ");
-
-	/* Initializing twsiSlave in order to read from the TWSI address */
-	twsiSlave.slaveAddr.address = BOARD_ID_GET_ADDR;
-	twsiSlave.slaveAddr.type = ADDR7_BIT;
-	twsiSlave.validOffset = MV_TRUE;
-	twsiSlave.offset = 0;
-	twsiSlave.moreThen256 = MV_TRUE;
-
-	/* Reading mode */
-	DEBUG_INIT_FULL_S("loadTopologyRD: getting mode\n");
-	if (mvTwsiRead(0, &twsiSlave, &mode, 1) != MV_OK) {
-		DEBUG_INIT_S("loadTopologyRD: TWSI Read failed\n");
-		return MV_FAIL;
-	}
-
-	/* Updating the topology map */
-	DEBUG_INIT_FULL_S("loadTopologyRD: Loading board topology details\n");
-
-	/* RD mode: 0 = NAS, 1 = AP */
-	if (((mode >> 1) & 0x1) == 0) {
-		CHECK_STATUS(loadTopologyRDNas(serdesMapArray));
-
-	}
-	else {
-		CHECK_STATUS(loadTopologyRDAp(serdesMapArray));
-	}
-
-	updateTopologySatR(serdesMapArray);
-
-	return MV_OK;
-}
-
-/***************************************************************************/
-MV_STATUS loadTopologyRDNas(SERDES_MAP  *serdesMapArray)
-{
-	MV_BOOL isSgmii = MV_FALSE;
-
-	DEBUG_INIT_S("\nInit RD NAS topology ");
-
-	/* check if lane 4 is USB3 or SGMII */
-
-	if (loadTopologyRDSgmiiUsb(&isSgmii) != MV_OK) {
-		DEBUG_INIT_S("loadTopologyRD NAS: TWSI Read failed\n");
-		return MV_FAIL;
-	}
-
-	/* Lane 0 */
-	serdesMapArray[0].serdesType = PEX0;
-	serdesMapArray[0].serdesSpeed = __5Gbps;
-	serdesMapArray[0].serdesMode = PEX_ROOT_COMPLEX_x1;
-
-	/* Lane 1 */
-	serdesMapArray[1].serdesType = SATA0;
-	serdesMapArray[1].serdesSpeed = __3Gbps;
-	serdesMapArray[1].serdesMode = SERDES_DEFAULT_MODE;
-
-	/* Lane 2 */
-	serdesMapArray[2].serdesType = SATA1;
-	serdesMapArray[2].serdesSpeed = __3Gbps;
-	serdesMapArray[2].serdesMode = SERDES_DEFAULT_MODE;
-
-
-	/* Lane 3 */
-	serdesMapArray[3].serdesType =  SATA3;
-	serdesMapArray[3].serdesSpeed = __3Gbps;
-	serdesMapArray[3].serdesMode =  SERDES_DEFAULT_MODE;
-
-	/* Lane 4 */
-	if (isSgmii == MV_TRUE) {
-		DEBUG_INIT_S("Serdes Lane 4 is SGMII\n");
-		serdesMapArray[4].serdesType = SGMII1;
-		serdesMapArray[4].serdesSpeed = __3_125Gbps;
-		serdesMapArray[4].serdesMode = SERDES_DEFAULT_MODE;
-	}
-	else {
-		DEBUG_INIT_S("Serdes Lane 4 is USB3\n");
-		serdesMapArray[4].serdesType = USB3_HOST0;
-		serdesMapArray[4].serdesSpeed = __5Gbps;
-		serdesMapArray[4].serdesMode = SERDES_DEFAULT_MODE;
-	}
-
-	/* Lane 5 */
-	serdesMapArray[5].serdesType =  SATA2;
-	serdesMapArray[5].serdesSpeed = __3Gbps;
-
-	serdesMapArray[5].serdesMode =  SERDES_DEFAULT_MODE;
-
-	return MV_OK;
-}
-
-
-/***************************************************************************/
-MV_STATUS loadTopologyRDAp(SERDES_MAP  *serdesMapArray)
-{
-	MV_BOOL isSgmii = MV_FALSE;
-
-	DEBUG_INIT_S("\nInit RD AP topology ");
-
-	/* check if lane 4 is USB3 or SGMII */
-	if (loadTopologyRDSgmiiUsb(&isSgmii) != MV_OK) {
-		DEBUG_INIT_S("loadTopologyRD AP: TWSI Read failed\n");
-		return MV_FAIL;
-	}
-
-	/* Lane 0 */
-	serdesMapArray[0].serdesType = DEFAULT_SERDES;
-	serdesMapArray[0].serdesSpeed = LAST_SERDES_SPEED;
-	serdesMapArray[0].serdesMode = SERDES_DEFAULT_MODE;
-
-	/* Lane 1 */
-	serdesMapArray[1].serdesType = PEX0;
-	serdesMapArray[1].serdesSpeed = __5Gbps;
-	serdesMapArray[1].serdesMode = PEX_ROOT_COMPLEX_x1;
-
-	/* Lane 2 */
-	serdesMapArray[2].serdesType = PEX1;
-	serdesMapArray[2].serdesSpeed = __5Gbps;
-	serdesMapArray[2].serdesMode = PEX_ROOT_COMPLEX_x1;
-
-	/* Lane 3 */
-	serdesMapArray[3].serdesType =  SATA3;
-	serdesMapArray[3].serdesSpeed = __3Gbps;
-	serdesMapArray[3].serdesMode =  SERDES_DEFAULT_MODE;
-
-	/* Lane 4 */
-	if (isSgmii == MV_TRUE) {
-		DEBUG_INIT_S("Serdes Lane 4 is SGMII\n");
-		serdesMapArray[4].serdesType = SGMII1;
-		serdesMapArray[4].serdesSpeed = __3_125Gbps;
-		serdesMapArray[4].serdesMode = SERDES_DEFAULT_MODE;
-	}
-	else {
-		DEBUG_INIT_S("Serdes Lane 4 is USB3\n");
-		serdesMapArray[4].serdesType = USB3_HOST0;
-		serdesMapArray[4].serdesSpeed = __5Gbps;
-		serdesMapArray[4].serdesMode = SERDES_DEFAULT_MODE;
-	}
-
-	/* Lane 5 */
-	serdesMapArray[5].serdesType =  SATA2;
-	serdesMapArray[5].serdesSpeed = __3Gbps;
-	serdesMapArray[5].serdesMode =  SERDES_DEFAULT_MODE;
-
-	return MV_OK;
-}
-
-/***************************************************************************/
-MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii)
-{
-	MV_TWSI_SLAVE twsiSlave;
-	MV_U8 mode;
-
-	/* Initializing twsiSlave in order to read from the TWSI address */
-	twsiSlave.slaveAddr.address = RD_GET_MODE_ADDR;
-	twsiSlave.slaveAddr.type = ADDR7_BIT;
-	twsiSlave.validOffset = MV_TRUE;
-	twsiSlave.offset = 1;
-	twsiSlave.moreThen256 = MV_TRUE;
-
-	/* check if lane 4 is USB3 or SGMII */
-	if (mvTwsiRead(0, &twsiSlave, &mode, 1) == MV_OK) {
-		*isSgmii = ((mode >> 2) & 0x1);
-	}
-	else
-	{
-		/* else use the default - USB3 */
-		*isSgmii = MV_FALSE;
-	}
-
-	return MV_OK;
-}
-
-#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
-/***************************************************************************/

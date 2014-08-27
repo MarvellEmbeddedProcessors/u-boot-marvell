@@ -72,10 +72,14 @@ CSRC = $(BOARD)/mvHighSpeedEnvSpec.c
 
 ifeq "$(CONFIG_ARMADA_38X)"  "y"
   CSRC += $(BOARD)/mvCtrlPex.c
+  CSRC += $(BOARD)/mvHighSpeedEnvSpec-38x.c
+  CSRC += $(BOARD)/mvHighSpeedTopologySpec-38x.c
 endif
 
 ifeq "$(CONFIG_ARMADA_39X)"  "y"
   CSRC += $(BOARD)/mvCtrlPex.c
+  CSRC += $(BOARD)/mvHighSpeedEnvSpec-39x.c
+  CSRC += $(BOARD)/mvHighSpeedTopologySpec-39x.c
 endif
 
 ifeq "$(CONFIG_BOBCAT2)"  "y"

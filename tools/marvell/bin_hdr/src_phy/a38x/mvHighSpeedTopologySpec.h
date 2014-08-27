@@ -61,107 +61,23 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#ifndef _MV_SEQ_EXEC_H
-#define _MV_SEQ_EXEC_H
+#ifndef _MV_HIGHSPEED_TOPOLOGY_SPEC_H
+#define _MV_HIGHSPEED_TOPOLOGY_SPEC_H
 
-#include "mv_os.h"
-#include "bin_hdr_twsi.h"
-#include "mvUart.h"
-#include "util.h"
+#include "mvHighSpeedEnvSpec.h"
 
-#define MAX_SERDES_LANES        7
-#define NA                      8
-#define DEFAULT_PARAM           0
-#define MV_BOARD_TCLK_ERROR     0xFFFFFFFF
-
-#define NO_DATA                 0xFFFFFFFF
-#define MAX_DATA_ARRAY          5
-#define FIRST_CELL              0
-
-/* Operation types */
-typedef enum {
-	WRITE_OP,
-	DELAY_OP,
-	POLL_OP,
-} MV_OP;
-
-/* Operation parameters */
-typedef struct {
-	MV_U32 unitBaseReg;
-	MV_U32 unitOffset;
-	MV_U32 mask;
-	MV_U32 data[MAX_DATA_ARRAY];            /* data array */
-	MV_U8 waitTime;                         /* msec */
-	MV_U16 numOfLoops;                      /* for polling only */
-} MV_OP_PARAMS;
-
-/*
-    Sequence parameters. Each sequence contains:
-        1. Sequence id.
-        2. Sequence size (total amount of operations during the sequence)
-        3. a series of operations. operations can be write, poll or delay
-        4. index in the data array (the entry where the relevant data sits)
- */
-typedef struct {
-	MV_OP_PARAMS    *opParamsPtr;
-	MV_U8 cfgSeqSize;
-	MV_U8 dataArrIdx;
-} MV_CFG_SEQ;
-
-/* A generic function type for executing an operation (write, poll or delay) */
-typedef MV_STATUS (*opExecuteFuncPtr)
-(
-	MV_U32 serdesNum,
-	MV_OP_PARAMS    *params,
-	MV_U32 dataArrIdx
-);
-
-/* Specific functions for executing each operation */
-MV_STATUS writeOpExecute
-(
-	MV_U32 serdesNum,
-	MV_OP_PARAMS    *params,
-	MV_U32 dataArrIdx
-);
-
-MV_STATUS delayOpExecute
-(
-	MV_U32 serdesNum,
-	MV_OP_PARAMS    *params,
-	MV_U32 dataArrIdx
-);
-
-MV_STATUS pollOpExecute
-(
-	MV_U32 serdesNum,
-	MV_OP_PARAMS    *params,
-	MV_U32 dataArrIdx
-);
+/* A generic function pointer for loading the board topology map */
+typedef MV_STATUS (*loadTopologyFuncPtr)(SERDES_MAP  *serdesMapArray);
 
 /**************************************************************************
- * getCfgSeqOp -
+ * mvHwsBoardTopologyLoad -
  *
- * DESCRIPTION:          Returns the relevant operation
- *                       (WRITE_OP, POLL_OP or DELAY_OP) to execute
- *                       according to the sequence details given as input
- * INPUT:                params      - the sequence operation parameters
- * OUTPUT:               None.
- * RETURNS:              the relevant op (WRITE_OP, POLL_OP or DELAY_OP)
+ * DESCRIPTION:          Loads the board topology
+ * INPUT:                serdesMapArray  -   The struct that will contain
+ *                                           the board topology map
+ * OUTPUT:               The board topology.
+ * RETURNS:              MV_OK           -   for success
  ***************************************************************************/
-MV_OP getCfgSeqOp(MV_OP_PARAMS *params);
+MV_STATUS mvHwsBoardTopologyLoad(SERDES_MAP  *serdesMapArray);
 
-/**************************************************************************
- * mvSeqExec -
- *
- * DESCRIPTION:          Executes a serdes sequence
- * INPUT:                serdesNum       - the serdes which the sequence
- *                                         is executed for
- *                       seqId           - the id of the executed sequence
- * OUTPUT:               None.
- * RETURNS:              MV_OK           - for success
- *                       MV_BAD_PARAM    - for bad sequence id or serdes num
- *                       MV_TIMEOUT      - for an unsuccessful polling
- ***************************************************************************/
-MV_STATUS mvSeqExec(MV_U32 serdesNum, MV_U32 seqId);
-
-#endif /*_MV_SEQ_EXEC_H*/
+#endif /* _MV_HIGHSPEED_TOPOLOGY_SPEC_H */

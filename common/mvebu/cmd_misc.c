@@ -34,9 +34,45 @@ int do_map_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 
 U_BOOT_CMD(
 	map,      1,     1,      do_map_cmd,
-	"map	- Display address decode windows\n",
-	"\n"
+	"Display address decode windows\n",
 	"\tDisplay address decode windows\n"
+);
+
+int do_remap_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
+			char * const argv[])
+{
+	phys_addr_t input;
+	phys_addr_t output;
+
+	if (argc < 3) {
+		printf("Error: Not enough arguments\n");
+		printf("Usage:\n%s\n", cmdtp->usage);
+		return 1;
+	}
+
+	input = simple_strtoul(argv[1], NULL, 16);
+	output = simple_strtoul(argv[2], NULL, 16);
+
+	if (adec_remap(input, output)) {
+		printf("Error: Failed to remap 0x%08x->0x%08x\n", (uint)input, (uint)output);
+		return 1;
+	}
+
+	printf("Remapped address 0x%08x t0 0x%08x\n", (uint)input, (uint)output);
+	return 0;
+}
+
+U_BOOT_CMD(
+	remap,      3,     1,      do_remap_cmd,
+	"Remap the output address of a window",
+	"input_addr output_addr\n"
+	"  - input_addr: Base address used by CPU\n"
+	"  - output_addr: Base address issued by window target\n"
+	"The remap command enables modifying the base address used\n"
+	"to access a certain HW unit. It is usefull when the PCI\n"
+	"address space is different then the CPU address space\n"
+	"Remapping the PCI window enables the PCI host to change the ouput\n"
+	"address on the PCI bus and so to access different PCI BARs\n"
 );
 
 

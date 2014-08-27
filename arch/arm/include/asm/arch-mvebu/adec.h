@@ -35,5 +35,6 @@
 
 void adec_dump(void);
 int adec_init(struct adec_win *windows);
+int adec_remap(phys_addr_t input, phys_addr_t output);
 
 #endif /* _ADEC_H_ */

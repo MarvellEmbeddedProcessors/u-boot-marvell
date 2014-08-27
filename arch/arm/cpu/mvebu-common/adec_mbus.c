@@ -99,6 +99,31 @@ void adec_dump(void)
 	return;
 }
 
+int adec_remap(phys_addr_t input, phys_addr_t output)
+{
+	int win;
+	u32 ctrl, base;
+
+	for (win = 0; win < MAX_MBUS_WINS; win++) {
+		ctrl = readl(mbus_adec_base + MBUS_WIN_CTRL_REG(win));
+		base = readl(mbus_adec_base + MBUS_WIN_BASE_REG(win));
+
+		if ((ctrl & MBUS_CR_WIN_ENABLE) && (base == input)) {
+			if (win >= MAX_MBUS_REMAP_WINS) {
+				printf("Window %d with base addres 0x%08x is not remapable\n",
+				       win, (uint)base);
+				return 1;
+			}
+			writel(output & MBUS_RLR_REMAP_LOW_MASK, mbus_adec_base + MBUS_WIN_REMAP_LOW_REG(win));
+			writel(0x0, mbus_adec_base + MBUS_WIN_REMAP_HIGH_REG(win));
+			return 0;
+		}
+	}
+
+	printf("Couldn't find XBAR window with base address 0x%08x\n", (uint)input);
+	return 0;
+}
+
 int adec_init(struct adec_win *windows)
 {
 	u32 win_id, index, mbus_win;
@@ -108,7 +133,7 @@ int adec_init(struct adec_win *windows)
 	mbus_adec_base = (void *)MVEBU_ADEC_BASE;
 
 	/* disable all windows */
-	for (win_id = 0; windows[win_id].enabled != TBL_TERM; win_id++) {
+	for (win_id = 0; win_id < MAX_MBUS_WINS; win_id++) {
 		mbus_win = readl(mbus_adec_base + MBUS_WIN_CTRL_REG(win_id));
 		mbus_win &= ~MBUS_CR_WIN_ENABLE;
 		writel(mbus_win, mbus_adec_base + MBUS_WIN_CTRL_REG(win_id));

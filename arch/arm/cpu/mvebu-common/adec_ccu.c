@@ -98,6 +98,11 @@ static void adec_enable_ap_win(struct adec_win *win, u32 win_id)
 	writel(ahr, AP_WIN_AHR_OFFSET(win_id));
 }
 
+int adec_remap(phys_addr_t input, phys_addr_t output)
+{
+	return 0;
+}
+
 void adec_dump(void)
 {
 	u32 win_id;

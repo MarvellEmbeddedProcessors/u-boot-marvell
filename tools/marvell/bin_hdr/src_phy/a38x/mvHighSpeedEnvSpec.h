@@ -105,6 +105,9 @@ typedef enum {
 	USB3_HOST0,
 	USB3_HOST1,
 	USB3_DEVICE,
+	SGMII3,
+	XAUI,
+	RXAUI,
 	DEFAULT_SERDES,
 	LAST_SERDES_TYPE
 } SERDES_TYPE;
@@ -181,6 +184,26 @@ typedef enum {
 
 	SERDES_POWER_DOWN_SEQ,
 
+	SGMII3_POWER_UP_SEQ,
+	SGMII3__1_25_SPEED_CONFIG_SEQ,
+	SGMII3_TX_CONFIG_SEQ1,
+	SGMII3_TX_CONFIG_SEQ2,
+
+	QSGMII_POWER_UP_SEQ,
+	QSGMII__5_SPEED_CONFIG_SEQ,
+	QSGMII_TX_CONFIG_SEQ1,
+	QSGMII_TX_CONFIG_SEQ2,
+
+	XAUI_POWER_UP_SEQ,
+	XAUI__3_125_SPEED_CONFIG_SEQ,
+	XAUI_TX_CONFIG_SEQ1,
+	XAUI_TX_CONFIG_SEQ2,
+
+	RXAUI_POWER_UP_SEQ,
+	RXAUI__6_25_SPEED_CONFIG_SEQ,
+	RXAUI_TX_CONFIG_SEQ1,
+	RXAUI_TX_CONFIG_SEQ2,
+
 	SERDES_LAST_SEQ
 } SERDES_SEQ;
 
@@ -226,24 +249,10 @@ SERDES_MAP serdesConfigurationMap[MAX_SERDES_LANES];
    initialized in serdesSeqInit */
 MV_CFG_SEQ serdesSeqDb[SERDES_LAST_SEQ];
 
-/* Temp solution for memory allocations */
-#ifdef MEM_ALLOCS
-#define HEAP_SIZE 1024
-char localHeap[HEAP_SIZE];
-char* currHeapPtr = localHeap;
+extern MV_U8 commonPhysSelectorsMap[LAST_SERDES_TYPE][MAX_SERDES_LANES];
 
-void* malloc(MV_U32 allocSize)
-{
-	char* ptr;
-
-	if (currHeapPtr + allocSize >= localHeap + HEAP_SIZE)
-		return NULL;
-	ptr = currHeapPtr;
-	currHeapPtr += allocSize;
-	return (void*)ptr;
-}
-
-#endif
+/* Serdes type to ref clock map */
+extern REF_CLOCK serdesTypeToRefClockMap[LAST_SERDES_TYPE];
 
 /*************************** Functions declarations ***************************/
 /**************************************************************************
@@ -278,7 +287,17 @@ SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
 );
 
 /**************************************************************************
- * serdesSeqInit -
+ * mvHwsSerdesSeqInit -
+ *
+ * DESCRIPTION:          Inits serdes related Db
+ * INPUT:                None.
+ * OUTPUT:               serdesSeqDb is initialized
+ * RETURNS:              Nothing.
+ ***************************************************************************/
+MV_VOID mvHwsSerdesSeqInit(MV_VOID);
+
+/**************************************************************************
+ * mvHwsSerdesSeqDbInit -
  *
  * DESCRIPTION:          Inits serdesSeqDb, the array that contains for
  *                       every serdes sequence the following information:
@@ -292,7 +311,7 @@ SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
  * OUTPUT:               serdesSeqDb is initialized
  * RETURNS:              Nothing.
  ***************************************************************************/
-MV_VOID serdesSeqInit(MV_VOID);
+MV_VOID mvHwsSerdesSeqDbInit(MV_VOID);
 
 /**************************************************************************
  * mvHwsTwsiInitWrapper -
@@ -352,20 +371,29 @@ MV_STATUS mvSerdesPowerUpCtrl(MV_U32 serdesNum,
 			      SERDES_MODE  serdesMode,
 			      REF_CLOCK refClock);
 
-
-/* A generic function pointer for loading the board topology map */
-typedef MV_STATUS (*loadTopologyFuncPtr)(SERDES_MAP  *serdesMapArray);
-
 /**************************************************************************
- * mvHwsBoardTopologyLoad -
+ * mvSerdesPowerUpCtrlExt -
  *
- * DESCRIPTION:          Loads the board topology
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology.
+ * DESCRIPTION:          Addtional executes serdes power up/down
+ * INPUT:                serdesNum       -   Serdes lane number
+ *                       serdesPowerUp   -   True for power up
+ *                                           False for power down
+ *                       serdesType      -   SGMII3, QSGMII ,XAUI or RXAUI
+ *                       baudRate        -   serdes speed
+ *                       serdesMode      -   serdes mode
+ *                       refClock        -   ref clock (25 or 100)
+ * OUTPUT:               None.
  * RETURNS:              MV_OK           -   for success
  ***************************************************************************/
-MV_STATUS mvHwsBoardTopologyLoad(SERDES_MAP  *serdesMapArray);
+MV_STATUS mvSerdesPowerUpCtrlExt
+(
+	MV_U32 serdesNum,
+	MV_BOOL serdesPowerUp,
+	SERDES_TYPE serdesType,
+	SERDES_SPEED baudRate,
+	SERDES_MODE  serdesMode,
+	REF_CLOCK refClock
+);
 
 /**************************************************************************
  * mvHwsRefClockSet -
@@ -406,5 +434,47 @@ MV_STATUS mvHwsRefClockSet
  *                                         and serdes type
  ***************************************************************************/
 MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP  *serdesConfigMap);
+
+/**************************************************************************
+ * mvHwsSerdesGetPhySelectorVal -
+ *
+ * DESCRIPTION:          return PHY selector value according to device type.
+ * INPUT:                serdesNum       - serdes lane number.
+ *                       serdesType      - PEX, USB3, SATA or SGMII.
+ * OUTPUT:               None.
+ * RETURNS:              Selector value
+ ***************************************************************************/
+MV_U32 mvHwsSerdesGetPhySelectorVal
+(
+    MV_32 serdesNum,
+	SERDES_TYPE serdesType
+);
+
+/**************************************************************************
+ * mvHwsSerdesGetRefClockVal -
+ *
+ * DESCRIPTION:          return ref clock frequency according to device type.
+ * INPUT:   			 serdesType      - PEX, USB3, SATA or SGMII.
+ * OUTPUT:               None.
+ * RETURNS:              Ref clock frequency
+ ***************************************************************************/
+MV_U32 mvHwsSerdesGetRefClockVal
+(
+	SERDES_TYPE serdesType
+);
+
+/**************************************************************************
+ * mvHwsSerdesGetMaxLane -
+ *
+ * DESCRIPTION:          return number of lanes according to device type.
+ * INPUT:   			 NONE.
+ * OUTPUT:               None.
+ * RETURNS:              number of lanes
+ ***************************************************************************/
+MV_U32 mvHwsSerdesGetMaxLane
+(
+	MV_VOID
+);
+
 
 #endif /* _MV_HIGHSPEED_ENV_SPEC_H */

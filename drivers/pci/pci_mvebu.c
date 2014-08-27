@@ -40,6 +40,11 @@
 #define PCIE_DEV_ID_OFF(x)		(MVEBU_PCIE_BASE(x) + 0x0)
 #define PCIE_CMD_OFF(x)			(MVEBU_PCIE_BASE(x) + 0x4)
 #define PCIE_DEV_REV_OFF(x)		(MVEBU_PCIE_BASE(x) + 0x8)
+#define PCIE_CAP_OFF(x)			(MVEBU_PCIE_BASE(x) + 0x60)
+#define PCIE_CAP_DEV_TYPE_MASK		(0xF << 20)
+#define PCIE_CAP_DEV_TYPE_EP		(0x1 << 20)
+#define PCIE_CAP_DEV_TYPE_RC		(0x4 << 20)
+
 #define PCIE_BAR_LO_OFF(x, n)		(MVEBU_PCIE_BASE(x) + (0x10 + (0x8 * n)))
 #define PCIE_BAR_HI_OFF(x, n)		(MVEBU_PCIE_BASE(x) + (0x14 + (0x8 * n)))
 #define PCIE_BAR_CTRL_OFF(x, n)		(MVEBU_PCIE_BASE(x) + (0x1800 + (0x4 * n)))
@@ -337,7 +342,23 @@ static int mvebu_pcie_check_link(int hid)
 	return readl(PCIE_STAT_OFF(hid)) &  PCIE_STAT_LINK;
 }
 
-void mvebu_pcie_init_board(int max_hosts, u16 active_mask)
+static void mvebu_pcie_set_endpoint(int hid)
+{
+	u32 capability;
+
+	/* Check the LTSSM state machine if something is connected */
+	capability = readl(PCIE_CAP_OFF(hid));
+	capability &= ~PCIE_CAP_DEV_TYPE_MASK;
+	capability |= PCIE_CAP_DEV_TYPE_EP;
+	writel(capability, PCIE_CAP_OFF(hid));
+
+	/* Open DRAM access for master */
+	mvebu_pcie_setup_mapping(hid);
+
+	printf("PCIE-%d: End point mode\n", hid);
+}
+
+void mvebu_pcie_init_board(int max_hosts, u16 active_mask, u16 ep_mask)
 {
 	int host_id;
 	int first_busno = 0;
@@ -347,6 +368,12 @@ void mvebu_pcie_init_board(int max_hosts, u16 active_mask)
 		/* Check if unit is enabled */
 		if ((active_mask & (1 << host_id)) == 0)
 			continue;
+
+		/* Define host controller as endpoint */
+		if (ep_mask & (1 << host_id)) {
+			mvebu_pcie_set_endpoint(host_id);
+			continue;
+		}
 
 		/* Don't register host if link is down */
 		if (mvebu_pcie_check_link(host_id))

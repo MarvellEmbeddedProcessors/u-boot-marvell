@@ -235,6 +235,7 @@
 	#define CONFIG_PCI
 	#define CONFIG_CMD_PCI
 	#define CONFIG_PCI_PNP  /* Enable plug-and-play */
+	/*#define CONFIG_MVEBU_PCI_EP*/ /* Set PCI host as end point */
 
 	/* Enable PCIE NIC for devel boards */
 	#ifdef CONFIG_MVEBU_DEVEL_BOARD

@@ -27,6 +27,16 @@ void pci_init_board(void)
 {
 	int host_cnt = unit_info_get_count(PCIE_UNIT_ID);
 	u16 active_mask = unit_info_get_mask(PCIE_UNIT_ID);
+	int ep_mask = 0;
 
-	mvebu_pcie_init_board(host_cnt, active_mask);
+#ifdef CONFIG_MVEBU_PCI_EP
+	/*
+	 * Currently set all hosts as EP. In case we want to support
+	 * mixed mode (RC & EP hosts) we need to define a way to
+	 * select it per port
+	 */
+	ep_mask = active_mask;
+#endif
+
+	mvebu_pcie_init_board(host_cnt, active_mask, ep_mask);
 }

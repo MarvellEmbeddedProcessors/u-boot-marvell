@@ -163,8 +163,33 @@ int temperature_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 U_BOOT_CMD(
 	temp,      1,     1,      temperature_cmd,
 	"temp	- Display the device temperature.\n",
+	" \n \tDisplay the device temperature as read from the internal sensor.\n"
+
+);
+
+int reset_count_cmd(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
+{
+	MV_U32 resetCount;
+	char *tmpStr = getenv("reset_count");
+	char countStr[10];
+
+	resetCount = tmpStr ? simple_strtoul(tmpStr, NULL, 16) : 0;
+	printf("\nreset_count = %d\n" , resetCount);
+	sprintf(countStr, "%x", ++resetCount);
+
+	setenv("reset_count", countStr);
+	setenv("bootcmd", "Creset");
+
+	run_command("saveenv", 0);
+	run_command("reset", 0);
+	return 1;
+}
+
+U_BOOT_CMD(Creset, 1, 1, reset_count_cmd,
+	"Creset	- Run 'reset' in a loop while counting.\n",
 	" \n"
-	"\tDisplay the device temperature as read from the internal sensor.\n"
+	"\tDisplay the amounts of successful reset sequence performed.\n"
+	" \n \tto set count start value run 'setenv reset_count <value>.\n"
 );
 
 #if defined(MV_INCLUDE_PMU)

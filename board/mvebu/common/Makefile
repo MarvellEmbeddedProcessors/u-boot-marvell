@@ -21,6 +21,7 @@ obj-y	+= board-common.o
 obj-y	+= entry.o
 obj-y	+= init.o
 obj-$(CONFIG_MVEBU_SPI) += spi_init.o
+obj-$(CONFIG_MVEBU_NAND) += nand_init.o
 obj-$(CONFIG_MVEBU_PCI)	+= pcie_init.o
 obj-$(CONFIG_CMD_NET)	+= eth_init.o
 

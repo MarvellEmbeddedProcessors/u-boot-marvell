@@ -17,7 +17,17 @@
  * ***************************************************************************
  */
 
-struct spi_slave *mvebu_spi_setup_slave(unsigned int bus, unsigned int cs,
-		unsigned int max_hz, unsigned int mode, u32 cpu_clk);
-void mvebu_pcie_init_board(int max_hosts, u16 active_mask, u16 ep_mask);
-void pxa3xx_nand_init(void);
+#include <common.h>
+#include <nand.h>
+
+#include <asm/arch-mvebu/clock.h>
+#include <asm/arch-mvebu/unit-info.h>
+#include <asm/arch-mvebu/driver_interface.h>
+
+void board_nand_init(void)
+{
+	if (unit_info_is_active(NAND_UNIT_ID, 0)) {
+		debug("Activating NAND\n");
+		pxa3xx_nand_init();
+	}
+}

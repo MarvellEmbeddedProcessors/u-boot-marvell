@@ -269,6 +269,17 @@ extern REF_CLOCK serdesTypeToRefClockMap[LAST_SERDES_TYPE];
 MV_STATUS mvUpdateSerdesSelectPhyModeSeq(MV_VOID);
 
 /**************************************************************************
+ * mvHwsBoardTopologyLoad -
+ *
+ * DESCRIPTION:          Loads the board topology
+ * INPUT:                serdesMapArray  -   The struct that will contain
+ *                                           the board topology map
+ * OUTPUT:               The board topology.
+ * RETURNS:              MV_OK           -   for success
+ ***************************************************************************/
+MV_STATUS mvHwsBoardTopologyLoad(SERDES_MAP  *serdesMapArray);
+
+/**************************************************************************
  * serdesTypeAndSpeedToSpeedSeq -
  *
  * DESCRIPTION:          Returns the relevant Speed Config sequence id
@@ -474,6 +485,21 @@ MV_U32 mvHwsSerdesGetRefClockVal
 MV_U32 mvHwsSerdesGetMaxLane
 (
 	MV_VOID
+);
+
+/**************************************************************************
+ * mvHwsGetExtBaseAddr -
+ *
+ * DESCRIPTION:          return extended base address (when needed).
+ * INPUT:   			 NONE.
+ * OUTPUT:               None.
+ * RETURNS:              number of lanes
+ ***************************************************************************/
+MV_STATUS mvHwsGetExtBaseAddr
+(
+	MV_U32 serdesNum,
+	MV_U32 baseAddr,
+	MV_U32 *unitBaseReg
 );
 
 

@@ -163,3 +163,19 @@ MV_U32 mvHwsSerdesGetMaxLane
 {
     return 6;
 }
+
+/***************************************************************************/
+MV_STATUS mvHwsGetExtBaseAddr
+(
+	MV_U32 serdesNum,
+	MV_U32 baseAddr,
+	MV_U32 *unitBaseReg
+)
+{
+	*unitBaseReg = baseAddr;
+
+	return MV_OK;
+}
+
+
+

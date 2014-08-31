@@ -69,15 +69,6 @@
 /* A generic function pointer for loading the board topology map */
 typedef MV_STATUS (*loadTopologyFuncPtr)(SERDES_MAP  *serdesMapArray);
 
-/**************************************************************************
- * mvHwsBoardTopologyLoad -
- *
- * DESCRIPTION:          Loads the board topology
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology.
- * RETURNS:              MV_OK           -   for success
- ***************************************************************************/
-MV_STATUS mvHwsBoardTopologyLoad(SERDES_MAP  *serdesMapArray);
+extern loadTopologyFuncPtr loadTopologyFuncArr[];
 
 #endif /* _MV_HIGHSPEED_TOPOLOGY_SPEC_H */

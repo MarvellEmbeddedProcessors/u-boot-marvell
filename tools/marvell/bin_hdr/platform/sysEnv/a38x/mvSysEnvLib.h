@@ -68,13 +68,15 @@
 
 #define INTER_REGS_BASE                                     0xD0000000
 
+#define	COMMON_PHY_BASE_ADDR					0x18300
+
 #define COMMON_PHY_CONFIGURATION1_REG           0x18300
 #define COMMON_PHY_CONFIGURATION2_REG           0x18304
 #define COMMON_PHY_CONFIGURATION4_REG           0x1830C
 #define COMMON_PHY_STATUS1_REG                  0x18318
 #define COMMON_PHYS_SELECTORS_REG               0x183FC
 #define SOC_CONTROL_REG1                        0x18204
-#define GENERAL_PURPOSE_RESERVED0_REG		0x182E0
+#define GENERAL_PURPOSE_RESERVED0_REG		    0x182E0
 #define GBE_CONFIGURATION_REG                   0x18460
 #define DEVICE_SAMPLE_AT_RESET1_REG             0xE4204
 
@@ -88,6 +90,7 @@
 #define GLUE_REG                                0xa0140
 #define GENERATION_DIVIDER_FORCE_REG            0xa0144
 #define RESET_DFE_REG                           0xa0148
+#define LANE_ALIGN_REG0							0xa0124
 
 #define SATA_CTRL_REG_INDIRECT                  0xa80a0
 #define SATA_CTRL_REG                           0xa80a4
@@ -128,7 +131,7 @@
 /* Marvell boards */
 #define MARVELL_BOARD_ID_BASE		0x10
 #define RD_NAS_68XX_ID			(MARVELL_BOARD_ID_BASE + 0)
-#define DB_68XX_ID			(MARVELL_BOARD_ID_BASE + 1)
+#define DB_68XX_ID			    (MARVELL_BOARD_ID_BASE + 1)
 #define RD_AP_68XX_ID			(MARVELL_BOARD_ID_BASE + 2)
 #define DB_AP_68XX_ID			(MARVELL_BOARD_ID_BASE + 3)
 #define MV_MAX_MARVELL_BOARD_ID		(MARVELL_BOARD_ID_BASE + 4)

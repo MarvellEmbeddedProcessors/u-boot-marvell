@@ -792,7 +792,7 @@ MV_BOARD_MPP_INFO db_misl_24G_46_ac3InfoBoardMppConfigValue[] = {
 };
 
 MV_BOARD_INFO db_misl_24G_4xg_ac3Info = {
-	.boardName			= "DB-XC3-24G-4XG",
+	.boardName			= "DB-XC3-24G-4G",
 	.numBoardMppTypeValue		= ARRSZ(db_dx_ac3InfoBoardModTypeInfo),
 	.pBoardModTypeValue		= db_dx_ac3InfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(db_misl_24G_46_ac3InfoBoardMppConfigValue),

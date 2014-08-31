@@ -56,7 +56,7 @@ int mv_get_arch_number(void)
 	case DB_AC3_ID:
 	case RD_MTL_4XG_AC3_ID:
 	case RD_MTL_2XXG_2XG_AC3_ID:
-	case RD_MISL_24G46_AC3_ID:
+	case RD_MISL_24G4G_AC3_ID:
 	case AC3_CUSTOMER_BOARD_ID0:
 	case AC3_CUSTOMER_BOARD_ID1:
 		return 3035;

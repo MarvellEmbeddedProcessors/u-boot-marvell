@@ -21,3 +21,4 @@ obj-y += cmd_misc.o
 obj-$(CONFIG_CMD_MVEBU_SAR) += cmd_sar.o
 obj-$(CONFIG_CMD_MVEBU_CONFIG) += cmd_config.o
 obj-$(CONFIG_CMD_MVEBU_MPP) += cmd_mpp.o
+obj-$(CONFIG_CMD_MVEBU_BUBT) += cmd_bubt.o

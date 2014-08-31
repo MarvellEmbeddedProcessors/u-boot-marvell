@@ -67,6 +67,10 @@
 #define MV_INCLUDE_PEX
 */
 
+#ifdef CONFIG_MVEBU_SPI
+#define CONFIG_MVEBU_SPI_BOOT
+#endif
+
 /* For Integration only */
 #define DB_784MP_GP
 #define MV_CPU_LE

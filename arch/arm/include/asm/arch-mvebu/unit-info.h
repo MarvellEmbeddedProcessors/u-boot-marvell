@@ -42,6 +42,7 @@ enum mvebu_unit_id {
 	PNC_UNIT_ID,
 	NAND_UNIT_ID,
 	SERDES_LANES_UNIT_ID,
+	DEVICE_BUS_UNIT_ID,
 	MAX_UNIT_ID
 };
 

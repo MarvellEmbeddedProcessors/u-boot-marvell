@@ -47,9 +47,9 @@
 #define CONFIG_NR_DRAM_BANKS		(4)
 /* maybe need to set back to 0x7fff0 */
 #define CONFIG_SYS_INIT_SP_ADDR         (CONFIG_SYS_TEXT_BASE + 0xFF0000)   /* End of 16M scrubbed by training in bootrom */
-#define CONFIG_SYS_GBL_DATA_SIZE        128          /* Size in bytes reserved for init data */
-#define CONFIG_SYS_MAXARGS		32      /* Max number of command argg */
-#define CONFIG_UBOOT_SIZE		0x100000
+#define CONFIG_SYS_GBL_DATA_SIZE        128	/* Size in bytes reserved for init data */
+#define CONFIG_SYS_MAXARGS		32	/* Max number of command argg */
+#define CONFIG_UBOOT_SIZE		0x100000 /* 1MB */
 #undef  CONFIG_USE_IRQ
 
 /* Memory reserve */
@@ -134,10 +134,11 @@
 #define CONFIG_CMD_MVEBU_MAP
 #define CONFIG_CMD_MVEBU_MPP
 #define CONFIG_CMD_MVEBU_IR
+#define CONFIG_CMD_MVEBU_BUBT
 
 
 /* No flash setup */
-#if !defined(MV_INCLUDE_NOR) && !defined(MV_INCLUDE_NAND) && !defined(MV_SPI_BOOT)
+#if !defined(MV_INCLUDE_NOR) && !defined(MV_INCLUDE_NAND) && !defined(CONFIG_MVEBU_SPI_BOOT)
 	#undef CONFIG_CMD_FLASH
 	#undef CONFIG_CMD_IMLS
 	#define CONFIG_ENV_IS_NOWHERE
@@ -404,36 +405,23 @@
 	#define CONFIG_SF_DEFAULT_MODE         SPI_MODE_3
 	#endif
 
-	/* Boot from SPI settings */
-	#if defined(MV_SPI_BOOT)
-	#define CONFIG_ENV_IS_IN_SPI_FLASH
 
-	#if defined(MV_SEC_64K)
-	#define CONFIG_ENV_SECT_SIZE            0x10000
-	#elif defined(MV_SEC_128K)
-	#define CONFIG_ENV_SECT_SIZE            0x20000
-	#elif defined(MV_SEC_256K)
-	#define CONFIG_ENV_SECT_SIZE            0x40000
-	#endif
-	#define CONFIG_ENV_SIZE		CONFIG_ENV_SECT_SIZE    /* environment takes one sector */
-	#define CONFIG_ENV_OFFSET	0x100000    /* (1MB For Image) environment starts here  */
-	#define CONFIG_ENV_ADDR		CONFIG_ENV_OFFSET
-	#define MONITOR_HEADER_LEN	0x200
-	#define CONFIG_SYS_MONITOR_BASE	0
-	#define CONFIG_SYS_MONITOR_LEN	0x80000        /*(512 << 10) Reserve 512 kB for Monitor */
-
-	#ifndef MV_INCLUDE_NOR
-	#ifdef MV_BOOTROM
-	#define CONFIG_SYS_FLASH_BASE           DEVICE_SPI_BASE
-	#define CONFIG_SYS_FLASH_SIZE           _16M
-	#else
-	#define CONFIG_SYS_FLASH_BASE           BOOTDEV_CS_BASE
-	#define CONFIG_SYS_FLASH_SIZE           BOOTDEV_CS_SIZE
-	#endif  /* MV_BOOTROM */
-	#endif  /* MV_INCLUDE_NOR */
-	#endif  /* MV_SPI_BOOT */
 #endif  /* MV_INCLUDE_SPI */
 
+/* Boot from SPI settings */
+#if defined(CONFIG_MVEBU_SPI_BOOT)
+	#define CONFIG_ENV_IS_IN_SPI_FLASH
+
+	#define CONFIG_ENV_SECT_SIZE	0x10000
+	#define CONFIG_ENV_SIZE		CONFIG_ENV_SECT_SIZE    /* environment takes one sector */
+	#define CONFIG_ENV_OFFSET	CONFIG_UBOOT_SIZE
+	#define CONFIG_ENV_ADDR		CONFIG_ENV_OFFSET
+
+	/* TODO - Do we really need this */
+	#define CONFIG_SYS_MONITOR_BASE	0
+	#define CONFIG_SYS_MONITOR_LEN	0x80000  /* Reserve 512 kB for Monitor */
+
+#endif /* CONFIG_MVEBU_SPI_BOOT */
 
 /* NOR Flash */
 #ifdef MV_INCLUDE_NOR

@@ -418,7 +418,7 @@ typedef enum _mvTarget {
 	{ 0xDA, DEV_TARGET_ID	},		/* SPI1_CS3              */ \
 	{ MAIN_BOOT_ATTR, DEV_TARGET_ID },	/* Main Boot device      */ \
 	{ SEC_BOOT_ATTR, DEV_TARGET_ID  },	/* Secondary Boot device */ \
-	{ 0x01, CRYPT_TARGET_ID	},		/* CRYPT_ENG0            */ \
+	{ 0x09, CRYPT_TARGET_ID	},		/* CRYPT_ENG0            */ \
 	{ 0x05, CRYPT_TARGET_ID	},		/* CRYPT_ENG1            */ \
 	PNC_PSS_NSS_TARGET_ENTRY \
 }

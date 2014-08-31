@@ -1921,6 +1921,52 @@ MV_STATUS mvBoardSarBoardIdSet(MV_U8 val)
 	return MV_OK;
 }
 
+/*******************************************************************************/
+MV_STATUS mvBoardDdrEccEnableGet(MV_U8 *val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: BC2 controller family is not supported\n", __func__));
+		return MV_ERROR; /* Not supported on BC2 */
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(1, 1, &sar))
+		return MV_ERROR;
+
+	*val = sar & 0x1;
+
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_STATUS mvBoardDdrEccEnableSet(MV_U8 val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: BC2 controller family is not supported\n", __func__));
+		return MV_ERROR; /* Not supported on BC2 */
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(1, 1, &sar))
+		return MV_ERROR;
+
+	sar &= ~(0x1);
+	sar |= (val != 0) ? 0x1 : 0x0;
+
+	if (MV_OK != mvBoardTwsiSatRSet(1, 1, sar)) {
+		DB(mvOsPrintf("Board: Write ddreccenable S@R fail\n"));
+		return MV_ERROR;
+	}
+
+	DB(mvOsPrintf("Board: Write ddreccenable S@R succeeded\n"));
+	return MV_OK;
+}
+
+
 /*******************************************************************************
 * End of SatR Configuration functions
 *******************************************************************************/

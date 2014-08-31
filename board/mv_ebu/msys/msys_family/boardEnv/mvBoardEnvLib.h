@@ -324,6 +324,8 @@ MV_STATUS mvBoardCoreFreqGet(MV_U8 *value);
 MV_STATUS mvBoardTmFreqGet(MV_U8 *value);
 MV_STATUS mvBoardTmFreqSet(MV_U8 freqVal);
 MV_STATUS mvBoardCoreFreqSet(MV_U8 freqVal);
+MV_STATUS mvBoardDdrEccEnableGet(MV_U8 *val);
+MV_STATUS mvBoardDdrEccEnableSet(MV_U8 val);
 
 MV_STATUS mvBoardMppModulesScan(void);
 MV_STATUS mvBoardOtherModulesScan(void);

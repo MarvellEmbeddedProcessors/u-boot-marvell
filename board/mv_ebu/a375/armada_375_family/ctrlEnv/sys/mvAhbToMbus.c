@@ -673,18 +673,13 @@ static MV_STATUS ahbToMbusRemapRegOffsGet(MV_U32 winNum, AHB_TO_MBUS_REMAP_REG_O
 	switch (winNum) {
 	case 0:
 	case 1:
-		pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
-		pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);
-		break;
 	case 2:
 	case 3:
-		pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
-		pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);
-		break;
 	case 4:
 	case 5:
 	case 6:
 	case 7:
+	case 13:
 		pRemapRegs->lowRegOffs = AHB_TO_MBUS_WIN_REMAP_LOW_REG(winNum);
 		pRemapRegs->highRegOffs = AHB_TO_MBUS_WIN_REMAP_HIGH_REG(winNum);
 		break;

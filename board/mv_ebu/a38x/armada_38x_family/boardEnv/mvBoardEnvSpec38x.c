@@ -131,8 +131,8 @@ struct MV_BOARD_IO_EXPANDER armada_38x_customer_0_IoExpanderInfo[] = {
 
 MV_BOARD_INFO armada_38x_customer_board_0_info = {
 	.boardName			= "A38x-Customer-Board-0",
-	.numBoardMppTypeValue		= ARRSZ(armada_38x_customer_0_BoardMppConfigValue),
-	.pBoardModTypeValue		= NULL,
+	.numBoardNetComplexValue		= ARRSZ(armada_38x_customer_0_BoardMppConfigValue),
+	.pBoardNetComplexInfo		= NULL,
 	.pBoardMppConfigValue		= armada_38x_customer_0_BoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
@@ -258,8 +258,8 @@ MV_BOARD_TDM_SPI_INFO db88f68xxTdmSpiInfo[] = { {1} };
 
 MV_BOARD_INFO db88f68xx_board_info = {
 	.boardName		= "DB-88F6820-BP",
-	.numBoardMppTypeValue	= 0,		/* ARRSZ(db88f68XXInfoBoardModTypeInfo), */
-	.pBoardModTypeValue	= NULL,		/* db88f68XXInfoBoardModTypeInfo, */
+	.numBoardNetComplexValue	= 0,		/* ARRSZ(db88f68XXInfoBoardModTypeInfo), */
+	.pBoardNetComplexInfo	= NULL,		/* db88f68XXInfoBoardModTypeInfo, */
 	.pBoardMppConfigValue	= db88f68xxInfoBoardMppConfigValue,
 	.intsGppMaskLow		= 0,
 	.intsGppMaskMid		= 0,
@@ -364,8 +364,8 @@ struct MV_BOARD_IO_EXPANDER ioExpNas[] = {
 
 MV_BOARD_INFO rdNas88f68XX_board_info = {
 	.boardName			= "RD-NAS-88F6820-DDR3",
-	.numBoardMppTypeValue	= ARRSZ(rdNas88f68XXInfoBoardMppConfigValue),
-	.pBoardModTypeValue		= NULL,
+	.numBoardNetComplexValue	= ARRSZ(rdNas88f68XXInfoBoardMppConfigValue),
+	.pBoardNetComplexInfo		= NULL,
 	.pBoardMppConfigValue	= rdNas88f68XXInfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
@@ -442,8 +442,8 @@ struct MV_BOARD_IO_EXPANDER ioExpWap[] = {
 };
 MV_BOARD_INFO rdWAP88f68XX_board_info = {
 	.boardName			= "RD-AP-88F6820-DDR3",
-	.numBoardMppTypeValue	= ARRSZ(rdWap88f68XXInfoBoardMppConfigValue),
-	.pBoardModTypeValue		= NULL,
+	.numBoardNetComplexValue	= ARRSZ(rdWap88f68XXInfoBoardMppConfigValue),
+	.pBoardNetComplexInfo		= NULL,
 	.pBoardMppConfigValue	= rdWap88f68XXInfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
@@ -555,8 +555,8 @@ MV_BOARD_TDM_SPI_INFO dbAP88f68xxTdmSpiInfo[] = { {1} };
 
 MV_BOARD_INFO dbAP88f68xx_board_info = {
 	.boardName              = "DB-88F6820-AP",
-	.numBoardMppTypeValue   = 0,            /* ARRSZ(db88f68XXInfoBoardModTypeInfo), */
-	.pBoardModTypeValue     = NULL,         /* db88f68XXInfoBoardModTypeInfo, */
+	.numBoardNetComplexValue   = 0,            /* ARRSZ(db88f68XXInfoBoardModTypeInfo), */
+	.pBoardNetComplexInfo     = NULL,         /* db88f68XXInfoBoardModTypeInfo, */
 	.pBoardMppConfigValue   = dbAP88f68xxInfoBoardMppConfigValue,
 	.intsGppMaskLow         = 0,
 	.intsGppMaskMid         = 0,

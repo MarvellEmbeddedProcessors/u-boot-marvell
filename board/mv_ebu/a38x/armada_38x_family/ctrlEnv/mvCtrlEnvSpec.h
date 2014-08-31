@@ -224,7 +224,11 @@ extern "C" {
 /* This define describes the maximum number of supported Ethernet ports */
 /* TODO - verify all these numbers */
 /* This define describes the maximum number of supported Ethernet ports */
+#ifdef CONFIG_ARMADA_38X
 #define MV_ETH_MAX_PORTS			3
+#else
+#define MV_ETH_MAX_PORTS                        4
+#endif
 #define MV_ETH_MAX_ON_BOARD_PORTS		2
 #define MV_ETH_MAX_PORTS_6810			2
 #define MV_ETH_VERSION				4 /* for Legacy mode */

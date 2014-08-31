@@ -86,10 +86,21 @@ MV_BOARD_TWSI_INFO armada_39x_customer_0_BoardTwsiDev[] = {
 	{ BOARD_TWSI_IO_EXPANDER,	0,	0x20, ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_IO_EXPANDER,	1,	0x21, ADDR7_BIT, MV_FALSE},
 };
+
 MV_BOARD_MAC_INFO armada_39x_customer_0_BoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x1},
-	{ BOARD_MAC_SPEED_AUTO, 0x0}
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
+	{ BOARD_MAC_SPEED_AUTO, 0x5, 0x5},
+	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4},
+	{ BOARD_MAC_UNCONNECTED, -1, -1}
+};
+
+MV_BOARD_NET_COMPLEX_INFO armada_39x_customer_0_InfoBoardNetComplexInfo[] = {
+	{
+		.netComplexOpt = MV_NETCOMP_GE_MAC1_2_SGMII_L1 |
+			MV_NETCOMP_GE_MAC2_2_SGMII_L3 |
+			MV_NETCOMP_GE_MAC0_2_RXAUI,
+	}
 };
 
 MV_DEV_CS_INFO armada_39x_customer_0_BoardDeCsInfo[] = {
@@ -131,8 +142,8 @@ struct MV_BOARD_IO_EXPANDER armada_39x_customer_0_IoExpanderInfo[] = {
 
 MV_BOARD_INFO armada_39x_customer_board_0_info = {
 	.boardName			= "A39x-Customer-Board-0",
-	.numBoardMppTypeValue		= ARRSZ(armada_39x_customer_0_BoardMppConfigValue),
-	.pBoardModTypeValue		= NULL,
+	.numBoardNetComplexValue	= ARRSZ(armada_39x_customer_0_InfoBoardNetComplexInfo),
+	.pBoardNetComplexInfo		= armada_39x_customer_0_InfoBoardNetComplexInfo,
 	.pBoardMppConfigValue		= armada_39x_customer_0_BoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
@@ -231,11 +242,21 @@ MV_BOARD_TWSI_INFO db88f69xxInfoBoardTwsiDev[] = {
 	{ BOARD_TWSI_MODULE_DETECT,	4,	0x26,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_MODULE_DETECT,	5,	0x27,	   ADDR7_BIT, MV_FALSE},
 };
+
 MV_BOARD_MAC_INFO db88f69xxInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0},
-	{ BOARD_MAC_SPEED_AUTO, 0x1},
-	{ BOARD_MAC_SPEED_AUTO, 0x0},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
+	{ BOARD_MAC_SPEED_AUTO, 0x5, 0x5},
+	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4},
+	{ BOARD_MAC_UNCONNECTED, -1, -1}
+};
+
+MV_BOARD_NET_COMPLEX_INFO db88f69xxInfoBoarNetComplexInfo[] = {
+	{
+		.netComplexOpt = MV_NETCOMP_GE_MAC1_2_SGMII_L1 |
+			MV_NETCOMP_GE_MAC2_2_SGMII_L3 |
+			MV_NETCOMP_GE_MAC0_2_RXAUI,
+	}
 };
 
 MV_DEV_CS_INFO db88f69xxInfoBoardDeCsInfo[] = {
@@ -257,8 +278,8 @@ MV_BOARD_TDM_SPI_INFO db88f69xxTdmSpiInfo[] = { {1} };
 
 MV_BOARD_INFO db88f69xx_board_info = {
 	.boardName		= "DB-88F6920-BP",
-	.numBoardMppTypeValue	= 0,		/* ARRSZ(db88f69XXInfoBoardModTypeInfo), */
-	.pBoardModTypeValue	= NULL,		/* db88f69XXInfoBoardModTypeInfo, */
+	.numBoardNetComplexValue = ARRSZ(db88f69xxInfoBoarNetComplexInfo),
+	.pBoardNetComplexInfo	= db88f69xxInfoBoarNetComplexInfo,
 	.pBoardMppConfigValue	= db88f69xxInfoBoardMppConfigValue,
 	.intsGppMaskLow		= 0,
 	.intsGppMaskMid		= 0,

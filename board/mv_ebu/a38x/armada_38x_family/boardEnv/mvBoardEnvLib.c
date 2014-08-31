@@ -276,105 +276,6 @@ MV_STATUS mvBoardNameGet(char *pNameBuff, MV_U32 size)
 }
 
 /*******************************************************************************
-* mvBoardIsPortInSgmii -
-*
-* DESCRIPTION:
-*       This routine returns MV_TRUE for port number works in SGMII or MV_FALSE
-*	For all other options.
-*
-* INPUT:
-*       ethPortNum - Ethernet port number.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE - port in SGMII.
-*       MV_FALSE - other.
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
-{
-	return mvCtrlPortIsSerdesSgmii(ethPortNum);
-}
-
-/*******************************************************************************
-* mvBoardIsPortInGmii
-*
-* DESCRIPTION:
-*	This routine returns MV_TRUE for port number works in GMII or MV_FALSE
-*	For all other options.
-*
-* INPUT:
-*       ethPortNum - Ethernet port number.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE - port in GMII.
-*       MV_FALSE - other.
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum)
-{
-	/* If module MII connected return port MII as GMII for NETA init configuration */
-	if (mvBoardIsPortInMii(ethPortNum))
-		return MV_TRUE;
-	return MV_FALSE;
-}
-/*******************************************************************************
-* mvBoardIsPortInMii
-*
-* DESCRIPTION:
-*	This routine returns MV_TRUE for port number works in MII or MV_FALSE
-*	For all other options.
-*
-* INPUT:
-*       ethPortNum - Ethernet port number.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE - port in MII.
-*       MV_FALSE - other.
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsPortInMii(MV_U32 ethPortNum)
-{
-	/* On DB board if MII module detected then port 0 is MII */
-	if ((mvBoardIsModuleConnected(MV_MODULE_MII)) && (ethPortNum == 0))
-		return MV_TRUE;
-	return MV_FALSE;
-}
-/*******************************************************************************
-* mvBoardIsPortInRgmii
-*
-* DESCRIPTION:
-*       This routine returns MV_TRUE for port number works in RGMII or MV_FALSE
-*	For all other options.
-*
-* INPUT:
-*       ethPortNum - Ethernet port number.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE - port in RGMII.
-*       MV_FALSE - other.
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum)
-{
-	if (mvBoardIsPortInGmii(ethPortNum) || mvBoardIsPortInSgmii(ethPortNum))
-		return MV_FALSE;
-	if (ethPortNum < 2)
-		return MV_TRUE;
-	return MV_FALSE;
-}
-/*******************************************************************************
 * mvBoardModuleConfigGet - Get the module configuration
 *
 * DESCRIPTION:
@@ -987,54 +888,6 @@ static MV_VOID mvBoardModuleAutoDetect(MV_VOID)
 }
 
 /*******************************************************************************
-* mvBoardInfoUpdate - Update Board information structures according to auto-detection.
-*
-* DESCRIPTION:
-*	Update board information according to detection using TWSI bus.
-*
-* INPUT:
-*	None.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*	None.
-*
-*******************************************************************************/
-MV_VOID mvBoardInfoUpdate(MV_VOID)
-{
-	MV_U32	reg;
-
-	switch (mvBoardIdGet()) {
-	case RD_NAS_68XX_ID:
-	case RD_AP_68XX_ID:
-		mvBoardIoExpanderUpdate();
-		/* SGMII utilizes in-Band SMI access, no SMI address is used (set -1 to disable MAC SMI polling)*/
-		if (mvBoardSatRRead(MV_SATR_RD_SERDES4_CFG) == 1) /* 0 = USB3.  1 = SGMII. */
-			mvBoardPhyAddrSet(1, -1);
-		break;
-	case DB_68XX_ID:
-		if ((mvBoardIsModuleConnected(MV_MODULE_MII)))	/* MII Module uses different PHY address */
-			mvBoardPhyAddrSet(0, 8);	/*set SMI address 8 for port 0*/
-
-		/* Update MPP group types and values according to board configuration */
-		mvBoardMppIdUpdate();
-		mvBoardEthComplexInfoUpdate();
-		/* board on test mode  */
-		reg = MV_REG_READ(MPP_SAMPLE_AT_RESET) & BIT20;
-		if (reg) {
-			/* if board on test mode reset MPP19 */
-			reg = mvBoardMppGet(2);
-			reg &= 0xffff0fff;
-			mvBoardMppSet(2, reg);
-		}
-		break;
-	default:
-		mvOsPrintf("%s: Error: Auto detection update sequence is not supported by current board.\n" , __func__);
-	}
-}
-/*******************************************************************************
 * mvBoardIsModuleConnected
 *
 * DESCRIPTION:
@@ -1088,7 +941,7 @@ void mvModuleMppUpdate(MV_U32 numGroup, struct _mvBoardMppModule *pMpp)
 * DESCRIPTION:
 *	Update MPP ID's according to on-board modules as detected using TWSI bus.
 *	Update board information for changed mpp values
-	Must run AFTER mvBoardEthComplexInfoUpdate
+	Must run AFTER mvBoardNetComplexInfoUpdate
 *
 * INPUT:
 *	None.
@@ -1136,28 +989,6 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 		mvModuleMppUpdate(4, nandOnBoard);
 }
 
-/*******************************************************************************
-* mvBoardEthComplexInfoUpdate
-*
-* DESCRIPTION:
-*	Update etherntComplex configuration,
-*	according to modules detection (S@R & board configuration)
-*
-** INPUT:
-*	None.
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	MV_OK - on success,
-*	MV_ERROR - On failure.
-*
-*******************************************************************************/
-MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID)
-{
-	return MV_OK;
-}
 /*******************************************************************************
 * mvBoardIoExpanderUpdate
 *
@@ -1789,7 +1620,7 @@ MV_U8 mvBoardTwsiIsMore256Get(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index)
 }
 
 /*******************************************************************************
-* mvBoardEthComplexConfigGet - Return ethernet complex board configuration.
+* mvBoardNetComplexConfigGet - Return ethernet complex board configuration.
 *
 * DESCRIPTION:
 *	Returns the ethernet / Sata complex configuration from the board spec
@@ -1805,13 +1636,13 @@ MV_U8 mvBoardTwsiIsMore256Get(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index)
 *       32bit value describing the ethernet complex config.
 *
 *******************************************************************************/
-MV_U32 mvBoardEthComplexConfigGet(MV_VOID)
+MV_U32 mvBoardNetComplexConfigGet(MV_VOID)
 {
-	return 0;
+	return board->pBoardNetComplexInfo->netComplexOpt;
 }
 
 /*******************************************************************************
-* mvBoardEthComplexConfigSet - Set ethernet complex board configuration.
+* mvBoardNetComplexConfigSet - Set ethernet complex board configuration.
 *
 * DESCRIPTION:
 *	Sets the ethernet / Sata complex configuration in the board spec
@@ -1827,9 +1658,9 @@ MV_U32 mvBoardEthComplexConfigGet(MV_VOID)
 *	None.
 *
 *******************************************************************************/
-MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig)
+MV_VOID mvBoardNetComplexConfigSet(MV_U32 ethConfig)
 {
-	return;
+	board->pBoardNetComplexInfo->netComplexOpt = ethConfig;
 }
 
 /*******************************************************************************
@@ -2247,27 +2078,6 @@ MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
 MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 {
 	return -1;
-}
-
-/*******************************************************************************
-* mvBoardIsEthConnected - detect if a certain Ethernet port is active
-*
-* DESCRIPTION:
-*	This routine returns true if a certain Ethernet port is active
-*
-* INPUT:
-*	ethNum - index of the ethernet port requested
-*
-* OUTPUT:
-*	None.
-*
-* RETURN:
-*	MV_TRUE if the requested ethernet port is connected.
-*
-*******************************************************************************/
-MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
-{
-	return mvBoardIsGbEPortConnected(ethNum);
 }
 
 /*******************************************************************************

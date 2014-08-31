@@ -83,7 +83,9 @@ ifeq "$(CONFIG_ALLEYCAT3)"  "y"
   CSRC_UTILS += $(UTILS)/mv_seq_exec_ext.c
 else ifeq "$(CONFIG_BOBCAT2)"  "y"
   CSRC_UTILS += $(UTILS)/mv_seq_exec_ext.c
-else
+else ifeq "$(CONFIG_ARMADA_38X)"  "y"
+  CSRC_UTILS += $(UTILS)/mv_seq_exec.c
+else ifeq "$(CONFIG_ARMADA_39X)"  "y"
   CSRC_UTILS += $(UTILS)/mv_seq_exec.c
 endif
 

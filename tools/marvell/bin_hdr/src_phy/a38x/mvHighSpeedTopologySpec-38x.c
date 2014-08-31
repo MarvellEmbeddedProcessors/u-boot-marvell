@@ -63,23 +63,6 @@
 #include "mvHighSpeedTopologySpec.h"
 #include "mvSysEnvLib.h"
 
-extern loadTopologyFuncPtr loadTopologyFuncArr[];
-
-/***************************************************************************/
-MV_STATUS mvHwsBoardTopologyLoad(SERDES_MAP  *serdesMapArray)
-{
-	MV_U32 boardId = mvBoardIdGet();
-	MV_U32 boardIdIndex = mvBoardIdIndexGet(boardId);
-
-	DEBUG_INIT_FULL_S("\n### mvHwsBoardTopologyLoad ###\n");
-	/* getting board topology according to the board id */
-	DEBUG_INIT_FULL_S("Getting board topology according to the board id\n");
-
-	CHECK_STATUS(loadTopologyFuncArr[boardIdIndex](serdesMapArray));
-
-	return MV_OK;
-}
-
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 /**************************************************************************
  * loadTopologyCustomer -

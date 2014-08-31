@@ -63,6 +63,7 @@
 
 #include "mv_seq_exec.h"
 #include "soc_spec.h"
+#include "mvHighSpeedEnvSpec.h"
 
 #ifdef MV88F68XX
 #include "ddr3_a38x.h"
@@ -115,21 +116,23 @@ MV_STATUS writeOpExecute
 {
 	MV_U32 unitBaseReg, unitOffset, data, mask, regData, regAddr;
 
-	/* Getting write op params from the input parameter */
-
-	unitBaseReg = params->unitBaseReg;
-	unitOffset = params->unitOffset;
-	data = params->data[dataArrIdx];
-	mask = params->mask;
-
 	if (serdesNum >= MAX_SERDES_LANES) {
 		DEBUG_INIT_S("writeOpExecute: bad serdes number\n");
 		return MV_BAD_PARAM;
 	}
 
+	/* Getting write op params from the input parameter */
+	/*unitBaseReg = params->unitBaseReg;*/
+	unitOffset = params->unitOffset;
+	data = params->data[dataArrIdx];
+	mask = params->mask;
+
 	/* an empty operation */
 	if (data == NO_DATA)
 		return MV_OK;
+
+	/* get updated base address since it can be different between Serdes */
+	CHECK_STATUS(mvHwsGetExtBaseAddr(serdesNum, params->unitBaseReg, &unitBaseReg));
 
 	/* Address calculation */
 	regAddr = unitBaseReg + unitOffset * serdesNum;

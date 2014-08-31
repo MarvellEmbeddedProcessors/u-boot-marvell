@@ -64,7 +64,6 @@
 #include "mvHighSpeedTopologySpec.h"
 #include "mvSysEnvLib.h"
 #include "mvCtrlPex.h"
-#include "mv_seq_exec.h"
 
 #define SLOWDOWN  mvOsUDelay(50);
 
@@ -102,6 +101,7 @@ static MV_VOID _MV_REG_WRITE(MV_U32 regAddr, MV_U32 regData)
 #define LINK_WAIT_CNTR  100
 #define LINK_WAIT_SLEEP 100
 
+/* Selector mapping for a38x-A0/Z1 and a39x */
 MV_U8 commonPhysSelectorsMap[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 {
 	/* 0      1      2       3       4       5       6 */
@@ -128,7 +128,8 @@ MV_U8 commonPhysSelectorsMap[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 	{ 0x0,   0x0,    0x0,	 0x0,	 0x0,	 0x0,    NA	  }   /* DEFAULT_SERDES */
 };
 
-MV_U8 commonPhysSelectorsPex4Lanes[] = { 0x1, 0x2, 0x2, 0x2 };
+/* Selector mapping for PEX by 4 confiuration */
+MV_U8 commonPhysSelectorsPexBy4Lanes[] = { 0x1, 0x2, 0x2, 0x2 };
 
 /* Serdes type to ref clock map */
 REF_CLOCK serdesTypeToRefClockMap[LAST_SERDES_TYPE] =
@@ -243,9 +244,9 @@ MV_OP_PARAMS sataTxConfigParams[] =
 
 MV_OP_PARAMS sataAndSgmiiTxConfigParams2[] =
 {
-	/* unitunitBaseReg                      unitOffset   mask        SATA data       SGMII data      waitTime    numOfLoops */
-	{ COMMON_PHY_STATUS1_REG, 0x28,	       0xC,		  { 0xC, 0xC	       }, 10,	       1000	      },        /* Wait for PHY power up sequence to finish */
-	{ COMMON_PHY_STATUS1_REG, 0x28,	       0x1,		  { 0x1, 0x1	       }, 1,	       1000	      },        /* Wait for PHY power up sequence to finish */
+	/* unitunitBaseReg         unitOffset    mask         SATA data    SGMII data      waitTime    numOfLoops */
+	{ COMMON_PHY_STATUS1_REG,   0x28,	     0xC,		{ 0xC,         0xC	       },   10,	         1000	    },  /* Wait for PHY power up sequence to finish */
+	{ COMMON_PHY_STATUS1_REG,   0x28,	     0x1,		{ 0x1,         0x1	       },   1,	         1000	    },  /* Wait for PHY power up sequence to finish */
 };
 
 /****************/
@@ -538,6 +539,21 @@ SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
 }
 
 /***************************************************************************/
+MV_STATUS mvHwsBoardTopologyLoad(SERDES_MAP  *serdesMapArray)
+{
+	MV_U32 boardId = mvBoardIdGet();
+	MV_U32 boardIdIndex = mvBoardIdIndexGet(boardId);
+
+	DEBUG_INIT_FULL_S("\n### mvHwsBoardTopologyLoad ###\n");
+	/* getting board topology according to the board id */
+	DEBUG_INIT_FULL_S("Getting board topology according to the board id\n");
+
+	CHECK_STATUS(loadTopologyFuncArr[boardIdIndex](serdesMapArray));
+
+	return MV_OK;
+}
+
+/***************************************************************************/
 #ifdef MV_DEBUG_INIT
 
 MV_VOID printTopologyDetails(SERDES_MAP  *serdesMapArray)
@@ -583,7 +599,7 @@ MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	/* Board topology load */
 	DEBUG_INIT_FULL_S("mvCtrlHighSpeedSerdesPhyConfig: Loading board topology..\n");
-	CHECK_STATUS(mvHwsBoardTopologyLoad(serdesConfigurationMap));
+    CHECK_STATUS(mvHwsBoardTopologyLoad(serdesConfigurationMap));
 
 #ifdef MV_DEBUG_INIT
 	/* print topology */
@@ -953,10 +969,19 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 	MV_U32 laneData, serdesIdx, regData = 0;
 	SERDES_TYPE serdesType;
 	SERDES_MODE serdesMode;
+	MV_U8       selectBitOff;
 	MV_BOOL isPEXx4 = MV_FALSE;
 
 	DEBUG_INIT_FULL_S("\n### mvHwsUpdateSerdesPhySelectors ###\n");
 	DEBUG_INIT_FULL_S("Updating the COMMON PHYS SELECTORS register with the serdes types\n");
+
+#ifdef CONFIG_ARMADA_39X
+	selectBitOff = 4;
+#else
+	/* TBD - for now, use a380-Z1 offset
+		need to add distinguish between a380-Z1 and a380-A0 */
+	selectBitOff = 3;
+#endif
 
 	/* Updating bits 0-17 in the COMMON PHYS SELECTORS register according to the serdes types */
 	for (serdesIdx = 0; serdesIdx < mvHwsSerdesGetMaxLane(); serdesIdx++) {
@@ -972,14 +997,14 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 		/* Checking if the board topology configuration includes PEXx4 - for the next step */
 		if ((serdesMode == PEX_END_POINT_x4) || (serdesMode == PEX_ROOT_COMPLEX_x4)) {
             /* update lane data to the 3 next SERDES lanes */
-            laneData = commonPhysSelectorsPex4Lanes[serdesIdx];
+            laneData = commonPhysSelectorsPexBy4Lanes[serdesIdx];
 			if (serdesType == PEX0) {
 				isPEXx4 = MV_TRUE;
 			}
 		}
 
 		/* Updating the data that will be written to COMMON_PHYS_SELECTORS_REG */
-		regData |= (laneData << (3 * serdesIdx));
+		regData |= (laneData << (selectBitOff * serdesIdx));
 	}
 
 	/* Updating the 18th bit in the COMMON PHYS SELECTORS register in case there is PEXx4 */
@@ -1051,17 +1076,16 @@ MV_STATUS mvHwsRefClockSet
 		}
 		break;
 #ifdef CONFIG_ARMADA_39X
-    case SGMII3:
-        data = 0x0; /* TBD */
-        break;
-    case QSGMII:
-        data = 0x0; /* TBD */
-        break;
-    case XAUI:
-        data = 0x0; /* TBD */
-        break;
-    case RXAUI:
-        data = 0x0; /* TBD */
+	case SGMII3:
+	case QSGMII:
+	case XAUI:
+	case RXAUI:
+        if (refClock == REF_CLOCK__25MHz)
+			data = 0x1;
+		else{
+			DEBUG_INIT_S("mvHwsRefClockSet: bad ref clock\n");
+			return MV_BAD_PARAM;
+		}
         break;
 #endif
     default:

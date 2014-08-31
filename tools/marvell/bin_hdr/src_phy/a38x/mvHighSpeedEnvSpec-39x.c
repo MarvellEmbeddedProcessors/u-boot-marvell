@@ -65,6 +65,9 @@
 
 #define	SERDES_VERION	"2.0"
 
+#define COMMON_PHY_BASE_ADDR_MASK       0xFFF00
+#define COMMON_PHY6_OFF                 0x600
+
 /******************************** Sequences DB ********************************/
 
 /*******************************/
@@ -74,38 +77,40 @@
 /* QSGMII, XAUI, RXAUI - power up seq */
 MV_OP_PARAMS ethPortPowerUpParams[] =
 {
-	/* unitBaseReg                    unitOffset   	mask     QSGMII data    XAUI data    RXAUI data    waitTime   numOfLoops */
-	{ COMMON_PHY_CONFIGURATION1_REG,   0xFF,  		 0xFF,	{ 0xFF,            0xFF,		    0xFF  }, 		   0,		  0 },  /* Power Up */
-	{ COMMON_PHY_CONFIGURATION1_REG,   0xFF,		 0xFF,	{ 0xFF,            0xFF,		    0xFF  }, 		   0,		  0 },  /* Unreset */
-	{ POWER_AND_PLL_CTRL_REG,	 	   0xFF,		 0xFF,	{ 0xFF,            0xFF,		    0xFF  }, 		   0,		  0 }   /* Phy Selector */
+	/* unitBaseReg                    unitOffset   	mask          QSGMII data    XAUI data    RXAUI data    waitTime   numOfLoops */
+	{ COMMON_PHY_CONFIGURATION1_REG,   0x28,  		0xF0006,	{ 0x80002,       0x80002,	  0x80002  }, 	   0,		  0 },    /* Power Up */
+	{ COMMON_PHY_CONFIGURATION1_REG,   0x28,		0x7800,	    { 0x6000,        0x6000,	  0x6000   }, 	   0,		  0 },    /* Unreset */
+	{ POWER_AND_PLL_CTRL_REG,	 	   0x800,		0xFF,	    { 0xFC81,        0xFC81,	  0xFC81   }, 	   0,		  0 }     /* Phy Selector */
 };
 
 /* QSGMII, XAUI, RXAUI - speed config seq */
 MV_OP_PARAMS ethPortSpeedConfigParams[] =
 {
-	/* unitBaseReg  				  unitOffset   	mask       QSGMII     XAUI       RXAUI       waitTime   numOfLoops */
-    { COMMON_PHY_CONFIGURATION1_REG,   0xFF,		0xFF,	{ 0xFF,	   0xFF,        0xFF    }, 	0,		   0 }, /* Baud Rate */
-	{ INTERFACE_REG, 				   0xFF,	    0xFF,	{ NO_DATA,   NO_DATA,     NO_DATA },    0,	       0 }, /* Select Baud Rate for SATA only*/
-	{ ISOLATE_REG,	 				   0xFF,	    0xFF,	{ 0xFF,      0xFF,        0xFF    }, 	0,	       0 }, /* Phy Gen RX and TX */
-	{ LOOPBACK_REG,	 				   0xFF,	    0xFF,	{ 0xFF,  	   0xFF,        0xFF    }, 	0,	       0 }  /* Bus Width */
+	/* unitBaseReg  				  unitOffset   	mask          QSGMII        XAUI           RXAUI          waitTime   numOfLoops */
+    { COMMON_PHY_CONFIGURATION1_REG,   0x28,		0x3FC00000,	{ 0xCC00000,	0x22000000,    0x2EC00000 }, 	0,		   0 }, /* Baud Rate */
+	{ INTERFACE_REG, 				   0x800,	    0x0,	    { NO_DATA,      NO_DATA,       NO_DATA    },    0,	       0 }, /* Select Baud Rate for SATA only*/
+	{ ISOLATE_REG,	 				   0x800,	    0xFF,	    { 0x33,         0x88,          0xBB       }, 	0,	       0 }, /* Phy Gen RX and TX */
+	{ LOOPBACK_REG,	 				   0x800,	    0xE,	    { 0x2,  	    0x2,           0x2        }, 	0,	       0 }  /* Bus Width */
 };
 
 /* QSGMII, XAUI, RXAUI - TX config seq */
 MV_OP_PARAMS ethPortTxConfigParams1[] =
 {
-	/* unitunitBaseReg               unitOffset   mask        QSGMII data    XAUI data     RXAUI data   waitTime    numOfLoops */
-	{ MISC_REG,			              0xFF,		 0xFF,	    { 0xFF,	          0xFF,          0xFF},           0,	      0		   },
-	{ GLUE_REG,			              0xFF,		 0xFF,      { 0xFF,	          0xFF,          0xFF},           0,	      0		   },
-	{ RESET_DFE_REG,		          0xFF,		 0xFF,	    { 0xFF,	          0xFF,          0xFF},           0,	      0		   }, /* Sft Reset pulse */
-	{ RESET_DFE_REG,		          0xFF,		 0xFF,	    { 0xFF,	          0xFF,          0xFF},           0,	      0		   }, /* Sft Reset pulse */
-	{ COMMON_PHY_CONFIGURATION1_REG,  0xFF,		 0xFF,      { 0xFF,	          0xFF,          0xFF},           0,	      0		   }  /* Power up PLL, RX and TX */
+	/* unitunitBaseReg               unitOffset   mask          QSGMII data    XAUI data     RXAUI data      waitTime    numOfLoops */
+	{ MISC_REG,			              0x800,	  0x4C0,	  { 0x480,	       0x480,        0x480       },     0,	       0		   },
+	{ GLUE_REG,			              0x800,	  0x1800,     { 0x800,	       0x800,        0x800       },     0,	       0		   },
+	{ RESET_DFE_REG,		          0x800,	  0x401,	  { 0x401,	       0x401,        0x401       },     0,	       0		   }, /* Sft Reset pulse */
+	{ RESET_DFE_REG,		          0x800,	  0x401,	  { 0x0,	       0x0,          0x0         },     0,	       0		   }, /* Sft Reset pulse */
+    { LANE_ALIGN_REG0,                0x800,	  0x1000,	  { 0x1000,	       0x0,          0x0         },     0,	       0		   }, /* Lane align */
+    { COMMON_PHY_CONFIGURATION1_REG,  0x28,		  0x70000,    { 0x70000,	   0x70000,      0x70000     },     0,	       0		   }, /* Power up PLL, RX and TX */
+    { COMMON_PHY_CONFIGURATION1_REG,  0x28,		  0x80000,    { 0x80000,	   0x80000,      0x80000     },     0,	       0		   }  /* Tx driver output valid */
 };
 
 MV_OP_PARAMS ethPortTxConfigParams2[] =
 {
-	/* unitunitBaseReg           unitOffset   mask       QSGMII data    XAUI data    RXAUI data      waitTime    numOfLoops */
-	{ COMMON_PHY_STATUS1_REG,       0xFF,     0xFF,	   {  0xFF,            0xFF,          0xFF},      0,	       	  0       }, /* Wait for PHY power up sequence to finish */
-	{ COMMON_PHY_STATUS1_REG,       0xFF,     0xFF,	   {  0xFF,            0xFF,          0xFF}, 	    0,   	      0       }, /* Wait for PHY power up sequence to finish */
+	/* unitunitBaseReg           unitOffset   mask       QSGMII data    XAUI data    RXAUI data    waitTime    numOfLoops */
+	{ COMMON_PHY_STATUS1_REG,     0x28,       0xC,	   {  0xC,          0xC,         0xC},           0,	         0        }, /* Wait for PHY power up sequence to finish */
+	{ COMMON_PHY_STATUS1_REG,     0x28,       0xFF,	   {  NO_DATA,      NO_DATA,     NO_DATA}, 	     0,   	     0        }, /* Wait for PHY power up sequence to finish */
 };
 
 /************************* Local functions declarations ***********************/
@@ -213,16 +218,32 @@ MV_STATUS mvSerdesPowerUpCtrlExt
 		/* Executing power up, ref clock set, speed config and TX config */
 		switch (serdesType) {
         case SGMII3:
-
+			CHECK_STATUS(mvSeqExec(serdesNum, SGMII_POWER_UP_SEQ));
+			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
+			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
+			CHECK_STATUS(mvSeqExec(serdesNum, SGMII_TX_CONFIG_SEQ1));
+			CHECK_STATUS(mvSeqExec(serdesNum, SGMII_TX_CONFIG_SEQ2));
             break;
         case QSGMII:
-
+			CHECK_STATUS(mvSeqExec(serdesNum, QSGMII_POWER_UP_SEQ));
+			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
+			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
+			CHECK_STATUS(mvSeqExec(serdesNum, QSGMII_TX_CONFIG_SEQ1));
+			CHECK_STATUS(mvSeqExec(serdesNum, QSGMII_TX_CONFIG_SEQ2));
             break;
         case XAUI:
-
+			CHECK_STATUS(mvSeqExec(serdesNum, XAUI_POWER_UP_SEQ));
+			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
+			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
+			CHECK_STATUS(mvSeqExec(serdesNum, XAUI_TX_CONFIG_SEQ1));
+			CHECK_STATUS(mvSeqExec(serdesNum, XAUI_TX_CONFIG_SEQ2));
             break;
         case RXAUI:
-
+			CHECK_STATUS(mvSeqExec(serdesNum, RXAUI_POWER_UP_SEQ));
+			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
+			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
+			CHECK_STATUS(mvSeqExec(serdesNum, RXAUI_TX_CONFIG_SEQ1));
+			CHECK_STATUS(mvSeqExec(serdesNum, RXAUI_TX_CONFIG_SEQ2));
             break;
 		default:
 			DEBUG_INIT_S("mvSerdesPowerUpCtrlExt: bad serdesType parameter\n");
@@ -275,3 +296,25 @@ MV_U32 mvHwsSerdesGetMaxLane
 {
     return 7;
 }
+
+/***************************************************************************/
+MV_STATUS mvHwsGetExtBaseAddr
+(
+	MV_U32 serdesNum,
+	MV_U32 baseAddr,
+	MV_U32 *unitBaseReg
+)
+{
+	*unitBaseReg = baseAddr;
+
+	/* in a39x, serdes base addrress for COMPHY 6 is 0x18900
+		(instead of 0x18300) */
+	if (serdesNum == 6 && ((baseAddr & COMMON_PHY_BASE_ADDR_MASK) == COMMON_PHY_BASE_ADDR)) {
+		*unitBaseReg += COMMON_PHY6_OFF;
+	}
+
+	return MV_OK;
+}
+
+
+

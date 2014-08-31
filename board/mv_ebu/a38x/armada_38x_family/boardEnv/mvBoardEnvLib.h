@@ -258,7 +258,8 @@ typedef enum _boardMacSpeed {
 	BOARD_MAC_SPEED_100M,
 	BOARD_MAC_SPEED_1000M,
 	BOARD_MAC_SPEED_2000M,
-	BOARD_MAC_SPEED_AUTO
+	BOARD_MAC_SPEED_AUTO,
+	BOARD_MAC_UNCONNECTED
 } MV_BOARD_MAC_SPEED;
 
 typedef struct _boardMacInfo {
@@ -271,10 +272,9 @@ typedef struct _boardMppInfo {
 	MV_U32 mppGroup[MV_BOARD_MAX_MPP];
 } MV_BOARD_MPP_INFO;
 
-typedef struct _boardMppTypeInfo {
-	MV_BOARD_OTHER_TYPE_CLASS externalModule;
-	MV_BOARD_MPP_INFO		  ModuleMpp;
-} MV_BOARD_MPP_TYPE_INFO;
+typedef struct _boardNetComplexInfo {
+	MV_U32 netComplexOpt;
+} MV_BOARD_NET_COMPLEX_INFO;
 
 typedef enum {
 	BOARD_EPON_CONFIG,
@@ -329,8 +329,8 @@ struct MV_BOARD_IO_EXPANDER {
 
 typedef struct _boardInfo {
 	char boardName[MV_BOARD_NAME_LEN];
-	MV_U8 numBoardMppTypeValue;
-	MV_BOARD_MPP_TYPE_INFO *pBoardModTypeValue;
+	MV_U8 numBoardNetComplexValue;
+	MV_BOARD_NET_COMPLEX_INFO *pBoardNetComplexInfo;
 	MV_U8 numBoardMppConfigValue;
 	MV_BOARD_MPP_INFO *pBoardMppConfigValue;
 	MV_U32 intsGppMaskLow;
@@ -488,8 +488,8 @@ MV_U32 boardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_U8 mvBoardTwsiAddrTypeGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_U8 mvBoardTwsiIsMore256Get(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
-MV_U32 mvBoardEthComplexConfigGet(MV_VOID);
-MV_VOID mvBoardEthComplexConfigSet(MV_U32 ethConfig);
+MV_U32 mvBoardNetComplexConfigGet(MV_VOID);
+MV_VOID mvBoardNetComplexConfigSet(MV_U32 ethConfig);
 MV_U32 mvBoardIdIndexGet(MV_U32 boardId);
 MV_U32 mvBoardIdGet(MV_VOID);
 MV_VOID mvBoardSet(MV_U32 boardId);
@@ -497,11 +497,8 @@ MV_U32 mvBoardSledCpuNumGet(MV_VOID);
 MV_VOID mvBoardInfoUpdate(MV_VOID);
 MV_VOID mvBoardVerifySerdesCofig(MV_VOID);
 MV_VOID mvBoardMppIdUpdate(MV_VOID);
-MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID);
+MV_STATUS mvBoardNetComplexInfoUpdate(MV_VOID);
 MV_VOID mvBoardConfigWrite(MV_VOID);
-MV_ETH_COMPLEX_TOPOLOGY mvBoardMac0ConfigGet(MV_VOID);
-MV_ETH_COMPLEX_TOPOLOGY mvBoardMac1ConfigGet(MV_VOID);
-MV_BOOL mvBoardLaneSGMIIGet(MV_ETH_COMPLEX_TOPOLOGY *sgmiiConfig);
 MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet(MV_VOID);
 MV_BOARD_BOOT_SRC mvBoardBootDeviceGet(MV_VOID);
 MV_U32 mvBoardBootAttrGet(MV_U32 satrBootDeviceValue, MV_U8 attrNum);

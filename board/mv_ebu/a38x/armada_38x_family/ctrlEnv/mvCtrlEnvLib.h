@@ -86,36 +86,6 @@ typedef enum _mvCachePolicy {
 	WB_COHERENCY    /* HW cache coherency supported in Write Back policy    */
 } MV_CACHE_POLICY;
 
-/* The swapping is referred to a 64-bit words (as this is the controller
- * internal data path width). This enumerator describes the possible
- * data swap types. Below is an example of the data 0x0011223344556677
- */
-typedef enum _mvSwapType {
-	MV_BYTE_SWAP,           /* Byte Swap                77 66 55 44 33 22 11 00 */
-	MV_NO_SWAP,             /* No swapping              00 11 22 33 44 55 66 77 */
-	MV_BYTE_WORD_SWAP,      /* Both byte and word swap  33 22 11 00 77 66 55 44 */
-	MV_WORD_SWAP,           /* Word swap                44 55 66 77 00 11 22 33 */
-	SWAP_TYPE_MAX           /* Delimiter for this enumerator                    */
-} MV_SWAP_TYPE;
-
-/*
- * Define the different Ethernet complex sources for the RGMIIA/B and
- * the FE/GE phy interfaces.
- */
-typedef enum {
-	MV_ETHCOMP_SW_GE_0_1_DEFAULT		=	BIT0,
-	MV_ETHCOMP_SW_GE_0_1_SGMII_MODULE	=	BIT1,
-	MV_ETHCOMP_SW_GE_0_MII_MODULE		=	BIT2,
-} MV_ETH_COMPLEX_TOPOLOGY;
-
-typedef enum {
-	EPM_DEFAULT = 0x0,      /* RGMII */
-	EPM_MAC0_MII = 0x01,
-	EPM_MAC1_MII = 0x10,
-	EPM_SW_PORT_5_MII = 0x100,
-	EPM_SW_PORT_6_MII = 0x1000
-} MV_ETH_PORT_MODE;
-
 typedef enum {
 	SERDES_UNIT_NA		= 0x0,
 	SERDES_UNIT_PEX		= 0x10,

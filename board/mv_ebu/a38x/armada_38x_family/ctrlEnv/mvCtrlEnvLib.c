@@ -65,7 +65,6 @@
 #include "mvCommon.h"
 #include "mvCtrlEnvLib.h"
 #include "boardEnv/mvBoardEnvLib.h"
-#include "ctrlEnv/mvCtrlEthCompLib.h"
 #include "ctrlEnv/sys/mvCpuIf.h"
 #include "ctrlEnv/mvCtrlEnvSpec.h"
 #include "gpp/mvGpp.h"

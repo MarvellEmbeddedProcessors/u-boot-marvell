@@ -194,10 +194,9 @@ SOC_OBJS+=	$(SOC_ENV_DIR)/mvCtrlEnvAddrDec.o 	\
 		$(SOC_SYS_DIR)/mvCpuIf.o		\
 		$(SOC_CPU_DIR)/mvCpu.o 			\
 		$(SOC_DEVICE_DIR)/mvDevice.o
-
-ifdef MAKE_PPV2
-SOC_OBJS +=	$(SOC_ENV_DIR)/mvCtrlEthCompLib.o
-endif
+SOC_OBJS-$(CONFIG_MV_ETH_PP2) += $(SOC_ENV_DIR)/mvCtrlEthCompLib.o
+SOC_OBJS-$(CONFIG_NET_COMPLEX) += $(SOC_ENV_DIR)/mvCtrlNetCompLib.o
+SOC_OBJS += $(sort $(SOC_OBJS-y))
 
 ifneq ($(BOARD),alp)
 ifneq ($(BOARD),a375)

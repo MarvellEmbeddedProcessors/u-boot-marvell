@@ -75,10 +75,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BUS_MASK_16BIT_ECC			0x13
 #define BUS_MASK_16BIT_ECC_PUP3		0xB
 
-/*Change Me!
-	Actual defintions used in topolology struct*/
-#define ACTUAL_BUS_MASK 	BUS_MASK_16BIT
-
 /*Bus Width used by Bus mask definition*/
 #define ACTUAL_BUS_WIDTH 	BUS_WIDTH_8
 
@@ -92,7 +88,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x3,0,0,0}, {0x3,0,0,0}, {0x0,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
-    ACTUAL_BUS_MASK  /* Buses mask */
+    BUS_MASK_16BIT  /* Buses mask */
     },
     /* 2nd Customer board */
     {
@@ -100,7 +96,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
-    ACTUAL_BUS_MASK  /* Buses mask */
+    BUS_MASK_16BIT  /* Buses mask */
     }
 };
 
@@ -114,7 +110,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x3,0,0,0}, {0x3,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
-    ACTUAL_BUS_MASK  /* Buses mask */
+    BUS_MASK_16BIT  /* Buses mask */
     },
 	/* 2rd Marvell board - RD_MTL_4XG  (BoardId = 0x1) */
     {
@@ -122,7 +118,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0},{ 0x1,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
-    ACTUAL_BUS_MASK  /* Buses mask */
+    BUS_MASK_16BIT  /* Buses mask */
     },
 	/* 3rd Marvell board - RD_MTL_2XXG_2XG: No ECC (BoardId = 0x2) */
     {
@@ -130,15 +126,15 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0},{ 0x1,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
-    ACTUAL_BUS_MASK  /* Buses mask */
+    BUS_MASK_16BIT  /* Buses mask */
     },
-    /* 4th Marvell board - RD_MISL - No ECC (BoardId = 0x3) */
+    /* 4th Marvell board - RD_MISL_24G4G - No ECC (BoardId = 0x3) */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x3,0,0,0}, {0x3,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0},{ 0x1,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
-    ACTUAL_BUS_MASK  /* Buses mask */
+    BUS_MASK_16BIT  /* Buses mask */
     },
 
     /* XX Marvell board - DB + ECC (BoardId = TBD)*/
@@ -155,7 +151,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0},{ 0x1,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
-    ACTUAL_BUS_MASK  /* Buses mask */
+    BUS_MASK_16BIT  /* Buses mask */
     }
 };
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */

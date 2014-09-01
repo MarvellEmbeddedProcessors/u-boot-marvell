@@ -668,6 +668,10 @@ void misc_init_r_env(void)
 	if (!env)
 		setenv("fdtaddr", "0x1000000");
 
+	env = getenv("fdt_skip_update");
+	if (!env)
+		setenv("fdt_skip_update", "no");
+
 	env = getenv("fdtfile");
 	if (!env) {
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT

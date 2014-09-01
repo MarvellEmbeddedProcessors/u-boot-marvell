@@ -93,7 +93,7 @@ extern "C" {
 #define MV_COMMON_PHY_REGS_OFFSET               (0x18300)
 #define MV_IP_CONFIG_REGS_OFFSET                (0x18400)
 #define MV_CLK_CMPLX_REGS_OFFSET        	(0x18700)
-#define MV_ETH_COMPLEX_OFFSET			(0x18900)
+#define MV_NET_COMPLEX_OFFSET			(0x18A00)
 #define MV_MBUS_REGS_OFFSET                     (0x20000)
 #define CPU_GLOBAL_BASE                         (MV_MBUS_REGS_OFFSET)
 #define MV_COHERENCY_FABRIC_OFFSET              (0x20200) /* ??? IO Error Control Register = Offset: 0x00020200 */

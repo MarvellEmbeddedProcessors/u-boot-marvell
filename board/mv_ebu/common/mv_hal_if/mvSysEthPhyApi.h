@@ -67,5 +67,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 MV_STATUS mvSysEthPhyInit(void);
+#if defined(CONFIG_MV_XSMI)
+MV_STATUS mvSysEthPhyXsmiInit(void);
+#if defined(CONFIG_MV_ETH_10G)
+MV_STATUS mvSysEth10gPhyInit(void);
+#endif /* CONFIG_MV_ETH_10G */
+#endif /* CONFIG_MV_XSMI */
 
 #endif

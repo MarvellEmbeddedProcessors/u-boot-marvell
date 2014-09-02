@@ -62,26 +62,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef __INCETHPHYXSMIH
-#define __INCETHPHYXSMIH
+#ifndef __INCETH10GPHYH
+#define __INCETH10GPHYH
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct mvEthPhyXsmiHalData {
-	MV_U16		ctrlModel;
-	MV_U32		ethPhyXsmiRegOff;		/* Ethernet unit PHY XSMI register offset */
-} MV_ETHPHY_XSMI_HAL_DATA;
+#define PHY_MODEL_MASK				0x3F0
+#define PHY_MODEL_OFFSET			4
 
-MV_STATUS mvEthPhyXsmiHalInit(MV_ETHPHY_XSMI_HAL_DATA *halData);
-MV_STATUS mvEthPhyXsmiRegRead(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, MV_U16 *data);
-MV_STATUS mvEthPhyXsmiRegWrite(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, MV_U16 data);
-MV_STATUS mvEthPhyXsmiRegReadModifyWrite(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, MV_U16 data);
-MV_STATUS mvEthPhyXsmiSeveralRegRead(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, MV_U16 *ptrData, MV_U32 count);
+MV_STATUS mvEth10gPhyHalInit(MV_ETHPHY_HAL_DATA *halData);
+MV_STATUS mvEth10gPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable);
+MV_STATUS mvEthX2242PPhyBasicInit(MV_U32 ethPortNum);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* #ifndef __INCETHPHYXSMIH */
+#endif /* #ifndef __INCETH10GPHYH */

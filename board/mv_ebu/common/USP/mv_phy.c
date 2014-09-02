@@ -236,6 +236,9 @@ void mvBoardEgigaPhyInit(void)
 
 	/* Prepare HAL data information */
 	mvSysEthPhyInit();
+#if defined(CONFIG_MV_ETH_10G) && defined(CONFIG_MV_XSMI)
+	mvSysEth10gPhyInit();
+#endif
 
 #if defined(MV_ETH_NETA)
 	int i;

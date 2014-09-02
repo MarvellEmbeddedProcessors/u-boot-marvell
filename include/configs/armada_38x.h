@@ -279,7 +279,11 @@ extern unsigned int mvTclkGet(void);
 	#define CONFIG_SPI_FLASH_WINBOND
 	#define CONFIG_ENV_SPI_MAX_HZ           50000000
 	#define CONFIG_ENV_SPI_CS               0
+#ifdef CONFIG_ARMADA_39X
+	#define CONFIG_ENV_SPI_BUS              1
+#else
 	#define CONFIG_ENV_SPI_BUS              0
+#endif
 
 #ifndef CONFIG_SF_DEFAULT_SPEED
 # define CONFIG_SF_DEFAULT_SPEED        CONFIG_ENV_SPI_MAX_HZ

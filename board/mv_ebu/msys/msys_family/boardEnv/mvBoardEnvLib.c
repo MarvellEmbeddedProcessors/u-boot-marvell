@@ -1232,9 +1232,6 @@ MV_U32 mvBoardIdGet(MV_VOID)
 
 #endif
 
-	if (mvBoardCpssBoardIdSet(gBoardId) != MV_OK)
-		mvOsPrintf("%s: Error: Failed to set Board ID for CPSS!\n", __func__);
-
 	return gBoardId;
 }
 

@@ -68,6 +68,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrlEnv/mvCtrlEnvSpec.h"
 #include "boardEnv/mvBoardEnvLib.h"
 #include "eth-phy/mvEthPhy.h"
+#ifdef CONFIG_MV_XSMI
+#include "eth-phy/mvEthPhyXsmi.h"
+#endif
+#ifdef CONFIG_MV_ETH_10G
+#include "eth-phy/mvEth10gPhy.h"
+#endif
 #if defined(MV_ETH_LEGACY)
 #include "eth/gbe/mvEthRegs.h"
 #elif defined(MV_ETH_NETA)
@@ -108,3 +114,64 @@ MV_STATUS mvSysEthPhyInit(void)
 
 	return mvEthPhyHalInit(&halData);
 }
+
+#if defined(CONFIG_MV_XSMI)
+/*******************************************************************************
+* mvSysEthPhyXsmiInit - Initialize the EthPhy XSMI subsystem
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None
+* OUTPUT:
+*               None
+* RETURN:
+*       None
+*
+*******************************************************************************/
+MV_STATUS mvSysEthPhyXsmiInit(void)
+{
+	MV_ETHPHY_XSMI_HAL_DATA halData;
+
+	halData.ctrlModel = 0;
+	halData.ethPhyXsmiRegOff = PSS_PORTS_PHYS_BASE + 30000;
+
+	return mvEthPhyXsmiHalInit(&halData);
+}
+
+#if defined(CONFIG_MV_ETH_10G)
+/*******************************************************************************
+* mvSysEth10gPhyInit - Initialize the EthPhy subsystem
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None
+* OUTPUT:
+*               None
+* RETURN:
+*       None
+*
+*******************************************************************************/
+MV_STATUS mvSysEth10gPhyInit(void)
+{
+	MV_ETHPHY_HAL_DATA halData;
+	MV_U32 port;
+
+	/* Init the XSMI interface, which is required for the 10G PHY */
+	mvSysEthPhyXsmiInit();
+
+	for (port=0; port < mvCtrlEthMaxPortGet(); port++) {
+		halData.phyAddr[port] = mvBoardPhyAddrGet(port);
+		halData.boardSpecInit = MV_FALSE;
+		halData.isSgmii[port] = mvBoardIsPortInSgmii(port);
+		halData.QuadPhyPort0[port] = mvBoardQuadPhyAddr0Get(port);
+	}
+	halData.ethPhySmiReg = ETH_SMI_REG(MV_ETH_SMI_PORT);
+	halData.ctrlModel = mvCtrlModelGet();
+	halData.ctrlFamily = mvCtrlDevFamilyIdGet(halData.ctrlModel);
+
+	return mvEth10gPhyHalInit(&halData);
+}
+#endif /* CONFIG_MV_ETH_10G */
+#endif /* CONFIG_MV_XSMI */

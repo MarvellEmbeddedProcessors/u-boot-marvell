@@ -452,6 +452,8 @@ extern unsigned int mvTclkGet(void);
 #define CONFIG_MV_ETH_NETA
 #ifdef CONFIG_ARMADA_39X
 #define CONFIG_NET_COMPLEX
+#define CONFIG_MV_XSMI
+#define CONFIG_MV_ETH_10G
 #endif
 /* to change the default ethernet port, use this define (options: 0, 1, 2) */
 #define CONFIG_NET_MULTI

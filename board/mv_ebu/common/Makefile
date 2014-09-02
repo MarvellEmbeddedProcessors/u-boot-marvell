@@ -64,7 +64,6 @@ HAL_IF_OBJS =	$(HAL_IF_DIR)/mvSysSpi.o	\
 		$(HAL_IF_DIR)/mvSysEthPhy.o
 
 
-
 HAL_OBJS =	$(HAL_SPI_DIR)/mvSpi.o		\
 		$(HAL_SPI_DIR)/mvSpiCmnd.o	\
 		$(HAL_NFC_DIR)/mvNfc.o		\
@@ -77,7 +76,8 @@ HAL_OBJS =	$(HAL_SPI_DIR)/mvSpi.o		\
 		$(HAL_UART_DIR)/mvUart.o	\
 		$(HAL_PCIIF_DIR)/mvPciIf.o	\
 		$(HAL_PCIIF_UTIL_DIR)/mvPciUtils.o
-HAL_OBJS-$(CONFIG_ARMADA_39X) = $(HAL_ETHPHY_DIR)/mvEthPhyXsmi.o
+HAL_OBJS-$(CONFIG_MV_XSMI) = $(HAL_ETHPHY_DIR)/mvEthPhyXsmi.o
+HAL_OBJS-$(CONFIG_MV_ETH_10G) += $(HAL_ETHPHY_DIR)/mvEth10gPhy.o
 HAL_OBJS += $(sort $(HAL_OBJS-y))
 
 USP_OBJS =	$(USP_DIR)/mv_spi.o		\

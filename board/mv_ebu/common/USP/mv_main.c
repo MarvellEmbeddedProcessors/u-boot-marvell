@@ -254,6 +254,8 @@ int board_init (void)
 
 	/* Init the Controlloer environment module (MPP init) */
 	mvCtrlEnvInit();
+	if (mvBoardCpssBoardIdSet(mvBoardIdGet()) != MV_OK)
+		printf("%s: Error: Failed to set Board ID for CPSS!\n", __func__);
 
 #if defined(CONFIG_DISPLAY_CPUINFO)
 	late_print_cpuinfo();          /* display cpu info (and speed) */

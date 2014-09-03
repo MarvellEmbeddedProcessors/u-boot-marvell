@@ -392,12 +392,6 @@ void misc_init_r_env(void)
 	else
 		setenv("pexMode", "RC");
 
-	env = getenv("disL2Cache");
-	if (!env || ( (strcmp(env, "yes") == 0) || (strcmp(env, "Yes") == 0) ) )
-		setenv("disL2Cache", "yes");
-	else
-		setenv("disL2Cache", "no");
-
 	env = getenv("MPmode");
 	if (!env || ( (strcmp(env, "smp") == 0) || (strcmp(env, "SMP") == 0) ) )
 		setenv("MPmode", "SMP");
@@ -410,35 +404,6 @@ void misc_init_r_env(void)
 		setenv("cacheShare", "no");
 	else
 		setenv("cacheShare", "yes");
-
-	env = getenv("setL2CacheWT");
-	if (!env || ( (strcmp(env, "no") == 0) || (strcmp(env, "No") == 0) ) )
-		setenv("setL2CacheWT", "no");
-	else
-		setenv("setL2CacheWT", "yes");
-
-	env = getenv("disL2Prefetch");
-	if (!env || ( (strcmp(env, "yes") == 0) || (strcmp(env, "Yes") == 0) ) ) {
-		setenv("disL2Prefetch", "yes");
-
-		/* ICache Prefetch */
-		env = getenv("enaICPref");
-		if ( env && ( ((strcmp(env, "no") == 0) || (strcmp(env, "No") == 0) )))
-			setenv("enaICPref", "no");
-		else
-			setenv("enaICPref", "yes");
-
-		/* DCache Prefetch */
-		env = getenv("enaDCPref");
-		if ( env && ( ((strcmp(env, "no") == 0) || (strcmp(env, "No") == 0) )))
-			setenv("enaDCPref", "no");
-		else
-			setenv("enaDCPref", "yes");
-	}else  {
-		setenv("disL2Prefetch", "no");
-		setenv("enaICPref", "no");
-		setenv("enaDCPref", "no");
-	}
 
 	env = getenv("enaFPU");
 	if (env && ((strcmp(env, "no") == 0) || (strcmp(env, "no") == 0)))

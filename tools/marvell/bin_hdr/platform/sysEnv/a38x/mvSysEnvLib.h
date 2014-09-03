@@ -68,6 +68,7 @@
 
 #define INTER_REGS_BASE                                     0xD0000000
 
+/* Serdes definitions */
 #define	COMMON_PHY_BASE_ADDR					0x18300
 
 #define COMMON_PHY_CONFIGURATION1_REG           0x18300
@@ -76,7 +77,7 @@
 #define COMMON_PHY_STATUS1_REG                  0x18318
 #define COMMON_PHYS_SELECTORS_REG               0x183FC
 #define SOC_CONTROL_REG1                        0x18204
-#define GENERAL_PURPOSE_RESERVED0_REG		    0x182E0
+#define GENERAL_PURPOSE_RESERVED0_REG			0x182E0
 #define GBE_CONFIGURATION_REG                   0x18460
 #define DEVICE_SAMPLE_AT_RESET1_REG             0xE4204
 
@@ -84,6 +85,7 @@
 #define CALIBRATION_CTRL_REG                    0xa0008
 #define LOOPBACK_REG                            0xa008C
 #define GLOBAL_CLK_CTRL                         0xa0704
+#define GLOBAL_MISC_CTRL                        0xa0718
 #define INTERFACE_REG                           0xa0094
 #define ISOLATE_REG                             0xa0098
 #define MISC_REG                                0xa013C
@@ -94,6 +96,8 @@
 
 #define SATA_CTRL_REG_INDIRECT                  0xa80a0
 #define SATA_CTRL_REG                           0xa80a4
+
+#define MAX_SELECTOR_VAL		0x9
 
 /* TWSI addresses */
 #define BOARD_ID_GET_ADDR                       0x50
@@ -283,6 +287,39 @@ typedef struct _boardConfigTypesInfo {
 	MV_U32 byteNum;
 	MV_U32 isActiveForBoard[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_CONFIG_TYPE_INFO;
+
+/*******************************************************************************
+* mvSysEnvConfigInit
+*
+* DESCRIPTION: Initialize EEPROM configuration
+*       1. initialize all board configuration fields
+*       3. read relevant board configuration (using TWSI/EEPROM access)
+*
+* INPUT:  None
+*
+* OUTPUT: None
+*
+* RETURN:
+*       MV_OK if initialize pass, MV_INIT_ERROR if read board topology fail,
+*       MV_BAD_VALUE if mvSysUpdateLaneConfig function fail
+*
+*******************************************************************************/
+MV_STATUS mvSysEnvConfigInit(void);
+
+/*******************************************************************************
+* mvSysEnvConfigGet
+*
+* DESCRIPTION: Read Board configuration Field
+*
+* INPUT: configField - Field description enum
+*
+* OUTPUT: None
+*
+* RETURN:
+*       if field is valid - returns requested Board configuration field value
+*
+*******************************************************************************/
+MV_U32 mvSysEnvConfigGet(MV_CONFIG_TYPE_ID configField);
 
 #endif /* CONFIG_ARMADA_39X */
 #endif /* CONFIG_CMD_BOARDCFG */

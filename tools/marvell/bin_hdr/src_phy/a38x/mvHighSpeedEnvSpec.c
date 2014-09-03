@@ -64,6 +64,7 @@
 #include "mvHighSpeedTopologySpec.h"
 #include "mvSysEnvLib.h"
 #include "mvCtrlPex.h"
+#include "printf.h"
 
 #define SLOWDOWN  mvOsUDelay(50);
 
@@ -113,8 +114,8 @@ MV_U8 commonPhysSelectorsMap[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 	{ NA,    NA,     0x3,	 NA,	 NA,	 NA,     NA	  },  /* SATA1 */
 	{ NA,    NA,     NA,	 NA,	 0x6,	 0x2,    NA	  },  /* SATA2 */
 	{ NA,    NA,     NA,	 0x3,	 NA,	 NA,     NA	  },  /* SATA3 */
-    { 0x4,   0x8,    NA,	 NA,	 NA,	 NA,     NA	  },  /* SGMII0 */
-    { NA,    0x9,    0x5,	 NA,	 NA,	 NA,     NA	  },  /* SGMII1 */
+    { 0x4,   0x4/*0x8*/,    NA,	 NA,	 NA,	 NA,     NA	  },  /* SGMII0 */
+    { NA,    0x5/*0x9*/,    0x5,	 NA,	 NA,	 NA,     NA	  },  /* SGMII1 */
     { NA,    NA,     NA,	 0x7,	 NA,	 0x6,    NA	  },  /* SGMII2 */
 	{ NA,    0x7,    NA,	 NA,	 NA,	 NA,     NA	  },  /* QSGMII */
 	{ NA,    0x6,    NA,	 NA,	 0x4,	 NA,     NA	  },  /* USB3_HOST0 */
@@ -244,9 +245,15 @@ MV_OP_PARAMS sataTxConfigParams[] =
 
 MV_OP_PARAMS sataAndSgmiiTxConfigParams2[] =
 {
-	/* unitunitBaseReg         unitOffset    mask         SATA data    SGMII data      waitTime    numOfLoops */
-	{ COMMON_PHY_STATUS1_REG,   0x28,	     0xC,		{ 0xC,         0xC	       },   10,	         1000	    },  /* Wait for PHY power up sequence to finish */
-	{ COMMON_PHY_STATUS1_REG,   0x28,	     0x1,		{ 0x1,         0x1	       },   1,	         1000	    },  /* Wait for PHY power up sequence to finish */
+	/* unitunitBaseReg				unitOffset		 mask         SATA data    SGMII data      waitTime    numOfLoops */
+	{ COMMON_PHY_STATUS1_REG,			0x28,	     0xC,			{ 0xC,			0xC	       },   10,	        1000	    },  /* Wait for PHY power up sequence to finish */
+#ifdef CONFIG_ARMADA_39X /* TBD - need to add to a380x-A0 as well */
+	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		 0x40000000,    { 0x40000000,	0x40000000 },	0,			0		    },  /* Rx Init */
+	{ COMMON_PHY_STATUS1_REG,			0x28,	     0x1,			{ 0x1,			0x1	       },   1,	        1000	    },  /* Wait for PHY power up sequence to finish */
+	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		 0x40000000,    { 0x0,			0x0		   },	0,			0		    },  /* Rx Init */
+#else
+	{ COMMON_PHY_STATUS1_REG,			0x28,	     0x1,			{ 0x1,			0x1	       },   1,	        1000	    },  /* Wait for PHY power up sequence to finish */
+#endif
 };
 
 /****************/
@@ -256,14 +263,16 @@ MV_OP_PARAMS sataAndSgmiiTxConfigParams2[] =
 /* PEX and USB3 - power up seq */
 MV_OP_PARAMS pexAndUsb3PowerUpParams[] =
 {
-	/* unitunitBaseReg                          unitOffset   mask        PEX data        USB3 data       waitTime    numOfLoops */
-	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,							  0x3FC7F806,			   { 0x4471804, 0x4479804 },	0,          0	 },
-	{ COMMON_PHY_CONFIGURATION2_REG, 0x28,							  0x5C,				   { 0x58,	0x58 },		0,          0	 },
-	{ COMMON_PHY_CONFIGURATION4_REG, 0x28,							  0x3,				   { 0x1,	0x1 },		0,          0	 },
-	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,							  0x7800,			   { 0x6000,	0xE000 },	0,          0	 },
-	{ GLOBAL_CLK_CTRL,		 0x800,							  0xD,				   { 0x5,	0x1 },		0,          0	 },
-	{ POWER_AND_PLL_CTRL_REG,	 0x800,							  0x0E0,			   { 0x60,	0xA0 },		0,          0	 } /* Phy Selector */
-
+	/* unitunitBaseReg              unitOffset							mask				 PEX data    USB3 data       waitTime    numOfLoops */
+	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,							  0x3FC7F806,		   { 0x4471804, 0x4479804 },	0,          0	 },
+	{ COMMON_PHY_CONFIGURATION2_REG, 0x28,							  0x5C,				   { 0x58,		0x58 },			0,          0	 },
+	{ COMMON_PHY_CONFIGURATION4_REG, 0x28,							  0x3,				   { 0x1,		0x1 },			0,          0	 },
+	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,							  0x7800,			   { 0x6000,	0xE000 },		0,          0	 },
+	{ GLOBAL_CLK_CTRL,				 0x800,							  0xD,				   { 0x5,		0x1 },			0,          0	 },
+#ifdef CONFIG_ARMADA_39X /* TBD - need to add to a380x-A0 as well */
+	{ GLOBAL_MISC_CTRL,				 0x800,							  0xC0,				   { 0x0,		0x0 },			0,          0	 },
+#endif
+	{ POWER_AND_PLL_CTRL_REG,		 0x800,							  0x0E0,			   { 0x60,		0xA0 },			0,          0	 } /* Phy Selector */
 };
 
 /* PEX and USB3 - speed config seq */
@@ -989,8 +998,14 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 		serdesMode = serdesConfigMap[serdesIdx].serdesMode;
 		laneData = mvHwsSerdesGetPhySelectorVal(serdesIdx, serdesType);
 
+		if(serdesType == DEFAULT_SERDES) {
+			continue;
+		}
+
+
 		if (laneData == NA) {
-			DEBUG_INIT_S("mvUpdateSerdesSelectPhyModeSeq: serdes number and type are not supported together\n");
+			mvPrintf("mvUpdateSerdesSelectPhyModeSeq: serdes number %d and type %d are not supported together\n",
+					 serdesIdx, serdesMode);
 			return MV_BAD_PARAM;
 		}
 

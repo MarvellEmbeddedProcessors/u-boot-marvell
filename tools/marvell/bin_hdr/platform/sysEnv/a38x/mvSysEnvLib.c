@@ -411,7 +411,7 @@ static MV_BOOL mvSysEnvConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CON
 }
 
 /*******************************************************************************
-* mvBoardSysConfigInit
+* mvSysEnvConfigInit
 *
 * DESCRIPTION: Initialize EEPROM configuration
 *       1. initialize all board configuration fields
@@ -421,11 +421,12 @@ static MV_BOOL mvSysEnvConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CON
 *
 * OUTPUT: None
 *
-* RETURN: NONE
+* RETURN:
+*       MV_OK if initialize pass, MV_INIT_ERROR if read board topology fail,
 *
 *******************************************************************************/
 static int flagConfigInit = -1;
-static MV_VOID mvSysEnvConfigInit(void)
+MV_STATUS mvSysEnvConfigInit(void)
 {
 	MV_U8 i, readValue;
 	MV_U32 defaultVal[2] = MV_BOARD_CONFIG_DEFAULT_VALUE;
@@ -434,7 +435,8 @@ static MV_VOID mvSysEnvConfigInit(void)
 	MV_BOOL readSuccess = MV_FALSE, readFlagError = MV_TRUE;
 
 	if (flagConfigInit != -1)
-		return;
+		return MV_OK;
+
 	flagConfigInit = 1;
 
 	/* Read Board Configuration*/
@@ -455,6 +457,7 @@ static MV_VOID mvSysEnvConfigInit(void)
 		for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4; i++)
 			configVal[i] = defaultVal[i];
 	}
+
 	/* Save values Locally in configVal[] */
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
 		/* Get board configuration field information (Mask, offset, etc..) */
@@ -462,12 +465,16 @@ static MV_VOID mvSysEnvConfigInit(void)
 			continue;
 
 		readValue = (configVal[configInfo.byteNum/4] & configInfo.mask) >> configInfo.offset;
-		boardOptionsConfig[configInfo.configId] =  readValue;
+		boardOptionsConfig[configInfo.configId] = readValue;
 		readSuccess = MV_TRUE;
 	}
 
-	if (readSuccess == MV_FALSE)
+	if (readSuccess == MV_FALSE) {
 		DEBUG_INIT_FULL_S("mvSysEnvConfigInit: Error: Read board configuration from EEPROM failed\n");
+		return MV_INIT_ERROR;
+	}
+
+	return MV_OK;
 }
 
 /*******************************************************************************
@@ -483,7 +490,7 @@ static MV_VOID mvSysEnvConfigInit(void)
 *       if field is valid - returns requested Board configuration field value
 *
 *******************************************************************************/
-static MV_U32 mvSysEnvConfigGet(MV_CONFIG_TYPE_ID configField)
+MV_U32 mvSysEnvConfigGet(MV_CONFIG_TYPE_ID configField)
 {
 	MV_BOARD_CONFIG_TYPE_INFO configInfo;
 
@@ -495,4 +502,5 @@ static MV_U32 mvSysEnvConfigGet(MV_CONFIG_TYPE_ID configField)
 
 	return boardOptionsConfig[configField];
 }
-#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+
+#endif /* CONFIG_CMD_BOARDCFG */

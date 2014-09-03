@@ -71,6 +71,8 @@
 #include "mv_seq_exec.h"
 
 /********************************* Definitions ********************************/
+#define MAX_SERDES_LANES        7 /* as in a39x*/
+
 /* For setting or clearing a certain bit
    (bit is a number between 0 and 31) in the data*/
 #define SET_BIT(data, bit)          (data | (0x1 << bit))

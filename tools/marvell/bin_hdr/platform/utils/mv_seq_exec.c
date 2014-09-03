@@ -116,7 +116,7 @@ MV_STATUS writeOpExecute
 {
 	MV_U32 unitBaseReg, unitOffset, data, mask, regData, regAddr;
 
-	if (serdesNum >= MAX_SERDES_LANES) {
+	if (serdesNum >= mvHwsSerdesGetMaxLane()) {
 		DEBUG_INIT_S("writeOpExecute: bad serdes number\n");
 		return MV_BAD_PARAM;
 	}
@@ -185,7 +185,7 @@ MV_STATUS pollOpExecute
 	numOfLoops = params->numOfLoops;
 	waitTime = params->waitTime;
 
-	if (serdesNum >= MAX_SERDES_LANES) {
+	if (serdesNum >= mvHwsSerdesGetMaxLane()) {
 		DEBUG_INIT_S("pollOpExecute: bad serdes number\n");
 		return MV_BAD_PARAM;
 	}

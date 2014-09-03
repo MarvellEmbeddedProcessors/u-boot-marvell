@@ -139,7 +139,7 @@ endif
 ifeq "$(CONFIG_ARMADA_39X)"  "y"
   CFLAGS += -DCONFIG_ARMADA_39X
   ifneq "$(CONFIG_CUSTOMER_BOARD_SUPPORT)" "y"
-/*    CFLAGS += -DCONFIG_CMD_BOARDCFG (Need to implement load topology)*/
+    #CFLAGS += -DCONFIG_CMD_BOARDCFG
   endif
   NEW_TIP = yes
   LIBNAME = a39x

@@ -88,8 +88,6 @@ int mvebu_soc_init()
 	int soc_id, soc_rev;
 	int ret;
 
-	debug_enter();
-
 	set_soc_family(soc_init());
 	soc_family = get_soc_family();
 	if (!soc_family)
@@ -130,9 +128,6 @@ int mvebu_soc_init()
 	ret = soc_late_init();
 	if (ret)
 		error("SOC late init failed");
-
-	debug_exit();
-
 
 	return 0;
 }

@@ -128,7 +128,6 @@ int adec_init(struct adec_win *windows)
 {
 	u32 win_id, index, mbus_win;
 
-	debug_enter();
 	debug("Initializing MBUS address decoding\n");
 	mbus_adec_base = (void *)MVEBU_ADEC_BASE;
 
@@ -171,11 +170,9 @@ int adec_init(struct adec_win *windows)
 	}
 
 	debug("Done MBUS address decoding initializing\n");
-	debug_exit();
 
 	return 0;
 }
-
 
 int dram_init(void)
 {

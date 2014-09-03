@@ -157,7 +157,6 @@ int adec_init(struct adec_win *windows)
 	u32 win_id;
 	u32 win_reg, target_id;
 
-	debug_enter();
 	debug("Initializing CCU Address decoding\n");
 
 	/* disable all RFU windows */
@@ -215,7 +214,6 @@ int adec_init(struct adec_win *windows)
 	}
 
 	debug("Done CCU Address decoding Initializing\n");
-	debug_exit();
 
 	return 0;
 }

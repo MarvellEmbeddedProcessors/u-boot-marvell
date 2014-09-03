@@ -69,8 +69,7 @@
 #include "mvUart.h"
 #include "util.h"
 
-#define MAX_SERDES_LANES        7
-#define NA                      8
+#define NA                      0xFF
 #define DEFAULT_PARAM           0
 #define MV_BOARD_TCLK_ERROR     0xFFFFFFFF
 

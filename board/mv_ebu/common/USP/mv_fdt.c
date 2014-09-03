@@ -33,16 +33,18 @@ disclaimer.
 #define MV_FDT_MAXDEPTH 32
 
 static int mv_fdt_find_node(void *fdt, const char *name);
-static int mv_fdt_update_l2(void *fdt);
 static int mv_fdt_update_cpus(void *fdt);
 static int mv_fdt_update_pex(void *fdt);
 static int mv_fdt_update_ethnum(void *fdt);
-static int mv_fdt_remove_prop(void *fdt, const char *path,
-				const char *name, int nodeoff);
 static int mv_fdt_remove_node(void *fdt, const char *path);
 static int mv_fdt_scan_and_set_alias(void *fdt,
 					const char *name, const char *alias);
 static int mv_fdt_debug;
+
+#if 0 /* not compiled, since this routine is currently not in use  */
+static int mv_fdt_remove_prop(void *fdt, const char *path,
+				const char *name, int nodeoff);
+#endif
 
 #define mv_fdt_dprintf(...)		\
 	if (mv_fdt_debug)		\
@@ -85,11 +87,6 @@ void ft_board_setup(void *blob, bd_t *bd)
 		goto bs_fail;
 	}
 	mv_fdt_dprintf("DT bootargs updated from commandline\n");
-
-	/* Update dt L2 information */
-	err = mv_fdt_update_l2(blob);
-	if (err < 0)
-		goto bs_fail;
 
 	/* Update ethernet aliases with nodes' names and update mac addresses */
 	err = mv_fdt_scan_and_set_alias(blob, "ethernet@", "ethernet");
@@ -178,92 +175,6 @@ static int mv_fdt_find_node(void *fdt, const char *name)
 	/* Node not found in the device tree */
 	return -1;
 
-}
-
-static int mv_fdt_update_l2(void *fdt)
-{
-	int err;			/* error number */
-	int nodeoffset;			/* node offset from libfdt */
-	char *env;			/* env value */
-	char *prop;			/* property name */
-	const char *node;		/* node name */
-
-	/* If /l2-cache node doesn't exist, omit whole updating */
-	node = "l2-cache";
-	nodeoffset = mv_fdt_find_node(fdt, node);
-	if (nodeoffset < 0) {
-		mv_fdt_dprintf("Omit L2 properties update - /l2-cache node "
-			       "not present in fdt\n");
-		goto no_l2_node;
-	}
-	/* Enable/disable L2 cache */
-	env = getenv("disL2Cache");
-	if (env && ((strncmp(env, "yes", 3) == 0))) {
-		err = mv_fdt_remove_node(fdt, node);
-		if (err < 0) {
-			mv_fdt_dprintf("Updating fdt failed - L2 disabling\n");
-			return -1;
-		}
-		mv_fdt_dprintf("Remove '%s' node - disL2Cache=yes\n", node);
-	} else {
-		/* Enable/disable L2 cache WT mode */
-		/* Check setting of L2forceWrPolicy variable. If it doesn't
-		 * exist examine setL2CacheWT variable*/
-		env = getenv("L2forceWrPolicy");
-		prop = "wt-override";
-		if (env) {
-			if ((strncmp(env, "wt", 2) == 0) ||
-			    (strncmp(env, "WT", 2) == 0)) {
-				mv_fdt_modify(fdt, err, fdt_setprop(fdt,
-						nodeoffset, prop, NULL, 0));
-				if (err < 0) {
-					mv_fdt_dprintf("Adding '%s' to '%s' "
-						       "node failed\n", prop,
-						       node);
-					return -1;
-				} else
-					mv_fdt_dprintf("Adding '%s' to '%s' "
-						       "node succeeded\n", prop,
-						       node);
-			} else {
-				err = mv_fdt_remove_prop(fdt, node, prop,
-								nodeoffset);
-				if (err < 0) {
-					mv_fdt_dprintf("Removing '%s' from "
-						       "'%s' node failed\n",
-						       prop, node);
-					return -1;
-				}
-			}
-		} else {
-			env = getenv("setL2CacheWT");
-			if (env && ((strncmp(env, "yes", 3) == 0))) {
-				mv_fdt_modify(fdt, err, fdt_setprop(fdt,
-						nodeoffset, prop, NULL, 0));
-				if (err < 0) {
-					mv_fdt_dprintf("Adding '%s' to '%s' "
-						       "node failed\n", prop,
-						       node);
-					return -1;
-				} else
-					mv_fdt_dprintf("Adding '%s' to '%s' "
-						       "node succeeded\n", prop,
-						       node);
-			} else if (env && ((strncmp(env, "no", 2) == 0))) {
-				err = mv_fdt_remove_prop(fdt, node, prop,
-								nodeoffset);
-				if (err < 0) {
-					mv_fdt_dprintf("Removing '%s' from "
-						       "'%s' node failed\n",
-						       prop, node);
-					return -1;
-				}
-			}
-		}
-	}
-
-no_l2_node:
-	return 0;
 }
 
 static int mv_fdt_update_cpus(void *fdt)
@@ -448,6 +359,7 @@ static int mv_fdt_update_ethnum(void *fdt)
 	return 0;
 }
 
+#if 0 /* not compiled, since this routine is currently not in use  */
 static int mv_fdt_remove_prop(void *fdt, const char *path,
 				const char *name, int nodeoff)
 {
@@ -468,6 +380,7 @@ static int mv_fdt_remove_prop(void *fdt, const char *path,
 		return 0;
 	}
 }
+#endif
 
 static int mv_fdt_remove_node(void *fdt, const char *path)
 {

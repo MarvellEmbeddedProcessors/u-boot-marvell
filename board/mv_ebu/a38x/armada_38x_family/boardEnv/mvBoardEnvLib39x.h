@@ -67,6 +67,15 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef enum {
+	MV_PORT_TYPE_RXAUI,
+	MV_PORT_TYPE_XAUI,
+	MV_PORT_TYPE_SGMII,
+	MV_PORT_TYPE_QSGMII,
+	MV_PORT_TYPE_RGMII,
+	MV_PORT_TYPE_UNKNOWN = -1,
+} MV_PORT_TYPE;
+
+typedef enum {
 	MV_NETCOMP_GE_MAC0_2_RXAUI	=	BIT0,
 	MV_NETCOMP_GE_MAC0_2_XAUI	=	BIT1,
 	MV_NETCOMP_GE_MAC0_2_SGMII_L0	=	BIT2,
@@ -188,6 +197,8 @@ typedef enum _mvConfigTypeID {
 
 #endif /* CONFIG_CMD_BOARDCFG */
 
+MV_BOOL mvBoardIsPortInXaui(MV_U32 ethPortNum);
+MV_BOOL mvBoardIsPortInRxaui(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInQsgmii(MV_U32 ethPortNum);
 MV_U32 mvBoardNetComplexConfigGet(MV_VOID);
 MV_VOID mvBoardNetComplexConfigSet(MV_U32 ethConfig);

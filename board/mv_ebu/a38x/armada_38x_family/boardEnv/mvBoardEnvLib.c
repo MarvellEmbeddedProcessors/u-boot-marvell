@@ -2630,7 +2630,7 @@ MV_STATUS mvBoardEepromWriteDefaultCfg(void)
 			- in order to keep I2C output aligned with original written data
 			we reverse the byte order to be from LSB to MSB before each read/write */
 		defaultValue[i] = cpu_to_be32(defaultValue[i]);
-		if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, i * 4, (MV_U8 *)&defaultValue[i], 4) != MV_OK) {
+		if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, 0, i * 4, (MV_U8 *)&defaultValue[i], 4) != MV_OK) {
 			mvOsPrintf("%s: Error: Set default configuration to EEPROM failed\n", __func__);
 			return MV_ERROR;
 		}
@@ -2667,7 +2667,7 @@ MV_STATUS mvBoardEepromInit(void)
 	}
 
 	/* verify EEPROM: read 4 bytes at address 0x8 (read magic pattern) */
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, 8, (MV_U8 *)&pattern, 4) != MV_OK) {
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, 8, (MV_U8 *)&pattern, 4) != MV_OK) {
 		mvOsPrintf("%s: Error: Read pattern from EEPROM failed\n", __func__);
 		return MV_ERROR;
 	}
@@ -2689,7 +2689,7 @@ MV_STATUS mvBoardEepromInit(void)
 
 	pattern = be32_to_cpu(EEPROM_VERIFICATION_PATTERN);
 	/* shift bytes to correct location from 32bit pattern to 1 byte chunks*/
-	if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, 8, (MV_U8 *)&pattern, 4) != MV_OK) {
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, 0, 8, (MV_U8 *)&pattern, 4) != MV_OK) {
 		mvOsPrintf("%s: Error: Write magic pattern to EEPROM failed\n", __func__);
 		return MV_ERROR;
 	}
@@ -2732,7 +2732,7 @@ MV_VOID mvBoardSysConfigInit(void)
 	}
 	/* Read configuration data: 1st 8 bytes in  EEPROM, (read twice: each read of 4 bytes(32bit)) */
 	for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4; i++) {
-		if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, i * 4, (MV_U8 *)&configVal[i], 4) != MV_OK) {
+		if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, i * 4, (MV_U8 *)&configVal[i], 4) != MV_OK) {
 			DB(mvOsPrintf("%s: Error: mvBoardTwsiGet from EEPROM failed\n", __func__));
 			readFlagError = MV_FALSE;
 		}
@@ -2783,7 +2783,7 @@ MV_VOID mvBoardSysConfigInit(void)
 *******************************************************************************/
 MV_BOOL mvBoardIsEepromEnabled(void)
 {
-	MV_U8 addr = mvBoardTwsiAddrGet(BOARD_DEV_TWSI_EEPROM, 0);
+	MV_U8 addr = mvBoardTwsiAddrGet(BOARD_DEV_TWSI_SATR, 0);
 
 	if (addr == 0xFF)
 		return MV_FALSE;
@@ -2926,7 +2926,7 @@ MV_STATUS mvBoardEepromWrite(MV_CONFIG_TYPE_ID configType, MV_U8 value)
 	}
 
 	/* Read */
-	if (mvBoardTwsiGet(BOARD_DEV_TWSI_EEPROM, 0, configInfo.byteNum, (MV_U8 *)&readValue, 4) != MV_OK) {
+	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, configInfo.byteNum, (MV_U8 *)&readValue, 4) != MV_OK) {
 		mvOsPrintf("%s: Error: Read configuration from EEPROM failed\n", __func__);
 		return MV_ERROR;
 	}
@@ -2943,7 +2943,7 @@ MV_STATUS mvBoardEepromWrite(MV_CONFIG_TYPE_ID configType, MV_U8 value)
 
 	readValue = be32_to_cpu(readValue);
 	/* Write */
-	if (mvBoardTwsiSet(BOARD_DEV_TWSI_EEPROM, 0, configInfo.byteNum, (MV_U8 *)&readValue, 4) != MV_OK) {
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, 0, configInfo.byteNum, (MV_U8 *)&readValue, 4) != MV_OK) {
 		mvOsPrintf("%s: Error: Write configuration to EEPROM failed\n", __func__);
 		return MV_ERROR;
 	}

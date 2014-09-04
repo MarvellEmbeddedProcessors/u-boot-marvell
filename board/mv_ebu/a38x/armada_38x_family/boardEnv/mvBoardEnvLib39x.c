@@ -74,50 +74,54 @@
 #define DB(x)
 #endif
 
+
 /*******************************************************************************
-* mvBoardIsPortInGmii
+* mvBoardPortTypeGet
 *
 * DESCRIPTION:
-*	This routine returns MV_TRUE for port number works in GMII or MV_FALSE
-*	For all other options.
+*       This routine returns port type
 *
 * INPUT:
 *       ethPortNum - Ethernet port number.
 *
 * OUTPUT:
-*       None.
+*       None
 *
 * RETURN:
-*       MV_TRUE - port in GMII.
-*       MV_FALSE - other.
+*       Mode of the port
 *
+*******************************************************************************/
+MV_U32 mvBoardPortTypeGet(MV_U32 ethPortNum)
+{
+	if (mvBoardIsPortInSgmii(ethPortNum))
+		return MV_PORT_TYPE_SGMII;
+	if (mvBoardIsPortInRgmii(ethPortNum))
+		return MV_PORT_TYPE_RGMII;
+	if (mvBoardIsPortInRxaui(ethPortNum))
+		return MV_PORT_TYPE_RXAUI;
+	if (mvBoardIsPortInXaui(ethPortNum))
+		return MV_PORT_TYPE_XAUI;
+	if (mvBoardIsPortInQsgmii(ethPortNum))
+		return MV_PORT_TYPE_QSGMII;
+	return MV_PORT_TYPE_UNKNOWN;
+}
+
+/*******************************************************************************
+* mvBoardIsPortInGmii - No Gmii interface for Armada 39x
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum)
 {
 	return MV_FALSE;
 }
+
 /*******************************************************************************
-* mvBoardIsPortInMii
-*
-* DESCRIPTION:
-*	This routine returns MV_TRUE for port number works in MII or MV_FALSE
-*	For all other options.
-*
-* INPUT:
-*       ethPortNum - Ethernet port number.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_TRUE - port in MII.
-*       MV_FALSE - other.
-*
+* mvBoardIsPortInMii - No Mii interface for Armada 39x
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInMii(MV_U32 ethPortNum)
 {
 	return MV_FALSE;
 }
+
 /*******************************************************************************
 * mvBoardIsPortInRgmii
 *

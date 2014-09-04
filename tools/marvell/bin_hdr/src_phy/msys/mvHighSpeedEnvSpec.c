@@ -641,7 +641,7 @@ MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
 	MV_U32 serverBaseAddr = MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID));
 
 	/*Read SatR configuration(bit16)*/
-	uiReg = MV_REG_READ(serverBaseAddr + REG_DEVICE_SAR1_ADDR);
+	uiReg = MV_MEMIO_LE32_READ(serverBaseAddr + REG_DEVICE_SAR1_ADDR);
 
 	/* check BIT16 for PCIe mode status: 0 = RC , 1 = EP */
 	if(0 == (uiReg & BIT16))
@@ -923,6 +923,7 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 /****************************************************************************/
 MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
+
 	SERDES_MAP serdesConfigurationMap[MAX_SERDES_LANES];
 
 	mvPrintf("Serdes initialization - Version: 1.0.2\n");
@@ -939,7 +940,6 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	/* USB2 configuration */
 	mvCtrlUsb2Config();
-
 	DEBUG_INIT_FULL_S("### powerUpSerdesLanes ended successfully ###\n");
 	return MV_OK;
 }

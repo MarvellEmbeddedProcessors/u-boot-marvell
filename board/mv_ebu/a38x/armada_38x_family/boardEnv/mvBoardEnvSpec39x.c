@@ -303,13 +303,10 @@ MV_BOARD_INFO db88f69xx_board_info = {
 	/* GPP values */
 	.gppOutEnValLow		= DB_88F69XX_GPP_OUT_ENA_LOW,
 	.gppOutEnValMid		= DB_88F69XX_GPP_OUT_ENA_MID,
-	.gppOutEnValHigh	= DB_88F69XX_GPP_OUT_ENA_HIGH,
 	.gppOutValLow		= DB_88F69XX_GPP_OUT_VAL_LOW,
 	.gppOutValMid		= DB_88F69XX_GPP_OUT_VAL_MID,
-	.gppOutValHigh		= DB_88F69XX_GPP_OUT_VAL_HIGH,
 	.gppPolarityValLow	= DB_88F69XX_GPP_POL_LOW,
 	.gppPolarityValMid	= DB_88F69XX_GPP_POL_MID,
-	.gppPolarityValHigh	= DB_88F69XX_GPP_POL_HIGH,
 
 	/* TDM */
 	.numBoardTdmInfo		= {1},

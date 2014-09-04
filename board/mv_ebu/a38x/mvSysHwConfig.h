@@ -126,6 +126,12 @@ disclaimer.
 #define PNC_BM_PHYS_BASE 0xf2100000
 #define PNC_BM_SIZE	 _1M
 
+#define PSS_PORTS_PHYS_BASE 0xf4800000
+#define PSS_PORTS_SIZE	_1M
+
+#define NSS_MGMT_PHYS_BASE 0xf5000000
+#define NSS_MGMT_SIZE	_16M
+
 /* Important for MP - Do not disable/change this window, used by BOOTROM when booting other cores */
 #define CRYPT_ENG_BASE	 0xc8010000
 #define CRYPT_ENG_SIZE	 _64K
@@ -204,6 +210,13 @@ disclaimer.
 #   error "Unexpected ETHER_DRAM_COHER value"
 #endif /* ETHER_DRAM_COHER */
 
+#ifdef CONFIG_ARMADA_39X
+	#define PNC_PSS_NSS_ENTRY {{PSS_PORTS_PHYS_BASE, 0, PSS_PORTS_SIZE }, 16, EN}, /* PSS_PORTS */ \
+			{{NSS_MGMT_PHYS_BASE, 0, NSS_MGMT_SIZE }, 17, DIS}, /* NSS_MGMT  */
+#else
+	#define PNC_PSS_NSS_ENTRY {{PNC_BM_PHYS_BASE, 0, PNC_BM_SIZE }, TBL_UNUSED, DIS}, /* 29 PNC_BM */
+#endif
+
 /*
  * CPU address decode table
  * Note: that table entry number must match its winNum enumerator.
@@ -241,7 +254,8 @@ disclaimer.
 	{{0xf8000000,		0,		_1M	},			13,	DIS},	/* 26 BOOT_ROM_CS */\
 	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},			9,	 EN},	/* 27 DEV_BOOCS */  \
 	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},			10,	DIS},	/* 28 CRYPT_ENG */ \
-	{{PNC_BM_PHYS_BASE,	0,	PNC_BM_SIZE	},		TBL_UNUSED,	DIS},	/* 29 PNC_BM */    \
+	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 29 CRYPT ENG */  \
+	PNC_PSS_NSS_ENTRY	\
 	{{TBL_TERM,	TBL_TERM, 	TBL_TERM	},		TBL_TERM,	TBL_TERM}               \
 };
 

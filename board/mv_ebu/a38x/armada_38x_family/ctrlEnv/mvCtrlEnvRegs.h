@@ -396,7 +396,12 @@ typedef enum _mvTargetId {
 	PEX_TARGET_ID_123  = 4,  /* Port 4  -> PCI Express 0 and 1        */
 	PEX_TARGET_ID_0   = 8,  /* Port 4  -> PCI Express 0 and 1        */
 	CRYPT_TARGET_ID  = 9,  /* Port 9  -> Crypto Engine SRAM         */
-	PNC_BM_TARGET_ID = 0xC,    /* Port 12 -> PP2 Unit                   */
+#ifdef CONFIG_ARMADA_38X
+	PNC_BM_TARGET_ID = 0xC,    /* Port 12 -> PP2 Unit */
+#elif defined(CONFIG_ARMADA_39X)
+	NSS_TARGET_ID = 0xc, /* Port 12 -> NSS */
+	PSS_PORTS_TARGET_ID = 0xB,   /* Port 11 -> PSS Ports             */
+#endif
 	MAX_TARGETS_ID
 } MV_TARGET_ID;
 

@@ -1033,8 +1033,12 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 		return MV_6820_DEV_ID;
 	if (ctrlId == 0x6810)
 		return MV_6810_DEV_ID;
+	if (ctrlId == 0x6910)
+		return MV_6910_DEV_ID;
 	if (ctrlId == 0x6920)
 		return MV_6920_DEV_ID;
+	if (ctrlId == 0x6928)
+		return MV_6928_DEV_ID;
 
 	return MV_INVALID_DEV_ID;
 }

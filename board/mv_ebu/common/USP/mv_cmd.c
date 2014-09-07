@@ -170,26 +170,40 @@ U_BOOT_CMD(
 int reset_count_cmd(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U32 resetCount;
-	char *tmpStr = getenv("reset_count");
+	char *bootcmd, *tmpStr = getenv("reset_count");
 	char countStr[10];
 
 	resetCount = tmpStr ? simple_strtoul(tmpStr, NULL, 16) : 0;
+
+	/* in 1st time, save original boot command in 'bootcmd_Creset' env varialble */
+	if (resetCount == 0) {
+		bootcmd = getenv("bootcmd");
+		setenv("bootcmd_Creset", bootcmd);
+		/* replace boot command with 'Creset' */
+		setenv("bootcmd", "Creset");
+	}
+
 	printf("\nreset_count = %d\n" , resetCount);
 	sprintf(countStr, "%x", ++resetCount);
-
 	setenv("reset_count", countStr);
-	setenv("bootcmd", "Creset");
-
 	run_command("saveenv", 0);
-	run_command("reset", 0);
+
+	/* if requested 'Creset boot' run boot command instead of reset */
+	if( argc == 2 && strcmp( argv[1], "boot"))
+		run_command("run bootcmd_Creset", 0);
+	else
+		run_command("reset", 0);
+
 	return 1;
 }
 
-U_BOOT_CMD(Creset, 1, 1, reset_count_cmd,
-	"Creset	- Run 'reset' in a loop while counting.\n",
+U_BOOT_CMD(Creset, 2, 1, reset_count_cmd,
+	"Creset	- Run 'reset' or boot command in a loop, while counting.\n",
 	" \n"
-	"\tDisplay the amounts of successful reset sequence performed.\n"
-	" \n \tto set count start value run 'setenv reset_count <value>.\n"
+	"    \t'Creset'      - loop and count reset tries:\n"
+	"    \t'Creset boot' - loop and count boot tries:\n\n"
+	"    \tto restart count, set count value to 1, save, and run boot:\n"
+	"    \t'setenv reset_count 1; saveenv; boot;'\n"
 );
 
 #if defined(MV_INCLUDE_PMU)

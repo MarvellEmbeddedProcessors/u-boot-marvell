@@ -440,6 +440,12 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 
 	mvCtrlSerdesConfigDetect();
 
+#ifdef CONFIG_ARMADA_39X
+	/* update MPP settings to NSS mode if required */
+	if (mvNssEnabled())
+		mvCtrlNSSMppSwitch();
+#endif
+
 	/* write MPP's config and Board general config */
 	mvBoardConfigWrite();
 
@@ -1863,3 +1869,57 @@ void mvCtrlNandClkSet(int nClock)
 	/* Set reload ratio bit 0x00018740[8] to 0'b1 */
 	MV_REG_BIT_RESET(CORE_DIV_CLK_CTRL(0), CORE_DIVCLK_RELOAD_RATIO_MASK);
 }
+
+#ifdef CONFIG_ARMADA_39X
+
+/*******************************************************************************
+* mvCtrlNSSMppSwitch
+*
+* DESCRIPTION:
+*       switches the MPP port settings from legacy mode to NSS mode.
+*	for example, if SMI_MDC (MPP 4 & 5) are set to legacy mode (0x1), change
+*	them to NSS mode (0x7). if the ethernet port is set to legacy mode (0x2),
+*	change them to NSS mode (0x8).
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None
+*******************************************************************************/
+void mvCtrlNSSMppSwitch(void)
+{
+	MV_U32 mppGroupValue = 0;
+
+	/* Read the SMI_MDC MPP configuration */
+	mppGroupValue = mvBoardMppGet(0);
+	/* If the SMI_MDC is configured to legacy mode, change it no NSS mode  */
+	if ((mppGroupValue & MPP_GROUP0_SMI_MDC_MASK) == MPP_GROUP0_SMI_MDC_LEGACY_MODE) {
+		mppGroupValue &= ~MPP_GROUP0_SMI_MDC_MASK;
+		mppGroupValue |= MPP_GROUP0_SMI_MDC_NSS_MODE;
+		mvBoardMppSet(0, mppGroupValue);
+	}
+
+	/* Read the GE1 MPP configurations */
+	mppGroupValue = mvBoardMppGet(3);
+	/* If GE1 is set to legacy mode, change it to NSS mode */
+	if ((mppGroupValue & MPP_GROUP3_GE1_MASK) == MPP_GROUP3_GE1_LEGACY_MODE) {
+		mppGroupValue &= ~MPP_GROUP3_GE1_MASK;
+		mppGroupValue |= MPP_GROUP3_GE1_NSS_MODE;
+		mvBoardMppSet(3, mppGroupValue);
+
+		mppGroupValue = mvBoardMppGet(4);
+		mppGroupValue &= ~MPP_GROUP4_GE1_MASK;
+		mppGroupValue |= MPP_GROUP4_GE1_NSS_MODE;
+		mvBoardMppSet(4, mppGroupValue);
+
+		mppGroupValue = mvBoardMppGet(5);
+		mppGroupValue &= ~MPP_GROUP5_GE1_MASK;
+		mppGroupValue |= MPP_GROUP5_GE1_NSS_MODE;
+		mvBoardMppSet(5, mppGroupValue);
+	}
+}
+#endif /* CONFIG_ARMADA_38X */

@@ -342,6 +342,11 @@ disclaimer.
 #define ETH_NUM_OF_RX_DESCR	64
 #define ETH_NUM_OF_TX_DESCR	(ETH_NUM_OF_RX_DESCR * 2)
 
+/* The following definition is used to determine if the NSS is enabled,  */
+/* and change the MPPs setting from legacy mode to NSS mode, if required */
+/* Here it is set to 0, since the NSS mode is not supported in u-boot */
+#define mvNssEnabled()		0
+
 /*
  * CESA (crypto)
  */

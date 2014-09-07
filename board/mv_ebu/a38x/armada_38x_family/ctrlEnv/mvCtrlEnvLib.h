@@ -182,6 +182,21 @@ typedef enum {
 /* BIOS Modes related defines */
 #define SAR_CPU_FAB_GET(cpu, fab)       (((cpu & 0x7) << 21) | ((fab & 0xF) << 24))
 
+/* NSS MPP related defines */
+#define MPP_GROUP0_SMI_MDC_MASK					0x00FF0000
+#define MPP_GROUP0_SMI_MDC_LEGACY_MODE				0x00110000
+#define MPP_GROUP0_SMI_MDC_NSS_MODE				0x00770000
+
+#define MPP_GROUP3_GE1_MASK					0xFFFFF000
+#define MPP_GROUP3_GE1_LEGACY_MODE				0x22222000
+#define MPP_GROUP3_GE1_NSS_MODE					0x88888000
+
+#define MPP_GROUP4_GE1_MASK					0xFFF0000F
+#define MPP_GROUP4_GE1_NSS_MODE					0x88800008
+
+#define MPP_GROUP5_GE1_MASK					0x000000FF
+#define MPP_GROUP5_GE1_NSS_MODE					0x00000088
+
 /* mcspLib.h API list */
 MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode);
 MV_U32 mvCtrlbootSrcGet(void);
@@ -260,5 +275,6 @@ MV_U32 mvCtrlDDRBudWidth(MV_VOID);
 MV_BOOL mvCtrlDDRThruXbar(MV_VOID);
 MV_BOOL mvCtrlDDRECC(MV_VOID);
 MV_BOOL mvCtrlDDRECCPUP3(MV_VOID);
+void mvCtrlNSSMppSwitch(void);
 
 #endif /* __INCmvCtrlEnvLibh */

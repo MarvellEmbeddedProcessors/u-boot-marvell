@@ -476,6 +476,58 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 			return 1;
 	}
 
+	/* Debug print options */
+	if (opt->flags & p_OPTION_MASK)
+		hdr->flags &= ~BHR_FLAG_PRINT_EN;
+	else
+		hdr->flags |= BHR_FLAG_PRINT_EN;	/* Enable printing by default */
+
+	if (opt->flags & b_OPTION_MASK) {
+		switch (opt->baudRate) {
+		case 2400:
+			hdr->options = BHR_OPT_BAUD_2400;
+			break;
+
+		case 4800:
+			hdr->options = BHR_OPT_BAUD_4800;
+			break;
+
+		case 9600:
+			hdr->options = BHR_OPT_BAUD_9600;
+			break;
+
+		case 19200:
+			hdr->options = BHR_OPT_BAUD_19200;
+			break;
+
+		case 38400:
+			hdr->options = BHR_OPT_BAUD_38400;
+			break;
+
+		case 57600:
+			hdr->options = BHR_OPT_BAUD_57600;
+			break;
+
+		case 115200:
+			hdr->options = BHR_OPT_BAUD_115200;
+			break;
+
+		default:
+			fprintf(stderr, "Unsupported baud rate - %d!\n", opt->baudRate);
+			return 1;
+		}
+	} else
+		hdr->options = BHR_OPT_BAUD_DEFAULT;
+
+	/* debug port number */
+	if (opt->flags & u_OPTION_MASK)
+		hdr->options |= (opt->debugPortNum << BHR_OPT_UART_PORT_OFFS) & BHR_OPT_UART_PORT_MASK;
+
+	/* debug port MPP setup index */
+	if (opt->flags & m_OPTION_MASK)
+		hdr->options |= (opt->debugPortMpp << BHR_OPT_UART_MPPS_OFFS) & BHR_OPT_UART_MPPS_MASK;
+
+
 	hdr->destinationAddr	= opt->image_dest;
 	hdr->executionAddr	= (MV_U32)opt->image_exec;
 	hdr->version		= MAIN_HDR_VERSION;
@@ -1679,13 +1731,15 @@ end:
 *******************************************************************************/
 void print_usage(void)
 {
+	printf("==============================================================================================\n\n");
 	printf("Marvell doimage Tool version %s\n", VERSION_NUMBER);
 	printf("Supported SoC devices: \n\t%s\n", PRODUCT_SUPPORT);
-	printf("\n");
+	printf("==============================================================================================\n\n");
 	printf("Usage: \n");
-	printf("doimage <mandatory_opt> [other_options] <image_in> <image_out> [header_out]\n\n");
+	printf("doimage <mandatory_opt> [other_options] [bootrom_output] <image_in> <image_out> [header_out]\n\n");
 
-	printf("<mandatory_opt> - can be one or more of the following:\n\n");
+	printf("<mandatory_opt> - can be one or more of the following:\n");
+	printf("==============================================================================================\n\n");
 
 	printf("-T image_type:   sata\\uart\\flash\\bootrom\\nand\\hex\\bin\\pex\\mmc\n");
 	printf("-D image_dest:   image destination in dram (in hex)\n");
@@ -1700,7 +1754,8 @@ void print_usage(void)
 	printf("-M twsi_file:    ascii file name that contains the I2C init regs set by h/w.\n");
 	printf("                 this is used in i2c boot only\n");
 
-	printf("\nThe following options are mandatory for NAND image type:\n\n");
+	printf("\nThe following options are mandatory for NAND image type:\n");
+	printf("-----------------------------------------------------------------------------------------------\n\n");
 
 	printf("-L nand_blk_size:NAND block size in KBytes (decimal int in range 64-16320)\n");
 	printf("                 This parameter is ignored for flashes with  512B pages\n");
@@ -1709,6 +1764,7 @@ void print_usage(void)
 	printf("-P nand_pg_size: NAND page size: (decimal 512, 2048, 4096 or 8192)\n");
 
 	printf("\nSecure boot mode options - all options are mandatory once secure mode is selected by Z switch:\n");
+	printf("-----------------------------------------------------------------------------------------------\n\n");
 
 	printf("-Z [prv_key_file]: Create image with RSA signature for secure boot mode\n");
 	printf("                   If the private key file name is missing, a new key pair will be generated\n");
@@ -1718,7 +1774,8 @@ void print_usage(void)
 	printf("-B hex_box_id:   Box ID (hex) - from 0 to 0xffffffff\n");
 	printf("-F hex_flash_id: Flash ID (hex) - from 0 to 0xffff \n\n");
 
-	printf("\n<other_options> - optional and can be one or more of the following:\n\n");
+	printf("\n[other_options] - optional and can be one or more of the following:\n");
+	printf("==============================================================================================\n\n");
 
 	printf("-A [aes_key_file]: Valid in secure mode only. Encrypt the boot image using AES-128 key\n");
 	printf("                   If the aes key file name is missing, a new AES-128 key will be generated\n");
@@ -1733,10 +1790,19 @@ void print_usage(void)
 	printf("-X pre_padding_size (hex)\n");
 	printf("-Y post_padding_size (hex)\n");
 	printf("-H header_mode: Header mode, can be:\n");
-	printf("   -H 1 :will create one file (image_out) for header and image\n");
-	printf("   -H 2 :will create two files, (image_out) for image , (header_out) for header\n");
-	printf("   -H 3 :will create one file (image_out) for header only \n");
-	printf("   -H 4 :will create one file (image_out) for image only \n");
+	printf("                -H 1 : will create one file (image_out) for header and image\n");
+	printf("                -H 2 : will create two files, (image_out) for image , (header_out) for header\n");
+	printf("                -H 3 : will create one file (image_out) for header only \n");
+	printf("                -H 4 : will create one file (image_out) for image only \n");
+
+	printf("\n[bootrom_output] - optional and can be one or more of the following:\n");
+	printf("==============================================================================================\n\n");
+
+	printf("-p               Disable BootROM messages output to UART port (enabled by default)\n");
+	printf("-b baudrate      Set BootROM debug port UART baudrate \n");
+	printf("                 value = 2400,4800,9600,19200,38400,57600,115200 (use default baudrate is omitted)\n");
+	printf("-u port_num      Set BootROM debug port UART number value = 0-3 (use default port if omitted)\n");
+	printf("-m mpp_config    Select BootROM debug port MPPs configuration value = 0-7 (BootROM-specific)\n");
 
 	printf("\nCommand examples: \n\n");
 
@@ -1755,7 +1821,7 @@ void print_usage(void)
 	printf("         [other_options] image_in image_out\n\n");
 	printf("doimage -T pex -D image_dest -E image_exec \n");
 	printf("         [other_options] image_in image_out\n\n");
-	printf("\n\n\n");
+	printf("\n\n");
 
 } /* end of print_usage() */
 
@@ -1935,7 +2001,7 @@ int main (int argc, char** argv)
 {
 	USER_OPTIONS	options;
 	int 		optch; /* command-line option char */
-	static char	optstring[] = "T:D:E:X:Y:S:P:W:H:R:M:Z:J:B:F:A:G:L:N:C:";
+	static char	optstring[] = "T:D:E:X:Y:S:P:W:H:R:M:Z:J:B:F:A:G:L:N:C:b:u:m:p";
 	int		i, k;
 
 	if (argc < 2) goto parse_error;
@@ -2107,6 +2173,37 @@ int main (int argc, char** argv)
 				goto parse_error;
 			options.flags |= N_OPTION_MASK;
 			DB("NAND cell technology %c\n", options.nandCellTech);
+			break;
+
+		case 'p': /* BootROM debug output */
+			if (options.flags & p_OPTION_MASK)
+				goto parse_error;
+			options.flags |= p_OPTION_MASK;
+			DB("BootROM debug output disabled\n");
+			break;
+
+		case 'b': /* BootROM debug port baudrate */
+			options.baudRate = strtoul(optarg, &endptr, 10);
+			if (*endptr || (options.flags & b_OPTION_MASK))
+				goto parse_error;
+			options.flags |= b_OPTION_MASK;
+			DB("BootROM debug port baudrate %d\n", options.baudRate);
+			break;
+
+		case 'u': /* BootROM debug port number */
+			options.debugPortNum = strtoul(optarg, &endptr, 10);
+			if (*endptr || (options.flags & u_OPTION_MASK))
+				goto parse_error;
+			options.flags |= u_OPTION_MASK;
+			DB("BootROM debug port number %d\n", options.debugPortNum);
+			break;
+
+		case 'm': /* BootROM debug port MPP settings */
+			options.debugPortMpp = strtoul(optarg, &endptr, 10);
+			if (*endptr || (options.flags & m_OPTION_MASK))
+				goto parse_error;
+			options.flags |= m_OPTION_MASK;
+			DB("BootROM debug port MPP setup # %d\n", options.debugPortMpp);
 			break;
 
 		default:

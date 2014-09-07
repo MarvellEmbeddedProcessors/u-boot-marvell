@@ -365,9 +365,15 @@ static MV_VOID mvNetComplexMacToXaui(MV_U32 port, MV_NETC_PHASE_CFG phase)
 
 MV_STATUS mvNetComplexInit(MV_U32 netCompConfig, MV_NETC_PHASE_CFG phase)
 {
+	MV_U32 reg;
 	MV_U32 c = netCompConfig, i;
 
 	if (phase == MV_NETC_FIRST_PHASE) {
+		/* fix the base address for transactions from the AXI to MBUS */
+		reg = (MV_REG_READ(MV_NETCOMP_AMB_ACCESS_CTRL_0) & (~NETC_AMB_ACCESS_CTRL_MASK));
+		reg |= (INTER_REGS_BASE & NETC_AMB_ACCESS_CTRL_MASK);
+		MV_REG_WRITE(MV_NETCOMP_AMB_ACCESS_CTRL_0, reg);
+
 		/* Reset the GOP unit */
 		mvNetComplexGopReset(0);
 		/* Active the GOP 4 ports */

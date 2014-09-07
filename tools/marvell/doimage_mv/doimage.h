@@ -67,8 +67,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/types.h>
 
 /* use the same version as in "bootrom.inc" file */
-#define VERSION_NUMBER	"2.01"
-#define PRODUCT_SUPPORT "Marvell Armada series"
+#define VERSION_NUMBER	"2.10"
+#define PRODUCT_SUPPORT "Marvell Armada and xCAT series"
 
 #define RSA_KEY_SIZE	2048
 #define RSA_EXPONENT	65537
@@ -95,6 +95,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define G_OPTION_MASK	0x20000	/* binary file */
 #define L_OPTION_MASK	0x80000	/* NAND block size (in 64K chunks) */
 #define N_OPTION_MASK	0x100000/* NAND cell technology MLC/SLC */
+#define p_OPTION_MASK	0x200000	/* Print enable */
+#define b_OPTION_MASK	0x400000	/* Baudrate */
+#define u_OPTION_MASK	0x800000	/* debug serial port number */
+#define m_OPTION_MASK	0x1000000	/* debug serial port MPP configuration */
 
 #ifndef O_BINARY                /* should be defined on __WIN32__ */
 #define O_BINARY        0
@@ -156,27 +160,30 @@ typedef struct
 	char		*fname_prkey;/* RSA Private key file */
 	char		*fname_aeskey;/* AES-128 key file */
 	char		*fname_list; /* headers definition file */
-	u32		flags;       /* user-defined flags */
-	u32		req_flags;   /* mandatory flags */
-	u32		image_source;/* starting sector */
-	u32		image_dest;  /* image destination  */
-	u32		image_exec;  /* image execution  */
+	u32			flags;       /* user-defined flags */
+	u32			req_flags;   /* mandatory flags */
+	u32			image_source;/* starting sector */
+	u32			image_dest;  /* image destination  */
+	u32			image_exec;  /* image execution  */
 	unsigned int 	hex_width;   /* HEX file width */
 	unsigned int 	header_mode; /* Header file mode */
 	int 		pre_padding;
 	int 		post_padding;
-	int		prepadding_size;
-	int		postpadding_size;
+	int			prepadding_size;
+	int			postpadding_size;
 	unsigned int	bytesToAlign;
 	unsigned int	nandPageSize;
 	unsigned int	nandBlkSize;
 	char		nandCellTech;
-	u32		boxId;
-	u32		flashId;
-	u32		jtagDelay;
+	u32			boxId;
+	u32			flashId;
+	u32			jtagDelay;
 	char		*image_buf;   /* image buffer for image pre-load */
-	u32		image_sz;	/* total size of pre-loaded image buffer including paddings */
-	u32		img_gap;   /* gap between header and image start point */
+	u32			image_sz;	/* total size of pre-loaded image buffer including paddings */
+	u32			img_gap;   /* gap between header and image start point */
+	u32			baudRate;	/* debug print port baudrate */
+	u32			debugPortNum;	/* debug print port number */
+	u32			debugPortMpp;	/* debug print port MPP configuration */
 	union
 	{
 		char	*fname_arr[5];

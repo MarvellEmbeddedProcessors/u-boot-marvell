@@ -79,7 +79,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "polarssl/rsa.h"
 #include "polarssl/aes.h"
 
-#define VERSION_NUMBER	"1.0"
+#define VERSION_NUMBER	"1.1"
 
 /* Security context */
 typedef struct secCtx_t
@@ -181,8 +181,8 @@ int parse_main_header(pBHR_t	pHdr)
 			return -1;
 	}
 
-	fprintf(stdout, "[01:01]Reserved:                  0x%02X\n",
-		pHdr->rsvd1);
+	fprintf(stdout, "[01:01]Flags   :                  0x%02X\n",
+		pHdr->flags);
 	fprintf(stdout, "[03:02]NAND page size:            %d (0x%04X)\n",
 		pHdr->nandPageSize, pHdr->nandPageSize);
 	fprintf(stdout, "[07:04]Boot image size:           %d (0x%08X)\n",
@@ -202,8 +202,8 @@ int parse_main_header(pBHR_t	pHdr)
 		pHdr->destinationAddr);
 	fprintf(stdout, "[23:20]Execution address:         0x%08X\n",
 		pHdr->executionAddr);
-	fprintf(stdout, "[24:24]Reserved:                  0x%02X\n",
-		pHdr->rsvd3);
+	fprintf(stdout, "[24:24]Options :                  0x%02X\n",
+		pHdr->options);
 	fprintf(stdout, "[25:25]NAND Block size:           %d (%dKB)\n",
 		pHdr->nandBlockSize, pHdr->nandBlockSize*64);
 	fprintf(stdout, "[26:26]NAND Technology:           %d (%s)\n",

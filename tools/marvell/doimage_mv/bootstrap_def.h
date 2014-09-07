@@ -76,23 +76,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 typedef struct BHR_t
 {
 //  	type        	name                byte order
-	MV_U8		blockID;		//0
-	MV_U8		rsvd1;			//1
-	MV_U16		nandPageSize;		//2-3
-	MV_U32		blockSize;		//4-7
-	MV_U8		version;		//8
-	MV_U8		hdrSizeMsb;		//9
-	MV_U16		hdrSizeLsb;		//10-11
-	MV_U32		sourceAddr;		//12-15
-	MV_U32		destinationAddr;	//16-19
-	MV_U32		executionAddr;		//20-23
-	MV_U8		rsvd3;			//24
-	MV_U8		nandBlockSize;		//25
-	MV_U8		nandTechnology;		//26
-	MV_U8		rsvd4;			//27
-	MV_U16		rsvd2;			//28-29
-	MV_U8		ext;			//30
-	MV_U8		checkSum;		//31
+	MV_U8		blockID;			/*   0   */
+	MV_U8		flags;				/*   1   */
+	MV_U16		nandPageSize;		/*  2-3  */
+	MV_U32		blockSize;			/*  4-7  */
+	MV_U8		version;			/*   8   */
+	MV_U8		hdrSizeMsb;			/*   9   */
+	MV_U16		hdrSizeLsb;			/* 10-11 */
+	MV_U32		sourceAddr;			/* 12-15 */
+	MV_U32		destinationAddr;	/* 16-19 */
+	MV_U32		executionAddr;		/* 20-23 */
+	MV_U8		options;			/*   24  */
+	MV_U8		nandBlockSize;		/*   25  */
+	MV_U8		nandTechnology;		/*   26  */
+	MV_U8		rsvd4;				/*   27  */
+	MV_U16		rsvd2;				/* 28-29 */
+	MV_U8		ext;				/*   30  */
+	MV_U8		checkSum;			/*   31  */
 
 } BHR_t, * pBHR_t;
 
@@ -170,6 +170,34 @@ typedef struct secExtBHR_t
 #define IBR_HDR_MMC_ID			0xAE
 #define IBR_HDR_UART_ID     	0x69
 #define IBR_DEF_ATTRIB      	0x00
+
+/* ROM flags */
+#define BHR_FLAG_PRINT_EN	0x01
+#define BHR_FLAG_RESERVED1	0x02
+#define BHR_FLAG_RESERVED2	0x04
+#define BHR_FLAG_RESERVED3	0x08
+#define BHR_FLAG_RESERVED4	0x10
+#define BHR_FLAG_RESERVED5	0x20
+#define BHR_FLAG_RESERVED6	0x40
+#define BHR_FLAG_RESERVED7	0x80
+
+/* ROM options */
+#define BHR_OPT_BAUDRATE_OFFS	0x0
+#define BHR_OPT_BAUDRATE_MASK	(0x7 << BHR_OPT_BAUDRATE_OFFS)
+#define BHR_OPT_BAUD_DEFAULT	(0x0 << BHR_OPT_BAUDRATE_OFFS)
+#define BHR_OPT_BAUD_2400		(0x1 << BHR_OPT_BAUDRATE_OFFS)
+#define BHR_OPT_BAUD_4800		(0x2 << BHR_OPT_BAUDRATE_OFFS)
+#define BHR_OPT_BAUD_9600		(0x3 << BHR_OPT_BAUDRATE_OFFS)
+#define BHR_OPT_BAUD_19200		(0x4 << BHR_OPT_BAUDRATE_OFFS)
+#define BHR_OPT_BAUD_38400		(0x5 << BHR_OPT_BAUDRATE_OFFS)
+#define BHR_OPT_BAUD_57600		(0x6 << BHR_OPT_BAUDRATE_OFFS)
+#define BHR_OPT_BAUD_115200		(0x7 << BHR_OPT_BAUDRATE_OFFS)
+
+#define BHR_OPT_UART_PORT_OFFS	0x3
+#define BHR_OPT_UART_PORT_MASK	(0x3 << BHR_OPT_UART_PORT_OFFS)
+
+#define BHR_OPT_UART_MPPS_OFFS	0x5
+#define BHR_OPT_UART_MPPS_MASK	(0x7 << BHR_OPT_UART_PORT_OFFS)
 
 #endif /* MV_ASMLANGUAGE */
 #endif /* _INC_BOOTSTRAP_H */

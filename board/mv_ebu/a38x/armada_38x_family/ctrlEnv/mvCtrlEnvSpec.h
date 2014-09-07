@@ -362,6 +362,7 @@ typedef enum _mvTarget {
 	PNC_BM,		/* 30 PNC + BM			*/
 #elif defined(CONFIG_ARMADA_39X)
 	PSS_PORT,	/* 31 PSS Ports			*/
+	NSS_MAC_NIC,	/* 32 NSS MAC NIC		*/
 	NSS_MGMT,	/* 32 NSS Managment		*/
 #endif
 	MAX_TARGETS
@@ -384,7 +385,8 @@ typedef enum _mvTarget {
 
 #ifdef CONFIG_ARMADA_39X
 	#define PNC_PSS_NSS_TARGET_ENTRY { 0x04, PSS_PORTS_TARGET_ID }, /* PSS Ports */ \
-					{ 0x04, NSS_TARGET_ID }, /* NSS */
+					{ 0x05, NSS_TARGET_ID }, /* NSS MAC_NIC */ \
+					{ 0x04, NSS_TARGET_ID }, /* NSS MGMT */
 #else
 	#define PNC_PSS_NSS_TARGET_ENTRY { 0x00, PNC_BM_TARGET_ID }, /* PNC_BM */
 #endif
@@ -425,6 +427,7 @@ typedef enum _mvTarget {
 
 #ifdef CONFIG_ARMADA_39X
 	#define PNC_PSS_NSS_TARGET_NAME_ENTRY "PSS_PORTS", /* PSS Ports */ \
+					"NSS_MAC_NIC", /* NSS Managment */ \
 					"NSS_MGMT", /* NSS Managment */
 #else
 	#define PNC_PSS_NSS_TARGET_NAME_ENTRY "PNC_BM", /* PNC_BM */

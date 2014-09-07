@@ -126,8 +126,10 @@ disclaimer.
 #define PNC_BM_PHYS_BASE 0xf2100000
 #define PNC_BM_SIZE	 _1M
 
-#define PSS_PORTS_PHYS_BASE 0xf4800000
-#define PSS_PORTS_SIZE	_1M
+/* PSS window must be aligned to 128M, Size 4MB */
+/* So it actually occupies 0xF8000000 - 0xF83FFFFF */
+#define PSS_PORTS_PHYS_BASE 0xf8000000
+#define PSS_PORTS_SIZE	_4M
 
 #define NSS_MGMT_PHYS_BASE 0xf5000000
 #define NSS_MGMT_SIZE	_16M
@@ -211,7 +213,7 @@ disclaimer.
 #endif /* ETHER_DRAM_COHER */
 
 #ifdef CONFIG_ARMADA_39X
-	#define PNC_PSS_NSS_ENTRY {{PSS_PORTS_PHYS_BASE, 0, PSS_PORTS_SIZE }, 16, EN}, /* PSS_PORTS */ \
+	#define PNC_PSS_NSS_ENTRY {{PSS_PORTS_PHYS_BASE, 0, PSS_PORTS_SIZE }, 13, EN}, /* PSS_PORTS */ \
 			{{NSS_MGMT_PHYS_BASE, 0, NSS_MGMT_SIZE }, 17, DIS}, /* NSS_MGMT  */
 #else
 	#define PNC_PSS_NSS_ENTRY {{PNC_BM_PHYS_BASE, 0, PNC_BM_SIZE }, TBL_UNUSED, DIS}, /* 29 PNC_BM */
@@ -251,7 +253,7 @@ disclaimer.
 	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 23 SPI1_CS1 */  \
 	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 24 SPI1_CS2 */  \
 	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 25 SPI1_CS3 */  \
-	{{0xf8000000,		0,		_1M	},			13,	DIS},	/* 26 BOOT_ROM_CS */\
+	{{0xf8000000,		0,		_1M	},			14,	DIS},	/* 26 BOOT_ROM_CS */\
 	{{NOR_CS_BASE,		0,	NOR_CS_SIZE	},			9,	 EN},	/* 27 DEV_BOOCS */  \
 	{{CRYPT_ENG_BASE,	0,	CRYPT_ENG_SIZE	},			10,	DIS},	/* 28 CRYPT_ENG */ \
 	{{TBL_UNUSED,		0,	TBL_UNUSED	},		TBL_UNUSED,	DIS},	/* 29 CRYPT ENG */  \

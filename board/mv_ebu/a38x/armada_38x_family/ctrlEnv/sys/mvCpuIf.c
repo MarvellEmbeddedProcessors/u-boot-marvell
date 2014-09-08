@@ -257,18 +257,17 @@ MV_STATUS mvCpuIfInitForCpu(MV_U32 cpu, MV_CPU_DEC_WIN *cpuAddrWinMap)
 				DB(mvOsPrintf("%s: ERR: mvCpuIfTargetWinSet failed\n", __func__));
 				return MV_ERROR;
 			}
-#ifdef CONFIG_ARMADA_39X
-			if (target == PSS_PORT) {
+			if ((mvCtrlDevFamilyIdGet(mvCtrlModelGet()) ==
+				MV_88F69XX) && (target == PSS_PORT)) {
+				/* We need to remap PSS ports window to address
+				** 0x0, as the design requires addresses
+				** [31:27] to be zero */
 				addrWin.baseLow = 0x0;
 				addrWin.baseHigh = 0x0;
 			} else {
 				addrWin.baseLow = cpuAddrWinMap[target].addrWin.baseLow;
 				addrWin.baseHigh = cpuAddrWinMap[target].addrWin.baseHigh;
 			}
-#else
-			addrWin.baseLow = cpuAddrWinMap[target].addrWin.baseLow;
-			addrWin.baseHigh = cpuAddrWinMap[target].addrWin.baseHigh;
-#endif
 			if (0xffffffff == mvAhbToMbusWinRemap(cpuAddrWinMap[target].winNum, &addrWin)) {
 				DB(mvOsPrintf("%s: WARN: mvAhbToMbusWinRemap can't remap winNum=%d\n",
 					      __func__, cpuAddrWinMap[target].winNum));

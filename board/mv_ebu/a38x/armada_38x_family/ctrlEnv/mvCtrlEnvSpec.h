@@ -358,13 +358,10 @@ typedef enum _mvTarget {
 	DEV_BOOCS,	/* 27 DEV_BOOCS			*/
 	CRYPT0_ENG,	/* 28 Crypto0 Engine		*/
 	CRYPT1_ENG,	/* 29 Crypto1 Engine		*/
-#ifdef CONFIG_ARMADA_38X
-	PNC_BM,		/* 30 PNC + BM			*/
-#elif defined(CONFIG_ARMADA_39X)
-	PSS_PORT,	/* 31 PSS Ports			*/
-	NSS_MAC_NIC,	/* 32 NSS MAC NIC		*/
-	NSS_MGMT,	/* 32 NSS Managment		*/
-#endif
+	PNC_BM,		/* 30 PNC + BM (A38x)		*/
+	PSS_PORT,	/* 31 PSS Ports	(A39x)		*/
+	NSS_MAC_NIC,	/* 32 NSS MAC NIC (A39x)	*/
+	NSS_MGMT,	/* 33 NSS Managment (A39x)	*/
 	MAX_TARGETS
 } MV_TARGET;
 
@@ -382,14 +379,6 @@ typedef enum _mvTarget {
 
 #define MAIN_BOOT_ATTR         0x1D    /* BootROM */
 #define SEC_BOOT_ATTR          0x2F    /* Boot Device CS */
-
-#ifdef CONFIG_ARMADA_39X
-	#define PNC_PSS_NSS_TARGET_ENTRY { 0x04, PSS_PORTS_TARGET_ID }, /* PSS Ports */ \
-					{ 0x05, NSS_TARGET_ID }, /* NSS MAC_NIC */ \
-					{ 0x04, NSS_TARGET_ID }, /* NSS MGMT */
-#else
-	#define PNC_PSS_NSS_TARGET_ENTRY { 0x00, PNC_BM_TARGET_ID }, /* PNC_BM */
-#endif
 
 #define TARGETS_DEF_ARRAY {                                                 \
 	{ DRAM_CS0_ATTR, DRAM_TARGET_ID },	/* SDRAM_CS0             */ \
@@ -422,16 +411,11 @@ typedef enum _mvTarget {
 	{ SEC_BOOT_ATTR, DEV_TARGET_ID  },	/* Secondary Boot device */ \
 	{ 0x09, CRYPT_TARGET_ID	},		/* CRYPT_ENG0            */ \
 	{ 0x05, CRYPT_TARGET_ID	},		/* CRYPT_ENG1            */ \
-	PNC_PSS_NSS_TARGET_ENTRY \
+	{ 0x00, PNC_BM_NSS_TARGET_ID },		/* PNC_BM (A38x)	 */ \
+	{ 0x04, PSS_PORTS_TARGET_ID },		/* PSS Ports (A39x)	 */ \
+	{ 0x05, PNC_BM_NSS_TARGET_ID },		/* NSS MAC_NIC (A39x)	 */ \
+	{ 0x04, PNC_BM_NSS_TARGET_ID }		/* NSS MGMT (A39x)	 */ \
 }
-
-#ifdef CONFIG_ARMADA_39X
-	#define PNC_PSS_NSS_TARGET_NAME_ENTRY "PSS_PORTS", /* PSS Ports */ \
-					"NSS_MAC_NIC", /* NSS Managment */ \
-					"NSS_MGMT", /* NSS Managment */
-#else
-	#define PNC_PSS_NSS_TARGET_NAME_ENTRY "PNC_BM", /* PNC_BM */
-#endif
 
 #define CESA_TARGET_NAME_DEF    ("CRYPT_ENG0", "CRYPT_ENG1")
 #define TARGETS_NAME_ARRAY      {			\
@@ -465,7 +449,10 @@ typedef enum _mvTarget {
 	"DEV_BOOTCS",		/* DEV_BOOCS */		\
 	"CRYPT1_ENG",		/* CRYPT1_ENG */	\
 	"CRYPT2_ENG",		/* CRYPT2_ENG */	\
-	PNC_PSS_NSS_TARGET_NAME_ENTRY \
+	"PNC_BM",		/* PNC_BM */		\
+	"PSS_PORTS",		/* PSS Ports */		\
+	"NSS_MAC_NIC",		/* NSS Managment */	\
+	"NSS_MGMT"		/* NSS Managment */	\
 }
 
 #endif /* MV_ASMLANGUAGE */

@@ -218,43 +218,41 @@ static MV_VOID mvNetComplexSampleStagesTiming(MV_U32 val)
 static MV_VOID mvNetComplexComPhySelectorConfig(MV_U32 netComplex)
 {
 	MV_U32 selector = MV_REG_READ(COMMON_PHYS_SELECTORS_REG);
-	switch (netComplex) {
-	case MV_NETCOMP_GE_MAC0_2_SGMII_L0:
+
+	/* Change the value of the selector from the legacy mode to NSS mode */
+	if (netComplex & MV_NETCOMP_GE_MAC0_2_SGMII_L0) {
 		selector &= ~COMMON_PHYS_SELECTOR_LANE_MASK(0);
 		selector |= 0x4 << COMMON_PHYS_SELECTOR_LANE_OFFSET(0);
-		break;
-	case MV_NETCOMP_GE_MAC0_2_SGMII_L1:
+	}
+	if (netComplex &  MV_NETCOMP_GE_MAC0_2_SGMII_L1) {
 		selector &= ~COMMON_PHYS_SELECTOR_LANE_MASK(1);
 		selector |= 0x8 << COMMON_PHYS_SELECTOR_LANE_OFFSET(1);
-		break;
-	case MV_NETCOMP_GE_MAC1_2_SGMII_L1:
+	}
+	if (netComplex &  MV_NETCOMP_GE_MAC1_2_SGMII_L1) {
 		selector &= ~COMMON_PHYS_SELECTOR_LANE_MASK(1);
 		selector |= 0x9 << COMMON_PHYS_SELECTOR_LANE_OFFSET(1);
-		break;
-	case MV_NETCOMP_GE_MAC1_2_SGMII_L2:
+	}
+	if (netComplex &  MV_NETCOMP_GE_MAC1_2_SGMII_L2) {
 		selector &= ~COMMON_PHYS_SELECTOR_LANE_MASK(2);
 		selector |= 0x5 << COMMON_PHYS_SELECTOR_LANE_OFFSET(2);
-		break;
-	case MV_NETCOMP_GE_MAC2_2_SGMII_L3:
+	}
+	if (netComplex &  MV_NETCOMP_GE_MAC2_2_SGMII_L3) {
 		selector &= ~COMMON_PHYS_SELECTOR_LANE_MASK(3);
 		selector |= 0x7 << COMMON_PHYS_SELECTOR_LANE_OFFSET(3);
-		break;
-	case MV_NETCOMP_GE_MAC1_2_SGMII_L4:
-		/* in serdes lane 4 can't connect MAC1->SGMII using LANE4 with V3*/
-		break;
-	case MV_NETCOMP_GE_MAC3_2_SGMII_L4:
+	}
+	if (netComplex &  MV_NETCOMP_GE_MAC3_2_SGMII_L4) {
 		selector &= ~COMMON_PHYS_SELECTOR_LANE_MASK(4);
 		selector |= 0x8 << COMMON_PHYS_SELECTOR_LANE_OFFSET(4);
-		break;
-	case MV_NETCOMP_GE_MAC2_2_SGMII_L5:
+	}
+	if (netComplex &  MV_NETCOMP_GE_MAC2_2_SGMII_L5) {
 		selector &= ~COMMON_PHYS_SELECTOR_LANE_MASK(5);
 		selector |= 0x6 << COMMON_PHYS_SELECTOR_LANE_OFFSET(5);
-		break;
-	case MV_NETCOMP_GE_MAC3_2_SGMII_L6:
+	}
+	if (netComplex &  MV_NETCOMP_GE_MAC3_2_SGMII_L6) {
 		selector &= ~COMMON_PHYS_SELECTOR_LANE_MASK(6);
 		selector |= 0x2 << COMMON_PHYS_SELECTOR_LANE_OFFSET(6);
-		break;
 	}
+
 	MV_REG_WRITE(COMMON_PHYS_SELECTORS_REG, selector);
 }
 

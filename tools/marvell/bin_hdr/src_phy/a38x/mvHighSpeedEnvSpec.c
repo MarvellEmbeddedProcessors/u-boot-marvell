@@ -106,25 +106,25 @@ static MV_VOID _MV_REG_WRITE(MV_U32 regAddr, MV_U32 regData)
 MV_U8 commonPhysSelectorsMap[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 {
 	/* 0      1      2       3       4       5       6 */
-	{ 0x1,   0x1,    NA,	 NA,	 NA,	 NA,     NA   },  /* PEX0 */
-	{ NA,    NA,     0x1,	 NA,	 0x1,	 NA,     0x1  },  /* PEX1 */
+	{ 0x1,   0x1,    NA,	 NA,	 NA,	 NA,     NA       },  /* PEX0 */
+	{ NA,    NA,     0x1,	 NA,	 0x1,	 NA,     0x1      },  /* PEX1 */
 	{ NA,    NA,     NA,	 NA,	 0x7,	 0x1,    NA	  },  /* PEX2 */
 	{ NA,    NA,     NA,	 0x1,	 NA,	 NA,     NA	  },  /* PEX3 */
-    { 0x2,   0x3,    NA,	 NA,	 NA,	 NA,     NA	  },  /* SATA0 */
+	{ 0x2,   0x3,    NA,	 NA,	 NA,	 NA,     NA	  },  /* SATA0 */
 	{ NA,    NA,     0x3,	 NA,	 NA,	 NA,     NA	  },  /* SATA1 */
 	{ NA,    NA,     NA,	 NA,	 0x6,	 0x2,    NA	  },  /* SATA2 */
-	{ NA,    NA,     NA,	 0x3,	 NA,	 NA,     NA	  },  /* SATA3 */
-    { 0x4,   0x4/*0x8*/,    NA,	 NA,	 NA,	 NA,     NA	  },  /* SGMII0 */
-    { NA,    0x5/*0x9*/,    0x5,	 NA,	 NA,	 NA,     NA	  },  /* SGMII1 */
-    { NA,    NA,     NA,	 0x7,	 NA,	 0x6,    NA	  },  /* SGMII2 */
+	{ NA,	 NA,     NA,	 0x3,	 NA,	 NA,     NA	  },  /* SATA3 */
+	{ 0x3/*0x4*/,   0x4/*0x8*/,    NA,     NA,	 NA,	 NA,     NA	  },  /* SGMII0 */
+	{ NA,    0x5/*0x9*/,    0x4/*0x5*/,    NA,	 NA,	 NA,     NA	  },  /* SGMII1 */
+	{ NA,    NA,     NA,	 0x4/*0x7*/,	 NA,	 0x3/*0x6*/,    NA	  },  /* SGMII2 */
 	{ NA,    0x7,    NA,	 NA,	 NA,	 NA,     NA	  },  /* QSGMII */
 	{ NA,    0x6,    NA,	 NA,	 0x4,	 NA,     NA	  },  /* USB3_HOST0 */
 	{ NA,    NA,     NA,	 0x5,	 NA,	 0x4,    NA	  },  /* USB3_HOST1 */
 	{ NA,    NA,     NA,	 0x6,	 0x5,	 0x5,    NA	  },  /* USB3_DEVICE */
 #ifdef CONFIG_ARMADA_39X
-    { NA,    NA,     NA,	 NA,	 0x8,	 NA,     0x2  },  /* SGMII3 */
-    { NA,    NA,     NA,	 0x8,	 0x9,	 0x8,    0x4  },  /* XAUI */
-    { NA,    NA,     NA,	 NA,	 NA,	 0x8,    0x4  },  /* RXAUI */
+	{ NA,    NA,     NA,	 NA,	 0x8,	 NA,     0x2  },  /* SGMII3 */
+	{ NA,    NA,     NA,	 0x8,	 0x9,	 0x8,    0x4  },  /* XAUI */
+	{ NA,    NA,     NA,	 NA,	 NA,	 0x8,    0x4  },  /* RXAUI */
 #endif
 	{ 0x0,   0x0,    0x0,	 0x0,	 0x0,	 0x0,    NA	  }   /* DEFAULT_SERDES */
 };

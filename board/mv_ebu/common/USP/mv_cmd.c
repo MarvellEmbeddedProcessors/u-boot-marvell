@@ -817,6 +817,47 @@ U_BOOT_CMD(
 );
 #endif /* #if defined(MV_INC_BOARD_DDIM) */
 
+#ifdef CONFIG_MV_XSMI
+#include "eth-phy/mvEthPhyXsmi.h"
+
+int xsmi_phy_read_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	MV_U16 phyReg;
+
+	mvEthPhyXsmiRegRead(simple_strtoul(argv[1], NULL, 16),
+			simple_strtoul(argv[2], NULL, 16),
+			simple_strtoul(argv[3], NULL, 16), &phyReg);
+
+	printf("0x%x\n", phyReg);
+
+	return 1;
+}
+
+U_BOOT_CMD(
+	xsmiPhyRead,      4,     4, xsmi_phy_read_cmd,
+	"xsmiPhyRead	- Read Phy register through XSMI interface\n",
+	" <Phy Address> <Dev Address> <Reg Offset>. \n"
+	"\tRead the Phy register through XSMI interface. \n"
+);
+
+int xsmi_phy_write_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
+{
+	mvEthPhyXsmiRegWrite(simple_strtoul(argv[1], NULL, 16),
+			simple_strtoul(argv[2], NULL, 16),
+			simple_strtoul(argv[3], NULL, 16),
+			simple_strtoul(argv[4], NULL, 16));
+
+	return 1;
+}
+
+U_BOOT_CMD(
+	xsmiPhyWrite,      5,     5, xsmi_phy_write_cmd,
+	"xsmiPhyWrite	- Write Phy register through XSMI interface\n",
+	" <Phy Address> <Dev Address> <Reg Offset> <Value>. \n"
+	"\tWrite to Phy register through XSMI interface. \n"
+);
+
+#endif /* CONFIG_MV_XSMI */
 
 #if defined(MV_INCLUDE_GIG_ETH)
 

@@ -128,7 +128,15 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_16BIT  /* Buses mask */
     },
-    /* 4th Marvell board - RD_MISL_24G4G - No ECC (BoardId = 0x3) */
+    /* 4th Marvell board - DB_MISL_24G4G - No ECC (BoardId = 0x3) */
+    {
+    0x1, /* active interfaces */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
+	{{{{0x1,0,0,0},{ 0x1,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
+    5, /* Num Of Bus Per Interface*/
+    BUS_MASK_16BIT  /* Buses mask */
+    },
+    /* 5th Marvell board - RD_MTL_24G - No ECC (BoardId = 0x4) */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */

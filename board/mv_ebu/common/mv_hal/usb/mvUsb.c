@@ -823,8 +823,8 @@ MV_STATUS mvUsbUtmiPhyInit(int dev, MV_USB_HAL_DATA *usbHalData)
 		/* The below init flow is incorrect for MVF67X0 and disabled until updated */
 		/* status = mvUsbPhy40nmLpInit(dev); */
 
-	} else if (usbHalData->ctrlFamily == MV_88F68XX) {
-		/* The USB Phy init of MV_88F68XX is done by the Bin Header */
+	} else if (usbHalData->ctrlFamily == MV_88F68XX || usbHalData->ctrlFamily == MV_88F69XX) {
+		/* The USB Phy init of MV_88F68XX or MV_88F69XX is done by the Bin Header */
 	} else
 		mvUsbPhyInit(dev);
 

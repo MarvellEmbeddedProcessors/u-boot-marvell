@@ -172,20 +172,14 @@ MV_STATUS mvEth10gPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	if (ethPortNum != ((MV_U32) -1))
 		phyAddr = eth10gPhyHalData.phyAddr[ethPortNum];
 
-	/* Set page as 0 */
-	if (mvEthPhyXsmiRegWrite(phyAddr, 0, 22, 0) != MV_OK) {
-		mvOsPrintf("%s: Port%d: phyAddr=0x%x -  phy set page 0 failed\n", __func__, ethPortNum, phyAddr);
-		return MV_ERROR;
-	}
-
 	/* Reads ID1 */
-	if (mvEthPhyXsmiRegRead(phyAddr, 0, 2, &id1) != MV_OK) {
+	if (mvEthPhyXsmiRegRead(phyAddr, 2, 2, &id1) != MV_OK) {
 		mvOsPrintf("%s: Port%d: phyAddr=0x%x -  phy read id1 failed\n", __func__, ethPortNum, phyAddr);
 		return MV_ERROR;
 	}
 
 	/* Reads ID2 */
-	if (mvEthPhyXsmiRegRead(phyAddr, 0, 3, &id2) != MV_OK) {
+	if (mvEthPhyXsmiRegRead(phyAddr, 2, 3, &id2) != MV_OK) {
 		mvOsPrintf("%s: Port%d: phyAddr=0x%x -  phy read id2 failed\n", __func__, ethPortNum, phyAddr);
 		return MV_ERROR;
 	}

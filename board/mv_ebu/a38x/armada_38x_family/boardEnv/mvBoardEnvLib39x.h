@@ -197,6 +197,7 @@ typedef enum _mvConfigTypeID {
 
 #endif /* CONFIG_CMD_BOARDCFG */
 
+MV_U32 mvBoardPortTypeGet(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInXaui(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInRxaui(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInQsgmii(MV_U32 ethPortNum);

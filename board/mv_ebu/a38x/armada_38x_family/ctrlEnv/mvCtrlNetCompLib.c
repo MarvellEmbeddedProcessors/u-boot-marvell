@@ -65,6 +65,83 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "boardEnv/mvBoardEnvLib.h"
 #include "mvCtrlNetCompLib.h"
 
+static MV_VOID mvNetAssertLoadConfig(void)
+{
+	MV_U32 reg;
+
+	reg = MV_REG_READ(MV_NETCOMP_SYSTEM_SOFT_RESET);
+	reg &= ~NETC_NSS_SRAM_LOAD_CONF_MASK;
+	reg &= ~NETC_NSS_PPC_LOAD_CONF_MASK;
+	reg &= ~NETC_NSS_MACS_LOAD_CONF_MASK;
+	reg &= ~NETC_NSS_QM1_LOAD_CONF_MASK;
+	MV_REG_WRITE(MV_NETCOMP_SYSTEM_SOFT_RESET, reg);
+}
+
+static MV_VOID mvNetDeAssertLoadConfig(void)
+{
+	MV_U32 reg;
+
+	reg = MV_REG_READ(MV_NETCOMP_SYSTEM_SOFT_RESET);
+	reg |= NETC_NSS_SRAM_LOAD_CONF_MASK;
+	reg |= NETC_NSS_PPC_LOAD_CONF_MASK;
+	reg |= NETC_NSS_MACS_LOAD_CONF_MASK;
+	reg |= NETC_NSS_QM1_LOAD_CONF_MASK;
+	MV_REG_WRITE(MV_NETCOMP_SYSTEM_SOFT_RESET, reg);
+}
+
+static MV_VOID mvNetPmClockDown(void)
+{
+	MV_U32 reg;
+
+	reg = MV_REG_READ(MV_NETCOMP_CLOCK_GATING);
+
+	reg &= ~NETC_CLOCK_GATING_SRAM_X2_MASK;
+	reg &= ~NETC_CLOCK_GATING_SRAM_MASK;
+	reg &= ~NETC_CLOCK_GATING_PPC_CMAC_MASK;
+	reg &= ~NETC_CLOCK_GATING_PPC_PP_MASK;
+	reg &= ~NETC_CLOCK_GATING_PPC_NSS_MASK;
+	reg &= ~NETC_CLOCK_GATING_CMAC_MASK;
+	reg &= ~NETC_CLOCK_GATING_NSS_MASK;
+	reg &= ~NETC_CLOCK_GATING_QM2_MASK;
+	reg &= ~NETC_CLOCK_GATING_QM1_X2_MASK;
+	reg &= ~NETC_CLOCK_GATING_QM1_MASK;
+
+	MV_REG_WRITE(MV_NETCOMP_CLOCK_GATING, reg);
+}
+
+static MV_VOID mvNetPmClockUp(void)
+{
+	MV_U32 reg;
+
+	reg = MV_REG_READ(MV_NETCOMP_CLOCK_GATING);
+
+	reg |= NETC_CLOCK_GATING_SRAM_X2_MASK;
+	reg |= NETC_CLOCK_GATING_SRAM_MASK;
+	reg |= NETC_CLOCK_GATING_PPC_CMAC_MASK;
+	reg |= NETC_CLOCK_GATING_PPC_PP_MASK;
+	reg |= NETC_CLOCK_GATING_PPC_NSS_MASK;
+	reg |= NETC_CLOCK_GATING_CMAC_MASK;
+	reg |= NETC_CLOCK_GATING_NSS_MASK;
+	reg |= NETC_CLOCK_GATING_QM2_MASK;
+	reg |= NETC_CLOCK_GATING_QM1_X2_MASK;
+	reg |= NETC_CLOCK_GATING_QM1_MASK;
+
+	MV_REG_WRITE(MV_NETCOMP_CLOCK_GATING, reg);
+}
+
+static MV_VOID mvNetRestoreRegsDefaults(void)
+{
+	/* WA for A390 Z1 - when NSS wake up from reset
+	registers default values are wrong */
+
+	mvNetPmClockDown();
+	mvNetAssertLoadConfig();
+	mvNetPmClockUp();
+	mvNetPmClockDown();
+	mvNetDeAssertLoadConfig();
+	mvNetPmClockUp();
+}
+
 static MV_VOID mvNetComplexNssSelect(MV_U32 val)
 {
 	MV_U32 reg;
@@ -416,11 +493,16 @@ MV_STATUS mvNetComplexInit(MV_U32 netCompConfig, MV_NETC_PHASE_CFG phase)
 	if (phase == MV_NETC_FIRST_PHASE)
 		/* Enable the NSS (PPv3) instead of the NetA (PPv1) */
 		mvNetComplexNssSelect(1);
+
 	else if (phase == MV_NETC_SECOND_PHASE) {
 		/* Enable the GOP internal clock logic */
 		mvNetComplexGopClockLogicSet(1);
 		/* De-assert GOP unit reset */
 		mvNetComplexGopReset(1);
+
+		/* WA for A390 Z1 - when NSS wake up from reset
+		registers default values are wrong */
+		mvNetRestoreRegsDefaults();
 	}
 
 	return MV_OK;

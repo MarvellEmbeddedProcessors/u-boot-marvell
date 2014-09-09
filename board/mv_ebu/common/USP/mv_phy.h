@@ -64,6 +64,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mvOs.h"
 #include "eth-phy/mvEthPhy.h"
+#ifdef CONFIG_MV_ETH_10G
+#include "eth-phy/mvEth10gPhy.h"
+#endif
 
 MV_VOID mvBoardEgigaPhyInit(MV_VOID);
 MV_VOID mvBoardALPEgigaPhyInit(MV_VOID);

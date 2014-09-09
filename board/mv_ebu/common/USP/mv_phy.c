@@ -66,6 +66,9 @@
 #include "mvBoardEnvLib.h"
 #include "mv_phy.h"
 #include "ctrlEnv/mvCtrlEnvRegs.h"
+#ifdef CONFIG_ARMADA_39X
+#include "ctrlEnv/mvCtrlNetCompLib.h"
+#endif
 #if defined(MV_ETH_NETA)
 #include "neta/gbe/mvEthRegs.h"
 #include "neta/gbe/mvNeta.h"
@@ -229,6 +232,30 @@ void mvBoardLedMatrixInit(void)
 #endif /* MV88F66XX || MV88F672X*/
 
 /***********************************************************
+ * Init the 10G PHY of the board                           *
+ ***********************************************************/
+MV_STATUS mvBoard10GPhyInit(MV_U32 port)
+{
+#ifdef CONFIG_MV_ETH_10G
+	MV_U32 portType;
+
+	portType = mvBoardPortTypeGet(port);
+	if ((portType == MV_PORT_TYPE_RXAUI) || (portType == MV_PORT_TYPE_XAUI)) {
+		mvNetComplexNssSelect(1);
+		if (MV_ERROR == mvEth10gPhyInit(port, MV_FALSE)) {
+			mvNetComplexNssSelect(0);
+			mvCtrlPwrClckSet(ETH_GIG_UNIT_ID, port, MV_FALSE);
+			mvOsPrintf("PHY error - Failed to initialize 10G PHY (port %d).\n", port);
+			return MV_FAIL;
+		}
+		mvNetComplexNssSelect(0);
+		return MV_OK;
+	}
+#endif	/* CONFIG_MV_ETH_10G */
+	return MV_NOT_SUPPORTED;
+}
+
+/***********************************************************
  * Init the PHY of the board                               *
  ***********************************************************/
 void mvBoardEgigaPhyInit(void)
@@ -254,12 +281,18 @@ void mvBoardEgigaPhyInit(void)
 		if (phyAddr != -1) {
 			/* writing the PHY address before PHY init */
 			mvNetaPhyAddrSet(i, phyAddr);
-			if (MV_ERROR == mvEthPhyInit(i, MV_FALSE)) {
+			/* Initiaze 10G PHYs */
+			status = mvBoard10GPhyInit(i);
+			if (status == MV_OK)
+				continue;
+			if ((status != MV_OK) && (status != MV_NOT_SUPPORTED)) {
+				mvCtrlPwrClckSet(ETH_GIG_UNIT_ID, i, MV_FALSE);
+				mvOsOutput("PHY error - shutdown port%d\n", i);
+			} else if (MV_ERROR == mvEthPhyInit(i, MV_FALSE)) {
 				mvNetaPhyAddrPollingDisable(i);
 				mvCtrlPwrClckSet(ETH_GIG_UNIT_ID, i, MV_FALSE);
 				mvOsOutput("PHY error - shutdown port%d\n", i);
-			}
-			else if (mvBoardIsPortInMii(i)) {
+			} else if (mvBoardIsPortInMii(i)) {
 				/* if port is MII the speed is les the 1Gbps need too change the phy advertisment */
 				mvEthPhyAdvertiseSet(phyAddr, MV_PHY_ADVERTISE_100_FULL);
 				/* after PHY advertisment change must reset PHY is needed*/

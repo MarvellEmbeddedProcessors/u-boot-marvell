@@ -142,7 +142,7 @@ static MV_VOID mvNetRestoreRegsDefaults(void)
 	mvNetPmClockUp();
 }
 
-static MV_VOID mvNetComplexNssSelect(MV_U32 val)
+MV_VOID mvNetComplexNssSelect(MV_U32 val)
 {
 	MV_U32 reg;
 

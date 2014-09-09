@@ -96,15 +96,15 @@ MV_STATUS suspendWakeup(void)
 	if (!mvSysEnvSuspendWakeupCheck())
 		return MV_OK;
 
-	DEBUG_INIT_S("Detected suspend to RAM indication\n");
 	/* Read and clear magic word to avoid successive resumes */
 	magic_word =  *(boot_info);
 	(*boot_info++) =  0x0; /* boot_info -> return pc */
 
 	if(!(magic_word == SUSPEND_MAGIC_WORD)) {
-		DEBUG_INIT_S("Detected magic word error!\n");
+		DEBUG_INIT_S("Not detected suspend to RAM indication\n");
 		return MV_OK;
 	}
+	DEBUG_INIT_S("Detected suspend to RAM indication\n");
 
 	resumeFunc = (void *)(*boot_info++);
 	/* boot_info now points to the 1st register address*/

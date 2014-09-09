@@ -168,7 +168,10 @@ typedef struct boardWakeupGPIO {
 } MV_BOARD_WAKEUP_GPIO;
 
 /* GPIO status indication for Suspend Wakeup:
- * this array defines the indication GPIO per board, if exist (else -1 if disabled) */
+ * if suspend to RAM is supported and GPIO inidcation is implemented, set the gpio number
+ * if suspend to RAM is supported but GPIO indication is not implemented set '-2'
+ * if suspend to RAM is not supported set '-1'
+ */
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 #define MV_BOARD_WAKEUP_GPIO_INFO {\
 {ARMADA_38x_CUSTOMER_BOARD_ID0,	-1 },\
@@ -178,9 +181,9 @@ typedef struct boardWakeupGPIO {
 #else
 
 #define MV_BOARD_WAKEUP_GPIO_INFO {\
-{RD_NAS_68XX_ID, -1 },\
+{RD_NAS_68XX_ID, -2 },\
 {DB_68XX_ID,	 -1 },\
-{RD_AP_68XX_ID,	 -1 },\
+{RD_AP_68XX_ID,	 -2 },\
 {DB_AP_68XX_ID,	 21 },\
 };
 #endif

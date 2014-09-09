@@ -182,10 +182,11 @@ MV_U32 mvSysEnvSuspendWakeupCheck(void)
 	 * - Fetch the GPIO number for wakeup status input indication */
 	boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
 	if (boardGpio[boardIdIndex].gpioNum == -1)
-		return 0;
+		return 0; /* suspend to RAM is not supported */
+	else if (boardGpio[boardIdIndex].gpioNum == -2)
+		return 1; /* suspend to RAM is supported but GPIO indication is not implemented - Skip */
 	else
 		gpio = boardGpio[boardIdIndex].gpioNum;
-
 
 	/* Initialize MPP for GPIO (set MPP = 0x0) */
 	reg = MV_REG_READ(MPP_CONTROL_REG(MPP_REG_NUM(gpio)));

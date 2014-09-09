@@ -171,7 +171,7 @@ typedef enum mvNetComplexPhase {
 #define NETC_QSGMII_CTRL_VERSION_MASK			(0x1 << NETC_QSGMII_CTRL_VERSION_OFFSET)
 
 /* Function Enable Control 1 */
-#define MV_NETCOMP_FUNCTION_ENABLE_CTRL_1		(MV_MISC_REGS_OFFSET + 0X88)
+#define MV_NETCOMP_FUNCTION_ENABLE_CTRL_1			(MV_MISC_REGS_OFFSET + 0x88)
 
 #define NETC_PACKET_PROCESS_OFFSET			1
 #define NETC_PACKET_PROCESS_MASK			(0x1 << NETC_PACKET_PROCESS_OFFSET)
@@ -183,3 +183,4 @@ typedef enum mvNetComplexPhase {
 #define COMMON_PHYS_SELECTOR_LANE_MASK(lane)		(0xF << COMMON_PHYS_SELECTOR_LANE_OFFSET(lane))
 
 MV_STATUS mvNetComplexInit(MV_U32 netCompConfig, MV_NETC_PHASE_CFG phase);
+MV_VOID mvNetComplexNssSelect(MV_U32 val);

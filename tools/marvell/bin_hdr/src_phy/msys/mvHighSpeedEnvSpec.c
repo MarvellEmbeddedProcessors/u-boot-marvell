@@ -154,34 +154,40 @@ SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
 /* Configuration options */
 SERDES_MAP serdesDbTopology[MAX_SERDES_LANES] =
 { /* DB_MISL_24G4XG */
-	/* Type		Serdes		Speed			Mode			SwapRX		SwapTX */
-	{ PEX0,		0,			0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
+	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 };
 
 SERDES_MAP serdesRd48_4xg_Topology[MAX_SERDES_LANES] =
 { /* RD_MTL_48G4XG */
-	/* Type		Serdes		Speed			Mode			SwapRX		SwapTX */
-	{ PEX0,		0,			0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
+	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_TRUE,	MV_FALSE },
 };
 
 SERDES_MAP serdesRd48_2xxg_2xg_Topology[MAX_SERDES_LANES] =
 { /* RD_MTL_48G_2XXG_2XG */
-	/* Type		Serdes		Speed			Mode			SwapRX		SwapTX */
-	{ PEX0,		0,			0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
+	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_TRUE,	MV_FALSE },
 };
 
-SERDES_MAP serdesRd24_g46_Topology[MAX_SERDES_LANES] =
-{ /* RD_MISL_24G46 */
-	/* Type		Serdes		Speed			Mode			SwapRX		SwapTX */
-	{ PEX0,		0,			0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+SERDES_MAP serdesDb24_g46_Topology[MAX_SERDES_LANES] =
+{ /* DB_MISL_24G46 */
+	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
+	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+};
+
+SERDES_MAP serdesRd24_Topology[MAX_SERDES_LANES] =
+{ /* RD_MTL_24G - no build-in OOB ports */
+	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
+	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 };
 
 SERDES_MAP* marvellBoardSerdesTopology[] =
@@ -189,7 +195,8 @@ SERDES_MAP* marvellBoardSerdesTopology[] =
 	serdesDbTopology,
 	serdesRd48_4xg_Topology,
 	serdesRd48_2xxg_2xg_Topology,
-	serdesRd24_g46_Topology,
+	serdesDb24_g46_Topology,
+	serdesRd24_Topology,
 };
 
 /*************************** Functions implementation *************************/

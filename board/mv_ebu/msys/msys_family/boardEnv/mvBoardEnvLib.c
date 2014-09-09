@@ -743,17 +743,10 @@ MV_U32 mvBoardGppConfigGet(void)
 *******************************************************************************/
 MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum)
 {
-	switch (ethPortNum) {
-	case 0:
-	case 1:
-		break;
-	case 2:
-	case 3:
-	default:
+	if ((ethPortNum + 1) <= board->numBoardMacInfo)
+		return MV_TRUE;
+	else
 		return MV_FALSE;
-	}
-
-	return MV_TRUE;
 }
 
 /*******************************************************************************

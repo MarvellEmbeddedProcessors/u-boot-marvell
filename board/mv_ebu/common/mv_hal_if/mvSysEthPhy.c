@@ -134,7 +134,7 @@ MV_STATUS mvSysEthPhyXsmiInit(void)
 	MV_ETHPHY_XSMI_HAL_DATA halData;
 
 	halData.ctrlModel = 0;
-	halData.ethPhyXsmiRegOff = PSS_PORTS_PHYS_BASE + 30000;
+	halData.ethPhyXsmiRegOff = PSS_PORTS_PHYS_BASE + MV_XSMI_REGS_OFFSET;
 
 	return mvEthPhyXsmiHalInit(&halData);
 }

@@ -100,6 +100,8 @@ extern "C" {
 #define MV_CIB_CTRL_STATUS_OFFSET               (0x20280)
 #define MV_CNTMR_REGS_OFFSET                    (0x20300)
 
+#define MV_XSMI_REGS_OFFSET			(0x30000) /* Access for XSMI registers using PSS window only */
+
 /*
  * CPU virtual/banked registers: 0x21000 to 0x21100 (64 registers).
  * Physical registers:

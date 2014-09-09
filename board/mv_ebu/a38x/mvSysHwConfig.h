@@ -126,10 +126,10 @@ disclaimer.
 #define PNC_BM_PHYS_BASE 0xf2100000
 #define PNC_BM_SIZE	 _1M
 
-/* PSS window must be aligned to 128M, Size 4MB */
-/* So it actually occupies 0xF8000000 - 0xF83FFFFF */
-#define PSS_PORTS_PHYS_BASE 0xf8000000
-#define PSS_PORTS_SIZE	_4M
+/* PSS window Size is 12MB to avoid address complition */
+/* So it actually occupies 0xE8000000 - 0xEFFFFFFF */
+#define PSS_PORTS_PHYS_BASE 0xE8000000
+#define PSS_PORTS_SIZE	_128M
 
 #define NSS_MGMT_PHYS_BASE 0xf5000000
 #define NSS_MGMT_SIZE	_16M

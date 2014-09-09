@@ -123,7 +123,7 @@ extern "C" {
 
 #ifdef CONFIG_ARMADA_38X
 #define PMC_SATA_STOP_CLK_OFFS(index)		(index == 0 ? 15 : 30)	/* bit 15 - sata0, bit 30 - sata1 */
-#elif CONFIG_ARMADA_39X
+#elif defined(CONFIG_ARMADA_39X)
 #define PMC_SATA_STOP_CLK_OFFS(index)           (index < 2 ? 15 : 30)	/* bit 15 - sata0/1, bit 30 - sata2/3 */
 #endif
 

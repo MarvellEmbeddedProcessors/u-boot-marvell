@@ -162,7 +162,7 @@ MV_STATUS mvEthPhyXsmiWaitReady(void)
 	/* wait till the XSMI is not busy*/
 	do {
 		/* read xsmi register */
-		xSmiReg = MV_REG_READ(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT);
+		xSmiReg = MV_MEMIO_LE32_READ(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT);
 		if (timeout-- == 0) {
 			mvOsPrintf("%s: XSMI busy timeout\n", __func__);
 			return MV_FAIL;
@@ -197,7 +197,7 @@ MV_STATUS mvEthPhyXsmiWaitValid(void)
 	/*wait till readed value is ready */
 	do {
 		/* read xsmi register */
-		xSmiReg = MV_REG_READ(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT);
+		xSmiReg = MV_MEMIO_LE32_READ(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT);
 
 		if (timeout-- == 0) {
 			mvOsPrintf("%s: XSMI read-valid timeout\n", __func__);
@@ -236,19 +236,19 @@ MV_STATUS mvEthPhyXsmiRegRead(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, MV
 		return MV_FAIL;
 
 	xSmiAddr = (regAddr << ETH_PHY_XSMI_REG_ADDR_OFFS);
-	MV_REG_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_REG_ADDR, xSmiAddr);
+	MV_MEMIO_LE32_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_REG_ADDR, xSmiAddr);
 
 	/* fill the phy address and regiser offset and read opcode */
 	xSmiReg = (phyAddr <<  ETH_PHY_XSMI_PHY_ADDR_OFFS) | (devAddr << ETH_PHY_XSMI_DEV_ADDR_OFFS)|
 			   ETH_PHY_XSMI_OPCODE_ADDR_READ;
 
 	/* write the xsmi register */
-	MV_REG_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT, xSmiReg);
+	MV_MEMIO_LE32_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT, xSmiReg);
 
 	if (mvEthPhyXsmiWaitValid() != MV_OK)
 		return MV_FAIL;
 
-	*data = (MV_U16)(MV_REG_READ(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT) &
+	*data = (MV_U16)(MV_MEMIO_LE32_READ(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT) &
 			ETH_PHY_XSMI_DATA_MASK);
 
 	return MV_OK;
@@ -284,7 +284,7 @@ MV_STATUS mvEthPhyXsmiRegWrite(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, M
 		return MV_FAIL;
 
 	xSmiAddr = (regAddr << ETH_PHY_XSMI_REG_ADDR_OFFS);
-	MV_REG_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_REG_ADDR, xSmiAddr);
+	MV_MEMIO_LE32_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_REG_ADDR, xSmiAddr);
 
 	/* fill the phy address and regiser offset and write opcode and data*/
 	xSmiReg = (data << ETH_PHY_XSMI_DATA_OFFS);
@@ -295,7 +295,7 @@ MV_STATUS mvEthPhyXsmiRegWrite(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, M
 	DB(printf("%s: phyAddr=0x%x offset = 0x%x data=0x%x\n", __func__, phyAddr, devAddr, data));
 	DB(printf("%s: ethphyXsmiHalData.ethPhyXsmiReg = 0x%x xSmiReg=0x%x\n", __func__,
 				ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT, xSmiReg));
-	MV_REG_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT, xSmiReg);
+	MV_MEMIO_LE32_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT, xSmiReg);
 
 	return MV_OK;
 }
@@ -338,7 +338,7 @@ MV_STATUS mvEthPhyXsmiRegReadModifyWrite(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 
 	DB(printf("%s: phyAddr=0x%x offset = 0x%x data=0x%x\n", __func__, phyAddr, devAddr, data));
 	DB(printf("%s: ethphyXsmiHalData.ethPhyXsmiRegOff = 0x%x xSmiReg=0x%x\n", __func__,
 				ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT, xSmiReg));
-	MV_REG_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT, xSmiReg);
+	MV_MEMIO_LE32_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT, xSmiReg);
 
 	return MV_OK;
 }
@@ -373,7 +373,7 @@ MV_STATUS mvEthPhyXsmiSeveralRegRead(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regA
 		return MV_FAIL;
 
 	xSmiAddr = (regAddr << ETH_PHY_XSMI_REG_ADDR_OFFS);
-	MV_REG_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_REG_ADDR, xSmiAddr);
+	MV_MEMIO_LE32_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_REG_ADDR, xSmiAddr);
 
 	/* Perform reading as many as needed with OpCode ETH_PHY_XSMI_OPCODE_ADDR_INC_READ
 	 * to read all registers except the last one with OpCode ETH_PHY_XSMI_OPCODE_READ */
@@ -386,12 +386,12 @@ MV_STATUS mvEthPhyXsmiSeveralRegRead(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regA
 			xSmiReg = (phyAddr <<  ETH_PHY_XSMI_PHY_ADDR_OFFS) | (devAddr << ETH_PHY_XSMI_DEV_ADDR_OFFS)|
 				ETH_PHY_XSMI_OPCODE_READ;
 		/* write the xsmi register */
-		MV_REG_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT, xSmiReg);
+		MV_MEMIO_LE32_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_MANAGEMENT, xSmiReg);
 
 		if (mvEthPhyXsmiWaitValid() != MV_OK)
 			return MV_FAIL;
 
-		ptrData[i] = (MV_U16)(MV_REG_READ(ethphyXsmiHalData.ethPhyXsmiRegOff +
+		ptrData[i] = (MV_U16)(MV_MEMIO_LE32_READ(ethphyXsmiHalData.ethPhyXsmiRegOff +
 					ETH_PHY_XSMI_MANAGEMENT) & ETH_PHY_XSMI_DATA_MASK);
 	}
 

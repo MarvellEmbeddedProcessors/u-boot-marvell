@@ -135,7 +135,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_SW_ENABLED_PORTS						((1 << 0)|(1 << 1)|(1 << 2)|(1 << 3)|(1 << 4))
 #define MV_SW_PHY_TIMEOUT						10000
 #define MV_SW_PHY_SMI_BUSY_BIT					15  /* Busy */
-#define MV_SW_PHY_SMI_BUSY_MASK					(1 << ETH_PHY_SMI_BUSY_BIT)
+#define MV_SW_PHY_SMI_BUSY_MASK					(1 << MV_SW_PHY_SMI_BUSY_BIT)
 
 /* KW2 internal related */
 #define MV_KW2_SW_CPU_PORT						0x6

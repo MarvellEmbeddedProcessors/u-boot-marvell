@@ -141,7 +141,7 @@ MV_STATUS	mvEthPhyPrintStatus(MV_U32 phyAddr);
 MV_STATUS	mvEthPhyAdvertiseSet(MV_U32 phyAddr, MV_U16 advertise);
 MV_STATUS	mvEthPhyAdvertiseGet(MV_U32 phyAddr, MV_U16 *advertise);
 
-MV_VOID		mvEthInternalQuadGEPhyBasicInit(MV_VOID);
+MV_VOID		mvEthInternalQuadGEPhyBasicInit(MV_BOOL eeeEnable);
 MV_VOID		mvEthE1111PhyBasicInit(MV_U32 ethPortNum);
 MV_VOID		mvEthE1112PhyBasicInit(MV_U32 ethPortNum);
 MV_VOID		mvEthE1112PhyPowerDown(MV_U32 ethPortNum);

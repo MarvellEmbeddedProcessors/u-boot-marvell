@@ -103,7 +103,7 @@ static MV_VOID _MV_REG_WRITE(MV_U32 regAddr, MV_U32 regData)
 #define LINK_WAIT_SLEEP 100
 
 /* Selector mapping for a38x-A0/Z1 and a39x */
-MV_U8 commonPhysSelectorsMap[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
+MV_U8 commonPhysSelectorsSerdesRev2Map[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 {
 	/* 0      1      2       3       4       5       6 */
 	{ 0x1,   0x1,    NA,	 NA,	 NA,	 NA,     NA       },  /* PEX0 */
@@ -133,7 +133,7 @@ MV_U8 commonPhysSelectorsMap[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 MV_U8 commonPhysSelectorsPexBy4Lanes[] = { 0x1, 0x2, 0x2, 0x2 };
 
 /* Serdes type to ref clock map */
-REF_CLOCK serdesTypeToRefClockMap[LAST_SERDES_TYPE] =
+REF_CLOCK serdesTypeToRefClockSerdesRev2Map[LAST_SERDES_TYPE] =
 {
 	REF_CLOCK__100MHz,      /* PEX0 */
 	REF_CLOCK__100MHz,      /* PEX1 */
@@ -243,25 +243,28 @@ MV_OP_PARAMS sataTxConfigParams[] =
 	{ SATA_CTRL_REG,	  0x38000,			       0xFFFFFFFF,     { 0x0,	   NO_DATA,	      }, 0,  0		    } /* Power Down Sata */
 };
 
-MV_OP_PARAMS sataAndSgmiiTxConfigParams2[] =
+MV_OP_PARAMS sataAndSgmiiTxConfigSerdesRev1Params2[] =
 {
 	/* unitunitBaseReg				unitOffset		 mask         SATA data    SGMII data      waitTime    numOfLoops */
 	{ COMMON_PHY_STATUS1_REG,			0x28,	     0xC,			{ 0xC,			0xC	       },   10,	        1000	    },  /* Wait for PHY power up sequence to finish */
-#ifdef CONFIG_ARMADA_39X /* TBD - need to add to a380x-A0 as well */
-	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		 0x40000000,    { 0x40000000,	0x40000000 },	0,			0		    },  /* Rx Init */
 	{ COMMON_PHY_STATUS1_REG,			0x28,	     0x1,			{ 0x1,			0x1	       },   1,	        1000	    },  /* Wait for PHY power up sequence to finish */
-	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		 0x40000000,    { 0x0,			0x0		   },	0,			0		    },  /* Rx Init */
-#else
+};
+
+MV_OP_PARAMS sataAndSgmiiTxConfigSerdesRev2Params2[] =
+{
+	/* unitunitBaseReg				unitOffset		 mask         SATA data    SGMII data      waitTime    numOfLoops */
+	{ COMMON_PHY_STATUS1_REG,			0x28,	     0xC,			{ 0xC,			0xC	       },   10,	        1000	    },  /* Wait for PHY power up sequence to finish */
+	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		 0x40000000,    { 0x40000000,	0x40000000 },	0,			0		    },  /* Assert Rx Init */
 	{ COMMON_PHY_STATUS1_REG,			0x28,	     0x1,			{ 0x1,			0x1	       },   1,	        1000	    },  /* Wait for PHY power up sequence to finish */
-#endif
+	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		 0x40000000,    { 0x0,			0x0		   },	0,			0		    },  /* De-assert Rx Init */
 };
 
 /****************/
 /* PEX and USB3 */
 /****************/
 
-/* PEX and USB3 - power up seq */
-MV_OP_PARAMS pexAndUsb3PowerUpParams[] =
+/* PEX and USB3 - power up seq for Serdes Rev 1.2 */
+MV_OP_PARAMS pexAndUsb3PowerUpSerdesRev1Params[] =
 {
 	/* unitunitBaseReg              unitOffset							mask				 PEX data    USB3 data       waitTime    numOfLoops */
 	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,							  0x3FC7F806,		   { 0x4471804, 0x4479804 },	0,          0	 },
@@ -269,9 +272,19 @@ MV_OP_PARAMS pexAndUsb3PowerUpParams[] =
 	{ COMMON_PHY_CONFIGURATION4_REG, 0x28,							  0x3,				   { 0x1,		0x1 },			0,          0	 },
 	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,							  0x7800,			   { 0x6000,	0xE000 },		0,          0	 },
 	{ GLOBAL_CLK_CTRL,				 0x800,							  0xD,				   { 0x5,		0x1 },			0,          0	 },
-#ifdef CONFIG_ARMADA_39X /* TBD - need to add to a380x-A0 as well */
-	{ GLOBAL_MISC_CTRL,				 0x800,							  0xC0,				   { 0x0,		0x0 },			0,          0	 },
-#endif
+	{ POWER_AND_PLL_CTRL_REG,		 0x800,							  0x0E0,			   { 0x60,		0xA0 },			0,          0	 } /* Phy Selector */
+};
+
+/* PEX and USB3 - power up seq for Serdes Rev 2.1 */
+MV_OP_PARAMS pexAndUsb3PowerUpSerdesRev2Params[] =
+{
+	/* unitunitBaseReg              unitOffset							mask				 PEX data    USB3 data       waitTime    numOfLoops */
+	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,							  0x3FC7F806,		   { 0x4471804, 0x4479804 },	0,          0	 },
+	{ COMMON_PHY_CONFIGURATION2_REG, 0x28,							  0x5C,				   { 0x58,		0x58 },			0,          0	 },
+	{ COMMON_PHY_CONFIGURATION4_REG, 0x28,							  0x3,				   { 0x1,		0x1 },			0,          0	 },
+	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,							  0x7800,			   { 0x6000,	0xE000 },		0,          0	 },
+	{ GLOBAL_CLK_CTRL,				 0x800,							  0xD,				   { 0x5,		0x1 },			0,          0	 },
+	{ GLOBAL_MISC_CTRL,				 0x800,							  0xC0,				   { 0x0,		NO_DATA },		0,          0	 },
 	{ POWER_AND_PLL_CTRL_REG,		 0x800,							  0x0E0,			   { 0x60,		0xA0 },			0,          0	 } /* Phy Selector */
 };
 
@@ -286,12 +299,12 @@ MV_OP_PARAMS pexAndUsb3SpeedConfigParams[] =
 /* PEX and USB3 - TX config seq */
 MV_OP_PARAMS pexAndUsb3TxConfigParams[] =
 {
-	/* unitunitBaseReg                      unitOffset   mask    PEX data  USB3 data   waitTime    numOfLoops */
-	{ MISC_REG,	   0x800,					    0x4C0,	     { 0x80,  0xC0  }, 0,	   0			  },
-	{ RESET_DFE_REG,   0x800,					    0x401,	     { 0x401, 0x401 }, 0,	   0			  },    /* Sft Reset pulse */
-	{ RESET_DFE_REG,   0x800,					    0x401,	     { 0x0,   0x0   }, 0,	   0			  },    /* Sft Reset pulse */
-	{ GLOBAL_CLK_CTRL, 0x800,					    0x1,	     { 0x0,   0x0   }, 0,	   0			  },
-	{ 0x0,		   0x0,						    0x0,	     { 0x0,   0x0   }, 10,	   0			  } /* 10ms delay */
+	/* unitBaseReg    unitOffset   	mask    	PEX data  USB3 data   waitTime    numOfLoops */
+	{ MISC_REG,	   		0x800,	    0x4C0,	     { 0x80,  0x4C0 }, 	0,	   0			  },
+	{ RESET_DFE_REG,   	0x800,	    0x401,	     { 0x401, 0x401 }, 	0,	   0			  },    /* Sft Reset pulse */
+	{ RESET_DFE_REG,   	0x800,		0x401,	     { 0x0,   0x0   }, 	0,	   0			  },    /* Sft Reset pulse */
+	{ GLOBAL_CLK_CTRL, 	0x800,		0x1,	     { 0x0,   0x0   }, 	0,	   0			  },
+	{ 0x0,		   		0x0,		0x0,	     { 0x0,   0x0   }, 	10,	   0			  } 	/* 10ms delay */
 };
 
 /* PEX by 4 config seq */
@@ -341,10 +354,39 @@ MV_OP_PARAMS serdesPowerDownParams[] =
 };
 
 /************************* Local functions declarations ***********************/
+/*******************************************************************************
+* mvCtrlSerdesRevGet
+*
+* DESCRIPTION: Get the Serdes revision number
+*
+* INPUT: configField - Field description enum
+*
+* OUTPUT: None
+*
+* RETURN:
+* 		8bit Serdes revision number
+*
+*******************************************************************************/
+MV_U8 mvCtrlSerdesRevGet(MV_VOID)
+{
+#ifdef CONFIG_ARMADA_39X
+	return MV_SERDES_REV_2_1;
+#elif defined(CONFIG_ARMADA_38X)
+	return MV_SERDES_REV_1_2;
+#else
+	return MV_SERDES_REV_NA;
+#endif /* CONFIG_ARMADA_39X */
+}
 
-MV_VOID mvHwsSerdesSeqDbInit(MV_VOID)
+MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID)
 {
 	DEBUG_INIT_FULL_S("\n### serdesSeq38xInit ###\n");
+	MV_U8 serdesRev = mvCtrlSerdesRevGet();
+
+	if(serdesRev == MV_SERDES_REV_NA) {
+		mvPrintf("mvHwsSerdesSeqDbInit: serdes revision number is not supported\n");
+		return MV_NOT_SUPPORTED;
+	}
 
 	/* SATA_ONLY_POWER_UP_SEQ sequence init */
 	serdesSeqDb[SATA_ONLY_POWER_UP_SEQ].opParamsPtr = sataPowerUpParams;
@@ -377,8 +419,13 @@ MV_VOID mvHwsSerdesSeqDbInit(MV_VOID)
 	serdesSeqDb[SATA_DB_TX_AMP_SEQ].dataArrIdx  = SATA;
 
 	/* SATA_TX_CONFIG_SEQ sequence init */
-	serdesSeqDb[SATA_TX_CONFIG_SEQ1].opParamsPtr = sataAndSgmiiTxConfigParams1;
-	serdesSeqDb[SATA_TX_CONFIG_SEQ1].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigParams1) / sizeof(MV_OP_PARAMS);
+	if(serdesRev == MV_SERDES_REV_1_2) {
+		serdesSeqDb[SATA_TX_CONFIG_SEQ1].opParamsPtr = sataAndSgmiiTxConfigSerdesRev1Params2;
+		serdesSeqDb[SATA_TX_CONFIG_SEQ1].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigSerdesRev1Params2) / sizeof(MV_OP_PARAMS);
+	} else {
+		serdesSeqDb[SATA_TX_CONFIG_SEQ1].opParamsPtr = sataAndSgmiiTxConfigSerdesRev2Params2;
+		serdesSeqDb[SATA_TX_CONFIG_SEQ1].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigSerdesRev2Params2) / sizeof(MV_OP_PARAMS);
+	}
 	serdesSeqDb[SATA_TX_CONFIG_SEQ1].dataArrIdx  = SATA;
 
 	/* SATA_TX_CONFIG_SEQ sequence init */
@@ -387,8 +434,13 @@ MV_VOID mvHwsSerdesSeqDbInit(MV_VOID)
 	serdesSeqDb[SATA_ONLY_TX_CONFIG_SEQ].dataArrIdx  = SATA;
 
 	/* SATA_TX_CONFIG_SEQ sequence init */
-	serdesSeqDb[SATA_TX_CONFIG_SEQ2].opParamsPtr = sataAndSgmiiTxConfigParams2;
-	serdesSeqDb[SATA_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigParams2) / sizeof(MV_OP_PARAMS);
+	if(serdesRev == MV_SERDES_REV_1_2) {
+		serdesSeqDb[SATA_TX_CONFIG_SEQ2].opParamsPtr = sataAndSgmiiTxConfigSerdesRev1Params2;
+		serdesSeqDb[SATA_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigSerdesRev1Params2) / sizeof(MV_OP_PARAMS);
+	} else {
+		serdesSeqDb[SATA_TX_CONFIG_SEQ2].opParamsPtr = sataAndSgmiiTxConfigSerdesRev2Params2;
+		serdesSeqDb[SATA_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigSerdesRev2Params2) / sizeof(MV_OP_PARAMS);
+	}
 	serdesSeqDb[SATA_TX_CONFIG_SEQ2].dataArrIdx  = SATA;
 
 	/* SGMII_POWER_UP_SEQ sequence init */
@@ -412,13 +464,23 @@ MV_VOID mvHwsSerdesSeqDbInit(MV_VOID)
 	serdesSeqDb[SGMII_TX_CONFIG_SEQ1].dataArrIdx  = SGMII;
 
 	/* SGMII_TX_CONFIG_SEQ sequence init */
-	serdesSeqDb[SGMII_TX_CONFIG_SEQ2].opParamsPtr = sataAndSgmiiTxConfigParams2;
-	serdesSeqDb[SGMII_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigParams2) / sizeof(MV_OP_PARAMS);
+	if(serdesRev == MV_SERDES_REV_1_2) {
+		serdesSeqDb[SGMII_TX_CONFIG_SEQ2].opParamsPtr = sataAndSgmiiTxConfigSerdesRev1Params2;
+		serdesSeqDb[SGMII_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigSerdesRev1Params2) / sizeof(MV_OP_PARAMS);
+	} else {
+		serdesSeqDb[SGMII_TX_CONFIG_SEQ2].opParamsPtr = sataAndSgmiiTxConfigSerdesRev2Params2;
+		serdesSeqDb[SGMII_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigSerdesRev2Params2) / sizeof(MV_OP_PARAMS);
+	}
 	serdesSeqDb[SGMII_TX_CONFIG_SEQ2].dataArrIdx  = SGMII;
 
 	/* PEX_POWER_UP_SEQ sequence init */
-	serdesSeqDb[PEX_POWER_UP_SEQ].opParamsPtr = pexAndUsb3PowerUpParams;
-	serdesSeqDb[PEX_POWER_UP_SEQ].cfgSeqSize  = sizeof(pexAndUsb3PowerUpParams) / sizeof(MV_OP_PARAMS);
+	if(serdesRev == MV_SERDES_REV_1_2) {
+		serdesSeqDb[PEX_POWER_UP_SEQ].opParamsPtr = pexAndUsb3PowerUpSerdesRev1Params;
+		serdesSeqDb[PEX_POWER_UP_SEQ].cfgSeqSize  = sizeof(pexAndUsb3PowerUpSerdesRev1Params) / sizeof(MV_OP_PARAMS);
+	} else {
+		serdesSeqDb[PEX_POWER_UP_SEQ].opParamsPtr = pexAndUsb3PowerUpSerdesRev2Params;
+		serdesSeqDb[PEX_POWER_UP_SEQ].cfgSeqSize  = sizeof(pexAndUsb3PowerUpSerdesRev2Params) / sizeof(MV_OP_PARAMS);
+	}
 	serdesSeqDb[PEX_POWER_UP_SEQ].dataArrIdx  = PEX;
 
 	/* PEX__2_5_SPEED_CONFIG_SEQ sequence init */
@@ -442,9 +504,13 @@ MV_VOID mvHwsSerdesSeqDbInit(MV_VOID)
 	serdesSeqDb[PEX_BY_4_CONFIG_SEQ].dataArrIdx  = PEX;
 
 	/* USB3_POWER_UP_SEQ sequence init */
-	serdesSeqDb[USB3_POWER_UP_SEQ].opParamsPtr = pexAndUsb3PowerUpParams;
-	serdesSeqDb[USB3_POWER_UP_SEQ].cfgSeqSize  = sizeof(pexAndUsb3PowerUpParams) / sizeof(MV_OP_PARAMS);
-
+	if(serdesRev == MV_SERDES_REV_1_2) {
+		serdesSeqDb[USB3_POWER_UP_SEQ].opParamsPtr = pexAndUsb3PowerUpSerdesRev1Params;
+		serdesSeqDb[USB3_POWER_UP_SEQ].cfgSeqSize  = sizeof(pexAndUsb3PowerUpSerdesRev1Params) / sizeof(MV_OP_PARAMS);
+	} else {
+		serdesSeqDb[USB3_POWER_UP_SEQ].opParamsPtr = pexAndUsb3PowerUpSerdesRev2Params;
+		serdesSeqDb[USB3_POWER_UP_SEQ].cfgSeqSize  = sizeof(pexAndUsb3PowerUpSerdesRev2Params) / sizeof(MV_OP_PARAMS);
+	}
 	serdesSeqDb[USB3_POWER_UP_SEQ].dataArrIdx = USB3;
 
 	/* USB3__HOST_SPEED_CONFIG_SEQ sequence init */
@@ -476,6 +542,8 @@ MV_VOID mvHwsSerdesSeqDbInit(MV_VOID)
 	serdesSeqDb[SERDES_POWER_DOWN_SEQ].opParamsPtr = serdesPowerDownParams;
 	serdesSeqDb[SERDES_POWER_DOWN_SEQ].cfgSeqSize  = sizeof(serdesPowerDownParams) / sizeof(MV_OP_PARAMS);
 	serdesSeqDb[SERDES_POWER_DOWN_SEQ].dataArrIdx  = FIRST_CELL;
+
+    return MV_OK;
 }
 
 /***************************************************************************/
@@ -600,7 +668,10 @@ MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	DEBUG_INIT_S("\n");
 
 	/* Init serdes sequences DB */
-	mvHwsSerdesSeqInit();
+	if (mvHwsSerdesSeqInit() != MV_OK){
+		mvPrintf("mvHwsCtrlHighSpeedSerdesPhyConfig: Error: Serdes initialization fail\n");
+		return MV_FAIL;
+	}
 
 	/* TWSI init */
 	DEBUG_INIT_FULL_S("mvHwsTwsiInitWrapper: Init TWSI interface.\n");
@@ -720,7 +791,6 @@ static MV_STATUS mvSerdesPexUsb3PipeDelayWA(MV_U32 serdesNum, MV_U8 serdesType)
 }
 
 /***************************************************************************/
-
 MV_STATUS mvSerdesPowerUpCtrl
 (
 	MV_U32 serdesNum,
@@ -760,8 +830,10 @@ MV_STATUS mvSerdesPowerUpCtrl
 		case PEX0:
 		case PEX1:
 		case PEX2:
-        case PEX3:
-			CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, PEX));
+		case PEX3:
+			if (mvCtrlSerdesRevGet() == MV_SERDES_REV_1_2) {
+				CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, PEX));
+			}
 
 			isPexBy1 = (serdesMode == PEX_ROOT_COMPLEX_x1) ||
 				(serdesMode == PEX_END_POINT_x1);
@@ -844,8 +916,9 @@ MV_STATUS mvSerdesPowerUpCtrl
 			break;
 		case USB3_HOST0:
 		case USB3_HOST1:
-			CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, USB3));
-
+			if (mvCtrlSerdesRevGet() == MV_SERDES_REV_1_2) {
+				CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, USB3));
+			}
 			CHECK_STATUS(mvSeqExec(serdesNum, USB3_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
@@ -856,9 +929,9 @@ MV_STATUS mvSerdesPowerUpCtrl
 #ifdef DB_LINK_CHECK
 			if ( serdesNum == 4) {
 				if ( 0 != (MV_REG_READ(0xA2004) & 0x100))
-					DEBUG_INIT_S("USB PLL0 UNLOCK ;-)\n");
-				else
 					DEBUG_INIT_S("USB PLL0 LOCKED ;-|\n");
+				else
+					DEBUG_INIT_S("USB PLL0 UNLOCK ;-)\n");
 
 				if ( 0xD == (MV_REG_READ(0x183B8) & 0xD))
 					DEBUG_INIT_S("USB PLL0 READY ;-)\n");
@@ -866,9 +939,9 @@ MV_STATUS mvSerdesPowerUpCtrl
 					DEBUG_INIT_S("USB PLL0 NOT READY ;-|\n");
 			}else{
 				if ( 0 != (MV_REG_READ(0xA2804) & 0x100))
-					DEBUG_INIT_S("USB PLL1 UNLOCK ;-)\n");
-				else
 					DEBUG_INIT_S("USB PLL1 LOCKED ;-|\n");
+				else
+					DEBUG_INIT_S("USB PLL1 UNLOCK ;-)\n");
 
 				if ( 0xD == (MV_REG_READ(0x183E0) & 0xD))
 					DEBUG_INIT_S("USB PLL1 READY ;-)\n");
@@ -876,12 +949,13 @@ MV_STATUS mvSerdesPowerUpCtrl
 					DEBUG_INIT_S("USB PLL1 NOT READY ;-|\n");
 
 			}
-#endif                  /* DB_LINK_CHECK */
+#endif /* DB_LINK_CHECK */
 
 			break;
 		case USB3_DEVICE:
-			CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, USB3));
-
+			if (mvCtrlSerdesRevGet() == MV_SERDES_REV_1_2) {
+				CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, USB3));
+			}
 			CHECK_STATUS(mvSeqExec(serdesNum, USB3_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
@@ -893,7 +967,6 @@ MV_STATUS mvSerdesPowerUpCtrl
 		case SATA1:
 		case SATA2:
 		case SATA3:
-
 			sataIdx =  ((serdesType == SATA0) || (serdesType == SATA1)) ? 0 : 1;
 			CHECK_STATUS(mvSeqExec(sataIdx, SATA_ONLY_POWER_UP_SEQ));
 			CHECK_STATUS(mvSeqExec(serdesNum, SATA_POWER_UP_SEQ));
@@ -984,13 +1057,11 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 	DEBUG_INIT_FULL_S("\n### mvHwsUpdateSerdesPhySelectors ###\n");
 	DEBUG_INIT_FULL_S("Updating the COMMON PHYS SELECTORS register with the serdes types\n");
 
-#ifdef CONFIG_ARMADA_39X
-	selectBitOff = 4;
-#else
-	/* TBD - for now, use a380-Z1 offset
-		need to add distinguish between a380-Z1 and a380-A0 */
-	selectBitOff = 3;
-#endif
+	if(mvCtrlSerdesRevGet() == MV_SERDES_REV_1_2) {
+		selectBitOff = 3;
+	} else {
+		selectBitOff = 4;
+	}
 
 	/* Updating bits 0-17 in the COMMON PHYS SELECTORS register according to the serdes types */
 	for (serdesIdx = 0; serdesIdx < mvHwsSerdesGetMaxLane(); serdesIdx++) {
@@ -1116,4 +1187,3 @@ MV_STATUS mvHwsRefClockSet
 
 	return MV_OK;
 }
-

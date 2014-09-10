@@ -73,6 +73,12 @@
 /********************************* Definitions ********************************/
 #define MAX_SERDES_LANES        7 /* as in a39x*/
 
+/* Serdes revision */
+#define MV_SERDES_REV_1_2		0x0		/* SerDes revision 1.2 (for A38x-Z1) */
+#define MV_SERDES_REV_2_1		0x1		/* SerDes revision 2.1 (for A39x-Z1, A38x-A0) */
+
+#define MV_SERDES_REV_NA		0xFF
+
 /* For setting or clearing a certain bit
    (bit is a number between 0 and 31) in the data*/
 #define SET_BIT(data, bit)          (data | (0x1 << bit))
@@ -261,12 +267,27 @@ SERDES_MAP serdesConfigurationMap[MAX_SERDES_LANES];
    initialized in serdesSeqInit */
 MV_CFG_SEQ serdesSeqDb[SERDES_LAST_SEQ];
 
-extern MV_U8 commonPhysSelectorsMap[LAST_SERDES_TYPE][MAX_SERDES_LANES];
+extern MV_U8 commonPhysSelectorsSerdesRev2Map[LAST_SERDES_TYPE][MAX_SERDES_LANES];
 
 /* Serdes type to ref clock map */
-extern REF_CLOCK serdesTypeToRefClockMap[LAST_SERDES_TYPE];
+extern REF_CLOCK serdesTypeToRefClockSerdesRev2Map[LAST_SERDES_TYPE];
 
 /*************************** Functions declarations ***************************/
+/*******************************************************************************
+* mvCtrlSerdesRevGet
+*
+* DESCRIPTION: Get the Serdes revision number
+*
+* INPUT: configField - Field description enum
+*
+* OUTPUT: None
+*
+* RETURN:
+* 		8bit Serdes revision number
+*
+*******************************************************************************/
+MV_U8 mvCtrlSerdesRevGet(MV_VOID);
+
 /**************************************************************************
  * mvUpdateSerdesSelectPhyModeSeq -
  *
@@ -315,9 +336,10 @@ SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
  * DESCRIPTION:          Inits serdes related Db
  * INPUT:                None.
  * OUTPUT:               serdesSeqDb is initialized
- * RETURNS:              Nothing.
+ * RETURNS:              MV_OK      - for success
+ *                       MV_FAIL    - if Serdes initialization fail
  ***************************************************************************/
-MV_VOID mvHwsSerdesSeqInit(MV_VOID);
+MV_STATUS mvHwsSerdesSeqInit(MV_VOID);
 
 /**************************************************************************
  * mvHwsSerdesSeqDbInit -
@@ -332,9 +354,11 @@ MV_VOID mvHwsSerdesSeqInit(MV_VOID);
  *                                             data array in MV_OP_PARAMS
  * INPUT:                None.
  * OUTPUT:               serdesSeqDb is initialized
- * RETURNS:              Nothing.
+ * RETURNS:              MV_OK               - for success
+ *                       MV_NOT_SUPPORTED    - if serdes revision number
+ *                                             is not supported
  ***************************************************************************/
-MV_VOID mvHwsSerdesSeqDbInit(MV_VOID);
+MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID);
 
 /**************************************************************************
  * mvHwsTwsiInitWrapper -

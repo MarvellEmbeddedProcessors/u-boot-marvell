@@ -61,8 +61,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#ifndef __INCmvBHboardEnvSpech
-#define __INCmvBHboardEnvSpech
+#ifndef __INCmvSysEnvLibh
+#define __INCmvSysEnvLibh
 
 /********************************* Definitions ********************************/
 
@@ -325,4 +325,4 @@ MV_U32 mvSysEnvConfigGet(MV_CONFIG_TYPE_ID configField);
 #endif /* CONFIG_ARMADA_39X */
 #endif /* CONFIG_CMD_BOARDCFG */
 
-#endif
+#endif /* __INCmvSysEnvLibh */

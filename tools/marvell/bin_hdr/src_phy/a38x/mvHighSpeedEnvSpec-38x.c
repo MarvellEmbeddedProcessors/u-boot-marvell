@@ -62,6 +62,7 @@
 *******************************************************************************/
 #include "mvHighSpeedEnvSpec.h"
 #include "mvSysEnvLib.h"
+#include "printf.h"
 
 #define	SERDES_VERION	"2.0"
 
@@ -103,19 +104,24 @@ REF_CLOCK serdesTypeToRefClock38xZ1Map[LAST_SERDES_TYPE] =
 	REF_CLOCK__25MHz,       /* SGMII1 */
 	REF_CLOCK__25MHz,       /* SGMII2 */
 	REF_CLOCK__25MHz,       /* QSGMII */
-	REF_CLOCK__100MHz,      /* USB3_HOST0 */
-	REF_CLOCK__100MHz,      /* USB3_HOST1 */
+	REF_CLOCK__25MHz,      	/* USB3_HOST0 */
+	REF_CLOCK__25MHz,      	/* USB3_HOST1 */
 	REF_CLOCK__25MHz,       /* USB3_DEVICE */
 	REF_CLOCK_UNSUPPORTED   /* DEFAULT_SERDES */
 };
 
 /************************* Local functions declarations ***********************/
 
-MV_VOID mvHwsSerdesSeqInit(MV_VOID)
+MV_STATUS mvHwsSerdesSeqInit(MV_VOID)
 {
 	DEBUG_INIT_FULL_S("\n### serdesSeqInit ###\n");
 
-    mvHwsSerdesSeqDbInit();
+	if (mvHwsSerdesSeqDbInit() != MV_OK){
+		mvPrintf("mvHwsSerdesSeqInit: Error: Serdes initialization fail\n");
+		return MV_FAIL;
+	}
+
+	return MV_OK;
 }
 
 /***************************************************************************/

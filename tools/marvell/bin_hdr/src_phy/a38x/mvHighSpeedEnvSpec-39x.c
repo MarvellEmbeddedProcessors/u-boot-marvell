@@ -62,6 +62,7 @@
 *******************************************************************************/
 #include "mvHighSpeedEnvSpec.h"
 #include "mvSysEnvLib.h"
+#include "printf.h"
 
 #define	SERDES_VERION	"2.0"
 
@@ -125,11 +126,14 @@ MV_OP_PARAMS ethPortTxConfigParams2[] =
 /************************* Local functions declarations ***********************/
 
 /* Added from A380 */
-MV_VOID mvHwsSerdesSeqInit(MV_VOID)
+MV_STATUS mvHwsSerdesSeqInit(MV_VOID)
 {
 	DEBUG_INIT_FULL_S("\n### serdesSeqInit ###\n");
 
-    mvHwsSerdesSeqDbInit();
+	if (mvHwsSerdesSeqDbInit() != MV_OK){
+		mvPrintf("mvHwsSerdesSeqInit: Error: Serdes initialization fail\n");
+		return MV_FAIL;
+	}
 
     /* additional sequences for a390x*/
 
@@ -208,6 +212,7 @@ MV_VOID mvHwsSerdesSeqInit(MV_VOID)
 	serdesSeqDb[RXAUI_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(ethPortTxConfigParams2) / sizeof(MV_OP_PARAMS);
 	serdesSeqDb[RXAUI_TX_CONFIG_SEQ2].dataArrIdx  = RXAUI_SEQ_IDX;
 
+	return MV_OK;
 }
 
 /***************************************************************************/
@@ -299,7 +304,7 @@ MV_U32 mvHwsSerdesGetPhySelectorVal
         return 0xFF;
     }
 
-    return commonPhysSelectorsMap[serdesType][serdesNum];
+    return commonPhysSelectorsSerdesRev2Map[serdesType][serdesNum];
 }
 
 /***************************************************************************/
@@ -312,7 +317,7 @@ MV_U32 mvHwsSerdesGetRefClockVal
         return REF_CLOCK_UNSUPPORTED;
     }
 
-    return serdesTypeToRefClockMap[serdesType];
+    return serdesTypeToRefClockSerdesRev2Map[serdesType];
 }
 
 /***************************************************************************/

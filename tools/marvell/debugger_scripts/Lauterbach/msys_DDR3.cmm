@@ -1,0 +1,213 @@
+LOCAL &runmode
+LOCAL &ddrbus
+
+DIALOG
+(
+  HEADER "Marvell MSYS debug"
+  POS 1. 0. 28. 1.
+  TEXT "Please select the run mode:"
+
+  ;choosebox group for Mode
+  POS 0. 1. 29. 1.
+  LINE "Run Mode"
+  POS 1. 2. 25. 1.
+  Mode.1: CHOOSEBOX "Debugger initialization" "GOTO disable_ddr"
+  Mode.2: CHOOSEBOX "Debugger and SOC initialization" "GOTO enable_ddr"
+
+  ;choosebox group for DDR init method
+  POS 0. 4. 29. 1.
+  LINE "DDR Init Method"
+  POS 1. 5. 25. 1.
+  DdrBus.1: CHOOSEBOX "Static DDR training" ""
+  DdrBus.2: CHOOSEBOX "Dynamic trainig (bypass BootROM)" ""
+  DdrBus.3: CHOOSEBOX "Dynamic trainig (SRAM via BootROM)" ""
+
+  ;buttons OK (Default) and Cancel
+  POS 1. 9. 10. 1.
+  DEFBUTTON "OK" "CONTinue"
+  POS 14. 9. 10. 1.
+  BUTTON    "Cancel" "GOTO mode_cancel"
+  ;define action when window is closed
+  CLOSE "GOTO mode_cancel"
+)
+
+disable_ddr:
+  DIALOG.SET Mode.1
+  DIALOG.DISABLE DdrBus.1
+  DIALOG.DISABLE DdrBus.2
+  DIALOG.DISABLE DdrBus.3
+
+waitforok:
+  STOP
+  GOTO dialog_ok
+
+mode_cancel:
+  ;script continues here when Cancel is clicked"
+  DIALOG.END
+  DIALOG.OK "Script cancelled"
+ENDDO
+
+enable_ddr:
+  DIALOG.ENABLE DdrBus.1
+  DIALOG.ENABLE DdrBus.2
+  DIALOG.ENABLE DdrBus.3
+  DIALOG.SET DdrBus.3
+  GOTO waitforok
+
+dialog_ok:
+  ;get selections
+  IF DIALOG.BOOLEAN(Mode.1)
+    &runmode="basic"
+  IF DIALOG.BOOLEAN(Mode.2)
+    &runmode="ddr"
+  IF DIALOG.BOOLEAN(DdrBus.1)
+    &ddrbus="static"
+  IF DIALOG.BOOLEAN(DdrBus.2)
+    &ddrbus="naked"
+  IF DIALOG.BOOLEAN(DdrBus.3)
+    &ddrbus="bootrom"
+
+  ;close dialog window
+  DIALOG.END
+
+;***************************************************************************************************************
+  ; other 946 cpu bug fix seen also on 926
+  SYStem.Option MULTIPLESFIX on
+
+  ; First it is very important to select the CPU and then set the options,
+  ; otherwise important options are cleared again
+  SYStem.RESet
+  SYSTEM.CPU 88FR581V7
+  SYStem.MultiCore COREBASE 0xc2301000
+  SYStem.MultiCore MEMORYACCESSPORT 0
+  SYStem.MultiCore DEBUGACCESSPORT  1
+  SYStem.Option L2Cache ON
+  ;SYStem.MemAccess Denied
+
+  SYStem.JtagClock 10Mhz
+  SYStem.Mode attach
+  Break
+
+  ; set system settings according LE MMU
+  ; <MCR|MRC> p15, <op1>, Rd, CRn, CRm, <op2>
+  ; BIT0-3:CRn, BIT4-7:CRm, BIT8-10:<op2>, BIT12-14:<op1>, Bit16=0 (32-bit access)
+  Per.Set C15:1 %LONG 0x00052078
+
+  BREAK.SELECT PROGRAM ONCHIP
+;***************************************************************************************************************
+
+IF ("&runmode"=="ddr")
+(
+;***************************************************************************************************************
+  IF ("&ddrbus"=="bootrom")
+  (
+;***************************************************************************************************************
+    ;Break.direct 0x40000000 /Write 	; Stop on L2 SRAM access
+    ;GO	 				; Run the Bootrom
+    ;WAIT !RUN()
+    PRINT "Please select the bin_hdr.elf file location"
+    D.LOAD ../../bin_hdr/*
+    GO					; Run the BIN header
+    WAIT 5.s
+    Break.Direct
+    Per.Set C15:1 %LONG 0x00052078	; Disable MMU
+    PRINT "Done, DRAM is ready"	; The u-boot can be loaded and executed
+;***************************************************************************************************************
+  )
+  ELSE IF ("&ddrbus"=="naked")
+  (
+;***************************************************************************************************************
+    Data.Set C15:1 %LONG 0x00052078
+
+    ; Configure L@ ways 0-3 to be SRAM
+    Data.Set SD:0xD000878C %LE %LONG 0x40000000
+    Data.Set SD:0xD000878C %LE %LONG 0x40010001
+    Data.Set SD:0xD000878C %LE %LONG 0x40020002
+    Data.Set SD:0xD000878C %LE %LONG 0x40030003
+
+    ; Open the SRAM window 0 to the 512K SRAM
+    Data.Set SD:0xD0020240 %LE %LONG 0x40000701
+
+    ; MPPs for SPI
+    Data.Set SD:0xD0018000 %LE %LONG 0x00022222
+    ; Stack pointer
+    Register.Set R13 0x4003FFFC
+
+    PRINT "Finished setting the L2 as SRAM"
+    WAIT 100.ms
+
+    D.LOAD ../../bin_hdr/*
+    GO					; Run the BIN header
+    WAIT 5.s
+    Break.Direct
+    Per.Set C15:1 %LONG 0x00052078	; Disable MMU
+    PRINT "Done, DRAM is ready"	; The u-boot can be loaded and executed
+;***************************************************************************************************************
+  )
+  ELSE ; Static DDR init
+  (
+;***************************************************************************************************************
+    ;############DDR@800Mhz D-Unit configuration#############
+    PRINT ""
+    PRINT "Starting DRAM initialization:"
+    ; dram init
+    Data.Set 0xD0001400 %LONG 0x7b004618 ;  DDR SDRAM Configuration Register
+    Data.Set 0xD0001404 %LONG 0x36300848 ;  Dunit Control Low Register - kw40 bit11 high
+    Data.Set 0xD0001408 %LONG 0x5315baab ;  DDR SDRAM Timing (Low) Register
+    Data.Set 0xD000140C %LONG 0x76411fcf ;  DDR SDRAM Timing (High) Register
+    Data.Set 0xD0001410 %LONG 0x15134440 ;  DDR SDRAM Address Control Register
+    Data.Set 0xD0001414 %LONG 0x00000700 ;  DDR SDRAM Open Pages Control Register
+    Data.Set 0xD0001424 %LONG 0x0160f399 ;  Dunit Control High Register ( 2 :1 - bits 15:12 = 0xD )
+    Data.Set 0xD0001428 %LONG 0x0001a940 ;  Dunit Control High Register
+    Data.Set 0xD000142C %LONG 0x014c5098 ;  Dunit Control High Register  ( 2:1 -  bit 29 = '1' )
+    Data.Set 0xD000147C %LONG 0x0000d771 ;
+
+    Data.Set 0xD0001494 %LONG 0x00030000 ;  DDR SDRAM ODT Control (Low) Register
+    Data.Set 0xD000149C %LONG 0x0000000f ;  DDR Dunit ODT Control Register
+
+    Data.Set 0xD00014a8 %LONG 0x00000000 ;
+    Data.Set 0xD00014cc %LONG 0x8001200c ;
+    Data.Set 0xD0001474 %LONG 0x30c ;
+
+    Data.Set 0xD0001538 %LONG 0x0000000b ;  Read Data Sample Delays Register
+    Data.Set 0xD000153C %LONG 0x0000000b ;  Read Data Ready Delay Register
+
+    Data.Set 0xD0001504 %LONG 0xFFFFFFF1 ;
+    Data.Set 0xD000150c %LONG 0xFFFFFFE5 ;
+    Data.Set 0xD0001514 %LONG 0xffffff9	;
+    Data.Set 0xD000151c %LONG 0xffffffd	;
+
+    Data.Set 0xD00015D0 %LONG 0x00000070 ;  MR0
+    Data.Set 0xD00015D4 %LONG 0x00000046 ;  MR1
+    Data.Set 0xD00015D8 %LONG 0x00000218 ;  MR2
+    Data.Set 0xD00015DC %LONG 0x00000000 ;  MR3
+
+    Data.Set 0xD00015E0 %LONG 0x5		;
+    Data.Set 0xD00015E4 %LONG 0x203c18	;  ZQC Configuration Register
+    Data.Set 0xD00015EC %LONG 0xd9ff0029	;  DDR PHY
+
+    Data.Set 0xD00016A0 %LONG 0xe8243dfe ; ZNR / SPR
+    Data.Set 0xD00016A0 %LONG 0xe8280434 ; disable clamp	and Vref
+    Data.Set 0xD00016A0 %LONG 0xcc000008 ; Clock skew
+    Data.Set 0xD00016A0 %LONG 0xe8260cb2
+    Data.Set 0xD00016A0 %LONG 0xe8290000
+    Data.Set 0xD00016A0 %LONG 0xf810001f
+
+    Data.Set 0xD0001480 %LONG 0x00000001 ;  DDR SDRAM Initialization Control Register
+    WAIT 2.s
+
+    Data.Set 0xD0018000 %LONG 0x11		;
+
+    Data.Set 0xD00200e8 %LONG 0x0;
+    Data.Set 0xD0020184 %LONG 0x0FFFFFE1 ;
+    Data.Set 0xD00182e4 %LONG 0xfffdffff ;
+
+    ; End DRAM init
+    PRINT "Done, DRAM is ready"	; The u-boot can be loaded and executed
+
+  ) ; End of if &ddrbus!=3
+
+) ; End of &runmode==ddr
+
+
+enddo

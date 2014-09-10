@@ -169,10 +169,13 @@ MV_STATUS mvHwsGetExtBaseAddr
 (
 	MV_U32 serdesNum,
 	MV_U32 baseAddr,
-	MV_U32 *unitBaseReg
+	MV_U32 unitBaseOffset,
+	MV_U32 *unitBaseReg,
+	MV_U32 *unitOffset
 )
 {
 	*unitBaseReg = baseAddr;
+	*unitOffset  = unitBaseOffset;
 
 	return MV_OK;
 }

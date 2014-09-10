@@ -83,6 +83,7 @@
 
 #define POWER_AND_PLL_CTRL_REG                  0xa0004
 #define CALIBRATION_CTRL_REG                    0xa0008
+#define G1_SETTINGS_0_REG						0xa0034
 #define LOOPBACK_REG                            0xa008C
 #define GLOBAL_CLK_CTRL                         0xa0704
 #define GLOBAL_MISC_CTRL                        0xa0718

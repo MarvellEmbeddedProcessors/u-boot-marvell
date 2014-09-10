@@ -122,8 +122,10 @@ MV_STATUS writeOpExecute
 	}
 
 	/* Getting write op params from the input parameter */
-	/*unitBaseReg = params->unitBaseReg;*/
+	/*
+	unitBaseReg = params->unitBaseReg;
 	unitOffset = params->unitOffset;
+	*/
 	data = params->data[dataArrIdx];
 	mask = params->mask;
 
@@ -132,11 +134,15 @@ MV_STATUS writeOpExecute
 		return MV_OK;
 
 	/* get updated base address since it can be different between Serdes */
-	CHECK_STATUS(mvHwsGetExtBaseAddr(serdesNum, params->unitBaseReg, &unitBaseReg));
+	CHECK_STATUS(mvHwsGetExtBaseAddr(serdesNum, params->unitBaseReg, params->unitOffset,
+									 &unitBaseReg, &unitOffset));
 
 	/* Address calculation */
 	regAddr = unitBaseReg + unitOffset * serdesNum;
 
+#ifdef SEQ_DEBUG
+	mvPrintf("Write: 0x%x: 0x%x (mask 0x%x) - ", regAddr, data, mask);
+#endif
 	/* Reading old value */
 	regData = MV_REG_READ(regAddr);
 	regData &= (~mask);
@@ -145,6 +151,10 @@ MV_STATUS writeOpExecute
 	data &= mask;
 	regData |= data;
 	MV_REG_WRITE(regAddr, regData);
+
+#ifdef SEQ_DEBUG
+	mvPrintf(" - 0x%x\n", regData);
+#endif
 
 	return MV_OK;
 }
@@ -161,6 +171,9 @@ MV_STATUS delayOpExecute
 
 	/* Getting delay op params from the input parameter */
 	delay = params->waitTime;
+#ifdef SEQ_DEBUG
+	mvPrintf("Delay: %d\n", delay);
+#endif
 	mvOsDelay(delay);
 	return MV_OK;
 }
@@ -178,8 +191,10 @@ MV_STATUS pollOpExecute
 	MV_U32 regAddr, regData;
 
 	/* Getting poll op params from the input parameter */
+	/*
 	unitBaseReg = params->unitBaseReg;
 	unitOffset = params->unitOffset;
+	*/
 	data = params->data[dataArrIdx];
 	mask = params->mask;
 	numOfLoops = params->numOfLoops;
@@ -194,10 +209,17 @@ MV_STATUS pollOpExecute
 	if (data == NO_DATA)
 		return MV_OK;
 
+	/* get updated base address since it can be different between Serdes */
+	CHECK_STATUS(mvHwsGetExtBaseAddr(serdesNum, params->unitBaseReg, params->unitOffset,
+									 &unitBaseReg, &unitOffset));
+
 	/* Address calculation */
 	regAddr = unitBaseReg + unitOffset * serdesNum;
 
 	/* Polling */
+#ifdef SEQ_DEBUG
+	mvPrintf("Poll:  0x%x: 0x%x (mask 0x%x)\n", regAddr, data, mask);
+#endif
 
 #ifdef WIN32
 

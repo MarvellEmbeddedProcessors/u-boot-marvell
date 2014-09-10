@@ -88,9 +88,16 @@ MV_OP_PARAMS ethPortSpeedConfigParams[] =
 {
 	/* unitBaseReg  				  unitOffset   	mask          QSGMII        XAUI           RXAUI          waitTime   numOfLoops */
     { COMMON_PHY_CONFIGURATION1_REG,   0x28,		0x3FC00000,	{ 0xCC00000,	0x22000000,    0x2EC00000 }, 	0,		   0 }, /* Baud Rate */
-	{ INTERFACE_REG, 				   0x800,	    0x0,	    { NO_DATA,      NO_DATA,       NO_DATA    },    0,	       0 }, /* Select Baud Rate for SATA only*/
 	{ ISOLATE_REG,	 				   0x800,	    0xFF,	    { 0x33,         0x88,          0xBB       }, 	0,	       0 }, /* Phy Gen RX and TX */
 	{ LOOPBACK_REG,	 				   0x800,	    0xE,	    { 0x2,  	    0x2,           0x2        }, 	0,	       0 }  /* Bus Width */
+};
+
+/* QSGMII, XAUI, RXAUI - Select electrical param seq */
+MV_OP_PARAMS ethPortElectricalConfigParams[] =
+{
+	/* unitunitBaseReg		unitOffset   mask			QSGMII data     XAUI data     	RXAUI data      waitTime    numOfLoops */
+	{ G1_SETTINGS_0_REG,	0x800,		 0x7780,	  { NO_DATA,		NO_DATA,		0x580       },     0,	       0		   }
+/* Slew rate and emphasis */
 };
 
 /* QSGMII, XAUI, RXAUI - TX config seq */
@@ -108,9 +115,11 @@ MV_OP_PARAMS ethPortTxConfigParams1[] =
 
 MV_OP_PARAMS ethPortTxConfigParams2[] =
 {
-	/* unitunitBaseReg           unitOffset   mask       QSGMII data    XAUI data    RXAUI data    waitTime    numOfLoops */
-	{ COMMON_PHY_STATUS1_REG,     0x28,       0xC,	   {  0xC,          0xC,         0xC},           0,	         0        }, /* Wait for PHY power up sequence to finish */
-	{ COMMON_PHY_STATUS1_REG,     0x28,       0xFF,	   {  NO_DATA,      NO_DATA,     NO_DATA}, 	     0,   	     0        }, /* Wait for PHY power up sequence to finish */
+	/* unitunitBaseReg				unitOffset		mask			QSGMII data    XAUI data    RXAUI data    waitTime    numOfLoops */
+	{ COMMON_PHY_STATUS1_REG,			0x28,		0xC,			{ 0xC,			0xC,         0xC		},	10,	         1000		},	/* Wait for PHY power up sequence to finish */
+	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		0x40000000,		{ 0x40000000,	0x40000000,	 0x40000000 },	0,			 0			},  /* Assert Rx Init */
+	{ COMMON_PHY_STATUS1_REG,			0x28,	    0x1,			{ 0x1,			0x1,		 0x1		},  1,			 1000	    },  /* Wait for PHY power up sequence to finish */
+	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		0x40000000,		{ 0x0,			0x0,		 0x0		},	0,			 0		    },  /* De-assert Rx Init */
 };
 
 /************************* Local functions declarations ***********************/
@@ -127,62 +136,77 @@ MV_VOID mvHwsSerdesSeqInit(MV_VOID)
     /* QSGMII_POWER_UP_SEQ sequence init */
 	serdesSeqDb[QSGMII_POWER_UP_SEQ].opParamsPtr = ethPortPowerUpParams;
 	serdesSeqDb[QSGMII_POWER_UP_SEQ].cfgSeqSize  = sizeof(ethPortPowerUpParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[QSGMII_POWER_UP_SEQ].dataArrIdx  = QSGMII;
+	serdesSeqDb[QSGMII_POWER_UP_SEQ].dataArrIdx  = QSGMII_SEQ_IDX;
 
 	/* QSGMII__5_SPEED_CONFIG_SEQ sequence init */
 	serdesSeqDb[QSGMII__5_SPEED_CONFIG_SEQ].opParamsPtr = ethPortSpeedConfigParams;
 	serdesSeqDb[QSGMII__5_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(ethPortSpeedConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[QSGMII__5_SPEED_CONFIG_SEQ].dataArrIdx  = QSGMII;
+	serdesSeqDb[QSGMII__5_SPEED_CONFIG_SEQ].dataArrIdx  = QSGMII_SEQ_IDX;
+
+	/* QSGMII_ELECTRICAL_CONFIG_SEQ seq sequence init */
+	serdesSeqDb[QSGMII_ELECTRICAL_CONFIG_SEQ].opParamsPtr = ethPortElectricalConfigParams;
+	serdesSeqDb[QSGMII_ELECTRICAL_CONFIG_SEQ].cfgSeqSize  = sizeof(ethPortElectricalConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[QSGMII_ELECTRICAL_CONFIG_SEQ].dataArrIdx  = QSGMII_SEQ_IDX;
 
     /* QSGMII_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[QSGMII_TX_CONFIG_SEQ1].opParamsPtr = ethPortTxConfigParams1;
 	serdesSeqDb[QSGMII_TX_CONFIG_SEQ1].cfgSeqSize  = sizeof(ethPortTxConfigParams1) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[QSGMII_TX_CONFIG_SEQ1].dataArrIdx  = QSGMII;
+	serdesSeqDb[QSGMII_TX_CONFIG_SEQ1].dataArrIdx  = QSGMII_SEQ_IDX;
 
 	/* QSGMII_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[QSGMII_TX_CONFIG_SEQ2].opParamsPtr = ethPortTxConfigParams2;
 	serdesSeqDb[QSGMII_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(ethPortTxConfigParams2) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[QSGMII_TX_CONFIG_SEQ2].dataArrIdx  = QSGMII;
+	serdesSeqDb[QSGMII_TX_CONFIG_SEQ2].dataArrIdx  = QSGMII_SEQ_IDX;
 
     /* XAUI_POWER_UP_SEQ sequence init */
 	serdesSeqDb[XAUI_POWER_UP_SEQ].opParamsPtr = ethPortPowerUpParams;
 	serdesSeqDb[XAUI_POWER_UP_SEQ].cfgSeqSize  = sizeof(ethPortPowerUpParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[XAUI_POWER_UP_SEQ].dataArrIdx  = XAUI;
+	serdesSeqDb[XAUI_POWER_UP_SEQ].dataArrIdx  = XAUI_SEQ_IDX;
 
     /* XAUI__3_125_SPEED_CONFIG_SEQ sequence init */
 	serdesSeqDb[XAUI__3_125_SPEED_CONFIG_SEQ].opParamsPtr = ethPortSpeedConfigParams;
 	serdesSeqDb[XAUI__3_125_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(ethPortSpeedConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[XAUI__3_125_SPEED_CONFIG_SEQ].dataArrIdx  = XAUI;
+	serdesSeqDb[XAUI__3_125_SPEED_CONFIG_SEQ].dataArrIdx  = XAUI_SEQ_IDX;
+
+	/* XAUI_ELECTRICAL_CONFIG_SEQ seq sequence init */
+	serdesSeqDb[XAUI_ELECTRICAL_CONFIG_SEQ].opParamsPtr = ethPortElectricalConfigParams;
+	serdesSeqDb[XAUI_ELECTRICAL_CONFIG_SEQ].cfgSeqSize  = sizeof(ethPortElectricalConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[XAUI_ELECTRICAL_CONFIG_SEQ].dataArrIdx  = XAUI_SEQ_IDX;
 
 	/* XAUI_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[XAUI_TX_CONFIG_SEQ1].opParamsPtr = ethPortTxConfigParams1;
 	serdesSeqDb[XAUI_TX_CONFIG_SEQ1].cfgSeqSize  = sizeof(ethPortTxConfigParams1) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[XAUI_TX_CONFIG_SEQ1].dataArrIdx  = XAUI;
+	serdesSeqDb[XAUI_TX_CONFIG_SEQ1].dataArrIdx  = XAUI_SEQ_IDX;
 
 	/* XAUI_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[XAUI_TX_CONFIG_SEQ2].opParamsPtr = ethPortTxConfigParams2;
 	serdesSeqDb[XAUI_TX_CONFIG_SEQ2].cfgSeqSize =  sizeof(ethPortTxConfigParams2) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[XAUI_TX_CONFIG_SEQ2].dataArrIdx =  XAUI;
+	serdesSeqDb[XAUI_TX_CONFIG_SEQ2].dataArrIdx =  XAUI_SEQ_IDX;
 
-     /* RXAUI_POWER_UP_SEQ sequence init */
+    /* RXAUI_POWER_UP_SEQ sequence init */
 	serdesSeqDb[RXAUI_POWER_UP_SEQ].opParamsPtr = ethPortPowerUpParams;
 	serdesSeqDb[RXAUI_POWER_UP_SEQ].cfgSeqSize  = sizeof(ethPortPowerUpParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[RXAUI_POWER_UP_SEQ].dataArrIdx  = RXAUI;
+	serdesSeqDb[RXAUI_POWER_UP_SEQ].dataArrIdx  = RXAUI_SEQ_IDX;
 
 	/* RXAUI__6_25_SPEED_CONFIG_SEQ sequence init */
 	serdesSeqDb[RXAUI__6_25_SPEED_CONFIG_SEQ].opParamsPtr = ethPortSpeedConfigParams;
 	serdesSeqDb[RXAUI__6_25_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(ethPortSpeedConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[RXAUI__6_25_SPEED_CONFIG_SEQ].dataArrIdx  = RXAUI;
+	serdesSeqDb[RXAUI__6_25_SPEED_CONFIG_SEQ].dataArrIdx  = RXAUI_SEQ_IDX;
+
+	/* RXAUI_ELECTRICAL_CONFIG_SEQ seq sequence init */
+	serdesSeqDb[RXAUI_ELECTRICAL_CONFIG_SEQ].opParamsPtr = ethPortElectricalConfigParams;
+	serdesSeqDb[RXAUI_ELECTRICAL_CONFIG_SEQ].cfgSeqSize  = sizeof(ethPortElectricalConfigParams) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[RXAUI_ELECTRICAL_CONFIG_SEQ].dataArrIdx  = RXAUI_SEQ_IDX;
 
     /* RXAUI_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[RXAUI_TX_CONFIG_SEQ1].opParamsPtr = ethPortTxConfigParams1;
 	serdesSeqDb[RXAUI_TX_CONFIG_SEQ1].cfgSeqSize  = sizeof(ethPortTxConfigParams1) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[RXAUI_TX_CONFIG_SEQ1].dataArrIdx  = RXAUI;
+	serdesSeqDb[RXAUI_TX_CONFIG_SEQ1].dataArrIdx  = RXAUI_SEQ_IDX;
 
 	/* RXAUI_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[RXAUI_TX_CONFIG_SEQ2].opParamsPtr = ethPortTxConfigParams2;
 	serdesSeqDb[RXAUI_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(ethPortTxConfigParams2) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[RXAUI_TX_CONFIG_SEQ2].dataArrIdx  = RXAUI;
+	serdesSeqDb[RXAUI_TX_CONFIG_SEQ2].dataArrIdx  = RXAUI_SEQ_IDX;
 
 }
 
@@ -228,6 +252,7 @@ MV_STATUS mvSerdesPowerUpCtrlExt
 			CHECK_STATUS(mvSeqExec(serdesNum, QSGMII_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
+			CHECK_STATUS(mvSeqExec(serdesNum, QSGMII_ELECTRICAL_CONFIG_SEQ));
 			CHECK_STATUS(mvSeqExec(serdesNum, QSGMII_TX_CONFIG_SEQ1));
 			CHECK_STATUS(mvSeqExec(serdesNum, QSGMII_TX_CONFIG_SEQ2));
             break;
@@ -235,6 +260,7 @@ MV_STATUS mvSerdesPowerUpCtrlExt
 			CHECK_STATUS(mvSeqExec(serdesNum, XAUI_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
+			CHECK_STATUS(mvSeqExec(serdesNum, XAUI_ELECTRICAL_CONFIG_SEQ));
 			CHECK_STATUS(mvSeqExec(serdesNum, XAUI_TX_CONFIG_SEQ1));
 			CHECK_STATUS(mvSeqExec(serdesNum, XAUI_TX_CONFIG_SEQ2));
             break;
@@ -242,6 +268,7 @@ MV_STATUS mvSerdesPowerUpCtrlExt
 			CHECK_STATUS(mvSeqExec(serdesNum, RXAUI_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
+			CHECK_STATUS(mvSeqExec(serdesNum, RXAUI_ELECTRICAL_CONFIG_SEQ));
 			CHECK_STATUS(mvSeqExec(serdesNum, RXAUI_TX_CONFIG_SEQ1));
 			CHECK_STATUS(mvSeqExec(serdesNum, RXAUI_TX_CONFIG_SEQ2));
             break;
@@ -302,15 +329,19 @@ MV_STATUS mvHwsGetExtBaseAddr
 (
 	MV_U32 serdesNum,
 	MV_U32 baseAddr,
-	MV_U32 *unitBaseReg
+	MV_U32 unitBaseOffset,
+	MV_U32 *unitBaseReg,
+	MV_U32 *unitOffset
 )
 {
 	*unitBaseReg = baseAddr;
+	*unitOffset  = unitBaseOffset;
 
 	/* in a39x, serdes base addrress for COMPHY 6 is 0x18900
 		(instead of 0x18300) */
 	if (serdesNum == 6 && ((baseAddr & COMMON_PHY_BASE_ADDR_MASK) == COMMON_PHY_BASE_ADDR)) {
 		*unitBaseReg += COMMON_PHY6_OFF;
+		*unitOffset  = 0;
 	}
 
 	return MV_OK;

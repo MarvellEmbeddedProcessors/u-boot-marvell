@@ -213,8 +213,8 @@ SERDES_MAP DbConfigDefault[MAX_SERDES_LANES] =
 	{ PEX1,	        __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
 	{ SGMII2,       __1_25Gbps,		   SERDES_DEFAULT_MODE },
 	{ PEX2,         __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
-	{ DEFAULT_SERDES/*RXAUI*/,        __6_25Gbps,		   SERDES_DEFAULT_MODE },
-    { DEFAULT_SERDES/*RXAUI*/,        __6_25Gbps,		   SERDES_DEFAULT_MODE },
+	{ RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE },
+    { RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE },
 };
 
 /*************************** Functions implementation *************************/

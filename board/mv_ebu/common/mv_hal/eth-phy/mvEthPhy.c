@@ -183,7 +183,7 @@ MV_STATUS mvEthPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 		break;
 	case MV_PHY_ALP_INTERNAL_QUAD_GE:
 		if (ethphyHalData.ctrlFamily == MV_88F66X0)
-			mvEthInternalQuadGEPhyBasicInit();
+			mvEthInternalQuadGEPhyBasicInit(eeeEnable);
 	case MV_PHY_88E1340S:
 	case MV_PHY_88E1340:
 		mvEth1340PhyBasicInit();
@@ -852,7 +852,7 @@ MV_VOID		mvEthE1111PhyBasicInit(MV_U32 ethPortNum)
 *	Do a basic Init to the Phy , including reset
 *
 * INPUT:
-*       NONE.
+*	eeeEnable  - Whether to enable EEE or not.
 *
 * OUTPUT:
 *       None.
@@ -861,9 +861,20 @@ MV_VOID		mvEthE1111PhyBasicInit(MV_U32 ethPortNum)
 *	None
 *
 *******************************************************************************/
-MV_VOID mvEthInternalQuadGEPhyBasicInit(MV_VOID)
+MV_VOID mvEthInternalQuadGEPhyBasicInit(MV_BOOL eeeEnable)
 {
-	/* No init needed */
+	int i;
+
+	if (eeeEnable == MV_TRUE) {
+		for (i = 0; i < 4; i++) {
+			mvEthPhyRegWrite(i, 0x10, 0x3310);
+			mvEthPhyRegWrite(i, 0x13, 0x7);
+			mvEthPhyRegWrite(i, 0x14, 0x3c);
+			mvEthPhyRegWrite(i, 0x13, 0x4007);
+			mvEthPhyRegWrite(i, 0x14, 0x6);
+			mvEthPhyRegWrite(i, 0, 0x9140);
+		}
+	}
 }
 
 /*******************************************************************************

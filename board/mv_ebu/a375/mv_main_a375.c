@@ -104,6 +104,7 @@
 #endif
 
 extern int display_dram_config(int print);
+extern int fdt_env_setup(char *fdtfile);
 int late_print_cpuinfo(void);
 
 /* CPU address decode table. */
@@ -620,29 +621,11 @@ void misc_init_r_env(void)
 		setenv("enaLPAE", "no");
 #endif
 
-#if CONFIG_OF_LIBFDT
-	char bootcmd_fdt[] = "tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;"
-		"setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath ip=$ipaddr:"
-		"$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
-		"clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel; bootz 0x2000000 - $fdtaddr;";
-	env = getenv("fdtaddr");
-	if (!env)
-		setenv("fdtaddr", "0x1000000");
-
-	env = getenv("fdt_skip_update");
-	if (!env)
-		setenv("fdt_skip_update", "no");
-
-	env = getenv("fdtfile");
-	if (!env)
+	/* Flatten Device Tree environment setup */
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-		setenv("fdtfile", "armada-375.dtb");
+		fdt_env_setup("armada-375.dtb");
 #else
-		setenv("fdtfile", "armada-375-db.dtb");
-#endif
-	env = getenv("bootcmd_fdt");
-	if (!env)
-		setenv("bootcmd_fdt",bootcmd_fdt);
+		fdt_env_setup("armada-375-db.dtb");
 #endif
 
 #if (CONFIG_BOOTDELAY >= 0)

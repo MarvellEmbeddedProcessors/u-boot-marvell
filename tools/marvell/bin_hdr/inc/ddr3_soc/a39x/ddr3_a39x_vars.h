@@ -67,6 +67,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mvDdr3TopologyDef.h"
 
+#if 0 /*TODO U-Boot support*/
+/*Allow topolgy update from board TWSI device*/
+#if !defined(CONFIG_CUSTOMER_BOARD_SUPPORT) && defined(CONFIG_DDR3)
+#define MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI
+#endif
+#endif
+
 #define MARVELL_BOARD MARVELL_BOARD_ID_BASE
 
 typedef struct __mvDramModes {

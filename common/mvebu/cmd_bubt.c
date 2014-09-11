@@ -24,7 +24,10 @@
 #include <errno.h>
 
 #include <asm/arch-mvebu/unit-info.h>
+
 #include <spi_flash.h>
+
+#include <nand.h>
 
 struct mvebu_image_header {
 	u8	block_id;		/* 0 */
@@ -125,9 +128,42 @@ int is_spi_active(void)
 #endif /* CONFIG_SPI_FLASH */
 
 #ifdef CONFIG_CMD_NAND
-static int (int image_size)
+static int nand_burn_image(int image_size)
 {
-	return 0;
+	int ret, block_size;
+	nand_info_t *nand;
+	int dev = nand_curr_device;
+
+	if ((dev < 0) || (dev >= CONFIG_SYS_MAX_NAND_DEVICE) ||
+	    (!nand_info[dev].name)) {
+		puts("\nno devices available\n");
+		return 1;
+	}
+	nand = &nand_info[dev];
+	block_size = nand->erasesize;
+
+	/* Align U-Boot size to currently used blocksize */
+	image_size = ((image_size + (block_size - 1)) & (~(block_size-1)));
+
+	/* Erase the U-BOOT image space */
+	printf("Erasing 0x%x - 0x%x:...", 0, image_size);
+	ret = nand_erase(nand, 0, (size_t)image_size);
+	if (ret) {
+		printf("Error!\n");
+		goto error;
+	}
+	printf("Done!\n");
+
+	/* Write the image to flash */
+	printf("Writing image:...");
+	ret = nand_write(nand, 0, (size_t *)&image_size, (void *)get_load_addr());
+	if (ret)
+		printf("Error!\n");
+	else
+		printf("Done!\n");
+
+error:
+	return ret;
 }
 
 int is_nand_active(void)
@@ -348,9 +384,9 @@ struct bubt_dev *find_bubt_dev(char *dev_name)
 
 #ifdef CONFIG_MVEBU_SPI_BOOT
 #define DEFAULT_BUBT_DST "spi"
-#elif CONFIG_MVEBU_NAND_BOOT
+#elif defined(CONFIG_MVEBU_NAND_BOOT)
 #define DEFAULT_BUBT_DST "nand"
-#elif CONFIG_MVEBU_NOR_BOOT
+#elif defined(CONFIG_MVEBU_NOR_BOOT)
 #define DEFAULT_BUBT_DST "nor"
 #else
 #define DEFAULT_BUBT_DST "error"

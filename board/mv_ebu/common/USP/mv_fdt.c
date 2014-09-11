@@ -32,6 +32,19 @@ void fdt_env_setup(char *fdtfile)
 {
 #if CONFIG_OF_LIBFDT
 	char *env;
+
+	env = getenv("fdt_skip_update"); /* if set to yes, automatic board setup will be skipped */
+	if (!env)
+		setenv("fdt_skip_update", "no");
+
+	env = getenv("fdtaddr");
+	if (!env)
+		setenv("fdtaddr", "0x1000000");
+
+	env = getenv("fdtfile");
+	if (!env)
+		setenv("fdtfile", fdtfile);
+
 	/* boot command to fetch DT file, update DT (if fdt_skip_update=no) and bootz LSP zImage */
 	char bootcmd_fdt[] = "tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;"
 		"setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
@@ -50,18 +63,6 @@ void fdt_env_setup(char *fdtfile)
 	env = getenv("bootcmd_fdt_edit");
 	if (!env)
 		setenv("bootcmd_fdt_edit", "tftpboot $fdtaddr $fdtfile; fdt addr $fdtaddr; setenv bootcmd $bootcmd_fdt_boot");
-
-	env = getenv("fdtaddr");
-	if (!env)
-		setenv("fdtaddr", "0x1000000");
-
-	env = getenv("fdtfile");
-	if (!env)
-		setenv("fdtfile", fdtfile);
-
-	env = getenv("fdt_skip_update"); /* if set to yes, automatic board setup will be skipped */
-	if (!env)
-		setenv("fdt_skip_update", "no");
 
 	env = getenv("bootcmd_fdt");
 	if (!env)

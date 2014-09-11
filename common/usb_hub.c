@@ -68,6 +68,7 @@
 
 static struct usb_hub_device hub_dev[USB_MAX_HUB];
 static int usb_hub_index;
+extern int usb_second_reset_needed;
 
 
 static int usb_get_hub_descriptor(struct usb_device *dev, void *data, int size)
@@ -240,6 +241,7 @@ void usb_hub_port_connect_change(struct usb_device *dev, int port)
 	/* Reset the port */
 	if (hub_port_reset(dev, port, &portstatus) < 0) {
 		printf("cannot reset port %i!?\n", port + 1);
+		usb_second_reset_needed = 1;
 		return;
 	}
 

@@ -75,6 +75,7 @@ static int dev_index;
 static int asynch_allowed;
 
 char usb_started; /* flag for the started/stopped USB status */
+int  usb_second_reset_needed; /* WA for USB3 */
 
 #ifndef CONFIG_USB_MAX_CONTROLLER_COUNT
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 1
@@ -89,6 +90,7 @@ int usb_init(void)
 	struct usb_device *dev;
 	int i, start_index = 0;
 
+	usb_second_reset_needed = 0;
 	dev_index = 0;
 	asynch_allowed = 1;
 	usb_hub_reset();
@@ -145,7 +147,7 @@ int usb_init(void)
 		return -1;
 	}
 
-	return 0;
+	return usb_second_reset_needed;
 }
 
 /******************************************************************************
@@ -945,6 +947,7 @@ int usb_new_device(struct usb_device *dev)
 		/* reset the port for the second time */
 		err = hub_port_reset(dev->parent, port, &portstatus);
 		if (err < 0) {
+			usb_second_reset_needed = 1;
 			printf("\n     Couldn't reset port %i\n", port);
 			return 1;
 		}

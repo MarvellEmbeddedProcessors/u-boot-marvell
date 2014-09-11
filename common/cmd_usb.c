@@ -390,10 +390,21 @@ int do_usb(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	if ((strncmp(argv[1], "reset", 5) == 0) ||
 		 (strncmp(argv[1], "start", 5) == 0)) {
+		int init_result;
+
 		bootstage_mark_name(BOOTSTAGE_ID_USB_START, "usb_start");
 		usb_stop();
 		printf("(Re)start USB...\n");
-		if (usb_init() >= 0) {
+		init_result = usb_init();
+		if (init_result > 0) {
+			if (simple_strtoul(getenv("usbType"), NULL, 10) == 3) {
+				/* WA for USB3 init after reset with device in port */
+				printf("Bad detection, need a second reset...\n");
+				usb_stop();
+				init_result = usb_init();
+			}
+		}
+		if (init_result >= 0) {
 #ifdef CONFIG_USB_STORAGE
 			/* try to recognize storage devices immediately */
 			usb_stor_curr_dev = usb_stor_scan(1);

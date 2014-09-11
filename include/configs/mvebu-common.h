@@ -138,12 +138,21 @@
 
 
 /* No flash setup */
-#if !defined(MV_INCLUDE_NOR) && !defined(MV_INCLUDE_NAND) && !defined(CONFIG_MVEBU_SPI_BOOT)
+#if !defined(MV_INCLUDE_NOR) && !defined(CONFIG_MVEBU_NAND_BOOT) && !defined(CONFIG_MVEBU_SPI_BOOT)
 	#undef CONFIG_CMD_FLASH
 	#undef CONFIG_CMD_IMLS
 	#define CONFIG_ENV_IS_NOWHERE
 	#define CONFIG_ENV_SIZE		0x10000  /* environment takes one erase block */
 	#define CONFIG_SYS_NO_FLASH
+#else
+	#define CONFIG_ENV_SECT_SIZE	0x10000
+	#define CONFIG_ENV_SIZE		CONFIG_ENV_SECT_SIZE    /* environment takes one sector */
+	#define CONFIG_ENV_OFFSET	CONFIG_UBOOT_SIZE
+	#define CONFIG_ENV_ADDR		CONFIG_ENV_OFFSET
+
+	/* TODO - Do we really need this */
+	#define CONFIG_SYS_MONITOR_BASE	0
+	#define CONFIG_SYS_MONITOR_LEN	0x80000  /* Reserve 512 kB for Monitor */
 #endif
 
 /* Generic Interrupt Controller Definitions */
@@ -326,64 +335,20 @@
 #endif /* MV_INCLUDE_SATA */
 
 /* NAND */
-#ifdef MV_INCLUDE_NAND
-	#define NFLASH_CS_BASE 0xfd000000 /* not relevant for the new controller */
-	#define NFLASH_CS_SIZE _2M
-	#define DEVICE_CS0_BASE		NFLASH_CS_BASE
-	#define DEVICE_CS0_SIZE		NFLASH_CS_SIZE
-	#define CONFIG_SYS_NAND_BASE	DEVICE_CS0_BASE
-
-	#ifndef RD_78460_SERVER_REV2
-		#define CONFIG_CMD_NAND
-		#define CONFIG_CMD_NAND_TRIMFFS  /*  add this line to support "nand write.trimffs" command */
-	#endif
+#ifdef CONFIG_MVEBU_NAND
+	#define CONFIG_NAND_PXA3XX
 	#define CONFIG_SYS_MAX_NAND_DEVICE 1
+	#define CONFIG_SYS_NAND_MAX_CHIPS 1
+	#define CONFIG_CMD_NAND
+	#define CONFIG_SYS_NAND_SELF_INIT
+	#define CONFIG_NAND_ECC_STRENGTH 4
+	#define CONFIG_NAND_ECC_STEP_SIZE 512
+#endif
 
-	#if defined(CONFIG_MTD_NAND_LNC)
-		/* Use Software BCH */
-		#define CONFIG_BCH
-		#define CONFIG_NAND_ECC_BCH
-		#define MV_NAND_1CS_MODE
-		/* Allow to use both NAND and NOR at once */
-		#define MTD_NAND_LNC_WITH_NOR
-	#elif defined(CONFIG_MTD_NAND_NFC)
-		/* #define CONFIG_NAND_RS_ECC_SUPPORT */
-		#define CONFIG_MV_MTD_GANG_SUPPORT
-		#define CONFIG_MV_MTD_MLC_NAND_SUPPORT
-		#define CONFIG_SYS_64BIT_VSPRINTF
-		#define CONFIG_SKIP_BAD_BLOCK
-		#undef MV_NFC_DBG
-
-		#define MV_NAND_PIO_MODE
-		#define MV_NAND_1CS_MODE
-	#ifndef MV_NAND_READ_OOB
-		#define MV_NAND_4BIT_MODE
-	#endif
-		#define MTD_NAND_NFC_INIT_RESET
-	#endif /* CONFIG_MTD_NAND_NFC */
-
-	#if defined(MV_NAND_2CS_MODE)
-		#define CONFIG_SYS_NAND_MAX_CHIPS 2
-	#elif defined(MV_NAND_1CS_MODE)
-		#define CONFIG_SYS_NAND_MAX_CHIPS 1
-	#endif
-
-	/* Boot from NAND settings */
-	#if defined(MV_NAND_BOOT)
-		#define CONFIG_ENV_IS_IN_NAND
-
-		#define CONFIG_ENV_SIZE                 0x80000  /* environment takes one erase block */
-		#define CONFIG_ENV_OFFSET               nand_get_env_offs() /* environment starts here  */
-		#define CONFIG_ENV_ADDR                 CONFIG_ENV_OFFSET
-		#define MONITOR_HEADER_LEN              0x200
-		#define CONFIG_SYS_MONITOR_BASE         0
-		#define CONFIG_SYS_MONITOR_LEN          0x80000           /* Reserve 512 kB for Monitor */
-		#define CONFIG_ENV_RANGE                CONFIG_ENV_SIZE * 8
-
-		#define MV_NBOOT_BASE                   0
-		#define MV_NBOOT_LEN                    (4 << 10)       /* Reserved 4KB for boot strap */
-	#endif /* MV_NAND_BOOT */
-#endif /* MV_INCLUDE_NAND */
+/* Boot from NAND settings */
+#if defined(CONFIG_MVEBU_NAND_BOOT)
+	#define CONFIG_ENV_IS_IN_NAND
+#endif /* CONFIG_MVEBU_SPI_BOOT */
 
 /* SPI Flash */
 #ifdef CONFIG_MVEBU_SPI
@@ -411,16 +376,6 @@
 /* Boot from SPI settings */
 #if defined(CONFIG_MVEBU_SPI_BOOT)
 	#define CONFIG_ENV_IS_IN_SPI_FLASH
-
-	#define CONFIG_ENV_SECT_SIZE	0x10000
-	#define CONFIG_ENV_SIZE		CONFIG_ENV_SECT_SIZE    /* environment takes one sector */
-	#define CONFIG_ENV_OFFSET	CONFIG_UBOOT_SIZE
-	#define CONFIG_ENV_ADDR		CONFIG_ENV_OFFSET
-
-	/* TODO - Do we really need this */
-	#define CONFIG_SYS_MONITOR_BASE	0
-	#define CONFIG_SYS_MONITOR_LEN	0x80000  /* Reserve 512 kB for Monitor */
-
 #endif /* CONFIG_MVEBU_SPI_BOOT */
 
 /* NOR Flash */

@@ -2,7 +2,7 @@
 
 use Cwd qw();
 
-our @supported_boards = ("armada8k", "armada8k-pxp", "armada38x");
+our @supported_boards = ("armada8k", "armada8k-pxp", "armada38x", "armada38x_nand", "armada38x_spi");
 our @supported_flash = ("spi", "nand", "nor");
 
 sub bin2hex

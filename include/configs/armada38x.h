@@ -50,6 +50,8 @@
 #define CONFIG_MVEBU_UART
 #define CONFIG_MVEBU_SPI
 #define CONFIG_MVEBU_PCI
+#define CONFIG_MVEBU_NAND
+
 /*
 #define MV_INCLUDE_SDIO
 #define MV_INCLUDE_INTEG_SATA
@@ -66,10 +68,6 @@
 #define MV_INCLUDE_RTC
 #define MV_INCLUDE_PEX
 */
-
-#ifdef CONFIG_MVEBU_SPI
-#define CONFIG_MVEBU_SPI_BOOT
-#endif
 
 /* For Integration only */
 #define DB_784MP_GP

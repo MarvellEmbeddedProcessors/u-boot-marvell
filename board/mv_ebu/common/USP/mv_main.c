@@ -254,8 +254,6 @@ int board_init (void)
 
 	/* Init the Controlloer environment module (MPP init) */
 	mvCtrlEnvInit();
-	if (mvBoardCpssBoardIdSet(mvBoardIdGet()) != MV_OK)
-		printf("%s: Error: Failed to set Board ID for CPSS!\n", __func__);
 
 #if defined(CONFIG_DISPLAY_CPUINFO)
 	late_print_cpuinfo();          /* display cpu info (and speed) */
@@ -267,6 +265,8 @@ int board_init (void)
 #if defined(MV_NOR_BOOT)
 	env_init();
 #endif
+	if (mvBoardCpssBoardIdSet(mvBoardIdGet()) != MV_OK)
+		printf("%s: Error: Failed to set Board ID for CPSS!\n", __func__);
 
 	/* Init the GPIO sub-system */
 	gppHalData.ctrlRev = mvCtrlRevGet();

@@ -67,6 +67,7 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_spd.h"
 #include "bin_hdr_twsi.h"
 #include "mvUart.h"
+#include "printf.h"
 #include "mvSysEnvLib.h"
 #include "ddr3_hws_hw_training.h"
 
@@ -135,7 +136,15 @@ static MV_U32 gLogLevel = 0;
 
 MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize);
 
-MV_STATUS ddr3UpdateTopologyMap(MV_HWS_TOPOLOGY_MAP* topologyMap);
+#if defined(MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI)
+static MV_STATUS ddr3UpdateTopologyMap(MV_HWS_TOPOLOGY_MAP* topologyMap);
+#endif
+
+#ifdef CONFIG_DDR4
+char* ddrType = "DDR4";
+#else
+char* ddrType = "DDR3";
+#endif
 
 /************************************************************************************
  * Name:     levelLogPrintD
@@ -176,7 +185,7 @@ static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 	for (ui = 0; ui < numOfWinRegs; ui++)
 		MV_REG_WRITE((winCtrlReg + 0x4 * ui), auWinBackup[ui]);
 
-	DEBUG_INIT_FULL_S("DDR3 Training Sequence - Switching XBAR Window to FastPath Window \n");
+	mvPrintf("%s Training Sequence - Switching XBAR Window to FastPath Window \n", ddrType);
 
 #if defined(MV88F68XX)
 	ddr3FastPathDynamicCsSizeConfig(uiCsEna);
@@ -294,7 +303,7 @@ MV_U32 ddr3Init(void)
 
 	/* Check if DRAM is already initialized  */
 	if (MV_REG_READ(REG_BOOTROM_ROUTINE_ADDR) & (1 << REG_BOOTROM_ROUTINE_DRAM_INIT_OFFS)) {
-		DEBUG_INIT_S("DDR3 Training Sequence - 2nd boot - Skip \n");
+		mvPrintf("%s Training Sequence - 2nd boot - Skip \n", ddrType);
 		return MV_OK;
 	}
 
@@ -335,7 +344,7 @@ MV_U32 ddr3Init(void)
 	/*Load topology for New Training IP*/
 	status = ddr3LoadTopologyMap();
 	if (MV_OK != status) {
-		DEBUG_INIT_FULL_S("DDR3 Training Sequence topology load - FAILED\n");
+		mvPrintf("%s Training Sequence topology load - FAILED\n", ddrType);
 		return status;
 	}
 
@@ -345,7 +354,7 @@ MV_U32 ddr3Init(void)
 	/*Start New Training IP*/
 	status = ddr3HwsHwTraining();
 	if (MV_OK != status) {
-		DEBUG_INIT_FULL_S("DDR3 Training Sequence - FAILED\n");
+		mvPrintf("%s Training Sequence - FAILED\n", ddrType);
 		return status;
 	}
 
@@ -359,10 +368,13 @@ MV_U32 ddr3Init(void)
 	uiReg = MV_REG_READ(REG_BOOTROM_ROUTINE_ADDR);
 	MV_REG_WRITE(REG_BOOTROM_ROUTINE_ADDR, uiReg | (1 << REG_BOOTROM_ROUTINE_DRAM_INIT_OFFS));
 
+#ifndef CONFIG_DDR4
+/*Diabled for DDR4 until debug finished*/
 	/* DLB config */
 	ddr3NewTipDlbConfig();
+#endif
 
-	DEBUG_INIT_S("DDR3 Training Sequence - Ended Successfully \n");
+	mvPrintf("%s Training Sequence - Ended Successfully\n", ddrType);
 
 #if defined(MV88F68XX)
 	if( MV_TRUE == ddr3IfEccEnabled()){
@@ -506,7 +518,7 @@ MV_STATUS ddr3LoadTopologyMap(void)
 		return MV_FAIL;
 	}
 
-#if defined(MV88F68XX) && !defined(CONFIG_CUSTOMER_BOARD_SUPPORT) && !defined(CONFIG_ARMADA_39X)
+#if defined(MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI)
 	/*Update topology data*/
 	if(MV_OK != ddr3UpdateTopologyMap(topologyMap))
 		DEBUG_INIT_FULL_S("Failed update of DDR3 Topology map\n");
@@ -669,7 +681,7 @@ MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize){
     return MV_OK;
 }
 
-#if defined(MV88F68XX) && !defined(CONFIG_CUSTOMER_BOARD_SUPPORT)
+#if defined(MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI)
 /******************************************************************************
  * Name:     ddr3UpdateTopologyMap
  * Desc:
@@ -677,7 +689,7 @@ MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize){
  * Notes: Update topology map by SatR values
  * Returns:
  */
-MV_STATUS ddr3UpdateTopologyMap(MV_HWS_TOPOLOGY_MAP* topologyMap)
+static MV_STATUS ddr3UpdateTopologyMap(MV_HWS_TOPOLOGY_MAP* topologyMap)
 {
 	MV_U8	configVal;
 	MV_TWSI_SLAVE twsiSlave;

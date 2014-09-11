@@ -506,7 +506,7 @@ MV_STATUS ddr3LoadTopologyMap(void)
 		return MV_FAIL;
 	}
 
-#if defined(MV88F68XX) && !defined(CONFIG_CUSTOMER_BOARD_SUPPORT)
+#if defined(MV88F68XX) && !defined(CONFIG_CUSTOMER_BOARD_SUPPORT) && !defined(CONFIG_ARMADA_39X)
 	/*Update topology data*/
 	if(MV_OK != ddr3UpdateTopologyMap(topologyMap))
 		DEBUG_INIT_FULL_S("Failed update of DDR3 Topology map\n");

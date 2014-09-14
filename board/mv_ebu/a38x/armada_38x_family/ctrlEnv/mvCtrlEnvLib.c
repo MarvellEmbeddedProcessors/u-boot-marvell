@@ -420,7 +420,7 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 *******************************************************************************/
 MV_STATUS mvCtrlEnvInit(MV_VOID)
 {
-	MV_U32 i, gppMask;
+	MV_U32 i, port, rVal, gppMask;
 
 
 	/* If set to Auto detect, read board config info, update MPP group types*/
@@ -493,6 +493,17 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 
 	/* Disable MBUS Err Prop - inorder to avoid data aborts */
 	MV_REG_BIT_RESET(SOC_COHERENCY_FABRIC_CTRL_REG, BIT8);
+
+	/* Apply additional SATA ports configurations */
+	for (i = 0; i < MV_SATA_MAX_UNIT; i++) {
+		for (port = 0; port < MV_SATA_MAX_CHAN_PER_UNIT; port++) {
+			MV_REG_WRITE(SATA_INDIR_ACCESS_PORT_ADDR(i, port), SATA_OOB1_PARAM_ADDR);
+			rVal = MV_REG_READ(SATA_INDIR_ACCESS_PORT_DATA(i, port));
+			rVal &= ~SATA_COM_WAKE_RESET_SPACING_UP_LIMIT_MASK;
+			rVal |= SATA_COM_WAKE_RESET_SPACING_UP_LIMIT_VALUE;
+			MV_REG_WRITE(SATA_INDIR_ACCESS_PORT_DATA(i, port), rVal);
+		}
+	}
 
 	return MV_OK;
 }

@@ -1078,6 +1078,11 @@ MV_STATUS mvUsb2PhyInit(MV_U32 dev)
 	regVal &= ~0x1;
 	MV_REG_WRITE(USB_CLUSTER_CONTROL_REG, regVal);
 
+	/* set LPF_COEF parameter: configure Rx PLL tolerance to ppm deviation (change to 2000ppm) */
+	regVal = MV_REG_READ(MV_USB2_PHY_CHANNEL_REG(dev, 8));
+	regVal = (regVal & (~0xC)) | (8);
+	MV_REG_WRITE(MV_USB2_PHY_CHANNEL_REG(dev, 8), regVal);
+
 	/* Set the PLL clocks to 450 MHz. Our ref clock is 25 Mhz so to
 	 * achieve 480 MHz we set divider = 5 multiplier = 96 */
 	regVal = MV_REG_READ(MV_USB2_PHY_CHANNEL_REG(dev, 1));

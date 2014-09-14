@@ -197,10 +197,11 @@ MV_OP_PARAMS sataPowerUpParams[] =
 /* SATA and SGMII - power up seq */
 MV_OP_PARAMS sataAndSgmiiPowerUpParams[] =
 {
-	/* unitBaseReg                 unitOffset   	mask         SATA data       SGMII data    waitTime  numOfLoops */
-	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,		   0x90006,		{ 0x80002,		0x80002 }, 		0,		   0 },  /* Power Up */
-	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,		   0x7800,		{ 0x6000,		0x6000 }, 		0,		   0 },  /* Unreset */
-	{ POWER_AND_PLL_CTRL_REG,	 	 0x800,		   0x0E0,		{ 0x0,			0x80 }, 		0,		   0}    /* Phy Selector */
+	/* unitBaseReg                      unitOffset   	mask         SATA data      SGMII data  waitTime    numOfLoops */
+	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,           0x90006,	{ 0x80002,		0x80002 }, 		0,          0       },  /* Power Up */
+	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,		    0x7800,		{ 0x6000,		0x6000  }, 		0,		    0       },  /* Unreset */
+	{ POWER_AND_PLL_CTRL_REG,	 	    0x800,		    0x0E0,		{ 0x0,			0x80    }, 		0,		    0       },  /* Phy Selector */
+    { MISC_REG,                         0x800,			0x440,		{ 0x440,        0x400	},      0,          0       },  /* Ref clock source select */
 };
 
 /* SATA and SGMII - speed config seq */
@@ -210,28 +211,17 @@ MV_OP_PARAMS sataAndSgmiiSpeedConfigParams[] =
     { COMMON_PHY_CONFIGURATION1_REG, 	0x28,		0x3FC00000,	{ 0x8800000, 	0x19800000,		0x22000000 }, 	0,		   0 }, /* Baud Rate */
 	{ INTERFACE_REG, 					0x800,	    0xC00,	 	{ 0x800,	  	NO_DATA,        NO_DATA    }, 	0,	       0 }, /* Select Baud Rate for SATA only*/
 	{ ISOLATE_REG,	 					0x800,	    0xFF,	 	{ NO_DATA, 		0x66,           0x66       }, 	0,	       0 }, /* Phy Gen RX and TX */
-	{ LOOPBACK_REG,	 					0x800,	    0xE,	    { 0x4,	  		0x2,   			0x2        }, 	0,	       0 }  /* Bus Width */
+	{ LOOPBACK_REG,	 					0x800,	    0xE,	    { 0x4,	  		0x2,   			0x2        }, 	0,	       0 }, /* Bus Width */
 };
-
-MV_OP_PARAMS sataDBTxAmpParams[] =
-{
-	/* unitunitBaseReg  unitOffset   mask      SATA data   waitTime  numOfLoops */
-	{ 0xa0018,          0x800,       0xFF,	  { 0xDF},      0,	 0		 },
-	{ 0xa0188,          0x800,       0x1FF,	  { 0x1DD},     0,	 0		 },
-	{ 0xa0188,          0x800,       0x100,	  { 0x0},       0,	 0		 },
-	{ 0x1830C,          0x28,        0x8,	  { 0x0},       0,	 0		 }
-};
-
 
 /* SATA and SGMII - TX config seq */
 MV_OP_PARAMS sataAndSgmiiTxConfigParams1[] =
 {
-	/* unitunitBaseReg                      unitOffset   mask        SATA data       SGMII data      waitTime    numOfLoops */
-	{ MISC_REG,			 0x800,				 0x440,		     { 0x440,	0x400	      }, 0,	    0		   },
-	{ GLUE_REG,			 0x800,				 0x1800,	     { NO_DATA, 0x800	      }, 0,	    0		   },
-	{ RESET_DFE_REG,		 0x800,				 0x401,		     { 0x401,	0x401	      }, 0,	    0		   },   /* Sft Reset pulse */
-	{ RESET_DFE_REG,		 0x800,				 0x401,		     { 0x0,	0x0	      }, 0,	    0		   },   /* Sft Reset pulse */
-	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,				 0xF0000,	     { 0x70000, 0x70000	      }, 0,	    0		   } /* Power up PLL, RX and TX */
+	/* unitunitBaseReg                  unitOffset  mask        SATA data       SGMII data      waitTime    numOfLoops */
+	{ GLUE_REG,                         0x800,		0x1800,     { NO_DATA,      0x800       },      0,          0		   },
+	{ RESET_DFE_REG,		            0x800,      0x401,		{ 0x401,        0x401       },      0,          0		   },   /* Sft Reset pulse */
+	{ RESET_DFE_REG,		            0x800,		0x401,		{ 0x0,          0x0         },      0,	        0		   },   /* Sft Reset pulse */
+	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,		0xF0000,	{ 0x70000,      0x70000     },      0,	        0		   },   /* Power up PLL, RX and TX */
 };
 
 MV_OP_PARAMS sataTxConfigParams[] =
@@ -257,6 +247,36 @@ MV_OP_PARAMS sataAndSgmiiTxConfigSerdesRev2Params2[] =
 	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		 0x40000000,    { 0x40000000,	0x40000000 },	0,			0		    },  /* Assert Rx Init */
 	{ COMMON_PHY_STATUS1_REG,			0x28,	     0x1,			{ 0x1,			0x1	       },   1,	        1000	    },  /* Wait for PHY power up sequence to finish */
 	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		 0x40000000,    { 0x0,			0x0		   },	0,			0		    },  /* De-assert Rx Init */
+};
+
+MV_OP_PARAMS sataElectricalConfigSerdesRev1Params[] =
+{
+	/* unitunitBaseReg					unitOffset	 mask		SATA data		waitTime    numOfLoops */
+	{ COMMON_PHY_CONFIGURATION4_REG,	0x28,	    0x400008,	{ 0x400000,	},   	0,			0		},  /* enable SSC and DFE update enable */
+	{ VTHIMPCAL_CTRL_REG,				0x800,	    0xFF00,		{ 0x4000,	},   	0,			0		},  /* tximpcal_th and rximpcal_th */
+	{ SQUELCH_FFE_SETTING_REG,			0x800,	    0xFFF,		{ 0x6CF,	},   	0,			0		},  /* SQ_THRESH and FFE Setting */
+	{ G1_SETTINGS_0_REG,				0x800,	    0xFFFF,		{ 0x8A32,	},   	0,			0		},  /* G1_TX SLEW, EMPH1 and AMP */
+	{ G1_SETTINGS_1_REG,				0x800,	    0x3FF,		{ 0x3C9,	},   	0,			0		},  /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ G2_SETTINGS_0_REG,				0x800,	    0xFFFF,		{ 0x8B5C,	},   	0,			0		},  /* G2_TX SLEW, EMPH1 and AMP */
+	{ G2_SETTINGS_1_REG,				0x800,	    0x3FF,		{ 0x3D2,	},   	0,			0		},  /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ G3_SETTINGS_0_REG,				0x800,	    0xFFFF,		{ 0xE6E,	},   	0,			0		},  /* G3_TX SLEW, EMPH1 and AMP */
+	{ G3_SETTINGS_1_REG,				0x800,	    0x3FF,		{ 0x3D2,	},   	0,			0		},  /* G3_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ CAL_REG6,							0x800,	    0xFF00,		{ 0xDD00,	},   	0,			0		},  /* Cal rxclkalign90 ext enable and Cal os ph ext */
+	{ RX_REG2,							0x800,	    0xF0,		{ 0x70,		},   	0,			0		},  /* Dtl Clamping disable and Dtl clamping Sel(6000ppm) */
+};
+
+MV_OP_PARAMS sataElectricalConfigSerdesRev2Params[] =
+{
+	/* unitunitBaseReg					unitOffset	 mask		SATA data		waitTime    numOfLoops */
+	{ COMMON_PHY_CONFIGURATION4_REG,	0x28,	    0x400008,	{ 0x400000,	},   	0,			0		},  /* enable SSC and DFE update enable */
+	{ G1_SETTINGS_0_REG,				0x800,	    0xFFFF,		{ 0x8A32,	},   	0,			0		},  /* G1_TX SLEW, EMPH1 and AMP */
+	{ G1_SETTINGS_1_REG,				0x800,	    0x3FF,		{ 0x3C9,	},   	0,			0		},  /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ G2_SETTINGS_0_REG,				0x800,	    0xFFFF,		{ 0x8B5C,	},   	0,			0		},  /* G2_TX SLEW, EMPH1 and AMP */
+	{ G2_SETTINGS_1_REG,				0x800,	    0x3FF,		{ 0x3D2,	},   	0,			0		},  /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ G3_SETTINGS_0_REG,				0x800,	    0xFFFF,		{ 0xE6E,	},   	0,			0		},  /* G3_TX SLEW, EMPH1 and AMP */
+	{ G3_SETTINGS_1_REG,				0x800,	    0x3FF,		{ 0x3D2,	},   	0,			0		},  /* G3_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ CAL_REG6,							0x800,	    0xFF00,		{ 0xDD00,	},   	0,			0		},  /* Cal rxclkalign90 ext enable and Cal os ph ext */
+	{ RX_REG2,							0x800,	    0xF0,		{ 0x70,		},   	0,			0		},  /* Dtl Clamping disable and Dtl clamping Sel(6000ppm) */
 };
 
 /****************/
@@ -413,28 +433,28 @@ MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID)
 	serdesSeqDb[SATA__6_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(sataAndSgmiiSpeedConfigParams) / sizeof(MV_OP_PARAMS);
 	serdesSeqDb[SATA__6_SPEED_CONFIG_SEQ].dataArrIdx  = SATA;
 
-	/* SATA_DB_TX_AMP_SEQ sequence init */
-	serdesSeqDb[SATA_DB_TX_AMP_SEQ].opParamsPtr = sataDBTxAmpParams;
-	serdesSeqDb[SATA_DB_TX_AMP_SEQ].cfgSeqSize  = sizeof(sataDBTxAmpParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[SATA_DB_TX_AMP_SEQ].dataArrIdx  = SATA;
-
-	/* SATA_TX_CONFIG_SEQ sequence init */
-	if(serdesRev == MV_SERDES_REV_1_2) {
-		serdesSeqDb[SATA_TX_CONFIG_SEQ1].opParamsPtr = sataAndSgmiiTxConfigSerdesRev1Params2;
-		serdesSeqDb[SATA_TX_CONFIG_SEQ1].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigSerdesRev1Params2) / sizeof(MV_OP_PARAMS);
-	} else {
-		serdesSeqDb[SATA_TX_CONFIG_SEQ1].opParamsPtr = sataAndSgmiiTxConfigSerdesRev2Params2;
-		serdesSeqDb[SATA_TX_CONFIG_SEQ1].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigSerdesRev2Params2) / sizeof(MV_OP_PARAMS);
+    /* SATA_ELECTRICAL_CONFIG_SEQ seq sequence init */
+    if(serdesRev == MV_SERDES_REV_1_2) {
+		serdesSeqDb[SATA_ELECTRICAL_CONFIG_SEQ].opParamsPtr = sataElectricalConfigSerdesRev1Params;
+		serdesSeqDb[SATA_ELECTRICAL_CONFIG_SEQ].cfgSeqSize  = sizeof(sataElectricalConfigSerdesRev1Params) / sizeof(MV_OP_PARAMS);
+    } else {
+		serdesSeqDb[SATA_ELECTRICAL_CONFIG_SEQ].opParamsPtr = sataElectricalConfigSerdesRev2Params;
+		serdesSeqDb[SATA_ELECTRICAL_CONFIG_SEQ].cfgSeqSize  = sizeof(sataElectricalConfigSerdesRev2Params) / sizeof(MV_OP_PARAMS);
 	}
-	serdesSeqDb[SATA_TX_CONFIG_SEQ1].dataArrIdx  = SATA;
+	serdesSeqDb[SATA_ELECTRICAL_CONFIG_SEQ].dataArrIdx  = SATA;
 
-	/* SATA_TX_CONFIG_SEQ sequence init */
+    /* SATA_TX_CONFIG_SEQ sequence init */
+    serdesSeqDb[SATA_TX_CONFIG_SEQ1].opParamsPtr = sataAndSgmiiTxConfigParams1;
+    serdesSeqDb[SATA_TX_CONFIG_SEQ1].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigParams1) / sizeof(MV_OP_PARAMS);
+    serdesSeqDb[SATA_TX_CONFIG_SEQ1].dataArrIdx  = SATA;
+
+    /* SATA_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[SATA_ONLY_TX_CONFIG_SEQ].opParamsPtr = sataTxConfigParams;
 	serdesSeqDb[SATA_ONLY_TX_CONFIG_SEQ].cfgSeqSize  = sizeof(sataTxConfigParams) / sizeof(MV_OP_PARAMS);
 	serdesSeqDb[SATA_ONLY_TX_CONFIG_SEQ].dataArrIdx  = SATA;
 
-	/* SATA_TX_CONFIG_SEQ sequence init */
-	if(serdesRev == MV_SERDES_REV_1_2) {
+    /* SATA_TX_CONFIG_SEQ sequence init */
+    if(serdesRev == MV_SERDES_REV_1_2) {
 		serdesSeqDb[SATA_TX_CONFIG_SEQ2].opParamsPtr = sataAndSgmiiTxConfigSerdesRev1Params2;
 		serdesSeqDb[SATA_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(sataAndSgmiiTxConfigSerdesRev1Params2) / sizeof(MV_OP_PARAMS);
 	} else {
@@ -967,19 +987,15 @@ MV_STATUS mvSerdesPowerUpCtrl
 		case SATA1:
 		case SATA2:
 		case SATA3:
-			sataIdx =  ((serdesType == SATA0) || (serdesType == SATA1)) ? 0 : 1;
+			sataIdx = ((serdesType == SATA0) || (serdesType == SATA1)) ? 0 : 1;
 			CHECK_STATUS(mvSeqExec(sataIdx, SATA_ONLY_POWER_UP_SEQ));
 			CHECK_STATUS(mvSeqExec(serdesNum, SATA_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
-			if (mvBoardIdGet() == DB_68XX_ID)
-			{
-				/* relevant to DB board only */
-				CHECK_STATUS(mvSeqExec(serdesNum, SATA_DB_TX_AMP_SEQ));
-			}
-			CHECK_STATUS(mvSeqExec(serdesNum, SATA_TX_CONFIG_SEQ1));
-			CHECK_STATUS(mvSeqExec(sataIdx, SATA_ONLY_TX_CONFIG_SEQ));
-			CHECK_STATUS(mvSeqExec(serdesNum, SATA_TX_CONFIG_SEQ2));
+            CHECK_STATUS(mvSeqExec(serdesNum, SATA_ELECTRICAL_CONFIG_SEQ));
+            CHECK_STATUS(mvSeqExec(serdesNum, SATA_TX_CONFIG_SEQ1));
+            CHECK_STATUS(mvSeqExec(sataIdx, SATA_ONLY_TX_CONFIG_SEQ));
+            CHECK_STATUS(mvSeqExec(serdesNum, SATA_TX_CONFIG_SEQ2));
 
 			mvOsUDelay(10000);
 #ifdef DB_LINK_CHECK

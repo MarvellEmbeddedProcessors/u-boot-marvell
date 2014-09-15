@@ -276,9 +276,9 @@ static int mv_fdt_update_pex(void *fdt)
 	MV_BOARD_PEX_INFO *boardPexInfo;	/* pex info */
 	int err;				/* error number */
 	int nodeoffset;				/* node offset from libfdt */
-	char *prop;				/* property name */
-	char *propval;				/* property value */
-	const char *node;			/* node name */
+	char propval[10];			/* property value */
+	const char *prop = "status";		/* property name */
+	const char *node = "pcie-controller";	/* node name */
 	int i = 0;
 	int k = 0;
 	int depth = 1;
@@ -293,8 +293,6 @@ static int mv_fdt_update_pex(void *fdt)
 	mv_fdt_dprintf("\n");
 	/* Set controller and 'pexnum' number of interfaces' status to 'okay'.
 	 * Rest of them are disabled */
-	prop = "status";
-	node = "pcie-controller";
 	nodeoffset = mv_fdt_find_node(fdt, node);
 	if (nodeoffset < 0) {
 		mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
@@ -303,10 +301,10 @@ static int mv_fdt_update_pex(void *fdt)
 	while (strncmp(node, "pcie", 4) == 0) {
 		for (k = 0; k <= pexnum; k++)
 			if (i == boardPexInfo->pexMapping[k]) {
-				propval = "okay";
+				sprintf(propval, "okay");
 				goto pex_ok;
 			}
-		propval = "disabled";
+		sprintf(propval, "disabled");
 pex_ok:
 		if (strncmp(node, "pcie-controller", 15) != 0)
 			i++;
@@ -338,8 +336,8 @@ static int mv_fdt_update_ethnum(void *fdt)
 	int ethcounter = 0;		/* nodes' counter */
 	int nodeoffset;			/* node offset from libfdt */
 	int aliasesoffset;		/* aliases node offset from libfdt */
-	char *prop;			/* property name */
-	char *propval;			/* property value */
+	char prop[10];			/* property name */
+	const char *propval = "disabled";	/* property value */
 	const char *node = "aliases";	/* node name */
 	int depth = 1;
 
@@ -387,8 +385,7 @@ static int mv_fdt_update_ethnum(void *fdt)
 				       node);
 			return -1;
 		}
-		prop = "status";
-		propval = "disabled";
+		sprintf(prop, "status");
 		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
 						propval, strlen(propval)+1));
 		if (err < 0) {

@@ -413,7 +413,7 @@ typedef enum _mvTarget {
 	{ SEC_BOOT_ATTR, DEV_TARGET_ID  },	/* Secondary Boot device */ \
 	{ 0x09, CRYPT_TARGET_ID	},		/* CRYPT_ENG0            */ \
 	{ 0x05, CRYPT_TARGET_ID	},		/* CRYPT_ENG1            */ \
-	{ 0x00, PNC_BM_NSS_TARGET_ID },		/* PNC_BM (A38x)	 */ \
+	{ 0x04, PNC_BM_NSS_TARGET_ID },		/* PNC_BM (A38x)	 */ \
 	{ 0x04, PSS_PORTS_TARGET_ID },		/* PSS Ports (A39x)	 */ \
 	{ 0x05, PNC_BM_NSS_TARGET_ID },		/* NSS MAC_NIC (A39x)	 */ \
 	{ 0x04, PNC_BM_NSS_TARGET_ID }		/* NSS MGMT (A39x)	 */ \

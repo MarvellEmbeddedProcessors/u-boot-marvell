@@ -125,12 +125,12 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 {
 	MV_U32 value;
 
-	value = MV_MEMIO_LE32_READ((INTER_REGS_BASE | DEVICE_SAMPLE_AT_RESET1_REG)) & (0x3 << 22);
+	value = (MV_MEMIO_LE32_READ(INTER_REGS_BASE | DEVICE_SAMPLE_AT_RESET1_REG) >> 15) & 0x1;
 
 	switch (value) {
-	case 0:
+	case (0x0):
 		return MV_BOARD_TCLK_250MHZ;
-	case (0x1 << 22):
+	case (0x1):
 		return MV_BOARD_TCLK_200MHZ;
 	default:
 		return MV_BOARD_TCLK_ERROR;

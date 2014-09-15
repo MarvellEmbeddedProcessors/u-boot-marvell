@@ -79,7 +79,7 @@
 #define SOC_CONTROL_REG1                        0x18204
 #define GENERAL_PURPOSE_RESERVED0_REG			0x182E0
 #define GBE_CONFIGURATION_REG                   0x18460
-#define DEVICE_SAMPLE_AT_RESET1_REG             0xE4204
+#define DEVICE_SAMPLE_AT_RESET1_REG             0x18600
 
 #define POWER_AND_PLL_CTRL_REG                  0xa0004
 #define CALIBRATION_CTRL_REG                    0xa0008

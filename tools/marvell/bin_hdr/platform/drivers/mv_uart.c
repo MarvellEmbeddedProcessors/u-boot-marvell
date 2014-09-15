@@ -148,16 +148,16 @@ MV_VOID mvUartInit(void)
 			break;
 	}
 
-    pUartPort->ier = 0x00;
-    pUartPort->lcr = LCR_DIVL_EN;           /* Access baud rate */
-    pUartPort->dll = baudDivisor & 0xff;    /* 9600 baud */
-    pUartPort->dlm = (baudDivisor >> 8) & 0xff;
-    pUartPort->lcr = LCR_8N1;               /* 8 data, 1 stop, no parity */
+	pUartPort->ier = 0x00;
+	pUartPort->lcr = LCR_DIVL_EN;           /* Access baud rate */
+	pUartPort->dll = baudDivisor & 0xff;    /* 9600 baud */
+	pUartPort->dlm = (baudDivisor >> 8) & 0xff;
+	pUartPort->lcr = LCR_8N1;               /* 8 data, 1 stop, no parity */
 
-    /* Clear & enable FIFOs */
-    pUartPort->fcr = FCR_FIFO_EN | FCR_RXSR | FCR_TXSR;
+	/* Clear & enable FIFOs */
+	pUartPort->fcr = FCR_FIFO_EN | FCR_RXSR | FCR_TXSR;
 #endif
-    return;
+	return;
 }
 
 /*******************************************************************************

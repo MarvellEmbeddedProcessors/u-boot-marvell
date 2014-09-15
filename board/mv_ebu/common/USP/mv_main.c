@@ -342,6 +342,7 @@ void misc_init_r_env(void){
 	setBoardEnv();
 	/* Write allocation */
 	envVerifyAndSet("enaWrAllo", "no", "yes",1);
+	envVerifyAndSet("disL2Cache", "yes", "no",1);
 	envVerifyAndSet("cacheShare", "no", "yes",1);
 	envVerifyAndSet("pexMode", "EP", "RC",2);
 #if defined(MV_INCLUDE_CLK_PWR_CNTRL)

@@ -65,10 +65,6 @@
 #include "soc_spec.h"
 #include "mvHighSpeedEnvSpec.h"
 
-#ifdef MV88F68XX
-#include "ddr3_a38x.h"
-#endif
-
 #ifdef REGISTER_TRACE_DEBUG
 static MV_U32 _MV_REG_READ(MV_U32 regAddr)
 {

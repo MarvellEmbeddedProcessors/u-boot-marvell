@@ -70,6 +70,8 @@ CFLAGS =
 BOARDNAME = $(BOARD)
 SILNAME = $(BOARD)
 LIBNAME = $(BOARD)
+#INCNAME - include path - by default = BOARD, for A90 BOARD=A380 and INCNAME=A390
+INCNAME = $(BOARD)
 
 # CUSTOMER
 ifeq "$(CONFIG_CUSTOMER_BOARD_SUPPORT)" "y"
@@ -143,6 +145,7 @@ ifeq "$(CONFIG_ARMADA_39X)"  "y"
   endif
   NEW_TIP = yes
   LIBNAME = a39x
+  INCNAME = a39x
 endif
 
 # BOBCAT2
@@ -206,7 +209,7 @@ CPUOPTS  = -mthumb -mthumb-interwork -march=armv7 -mlittle-endian
 
 BH_ROOT_DIR  = $(TOPDIR)/tools/marvell/bin_hdr
 INCLUDE      = -I$(BH_ROOT_DIR)/src_ddr -I$(BH_ROOT_DIR)/src_phy/$(BOARD) -I$(BH_ROOT_DIR)/inc/common \
-	       -I$(BH_ROOT_DIR)/inc/ddr3_soc/$(BOARD) -I$(BH_ROOT_DIR)/platform/sysEnv/$(BOARD) -I$(TOPDIR)/include
+	       -I$(BH_ROOT_DIR)/inc/ddr3_soc/$(INCNAME)  -I$(BH_ROOT_DIR)/inc/ddr3_soc/$(BOARD) -I$(BH_ROOT_DIR)/platform/sysEnv/$(BOARD) -I$(TOPDIR)/include
 HOSTCFLAGS   = -Wall $(INCLUDE)
 
 ifeq ($(BIN_HDR_DEBUG),1)

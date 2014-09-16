@@ -65,5 +65,43 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _INC_A39x_MC_STATIC_H
 #define _INC_A39x_MC_STATIC_H
 
+#include "ddr3_a39x.h"
+
+typedef struct __mvDramMcInit {
+	MV_U32 reg_addr;
+	MV_U32 reg_value;
+	MV_U32 reg_mask;
+} MV_DRAM_MC_INIT;
+
+#ifdef SUPPORT_STATIC_DUNIT_CONFIG
+
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+static MV_DRAM_MC_INIT ddr3_customer_800[] =
+{
+/* parameters for customer board (based on 800MHZ)
+	should be changed according to customer's board parameter */
+
+	{0,   0, 0}
+};
+
+#else /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+
+static MV_DRAM_MC_INIT ddr3_a39x_800[] =
+{
+	/*parameters for 800MHZ*/
+	{0,   0, 0}
+};
+
+
+static MV_DRAM_MC_INIT ddr3_a39x_667[] =
+{
+	/*parameters for 667MHZ*/
+	{0,   0, 0}
+};
+
+#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+
+#endif /*SUPPORT_STATIC_DUNIT_CONFIG*/
 
 #endif /* _INC_A39x_MC_STATIC_H*/
+

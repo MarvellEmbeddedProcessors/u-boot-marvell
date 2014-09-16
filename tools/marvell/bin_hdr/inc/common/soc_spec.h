@@ -85,7 +85,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	#define RAM_TOP			0x81004000 /*  Use PEX memory - (16KB for MMU table) */
 #elif defined(MV88F6710) || defined(MV88F78X60)
 	#define RAM_TOP			0x40004000 /*  L2 cache 512KB - (16KB for MMU table) */
-#elif defined(MV88F66XX) || defined(MV88F68XX) || defined(MV88F672X)
+#elif defined(MV88F66XX) || defined(MV88F68XX) || defined(MV88F672X) || defined(MV88F69XX)
 	#define RAM_TOP			0x40000000 /*  L2 cache 512KB */
 #else
 	#define RAM_TOP			0x40004000 /*  L2 cache 512KB */

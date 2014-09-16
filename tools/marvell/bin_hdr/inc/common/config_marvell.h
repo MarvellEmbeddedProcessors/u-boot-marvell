@@ -144,8 +144,7 @@
 /* defines for DB-6920  */
 /**********************************/
 
-/* currently using a38x define for temporary compilation support */
-	#define MV88F68XX
+	#define MV88F69XX
 
 /*********************************/
 /* defines for BOBCAT2    */

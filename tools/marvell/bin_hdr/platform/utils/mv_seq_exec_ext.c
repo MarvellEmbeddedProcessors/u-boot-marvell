@@ -63,9 +63,6 @@
 
 #include "mv_seq_exec_ext.h"
 
-#ifdef MV88F68XX
-#include "ddr3_a38x.h"
-#endif
 
 /* Forward declarations of local functions */
 static MV_STATUS writeOpExecuteExt

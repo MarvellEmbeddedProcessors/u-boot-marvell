@@ -75,10 +75,12 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_a39x.h"
 #include "ddr3_a39x_vars.h"
 #include "ddr3_a39x_topology.h"
+#include "ddr_a38x_dlb_config.h"
 #elif defined(MV88F68XX)
 #include "ddr3_a38x.h"
 #include "ddr3_a38x_vars.h"
 #include "ddr3_a38x_topology.h"
+#include "ddr_a38x_dlb_config.h"
 #elif defined(MV_MSYS_BC2)
 #include "ddr3_msys_bc2.h"
 #include "ddr3_msys_bc2_config.h"
@@ -187,7 +189,7 @@ static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 
 	mvPrintf("%s Training Sequence - Switching XBAR Window to FastPath Window \n", ddrType);
 
-#if defined(MV88F68XX)
+#if defined(MV88F68XX) || defined(MV88F69XX)
 	ddr3FastPathDynamicCsSizeConfig(uiCsEna);
 #else
 	MV_U32 uiReg, uiCs;
@@ -373,7 +375,7 @@ MV_U32 ddr3Init(void)
 
 	mvPrintf("%s Training Sequence - Ended Successfully\n", ddrType);
 
-#if defined(MV88F68XX)
+#if defined(MV88F68XX) || defined(MV88F69XX)
 	if( MV_TRUE == ddr3IfEccEnabled()){
 		ddr3NewTipEccScrub();
 	}
@@ -600,7 +602,7 @@ MV_VOID ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
             uiReg = ((uiCsMemSize) * uiCs) & 0xFFFF0000;
             MV_REG_WRITE(REG_FASTPATH_WIN_BASE_ADDR(uiCs), uiReg); /*Set base address */
             uiMemTotalSize += uiCsMemSize;
-#if defined(MV88F68XX)
+#if defined(MV88F68XX) || defined(MV88F69XX)
 			break;/*KW28 works with single CS*/
 #endif
         }

@@ -75,6 +75,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_a375.h"
 #elif defined(MV88F68XX)
 #include "ddr3_a38x.h"
+#elif defined(MV88F69XX)
+#include "ddr3_a39x.h"
 #elif defined(MV_MSYS_BC2)
 #include "ddr3_msys_bc2.h"
 #elif defined(MV_MSYS_AC3)
@@ -82,7 +84,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #else
 #error "No SOC define for uart in binary header."
 #endif
-#ifdef MV88F68XX
+#if defined (MV88F68XX)
 #include "mvSysEnvLib.h"
 #endif
 
@@ -120,7 +122,7 @@ MV_VOID mvUartInit(void)
 
 	tmpTClkRate = mvBoardTclkGet();
 
-#ifdef MV88F68XX
+#if defined (MV88F68XX)
 	/* UART1 on DB-AP board is the default UART interface
 	 - Init the TWSI to read the board ID from the EEPROM
 	 - Update the global Uart interface to use UART1 register offset */

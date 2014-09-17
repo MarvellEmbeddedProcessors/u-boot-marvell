@@ -276,5 +276,6 @@ MV_BOOL mvCtrlDDRThruXbar(MV_VOID);
 MV_BOOL mvCtrlDDRECC(MV_VOID);
 MV_BOOL mvCtrlDDRECCPUP3(MV_VOID);
 void mvCtrlNSSMppSwitch(void);
+MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive);
 
 #endif /* __INCmvCtrlEnvLibh */

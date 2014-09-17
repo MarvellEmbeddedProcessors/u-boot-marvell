@@ -203,5 +203,6 @@ MV_BOOL mvCtrlDDRECC(MV_VOID);
 MV_U32 mvCtrlGetJuncTemp(MV_VOID);
 void mvCtrlGetPexActive(MV_BOOL *pPexActive, int size);
 void mvCtrlNandClkSet(int nClock);
+MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive);
 
 #endif /* __INCmvCtrlEnvLibh */

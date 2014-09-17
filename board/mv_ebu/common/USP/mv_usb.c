@@ -52,8 +52,6 @@ MV_STATUS getUsbActive(MV_U32 usbUnitId, MV_U32 maxUsbPorts)
 {
 	char *env = getenv("usbActive");
 	int usbActive = simple_strtoul(env, NULL, 10);
-	MV_U32 family = mvCtrlDevFamilyIdGet(0);
-	int mac_id[2] = {1, 0};
 
 	mvOsPrintf("Port (usbActive) : ");
 	if (usbActive >= maxUsbPorts) {
@@ -64,11 +62,9 @@ MV_STATUS getUsbActive(MV_U32 usbUnitId, MV_U32 maxUsbPorts)
 	}
 
 	mvOsPrintf("Interface (usbType = %d) : ", ((usbUnitId == USB3_UNIT_ID) ? 3 : 2));
-	/* for ALP/A375: if using single usb2 port, use Virtual MAC ID since MAC ID0 (usbActive =0)
-	 is connected to Physical MAC ID1 */
-	if (maxUsbPorts == 1 && usbUnitId == USB_UNIT_ID &&
-	    ((family == MV_88F66X0 && mvCtrlRevGet() == MV_88F66XX_A0_ID) || family == MV_88F67X0))
-		usbActive = mac_id[usbActive];
+	/* Fetch SoC USB mapping:
+	   For Some SoCs, when using single USB port, unit 1 is active and not 0 */
+	usbActive = mvCtrlUsbMapGet(usbUnitId, usbActive);
 
 	return usbActive;
 }

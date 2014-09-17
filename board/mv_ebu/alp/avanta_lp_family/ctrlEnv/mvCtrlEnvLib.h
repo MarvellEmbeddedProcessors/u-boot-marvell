@@ -336,5 +336,6 @@ MV_BOOL mvCtrlIsDLBEnabled(MV_VOID);
 MV_U32 mvCtrlDDRBudWidth(MV_VOID);
 MV_BOOL mvCtrlDDRThruXbar(MV_VOID);
 MV_BOOL mvCtrlDDRECC(MV_VOID);
+MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive);
 
 #endif /* __INCmvCtrlEnvLibh */

@@ -2243,3 +2243,30 @@ void mvCtrlNandClkSet(int nClock)
 	/* Set reload ratio bit 0x00018740[8] to 0'b1 */
 	MV_REG_BIT_RESET(CORE_DIV_CLK_CTRL(0), CORE_DIVCLK_RELOAD_RATIO_MASK);
 }
+
+/*******************************************************************************
+* mvCtrlUsbMapGet
+*
+* DESCRIPTION:
+*       Get the map of USB ports if exists
+*
+* INPUT:
+*       The current usbActive.
+*
+* OUTPUT:
+*       Mapped usbActive.
+*
+* RETURN:
+*       None
+*******************************************************************************/
+MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive)
+{
+	int mac_id[2] = {1, 0};
+
+	/* if using single usb2 port, use Virtual MAC ID since MAC ID0 (usbActive =0)
+		is connected to Physical MAC ID1 */
+	if (mvCtrlUsbMaxGet() == 1 && usbUnitId == USB_UNIT_ID)
+			return mac_id[usbActive];
+
+	return usbActive;
+}

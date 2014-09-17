@@ -79,9 +79,10 @@
 MV_OP_PARAMS ethPortPowerUpParams[] =
 {
 	/* unitBaseReg                    unitOffset   	mask          QSGMII data    XAUI data    RXAUI data    waitTime   numOfLoops */
-	{ COMMON_PHY_CONFIGURATION1_REG,   0x28,  		0xF0006,	{ 0x80002,       0x80002,	  0x80002  }, 	   0,		  0 },    /* Power Up */
-	{ COMMON_PHY_CONFIGURATION1_REG,   0x28,		0x7800,	    { 0x6000,        0x6000,	  0x6000   }, 	   0,		  0 },    /* Unreset */
-	{ POWER_AND_PLL_CTRL_REG,	 	   0x800,		0xFF,	    { 0xFC81,        0xFC81,	  0xFC81   }, 	   0,		  0 }     /* Phy Selector */
+	{ COMMON_PHY_CONFIGURATION1_REG,   0x28,  		0xF0006,	{ 0x80002,       0x80002,	  0x80002  }, 	   0,		  0 },	/* Power Up */
+	{ COMMON_PHY_CONFIGURATION1_REG,   0x28,		0x7800,	    { 0x6000,        0x6000,	  0x6000   }, 	   0,		  0 },	/* Unreset */
+	{ POWER_AND_PLL_CTRL_REG,	 	   0x800,		0xFF,	    { 0xFC81,        0xFC81,	  0xFC81   }, 	   0,		  0 },	/* Phy Selector */
+	{ MISC_REG,			               0x800,	    0x4C0,	    { 0x480,	     0x480,       0x480    },      0,	      0 } 	/* Ref clock source select */ 
 };
 
 /* QSGMII, XAUI, RXAUI - speed config seq */
@@ -97,30 +98,28 @@ MV_OP_PARAMS ethPortSpeedConfigParams[] =
 MV_OP_PARAMS ethPortElectricalConfigParams[] =
 {
 	/* unitunitBaseReg		unitOffset   mask			QSGMII data     XAUI data     	RXAUI data      waitTime    numOfLoops */
-	{ G1_SETTINGS_0_REG,	0x800,		 0x7780,	  { NO_DATA,		NO_DATA,		0x580       },     0,	       0		   }
-/* Slew rate and emphasis */
+	{ G1_SETTINGS_0_REG,	0x800,		 0x7780,	  { NO_DATA,		NO_DATA,		0x580       },     0,	       0		} /* Slew rate and emphasis */
 };
 
 /* QSGMII, XAUI, RXAUI - TX config seq */
 MV_OP_PARAMS ethPortTxConfigParams1[] =
 {
 	/* unitunitBaseReg               unitOffset   mask          QSGMII data    XAUI data     RXAUI data      waitTime    numOfLoops */
-	{ MISC_REG,			              0x800,	  0x4C0,	  { 0x480,	       0x480,        0x480       },     0,	       0		   },
 	{ GLUE_REG,			              0x800,	  0x1800,     { 0x800,	       0x800,        0x800       },     0,	       0		   },
 	{ RESET_DFE_REG,		          0x800,	  0x401,	  { 0x401,	       0x401,        0x401       },     0,	       0		   }, /* Sft Reset pulse */
 	{ RESET_DFE_REG,		          0x800,	  0x401,	  { 0x0,	       0x0,          0x0         },     0,	       0		   }, /* Sft Reset pulse */
     { LANE_ALIGN_REG0,                0x800,	  0x1000,	  { 0x1000,	       0x0,          0x0         },     0,	       0		   }, /* Lane align */
     { COMMON_PHY_CONFIGURATION1_REG,  0x28,		  0x70000,    { 0x70000,	   0x70000,      0x70000     },     0,	       0		   }, /* Power up PLL, RX and TX */
-    { COMMON_PHY_CONFIGURATION1_REG,  0x28,		  0x80000,    { 0x80000,	   0x80000,      0x80000     },     0,	       0		   }  /* Tx driver output valid */
+    { COMMON_PHY_CONFIGURATION1_REG,  0x28,		  0x80000,    { 0x80000,	   0x80000,      0x80000     },     0,	       0		   }  /* Tx driver output idle */
 };
 
 MV_OP_PARAMS ethPortTxConfigParams2[] =
 {
 	/* unitunitBaseReg				unitOffset		mask			QSGMII data    XAUI data    RXAUI data    waitTime    numOfLoops */
-	{ COMMON_PHY_STATUS1_REG,			0x28,		0xC,			{ 0xC,			0xC,         0xC		},	10,	         1000		},	/* Wait for PHY power up sequence to finish */
-	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		0x40000000,		{ 0x40000000,	0x40000000,	 0x40000000 },	0,			 0			},  /* Assert Rx Init */
-	{ COMMON_PHY_STATUS1_REG,			0x28,	    0x1,			{ 0x1,			0x1,		 0x1		},  1,			 1000	    },  /* Wait for PHY power up sequence to finish */
-	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		0x40000000,		{ 0x0,			0x0,		 0x0		},	0,			 0		    },  /* De-assert Rx Init */
+	{ COMMON_PHY_STATUS1_REG,			0x28,		0xC,			{ 0xC,			0xC,         0xC		},	10,			1000		},	/* Wait for PHY power up sequence to finish */
+	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		0x40080000,		{ 0x40000000,	0x40000000,	 0x40000000 },	0,			0			},  /* Assert Rx Init and Tx driver output valid */
+	{ COMMON_PHY_STATUS1_REG,			0x28,	    0x1,			{ 0x1,			0x1,		 0x1		},  1,			1000	    },  /* Wait for PHY power up sequence to finish */
+	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		0x40000000,		{ 0x0,			0x0,		 0x0		},	0,			0		    }   /* De-assert Rx Init */
 };
 
 /************************* Local functions declarations ***********************/

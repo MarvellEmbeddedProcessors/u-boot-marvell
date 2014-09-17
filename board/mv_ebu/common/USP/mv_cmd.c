@@ -179,8 +179,11 @@ int reset_count_cmd(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	if (resetCount == 0) {
 		bootcmd = getenv("bootcmd");
 		setenv("bootcmd_Creset", bootcmd);
-		/* replace boot command with 'Creset' */
-		setenv("bootcmd", "Creset");
+		/* replace boot command with 'Creset' or 'Creset boot' */
+		if( argc >= 2 && strcmp( argv[1], "boot") == 0)
+			setenv("bootcmd", "Creset boot");
+		else
+			setenv("bootcmd", "Creset");
 	}
 
 	printf("\nreset_count = %d\n" , resetCount);
@@ -189,7 +192,7 @@ int reset_count_cmd(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	run_command("saveenv", 0);
 
 	/* if requested 'Creset boot' run boot command instead of reset */
-	if( argc == 2 && strcmp( argv[1], "boot"))
+	if( argc >= 2 && strcmp( argv[1], "boot") == 0)
 		run_command("run bootcmd_Creset", 0);
 	else
 		run_command("reset", 0);

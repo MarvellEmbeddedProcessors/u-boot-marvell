@@ -1881,6 +1881,26 @@ void mvCtrlNandClkSet(int nClock)
 	MV_REG_BIT_RESET(CORE_DIV_CLK_CTRL(0), CORE_DIVCLK_RELOAD_RATIO_MASK);
 }
 
+/*******************************************************************************
+* mvCtrlUsbMapGet
+*
+* DESCRIPTION:
+*       Get the map of USB ports if exists
+*
+* INPUT:
+*       The current usbActive.
+*
+* OUTPUT:
+*       Mapped usbActive.
+*
+* RETURN:
+*       None
+*******************************************************************************/
+MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive)
+{
+	return usbActive;
+}
+
 #ifdef CONFIG_ARMADA_39X
 
 /*******************************************************************************

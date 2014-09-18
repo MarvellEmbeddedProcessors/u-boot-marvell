@@ -19,8 +19,8 @@ DIALOG
   LINE "DDR Init Method"
   POS 1. 5. 25. 1.
   DdrBus.1: CHOOSEBOX "Static DDR training" ""
-  DdrBus.2: CHOOSEBOX "Dynamic trainig (bypass BootROM)" ""
-  DdrBus.3: CHOOSEBOX "Dynamic trainig (SRAM via BootROM)" ""
+  DdrBus.2: CHOOSEBOX "Dynamic training (bypass BootROM)" ""
+  DdrBus.3: CHOOSEBOX "Dynamic training (SRAM via BootROM)" ""
 
   ;buttons OK (Default) and Cancel
   POS 1. 9. 10. 1.

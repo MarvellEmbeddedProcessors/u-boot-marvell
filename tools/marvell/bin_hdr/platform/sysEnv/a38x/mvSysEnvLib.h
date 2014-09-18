@@ -98,12 +98,15 @@
 #define G1_SETTINGS_1_REG						0xa0038
 #define G2_SETTINGS_0_REG						0xa003C
 #define G2_SETTINGS_1_REG						0xa0040
+#define G2_SETTINGS_2_REG						0xa00F8
 #define G3_SETTINGS_0_REG						0xa0044
 #define G3_SETTINGS_1_REG						0xa0048
-#define G2_SETTINGS_2_REG						0xa00F8
 #define VTHIMPCAL_CTRL_REG						0xa0104
+#define REF_REG0                                0xa0134
 #define CAL_REG6								0xa0168
 #define RX_REG2									0xa0184
+
+#define LANE_CFG4_REG							0xa0620
 
 #define SATA_CTRL_REG_INDIRECT                  0xa80a0
 #define SATA_CTRL_REG                           0xa80a4

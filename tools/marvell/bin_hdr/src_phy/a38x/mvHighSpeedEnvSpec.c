@@ -191,7 +191,7 @@ MV_OP_PARAMS sataPowerUpParams[] =
 {
 	/* unitunitBaseReg       unitOffset   mask        SATA data   SGMII data  waitTime    numOfLoops */
 	{ SATA_CTRL_REG_INDIRECT, 0x38000,	0xFFFFFFFF,	  { 0x0,      NO_DATA,}, 0,	0		 }, /* Power Down Sata addr*/
-	{ SATA_CTRL_REG,	      0x38000,	0xFFFFFFFF,	  { 0xC44040, NO_DATA,}, 0,	0		 } /* Power Down Sata */
+	{ SATA_CTRL_REG,	      0x38000,	0xFFFFFFFF,	  { 0xC44040, NO_DATA,}, 0,	0		 }  /* Power Down Sata */
 };
 
 /* SATA and SGMII - power up seq */
@@ -201,43 +201,43 @@ MV_OP_PARAMS sataAndSgmiiPowerUpParams[] =
 	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,           0x90006,	{ 0x80002,		0x80002 }, 		0,          0       },  /* Power Up */
 	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,		    0x7800,		{ 0x6000,		0x6000  }, 		0,		    0       },  /* Unreset */
 	{ POWER_AND_PLL_CTRL_REG,	 	    0x800,		    0x0E0,		{ 0x0,			0x80    }, 		0,		    0       },  /* Phy Selector */
-    { MISC_REG,                         0x800,			0x440,		{ 0x440,        0x400	},      0,          0       },  /* Ref clock source select */
+    { MISC_REG,			 		        0x800,		    0x440,		{ 0x440,	    0x400	},      0,	        0	    }   /* Ref clock source select */ 
 };
 
 /* SATA and SGMII - speed config seq */
 MV_OP_PARAMS sataAndSgmiiSpeedConfigParams[] =
 {
-	/* unitBaseReg  				unitOffset   	mask     	 SATA data      SGMII (1.25G)  SGMII (3.125G) waitTime  numOfLoops */
+	/* unitBaseReg  				    unitOffset  mask     	 SATA data      SGMII (1.25G)  SGMII (3.125G) waitTime  numOfLoops */
     { COMMON_PHY_CONFIGURATION1_REG, 	0x28,		0x3FC00000,	{ 0x8800000, 	0x19800000,		0x22000000 }, 	0,		   0 }, /* Baud Rate */
 	{ INTERFACE_REG, 					0x800,	    0xC00,	 	{ 0x800,	  	NO_DATA,        NO_DATA    }, 	0,	       0 }, /* Select Baud Rate for SATA only*/
 	{ ISOLATE_REG,	 					0x800,	    0xFF,	 	{ NO_DATA, 		0x66,           0x66       }, 	0,	       0 }, /* Phy Gen RX and TX */
-	{ LOOPBACK_REG,	 					0x800,	    0xE,	    { 0x4,	  		0x2,   			0x2        }, 	0,	       0 }, /* Bus Width */
+	{ LOOPBACK_REG,	 					0x800,	    0xE,	    { 0x4,	  		0x2,   			0x2        }, 	0,	       0 }  /* Bus Width */
 };
 
 /* SATA and SGMII - TX config seq */
 MV_OP_PARAMS sataAndSgmiiTxConfigParams1[] =
 {
 	/* unitunitBaseReg                  unitOffset  mask        SATA data       SGMII data      waitTime    numOfLoops */
-	{ GLUE_REG,                         0x800,		0x1800,     { NO_DATA,      0x800       },      0,          0		   },
-	{ RESET_DFE_REG,		            0x800,      0x401,		{ 0x401,        0x401       },      0,          0		   },   /* Sft Reset pulse */
-	{ RESET_DFE_REG,		            0x800,		0x401,		{ 0x0,          0x0         },      0,	        0		   },   /* Sft Reset pulse */
-	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,		0xF0000,	{ 0x70000,      0x70000     },      0,	        0		   },   /* Power up PLL, RX and TX */
+	{ GLUE_REG,                         0x800,		0x1800,     { NO_DATA,      0x800   },      0,              0		},
+	{ RESET_DFE_REG,		            0x800,      0x401,		{ 0x401,        0x401   },      0,              0		},  /* Sft Reset pulse */
+	{ RESET_DFE_REG,		            0x800,		0x401,		{ 0x0,          0x0     },      0,	            0		},  /* Sft Reset pulse */
+	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,		0xF0000,	{ 0x70000,      0x70000	},      0,	            0		}   /* Power up PLL, RX and TX */
 };
 
 MV_OP_PARAMS sataTxConfigParams[] =
 {
-	/* unitunitBaseReg                      unitOffset   mask        SATA data       SGMII data      waitTime    numOfLoops */
-	{ SATA_CTRL_REG_INDIRECT, 0x38000,			       0xFFFFFFFF,     { 0x0,	   NO_DATA,	      }, 0,  0		    },  /* Power Down Sata addr*/
-	{ SATA_CTRL_REG,	  0x38000,			       0xFFFFFFFF,     { 0xC40000, NO_DATA,	      }, 0,  0		    },  /* Power Down Sata */
-	{ SATA_CTRL_REG_INDIRECT, 0x38000,			       0xFFFFFFFF,     { 0x4,	   NO_DATA,	      }, 0,  0		    },  /* Power Down Sata addr*/
-	{ SATA_CTRL_REG,	  0x38000,			       0xFFFFFFFF,     { 0x0,	   NO_DATA,	      }, 0,  0		    } /* Power Down Sata */
+	/* unitunitBaseReg          unitOffset  mask            SATA data       SGMII data      waitTime    numOfLoops */
+	{ SATA_CTRL_REG_INDIRECT,   0x38000,	0xFFFFFFFF,     { 0x0,	        NO_DATA,    },      0,          0       },  /* Power Down Sata addr*/
+	{ SATA_CTRL_REG,	        0x38000,	0xFFFFFFFF,     { 0xC40000,     NO_DATA,	},      0,          0		},  /* Power Down Sata */
+	{ SATA_CTRL_REG_INDIRECT,   0x38000,	0xFFFFFFFF,     { 0x4,	        NO_DATA,	},      0,          0		},  /* Power Down Sata addr*/
+	{ SATA_CTRL_REG,	        0x38000,	0xFFFFFFFF,     { 0x0,	        NO_DATA,	},      0,          0		} /* Power Down Sata */
 };
 
 MV_OP_PARAMS sataAndSgmiiTxConfigSerdesRev1Params2[] =
 {
 	/* unitunitBaseReg				unitOffset		 mask         SATA data    SGMII data      waitTime    numOfLoops */
 	{ COMMON_PHY_STATUS1_REG,			0x28,	     0xC,			{ 0xC,			0xC	       },   10,	        1000	    },  /* Wait for PHY power up sequence to finish */
-	{ COMMON_PHY_STATUS1_REG,			0x28,	     0x1,			{ 0x1,			0x1	       },   1,	        1000	    },  /* Wait for PHY power up sequence to finish */
+	{ COMMON_PHY_STATUS1_REG,			0x28,	     0x1,			{ 0x1,			0x1	       },   1,	        1000	    }   /* Wait for PHY power up sequence to finish */
 };
 
 MV_OP_PARAMS sataAndSgmiiTxConfigSerdesRev2Params2[] =
@@ -276,7 +276,7 @@ MV_OP_PARAMS sataElectricalConfigSerdesRev2Params[] =
 	{ G3_SETTINGS_0_REG,				0x800,	    0xFFFF,		{ 0xE6E,	},   	0,			0		},  /* G3_TX SLEW, EMPH1 and AMP */
 	{ G3_SETTINGS_1_REG,				0x800,	    0x3FF,		{ 0x3D2,	},   	0,			0		},  /* G3_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
 	{ CAL_REG6,							0x800,	    0xFF00,		{ 0xDD00,	},   	0,			0		},  /* Cal rxclkalign90 ext enable and Cal os ph ext */
-	{ RX_REG2,							0x800,	    0xF0,		{ 0x70,		},   	0,			0		},  /* Dtl Clamping disable and Dtl clamping Sel(6000ppm) */
+	{ RX_REG2,							0x800,	    0xF0,		{ 0x70,		},   	0,			0		}   /* Dtl Clamping disable and Dtl clamping Sel(6000ppm) */
 };
 
 /****************/
@@ -286,26 +286,28 @@ MV_OP_PARAMS sataElectricalConfigSerdesRev2Params[] =
 /* PEX and USB3 - power up seq for Serdes Rev 1.2 */
 MV_OP_PARAMS pexAndUsb3PowerUpSerdesRev1Params[] =
 {
-	/* unitunitBaseReg              unitOffset							mask				 PEX data    USB3 data       waitTime    numOfLoops */
-	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,							  0x3FC7F806,		   { 0x4471804, 0x4479804 },	0,          0	 },
-	{ COMMON_PHY_CONFIGURATION2_REG, 0x28,							  0x5C,				   { 0x58,		0x58 },			0,          0	 },
-	{ COMMON_PHY_CONFIGURATION4_REG, 0x28,							  0x3,				   { 0x1,		0x1 },			0,          0	 },
-	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,							  0x7800,			   { 0x6000,	0xE000 },		0,          0	 },
-	{ GLOBAL_CLK_CTRL,				 0x800,							  0xD,				   { 0x5,		0x1 },			0,          0	 },
-	{ POWER_AND_PLL_CTRL_REG,		 0x800,							  0x0E0,			   { 0x60,		0xA0 },			0,          0	 } /* Phy Selector */
+	/* unitunitBaseReg                  unitOffset      mask            PEX data        USB3 data       waitTime    numOfLoops */
+	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,			0x3FC7F806,     { 0x4471804,    0x4479804   },      0,          0	    },
+	{ COMMON_PHY_CONFIGURATION2_REG,    0x28,			0x5C,		    { 0x58,		    0x58        },	    0,          0	    },
+	{ COMMON_PHY_CONFIGURATION4_REG,    0x28,			0x3,			{ 0x1,		    0x1         },		0,          0	    },
+	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,			0x7800,			{ 0x6000,	    0xE000      },		0,          0	    },
+	{ GLOBAL_CLK_CTRL,				    0x800,			0xD,			{ 0x5,		    0x1         },		0,          0	    },
+	{ POWER_AND_PLL_CTRL_REG,		    0x800,          0x0E0,			{ 0x60,		    0xA0        },		0,          0	    }, /* Phy Selector */
+	{ MISC_REG,	   					    0x800,          0x4C0,	     	{ 0x80,         0x4C0 	    }, 	    0,	        0       }  /* Ref clock source select */ 
 };
 
 /* PEX and USB3 - power up seq for Serdes Rev 2.1 */
 MV_OP_PARAMS pexAndUsb3PowerUpSerdesRev2Params[] =
 {
-	/* unitunitBaseReg              unitOffset							mask				 PEX data    USB3 data       waitTime    numOfLoops */
-	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,							  0x3FC7F806,		   { 0x4471804, 0x4479804 },	0,          0	 },
-	{ COMMON_PHY_CONFIGURATION2_REG, 0x28,							  0x5C,				   { 0x58,		0x58 },			0,          0	 },
-	{ COMMON_PHY_CONFIGURATION4_REG, 0x28,							  0x3,				   { 0x1,		0x1 },			0,          0	 },
-	{ COMMON_PHY_CONFIGURATION1_REG, 0x28,							  0x7800,			   { 0x6000,	0xE000 },		0,          0	 },
-	{ GLOBAL_CLK_CTRL,				 0x800,							  0xD,				   { 0x5,		0x1 },			0,          0	 },
-	{ GLOBAL_MISC_CTRL,				 0x800,							  0xC0,				   { 0x0,		NO_DATA },		0,          0	 },
-	{ POWER_AND_PLL_CTRL_REG,		 0x800,							  0x0E0,			   { 0x60,		0xA0 },			0,          0	 } /* Phy Selector */
+	/* unitunitBaseReg                  unitOffset      mask            PEX data        USB3 data       waitTime    numOfLoops */
+	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,		    0x3FC7F806,     { 0x4471804,    0x4479804   },      0,          0	    },
+	{ COMMON_PHY_CONFIGURATION2_REG,    0x28,			0x5C,		    { 0x58,		    0x58        },		0,          0	    },
+	{ COMMON_PHY_CONFIGURATION4_REG,    0x28,			0x3,			{ 0x1,		    0x1         },		0,          0	    },
+	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,			0x7800,			{ 0x6000,	    0xE000      },		0,          0	    },
+	{ GLOBAL_CLK_CTRL,				    0x800,			0xD,			{ 0x5,		    0x1         },		0,          0	    },
+	{ GLOBAL_MISC_CTRL,				    0x800,			0xC0,			{ 0x0,		    NO_DATA     },		0,          0	    },
+	{ POWER_AND_PLL_CTRL_REG,		    0x800,			0x0E0,			{ 0x60,		    0xA0        },	    0,          0	    }, /* Phy Selector */
+	{ MISC_REG,	   					    0x800,	    	0x4C0,	     	{ 0x80,         0x4C0 	    }, 	    0,	        0		}  /* Ref clock source select */ 
 };
 
 /* PEX and USB3 - speed config seq */
@@ -316,15 +318,37 @@ MV_OP_PARAMS pexAndUsb3SpeedConfigParams[] =
 	{ INTERFACE_REG, 0x800,	   0xC00,	  { 0x400, 0x400,   0x400,   0x400,   0x400   }, 0,		  0		  }, /* Maximal PHY Generation Setting */
 };
 
+MV_OP_PARAMS usb3ElectricalConfigSerdesRev1Params[] =
+{
+	{ LANE_CFG4_REG,			0x800,		0x80,		{ 0x80      },		0,			0	 	}, /* Spread Spectrum Clock Enable */
+	{ G2_SETTINGS_2_REG,		0x800,		0xFE40,		{ 0x4440    },		0,          0	 	}, /* G2_TX_SSC_AMP[6:0]=4.5kPPM and TX emphasis mode=mV */
+	{ VTHIMPCAL_CTRL_REG,		0x800,		0xFF00,		{ 0x4000    },		0,          0	 	}, /* tximpcal_th and rximpcal_th */
+	{ G2_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3D2     },		0,          0	 	}, /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ SQUELCH_FFE_SETTING_REG,	0x800,		0xFF,		{ 0xEF      },		0,          0	 	}, /* FFE Setting Force, RES and CAP */
+	{ RX_REG2,				 	0x800,		0xF0,		{ 0x70      },		0,          0	 	}, /* Dtl Clamping disable and Dtl-clamping-Sel(6000ppm) */
+	{ CAL_REG6,		 			0x800,		0xFF00,		{ 0xD500    },		0,          0	 	}, /* cal_rxclkalign90_ext_en and cal_os_ph_ext */
+	{ REF_REG0,		 			0x800,		0x38,		{ 0x20      },		0,          0	 	}, /* vco_cal_vth_sel */
+};
+
+MV_OP_PARAMS usb3ElectricalConfigSerdesRev2Params[] =
+{
+	{ LANE_CFG4_REG,			0x800,		0x80,		{ 0x80      },		0,			0	 	}, /* Spread Spectrum Clock Enable */
+	{ G2_SETTINGS_2_REG,		0x800,		0xFE40,		{ 0x4440    },		0,          0	 	}, /* G2_TX_SSC_AMP[6:0]=4.5kPPM and TX emphasis mode=mV */
+	{ G2_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3D2     },		0,          0	 	}, /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ SQUELCH_FFE_SETTING_REG,	0x800,		0xFF,		{ 0xEF      },		0,          0	 	}, /* FFE Setting Force, RES and CAP */
+	{ RX_REG2,				 	0x800,		0xF0,		{ 0x70      },		0,          0	 	}, /* Dtl Clamping disable and Dtl-clamping-Sel(6000ppm) */
+	{ CAL_REG6,		 			0x800,		0xFF00,		{ 0xD500    },		0,          0	 	}, /* cal_rxclkalign90_ext_en and cal_os_ph_ext */
+	{ REF_REG0,		 			0x800,		0x38,		{ 0x20      },		0,          0	 	}, /* vco_cal_vth_sel */
+};
+
 /* PEX and USB3 - TX config seq */
 MV_OP_PARAMS pexAndUsb3TxConfigParams[] =
 {
-	/* unitBaseReg    unitOffset   	mask    	PEX data  USB3 data   waitTime    numOfLoops */
-	{ MISC_REG,	   		0x800,	    0x4C0,	     { 0x80,  0x4C0 }, 	0,	   0			  },
-	{ RESET_DFE_REG,   	0x800,	    0x401,	     { 0x401, 0x401 }, 	0,	   0			  },    /* Sft Reset pulse */
-	{ RESET_DFE_REG,   	0x800,		0x401,	     { 0x0,   0x0   }, 	0,	   0			  },    /* Sft Reset pulse */
-	{ GLOBAL_CLK_CTRL, 	0x800,		0x1,	     { 0x0,   0x0   }, 	0,	   0			  },
-	{ 0x0,		   		0x0,		0x0,	     { 0x0,   0x0   }, 	10,	   0			  } 	/* 10ms delay */
+	/* unitBaseReg    unitOffset   	mask        PEX data    USB3 data   waitTime    numOfLoops */
+	{ RESET_DFE_REG,   	0x800,	    0x401,      { 0x401,    0x401   },      0,          0       }, /* Sft Reset pulse */
+	{ RESET_DFE_REG,   	0x800,		0x401,      { 0x0,      0x0     }, 	    0,          0		}, /* Sft Reset pulse */
+	{ GLOBAL_CLK_CTRL, 	0x800,		0x1,	    { 0x0,      0x0     }, 	    0,	        0		},
+	{ 0x0,		   		0x0,		0x0,	    { 0x0,      0x0     }, 	    10,	        0		}  /* 10ms delay */
 };
 
 /* PEX by 4 config seq */
@@ -337,8 +361,8 @@ MV_OP_PARAMS pexBy4ConfigParams[] =
 /* USB3 device donfig seq */
 MV_OP_PARAMS usb3DeviceConfigParams[] =
 {
-	/* unitunitBaseReg  unitOffset   mask    data        waitTime   numOfLoops */
-	{ 0xa0620,	    0x800,       0x200,	 { 0x200 },  0,	        0}
+	/* unitunitBaseReg  unitOffset  mask    data        waitTime    numOfLoops */
+	{ LANE_CFG4_REG,    0x800,      0x200,  { 0x200 },  	0,          0       }
 };
 
 
@@ -362,7 +386,7 @@ MV_OP_PARAMS usb2PowerUpParams[] =
 	{ 0xC400C ,        0x0 /*NA*/,	0x1000000,  {0x1000000},  0,        0}, /* Phy0 register 3  - TX Channel control 0 */
 	{ 0xC0008 ,        0x0 /*NA*/,	0x80800000, {0x80800000}, 1,     1000}, /* check PLLCAL_DONE is set and IMPCAL_DONE is set*/
 	{ 0xC0018 ,        0x0 /*NA*/,	0x80000000, {0x80000000}, 1,     1000}, /* check REG_SQCAL_DONE  is set*/
-	{ 0xC0000 ,        0x0 /*NA*/,	0x80000000, {0x80000000}, 1,     1000} /* check PLL_READY  is set*/
+	{ 0xC0000 ,        0x0 /*NA*/,	0x80000000, {0x80000000}, 1,     1000}  /* check PLL_READY  is set*/
 };
 
 
@@ -542,6 +566,16 @@ MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID)
 	serdesSeqDb[USB3__DEVICE_SPEED_CONFIG_SEQ].opParamsPtr = pexAndUsb3SpeedConfigParams;
 	serdesSeqDb[USB3__DEVICE_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(pexAndUsb3SpeedConfigParams) / sizeof(MV_OP_PARAMS);
 	serdesSeqDb[USB3__DEVICE_SPEED_CONFIG_SEQ].dataArrIdx  = USB3__5Gbps_DEVICE;
+
+    /* USB3_ELECTRICAL_CONFIG_SEQ seq sequence init */
+    if(serdesRev == MV_SERDES_REV_1_2) {
+		serdesSeqDb[USB3_ELECTRICAL_CONFIG_SEQ].opParamsPtr = usb3ElectricalConfigSerdesRev1Params;
+		serdesSeqDb[USB3_ELECTRICAL_CONFIG_SEQ].cfgSeqSize  = sizeof(usb3ElectricalConfigSerdesRev1Params) / sizeof(MV_OP_PARAMS);
+	} else {
+		serdesSeqDb[USB3_ELECTRICAL_CONFIG_SEQ].opParamsPtr = usb3ElectricalConfigSerdesRev2Params;
+		serdesSeqDb[USB3_ELECTRICAL_CONFIG_SEQ].cfgSeqSize  = sizeof(usb3ElectricalConfigSerdesRev2Params) / sizeof(MV_OP_PARAMS);
+	}
+	serdesSeqDb[USB3_ELECTRICAL_CONFIG_SEQ].dataArrIdx = USB3;
 
 	/* USB3_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[USB3_TX_CONFIG_SEQ].opParamsPtr = pexAndUsb3TxConfigParams;
@@ -936,12 +970,17 @@ MV_STATUS mvSerdesPowerUpCtrl
 			break;
 		case USB3_HOST0:
 		case USB3_HOST1:
+        case USB3_DEVICE:
 			if (mvCtrlSerdesRevGet() == MV_SERDES_REV_1_2) {
 				CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, USB3));
 			}
 			CHECK_STATUS(mvSeqExec(serdesNum, USB3_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
+            if (serdesType == USB3_DEVICE) {
+                CHECK_STATUS(mvSeqExec(serdesNum, USB3_DEVICE_CONFIG_SEQ));
+            }
+            CHECK_STATUS(mvSeqExec(serdesNum, USB3_ELECTRICAL_CONFIG_SEQ));
 			CHECK_STATUS(mvSeqExec(serdesNum, USB3_TX_CONFIG_SEQ));
 
 			mvOsUDelay(10000);
@@ -967,22 +1006,10 @@ MV_STATUS mvSerdesPowerUpCtrl
 					DEBUG_INIT_S("USB PLL1 READY ;-)\n");
 				else
 					DEBUG_INIT_S("USB PLL1 NOT READY ;-|\n");
-
 			}
 #endif /* DB_LINK_CHECK */
 
 			break;
-		case USB3_DEVICE:
-			if (mvCtrlSerdesRevGet() == MV_SERDES_REV_1_2) {
-				CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, USB3));
-			}
-			CHECK_STATUS(mvSeqExec(serdesNum, USB3_POWER_UP_SEQ));
-			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
-			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
-			CHECK_STATUS(mvSeqExec(serdesNum, USB3_DEVICE_CONFIG_SEQ));
-			CHECK_STATUS(mvSeqExec(serdesNum, USB3_TX_CONFIG_SEQ));
-			break;
-
 		case SATA0:
 		case SATA1:
 		case SATA2:
@@ -1203,3 +1230,6 @@ MV_STATUS mvHwsRefClockSet
 
 	return MV_OK;
 }
+
+
+

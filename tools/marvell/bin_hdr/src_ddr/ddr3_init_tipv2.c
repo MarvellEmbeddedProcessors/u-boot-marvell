@@ -368,11 +368,8 @@ MV_U32 ddr3Init(void)
 	uiReg = MV_REG_READ(REG_BOOTROM_ROUTINE_ADDR);
 	MV_REG_WRITE(REG_BOOTROM_ROUTINE_ADDR, uiReg | (1 << REG_BOOTROM_ROUTINE_DRAM_INIT_OFFS));
 
-#ifndef CONFIG_DDR4
-/*Diabled for DDR4 until debug finished*/
 	/* DLB config */
 	ddr3NewTipDlbConfig();
-#endif
 
 	mvPrintf("%s Training Sequence - Ended Successfully\n", ddrType);
 
@@ -569,6 +566,11 @@ MV_VOID ddr3NewTipDlbConfig()
 		MV_REG_WRITE(ddr3DlbConfigTable[i].regAddr, ddr3DlbConfigTable[i].regData);
 		i++;
 	}
+#ifdef CONFIG_DDR4
+	uiReg = MV_REG_READ(REG_DDR_CONT_HIGH_ADDR);
+	uiReg |= DLB_INTERJECTION_ENABLE;
+	MV_REG_WRITE(REG_DDR_CONT_HIGH_ADDR, uiReg);
+#endif
 
 	/*Enable DLB*/
 	uiReg = MV_REG_READ(REG_STATIC_DRAM_DLB_CONTROL);

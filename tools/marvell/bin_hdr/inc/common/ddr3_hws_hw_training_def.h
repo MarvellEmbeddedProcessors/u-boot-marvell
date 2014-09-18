@@ -336,6 +336,7 @@
 #define DLB_AXI_PREFETCH_EN (0x1 << 3)
 #define DLB_MBUS_PREFETCH_EN (0x1 << 4)
 #define PreFetchNLnSzTr (0x1 << 6)
+#define DLB_INTERJECTION_ENABLE (0x1 << 3)
 
 /* CPU    */
 #define REG_BOOTROM_ROUTINE_ADDR				0x182D0

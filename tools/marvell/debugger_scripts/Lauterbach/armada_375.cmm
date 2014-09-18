@@ -87,7 +87,7 @@ dialog_ok:
 
   SYStem.JtagClock 10Mhz
   SYStem.Mode attach
-  Break
+  System.Up
 
   ; set system settings according LE MMU
   ; <MCR|MRC> p15, <op1>, Rd, CRn, CRm, <op2>
@@ -103,9 +103,9 @@ IF ("&runmode"=="ddr")
   IF ("&ddrbus"=="bootrom")
   (
 ;***************************************************************************************************************
-    ;Break.direct 0x40000000 /Write 	; Stop on L2 SRAM access
-    ;GO	 				; Run the Bootrom
-    ;WAIT !RUN()
+    Break.direct 0x40000000 /Write 	; Stop on L2 SRAM access
+    GO	 				; Run the Bootrom
+    WAIT !RUN()
     PRINT "Please select the bin_hdr.elf file location"
     D.LOAD ../../bin_hdr/*
     GO					; Run the BIN header

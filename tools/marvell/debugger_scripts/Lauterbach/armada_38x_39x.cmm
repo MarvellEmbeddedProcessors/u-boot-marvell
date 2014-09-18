@@ -1,0 +1,492 @@
+LOCAL &runmode
+LOCAL &ddrbus
+
+DIALOG
+(
+  HEADER "Marvell Armada-38x/39x debug"
+  POS 1. 0. 28. 1.
+  TEXT "Please select the run mode:"
+
+  ;choosebox group for Mode
+  POS 0. 1. 29. 1.
+  LINE "Run Mode"
+  POS 1. 2. 25. 1.
+  Mode.1: CHOOSEBOX "Debugger initialization" "GOTO disable_ddr"
+  Mode.2: CHOOSEBOX "Debugger and SOC initialization" "GOTO enable_ddr"
+
+  ;choosebox group for DDR init method
+  POS 0. 4. 29. 1.
+  LINE "DDR Init Method"
+  POS 1. 5. 25. 1.
+  DdrBus.1: CHOOSEBOX "Static 667MHz 32-bit" ""
+  DdrBus.2: CHOOSEBOX "Static 667MHz 16-bit" ""
+  DdrBus.3: CHOOSEBOX "Dynamic training (bypass BootROM)" ""
+  DdrBus.4: CHOOSEBOX "Dynamic training (SRAM via BootROM)" ""
+
+  ;buttons OK (Default) and Cancel
+  POS 1. 10. 10. 1.
+  DEFBUTTON "OK" "CONTinue"
+  POS 14. 10. 10. 1.
+  BUTTON    "Cancel" "GOTO mode_cancel"
+  ;define action when window is closed
+  CLOSE "GOTO mode_cancel"
+)
+
+disable_ddr:
+  DIALOG.SET Mode.1
+  DIALOG.DISABLE DdrBus.1
+  DIALOG.DISABLE DdrBus.2
+  DIALOG.DISABLE DdrBus.3
+  DIALOG.DISABLE DdrBus.4
+
+waitforok:
+  STOP
+  GOTO dialog_ok
+
+mode_cancel:
+  ;script continues here when Cancel is clicked"
+  DIALOG.END
+  DIALOG.OK "Script cancelled"
+ENDDO
+
+enable_ddr:
+  DIALOG.ENABLE DdrBus.1
+  DIALOG.ENABLE DdrBus.2
+  ;DIALOG.ENABLE DdrBus.3
+  DIALOG.ENABLE DdrBus.4
+  DIALOG.SET DdrBus.4
+  GOTO waitforok
+
+dialog_ok:
+  ;get selections
+  IF DIALOG.BOOLEAN(Mode.1)
+    &runmode="basic"
+  IF DIALOG.BOOLEAN(Mode.2)
+    &runmode="ddr"
+  IF DIALOG.BOOLEAN(DdrBus.1)
+    &ddrbus="32bit"
+  IF DIALOG.BOOLEAN(DdrBus.2)
+    &ddrbus="16bit"
+  IF DIALOG.BOOLEAN(DdrBus.3)
+    &ddrbus="naked"
+  IF DIALOG.BOOLEAN(DdrBus.4)
+    &ddrbus="bootrom"
+
+  ;close dialog window
+  DIALOG.END
+
+;***************************************************************************************************************
+  ; First it is very important to select the CPU and then set the options,
+  ; otherwise important options are cleared again
+  SYStem.RESet
+  SYStem.CPU CortexA9MPCore ; or CortexA9
+  SYStem.MultiCore MEMORYACCESSPORT 0
+  SYStem.MultiCore DEBUGACCESSPORT  1
+  ;SYStem.MemAccess Denied
+
+  SYStem.MultiCore COREBASE 0xc2310000
+  SYStem.MultiCore ETMBASE 0xc231c000
+  SYStem.MultiCore ETBBASE 0xc2324000
+  ;SYStem.Option L2CacheBase 0xD0008000
+  SYStem.Option CFLUSH OFF
+
+  SYStem.JtagClock 10Mhz
+  SYStem.Mode attach
+  SYStem.Up
+
+  ; set system settings according LE MMU
+  ; <MCR|MRC> p15, <op1>, Rd, CRn, CRm, <op2>
+  ; BIT0-3:CRn, BIT4-7:CRm, BIT8-10:<op2>, BIT12-14:<op1>, Bit16=0 (32-bit access)
+  Per.Set C15:1 %LONG 0x00052078
+
+  BREAK.SELECT PROGRAM ONCHIP
+;***************************************************************************************************************
+
+IF ("&runmode"=="ddr")
+(
+;***************************************************************************************************************
+  IF ("&ddrbus"=="bootrom")
+  (
+;***************************************************************************************************************
+    Break.direct 0x40000000 /Write 	; Stop on L2 SRAM access
+    GO					; Run the Bootrom
+    WAIT !RUN()
+    PRINT "Please select the bin_hdr.elf file location"
+    D.LOAD ../../bin_hdr/*
+    GO					; Run the BIN header
+    WAIT 5.s
+    Break.Direct
+    Per.Set C15:1 %LONG 0x00052078	; Disable MMU
+    PRINT "Done, DRAM is ready"	; The u-boot can be loaded and executed
+;***************************************************************************************************************
+  )
+  ELSE IF ("&ddrbus"=="naked")
+  (
+;***************************************************************************************************************
+     LOCAL &regval
+     LOCAL &savectrl
+     LOCAL &savebar
+     LOCAL &address
+     LOCAL &counter
+
+    ;====================l2_activate===============================================
+    ; Activate L2 cache
+    ; 1. Invalidate all ways
+    ; 2. Instruction lock all ways
+
+    ; REG1_AUX_CONTROL
+    ; bit[16] - 16 Ways(1)/ Bit 17-19 - 64KB way (0b011)
+    ; bit[26] - enable non-secure lockdown
+    Data.Set D:0xD0008104 %LONG (Data.Long(D:0xD0008104)|(0x4070000))
+
+    ;SCU Disable and invalidate
+    Data.Set D:0xD000C000 %LONG (Data.Long(D:0xD000C000)&~(0x1))
+    Data.Set D:0xD000C00C %LONG 0xFFFFFFFF
+
+    ; Disable L2 cache through L2 REG1_CONTROL
+    Data.Set D:0xD0008100 %LONG (Data.Long(D:0xD0008100)&~(0x1))
+
+    ; Invalidate all ways
+    Data.Set D:0xD000877C %LONG 0xFFFF 0xFFFF	; REG7_INV_WAY
+
+    ; Check for loops
+    WHILE ((Data.Long(D:0xD000877C)&(0x0000FFFF))!=0)
+
+    ; Enable L2 cache - REG1_CONTROL
+    Data.Set D:0xD0008100 %LONG (Data.Long(D:0xD0008100)|(0x1))
+
+    ; Lock all ways Instruction cache
+    Data.Set D:0xD0008904 %LONG 0x0000FFFF	; REG9_I_LOCKDOWN0
+    ;====================l2_activate_done==========================================
+
+    ; Configure EFUSE Window
+    Data.Set D:0xD00200EC %LONG 0x410F0000	; Window 19 base
+    Data.Set D:0xD00200E8 %LONG 0x00000AE1	; Window 19 control
+
+    ; Initial Clean up & configurations
+
+    ; <MCR|MRC> p15, <op1>, Rd, CRn, CRm, <op2>
+    ; BIT0-3:CRn, BIT4-7:CRm, BIT8-10:<op2>, BIT12-14:<op1>, Bit16=0 (32-bit access)
+    Per.Set C15:0x57 %LONG 0x0			; Invalidate entire I-cache, flush BTC & BTAC
+    Per.Set C15:0x78 %LONG 0x0			; TLB invalidate
+    WAIT 1.s
+    Per.Set C15:0x3 %LONG 0x3			; Set DAC Register - Domain 0 is manager domain
+    Per.Set C15:0x2 %LONG 0xD002C000		; Set TTBR Register to Table in SRAM start
+
+    ; Enable I-Cache
+    Per.Set C15:1 %LONG (Data.Long(C15:0x1)|(0x1000)) 	; set bit 12 (I) I-Cache enable
+
+    ;====================mmu_init================================================
+    ; Initialize MMU - 8 Static Windows
+    Data.Set D:0xD0020890 %LONG ((0x00001027)|(0xFFF00000))	; BootROM Window - 1MB
+    Data.Set D:0xD0020894 %LONG ((0x00001001)|(0xD0080000))	; Internal Registers Window - 256MB
+    Data.Set D:0xD0020898 %LONG ((0x00001001)|(0xE0090000))	; RUNIT Window - 512MB
+    Data.Set D:0xD002089C %LONG ((0x0000103F)|(0xC8000000))	; CESA Window - 1MB
+    Data.Set D:0xD00208A0 %LONG ((0x00001001)|(0x41000000))	; EFUSE Window - 1MB
+    Data.Set D:0xD00208A4 %LONG ((0x0000902F)|(0x40000000))	; SRAM Window - 1MB
+    Data.Set D:0xD00208A8 %LONG ((0x00001001)|(0x800A0000))	; PEX Window - 1GB
+    Data.Set D:0xD00208AC %LONG ((0x00001001)|(0x000A0000))	; DUNIT Window - 1GB
+    ;====================mmu_init_done================================================
+    WAIT 1.s
+
+    ;====================dcache_invalidate================================================
+    ; D-cache invalidate
+    ; <MCR|MRC> p15, <op1>, Rd, CRn, CRm, <op2>
+    ; BIT0-3:CRn, BIT4-7:CRm, BIT8-10:<op2>, BIT12-14:<op1>, Bit16=0 (32-bit access)
+    Per.Set C15:0x2000 %LONG 0x0			; cache size selection register, select dcache
+    WAIT 1.s
+
+    &regval=((Data.Long(C15:0x1000)>>(0xD))&(0xFFF))	; cache size ID register
+    IF &regval==0x7F
+    (
+      &counter=0x1000					; 4KB per way
+    )
+    IF &regval==0xFF
+    (
+      &counter=0x2000					; 8KB per way
+    )
+    ELSE
+    (
+      &counter=0x4000					; 16KB per way
+    )
+    ; D-cache invalidate by way loop
+    &address=0
+    WHILE (&address<&counter)
+    (
+      ; <MCR|MRC> p15, <op1>, Rd, CRn, CRm, <op2>
+      ; BIT0-3:CRn, BIT4-7:CRm, BIT8-10:<op2>, BIT12-14:<op1>, Bit16=0 (32-bit access)
+      Per.Set C15:0x267 %LONG &address			; invalidate dcache by set / way
+      Per.Set C15:0x267 %LONG (0x40000000+&address)	; invalidate dcache by set / way
+      Per.Set C15:0x267 %LONG (0x80000000+&address)	; invalidate dcache by set / way
+      Per.Set C15:0x267 %LONG (0xC0000000+&address)	; invalidate dcache by set / way
+      &address=&address+0x20
+    )
+    ;====================dcache_invalidate_done=============================================
+
+    ; Enable MMU & D-Cache
+    Per.Set C15:0x1 %LONG (Data.Long(C15:0x1)|(0x5))	; Enable MMU (bit0) and Dcache (bit2)
+
+    ;====================create_sram======================================================
+    ; Create SRAM from L2 cache
+    ; 1. Redirect SRAM address to CESA sram
+    ; 2. Read 192K into the L2
+    ; 3. Lock the L2
+    ; 4. Restore CESA sram bar to default setting
+
+    ; Keep CESA Window original values and change the CESA BAR to SRAM values
+    &savectrl=Data.Long(D:0xD0020040)		; Original value of CESA BAR Control
+    &savebar=Data.Long(D:0xD0020044)		; Original value of CESA BAR Base Address
+    Data.Set D:0xD0020040 %LONG 0x000F1991	; New value for CESA BAR Control
+    Data.Set D:0xD0020044 %LONG 0x40000000	; New value for CESA BAR Base Address
+
+    ; Create an SRAM
+    &address=0x40000000				; bit[4:0] - way, bit[31:10] - base address
+    WHILE (&address<0x40004000)
+    (
+      &regval=Data.Long(D:&address)		; Read from SRAM CESA to the L2
+      &address=&address+0x20			; Increment address. 4KB*32 / (32 bytes read fetch at the time)=32K writes
+    )
+
+    ; ==================PLE TEST========================
+    ; <MCR|MRC> p15, <op1>, Rd, CRn, CRm, <op2>
+    ; BIT0-3:CRn, BIT4-7:CRm, BIT8-10:<op2>, BIT12-14:<op1>, Bit16=0 (32-bit access)
+    ;Per.Set C15:0x11B %LONG 0x3FFFFF00		; MRC p15, 0, <Rt>, c11, c1, 1; Write PLEPCR
+    ; <MCRR|MRRC> p15, <op1>, <Rd1>, <Rd2>, <CRm>
+    ; BIT0-3: -, BIT4-7:CRm, BIT8-10: -, BIT12-14:<op1>, Bit16=1 (64-bit access)
+    ; MCRR p15, 0, <Rt>,<Rt2> c11 - PLE programm new channel
+    ;Per.Set C15:0x90B0 %QUAD 0x4000000040000000	; Length - 0x1000 words, 1 block
+    ;WAIT 1.s
+    ; <MCR|MRC> p15, <op1>, Rd, CRn, CRm, <op2>
+    ; BIT0-3:CRn, BIT4-7:CRm, BIT8-10:<op2>, BIT12-14:<op1>, Bit16=0 (32-bit access)
+    ;Per.Set C15:0x23B %LONG 0x0			; Kill channel MCR p15, 0, <Rt>, c11, c3, 2
+    ; ==================PLE TEST END====================
+
+    ; Lock all ways
+    &address=0xD0008900				; L2 lockdown registers base - REG9_D_LOCKDOWN0
+    WHILE (&address<=0xD000893C)		; REG9_I_LOCKDOWN7 - last lockdown register
+    (
+      Data.Set D:&address %LONG 0x0000FFFF	; Lock the current way
+      &address=&address+0x4			; Go to next way
+    )
+
+    ; Restore CESA Window
+    Data.Set D:0xD0020040 %LONG &savectrl		; Saved value of CESA BAR Control
+    Data.Set D:0xD0020044 %LONG &savebar		; Saved value of CESA BAR Base Address
+    ;====================create_sram_done==================================================
+
+    ; Stack pointer
+    Register.Set R13 0x4003FFFC
+
+    PRINT "Please select the bin_hdr.elf file location"
+    D.LOAD ../../bin_hdr/*
+    GO
+    WAIT 5.s
+    Break.direct
+    Per.Set C15:1 %LONG 0x00052078	; Disable MMU
+    PRINT "Done, DRAM is ready"	; The u-boot can be loaded and executed
+;***************************************************************************************************************
+  )
+  ELSE ; Static DDR init
+  (
+;***************************************************************************************************************
+    ; 667 MHZ DDR
+    PRINT ""
+    PRINT "Starting DRAM initialization:"
+    ; dram init
+    IF ("&ddrbus"=="32bit")
+    (
+      Data.Set 0xD0001400 %LONG 0x7B00Ca28 ;  DDR SDRAM Configuration Register
+    )
+    ELSE
+    (
+      Data.Set 0xD0001400 %LONG 0x7B004a28 ;  DDR SDRAM Configuration Register
+    )
+    Data.Set 0xD0001404 %LONG 0x36301820 ;  Dunit Control Low Register - kw40 bit11 high
+    Data.Set 0xD0001408 %LONG 0x43149997 ;  DDR SDRAM Timing (Low) Register
+    Data.Set 0xD000140C %LONG 0x38411bc7 ;  DDR SDRAM Timing (High) Register
+    Data.Set 0xD0001410 %LONG 0x14300000 ;  DDR SDRAM Address Control Register
+    Data.Set 0xD0001414 %LONG 0x00000700 ;  DDR SDRAM Open Pages Control Register
+    Data.Set 0xD0001424 %LONG 0x0060f3ff ;  Dunit Control High Register ( 2 :1 - bits 15:12 = 0xD )
+    Data.Set 0xD0001428 %LONG 0x000F8830 ;  Dunit Control High Register
+    Data.Set 0xD000142C %LONG 0x28c50f8 ;  Dunit Control High Register  ( 2:1 -  bit 29 = '1' )
+    Data.Set 0xD000147C %LONG 0x0000c671 ;
+
+    ; 2:1
+    Data.Set 0xD0001494 %LONG 0x00030000 ;  DDR SDRAM ODT Control (Low) Register
+    Data.Set 0xD000149C %LONG 0x00000300 ;  DDR Dunit ODT Control Register
+
+    Data.Set 0xD00014a8 %LONG 0x00000000 ;
+    Data.Set 0xD00014cc %LONG 0xbd09000d ;
+    Data.Set 0xD0001474 %LONG 0x00000000 ;
+
+    Data.Set 0xD0001538 %LONG 0x00000009 ;  Read Data Sample Delays Register
+    Data.Set 0xD000153C %LONG 0x0000000c ;  Read Data Ready Delay Register
+
+    Data.Set 0xD0001504 %LONG 0xFFFFFFF1 ;
+    Data.Set 0xD000150c %LONG 0xFFFFFFE5 ;
+    Data.Set 0xD0001514 %LONG 0x00000000 ;
+    Data.Set 0xD000151c %LONG 0x0;
+
+    Data.Set 0xD00015D0 %LONG 0x00000650 ;  MR0
+    Data.Set 0xD00015D4 %LONG 0x00000046 ;  MR1
+    Data.Set 0xD00015D8 %LONG 0x00000010 ;  MR2
+    Data.Set 0xD00015DC %LONG 0x00000000 ;  MR3
+
+    Data.Set 0xD00015E0 %LONG 0x23 ;
+    Data.Set 0xD00015E4 %LONG 0x00203c18;  ZQC Configuration Register
+    Data.Set 0xD00015EC %LONG 0xf8000019;  DDR PHY
+
+    PRINT " [Done]"
+    LOCAL &status
+    LOCAL &bit
+
+    LOCAL &readlvl
+    &readlvl=1
+
+    Data.Set 0xD00016A0 %LONG 0xe8243dfe ; ZNR / SPR
+    Data.Set 0xD00016A0 %LONG 0xe8280434 ; disable clamp	and Vref
+
+    Data.Set 0xD00016A0 %LONG 0x281020da ; Clock skew
+    Data.Set 0xD00016A0 %LONG 0xe8260cb2
+    Data.Set 0xD00016A0 %LONG 0xe8290000
+    Data.Set 0xD00016A0 %LONG 0xf810001f
+
+    Data.Set 0xD00016A0 %LONG 0xC0005847
+
+    &status=Data.Long(SD:0xD00016A0)
+    &status=&status&(1<<31)
+    WHILE (&status>0)
+    (
+      &status=Data.Long(SD:0xD00016A0)
+      &status=&status&(1<<31)
+    )
+
+    Data.Set 0xD00016A0 %LONG 0xC0406049
+    &status=Data.Long(SD:0xD00016A0)
+    &status=&status&(1<<31)
+    WHILE (&status>0)
+    (
+      &status=Data.Long(SD:0xD00016A0)
+      &status=&status&(1<<31)
+    )
+
+    Data.Set 0xD00016A0 %LONG 0xC080704d
+
+    &status=Data.Long(SD:0xD00016A0)
+    &status=&status&(1<<31)
+    WHILE (&status>0)
+    (
+      &status=Data.Long(SD:0xD00016A0)
+      &status=&status&(1<<31)
+    )
+
+    Data.Set 0xD00016A0 %LONG 0xC0C0a85b
+
+    &status=Data.Long(SD:0xD00016A0)
+    &status=&status&(1<<31)
+    WHILE (&status>0)
+    (
+      &status=Data.Long(SD:0xD00016A0)
+      &status=&status&(1<<31)
+    )
+
+    Data.Set 0xD00016A0 %LONG 0xC002008d
+
+    &status=Data.Long(SD:0xD00016A0)
+    &status=&status&(1<<31)
+    WHILE (&status>0)
+    (
+      &status=Data.Long(SD:0xD00016A0)
+      &status=&status&(1<<31)
+    )
+
+    Data.Set 0xD00016A0 %LONG 0xC0420084
+
+    &status=Data.Long(SD:0xD00016A0)
+    &status=&status&(1<<31)
+    WHILE (&status>0)
+    (
+      &status=Data.Long(SD:0xD00016A0)
+      &status=&status&(1<<31)
+    )
+
+    Data.Set 0xD00016A0 %LONG 0xC082009f
+
+    &status=Data.Long(SD:0xD00016A0)
+    &status=&status&(1<<31)
+    WHILE (&status>0)
+    (
+      &status=Data.Long(SD:0xD00016A0)
+      &status=&status&(1<<31)
+    )
+
+    Data.Set 0xD00016A0 %LONG 0xC0c20099
+
+    &status=Data.Long(SD:0xD00016A0)
+    &status=&status&(1<<31)
+    WHILE (&status>0)
+    (
+      &status=Data.Long(SD:0xD00016A0)
+      &status=&status&(1<<31)
+    )
+
+    Data.Set 0xD00016A0 %LONG 0xC003000F
+
+    &status=Data.Long(SD:0xD00016A0)
+    &status=&status&(1<<31)
+    WHILE (&status>0)
+    (
+      &status=Data.Long(SD:0xD00016A0)
+      &status=&status&(1<<31)
+    )
+
+    Data.Set 0xD00016A0 %LONG 0xC043000f
+
+    &status=Data.Long(SD:0xD00016A0)
+    &status=&status&(1<<31)
+    WHILE (&status>0)
+    (
+      &status=Data.Long(SD:0xD00016A0)
+      &status=&status&(1<<31)
+    )
+
+    Data.Set 0xD00016A0 %LONG 0xC083000f
+
+    &status=Data.Long(SD:0xD00016A0)
+    &status=&status&(1<<31)
+    WHILE (&status>0)
+    (
+      &status=Data.Long(SD:0xD00016A0)
+      &status=&status&(1<<31)
+    )
+
+    Data.Set 0xD00016A0 %LONG 0xC0C3000f
+
+    &status=Data.Long(SD:0xD00016A0)
+    &status=&status&(1<<31)
+    WHILE (&status>0)
+    (
+      &status=Data.Long(SD:0xD00016A0)
+      &status=&status&(1<<31)
+    )
+
+    Data.Set 0xD0001480 %LONG 0x00000001 ;  DDR SDRAM Initialization Control Register
+    WAIT 2.s
+
+    Data.Set 0xD00015B0 %LONG 0x80100008 ; WL
+    Data.Set 0xD00015B0 %LONG 0x80100002 ; Load pattern ;
+    Data.Set 0xD00015B0 %LONG 0x80100040 ; RL
+
+    Data.Set 0xD0018000 %LONG 0x11 ; RL
+
+    Data.Set 0xD00200e8 %LONG 0x0; RL
+    Data.Set 0xD0020184 %LONG 0x0FFFFFE1 ; RL
+    Data.Set 0xD00182e4 %LONG 0xfffdffff ; RL
+
+    PRINT "Done, DRAM is ready"	; The u-boot can be loaded and executed
+  ) ; End of if &ddrbus!=3
+
+) ; End of &runmode==ddr
+
+
+enddo

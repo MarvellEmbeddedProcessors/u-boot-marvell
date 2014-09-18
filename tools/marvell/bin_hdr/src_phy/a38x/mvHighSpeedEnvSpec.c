@@ -279,6 +279,22 @@ MV_OP_PARAMS sataElectricalConfigSerdesRev2Params[] =
 	{ RX_REG2,							0x800,	    0xF0,		{ 0x70,		},   	0,			0		}   /* Dtl Clamping disable and Dtl clamping Sel(6000ppm) */
 };
 
+MV_OP_PARAMS sgmiiElectricalConfigSerdesRev1Params[] =
+{
+	/* unitunitBaseReg			unitOffset	 mask		SGMII (1.25G)  SGMII (3.125G)	waitTime    numOfLoops */
+	{ G1_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3C9,		0x3C9		},   	0,			0		},  /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ SQUELCH_FFE_SETTING_REG,	0x800,		0xFFF,		{ 0x8F,			0xBF		},   	0,			0		},  /* SQ_THRESH and FFE Setting */
+	{ VTHIMPCAL_CTRL_REG,		0x800,		0xFF00,		{ 0x4000,		0x4000		},   	0,			0		},  /* tximpcal_th and rximpcal_th */
+};
+
+MV_OP_PARAMS sgmiiElectricalConfigSerdesRev2Params[] =
+{
+	/* unitunitBaseReg			unitOffset	 mask		SGMII (1.25G)  SGMII (3.125G)	waitTime    numOfLoops */
+	{ G1_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3C9,		0x3C9		},   	0,			0		},  /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ VTHIMPCAL_CTRL_REG,		0x800,		0xFF00,		{ 0x4000,		0x4000		},   	0,			0		},  /* tximpcal_th and rximpcal_th */
+};
+
+
 /****************/
 /* PEX and USB3 */
 /****************/
@@ -501,6 +517,16 @@ MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID)
 	serdesSeqDb[SGMII__3_125_SPEED_CONFIG_SEQ].opParamsPtr = sataAndSgmiiSpeedConfigParams;
 	serdesSeqDb[SGMII__3_125_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(sataAndSgmiiSpeedConfigParams) / sizeof(MV_OP_PARAMS);
 	serdesSeqDb[SGMII__3_125_SPEED_CONFIG_SEQ].dataArrIdx  = SGMII_3_125;
+
+    /* SGMII_ELECTRICAL_CONFIG_SEQ seq sequence init */
+	if(serdesRev == MV_SERDES_REV_1_2) {
+		serdesSeqDb[SGMII_ELECTRICAL_CONFIG_SEQ].opParamsPtr = sgmiiElectricalConfigSerdesRev1Params;
+		serdesSeqDb[SGMII_ELECTRICAL_CONFIG_SEQ].cfgSeqSize  = sizeof(sgmiiElectricalConfigSerdesRev1Params) / sizeof(MV_OP_PARAMS);
+	} else {
+		serdesSeqDb[SGMII_ELECTRICAL_CONFIG_SEQ].opParamsPtr = sgmiiElectricalConfigSerdesRev2Params;
+		serdesSeqDb[SGMII_ELECTRICAL_CONFIG_SEQ].cfgSeqSize  = sizeof(sgmiiElectricalConfigSerdesRev2Params) / sizeof(MV_OP_PARAMS);
+	}
+	serdesSeqDb[SGMII_ELECTRICAL_CONFIG_SEQ].dataArrIdx  = SGMII;
 
 	/* SGMII_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[SGMII_TX_CONFIG_SEQ1].opParamsPtr = sataAndSgmiiTxConfigParams1;
@@ -1057,6 +1083,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 			CHECK_STATUS(mvSeqExec(serdesNum, SGMII_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
+            CHECK_STATUS(mvSeqExec(serdesNum, SGMII_ELECTRICAL_CONFIG_SEQ));
 			CHECK_STATUS(mvSeqExec(serdesNum, SGMII_TX_CONFIG_SEQ1));
 			CHECK_STATUS(mvSeqExec(serdesNum, SGMII_TX_CONFIG_SEQ2));
 

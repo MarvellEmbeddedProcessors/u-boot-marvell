@@ -82,12 +82,20 @@ static int mv_fdt_update_ethnum(void *fdt);
 static int mv_fdt_remove_node(void *fdt, const char *path);
 static int mv_fdt_scan_and_set_alias(void *fdt,
 					const char *name, const char *alias);
+static int mv_fdt_nand_mode_fixup(void *fdt);
 static int mv_fdt_debug;
 
 #if 0 /* not compiled, since this routine is currently not in use  */
 static int mv_fdt_remove_prop(void *fdt, const char *path,
 				const char *name, int nodeoff);
 #endif
+
+enum nfc_driver_type {
+	MV_FDT_NFC_PXA3XX,	/* mainline pxa3xx-nand */
+	MV_FDT_NFC_HAL,		/* mvebu HAL-based NFC */
+	MV_FDT_NFC_HAL_A375,	/* mvebu HAL-based NFC for A375 */
+	MV_FDT_NFC_NONE,
+};
 
 #define mv_fdt_dprintf(...)		\
 	if (mv_fdt_debug)		\
@@ -148,6 +156,11 @@ void ft_board_setup(void *blob, bd_t *bd)
 
 	/* Get number of active ETH port and update DT */
 	err = mv_fdt_update_ethnum(blob);
+	if (err < 0)
+		goto bs_fail;
+
+	/* Update NAND controller settings in DT */
+	err = mv_fdt_nand_mode_fixup(blob);
 	if (err < 0)
 		goto bs_fail;
 
@@ -527,6 +540,125 @@ alias_fail:
 		}
 		nodeoffset = nextoffset;
 	}
+
+	return 0;
+}
+
+static int mv_fdt_nfc_driver_type(void *fdt, int *offset,
+				  int check_status)
+{
+	int nodeoffset, type;
+	const void *status;
+	const char *compat[3] = {"marvell,armada370-nand",
+				 "marvell,armada-nand",
+				 "marvell,armada375-nand"};
+
+	for (type = 0; type < 3; type++) {
+		nodeoffset = fdt_node_offset_by_compatible(fdt, -1,
+							   compat[type]);
+		if (nodeoffset < 0)
+			continue;
+
+		if (!check_status) {
+			mv_fdt_dprintf("Detected NFC driver - %s\n",
+				       compat[type]);
+			break;
+		}
+
+		status = fdt_getprop(fdt, nodeoffset, "status", NULL);
+		if (!status || strncmp(status, "okay", 4) == 0) {
+			mv_fdt_dprintf("Enabled NFC driver - %s\n",
+				       compat[type]);
+			break;
+		}
+	}
+
+	*offset = nodeoffset;
+	return type;
+}
+
+static int mv_fdt_nand_mode_fixup(void *fdt)
+{
+	u32 ecc_val;
+	int nodeoffset, nfcoffset, nfc_driver_hal, err;
+	const void *cmdline;
+	char *nfc_config;
+	char prop[20];
+	char propval[7];
+
+	/* Search for enabled NFC driver in DT */
+	nfc_driver_hal = mv_fdt_nfc_driver_type(fdt, &nfcoffset, 1);
+	if (nfc_driver_hal == MV_FDT_NFC_NONE) {
+		mv_fdt_dprintf("No NFC driver enabled in device tree\n");
+		return 0;
+	}
+
+	/* Get bootargs value from the updated property in '/chosen' node */
+	nodeoffset = fdt_path_offset(fdt, "/chosen");
+	cmdline = fdt_getprop(fdt, nodeoffset, "bootargs", NULL);
+
+	/* Search for 'nfcConfig' parameter in cmdline */
+	nfc_config = strstr(cmdline, "nfcConfig");
+	if (!nfc_config) {
+		mv_fdt_dprintf("Keep default NFC configuration\n");
+		return 0;
+	}
+
+	nfc_config += strlen("nfcConfig") + 1;
+
+	/* Check for ganged mode */
+	if (strncmp(nfc_config, "ganged", 6) == 0) {
+		nfc_config += 7;
+
+		if (!nfc_driver_hal) {
+			mv_fdt_dprintf("NFC update: pxa3xx-nand driver "
+				       "doesn't support ganged mode\n");
+			goto check_ecc;
+		}
+
+		sprintf(prop, "%s", "nfc,nfc-mode");
+		sprintf(propval, "%s", "ganged");
+		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nfcoffset,
+						    prop, propval,
+						    strlen(propval) + 1));
+		if (err < 0) {
+			mv_fdt_dprintf("NFC update: fail to modify '%s'\n",
+				       prop);
+			return -1;
+		}
+		mv_fdt_dprintf("NFC update: set '%s' property to '%s'\n",
+			       prop, propval);
+	}
+
+check_ecc:
+	/* Check for ECC type directive */
+	if (strcmp(nfc_config, "1bitecc") == 0)
+		ecc_val = nfc_driver_hal ? MV_NFC_ECC_HAMMING : 1;
+	else if (strcmp(nfc_config, "4bitecc") == 0)
+		ecc_val = nfc_driver_hal ? MV_NFC_ECC_BCH_2K : 4;
+	else if (strcmp(nfc_config, "8bitecc") == 0)
+		ecc_val = nfc_driver_hal ? MV_NFC_ECC_BCH_1K : 8;
+	else if (strcmp(nfc_config, "12bitecc") == 0)
+		ecc_val = nfc_driver_hal ? MV_NFC_ECC_BCH_704B : 12;
+	else if (strcmp(nfc_config, "16bitecc") == 0)
+		ecc_val = nfc_driver_hal ? MV_NFC_ECC_BCH_512B : 16;
+	else {
+		mv_fdt_dprintf("NFC update: invalid nfcConfig ECC parameter\n");
+		return 0;
+	}
+
+	if (!nfc_driver_hal)
+		sprintf(prop, "%s", "nand-ecc-strength");
+	else
+		sprintf(prop, "%s", "nfc,ecc-type");
+
+	mv_fdt_modify(fdt, err, fdt_setprop_u32(fdt, nfcoffset, prop,
+						ecc_val));
+	if (err < 0) {
+		mv_fdt_dprintf("NFC update: fail to modify'%s'\n", prop);
+		return -1;
+	}
+	mv_fdt_dprintf("NFC update: set '%s' property to %d\n", prop, ecc_val);
 
 	return 0;
 }

@@ -147,11 +147,12 @@ MV_STATUS mvSysUsbInit(MV_VOID)
 				MV_REG_WRITE(USB_CLUSTER_CONTROL, reg);
 			}
 			if (status == MV_OK)	/* Map DDR windows to XHCI */
-				status = mvUsbWinInit(dev, addrWinMap, MV_TRUE);
+				status = mvUsbWinInit(mvCtrlUsbMapGet(USB3_UNIT_ID, dev), addrWinMap, MV_TRUE);
 			if (status == MV_OK)
-				printf("USB3.0 %d: Host Mode\n", dev);
+				printf("USB3.0 %d: Host Mode\n", mvCtrlUsbMapGet(USB3_UNIT_ID, dev));
 			else
-				mvOsPrintf("%s: Error: USB3.0 initialization failed (port %d).\n", __func__, dev);
+				mvOsPrintf("%s: Error: USB3.0 initialization failed (port %d).\n", __func__,
+						mvCtrlUsbMapGet(USB3_UNIT_ID, dev));
 		}
 #endif
 	return status;

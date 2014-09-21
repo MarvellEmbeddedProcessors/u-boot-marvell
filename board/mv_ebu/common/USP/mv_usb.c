@@ -113,6 +113,9 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 	MV_U32 ctrlModel = mvCtrlModelGet();
 
 	switch (ctrlModel) {
+	case MV_6928_DEV_ID:
+	case MV_6920_DEV_ID:
+	case MV_6910_DEV_ID:
 	case MV_6820_DEV_ID:
 	case MV_6810_DEV_ID:
 	case MV_6660_DEV_ID:

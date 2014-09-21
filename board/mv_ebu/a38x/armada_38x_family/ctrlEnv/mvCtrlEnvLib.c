@@ -1916,7 +1916,8 @@ void mvCtrlNandClkSet(int nClock)
 *       Get the map of USB ports if exists
 *
 * INPUT:
-*       The current usbActive.
+*	the current USB unit(USB3.0 or USB2.0)
+*	the current usbActive(not used, relevant for other SoC)
 *
 * OUTPUT:
 *       Mapped usbActive.
@@ -1926,6 +1927,26 @@ void mvCtrlNandClkSet(int nClock)
 *******************************************************************************/
 MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive)
 {
+	MV_U32 serdesConfigField;
+
+	/* On A39x and A38x A0 revision, there are 2 USB3.0 MACs, and the connectivity of the
+	   USB3.0 depends on the SerDes configuration:
+		When only USB3.0 Host port #1 is connected via SerDes Lane 5,
+		map the USB port #1 to be usbActive=0 */
+
+	/* if a38x Z0 rev, return original mapping */
+	if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX && mvCtrlRevGet() == MV_88F68XX_69XX_Z1_ID)
+		return usbActive;
+
+	if (usbUnitId == USB3_UNIT_ID && mvCtrlUsb3MaxGet() == 1) {
+		serdesConfigField = (MV_REG_READ(COMM_PHY_SELECTOR_REG) & COMPHY_SELECT_MASK(5)) >>
+				COMPHY_SELECT_OFFS(5);
+		if (serdesConfigField == COMPHY_SELECT_LANE5_USB3_VAL)
+			return 1;
+	}
+	/* If A39x or A38x A0 rev, but the no mapping needed:
+	 * - single USB#0 in use
+	 * - both USB units are in use */
 	return usbActive;
 }
 

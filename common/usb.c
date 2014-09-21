@@ -111,7 +111,7 @@ int usb_init(void)
 		}
 
 
-#if defined(MV88F68XX)
+#if defined(MV88F68XX) || defined(MV88F69XX)
 	/* Temp WA for timing issue with Armada 38x and xHCI */
 	/* Check if currently using xHCI stack (usbType = 3) */
 	if (simple_strtoul(getenv("usbType"), NULL, 10) == 3)

@@ -72,16 +72,10 @@ static inline phys_addr_t virt_to_phys(void * vaddr)
 #define __arch_getl(a)			(*(volatile unsigned int *)(a))
 #define __arch_getq(a)			(*(volatile unsigned long long *)(a))
 
-#if CONFIG_PALLADIUM
-#define __arch_putb(v,a)		{__arch_getb(a); (*(volatile unsigned char *)(a) = (v)); __arch_getb(a);}
-#define __arch_putw(v,a)		{__arch_getw(a); (*(volatile unsigned short *)(a) = (v)); __arch_getw(a);}
-#define __arch_putl(v,a)		{__arch_getl(a); (*(volatile unsigned int *)(a) = (v)); __arch_getl(a);}
-#else
 #define __arch_putb(v,a)		(*(volatile unsigned char *)(a) = (v))
 #define __arch_putw(v,a)		(*(volatile unsigned short *)(a) = (v))
 #define __arch_putl(v,a)		(*(volatile unsigned int *)(a) = (v))
 #define __arch_putq(v,a)		(*(volatile unsigned long long *)(a) = (v))
-#endif
 
 static inline void __raw_writesb(unsigned long addr, const void *data,
 				 int bytelen)

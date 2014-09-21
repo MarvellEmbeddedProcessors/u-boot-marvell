@@ -822,14 +822,19 @@ U_BOOT_CMD(
 
 #ifdef CONFIG_MV_XSMI
 #include "eth-phy/mvEthPhyXsmi.h"
+#include "ctrlEnv/mvCtrlNetCompLib.h"
 
 int xsmi_phy_read_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U16 phyReg;
 
+	/* NSS need to be enabled before each access and disabled right after,
+	   in order to access the PHY registers via PSS window */
+	mvNetComplexNssSelect(1);
 	mvEthPhyXsmiRegRead(simple_strtoul(argv[1], NULL, 16),
 			simple_strtoul(argv[2], NULL, 16),
 			simple_strtoul(argv[3], NULL, 16), &phyReg);
+	mvNetComplexNssSelect(0);
 
 	printf("0x%x\n", phyReg);
 
@@ -845,10 +850,14 @@ U_BOOT_CMD(
 
 int xsmi_phy_write_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 {
+	/* NSS need to be enabled before each access and disabled right after,
+	   in order to access the PHY registers via PSS window */
+	mvNetComplexNssSelect(1);
 	mvEthPhyXsmiRegWrite(simple_strtoul(argv[1], NULL, 16),
 			simple_strtoul(argv[2], NULL, 16),
 			simple_strtoul(argv[3], NULL, 16),
 			simple_strtoul(argv[4], NULL, 16));
+	mvNetComplexNssSelect(0);
 
 	return 1;
 }

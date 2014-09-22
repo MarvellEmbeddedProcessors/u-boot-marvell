@@ -89,6 +89,13 @@
 #define CONFIG_OF_BOARD_SETUP	1
 */
 
+/* Define NAND chip parameters */
+#ifdef CONFIG_MVEBU_NAND_BOOT
+#define CONFIG_MVEBU_NAND_PAGE_SIZE	4096
+#define CONFIG_MVEBU_NAND_BLOCK_SIZE	128
+#define CONFIG_MVEBU_NAND_CELL_TYPE	MLC
+#endif
+
 /* Clock */
 #ifndef __ASSEMBLY__
 	#define CONFIG_SYS_HZ                   1000

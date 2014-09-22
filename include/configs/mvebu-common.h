@@ -137,7 +137,7 @@
 #define CONFIG_CMD_MVEBU_BUBT
 
 
-/* No flash setup */
+/* Flash env setup */
 #if !defined(MV_INCLUDE_NOR) && !defined(CONFIG_MVEBU_NAND_BOOT) && !defined(CONFIG_MVEBU_SPI_BOOT)
 	#undef CONFIG_CMD_FLASH
 	#undef CONFIG_CMD_IMLS
@@ -153,7 +153,25 @@
 	/* TODO - Do we really need this */
 	#define CONFIG_SYS_MONITOR_BASE	0
 	#define CONFIG_SYS_MONITOR_LEN	0x80000  /* Reserve 512 kB for Monitor */
+
+	#define CONFIG_MVEBU_DOIMAGE
 #endif
+
+
+/* Boot from NAND settings */
+#if defined(CONFIG_MVEBU_NAND_BOOT)
+	#define CONFIG_ENV_IS_IN_NAND
+	#define CONFIG_DOIMAGE_TYPE	"nand"
+	#define CONFIG_DOIMAGE_SUFFIX	"nand-flash"
+#endif /* CONFIG_MVEBU_NAND_BOOT */
+
+/* Boot from SPI settings */
+#if defined(CONFIG_MVEBU_SPI_BOOT)
+	#define CONFIG_ENV_IS_IN_SPI_FLASH
+	#define CONFIG_DOIMAGE_TYPE	"flash"
+	#define CONFIG_DOIMAGE_SUFFIX	"spi-flash"
+#endif /* CONFIG_MVEBU_SPI_BOOT */
+
 
 /* Generic Interrupt Controller Definitions */
 #define GICD_BASE                       MVEBU_GICD_BASE
@@ -345,11 +363,6 @@
 	#define CONFIG_NAND_ECC_STEP_SIZE 512
 #endif
 
-/* Boot from NAND settings */
-#if defined(CONFIG_MVEBU_NAND_BOOT)
-	#define CONFIG_ENV_IS_IN_NAND
-#endif /* CONFIG_MVEBU_SPI_BOOT */
-
 /* SPI Flash */
 #ifdef CONFIG_MVEBU_SPI
 	#define CONFIG_CMD_SPI
@@ -373,10 +386,6 @@
 
 #endif  /* MV_INCLUDE_SPI */
 
-/* Boot from SPI settings */
-#if defined(CONFIG_MVEBU_SPI_BOOT)
-	#define CONFIG_ENV_IS_IN_SPI_FLASH
-#endif /* CONFIG_MVEBU_SPI_BOOT */
 
 /* NOR Flash */
 #ifdef MV_INCLUDE_NOR

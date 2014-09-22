@@ -84,7 +84,6 @@
 
 #define POWER_AND_PLL_CTRL_REG                  0xa0004
 #define CALIBRATION_CTRL_REG                    0xa0008
-#define G1_SETTINGS_0_REG						0xa0034
 #define LOOPBACK_REG                            0xa008C
 #define INTERFACE_REG                           0xa0094
 #define ISOLATE_REG                             0xa0098
@@ -94,6 +93,7 @@
 #define RESET_DFE_REG                           0xa0148
 #define LANE_ALIGN_REG0							0xa0124
 #define SQUELCH_FFE_SETTING_REG					0xa0018
+#define G1_SETTINGS_0_REG						0xa0034
 #define G1_SETTINGS_1_REG						0xa0038
 #define G2_SETTINGS_0_REG						0xa003C
 #define G2_SETTINGS_1_REG						0xa0040
@@ -104,8 +104,10 @@
 #define REF_REG0                                0xa0134
 #define CAL_REG6								0xa0168
 #define RX_REG2									0xa0184
-
 #define LANE_CFG4_REG							0xa0620
+#define GLOBAL_CLK_CTRL                         0xa0704
+#define GLOBAL_MISC_CTRL                        0xa0718
+#define	GLOBAL_CLK_SRC_HI						0xa0710
 
 #define GLOBAL_CLK_CTRL                         0xa0704
 #define GLOBAL_MISC_CTRL                        0xa0718

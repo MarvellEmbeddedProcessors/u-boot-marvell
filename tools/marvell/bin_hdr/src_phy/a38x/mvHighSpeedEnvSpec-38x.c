@@ -90,7 +90,7 @@ MV_U8 commonPhysSelectors38xZ1Map[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 };
 
 /* Serdes type to ref clock map */
-REF_CLOCK serdesTypeToRefClock38xZ1Map[LAST_SERDES_TYPE] =
+REF_CLOCK serdesTypeToRefClock38xMap[LAST_SERDES_TYPE] =
 {
 	REF_CLOCK__100MHz,      /* PEX0 */
 	REF_CLOCK__100MHz,      /* PEX1 */
@@ -156,9 +156,7 @@ MV_U32 mvHwsSerdesGetRefClockVal
 	SERDES_TYPE serdesType
 )
 {
-    /* TBD - for now, return only Z1 mapping
-       need to add function to get Ctrl revision */
-    return serdesTypeToRefClock38xZ1Map[serdesType];
+    return serdesTypeToRefClock38xMap[serdesType];
 }
 
 /***************************************************************************/

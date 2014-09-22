@@ -80,13 +80,12 @@
 #define GENERAL_PURPOSE_RESERVED0_REG			0x182E0
 #define GBE_CONFIGURATION_REG                   0x18460
 #define DEVICE_SAMPLE_AT_RESET1_REG             0x18600
+#define DEVICE_SAMPLE_AT_RESET2_REG				0x18604
 
 #define POWER_AND_PLL_CTRL_REG                  0xa0004
 #define CALIBRATION_CTRL_REG                    0xa0008
 #define G1_SETTINGS_0_REG						0xa0034
 #define LOOPBACK_REG                            0xa008C
-#define GLOBAL_CLK_CTRL                         0xa0704
-#define GLOBAL_MISC_CTRL                        0xa0718
 #define INTERFACE_REG                           0xa0094
 #define ISOLATE_REG                             0xa0098
 #define MISC_REG                                0xa013C
@@ -108,10 +107,30 @@
 
 #define LANE_CFG4_REG							0xa0620
 
+#define GLOBAL_CLK_CTRL                         0xa0704
+#define GLOBAL_MISC_CTRL                        0xa0718
+#define GLOBAL_PM_CTRL							0xa0740
+
 #define SATA_CTRL_REG_INDIRECT                  0xa80a0
 #define SATA_CTRL_REG                           0xa80a4
 
-#define MAX_SELECTOR_VAL		0x9
+#define MAX_SELECTOR_VAL						0x9
+
+/* Reference clock values and mask */
+#define POWER_AND_PLL_CTRL_REG_100MHZ_VAL		0x0
+#define POWER_AND_PLL_CTRL_REG_25MHZ_VAL_1		0x1
+#define POWER_AND_PLL_CTRL_REG_25MHZ_VAL_2		0x2
+#define POWER_AND_PLL_CTRL_REG_40MHZ_VAL		0x3
+#define GLOBAL_PM_CTRL_REG_25MHZ_VAL			0x7
+#define GLOBAL_PM_CTRL_REG_40MHZ_VAL			0xC
+#define LANE_CFG4_REG_25MHZ_VAL					0x200
+#define LANE_CFG4_REG_40MHZ_VAL					0x300
+
+#define POWER_AND_PLL_CTRL_REG_MASK				(~(0x1F))
+#define GLOBAL_PM_CTRL_REG_MASK					(~(0xFF))
+#define LANE_CFG4_REG_MASK						(~(0x1F00))
+
+#define	REF_CLK_SELECTOR_VAL(regVal)			(regVal & 0x1)
 
 /* TWSI addresses */
 #define BOARD_ID_GET_ADDR                       0x50

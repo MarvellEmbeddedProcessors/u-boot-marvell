@@ -307,16 +307,51 @@ MV_U32 mvHwsSerdesGetPhySelectorVal
 }
 
 /***************************************************************************/
-MV_U32 mvHwsSerdesGetRefClockVal
-(
-	SERDES_TYPE serdesType
-)
+MV_U32 mvHwsSerdesGetRefClockVal(SERDES_TYPE	serdesType)
 {
-    if (serdesType >= LAST_SERDES_TYPE) {
+	MV_U32 regVal;
+	REF_CLOCK refClock;
+
+	DEBUG_INIT_FULL_S("\n### mvHwsSerdesGetRefClockVal ###\n");
+
+	if (serdesType >= LAST_SERDES_TYPE) {
         return REF_CLOCK_UNSUPPORTED;
     }
 
-    return serdesTypeToRefClockSerdesRev2Map[serdesType];
+	/* Get the referance clock value from DEVICE_SAMPLE_AT_RESET2_REG bit 0:
+	   if bit[0]=0 --> REF_CLOCK__25MHz, bit[0]=1 --> REF_CLOCK__40MHz */
+	regVal = MV_REG_READ(DEVICE_SAMPLE_AT_RESET2_REG);
+	regVal = REF_CLK_SELECTOR_VAL(regVal);
+
+	switch (serdesType) {
+	case PEX0:
+	case PEX1:
+	case PEX2:
+    case PEX3:
+        refClock = REF_CLOCK__100MHz;
+		break;
+	case USB3_HOST0:
+	case USB3_HOST1:
+	case USB3_DEVICE:
+	case SATA0:
+	case SATA1:
+	case SATA2:
+	case SATA3:
+	case SGMII0:
+	case SGMII1:
+	case SGMII2:
+	case SGMII3:
+	case QSGMII:
+	case XAUI:
+	case RXAUI:
+		refClock = (regVal == REF_CLOCK__25MHz) ? REF_CLOCK__25MHz : REF_CLOCK__40MHz;
+		break;
+    default:
+		DEBUG_INIT_S("mvHwsRefClockSet: bad serdes type\n");
+		return MV_BAD_PARAM;
+	}
+
+    return refClock;
 }
 
 /***************************************************************************/

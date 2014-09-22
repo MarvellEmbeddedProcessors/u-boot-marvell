@@ -79,6 +79,8 @@
 
 #define MV_SERDES_REV_NA		0xFF
 
+#define	SERDES_REGS_LANE_BASE_OFFSET(lane)	(0x800 * lane)
+
 /* For setting or clearing a certain bit
    (bit is a number between 0 and 31) in the data*/
 #define SET_BIT(data, bit)          (data | (0x1 << bit))
@@ -155,6 +157,7 @@ typedef struct {
 typedef enum {
 	REF_CLOCK__25MHz,
 	REF_CLOCK__100MHz,
+	REF_CLOCK__40MHz,
 	REF_CLOCK_UNSUPPORTED
 } REF_CLOCK;
 
@@ -270,9 +273,6 @@ SERDES_MAP serdesConfigurationMap[MAX_SERDES_LANES];
 MV_CFG_SEQ serdesSeqDb[SERDES_LAST_SEQ];
 
 extern MV_U8 commonPhysSelectorsSerdesRev2Map[LAST_SERDES_TYPE][MAX_SERDES_LANES];
-
-/* Serdes type to ref clock map */
-extern REF_CLOCK serdesTypeToRefClockSerdesRev2Map[LAST_SERDES_TYPE];
 
 /*************************** Functions declarations ***************************/
 /*******************************************************************************

@@ -132,30 +132,6 @@ MV_U8 commonPhysSelectorsSerdesRev2Map[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 /* Selector mapping for PEX by 4 confiuration */
 MV_U8 commonPhysSelectorsPexBy4Lanes[] = { 0x1, 0x2, 0x2, 0x2 };
 
-/* Serdes type to ref clock map */
-REF_CLOCK serdesTypeToRefClockSerdesRev2Map[LAST_SERDES_TYPE] =
-{
-	REF_CLOCK__100MHz,      /* PEX0 */
-	REF_CLOCK__100MHz,      /* PEX1 */
-	REF_CLOCK__100MHz,      /* PEX2 */
-	REF_CLOCK__100MHz,      /* PEX3 */
-	REF_CLOCK__25MHz,       /* SATA0 */
-	REF_CLOCK__25MHz,       /* SATA1 */
-	REF_CLOCK__25MHz,       /* SATA2 */
-	REF_CLOCK__25MHz,       /* SATA3 */
-	REF_CLOCK__25MHz,       /* SGMII0 */
-	REF_CLOCK__25MHz,       /* SGMII1 */
-	REF_CLOCK__25MHz,       /* SGMII2 */
-    REF_CLOCK__25MHz,       /* SGMII3 */
-	REF_CLOCK__25MHz,       /* QSGMII */
-	REF_CLOCK__25MHz,       /* USB3_HOST0 */
-	REF_CLOCK__25MHz,       /* USB3_HOST1 */
-	REF_CLOCK__25MHz,       /* USB3_DEVICE */
-    REF_CLOCK__25MHz,       /* XAUI */
-    REF_CLOCK__25MHz,       /* RXAUI */
-	REF_CLOCK_UNSUPPORTED   /* DEFAULT_SERDES */
-};
-
 #ifdef MV_DEBUG_INIT
 static const char *serdesTypeToString[] = {
 	"PCIe0",
@@ -1180,7 +1156,7 @@ MV_STATUS mvHwsRefClockSet
 	REF_CLOCK refClock
 )
 {
-	MV_U32 data, regData;
+	MV_U32 data1=0, data2=0, data3=0, regData;
 
 	DEBUG_INIT_FULL_S("\n### mvHwsRefClockSet ###\n");
 
@@ -1193,14 +1169,28 @@ MV_STATUS mvHwsRefClockSet
 	case PEX0:
 	case PEX1:
 	case PEX2:
-	case PEX3:
+    case PEX3:
+        if (refClock == REF_CLOCK__100MHz) {
+			data1 = POWER_AND_PLL_CTRL_REG_100MHZ_VAL;
+		}
+		else{
+			DEBUG_INIT_S("mvHwsRefClockSet: bad ref clock\n");
+			return MV_BAD_PARAM;
+		}
+		break;
 	case USB3_HOST0:
 	case USB3_HOST1:
 	case USB3_DEVICE:
-		if (refClock == REF_CLOCK__100MHz)
-			data = 0x0;
-		else if (refClock == REF_CLOCK__25MHz)
-			data = 0x2;
+		if (refClock == REF_CLOCK__25MHz) {
+			data1 = POWER_AND_PLL_CTRL_REG_25MHZ_VAL_2;
+            data2 = GLOBAL_PM_CTRL_REG_25MHZ_VAL;
+            data3 = LANE_CFG4_REG_25MHZ_VAL;
+        }
+        else if (refClock == REF_CLOCK__40MHz) {
+			data1 = POWER_AND_PLL_CTRL_REG_40MHZ_VAL;
+            data2 = GLOBAL_PM_CTRL_REG_40MHZ_VAL;
+            data3 = LANE_CFG4_REG_40MHZ_VAL;
+		}
 		else{
 			DEBUG_INIT_S("mvHwsRefClockSet: bad ref clock\n");
 			return MV_BAD_PARAM;
@@ -1209,39 +1199,36 @@ MV_STATUS mvHwsRefClockSet
 	case SATA0:
 	case SATA1:
 	case SATA2:
-	case SATA3:
-		if (refClock == REF_CLOCK__100MHz)
-			data = 0x7;
-		else if (refClock == REF_CLOCK__25MHz)
-			data = 0x1;
-		else{
-			DEBUG_INIT_S("mvHwsRefClockSet: bad ref clock\n");
-			return MV_BAD_PARAM;
-		}
-		break;
-	case SGMII0:
+    case SATA3:
+    case SGMII0:
 	case SGMII1:
 	case SGMII2:
-		if (refClock == REF_CLOCK__100MHz)
-			data = 0x8;
-		else if (refClock == REF_CLOCK__25MHz)
-			data = 0x1;
-		else{
-			DEBUG_INIT_S("mvHwsRefClockSet: bad ref clock\n");
-			return MV_BAD_PARAM;
-		}
-		break;
+		if (refClock == REF_CLOCK__25MHz) {
+			data1 = POWER_AND_PLL_CTRL_REG_25MHZ_VAL_1;
+        }
+        else if (refClock == REF_CLOCK__40MHz) {
+			data1 = POWER_AND_PLL_CTRL_REG_40MHZ_VAL;
+        }
+        else{
+            DEBUG_INIT_S("mvHwsRefClockSet: bad ref clock\n");
+            return MV_BAD_PARAM;
+        }
+        break;
 #ifdef CONFIG_ARMADA_39X
 	case SGMII3:
 	case QSGMII:
 	case XAUI:
 	case RXAUI:
-        if (refClock == REF_CLOCK__25MHz)
-			data = 0x1;
-		else{
-			DEBUG_INIT_S("mvHwsRefClockSet: bad ref clock\n");
-			return MV_BAD_PARAM;
-		}
+        if (refClock == REF_CLOCK__25MHz) {
+			data1 = POWER_AND_PLL_CTRL_REG_25MHZ_VAL_1;
+        }
+        else if (refClock == REF_CLOCK__40MHz) {
+			data1 = POWER_AND_PLL_CTRL_REG_40MHZ_VAL;
+        }
+        else{
+            DEBUG_INIT_S("mvHwsRefClockSet: bad ref clock\n");
+            return MV_BAD_PARAM;
+        }
         break;
 #endif
     default:
@@ -1250,10 +1237,22 @@ MV_STATUS mvHwsRefClockSet
 	}
 
 	/* Write the refClock to relevant SELECT_REF_CLOCK_REG bits and offset */
-	regData = MV_REG_READ(POWER_AND_PLL_CTRL_REG + (0x800 * serdesNum));
-	regData &= ~(0x1F);
-	regData |= data;
-	MV_REG_WRITE(POWER_AND_PLL_CTRL_REG + (0x800 * serdesNum), regData);
+	regData = MV_REG_READ(POWER_AND_PLL_CTRL_REG + SERDES_REGS_LANE_BASE_OFFSET(serdesNum));
+	regData &= POWER_AND_PLL_CTRL_REG_MASK;
+	regData |= data1;
+	MV_REG_WRITE(POWER_AND_PLL_CTRL_REG + SERDES_REGS_LANE_BASE_OFFSET(serdesNum), regData);
+
+    if ((serdesType == USB3_HOST0) || (serdesType == USB3_HOST1) || (serdesType == USB3_DEVICE)) {
+        regData = MV_REG_READ(GLOBAL_PM_CTRL + SERDES_REGS_LANE_BASE_OFFSET(serdesNum));
+        regData &= GLOBAL_PM_CTRL_REG_MASK;
+        regData |= data2;
+        MV_REG_WRITE(GLOBAL_PM_CTRL + SERDES_REGS_LANE_BASE_OFFSET(serdesNum), regData);
+
+        regData = MV_REG_READ(LANE_CFG4_REG + SERDES_REGS_LANE_BASE_OFFSET(serdesNum));
+        regData &= LANE_CFG4_REG_MASK;
+        regData |= data3;
+        MV_REG_WRITE(LANE_CFG4_REG + SERDES_REGS_LANE_BASE_OFFSET(serdesNum), regData);
+    }
 
 	return MV_OK;
 }

@@ -58,7 +58,7 @@ struct mpp_bus {
 
 u8   mpp_get_pin(int mpp_id);
 void mpp_set_pin(int mpp_id, int value);
-int  mpp_enable_bus(int bus_id, int bus_alt);
+int  mpp_enable_bus(u32 *mpp_reg, int bus_id, int bus_alt);
 int  mpp_is_bus_valid(struct mpp_bus *bus);
 int  mpp_is_bus_enabled(struct mpp_bus *bus);
 void mpp_set_and_update(u32 *mpp_reg);

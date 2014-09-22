@@ -144,7 +144,6 @@ int mvebu_board_init(void)
 
 #ifndef CONFIG_PALLADIUM
 	/* mpp_set */
-	mpp_enable_bus(UART_0_MPP_BUS, 0);
 	mpp_set_and_update(brd->mpp_regs);
 #endif
 

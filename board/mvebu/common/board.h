@@ -65,11 +65,14 @@ struct mvebu_board_info {
 	u32  id;
 	u16  *unit_mask;
 	enum unit_update_mode unit_update_mode;
+	/* Default MPP configurations */
 	u32 mpp_regs[MAX_MPP_REGS];
 
 	/* Only for development boards */
 	bool configurable;
 	struct mvebu_board_config *config_data;
+	/* Configure MPP for different board configurations */
+	int (*configure_mpp)(void);
 };
 
 /*

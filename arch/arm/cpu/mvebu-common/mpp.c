@@ -152,13 +152,13 @@ int mpp_is_bus_valid(struct mpp_bus *bus)
 	return valid;
 }
 
-int mpp_enable_bus(int bus_id, int bus_alt)
+int mpp_enable_bus(u32 *mpp_reg, int bus_id, int bus_alt)
 {
-	int i;
+	int i, reg_offset, field_offset, value;
+	u32 mask;
 	struct mpp_pin *pin;
 	struct mpp_bus *bus = soc_get_mpp_bus(bus_id);
 	u32 *update_mask = soc_get_mpp_update_mask();
-	u32 *update_val = soc_get_mpp_update_val();
 
 	debug("Enabling MPP bus %s\n", bus->name);
 
@@ -180,8 +180,14 @@ int mpp_enable_bus(int bus_id, int bus_alt)
 	for (i = 0; i < bus->pin_cnt; i++) {
 		pin = &bus->pin_data[bus_alt][i];
 		debug("Setting [pin, val] = [%d, 0x%x]\n", pin->id, pin->val);
-		set_field(pin->id, MPP_VAL_MASK, update_mask);
-		set_field(pin->id, pin->val, update_val);
+
+		value =  MPP_VAL_MASK & pin->val;
+		/* Calculate register address and bit in register */
+		reg_offset   = pin->id >> (MPP_FIELD_BITS);
+		field_offset = (MPP_BIT_CNT) * (pin->id & MPP_FIELD_MASK);
+		mask = ~(MPP_VAL_MASK << field_offset);
+
+		mpp_reg[reg_offset] = (mpp_reg[reg_offset] & mask) | (value << field_offset);
 	}
 
 	return 0;

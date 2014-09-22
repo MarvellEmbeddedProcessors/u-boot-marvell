@@ -50,6 +50,10 @@ int mvebu_devel_board_init(struct mvebu_board_family *brd_fam)
 			brd_fam->sar->sar_lookup[brd_cfg->active_cfg[idx]].active = 1;
 	}
 
+	/* Update MPP configurations */
+	if (brd->configure_mpp)
+		(*brd->configure_mpp)();
+
 	return 0;
 }
 

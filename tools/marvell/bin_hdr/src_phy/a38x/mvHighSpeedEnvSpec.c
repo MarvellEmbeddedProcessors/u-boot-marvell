@@ -347,7 +347,7 @@ MV_OP_PARAMS pexAndUsb3TxConfigParams[] =
 MV_OP_PARAMS pexBy4ConfigParams[] =
 {
 	/* unitunitBaseReg  unitOffset   mask    data                   waitTime   numOfLoops */
-	{ 0xa0710,	    0x800,       0x7,	 { 0x5, 0x0, 0x0, 0x2 },  0,	        0}
+	{ GLOBAL_CLK_SRC_HI,	0x800,       0x7,	 { 0x5, 0x0, 0x0, 0x2 },	0,	        0       }
 };
 
 /* USB3 device donfig seq */
@@ -357,6 +357,29 @@ MV_OP_PARAMS usb3DeviceConfigParams[] =
 	{ LANE_CFG4_REG,    0x800,      0x200,  { 0x200 },  	0,          0       }
 };
 
+/* PEX - electrical configuration seq Rev 1.2 */
+MV_OP_PARAMS pexElectricalConfigSerdesRev1Params[] =
+{
+	/* unitunitBaseReg			unitOffset	mask		PEX data       waitTime    numOfLoops */
+	{ G1_SETTINGS_0_REG,		0x800,		0xF000,		{ 0xB000    },		0,			0	 	}, /* G1_TX_SLEW_CTRL_EN and G1_TX_SLEW_RATE */
+	{ G1_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3C9     },		0,          0	 	}, /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ G2_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3C9     },		0,          0	 	}, /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ LANE_CFG4_REG,            0x800,      0x8,		{ 0x8       },		0,          0	 	}, /* CFG_DFE_EN_SEL */
+	{ SQUELCH_FFE_SETTING_REG,	0x800,		0xFF,		{ 0xAF      },		0,          0	 	}, /* FFE Setting Force, RES and CAP */
+	{ VTHIMPCAL_CTRL_REG,		0x800,		0xFF00,		{ 0x4000    },		0,          0	 	}, /* tximpcal_th and rximpcal_th */
+	{ CAL_REG6,		 			0x800,		0xFF00,		{ 0xDC00    },		0,          0	 	}, /* cal_rxclkalign90_ext_en and cal_os_ph_ext */
+};
+
+/* PEX - electrical configuration seq Rev 2.1 */
+MV_OP_PARAMS pexElectricalConfigSerdesRev2Params[] =
+{
+	/* unitunitBaseReg			unitOffset	mask		PEX data       waitTime    numOfLoops */
+	{ G1_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3C9     },		0,          0	 	}, /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ G2_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3C9     },		0,          0	 	}, /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ LANE_CFG4_REG,            0x800,		0x8,		{ 0x8       },		0,          0	 	}, /* CFG_DFE_EN_SEL */
+	{ VTHIMPCAL_CTRL_REG,		0x800,		0xFF00,		{ 0x4000    },		0,          0	 	}, /* tximpcal_th and rximpcal_th */
+	{ CAL_REG6,                 0x800,		0xFF00,		{ 0xDC00    },		0,          0	 	}, /* cal_rxclkalign90_ext_en and cal_os_ph_ext */
+};
 
 /*****************/
 /*    USB2       */
@@ -538,6 +561,16 @@ MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID)
 	serdesSeqDb[PEX__5_SPEED_CONFIG_SEQ].opParamsPtr = pexAndUsb3SpeedConfigParams;
 	serdesSeqDb[PEX__5_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(pexAndUsb3SpeedConfigParams) / sizeof(MV_OP_PARAMS);
 	serdesSeqDb[PEX__5_SPEED_CONFIG_SEQ].dataArrIdx  = PEX__5Gbps;
+
+    /* PEX_ELECTRICAL_CONFIG_SEQ seq sequence init */
+	if(serdesRev == MV_SERDES_REV_1_2) {
+		serdesSeqDb[PEX_ELECTRICAL_CONFIG_SEQ].opParamsPtr = pexElectricalConfigSerdesRev1Params;
+		serdesSeqDb[PEX_ELECTRICAL_CONFIG_SEQ].cfgSeqSize  = sizeof(pexElectricalConfigSerdesRev1Params) / sizeof(MV_OP_PARAMS);
+	} else {
+		serdesSeqDb[PEX_ELECTRICAL_CONFIG_SEQ].opParamsPtr = pexElectricalConfigSerdesRev2Params;
+		serdesSeqDb[PEX_ELECTRICAL_CONFIG_SEQ].cfgSeqSize  = sizeof(pexElectricalConfigSerdesRev2Params) / sizeof(MV_OP_PARAMS);
+	}
+	serdesSeqDb[PEX_ELECTRICAL_CONFIG_SEQ].dataArrIdx = PEX;
 
 	/* PEX_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[PEX_TX_CONFIG_SEQ].opParamsPtr = pexAndUsb3TxConfigParams;
@@ -937,6 +970,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
+			CHECK_STATUS(mvSeqExec(serdesNum, PEX_ELECTRICAL_CONFIG_SEQ));
 			CHECK_STATUS(mvSeqExec(serdesNum, PEX_TX_CONFIG_SEQ));
 
 			mvOsUDelay(20);

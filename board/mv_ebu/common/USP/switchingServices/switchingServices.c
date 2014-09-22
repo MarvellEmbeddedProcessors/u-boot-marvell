@@ -350,7 +350,7 @@ void flashWrite (MV_U32 destination, MV_U32 len, MV_U32 source, MV_BOOL isNand)
 	char cmdBuf[128];
 
 	if (isNand == MV_TRUE) {
-		sprintf(cmdBuf, "nand write %x %x %x\n", source, destination, len);
+		sprintf(cmdBuf, "nand write.trimffs %x %x %x\n", source, destination, len);
 		printf(cmdBuf);
 		run_command(cmdBuf, 0);
 	} else

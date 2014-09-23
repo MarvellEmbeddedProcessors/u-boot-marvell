@@ -127,8 +127,6 @@
 #define SATA_CTRL_REG_INDIRECT                  0xa80a0
 #define SATA_CTRL_REG                           0xa80a4
 
-#define MAX_SELECTOR_VAL						10
-
 /* Reference clock values and mask */
 #define POWER_AND_PLL_CTRL_REG_100MHZ_VAL		0x0
 #define POWER_AND_PLL_CTRL_REG_25MHZ_VAL_1		0x1
@@ -144,6 +142,8 @@
 #define LANE_CFG4_REG_MASK						(~(0x1F00))
 
 #define	REF_CLK_SELECTOR_VAL(regVal)			(regVal & 0x1)
+
+#define MAX_SELECTOR_VAL			10
 
 /* TWSI addresses */
 #define BOARD_ID_GET_ADDR                       0x50
@@ -198,8 +198,8 @@
 
 /* Marvell boards for A39x*/
 #define A39X_MARVELL_BOARD_ID_BASE		0x30
-#define A39X_RD_69XX_ID				(A39X_MARVELL_BOARD_ID_BASE + 0)
-#define A39X_DB_69XX_ID				(A39X_MARVELL_BOARD_ID_BASE + 1)
+#define A39X_DB_69XX_ID				(A39X_MARVELL_BOARD_ID_BASE + 0)
+#define A39X_RD_69XX_ID				(A39X_MARVELL_BOARD_ID_BASE + 1)
 #define A39X_MV_MAX_MARVELL_BOARD_ID		(A39X_MARVELL_BOARD_ID_BASE + 2)
 #define A39X_MV_MARVELL_BOARD_NUM		(A39X_MV_MAX_MARVELL_BOARD_ID - A39X_MARVELL_BOARD_ID_BASE)
 
@@ -438,10 +438,17 @@ MV_U16 mvSysEnvModelGet(MV_VOID);
 MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID);
 
 #ifdef CONFIG_CMD_BOARDCFG
-#define MV_INFO_TWSI_EEPROM_DEV     0x50
-#define EEPROM_VERIFICATION_PATTERN     0xfadecafe
-#define MV_BOARD_CONFIG_MAX_BYTE_COUNT  8
-#define MV_BOARD_CONFIG_DEFAULT_VALUE		{0x1921d0a1, 0x4 }
+#define MV_INFO_TWSI_EEPROM_DEV			0x50
+
+#define MV_BOARD_CONFIG_MAX_BYTE_COUNT		8
+#define MV_BOARD_CONFIG_DEFAULT_VALUE		{0x0021D0A9, 0x4 }
+#define MV_BOARD_CONFIG_PATTERN_OFFSET		0x14
+#define EEPROM_VERIFICATION_PATTERN             0xFADECAFE
+
+/* the following definition is used to calculate a byte offset in the
+   EEPROM according to byte number and bit offset, as they are stored
+   in MV_EEPROM_CONFIG_INFO */
+#define CALC_BYTE_OFFSET(off, byte) ((4 - ((off / 8) + 1)) + byte)
 
 #ifdef MV88F69XX /* tables below are relevant for A390 SoC */
 typedef enum _mvConfigTypeID {
@@ -456,23 +463,27 @@ typedef enum _mvConfigTypeID {
 	MV_CONFIG_NSS_EN,
 	MV_CONFIG_DDR_BUSWIDTH,
 	MV_CONFIG_DDR_ECC_EN,
+	MV_CONFIG_BOARDCFG_EN,
+	MV_CONFIG_BOARDCFG_VALID,
 	MV_CONFIG_TYPE_MAX_OPTION,
 	MV_CONFIG_TYPE_CMD_DUMP_ALL,
 	MV_CONFIG_TYPE_CMD_SET_DEFAULT
 } MV_CONFIG_TYPE_ID;
 
 #define MV_EEPROM_CONFIG_INFO { \
-{ MV_CONFIG_BOARDID,		0xFF000000,	24,	0,	{1} }, \
-{ MV_CONFIG_LANE0,		0x7,		0,	0,	{1} }, \
-{ MV_CONFIG_LANE1,		0x78,		3,	0,	{1} }, \
-{ MV_CONFIG_LANE2,		0x380,		7,	0,	{1} }, \
-{ MV_CONFIG_LANE3,		0x3C00,		10,	0,	{1} }, \
-{ MV_CONFIG_LANE4,		0x3C000,	14,	0,	{1} }, \
-{ MV_CONFIG_LANE5,		0x3C0000,	18,	0,	{1} }, \
-{ MV_CONFIG_LANE6,		0x7,		0,	4,	{1} }, \
-{ MV_CONFIG_NSS_EN,		0x8,		3,	4,	{1} }, \
-{ MV_CONFIG_DDR_BUSWIDTH,	0x10,		4,	4,	{1} }, \
-{ MV_CONFIG_DDR_ECC_EN,		0x20,		5,	4,	{1} }, \
+{ MV_CONFIG_BOARDID,		0xFF000000,	24,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE0,		0x7,		0,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE1,		0x78,		3,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE2,		0x380,		7,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE3,		0x3C00,		10,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE4,		0x3C000,	14,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE5,		0x3C0000,	18,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE6,		0x7,		0,	4,	{1, 1} }, \
+{ MV_CONFIG_NSS_EN,		0x8,		3,	4,	{1, 1} }, \
+{ MV_CONFIG_DDR_BUSWIDTH,	0x10,		4,	4,	{1, 1} }, \
+{ MV_CONFIG_DDR_ECC_EN,		0x20,		5,	4,	{1, 1} }, \
+{ MV_CONFIG_BOARDCFG_EN,	0x40,		6,	4,	{1, 1} }, \
+{ MV_CONFIG_BOARDCFG_VALID,	0x3,		0,	16,	{1, 1} }, \
 };
 
 typedef struct _boardConfigTypesInfo {

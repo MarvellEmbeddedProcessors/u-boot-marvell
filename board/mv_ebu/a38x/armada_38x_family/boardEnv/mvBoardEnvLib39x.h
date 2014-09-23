@@ -128,7 +128,12 @@ typedef enum {
 
 #ifdef CONFIG_CMD_BOARDCFG
 #define MV_BOARD_CONFIG_MAX_BYTE_COUNT	8
-#define MV_BOARD_CONFIG_DEFAULT_VALUE	{0x1921d0a1, 0x4 }
+
+/* The defualt board configuration is -					*
+* Serdes	0	1	2	3	4	5	6	*
+* Type		PCIe0	SGMII1	PCIe1	SGMII2	PCIe2	RXAUI	RXAUI	*/
+
+#define MV_BOARD_CONFIG_DEFAULT_VALUE	{0x0021D0A9, 0x4 }
 
 typedef enum _mvConfigTypeID {
 	MV_CONFIG_BOARDID,
@@ -142,29 +147,33 @@ typedef enum _mvConfigTypeID {
 	MV_CONFIG_NSS_EN,
 	MV_CONFIG_DDR_BUSWIDTH,
 	MV_CONFIG_DDR_ECC_EN,
+	MV_CONFIG_BOARDCFG_EN,
 	MV_CONFIG_TYPE_MAX_OPTION,
+	MV_CONFIG_BOARDCFG_VALID,
 	MV_CONFIG_TYPE_CMD_DUMP_ALL,
-	MV_CONFIG_TYPE_CMD_SET_DEFAULT
+	MV_CONFIG_TYPE_CMD_SET_DEFAULT,
 } MV_CONFIG_TYPE_ID;
 
 /* {{MV_CONFIG_TYPE_ID ConfigID, MV_U32 Mask,  Offset, byteNum,    isActiveForBoard[]}} */
 #define MV_EEPROM_CONFIG_INFO { \
-{ MV_CONFIG_BOARDID,		0xFF000000,	24,	0,	{1 } }, \
-{ MV_CONFIG_LANE0,		0x7,		0,	0,	{1 } }, \
-{ MV_CONFIG_LANE1,		0x78,		3,	0,	{1 } }, \
-{ MV_CONFIG_LANE2,		0x380,		7,	0,	{1 } }, \
-{ MV_CONFIG_LANE3,		0x3C00,		10,	0,	{1 } }, \
-{ MV_CONFIG_LANE4,		0x3C000,	14,	0,	{1 } }, \
-{ MV_CONFIG_LANE5,		0x3C0000,	18,	0,	{1 } }, \
-{ MV_CONFIG_LANE6,		0x7,		0,	4,	{1 } }, \
-{ MV_CONFIG_NSS_EN,		0x8,		3,	4,	{1 } }, \
-{ MV_CONFIG_DDR_BUSWIDTH,	0x10,		4,	4,	{1 } }, \
-{ MV_CONFIG_DDR_ECC_EN,		0x20,		5,	4,	{1 } }, \
+{ MV_CONFIG_BOARDID,		0xFF000000,	24,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE0,		0x7,		0,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE1,		0x78,		3,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE2,		0x380,		7,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE3,		0x3C00,		10,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE4,		0x3C000,	14,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE5,		0x3C0000,	18,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE6,		0x7,		0,	4,	{1, 1} }, \
+{ MV_CONFIG_NSS_EN,		0x8,		3,	4,	{1, 1} }, \
+{ MV_CONFIG_DDR_BUSWIDTH,	0x10,		4,	4,	{1, 1} }, \
+{ MV_CONFIG_DDR_ECC_EN,		0x20,		5,	4,	{1, 1} }, \
+{ MV_CONFIG_BOARDCFG_EN,	0x40,		6,	4,	{1, 1} }, \
+{ MV_CONFIG_BOARDCFG_VALID,	0x3,		0,	16,	{1, 1} }, \
 };
 
 #define MV_BOARD_CONFIG_CMD_STR "serdes0, serdes1, serdes2, serdes3, serdes4, serdes5, serdes6, nss_en,\n"	\
-				"\tddr_buswidth, ddr_ecc\n\n"
-#define MV_BOARD_CONFIG_CMD_MAX_OPTS 10
+				"\tddr_buswidth, ddr_ecc, eepromEnable\n\n"
+#define MV_BOARD_CONFIG_CMD_MAX_OPTS 11
 
 /*MV_CMD_TYPE_ID,		command name,		Name,			numOfValues,	Possible Values */
 #define MV_BOARD_CONFIG_CMD_INFO {										\
@@ -190,9 +199,11 @@ typedef enum _mvConfigTypeID {
 {MV_CONFIG_NSS_EN,	"nss_en",	"NSS enable",		2,						\
 	{"Disable", "Enable"} },										\
 {MV_CONFIG_DDR_BUSWIDTH,	"ddr_buswidth",	"Buswidth enable",		2,				\
-	{"Disable", "Enable"} },										\
-{MV_CONFIG_DDR_ECC_EN,	"ddr_ecc",	"Dram ECC enable",		2,					\
 	{"32bit", "16bit"} },											\
+{MV_CONFIG_DDR_ECC_EN,	"ddr_ecc",	"Dram ECC enable",		2,					\
+	{"Disable", "Enable"} },										\
+{MV_CONFIG_BOARDCFG_EN,	"eepromEnable",	"EEPROM enable",	2,					\
+	{"Disable", "Enable"} },										\
 };
 
 #endif /* CONFIG_CMD_BOARDCFG */

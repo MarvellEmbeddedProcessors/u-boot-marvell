@@ -188,17 +188,17 @@ extern "C" {
 /* common PHys Selectors register */
 #define COMM_PHY_SELECTOR_REG			0x183fc
 
-#ifdef CONFIG_ARMADA_38X
-#define COMPHY_SELECT_OFFS(x)			(x * 3)
-#define COMPHY_SELECT_MASK(x)			(0x07 << COMPHY_SELECT_OFFS(x))
-#define	PCIE0_X4_EN_OFFS			18
-#define	PCIE0_X4_EN_MASK			(1 << PCIE0_X4_EN_OFFS)
-#elif defined CONFIG_ARMADA_39X
-#define COMPHY_SELECT_OFFS(x)                   (x * 4)
-#define COMPHY_SELECT_MASK(x)                   (0x0F << COMPHY_SELECT_OFFS(x))
-#define PCIE0_X4_EN_OFFS                        31
-#define PCIE0_X4_EN_MASK                        (1 << PCIE0_X4_EN_OFFS)
-#endif
+/* A38X Z1 has different mapping of the COMPHY selector vs A38x A0 & A39X */
+#define COMPHY_SELECT_OFFS(laneNum)	((mvCtrlDevFamilyIdGet(0) == MV_88F68XX && \
+					mvCtrlRevGet() == MV_88F68XX_69XX_Z1_ID) ? \
+					(laneNum * 3) :  (laneNum * 4))
+#define COMPHY_SELECT_MASK(laneNum)	((mvCtrlDevFamilyIdGet(0) == MV_88F68XX && \
+					mvCtrlRevGet() == MV_88F68XX_69XX_Z1_ID) ? \
+					(0x07 << COMPHY_SELECT_OFFS(laneNum)) :  (0x0F << COMPHY_SELECT_OFFS(laneNum)))
+#define PCIE0_X4_EN_OFFS		((mvCtrlDevFamilyIdGet(0) == MV_88F68XX && \
+					mvCtrlRevGet() == MV_88F68XX_69XX_Z1_ID) ? \
+					(18) :  (31))
+#define PCIE0_X4_EN_MASK		(1 << PCIE0_X4_EN_OFFS)
 
 /******************/
 /* SATA registers */

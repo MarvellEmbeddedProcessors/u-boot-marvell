@@ -9,9 +9,8 @@ UPDATE NOR TO KEEP CURRENT THE INFORMATION CONTAINED IN THIS DOCUMENT.
 -----------------------------------------------------------------------
 [PROJECT]
 Target=JTAG CS/CS
-Template=true
 Version=2:2
 [SETTINGS]
-Global=-sync "Simulation"
-CS=-L "usb:" -rdf "~\SoC\rdf\PJ4B.RDF" -target scanchain=JTAG_CS_CS_dap4_jcs device=mjc
-CS$2=-L "usb:" -rdf "~\SoC\rdf\PJ4B.RDF" -target scanchain=JTAG_CS_CS_dap4_jcs device=mjc
+Global=-plg "./../plugin/common/vt100/vt100.dll " -B "./tools/marvell/debugger_scripts/XDB/startup.xdb" -sync "EctHardware" -W "/local/store/u-boot-14t3/u-boot"
+CS=-plg "./../plugin/arm/trace/etmtrace.dll " -L "tcp:127.0.0.1:3020:usb:" -smp "1" -target scanchain=JTAG_CS_CS_dap4_jcs_a3xx device=mjc
+CS$2=-plg "./../plugin/arm/trace/etmtrace.dll " -L "tcp:127.0.0.1:3020:usb:" -smp "1" -target scanchain=JTAG_CS_CS_dap4_jcs_a3xx hotdebug device=mjc

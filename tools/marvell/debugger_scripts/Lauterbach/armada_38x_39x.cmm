@@ -108,14 +108,23 @@ IF ("&runmode"=="ddr")
   IF ("&ddrbus"=="bootrom")
   (
 ;***************************************************************************************************************
-    Break.direct 0x40000000 /Write 	; Stop on L2 SRAM access
+    Break 0x40000000 /Write 	; Stop on L2 SRAM access
     GO					; Run the Bootrom
     WAIT !RUN()
     PRINT "Please select the bin_hdr.elf file location"
     D.LOAD ../../bin_hdr/*
+    ; The binary header is started by the following ASM code (bin_entry.s):
+    ; _start:
+    ;	push	{r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}
+    ;	blx	<mvBinHdrDispatcher>
+    ;	mov	r0, #0
+    ;	pop	{r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, pc}
+    ; Each of these commands is 4 bytes long, while PC is set to _start upon ELF load.
+    ; Therefore the end execution break point should be set to _start + 0xC (pop)
+    Break.Set Register(PC)+0xC          ; Stop at the end of BIN header execution
     GO					; Run the BIN header
-    WAIT 5.s
-    Break.Direct
+    WAIT  !RUN()
+    Break.Delete
     Per.Set C15:1 %LONG 0x00052078	; Disable MMU
     PRINT "Done, DRAM is ready"	; The u-boot can be loaded and executed
 ;***************************************************************************************************************

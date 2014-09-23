@@ -1116,7 +1116,7 @@ MV_U8 mvCtrlRevGet(MV_VOID)
 *******************************************************************************/
 MV_STATUS mvCtrlNameGet(char *pNameBuff)
 {
-	mvOsSPrintf(pNameBuff, "%s%x Rev %d", SOC_NAME_PREFIX, mvCtrlModelGet(), mvCtrlRevGet());
+	mvOsSPrintf(pNameBuff, "%s%x", SOC_NAME_PREFIX, mvCtrlModelGet());
 	return MV_OK;
 }
 
@@ -1145,6 +1145,39 @@ MV_U32 mvCtrlModelRevGet(MV_VOID)
 }
 
 /*******************************************************************************
+* mvCtrlRevNameGet - Get Marvell controller name
+*
+* DESCRIPTION:
+*       This function returns a string describing the revision id.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       pNameBuff - Buffer to contain revision name string. Minimum size 30 chars.
+*
+* RETURN:
+*
+*       MV_ERROR if informantion can not be read.
+*******************************************************************************/
+MV_VOID mvCtrlRevNameGet(char *pNameBuff)
+{
+	MV_U32 revId;
+	char *revArray[] = MV_88F68XX_69XX_ID_ARRAY;
+
+	revId = mvCtrlRevGet();
+
+	switch (revId) {
+	case MV_88F68XX_69XX_Z1_ID:
+	case MV_88F68XX_69XX_A0_ID:
+			mvOsSPrintf(pNameBuff, " Rev %s", revArray[revId]);
+			return;
+	default:
+		mvOsPrintf("%s: Error: Failed to read Revision ID\n", __func__);
+	}
+}
+
+/*******************************************************************************
 * mvCtrlModelRevNameGet - Get Marvell controller name
 *
 * DESCRIPTION:
@@ -1162,8 +1195,8 @@ MV_U32 mvCtrlModelRevGet(MV_VOID)
 *******************************************************************************/
 MV_STATUS mvCtrlModelRevNameGet(char *pNameBuff)
 {
-	/* mvCtrlModelRevGet(); */
 	mvCtrlNameGet(pNameBuff);
+	mvCtrlRevNameGet(pNameBuff + strlen(pNameBuff));
 	return MV_OK;
 }
 

@@ -312,6 +312,7 @@ extern unsigned int mvTclkGet(void);
 
 	#define CONFIG_SYS_MAX_NAND_DEVICE 1
 	#define CONFIG_CMD_NAND
+	#define CONFIG_CMD_NAND_TRIMFFS
 	#define CONFIG_MV_MTD_GANG_SUPPORT
 	#define CONFIG_MV_MTD_MLC_NAND_SUPPORT
 	#define CONFIG_SYS_64BIT_VSPRINTF

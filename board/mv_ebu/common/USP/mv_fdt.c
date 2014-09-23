@@ -115,12 +115,6 @@ void ft_board_setup(void *blob, bd_t *bd)
 	else
 		mv_fdt_debug = 0;
 
-	env = getenv("fdt_skip_update");
-	if (env && ((strncmp(env, "yes", 3) == 0))) {
-		printf("\n   Skipping device tree update ('fdt_skip_update' = yes)\n");
-		return;
-	}
-
 	/* Update dt information for all SoCs */
 	/* Update dt bootargs from commandline */
 	fdt_resize(blob);

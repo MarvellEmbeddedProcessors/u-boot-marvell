@@ -103,14 +103,23 @@ IF ("&runmode"=="ddr")
   IF ("&ddrbus"=="bootrom")
   (
 ;***************************************************************************************************************
-    Break.direct 0x40000000 /Write 	; Stop on L2 SRAM access
-    GO	 				; Run the Bootrom
+    Break 0x40000000 /Write 	; Stop on L2 SRAM access
+    GO					; Run the Bootrom
     WAIT !RUN()
     PRINT "Please select the bin_hdr.elf file location"
     D.LOAD ../../bin_hdr/*
+    ; The binary header is started by the following ASM code (bin_entry.s):
+    ; _start:
+    ;	push	{r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}
+    ;	blx	<mvBinHdrDispatcher>
+    ;	mov	r0, #0
+    ;	pop	{r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, pc}
+    ; Each of these commands is 4 bytes long, while PC is set to _start upon ELF load.
+    ; Therefore the end execution break point should be set to _start + 0xC (pop)
+    Break.Set Register(PC)+0xC          ; Stop at the end of BIN header execution
     GO					; Run the BIN header
-    WAIT 5.s
-    Break.Direct
+    WAIT  !RUN()
+    Break.Delete
     Per.Set C15:1 %LONG 0x00052078	; Disable MMU
     PRINT "Done, DRAM is ready"	; The u-boot can be loaded and executed
 ;***************************************************************************************************************
@@ -289,87 +298,87 @@ IF ("&runmode"=="ddr")
     Data.Set 0xD00200b0 %LONG 0x000f3b11
     ; Start DRAM init
     ;SDRAM_CONFIG_ADDR
-    Data.Set 0xd0001400 %LONG 0x7B00c820
+    Data.Set 0xD0001400 %LONG 0x7B00c820
     ;SDRAM_DUNIT_CTRL_LOW_ADDR
-    Data.Set 0xd0001404 %LONG 0x36301820
+    Data.Set 0xD0001404 %LONG 0x36301820
     ;SDRAM_TIMING_LOW_ADDR
-    Data.Set 0xd0001408 %LONG 0x33137772
+    Data.Set 0xD0001408 %LONG 0x33137772
     ;SDRAM_TIMING_HI_ADDR
-    Data.Set 0xd000140c %LONG 0x384019D5
+    Data.Set 0xD000140c %LONG 0x384019D5
     ;SDRAM_ADDR_CTRL_ADDR
-    Data.Set 0xd0001410 %LONG 0x10000000
-    Data.Set 0xd0001414 %LONG 0x00000700
+    Data.Set 0xD0001410 %LONG 0x10000000
+    Data.Set 0xD0001414 %LONG 0x00000700
     ;DDR_CONTROLLER_CTRL_HIGH
-    Data.Set 0xd0001424 %LONG 0x60F3FF
+    Data.Set 0xD0001424 %LONG 0x60F3FF
     ;DDR_CONTROLLER_CTRL_HIGH
-    Data.Set 0xd0001428 %LONG 0x000D6720
+    Data.Set 0xD0001428 %LONG 0x000D6720
     ;DDR ODT Timing (High) Register
-    Data.Set 0xd000147c %LONG 0x0000B571
+    Data.Set 0xD000147c %LONG 0x0000B571
     ;SDRAM_SRAM_ODT_CNTL_LOW
-    Data.Set 0xd0001494 %LONG 0x00030000
+    Data.Set 0xD0001494 %LONG 0x00030000
     ;SDRAM_ODT_CONTROL
-    Data.Set 0xd000149c %LONG 0x303
+    Data.Set 0xD000149c %LONG 0x303
     ;AXI Control Register
-    Data.Set 0xd00014a8 %LONG 0x0
+    Data.Set 0xD00014a8 %LONG 0x0
 
     ;Win 0 Control Register (This value will be writen by the bin header file to register 0x20184)
-    Data.Set 0xd0001504 %LONG 0x7FFFFFE1
+    Data.Set 0xD0001504 %LONG 0x7FFFFFE1
     ;Win 1 Control Register (This value will be writen by the bin header file to register 0x2018C)
-    Data.Set 0xd000150c %LONG 0x7FFFFFE5
+    Data.Set 0xD000150c %LONG 0x7FFFFFE5
     ;Win 2 Control Register (This value will be writen by the bin header file to register 0x20194)
-    Data.Set 0xd0001514 %LONG 0x0
+    Data.Set 0xD0001514 %LONG 0x0
     ;Win 3 Control Register (This value will be writen by the bin header file to register 0x2019C)
-    Data.Set 0xd000151c %LONG 0x0
+    Data.Set 0xD000151c %LONG 0x0
 
     ;Read Data Sample Delays Register
-    Data.Set 0xd0001538 %LONG 0x707
+    Data.Set 0xD0001538 %LONG 0x707
     ;Read Data Ready Delays Register
-    Data.Set 0xd000153c %LONG 0x707
+    Data.Set 0xD000153c %LONG 0x707
 
     ;DDR3 MR0 Register
-    Data.Set 0xd00015d0 %LONG 0x630
+    Data.Set 0xD00015d0 %LONG 0x630
     ;DDR3 MR1 Register
-    Data.Set 0xd00015d4 %LONG 0x46
+    Data.Set 0xD00015d4 %LONG 0x46
     ;DDR3 MR2 Register
-    Data.Set 0xd00015d8 %LONG 0x8
+    Data.Set 0xD00015d8 %LONG 0x8
     ;DDR3 MR3 Register
-    Data.Set 0xd00015dC %LONG 0x0
+    Data.Set 0xD00015dC %LONG 0x0
     ;DDR3 Rank Control Register
-    Data.Set 0xd00015e0 %LONG 0x1
+    Data.Set 0xD00015e0 %LONG 0x1
     ;ZQC Configuration Register
-    Data.Set 0xd00015e4 %LONG 0x203C18
+    Data.Set 0xD00015e4 %LONG 0x203C18
 
     ;DRAM PHY Configuration Register
-    Data.Set 0xd00015ec %LONG 0xF8000025
+    Data.Set 0xD00015ec %LONG 0xF8000025
 
     ;DRAM address and Control Driving Strenght
-    Data.Set 0xd00014c0 %LONG 0x192434E9
+    Data.Set 0xD00014c0 %LONG 0x192434E9
     ;DRAM Data and DQS Driving Strenght
-    Data.Set 0xd00014c4 %LONG 0x192434E9
+    Data.Set 0xD00014c4 %LONG 0x192434E9
 
     ;Enable DDR
-    Data.Set 0xd0001480 %LONG 0x1
+    Data.Set 0xD0001480 %LONG 0x1
 
     ; Set Dram size 256MB for FPGA (only if using XBAR)
-    Data.Set 0xd0008c04 %LONG 0x3fff0000
+    Data.Set 0xD0008c04 %LONG 0x3fff0000
 
     ;set ddr_phy width
-    Data.Set 0xd00014a8 %LONG 0x00000000
-    Data.Set 0xd0020184 %LONG 0x1fFFFFE1
+    Data.Set 0xD00014a8 %LONG 0x00000000
+    Data.Set 0xD0020184 %LONG 0x1fFFFFE1
 
     ;FASTPASS- close XBAR window 19 (set BIT0=0 - Disabled DDR window enabled in default)
-    Data.Set 0xd00200e8 %LONG 0x0fff0e00
+    Data.Set 0xD00200e8 %LONG 0x0fff0e00
 
     ; training
-    Data.Set 0xd00015B0 %LONG 0x80100008
+    Data.Set 0xD00015B0 %LONG 0x80100008
     WAIT 1.s
 
     ; training
-    Data.Set 0xd00015B0 %LONG 0x80100010
+    Data.Set 0xD00015B0 %LONG 0x80100010
     WAIT 1.s
 
     ; training
-    Data.Set 0xd00015B0 %LONG 0x80100040
+    Data.Set 0xD00015B0 %LONG 0x80100040
     WAIT 1.s
 
     ; End DRAM init

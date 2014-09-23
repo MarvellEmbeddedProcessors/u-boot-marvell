@@ -305,6 +305,42 @@ MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_EEPROM_CONFIG_INFO;
 MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 
 /*******************************************************************************
+* mvSysEnvConfigTypeGet
+*
+* DESCRIPTION:
+*       Return the Config type fields information for a given Config type class.
+*
+* INPUT:
+*       configClass - The Config type field to return the information for.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_BOARD_CONFIG_TYPE_INFO struct with mask, offset and register number.
+*
+*******************************************************************************/
+static MV_BOOL mvSysEnvConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo)
+{
+	int i;
+	MV_U32 boardId = mvBoardIdIndexGet(mvBoardIdGet());
+
+	/* verify existence of requested config type, pull its data,
+	 * and check if field is relevant to current running board */
+	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION ; i++)
+		if (boardConfigTypesInfo[i].configId == configClass) {
+			*configInfo = boardConfigTypesInfo[i];
+			if (boardConfigTypesInfo[i].isActiveForBoard[boardId])
+				return MV_TRUE;
+			else
+				return MV_FALSE;
+		}
+
+	DEBUG_INIT_FULL_S("mvSysEnvConfigTypeGet: Error: requested MV_CONFIG_TYPE_ID was not found\n");
+	return MV_FALSE;
+}
+
+/*******************************************************************************
 * mvSysEnvEpromRead -
 *
 * DESCRIPTION:
@@ -336,14 +372,56 @@ static MV_STATUS mvSysEnvEpromRead(MV_U8 byteNum, MV_U32 *pData, MV_U32 byteCnt,
 	for ( i = 0 ; i < byteCnt; i++) {
 		twsiSlave.offset = byteNum + i;
 		if (mvTwsiRead(0, &twsiSlave, &readVal, 1) != MV_OK) {
-			DEBUG_INIT_S("mvSysEnvEepromInit: Error: Read pattern from EEPROM failed\n");
-			return MV_ERROR;
+			DEBUG_INIT_S("mvSysEnvEepromRead: Error: Read pattern from EEPROM failed\n");
+			return MV_FAIL;
 		}
 		readVal = MV_32BIT_LE_FAST(readVal);
-		(*pData) |= (readVal & 0x000000FF) << (32 - 8*(i+1));
+		(*pData) |= (readVal & 0x000000FF) << (8*byteCnt - 8*(i+1));
 		readVal = 0x0;
 	}
 
+	return MV_OK;
+}
+
+/*******************************************************************************
+* mvSysEnvEpromWrite -
+*
+* DESCRIPTION:
+*       routine to write more that 1 byte to EEPROM
+* INPUT:
+*       byteNum - byteNumber to write
+*       byteCnt - how many bytes to read/write
+*       pData - pointer for 32bit
+*
+* OUTPUT:
+*               None.
+*
+* RETURN:
+*               returns MV_OK on success, MV_ERROR on failure.
+*
+*******************************************************************************/
+static MV_STATUS mvSysEnvEpromWrite(MV_U8 byteNum, MV_U32 *pData, MV_U32 byteCnt, MV_U8 addr)
+{
+	MV_TWSI_SLAVE twsiSlave;
+	MV_U32 i;
+	MV_U8 writeVal;
+
+	twsiSlave.slaveAddr.address = addr;
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.moreThen256 = MV_TRUE;
+
+	for (i = 0 ; i < byteCnt ; i++) {
+		twsiSlave.offset = byteNum + i;
+		writeVal = (*pData >> (8*i)) & 0xFF;
+		if (mvTwsiWrite(0, &twsiSlave, &writeVal, 1) != MV_OK) {
+			DEBUG_INIT_S("mvSysEnvEpromWrite: Error: write data to EEPROM failed\n");
+			return MV_ERROR;
+		}
+		/* add delay to wait for the bus to be ready. */
+		/* this is a temporary delay which will be removed once twsi bugs will be fixed */
+		mvOsUDelay(5000);
+	}
 	return MV_OK;
 }
 
@@ -412,22 +490,58 @@ static MV_STATUS mvSysEnvTwsiProbe(MV_U32 chip)
 *       MV_BOOL :  MV_TRUE if EEPROM exists, else return MV_FALSE.
 *
 *******************************************************************************/
-static MV_BOOL mvSysEnvIsEepromEnabled(void)
+static MV_STATUS mvSysEnvIsEepromEnabled(void)
 {
 	MV_U8 addr = MV_INFO_TWSI_EEPROM_DEV;
-
-	/* TBD - check if jumper exists */
-	/* by default EEPROM is enabled */
-	DEBUG_INIT_FULL_S("mvSysEnvIsEepromEnabled: EEPROM Jumper is enabled\n");
 
 	DEBUG_INIT_FULL_S("mvSysEnvIsEepromEnabled probing for i2c chip 0x");
 	DEBUG_INIT_FULL_D(addr, 2);
 	DEBUG_INIT_FULL_S("\n");
 
 	if (mvSysEnvTwsiProbe((MV_U32)addr) == MV_TRUE)
-		return MV_TRUE;  /* EEPROM enabled */
+		return MV_OK;  /* EEPROM enabled */
 	else
-		return MV_FALSE; /* EEPROM disabled */
+		return MV_FAIL; /* EEPROM disabled */
+}
+
+/*******************************************************************************
+* mvSysEnvEpromReset - reset EEPROM to default content.
+*
+* DESCRIPTION:
+*       This function resets the EEPROM content. used for first board boot.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_OK if EEPROM is reset, else return MV_FAIL.
+*
+*******************************************************************************/
+static MV_STATUS mvSysEnvEpromReset(void)
+{
+	MV_U32 data[2] = MV_BOARD_CONFIG_DEFAULT_VALUE;
+	MV_U32 i;
+
+	/* write default configuration to the EEPROM */
+	for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4 ; i++) {
+		data[i] = MV_BYTE_SWAP_32BIT(data[i]);
+		if (mvSysEnvEpromWrite(i * 4, &data[i], 4, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+			DEBUG_INIT_S("mvSysEnvEpromReset: Error: Write default configuration to EEPROM failed\n");
+			return MV_FAIL;
+		}
+	}
+
+	/* write magic pattern to the EEPROM */
+	data[0] = MV_BYTE_SWAP_32BIT(EEPROM_VERIFICATION_PATTERN);
+	if (mvSysEnvEpromWrite(MV_BOARD_CONFIG_PATTERN_OFFSET, &data[0], 4, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+		DEBUG_INIT_S("mvSysEnvEpromReset: failed to write magic pattern to EEPROM\n");
+		return MV_FAIL;
+	}
+
+	return MV_OK;
 }
 
 /*******************************************************************************
@@ -436,8 +550,11 @@ static MV_BOOL mvSysEnvIsEepromEnabled(void)
 * DESCRIPTION:
 *       Verify if the EEPROM have been initialized:
 *       EEPROM expected mapping:
-*       [0x0-0x7](64bits) - board configuration
-*       [0x8-0xB](32bits) - pattern
+*       [0x0-0x7](64bits) - board configuration section 1
+*       [0x8-0xF](64bits) - board configuration section 2
+*	[0x10-0x13](32bit) - board configuration internal data
+*			     offset 0x13,  bits 0:1 - board configuration valid counter.
+*	[0x14-0x17](32bit) - magic pattern
 * INPUT:
 *       None
 *
@@ -450,61 +567,105 @@ static MV_BOOL mvSysEnvIsEepromEnabled(void)
 *******************************************************************************/
 static MV_STATUS mvSysEnvEepromInit(void)
 {
-	MV_U32 pattern = 0;
+	MV_U32 data = 0;
+	MV_U32 validCount = 0;
+	MV_BOARD_CONFIG_TYPE_INFO configEnableInfo;
+	MV_BOARD_CONFIG_TYPE_INFO configValidInfo;
 
-	if (mvSysEnvIsEepromEnabled() != MV_TRUE) {
+	/* check if EEPROM is enabled */
+	if (mvSysEnvIsEepromEnabled() != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvEepromInit: EEPROM doesn't exists on board\n");
-		return MV_ERROR;
+		return MV_FAIL;
 	}
 
-	/* verify EEPROM: read 4 bytes at byte number 0x8 (read magic pattern) */
-	if (mvSysEnvEpromRead(8, &pattern, 4, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
-		DEBUG_INIT_S("mvSysEnvEepromInit: Error: Read pattern from EEPROM failed\n");
-		return MV_ERROR;
+	/* check for EEPROM pattern to see if this is the board's first boot */
+	if (mvSysEnvEpromRead(MV_BOARD_CONFIG_PATTERN_OFFSET, &data, 4, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+		DEBUG_INIT_S("mvSysEnvEepromInit: Error: read pattern from EEPROM failed.\n");
+		return MV_FAIL;
 	}
 
-	/* If EEPROM is initialized with magic pattern, continue and exit*/
-	if (pattern == EEPROM_VERIFICATION_PATTERN)
+	/* if the magic pattern was not found, reset the EEPROM to default configuration. */
+	if (data != EEPROM_VERIFICATION_PATTERN) {
+		DEBUG_INIT_S("mvSysEnvEepromInit: First init of the board. loadind default configuration\n");
+		if (mvSysEnvEpromReset() != MV_OK) {
+			DEBUG_INIT_S("mvSysEnvEepromInit: Error: failed resetting EEPROM\n");
+			return MV_FAIL;
+		}
 		return MV_OK;
+	}
 
-	DEBUG_INIT_S("\nmvSysEnvEepromInit: first use of EEPROM\n");
-	return MV_ERROR;
-}
+	if (mvSysEnvConfigTypeGet(MV_CONFIG_BOARDCFG_EN, &configEnableInfo) != MV_TRUE)
+		return MV_FAIL;
 
-/*******************************************************************************
-* mvSysEnvConfigTypeGet
-*
-* DESCRIPTION:
-*       Return the Config type fields information for a given Config type class.
-*
-* INPUT:
-*       configClass - The Config type field to return the information for.
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       MV_BOARD_CONFIG_TYPE_INFO struct with mask, offset and register number.
-*
-*******************************************************************************/
-static MV_BOOL mvSysEnvConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE_INFO *configInfo)
-{
-	int i;
-	MV_U32 boardId = mvBoardIdIndexGet(mvBoardIdGet());
+	/* the folowing formula is used to calculate the byte offset in the EEPROM according
+	   to the byte number and bit offset as they are defined in the config info table. */
+	configEnableInfo.offset = CALC_BYTE_OFFSET(configEnableInfo.offset, configEnableInfo.byteNum);
 
-	/* verify existence of requested config type, pull its data,
-	 * and check if field is relevant to current running board */
-	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION ; i++)
-		if (boardConfigTypesInfo[i].configId == configClass) {
-			*configInfo = boardConfigTypesInfo[i];
-			if (boardConfigTypesInfo[i].isActiveForBoard[boardId])
-				return MV_TRUE;
-			else
-				return MV_FALSE;
+	/* check if board auto configuration is enabled */
+	if (mvSysEnvEpromRead(configEnableInfo.offset, &data, 1, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+		DEBUG_INIT_S("mvSysEnvEepromInit: Error: read data from EEPROM failed.\n");
+		return MV_FAIL;
+	}
+
+	/* if board auto configuration is disabled, return MV_ERROR to load default configuration */
+	if ((data & configEnableInfo.mask) == 0x0) {
+		DEBUG_INIT_S("mvSysEnvEepromInit: board auto configuration is not enabled.\n");
+		return MV_FAIL;
+	}
+
+	if (mvSysEnvConfigTypeGet(MV_CONFIG_BOARDCFG_VALID, &configValidInfo) != MV_TRUE)
+		return MV_FAIL;
+
+	/* the folowing formula is used to calculate the byte offset in the EEPROM according
+	   to the byte number and bit offset as they are defined in the config info table. */
+	configValidInfo.offset = CALC_BYTE_OFFSET(configValidInfo.offset, configValidInfo.byteNum);
+
+	/* board configuration is enabled. */
+	/* bits 0&1 in offset 11 in the EEPROM are used as counters for board configuration validation.
+	   each load of the board by EEPROM configuration, the counter is incremented, and when
+	   it reaches 3 times, the configuration is set to default */
+	if (mvSysEnvEpromRead(configValidInfo.offset, &data, 1, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+		DEBUG_INIT_S("mvSysEnvEepromInit: Error: read data from EEPROM failed.");
+		return MV_FAIL;
+	}
+
+	validCount = (data & configValidInfo.mask);
+
+	/* if the valid counter has reached 3, reset the counter, disable the board auto configuration
+	   enable bit, and return MV_FAIL to load default configuration. */
+	if (validCount == 3) {
+		DEBUG_INIT_S("mvSysEnvEepromInit: board configuration from the EEPROM is not valid\n");
+
+		/* reset the valid counter to 0 */
+		data &= ~configValidInfo.mask;
+		if (mvSysEnvEpromWrite(configValidInfo.offset, &data, 1, MV_INFO_TWSI_EEPROM_DEV) != MV_OK)
+			DEBUG_INIT_S("mvSysEnvEepromInit: write data to EEPROM failed.\n");
+
+		if (mvSysEnvEpromRead(configEnableInfo.offset, &data, 1, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+			DEBUG_INIT_S("mvSysEnvEepromInit: Error: read data from EEPROM failed.");
+			return MV_FAIL;
 		}
 
-	DEBUG_INIT_FULL_S("mvSysEnvConfigTypeGet: Error: requested MV_CONFIG_TYPE_ID was not found\n");
-	return MV_FALSE;
+		/* disable the board auto config */
+		DEBUG_INIT_S("mvSysEnvEepromInit: Disable board config.\n");
+		data &= ~configEnableInfo.mask;
+		if (mvSysEnvEpromWrite(configEnableInfo.offset, &data, 1, MV_INFO_TWSI_EEPROM_DEV) != MV_OK)
+			DEBUG_INIT_S("mvSysEnvEepromInit: write data to EEPROM failed.\n");
+
+		return MV_FAIL;
+	}
+
+	/* incremeant the valid counter by 1, and return MV_OK to load configuration from the EEPROM */
+	validCount++;
+	data &= ~configValidInfo.mask;
+	data |= (validCount);
+
+	if (mvSysEnvEpromWrite(configValidInfo.offset, &data, 1, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+		DEBUG_INIT_S("mvSysEnvEepromInit: write data to EEPROM failed.\n");
+		return MV_FAIL;
+	}
+
+	return MV_OK;
 }
 
 /*******************************************************************************
@@ -530,6 +691,7 @@ MV_STATUS mvSysEnvConfigInit(void)
 	MV_U32 configVal[2] = MV_BOARD_CONFIG_DEFAULT_VALUE;
 	MV_BOARD_CONFIG_TYPE_INFO configInfo;
 	MV_BOOL readSuccess = MV_FALSE, readFlagError = MV_TRUE;
+	MV_STATUS res;
 
 	if (flagConfigInit != -1)
 		return MV_OK;
@@ -537,20 +699,18 @@ MV_STATUS mvSysEnvConfigInit(void)
 	flagConfigInit = 1;
 
 	/* Read Board Configuration*/
-	if (mvSysEnvEepromInit() != MV_OK) {
-		DEBUG_INIT_S("mvSysEnvConfigInit: Error: mvSysEnvEepromInit failed\n");
-		readFlagError = MV_FALSE;
+	res = mvSysEnvEepromInit();
+	if (res == MV_OK) {
+		/* Read configuration data: 1st 8 bytes in  EEPROM, (read twice: each read of 4 bytes(32bit)) */
+		for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4 ; i++)
+			if (mvSysEnvEpromRead(i * 4, &configVal[i], 4, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+				DEBUG_INIT_S("mvSysEnvConfigInit: Error: Read board configuration from EEPROM failed\n");
+				readFlagError = MV_FALSE;
+			}
 	}
-
-	/* Read configuration data: 1st 8 bytes in  EEPROM, (read twice: each read of 4 bytes(32bit)) */
-	for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4 ; i++)
-		if (mvSysEnvEpromRead(i * 4, &configVal[i], 4, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
-			DEBUG_INIT_S("mvSysEnvConfigInit: Error: Read pattern from EEPROM failed\n");
-			readFlagError = MV_FALSE;
-		}
-
-	if (readFlagError == MV_FALSE) {
-		DEBUG_INIT_S("mvSysEnvConfigInit: Warning Failed to init/read from EEPROM, set default configurations\n");
+	/* if mvSysEnvEepromInit or the EEPROM reading fails, load default configuration. */
+	if ((res != MV_OK) || (readFlagError == MV_FALSE)) {
+		DEBUG_INIT_S("mvSysEnvConfigInit: Setting default configurations\n");
 		for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4; i++)
 			configVal[i] = defaultVal[i];
 	}

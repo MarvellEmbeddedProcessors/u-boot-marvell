@@ -329,7 +329,7 @@ MV_BOARD_INFO db88f69xx_board_info = {
 	.norFlashWriteParams		= DB_88F69XX_BOARD_NOR_WRITE_PARAMS,
 
 	/* Enable modules auto-detection. */
-	.configAutoDetect		= MV_FALSE,
+	.configAutoDetect		= MV_TRUE,
 	.numIoExp			= 0,
 	.pIoExp				= NULL,
 	.boardOptionsModule		= MV_MODULE_NO_MODULE

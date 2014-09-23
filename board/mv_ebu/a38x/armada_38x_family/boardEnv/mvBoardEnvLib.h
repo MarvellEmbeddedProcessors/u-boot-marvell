@@ -84,7 +84,7 @@ extern "C" {
 #include "boardEnv/mvBoardEnvLib39x.h"
 #endif
 
-#define EEPROM_VERIFICATION_PATTERN     0xfadecafe
+#define MV_BOARD_CONFIG_VALID_OFFSET	0x13
 
 #define ARRSZ(x)                (sizeof(x) / sizeof(x[0]))
 #define BOARD_ETH_SWITCH_PORT_NUM       7
@@ -94,6 +94,11 @@ extern "C" {
 #define MV_BOARD_MPP_GROUPS_MAX_TYPES   8
 #define MV_BOARD_NAME_LEN               0x20
 #define MV_A38X_Z_REV_BOARDID_I2C_ADDR	0x50
+
+/* the following definition is used to calculate a byte offset in the
+   EEPROM according to byte number and bit offset, as they are stored
+   in MV_EEPROM_CONFIG_INFO */
+#define CALC_BYTE_OFFSET(off, byte) ((4 - ((off / 8) + 1)) + byte)
 
 typedef enum _devBoardOtherTypeClass {
 	MV_BOARD_NONE		= 0x00000000,
@@ -573,6 +578,7 @@ MV_STATUS mvBoardEepromWrite(MV_CONFIG_TYPE_ID configType, MV_U8 value);
 MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal);
 MV_U32 mvBoardSysConfigGet(MV_CONFIG_TYPE_ID configField);
 MV_STATUS mvBoardSysConfigSet(MV_CONFIG_TYPE_ID configField, MV_U8 value);
+void mvBoardEepromValidSet(void);
 #endif /* CONFIG_CMD_BOARDCFG */
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
 

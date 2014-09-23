@@ -61,6 +61,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 #include "mvHighSpeedTopologySpec.h"
+#include "config_marvell.h"
 #include "mvSysEnvLib.h"
 #include "printf.h"
 

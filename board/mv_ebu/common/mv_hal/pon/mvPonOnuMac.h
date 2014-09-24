@@ -589,6 +589,11 @@ void      mvOnuGponMacFifoSupportSet(MV_32 value);
 #define PPV2_PON_FEC_TX_DESC_SET                        (1)
 #define PPV2_PON_FEC_TX_DESC_CLR                        (0)
 
+/* EPON RX timestamp  */
+#define EPON_RX_TIMESTAMP_SELECT            (1)
+#define EPON_RX_TIMESTAMP_SIGN_SUB          (0)
+#define EPON_RX_TIMESTAMP_OFFSET            (0x22C) /* The value after testing */
+
 /* Global functions
    ------------------------------------------------------------------------------*/
 

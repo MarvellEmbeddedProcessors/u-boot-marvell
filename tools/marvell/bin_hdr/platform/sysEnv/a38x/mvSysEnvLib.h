@@ -174,6 +174,8 @@
 #define MV_MAX_MARVELL_BOARD_ID		(MARVELL_BOARD_ID_BASE + 4)
 #define MV_MARVELL_BOARD_NUM		(MV_MAX_MARVELL_BOARD_ID - MARVELL_BOARD_ID_BASE)
 
+#define DB_69XX_ID			    (MARVELL_BOARD_ID_BASE + 0)
+
 #define MV_INVALID_BOARD_ID		0xFFFFFFFF
 
 /* device ID */
@@ -212,12 +214,18 @@ typedef struct boardWakeupGPIO {
 
 #else
 
+#ifdef MV88F68XX
 #define MV_BOARD_WAKEUP_GPIO_INFO {\
 {RD_NAS_68XX_ID, -2 },\
 {DB_68XX_ID,	 -1 },\
 {RD_AP_68XX_ID,	 -2 },\
 {DB_AP_68XX_ID,	 21 },\
 };
+#else
+#define MV_BOARD_WAKEUP_GPIO_INFO {\
+{DB_69XX_ID, -1 },\
+};
+#endif
 #endif
 /**************************************************************************
  * mvBoardTclkGet -

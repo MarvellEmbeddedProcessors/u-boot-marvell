@@ -89,8 +89,8 @@ MV_DRAM_MODES ddr_modes[] =
 #ifdef SUPPORT_STATIC_DUNIT_CONFIG
 /*	Conf name		CPUFreq	     FabFreq   Chip ID		Chip/Board		MC regs*/
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-	{"a38x_customer_0_800",	DDR_FREQ_800,	0,	0x0,	ARMADA_38x_CUSTOMER_BOARD_ID0,	ddr3_customer_800},
-	{"a38x_customer_1_800",	DDR_FREQ_800,	0,	0x0,	ARMADA_38x_CUSTOMER_BOARD_ID1,	ddr3_customer_800},
+	{"a38x_customer_0_800",	DDR_FREQ_800,	0,	0x0,	A38X_CUSTOMER_BOARD_ID0,	ddr3_customer_800},
+	{"a38x_customer_1_800",	DDR_FREQ_800,	0,	0x0,	A38X_CUSTOMER_BOARD_ID1,	ddr3_customer_800},
 #else
 	{"a38x_533",		DDR_FREQ_533,	0,	0x0,		MARVELL_BOARD,		ddr3_a38x_533},
 	{"a38x_667",		DDR_FREQ_667,	0,	0x0,		MARVELL_BOARD,		ddr3_a38x_667},

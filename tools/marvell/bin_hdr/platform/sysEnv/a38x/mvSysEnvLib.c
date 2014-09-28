@@ -60,6 +60,7 @@
    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
+#include "config_marvell.h"     /* Required to identify SOC and Board */
 #include "mv_os.h"
 #include "mvSysEnvLib.h"
 #include "bin_hdr_twsi.h"
@@ -79,9 +80,9 @@ MV_U32 mvBoardIdGet(MV_VOID)
 
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 	#ifdef CONFIG_CUSTOMER_BOARD_0
-		gBoardId = ARMADA_38x_CUSTOMER_BOARD_ID0;
+		gBoardId = CUSTOMER_BOARD_ID0;
 	#elif CONFIG_CUSTOMER_BOARD_1
-		gBoardId = ARMADA_38x_CUSTOMER_BOARD_ID1;
+		gBoardId = CUSTOMER_BOARD_ID1;
 	#endif
 #else
 	/* For Marvell Boards: read board ID from TWSI*/
@@ -114,8 +115,8 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	else {
 		DEBUG_INIT_S("mvHwsBoardTopologyLoad: board id 0x");
 		DEBUG_INIT_FULL_D(boardId, 8);
-		DEBUG_INIT_S("is out of range. Using default board ID (DB-88F6820-BP)\n");
-		gBoardId = DB_68XX_ID;
+		DEBUG_INIT_S("is out of range. Using default board ID\n");
+		gBoardId = MV_DEFAULT_BOARD_ID;
 	}
 #endif
 	return gBoardId;
@@ -140,7 +141,7 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
 {
 /* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
-	return boardId & (MARVELL_BOARD_ID_BASE - 1);
+	return boardId & (MARVELL_BOARD_ID_MASK - 1);
 }
 
 /* Use flagTwsiInit global flag to init the Twsi once */

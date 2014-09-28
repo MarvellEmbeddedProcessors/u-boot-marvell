@@ -161,6 +161,7 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray);
 loadTopologyFuncPtr loadTopologyFuncArr[] =
 {
 	loadTopologyDB,		/* DB */
+	loadTopologyDB,		/* DB */
 };
 
 /*********************************** Globals **********************************/

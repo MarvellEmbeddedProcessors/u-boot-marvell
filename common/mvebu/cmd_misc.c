@@ -20,6 +20,7 @@
 #include <config.h>
 #include <common.h>
 #include <command.h>
+#include <cli.h>
 
 #include <asm/io.h>
 #include <asm/arch-mvebu/adec.h>
@@ -144,7 +145,7 @@ int ir_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			printf("-");
 	}
 
-	readline("\nNEW: ");
+	cli_readline("\nNEW: ");
 	strcpy(cmd, console_buffer);
 	if ((cmd[0] == '0') && (cmd[1] == 'x')) {
 		reg = simple_strtoul(cmd, NULL, 16);

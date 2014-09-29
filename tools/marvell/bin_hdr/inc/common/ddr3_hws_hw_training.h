@@ -37,6 +37,27 @@ typedef struct __mvDramDLBConfig {
 	MV_U32 regData;
 } MV_DRAM_DLB_CONFIG;
 
+/*Topology update structure*/
+typedef struct topologyUpdateInfo{
+	MV_BOOL 	mvUpdateECC;
+	MV_U8 		mvECC;
+	MV_BOOL 	mvUpdateWidth;
+	MV_U8 		mvWidth;
+} MV_TOPOLOGY_UPDATE_INFO;
+
+/*Topology update defines*/
+#define MV_TOPOLOGY_UPDATE_WIDTH_16BIT 			1
+#define MV_TOPOLOGY_UPDATE_WIDTH_32BIT 			0
+#define MV_TOPOLOGY_UPDATE_WIDTH_ALL_BIT_MASK	0xF
+#define MV_TOPOLOGY_UPDATE_WIDTH_32BIT_MASK		0xF
+#define MV_TOPOLOGY_UPDATE_WIDTH_16BIT_MASK		0x3
+
+#define MV_TOPOLOGY_UPDATE_ECC_ON				1
+#define MV_TOPOLOGY_UPDATE_ECC_OFF				0
+#define MV_TOPOLOGY_UPDATE_ECC_OFFSET			4
+
+
+
 #define SUB_VERSION	0
 
 #endif /* _DDR3_HWS_HW_TRAINING_H */

@@ -375,7 +375,7 @@ MV_U32 ddr3Init(void)
 
 	mvPrintf("%s Training Sequence - Ended Successfully\n", ddrType);
 
-#if defined(MV88F68XX) || defined(MV88F69XX)
+#if defined(ECC_SUPPORT)
 	if( MV_TRUE == ddr3IfEccEnabled()){
 		ddr3NewTipEccScrub();
 	}
@@ -701,50 +701,25 @@ MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize){
  */
 static MV_STATUS ddr3UpdateTopologyMap(MV_HWS_TOPOLOGY_MAP* topologyMap)
 {
-	MV_U8	configVal;
-	MV_TWSI_SLAVE twsiSlave;
-	/*Fix the topology for A380 by SatR values*/
-	twsiSlave.slaveAddr.address = 0x50;
-	twsiSlave.slaveAddr.type = ADDR7_BIT;
-	twsiSlave.validOffset = MV_TRUE;
-	twsiSlave.offset = 0;
-	twsiSlave.moreThen256 = MV_TRUE;
+	MV_TOPOLOGY_UPDATE_INFO topologyUpdateInfo;
 
-	/* Reading board id */
-	if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
-		DEBUG_INIT_S("mvHwsBoardIdGet: TWSI Read failed\n");
-		return MV_FAIL;
+	topologyUpdateInfo.mvUpdateWidth = MV_FALSE;
+	topologyUpdateInfo.mvUpdateWidth = MV_FALSE;
+	mvSysEnvGetTopologyUpdateInfo(&topologyUpdateInfo);
+
+	if(topologyUpdateInfo.mvUpdateECC == MV_TRUE)
+	{
+		topologyMap->activeBusMask &= ~(1<<MV_TOPOLOGY_UPDATE_ECC_OFFSET);
+		topologyMap->activeBusMask |= topologyUpdateInfo.mvECC << MV_TOPOLOGY_UPDATE_ECC_OFFSET;
 	}
 
-	/*Read 3 bits, 0 is 16/32 mode, 1 is ECC mode, 2 is special ECC mode*/
-	switch( (configVal & DDR_SATR_CONFIG_MASK) >> DDR_SATR_CONFIG_OFFSET ){
-		case DDR_SATR_16BIT_VALUE:
-			topologyMap->activeBusMask = BUS_MASK_16BIT;
-			break;
-		case DDR_SATR_16BIT_NOT_VALID_ECC_VALUE:
-			topologyMap->activeBusMask = BUS_MASK_16BIT;
-			DEBUG_INIT_S("The ECC DRAM mode not valid, configured 16bit mode no ECC\n");
-			break;
-		case DDR_SATR_16BIT_ECC_PUP3_VALUE:
-		case DDR_SATR_16BIT_ECC_PUP4_VALUE:
-			topologyMap->activeBusMask = BUS_MASK_16BIT;
-			DEBUG_INIT_S("The ECC DRAM mode not supported, ECC disabled for 16bit mode\n");
-			break;
-
-		case DDR_SATR_32BIT_VALUE:
-			topologyMap->activeBusMask = BUS_MASK_32BIT;
-			break;
-		case DDR_SATR_32BIT_ECC_VALUE:
-			topologyMap->activeBusMask = BUS_MASK_32BIT;
-			DEBUG_INIT_S("The ECC DRAM mode not supported, ECC disabled for 32bit mode\n");
-			break;
-		case DDR_SATR_32BIT_NOT_VALID_NO_ECC_VALUE:
-		case DDR_SATR_32BIT_NOT_VALID_ECC_VALUE:
-			topologyMap->activeBusMask = BUS_MASK_32BIT;
-			DEBUG_INIT_S("The ECC DRAM mode not valid, configured 32bit mode no ECC\n");
-			break;
-		default:
-			break;
+	if(topologyUpdateInfo.mvUpdateWidth == MV_TRUE)
+	{
+		topologyMap->activeBusMask &= ~(MV_TOPOLOGY_UPDATE_WIDTH_ALL_BIT_MASK);
+		if(topologyUpdateInfo.mvWidth == MV_TOPOLOGY_UPDATE_WIDTH_16BIT)
+			topologyMap->activeBusMask |= MV_TOPOLOGY_UPDATE_WIDTH_16BIT_MASK;
+		else
+			topologyMap->activeBusMask |= MV_TOPOLOGY_UPDATE_WIDTH_32BIT_MASK;
 	}
 
 	return MV_OK;

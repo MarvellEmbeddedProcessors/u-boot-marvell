@@ -68,6 +68,7 @@
 #include "util.h"
 #include "mv_seq_exec.h"
 #include "printf.h"
+#include "ddr3_a38x.h"
 
 #ifdef WIN32
 #define mvPrintf    printf
@@ -761,3 +762,73 @@ MV_U32 mvSysEnvConfigGet(MV_CONFIG_TYPE_ID configField)
 }
 
 #endif /* CONFIG_CMD_BOARDCFG */
+
+/*******************************************************************************
+* mvSysEnvGetTopologyUpdateInfo
+*
+* DESCRIPTION: Read TWSI fields to update DDR topology structure
+*
+* INPUT: None
+*
+* OUTPUT: None, 0 means no topology update
+*
+* RETURN:
+*       Bit mask of changes topology features
+*
+*******************************************************************************/
+MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo)
+{
+	MV_U8	configVal;
+	MV_TWSI_SLAVE twsiSlave;
+	/*Fix the topology for A380 by SatR values*/
+	twsiSlave.slaveAddr.address = 0x50;
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.offset = 0;
+	twsiSlave.moreThen256 = MV_TRUE;
+
+	/* Reading board id */
+	if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
+		DEBUG_INIT_S("mvHwsBoardIdGet: TWSI Read failed\n");
+		return 0;
+	}
+
+	/*Read 3 bits, 0 is 16/32 mode, 1 is ECC mode, 2 is special ECC mode*/
+	switch( (configVal & DDR_SATR_CONFIG_MASK) >> DDR_SATR_CONFIG_OFFSET ){
+		case DDR_SATR_16BIT_VALUE:
+			topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
+			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_16BIT;
+			break;
+		case DDR_SATR_16BIT_NOT_VALID_ECC_VALUE:
+			topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
+			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_16BIT;
+			DEBUG_INIT_S("The ECC DRAM mode not valid, configured 16bit mode no ECC\n");
+			break;
+		case DDR_SATR_16BIT_ECC_PUP3_VALUE:
+		case DDR_SATR_16BIT_ECC_PUP4_VALUE:
+			topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
+			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_16BIT;
+			DEBUG_INIT_S("The ECC DRAM mode not supported, ECC disabled for 16bit mode\n");
+			break;
+
+		case DDR_SATR_32BIT_VALUE:
+			topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
+			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_32BIT;
+			break;
+		case DDR_SATR_32BIT_ECC_VALUE:
+			topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
+			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_32BIT;
+			DEBUG_INIT_S("The ECC DRAM mode not supported, ECC disabled for 32bit mode\n");
+			break;
+		case DDR_SATR_32BIT_NOT_VALID_NO_ECC_VALUE:
+		case DDR_SATR_32BIT_NOT_VALID_ECC_VALUE:
+			topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
+			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_32BIT;
+			DEBUG_INIT_S("The ECC DRAM mode not valid, configured 32bit mode no ECC\n");
+			break;
+		default:
+			break;
+	}
+	return MV_OK;
+}
+

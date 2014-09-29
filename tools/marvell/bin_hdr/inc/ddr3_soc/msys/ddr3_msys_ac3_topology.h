@@ -61,7 +61,6 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-
 #ifndef _INC_MSYS_AC3_TOPOLOGY_H
 #define _INC_MSYS_AC3_TOPOLOGY_H
 
@@ -75,9 +74,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BUS_MASK_16BIT_ECC			0x13
 #define BUS_MASK_16BIT_ECC_PUP3		0xB
 
-/*Bus Width used by Bus mask definition*/
-#define ACTUAL_BUS_WIDTH 	BUS_WIDTH_8
-
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 /************************************* Customer Boards Topology *************************************/
 MV_HWS_TOPOLOGY_MAP TopologyMap[] =
@@ -86,7 +82,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x3,0,0,0}, {0x3,0,0,0}, {0x0,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_16BIT  /* Buses mask */
     },
@@ -94,7 +90,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_16BIT  /* Buses mask */
     }
@@ -108,7 +104,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x3,0,0,0}, {0x3,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_16BIT  /* Buses mask */
     },
@@ -116,7 +112,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_16BIT  /* Buses mask */
     },
@@ -124,7 +120,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_16BIT  /* Buses mask */
     },
@@ -132,7 +128,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_16BIT  /* Buses mask */
     },
@@ -140,27 +136,10 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_16BIT  /* Buses mask */
     },
-
-    /* XX Marvell board - DB + ECC (BoardId = TBD)*/
-    {
-    0x1, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs   speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x3,0,0,0},{ 0x3,0,0,0},{ 0x3,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
-    BUS_MASK_16BIT_ECC  /* Buses mask */
-    },
-    /* XX Marvell board - RD - No ECC (BoardId = TBD)*/
-    {
-    0x1, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0}}, SPEED_BIN_DDR_1866L, ACTUAL_BUS_WIDTH , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
-    BUS_MASK_16BIT  /* Buses mask */
-    }
 };
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 

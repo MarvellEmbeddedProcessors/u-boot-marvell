@@ -68,7 +68,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvCtrlPex.h"
 #include "mv_seq_exec_ext.h"
 
-
 #if defined(MV_MSYS_BC2)
 #include "ddr3_msys_bc2.h"
 #include "ddr3_msys_bc2_config.h"
@@ -246,3 +245,46 @@ MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID)
 	return (&ddr3DlbConfigTable[0]);
 }
 
+/*******************************************************************************
+* mvSysEnvGetTopologyUpdateInfo
+*
+* DESCRIPTION: Read TWSI fields to update DDR topology structure
+*
+* INPUT: None
+*
+* OUTPUT: None, 0 means no topology update
+*
+* RETURN:
+*       Bit mask of changes topology features
+*
+*******************************************************************************/
+MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo)
+{
+	MV_U32 topologyFeaturesMap = 0;
+	MV_U8	configVal;
+	MV_TWSI_SLAVE twsiSlave;
+
+	/*Fix the topology for A380 by SatR values*/
+	twsiSlave.slaveAddr.address = 0x4D;
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.offset = 0;
+	twsiSlave.moreThen256 = MV_TRUE;
+
+	/* Reading board id */
+	if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
+		DEBUG_INIT_S("mvHwsBoardIdGet: TWSI Read failed\n");
+		return 0;
+	}
+
+	if( (configVal & DDR_SATR_ECC_CONFIG_MASK) == DDR_SATR_ECC_ENABLE_VALUE){
+			topologyUpdateInfo->mvUpdateECC = MV_TRUE;
+			topologyUpdateInfo->mvECC = MV_TOPOLOGY_UPDATE_ECC_ON;
+	}
+	else{
+			topologyUpdateInfo->mvUpdateECC = MV_TRUE;
+			topologyUpdateInfo->mvECC = MV_TOPOLOGY_UPDATE_ECC_OFF;
+	}
+
+	return topologyFeaturesMap;
+}

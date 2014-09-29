@@ -838,10 +838,10 @@ u-boot.ldr.hex u-boot.ldr.srec: u-boot.ldr FORCE
 	$(call if_changed,objcopy)
 
 ifdef CONFIG_MVEBU
-DOIMAGE :=  $(SRCTREE)/tools/marvell/doimage
-BIN_HDR :=  $(SRCTREE)/tools/marvell/bin_hdr
-BIN_HDR_UART :=  $(SRCTREE)/tools/marvell/bin_hdr.uart
-BIN2PHEX := $(SRCTREE)/scripts/bin2phex.pl
+DOIMAGE :=  $(srctree)/tools/marvell/doimage
+BIN_HDR :=  $(srctree)/tools/marvell/bin_hdr
+BIN_HDR_UART :=  $(srctree)/tools/marvell/bin_hdr.uart
+BIN2PHEX := $(srctree)/scripts/bin2phex.pl
 
 ifdef CONFIG_MVEBU_NAND_BOOT
 NAND_OPTS := -P $(CONFIG_MVEBU_NAND_PAGE_SIZE) -L $(CONFIG_MVEBU_NAND_BLOCK_SIZE) -N $(CONFIG_MVEBU_NAND_CELL_TYPE)
@@ -849,11 +849,11 @@ endif
 DOIMAGE_FLAGS 		:= -T $(CONFIG_DOIMAGE_TYPE) -D 0x0 -E 0x0 $(NAND_OPTS) -G $(BIN_HDR)
 DOIMAGE_UART_FLGS	:= -T uart -D 0x0 -E 0x0 -G $(BIN_HDR_UART)
 
-doimage: $(obj)u-boot.bin $(DOIMAGE) $(BIN_HDR) $(BIN_HDR_UART)
+doimage: $(obj)/u-boot.bin $(DOIMAGE) $(BIN_HDR) $(BIN_HDR_UART)
 		$(DOIMAGE) $(DOIMAGE_FLAGS)     u-boot.bin u-boot-$(CONFIG_DOIMAGE_SUFFIX).bin
 		$(DOIMAGE) $(DOIMAGE_UART_FLGS) u-boot.bin u-boot-$(CONFIG_DOIMAGE_SUFFIX)-uart.bin
 
-bin2phex: $(obj)u-boot.bin
+bin2phex: $(obj)/u-boot.bin
 		$(BIN2PHEX) -i u-boot.bin -o u-boot.hex -b 0x0
 endif # CONFIG_MVEBU
 

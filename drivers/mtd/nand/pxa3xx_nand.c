@@ -1549,7 +1549,8 @@ static int pxa3xx_nand_scan(struct pxa3xx_nand_host *host)
 	}
 	memset(pxa3xx_flash_ids, 0x00, sizeof(pxa3xx_flash_ids));
 	pxa3xx_flash_ids[0].name = f->name;
-	pxa3xx_flash_ids[0].id = (f->chip_id >> 8) & 0xffff;
+	pxa3xx_flash_ids[0].mfr_id = (uint8_t)(f->chip_id & 0xff);
+	pxa3xx_flash_ids[0].dev_id = (uint8_t)((f->chip_id >> 8) & 0xff);
 	pxa3xx_flash_ids[0].pagesize = f->page_size;
 	chipsize = (uint64_t)f->num_blocks * f->page_per_block * f->page_size;
 	pxa3xx_flash_ids[0].chipsize = chipsize >> 20;

@@ -225,6 +225,13 @@
 
 #define MV_INVALID_BOARD_ID			0xFFFFFFFF
 
+/* device revesion */
+#define DEV_VERSION_ID_REG			0x1823C
+#define REVISON_ID_OFFS				8
+#define REVISON_ID_MASK				0xF00
+#define MV_88F68XX_Z1_ID			0x0
+#define MV_88F68XX_A0_ID			0x1
+
 #define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
 #define GPP_DATA_OUT_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x00)
 #define GPP_DATA_OUT_EN_REG(grp)		(MV_GPP_REGS_BASE(grp) + 0x04)
@@ -376,6 +383,25 @@ MV_STATUS mvHwsTwsiInitWrapper(MV_VOID);
  ***************************************************************************/
 MV_U32 mvSysEnvSuspendWakeupCheck(MV_VOID);
 
+/*******************************************************************************
+* mvSysEnvDeviceRevGet - Get Marvell controller device revision number
+*
+* DESCRIPTION:
+*       This function returns 8bit describing the device revision as defined
+*       Revision ID Register.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       8bit desscribing Marvell controller revision number
+*
+*******************************************************************************/
+MV_U8 mvSysEnvDeviceRevGet(MV_VOID);
+
 /************************************************************************************
 * mvSysEnvDeviceIdGet
 * DESCRIPTION:	 	Returns enum (0..7) index of the device model (ID)
@@ -398,7 +424,7 @@ MV_U16 mvSysEnvModelGet(MV_VOID);
 #define MV_BOARD_CONFIG_MAX_BYTE_COUNT  8
 #define MV_BOARD_CONFIG_DEFAULT_VALUE		{0x1921d0a1, 0x4 }
 
-#ifdef CONFIG_ARMADA_39X /* tables below are relevant for A390 SoC */
+#ifdef MV88F69XX /* tables below are relevant for A390 SoC */
 typedef enum _mvConfigTypeID {
 	MV_CONFIG_BOARDID,
 	MV_CONFIG_LANE0,
@@ -471,7 +497,7 @@ MV_STATUS mvSysEnvConfigInit(void);
 *******************************************************************************/
 MV_U32 mvSysEnvConfigGet(MV_CONFIG_TYPE_ID configField);
 
-#endif /* CONFIG_ARMADA_39X */
+#endif /* MV88F69XX */
 #endif /* CONFIG_CMD_BOARDCFG */
 
 #endif /* __INCmvSysEnvLibh */

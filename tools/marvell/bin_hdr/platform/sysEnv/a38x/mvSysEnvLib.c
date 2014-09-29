@@ -246,6 +246,31 @@ MV_U32 mvSysEnvDeviceIdGet(MV_VOID)
 	return deviceId >> SAR_DEV_ID_OFFS & SAR_DEV_ID_MASK;
 }
 
+/*******************************************************************************
+* mvSysEnvDeviceRevGet - Get Marvell controller device revision number
+*
+* DESCRIPTION:
+*       This function returns 8bit describing the device revision as defined
+*       Revision ID Register.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       8bit desscribing Marvell controller revision number
+*
+*******************************************************************************/
+MV_U8 mvSysEnvDeviceRevGet(MV_VOID)
+{
+    MV_U8   value;
+
+    value = MV_REG_READ(DEV_VERSION_ID_REG);
+    return ((value & (REVISON_ID_MASK)) >> REVISON_ID_OFFS);
+}
+
 #ifdef CONFIG_CMD_BOARDCFG
 MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_EEPROM_CONFIG_INFO;
 MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];

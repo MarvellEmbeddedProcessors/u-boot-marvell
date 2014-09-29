@@ -60,11 +60,18 @@
    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
+#include "config_marvell.h"     /* Required to identify SOC and Board */
 #include "mvHighSpeedEnvSpec.h"
 #include "mvHighSpeedTopologySpec.h"
 #include "mvSysEnvLib.h"
 #include "mvCtrlPex.h"
 #include "printf.h"
+
+#if defined (MV88F68XX)
+#elif defined (MV88F69XX)
+#else
+#error "No device is defined"
+#endif
 
 #define SLOWDOWN  mvOsUDelay(50);
 
@@ -102,26 +109,26 @@ static MV_VOID _MV_REG_WRITE(MV_U32 regAddr, MV_U32 regData)
 #define LINK_WAIT_CNTR  100
 #define LINK_WAIT_SLEEP 100
 
-/* Selector mapping for a38x-A0/Z1 and a39x */
+/* Selector mapping for A380-A0 and A390-Z1 */
 MV_U8 commonPhysSelectorsSerdesRev2Map[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 {
 	/* 0      1      2       3       4       5       6 */
-	{ 0x1,   0x1,    NA,	 NA,	 NA,	 NA,     NA       },  /* PEX0 */
-	{ NA,    NA,     0x1,	 NA,	 0x1,	 NA,     0x1      },  /* PEX1 */
+	{ 0x1,   0x1,    NA,	 NA,	 NA,	 NA,     NA   },  /* PEX0 */
+	{ NA,    NA,     0x1,	 NA,	 0x1,	 NA,     0x1  },  /* PEX1 */
 	{ NA,    NA,     NA,	 NA,	 0x7,	 0x1,    NA	  },  /* PEX2 */
 	{ NA,    NA,     NA,	 0x1,	 NA,	 NA,     NA	  },  /* PEX3 */
 	{ 0x2,   0x3,    NA,	 NA,	 NA,	 NA,     NA	  },  /* SATA0 */
 	{ NA,    NA,     0x3,	 NA,	 NA,	 NA,     NA	  },  /* SATA1 */
 	{ NA,    NA,     NA,	 NA,	 0x6,	 0x2,    NA	  },  /* SATA2 */
 	{ NA,	 NA,     NA,	 0x3,	 NA,	 NA,     NA	  },  /* SATA3 */
-	{ 0x3/*0x4*/,   0x4/*0x8*/,    NA,     NA,	 NA,	 NA,     NA	  },  /* SGMII0 */
-	{ NA,    0x5/*0x9*/,    0x4/*0x5*/,    NA,	 NA,	 NA,     NA	  },  /* SGMII1 */
-	{ NA,    NA,     NA,	 0x4/*0x7*/,	 NA,	 0x3/*0x6*/,    NA	  },  /* SGMII2 */
+	{ 0x3,   0x4,    NA,     NA,	 NA,	 NA,     NA	  },  /* SGMII0 */
+	{ NA,    0x5,    0x4,    NA,	 NA,	 NA,     NA	  },  /* SGMII1 */
+	{ NA,    NA,     NA,	 0x4,	 NA,	 0x3,    NA	  },  /* SGMII2 */
 	{ NA,    0x7,    NA,	 NA,	 NA,	 NA,     NA	  },  /* QSGMII */
 	{ NA,    0x6,    NA,	 NA,	 0x4,	 NA,     NA	  },  /* USB3_HOST0 */
 	{ NA,    NA,     NA,	 0x5,	 NA,	 0x4,    NA	  },  /* USB3_HOST1 */
 	{ NA,    NA,     NA,	 0x6,	 0x5,	 0x5,    NA	  },  /* USB3_DEVICE */
-#ifdef CONFIG_ARMADA_39X
+#ifdef MV88F69XX
 	{ NA,    NA,     NA,	 NA,	 0x8,	 NA,     0x2  },  /* SGMII3 */
 	{ NA,    NA,     NA,	 0x8,	 0x9,	 0x8,    0x4  },  /* XAUI */
 	{ NA,    NA,     NA,	 NA,	 NA,	 0x8,    0x4  },  /* RXAUI */
@@ -426,21 +433,51 @@ MV_OP_PARAMS serdesPowerDownParams[] =
 * 		8bit Serdes revision number
 *
 *******************************************************************************/
-MV_U8 mvCtrlSerdesRevGet(MV_VOID)
+MV_U8 mvHwsCtrlSerdesRevGet(MV_VOID)
 {
-#ifdef CONFIG_ARMADA_39X
-	return MV_SERDES_REV_2_1;
-#elif defined(CONFIG_ARMADA_38X)
-	return MV_SERDES_REV_1_2;
-#else
-	return MV_SERDES_REV_NA;
-#endif /* CONFIG_ARMADA_39X */
+#ifdef MV88F68XX
+    /* for A38x-Z1 */
+    if (mvSysEnvDeviceRevGet() == MV_88F68XX_Z1_ID) {
+        return MV_SERDES_REV_1_2;
+    }
+#endif
+    /* for A39x-Z1, A38x-A0 */
+    return MV_SERDES_REV_2_1;
+}
+
+/*******************************************************************************
+* mvHwsSerdesGetPhySelectorVal
+*
+* DESCRIPTION: Get the mapping of Serdes Selector values according to the
+*               Serdes revision number
+*
+* INPUT:    serdesNum - Serdes number
+*           serdesType - Serdes type
+*
+* OUTPUT: None
+*
+* RETURN:
+* 		Mapping of Serdes Selector values
+*
+*******************************************************************************/
+MV_U32 mvHwsSerdesGetPhySelectorVal(MV_32 serdesNum, SERDES_TYPE serdesType)
+{
+    if (serdesType >= LAST_SERDES_TYPE) {
+        return 0xFF;
+    }
+
+    if (mvHwsCtrlSerdesRevGet() == MV_SERDES_REV_1_2) {
+        return commonPhysSelectorsSerdesRev1Map[serdesType][serdesNum];
+    }
+    else {
+        return commonPhysSelectorsSerdesRev2Map[serdesType][serdesNum];
+    }
 }
 
 MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID)
 {
 	DEBUG_INIT_FULL_S("\n### serdesSeq38xInit ###\n");
-	MV_U8 serdesRev = mvCtrlSerdesRevGet();
+	MV_U8 serdesRev = mvHwsCtrlSerdesRevGet();
 
 	if(serdesRev == MV_SERDES_REV_NA) {
 		mvPrintf("mvHwsSerdesSeqDbInit: serdes revision number is not supported\n");
@@ -678,7 +715,7 @@ SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
 	case SGMII0:
 	case SGMII1:
 	case SGMII2:
-#ifdef CONFIG_ARMADA_39X
+#ifdef MV88F69XX
     case SGMII3:
 #endif
         if (baudRate == __1_25Gbps)
@@ -686,7 +723,7 @@ SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
 		else if (baudRate == __3_125Gbps)
 			seqId = SGMII__3_125_SPEED_CONFIG_SEQ;
 		break;
-#ifdef CONFIG_ARMADA_39X
+#ifdef MV88F69XX
     case QSGMII:
         seqId = QSGMII__5_SPEED_CONFIG_SEQ;
         break;
@@ -920,7 +957,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 		case PEX1:
 		case PEX2:
 		case PEX3:
-			if (mvCtrlSerdesRevGet() == MV_SERDES_REV_1_2) {
+			if (mvHwsCtrlSerdesRevGet() == MV_SERDES_REV_1_2) {
 				CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, PEX));
 			}
 
@@ -1007,7 +1044,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 		case USB3_HOST0:
 		case USB3_HOST1:
         case USB3_DEVICE:
-			if (mvCtrlSerdesRevGet() == MV_SERDES_REV_1_2) {
+			if (mvHwsCtrlSerdesRevGet() == MV_SERDES_REV_1_2) {
 				CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, USB3));
 			}
 			CHECK_STATUS(mvSeqExec(serdesNum, USB3_POWER_UP_SEQ));
@@ -1137,7 +1174,7 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 	DEBUG_INIT_FULL_S("\n### mvHwsUpdateSerdesPhySelectors ###\n");
 	DEBUG_INIT_FULL_S("Updating the COMMON PHYS SELECTORS register with the serdes types\n");
 
-	if(mvCtrlSerdesRevGet() == MV_SERDES_REV_1_2) {
+	if(mvHwsCtrlSerdesRevGet() == MV_SERDES_REV_1_2) {
 		selectBitOff = 3;
 	} else {
 		selectBitOff = 4;
@@ -1152,7 +1189,6 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 		if(serdesType == DEFAULT_SERDES) {
 			continue;
 		}
-
 
 		if (laneData == NA) {
 			mvPrintf("mvUpdateSerdesSelectPhyModeSeq: serdes number %d and type %d are not supported together\n",
@@ -1248,7 +1284,7 @@ MV_STATUS mvHwsRefClockSet
             return MV_BAD_PARAM;
         }
         break;
-#ifdef CONFIG_ARMADA_39X
+#ifdef MV88F69XX
 	case SGMII3:
 	case QSGMII:
 	case XAUI:

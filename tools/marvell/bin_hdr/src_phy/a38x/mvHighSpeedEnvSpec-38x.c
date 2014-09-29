@@ -68,7 +68,7 @@
 
 /************************* Globals ********************************************/
 
-MV_U8 commonPhysSelectors38xZ1Map[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
+MV_U8 commonPhysSelectorsSerdesRev1Map[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 {
 	/* 0     1       2       3       4       5 */
 	{ 0x1,  0x1,    NA,	    NA,	    NA,	    NA	  },    /* PEX0 */
@@ -136,18 +136,6 @@ MV_STATUS mvSerdesPowerUpCtrlExt
 )
 {
 	return MV_NOT_SUPPORTED;
-}
-
-/***************************************************************************/
-MV_U32 mvHwsSerdesGetPhySelectorVal
-(
-    MV_32 serdesNum,
-	SERDES_TYPE serdesType
-)
-{
-    /* TBD - for now, return only Z1 mapping
-       need to add function to get Ctrl revision */
-    return commonPhysSelectors38xZ1Map[serdesType][serdesNum];
 }
 
 /***************************************************************************/

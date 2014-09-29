@@ -1,0 +1,27 @@
+if TARGET_ARMADA_8K
+
+config SYS_CPU
+	string
+	default "armv8"
+
+config SYS_BOARD
+	string
+	default "armada8k"
+
+config SYS_VENDOR
+	string
+	default "mvebu"
+
+config SYS_SOC
+	string
+	default "armada8k"
+
+config SYS_CONFIG_NAME
+	string
+	default "armada8k"
+
+config PALLADIUM
+	bool "Support palladium emulation"
+	default y
+endif
+

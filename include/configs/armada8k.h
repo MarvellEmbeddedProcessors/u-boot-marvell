@@ -24,8 +24,6 @@
 #define CONFIG_IDENT_STRING             " Armada8k"
 #define CONFIG_BOOTP_VCI_STRING         "U-boot.armv8.armada8k"
 
-/* Enable IO drivers */
-#define CONFIG_MVEBU_UART
 /*
 #define MV_INCLUDE_SDIO
 #define MV_INCLUDE_INTEG_SATA

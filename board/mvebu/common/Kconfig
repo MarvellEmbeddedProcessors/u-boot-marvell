@@ -1,0 +1,42 @@
+
+source "board/mvebu/armada8k/Kconfig"
+source "board/mvebu/armada38x/Kconfig"
+
+menu "IO support"
+
+config MVEBU_NAND
+	bool "NAND flash support"
+	default n
+
+config MVEBU_SPI
+	bool "SPI flash support"
+	default n
+
+config MVEBU_PCI
+	bool "PCIE support"
+	default n
+
+config MVEBU_UART
+	bool "UART support"
+	default n
+
+endmenu
+
+
+choice
+	prompt "Flash for environment and image"
+	default MVEBU_SPI_BOOT
+
+config MVEBU_NAND_BOOT
+	bool "NAND flash boot"
+	depends on MVEBU_NAND
+
+config MVEBU_SPI_BOOT
+	bool "SPI flash boot"
+	depends on MVEBU_SPI
+
+config MVEBU_NOR_BOOT
+	bool "NOR flash boot"
+	depends on MVEBU_NOR
+
+endchoice

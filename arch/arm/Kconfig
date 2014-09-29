@@ -102,6 +102,12 @@ config TARGET_VCMA9
 	bool "Support VCMA9"
 	select CPU_ARM920T
 
+config TARGET_ARMADA_8K
+	bool "Support Armada 8K"
+
+config TARGET_ARMADA_38X
+	bool "Support Armada 38x"
+
 config TARGET_SMDK2410
 	bool "Support smdk2410"
 	select CPU_ARM920T
@@ -932,6 +938,7 @@ source "board/logicpd/imx27lite/Kconfig"
 source "board/logicpd/imx31_litekit/Kconfig"
 source "board/maxbcm/Kconfig"
 source "board/mpl/vcma9/Kconfig"
+source "board/mvebu/common/Kconfig"
 source "board/olimex/mx23_olinuxino/Kconfig"
 source "board/palmld/Kconfig"
 source "board/palmtc/Kconfig"

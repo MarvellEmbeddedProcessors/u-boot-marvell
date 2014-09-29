@@ -1,0 +1,23 @@
+if TARGET_ARMADA_38X
+
+config SYS_CPU
+	string
+	default "armv7"
+
+config SYS_BOARD
+	string
+	default "armada38x"
+
+config SYS_VENDOR
+	string
+	default "mvebu"
+
+config SYS_SOC
+	string
+	default "armada38x"
+
+config SYS_CONFIG_NAME
+	string
+	default "armada38x"
+
+endif

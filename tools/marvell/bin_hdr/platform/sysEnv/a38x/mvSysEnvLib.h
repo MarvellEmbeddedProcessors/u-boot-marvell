@@ -71,6 +71,8 @@
 /* Serdes definitions */
 #define	COMMON_PHY_BASE_ADDR					0x18300
 
+#define DEVICE_CONFIGURATION_REG0		0x18284
+#define DEVICE_CONFIGURATION_REG1		0x18288
 #define COMMON_PHY_CONFIGURATION1_REG           0x18300
 #define COMMON_PHY_CONFIGURATION2_REG           0x18304
 #define COMMON_PHY_CONFIGURATION4_REG           0x1830C
@@ -80,7 +82,15 @@
 #define GENERAL_PURPOSE_RESERVED0_REG			0x182E0
 #define GBE_CONFIGURATION_REG                   0x18460
 #define DEVICE_SAMPLE_AT_RESET1_REG             0x18600
-#define DEVICE_SAMPLE_AT_RESET2_REG				0x18604
+#define DEVICE_SAMPLE_AT_RESET2_REG		0x18604
+#define DEV_ID_REG				0x18238
+
+#define DEV_ID_REG_DEVICE_ID_OFFS		16
+#define DEV_ID_REG_DEVICE_ID_MASK		0xFFFF0000
+
+
+#define SAR_DEV_ID_OFFS				27
+#define SAR_DEV_ID_MASK          		0x7
 
 #define POWER_AND_PLL_CTRL_REG                  0xa0004
 #define CALIBRATION_CTRL_REG                    0xa0008
@@ -215,13 +225,6 @@
 
 #define MV_INVALID_BOARD_ID			0xFFFFFFFF
 
-/* device ID */
-#define ARMADA_380_DEVIDE_ID                    0x6810
-#define ARMADA_385_DEVIDE_ID                    0x6820
-#define ARMADA_388_DEVIDE_ID                    0x6828
-#define ARMADA_390_DEVIDE_ID                    0x6920
-#define ARMADA_398_DEVIDE_ID                    0x6928
-
 #define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
 #define GPP_DATA_OUT_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x00)
 #define GPP_DATA_OUT_EN_REG(grp)		(MV_GPP_REGS_BASE(grp) + 0x04)
@@ -232,6 +235,48 @@
 #define MPP_MASK(GPIO_NUM)		(0xf << 4 * (GPIO_NUM - (MPP_REG_NUM(GPIO_NUM) * 8)));
 #define GPP_REG_NUM(GPIO_NUM)		(GPIO_NUM / 32)
 #define GPP_MASK(GPIO_NUM)		(1 << GPIO_NUM % 32)
+
+/* device ID */
+/* Armada 38x Family */
+#define MV_6810_DEV_ID		0x6810
+#define MV_6811_DEV_ID		0x6811
+#define MV_6820_DEV_ID		0x6820
+#define MV_6828_DEV_ID		0x6828
+/* Armada 39x Family */
+#define MV_6910_DEV_ID		0x6910
+#define MV_6920_DEV_ID		0x6920
+#define MV_6928_DEV_ID		0x6928
+
+
+typedef enum _mvDeviceId {
+	MV_6810,
+	MV_6820,
+	MV_6811,
+	MV_6828,
+	MV_6910,
+	MV_6920,
+	MV_6928,
+	MV_MAX_DEV_ID,
+} MV_DEVICE_ID;
+
+typedef struct boardDeviceIdWoVal {
+	MV_DEVICE_ID devId;
+	MV_32 ctrlModel;
+	MV_32 wo_reg_val0;
+	MV_32 wo_reg_val1;
+} MV_DEVICE_ID_VAL;
+
+/* predefined values for FUNCTION_ENABLE_CONTROL per flavour */
+#define MV_DEVICE_ID_VAL_INFO {\
+/* 		dev,	ctrlModel,		WO_VAL0,	WO_VAL1 */\
+/* A380 */ {MV_6810,	MV_6810_DEV_ID,		0x71fd7f3,	0x00 },\
+/* A381 */ {MV_6820,	MV_6820_DEV_ID,		0x77fdfff,	0x00 },\
+/* A385 */ {MV_6811,	MV_6811_DEV_ID,		0x77ffffff,	0x00 },\
+/* A388 */ {MV_6828,	MV_6828_DEV_ID,		0x77fffff,	0x00 },\
+/* A390 */ {MV_6910,	MV_6910_DEV_ID,		0x77ffffff,	0x00 },\
+/* A395 */ {MV_6920,	MV_6920_DEV_ID,		0x77ffffff,	0x00 },\
+/* A398 */ {MV_6928,	MV_6928_DEV_ID,		0x77ffffff,	0x00 },\
+};
 
 typedef struct boardWakeupGPIO {
 	MV_U32 boardId;
@@ -331,6 +376,22 @@ MV_STATUS mvHwsTwsiInitWrapper(MV_VOID);
  ***************************************************************************/
 MV_U32 mvSysEnvSuspendWakeupCheck(MV_VOID);
 
+/************************************************************************************
+* mvSysEnvDeviceIdGet
+* DESCRIPTION:	 	Returns enum (0..7) index of the device model (ID)
+* INPUT:	 	None.
+* OUTPUT:
+* RRETURNS:	MV_U32 with Device ID
+ ***************************************************************************/
+MV_U32 mvSysEnvDeviceIdGet(MV_VOID);
+/************************************************************************************
+* mvSysEnvDeviceIdGet
+* DESCRIPTION:	 	returns 16bit describing the device model (id)
+* INPUT:	 	None.
+* OUTPUT:
+* RRETURNS:	MV_U32 with Device ID
+ ***************************************************************************/
+MV_U16 mvSysEnvModelGet(MV_VOID);
 #ifdef CONFIG_CMD_BOARDCFG
 #define MV_INFO_TWSI_EEPROM_DEV     0x50
 #define EEPROM_VERIFICATION_PATTERN     0xfadecafe

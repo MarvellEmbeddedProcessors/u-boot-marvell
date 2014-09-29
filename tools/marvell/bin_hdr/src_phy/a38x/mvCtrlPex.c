@@ -159,19 +159,6 @@ MV_U32 mvPexConfigRead
 	MV_U32 regOff
 );
 
-/*******************************************************************************
-* mvCtrlModelGet -
-*
-* DESCRIPTION:      Returns 32bit describing the device model (ID) as defined
-*                   in PCI Device and Vendor ID configuration register
-*                   offset 0x0.
-*
-* INPUT:            None.
-* OUTPUT:           None.
-* RETURN:           16bit describing Marvell controller ID
-*******************************************************************************/
-MV_U32 mvCtrlModelGet(MV_VOID);
-
 /************************** Functions implementation **************************/
 
 /***************************************************************************/
@@ -327,7 +314,7 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 	}
 
 	/* update pex DEVICE ID*/
-	ctrlMode = mvCtrlModelGet();
+	ctrlMode = mvSysEnvModelGet();
 
 	for (serdesIdx = 0; serdesIdx < MAX_SERDES_LANES; serdesIdx++) {
 		serdesType = serdesMap[serdesIdx].serdesType;
@@ -477,10 +464,4 @@ MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32
 }
 
 /***************************************************************************/
-MV_U32 mvCtrlModelGet(MV_VOID)
-{
-	DEBUG_INIT_FULL_S("\n### mvCtrlModelGet ###\n");
 
-	/* Temporary solution, should be update according to S@R register - currently not supported */
-	return ARMADA_388_DEVIDE_ID;
-}

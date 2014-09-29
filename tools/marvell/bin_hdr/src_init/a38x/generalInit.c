@@ -68,8 +68,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvUart.h"
 #include "util.h"
 #include "generalInit.h"
-
+#include "printf.h"
 #include "mvSysEnvLib.h"
+
+/******************************************************************************************
+* mvDeviceIdConfig - set SoC Unit configuration and device ID according to detected flavour
+*******************************************************************************************/
+static MV_VOID mvDeviceIdConfig(void)
+{
+	MV_DEVICE_ID_VAL dev_id_val[] = MV_DEVICE_ID_VAL_INFO;
+	MV_U32 ctrlId, devId = mvSysEnvDeviceIdGet(); /* read Sample at reset for device ID*/
+
+	/* Configure Units according to detected deviceId (flavor) */
+	MV_REG_WRITE(DEVICE_CONFIGURATION_REG0, dev_id_val[devId].wo_reg_val0);
+	MV_REG_WRITE(DEVICE_CONFIGURATION_REG1, dev_id_val[devId].wo_reg_val1);
+
+	/* set device ID register (flavor) */
+	ctrlId = MV_REG_READ(DEV_ID_REG) & ~DEV_ID_REG_DEVICE_ID_MASK;
+	ctrlId |= dev_id_val[devId].ctrlModel << DEV_ID_REG_DEVICE_ID_OFFS;
+	MV_REG_WRITE(DEV_ID_REG, ctrlId);
+}
 
 /* mvMppConfig() prepares UART and I2C configuration (MPP's and UART interface selection) */
 static inline MV_VOID mvMppConfig()
@@ -101,6 +119,7 @@ MV_STATUS mvGeneralInit(void)
 	mvUartInit();
 	DEBUG_INIT_S("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
 #endif
-
+	mvDeviceIdConfig();
 	return MV_OK;
 }
+

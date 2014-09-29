@@ -119,7 +119,11 @@ MV_STATUS mvGeneralInit(void)
 	mvUartInit();
 	DEBUG_INIT_S("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
 #endif
-	mvDeviceIdConfig();
+
+	/* Device general configuration: A39x, and A38x A revision */
+	if (mvSysEnvDeviceRevGet() != MV_88F68XX_Z1_ID)
+		mvDeviceIdConfig();
+
 	return MV_OK;
 }
 

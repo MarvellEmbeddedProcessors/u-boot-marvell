@@ -293,20 +293,6 @@ MV_STATUS mvSerdesPowerUpCtrlExt
 }
 
 /***************************************************************************/
-MV_U32 mvHwsSerdesGetPhySelectorVal
-(
-    MV_32 serdesNum,
-	SERDES_TYPE serdesType
-)
-{
-    if (serdesType >= LAST_SERDES_TYPE) {
-        return 0xFF;
-    }
-
-    return commonPhysSelectorsSerdesRev2Map[serdesType][serdesNum];
-}
-
-/***************************************************************************/
 MV_U32 mvHwsSerdesGetRefClockVal(SERDES_TYPE	serdesType)
 {
 	MV_U32 regVal;

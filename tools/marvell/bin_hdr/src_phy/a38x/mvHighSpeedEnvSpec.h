@@ -273,15 +273,16 @@ SERDES_MAP serdesConfigurationMap[MAX_SERDES_LANES];
    initialized in serdesSeqInit */
 MV_CFG_SEQ serdesSeqDb[SERDES_LAST_SEQ];
 
+extern MV_U8 commonPhysSelectorsSerdesRev1Map[LAST_SERDES_TYPE][MAX_SERDES_LANES];
 extern MV_U8 commonPhysSelectorsSerdesRev2Map[LAST_SERDES_TYPE][MAX_SERDES_LANES];
 
 /*************************** Functions declarations ***************************/
 /*******************************************************************************
-* mvCtrlSerdesRevGet
+* mvHwsCtrlSerdesRevGet
 *
-* DESCRIPTION: Get the Serdes revision number
+* DESCRIPTION: Get the Serdes revision number according to the device revision
 *
-* INPUT: configField - Field description enum
+* INPUT: None
 *
 * OUTPUT: None
 *
@@ -289,7 +290,7 @@ extern MV_U8 commonPhysSelectorsSerdesRev2Map[LAST_SERDES_TYPE][MAX_SERDES_LANES
 * 		8bit Serdes revision number
 *
 *******************************************************************************/
-MV_U8 mvCtrlSerdesRevGet(MV_VOID);
+MV_U8 mvHwsCtrlSerdesRevGet(MV_VOID);
 
 /**************************************************************************
  * mvUpdateSerdesSelectPhyModeSeq -
@@ -485,20 +486,22 @@ MV_STATUS mvHwsRefClockSet
  ***************************************************************************/
 MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP  *serdesConfigMap);
 
-/**************************************************************************
- * mvHwsSerdesGetPhySelectorVal -
- *
- * DESCRIPTION:          return PHY selector value according to device type.
- * INPUT:                serdesNum       - serdes lane number.
- *                       serdesType      - PEX, USB3, SATA or SGMII.
- * OUTPUT:               None.
- * RETURNS:              Selector value
- ***************************************************************************/
-MV_U32 mvHwsSerdesGetPhySelectorVal
-(
-    MV_32 serdesNum,
-	SERDES_TYPE serdesType
-);
+/*******************************************************************************
+* mvHwsSerdesGetPhySelectorVal
+*
+* DESCRIPTION: Get the mapping of Serdes Selector values according to the
+*               Serdes revision number
+*
+* INPUT:    serdesNum - Serdes number
+*           serdesType - Serdes type
+*
+* OUTPUT: None
+*
+* RETURN:
+* 		Mapping of Serdes Selector values
+*
+*******************************************************************************/
+MV_U32 mvHwsSerdesGetPhySelectorVal(MV_32 serdesNum, SERDES_TYPE serdesType);
 
 /**************************************************************************
  * mvHwsSerdesGetRefClockVal -

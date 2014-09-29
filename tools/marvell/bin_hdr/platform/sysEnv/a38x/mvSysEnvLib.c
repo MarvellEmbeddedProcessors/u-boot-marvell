@@ -67,6 +67,7 @@
 #include "mvUart.h"
 #include "util.h"
 #include "mv_seq_exec.h"
+#include "printf.h"
 
 #ifdef WIN32
 #define mvPrintf    printf
@@ -203,6 +204,46 @@ MV_U32 mvSysEnvSuspendWakeupCheck(void)
 	reg = MV_REG_READ(GPP_DATA_IN_REG(GPP_REG_NUM(gpio)));
 
 	return reg & GPP_MASK(gpio);
+}
+
+/************************************************************************************
+* mvSysEnvModelGet
+* DESCRIPTION:	 	Returns 16bit describing the device model (ID) as defined
+*       		in Vendor ID configuration register
+ ***************************************************************************/
+MV_U16 mvSysEnvModelGet(MV_VOID)
+{
+	MV_U32	defaultCtrlId, ctrlId = MV_REG_READ(DEV_ID_REG);
+	ctrlId = (ctrlId & (DEV_ID_REG_DEVICE_ID_MASK)) >> DEV_ID_REG_DEVICE_ID_OFFS;
+
+	switch (ctrlId) {
+	case MV_6820_DEV_ID:
+	case MV_6810_DEV_ID:
+	case MV_6811_DEV_ID:
+	case MV_6828_DEV_ID:
+	case MV_6920_DEV_ID:
+	case MV_6910_DEV_ID:
+	case MV_6928_DEV_ID:
+		return ctrlId;
+	default: /*Device ID Default for A38x: 6820 , for A39x: 6920 */
+	#ifdef MV88F68XX
+		defaultCtrlId =  MV_6820_DEV_ID
+	#else
+		defaultCtrlId = MV_6920_DEV_ID;
+	#endif
+		mvPrintf("%s:Error retrieving device ID (%x), using default ID = %x \n", __func__, ctrlId, defaultCtrlId);
+		return defaultCtrlId;
+	}
+}
+
+/************************************************************************************
+* mvSysEnvDeviceIdGet
+* DESCRIPTION:	 	Returns enum (0..7) index of the device model (ID)
+ ***************************************************************************/
+MV_U32 mvSysEnvDeviceIdGet(MV_VOID)
+{
+	MV_U32 deviceId = MV_REG_READ(DEVICE_SAMPLE_AT_RESET1_REG);
+	return deviceId >> SAR_DEV_ID_OFFS & SAR_DEV_ID_MASK;
 }
 
 #ifdef CONFIG_CMD_BOARDCFG

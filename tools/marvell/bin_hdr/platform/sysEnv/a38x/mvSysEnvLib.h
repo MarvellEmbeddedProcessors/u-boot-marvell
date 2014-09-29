@@ -530,4 +530,19 @@ MV_U32 mvSysEnvConfigGet(MV_CONFIG_TYPE_ID configField);
 #endif /* MV88F69XX */
 #endif /* CONFIG_CMD_BOARDCFG */
 
+/*******************************************************************************
+* mvSysEnvGetTopologyUpdateInfo
+*
+* DESCRIPTION: Read TWSI fields to update DDR topology structure
+*
+* INPUT: None
+*
+* OUTPUT: None, 0 means no topology update
+*
+* RETURN:
+*       Bit mask of changes topology features
+*
+*******************************************************************************/
+MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo);
+
 #endif /* __INCmvSysEnvLibh */

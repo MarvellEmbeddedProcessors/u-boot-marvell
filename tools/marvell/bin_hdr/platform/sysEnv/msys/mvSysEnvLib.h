@@ -233,5 +233,20 @@ MV_U8 mvSysEnvDeviceRevGet(MV_VOID);
 *******************************************************************************/
 MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID);
 
+/*******************************************************************************
+* mvSysEnvGetTopologyUpdateInfo
+*
+* DESCRIPTION: Read TWSI fields to update DDR topology structure
+*
+* INPUT: None
+*
+* OUTPUT: None, 0 means no topology update
+*
+* RETURN:
+*       Bit mask of changes topology features
+*
+*******************************************************************************/
+MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo);
+
 #endif /* __INCmvBHboardEnvSpech */
 

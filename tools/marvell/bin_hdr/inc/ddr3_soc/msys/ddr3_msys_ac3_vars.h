@@ -69,6 +69,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_msys_ac3_mc_static.h"
 #include "mvDdr3TopologyDef.h"
 
+#if !defined(CONFIG_CUSTOMER_BOARD_SUPPORT)
+#define MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI
+#endif
+
+#define ECC_SUPPORT
+
 typedef struct __mvDramModes {
     char *mode_name;
     MV_U8 cpuFreq;

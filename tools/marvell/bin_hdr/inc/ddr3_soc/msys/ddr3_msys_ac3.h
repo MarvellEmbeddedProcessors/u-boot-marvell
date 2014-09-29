@@ -1,4 +1,3 @@
-
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
@@ -181,4 +180,10 @@ typedef enum
 
 #define ACTIVE_INTERFACE_MASK			  0x10
 
+/*SatR defined to change topology ECC configuration*/
+#define DDR_SATR_ECC_CONFIG_MASK 						0x1
+#define DDR_SATR_ECC_ENABLE_VALUE 						0b1
+
+
 #endif /* _DDR3_MSYS_AC3_H */
+

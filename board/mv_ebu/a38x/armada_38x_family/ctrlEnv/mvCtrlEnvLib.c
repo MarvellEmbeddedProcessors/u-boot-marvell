@@ -191,23 +191,7 @@ MV_BOOL mvCtrlPortIsSerdesSgmii(MV_U32 ethPort)
 *******************************************************************************/
 MV_U32 mvCtrlGetCpuNum(MV_VOID)
 {
-	MV_U32 cpu1Enabled;
-
-	if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX) {
-		cpu1Enabled = MV_REG_READ(MPP_SAMPLE_AT_RESET);
-		if (cpu1Enabled & SATR_CPU1_ENABLE_MASK)
-			return 1;
-		return 0;
-	}
-
-	switch (mvCtrlModelGet()) {
-	case MV_6910_DEV_ID:
-		return 0;
-	case MV_6920_DEV_ID:
-	case MV_6928_DEV_ID:
-		return 1;
-	}
-	return -1;
+	return MV_REG_READ(SOC_COHERENCY_FABRIC_CFG_REG) & FABRIC_CPU_NUMBER_CFG_MASK;
 }
 
 #ifdef MV_INCLUDE_PEX

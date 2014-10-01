@@ -115,37 +115,65 @@ static const MV_U8 serdesCfg[MV_SERDES_MAX_LANES][MV_SERDES_CFG_OPTIONS_CNT] = S
 
 #define MV_6820_INDEX		0
 #define MV_6810_INDEX		1
-#define MV_68xx_INDEX_MAX	2
+#define MV_6811_INDEX		2
+#define MV_6828_INDEX		3
 
-#define MV_6920_INDEX		2
-#define MV_69xx_INDEX_MAX	2
+#define MV_6920_INDEX		0
+#define MV_6928_INDEX		1
 
-#define MV_NUM_OF_INDEXES	3
+#define MAX_DEV_ID_NUM		4
 
-MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_NUM_OF_INDEXES] = {
-/*			6820			6810			6920	*/
-/* DRAM_UNIT_ID     */ { 1,			1,			1},
-/* PEX_UNIT_ID      */ { MV_PEX_MAX_UNIT,	MV_PEX_MAX_UNIT_6810,	MV_PEX_MAX_UNIT},
-/* ETH_GIG_UNIT_ID  */ { MV_ETH_MAX_PORTS,	MV_ETH_MAX_PORTS_6810,	MV_ETH_MAX_PORTS},
-/* USB_UNIT_ID      */ { MV_USB_MAX_PORTS,	MV_USB_MAX_PORTS,	MV_USB_MAX_PORTS},
-/* USB3_UNIT_ID     */ { MV_USB3_MAX_PORTS,	MV_USB3_MAX_PORTS_6810,	MV_USB3_MAX_PORTS},
-/* IDMA_UNIT_ID     */ { MV_IDMA_MAX_CHAN,	MV_IDMA_MAX_CHAN,	MV_IDMA_MAX_CHAN},
-/* XOR_UNIT_ID      */ { MV_XOR_MAX_UNIT,	MV_XOR_MAX_UNIT,	MV_XOR_MAX_UNIT},
-/* SATA_UNIT_ID     */ { MV_SATA_MAX_CHAN,	MV_SATA_MAX_CHAN,	MV_SATA_MAX_CHAN},
-/* TDM_32CH_UNIT_ID */ { 1,			1,			1},
-/* UART_UNIT_ID     */ { MV_UART_MAX_CHAN,	MV_UART_MAX_CHAN,	MV_UART_MAX_CHAN},
-/* CESA_UNIT_ID     */ { 2,			2,			2},
-/* SPI_UNIT_ID      */ { 1,			1,			1},
-/* AUDIO_UNIT_ID    */ { 1,			1,			1},
-/* SDIO_UNIT_ID     */ { 1,			1,			1},
-/* TS_UNIT_ID       */ { 0,			0,			0},
-/* XPON_UNIT_ID     */ { 0,			0,			0},
-/* BM_UNIT_ID       */ { 0,			0,			0},
-/* PNC_UNIT_ID      */ { 0,			0,			0},
-/* I2C_UNIT_ID      */ { 2,			2,			2},
-/* QSGMII_UNIT_ID   */ { 0,			0,			0},
-/* XAUI_UNIT_ID     */ { 0,			0,			0},
+#ifdef CONFIG_ARMADA_38X
+MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
+/*			6820	6810	6811	6828	*/
+/* DRAM_UNIT_ID     */ { 1,	1,	1,	1},
+/* PEX_UNIT_ID      */ { 4,	3,	3,	4},
+/* ETH_GIG_UNIT_ID  */ { 3,	2,	2,	3},
+/* USB_UNIT_ID      */ { 1,	1,	0,	1},
+/* USB3_UNIT_ID     */ { 2,	2,	2,	2},
+/* IDMA_UNIT_ID     */ { 0,	0,	0,	0},
+/* XOR_UNIT_ID      */ { 2,	2,	2,	2},
+/* SATA_UNIT_ID     */ { 2,	2,	2,	4},
+/* TDM_32CH_UNIT_ID */ { 1,	1,	0,	1},
+/* UART_UNIT_ID     */ { 4,	4,	4,	4},
+/* CESA_UNIT_ID     */ { 2,	2,	2,	2},
+/* SPI_UNIT_ID      */ { 2,	2,	2,	2},
+/* AUDIO_UNIT_ID    */ { 1,	1,	0,	1},
+/* SDIO_UNIT_ID     */ { 1,	1,	1,	1},
+/* TS_UNIT_ID       */ { 0,	0,	0,	0},
+/* XPON_UNIT_ID     */ { 0,	0,	0,	0},
+/* BM_UNIT_ID       */ { 0,	0,	0,	0},
+/* PNC_UNIT_ID      */ { 0,	0,	0,	0},
+/* I2C_UNIT_ID      */ { 2,	2,	2,	2},
+/* QSGMII_UNIT_ID   */ { 1,	0,	0,	1},
+/* XAUI_UNIT_ID     */ { 0,	0,	0,	0},
 };
+#else  /* if (CONFIG_ARMADA_39X) */
+MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
+/*			6920	6928	*/
+/* DRAM_UNIT_ID     */ { 1,	1},
+/* PEX_UNIT_ID      */ { 4,	4},
+/* ETH_GIG_UNIT_ID  */ { 3,	3},
+/* USB_UNIT_ID      */ { 0,	1},
+/* USB3_UNIT_ID     */ { 1,	2},
+/* IDMA_UNIT_ID     */ { 0,	0},
+/* XOR_UNIT_ID      */ { 2,	2},
+/* SATA_UNIT_ID     */ { 0,	4},
+/* TDM_32CH_UNIT_ID */ { 0,	1},
+/* UART_UNIT_ID     */ { 4,	4},
+/* CESA_UNIT_ID     */ { 2,	2},
+/* SPI_UNIT_ID      */ { 2,	2},
+/* AUDIO_UNIT_ID    */ { 0,	1},
+/* SDIO_UNIT_ID     */ { 1,	1},
+/* TS_UNIT_ID       */ { 0,	0},
+/* XPON_UNIT_ID     */ { 0,	0},
+/* BM_UNIT_ID       */ { 0,	0},
+/* PNC_UNIT_ID      */ { 0,	0},
+/* I2C_UNIT_ID      */ { 4,	4},
+/* QSGMII_UNIT_ID   */ { 0,	1},
+/* XAUI_UNIT_ID     */ { 1,	1},
+};
+#endif
 
 #define ON_BOARD_RGMII(x)	(1 << x)
 #define SERDES_SGMII(x)		(4 << x)
@@ -217,11 +245,22 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlDevIdIndexGet(void)
 {
-	if (MV_6810_DEV_ID == mvCtrlModelGet())
+	switch (mvCtrlModelGet()) {
+	case MV_6820_DEV_ID:
+		return MV_6820_INDEX;
+	case MV_6810_DEV_ID:
 		return MV_6810_INDEX;
-	if (MV_6920_DEV_ID == mvCtrlModelGet())
+	case MV_6811_DEV_ID:
+		return MV_6811_INDEX;
+	case MV_6828_DEV_ID:
+		return MV_6828_INDEX;
+	case MV_6920_DEV_ID:
 		return MV_6920_INDEX;
-	return MV_6820_INDEX;
+	case MV_6928_DEV_ID:
+		return MV_6928_INDEX;
+	default:
+		return MV_6820_INDEX;
+	}
 }
 
 /*******************************************************************************
@@ -273,6 +312,34 @@ MV_U32 mvCtrlSocUnitInfoNumSet(MV_UNIT_ID unit, MV_U32 maxValue)
 
 	devIdIndex = mvCtrlDevIdIndexGet();
 	return mvCtrlSocUnitNums[unit][devIdIndex] = maxValue;
+}
+
+/* Debug routine, not in use */
+MV_VOID mvCtrlSocUnitInfoPrint(MV_VOID)
+{
+	mvOsPrintf("DRAM     -  %d\n", mvCtrlSocUnitInfoNumGet(DRAM_UNIT_ID));
+	mvOsPrintf("PEX      -  %d\n", mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID));
+	mvOsPrintf("ETH_GIG  -  %d\n", mvCtrlSocUnitInfoNumGet(ETH_GIG_UNIT_ID));
+	mvOsPrintf("USB      -  %d\n", mvCtrlSocUnitInfoNumGet(USB_UNIT_ID));
+	mvOsPrintf("USB3     -  %d\n", mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID));
+	mvOsPrintf("IDMA     -  %d\n", mvCtrlSocUnitInfoNumGet(IDMA_UNIT_ID));
+	mvOsPrintf("XOR      -  %d\n", mvCtrlSocUnitInfoNumGet(XOR_UNIT_ID));
+	mvOsPrintf("SATA     -  %d\n", mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID));
+	mvOsPrintf("TDM      -  %d\n", mvCtrlSocUnitInfoNumGet(TDM_UNIT_ID));
+	mvOsPrintf("UART     -  %d\n", mvCtrlSocUnitInfoNumGet(UART_UNIT_ID));
+	mvOsPrintf("CESA     -  %d\n", mvCtrlSocUnitInfoNumGet(CESA_UNIT_ID));
+	mvOsPrintf("SPI      -  %d\n", mvCtrlSocUnitInfoNumGet(SPI_UNIT_ID));
+	mvOsPrintf("AUDIO    -  %d\n", mvCtrlSocUnitInfoNumGet(AUDIO_UNIT_ID));
+	mvOsPrintf("SDIO     -  %d\n", mvCtrlSocUnitInfoNumGet(SDIO_UNIT_ID));
+	mvOsPrintf("TS       -  %d\n", mvCtrlSocUnitInfoNumGet(TS_UNIT_ID));
+	mvOsPrintf("XPON     -  %d\n", mvCtrlSocUnitInfoNumGet(XPON_UNIT_ID));
+	mvOsPrintf("BM       -  %d\n", mvCtrlSocUnitInfoNumGet(BM_UNIT_ID));
+	mvOsPrintf("PNC      -  %d\n", mvCtrlSocUnitInfoNumGet(PNC_UNIT_ID));
+	mvOsPrintf("I2C      -  %d\n", mvCtrlSocUnitInfoNumGet(I2C_UNIT_ID));
+#ifdef CONFIG_ARMADA_39X
+	mvOsPrintf("QSGMII   -  %d\n", mvCtrlSocUnitInfoNumGet(QSGMII_UNIT_ID));
+	mvOsPrintf("XAUI     -  %d\n", mvCtrlSocUnitInfoNumGet(XAUI_UNIT_ID));
+#endif
 }
 
 /*******************************************************************************
@@ -1041,20 +1108,24 @@ MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID)
 *******************************************************************************/
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
-	MV_U32	ctrlId = MV_REG_READ(DEV_ID_REG);
+	MV_U32	defaultCtrlId, ctrlId = MV_REG_READ(DEV_ID_REG);
 	ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
-	if (ctrlId == 0x6820)
-		return MV_6820_DEV_ID;
-	if (ctrlId == 0x6810)
-		return MV_6810_DEV_ID;
-	if (ctrlId == 0x6910)
-		return MV_6910_DEV_ID;
-	if (ctrlId == 0x6920)
-		return MV_6920_DEV_ID;
-	if (ctrlId == 0x6928)
-		return MV_6928_DEV_ID;
 
-	return MV_INVALID_DEV_ID;
+	switch (ctrlId) {
+	case MV_6820_DEV_ID:
+	case MV_6810_DEV_ID:
+	case MV_6811_DEV_ID:
+	case MV_6828_DEV_ID:
+	case MV_6920_DEV_ID:
+	case MV_6928_DEV_ID:
+		return ctrlId;
+	default:
+		/*Device ID Default for A38x: 6820 , for A39x: 6920 */
+		defaultCtrlId = mvCtrlDevFamilyIdGet(0) == MV_88F68XX ? MV_6820_DEV_ID : MV_6920_DEV_ID;
+		mvOsPrintf("%s:Error retrieving device ID (%x)", __func__, ctrlId);
+		mvOsPrintf("using default ID = %x\n", defaultCtrlId);
+		return defaultCtrlId;
+	}
 }
 
 /*******************************************************************************

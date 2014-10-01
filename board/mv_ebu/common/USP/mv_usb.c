@@ -111,7 +111,7 @@ static int mv_xhci_core_init(MV_U32 unitId)
 int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 {
 	if (mvCtrlUsb3MaxGet() <= 0) {
-		mvOsPrintf("%s: Error: USB 3.0 is not supported on current soc\n", __func__);
+		mvOsPrintf("\n%s: Error: USB 3.0 is not supported on current device\n", __func__);
 		return -1;
 	}
 
@@ -260,11 +260,17 @@ int usb_lowlevel_init(int index, void **controller)
 	return hc->hc_usb_lowlevel_init(usbActive, controller);
 
 input_error:
-	mvOsPrintf("'usbType' Error: Type %d is not valid. Supported types:\n", usbType);
+	mvOsPrintf("Error: requested 'usbType' (Type %d) is not supported", usbType);
+	if ((usbType == 2 && usb2UnitNum < 1) || (usbType ==3 && usb3UnitNum < 1))
+		mvOsPrintf(" (no available USB ports).\n");
+
+	if ((hc_ehci.interface_supported == MV_TRUE && usb2UnitNum > 0) ||
+		(hc_xhci.interface_supported == MV_TRUE && usb3UnitNum > 0))
+		mvOsPrintf("\n\n\t Supported Units:\n");
 	if (hc_ehci.interface_supported == MV_TRUE && usb2UnitNum > 0)
-		mvOsPrintf("\tusbType = 2 --> EHCI Stack will be used\n");
+		mvOsPrintf("\n\tUSB2.0: %d ports: set usbType = 2 --> EHCI Stack will be used\n", usb2UnitNum);
 	if (hc_xhci.interface_supported == MV_TRUE && usb3UnitNum > 0)
-		mvOsPrintf("\tusbType = 3 --> XHCI Stack will be used\n");
+		mvOsPrintf("\tUSB3.0: %d ports: set usbType = 3 --> xHCI Stack will be used\n", usb3UnitNum);
 	return -1;
 }
 

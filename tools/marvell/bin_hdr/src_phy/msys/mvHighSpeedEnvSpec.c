@@ -199,10 +199,22 @@ SERDES_MAP* marvellBoardSerdesTopology[] =
 	serdesRd24_Topology,
 };
 
+#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+
 /*************************** Functions implementation *************************/
 
-
-#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+/**************************************************************************
+ * mvHwsSerdesLastLaneGet -
+ *
+ * DESCRIPTION:          return last lane number.
+ * INPUT:   			 NONE.
+ * OUTPUT:               None.
+ * RETURNS:              number of lanes
+ ***************************************************************************/
+MV_U32 mvHwsSerdesLastLaneGet(MV_VOID)
+{
+	return LAST_LANE_NUM;
+}
 
 /**************************************************************************
  * boardTopologyLoad -

@@ -71,14 +71,6 @@
 #include "soc_spec.h"
 #include "mvSiliconIf.h"
 
-#if defined(MV_MSYS_AC3)	/* TBD - create a platform-specifica function for obtaining these parameters */
-#define MAX_SERDES_LANES		3
-#define MAX_SERDES_UNITS		12
-#else
-#define MAX_SERDES_LANES		6
-#define MAX_SERDES_UNITS		0 /* Not used so far, should be re-defined later */
-#endif
-
 #define NA                      8
 #define DEFAULT_PARAM           0
 #define MV_BOARD_TCLK_ERROR     0xFFFFFFFF

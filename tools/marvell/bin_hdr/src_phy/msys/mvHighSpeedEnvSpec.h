@@ -68,6 +68,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bootstrap_os.h"
 #include "mv_seq_exec_ext.h"
 
+/********************************* Definitions *************************/
+
+#if defined(MV_MSYS_AC3)
+#define MAX_SERDES_LANES		3
+#define LAST_LANE_NUM			12
+#else
+#define MAX_SERDES_LANES		6
+#define LAST_LANE_NUM			0 /* Not used so far, should be re-defined later */
+#endif
+
 /********************************* Enum ********************************/
 typedef enum {
 	PEX0,
@@ -133,6 +143,18 @@ typedef struct {
 /*********************************** Globals **********************************/
 /* A generic function pointer for loading the board topology map */
 typedef MV_STATUS (*loadTopologyFuncPtr)(SERDES_MAP  *serdesMapArray);
+
+/*************************** Functions declarations ***************************/
+
+/**************************************************************************
+ * mvHwsSerdesLastLaneGet -
+ *
+ * DESCRIPTION:          return last lane number.
+ * INPUT:   			 NONE.
+ * OUTPUT:               None.
+ * RETURNS:              number of lanes
+ ***************************************************************************/
+MV_U32 mvHwsSerdesLastLaneGet(MV_VOID);
 
 #endif /* _MV_HIGHSPEED_ENV_SPEC_H */
 

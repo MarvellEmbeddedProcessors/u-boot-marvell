@@ -110,19 +110,7 @@ static int mv_xhci_core_init(MV_U32 unitId)
 
 int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 {
-	MV_U32 ctrlModel = mvCtrlModelGet();
-
-	switch (ctrlModel) {
-	case MV_6928_DEV_ID:
-	case MV_6920_DEV_ID:
-	case MV_6910_DEV_ID:
-	case MV_6820_DEV_ID:
-	case MV_6810_DEV_ID:
-	case MV_6660_DEV_ID:
-	case MV_6720_DEV_ID:
-		break;
-	default:
-	/* USB 3.0 is currently supported only for ALP DB-6660 and A375 board */
+	if (mvCtrlUsb3MaxGet() <= 0) {
 		mvOsPrintf("%s: Error: USB 3.0 is not supported on current soc\n", __func__);
 		return -1;
 	}

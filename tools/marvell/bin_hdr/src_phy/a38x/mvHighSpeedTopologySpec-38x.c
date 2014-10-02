@@ -141,20 +141,6 @@ typedef enum {
 
 /************************* Local functions declarations ***********************/
 /**************************************************************************
- * loadTopologyDB -
- *
- * DESCRIPTION:          Loads the board topology for the DB_A38X_BP board
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology map.
- * RETURNS:              MV_OK           -   for success
- *                       MV_FAIL         -   for failure (a wrong
- *                                           topology mode was read
- *                                           from the board)
- ***************************************************************************/
-MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray);
-
-/**************************************************************************
  * topologyConfigDBModeGet -
  *
  * DESCRIPTION:          Gets the relevant topology mode (index).
@@ -163,10 +149,12 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray);
  * OUTPUT:               None.
  * RETURNS:              the topology mode
  ***************************************************************************/
+MV_U8 topologyConfigDBModeGet(MV_VOID);
+
 /**************************************************************************
- * loadTopologyDBAp -
+ * loadTopologyXXX -
  *
- * DESCRIPTION:          Loads the board topology for the DB_A38X_-AP board
+ * DESCRIPTION:          Loads the board topology for the XXX board
  * INPUT:                serdesMapArray  -   The struct that will contain
  *                                           the board topology map
  * OUTPUT:               The board topology map.
@@ -175,42 +163,28 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray);
  *                                           topology mode was read
  *                                           from the board)
  ***************************************************************************/
-MV_STATUS loadTopologyDBAp(SERDES_MAP  *serdesMapArray);
 
-MV_U8 topologyConfigDBModeGet(MV_VOID);
+/* loadTopologyDB - Loads the board topology from DB Board */
+MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray);
 
-/**************************************************************************
- * loadTopologyRD -
- *
- * DESCRIPTION:          Loads the board topology from RD
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology.
- * RETURNS:              MV_OK           -   for success
- ***************************************************************************/
+
+/* loadTopologyRD - Loads the board topology from RD Board */
 MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray);
+/***************************************************************************/
 
-/**************************************************************************
- * loadTopologyRDNas -
- *
- * DESCRIPTION:          Loads the board topology for RD NAS board
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology.
- * RETURNS:              MV_OK           -   for success
- ***************************************************************************/
+/* loadTopologyRDNas - Loads the board topology from RD NAS Board */
 MV_STATUS loadTopologyRDNas(SERDES_MAP  *serdesMapArray);
+/***************************************************************************/
 
-/**************************************************************************
- * loadTopologyRDAp -
- *
- * DESCRIPTION:          Loads the board topology for RD AP board
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology.
- * RETURNS:              MV_OK           -   for success
- ***************************************************************************/
+/* loadTopologyRDAp - Loads the board topology from RD Ap Board */
 MV_STATUS loadTopologyRDAp(SERDES_MAP  *serdesMapArray);
+
+/* loadTopologyDBAp - Loads the board topology from DB-AP Board */
+MV_STATUS loadTopologyDBAp(SERDES_MAP  *serdesMapArray);
+/***************************************************************************/
+
+/* loadTopologyDBGp - Loads the board topology from RD Ap Board */
+MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray);
 
 /**************************************************************************
  * loadTopologyRDSgmiiUsb -
@@ -229,6 +203,7 @@ loadTopologyFuncPtr loadTopologyFuncArr[] =
 	loadTopologyDB,		/* DB BP */
 	loadTopologyRD,         /* RD AP */
 	loadTopologyDBAp,	/* DB AP */
+	loadTopologyDBGp,	/* DB GP */
 };
 
 /*********************************** Globals **********************************/
@@ -344,6 +319,19 @@ SERDES_MAP DbApConfigDefault[MAX_SERDES_LANES] =
 	{ SGMII2,	__3_125Gbps,		SERDES_DEFAULT_MODE	},
 	{ USB3_HOST0,	__5Gbps,		SERDES_DEFAULT_MODE	},
 	{ PEX2,		__5Gbps,		PEX_ROOT_COMPLEX_x1	}
+};
+
+/*************************************/
+/** Load topology - Marvell DB - GP **/
+/*************************************/
+SERDES_MAP DbGpConfigDefault[MAX_SERDES_LANES] =
+{
+	{ PEX0,		__5Gbps,		PEX_ROOT_COMPLEX_x1	},
+	{ SATA0,	__3Gbps,		SERDES_DEFAULT_MODE	},
+	{ SATA1,	__3Gbps,		SERDES_DEFAULT_MODE	},
+	{ SATA3,	__3Gbps,		SERDES_DEFAULT_MODE	},
+	{ USB3_HOST0,	__5Gbps,		SERDES_DEFAULT_MODE	},
+	{ SATA2,	__3Gbps,		SERDES_DEFAULT_MODE	}
 };
 
 /*************************** Functions implementation *************************/
@@ -526,6 +514,27 @@ MV_STATUS loadTopologyDBAp(SERDES_MAP  *serdesMapArray)
 	DEBUG_INIT_FULL_S("\n### loadTopologyDBAp ###\n");
 
 	topologyConfigPtr = DbApConfigDefault;
+
+	/* Updating the topology map */
+	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
+		serdesMapArray[laneNum].serdesMode =  topologyConfigPtr[laneNum].serdesMode;
+		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
+		serdesMapArray[laneNum].serdesType =  topologyConfigPtr[laneNum].serdesType;
+	}
+
+	updateTopologySatR(serdesMapArray);
+
+	return MV_OK;
+}
+
+MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray)
+{
+	MV_U32 laneNum;
+	SERDES_MAP* topologyConfigPtr;
+
+	DEBUG_INIT_FULL_S("\n### loadTopologyDBGp ###\n");
+
+	topologyConfigPtr = DbGpConfigDefault;
 
 	/* Updating the topology map */
 	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {

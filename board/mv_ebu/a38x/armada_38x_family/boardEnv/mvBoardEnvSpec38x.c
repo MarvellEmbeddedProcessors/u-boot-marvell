@@ -119,19 +119,19 @@ MV_BOARD_MPP_INFO armada_38x_customer_0_BoardMppConfigValue[] = {
 };
 
 struct MV_BOARD_IO_EXPANDER armada_38x_customer_0_IoExpanderInfo[] = {
-	{0, 6, 0xF4},
-	{0, 7, 0xC3},
-	{0, 2, 0x0B},
-	{0, 3, 0x18},
-	{1, 6, 0xE7},
-	{1, 7, 0xF9},
-	{1, 2, 0x08},
-	{1, 3, 0x00}
+	{0, 6, 0xF4}, /* Configuration registers: Bit on --> Input bits  */
+	{0, 7, 0xC3}, /* Configuration registers: Bit on --> Input bits  */
+	{0, 2, 0x0B}, /* Output Data, register#0 */
+	{0, 3, 0x18}, /* Output Data, register#1 */
+	{1, 6, 0xE7}, /* Configuration registers: Bit on --> Input bits  */
+	{1, 7, 0xF9}, /* Configuration registers: Bit on --> Input bits  */
+	{1, 2, 0x08}, /* Output Data, register#0 */
+	{1, 3, 0x00}  /* Output Data, register#1 */
 };
 
 MV_BOARD_INFO armada_38x_customer_board_0_info = {
 	.boardName			= "A38x-Customer-Board-0",
-	.numBoardNetComplexValue		= ARRSZ(armada_38x_customer_0_BoardMppConfigValue),
+	.numBoardNetComplexValue		= 0,
 	.pBoardNetComplexInfo		= NULL,
 	.pBoardMppConfigValue		= armada_38x_customer_0_BoardMppConfigValue,
 	.intsGppMaskLow			= 0,
@@ -260,8 +260,8 @@ MV_BOARD_TDM_SPI_INFO db88f68xxTdmSpiInfo[] = { {1} };
 
 MV_BOARD_INFO db88f68xx_board_info = {
 	.boardName		= "DB-88F6820-BP",
-	.numBoardNetComplexValue	= 0,		/* ARRSZ(db88f68XXInfoBoardModTypeInfo), */
-	.pBoardNetComplexInfo	= NULL,		/* db88f68XXInfoBoardModTypeInfo, */
+	.numBoardNetComplexValue	= 0,
+	.pBoardNetComplexInfo	= NULL,
 	.pBoardMppConfigValue	= db88f68xxInfoBoardMppConfigValue,
 	.intsGppMaskLow		= 0,
 	.intsGppMaskMid		= 0,
@@ -356,19 +356,19 @@ MV_BOARD_MPP_INFO rdNas88f68XXInfoBoardMppConfigValue[] = {
 };
 
 struct MV_BOARD_IO_EXPANDER ioExpNas[] = {
-	{0, 6, 0xF4},
-	{0, 7, 0xC3},
-	{0, 2, 0x0B},
-	{0, 3, 0x18},
-	{1, 6, 0xE7},
-	{1, 7, 0xF9},
-	{1, 2, 0x08},
-	{1, 3, 0x00}
+	{0, 6, 0xF4}, /* Configuration registers: Bit on --> Input bits  */
+	{0, 7, 0xC3}, /* Configuration registers: Bit on --> Input bits  */
+	{0, 2, 0x0B}, /* Output Data, register#0 */
+	{0, 3, 0x18}, /* Output Data, register#1 */
+	{1, 6, 0xE7}, /* Configuration registers: Bit on --> Input bits  */
+	{1, 7, 0xF9}, /* Configuration registers: Bit on --> Input bits  */
+	{1, 2, 0x08}, /* Output Data, register#0 */
+	{1, 3, 0x00}  /* Output Data, register#1 */
 };
 
 MV_BOARD_INFO rdNas88f68XX_board_info = {
 	.boardName			= "RD-NAS-88F6820-DDR3",
-	.numBoardNetComplexValue	= ARRSZ(rdNas88f68XXInfoBoardMppConfigValue),
+	.numBoardNetComplexValue	= 0,
 	.pBoardNetComplexInfo		= NULL,
 	.pBoardMppConfigValue	= rdNas88f68XXInfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
@@ -436,18 +436,18 @@ MV_BOARD_MPP_INFO rdWap88f68XXInfoBoardMppConfigValue[] = {
 };
 
 struct MV_BOARD_IO_EXPANDER ioExpWap[] = {
-	{0, 6, 0xF4},
-	{0, 7, 0xC3},
-	{0, 2, 0x0B},
-	{0, 3, 0x18},
-	{1, 6, 0xE7},
-	{1, 7, 0xF9},
-	{1, 2, 0x18},
-	{1, 3, 0x06}
+	{0, 6, 0xF4}, /* Configuration registers: Bit on --> Input bits  */
+	{0, 7, 0xC3}, /* Configuration registers: Bit on --> Input bits  */
+	{0, 2, 0x0B}, /* Output Data, register#0 */
+	{0, 3, 0x18}, /* Output Data, register#1 */
+	{1, 6, 0xE7}, /* Configuration registers: Bit on --> Input bits  */
+	{1, 7, 0xF9}, /* Configuration registers: Bit on --> Input bits  */
+	{1, 2, 0x18}, /* Output Data, register#0 */
+	{1, 3, 0x06}  /* Output Data, register#1 */
 };
 MV_BOARD_INFO rdWAP88f68XX_board_info = {
 	.boardName			= "RD-AP-88F6820-DDR3",
-	.numBoardNetComplexValue	= ARRSZ(rdWap88f68XXInfoBoardMppConfigValue),
+	.numBoardNetComplexValue	= 0,
 	.pBoardNetComplexInfo		= NULL,
 	.pBoardMppConfigValue	= rdWap88f68XXInfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
@@ -561,8 +561,8 @@ MV_BOARD_TDM_SPI_INFO dbAP88f68xxTdmSpiInfo[] = { {1} };
 
 MV_BOARD_INFO dbAP88f68xx_board_info = {
 	.boardName              = "DB-88F6820-AP",
-	.numBoardNetComplexValue   = 0,            /* ARRSZ(db88f68XXInfoBoardModTypeInfo), */
-	.pBoardNetComplexInfo     = NULL,         /* db88f68XXInfoBoardModTypeInfo, */
+	.numBoardNetComplexValue   = 0,
+	.pBoardNetComplexInfo     = NULL,
 	.pBoardMppConfigValue   = dbAP88f68xxInfoBoardMppConfigValue,
 	.intsGppMaskLow         = 0,
 	.intsGppMaskMid         = 0,
@@ -603,9 +603,112 @@ MV_BOARD_INFO dbAP88f68xx_board_info = {
 	.boardOptionsModule             = MV_MODULE_NO_MODULE
 };
 
+/*******************************************************************************
+ * A380 DB-GP-88F68XX board */
+/*******************************************************************************/
+MV_BOARD_TWSI_INFO dbGP88F68XXInfoBoardTwsiDev[] = {
+	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{ BOARD_DEV_TWSI_SATR,	0,	0x57, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,	1,	0x4C, ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,	1,	0x4D, ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	0,	0x20, ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	1,	0x21, ADDR7_BIT, MV_FALSE},
+};
+MV_BOARD_MAC_INFO dbGP88F68XXInfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x1, 0x1},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0}
+};
+
+MV_DEV_CS_INFO dbGP88F68XXInfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#if defined(MV_INCLUDE_SPI)
+	{ SPI0_CS0,	N_A,	BOARD_DEV_SPI_FLASH,	8,	8}  /* SPI DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO dbGP88f68XXInfoBoardMppConfigValue[] = {
+	{ {
+		DB_GP_88F68XX_MPP0_7,
+		DB_GP_88F68XX_MPP8_15,
+		DB_GP_88F68XX_MPP16_23,
+		DB_GP_88F68XX_MPP24_31,
+		DB_GP_88F68XX_MPP32_39,
+		DB_GP_88F68XX_MPP40_47,
+		DB_GP_88F68XX_MPP48_55,
+		DB_GP_88F68XX_MPP56_63,
+	} }
+};
+
+struct MV_BOARD_IO_EXPANDER dbGP88f68XXInfoBoardioExpValue[] = {
+	{0, 6, 0x20}, /* Configuration registers: Bit on --> Input bits */
+	{0, 7, 0xC3}, /* Configuration registers: Bit on --> Input bits */
+	{0, 2, 0x1D}, /* Output Data, register#0 */
+	{0, 3, 0x18}, /* Output Data, register#1 */
+	{1, 6, 0xC3}, /* Configuration registers: Bit on --> Input bits  */
+	{1, 7, 0x31}, /* Configuration registers: Bit on --> Input bits  */
+	{1, 2, 0x08}, /* Output Data, register#0 */
+	{1, 3, 0xC0}  /* Output Data, register#1 */
+};
+
+MV_BOARD_INFO dbGP88f68XX_board_info = {
+	.boardName			= "DB-GP-88F6820-DDR3",
+	.numBoardNetComplexValue	= 0,
+	.pBoardNetComplexInfo		= NULL,
+	.pBoardMppConfigValue		= dbGP88f68XXInfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(dbGP88F68XXInfoBoardDeCsInfo),
+	.pDevCsInfo				= dbGP88F68XXInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(dbGP88F68XXInfoBoardTwsiDev),
+	.pBoardTwsiDev			= dbGP88F68XXInfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(dbGP88F68XXInfoBoardMacInfo),
+	.pBoardMacInfo			= dbGP88F68XXInfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= 0,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow			= DB_GP_88F68XX_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= DB_GP_88F68XX_GPP_OUT_ENA_MID,
+	.gppOutValLow			= DB_GP_88F68XX_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= DB_GP_88F68XX_GPP_OUT_VAL_MID,
+	.gppPolarityValLow		= DB_GP_88F68XX_GPP_POL_LOW,
+	.gppPolarityValMid		= DB_GP_88F68XX_GPP_POL_MID,
+
+	/* TDM */
+	.numBoardTdmInfo		= {},
+	.pBoardTdmInt2CsInfo		= {},
+	.boardTdmInfoIndex		= -1,
+
+	.pBoardSpecInit			= NULL,
+
+	/* NAND init params */
+	.nandFlashReadParams		= 0,
+	.nandFlashWriteParams		= 0,
+	.nandFlashControl		= 0,
+	.nandIfMode			= NAND_IF_NFC,
+	/* NOR init params */
+	.norFlashReadParams		= 0,
+	.norFlashWriteParams		= 0,
+	/* Enable modules auto-detection. */
+	.configAutoDetect		= MV_TRUE,
+	.numIoExp			= ARRSZ(dbGP88f68XXInfoBoardioExpValue),
+	.pIoExp				= dbGP88f68XXInfoBoardioExpValue,
+	.boardOptionsModule		= MV_MODULE_NO_MODULE
+};
+
 MV_BOARD_INFO *marvellBoardInfoTbl[] = {
 	&rdNas88f68XX_board_info,
 	&db88f68xx_board_info,
 	&rdWAP88f68XX_board_info,
-	&dbAP88f68xx_board_info
+	&dbAP88f68xx_board_info,
+	&dbGP88f68XX_board_info,
 };

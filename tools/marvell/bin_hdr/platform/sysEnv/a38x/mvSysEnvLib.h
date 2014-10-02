@@ -63,6 +63,7 @@
 *******************************************************************************/
 #ifndef __INCmvSysEnvLibh
 #define __INCmvSysEnvLibh
+#include "ddr3_hws_hw_training.h"
 
 /********************************* Definitions ********************************/
 
@@ -325,6 +326,9 @@ typedef struct boardWakeupGPIO {
 };
 #endif /* MV88F68XX */
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+extern MV_DRAM_DLB_CONFIG ddr3DlbConfigTable[];
+extern MV_DRAM_DLB_CONFIG ddr3DlbConfigTable_A0[];
+
 /**************************************************************************
  * mvBoardTclkGet -
  *
@@ -419,6 +423,16 @@ MV_U32 mvSysEnvDeviceIdGet(MV_VOID);
 * RRETURNS:	MV_U32 with Device ID
  ***************************************************************************/
 MV_U16 mvSysEnvModelGet(MV_VOID);
+/*******************************************************************************
+* mvSysEnvDlbConfigPtrGet
+* DESCRIPTION: defines pointer to to DLB COnfiguration table
+* INPUT: none
+* OUTPUT: 
+* RETURN:
+*       returns pointer to DLB COnfiguration table
+*******************************************************************************/
+MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID);
+
 #ifdef CONFIG_CMD_BOARDCFG
 #define MV_INFO_TWSI_EEPROM_DEV     0x50
 #define EEPROM_VERIFICATION_PATTERN     0xfadecafe

@@ -75,6 +75,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif defined(MV_MSYS_AC3)
 #include "ddr3_msys_ac3.h"
 #include "ddr3_msys_ac3_config.h"
+
 #endif
 
 #include "bin_hdr_twsi.h"
@@ -202,3 +203,16 @@ MV_U32 mvSysEnvSuspendWakeupCheck(void)
 	/* TBD */
 	return 0;
 }
+/*******************************************************************************
+* mvSysEnvDlbConfigPtrGet
+* DESCRIPTION: defines pointer to to DLB COnfiguration table
+* INPUT: none
+* OUTPUT: 
+* RETURN:
+*       returns pointer to DLB COnfiguration table
+*******************************************************************************/
+MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID)
+{
+	return (&ddr3DlbConfigTable[0]);
+}
+

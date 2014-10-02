@@ -558,16 +558,20 @@ MV_VOID getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs)
 		return;
 }
 
+
 MV_VOID ddr3NewTipDlbConfig()
 {
 	MV_U32 uiReg, i = 0;
+	MV_DRAM_DLB_CONFIG  *ConfigTablePtr= mvSysEnvDlbConfigPtrGet();
+
 
 	/*Write the configuration*/
-	while(ddr3DlbConfigTable[i].regAddr != 0)
+	while(ConfigTablePtr[i].regAddr != 0)
 	{
-		MV_REG_WRITE(ddr3DlbConfigTable[i].regAddr, ddr3DlbConfigTable[i].regData);
+		MV_REG_WRITE(ConfigTablePtr[i].regAddr, ConfigTablePtr[i].regData);
 		i++;
 	}
+
 #ifdef CONFIG_DDR4
 	uiReg = MV_REG_READ(REG_DDR_CONT_HIGH_ADDR);
 	uiReg |= DLB_INTERJECTION_ENABLE;
@@ -579,6 +583,8 @@ MV_VOID ddr3NewTipDlbConfig()
 	uiReg |= (DLB_ENABLE | DLB_WRITE_COALESING | DLB_AXI_PREFETCH_EN | DLB_MBUS_PREFETCH_EN | PreFetchNLnSzTr);
 	MV_REG_WRITE(REG_STATIC_DRAM_DLB_CONTROL, uiReg);
 }
+
+
 
 MV_VOID ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
 

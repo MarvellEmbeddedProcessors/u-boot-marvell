@@ -310,6 +310,12 @@ MV_U32 mvCtrlSocUnitInfoNumSet(MV_UNIT_ID unit, MV_U32 maxValue)
 		return 0;
 	}
 
+	/* verify requested unit count is Valid - verify with flavor super-set limitation */
+	if (maxValue > mvCtrlSocUnitInfoNumGet(unit)) {
+		mvOsPrintf("%s: Error: invalid unit count (unit = %u, count = %d )\n", __func__, unit, maxValue);
+		return 0;
+	}
+
 	devIdIndex = mvCtrlDevIdIndexGet();
 	return mvCtrlSocUnitNums[unit][devIdIndex] = maxValue;
 }

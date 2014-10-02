@@ -81,7 +81,7 @@
 
 MV_BOARD_TWSI_INFO armada_38x_customer_0_BoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,	0,	0x50, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,	0,	0x57, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
 	{ BOARD_DEV_TWSI_SATR,	1,	0x4C, ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_IO_EXPANDER,	0,	0x20, ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_IO_EXPANDER,	1,	0x21, ADDR7_BIT, MV_FALSE},
@@ -221,7 +221,7 @@ MV_BOARD_MPP_INFO db88f68xxInfoBoardMppConfigValue[] = {
 
 MV_BOARD_TWSI_INFO db88f68xxInfoBoardTwsiDev[] = {
 	/* {{devClass,		devClassId, twsiDevAddr, twsiDevAddrType, moreThen256}} */
-	{ BOARD_DEV_TWSI_SATR,		0,	0x50,	   ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,		0,	0x57,	   ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
 	{ BOARD_DEV_TWSI_SATR,		1,	0x4c,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_DEV_TWSI_SATR,		2,	0x4d,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_DEV_TWSI_SATR,		3,	0x4e,	   ADDR7_BIT, MV_FALSE},
@@ -232,7 +232,6 @@ MV_BOARD_TWSI_INFO db88f68xxInfoBoardTwsiDev[] = {
 	{ BOARD_TWSI_MODULE_DETECT,	3,	0x25,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_MODULE_DETECT,	4,	0x26,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_MODULE_DETECT,	5,	0x27,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_DEV_TWSI_EEPROM,	0,	0x50,	   ADDR7_BIT, MV_TRUE},
 };
 MV_BOARD_MAC_INFO db88f68xxInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
@@ -324,7 +323,7 @@ MV_BOARD_INFO db88f68xx_board_info = {
 /*******************************************************************************/
 MV_BOARD_TWSI_INFO rd88F68XXInfoBoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,	0,	0x50, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,	0,	0x57, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
 	{ BOARD_DEV_TWSI_SATR,	1,	0x4C, ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_IO_EXPANDER,	0,	0x20, ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_IO_EXPANDER,	1,	0x21, ADDR7_BIT, MV_FALSE},
@@ -522,7 +521,7 @@ MV_BOARD_MPP_INFO dbAP88f68xxInfoBoardMppConfigValue[] = {
 
 MV_BOARD_TWSI_INFO dbAP88f68xxInfoBoardTwsiDev[] = {
 	/* {{devClass,          devClassId, twsiDevAddr, twsiDevAddrType, moreThen256}} */
-	{ BOARD_DEV_TWSI_SATR,          0,      0x50,      ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,          0,      0x57,      ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
 	{ BOARD_DEV_TWSI_SATR,          1,      0x4c,      ADDR7_BIT, MV_FALSE},
 	{ BOARD_DEV_TWSI_SATR,          2,      0x4d,      ADDR7_BIT, MV_FALSE},
 	{ BOARD_DEV_TWSI_SATR,          3,      0x4e,      ADDR7_BIT, MV_FALSE},

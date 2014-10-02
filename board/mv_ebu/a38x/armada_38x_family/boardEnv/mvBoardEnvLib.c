@@ -1589,6 +1589,38 @@ MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index)
 
 	return 0xFF;
 }
+
+/*******************************************************************************
+* mvBoardTwsiAddrSet
+*
+* DESCRIPTION:
+*	Set a new TWSI address for a given twsi device class.
+*
+* INPUT:
+*	twsiClass - The TWSI device to return the address type for.
+*	index	  - The TWSI device index (Pass 0 in case of a single
+*		    device)
+*	address   - The new TWSI address.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	The TWSI address.
+*
+*******************************************************************************/
+MV_VOID mvBoardTwsiAddrSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index, MV_U8 address)
+{
+	int i;
+
+	for (i = 0; i < board->numBoardTwsiDev; i++) {
+		if ((board->pBoardTwsiDev[i].devClass == twsiClass) \
+				&& (board->pBoardTwsiDev[i].devClassId == index)) {
+			board->pBoardTwsiDev[i].twsiDevAddr = address;
+		}
+	}
+}
+
 /*******************************************************************************
 * mvBoardTwsiIsMore256Get
 *
@@ -1845,9 +1877,16 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		gBoardId = CUSTOMER_BOARD_ID1;
 	#endif
 #else /* !CONFIG_CUSTOMER_BOARD_SUPPORT */
-	/* For Marvell Boards: Temporarily set generic board struct pointer to
-	   use S@R TWSI address, and read board ID */
+	/* Temporarily set generic board struct pointer, to set/get EEPROM i2c address, and read board ID */
 	board = marvellBoardInfoTbl[mvBoardIdIndexGet(MV_DEFAULT_BOARD_ID)];
+
+	/* Up to Z revision, A38x Marvell board ID was saved on EEPROM@0x50.
+	 * due to i2c address conflict between the SFP transceiver,
+	 * starting from A0 rev, the EEPROM address is shifted to 0x57.
+	 * if running A38x Z rev, use the old address = 0x50*/
+	if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX && mvCtrlRevGet() == MV_88F68XX_69XX_Z1_ID)
+		mvBoardTwsiAddrSet(BOARD_DEV_TWSI_SATR, 0, MV_A38X_Z_REV_BOARDID_I2C_ADDR);
+
 	MV_U8 readValue;
 	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, 0, &readValue, 1) != MV_OK) {
 		mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);

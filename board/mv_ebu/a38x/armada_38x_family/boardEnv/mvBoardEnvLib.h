@@ -93,6 +93,7 @@ extern "C" {
 #define MV_BOARD_MAX_MPP_GROUPS         9
 #define MV_BOARD_MPP_GROUPS_MAX_TYPES   8
 #define MV_BOARD_NAME_LEN               0x20
+#define MV_A38X_Z_REV_BOARDID_I2C_ADDR	0x50
 
 typedef enum _devBoardOtherTypeClass {
 	MV_BOARD_NONE		= 0x00000000,
@@ -495,6 +496,7 @@ MV_32 mvBoardGetDeviceWinSize(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_U32 boardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_U8 mvBoardTwsiAddrTypeGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
+MV_VOID mvBoardTwsiAddrSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index, MV_U8 address);
 MV_U8 mvBoardTwsiIsMore256Get(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_U32 mvBoardNetComplexConfigGet(MV_VOID);
 MV_VOID mvBoardNetComplexConfigSet(MV_U32 ethConfig);

@@ -74,38 +74,13 @@ MV_STATUS getUsbActive(MV_U32 usbUnitId, MV_U32 maxUsbPorts)
 /**********************      xHCI Stack registration layer  **********************/
 /*********************************************************************************/
 /*
- * initialize USB3 :
- * - Set UTMI PHY Selector
- * - Map DDR address space to xHCI
- * - LFPS FREQ WA
+ * initialize USB3 Core:
+ * Set UTMI PHY Selector
  */
-static int mv_xhci_core_init(MV_U32 unitId)
+static void mv_xhci_core_init(MV_U32 unitId)
 {
-	int reg, mask;
-	MV_U32 rev = mvCtrlRevGet();
-	MV_U32 family = mvCtrlDevFamilyIdGet(0);
-
-	/* LFPS FREQUENCY WA for alp/a375 Z revisions (Should be fixed for A0) */
-	if ((family == MV_88F66X0) && (rev == MV_88F66X0_Z1_ID ||
-		rev == MV_88F66X0_Z2_ID || rev == MV_88F66X0_Z3_ID )) {
-		/*
-		 * All defines below are used for a temporary workaround, and therefore
-		 * placed inside the code and not in an include file
-		 */
-		#define USB3_MAC_REGS_BASE_OFFSET	(0x10000)
-		#define USB3_CNTR_PULSE_WIDTH_OFFSET	(0x454)
-		#define REF_CLK_100NS_OFFSET		(24)
-		#define REF_CLK_100NS_MASK		(0xFF)
-		//#define USB3_MAC_REGS_SIZE		(0x500)
-		#define USB3_MAC_REGS_BASE (USB3_REGS_PHYS_BASE(0) + USB3_MAC_REGS_BASE_OFFSET)
-
-		/* Modify the LFPS timing to fix clock issues on ALP-Z1 */
-		reg = MV_REG_READ(USB3_MAC_REGS_BASE + USB3_CNTR_PULSE_WIDTH_OFFSET);
-		mask = ~(REF_CLK_100NS_MASK << REF_CLK_100NS_OFFSET);
-		reg = (reg & mask) | (0x10 << REF_CLK_100NS_OFFSET);
-		MV_REG_WRITE(USB3_MAC_REGS_BASE + USB3_CNTR_PULSE_WIDTH_OFFSET, reg);
-	}
-	return 0;
+	/* A shared xHCI MAC with USB2/3 requires UTMI Phy selection */
+	mvCtrlUtmiPhySelectorSet(USB3_UNIT_ID);
 }
 
 int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
@@ -114,9 +89,6 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 		mvOsPrintf("\n%s: Error: USB 3.0 is not supported on current device\n", __func__);
 		return -1;
 	}
-
-	/* ALP/A375 USB2 port 0 is a shared MAC with USB2/3, and requires UTMI Phy selection */
-	mvCtrlUtmiPhySelectorSet(USB3_UNIT_ID);
 
 	mv_xhci_core_init(index);
 

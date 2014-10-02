@@ -270,6 +270,28 @@ MV_U8 mvSysEnvDeviceRevGet(MV_VOID)
     value = MV_REG_READ(DEV_VERSION_ID_REG);
     return ((value & (REVISON_ID_MASK)) >> REVISON_ID_OFFS);
 }
+/*******************************************************************************
+* mvSysEnvDlbConfigPtrGet
+*
+* DESCRIPTION: defines pointer to to DLB COnfiguration table
+*
+* INPUT: none
+*
+* OUTPUT: pointer to DLB COnfiguration table
+*
+* RETURN:
+*       returns pointer to DLB COnfiguration table
+*
+*******************************************************************************/
+MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID)
+{
+	if (mvSysEnvDeviceRevGet() == MV_88F68XX_A0_ID)
+		return (&ddr3DlbConfigTable_A0[0]);
+	else
+		return (&ddr3DlbConfigTable[0]);
+
+}
+
 
 #ifdef CONFIG_CMD_BOARDCFG
 MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_EEPROM_CONFIG_INFO;

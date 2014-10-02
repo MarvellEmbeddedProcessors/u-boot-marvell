@@ -65,7 +65,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef __INCmvBHboardEnvSpech
 #define __INCmvBHboardEnvSpech
-
+#include "ddr3_hws_hw_training.h"
 /* Board specific configuration */
 /* ============================ */
 /* Bobcat2 Customer Boards */
@@ -104,6 +104,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define INVALID_BOARD_ID		0xFFFF
 #define BOARD_ID_INDEX_MASK		0x10	/* Mask used to return board index via board Id */
 
+extern MV_DRAM_DLB_CONFIG ddr3DlbConfigTable[];
 
 /*************************** Functions declarations ***************************/
 
@@ -113,5 +114,16 @@ MV_U32 mvBoardIdIndexGet(MV_U32 boardId);
 MV_U32 mvBoardTclkGet(MV_VOID);
 MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value);
 MV_U32 mvSysEnvSuspendWakeupCheck(MV_VOID);
+
+/*******************************************************************************
+* mvSysEnvDlbConfigPtrGet
+* DESCRIPTION: defines pointer to to DLB COnfiguration table
+* INPUT: none
+* OUTPUT: 
+* RETURN:
+*       returns pointer to DLB COnfiguration table
+*******************************************************************************/
+MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID);
+
 #endif /* __INCmvBHboardEnvSpech */
 

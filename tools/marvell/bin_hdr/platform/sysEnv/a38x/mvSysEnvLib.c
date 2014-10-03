@@ -227,7 +227,7 @@ MV_U16 mvSysEnvModelGet(MV_VOID)
 		return ctrlId;
 	default: /*Device ID Default for A38x: 6820 , for A39x: 6920 */
 	#ifdef MV88F68XX
-		defaultCtrlId =  MV_6820_DEV_ID
+		defaultCtrlId =  MV_6820_DEV_ID;
 	#else
 		defaultCtrlId = MV_6920_DEV_ID;
 	#endif

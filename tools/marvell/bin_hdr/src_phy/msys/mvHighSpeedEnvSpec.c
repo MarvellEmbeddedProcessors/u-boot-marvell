@@ -426,6 +426,12 @@ MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
 	return  (uiReg == 0);
 }
 
+/* AC3: Get the Serdes revision number **************************************/
+MV_U8 mvHwsSerdesRevGet(MV_VOID)
+{
+	return MV_SERDES_28NM_REV_3;
+}
+
 /* AC3: init silicon related configurations *********************************/
 MV_STATUS mvSiliconInit(MV_VOID)
 {
@@ -663,11 +669,17 @@ MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
 {
 	MV_U32 uiReg = 0;
 
-	/*Read AC3 SatR configuration SAR0[14]*/
+	/*Read BC2 SatR configuration SAR0[16]*/
 	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, REG_DEVICE_SAR1_ADDR, &uiReg, BIT16));
 
-	/* check BIT16 for PCIe mode status: 0 = RC , 1 = EP */
+	/* check BIT16 for PCIe mode status: 0 = EP , 1 = RC */
 	return  (uiReg == 0);
+}
+
+/* BC2: Get the Serdes revision number **************************************/
+MV_U8 mvHwsSerdesRevGet(MV_VOID)
+{
+	return (mvSysEnvDeviceRevGet() == MV_MSYS_BC2_A0_ID) ? MV_SERDES_28NM_REV_1 : MV_SERDES_28NM_REV_3;
 }
 
 /*BC2: initialize USB2.0 UTMI PHY**********************************************/
@@ -943,7 +955,6 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 /****************************************************************************/
 MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
-
 	SERDES_MAP serdesConfigurationMap[MAX_SERDES_LANES];
 
 	mvPrintf("Serdes initialization - Version: 1.0.2\n");

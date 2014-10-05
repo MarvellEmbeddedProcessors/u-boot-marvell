@@ -1309,7 +1309,7 @@ MV_U32 mvCtrlDDRBudWidth(MV_VOID)
 	MV_U32 reg;
 	reg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
 
-	return (reg & (1 << REG_SDRAM_CONFIG_DDR_BUS_OFFS)) ? 64 : 32;
+	return (reg & (1 << REG_SDRAM_CONFIG_DDR_BUS_OFFS)) ? 32 : 16;
 }
 MV_BOOL mvCtrlDDRThruXbar(MV_VOID)
 {

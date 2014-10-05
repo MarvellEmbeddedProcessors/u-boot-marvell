@@ -88,14 +88,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*****************************************************************************/
 static inline MV_VOID mvMbusWinConfig()
 {
-#if defined(MV_MSYS_AC3)
 	const MV_U32	mmuTableBase = 0x40000000;
 	MV_U32			idx, mmuTableEntry, mmuTableEntryAddr;
 
 	/* open DFX server window - required to derive Tclk for UART init (mvBoardTclkGet)
 	   The server window base has been already configured by BootROM and should not be changed */
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(SERVER_WIN_ID), SERVER_MBUS_WIN_CTRL_VAL);
-
 
 	/* Configure memory window for SERDES switch access */
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_BASE_REG(SWITCH_WIN_ID),  SWITCH_MBUS_WIN_BASE_VAL);
@@ -105,6 +103,7 @@ static inline MV_VOID mvMbusWinConfig()
 	}
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(SWITCH_WIN_ID),  SWITCH_MBUS_WIN_CTRL_VAL);
 
+#if defined(MV_MSYS_AC3)
 	/* Configure memory window for USB registers access */
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_BASE_REG(USB_WIN_ID),  USB_MBUS_WIN_BASE_VAL);
 	if (AHB_TO_MBUS_WIN_REMAP_LOW_REG(USB_WIN_ID)) {
@@ -112,7 +111,7 @@ static inline MV_VOID mvMbusWinConfig()
 		MV_REG_WRITE(AHB_TO_MBUS_WIN_REMAP_HIGH_REG(USB_WIN_ID), 0);
 	}
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(USB_WIN_ID),  USB_MBUS_WIN_CTRL_VAL);
-
+#endif
 
 	/* Configure MMU translation table (see VMSAv7 documentation for details)
 	   The MSYS BootROM uses 1 translation table entry (4 bytes) per 1MB of memory section
@@ -132,24 +131,26 @@ static inline MV_VOID mvMbusWinConfig()
 	   0xFFF00000 - 0xFFFFFFFF - BootROM, 1MB
 
 	   The Switch memory window fits the Reserved2 region (started from 2688th descriptor),
-	   which has to be switched from "not accessible" memory type to "strongly ordered, priviledged RW access" one
+	   which has to be switched from "not accessible" memory type to "strongly ordered, privileged RW access" one
 	   */
 	mmuTableEntryAddr = mmuTableBase + (SWITCH_MBUS_WIN_BASE_VAL >> 18); /* Should be inside the Reserved2 region */
 	/* Fill in 64 descriptors for 64MB switch window */
 	for (idx = 0; idx < 64; idx++) {
 		mmuTableEntry = MV_MEMIO_LE32_READ(mmuTableEntryAddr);
 		mmuTableEntry &= ~0xFFF;
-		mmuTableEntry |= 0x402; /* Set section access permissions for priviledged access */
+		mmuTableEntry |= 0x402; /* Set section access permissions for privileged access */
 		MV_MEMIO_LE32_WRITE(mmuTableEntryAddr, mmuTableEntry);
 		mmuTableEntryAddr +=  4;
 	}
 
+#if defined(MV_MSYS_AC3)
 	/* Fill in single descriptor for 1MB USB window */
 	mmuTableEntryAddr = mmuTableBase + (USB_MBUS_WIN_BASE_VAL >> 18); /* Should be inside the Reserved2 region */
 	mmuTableEntry = MV_MEMIO_LE32_READ(mmuTableEntryAddr);
 	mmuTableEntry &= ~0xFFF;
-	mmuTableEntry |= 0x402; /* Set section access permissions for priviledged access */
+	mmuTableEntry |= 0x402; /* Set section access permissions for privileged access */
 	MV_MEMIO_LE32_WRITE(mmuTableEntryAddr, mmuTableEntry);
+#endif
 
 	/* Invalidate the TLB for re-loading the translation table */
 	asm (
@@ -161,7 +162,6 @@ static inline MV_VOID mvMbusWinConfig()
 		"nop\n\t"
 		"nop"
 	);
-#endif
 }
 
 /*****************************************************************************/

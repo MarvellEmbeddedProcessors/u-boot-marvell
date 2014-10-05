@@ -81,10 +81,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /************************************ definitions ***********************************/
 
-#define AC3_SERDES_BASE					0x13000000
-#define AC3_SERDES_PHY_BASE				0x13000800
-#define AC3_SERDES_OFFSET				0x1000
-#define AC3_INTERNAL_OFFSET				0x1000
+#define MV_SERDES_BASE					0x13000000
+#define MV_SERDES_PHY_BASE				0x13000800
+#define MV_SERDES_OFFSET				0x1000
+#define MV_INTERNAL_OFFSET				0x1000
 
 /************************************ globals ***********************************/
 /* serdesSeqDb - holds all SERDES sequences, their size and the relevant index in the data array
@@ -257,15 +257,6 @@ MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray)
 
 #if defined MV_MSYS_AC3
 
-/*AC3: check S@R for PCIe mode (EP/RC****************************************/
-MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
-{
-	MV_U32 uiReg = 0;
-	/*Read AC3 SatR configuration SAR0[14]*/
-	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, REG_DEVICE_SAR0_ADDR, &uiReg, BIT14));
-	return  (uiReg == 0);
-}
-
 /*****************/
 /*    USB2       */
 /*****************/
@@ -426,6 +417,14 @@ MV_OP_EXT_PARAMS sgmiiPowerDownCtrlParams[] =
 	{ SERDES_UNIT,  0x4,   0x4000,  { 0x0 },   0,      0 }
 };
 
+/*AC3: check S@R for PCIe mode (EP/RC****************************************/
+MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
+{
+	MV_U32 uiReg = 0;
+	/*Read AC3 SatR configuration SAR0[14]*/
+	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, REG_DEVICE_SAR0_ADDR, &uiReg, BIT14));
+	return  (uiReg == 0);
+}
 
 /* AC3: init silicon related configurations *********************************/
 MV_STATUS mvSiliconInit(MV_VOID)
@@ -433,11 +432,11 @@ MV_STATUS mvSiliconInit(MV_VOID)
 	MV_TWSI_ADDR slave;
 	MV_U32 tClock;
 
-	/* Prepare data to be used by access functions for varous SOC regions */
-	mvUnitInfoSet(INTERNAL_REG_UNIT,	INTER_REGS_BASE,		AC3_INTERNAL_OFFSET);
-	mvUnitInfoSet(MG_UNIT,				0,						AC3_INTERNAL_OFFSET);
-	mvUnitInfoSet(SERDES_UNIT,			AC3_SERDES_BASE,		AC3_SERDES_OFFSET);
-	mvUnitInfoSet(SERDES_PHY_UNIT,		AC3_SERDES_PHY_BASE,	AC3_SERDES_OFFSET);
+	/* Prepare data to be used by access functions for various SOC regions */
+	mvUnitInfoSet(INTERNAL_REG_UNIT,	INTER_REGS_BASE,		MV_INTERNAL_OFFSET);
+	mvUnitInfoSet(MG_UNIT,				0,						MV_INTERNAL_OFFSET);
+	mvUnitInfoSet(SERDES_UNIT,			MV_SERDES_BASE,			MV_SERDES_OFFSET);
+	mvUnitInfoSet(SERDES_PHY_UNIT,		MV_SERDES_PHY_BASE,		MV_SERDES_OFFSET);
 	mvUnitInfoSet(USB_REG_UNIT,			MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(USB_WIN_ID)) & 0xFFFF0000,		0);
 	mvUnitInfoSet(SERVER_REG_UNIT,		MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID)) & 0xFFFF0000,	0);
 
@@ -600,8 +599,15 @@ MV_STATUS mvSiliconInit(MV_VOID)
 	MV_TWSI_ADDR slave;
 	MV_U32 tClock;
 
-	/* Enable DFX Server window via XBAR */
-	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(SERVER_WIN_ID), 0xF0081);
+	/* Prepare data to be used by access functions for various SOC regions */
+	mvUnitInfoSet(INTERNAL_REG_UNIT,	INTER_REGS_BASE,		MV_INTERNAL_OFFSET);
+	mvUnitInfoSet(MG_UNIT,				0,						MV_INTERNAL_OFFSET);
+	mvUnitInfoSet(SERDES_UNIT,			MV_SERDES_BASE,			MV_SERDES_OFFSET);
+	mvUnitInfoSet(SERDES_PHY_UNIT,		MV_SERDES_PHY_BASE,		MV_SERDES_OFFSET);
+	mvUnitInfoSet(SERVER_REG_UNIT,		MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID)) & 0xFFFF0000,	0);
+
+	/* Set legacy mode address completion */
+	mvGenUnitRegisterSet(MG_UNIT, 0, 0x140, (1 << 16), (1 << 16));
 
 	/* initialize TWSI interface */
 	DEBUG_INIT_FULL_S("mvSiliconInit: Init TWSI interface.\n");
@@ -652,21 +658,16 @@ MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
 	return mvHwsPexConfig();
 }
 
-/*BC2: check S@R for PCIe mode (EP/RC****************************************/
+/*BC2: check S@R for PCIe mode (EP/RC) ****************************************/
 MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
 {
 	MV_U32 uiReg = 0;
-	/*Read DFX Server Reg base from XBAR window configuration */
-	MV_U32 serverBaseAddr = MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID));
 
-	/*Read SatR configuration(bit16)*/
-	uiReg = MV_MEMIO_LE32_READ(serverBaseAddr + REG_DEVICE_SAR1_ADDR);
+	/*Read AC3 SatR configuration SAR0[14]*/
+	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, REG_DEVICE_SAR1_ADDR, &uiReg, BIT16));
 
 	/* check BIT16 for PCIe mode status: 0 = RC , 1 = EP */
-	if(0 == (uiReg & BIT16))
-		return MV_TRUE;
-
-	return MV_FALSE;
+	return  (uiReg == 0);
 }
 
 /*BC2: initialize USB2.0 UTMI PHY**********************************************/

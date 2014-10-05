@@ -176,7 +176,7 @@ extern "C" {
 #define MV_SATA_MAX_CHAN                        4	/* total channels (ports) for all units together */
 #define MV_SATA_MAX_CHAN_PER_UNIT               2       /* channels (ports) per unit */
 
-#define MV_MPP_MAX_GROUP                        9
+#define MV_MPP_MAX_GROUP                        8
 
 #define MV_DRAM_MAX_CS                          4
 #define MV_SPI_MAX_CS                           8

@@ -93,27 +93,135 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* AlleyCat3 Marvell boards */
 #define AC3_MARVELL_BOARD_ID_BASE	0x30
-#define DB_AC3_ID			(AC3_MARVELL_BOARD_ID_BASE + 0)
-#define RD_MTL_4XG_AC3_ID		(AC3_MARVELL_BOARD_ID_BASE + 1)
+#define DB_AC3_ID					(AC3_MARVELL_BOARD_ID_BASE + 0)
+#define RD_MTL_4XG_AC3_ID			(AC3_MARVELL_BOARD_ID_BASE + 1)
 #define RD_MTL_2XXG_2XG_AC3_ID		(AC3_MARVELL_BOARD_ID_BASE + 2)
 #define DB_MISL_24G4G_AC3_ID		(AC3_MARVELL_BOARD_ID_BASE + 3)
 #define RD_MTL_24G_AC3_ID			(AC3_MARVELL_BOARD_ID_BASE + 4)
 #define AC3_MARVELL_MAX_BOARD_ID	(AC3_MARVELL_BOARD_ID_BASE + 5)
 #define AC3_MARVELL_BOARD_NUM		(AC3_MARVELL_MAX_BOARD_ID - AC3_MARVELL_BOARD_ID_BASE)
 
-#define INVALID_BOARD_ID		0xFFFF
-#define BOARD_ID_INDEX_MASK		0x10	/* Mask used to return board index via board Id */
+#define INVALID_BOARD_ID			0xFFFF
+#define BOARD_ID_INDEX_MASK			0x10	/* Mask used to return board index via board Id */
+
+
+/* Bobcat2 device revision */
+#define BC2_DEV_VERSION_ID_REG		0xF8240	/* under server space */
+#define BC2_REVISON_ID_OFFS			16
+#define BC2_REVISON_ID_MASK			0xF
+#define MV_MSYS_BC2_A0_ID			0x0
+#define MV_MSYS_BC2_B0_ID			0x1
+
+/* Alleycat3 device revision */
+#define MV_MSYS_AC3_A0_ID			0x0
+
+/*************************** Globals ***************************/
 
 extern MV_DRAM_DLB_CONFIG ddr3DlbConfigTable[];
 
 /*************************** Functions declarations ***************************/
 
-MV_U8 mvHwsBoardIdGet(MV_VOID);
+/**************************************************************************
+ * mvBoardIdGet -
+ *
+ * DESCRIPTION:          Returns the board ID
+ *
+ * INPUT:
+ *		None.
+ *
+ * OUTPUT:
+ *		None.
+ *
+ * RETURNS:
+ *		Board ID.
+ ***************************************************************************/
 MV_U32 mvBoardIdGet(MV_VOID);
+
+/*******************************************************************************
+* mvBoardIdIndexGet
+*
+* DESCRIPTION:
+*	returns an index for board arrays with direct memory access, according to board id
+*
+* INPUT:
+*       boardId.
+*
+* OUTPUT:
+*       direct access index for board arrays
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
 MV_U32 mvBoardIdIndexGet(MV_U32 boardId);
+
+/**************************************************************************
+ * mvBoardTclkGet -
+ *
+ * DESCRIPTION:          Returns the board id
+ *
+ * INPUT:
+ *		None.
+ *
+ * OUTPUT:
+ *		None.
+ *
+ * RETURNS:
+ *		board ID.
+ ***************************************************************************/
 MV_U32 mvBoardTclkGet(MV_VOID);
+
+/**************************************************************************
+ * mvBoardSarBoardIdGet -
+ *
+ * DESCRIPTION:          Returns the board ID from SatR
+ *
+ * INPUT:
+ *		None.
+ *
+ * OUTPUT:
+ *		None.
+ *
+ * RETURNS:
+ *		Tclk
+ ***************************************************************************/
 MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value);
+
+/************************************************************************************
+* mvSysEnvSuspendWakeupCheck
+* DESCRIPTION:
+*		Reads GPIO input for suspend-wakeup indication.
+*					Not supported for AC3/BC2
+* INPUT:
+*		None.
+*
+* OUTPUT:
+*		None.
+*
+* RRETURN:
+*		MV_U32 indicating suspend wakeup status:
+* 		0 - normal initialization, otherwise - suspend wakeup.
+ ***************************************************************************/
 MV_U32 mvSysEnvSuspendWakeupCheck(MV_VOID);
+
+/*******************************************************************************
+* mvSysEnvDeviceRevGet - Get Marvell controller device revision number
+*
+* DESCRIPTION:
+*       This function returns 8bit describing the device revision as defined
+*       Revision ID Register.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       8bit describing Marvell controller revision number
+*
+*******************************************************************************/
+MV_U8 mvSysEnvDeviceRevGet(MV_VOID);
 
 /*******************************************************************************
 * mvSysEnvDlbConfigPtrGet

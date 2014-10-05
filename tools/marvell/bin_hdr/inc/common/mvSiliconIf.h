@@ -41,6 +41,8 @@ extern "C" {
 #define USB_WIN_ID						6
 #define SWITCH_REGS_BASE_ADDR_MASK		0xFC000000
 
+#define MV_ALL_BITS_MASK				0xFFFFFFFF
+
 static __inline MV_U32 SWITCH_WIN_BASE_ADDR_GET(MV_VOID)
 {
 	static MV_U32	baseAddr = 0;

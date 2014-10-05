@@ -75,7 +75,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif defined(MV_MSYS_AC3)
 #include "ddr3_msys_ac3.h"
 #include "ddr3_msys_ac3_config.h"
-
 #endif
 
 #include "bin_hdr_twsi.h"
@@ -188,6 +187,37 @@ MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value)
 	*value = (boardId & 0x7);
 
 	return MV_OK;
+}
+
+/*******************************************************************************
+* mvSysEnvDeviceRevGet - Get Marvell controller device revision number
+*
+* DESCRIPTION:
+*       This function returns 8bit describing the device revision as defined
+*       Revision ID Register.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       8bit describing Marvell controller revision number
+*
+*******************************************************************************/
+MV_U8 mvSysEnvDeviceRevGet(MV_VOID)
+{
+#if defined MV_MSYS_AC3
+	return MV_MSYS_AC3_A0_ID;
+#elif defined MV_MSYS_BC2
+	MV_U32   uiRegData;
+
+	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, BC2_DEV_VERSION_ID_REG, &uiRegData, MV_ALL_BITS_MASK));
+	return ((uiRegData >> BC2_REVISON_ID_OFFS) & BC2_REVISON_ID_MASK) ;
+#else
+	#error "Un-defined silicon"
+#endif
 }
 
 /************************************************************************************

@@ -78,6 +78,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LAST_LANE_NUM			0 /* Not used so far, should be re-defined later */
 #endif
 
+#define MV_SERDES_28NM_REV_1	0x0
+#define MV_SERDES_28NM_REV_3	0x1
+
 /********************************* Enum ********************************/
 typedef enum {
 	PEX0,
@@ -145,6 +148,21 @@ typedef struct {
 typedef MV_STATUS (*loadTopologyFuncPtr)(SERDES_MAP  *serdesMapArray);
 
 /*************************** Functions declarations ***************************/
+
+/*******************************************************************************
+* mvHwsSerdesRevGet
+*
+* DESCRIPTION: Get the Serdes revision number
+*
+* INPUT: configField - Field description enum
+*
+* OUTPUT: None
+*
+* RETURN:
+* 		8 bit Serdes revision number
+*
+*******************************************************************************/
+MV_U8 mvHwsSerdesRevGet(MV_VOID);
 
 /**************************************************************************
  * mvHwsSerdesLastLaneGet -

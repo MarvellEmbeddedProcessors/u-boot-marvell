@@ -252,7 +252,6 @@
 #define MV_6820_DEV_ID		0x6820
 #define MV_6828_DEV_ID		0x6828
 /* Armada 39x Family */
-#define MV_6910_DEV_ID		0x6910
 #define MV_6920_DEV_ID		0x6920
 #define MV_6928_DEV_ID		0x6928
 
@@ -262,7 +261,7 @@ typedef enum _mvDeviceId {
 	MV_6820,
 	MV_6811,
 	MV_6828,
-	MV_6910,
+	MV_NONE,
 	MV_6920,
 	MV_6928,
 	MV_MAX_DEV_ID,
@@ -282,7 +281,7 @@ typedef struct boardDeviceIdWoVal {
 /* A381 */ {MV_6820,	MV_6820_DEV_ID,		0x77fdfff,	0x00 },\
 /* A385 */ {MV_6811,	MV_6811_DEV_ID,		0x77ffffff,	0x00 },\
 /* A388 */ {MV_6828,	MV_6828_DEV_ID,		0x77fffff,	0x00 },\
-/* A390 */ {MV_6910,	MV_6910_DEV_ID,		0x77ffffff,	0x00 },\
+/* NONE */ {MV_NONE,	0x0,			0x0,		0x0  },\
 /* A395 */ {MV_6920,	MV_6920_DEV_ID,		0x77ffffff,	0x00 },\
 /* A398 */ {MV_6928,	MV_6928_DEV_ID,		0x77ffffff,	0x00 },\
 };

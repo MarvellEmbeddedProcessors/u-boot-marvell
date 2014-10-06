@@ -21,7 +21,7 @@
 .globl	_start
 _start:
 #ifdef CONFIG_PALLADIUM
-	b .
+	bl	fixup_affinity
 #endif
 	b	reset
 
@@ -177,3 +177,60 @@ ENTRY(c_runtime_cpu_setup)
 
 	ret
 ENDPROC(c_runtime_cpu_setup)
+
+#ifdef CONFIG_PALLADIUM
+ENTRY(fixup_affinity)
+
+/*
+ * Configure snoop affinity.
+ * in UP each master snoops only itself
+ * For cpu 0 set DVM affiinity with SMMU & self
+ */
+	ldr	x0, =0xf0004210
+	ldr	w1, =0x2030003
+	str	w1, [x0]
+
+	ldr     x0, =0xf0004214
+	ldr	w1, =0x2030003
+	str     w1, [x0]
+
+	ldr     x0, =0xf0004218
+	ldr     w1, =0x4
+	str     w1, [x0]
+
+	ldr     x0, =0xf000421c
+	ldr     w1, =0x8
+	str     w1, [x0]
+
+	ldr     x0, =0xf0004220
+	ldr     w1, =0x0
+	str     w1, [x0]
+
+	ldr     x0, =0xf0004224
+	ldr     w1, =0x0
+	str     w1, [x0]
+
+	ldr     x0, =0xf0004228
+	ldr     w1, =0x0
+	str     w1, [x0]
+
+	ldr     x0, =0xf000422c
+	ldr     w1, =0x0
+	str     w1, [x0]
+
+	ldr     x0, =0xf0004230
+	ldr     w1, =0x0
+	str     w1, [x0]
+
+	ldr     x0, =0xf0004234
+	ldr     w1, =0x0
+	str     w1, [x0]
+
+	ldr     x0, =0xf00040b0
+	ldr     w1, =0xf0080401
+	str     w1, [x0]
+
+	ret
+
+ENDPROC(fixup_affinity)
+#endif /* CONFIG_PALLADIUM */

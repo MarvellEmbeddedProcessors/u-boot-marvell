@@ -129,6 +129,10 @@ int mvebu_soc_init()
 	if (ret)
 		error("SOC late init failed");
 
+#ifdef CPU_RELEASE_ADDR
+	*(unsigned long *)CPU_RELEASE_ADDR = 0;
+#endif
+
 	return 0;
 }
 

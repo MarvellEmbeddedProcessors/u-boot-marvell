@@ -127,7 +127,7 @@
 #define SATA_CTRL_REG_INDIRECT                  0xa80a0
 #define SATA_CTRL_REG                           0xa80a4
 
-#define MAX_SELECTOR_VAL						0x9
+#define MAX_SELECTOR_VAL						10
 
 /* Reference clock values and mask */
 #define POWER_AND_PLL_CTRL_REG_100MHZ_VAL		0x0

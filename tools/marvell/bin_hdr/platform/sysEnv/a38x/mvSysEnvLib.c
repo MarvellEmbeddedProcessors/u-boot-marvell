@@ -265,7 +265,7 @@ MV_U32 mvSysEnvDeviceIdGet(MV_VOID)
 *******************************************************************************/
 MV_U8 mvSysEnvDeviceRevGet(MV_VOID)
 {
-    MV_U8   value;
+    MV_U32 value;
 
     value = MV_REG_READ(DEV_VERSION_ID_REG);
     return ((value & (REVISON_ID_MASK)) >> REVISON_ID_OFFS);

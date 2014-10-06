@@ -100,163 +100,6 @@ REF_CLOCK serdesTypeToRefClockMap[LAST_SERDES_TYPE] =
 	REF_CLOCK_UNSUPPORTED   /* DEFAULT_SERDES */
 };
 
-
-extern MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray);
-
-/**************************************************************************************/
-
-/**************************************************************************
- * boardTopologyLoad -
- *
- * DESCRIPTION:          Loads the board topology for the DB_A38X_BP board
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology map.
- * RETURNS:              MV_OK           -   for success
- *                       MV_FAIL         -   for failure (a wrong
- *                                           topology mode was read
- *                                           from the board)
- ***************************************************************************/
-MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray);
-
-#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-
-/************************* Load Topology - Customer Boards ****************************/
-SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
-{
-{	/* Customer Board 0 Toplogy */
-	/* Type		Serdes		Speed			Mode				Swap		Swap */
-	/*			Number											RX			TX   */
-	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-},
-{	/* Customer Board 1 Toplogy */
-	/* Type		Serdes		Speed			Mode				Swap		Swap */
-	/*			Number											RX			TX   */
-	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-}};
-
-
-#else /* CONFIG_CUSTOMER_BOARD_SUPPORT */
-
-/*********************************** Enums ************************************/
-
-/************************* Local functions declarations ***********************/
-
-/*********************************** Globals **********************************/
-/********************************/
-/** Load topology - Marvell DB/RD **/
-/********************************/
-
-/* Configuration options */
-SERDES_MAP serdesDbTopology[MAX_SERDES_LANES] =
-{ /* DB_MISL_24G4XG */
-	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
-	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-};
-
-SERDES_MAP serdesRd48_4xg_Topology[MAX_SERDES_LANES] =
-{ /* RD_MTL_48G4XG */
-	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
-	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_TRUE,	MV_FALSE },
-};
-
-SERDES_MAP serdesRd48_2xxg_2xg_Topology[MAX_SERDES_LANES] =
-{ /* RD_MTL_48G_2XXG_2XG */
-	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
-	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_TRUE,	MV_FALSE },
-};
-
-SERDES_MAP serdesDb24_g46_Topology[MAX_SERDES_LANES] =
-{ /* DB_MISL_24G46 */
-	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
-	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-};
-
-SERDES_MAP serdesRd24_Topology[MAX_SERDES_LANES] =
-{ /* RD_MTL_24G - no build-in OOB ports */
-	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
-	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-};
-
-SERDES_MAP* marvellBoardSerdesTopology[] =
-{
-	serdesDbTopology,
-	serdesRd48_4xg_Topology,
-	serdesRd48_2xxg_2xg_Topology,
-	serdesDb24_g46_Topology,
-	serdesRd24_Topology,
-};
-
-#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
-
-/*************************** Functions implementation *************************/
-
-/**************************************************************************
- * mvHwsSerdesLastLaneGet -
- *
- * DESCRIPTION:          return last lane number.
- * INPUT:   			 NONE.
- * OUTPUT:               None.
- * RETURNS:              number of lanes
- ***************************************************************************/
-MV_U32 mvHwsSerdesLastLaneGet(MV_VOID)
-{
-	return LAST_LANE_NUM;
-}
-
-/**************************************************************************
- * boardTopologyLoad -
- *
- * DESCRIPTION:          Loads the board topology for the DB_A38X_BP board
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology map.
- * RETURNS:              MV_OK           -   for success
- *                       MV_FAIL         -   for failure (a wrong
- *                                           topology mode was read
- *                                           from the board)
- ***************************************************************************/
-MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray)
-{
-	MV_U32		laneNum;
-	MV_U32		boardIdIndex;
-	SERDES_MAP	*topologyConfigPtr;
-
-	DEBUG_INIT_FULL_S("\n### loadTopologyDB ###\n");
-
-	boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
-#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-	topologyConfigPtr = CustomerBoardTopologyConfig[boardIdIndex];
-#else
-	topologyConfigPtr = marvellBoardSerdesTopology[boardIdIndex];
-#endif
-	/* Updating the topology map */
-	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
-		serdesMapArray[laneNum].serdesMode  =  topologyConfigPtr[laneNum].serdesMode;
-		serdesMapArray[laneNum].serdesNum   =  topologyConfigPtr[laneNum].serdesNum;
-		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
-		serdesMapArray[laneNum].serdesType  =  topologyConfigPtr[laneNum].serdesType;
-		serdesMapArray[laneNum].swapRx      =  topologyConfigPtr[laneNum].swapRx;
-		serdesMapArray[laneNum].swapTx      =  topologyConfigPtr[laneNum].swapTx;
-	}
-
-	return MV_OK;
-}
-
-#if defined MV_MSYS_AC3
-
 /*****************/
 /*    USB2       */
 /*****************/
@@ -417,7 +260,210 @@ MV_OP_EXT_PARAMS sgmiiPowerDownCtrlParams[] =
 	{ SERDES_UNIT,  0x4,   0x4000,  { 0x0 },   0,      0 }
 };
 
-/*AC3: check S@R for PCIe mode (EP/RC****************************************/
+/**************************************************************************************/
+
+/*********************************** Enums ************************************/
+
+/************************* Local functions declarations ***********************/
+
+SERDES_MAP* mvHwsSerdesTopologyGet(MV_U32 boardIdIndex);
+
+MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray);
+
+/******************************************************************************/
+
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+
+/************************* Load Topology - Customer Boards ****************************/
+SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
+{
+{	/* Customer Board 0 Topology */
+	/* Type		Serdes		Speed			Mode				Swap		Swap */
+	/*			Number											RX			TX   */
+	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+},
+{	/* Customer Board 1 Topology */
+	/* Type		Serdes		Speed			Mode				Swap		Swap */
+	/*			Number											RX			TX   */
+	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+}};
+
+
+#else /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+
+/*********************************** Globals **********************************/
+
+/****************************************/
+/*  Load topology - Marvell AC3 DB/RD   */
+/****************************************/
+#if defined MV_MSYS_AC3
+
+/* Configuration options */
+SERDES_MAP ac3SerdesDbTopology[MAX_SERDES_LANES] =
+{ /* DB_MISL_24G4XG */
+	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
+	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+};
+
+SERDES_MAP ac3SerdesRd48_4xg_Topology[MAX_SERDES_LANES] =
+{ /* RD_MTL_48G4XG */
+	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
+	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_TRUE,	MV_FALSE },
+};
+
+SERDES_MAP ac3SerdesRd48_2xxg_2xg_Topology[MAX_SERDES_LANES] =
+{ /* RD_MTL_48G_2XXG_2XG */
+	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
+	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_TRUE,	MV_FALSE },
+};
+
+SERDES_MAP ac3SerdesDb24_g46_Topology[MAX_SERDES_LANES] =
+{ /* DB_MISL_24G46 */
+	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
+	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+};
+
+SERDES_MAP ac3SerdesRd24_Topology[MAX_SERDES_LANES] =
+{ /* RD_MTL_24G - no build-in OOB ports */
+	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
+	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+};
+
+SERDES_MAP* marvellBoardSerdesTopology[] =
+{
+	ac3SerdesDbTopology,
+	ac3SerdesRd48_4xg_Topology,
+	ac3SerdesRd48_2xxg_2xg_Topology,
+	ac3SerdesDb24_g46_Topology,
+	ac3SerdesRd24_Topology,
+};
+
+#elif defined MV_MSYS_BC2
+
+/************************************************************************/
+/*	BC2-A0 Serdes Topology (no SGMII)                                   */
+/************************************************************************/
+
+
+/* Configuration options */
+SERDES_MAP bc2A0SerdesTopology[MAX_SERDES_LANES] =
+{ /* BC2 DB/RD */
+	/* Type			  Serdes		Speed			Mode				SwapRX		SwapTX */
+	{ PEX0,				 0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ DEFAULT_SERDES,	20,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ DEFAULT_SERDES,	21,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+};
+
+SERDES_MAP* marvellBoardBc2A0SerdesTopology[] =
+{
+	bc2A0SerdesTopology, /* DB */
+	bc2A0SerdesTopology, /* RD */
+	bc2A0SerdesTopology, /* MTL */
+};
+
+/************************************************************************/
+/*	BC2-B0 Serdes Topology			                                    */
+/************************************************************************/
+
+
+/* Configuration options */
+SERDES_MAP bc2B0SerdesTopology[MAX_SERDES_LANES] =
+{ /* BC2 DB/RD */
+	/* Type			  Serdes		Speed			Mode				SwapRX		SwapTX */
+	{ PEX0,				 0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII0,			20,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ SGMII1,			21,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+};
+
+SERDES_MAP* marvellBoardBc2B0SerdesTopology[] =
+{
+	bc2B0SerdesTopology, /* DB */
+	bc2B0SerdesTopology, /* RD */
+	bc2B0SerdesTopology, /* MTL */
+};
+
+#endif
+
+#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+
+/*************************** Functions implementation *************************/
+
+/**************************************************************************
+ * mvHwsSerdesLastLaneGet -
+ *
+ * DESCRIPTION:          return last lane number.
+ * INPUT:   			 NONE.
+ * OUTPUT:               None.
+ * RETURNS:              number of lanes
+ ***************************************************************************/
+MV_U32 mvHwsSerdesLastLaneGet(MV_VOID)
+{
+	return LAST_LANE_NUM;
+}
+
+/**************************************************************************
+ * boardTopologyLoad -
+ *
+ * DESCRIPTION:          Loads the board topology for the DB_A38X_BP board
+ * INPUT:                serdesMapArray  -   The struct that will contain
+ *                                           the board topology map
+ * OUTPUT:               The board topology map.
+ * RETURNS:              MV_OK           -   for success
+ *                       MV_FAIL         -   for failure (a wrong
+ *                                           topology mode was read
+ *                                           from the board)
+ ***************************************************************************/
+MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray)
+{
+	MV_U32		laneNum;
+	MV_U32		boardIdIndex;
+	SERDES_MAP	*topologyConfigPtr;
+
+	DEBUG_INIT_FULL_S("\n### loadTopologyDB ###\n");
+
+	boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
+
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	topologyConfigPtr = CustomerBoardTopologyConfig[boardIdIndex];
+#else
+	topologyConfigPtr = mvHwsSerdesTopologyGet(boardIdIndex);
+#endif
+	/* Updating the topology map */
+	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
+		serdesMapArray[laneNum].serdesMode  =  topologyConfigPtr[laneNum].serdesMode;
+		serdesMapArray[laneNum].serdesNum   =  topologyConfigPtr[laneNum].serdesNum;
+		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
+		serdesMapArray[laneNum].serdesType  =  topologyConfigPtr[laneNum].serdesType;
+		serdesMapArray[laneNum].swapRx      =  topologyConfigPtr[laneNum].swapRx;
+		serdesMapArray[laneNum].swapTx      =  topologyConfigPtr[laneNum].swapTx;
+	}
+
+	return MV_OK;
+}
+
+#if defined MV_MSYS_AC3
+
+#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
+/* AC3: Get the Serdes topology map      **************************************/
+SERDES_MAP* mvHwsSerdesTopologyGet(MV_U32 boardIdIndex)
+{
+	return marvellBoardSerdesTopology[boardIdIndex];
+}
+#endif
+
+/*AC3: check S@R for PCIe mode (EP/RC) ****************************************/
 MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
 {
 	MV_U32 uiReg = 0;
@@ -464,7 +510,169 @@ MV_STATUS mvSiliconInit(MV_VOID)
 	return MV_OK;
 }
 
-/* AC3: Init serdes sequences DB ********************************************/
+/****************************************************************************/
+/* AC3: set PCIe mode as End Point */
+MV_STATUS mvCtrlPexEndPointConfig(MV_VOID)
+{
+	return MV_OK; /*no EP config for AC3*/
+}
+
+/****************************************************************************/
+/* AC3: set PCIe mode as Root Complex */
+MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
+{
+	MV_U32 uiReg = 0;
+	/* Reg 0x18204, Set PCIe0nEn[0] to 0x0*/
+	uiReg = MV_REG_READ(SOC_CTRL_REG);
+	uiReg &= ~(0x1 << 0);
+	uiReg |= (0x0 << 0);
+	MV_REG_WRITE(SOC_CTRL_REG, uiReg);
+
+	/* Reg 0x40060, Set DevType[23:20] to 0x4(Root Complex)*/
+	uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
+	uiReg &= ~(0xF << 20);
+	uiReg |= (0x4 << 20);
+	MV_REG_WRITE(PEX_CAPABILITIES_REG(0), uiReg);
+
+	/* Reg 0x41a60, Assert soft_reset[20] to 0x1,
+					Set DisLinkRestartRegRst[19] to 0x1,
+					Set ConfMskLnkRestart[16] to 0x1*/
+	uiReg = MV_REG_READ(PEX_DBG_CTRL_REG(0));
+	uiReg &= 0xFFE6FFFF;
+	uiReg |= 190000;
+	MV_REG_WRITE(PEX_DBG_CTRL_REG(0), uiReg);
+
+	/* Reg 0x41a00, Set ConfRoot_Complex to 0x1*/
+	uiReg = MV_REG_READ(PEX_CTRL_REG(0));
+	uiReg &= ~(0x1 << 1);
+	uiReg |= (0x1 << 1);
+	MV_REG_WRITE(PEX_CTRL_REG(0), uiReg);
+
+	/* Reg 0x41a60, Deassert soft_reset[20] to 0x0*/
+	uiReg = MV_REG_READ(PEX_DBG_CTRL_REG(0));
+	uiReg &= ~(0x1 << 20);
+	MV_REG_WRITE(PEX_DBG_CTRL_REG(0), uiReg);
+
+	/* Reg 0x18204, Set PCIe0nEn[0] to 0x1*/
+	uiReg = MV_REG_READ(SOC_CTRL_REG);
+	uiReg &= ~(0x1 << 0);
+	uiReg |= (0x1 << 0);
+	MV_REG_WRITE(SOC_CTRL_REG, uiReg);
+
+	return mvHwsPexConfig();
+}
+
+/*AC3: initialize USB2.0 UTMI PHY**********************************************/
+MV_STATUS mvCtrlUsb2Config(MV_VOID)
+{
+	/* USB2 configuration */
+	DEBUG_INIT_FULL_S("init USB2 PHYs\n");
+	CHECK_STATUS(mvSeqExecExt(0 /* not relevant */, USB2_POWER_UP_SEQ));
+
+	return MV_OK;
+}
+
+#elif defined MV_MSYS_BC2
+
+#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
+/* BC2: Get the Serdes topology map      **************************************/
+SERDES_MAP* mvHwsSerdesTopologyGet(MV_U32 boardIdIndex)
+{
+	if (mvSysEnvDeviceRevGet() == MV_MSYS_BC2_A0_ID) {
+		return marvellBoardBc2A0SerdesTopology[boardIdIndex];
+	}
+	else {
+		return marvellBoardBc2B0SerdesTopology[boardIdIndex];
+	}
+}
+#endif
+
+/* BC2: init silicon related configurations *********************************/
+MV_STATUS mvSiliconInit(MV_VOID)
+{
+	MV_TWSI_ADDR slave;
+	MV_U32 tClock;
+
+	/* Prepare data to be used by access functions for various SOC regions */
+	mvUnitInfoSet(INTERNAL_REG_UNIT,	INTER_REGS_BASE,		MV_INTERNAL_OFFSET);
+	mvUnitInfoSet(MG_UNIT,				0,						MV_INTERNAL_OFFSET);
+	mvUnitInfoSet(SERDES_UNIT,			MV_SERDES_BASE,			MV_SERDES_OFFSET);
+	mvUnitInfoSet(SERDES_PHY_UNIT,		MV_SERDES_PHY_BASE,		MV_SERDES_OFFSET);
+	mvUnitInfoSet(SERVER_REG_UNIT,		MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID)) & 0xFFFF0000,	0);
+
+	/* Set legacy mode address completion */
+	mvGenUnitRegisterSet(MG_UNIT, 0, 0x140, (1 << 16), (1 << 16));
+
+	/* initialize TWSI interface */
+	DEBUG_INIT_FULL_S("mvSiliconInit: Init TWSI interface.\n");
+	slave.type = ADDR7_BIT;
+	slave.address = 0;
+	tClock = mvBoardTclkGet();
+	if (tClock == MV_BOARD_TCLK_ERROR) {
+		DEBUG_INIT_FULL_S("mvSiliconInit: TClk read from the board is not supported\n");
+		return MV_NOT_SUPPORTED;
+	}
+
+	mvTwsiInit(0, TWSI_SPEED, tClock, &slave, 0);
+	return MV_OK;
+}
+
+/****************************************************************************/
+/* BC2: set PCIe mode as End Point */
+MV_STATUS mvCtrlPexEndPointConfig(MV_VOID)
+{
+	MV_U32 uiReg = 0;
+		/*Do End Point pex config*/
+		uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
+		uiReg &= ~(0xF << 20);
+		uiReg |= (0x1 << 20);
+		MV_REG_WRITE(PEX_CAPABILITIES_REG(0), uiReg);
+		MV_REG_WRITE(0x41a60, 0xF63F0C0);
+		mvPrintf("EP detected.\n");
+		return MV_OK;
+}
+
+/****************************************************************************/
+/* BC2: set PCIe mode as Root Complex */
+MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
+{
+	MV_U32 uiReg = 0;
+	/*Do Root Complex pex config*/
+	uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
+	uiReg &= ~(0xF << 20);
+	uiReg |= (0x4 << 20);
+	MV_REG_WRITE(PEX_CAPABILITIES_REG(0), uiReg);
+	mvPrintf("RC detected.\n");
+	return mvHwsPexConfig();
+}
+
+/*BC2: check S@R for PCIe mode (EP/RC) ****************************************/
+MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
+{
+	MV_U32 uiReg = 0;
+
+	/*Read BC2 SatR configuration SAR0[16]*/
+	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, REG_DEVICE_SAR1_ADDR, &uiReg, BIT16));
+
+	/* check BIT16 for PCIe mode status: 0 = EP , 1 = RC */
+	return  (uiReg == 0);
+}
+
+/* BC2: Get the Serdes revision number **************************************/
+MV_U8 mvHwsSerdesRevGet(MV_VOID)
+{
+	return (mvSysEnvDeviceRevGet() == MV_MSYS_BC2_A0_ID) ? MV_SERDES_28NM_REV_1 : MV_SERDES_28NM_REV_3;
+}
+
+/*BC2: initialize USB2.0 UTMI PHY**********************************************/
+MV_STATUS mvCtrlUsb2Config(MV_VOID)
+{
+	/* no USB2 in BC2 */
+	return MV_OK;
+}
+#endif
+
+/* Init serdes sequences DB ********************************************/
 MV_VOID mvSerdesSeqInit(MV_VOID)
 {
 	DEBUG_INIT_FULL_S("\n### serdesSeqInit ###\n");
@@ -536,161 +744,6 @@ MV_VOID mvSerdesSeqInit(MV_VOID)
 }
 
 /****************************************************************************/
-/* AC3: set PCIe mode as End Point */
-MV_STATUS mvCtrlPexEndPointConfig(MV_VOID)
-{
-	return MV_OK; /*no EP config for AC3*/
-}
-
-/****************************************************************************/
-/* AC3: set PCIe mode as Root Complex */
-MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
-{
-	MV_U32 uiReg = 0;
-	/* Reg 0x18204, Set PCIe0nEn[0] to 0x0*/
-	uiReg = MV_REG_READ(SOC_CTRL_REG);
-	uiReg &= ~(0x1 << 0);
-	uiReg |= (0x0 << 0);
-	MV_REG_WRITE(SOC_CTRL_REG, uiReg);
-
-	/* Reg 0x40060, Set DevType[23:20] to 0x4(Root Complex)*/
-	uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
-	uiReg &= ~(0xF << 20);
-	uiReg |= (0x4 << 20);
-	MV_REG_WRITE(PEX_CAPABILITIES_REG(0), uiReg);
-
-	/* Reg 0x41a60, Assert soft_reset[20] to 0x1,
-					Set DisLinkRestartRegRst[19] to 0x1,
-					Set ConfMskLnkRestart[16] to 0x1*/
-	uiReg = MV_REG_READ(PEX_DBG_CTRL_REG(0));
-	uiReg &= 0xFFE6FFFF;
-	uiReg |= 190000;
-	MV_REG_WRITE(PEX_DBG_CTRL_REG(0), uiReg);
-
-	/* Reg 0x41a00, Set ConfRoot_Complex to 0x1*/
-	uiReg = MV_REG_READ(PEX_CTRL_REG(0));
-	uiReg &= ~(0x1 << 1);
-	uiReg |= (0x1 << 1);
-	MV_REG_WRITE(PEX_CTRL_REG(0), uiReg);
-
-	/* Reg 0x41a60, Deassert soft_reset[20] to 0x0*/
-	uiReg = MV_REG_READ(PEX_DBG_CTRL_REG(0));
-	uiReg &= ~(0x1 << 20);
-	MV_REG_WRITE(PEX_DBG_CTRL_REG(0), uiReg);
-
-	/* Reg 0x18204, Set PCIe0nEn[0] to 0x1*/
-	uiReg = MV_REG_READ(SOC_CTRL_REG);
-	uiReg &= ~(0x1 << 0);
-	uiReg |= (0x1 << 0);
-	MV_REG_WRITE(SOC_CTRL_REG, uiReg);
-
-	return mvHwsPexConfig();
-}
-
-
-/*AC3: initialize USB2.0 UTMI PHY**********************************************/
-MV_STATUS mvCtrlUsb2Config(MV_VOID)
-{
-	/* USB2 configuration */
-	DEBUG_INIT_FULL_S("init USB2 PHYs\n");
-	CHECK_STATUS(mvSeqExecExt(0 /* not relevant */, USB2_POWER_UP_SEQ));
-
-	return MV_OK;
-}
-
-#elif defined MV_MSYS_BC2
-/* BC2: init silicon related configurations *********************************/
-MV_STATUS mvSiliconInit(MV_VOID)
-{
-	MV_TWSI_ADDR slave;
-	MV_U32 tClock;
-
-	/* Prepare data to be used by access functions for various SOC regions */
-	mvUnitInfoSet(INTERNAL_REG_UNIT,	INTER_REGS_BASE,		MV_INTERNAL_OFFSET);
-	mvUnitInfoSet(MG_UNIT,				0,						MV_INTERNAL_OFFSET);
-	mvUnitInfoSet(SERDES_UNIT,			MV_SERDES_BASE,			MV_SERDES_OFFSET);
-	mvUnitInfoSet(SERDES_PHY_UNIT,		MV_SERDES_PHY_BASE,		MV_SERDES_OFFSET);
-	mvUnitInfoSet(SERVER_REG_UNIT,		MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID)) & 0xFFFF0000,	0);
-
-	/* Set legacy mode address completion */
-	mvGenUnitRegisterSet(MG_UNIT, 0, 0x140, (1 << 16), (1 << 16));
-
-	/* initialize TWSI interface */
-	DEBUG_INIT_FULL_S("mvSiliconInit: Init TWSI interface.\n");
-	slave.type = ADDR7_BIT;
-	slave.address = 0;
-	tClock = mvBoardTclkGet();
-	if (tClock == MV_BOARD_TCLK_ERROR) {
-		DEBUG_INIT_FULL_S("mvSiliconInit: TClk read from the board is not supported\n");
-		return MV_NOT_SUPPORTED;
-	}
-
-	mvTwsiInit(0, TWSI_SPEED, tClock, &slave, 0);
-	return MV_OK;
-}
-
-/* BC2: Init serdes sequences DB ********************************************/
-MV_VOID mvSerdesSeqInit(MV_VOID)
-{
-
-}
-
-/****************************************************************************/
-/* BC2: set PCIe mode as End Point */
-MV_STATUS mvCtrlPexEndPointConfig(MV_VOID)
-{
-	MV_U32 uiReg = 0;
-		/*Do End Point pex config*/
-		uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
-		uiReg &= ~(0xF << 20);
-		uiReg |= (0x1 << 20);
-		MV_REG_WRITE(PEX_CAPABILITIES_REG(0), uiReg);
-		MV_REG_WRITE(0x41a60, 0xF63F0C0);
-		mvPrintf("EP detected.\n");
-		return MV_OK;
-}
-
-/****************************************************************************/
-/* BC2: set PCIe mode as Root Complex */
-MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
-{
-	MV_U32 uiReg = 0;
-	/*Do Root Complex pex config*/
-	uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
-	uiReg &= ~(0xF << 20);
-	uiReg |= (0x4 << 20);
-	MV_REG_WRITE(PEX_CAPABILITIES_REG(0), uiReg);
-	mvPrintf("RC detected.\n");
-	return mvHwsPexConfig();
-}
-
-/*BC2: check S@R for PCIe mode (EP/RC) ****************************************/
-MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
-{
-	MV_U32 uiReg = 0;
-
-	/*Read BC2 SatR configuration SAR0[16]*/
-	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, REG_DEVICE_SAR1_ADDR, &uiReg, BIT16));
-
-	/* check BIT16 for PCIe mode status: 0 = EP , 1 = RC */
-	return  (uiReg == 0);
-}
-
-/* BC2: Get the Serdes revision number **************************************/
-MV_U8 mvHwsSerdesRevGet(MV_VOID)
-{
-	return (mvSysEnvDeviceRevGet() == MV_MSYS_BC2_A0_ID) ? MV_SERDES_28NM_REV_1 : MV_SERDES_28NM_REV_3;
-}
-
-/*BC2: initialize USB2.0 UTMI PHY**********************************************/
-MV_STATUS mvCtrlUsb2Config(MV_VOID)
-{
-	/* no USB2 in BC2 */
-	return MV_OK;
-}
-#endif
-
-
 MV_STATUS mvSerdesReset(
 	MV_U32 serdesNum,
 	MV_BOOL analogReset,
@@ -752,9 +805,10 @@ MV_STATUS mvHwsComH28nmSerdesPowerCtrl
 {
 	MV_U32 regData;
 
-	#ifndef MV_MSYS_AC3
+	if (mvHwsSerdesRevGet() == MV_SERDES_28NM_REV_1) {
+		/* in BC2-A0 there is no MSYS Serdes support */
 		return MV_OK;
-	#endif
+	}
 
 	if (powerUp == MV_TRUE) {
 
@@ -803,9 +857,9 @@ MV_STATUS mvHwsComH28nmSerdesPowerCtrl
 		if (regData != 0x1C)
 			return MV_ERROR;
 
-  } else {
+	} else {
 
-	  /*PCI-E Root Complex configuration*/
+		/*PCI-E Root Complex configuration*/
 		DEBUG_INIT_FULL_S("mvSerdesPowerUpCtrl: executing power down.. ");
 
 		CHECK_STATUS(mvSerdesReset(serdesNum, MV_TRUE, MV_FALSE, MV_FALSE));
@@ -815,7 +869,7 @@ MV_STATUS mvHwsComH28nmSerdesPowerCtrl
 
 		CHECK_STATUS(mvSerdesReset(serdesNum, MV_TRUE, MV_TRUE, MV_TRUE));
 		CHECK_STATUS(mvSerdesCoreReset(serdesNum, MV_TRUE));
-  }
+	}
 
 	return MV_OK;
 }
@@ -862,6 +916,13 @@ MV_STATUS mvSerdesPowerUpCtrl(
 	switch (serdesType) {
 	case SGMII0:
 	case SGMII1:
+		if (mvHwsSerdesRevGet() == MV_SERDES_28NM_REV_1) {
+			/* in BC2-A0 there is no MSYS Serdes support */
+
+			mvPrintf("Error: mvSerdesPowerUpCtrl: SGMII configuration is not supported in Serdes Rev 1.0 (Serdes %d)\n", serdesNum);
+			return MV_NOT_SUPPORTED;
+		}
+
 		DEBUG_INIT_FULL_C("== Init SGMII\n", (serdesType == SGMII0 ? 0 :1), 1);
 		CHECK_STATUS(mvHwsComH28nmSerdesPowerCtrl(serdesNum, serdesPowerUp));
 		CHECK_STATUS(mvHwsComH28nmSerdesPolaritySwap(serdesNum, MV_TRUE, swapRx));
@@ -901,19 +962,6 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 
 	DEBUG_INIT_FULL_S("\n### powerUpSerdesLanes ###\n");
 
-#ifndef MV_MSYS_AC3
-	DEBUG_INIT_FULL_S("== Init PCIe0\n");
-	if(mvCtrlIsPexEndPointMode() == MV_TRUE) {
-		CHECK_STATUS(mvCtrlPexPolaritySet(MV_PCIE_POLARITY_EP));
-		return mvCtrlPexEndPointConfig(); /*PCI-E End Point configuration*/
-	} else {
-		CHECK_STATUS(mvCtrlPexPolaritySet(MV_PCIE_POLARITY_RC));
-		return mvCtrlPexRootComplexConfig(); /*PCI-E Root Complex configuration*/
-	}
-
-	DEBUG_INIT_FULL_S("Skipping powerUpSerdesLanes\n");
-	return MV_OK;
-#endif
 	/* per Serdes Power Up */
 	for (serdesId = 0; serdesId < MAX_SERDES_LANES; serdesId++) {
 

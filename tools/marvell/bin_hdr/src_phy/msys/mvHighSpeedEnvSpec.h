@@ -74,8 +74,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MAX_SERDES_LANES		3
 #define LAST_LANE_NUM			12
 #else
-#define MAX_SERDES_LANES		6
-#define LAST_LANE_NUM			0 /* Not used so far, should be re-defined later */
+#define MAX_SERDES_LANES		3
+#define LAST_LANE_NUM			21
 #endif
 
 #define MV_SERDES_28NM_REV_1	0x0

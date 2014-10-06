@@ -448,7 +448,13 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 	mvCtrlSocUnitInfoNumSet(USB3_UNIT_ID, usbHIfCount);
 #ifdef CONFIG_ARMADA_39X
 	mvCtrlSocUnitInfoNumSet(QSGMII_UNIT_ID, qsgmiiIfCount);
-	mvCtrlSocUnitInfoNumSet(XAUI_UNIT_ID, xauiIfCount);
+	/* if xauiIfCount(count of RXAUI serdes lanes) == 2 => RXAUI is connected to SerDes's
+	   if xauiIfCount(count of XAUI serdes lanes) == 4 => XAUI is connected to SerDes's */
+	if (xauiIfCount == 2 || xauiIfCount == 4)
+		mvCtrlSocUnitInfoNumSet(XAUI_UNIT_ID, 1);
+	else
+		mvCtrlSocUnitInfoNumSet(XAUI_UNIT_ID, 0);
+
 #endif
 	/* only if found more serdes eth interfaces than on-board ports,than update max eth count.
 	   (needed by phy + giga init sequence)				*/

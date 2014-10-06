@@ -222,7 +222,6 @@ MV_U16 mvSysEnvModelGet(MV_VOID)
 	case MV_6811_DEV_ID:
 	case MV_6828_DEV_ID:
 	case MV_6920_DEV_ID:
-	case MV_6910_DEV_ID:
 	case MV_6928_DEV_ID:
 		return ctrlId;
 	default: /*Device ID Default for A38x: 6820 , for A39x: 6920 */

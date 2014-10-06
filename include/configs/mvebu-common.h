@@ -36,6 +36,8 @@
 #define CONFIG_MVEBU_DEBUG_FUNC_IN_OUT
 /* #define CONFIG_MV_DEBUG_PUTS */
 
+#define CONFIG_SYS_GENERIC_BOARD
+
 /* Global definitions */
 #ifndef CONFIG_SYS_TEXT_BASE
 #define CONFIG_SYS_TEXT_BASE            0x00000000
@@ -129,6 +131,9 @@
 #define CONFIG_CMD_BSP		/* Enable board specfic commands */
 #define CONFIG_CMD_ELF
 #define CONFIG_CMD_STAGE_BOOT
+#ifdef CONFIG_ARM64
+#define CONFIG_CMD_BOOTI
+#endif
 
 /* MVEBU Generic commands */
 #define CONFIG_CMD_MVEBU_MAP
@@ -174,6 +179,7 @@
 
 
 /* Generic Interrupt Controller Definitions */
+#define CONFIG_GICV2
 #define GICD_BASE                       MVEBU_GICD_BASE
 #define GICC_BASE                       MVEBU_GICC_BASE
 
@@ -181,7 +187,7 @@
 #define CONFIG_OF_LIBFDT
 
 /* SMP Spin Table Definitions */
-#define CPU_RELEASE_ADDR               (CONFIG_SYS_SDRAM_BASE + 0x7fff0)
+#define CPU_RELEASE_ADDR               (CONFIG_SYS_SDRAM_BASE + 0x2000000)
 
 /* Exception level */
 /* define CONFIG_ARMV8_SWITCH_TO_EL1 */

@@ -416,40 +416,31 @@ usage:
 }
 
 U_BOOT_CMD(SatR, 6, 1, do_sar,
-	"Sample At Reset sub-system\n",
+	"Sample At Reset sub-system",
+     "list <field>          - list configuration options for <field>\n\n"
+"SatR read                  - print all SatR configuration values\n"
+"SatR read <field>          - print the requested <field> value\n\n"
+"SatR write default         - restore all SatR fields to their default values\n"
+"SatR write <field> <val>   - write the requested <field> <value>\n\n"
 
-	"list freq		- prints the S@R modes list\n"
-	"SatR list coreclock	- prints the S@R modes list\n"
-	"SatR list cpusnum	- prints the S@R modes list\n"
-	"SatR list sscg		- prints the S@R modes list\n"
-	"SatR list pcimode	- prints the S@R modes list\n\n"
-
-	"SatR read		- read and print all active S@R values\n"
-	"SatR read freq		- read and print the CPU frequency S@R value\n"
-	"SatR read coreclock	- read and print the Core Clock frequency S@R value\n"
-	"SatR read cpusnum	- read and print the number of CPU cores S@R value\n"
-	"SatR read sscg		- read and print the SSCG S@R value (reading the I2C device)\n"	 
-	"SatR read i2c0		- read and print the i2c0 S@R value (reading the I2C device)\n"
-	"SatR read cpureset	- read and print the CPU reset mode S@R value (reading the I2C device)\n"
-	"SatR read corereset	- read and print the Core reset mode S@R value (reading the I2C device)\n"
-	"SatR read bootsrc	- read and print the boot source from S@R value (reading the I2C device)\n"
-	"SatR read cpubypass	- read and print the CPU Bypass mode from S@R value (reading the I2C device)\n"
-	"SatR read cpuendi	- read and print the CPU Endianess (Little/Big) S@R value (reading the I2C device)\n"
-	"SatR read cpunmfi	- read and print the CPU FIQ mask mode (Little/Big) S@R value (reading the I2C device)\n"
-	"SatR read cputhumb	- read and print the CPU Thumb mode (ARM/ Thumb) S@R value (reading the I2C device)\n"
-	"SatR read pcimode0	- read and print the pci0 clock mode (input/output) from S@R value (reading the I2C device)\n"
-	"SatR read pcimode1	- read and print the pci1 clock mode (input/output) from S@R value (reading the I2C device)\n"
-	"SatR read refclk	- read and print the ref clock mode S@R value \n"
-	"SatR read tester	- read and print the tester mode S@R value\n\n"
-
-	"SatR write freq <val>		- write the S@R with CPU frequency value\n"
-	"SatR write coreclock <val>	- write the S@R with Core Clock frequency value\n"
-	"SatR write cpusnum <val>	- write the S@R with number of CPU cores value\n"
-	"SatR write sscg <val>		- write the S@R with sscg mode value\n"
-	"SatR write pcimode0 <val>	- write the S@R with pci0 clock mode (0:input/1:output)\n"
-	"SatR write pcimode1 <val>	- write the S@R with pci1 clock mode (0:input/1:output)\n"
-
-	"SatR write default		- restore writeable S@R values to their default value\n"
+"\tHW SatR fields\n"
+"\t--------------\n"
+"coreclock                  - Core Clock frequency\n"
+"freq                       - CPU frequency\n"
+"cpusnum                    - number of CPU cores\n"
+"sscg                       - SSCG modes\n"
+"pcimode0                   - pci0 clock mode (0:input/1:output)\n"
+"pcimode1                   - pci1 clock mode (0:input/1:output)\n"
+"i2c0                       - i2c0 mode (read only)\n"
+"cpureset                   - CPU reset mode (read only)\n"
+"corereset                  - Core reset mode (read only)\n"
+"bootsrc                    - boot source (read only)\n"
+"cpubypass                  - CPU Bypass mode (read only)\n"
+"cpuendi                    - CPU Endianess (read only)\n"
+"cpunmfi                    - CPU FIQ mask mode (read only)\n"
+"cputhumb                   - CPU Thumb mode (ARM/ Thumb) (read only)\n"
+"refclk                     - ref clock mode (read only)\n"
+"tester                     - tester mode (read only)\n"
 );
 #endif /*defined(CONFIG_CMD_SAR)*/
 

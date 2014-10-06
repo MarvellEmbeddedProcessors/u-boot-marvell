@@ -293,9 +293,9 @@ static int do_sar_read(int mode)
 
 	case CMD_PLL_CLOCK:
 		if (mvBoardPllClockGet(&tmp) == MV_OK)
-			printf("pllclock (VCO)\t\t= %d ==>  %s\n", tmp, ((tmp == 0) ? "1GHz" : "2.5GHz"));
+			printf("pllclock (PLL2 VCO)\t\t= %d ==>  %s\n", tmp, ((tmp == 0) ? "1GHz" : "2.5GHz"));
 		else
-			printf("pllclock (VCO) Error: failed reading PLL VCO clock\n");
+			printf("pllclock (PLL2 VCO) Error: failed reading PLL VCO clock\n");
 		break;
 	case CMD_DEVICE_NUM:
 		if (mvBoardDeviceNumGet(&tmp) == MV_OK)
@@ -456,53 +456,32 @@ usage:
 }
 
 U_BOOT_CMD(SatR, 6, 1, do_sar,
-	"Sample At Reset sub-system\n",
+	"Sample At Reset sub-system",
+     "list <field>          - list configuration options for <field>\n\n"
+"SatR read dump             - print all SatR configuration values\n"
+"SatR read <field>          - print the requested <field> value\n\n"
+"SatR write default         - restore all SatR fields to their default values\n"
+"SatR write <field> <val>   - write the requested <field> <value>\n\n"
 
-	"list coreclock	- prints the S@R modes list\n"
-	"SatR list freq		- prints the S@R modes list\n"
+"\tHW SatR fields\n"
+"\t--------------\n"
+"coreclock                  - Core frequency\n"
+"freq                       - CPU DDR frequency\n"
 #ifdef CONFIG_BOBCAT2
-	"SatR list tmfreq	- prints the S@R modes list\n"
+"tmfreq                     - TM frequency\n"
 #elif defined CONFIG_ALLEYCAT3
-	"SatR list ddreccenable	- prints the S@R modes list\n"
-	"SatR list pcimode	- prints the S@R modes list\n"
-	"SatR list pciclock	- prints the S@R modes list\n"
-	"SatR list pllclock	- prints the S@R modes list\n"
-	"SatR list devicenum	- prints the S@R modes list\n\n"
-	"SatR list boardid	- prints the S@R modes list\n"
+"pcimode                    - PCIe mode (EP/RC)\n"
+"pciclock                   - PCIe reference clock source\n"
+"pllclock                   - PLL2 VCO clock frequency\n"
+"devicenum                  - Devicenum\n"
 #endif
-	"SatR list bootsrc	- prints the S@R modes list\n"
-	"SatR list deviceid	- prints the S@R modes list\n\n"
-
-	"SatR read coreclock	- read and print the Core frequency S@R value\n"
-	"SatR read freq		- read and print the CPU DDR frequency S@R value\n"
-#ifdef CONFIG_BOBCAT2
-	"SatR read tmfreq	- read and print the TM frequency S@R value\n"
-#elif defined CONFIG_ALLEYCAT3
-	"SatR read ddreccenable	- read and print the DDR ECC En/Dis S@R value\n"
-	"SatR read pcimode	- read and print the PCIe mode (EP/RC) S@R value\n"
-	"SatR read pciclock	- read and print the PCIe reference clock source S@R value\n"
-	"SatR read pllclock	- read and print the PLL VCO clock frequency S@R value\n"
-	"SatR read devicenum	- read and print the Devicenum S@R value\n"
-	"SatR read boardid	- read and print the Board ID S@R value\n"
+"bootsrc                    - Boot source\n"
+"deviceid                   - Device ID\n"
+#ifdef CONFIG_ALLEYCAT3
+"\n\tSW SatR fields\n"
+"\t--------------\n"
+"ddreccenable               - DDR ECC modes\n"
+"boardid                    - Board ID\n"
 #endif
-	"SatR read bootsrc	- read and print the Boot source S@R value\n"
-	"SatR read deviceid	- read and print the Device ID S@R value\n"
-	"SatR read dump		- read and print the SAR register \n\n"
-
-	"SatR write coreclock <val>	- write the S@R with core frequency value\n"
-	"SatR write freq <val>		- write the S@R with CPU DDR frequency value\n"
-#ifdef CONFIG_BOBCAT2
-	"SatR write tmfreq   <val>	- write the S@R with TM frequency value\n"
-#elif defined CONFIG_ALLEYCAT3
-	"SatR write ddreccenable <val>	- write the DDR ECC En/Dis value\n"
-	"SatR write pcimode <val>	- write the S@R with PCIe mode (EP/RC) value\n"
-	"SatR write pciclock <val>	- write the S@R with PCIe reference clock source value\n"
-	"SatR write pllclock <val>	- write the S@R with PLL VCO clock frequency value\n"
-	"SatR write devicenum <val>	- write the S@R with Device Num. value\n"
-	"SatR write boardid <val>	- write the S@R with Board ID value\n"
-#endif
-	"SatR write bootsrc  <val>	- write the S@R with Boot source value\n"
-	"SatR write deviceid <val>	- write the S@R with Device ID value\n"
-	"SatR write default		- write all S@R values to their default\n"
 );
 #endif /*defined(CONFIG_CMD_SAR)*/

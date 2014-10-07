@@ -416,7 +416,7 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray)
 			MV_TWSI_SLAVE twsiSlave;
 
 			/*Fix the topology for A380 by SatR values*/
-			twsiSlave.slaveAddr.address = 0x50;
+			twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
 			twsiSlave.slaveAddr.type = ADDR7_BIT;
 			twsiSlave.validOffset = MV_TRUE;
 			twsiSlave.offset = 0;
@@ -576,7 +576,7 @@ MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
 	DEBUG_INIT_S("\nInit RD board ");
 
 	/* Initializing twsiSlave in order to read from the TWSI address */
-	twsiSlave.slaveAddr.address = BOARD_ID_GET_ADDR;
+	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.offset = 0;

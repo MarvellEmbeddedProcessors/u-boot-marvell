@@ -91,18 +91,18 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	MV_TWSI_SLAVE twsiSlave;
 	MV_U8 boardId;
 
-	DEBUG_INIT_FULL_S("\n### mvHwsBoardIdGet ###\n");
+	DEBUG_INIT_FULL_S("\n### mvBoardIdGet ###\n");
 
-	twsiSlave.slaveAddr.address = BOARD_ID_GET_ADDR;
+	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.offset = 0;
 	twsiSlave.moreThen256 = MV_TRUE;
 
 	/* Reading board id */
-	DEBUG_INIT_FULL_S("mvHwsBoardIdGet: getting board id\n");
+	DEBUG_INIT_FULL_S("mvBoardIdGet: getting board id\n");
 	if (mvTwsiRead(0, &twsiSlave, &boardId, 1) != MV_OK) {
-		DEBUG_INIT_S("mvHwsBoardIdGet: TWSI Read failed\n");
+		DEBUG_INIT_S("mvBoardIdGet: TWSI Read failed\n");
 		return (MV_U8)MV_INVALID_BOARD_ID;
 	}
 
@@ -493,7 +493,7 @@ static MV_STATUS mvSysEnvTwsiProbe(MV_U32 chip)
 *******************************************************************************/
 static MV_STATUS mvSysEnvIsEepromEnabled(void)
 {
-	MV_U8 addr = MV_INFO_TWSI_EEPROM_DEV;
+	MV_U8 addr = EEPROM_I2C_ADDR;
 
 	DEBUG_INIT_FULL_S("mvSysEnvIsEepromEnabled probing for i2c chip 0x");
 	DEBUG_INIT_FULL_D(addr, 2);
@@ -529,7 +529,7 @@ static MV_STATUS mvSysEnvEpromReset(void)
 	/* write default configuration to the EEPROM */
 	for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4 ; i++) {
 		data[i] = MV_BYTE_SWAP_32BIT(data[i]);
-		if (mvSysEnvEpromWrite(i * 4, &data[i], 4, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+		if (mvSysEnvEpromWrite(i * 4, &data[i], 4, EEPROM_I2C_ADDR) != MV_OK) {
 			DEBUG_INIT_S("mvSysEnvEpromReset: Error: Write default configuration to EEPROM failed\n");
 			return MV_FAIL;
 		}
@@ -537,7 +537,7 @@ static MV_STATUS mvSysEnvEpromReset(void)
 
 	/* write magic pattern to the EEPROM */
 	data[0] = MV_BYTE_SWAP_32BIT(EEPROM_VERIFICATION_PATTERN);
-	if (mvSysEnvEpromWrite(MV_BOARD_CONFIG_PATTERN_OFFSET, &data[0], 4, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+	if (mvSysEnvEpromWrite(MV_BOARD_CONFIG_PATTERN_OFFSET, &data[0], 4, EEPROM_I2C_ADDR) != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvEpromReset: failed to write magic pattern to EEPROM\n");
 		return MV_FAIL;
 	}
@@ -580,7 +580,7 @@ static MV_STATUS mvSysEnvEepromInit(void)
 	}
 
 	/* check for EEPROM pattern to see if this is the board's first boot */
-	if (mvSysEnvEpromRead(MV_BOARD_CONFIG_PATTERN_OFFSET, &data, 4, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+	if (mvSysEnvEpromRead(MV_BOARD_CONFIG_PATTERN_OFFSET, &data, 4, EEPROM_I2C_ADDR) != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvEepromInit: Error: read pattern from EEPROM failed.\n");
 		return MV_FAIL;
 	}
@@ -603,7 +603,7 @@ static MV_STATUS mvSysEnvEepromInit(void)
 	configEnableInfo.offset = CALC_BYTE_OFFSET(configEnableInfo.offset, configEnableInfo.byteNum);
 
 	/* check if board auto configuration is enabled */
-	if (mvSysEnvEpromRead(configEnableInfo.offset, &data, 1, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+	if (mvSysEnvEpromRead(configEnableInfo.offset, &data, 1, EEPROM_I2C_ADDR) != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvEepromInit: Error: read data from EEPROM failed.\n");
 		return MV_FAIL;
 	}
@@ -625,7 +625,7 @@ static MV_STATUS mvSysEnvEepromInit(void)
 	/* bits 0&1 in offset 11 in the EEPROM are used as counters for board configuration validation.
 	   each load of the board by EEPROM configuration, the counter is incremented, and when
 	   it reaches 3 times, the configuration is set to default */
-	if (mvSysEnvEpromRead(configValidInfo.offset, &data, 1, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+	if (mvSysEnvEpromRead(configValidInfo.offset, &data, 1, EEPROM_I2C_ADDR) != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvEepromInit: Error: read data from EEPROM failed.");
 		return MV_FAIL;
 	}
@@ -639,10 +639,10 @@ static MV_STATUS mvSysEnvEepromInit(void)
 
 		/* reset the valid counter to 0 */
 		data &= ~configValidInfo.mask;
-		if (mvSysEnvEpromWrite(configValidInfo.offset, &data, 1, MV_INFO_TWSI_EEPROM_DEV) != MV_OK)
+		if (mvSysEnvEpromWrite(configValidInfo.offset, &data, 1, EEPROM_I2C_ADDR) != MV_OK)
 			DEBUG_INIT_S("mvSysEnvEepromInit: write data to EEPROM failed.\n");
 
-		if (mvSysEnvEpromRead(configEnableInfo.offset, &data, 1, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+		if (mvSysEnvEpromRead(configEnableInfo.offset, &data, 1, EEPROM_I2C_ADDR) != MV_OK) {
 			DEBUG_INIT_S("mvSysEnvEepromInit: Error: read data from EEPROM failed.");
 			return MV_FAIL;
 		}
@@ -650,7 +650,7 @@ static MV_STATUS mvSysEnvEepromInit(void)
 		/* disable the board auto config */
 		DEBUG_INIT_S("mvSysEnvEepromInit: Disable board config.\n");
 		data &= ~configEnableInfo.mask;
-		if (mvSysEnvEpromWrite(configEnableInfo.offset, &data, 1, MV_INFO_TWSI_EEPROM_DEV) != MV_OK)
+		if (mvSysEnvEpromWrite(configEnableInfo.offset, &data, 1, EEPROM_I2C_ADDR) != MV_OK)
 			DEBUG_INIT_S("mvSysEnvEepromInit: write data to EEPROM failed.\n");
 
 		return MV_FAIL;
@@ -661,7 +661,7 @@ static MV_STATUS mvSysEnvEepromInit(void)
 	data &= ~configValidInfo.mask;
 	data |= (validCount);
 
-	if (mvSysEnvEpromWrite(configValidInfo.offset, &data, 1, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+	if (mvSysEnvEpromWrite(configValidInfo.offset, &data, 1, EEPROM_I2C_ADDR) != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvEepromInit: write data to EEPROM failed.\n");
 		return MV_FAIL;
 	}
@@ -704,7 +704,7 @@ MV_STATUS mvSysEnvConfigInit(void)
 	if (res == MV_OK) {
 		/* Read configuration data: 1st 8 bytes in  EEPROM, (read twice: each read of 4 bytes(32bit)) */
 		for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4 ; i++)
-			if (mvSysEnvEpromRead(i * 4, &configVal[i], 4, MV_INFO_TWSI_EEPROM_DEV) != MV_OK) {
+			if (mvSysEnvEpromRead(i * 4, &configVal[i], 4, EEPROM_I2C_ADDR) != MV_OK) {
 				DEBUG_INIT_S("mvSysEnvConfigInit: Error: Read board configuration from EEPROM failed\n");
 				readFlagError = MV_FALSE;
 			}

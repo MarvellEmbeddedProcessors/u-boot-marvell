@@ -191,13 +191,13 @@ extern "C" {
 
 /* A38X Z1 has different mapping of the COMPHY selector vs A38x A0 & A39X */
 #define COMPHY_SELECT_OFFS(laneNum)	((mvCtrlDevFamilyIdGet(0) == MV_88F68XX && \
-					mvCtrlRevGet() == MV_88F68XX_69XX_Z1_ID) ? \
+					mvCtrlRevGet() == MV_88F68XX_Z1_ID) ? \
 					(laneNum * 3) :  (laneNum * 4))
 #define COMPHY_SELECT_MASK(laneNum)	((mvCtrlDevFamilyIdGet(0) == MV_88F68XX && \
-					mvCtrlRevGet() == MV_88F68XX_69XX_Z1_ID) ? \
+					mvCtrlRevGet() == MV_88F68XX_Z1_ID) ? \
 					(0x07 << COMPHY_SELECT_OFFS(laneNum)) :  (0x0F << COMPHY_SELECT_OFFS(laneNum)))
 #define PCIE0_X4_EN_OFFS		((mvCtrlDevFamilyIdGet(0) == MV_88F68XX && \
-					mvCtrlRevGet() == MV_88F68XX_69XX_Z1_ID) ? \
+					mvCtrlRevGet() == MV_88F68XX_Z1_ID) ? \
 					(18) :  (31))
 #define PCIE0_X4_EN_MASK		(1 << PCIE0_X4_EN_OFFS)
 

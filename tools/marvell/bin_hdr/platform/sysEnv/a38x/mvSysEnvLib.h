@@ -231,8 +231,12 @@
 #define DEV_VERSION_ID_REG			0x1823C
 #define REVISON_ID_OFFS				8
 #define REVISON_ID_MASK				0xF00
-#define MV_88F68XX_Z1_ID			0x0
-#define MV_88F68XX_A0_ID			0x1
+
+/* A38x revisions */
+#define MV_88F68XX_Z1_ID		0x0
+#define MV_88F68XX_A0_ID		0x4
+/* A39x revisions */
+#define MV_88F69XX_Z1_ID		0x2
 
 #define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
 #define GPP_DATA_OUT_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x00)

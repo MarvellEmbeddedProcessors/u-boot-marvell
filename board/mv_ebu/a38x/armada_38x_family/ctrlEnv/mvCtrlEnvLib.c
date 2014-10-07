@@ -1229,8 +1229,9 @@ MV_VOID mvCtrlRevNameGet(char *pNameBuff)
 	revId = mvCtrlRevGet();
 
 	switch (revId) {
-	case MV_88F68XX_69XX_Z1_ID:
-	case MV_88F68XX_69XX_A0_ID:
+	case MV_88F68XX_Z1_ID:
+	case MV_88F68XX_A0_ID:
+	case MV_88F69XX_Z1_ID:
 			mvOsSPrintf(pNameBuff, " Rev %s", revArray[revId]);
 			return;
 	default:
@@ -2012,7 +2013,7 @@ MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive)
 		map the USB port #1 to be usbActive=0 */
 
 	/* if a38x Z0 rev, return original mapping */
-	if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX && mvCtrlRevGet() == MV_88F68XX_69XX_Z1_ID)
+	if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX && mvCtrlRevGet() == MV_88F68XX_Z1_ID)
 		return usbActive;
 
 	if (usbUnitId == USB3_UNIT_ID && mvCtrlUsb3MaxGet() == 1) {

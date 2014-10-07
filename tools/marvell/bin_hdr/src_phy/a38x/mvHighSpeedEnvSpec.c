@@ -445,34 +445,6 @@ MV_U8 mvHwsCtrlSerdesRevGet(MV_VOID)
     return MV_SERDES_REV_2_1;
 }
 
-/*******************************************************************************
-* mvHwsSerdesGetPhySelectorVal
-*
-* DESCRIPTION: Get the mapping of Serdes Selector values according to the
-*               Serdes revision number
-*
-* INPUT:    serdesNum - Serdes number
-*           serdesType - Serdes type
-*
-* OUTPUT: None
-*
-* RETURN:
-* 		Mapping of Serdes Selector values
-*
-*******************************************************************************/
-MV_U32 mvHwsSerdesGetPhySelectorVal(MV_32 serdesNum, SERDES_TYPE serdesType)
-{
-    if (serdesType >= LAST_SERDES_TYPE) {
-        return 0xFF;
-    }
-
-    if (mvHwsCtrlSerdesRevGet() == MV_SERDES_REV_1_2) {
-        return commonPhysSelectorsSerdesRev1Map[serdesType][serdesNum];
-    }
-    else {
-        return commonPhysSelectorsSerdesRev2Map[serdesType][serdesNum];
-    }
-}
 
 MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID)
 {

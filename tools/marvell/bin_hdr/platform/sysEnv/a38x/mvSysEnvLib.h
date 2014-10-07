@@ -146,7 +146,12 @@
 #define MAX_SELECTOR_VAL			10
 
 /* TWSI addresses */
-#define BOARD_ID_GET_ADDR                       0x50
+/* starting from A38x A0, i2c address of EEPROM is 0x57 */
+#ifdef MV88F69XX
+#define EEPROM_I2C_ADDR				0x50
+#else
+#define EEPROM_I2C_ADDR				(mvSysEnvDeviceRevGet() == MV_88F68XX_Z1_ID ? 0x50 : 0x57)
+#endif
 #define RD_GET_MODE_ADDR                        0x4C
 #define DB_GET_MODE_SLM1363_ADDR                0x25
 #define DB_GET_MODE_SLM1364_ADDR                0x24
@@ -438,7 +443,6 @@ MV_U16 mvSysEnvModelGet(MV_VOID);
 MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID);
 
 #ifdef CONFIG_CMD_BOARDCFG
-#define MV_INFO_TWSI_EEPROM_DEV			0x50
 
 #define MV_BOARD_CONFIG_MAX_BYTE_COUNT		8
 #define MV_BOARD_CONFIG_DEFAULT_VALUE		{0x0021D0A9, 0x4 }

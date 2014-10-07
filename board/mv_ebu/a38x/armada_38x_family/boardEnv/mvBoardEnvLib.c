@@ -1884,7 +1884,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	 * due to i2c address conflict between the SFP transceiver,
 	 * starting from A0 rev, the EEPROM address is shifted to 0x57.
 	 * if running A38x Z rev, use the old address = 0x50*/
-	if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX && mvCtrlRevGet() == MV_88F68XX_69XX_Z1_ID)
+	if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX && mvCtrlRevGet() == MV_88F68XX_Z1_ID)
 		mvBoardTwsiAddrSet(BOARD_DEV_TWSI_SATR, 0, MV_A38X_Z_REV_BOARDID_I2C_ADDR);
 
 	MV_U8 readValue;

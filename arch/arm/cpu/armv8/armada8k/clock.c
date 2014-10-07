@@ -22,7 +22,7 @@
 
 u32 soc_tclk_get(void)
 {
-	return COUNTER_FREQUENCY;
+	return CONFIG_MSS_FREQUENCY;
 }
 
 u32 soc_cpu_clk_get(void)

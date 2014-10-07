@@ -46,7 +46,8 @@
 #define CONFIG_REMAKE_ELF
 
 /* Clock Definitions */
-#define COUNTER_FREQUENCY               (125000)     /* 24MHz */
+#define COUNTER_FREQUENCY	(46300)
+#define CONFIG_MSS_FREQUENCY	(125000)
 
 /*
  * Include the generic MVEBU configuration file.

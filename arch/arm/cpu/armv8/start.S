@@ -226,10 +226,6 @@ ENTRY(fixup_affinity)
 	ldr     w1, =0x0
 	str     w1, [x0]
 
-	ldr     x0, =0xf00040b0
-	ldr     w1, =0xf0080401
-	str     w1, [x0]
-
 	ret
 
 ENDPROC(fixup_affinity)

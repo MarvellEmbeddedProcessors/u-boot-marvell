@@ -27,12 +27,6 @@
 
 int soc_early_init_f(void)
 {
-#if CONFIG_PALLADIUM
-	/* Temporary configs. remove in future models */
-
-	/* Define the mapping inside register space */
-	writel(0xf0100201, 0xf00040b0);
-#endif
 	return 0;
 }
 

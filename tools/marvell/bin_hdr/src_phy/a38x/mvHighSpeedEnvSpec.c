@@ -122,14 +122,14 @@ MV_U8 commonPhysSelectorsSerdesRev2Map[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 	{ NA,    NA,     NA,	 NA,	 0x6,	 0x2,    NA	  },  /* SATA2 */
 	{ NA,	 NA,     NA,	 0x3,	 NA,	 NA,     NA	  },  /* SATA3 */
 	{ 0x3,   0x4,    NA,     NA,	 NA,	 NA,     NA	  },  /* SGMII0 */
-	{ NA,    0x5,    0x4,    NA,	 NA,	 NA,     NA	  },  /* SGMII1 */
+	{ NA,    0x5,    0x4,    NA,	 0x3,	 NA,     NA	  },  /* SGMII1 */
 	{ NA,    NA,     NA,	 0x4,	 NA,	 0x3,    NA	  },  /* SGMII2 */
 	{ NA,    0x7,    NA,	 NA,	 NA,	 NA,     NA	  },  /* QSGMII */
 	{ NA,    0x6,    NA,	 NA,	 0x4,	 NA,     NA	  },  /* USB3_HOST0 */
 	{ NA,    NA,     NA,	 0x5,	 NA,	 0x4,    NA	  },  /* USB3_HOST1 */
 	{ NA,    NA,     NA,	 0x6,	 0x5,	 0x5,    NA	  },  /* USB3_DEVICE */
 #ifdef MV88F69XX
-	{ NA,    NA,     NA,	 NA,	 0x8,	 NA,     0x2  },  /* SGMII3 */
+	{ NA,    NA,     0x5,	 NA,	 0x8,	 NA,     0x2  },  /* SGMII3 */
 	{ NA,    NA,     NA,	 0x8,	 0x9,	 0x8,    0x4  },  /* XAUI */
 	{ NA,    NA,     NA,	 NA,	 NA,	 0x8,    0x4  },  /* RXAUI */
 #endif

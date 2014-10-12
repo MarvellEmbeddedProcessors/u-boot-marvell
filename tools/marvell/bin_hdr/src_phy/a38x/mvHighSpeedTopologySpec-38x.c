@@ -62,6 +62,7 @@
 *******************************************************************************/
 #include "mvHighSpeedTopologySpec.h"
 #include "mvSysEnvLib.h"
+#include "printf.h"
 
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 /**************************************************************************
@@ -330,8 +331,8 @@ SERDES_MAP DbGpConfigDefault[MAX_SERDES_LANES] =
 	{ SATA0,	__3Gbps,		SERDES_DEFAULT_MODE	},
 	{ SATA1,	__3Gbps,		SERDES_DEFAULT_MODE	},
 	{ SATA3,	__3Gbps,		SERDES_DEFAULT_MODE	},
-	{ USB3_HOST0,	__5Gbps,		SERDES_DEFAULT_MODE	},
-	{ SATA2,	__3Gbps,		SERDES_DEFAULT_MODE	}
+	{ SATA2,	__3Gbps,		SERDES_DEFAULT_MODE	},
+	{ USB3_HOST1,	__5Gbps,		SERDES_DEFAULT_MODE	}
 };
 
 /*************************** Functions implementation *************************/
@@ -532,18 +533,29 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray)
 {
 	MV_U32 laneNum;
 	SERDES_MAP* topologyConfigPtr;
+	MV_BOOL isSgmii = MV_FALSE;
 
 	DEBUG_INIT_FULL_S("\n### loadTopologyDBGp ###\n");
 
 	topologyConfigPtr = DbGpConfigDefault;
 
-	DEBUG_INIT_S("\nInitialize DB-GP board topology\n");
+	mvPrintf("\nInitialize DB-GP board topology\n");
 
 	/* Updating the topology map */
 	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
 		serdesMapArray[laneNum].serdesMode =  topologyConfigPtr[laneNum].serdesMode;
 		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
 		serdesMapArray[laneNum].serdesType =  topologyConfigPtr[laneNum].serdesType;
+	}
+
+	/* check S@R: if lane 5 is USB3 or SGMII */
+	if (loadTopologyRDSgmiiUsb(&isSgmii) != MV_OK)
+		mvPrintf("loadTopologyDBGp: TWSI Read failed - Loading Default Topology\n");
+	else {
+		mvPrintf("Lane 5: %s \n" ,isSgmii ? "SGMII2" : "USB3.0 Host Port 1");
+		serdesMapArray[5].serdesType  =  isSgmii ? SGMII2 : USB3_HOST1;
+		serdesMapArray[5].serdesSpeed =  isSgmii ? __3_125Gbps : __5Gbps;;
+		serdesMapArray[5].serdesMode = SERDES_DEFAULT_MODE;
 	}
 
 	updateTopologySatR(serdesMapArray);

@@ -513,6 +513,7 @@ MV_STATUS loadTopologyDBAp(SERDES_MAP  *serdesMapArray)
 
 	DEBUG_INIT_FULL_S("\n### loadTopologyDBAp ###\n");
 
+	DEBUG_INIT_S("\nInitialize DB-AP board topology\n");
 	topologyConfigPtr = DbApConfigDefault;
 
 	/* Updating the topology map */
@@ -535,6 +536,8 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray)
 	DEBUG_INIT_FULL_S("\n### loadTopologyDBGp ###\n");
 
 	topologyConfigPtr = DbGpConfigDefault;
+
+	DEBUG_INIT_S("\nInitialize DB-GP board topology\n");
 
 	/* Updating the topology map */
 	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {

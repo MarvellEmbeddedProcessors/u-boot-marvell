@@ -180,9 +180,14 @@ MV_U32 mvSysEnvSuspendWakeupCheck(void)
 	MV_U32 reg, boardIdIndex, gpio;
 	MV_BOARD_WAKEUP_GPIO boardGpio[] = MV_BOARD_WAKEUP_GPIO_INFO;
 
+	boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
+	if (!(sizeof(boardGpio)/sizeof(MV_BOARD_WAKEUP_GPIO) > boardIdIndex)) {
+		mvPrintf("\nFailed loading Suspend-Wakeup information (invalid board ID)\n");
+		return 0;
+	}
+
 	/* - Detect if Suspend-Wakeup is supported on current board
 	 * - Fetch the GPIO number for wakeup status input indication */
-	boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
 	if (boardGpio[boardIdIndex].gpioNum == -1)
 		return 0; /* suspend to RAM is not supported */
 	else if (boardGpio[boardIdIndex].gpioNum == -2)

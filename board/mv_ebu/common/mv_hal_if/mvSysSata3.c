@@ -73,6 +73,9 @@ MV_STATUS mvSysSata3WinInit(MV_VOID)
 	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
 	MV_STATUS status;
 
+	if (mvCtrlSataMaxPortGet() == 0)
+		return MV_OK;
+
 	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
 	if (status == MV_OK)
 		status = mvSata3WinInit(addrWinMap);

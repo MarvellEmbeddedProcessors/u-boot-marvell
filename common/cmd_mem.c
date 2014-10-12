@@ -54,8 +54,7 @@ static	ulong	base_address = 0;
  * 	size - align address to this size
  */
 static ulong align_address(ulong addr, int size) {
-#if defined(MV88F66XX) || defined(MV88F672X)
-	/* Unaligned memory access Workaround for ALP & A375:
+	/* Unaligned memory access Workaround:
 	 * if size = long/word, & address not aligned to long/word (respectively)
 	 * align address to meet requested size */
 	if((size > 1) && (addr % size > 0)) {
@@ -63,7 +62,6 @@ static ulong align_address(ulong addr, int size) {
 		addr &= ~(size - 1);
 		printf("Using aligned address (0x%x)\n", (unsigned int)addr );
 	}
-#endif
 	return addr;
 }
 

@@ -197,6 +197,9 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	MV_U32	reg;
 
 	switch (mvBoardIdGet()) {
+	case DB_GP_68XX_ID:
+		mvBoardIoExpanderUpdate();
+		break;
 	case RD_NAS_68XX_ID:
 	case RD_AP_68XX_ID:
 		mvBoardIoExpanderUpdate();

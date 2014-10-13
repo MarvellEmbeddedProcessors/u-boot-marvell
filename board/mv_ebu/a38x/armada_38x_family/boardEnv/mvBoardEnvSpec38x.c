@@ -616,7 +616,8 @@ MV_BOARD_TWSI_INFO dbGP88F68XXInfoBoardTwsiDev[] = {
 MV_BOARD_MAC_INFO dbGP88F68XXInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
 	{ BOARD_MAC_SPEED_AUTO, 0x1, 0x1},
-	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0}
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
+	{ BOARD_MAC_SPEED_AUTO,  -1,  -1}
 };
 
 MV_DEV_CS_INFO dbGP88F68XXInfoBoardDeCsInfo[] = {
@@ -651,7 +652,7 @@ struct MV_BOARD_IO_EXPANDER dbGP88f68XXInfoBoardioExpValue[] = {
 };
 
 MV_BOARD_INFO dbGP88f68XX_board_info = {
-	.boardName			= "DB-GP-88F6820-DDR3",
+	.boardName			= "DB-88F6820-GP",
 	.numBoardNetComplexValue	= 0,
 	.pBoardNetComplexInfo		= NULL,
 	.pBoardMppConfigValue		= dbGP88f68XXInfoBoardMppConfigValue,

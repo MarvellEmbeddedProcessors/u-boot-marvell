@@ -203,6 +203,11 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("\t0 = USB3\n");
 		mvOsPrintf("\t1 = SGMII\n ");
 		break;
+	case MV_SATR_GP_SERDES5_CFG:
+		mvOsPrintf("Determines the GP SERDES lane #5 configuration:\n");
+		mvOsPrintf("\t0 = USB3.0 Port 1\n");
+		mvOsPrintf("\t1 = SGMII-2\n ");
+		break;
 	default:
 		mvOsPrintf("Usage: sar list [options] (see help)\n");
 		return 1;
@@ -282,6 +287,8 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		break;
 	case MV_SATR_RD_SERDES4_CFG:
 		mvOsPrintf("rdserdes4\t\t= %d  ==> RD SERDES Lane #4: %s\n", tmp, (tmp == 0) ? "USB3" : "SGMII");
+	case MV_SATR_GP_SERDES5_CFG:
+		mvOsPrintf("gpserdes5\t\t= %d  ==> GP SERDES Lane #5: %s\n", tmp, (tmp == 0) ? "USB3.0 port 1" : "SGMII-2");
 		break;
 
 		case CMD_DUMP:

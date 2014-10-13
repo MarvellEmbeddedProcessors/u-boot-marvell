@@ -147,6 +147,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /* I2C_UNIT_ID      */ { 2,	2,	2,	2},
 /* QSGMII_UNIT_ID   */ { 1,	0,	0,	1},
 /* XAUI_UNIT_ID     */ { 0,	0,	0,	0},
+/* USB3_HOST_UNIT_ID*/ { 2,	2,	2,	2},
 };
 #else  /* if (CONFIG_ARMADA_39X) */
 MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
@@ -172,6 +173,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /* I2C_UNIT_ID      */ { 4,	4},
 /* QSGMII_UNIT_ID   */ { 0,	1},
 /* XAUI_UNIT_ID     */ { 1,	1},
+/* USB3_HOST_UNIT_ID*/ { 2,	2},
 };
 #endif
 
@@ -1023,7 +1025,7 @@ MV_U32 mvCtrlUsbMaxGet(void)
 }
 
 /*******************************************************************************
-* mvCtrlUsb3MaxGet - Get number of Marvell USB 3.0 controllers
+* mvCtrlUsb3MaxGet - Get number of Marvell USB 3.0 SerDes lanes
 *
 * DESCRIPTION:
 *
@@ -1034,12 +1036,32 @@ MV_U32 mvCtrlUsbMaxGet(void)
 *       None.
 *
 * RETURN:
-*       returns number of Marvell USB 3.0 controllers.
+*       returns number of Marvell USB 3.0 SerDes lanes.
 *
 *******************************************************************************/
 MV_U32 mvCtrlUsb3MaxGet(void)
 {
 	return mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID);
+}
+
+/*******************************************************************************
+* mvCtrlUsb3HostMaxGet - Get number of Marvell USB 3.0 HOST controllers
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       returns number of Marvell USB 3.0 Host controllers.
+*
+*******************************************************************************/
+MV_U32 mvCtrlUsb3HostMaxGet(void)
+{
+	return mvCtrlSocUnitInfoNumGet(USB3_HOST_UNIT_ID);
 }
 
 /*******************************************************************************
@@ -2085,18 +2107,32 @@ MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive)
 
 	/* On A39x and A38x A0 revision, there are 2 USB3.0 MACs, and the connectivity of the
 	   USB3.0 depends on the SerDes configuration:
-		When only USB3.0 Host port #1 is connected via SerDes Lane 5,
-		map the USB port #1 to be usbActive=0 */
+		2 SerDes lanes for USB3.0:
+		| usbActive	|  USB port		|
+		-----------------------------------------
+		|	0	| USB3.0 Host Port #0	|
+		|	1	| USB3.0 Host Port #1	|
+
+		single SerDes lane#5 for USB3.0
+		| usbActive	|  USB port				|
+		---------------------------------------------------------
+		|	0	| USB3.0 Host Port #1			|
+		|	1	| USB2.0 via USB3.0  Host Port #0	|
+
+		When only single USB3.0 Host port #1 is connected via SerDes Lane 5,
+		map the USB port #1 to be usbActive=0
+		*/
 
 	/* if a38x Z0 rev, return original mapping */
 	if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX && mvCtrlRevGet() == MV_88F68XX_Z1_ID)
 		return usbActive;
 
-	if (usbUnitId == USB3_UNIT_ID && mvCtrlUsb3MaxGet() == 1) {
+	/* check if used SerDes Lane5 for USB3.0 */
+	if (usbUnitId == USB3_UNIT_ID) {
 		serdesConfigField = (MV_REG_READ(COMM_PHY_SELECTOR_REG) & COMPHY_SELECT_MASK(5)) >>
 				COMPHY_SELECT_OFFS(5);
 		if (serdesConfigField == COMPHY_SELECT_LANE5_USB3_VAL)
-			return 1;
+			return 1 - usbActive;
 	}
 	/* If A39x or A38x A0 rev, but the no mapping needed:
 	 * - single USB#0 in use

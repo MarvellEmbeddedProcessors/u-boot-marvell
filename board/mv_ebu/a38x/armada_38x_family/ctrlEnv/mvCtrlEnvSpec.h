@@ -286,7 +286,7 @@ typedef enum _mvUnitId {
 	PEX_UNIT_ID,
 	ETH_GIG_UNIT_ID,
 	USB_UNIT_ID,
-	USB3_UNIT_ID,
+	USB3_UNIT_ID,	/* USB3.0 SerDes lanes */
 	IDMA_UNIT_ID,
 	XOR_UNIT_ID,
 	SATA_UNIT_ID,
@@ -303,6 +303,7 @@ typedef enum _mvUnitId {
 	I2C_UNIT_ID,
 	QSGMII_UNIT_ID,
 	XAUI_UNIT_ID,
+	USB3_HOST_UNIT_ID, /* USB3.0 HOST ports */
 	MAX_UNITS_ID
 } MV_UNIT_ID;
 

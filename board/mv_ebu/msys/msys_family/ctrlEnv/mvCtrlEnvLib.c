@@ -457,6 +457,11 @@ MV_U32 mvCtrlUsb3MaxGet(void)
 	return 0; /* no USB3.0 */
 }
 
+MV_U32 mvCtrlUsb3HostMaxGet(void)
+{
+	return 0; /* no USB3.0 */
+}
+
 /*******************************************************************************
 * mvCtrlUtmiPhySelectorSet - configures the shared MAC access between USB2/3
 *

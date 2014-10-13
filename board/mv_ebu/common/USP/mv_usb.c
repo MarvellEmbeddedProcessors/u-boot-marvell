@@ -48,20 +48,21 @@
 *       Num of requested interface USB2/3
 *
 *******************************************************************************/
-MV_STATUS getUsbActive(MV_U32 usbUnitId, MV_U32 maxUsbPorts)
+MV_STATUS getUsbActive(MV_U32 usbUnitId, MV_U32 maxUsbHostPorts, MV_U32 maxSerDesLanes)
 {
 	char *env = getenv("usbActive");
 	int usbActive = simple_strtoul(env, NULL, 10);
 
-	mvOsPrintf("Port (usbActive) : ");
-	if (usbActive >= maxUsbPorts) {
-		mvOsPrintf("\n'usbActive' Error: invalid port number %d, switching to port 0\n", usbActive);
-		usbActive=0;
-	} else {
-		mvOsPrintf("%d\t", usbActive);
-	}
 
-	mvOsPrintf("Interface (usbType = %d) : ", ((usbUnitId == USB3_UNIT_ID) ? 3 : 2));
+	/*  if requested USB3.0 is not connected via SerDes, but there are enough USB3.0 ports */
+	if (usbUnitId == USB3_UNIT_ID && (usbActive >= maxSerDesLanes && maxUsbHostPorts > maxSerDesLanes)) {
+		mvOsPrintf("\n'usbActive' warning (%d): Invalid USB3.0 port (no valid SerDes)..", usbActive);
+		mvOsPrintf("Trying USB2.0 Host via USB3.0\n");
+	}
+	else if (usbActive >= maxUsbHostPorts && usbUnitId == USB_UNIT_ID)
+		mvOsPrintf("\n'usbActive' warning (%d): Invalid USB2.0 port \n", usbActive);
+
+	mvOsPrintf("Port (usbActive) : %d\tInterface (usbType = %d) : ", usbActive, ((usbUnitId == USB3_UNIT_ID) ? 3 : 2));
 	/* Fetch SoC USB mapping:
 	   For Some SoCs, when using single USB port, unit 1 is active and not 0 */
 	usbActive = mvCtrlUsbMapGet(usbUnitId, usbActive);
@@ -85,7 +86,7 @@ static void mv_xhci_core_init(MV_U32 unitId)
 
 int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 {
-	if (mvCtrlUsb3MaxGet() <= 0) {
+	if (mvCtrlUsb3HostMaxGet() <= 0) {
 		mvOsPrintf("\n%s: Error: USB 3.0 is not supported on current device\n", __func__);
 		return -1;
 	}
@@ -204,23 +205,23 @@ struct hc_interface hc_xhci = {
 */
 int usb_lowlevel_init(int index, void **controller)
 {
-	int usb2UnitNum, usb3UnitNum, usbType, usbActive = 0;
+	int usb2HostNum, usb3HostNum, usbType, usbActive = 0;
 
 	usbType = simple_strtoul(getenv("usbType"), NULL, 10);
-	usb3UnitNum = mvCtrlUsb3MaxGet();
-	usb2UnitNum = mvCtrlUsbMaxGet();
+	usb3HostNum = mvCtrlUsb3HostMaxGet();
+	usb2HostNum = mvCtrlUsbMaxGet();
 
 	switch (usbType) {
 	case 2:
-		if (hc_ehci.interface_supported == MV_TRUE && usb2UnitNum > 0) {
-			usbActive = getUsbActive(USB_UNIT_ID, usb2UnitNum); /* read requested active port */
+		if (hc_ehci.interface_supported == MV_TRUE && usb2HostNum > 0) {
+			usbActive = getUsbActive(USB_UNIT_ID, usb2HostNum, 0); /* read requested active port */
 			hc = &hc_ehci; /* set Host Controller struct for function pointers  */
 		} else
 			goto input_error;
 		break;
 	case 3:
-		if (hc_xhci.interface_supported == MV_TRUE && usb3UnitNum > 0) {
-			usbActive = getUsbActive(USB3_UNIT_ID, usb3UnitNum); /* read requested active port */
+		if (hc_xhci.interface_supported == MV_TRUE && usb3HostNum > 0) {
+			usbActive = getUsbActive(USB3_UNIT_ID, usb3HostNum , mvCtrlUsb3MaxGet()); /* read requested active port */
 			hc = &hc_xhci; /* set Host Controller struct for function pointers  */
 		} else
 			goto input_error;
@@ -233,16 +234,16 @@ int usb_lowlevel_init(int index, void **controller)
 
 input_error:
 	mvOsPrintf("Error: requested 'usbType' (Type %d) is not supported", usbType);
-	if ((usbType == 2 && usb2UnitNum < 1) || (usbType ==3 && usb3UnitNum < 1))
+	if ((usbType == 2 && usb2HostNum < 1) || (usbType ==3 && usb3HostNum < 1))
 		mvOsPrintf(" (no available USB ports).\n");
 
-	if ((hc_ehci.interface_supported == MV_TRUE && usb2UnitNum > 0) ||
-		(hc_xhci.interface_supported == MV_TRUE && usb3UnitNum > 0))
+	if ((hc_ehci.interface_supported == MV_TRUE && usb2HostNum > 0) ||
+		(hc_xhci.interface_supported == MV_TRUE && usb3HostNum > 0))
 		mvOsPrintf("\n\n\t Supported Units:\n");
-	if (hc_ehci.interface_supported == MV_TRUE && usb2UnitNum > 0)
-		mvOsPrintf("\n\tUSB2.0: %d ports: set usbType = 2 --> EHCI Stack will be used\n", usb2UnitNum);
-	if (hc_xhci.interface_supported == MV_TRUE && usb3UnitNum > 0)
-		mvOsPrintf("\tUSB3.0: %d ports: set usbType = 3 --> xHCI Stack will be used\n", usb3UnitNum);
+	if (hc_ehci.interface_supported == MV_TRUE && usb2HostNum > 0)
+		mvOsPrintf("\n\tUSB2.0: %d ports: set usbType = 2 --> EHCI Stack will be used\n", usb2HostNum);
+	if (hc_xhci.interface_supported == MV_TRUE && usb3HostNum > 0)
+		mvOsPrintf("\tUSB3.0: %d ports: set usbType = 3 --> xHCI Stack will be used\n", usb3HostNum);
 	return -1;
 }
 

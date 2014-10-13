@@ -1010,7 +1010,7 @@ MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 {
 	MV_U32 i = 0;
 	MV_U8 ioValue, ioValue2, boardId = mvBoardIdGet();
-	MV_U32 rdSerdes4cfg = MV_ERROR;
+	MV_U32 serdesCfg = MV_ERROR;
 
 	/* Verify existence of IO expander on board, and fetch 1st IO expander value to modify */
 	if (mvBoardIoExpanderGet(0, 2, &ioValue) == MV_ERROR ||
@@ -1019,10 +1019,13 @@ MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 
 	/* if RD board: detect SerDes Lane #4 configuration*/
 	if (boardId == RD_NAS_68XX_ID || boardId == RD_AP_68XX_ID)
-		rdSerdes4cfg = mvBoardSatRRead(MV_SATR_RD_SERDES4_CFG);
+		serdesCfg = mvBoardSatRRead(MV_SATR_RD_SERDES4_CFG);
+	/* DB-GP board: configurable lane #5 */
+	if (boardId == DB_GP_68XX_ID)
+		serdesCfg = mvBoardSatRRead(MV_SATR_GP_SERDES5_CFG);
 
-	if (rdSerdes4cfg != MV_ERROR) { /* ignore for none RD_NAS board */
-		if (rdSerdes4cfg == 0) /* 0 = USB3.  1 = SGMII. */
+	if (serdesCfg != MV_ERROR) { /* ignore for none RD_NAS board */
+		if (serdesCfg == 0) /* 0 = USB3.  1 = SGMII. */
 			ioValue |= 1 ;	/* Setting USB3.0 interface: configure IO as output '1' */
 		else {
 			ioValue &= ~1;		/* Setting SGMII interface:  configure IO as output '0' */

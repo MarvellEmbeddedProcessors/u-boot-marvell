@@ -165,6 +165,7 @@ MV_U8	  mvCtrlEthMaxCPUsGet(MV_VOID);
 #if defined(MV_INCLUDE_USB)
 MV_U32 mvCtrlUsbMaxGet(MV_VOID);
 MV_U32 mvCtrlUsb3MaxGet(MV_VOID);
+MV_U32 mvCtrlUsb3HostMaxGet(MV_VOID);
 MV_VOID mvCtrlUtmiPhySelectorSet(MV_U32 usbUnitId);
 #endif
 #if defined(MV_INCLUDE_XOR)

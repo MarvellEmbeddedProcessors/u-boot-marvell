@@ -982,7 +982,7 @@ MV_U32 mvCtrlUsbMaxGet(void)
 }
 
 /*******************************************************************************
-* mvCtrlUsb3MaxGet - Get number of Marvell USB 3.0 controllers
+* mvCtrlUsb3MaxGet - Get number of Marvell USB 3.0 SerDes Lanes
 *
 * DESCRIPTION:
 *
@@ -993,13 +993,34 @@ MV_U32 mvCtrlUsbMaxGet(void)
 *       None.
 *
 * RETURN:
-*       returns number of Marvell USB 3.0 controllers.
+*       returns number of Marvell USB 3.0 SerDes Lanes.
 *
 *******************************************************************************/
 MV_U32 mvCtrlUsb3MaxGet(void)
 {
 	return mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID);
 }
+
+/*******************************************************************************
+* mvCtrlUsb3HostMaxGet - Get number of Marvell USB 3.0 Host Controllers.
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       returns number of Marvell USB 3.0 Host Controllers.
+*
+*******************************************************************************/
+MV_U32 mvCtrlUsb3HostMaxGet(void)
+{
+	return mvCtrlUsb3MaxGet();
+}
+
 
 /*******************************************************************************
 * mvCtrlUtmiPhySelectorSet - configures the shared MAC access between USB2/3

@@ -136,7 +136,7 @@ MV_STATUS mvSysUsbInit(MV_VOID)
 #endif
 #ifdef CONFIG_USB_XHCI
 		MV_U32 reg;
-		for (dev = 0; dev < mvCtrlUsb3MaxGet(); dev++) {
+		for (dev = 0; dev < mvCtrlUsb3HostMaxGet() ; dev++) {
 			status = mvUsbUtmiPhyInit(dev, &halData);
 			if (halData.ctrlFamily == MV_88F66X0 || halData.ctrlFamily == MV_88F67X0) {
 				/* ALP/A375: Set UTMI PHY Selector:

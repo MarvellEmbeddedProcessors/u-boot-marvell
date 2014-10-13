@@ -642,6 +642,76 @@ MV_U32 mvCtrlbootSrcGet(void)
 }
 
 /*******************************************************************************
+* mvCtrlSSCGEnabled
+*
+* DESCRIPTION:
+*	Check if SSCG is enabled in the SoC Sample-At-Reset register.
+*
+* INPUT:  none
+*
+* OUTPUT: boot source value,
+*
+* RETURN:
+*	boot source value
+*
+*******************************************************************************/
+static MV_BOOL mvCtrlSSCGEnabled(void)
+{
+	MV_U32 satrVal, sscgDis;
+
+	satrVal = MV_REG_READ(MPP_SAMPLE_AT_RESET);
+	sscgDis = (satrVal & SATR_SSCG_DISABLE_MASK) >> SATR_SSCG_DISABLE_OFFS;
+
+	return !sscgDis;
+}
+
+/*******************************************************************************
+* mvCtrlSSCGInit
+*
+* DESCRIPTION:
+*	Enable SSCG mode in SoC if it's enabled by Sample-at-reset.
+*
+* INPUT:  none
+*
+* OUTPUT: boot source value,
+*
+* RETURN:
+*	boot source value
+*
+*******************************************************************************/
+MV_STATUS mvCtrlSSCGInit(void)
+{
+	MV_U32 reg;
+
+	if (mvCtrlSSCGEnabled() == MV_FALSE)
+		return MV_OK;
+
+	/* Initialize SSCG */
+	reg = MV_REG_READ(SSCG_SSC_MODE_REG);
+	/* De-assert the <SSC Reset> field and the <External PI Reset>.*/
+	reg &= ~((1 << SSCG_SSC_RESET_OFFS) |
+			(1 << SSCG_SSC_EXT_IPI_RESET_OFFS));
+	MV_REG_WRITE(SSCG_SSC_MODE_REG, reg);
+
+	/* Wait at least 1us. */
+	mvOsDelay(1);
+
+	/* Set <PI Loop Control> to 0x1 (Enable). */
+	reg |= (1 << SSCG_SSC_PI_LOOP_CTRL_OFFS);
+	MV_REG_WRITE(SSCG_SSC_MODE_REG, reg);
+
+	/* Wait at least 1us. */
+	mvOsDelay(1);
+
+	/* Set <SSC Clock Enable> to 0x1 (Enable).*/
+	reg |= (1 << SSCG_SSC_CLOCK_EN_OFFS);
+	MV_REG_WRITE(SSCG_SSC_MODE_REG, reg);
+
+	return MV_OK;
+}
+
+
+/*******************************************************************************
 * mvCtrlDevFamilyIdGet - Get Device ID
 *
 * DESCRIPTION:

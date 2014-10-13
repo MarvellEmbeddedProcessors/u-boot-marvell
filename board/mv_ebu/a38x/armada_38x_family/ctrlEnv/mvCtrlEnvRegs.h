@@ -151,6 +151,16 @@ extern "C" {
 #define SATR_CPU_FREQ_MASK		(0x1F << SATR_CPU_FREQ_OFFS)
 #define SATR_CPU1_ENABLE_OFFS		19
 #define SATR_CPU1_ENABLE_MASK		(1 << SATR_CPU1_ENABLE_OFFS)
+#define SATR_SSCG_DISABLE_OFFS		21
+#define SATR_SSCG_DISABLE_MASK		(1 << SATR_SSCG_DISABLE_OFFS)
+
+
+/* SSCG SSC Mode Register */
+#define SSCG_SSC_MODE_REG		(0x184B0)
+#define SSCG_SSC_RESET_OFFS		3
+#define SSCG_SSC_EXT_IPI_RESET_OFFS	2
+#define SSCG_SSC_PI_LOOP_CTRL_OFFS	1
+#define SSCG_SSC_CLOCK_EN_OFFS		0
 
 /* Core Divider Clock Control */
 #define CORE_DIV_CLK_CTRL(num)		(0xE4250 + ((num) * 0x4))

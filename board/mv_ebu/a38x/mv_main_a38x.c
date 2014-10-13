@@ -274,6 +274,9 @@ int board_init(void)
 
 	mvCpuIfInit(mvCpuAddrWinMap);
 
+	/* Initialize SSCG in case enabled by Sample-at-reset. */
+	mvCtrlSSCGInit();
+
 #ifdef MV_NOR_BOOT
 	env_init();
 #endif

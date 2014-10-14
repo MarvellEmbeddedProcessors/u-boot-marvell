@@ -94,7 +94,10 @@ extern MV_BOARD_INFO *marvellBoardInfoTbl[];
 extern MV_BOARD_INFO *customerBoardInfoTbl[];
 MV_MODULE_TYPE_INFO boardModuleTypesInfo[] = MV_MODULE_INFO;
 MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
+MV_BOARD_SATR_INFO boardSatrInfo2[] = MV_SAR_INFO2;
 MV_SATR_BOOT_TABLE satrBootSrcTable[] = MV_SATR_BOOT_SRC_TABLE_VAL;
+
+
 
 /* Locals */
 static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
@@ -1717,18 +1720,26 @@ MV_VOID mvBoardNetComplexConfigSet(MV_U32 ethConfig)
 MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo)
 {
 	int i;
-	MV_U32 boardId = mvBoardIdIndexGet(mvBoardIdGet());
+	MV_U32 boardId = mvBoardIdGet();
+	MV_U32 boardIdIndex = mvBoardIdIndexGet(boardId);
+	MV_BOARD_SATR_INFO *satrInfoTable = boardSatrInfo;
+
+	/* A38x DB-GP board has different i2c mapping for SSCG and Core clock S@R fields */
+	if (boardId == DB_GP_68XX_ID &&
+		(satrClass == MV_SATR_CORE_CLK_SELECT || satrClass == MV_SATR_SSCG_DISABLE))
+		satrInfoTable = boardSatrInfo2;
 
 	/* verify existence of requested SATR type, pull its data,
 	 * and check if field is relevant to current running board */
-	for (i = 0; i < MV_SATR_MAX_OPTION ; i++)
-		if (boardSatrInfo[i].satrId == satrClass) {
-			memcpy(satrInfo, &boardSatrInfo[i], sizeof(MV_BOARD_SATR_INFO));
-			if (boardSatrInfo[i].isActiveForBoard[boardId])
+	for (i = 0; satrInfoTable[i].satrId != MV_SATR_MAX_OPTION ; i++) {
+		if (satrInfoTable[i].satrId == satrClass) {
+			memcpy(satrInfo, &satrInfoTable[i], sizeof(MV_BOARD_SATR_INFO));
+			if (satrInfoTable[i].isActiveForBoard[boardIdIndex])
 				return MV_OK;
 			else
 				return MV_ERROR;
 		}
+	}
 	DB(mvOsPrintf("%s: Error: requested MV_SATR_TYPE_ID was not found (%d)\n", __func__,satrClass));
 	return MV_ERROR;
 }

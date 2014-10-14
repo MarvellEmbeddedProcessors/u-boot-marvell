@@ -101,6 +101,14 @@ extern "C" {
 { "max_option",	MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0, 0, 0}, 0},\
 };
 
+/* extra SAR table, for different board implementations:
+ * in case a field is used on 2 boards with different i2c mapping */
+#define MV_SAR_INFO2 { \
+{ "coreclock",	MV_SATR_CORE_CLK_SELECT,	0x08,   3,      2,      0,      {0, 0, 0, 0, 1}, 0},\
+{ "sscg",	MV_SATR_SSCG_DISABLE,		0x10,	4,	2,	0,	{0, 0, 0, 0, 1}, 0},\
+{ "max_option",	MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0, 0, 0}, 0},\
+};
+
 #ifdef CONFIG_CMD_BOARDCFG
 #define MV_BOARD_CONFIG_MAX_BYTE_COUNT	8
 #define MV_BOARD_CONFIG_DEFAULT_VALUE	{0x1921d0a1, 0x4 }

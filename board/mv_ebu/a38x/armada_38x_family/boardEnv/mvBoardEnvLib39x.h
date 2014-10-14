@@ -126,6 +126,12 @@ typedef enum {
 { "max_option",		MV_SATR_MAX_OPTION,		0x0,	0, 0, 0, {0, 0}, 0},\
 };
 
+/* extra SAR table, for different board implementations:
+ * in case a field is used on 2 boards with different i2c mapping */
+#define MV_SAR_INFO2 { \
+{ "max_option",		MV_SATR_MAX_OPTION,		0x0,	0, 0, 0, {0, 0}, 0},\
+};
+
 #ifdef CONFIG_CMD_BOARDCFG
 #define MV_BOARD_CONFIG_MAX_BYTE_COUNT	8
 

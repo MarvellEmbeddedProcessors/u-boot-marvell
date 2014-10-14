@@ -436,6 +436,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "boardid                    - board ID\n"
 "sgmiispeed                 - SGMII speed\n"
 "rdserdes4                  - RD-NAS SerDes lane#4\n"
+"gpserdes5                  - DB-GP  SerDes lane#5\n"
 "ddr4select                 - DDR3/4 (read only) \n"
 "ecoversion                 - ECO version (read only)\n"
 );

@@ -508,6 +508,22 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
 	u_char *p_buffer = buffer;
 	int need_skip;
 
+#ifdef CONFIG_CMD_NAND_YAFFS2
+	if (nand->rw_oob == 1) {
+		size_t oobsize = nand->oobsize;
+		size_t datasize = nand->writesize;
+		int datapages = 0;
+
+		if (((*length)%(nand->oobsize + nand->writesize)) != 0) {
+			printf("Attempt to write error length data!\n");
+			return -EINVAL;
+		}
+		datapages = *length/(datasize + oobsize);
+		*length = datapages *  datasize;
+		left_to_write = *length;
+	}
+#endif
+
 #ifdef CONFIG_CMD_NAND_YAFFS
 	if (flags & WITH_YAFFS_OOB) {
 		if (flags & ~WITH_YAFFS_OOB)
@@ -550,7 +566,12 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
 		*length = 0;
 		return -EINVAL;
 	}
-
+#ifndef CONFIG_MTD_NAND_YAFFS2
+	/* This case handles writing of all data without OOB and */
+	/* not suitable for YAFFS2 which will be handled below: */
+	/* data and OOB info will be written for every page in a loop; */
+	/* 'need_skip'=0 (an image fits and no bad blocks) && */
+	/* no drop of 0xFFs (TRIMFFS not defined ) */
 	if (!need_skip && !(flags & WITH_DROP_FFS)) {
 		rval = nand_write(nand, offset, length, buffer);
 		if (rval == 0)
@@ -561,7 +582,7 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
 			offset, rval);
 		return rval;
 	}
-
+#endif
 	while (left_to_write > 0) {
 		size_t block_offset = offset & (nand->erasesize - 1);
 		size_t write_size, truncated_write_size;
@@ -579,7 +600,6 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
 			write_size = left_to_write;
 		else
 			write_size = blocksize - block_offset;
-
 #ifdef CONFIG_CMD_NAND_YAFFS
 		if (flags & WITH_YAFFS_OOB) {
 			int page, pages;
@@ -616,11 +636,17 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
 				truncated_write_size = drop_ffs(nand, p_buffer,
 						&write_size);
 #endif
-
 			rval = nand_write(nand, offset, &truncated_write_size,
 					p_buffer);
 			offset += write_size;
+#ifdef CONFIG_MTD_NAND_YAFFS2
+			if (nand->rw_oob == 1)
+				p_buffer += write_size + (write_size / nand->writesize * nand->oobsize);
+			else
+				p_buffer += write_size;
+#else
 			p_buffer += write_size;
+#endif
 		}
 
 		if (rval != 0) {
@@ -631,6 +657,7 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
 		}
 
 		left_to_write -= write_size;
+		printf("%d%% is completed\n", 100 - (left_to_write/(*length/100)));
 	}
 
 	return 0;

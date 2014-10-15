@@ -2001,7 +2001,10 @@ static int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
 		if (unlikely(oob)) {
 			size_t len = min(oobwritelen, oobmaxlen);
 			oob = nand_fill_oob(chip, oob, len, ops);
+#ifndef CONFIG_CMD_NAND_YAFFS2
+			/* We do not need to change OOB length */
 			oobwritelen -= len;
+#endif
 		}
 
 		ret = chip->write_page(mtd, chip, wbuf, page, cached,
@@ -2047,7 +2050,32 @@ static int nand_write(struct mtd_info *mtd, loff_t to, size_t len,
 {
 	struct nand_chip *chip = mtd->priv;
 	int ret;
+#ifdef CONFIG_MTD_NAND_YAFFS2
+	int oldopsmode = 0;
+	if (mtd->rw_oob == 1) {
+		int i = 0;
+		int datapages = 0;
 
+		size_t oobsize = mtd->oobsize;
+		size_t datasize = mtd->writesize;
+
+		uint8_t oobtemp[oobsize];
+		datapages = len / (datasize);
+		oobtemp[0] = oobtemp[1] = 0xff;
+
+		/* Rewrite buffer with YAFFS2 image, which consists of sequential */
+		/* pages of data and OOB info, in such a way that, first, appears */
+		/* data of all pages without OOB and, then, OOB info from all pages. */
+		/* NOTE: this code is inefficient and will be optimized later */
+		for (i = 0; i < datapages; i++) {
+			memcpy((void *)oobtemp+2, (void *)(buf + datasize * (i + 1)), oobsize-2);
+			memmove((void *)(buf + datasize * (i + 1)), (void *)(buf + datasize * (i + 1) + oobsize),
+				(datapages - (i + 1)) * (datasize) + (datapages - 1) * oobsize);
+			memcpy((void *)(buf + (datapages) * (datasize + oobsize) - oobsize),
+				(void *)(oobtemp), oobsize);
+		}
+	}
+#endif
 	/* Do not allow writes past end of device */
 	if ((to + len) > mtd->size)
 		return -EINVAL;
@@ -2058,14 +2086,30 @@ static int nand_write(struct mtd_info *mtd, loff_t to, size_t len,
 
 	chip->ops.len = len;
 	chip->ops.datbuf = (uint8_t *)buf;
+#ifdef CONFIG_MTD_NAND_YAFFS2
+	if (mtd->rw_oob != 1) {
+		chip->ops.oobbuf = NULL;
+	} else {
+		/* In case OOB writing is needed, change chip's operation mode */
+		/* and fill OOB parameters */
+		chip->ops.oobbuf = (uint8_t *)(buf + len);
+		chip->ops.ooblen = mtd->oobsize;
+		oldopsmode = chip->ops.mode;
+		chip->ops.mode = MTD_OOB_RAW;
+	}
+#else
 	chip->ops.oobbuf = NULL;
+#endif
 
 	ret = nand_do_write_ops(mtd, to, &chip->ops);
 
 	*retlen = chip->ops.retlen;
 
 	nand_release_device(mtd);
-
+#ifdef CONFIG_MTD_NAND_YAFFS2
+	/* Restore chip's operation mode */
+	chip->ops.mode = oldopsmode;
+#endif
 	return ret;
 }
 

@@ -129,7 +129,9 @@ struct mtd_info {
 	 * 1 or larger.
 	 */
 	u_int32_t writesize;
-
+#ifdef CONFIG_MTD_NAND_YAFFS2
+	u_char rw_oob;
+#endif
 	u_int32_t oobsize;   /* Amount of OOB data per block (e.g. 16) */
 	u_int32_t oobavail;  /* Available OOB bytes per block */
 

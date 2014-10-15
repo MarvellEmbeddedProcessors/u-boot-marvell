@@ -315,6 +315,9 @@ extern unsigned int mvTclkGet(void);
 	#define CONFIG_SKIP_BAD_BLOCK
 	#undef MV_NFC_DBG
 	#define CONFIG_JFFS2_NAND
+	/* Define the next 2 definitions in order to support YAFFS2 */
+	#undef CONFIG_CMD_NAND_YAFFS2
+	#undef CONFIG_MTD_NAND_YAFFS2
 
 /* Boot from NAND settings */
 	#if defined(MV_NAND_BOOT)

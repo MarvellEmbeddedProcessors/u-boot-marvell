@@ -88,6 +88,15 @@ Commands:
 
       [1] http://www.linux-mtd.infradead.org/doc/ubi.html#L_flasher_algo
 
+   nand write.yaffs2 addr ofs|partition size
+      Enabled by the CONFIG_CMD_NAND_YAFFS2 and CONFIG_MTD_NAND_YAFFS2
+      macros. This command will write YAFFS2 image from memory 'addr'
+      to the NAND flash. The YAFFS2 image, consisting of sequential pages of
+      data and OOB (Out Of Band) information, may be created by the utility
+      'mkyaffs2image' provided on the official YAFFS2 web site[1].
+
+      [1] http://www.yaffs.net/
+
    nand write.oob addr ofs|partition size
       Write `size' bytes from `addr' to the out-of-band data area
       corresponding to `ofs' in NAND flash. This is limited to the 16 bytes

@@ -2127,8 +2127,8 @@ MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive)
 	if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX && mvCtrlRevGet() == MV_88F68XX_Z1_ID)
 		return usbActive;
 
-	/* check if used SerDes Lane5 for USB3.0 */
-	if (usbUnitId == USB3_UNIT_ID) {
+	/* if only single USB3.0 SerDes, via Lane5 */
+	if (usbUnitId == USB3_UNIT_ID && mvCtrlUsb3MaxGet() == 1) {
 		serdesConfigField = (MV_REG_READ(COMM_PHY_SELECTOR_REG) & COMPHY_SELECT_MASK(5)) >>
 				COMPHY_SELECT_OFFS(5);
 		if (serdesConfigField == COMPHY_SELECT_LANE5_USB3_VAL)
@@ -2137,6 +2137,7 @@ MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive)
 	/* If A39x or A38x A0 rev, but the no mapping needed:
 	 * - single USB#0 in use
 	 * - both USB units are in use */
+
 	return usbActive;
 }
 

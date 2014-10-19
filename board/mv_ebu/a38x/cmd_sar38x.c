@@ -249,10 +249,10 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("\ncoreclock\t= %d  ==> %sMhz\n", tmp, (tmp == 0x0) ? "250" : "200");
 		break;
 	case MV_SATR_CPU1_ENABLE:
-		mvOsPrintf("cpusnum\t\t\t= %d  ==> %s CPU\n", tmp, (tmp == 0) ? "Single" : "Dual");
+		mvOsPrintf("cpusnum\t\t= %d  ==> %s CPU\n", tmp, (tmp == 0) ? "Single" : "Dual");
 		break;
 	case MV_SATR_SSCG_DISABLE:
-		mvOsPrintf("sscg \t\t\t= %d  ==> %s\n", tmp, (tmp == 1) ? "Disabled" : "Enabled");
+		mvOsPrintf("sscg \t\t= %d  ==> %s\n", tmp, (tmp == 1) ? "Disabled" : "Enabled");
 		break;
 	case MV_SATR_DDR4_SELECT:
 		mvOsPrintf("ddr4select\t= %d  ==> DDR%d module\n", tmp, (tmp == 0) ? 3 : 4);
@@ -271,10 +271,10 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		break;
 	case MV_SATR_BOOT_DEVICE:
 		if (tmp < BOOT_SRC_TABLE_SIZE)
-			mvOsPrintf("bootsrc\t\t\t= %d ==> Boot From %s\n", tmp, satrBootSrcTable[tmp].name);
+			mvOsPrintf("bootsrc\t\t= %d ==> Boot From %s\n", tmp, satrBootSrcTable[tmp].name);
 		break;
 	case MV_SATR_BOARD_ID:
-		mvOsPrintf("boardid\t\t\t= %d  ==> %s\n", tmp, marvellBoardInfoTbl[tmp]->boardName);
+		mvOsPrintf("boardid\t\t= %d  ==> %s\n", tmp, marvellBoardInfoTbl[tmp]->boardName);
 		break;
 	case MV_SATR_BOARD_ECO_VERSION:
 		mvOsPrintf("ecoversion\t= %d  ==> ECO v%d.%d\n", tmp, (tmp & 0x0f), ((tmp >> 4) & 0x0f));
@@ -286,9 +286,9 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("usb3port1\t= %d  ==> USB3.0 port0: %s Mode\n", tmp, (tmp == 0) ? "Host" : "Device");
 		break;
 	case MV_SATR_RD_SERDES4_CFG:
-		mvOsPrintf("rdserdes4\t\t= %d  ==> RD SERDES Lane #4: %s\n", tmp, (tmp == 0) ? "USB3" : "SGMII");
+		mvOsPrintf("rdserdes4\t= %d  ==> RD SERDES Lane #4: %s\n", tmp, (tmp == 0) ? "USB3" : "SGMII");
 	case MV_SATR_GP_SERDES5_CFG:
-		mvOsPrintf("gpserdes5\t\t= %d  ==> GP SERDES Lane #5: %s\n", tmp, (tmp == 0) ? "USB3.0 port 1" : "SGMII-2");
+		mvOsPrintf("gpserdes5\t= %d  ==> GP SERDES Lane #5: %s\n", tmp, (tmp == 0) ? "USB3.0 port 1" : "SGMII-2");
 		break;
 
 		case CMD_DUMP:

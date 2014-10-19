@@ -781,15 +781,15 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 	MV_U8	configVal;
 	MV_TWSI_SLAVE twsiSlave;
 	/*Fix the topology for A380 by SatR values*/
-	twsiSlave.slaveAddr.address = 0x50;
+	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.offset = 0;
 	twsiSlave.moreThen256 = MV_TRUE;
 
-	/* Reading board id */
+	/* Reading DDR topology configuration from EEPROM */
 	if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
-		DEBUG_INIT_S("mvHwsBoardIdGet: TWSI Read failed\n");
+		DEBUG_INIT_S("mvSysEnvGetTopologyUpdateInfo: TWSI Read failed\n");
 		return 0;
 	}
 

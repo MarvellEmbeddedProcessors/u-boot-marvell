@@ -70,6 +70,7 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "printf.h"
 #include "mvSysEnvLib.h"
 #include "ddr3_hws_hw_training.h"
+#include "mvSiliconIf.h"
 
 #if defined(MV88F69XX)
 #include "ddr3_a39x.h"
@@ -104,7 +105,7 @@ extern MV_STATUS ddr3TipInitSpecificRegConfig
     MV_U32              devNum,
 	MV_DRAM_MC_INIT		*regConfigArr
 );
-extern MV_STATUS    ddr3TipSetTopologyMap
+extern MV_VOID  ddr3TipSetTopologyMap
 (
     MV_U32                  devNum,
     MV_HWS_TOPOLOGY_MAP     *topology
@@ -174,6 +175,30 @@ MV_VOID levelLogPrintDD(MV_U32 dec_num, MV_U32 length, MV_LOG_LEVEL eLogLevel)
 		putdataDec(dec_num, length);
 }
 
+/******************************************************************************
+ * Name:     ddr3GetTopologyMap
+ * Desc:     gets board Topology map
+ * Args:     pointer to topology map structure
+ * Notes:
+ * Returns:  MV_STATUS
+ */
+MV_STATUS ddr3GetTopologyMap(MV_HWS_TOPOLOGY_MAP** tMap)
+{
+	MV_U32 boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
+
+
+	/*Get topology data by board ID*/
+	if (sizeof(TopologyMap)/sizeof(MV_HWS_TOPOLOGY_MAP*) > boardIdIndex)
+		*tMap = &(TopologyMap[boardIdIndex]);
+	else {
+		mvPrintf("Failed get DDR3 Topology map (invalid board ID #d)\n",boardIdIndex);
+		return MV_NOT_SUPPORTED;
+	}
+
+	return MV_OK;
+}
+
+
 static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 {
 	MV_U32 winCtrlReg, numOfWinRegs;
@@ -189,7 +214,7 @@ static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 
 	mvPrintf("%s Training Sequence - Switching XBAR Window to FastPath Window \n", ddrType);
 
-#if defined(MV88F68XX) || defined(MV88F69XX)
+#if defined DYNAMIC_CS_SIZE_CONFIG
 	ddr3FastPathDynamicCsSizeConfig(uiCsEna);
 #else
 	MV_U32 uiReg, uiCs;
@@ -204,18 +229,22 @@ static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 #endif
 }
 
-static MV_VOID ddr3SaveAndSetTrainingWindows(MV_U32 *auWinBackup)
+static MV_STATUS ddr3SaveAndSetTrainingWindows(MV_U32 *auWinBackup)
 {
-	MV_U32 uiCsEna = ddr3GetCSEnaFromReg();
+	MV_U32 uiCsEna;
 	MV_U32 uiReg, uiTempCount, uiCs, ui;
 	MV_U32 winCtrlReg, winBaseReg, winRemapReg;
 	MV_U32 numOfWinRegs, winJumpIndex;
-
 	winCtrlReg  = REG_XBAR_WIN_4_CTRL_ADDR;
 	winBaseReg  = REG_XBAR_WIN_4_BASE_ADDR;
 	winRemapReg = REG_XBAR_WIN_4_REMAP_ADDR;
 	winJumpIndex = 0x10;
 	numOfWinRegs = 16;
+	MV_HWS_TOPOLOGY_MAP* toplogyMap = NULL;
+
+	CHECK_STATUS(ddr3GetTopologyMap(&toplogyMap));
+
+	uiCsEna = toplogyMap->interfaceParams[0].asBusParams[0].csBitmask;
 
 	/*  Close XBAR Window 19 - Not needed */
 	/* {0x000200e8}  -   Open Mbus Window - 2G */
@@ -257,6 +286,7 @@ static MV_VOID ddr3SaveAndSetTrainingWindows(MV_U32 *auWinBackup)
 			uiTempCount++;
 		}
 	}
+return MV_OK;
 }
 
 /************************************************************************************
@@ -504,28 +534,19 @@ MV_U32 ddr3GetCSEnaFromReg(void)
  */
 MV_STATUS ddr3LoadTopologyMap(void)
 {
-	MV_HWS_TOPOLOGY_MAP* topologyMap;
+	MV_HWS_TOPOLOGY_MAP* toplogyMap = NULL;
 	MV_U8 	devNum = 0;
-	MV_U32 boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
 
-
-	/*Get topology data by board ID*/
-	if (sizeof(TopologyMap)/sizeof(MV_HWS_TOPOLOGY_MAP*) > boardIdIndex)
-		topologyMap = &TopologyMap[boardIdIndex];
-	else {
-		DEBUG_INIT_FULL_S("Failed loading DDR3 Topology map (invalid board ID)\n");
-		return MV_FAIL;
-	}
+	CHECK_STATUS(ddr3GetTopologyMap(&toplogyMap));
 
 #if defined(MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI)
 	/*Update topology data*/
-	if(MV_OK != ddr3UpdateTopologyMap(topologyMap))
+	if(MV_OK != ddr3UpdateTopologyMap(toplogyMap))
 		DEBUG_INIT_FULL_S("Failed update of DDR3 Topology map\n");
 #endif
 
 	/*Set topology data for internal DDR training usage*/
-	if(MV_OK != ddr3TipSetTopologyMap(devNum, topologyMap))
-		return MV_FAIL;
+	ddr3TipSetTopologyMap(devNum, toplogyMap);
 
 	return MV_OK;
 }
@@ -591,6 +612,7 @@ MV_VOID ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
 	MV_U32 uiReg, uiCs;
     MV_U32 uiMemTotalSize = 0;
     MV_U32 uiCsMemSize = 0;
+	MV_U32 uiMemTotalSize_c, uiCsMemSize_c;
     /* Open fast path windows */
     for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
         if (uiCsEna & (1 << uiCs)) {
@@ -607,14 +629,19 @@ MV_VOID ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
             /* set fast path window base address for the cs */
             uiReg = ((uiCsMemSize) * uiCs) & 0xFFFF0000;
             MV_REG_WRITE(REG_FASTPATH_WIN_BASE_ADDR(uiCs), uiReg); /*Set base address */
-            uiMemTotalSize += uiCsMemSize;
-#if defined(MV88F68XX) || defined(MV88F69XX)
-			break;/*KW28 works with single CS*/
-#endif
-        }
+			/* since memory size may be bigger than 4G the summ may be more than 32 bit word,
+			so to estimate the result divide uiMemTotalSize and uiCsMemSize by 0x10000 (it is equal to >>16) */
+			uiMemTotalSize_c = uiMemTotalSize >> 16;
+			uiCsMemSize_c = uiCsMemSize >>16;
+			/*if the sum less than 2 G - calculate the value*/
+			if (uiMemTotalSize_c + uiCsMemSize_c < 0x10000)
+				uiMemTotalSize += uiCsMemSize;
+			else /* put max possible size */
+				uiMemTotalSize = L2_FILTER_FOR_MAX_MEMORY_SIZE;
+       }
     }
-    /* Set L2 filtering to Max Memory size */
-    MV_REG_WRITE(0x8c04, uiMemTotalSize);
+	/* Set L2 filtering to Max Memory size */
+	MV_REG_WRITE(0x8c04, uiMemTotalSize);
 }
 
 MV_U32 ddr3GetBusWidth(void) {

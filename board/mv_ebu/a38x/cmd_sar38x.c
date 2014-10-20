@@ -55,6 +55,19 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 { MV_SATR_SGMII_SPEED,		{0,		0,		0,		0}},
 };
 
+char* lane1Arr[7] = { 	"Unconnected" ,
+			"PCIe Port 0",
+			"SATA3 Port 0",
+			"SGMII-0",
+			"SGMII-1",
+			"USB3.0 Port 0",
+			"QSGMII" };
+
+char* lane2Arr[4] = { 	"Unconnected" ,
+			"PCIe Port 1",
+			"SATA3 Port 1",
+			"SGMII-1" };
+
 MV_BOOL mvVerifyRequest(void)
 {
 	readline(" ");
@@ -208,6 +221,16 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("\t0 = USB3.0 Port 1\n");
 		mvOsPrintf("\t1 = SGMII-2\n ");
 		break;
+	case MV_SATR_DB_SERDES1_CFG:
+		mvOsPrintf("Determines the DB SERDES lane #1 configuration:\n");
+		for (i = 0; i < 7; i++)
+			mvOsPrintf("\t %d = %s\n" , i ,lane1Arr[i]);
+		break;
+	case MV_SATR_DB_SERDES2_CFG:
+		mvOsPrintf("Determines the DB SERDES lane #2 configuration:\n");
+		for (i = 0; i < 4; i++)
+			mvOsPrintf("\t %d = %s\n" , i ,lane2Arr[i]);
+		break;
 	default:
 		mvOsPrintf("Usage: sar list [options] (see help)\n");
 		return 1;
@@ -290,8 +313,13 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 	case MV_SATR_GP_SERDES5_CFG:
 		mvOsPrintf("gpserdes5\t= %d  ==> GP SERDES Lane #5: %s\n", tmp, (tmp == 0) ? "USB3.0 port 1" : "SGMII-2");
 		break;
-
-		case CMD_DUMP:
+	case MV_SATR_DB_SERDES1_CFG:
+		mvOsPrintf("dbserdes1\t= %d  ==> DB SERDES Lane #1: %s\n", tmp, lane1Arr[tmp]);
+		break;
+	case MV_SATR_DB_SERDES2_CFG:
+		mvOsPrintf("dbserdes2\t= %d  ==> DB SERDES Lane #2: %s\n", tmp, lane2Arr[tmp]);
+		break;
+	case CMD_DUMP:
 		{
 			MV_BOARD_SATR_INFO satrInfo;
 
@@ -334,7 +362,6 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 			mvOsPrintf("Write S@R failed!\n");
 			return 1;
 		}
-
 	}
 
 	rc = mvBoardSatRWrite(satrInfo->satrId, value);
@@ -435,8 +462,10 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "ddreccpupselect            - DDR ECC PUP selection\n"
 "boardid                    - board ID\n"
 "sgmiispeed                 - SGMII speed\n"
-"rdserdes4                  - RD-NAS SerDes lane#4\n"
-"gpserdes5                  - DB-GP  SerDes lane#5\n"
+"rdserdes4                  - RD-NAS: SerDes lane #4\n"
+"gpserdes5                  - DB-GP:  SerDes lane #5\n"
+"dbserdes1                  - DB:     SerDes lane #1\n"
+"dbserdes2                  - DB:     SerDes lane #2\n"
 "ddr4select                 - DDR3/4 (read only) \n"
 "ecoversion                 - ECO version (read only)\n"
 );

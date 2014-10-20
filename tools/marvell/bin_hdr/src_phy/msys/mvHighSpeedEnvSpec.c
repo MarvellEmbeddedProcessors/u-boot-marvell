@@ -64,8 +64,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mv_os.h"
 #include "config_marvell.h"  	/* Required to identify SOC and Board */
 #include "mvHighSpeedEnvSpec.h"
+#include "mvHighSpeedTopologySpec.h"
+#include "mv_seq_exec_ext.h"
 #include "mvSysEnvLib.h"
 #include "mvCtrlPex.h"
+
 
 #if defined(MV_MSYS_BC2)
 #include "ddr3_msys_bc2.h"
@@ -117,7 +120,7 @@ MV_OP_EXT_PARAMS usb2PowerUpParams[] =
 	{ USB_REG_UNIT,    0x50800,     0x80000000, { 0x80000000 }, 1,     1000 }  /* check PLL_READY  is set*/
 };
 
-
+/******************/
 /*    SGMII       */
 /******************/
 
@@ -266,137 +269,7 @@ MV_OP_EXT_PARAMS sgmiiPowerDownCtrlParams[] =
 
 /************************* Local functions declarations ***********************/
 
-SERDES_MAP* mvHwsSerdesTopologyGet(MV_U32 boardIdIndex);
-
 MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray);
-
-/******************************************************************************/
-
-#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-
-/************************* Load Topology - Customer Boards ****************************/
-SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
-{
-{	/* Customer Board 0 Topology */
-	/* Type		Serdes		Speed			Mode				Swap		Swap */
-	/*			Number											RX			TX   */
-	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-},
-{	/* Customer Board 1 Topology */
-	/* Type		Serdes		Speed			Mode				Swap		Swap */
-	/*			Number											RX			TX   */
-	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-}};
-
-
-#else /* CONFIG_CUSTOMER_BOARD_SUPPORT */
-
-/*********************************** Globals **********************************/
-
-/****************************************/
-/*  Load topology - Marvell AC3 DB/RD   */
-/****************************************/
-#if defined MV_MSYS_AC3
-
-/* Configuration options */
-SERDES_MAP ac3SerdesDbTopology[MAX_SERDES_LANES] =
-{ /* DB_MISL_24G4XG */
-	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
-	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-};
-
-SERDES_MAP ac3SerdesRd48_4xg_Topology[MAX_SERDES_LANES] =
-{ /* RD_MTL_48G4XG */
-	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
-	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_TRUE,	MV_FALSE },
-};
-
-SERDES_MAP ac3SerdesRd48_2xxg_2xg_Topology[MAX_SERDES_LANES] =
-{ /* RD_MTL_48G_2XXG_2XG */
-	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
-	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_TRUE,	MV_FALSE },
-};
-
-SERDES_MAP ac3SerdesDb24_g46_Topology[MAX_SERDES_LANES] =
-{ /* DB_MISL_24G46 */
-	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
-	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII0,	10,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII1,	11,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-};
-
-SERDES_MAP ac3SerdesRd24_Topology[MAX_SERDES_LANES] =
-{ /* RD_MTL_24G - no build-in OOB ports */
-	/* Type		Serdes		Speed			Mode				SwapRX		SwapTX */
-	{ PEX0,		0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-};
-
-SERDES_MAP* marvellBoardSerdesTopology[] =
-{
-	ac3SerdesDbTopology,
-	ac3SerdesRd48_4xg_Topology,
-	ac3SerdesRd48_2xxg_2xg_Topology,
-	ac3SerdesDb24_g46_Topology,
-	ac3SerdesRd24_Topology,
-};
-
-#elif defined MV_MSYS_BC2
-
-/************************************************************************/
-/*	BC2-A0 Serdes Topology (no SGMII)                                   */
-/************************************************************************/
-
-
-/* Configuration options */
-SERDES_MAP bc2A0SerdesTopology[MAX_SERDES_LANES] =
-{ /* BC2 DB/RD */
-	/* Type			  Serdes		Speed			Mode				SwapRX		SwapTX */
-	{ PEX0,				 0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ DEFAULT_SERDES,	20,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ DEFAULT_SERDES,	21,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-};
-
-SERDES_MAP* marvellBoardBc2A0SerdesTopology[] =
-{
-	bc2A0SerdesTopology, /* DB */
-	bc2A0SerdesTopology, /* RD */
-	bc2A0SerdesTopology, /* MTL */
-};
-
-/************************************************************************/
-/*	BC2-B0 Serdes Topology			                                    */
-/************************************************************************/
-
-
-/* Configuration options */
-SERDES_MAP bc2B0SerdesTopology[MAX_SERDES_LANES] =
-{ /* BC2 DB/RD */
-	/* Type			  Serdes		Speed			Mode				SwapRX		SwapTX */
-	{ PEX0,				 0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII0,			20,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-	{ SGMII1,			21,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
-};
-
-SERDES_MAP* marvellBoardBc2B0SerdesTopology[] =
-{
-	bc2B0SerdesTopology, /* DB */
-	bc2B0SerdesTopology, /* RD */
-	bc2B0SerdesTopology, /* MTL */
-};
-
-#endif
-
-#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 
 /*************************** Functions implementation *************************/
 
@@ -435,11 +308,12 @@ MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray)
 
 	boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
 
-#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-	topologyConfigPtr = CustomerBoardTopologyConfig[boardIdIndex];
-#else
 	topologyConfigPtr = mvHwsSerdesTopologyGet(boardIdIndex);
-#endif
+	if (topologyConfigPtr == NULL)
+	{
+		return MV_NOT_SUPPORTED;
+	}
+
 	/* Updating the topology map */
 	for (laneNum = 0; laneNum < MAX_SERDES_LANES; laneNum++) {
 		serdesMapArray[laneNum].serdesMode  =  topologyConfigPtr[laneNum].serdesMode;
@@ -454,14 +328,6 @@ MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray)
 }
 
 #if defined MV_MSYS_AC3
-
-#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
-/* AC3: Get the Serdes topology map      **************************************/
-SERDES_MAP* mvHwsSerdesTopologyGet(MV_U32 boardIdIndex)
-{
-	return marvellBoardSerdesTopology[boardIdIndex];
-}
-#endif
 
 /*AC3: check S@R for PCIe mode (EP/RC) ****************************************/
 MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
@@ -573,19 +439,6 @@ MV_STATUS mvCtrlUsb2Config(MV_VOID)
 }
 
 #elif defined MV_MSYS_BC2
-
-#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
-/* BC2: Get the Serdes topology map      **************************************/
-SERDES_MAP* mvHwsSerdesTopologyGet(MV_U32 boardIdIndex)
-{
-	if (mvSysEnvDeviceRevGet() == MV_MSYS_BC2_A0_ID) {
-		return marvellBoardBc2A0SerdesTopology[boardIdIndex];
-	}
-	else {
-		return marvellBoardBc2B0SerdesTopology[boardIdIndex];
-	}
-}
-#endif
 
 /* BC2: init silicon related configurations *********************************/
 MV_STATUS mvSiliconInit(MV_VOID)
@@ -917,10 +770,8 @@ MV_STATUS mvSerdesPowerUpCtrl(
 	case SGMII0:
 	case SGMII1:
 		if (mvHwsSerdesRevGet() == MV_SERDES_28NM_REV_1) {
-			/* in BC2-A0 there is no MSYS Serdes support */
-
-			mvPrintf("Error: mvSerdesPowerUpCtrl: SGMII configuration is not supported in Serdes Rev 1.0 (Serdes %d)\n", serdesNum);
-			return MV_NOT_SUPPORTED;
+			/* in BC2-A0 there is no MSYS Serdes support so it is skipped */
+			return MV_OK;
 		}
 
 		DEBUG_INIT_FULL_C("== Init SGMII\n", (serdesType == SGMII0 ? 0 :1), 1);

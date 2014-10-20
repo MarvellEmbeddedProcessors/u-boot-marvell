@@ -84,10 +84,12 @@ endif
 
 ifeq "$(CONFIG_BOBCAT2)"  "y"
   CSRC += $(BOARD)/mvCtrlPex.c
+  CSRC += $(BOARD)/mvHighSpeedTopologySpec-bc2.c
 endif
 
 ifeq "$(CONFIG_ALLEYCAT3)"  "y"
   CSRC += $(BOARD)/mvCtrlPex.c
+  CSRC += $(BOARD)/mvHighSpeedTopologySpec-ac3.c
 endif
 
 COBJ = $(subst .c,.o,$(CSRC))

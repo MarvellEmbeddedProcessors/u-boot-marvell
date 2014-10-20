@@ -293,6 +293,29 @@ SERDES_MAP DbConfigSLM1364_F[MAX_SERDES_LANES] =
 	{ PEX2,		  __5Gbps,		  PEX_ROOT_COMPLEX_x1		     }
 };
 
+
+/**************************************************************************/
+/** The following structs are mapping for DB board 'SatR' configuration **/
+/**************************************************************************/
+SERDES_MAP DBSatRConfigLane1[SATR_DB_LANE1_MAX_OPTIONS] =
+{
+/* 0 */	{ DEFAULT_SERDES,	LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE },
+/* 1 */	{ PEX0,			__5Gbps,		PEX_ROOT_COMPLEX_x1 },
+/* 2 */	{ SATA0,		__3Gbps,		PEX_ROOT_COMPLEX_x1 },
+/* 3 */	{ SGMII0,		__3_125Gbps,		SERDES_DEFAULT_MODE },
+/* 4 */	{ SGMII1,		__3_125Gbps,		SERDES_DEFAULT_MODE },
+/* 5 */	{ USB3_HOST0,		__5Gbps,		SERDES_DEFAULT_MODE },
+/* 6 */	{ QSGMII,		__5Gbps,		SERDES_DEFAULT_MODE },
+};
+
+SERDES_MAP DBSatRConfigLane2[SATR_DB_LANE2_MAX_OPTIONS] =
+{
+/* 0 */	{ DEFAULT_SERDES,	LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE },
+/* 1 */	{ PEX1,			__5Gbps,		PEX_ROOT_COMPLEX_x1 },
+/* 2 */	{ SATA1,		__3Gbps,		PEX_ROOT_COMPLEX_x1 },
+/* 3 */	{ SGMII1,		__3_125Gbps,		SERDES_DEFAULT_MODE },
+};
+
 /*******************************************************/
 /* Configuration options DB ****************************/
 /* mapping from TWSI address data to configuration map */
@@ -402,29 +425,26 @@ MV_U8 topologyConfigDBModeGet(MV_VOID)
 	}
 }
 
-MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray)
+MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneType)
 {
-	MV_U32 serdesType;
-	MV_U32 laneNum;
+	MV_U32 serdesType, laneNum;
+	MV_U8 configVal, laneSelect;
+	MV_TWSI_SLAVE twsiSlave;
 
+	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.moreThen256 = MV_TRUE;
+
+	/* update SGMII speed settings by 'sgmiispeed' SatR value */
 	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
 		serdesType = serdesMapArray[laneNum].serdesType;
-
+		twsiSlave.offset = 0;
 		/*Read SatR configuration for SGMII speed*/
 		if((serdesType == SGMII0) || (serdesType == SGMII1) || (serdesType == SGMII2) ){
-			MV_U8	configVal;
-			MV_TWSI_SLAVE twsiSlave;
-
-			/*Fix the topology for A380 by SatR values*/
-			twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
-			twsiSlave.slaveAddr.type = ADDR7_BIT;
-			twsiSlave.validOffset = MV_TRUE;
-			twsiSlave.offset = 0;
-			twsiSlave.moreThen256 = MV_TRUE;
-
-			/* Reading SatR value */
+			/* Read SatR 'sgmiispeed' value */
 			if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
-				DEBUG_INIT_S("powerUpSerdesLanes: TWSI Read failed\n");
+				mvPrintf("updateTopologySatR: TWSI Read of 'sgmiispeed' failed\n");
 				return MV_FAIL;
 			}
 
@@ -436,6 +456,39 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray)
 			}
 		}
 	}
+
+	/* if board supports dynamic update of lanes 1&2 topology ('dbserdes1' & 'dbserdes2') */
+	if (!updateLaneType)
+		return MV_OK;
+
+	/* read 'dbserdes1' and 'dbserdes2' values */
+	twsiSlave.offset = 1;
+	if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
+		mvPrintf("updateTopologySatR: TWSI Read of 'dbserdes1/2' failed\n");
+		return MV_FAIL;
+	}
+
+	/* Lane #1 */
+	laneSelect = (configVal & SATR_DB_LANE1_CFG_MASK) >> SATR_DB_LANE1_CFG_OFFSET;
+	if (laneSelect > SATR_DB_LANE1_MAX_OPTIONS) {
+		mvPrintf("\nupdateTopologySatR: Error: invalid value for SatR field 'dbserdes1' (%x)\n\n", laneSelect);
+		return MV_FAIL;
+	}
+	serdesMapArray[1] = DBSatRConfigLane1[laneSelect];
+
+	/* verify if lane #1 conflicts with lane #4 (only 1 lane can be USB3 Host port 0)*/
+	if (serdesMapArray[1].serdesType == serdesMapArray[4].serdesType) {
+		mvPrintf("updateTopologySatR: Lane #4 Type conflicts with Lane #1 Type (Lane #4 disabled) \n", laneSelect);
+		serdesMapArray[4] = DBSatRConfigLane1[0];
+	}
+
+	/* Lane #2 */
+	laneSelect = (configVal & SATR_DB_LANE2_CFG_MASK) >> SATR_DB_LANE2_CFG_OFFSET;
+	if (laneSelect > SATR_DB_LANE2_MAX_OPTIONS) {
+		mvPrintf("updateTopologySatR: invalid value for SatR field 'dbserdes2' (%x)\n", laneSelect);
+		return MV_FAIL;
+	}
+	serdesMapArray[2] = DBSatRConfigLane2[laneSelect];
 
 	return MV_OK;
 }
@@ -478,7 +531,6 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 		}
 	}
 
-
 	/* Updating the topology map */
 	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
 		serdesMapArray[laneNum].serdesMode =  topologyConfigPtr[laneNum].serdesMode;
@@ -502,7 +554,7 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 		}
 	}
 
-	updateTopologySatR(serdesMapArray);
+	updateTopologySatR(serdesMapArray, MV_TRUE);
 
 	return MV_OK;
 }
@@ -524,7 +576,7 @@ MV_STATUS loadTopologyDBAp(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[laneNum].serdesType =  topologyConfigPtr[laneNum].serdesType;
 	}
 
-	updateTopologySatR(serdesMapArray);
+	updateTopologySatR(serdesMapArray, MV_FALSE);
 
 	return MV_OK;
 }
@@ -558,7 +610,7 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[5].serdesMode = SERDES_DEFAULT_MODE;
 	}
 
-	updateTopologySatR(serdesMapArray);
+	updateTopologySatR(serdesMapArray, MV_FALSE);
 
 	return MV_OK;
 }
@@ -601,7 +653,7 @@ MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
 		CHECK_STATUS(loadTopologyRDAp(serdesMapArray));
 	}
 
-	updateTopologySatR(serdesMapArray);
+	updateTopologySatR(serdesMapArray, MV_FALSE);
 
 	return MV_OK;
 }

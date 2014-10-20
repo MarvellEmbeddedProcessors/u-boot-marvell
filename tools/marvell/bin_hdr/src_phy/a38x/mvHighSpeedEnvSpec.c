@@ -411,6 +411,58 @@ MV_OP_PARAMS usb2PowerUpParams[] =
 	{ 0xC0000 ,        0x0 /*NA*/,	0x80000000, {0x80000000}, 1,     1000}  /* check PLL_READY  is set*/
 };
 
+/*****************/
+/*    QSGMII     */
+/*****************/
+
+/* QSGMII - power up seq */
+MV_OP_PARAMS qsgmiiPortPowerUpParams[] =
+{
+	/* unitBaseReg                    unitOffset   	mask         QSGMII data		waitTime   numOfLoops */
+	{ QSGMII_CONTROL_REG1,				0x0,  		0x40000000,	{ 0x40000000	}, 	   0,		  0 },	  /* Connect the QSGMII to Gigabit Ethernet units */
+	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,  		0xF0006,	{ 0x80002		}, 	   0,		  0 },	  /* Power Up */
+	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		0x7800,	    { 0x6000		}, 	   0,		  0 },	  /* Unreset */
+	{ POWER_AND_PLL_CTRL_REG,			0x800,		0xFF,	    { 0xFC81		}, 	   0,		  0 },	  /* Phy Selector */
+	{ MISC_REG,							0x800,	    0x4C0,	    { 0x480			},     0,	      0 } 	  /* Ref clock source select */
+};
+
+/* QSGMII - speed config seq */
+MV_OP_PARAMS qsgmiiPortSpeedConfigParams[] =
+{
+	/* unitBaseReg  				  unitOffset   	mask          QSGMII		waitTime   numOfLoops */
+    { COMMON_PHY_CONFIGURATION1_REG,   0x28,		0x3FC00000,	{ 0xCC00000	}, 		0,		   0 }, /* Baud Rate */
+	{ ISOLATE_REG,	 				   0x800,	    0xFF,	    { 0x33		}, 		0,	       0 }, /* Phy Gen RX and TX */
+	{ LOOPBACK_REG,	 				   0x800,	    0xE,	    { 0x2		}, 		0,	       0 }  /* Bus Width */
+};
+
+/* QSGMII - Select electrical param seq */
+MV_OP_PARAMS qsgmiiPortElectricalConfigParams[] =
+{
+	/* unitunitBaseReg		unitOffset   mask			QSGMII data		waitTime    numOfLoops */
+	{ G1_SETTINGS_0_REG,	0x800,		 0x8000,	  { 0x0	},			0,				0		} /* Slew rate and emphasis */
+};
+
+/* QSGMII - TX config seq */
+MV_OP_PARAMS qsgmiiPortTxConfigParams1[] =
+{
+	/* unitunitBaseReg               unitOffset   mask          QSGMII data		waitTime    numOfLoops */
+	{ GLUE_REG,			              0x800,	  0x1800,     { 0x800		},     0,	       0		   },
+	{ RESET_DFE_REG,		          0x800,	  0x401,	  { 0x401		},     0,	       0		   }, /* Sft Reset pulse */
+	{ RESET_DFE_REG,		          0x800,	  0x401,	  { 0x0			},     0,	       0		   }, /* Sft Reset pulse */
+    { LANE_ALIGN_REG0,                0x800,	  0x1000,	  { 0x1000		},     0,	       0		   }, /* Lane align */
+    { COMMON_PHY_CONFIGURATION1_REG,  0x28,		  0x70000,    { 0x70000		},     0,	       0		   }, /* Power up PLL, RX and TX */
+    { COMMON_PHY_CONFIGURATION1_REG,  0x28,		  0x80000,    { 0x80000		},     0,	       0		   }  /* Tx driver output idle */
+};
+
+MV_OP_PARAMS qsgmiiPortTxConfigParams2[] =
+{
+	/* unitunitBaseReg				unitOffset		mask			QSGMII data		waitTime    numOfLoops */
+	{ COMMON_PHY_STATUS1_REG,			0x28,		0xC,			{ 0xC			},	10,			1000		},	/* Wait for PHY power up sequence to finish */
+	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		0x40080000,		{ 0x40000000	},	0,			0			},  /* Assert Rx Init and Tx driver output valid */
+	{ COMMON_PHY_STATUS1_REG,			0x28,	    0x1,			{ 0x1			},  1,			1000	    },  /* Wait for PHY power up sequence to finish */
+	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		0x40000000,		{ 0x0			},	0,			0		    }   /* De-assert Rx Init */
+};
+
 
 /* SERDES_POWER_DOWN */
 MV_OP_PARAMS serdesPowerDownParams[] =
@@ -641,6 +693,33 @@ MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID)
 	serdesSeqDb[SERDES_POWER_DOWN_SEQ].cfgSeqSize  = sizeof(serdesPowerDownParams) / sizeof(MV_OP_PARAMS);
 	serdesSeqDb[SERDES_POWER_DOWN_SEQ].dataArrIdx  = FIRST_CELL;
 
+	if(serdesRev == MV_SERDES_REV_2_1) {
+		/* QSGMII_POWER_UP_SEQ sequence init */
+		serdesSeqDb[QSGMII_POWER_UP_SEQ].opParamsPtr = qsgmiiPortPowerUpParams;
+		serdesSeqDb[QSGMII_POWER_UP_SEQ].cfgSeqSize  = sizeof(qsgmiiPortPowerUpParams) / sizeof(MV_OP_PARAMS);
+		serdesSeqDb[QSGMII_POWER_UP_SEQ].dataArrIdx  = QSGMII_SEQ_IDX;
+
+		/* QSGMII__5_SPEED_CONFIG_SEQ sequence init */
+		serdesSeqDb[QSGMII__5_SPEED_CONFIG_SEQ].opParamsPtr = qsgmiiPortSpeedConfigParams;
+		serdesSeqDb[QSGMII__5_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(qsgmiiPortSpeedConfigParams) / sizeof(MV_OP_PARAMS);
+		serdesSeqDb[QSGMII__5_SPEED_CONFIG_SEQ].dataArrIdx  = QSGMII_SEQ_IDX;
+
+		/* QSGMII_ELECTRICAL_CONFIG_SEQ seq sequence init */
+		serdesSeqDb[QSGMII_ELECTRICAL_CONFIG_SEQ].opParamsPtr = qsgmiiPortElectricalConfigParams;
+		serdesSeqDb[QSGMII_ELECTRICAL_CONFIG_SEQ].cfgSeqSize  = sizeof(qsgmiiPortElectricalConfigParams) / sizeof(MV_OP_PARAMS);
+		serdesSeqDb[QSGMII_ELECTRICAL_CONFIG_SEQ].dataArrIdx  = QSGMII_SEQ_IDX;
+
+		/* QSGMII_TX_CONFIG_SEQ sequence init */
+		serdesSeqDb[QSGMII_TX_CONFIG_SEQ1].opParamsPtr = qsgmiiPortTxConfigParams1;
+		serdesSeqDb[QSGMII_TX_CONFIG_SEQ1].cfgSeqSize  = sizeof(qsgmiiPortTxConfigParams1) / sizeof(MV_OP_PARAMS);
+		serdesSeqDb[QSGMII_TX_CONFIG_SEQ1].dataArrIdx  = QSGMII_SEQ_IDX;
+
+		/* QSGMII_TX_CONFIG_SEQ sequence init */
+		serdesSeqDb[QSGMII_TX_CONFIG_SEQ2].opParamsPtr = qsgmiiPortTxConfigParams2;
+		serdesSeqDb[QSGMII_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(qsgmiiPortTxConfigParams2) / sizeof(MV_OP_PARAMS);
+		serdesSeqDb[QSGMII_TX_CONFIG_SEQ2].dataArrIdx  = QSGMII_SEQ_IDX;
+	}
+
     return MV_OK;
 }
 
@@ -695,10 +774,10 @@ SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
 		else if (baudRate == __3_125Gbps)
 			seqId = SGMII__3_125_SPEED_CONFIG_SEQ;
 		break;
-#ifdef MV88F69XX
     case QSGMII:
         seqId = QSGMII__5_SPEED_CONFIG_SEQ;
         break;
+#ifdef MV88F69XX
     case XAUI:
         seqId = XAUI__3_125_SPEED_CONFIG_SEQ;
         break;
@@ -919,7 +998,9 @@ MV_STATUS mvSerdesPowerUpCtrl
 		/* Getting the Speed Select sequence id */
 		speedSeqId = serdesTypeAndSpeedToSpeedSeq(serdesType, baudRate);
 		if (speedSeqId == SERDES_LAST_SEQ) {
-			DEBUG_INIT_S("mvSerdesPowerUpCtrl: serdes type and speed aren't supported together\n");
+			mvPrintf("mvSerdesPowerUpCtrl: serdes type %d and speed %d are not supported together\n",
+					 serdesType, baudRate);
+
 			return MV_BAD_PARAM;
 		}
 
@@ -933,8 +1014,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 				CHECK_STATUS(mvSerdesPexUsb3PipeDelayWA(serdesNum, PEX));
 			}
 
-			isPexBy1 = (serdesMode == PEX_ROOT_COMPLEX_x1) ||
-				(serdesMode == PEX_END_POINT_x1);
+			isPexBy1 = (serdesMode == PEX_ROOT_COMPLEX_x1) || (serdesMode == PEX_END_POINT_x1);
 			pexIdx = serdesType - PEX0;
 
 			if ((isPexBy1 == MV_TRUE) || (serdesType == PEX0))
@@ -1112,9 +1192,16 @@ MV_STATUS mvSerdesPowerUpCtrl
 			MV_REG_WRITE(GBE_CONFIGURATION_REG, regData);
 
 			break;
-        case SGMII3:
-        case QSGMII:
-        case XAUI:
+		case QSGMII:
+			CHECK_STATUS(mvSeqExec(serdesNum, QSGMII_POWER_UP_SEQ));
+			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
+			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
+			CHECK_STATUS(mvSeqExec(serdesNum, QSGMII_ELECTRICAL_CONFIG_SEQ));
+			CHECK_STATUS(mvSeqExec(serdesNum, QSGMII_TX_CONFIG_SEQ1));
+			CHECK_STATUS(mvSeqExec(serdesNum, QSGMII_TX_CONFIG_SEQ2));
+            break;
+		case SGMII3:
+		case XAUI:
         case RXAUI:
             CHECK_STATUS(mvSerdesPowerUpCtrlExt(serdesNum, serdesPowerUp, serdesType, baudRate, serdesMode, refClock));
             break;
@@ -1216,7 +1303,7 @@ MV_STATUS mvHwsRefClockSet
 			data1 = POWER_AND_PLL_CTRL_REG_100MHZ_VAL;
 		}
 		else{
-			DEBUG_INIT_S("mvHwsRefClockSet: bad ref clock\n");
+			mvPrintf("mvHwsRefClockSet: ref clock is not valid for serdes type %d\n", serdesType);
 			return MV_BAD_PARAM;
 		}
 		break;
@@ -1234,7 +1321,7 @@ MV_STATUS mvHwsRefClockSet
             data3 = LANE_CFG4_REG_40MHZ_VAL;
 		}
 		else{
-			DEBUG_INIT_S("mvHwsRefClockSet: bad ref clock\n");
+			mvPrintf("mvHwsRefClockSet: ref clock is not valid for serdes type %d\n", serdesType);
 			return MV_BAD_PARAM;
 		}
 		break;
@@ -1245,6 +1332,7 @@ MV_STATUS mvHwsRefClockSet
     case SGMII0:
 	case SGMII1:
 	case SGMII2:
+	case QSGMII:
 		if (refClock == REF_CLOCK__25MHz) {
 			data1 = POWER_AND_PLL_CTRL_REG_25MHZ_VAL_1;
         }
@@ -1252,13 +1340,12 @@ MV_STATUS mvHwsRefClockSet
 			data1 = POWER_AND_PLL_CTRL_REG_40MHZ_VAL;
         }
         else{
-            DEBUG_INIT_S("mvHwsRefClockSet: bad ref clock\n");
-            return MV_BAD_PARAM;
+			mvPrintf("mvHwsRefClockSet: ref clock is not valid for serdes type %d\n", serdesType);
+			return MV_BAD_PARAM;
         }
         break;
 #ifdef MV88F69XX
 	case SGMII3:
-	case QSGMII:
 	case XAUI:
 	case RXAUI:
         if (refClock == REF_CLOCK__25MHz) {
@@ -1268,13 +1355,13 @@ MV_STATUS mvHwsRefClockSet
 			data1 = POWER_AND_PLL_CTRL_REG_40MHZ_VAL;
         }
         else{
-            DEBUG_INIT_S("mvHwsRefClockSet: bad ref clock\n");
-            return MV_BAD_PARAM;
+			mvPrintf("mvHwsRefClockSet: ref clock is not valid for serdes type %d\n", serdesType);
+			return MV_BAD_PARAM;
         }
         break;
 #endif
     default:
-		DEBUG_INIT_S("mvHwsRefClockSet: bad serdes type\n");
+		DEBUG_INIT_S("mvHwsRefClockSet: not supported serdes type\n");
 		return MV_BAD_PARAM;
 	}
 

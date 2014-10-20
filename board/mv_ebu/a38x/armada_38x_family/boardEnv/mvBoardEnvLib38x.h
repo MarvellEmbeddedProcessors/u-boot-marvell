@@ -98,6 +98,8 @@ extern "C" {
 { "usb3port1",	MV_SATR_DB_USB3_PORT1,		0x2,	1,	1,	1,	{0, 1, 0, 0, 0}, 0},\
 { "rdserdes4",	MV_SATR_RD_SERDES4_CFG,		0x4,	2,	1,	1,	{1, 0, 1, 0, 0}, 0},\
 { "gpserdes5",	MV_SATR_GP_SERDES5_CFG,		0x4,	2,	1,	1,	{0, 0, 0, 0, 1}, 0},\
+{ "dbserdes1",	MV_SATR_DB_SERDES1_CFG,		0x7,	0,	0,	1,	{0, 1, 0, 0, 0}, 0},\
+{ "dbserdes2",	MV_SATR_DB_SERDES2_CFG,		0x38,	3,	0,	1,	{0, 1, 0, 0, 0}, 0},\
 { "max_option",	MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0, 0, 0}, 0},\
 };
 

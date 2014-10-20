@@ -74,6 +74,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BUS_MASK_16BIT_ECC			0x13
 #define BUS_MASK_16BIT_ECC_PUP3		0xB
 
+#define  DYNAMIC_CS_SIZE_CONFIG
+
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 /************************************* Customer Boards Topology *************************************/
 MV_HWS_TOPOLOGY_MAP TopologyMap[] =

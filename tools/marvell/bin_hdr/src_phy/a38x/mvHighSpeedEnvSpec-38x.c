@@ -82,7 +82,7 @@ MV_U8 commonPhysSelectorsSerdesRev1Map[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 	{ 0x3,  0x4,    NA,	    NA,	    NA,	    NA	  },    /* SGMII0 */
 	{ NA,   0x5,    0x4,	NA,	    0x3,	NA	  },    /* SGMII1 */
 	{ NA,   NA,     NA,	    0x4,    NA,	    0x3	  },    /* SGMII2 */
-	{ NA,   0X7,    NA,	    NA,	    NA,	    NA	  },    /* QSGMII */
+	{ NA,   0x7,    NA,	    NA,	    NA,	    NA	  },    /* QSGMII */
 	{ NA,   0x6,    NA,	    NA,	    0x4,	NA	  },    /* USB3_HOST0 */
 	{ NA,   NA,     NA,	    0x5,    NA,	    0x4	  },    /* USB3_HOST1 */
 	{ NA,   NA,     NA,	    0x6,    0x5,	0x5	  },    /* USB3_DEVICE */

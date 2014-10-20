@@ -158,6 +158,13 @@
 #define DB_GET_MODE_SLM1363_ADDR                0x25
 #define DB_GET_MODE_SLM1364_ADDR                0x24
 
+#define SATR_DB_LANE1_MAX_OPTIONS		7
+#define SATR_DB_LANE1_CFG_MASK			0x7
+#define SATR_DB_LANE1_CFG_OFFSET		0
+#define SATR_DB_LANE2_MAX_OPTIONS		4
+#define SATR_DB_LANE2_CFG_MASK			0x38
+#define SATR_DB_LANE2_CFG_OFFSET		3
+
 /* For setting MPP2 and MPP3 to be TWSI mode and MPP 0,1 to UART mode */
 #define MPP_CTRL_REG                            0x18000
 #define MPP_SET_MASK                            (~(0xFFFF))

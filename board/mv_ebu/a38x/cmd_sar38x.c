@@ -47,12 +47,12 @@ typedef struct _boardSatrDefault {
 } MV_BOARD_SATR_DEFAULT;
 #define MAX_DEFAULT_ENTRY	5
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
-/* 	defauleValueForBoard[] = RD_NAS_68xx,	DB_BP_68xx,	RD_WAP_68xx,	DB_AP_68xx */
-{ MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		0x0c,		0x0c}},
-{ MV_SATR_CORE_CLK_SELECT,	{1,		1,		1,		1}},
-{ MV_SATR_CPU1_ENABLE,	  	{MV_TRUE,	MV_TRUE,	MV_TRUE,	MV_TRUE}},
-{ MV_SATR_SSCG_DISABLE,	  	{MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE}},
-{ MV_SATR_SGMII_SPEED,		{0,		0,		0,		0}},
+/* 	defauleValueForBoard[] = RD_NAS_68xx,	DB_BP_68xx,	RD_WAP_68xx,	DB_AP_68xx , DB_gp_68xx */
+{ MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		0x0c,		0x0c,		0x0c}},
+{ MV_SATR_CORE_CLK_SELECT,	{1,		1,		1,		1,		1}},
+{ MV_SATR_CPU1_ENABLE,	  	{MV_TRUE,	MV_TRUE,	MV_TRUE,	MV_TRUE,	MV_TRUE}},
+{ MV_SATR_SSCG_DISABLE,	  	{MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE}},
+{ MV_SATR_SGMII_SPEED,		{0,		0,		0,		0,		0}},
 };
 
 char* lane1Arr[7] = { 	"Unconnected" ,

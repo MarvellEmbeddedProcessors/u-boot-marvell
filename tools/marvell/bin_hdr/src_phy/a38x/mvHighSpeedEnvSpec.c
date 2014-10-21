@@ -341,20 +341,39 @@ MV_OP_PARAMS usb3ElectricalConfigSerdesRev2Params[] =
 };
 
 /* PEX and USB3 - TX config seq */
-MV_OP_PARAMS pexAndUsb3TxConfigParams[] =
+
+/* For PEXx1: the pexAndUsb3TxConfigParams1/2/3 configurations should run
+			  one by one on the lane.
+   For PEXx4: the pexAndUsb3TxConfigParams1/2/3 configurations should run
+			  by setting each sequence for all 4 lanes. */
+MV_OP_PARAMS pexAndUsb3TxConfigParams1[] =
+{
+	/* unitBaseReg    unitOffset   	mask        PEX data    USB3 data   waitTime    numOfLoops */
+	{ GLOBAL_CLK_CTRL, 	0x800,		0x1,	    { 0x0,      0x0     }, 	    0,	        0		},
+	{ 0x0,		   		0x0,		0x0,	    { 0x0,      0x0     }, 	    10,	        0		}  /* 10ms delay */
+};
+
+MV_OP_PARAMS pexAndUsb3TxConfigParams2[] =
 {
 	/* unitBaseReg    unitOffset   	mask        PEX data    USB3 data   waitTime    numOfLoops */
 	{ RESET_DFE_REG,   	0x800,	    0x401,      { 0x401,    0x401   },      0,          0       }, /* Sft Reset pulse */
+};
+
+MV_OP_PARAMS pexAndUsb3TxConfigParams3[] =
+{
+	/* unitBaseReg    unitOffset   	mask        PEX data    USB3 data   waitTime    numOfLoops */
 	{ RESET_DFE_REG,   	0x800,		0x401,      { 0x0,      0x0     }, 	    0,          0		}, /* Sft Reset pulse */
-	{ GLOBAL_CLK_CTRL, 	0x800,		0x1,	    { 0x0,      0x0     }, 	    0,	        0		},
 	{ 0x0,		   		0x0,		0x0,	    { 0x0,      0x0     }, 	    10,	        0		}  /* 10ms delay */
 };
 
 /* PEX by 4 config seq */
 MV_OP_PARAMS pexBy4ConfigParams[] =
 {
-	/* unitunitBaseReg  unitOffset   mask    data                   waitTime   numOfLoops */
-	{ GLOBAL_CLK_SRC_HI,	0x800,       0x7,	 { 0x5, 0x0, 0x0, 0x2 },	0,	        0       }
+	/* unitunitBaseReg      unitOffset   mask           data                			waitTime   numOfLoops */
+	{ GLOBAL_CLK_SRC_HI,	0x800,       0x7,      { 0x5, 0x0, 0x0, 0x2 			},     	0,          0       },
+    { LANE_ALIGN_REG0,      0x800,       0x1000,   { 0x0, 0x0, 0x0, 0x0 			},     	0,	        0       }, /* Lane Alignement enable */
+	{ CALIBRATION_CTRL_REG,	0x800,       0x1000,   { 0x1000, 0x1000, 0x1000, 0x1000 },		0,	        0       }, /* Max PLL phy config */
+	{ LANE_CFG1_REG,		0x800,       0x600,    { 0x600, 0x600, 0x600, 0x600 	},		0,	        0       }, /* Max PLL pipe config */
 };
 
 /* USB3 device donfig seq */
@@ -633,10 +652,20 @@ MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID)
 	}
 	serdesSeqDb[PEX_ELECTRICAL_CONFIG_SEQ].dataArrIdx = PEX;
 
-	/* PEX_TX_CONFIG_SEQ sequence init */
-	serdesSeqDb[PEX_TX_CONFIG_SEQ].opParamsPtr = pexAndUsb3TxConfigParams;
-	serdesSeqDb[PEX_TX_CONFIG_SEQ].cfgSeqSize  = sizeof(pexAndUsb3TxConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[PEX_TX_CONFIG_SEQ].dataArrIdx  = PEX;
+	/* PEX_TX_CONFIG_SEQ1 sequence init */
+	serdesSeqDb[PEX_TX_CONFIG_SEQ1].opParamsPtr = pexAndUsb3TxConfigParams1;
+	serdesSeqDb[PEX_TX_CONFIG_SEQ1].cfgSeqSize  = sizeof(pexAndUsb3TxConfigParams1) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[PEX_TX_CONFIG_SEQ1].dataArrIdx  = PEX;
+
+    /* PEX_TX_CONFIG_SEQ2 sequence init */
+	serdesSeqDb[PEX_TX_CONFIG_SEQ2].opParamsPtr = pexAndUsb3TxConfigParams2;
+	serdesSeqDb[PEX_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(pexAndUsb3TxConfigParams2) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[PEX_TX_CONFIG_SEQ2].dataArrIdx  = PEX;
+
+	/* PEX_TX_CONFIG_SEQ3 sequence init */
+	serdesSeqDb[PEX_TX_CONFIG_SEQ3].opParamsPtr = pexAndUsb3TxConfigParams3;
+	serdesSeqDb[PEX_TX_CONFIG_SEQ3].cfgSeqSize  = sizeof(pexAndUsb3TxConfigParams3) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[PEX_TX_CONFIG_SEQ3].dataArrIdx  = PEX;
 
 	/* PEX_BY_4_CONFIG_SEQ sequence init */
 	serdesSeqDb[PEX_BY_4_CONFIG_SEQ].opParamsPtr = pexBy4ConfigParams;
@@ -674,9 +703,19 @@ MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID)
 	serdesSeqDb[USB3_ELECTRICAL_CONFIG_SEQ].dataArrIdx = USB3;
 
 	/* USB3_TX_CONFIG_SEQ sequence init */
-	serdesSeqDb[USB3_TX_CONFIG_SEQ].opParamsPtr = pexAndUsb3TxConfigParams;
-	serdesSeqDb[USB3_TX_CONFIG_SEQ].cfgSeqSize  = sizeof(pexAndUsb3TxConfigParams) / sizeof(MV_OP_PARAMS);
-	serdesSeqDb[USB3_TX_CONFIG_SEQ].dataArrIdx  = USB3;
+	serdesSeqDb[USB3_TX_CONFIG_SEQ1].opParamsPtr = pexAndUsb3TxConfigParams1;
+	serdesSeqDb[USB3_TX_CONFIG_SEQ1].cfgSeqSize  = sizeof(pexAndUsb3TxConfigParams1) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[USB3_TX_CONFIG_SEQ1].dataArrIdx  = USB3;
+
+    /* USB3_TX_CONFIG_SEQ sequence init */
+	serdesSeqDb[USB3_TX_CONFIG_SEQ2].opParamsPtr = pexAndUsb3TxConfigParams2;
+	serdesSeqDb[USB3_TX_CONFIG_SEQ2].cfgSeqSize  = sizeof(pexAndUsb3TxConfigParams2) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[USB3_TX_CONFIG_SEQ2].dataArrIdx  = USB3;
+
+	/* USB3_TX_CONFIG_SEQ sequence init */
+	serdesSeqDb[USB3_TX_CONFIG_SEQ3].opParamsPtr = pexAndUsb3TxConfigParams3;
+	serdesSeqDb[USB3_TX_CONFIG_SEQ3].cfgSeqSize  = sizeof(pexAndUsb3TxConfigParams3) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[USB3_TX_CONFIG_SEQ3].dataArrIdx  = USB3;
 
 	/* USB2_POWER_UP_SEQ sequence init */
 	serdesSeqDb[USB2_POWER_UP_SEQ].opParamsPtr = usb2PowerUpParams;
@@ -917,6 +956,11 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 						 refClock));
 	}
 
+    /* Set PEX_TX_CONFIG_SEQ sequence for PEXx4 mode.
+       After finish the PowerUp sequence for all lanes,
+       the lanes should be released from reset state.	*/
+	CHECK_STATUS(mvHwsPexTxConfigSeq(serdesConfigMap));
+
 	/* PEX configuration*/
 	CHECK_STATUS(mvHwsPexConfig(serdesConfigMap));
 
@@ -1060,7 +1104,12 @@ MV_STATUS mvSerdesPowerUpCtrl
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
 			CHECK_STATUS(mvSeqExec(serdesNum, PEX_ELECTRICAL_CONFIG_SEQ));
-			CHECK_STATUS(mvSeqExec(serdesNum, PEX_TX_CONFIG_SEQ));
+
+			if (isPexBy1 == MV_TRUE) {
+				CHECK_STATUS(mvSeqExec(serdesNum, PEX_TX_CONFIG_SEQ2));
+				CHECK_STATUS(mvSeqExec(serdesNum, PEX_TX_CONFIG_SEQ3));
+				CHECK_STATUS(mvSeqExec(serdesNum, PEX_TX_CONFIG_SEQ1));
+			}
 
 			mvOsUDelay(20);
 
@@ -1106,7 +1155,9 @@ MV_STATUS mvSerdesPowerUpCtrl
                 CHECK_STATUS(mvSeqExec(serdesNum, USB3_DEVICE_CONFIG_SEQ));
             }
             CHECK_STATUS(mvSeqExec(serdesNum, USB3_ELECTRICAL_CONFIG_SEQ));
-			CHECK_STATUS(mvSeqExec(serdesNum, USB3_TX_CONFIG_SEQ));
+			CHECK_STATUS(mvSeqExec(serdesNum, USB3_TX_CONFIG_SEQ1));
+            CHECK_STATUS(mvSeqExec(serdesNum, USB3_TX_CONFIG_SEQ2));
+			CHECK_STATUS(mvSeqExec(serdesNum, USB3_TX_CONFIG_SEQ3));
 
 			mvOsUDelay(10000);
 
@@ -1193,6 +1244,9 @@ MV_STATUS mvSerdesPowerUpCtrl
 
 			break;
 		case QSGMII:
+			if (mvHwsCtrlSerdesRevGet() < MV_SERDES_REV_2_1) {
+				return MV_NOT_SUPPORTED;
+			}
 			CHECK_STATUS(mvSeqExec(serdesNum, QSGMII_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
@@ -1249,12 +1303,6 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 			continue;
 		}
 
-		if (laneData == NA) {
-			mvPrintf("mvUpdateSerdesSelectPhyModeSeq: serdes number %d and type %d are not supported together\n",
-					 serdesIdx, serdesMode);
-			return MV_BAD_PARAM;
-		}
-
 		/* Checking if the board topology configuration includes PEXx4 - for the next step */
 		if ((serdesMode == PEX_END_POINT_x4) || (serdesMode == PEX_ROOT_COMPLEX_x4)) {
             /* update lane data to the 3 next SERDES lanes */
@@ -1264,12 +1312,18 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 			}
 		}
 
+		if (laneData == NA) {
+			mvPrintf("mvUpdateSerdesSelectPhyModeSeq: serdes number %d and type %d are not supported together\n",
+					 serdesIdx, serdesMode);
+			return MV_BAD_PARAM;
+		}
+
 		/* Updating the data that will be written to COMMON_PHYS_SELECTORS_REG */
 		regData |= (laneData << (selectBitOff * serdesIdx));
 	}
 
-	/* Updating the 18th bit in the COMMON PHYS SELECTORS register in case there is PEXx4 */
-	regData |= (isPEXx4 == MV_TRUE) ? (0x1 << 18) : 0;
+	/* Updating the PEXx4 Enable bit in the COMMON PHYS SELECTORS register for PEXx4 mode */
+	regData |= (isPEXx4 == MV_TRUE) ? (0x1 << PEXx4_ENABLE_OFFS) : 0;
 
 	/* Updating the COMMON PHYS SELECTORS register */
 	MV_REG_WRITE(COMMON_PHYS_SELECTORS_REG, regData);
@@ -1386,5 +1440,50 @@ MV_STATUS mvHwsRefClockSet
 	return MV_OK;
 }
 
+/**************************************************************************
+* mvHwsPexTxConfigSeq -
+*
+* DESCRIPTION:          Set PEX_TX_CONFIG_SEQ sequence init for PEXx4 mode
+* INPUT:                serdesMap       - The board topology map
+* OUTPUT:               None
+* RETURNS:              MV_OK           - for success
+*                       MV_BAD_PARAM    - for fail
+***************************************************************************/
+MV_STATUS mvHwsPexTxConfigSeq(SERDES_MAP *serdesMap)
+{
+    SERDES_MODE serdesMode;
+    MV_U32 serdesLaneNum;
+
+    DEBUG_INIT_FULL_S("\n### mvHwsPexTxConfigSeq ###\n");
+
+	/*  For PEXx4: the pexAndUsb3TxConfigParams1/2/3 configurations should run
+			  by setting each sequence for all 4 lanes. */
+
+	/* relese pipe soft reset for all lanes */
+	for (serdesLaneNum = 0; serdesLaneNum < mvHwsSerdesGetMaxLane(); serdesLaneNum++) {
+		serdesMode = serdesMap[serdesLaneNum].serdesMode;
+		if ((serdesMode == PEX_ROOT_COMPLEX_x4) || (serdesMode == PEX_END_POINT_x4)) {
+			CHECK_STATUS(mvSeqExec(serdesLaneNum, PEX_TX_CONFIG_SEQ1));
+		}
+	}
+
+	/* set phy soft reset for all lanes */
+	for (serdesLaneNum = 0; serdesLaneNum < mvHwsSerdesGetMaxLane(); serdesLaneNum++) {
+		serdesMode = serdesMap[serdesLaneNum].serdesMode;
+		if ((serdesMode == PEX_ROOT_COMPLEX_x4) || (serdesMode == PEX_END_POINT_x4)) {
+			CHECK_STATUS(mvSeqExec(serdesLaneNum, PEX_TX_CONFIG_SEQ2));
+		}
+	}
+
+	/* set phy soft reset for all lanes */
+	for (serdesLaneNum = 0; serdesLaneNum < mvHwsSerdesGetMaxLane(); serdesLaneNum++) {
+		serdesMode = serdesMap[serdesLaneNum].serdesMode;
+		if ((serdesMode == PEX_ROOT_COMPLEX_x4) || (serdesMode == PEX_END_POINT_x4)) {
+			CHECK_STATUS(mvSeqExec(serdesLaneNum, PEX_TX_CONFIG_SEQ3));
+		}
+	}
+
+	return MV_OK;
+}
 
 

@@ -382,10 +382,10 @@ MV_VOID mvBoardPhyAddrSet(MV_U32 ethPortNum, MV_U32 smiAddr)
 	board->pBoardMacInfo[ethPortNum].boardEthSmiAddr = smiAddr;
 }
 /*******************************************************************************
-* mvBoardQuadPhyAddr0Get - Get the PHY address
+* mvBoardQuadPhyAddr0Get - Get the Quad PHY address
 *
 * DESCRIPTION:
-*       This routine returns the PHY address of a given Ethernet port.
+*       This routine returns the Quad PHY address of a given Ethernet port.
 *       Required to initialize QUAD PHY through a specific PHY address
 *
 * INPUT:
@@ -395,7 +395,7 @@ MV_VOID mvBoardPhyAddrSet(MV_U32 ethPortNum, MV_U32 smiAddr)
 *       None.
 *
 * RETURN:
-*       32bit describing PHY address, -1 if the port number is wrong.
+*       32bit describing Quad PHY address, -1 if the port number is wrong.
 *
 *******************************************************************************/
 MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum)
@@ -406,6 +406,34 @@ MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum)
 	}
 
 	return board->pBoardMacInfo[ethPortNum].boardEthSmiAddr0;
+}
+
+/*******************************************************************************
+* mvBoardQuadPhyAddr0Set - Set the phy address
+*
+* DESCRIPTION:
+*       This routine sets the Quad PHY address of a given Ethernet port.
+*       Required to initialize QUAD PHY through a specific PHY address
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*       smiAddr    - requested Quad phy address
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_VOID mvBoardQuadPhyAddr0Set(MV_U32 ethPortNum, MV_U32 smiAddr)
+{
+	if (ethPortNum >= board->numBoardMacInfo) {
+		DB(mvOsPrintf("%s: Error: invalid ethPortNum (%d)\n", __func__, ethPortNum));
+		return;
+	}
+
+	board->pBoardMacInfo[ethPortNum].boardEthSmiAddr0 = smiAddr;
 }
 
 /*******************************************************************************

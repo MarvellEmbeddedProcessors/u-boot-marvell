@@ -193,6 +193,7 @@ typedef enum _mvSatRTypeID {
 	MV_SATR_GP_SERDES5_CFG,
 	MV_SATR_DB_SERDES1_CFG,
 	MV_SATR_DB_SERDES2_CFG,
+	MV_SATR_SGMII_MODE,
 	MV_SATR_MAX_OPTION,
 } MV_SATR_TYPE_ID;
 
@@ -473,6 +474,7 @@ MV_32 mvBoardModuleConfigGet(MV_VOID);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
 MV_VOID mvBoardPhyAddrSet(MV_U32 ethPortNum, MV_U32 smiAddr);
 MV_32 mvBoardQuadPhyAddr0Get(MV_U32 ethPortNum);
+MV_VOID mvBoardQuadPhyAddr0Set(MV_U32 ethPortNum, MV_U32 smiAddr);
 MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo);
 MV_STATUS mvBoardModuleTypeGet(MV_MODULE_TYPE_ID configClass, MV_MODULE_TYPE_INFO *configInfo);
 MV_STATUS mvBoardExtPhyBufferSelect(MV_BOOL enable);

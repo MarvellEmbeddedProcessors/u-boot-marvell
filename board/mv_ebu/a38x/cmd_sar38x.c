@@ -236,6 +236,11 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		for (i = 0; i < 4; i++)
 			mvOsPrintf("\t %d = %s\n" , i ,lane2Arr[i]);
 		break;
+	case MV_SATR_SGMII_MODE:
+		mvOsPrintf("Determines the SGMII negotiation mode:\n");
+		mvOsPrintf("\t0 = In-band\n");
+		mvOsPrintf("\t1 = Out-of-band (PHY)\n ");
+		break;
 	default:
 		mvOsPrintf("Usage: sar list [options] (see help)\n");
 		return 1;
@@ -323,6 +328,9 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		break;
 	case MV_SATR_DB_SERDES2_CFG:
 		mvOsPrintf("dbserdes2\t= %d  ==> DB SERDES Lane #2: %s\n", tmp, lane2Arr[tmp]);
+		break;
+	case MV_SATR_SGMII_MODE:
+		mvOsPrintf("sgmiimode\t= %d  ==> SGMII mode: %s\n", tmp, (tmp == 0) ? "In-band" : "Out-of-band (PHY)");
 		break;
 	case CMD_DUMP:
 		{
@@ -467,6 +475,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "ddreccpupselect            - DDR ECC PUP selection\n"
 "boardid                    - board ID\n"
 "sgmiispeed                 - SGMII speed\n"
+"sgmiimode                 - SGMII negotiation mode\n"
 "rdserdes4                  - RD-NAS: SerDes lane #4\n"
 "gpserdes5                  - DB-GP:  SerDes lane #5\n"
 "dbserdes1                  - DB:     SerDes lane #1\n"

@@ -90,7 +90,7 @@ int spi_flash_cmd_write_multi(struct spi_flash *flash, u32 offset,
 	size_t chunk_len, actual;
 	int ret;
 	u8 cmd[5];
-		
+
 	page_size = flash->page_size;
 	page_addr = offset / page_size;
 	byte_addr = offset % page_size;
@@ -184,7 +184,7 @@ int spi_flash_cmd_read_fast(struct spi_flash *flash, u32 offset,
 	u8 cmd[6];
 	cmd[0] = CMD_READ_ARRAY_FAST;
 	spi_flash_addr(offset, cmd, flash->addr_cycles);
-	
+
 	cmd[flash->addr_cycles+1] = 0x00;
 
 	return spi_flash_read_common(flash, cmd, flash->addr_cycles+2, data, len);
@@ -243,7 +243,7 @@ int spi_flash_cmd_erase(struct spi_flash *flash, u32 offset, size_t len)
 #endif
 	erase_size = flash->sector_size;
 	if (offset % erase_size || len % erase_size) {
-		debug("SF: Erase offset/length not multiple of erase size\n");
+		printf("SF: Erase offset/length not multiple of erase size\n");
 		return -1;
 	}
 

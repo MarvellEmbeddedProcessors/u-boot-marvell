@@ -366,12 +366,12 @@ MV_VOID mvCtrlSocUnitInfoPrint(MV_VOID)
 *******************************************************************************/
 MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 {
-	MV_U32 ifNo, commPhyConfigReg, comPhyCfg, serdesNum, serdesConfigField, maxSerdesLane;
+	MV_U32 i, ifNo, commPhyConfigReg, comPhyCfg, serdesNum, serdesConfigField, maxSerdesLane;
 	MV_U32 sataIfCount = 0;
 	MV_U32 usbIfCount = 0;
 	MV_U32 usbHIfCount = 0;
-#ifdef CONFIG_ARMADA_39X
 	MV_U32 qsgmiiIfCount = 0;
+#ifdef CONFIG_ARMADA_39X
 	MV_U32 xauiIfCount = 0;
 #endif
 
@@ -418,7 +418,7 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 				sataUnitActive[0] = MV_TRUE;
 			break;
 		case SERDES_UNIT_GBE:
-			if (ON_BOARD_RGMII(ifNo)) /* detected SGMII will replace the same Ob-Board compatible port */
+			if (ON_BOARD_RGMII(ifNo)) /* detected SGMII will replace the same On-Board compatible port */
 				ethComPhy &= ~(ON_BOARD_RGMII(ifNo));
 			ethComPhy |= SERDES_SGMII(ifNo);
 			DB(printf("SGMII, if=%d\n", ifNo));
@@ -431,11 +431,14 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 			DB(printf("USB, if=%d\n", ifNo));
 			usbIfCount++;
 			break;
-#ifdef CONFIG_ARMADA_39X
 		case SERDES_UNIT_QSGMII:
 			DB(printf("QSGMII, if=%d\n", ifNo));
 			qsgmiiIfCount++;
+			ethComPhy = 0; /* disable on board RGMII ports mark */
+			for (i = 0 ; i < mvCtrlEthMaxPortGet(); i++)
+				ethComPhy |= SERDES_SGMII(i); /*  mark available MAC ports as SGMII */
 			break;
+#ifdef CONFIG_ARMADA_39X
 		case SERDES_UNIT_XAUI:
 			DB(printf("XAUI, if=%d\n", ifNo));
 			xauiIfCount++;
@@ -448,8 +451,8 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 	mvCtrlSocUnitInfoNumSet(PEX_UNIT_ID, boardPexInfo->boardPexIfNum);
 	mvCtrlSocUnitInfoNumSet(SATA_UNIT_ID , sataIfCount);
 	mvCtrlSocUnitInfoNumSet(USB3_UNIT_ID, usbHIfCount);
-#ifdef CONFIG_ARMADA_39X
 	mvCtrlSocUnitInfoNumSet(QSGMII_UNIT_ID, qsgmiiIfCount);
+#ifdef CONFIG_ARMADA_39X
 	/* if xauiIfCount(count of RXAUI serdes lanes) == 2 => RXAUI is connected to SerDes's
 	   if xauiIfCount(count of XAUI serdes lanes) == 4 => XAUI is connected to SerDes's */
 	if (xauiIfCount == 2 || xauiIfCount == 4)

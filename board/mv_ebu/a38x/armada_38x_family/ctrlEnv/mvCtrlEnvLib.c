@@ -177,14 +177,17 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 };
 #endif
 
+/* ethComPhy: bit description for RGMII/SGMII per MAC:
+ * bits 0,1,2 : RGMII port 0,1,2 indication
+ * bits 3,4,5 : SGMII port 0,1,2 indication
+ * ethComPhy is updated by mvCtrlSerdesConfigDetect in case SGMII/QSGMII is set */
+static MV_U32	ethComPhy;
 #define ON_BOARD_RGMII(x)	(1 << x)
-#define SERDES_SGMII(x)		(4 << x)
+#define SERDES_SGMII(x)		(8 << x)
 
 /* Only the first unit, only the second unit or both can be active on the specific board */
 static MV_BOOL sataUnitActive[MV_SATA_MAX_UNIT] = {MV_FALSE, MV_FALSE};
 
-/* ethComPhy will be initialize by mvCtrlEnvInit and  updated by mvCtrlSerdesConfigDetect in case SGMII is set */
-static MV_U32	ethComPhy;
 /*******************************************************************************
 * mvCtrlPortIsSerdesSgmii
 *

@@ -81,6 +81,8 @@
 
 #define	SERDES_REGS_LANE_BASE_OFFSET(lane)	(0x800 * lane)
 
+#define PEXx4_ENABLE_OFFS		(mvHwsCtrlSerdesRevGet() == MV_SERDES_REV_1_2 ? 18 : 31)
+
 /* For setting or clearing a certain bit
    (bit is a number between 0 and 31) in the data*/
 #define SET_BIT(data, bit)          (data | (0x1 << bit))
@@ -184,14 +186,18 @@ typedef enum {
 	PEX__2_5_SPEED_CONFIG_SEQ,
 	PEX__5_SPEED_CONFIG_SEQ,
 	PEX_ELECTRICAL_CONFIG_SEQ,
-	PEX_TX_CONFIG_SEQ,
+	PEX_TX_CONFIG_SEQ1,
+	PEX_TX_CONFIG_SEQ2,
+	PEX_TX_CONFIG_SEQ3,
 	PEX_BY_4_CONFIG_SEQ,
 
 	USB3_POWER_UP_SEQ,
 	USB3__HOST_SPEED_CONFIG_SEQ,
 	USB3__DEVICE_SPEED_CONFIG_SEQ,
 	USB3_ELECTRICAL_CONFIG_SEQ,
-	USB3_TX_CONFIG_SEQ,
+	USB3_TX_CONFIG_SEQ1,
+	USB3_TX_CONFIG_SEQ2,
+	USB3_TX_CONFIG_SEQ3,
 	USB3_DEVICE_CONFIG_SEQ,
 
 	USB2_POWER_UP_SEQ,
@@ -550,5 +556,15 @@ MV_STATUS mvHwsGetExtBaseAddr
 	MV_U32 *unitOffset
 );
 
+/**************************************************************************
+* mvHwsPexTxConfigSeq -
+*
+* DESCRIPTION:          Set PEX_TX_CONFIG_SEQ sequence init for PEXx4 mode
+* INPUT:                serdesMap       - The board topology map
+* OUTPUT:               None
+* RETURNS:              MV_OK           - for success
+*                       MV_BAD_PARAM    - for fail
+***************************************************************************/
+MV_STATUS mvHwsPexTxConfigSeq(SERDES_MAP *serdesMap);
 
 #endif /* _MV_HIGHSPEED_ENV_SPEC_H */

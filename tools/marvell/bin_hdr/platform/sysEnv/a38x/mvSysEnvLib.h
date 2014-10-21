@@ -117,6 +117,7 @@
 #define REF_REG0                                0xa0134
 #define CAL_REG6								0xa0168
 #define RX_REG2									0xa0184
+#define LANE_CFG1_REG							0xa0604
 #define LANE_CFG4_REG							0xa0620
 #define GLOBAL_CLK_CTRL                         0xa0704
 #define GLOBAL_MISC_CTRL                        0xa0718

@@ -4,7 +4,8 @@ use Cwd qw();
 
 sub HELP_MESSAGE
 {
-	print "\nUsage  : build -f \"Flash type\" -b \"board name\" [-v X.X.X] [-m \"DDR type\"] [-o \"Output file\"]\n";
+	print "\nUsage  : build -f \"Flash type\" -b \"board name\" [-v X.X.X] [-m \"DDR type\"] [-o \"Output file\"]\\\n";
+	print "              [-p] [-r \"UART baudrate\"] [-u \"UART port\"] [-g \"MPP configuration\"]\n\n";
 	print "Example: ./build.pl -f spi -v 14T2 -b avanta_lp -i spi:nand -c\n";
 	print "\n";
 	print "Options:\n";
@@ -22,6 +23,11 @@ sub HELP_MESSAGE
 	print "\t-v\tSW version (in file name: u-boot-alp-X.X.X-spi.bin, else using date by default)\n";
 	print "\t\tinterfaces. Supports spi, nor, nand. the boot \n";
 	print "\t\tinterface will always be suppored\n";
+	print "\t-p\tDisable BootROM debug print output during boot (enabled by dafault)\n";
+	print "\t-r\tChange the default BootROM UART debug port baudrate. Supported baudrates:\n";
+	print "\t\t\t\t\t2400, 4800, 9600, 19200, 38400, 57600, 115200\n";
+	print "\t-u\tChange the default BootROM UART debug port number. Suported ports 0 - 3\n";
+	print "\t-g\tSelect BootROM debug port MPPs configuration value = 0-7 (BootROM-specific)\n";
 	print "\n";
 	print "Environment Variables:\n";
 	print "\tCROSS_COMPILE     Cross compiler to build U-BOOT\n";
@@ -32,7 +38,7 @@ sub HELP_MESSAGE
 # Main
 use Getopt::Std;
 
-getopt('f:b:o:i:v:d:m:');
+getopt('f:b:o:i:v:d:m:r:u:g:');
 
 if((!defined $opt_b) or
 	(!defined $opt_f)) {
@@ -276,6 +282,27 @@ if($opt_z eq 1)
 		system("echo \"#define CONFIG_ALP_A375_ZX_REV 1\" >> include/config.h");
 	}
 }
+
+if(defined $opt_p)
+{
+	$extra_opt = " -p";
+}
+
+if(defined $opt_r)
+{
+	$extra_opt = "$extra_opt" . " -b $opt_r";
+}
+
+if(defined $opt_u)
+{
+	$extra_opt = "$extra_opt" . " -u $opt_u";
+}
+
+if(defined $opt_g)
+{
+	$extra_opt = "$extra_opt" . " -m $opt_g";
+}
+
 # Build !
 print "\n**** [Building U-BOOT]\t*****\n\n";
 $fail = system("make -j6 -s");
@@ -305,7 +332,7 @@ else {
 print "\n**** [Creating Image]\t*****\n\n";
 
 $failUart = system("./tools/marvell/doimage -T uart -D 0 -E 0 -G ./tools/marvell/bin_hdr/bin_hdr.uart.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name$targetBoard-uart.bin");
-$fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name$targetBoard.bin");
+$fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts $extra_opt -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name$targetBoard.bin");
 
 if($fail){
 	print "\n *** Error: Doimage failed\n\n";

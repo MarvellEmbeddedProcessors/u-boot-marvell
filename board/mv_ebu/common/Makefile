@@ -32,6 +32,7 @@ MAKE_SATA3 = yes
 MAKE_NETA = yes
 MAKE_GENERAL_U_BOOT_TOOLS = yes
 MAKE_SPI_NAND = yes
+MAKE_RTC2 = yes
 endif
 
 ifeq ($(BOARD),msys)
@@ -181,11 +182,16 @@ endif
 endif
 
 
-ifdef MAKE_RTC
+ifeq ($(MAKE_RTC),yes)
+ifneq ($(MAKE_RTC2),yes)
 HAL_OBJS +=	$(HAL_RTC_DIR)/mvRtc.o
 USP_OBJS +=	$(USP_DIR)/mv_rtc.o
 endif
+endif
 
+ifeq ($(MAKE_RTC2),yes)
+USP_OBJS +=	$(USP_DIR)/mv_rtc2.o
+endif
 
 ifdef MAKE_GENERAL_U_BOOT_TOOLS
 USP_OBJS +=	$(USP_DIR)/cmd_sys_restore.o	\

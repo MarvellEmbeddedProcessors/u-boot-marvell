@@ -39,15 +39,15 @@
    are permitted provided that the following conditions are met:
 
 *   Redistributions of source code must retain the above copyright notice,
-        this list of conditions and the following disclaimer.
+		this list of conditions and the following disclaimer.
 
 *   Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
 
 *   Neither the name of Marvell nor the names of its contributors may be
-        used to endorse or promote products derived from this software without
-        specific prior written permission.
+		used to endorse or promote products derived from this software without
+		specific prior written permission.
 
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -68,10 +68,10 @@
 /**************************************************************************
  * loadTopologyCustomer -
  *
- * DESCRIPTION:          Loads the board topology for customer board
- * INPUT:                serdesMapArray  -   Not relevant
- * OUTPUT:               The board topology.
- * RETURNS:              MV_OK           -   for success
+ * DESCRIPTION: 		 Loads the board topology for customer board
+ * INPUT:   			 serdesMapArray  -   Not relevant
+ * OUTPUT:  			 The board topology.
+ * RETURNS: 			 MV_OK  		 -   for success
  ***************************************************************************/
 MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray);
 
@@ -79,19 +79,19 @@ MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray);
 SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
 {{
 	/* Customer Board 0 Toplogy - reference from DB */
-	{ SATA0,     __3Gbps,		   SERDES_DEFAULT_MODE },
-	{ PEX0,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
-	{ PEX1,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
-	{ SATA3,     __3Gbps,		   SERDES_DEFAULT_MODE },
-	{ USB3_HOST0, __5Gbps,		   SERDES_DEFAULT_MODE },
-	{ USB3_HOST1, __5Gbps,		   SERDES_DEFAULT_MODE }
+	{ SATA0,	 __3Gbps,   	   SERDES_DEFAULT_MODE },
+	{ PEX0, 	 __5Gbps,   	   PEX_ROOT_COMPLEX_x1 },
+	{ PEX1, 	 __5Gbps,   	   PEX_ROOT_COMPLEX_x1 },
+	{ SATA3,	 __3Gbps,   	   SERDES_DEFAULT_MODE },
+	{ USB3_HOST0, __5Gbps,  	   SERDES_DEFAULT_MODE },
+	{ USB3_HOST1, __5Gbps,  	   SERDES_DEFAULT_MODE }
 },
-{	/* Customer Board 1 Toplogy */
-	{ PEX0,		__5Gbps,	PEX_ROOT_COMPLEX_x1 },
+{   /* Customer Board 1 Toplogy */
+	{ PEX0, 	__5Gbps,	PEX_ROOT_COMPLEX_x1 },
 	{ SATA0,	__3Gbps,	SERDES_DEFAULT_MODE },
 	{ SATA1,	__3Gbps,	SERDES_DEFAULT_MODE },
 	{ SATA3,	__3Gbps,	SERDES_DEFAULT_MODE },
-	{ USB3_HOST0,	__5Gbps,	SERDES_DEFAULT_MODE },
+	{ USB3_HOST0,   __5Gbps,	SERDES_DEFAULT_MODE },
 	{ SATA2,	__3Gbps,	SERDES_DEFAULT_MODE }
 }};
 
@@ -120,8 +120,8 @@ MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray)
 
 loadTopologyFuncPtr loadTopologyFuncArr[] =
 {
-	loadTopologyCustomer,         /* Customer Board 0 */
-	loadTopologyCustomer,         /* Customer Board 1*/
+	loadTopologyCustomer,   	  /* Customer Board 0 */
+	loadTopologyCustomer,   	  /* Customer Board 1*/
 };
 
 #else /* CONFIG_CUSTOMER_BOARD_SUPPORT */
@@ -145,25 +145,25 @@ typedef enum {
 /**************************************************************************
  * topologyConfigDBModeGet -
  *
- * DESCRIPTION:          Gets the relevant topology mode (index).
- *                       for loadTopologyDB use only.
- * INPUT:                None.
- * OUTPUT:               None.
- * RETURNS:              the topology mode
+ * DESCRIPTION: 		 Gets the relevant topology mode (index).
+ *  					 for loadTopologyDB use only.
+ * INPUT:   			 None.
+ * OUTPUT:  			 None.
+ * RETURNS: 			 the topology mode
  ***************************************************************************/
 MV_U8 topologyConfigDBModeGet(MV_VOID);
 
 /**************************************************************************
  * loadTopologyXXX -
  *
- * DESCRIPTION:          Loads the board topology for the XXX board
- * INPUT:                serdesMapArray  -   The struct that will contain
- *                                           the board topology map
- * OUTPUT:               The board topology map.
- * RETURNS:              MV_OK           -   for success
- *                       MV_FAIL         -   for failure (a wrong
- *                                           topology mode was read
- *                                           from the board)
+ * DESCRIPTION: 		 Loads the board topology for the XXX board
+ * INPUT:   			 serdesMapArray  -   The struct that will contain
+ *  										 the board topology map
+ * OUTPUT:  			 The board topology map.
+ * RETURNS: 			 MV_OK  		 -   for success
+ *  					 MV_FAIL		 -   for failure (a wrong
+ *  										 topology mode was read
+ *  										 from the board)
  ***************************************************************************/
 
 /* loadTopologyDB - Loads the board topology from DB Board */
@@ -191,21 +191,21 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray);
 /**************************************************************************
  * loadTopologyRDSgmiiUsb -
  *
- * DESCRIPTION:          For RD board check if lane 4 is USB3 or SGMII
- * INPUT:                None
- * OUTPUT:               isSgmii - return MV_TRUE if lane 4 is SGMII
- * 				   return MV_FALSE if lane 4 is USB.
- * RETURNS:              MV_OK           -   for success
+ * DESCRIPTION: 		 For RD board check if lane 4 is USB3 or SGMII
+ * INPUT:   			 None
+ * OUTPUT:  			 isSgmii - return MV_TRUE if lane 4 is SGMII
+ *  			   return MV_FALSE if lane 4 is USB.
+ * RETURNS: 			 MV_OK  		 -   for success
  ***************************************************************************/
 MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii);
 
 loadTopologyFuncPtr loadTopologyFuncArr[] =
 {
-	loadTopologyRD,         /* RD NAS */
-	loadTopologyDB,		/* DB BP */
-	loadTopologyRD,         /* RD AP */
-	loadTopologyDBAp,	/* DB AP */
-	loadTopologyDBGp,	/* DB GP */
+	loadTopologyRD, 		/* RD NAS */
+	loadTopologyDB, 	/* DB BP */
+	loadTopologyRD, 		/* RD AP */
+	loadTopologyDBAp,   /* DB AP */
+	loadTopologyDBGp,   /* DB GP */
 };
 
 /*********************************** Globals **********************************/
@@ -216,72 +216,72 @@ loadTopologyFuncPtr loadTopologyFuncArr[] =
 /* Configuration options */
 SERDES_MAP DbConfigDefault[MAX_SERDES_LANES] =
 {
-	{ SATA0,     __3Gbps,		   SERDES_DEFAULT_MODE		      },
-	{ PEX0,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1		      },
-	{ PEX1,	     __5Gbps,		   PEX_ROOT_COMPLEX_x1		      },
-	{ SATA3,     __3Gbps,		   SERDES_DEFAULT_MODE		      },
-	{ USB3_HOST0, __5Gbps,		   SERDES_DEFAULT_MODE		      },
-	{ USB3_HOST1, __5Gbps,		   SERDES_DEFAULT_MODE		      }
+	{ SATA0,	 __3Gbps,   	   SERDES_DEFAULT_MODE  		  },
+	{ PEX0, 	 __5Gbps,   	   PEX_ROOT_COMPLEX_x1  		  },
+	{ PEX1, 	 __5Gbps,   	   PEX_ROOT_COMPLEX_x1  		  },
+	{ SATA3,	 __3Gbps,   	   SERDES_DEFAULT_MODE  		  },
+	{ USB3_HOST0, __5Gbps,  	   SERDES_DEFAULT_MODE  		  },
+	{ USB3_HOST1, __5Gbps,  	   SERDES_DEFAULT_MODE  		  }
 };
 
 SERDES_MAP DbConfigSLM1363_C[MAX_SERDES_LANES] =
 {
-	{ PEX0,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE		   },
-	{ PEX1,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ PEX3,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ SATA1,	  __3Gbps,		SERDES_DEFAULT_MODE		   },
-	{ SATA2,	  __3Gbps,		SERDES_DEFAULT_MODE		   }
+	{ PEX0, 	  __5Gbps,  	PEX_ROOT_COMPLEX_x1 	   },
+	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE 	   },
+	{ PEX1, 	  __5Gbps,  	PEX_ROOT_COMPLEX_x1 	   },
+	{ PEX3, 	  __5Gbps,  	PEX_ROOT_COMPLEX_x1 	   },
+	{ SATA1,	  __3Gbps,  	SERDES_DEFAULT_MODE 	   },
+	{ SATA2,	  __3Gbps,  	SERDES_DEFAULT_MODE 	   }
 };
 
 SERDES_MAP DbConfigSLM1363_D[MAX_SERDES_LANES] =
 {
-	{ PEX0,		  __5Gbps,		PEX_ROOT_COMPLEX_x4		   },
-	{ PEX1,		  __5Gbps,		PEX_ROOT_COMPLEX_x4		   },
-	{ PEX2,		  __5Gbps,		PEX_ROOT_COMPLEX_x4		   },
-	{ PEX3,		  __5Gbps,		PEX_ROOT_COMPLEX_x4		   },
-	{ SATA1,	  __3Gbps,		SERDES_DEFAULT_MODE		   },
-	{ SATA2,	  __3Gbps,		SERDES_DEFAULT_MODE		   }
+	{ PEX0, 	  __5Gbps,  	PEX_ROOT_COMPLEX_x4 	},
+	{ PEX1, 	  __5Gbps,  	PEX_ROOT_COMPLEX_x4 	},
+	{ PEX2, 	  __5Gbps,  	PEX_ROOT_COMPLEX_x4 	},
+	{ PEX3, 	  __5Gbps,  	PEX_ROOT_COMPLEX_x4 	},
+	{ USB3_HOST0, __5Gbps,		SERDES_DEFAULT_MODE 	},
+	{ USB3_HOST1, __5Gbps,		SERDES_DEFAULT_MODE 	}
 };
 
 SERDES_MAP DbConfigSLM1363_E[MAX_SERDES_LANES] =
 {
-	{ PEX0,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ USB3_HOST0,	  __5Gbps,		SERDES_DEFAULT_MODE		   },
-	{ SATA1,	  __3Gbps,		SERDES_DEFAULT_MODE		   },
-	{ USB3_HOST1,	  __5Gbps,		SERDES_DEFAULT_MODE		   },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE		   },
-	{ SATA2,	  __3Gbps,		SERDES_DEFAULT_MODE		   }
+	{ PEX0, 	  __5Gbps,  	PEX_ROOT_COMPLEX_x1 	   },
+	{ USB3_HOST0,     __5Gbps,  	SERDES_DEFAULT_MODE 	   },
+	{ SATA1,	  __3Gbps,  	SERDES_DEFAULT_MODE 	   },
+	{ USB3_HOST1,     __5Gbps,  	SERDES_DEFAULT_MODE 	   },
+	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE 	   },
+	{ SATA2,	  __3Gbps,  	SERDES_DEFAULT_MODE 	   }
 };
 
 SERDES_MAP DbConfigSLM1363_F[MAX_SERDES_LANES] =
 {
-	{ PEX0,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE		   },
-	{ PEX1,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ PEX3,		  __5Gbps,		PEX_ROOT_COMPLEX_x1		   },
-	{ SATA1,	  __3Gbps,		SERDES_DEFAULT_MODE		   },
-	{ USB3_HOST1,	  __5Gbps,		SERDES_DEFAULT_MODE		   }
+	{ PEX0, 	  __5Gbps,  	PEX_ROOT_COMPLEX_x1 	   },
+	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE 	   },
+	{ PEX1, 	  __5Gbps,  	PEX_ROOT_COMPLEX_x1 	   },
+	{ PEX3, 	  __5Gbps,  	PEX_ROOT_COMPLEX_x1 	   },
+	{ SATA1,	  __3Gbps,  	SERDES_DEFAULT_MODE 	   },
+	{ USB3_HOST1,     __5Gbps,  	SERDES_DEFAULT_MODE 	   }
 };
 
 SERDES_MAP DbConfigSLM1364_D[MAX_SERDES_LANES] =
 {
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE		 },
-	{ SGMII0,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		 },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE		 },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE		 },
-	{ SGMII1,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		 },
-	{ SGMII2,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		 }
+	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE   	 },
+	{ SGMII0,     __3_125Gbps,  	  SERDES_DEFAULT_MODE   	 },
+	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE   	 },
+	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE   	 },
+	{ SGMII1,     __3_125Gbps,  	  SERDES_DEFAULT_MODE   	 },
+	{ SGMII2,     __3_125Gbps,  	  SERDES_DEFAULT_MODE   	 }
 };
 
 SERDES_MAP DbConfigSLM1364_E[MAX_SERDES_LANES] =
 {
-	{ SGMII0,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		     },
-	{ SGMII1,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		     },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE		     },
-	{ SGMII2,	  __3_125Gbps,		  SERDES_DEFAULT_MODE		     },
-	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE		     },
-	{ PEX2,		  __5Gbps,		  PEX_ROOT_COMPLEX_x1		     }
+	{ SGMII0,     __3_125Gbps,  	  SERDES_DEFAULT_MODE   		 },
+	{ SGMII1,     __3_125Gbps,  	  SERDES_DEFAULT_MODE   		 },
+	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE   		 },
+	{ SGMII2,     __3_125Gbps,  	  SERDES_DEFAULT_MODE   		 },
+	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE   		 },
+	{ PEX2, 	  __5Gbps,  	  PEX_ROOT_COMPLEX_x1   		 }
 };
 
 SERDES_MAP DbConfigSLM1364_F[MAX_SERDES_LANES] =
@@ -293,7 +293,6 @@ SERDES_MAP DbConfigSLM1364_F[MAX_SERDES_LANES] =
 	{ DEFAULT_SERDES, LAST_SERDES_SPEED,	  SERDES_DEFAULT_MODE		     },
 	{ PEX2,		  __5Gbps,		  PEX_ROOT_COMPLEX_x1		     }
 };
-
 
 /**************************************************************************/
 /** The following structs are mapping for DB board 'SatR' configuration **/
@@ -338,12 +337,12 @@ SERDES_MAP* topologyConfigDB[] =
 /*************************************/
 SERDES_MAP DbApConfigDefault[MAX_SERDES_LANES] =
 {
-	{ PEX0,		__5Gbps,		PEX_ROOT_COMPLEX_x1	},
-	{ SGMII1,	__3_125Gbps,		SERDES_DEFAULT_MODE	},
-	{ PEX1,		__5Gbps,		PEX_ROOT_COMPLEX_x1	},
-	{ SGMII2,	__3_125Gbps,		SERDES_DEFAULT_MODE	},
-	{ USB3_HOST0,	__5Gbps,		SERDES_DEFAULT_MODE	},
-	{ PEX2,		__5Gbps,		PEX_ROOT_COMPLEX_x1	}
+	{ PEX0, 	__5Gbps,		PEX_ROOT_COMPLEX_x1 },
+	{ SGMII1,   __3_125Gbps,		SERDES_DEFAULT_MODE },
+	{ PEX1, 	__5Gbps,		PEX_ROOT_COMPLEX_x1 },
+	{ SGMII2,   __3_125Gbps,		SERDES_DEFAULT_MODE },
+	{ USB3_HOST0,   __5Gbps,		SERDES_DEFAULT_MODE },
+	{ PEX2, 	__5Gbps,		PEX_ROOT_COMPLEX_x1 }
 };
 
 /*************************************/
@@ -351,12 +350,12 @@ SERDES_MAP DbApConfigDefault[MAX_SERDES_LANES] =
 /*************************************/
 SERDES_MAP DbGpConfigDefault[MAX_SERDES_LANES] =
 {
-	{ PEX0,		__5Gbps,		PEX_ROOT_COMPLEX_x1	},
-	{ SATA0,	__3Gbps,		SERDES_DEFAULT_MODE	},
-	{ SATA1,	__3Gbps,		SERDES_DEFAULT_MODE	},
-	{ SATA3,	__3Gbps,		SERDES_DEFAULT_MODE	},
-	{ SATA2,	__3Gbps,		SERDES_DEFAULT_MODE	},
-	{ USB3_HOST1,	__5Gbps,		SERDES_DEFAULT_MODE	}
+	{ PEX0, 	__5Gbps,		PEX_ROOT_COMPLEX_x1 },
+	{ SATA0,	__3Gbps,		SERDES_DEFAULT_MODE },
+	{ SATA1,	__3Gbps,		SERDES_DEFAULT_MODE },
+	{ SATA3,	__3Gbps,		SERDES_DEFAULT_MODE },
+	{ SATA2,	__3Gbps,		SERDES_DEFAULT_MODE },
+	{ USB3_HOST1,   __5Gbps,		SERDES_DEFAULT_MODE }
 };
 
 /*************************** Functions implementation *************************/
@@ -397,7 +396,7 @@ MV_U8 topologyConfigDBModeGet(MV_VOID)
 		case 0xF:
 			DEBUG_INIT_S("\nInit DB board SLM 1363 F topology\n");
 			return DB_CONFIG_SLM1363_F;
-		default:    /* not the right module */
+		default:	/* not the right module */
 			break;
 		}
 	}

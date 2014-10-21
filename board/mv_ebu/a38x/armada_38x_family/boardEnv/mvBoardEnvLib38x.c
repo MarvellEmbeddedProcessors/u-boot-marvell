@@ -194,7 +194,7 @@ MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_VOID mvBoardInfoUpdate(MV_VOID)
 {
-	MV_U32	reg;
+	MV_U32 reg, sgmiiPhyAddr;
 
 	switch (mvBoardIdGet()) {
 	case DB_GP_68XX_ID:
@@ -221,6 +221,30 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			reg &= 0xffff0fff;
 			mvBoardMppSet(2, reg);
 		}
+
+		/* 'SatR' PCIe modules configuration ('dbserdes1', 'dbserdes2' , 'sgmiimode') */
+
+		sgmiiPhyAddr = mvBoardSatRRead(MV_SATR_SGMII_MODE) ? 0x10 : -1;
+
+		switch (mvBoardSatRRead(MV_SATR_DB_SERDES1_CFG)) {
+		case 0x3: /* SGMII port 0 */
+			mvBoardPhyAddrSet(0, sgmiiPhyAddr);
+			break;
+		case 0x4: /* SGMII port 1 */
+			mvBoardPhyAddrSet(1, sgmiiPhyAddr);
+			break;
+		case 0x6: /* QSGMII */
+			sgmiiPhyAddr = 0x8; /* 0x8 = SMI address of 1st Quad PHY */
+			mvBoardPhyAddrSet(0, sgmiiPhyAddr);
+			mvBoardPhyAddrSet(1, sgmiiPhyAddr + 1);
+			mvBoardPhyAddrSet(2, sgmiiPhyAddr + 2);
+			mvBoardQuadPhyAddr0Set(0, sgmiiPhyAddr);
+			mvBoardQuadPhyAddr0Set(1, sgmiiPhyAddr);
+			mvBoardQuadPhyAddr0Set(2, sgmiiPhyAddr);
+			break;
+		}
+		if (mvBoardSatRRead(MV_SATR_DB_SERDES2_CFG) == 0x4) /* SGMII port 1 */
+			mvBoardPhyAddrSet(1, sgmiiPhyAddr);
 		break;
 	default:
 		mvOsPrintf("%s: Error: Auto detection update sequence is not supported by current board.\n" , __func__);

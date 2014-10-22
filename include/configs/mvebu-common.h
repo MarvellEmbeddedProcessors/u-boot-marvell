@@ -215,20 +215,19 @@
 #endif /* MV_INCLUDE_GPIO */
 
 /* I2C */
-#if defined(MV_INCLUDE_I2C)
+#ifdef CONFIG_MVEBU_I2C
 	#ifdef CONFIG_MVEBU_DEVEL_BOARD
 		#define CONFIG_CMD_MVEBU_SAR
 		#define CONFIG_CMD_MVEBU_CONFIG
 	#endif
-	#define CONFIG_CMD_EEPROM
+	#define CONFIG_SYS_I2C
 	#define CONFIG_CMD_I2C
-	#define CONFIG_I2C_MVEBU
 	#define CONFIG_I2C_MULTI_BUS
-	#define CONFIG_SYS_MAX_I2C_BUS          2
+	#define CONFIG_SYS_I2C_SPEED            100000  /* I2C speed default */
+/*	#define CONFIG_CMD_EEPROM
 	#define CONFIG_SYS_I2C_EEPROM_ADDR_LEN  1
 	#define CONFIG_SYS_I2C_MULTI_EEPROMS
-	#define CONFIG_SYS_I2C_SLAVE		0x0
-	#define CONFIG_SYS_I2C_SPEED            100000  /* I2C speed default */
+	#define CONFIG_SYS_I2C_SLAVE		0x0*/
 #endif
 
 /* RTC */

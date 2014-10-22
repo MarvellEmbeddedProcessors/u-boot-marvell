@@ -19,6 +19,20 @@ config MVEBU_PCI
 config MVEBU_UART
 	bool "UART support"
 	default n
+	help
+	  Choose this option to add support
+	  for UART driver, using COM1 NS16550
+	  driver.
+	  base address is configured under MVEBU_UART_BASE
+
+config MVEBU_I2C
+	bool "I2C support"
+	default n
+	help
+	  Choose this option to add support
+	  for I2C driver, using Marvell mvebu_i2c.c
+	  driver.
+	  base address is configured under MVEBU_I2C_BASE
 
 endmenu
 

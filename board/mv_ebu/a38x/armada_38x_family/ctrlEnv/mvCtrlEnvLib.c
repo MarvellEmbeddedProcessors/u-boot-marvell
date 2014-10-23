@@ -578,6 +578,8 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 
 	/* Apply additional SATA ports configurations */
 	for (i = 0; i < MV_SATA_MAX_UNIT; i++) {
+		if (sataUnitActive[i] == MV_FALSE)
+			continue;
 		for (port = 0; port < MV_SATA_MAX_CHAN_PER_UNIT; port++) {
 			MV_REG_WRITE(SATA_INDIR_ACCESS_PORT_ADDR(i, port), SATA_OOB1_PARAM_ADDR);
 			rVal = MV_REG_READ(SATA_INDIR_ACCESS_PORT_DATA(i, port));

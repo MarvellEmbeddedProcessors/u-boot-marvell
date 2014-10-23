@@ -297,7 +297,7 @@ int board_init(void)
 
 	mvBoardDebugLed(4);
 	mv_print_map();
-#if defined(CONFIG_ARMADA_39X) && defined(CONFIG_CMD_BOARDCFG)
+#if defined(CONFIG_CMD_BOARDCFG)
 	mvBoardEepromValidSet();
 #endif
 	return 0;

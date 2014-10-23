@@ -102,8 +102,10 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	/* Reading board id */
 	DEBUG_INIT_FULL_S("mvBoardIdGet: getting board id\n");
 	if (mvTwsiRead(0, &twsiSlave, &boardId, 1) != MV_OK) {
-		DEBUG_INIT_S("mvBoardIdGet: TWSI Read failed\n");
-		return (MV_U8)MV_INVALID_BOARD_ID;
+		mvPrintf("\n\n%s: TWSI Read for Marvell Board ID failed (%x) \n", __func__, EEPROM_I2C_ADDR);
+		mvPrintf("\tUsing default board ID\n\n");
+		gBoardId = MV_DEFAULT_BOARD_ID;
+		return gBoardId;
 	}
 
 	DEBUG_INIT_FULL_S("boardId from HW = 0x");

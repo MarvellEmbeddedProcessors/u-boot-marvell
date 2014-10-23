@@ -65,8 +65,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _DDR3_TOPOLOGY_CONFIG_H
 #define _DDR3_TOPOLOGY_CONFIG_H
 
+#define      ADDR_SIZE_512Mb    0x04000000
+#define      ADDR_SIZE_1Gb      0x08000000
+#define      ADDR_SIZE_2Gb      0x10000000
+#define      ADDR_SIZE_4Gb      0x20000000
+#define      ADDR_SIZE_8Gb      0x40000000
+
+
 /*************************TOPOLOGY*******************************************/
 #ifdef CONFIG_DDR3
+
+
 typedef enum
 {
    SPEED_BIN_DDR_800D,

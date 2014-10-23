@@ -2702,6 +2702,7 @@ MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 MV_STATUS mvBoardEepromWriteDefaultCfg(void)
 {
 	MV_U8 i;
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
 	MV_U32 defaultValue[2] = MV_BOARD_CONFIG_DEFAULT_VALUE;
 	/* write default board configuration, chunk of 4 bytes*/
 	for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT/4; i++) {
@@ -2717,10 +2718,12 @@ MV_STATUS mvBoardEepromWriteDefaultCfg(void)
 		}
 	}
 
+	if (mvBoardConfigTypeGet(MV_CONFIG_BOARDCFG_VALID, &configInfo) != MV_TRUE)
+		DB(printf("failed reading board config valid data\n"));
+
 	/* reset the valid counter */
 	defaultValue[0] = 0;
-	if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, 0, MV_BOARD_CONFIG_VALID_OFFSET,
-		(MV_U8 *)&defaultValue[0], 4) != MV_OK) {
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, 0, configInfo.offset, (MV_U8 *)&defaultValue[0], 4) != MV_OK) {
 		mvOsPrintf("%s: Error: Set default configuration to EEPROM failed\n", __func__);
 		return MV_ERROR;
 	}

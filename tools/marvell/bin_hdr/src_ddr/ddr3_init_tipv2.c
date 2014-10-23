@@ -99,6 +99,9 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #elif defined(MV_MSYS_AC3)
 #define MARVELL_BOARD	AC3_MARVELL_BOARD_ID_BASE
 #endif
+/* translates topology map definitions to real memory size in bits */
+MV_U32 mv_memSize[] = { ADDR_SIZE_512Mb, ADDR_SIZE_1Gb, ADDR_SIZE_2Gb, ADDR_SIZE_4Gb ,ADDR_SIZE_8Gb };
+
 
 extern MV_STATUS ddr3TipInitSpecificRegConfig
 (
@@ -128,11 +131,12 @@ static MV_U32 ddr3GetStaticDdrMode(void);
 MV_U8 genericInitController = 1;
 
 MV_VOID		getTargetFreq(MV_U32 uiFreqMode, MV_U32 *ddrFreq, MV_U32 *hclkPs);
-MV_VOID		ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna);
+MV_STATUS		ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna);
 MV_VOID		ddr3FastPathStaticCsSizeConfig(MV_U32 uiCsEna);
-
+MV_U32 ddr3GetDeviceWidth(MV_U32 uiCs);
 MV_U32 	mvBoardIdIndexGet(MV_U32 boardId);
 MV_U32 mvBoardIdGet(MV_VOID);
+MV_U32 ddr3GetBusWidth(void);
 
 extern MV_VOID ddr3SetLogLevel(MV_U32 nLogLevel);
 static MV_U32 gLogLevel = 0;
@@ -215,7 +219,8 @@ static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 	mvPrintf("%s Training Sequence - Switching XBAR Window to FastPath Window \n", ddrType);
 
 #if defined DYNAMIC_CS_SIZE_CONFIG
-	ddr3FastPathDynamicCsSizeConfig(uiCsEna);
+	if (ddr3FastPathDynamicCsSizeConfig(uiCsEna)!= MV_OK)
+		mvPrintf("ddr3FastPathDynamicCsSizeConfig FAILED\n");
 #else
 	MV_U32 uiReg, uiCs;
 	uiReg = 0x1FFFFFE1;
@@ -607,19 +612,37 @@ MV_VOID ddr3NewTipDlbConfig()
 
 
 
-MV_VOID ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
+MV_STATUS ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
 
 	MV_U32 uiReg, uiCs;
     MV_U32 uiMemTotalSize = 0;
     MV_U32 uiCsMemSize = 0;
 	MV_U32 uiMemTotalSize_c, uiCsMemSize_c;
-    /* Open fast path windows */
+
+#ifdef MV_DEVICE_MAX_DRAM_ADDRESS_SIZE
+	MV_U32 physicalMemSize;
+	MV_HWS_TOPOLOGY_MAP* toplogyMap = NULL;
+#endif
+
+	/* Open fast path windows */
     for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
         if (uiCsEna & (1 << uiCs)) {
             /* get CS size */
 
             if (ddr3CalcMemCsSize(uiCs, &uiCsMemSize) != MV_OK)
-                return;
+                return MV_FAIL;
+
+#ifdef MV_DEVICE_MAX_DRAM_ADDRESS_SIZE
+			/* if number of address pins doesn't allow to use max mem size that is defined in topology 
+			 mem size is defined by MV_DEVICE_MAX_DRAM_ADDRESS_SIZE*/
+			CHECK_STATUS(ddr3GetTopologyMap(&toplogyMap));
+			physicalMemSize = mv_memSize [toplogyMap->interfaceParams[0].memorySize];
+
+			if (physicalMemSize > MV_DEVICE_MAX_DRAM_ADDRESS_SIZE ){
+				uiCsMemSize = MV_DEVICE_MAX_DRAM_ADDRESS_SIZE *(ddr3GetBusWidth() / ddr3GetDeviceWidth(uiCs)) ;
+				mvPrintf ("Updated Physical Mem size is from 0x%x to %x\n", physicalMemSize, MV_DEVICE_MAX_DRAM_ADDRESS_SIZE);
+			}
+#endif
 
             /* set fast path window control for the cs */
             uiReg = 0xFFFFE1;
@@ -642,6 +665,7 @@ MV_VOID ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
     }
 	/* Set L2 filtering to Max Memory size */
 	MV_REG_WRITE(0x8c04, uiMemTotalSize);
+	return MV_OK;
 }
 
 MV_U32 ddr3GetBusWidth(void) {

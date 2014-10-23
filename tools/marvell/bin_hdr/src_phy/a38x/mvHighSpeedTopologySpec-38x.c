@@ -553,8 +553,10 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 			}
 		}
 	}
-
-	updateTopologySatR(serdesMapArray, MV_TRUE);
+	if (topologyMode == DB_CONFIG_DEFAULT)
+		updateTopologySatR(serdesMapArray, MV_TRUE);
+	else
+		updateTopologySatR(serdesMapArray, MV_FALSE);
 
 	return MV_OK;
 }

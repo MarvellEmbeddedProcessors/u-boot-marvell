@@ -80,8 +80,8 @@ static MV_VOID mvDeviceIdConfig(void)
 	MV_U32 ctrlId, devId = mvSysEnvDeviceIdGet(); /* read Sample at reset for device ID*/
 
 	if (devId == MV_NONE) {
-		devId = MV_6920;
-		mvPrintf("%s: Error: Read an unkown device ID from 'S@R', set MV_6920 as device ID\n", __func__);
+		devId = MV_DEFAULT_DEVICE_ID;
+		mvPrintf("%s: Error: Read an unknown device ID from 'S@R', set default device ID\n", __func__);
 	}
 	/* Configure Units according to detected deviceId (flavor) */
 	MV_REG_WRITE(DEVICE_CONFIGURATION_REG0, dev_id_val[devId].wo_reg_val0);

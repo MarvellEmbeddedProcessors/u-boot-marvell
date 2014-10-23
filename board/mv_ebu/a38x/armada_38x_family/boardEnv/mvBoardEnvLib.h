@@ -84,8 +84,6 @@ extern "C" {
 #include "boardEnv/mvBoardEnvLib39x.h"
 #endif
 
-#define MV_BOARD_CONFIG_VALID_OFFSET	0x13
-
 #define ARRSZ(x)                (sizeof(x) / sizeof(x[0]))
 #define BOARD_ETH_SWITCH_PORT_NUM       7
 #define BOARD_ETH_SWITCH_SMI_SCAN_MODE	1	/* Use manual scanning mode */

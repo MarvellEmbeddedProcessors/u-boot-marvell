@@ -66,7 +66,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ddr3_hws_hw_training_def.h"
 #ifdef CONFIG_DDR4
-MV_DRAM_DLB_CONFIG ddr3DlbConfigTable[] =
+/* for a39x Z and A38x A0 */
+MV_DRAM_DLB_CONFIG ddr3DlbConfigTable_A0[] =
 {
       {REG_STATIC_DRAM_DLB_CONTROL, 	 	0x2000005F},
       {DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 	0x00880000},
@@ -101,9 +102,7 @@ MV_DRAM_DLB_CONFIG ddr3DlbConfigTable[] =
 	{DLB_USER_COMMAND_REG, 0x00000000},
 	{0x0, 0x0}
 };
-#endif
 
-/*Table for future A0 device*/
 MV_DRAM_DLB_CONFIG ddr3DlbConfigTable_A0[] =
 {
 	{REG_STATIC_DRAM_DLB_CONTROL, 0x2000005C},
@@ -121,5 +120,7 @@ MV_DRAM_DLB_CONFIG ddr3DlbConfigTable_A0[] =
 	{DLB_USER_COMMAND_REG,0x00000000},
 	{0x0, 0x0}
 };
+#endif
+
 
 #endif /* _INC_A38X_DLB_CONFIG_H */

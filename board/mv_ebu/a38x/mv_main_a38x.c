@@ -477,9 +477,15 @@ void misc_init_r_env(void)
 		setenv("script_addr_r", "3000000");
 	env = getenv("bootargs_dflt");
 	if (!env)
+#if defined(CONFIG_ARMADA_39X)
+		setenv("bootargs_dflt", "$console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
+			   "ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
+			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel $nss_emac_map");
+#else
 		setenv("bootargs_dflt", "$console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
 			   "ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
 			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
+#endif
 	env = getenv("bootcmd_auto");
 	if (!env)
 		setenv("bootcmd_auto", "stage_boot $boot_order");
@@ -826,6 +832,12 @@ void misc_init_r_env(void)
 	if (!env)
 		setenv("eeeEnable", "no");
 
+#if defined(CONFIG_ARMADA_39X)
+	env = getenv("nss_emac_map");
+	if (!env)
+		setenv("nss_emac_map", "0x0");/* bit == 0 ==> NIC mode,
+						 bit == 1 ==> NSS mode */
+#endif
 	env = getenv("lcd0_enable");
 	if (!env)
 		setenv("lcd0_enable", "0");

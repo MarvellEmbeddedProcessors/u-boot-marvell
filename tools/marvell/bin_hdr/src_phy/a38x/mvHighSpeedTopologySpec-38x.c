@@ -101,13 +101,14 @@ MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray)
 {
 	MV_U32 laneNum;
 	MV_U32 boardId = mvBoardIdGet();
+	MV_U32 boardIdIndex = mvBoardIdIndexGet(boardId);
 	DEBUG_INIT_S("\nInit Customer board ");
 
 	/* Updating the topology map */
 	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
-		serdesMapArray[laneNum].serdesMode  =  CustomerBoardTopologyConfig[boardId][laneNum].serdesMode;
-		serdesMapArray[laneNum].serdesSpeed =  CustomerBoardTopologyConfig[boardId][laneNum].serdesSpeed;
-		serdesMapArray[laneNum].serdesType  =  CustomerBoardTopologyConfig[boardId][laneNum].serdesType;
+		serdesMapArray[laneNum].serdesMode  =  CustomerBoardTopologyConfig[boardIdIndex][laneNum].serdesMode;
+		serdesMapArray[laneNum].serdesSpeed =  CustomerBoardTopologyConfig[boardIdIndex][laneNum].serdesSpeed;
+		serdesMapArray[laneNum].serdesType  =  CustomerBoardTopologyConfig[boardIdIndex][laneNum].serdesType;
 	}
 
 	return MV_OK;

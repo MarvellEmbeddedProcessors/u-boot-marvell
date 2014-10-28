@@ -495,17 +495,21 @@ static int mv_fdt_scan_and_set_alias(void *fdt,
 				nodeoffset = mv_fdt_find_node(fdt, "aliases");
 				if (nodeoffset < 0)
 					goto alias_fail;
-				mv_fdt_modify(fdt, err, fdt_setprop(fdt,
+				/* Do not modify existing alias property */
+				if (!fdt_getprop(fdt, nodeoffset, aliasname,
+						 NULL)) {
+					mv_fdt_modify(fdt, err, fdt_setprop(fdt,
 							nodeoffset, aliasname,
 							path, strlen(path)+1));
-				if (err < 0)
-					goto alias_fail;
+					if (err < 0)
+						goto alias_fail;
+					mv_fdt_dprintf("Set alias %s=%s\n",
+						       aliasname, path);
+				}
 				nodeoffset = fdt_path_offset(fdt, path);
 				if (nodeoffset < 0)
 					goto alias_fail;
 				nextoffset = nodeoffset + delta;
-				mv_fdt_dprintf("Set alias %s=%s\n", aliasname,
-					       path);
 				i++;
 			}
 			level++;

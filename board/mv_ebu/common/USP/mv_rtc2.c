@@ -99,6 +99,10 @@ int rtc_set(struct rtc_time *tm)
 	time = mktime(tm->tm_year, tm->tm_mon,
 				  tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 
+	/* WA for failing time set attempts. The HW ERRATA information should be added here */
+	RTC_WRITE_REG(0, RTC_STATUS_REG_OFFS);
+	mdelay(100);
+	/* End of SW WA */
 	RTC_WRITE_REG(time, RTC_TIME_REG_OFFS);
 	RTC_WRITE_REG(time, RTC_TIME_REG_OFFS);
 

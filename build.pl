@@ -267,6 +267,7 @@ if(defined $opt_d)
 if(defined $opt_m)
 {
 	system("echo \"DDRTYPE = ddr$opt_m\" >> include/config.mk");
+	system("echo \"#define CONFIG_DDR4\" >> include/config.h");
 	print "** DDRTYPE = DDR$opt_m **\n";
 }
 else {

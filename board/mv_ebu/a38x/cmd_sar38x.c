@@ -47,17 +47,17 @@ typedef struct _boardSatrDefault {
 } MV_BOARD_SATR_DEFAULT;
 #define MAX_DEFAULT_ENTRY	10
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
-/* 	defauleValueForBoard[] = RD_NAS_68xx,	DB_BP_68xx,	RD_WAP_68xx,	DB_AP_68xx , DB_gp_68xx */
-{ MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		0x0c,		0x0c,		0x0c}},
-{ MV_SATR_CORE_CLK_SELECT,	{0,		0,		0,		0,		0}},
-{ MV_SATR_CPU1_ENABLE,	  	{MV_TRUE,	MV_TRUE,	MV_TRUE,	MV_TRUE,	MV_TRUE}},
-{ MV_SATR_SSCG_DISABLE,	  	{MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE}},
-{ MV_SATR_SGMII_SPEED,		{0,		0,		0,		0,		0}},
-{ MV_SATR_DDR_BUS_WIDTH,	{1,		1,		1,		1,		1}},
-{ MV_SATR_RD_SERDES4_CFG,	{0,		0,		0,		0,		0}},
-{ MV_SATR_GP_SERDES5_CFG,	{0,		0,		0,		0,		0}},
-{ MV_SATR_DB_SERDES1_CFG,	{1,		1,		1,		1,		1}},
-{ MV_SATR_DB_SERDES2_CFG,	{1,		1,		1,		1,		1}},
+/* 	defauleValueForBoard[] = RD_NAS_68xx,	DB_BP_68xx,	RD_WAP_68xx,	DB_AP_68xx , DB_GP_68xx, 	DB_BP_6821 */
+{ MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		0x0c,		0x0c,		0x0c,		0xc}},
+{ MV_SATR_CORE_CLK_SELECT,	{0,		0,		0,		0,		0,		0}},
+{ MV_SATR_CPU1_ENABLE,	  	{MV_TRUE,	MV_TRUE,	MV_TRUE,	MV_TRUE,	MV_TRUE,	MV_TRUE}},
+{ MV_SATR_SSCG_DISABLE,	  	{MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE}},
+{ MV_SATR_SGMII_SPEED,		{0,		0,		0,		0,		0,		0}},
+{ MV_SATR_DDR_BUS_WIDTH,	{1,		1,		1,		1,		1,		1}},
+{ MV_SATR_RD_SERDES4_CFG,	{0,		0,		0,		0,		0,		0}},
+{ MV_SATR_GP_SERDES5_CFG,	{0,		0,		0,		0,		0,		0}},
+{ MV_SATR_DB_SERDES1_CFG,	{1,		1,		1,		1,		1,		1}},
+{ MV_SATR_DB_SERDES2_CFG,	{1,		1,		1,		1,		1,		1}},
 };
 
 char* lane1Arr[7] = { 	"Unconnected" ,
@@ -360,7 +360,7 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 	MV_U32 boardId = mvBoardIdGet();
 
 	/* if field is read only, or field is board id for DB boards - modification not supported */
-	if (satrInfo->status & BOARD_SATR_READ_ONLY ||
+	if (satrInfo->status & SATR_READ_ONLY ||
 	    (MV_SATR_BOARD_ID == satrInfo->satrId  && (boardId != RD_NAS_68XX_ID && boardId != RD_AP_68XX_ID))) {
 		mvOsPrintf("S@R ID = %d is read only for this board\n", satrInfo->satrId);
 		mvOsPrintf("Write S@R failed!\n");

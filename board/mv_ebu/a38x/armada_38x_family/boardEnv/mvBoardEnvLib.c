@@ -1752,10 +1752,13 @@ MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *s
 	MV_U32 boardIdIndex = mvBoardIdIndexGet(boardId);
 	MV_BOARD_SATR_INFO *satrInfoTable = boardSatrInfo;
 
-	/* A38x DB-GP board has different i2c mapping for SSCG and Core clock S@R fields */
-	if (boardId == DB_GP_68XX_ID &&
-		(satrClass == MV_SATR_CORE_CLK_SELECT || satrClass == MV_SATR_SSCG_DISABLE))
-		satrInfoTable = boardSatrInfo2;
+	/* A38x DB-GP board has different I2C mapping for SSCG and Core clock S@R fields */
+	/* A381 DB-BP board has different I2C mapping for 'freq' and 'cpusnum' S@R fields */
+	if ((boardId == DB_GP_68XX_ID &&
+		(satrClass == MV_SATR_CORE_CLK_SELECT || satrClass == MV_SATR_SSCG_DISABLE)) ||
+		(boardId == DB_BP_6821_ID &&
+		(satrClass == MV_SATR_CPU_DDR_L2_FREQ || satrClass == MV_SATR_CPU1_ENABLE)))
+			satrInfoTable = boardSatrInfo2;
 
 	/* verify existence of requested SATR type, pull its data,
 	 * and check if field is relevant to current running board */
@@ -2428,7 +2431,7 @@ MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField)
 	data &= satrInfo.mask;
 	data = (data >> satrInfo.bitOffset);
 
-	if (satrInfo.status & BOARD_SATR_SWAP_BIT) {
+	if (satrInfo.status & SATR_SWAP_BIT) {
 		c = mvCountMaskBits(satrInfo.mask);
 		data1 = mvReverseBits(data);
 		data =  (data1 >> (8-c));
@@ -2478,7 +2481,7 @@ MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val)
 		mvOsPrintf("%s: Error: Requested S@R field is not relevant for this board\n", __func__);
 		return MV_ERROR;
 	}
-	if (satrInfo.status & BOARD_SATR_READ_ONLY) {
+	if (satrInfo.status & SATR_READ_ONLY) {
 		mvOsPrintf("%s: Error: Requested S@R field is read only\n", __func__);
 		return MV_ERROR;
 	}
@@ -2497,7 +2500,7 @@ MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val)
 		return MV_ERROR;
 	}
 
-	if (satrInfo.status & BOARD_SATR_SWAP_BIT) {
+	if (satrInfo.status & SATR_SWAP_BIT) {
 		c = mvCountMaskBits(satrInfo.mask);
 		data1 = mvReverseBits(val);
 		val =  (data1 >> (8-c));

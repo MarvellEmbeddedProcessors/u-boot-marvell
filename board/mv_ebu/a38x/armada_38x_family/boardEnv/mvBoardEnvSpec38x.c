@@ -194,9 +194,8 @@ MV_BOARD_INFO *customerBoardInfoTbl[] = {
 
 
 /***************************************** Marvell Boards *****************************************/
-
 /*******************************************************************************
- * A380 DB-88F6660 board */
+ * A38x DB-88F68XX board */
 /*******************************************************************************/
 #define DB_88F68XX_BOARD_NAND_READ_PARAMS	0x000C0282
 #define DB_88F68XX_BOARD_NAND_WRITE_PARAMS	0x00010305
@@ -705,10 +704,111 @@ MV_BOARD_INFO dbGP88f68XX_board_info = {
 	.boardOptionsModule		= MV_MODULE_NO_MODULE
 };
 
+/*******************************************************************************
+ * A381 DB-88F6821-BP board */
+/*******************************************************************************/
+MV_BOARD_MPP_INFO db88f6821InfoBoardMppConfigValue[] = {
+	{ {
+		  DB_BP_88F6821_MPP0_7,
+		  DB_BP_88F6821_MPP8_15,
+		  DB_BP_88F6821_MPP16_23,
+		  DB_BP_88F6821_MPP24_31,
+		  DB_BP_88F6821_MPP32_39,
+		  DB_BP_88F6821_MPP40_47,
+	 } }
+};
+
+MV_BOARD_TWSI_INFO db88f6821InfoBoardTwsiDev[] = {
+	/* {{devClass,		devClassId, twsiDevAddr, twsiDevAddrType, moreThen256}} */
+	{ BOARD_DEV_TWSI_SATR,		0,	0x57,	   ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4c,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		2,	0x4d,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		3,	0x4e,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		4,	0x21,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	0,	0x20,	   ADDR7_BIT, MV_FALSE},   /* modules */
+	{ BOARD_TWSI_MODULE_DETECT,	1,	0x23,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	2,	0x24,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	3,	0x25,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	4,	0x26,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	5,	0x27,	   ADDR7_BIT, MV_FALSE},
+};
+MV_BOARD_MAC_INFO db88f6821InfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
+	{ BOARD_MAC_SPEED_AUTO, 0x1, 0x1},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
+};
+
+MV_DEV_CS_INFO db88f6821InfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth }*/
+#ifdef MV_NAND
+	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8},  /* NAND DEV */
+#endif
+#if defined(MV_INCLUDE_NOR)
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16}, /* NOR DEV */
+	{ SPI0_CS1,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
+#else
+	{ SPI0_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
+#endif
+};
+
+MV_BOARD_INFO db88f6821_board_info = {
+	.boardName		= "DB-88F6821-BP",
+	.numBoardNetComplexValue = 0,
+	.pBoardNetComplexInfo	= NULL,
+	.pBoardMppConfigValue	= db88f6821InfoBoardMppConfigValue,
+	.intsGppMaskLow		= 0,
+	.intsGppMaskMid		= 0,
+	.intsGppMaskHigh	= 0,
+	.numBoardDeviceIf	= ARRSZ(db88f6821InfoBoardDeCsInfo),
+	.pDevCsInfo		= db88f6821InfoBoardDeCsInfo,
+	.numBoardTwsiDev	= ARRSZ(db88f6821InfoBoardTwsiDev),
+	.pBoardTwsiDev		= db88f6821InfoBoardTwsiDev,
+	.numBoardMacInfo	= ARRSZ(db88f6821InfoBoardMacInfo),
+	.pBoardMacInfo		= db88f6821InfoBoardMacInfo,
+	.numBoardGppInfo	= 0,
+	.pBoardGppInfo		= 0,
+	.activeLedsNumber	= 0,
+	.pLedGppPin		= NULL,
+	.ledsPolarity		= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity	= 0,
+	.pmuPwrUpDelay		= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow		= DB_BP_88F6821_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid		= DB_BP_88F6821_GPP_OUT_ENA_MID,
+	.gppOutValLow		= DB_BP_88F6821_GPP_OUT_VAL_LOW,
+	.gppOutValMid		= DB_BP_88F6821_GPP_OUT_VAL_MID,
+	.gppPolarityValLow	= DB_BP_88F6821_GPP_POL_LOW,
+	.gppPolarityValMid	= DB_BP_88F6821_GPP_POL_MID,
+
+	.pBoardSpecInit		= NULL,
+
+	/* NAND init params */
+	.nandFlashReadParams	= DB_88F68XX_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams	= DB_88F68XX_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl	= DB_88F68XX_BOARD_NAND_CONTROL,
+	.nandIfMode		= NAND_IF_NFC,
+
+	/* NOR init params */
+	.norFlashReadParams	= DB_88F68XX_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams	= DB_88F68XX_BOARD_NOR_WRITE_PARAMS,
+
+	/* Enable modules auto-detection. */
+	.configAutoDetect	= MV_TRUE,
+	.numIoExp		= 0,
+	.pIoExp			= NULL,
+	.boardOptionsModule	= MV_MODULE_NO_MODULE
+};
+
+
 MV_BOARD_INFO *marvellBoardInfoTbl[] = {
 	&rdNas88f68XX_board_info,
 	&db88f68xx_board_info,
 	&rdWAP88f68XX_board_info,
 	&dbAP88f68xx_board_info,
 	&dbGP88f68XX_board_info,
+	&db88f6821_board_info,
 };

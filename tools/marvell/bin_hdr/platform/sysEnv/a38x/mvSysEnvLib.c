@@ -117,7 +117,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	if (boardId < MV_MARVELL_BOARD_NUM && boardId >= 0)
 		gBoardId = MARVELL_BOARD_ID_BASE + boardId;
 	else {
-		DEBUG_INIT_S("mvHwsBoardTopologyLoad: board id 0x");
+		DEBUG_INIT_S("mvBoardIdGet: board id 0x");
 		DEBUG_INIT_FULL_D(boardId, 8);
 		DEBUG_INIT_S("is out of range. Using default board ID\n");
 		gBoardId = MV_DEFAULT_BOARD_ID;

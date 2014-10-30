@@ -303,7 +303,7 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 	MV_U32 boardId = mvBoardIdGet();
 
 	/* if field is read only, or field is board id for DB boards - modification not supported */
-	if (satrInfo->status & BOARD_SATR_READ_ONLY ||
+	if (satrInfo->status & SATR_READ_ONLY ||
 	    (MV_SATR_BOARD_ID == satrInfo->satrId  && (boardId != RD_NAS_68XX_ID && boardId != RD_AP_68XX_ID))) {
 		mvOsPrintf("S@R ID = %d is read only for this board\n", satrInfo->satrId);
 		mvOsPrintf("Write S@R failed!\n");

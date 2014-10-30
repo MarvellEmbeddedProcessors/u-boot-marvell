@@ -327,7 +327,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		if (netComplex & (MV_NETCOMP_GE_MAC0_2_SGMII_L0 | MV_NETCOMP_GE_MAC0_2_SGMII_L1))
 			smiAddress = 0x4;
 		else if (netComplex & (MV_NETCOMP_GE_MAC0_2_RXAUI | MV_NETCOMP_GE_MAC0_2_XAUI))
-			smiAddress = -1;
+			smiAddress = 0x0;
 		mvBoardPhyAddrSet(0, smiAddress);
 
 		if (netComplex & (MV_NETCOMP_GE_MAC1_2_SGMII_L1 | MV_NETCOMP_GE_MAC1_2_SGMII_L2))

@@ -797,7 +797,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ** Specific definition for Main CPU interrupt cause register.
 ** Needed for TWSI operation completion monitoring.
 */
-/*#define MV_TWSI_CPU_MAIN_INT_CASUE(chNum)			*/
+/*#define MV_TWSI_CPU_MAIN_INT_CAUSE(chNum)			*/
 
 
 /*#define MV_TWSI_SLAVE_REGS_OFFSET(chanNum)	(0x11000 + (chanNum * 0x100))		*/
@@ -810,7 +810,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ** Specific definition for Main CPU interrupt cause register.
 ** Needed for TWSI operation completion monitoring.
 */
-/*#define MV_TWSI_CPU_MAIN_INT_CASUE(chNum)	TWSI_CPU_MAIN_INT_CAUSE_REG		*/
+/*#define MV_TWSI_CPU_MAIN_INT_CAUSE(chNum)	TWSI_CPU_MAIN_INT_CAUSE_REG		*/
 /*
 #define TWSI_CONTROL_REG(chanNum)			(MV_TWSI_SLAVE_REGS_BASE(chanNum) + 0x08)
 #define TWSI_CONTROL_ACK            		BIT2

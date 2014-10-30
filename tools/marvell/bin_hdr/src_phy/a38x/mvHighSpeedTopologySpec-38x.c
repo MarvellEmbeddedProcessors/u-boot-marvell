@@ -141,6 +141,13 @@ typedef enum {
 	DB_NO_TOPOLOGY
 } TOPOLOGY_CONFIG_DB;
 
+/* this enum must be aligned with topologyConfigDB381 array,
+ * every update to this enum requires update to topologyConfigDB381 array*/
+typedef enum {
+	DB_381_CONFIG_DEFAULT,
+	DB_381_NO_TOPOLOGY
+} TOPOLOGY_CONFIG_DB381;
+
 /************************* Local functions declarations ***********************/
 /**************************************************************************
  * topologyConfigDBModeGet -
@@ -166,27 +173,30 @@ MV_U8 topologyConfigDBModeGet(MV_VOID);
  *  										 from the board)
  ***************************************************************************/
 
-/* loadTopologyDB - Loads the board topology from DB Board */
+/* loadTopologyDB - Loads the board topology for DB Board */
 MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray);
 
 
-/* loadTopologyRD - Loads the board topology from RD Board */
+/* loadTopologyRD - Loads the board topology for RD Board */
 MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray);
 /***************************************************************************/
 
-/* loadTopologyRDNas - Loads the board topology from RD NAS Board */
+/* loadTopologyRDNas - Loads the board topology for RD NAS Board */
 MV_STATUS loadTopologyRDNas(SERDES_MAP  *serdesMapArray);
 /***************************************************************************/
 
-/* loadTopologyRDAp - Loads the board topology from RD Ap Board */
+/* loadTopologyRDAp - Loads the board topology for RD Ap Board */
 MV_STATUS loadTopologyRDAp(SERDES_MAP  *serdesMapArray);
 
-/* loadTopologyDBAp - Loads the board topology from DB-AP Board */
+/* loadTopologyDBAp - Loads the board topology for DB-AP Board */
 MV_STATUS loadTopologyDBAp(SERDES_MAP  *serdesMapArray);
 /***************************************************************************/
 
-/* loadTopologyDBGp - Loads the board topology from RD Ap Board */
+/* loadTopologyDBGp - Loads the board topology for DB GP Board */
 MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray);
+
+/* loadTopologyDB381 - Loads the board topology for 381 DB-BP Board */
+MV_STATUS loadTopologyDB381(SERDES_MAP  *serdesMapArray);
 
 /**************************************************************************
  * loadTopologyRDSgmiiUsb -
@@ -199,20 +209,30 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray);
  ***************************************************************************/
 MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii);
 
+/**************************************************************************
+ * loadTopologyUSBModeGet -
+ *
+ * DESCRIPTION: 		 For DB board check if USB3.0 mode
+ * INPUT:   			 None
+ * OUTPUT:  			 twsiData - return data read from S@R via I2C
+ * RETURNS: 			 MV_OK  		 -   for success
+ ***************************************************************************/
+MV_STATUS loadTopologyUSBModeGet(MV_U8 *twsiData);
+
 loadTopologyFuncPtr loadTopologyFuncArr[] =
 {
-	loadTopologyRD, 		/* RD NAS */
-	loadTopologyDB, 	/* DB BP */
-	loadTopologyRD, 		/* RD AP */
-	loadTopologyDBAp,   /* DB AP */
-	loadTopologyDBGp,   /* DB GP */
+	loadTopologyRD, 	/* RD NAS */
+	loadTopologyDB, 	/* 6820 DB-BP (A38x) */
+	loadTopologyRD, 	/* RD AP */
+	loadTopologyDBAp,	/* DB AP */
+	loadTopologyDBGp,	/* DB GP */
+	loadTopologyDB381,	/* 6821 DB-BP (A381) */
 };
 
 /*********************************** Globals **********************************/
-/*************************************/
-/** Load topology - Marvell DB - BP **/
-/*************************************/
-
+/*****************************************/
+/** Load topology - Marvell 380 DB - BP **/
+/*****************************************/
 /* Configuration options */
 SERDES_MAP DbConfigDefault[MAX_SERDES_LANES] =
 {
@@ -358,6 +378,25 @@ SERDES_MAP DbGpConfigDefault[MAX_SERDES_LANES] =
 	{ USB3_HOST1,   __5Gbps,		SERDES_DEFAULT_MODE }
 };
 
+/*****************************************/
+/** Load topology - Marvell 381 DB - BP **/
+/*****************************************/
+/* Configuration options */
+SERDES_MAP Db381ConfigDefault[MAX_SERDES_LANES] =
+{
+	{ SATA0,	__3Gbps,		SERDES_DEFAULT_MODE },
+	{ PEX0, 	__5Gbps,		PEX_ROOT_COMPLEX_x1 },
+	{ PEX1, 	__5Gbps,		PEX_ROOT_COMPLEX_x1 },
+	{ USB3_HOST1,	__5Gbps,		SERDES_DEFAULT_MODE },
+};
+
+/* this array must be aligned with TOPOLOGY_CONFIG_DB381 enum,
+ * every update to this array requires update to TOPOLOGY_CONFIG_DB381 enum*/
+SERDES_MAP* topologyConfigDB381[] =
+{
+	Db381ConfigDefault,
+};
+
 /*************************** Functions implementation *************************/
 /***************************************************************************/
 
@@ -425,6 +464,13 @@ MV_U8 topologyConfigDBModeGet(MV_VOID)
 	}
 }
 
+MV_U8 topologyConfigDB381ModeGet(MV_VOID)
+{
+	/* TODO: add scan for SLM-1427-V1 and SLM-1426-V1
+	 * if not detected any I2C module, return DB_381_CONFIG_DEFAULT */
+	return DB_381_CONFIG_DEFAULT;
+}
+
 MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneType)
 {
 	MV_U32 serdesType, laneNum;
@@ -444,7 +490,7 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneTyp
 		if((serdesType == SGMII0) || (serdesType == SGMII1) || (serdesType == SGMII2) ){
 			/* Read SatR 'sgmiispeed' value */
 			if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
-				mvPrintf("updateTopologySatR: TWSI Read of 'sgmiispeed' failed\n");
+				mvPrintf("%s: TWSI Read of 'sgmiispeed' failed\n", __func__);
 				return MV_FAIL;
 			}
 
@@ -464,28 +510,30 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneTyp
 	/* read 'dbserdes1' and 'dbserdes2' values */
 	twsiSlave.offset = 1;
 	if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
-		mvPrintf("updateTopologySatR: TWSI Read of 'dbserdes1/2' failed\n");
+		mvPrintf("%s: TWSI Read of 'dbserdes1/2' failed\n", __func__);
 		return MV_FAIL;
 	}
 
 	/* Lane #1 */
 	laneSelect = (configVal & SATR_DB_LANE1_CFG_MASK) >> SATR_DB_LANE1_CFG_OFFSET;
 	if (laneSelect > SATR_DB_LANE1_MAX_OPTIONS) {
-		mvPrintf("\nupdateTopologySatR: Error: invalid value for SatR field 'dbserdes1' (%x)\n\n", laneSelect);
+		mvPrintf("\n\%s: Error: invalid value for SatR field 'dbserdes1' (%x)\n", __func__, laneSelect);
+		mvPrintf("Check 'SatR' configuration ('SatR write default')\n\n");
 		return MV_FAIL;
 	}
 	serdesMapArray[1] = DBSatRConfigLane1[laneSelect];
 
 	/* verify if lane #1 conflicts with lane #4 (only 1 lane can be USB3 Host port 0)*/
-	if (serdesMapArray[1].serdesType == serdesMapArray[4].serdesType) {
-		mvPrintf("updateTopologySatR: Lane #4 Type conflicts with Lane #1 Type (Lane #4 disabled) \n", laneSelect);
+	if (mvHwsSerdesGetMaxLane() > 4 && serdesMapArray[1].serdesType == serdesMapArray[4].serdesType) {
+		mvPrintf("%s: Lane #4 Type conflicts with Lane #1 Type (Lane #4 disabled) \n", __func__, laneSelect);
 		serdesMapArray[4] = DBSatRConfigLane1[0];
 	}
 
 	/* Lane #2 */
 	laneSelect = (configVal & SATR_DB_LANE2_CFG_MASK) >> SATR_DB_LANE2_CFG_OFFSET;
 	if (laneSelect > SATR_DB_LANE2_MAX_OPTIONS) {
-		mvPrintf("updateTopologySatR: invalid value for SatR field 'dbserdes2' (%x)\n", laneSelect);
+		mvPrintf("\n\%s: Error: invalid value for SatR field 'dbserdes2' (%x)\n", __func__, laneSelect);
+		mvPrintf("Check 'SatR' configuration ('SatR write default')\n\n");
 		return MV_FAIL;
 	}
 	serdesMapArray[2] = DBSatRConfigLane2[laneSelect];
@@ -493,6 +541,56 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneTyp
 	return MV_OK;
 }
 
+MV_STATUS loadTopologyDB381(SERDES_MAP  *serdesMapArray)
+{
+	MV_U32 laneNum;
+	MV_U8 topologyMode;
+	SERDES_MAP* topologyConfigPtr;
+	MV_U8 twsiData;
+	MV_U8 usb3Host0OrDevice = 0, usb3Host1OrDevice = 0;
+
+	DEBUG_INIT_FULL_S("\n### loadTopologyDB381 ###\n");
+
+	/* Getting the relevant topology mode (index) */
+	DEBUG_INIT_FULL_S("loadTopologyDB381: calling topologyConfigDB381ModeGet\n");
+
+	topologyMode = topologyConfigDB381ModeGet();
+
+	topologyConfigPtr = topologyConfigDB381[topologyMode];
+
+	/* Read USB3.0 mode: HOST/DEVICE */
+	if (loadTopologyUSBModeGet(&twsiData) == MV_OK){
+		usb3Host0OrDevice = (twsiData & 0x1);
+		if (usb3Host0OrDevice == 0) /* Only one USB3 device is enabled */
+			usb3Host1OrDevice = ((twsiData >> 1) & 0x1);
+	}
+
+	/* Updating the topology map */
+	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
+		serdesMapArray[laneNum].serdesMode =  topologyConfigPtr[laneNum].serdesMode;
+		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
+		serdesMapArray[laneNum].serdesType =  topologyConfigPtr[laneNum].serdesType;
+
+		/* Update USB3 device if needed - relevant for lane 3,4,5 only */
+		if (laneNum >= 3)
+		{
+			if ((serdesMapArray[laneNum].serdesType == USB3_HOST0) &&
+				(usb3Host0OrDevice == 1))
+					serdesMapArray[laneNum].serdesType = USB3_DEVICE;
+
+			if ((serdesMapArray[laneNum].serdesType == USB3_HOST1) &&
+				(usb3Host1OrDevice == 1))
+					serdesMapArray[laneNum].serdesType = USB3_DEVICE;
+		}
+	}
+	/* if not detected any SerDes Site module, read 'SatR' lane setup */
+	if (topologyMode == DB_381_CONFIG_DEFAULT)
+		updateTopologySatR(serdesMapArray, MV_TRUE);
+	else
+		updateTopologySatR(serdesMapArray, MV_FALSE);
+
+	return MV_OK;
+}
 
 /***************************************************************************/
 MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
@@ -500,7 +598,6 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 	MV_U32 laneNum;
 	MV_U8 topologyMode;
 	SERDES_MAP* topologyConfigPtr;
-	MV_TWSI_SLAVE twsiSlave;
 	MV_U8 twsiData;
 	MV_U8 usb3Host0OrDevice = 0, usb3Host1OrDevice = 0;
 
@@ -516,19 +613,11 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 
 	topologyConfigPtr = topologyConfigDB[topologyMode];
 
-	/* Read SatR usb3port0 & usb3port1 */
-	twsiSlave.slaveAddr.address = RD_GET_MODE_ADDR;
-	twsiSlave.slaveAddr.type = ADDR7_BIT;
-	twsiSlave.validOffset = MV_TRUE;
-	twsiSlave.offset = 0;
-	twsiSlave.moreThen256 = MV_TRUE;
-	if (mvTwsiRead(0, &twsiSlave, &twsiData, 1) == MV_OK) {
+	/* Read USB3.0 mode: HOST/DEVICE */
+	if (loadTopologyUSBModeGet(&twsiData) == MV_OK){
 		usb3Host0OrDevice = (twsiData & 0x1);
-		if (usb3Host0OrDevice == 0)
-		{
-			/* Only one USB3 device is enabled */
+		if (usb3Host0OrDevice == 0) /* Only one USB3 device is enabled */
 			usb3Host1OrDevice = ((twsiData >> 1) & 0x1);
-		}
 	}
 
 	/* Updating the topology map */
@@ -537,22 +626,19 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
 		serdesMapArray[laneNum].serdesType =  topologyConfigPtr[laneNum].serdesType;
 
-		/* Update USB3 device if needed - relvant for lane 3,4,5 only */
+		/* Update USB3 device if needed - relevant for lane 3,4,5 only */
 		if (laneNum >= 3)
 		{
 			if ((serdesMapArray[laneNum].serdesType == USB3_HOST0) &&
 				(usb3Host0OrDevice == 1))
-			{
-				serdesMapArray[laneNum].serdesType = USB3_DEVICE;
-			}
+					serdesMapArray[laneNum].serdesType = USB3_DEVICE;
 
 			if ((serdesMapArray[laneNum].serdesType == USB3_HOST1) &&
 				(usb3Host1OrDevice == 1))
-			{
-				serdesMapArray[laneNum].serdesType = USB3_DEVICE;
-			}
+					serdesMapArray[laneNum].serdesType = USB3_DEVICE;
 		}
 	}
+	/* if not detected any SerDes Site module, read 'SatR' lane setup */
 	if (topologyMode == DB_CONFIG_DEFAULT)
 		updateTopologySatR(serdesMapArray, MV_TRUE);
 	else
@@ -798,6 +884,22 @@ MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii)
 	}
 
 	return MV_OK;
+}
+
+MV_STATUS loadTopologyUSBModeGet(MV_U8 *twsiData)
+{
+	MV_TWSI_SLAVE twsiSlave;
+
+	/* Read SatR 'usb3port0' & 'usb3port1' values */
+	twsiSlave.slaveAddr.address = RD_GET_MODE_ADDR;
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.offset = 0;
+	twsiSlave.moreThen256 = MV_TRUE;
+	if (mvTwsiRead(0, &twsiSlave, twsiData, 1) == MV_OK)
+		return MV_OK;
+
+	return MV_ERROR;
 }
 
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */

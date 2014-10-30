@@ -248,3 +248,20 @@
 #define DB_GP_88F68XX_GPP_OUT_VAL_MID	0x0
 #define DB_GP_88F68XX_GPP_POL_LOW		0x0
 #define DB_GP_88F68XX_GPP_POL_MID		0x0
+
+/*******************************************************************************
+* A380 DB-6821-BP board
+*******************************************************************************/
+#define DB_BP_88F6821_MPP0_7		0x11111111 /* UA0_[RX,TX], I2C_[TXD,SCK,SDA], SMI0_[MD,MDI], GE0_[TXCL,TXD] */
+#define DB_BP_88F6821_MPP8_15		0x11111111 /* GE0_XXX */
+#define DB_BP_88F6821_MPP16_23		0x11266011 /* GE0_RXC[T,L],GPIO(interrupt),UA1_[RX,TX],GE1_RXD,SPI0_[MOS,SCK] */
+#define DB_BP_88F6821_MPP24_31		0x22222011 /* SPI0_[MOS,SCK], GPIO(USB in),  GE1_XXX */
+#define DB_BP_88F6821_MPP32_39		0x22200002 /* GE1_TXCTL,GPIOx3(7 seg-out),GPIO(spare-in),GE1_RX[CLK,D1,D2] */
+#define DB_BP_88F6821_MPP40_47		0x20012022 /* GE1_RX[D3,CTL],GPIO(42-new PIC,45,46-pic;out),SATA[0,1]_Active */
+
+#define DB_BP_88F6821_GPP_OUT_ENA_LOW	0xFFFFFFFF
+#define DB_BP_88F6821_GPP_OUT_ENA_MID	(~(BIT10 | BIT13 | BIT14)) /* GPIO output for PIC @ MPP 42,45,46 */
+#define DB_BP_88F6821_GPP_OUT_VAL_LOW	0x0
+#define DB_BP_88F6821_GPP_OUT_VAL_MID	0x0
+#define DB_BP_88F6821_GPP_POL_LOW	0x0
+#define DB_BP_88F6821_GPP_POL_MID	0x0

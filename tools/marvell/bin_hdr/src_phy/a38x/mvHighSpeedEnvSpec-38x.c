@@ -139,21 +139,27 @@ MV_STATUS mvSerdesPowerUpCtrlExt
 }
 
 /***************************************************************************/
-MV_U32 mvHwsSerdesGetRefClockVal
-(
-	SERDES_TYPE serdesType
-)
+MV_U32 mvHwsSerdesGetRefClockVal(SERDES_TYPE serdesType)
 {
     return serdesTypeToRefClock38xMap[serdesType];
 }
 
 /***************************************************************************/
-MV_U32 mvHwsSerdesGetMaxLane
-(
-	MV_VOID
-)
+MV_U32 mvHwsSerdesGetMaxLane(MV_VOID)
 {
-    return 6;
+	switch (mvSysEnvDeviceIdGet()) {
+	case MV_6811: /* A381/A3282: 6811/6821: single/dual cpu */
+		return 4;
+	case MV_6810:
+		return 5;
+	case MV_6820:
+	case MV_6828:
+		return 6;
+	default:	/* not the right module */
+		mvPrintf("%s : Device ID Error, using 4 SerDes lanes\n", __func__);
+		return 4;
+		}
+	return 6;
 }
 
 /***************************************************************************/

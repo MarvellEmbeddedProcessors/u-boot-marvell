@@ -219,8 +219,8 @@ typedef struct _devCsInfo {
 } MV_DEV_CS_INFO;
 
 typedef enum _SatRstatus {
-	BOARD_SATR_READ_ONLY = 0x01,
-	BOARD_SATR_SWAP_BIT  = 0x02,
+	SATR_READ_ONLY = 0x01,
+	SATR_SWAP_BIT  = 0x02,
 } MV_BOARD_SATR_STATUS;
 
 typedef struct _boardLedInfo {

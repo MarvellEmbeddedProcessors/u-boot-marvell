@@ -197,6 +197,12 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	MV_U32 reg, sgmiiPhyAddr;
 
 	switch (mvBoardIdGet()) {
+	case DB_BP_6821_ID:
+		/* need to add similar detection as DB board:
+		 * - mvBoardMppIdUpdate();
+		 * - check for MV_SATR_DB_SERDES1_CFG, MV_SATR_DB_SERDES2_CFG, MV_SATR_SGMII_MODE */
+		mvOsPrintf("%s: initializing pre-defined board configuration.\n", __func__);
+		break;
 	case DB_GP_68XX_ID:
 		mvBoardIoExpanderUpdate();
 		break;

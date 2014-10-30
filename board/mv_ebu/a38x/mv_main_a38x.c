@@ -636,7 +636,7 @@ void misc_init_r_env(void)
 		fdt_env_setup("armada-38x.dtb");
 #else
 		char *fdtfiles[] = {"armada-388-rd.dtb", "armada-385-db.dtb", "armada-385-rd.dtb",\
-					"armada-385-db-ap.dtb", "armada-388-db-gp.dtb"};
+				"armada-385-db-ap.dtb", "armada-388-db-gp.dtb", "armada-381-db-bp.dtb"};
 		fdt_env_setup(fdtfiles[mvBoardIdIndexGet(mvBoardIdGet())]);
 #endif
 

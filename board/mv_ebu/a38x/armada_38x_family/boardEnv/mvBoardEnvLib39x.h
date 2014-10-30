@@ -142,7 +142,7 @@ typedef enum _mvSatRTypeID {
 * Serdes	0	1	2	3	4	5	6	*
 * Type		PCIe0	SGMII1	PCIe1	SGMII2	PCIe2	RXAUI	RXAUI	*/
 
-#define MV_BOARD_CONFIG_DEFAULT_VALUE	{0x0021D0A9, 0x4 }
+#define MV_BOARD_CONFIG_DEFAULT_VALUE		{0x00, 0x51, 0x41, 0x87, 0x04, 0x00, 0x00, 0x00}
 
 typedef enum _mvConfigTypeID {
 	MV_CONFIG_BOARDID,
@@ -165,19 +165,19 @@ typedef enum _mvConfigTypeID {
 
 /* {{MV_CONFIG_TYPE_ID ConfigID, MV_U32 Mask,  Offset, byteNum,    isActiveForBoard[]}} */
 #define MV_EEPROM_CONFIG_INFO { \
-{ MV_CONFIG_BOARDID,		0xFF000000,	24,	0,	{1, 1} }, \
-{ MV_CONFIG_LANE0,		0x7,		0,	0,	{1, 1} }, \
-{ MV_CONFIG_LANE1,		0x78,		3,	0,	{1, 1} }, \
-{ MV_CONFIG_LANE2,		0x380,		7,	0,	{1, 1} }, \
-{ MV_CONFIG_LANE3,		0x3C00,		10,	0,	{1, 1} }, \
-{ MV_CONFIG_LANE4,		0x3C000,	14,	0,	{1, 1} }, \
-{ MV_CONFIG_LANE5,		0x3C0000,	18,	0,	{1, 1} }, \
-{ MV_CONFIG_LANE6,		0x7,		0,	4,	{1, 1} }, \
-{ MV_CONFIG_NSS_EN,		0x8,		3,	4,	{1, 1} }, \
-{ MV_CONFIG_DDR_BUSWIDTH,	0x10,		4,	4,	{1, 1} }, \
-{ MV_CONFIG_DDR_ECC_EN,		0x20,		5,	4,	{1, 1} }, \
-{ MV_CONFIG_BOARDCFG_EN,	0x40,		6,	4,	{1, 1} }, \
-{ MV_CONFIG_BOARDCFG_VALID,	0x3,		0,	16,	{1, 1} }, \
+{ MV_CONFIG_BOARDID,		0xFF,	0,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE0,		0x0F,	0,	1,	{1, 1} }, \
+{ MV_CONFIG_LANE1,		0xF0,	4,	1,	{1, 1} }, \
+{ MV_CONFIG_LANE2,		0x0F,	0,	2,	{1, 1} }, \
+{ MV_CONFIG_LANE3,		0xF0,	4,	2,	{1, 1} }, \
+{ MV_CONFIG_LANE4,		0x0F,	0,	3,	{1, 1} }, \
+{ MV_CONFIG_LANE5,		0xF0,	4,	3,	{1, 1} }, \
+{ MV_CONFIG_LANE6,		0x0F,	0,	4,	{1, 1} }, \
+{ MV_CONFIG_NSS_EN,		0x01,	0,	5,	{1, 1} }, \
+{ MV_CONFIG_DDR_BUSWIDTH,	0x02,	1,	5,	{1, 1} }, \
+{ MV_CONFIG_DDR_ECC_EN,		0x04,	2,	5,	{1, 1} }, \
+{ MV_CONFIG_BOARDCFG_EN,	0x08,	3,	5,	{1, 1} }, \
+{ MV_CONFIG_BOARDCFG_VALID,	0x03,	0,	6,	{1, 1} }, \
 };
 
 

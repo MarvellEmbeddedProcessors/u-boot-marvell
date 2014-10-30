@@ -490,14 +490,13 @@ MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID);
 #ifdef CONFIG_CMD_BOARDCFG
 
 #define MV_BOARD_CONFIG_MAX_BYTE_COUNT		8
-#define MV_BOARD_CONFIG_DEFAULT_VALUE		{0x0021D0A9, 0x4 }
-#define MV_BOARD_CONFIG_PATTERN_OFFSET		0x14
-#define EEPROM_VERIFICATION_PATTERN             0xFADECAFE
+#define MV_BOARD_CONFIG_EEPROM_OFFSET		0x0
+#define MV_BOARD_CONFIG_DEFAULT_VALUE		{0x00, 0x51, 0x41, 0x87, 0x04, 0x00, 0x00, 0x00}
 
-/* the following definition is used to calculate a byte offset in the
-   EEPROM according to byte number and bit offset, as they are stored
-   in MV_EEPROM_CONFIG_INFO */
-#define CALC_BYTE_OFFSET(off, byte) ((4 - ((off / 8) + 1)) + byte)
+#define MV_BOARD_CONFIG_PATTERN_BYTES_NUM	4
+#define MV_BOARD_CONFIG_PATTERN_OFFSET		0x10
+
+#define EEPROM_VERIFICATION_PATTERN             {0xFA, 0xDE, 0xCA, 0xFE}
 
 #ifdef MV88F69XX /* tables below are relevant for A390 SoC */
 typedef enum _mvConfigTypeID {
@@ -520,25 +519,25 @@ typedef enum _mvConfigTypeID {
 } MV_CONFIG_TYPE_ID;
 
 #define MV_EEPROM_CONFIG_INFO { \
-{ MV_CONFIG_BOARDID,		0xFF000000,	24,	0,	{1, 1} }, \
-{ MV_CONFIG_LANE0,		0x7,		0,	0,	{1, 1} }, \
-{ MV_CONFIG_LANE1,		0x78,		3,	0,	{1, 1} }, \
-{ MV_CONFIG_LANE2,		0x380,		7,	0,	{1, 1} }, \
-{ MV_CONFIG_LANE3,		0x3C00,		10,	0,	{1, 1} }, \
-{ MV_CONFIG_LANE4,		0x3C000,	14,	0,	{1, 1} }, \
-{ MV_CONFIG_LANE5,		0x3C0000,	18,	0,	{1, 1} }, \
-{ MV_CONFIG_LANE6,		0x7,		0,	4,	{1, 1} }, \
-{ MV_CONFIG_NSS_EN,		0x8,		3,	4,	{1, 1} }, \
-{ MV_CONFIG_DDR_BUSWIDTH,	0x10,		4,	4,	{1, 1} }, \
-{ MV_CONFIG_DDR_ECC_EN,		0x20,		5,	4,	{1, 1} }, \
-{ MV_CONFIG_BOARDCFG_EN,	0x40,		6,	4,	{1, 1} }, \
-{ MV_CONFIG_BOARDCFG_VALID,	0x3,		0,	16,	{1, 1} }, \
+{ MV_CONFIG_BOARDID,		0xFF,	0,	0,	{1, 1} }, \
+{ MV_CONFIG_LANE0,		0x0F,	0,	1,	{1, 1} }, \
+{ MV_CONFIG_LANE1,		0xF0,	4,	1,	{1, 1} }, \
+{ MV_CONFIG_LANE2,		0x0F,	0,	2,	{1, 1} }, \
+{ MV_CONFIG_LANE3,		0xF0,	4,	2,	{1, 1} }, \
+{ MV_CONFIG_LANE4,		0x0F,	0,	3,	{1, 1} }, \
+{ MV_CONFIG_LANE5,		0xF0,	4,	3,	{1, 1} }, \
+{ MV_CONFIG_LANE6,		0x0F,	0,	4,	{1, 1} }, \
+{ MV_CONFIG_NSS_EN,		0x01,	0,	5,	{1, 1} }, \
+{ MV_CONFIG_DDR_BUSWIDTH,	0x02,	1,	5,	{1, 1} }, \
+{ MV_CONFIG_DDR_ECC_EN,		0x04,	2,	5,	{1, 1} }, \
+{ MV_CONFIG_BOARDCFG_EN,	0x08,	3,	5,	{1, 1} }, \
+{ MV_CONFIG_BOARDCFG_VALID,	0x03,	0,	6,	{1, 1} }, \
 };
 
 typedef struct _boardConfigTypesInfo {
 	MV_CONFIG_TYPE_ID configId;
-	MV_U32 mask;
-	MV_U32 offset;
+	MV_U8 mask;
+	MV_U8 offset;
 	MV_U32 byteNum;
 	MV_U32 isActiveForBoard[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_CONFIG_TYPE_INFO;

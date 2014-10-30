@@ -93,11 +93,6 @@ extern "C" {
 #define MV_BOARD_NAME_LEN               0x20
 #define MV_A38X_Z_REV_BOARDID_I2C_ADDR	0x50
 
-/* the following definition is used to calculate a byte offset in the
-   EEPROM according to byte number and bit offset, as they are stored
-   in MV_EEPROM_CONFIG_INFO */
-#define CALC_BYTE_OFFSET(off, byte) ((4 - ((off / 8) + 1)) + byte)
-
 typedef enum _devBoardOtherTypeClass {
 	MV_BOARD_NONE		= 0x00000000,
 	MV_BOARD_SPDIF		= 0x00000001,
@@ -566,8 +561,8 @@ MV_U8 mvBoardCompatibleNameGet(char *pNameBuff);
 #ifdef CONFIG_CMD_BOARDCFG
 typedef struct _boardConfigTypesInfo {
 	MV_CONFIG_TYPE_ID configId;
-	MV_U32 mask;
-	MV_U32 offset;
+	MV_U8 mask;
+	MV_U8 offset;
 	MV_U32 byteNum;
 	MV_U32 isActiveForBoard[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_CONFIG_TYPE_INFO;

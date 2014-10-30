@@ -116,8 +116,10 @@ extern MV_U32 mvBoardTclkGet(MV_VOID);
 ** Specific definition for Main CPU interrupt cause register.
 ** Needed for TWSI operation completion monitoring.
 */
-#define MV_TWSI_CPU_MAIN_INT_CASUE(chNum)   TWSI_CPU_MAIN_INT_CAUSE_REG
+#define MV_TWSI_CPU_MAIN_INT_CAUSE(chNum)   TWSI_CPU_MAIN_INT_CAUSE_REG
 
+/* Operation failed need retry - ERROR code from TWSI hal driver */
+#define MV_TWSI_RETRY			    38
 
 #define TWSI_TIMEOUT_VALUE                  0x500
 

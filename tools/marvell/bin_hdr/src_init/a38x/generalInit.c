@@ -79,6 +79,13 @@ static MV_VOID mvDeviceIdConfig(void)
 	MV_DEVICE_ID_VAL dev_id_val[] = MV_DEVICE_ID_VAL_INFO;
 	MV_U32 ctrlId, devId = mvSysEnvDeviceIdGet(); /* read Sample at reset for device ID*/
 
+	/* Verify Marvell A38x boards limitation */
+#if !defined(CONFIG_CUSTOMER_BOARD_SUPPORT) && defined(MV88F68XX)
+	/* only A381/2 board support 6821 device ID */
+	if (devId == MV_6811 && mvBoardIdGet() != DB_BP_6821_ID)
+		mvPrintf("%s: Error: Device 6811/21 is not supported on current board (only A381/2 DB-BP)\n", __func__);
+#endif
+
 	if (devId == MV_NONE) {
 		mvPrintf("%s: Error: Read an unknown device ID from 'S@R'\n", __func__);
 #if !defined(CONFIG_CUSTOMER_BOARD_SUPPORT)

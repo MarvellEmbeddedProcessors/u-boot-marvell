@@ -38,11 +38,4 @@
 #define MVEBU_RESET_MASK_REG	(MVEBU_MISC_REGS_BASE + 0x60)
 #define MVEBU_SOFT_RESET_REG	(MVEBU_MISC_REGS_BASE + 0x64)
 
-/* This register used to check TWSI interrupt cause */
-#define MVEBU_CPU_MAIN_INT_CAUSE_REG	(MVEBU_REGS_BASE + 0x21884)
-#define MVEBU_CPU_MAIN_INT_I2C_OFFS(i)	(2 + i)
-
-#define MVEBU_CPU_INT_SRC_CTRL_REG(i)	(MVEBU_REGS_BASE + 0x20B00 + (i * 0x4))
-#define MVEBU_CPU_INT_SRC_CTRL_EN_OFFS	(28)
-#define MVEBU_CPU_INT_SRC_I2C_ID(i)	(31 + i)
 #endif	/* _REGS_BASE_H_ */

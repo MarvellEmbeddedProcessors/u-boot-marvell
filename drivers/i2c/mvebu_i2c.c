@@ -95,9 +95,9 @@ static int mvebu_i2c_interrupt_get(void)
 	u32 reg;
 
 	/* get the interrupt flag bit */
-	reg = readl(MVEBU_CPU_MAIN_INT_CAUSE_REG);
-	reg &= (1 << MVEBU_CPU_MAIN_INT_I2C_OFFS(gd->cur_i2c_bus));
-	return reg >> MVEBU_CPU_MAIN_INT_I2C_OFFS(gd->cur_i2c_bus);
+	reg = readl(&i2c_reg->control);
+	reg &= I2C_CONTROL_IFLG;
+	return reg && I2C_CONTROL_IFLG;
 }
 
 static int mvebu_i2c_wait_interrupt(void)
@@ -325,11 +325,11 @@ static unsigned int mvebu_i2c_bus_speed_set(struct i2c_adapter *adap, unsigned i
 	unsigned int n, m, freq, margin, min_margin = 0xffffffff;
 	unsigned int actual_freq = 0, actual_n = 0, actual_m = 0;
 
-	debug("%s: Tclock = 0x%x, freq = 0x%x\n", __func__, CONFIG_SYS_TCLK, requested_speed);
+	debug("%s: Tclock = 0x%x, freq = 0x%x\n", __func__, soc_tclk_get(), requested_speed);
 	/* Calucalte N and M for the TWSI clock baud rate */
 	for (n = 0; n < 8; n++) {
 		for (m = 0; m < 16; m++) {
-			freq = CONFIG_SYS_TCLK / (10 * (m + 1) * (2 << n));
+			freq = soc_tclk_get() / (10 * (m + 1) * (2 << n));
 			margin = abs(requested_speed - freq);
 
 			if ((freq <= requested_speed) && (margin < min_margin)) {
@@ -349,7 +349,6 @@ static unsigned int mvebu_i2c_bus_speed_set(struct i2c_adapter *adap, unsigned i
 
 static void mvebu_i2c_init(struct i2c_adapter *adap, int speed, int slaveaddr)
 {
-	u32 reg;
 	i2c_reg = (struct  mvebu_i2c_regs *)MVEBU_I2C_BASE(gd->cur_i2c_bus);
 	/* Reset the I2C logic */
 	writel(0, &i2c_reg->soft_reset);
@@ -367,11 +366,6 @@ static void mvebu_i2c_init(struct i2c_adapter *adap, int speed, int slaveaddr)
 
 	/* unmask I2C interrupt */
 	writel(readl(&i2c_reg->control) | I2C_CONTROL_INTEN, &i2c_reg->control);
-
-	/* unmask I2C interrupt in Interrupt source control register */
-	reg = (readl(MVEBU_CPU_INT_SRC_CTRL_REG(MVEBU_CPU_INT_SRC_I2C_ID(gd->cur_i2c_bus))) |
-			(1 << MVEBU_CPU_INT_SRC_CTRL_EN_OFFS));
-	writel(reg, MVEBU_CPU_INT_SRC_CTRL_REG(MVEBU_CPU_INT_SRC_I2C_ID(gd->cur_i2c_bus)));
 
 	udelay(1000);
 }

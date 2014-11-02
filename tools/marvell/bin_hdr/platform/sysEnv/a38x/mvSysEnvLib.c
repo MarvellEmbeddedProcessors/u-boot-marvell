@@ -247,10 +247,19 @@ MV_U16 mvSysEnvModelGet(MV_VOID)
 * mvSysEnvDeviceIdGet
 * DESCRIPTION:	 	Returns enum (0..7) index of the device model (ID)
  ***************************************************************************/
+MV_U32 gDevId = -1;
 MV_U32 mvSysEnvDeviceIdGet(MV_VOID)
 {
-	MV_U32 deviceId = MV_REG_READ(DEVICE_SAMPLE_AT_RESET1_REG);
-	return deviceId >> SAR_DEV_ID_OFFS & SAR_DEV_ID_MASK;
+	char *deviceIdStr[7] = { "6810", "6820", "6811", "6828",
+				"NONE", "6920", "6928" };
+
+	if (gDevId != -1)
+		return gDevId;
+
+	gDevId = MV_REG_READ(DEVICE_SAMPLE_AT_RESET1_REG);
+	gDevId = gDevId >> SAR_DEV_ID_OFFS & SAR_DEV_ID_MASK;
+	mvPrintf("Detected Device ID %s\n" ,deviceIdStr[gDevId]);
+	return gDevId;
 }
 
 /*******************************************************************************

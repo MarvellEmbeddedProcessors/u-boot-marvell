@@ -80,8 +80,12 @@ static MV_VOID mvDeviceIdConfig(void)
 	MV_U32 ctrlId, devId = mvSysEnvDeviceIdGet(); /* read Sample at reset for device ID*/
 
 	if (devId == MV_NONE) {
-		devId = MV_DEFAULT_DEVICE_ID;
-		mvPrintf("%s: Error: Read an unknown device ID from 'S@R', set default device ID\n", __func__);
+		mvPrintf("%s: Error: Read an unknown device ID from 'S@R'\n", __func__);
+#if !defined(CONFIG_CUSTOMER_BOARD_SUPPORT)
+		mvPrintf("Setting default device ID\n");
+		devId = MV_DEFAULT_DEVICE_ID; /* fallback to default only for Marvell boards */
+#endif
+
 	}
 	/* Configure Units according to detected deviceId (flavor) */
 	MV_REG_WRITE(DEVICE_CONFIGURATION_REG0, dev_id_val[devId].wo_reg_val0);

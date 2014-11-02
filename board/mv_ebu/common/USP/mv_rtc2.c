@@ -119,8 +119,6 @@ void rtc_reset(void)
 /*******************************************************/
 static void rtc_init(void)
 {
-	uint32_t stat, alrm1, alrm2, int1, int2, tstcfg;
-
 	/* Update RTC-MBUS bridge timing parameters */
 	MV_REG_WRITE(MV_RTC2_SOC_OFFSET, 0xFD4D4CFA);
 
@@ -141,20 +139,6 @@ static void rtc_init(void)
 
 	/* Clear any pending Status bits */
 	RTC_WRITE_REG((RTC_SZ_STATUS_ALARM1_MASK | RTC_SZ_STATUS_ALARM2_MASK), RTC_STATUS_REG_OFFS);
-	stat   = RTC_READ_REG(RTC_STATUS_REG_OFFS) & 0xFF;
-	alrm1  = RTC_READ_REG(RTC_ALARM_1_REG_OFFS);
-	int1   = RTC_READ_REG(RTC_IRQ_1_CONFIG_REG_OFFS) & 0xFF;
-	alrm2  = RTC_READ_REG(RTC_ALARM_2_REG_OFFS);
-	int2   = RTC_READ_REG(RTC_IRQ_2_CONFIG_REG_OFFS) & 0xFF;
-	tstcfg = RTC_READ_REG(RTC_TEST_CONFIG_REG_OFFS) & 0xFF;
-
-	if ((0xFC == stat)  &&
-		(0 == alrm1) && (0xC0 == int1) &&
-		(0 == alrm2) && (0xC0 == int2) &&
-		(0 == tstcfg)) {
-		/* Setup the loosest register access timing possible */
-		RTC_WRITE_REG(~RTC_SZ_TIMING_RESERVED1_MASK, RTC_CLOCK_CORR_REG_OFFS);
-	}
 
 	rtc_ready = 1;
 }

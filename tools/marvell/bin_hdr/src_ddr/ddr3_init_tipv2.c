@@ -621,6 +621,7 @@ MV_STATUS ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
 
 #ifdef MV_DEVICE_MAX_DRAM_ADDRESS_SIZE
 	MV_U32 physicalMemSize;
+	MV_U32 maxMemSize = MV_DEVICE_MAX_DRAM_ADDRESS_SIZE;
 	MV_HWS_TOPOLOGY_MAP* toplogyMap = NULL;
 #endif
 
@@ -638,8 +639,11 @@ MV_STATUS ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
 			CHECK_STATUS(ddr3GetTopologyMap(&toplogyMap));
 			physicalMemSize = mv_memSize [toplogyMap->interfaceParams[0].memorySize];
 
-			if (physicalMemSize > MV_DEVICE_MAX_DRAM_ADDRESS_SIZE ){
-				uiCsMemSize = MV_DEVICE_MAX_DRAM_ADDRESS_SIZE *(ddr3GetBusWidth() / ddr3GetDeviceWidth(uiCs)) ;
+			if (ddr3GetDeviceWidth(uiCs) == 16)
+				maxMemSize = MV_DEVICE_MAX_DRAM_ADDRESS_SIZE * 2; /* 16bit mem device can be twice more - no need in less significant pin*/
+
+			if (physicalMemSize > maxMemSize ){
+				uiCsMemSize = maxMemSize * (ddr3GetBusWidth() / ddr3GetDeviceWidth(uiCs)) ;
 				mvPrintf ("Updated Physical Mem size is from 0x%x to %x\n", physicalMemSize, MV_DEVICE_MAX_DRAM_ADDRESS_SIZE);
 			}
 #endif

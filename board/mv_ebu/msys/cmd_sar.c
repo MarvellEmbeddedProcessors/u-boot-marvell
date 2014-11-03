@@ -467,10 +467,10 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "\t--------------\n"
 "coreclock                  - Core frequency\n"
 "freq                       - CPU DDR frequency\n"
+"pcimode                    - PCIe mode (EP/RC)\n"
 #ifdef CONFIG_BOBCAT2
 "tmfreq                     - TM frequency\n"
 #elif defined CONFIG_ALLEYCAT3
-"pcimode                    - PCIe mode (EP/RC)\n"
 "pciclock                   - PCIe reference clock source\n"
 "pllclock                   - PLL2 VCO clock frequency\n"
 "devicenum                  - Devicenum\n"

@@ -1040,7 +1040,10 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 {
 	MV_U32 i = 0;
-	MV_U8 ioValue, ioValue2, boardId = mvBoardIdGet();
+
+#ifdef CONFIG_ARMADA_38X
+	MV_U8 ioValue, ioValue2;
+	MV_U8 boardId = mvBoardIdGet();
 	MV_U32 serdesCfg = MV_ERROR;
 
 	/* Verify existence of IO expander on board, and fetch 1st IO expander value to modify */
@@ -1065,6 +1068,7 @@ MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 		mvBoardIoExpanderSet(1, 6, ioValue2);
 		mvBoardIoExpanderSet(0, 2, ioValue);
 	}
+#endif
 
 	for (i = 0; i < board->numIoExp; i++) {
 		if (MV_OK != mvBoardTwsiSet(BOARD_TWSI_IO_EXPANDER, board->pIoExp[i].addr,
@@ -1711,12 +1715,14 @@ MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *s
 	MV_U32 boardIdIndex = mvBoardIdIndexGet(boardId);
 	MV_BOARD_SATR_INFO *satrInfoTable = boardSatrInfo;
 
+#ifdef CONFIG_ARMADA_38X
 	/* A38x DB-GP board has different I2C mapping for SSCG and Core clock S@R fields */
 	/* A381 DB-BP board has different I2C mapping for 'freq' and 'cpusnum' S@R fields */
 	if ((boardId == DB_GP_68XX_ID &&
 		(satrClass == MV_SATR_CORE_CLK_SELECT || satrClass == MV_SATR_SSCG_DISABLE)) ||
 		(boardId == DB_BP_6821_ID && satrClass == MV_SATR_CPU_DDR_L2_FREQ))
 			satrInfoTable = boardSatrInfo2;
+#endif
 
 	/* verify existence of requested SATR type, pull its data,
 	 * and check if field is relevant to current running board */
@@ -2403,7 +2409,7 @@ MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField)
 			mvOsPrintf("%s: Error: Read from S@R failed\n", __func__);
 			return MV_ERROR;
 		}
-		data = data | ((tmp & 0x0f) << 2);
+		data = data | ((tmp & MV_SATR_BOOT2_VALUE_MASK) << MV_SATR_BOOT2_VALUE_OFFSET);
 	}
 	return data;
 }
@@ -2444,7 +2450,7 @@ MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val)
 		return MV_ERROR;
 	}
 	if (satrWriteField == MV_SATR_BOOT_DEVICE) {
-		val1 = (val & 0x3c) >> 2;
+		val1 = (val >> MV_SATR_BOOT2_VALUE_OFFSET) & MV_SATR_BOOT2_VALUE_MASK ;
 		if (mvBoardSatRWrite(MV_SATR_BOOT2_DEVICE, val1) != MV_OK) {
 			mvOsPrintf("%s: Error: write boot device second field\n", __func__);
 			return MV_ERROR;

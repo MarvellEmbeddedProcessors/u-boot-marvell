@@ -390,7 +390,7 @@ typedef struct {
 		{ 0x6,   1200, 600, 600, MV_TRUE  }, \
 		{ 0x8,   1332, 666, 666, MV_TRUE  }, \
 		{ 0xC,   1600, 800, 800, MV_TRUE  }, \
-		{ 0x12,   1800, 900, 900, MV_TRUE  }, \
+		{ 0x12,  1800, 900, 900, MV_TRUE  }, \
 		{ MV_SAR_FREQ_MODES_EOT,  0,    0,   0, MV_FALSE } \
 };
 

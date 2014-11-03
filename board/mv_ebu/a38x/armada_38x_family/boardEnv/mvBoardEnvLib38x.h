@@ -78,6 +78,32 @@ extern "C" {
 { MV_MODULE_SGMII,		0x2,	0,	 0xF,	{ 0, 1, 0, 0} }, \
 };
 
+typedef enum _mvSatRTypeID {
+/*  "Bios" Device  */
+	MV_SATR_CPU_DDR_L2_FREQ,
+	MV_SATR_CORE_CLK_SELECT,
+	MV_SATR_CPU1_ENABLE,
+	MV_SATR_SSCG_DISABLE,
+	/*  SW parameters: */
+	MV_SATR_DDR4_SELECT,
+	MV_SATR_DDR_BUS_WIDTH,
+	MV_SATR_DDR_ECC_ENABLE,
+	MV_SATR_DDR_ECC_PUP_SEL,
+	MV_SATR_SGMII_SPEED,
+	MV_SATR_BOOT_DEVICE,
+	MV_SATR_BOOT2_DEVICE,
+	MV_SATR_BOARD_ID,
+	MV_SATR_BOARD_ECO_VERSION,
+	MV_SATR_DB_USB3_PORT0,
+	MV_SATR_DB_USB3_PORT1,
+	MV_SATR_RD_SERDES4_CFG,
+	MV_SATR_GP_SERDES5_CFG,
+	MV_SATR_DB_SERDES1_CFG,
+	MV_SATR_DB_SERDES2_CFG,
+	MV_SATR_SGMII_MODE,
+	MV_SATR_MAX_OPTION,
+} MV_SATR_TYPE_ID;
+
 /*						bit    TWSI           Reg	board	*/
 /*   name		SATR-ID			Mask  offset  devID   num	active	*/
 #define MV_SAR_INFO { \
@@ -112,6 +138,9 @@ extern "C" {
 { "sscg",	MV_SATR_SSCG_DISABLE,		0x10,	4,	2,	0,	{0, 0, 0, 0, 1, 0}, 0},\
 { "max_option",	MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0, 0, 0, 0}, 0},\
 };
+
+#define MV_SATR_BOOT2_VALUE_MASK		0xF
+#define MV_SATR_BOOT2_VALUE_OFFSET		2
 
 #ifdef CONFIG_CMD_BOARDCFG
 #define MV_BOARD_CONFIG_MAX_BYTE_COUNT	8

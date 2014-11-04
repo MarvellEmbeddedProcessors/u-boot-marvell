@@ -919,78 +919,80 @@ MV_STATUS mvTwsiRead(MV_U8 chanNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *pBlock, MV
 	do	{
 		if (counter > 0) /* wait for 1 mili sec for the clear to take effect */
 			mvOsDelay(1);
+
+		counter++;
+
 		ret = mvTwsiStartBitSet(chanNum);
 
 		if (MV_RETRY == ret)
 			continue;
 		else if (MV_OK != ret) {
-		mvTwsiStopBitSet(chanNum);
-		DB1(mvOsPrintf("mvTwsiRead: mvTwsiStartBitSet Faild\n"));
-		return MV_FAIL;
-	}
+			mvTwsiStopBitSet(chanNum);
+			DB1(mvOsPrintf("mvTwsiRead: mvTwsiStartBitSet Faild\n"));
+			return MV_FAIL;
+		}
 
-	DB(mvOsPrintf("TWSI: mvTwsiEepromRead after mvTwsiStartBitSet\n"));
+		DB(mvOsPrintf("TWSI: mvTwsiEepromRead after mvTwsiStartBitSet\n"));
 
-	/* in case offset exsist (i.e. eeprom ) */
-	if (MV_TRUE == pTwsiSlave->validOffset) {
-		rc = mvTwsiAddrSet(chanNum, &(pTwsiSlave->slaveAddr), MV_TWSI_WRITE);
+		/* in case offset exsist (i.e. eeprom ) */
+		if (MV_TRUE == pTwsiSlave->validOffset) {
+			rc = mvTwsiAddrSet(chanNum, &(pTwsiSlave->slaveAddr), MV_TWSI_WRITE);
 			if (MV_RETRY == rc)
 				continue;
 			else if (MV_OK != rc) {
-			mvTwsiStopBitSet(chanNum);
-			DB1(mvOsPrintf("mvTwsiRead: mvTwsiAddrSet(%d,0x%x,%d) return rc=%d\n", chanNum,
+				mvTwsiStopBitSet(chanNum);
+				DB1(mvOsPrintf("mvTwsiRead: mvTwsiAddrSet(%d,0x%x,%d) return rc=%d\n", chanNum,
 							(MV_U32)&(pTwsiSlave->slaveAddr), MV_TWSI_WRITE, rc));
-			return MV_FAIL;
-		}
-		DB(mvOsPrintf("TWSI: mvTwsiEepromRead after mvTwsiAddrSet\n"));
+				return MV_FAIL;
+			}
+			DB(mvOsPrintf("TWSI: mvTwsiEepromRead after mvTwsiAddrSet\n"));
 
 			ret = twsiTargetOffsSet(chanNum, pTwsiSlave->offset, pTwsiSlave->moreThen256);
 			if (MV_RETRY == ret)
 				continue;
 			else if (MV_OK != ret) {
-			mvTwsiStopBitSet(chanNum);
-			DB1(mvOsPrintf("mvTwsiRead: twsiTargetOffsSet Faild\n"));
-			return MV_FAIL;
-		}
-		DB(mvOsPrintf("TWSI: mvTwsiEepromRead after twsiTargetOffsSet\n"));
+				mvTwsiStopBitSet(chanNum);
+				DB1(mvOsPrintf("mvTwsiRead: twsiTargetOffsSet Faild\n"));
+				return MV_FAIL;
+			}
+			DB(mvOsPrintf("TWSI: mvTwsiEepromRead after twsiTargetOffsSet\n"));
 			ret = mvTwsiStartBitSet(chanNum);
 			if (MV_RETRY == ret)
 				continue;
 			else if (MV_OK != ret) {
-			mvTwsiStopBitSet(chanNum);
-			DB1(mvOsPrintf("mvTwsiRead: mvTwsiStartBitSet 2 Faild\n"));
-			return MV_FAIL;
+				mvTwsiStopBitSet(chanNum);
+				DB1(mvOsPrintf("mvTwsiRead: mvTwsiStartBitSet 2 Faild\n"));
+				return MV_FAIL;
+			}
+			DB(mvOsPrintf("TWSI: mvTwsiEepromRead after mvTwsiStartBitSet\n"));
 		}
-		DB(mvOsPrintf("TWSI: mvTwsiEepromRead after mvTwsiStartBitSet\n"));
-	}
 		ret =  mvTwsiAddrSet(chanNum, &(pTwsiSlave->slaveAddr), MV_TWSI_READ);
 		if (MV_RETRY == ret)
 			continue;
 		else if (MV_OK != ret) {
-		mvTwsiStopBitSet(chanNum);
-		DB1(mvOsPrintf("mvTwsiRead: mvTwsiAddrSet 2 Faild\n"));
-		return MV_FAIL;
-	}
-	DB(mvOsPrintf("TWSI: mvTwsiEepromRead after mvTwsiAddrSet\n"));
+			mvTwsiStopBitSet(chanNum);
+			DB1(mvOsPrintf("mvTwsiRead: mvTwsiAddrSet 2 Faild\n"));
+			return MV_FAIL;
+		}
+		DB(mvOsPrintf("TWSI: mvTwsiEepromRead after mvTwsiAddrSet\n"));
 
 		ret = twsiDataReceive(chanNum, pBlock, blockSize);
 		if (MV_RETRY == ret)
 			continue;
 		else if (MV_OK != ret) {
-		mvTwsiStopBitSet(chanNum);
-		DB1(mvOsPrintf("mvTwsiRead: twsiDataReceive Faild\n"));
-		return MV_FAIL;
-	}
-	DB(mvOsPrintf("TWSI: mvTwsiEepromRead after twsiDataReceive\n"));
+			mvTwsiStopBitSet(chanNum);
+			DB1(mvOsPrintf("mvTwsiRead: twsiDataReceive Faild\n"));
+			return MV_FAIL;
+		}
+		DB(mvOsPrintf("TWSI: mvTwsiEepromRead after twsiDataReceive\n"));
 
 		ret =  mvTwsiStopBitSet(chanNum);
 		if (MV_RETRY == ret)
 			continue;
 		else if (MV_OK != ret) {
-		DB1(mvOsPrintf("mvTwsiRead: mvTwsiStopBitSet 3 Faild\n"));
-		return MV_FAIL;
-	}
-		counter++;
+			DB1(mvOsPrintf("mvTwsiRead: mvTwsiStopBitSet 3 Faild\n"));
+			return MV_FAIL;
+		}
 	} while ((MV_RETRY == ret) && (counter < MAX_RETRY_CNT));
 
 	if (counter == MAX_RETRY_CNT)
@@ -1042,59 +1044,61 @@ MV_STATUS mvTwsiWrite(MV_U8 chanNum, MV_TWSI_SLAVE *pTwsiSlave, MV_U8 *pBlock, M
 	do	{
 		if (counter > 0) /* wait for 1 mili sec for the clear to take effect */
 			mvOsDelay(1);
+
+		counter++;
+
 		 ret = mvTwsiStartBitSet(chanNum);
 
 		if (MV_RETRY == ret)
 			continue;
 
 		else if (MV_OK != ret) {
-		mvTwsiStopBitSet(chanNum);
-		DB1(mvOsPrintf("mvTwsiWrite: mvTwsiStartBitSet faild\n"));
-		return MV_FAIL;
-	}
+			mvTwsiStopBitSet(chanNum);
+			DB1(mvOsPrintf("mvTwsiWrite: mvTwsiStartBitSet faild\n"));
+			return MV_FAIL;
+		}
 
-	DB(mvOsPrintf("TWSI: mvTwsiEepromWrite after mvTwsiStartBitSet\n"));
+		DB(mvOsPrintf("TWSI: mvTwsiEepromWrite after mvTwsiStartBitSet\n"));
 		ret = mvTwsiAddrSet(chanNum, &(pTwsiSlave->slaveAddr), MV_TWSI_WRITE);
 		if (MV_RETRY == ret)
 			continue;
 		else if (MV_OK != ret) {
-		mvTwsiStopBitSet(chanNum);
-		DB1(mvOsPrintf("mvTwsiWrite: mvTwsiAddrSet faild\n"));
-		return MV_FAIL;
-	}
-	DB(mvOsPrintf("mvTwsiWrite :mvTwsiEepromWrite after mvTwsiAddrSet\n"));
+			mvTwsiStopBitSet(chanNum);
+			DB1(mvOsPrintf("mvTwsiWrite: mvTwsiAddrSet faild\n"));
+			return MV_FAIL;
+		}
+		DB(mvOsPrintf("mvTwsiWrite :mvTwsiEepromWrite after mvTwsiAddrSet\n"));
 
-	/* in case offset exsist (i.e. eeprom ) */
-	if (MV_TRUE == pTwsiSlave->validOffset) {
+		/* in case offset exsist (i.e. eeprom ) */
+		if (MV_TRUE == pTwsiSlave->validOffset) {
 			ret = twsiTargetOffsSet(chanNum, pTwsiSlave->offset, pTwsiSlave->moreThen256);
 			if (MV_RETRY == ret)
 				continue;
 			else if (MV_OK != ret) {
-			mvTwsiStopBitSet(chanNum);
-			DB1(mvOsPrintf("mvTwsiWrite: twsiTargetOffsSet faild\n"));
-			return MV_FAIL;
+				mvTwsiStopBitSet(chanNum);
+				DB1(mvOsPrintf("mvTwsiWrite: twsiTargetOffsSet faild\n"));
+				return MV_FAIL;
+			}
+			DB(mvOsPrintf("mvTwsiWrite: mvTwsiEepromWrite after twsiTargetOffsSet\n"));
 		}
-		DB(mvOsPrintf("mvTwsiWrite: mvTwsiEepromWrite after twsiTargetOffsSet\n"));
-	}
 
 		ret = twsiDataTransmit(chanNum, pBlock, blockSize);
 		if (MV_RETRY == ret)
 			continue;
 		else if (MV_OK != ret) {
-		mvTwsiStopBitSet(chanNum);
-		DB1(mvOsPrintf("mvTwsiWrite: twsiDataTransmit faild\n"));
-		return MV_FAIL;
-	}
-	DB(mvOsPrintf("mvTwsiWrite: mvTwsiEepromWrite after twsiDataTransmit\n"));
+			mvTwsiStopBitSet(chanNum);
+			DB1(mvOsPrintf("mvTwsiWrite: twsiDataTransmit faild\n"));
+			return MV_FAIL;
+		}
+		DB(mvOsPrintf("mvTwsiWrite: mvTwsiEepromWrite after twsiDataTransmit\n"));
 		ret = mvTwsiStopBitSet(chanNum);
 		if (MV_RETRY == ret)
 			continue;
 		else if (MV_OK != ret) {
-		DB1(mvOsPrintf("mvTwsiWrite: mvTwsiStopBitSet faild in last mvTwsiWrite\n"));
-		return MV_FAIL;
-	}
-	DB(mvOsPrintf("mvTwsiWrite: mvTwsiEepromWrite after mvTwsiStopBitSet\n"));
-		counter++;
+			DB1(mvOsPrintf("mvTwsiWrite: mvTwsiStopBitSet faild in last mvTwsiWrite\n"));
+			return MV_FAIL;
+		}
+		DB(mvOsPrintf("mvTwsiWrite: mvTwsiEepromWrite after mvTwsiStopBitSet\n"));
 	} while ((MV_RETRY == ret) && (counter < MAX_RETRY_CNT));
 
 	if (counter == MAX_RETRY_CNT)

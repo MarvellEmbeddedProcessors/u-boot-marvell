@@ -134,9 +134,21 @@ void 	mvSysNetaInit(MV_U32 portMask, MV_U32 cpuMask)
 	halData.pncVirtBase = (MV_U8 *)ioremap(PNC_BM_PHYS_BASE, PNC_BM_SIZE);
 #endif /* CONFIG_MV_ETH_PNC */
 
+	mvOsPrintf("\n|  port  | Interface | PHY address  |\n");
+	mvOsPrintf("|--------|-----------|--------------|\n");
 	for (port = 0; port < halData.maxPort; port++) {
 		if (!(MV_BIT_CHECK(portMask, port)))
 			continue;
+
+#ifndef CONFIG_CMD_BOARDCFG
+		/* SoCs that support BOARDCFG has specific board configuration print routines */
+		if (mvBoardPhyAddrGet(port) != -1)
+			mvOsPrintf("| egiga%d |   %5s   |     %#04x     |\n", port,
+				mvBoardIsPortInSgmii(port) ? "SGMII" : "RGMII", (MV_U8)mvBoardPhyAddrGet(port));
+		else
+			mvOsPrintf("| egiga%d |   %5s   |   In-Band    |\n", port,
+				mvBoardIsPortInSgmii(port) ? "SGMII" : "RGMII");
+#endif
 
 		if (mvCtrlPwrClckGet(ETH_GIG_UNIT_ID, port) == MV_FALSE)
 			continue;

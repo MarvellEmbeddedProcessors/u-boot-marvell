@@ -75,7 +75,7 @@ SERDES_MAP customerBoard0Topology[MAX_SERDES_LANES] =
 {
 	/* Type		Serdes		Speed			Mode				Swap		Swap */
 	/*			Number											RX			TX   */
-	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ PEX0,		 0,		__5Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 	{ SGMII0,	20,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 	{ SGMII1,	21,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 };
@@ -85,7 +85,7 @@ SERDES_MAP customerBoard1Topology[MAX_SERDES_LANES] =
 {
 	/* Type		Serdes		Speed			Mode				Swap		Swap */
 	/*			Number											RX			TX   */
-	{ PEX0,		0,				0,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ PEX0,		 0,		__5Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 	{ SGMII0,	20,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 	{ SGMII1,	21,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 };
@@ -107,7 +107,7 @@ SERDES_MAP* customerBc2BoardSerdesTopology[] =
 SERDES_MAP bc2SerdesTopology[MAX_SERDES_LANES] =
 { /* BC2 DB/RD */
 	/* Type			  Serdes		Speed			Mode				SwapRX		SwapTX */
-	{ PEX0,				 0,			0,			SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+	{ PEX0,				 0,		__5Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 	{ SGMII0,			20,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 	{ SGMII1,			21,		__1_25Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
 };

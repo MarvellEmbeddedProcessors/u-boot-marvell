@@ -93,7 +93,7 @@ typedef enum {
 /* Serdes baud rates */
 typedef enum {
 	__1_25Gbps,
-
+	__5Gbps,
 	LAST_SERDES_SPEED
 } SERDES_SPEED;
 

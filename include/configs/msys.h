@@ -37,14 +37,10 @@ disclaimer.
 #define __CONFIG_BOBCAT2_H
 
 #include <config.h>
+#include "mv_version.h"
 #include "../../board/mv_ebu/msys/mvSysHwConfig.h"
 
 #define MV_RT_DEBUG
-
-/************/
-/* VERSIONS */
-/************/
-#define CONFIG_IDENT_STRING	" Marvell version: 2015_T1.0.eng_drop_v1"
 
 /* version number passing when loading Kernel */
 #define VER_NUM 0x11120000           /* 2011.12 */

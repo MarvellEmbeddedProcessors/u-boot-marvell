@@ -37,6 +37,7 @@
 #define __CONFIG_H
 
 #include <config.h>
+#include "mv_version.h"
 
 /*
  * Plaform
@@ -47,11 +48,6 @@
  */
 
 #include "../../board/mv_ebu/a375/mvSysHwConfig.h"
-
-/*
- * Version
- */
-#define CONFIG_IDENT_STRING	" Marvell version: 2015_T1.0.eng_drop_v1"
 
 /* Version number passed to kernel */
 #define VER_NUM 0x13010000              /* 2013.01 */

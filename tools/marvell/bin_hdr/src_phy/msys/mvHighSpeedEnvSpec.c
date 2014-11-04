@@ -438,6 +438,14 @@ MV_STATUS mvCtrlUsb2Config(MV_VOID)
 	return MV_OK;
 }
 
+MV_STATUS mvHwsComH28nmSerdesTxIfSelect(MV_U32 serdesNum)
+{
+	MV_U8	serdesTxIfNum = (serdesNum == 10) ? 3 : 1; /* OOB port MSYS0/MSYS1 */
+	/* Configure TX SERDES interface number */
+	CHECK_STATUS(mvGenUnitRegisterSet(SERDES_UNIT, serdesNum, 0xC, serdesTxIfNum, 0x7));
+
+	return MV_OK;
+}
 #elif defined MV_MSYS_BC2
 
 /* BC2: init silicon related configurations *********************************/
@@ -523,6 +531,20 @@ MV_STATUS mvCtrlUsb2Config(MV_VOID)
 	/* no USB2 in BC2 */
 	return MV_OK;
 }
+
+MV_STATUS mvHwsComH28nmSerdesTxIfSelect(MV_U32 serdesNum)
+{
+
+	MV_U32	msys2sdShift = ((serdesNum == 20) || (serdesNum == 0))  ? 14 : 13; /* serdes 0 and 20 are connected by bit 14 
+																			    and serdes 1 and 21 by bit 13 of REG_DEVICE_SERVER_CONTROL_14 */ 
+	/* set RF_QSGMII_PORT_TO_CPU_EN bit in DFX */
+	CHECK_STATUS(mvGenUnitRegisterSet(SERVER_REG_UNIT, 0, REG_DEVICE_SERVER_CONTROL_14, 1 << msys2sdShift , 1 << msys2sdShift));
+	/* Configure TX SERDES interface number - for BC2 - always 1*/
+	CHECK_STATUS(mvGenUnitRegisterSet(SERDES_UNIT, serdesNum, 0xC, 1, 0x7));
+
+	return MV_OK;
+}
+
 #endif
 
 /* Init serdes sequences DB ********************************************/
@@ -627,16 +649,6 @@ MV_STATUS mvSerdesCoreReset(MV_U32 serdesNum, MV_BOOL coreReset)
 
 	return MV_OK;
 }
-	  /*PCI-E End Point configuration*/
-/****************************************************************************/
-MV_STATUS mvHwsComH28nmSerdesTxIfSelect(MV_U32 serdesNum, MV_U8 serdesTxIfNum)
-{
-	/* Configure TX SERDES interface number */
-	CHECK_STATUS(mvGenUnitRegisterSet(SERDES_UNIT, serdesNum, 0xC, serdesTxIfNum, 0x7));
-
-	return MV_OK;
-}
-
 /****************************************************************************/
 MV_STATUS mvHwsComH28nmSerdesPolaritySwap(MV_U32 serdesNum, MV_BOOL isRx, MV_BOOL doSwap)
 {
@@ -758,7 +770,6 @@ MV_STATUS mvSerdesPowerUpCtrl(
 	MV_BOOL			swapTx
 )
 {
-	MV_U8	serdesTxIfNum = (serdesNum == 10) ? 3 : 1; /* OOB port MSYS0/MSYS1 */
 
 	DEBUG_INIT_FULL_S("\n### mvSerdesPowerUpCtrl ###\n");
 
@@ -778,7 +789,7 @@ MV_STATUS mvSerdesPowerUpCtrl(
 		CHECK_STATUS(mvHwsComH28nmSerdesPowerCtrl(serdesNum, serdesPowerUp));
 		CHECK_STATUS(mvHwsComH28nmSerdesPolaritySwap(serdesNum, MV_TRUE, swapRx));
 		CHECK_STATUS(mvHwsComH28nmSerdesPolaritySwap(serdesNum, MV_FALSE, swapTx));
-		return mvHwsComH28nmSerdesTxIfSelect(serdesNum, serdesTxIfNum);
+		return mvHwsComH28nmSerdesTxIfSelect(serdesNum);
 
 	case PEX0:
 		DEBUG_INIT_FULL_S("== Init PEX0\n");

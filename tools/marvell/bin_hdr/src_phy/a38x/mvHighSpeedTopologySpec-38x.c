@@ -199,6 +199,19 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray);
 MV_STATUS loadTopologyDB381(SERDES_MAP  *serdesMapArray);
 
 /**************************************************************************
+* mvHwsUpdateDeviceToplogy
+* DESCRIPTION: Update the default board topology for specific device Id
+* INPUT:
+*   	topologyConfigPtr - pointer to the Serdes mapping
+*   	topologyMode - topology mode (index)
+* OUTPUT: None
+* RRETURNS:
+*   	MV_OK - if updating the board topology success
+*   	MV_BAD_PARAM - if the input parameter is wrong
+***************************************************************************/
+MV_STATUS mvHwsUpdateDeviceToplogy(SERDES_MAP* topologyConfigPtr, TOPOLOGY_CONFIG_DB topologyMode);
+
+/**************************************************************************
  * loadTopologyRDSgmiiUsb -
  *
  * DESCRIPTION: 		 For RD board check if lane 4 is USB3 or SGMII
@@ -541,6 +554,47 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneTyp
 	return MV_OK;
 }
 
+/**************************************************************************
+* mvHwsUpdateDeviceToplogy
+* DESCRIPTION: Update the default board topology for specific device Id
+* INPUT:
+*   	topologyConfigPtr - pointer to the Serdes mapping
+*   	topologyMode - topology mode (index)
+* OUTPUT: None
+* RRETURNS:
+*   	MV_OK - if updating the board topology success
+*   	MV_BAD_PARAM - if the input parameter is wrong
+***************************************************************************/
+MV_STATUS mvHwsUpdateDeviceToplogy(SERDES_MAP* topologyConfigPtr, TOPOLOGY_CONFIG_DB topologyMode)
+{
+	MV_U32 DevId = mvSysEnvDeviceIdGet();
+	MV_U32 BoardId = mvBoardIdGet();
+
+	switch(topologyMode){
+	case DB_CONFIG_DEFAULT:
+		switch(DevId){
+		/* default type for Lane3=SATA3, which is not supported by device flavours 6810/6820 */
+		case MV_6810:
+		case MV_6820:
+			if ((BoardId == DB_68XX_ID) || (BoardId == DB_GP_68XX_ID)){
+				topologyConfigPtr[3].serdesType  = DEFAULT_SERDES;
+				topologyConfigPtr[3].serdesSpeed = LAST_SERDES_SPEED;
+				topologyConfigPtr[3].serdesMode  = SERDES_DEFAULT_MODE;
+			}
+			break;
+		default:
+			break;
+		}
+		break;
+
+	default:
+		mvPrintf("mvSysEnvUpdateDeviceToplogy: selected toplogy is not supported by this routine\n");
+		break;
+	}
+
+	return MV_OK;
+}
+
 MV_STATUS loadTopologyDB381(SERDES_MAP  *serdesMapArray)
 {
 	MV_U32 laneNum;
@@ -613,6 +667,9 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 
 	topologyConfigPtr = topologyConfigDB[topologyMode];
 
+	/* Update the default board topology device flavours */
+	CHECK_STATUS(mvHwsUpdateDeviceToplogy(topologyConfigPtr, topologyMode));
+
 	/* Read USB3.0 mode: HOST/DEVICE */
 	if (loadTopologyUSBModeGet(&twsiData) == MV_OK){
 		usb3Host0OrDevice = (twsiData & 0x1);
@@ -622,9 +679,9 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 
 	/* Updating the topology map */
 	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
-		serdesMapArray[laneNum].serdesMode =  topologyConfigPtr[laneNum].serdesMode;
-		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
-		serdesMapArray[laneNum].serdesType =  topologyConfigPtr[laneNum].serdesType;
+		serdesMapArray[laneNum].serdesMode  = topologyConfigPtr[laneNum].serdesMode;
+		serdesMapArray[laneNum].serdesSpeed = topologyConfigPtr[laneNum].serdesSpeed;
+		serdesMapArray[laneNum].serdesType  = topologyConfigPtr[laneNum].serdesType;
 
 		/* Update USB3 device if needed - relevant for lane 3,4,5 only */
 		if (laneNum >= 3)
@@ -680,6 +737,9 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray)
 	topologyConfigPtr = DbGpConfigDefault;
 
 	mvPrintf("\nInitialize DB-GP board topology\n");
+
+	/* Update the default board topology device flavours */
+	CHECK_STATUS(mvHwsUpdateDeviceToplogy(topologyConfigPtr, DB_CONFIG_DEFAULT));
 
 	/* Updating the topology map */
 	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {

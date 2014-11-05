@@ -260,6 +260,12 @@ extern "C" {
 #define CPLD_REV_REG		2
 #define CPLD_REV_MASK		0x1f
 
+#define DEV_ID_REG				0x1823C
+#define DEVICE_ID_OFFS			0
+#define DEVICE_ID_MASK			0xFFFF
+#define REVISON_ID_OFFS			16
+#define REVISON_ID_MASK			0xF0000
+
 /* Extract CPU, L2, DDR clocks SAR value from
 ** SAR bits 24-27
 */

@@ -104,7 +104,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_MSYS_INDEX_MAX] = {
 /*			    BC2		AC3 */
 /* DRAM_UNIT_ID         */ { 1,		1, },
 /* PEX_UNIT_ID          */ { 1,		1, },
-/* ETH_GIG_UNIT_ID      */ { 1,		2, },
+/* ETH_GIG_UNIT_ID      */ { 2,		2, },
 /* XOR_UNIT_ID          */ { 1,		1, },
 /* UART_UNIT_ID         */ { 2,		2, },
 /* SPI_UNIT_ID          */ { 2,		1, },

@@ -110,6 +110,14 @@ MV_TARGET sata3AddrDecPrioTab[] = {
 	TBL_TERM
 };
 
+static MV_SATA3_HAL_DATA sata3HalData;
+
+MV_STATUS mvSata3HalInit(MV_SATA3_HAL_DATA *halData)
+{
+	mvOsMemcpy(&sata3HalData, halData, sizeof(MV_SATA3_HAL_DATA));
+	return MV_OK;
+}
+
 /*******************************************************************************
 * sataWinOverlapDetect - Detect SATA address windows overlapping
 *
@@ -303,6 +311,8 @@ MV_STATUS mvSata3WinInit(MV_UNIT_WIN_INFO *addrWinMap)
 
 	/* First disable all address decode windows */
 	for (unit = 0; unit < SATA3_NUM_OF_PORTS; unit++) {
+		if (MV_FALSE == sata3HalData.unitActive[unit])
+			continue;
 		for (winNum = 0; winNum < MV_SATA3_MAX_ADDR_DECODE_WIN; winNum++) {
 			MV_U32 regVal = MV_REG_READ(MV_SATA3_WIN_CTRL_REG(unit, winNum));
 			regVal &= ~MV_SATA3_WIN_ENABLE_MASK;
@@ -310,6 +320,8 @@ MV_STATUS mvSata3WinInit(MV_UNIT_WIN_INFO *addrWinMap)
 		}
 	}
 	for (unit = 0; unit < SATA3_NUM_OF_PORTS; unit++) {
+		if (MV_FALSE == sata3HalData.unitActive[unit])
+			continue;
 		winNum = 0;
 		winPrioIndex = 0;
 		while ((sata3AddrDecPrioTab[winPrioIndex] != TBL_TERM) && (winNum < MV_SATA3_MAX_ADDR_DECODE_WIN)) {

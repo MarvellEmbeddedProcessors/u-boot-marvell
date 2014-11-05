@@ -72,6 +72,13 @@ MV_STATUS mvSysSata3WinInit(MV_VOID)
 {
 	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
 	MV_STATUS status;
+	MV_U32 unit;
+	MV_SATA3_HAL_DATA halData;
+
+	/* prepare HAL data regarding active units */
+	for (unit = 0; unit < SATA3_NUM_OF_PORTS; unit++)
+		halData.unitActive[unit] = mvCtrlIsActiveSataUnit(unit);
+	mvSata3HalInit(&halData);
 
 	if (mvCtrlSataMaxPortGet() == 0)
 		return MV_OK;
@@ -79,6 +86,5 @@ MV_STATUS mvSysSata3WinInit(MV_VOID)
 	status = mvCtrlAddrWinMapBuild(addrWinMap, MAX_TARGETS + 1);
 	if (status == MV_OK)
 		status = mvSata3WinInit(addrWinMap);
-
 	return status;
 }

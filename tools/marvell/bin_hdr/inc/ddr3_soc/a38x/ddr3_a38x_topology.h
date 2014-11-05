@@ -84,7 +84,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_32BIT  /* Buses mask */
     },
@@ -92,7 +92,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_32BIT  /* Buses mask */
     }
@@ -116,7 +116,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_32BIT  /* Buses mask */
     },
@@ -134,7 +134,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_32BIT  /* Buses mask */
     },
@@ -142,7 +142,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
     BUS_MASK_32BIT  /* Buses mask */
     },

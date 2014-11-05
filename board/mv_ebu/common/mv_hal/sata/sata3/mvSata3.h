@@ -64,6 +64,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __INCmvSata3H
 #define __INCmvSata3H
 
+typedef struct {
+	MV_BOOL unitActive[SATA3_NUM_OF_PORTS];
+} MV_SATA3_HAL_DATA;
+
+MV_STATUS mvSata3HalInit(MV_SATA3_HAL_DATA *halData);
 MV_STATUS mvSata3WinInit(MV_UNIT_WIN_INFO *addrWinMap);
 
 MV_STATUS mvSata3TargetWinEnable(MV_U32 winNum, MV_BOOL enable);

@@ -337,7 +337,7 @@ typedef struct {
 #define MV_CORE_CLK_TBL_BC2	{	\
 		360, 220,			\
 		250, 400,			\
-		500, 520,			\
+		175, 520,			\
 		450					\
 	}
 
@@ -355,8 +355,9 @@ typedef struct {
 		{ 667, 667, MV_FALSE},	\
 		{ 800, 800, MV_FALSE},	\
 		{1000, 500, MV_TRUE},	\
-		{1200, 600, MV_TRUE},	\
-		{1333, 666, MV_TRUE}	\
+		{ 800, 400, MV_TRUE},	\
+		{ 800, 400, MV_TRUE},	\
+		{ 800, 800, MV_TRUE}	\
 }
 
 #define MV_CPU_DDR_CLK_TBL_AC3 {	\

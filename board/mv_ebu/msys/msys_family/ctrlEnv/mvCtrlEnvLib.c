@@ -568,9 +568,18 @@ MV_U32 mvCtrlSdioSupport(MV_VOID)
 *******************************************************************************/
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
-	/* Currently the controller ID is derived from board according to msys family (BC2/AC3)
-	   It must be updated in case of new flavours of AC3 or BC2 */
-	return mvCtrlDevFamilyIdGet(0);
+	MV_U32	ctrlId = MV_REG_READ(DEV_ID_REG);
+
+	ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
+
+	switch (ctrlId) {
+	case MV_BOBCAT2_DEV_ID:
+	case MV_ALLEYCAT3_DEV_ID:
+		return ctrlId;
+	default:
+		mvOsPrintf("%s: Error: Failed to obtain Controller Device ID\n", __func__);
+		return mvCtrlDevFamilyIdGet(0);
+	}
 }
 
 /*******************************************************************************
@@ -592,21 +601,8 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 *******************************************************************************/
 MV_U8 mvCtrlRevGet(MV_VOID)
 {
-	MV_U8 revNum;
-#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
-	/* Check pex power state */
-	MV_U32 pexPower;
-	pexPower = mvCtrlPwrClckGet(PEX_UNIT_ID, 0);
-	if (pexPower == MV_FALSE)
-		mvCtrlPwrClckSet(PEX_UNIT_ID, 0, MV_TRUE);
-#endif
-	revNum = (MV_U8) MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PCI_CLASS_CODE_AND_REVISION_ID));
-#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
-	/* Return to power off state */
-	if (pexPower == MV_FALSE)
-		mvCtrlPwrClckSet(PEX_UNIT_ID, 0, MV_FALSE);
-#endif
-	return ((revNum & PCCRIR_REVID_MASK) >> PCCRIR_REVID_OFFS);
+	MV_U32 value = MV_REG_READ(DEV_ID_REG);
+	return (value & (REVISON_ID_MASK)) >> REVISON_ID_OFFS;
 }
 
 /*******************************************************************************
@@ -656,6 +652,55 @@ MV_U32 mvCtrlModelRevGet(MV_VOID)
 }
 
 /*******************************************************************************
+* mvCtrlRevNameGet - Get Marvell controller name
+*
+* DESCRIPTION:
+*       This function returns a string describing the revision id.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       pNameBuff - Buffer to contain revision name string. Minimum size 30 chars.
+*
+* RETURN:
+*
+*       MV_ERROR if informantion can not be read.
+*******************************************************************************/
+MV_VOID mvCtrlRevNameGet(char *pNameBuff)
+{
+	MV_U32 revId = mvCtrlRevGet();
+	MV_U32 ctrlFamily = mvCtrlDevFamilyIdGet(0);
+
+	if (ctrlFamily == MV_BOBCAT2_DEV_ID) {
+
+		char *revArrayBC2[] = MV_BOBCAT2_ID_ARRAY;
+
+		switch (revId) {
+		case MV_BOBCAT2_A0_ID:
+		case MV_BOBCAT2_B0_ID:
+			mvOsSPrintf(pNameBuff, " Rev %s", revArrayBC2[revId]);
+			return;
+		}
+
+	} else if (ctrlFamily == MV_ALLEYCAT3_DEV_ID) {
+
+		char *revArrayAC3[] = MV_ALLEYCAT3_ID_ARRAY;
+
+		switch (revId) {
+		case MV_ALLEYCAT3_A0_ID:
+		case MV_ALLEYCAT3_A1_ID:
+			mvOsSPrintf(pNameBuff, " Rev %s", revArrayAC3[revId]);
+			return;
+		}
+
+	} else
+		mvOsPrintf("%s: Error: Wrong controller model %#x\n", __func__, ctrlFamily);
+
+	mvOsPrintf("%s: Error: Failed to read Revision ID\n", __func__);
+}
+
+/*******************************************************************************
 * mvCtrlModelRevNameGet - Get Marvell controller name
 *
 * DESCRIPTION:
@@ -674,6 +719,7 @@ MV_U32 mvCtrlModelRevGet(MV_VOID)
 MV_STATUS mvCtrlModelRevNameGet(char *pNameBuff)
 {
 	mvCtrlNameGet(pNameBuff);
+	mvCtrlRevNameGet(pNameBuff + strlen(pNameBuff));
 	return MV_OK;
 }
 

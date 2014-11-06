@@ -828,6 +828,11 @@ int xsmi_phy_read_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U16 phyReg;
 
+	if (argc < 4) {
+		printf("command need three arguments\n");
+		cmd_usage(cmdtp);
+		return 1;
+	}
 	/* NSS need to be enabled before each access and disabled right after,
 	   in order to access the PHY registers via PSS window */
 	mvNetComplexNssSelect(1);
@@ -850,6 +855,11 @@ U_BOOT_CMD(
 
 int xsmi_phy_write_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 {
+	if (argc < 5) {
+		printf("command need four arguments\n");
+		cmd_usage(cmdtp);
+		return 1;
+	}
 	/* NSS need to be enabled before each access and disabled right after,
 	   in order to access the PHY registers via PSS window */
 	mvNetComplexNssSelect(1);

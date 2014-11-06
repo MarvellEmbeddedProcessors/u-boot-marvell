@@ -225,11 +225,13 @@ MV_OP_PARAMS sataAndSgmiiTxConfigSerdesRev1Params2[] =
 
 MV_OP_PARAMS sataAndSgmiiTxConfigSerdesRev2Params2[] =
 {
-	/* unitunitBaseReg				unitOffset		 mask         SATA data    SGMII data      waitTime    numOfLoops */
-	{ COMMON_PHY_STATUS1_REG,			0x28,	     0xC,			{ 0xC,			0xC	       },   10,	        1000	    },  /* Wait for PHY power up sequence to finish */
-	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		 0x40000000,    { 0x40000000,	0x40000000 },	0,			0		    },  /* Assert Rx Init */
-	{ COMMON_PHY_STATUS1_REG,			0x28,	     0x1,			{ 0x1,			0x1	       },   1,	        1000	    },  /* Wait for PHY power up sequence to finish */
-	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		 0x40000000,    { 0x0,			0x0		   },	0,			0		    },  /* De-assert Rx Init */
+    /* unitunitBaseReg              unitOffset       mask         SATA data    SGMII data      waitTime    numOfLoops */
+    { COMMON_PHY_STATUS1_REG,           0x28,        0xC,           { 0xC,          0xC        },   10,         1000        },  /* Wait for PHY power up sequence to finish */
+    { COMMON_PHY_CONFIGURATION1_REG,    0x28,        0x40000000,    { NA,           0x40000000 },   0,          0           },  /* Assert Rx Init for SGMII */
+    { ISOLATE_REG,                      0x800,       0x400,         { 0x400,        NA         },   0,          0           },  /* Assert Rx Init for SATA */
+    { COMMON_PHY_STATUS1_REG,           0x28,        0x1,           { 0x1,          0x1        },   1,          1000        },  /* Wait for PHY power up sequence to finish */
+    { COMMON_PHY_CONFIGURATION1_REG,    0x28,        0x40000000,    { NA,           0x0        },   0,          0           },  /* De-assert Rx Init for SGMII */
+    { ISOLATE_REG,                      0x800,       0x400,         { 0x0,          NA         },   0,          0           },  /* De-assert Rx Init for SATA */
 };
 
 MV_OP_PARAMS sataElectricalConfigSerdesRev1Params[] =

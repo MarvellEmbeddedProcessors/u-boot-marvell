@@ -1046,7 +1046,6 @@ int misc_init_r(void)
 	mvBoardDebugLed(6);
 
 	mvBoardMppModuleTypePrint();
-	mvBoardOtherModuleTypePrint();
 
 	mvBoardDebugLed(7);
 

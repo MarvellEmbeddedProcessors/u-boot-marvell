@@ -277,3 +277,41 @@ MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 {
 	return mvBoardIsGbEPortConnected(ethNum);
 }
+
+/*******************************************************************************
+* mvBoardMppModuleTypePrint
+*
+* DESCRIPTION:
+*	Print on-board detected modules.
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
+{
+	int i;
+	char *moduleStr[MV_MODULE_TYPE_MAX_MODULE] = { \
+		"MII",                                  \
+		"TDM",                                  \
+		"AUDIO I2S",                     \
+		"AUDIO SPDIF",                   \
+		"NOR 16bit",                                  \
+		"NAND 16bit",                                 \
+		"SDIO 4bit",                                 \
+		"SGMII",                                 \
+	};
+	mvOsOutput("Board configuration detected:\n");
+
+	for (i = 0; i < MV_MODULE_TYPE_MAX_MODULE; i++) {
+		if (mvBoardIsModuleConnected(1 << i))
+			mvOsOutput("       %s module.\n", moduleStr[i]);
+
+	}
+}

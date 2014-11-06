@@ -476,3 +476,51 @@ MV_STATUS mvBoardNetComplexInfoUpdate(MV_VOID)
 	return MV_OK;
 }
 #endif /* CONFIG_CMD_BOARDCFG */
+
+/*******************************************************************************
+* mvBoardMppModuleTypePrint
+*
+* DESCRIPTION:
+*	Print on-board detected modules.
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
+{
+	int port;
+	mvOsOutput("Board configuration:\n");
+	mvOsOutput("|  port  | Interface  | PHY address  |\n");
+	mvOsOutput("|--------|------------|--------------|\n");
+	for (port = 0; port < mvCtrlEthMaxPortGet(); port++) {
+		mvOsOutput("| egiga%d ", port);
+		switch (mvBoardPortTypeGet(port)) {
+		case MV_PORT_TYPE_SGMII:
+			mvOsOutput("|   SGMII    ");
+			break;
+		case MV_PORT_TYPE_RGMII:
+			mvOsOutput("|   RGMII    ");
+			break;
+		case MV_PORT_TYPE_RXAUI:
+			mvOsOutput("|   RXAUI    ");
+			break;
+		case MV_PORT_TYPE_XAUI:
+			mvOsOutput("|   XAUI     ");
+			break;
+		case MV_PORT_TYPE_QSGMII:
+			mvOsOutput("|   QSGMII   ");
+			break;
+		}
+		if (mvBoardPhyAddrGet(port) != -1)
+			mvOsOutput("|     %#04x     |\n", (MV_U8)mvBoardPhyAddrGet(port));
+		else
+			mvOsOutput("|     In-Band     |\n");
+	}
+}

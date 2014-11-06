@@ -263,8 +263,9 @@ extern "C" {
 #define DEV_ID_REG				0x1823C
 #define DEVICE_ID_OFFS			0
 #define DEVICE_ID_MASK			0xFFFF
-#define REVISON_ID_OFFS			16
-#define REVISON_ID_MASK			0xF0000
+#define DEV_REV_ID_REG			0xF8244
+#define REVISON_ID_OFFS			28
+#define REVISON_ID_MASK			0xF0000000
 
 /* Extract CPU, L2, DDR clocks SAR value from
 ** SAR bits 24-27

@@ -164,6 +164,7 @@ typedef struct {
 MV_STATUS mvTdmHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData);
 MV_STATUS mvTdmWinInit(MV_UNIT_WIN_INFO *addrWinMap);
 MV_VOID mvTdmRelease(MV_VOID);
+MV_32 mvPcmStopIntMiss(void);
 MV_32 mvTdmIntLow(MV_TDM_INT_INFO *tdmIntInfo);
 MV_VOID mvTdmPcmStart(MV_VOID);
 MV_VOID mvTdmPcmStop(MV_VOID);

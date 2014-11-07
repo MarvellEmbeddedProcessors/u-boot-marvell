@@ -492,6 +492,49 @@ MV_STATUS mvTdmRx(MV_U8 *tdmRxBuff)
 	return MV_OK;
 }
 
+MV_32 mvPcmStopIntMiss(void)
+{
+	MV_U32 statusReg, maskReg, statusStopInt, statusMask = 0, intMask = 0, ret = 0;
+
+	MV_TRC_REC("->%s\n", __func__);
+
+	statusReg = MV_REG_READ(INT_STATUS_REG);
+	maskReg = MV_REG_READ(INT_STATUS_MASK_REG);
+
+	/* Refer only to unmasked bits */
+	statusStopInt = statusReg & maskReg;
+
+	if (statusStopInt & TX_UNDERFLOW_BIT(1)) {
+		statusMask |= TX_UNDERFLOW_BIT(1);
+		intMask |= TDM_INT_TX(1);
+	}
+
+	if (statusStopInt & TX_UNDERFLOW_BIT(0)) {
+		statusMask |= TX_UNDERFLOW_BIT(0);
+		intMask |= TDM_INT_TX(0);
+	}
+
+	if (statusStopInt & RX_OVERFLOW_BIT(1)) {
+		statusMask |= RX_OVERFLOW_BIT(1);
+		intMask |= TDM_INT_RX(1);
+	}
+
+	if (statusStopInt & RX_OVERFLOW_BIT(0)) {
+		statusMask |= TX_UNDERFLOW_BIT(0);
+		intMask |= TDM_INT_RX(0);
+	}
+
+	if (intMask != 0) {
+		MV_TRC_REC("Stop Interrupt missing found STATUS=%x, MASK=%x\n", statusReg, maskReg);
+		MV_REG_WRITE(INT_STATUS_REG, ~(statusMask));
+		MV_REG_WRITE(INT_STATUS_MASK_REG,
+					     MV_REG_READ(INT_STATUS_MASK_REG) & (~(intMask)));
+		ret = 1;
+	}
+	MV_TRC_REC("<-%s\n", __func__);
+	return ret;
+}
+
 /* Low level TDM interrupt service routine */
 MV_32 mvTdmIntLow(MV_TDM_INT_INFO *tdmIntInfo)
 {

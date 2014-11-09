@@ -391,6 +391,9 @@ typedef struct {
 	MV_U32 l2Freq;
 } MV_FREQ_MODE;
 
+/* PLL(CPU) input clock */
+#define MV_PLL_IN_CLK	_1GHz
+
 #define MV_USER_SAR_FREQ_MODES { \
 		{ 6,  400,  400, 200 }, \
 		{ 14, 600,  400, 300 }, \

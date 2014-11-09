@@ -294,7 +294,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID);
 MV_U32    mvCtrlMppRegGet(MV_U32 mppGroup);
 MV_U32 mvCtrlGetJuncTemp(MV_VOID);
 MV_STATUS mvEthComplexInit(MV_U32 ethCompConfig);
-void mvCtrlNandClkSet(int nClock);
+int mvCtrlNandClkSet(int nfc_clk_freq);
 MV_U32 mvCtrlLaneSelectorGet(MV_U32 laneNum);
 #if defined(MV_INCLUDE_PEX)
 MV_U32 mvCtrlPexMaxIfGet(MV_VOID);

@@ -71,6 +71,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "gpp/mvGpp.h"
 #include "gpp/mvGppRegs.h"
 #include "mvSysEthConfig.h"
+#include "cpu/mvCpu.h"
 
 #include "pex/mvPex.h"
 #include "pex/mvPexRegs.h"
@@ -1554,15 +1555,25 @@ void mvCtrlGetPexActive(MV_BOOL *pPexActive, int size)
 * RETURN:
 *       None
 *******************************************************************************/
-void mvCtrlNandClkSet(int nClock)
+int mvCtrlNandClkSet(int nfc_clk_freq)
 {
+	int divider;
 	MV_U32 nVal = MV_DFX_REG_READ(CORE_DIV_CLK_CTRL(2));
+	MV_U32 pll_clk = mvCpuPllClkGet();
 
-	DB(mvOsPrintf("%s: CPU (PLL_1) clock)  = %d, dividor = %d\n", __func__, mvCpuPclkGet(), nClock));
+	/*
+	 * Calculate nand divider for requested nfc_clk_freq. If integer divider
+	 * cannot be achieved, it will be rounded-up, which will result in
+	 * setting the closest lower frequency.
+	 * ECC engine clock = (PLL frequency / divider)
+	 * NFC clock = ECC clock / 2
+	 */
+	divider = DIV_ROUND_UP(pll_clk, (2 * nfc_clk_freq));
+	DB(mvOsPrintf("%s: divider %d\n", __func__, divider));
 
 	/* Set the division ratio of ECC Clock 0x000F8270[9:6] (ECC clock = CPU / dividor) */
 	nVal &= ~(NAND_ECC_DIVCKL_RATIO_MASK);
-	nVal |= (nClock << NAND_ECC_DIVCKL_RATIO_OFFS);
+	nVal |= (divider << NAND_ECC_DIVCKL_RATIO_OFFS);
 	MV_DFX_REG_WRITE(CORE_DIV_CLK_CTRL(2), nVal);
 
 	/* Set reload force of ECC clock 0x000F8268[27:21] to 0x40 (force the dividor only the NAND ECC clock) */
@@ -1576,6 +1587,9 @@ void mvCtrlNandClkSet(int nClock)
 	mvOsDelay(1); /*  msec */
 	/* Set reload ratio bit 0x000F8270[10] to 0'b1 */
 	MV_DFX_REG_BIT_RESET(CORE_DIV_CLK_CTRL(2), CORE_DIVCLK_RELOAD_RATIO_MASK);
+
+	/* Return calculated nand clock frequency */
+	return pll_clk/(2 * divider);
 }
 
 /*******************************************************************************

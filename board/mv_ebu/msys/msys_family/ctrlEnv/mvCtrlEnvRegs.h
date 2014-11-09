@@ -326,6 +326,7 @@ typedef enum {
 typedef struct {
 	MV_U32		cpuFreq;
 	MV_U32		ddrFreq;
+	MV_U32		pllClk;
 	MV_STATUS	internalFreq;
 } MV_CPUDDR_MODE;
 
@@ -351,25 +352,24 @@ typedef struct {
 
 
 #define MV_CPU_DDR_CLK_TBL_BC2 {	\
-		{ 400, 400, MV_FALSE},	\
-		{ 533, 533, MV_TRUE},	\
-		{ 667, 667, MV_FALSE},	\
-		{ 800, 800, MV_FALSE},	\
-		{1000, 500, MV_TRUE},	\
-		{1200, 600, MV_TRUE},	\
-		{1333, 666, MV_TRUE},	\
-		{1600, 800, MV_TRUE}	\
+	{ 400, 400,  800, MV_FALSE},	\
+	{ 533, 533, 1600, MV_TRUE},	\
+	{ 667, 667, 2000, MV_FALSE},	\
+	{ 800, 800, 1600, MV_FALSE},	\
+	{1000, 500, 2000, MV_TRUE},	\
+	{1200, 600, 2400, MV_TRUE},	\
+	{1333, 666, 1600, MV_TRUE}	\
 }
 
 #define MV_CPU_DDR_CLK_TBL_AC3 {	\
-		{ 400, 400, MV_FALSE},	\
-		{ 533, 533, MV_TRUE},	\
-		{ 667, 667, MV_FALSE},	\
-		{ 800, 800, MV_FALSE},	\
-		{   0,   0, MV_TRUE},	\
-		{ 800, 400, MV_FALSE},	\
-		{ 800, 400, MV_TRUE},	\
-		{ 0,     0, MV_TRUE}	\
+	{ 533, 533,  533, MV_TRUE},	\
+	{ 667, 667, 2000, MV_FALSE},	\
+	{ 400, 400,  400, MV_FALSE},	\
+	{ 800, 800,  800, MV_FALSE},	\
+	{   0,   0, 2000, MV_TRUE},	\
+	{ 800, 400,  800, MV_FALSE},	\
+	{ 800, 400,  800, MV_TRUE},	\
+	{ 0,     0,  800, MV_TRUE}	\
 }
 
 #define MV_TM_CLK_TBL	{	\

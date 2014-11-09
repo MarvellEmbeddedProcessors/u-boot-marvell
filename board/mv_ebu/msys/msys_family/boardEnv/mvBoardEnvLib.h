@@ -328,6 +328,12 @@ MV_U16 mvBoardDramBusWidthGet(MV_VOID);
 MV_STATUS mvBoardCoreFreqGet(MV_U8 *value);
 MV_STATUS mvBoardTmFreqGet(MV_U8 *value);
 MV_STATUS mvBoardTmFreqSet(MV_U8 freqVal);
+MV_STATUS mvBoardJtagCpuGet(MV_U8 *value);
+MV_STATUS mvBoardJtagCpuSet(MV_U8 val);
+MV_STATUS mvBoardPtpPllGet(MV_U8 *value);
+MV_STATUS mvBoardPtpPllSet(MV_U8 val);
+MV_STATUS mvBoardOobPortConnectionGet(MV_U8 port, MV_U8 *value);
+MV_STATUS mvBoardOobPortConnectionSet(MV_U8 port, MV_U8 val);
 MV_STATUS mvBoardCoreFreqSet(MV_U8 freqVal);
 MV_STATUS mvBoardDdrEccEnableGet(MV_U8 *val);
 MV_STATUS mvBoardDdrEccEnableSet(MV_U8 val);
@@ -351,6 +357,7 @@ MV_VOID mvBoardDebugLed(MV_U32 hexNum);
 MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
 MV_U32 mvBoardCpssBoardIdSet(MV_U8);
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
+MV_STATUS mvBoardOobPortCfgSet(MV_VOID);
 
 #ifdef __cplusplus
 }

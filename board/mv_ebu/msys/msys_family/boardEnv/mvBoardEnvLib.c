@@ -176,6 +176,10 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 	mvGppTypeSet(0, 0xFFFFFFFF, board->gppOutEnValLow);
 	mvGppTypeSet(1, 0xFFFFFFFF, board->gppOutEnValMid);
 
+#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
+	mvBoardOobPortCfgSet();
+#endif
+
 }
 
 /*******************************************************************************
@@ -1601,6 +1605,156 @@ MV_STATUS mvBoardTmFreqSet(MV_U8 freqVal)
 }
 
 /*******************************************************************************/
+MV_STATUS mvBoardJtagCpuGet(MV_U8 *value)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_BOBCAT2_DEV_ID) {
+		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
+		return MV_ERROR; /* AC3 */
+	}
+
+	/* BC2 */
+	if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+		return MV_ERROR;
+
+	*value = (sar & 0x8) >> 3;
+
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_STATUS mvBoardJtagCpuSet(MV_U8 cpu)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_BOBCAT2_DEV_ID) {
+		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
+		return MV_ERROR; /* AC3 */
+	}
+
+	/* BC2 */
+	if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+		return MV_ERROR;
+
+	sar &= ~(0x8);
+	sar |= ((cpu & 0x1) << 3);
+
+	if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar)) {
+		DB(mvOsPrintf("Board: Write JTAG CPU S@R fail\n"));
+		return MV_ERROR;
+	}
+
+	DB(mvOsPrintf("Board: Write JTAG CPU  S@R succeeded\n"));
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_STATUS mvBoardPtpPllGet(MV_U8 *value)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_BOBCAT2_DEV_ID) {
+		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
+		return MV_ERROR; /* AC3 */
+	}
+
+	/* BC2 */
+	if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+		return MV_ERROR;
+
+	*value = (sar & 0x10) >> 4;
+
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_STATUS mvBoardPtpPllSet(MV_U8 val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_BOBCAT2_DEV_ID) {
+		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
+		return MV_ERROR; /* AC3 */
+	}
+
+	/* BC2 */
+	if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+		return MV_ERROR;
+
+	sar &= ~(0x10);
+	sar |= ((val & 0x1) << 4);
+
+	if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar)) {
+		DB(mvOsPrintf("Board: Write PTP PLL S@R fail\n"));
+		return MV_ERROR;
+	}
+
+	DB(mvOsPrintf("Board: Write PTP PLL  S@R succeeded\n"));
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_STATUS mvBoardOobPortConnectionGet(MV_U8 port, MV_U8 *value)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_BOBCAT2_DEV_ID) {
+		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
+		return MV_ERROR; /* AC3 */
+	}
+
+	if (port > 1) {
+		DB(mvOsPrintf("%s: Unsupported OOB port number - %d\n", port, __func__));
+		return MV_ERROR;
+	}
+
+	/* BC2 */
+	if (MV_ERROR == mvBoardTwsiSatRGet(0, 1, &sar))
+		return MV_ERROR;
+
+	*value = (sar & (0x3 << (port << 1))) >> (port << 1);
+
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_STATUS mvBoardOobPortConnectionSet(MV_U8 port, MV_U8 val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_BOBCAT2_DEV_ID) {
+		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
+		return MV_ERROR; /* AC3 */
+	}
+
+	if (port > 1) {
+		DB(mvOsPrintf("%s: Unsupported OOB port number - %d\n", port, __func__));
+		return MV_ERROR;
+	}
+	/* BC2 */
+	if (MV_ERROR == mvBoardTwsiSatRGet(0, 1, &sar))
+		return MV_ERROR;
+
+	sar &= ~(0x3 << (port << 1));
+	sar |= ((val & 0x3) << (port << 1));
+
+	if (MV_OK != mvBoardTwsiSatRSet(0, 1, sar)) {
+		DB(mvOsPrintf("Board: Write OOB port %d connection S@R fail\n", port));
+		return MV_ERROR;
+	}
+
+	DB(mvOsPrintf("Board: Write OOB port %d connection S@R succeeded\n", port));
+	return MV_OK;
+}
+
+/*******************************************************************************/
 MV_STATUS mvBoardBootDevGet(MV_U8 *value)
 {
 	MV_U8		sar;
@@ -2159,3 +2313,67 @@ MV_NAND_IF_MODE mvBoardNandIfGet()
 	return NAND_IF_NFC;
 }
 
+/*******************************************************************************
+* mvBoardOobPortCfgSet - Set the OOB ports connection according to SAR
+*
+* DESCRIPTION:
+*		The OOB ports can be wired to either front panel connectors (internal
+*		board ports) or to back panel connectors (plug-in module ports).
+*		Additionally the OOB port can be disconnected from all board connectors.
+*		The front panel connectors are wired to SERDES lines through external
+*		analog MUX (located in CPLD), whcih allows either to select copper
+*		ports (SMI managable PHYs) or QSGMII GBIC slots (inband managable).
+*		When a particular OOB port SERDES is forwarded to front panel connectors
+*		the MUX for this SERDES should select QSGMII connection.
+*		The MUX configuration should not be altered for OOB port that uses
+*		the back panel connector or defined as disconnected.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*
+*
+*******************************************************************************/
+MV_STATUS mvBoardOobPortCfgSet(MV_VOID)
+{
+	MV_U8		portCfg;
+	MV_U8		port;
+	MV_STATUS	rVal;
+
+	for (port = 0; port <= 1; port++) {
+
+		rVal = mvBoardOobPortConnectionGet(port, &portCfg);
+		if (rVal != MV_OK)
+			return rVal;
+
+		/* SAR defines OOB port connection as following:
+		   0 - Back panel connectors (physical ports 20 and 21)
+		   1 - Front panel connectors (physical ports 0 and 1)
+		   2 - OOB [port disconnected
+		   3 - Reserved
+		*/
+		/* Only write to IO expander MUX if the port is using front panel connector */
+		if (portCfg == 1) {
+			rVal = mvBoardTwsiRead(BOARD_DEV_TWSI_PCA9555_IO_EXPANDER, 0, 2, &portCfg);
+			if (rVal != MV_OK) {
+				DB(mvOsPrintf("%s: Error reading port %d config from IO expander\n", __func__, port));
+				return rVal;
+			}
+
+			portCfg |= 0x1 << port; /* Redirect the port to QSGMII */
+
+			rVal = mvBoardTwsiWrite(BOARD_DEV_TWSI_PCA9555_IO_EXPANDER, 0, 2, portCfg);
+			if (rVal != MV_OK) {
+				DB(mvOsPrintf("%s: Error writing port %d config to IO expander\n", __func__, port));
+				return rVal;
+			}
+		}
+
+	} /* For all OOB ports */
+
+	return MV_OK;
+}

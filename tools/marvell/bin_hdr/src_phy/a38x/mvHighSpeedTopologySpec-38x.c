@@ -763,7 +763,7 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray)
 	/* check S@R: if lane 5 is USB3 or SGMII */
 	if (loadTopologyRDSgmiiUsb(&isSgmii) != MV_OK)
 		mvPrintf("loadTopologyDBGp: TWSI Read failed - Loading Default Topology\n");
-	else {
+	else if (mvHwsSerdesGetMaxLane() >= 6) {
 		mvPrintf("Lane 5: %s \n" ,isSgmii ? "SGMII2" : "USB3.0 Host Port 1");
 		serdesMapArray[5].serdesType  =  isSgmii ? SGMII2 : USB3_HOST1;
 		serdesMapArray[5].serdesSpeed =  isSgmii ? __3_125Gbps : __5Gbps;;

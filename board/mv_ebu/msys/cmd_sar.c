@@ -42,6 +42,10 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 	CMD_CPU_DDR_REQ,
 #ifdef CONFIG_BOBCAT2
 	CMD_TM_FREQ,
+	CMD_JTAG_CPU,
+	CMD_PTP_PLL,
+	CMD_OOB0_CON,
+	CMD_OOB1_CON,
 #elif defined(CONFIG_ALLEYCAT3)
 	CMD_PCIE_CLOCK,
 	CMD_PLL_CLOCK,
@@ -62,6 +66,10 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 	int defaultValue[] = { 0,	/* Core clock */
 						   3,	/* CPU/DDR clock */
 						   3,	/* TM frequency */
+						   1,	/* JTAG CPU 1 == MSYS */
+						   0,	/* PTP PLL */
+						   0,	/* OOB0 connection */
+						   0,	/* OOB1 connection */
 						   1,	/* PCIe mode */
 						   3,	/* Boot source */
 						   0 };	/* Device ID */
@@ -114,6 +122,14 @@ static int sar_cmd_get(const char *cmd)
 #ifdef CONFIG_BOBCAT2
 	if (strcmp(cmd, "tmfreq") == 0)
 		return CMD_TM_FREQ;
+	if (strcmp(cmd, "jtagcpu") == 0)
+		return CMD_JTAG_CPU;
+	if (strcmp(cmd, "ptppll") == 0)
+		return CMD_PTP_PLL;
+	if (strcmp(cmd, "oob0con") == 0)
+		return CMD_OOB0_CON;
+	if (strcmp(cmd, "oob1con") == 0)
+		return CMD_OOB1_CON;
 #elif defined CONFIG_ALLEYCAT3
 	if (strcmp(cmd, "pciclock") == 0)
 		return CMD_PCIE_CLOCK;
@@ -177,6 +193,36 @@ static int do_sar_list(int mode)
 			       i, tmClkTbl[i].tmFreq, tmClkTbl[i].ddr3Freq);
 		}
 		printf("\t----------------------------------------\n");
+		break;
+	case CMD_JTAG_CPU:
+		printf("Determines the JTAG to CPU connection:\n");
+		printf("\t| ID  | JTAG connection |\n");
+		printf("\t------------------------\n");
+		printf("\t|  0  |  Cortex-M3      |\n");
+		printf("\t|  1  |  MSYS (PJ4B)    |\n");
+		printf("\t------------------------\n");
+		break;
+	case CMD_PTP_PLL:
+		printf("Determines the PTP PLL multiplier configurtation:\n");
+		printf("\t| ID  |  PTP PLL Multiplier |\n");
+		printf("\t----------------------------\n");
+		printf("\t|  0  |      20             |\n");
+		printf("\t|  1  |      21.875         |\n");
+		printf("\t----------------------------\n");
+		break;
+	case CMD_OOB0_CON:
+	case CMD_OOB1_CON:
+		printf("Determines the OOB port 0/1 to Physical port connection:\n");
+		printf("\t| ID  | OOB port | Physical port   |\n");
+		printf("\t-----------------------------------\n");
+		printf("\t|  0  |    0     | 20 (back panel) |\n");
+		printf("\t|  1  |    0     | 0 (front panel) |\n");
+		printf("\t|  2  |    0     | Not connected   |\n");
+		printf("\t-----------------------------------\n");
+		printf("\t|  0  |    1     | 21 (back panel) |\n");
+		printf("\t|  1  |    1     | 1 (front panel) |\n");
+		printf("\t|  2  |    1     | Not connected   |\n");
+		printf("\t-----------------------------------\n");
 		break;
 #elif defined CONFIG_ALLEYCAT3
 	case CMD_DDR_ECC_EN:
@@ -274,6 +320,32 @@ static int do_sar_read(int mode)
 			printf("tmfreq Error: failed reading TM Clock Frequency (PLL_2)\n");
 		break;
 
+	case CMD_JTAG_CPU:
+		if (mvBoardJtagCpuGet(&tmp) == MV_OK)
+			printf("jtagcpu \t\t= %d ==>  %s\n", tmp, ((tmp == 0) ? "Cortex-M3" : "MSYS (PJ4B)"));
+		else
+			printf("jtagcpu Error: failed reading JTAG connection type\n");
+		break;
+
+	case CMD_PTP_PLL:
+		if (mvBoardPtpPllGet(&tmp) == MV_OK)
+			printf("ptppll \t\t= %d ==>  %s\n", tmp, ((tmp == 0) ? "20" : "21.875"));
+		else
+			printf("ptppll Error: failed reading PTP PLL multiplier\n");
+	break;
+
+	case CMD_OOB0_CON:
+	case CMD_OOB1_CON:
+		i = mode == CMD_OOB0_CON ? 0 : 1;
+		if (mvBoardOobPortConnectionGet(i, &tmp) == MV_OK) {
+			if (tmp == 2)
+				printf("oob%dcon \t\t= %d ==>  OOB port is disconnected\n", i, tmp);
+			else
+				printf("oob%dcon \t\t= %d ==>  Physical port %d\n", i, tmp, ((tmp == 0) ? i : (20 + i)));
+		} else
+			printf("oob%dcon Error: failed reading PTP PLL multiplier\n", i);
+ break;
+
 #elif defined CONFIG_ALLEYCAT3
 	case CMD_DDR_ECC_EN:
 		if (mvBoardDdrEccEnableGet(&tmp) == MV_OK)
@@ -363,6 +435,16 @@ static int do_sar_write(int mode, int value)
 #ifdef CONFIG_BOBCAT2
 	case CMD_TM_FREQ:
 		rc = mvBoardTmFreqSet(tmp);
+		break;
+	case CMD_JTAG_CPU:
+		rc = mvBoardJtagCpuSet(tmp);
+		break;
+	case CMD_PTP_PLL:
+		rc = mvBoardPtpPllSet(tmp);
+		break;
+	case CMD_OOB0_CON:
+	case CMD_OOB1_CON:
+		rc = mvBoardOobPortConnectionSet((mode == CMD_OOB0_CON ? 0 : 1), tmp);
 		break;
 #elif defined CONFIG_ALLEYCAT3
 	case CMD_DDR_ECC_EN:
@@ -470,6 +552,10 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "pcimode                    - PCIe mode (EP/RC)\n"
 #ifdef CONFIG_BOBCAT2
 "tmfreq                     - TM frequency\n"
+"jtagcpu                    - JTAG CPU connection\n"
+"ptppll                     - PTP PLL multiplier\n"
+"oob0con                    - OOB-0 to physical port connection\n"
+"oob1con                    - OOB-1 to physical port connection\n"
 #elif defined CONFIG_ALLEYCAT3
 "pciclock                   - PCIe reference clock source\n"
 "pllclock                   - PLL2 VCO clock frequency\n"

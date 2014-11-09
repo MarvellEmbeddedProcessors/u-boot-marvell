@@ -381,6 +381,9 @@ typedef struct {
 /* End of Table indicator - Should be in the last line of the SAR Table */
 #define MV_SAR_FREQ_MODES_EOT		0xFF
 
+/* PLL(CPU) input clock */
+#define MV_PLL_IN_CLK	_1GHz
+
 #ifdef CONFIG_DDR4
 #define MV_SAR_FREQ_MODES { \
 		{ 0x6,   1200, 600, 600, MV_TRUE  }, \

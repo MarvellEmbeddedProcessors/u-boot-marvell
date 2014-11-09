@@ -147,6 +147,47 @@ MV_U32 mvCpuDdrClkGet(MV_VOID)
 
 	return freqMhz;
 }
+
+/*******************************************************************************
+* mvCpuPllClkGet - Get the PLL clock
+*
+* DESCRIPTION:
+*       This routine extract the PLL clock.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit clock cycles in Hertz.
+*
+*******************************************************************************/
+MV_U32 mvCpuPllClkGet(MV_VOID)
+{
+	MV_U32		idx;
+	MV_U32		freqMhz;
+	MV_CPUDDR_MODE	bc2ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BC2;
+	MV_CPUDDR_MODE	ac3ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_AC3;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+	MV_U32		sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
+
+	idx = MSAR_CPU_DDR_CLK(0, sar2);
+	switch (family) {
+	case MV_BOBCAT2_DEV_ID:
+		freqMhz = bc2ClockRatioTbl[idx].pllClk * 1000000;
+		break;
+	case MV_ALLEYCAT3_DEV_ID:
+		freqMhz = ac3ClockRatioTbl[idx].pllClk * 1000000;
+		break;
+	default:
+		return 0xFFFFFFFF;
+	}
+
+	return freqMhz;
+}
+
 /*******************************************************************************
 * mvCpuL2ClkGet - Get the CPU L2 (CPU bus clock)
 *

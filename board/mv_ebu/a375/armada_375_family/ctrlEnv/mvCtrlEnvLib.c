@@ -1993,12 +1993,25 @@ MV_U32 mvCtrlGetJuncTemp(MV_VOID)
 * RETURN:
 *       None
 *******************************************************************************/
-void mvCtrlNandClkSet(int nClock)
+int mvCtrlNandClkSet(int nfc_clk_freq)
 {
+	int divider;
+
 	/* Set the division ratio of ECC Clock 0x00018748[13:8] (by default it's double of core clock) */
 	MV_U32 nVal = MV_REG_READ(CORE_DIV_CLK_CTRL(1));
+
+	/*
+	 * Calculate nand divider for requested nfc_clk_freq. If integer divider
+	 * cannot be achieved, it will be rounded-up, which will result in
+	 * setting the closest lower frequency.
+	 * ECC engine clock = (PLL frequency / divider)
+	 * NFC clock = ECC clock / 2
+	 */
+	divider = DIV_ROUND_UP(MV_PLL_IN_CLK, (2 * nfc_clk_freq));
+	DB(mvOsPrintf("%s: divider %d\n", __func__, divider));
+
 	nVal &= ~(NAND_ECC_DIVCKL_RATIO_MASK);
-	nVal |= (nClock << NAND_ECC_DIVCKL_RATIO_OFFS);
+	nVal |= (divider << NAND_ECC_DIVCKL_RATIO_OFFS);
 	MV_REG_WRITE(CORE_DIV_CLK_CTRL(1), nVal);
 
 	/* Set reload force of ECC clock 0x00018740[7:0] to 0x2 (meaning you will force only the ECC clock) */
@@ -2012,6 +2025,9 @@ void mvCtrlNandClkSet(int nClock)
 	mvOsDelay(1); /*  msec */
 	/* Set reload ratio bit 0x00018740[8] to 0'b1 */
 	MV_REG_BIT_RESET(CORE_DIV_CLK_CTRL(0), CORE_DIVCLK_RELOAD_RATIO_MASK);
+
+	/* Return calculated nand clock frequency */
+	return (MV_PLL_IN_CLK)/(2 * divider);
 }
 
 /*******************************************************************************

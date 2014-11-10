@@ -565,6 +565,7 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneTyp
 *   	MV_OK - if updating the board topology success
 *   	MV_BAD_PARAM - if the input parameter is wrong
 ***************************************************************************/
+SERDES_MAP DefaultLane = { DEFAULT_SERDES, LAST_SERDES_SPEED, SERDES_DEFAULT_MODE };
 MV_STATUS mvHwsUpdateDeviceToplogy(SERDES_MAP* topologyConfigPtr, TOPOLOGY_CONFIG_DB topologyMode)
 {
 	MV_U32 DevId = mvSysEnvDeviceIdGet();
@@ -574,25 +575,25 @@ MV_STATUS mvHwsUpdateDeviceToplogy(SERDES_MAP* topologyConfigPtr, TOPOLOGY_CONFI
 	case DB_CONFIG_DEFAULT:
 		switch(DevId){
 		case MV_6810:
+			/* DB-AP : default for Lane3=SGMII2 --> 6810 supports only 2 SGMII interfaces: lane 3 disabled */
+			if (BoardId == DB_AP_68XX_ID) {
+				/* temporarily disable lane - when setting serdes to new type remove print */
+				mvPrintf("%s: Device flavour supports only 2 SGMII interfaces: SGMII2 via lane3 disabled\n", __func__);
+				topologyConfigPtr[3] = DefaultLane;
+			}
 		case MV_6820:
-			/* DB-GP & DB-BP: default for Lane3=SATA3 --> only SATA0 & SATA1 supported by 6810/6820 */
+			/* DB-GP & DB-BP: default for Lane3=SATA3 --> 6810/20 supports only 2 SATA interfaces: lane 3 disabled */
 			if ((BoardId == DB_68XX_ID) || (BoardId == DB_GP_68XX_ID)) {
 				/* temporarily disable lane - when setting serdes to new type remove print */
-				mvPrintf("%s: Current flavour supports only SATA0 & SATA1 - lane3 disabled\n", __func__);
-				topologyConfigPtr[3].serdesType  = DEFAULT_SERDES;
-				topologyConfigPtr[3].serdesSpeed = LAST_SERDES_SPEED;
-				topologyConfigPtr[3].serdesMode  = SERDES_DEFAULT_MODE;
+				mvPrintf("%s: Device flavour supports only 2 SATA interfaces: SATA2 via lane3 disabled\n", __func__);
+				topologyConfigPtr[3] = DefaultLane;
 			}
-			/* DB-GP : default for Lane4=SATA2 --> only SATA0 & SATA1 supported by 6810/6820 */
+			/* DB-GP : default for Lane4=SATA2 --> 6810/20 supports only 2 SATA interfaces: lane 3 disabled */
 			if (BoardId == DB_GP_68XX_ID) {
 				/* temporarily disable lane - when setting serdes to new type remove print */
-				mvPrintf("%s: Current flavour supports only SATA0 & SATA1 - lane4 disabled\n", __func__);
-				topologyConfigPtr[4].serdesType  = DEFAULT_SERDES;
-				topologyConfigPtr[4].serdesSpeed = LAST_SERDES_SPEED;
-				topologyConfigPtr[4].serdesMode  = SERDES_DEFAULT_MODE;
+				mvPrintf("%s: Device flavour supports only 2 SATA interfaces: SATA2 via lane4 disabled\n", __func__);
+				topologyConfigPtr[4] = DefaultLane;
 			}
-
-
 			break;
 		default:
 			break;
@@ -723,8 +724,11 @@ MV_STATUS loadTopologyDBAp(SERDES_MAP  *serdesMapArray)
 
 	DEBUG_INIT_FULL_S("\n### loadTopologyDBAp ###\n");
 
-	DEBUG_INIT_S("\nInitialize DB-AP board topology\n");
+	mvPrintf("\nInitialize DB-AP board topology\n");
 	topologyConfigPtr = DbApConfigDefault;
+
+	/* Update the default board topology device flavours */
+	CHECK_STATUS(mvHwsUpdateDeviceToplogy(topologyConfigPtr, DB_CONFIG_DEFAULT));
 
 	/* Updating the topology map */
 	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {

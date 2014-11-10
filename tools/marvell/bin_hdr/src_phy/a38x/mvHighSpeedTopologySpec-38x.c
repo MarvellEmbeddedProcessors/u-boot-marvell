@@ -585,7 +585,7 @@ MV_STATUS mvHwsUpdateDeviceToplogy(SERDES_MAP* topologyConfigPtr, TOPOLOGY_CONFI
 			/* DB-GP & DB-BP: default for Lane3=SATA3 --> 6810/20 supports only 2 SATA interfaces: lane 3 disabled */
 			if ((BoardId == DB_68XX_ID) || (BoardId == DB_GP_68XX_ID)) {
 				/* temporarily disable lane - when setting serdes to new type remove print */
-				mvPrintf("%s: Device flavour supports only 2 SATA interfaces: SATA2 via lane3 disabled\n", __func__);
+				mvPrintf("%s: Device flavour supports only 2 SATA interfaces: SATA3 via lane3 disabled\n", __func__);
 				topologyConfigPtr[3] = DefaultLane;
 			}
 			/* DB-GP : default for Lane4=SATA2 --> 6810/20 supports only 2 SATA interfaces: lane 3 disabled */

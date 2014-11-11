@@ -159,8 +159,8 @@ SERDES_MAP* mvHwsSerdesTopologyGet(MV_U32 boardIdIndex)
 	MV_U32 arrSize;
 
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-	topologyArr = customerBoard0Topology;
-	arrSize = sizeof(customerBoard0Topology)/sizeof(SERDES_MAP*);
+	topologyArr = customerAc3BoardSerdesTopology;
+	arrSize = sizeof(customerAc3BoardSerdesTopology)/sizeof(SERDES_MAP*);
 #else
 	topologyArr = marvellBoardAc3SerdesTopology;
 	arrSize = sizeof(marvellBoardAc3SerdesTopology)/sizeof(SERDES_MAP*);
@@ -168,7 +168,7 @@ SERDES_MAP* mvHwsSerdesTopologyGet(MV_U32 boardIdIndex)
 
 	if (boardIdIndex >= arrSize)
 	{
-		mvPrintf("Error: mvHwsSerdesTopologyGet: board index %d is not valid\n", boardIdIndex);
+		mvPrintf("%s: Error: board index %d is not valid\n", __func__, boardIdIndex);
 		return NULL;
 	}
 

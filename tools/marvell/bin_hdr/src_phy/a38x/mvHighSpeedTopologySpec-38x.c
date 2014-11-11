@@ -578,20 +578,20 @@ MV_STATUS mvHwsUpdateDeviceToplogy(SERDES_MAP* topologyConfigPtr, TOPOLOGY_CONFI
 			/* DB-AP : default for Lane3=SGMII2 --> 6810 supports only 2 SGMII interfaces: lane 3 disabled */
 			if (BoardId == DB_AP_68XX_ID) {
 				/* temporarily disable lane - when setting serdes to new type remove print */
-				mvPrintf("%s: Device flavour supports only 2 SGMII interfaces: SGMII2 via lane3 disabled\n", __func__);
+				mvPrintf("%s: Device flavour supports only 2 SGMII interfaces: SGMII-2 @ lane3 disabled\n", __func__);
 				topologyConfigPtr[3] = DefaultLane;
 			}
 		case MV_6820:
 			/* DB-GP & DB-BP: default for Lane3=SATA3 --> 6810/20 supports only 2 SATA interfaces: lane 3 disabled */
 			if ((BoardId == DB_68XX_ID) || (BoardId == DB_GP_68XX_ID)) {
 				/* temporarily disable lane - when setting serdes to new type remove print */
-				mvPrintf("%s: Device flavour supports only 2 SATA interfaces: SATA3 via lane3 disabled\n", __func__);
+				mvPrintf("%s: Device flavour supports only 2 SATA interfaces: SATA Port 3 @ lane3 disabled\n", __func__);
 				topologyConfigPtr[3] = DefaultLane;
 			}
 			/* DB-GP : default for Lane4=SATA2 --> 6810/20 supports only 2 SATA interfaces: lane 3 disabled */
 			if (BoardId == DB_GP_68XX_ID) {
 				/* temporarily disable lane - when setting serdes to new type remove print */
-				mvPrintf("%s: Device flavour supports only 2 SATA interfaces: SATA2 via lane4 disabled\n", __func__);
+				mvPrintf("%s: Device flavour supports only 2 SATA interfaces: SATA Port 2 @ lane4 disabled\n", __func__);
 				topologyConfigPtr[4] = DefaultLane;
 			}
 			break;
@@ -772,7 +772,9 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[5].serdesType  =  isSgmii ? SGMII2 : USB3_HOST1;
 		serdesMapArray[5].serdesSpeed =  isSgmii ? __3_125Gbps : __5Gbps;;
 		serdesMapArray[5].serdesMode = SERDES_DEFAULT_MODE;
-	}
+	} else
+		mvPrintf("%s: Device flavour doesn't support 6 SerDes lanes: %s @ lane6 disabled\n",\
+				__func__, isSgmii ? "SGMII2" : "USB3.0 Host Port 1");
 
 	updateTopologySatR(serdesMapArray, MV_FALSE);
 

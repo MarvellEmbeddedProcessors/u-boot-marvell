@@ -84,9 +84,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static MV_U32 gBoardId = -1;
 MV_U32 mvBoardIdGet(MV_VOID)
 {
-#if defined(CONFIG_ALLEYCAT3)
-	MV_U8 readValue = 0;
-#endif
 	if (gBoardId != -1)
 		return gBoardId;
 
@@ -114,6 +111,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	#elif defined(RD_MTL_BOBCAT2)
 		gBoardId = RD_MTL_BC2;
 	#else
+		MV_U8 readValue = 0;
 		/* AlleyCat3 Board ID's */
 		if (mvBoardSarBoardIdGet(&readValue) != MV_OK || readValue >= AC3_MARVELL_BOARD_NUM) {
 			mvPrintf("%s: Error obtaining Board ID from EEPROM (%d)\n", __func__, readValue);

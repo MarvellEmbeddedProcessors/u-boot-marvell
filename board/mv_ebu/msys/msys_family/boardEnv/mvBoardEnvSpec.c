@@ -206,9 +206,9 @@ MV_BOARD_TWSI_INFO	alleycat3_customer_board_0_InfoBoardTwsiDev[] = {
 };
 
 MV_BOARD_MAC_INFO alleycat3_customer_board_0_InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
-	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0 },
-	{BOARD_MAC_SPEED_AUTO, 0x1, 0x1 },
+/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{BOARD_MAC_SPEED_AUTO, -1, -1 },
+	{BOARD_MAC_SPEED_AUTO, -1, -1 }
 };
 
 MV_BOARD_MODULE_TYPE_INFO alleycat3_customer_board_0_InfoBoardModTypeInfo[] = {
@@ -583,7 +583,7 @@ MV_BOARD_TWSI_INFO db_dx_ac3InfoBoardTwsiDev[] = {
 };
 
 MV_BOARD_MAC_INFO db_dx_ac3InfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
 	{BOARD_MAC_SPEED_AUTO, -1, -1 },
 	{BOARD_MAC_SPEED_AUTO, -1, -1 }
 };

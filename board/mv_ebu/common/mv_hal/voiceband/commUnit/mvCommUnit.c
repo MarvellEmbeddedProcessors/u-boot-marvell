@@ -279,9 +279,13 @@ MV_STATUS mvCommUnitHalInit(MV_TDM_PARAMS *tdmParams, MV_TDM_HAL_DATA *halData)
 		MV_REG_WRITE(MCSC_CHx_TRANSMIT_CONFIG_REG(chan), CONFIG_MTCRx);
 	}
 
-	/* Enable RX/TX linear byte swap */
-	MV_REG_WRITE(MCSC_GLOBAL_CONFIG_EXTENDED_REG,
-		    (MV_REG_READ(MCSC_GLOBAL_CONFIG_EXTENDED_REG) | CONFIG_LINEAR_BYTE_SWAP));
+	/* Enable RX/TX linear byte swap, only in linear mode */
+	if (MV_PCM_FORMAT_1BYTE == tdmParams->pcmFormat)
+		MV_REG_WRITE(MCSC_GLOBAL_CONFIG_EXTENDED_REG,
+			    (MV_REG_READ(MCSC_GLOBAL_CONFIG_EXTENDED_REG) & (~CONFIG_LINEAR_BYTE_SWAP)));
+	else
+		MV_REG_WRITE(MCSC_GLOBAL_CONFIG_EXTENDED_REG,
+			    (MV_REG_READ(MCSC_GLOBAL_CONFIG_EXTENDED_REG) | CONFIG_LINEAR_BYTE_SWAP));
 
 	/***********************************************/
 	/* Shared Bus to Crossbar Bridge Configuration */

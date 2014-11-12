@@ -134,7 +134,7 @@ void 	mvSysNetaInit(MV_U32 portMask, MV_U32 cpuMask)
 	halData.pncVirtBase = (MV_U8 *)ioremap(PNC_BM_PHYS_BASE, PNC_BM_SIZE);
 #endif /* CONFIG_MV_ETH_PNC */
 
-#ifndef CONFIG_CMD_BOARDCFG /* print ETH setup (if not using board configuration specific prints) */
+#ifndef CONFIG_ARMADA_39X /* print ETH setup (A39x is using board configuration specific prints) */
 	mvOsPrintf("\n|  port  | Interface | PHY address  |\n");
 	mvOsPrintf("|--------|-----------|--------------|\n");
 #endif
@@ -143,7 +143,7 @@ void 	mvSysNetaInit(MV_U32 portMask, MV_U32 cpuMask)
 		if (!(MV_BIT_CHECK(portMask, port)))
 			continue;
 
-#ifndef CONFIG_CMD_BOARDCFG /* print ETH setup (if not using board configuration specific prints) */
+#ifndef CONFIG_ARMADA_39X /* print ETH setup (A39x is using board configuration specific prints) */
 		/* SoCs that support BOARDCFG has specific board configuration print routines */
 		if (mvBoardPhyAddrGet(port) != -1)
 			mvOsPrintf("| egiga%d |   %5s   |     %#04x     |\n", port,

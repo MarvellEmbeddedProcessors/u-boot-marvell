@@ -88,8 +88,8 @@ MV_BOARD_TWSI_INFO armada_38x_customer_0_BoardTwsiDev[] = {
 };
 MV_BOARD_MAC_INFO armada_38x_customer_0_BoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
 	{ BOARD_MAC_SPEED_AUTO, 0x1, 0x1},
-	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0}
 };
 
 MV_DEV_CS_INFO armada_38x_customer_0_BoardDeCsInfo[] = {

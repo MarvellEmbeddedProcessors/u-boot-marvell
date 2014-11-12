@@ -151,6 +151,7 @@ static GT_STATUS    ddr3TipCentralization
         regPhyOffset = READ_CENTRALIZATION_PHY_REG + (effective_cs * 4);
         direction = OPER_READ;
     }
+
     /* DB initialization */
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
@@ -164,6 +165,7 @@ static GT_STATUS    ddr3TipCentralization
             centralizationResult[interfaceId][busId] = 0;
         }
     }
+
     /* start flow */
     for(patternId = startPattern; patternId <= endPattern ; patternId++)
     {
@@ -172,6 +174,7 @@ static GT_STATUS    ddr3TipCentralization
                                  PARAM_NOT_CARE, direction, topologyMap->interfaceActiveMask, 
                                  0x0, maxWinSize-1, maxWinSize-1, patternId, EDGE_FPF, CS_SINGLE, 
                                  PARAM_NOT_CARE, trainingResult);
+
         for(interfaceId = startIf; interfaceId <= endIf; interfaceId++)
         {
             VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
@@ -261,6 +264,7 @@ static GT_STATUS    ddr3TipCentralization
 		                centralizationState[interfaceId][busId] = 1;
 		                if (debugMode == GT_FALSE)
 		                {
+							flowResult[interfaceId] = TEST_FAILED;
 		                    return GT_FAIL;
 		                }
 		            }
@@ -270,10 +274,8 @@ static GT_STATUS    ddr3TipCentralization
     }/*pattern*/
     for(interfaceId = startIf; interfaceId <= endIf; interfaceId++)
     {
-        if (IS_INTERFACE_ACTIVE(topologyMap->interfaceActiveMask, interfaceId) ==  GT_FALSE)
-        {
-            continue;
-        }
+		VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
+
         isIfFail = GT_FALSE;
         flowResult[interfaceId] = TEST_SUCCESS;
         for(busId = 0; busId < octetsPerInterfaceNum ; busId++)
@@ -303,6 +305,7 @@ static GT_STATUS    ddr3TipCentralization
                     consTap   = 64;
 				}
             }
+
             /* check states */
             if (centralizationState[interfaceId][busId] == 3)
             {
@@ -323,6 +326,7 @@ static GT_STATUS    ddr3TipCentralization
                 DEBUG_CENTRALIZATION_ENGINE(DEBUG_LEVEL_ERROR, ("fail, IF %d pup %d\n", interfaceId, busId));
                 lockSuccess = GT_FALSE;
             }
+
             if (lockSuccess == GT_TRUE)
             {
                 centralizationResult[interfaceId][busId] = (busEndWindow[mode][interfaceId][busId] + busStartWindow[mode][interfaceId][busId])/2 - consTap;
@@ -344,17 +348,20 @@ static GT_STATUS    ddr3TipCentralization
                 isIfFail = GT_TRUE;
             }
        }
+
        if (isIfFail == GT_TRUE)
        {
            flowResult[interfaceId] = TEST_FAILED;
        }
    }
 
-    for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
+   /* restore cs enable value*/
+   for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
    {
-        VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)        /* restore cs enable value*/
+        VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, CS_ENABLE_REG, csEnableRegVal[interfaceId], MASK_ALL_BITS));
    }
+
    return isIfFail;
 }
 

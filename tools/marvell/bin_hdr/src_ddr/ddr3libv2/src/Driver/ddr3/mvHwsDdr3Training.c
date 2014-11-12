@@ -914,7 +914,7 @@ GT_STATUS    mvHwsDdr3TipRunAlg
     MV_HWS_ALGO_TYPE    algoType
 )
 {
-    GT_STATUS          retVal = GT_OK , retTune = GT_OK ;
+    GT_STATUS          retVal = GT_OK;
 
 #ifdef ODT_TEST_SUPPORT
    if (fingerTest == 1)
@@ -937,7 +937,7 @@ GT_STATUS    mvHwsDdr3TipRunAlg
         /* add to mask */
         if (isAdllCalibBeforeInit != 0)
         {
-            mvPrintf("with adll calib before init\n");
+            DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("with adll calib before init\n"));
             AdllCalibration(devNum, ACCESS_TYPE_MULTICAST, 0, freq );
         }
         /* frequency per interface is not relevant, only interface 0 */
@@ -947,7 +947,7 @@ GT_STATUS    mvHwsDdr3TipRunAlg
     }
     if (retVal != GT_OK)
     {
-        DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("RunAlg: tuning failed %d\n", retTune));
+        DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("********   DRAM initialization Failed (res 0x%x)   ********\n", retVal));
     }
 
    return retVal;
@@ -2871,7 +2871,15 @@ static GT_STATUS    ddr3TipDDR3AutoTune
         }
     }
 
-	if ((retVal== GT_FAIL) || (isAutoTuneFail == GT_TRUE))
+	if (((retVal != GT_OK) && (isAutoTuneFail == GT_FALSE)) ||
+	    ((retVal == GT_OK) && (isAutoTuneFail == GT_TRUE)))
+	{
+		/* in case MainFlow result and trainingResult DB are not synced we issue warning message
+		   this usually means that trainingResult DB was not updated in a case of a failure */
+		DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("Warning: Algorithm return value and Result DB are not synced (retVal 0x%x  result DB %d)\n", retVal, isAutoTuneFail));
+	}
+
+	if ((retVal != GT_OK) || (isAutoTuneFail == GT_TRUE))
 		return GT_FAIL;
 	else
 		return GT_OK;

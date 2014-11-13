@@ -340,6 +340,7 @@ typedef struct boardWakeupGPIO {
 {RD_AP_68XX_ID,	 -2 },\
 {DB_AP_68XX_ID,	 21 },\
 {DB_GP_68XX_ID,	 -2 },\
+{DB_BP_6821_ID,	 -2 },\
 };
 #else
 #define MV_BOARD_WAKEUP_GPIO_INFO {\

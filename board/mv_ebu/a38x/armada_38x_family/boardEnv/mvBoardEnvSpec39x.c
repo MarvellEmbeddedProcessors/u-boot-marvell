@@ -129,17 +129,6 @@ MV_BOARD_MPP_INFO armada_39x_customer_0_BoardMppConfigValue[] = {
 	} }
 };
 
-struct MV_BOARD_IO_EXPANDER armada_39x_customer_0_IoExpanderInfo[] = {
-	{0, 6, 0xF4},
-	{0, 7, 0xC3},
-	{0, 2, 0x0B},
-	{0, 3, 0x18},
-	{1, 6, 0xE7},
-	{1, 7, 0xF9},
-	{1, 2, 0x08},
-	{1, 3, 0x00}
-};
-
 MV_BOARD_INFO armada_39x_customer_board_0_info = {
 	.boardName			= "A39x-Customer-Board-0",
 	.numBoardNetComplexValue	= ARRSZ(armada_39x_customer_0_InfoBoardNetComplexInfo),
@@ -189,8 +178,8 @@ MV_BOARD_INFO armada_39x_customer_board_0_info = {
 	.norFlashWriteParams		= A39X_CUSTOMER_BOARD_0_NOR_WRITE_PARAMS,
 	/* Enable modules auto-detection. */
 	.configAutoDetect		= MV_FALSE,
-	.numIoExp			= ARRSZ(armada_39x_customer_0_IoExpanderInfo),
-	.pIoExp				= armada_39x_customer_0_IoExpanderInfo,
+	.numIoExp			= 0,
+	.pIoExp				= NULL,
 	.boardOptionsModule		= MV_MODULE_NO_MODULE
 };
 

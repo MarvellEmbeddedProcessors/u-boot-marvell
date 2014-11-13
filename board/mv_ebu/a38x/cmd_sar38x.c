@@ -45,7 +45,7 @@ typedef struct _boardSatrDefault {
 	MV_SATR_TYPE_ID satrId;
 	MV_U32 defauleValueForBoard[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_SATR_DEFAULT;
-#define MAX_DEFAULT_ENTRY	10
+#define MAX_DEFAULT_ENTRY	12
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 /* 	defauleValueForBoard[] = RD_NAS_68xx,	DB_BP_68xx,	RD_WAP_68xx,	DB_AP_68xx , DB_GP_68xx, 	DB_BP_6821 */
 { MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		0x0c,		0x0c,		0x0c,		0xc}},
@@ -58,6 +58,8 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 { MV_SATR_GP_SERDES5_CFG,	{0,		0,		0,		0,		0,		0}},
 { MV_SATR_DB_SERDES1_CFG,	{1,		1,		1,		1,		1,		1}},
 { MV_SATR_DB_SERDES2_CFG,	{1,		1,		1,		1,		1,		1}},
+{ MV_SATR_DB_USB3_PORT0,	{0,		0,		0,		0,		0,		0}},
+{ MV_SATR_DB_USB3_PORT1,	{0,		0,		0,		0,		0,		0}},
 };
 
 char* lane1Arr[7] = { 	"Unconnected" ,
@@ -465,22 +467,22 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "cpusnum                    - number of CPU cores\n"
 "sscg                       - SSCG modes\n"
 "bootsrc                    - boot source\n"
-"usb3port0                  - USB3-Port0 mode\n"
-"usb3port1                  - USB3-Port1 mode\n\n"
 
 "\tSW SatR fields\n"
 "\t--------------\n"
-"ddrbuswidth                - DDR bus width\n"
-"ddreccenable               - DDR ECC enable\n"
-"ddreccpupselect            - DDR ECC PUP selection\n"
-"boardid                    - board ID\n"
-"sgmiispeed                 - SGMII speed\n"
-"sgmiimode                 - SGMII negotiation mode\n"
-"rdserdes4                  - RD-NAS: SerDes lane #4\n"
-"gpserdes5                  - DB-GP:  SerDes lane #5\n"
-"dbserdes1                  - DB:     SerDes lane #1\n"
-"dbserdes2                  - DB:     SerDes lane #2\n"
-"ddr4select                 - DDR3/4 (read only) \n"
-"ecoversion                 - ECO version (read only)\n"
+"ddrbuswidth		- DDR bus width\n"
+"ddreccenable		- DDR ECC enable\n"
+"ddreccpupselect	- DDR ECC PUP selection\n"
+"boardid		- board ID\n"
+"sgmiispeed		- SGMII speed\n"
+"sgmiimode		- SGMII negotiation mode\n"
+"rdserdes4		- RD-NAS:	SerDes lane #4\n"
+"gpserdes5		- DB-GP:	SerDes lane #5\n"
+"dbserdes1		- DB:	SerDes lane #1\n"
+"dbserdes2		- DB:	SerDes lane #2\n"
+"usb3port0		- DB:	USB3-Port0 mode\n"
+"usb3port1		- DB:	USB3-Port1 mode\n\n"
+"ddr4select		- DDR3/4 (read only) \n"
+"ecoversion		- ECO version (read only)\n"
 );
 #endif /*defined(CONFIG_CMD_SAR)*/

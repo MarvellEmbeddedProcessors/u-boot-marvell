@@ -2127,7 +2127,7 @@ int mvCtrlNandClkSet(int nfc_clk_freq)
 *******************************************************************************/
 MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive)
 {
-	MV_U32 serdesConfigField;
+	MV_U32 lane5Cfg, lane3Cfg, phySelector;
 
 	/* On A39x and A38x A0 revision, there are 2 USB3.0 MACs, and the connectivity of the
 	   USB3.0 depends on the SerDes configuration:
@@ -2151,11 +2151,13 @@ MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive)
 	if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX && mvCtrlRevGet() == MV_88F68XX_Z1_ID)
 		return usbActive;
 
-	/* if only single USB3.0 SerDes, via Lane5 */
+	/* if only single USB3.0 SerDes, via Lane5 or via lane3 */
 	if (usbUnitId == USB3_UNIT_ID && mvCtrlUsb3MaxGet() == 1) {
-		serdesConfigField = (MV_REG_READ(COMM_PHY_SELECTOR_REG) & COMPHY_SELECT_MASK(5)) >>
-				COMPHY_SELECT_OFFS(5);
-		if (serdesConfigField == COMPHY_SELECT_LANE5_USB3_VAL)
+		phySelector = MV_REG_READ(COMM_PHY_SELECTOR_REG);
+		lane5Cfg = (phySelector & COMPHY_SELECT_MASK(5)) >> COMPHY_SELECT_OFFS(5);
+		lane3Cfg = (phySelector & COMPHY_SELECT_MASK(3)) >> COMPHY_SELECT_OFFS(3);
+		if (lane5Cfg == COMPHY_SELECT_LANE5_USB3_VAL ||
+			lane3Cfg == COMPHY_SELECT_LANE3_USB3_VAL)
 			return 1 - usbActive;
 	}
 	/* If A39x or A38x A0 rev, but the no mapping needed:

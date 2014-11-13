@@ -126,6 +126,7 @@ extern "C" {
 #elif defined(CONFIG_ARMADA_39X)
 #define PMC_SATA_STOP_CLK_OFFS(index)           (index < 2 ? 15 : 30)	/* bit 15 - sata0/1, bit 30 - sata2/3 */
 #endif
+#define COMPHY_SELECT_LANE3_USB3_VAL		0x5
 #define COMPHY_SELECT_LANE5_USB3_VAL		0x4
 
 #define PMC_SATA_STOP_CLK_MASK(index)		(1 << PMC_SATA_STOP_CLK_OFFS(index))

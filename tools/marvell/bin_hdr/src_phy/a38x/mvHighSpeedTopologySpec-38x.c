@@ -959,16 +959,16 @@ MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii)
 
 	return MV_OK;
 }
-
+/* 'usb3port0'/'usb3port1' fields are located in EEPROM, at 3rd byte(offset=2), bit 0:1 (respectively) */
 MV_STATUS loadTopologyUSBModeGet(MV_U8 *twsiData)
 {
 	MV_TWSI_SLAVE twsiSlave;
 
 	/* Read SatR 'usb3port0' & 'usb3port1' values */
-	twsiSlave.slaveAddr.address = RD_GET_MODE_ADDR;
+	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
-	twsiSlave.offset = 0;
+	twsiSlave.offset = 2;
 	twsiSlave.moreThen256 = MV_TRUE;
 	if (mvTwsiRead(0, &twsiSlave, twsiData, 1) == MV_OK)
 		return MV_OK;

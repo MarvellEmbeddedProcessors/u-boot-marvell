@@ -616,11 +616,9 @@ MV_STATUS loadTopologyDB381(SERDES_MAP  *serdesMapArray)
 	MV_U8 twsiData;
 	MV_U8 usb3Host0OrDevice = 0, usb3Host1OrDevice = 0;
 
-	DEBUG_INIT_FULL_S("\n### loadTopologyDB381 ###\n");
+	mvPrintf("\nInitialize DB-88F6821-BP board topology\n");
 
 	/* Getting the relevant topology mode (index) */
-	DEBUG_INIT_FULL_S("loadTopologyDB381: calling topologyConfigDB381ModeGet\n");
-
 	topologyMode = topologyConfigDB381ModeGet();
 
 	topologyConfigPtr = topologyConfigDB381[topologyMode];
@@ -668,11 +666,9 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 	MV_U8 twsiData;
 	MV_U8 usb3Host0OrDevice = 0, usb3Host1OrDevice = 0;
 
-	DEBUG_INIT_FULL_S("\n### loadTopologyDB ###\n");
+	mvPrintf("\nInitialize DB-88F6820-BP board topology\n");
 
 	/* Getting the relevant topology mode (index) */
-	DEBUG_INIT_FULL_S("loadTopologyDB: calling topologyConfigDBModeGet\n");
-
 	topologyMode = topologyConfigDBModeGet();
 
 	if (topologyMode == DB_NO_TOPOLOGY)

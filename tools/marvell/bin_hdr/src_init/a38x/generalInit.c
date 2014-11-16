@@ -130,9 +130,13 @@ MV_STATUS mvGeneralInit(void)
 
 	mvMppConfig();
 
+	/* - Init the TWSI before all I2C transaction */
+	DEBUG_INIT_FULL_S("mvGeneralInit: Init TWSI interface.\n");
+	mvHwsTwsiInitWrapper();
+
 #if !defined(MV_NO_PRINT)
 	mvUartInit();
-	DEBUG_INIT_S("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
+	mvPrintf("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
 #endif
 
 	/* Device general configuration was not supported on a38x Z0 revision */

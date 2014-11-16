@@ -48,12 +48,12 @@ typedef struct _boardSatrDefault {
 #define MAX_DEFAULT_ENTRY	12
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 /* 	defauleValueForBoard[] = RD_NAS_68xx,	DB_BP_68xx,	RD_WAP_68xx,	DB_AP_68xx , DB_GP_68xx, 	DB_BP_6821 */
-{ MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		0x0c,		0x0c,		0x0c,		0xc}},
-{ MV_SATR_CORE_CLK_SELECT,	{0,		0,		0,		0,		0,		0}},
+{ MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		0x0c,		0x0c,		0x0c,		0x4}},
+{ MV_SATR_CORE_CLK_SELECT,	{0,		0,		0,		0,		0,		1}},
 { MV_SATR_CPU1_ENABLE,	  	{MV_TRUE,	MV_TRUE,	MV_TRUE,	MV_TRUE,	MV_TRUE,	MV_TRUE}},
 { MV_SATR_SSCG_DISABLE,	  	{MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE,	MV_FALSE}},
 { MV_SATR_SGMII_SPEED,		{0,		0,		0,		0,		0,		0}},
-{ MV_SATR_DDR_BUS_WIDTH,	{1,		1,		1,		1,		1,		1}},
+{ MV_SATR_DDR_BUS_WIDTH,	{1,		1,		1,		1,		1,		0}},
 { MV_SATR_RD_SERDES4_CFG,	{0,		0,		0,		0,		0,		0}},
 { MV_SATR_GP_SERDES5_CFG,	{0,		0,		0,		0,		0,		0}},
 { MV_SATR_DB_SERDES1_CFG,	{1,		1,		1,		1,		1,		1}},

@@ -1715,8 +1715,7 @@ MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *s
 	/* A381 DB-BP board has different I2C mapping for 'freq' and 'cpusnum' S@R fields */
 	if ((boardId == DB_GP_68XX_ID &&
 		(satrClass == MV_SATR_CORE_CLK_SELECT || satrClass == MV_SATR_SSCG_DISABLE)) ||
-		(boardId == DB_BP_6821_ID &&
-		(satrClass == MV_SATR_CPU_DDR_L2_FREQ || satrClass == MV_SATR_CPU1_ENABLE)))
+		(boardId == DB_BP_6821_ID && satrClass == MV_SATR_CPU_DDR_L2_FREQ))
 			satrInfoTable = boardSatrInfo2;
 
 	/* verify existence of requested SATR type, pull its data,

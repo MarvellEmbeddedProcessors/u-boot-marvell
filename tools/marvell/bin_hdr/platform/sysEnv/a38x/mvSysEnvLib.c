@@ -840,6 +840,13 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 		default:
 			break;
 	}
+	/* DB_BP_6821_ID: verify Bus width value is valid (16bit only) */
+	if (mvBoardIdGet() == DB_BP_6821_ID && topologyUpdateInfo->mvWidth == MV_TOPOLOGY_UPDATE_WIDTH_32BIT) {
+		mvPrintf("\nWarning: DB-88F6821-BP board doesn't support 32BIT DDR bus width.\n");
+		mvPrintf("\t Overriding 'SatR' configuration to be 16BIT\n\n");
+		topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_16BIT;
+	}
+
 	return MV_OK;
 }
 

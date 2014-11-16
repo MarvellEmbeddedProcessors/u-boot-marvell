@@ -124,11 +124,7 @@ MV_VOID mvUartInit(void)
 
 #if defined (MV88F68XX)
 	/* UART1 on DB-AP board is the default UART interface
-	 - Init the TWSI to read the board ID from the EEPROM
 	 - Update the global Uart interface to use UART1 register offset */
-	DEBUG_INIT_FULL_S("mvHwsTwsiInitWrapper: Init TWSI interface.\n");
-	mvHwsTwsiInitWrapper();
-
 	if( mvBoardIdGet() == DB_AP_68XX_ID)
 		uartOffset = UART1_REG_OFFSET;
 #endif

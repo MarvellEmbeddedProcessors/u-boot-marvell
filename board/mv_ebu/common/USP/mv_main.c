@@ -131,10 +131,17 @@ void mv_print_map(void)
 #ifdef DB_78X60_PCAC
 		return 0;
 #endif
-	printf("\nMap:   Code:\t\t0x%08x:0x%08x\n", (unsigned int)gd->reloc_off, (unsigned int)(gd->reloc_off + _bss_start_ofs));
-	printf("       BSS:\t\t0x%08x\n", (unsigned int)(gd->reloc_off + _bss_end_ofs));
-	printf("       Stack:\t\t0x%08x\n", (unsigned int)gd->start_addr_sp);
-	printf("       Heap:\t\t0x%08x:0x%08x\n\n",(unsigned int)(gd->relocaddr - TOTAL_MALLOC_LEN), (unsigned int)gd->relocaddr);
+
+	printf("\nMap:   Code:\t\t\t0x%08x:0x%08x\n", (unsigned int)gd->reloc_off, (unsigned int)(gd->reloc_off + _bss_start_ofs));
+	printf("       BSS:\t\t\t0x%08x\n", (unsigned int)(gd->reloc_off + _bss_end_ofs));
+	printf("       Stack:\t\t\t0x%08x\n", (unsigned int)gd->start_addr_sp);
+	printf("       Heap:\t\t\t0x%08x:0x%08x\n", (unsigned int)(gd->relocaddr - TOTAL_MALLOC_LEN), (unsigned int)gd->relocaddr);
+	printf("       U-Boot Environment:\t0x%08x:0x%08x ", CONFIG_ENV_OFFSET, CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE);
+#ifdef MV_NAND_BOOT
+	printf("(NAND)\n\n");
+#elif defined(MV_SPI_BOOT)
+	printf("(SPI)\n\n");
+#endif
 }
 
 void print_mvBanner(void)

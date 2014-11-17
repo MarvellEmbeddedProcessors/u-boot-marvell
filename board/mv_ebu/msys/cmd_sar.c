@@ -430,6 +430,11 @@ static int do_sar_write(int mode, int value)
 		rc = mvBoardCoreFreqSet(tmp);
 		break;
 	case CMD_CPU_DDR_REQ:
+		if ((value < 0) || (value > (sizeof(cpuDdrClkTbl)/sizeof(cpuDdrClkTbl[0])))) {
+			mvOsPrintf("S@R incorrect value for Freq %d\n", value);
+			rc = MV_ERROR;
+			break;
+		}
 		rc = mvBoardCpuFreqSet(tmp);
 		break;
 #ifdef CONFIG_BOBCAT2

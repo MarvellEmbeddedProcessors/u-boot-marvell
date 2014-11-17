@@ -360,6 +360,7 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 {
 	MV_STATUS rc = MV_TRUE;
 	MV_U32 boardId = mvBoardIdGet();
+	MV_U32 i, freqValueInvalid;
 
 	/* if field is read only, or field is board id for DB boards - modification not supported */
 	if (satrInfo->status & SATR_READ_ONLY ||
@@ -374,6 +375,23 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 		if ((value + MARVELL_BOARD_ID_BASE != RD_NAS_68XX_ID)
 			&& (value + MARVELL_BOARD_ID_BASE != RD_AP_68XX_ID)) {
 			mvOsPrintf("S@R incorrect value for board ID %d\n", value);
+			mvOsPrintf("Write S@R failed!\n");
+			return 1;
+		}
+	}
+
+	if (satrInfo->satrId == MV_SATR_CPU_DDR_L2_FREQ) {
+		freqValueInvalid = 1;
+		for (i=0; i <= MV_SAR_FREQ_MODES_EOT; i++) {
+			if (cpuDdrClkTbl[i].id == MV_SAR_FREQ_MODES_EOT)
+				break;
+			if (cpuDdrClkTbl[i].id == value) {
+				freqValueInvalid = 0;
+				break;
+			}
+		}
+		if (freqValueInvalid) {
+			mvOsPrintf("S@R incorrect value for Freq %d\n", value);
 			mvOsPrintf("Write S@R failed!\n");
 			return 1;
 		}

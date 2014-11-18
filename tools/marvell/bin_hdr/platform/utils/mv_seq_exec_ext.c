@@ -63,7 +63,7 @@
 
 #include "mv_seq_exec_ext.h"
 #include "mvHighSpeedEnvSpec.h"
-
+#include "printf.h"
 
 /* Forward declarations of local functions */
 static MV_STATUS writeOpExecuteExt
@@ -114,11 +114,6 @@ static MV_STATUS writeOpExecuteExt(
 	data   = params->data[dataArrIdx];
 	mask   = params->mask;
 
-	if (unitNum > mvHwsSerdesLastLaneGet()) {
-		DEBUG_INIT_S("writeOpExecuteExt: bad serdes number\n");
-		return MV_BAD_PARAM;
-	}
-
 	/* an empty operation */
 	if (data == NO_DATA)
 		return MV_OK;
@@ -160,11 +155,6 @@ static MV_STATUS pollOpExecuteExt(
 	mask   = params->mask;
 	numOfLoops = params->numOfLoops;
 	waitTime   = params->waitTime;
-
-	if (unitNum > mvHwsSerdesLastLaneGet()) {
-		DEBUG_INIT_S("pollOpExecuteExt: bad serdes number\n");
-		return MV_BAD_PARAM;
-	}
 
 	/* an empty operation */
 	if (data == NO_DATA)
@@ -226,15 +216,20 @@ MV_STATUS mvSeqExecExt(
 	MV_U32				dataArrIdx;
 	MV_EXT_OP			currOp;
 
-	DEBUG_INIT_FULL_S("\n### mvSeqExtExec ###\n");
-	DEBUG_INIT_FULL_C("seq id = ", seqId, 2);
+	DB(mvPrintf("\n### mvSeqExtExec ###\n"));
+	DB(mvPrintf("seq id: %d\n", seqId));
+
+	if (unitNum > mvHwsSerdesLastLaneGet()) {
+		mvPrintf("mvSeqExecExt: Serdes %d is not valid (last lane is %d)\n", unitNum, mvHwsSerdesLastLaneGet());
+		return MV_BAD_PARAM;
+	}
 
 	seqArr     = serdesSeqDb[seqId].opParamsPtr;
 	seqSize    = serdesSeqDb[seqId].cfgSeqSize;
 	dataArrIdx = serdesSeqDb[seqId].dataArrIdx;
 
-	DEBUG_INIT_FULL_C("seqSize= ", seqSize, 2);
-	DEBUG_INIT_FULL_C("dataArrIdx = ", dataArrIdx, 2);
+	DB(mvPrintf("seqSize: %d\n", seqSize));
+	DB(mvPrintf("dataArrIdx: %d\n", dataArrIdx));
 
 	/* Executing the sequence operations */
 	for (seqIdx = 0; seqIdx < seqSize; seqIdx++) {

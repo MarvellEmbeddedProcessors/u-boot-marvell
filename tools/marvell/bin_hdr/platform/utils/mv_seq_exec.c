@@ -64,6 +64,7 @@
 #include "mv_seq_exec.h"
 #include "soc_spec.h"
 #include "mvHighSpeedEnvSpec.h"
+#include "printf.h"
 
 #ifdef REGISTER_TRACE_DEBUG
 static MV_U32 _MV_REG_READ(MV_U32 regAddr)
@@ -111,11 +112,6 @@ MV_STATUS writeOpExecute
 )
 {
 	MV_U32 unitBaseReg, unitOffset, data, mask, regData, regAddr;
-
-	if (serdesNum >= mvHwsSerdesGetMaxLane()) {
-		DEBUG_INIT_S("writeOpExecute: bad serdes number\n");
-		return MV_BAD_PARAM;
-	}
 
 	/* Getting write op params from the input parameter */
 	/*
@@ -196,11 +192,6 @@ MV_STATUS pollOpExecute
 	numOfLoops = params->numOfLoops;
 	waitTime = params->waitTime;
 
-	if (serdesNum >= mvHwsSerdesGetMaxLane()) {
-		DEBUG_INIT_S("pollOpExecute: bad serdes number\n");
-		return MV_BAD_PARAM;
-	}
-
 	/* an empty operation */
 	if (data == NO_DATA)
 		return MV_OK;
@@ -268,15 +259,20 @@ MV_STATUS mvSeqExec
 	MV_U32 dataArrIdx;
 	MV_OP currOp;
 
-	DEBUG_INIT_FULL_S("\n### mvSeqExec ###\n");
-	DEBUG_INIT_FULL_C("seq id = ", seqId, 2);
+	DB(mvPrintf("\n### mvSeqExec ###\n"));
+	DB(mvPrintf("seq id: %d\n", seqId));
+
+	if (serdesNum >= mvHwsSerdesGetMaxLane()) {
+		mvPrintf("mvSeqExecExt: Serdes %d is not valid (last lane is %d)\n", serdesNum, mvHwsSerdesGetMaxLane());
+		return MV_BAD_PARAM;
+	}
 
 	seqArr = serdesSeqDb[seqId].opParamsPtr;
 	seqSize = serdesSeqDb[seqId].cfgSeqSize;
 	dataArrIdx = serdesSeqDb[seqId].dataArrIdx;
 
-	DEBUG_INIT_FULL_C("seqSize= ", seqSize, 2);
-	DEBUG_INIT_FULL_C("dataArrIdx = ", dataArrIdx, 2);
+	DB(mvPrintf("seqSize: %d\n", seqSize));
+	DB(mvPrintf("dataArrIdx: %d\n", dataArrIdx));
 
 	/* Executing the sequence operations */
 	for (seqIdx = 0; seqIdx < seqSize; seqIdx++) {

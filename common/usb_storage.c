@@ -215,6 +215,17 @@ static unsigned int usb_get_max_lun(struct us_data *us)
 	return (len > 0) ? *result : 0;
 }
 
+/********************************************************************************
+ * A hierarchical support (HISUP) bit set to zero indicates the SCSI target device does
+ * not use the hierarchical addressing model to assign LUNs to logical units. A HISUP bit
+ * set to one indicates the SCSI target device uses the hierarchical addressing model
+ * to assign LUNs to logical units
+ *
+ * read hiSup status in usb_inquiry() routine: 3rd byte of inquiry DATA, bit4:
+ * if hiSup bit is enabled, read positive max LUN from device and use it as index.
+ */
+int global_hi_sup = -1;
+
 /*******************************************************************************
  * scan the usb and reports device info
  * to the user if mode = 1
@@ -252,17 +263,26 @@ int usb_stor_scan(int mode)
 			/* OK, it's a storage device.  Iterate over its LUNs
 			 * and populate `usb_dev_desc'.
 			 */
-			int lun, max_lun, start = usb_max_devs;
+			int lun, start = usb_max_devs;
+			unsigned int max_lun_index;
 
-			max_lun = usb_get_max_lun(&usb_stor[usb_max_devs]);
+			max_lun_index = usb_get_max_lun(&usb_stor[usb_max_devs]);
+			/*if valid, convert logic unit count to logic unit index: decrease it by 1 */
+			if (max_lun_index > 0)
+				max_lun_index--;
+
 			for (lun = 0;
-			     lun <= max_lun && usb_max_devs < USB_MAX_STOR_DEV;
+			     lun <= max_lun_index && usb_max_devs < USB_MAX_STOR_DEV;
 			     lun++) {
 				usb_dev_desc[usb_max_devs].lun = lun;
 				if (usb_stor_get_info(dev, &usb_stor[start],
 				    &usb_dev_desc[usb_max_devs]) == 1) {
 					usb_max_devs++;
 				}
+				/* hiSup bit is tested in usb_inquiry():
+				 * if disabled --> mark that logical units are not supported */
+				if (!global_hi_sup)
+					max_lun_index = 0;
 			}
 		}
 		/* if storage device */
@@ -1347,7 +1367,6 @@ int usb_stor_get_info(struct usb_device *dev, struct us_data *ss,
 	ALLOC_CACHE_ALIGN_BUFFER(u8, usb_stor_buf, 36);
 	u32 capacity, blksz;
 	ccb *pccb = &usb_ccb;
-
 	pccb->pdata = usb_stor_buf;
 
 	dev_desc->target = dev->devnum;
@@ -1383,6 +1402,11 @@ int usb_stor_get_info(struct usb_device *dev, struct us_data *ss,
 #endif /* CONFIG_USB_BIN_FIXUP */
 	debug("ISO Vers %X, Response Data %X\n", usb_stor_buf[2],
 	      usb_stor_buf[3]);
+
+	/* INQUIRY data byte3, bit4 is hiSup bit (hierarchical support).
+	 * if HISUP bit is not set, disregard LUN index value (scan only unit#0) */
+	global_hi_sup = usb_stor_buf[3] & (1<<4) ? 1 : 0;
+
 	if (usb_test_unit_ready(pccb, ss)) {
 		printf("Device NOT ready\n"
 		       "   Request Sense returned %02X %02X %02X\n",

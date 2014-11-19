@@ -177,13 +177,18 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 };
 #endif
 
-/* ethComPhy: bit description for RGMII/SGMII per MAC:
+/* ethComPhy: bit description for RGMII/SGMII/RXAUI/XAUI per MAC:
  * bits 0,1,2 : RGMII port 0,1,2 indication
  * bits 3,4,5 : SGMII port 0,1,2 indication
- * ethComPhy is updated by mvCtrlSerdesConfigDetect in case SGMII/QSGMII is set */
-static MV_U32	ethComPhy;
+ * bits 6     : RXAUI port 0 indication
+ * ethComPhy logic:
+ *       1. mvCtrlEnvInit:            initialized according to SoC
+ *       2. mvCtrlEnvInit:            updated according to NAND existance
+ *       3. mvCtrlSerdesConfigDetect: updated according to SerDes status (Q/SGMII & R/XAUI). */
 #define ON_BOARD_RGMII(x)	(1 << x)
 #define SERDES_SGMII(x)		(8 << x)
+#define SERDES_RXAUI(x)		(64 << x)
+static MV_U32 ethComPhy;
 
 /* Only the first unit, only the second unit or both can be active on the specific board */
 static MV_BOOL sataUnitActive[MV_SATA_MAX_UNIT] = {MV_FALSE, MV_FALSE};
@@ -468,14 +473,16 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 	mvCtrlSocUnitInfoNumSet(USB3_UNIT_ID, usbHIfCount);
 	mvCtrlSocUnitInfoNumSet(QSGMII_UNIT_ID, qsgmiiIfCount);
 #ifdef CONFIG_ARMADA_39X
-	/* if xauiIfCount(count of RXAUI serdes lanes) == 2 => RXAUI is connected to SerDes's
-	   if xauiIfCount(count of XAUI serdes lanes) == 4 => XAUI is connected to SerDes's */
-	if (xauiIfCount == 2 || xauiIfCount == 4)
+       /* if xauiIfCount(count of RXAUI serdes lanes) == 2 => RXAUI is connected to SerDes's
+	  if xauiIfCount(count of XAUI serdes lanes) == 4 => XAUI is connected to SerDes's */
+	if (xauiIfCount == 2 || xauiIfCount == 4) {
 		mvCtrlSocUnitInfoNumSet(XAUI_UNIT_ID, 1);
+		ethComPhy |= SERDES_RXAUI(1);
+	}
 	else
 		mvCtrlSocUnitInfoNumSet(XAUI_UNIT_ID, 0);
-
 #endif
+
 	/* only if found more serdes eth interfaces than on-board ports,than update max eth count.
 	   (needed by phy + giga init sequence)				*/
 	mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, mvCountMaskBits(ethComPhy));
@@ -485,8 +492,8 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 	DB(printf("mvCtrlSocUnitGet[USBH]= %d,\n", mvCtrlSocUnitInfoNumGet(USB_UNIT_ID)));
 	DB(printf("mvCtrlSocUnitGet[USB3]= %d,\n", mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID)));
 	DB(printf("mvCtrlSocUnitGet[USB2]= %d,\n", mvCtrlSocUnitInfoNumGet(USB_UNIT_ID)));
-#ifdef CONFIG_ARMADA_39X
 	DB(printf("mvCtrlSocUnitGet[QSGMII]= %d,\n", mvCtrlSocUnitInfoNumGet(QSGMII_UNIT_ID)));
+#ifdef CONFIG_ARMADA_39X
 	DB(printf("mvCtrlSocUnitGet[XAUI]=   %d,\n", mvCtrlSocUnitInfoNumGet(XAUI_UNIT_ID)));
 #endif
 }
@@ -516,6 +523,12 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 {
 	MV_U32 i, port, rVal, gppMask;
 
+#if CONFIG_ARMADA_38X
+	ethComPhy = ON_BOARD_RGMII(0);
+#else
+	/* RGMII-0 is not supported on A39x */
+	ethComPhy = 0;
+#endif
 
 	/* If set to Auto detect, read board config info, update MPP group types*/
 	if (mvBoardConfigAutoDetectEnabled()) {
@@ -525,12 +538,10 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvBoardInfoUpdate();
 	}
 
-	if (mvBoardIsModuleConnected(MV_MODULE_NOR) ||
+	if (!(mvBoardIsModuleConnected(MV_MODULE_NOR) ||
 	    mvBoardIsModuleConnected(MV_MODULE_NAND) ||
-	    mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD))
-		ethComPhy = ON_BOARD_RGMII(0); /* NOR/NAND modules overides RGMII-1 MPP's */
-	else
-		ethComPhy = ON_BOARD_RGMII(0) | ON_BOARD_RGMII(1);
+	    mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD)))
+		ethComPhy |= ON_BOARD_RGMII(1); /* NOR/NAND modules overides RGMII-1 MPP's */
 
 	mvCtrlSerdesConfigDetect();
 

@@ -330,11 +330,17 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			smiAddress = 0x0;
 		mvBoardPhyAddrSet(0, smiAddress);
 
+		smiAddress = -1;
 		if (netComplex & (MV_NETCOMP_GE_MAC1_2_SGMII_L1 | MV_NETCOMP_GE_MAC1_2_SGMII_L2))
 			smiAddress = 0x5;
 		else if (netComplex & (MV_NETCOMP_GE_MAC1_2_RGMII1))
 			smiAddress = 0x1;
 		mvBoardPhyAddrSet(1, smiAddress);
+
+		smiAddress = -1;
+		if (netComplex & (MV_NETCOMP_GE_MAC3_2_SGMII_L6))
+			smiAddress = 0x6;
+		mvBoardPhyAddrSet(3, smiAddress);
 
 		break;
 	default:
@@ -521,6 +527,6 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 		if (mvBoardPhyAddrGet(port) != -1)
 			mvOsOutput("|     %#04x     |\n", (MV_U8)mvBoardPhyAddrGet(port));
 		else
-			mvOsOutput("|     In-Band     |\n");
+			mvOsOutput("|     In-Band  |\n");
 	}
 }

@@ -109,7 +109,9 @@ int mv_sdh_init(u32 regbase, u32 max_clk, u32 min_clk, u32 quirks);
 #else
 #define DB(x)
 #endif
-
+#if defined(CONFIG_CMD_DATE)
+extern void rtc_init(void);
+#endif
 extern int display_dram_config(int print);
 extern int fdt_env_setup(char *fdtfile);
 int late_print_cpuinfo(void);
@@ -1069,6 +1071,9 @@ int misc_init_r(void)
 
 #if defined(MV_INCLUDE_UNM_ETH) || defined(MV_INCLUDE_GIG_ETH)
 	mvBoardEgigaPhyInit();
+#endif
+#if defined(CONFIG_CMD_DATE)
+	rtc_init(); /* Ensure the bus bridge parameters are ready for RTC access */
 #endif
 
 	return 0;

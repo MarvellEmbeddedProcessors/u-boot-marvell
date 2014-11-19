@@ -317,6 +317,16 @@ MV_U32 mvHwsSerdesGetMaxLane
 }
 
 /***************************************************************************/
+MV_BOOL mvHwsIsSerdesActive(MV_U8 laneNum)
+{
+	if (laneNum < mvHwsSerdesGetMaxLane())
+		return MV_TRUE;
+
+	mvPrintf("%s: invalid SerDes lane for this device (%d)\n", __func__, laneNum);
+	return MV_FALSE;
+}
+
+/***************************************************************************/
 MV_STATUS mvHwsGetExtBaseAddr
 (
 	MV_U32 serdesNum,
@@ -358,4 +368,9 @@ MV_U32 mvHwsSerdesGetPhySelectorVal(MV_32 serdesNum, SERDES_TYPE serdesType)
 	return commonPhysSelectorsSerdesRev2Map[serdesType][serdesNum];
 }
 
+/***************************************************************************/
+MV_U32 mvHwsGetPhysicalSerdesNum(MV_U32 serdesNum)
+{
+	return serdesNum;
+}
 

@@ -48,7 +48,7 @@ MAKE_NETA = yes
 endif
 
 
-COMMON_OBJS     = $(COMMON_DIR)/mvCommon.o
+COMMON_OBJS     = $(COMMON_DIR)/mvCommon.o $(COMMON_DIR)/mvList.o
 OSSERVICES_OBJS = $(OSSERVICES_DIR)/mvOs.o
 ifdef MAKE_SATA
 OSSERVICES_OBJS+= $(OSSERVICES_DIR)/mvOsSata.o

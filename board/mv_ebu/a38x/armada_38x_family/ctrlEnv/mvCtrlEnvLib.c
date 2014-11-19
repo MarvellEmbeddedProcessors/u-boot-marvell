@@ -248,9 +248,9 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 *        return SOC device index
 *
 *******************************************************************************/
-MV_U32 mvCtrlDevIdIndexGet(void)
+MV_U32 mvCtrlDevIdIndexGet(MV_U32 ctrlModel)
 {
-	switch (mvCtrlModelGet()) {
+	switch (ctrlModel) {
 	case MV_6820_DEV_ID:
 		return MV_6820_INDEX;
 	case MV_6810_DEV_ID:
@@ -290,7 +290,7 @@ MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit)
 		return 0;
 	}
 
-	devIdIndex = mvCtrlDevIdIndexGet();
+	devIdIndex = mvCtrlDevIdIndexGet(mvCtrlModelGet());
 	return mvCtrlSocUnitNums[unit][devIdIndex];
 }
 /*******************************************************************************
@@ -321,7 +321,7 @@ MV_U32 mvCtrlSocUnitInfoNumSet(MV_UNIT_ID unit, MV_U32 maxValue)
 		return 0;
 	}
 
-	devIdIndex = mvCtrlDevIdIndexGet();
+	devIdIndex = mvCtrlDevIdIndexGet(mvCtrlModelGet());
 	return mvCtrlSocUnitNums[unit][devIdIndex] = maxValue;
 }
 
@@ -1215,13 +1215,12 @@ MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID)
 *       None.
 *
 * RETURN:
-*       16bit desscribing Marvell controller ID
+*       16bit describing Marvell Device ID
 *
 *******************************************************************************/
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
-	MV_U32	defaultCtrlId, ctrlId = MV_REG_READ(DEV_ID_REG);
-	ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
+	MV_U32 defaultCtrlId, ctrlId = (MV_REG_READ(DEV_ID_REG) & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
 
 	switch (ctrlId) {
 	case MV_6820_DEV_ID:

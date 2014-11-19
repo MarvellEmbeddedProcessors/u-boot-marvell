@@ -53,6 +53,18 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 { MV_SATR_CORE_CLK_SELECT,	{0,		0,		} },
 };
 
+typedef struct _deviceIdEntry {
+	char *devIdStr;
+	MV_U16 devIdFlavor;
+	MV_U16 devIdValue;
+} MV_BOARD_SATR_DEVICE_ID;
+
+MV_BOARD_SATR_DEVICE_ID devIdArr[2] = {
+/* Device ID STR	ID Flavor	ID HW Value*/
+{ "6920 (A395)",	0x6920,		0x4 },
+{ "6928 (A398)",	0x6928,		0x6 },
+};
+
 MV_BOOL mvVerifyRequest(void)
 {
 	readline(" ");
@@ -81,6 +93,16 @@ int do_sar_default(void)
 			mvOsPrintf("Error write S@R for id=%d\n", satrClassId);
 		}
 	}
+
+	/* set default Device ID - if MV_SATR_DEVICE_ID field is relevant on board */
+	if (mvBoardSatrInfoConfig(MV_SATR_DEVICE_ID, &satrInfo) == MV_OK) {
+		for (i = 0; i < ARRAY_SIZE(devIdArr); i++) {
+			if (devIdArr[i].devIdFlavor == mvCtrlModelGet())
+				if (mvBoardSatRWrite(MV_SATR_DEVICE_ID, devIdArr[i].devIdValue) == MV_ERROR)
+					mvOsPrintf("Error writing default Device ID ('devid') =%d\n", devIdArr[i].devIdValue);
+		}
+	}
+
 	printf("\nSample at Reset values were restored to default.\n");
 	return 0;
 }
@@ -139,6 +161,11 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 			mvOsPrintf("\t%02d (%#04x), Boot from %s\n", i, i, satrBootSrcTable[i].name);
 		}
 		break;
+	case MV_SATR_DEVICE_ID:
+		mvOsPrintf("Determines the Device ID:\n");
+		for (i = 0; i < ARRAY_SIZE(devIdArr); i++)
+			mvOsPrintf("\t\t %d = %s (ID value = %x)\n" , i ,devIdArr[i].devIdStr, devIdArr[i].devIdValue);
+		break;
 	default:
 		mvOsPrintf("Usage: sar list [options] (see help)\n");
 		return 1;
@@ -182,6 +209,13 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 	case MV_SATR_BOOT_DEVICE:
 		if (tmp < BOOT_SRC_TABLE_SIZE)
 			mvOsPrintf("bootsrc\t\t\t= %d ==> Boot From %s\n", tmp, satrBootSrcTable[tmp].name);
+		break;
+	case MV_SATR_DEVICE_ID:
+		for (i = 0; i < ARRAY_SIZE(devIdArr); i++) {
+			if (devIdArr[i].devIdValue == tmp)
+				mvOsPrintf("devid\t\t= %d  ==> Device ID: %s (ID value = %x)\n", i,
+				devIdArr[i].devIdStr, devIdArr[i].devIdValue);
+		}
 		break;
 	case CMD_DUMP:
 		{
@@ -231,6 +265,16 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 		if (freqValueInvalid) {
 			mvOsPrintf("S@R incorrect value for Freq %d\n", value);
 			mvOsPrintf("Write S@R failed!\n");
+			return 1;
+		}
+	}
+
+	/* verify requested entry is valid */
+	if (satrInfo->satrId == MV_SATR_DEVICE_ID) {
+		if (value <= ARRAY_SIZE(devIdArr))
+			value = devIdArr[value].devIdValue;
+		else {
+			printf("%s: Error: requested invalid DEVICE_ID value (%x)\n", __func__, value);
 			return 1;
 		}
 	}
@@ -312,9 +356,10 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 
 "\tHW SatR fields\n"
 "\t--------------\n"
-"coreclock                  - core frequency\n"
-"freq                       - CPU DDR frequency\n"
-"bootsrc                    - boot source\n"
+"devid			- Device ID flavor\n"
+"coreclock		- core frequency\n"
+"freq			- CPU DDR frequency\n"
+"bootsrc		- boot source\n"
 );
 
 #endif /*defined(CONFIG_CMD_SAR)*/

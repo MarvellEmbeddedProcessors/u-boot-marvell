@@ -1716,11 +1716,11 @@ MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *s
 	MV_BOARD_SATR_INFO *satrInfoTable = boardSatrInfo;
 
 #ifdef CONFIG_ARMADA_38X
-	/* A38x DB-GP board has different I2C mapping for SSCG and Core clock S@R fields */
+	/* A38x DB-GP board has different I2C mapping for SSCG, Core clock, and Device ID S@R fields */
 	/* A381 DB-BP board has different I2C mapping for 'freq' and 'cpusnum' S@R fields */
-	if ((boardId == DB_GP_68XX_ID &&
-		(satrClass == MV_SATR_CORE_CLK_SELECT || satrClass == MV_SATR_SSCG_DISABLE)) ||
-		(boardId == DB_BP_6821_ID && satrClass == MV_SATR_CPU_DDR_L2_FREQ))
+	if ((boardId == DB_GP_68XX_ID && (satrClass == MV_SATR_CORE_CLK_SELECT ||
+		satrClass == MV_SATR_SSCG_DISABLE || satrClass == MV_SATR_DEVICE_ID))
+		|| (boardId == DB_BP_6821_ID && satrClass == MV_SATR_CPU_DDR_L2_FREQ))
 			satrInfoTable = boardSatrInfo2;
 #endif
 
@@ -2402,15 +2402,30 @@ MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField)
 		DB(mvOsPrintf("%s: value after mvReverseBits = 0x%X\n", __func__, data));
 	}
 
+	/* BootSrc field is 6 bits: divided over 2 I2C registers */
 	if (satrField == MV_SATR_BOOT_DEVICE) {
-		/*  read boot mode second part from rd */
+		/*  read boot mode MSV part from I2C */
 		MV_U32 tmp = mvBoardSatRRead(MV_SATR_BOOT2_DEVICE);
 		if (tmp == MV_ERROR) {
-			mvOsPrintf("%s: Error: Read from S@R failed\n", __func__);
+			mvOsPrintf("%s: Error: Read 2nd part (MSB) of 'bootsrc' from S@R failed\n", __func__);
 			return MV_ERROR;
 		}
 		data = data | ((tmp & MV_SATR_BOOT2_VALUE_MASK) << MV_SATR_BOOT2_VALUE_OFFSET);
 	}
+
+	/* devId field for A38x DB-BP board it's divided over 2 I2C registers */
+#ifdef CONFIG_ARMADA_38X
+	if (mvBoardIdGet() == DB_68XX_ID && satrField == MV_SATR_DEVICE_ID) {
+		/* read boot mode MSB part from I2C */
+		MV_U32 tmp = mvBoardSatRRead(MV_SATR_DEVICE_ID2);
+		if (tmp == MV_ERROR) {
+			mvOsPrintf("%s: Error: Read 2nd part (MSB) of 'devid' from S@R failed\n", __func__);
+			return MV_ERROR;
+		}
+		data = data | ((tmp & MV_SATR_DEVICE_ID2_VALUE_OFFSET) << MV_SATR_DEVICE_ID2_VALUE_MASK);
+	}
+#endif
+
 	return data;
 }
 
@@ -2449,13 +2464,26 @@ MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val)
 		mvOsPrintf("%s: Error: Requested S@R field is read only\n", __func__);
 		return MV_ERROR;
 	}
+	/* BootSrc field is 6 bits: divided over 2 I2C registers */
 	if (satrWriteField == MV_SATR_BOOT_DEVICE) {
 		val1 = (val >> MV_SATR_BOOT2_VALUE_OFFSET) & MV_SATR_BOOT2_VALUE_MASK ;
 		if (mvBoardSatRWrite(MV_SATR_BOOT2_DEVICE, val1) != MV_OK) {
-			mvOsPrintf("%s: Error: write boot device second field\n", __func__);
+			mvOsPrintf("%s: Error: write 2nd part (MSB) of boot device field\n", __func__);
 			return MV_ERROR;
 		}
 	}
+
+	/* devId field for DB-BP board it's divided over 2 I2C registers */
+#ifdef CONFIG_ARMADA_38X
+	if (mvBoardIdGet() == DB_68XX_ID && satrWriteField == MV_SATR_DEVICE_ID) {
+		val1 = (val >> MV_SATR_DEVICE_ID2_VALUE_OFFSET) & MV_SATR_DEVICE_ID2_VALUE_MASK;
+		if (mvBoardSatRWrite(MV_SATR_DEVICE_ID2, val1) != MV_OK) {
+			mvOsPrintf("%s: Error: write 2nd part (MSB) of device ID field\n", __func__);
+			return MV_ERROR;
+		}
+	}
+#endif
+
 	val &= (satrInfo.mask >> satrInfo.bitOffset); /* verify correct value */
 
 	/* read */

@@ -101,6 +101,8 @@ typedef enum _mvSatRTypeID {
 	MV_SATR_DB_SERDES1_CFG,
 	MV_SATR_DB_SERDES2_CFG,
 	MV_SATR_SGMII_MODE,
+	MV_SATR_DEVICE_ID,
+	MV_SATR_DEVICE_ID2,
 	MV_SATR_MAX_OPTION,
 } MV_SATR_TYPE_ID;
 
@@ -127,20 +129,25 @@ typedef enum _mvSatRTypeID {
 {"dbserdes1",	MV_SATR_DB_SERDES1_CFG,		0x7,	0,	0,	1,	{0, 1, 0, 0, 0, 1}, 0},\
 {"dbserdes2",	MV_SATR_DB_SERDES2_CFG,		0x38,	3,	0,	1,	{0, 1, 0, 0, 0, 1}, 0},\
 {"sgmiimode",	MV_SATR_SGMII_MODE,		0x40,	6,	0,	1,	{0, 1, 0, 0, 0, 1}, 0},\
+{"devid",	MV_SATR_DEVICE_ID,		0x1,	0,	2,	0,	{0, 1, 0, 0, 0, 0}, 0},\
+{"devid2",	MV_SATR_DEVICE_ID2,		0x10,	4,	3,	0,	{0, 1, 0, 0, 0, 0}, 0},\
 {"max_option",	MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0, 0, 0, 0}, 0},\
 };
 
 /* extra SAR table, for different board implementations:
  * in case a field is used on 2 boards with different i2c mapping */
 #define MV_SAR_INFO2 { \
-{ "freq",	MV_SATR_CPU_DDR_L2_FREQ,	0x1E,	1,	1,	0,	{0, 0, 0, 0, 0, 1},  SATR_SWAP_BIT},\
-{ "coreclock",	MV_SATR_CORE_CLK_SELECT,	0x08,	3,	2,	0,	{0, 0, 0, 0, 1, 0}, 0},\
-{ "sscg",	MV_SATR_SSCG_DISABLE,		0x10,	4,	2,	0,	{0, 0, 0, 0, 1, 0}, 0},\
+{"freq",	MV_SATR_CPU_DDR_L2_FREQ,	0x1E,	1,	1,	0,	{0, 0, 0, 0, 0, 1},  SATR_SWAP_BIT},\
+{"coreclock",	MV_SATR_CORE_CLK_SELECT,	0x08,	3,	2,	0,	{0, 0, 0, 0, 1, 0}, 0},\
+{"sscg",	MV_SATR_SSCG_DISABLE,		0x10,	4,	2,	0,	{0, 0, 0, 0, 1, 0}, 0},\
+{"devid",	MV_SATR_DEVICE_ID,		0x3,	0,	2,	0,	{0, 0, 0, 0, 1, 0}, 0},\
 { "max_option",	MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0, 0, 0, 0}, 0},\
 };
 
-#define MV_SATR_BOOT2_VALUE_MASK		0xF
-#define MV_SATR_BOOT2_VALUE_OFFSET		2
+#define MV_SATR_BOOT2_VALUE_MASK	0xF
+#define MV_SATR_BOOT2_VALUE_OFFSET	2
+#define MV_SATR_DEVICE_ID2_VALUE_MASK	1
+#define MV_SATR_DEVICE_ID2_VALUE_OFFSET	1
 
 #ifdef CONFIG_CMD_BOARDCFG
 #define MV_BOARD_CONFIG_MAX_BYTE_COUNT	8

@@ -75,6 +75,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define ECC_SUPPORT
 
+/*Tune internal training params values*/
+#define MV_TUNE_TRAINING_PARAMS_CK_DELAY 		200
+#define MV_TUNE_TRAINING_PARAMS_CK_DELAY_16		200
+#define MV_TUNE_TRAINING_PARAMS_PFINGER			41
+#define MV_TUNE_TRAINING_PARAMS_NFINGER			43
+#define MV_TUNE_TRAINING_PARAMS_PHYREG3VAL		0xA
+
 typedef struct __mvDramModes {
     char *mode_name;
     MV_U8 cpuFreq;

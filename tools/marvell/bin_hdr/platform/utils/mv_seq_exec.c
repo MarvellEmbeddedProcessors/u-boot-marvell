@@ -262,8 +262,8 @@ MV_STATUS mvSeqExec
 	DB(mvPrintf("\n### mvSeqExec ###\n"));
 	DB(mvPrintf("seq id: %d\n", seqId));
 
-	if (serdesNum >= mvHwsSerdesGetMaxLane()) {
-		mvPrintf("mvSeqExecExt: Serdes %d is not valid (last lane is %d)\n", serdesNum, mvHwsSerdesGetMaxLane());
+	if (mvHwsIsSerdesActive(serdesNum) != MV_TRUE) {
+		mvPrintf("mvSeqExecExt:Error: SerDes lane %d is not valid\n", serdesNum);
 		return MV_BAD_PARAM;
 	}
 

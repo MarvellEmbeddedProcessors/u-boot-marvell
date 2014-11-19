@@ -301,7 +301,6 @@ extern MV_U8 commonPhysSelectorsSerdesRev2Map[LAST_SERDES_TYPE][MAX_SERDES_LANES
 *
 *******************************************************************************/
 MV_U8 mvHwsCtrlSerdesRevGet(MV_VOID);
-
 /**************************************************************************
  * mvUpdateSerdesSelectPhyModeSeq -
  *
@@ -314,7 +313,6 @@ MV_U8 mvHwsCtrlSerdesRevGet(MV_VOID);
  *                                         and serdes type
  ***************************************************************************/
 MV_STATUS mvUpdateSerdesSelectPhyModeSeq(MV_VOID);
-
 /**************************************************************************
  * mvHwsBoardTopologyLoad -
  *
@@ -325,7 +323,6 @@ MV_STATUS mvUpdateSerdesSelectPhyModeSeq(MV_VOID);
  * RETURNS:              MV_OK           -   for success
  ***************************************************************************/
 MV_STATUS mvHwsBoardTopologyLoad(SERDES_MAP  *serdesMapArray);
-
 /**************************************************************************
  * serdesTypeAndSpeedToSpeedSeq -
  *
@@ -338,12 +335,7 @@ MV_STATUS mvHwsBoardTopologyLoad(SERDES_MAP  *serdesMapArray);
  * RETURNS:              The relevant sequence id or SERDES_LAST_SEQ in case
  *                       the serdes type and speed are not supported together
  ***************************************************************************/
-SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
-(
-	SERDES_TYPE serdesType,
-	SERDES_SPEED baudRate
-);
-
+SERDES_SEQ serdesTypeAndSpeedToSpeedSeq(SERDES_TYPE serdesType,	SERDES_SPEED baudRate);
 /**************************************************************************
  * mvHwsSerdesSeqInit -
  *
@@ -354,7 +346,6 @@ SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
  *                       MV_FAIL    - if Serdes initialization fail
  ***************************************************************************/
 MV_STATUS mvHwsSerdesSeqInit(MV_VOID);
-
 /**************************************************************************
  * mvHwsSerdesSeqDbInit -
  *
@@ -373,7 +364,6 @@ MV_STATUS mvHwsSerdesSeqInit(MV_VOID);
  *                                             is not supported
  ***************************************************************************/
 MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID);
-
 /**************************************************************************
  * mvHwsTwsiInitWrapper -
  *
@@ -384,7 +374,6 @@ MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID);
  *                       MV_NOT_SUPPORTED    - if the tclk is not supported
  ***************************************************************************/
 MV_STATUS mvHwsTwsiInitWrapper(MV_VOID);
-
 /**************************************************************************
  * powerUpSerdesLanes -
  *
@@ -399,7 +388,6 @@ MV_STATUS mvHwsTwsiInitWrapper(MV_VOID);
  *                                             mvSerdesPowerUpCtrl
  ***************************************************************************/
 MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap);
-
 /**************************************************************************
  * mvCtrlHighSpeedSerdesPhyConfig -
  *
@@ -409,7 +397,6 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap);
  * RETURNS:              MV_OK           -   for success
  ***************************************************************************/
 MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID);
-
 /**************************************************************************
  * mvSerdesPowerUpCtrl -
  *
@@ -431,7 +418,6 @@ MV_STATUS mvSerdesPowerUpCtrl(MV_U32 serdesNum,
 			      SERDES_SPEED baudRate,
 			      SERDES_MODE  serdesMode,
 			      REF_CLOCK refClock);
-
 /**************************************************************************
  * mvSerdesPowerUpCtrlExt -
  *
@@ -455,7 +441,6 @@ MV_STATUS mvSerdesPowerUpCtrlExt
 	SERDES_MODE  serdesMode,
 	REF_CLOCK refClock
 );
-
 /**************************************************************************
  * mvHwsRefClockSet -
  *
@@ -472,13 +457,7 @@ MV_STATUS mvSerdesPowerUpCtrlExt
  *                       MV_BAD_PARAMS   - if one or more of the input
  *                                         parameters were bad
  ***************************************************************************/
-MV_STATUS mvHwsRefClockSet
-(
-        MV_U32 serdesNum,
-        SERDES_TYPE serdesType,
-        REF_CLOCK refClock
-);
-
+MV_STATUS mvHwsRefClockSet(MV_U32 serdesNum, SERDES_TYPE serdesType, REF_CLOCK refClock);
 /**************************************************************************
  * mvUpdateSerdesPhySelectors -
  *
@@ -495,7 +474,6 @@ MV_STATUS mvHwsRefClockSet
  *                                         and serdes type
  ***************************************************************************/
 MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP  *serdesConfigMap);
-
 /*******************************************************************************
 * mvHwsSerdesGetPhySelectorVal
 *
@@ -512,7 +490,6 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP  *serdesConfigMap);
 *
 *******************************************************************************/
 MV_U32 mvHwsSerdesGetPhySelectorVal(MV_32 serdesNum, SERDES_TYPE serdesType);
-
 /**************************************************************************
  * mvHwsSerdesGetRefClockVal -
  *
@@ -521,24 +498,16 @@ MV_U32 mvHwsSerdesGetPhySelectorVal(MV_32 serdesNum, SERDES_TYPE serdesType);
  * OUTPUT:               None.
  * RETURNS:              Ref clock frequency
  ***************************************************************************/
-MV_U32 mvHwsSerdesGetRefClockVal
-(
-	SERDES_TYPE serdesType
-);
-
+MV_U32 mvHwsSerdesGetRefClockVal(SERDES_TYPE serdesType);
 /**************************************************************************
  * mvHwsSerdesGetMaxLane -
  *
  * DESCRIPTION:          return number of lanes according to device type.
  * INPUT:   			 NONE.
  * OUTPUT:               None.
- * RETURNS:              number of lanes
+* RETURNS:              number of lanes
  ***************************************************************************/
-MV_U32 mvHwsSerdesGetMaxLane
-(
-	MV_VOID
-);
-
+MV_U32 mvHwsSerdesGetMaxLane(MV_VOID);
 /**************************************************************************
  * mvHwsGetExtBaseAddr -
  *
@@ -566,5 +535,25 @@ MV_STATUS mvHwsGetExtBaseAddr
 *                       MV_BAD_PARAM    - for fail
 ***************************************************************************/
 MV_STATUS mvHwsPexTxConfigSeq(SERDES_MAP *serdesMap);
-
+/**************************************************************************
+* mvHwsGetPhysicalSerdesNum -
+*
+* DESCRIPTION:          Returns the physical Serdes number since in some devices
+*                       (such as 6810) Serdes number may not be consecutive
+* INPUT:                serdesNum       - Serdes number
+* OUTPUT:               None
+* RETURNS:              Physical Serdes number
+*
+***************************************************************************/
+MV_U32 mvHwsGetPhysicalSerdesNum(MV_U32 serdesNum);
+/**************************************************************************
+* mvHwsIsSerdesActive -
+*
+* DESCRIPTION:          Return True, if requested lane is Valid and Active for Device
+* 			(some device flavors have specific lane topology limitation)
+* INPUT:                serdesNum       - Serdes number
+* OUTPUT:               None
+* RETURNS:              True if lane is active
+***************************************************************************/
+MV_BOOL mvHwsIsSerdesActive(MV_U8 laneNum);
 #endif /* _MV_HIGHSPEED_ENV_SPEC_H */

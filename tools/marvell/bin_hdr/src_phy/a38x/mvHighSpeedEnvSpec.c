@@ -857,7 +857,7 @@ MV_VOID printTopologyDetails(SERDES_MAP  *serdesMapArray)
 
 	DEBUG_INIT_S("board SerDes lanes topology details:\n");
 
-	DEBUG_INIT_S(" | Number | Speed |  Type       |\n");
+	DEBUG_INIT_S(" | Lane #  | Speed |  Type       |\n");
 	DEBUG_INIT_S(" --------------------------------\n");
 	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
 		if (serdesMapArray[laneNum].serdesType == DEFAULT_SERDES)
@@ -865,7 +865,7 @@ MV_VOID printTopologyDetails(SERDES_MAP  *serdesMapArray)
 			continue;
 		}
 		DEBUG_INIT_S(" |   ");
-		DEBUG_INIT_D(laneNum, 1);
+		DEBUG_INIT_D(mvHwsGetPhysicalSerdesNum(laneNum), 1);
 		DEBUG_INIT_S("    |  ");
 		DEBUG_INIT_D(serdesMapArray[laneNum].serdesSpeed, 2);
 		DEBUG_INIT_S("   |  ");
@@ -919,7 +919,7 @@ MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 /***************************************************************************/
 MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 {
-	MV_U32 serdesLaneNum;
+	MV_U32 serdesId, serdesLaneNum;
 	REF_CLOCK refClock;
 	SERDES_TYPE serdesType;
 	SERDES_SPEED serdesSpeed;
@@ -932,14 +932,16 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 	CHECK_STATUS(mvHwsUpdateSerdesPhySelectors(serdesConfigurationMap));
 
 	/* per Serdes Power Up */
-	for (serdesLaneNum = 0; serdesLaneNum < mvHwsSerdesGetMaxLane(); serdesLaneNum++) {
+	for (serdesId = 0; serdesId < mvHwsSerdesGetMaxLane(); serdesId++) {
 		DEBUG_INIT_FULL_S("calling serdesPowerUpCtrl: serdes lane number ");
 		DEBUG_INIT_FULL_D_10(serdesLaneNum, 1);
 		DEBUG_INIT_FULL_S("\n");
 
-		serdesType = serdesConfigMap[serdesLaneNum].serdesType;
-		serdesSpeed = serdesConfigMap[serdesLaneNum].serdesSpeed;
-		serdesMode = serdesConfigMap[serdesLaneNum].serdesMode;
+		serdesLaneNum = mvHwsGetPhysicalSerdesNum(serdesId);
+
+		serdesType = serdesConfigMap[serdesId].serdesType;
+		serdesSpeed = serdesConfigMap[serdesId].serdesSpeed;
+		serdesMode = serdesConfigMap[serdesId].serdesMode;
 
 		/* serdes lane is not in use */
 		if (serdesType == DEFAULT_SERDES)
@@ -1280,7 +1282,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 /***************************************************************************/
 MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 {
-	MV_U32 laneData, serdesIdx, regData = 0;
+	MV_U32 laneData, serdesIdx, serdesLaneHwNum, regData = 0;
 	SERDES_TYPE serdesType;
 	SERDES_MODE serdesMode;
 	MV_U8       selectBitOff;
@@ -1299,7 +1301,10 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 	for (serdesIdx = 0; serdesIdx < mvHwsSerdesGetMaxLane(); serdesIdx++) {
 		serdesType = serdesConfigMap[serdesIdx].serdesType;
 		serdesMode = serdesConfigMap[serdesIdx].serdesMode;
-		laneData = mvHwsSerdesGetPhySelectorVal(serdesIdx, serdesType);
+
+		serdesLaneHwNum = mvHwsGetPhysicalSerdesNum(serdesIdx);
+
+		laneData = mvHwsSerdesGetPhySelectorVal(serdesLaneHwNum, serdesType);
 
 		if(serdesType == DEFAULT_SERDES) {
 			continue;
@@ -1308,20 +1313,20 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 		/* Checking if the board topology configuration includes PEXx4 - for the next step */
 		if ((serdesMode == PEX_END_POINT_x4) || (serdesMode == PEX_ROOT_COMPLEX_x4)) {
             /* update lane data to the 3 next SERDES lanes */
-            laneData = commonPhysSelectorsPexBy4Lanes[serdesIdx];
+            laneData = commonPhysSelectorsPexBy4Lanes[serdesLaneHwNum];
 			if (serdesType == PEX0) {
 				isPEXx4 = MV_TRUE;
 			}
 		}
 
 		if (laneData == NA) {
-			mvPrintf("mvUpdateSerdesSelectPhyModeSeq: serdes number %d and type %d are not supported together\n",
-					 serdesIdx, serdesMode);
+			mvPrintf("%s: Error: SerDes lane #%d and type %d are not supported together\n",
+					__func__, serdesLaneHwNum, serdesMode);
 			return MV_BAD_PARAM;
 		}
 
 		/* Updating the data that will be written to COMMON_PHYS_SELECTORS_REG */
-		regData |= (laneData << (selectBitOff * serdesIdx));
+		regData |= (laneData << (selectBitOff * serdesLaneHwNum));
 	}
 
 	/* Updating the PEXx4 Enable bit in the COMMON PHYS SELECTORS register for PEXx4 mode */
@@ -1345,8 +1350,8 @@ MV_STATUS mvHwsRefClockSet
 
 	DEBUG_INIT_FULL_S("\n### mvHwsRefClockSet ###\n");
 
-	if (serdesNum >= mvHwsSerdesGetMaxLane()) {
-		DEBUG_INIT_S("mvHwsRefClockSet: bad serdes number\n");
+	if (mvHwsIsSerdesActive(serdesNum) != MV_TRUE) {
+		mvPrintf("%s: SerDes lane #%d is not Active\n", __func__, serdesNum);
 		return MV_BAD_PARAM;
 	}
 
@@ -1454,7 +1459,7 @@ MV_STATUS mvHwsRefClockSet
 MV_STATUS mvHwsPexTxConfigSeq(SERDES_MAP *serdesMap)
 {
     SERDES_MODE serdesMode;
-    MV_U32 serdesLaneNum;
+    MV_U32 serdesLaneId, serdesLaneHwNum;
 
     DEBUG_INIT_FULL_S("\n### mvHwsPexTxConfigSeq ###\n");
 
@@ -1462,26 +1467,30 @@ MV_STATUS mvHwsPexTxConfigSeq(SERDES_MAP *serdesMap)
 			  by setting each sequence for all 4 lanes. */
 
 	/* relese pipe soft reset for all lanes */
-	for (serdesLaneNum = 0; serdesLaneNum < mvHwsSerdesGetMaxLane(); serdesLaneNum++) {
-		serdesMode = serdesMap[serdesLaneNum].serdesMode;
+	for (serdesLaneId = 0; serdesLaneId < mvHwsSerdesGetMaxLane(); serdesLaneId++) {
+		serdesMode = serdesMap[serdesLaneId].serdesMode;
+		serdesLaneHwNum = mvHwsGetPhysicalSerdesNum(serdesLaneId);
+
 		if ((serdesMode == PEX_ROOT_COMPLEX_x4) || (serdesMode == PEX_END_POINT_x4)) {
-			CHECK_STATUS(mvSeqExec(serdesLaneNum, PEX_TX_CONFIG_SEQ1));
+			CHECK_STATUS(mvSeqExec(serdesLaneHwNum, PEX_TX_CONFIG_SEQ1));
 		}
 	}
 
 	/* set phy soft reset for all lanes */
-	for (serdesLaneNum = 0; serdesLaneNum < mvHwsSerdesGetMaxLane(); serdesLaneNum++) {
-		serdesMode = serdesMap[serdesLaneNum].serdesMode;
+	for (serdesLaneId = 0; serdesLaneId < mvHwsSerdesGetMaxLane(); serdesLaneId++) {
+		serdesMode = serdesMap[serdesLaneId].serdesMode;
+		serdesLaneHwNum = mvHwsGetPhysicalSerdesNum(serdesLaneId);
 		if ((serdesMode == PEX_ROOT_COMPLEX_x4) || (serdesMode == PEX_END_POINT_x4)) {
-			CHECK_STATUS(mvSeqExec(serdesLaneNum, PEX_TX_CONFIG_SEQ2));
+			CHECK_STATUS(mvSeqExec(serdesLaneHwNum, PEX_TX_CONFIG_SEQ2));
 		}
 	}
 
 	/* set phy soft reset for all lanes */
-	for (serdesLaneNum = 0; serdesLaneNum < mvHwsSerdesGetMaxLane(); serdesLaneNum++) {
-		serdesMode = serdesMap[serdesLaneNum].serdesMode;
+	for (serdesLaneId = 0; serdesLaneId < mvHwsSerdesGetMaxLane(); serdesLaneId++) {
+		serdesMode = serdesMap[serdesLaneId].serdesMode;
+		serdesLaneHwNum = mvHwsGetPhysicalSerdesNum(serdesLaneId);
 		if ((serdesMode == PEX_ROOT_COMPLEX_x4) || (serdesMode == PEX_END_POINT_x4)) {
-			CHECK_STATUS(mvSeqExec(serdesLaneNum, PEX_TX_CONFIG_SEQ3));
+			CHECK_STATUS(mvSeqExec(serdesLaneHwNum, PEX_TX_CONFIG_SEQ3));
 		}
 	}
 

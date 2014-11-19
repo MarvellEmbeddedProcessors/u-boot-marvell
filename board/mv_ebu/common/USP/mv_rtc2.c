@@ -73,17 +73,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static int rtc_ready = -1;
 
-static void rtc_init(void);
+/*******************************************************/
+void rtc_init(void)
+{
+	/* Update RTC-MBUS bridge timing parameters */
+	MV_REG_WRITE(MV_RTC2_SOC_OFFSET, 0xFD4D4CFA);
+	rtc_ready = 1;
+}
 
 /*******************************************************/
 int rtc_get(struct rtc_time *tm)
 {
-	unsigned long time;
+	unsigned long time, time_check;
 
 	if (rtc_ready != 1)
 		rtc_init();
 
-	to_tm((time = RTC_READ_REG(RTC_TIME_REG_OFFS)), tm);
+	time = RTC_READ_REG(RTC_TIME_REG_OFFS);
+	/* WA for failing time read attempts. The HW ERRATA information should be added here */
+	/* if detected more than one second between two time reads, read once again */
+	time_check = RTC_READ_REG(RTC_TIME_REG_OFFS);
+	if ((time_check - time) > 1)
+		time_check = RTC_READ_REG(RTC_TIME_REG_OFFS);
+	/* End of WA */
+
+	to_tm(time_check, tm);
 
 	return 0;
 }
@@ -104,7 +118,6 @@ int rtc_set(struct rtc_time *tm)
 	mdelay(100);
 	/* End of SW WA */
 	RTC_WRITE_REG(time, RTC_TIME_REG_OFFS);
-	RTC_WRITE_REG(time, RTC_TIME_REG_OFFS);
 
 	return 0;
 }
@@ -112,16 +125,6 @@ int rtc_set(struct rtc_time *tm)
 /*******************************************************/
 void rtc_reset(void)
 {
-	if (rtc_ready != 1)
-		rtc_init();
-}
-
-/*******************************************************/
-static void rtc_init(void)
-{
-	/* Update RTC-MBUS bridge timing parameters */
-	MV_REG_WRITE(MV_RTC2_SOC_OFFSET, 0xFD4D4CFA);
-
 	/* Setup nominal register access timing */
 	RTC_WRITE_REG(RTC_NOMINAL_TIMING, RTC_CLOCK_CORR_REG_OFFS);
 
@@ -139,8 +142,6 @@ static void rtc_init(void)
 
 	/* Clear any pending Status bits */
 	RTC_WRITE_REG((RTC_SZ_STATUS_ALARM1_MASK | RTC_SZ_STATUS_ALARM2_MASK), RTC_STATUS_REG_OFFS);
-
-	rtc_ready = 1;
 }
 
 #endif	/* CONFIG_CMD_DATE */

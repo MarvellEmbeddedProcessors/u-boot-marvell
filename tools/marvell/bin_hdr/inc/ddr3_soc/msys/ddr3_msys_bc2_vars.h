@@ -68,6 +68,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_msys_bc2_config.h"
 #include "mvDdr3TopologyDef.h"
 
+/*Tune internal training params values*/
+#define MV_TUNE_TRAINING_PARAMS_CK_DELAY 		150
+#define MV_TUNE_TRAINING_PARAMS_CK_DELAY_16		150
+#define MV_TUNE_TRAINING_PARAMS_PFINGER			41
+#define MV_TUNE_TRAINING_PARAMS_NFINGER			43
+#define MV_TUNE_TRAINING_PARAMS_PHYREG3VAL		0xA
 
 typedef struct __mvDramMcInit {
 	MV_U32 reg_addr;

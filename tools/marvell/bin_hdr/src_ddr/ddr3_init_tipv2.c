@@ -94,6 +94,8 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_msys_ac3_topology.h"
 #endif
 
+#include "bootstrap_os.h"
+
 #if defined(MV_MSYS_BC2)
 #define MARVELL_BOARD	BC2_MARVELL_BOARD_ID_BASE
 #elif defined(MV_MSYS_AC3)
@@ -102,25 +104,32 @@ Copyright (C) Marvell International Ltd. and its affiliates
 /* translates topology map definitions to real memory size in bits */
 MV_U32 mv_memSize[] = { ADDR_SIZE_512Mb, ADDR_SIZE_1Gb, ADDR_SIZE_2Gb, ADDR_SIZE_4Gb ,ADDR_SIZE_8Gb };
 
+MV_STATUS ddr3LoadTopologyMap(void);
 
 extern MV_STATUS ddr3TipInitSpecificRegConfig
 (
     MV_U32              devNum,
 	MV_DRAM_MC_INIT		*regConfigArr
 );
+
 extern MV_VOID  ddr3TipSetTopologyMap
 (
     MV_U32                  devNum,
     MV_HWS_TOPOLOGY_MAP     *topology
 );
+
 extern MV_U32 ddr3TipGetInitFreq();
-MV_STATUS ddr3LoadTopologyMap(void);
+
 extern MV_VOID ddr3HwsSetLogLevel(
 	MV_DDR_LIB_DEBUG_BLOCK 	block,
 	MV_U8					level
 );
 
-#include "bootstrap_os.h"
+extern MV_STATUS ddr3TipTuneTrainingParams
+(
+    MV_U32                  devNum,
+    MV_TUNE_TRAINING_PARAMS *params
+);
 
 #ifdef SUPPORT_STATIC_DUNIT_CONFIG
 static MV_U32 ddr3GetStaticDdrMode(void);
@@ -140,6 +149,7 @@ MV_U32 ddr3GetBusWidth(void);
 
 extern MV_VOID ddr3SetLogLevel(MV_U32 nLogLevel);
 static MV_U32 gLogLevel = 0;
+static MV_STATUS ddr3HwsTuneTrainingParams(MV_U8 devNum);
 
 MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize);
 
@@ -382,6 +392,12 @@ MV_U32 ddr3Init(void)
 	status = ddr3LoadTopologyMap();
 	if (MV_OK != status) {
 		mvPrintf("%s Training Sequence topology load - FAILED\n", ddrType);
+		return status;
+	}
+
+	/*Tune training algo paramteres*/
+	status = ddr3HwsTuneTrainingParams(0);
+	if (MV_OK != status) {
 		return status;
 	}
 
@@ -781,3 +797,30 @@ static MV_STATUS ddr3UpdateTopologyMap(MV_HWS_TOPOLOGY_MAP* topologyMap)
 }
 #endif
 
+/******************************************************************************
+ * Name:     ddr3HwsTuneTrainingParams
+ * Desc:
+ * Args:
+ * Notes: Tune internal training params
+ * Returns:
+ */
+static MV_STATUS ddr3HwsTuneTrainingParams(MV_U8 devNum)
+{
+	MV_TUNE_TRAINING_PARAMS params;
+	MV_STATUS status;
+
+	/*NOTE: do not remove any field initilization*/
+	params.ckDelay = MV_TUNE_TRAINING_PARAMS_CK_DELAY;
+	params.ckDelay_16 = MV_TUNE_TRAINING_PARAMS_CK_DELAY_16;
+	params.Pfinger = MV_TUNE_TRAINING_PARAMS_PFINGER;
+	params.Nfinger = MV_TUNE_TRAINING_PARAMS_NFINGER;
+	params.PhyReg3Val = MV_TUNE_TRAINING_PARAMS_PHYREG3VAL;
+
+	status = ddr3TipTuneTrainingParams(devNum, &params);
+	if (MV_OK != status) {
+		mvPrintf("%s Training Sequence - FAILED\n", ddrType);
+		return status;
+	}
+
+	return MV_OK;
+}

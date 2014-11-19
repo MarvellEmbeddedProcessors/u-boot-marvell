@@ -252,5 +252,14 @@ typedef struct
 
 } MV_HWS_TOPOLOGY_MAP;
 
+typedef struct
+{
+   MV_U32              ckDelay;
+   MV_U32              ckDelay_16;
+   MV_U32              Pfinger;
+   MV_U32              Nfinger;
+   MV_U32              PhyReg3Val;
+} MV_TUNE_TRAINING_PARAMS;
 
 #endif /* _DDR3_TOPOLOGY_CONFIG_H */
+

@@ -62,7 +62,7 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 { MV_SATR_DB_USB3_PORT1,	{0,		0,		0,		0,		0,		0}},
 };
 
-char* lane1Arr[7] = { 	"Unconnected" ,
+char *lane1Arr[7] = {	"Unconnected" ,
 			"PCIe Port 0",
 			"SATA3 Port 0",
 			"SGMII-0",
@@ -70,10 +70,16 @@ char* lane1Arr[7] = { 	"Unconnected" ,
 			"USB3.0 Port 0",
 			"QSGMII" };
 
-char* lane2Arr[4] = { 	"Unconnected" ,
+char *lane2Arr[4] = {	"Unconnected" ,
 			"PCIe Port 1",
 			"SATA3 Port 1",
 			"SGMII-1" };
+
+char *devIdArr[4] = {
+			"6810 (A380)",
+			"6820 (A385)",
+			"6811 (A381/2)",
+			"6828 (A388)" };
 
 MV_BOOL mvVerifyRequest(void)
 {
@@ -103,6 +109,13 @@ int do_sar_default(void)
 			mvOsPrintf("Error write S@R for id=%d\n", satrClassId);
 		}
 	}
+
+	/* set default Device ID - if MV_SATR_DEVICE_ID field is relevant on board */
+	if (mvBoardSatrInfoConfig(MV_SATR_DEVICE_ID, &satrInfo) == MV_OK) {
+		if (mvBoardSatRWrite(MV_SATR_DEVICE_ID, mvCtrlDevIdIndexGet(mvCtrlModelGet())) == MV_ERROR)
+			mvOsPrintf("Error writing default Device ID ('devid') =%d\n", i);
+	}
+
 	printf("\nSample at Reset values were restored to default.\n");
 	return 0;
 }
@@ -113,7 +126,7 @@ int sar_cmd_get(const char *cmd)
 	MV_BOARD_SATR_INFO satrInfo;
 
 	for (i = MV_SATR_CPU_DDR_L2_FREQ; i < MV_SATR_MAX_OPTION; i++) {
-		if (i == MV_SATR_BOOT2_DEVICE)
+		if (i == MV_SATR_BOOT2_DEVICE || i == MV_SATR_DEVICE_ID2)
 			continue;
 		if (mvBoardSatrInfoConfig(i, &satrInfo) != MV_OK)
 			continue;
@@ -230,18 +243,23 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		break;
 	case MV_SATR_DB_SERDES1_CFG:
 		mvOsPrintf("Determines the DB SERDES lane #1 configuration:\n");
-		for (i = 0; i < 7; i++)
+		for (i = 0; i <  ARRAY_SIZE(lane1Arr); i++)
 			mvOsPrintf("\t %d = %s\n" , i ,lane1Arr[i]);
 		break;
 	case MV_SATR_DB_SERDES2_CFG:
 		mvOsPrintf("Determines the DB SERDES lane #2 configuration:\n");
-		for (i = 0; i < 4; i++)
+		for (i = 0; i < ARRAY_SIZE(lane2Arr); i++)
 			mvOsPrintf("\t %d = %s\n" , i ,lane2Arr[i]);
 		break;
 	case MV_SATR_SGMII_MODE:
 		mvOsPrintf("Determines the SGMII negotiation mode:\n");
 		mvOsPrintf("\t0 = In-band\n");
 		mvOsPrintf("\t1 = Out-of-band (PHY)\n ");
+		break;
+	case MV_SATR_DEVICE_ID:
+		mvOsPrintf("Determines the Device ID:\n");
+		for (i = 0; i < ARRAY_SIZE(devIdArr); i++)
+			mvOsPrintf("\t %d = %s\n", i, devIdArr[i]);
 		break;
 	default:
 		mvOsPrintf("Usage: sar list [options] (see help)\n");
@@ -334,12 +352,15 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 	case MV_SATR_SGMII_MODE:
 		mvOsPrintf("sgmiimode\t= %d  ==> SGMII mode: %s\n", tmp, (tmp == 0) ? "In-band" : "Out-of-band (PHY)");
 		break;
+	case MV_SATR_DEVICE_ID:
+		mvOsPrintf("devid\t\t= %d  ==> Device ID: %s\n", tmp, devIdArr[tmp]);
+		break;
 	case CMD_DUMP:
 		{
 			MV_BOARD_SATR_INFO satrInfo;
 
 			for (i = MV_SATR_CPU_DDR_L2_FREQ; i < MV_SATR_MAX_OPTION; i++) {
-				if (i == MV_SATR_BOOT2_DEVICE)
+				if (i == MV_SATR_BOOT2_DEVICE || i == MV_SATR_DEVICE_ID2)
 					continue;
 				if (mvBoardSatrInfoConfig(i, &satrInfo) != MV_OK)
 					continue;
@@ -393,6 +414,14 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 		if (freqValueInvalid) {
 			mvOsPrintf("S@R incorrect value for Freq %d\n", value);
 			mvOsPrintf("Write S@R failed!\n");
+			return 1;
+		}
+	}
+
+	/* verify requested entry is valid and map it's ID value */
+	if (satrInfo->satrId == MV_SATR_DEVICE_ID) {
+		if (value > ARRAY_SIZE(devIdArr)) {
+			printf("%s: Error: requested invalid DEVICE_ID value (%x)\n", __func__, value);
 			return 1;
 		}
 	}
@@ -488,19 +517,24 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 
 "\tSW SatR fields\n"
 "\t--------------\n"
-"ddrbuswidth		- DDR bus width\n"
+"ddrbuswidth		- DB, DB-GP, DB-AP: DDR bus width\n"
 "ddreccenable		- DDR ECC enable\n"
 "ddreccpupselect	- DDR ECC PUP selection\n"
-"boardid		- board ID\n"
 "sgmiispeed		- SGMII speed\n"
 "sgmiimode		- SGMII negotiation mode\n"
+"ddr4select		- DDR3/4		(read only)\n"
+"ecoversion		- ECO version	(read only)\n"
+"boardid		- board ID	(read only)\n"
+
+"\n\t Board Specific SW fields\n"
+"\t------------------------\n"
+"devid			- DB, DB-GP:	Device ID flavor\n"
 "rdserdes4		- RD-NAS:	SerDes lane #4\n"
-"gpserdes5		- DB-GP:	SerDes lane #5\n"
-"dbserdes1		- DB:	SerDes lane #1\n"
-"dbserdes2		- DB:	SerDes lane #2\n"
-"usb3port0		- DB:	USB3-Port0 mode\n"
-"usb3port1		- DB:	USB3-Port1 mode\n\n"
-"ddr4select		- DDR3/4 (read only) \n"
-"ecoversion		- ECO version (read only)\n"
+"gpserdes5		- DB-GP:		SerDes lane #5\n"
+"dbserdes1		- DB:		SerDes lane #1\n"
+"dbserdes2		- DB:		SerDes lane #2\n"
+"usb3port0		- DB:		USB3-Port0 mode\n"
+"usb3port1		- DB:		USB3-Port1 mode\n\n"
+
 );
 #endif /*defined(CONFIG_CMD_SAR)*/

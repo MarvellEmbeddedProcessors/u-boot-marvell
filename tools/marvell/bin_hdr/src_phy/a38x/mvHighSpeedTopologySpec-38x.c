@@ -370,12 +370,12 @@ SERDES_MAP* topologyConfigDB[] =
 /*************************************/
 SERDES_MAP DbApConfigDefault[MAX_SERDES_LANES] =
 {
-	{ PEX0, 	__5Gbps,		PEX_ROOT_COMPLEX_x1 },
-	{ SGMII1,   __3_125Gbps,		SERDES_DEFAULT_MODE },
-	{ PEX1, 	__5Gbps,		PEX_ROOT_COMPLEX_x1 },
-	{ SGMII2,   __3_125Gbps,		SERDES_DEFAULT_MODE },
-	{ USB3_HOST0,   __5Gbps,		SERDES_DEFAULT_MODE },
-	{ PEX2, 	__5Gbps,		PEX_ROOT_COMPLEX_x1 }
+/* 0 */ { PEX0, 	__5Gbps,		PEX_ROOT_COMPLEX_x1 },
+/* 1 */ { SGMII1,   __3_125Gbps,		SERDES_DEFAULT_MODE },
+/* 2 */ { PEX1, 	__5Gbps,		PEX_ROOT_COMPLEX_x1 },
+/* 3 */ { SGMII2,   __3_125Gbps,		SERDES_DEFAULT_MODE },
+/* 4 */ { USB3_HOST0,   __5Gbps,		SERDES_DEFAULT_MODE },
+/* 5 */ { PEX2, 	__5Gbps,		PEX_ROOT_COMPLEX_x1 }
 };
 
 /*************************************/
@@ -383,12 +383,12 @@ SERDES_MAP DbApConfigDefault[MAX_SERDES_LANES] =
 /*************************************/
 SERDES_MAP DbGpConfigDefault[MAX_SERDES_LANES] =
 {
-	{ PEX0, 	__5Gbps,		PEX_ROOT_COMPLEX_x1 },
-	{ SATA0,	__3Gbps,		SERDES_DEFAULT_MODE },
-	{ SATA1,	__3Gbps,		SERDES_DEFAULT_MODE },
-	{ SATA3,	__3Gbps,		SERDES_DEFAULT_MODE },
-	{ SATA2,	__3Gbps,		SERDES_DEFAULT_MODE },
-	{ USB3_HOST1,   __5Gbps,		SERDES_DEFAULT_MODE }
+/* 0 */ { PEX0, 	__5Gbps,		PEX_ROOT_COMPLEX_x1 },
+/* 1 */ { SATA0,	__3Gbps,		SERDES_DEFAULT_MODE },
+/* 2 */ { SATA1,	__3Gbps,		SERDES_DEFAULT_MODE },
+/* 3 */ { SATA3,	__3Gbps,		SERDES_DEFAULT_MODE },
+/* 4 */ { SATA2,	__3Gbps,		SERDES_DEFAULT_MODE },
+/* 5 */ { USB3_HOST1,   __5Gbps,		SERDES_DEFAULT_MODE }
 };
 
 /*****************************************/
@@ -577,21 +577,23 @@ MV_STATUS mvHwsUpdateDeviceToplogy(SERDES_MAP* topologyConfigPtr, TOPOLOGY_CONFI
 		case MV_6810:
 			/* DB-AP : default for Lane3=SGMII2 --> 6810 supports only 2 SGMII interfaces: lane 3 disabled */
 			if (BoardId == DB_AP_68XX_ID) {
-				/* temporarily disable lane - when setting serdes to new type remove print */
-				mvPrintf("%s: Device flavour supports only 2 SGMII interfaces: SGMII-2 @ lane3 disabled\n", __func__);
+				mvPrintf("Device 6810 supports only 2 SGMII interfaces: SGMII-2 @ lane3 disabled\n");
 				topologyConfigPtr[3] = DefaultLane;
 			}
-		case MV_6820:
+
+			/* 6810 has only 4 SerDes and the forth one is Serdes number 5 (i.e. Serdes 4 is not connected),
+			   therefore we need to copy SerDes 5 configuration to SerDes 4 */
+			mvPrintf("Device 6810 does not supports SerDes Lane #4: replaced topology entry with lane #5\n");
+			topologyConfigPtr[4] = topologyConfigPtr[5];
+		case MV_6820: /* no break between cases since the 1st 6820 limitation apply on 6810 */
 			/* DB-GP & DB-BP: default for Lane3=SATA3 --> 6810/20 supports only 2 SATA interfaces: lane 3 disabled */
 			if ((BoardId == DB_68XX_ID) || (BoardId == DB_GP_68XX_ID)) {
-				/* temporarily disable lane - when setting serdes to new type remove print */
-				mvPrintf("%s: Device flavour supports only 2 SATA interfaces: SATA Port 3 @ lane3 disabled\n", __func__);
+				mvPrintf("Device 6810/20 supports only 2 SATA interfaces: SATA Port 3 @ lane3 disabled\n");
 				topologyConfigPtr[3] = DefaultLane;
 			}
-			/* DB-GP : default for Lane4=SATA2 --> 6810/20 supports only 2 SATA interfaces: lane 3 disabled */
-			if (BoardId == DB_GP_68XX_ID) {
-				/* temporarily disable lane - when setting serdes to new type remove print */
-				mvPrintf("%s: Device flavour supports only 2 SATA interfaces: SATA Port 2 @ lane4 disabled\n", __func__);
+			/* DB-GP on 6820 only: default for Lane4=SATA2 --> 6820 supports only 2 SATA interfaces: lane 3 disabled */
+			if (BoardId == DB_GP_68XX_ID && DevId == MV_6820) {
+				mvPrintf("Device 6820 supports only 2 SATA interfaces: SATA Port 2 @ lane4 disabled\n");
 				topologyConfigPtr[4] = DefaultLane;
 			}
 			break;
@@ -750,6 +752,15 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray)
 
 	mvPrintf("\nInitialize DB-GP board topology\n");
 
+	/* check S@R: if lane 5 is USB3 or SGMII */
+	if (loadTopologyRDSgmiiUsb(&isSgmii) != MV_OK)
+		mvPrintf("%s: TWSI Read failed - Loading Default Topology\n", __func__);
+	else {
+		topologyConfigPtr[5].serdesType  =  isSgmii ? SGMII2 : USB3_HOST1;
+		topologyConfigPtr[5].serdesSpeed =  isSgmii ? __3_125Gbps : __5Gbps;;
+		topologyConfigPtr[5].serdesMode = SERDES_DEFAULT_MODE;
+	}
+
 	/* Update the default board topology device flavours */
 	CHECK_STATUS(mvHwsUpdateDeviceToplogy(topologyConfigPtr, DB_CONFIG_DEFAULT));
 
@@ -759,18 +770,6 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[laneNum].serdesSpeed =  topologyConfigPtr[laneNum].serdesSpeed;
 		serdesMapArray[laneNum].serdesType =  topologyConfigPtr[laneNum].serdesType;
 	}
-
-	/* check S@R: if lane 5 is USB3 or SGMII */
-	if (loadTopologyRDSgmiiUsb(&isSgmii) != MV_OK)
-		mvPrintf("loadTopologyDBGp: TWSI Read failed - Loading Default Topology\n");
-	else if (mvHwsSerdesGetMaxLane() >= 6) {
-		mvPrintf("Lane 5: %s \n" ,isSgmii ? "SGMII2" : "USB3.0 Host Port 1");
-		serdesMapArray[5].serdesType  =  isSgmii ? SGMII2 : USB3_HOST1;
-		serdesMapArray[5].serdesSpeed =  isSgmii ? __3_125Gbps : __5Gbps;;
-		serdesMapArray[5].serdesMode = SERDES_DEFAULT_MODE;
-	} else
-		mvPrintf("%s: Device flavour doesn't support 6 SerDes lanes: %s @ lane6 disabled\n",\
-				__func__, isSgmii ? "SGMII2" : "USB3.0 Host Port 1");
 
 	updateTopologySatR(serdesMapArray, MV_FALSE);
 
@@ -940,6 +939,13 @@ MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii)
 	MV_TWSI_SLAVE twsiSlave;
 	MV_U8 mode;
 
+	/* DB-GP board: Device 6810 supports only 2 GbE ports: SGMII2 not supported (USE USB3 Host instead) */
+	if (mvSysEnvDeviceIdGet() == MV_6810) {
+		mvPrintf("Device 6810 supports only 2 GbE ports: SGMII-2 @ lane5 disabled (setting USB3.0 H1 instead)\n");
+		*isSgmii = MV_FALSE;
+		return MV_OK;
+	}
+
 	/* Initializing twsiSlave in order to read from the TWSI address */
 	twsiSlave.slaveAddr.address = RD_GET_MODE_ADDR;
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
@@ -956,6 +962,7 @@ MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii)
 		/* else use the default - USB3 */
 		*isSgmii = MV_FALSE;
 	}
+	mvPrintf("Lane 5 detection: %s \n" ,isSgmii ? "SGMII2" : "USB3.0 Host Port 1");
 
 	return MV_OK;
 }

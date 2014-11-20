@@ -156,10 +156,35 @@ MV_U32 mvHwsSerdesGetMaxLane(MV_VOID)
 	case MV_6828:
 		return 6;
 	default:	/* not the right module */
-		mvPrintf("%s : Device ID Error, using 4 SerDes lanes\n", __func__);
+		mvPrintf("%s: Device ID Error, using 4 SerDes lanes\n", __func__);
 		return 4;
 		}
 	return 6;
+}
+
+/***************************************************************************/
+MV_BOOL mvHwsIsSerdesActive(MV_U8 laneNum)
+{
+	MV_BOOL ret = MV_TRUE;
+
+	/* Maximum lane count for A388 (6828) is 6 */
+	if (laneNum > 6)
+		ret = MV_FALSE;
+
+	/* 4th Lane (#4 on Device 6810 is not Active */
+	if (mvSysEnvDeviceIdGet() == MV_6810 && laneNum == 4) {
+		mvPrintf("%s: Error: Lane#4 on Device 6810 is not Active.\n", __func__);
+		return MV_FALSE;
+	}
+
+	/* 6th Lane (#5) on Device 6810 is Active, even though 6810 has only 5 lanes*/
+	if (mvSysEnvDeviceIdGet() == MV_6810 && laneNum == 5)
+		return MV_TRUE;
+
+	if (laneNum >= mvHwsSerdesGetMaxLane())
+		ret = MV_FALSE;
+
+	return ret;
 }
 
 /***************************************************************************/
@@ -177,7 +202,6 @@ MV_STATUS mvHwsGetExtBaseAddr
 
 	return MV_OK;
 }
-
 
 /*******************************************************************************
 * mvHwsSerdesGetPhySelectorVal
@@ -201,4 +225,16 @@ MV_U32 mvHwsSerdesGetPhySelectorVal(MV_32 serdesNum, SERDES_TYPE serdesType)
     }
     else
 		return commonPhysSelectorsSerdesRev2Map[serdesType][serdesNum];
+}
+
+/***************************************************************************/
+MV_U32 mvHwsGetPhysicalSerdesNum(MV_U32 serdesNum)
+{
+	if((serdesNum == 4) && (mvSysEnvDeviceIdGet() == MV_6810)) {
+		/* for 6810, there are 5 Serdes and Serdes Num 4 doesn't exist.
+		   instead Serdes Num 5 is connected. */
+		return 5;
+	} else {
+		return serdesNum;
+	}
 }

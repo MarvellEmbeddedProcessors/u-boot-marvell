@@ -352,6 +352,16 @@ MV_VOID mvCtrlSocUnitInfoPrint(MV_VOID)
 	mvOsPrintf("XAUI     -  %d\n", mvCtrlSocUnitInfoNumGet(XAUI_UNIT_ID));
 #endif
 }
+/***************************************************************************/
+MV_U32 mvCtrlGetPhysicalSerdesNum(MV_U32 serdesNum)
+{
+	if ((serdesNum == 4) && (mvCtrlModelGet() == MV_6810_DEV_ID)) {
+		/* for 6810, there are 5 Serdes and Serdes Num 4 doesn't exist.
+		   instead Serdes Num 5 is connected. */
+		return 5;
+	} else
+		return serdesNum;
+}
 
 /*******************************************************************************
 * mvCtrlSerdesConfigDetect
@@ -369,7 +379,7 @@ MV_VOID mvCtrlSocUnitInfoPrint(MV_VOID)
 *******************************************************************************/
 MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 {
-	MV_U32 i, ifNo, commPhyConfigReg, comPhyCfg, serdesNum, serdesConfigField, maxSerdesLane;
+	MV_U32 i, ifNo, commPhyCfgReg, comPhyCfg, serdesNum, SerdesHwNum, serdesCfgField, maxSerdesLane;
 	MV_U32 sataIfCount = 0;
 	MV_U32 usbIfCount = 0;
 	MV_U32 usbHIfCount = 0;
@@ -385,17 +395,18 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 		maxSerdesLane = MV_SERDES_MAX_LANES_6810;
 
 	memset(boardPexInfo, 0, sizeof(MV_BOARD_PEX_INFO));
-	commPhyConfigReg = MV_REG_READ(COMM_PHY_SELECTOR_REG);
-	DB(printf("mvCtrlSerdesConfig: commPhyConfigReg=0x%x\n", commPhyConfigReg));
+	commPhyCfgReg = MV_REG_READ(COMM_PHY_SELECTOR_REG);
+	DB(printf("mvCtrlSerdesConfig: commPhyCfgReg=0x%x\n", commPhyCfgReg));
 	for (serdesNum = 0; serdesNum < maxSerdesLane; serdesNum++) {
-		serdesConfigField = (commPhyConfigReg & COMPHY_SELECT_MASK(serdesNum)) >> COMPHY_SELECT_OFFS(serdesNum);
-		comPhyCfg = serdesCfg[serdesNum][serdesConfigField];
-		DB(printf("serdesConfigField=0x%x, comPhyCfg=0x%02x SERDES %d detect as ",	\
-			  serdesConfigField, comPhyCfg, serdesNum));
+		SerdesHwNum = mvCtrlGetPhysicalSerdesNum(serdesNum);
+		serdesCfgField = (commPhyCfgReg & COMPHY_SELECT_MASK(SerdesHwNum)) >> COMPHY_SELECT_OFFS(SerdesHwNum);
+		comPhyCfg = serdesCfg[SerdesHwNum][serdesCfgField];
+		DB(printf("\nserdesConfigField=0x%x, comPhyCfg=0x%02x SERDES %d detect as ",
+			  serdesCfgField, comPhyCfg, SerdesHwNum));
 		ifNo = comPhyCfg & 0x0f;
 		switch (comPhyCfg & 0xF0) {
 		case SERDES_UNIT_PEX:
-			if ((ifNo == PEX0_IF) && (commPhyConfigReg & PCIE0_X4_EN_MASK))
+			if ((ifNo == PEX0_IF) && (commPhyCfgReg & PCIE0_X4_EN_MASK))
 				boardPexInfo->pexUnitCfg[ifNo] = PEX_BUS_MODE_X4;
 			else
 				boardPexInfo->pexUnitCfg[ifNo] = PEX_BUS_MODE_X1;
@@ -406,11 +417,11 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 		case SERDES_UNIT_SATA:
 			DB(printf("SATA, if=%d\n", ifNo));
 			sataIfCount++;
-			if (serdesNum > 2)
+			if (SerdesHwNum > 2)
 #if defined CONFIG_ARMADA_38X
 				/* SerDes 0,1,2 - Unit 0. SerDes 3,5 - Unit 1.
-				   SerDes 4 can be Unit 0 if serdesConfigField is set to 0x2, or Unit 1 if set to 0x6 */
-				if ((serdesNum == 4) && (serdesConfigField == 0x2))
+				   SerDes 4 can be Unit 0 if serdesCfgField is set to 0x2, or Unit 1 if set to 0x6 */
+				if ((SerdesHwNum == 4) && (serdesCfgField == 0x2))
 					sataUnitActive[0] = MV_TRUE;
 				else
 					sataUnitActive[1] = MV_TRUE;
@@ -449,6 +460,7 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 #endif
 		case SERDES_UNIT_NA:
 			DB(printf("Not connected! ***\n"));
+			break;
 		}
 	}
 	mvCtrlSocUnitInfoNumSet(PEX_UNIT_ID, boardPexInfo->boardPexIfNum);

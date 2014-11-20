@@ -178,14 +178,12 @@ void putdataDec (u32 dec_num,u32 length);
 #define DEBUG_INIT_FULL_D_10(d, l)	putdataDec(d, l)
 #define DEBUG_WR_REG(reg,val)       	{DEBUG_INIT_S("Write Reg: 0x"); DEBUG_INIT_D((reg), 8); DEBUG_INIT_S("= "); DEBUG_INIT_D((val), 8);DEBUG_INIT_S("\n");}
 #define DEBUG_RD_REG(reg,val)       	{DEBUG_INIT_S("Read  Reg: 0x"); DEBUG_INIT_D((reg), 8); DEBUG_INIT_S("= "); DEBUG_INIT_D((val), 8);DEBUG_INIT_S("\n");}
-#define DB(s)				s
 #else
 #define DEBUG_INIT_FULL_S(s)
 #define DEBUG_INIT_FULL_D(d, l)
 #define DEBUG_INIT_FULL_D_10(d, l)
 #define DEBUG_WR_REG(reg,val)
 #define DEBUG_RD_REG(reg,val)
-#define DB(s)
 #endif
 
 #define DEBUG_INIT_FULL_C(s, d, l)    {DEBUG_INIT_FULL_S(s); DEBUG_INIT_FULL_D(d, l); DEBUG_INIT_FULL_S("\n"); }

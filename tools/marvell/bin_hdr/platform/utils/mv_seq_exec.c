@@ -66,6 +66,13 @@
 #include "mvHighSpeedEnvSpec.h"
 #include "printf.h"
 
+/*#define MV_DEBUG*/
+#if defined(MV_DEBUG_INIT_FULL) || defined(MV_DEBUG)
+#define DB(x)	x
+#else
+#define DB(x)
+#endif
+
 #ifdef REGISTER_TRACE_DEBUG
 static MV_U32 _MV_REG_READ(MV_U32 regAddr)
 {

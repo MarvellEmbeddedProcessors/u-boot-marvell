@@ -65,6 +65,13 @@
 #include "mvHighSpeedEnvSpec.h"
 #include "printf.h"
 
+/*#define MV_DEBUG*/
+#if defined(MV_DEBUG_INIT_FULL) || defined(MV_DEBUG)
+#define DB(x)	x
+#else
+#define DB(x)
+#endif
+
 /* Forward declarations of local functions */
 static MV_STATUS writeOpExecuteExt
 (

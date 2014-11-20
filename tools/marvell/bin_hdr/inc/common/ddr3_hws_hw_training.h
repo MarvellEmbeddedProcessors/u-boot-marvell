@@ -43,18 +43,21 @@ typedef struct topologyUpdateInfo{
 	MV_U8 		mvECC;
 	MV_BOOL 	mvUpdateWidth;
 	MV_U8 		mvWidth;
+	MV_BOOL 	mvUpdateECCPup3Mode;
+	MV_BOOL 	mvECCPupModeOffset;
 } MV_TOPOLOGY_UPDATE_INFO;
+
 
 /*Topology update defines*/
 #define MV_TOPOLOGY_UPDATE_WIDTH_16BIT 			1
 #define MV_TOPOLOGY_UPDATE_WIDTH_32BIT 			0
-#define MV_TOPOLOGY_UPDATE_WIDTH_ALL_BIT_MASK	0xF
 #define MV_TOPOLOGY_UPDATE_WIDTH_32BIT_MASK		0xF
 #define MV_TOPOLOGY_UPDATE_WIDTH_16BIT_MASK		0x3
 
 #define MV_TOPOLOGY_UPDATE_ECC_ON				1
 #define MV_TOPOLOGY_UPDATE_ECC_OFF				0
-#define MV_TOPOLOGY_UPDATE_ECC_OFFSET			4
+#define MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP4		4
+#define MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP3		3
 
 /* 1. L2 filter should be set at binary header to 0xD000000,
  *    to avoid conflict with internal register IO.

@@ -791,6 +791,11 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 {
 	MV_U8	configVal;
 	MV_TWSI_SLAVE twsiSlave;
+	MV_U8 boardEccModeArray[A38X_MV_MAX_MARVELL_BOARD_ID-A38X_MARVELL_BOARD_ID_BASE][5] = MV_TOPOLOGY_UPDATE;
+	MV_U8 boardId = mvBoardIdGet();
+
+	boardId = mvBoardIdIndexGet(boardId);
+
 	/*Fix the topology for A380 by SatR values*/
 	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
@@ -804,47 +809,64 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 		return 0;
 	}
 
-	/*Read 3 bits, 0 is 16/32 mode, 1 is ECC mode, 2 is special ECC mode*/
-	switch( (configVal & DDR_SATR_CONFIG_MASK) >> DDR_SATR_CONFIG_OFFSET ){
-		case DDR_SATR_16BIT_VALUE:
+	/*Set 16/32 bit configuration*/
+	if( 0 == (configVal & DDR_SATR_CONFIG_MASK_WIDTH) ){
+		/*16bit*/
+		if( (boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_16BIT] != 0)){
 			topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
 			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_16BIT;
-			break;
-		case DDR_SATR_16BIT_NOT_VALID_ECC_VALUE:
-			topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
-			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_16BIT;
-			DEBUG_INIT_S("The ECC DRAM mode not valid, configured 16bit mode no ECC\n");
-			break;
-		case DDR_SATR_16BIT_ECC_PUP3_VALUE:
-		case DDR_SATR_16BIT_ECC_PUP4_VALUE:
-			topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
-			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_16BIT;
-			DEBUG_INIT_S("The ECC DRAM mode not supported, ECC disabled for 16bit mode\n");
-			break;
-
-		case DDR_SATR_32BIT_VALUE:
-			topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
-			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_32BIT;
-			break;
-		case DDR_SATR_32BIT_ECC_VALUE:
-			topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
-			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_32BIT;
-			DEBUG_INIT_S("The ECC DRAM mode not supported, ECC disabled for 32bit mode\n");
-			break;
-		case DDR_SATR_32BIT_NOT_VALID_NO_ECC_VALUE:
-		case DDR_SATR_32BIT_NOT_VALID_ECC_VALUE:
-			topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
-			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_32BIT;
-			DEBUG_INIT_S("The ECC DRAM mode not valid, configured 32bit mode no ECC\n");
-			break;
-		default:
-			break;
+		}
 	}
-	/* DB_BP_6821_ID: verify Bus width value is valid (16bit only) */
-	if (mvBoardIdGet() == DB_BP_6821_ID && topologyUpdateInfo->mvWidth == MV_TOPOLOGY_UPDATE_WIDTH_32BIT) {
-		mvPrintf("\nWarning: DB-88F6821-BP board doesn't support 32BIT DDR bus width.\n");
-		mvPrintf("\t Overriding 'SatR' configuration to be 16BIT\n\n");
-		topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_16BIT;
+	else{
+		/*32bit*/
+		if( (boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_32BIT] !=0 )){
+			topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
+			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_32BIT;
+		}
+	}
+	
+	/*Set ECC/no ECC bit configuration*/
+	if( 0 == (configVal & DDR_SATR_CONFIG_MASK_ECC) ){
+		/*NO ECC*/
+		topologyUpdateInfo->mvUpdateECC = MV_TRUE;
+		topologyUpdateInfo->mvECC = MV_TOPOLOGY_UPDATE_ECC_OFF;
+	}
+	else{
+		/*ECC*/
+		if( (boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_32BIT_ECC] !=0) ||
+			(boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_16BIT_ECC] !=0) ||
+			(boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_16BIT_ECC_PUP3] !=0) ){
+			topologyUpdateInfo->mvUpdateECC = MV_TRUE;
+			topologyUpdateInfo->mvECC = MV_TOPOLOGY_UPDATE_ECC_ON;
+			topologyUpdateInfo->mvUpdateECCPup3Mode = MV_TRUE;
+			topologyUpdateInfo->mvECCPupModeOffset = MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP4;
+		}
+	}
+
+	/*Set ECC pup bit configuration*/
+	if( 0 == (configVal & DDR_SATR_CONFIG_MASK_ECC_PUP) ){
+		/*PUP3*/
+		if(	(boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_16BIT_ECC_PUP3] !=0 )){
+			if(topologyUpdateInfo->mvWidth == MV_TOPOLOGY_UPDATE_WIDTH_16BIT){
+				topologyUpdateInfo->mvUpdateECCPup3Mode = MV_TRUE;
+				topologyUpdateInfo->mvECCPupModeOffset = MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP3;
+			}
+			else{
+				if( (boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_32BIT_ECC] !=0 ) ){
+					mvPrintf("DDR Topology Update: ECC PUP3 not valid for 32bit mode, force ECC in PUP4\n");
+					topologyUpdateInfo->mvUpdateECCPup3Mode = MV_TRUE;
+					topologyUpdateInfo->mvECCPupModeOffset = MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP4;
+				}
+			}
+		}
+	}
+	else{
+		/*PUP4*/
+		if( (boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_32BIT_ECC] !=0 ) ||
+			(boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_16BIT_ECC] !=0 )){
+			topologyUpdateInfo->mvUpdateECCPup3Mode = MV_TRUE;
+			topologyUpdateInfo->mvECCPupModeOffset = MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP4;
+		}
 	}
 
 	return MV_OK;

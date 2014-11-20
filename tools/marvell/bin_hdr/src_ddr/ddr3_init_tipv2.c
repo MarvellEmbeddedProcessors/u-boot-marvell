@@ -777,22 +777,27 @@ static MV_STATUS ddr3UpdateTopologyMap(MV_HWS_TOPOLOGY_MAP* topologyMap)
 	MV_TOPOLOGY_UPDATE_INFO topologyUpdateInfo;
 
 	topologyUpdateInfo.mvUpdateWidth = MV_FALSE;
-	topologyUpdateInfo.mvUpdateWidth = MV_FALSE;
+	topologyUpdateInfo.mvUpdateECC = MV_FALSE;
+	topologyUpdateInfo.mvUpdateECCPup3Mode = MV_FALSE;
 	mvSysEnvGetTopologyUpdateInfo(&topologyUpdateInfo);
-
-	if(topologyUpdateInfo.mvUpdateECC == MV_TRUE)
-	{
-		topologyMap->activeBusMask &= ~(1<<MV_TOPOLOGY_UPDATE_ECC_OFFSET);
-		topologyMap->activeBusMask |= topologyUpdateInfo.mvECC << MV_TOPOLOGY_UPDATE_ECC_OFFSET;
-	}
 
 	if(topologyUpdateInfo.mvUpdateWidth == MV_TRUE)
 	{
-		topologyMap->activeBusMask &= ~(MV_TOPOLOGY_UPDATE_WIDTH_ALL_BIT_MASK);
+		topologyMap->activeBusMask &= ~(MV_TOPOLOGY_UPDATE_WIDTH_32BIT_MASK);
 		if(topologyUpdateInfo.mvWidth == MV_TOPOLOGY_UPDATE_WIDTH_16BIT)
-			topologyMap->activeBusMask |= MV_TOPOLOGY_UPDATE_WIDTH_16BIT_MASK;
+			topologyMap->activeBusMask = MV_TOPOLOGY_UPDATE_WIDTH_16BIT_MASK;
 		else
-			topologyMap->activeBusMask |= MV_TOPOLOGY_UPDATE_WIDTH_32BIT_MASK;
+			topologyMap->activeBusMask = MV_TOPOLOGY_UPDATE_WIDTH_32BIT_MASK;
+	}
+
+	if(topologyUpdateInfo.mvUpdateECC == MV_TRUE)
+	{
+		if(topologyUpdateInfo.mvECC == MV_TOPOLOGY_UPDATE_ECC_OFF){
+			topologyMap->activeBusMask &= ~(1<<topologyUpdateInfo.mvECCPupModeOffset);
+		}
+		else{
+			topologyMap->activeBusMask |= topologyUpdateInfo.mvECC << topologyUpdateInfo.mvECCPupModeOffset;
+		}
 	}
 
 	return MV_OK;

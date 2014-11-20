@@ -226,6 +226,11 @@ extern "C" {
 #define SATA_COM_WAKE_RESET_SPACING_UP_LIMIT_VALUE	0x6018
 #define SATA_COM_WAKE_RESET_SPACING_UP_LIMIT_MASK	0xF03F
 
+/******************/
+/* SATA registers */
+/******************/
+#define COMPHY_H_PIPE3_SYNC_PATTERN_REG		(MV_COMPHY_H_PIPE3_REGS_OFFSET + 0x90)
+
 /*****************/
 /* PUP registers */
 /*****************/

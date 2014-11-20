@@ -201,7 +201,12 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		/* need to add similar detection as DB board:
 		 * - mvBoardMppIdUpdate();
 		 * - check for MV_SATR_DB_SERDES1_CFG, MV_SATR_DB_SERDES2_CFG, MV_SATR_SGMII_MODE */
-		mvOsPrintf("%s: initializing pre-defined board configuration.\n", __func__);
+
+		/* temporary WA for SATA port on DB-381 board: swapping SerDes lane polarity: */
+		MV_REG_BIT_SET(COMPHY_H_PIPE3_SYNC_PATTERN_REG,  BIT10); /* invert polarity for RX */
+		MV_REG_BIT_SET(COMPHY_H_PIPE3_SYNC_PATTERN_REG,  BIT11); /* invert polarity for TX */
+		mvOsPrintf("%s: Warning: Inverting RX/TX polarity for SerDes lane#0 (SATA0)\n\n", __func__);
+
 		break;
 	case DB_GP_68XX_ID:
 		mvBoardIoExpanderUpdate();

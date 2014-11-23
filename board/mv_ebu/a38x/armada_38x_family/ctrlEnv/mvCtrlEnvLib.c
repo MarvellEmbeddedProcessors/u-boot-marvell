@@ -154,9 +154,9 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /*			6920	6928	*/
 /* DRAM_UNIT_ID     */ { 1,	1},
 /* PEX_UNIT_ID      */ { 4,	4},
-/* ETH_GIG_UNIT_ID  */ { 3,	3},
+/* ETH_GIG_UNIT_ID  */ { 3,	2},
 /* USB_UNIT_ID      */ { 0,	1},
-/* USB3_UNIT_ID     */ { 1,	2},
+/* USB3_UNIT_ID     */ { 1,	2},/* usb3 serdes lane  */
 /* IDMA_UNIT_ID     */ { 0,	0},
 /* XOR_UNIT_ID      */ { 2,	2},
 /* SATA_UNIT_ID     */ { 0,	4},
@@ -173,7 +173,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /* I2C_UNIT_ID      */ { 4,	4},
 /* QSGMII_UNIT_ID   */ { 0,	1},
 /* XAUI_UNIT_ID     */ { 1,	1},
-/* USB3_HOST_UNIT_ID*/ { 2,	2},
+/* USB3_HOST_UNIT_ID*/ { 1,	2},
 };
 #endif
 

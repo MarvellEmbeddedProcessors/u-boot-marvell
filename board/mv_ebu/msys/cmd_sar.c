@@ -430,8 +430,9 @@ static int do_sar_write(int mode, int value)
 		rc = mvBoardCoreFreqSet(tmp);
 		break;
 	case CMD_CPU_DDR_REQ:
-		if ((value < 0) || (value > (sizeof(cpuDdrClkTbl)/sizeof(cpuDdrClkTbl[0])))) {
-			mvOsPrintf("S@R incorrect value for Freq %d\n", value);
+		if (((value < 0) || (value >= ARRAY_SIZE(cpuDdrClkTbl))) ||
+			(cpuDdrClkTbl[value].internalFreq != MV_FALSE)) {
+			mvOsPrintf("S@R incorrect value for Freq: %d\n", value);
 			rc = MV_ERROR;
 			break;
 		}
@@ -439,6 +440,12 @@ static int do_sar_write(int mode, int value)
 		break;
 #ifdef CONFIG_BOBCAT2
 	case CMD_TM_FREQ:
+		if (((value < 0) || (value >= ARRAY_SIZE(tmClkTbl))) ||
+			(tmClkTbl[value].internalFreq != MV_FALSE)) {
+			mvOsPrintf("S@R incorrect value for TM Freq: %d\n", value);
+			rc = MV_ERROR;
+			break;
+		}
 		rc = mvBoardTmFreqSet(tmp);
 		break;
 	case CMD_JTAG_CPU:

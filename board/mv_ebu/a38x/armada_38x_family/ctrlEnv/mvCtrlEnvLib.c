@@ -86,7 +86,7 @@
 #include "xor/mvXor.h"
 #endif
 
-#if defined(MV_INCLUDE_SATA)
+#if defined(CONFIG_SATA_AHCI_MV)
 #include "sata/sata3/mvSata3.h"
 #endif
 #if defined(MV_INCLUDE_USB)
@@ -921,7 +921,7 @@ MV_U8 mvCtrlEthMaxCPUsGet(MV_VOID)
 }
 
 
-#if defined(MV_INCLUDE_SATA)
+#if defined(CONFIG_SATA_AHCI_MV)
 /*******************************************************************************
 * mvCtrlSataMaxPortGet - Get Marvell controller number of Sata ports.
 *
@@ -1607,7 +1607,7 @@ MV_VOID mvCtrlAddrDecShow(MV_VOID)
 	mvUnitAddrDecShow(mvCtrlXorMaxChanGet(), XOR_UNIT_ID, "XOR", mvXorTargetWinRead);
 #endif
 
-#if defined(MV_INCLUDE_SATA)
+#if defined(CONFIG_SATA_AHCI_MV) && defined(MV_INCLUDE_SATA)
 	mvUnitAddrDecShow(mvCtrlSataMaxPortGet(), SATA_UNIT_ID, "Sata", mvSata3WinRead);
 #endif
 }
@@ -1954,7 +1954,7 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 			state = MV_TRUE;
 		break;
 #endif
-#if defined(MV_INCLUDE_SATA)
+#if defined(CONFIG_SATA_AHCI_MV)
 	case SATA_UNIT_ID:
 		if ((reg & PMC_SATA_STOP_CLK_MASK(index)) == PMC_SATA_STOP_CLK_STOP(index))
 			state = MV_FALSE;

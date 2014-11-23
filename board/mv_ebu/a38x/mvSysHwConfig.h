@@ -34,7 +34,8 @@ disclaimer.
 #define MV_INCLUDE_UART
 #define MV_INCLUDE_TDM
 #define MV_INCLUDE_XOR
-#define MV_INCLUDE_SATA
+#define CONFIG_SATA_AHCI_MV /* shared for u-boot and linux*/
+#define MV_INCLUDE_SATA /* only on u-boot */
 #define MV_INCLUDE_SDIO
 #define MV_INCLUDE_RTC
 

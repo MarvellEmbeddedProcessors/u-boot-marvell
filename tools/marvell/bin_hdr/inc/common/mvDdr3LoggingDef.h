@@ -86,6 +86,7 @@ typedef enum
 #ifdef CONFIG_DDR4
 	MV_DEBUG_TAP_TUNING,
     MV_DEBUG_BLOCK_CALIBRATION,
+    MV_DEBUG_BLOCK_DDR4_CENTRALIZATION,
 #endif
     MV_DEBUG_BLOCK_ALL /*All excluding IP and REG_DUMP, should be enabled separatelly*/
 }MV_DDR_LIB_DEBUG_BLOCK;

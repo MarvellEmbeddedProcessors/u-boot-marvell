@@ -45,7 +45,7 @@ typedef struct _boardSatrDefault {
 	MV_SATR_TYPE_ID satrId;
 	MV_U32 defauleValueForBoard[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_SATR_DEFAULT;
-#define MAX_DEFAULT_ENTRY	12
+#define MAX_DEFAULT_ENTRY	14
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 /* 	defauleValueForBoard[] = RD_NAS_68xx,	DB_BP_68xx,	RD_WAP_68xx,	DB_AP_68xx , DB_GP_68xx, 	DB_BP_6821 */
 { MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		0x0c,		0x0c,		0x0c,		0x4}},
@@ -56,6 +56,8 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 { MV_SATR_DDR_BUS_WIDTH,	{1,		1,		1,		1,		1,		0}},
 { MV_SATR_RD_SERDES4_CFG,	{0,		0,		0,		0,		0,		0}},
 { MV_SATR_GP_SERDES5_CFG,	{0,		0,		0,		0,		0,		0}},
+{ MV_SATR_GP_SERDES1_CFG,	{0,		0,		0,		0,		0,		0}},
+{ MV_SATR_GP_SERDES2_CFG,	{0,		0,		0,		0,		0,		0}},
 { MV_SATR_DB_SERDES1_CFG,	{1,		1,		1,		1,		1,		1}},
 { MV_SATR_DB_SERDES2_CFG,	{1,		1,		1,		1,		1,		1}},
 { MV_SATR_DB_USB3_PORT0,	{0,		0,		0,		0,		0,		0}},
@@ -241,6 +243,16 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("\t0 = USB3.0 Port 1\n");
 		mvOsPrintf("\t1 = SGMII-2\n ");
 		break;
+	case MV_SATR_GP_SERDES1_CFG:
+		mvOsPrintf("Determines the GP SERDES lane #1 configuration:\n");
+		mvOsPrintf("\t0 = SATA0\n");
+		mvOsPrintf("\t1 = PCIe0 (mini PCIe)\n ");
+		break;
+	case MV_SATR_GP_SERDES2_CFG:
+		mvOsPrintf("Determines the GP SERDES lane #2 configuration:\n");
+		mvOsPrintf("\t0 = SATA1\n");
+		mvOsPrintf("\t1 = PCIe1 (mini PCIe)\n ");
+		break;
 	case MV_SATR_DB_SERDES1_CFG:
 		mvOsPrintf("Determines the DB SERDES lane #1 configuration:\n");
 		for (i = 0; i <  ARRAY_SIZE(lane1Arr); i++)
@@ -342,6 +354,12 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("rdserdes4\t= %d  ==> RD SERDES Lane #4: %s\n", tmp, (tmp == 0) ? "USB3" : "SGMII");
 	case MV_SATR_GP_SERDES5_CFG:
 		mvOsPrintf("gpserdes5\t= %d  ==> GP SERDES Lane #5: %s\n", tmp, (tmp == 0) ? "USB3.0 port 1" : "SGMII-2");
+		break;
+	case MV_SATR_GP_SERDES1_CFG:
+		mvOsPrintf("gpserdes1\t= %d  ==> GP SERDES Lane #1: %s\n", tmp, (tmp == 0) ? "SATA0" : "PCIe0 (mini PCIe)");
+		break;
+	case MV_SATR_GP_SERDES2_CFG:
+		mvOsPrintf("gpserdes2\t= %d  ==> GP SERDES Lane #2: %s\n", tmp, (tmp == 0) ? "SATA1" : "PCIe1 (mini PCIe)");
 		break;
 	case MV_SATR_DB_SERDES1_CFG:
 		mvOsPrintf("dbserdes1\t= %d  ==> DB SERDES Lane #1: %s\n", tmp, lane1Arr[tmp]);
@@ -529,8 +547,9 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "\n\t Board Specific SW fields\n"
 "\t------------------------\n"
 "devid			- DB, DB-GP:	Device ID flavor\n"
-"rdserdes4		- RD-NAS:	SerDes lane #4\n"
-"gpserdes5		- DB-GP:		SerDes lane #5\n"
+"gpserdes1		- DB-GP:	SerDes lane #1\n"
+"gpserdes2		- DB-GP:	SerDes lane #2\n"
+"gpserdes5		- DB-GP:	SerDes lane #5\n"
 "dbserdes1		- DB:		SerDes lane #1\n"
 "dbserdes2		- DB:		SerDes lane #2\n"
 "usb3port0		- DB:		USB3-Port0 mode\n"

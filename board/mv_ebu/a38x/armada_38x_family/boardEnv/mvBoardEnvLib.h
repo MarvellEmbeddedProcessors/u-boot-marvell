@@ -403,6 +403,9 @@ struct _mvBoardMppModule {
 				  {3, 0x25255051}, {4, 0x25555555}, {5, 0x40042555 } }
 #define MPP_SDIO_MODULE		{ {2, 0x11466011}, {3, 0x22242011}, {4, 0x44400002}, {5, 0x40042024 } }
 #define MPP_NAND_ON_BOARD	{ {2, 0x55266011}, {3, 0x25252051}, {4, 0x25255555}, {5, 0x40042565 } }
+#define MPP_GP_MINI_PCIE0	{2, 0x11240011}
+#define MPP_GP_MINI_PCIE1	{2, 0x11204011}
+#define MPP_GP_MINI_PCIE0_PCIE1	{2, 0x11200011}
 
 /* Boot device bus width */
 #define MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS          3

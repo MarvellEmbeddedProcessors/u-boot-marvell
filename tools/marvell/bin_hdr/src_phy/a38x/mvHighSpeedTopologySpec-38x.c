@@ -484,6 +484,7 @@ MV_U8 topologyConfigDB381ModeGet(MV_VOID)
 	return DB_381_CONFIG_DEFAULT;
 }
 
+SERDES_MAP DefaultLane = { DEFAULT_SERDES, LAST_SERDES_SPEED, SERDES_DEFAULT_MODE };
 MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneType)
 {
 	MV_U32 serdesType, laneNum;
@@ -516,40 +517,70 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneTyp
 		}
 	}
 
-	/* if board supports dynamic update of lanes 1&2 topology ('dbserdes1' & 'dbserdes2') */
+	/* if board supports dynamic update of lanes 1&2 topology */
 	if (!updateLaneType)
 		return MV_OK;
 
-	/* read 'dbserdes1' and 'dbserdes2' values */
-	twsiSlave.offset = 1;
-	if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
-		mvPrintf("%s: TWSI Read of 'dbserdes1/2' failed\n", __func__);
-		return MV_FAIL;
-	}
+	switch (mvBoardIdGet()) {
+	case DB_68XX_ID: /* read 'dbserdes1' & 'dbserdes2' */
+		twsiSlave.offset = 1;
+		if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
+			mvPrintf("%s: TWSI Read of 'dbserdes1/2' failed\n", __func__);
+			return MV_FAIL;
+		}
 
-	/* Lane #1 */
-	laneSelect = (configVal & SATR_DB_LANE1_CFG_MASK) >> SATR_DB_LANE1_CFG_OFFSET;
-	if (laneSelect > SATR_DB_LANE1_MAX_OPTIONS) {
-		mvPrintf("\n\%s: Error: invalid value for SatR field 'dbserdes1' (%x)\n", __func__, laneSelect);
-		mvPrintf("Check 'SatR' configuration ('SatR write default')\n\n");
-		return MV_FAIL;
-	}
-	serdesMapArray[1] = DBSatRConfigLane1[laneSelect];
+		/* Lane #1 */
+		laneSelect = (configVal & SATR_DB_LANE1_CFG_MASK) >> SATR_DB_LANE1_CFG_OFFSET;
+		if (laneSelect > SATR_DB_LANE1_MAX_OPTIONS) {
+			mvPrintf("\n\%s: Error: invalid value for SatR field 'dbserdes1' (%x)\n", __func__, laneSelect);
+			mvPrintf("Check 'SatR' configuration ('SatR write default')\n\n");
+			return MV_FAIL;
+		}
+		serdesMapArray[1] = DBSatRConfigLane1[laneSelect];
 
-	/* verify if lane #1 conflicts with lane #4 (only 1 lane can be USB3 Host port 0)*/
-	if (mvHwsSerdesGetMaxLane() > 4 && serdesMapArray[1].serdesType == serdesMapArray[4].serdesType) {
-		mvPrintf("%s: Lane #4 Type conflicts with Lane #1 Type (Lane #4 disabled) \n", __func__, laneSelect);
-		serdesMapArray[4] = DBSatRConfigLane1[0];
-	}
+		/* verify if lane #1 conflicts with lane #4 (only 1 lane can be USB3 Host port 0)*/
+		if (mvHwsSerdesGetMaxLane() > 4 && serdesMapArray[1].serdesType == serdesMapArray[4].serdesType) {
+			mvPrintf("%s: Lane #4 Type conflicts with Lane #1 Type (Lane #4 disabled) \n", __func__, laneSelect);
+			serdesMapArray[4] = DBSatRConfigLane1[0];
+		}
 
-	/* Lane #2 */
-	laneSelect = (configVal & SATR_DB_LANE2_CFG_MASK) >> SATR_DB_LANE2_CFG_OFFSET;
-	if (laneSelect > SATR_DB_LANE2_MAX_OPTIONS) {
-		mvPrintf("\n\%s: Error: invalid value for SatR field 'dbserdes2' (%x)\n", __func__, laneSelect);
-		mvPrintf("Check 'SatR' configuration ('SatR write default')\n\n");
-		return MV_FAIL;
+		/* Lane #2 */
+		laneSelect = (configVal & SATR_DB_LANE2_CFG_MASK) >> SATR_DB_LANE2_CFG_OFFSET;
+		if (laneSelect > SATR_DB_LANE2_MAX_OPTIONS) {
+			mvPrintf("\n\%s: Error: invalid value for SatR field 'dbserdes2' (%x)\n", __func__, laneSelect);
+			mvPrintf("Check 'SatR' configuration ('SatR write default')\n\n");
+			return MV_FAIL;
+		}
+		serdesMapArray[2] = DBSatRConfigLane2[laneSelect];
+		break;
+	case DB_GP_68XX_ID: /* read 'gpserdes1' & 'gpserdes2' */
+		twsiSlave.offset = 2;
+		if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
+			mvPrintf("%s: TWSI Read of 'gpserdes1/2' failed\n", __func__);
+			return MV_FAIL;
+		}
+
+		/* Lane #1: laneSelect = 0 --> SATA0,  laneSelect = 1 --> PCIe0 (mini PCIe) */
+		laneSelect = (configVal & SATR_GP_LANE1_CFG_MASK) >> SATR_GP_LANE1_CFG_OFFSET;
+		if (laneSelect == 1) {
+			serdesMapArray[1].serdesMode = PEX0;
+			serdesMapArray[1].serdesSpeed = __5Gbps;
+			serdesMapArray[1].serdesType = PEX_ROOT_COMPLEX_x1;
+			/* if lane 1 is set to PCIe0 --> disable PCIe0 on lane 0 */
+			serdesMapArray[0] = DefaultLane;
+		}
+		mvPrintf("Lane 1 detection: %s \n" ,laneSelect ? "PCIe0 (mini PCIe)" : "SATA0");
+
+		/* Lane #2: laneSelect = 0 --> SATA1,  laneSelect = 1 --> PCIe1 (mini PCIe) */
+		laneSelect = (configVal & SATR_GP_LANE2_CFG_MASK) >> SATR_GP_LANE2_CFG_OFFSET;
+		if (laneSelect == 1) {
+			serdesMapArray[2].serdesType = PEX1;
+			serdesMapArray[2].serdesSpeed = __5Gbps;
+			serdesMapArray[2].serdesMode = PEX_ROOT_COMPLEX_x1;
+		}
+		mvPrintf("Lane 2 detection: %s \n" ,laneSelect ? "PCIe1 (mini PCIe)" : "SATA1");
+		break;
 	}
-	serdesMapArray[2] = DBSatRConfigLane2[laneSelect];
 
 	return MV_OK;
 }
@@ -565,15 +596,14 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneTyp
 *   	MV_OK - if updating the board topology success
 *   	MV_BAD_PARAM - if the input parameter is wrong
 ***************************************************************************/
-SERDES_MAP DefaultLane = { DEFAULT_SERDES, LAST_SERDES_SPEED, SERDES_DEFAULT_MODE };
 MV_STATUS mvHwsUpdateDeviceToplogy(SERDES_MAP* topologyConfigPtr, TOPOLOGY_CONFIG_DB topologyMode)
 {
 	MV_U32 DevId = mvSysEnvDeviceIdGet();
 	MV_U32 BoardId = mvBoardIdGet();
 
-	switch(topologyMode){
+	switch(topologyMode) {
 	case DB_CONFIG_DEFAULT:
-		switch(DevId){
+		switch(DevId) {
 		case MV_6810:
 			/* DB-AP : default for Lane3=SGMII2 --> 6810 supports only 2 SGMII interfaces: lane 3 disabled */
 			if (BoardId == DB_AP_68XX_ID) {
@@ -771,7 +801,8 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[laneNum].serdesType =  topologyConfigPtr[laneNum].serdesType;
 	}
 
-	updateTopologySatR(serdesMapArray, MV_FALSE);
+	/* update 'gpserdes1/2/3' lane configuration , and 'sgmiispeed' for SGMII lanes */
+	updateTopologySatR(serdesMapArray, MV_TRUE);
 
 	return MV_OK;
 }
@@ -962,7 +993,7 @@ MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii)
 		/* else use the default - USB3 */
 		*isSgmii = MV_FALSE;
 	}
-	mvPrintf("Lane 5 detection: %s \n" ,isSgmii ? "SGMII2" : "USB3.0 Host Port 1");
+	mvPrintf("Lane 5 detection: %s \n" ,*isSgmii ? "SGMII2" : "USB3.0 Host Port 1");
 
 	return MV_OK;
 }

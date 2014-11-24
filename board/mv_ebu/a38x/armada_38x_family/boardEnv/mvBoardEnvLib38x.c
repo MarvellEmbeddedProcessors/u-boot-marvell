@@ -209,6 +209,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 
 		break;
 	case DB_GP_68XX_ID:
+		mvBoardMppIdUpdate();
 		mvBoardIoExpanderUpdate();
 		break;
 	case RD_NAS_68XX_ID:

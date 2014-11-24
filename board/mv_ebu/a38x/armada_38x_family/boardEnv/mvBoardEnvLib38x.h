@@ -103,6 +103,8 @@ typedef enum _mvSatRTypeID {
 	MV_SATR_SGMII_MODE,
 	MV_SATR_DEVICE_ID,
 	MV_SATR_DEVICE_ID2,
+	MV_SATR_GP_SERDES1_CFG,
+	MV_SATR_GP_SERDES2_CFG,
 	MV_SATR_MAX_OPTION,
 } MV_SATR_TYPE_ID;
 
@@ -128,7 +130,9 @@ typedef enum _mvSatRTypeID {
 {"gpserdes5",	MV_SATR_GP_SERDES5_CFG,		0x4,	2,	1,	1,	{0, 0, 0, 0, 1, 0}, 0},\
 {"dbserdes1",	MV_SATR_DB_SERDES1_CFG,		0x7,	0,	0,	1,	{0, 1, 0, 0, 0, 1}, 0},\
 {"dbserdes2",	MV_SATR_DB_SERDES2_CFG,		0x38,	3,	0,	1,	{0, 1, 0, 0, 0, 1}, 0},\
-{"sgmiimode",	MV_SATR_SGMII_MODE,		0x40,	6,	0,	1,	{0, 1, 0, 0, 0, 1}, 0},\
+{"gpserdes1",	MV_SATR_GP_SERDES1_CFG,		0x4,	2,	0,	2,	{0, 0, 0, 0, 1, 0}, 0},\
+{"gpserdes2",	MV_SATR_GP_SERDES2_CFG,		0x8,	3,	0,	2,	{0, 0, 0, 0, 1, 0}, 0},\
+{"sgmiimode",	MV_SATR_SGMII_MODE,		0x40,	6,	0,	1,	{0, 1, 0, 0, 1, 1}, 0},\
 {"devid",	MV_SATR_DEVICE_ID,		0x1,	0,	2,	0,	{0, 1, 0, 0, 0, 0}, 0},\
 {"devid2",	MV_SATR_DEVICE_ID2,		0x10,	4,	3,	0,	{0, 1, 0, 0, 0, 0}, 0},\
 {"max_option",	MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0, 0, 0, 0}, 0},\

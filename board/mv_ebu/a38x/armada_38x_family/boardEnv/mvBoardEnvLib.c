@@ -986,6 +986,7 @@ void mvModuleMppUpdate(MV_U32 numGroup, struct _mvBoardMppModule *pMpp)
 *******************************************************************************/
 MV_VOID mvBoardMppIdUpdate(MV_VOID)
 {
+#ifdef CONFIG_ARMADA_38X
 	struct _mvBoardMppModule miiModule[3] = MPP_MII_MODULE;
 	struct _mvBoardMppModule norModule[6] = MPP_NOR_MODULE;
 	struct _mvBoardMppModule nandModule[6] = MPP_NAND_MODULE;
@@ -994,30 +995,50 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 	struct _mvBoardMppModule i2sModule = MPP_I2S_MODULE;
 	struct _mvBoardMppModule spdifModule = MPP_SPDIF_MODULE;
 	struct _mvBoardMppModule nandOnBoard[4] = MPP_NAND_ON_BOARD;
+	struct _mvBoardMppModule mini_pcie0_OnBoard = MPP_GP_MINI_PCIE0;
+	struct _mvBoardMppModule mini_pcie1_OnBoard = MPP_GP_MINI_PCIE1;
+	struct _mvBoardMppModule mini_pcie0_pcie1OnBoard = MPP_GP_MINI_PCIE0_PCIE1;
+	MV_U8 miniPcie0_sata0_selector, miniPcie1_sata1_selector;
 
-	if (mvBoardIsModuleConnected(MV_MODULE_MII))
-		mvModuleMppUpdate(3, miiModule);
 
-	if (mvBoardIsModuleConnected(MV_MODULE_NOR))
-		mvModuleMppUpdate(6, norModule);
+	switch (mvBoardIdGet()) {
+	case DB_68XX_ID:
+		if (mvBoardIsModuleConnected(MV_MODULE_MII))
+			mvModuleMppUpdate(3, miiModule);
 
-	if (mvBoardIsModuleConnected(MV_MODULE_NAND))
-		mvModuleMppUpdate(6, nandModule);
+		if (mvBoardIsModuleConnected(MV_MODULE_NOR))
+			mvModuleMppUpdate(6, norModule);
 
-	if (mvBoardIsModuleConnected(MV_MODULE_SDIO))
-		mvModuleMppUpdate(4, sdioModule);
+		if (mvBoardIsModuleConnected(MV_MODULE_NAND))
+			mvModuleMppUpdate(6, nandModule);
 
-	if (mvBoardIsModuleConnected(MV_MODULE_SLIC_TDM_DEVICE))
-		mvModuleMppUpdate(2, tdmModule);
+		if (mvBoardIsModuleConnected(MV_MODULE_SDIO))
+			mvModuleMppUpdate(4, sdioModule);
 
-	if (mvBoardIsModuleConnected(MV_MODULE_I2S_DEVICE))
-		mvModuleMppUpdate(1, &i2sModule);
+		if (mvBoardIsModuleConnected(MV_MODULE_SLIC_TDM_DEVICE))
+			mvModuleMppUpdate(2, tdmModule);
 
-	if (mvBoardIsModuleConnected(MV_MODULE_SPDIF_DEVICE))
-		mvModuleMppUpdate(1, &spdifModule);
+		if (mvBoardIsModuleConnected(MV_MODULE_I2S_DEVICE))
+			mvModuleMppUpdate(1, &i2sModule);
 
-	if (mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD))
-		mvModuleMppUpdate(4, nandOnBoard);
+		if (mvBoardIsModuleConnected(MV_MODULE_SPDIF_DEVICE))
+			mvModuleMppUpdate(1, &spdifModule);
+
+		if (mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD))
+			mvModuleMppUpdate(4, nandOnBoard);
+		break;
+	case DB_GP_68XX_ID:
+		miniPcie0_sata0_selector = mvBoardSatRRead(MV_SATR_GP_SERDES1_CFG); /* 0 = SATA0 , 1 = PCIe0 */
+		miniPcie1_sata1_selector = mvBoardSatRRead(MV_SATR_GP_SERDES2_CFG); /* 0 = SATA1 , 1 = PCIe1 */
+		if (miniPcie0_sata0_selector == 1 && miniPcie1_sata1_selector == 1)
+			mvModuleMppUpdate(1, &mini_pcie0_pcie1OnBoard);
+		else if (miniPcie0_sata0_selector == 1)
+			mvModuleMppUpdate(1, &mini_pcie0_OnBoard);
+		else if (miniPcie1_sata1_selector == 1)
+			mvModuleMppUpdate(1, &mini_pcie1_OnBoard);
+		break;
+	}
+#endif
 }
 
 /*******************************************************************************
@@ -1051,21 +1072,31 @@ MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 		mvBoardIoExpanderGet(1, 6, &ioValue2) == MV_ERROR)
 		return MV_OK;
 
-	/* if RD board: detect SerDes Lane #4 configuration*/
-	if (boardId == RD_NAS_68XX_ID || boardId == RD_AP_68XX_ID)
-		serdesCfg = mvBoardSatRRead(MV_SATR_RD_SERDES4_CFG);
-	/* DB-GP board: configurable lane #5 */
-	if (boardId == DB_GP_68XX_ID)
+	if (boardId == DB_GP_68XX_ID) {
+		/* check SerDes lane 1,2,5 configuration ('gpserdes1/2/5') */
 		serdesCfg = mvBoardSatRRead(MV_SATR_GP_SERDES5_CFG);
-
-	if (serdesCfg != MV_ERROR) { /* ignore for none RD_NAS board */
-		if (serdesCfg == 0) /* 0 = USB3.  1 = SGMII. */
-			ioValue |= 1 ;	/* Setting USB3.0 interface: configure IO as output '1' */
-		else {
-			ioValue &= ~1;		/* Setting SGMII interface:  configure IO as output '0' */
-			ioValue2 &= ~BIT5;	/* Set Tx disable for SGMII */
+		if (serdesCfg != MV_ERROR) {
+			if (serdesCfg == 0) /* 0 = USB3.  1 = SGMII. */
+				ioValue |= 1 ;	/* Setting USB3.0 interface: configure IO as output '1' */
+			else {
+				ioValue &= ~1;		/* Setting SGMII interface:  configure IO as output '0' */
+				ioValue2 &= ~BIT5;	/* Set Tx disable for SGMII */
+			}
+			mvBoardIoExpanderSet(1, 6, ioValue2);
 		}
-		mvBoardIoExpanderSet(1, 6, ioValue2);
+
+		serdesCfg = mvBoardSatRRead(MV_SATR_GP_SERDES1_CFG);
+		if (serdesCfg == 1) { /* 0 = SATA0 , 1 = PCIe0 */
+			ioValue |= BIT1 ;	/* Setting PCIe0 (mini): PCIe0_SATA0_SEL(out) = 1 (PCIe)  */
+			ioValue &= ~BIT2;	/* disable SATA0 power: PWR_EN_SATA0(out) = 0 */
+		}
+
+		serdesCfg = mvBoardSatRRead(MV_SATR_GP_SERDES2_CFG);
+		if (serdesCfg == 1) { /* 0 = SATA1 , 1 = PCIe1 */
+			ioValue |= BIT6 ;	/* Setting PCIe1 (mini): PCIe1_SATA1_SEL(out) = 1 (PCIe)  */
+			ioValue &= ~BIT3;	/* disable SATA1 power: PWR_EN_SATA1(out) = 0 */
+		}
+
 		mvBoardIoExpanderSet(0, 2, ioValue);
 	}
 #endif

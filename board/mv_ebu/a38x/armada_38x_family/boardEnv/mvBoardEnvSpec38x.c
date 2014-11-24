@@ -643,7 +643,7 @@ struct MV_BOARD_IO_EXPANDER dbGP88f68XXInfoBoardioExpValue[] = {
 	{0, 6, 0x20}, /* Configuration registers: Bit on --> Input bits */
 	{0, 7, 0xC3}, /* Configuration registers: Bit on --> Input bits */
 	{0, 2, 0x1D}, /* Output Data, register#0 */
-	{0, 3, 0x18}, /* Output Data, register#1 */
+	{0, 3, 0x3C}, /* Output Data, register#1 */
 	{1, 6, 0xC3}, /* Configuration registers: Bit on --> Input bits  */
 	{1, 7, 0x31}, /* Configuration registers: Bit on --> Input bits  */
 	{1, 2, 0x08}, /* Output Data, register#0 */

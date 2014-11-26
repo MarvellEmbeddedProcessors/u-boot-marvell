@@ -338,7 +338,7 @@ typedef struct boardWakeupGPIO {
 {RD_NAS_68XX_ID, -2 },\
 {DB_68XX_ID,	 -1 },\
 {RD_AP_68XX_ID,	 -2 },\
-{DB_AP_68XX_ID,	 21 },\
+{DB_AP_68XX_ID,	 -2 },\
 {DB_GP_68XX_ID,	 -2 },\
 {DB_BP_6821_ID,	 -2 },\
 };

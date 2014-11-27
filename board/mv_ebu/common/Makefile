@@ -38,6 +38,7 @@ endif
 ifeq ($(BOARD),msys)
 MAKE_NETA = yes
 MAKE_SWITCH_SERVICES = yes
+MAKE_GENERAL_U_BOOT_TOOLS = yes
 ifdef CONFIG_ALLEYCAT3
 MAKE_USB = yes
 endif

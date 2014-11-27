@@ -88,9 +88,11 @@ int do_active_units(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	printf(", i2c0");
 #endif
 
+#if defined (MV_INCLUDE_TDM)
 	/*   TDM	*/
 	if (mvBoardSlicUnitTypeGet() != MV_BOARD_SLIC_DISABLED)
 		printf(", tdm0");
+#endif
 
 	printf("\n");
 	return 0;

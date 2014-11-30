@@ -61,7 +61,7 @@ typedef struct _deviceIdEntry {
 
 MV_BOARD_SATR_DEVICE_ID devIdArr[2] = {
 /* Device ID STR	ID Flavor	ID HW Value*/
-{ "6920 (A395)",	0x6920,		0x4 },
+{ "6920 (A390)",	0x6920,		0x5 },
 { "6928 (A398)",	0x6928,		0x6 },
 };
 

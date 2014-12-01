@@ -987,6 +987,17 @@ MV_BOOL mvCtrlIsActiveSataUnit(MV_U32 unitNumber)
 		return MV_FALSE;
 	return sataUnitActive[unitNumber];
 }
+
+/*******************************************************************************
+* mvCtrlSataRegBaseGet
+*
+* DESCRIPTION: This function returns the register base of the SATA unit
+* *******************************************************************************/
+MV_U32 mvCtrlSataRegBaseGet(MV_U32 unitNumber)
+{
+	return MV_SATA3_REGS_OFFSET(unitNumber);
+}
+
 #endif
 
 #if defined(MV_INCLUDE_XOR)

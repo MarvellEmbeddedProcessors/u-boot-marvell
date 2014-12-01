@@ -78,6 +78,7 @@ void fdt_env_setup(char *fdtfile)
 static int mv_fdt_find_node(void *fdt, const char *name);
 static int mv_fdt_update_cpus(void *fdt);
 static int mv_fdt_update_pex(void *fdt);
+static int mv_fdt_update_sata(void *fdt);
 static int mv_fdt_update_ethnum(void *fdt);
 static int mv_fdt_remove_node(void *fdt, const char *path);
 static int mv_fdt_scan_and_set_alias(void *fdt,
@@ -151,6 +152,11 @@ void ft_board_setup(void *blob, bd_t *bd)
 
 	/* Get number of active PEX port and update DT */
 	err = mv_fdt_update_pex(blob);
+	if (err < 0)
+		goto bs_fail;
+
+	/* Get number of active SATA units and update DT */
+	err = mv_fdt_update_sata(blob);
 	if (err < 0)
 		goto bs_fail;
 
@@ -273,6 +279,42 @@ static int mv_fdt_update_cpus(void *fdt)
 	}
 	free(p);
 	free(lastcpu);
+
+	return 0;
+}
+
+static int mv_fdt_update_sata(void *fdt)
+{
+	int i, err, nodeoffset;				/* nodeoffset: node offset from libfdt */
+	char propval[10];				/* property value */
+	const char *prop = "status";			/* property name */
+	char node[64];					/* node name */
+	MV_U32 sataUnitNum = mvCtrlSataMaxUnitGet();	/* number of interfaces */
+
+	mv_fdt_dprintf("Maximum SATA Units = %d\n, Active SATA Units:", sataUnitNum);
+	for (i = 0; i < sataUnitNum; i++) {
+		if (mvCtrlIsActiveSataUnit(i))
+			sprintf(propval, "okay"); /* Enable active SATA interfaces */
+		else
+			sprintf(propval, "disabled"); /* disable NON active SATA units */
+
+		sprintf(node, "sata@%x", mvCtrlSataRegBaseGet(i));
+		nodeoffset = mv_fdt_find_node(fdt, node);
+		if (nodeoffset < 0) {
+			mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+			return -1;
+		}
+
+		if (strncmp(fdt_get_name(fdt, nodeoffset, NULL), node, 5) == 0) {
+			mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
+							propval, strlen(propval)+1));
+			if (err < 0) {
+				mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
+				return -1;
+			}
+			mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
+		}
+	}
 
 	return 0;
 }

@@ -125,23 +125,34 @@ int rtc_set(struct rtc_time *tm)
 /*******************************************************/
 void rtc_reset(void)
 {
+	/* Reset Test register */
+	RTC_WRITE_REG(0, RTC_TEST_CONFIG_REG_OFFS);
+	mdelay(500); /* Oscillator startup time */
+
+	/* Reset time register */
+	RTC_WRITE_REG(0, RTC_TIME_REG_OFFS);
+	udelay(62);
+
+	/* Reset Status register */
+	RTC_WRITE_REG((RTC_SZ_STATUS_ALARM1_MASK | RTC_SZ_STATUS_ALARM2_MASK), RTC_STATUS_REG_OFFS);
+	udelay(62);
+
+	/* Turn off Int1 and Int2 sources & clear the Alarm count */
+	RTC_WRITE_REG(0, RTC_IRQ_1_CONFIG_REG_OFFS);
+	RTC_WRITE_REG(0, RTC_IRQ_2_CONFIG_REG_OFFS);
+	RTC_WRITE_REG(0, RTC_ALARM_1_REG_OFFS);
+	RTC_WRITE_REG(0, RTC_ALARM_2_REG_OFFS);
+
 	/* Setup nominal register access timing */
 	RTC_WRITE_REG(RTC_NOMINAL_TIMING, RTC_CLOCK_CORR_REG_OFFS);
 
-	/* Make sure we are not in any test mode */
-	RTC_WRITE_REG(0, RTC_TEST_CONFIG_REG_OFFS);
-	mdelay(500);
+	/* Reset time register */
+	RTC_WRITE_REG(0, RTC_TIME_REG_OFFS);
+	udelay(10);
 
-	/* Turn off Int1 sources & clear the Alarm count */
-	RTC_WRITE_REG(0, RTC_IRQ_1_CONFIG_REG_OFFS);
-	RTC_WRITE_REG(0, RTC_ALARM_1_REG_OFFS);
-
-	/* Turn off Int2 sources & clear the Periodic count */
-	RTC_WRITE_REG(0, RTC_IRQ_2_CONFIG_REG_OFFS);
-	RTC_WRITE_REG(0, RTC_ALARM_2_REG_OFFS);
-
-	/* Clear any pending Status bits */
+	/* Reset Status register */
 	RTC_WRITE_REG((RTC_SZ_STATUS_ALARM1_MASK | RTC_SZ_STATUS_ALARM2_MASK), RTC_STATUS_REG_OFFS);
+	udelay(50);
 }
 
 #endif	/* CONFIG_CMD_DATE */

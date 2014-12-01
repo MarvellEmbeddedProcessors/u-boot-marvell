@@ -210,8 +210,9 @@ MV_U8 mvSysEnvDeviceRevGet(MV_VOID)
 #elif defined MV_MSYS_BC2
 	MV_U32   uiRegData;
 
-	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, BC2_DEV_VERSION_ID_REG, &uiRegData, MV_ALL_BITS_MASK));
-	return ((uiRegData >> BC2_REVISON_ID_OFFS) & BC2_REVISON_ID_MASK) ;
+	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, BC2_JTAG_DEV_ID_STATUS_REG_ADDR, &uiRegData, MV_ALL_BITS_MASK));
+	return ((uiRegData >> BC2_JTAG_DEV_ID_STATUS_VERSION_OFFSET) & BC2_REVISON_ID_MASK) ;
+
 #else
 	#error "Un-defined silicon"
 #endif

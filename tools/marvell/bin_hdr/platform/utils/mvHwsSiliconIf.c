@@ -143,7 +143,6 @@ MV_STATUS genSwitchRegisterGet
 	SWITCH_ADDR_COMPL_SET(address); /* Only MSB is important, serdes number offset does not matter */
 
 	*data  = MV_MEMIO_LE32_READ(SWITCH_BUS_ADDR(address)) & mask;
-
 	return MV_OK;
 }
 
@@ -174,7 +173,7 @@ MV_STATUS genSwitchRegisterSet
 {
 	MV_U32 regData;
 
-	if (mask != 0xFFFFFFFF) {
+	if ((mask & 0xFFFF) != 0xFFFF) { /* since switch registers are 16 bits - check only the relevant bits */
 		genSwitchRegisterGet(address, &regData, ~mask);
 		regData |= (data & mask);
 	} else
@@ -183,8 +182,7 @@ MV_STATUS genSwitchRegisterSet
 	SWITCH_ADDR_COMPL_SET(address); /* Only MSB is important, serdes number offset does not matter */
 
 	MV_MEMIO_LE32_WRITE(SWITCH_BUS_ADDR(address), regData);
-
-	return MV_OK;
+		return MV_OK;
 }
 
 /*******************************************************************************
@@ -214,7 +212,6 @@ MV_STATUS genRegisterGet
 )
 {
 	*data = MV_MEMIO_LE32_READ(address) & mask;
-
 	return MV_OK;
 }
 
@@ -250,9 +247,7 @@ MV_STATUS genRegisterSet
 		regData = (regData & ~mask) | (data & mask);
 	} else
 		regData = data;
-
 	MV_MEMIO_LE32_WRITE(address, regData);
-
 	return MV_OK;
 }
 
@@ -293,6 +288,9 @@ MV_STATUS mvGenUnitRegisterSet
 	mvUnitInfoGet(unitId, unitNum, &unitAddr, &unitIndexOffset);
 	if ((unitNum != 0) && (unitIndexOffset == 0))
 		return MV_BAD_PARAM;
+
+	if(mask == 0) /* the convention in the upper level code - if mask = 0, check all bits */
+		mask = 0xFFFFFFFF;
 
 	address = unitAddr + unitIndexOffset * unitNum + regOffset;
 

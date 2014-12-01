@@ -845,6 +845,27 @@ MV_U32 mvCtrlEthMaxPortGet(MV_VOID)
 
 #if defined(MV_INCLUDE_SATA)
 /*******************************************************************************
+* mvCtrlSataMaxUnitGet
+*
+* DESCRIPTION:
+*       This function returns max number of SATA units for A38x/A39x chip.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Marvell controller number of SATA units.
+*
+*******************************************************************************/
+MV_U32 mvCtrlSataMaxUnitGet(MV_VOID)
+{
+	return MV_SATA_MAX_UNIT;
+}
+
+/*******************************************************************************
 * mvCtrlSataMaxPortGet - Get Marvell controller number of Sata ports.
 *
 * DESCRIPTION:
@@ -873,6 +894,44 @@ MV_U32 mvCtrlSataMaxPortGet(MV_VOID)
 		sataMaxNum--;
 
 	return sataMaxNum;
+}
+
+/*******************************************************************************
+* mvCtrlIsActiveSataUnit
+*
+* DESCRIPTION:
+*       This function checks state of SATA port.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE if SATA port exists and active - MV_FALSE in any other case.
+*
+*******************************************************************************/
+MV_BOOL mvCtrlIsActiveSataUnit(MV_U32 unitNumber)
+{
+	if (unitNumber >= mvCtrlSataMaxUnitGet())
+		return MV_FALSE;
+
+	/* SATA UNIT is active: if at least 1 of the SATA SerDes lanes is configured */
+	if (mvCtrlLaneSelectorGet(1) == SATA_UNIT_ID || mvCtrlLaneSelectorGet(2) == SATA_UNIT_ID)
+		return MV_TRUE;
+
+	return MV_FALSE;
+}
+
+/*******************************************************************************
+* mvCtrlSataRegBaseGet
+*
+* DESCRIPTION: This function returns the register base of the SATA unit
+* *******************************************************************************/
+MV_U32 mvCtrlSataRegBaseGet(MV_U32 unitNumber)
+{
+	return MV_SATA_REGS_OFFSET;
 }
 
 #endif

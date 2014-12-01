@@ -106,8 +106,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 /* Bobcat2 device revision */
-#define BC2_DEV_VERSION_ID_REG		0xF8240	/* under server space */
-#define BC2_REVISON_ID_OFFS			16
+#define BC2_DEV_VERSION_ID_REG		           0xF8240	/* under server space */
+#define BC2_JTAG_DEV_ID_STATUS_REG_ADDR        0x000F8244
+#define BC2_REVISON_ID_OFFS			              16
+#define BC2_JTAG_DEV_ID_STATUS_VERSION_OFFSET     28
 #define BC2_REVISON_ID_MASK			0xF
 #define MV_MSYS_BC2_A0_ID			0x0
 #define MV_MSYS_BC2_B0_ID			0x1

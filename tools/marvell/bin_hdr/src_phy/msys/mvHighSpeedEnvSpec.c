@@ -190,7 +190,7 @@ MV_OP_EXT_PARAMS sgmiiSdResetParams[] =
 {
 	/* unit         offset  mask      data     wait  numOf  */
 	/* ID                             1.25G    Time  Loops */
-	{ SERDES_UNIT,  0x4,    0x0,    { 0x8 },   0,    0 }	/* SERDES_SD_RESET_SEQ Sequence init */
+	{ SERDES_UNIT,  0x4,    0x8,    { 0x0 },   0,    0 }	/* SERDES_SD_RESET_SEQ Sequence init */
 };
 
 MV_OP_EXT_PARAMS sgmiiSdUnresetParams[] =
@@ -204,7 +204,7 @@ MV_OP_EXT_PARAMS sgmiiRfResetParams[] =
 {
 	/* unit         offset  mask      data     wait  numOf  */
 	/* ID                             1.25G    Time  Loops */
-	{ SERDES_UNIT,  0x4,    0x0,    { 0x40 },  0,    0 }	/* SERDES_RF_RESET Sequence init */
+	{ SERDES_UNIT,  0x4,    0x40,   { 0x0 },  0,    0 }	/* SERDES_RF_RESET Sequence init */
 };
 
 MV_OP_EXT_PARAMS sgmiiRfUnresetParams[] =
@@ -218,7 +218,7 @@ MV_OP_EXT_PARAMS sgmiiCoreResetParams[] =
 {
 	/* unit         offset  mask      data     wait  numOf  */
 	/* ID                             1.25G    Time  Loops */
-	{ SERDES_UNIT,  0x4,    0x0,    { 0x20 },  0,    0 }	/* SERDES_CORE_RESET_SEQ Sequence init */
+	{ SERDES_UNIT,  0x4,    0x20,   { 0x0 },  0,    0 }	/* SERDES_CORE_RESET_SEQ Sequence init */
 };
 
 MV_OP_EXT_PARAMS sgmiiCoreUnresetParams[] =
@@ -232,14 +232,14 @@ MV_OP_EXT_PARAMS sgmiiSynceResetParams[] =
 {
 	/* unit         offset  mask      data     wait  numOf  */
 	/* ID                             1.25G    Time  Loops */
-	{ SERDES_UNIT,  0x8,    0x0,    { 0x8 },   0,    0 }	/* SERDES_SYNCE_RESET_SEQ Sequence init */
+	{ SERDES_UNIT,  0x8,    0x8,    { 0x0 },   0,    0 }	/* SERDES_SYNCE_RESET_SEQ Sequence init */
 };
 
 MV_OP_EXT_PARAMS sgmiiSynceUnresetParams[] =
 {
 	/* unit         offset  mask      data     wait  numOf  */
 	/* ID                             1.25G    Time  Loops */
-	{ SERDES_UNIT,  0x4,    0xDD00, { 0xFF00 }, 0,    0 },	/* SERDES_SYNCE_UNRESET_SEQ Sequence init */
+	{ SERDES_UNIT,  0x4,    0xFF00, { 0xDD00 }, 0,    0 },	/* SERDES_SYNCE_UNRESET_SEQ Sequence init */
 	{ SERDES_UNIT,  0x8,    0xB,    { 0xB    }, 0,    0 }		/* SERDES_SYNCE_UNRESET_SEQ Sequence init */
 };
 
@@ -445,6 +445,17 @@ MV_STATUS mvHwsComH28nmSerdesTxIfSelect(MV_U32 serdesNum)
 
 	return MV_OK;
 }
+
+
+/*AC3: Set Ref Clock**********************************************/
+MV_STATUS mvHwsRefClockGet (MV_U32 serdesNum ,MV_U8 *refClockSource)
+{
+	*refClockSource = PRIMARY; /* in AC3 all serdes has to use the same reference clock = PRIMARY */
+
+	return MV_OK;
+}
+	/* Reference clock source */
+
 #elif defined MV_MSYS_BC2
 
 /* BC2: init silicon related configurations *********************************/
@@ -548,6 +559,16 @@ MV_STATUS mvHwsComH28nmSerdesTxIfSelect(MV_U32 serdesNum)
 
 	return MV_OK;
 }
+MV_STATUS mvHwsRefClockGet (MV_U32 serdesNum ,MV_U8 *refClockSource)
+{
+	*refClockSource = (serdesNum >= 20) ? SECONDARY : PRIMARY;
+	/* in BC2 2 reference clocks: SECONDARY and PRIMARY
+		serdeses 20 and 21 has to use SECONDARY others -primary */
+
+	return MV_OK;
+}
+
+
 
 #endif
 
@@ -673,6 +694,7 @@ MV_STATUS mvHwsComH28nmSerdesPowerCtrl
 )
 {
 	MV_U32 regData;
+	MV_U8 refClockSource;
 
 	if (mvHwsSerdesRevGet() == MV_SERDES_28NM_REV_1) {
 		/* in BC2-A0 there is no MSYS Serdes support */
@@ -680,7 +702,6 @@ MV_STATUS mvHwsComH28nmSerdesPowerCtrl
 	}
 
 	if (powerUp == MV_TRUE) {
-
 		DEBUG_INIT_FULL_S("mvSerdesPowerUpCtrl: executing power up.. ");
 		/* config media */
 		regData = 0; /* (media == RXAUI_MEDIA) ? (1 << 15) : 0; */
@@ -694,9 +715,8 @@ MV_STATUS mvHwsComH28nmSerdesPowerCtrl
 		CHECK_STATUS(mvSerdesCoreReset(serdesNum, MV_FALSE));
 
 		/* Reference clock source */
-		regData = 0; /* ((refClockSource == PRIMARY) ? 0 : 1) << 10; */
-		CHECK_STATUS(mvGenUnitRegisterSet(SERDES_PHY_UNIT, serdesNum, 0x13C, regData, (1 << 10)));
-
+		CHECK_STATUS(mvHwsRefClockGet (serdesNum,&refClockSource));
+		CHECK_STATUS(mvGenUnitRegisterSet(SERDES_PHY_UNIT, serdesNum, 0x13C, (refClockSource << 10), (1 << 10)));
 		/* Serdes speed */
 		CHECK_STATUS(mvSeqExecExt(serdesNum, SGMII_EXT_SPEED_CONFIG_SEQ));
 		CHECK_STATUS(mvSeqExecExt(serdesNum, SGMII_INT_SPEED_CONFIG_SEQ));

@@ -133,6 +133,12 @@ typedef enum {
 	SERDES_LAST_SEQ
 } SERDES_SEQ;
 
+typedef enum
+{
+    PRIMARY,
+    SECONDARY
+}MV_HWS_REF_CLOCK_SRC;
+
 /************************************ structures ******************************/
 typedef struct {
 	SERDES_TYPE		serdesType;
@@ -142,6 +148,7 @@ typedef struct {
 	MV_BOOL			swapRx;
 	MV_BOOL			swapTx;
 } SERDES_MAP;
+
 
 /*********************************** Globals **********************************/
 /* A generic function pointer for loading the board topology map */

@@ -84,6 +84,7 @@ static int mv_fdt_remove_node(void *fdt, const char *path);
 static int mv_fdt_scan_and_set_alias(void *fdt,
 					const char *name, const char *alias);
 static int mv_fdt_nand_mode_fixup(void *fdt);
+static int mv_fdt_update_pinctrl(void *fdt);
 static int mv_fdt_debug;
 
 #if 0 /* not compiled, since this routine is currently not in use  */
@@ -167,6 +168,11 @@ void ft_board_setup(void *blob, bd_t *bd)
 
 	/* Update NAND controller settings in DT */
 	err = mv_fdt_nand_mode_fixup(blob);
+	if (err < 0)
+		goto bs_fail;
+
+	/* Update pinctrl driver settings in DT */
+	err = mv_fdt_update_pinctrl(blob);
 	if (err < 0)
 		goto bs_fail;
 
@@ -305,7 +311,7 @@ static int mv_fdt_update_sata(void *fdt)
 			return -1;
 		}
 
-		if (strncmp(fdt_get_name(fdt, nodeoffset, NULL), node, 5) == 0) {
+		if (strncmp(fdt_get_name(fdt, nodeoffset, NULL), node, strlen(node)) == 0) {
 			mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
 							propval, strlen(propval)+1));
 			if (err < 0) {
@@ -376,6 +382,37 @@ pex_ok:
 	}
 	return 0;
 }
+
+static int mv_fdt_update_pinctrl(void *fdt)
+{
+	int err, nodeoffset, len = 0;			/* nodeoffset: node offset from libfdt */
+	char propval[10];				/* property value */
+	const char *prop = "compatible";		/* property name */
+	const char *node = "pinctrl";			/* node name */
+
+	/* update pinctrl driver 'compatible' propert, according to device model type */
+	sprintf(propval, "marvell,mv88f%x-pinctrl", mvCtrlModelGet());
+
+	nodeoffset = mv_fdt_find_node(fdt, "pinctrl");
+	if (nodeoffset < 0) {
+		mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+		return -1;
+	}
+
+	if (strncmp(fdt_get_name(fdt, nodeoffset, NULL), node, strlen(node)) == 0) {
+		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
+						propval, strlen(propval)+1));
+		if (err < 0) {
+			mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
+			return -1;
+		}
+		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n (was '%s')\n",
+				prop, propval, node, (char*)fdt_getprop(fdt, nodeoffset, prop, &len));
+	}
+
+	return 0;
+}
+
 
 static int mv_fdt_update_ethnum(void *fdt)
 {

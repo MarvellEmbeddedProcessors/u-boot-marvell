@@ -97,10 +97,10 @@ USP_OBJS =	$(USP_DIR)/mv_spi.o		\
 		$(USP_DIR)/cmd_bubt.o		\
 		$(USP_DIR)/cmd_resetenv.o	\
 		$(USP_DIR)/mvDramScrubbing.o	\
-		$(USP_DIR)/mv_fdt.o		\
 		$(USP_DIR)/cmd_ddr.o		\
 		$(USP_DIR)/mv_phy.o
 USP_OBJS-$(CONFIG_CMD_BOARDCFG) = $(USP_DIR)/cmd_boardCfg.o
+USP_OBJS-$(CONFIG_OF_BOARD_SETUP) += $(USP_DIR)/mv_fdt.o
 USP_OBJS += $(sort $(USP_OBJS-y))
 
 ifdef MAKE_PPV2

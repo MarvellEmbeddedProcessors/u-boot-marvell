@@ -203,11 +203,6 @@ disclaimer.
 #define CONFIG_BOOTP_PXE_CLIENTARCH	0x100
 #define CONFIG_BOOTP_VCI_STRING		"U-boot.armv7.armada_xp"
 
-/* Flattened Device Tree (FDT) support */
-#define CONFIG_OF_LIBFDT		1
-#define CONFIG_OF_BOARD_SETUP
-#undef CONFIG_OF_LIBFDT_IS_DEFAULT   /* dft is the default for bootcmd */
-
 /* FS supported */
 #define CONFIG_CMD_EXT2
 #define CONFIG_CMD_EXT4

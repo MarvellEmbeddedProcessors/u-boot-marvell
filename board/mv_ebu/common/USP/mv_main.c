@@ -379,7 +379,6 @@ void misc_init_r_env(void){
 
 	/* image/script addr */
 #if defined (CONFIG_CMD_STAGE_BOOT)
-	envSetDefault("fdt_addr", "2040000");
 	envSetDefault("kernel_addr_r", "2080000");
 	envSetDefault("ramdisk_addr_r", "2880000");
 	envSetDefault("device_partition", "0:1");
@@ -446,23 +445,6 @@ void misc_init_r_env(void){
 	}
 	envSetDefault("image_name", "uImage");
 
-#if CONFIG_OF_LIBFDT
-	char bootcmd_fdt[] = "tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;"
-		"setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
-		"ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
-		"clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootz 0x2000000 - $fdtaddr;";
-	env = getenv("fdtaddr");
-	if (!env)
-		setenv("fdtaddr", "0x1000000");
-
-	env = getenv("fdtfile");
-	if (!env)
-		setenv("fdtfile", "bobcat2-db.dtb");
-	env = getenv("bootcmd_fdt");
-	if (!env)
-		setenv("bootcmd_fdt",bootcmd_fdt);
-#endif
-
 #if CONFIG_AMP_SUPPORT
 	env = getenv("amp_enable");
 	if(!env || ( ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) ))){
@@ -484,9 +466,7 @@ void misc_init_r_env(void){
 #if (CONFIG_BOOTDELAY >= 0)
 	env = getenv("bootcmd");
 	if(!env)
-#if defined(CONFIG_OF_LIBFDT) && defined (CONFIG_OF_LIBFDT_IS_DEFAULT)
-		setenv("bootcmd",bootcmd_fdt);
-#elif defined(CONFIG_CMD_STAGE_BOOT)
+#if defined(CONFIG_CMD_STAGE_BOOT)
 //	setenv("bootcmd","stage_boot $boot_order");
 // Temporary workaround till stage_boot gets stable.
 	setenv("bootcmd", "tftpboot 0x2000000 $image_name;"

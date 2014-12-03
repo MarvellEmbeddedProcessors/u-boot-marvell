@@ -193,7 +193,7 @@ MV_VOID mvCtrlDevBusInit(MV_VOID)
 	/* Configure NOR bus width */
 	numOfDevices = mvBoardGetDevicesNumber(BOARD_DEV_NOR_FLASH);
 	for (deviceId = 0; deviceId < numOfDevices; deviceId++) {
-		deviceCS = boardGetDevCSNum(deviceId, BOARD_DEV_NOR_FLASH);
+		deviceCS = mvBoardGetDevCSNum(deviceId, BOARD_DEV_NOR_FLASH);
 		if (deviceCS != 0xFFFFFFFF) {
 			busWidth = mvBoardGetDeviceBusWidth(deviceId, BOARD_DEV_NOR_FLASH);
 

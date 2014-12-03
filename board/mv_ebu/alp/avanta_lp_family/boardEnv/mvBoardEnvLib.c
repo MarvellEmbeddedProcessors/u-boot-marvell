@@ -96,7 +96,7 @@ extern MV_BOARD_SATR_INFO boardSatrInfo[];
 MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_BOARD_CONFIG_INFO;
 
 /* Locals */
-static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
+static MV_DEV_CS_INFO *mvBoardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 /* Global variables should be removed from BSS (set to a non-zero value)
    for avoiding memory corruption during early access upon code relocation */
 static MV_BOARD_INFO *board = (MV_BOARD_INFO *)-1;
@@ -150,7 +150,7 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 	MV_U32 nandDev;
 	MV_U32 norDev;
 
-	nandDev = boardGetDevCSNum(0, BOARD_DEV_NAND_FLASH);
+	nandDev = mvBoardGetDevCSNum(0, BOARD_DEV_NAND_FLASH);
 	if (nandDev != 0xFFFFFFFF) {
 		/* Set NAND interface access parameters */
 		nandDev = BOOT_CS;
@@ -159,7 +159,7 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 		MV_REG_WRITE(DEV_NAND_CTRL_REG, board->nandFlashControl);
 	}
 
-	norDev = boardGetDevCSNum(0, BOARD_DEV_NOR_FLASH);
+	norDev = mvBoardGetDevCSNum(0, BOARD_DEV_NOR_FLASH);
 	if (norDev != 0xFFFFFFFF) {
 		/* Set NOR interface access parameters */
 		MV_REG_WRITE(DEV_BANK_PARAM_REG(norDev), board->norFlashReadParams);
@@ -2151,7 +2151,7 @@ MV_32 mvBoardGetDevicesNumber(MV_BOARD_DEV_CLASS devClass)
 *******************************************************************************/
 MV_32 mvBoardGetDeviceBaseAddr(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
-	MV_DEV_CS_INFO *devEntry = boardGetDevEntry(devNum, devClass);
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
 
 	if (devEntry)
 		return mvCpuIfTargetWinBaseLowGet(DEV_TO_TARGET(devEntry->deviceCS));
@@ -2179,7 +2179,7 @@ MV_32 mvBoardGetDeviceBaseAddr(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 *******************************************************************************/
 MV_32 mvBoardGetDeviceBusWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
-	MV_DEV_CS_INFO *devEntry = boardGetDevEntry(devNum, devClass);
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
 
 	if (devEntry)
 		return devEntry->busWidth;
@@ -2207,7 +2207,7 @@ MV_32 mvBoardGetDeviceBusWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 *******************************************************************************/
 MV_32 mvBoardGetDeviceWinSize(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
-	MV_DEV_CS_INFO *devEntry = boardGetDevEntry(devNum, devClass);
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
 
 	if (devEntry)
 		return mvCpuIfTargetWinSizeGet(DEV_TO_TARGET(devEntry->deviceCS));
@@ -2216,7 +2216,7 @@ MV_32 mvBoardGetDeviceWinSize(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 }
 
 /*******************************************************************************
-* boardGetDevEntry - returns the entry pointer of a device on the board
+* mvBoardGetDevEntry - returns the entry pointer of a device on the board
 *
 * DESCRIPTION:
 *
@@ -2232,7 +2232,7 @@ MV_32 mvBoardGetDeviceWinSize(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 *	dev number else the function returns 0x0
 *
 *******************************************************************************/
-static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
+static MV_DEV_CS_INFO *mvBoardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
 	MV_U32 foundIndex = 0, devIndex;
 
@@ -2249,7 +2249,7 @@ static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClas
 }
 
 /*******************************************************************************
-* boardGetDevCSNum
+* mvBoardGetDevCSNum
 *
 * DESCRIPTION:
 *	Return the device's chip-select number.
@@ -2266,9 +2266,9 @@ static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClas
 *	dev number else the function returns 0x0
 *
 *******************************************************************************/
-MV_U32 boardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
+MV_U32 mvBoardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
-	MV_DEV_CS_INFO *devEntry = boardGetDevEntry(devNum, devClass);
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
 
 	if (devEntry)
 		return devEntry->deviceCS;

@@ -96,7 +96,7 @@ extern MV_BOARD_SATR_INFO boardSatrInfo[];
 MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_BOARD_CONFIG_INFO;
 
 /* Locals */
-static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
+static MV_DEV_CS_INFO *mvBoardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 /* Global variables should be removed from BSS (set to a non-zero value)
    for avoiding memory corruption during early access upon code relocation */
 static MV_BOARD_INFO *board = (MV_BOARD_INFO *)-1;
@@ -148,7 +148,7 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 	mvBoardSet(mvBoardIdGet());
 	MV_U32 syncCtrl = 0;
 
-	nandDev = boardGetDevCSNum(0, BOARD_DEV_NAND_FLASH);
+	nandDev = mvBoardGetDevCSNum(0, BOARD_DEV_NAND_FLASH);
 	if (nandDev != 0xFFFFFFFF) {
 		/* Set NAND interface access parameters */
 		MV_REG_WRITE(DEV_BANK_PARAM_REG(nandDev), board->nandFlashReadParams);
@@ -158,7 +158,7 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 		syncCtrl |= SYNC_CTRL_READY_POL(nandDev);
 	}
 
-	norDev = boardGetDevCSNum(0, BOARD_DEV_NOR_FLASH);
+	norDev = mvBoardGetDevCSNum(0, BOARD_DEV_NOR_FLASH);
 	if (norDev != 0xFFFFFFFF) {
 		/* Set NOR interface access parameters */
 		MV_REG_WRITE(DEV_BANK_PARAM_REG(norDev), board->norFlashReadParams);
@@ -951,6 +951,60 @@ MV_VOID mvBoardMppTypeSet(MV_U32 mppGroupNum, MV_U32 groupType)
 }
 
 /*******************************************************************************
+* mvBoardDevStateUpdate -
+*
+* DESCRIPTION:
+*	Update Board devices state (active/passive) according to boot source
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_VOID mvBoardFlashDeviceUpdate(MV_VOID)
+{
+	MV_BOARD_BOOT_SRC	bootSrc = mvBoardBootDeviceGet();
+	MV_U32				numOfDevices;
+	MV_U8				devNum;
+	MV_U32				devBus;
+
+	/* Assume that the board sctructure sets SPI flash active as the default boot device */
+	if (bootSrc == MSAR_0_BOOT_NAND_NEW) {
+		/* Activate first NAND device */
+		mvBoardSetDevState(0, BOARD_DEV_NAND_FLASH, MV_TRUE);
+
+		/* Deactivate all SPI0 devices */
+		numOfDevices = mvBoardGetDevicesNumber(BOARD_DEV_SPI_FLASH);
+		for (devNum = 0; devNum < numOfDevices; devNum++) {
+			devBus = mvBoardGetDevBusNum(devNum, BOARD_DEV_SPI_FLASH);
+			if (devBus == 0)
+				mvBoardSetDevState(devNum, BOARD_DEV_SPI_FLASH, MV_FALSE);
+		}
+
+	} else if (bootSrc == MSAR_0_BOOT_NOR_FLASH) {
+
+		/* Activate first NOR device */
+		mvBoardSetDevState(0, BOARD_DEV_NOR_FLASH, MV_TRUE);
+
+		/* Deactivate all SPI devices */
+		numOfDevices = mvBoardGetDevicesNumber(BOARD_DEV_SPI_FLASH);
+		for (devNum = 0; devNum < numOfDevices; devNum++)
+			mvBoardSetDevState(devNum, BOARD_DEV_SPI_FLASH, MV_FALSE);
+
+		/* Deactivate all NAND devices */
+		numOfDevices = mvBoardGetDevicesNumber(BOARD_DEV_NAND_FLASH);
+		for (devNum = 0; devNum < numOfDevices; devNum++)
+			mvBoardSetDevState(devNum, BOARD_DEV_NAND_FLASH, MV_FALSE);
+
+	}
+}
+
+/*******************************************************************************
 * mvBoardInfoUpdate - Update Board information structures according to auto-detection.
 *
 * DESCRIPTION:
@@ -1001,6 +1055,8 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 
 	/* Update MPP group types and values according to board configuration */
 	mvBoardMppIdUpdate();
+
+	mvBoardFlashDeviceUpdate();
 }
 
 /*******************************************************************************
@@ -1737,7 +1793,7 @@ MV_32 mvBoardGetDevicesNumber(MV_BOARD_DEV_CLASS devClass)
 *******************************************************************************/
 MV_32 mvBoardGetDeviceBaseAddr(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
-	MV_DEV_CS_INFO *devEntry = boardGetDevEntry(devNum, devClass);
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
 
 	if (devEntry)
 		return mvCpuIfTargetWinBaseLowGet(DEV_TO_TARGET(devEntry->deviceCS));
@@ -1765,7 +1821,7 @@ MV_32 mvBoardGetDeviceBaseAddr(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 *******************************************************************************/
 MV_32 mvBoardGetDeviceBusWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
-	MV_DEV_CS_INFO *devEntry = boardGetDevEntry(devNum, devClass);
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
 
 	if (devEntry)
 		return devEntry->busWidth;
@@ -1793,7 +1849,7 @@ MV_32 mvBoardGetDeviceBusWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 *******************************************************************************/
 MV_32 mvBoardGetDeviceWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
-	MV_DEV_CS_INFO *devEntry = boardGetDevEntry(devNum, devClass);
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
 
 	if (devEntry)
 		return devEntry->devWidth;
@@ -1821,7 +1877,7 @@ MV_32 mvBoardGetDeviceWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 *******************************************************************************/
 MV_32 mvBoardGetDeviceWinSize(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
-	MV_DEV_CS_INFO *devEntry = boardGetDevEntry(devNum, devClass);
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
 
 	if (devEntry)
 		return mvCpuIfTargetWinSizeGet(DEV_TO_TARGET(devEntry->deviceCS));
@@ -1830,7 +1886,7 @@ MV_32 mvBoardGetDeviceWinSize(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 }
 
 /*******************************************************************************
-* boardGetDevEntry - returns the entry pointer of a device on the board
+* mvBoardGetDevEntry - returns the entry pointer of a device on the board
 *
 * DESCRIPTION:
 *
@@ -1846,7 +1902,7 @@ MV_32 mvBoardGetDeviceWinSize(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 *	dev number else the function returns 0x0
 *
 *******************************************************************************/
-static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
+static MV_DEV_CS_INFO *mvBoardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
 	MV_U32 foundIndex = 0, devIndex;
 
@@ -1863,7 +1919,7 @@ static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClas
 }
 
 /*******************************************************************************
-* boardGetDevCSNum
+* mvBoardGetDevCSNum
 *
 * DESCRIPTION:
 *	Return the device's chip-select number.
@@ -1880,15 +1936,102 @@ static MV_DEV_CS_INFO *boardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClas
 *	dev number else the function returns 0x0
 *
 *******************************************************************************/
-MV_U32 boardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
+MV_U32 mvBoardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 {
-	MV_DEV_CS_INFO *devEntry = boardGetDevEntry(devNum, devClass);
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
 
 	if (devEntry)
 		return devEntry->deviceCS;
 
 	return 0xFFFFFFFF;
 }
+
+/*******************************************************************************
+* mvBoardGetDevBusNum
+*
+* DESCRIPTION:
+*	Return the device's bus number.
+*
+* INPUT:
+*	devIndex - The device sequential number on the board
+*	devType - The device type ( Flash,RTC , etc .. )
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	If the device is found on the board the then the functions returns the
+*	dev bus number else the function returns 0xFFFFFFFF
+*
+*******************************************************************************/
+MV_U32 mvBoardGetDevBusNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
+{
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
+
+	if (devEntry)
+		return devEntry->busNum;
+
+	return 0xFFFFFFFF;
+}
+
+/*******************************************************************************
+* mvBoardGetDevState
+*
+* DESCRIPTION:
+*	Return the device's activity state.
+*
+* INPUT:
+*	devIndex - The device sequential number on the board
+*	devType - The device type ( Flash,RTC , etc .. )
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	If the device is found on the board the then the functions returns the
+*	dev activity state else the function returns 0xFFFFFFFF
+*
+*******************************************************************************/
+MV_BOOL mvBoardGetDevState(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
+{
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
+
+	if (devEntry)
+		return devEntry->active;
+
+	return 0xFFFFFFFF;
+}
+
+/*******************************************************************************
+* mvBoardSetDevState
+*
+* DESCRIPTION:
+*	Sets the device's activity state.
+*
+* INPUT:
+*	devIndex - The device sequential number on the board
+*   devType - The device type ( Flash,RTC , etc .. )
+*   newState - requested deevice state
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	If the device is found on the board the then the functions returns
+*	MV_OK else MV_ERROR
+*
+*******************************************************************************/
+MV_STATUS mvBoardSetDevState(MV_32 devNum, MV_BOARD_DEV_CLASS devClass, MV_BOOL newState)
+{
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
+
+	if (devEntry) {
+		devEntry->active = newState;
+		return MV_OK;
+	} else
+		return MV_ERROR;
+}
+
 /*******************************************************************************
 * mvBoardSgmiiSfp1TxSet - enable/disable SGMII_SFP1_TX_DISABLE status
 *

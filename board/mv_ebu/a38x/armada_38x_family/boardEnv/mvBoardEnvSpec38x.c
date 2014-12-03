@@ -93,16 +93,20 @@ MV_BOARD_MAC_INFO armada_38x_customer_0_BoardMacInfo[] = {
 };
 
 MV_DEV_CS_INFO armada_38x_customer_0_BoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
-#ifdef MV_NAND
-	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8},  /* NAND DEV */
-#endif
-#if defined(MV_INCLUDE_NOR)
-	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16}, /* NOR DEV */
-	{ SPI0_CS1,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
-#else
-	{ SPI0_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
-#endif
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS1,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS2,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS3,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
+	{ SPI0_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_TRUE },	/* SPI0 DEV */
+	{ SPI0_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS2,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI1_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS2,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE }	/* SPI1 DEV */
 };
 
 MV_BOARD_MPP_INFO armada_38x_customer_0_BoardMppConfigValue[] = {
@@ -195,7 +199,7 @@ MV_BOARD_INFO *customerBoardInfoTbl[] = {
 
 /***************************************** Marvell Boards *****************************************/
 /*******************************************************************************
- * A38x DB-88F68XX board */
+* A38x DB-88F68XX-BP board */
 /*******************************************************************************/
 #define DB_88F68XX_BOARD_NAND_READ_PARAMS	0x000C0282
 #define DB_88F68XX_BOARD_NAND_WRITE_PARAMS	0x00010305
@@ -240,16 +244,11 @@ MV_BOARD_MAC_INFO db88f68xxInfoBoardMacInfo[] = {
 };
 
 MV_DEV_CS_INFO db88f68xxInfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
-#ifdef MV_NAND
-	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8},  /* NAND DEV */
-#endif
-#if defined(MV_INCLUDE_NOR)
-	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16}, /* NOR DEV */
-	{ SPI0_CS1,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
-#else
-	{ SPI0_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
-#endif
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
+	{ SPI0_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_TRUE },	/* SPI0 DEV */
+	{ SPI0_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE }	/* SPI0 DEV */
 };
 
 MV_BOARD_TDM_INFO db88f68xxTdm880[] = { {0} };
@@ -334,10 +333,8 @@ MV_BOARD_MAC_INFO rd88F68XXInfoBoardMacInfo[] = {
 };
 
 MV_DEV_CS_INFO rd88F68XXInfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
-#if defined(MV_INCLUDE_SPI)
-	{ SPI0_CS0,	N_A,	BOARD_DEV_SPI_FLASH,	8,	8}  /* SPI DEV */
-#endif
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+	{ SPI0_CS0,	N_A,	BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_TRUE }  /* SPI DEV */
 };
 
 MV_BOARD_MPP_INFO rdNas88f68XXInfoBoardMppConfigValue[] = {
@@ -541,16 +538,11 @@ MV_BOARD_MAC_INFO dbAP88f68xxInfoBoardMacInfo[] = {
 };
 
 MV_DEV_CS_INFO dbAP88f68xxInfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
-#ifdef MV_NAND
-	{ DEVICE_CS0,   N_A, BOARD_DEV_NAND_FLASH,      8,      8},  /* NAND DEV */
-#endif
-#if defined(MV_INCLUDE_NOR)
-	{ DEV_BOOCS,    N_A, BOARD_DEV_NOR_FLASH,       16,     16}, /* NOR DEV */
-	{ SPI0_CS1,     N_A, BOARD_DEV_SPI_FLASH,       8,      8 } /* SPI DEV */
-#else
-	{ SPI0_CS0,     N_A, BOARD_DEV_SPI_FLASH,       8,      8 } /* SPI DEV */
-#endif
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_TRUE },	/* NAND DEV */
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
+	{ SPI0_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE }	/* SPI0 DEV */
 };
 
 MV_BOARD_TDM_INFO dbAP88f68xxTdm880[] = { {0} };
@@ -620,10 +612,8 @@ MV_BOARD_MAC_INFO dbGP88F68XXInfoBoardMacInfo[] = {
 };
 
 MV_DEV_CS_INFO dbGP88F68XXInfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
-#if defined(MV_INCLUDE_SPI)
-	{ SPI0_CS0,	N_A,	BOARD_DEV_SPI_FLASH,	8,	8}  /* SPI DEV */
-#endif
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+	{ SPI0_CS0,	N_A,	BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_TRUE }  /* SPI DEV */
 };
 
 MV_BOARD_MPP_INFO dbGP88f68XXInfoBoardMppConfigValue[] = {
@@ -740,16 +730,11 @@ MV_BOARD_MAC_INFO db88f6821InfoBoardMacInfo[] = {
 };
 
 MV_DEV_CS_INFO db88f6821InfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
-#ifdef MV_NAND
-	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8},  /* NAND DEV */
-#endif
-#if defined(MV_INCLUDE_NOR)
-	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16}, /* NOR DEV */
-	{ SPI0_CS1,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
-#else
-	{ SPI0_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8 } /* SPI DEV */
-#endif
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
+	{ SPI0_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_TRUE },	/* SPI0 DEV */
+	{ SPI0_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE }	/* SPI0 DEV */
 };
 
 MV_BOARD_INFO db88f6821_board_info = {

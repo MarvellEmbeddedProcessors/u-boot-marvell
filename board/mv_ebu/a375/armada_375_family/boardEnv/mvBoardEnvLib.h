@@ -178,6 +178,8 @@ typedef struct _devCsInfo {
 	MV_U32 devClass;        /* MV_BOARD_DEV_CLASS */
 	MV_U8 devWidth;
 	MV_U8 busWidth;
+	MV_U8 busNum;
+	MV_BOOL active;
 } MV_DEV_CS_INFO;
 
 typedef struct _boardLedInfo {
@@ -434,7 +436,10 @@ MV_32 mvBoardGetDeviceBaseAddr(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_32 mvBoardGetDeviceBusWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_32 mvBoardGetDeviceWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_32 mvBoardGetDeviceWinSize(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
-MV_U32 boardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
+MV_U32 mvBoardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
+MV_U32 mvBoardGetDevBusNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
+MV_BOOL mvBoardGetDevState(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
+MV_STATUS mvBoardSetDevState(MV_32 devNum, MV_BOARD_DEV_CLASS devClass, MV_BOOL newState);
 MV_U8 mvBoardTwsiAddrTypeGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_32 mvBoardNandWidthGet(void);
@@ -444,6 +449,7 @@ MV_U32 mvBoardIdIndexGet(MV_U32 boardId);
 MV_U32 mvBoardIdGet(MV_VOID);
 MV_VOID mvBoardSet(MV_U32 boardId);
 MV_U32 mvBoardSledCpuNumGet(MV_VOID);
+MV_VOID mvBoardFlashDeviceUpdate(MV_VOID);
 MV_VOID mvBoardInfoUpdate(MV_VOID);
 MV_VOID mvBoardMppIdUpdate(MV_VOID);
 MV_STATUS mvBoardEthComplexInfoUpdate(MV_VOID);

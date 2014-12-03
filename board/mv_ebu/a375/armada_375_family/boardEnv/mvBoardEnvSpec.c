@@ -102,16 +102,21 @@ MV_BOARD_MPP_TYPE_INFO armada_375_customer_board_0_BoardModTypeInfo[] = {
 };
 
 MV_DEV_CS_INFO armada_375_customer_board_0_BoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
-#if defined(MV_INCLUDE_SPI)
-	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 }, /* SPI DEV */
-#endif
-#if defined(MV_INCLUDE_NOR)
-	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16}, /* NOR DEV */
-#endif
-#if defined(MV_INCLUDE_LEGACY_NAND)
-	{DEV_BOOCS, N_A, BOARD_DEV_NAND_FLASH, 16, 16}  /* NAND DEV */
-#endif
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NAND_FLASH,	16,	16,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	16,	16,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS1,	N_A, BOARD_DEV_NAND_FLASH,	16,	16,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS2,	N_A, BOARD_DEV_NAND_FLASH,	16,	16,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS3,	N_A, BOARD_DEV_NAND_FLASH,	16,	16,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
+	{ SPI_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_TRUE },	/* SPI DEV */
+	{ SPI_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI DEV */
+	{ SPI_CS2,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI DEV */
+	{ SPI_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI DEV */
+	{ SPI_CS4,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI DEV */
+	{ SPI_CS5,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI DEV */
+	{ SPI_CS6,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI DEV */
+	{ SPI_CS7,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE }	/* SPI DEV */
 };
 
 MV_BOARD_MPP_INFO armada_375_customer_board_0_BoardMppConfigValue[] = {
@@ -224,16 +229,10 @@ MV_BOARD_MPP_TYPE_INFO db88f6720InfoBoardModTypeInfo[] = {
 };
 
 MV_DEV_CS_INFO db88f6720InfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
-#if defined(MV_INCLUDE_SPI)
-	{ SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8 }, /* SPI DEV */
-#endif
-#if defined(MV_INCLUDE_NOR)
-	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16}, /* NOR DEV */
-#endif
-#if defined(MV_INCLUDE_LEGACY_NAND)
-	{DEV_BOOCS, N_A, BOARD_DEV_NAND_FLASH, 16, 16}  /* NAND DEV */
-#endif
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NAND_FLASH,	16,	16,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
+	{ SPI_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_TRUE }	/* SPI DEV */
 };
 
 MV_BOARD_MPP_INFO db88f6720InfoBoardMppConfigValue[] = {

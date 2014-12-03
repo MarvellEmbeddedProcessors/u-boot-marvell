@@ -298,6 +298,61 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 }
 
 /*******************************************************************************
+* mvBoardDevStateUpdate -
+*
+* DESCRIPTION:
+*	Update Board devices state (active/passive) according to boot source
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_VOID mvBoardFlashDeviceUpdate(MV_VOID)
+{
+	MV_BOARD_BOOT_SRC	bootSrc = mvBoardBootDeviceGet();
+	MV_U32				numOfDevices;
+	MV_U8				devNum;
+	MV_U32				devBus;
+
+	/* Assume that the board sctructure sets SPI flash active as the default boot device */
+	if (bootSrc == MSAR_0_BOOT_NAND_NEW) {
+
+		/* Activate first NAND device */
+		mvBoardSetDevState(0, BOARD_DEV_NAND_FLASH, MV_TRUE);
+
+		/* Deactivate all SPI0 devices */
+		numOfDevices = mvBoardGetDevicesNumber(BOARD_DEV_SPI_FLASH);
+		for (devNum = 0; devNum < numOfDevices; devNum++) {
+			devBus = mvBoardGetDevBusNum(devNum, BOARD_DEV_SPI_FLASH);
+			if (devBus == 0)
+				mvBoardSetDevState(devNum, BOARD_DEV_SPI_FLASH, MV_FALSE);
+		}
+
+	} else if (bootSrc == MSAR_0_BOOT_NOR_FLASH) {
+
+		/* Activate first NOR device */
+		mvBoardSetDevState(0, BOARD_DEV_NOR_FLASH, MV_TRUE);
+
+		/* Deactivate all SPI devices */
+		numOfDevices = mvBoardGetDevicesNumber(BOARD_DEV_SPI_FLASH);
+		for (devNum = 0; devNum < numOfDevices; devNum++)
+			mvBoardSetDevState(devNum, BOARD_DEV_SPI_FLASH, MV_FALSE);
+
+		/* Deactivate all NAND devices */
+		numOfDevices = mvBoardGetDevicesNumber(BOARD_DEV_NAND_FLASH);
+		for (devNum = 0; devNum < numOfDevices; devNum++)
+			mvBoardSetDevState(devNum, BOARD_DEV_NAND_FLASH, MV_FALSE);
+
+	}
+}
+
+/*******************************************************************************
 * mvBoardInfoUpdate - Update Board information structures according to auto-detection.
 *
 * DESCRIPTION:
@@ -342,6 +397,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			smiAddress = 0x6;
 		mvBoardPhyAddrSet(3, smiAddress);
 
+		mvBoardFlashDeviceUpdate();
 		break;
 	default:
 		mvOsPrintf("%s: Error: Auto detection update sequence is not supported by current board.\n" , __func__);

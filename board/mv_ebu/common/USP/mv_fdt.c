@@ -28,6 +28,21 @@ disclaimer.
 #include "fdt_support.h"
 #include "mvBoardEnvLib.h"
 
+/*******************************************************************************
+* fdt_env_setup
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdtfile.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
 void fdt_env_setup(char *fdtfile)
 {
 #if CONFIG_OF_LIBFDT
@@ -80,6 +95,8 @@ static int mv_fdt_update_cpus(void *fdt);
 static int mv_fdt_update_pex(void *fdt);
 static int mv_fdt_update_sata(void *fdt);
 static int mv_fdt_update_ethnum(void *fdt);
+static int mv_fdt_update_flash(void *fdt);
+static int mv_fdt_set_node_prop(void *fdt, const char *node, const char *prop, const char *prop_val);
 static int mv_fdt_remove_node(void *fdt, const char *path);
 static int mv_fdt_scan_and_set_alias(void *fdt, const char *name, const char *alias);
 static int mv_fdt_nand_mode_fixup(void *fdt);
@@ -115,6 +132,22 @@ enum nfc_driver_type {
 		}							\
 	} while (0)
 
+/*******************************************************************************
+* ft_board_setup
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	blob.
+*	bd.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
 void ft_board_setup(void *blob, bd_t *bd)
 {
 	int err;		/* error number */
@@ -175,7 +208,12 @@ void ft_board_setup(void *blob, bd_t *bd)
 		goto bs_fail;
 #endif
 
-	/* Update NAND controller settings in DT */
+	/* Get number of active flash devices and update DT */
+	err = mv_fdt_update_flash(blob);
+	if (err < 0)
+		goto bs_fail;
+
+	/* Update NAND controller ECC settings in DT */
 	err = mv_fdt_nand_mode_fixup(blob);
 	if (err < 0)
 		goto bs_fail;
@@ -193,6 +231,22 @@ bs_fail:
 	return;
 }
 
+/*******************************************************************************
+* mv_fdt_find_node
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdt.
+*	name.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	node offset or -1 if node not found.
+*
+*******************************************************************************/
 static int mv_fdt_find_node(void *fdt, const char *name)
 {
 	int nodeoffset;		/* current node's offset from libfdt */
@@ -245,9 +299,23 @@ static int mv_fdt_find_node(void *fdt, const char *name)
 
 	/* Node not found in the device tree */
 	return -1;
-
 }
 
+/*******************************************************************************
+* mv_fdt_update_cpus
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
 static int mv_fdt_update_cpus(void *fdt)
 {
 	int cpusnodes = 0;	/* number of cpu nodes */
@@ -298,9 +366,24 @@ static int mv_fdt_update_cpus(void *fdt)
 	return 0;
 }
 
+/*******************************************************************************
+* mv_fdt_update_sata
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
 static int mv_fdt_update_sata(void *fdt)
 {
-	int i, err, nodeoffset;				/* nodeoffset: node offset from libfdt */
+	int i;
 	char propval[10];				/* property value */
 	const char *prop = "status";			/* property name */
 	char node[64];					/* node name */
@@ -314,20 +397,9 @@ static int mv_fdt_update_sata(void *fdt)
 			sprintf(propval, "disabled"); /* disable NON active SATA units */
 
 		sprintf(node, "sata@%x", mvCtrlSataRegBaseGet(i));
-		nodeoffset = mv_fdt_find_node(fdt, node);
-		if (nodeoffset < 0) {
-			mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+		if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
+			mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
 			return -1;
-		}
-
-		if (strncmp(fdt_get_name(fdt, nodeoffset, NULL), node, strlen(node)) == 0) {
-			mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
-							propval, strlen(propval)+1));
-			if (err < 0) {
-				mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
-				return -1;
-			}
-			mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
 		}
 	}
 
@@ -370,6 +442,21 @@ static int mv_fdt_update_sdhci(void *fdt)
 }
 #endif
 
+/*******************************************************************************
+* mv_fdt_update_pex
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
 static int mv_fdt_update_pex(void *fdt)
 {
 	MV_U32 pexnum;				/* number of interfaces */
@@ -428,37 +515,52 @@ pex_ok:
 	return 0;
 }
 
+/*******************************************************************************
+* mv_fdt_update_pinctrl
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
 static int mv_fdt_update_pinctrl(void *fdt)
 {
-	int err, nodeoffset, len = 0;			/* nodeoffset: node offset from libfdt */
 	char propval[10];				/* property value */
 	const char *prop = "compatible";		/* property name */
 	const char *node = "pinctrl";			/* node name */
 
 	/* update pinctrl driver 'compatible' propert, according to device model type */
 	sprintf(propval, "marvell,mv88f%x-pinctrl", mvCtrlModelGet());
-
-	nodeoffset = mv_fdt_find_node(fdt, "pinctrl");
-	if (nodeoffset < 0) {
-		mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+	if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
+		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
 		return -1;
-	}
-
-	if (strncmp(fdt_get_name(fdt, nodeoffset, NULL), node, strlen(node)) == 0) {
-		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
-						propval, strlen(propval)+1));
-		if (err < 0) {
-			mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
-			return -1;
-		}
-		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n (was '%s')\n",
-				prop, propval, node, (char*)fdt_getprop(fdt, nodeoffset, prop, &len));
 	}
 
 	return 0;
 }
 
-
+/*******************************************************************************
+* mv_fdt_update_ethnum
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
 static int mv_fdt_update_ethnum(void *fdt)
 {
 	MV_U32 ethnum = 0;		/* number of interfaces */
@@ -530,7 +632,187 @@ static int mv_fdt_update_ethnum(void *fdt)
 	return 0;
 }
 
+/*******************************************************************************
+* mv_fdt_update_flash
+*
+* DESCRIPTION:
+*   Update FDT entires related to board flash devices according to board sctructures.
+*   The board sctructures are scanned and initialized at uboot startup using board
+*   boot source and bord type. This function obtails flash entries marked as active
+*   during the board initalization process and activates appropriate nodes in FDT.
+*   Nodes corresponding to non-active flash devices are disabled in FDT.
+*
+* INPUT:
+*	fdt		- FDT
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
+static int mv_fdt_update_flash(void *fdt)
+{
+	MV_U32 device;
+	char propval[10];				/* property value */
+	const char *prop = "status";	/* property name */
+	char node[64];					/* node name */
+	MV_U32 flashNum;				/* number of flashes defined for beard */
+	MV_U32 unit, maxUnits;			/* number of interface controller units */
+	MV_U32 chipSel;
+	MV_BOOL interfaceIsActive;
+
+	/* start with SPI flashes */
+	flashNum = mvBoardGetDevicesNumber(BOARD_DEV_SPI_FLASH);
+	maxUnits = mvCtrlSocUnitInfoNumGet(SPI_UNIT_ID);
+	for (unit = 0; unit < maxUnits; unit++) {
+		interfaceIsActive = MV_FALSE;
+		for (device = 0; device < flashNum; device++) {
+			/* Only devices related to current bus/unit */
+			if (mvBoardGetDevBusNum(device, BOARD_DEV_SPI_FLASH) != unit)
+				continue;
+
+			if (mvBoardGetDevState(device, BOARD_DEV_SPI_FLASH) == MV_TRUE) {
+				interfaceIsActive = MV_TRUE; /* One active device is enough */
+				break;
+			}
+		} /* SPI devices */
+
+		if (interfaceIsActive == MV_TRUE)
+			sprintf(propval, "okay"); /* Enable active SPI unit/bus */
+		else
+			sprintf(propval, "disabled"); /* disable NON active SPI unit/bus */
+
+		sprintf(node, "spi@%x", MV_SPI_REGS_OFFSET(unit));
+		if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
+			mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+			return -1;
+		}
+	} /* SPI units/buses */
+
+	/* handle NAND flashes - there is only one NAND unit, but different CS are possible */
+	flashNum = mvBoardGetDevicesNumber(BOARD_DEV_NAND_FLASH);
+	interfaceIsActive = MV_FALSE;
+	for (device = 0; device < flashNum; device++) {
+		if (mvBoardGetDevState(device, BOARD_DEV_NAND_FLASH) == MV_TRUE) {
+			interfaceIsActive = MV_TRUE; /* One active device is enough */
+			/* Once a NAND node updated, there is no reason to search for other devices */
+			break;
+		}
+	} /* NAND devices */
+
+	if (interfaceIsActive == MV_TRUE)
+		sprintf(propval, "okay"); /* Enable NAND interface if found active device */
+	else
+		sprintf(propval, "disabled"); /* disable NAND interface if NOT found active devices */
+
+	sprintf(node, "nand@%x", MV_NFC_REGS_OFFSET);
+	if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
+		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+		return -1;
+	}
+
+	/* handle NOR flashes - there is only one NOR unit, but different CS are possible */
+	flashNum = mvBoardGetDevicesNumber(BOARD_DEV_NOR_FLASH);
+	chipSel = 0xFFFF;
+	for (device = 0;  device < flashNum; device++) {
+		if (mvBoardGetDevState(device, BOARD_DEV_NOR_FLASH) != MV_TRUE)
+			continue;
+
+		chipSel = mvBoardGetDevCSNum(device, BOARD_DEV_NOR_FLASH);
+		if (chipSel == DEV_BOOCS)	/* Special case - this value is not close to the rest of Device Bus */
+			chipSel = 4;			/* Chip Selects (0 to 3) in target definitiond enum, */
+		else						/* so it will be hadled just as a 4th chip select */
+			chipSel -= DEVICE_CS0;	/* Substract the base value for getting 0-3 CS range */
+
+		/* Once an active NOR flash entry found, there is no reason to search for others */
+		break;
+	} /* NOR devices */
+
+	/* Walk through Device Bus entries and update them */
+	for (device = 0; device < 5; device++) {
+		if (device == chipSel)
+			sprintf(propval, "okay"); /* Enable NOR interface if found active device */
+		else
+			sprintf(propval, "disabled"); /* disable NOR interface if NOT found active devices */
+
+		if (device == 4)	/* Fourth CS is a Boot CS - see the comment above */
+			sprintf(node, "devbus-bootcs");
+		else
+			sprintf(node, "devbus-cs%d", device);
+
+		if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
+			mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+/*******************************************************************************
+* mv_fdt_set_node_prop
+*
+* DESCRIPTION:
+* 	Set a named node property to a specific value
+*
+* INPUT:
+*	fdt		- FDT
+*	node	- FDT node name
+*	prop	- FDT node property name
+*	propval	- property value to set
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
+static int mv_fdt_set_node_prop(void *fdt, const char *node, const char *prop, const char *propval)
+{
+	int err, nodeoffset = 0; /* nodeoffset: node offset from libfdt */
+
+	if (node != NULL) { /* node ==NULL --> search property in root node */
+		nodeoffset = mv_fdt_find_node(fdt, node);
+		if (nodeoffset < 0) {
+			mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+			return -1;
+		}
+	}
+
+	if (strncmp(fdt_get_name(fdt, nodeoffset, NULL), node, strlen(node)) == 0) {
+		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop, propval, strlen(propval)+1));
+		if (err < 0) {
+			mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
+			return -1;
+		}
+		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
+	}
+
+	return 0;
+}
+
 #if 0 /* not compiled, since this routine is currently not in use  */
+/*******************************************************************************
+* mv_fdt_remove_prop
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdt.
+*	path.
+*	name.
+*	nodeoff.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
 static int mv_fdt_remove_prop(void *fdt, const char *path,
 				const char *name, int nodeoff)
 {
@@ -553,6 +835,22 @@ static int mv_fdt_remove_prop(void *fdt, const char *path,
 }
 #endif
 
+/*******************************************************************************
+* mv_fdt_remove_node
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdt.
+*	path.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
 static int mv_fdt_remove_node(void *fdt, const char *path)
 {
 	int error;
@@ -575,6 +873,23 @@ static int mv_fdt_remove_node(void *fdt, const char *path)
 	}
 }
 
+/*******************************************************************************
+* mv_fdt_scan_and_set_alias
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdt.
+*	name.
+*	alias.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
 static int mv_fdt_scan_and_set_alias(void *fdt,
 					const char *name, const char *alias)
 {
@@ -690,6 +1005,23 @@ alias_fail:
 	return 0;
 }
 
+/*******************************************************************************
+* mv_fdt_nfc_driver_type
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdt.
+*	offset.
+*	check_status.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
 static int mv_fdt_nfc_driver_type(void *fdt, int *offset,
 				  int check_status)
 {
@@ -723,6 +1055,23 @@ static int mv_fdt_nfc_driver_type(void *fdt, int *offset,
 	return type;
 }
 
+/*******************************************************************************
+* mv_fdt_nand_mode_fixup
+*
+* DESCRIPTION:
+*   Obtain the NAND ECC value from u-boot environment and upodate FDT NAND node
+*   accordingly.
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
 static int mv_fdt_nand_mode_fixup(void *fdt)
 {
 	u32 ecc_val;

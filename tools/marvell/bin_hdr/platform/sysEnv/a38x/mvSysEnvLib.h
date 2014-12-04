@@ -67,10 +67,10 @@
 
 /********************************* Definitions ********************************/
 
-#define INTER_REGS_BASE                                     0xD0000000
+#define INTER_REGS_BASE                         0xD0000000
 
 /* Serdes definitions */
-#define	COMMON_PHY_BASE_ADDR					0x18300
+#define	COMMON_PHY_BASE_ADDR			0x18300
 
 #define DEVICE_CONFIGURATION_REG0		0x18284
 #define DEVICE_CONFIGURATION_REG1		0x18288
@@ -80,13 +80,13 @@
 #define COMMON_PHY_STATUS1_REG                  0x18318
 #define COMMON_PHYS_SELECTORS_REG               0x183FC
 #define SOC_CONTROL_REG1                        0x18204
-#define GENERAL_PURPOSE_RESERVED0_REG			0x182E0
+#define GENERAL_PURPOSE_RESERVED0_REG		0x182E0
 #define GBE_CONFIGURATION_REG                   0x18460
 #define DEVICE_SAMPLE_AT_RESET1_REG             0x18600
 #define DEVICE_SAMPLE_AT_RESET2_REG		0x18604
 #define DEV_ID_REG				0x18238
 
-#define QSGMII_CONTROL_REG1						0x18494
+#define QSGMII_CONTROL_REG1			0x18494
 
 #define DEV_ID_REG_DEVICE_ID_OFFS		16
 #define DEV_ID_REG_DEVICE_ID_MASK		0xFFFF0000
@@ -98,34 +98,35 @@
 #define POWER_AND_PLL_CTRL_REG                  0xa0004
 #define CALIBRATION_CTRL_REG                    0xa0008
 #define LOOPBACK_REG                            0xa008C
+#define SYNC_PATTERN_REG                        0xa0090
 #define INTERFACE_REG                           0xa0094
 #define ISOLATE_REG                             0xa0098
 #define MISC_REG                                0xa013C
 #define GLUE_REG                                0xa0140
 #define GENERATION_DIVIDER_FORCE_REG            0xa0144
 #define RESET_DFE_REG                           0xa0148
-#define LANE_ALIGN_REG0							0xa0124
-#define SQUELCH_FFE_SETTING_REG					0xa0018
-#define G1_SETTINGS_0_REG						0xa0034
-#define G1_SETTINGS_1_REG						0xa0038
-#define G2_SETTINGS_0_REG						0xa003C
-#define G2_SETTINGS_1_REG						0xa0040
-#define G2_SETTINGS_2_REG						0xa00F8
-#define G3_SETTINGS_0_REG						0xa0044
-#define G3_SETTINGS_1_REG						0xa0048
-#define VTHIMPCAL_CTRL_REG						0xa0104
+#define LANE_ALIGN_REG0				0xa0124
+#define SQUELCH_FFE_SETTING_REG			0xa0018
+#define G1_SETTINGS_0_REG			0xa0034
+#define G1_SETTINGS_1_REG			0xa0038
+#define G2_SETTINGS_0_REG			0xa003C
+#define G2_SETTINGS_1_REG			0xa0040
+#define G2_SETTINGS_2_REG			0xa00F8
+#define G3_SETTINGS_0_REG			0xa0044
+#define G3_SETTINGS_1_REG			0xa0048
+#define VTHIMPCAL_CTRL_REG			0xa0104
 #define REF_REG0                                0xa0134
-#define CAL_REG6								0xa0168
-#define RX_REG2									0xa0184
-#define LANE_CFG1_REG							0xa0604
-#define LANE_CFG4_REG							0xa0620
+#define CAL_REG6				0xa0168
+#define RX_REG2					0xa0184
+#define LANE_CFG1_REG				0xa0604
+#define LANE_CFG4_REG				0xa0620
 #define GLOBAL_CLK_CTRL                         0xa0704
 #define GLOBAL_MISC_CTRL                        0xa0718
-#define	GLOBAL_CLK_SRC_HI						0xa0710
+#define	GLOBAL_CLK_SRC_HI			0xa0710
 
 #define GLOBAL_CLK_CTRL                         0xa0704
 #define GLOBAL_MISC_CTRL                        0xa0718
-#define GLOBAL_PM_CTRL							0xa0740
+#define GLOBAL_PM_CTRL				0xa0740
 
 /* SATA registers */
 #define SATA_CTRL_REG_INDIRECT                  0xa80a0

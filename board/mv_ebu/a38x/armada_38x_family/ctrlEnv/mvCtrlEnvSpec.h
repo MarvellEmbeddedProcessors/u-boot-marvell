@@ -124,11 +124,7 @@ extern "C" {
 #define MV_XOR_REGS_OFFSET(unit)                (0x60800 + (unit)*0x100)
 #define MV_CESA_TDMA_REGS_OFFSET(chanNum)       (0x90000 + (chanNum * 0x2000))
 #define MV_CESA_REGS_OFFSET(chanNum)            (0x9D000 + (chanNum * 0x2000))
-
-/* MV_SATA_REGS_OFFSET: legacy SATA controller base - obsolete for A38x and must be removed */
 #define MV_SATA_REGS_OFFSET                     (0xA0000)
-
-#define MV_COMPHY_H_PIPE3_REGS_OFFSET		(0xA0000)
 #define MV_SATA3_REGS_OFFSET(u)			((u == 0) ? 0xA8000 : 0xE0000) /* sata register per unit*/
 #define MV_COMM_UNIT_REGS_OFFSET                (0xB0000)
 #define MV_BM_REGS_OFFSET                       (0xC8000)

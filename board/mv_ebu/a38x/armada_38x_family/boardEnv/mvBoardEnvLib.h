@@ -381,6 +381,9 @@ typedef struct _boardInfo {
 	MV_U32 norFlashReadParams;
 	MV_U32 norFlashWriteParams;
 
+	MV_BOOL isSdMmcConnected;	/* indicate SD/MMC card reader on board */
+	MV_BOOL isSdMmc_1_8v_Connected;	/* indicate SD/MMC card reader connected to 1.8v power supply on board */
+
 	/* Indicates if auto-detection of modules is enabled on this board. */
 	/* Set to MV_FALSE for any board that is not a DB. */
 	MV_BOOL configAutoDetect;
@@ -567,6 +570,7 @@ MV_STATUS mvBoardSysConfigSet(MV_CONFIG_TYPE_ID configField, MV_U8 value);
 void mvBoardEepromValidSet(void);
 #endif /* CONFIG_CMD_BOARDCFG */
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
+MV_BOOL mvBoardisSdioConnected(void);
 
 #ifdef __cplusplus
 }

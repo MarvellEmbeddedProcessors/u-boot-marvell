@@ -81,11 +81,13 @@ static int mv_fdt_update_pex(void *fdt);
 static int mv_fdt_update_sata(void *fdt);
 static int mv_fdt_update_ethnum(void *fdt);
 static int mv_fdt_remove_node(void *fdt, const char *path);
-static int mv_fdt_scan_and_set_alias(void *fdt,
-					const char *name, const char *alias);
+static int mv_fdt_scan_and_set_alias(void *fdt, const char *name, const char *alias);
 static int mv_fdt_nand_mode_fixup(void *fdt);
 static int mv_fdt_update_pinctrl(void *fdt);
 static int mv_fdt_debug;
+#ifdef CONFIG_MV_SDHCI
+static int mv_fdt_update_sdhci(void *fdt);
+#endif
 
 #if 0 /* not compiled, since this routine is currently not in use  */
 static int mv_fdt_remove_prop(void *fdt, const char *path,
@@ -165,6 +167,13 @@ void ft_board_setup(void *blob, bd_t *bd)
 	err = mv_fdt_update_ethnum(blob);
 	if (err < 0)
 		goto bs_fail;
+
+#ifdef CONFIG_MV_SDHCI
+	/* Update SDHCI driver settings in DT */
+	err = mv_fdt_update_sdhci(blob);
+	if (err < 0)
+		goto bs_fail;
+#endif
 
 	/* Update NAND controller settings in DT */
 	err = mv_fdt_nand_mode_fixup(blob);
@@ -324,6 +333,42 @@ static int mv_fdt_update_sata(void *fdt)
 
 	return 0;
 }
+
+#ifdef CONFIG_MV_SDHCI
+static int mv_fdt_update_sdhci(void *fdt)
+{
+	int err, nodeoffset;				/* nodeoffset: node offset from libfdt */
+	char propval[10];				/* property value */
+	const char *prop = "status";			/* property name */
+	char node[64];					/* node name */
+
+	if (mvBoardisSdioConnected())
+		sprintf(propval, "okay");
+	else
+		sprintf(propval, "disabled");
+
+	sprintf(node, "sdhci@%x", MV_SDMMC_REGS_OFFSET);
+	nodeoffset = mv_fdt_find_node(fdt, node);
+
+	if (nodeoffset < 0) {
+		mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+		return -1;
+	}
+
+	if (strncmp(fdt_get_name(fdt, nodeoffset, NULL), node, strlen(node)) == 0) {
+		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
+						propval, strlen(propval)+1));
+		if (err < 0) {
+			mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
+			return -1;
+		}
+		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
+	}
+
+	return 0;
+
+}
+#endif
 
 static int mv_fdt_update_pex(void *fdt)
 {

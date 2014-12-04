@@ -286,6 +286,7 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 						DEBUG_RD_REG(PEX_LINK_CTRL_STATUS2_REG(pexIdx), tmp);
 						tmp &= ~(BIT0 | BIT1);
 						tmp |= BIT1;
+						tmp |= BIT6; /* Select Deemphasize (-3.5dB) */
 						MV_REG_WRITE(PEX_LINK_CTRL_STATUS2_REG(pexIdx), tmp);
 						DEBUG_WR_REG(PEX_LINK_CTRL_STATUS2_REG(pexIdx), tmp);
 

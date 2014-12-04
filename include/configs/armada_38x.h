@@ -75,6 +75,9 @@
 #define MV_FS
 #define CONFIG_CMD_DATE
 #define CONFIG_BOARD_EARLY_INIT_F
+
+#define MV_DDR_TRAINING_CMD_NEW_TIP
+
 /*
  * Debug
  */

@@ -84,6 +84,8 @@ disclaimer.
 #define MV_BOOTROM
 #define CONFIG_BOARD_EARLY_INIT_F
 
+#define MV_DDR_TRAINING_CMD_NEW_TIP
+
 #ifdef CONFIG_ALLEYCAT3
 #define MV_USB
 #endif

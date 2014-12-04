@@ -80,22 +80,22 @@ MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray);
 SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
 {
 {	/* Customer Board 0 Toplogy */
-	{ PEX0,         __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
-	{ SGMII1,       __1_25Gbps,		   SERDES_DEFAULT_MODE },
-	{ PEX1,	        __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
-	{ SGMII2,       __1_25Gbps,		   SERDES_DEFAULT_MODE },
-	{ PEX2,         __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
-	{ RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE },
-    { RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE },
+	{ PEX0,         __5Gbps,		   PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
+	{ SGMII1,       __1_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+	{ PEX1,	        __5Gbps,		   PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
+	{ SGMII2,       __1_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+	{ PEX2,         __5Gbps,		   PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
+	{ RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+    { RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
 },
 {	/* Customer Board 1 Toplogy */
-	{ PEX0,         __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
-	{ SGMII1,       __1_25Gbps,		   SERDES_DEFAULT_MODE },
-	{ PEX1,	        __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
-	{ SGMII2,       __1_25Gbps,		   SERDES_DEFAULT_MODE },
-	{ PEX2,         __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
-	{ RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE },
-    { RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE },
+	{ PEX0,         __5Gbps,		   PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
+	{ SGMII1,       __1_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+	{ PEX1,	        __5Gbps,		   PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
+	{ SGMII2,       __1_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+	{ PEX2,         __5Gbps,		   PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
+	{ RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+    { RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
 }};
 
 /***************************************************************************/
@@ -111,6 +111,8 @@ MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[laneNum].serdesMode  =  CustomerBoardTopologyConfig[boardIdIndex][laneNum].serdesMode;
 		serdesMapArray[laneNum].serdesSpeed =  CustomerBoardTopologyConfig[boardIdIndex][laneNum].serdesSpeed;
 		serdesMapArray[laneNum].serdesType  =  CustomerBoardTopologyConfig[boardIdIndex][laneNum].serdesType;
+		serdesMapArray[laneNum].swapRx      =  CustomerBoardTopologyConfig[boardIdIndex][laneNum].swapRx;
+		serdesMapArray[laneNum].swapTx      =  CustomerBoardTopologyConfig[boardIdIndex][laneNum].swapTx;
 	}
 
 	return MV_OK;
@@ -211,13 +213,13 @@ SERDES_TYPE commonPhysType[MAX_SERDES_LANES][MAX_SELECTOR_VAL] =
 /* Configuration options */
 SERDES_MAP DbConfigDefault[MAX_SERDES_LANES] =
 {
-	{ PEX0,         __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
-	{ SGMII1,       __1_25Gbps,		   SERDES_DEFAULT_MODE },
-	{ PEX1,	        __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
-	{ SGMII2,       __1_25Gbps,		   SERDES_DEFAULT_MODE },
-	{ PEX2,         __5Gbps,		   PEX_ROOT_COMPLEX_x1 },
-	{ RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE },
-    { RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE },
+	{ PEX0,         __5Gbps,		   PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
+	{ SGMII1,       __1_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+	{ PEX1,	        __5Gbps,		   PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
+	{ SGMII2,       __1_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+	{ PEX2,         __5Gbps,		   PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
+	{ RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+    { RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
 };
 
 /*************************** Functions implementation *************************/
@@ -256,6 +258,8 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[laneNum].serdesMode  =  serdesTopology[laneNum].serdesMode;
 		serdesMapArray[laneNum].serdesSpeed =  serdesTopology[laneNum].serdesSpeed;
 		serdesMapArray[laneNum].serdesType  =  serdesTopology[laneNum].serdesType;
+		serdesMapArray[laneNum].swapRx      =  serdesTopology[laneNum].swapRx;
+		serdesMapArray[laneNum].swapTx      =  serdesTopology[laneNum].swapTx;
 	}
 
 	return res;
@@ -314,6 +318,8 @@ MV_STATUS mvSysUpdateLaneConfig
 		serdesTopology[serdesNum].serdesType  = serdesType;
 		serdesTopology[serdesNum].serdesSpeed = defaultSerdesSpeedMap[serdesType];
         serdesTopology[serdesNum].serdesMode  = SERDES_DEFAULT_MODE; /* set to default */
+		serdesTopology[serdesNum].swapRx      = MV_FALSE;
+		serdesTopology[serdesNum].swapTx      = MV_FALSE;
 
         /* Update the Serdes mode for PEX type:
 		   The Serdes mode can be PEXx1 or PEXx4 and it can be determind accroding to the

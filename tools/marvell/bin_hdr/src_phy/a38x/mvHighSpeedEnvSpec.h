@@ -150,9 +150,11 @@ typedef enum {
 } SERDES_MODE;
 
 typedef struct {
-	SERDES_TYPE serdesType;
-	SERDES_SPEED serdesSpeed;
-	SERDES_MODE serdesMode;
+	SERDES_TYPE 	serdesType;
+	SERDES_SPEED 	serdesSpeed;
+	SERDES_MODE 	serdesMode;
+	MV_BOOL			swapRx;
+	MV_BOOL			swapTx;
 } SERDES_MAP;
 
 /* Serdes ref clock options */

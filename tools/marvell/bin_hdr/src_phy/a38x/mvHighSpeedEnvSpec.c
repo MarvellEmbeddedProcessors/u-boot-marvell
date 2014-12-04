@@ -172,9 +172,13 @@ static const char *serdesTypeToString[] = {
 
 MV_OP_PARAMS sataPowerUpParams[] =
 {
-	/* unitunitBaseReg       unitOffset   mask        SATA data   SGMII data  waitTime    numOfLoops */
-	{ SATA_CTRL_REG_INDIRECT, 0x38000,	0xFFFFFFFF,	  { 0x0,      NO_DATA,}, 0,	0		 }, /* Power Down Sata addr*/
-	{ SATA_CTRL_REG,	      0x38000,	0xFFFFFFFF,	  { 0xC44040, NO_DATA,}, 0,	0		 }  /* Power Down Sata */
+    /* unitunitBaseReg              unitOffset      mask            SATA data   SGMII data      waitTime    numOfLoops */
+    { SATA_VENDOR_PORT_0_REG_ADDR,  0x38000,        0xFFFFFFFF,     { 0xA,      NO_DATA, },         0,          0       }, /* Access to reg 0xA(PHY Control) */
+    { SATA_VENDOR_PORT_0_REG_DATA,  0x38000,        0x3000,         { 0x0,      NO_DATA, },         0,          0       }, /* Rx clk and Tx clk select non-inverted mode */
+    { SATA_VENDOR_PORT_1_REG_ADDR,  0x38000,        0xFFFFFFFF,     { 0xA,      NO_DATA, },         0,          0       }, /* Access to reg 0xA(PHY Control) */
+    { SATA_VENDOR_PORT_1_REG_DATA,  0x38000,        0x3000,         { 0x0,      NO_DATA, },         0,          0       }, /* Rx clk and Tx clk select non-inverted mode */
+    { SATA_CTRL_REG_INDIRECT,       0x38000,        0xFFFFFFFF,     { 0x0,      NO_DATA, },         0,          0       }, /* Power Down Sata addr*/
+    { SATA_CTRL_REG,                0x38000,        0xFFFFFFFF,     { 0xC44040, NO_DATA, },         0,          0       }, /* Power Down Sata */
 };
 
 /* SATA and SGMII - power up seq */

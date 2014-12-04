@@ -127,8 +127,14 @@
 #define GLOBAL_MISC_CTRL                        0xa0718
 #define GLOBAL_PM_CTRL							0xa0740
 
+/* SATA registers */
 #define SATA_CTRL_REG_INDIRECT                  0xa80a0
 #define SATA_CTRL_REG                           0xa80a4
+
+#define SATA_VENDOR_PORT_0_REG_ADDR             0xa8178
+#define SATA_VENDOR_PORT_1_REG_ADDR             0xa81F8
+#define SATA_VENDOR_PORT_0_REG_DATA             0xa817C
+#define SATA_VENDOR_PORT_1_REG_DATA             0xa81FC
 
 /* Reference clock values and mask */
 #define POWER_AND_PLL_CTRL_REG_100MHZ_VAL		0x0

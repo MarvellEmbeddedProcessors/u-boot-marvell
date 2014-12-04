@@ -3255,3 +3255,30 @@ MV_NAND_IF_MODE mvBoardNandIfGet()
 		return board->nandIfMode;
 	}
 }
+
+/*******************************************************************************
+* mvBoardisSdioConnected
+* DESCRIPTION: return true if SDIO connected on board
+*
+* INPUT:  None
+* OUTPUT: None.
+* RETURN: MV_TRUE:SDIO connected on board
+*         MV_FALSE: else
+*******************************************************************************/
+MV_BOOL mvBoardisSdioConnected(void)
+{
+	return board->isSdMmcConnected;
+}
+/*******************************************************************************
+* mvBoardisSdio18vConnected
+* DESCRIPTION: return true if SDIO connected to 1.8v power supply on board
+*
+* INPUT:  None
+* OUTPUT: None.
+* RETURN: MV_TRUE:SDIO connected to 1.8v power supply
+*         MV_FALSE: else
+*******************************************************************************/
+MV_BOOL mvBoardisSdio18vConnected(void)
+{
+	return board->isSdMmcConnected & board->isSdMmc_1_8v_Connected;
+}

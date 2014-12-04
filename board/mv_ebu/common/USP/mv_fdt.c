@@ -652,7 +652,7 @@ static int mv_fdt_nfc_driver_type(void *fdt, int *offset,
 	const void *status;
 	const char *compat[3] = {"marvell,armada370-nand",
 				 "marvell,armada-nand",
-				 "marvell,armada375-nand"};
+				 "marvell,armada-375-nand"};
 
 	for (type = 0; type < 3; type++) {
 		nodeoffset = fdt_node_offset_by_compatible(fdt, -1,
@@ -681,8 +681,7 @@ static int mv_fdt_nfc_driver_type(void *fdt, int *offset,
 static int mv_fdt_nand_mode_fixup(void *fdt)
 {
 	u32 ecc_val;
-	int nodeoffset, nfcoffset, nfc_driver_hal, err;
-	const void *cmdline;
+	int nfcoffset, nfc_driver_hal, err;
 	char *nfc_config;
 	char prop[20];
 	char propval[7];
@@ -694,12 +693,8 @@ static int mv_fdt_nand_mode_fixup(void *fdt)
 		return 0;
 	}
 
-	/* Get bootargs value from the updated property in '/chosen' node */
-	nodeoffset = fdt_path_offset(fdt, "/chosen");
-	cmdline = fdt_getprop(fdt, nodeoffset, "bootargs", NULL);
-
-	/* Search for 'nfcConfig' parameter in cmdline */
-	nfc_config = strstr(cmdline, "nfcConfig");
+	/* Search for 'nandEcc' parameter in the environment */
+	nfc_config = getenv("nandEcc");
 	if (!nfc_config) {
 		mv_fdt_dprintf("Keep default NFC configuration\n");
 		return 0;
@@ -744,7 +739,7 @@ check_ecc:
 	else if (strcmp(nfc_config, "16bitecc") == 0)
 		ecc_val = nfc_driver_hal ? MV_NFC_ECC_BCH_512B : 16;
 	else {
-		mv_fdt_dprintf("NFC update: invalid nfcConfig ECC parameter\n");
+		mv_fdt_dprintf("NFC update: invalid nfcConfig ECC parameter - \"%s\"\n", nfc_config);
 		return 0;
 	}
 

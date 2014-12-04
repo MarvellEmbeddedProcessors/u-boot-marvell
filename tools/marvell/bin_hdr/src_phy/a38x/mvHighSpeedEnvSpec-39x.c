@@ -97,8 +97,14 @@ MV_OP_PARAMS ethPortSpeedConfigParams[] =
 /* XAUI, RXAUI - Select electrical param seq */
 MV_OP_PARAMS ethPortElectricalConfigParams[] =
 {
-	/* unitunitBaseReg		unitOffset   mask			XAUI data	RXAUI data      waitTime    numOfLoops */
-	{ G1_SETTINGS_0_REG,	0x800,		 0x7780,	  { NO_DATA,	0x580       },     0,	       0		} /* Slew rate and emphasis */
+    /* unitunitBaseReg      unitOffset   mask       XAUI data   RXAUI data      waitTime    numOfLoops */
+    { G1_SETTINGS_1_REG,    0x800,      0x7FF,      { NO_DATA,  0x7C9       },      0,          0       }, /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+    { DFE_REG0,             0x800,      0xF,        { NO_DATA,  0xA         },      0,          0       }, /* DFE_STEP_FINE_FX */
+    { DFE_REG3,             0x800,      0xC000,     { NO_DATA,  0x0         },      0,          0       }, /* DFE_EN control from PIN and DFE Control From Pin */
+    { G1_SETTINGS_0_REG,    0x800,      0xFFFF,     { NO_DATA,  0x8DF2      },      0,          0       }, /* Slew rate and emphasis */
+    { G1_SETTINGS_3_REG,    0x800,      0xFF,       { NO_DATA,  0xAF        },      0,          0       }, /* G1 FFE Setting Force, RES and CAP */
+    { RX_REG2,              0x800,      0x4,        { NO_DATA,  0x0         },      0,          0       }, /* DTL_FLOOP_EN */
+    { VTHIMPCAL_CTRL_REG,   0x800,      0xFF00,     { NO_DATA,  0x3000      },      0,          0       }, /* tximpcal_th and rximpcal_th */
 };
 
 /* XAUI, RXAUI - TX config seq */
@@ -115,11 +121,14 @@ MV_OP_PARAMS ethPortTxConfigParams1[] =
 
 MV_OP_PARAMS ethPortTxConfigParams2[] =
 {
-	/* unitunitBaseReg				unitOffset		mask			XAUI data    	RXAUI data    waitTime    numOfLoops */
-	{ COMMON_PHY_STATUS1_REG,			0x28,		0xC,			{ 0xC,			0xC			},	10,			1000		},	/* Wait for PHY power up sequence to finish */
-	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		0x40080000,		{ 0x40000000,	0x40000000	},	0,			0			},  /* Assert Rx Init and Tx driver output valid */
-	{ COMMON_PHY_STATUS1_REG,			0x28,	    0x1,			{ 0x1,			0x1			},  1,			1000	    },  /* Wait for PHY power up sequence to finish */
-	{ COMMON_PHY_CONFIGURATION1_REG,	0x28,		0x40000000,		{ 0x0,			0x0			},	0,			0		    }   /* De-assert Rx Init */
+    /* unitunitBaseReg              unitOffset      mask            XAUI data       RXAUI data    waitTime    numOfLoops */
+    { COMMON_PHY_STATUS1_REG,           0x28,       0xC,            { 0xC,          0xC         },  10,         1000        },  /* Wait for PHY power up sequence to finish */
+    { COMMON_PHY_CONFIGURATION1_REG,    0x28,       0x40080000,     { 0x40000000,   0x40000000  },  0,          0           },  /* Assert Rx Init and Tx driver output valid */
+    { COMMON_PHY_STATUS1_REG,           0x28,       0x1,            { 0x1,          0x1         },  1,          1000        },  /* Wait for PHY power up sequence to finish */
+    { COMMON_PHY_CONFIGURATION1_REG,    0x28,       0x40000000,     { 0x0,          0x0         },  0,          0           },  /* De-assert Rx Init */
+    { RX_REG3,                          0x800,      0xFF,           { NO_DATA,      0xD9        },  0,          0           },  /* os_ph_offset_force (align 90) */
+    { RX_REG3,                          0x800,      0x100,          { NO_DATA,      0x100       },  0,          0           },  /* Set os_ph_valid */
+    { RX_REG3,                          0x800,      0x100,          { NO_DATA,      0x0         },  0,          0           },  /* Unset os_ph_valid */
 };
 
 /************************* Local functions declarations ***********************/

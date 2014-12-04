@@ -269,24 +269,26 @@ MV_OP_PARAMS sataElectricalConfigSerdesRev2Params[] =
 	{ G3_SETTINGS_0_REG,				0x800,	    0xFFFF,		{ 0xE6E,	},   	0,			0		},  /* G3_TX SLEW, EMPH1 and AMP */
 	{ G3_SETTINGS_1_REG,				0x800,	    0x3FF,		{ 0x3D2,	},   	0,			0		},  /* G3_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
 	{ CAL_REG6,							0x800,	    0xFF00,		{ 0xDD00,	},   	0,			0		},  /* Cal rxclkalign90 ext enable and Cal os ph ext */
-	{ RX_REG2,							0x800,	    0xF0,		{ 0x70,		},   	0,			0		}   /* Dtl Clamping disable and Dtl clamping Sel(6000ppm) */
+	{ RX_REG2,							0x800,	    0xF0,		{ 0x70,		},   	0,			0		},  /* Dtl Clamping disable and Dtl clamping Sel(6000ppm) */
 };
 
 MV_OP_PARAMS sgmiiElectricalConfigSerdesRev1Params[] =
 {
-	/* unitunitBaseReg			unitOffset	 mask		SGMII (1.25G)  SGMII (3.125G)	waitTime    numOfLoops */
-	{ G1_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3C9,		0x3C9		},   	0,			0		},  /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
-	{ SQUELCH_FFE_SETTING_REG,	0x800,		0xFFF,		{ 0x8F,			0xBF		},   	0,			0		},  /* SQ_THRESH and FFE Setting */
-	{ VTHIMPCAL_CTRL_REG,		0x800,		0xFF00,		{ 0x4000,		0x4000		},   	0,			0		},  /* tximpcal_th and rximpcal_th */
+    /* unitunitBaseReg          unitOffset   mask       SGMII (1.25G)  SGMII (3.125G)   waitTime    numOfLoops */
+    { G1_SETTINGS_1_REG,        0x800,      0x3FF,      { 0x3C9,        0x3C9       },      0,          0       }, /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+    { SQUELCH_FFE_SETTING_REG,  0x800,      0xFFF,      { 0x8F,         0xBF        },      0,          0       }, /* SQ_THRESH and FFE Setting */
+    { VTHIMPCAL_CTRL_REG,       0x800,      0xFF00,     { 0x4000,       0x4000      },      0,          0       }, /* tximpcal_th and rximpcal_th */
 };
 
 MV_OP_PARAMS sgmiiElectricalConfigSerdesRev2Params[] =
 {
-	/* unitunitBaseReg			unitOffset	 mask		SGMII (1.25G)  SGMII (3.125G)	waitTime    numOfLoops */
-	{ G1_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3C9,		0x3C9		},   	0,			0		},  /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
-	{ VTHIMPCAL_CTRL_REG,		0x800,		0xFF00,		{ 0x4000,		0x4000		},   	0,			0		},  /* tximpcal_th and rximpcal_th */
+    /* unitunitBaseReg          unitOffset   mask       SGMII (1.25G)  SGMII (3.125G)   waitTime    numOfLoops */
+    { G1_SETTINGS_0_REG,        0x800,      0xFFFF,     { 0x8FA,        0x8FA       },      0,          0       }, /* Set SlewRate, Emph and Amp */
+    { G1_SETTINGS_1_REG,        0x800,      0x3FF,      { 0x3C9,        0x3C9       },      0,          0       }, /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+    { RX_REG2,                  0x800,      0x4,        { 0x0,          0x0         },      0,          0       }, /* DTL_FLOOP_EN */
+    { G1_SETTINGS_3_REG,        0x800,      0xFF,       { 0x8F,         0xBF        },      0,          0       }, /* G1 FFE Setting Force, RES and CAP */
+    { VTHIMPCAL_CTRL_REG,       0x800,      0xFF00,     { 0x3000,       0x3000      },      0,          0       }, /* tximpcal_th and rximpcal_th */
 };
-
 
 /****************/
 /* PEX and USB3 */
@@ -358,9 +360,12 @@ MV_OP_PARAMS usb3ElectricalConfigSerdesRev2Params[] =
 			  by setting each sequence for all 4 lanes. */
 MV_OP_PARAMS pexAndUsb3TxConfigParams1[] =
 {
-	/* unitBaseReg    unitOffset   	mask        PEX data    USB3 data   waitTime    numOfLoops */
-	{ GLOBAL_CLK_CTRL, 	0x800,		0x1,	    { 0x0,      0x0     }, 	    0,	        0		},
-	{ 0x0,		   		0x0,		0x0,	    { 0x0,      0x0     }, 	    10,	        0		}  /* 10ms delay */
+    /* unitBaseReg    unitOffset    mask        PEX data    USB3 data   waitTime    numOfLoops */
+    { GLOBAL_CLK_CTRL,  0x800,      0x1,        { 0x0,      0x0     },      0,          0       },
+    { 0x0,              0x0,        0x0,        { 0x0,      0x0     },      10,         0       }, /* 10ms delay */
+    { RX_REG3,          0x800,      0xFF,       { 0xDC,     NO_DATA },      0,          0       }, /* os_ph_offset_force (align 90) */
+    { RX_REG3,          0x800,      0x100,      { 0x100,    NO_DATA },      0,          0       }, /* Set os_ph_valid */
+    { RX_REG3,          0x800,      0x100,      { 0x0,      NO_DATA },      0,          0       }, /* Unset os_ph_valid */
 };
 
 MV_OP_PARAMS pexAndUsb3TxConfigParams2[] =
@@ -396,25 +401,29 @@ MV_OP_PARAMS usb3DeviceConfigParams[] =
 /* PEX - electrical configuration seq Rev 1.2 */
 MV_OP_PARAMS pexElectricalConfigSerdesRev1Params[] =
 {
-	/* unitunitBaseReg			unitOffset	mask		PEX data       waitTime    numOfLoops */
-	{ G1_SETTINGS_0_REG,		0x800,		0xF000,		{ 0xB000    },		0,			0	 	}, /* G1_TX_SLEW_CTRL_EN and G1_TX_SLEW_RATE */
-	{ G1_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3C9     },		0,          0	 	}, /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
-	{ G2_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3C9     },		0,          0	 	}, /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
-	{ LANE_CFG4_REG,            0x800,      0x8,		{ 0x8       },		0,          0	 	}, /* CFG_DFE_EN_SEL */
-	{ SQUELCH_FFE_SETTING_REG,	0x800,		0xFF,		{ 0xAF      },		0,          0	 	}, /* FFE Setting Force, RES and CAP */
-	{ VTHIMPCAL_CTRL_REG,		0x800,		0xFF00,		{ 0x4000    },		0,          0	 	}, /* tximpcal_th and rximpcal_th */
-	{ CAL_REG6,		 			0x800,		0xFF00,		{ 0xDC00    },		0,          0	 	}, /* cal_rxclkalign90_ext_en and cal_os_ph_ext */
+    /* unitunitBaseReg          unitOffset  mask        PEX data       waitTime    numOfLoops */
+    { G1_SETTINGS_0_REG,        0x800,      0xF000,     { 0xB000    },      0,          0       }, /* G1_TX_SLEW_CTRL_EN and G1_TX_SLEW_RATE */
+    { G1_SETTINGS_1_REG,        0x800,      0x3FF,      { 0x3C9     },      0,          0       }, /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+    { G2_SETTINGS_1_REG,        0x800,      0x3FF,      { 0x3C9     },      0,          0       }, /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+    { LANE_CFG4_REG,            0x800,      0x8,        { 0x8       },      0,          0       }, /* CFG_DFE_EN_SEL */
+    { SQUELCH_FFE_SETTING_REG,  0x800,      0xFF,       { 0xAF      },      0,          0       }, /* FFE Setting Force, RES and CAP */
+    { VTHIMPCAL_CTRL_REG,       0x800,      0xFF00,     { 0x3000    },      0,          0       }, /* tximpcal_th and rximpcal_th */
+    { CAL_REG6,                 0x800,      0xFF00,     { 0xDC00    },      0,          0       }, /* cal_rxclkalign90_ext_en and cal_os_ph_ext */
 };
 
 /* PEX - electrical configuration seq Rev 2.1 */
 MV_OP_PARAMS pexElectricalConfigSerdesRev2Params[] =
 {
-	/* unitunitBaseReg			unitOffset	mask		PEX data       waitTime    numOfLoops */
-	{ G1_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3C9     },		0,          0	 	}, /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
-	{ G2_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3C9     },		0,          0	 	}, /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
-	{ LANE_CFG4_REG,            0x800,		0x8,		{ 0x8       },		0,          0	 	}, /* CFG_DFE_EN_SEL */
-	{ VTHIMPCAL_CTRL_REG,		0x800,		0xFF00,		{ 0x4000    },		0,          0	 	}, /* tximpcal_th and rximpcal_th */
-	{ CAL_REG6,                 0x800,		0xFF00,		{ 0xDC00    },		0,          0	 	}, /* cal_rxclkalign90_ext_en and cal_os_ph_ext */
+    /* unitunitBaseReg          unitOffset  mask        PEX data       waitTime    numOfLoops */
+    { G1_SETTINGS_0_REG,        0x800,      0xF000,     { 0xB000    },      0,          0       }, /* G1_TX_SLEW_CTRL_EN and G1_TX_SLEW_RATE */
+    { G1_SETTINGS_1_REG,        0x800,      0x3FF,      { 0x3C9     },      0,          0       }, /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+    { G1_SETTINGS_3_REG,        0x800,      0xFF,       { 0xCF      },      0,          0       }, /* G1 FFE Setting Force, RES and CAP */
+    { G2_SETTINGS_1_REG,        0x800,      0x3FF,      { 0x3C9     },      0,          0       }, /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+    { G2_SETTINGS_3_REG,        0x800,      0xFF,       { 0xAF      },      0,          0       }, /* G2 FFE Setting Force, RES and CAP */
+    { PCIE_REG1,                0x800,      0xF80,      { 0xD00     },      0,          0       }, /* Tx amplitude for Tx Margin 0 */
+    { PCIE_REG3,                0x800,      0xFF00,     { 0xAF00    },      0,          0       }, /* Tx_Emph value for -3.5dB and -6dB */
+    { LANE_CFG4_REG,            0x800,      0x8,        { 0x8       },      0,          0       }, /* CFG_DFE_EN_SEL */
+    { VTHIMPCAL_CTRL_REG,       0x800,      0xFF00,     { 0x4000    },      0,          0       }, /* tximpcal_th and rximpcal_th */
 };
 
 /*****************/

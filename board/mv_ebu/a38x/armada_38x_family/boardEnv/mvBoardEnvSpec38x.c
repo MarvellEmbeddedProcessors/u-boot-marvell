@@ -176,7 +176,9 @@ MV_BOARD_INFO armada_38x_customer_board_0_info = {
 	.nandFlashReadParams		= A38x_CUSTOMER_BOARD_0_NAND_READ_PARAMS,
 	.nandFlashWriteParams		= A38x_CUSTOMER_BOARD_0_NAND_WRITE_PARAMS,
 	.nandFlashControl		= A38x_CUSTOMER_BOARD_0_NAND_CONTROL,
-	.nandIfMode				= NAND_IF_NFC,
+	.nandIfMode			= NAND_IF_NFC,
+
+	.isSdMmcConnected		= MV_TRUE,
 
 	/* NOR init params */
 	.norFlashReadParams		= A38x_CUSTOMER_BOARD_0_NOR_READ_PARAMS,
@@ -301,7 +303,10 @@ MV_BOARD_INFO db88f68xx_board_info = {
 	.nandFlashReadParams		= DB_88F68XX_BOARD_NAND_READ_PARAMS,
 	.nandFlashWriteParams		= DB_88F68XX_BOARD_NAND_WRITE_PARAMS,
 	.nandFlashControl		= DB_88F68XX_BOARD_NAND_CONTROL,
-	.nandIfMode				= NAND_IF_NFC,
+	.nandIfMode			= NAND_IF_NFC,
+
+	.isSdMmcConnected		= MV_TRUE,
+	.isSdMmc_1_8v_Connected		= MV_FALSE,
 
 	.pBoardTdmSpiInfo		= db88f68xxTdmSpiInfo,
 
@@ -404,7 +409,11 @@ MV_BOARD_INFO rdNas88f68XX_board_info = {
 	.nandFlashReadParams		= 0,
 	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
-	.nandIfMode				= NAND_IF_NFC,
+	.nandIfMode			= NAND_IF_NFC,
+
+	.isSdMmcConnected		= MV_TRUE,
+	.isSdMmc_1_8v_Connected		= MV_FALSE,
+
 	/* NOR init params */
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,
@@ -483,7 +492,11 @@ MV_BOARD_INFO rdWAP88f68XX_board_info = {
 	.nandFlashReadParams		= 0,
 	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
-	.nandIfMode				= NAND_IF_NFC,
+	.nandIfMode			= NAND_IF_NFC,
+
+	.isSdMmcConnected		= MV_TRUE,
+	.isSdMmc_1_8v_Connected		= MV_FALSE,
+
 	/* NOR init params */
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,
@@ -585,6 +598,10 @@ MV_BOARD_INFO dbAP88f68xx_board_info = {
 	.pBoardTdmInt2CsInfo            = {dbAP88f68xxTdm880},
 	.boardTdmInfoIndex              = 0,
 	.pBoardSpecInit                 = NULL,
+	.nandIfMode			= NAND_IF_NFC,
+
+	.isSdMmcConnected		= MV_FALSE,
+	.isSdMmc_1_8v_Connected		= MV_FALSE,
 
 	/* Enable modules auto-detection. */
 	.configAutoDetect               = MV_FALSE,
@@ -684,6 +701,10 @@ MV_BOARD_INFO dbGP88f68XX_board_info = {
 	.nandFlashWriteParams		= 0,
 	.nandFlashControl		= 0,
 	.nandIfMode			= NAND_IF_NFC,
+
+	.isSdMmcConnected		= MV_TRUE,
+	.isSdMmc_1_8v_Connected		= MV_FALSE,
+
 	/* NOR init params */
 	.norFlashReadParams		= 0,
 	.norFlashWriteParams		= 0,
@@ -776,6 +797,9 @@ MV_BOARD_INFO db88f6821_board_info = {
 	.nandFlashWriteParams	= DB_88F68XX_BOARD_NAND_WRITE_PARAMS,
 	.nandFlashControl	= DB_88F68XX_BOARD_NAND_CONTROL,
 	.nandIfMode		= NAND_IF_NFC,
+
+	.isSdMmcConnected	= MV_TRUE,
+	.isSdMmc_1_8v_Connected	= MV_FALSE,
 
 	/* NOR init params */
 	.norFlashReadParams	= DB_88F68XX_BOARD_NOR_READ_PARAMS,

@@ -921,6 +921,24 @@ MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 }
 
 /***************************************************************************/
+MV_STATUS mvSerdesPolarityConfig(MV_U32 serdesNum, MV_BOOL isRx)
+{
+	MV_U32 data;
+	MV_U32 regAddr;
+	MV_U8 bitOff = (isRx) ? 11 : 10;
+
+	regAddr = SERDES_REGS_LANE_BASE_OFFSET(serdesNum) + SYNC_PATTERN_REG;
+
+	data = MV_REG_READ(regAddr);
+
+	data = SET_BIT(data, bitOff);
+
+	MV_REG_WRITE(regAddr, data);
+
+	return MV_OK;
+}
+
+/***************************************************************************/
 MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 {
 	MV_U32 serdesId, serdesLaneNum;
@@ -928,6 +946,8 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 	SERDES_TYPE serdesType;
 	SERDES_SPEED serdesSpeed;
 	SERDES_MODE  serdesMode;
+	MV_BOOL      serdesRxPolaritySwap;
+	MV_BOOL      serdesTxPolaritySwap;
 
 	DEBUG_INIT_FULL_S("\n### powerUpSerdesLanes ###\n");
 
@@ -946,6 +966,8 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 		serdesType = serdesConfigMap[serdesId].serdesType;
 		serdesSpeed = serdesConfigMap[serdesId].serdesSpeed;
 		serdesMode = serdesConfigMap[serdesId].serdesMode;
+		serdesRxPolaritySwap = serdesConfigMap[serdesId].swapRx;
+		serdesTxPolaritySwap = serdesConfigMap[serdesId].swapTx;
 
 		/* serdes lane is not in use */
 		if (serdesType == DEFAULT_SERDES)
@@ -962,6 +984,14 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 						 serdesSpeed,
 						 serdesMode,
 						 refClock));
+
+		/* RX Polarity config */
+		if(serdesRxPolaritySwap)
+			CHECK_STATUS(mvSerdesPolarityConfig(serdesLaneNum, MV_TRUE));
+
+		/* TX Polarity config */
+		if(serdesTxPolaritySwap)
+			CHECK_STATUS(mvSerdesPolarityConfig(serdesLaneNum, MV_FALSE));
 	}
 
     /* Set PEX_TX_CONFIG_SEQ sequence for PEXx4 mode.

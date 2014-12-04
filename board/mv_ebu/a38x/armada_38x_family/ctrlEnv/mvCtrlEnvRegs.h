@@ -218,14 +218,6 @@ extern "C" {
 #define SATA_UNIT_BASE_ADDR(unit)					(0xA8000 + (unit) * 0x38000)
 #define SATA_PORT_OFFS(port)						(0x100 + (port) * 0x80)
 
-#define SATA_INDIR_ACCESS_PORT_ADDR(unit, port)		(SATA_UNIT_BASE_ADDR(unit) + SATA_PORT_OFFS(port) + 0x78)
-#define SATA_INDIR_ACCESS_PORT_DATA(unit, port)		(SATA_UNIT_BASE_ADDR(unit) + SATA_PORT_OFFS(port) + 0x7C)
-
-#define SATA_OOB1_PARAM_ADDR						0x48
-
-#define SATA_COM_WAKE_RESET_SPACING_UP_LIMIT_VALUE	0x6018
-#define SATA_COM_WAKE_RESET_SPACING_UP_LIMIT_MASK	0xF03F
-
 /*****************/
 /* PUP registers */
 /*****************/

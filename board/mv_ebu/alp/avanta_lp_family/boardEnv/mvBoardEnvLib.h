@@ -607,6 +607,7 @@ MV_U32 mvBoardBootAttrGet(MV_U32 satrBootDeviceValue, MV_U8 attrNum);
 MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData, MV_U32 byteCnt);
 MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 *regVal, MV_U32 byteCnt);
 MV_STATUS mvBoardEepromInit(void);
+MV_U32 mvBoardDefaultValueGet(int option);
 MV_BOOL mvBoardIsEepromEnabled(void);
 MV_STATUS mvBoardEepromWrite(MV_CONFIG_TYPE_ID configType, MV_U8 value);
 MV_U8 mvBoardCpuFreqGet(MV_VOID);

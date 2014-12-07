@@ -1249,6 +1249,39 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 	}
 }
 
+
+/*******************************************************************************
+* mvCtrlDeviceIdGet - Get Marvell controller Device flavor ID
+*
+* DESCRIPTION:
+*       This function returns 16bit describing the Device flavor ID
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       16bit describing Marvell Device flavor ID
+*
+*******************************************************************************/
+MV_U16 mvCtrlDeviceIdGet(MV_VOID)
+{
+	switch (mvCtrlModelGet()) {
+	case MV_6810_DEV_ID:
+		return 0x380;
+	case MV_6811_DEV_ID:
+		return 0x381;
+	case MV_6820_DEV_ID:
+		return 0x385;
+	case MV_6828_DEV_ID:
+		return 0x388;
+	default:
+		return 0x380;	/* use lower device as default in case of error */
+	}
+}
+
 /*******************************************************************************
 * mvCtrlRevGet - Get Marvell controller device revision number
 *

@@ -279,6 +279,7 @@ typedef enum {
 
 typedef struct _boardInfo {
 	char boardName[MV_BOARD_NAME_LEN];
+	char compatibleDTName[MV_BOARD_NAME_LEN]; /* string for LSP Device Tree update usage */
 	MV_U8 numBoardMppTypeValue;
 	MV_BOARD_MPP_TYPE_INFO *pBoardModTypeValue;
 	MV_U8 numBoardMppConfigValue;
@@ -495,6 +496,7 @@ MV_U16 mvBoardPexModeGet(MV_VOID);
 MV_STATUS mvBoardPexModeSet(MV_U16 conf);
 MV_U32 mvBoardFreqModesNumGet(void);
 MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
+MV_STATUS mvBoardCompatibleNameGet(char *pNameBuff);
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
 
 #ifdef __cplusplus

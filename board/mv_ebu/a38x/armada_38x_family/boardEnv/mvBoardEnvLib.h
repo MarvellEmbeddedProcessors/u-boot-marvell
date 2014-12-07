@@ -319,6 +319,7 @@ typedef enum {
 
 typedef struct _boardInfo {
 	char boardName[MV_BOARD_NAME_LEN];
+	char compatibleDTName[MV_BOARD_NAME_LEN]; /* string for LSP Device Tree usage */
 	MV_U8 numBoardNetComplexValue;
 	MV_BOARD_NET_COMPLEX_INFO *pBoardNetComplexInfo;
 	MV_U8 numBoardMppConfigValue;
@@ -547,6 +548,7 @@ MV_STATUS mvBoardIoExpanderSet(MV_U8 addr, MV_U8 offs, MV_U8 val);
 MV_U32 mvBoardUartPortGet(MV_VOID);
 int mvBoardNorFlashConnect(void);
 MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
+MV_STATUS mvBoardCompatibleNameGet(char *pNameBuff);
 
 #ifdef CONFIG_CMD_BOARDCFG
 typedef struct _boardConfigTypesInfo {

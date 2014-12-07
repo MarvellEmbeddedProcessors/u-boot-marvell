@@ -2961,6 +2961,26 @@ MV_NFC_ECC_MODE mvBoardNandECCModeGet()
 #endif
 }
 
+/*******************************************************************************
+* mvBoardCompatibleNameGet
+*
+* DESCRIPTION: return string containing 'compatible' property value
+*		needed for Device Tree auto-update parsing sequence
+*
+* INPUT:  None
+* OUTPUT: None.
+*
+* RETURN: pointer to string
+*
+*******************************************************************************/
+MV_STATUS mvBoardCompatibleNameGet(char *pNameBuff)
+{
+	/* i.e: "marvell,a375-db", "marvell,armada375"; */
+	sprintf(pNameBuff, "marvell,a375-%s\", \"marvell,armada375", board->compatibleDTName);
+
+	return MV_OK;
+}
+
 MV_NAND_IF_MODE mvBoardNandIfGet()
 {
 	MV_BOARD_BOOT_SRC boot_src = mvBoardBootDeviceGet();

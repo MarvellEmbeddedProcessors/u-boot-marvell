@@ -489,6 +489,7 @@ MV_32 mvBoardSwitchIrqGet(MV_VOID);
 MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort);
 MV_U32 mvBoardSwitchPortsMaskGet(MV_U32 switchIdx);
 MV_BOOL mvBoardConfigAutoDetectEnabled(void);
+MV_U32 mvBoardUartPortGet(void);
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
 MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void);
 MV_STATUS mvBoardConfIdSet(MV_U16 conf);

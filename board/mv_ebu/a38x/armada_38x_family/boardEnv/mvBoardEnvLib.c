@@ -2749,7 +2749,7 @@ MV_STATUS mvBoardEepromWriteDefaultCfg(void)
 
 	/* reset the valid counter */
 	defaultValue[0] = 0;
-	if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, 0, configInfo.offset, (MV_U8 *)&defaultValue[0], 4) != MV_OK) {
+	if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, 0, configInfo.byteNum, (MV_U8 *)&defaultValue[0], 4) != MV_OK) {
 		mvOsPrintf("%s: Error: Set default configuration to EEPROM failed\n", __func__);
 		return MV_ERROR;
 	}

@@ -3149,6 +3149,23 @@ MV_STATUS mvBoardEepromInit()
 }
 
 /*******************************************************************************
+* mvBoardDefaultValueGet
+*
+* DESCRIPTION: This function get the option number and return the default value
+*
+* INPUT:  option number
+*
+* OUTPUT: None
+*
+* RETURN: default value
+*
+*******************************************************************************/
+MV_U32 mvBoardDefaultValueGet(int option)
+{
+	return 0;
+}
+
+/*******************************************************************************
 * mvBoardIsEepromEnabled - read EEPROM and verify if EEPROM exists
 *
 * DESCRIPTION:

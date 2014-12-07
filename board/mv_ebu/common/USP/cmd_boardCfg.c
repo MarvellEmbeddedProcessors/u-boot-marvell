@@ -63,7 +63,7 @@ static int do_boardCfg_default(void)
 
 	/* Reset local array data to default as well */
 	for (i = 0; i <	MV_CONFIG_TYPE_MAX_OPTION; i++)
-		mvBoardSysConfigSet(i, 0);
+		mvBoardSysConfigSet(i, mvBoardDefaultValueGet(i));
 
 	return 0;
 

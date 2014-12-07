@@ -2917,6 +2917,31 @@ MV_VOID mvBoardSysConfigInit(void)
 }
 
 /*******************************************************************************
+* mvBoardDefaultValueGet
+*
+* DESCRIPTION: This function get the option number and return the default value
+*
+* INPUT:  option number
+*
+* OUTPUT: None
+*
+* RETURN: default value
+*
+*******************************************************************************/
+MV_U32 mvBoardDefaultValueGet(int option)
+{
+	MV_BOARD_CONFIG_TYPE_INFO configInfo;
+	MV_U32 defaultVal[2] = MV_BOARD_CONFIG_DEFAULT_VALUE;
+	/* Get board configuration field information (Mask, offset, etc..) */
+	if (mvBoardConfigTypeGet(option, &configInfo) != MV_TRUE) {
+		mvOsPrintf("\nfailed getting board donfig for %d", option);
+		return -1;
+	}
+
+	return (defaultVal[configInfo.byteNum/4] & configInfo.mask) >> configInfo.offset;
+}
+
+/*******************************************************************************
 * mvBoardIsEepromEnabled - read EEPROM and verify if EEPROM exists
 *
 * DESCRIPTION:

@@ -166,7 +166,7 @@ extern "C" {
 
 #define MV_IO_EXP_MAX_REGS			3
 
-#define MV_UART_MAX_CHAN                        4
+#define MV_UART_MAX_CHAN                        2
 
 #define MV_XOR_MAX_UNIT                         2       /* XOR unit == XOR engine */
 #define MV_XOR_MAX_CHAN                         4       /* total channels for all units together*/

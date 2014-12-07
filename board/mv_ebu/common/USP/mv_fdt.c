@@ -92,6 +92,7 @@ void fdt_env_setup(char *fdtfile)
 
 static int mv_fdt_find_node(void *fdt, const char *name);
 static int mv_fdt_board_compatible_name_update(void *fdt);
+static int mv_fdt_update_serial(void *fdt);
 static int mv_fdt_update_cpus(void *fdt);
 static int mv_fdt_update_pex(void *fdt);
 static int mv_fdt_update_sata(void *fdt);
@@ -226,6 +227,11 @@ void ft_board_setup(void *blob, bd_t *bd)
 
 	/* Update compatible (board name) in DT */
 	err = mv_fdt_board_compatible_name_update(blob);
+	if (err < 0)
+		goto bs_fail;
+
+	/* Update serial/UART nodes in DT */
+	err = mv_fdt_update_serial(blob);
 	if (err < 0)
 		goto bs_fail;
 
@@ -1172,4 +1178,43 @@ static int mv_fdt_board_compatible_name_update(void *fdt)
 
 	return 0;
 }
+
+/*******************************************************************************
+* mv_fdt_update_serial
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
+static int mv_fdt_update_serial(void *fdt)
+{
+	char propval[10];				/* property value */
+	const char *prop = "status";	/* property name */
+	char node[64];					/* node name */
+	int i, defaultSerialPort = mvBoardUartPortGet();
+
+	for (i = 0; i < MV_UART_MAX_CHAN; i++) {
+		if (i == defaultSerialPort)
+			sprintf(propval, "okay"); /* Enable active Serial port node */
+		else
+			sprintf(propval, "disabled"); /* Disable non-active Serial port node */
+
+		sprintf(node, "serial@%x", MV_UART_REGS_OFFSET(i));
+		if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
+			mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
 #endif

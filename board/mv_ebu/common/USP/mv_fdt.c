@@ -91,6 +91,7 @@ void fdt_env_setup(char *fdtfile)
 #define MV_FDT_MAXDEPTH 32
 
 static int mv_fdt_find_node(void *fdt, const char *name);
+static int mv_fdt_board_compatible_name_update(void *fdt);
 static int mv_fdt_update_cpus(void *fdt);
 static int mv_fdt_update_pex(void *fdt);
 static int mv_fdt_update_sata(void *fdt);
@@ -220,6 +221,11 @@ void ft_board_setup(void *blob, bd_t *bd)
 
 	/* Update pinctrl driver settings in DT */
 	err = mv_fdt_update_pinctrl(blob);
+	if (err < 0)
+		goto bs_fail;
+
+	/* Update compatible (board name) in DT */
+	err = mv_fdt_board_compatible_name_update(blob);
 	if (err < 0)
 		goto bs_fail;
 
@@ -1149,6 +1155,20 @@ check_ecc:
 		return -1;
 	}
 	mv_fdt_dprintf("NFC update: set '%s' property to %d\n", prop, ecc_val);
+
+	return 0;
+}
+
+static int mv_fdt_board_compatible_name_update(void *fdt)
+{
+	char propval[128];				/* property value */
+	const char *prop = "compatible";		/* property name */
+	char node[64];					/* node name */
+
+	mvBoardCompatibleNameGet(propval);
+
+	if (mv_fdt_set_node_prop(fdt, NULL, prop, propval) < 0)
+		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
 
 	return 0;
 }

@@ -3236,6 +3236,29 @@ MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
 }
 #endif /* CONFIG_CMD_BOARDCFG */
 
+/*******************************************************************************
+* mvBoardCompatibleNameGet
+*
+* DESCRIPTION: return string containing 'compatible' property value
+*		needed for Device Tree auto-update parsing sequence
+*
+* INPUT:  None
+* OUTPUT: None.
+*
+* RETURN: pointer to string
+*
+*******************************************************************************/
+MV_STATUS mvBoardCompatibleNameGet(char *pNameBuff)
+{
+	MV_U16 deviceIdNum = mvCtrlDeviceIdGet();
+
+	/* i.e: "marvell,a388-db-gp", "marvell,armada388", "marvell,armada38x"; */
+	sprintf(pNameBuff, "marvell,a%x-%s\", \"marvell,armada%x\", \"marvell,armada38x",
+				deviceIdNum, board->compatibleDTName, deviceIdNum);
+
+	return MV_OK;
+}
+
 MV_NAND_IF_MODE mvBoardNandIfGet()
 {
 	MV_BOARD_BOOT_SRC boot_src = mvBoardBootDeviceGet();

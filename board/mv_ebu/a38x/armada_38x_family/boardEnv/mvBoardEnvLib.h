@@ -394,6 +394,9 @@ typedef struct _boardInfo {
 	MV_BOOL isSdMmcConnected;	/* indicate SD/MMC card reader on board */
 	MV_BOOL isSdMmc_1_8v_Connected;	/* indicate SD/MMC card reader connected to 1.8v power supply on board */
 
+	MV_U8 *picGpioInfo;			/* integer array to indicate PIC MPP numbers */
+	MV_U8 numPicGpioInfo;
+
 	/* Indicates if auto-detection of modules is enabled on this board. */
 	/* Set to MV_FALSE for any board that is not a DB. */
 	MV_BOOL configAutoDetect;
@@ -548,7 +551,7 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID);
 MV_VOID mvBoardOtherModuleTypePrint(MV_VOID);
 MV_BOOL mvBoardIsModuleConnected(MV_U32 ModuleID);
 MV_STATUS mvBoardIoExpanderUpdate(MV_VOID);
-
+MV_U8 mvBoardPICGpioGet(MV_U32 *picGpioMppInfo);
 MV_STATUS mvBoardTwsiSatRGet(MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);
 MV_STATUS mvBoardTwsiSatRSet(MV_U8 devNum, MV_U8 regNum, MV_U8 regVal);
 MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField);

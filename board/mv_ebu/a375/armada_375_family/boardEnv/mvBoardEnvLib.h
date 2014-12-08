@@ -350,6 +350,9 @@ typedef struct _boardInfo {
 	/* Deep-Idle power up delay */
 	MV_U32 deepIdlePwrUpDelay;
 
+	MV_U8 *picGpioInfo;			/* integer array to indicate PIC MPP numbers */
+	MV_U8 numPicGpioInfo;
+
 	/* NAND init params */
 	MV_U32 nandFlashReadParams;
 	MV_U32 nandFlashWriteParams;
@@ -517,6 +520,7 @@ MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
 MV_STATUS mvBoardCompatibleNameGet(char *pNameBuff);
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
 MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
+MV_U8 mvBoardPICGpioGet(MV_U32 *picGpioMppInfo);
 
 #ifdef __cplusplus
 }

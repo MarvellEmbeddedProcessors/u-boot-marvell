@@ -435,6 +435,21 @@ static int mv_fdt_update_sata(void *fdt)
 }
 
 #ifdef CONFIG_MV_SDHCI
+/*******************************************************************************
+* mv_fdt_update_sdhci
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
 static int mv_fdt_update_sdhci(void *fdt)
 {
 	int err, nodeoffset;				/* nodeoffset: node offset from libfdt */
@@ -466,7 +481,6 @@ static int mv_fdt_update_sdhci(void *fdt)
 	}
 
 	return 0;
-
 }
 #endif
 
@@ -624,72 +638,112 @@ static int mv_fdt_update_pinctrl(void *fdt)
 *******************************************************************************/
 static int mv_fdt_update_ethnum(void *fdt)
 {
-	MV_U32 ethnum = 0;		/* number of interfaces */
-	int i, err;			/* error number */
+	MV_32 phyAddr;
+	int port;
 	int len = 0;			/* property length */
-	int ethcounter = 0;		/* nodes' counter */
+	int ethPortsNum;		/* nodes' counter */
 	int nodeoffset;			/* node offset from libfdt */
 	int aliasesoffset;		/* aliases node offset from libfdt */
-	char prop[10];			/* property name */
-	const char *propval = "disabled";	/* property value */
-	const char *node = "aliases";	/* node name */
+	char prop[20];			/* property name */
+	char propval[20];		/* property value */
+	const char *node;		/* node name */
 	int depth = 1;
+	int err;
 
-	for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
-		if (mvBoardIsEthConnected(i) == MV_TRUE)
-			ethnum++;
-	}
-
-	mv_fdt_dprintf("Number of ethernet ports detected = %d\n", ethnum);
 	/* Get number of ethernet nodes */
-	aliasesoffset = mv_fdt_find_node(fdt, node);
+	aliasesoffset = mv_fdt_find_node(fdt, "aliases");
 	if (aliasesoffset < 0) {
-		mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+		mv_fdt_dprintf("Lack of 'aliases' node in device tree\n");
 		return -1;
 	}
-	nodeoffset = fdt_next_node(fdt, aliasesoffset, &depth);
-	node = fdt_get_name(fdt, nodeoffset, NULL);
-	while (node != NULL) {
-		if (strncmp(node, "ethernet@", 9) == 0)
-			ethcounter++;
+
+	/* Walk trough all aliases and count Ethernet ports entries */
+	ethPortsNum = 0;
+	nodeoffset = aliasesoffset;
+	do {
 		nodeoffset = fdt_next_node(fdt, nodeoffset, &depth);
 		node = fdt_get_name(fdt, nodeoffset, NULL);
-	}
-	mv_fdt_dprintf("Number of ethernet nodes in DT = %d\n", ethcounter);
+		if (strncmp(node, "ethernet@", 9) == 0) /* Node name can be NULL, but it's OK */
+			ethPortsNum++;
+	} while (node != NULL);
+	mv_fdt_dprintf("Number of ethernet nodes in DT = %d\n", ethPortsNum);
 
-	/* Disable excessive ethernet interfaces from DT regardless their
-	 * order in 'aliases' node */
-	for (i = ethnum; i < ethcounter; i++) {
 		/* Get path to ethernet node from property value */
-		sprintf(prop, "ethernet%d", i);
+	for (port = 0; port < ethPortsNum; port++) {
+
+		/* Get path to ethernet node from property value */
+		sprintf(prop, "ethernet%d", port);
 		node = fdt_getprop(fdt, aliasesoffset, prop, &len);
 		if (node == NULL) {
-			mv_fdt_dprintf("Lack of '%s' property in 'aliases' "
-				       "node\n", prop);
+			mv_fdt_dprintf("Lack of '%s' property in 'aliases' node\n", prop);
 			return -1;
 		}
 		if (len == 0) {
 			mv_fdt_dprintf("Empty property value\n");
 			return -1;
 		}
-		/* Set ethernet port status to 'disabled' */
+		/* Alias points to the ETH port node using full DT path */
 		nodeoffset = fdt_path_offset(fdt, node);
-		if (nodeoffset < 0) {
-			mv_fdt_dprintf("Lack of '%s' node in device tree\n",
-				       node);
-			return -1;
+
+		/* Set ethernet port status to 'disabled' */
+		/* Enable valid ports and configure their parametrs, disable non valid ones */
+		if (mvBoardIsEthConnected(port) != MV_TRUE)
+			sprintf(propval, "disabled");
+		else {
+
+			/* Configure PHY address */
+			phyAddr = mvBoardPhyAddrGet(port);
+			if (phyAddr == -1)
+				phyAddr = 999; /* Inband management - see mv_netdev.c for details */
+
+			phyAddr = htonl(phyAddr); /* DT numeric values are in network byte order */
+
+			/* Setup PHY address in DT - this is HEX number, not string */
+			sprintf(prop, "phy");
+			mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop, &phyAddr, sizeof(phyAddr)));
+			if (err < 0) {
+				mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+				return -1;
+			}
+			mv_fdt_dprintf("Set '%s' property to '%#x' in '%s' node\n", prop, ntohl(phyAddr), node);
+
+			/* Configure PHY mode */
+			switch (mvBoardPortTypeGet(port)) {
+			case MV_PORT_TYPE_SGMII: /* regardless the fact that qsgmii is supported by kernel DT,*/
+			case MV_PORT_TYPE_QSGMII:/* the ETH driver does not make use of this connection mode */
+				sprintf(propval, "sgmii");
+				break;
+			case MV_PORT_TYPE_RGMII:
+				sprintf(propval, "rgmii");
+				break;
+			default:
+				mv_fdt_dprintf("Bad port type received for interface %d\n", port);
+				return -1;
+			}
+
+			/* Setup PHY connection type in DT */
+			sprintf(prop, "phy-mode");
+			mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop, propval, strlen(propval)+1));
+			if (err < 0) {
+				mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+				return -1;
+			}
+			mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
+
+			/* Last property to set is the "status" - common for valid and non-valid ports */
+			sprintf(propval, "okay");
 		}
+
 		sprintf(prop, "status");
-		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
-						propval, strlen(propval)+1));
+		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop, propval, strlen(propval)+1));
 		if (err < 0) {
-			mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n",
-				       prop, node);
+			mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
 			return -1;
 		}
-		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n",
-			       prop, propval, node);
-	}
+		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
+
+	} /* For all ports in board sctructure */
+
 	return 0;
 }
 
@@ -835,7 +889,7 @@ static int mv_fdt_set_node_prop(void *fdt, const char *node, const char *prop, c
 {
 	int err, nodeoffset = 0; /* nodeoffset: node offset from libfdt */
 
-	if (node != NULL) { /* node ==NULL --> search property in root node */
+	if (node != NULL) { /* node == NULL --> search property in root node */
 		nodeoffset = mv_fdt_find_node(fdt, node);
 		if (nodeoffset < 0) {
 			mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
@@ -849,8 +903,8 @@ static int mv_fdt_set_node_prop(void *fdt, const char *node, const char *prop, c
 			mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
 			return -1;
 		}
-		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
 	}
+	mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
 
 	return 0;
 }

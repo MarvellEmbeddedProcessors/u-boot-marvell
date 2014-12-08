@@ -66,6 +66,13 @@
 extern "C" {
 #endif /* __cplusplus */
 
+enum {
+	MV_PORT_TYPE_SGMII,
+	MV_PORT_TYPE_QSGMII,
+	MV_PORT_TYPE_RGMII,
+	MV_PORT_TYPE_UNKNOWN = -1,
+};
+
 /* {{MV_MODULE_TYPE_ID ConfigID, twsi-ID,  Offset, ID,  isActiveForBoard[]}} */
 #define MV_MODULE_INFO { \
 { MV_MODULE_MII,		0x1,	0,	 0x4,	{ 0, 1, 0, 0} }, \

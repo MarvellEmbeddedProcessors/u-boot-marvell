@@ -531,7 +531,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "\t--------------\n"
 "coreclock                  - core frequency\n"
 "freq                       - CPU DDR frequency\n"
-"cpusnum                    - number of CPU cores\n"
+"cpusnum                    - DB-381-BP only: number of CPU cores\n"
 "sscg                       - SSCG modes\n"
 "bootsrc                    - boot source\n"
 

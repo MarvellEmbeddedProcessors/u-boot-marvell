@@ -75,6 +75,31 @@
 #endif
 
 /*******************************************************************************
+* mvBoardPortTypeGet
+*
+* DESCRIPTION:
+*       This routine returns port type
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None
+*
+* RETURN:
+*       Mode of the port
+*
+*******************************************************************************/
+MV_U32 mvBoardPortTypeGet(MV_U32 ethPortNum)
+{
+	if (mvBoardIsPortInSgmii(ethPortNum))
+		return MV_PORT_TYPE_SGMII;
+	if (mvBoardIsPortInRgmii(ethPortNum))
+		return MV_PORT_TYPE_RGMII;
+	return MV_PORT_TYPE_UNKNOWN;
+}
+
+/*******************************************************************************
 * mvBoardIsPortInSgmii -
 *
 * DESCRIPTION:
@@ -94,7 +119,10 @@
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 {
-	return mvCtrlPortIsSerdesSgmii(ethPortNum);
+	if (ethPortNum < mvCtrlEthMaxPortGet())
+		return mvCtrlPortIsSerdesSgmii(ethPortNum);
+
+	return MV_FALSE;
 }
 
 /*******************************************************************************
@@ -169,10 +197,9 @@ MV_BOOL mvBoardIsPortInMii(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum)
 {
-	if (mvBoardIsPortInGmii(ethPortNum) || mvBoardIsPortInSgmii(ethPortNum))
-		return MV_FALSE;
-	if (ethPortNum < 2)
-		return MV_TRUE;
+	if (ethPortNum < mvCtrlEthMaxPortGet())
+		return mvCtrlPortIsRgmii(ethPortNum);
+
 	return MV_FALSE;
 }
 

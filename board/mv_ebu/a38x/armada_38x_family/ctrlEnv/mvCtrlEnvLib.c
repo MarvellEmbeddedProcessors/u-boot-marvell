@@ -210,6 +210,27 @@ MV_BOOL mvCtrlPortIsSerdesSgmii(MV_U32 ethPort)
 	return MV_FALSE;
 }
 /*******************************************************************************
+* mvCtrlPortIsRgmii
+*
+* DESCRIPTION:
+*       Check if configuration of input port is RGMII
+*
+* INPUT:
+*	eth port.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE if input port is RGMII
+*******************************************************************************/
+MV_BOOL mvCtrlPortIsRgmii(MV_U32 ethPort)
+{
+	if (ethComPhy & ON_BOARD_RGMII(ethPort))
+		return MV_TRUE;
+	return MV_FALSE;
+}
+/*******************************************************************************
 * mvCtrlGetCpuNum
 *
 * DESCRIPTION: Read number of cores enabled by SatR

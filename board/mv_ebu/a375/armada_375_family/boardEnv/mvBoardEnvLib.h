@@ -87,6 +87,13 @@ extern "C" {
 
 #define DB_6720_HW_ID			0xc	/* A375 DB Board ID from S@R (E8200[4:7]) */
 
+enum {
+	MV_PORT_TYPE_SGMII,
+	MV_PORT_TYPE_QSGMII,
+	MV_PORT_TYPE_RGMII,
+	MV_PORT_TYPE_UNKNOWN = -1,
+};
+
 typedef enum _devBoardSlicType {
 	MV_BOARD_SLIC_DISABLED,
 	MV_BOARD_SLIC_SSI_ID, /* Lantiq Integrated SLIC */
@@ -392,6 +399,7 @@ typedef struct _boardInfo {
 #define MSAR_0_SPI0                             0
 #define MSAR_0_SPI1                             1
 
+MV_U32 mvBoardPortTypeGet(MV_U32 ethPortNum);
 MV_VOID mvBoardEnvInit(MV_VOID);
 MV_U16 mvBoardModelGet(MV_VOID);
 MV_U16 mvBoardRevGet(MV_VOID);

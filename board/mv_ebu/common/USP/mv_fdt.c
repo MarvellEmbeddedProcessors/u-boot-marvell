@@ -93,6 +93,7 @@ void fdt_env_setup(char *fdtfile)
 static int mv_fdt_find_node(void *fdt, const char *name);
 static int mv_fdt_board_compatible_name_update(void *fdt);
 static int mv_fdt_update_serial(void *fdt);
+static int mv_fdt_update_pic_gpio(void *fdt);
 static int mv_fdt_update_cpus(void *fdt);
 static int mv_fdt_update_pex(void *fdt);
 static int mv_fdt_update_sata(void *fdt);
@@ -243,6 +244,10 @@ void ft_board_setup(void *blob, bd_t *bd)
 
 	/* Update serial/UART nodes in DT */
 	err = mv_fdt_update_serial(blob);
+	if (err < 0)
+		goto bs_fail;
+
+	err = mv_fdt_update_pic_gpio(blob);
 	if (err < 0)
 		goto bs_fail;
 
@@ -1260,6 +1265,100 @@ static int mv_fdt_update_serial(void *fdt)
 			return -1;
 		}
 	}
+
+	return 0;
+}
+
+/*******************************************************************************
+* mv_fdt_update_pic_gpio
+*
+* DESCRIPTION: GPIO information for peripheral integrated controller (PIC)
+*
+*  PIC GPIO pins are represented in 2 different nodes in Device Tree:
+* 1. pinctrl/pic-pins-0/marvell,pins = "mpp33", "mpp34";
+* 2. pm_pic/ctrl-gpios = <0x0000000c 0x00000001 0x00000001 0x0000000c 0x00000002 0x00000001>;
+*    Each GPIO is represented in 'ctrl-gpios' property with 3 values of 32 bits:
+*    '<pinctrl-0_base + gpio_group_num   gpio_pin_num_in_group   ACTIVE_LOW>'
+*    i.e : for mpp 33, and given pinctrl-0 = <0x0000000b> :
+*    gpio_group_num	= 33/32 = 1
+*    gpio_pin_num_in_group= 33%32 = 1
+*    ACTIVE_LOW = 1
+*    DT entry is : '<0x0000000c 0x00000001 0x00000001>';
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
+#define MAX_GPIO_NUM 10
+static int mv_fdt_update_pic_gpio(void *fdt)
+{
+	const char *picPinsNode 	= "pic-pins-0";
+	const char *marvell_pins_prop 	= "marvell,pins";
+	const char *pm_picNode  	= "pm_pic";
+	const char *ctrl_gpios_prop 	= "ctrl-gpios";
+	const void *pinctrl_0_base;
+	MV_U32 pinctrl_0_base_val, picGpioInfo[MAX_GPIO_NUM];
+	MV_U32 ctrl_gpios_prop_value[3*MAX_GPIO_NUM]; /* 3*32bit is required per GPIO */
+	char propval[256] = "";
+	int err, len = 0, nodeoffset, i, gpioMaxNum = mvBoardPICGpioGet(picGpioInfo);
+
+	if (gpioMaxNum <= 0) /* if current board has no MPP Pins dedicated for PIC */
+		return -1;
+
+	/* set pinctrl/pic-pins-0/marvell,pins property as concatenated strings.
+	 * (i.e : marvell,pins = "mpp33", "mpp34", "mpp35")
+	 * append next string after the NULL character that the previous
+	 * sprintf wrote.  This is how a DT stores multiple strings in a property.*/
+	for (i = 0 ; i < gpioMaxNum ; i++)
+		len += sprintf(propval + len, "mpp%d", picGpioInfo[i]) + 1;
+
+	nodeoffset = mv_fdt_find_node(fdt, picPinsNode); 	/* find 'pic-pins-0' node */
+	mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, marvell_pins_prop, propval, len));
+	if (err < 0) {
+		mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", marvell_pins_prop, picPinsNode);
+		return -1;
+	}
+	mv_fdt_dprintf("Set '%s' property in '%s' node\n", marvell_pins_prop, picPinsNode);
+
+
+	/* set pm_pic/ctrl-gpios property: */
+	nodeoffset = mv_fdt_find_node(fdt, pm_picNode); 	/* find 'pm_pic' node */
+	pinctrl_0_base = fdt_getprop(fdt, nodeoffset, "pinctrl-0", &len);
+	if (len == 0) {
+		printf("Empty property value\n");
+		return -1;
+	}
+	/* Each GPIO is represented in 'ctrl-gpios' property with 3 values of 32 bits:
+	 * '<pinctrl-0_base + gpio_group_num   gpio_pin_num_in_group   ACTIVE_LOW>'
+	 * i.e : for mpp 33, and given pinctrl-0 = <0x0000000b> :
+	 * gpio_group_num	= 33/32 = 1
+	 * gpio_pin_num_in_group= 33%32 = 1
+	 * ACTIVE_LOW = 1
+	 * DT entry is : '<0x0000000c 0x00000001 0x00000001>'; */
+	pinctrl_0_base_val = ntohl(*((unsigned int*)pinctrl_0_base));	/* DT integer values are in BE format */
+	for (i = 0 ; i < gpioMaxNum ; i++) {
+		/* pinctrl_0_base +gpio Group num */
+		ctrl_gpios_prop_value[3*i] = htonl(pinctrl_0_base_val + picGpioInfo[i] / 32);
+
+		/* 32 pins in each group */
+		ctrl_gpios_prop_value[3*i + 1] = htonl(picGpioInfo[i] % 32);
+
+		/* GPIO_ACTIVE_LOW = 1 */
+		ctrl_gpios_prop_value[3*i + 2] = htonl(0x1);
+	}
+
+	mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, ctrl_gpios_prop, ctrl_gpios_prop_value, 4*gpioMaxNum*3));
+	if (err < 0) {
+		mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", ctrl_gpios_prop, pm_picNode);
+		return -1;
+	}
+	mv_fdt_dprintf("Set '%s' property in '%s' node\n", ctrl_gpios_prop, pm_picNode);
 
 	return 0;
 }

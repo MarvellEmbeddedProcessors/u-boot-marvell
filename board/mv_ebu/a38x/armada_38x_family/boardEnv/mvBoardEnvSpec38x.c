@@ -579,6 +579,8 @@ MV_BOARD_TDM_INFO dbAP88f68xxTdm880[] = { {0} };
 
 MV_BOARD_TDM_SPI_INFO dbAP88f68xxTdmSpiInfo[] = { {1} };
 
+MV_U8 dbAP88f68XXInfoBoardPicGpio[] = {21, 47};
+
 MV_BOARD_INFO dbAP88f68xx_board_info = {
 	.boardName              = "DB-88F6820-AP",
 	.compatibleDTName	= "db-ap",
@@ -620,6 +622,9 @@ MV_BOARD_INFO dbAP88f68xx_board_info = {
 	.boardTdmInfoIndex              = 0,
 	.pBoardSpecInit                 = NULL,
 	.nandIfMode			= NAND_IF_NFC,
+
+	.picGpioInfo			= dbAP88f68XXInfoBoardPicGpio,
+	.numPicGpioInfo			= ARRSZ(dbAP88f68XXInfoBoardPicGpio),
 
 	.isSdMmcConnected		= MV_FALSE,
 	.isSdMmc_1_8v_Connected		= MV_FALSE,
@@ -685,6 +690,8 @@ struct MV_BOARD_IO_EXPANDER dbGP88f68XXInfoBoardioExpValue[] = {
 	{1, 3, 0xC0}  /* Output Data, register#1 */
 };
 
+MV_U8 dbGP88f68XXInfoBoardPicGpio[] = {33, 34, 35};
+
 MV_BOARD_INFO dbGP88f68XX_board_info = {
 	.boardName			= "DB-88F6820-GP",
 	.compatibleDTName		= "db-gp",
@@ -725,6 +732,9 @@ MV_BOARD_INFO dbGP88f68XX_board_info = {
 	.numBoardTdmInfo		= {},
 	.pBoardTdmInt2CsInfo		= {},
 	.boardTdmInfoIndex		= -1,
+
+	.picGpioInfo			= dbGP88f68XXInfoBoardPicGpio,
+	.numPicGpioInfo			= ARRSZ(dbGP88f68XXInfoBoardPicGpio),
 
 	.pBoardSpecInit			= NULL,
 

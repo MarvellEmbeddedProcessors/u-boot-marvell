@@ -177,6 +177,7 @@ MV_BOARD_INFO armada_375_customer_board_0_info = {
 	.boardTdmInfoIndex		= -1,
 
 	.pBoardSpecInit			= NULL,
+	.numPicGpioInfo			= 0,
 
 	/* NAND init params */
 	.nandFlashReadParams		= A375_CUSTOMER_BOARD_0_NAND_READ_PARAMS,
@@ -303,6 +304,7 @@ MV_BOARD_INFO db88f6720_board_info = {
 	.boardTdmInfoIndex		= -1,
 
 	.pBoardSpecInit			= NULL,
+	.numPicGpioInfo			= 0,
 
 	/* NAND init params */
 	.nandFlashReadParams		= DB_88F6720_BOARD_NAND_READ_PARAMS,

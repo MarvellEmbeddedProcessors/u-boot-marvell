@@ -2719,6 +2719,31 @@ MV_STATUS mvBoardIoExpanderSet(MV_U8 addr, MV_U8 offs, MV_U8 val)
 }
 
 /*******************************************************************************
+* mvBoardPICGpioGet
+*
+* DESCRIPTION:
+*	return peripheral integrated controller (PIC) GPIO information if exists on board
+*
+* INPUT:
+*	index	  - pointer to integer array (gpio results)
+*
+* OUTPUT:
+*	pointer to interger array:
+*		each representing MPP pin with GPIO usage for suspend to ram
+* RETURN:
+*       amount of gpio used for suspend to ram
+*******************************************************************************/
+MV_U8 mvBoardPICGpioGet(MV_U32 *picGpioMppInfo)
+{
+	MV_U32 i;
+
+	for (i = 0 ; i < board->numPicGpioInfo ; i++)
+		picGpioMppInfo[i] = board->picGpioInfo[i];
+
+	return board->numPicGpioInfo;
+}
+
+/*******************************************************************************
 * mvBoardUartPortGet
 *
 * DESCRIPTION:

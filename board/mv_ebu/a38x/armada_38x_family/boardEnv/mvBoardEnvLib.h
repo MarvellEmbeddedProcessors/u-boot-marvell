@@ -457,6 +457,7 @@ MV_U16 mvBoardModelGet(MV_VOID);
 MV_U32 mvBoardRevGet(MV_VOID);
 MV_STATUS mvBoardNameGet(char *pNameBuff, MV_U32 size);
 MV_BOARD_SPEC_INIT *mvBoardSpecInitGet(MV_VOID);
+MV_U32 mvBoardPortTypeGet(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInMii(MV_U32 ethPortNum);

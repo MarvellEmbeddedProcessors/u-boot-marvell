@@ -102,6 +102,30 @@ static MV_DEV_CS_INFO *mvBoardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devCl
 static MV_BOARD_INFO *board = (MV_BOARD_INFO *)-1;
 
 /*******************************************************************************
+* mvBoardPortTypeGet
+*
+* DESCRIPTION:
+*       This routine returns port type
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None
+*
+* RETURN:
+*       Mode of the port
+*
+*******************************************************************************/
+MV_U32 mvBoardPortTypeGet(MV_U32 ethPortNum)
+{
+	if (mvBoardIsPortInSgmii(ethPortNum))
+		return MV_PORT_TYPE_SGMII;
+	else
+		return MV_PORT_TYPE_RGMII;
+}
+
+/*******************************************************************************
 * mvBoardIdIndexGet
 *
 * DESCRIPTION:
@@ -303,7 +327,7 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 *       None.
 *
 * RETURN:
-*       MV_TRUE - port in SGMII.
+*       MV_TRUE - port in GMII.
 *       MV_FALSE - other.
 *
 *******************************************************************************/

@@ -208,6 +208,7 @@ MV_STATUS mvCtrlCpuDdrL2FreqGet(MV_FREQ_MODE *freqMode);
 MV_U32 mvCtrlbootSrcGet(void);
 MV_BOOL mvCtrlSSCGInit(void);
 MV_BOOL mvCtrlPortIsSerdesSgmii(MV_U32 ethPort);
+MV_BOOL mvCtrlPortIsRgmii(MV_U32 ethPort);
 MV_U32 mvCtrlGetCpuNum(MV_VOID);
 MV_U32 mvCtrlDevIdIndexGet(MV_U32 ctrlModel);
 MV_U32 mvCtrlGetQuadNum(MV_VOID);

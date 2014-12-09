@@ -277,6 +277,12 @@ typedef enum {
 	NAND_IF_NONE
 } MV_NAND_IF_MODE;
 
+typedef struct {
+	MV_UNIT_ID usbType;
+	MV_U8 usbPortNum;
+	MV_BOOL isActive;
+} MV_BOARD_USB_INFO;
+
 typedef struct _boardInfo {
 	char boardName[MV_BOARD_NAME_LEN];
 	char compatibleDTName[MV_BOARD_NAME_LEN]; /* string for LSP Device Tree update usage */
@@ -311,6 +317,9 @@ typedef struct _boardInfo {
 	MV_U32 gppPolarityValLow;
 	MV_U32 gppPolarityValMid;
 	MV_U32 gppPolarityValHigh;
+
+	MV_BOARD_USB_INFO *pBoardUsbInfo;	/* usb2.0 and usb3.0 physical port mapping on board */
+	MV_U8 numBoardUsbInfo;
 
 	/* External Switch Configuration */
 	MV_U32 switchforceLinkMask;
@@ -499,6 +508,7 @@ MV_U32 mvBoardFreqModesNumGet(void);
 MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
 MV_STATUS mvBoardCompatibleNameGet(char *pNameBuff);
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
+MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
 
 #ifdef __cplusplus
 }

@@ -228,6 +228,12 @@ MV_BOARD_MPP_TYPE_INFO db88f6720InfoBoardModTypeInfo[] = {
 	}
 };
 
+MV_BOARD_USB_INFO db88f6720InfoBoardUsbInfo[] = {
+/* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
+	{ USB3_UNIT_ID, 0, MV_TRUE},
+	{ USB_UNIT_ID,  1, MV_TRUE},
+};
+
 MV_DEV_CS_INFO db88f6720InfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
 	{ DEV_BOOCS,	N_A, BOARD_DEV_NAND_FLASH,	16,	16,	0,	MV_FALSE },	/* NAND DEV */
@@ -284,6 +290,9 @@ MV_BOARD_INFO db88f6720_board_info = {
 	.gppPolarityValLow		= DB_88F6720_GPP_POL_LOW,
 	.gppPolarityValMid		= DB_88F6720_GPP_POL_MID,
 	.gppPolarityValHigh		= DB_88F6720_GPP_POL_HIGH,
+
+	.pBoardUsbInfo			= db88f6720InfoBoardUsbInfo,
+	.numBoardUsbInfo		= ARRSZ(db88f6720InfoBoardUsbInfo),
 
 	/* External Switch Configuration */
 	.switchforceLinkMask		= 0x0,

@@ -96,6 +96,7 @@ static int mv_fdt_update_serial(void *fdt);
 static int mv_fdt_update_cpus(void *fdt);
 static int mv_fdt_update_pex(void *fdt);
 static int mv_fdt_update_sata(void *fdt);
+static int mv_fdt_update_usb(void *fdt, MV_UNIT_ID unitType);
 static int mv_fdt_update_ethnum(void *fdt);
 static int mv_fdt_update_flash(void *fdt);
 static int mv_fdt_set_node_prop(void *fdt, const char *node, const char *prop, const char *prop_val);
@@ -195,6 +196,16 @@ void ft_board_setup(void *blob, bd_t *bd)
 
 	/* Get number of active SATA units and update DT */
 	err = mv_fdt_update_sata(blob);
+	if (err < 0)
+		goto bs_fail;
+
+	/* Get number of active USB2.0 units and update DT */
+	err = mv_fdt_update_usb(blob, USB_UNIT_ID);
+	if (err < 0)
+		goto bs_fail;
+
+	/* Get number of active USB3.0 units and update DT */
+	err = mv_fdt_update_usb(blob, USB3_UNIT_ID);
 	if (err < 0)
 		goto bs_fail;
 
@@ -524,6 +535,39 @@ pex_ok:
 		}
 		node = fdt_get_name(fdt, nodeoffset, NULL);
 	}
+	return 0;
+}
+
+/*******************************************************************************
+* mv_fdt_update_usb
+*
+* DESCRIPTION: update USB2.0(eHCI) & USB3.0(xHCI) status
+*
+* INPUT: fdt.
+* OUTPUT: None.
+* RETURN: -1 on error os 0 otherwise.
+*******************************************************************************/
+static int mv_fdt_update_usb(void *fdt, MV_UNIT_ID unitType)
+{
+	char propval[10];				/* property value */
+	const char *prop = "status";			/* property name */
+	char node[64];					/* node name */
+	int i, maxUsbPorts = unitType == USB_UNIT_ID ? MV_USB_MAX_PORTS : MV_USB3_MAX_HOST_PORTS;
+
+	/* update USB2.0 ports status */
+	for (i = 0; i < maxUsbPorts; i++) {
+		if (mvBoardIsUsbPortConnected(unitType, i))
+			sprintf(propval, "okay"); /* Enable active SATA interfaces */
+		else
+			sprintf(propval, "disabled"); /* disable NON active SATA units */
+
+		sprintf(node, "usb%s@%x", unitType == USB_UNIT_ID ? "" : "3", MV_USB2_USB3_REGS_OFFSET(unitType, i));
+		if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
+			mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+			return -1;
+		}
+	}
+
 	return 0;
 }
 

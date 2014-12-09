@@ -245,6 +245,13 @@ MV_BOARD_MAC_INFO db88f68xxInfoBoardMacInfo[] = {
 	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
 };
 
+MV_BOARD_USB_INFO db88f68xxInfoBoardUsbInfo[] = {
+/* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
+	{ USB3_UNIT_ID, 0, MV_TRUE},
+	{ USB3_UNIT_ID, 1, MV_TRUE},
+	{ USB_UNIT_ID,  0, MV_TRUE},
+};
+
 MV_DEV_CS_INFO db88f68xxInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
 	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
@@ -292,6 +299,9 @@ MV_BOARD_INFO db88f68xx_board_info = {
 	.gppPolarityValLow	= DB_88F68XX_GPP_POL_LOW,
 	.gppPolarityValMid	= DB_88F68XX_GPP_POL_MID,
 	.gppPolarityValHigh	= DB_88F68XX_GPP_POL_HIGH,
+
+	.pBoardUsbInfo		= db88f68xxInfoBoardUsbInfo,
+	.numBoardUsbInfo	= ARRSZ(db88f68xxInfoBoardUsbInfo),
 
 	/* TDM */
 	.numBoardTdmInfo		= {1},
@@ -551,6 +561,12 @@ MV_BOARD_MAC_INFO dbAP88f68xxInfoBoardMacInfo[] = {
 	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4},
 };
 
+MV_BOARD_USB_INFO dbAP88f68xxInfoBoardUsbInfo[] = {
+/* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
+	{ USB3_UNIT_ID, 0, MV_TRUE},
+	{ USB_UNIT_ID,  0, MV_TRUE},
+};
+
 MV_DEV_CS_INFO dbAP88f68xxInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
 	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_TRUE },	/* NAND DEV */
@@ -595,6 +611,9 @@ MV_BOARD_INFO dbAP88f68xx_board_info = {
 	.gppPolarityValMid      = DB_AP_88F68XX_GPP_POL_MID,
 	.gppPolarityValHigh     = DB_AP_88F68XX_GPP_POL_HIGH,
 
+	.pBoardUsbInfo		= dbAP88f68xxInfoBoardUsbInfo,
+	.numBoardUsbInfo	= ARRSZ(dbAP88f68xxInfoBoardUsbInfo),
+
 	/* TDM */
 	.numBoardTdmInfo                = {1},
 	.pBoardTdmInt2CsInfo            = {dbAP88f68xxTdm880},
@@ -628,6 +647,13 @@ MV_BOARD_MAC_INFO dbGP88F68XXInfoBoardMacInfo[] = {
 	{ BOARD_MAC_SPEED_AUTO, 0x1, 0x1},
 	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
 	{ BOARD_MAC_SPEED_AUTO,  -1,  -1}
+};
+
+MV_BOARD_USB_INFO dbGP88f68xxInfoBoardUsbInfo[] = {
+/* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
+	{ USB3_UNIT_ID, 0, MV_TRUE},
+	{ USB3_UNIT_ID, 1, MV_TRUE},	/* xHCI port#1 connected only via USB2.0 UTMI (not via USB3.0 SerDes lane) */
+	{ USB_UNIT_ID,  0, MV_TRUE},
 };
 
 MV_DEV_CS_INFO dbGP88F68XXInfoBoardDeCsInfo[] = {
@@ -692,6 +718,9 @@ MV_BOARD_INFO dbGP88f68XX_board_info = {
 	.gppPolarityValLow		= DB_GP_88F68XX_GPP_POL_LOW,
 	.gppPolarityValMid		= DB_GP_88F68XX_GPP_POL_MID,
 
+	.pBoardUsbInfo			= dbGP88f68xxInfoBoardUsbInfo,
+	.numBoardUsbInfo		= ARRSZ(dbGP88f68xxInfoBoardUsbInfo),
+
 	/* TDM */
 	.numBoardTdmInfo		= {},
 	.pBoardTdmInt2CsInfo		= {},
@@ -753,6 +782,11 @@ MV_BOARD_MAC_INFO db88f6821InfoBoardMacInfo[] = {
 	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
 };
 
+MV_BOARD_USB_INFO db88f6821InfoBoardUsbInfo[] = {
+/* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
+	{ USB3_UNIT_ID, 1, MV_TRUE},
+};
+
 MV_DEV_CS_INFO db88f6821InfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
 	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
@@ -793,6 +827,9 @@ MV_BOARD_INFO db88f6821_board_info = {
 	.gppOutValMid		= DB_BP_88F6821_GPP_OUT_VAL_MID,
 	.gppPolarityValLow	= DB_BP_88F6821_GPP_POL_LOW,
 	.gppPolarityValMid	= DB_BP_88F6821_GPP_POL_MID,
+
+	.pBoardUsbInfo		= db88f6821InfoBoardUsbInfo,
+	.numBoardUsbInfo	= ARRSZ(db88f68xxInfoBoardUsbInfo),
 
 	.pBoardSpecInit		= NULL,
 

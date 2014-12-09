@@ -121,6 +121,8 @@ extern "C" {
 #define MV_PEX_IF_REGS_OFFSET(pexIf)            (((pexIf) == 0) ? 0x80000 : (0x40000 + ((pexIf-1) * 0x4000)))
 #define MV_USB_REGS_OFFSET(dev)                 (0x58000)
 #define MV_USB3_REGS_OFFSET(dev)                (0xF0000 + (dev * 0x8000))
+#define MV_USB2_USB3_REGS_OFFSET(unitType, dev) (unitType == USB_UNIT_ID ? \
+							MV_USB_REGS_OFFSET(dev) : MV_USB3_REGS_OFFSET(dev))
 #define MV_XOR_REGS_OFFSET(unit)                (0x60800 + (unit)*0x100)
 #define MV_CESA_TDMA_REGS_OFFSET(chanNum)       (0x90000 + (chanNum * 0x2000))
 #define MV_CESA_REGS_OFFSET(chanNum)            (0x9D000 + (chanNum * 0x2000))
@@ -216,8 +218,7 @@ extern "C" {
 #ifndef MV_USB_MAX_PORTS
 #define MV_USB_MAX_PORTS			1
 #endif
-#define MV_USB3_MAX_PORTS			3
-#define MV_USB3_MAX_PORTS_6810			2
+#define MV_USB3_MAX_HOST_PORTS			2
 
 /* CESA version #3: One channel, 2KB SRAM, TDMA, CHAIN Mode support */
 #define MV_CESA_VERSION                         3 /*TODO verify */

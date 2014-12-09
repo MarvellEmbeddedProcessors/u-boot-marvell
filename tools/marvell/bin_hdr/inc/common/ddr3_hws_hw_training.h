@@ -56,8 +56,8 @@ typedef struct topologyUpdateInfo{
 #define MV_TOPOLOGY_UPDATE_ECC_OFF				0
 #define MV_TOPOLOGY_UPDATE_ECC_OFFSET			4
 
-/* max memory size is 0xd0000000,the value that will be writtten to the register is (0xd0000000-1) & 0xff0000000 */
-#define L2_FILTER_FOR_MAX_MEMORY_SIZE 0xCFFFFFFF
+#define L2_FILTER_FOR_MAX_MEMORY_SIZE 0xD0000000
+#define ADDRESS_FILTERING_END_REGISTER 0x8c04
 
 #define SUB_VERSION	0
 

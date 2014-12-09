@@ -3036,3 +3036,31 @@ MV_NAND_IF_MODE mvBoardNandIfGet()
 		return board->nandIfMode;
 	}
 }
+
+/*******************************************************************************
+* mvBoardisUsbPortConnected
+*
+* DESCRIPTION:
+*	return True if requested USB type and port num exists on current board
+*
+* INPUT:
+*	usbTypeID	- requested USB type : USB3_UNIT_ID / USB_UNIT_ID
+*	usbPortNumbder	- requested USB port number (according to xHCI MAC port num)
+*
+* OUTPUT: None
+*
+* RETURN: MV_TRUE if requested port/type exist on board
+
+*******************************************************************************/
+MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber)
+{
+	MV_U32 i;
+
+	/* Go over existing USB ports in board structures: test existence of requested USB Type/port */
+	for (i = 0; i < board->numBoardUsbInfo; i++)
+		if (board->pBoardUsbInfo[i].isActive && board->pBoardUsbInfo[i].usbType == usbTypeID &&
+			board->pBoardUsbInfo[i].usbPortNum == usbPortNumber)
+			return MV_TRUE;
+
+	return MV_FALSE;
+}

@@ -341,7 +341,7 @@ static int do_sar_read(int mode)
 			if (tmp == 2)
 				printf("oob%dcon \t\t= %d ==>  OOB port is disconnected\n", i, tmp);
 			else
-				printf("oob%dcon \t\t= %d ==>  Physical port %d\n", i, tmp, ((tmp == 0) ? i : (20 + i)));
+				printf("oob%dcon \t\t= %d ==>  Physical port %d\n", i, tmp, ((tmp == 1) ? i : (20 + i)));
 		} else
 			printf("oob%dcon Error: failed reading PTP PLL multiplier\n", i);
  break;

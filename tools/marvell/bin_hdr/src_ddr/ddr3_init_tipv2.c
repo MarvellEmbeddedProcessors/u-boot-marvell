@@ -96,6 +96,8 @@ Copyright (C) Marvell International Ltd. and its affiliates
 
 #include "bootstrap_os.h"
 
+
+
 #if defined(MV_MSYS_BC2)
 #define MARVELL_BOARD	BC2_MARVELL_BOARD_ID_BASE
 #elif defined(MV_MSYS_AC3)
@@ -243,7 +245,6 @@ static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 	MV_REG_WRITE(REG_FASTPATH_WIN_0_CTRL_ADDR, uiReg); /*Open fast path Window to - 0.5G */
 #endif
 }
-
 static MV_STATUS ddr3SaveAndSetTrainingWindows(MV_U32 *auWinBackup)
 {
 	MV_U32 uiCsEna;
@@ -256,6 +257,11 @@ static MV_STATUS ddr3SaveAndSetTrainingWindows(MV_U32 *auWinBackup)
 	winJumpIndex = 0x10;
 	numOfWinRegs = 16;
 	MV_HWS_TOPOLOGY_MAP* toplogyMap = NULL;
+
+#ifdef DISABLE_L2_FILTERING_DURING_DDR_TRAINING
+	/* Disable L2 filtering  during DDR training (when Cross Bar window is open)*/
+	MV_REG_WRITE(ADDRESS_FILTERING_END_REGISTER, 0);
+#endif
 
 	CHECK_STATUS(ddr3GetTopologyMap(&toplogyMap));
 
@@ -626,8 +632,6 @@ MV_VOID ddr3NewTipDlbConfig()
 	MV_REG_WRITE(REG_STATIC_DRAM_DLB_CONTROL, uiReg);
 }
 
-
-
 MV_STATUS ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
 
 	MV_U32 uiReg, uiCs;
@@ -644,9 +648,8 @@ MV_STATUS ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
 	/* Open fast path windows */
     for (uiCs = 0; uiCs < MAX_CS; uiCs++) {
         if (uiCsEna & (1 << uiCs)) {
-            /* get CS size */
-
-            if (ddr3CalcMemCsSize(uiCs, &uiCsMemSize) != MV_OK)
+		    /* get CS size */
+			if (ddr3CalcMemCsSize(uiCs, &uiCsMemSize) != MV_OK)
                 return MV_FAIL;
 
 #ifdef MV_DEVICE_MAX_DRAM_ADDRESS_SIZE
@@ -663,8 +666,7 @@ MV_STATUS ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
 				mvPrintf ("Updated Physical Mem size is from 0x%x to %x\n", physicalMemSize, MV_DEVICE_MAX_DRAM_ADDRESS_SIZE);
 			}
 #endif
-
-            /* set fast path window control for the cs */
+           /* set fast path window control for the cs */
             uiReg = 0xFFFFE1;
             uiReg |= (uiCs << 2);
             uiReg |= (uiCsMemSize - 1) & 0xFFFF0000;
@@ -684,7 +686,7 @@ MV_STATUS ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
        }
     }
 	/* Set L2 filtering to Max Memory size */
-	MV_REG_WRITE(0x8c04, uiMemTotalSize);
+	MV_REG_WRITE( ADDRESS_FILTERING_END_REGISTER, uiMemTotalSize);
 	return MV_OK;
 }
 

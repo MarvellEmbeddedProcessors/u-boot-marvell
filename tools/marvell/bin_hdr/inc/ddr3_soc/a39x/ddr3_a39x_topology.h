@@ -75,6 +75,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BUS_MASK_16BIT_ECC_PUP3		0xB
 
 #define  DYNAMIC_CS_SIZE_CONFIG
+#define  DISABLE_L2_FILTERING_DURING_DDR_TRAINING
 
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 /************************************* Customer Boards Topology *************************************/

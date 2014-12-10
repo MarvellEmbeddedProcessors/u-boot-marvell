@@ -194,6 +194,9 @@ typedef enum {
 	PEX_TX_CONFIG_SEQ2,
 	PEX_TX_CONFIG_SEQ3,
 	PEX_BY_4_CONFIG_SEQ,
+	PEX_CONFIG_REF_CLOCK_25MHz_SEQ,
+	PEX_CONFIG_REF_CLOCK_100MHz_SEQ,
+	PEX_CONFIG_REF_CLOCK_40MHz_SEQ,
 
 	USB3_POWER_UP_SEQ,
 	USB3__HOST_SPEED_CONFIG_SEQ,
@@ -416,12 +419,15 @@ MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID);
  * OUTPUT:               None.
  * RETURNS:              MV_OK           -   for success
  ***************************************************************************/
-MV_STATUS mvSerdesPowerUpCtrl(MV_U32 serdesNum,
-			      MV_BOOL serdesPowerUp,
-			      SERDES_TYPE serdesType,
-			      SERDES_SPEED baudRate,
-			      SERDES_MODE  serdesMode,
-			      REF_CLOCK refClock);
+MV_STATUS mvSerdesPowerUpCtrl
+(
+    MV_U32 serdesNum,
+    MV_BOOL serdesPowerUp,
+    SERDES_TYPE serdesType,
+    SERDES_SPEED baudRate,
+    SERDES_MODE  serdesMode,
+    REF_CLOCK refClock
+);
 /**************************************************************************
  * mvSerdesPowerUpCtrlExt -
  *
@@ -445,6 +451,41 @@ MV_STATUS mvSerdesPowerUpCtrlExt
 	SERDES_MODE  serdesMode,
 	REF_CLOCK refClock
 );
+
+/**************************************************************************
+* mvHwsSerdesSiliconRefClockGet -
+*
+* DESCRIPTION: Get the silicon reference clock
+*
+* INPUT:        None.
+*
+* OUTPUT:       refClock   - Return the REF_CLOCK value:
+*                            REF_CLOCK_25MHz, REF_CLOCK_40MHz or REF_CLOCK_100MHz
+*
+* RETURNS:      MV_OK        - for success
+*               MV_BAD_PARAM - for fail
+***************************************************************************/
+MV_U32 mvHwsSerdesSiliconRefClockGet(MV_VOID);
+
+/**************************************************************************
+* mvHwsSerdesPexRefClockGet -
+*
+* DESCRIPTION: Get the reference clock value from DEVICE_SAMPLE_AT_RESET1_REG and check:
+*              bit[2] for PEX#0, bit[3] for PEX#1, bit[30] for PEX#2, bit[31] for PEX#3.
+*              If bit=0 --> REF_CLOCK_100MHz
+*              If bit=1 && DEVICE_SAMPLE_AT_RESET2_REG bit[0]=0 --> REF_CLOCK_25MHz
+*              If bit=1 && DEVICE_SAMPLE_AT_RESET2_REG bit[0]=1 --> REF_CLOCK_40MHz
+*
+* INPUT:        serdesType - Type of Serdes
+*
+* OUTPUT:       refClock   - Return the REF_CLOCK value:
+*                            REF_CLOCK_25MHz, REF_CLOCK_40MHz or REF_CLOCK_100MHz
+*
+* RETURNS:      MV_OK        - for success
+*               MV_BAD_PARAM - for fail
+***************************************************************************/
+MV_STATUS mvHwsSerdesPexRefClockGet(SERDES_TYPE serdesType, REF_CLOCK *refClock);
+
 /**************************************************************************
  * mvHwsRefClockSet -
  *

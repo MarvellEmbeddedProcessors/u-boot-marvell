@@ -64,143 +64,124 @@
 #include "mvSysEnvLib.h"
 #include "printf.h"
 
-#define	SERDES_VERION	"2.0"
+#define SERDES_VERION   "2.0"
 
 /************************* Globals ********************************************/
 
 MV_U8 commonPhysSelectorsSerdesRev1Map[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 {
-	/* 0     1       2       3       4       5 */
-	{ 0x1,  0x1,    NA,	    NA,	    NA,	    NA	  },    /* PEX0 */
-	{ NA,   0x2,    0x1,	NA,	    0x1,	NA	  },    /* PEX1 */
-	{ NA,   NA,     0x2,	NA,	    NA,	    0x1	  },    /* PEX2 */
-	{ NA,   NA,     NA,	    0x1,    NA,	    NA	  },    /* PEX3 */
-	{ 0x2,  0x3,    NA,	    NA,	    NA,	    NA	  },    /* SATA0 */
-	{ NA,   NA,     0x3,	NA,	    0x2,	NA	  },    /* SATA1 */
-	{ NA,   NA,     NA,	    NA,	    0x6,	0x2	  },    /* SATA2 */
-	{ NA,   NA,     NA,	    0x3,    NA,	    NA	  },    /* SATA3 */
-	{ 0x3,  0x4,    NA,	    NA,	    NA,	    NA	  },    /* SGMII0 */
-	{ NA,   0x5,    0x4,	NA,	    0x3,	NA	  },    /* SGMII1 */
-	{ NA,   NA,     NA,	    0x4,    NA,	    0x3	  },    /* SGMII2 */
-	{ NA,   0x7,    NA,	    NA,	    NA,	    NA	  },    /* QSGMII */
-	{ NA,   0x6,    NA,	    NA,	    0x4,	NA	  },    /* USB3_HOST0 */
-	{ NA,   NA,     NA,	    0x5,    NA,	    0x4	  },    /* USB3_HOST1 */
-	{ NA,   NA,     NA,	    0x6,    0x5,	0x5	  },    /* USB3_DEVICE */
-	{ 0x0,  0x0,    0x0,	0x0,    0x0,	0x0	  }     /* DEFAULT_SERDES */
-};
-
-/* Serdes type to ref clock map */
-REF_CLOCK serdesTypeToRefClock38xMap[LAST_SERDES_TYPE] =
-{
-	REF_CLOCK__100MHz,      /* PEX0 */
-	REF_CLOCK__100MHz,      /* PEX1 */
-	REF_CLOCK__100MHz,      /* PEX2 */
-	REF_CLOCK__100MHz,      /* PEX3 */
-	REF_CLOCK__25MHz,       /* SATA0 */
-	REF_CLOCK__25MHz,       /* SATA1 */
-	REF_CLOCK__25MHz,       /* SATA2 */
-	REF_CLOCK__25MHz,       /* SATA3 */
-	REF_CLOCK__25MHz,       /* SGMII0 */
-	REF_CLOCK__25MHz,       /* SGMII1 */
-	REF_CLOCK__25MHz,       /* SGMII2 */
-	REF_CLOCK__25MHz,       /* QSGMII */
-	REF_CLOCK__25MHz,      	/* USB3_HOST0 */
-	REF_CLOCK__25MHz,      	/* USB3_HOST1 */
-	REF_CLOCK__25MHz,       /* USB3_DEVICE */
-	REF_CLOCK_UNSUPPORTED   /* DEFAULT_SERDES */
+    /* 0     1       2       3       4       5 */
+    { 0x1,  0x1,    NA,     NA,     NA,     NA    },    /* PEX0 */
+    { NA,   0x2,    0x1,    NA,     0x1,    NA    },    /* PEX1 */
+    { NA,   NA,     0x2,    NA,     NA,     0x1   },    /* PEX2 */
+    { NA,   NA,     NA,     0x1,    NA,     NA    },    /* PEX3 */
+    { 0x2,  0x3,    NA,     NA,     NA,     NA    },    /* SATA0 */
+    { NA,   NA,     0x3,    NA,     0x2,    NA    },    /* SATA1 */
+    { NA,   NA,     NA,     NA,     0x6,    0x2   },    /* SATA2 */
+    { NA,   NA,     NA,     0x3,    NA,     NA    },    /* SATA3 */
+    { 0x3,  0x4,    NA,     NA,     NA,     NA    },    /* SGMII0 */
+    { NA,   0x5,    0x4,    NA,     0x3,    NA    },    /* SGMII1 */
+    { NA,   NA,     NA,     0x4,    NA,     0x3   },    /* SGMII2 */
+    { NA,   0x7,    NA,     NA,     NA,     NA    },    /* QSGMII */
+    { NA,   0x6,    NA,     NA,     0x4,    NA    },    /* USB3_HOST0 */
+    { NA,   NA,     NA,     0x5,    NA,     0x4   },    /* USB3_HOST1 */
+    { NA,   NA,     NA,     0x6,    0x5,    0x5   },    /* USB3_DEVICE */
+    { 0x0,  0x0,    0x0,    0x0,    0x0,    0x0   }     /* DEFAULT_SERDES */
 };
 
 /************************* Local functions declarations ***********************/
 
 MV_STATUS mvHwsSerdesSeqInit(MV_VOID)
 {
-	DEBUG_INIT_FULL_S("\n### serdesSeqInit ###\n");
+    DEBUG_INIT_FULL_S("\n### serdesSeqInit ###\n");
 
-	if (mvHwsSerdesSeqDbInit() != MV_OK){
-		mvPrintf("mvHwsSerdesSeqInit: Error: Serdes initialization fail\n");
-		return MV_FAIL;
-	}
+    if (mvHwsSerdesSeqDbInit() != MV_OK){
+        mvPrintf("mvHwsSerdesSeqInit: Error: Serdes initialization fail\n");
+        return MV_FAIL;
+    }
 
-	return MV_OK;
+    return MV_OK;
 }
 
 /***************************************************************************/
 MV_STATUS mvSerdesPowerUpCtrlExt
 (
-	MV_U32 serdesNum,
-	MV_BOOL serdesPowerUp,
-	SERDES_TYPE serdesType,
-	SERDES_SPEED baudRate,
-	SERDES_MODE  serdesMode,
-	REF_CLOCK refClock
+    MV_U32 serdesNum,
+    MV_BOOL serdesPowerUp,
+    SERDES_TYPE serdesType,
+    SERDES_SPEED baudRate,
+    SERDES_MODE  serdesMode,
+    REF_CLOCK refClock
 )
 {
-	return MV_NOT_SUPPORTED;
+    return MV_NOT_SUPPORTED;
 }
 
 /***************************************************************************/
-MV_U32 mvHwsSerdesGetRefClockVal(SERDES_TYPE serdesType)
+MV_U32 mvHwsSerdesSiliconRefClockGet(MV_VOID)
 {
-    return serdesTypeToRefClock38xMap[serdesType];
+    DEBUG_INIT_FULL_S("\n### mvHwsSerdesSiliconRefClockGet ###\n");
+
+    return REF_CLOCK__25MHz;
 }
 
 /***************************************************************************/
 MV_U32 mvHwsSerdesGetMaxLane(MV_VOID)
 {
-	switch (mvSysEnvDeviceIdGet()) {
-	case MV_6811: /* A381/A3282: 6811/6821: single/dual cpu */
-		return 4;
-	case MV_6810:
-		return 5;
-	case MV_6820:
-	case MV_6828:
-		return 6;
-	default:	/* not the right module */
-		mvPrintf("%s: Device ID Error, using 4 SerDes lanes\n", __func__);
-		return 4;
-		}
-	return 6;
+    switch (mvSysEnvDeviceIdGet()) {
+    case MV_6811: /* A381/A3282: 6811/6821: single/dual cpu */
+        return 4;
+    case MV_6810:
+        return 5;
+    case MV_6820:
+    case MV_6828:
+        return 6;
+    default:    /* not the right module */
+        mvPrintf("%s: Device ID Error, using 4 SerDes lanes\n", __func__);
+        return 4;
+        }
+    return 6;
 }
 
 /***************************************************************************/
 MV_BOOL mvHwsIsSerdesActive(MV_U8 laneNum)
 {
-	MV_BOOL ret = MV_TRUE;
+    MV_BOOL ret = MV_TRUE;
 
-	/* Maximum lane count for A388 (6828) is 6 */
-	if (laneNum > 6)
-		ret = MV_FALSE;
+    /* Maximum lane count for A388 (6828) is 6 */
+    if (laneNum > 6)
+        ret = MV_FALSE;
 
-	/* 4th Lane (#4 on Device 6810 is not Active */
-	if (mvSysEnvDeviceIdGet() == MV_6810 && laneNum == 4) {
-		mvPrintf("%s: Error: Lane#4 on Device 6810 is not Active.\n", __func__);
-		return MV_FALSE;
-	}
+    /* 4th Lane (#4 on Device 6810 is not Active */
+    if (mvSysEnvDeviceIdGet() == MV_6810 && laneNum == 4) {
+        mvPrintf("%s: Error: Lane#4 on Device 6810 is not Active.\n", __func__);
+        return MV_FALSE;
+    }
 
-	/* 6th Lane (#5) on Device 6810 is Active, even though 6810 has only 5 lanes*/
-	if (mvSysEnvDeviceIdGet() == MV_6810 && laneNum == 5)
-		return MV_TRUE;
+    /* 6th Lane (#5) on Device 6810 is Active, even though 6810 has only 5 lanes*/
+    if (mvSysEnvDeviceIdGet() == MV_6810 && laneNum == 5)
+        return MV_TRUE;
 
-	if (laneNum >= mvHwsSerdesGetMaxLane())
-		ret = MV_FALSE;
+    if (laneNum >= mvHwsSerdesGetMaxLane())
+        ret = MV_FALSE;
 
-	return ret;
+    return ret;
 }
 
 /***************************************************************************/
 MV_STATUS mvHwsGetExtBaseAddr
 (
-	MV_U32 serdesNum,
-	MV_U32 baseAddr,
-	MV_U32 unitBaseOffset,
-	MV_U32 *unitBaseReg,
-	MV_U32 *unitOffset
+    MV_U32 serdesNum,
+    MV_U32 baseAddr,
+    MV_U32 unitBaseOffset,
+    MV_U32 *unitBaseReg,
+    MV_U32 *unitOffset
 )
 {
-	*unitBaseReg = baseAddr;
-	*unitOffset  = unitBaseOffset;
+    *unitBaseReg = baseAddr;
+    *unitOffset  = unitBaseOffset;
 
-	return MV_OK;
+    return MV_OK;
 }
 
 /*******************************************************************************
@@ -212,7 +193,7 @@ MV_STATUS mvHwsGetExtBaseAddr
 *           serdesType - Serdes type
 * OUTPUT: None
 * RETURN:
-* 		Mapping of Serdes Selector values
+*       Mapping of Serdes Selector values
 *******************************************************************************/
 MV_U32 mvHwsSerdesGetPhySelectorVal(MV_32 serdesNum, SERDES_TYPE serdesType)
 {
@@ -224,17 +205,18 @@ MV_U32 mvHwsSerdesGetPhySelectorVal(MV_32 serdesNum, SERDES_TYPE serdesType)
         return commonPhysSelectorsSerdesRev1Map[serdesType][serdesNum];
     }
     else
-		return commonPhysSelectorsSerdesRev2Map[serdesType][serdesNum];
+        return commonPhysSelectorsSerdesRev2Map[serdesType][serdesNum];
 }
 
 /***************************************************************************/
 MV_U32 mvHwsGetPhysicalSerdesNum(MV_U32 serdesNum)
 {
-	if((serdesNum == 4) && (mvSysEnvDeviceIdGet() == MV_6810)) {
-		/* for 6810, there are 5 Serdes and Serdes Num 4 doesn't exist.
-		   instead Serdes Num 5 is connected. */
-		return 5;
-	} else {
-		return serdesNum;
-	}
+    if((serdesNum == 4) && (mvSysEnvDeviceIdGet() == MV_6810)) {
+        /* for 6810, there are 5 Serdes and Serdes Num 4 doesn't exist.
+           instead Serdes Num 5 is connected. */
+        return 5;
+    } else {
+        return serdesNum;
+    }
 }
+

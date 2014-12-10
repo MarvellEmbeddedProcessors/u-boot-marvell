@@ -159,7 +159,11 @@
 #define GLOBAL_PM_CTRL_REG_MASK					(~(0xFF))
 #define LANE_CFG4_REG_MASK						(~(0x1F00))
 
-#define	REF_CLK_SELECTOR_VAL(regVal)			(regVal & 0x1)
+#define REF_CLK_SELECTOR_VAL_PEX0(regVal)       (regVal >> 2) & 0x1
+#define REF_CLK_SELECTOR_VAL_PEX1(regVal)       (regVal >> 3) & 0x1
+#define REF_CLK_SELECTOR_VAL_PEX2(regVal)       (regVal >> 30) & 0x1
+#define REF_CLK_SELECTOR_VAL_PEX3(regVal)       (regVal >> 31) & 0x1
+#define REF_CLK_SELECTOR_VAL(regVal)            (regVal & 0x1)
 
 #define MAX_SELECTOR_VAL                        10
 

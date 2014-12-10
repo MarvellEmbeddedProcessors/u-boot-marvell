@@ -72,6 +72,7 @@
 #else
 #error "No device is defined"
 #endif
+
 #define SLOWDOWN  mvOsUDelay(50);
 
 #ifdef REGISTER_TRACE_DEBUG
@@ -329,7 +330,6 @@ MV_OP_PARAMS pexAndUsb3PowerUpSerdesRev1Params[] =
 	{ COMMON_PHY_CONFIGURATION4_REG,    0x28,			0x3,			{ 0x1,		    0x1         },		0,          0	    },
 	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,			0x7800,			{ 0x6000,	    0xE000      },		0,          0	    },
 	{ GLOBAL_CLK_CTRL,				    0x800,			0xD,			{ 0x5,		    0x1         },		0,          0	    },
-	{ POWER_AND_PLL_CTRL_REG,		    0x800,          0x0E0,			{ 0x60,		    0xA0        },		0,          0	    }, /* Phy Selector */
 	{ MISC_REG,	   					    0x800,          0x4C0,	     	{ 0x80,         0x4C0 	    }, 	    0,	        0       }  /* Ref clock source select */ 
 };
 
@@ -343,7 +343,6 @@ MV_OP_PARAMS pexAndUsb3PowerUpSerdesRev2Params[] =
 	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,			0x7800,			{ 0x6000,	    0xE000      },		0,          0	    },
 	{ GLOBAL_CLK_CTRL,				    0x800,			0xD,			{ 0x5,		    0x1         },		0,          0	    },
 	{ GLOBAL_MISC_CTRL,				    0x800,			0xC0,			{ 0x0,		    NO_DATA     },		0,          0	    },
-	{ POWER_AND_PLL_CTRL_REG,		    0x800,			0x0E0,			{ 0x60,		    0xA0        },	    0,          0	    }, /* Phy Selector */
 	{ MISC_REG,	   					    0x800,	    	0x4C0,	     	{ 0x80,         0x4C0 	    }, 	    0,	        0		}  /* Ref clock source select */ 
 };
 
@@ -450,6 +449,33 @@ MV_OP_PARAMS pexElectricalConfigSerdesRev2Params[] =
     { PCIE_REG3,                0x800,      0xFF00,     { 0xAF00    },      0,          0       }, /* Tx_Emph value for -3.5dB and -6dB */
     { LANE_CFG4_REG,            0x800,      0x8,        { 0x8       },      0,          0       }, /* CFG_DFE_EN_SEL */
     { VTHIMPCAL_CTRL_REG,       0x800,      0xFF00,     { 0x3000    },      0,          0       }, /* tximpcal_th and rximpcal_th */
+};
+
+/* PEX - configuration seq for REF_CLOCK_25MHz */
+MV_OP_PARAMS pexConfigRefClock25MHz[] =
+{
+    /* unitunitBaseReg          unitOffset  mask        PEX data    waitTime    numOfLoops */
+    { POWER_AND_PLL_CTRL_REG,   0x800,      0x1F,       { 0x2   },      0,          0       }, /* Bits[4:0]=0x2 - REF_FREF_SEL */
+    { MISC_REG,                 0x800,      0x400,      { 0x400 },      0,          0       }, /* Bit[10]=0x1   - REFCLK_SEL */
+    { GLOBAL_PM_CTRL,           0x800,      0xFF,       { 0x7   },      0,          0       }, /* Bits[7:0]=0x7 - CFG_PM_RXDLOZ_WAIT */
+};
+
+/* PEX - configuration seq for REF_CLOCK_40MHz */
+MV_OP_PARAMS pexConfigRefClock40MHz[] =
+{
+    /* unitunitBaseReg          unitOffset  mask        PEX data    waitTime    numOfLoops */
+    { POWER_AND_PLL_CTRL_REG,   0x800,      0x1F,       { 0x3   },      0,          0       }, /* Bits[4:0]=0x3 - REF_FREF_SEL */
+    { MISC_REG,                 0x800,      0x400,      { 0x400 },      0,          0       }, /* Bits[10]=0x1  - REFCLK_SEL */
+    { GLOBAL_PM_CTRL,           0x800,      0xFF,       { 0xC   },      0,          0       }, /* Bits[7:0]=0xC - CFG_PM_RXDLOZ_WAIT */
+};
+
+/* PEX - configuration seq for REF_CLOCK_100MHz */
+MV_OP_PARAMS pexConfigRefClock100MHz[] =
+{
+    /* unitunitBaseReg          unitOffset  mask        PEX data    waitTime    numOfLoops */
+    { POWER_AND_PLL_CTRL_REG,   0x800,      0x1F,       { 0x0   },      0,          0       }, /* Bits[4:0]=0x0  - REF_FREF_SEL */
+    { MISC_REG,                 0x800,      0x400,      { 0x0   },      0,          0       }, /* Bit[10]=0x0    - REFCLK_SEL */
+    { GLOBAL_PM_CTRL,           0x800,      0xFF,       { 0x1E  },      0,          0       }, /* Bits[7:0]=0x1E - CFG_PM_RXDLOZ_WAIT */
 };
 
 /*****************/
@@ -726,6 +752,21 @@ MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID)
 	serdesSeqDb[PEX_BY_4_CONFIG_SEQ].opParamsPtr = pexBy4ConfigParams;
 	serdesSeqDb[PEX_BY_4_CONFIG_SEQ].cfgSeqSize  = sizeof(pexBy4ConfigParams) / sizeof(MV_OP_PARAMS);
 	serdesSeqDb[PEX_BY_4_CONFIG_SEQ].dataArrIdx  = PEX;
+
+	/* PEX_CONFIG_REF_CLOCK_25MHz_SEQ sequence init */
+	serdesSeqDb[PEX_CONFIG_REF_CLOCK_25MHz_SEQ].opParamsPtr = pexConfigRefClock25MHz;
+	serdesSeqDb[PEX_CONFIG_REF_CLOCK_25MHz_SEQ].cfgSeqSize  = sizeof(pexConfigRefClock25MHz) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[PEX_CONFIG_REF_CLOCK_25MHz_SEQ].dataArrIdx  = PEX;
+
+	/* PEX_ELECTRICAL_CONFIG_REF_CLOCK_40MHz_SEQ sequence init */
+	serdesSeqDb[PEX_CONFIG_REF_CLOCK_40MHz_SEQ].opParamsPtr = pexConfigRefClock40MHz;
+	serdesSeqDb[PEX_CONFIG_REF_CLOCK_40MHz_SEQ].cfgSeqSize  = sizeof(pexConfigRefClock40MHz) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[PEX_CONFIG_REF_CLOCK_40MHz_SEQ].dataArrIdx  = PEX;
+
+    /* PEX_CONFIG_REF_CLOCK_100MHz_SEQ sequence init */
+	serdesSeqDb[PEX_CONFIG_REF_CLOCK_100MHz_SEQ].opParamsPtr = pexConfigRefClock100MHz;
+	serdesSeqDb[PEX_CONFIG_REF_CLOCK_100MHz_SEQ].cfgSeqSize  = sizeof(pexConfigRefClock100MHz) / sizeof(MV_OP_PARAMS);
+	serdesSeqDb[PEX_CONFIG_REF_CLOCK_100MHz_SEQ].dataArrIdx  = PEX;
 
 	/* USB3_POWER_UP_SEQ sequence init */
 	if(serdesRev == MV_SERDES_REV_1_2) {
@@ -1106,6 +1147,88 @@ static MV_STATUS mvSerdesPexUsb3PipeDelayWA(MV_U32 serdesNum, MV_U8 serdesType)
 	return MV_OK;
 }
 
+/**************************************************************************
+* mvHwsSerdesPexRefClockSatRGet -
+*
+* DESCRIPTION: Get the reference clock value from DEVICE_SAMPLE_AT_RESET1_REG and check:
+*              bit[2] for PEX#0, bit[3] for PEX#1, bit[30] for PEX#2, bit[31] for PEX#3.
+*              If bit=0 --> REF_CLOCK_100MHz
+*              If bit=1 && DEVICE_SAMPLE_AT_RESET2_REG bit[0]=0 --> REF_CLOCK_25MHz
+*              If bit=1 && DEVICE_SAMPLE_AT_RESET2_REG bit[0]=1 --> REF_CLOCK_40MHz
+*
+* INPUT:        serdesType - Type of Serdes
+*
+* OUTPUT:       pexSatR   -  Return the REF_CLOCK value:
+*                            REF_CLOCK_25MHz, REF_CLOCK_40MHz or REF_CLOCK_100MHz
+*
+* RETURNS:      MV_OK        - for success
+*               MV_BAD_PARAM - for fail
+***************************************************************************/
+MV_STATUS mvHwsSerdesPexRefClockSatRGet(SERDES_TYPE serdesType, MV_U32 *pexSatR)
+{
+    MV_U32 data, regSatR1;
+
+    regSatR1 = MV_REG_READ(DEVICE_SAMPLE_AT_RESET1_REG);
+
+    switch (serdesType) {
+    case PEX0:
+        data = REF_CLK_SELECTOR_VAL_PEX0(regSatR1);
+        break;
+    case PEX1:
+        data = REF_CLK_SELECTOR_VAL_PEX1(regSatR1);
+        break;
+    case PEX2:
+        data = REF_CLK_SELECTOR_VAL_PEX2(regSatR1);
+        break;
+    case PEX3:
+        data = REF_CLK_SELECTOR_VAL_PEX3(regSatR1);
+        break;
+    default:
+        mvPrintf("%s: Error: SerDes type %d is not supported\n", __func__, serdesType);
+        return MV_BAD_PARAM;
+    }
+
+    *pexSatR = data;
+
+    return MV_OK;
+}
+
+/***************************************************************************/
+MV_U32 mvHwsSerdesGetRefClockVal(SERDES_TYPE serdesType)
+{
+    MV_U32 pexSatR;
+    REF_CLOCK refClock;
+
+    DEBUG_INIT_FULL_S("\n### mvHwsSerdesGetRefClockVal ###\n");
+
+    if (serdesType >= LAST_SERDES_TYPE) {
+        return REF_CLOCK_UNSUPPORTED;
+    }
+
+    /* read ref clock from S@R */
+    refClock = mvHwsSerdesSiliconRefClockGet();
+
+    if(serdesType > PEX3) {
+        /* for all Serdes types but PCIe */
+        return refClock;
+    }
+
+    /* for PCIe, need also to check PCIe S@R */
+    CHECK_STATUS(mvHwsSerdesPexRefClockSatRGet(serdesType, &pexSatR));
+
+    if (pexSatR == 0) {
+        return REF_CLOCK__100MHz;
+    }
+    else if(pexSatR == 1) {
+        /* value of 1 means we can use ref clock from SoC (as other Serdes types) */
+        return refClock;
+    }
+    else {
+        mvPrintf("%s: Error: REF_CLK_SELECTOR_VAL for SerDes type %d is wrong\n", __func__, serdesType);
+        return REF_CLOCK_UNSUPPORTED;
+    }
+}
+
 /***************************************************************************/
 MV_STATUS mvSerdesPowerUpCtrl
 (
@@ -1189,16 +1312,16 @@ MV_STATUS mvSerdesPowerUpCtrl
 				MV_REG_WRITE(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x70), regData);
 			}
 
-			CHECK_STATUS(mvSeqExec(serdesNum, PEX_POWER_UP_SEQ));
-			if (isPexBy1 == MV_FALSE) {
-				/* for PEX by 4 - use the PEX index as the seq array index */
-				serdesSeqDb[PEX_BY_4_CONFIG_SEQ].dataArrIdx = pexIdx;
-				CHECK_STATUS(mvSeqExec(serdesNum, PEX_BY_4_CONFIG_SEQ));
-			}
+            CHECK_STATUS(mvSeqExec(serdesNum, PEX_POWER_UP_SEQ));
+            if (isPexBy1 == MV_FALSE) {
+                /* for PEX by 4 - use the PEX index as the seq array index */
+                serdesSeqDb[PEX_BY_4_CONFIG_SEQ].dataArrIdx = pexIdx;
+                CHECK_STATUS(mvSeqExec(serdesNum, PEX_BY_4_CONFIG_SEQ));
+            }
 
-			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
-			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
-			CHECK_STATUS(mvSeqExec(serdesNum, PEX_ELECTRICAL_CONFIG_SEQ));
+            CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
+            CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));
+            CHECK_STATUS(mvSeqExec(serdesNum, PEX_ELECTRICAL_CONFIG_SEQ));
 
 			if (isPexBy1 == MV_TRUE) {
 				CHECK_STATUS(mvSeqExec(serdesNum, PEX_TX_CONFIG_SEQ2));
@@ -1438,38 +1561,47 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 /***************************************************************************/
 MV_STATUS mvHwsRefClockSet
 (
-	MV_U32 serdesNum,
-	SERDES_TYPE serdesType,
-	REF_CLOCK refClock
+    MV_U32 serdesNum,
+    SERDES_TYPE serdesType,
+    REF_CLOCK refClock
 )
 {
-	MV_U32 data1=0, data2=0, data3=0, regData;
+    MV_U32 data1=0, data2=0, data3=0, regData;
 
-	DEBUG_INIT_FULL_S("\n### mvHwsRefClockSet ###\n");
+    DEBUG_INIT_FULL_S("\n### mvHwsRefClockSet ###\n");
 
-	if (mvHwsIsSerdesActive(serdesNum) != MV_TRUE) {
-		mvPrintf("%s: SerDes lane #%d is not Active\n", __func__, serdesNum);
-		return MV_BAD_PARAM;
-	}
+    if (mvHwsIsSerdesActive(serdesNum) != MV_TRUE) {
+        mvPrintf("%s: SerDes lane #%d is not Active\n", __func__, serdesNum);
+        return MV_BAD_PARAM;
+    }
 
-	switch (serdesType) {
-	case PEX0:
-	case PEX1:
-	case PEX2:
+    switch (serdesType) {
+    case PEX0:
+    case PEX1:
+    case PEX2:
     case PEX3:
-        if (refClock == REF_CLOCK__100MHz) {
-			data1 = POWER_AND_PLL_CTRL_REG_100MHZ_VAL;
-		}
-		else{
-			mvPrintf("mvHwsRefClockSet: ref clock is not valid for serdes type %d\n", serdesType);
-			return MV_BAD_PARAM;
-		}
-		break;
-	case USB3_HOST0:
-	case USB3_HOST1:
-	case USB3_DEVICE:
-		if (refClock == REF_CLOCK__25MHz) {
-			data1 = POWER_AND_PLL_CTRL_REG_25MHZ_VAL_2;
+        switch (refClock) {
+        case REF_CLOCK__25MHz:
+            CHECK_STATUS(mvSeqExec(serdesNum, PEX_CONFIG_REF_CLOCK_25MHz_SEQ));
+            return MV_OK;
+        case REF_CLOCK__100MHz:
+            CHECK_STATUS(mvSeqExec(serdesNum, PEX_CONFIG_REF_CLOCK_100MHz_SEQ));
+            return MV_OK;
+#ifdef MV88F69XX
+        case REF_CLOCK__40MHz:
+            CHECK_STATUS(mvSeqExec(serdesNum, PEX_CONFIG_REF_CLOCK_40MHz_SEQ));
+            return MV_OK;
+#endif
+        default:
+            mvPrintf("%s: Error: refClock %d for SerDes lane #%d, type %d is not supported\n",
+                    __func__, refClock, serdesNum, serdesType);
+            return MV_BAD_PARAM;
+        }
+    case USB3_HOST0:
+    case USB3_HOST1:
+    case USB3_DEVICE:
+        if (refClock == REF_CLOCK__25MHz) {
+            data1 = POWER_AND_PLL_CTRL_REG_25MHZ_VAL_2;
             data2 = GLOBAL_PM_CTRL_REG_25MHZ_VAL;
             data3 = LANE_CFG4_REG_25MHZ_VAL;
         }

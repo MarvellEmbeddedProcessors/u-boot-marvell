@@ -360,7 +360,6 @@ MV_STATUS mvSiliconInit(MV_VOID)
 
 	/* Set legacy mode address completion */
 	mvGenUnitRegisterSet(MG_UNIT, 0, 0x140, (1 << 16), (1 << 16));
-
 	/* TWSI init */
 	DEBUG_INIT_FULL_S("mvSiliconInit: Init TWSI interface.\n");
 	slave.type = ADDR7_BIT;
@@ -463,6 +462,11 @@ MV_STATUS mvSiliconInit(MV_VOID)
 
 	/* Set legacy mode address completion */
 	mvGenUnitRegisterSet(MG_UNIT, 0, 0x140, (1 << 16), (1 << 16));
+
+	/*(errata : 4410555):
+	 BC2 specific register Device Control 0 (0x000F8250) Bit 4 should be 0
+	 before serdes power up */
+	mvGenUnitRegisterSet(SERVER_REG_UNIT,0,REG_DEVICE_SERVER_CONTROL_0,(0 << 4),(1 << 4));
 
 	/* initialize TWSI interface */
 	DEBUG_INIT_FULL_S("mvSiliconInit: Init TWSI interface.\n");

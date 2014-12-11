@@ -517,7 +517,7 @@ MV_U16 mvBoardPexModeGet(MV_VOID);
 MV_STATUS mvBoardPexModeSet(MV_U16 conf);
 MV_U32 mvBoardFreqModesNumGet(void);
 MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
-MV_STATUS mvBoardCompatibleNameGet(char *pNameBuff);
+MV_U8 mvBoardCompatibleNameGet(char *pNameBuff);
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
 MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
 MV_U8 mvBoardPICGpioGet(MV_U32 *picGpioMppInfo);

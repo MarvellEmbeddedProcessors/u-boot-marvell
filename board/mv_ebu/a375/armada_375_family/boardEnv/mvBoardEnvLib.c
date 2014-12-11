@@ -3007,15 +3007,22 @@ MV_NFC_ECC_MODE mvBoardNandECCModeGet()
 * INPUT:  None
 * OUTPUT: None.
 *
-* RETURN: pointer to string
+* RETURN: length of returned string (including special delimiters)
 *
 *******************************************************************************/
-MV_STATUS mvBoardCompatibleNameGet(char *pNameBuff)
+MV_U8 mvBoardCompatibleNameGet(char *pNameBuff)
 {
+	MV_U8 len = 0;
 	/* i.e: "marvell,a375-db", "marvell,armada375"; */
-	sprintf(pNameBuff, "marvell,a375-%s\", \"marvell,armada375", board->compatibleDTName);
+	len = sprintf(pNameBuff, "marvell,a375-%s", board->compatibleDTName) + 1;
+	/*
+	 * append next string after the NULL character that the previous
+	 * sprintf wrote.  This is how a device tree stores multiple
+	 * strings in a property.
+	 */
+	len += sprintf(pNameBuff + len, "marvell,armada375") + 1;
 
-	return MV_OK;
+	return len;
 }
 
 MV_NAND_IF_MODE mvBoardNandIfGet()

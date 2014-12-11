@@ -1287,17 +1287,25 @@ check_ecc:
 
 static int mv_fdt_board_compatible_name_update(void *fdt)
 {
-	char propval[128];				/* property value */
+	char propval[256];				/* property value */
 	const char *prop = "compatible";		/* property name */
 	char node[64];					/* node name */
+	MV_U8 len, err;
 
-	mvBoardCompatibleNameGet(propval);
+	/* set compatible property as concatenated strings.
+	 * (i.e: compatible = "marvell,a385-db", "marvell,armada385", "marvell,armada38x";
+	 * concatenated strings are appended after the NULL character of the previous
+	 * sprintf wrote.  This is how a DT stores multiple strings in a property.
+	 * as a result, strlen is not relevant, and len has to be calculated  */
+	len = mvBoardCompatibleNameGet(propval);
 
-	mvOsPrintf("\nskipping update of 'compatible' property in root node of device tree\n");
-	return 0;
-
-	if (mv_fdt_set_node_prop(fdt, NULL, prop, propval) < 0)
-		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+	if (len > 0)
+		mv_fdt_modify(fdt, err, fdt_setprop(fdt,0 , prop, propval, len));
+	if (len <= 0 || err < 0) {
+		mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
+		return -1;
+	}
+	mv_fdt_dprintf("Set '%s' property to Root node\n", prop);
 
 	return 0;
 }

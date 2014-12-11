@@ -561,7 +561,7 @@ MV_STATUS mvBoardIoExpanderSet(MV_U8 addr, MV_U8 offs, MV_U8 val);
 MV_U32 mvBoardUartPortGet(MV_VOID);
 int mvBoardNorFlashConnect(void);
 MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
-MV_STATUS mvBoardCompatibleNameGet(char *pNameBuff);
+MV_U8 mvBoardCompatibleNameGet(char *pNameBuff);
 
 #ifdef CONFIG_CMD_BOARDCFG
 typedef struct _boardConfigTypesInfo {

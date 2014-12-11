@@ -266,7 +266,7 @@ MV_BOARD_TDM_SPI_INFO db88f68xxTdmSpiInfo[] = { {1} };
 
 MV_BOARD_INFO db88f68xx_board_info = {
 	.boardName		= "DB-88F6820-BP",
-	.compatibleDTName	= "db",
+	.compatibleDTName	= "a385-db",
 	.numBoardNetComplexValue	= 0,
 	.pBoardNetComplexInfo	= NULL,
 	.pBoardMppConfigValue	= db88f68xxInfoBoardMppConfigValue,
@@ -583,7 +583,7 @@ MV_U8 dbAP88f68XXInfoBoardPicGpio[] = {21, 47};
 
 MV_BOARD_INFO dbAP88f68xx_board_info = {
 	.boardName              = "DB-88F6820-AP",
-	.compatibleDTName	= "db-ap",
+	.compatibleDTName	= "a385-db-ap",
 	.numBoardNetComplexValue   = 0,
 	.pBoardNetComplexInfo     = NULL,
 	.pBoardMppConfigValue   = dbAP88f68xxInfoBoardMppConfigValue,
@@ -694,7 +694,7 @@ MV_U8 dbGP88f68XXInfoBoardPicGpio[] = {33, 34, 35};
 
 MV_BOARD_INFO dbGP88f68XX_board_info = {
 	.boardName			= "DB-88F6820-GP",
-	.compatibleDTName		= "db-gp",
+	.compatibleDTName		= "a388-db-gp",
 	.numBoardNetComplexValue	= 0,
 	.pBoardNetComplexInfo		= NULL,
 	.pBoardMppConfigValue		= dbGP88f68XXInfoBoardMppConfigValue,
@@ -807,7 +807,7 @@ MV_DEV_CS_INFO db88f6821InfoBoardDeCsInfo[] = {
 
 MV_BOARD_INFO db88f6821_board_info = {
 	.boardName		= "DB-88F6821-BP",
-	.compatibleDTName	= "db-bp",
+	.compatibleDTName	= "a382-db",
 	.numBoardNetComplexValue = 0,
 	.pBoardNetComplexInfo	= NULL,
 	.pBoardMppConfigValue	= db88f6821InfoBoardMppConfigValue,

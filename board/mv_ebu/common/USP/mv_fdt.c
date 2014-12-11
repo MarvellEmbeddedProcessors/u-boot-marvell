@@ -1173,6 +1173,9 @@ static int mv_fdt_board_compatible_name_update(void *fdt)
 
 	mvBoardCompatibleNameGet(propval);
 
+	mvOsPrintf("\nskipping update of 'compatible' property in root node of device tree\n");
+	return 0;
+
 	if (mv_fdt_set_node_prop(fdt, NULL, prop, propval) < 0)
 		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
 

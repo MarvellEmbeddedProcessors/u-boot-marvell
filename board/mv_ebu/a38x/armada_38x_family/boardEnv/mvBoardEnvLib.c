@@ -3270,18 +3270,23 @@ MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
 * INPUT:  None
 * OUTPUT: None.
 *
-* RETURN: pointer to string
+* RETURN: length of returned string (including special delimiters)
 *
 *******************************************************************************/
-MV_STATUS mvBoardCompatibleNameGet(char *pNameBuff)
+MV_U8 mvBoardCompatibleNameGet(char *pNameBuff)
 {
-	MV_U16 deviceIdNum = mvCtrlDeviceIdGet();
-
+	MV_U8 len = 0;
 	/* i.e: "marvell,a388-db-gp", "marvell,armada388", "marvell,armada38x"; */
-	sprintf(pNameBuff, "marvell,a%x-%s\", \"marvell,armada%x\", \"marvell,armada38x",
-				deviceIdNum, board->compatibleDTName, deviceIdNum);
+	len = sprintf(pNameBuff, "marvell,%s", board->compatibleDTName) + 1;
+	/*
+	 * append next string after the NULL character that the previous
+	 * sprintf wrote.  This is how a device tree stores multiple
+	 * strings in a property.
+	 */
+	len += sprintf(pNameBuff + len, "marvell,armada%x",  mvCtrlDeviceIdGet()) + 1;
+	len += sprintf(pNameBuff + len, "marvell,armada38x") + 1;
 
-	return MV_OK;
+	return len;
 }
 
 MV_NAND_IF_MODE mvBoardNandIfGet()

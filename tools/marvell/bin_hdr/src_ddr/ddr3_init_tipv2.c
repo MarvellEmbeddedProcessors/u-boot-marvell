@@ -424,13 +424,13 @@ MV_U32 ddr3Init(void)
 	/* DLB config */
 	ddr3NewTipDlbConfig();
 
-	mvPrintf("%s Training Sequence - Ended Successfully\n", ddrType);
-
 #if defined(ECC_SUPPORT)
 	if( MV_TRUE == ddr3IfEccEnabled()){
 		ddr3NewTipEccScrub();
 	}
 #endif
+
+	mvPrintf("%s Training Sequence - Ended Successfully\n", ddrType);
 
 	return MV_OK;
 }

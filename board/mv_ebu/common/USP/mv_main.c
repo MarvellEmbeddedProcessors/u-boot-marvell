@@ -490,13 +490,16 @@ void misc_init_r_env(void){
 	char ethaddr_all[30];
 #if defined(MV_INCLUDE_RTC)
 	struct rtc_time tm;
-	rtc_get(&tm);
 
-	rand[0] = ((tm.tm_yday + tm.tm_sec) % 254);
+	rtc_get(&tm);
+	/*convert RTC values to unsigned: ensure positive values (originally kept in int variables) */
+	unsigned int day = tm.tm_mday, sec = tm.tm_sec, min = tm.tm_min, hour = tm.tm_hour;
+
+	rand[0] = ((day + sec) % 254);
 	/* No valid ip with one of the fileds has the value 0 */
 	if (rand[0] == 0)
 		rand[0]+=2;
-	rand[1] = ((tm.tm_yday + tm.tm_min) % 254);
+	rand[1] = ((day + min) % 254);
 	/* No valid ip with one of the fileds has the value 0 */
 	if (rand[1] == 0)
 		rand[1]+=2;
@@ -504,8 +507,8 @@ void misc_init_r_env(void){
 	if ((rand[1] == 1) && (rand[0] == 11))
 		rand[0]+=2;
 
-	rand[2] = (tm.tm_min * tm.tm_sec) % 254;
-	rand[3] = (tm.tm_hour * tm.tm_sec) % 254;
+	rand[2] = (min * sec) % 254;
+	rand[3] = (hour * sec) % 254;
 #else
 	rand[1] = (get_timer(0)) % 254;
 	rand[0] = (get_timer(0)) % 254;

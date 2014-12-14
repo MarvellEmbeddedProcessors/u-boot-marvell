@@ -723,12 +723,15 @@ void misc_init_r_env(void)
 	struct rtc_time tm;
 
 	rtc_get(&tm);
-	xi = ((tm.tm_yday + tm.tm_sec) % 254);
+	/*convert RTC values to unsigned: ensure positive values (originally kept in int variables) */
+	unsigned int day = tm.tm_mday, sec = tm.tm_sec, min = tm.tm_min, hour = tm.tm_hour;
+
+	xi = ((day + sec) % 254);
 	/* No valid ip with one of the fileds has the value 0 */
 	if (xi == 0)
 		xi += 2;
 
-	xj = ((tm.tm_yday + tm.tm_min) % 254);
+	xj = ((day + min) % 254);
 	/* No valid ip with one of the fileds has the value 0 */
 	if (xj == 0)
 		xj += 2;
@@ -737,8 +740,8 @@ void misc_init_r_env(void)
 	if ((xj == 1) && (xi == 11))
 		xi += 2;
 
-	xk = (tm.tm_min * tm.tm_sec) % 254;
-	xl = (tm.tm_hour * tm.tm_sec) % 254;
+	xk = (min * sec) % 254;
+	xl = (hour * sec) % 254;
 #endif  /* defined(MV_INCLUDE_RTC) */
 
 	sprintf(ethaddr_0, "00:50:43:%02x:%02x:%02x", xk, xi, xj);

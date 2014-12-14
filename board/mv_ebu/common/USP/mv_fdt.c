@@ -639,6 +639,8 @@ static int mv_fdt_update_ethnum(void *fdt)
 	int ethPortsNum;		/* nodes' counter */
 	int nodeoffset;			/* node offset from libfdt */
 	int aliasesoffset;		/* aliases node offset from libfdt */
+	int phyoffset;
+	const uint32_t *phandle;
 	char prop[20];			/* property name */
 	char propval[20];		/* property value */
 	const char *node;		/* node name */
@@ -691,16 +693,31 @@ static int mv_fdt_update_ethnum(void *fdt)
 			if (phyAddr == -1)
 				phyAddr = 999; /* Inband management - see mv_netdev.c for details */
 
-			phyAddr = htonl(phyAddr); /* DT numeric values are in network byte order */
-
-			/* Setup PHY address in DT - this is HEX number, not string */
-			sprintf(prop, "phy");
-			mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop, &phyAddr, sizeof(phyAddr)));
-			if (err < 0) {
-				mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+			/* The ETH node we found contains a pointer (phandle) to its PHY
+			   The phandle is a unique numeric identifier of a specific node */
+			phandle = fdt_getprop(fdt, nodeoffset, "phy", &len);
+			if (len == 0) {
+				mv_fdt_dprintf("Empty \"phy\" property value\n");
 				return -1;
 			}
-			mv_fdt_dprintf("Set '%s' property to '%#x' in '%s' node\n", prop, ntohl(phyAddr), node);
+			phyoffset = fdt_node_offset_by_phandle(fdt, ntohl(*phandle));
+			if (phyoffset < 0) {
+				mv_fdt_dprintf("Failed to get PHY node by phandle %x\n", ntohl(*phandle));
+				return -1;
+			}
+
+			/* Setup PHY address in DT in "reg" property of an appropriate PHY node.
+			   This value is HEX number, not a string, and uses network byte order */
+			phyAddr = htonl(phyAddr);
+			sprintf(prop, "reg");
+			mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, &phyAddr, sizeof(phyAddr)));
+			if (err < 0) {
+				mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n",
+							   prop, fdt_get_name(fdt, phyoffset, NULL));
+				return -1;
+			}
+			mv_fdt_dprintf("Set property '%s' of node '%s' to %#010x\n",
+						   prop, fdt_get_name(fdt, phyoffset, NULL), ntohl(phyAddr));
 
 			/* Configure PHY mode */
 			switch (mvBoardPortTypeGet(port)) {

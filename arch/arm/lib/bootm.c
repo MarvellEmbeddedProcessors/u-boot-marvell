@@ -104,8 +104,12 @@ int fixup_memory_node(void *blob)
 	for (bank = 0; bank < CONFIG_NR_DRAM_BANKS; bank++) {
 		start[bank] = gd->dram_hw_info[bank].start;
 		size[bank] = gd->dram_hw_info[bank].size;
-		if ((start[bank] + size[bank]) == _4G)		/* Save 256M for IO at 4G-256M */
-			size[bank] = ((_4G - _256M) - start[bank]);
+
+		/* Binary header preserves IO memory space via L2 filtering at 3.25GB, in order
+		 * to avoid conflict with internal registers IO located 0xd0000000
+		 * if DRAM CS size reaches 4G --> limit CS memory node to 3.25GB*/
+		if ((start[bank] + size[bank]) == _4G)
+			size[bank] = ((_4G - (_512M +_256M)) - start[bank]);
 	}
 #else
 	for (bank = 0; bank < CONFIG_NR_DRAM_BANKS; bank++) {

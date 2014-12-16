@@ -113,7 +113,7 @@ int mv_sdh_init(u32 regbase, u32 max_clk, u32 min_clk, u32 quirks);
 extern void rtc_init(void);
 #endif
 extern int display_dram_config(int print);
-extern int fdt_env_setup(char *fdtfile);
+extern void fdt_env_setup(char *fdtfile, MV_BOOL runUpdate);
 int late_print_cpuinfo(void);
 
 /* CPU address decode table. */
@@ -641,11 +641,9 @@ void misc_init_r_env(void)
 
 	/* Flatten Device Tree environment setup */
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-		fdt_env_setup("armada-38x.dtb");
+	fdt_env_setup("armada-38x.dtb", MV_FALSE); /* static setup: Skip DT update for customer -  */
 #else
-		char *fdtfiles[] = {"armada-388-rd.dtb", "armada-385-db.dtb", "armada-385-rd.dtb",\
-				"armada-385-db-ap.dtb", "armada-388-db-gp.dtb", "armada-382-db.dtb"};
-		fdt_env_setup(fdtfiles[mvBoardIdIndexGet(mvBoardIdGet())]);
+	fdt_env_setup("armada-38x-modular.dtb", MV_TRUE); /* dynamic setup: run DT update for customer -  */
 #endif
 
 #if (CONFIG_BOOTDELAY >= 0)

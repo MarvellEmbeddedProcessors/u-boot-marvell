@@ -104,7 +104,7 @@
 #endif
 
 extern int display_dram_config(int print);
-extern int fdt_env_setup(char *fdtfile);
+extern void fdt_env_setup(char *fdtfile, MV_BOOL runUpdate);
 int late_print_cpuinfo(void);
 
 /* CPU address decode table. */
@@ -629,9 +629,9 @@ void misc_init_r_env(void)
 
 	/* Flatten Device Tree environment setup */
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-		fdt_env_setup("armada-375.dtb");
+	fdt_env_setup("armada-375.dtb", MV_FALSE); /* static setup: Skip DT update for customer -  */
 #else
-		fdt_env_setup("armada-375-db.dtb");
+	fdt_env_setup("armada-375-db.dtb", MV_TRUE); /* dynamic setup: run DT update for customer -  */
 #endif
 
 #if (CONFIG_BOOTDELAY >= 0)

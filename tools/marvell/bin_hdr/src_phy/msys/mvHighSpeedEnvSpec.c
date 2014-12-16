@@ -137,11 +137,11 @@ MV_OP_EXT_PARAMS sgmiiSpeedIntConfigParams[] =
 	/* unit             offset  mask      data     wait  numOf  */
 	/* ID                                 1.25G    Time  Loops */
 	{ SERDES_PHY_UNIT,  0x4,    0xFFFF, { 0xFD8C }, 0,    0 },    /*  FFE_R=0x0, FFE_C=0xF, SQ_THRESH=0x2*/
-	{ SERDES_PHY_UNIT,  0x18,   0xFFFF, { 0x4000 }, 0,    0 },    /*  DFE_RES = 3.3mv*/
+	{ SERDES_PHY_UNIT,  0x18,   0xFFFF, { 0x4F00 }, 0,    0 },    /*  DFE_RES = 3.3mv*/
 	{ SERDES_PHY_UNIT,  0x1C,   0xFFFF, { 0xF047 }, 0,    0 },    /*  DFE UPDAE all coefficient*/
 	{ SERDES_PHY_UNIT,  0x34,   0xFFFF, { 0x406C }, 0,    0 },    /*  TX_AMP=31, AMP_ADJ=1*/
-	{ SERDES_PHY_UNIT,  0x38,   0xFFFF, { 0x1E52 }, 0,    0 },    /*  MUPI/F=2, rx_digclkdiv=2*/
-	{ SERDES_PHY_UNIT,  0x94,   0xFFFF, { 0x0FFF }, 0,    0 },    /*       */
+	{ SERDES_PHY_UNIT,  0x38,   0xFFFF, { 0x1E40 }, 0,    0 },    /*  MUPI/F=2, rx_digclkdiv=2*/
+	{ SERDES_PHY_UNIT,  0x94,   0xFFFF, { 0x1FFF }, 0,    0 },    /*       */
 	{ SERDES_PHY_UNIT,  0x98,   0xFFFF, { 0x66   }, 0,    0 },    /*  set password       */
 	{ SERDES_PHY_UNIT,  0x104,  0xFFFF, { 0x2208 }, 0,    0 },    /*       */
 	{ SERDES_PHY_UNIT,  0x108,  0xFFFF, { 0x243F }, 0,    0 },    /*  Set Gen_RX/TX       */

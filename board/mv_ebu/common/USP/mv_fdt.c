@@ -607,7 +607,7 @@ static int mv_fdt_update_usb(void *fdt, MV_UNIT_ID unitType)
 *******************************************************************************/
 static int mv_fdt_update_pinctrl(void *fdt)
 {
-	char propval[10];				/* property value */
+	char propval[128];				/* property value */
 	const char *prop = "compatible";		/* property name */
 	const char *node = "pinctrl";			/* node name */
 
@@ -1031,9 +1031,9 @@ static int mv_fdt_scan_and_set_alias(void *fdt,
 	int delta;		/* difference between next and current offset */
 	int err = 0;		/* error number */
 	int level = 0;		/* current fdt scanning depth */
-	char aliasname[16];	/* alias name to be stored in '/aliases' node */
+	char aliasname[128];	/* alias name to be stored in '/aliases' node */
 	char path[128] = "";	/* full path to current node */
-	char tmp[24];		/* auxiliary char array for extended node name*/
+	char tmp[128];		/* auxiliary char array for extended node name*/
 	char *cut;		/* auxiliary char pointer */
 	const char *node;	/* node name */
 	uint32_t tag;		/* device tree tag at given offset */
@@ -1209,7 +1209,7 @@ static int mv_fdt_nand_mode_fixup(void *fdt)
 	u32 ecc_val;
 	int nfcoffset, nfc_driver_hal, err;
 	char *nfc_config;
-	char prop[20];
+	char prop[128];
 	char propval[7];
 
 	/* Search for enabled NFC driver in DT */

@@ -43,14 +43,14 @@ disclaimer.
 *	None.
 *
 *******************************************************************************/
-void fdt_env_setup(char *fdtfile)
+void fdt_env_setup(char *fdtfile, MV_BOOL runUpdate)
 {
 #if CONFIG_OF_LIBFDT
 	char *env;
 
 	env = getenv("fdt_skip_update"); /* if set to yes, automatic board setup will be skipped */
 	if (!env)
-		setenv("fdt_skip_update", "no");
+		setenv("fdt_skip_update", runUpdate ? "no" : "yes");
 
 	env = getenv("fdtaddr");
 	if (!env)

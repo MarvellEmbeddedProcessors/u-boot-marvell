@@ -487,6 +487,7 @@ MV_U8 topologyConfigDB381ModeGet(MV_VOID)
 }
 
 SERDES_MAP DefaultLane = { DEFAULT_SERDES, LAST_SERDES_SPEED, SERDES_DEFAULT_MODE };
+MV_BOOL isCustomTopology = MV_FALSE; /* indicate user of non-default topology */
 MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneType)
 {
 	MV_U32 serdesType, laneNum;
@@ -535,10 +536,14 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneTyp
 		laneSelect = (configVal & SATR_DB_LANE1_CFG_MASK) >> SATR_DB_LANE1_CFG_OFFSET;
 		if (laneSelect > SATR_DB_LANE1_MAX_OPTIONS) {
 			mvPrintf("\n\%s: Error: invalid value for SatR field 'dbserdes1' (%x)\n", __func__, laneSelect);
-			mvPrintf("Check 'SatR' configuration ('SatR write default')\n\n");
+			isCustomTopology = MV_TRUE;
 			return MV_FAIL;
 		}
-		serdesMapArray[1] = DBSatRConfigLane1[laneSelect];
+		/* if modified default serdesType for lane#1, update topology and mark it as custom */
+		if (serdesMapArray[1].serdesType != DBSatRConfigLane1[laneSelect].serdesType) {
+			serdesMapArray[1] = DBSatRConfigLane1[laneSelect];
+			isCustomTopology = MV_TRUE;
+		}
 
 		/* verify if lane #1 conflicts with lane #4 (only 1 lane can be USB3 Host port 0)*/
 		if (mvHwsSerdesGetMaxLane() > 4 && serdesMapArray[1].serdesType == serdesMapArray[4].serdesType) {
@@ -550,11 +555,16 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneTyp
 		laneSelect = (configVal & SATR_DB_LANE2_CFG_MASK) >> SATR_DB_LANE2_CFG_OFFSET;
 		if (laneSelect > SATR_DB_LANE2_MAX_OPTIONS) {
 			mvPrintf("\n\%s: Error: invalid value for SatR field 'dbserdes2' (%x)\n", __func__, laneSelect);
-			mvPrintf("Check 'SatR' configuration ('SatR write default')\n\n");
+			isCustomTopology = MV_TRUE;
 			return MV_FAIL;
 		}
-		serdesMapArray[2] = DBSatRConfigLane2[laneSelect];
-		break;
+
+		/* if modified default serdesType for lane@2, update topology and mark it as custom */
+		if (serdesMapArray[2].serdesType != DBSatRConfigLane2[laneSelect].serdesType) {
+			serdesMapArray[2] = DBSatRConfigLane2[laneSelect];
+			isCustomTopology = MV_TRUE;
+		}
+		break; /* case DB_68XX_ID */
 	case DB_GP_68XX_ID: /* read 'gpserdes1' & 'gpserdes2' */
 		twsiSlave.offset = 2;
 		if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
@@ -570,6 +580,7 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneTyp
 			serdesMapArray[1].serdesType = PEX_ROOT_COMPLEX_x1;
 			/* if lane 1 is set to PCIe0 --> disable PCIe0 on lane 0 */
 			serdesMapArray[0] = DefaultLane;
+			isCustomTopology = MV_TRUE;	/* indicate user of non-default topology */
 		}
 		mvPrintf("Lane 1 detection: %s \n" ,laneSelect ? "PCIe0 (mini PCIe)" : "SATA0");
 
@@ -579,10 +590,14 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneTyp
 			serdesMapArray[2].serdesType = PEX1;
 			serdesMapArray[2].serdesSpeed = __5Gbps;
 			serdesMapArray[2].serdesMode = PEX_ROOT_COMPLEX_x1;
+			isCustomTopology = MV_TRUE;	/* indicate user of non-default topology */
 		}
 		mvPrintf("Lane 2 detection: %s \n" ,laneSelect ? "PCIe1 (mini PCIe)" : "SATA1");
-		break;
+		break; /* case DB_GP_68XX_ID */
 	}
+
+	if (isCustomTopology)
+		mvPrintf("\nDetected custom SerDes topology (to restore default run 'SatR write default')\n\n");
 
 	return MV_OK;
 }
@@ -1016,6 +1031,9 @@ MV_STATUS loadTopologyRDSgmiiUsb(MV_BOOL *isSgmii)
 		/* else use the default - USB3 */
 		*isSgmii = MV_FALSE;
 	}
+	if (*isSgmii)
+		isCustomTopology = MV_TRUE;
+
 	mvPrintf("Lane 5 detection: %s \n" ,*isSgmii ? "SGMII2" : "USB3.0 Host Port 1");
 
 	return MV_OK;

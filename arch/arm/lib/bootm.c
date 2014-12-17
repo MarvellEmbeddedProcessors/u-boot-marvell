@@ -105,11 +105,15 @@ int fixup_memory_node(void *blob)
 		start[bank] = gd->dram_hw_info[bank].start;
 		size[bank] = gd->dram_hw_info[bank].size;
 
-		/* Binary header preserves IO memory space via L2 filtering at 3.25GB, in order
-		 * to avoid conflict with internal registers IO located 0xd0000000
-		 * if DRAM CS size reaches 4G --> limit CS memory node to 3.25GB*/
+		/* - Binary header preserves IO memory space via L2 filtering at 3.25GB, in order
+		 *   to avoid conflict with internal registers IO located 0xd0000000.
+		 * - U-Boot updates internal register base to 0xf1000000 (3.75GB)
+		 * - if DRAM CS size reaches 4G --> also limit CS memory node to 3.75GB */
+
+		/* due to LSP issue with unaligned window sizes to power of 2 (3.75GB),
+		 * L2 is temporary set to 3GB: update DT memory node accordingly */
 		if ((start[bank] + size[bank]) == _4G)
-			size[bank] = ((_4G - (_512M +_256M)) - start[bank]);
+			size[bank] = ((_4G - (_1G)) - start[bank]);
 	}
 #else
 	for (bank = 0; bank < CONFIG_NR_DRAM_BANKS; bank++) {

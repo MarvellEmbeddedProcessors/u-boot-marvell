@@ -56,7 +56,11 @@ typedef struct topologyUpdateInfo{
 #define MV_TOPOLOGY_UPDATE_ECC_OFF				0
 #define MV_TOPOLOGY_UPDATE_ECC_OFFSET			4
 
-#define L2_FILTER_FOR_MAX_MEMORY_SIZE 0xD0000000
+/* 1. L2 filter should be set at binary header to 0xD000000,
+ *    to avoid conflict with internal register IO.
+ * 2. U-Boot modifies internal registers base to 0xf100000,
+ *    and than should update L2 filter accordingly to 0xf000000 (3.75 GB) */
+#define L2_FILTER_FOR_MAX_MEMORY_SIZE 0xC0000000 /* temporary limit l2 filter to 3gb (LSP issue) */
 #define ADDRESS_FILTERING_END_REGISTER 0x8c04
 
 #define SUB_VERSION	0

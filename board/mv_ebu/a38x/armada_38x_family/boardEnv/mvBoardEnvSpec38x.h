@@ -78,7 +78,7 @@
 
 /****************************** Customer Boards *******************************/
 /*******************************************************************************
- * A38x Customer Board 0 - Based on RD-AP
+ * A38x Customer Board 0 - Based on DB-BP
  *******************************************************************************/
 #define A38x_CUSTOMER_BOARD_0_MPP0_7		0x11111111
 #define A38x_CUSTOMER_BOARD_0_MPP8_15		0x11111111
@@ -95,6 +95,29 @@
 #define A38x_CUSTOMER_BOARD_0_GPP_OUT_VAL_MID      0x0
 #define A38x_CUSTOMER_BOARD_0_GPP_POL_LOW          0x0
 #define A38x_CUSTOMER_BOARD_0_GPP_POL_MID          0x0
+
+/*******************************************************************************
+ * A38x Customer Board 1 - Based on DB-GP
+ *******************************************************************************/
+#define A38x_CUSTOMER_BOARD_1_MPP0_7		0x11111111
+#define A38x_CUSTOMER_BOARD_1_MPP8_15		0x11111111
+#define A38x_CUSTOMER_BOARD_1_MPP16_23		0x11244011
+#define A38x_CUSTOMER_BOARD_1_MPP24_31		0x22222111
+#define A38x_CUSTOMER_BOARD_1_MPP32_39		0x22200002
+#define A38x_CUSTOMER_BOARD_1_MPP40_47		0x30042022
+#define A38x_CUSTOMER_BOARD_1_MPP48_55		0x55550555
+#define A38x_CUSTOMER_BOARD_1_MPP56_63		0x00005550
+
+#define A38x_CUSTOMER_BOARD_1_GPP_OUT_ENA_LOW	(~(BIT1  | BIT4  | BIT6  | BIT7  | BIT8  | BIT9  | BIT10 | \
+					   BIT11 | BIT19 | BIT22 | BIT23 | BIT25 | BIT26 | \
+					   BIT27 | BIT29 | BIT30 | BIT31))
+					/* PIC (STR) GPIO = 33, 34, 35 */
+#define A38x_CUSTOMER_BOARD_1_GPP_OUT_ENA_MID	(~(BIT0 | BIT1 | BIT2 | BIT3 | BIT4 | BIT15 | BIT16 | BIT17 | BIT18))
+
+#define A38x_CUSTOMER_BOARD_1_GPP_OUT_VAL_LOW	0x0
+#define A38x_CUSTOMER_BOARD_1_GPP_OUT_VAL_MID	0x0
+#define A38x_CUSTOMER_BOARD_1_GPP_POL_LOW		0x0
+#define A38x_CUSTOMER_BOARD_1_GPP_POL_MID		0x0
 
 /******************************* Marvell Boards *******************************/
 

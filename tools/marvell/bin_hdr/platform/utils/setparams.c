@@ -131,7 +131,22 @@ static boardDef boards[] = {
 			"\t} > ram2 = 0x0\n",
 		0x8500
 	},
-	{ "a38x",
+	{ "tip_ld_100kb",
+		"\tram1 : ORIGIN = %#08x, LENGTH = %#x\n"
+		"\tram2 : ORIGIN = 0x40020000, LENGTH = 0x8000\n",
+			"\t. = %#08x;\n"
+			"\t.text1 : {\n"
+			"\t\t*(.text)\n"
+			"\t} > ram1 = 0x0\n\n"
+			"\t.data : {\n"
+			"\t\t*(.data)\n"
+			"\t} > ram1 = 0x0\n\n"
+			"\t.bss : {\n"
+			"\t\t*(.bss)\n"
+			"\t} > ram2 = 0x0\n",
+		0x19000
+	},
+	{ "tip_ld_128kb",
 		"\tram1 : ORIGIN = %#08x, LENGTH = %#x\n"
 		"\tram2 : ORIGIN = 0x40020000, LENGTH = 0x8000\n",
 			"\t. = %#08x;\n"
@@ -162,7 +177,8 @@ void printusage(char *name)
 	printf("-		gen - generic board, used also if the requested board is not known\n");
 	printf("-		alp  - Avanta LP.\n");
 	printf("-		a375 - Armada 375.\n");
-	printf("-		a38x - Armada 38x family.\n");
+	printf("-		tip_ld_100k - TIP devices family which are limited to 100KB in SRAM.\n");
+	printf("-		tip_ld_128k - TIP devices family which are limited to 128KB in SRAM.\n");
 	printf("-d yes	Build the bin_hdr.elf using default linker.scr \n");
 }
 
@@ -178,6 +194,7 @@ int main(int argc, char **argv)
 	FILE		*f_outparm = NULL, *f_outlink = NULL;
 	FILE		*f_reg = NULL, *f_param = NULL;
 	char		*board_name = NULL;
+	char		*temp_board_name = NULL;
 	int 		optch; /* command-line option char */
 	static char	optstring[] = "SR:P:B:d:";
 	int		bIdx;
@@ -227,6 +244,20 @@ int main(int argc, char **argv)
 	board_name = "a375_alp_zx";
 	printf("-Zx");
 #endif
+
+#if defined(TIP_BUILD_LD_100KB)
+	/* build linker script for 100KB size limitation of bin header */
+	temp_board_name = "tip_ld_100kb";
+#elif defined(TIP_BUILD_LD_128KB)
+	/* build linker script for 128KB size limitation of bin header */
+	temp_board_name = "tip_ld_128kb";
+#else
+	/* build linker script for 'legacy' (DDR wise) devices
+	   where there are not limitation on the image structure */
+	temp_board_name = board_name;
+#endif
+
+
 	printf(", %s mode\n", secure == 1 ? "Secure" : "Non-secure");
 	f_outparm = fopen(argv[optind], "w");
 	if (f_outparm == NULL) {
@@ -241,7 +272,7 @@ int main(int argc, char **argv)
 		goto parse_error;
 	}
 
-	/* Count number of REG header parametres */
+	/* Count number of REG header parameters */
 	if (f_reg != NULL) {
 		while (1) {
 			int addr, val;
@@ -255,7 +286,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/* Count number of BIN header parametres */
+	/* Count number of BIN header parameters */
 	if (f_param != NULL) {
 		while (fgets(buf, BUFSIZE-2, f_param) != NULL) {
 			if (strncmp(buf, "0x", 2) != 0)
@@ -279,7 +310,7 @@ int main(int argc, char **argv)
 	DB("Offset before alignment is %#08lx \n", offset + RAM_TOP);
 
 	/* The start address of executable code should be aligned to 128bit boundary using dumb arguments
-	   Othervise the linker will silently align it and the execution will start at the wrong place */
+	   Otherwise the linker will silently align it and the execution will start at the wrong place */
 	memalign = offset & 0xF;
 	if (memalign != 0) {
 		argsnum += (0x10 - memalign) / 4;
@@ -297,9 +328,9 @@ int main(int argc, char **argv)
 	for (bIdx = 0; bIdx < ARRAY_SIZE(boards); bIdx++) {
 		if(debug_mode_flag == 1)
 			break; /*Use generic linker.scr anyway*/
-		if ((strcmp(boards[bIdx].bdName, board_name) == 0) ||
+		if ((strcmp(boards[bIdx].bdName, temp_board_name) == 0) ||
 		     /* alp should use the same parameters as a375 */
-		    ((strcmp(boards[bIdx].bdName, "a375") == 0) && (strcmp(board_name, "alp") == 0)))
+		    ((strcmp(boards[bIdx].bdName, "a375") == 0) && (strcmp(temp_board_name, "alp") == 0)))
 			break;
 	}
 	/* Select generic linker script for unknown board */

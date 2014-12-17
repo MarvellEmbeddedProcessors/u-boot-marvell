@@ -72,6 +72,11 @@ extern "C" {
 #define PHY_MODEL_MASK				0x3F0
 #define PHY_MODEL_OFFSET			4
 
+typedef enum SGMII_MODE {
+	SGMII_1G_1G_MODE,
+	SGMII_2_5G_2_5G_MODE
+} SGMII_MODE;
+
 MV_STATUS mvEth10gPhyHalInit(MV_ETHPHY_HAL_DATA *halData);
 MV_STATUS mvEth10gPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable);
 MV_STATUS mvEthX2242PPhyBasicInit(MV_U32 ethPortNum);

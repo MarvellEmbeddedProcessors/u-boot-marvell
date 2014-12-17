@@ -81,12 +81,20 @@ CSRC_SYS_ENV = $(SYS_ENV)/mvSysEnvLib.c
 
 ifeq "$(CONFIG_ALLEYCAT3)"  "y"
   CSRC_UTILS += $(UTILS)/mv_seq_exec_ext.c
+  #AC3 bin header has 100KB (this sets linker script structure)
+  CPPFLAGS += -DTIP_BUILD_LD_100KB
 else ifeq "$(CONFIG_BOBCAT2)"  "y"
   CSRC_UTILS += $(UTILS)/mv_seq_exec_ext.c
+  #BC2 bin header has 100KB (this sets linker script structure)
+  CPPFLAGS += -DTIP_BUILD_LD_100KB
 else ifeq "$(CONFIG_ARMADA_38X)"  "y"
   CSRC_UTILS += $(UTILS)/mv_seq_exec.c
+  #A-380 bin header has 128KB (this sets linker script structure)
+  CPPFLAGS += -DTIP_BUILD_LD_128KB
 else ifeq "$(CONFIG_ARMADA_39X)"  "y"
   CSRC_UTILS += $(UTILS)/mv_seq_exec.c
+  #A-390 bin header has 128KB (this sets linker script structure)
+  CPPFLAGS += -DTIP_BUILD_LD_128KB
 endif
 
 CSRC = $(CSRC_DRV) $(CSRC_UTILS) $(CSRC_SYS_ENV)

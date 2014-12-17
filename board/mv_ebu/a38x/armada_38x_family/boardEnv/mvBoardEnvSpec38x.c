@@ -69,7 +69,7 @@
 
 /***************************************** Customer Boards *****************************************/
 /*******************************************************************************
- * A38x Customer Board 0 - Based on RD-AP
+ * A38x Customer Board 0 - Based on DB-BP
  *******************************************************************************/
 #define A38x_CUSTOMER_BOARD_0_NAND_READ_PARAMS		0x000C0282
 #define A38x_CUSTOMER_BOARD_0_NAND_WRITE_PARAMS		0x00010305
@@ -190,12 +190,128 @@ MV_BOARD_INFO armada_38x_customer_board_0_info = {
 	.boardOptionsModule		= MV_MODULE_NO_MODULE
 };
 
+/*******************************************************************************
+ * A38x Customer Board 1 - Based on DB-GP
+ *******************************************************************************/
+MV_BOARD_TWSI_INFO armada_38x_customer_1_BoardTwsiDev[] = {
+	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{ BOARD_DEV_TWSI_SATR,	0,	0x57, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,	1,	0x4C, ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,	2,	0x4D, ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	0,	0x20, ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	1,	0x21, ADDR7_BIT, MV_FALSE},
+};
+MV_BOARD_MAC_INFO armada_38x_customer_1_BoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x1, 0x1},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
+	{ BOARD_MAC_SPEED_AUTO,  -1,  -1}
+};
+
+MV_DEV_CS_INFO armada_38x_customer_1_BoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS1,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS2,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS3,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
+	{ SPI0_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_TRUE },	/* SPI0 DEV */
+	{ SPI0_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS2,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI1_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS2,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE }	/* SPI1 DEV */
+};
+
+MV_BOARD_MPP_INFO armada_38x_customer_1_BoardMppConfigValue[] = {
+	{ {
+		A38x_CUSTOMER_BOARD_1_MPP0_7,
+		A38x_CUSTOMER_BOARD_1_MPP8_15,
+		A38x_CUSTOMER_BOARD_1_MPP16_23,
+		A38x_CUSTOMER_BOARD_1_MPP24_31,
+		A38x_CUSTOMER_BOARD_1_MPP32_39,
+		A38x_CUSTOMER_BOARD_1_MPP40_47,
+		A38x_CUSTOMER_BOARD_1_MPP48_55,
+		A38x_CUSTOMER_BOARD_1_MPP56_63,
+	} }
+};
+
+struct MV_BOARD_IO_EXPANDER armada_38x_customer_1_IoExpanderInfo[] = {
+	{0, 6, 0x20}, /* Configuration registers: Bit on --> Input bits */
+	{0, 7, 0xC3}, /* Configuration registers: Bit on --> Input bits */
+	{0, 2, 0x1D}, /* Output Data, register#0 */
+	{0, 3, 0x3C}, /* Output Data, register#1 */
+	{1, 6, 0xC3}, /* Configuration registers: Bit on --> Input bits  */
+	{1, 7, 0x31}, /* Configuration registers: Bit on --> Input bits  */
+	{1, 2, 0x08}, /* Output Data, register#0 */
+	{1, 3, 0xC0}  /* Output Data, register#1 */
+};
+
+MV_BOARD_INFO armada_38x_customer_board_1_info = {
+	.boardName			= "A38x-Customer-Board-1",
+	.numBoardNetComplexValue	= 0,
+	.pBoardNetComplexInfo		= NULL,
+	.pBoardMppConfigValue		= armada_38x_customer_1_BoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(armada_38x_customer_1_BoardDeCsInfo),
+	.pDevCsInfo				= armada_38x_customer_1_BoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(armada_38x_customer_1_BoardTwsiDev),
+	.pBoardTwsiDev			= armada_38x_customer_1_BoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(armada_38x_customer_1_BoardMacInfo),
+	.pBoardMacInfo			= armada_38x_customer_1_BoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= 0,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow			= A38x_CUSTOMER_BOARD_1_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= A38x_CUSTOMER_BOARD_1_GPP_OUT_ENA_MID,
+	.gppOutValLow			= A38x_CUSTOMER_BOARD_1_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= A38x_CUSTOMER_BOARD_1_GPP_OUT_VAL_MID,
+	.gppPolarityValLow		= A38x_CUSTOMER_BOARD_1_GPP_POL_LOW,
+	.gppPolarityValMid		= A38x_CUSTOMER_BOARD_1_GPP_POL_MID,
+
+	/* TDM */
+	.numBoardTdmInfo		= {},
+	.pBoardTdmInt2CsInfo		= {},
+	.boardTdmInfoIndex		= -1,
+
+	.pBoardSpecInit			= NULL,
+
+	/* NAND init params */
+	.nandFlashReadParams		= A38x_CUSTOMER_BOARD_0_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= A38x_CUSTOMER_BOARD_0_NAND_WRITE_PARAMS,
+	.nandFlashControl		= A38x_CUSTOMER_BOARD_0_NAND_CONTROL,
+	.nandIfMode			= NAND_IF_NFC,
+
+	.isSdMmcConnected		= MV_TRUE,
+
+	/* NOR init params */
+	.norFlashReadParams		= A38x_CUSTOMER_BOARD_0_NOR_READ_PARAMS,
+	.norFlashWriteParams		= A38x_CUSTOMER_BOARD_0_NOR_WRITE_PARAMS,
+	/* Enable modules auto-detection. */
+	.configAutoDetect		= MV_FALSE,
+	.numIoExp			= ARRSZ(armada_38x_customer_1_IoExpanderInfo),
+	.pIoExp				= armada_38x_customer_1_IoExpanderInfo,
+	.boardOptionsModule		= MV_MODULE_NO_MODULE
+};
+
 /*
- * All supported A380 boards
+ * All supported A380 customer boards
  */
 MV_BOARD_INFO *customerBoardInfoTbl[] = {
 	&armada_38x_customer_board_0_info,
-	&armada_38x_customer_board_0_info
+	&armada_38x_customer_board_1_info
 };
 
 

@@ -1387,8 +1387,10 @@ static int mv_fdt_update_pic_gpio(void *fdt)
 	char propval[256] = "";
 	int err, len = 0, nodeoffset, i, gpioMaxNum = mvBoardPICGpioGet(picGpioInfo);
 
-	if (gpioMaxNum <= 0) /* if current board has no MPP Pins dedicated for PIC */
-		return -1;
+	if (gpioMaxNum <= 0) {/* if current board has no MPP Pins dedicated for PIC */
+		mv_fdt_dprintf("'pic-pins-0' & 'pm_pic' update skipped: no dedicated PIC GPIO Pins\n");
+		return 0;
+	}
 
 	/* set pinctrl/pic-pins-0/marvell,pins property as concatenated strings.
 	 * (i.e : marvell,pins = "mpp33", "mpp34", "mpp35")

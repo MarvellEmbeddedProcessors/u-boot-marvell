@@ -201,3 +201,132 @@ MV_STATUS mvEth10gPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable)
 	}
 	return MV_OK;
 }
+
+void initSgmiiModeLineSide(MV_U32 phyAddr)
+{
+
+	/*Line side WAs*/
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB841, 0xE000);
+
+
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2014); /*b xx10 0000 0001 0100 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2114); /*b xx10 0001 0001 0100 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2214); /*b xx10 0010 0001 0100 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2314); /*b xx10 0011 0001 0100 */
+
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2414); /*b xx10 0100 0001 0100 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2514); /*b xx10 0101 0001 0100 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2614); /*b xx10 0110 0001 0100 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2714); /*b xx10 0111 0001 0100 */
+
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2826); /*b xx10 1000 0010 0110 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2938); /*b xx10 1001 0011 1000 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2A4A); /*b xx10 1010 0100 1010 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2B5C); /*b xx10 1011 0101 1100 */
+
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2C6D); /*b xx10 1100 0110 1101 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2D7E); /*b xx10 1101 0111 1110 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2E8F); /*b xx10 1110 1000 1111 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x2F9F); /*b xx10 1111 1001 1111 */
+
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x3014); /*b xx11 0000 0001 0100 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x3126); /*b xx11 0001 0010 0110 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x3238); /*b xx11 0010 0011 1000 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x334A); /*b xx11 0011 0100 1010 */
+
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x345C); /*b xx11 0100 0101 1100 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x356D); /*b xx11 0101 0110 1101 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x367E); /*b xx11 0110 0111 1110 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x378F); /*b xx11 0111 1000 1111 */
+
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x389F); /*b xx11 1000 1001 1111 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x399F); /*b xx11 1001 1001 1111 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x3A9F); /*b xx11 1010 1001 1111 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x3B9F); /*b xx11 1011 1001 1111 */
+
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x3C9F); /*b xx11 1100 1001 1111 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x3D9F); /*b xx11 1101 1001 1111 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x3E9F); /*b xx11 1110 1001 1111 */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E6, 0x3F9F); /*b xx11 1111 1001 1111 */
+
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1E7, 0xc000); /*b 11xx xxxx xxxx xxxx */
+
+	/*PCS Reset*/
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1F, 0xF003, 0x8080);
+}
+
+/*
+ *1G-1G initialization for the 2242p phy
+ *
+ *
+ */
+MV_STATUS mvEthX2242PPhy1GInit(MV_U32 ethPortNum)
+{
+	MV_U32 phyAddr;
+
+	phyAddr = eth10gPhyHalData.phyAddr[ethPortNum];
+
+	/* Chip HW Reset */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1F, 0xF404, 0x4000);
+
+	udelay(100000000);
+	/*1GX-1GX mode programming*/
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1F, 0xF002, 0x7A7A);
+
+	udelay(10000000);
+
+	/* Host side WAs*/
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0x9041, 0x0001);
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0x81D4, 0x0006);
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0x8194, 0x0600);
+
+	initSgmiiModeLineSide(phyAddr);
+
+	/*TX_DISABLE write*/
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1F, 0xF012, 0x0CBC);
+	return MV_TRUE;
+}
+
+
+/*
+ *2.5G-2.5G initialization for the 2242p phy
+ *
+ *
+ */
+MV_STATUS mvEthX2242PPhy2_5GInit(MV_U32 ethPortNum)
+{
+	MV_U32 phyAddr;
+
+	phyAddr = eth10gPhyHalData.phyAddr[ethPortNum];
+
+	/* Chip HW Reset */
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1F, 0xF404, 0x4000);
+
+	udelay(100000000);
+	/*2.5G-2.5G mode programming*/
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1F, 0xF002, 0x7676);
+
+	udelay(100000000);
+
+	/* Host side WAs*/
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0x9041, 0x0001);
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0x8066, 0x8000);
+	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0x818F, 0x0600);
+
+	initSgmiiModeLineSide(phyAddr);
+
+	return MV_TRUE;
+}
+
+MV_STATUS initSgmiiMode(MV_U32 ethPortNum, SGMII_MODE mode)
+{
+	switch (mode) {
+	case SGMII_1G_1G_MODE:
+		return mvEthX2242PPhy1GInit(ethPortNum);
+	case SGMII_2_5G_2_5G_MODE:
+		return mvEthX2242PPhy2_5GInit(ethPortNum);
+	default:
+		mvOsPrintf("Error - unknown SGMII mode\n");
+	}
+	return MV_FALSE;
+}

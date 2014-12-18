@@ -91,6 +91,7 @@ void arch_lmb_reserve(struct lmb *lmb)
 }
 
 #ifdef CONFIG_OF_LIBFDT
+extern void mvCpuIfMbusWindowSet(u32 base, u32 size);
 int fixup_memory_node(void *blob)
 {
 #ifndef CONFIG_MARVELL
@@ -99,6 +100,7 @@ int fixup_memory_node(void *blob)
 	int bank;
 	u64 start[CONFIG_NR_DRAM_BANKS];
 	u64 size[CONFIG_NR_DRAM_BANKS];
+	u64 l2_base;
 
 #ifdef CONFIG_MARVELL
 	for (bank = 0; bank < CONFIG_NR_DRAM_BANKS; bank++) {
@@ -112,8 +114,13 @@ int fixup_memory_node(void *blob)
 
 		/* due to LSP issue with unaligned window sizes to power of 2 (3.75GB),
 		 * L2 is temporary set to 3GB: update DT memory node accordingly */
-		if ((start[bank] + size[bank]) == _4G)
-			size[bank] = ((_4G - (_1G)) - start[bank]);
+		if ((start[bank] + size[bank]) == _4G) {
+			l2_base = (_4G - _1G);
+			size[bank] = (l2_base - start[bank]);
+			/* LSP is temporarily wrongly deriving DRAM windows limitation from MBus.
+			 * as a temp WA, align Mbus bridge with L2 base */
+			mvCpuIfMbusWindowSet(l2_base, _4G - l2_base);
+		}
 	}
 #else
 	for (bank = 0; bank < CONFIG_NR_DRAM_BANKS; bank++) {

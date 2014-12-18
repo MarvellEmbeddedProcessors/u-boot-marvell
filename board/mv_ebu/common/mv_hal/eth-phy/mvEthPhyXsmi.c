@@ -102,6 +102,34 @@ MV_STATUS mvEthPhyXsmiHalInit(MV_ETHPHY_XSMI_HAL_DATA *halData)
 	return MV_OK;
 }
 
+
+/*******************************************************************************
+* mvEthPhyXsmiSpeedSet -
+*
+* DESCRIPTION:
+*       Set the division factor of the core clock of the XSMI bus.
+*
+* INPUT:
+*       divisor: The clock divisor to be set.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_OK on success, MV_ERROR otherwise.
+*
+*******************************************************************************/
+MV_STATUS mvEthPhyXsmiSpeedSet(MV_XSMI_CLOCK_DIVISOR divisor)
+{
+	MV_U32 reg;
+
+	reg = MV_MEMIO_LE32_READ(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_CFG_ADDR);
+	reg &= ~ETH_PHY_XSMI_CFG_DIV_MASK;
+	reg |= (divisor << ETH_PHY_XSMI_CFG_DIV_OFFS);
+	MV_MEMIO_LE32_WRITE(ethphyXsmiHalData.ethPhyXsmiRegOff + ETH_PHY_XSMI_CFG_ADDR, reg);
+	return MV_OK;
+}
+
 /*******************************************************************************
 * mvEthPhyXsmiCheckParam - check parameters of XSMI interface
 *

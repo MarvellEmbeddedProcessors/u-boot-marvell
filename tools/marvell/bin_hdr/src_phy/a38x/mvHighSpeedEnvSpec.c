@@ -72,7 +72,6 @@
 #else
 #error "No device is defined"
 #endif
-
 #define SLOWDOWN  mvOsUDelay(50);
 
 #ifdef REGISTER_TRACE_DEBUG
@@ -240,6 +239,9 @@ MV_OP_PARAMS sataAndSgmiiTxConfigSerdesRev2Params2[] =
     { COMMON_PHY_STATUS1_REG,           0x28,        0x1,           { 0x1,          0x1        },   1,          1000        },  /* Wait for PHY power up sequence to finish */
     { COMMON_PHY_CONFIGURATION1_REG,    0x28,        0x40000000,    { NA,           0x0        },   0,          0           },  /* De-assert Rx Init for SGMII */
     { ISOLATE_REG,                      0x800,       0x400,         { 0x0,          NA         },   0,          0           },  /* De-assert Rx Init for SATA */
+    { RX_REG3,                          0x800,      0xFF,           { 0xDA,      NO_DATA        },  0,          0           },  /* os_ph_offset_force (align 90) */
+    { RX_REG3,                          0x800,      0x100,          { 0x100,      NO_DATA       },  0,          0           },  /* Set os_ph_valid */
+    { RX_REG3,                          0x800,      0x100,          { 0x0,      NO_DATA         },  0,          0           },  /* Unset os_ph_valid */
 };
 
 MV_OP_PARAMS sataElectricalConfigSerdesRev1Params[] =
@@ -261,16 +263,24 @@ MV_OP_PARAMS sataElectricalConfigSerdesRev1Params[] =
 MV_OP_PARAMS sataElectricalConfigSerdesRev2Params[] =
 {
 	/* unitunitBaseReg					unitOffset	 mask		SATA data		waitTime    numOfLoops */
-	{ COMMON_PHY_CONFIGURATION4_REG,	0x28,	    0x400008,	{ 0x400000,	},   	0,			0		},  /* enable SSC and DFE update enable */
-	{ G1_SETTINGS_0_REG,				0x800,	    0xFFFF,		{ 0x8A32,	},   	0,			0		},  /* G1_TX SLEW, EMPH1 and AMP */
-	{ G1_SETTINGS_1_REG,				0x800,	    0x3FF,		{ 0x3C9,	},   	0,			0		},  /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
-	{ G2_SETTINGS_0_REG,				0x800,	    0xFFFF,		{ 0x8B5C,	},   	0,			0		},  /* G2_TX SLEW, EMPH1 and AMP */
-	{ G2_SETTINGS_1_REG,				0x800,	    0x3FF,		{ 0x3D2,	},   	0,			0		},  /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
-	{ G3_SETTINGS_0_REG,				0x800,	    0xFFFF,		{ 0xE6E,	},   	0,			0		},  /* G3_TX SLEW, EMPH1 and AMP */
-	{ G3_SETTINGS_1_REG,				0x800,	    0x3FF,		{ 0x3D2,	},   	0,			0		},  /* G3_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
-	{ CAL_REG6,							0x800,	    0xFF00,		{ 0xDD00,	},   	0,			0		},  /* Cal rxclkalign90 ext enable and Cal os ph ext */
-	{ RX_REG2,							0x800,	    0xF0,		{ 0x70,		},   	0,			0		},  /* Dtl Clamping disable and Dtl clamping Sel(6000ppm) */
+	{ COMMON_PHY_CONFIGURATION4_REG,	0x28,		0x400008,	{ 0x400000,},   	0,	0	},  /* enable SSC and DFE update enable */
+	{ G1_SETTINGS_0_REG,			0x800,		0xFFFF,	{ 0x8A32,},	0,	0	},  /* G1_TX SLEW, EMPH1 and AMP */
+	{ G1_SETTINGS_1_REG,			0x800,		0x3FF,	{ 0x3C9,},	0,	0	},  /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ G2_SETTINGS_0_REG,			0x800,		0xFFFF,	{ 0x8B5C,},	0,	0	},  /* G2_TX SLEW, EMPH1 and AMP */
+	{ G2_SETTINGS_1_REG,			0x800,		0x3FF,	{ 0x3D2,},	0,	0	},  /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+	{ G3_SETTINGS_0_REG,			0x800,		0xFFFF,	{ 0xE6E,},	0,	0	},  /* G3_TX SLEW, EMPH1 and AMP */
+	{ G3_SETTINGS_1_REG,			0x800,		0x7FF,	{ 0x7D2,},	0,	0	},  /* G3_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI & DFE_En Gen3*/
+//	{ CAL_REG6,				0x800,		0xFF00,	{ 0xDD00,},	0,	0	},  /* Cal rxclkalign90 ext enable and Cal os ph ext */
+	{ RX_REG2,				0x800,		0xF0,	{ 0x70,	},	0,	0	},  /* Dtl Clamping disable and Dtl clamping Sel(6000ppm) */
+	{ VTHIMPCAL_CTRL_REG,			0x800,		0xFF00,	{ 0x3000},	0,	0	}, /* tximpcal_th and rximpcal_th */
+	{ DFE_REG0,				0x800,		0xF,	{ 0xA	},	0,	0	}, /* DFE_STEP_FINE_FX[3:0] =0xA */
+	{ DFE_REG3,				0x800,		0xC000,	{ 0x0	},	0,	0	}, /* DFE_EN and Dis Update control from pin disable */
+	{ G1_SETTINGS_3_REG,			0x800,		0xFF,	{ 0xAF	},	0,	0	}, /* FFE Force FFE_REs and cap settings for Gen1 */
+	{ G2_SETTINGS_3_REG,			0x800,		0xFF,	{ 0xBF	},	0,	0	}, /* FFE Force FFE_REs and cap settings for Gen2 */
+	{ G3_SETTINGS_3_REG,			0x800,		0xFF,	{ 0xAF	},	0,	0	}, /* FE Force FFE_REs and cap settings for Gen3n */
+
 };
+
 
 MV_OP_PARAMS sgmiiElectricalConfigSerdesRev1Params[] =
 {
@@ -423,7 +433,7 @@ MV_OP_PARAMS pexElectricalConfigSerdesRev2Params[] =
     { PCIE_REG1,                0x800,      0xF80,      { 0xD00     },      0,          0       }, /* Tx amplitude for Tx Margin 0 */
     { PCIE_REG3,                0x800,      0xFF00,     { 0xAF00    },      0,          0       }, /* Tx_Emph value for -3.5dB and -6dB */
     { LANE_CFG4_REG,            0x800,      0x8,        { 0x8       },      0,          0       }, /* CFG_DFE_EN_SEL */
-    { VTHIMPCAL_CTRL_REG,       0x800,      0xFF00,     { 0x4000    },      0,          0       }, /* tximpcal_th and rximpcal_th */
+    { VTHIMPCAL_CTRL_REG,       0x800,      0xFF00,     { 0x3000    },      0,          0       }, /* tximpcal_th and rximpcal_th */
 };
 
 /*****************/

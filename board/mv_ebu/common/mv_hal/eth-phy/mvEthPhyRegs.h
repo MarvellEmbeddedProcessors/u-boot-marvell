@@ -130,6 +130,11 @@ extern "C" {
 #define ETH_PHY_XSMI_REG_ADDR_OFFS		0
 #define ETH_PHY_XSMI_REG_ADDR_MASK		(0xffff << ETH_PHY_XSMI_REG_ADDR_OFFS)
 
+/* XSMI configuration register */
+#define ETH_PHY_XSMI_CFG_ADDR			0xC
+#define ETH_PHY_XSMI_CFG_DIV_OFFS		0
+#define ETH_PHY_XSMI_CFG_DIV_MASK		(0x3 << ETH_PHY_XSMI_CFG_DIV_OFFS)
+
 /* PHY registers and bits */
 #define ETH_PHY_CTRL_REG                0
 #define ETH_PHY_STATUS_REG              1

@@ -69,12 +69,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern "C" {
 #endif
 
+typedef enum {
+	XSMI_CLOCK_DIV_256 = 0,
+	XSMI_CLOCK_DIV_64 = 1,
+	XSMI_CLOCK_DIV_32 = 2,
+	XSMI_CLOCK_DIV_8 = 3
+} MV_XSMI_CLOCK_DIVISOR;
+
 typedef struct mvEthPhyXsmiHalData {
 	MV_U16		ctrlModel;
 	MV_U32		ethPhyXsmiRegOff;		/* Ethernet unit PHY XSMI register offset */
 } MV_ETHPHY_XSMI_HAL_DATA;
 
 MV_STATUS mvEthPhyXsmiHalInit(MV_ETHPHY_XSMI_HAL_DATA *halData);
+MV_STATUS mvEthPhyXsmiSpeedSet(MV_XSMI_CLOCK_DIVISOR divisor);
 MV_STATUS mvEthPhyXsmiRegRead(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, MV_U16 *data);
 MV_STATUS mvEthPhyXsmiRegWrite(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, MV_U16 data);
 MV_STATUS mvEthPhyXsmiRegReadModifyWrite(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, MV_U16 data);

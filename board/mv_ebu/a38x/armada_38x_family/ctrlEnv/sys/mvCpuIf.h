@@ -111,6 +111,7 @@ MV_U32 	  mvCpuIfPciRemap(MV_TARGET pciTarget, MV_ADDR_WIN *pAddrDecWin);
 MV_VOID   mvCpuIfAddDecShow(MV_VOID);
 
 MV_STATUS mvCpuIfLvdsPadsEnable(MV_BOOL enable);
+MV_VOID mvCpuIfMbusWindowSet(MV_U32 base, MV_U32 size);
 
 #ifdef __cplusplus
 }

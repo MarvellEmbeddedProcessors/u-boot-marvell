@@ -1387,8 +1387,13 @@ static int mv_fdt_update_pic_gpio(void *fdt)
 	char propval[256] = "";
 	int err, len = 0, nodeoffset, i, gpioMaxNum = mvBoardPICGpioGet(picGpioInfo);
 
-	if (gpioMaxNum <= 0) {/* if current board has no MPP Pins dedicated for PIC */
-		mv_fdt_dprintf("'pic-pins-0' & 'pm_pic' update skipped: no dedicated PIC GPIO Pins\n");
+	/* if board has no dedicated PIC MPP Pins: remove 'pm_pic' & 'pinctrl/pic-pins-0' */
+	if (gpioMaxNum <= 0) {
+		mv_fdt_dprintf("'pic-pins-0' & 'pm_pic' nodes removed: no dedicated PIC GPIO Pins\n");
+		if (mv_fdt_remove_node(fdt, picPinsNode))
+			mv_fdt_dprintf("Failed to remove %s\n", picPinsNode);
+		if (mv_fdt_remove_node(fdt, pm_picNode))
+			mv_fdt_dprintf("Failed to remove %s\n", pm_picNode);
 		return 0;
 	}
 

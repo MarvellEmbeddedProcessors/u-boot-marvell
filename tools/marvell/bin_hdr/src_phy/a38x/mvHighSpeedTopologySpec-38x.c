@@ -486,12 +486,11 @@ MV_U8 topologyConfigDB381ModeGet(MV_VOID)
 	return DB_381_CONFIG_DEFAULT;
 }
 
-SERDES_MAP DefaultLane = { DEFAULT_SERDES, LAST_SERDES_SPEED, SERDES_DEFAULT_MODE };
-MV_BOOL isCustomTopology = MV_FALSE; /* indicate user of non-default topology */
-MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneType)
+/* read SatR field 'sgmiispeed' and update lane topology SGMII entries speed setup */
+MV_STATUS updateTopologySgmiiSpeed(SERDES_MAP  *serdesMapArray)
 {
 	MV_U32 serdesType, laneNum;
-	MV_U8 configVal, laneSelect;
+	MV_U8 configVal;
 	MV_TWSI_SLAVE twsiSlave;
 
 	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
@@ -519,10 +518,21 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray , MV_BOOL updateLaneTyp
 			}
 		}
 	}
+	return MV_OK;
+}
 
-	/* if board supports dynamic update of lanes 1&2 topology */
-	if (!updateLaneType)
-		return MV_OK;
+SERDES_MAP DefaultLane = { DEFAULT_SERDES, LAST_SERDES_SPEED, SERDES_DEFAULT_MODE };
+MV_BOOL isCustomTopology = MV_FALSE; /* indicate user of non-default topology */
+/* read SatR fields (dbserdes1/2 , gpserdes1/2/5) and update lane topology accordingly */
+MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray)
+{
+	MV_U8 configVal, laneSelect;
+	MV_TWSI_SLAVE twsiSlave;
+
+	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.moreThen256 = MV_TRUE;
 
 	switch (mvBoardIdGet()) {
 	case DB_68XX_ID: /* read 'dbserdes1' & 'dbserdes2' */
@@ -701,9 +711,10 @@ MV_STATUS loadTopologyDB381(SERDES_MAP  *serdesMapArray)
 	}
 	/* if not detected any SerDes Site module, read 'SatR' lane setup */
 	if (topologyMode == DB_381_CONFIG_DEFAULT)
-		updateTopologySatR(serdesMapArray, MV_TRUE);
-	else
-		updateTopologySatR(serdesMapArray, MV_FALSE);
+		updateTopologySatR(serdesMapArray);
+
+	/* update 'sgmiispeed' settings */
+	updateTopologySgmiiSpeed(serdesMapArray);
 
 	return MV_OK;
 }
@@ -759,9 +770,10 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 	}
 	/* if not detected any SerDes Site module, read 'SatR' lane setup */
 	if (topologyMode == DB_CONFIG_DEFAULT)
-		updateTopologySatR(serdesMapArray, MV_TRUE);
-	else
-		updateTopologySatR(serdesMapArray, MV_FALSE);
+		updateTopologySatR(serdesMapArray);
+
+	/* update 'sgmiispeed' settings */
+	updateTopologySgmiiSpeed(serdesMapArray);
 
 	return MV_OK;
 }
@@ -788,7 +800,7 @@ MV_STATUS loadTopologyDBAp(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[laneNum].swapTx      = topologyConfigPtr[laneNum].swapTx;
 	}
 
-	updateTopologySatR(serdesMapArray, MV_FALSE);
+	updateTopologySgmiiSpeed(serdesMapArray);
 
 	return MV_OK;
 }
@@ -827,7 +839,8 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray)
 	}
 
 	/* update 'gpserdes1/2/3' lane configuration , and 'sgmiispeed' for SGMII lanes */
-	updateTopologySatR(serdesMapArray, MV_TRUE);
+	updateTopologySatR(serdesMapArray);
+	updateTopologySgmiiSpeed(serdesMapArray);
 
 	return MV_OK;
 }
@@ -870,7 +883,7 @@ MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
 		CHECK_STATUS(loadTopologyRDAp(serdesMapArray));
 	}
 
-	updateTopologySatR(serdesMapArray, MV_FALSE);
+	updateTopologySgmiiSpeed(serdesMapArray);
 
 	return MV_OK;
 }

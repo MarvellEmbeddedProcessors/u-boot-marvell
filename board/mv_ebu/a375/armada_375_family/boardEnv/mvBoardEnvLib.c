@@ -1791,7 +1791,8 @@ MV_32 mvBoardGetDevicesNumber(MV_BOARD_DEV_CLASS devClass)
 	MV_U32 foundIndex = 0, devNum;
 
 	for (devNum = START_DEV_CS; devNum < board->numBoardDeviceIf; devNum++)
-		if (board->pDevCsInfo[devNum].devClass == devClass)
+		if ((board->pDevCsInfo[devNum].devClass == devClass) &&
+			(board->pDevCsInfo[devNum].active == MV_TRUE))
 			foundIndex++;
 
 	return foundIndex;

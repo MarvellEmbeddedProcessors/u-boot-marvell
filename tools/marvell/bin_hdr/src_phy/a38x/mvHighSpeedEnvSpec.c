@@ -997,6 +997,9 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 	SERDES_MODE  serdesMode;
 	MV_BOOL      serdesRxPolaritySwap;
 	MV_BOOL      serdesTxPolaritySwap;
+	MV_BOOL      isPexEnabled = MV_FALSE; /* flag which indicates that one of the
+                                             Serdes is of PEX. in this case, PEX
+                                             unit will be initialized after Serdes power-up */
 
 	DEBUG_INIT_FULL_S("\n### powerUpSerdesLanes ###\n");
 
@@ -1021,6 +1024,8 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 		/* serdes lane is not in use */
 		if (serdesType == DEFAULT_SERDES)
 			continue;
+		else if(serdesType <= PEX3) /* PEX type */
+			isPexEnabled = MV_TRUE;
 
 		refClock = mvHwsSerdesGetRefClockVal(serdesType);
 		if (refClock == REF_CLOCK_UNSUPPORTED) {
@@ -1043,13 +1048,16 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 			CHECK_STATUS(mvSerdesPolarityConfig(serdesLaneNum, MV_FALSE));
 	}
 
-    /* Set PEX_TX_CONFIG_SEQ sequence for PEXx4 mode.
-       After finish the PowerUp sequence for all lanes,
-       the lanes should be released from reset state.	*/
-	CHECK_STATUS(mvHwsPexTxConfigSeq(serdesConfigMap));
+	if(isPexEnabled)
+	{
+		/* Set PEX_TX_CONFIG_SEQ sequence for PEXx4 mode.
+		   After finish the PowerUp sequence for all lanes,
+		   the lanes should be released from reset state.	*/
+		CHECK_STATUS(mvHwsPexTxConfigSeq(serdesConfigMap));
 
-	/* PEX configuration*/
-	CHECK_STATUS(mvHwsPexConfig(serdesConfigMap));
+		/* PEX configuration*/
+		CHECK_STATUS(mvHwsPexConfig(serdesConfigMap));
+	}
 
 	/* USB2 configuration */
 	DEBUG_INIT_FULL_S("powerUpSerdesLanes: init USB2 Phys\n");

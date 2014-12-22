@@ -137,8 +137,8 @@
 #define GLOBAL_PM_CTRL                          0xa0740
 
 /* SATA registers */
-#define SATA_CTRL_REG_INDIRECT                  0xa80a0
-#define SATA_CTRL_REG                           0xa80a4
+#define SATA_CTRL_REG_IND_ADDR                  0xa80a0
+#define SATA_CTRL_REG_IND_DATA                  0xa80a4
 
 #define SATA_VENDOR_PORT_0_REG_ADDR             0xa8178
 #define SATA_VENDOR_PORT_1_REG_ADDR             0xa81F8

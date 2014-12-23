@@ -170,15 +170,15 @@ MV_STATUS mvHwsTwsiInitWrapper(MV_VOID)
 	return MV_OK;
 }
 
-/************************************************************************************
+/*******************************************************************************
 * mvSysEnvSuspendWakeupCheck
 * DESCRIPTION:	 	Reads GPIO input for suspend-wakeup indication.
 * INPUT:	 	None.
 * OUTPUT:
 * RRETURNS:	MV_U32 indicating suspend wakeup status:
-* 		0 - normal initialization, otherwise - suspend wakeup.
+* 0 - Not supported, 1 - supported: read magic word detect wakeup, 2 - detected wakeup from GPIO.
  ***************************************************************************/
-MV_U32 mvSysEnvSuspendWakeupCheck(void)
+MV_SUSPEND_WAKEUP_STATUS mvSysEnvSuspendWakeupCheck(void)
 {
 	MV_U32 reg, boardIdIndex, gpio;
 	MV_BOARD_WAKEUP_GPIO boardGpio[] = MV_BOARD_WAKEUP_GPIO_INFO;
@@ -186,15 +186,15 @@ MV_U32 mvSysEnvSuspendWakeupCheck(void)
 	boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
 	if (!(sizeof(boardGpio)/sizeof(MV_BOARD_WAKEUP_GPIO) > boardIdIndex)) {
 		mvPrintf("\nFailed loading Suspend-Wakeup information (invalid board ID)\n");
-		return 0;
+		return MV_SUSPEND_WAKEUP_DISABLED;
 	}
 
 	/* - Detect if Suspend-Wakeup is supported on current board
 	 * - Fetch the GPIO number for wakeup status input indication */
 	if (boardGpio[boardIdIndex].gpioNum == -1)
-		return 0; /* suspend to RAM is not supported */
+		return MV_SUSPEND_WAKEUP_DISABLED; /* suspend to RAM is not supported */
 	else if (boardGpio[boardIdIndex].gpioNum == -2)
-		return 1; /* suspend to RAM is supported but GPIO indication is not implemented - Skip */
+		return MV_SUSPEND_WAKEUP_ENABLED; /* suspend to RAM is supported but GPIO indication is not implemented - Skip */
 	else
 		gpio = boardGpio[boardIdIndex].gpioNum;
 
@@ -211,7 +211,8 @@ MV_U32 mvSysEnvSuspendWakeupCheck(void)
 	/* Check GPP for input status from PIC: 0 - regular init, 1 - suspend wakeup */
 	reg = MV_REG_READ(GPP_DATA_IN_REG(GPP_REG_NUM(gpio)));
 
-	return reg & GPP_MASK(gpio);
+	/* if GPIO is ON: wakeup from S2RAM indication detected */
+	return (reg & GPP_MASK(gpio)) ? MV_SUSPEND_WAKEUP_ENABLED_GPIO_DETECTED: MV_SUSPEND_WAKEUP_DISABLED;
 }
 
 /************************************************************************************

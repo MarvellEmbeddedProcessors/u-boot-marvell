@@ -92,8 +92,8 @@ MV_STATUS suspendWakeup(void)
 	void (*resumeFunc)(void) = NULL;
 	int *reg_addr, reg_value;
 
-	/* Check Suspend Wakeup support and Wakeup indication*/
-	if (!mvSysEnvSuspendWakeupCheck())
+	/* Check Suspend Wakeup support and Wakeup indication: (0 = not supported at all) */
+	if (mvSysEnvSuspendWakeupCheck() == MV_SUSPEND_WAKEUP_DISABLED)
 		return MV_OK;
 
 	/* Read and clear magic word to avoid successive resumes */

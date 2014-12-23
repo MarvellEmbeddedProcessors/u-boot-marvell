@@ -337,6 +337,13 @@ typedef struct boardWakeupGPIO {
 	MV_32 gpioNum;
 } MV_BOARD_WAKEUP_GPIO;
 
+typedef enum _mvSuspendWakeupStatus {
+	MV_SUSPEND_WAKEUP_DISABLED,
+	MV_SUSPEND_WAKEUP_ENABLED,
+	MV_SUSPEND_WAKEUP_ENABLED_GPIO_DETECTED,
+} MV_SUSPEND_WAKEUP_STATUS;
+
+
 /* GPIO status indication for Suspend Wakeup:
  * if suspend to RAM is supported and GPIO inidcation is implemented, set the gpio number
  * if suspend to RAM is supported but GPIO indication is not implemented set '-2'
@@ -433,7 +440,7 @@ MV_STATUS mvHwsTwsiInitWrapper(MV_VOID);
 * RRETURNS:	MV_U32 indicating suspend wakeup status:
 * 		0 - normal initialization, otherwise - suspend wakeup.
  ***************************************************************************/
-MV_U32 mvSysEnvSuspendWakeupCheck(MV_VOID);
+MV_SUSPEND_WAKEUP_STATUS mvSysEnvSuspendWakeupCheck(MV_VOID);
 
 /*******************************************************************************
 * mvSysEnvDeviceRevGet - Get Marvell controller device revision number

@@ -524,6 +524,7 @@ extern unsigned int mvTclkGet(void);
 #ifdef CONFIG_ARMADA_38X
 #define MV_BOOTARGS_END         ":10.4.50.254:255.255.255.0:Armada38x:eth0:none"
 #define MV_BOOTARGS_END_SWITCH  ":::Armada38x:eth0:none"
+#define MV_DDR_L2_ALIGNMENT
 #elif defined CONFIG_ARMADA_39X
 #define MV_BOOTARGS_END         ":10.4.50.254:255.255.255.0:Armada39x:eth0:none"
 #define MV_BOOTARGS_END_SWITCH  ":::Armada39x:eth0:none"

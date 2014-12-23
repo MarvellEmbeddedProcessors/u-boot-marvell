@@ -117,6 +117,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Alleycat3 device revision */
 #define MV_MSYS_AC3_A0_ID			0x0
 
+typedef enum _mvSuspendWakeupStatus {
+	MV_SUSPEND_WAKEUP_DISABLED,
+	MV_SUSPEND_WAKEUP_ENABLED,
+	MV_SUSPEND_WAKEUP_ENABLED_GPIO_DETECTED,
+} MV_SUSPEND_WAKEUP_STATUS;
+
 /*************************** Globals ***************************/
 
 extern MV_DRAM_DLB_CONFIG ddr3DlbConfigTable[];
@@ -204,7 +210,7 @@ MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value);
 *		MV_U32 indicating suspend wakeup status:
 * 		0 - normal initialization, otherwise - suspend wakeup.
  ***************************************************************************/
-MV_U32 mvSysEnvSuspendWakeupCheck(MV_VOID);
+MV_SUSPEND_WAKEUP_STATUS mvSysEnvSuspendWakeupCheck(MV_VOID);
 
 /*******************************************************************************
 * mvSysEnvDeviceRevGet - Get Marvell controller device revision number

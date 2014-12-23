@@ -226,8 +226,8 @@ MV_OP_PARAMS sataPort0TxConfigParams[] =
 	/* unitunitBaseReg          unitOffset  mask            SATA data       waitTime    numOfLoops */
 	{ SATA_CTRL_REG_IND_ADDR,   0x38000,	0xFFFFFFFF,     { 0x0       },      0,          0       },  /* Power Down Sata addr*/
 	{ SATA_CTRL_REG_IND_DATA,   0x38000,	0xFFFF00FF,     { 0xC40000  },      0,          0		},  /* Power Down Sata  Port 0 */
-	{ SATA_CTRL_REG_IND_ADDR,   0x38000,	0xFFFFFFFF,     { 0x4       },      0,          0		},  /* Power Down Sata addr*/
-	{ SATA_CTRL_REG_IND_DATA,   0x38000,	0xFFFFFFFF,     { 0x0       },      0,          0		}   /* Power Down Sata */
+	{ SATA_CTRL_REG_IND_ADDR,   0x38000,	0xFFFFFFFF,     { 0x4       },      0,          0		},  /* Regret bit addr*/
+	{ SATA_CTRL_REG_IND_DATA,   0x38000,	0xFFFFFFFF,     { 0x80       },      0,          0		}   /* Regret bit data */
 };
 
 MV_OP_PARAMS sataPort1TxConfigParams[] =
@@ -235,8 +235,8 @@ MV_OP_PARAMS sataPort1TxConfigParams[] =
 	/* unitunitBaseReg          unitOffset  mask            SATA data     waitTime    numOfLoops */
 	{ SATA_CTRL_REG_IND_ADDR,   0x38000,	0xFFFFFFFF,     { 0x0      },      0,          0       },  /* Power Down Sata addr*/
 	{ SATA_CTRL_REG_IND_DATA,   0x38000,	0xFFFFFF00,     { 0xC40000 },      0,          0		},  /* Power Down Sata Port 1 */
-	{ SATA_CTRL_REG_IND_ADDR,   0x38000,	0xFFFFFFFF,     { 0x4      },      0,          0		},  /* Power Down Sata addr*/
-	{ SATA_CTRL_REG_IND_DATA,   0x38000,	0xFFFFFFFF,     { 0x0      },      0,          0		}   /* Power Down Sata */
+	{ SATA_CTRL_REG_IND_ADDR,   0x38000,	0xFFFFFFFF,     { 0x4      },      0,          0		},  /* Regret bit addr*/
+	{ SATA_CTRL_REG_IND_DATA,   0x38000,	0xFFFFFFFF,     { 0x80      },      0,          0		}   /* Regret bit data */
 };
 
 MV_OP_PARAMS sataAndSgmiiTxConfigSerdesRev1Params2[] =
@@ -293,7 +293,7 @@ MV_OP_PARAMS sataElectricalConfigSerdesRev2Params[] =
 	{ DFE_REG3,				0x800,		0xC000,	{ 0x0	},	0,	0	}, /* DFE_EN and Dis Update control from pin disable */
 	{ G1_SETTINGS_3_REG,			0x800,		0xFF,	{ 0xAF	},	0,	0	}, /* FFE Force FFE_REs and cap settings for Gen1 */
 	{ G2_SETTINGS_3_REG,			0x800,		0xFF,	{ 0xBF	},	0,	0	}, /* FFE Force FFE_REs and cap settings for Gen2 */
-	{ G3_SETTINGS_3_REG,			0x800,		0xFF,	{ 0xAF	},	0,	0	}, /* FE Force FFE_REs and cap settings for Gen3n */
+	{ G3_SETTINGS_3_REG,			0x800,		0xFF,	{ 0xCF	},	0,	0	}, /* FE Force FFE_REs=4 and cap settings for Gen3n */
 
 };
 

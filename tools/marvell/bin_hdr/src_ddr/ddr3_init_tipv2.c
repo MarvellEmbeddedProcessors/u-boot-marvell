@@ -345,9 +345,9 @@ MV_U32 ddr3Init(void)
 		break;
 	}
 
-	/* Set DRAM Reset Mask in case of wakeup from suspend
+	/* Set DRAM Reset Mask in case detected GPIO indication of wakeup from suspend
 	 * i.e the DRAM values will not be overwritten / reset when waking from suspend*/
-	if (mvSysEnvSuspendWakeupCheck())
+	if (mvSysEnvSuspendWakeupCheck() == MV_SUSPEND_WAKEUP_ENABLED_GPIO_DETECTED)
 		MV_REG_BIT_SET(REG_SDRAM_INIT_CTRL_ADDR, 1 << REG_SDRAM_INIT_RESET_MASK_OFFS);
 
 	/************************************************************************************/

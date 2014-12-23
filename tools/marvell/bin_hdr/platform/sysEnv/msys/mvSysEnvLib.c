@@ -218,18 +218,18 @@ MV_U8 mvSysEnvDeviceRevGet(MV_VOID)
 #endif
 }
 
-/************************************************************************************
+/*******************************************************************************
 * mvSysEnvSuspendWakeupCheck
-* DESCRIPTION:	 	Reads suspend-wakeup indication
+* DESCRIPTION:	 	Reads GPIO input for suspend-wakeup indication.
 * INPUT:	 	None.
 * OUTPUT:
 * RRETURNS:	MV_U32 indicating suspend wakeup status:
-* 		0 - normal initialization, otherwise - suspend wakeup.
+* 	0 - normal initialization, 1 - read magic word to know, 2 - yes from GPIO.
  ***************************************************************************/
-MV_U32 mvSysEnvSuspendWakeupCheck(void)
+MV_SUSPEND_WAKEUP_STATUS mvSysEnvSuspendWakeupCheck(void)
 {
 	/* TBD */
-	return 0;
+	return MV_SUSPEND_WAKEUP_DISABLED;
 }
 /*******************************************************************************
 * mvSysEnvDlbConfigPtrGet

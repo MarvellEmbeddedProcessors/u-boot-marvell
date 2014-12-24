@@ -540,6 +540,33 @@ MV_STATUS mvBoardNetComplexInfoUpdate(MV_VOID)
 #endif /* CONFIG_CMD_BOARDCFG */
 
 /*******************************************************************************
+* mvBoardPhyTypeGet - Get the phy negtiation type ( SMI / XSMI )
+*
+* DESCRIPTION:
+*       This routine returns the Phy negotiation type of a given ethernet port.
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit describing Phy negotiation type, -1 if the port number is wrong.
+*
+*******************************************************************************/
+MV_PHY_NEGOTIATION_PORT_TYPE mvBoardPhyNegotiationTypeGet(MV_U32 ethPortNum)
+{
+	MV_BOARD_INFO *board = mvBoardInfoStructureGet();
+	if (!board || ethPortNum >= board->numBoardMacInfo) {
+		DB(mvOsPrintf("%s: Error: invalid ethPortNum (%d)\n", __func__, ethPortNum));
+		return MV_ERROR;
+	}
+
+	return board->pBoardMacInfo[ethPortNum].negType;
+}
+
+/*******************************************************************************
 * mvBoardMppModuleTypePrint
 *
 * DESCRIPTION:

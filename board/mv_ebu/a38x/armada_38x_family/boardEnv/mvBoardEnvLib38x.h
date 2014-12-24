@@ -66,6 +66,21 @@
 extern "C" {
 #endif /* __cplusplus */
 
+typedef enum _boardMacSpeed {
+	BOARD_MAC_SPEED_10M,
+	BOARD_MAC_SPEED_100M,
+	BOARD_MAC_SPEED_1000M,
+	BOARD_MAC_SPEED_2000M,
+	BOARD_MAC_SPEED_AUTO,
+	BOARD_MAC_UNCONNECTED
+} MV_BOARD_MAC_SPEED;
+
+typedef struct _boardMacInfo {
+	MV_BOARD_MAC_SPEED boardMacSpeed;
+	MV_32 boardEthSmiAddr;
+	MV_32 boardEthSmiAddr0;
+} MV_BOARD_MAC_INFO;
+
 enum {
 	MV_PORT_TYPE_SGMII,
 	MV_PORT_TYPE_QSGMII,

@@ -78,7 +78,6 @@
 
 #define A39X_CUSTOMER_BOARD_0_NOR_READ_PARAMS		0x403E07CF
 #define A39X_CUSTOMER_BOARD_0_NOR_WRITE_PARAMS		0x000F0F0F
-
 MV_BOARD_TWSI_INFO armada_39x_customer_0_BoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
 	{ BOARD_DEV_TWSI_SATR,	0,	0x50, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
@@ -88,11 +87,12 @@ MV_BOARD_TWSI_INFO armada_39x_customer_0_BoardTwsiDev[] = {
 };
 
 MV_BOARD_MAC_INFO armada_39x_customer_0_BoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
-	{ BOARD_MAC_SPEED_AUTO, 0x5, 0x5},
-	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4},
-	{ BOARD_MAC_UNCONNECTED, -1, -1}
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr, MV_8
+	 * boardEthSmiAddr0, MV_PHY_PORT_TYPE portType}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI},
+	{ BOARD_MAC_SPEED_AUTO, 0x5, 0x5, SMI},
+	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4, SMI},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI}
 };
 
 MV_BOARD_NET_COMPLEX_INFO armada_39x_customer_0_InfoBoardNetComplexInfo[] = {
@@ -238,11 +238,12 @@ MV_BOARD_TWSI_INFO db88f69xxInfoBoardTwsiDev[] = {
 };
 
 MV_BOARD_MAC_INFO db88f69xxInfoBoardMacInfo[] = {
-	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
-	{ BOARD_MAC_SPEED_AUTO, 0x5, 0x5},
-	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4},
-	{ BOARD_MAC_UNCONNECTED, -1, -1}
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr, MV_8
+	 * boardEthSmiAddr0, MV_PHY_PORT_TYPE portType}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI},
+	{ BOARD_MAC_SPEED_AUTO, 0x5, 0x5, SMI},
+	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4, SMI},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI}
 };
 
 MV_BOARD_NET_COMPLEX_INFO db88f69xxInfoBoarNetComplexInfo[] = {

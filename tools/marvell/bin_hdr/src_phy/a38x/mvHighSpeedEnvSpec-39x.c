@@ -99,10 +99,11 @@ MV_OP_PARAMS ethPortElectricalConfigParams[] =
 {
     /* unitunitBaseReg      unitOffset   mask       XAUI data   RXAUI data      waitTime    numOfLoops */
     { G1_SETTINGS_1_REG,    0x800,      0x7FF,      { NO_DATA,  0x7C9       },      0,          0       }, /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
-    { DFE_REG0,             0x800,      0xF,        { NO_DATA,  0xA         },      0,          0       }, /* DFE_STEP_FINE_FX */
+    { DFE_REG0,             0x800,      0xA00F,     { NO_DATA,  0x800A      },      0,          0       }, /* Force DFE resolution, Disable DFE pattern & DFE_STEP_FINE_FX */
     { DFE_REG3,             0x800,      0xC000,     { NO_DATA,  0x0         },      0,          0       }, /* DFE_EN control from PIN and DFE Control From Pin */
-    { G1_SETTINGS_0_REG,    0x800,      0xFFFF,     { NO_DATA,  0x8DF2      },      0,          0       }, /* Slew rate and emphasis */
-    { G1_SETTINGS_3_REG,    0x800,      0xFF,       { NO_DATA,  0xAF        },      0,          0       }, /* G1 FFE Setting Force, RES and CAP */
+    { G1_SETTINGS_0_REG,    0x800,      0xFFFF,     { NO_DATA,  0xDF2       },      0,          0       }, /* Slew rate and emphasis */
+    { G1_SETTINGS_3_REG,    0x800,      0xFF,       { NO_DATA,  0xEF        },      0,          0       }, /* G1 FFE Setting Force, RES and CAP */
+    { G1_SETTINGS_4_REG,    0x800,      0x300,      { NO_DATA,  0x300       },      0,          0       }, /* DFE resolution */
     { RX_REG2,              0x800,      0x4,        { NO_DATA,  0x0         },      0,          0       }, /* DTL_FLOOP_EN */
     { VTHIMPCAL_CTRL_REG,   0x800,      0xFF00,     { NO_DATA,  0x3000      },      0,          0       }, /* tximpcal_th and rximpcal_th */
 };

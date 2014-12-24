@@ -166,11 +166,12 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 {
 	MV_U32 pexIdx, tmp, next_busno, first_busno, tempPexReg, tempReg, addr, devId, ctrlMode;
 	SERDES_TYPE serdesType;
-	MV_U32 serdesIdx;
+	MV_U32 serdesIdx, maxLaneNum;
 
 	DEBUG_INIT_FULL_S("\n### mvHwsPexConfig ###\n");
 
-	for (serdesIdx = 0; serdesIdx < MAX_SERDES_LANES; serdesIdx++) {
+	maxLaneNum = mvHwsSerdesGetMaxLane();
+	for (serdesIdx = 0; serdesIdx < maxLaneNum; serdesIdx++) {
 		serdesType = serdesMap[serdesIdx].serdesType;
 		/* configuration for PEX only */
 		if ((serdesType != PEX0) && (serdesType != PEX1) && (serdesType != PEX2) && (serdesType != PEX3))
@@ -194,7 +195,7 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 	tmp = MV_REG_READ(SOC_CTRL_REG);
 	tmp &= ~(0x03);
 
-	for (serdesIdx = 0; serdesIdx < MAX_SERDES_LANES; serdesIdx++) {
+	for (serdesIdx = 0; serdesIdx < maxLaneNum; serdesIdx++) {
 		serdesType = serdesMap[serdesIdx].serdesType;
 		if ((serdesType != PEX0) &&
 				((serdesMap[serdesIdx].serdesMode == PEX_ROOT_COMPLEX_x4) ||
@@ -230,7 +231,7 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 #ifndef WIN32
 	mvOsDelay(150);
 #endif
-	for (serdesIdx = 0; serdesIdx < MAX_SERDES_LANES; serdesIdx++) {
+	for (serdesIdx = 0; serdesIdx < maxLaneNum; serdesIdx++) {
 		serdesType = serdesMap[serdesIdx].serdesType;
 		DEBUG_INIT_FULL_S(" serdesType=0x");
 		DEBUG_INIT_FULL_D(serdesType, 8);
@@ -317,7 +318,7 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 	/* update pex DEVICE ID*/
 	ctrlMode = mvSysEnvModelGet();
 
-	for (serdesIdx = 0; serdesIdx < MAX_SERDES_LANES; serdesIdx++) {
+	for (serdesIdx = 0; serdesIdx < maxLaneNum; serdesIdx++) {
 		serdesType = serdesMap[serdesIdx].serdesType;
 		/* configuration for PEX only */
 		if ((serdesType != PEX0) && (serdesType != PEX1) && (serdesType != PEX2) && (serdesType != PEX3))

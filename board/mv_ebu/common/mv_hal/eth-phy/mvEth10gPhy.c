@@ -286,11 +286,11 @@ MV_STATUS mvEthX2242PPhy1GInit(MV_U32 ethPortNum)
 	/* Chip HW Reset */
 	mvEthPhyXsmiRegWrite(phyAddr, 0x1F, 0xF404, 0x4000);
 
-	udelay(100000000);
+	udelay(1000);
 	/*1GX-1GX mode programming*/
 	mvEthPhyXsmiRegWrite(phyAddr, 0x1F, 0xF002, 0x7A7A);
 
-	udelay(10000000);
+	udelay(1000);
 
 	/* Host side WAs*/
 	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0x9041, 0x0001);
@@ -301,7 +301,7 @@ MV_STATUS mvEthX2242PPhy1GInit(MV_U32 ethPortNum)
 
 	/*TX_DISABLE write*/
 	mvEthPhyXsmiRegWrite(phyAddr, 0x1F, 0xF012, 0x0CBC);
-	return MV_TRUE;
+	return MV_OK;
 }
 
 
@@ -319,11 +319,11 @@ MV_STATUS mvEthX2242PPhy2_5GInit(MV_U32 ethPortNum)
 	/* Chip HW Reset */
 	mvEthPhyXsmiRegWrite(phyAddr, 0x1F, 0xF404, 0x4000);
 
-	udelay(100000000);
+	udelay(1000);
 	/*2.5G-2.5G mode programming*/
 	mvEthPhyXsmiRegWrite(phyAddr, 0x1F, 0xF002, 0x7676);
 
-	udelay(100000000);
+	udelay(1000);
 
 	/* Host side WAs*/
 	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0x9041, 0x0001);
@@ -332,11 +332,12 @@ MV_STATUS mvEthX2242PPhy2_5GInit(MV_U32 ethPortNum)
 
 	initSgmiiModeLineSide(phyAddr);
 
-	return MV_TRUE;
+	return MV_OK;
 }
 
 MV_STATUS initSgmiiMode(MV_U32 ethPortNum, SGMII_MODE mode)
 {
+
 	switch (mode) {
 	case SGMII_1G_1G_MODE:
 		return mvEthX2242PPhy1GInit(ethPortNum);
@@ -345,5 +346,5 @@ MV_STATUS initSgmiiMode(MV_U32 ethPortNum, SGMII_MODE mode)
 	default:
 		mvOsPrintf("Error - unknown SGMII mode\n");
 	}
-	return MV_FALSE;
+	return MV_FAIL;
 }

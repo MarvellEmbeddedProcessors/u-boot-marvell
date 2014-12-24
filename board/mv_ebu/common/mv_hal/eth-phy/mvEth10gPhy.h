@@ -80,7 +80,7 @@ typedef enum SGMII_MODE {
 MV_STATUS mvEth10gPhyHalInit(MV_ETHPHY_HAL_DATA *halData);
 MV_STATUS mvEth10gPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable);
 MV_STATUS mvEthX2242PPhyBasicInit(MV_U32 ethPortNum);
-
+MV_STATUS initSgmiiMode(MV_U32 ethPortNum, SGMII_MODE mode);
 #ifdef __cplusplus
 }
 #endif

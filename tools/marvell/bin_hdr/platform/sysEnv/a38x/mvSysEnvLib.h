@@ -112,6 +112,7 @@
 #define G1_SETTINGS_0_REG                       0xa0034
 #define G1_SETTINGS_1_REG                       0xa0038
 #define G1_SETTINGS_3_REG                       0xa0440
+#define G1_SETTINGS_4_REG                       0xa0444
 #define G2_SETTINGS_0_REG                       0xa003C
 #define G2_SETTINGS_1_REG                       0xa0040
 #define G2_SETTINGS_2_REG                       0xa00F8

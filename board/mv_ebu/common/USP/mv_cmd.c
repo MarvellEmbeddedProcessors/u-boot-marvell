@@ -1351,7 +1351,7 @@ int trainingStability_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const ar
 		readData = MV_REG_READ(0x17C8);
 		printf("%d,%d,",((readData&0x3F0)>>4),((readData&0xFC00)>>10));
 		readData = MV_REG_READ(0x1DC8);
-		printf("%d,%d,",((readData&0x3F0)>>16),((readData&0xFC00)>>22));
+		printf("%d,%d,",((readData&0x3F0000)>>16),((readData&0xFC00000)>>22));
 		for(csindex = 0; csindex < 4; csindex++)
 		{
 			if (!(uiCsEna & (1 << csindex))) continue;

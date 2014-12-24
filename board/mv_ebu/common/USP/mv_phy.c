@@ -252,6 +252,20 @@ MV_STATUS mvBoard10GPhyInit(MV_U32 port)
 		mvNetComplexNssSelect(0);
 		return MV_OK;
 	}
+	if (portType ==  MV_PORT_TYPE_SGMII) {
+		if (mvBoardPhyNegotiationTypeGet(port) == XSMI) {
+			/*
+			 * writing to the xsmi registers is not done directly
+			 * it's done through a certain a window, so it requires having the
+			 * window obtained, otherwise the writes would go to waste,
+			 * obtaining the window is done through selecting the NSS.
+			 */
+			mvNetComplexNssSelect(1);
+			initSgmiiMode(port, SGMII_1G_1G_MODE);
+			mvNetComplexNssSelect(0);
+			return MV_OK;
+		}
+	}
 #endif	/* CONFIG_MV_ETH_10G */
 	return MV_NOT_SUPPORTED;
 }

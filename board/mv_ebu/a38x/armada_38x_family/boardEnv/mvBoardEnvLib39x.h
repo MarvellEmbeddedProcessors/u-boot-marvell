@@ -62,9 +62,33 @@
 
 *******************************************************************************/
 
+#ifndef __INCmvBoardEnvLib39h
+#define __INCmvBoardEnvLib39h
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+typedef enum _boardMacSpeed {
+	BOARD_MAC_SPEED_10M,
+	BOARD_MAC_SPEED_100M,
+	BOARD_MAC_SPEED_1000M,
+	BOARD_MAC_SPEED_2000M,
+	BOARD_MAC_SPEED_AUTO,
+	BOARD_MAC_UNCONNECTED
+} MV_BOARD_MAC_SPEED;
+
+typedef enum _eth_negotiation_port_type {
+	SMI,
+	XSMI
+} MV_PHY_NEGOTIATION_PORT_TYPE;
+
+typedef struct _boardMacInfo {
+	MV_BOARD_MAC_SPEED boardMacSpeed;
+	MV_32 boardEthSmiAddr;
+	MV_32 boardEthSmiAddr0;
+	MV_PHY_NEGOTIATION_PORT_TYPE negType;
+} MV_BOARD_MAC_INFO;
 
 typedef enum {
 	MV_PORT_TYPE_RXAUI,
@@ -223,6 +247,9 @@ MV_BOOL mvBoardIsPortInRxaui(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInQsgmii(MV_U32 ethPortNum);
 MV_U32 mvBoardNetComplexConfigGet(MV_VOID);
 MV_VOID mvBoardNetComplexConfigSet(MV_U32 ethConfig);
+MV_PHY_NEGOTIATION_PORT_TYPE mvBoardPhyNegotiationTypeGet(MV_U32 ethPortNum);
 #ifdef __cplusplus
 }
 #endif  /* __cplusplus */
+
+#endif /* __INCmvBoardEnvLib39h */

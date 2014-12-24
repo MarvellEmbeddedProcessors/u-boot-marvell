@@ -2032,7 +2032,35 @@ MV_U32 mvBoardIdGet(MV_VOID)
 
 	return gBoardId;
 }
-
+/*******************************************************************************
+* mvBoardInfoStructureGet - Get Board info structure pointer
+*
+* DESCRIPTION:
+*       This function returns a pointer to the current board info sturcture.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       a pointer to the boad info sturcture.
+*
+*******************************************************************************/
+MV_BOARD_INFO *mvBoardInfoStructureGet(MV_VOID)
+{
+	if (board != (MV_BOARD_INFO *)-1)
+		return board;
+#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
+	else {
+		mvOsPrintf("Warning: using board structure information prior to"\
+			"board initialization (Using default boardID)\n");
+		return marvellBoardInfoTbl[mvBoardIdIndexGet(MV_DEFAULT_BOARD_ID)];
+	}
+#endif
+	return NULL;
+}
 /*******************************************************************************
 * mvBoardTwsiGet -
 *

@@ -237,20 +237,6 @@ typedef struct _moudleTypesInfo {
 	MV_U32 isActiveForBoard[MV_MARVELL_BOARD_NUM];
 } MV_MODULE_TYPE_INFO;
 
-typedef enum _boardMacSpeed {
-	BOARD_MAC_SPEED_10M,
-	BOARD_MAC_SPEED_100M,
-	BOARD_MAC_SPEED_1000M,
-	BOARD_MAC_SPEED_2000M,
-	BOARD_MAC_SPEED_AUTO,
-	BOARD_MAC_UNCONNECTED
-} MV_BOARD_MAC_SPEED;
-
-typedef struct _boardMacInfo {
-	MV_BOARD_MAC_SPEED boardMacSpeed;
-	MV_32 boardEthSmiAddr;
-	MV_32 boardEthSmiAddr0;
-} MV_BOARD_MAC_INFO;
 
 typedef struct _boardMppInfo {
 	MV_U32 mppGroup[MV_BOARD_MAX_MPP];
@@ -588,6 +574,7 @@ void mvBoardEepromValidSet(void);
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
 MV_BOOL mvBoardisSdioConnected(void);
 MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
+MV_BOARD_INFO *mvBoardInfoStructureGet(MV_VOID);
 
 #ifdef __cplusplus
 }

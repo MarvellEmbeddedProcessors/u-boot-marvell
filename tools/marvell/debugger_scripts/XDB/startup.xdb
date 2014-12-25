@@ -15,7 +15,7 @@ IF @dev_id == 0x6660 THEN
   !define macro /button ALP_RD_16b_StaticInit "batch \"./tools/marvell/debugger_scripts/XDB/alp_static_RD_16.xdb\"\n"
   !define macro /button ALP_RD_32b_StaticInit "batch \"./tools/marvell/debugger_scripts/XDB/alp_static_RD_32.xdb\"\n"
 ELSE
-  IF @dev_id == 0x6820 THEN
+  IF @dev_id == 0x6820 || @dev_id == 0x6810 || @dev_id == 0x6828 || @dev_id == 0x6811 THEN
     PRINT "%s" "Running on Armada 38x\n"
     define macro /button StaticInitDDR "batch \"./tools/marvell/debugger_scripts/XDB/a38x_static.xdb\"\n"
   ELSE

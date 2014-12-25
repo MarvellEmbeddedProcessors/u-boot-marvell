@@ -1415,9 +1415,11 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 		}
 
 		if (laneData == NA) {
-			mvPrintf("%s: Error: SerDes lane #%d and type %d are not supported together\n",
+			mvPrintf("%s: Warning: SerDes lane #%d and type %d are not supported together\n",
 					__func__, serdesLaneHwNum, serdesMode);
-			return MV_BAD_PARAM;
+			serdesConfigMap[serdesIdx].serdesType = DEFAULT_SERDES;
+			mvPrintf("%s: SerDes lane #%d is  disabled\n",__func__, serdesLaneHwNum);
+			continue;
 		}
 
 		/* Updating the data that will be written to COMMON_PHYS_SELECTORS_REG */

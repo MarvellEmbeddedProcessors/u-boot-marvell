@@ -394,7 +394,17 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 
 		smiAddress = -1;
 		if (netComplex & (MV_NETCOMP_GE_MAC3_2_SGMII_L6))
-			smiAddress = 0x6;
+			/*
+			 * there is another option the is not supported anymore
+			 * which is to connect a bridge from the PCI to one of the
+			 * normal phys which means that mac3 would be connected with
+			 * lane 6 with smiAddress = 0x6
+			 * changes that has been done:
+			 * smiAddress = 0x6; --> smiAddress = 0x0;
+			 * now when mac3 is connected with lane 6 with sgmii
+			 * it means that it's through the 10 gig phy
+			 */
+			smiAddress = 0x0;
 		mvBoardPhyAddrSet(3, smiAddress);
 
 		mvBoardFlashDeviceUpdate();

@@ -115,11 +115,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*	 32Bit, 32bit ECC, 	16bit, 	16bit ECC PUP4, 16bit ECC PUP3*/
 #define MV_TOPOLOGY_UPDATE  {\
 	{1, 	1, 			1, 		1, 				1}, \
+	{1, 	1, 			1, 		1, 				1}, \
 	{1, 	0, 			1, 		0, 				1}, \
 	{1, 	0, 			1, 		0, 				1}, \
 	{1, 	0, 			1, 		0, 				1}, \
-	{1, 	0, 			1, 		0, 				1}, \
-	{0, 	0, 			1, 		0, 				1}};
+	{0, 	0, 			1, 		1, 				0}};
 
 /********************/
 /* Registers offset */

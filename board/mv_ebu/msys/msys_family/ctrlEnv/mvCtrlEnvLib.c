@@ -88,6 +88,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ddr2_3/mvDramIfRegs.h"
 
+#include "twsi/mvTwsiSpec.h"
+
 /* defines  */
 #undef MV_DEBUG
 #ifdef MV_DEBUG
@@ -288,6 +290,11 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 		mvOsPrintf("mvCtrlEnvInit: Can't init some or all SERDES lanes\n");
 
 	mvCtrlDevBusInit();
+
+#ifdef ERRATA_GL_5956802
+		/* SW WA for ERRATA 5956802 - disable the external i2c debugger access */
+		MV_REG_BIT_RESET(TWSI_CONFIG_DEBUG_REG, TWSI_DEBUG_SLAVE_PORT0_EN);
+#endif
 
 	mvOsDelay(100);
 

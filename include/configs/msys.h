@@ -675,6 +675,9 @@ disclaimer.
 /********************* Errata & Guide lines *****************************************************/
 #define ERRATA_FE_982377	/* Internal CPU Temperature Read Out Stability			*/
 #define ERRATA_FE_9123155	/* Boot from NAND Flash and Bad Blocks in SLC Default Mode	*/
+#ifdef CONFIG_BOBCAT2
+	#define ERRATA_GL_5956802	/* Disable the external i2c debugger access	*/
+#endif
 /************************************************************************************************/
 
 #endif	/* __CONFIG_BOBCAT2_H */

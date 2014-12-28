@@ -44,7 +44,7 @@ typedef struct topologyUpdateInfo{
 	MV_BOOL 	mvUpdateWidth;
 	MV_U8 		mvWidth;
 	MV_BOOL 	mvUpdateECCPup3Mode;
-	MV_BOOL 	mvECCPupModeOffset;
+	MV_U8 		mvECCPupModeOffset;
 } MV_TOPOLOGY_UPDATE_INFO;
 
 

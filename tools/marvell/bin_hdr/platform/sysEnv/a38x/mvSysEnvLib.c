@@ -789,8 +789,9 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 	}
 
 	/*Set 16/32 bit configuration*/
-	if( 0 == (configVal & DDR_SATR_CONFIG_MASK_WIDTH) ){
-		/*16bit*/
+	if( ( 0 == (configVal & DDR_SATR_CONFIG_MASK_WIDTH) ) ||
+		(boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_32BIT] == 0) ){
+		/*16bit by SatR of 32bit mode not supported for the board*/
 		if( (boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_16BIT] != 0)){
 			topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
 			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_16BIT;
@@ -815,17 +816,16 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 		if( (boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_32BIT_ECC] !=0) ||
 			(boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_16BIT_ECC] !=0) ||
 			(boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_16BIT_ECC_PUP3] !=0) ){
-			topologyUpdateInfo->mvUpdateECC = MV_TRUE;
-			topologyUpdateInfo->mvECC = MV_TOPOLOGY_UPDATE_ECC_ON;
-			topologyUpdateInfo->mvUpdateECCPup3Mode = MV_TRUE;
-			topologyUpdateInfo->mvECCPupModeOffset = MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP4;
+				topologyUpdateInfo->mvUpdateECC = MV_TRUE;
+				topologyUpdateInfo->mvECC = MV_TOPOLOGY_UPDATE_ECC_ON;
 		}
 	}
 
 	/*Set ECC pup bit configuration*/
 	if( 0 == (configVal & DDR_SATR_CONFIG_MASK_ECC_PUP) ){
 		/*PUP3*/
-		if(	(boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_16BIT_ECC_PUP3] !=0 )){
+		/*Check if PUP3 configuration allowed, if not - force Pup4 with warning message*/
+		if(	(boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_16BIT_ECC_PUP3] != 0)){
 			if(topologyUpdateInfo->mvWidth == MV_TOPOLOGY_UPDATE_WIDTH_16BIT){
 				topologyUpdateInfo->mvUpdateECCPup3Mode = MV_TRUE;
 				topologyUpdateInfo->mvECCPupModeOffset = MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP3;
@@ -838,6 +838,13 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 				}
 			}
 		}
+		else{
+			if(boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_16BIT_ECC] != 0 ){
+				mvPrintf("DDR Topology Update: ECC on PUP3 not supported, force ECC on PUP4\n");
+				topologyUpdateInfo->mvUpdateECCPup3Mode = MV_TRUE;
+				topologyUpdateInfo->mvECCPupModeOffset = MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP4;
+			}
+		}
 	}
 	else{
 		/*PUP4*/
@@ -845,6 +852,17 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 			(boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_16BIT_ECC] !=0 )){
 			topologyUpdateInfo->mvUpdateECCPup3Mode = MV_TRUE;
 			topologyUpdateInfo->mvECCPupModeOffset = MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP4;
+		}
+	}
+
+	/*Check for forbidden ECC mode,
+		if by default width and pup selection set 32bit ECC mode and this mode not supported for the board - config 16bit with ECC on PUP3*/
+	if( (topologyUpdateInfo->mvECC == MV_TOPOLOGY_UPDATE_ECC_ON) &&(topologyUpdateInfo->mvWidth == MV_TOPOLOGY_UPDATE_WIDTH_32BIT)){
+		if(boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_32BIT_ECC] == 0){
+			mvPrintf("DDR Topology Update: 32bit mode with ECC not allowed on this board, forced  16bit with ECC on PUP3\n");
+			topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_16BIT;
+			topologyUpdateInfo->mvUpdateECCPup3Mode = MV_TRUE;
+			topologyUpdateInfo->mvECCPupModeOffset = MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP3;
 		}
 	}
 

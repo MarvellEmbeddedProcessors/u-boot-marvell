@@ -173,6 +173,7 @@
 #define RD_GET_MODE_ADDR                        0x4C
 #define DB_GET_MODE_SLM1363_ADDR                0x25
 #define DB_GET_MODE_SLM1364_ADDR                0x24
+#define DB381_GET_MODE_SLM1426_1427_ADDR	0x56
 
 /* DB-BP Board 'SatR' mapping */
 #define SATR_DB_LANE1_MAX_OPTIONS		7

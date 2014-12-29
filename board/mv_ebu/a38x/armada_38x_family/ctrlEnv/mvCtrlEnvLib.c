@@ -2202,13 +2202,13 @@ MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive)
 		|	0	| USB3.0 Host Port #0	|
 		|	1	| USB3.0 Host Port #1	|
 
-		single SerDes lane#5 for USB3.0
+		single SerDes lane#5 Or single SerDes lane#3 for USB3.0
 		| usbActive	|  USB port				|
 		---------------------------------------------------------
 		|	0	| USB3.0 Host Port #1			|
 		|	1	| USB2.0 via USB3.0  Host Port #0	|
 
-		When only single USB3.0 Host port #1 is connected via SerDes Lane 5,
+		When only single USB3.0 Host port #1 is connected via SerDes Lane 3 or 5,
 		map the USB port #1 to be usbActive=0
 		*/
 

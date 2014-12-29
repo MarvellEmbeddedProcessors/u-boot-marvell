@@ -97,8 +97,6 @@ MV_BOARD_SATR_INFO boardSatrInfo[] = MV_SAR_INFO;
 MV_BOARD_SATR_INFO boardSatrInfo2[] = MV_SAR_INFO2;
 MV_SATR_BOOT_TABLE satrBootSrcTable[] = MV_SATR_BOOT_SRC_TABLE_VAL;
 
-
-
 /* Locals */
 static MV_DEV_CS_INFO *mvBoardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 /* Global variables should be removed from BSS (set to a non-zero value)
@@ -906,8 +904,8 @@ static MV_VOID mvBoardModuleAutoDetect(MV_VOID)
 					   __func__, configInfo.twsiAddr));
 				continue;
 			}
-			readValue &= 0x0f;	/* only 4 bit relevant  */
-			/* twsi ID represente  module configuration ID*/
+			readValue &= 0x0f;	/* only 4 bit relevant */
+			/* twsi ID represents module configuration ID */
 			if (configInfo.twsiId == readValue)
 				mvBoardModuleConfigSet(configInfo.configId);
 		}
@@ -1067,12 +1065,17 @@ MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 	MV_U8 boardId = mvBoardIdGet();
 	MV_U32 serdesCfg = MV_ERROR;
 
-	/* Verify existence of IO expander on board, and fetch 1st IO expander value to modify */
-	if (mvBoardIoExpanderGet(0, 2, &ioValue) == MV_ERROR ||
-		mvBoardIoExpanderGet(1, 6, &ioValue2) == MV_ERROR)
+	/* - Verify existence of IO expander on board (reg#2 must be set: output data config for reg#0)
+	 * - fetch IO expander 2nd output config value to modify */
+	if (mvBoardIoExpanderGet(0, 2, &ioValue) == MV_ERROR)
 		return MV_OK;
 
+	/* update IO expander struct values before writing via I2C */
 	if (boardId == DB_GP_68XX_ID) {
+		/* fetch IO exp. 2nd value to modify - MV_ERROR: no IO expander struct entry to update*/
+		if (mvBoardIoExpanderGet(1, 6, &ioValue2) == MV_ERROR)
+			return MV_OK;
+
 		/* check SerDes lane 1,2,5 configuration ('gpserdes1/2/5') */
 		serdesCfg = mvBoardSatRRead(MV_SATR_GP_SERDES5_CFG);
 		if (serdesCfg != MV_ERROR) {
@@ -1888,7 +1891,8 @@ MV_BOOL mvBoardModuleTypeGet(MV_MODULE_TYPE_ID configClass, MV_MODULE_TYPE_INFO 
 			else
 				return MV_FALSE;
 		}
-	mvOsPrintf("%s: Error: requested MV_MODULE_TYPE_ID was not found (%d)\n", __func__, configClass);
+
+	mvOsPrintf("%s: Error: requested MV_MODULE_TYPE_ID was not found (%x)\n", __func__, configClass);
 	return MV_FALSE;
 }
 

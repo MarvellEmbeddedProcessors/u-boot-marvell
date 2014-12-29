@@ -73,16 +73,17 @@ enum {
 	MV_PORT_TYPE_UNKNOWN = -1,
 };
 
-/* {{MV_MODULE_TYPE_ID ConfigID, twsi-ID,  Offset, ID,  isActiveForBoard[]}} */
+/* {{ConfigID,		     twsi-ID, Offset,	 ID,	isActiveForBoard[]}} */
 #define MV_MODULE_INFO { \
-{ MV_MODULE_MII,		0x1,	0,	 0x4,	{ 0, 1, 0, 0} }, \
-{ MV_MODULE_SLIC_TDM_DEVICE,	0x0,	0,	 0x1,	{ 0, 1, 0, 0} }, \
-{ MV_MODULE_I2S_DEVICE,		0x1,	0,	 0x3,	{ 0, 1, 0, 0} }, \
-{ MV_MODULE_SPDIF_DEVICE,	0x1,	0,	 0x2,	{ 0, 1, 0, 0} }, \
-{ MV_MODULE_NOR,		0x4,	0,	 0xF,	{ 0, 1, 0, 0} }, \
-{ MV_MODULE_NAND,		0x4,	0,	 0x1,	{ 0, 1, 0, 0} }, \
-{ MV_MODULE_SDIO,		0x4,	0,	 0x2,	{ 0, 1, 0, 0} }, \
-{ MV_MODULE_SGMII,		0x2,	0,	 0xF,	{ 0, 1, 0, 0} }, \
+{ MV_MODULE_MII,		0x1,	0,	 0x4,	{ 0, 1, 0, 0, 0, 0} }, \
+{ MV_MODULE_SLIC_TDM_DEVICE,	0x0,	0,	 0x1,	{ 0, 1, 0, 0, 0, 0} }, \
+{ MV_MODULE_I2S_DEVICE,		0x1,	0,	 0x3,	{ 0, 1, 0, 0, 0, 0} }, \
+{ MV_MODULE_SPDIF_DEVICE,	0x1,	0,	 0x2,	{ 0, 1, 0, 0, 0, 0} }, \
+{ MV_MODULE_NOR,		0x4,	0,	 0xF,	{ 0, 1, 0, 0, 0, 0} }, \
+{ MV_MODULE_NAND,		0x4,	0,	 0x1,	{ 0, 1, 0, 0, 0, 0} }, \
+{ MV_MODULE_SDIO,		0x4,	0,	 0x2,	{ 0, 1, 0, 0, 0, 0} }, \
+{ MV_MODULE_SGMII,		0x2,	0,	 0xF,	{ 0, 1, 0, 0, 0, 0} }, \
+{ MV_MODULE_DB381_SGMII,	0x0,	0,	 0x2,	{ 0, 0, 0, 0, 0, 1} }, \
 };
 
 typedef enum _mvSatRTypeID {
@@ -131,8 +132,8 @@ typedef enum _mvSatRTypeID {
 {"boarsrc2",	MV_SATR_BOOT2_DEVICE,		0x1E,	1,	2,	0,	{0, 1, 0, 0, 0, 1}, SATR_SWAP_BIT},\
 {"boardid",	MV_SATR_BOARD_ID,		0x7,	0,	0,	0,	{1, 1, 1, 1, 1, 1}, 0},\
 {"ecoversion",	MV_SATR_BOARD_ECO_VERSION,	0xff,	0,	0,	1,	{0, 1, 0, 0, 0, 0}, SATR_READ_ONLY},\
-{"usb3port0",	MV_SATR_DB_USB3_PORT0,		0x1,	0,	0,	2,	{0, 1, 0, 0, 0, 0}, 0},\
-{"usb3port1",	MV_SATR_DB_USB3_PORT1,		0x2,	1,	0,	2,	{0, 1, 0, 0, 0, 0}, 0},\
+{"usb3port0",	MV_SATR_DB_USB3_PORT0,		0x1,	0,	0,	2,	{0, 1, 0, 0, 0, 1}, 0},\
+{"usb3port1",	MV_SATR_DB_USB3_PORT1,		0x2,	1,	0,	2,	{0, 1, 0, 0, 0, 1}, 0},\
 {"rdserdes4",	MV_SATR_RD_SERDES4_CFG,		0x4,	2,	1,	1,	{1, 0, 1, 0, 0, 0}, 0},\
 {"gpserdes5",	MV_SATR_GP_SERDES5_CFG,		0x4,	2,	1,	1,	{0, 0, 0, 0, 1, 0}, 0},\
 {"dbserdes1",	MV_SATR_DB_SERDES1_CFG,		0x7,	0,	0,	1,	{0, 1, 0, 0, 0, 1}, 0},\

@@ -279,10 +279,14 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 
 	switch (mvBoardIdGet()) {
 	case DB_BP_6821_ID:
+		/* test if SLM-1426 (SGMII-2) module is connected */
+		if ((mvBoardIsModuleConnected(MV_MODULE_DB381_SGMII)))
+			mvBoardPhyAddrSet(2, -1);
+
 		/* need to add similar detection as DB board:
 		 * - mvBoardMppIdUpdate();
 		 * - check for MV_SATR_DB_SERDES1_CFG, MV_SATR_DB_SERDES2_CFG, MV_SATR_SGMII_MODE */
-
+		mvBoardIoExpanderUpdate();
 		mvBoardFlashDeviceUpdate();
 		break;
 	case DB_GP_68XX_ID:
@@ -391,6 +395,7 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 		"NAND 16bit",                                 \
 		"SDIO 4bit",                                 \
 		"SGMII",                                 \
+		"DB-381 SLM-1426 (SGMII-2)",                        \
 	};
 	mvOsOutput("Board configuration detected:\n");
 

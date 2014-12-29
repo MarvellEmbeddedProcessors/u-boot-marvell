@@ -889,17 +889,12 @@ MV_BOARD_MPP_INFO db88f6821InfoBoardMppConfigValue[] = {
 
 MV_BOARD_TWSI_INFO db88f6821InfoBoardTwsiDev[] = {
 	/* {{devClass,		devClassId, twsiDevAddr, twsiDevAddrType, moreThen256}} */
-	{ BOARD_DEV_TWSI_SATR,		0,	0x57,	   ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
-	{ BOARD_DEV_TWSI_SATR,		1,	0x4c,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_DEV_TWSI_SATR,		2,	0x4d,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_DEV_TWSI_SATR,		3,	0x4e,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_DEV_TWSI_SATR,		4,	0x21,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_MODULE_DETECT,	0,	0x20,	   ADDR7_BIT, MV_FALSE},   /* modules */
-	{ BOARD_TWSI_MODULE_DETECT,	1,	0x23,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_MODULE_DETECT,	2,	0x24,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_MODULE_DETECT,	3,	0x25,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_MODULE_DETECT,	4,	0x26,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_MODULE_DETECT,	5,	0x27,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		0,	0x57,	ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4c,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		2,	0x4d,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		3,	0x4e,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	0,	0x21,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	0,	0x56,	ADDR7_BIT, MV_TRUE},   /* SLM 1426/1427 module */
 };
 MV_BOARD_MAC_INFO db88f6821InfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
@@ -919,6 +914,13 @@ MV_DEV_CS_INFO db88f6821InfoBoardDeCsInfo[] = {
 	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
 	{ SPI0_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_TRUE },	/* SPI0 DEV */
 	{ SPI0_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE }	/* SPI0 DEV */
+};
+
+struct MV_BOARD_IO_EXPANDER db88f6821InfoBoardioExpValue[] = {
+	{0, 6, 0xFF}, /* Config reg#0: all bits as input -TBD (BIT on = Input) */
+	{0, 7, 0x7E}, /* Config reg#1: BIT0(SFP_TX_DIS), BIT7(USB3 current limit) as output (BIT on = Input) */
+	{0, 2, 0xFF}, /* Output Data, reg#0  - no output bits*/
+	{0, 3, 0x80}, /* Output Data, reg#1:  BIT0,SFP_TX_DIS=0, BIT7,USB3_CURRENT=1 */
 };
 
 MV_BOARD_INFO db88f6821_board_info = {
@@ -974,8 +976,8 @@ MV_BOARD_INFO db88f6821_board_info = {
 
 	/* Enable modules auto-detection. */
 	.configAutoDetect	= MV_TRUE,
-	.numIoExp		= 0,
-	.pIoExp			= NULL,
+	.numIoExp		= ARRSZ(db88f6821InfoBoardioExpValue),
+	.pIoExp			= db88f6821InfoBoardioExpValue,
 	.boardOptionsModule	= MV_MODULE_NO_MODULE
 };
 

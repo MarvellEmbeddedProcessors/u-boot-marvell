@@ -173,10 +173,11 @@ typedef enum _mvModuleTypeID {
 	MV_MODULE_NOR			= BIT4,	/* NOR board SLM 1361	*/
 	MV_MODULE_NAND			= BIT5,	/* NAND board SLM 1361	*/
 	MV_MODULE_SDIO			= BIT6,	/* SDIO board SLM 1361	*/
-	MV_MODULE_SGMII			= BIT7,	/* SDIO board SLM 1364	*/
-	MV_MODULE_NAND_ON_BOARD		= BIT8,	/* ON board nand detect */
-	MV_MODULE_TYPE_MAX_MODULE	= 8,
-	MV_MODULE_TYPE_MAX_OPTION	= 9
+	MV_MODULE_SGMII			= BIT7,	/* SGMII board SLM 1364	*/
+	MV_MODULE_DB381_SGMII		= BIT8,	/* DB-381 SGMII SLM 1426 */
+	MV_MODULE_NAND_ON_BOARD		= BIT9,	/* ON board nand detect */
+	MV_MODULE_TYPE_MAX_MODULE	= 9,
+	MV_MODULE_TYPE_MAX_OPTION	= 10
 } MV_MODULE_TYPE_ID;
 
 typedef struct _devCsInfo {

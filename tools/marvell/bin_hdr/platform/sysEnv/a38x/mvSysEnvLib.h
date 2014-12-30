@@ -86,6 +86,9 @@
 #define DEVICE_SAMPLE_AT_RESET2_REG             0x18604
 #define DEV_ID_REG                              0x18238
 
+#define CORE_PLL_PARAMETERS_REG                 0xE42E0
+#define CORE_PLL_CONFIG_REG                     0xE42E4
+
 #define QSGMII_CONTROL_REG1                     0x18494
 
 #define DEV_ID_REG_DEVICE_ID_OFFS               16

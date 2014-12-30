@@ -972,6 +972,30 @@ MV_VOID printTopologyDetails(SERDES_MAP  *serdesMapArray)
 #endif
 
 /***************************************************************************/
+MV_STATUS mvHwsPreSerdesInitConfig(MV_VOID)
+{
+    MV_U32 data;
+
+    /* configure Core PLL */
+    /*
+    set PLL parameters
+    bits[2:0]  =0x3 (Core-PLL Kdiv)
+    bits[20:12]=0x9F (Core-PLL Ndiv)
+    bits[24:21]=0x7(Core-PLL VCO Band)
+    bits[28:25]=0x1(Core-PLL Rlf)
+    bits[31:29]=0x2(Core-PLL charge-pump adjust)
+    */
+    MV_REG_WRITE(CORE_PLL_PARAMETERS_REG, 0x42E9F003);
+
+    /* Enable PLL Configuration */
+    data = MV_REG_READ(CORE_PLL_CONFIG_REG);
+    data = SET_BIT(data, 9);
+    MV_REG_WRITE(CORE_PLL_CONFIG_REG, data);
+
+    return MV_OK;
+}
+
+/***************************************************************************/
 MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
 	DEBUG_INIT_FULL_S("\n### mvCtrlHighSpeedSerdesPhyConfig ###\n");
@@ -999,10 +1023,12 @@ MV_STATUS mvHwsCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	printTopologyDetails(serdesConfigurationMap);
 #endif
 
+	CHECK_STATUS(mvHwsPreSerdesInitConfig());
+
 	/* Power-Up sequence */
 	DEBUG_INIT_FULL_S("mvCtrlHighSpeedSerdesPhyConfig: Starting serdes power up sequence\n");
 
-	CHECK_STATUS(powerUpSerdesLanes(serdesConfigurationMap));
+	CHECK_STATUS(mvHwsPowerUpSerdesLanes(serdesConfigurationMap));
 
 	DEBUG_INIT_FULL_S("\n### mvCtrlHighSpeedSerdesPhyConfig ended successfully ###\n");
 
@@ -1030,7 +1056,7 @@ MV_STATUS mvSerdesPolarityConfig(MV_U32 serdesNum, MV_BOOL isRx)
 }
 
 /***************************************************************************/
-MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
+MV_STATUS mvHwsPowerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 {
 	MV_U32 serdesId, serdesLaneNum;
 	REF_CLOCK refClock;
@@ -1043,10 +1069,10 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
                                              Serdes is of PEX. in this case, PEX
                                              unit will be initialized after Serdes power-up */
 
-	DEBUG_INIT_FULL_S("\n### powerUpSerdesLanes ###\n");
+	DEBUG_INIT_FULL_S("\n### mvHwsPowerUpSerdesLanes ###\n");
 
 	/* COMMON PHYS SELECTORS register configuration */
-	DEBUG_INIT_FULL_S("powerUpSerdesLanes: Updating COMMON PHYS SELECTORS reg\n");
+	DEBUG_INIT_FULL_S("mvHwsPowerUpSerdesLanes: Updating COMMON PHYS SELECTORS reg\n");
 	CHECK_STATUS(mvHwsUpdateSerdesPhySelectors(serdesConfigurationMap));
 
 	/* per Serdes Power Up */
@@ -1071,7 +1097,7 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 
 		refClock = mvHwsSerdesGetRefClockVal(serdesType);
 		if (refClock == REF_CLOCK_UNSUPPORTED) {
-			DEBUG_INIT_S("powerUpSerdesLanes: unsupported ref clock\n");
+			DEBUG_INIT_S("mvHwsPowerUpSerdesLanes: unsupported ref clock\n");
 			return MV_NOT_SUPPORTED;
 		}
 		CHECK_STATUS(mvSerdesPowerUpCtrl(serdesLaneNum,
@@ -1102,10 +1128,10 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 	}
 
 	/* USB2 configuration */
-	DEBUG_INIT_FULL_S("powerUpSerdesLanes: init USB2 Phys\n");
+	DEBUG_INIT_FULL_S("mvHwsPowerUpSerdesLanes: init USB2 Phys\n");
 	CHECK_STATUS(mvSeqExec(0 /* not relevant */, USB2_POWER_UP_SEQ));
 
-	DEBUG_INIT_FULL_S("### powerUpSerdesLanes ended successfully ###\n");
+	DEBUG_INIT_FULL_S("### mvHwsPowerUpSerdesLanes ended successfully ###\n");
 	return MV_OK;
 }
 

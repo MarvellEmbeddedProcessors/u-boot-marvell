@@ -445,6 +445,8 @@ MV_OP_PARAMS pexElectricalConfigSerdesRev2Params[] =
     { G1_SETTINGS_3_REG,        0x800,      0xFF,       { 0xCF      },      0,          0       }, /* G1 FFE Setting Force, RES and CAP */
     { G2_SETTINGS_1_REG,        0x800,      0x3FF,      { 0x3C9     },      0,          0       }, /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
     { G2_SETTINGS_3_REG,        0x800,      0xFF,       { 0xAF      },      0,          0       }, /* G2 FFE Setting Force, RES and CAP */
+    { G2_SETTINGS_4_REG,        0x800,      0x300,      { 0x300     },      0,          0       }, /* G2 DFE resolution value */
+    { DFE_REG0,                 0x800,      0x8000,     { 0x8000    },      0,          0       }, /* DFE resolution force */
     { PCIE_REG1,                0x800,      0xF80,      { 0xD00     },      0,          0       }, /* Tx amplitude for Tx Margin 0 */
     { PCIE_REG3,                0x800,      0xFF00,     { 0xAF00    },      0,          0       }, /* Tx_Emph value for -3.5dB and -6dB */
     { LANE_CFG4_REG,            0x800,      0x8,        { 0x8       },      0,          0       }, /* CFG_DFE_EN_SEL */

@@ -270,16 +270,16 @@ if(defined $opt_d)
 	print "\n *** DDR3LIB = v$opt_d *********************************\n\n";
 }
 
-if(defined $opt_m)
+if( (defined $opt_m) && ($opt_m eq 4) )
 {
 	system("echo \"DDRTYPE = ddr$opt_m\" >> include/config.mk");
 	system("echo \"#define CONFIG_DDR4\" >> include/config.h");
 	print "** DDRTYPE = DDR$opt_m **\n";
 }
 else {
-	# Set default to DDR3
 	system("echo \"DDRTYPE = ddr3\" >> include/config.mk");
-	print "** DDRTYPE = DDR3 ** \n";
+	system("echo \"#define CONFIG_DDR3\" >> include/config.h");
+	print "** DDRTYPE = DDR$opt_m **\n";
 }
 
 if($opt_z eq 1)

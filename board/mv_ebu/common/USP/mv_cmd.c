@@ -1286,6 +1286,7 @@ U_BOOT_CMD(
  );
 
 #ifdef MV_DDR_TRAINING_CMD_NEW_TIP
+#ifdef CONFIG_DDR4
 
 #define WL_PHY_REG                        (0x0)
 #define WRITE_CENTRALIZATION_PHY_REG      (0x1)
@@ -1416,7 +1417,8 @@ U_BOOT_CMD(
 	 "training	- prints the results of the DDR3 Training.\n",""
  );
 
-#endif
+#endif/*DDR4*/
+#endif/*NewTip*/
 
 #endif /* MV_TINY */
 

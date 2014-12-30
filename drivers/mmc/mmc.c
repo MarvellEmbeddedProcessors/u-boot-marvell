@@ -39,8 +39,11 @@
 #define CONFIG_SYS_MMC_MAX_BLK_COUNT 65535
 #endif
 
+extern void mvSysSDmmcWinInit(void);
+
 static struct list_head mmc_devices;
 static int cur_dev_num = -1;
+int mmc_initiated = 0;
 
 /* buffer to SDIO/MMC DMA must be aligned to 128 */
 
@@ -99,7 +102,10 @@ int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 #ifdef CONFIG_MMC_TRACE
 	printf("CMD_SEND:%d\n", cmd->cmdidx);
 	printf("\t\tARG\t\t\t 0x%08X\n", cmd->cmdarg);
-	printf("\t\tdata\t\t\t 0x%x\n", data);
+	printf("\t\tdata->dest/src\t\t 0x%p\n", data->dest);
+	printf("\t\tdata->flags\t\t 0x%x\n", data->flags);
+	printf("\t\tdata->blocks\t\t 0x%x\n", data->blocks);
+	printf("\t\tdata->blocksize\t\t 0x%x\n", data->blocksize);
 #endif
 	ret = mmc->send_cmd(mmc, cmd, data);
 	/* copy back to original dest address */
@@ -1324,6 +1330,11 @@ int mmc_init(struct mmc *mmc)
 {
 	int err = IN_PROGRESS;
 	unsigned start = get_timer(0);
+
+	if (mmc_initiated == 0) {
+		mvSysSDmmcWinInit();
+		mmc_initiated=1;
+	}
 
 	if (mmc->has_init)
 		return 0;

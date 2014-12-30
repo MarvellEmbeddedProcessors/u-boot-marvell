@@ -43,15 +43,27 @@ extern flash_info_t flash_info[];       /* info for FLASH chips */
 #if defined(CONFIG_ENV_IS_IN_NAND)
 int nand_get_env_offs(void);
 #endif
+#if defined(CONFIG_ENV_IS_IN_MMC)
+#include <mmc.h>
+extern unsigned long mmc_berase(int dev_num, lbaint_t start, lbaint_t blkcnt);
+extern ulong mmc_bwrite(int dev_num, lbaint_t start, lbaint_t blkcnt, const void *src);
+#endif
+
 /*******************************************************************************
 Reset environment variables.
 ********************************************************************************/
 int resetenv_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 #if defined(CONFIG_ENV_IS_IN_FLASH )
-        ulong stop_addr;
-	ulong start_addr;
-
+	ulong	stop_addr;
+	ulong	start_addr;
+#elif defined(CONFIG_ENV_IS_IN_MMC)
+	lbaint_t	start_lba;
+	lbaint_t	blk_count;
+	ulong		blk_erased;
+	ALLOC_CACHE_ALIGN_BUFFER(char, buf, CONFIG_ENV_SIZE);
+	struct mmc	*mmc;
+	int			err;
 #endif
 
 #if defined(CONFIG_ENV_IS_IN_NAND)
@@ -108,6 +120,57 @@ int resetenv_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	flash_sect_protect (1, start_addr, stop_addr);
 	printf("\t[Done]\n");
+
+#elif defined(CONFIG_ENV_IS_IN_MMC)
+
+	start_lba = CONFIG_ENV_ADDR / CONFIG_ENV_SECT_SIZE;
+	blk_count = CONFIG_ENV_SIZE / CONFIG_ENV_SECT_SIZE;
+
+	mmc = find_mmc_device(CONFIG_SYS_MMC_ENV_DEV);
+	if (!mmc) {
+		printf("No MMC card found\n");
+		return 1;
+	}
+
+	if (mmc_init(mmc)) {
+		printf("MMC(%d) init failed\n", CONFIG_SYS_MMC_ENV_DEV);
+		return 1;
+	}
+
+#ifdef CONFIG_SYS_MMC_ENV_PART /* Valid for MMC/eMMC only - switch to ENV partition */
+	if (CONFIG_SYS_MMC_ENV_PART != mmc->part_num) {
+		if (mmc_switch_part(CONFIG_SYS_MMC_ENV_DEV, CONFIG_SYS_MMC_ENV_PART)) {
+			printf("MMC partition switch failed\n");
+			return 1;
+		}
+	}
+#endif
+
+	printf("Erasing 0x"LBAF" blocks starting at sector 0x"LBAF" :", blk_count, start_lba);
+	/* For some unknown reason the mmc_berase() fails with timeout if called
+	   before any futher write to MMC/SD (for instance, right after u-boot bring up).
+	   However the mmc_bwrite() always succeds.
+	   Writing zeroes into SD/MMC blocks is similar operation as doing so to IDE/SATA
+	   disk and therefore can be used for erasing the imformation stored on the media.
+	   blk_erased = mmc_berase(CONFIG_SYS_MMC_ENV_DEV, start_lba, blk_count);
+	*/
+	memset(buf, 0, CONFIG_ENV_SIZE);
+	blk_erased = mmc_bwrite(CONFIG_SYS_MMC_ENV_DEV, start_lba, blk_count, buf);
+	if (blk_erased != blk_count) {
+		printf("\t[FAIL] - erased %#lx blocks\n", blk_erased);
+		err = 1;
+	} else {
+		printf("\t[Done]\n");
+		err = 0;
+	}
+
+#ifdef CONFIG_SYS_MMC_ENV_PART /* Valid for MMC/eMMC only - restore current partition */
+	if (CONFIG_SYS_MMC_ENV_PART != mmc->part_num)
+		mmc_switch_part(CONFIG_SYS_MMC_ENV_DEV, mmc->part_num);
+#endif
+
+	if (err)
+		return err;
 
 #endif
 	printf("Warning: Default Environment Variables will take effect Only after RESET\n");

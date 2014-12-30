@@ -517,6 +517,33 @@ extern unsigned int mvTclkGet(void);
 #endif
 #define CONFIG_SYS_MMC_BASE			(INTER_REGS_BASE + MV_SDMMC_REGS_OFFSET)
 
+/* MMC configuration   */
+/*****************************/
+//#define CONFIG_MMC_TRACE
+/* Boot from MMC settings */
+#if defined(MV_MMC_BOOT)
+	#define CONFIG_ENV_IS_IN_MMC	/* Environment is at absolute location (RAW) */
+//	#define CONFIG_ENV_IS_IN_FAT	/* Environment is in file on FAT partition */
+//	#define CONFIG_FAT_WRITE
+//	#define FAT_ENV_INTERFACE		"mmc"
+//	#define FAT_ENV_DEVICE			0
+//	#define FAT_ENV_PART			1
+//	#define FAT_ENV_FILE			"u-boot.env"
+
+//	#define CONFIG_SYS_MMC_ENV_PART			1 /* Valid for MMC/eMMC for separating boot image and env */
+	#define CONFIG_SYS_MMC_ENV_DEV			0
+	#define CONFIG_ENV_SECT_SIZE			0x200
+	#define CONFIG_ENV_SIZE					0x80000
+	/* For SD - reserve 1 LBA for MBR + 1M for u-boot image. The MMC/eMMC boot image starts @ LBA-0.
+	   As result in MMC/eMMC case it will be a 1 sector gap between u-boot image and environment */
+	#define CONFIG_ENV_OFFSET				(_1M + CONFIG_ENV_SECT_SIZE)
+	#define CONFIG_ENV_ADDR					CONFIG_ENV_OFFSET
+	#define MONITOR_HEADER_LEN				0x200
+	#define CONFIG_SYS_MONITOR_BASE			0
+	#define CONFIG_SYS_MONITOR_LEN			0x80000					/*(512 << 10) Reserve 512 kB for Monitor */
+
+#endif /* #if defined(MV_MMC_BOOT) */
+
 
 /*
  * Linux boot and other

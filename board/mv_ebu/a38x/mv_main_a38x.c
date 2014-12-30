@@ -158,6 +158,8 @@ void mv_print_map(void)
 	printf("(NAND)\n\n");
 #elif defined(MV_SPI_BOOT)
 	printf("(SPI)\n\n");
+#elif defined(MV_MMC_BOOT)
+	printf("(MMC)\n\n");
 #endif
 }
 

@@ -382,7 +382,7 @@ MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID);
  ***************************************************************************/
 MV_STATUS mvHwsTwsiInitWrapper(MV_VOID);
 /**************************************************************************
- * powerUpSerdesLanes -
+ * mvHwsPowerUpSerdesLanes -
  *
  * DESCRIPTION:          Executes power up for the 6 serdes lanes
  * INPUT:                serdesConfigMap     - the topology map.
@@ -394,7 +394,7 @@ MV_STATUS mvHwsTwsiInitWrapper(MV_VOID);
  *                       MV_BAD_PARAM        - a parameter was sent to
  *                                             mvSerdesPowerUpCtrl
  ***************************************************************************/
-MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap);
+MV_STATUS mvHwsPowerUpSerdesLanes(SERDES_MAP  *serdesConfigMap);
 /**************************************************************************
  * mvCtrlHighSpeedSerdesPhyConfig -
  *

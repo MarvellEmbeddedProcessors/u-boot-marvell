@@ -240,6 +240,13 @@ int sdhci_send_command(struct mmc *mmc, struct mmc_cmd *cmd,
 		stat = sdhci_readl(host, SDHCI_INT_STATUS);
 		if (stat & SDHCI_INT_ERROR)
 			break;
+#ifdef CONFIG_MV_SDHCI
+		/* Some commands om MRVL controller are not updating the SDHCI interrupt status
+		   register fast enough. Adding small polling interval solves the problem */
+		if (/* cmd->cmdidx == MMC_CMD_ERASE ||  $$ Currently not used $$ */
+			cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
+			udelay(5);
+#endif
 		if (--retry == 0)
 			break;
 	} while ((stat & mask) != mask);

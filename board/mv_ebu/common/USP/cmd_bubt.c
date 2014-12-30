@@ -46,6 +46,11 @@ extern struct spi_flash *flash;
 extern flash_info_t flash_info[];       /* info for FLASH chips */
 #endif
 
+#if defined(MV_MMC_BOOT)
+#include <mmc.h>
+extern ulong mmc_bwrite(int dev_num, lbaint_t start, lbaint_t blkcnt, const void *src);
+#endif
+
 #if 0 /* def MV_NOR_BOOT */
 static unsigned int flash_in_which_sec(flash_info_t *fl,unsigned int offset)
 {
@@ -468,3 +473,104 @@ U_BOOT_CMD(
 		"\tsource can be tftp or usb, default is tftp.\n"
 );
 #endif /* MV_NOR_BOOT */
+
+#if defined(MV_MMC_BOOT)
+
+/* Boot from SD/MMC/eMMC */
+/* Write u-boot image into SD/MMC/eMMC device */
+int mmc_burn_uboot_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	int filesize = 0;
+	extern char console_buffer[];
+	load_addr = CONFIG_SYS_LOAD_ADDR;
+	MV_U32 loadfrom = 0; /* 0 - from tftp, 1 - from USB */
+	lbaint_t	start_lba;
+	lbaint_t	blk_count;
+	ulong		blk_written;
+	ALLOC_CACHE_ALIGN_BUFFER(char, buf, CONFIG_ENV_SIZE);
+	struct mmc	*mmc;
+
+	start_lba = CONFIG_ENV_ADDR / CONFIG_ENV_SECT_SIZE;
+	blk_count = CONFIG_ENV_SIZE / CONFIG_ENV_SECT_SIZE;
+
+	mmc = find_mmc_device(CONFIG_SYS_MMC_ENV_DEV);
+	if (!mmc) {
+		printf("No SD/MMC/eMMC card found\n");
+		return 1;
+	}
+
+	if (mmc_init(mmc)) {
+		printf("%s(%d) init failed\n", IS_SD(mmc) ? "SD" : "MMC", CONFIG_SYS_MMC_ENV_DEV);
+		return 1;
+	}
+
+#ifdef CONFIG_SYS_MMC_ENV_PART
+	if (CONFIG_SYS_MMC_ENV_PART != mmc->part_num) {
+		if (mmc_switch_part(CONFIG_SYS_MMC_ENV_DEV, CONFIG_SYS_MMC_ENV_PART)) {
+			printf("MMC partition switch failed\n");
+			return 1;
+		}
+	}
+#endif
+
+	/* verify requested source is valid */
+	if (fetch_bubt_cmd_args(argc, argv, &loadfrom) != MV_OK)
+		return 0;
+
+	if ((filesize = fetch_uboot_file (loadfrom)) <= 0)
+		return 0;
+
+	printf("\t\t[Done]\n");
+	printf("Override Env parameters to default? [y/N]");
+	readline(" ");
+
+	if( strcmp(console_buffer,"Y")   == 0 ||
+	    strcmp(console_buffer,"yes") == 0 ||
+	    strcmp(console_buffer,"y")   == 0 ) {
+
+		printf("Erasing 0x"LBAF" blocks starting at sector 0x"LBAF" :", blk_count, start_lba);
+		memset(buf, 0, CONFIG_ENV_SIZE);
+		blk_written = mmc_bwrite(CONFIG_SYS_MMC_ENV_DEV, start_lba, blk_count, buf);
+		if (blk_written != blk_count) {
+			printf("\t[FAIL] - erased %#lx blocks\n", blk_written);
+			return 0;
+		} else
+			printf("\t[Done]\n");
+	}
+	if (filesize > CONFIG_ENV_OFFSET) {
+		printf("Error: Image size (%x) exceeds environment variables offset (%x). ", filesize, CONFIG_ENV_OFFSET);
+		return 0;
+	}
+
+	/* SD reserves LBA-0 for MBR and boots from LBA-1, MMC/eMMC boots from LBA-0 */
+	start_lba = IS_SD(mmc) ? 1 : 0;
+	blk_count = filesize / CONFIG_ENV_SECT_SIZE;
+	if (filesize % CONFIG_ENV_SECT_SIZE)
+		blk_count += 1;
+
+	printf("Writing image to %s(%d) at LBA 0x"LBAF" (0x"LBAF" blocks):",
+		   IS_SD(mmc) ? "SD" : "MMC", CONFIG_SYS_MMC_ENV_DEV, start_lba, blk_count);
+	blk_written = mmc_bwrite(CONFIG_SYS_MMC_ENV_DEV, start_lba, blk_count, (char *)CONFIG_SYS_LOAD_ADDR);
+	if (blk_written != blk_count) {
+		printf("\t[FAIL] - written %#lx blocks\n", blk_written);
+		return 0;
+	} else
+		printf("\t[Done]\n");
+
+#ifdef CONFIG_SYS_MMC_ENV_PART
+	if (CONFIG_SYS_MMC_ENV_PART != mmc->part_num)
+		mmc_switch_part(CONFIG_SYS_MMC_ENV_DEV, mmc->part_num);
+#endif
+
+	return 1;
+}
+
+U_BOOT_CMD(
+		bubt,      3,     1,      mmc_burn_uboot_cmd,
+		"bubt	- Burn an image on the Boot SD/MMC/eMMC device.\n",
+		" file-name \n"
+		"[file-name] [source] \n"
+		"\tBurn a binary image on the Boot Device, default file-name is u-boot.bin .\n"
+		"\tsource can be tftp or usb, default is tftp.\n"
+);
+#endif

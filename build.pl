@@ -9,7 +9,7 @@ sub HELP_MESSAGE
 	print "Example: ./build.pl -f spi -v 14T2 -b avanta_lp -i spi:nand -c\n";
 	print "\n";
 	print "Options:\n";
-	print "\t-f\tBoot device. Accepts spi, nor, nand\n";
+	print "\t-f\tBoot device. Accepts spi, nor, nand, mmc\n";
 	print "\t-b\tBoard type. Accepts:\tavanta_lp , avanta_lp_customer0 , avanta_lp_customer1\n";
 	print "\t\t\t\t\tarmada_38x, armada_38x_customer0, armada_38x_customer1\n";
 	print "\t\t\t\t\tarmada_39x, armada_39x_customer0, armada_39x_customer1\n";
@@ -185,6 +185,12 @@ elsif  ($opt_f eq "nand"){
 		$img_opts   = "-P 4096 -L 256 -N SLC";
 	}
 	print "Image options =  $img_opts\n\n";
+}
+elsif  ($opt_f eq "mmc"){
+	system("echo \"#define MV_MMC_BOOT\" >> include/config.h");
+	print "Boot from MMC/eMMC/SD\n";
+	$flash_name = "mmc";
+	$img_type   = "mmc";
 }
 else
 {

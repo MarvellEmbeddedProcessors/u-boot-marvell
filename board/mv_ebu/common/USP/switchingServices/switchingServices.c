@@ -373,7 +373,8 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U32 i, filesize, addr, src_addr, dest_addr;
 	MV_U32 kernel_unc_len, rootfs_unc_len = 0, unc_len, src_len;
-	MV_U32 kernel_addr = 0x6000000, rootfs_addr = 0x7000000;
+	MV_U32 kernel_addr = CFG_DEF_KERNEL_DEST_ADDR;
+	MV_U32 rootfs_addr = CFG_DEF_ROOTFS_DEST_ADDR;
 	MV_U32 total_in, rc, single_file = 0, bz2_file = 0;
 	char *from[] = {"tftp","usb","mmc", "ram"};
 	struct partitionInformation *partitionInfo = &nandInfo;	/* default destination = NAND */
@@ -381,7 +382,7 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	char * devPart = NULL;
 	MV_U32 fsys = FS_TYPE_FAT;				/* default FS = FAT */
 	MV_BOOL isNand = MV_TRUE;				/* default destination = NAND */
-	addr = load_addr = 0x2000000;
+	addr = load_addr = CFG_DEF_SOURCE_LOAD_ADDR;
 	int fileSizeFromRam = -1;
 
 	/* scan for flash destination in arguments (allowing usage of only 'mtdburn spi') */
@@ -416,9 +417,7 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			loadfrom = 2;
 		else if(strcmp(argv[1], "ram") == 0) {
 			loadfrom = 3;
-			if (devPart == NULL)
-				devPart = "2000000"; /*if source location not specified, use default load_addr */
-			else
+			if (devPart != NULL)
 				addr = load_addr = (unsigned int)simple_strtoul(devPart, NULL, 16);
 		}
 		if ((loadfrom == 1 || loadfrom == 2) && devPart == NULL) /* if using USB/MMC, and not selected interface num */
@@ -434,16 +433,16 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	printf(" - Load from device \t: %s", from[loadfrom]);
 	if (devPart != NULL) {
+		printf(", Interface :%s" ,devPart);
+		if (fsys == FS_TYPE_FAT)
+			printf("\n - File System \t\t: FAT");
+		else if (fsys == FS_TYPE_EXT)
+			printf("\n - File System \t\t: EXT2");
+	} else {
 		if (loadfrom == 3)	/* source = DRAM */
-			printf(", load from :%s" ,devPart);
-		else {			/* source = USB/MMC */
-			printf(", Interface :%s" ,devPart);
-			if (fsys == FS_TYPE_FAT)
-				printf("\n - File System \t\t: FAT");
-			else if (fsys == FS_TYPE_EXT)
-				printf("\n - File System \t\t: EXT2");
-		}
+			printf(", load from :%#lx" ,load_addr);
 	}
+
 	printf("\n - Filename\t\t: %s \n" ,BootFile);
 	printf(" - Flash destination\t: %s\n" , isNand == MV_TRUE ? "NAND" : "SPI");
 

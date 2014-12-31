@@ -285,5 +285,9 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 			topologyUpdateInfo->mvECC = MV_TOPOLOGY_UPDATE_ECC_OFF;
 	}
 
+	/*ECC always on PUP4*/
+	topologyUpdateInfo->mvECCPupModeOffset = MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP4;
+
 	return topologyFeaturesMap;
 }
+

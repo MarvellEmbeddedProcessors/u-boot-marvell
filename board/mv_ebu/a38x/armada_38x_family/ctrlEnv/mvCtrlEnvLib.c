@@ -545,10 +545,12 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 #endif
 		mvBoardInfoUpdate();
 	}
-
+	/* NOR/NAND modules overrides RGMII-1 MPP's */
+	/* Armada 381/2 (device 6811) doesn't support GE1 unit */
 	if (mvBoardIsModuleConnected(MV_MODULE_NOR) ||
-	    mvBoardIsModuleConnected(MV_MODULE_NAND) ||
-	    mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD))
+		mvBoardIsModuleConnected(MV_MODULE_NAND) ||
+		mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD) ||
+		mvCtrlModelGet() == MV_6811_DEV_ID)
 		ethComPhy = ON_BOARD_RGMII(0); /* NOR/NAND modules overides RGMII-1 MPP's */
 	else
 		ethComPhy = ON_BOARD_RGMII(0) | ON_BOARD_RGMII(1);

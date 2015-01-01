@@ -556,6 +556,8 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 	mvOsOutput("|  port  | Interface  | PHY address  |\n");
 	mvOsOutput("|--------|------------|--------------|\n");
 	for (port = 0; port < mvCtrlEthMaxPortGet(); port++) {
+		if (MV_FALSE ==  mvBoardIsGbEPortConnected(port)) /* verify port is active */
+			continue;
 		mvOsOutput("| egiga%d ", port);
 		switch (mvBoardPortTypeGet(port)) {
 		case MV_PORT_TYPE_SGMII:

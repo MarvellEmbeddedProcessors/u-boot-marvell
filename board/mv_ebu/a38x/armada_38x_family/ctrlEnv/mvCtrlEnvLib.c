@@ -126,54 +126,56 @@ static const MV_U8 serdesCfg[MV_SERDES_MAX_LANES][MV_SERDES_CFG_OPTIONS_CNT] = S
 #ifdef CONFIG_ARMADA_38X
 MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /*			6820	6810	6811	6828	*/
-/* DRAM_UNIT_ID     */ { 1,	1,	1,	1},
-/* PEX_UNIT_ID      */ { 4,	3,	3,	4},
-/* ETH_GIG_UNIT_ID  */ { 3,	2,	2,	3},
-/* USB_UNIT_ID      */ { 1,	1,	0,	1},
-/* USB3_UNIT_ID     */ { 2,	2,	2,	2},
-/* IDMA_UNIT_ID     */ { 0,	0,	0,	0},
-/* XOR_UNIT_ID      */ { 2,	2,	2,	2},
-/* SATA_UNIT_ID     */ { 2,	2,	2,	4},
-/* TDM_32CH_UNIT_ID */ { 1,	1,	0,	1},
-/* UART_UNIT_ID     */ { 4,	4,	4,	4},
-/* CESA_UNIT_ID     */ { 2,	2,	2,	2},
-/* SPI_UNIT_ID      */ { 2,	2,	2,	2},
-/* AUDIO_UNIT_ID    */ { 1,	1,	0,	1},
-/* SDIO_UNIT_ID     */ { 1,	1,	1,	1},
-/* TS_UNIT_ID       */ { 0,	0,	0,	0},
-/* XPON_UNIT_ID     */ { 0,	0,	0,	0},
-/* BM_UNIT_ID       */ { 0,	0,	0,	0},
-/* PNC_UNIT_ID      */ { 0,	0,	0,	0},
-/* I2C_UNIT_ID      */ { 2,	2,	2,	2},
-/* QSGMII_UNIT_ID   */ { 1,	0,	0,	1},
-/* XAUI_UNIT_ID     */ { 0,	0,	0,	0},
-/* USB3_HOST_UNIT_ID*/ { 2,	2,	2,	2},
+/* DRAM_UNIT_ID           */ { 1,	1,	1,	1},
+/* PEX_UNIT_ID            */ { 4,	3,	3,	4},
+/* ETH_GIG_UNIT_ID        */ { 3,	2,	2,	3}, /* total SoC MAC unit count (Not updated) */
+/* ETH_GIG_ACTIVE_UNIT_ID */ { 3,	2,	2,	3}, /* active MAC unit count (updated by ethComPhy) */
+/* USB_UNIT_ID            */ { 1,	1,	0,	1},
+/* USB3_UNIT_ID           */ { 2,	2,	2,	2},
+/* IDMA_UNIT_ID           */ { 0,	0,	0,	0},
+/* XOR_UNIT_ID            */ { 2,	2,	2,	2},
+/* SATA_UNIT_ID           */ { 2,	2,	2,	4},
+/* TDM_32CH_UNIT_ID       */ { 1,	1,	0,	1},
+/* UART_UNIT_ID           */ { 4,	4,	4,	4},
+/* CESA_UNIT_ID           */ { 2,	2,	2,	2},
+/* SPI_UNIT_ID            */ { 2,	2,	2,	2},
+/* AUDIO_UNIT_ID          */ { 1,	1,	0,	1},
+/* SDIO_UNIT_ID           */ { 1,	1,	1,	1},
+/* TS_UNIT_ID             */ { 0,	0,	0,	0},
+/* XPON_UNIT_ID           */ { 0,	0,	0,	0},
+/* BM_UNIT_ID             */ { 0,	0,	0,	0},
+/* PNC_UNIT_ID            */ { 0,	0,	0,	0},
+/* I2C_UNIT_ID            */ { 2,	2,	2,	2},
+/* QSGMII_UNIT_ID         */ { 1,	0,	0,	1},
+/* XAUI_UNIT_ID           */ { 0,	0,	0,	0},
+/* USB3_HOST_UNIT_ID      */ { 2,	2,	2,	2},
 };
 #else  /* if (CONFIG_ARMADA_39X) */
 MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /*			6920	6928	*/
-/* DRAM_UNIT_ID     */ { 1,	1},
-/* PEX_UNIT_ID      */ { 4,	4},
-/* ETH_GIG_UNIT_ID  */ { 3,	3},
-/* USB_UNIT_ID      */ { 0,	1},
-/* USB3_UNIT_ID     */ { 1,	2},
-/* IDMA_UNIT_ID     */ { 0,	0},
-/* XOR_UNIT_ID      */ { 2,	2},
-/* SATA_UNIT_ID     */ { 0,	4},
-/* TDM_32CH_UNIT_ID */ { 0,	1},
-/* UART_UNIT_ID     */ { 4,	4},
-/* CESA_UNIT_ID     */ { 2,	2},
-/* SPI_UNIT_ID      */ { 2,	2},
-/* AUDIO_UNIT_ID    */ { 0,	1},
-/* SDIO_UNIT_ID     */ { 1,	1},
-/* TS_UNIT_ID       */ { 0,	0},
-/* XPON_UNIT_ID     */ { 0,	0},
-/* BM_UNIT_ID       */ { 0,	0},
-/* PNC_UNIT_ID      */ { 0,	0},
-/* I2C_UNIT_ID      */ { 4,	4},
-/* QSGMII_UNIT_ID   */ { 0,	1},
-/* XAUI_UNIT_ID     */ { 1,	1},
-/* USB3_HOST_UNIT_ID*/ { 2,	2},
+/* DRAM_UNIT_ID           */ { 1,	1},
+/* PEX_UNIT_ID            */ { 4,	4},
+/* ETH_GIG_UNIT_ID        */ { 3,	3},
+/* ETH_GIG_ACTIVE_UNIT_ID */ { 3,	3},
+/* USB_UNIT_ID            */ { 0,	1},
+/* USB3_UNIT_ID           */ { 1,	2},
+/* IDMA_UNIT_ID           */ { 0,	0},
+/* XOR_UNIT_ID            */ { 2,	2},
+/* SATA_UNIT_ID           */ { 0,	4},
+/* TDM_32CH_UNIT_ID       */ { 0,	1},
+/* UART_UNIT_ID           */ { 4,	4},
+/* CESA_UNIT_ID           */ { 2,	2},
+/* SPI_UNIT_ID            */ { 2,	2},
+/* AUDIO_UNIT_ID          */ { 0,	1},
+/* SDIO_UNIT_ID           */ { 1,	1},
+/* TS_UNIT_ID             */ { 0,	0},
+/* XPON_UNIT_ID           */ { 0,	0},
+/* BM_UNIT_ID             */ { 0,	0},
+/* PNC_UNIT_ID            */ { 0,	0},
+/* I2C_UNIT_ID            */ { 4,	4},
+/* QSGMII_UNIT_ID         */ { 0,	1},
+/* XAUI_UNIT_ID           */ { 1,	1},
+/* USB3_HOST_UNIT_ID      */ { 2,	2},
 };
 #endif
 
@@ -351,7 +353,8 @@ MV_VOID mvCtrlSocUnitInfoPrint(MV_VOID)
 {
 	mvOsPrintf("DRAM     -  %d\n", mvCtrlSocUnitInfoNumGet(DRAM_UNIT_ID));
 	mvOsPrintf("PEX      -  %d\n", mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID));
-	mvOsPrintf("ETH_GIG  -  %d\n", mvCtrlSocUnitInfoNumGet(ETH_GIG_UNIT_ID));
+	mvOsPrintf("ETH_GIG(Total)  -  %d\n", mvCtrlSocUnitInfoNumGet(ETH_GIG_UNIT_ID));
+	mvOsPrintf("ETH_GIG(Active)  -  %d\n", mvCtrlSocUnitInfoNumGet(ETH_GIG_ACTIVE_UNIT_ID));
 	mvOsPrintf("USB      -  %d\n", mvCtrlSocUnitInfoNumGet(USB_UNIT_ID));
 	mvOsPrintf("USB3     -  %d\n", mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID));
 	mvOsPrintf("IDMA     -  %d\n", mvCtrlSocUnitInfoNumGet(IDMA_UNIT_ID));
@@ -499,9 +502,9 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 #endif
 	/* only if found more serdes eth interfaces than on-board ports,than update max eth count.
 	   (needed by phy + giga init sequence)				*/
-	mvCtrlSocUnitInfoNumSet(ETH_GIG_UNIT_ID, mvCountMaskBits(ethComPhy));
+	mvCtrlSocUnitInfoNumSet(ETH_GIG_ACTIVE_UNIT_ID, mvCountMaskBits(ethComPhy));
 	DB(printf("mvCtrlSocUnitGet[PEX] = %d,\n", mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID)));
-	DB(printf("mvCtrlSocUnitGet[ETH] = %d,\n", mvCtrlSocUnitInfoNumGet(ETH_GIG_UNIT_ID)));
+	DB(printf("mvCtrlSocUnitGet[ETH_ACTIVE] = %d,\n", mvCtrlSocUnitInfoNumGet(ETH_GIG_ACTIVE_UNIT_ID)));
 	DB(printf("mvCtrlSocUnitGet[SATA]= %d,\n", mvCtrlSocUnitInfoNumGet(SATA_UNIT_ID)));
 	DB(printf("mvCtrlSocUnitGet[USBH]= %d,\n", mvCtrlSocUnitInfoNumGet(USB_UNIT_ID)));
 	DB(printf("mvCtrlSocUnitGet[USB3]= %d,\n", mvCtrlSocUnitInfoNumGet(USB3_UNIT_ID)));
@@ -894,10 +897,7 @@ MV_U32 mvCtrlPciMaxIfGet(MV_VOID)
 #endif
 
 /*******************************************************************************
-* mvCtrlEthMaxPortGet - Get Marvell controller number of etherent ports.
-*
-* DESCRIPTION:
-*       This function returns Marvell controller number of etherent port.
+* mvCtrlEthMaxPortGet - Get total number of etherent controllers.
 *
 * INPUT:
 *       None.
@@ -906,13 +906,14 @@ MV_U32 mvCtrlPciMaxIfGet(MV_VOID)
 *       None.
 *
 * RETURN:
-*       Marvell controller number of etherent port.
+*       number of etherent controllers.
 *
 *******************************************************************************/
 MV_U32 mvCtrlEthMaxPortGet(MV_VOID)
 {
 	return mvCtrlSocUnitInfoNumGet(ETH_GIG_UNIT_ID);
 }
+
 /* compatable to NETA and AXP */
 MV_U8 mvCtrlEthMaxCPUsGet(MV_VOID)
 {

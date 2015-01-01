@@ -1329,7 +1329,9 @@ MV_VOID mvBoardConfigWrite(void)
 * mvBoardIsGbEPortConnected
 *
 * DESCRIPTION:
-*	Checks if a given GbE port is actually connected to the GE-PHY, internal Switch or any RGMII module.
+	Checks if a given GbE port is actually connected via R/SGMII,
+	And has corresponding MAC info entry in board structures.
+	**PHY connected via RGMII must also have a valid PHY address
 *
 * INPUT:
 *	port - GbE port number (0 or 1).
@@ -1343,10 +1345,17 @@ MV_VOID mvBoardConfigWrite(void)
 *******************************************************************************/
 MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum)
 {
-	if ((mvBoardIsModuleConnected(MV_MODULE_SGMII)) && (ethPortNum == 0))
-		return MV_FALSE;
-	if (ethPortNum < mvCtrlEthMaxPortGet())
+	/* port is connected, if it's identified as R/SGMII, and has a valid corresponding MAC info entry */
+
+
+	if ((ethPortNum <= board->numBoardMacInfo) &&
+		(mvCtrlPortIsSerdesSgmii(ethPortNum) ||
+		(mvCtrlPortIsRgmii(ethPortNum) && mvBoardPhyAddrGet(ethPortNum) != -1)))
 		return MV_TRUE;
+
+	/* print error in case invalid MAC entry */
+	if (mvCtrlPortIsRgmii(ethPortNum) && mvBoardPhyAddrGet(ethPortNum) == -1)
+		mvOsPrintf("Error: PHY Address of Port %d (RGMII) is invalid (-1).\n", ethPortNum);
 
 	return MV_FALSE;
 }

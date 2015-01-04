@@ -258,6 +258,49 @@ MV_VOID mvBoardFlashDeviceUpdate(MV_VOID)
 }
 
 /*******************************************************************************
+* mvBoardPcieModulesInfoUpdate - Update Board information PCIe modules structures
+*
+* DESCRIPTION:
+*	Update board information according to detection of 'dbserdes1/2' & 'sgmiimode'
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_VOID mvBoardPcieModulesInfoUpdate(MV_VOID)
+{
+	MV_U32 sgmiiPhyAddr;
+	/* 'SatR' PCIe modules configuration ('dbserdes1', 'dbserdes2' , 'sgmiimode') */
+	sgmiiPhyAddr = mvBoardSatRRead(MV_SATR_SGMII_MODE) ? 0x10 : -1;
+
+	switch (mvBoardSatRRead(MV_SATR_DB_SERDES1_CFG)) {
+	case 0x3: /* SGMII port 0 */
+		mvBoardPhyAddrSet(0, sgmiiPhyAddr);
+		break;
+	case 0x4: /* SGMII port 1 */
+		mvBoardPhyAddrSet(1, sgmiiPhyAddr);
+		break;
+	case 0x6: /* QSGMII */
+		sgmiiPhyAddr = 0x8; /* 0x8 = SMI address of 1st Quad PHY */
+		mvBoardPhyAddrSet(0, sgmiiPhyAddr);
+		mvBoardPhyAddrSet(1, sgmiiPhyAddr + 1);
+		mvBoardPhyAddrSet(2, sgmiiPhyAddr + 2);
+		mvBoardQuadPhyAddr0Set(0, sgmiiPhyAddr);
+		mvBoardQuadPhyAddr0Set(1, sgmiiPhyAddr);
+		mvBoardQuadPhyAddr0Set(2, sgmiiPhyAddr);
+		break;
+	}
+
+	if (mvBoardSatRRead(MV_SATR_DB_SERDES2_CFG) == 0x3) /* SGMII port 1 */
+		mvBoardPhyAddrSet(1, sgmiiPhyAddr);
+}
+/*******************************************************************************
 * mvBoardInfoUpdate - Update Board information structures according to auto-detection.
 *
 * DESCRIPTION:
@@ -275,7 +318,7 @@ MV_VOID mvBoardFlashDeviceUpdate(MV_VOID)
 *******************************************************************************/
 MV_VOID mvBoardInfoUpdate(MV_VOID)
 {
-	MV_U32 reg, sgmiiPhyAddr;
+	MV_U32 reg;
 
 	switch (mvBoardIdGet()) {
 	case DB_BP_6821_ID:
@@ -283,10 +326,8 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		if ((mvBoardIsModuleConnected(MV_MODULE_DB381_SGMII)))
 			mvBoardPhyAddrSet(2, -1);
 
-		/* need to add similar detection as DB board:
-		 * - mvBoardMppIdUpdate();
-		 * - check for MV_SATR_DB_SERDES1_CFG, MV_SATR_DB_SERDES2_CFG, MV_SATR_SGMII_MODE */
 		mvBoardIoExpanderUpdate();
+		mvBoardPcieModulesInfoUpdate();	/* if PCIe modules are configured (via 'SatR') */
 		mvBoardFlashDeviceUpdate();
 		break;
 	case DB_GP_68XX_ID:
@@ -315,30 +356,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			mvBoardMppSet(2, reg);
 		}
 
-		/* 'SatR' PCIe modules configuration ('dbserdes1', 'dbserdes2' , 'sgmiimode') */
-
-		sgmiiPhyAddr = mvBoardSatRRead(MV_SATR_SGMII_MODE) ? 0x10 : -1;
-
-		switch (mvBoardSatRRead(MV_SATR_DB_SERDES1_CFG)) {
-		case 0x3: /* SGMII port 0 */
-			mvBoardPhyAddrSet(0, sgmiiPhyAddr);
-			break;
-		case 0x4: /* SGMII port 1 */
-			mvBoardPhyAddrSet(1, sgmiiPhyAddr);
-			break;
-		case 0x6: /* QSGMII */
-			sgmiiPhyAddr = 0x8; /* 0x8 = SMI address of 1st Quad PHY */
-			mvBoardPhyAddrSet(0, sgmiiPhyAddr);
-			mvBoardPhyAddrSet(1, sgmiiPhyAddr + 1);
-			mvBoardPhyAddrSet(2, sgmiiPhyAddr + 2);
-			mvBoardQuadPhyAddr0Set(0, sgmiiPhyAddr);
-			mvBoardQuadPhyAddr0Set(1, sgmiiPhyAddr);
-			mvBoardQuadPhyAddr0Set(2, sgmiiPhyAddr);
-			break;
-		}
-		if (mvBoardSatRRead(MV_SATR_DB_SERDES2_CFG) == 0x4) /* SGMII port 1 */
-			mvBoardPhyAddrSet(1, sgmiiPhyAddr);
-
+		mvBoardPcieModulesInfoUpdate();	/* if PCIe modules are configured (via 'SatR') */
 		mvBoardFlashDeviceUpdate();
 		break;
 	default:

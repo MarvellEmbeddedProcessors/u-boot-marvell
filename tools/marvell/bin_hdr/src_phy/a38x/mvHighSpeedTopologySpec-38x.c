@@ -327,21 +327,21 @@ SERDES_MAP DbConfigSLM1364_F[MAX_SERDES_LANES] =
 /**************************************************************************/
 SERDES_MAP DBSatRConfigLane1[SATR_DB_LANE1_MAX_OPTIONS] =
 {
-/* 0 */	{ DEFAULT_SERDES,	LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
-/* 1 */	{ PEX0,				__5Gbps,			PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
-/* 2 */	{ SATA0,			__3Gbps,			PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
-/* 3 */	{ SGMII0,			__3_125Gbps,		SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
-/* 4 */	{ SGMII1,			__3_125Gbps,		SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
-/* 5 */	{ USB3_HOST0,		__5Gbps,			SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
-/* 6 */	{ QSGMII,			__5Gbps,			SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
+/* 0 */	{ DEFAULT_SERDES,	LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+/* 1 */	{ PEX0,			__5Gbps,		PEX_ROOT_COMPLEX_x1,	MV_FALSE,	MV_FALSE },
+/* 2 */	{ SATA0,		__3Gbps,		PEX_ROOT_COMPLEX_x1,	MV_FALSE,	MV_FALSE },
+/* 3 */	{ SGMII0,		__3_125Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+/* 4 */	{ SGMII1,		__3_125Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+/* 5 */	{ USB3_HOST0,		__5Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+/* 6 */	{ QSGMII,		__5Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE }
 };
 
 SERDES_MAP DBSatRConfigLane2[SATR_DB_LANE2_MAX_OPTIONS] =
 {
-/* 0 */	{ DEFAULT_SERDES,	LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
-/* 1 */	{ PEX1,				__5Gbps,			PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
-/* 2 */	{ SATA1,			__3Gbps,			PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
-/* 3 */	{ SGMII1,			__3_125Gbps,		SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
+/* 0 */	{ DEFAULT_SERDES,	LAST_SERDES_SPEED,	SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE },
+/* 1 */	{ PEX1,			__5Gbps,		PEX_ROOT_COMPLEX_x1,	MV_FALSE,	MV_FALSE },
+/* 2 */	{ SATA1,		__3Gbps,		PEX_ROOT_COMPLEX_x1,	MV_FALSE,	MV_FALSE },
+/* 3 */	{ SGMII1,		__3_125Gbps,		SERDES_DEFAULT_MODE,	MV_FALSE,	MV_FALSE }
 };
 
 /*******************************************************/
@@ -401,17 +401,17 @@ SERDES_MAP Db381ConfigDefault[MAX_SERDES_LANES] =
 SERDES_MAP DbConfigSLM1427[MAX_SERDES_LANES] =
 {
 	{ SATA0,		__3Gbps,		SERDES_DEFAULT_MODE,		MV_TRUE,	MV_TRUE  },
-	{ PEX0, 		__5Gbps,		PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
+	{ PEX0, 		__5Gbps,		PEX_ROOT_COMPLEX_x1,		MV_TRUE,	MV_TRUE },
 	{ SATA1,		__3Gbps,		SERDES_DEFAULT_MODE,		MV_TRUE,	MV_TRUE },
-	{ USB3_HOST1,		__5Gbps,		SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
+	{ USB3_HOST1,		__5Gbps,		SERDES_DEFAULT_MODE,		MV_TRUE,	MV_TRUE }
 };
 
 SERDES_MAP DbConfigSLM1426[MAX_SERDES_LANES] =
 {
 	{ SATA0,		__3Gbps,		SERDES_DEFAULT_MODE,		MV_TRUE,	MV_TRUE  },
-	{ USB3_HOST0,		__5Gbps,		SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
-	{ PEX1, 		__5Gbps,		PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
-	{ SGMII2,    		__3_125Gbps,  	  	  SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
+	{ USB3_HOST0,		__5Gbps,		SERDES_DEFAULT_MODE,		MV_TRUE,	MV_TRUE },
+	{ SATA1,		__3Gbps,		SERDES_DEFAULT_MODE,		MV_TRUE,	MV_TRUE  },
+	{ SGMII2,    		__3_125Gbps,  	  	  SERDES_DEFAULT_MODE,		MV_TRUE,	MV_TRUE }
 };
 
 /* this enum must be aligned with topologyConfigDB381 array,
@@ -515,10 +515,10 @@ MV_U8 topologyConfigDB381ModeGet(MV_VOID)
 	if (mvTwsiRead(0, &twsiSlave, &mode, 1) == MV_OK) {
 		switch (mode & 0xF) {
 		case 0x1:
-			DEBUG_INIT_S("\nInit DB-381 board SLM 1426 topology\n");
+			DEBUG_INIT_S("\nInit DB-381 board SLM 1427 topology\n");
 			return DB_CONFIG_SLM1427;
 		case 0x2:
-			DEBUG_INIT_S("\nInit DB-381 board SLM 1427 topology\n");
+			DEBUG_INIT_S("\nInit DB-381 board SLM 1426 topology\n");
 			return DB_CONFIG_SLM1426;
 		default:	/* not the right module */
 			break;
@@ -570,16 +570,18 @@ MV_BOOL isCustomTopology = MV_FALSE; /* indicate user of non-default topology */
 /* read SatR fields (dbserdes1/2 , gpserdes1/2/5) and update lane topology accordingly */
 MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray)
 {
-	MV_U8 configVal, laneSelect;
+	MV_U8 configVal, laneSelect, i;
 	MV_TWSI_SLAVE twsiSlave;
+	MV_U32 boardId = mvBoardIdGet();
 
 	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.moreThen256 = MV_TRUE;
 
-	switch (mvBoardIdGet()) {
+	switch (boardId) {
 	case DB_68XX_ID: /* read 'dbserdes1' & 'dbserdes2' */
+	case DB_BP_6821_ID:
 		twsiSlave.offset = 1;
 		if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
 			mvPrintf("%s: TWSI Read of 'dbserdes1/2' failed\n", __func__);
@@ -590,34 +592,45 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray)
 		laneSelect = (configVal & SATR_DB_LANE1_CFG_MASK) >> SATR_DB_LANE1_CFG_OFFSET;
 		if (laneSelect > SATR_DB_LANE1_MAX_OPTIONS) {
 			mvPrintf("\n\%s: Error: invalid value for SatR field 'dbserdes1' (%x)\n", __func__, laneSelect);
-			isCustomTopology = MV_TRUE;
 			return MV_FAIL;
 		}
 		/* if modified default serdesType for lane#1, update topology and mark it as custom */
 		if (serdesMapArray[1].serdesType != DBSatRConfigLane1[laneSelect].serdesType) {
 			serdesMapArray[1] = DBSatRConfigLane1[laneSelect];
 			isCustomTopology = MV_TRUE;
-		}
-
-		/* verify if lane #1 conflicts with lane #4 (only 1 lane can be USB3 Host port 0)*/
-		if (mvHwsSerdesGetMaxLane() > 4 && serdesMapArray[1].serdesType == serdesMapArray[4].serdesType) {
-			mvPrintf("%s: Lane #4 Type conflicts with Lane #1 Type (Lane #4 disabled) \n", __func__, laneSelect);
-			serdesMapArray[4] = DBSatRConfigLane1[0];
+			if (boardId == DB_BP_6821_ID)	/* DB 381/2 board has inverted SerDes polarity */
+				serdesMapArray[1].swapRx = serdesMapArray[1].swapTx = MV_TRUE;
 		}
 
 		/* Lane #2 */
 		laneSelect = (configVal & SATR_DB_LANE2_CFG_MASK) >> SATR_DB_LANE2_CFG_OFFSET;
 		if (laneSelect > SATR_DB_LANE2_MAX_OPTIONS) {
 			mvPrintf("\n\%s: Error: invalid value for SatR field 'dbserdes2' (%x)\n", __func__, laneSelect);
-			isCustomTopology = MV_TRUE;
 			return MV_FAIL;
 		}
-
 		/* if modified default serdesType for lane@2, update topology and mark it as custom */
 		if (serdesMapArray[2].serdesType != DBSatRConfigLane2[laneSelect].serdesType) {
 			serdesMapArray[2] = DBSatRConfigLane2[laneSelect];
 			isCustomTopology = MV_TRUE;
+			if (boardId == DB_BP_6821_ID)	/* DB 381/2 board has inverted SerDes polarity */
+				serdesMapArray[2].swapRx = serdesMapArray[2].swapTx = MV_TRUE;
 		}
+
+		if (isCustomTopology == MV_TRUE) {
+			/* check for conflicts with detected lane #1 and lane #2 (Disable conflicted lanes) */
+			for (i = 0; i < mvHwsSerdesGetMaxLane(); i++) {
+				if (i != 1 && serdesMapArray[1].serdesType == serdesMapArray[i].serdesType) {
+					mvPrintf("\tLane #%d Type conflicts with Lane #1 (Lane #%d disabled)\n", i, i);
+					serdesMapArray[i] = DBSatRConfigLane1[0];
+				}
+
+				if (i != 2 && serdesMapArray[2].serdesType == serdesMapArray[i].serdesType) {
+					mvPrintf("\tLane #%d Type conflicts with Lane #2 (Lane #%d disabled)\n", i, i);
+					serdesMapArray[i] = DBSatRConfigLane1[0];
+				}
+			}
+		}
+
 		break; /* case DB_68XX_ID */
 	case DB_GP_68XX_ID: /* read 'gpserdes1' & 'gpserdes2' */
 		twsiSlave.offset = 2;

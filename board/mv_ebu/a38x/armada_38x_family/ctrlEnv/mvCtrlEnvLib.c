@@ -456,10 +456,14 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 				sataUnitActive[0] = MV_TRUE;
 			break;
 		case SERDES_UNIT_GBE:
-			if (ON_BOARD_RGMII(ifNo)) /* detected SGMII will replace the same On-Board compatible port */
-				ethComPhy &= ~(ON_BOARD_RGMII(ifNo));
-			ethComPhy |= SERDES_SGMII(ifNo);
-			DB(printf("SGMII, if=%d\n", ifNo));
+			if (ifNo >= mvCtrlSocUnitInfoNumGet(ETH_GIG_UNIT_ID))
+				mvOsPrintf("\tError: SGMII-%d is not supported on current device\n\n", ifNo);
+			else {
+				if (ON_BOARD_RGMII(ifNo)) /* detected SGMII will replace the same On-Board compatible port */
+					ethComPhy &= ~(ON_BOARD_RGMII(ifNo));
+				ethComPhy |= SERDES_SGMII(ifNo);
+				DB(printf("SGMII, if=%d\n", ifNo));
+			}
 			break;
 		case SERDES_UNIT_USB_H:
 			DB(printf("USB_H, if=%d\n", ifNo));

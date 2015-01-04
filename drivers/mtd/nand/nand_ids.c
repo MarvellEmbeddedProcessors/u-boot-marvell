@@ -151,6 +151,7 @@ const struct nand_flash_dev nand_flash_ids[] = {
 #ifdef CONFIG_MV_MTD_MLC_NAND_SUPPORT
 	/* 32 Gigabit - wrongly detected due to changes in READ_ID decoding */
 	{"NAND 4GiB 3,3V 8-bit",	0xD7, 4096, 4096, 524288, LP_OPTIONS},
+	{"NAND 4GiB 3,3V 8-bit",	0x68, 8192, 4096, 1048576, LP_OPTIONS},
 	/* 32 Gigabit - wrongly detected due to changes in READ_ID decoding */
 	{"NAND 8GiB 3,3V 8-bit",	0x88, 8192, 8192, 2097152, LP_OPTIONS},
 #else

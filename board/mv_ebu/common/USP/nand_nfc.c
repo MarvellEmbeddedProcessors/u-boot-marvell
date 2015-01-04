@@ -265,14 +265,10 @@ static struct nand_ecclayout ecc_layout_4KB_bch8bit = {
 };
 
 static struct nand_ecclayout ecc_layout_8KB_bch8bit = {
-	.eccbytes = 160,
-	.eccpos = {
-		128, 129, 130, 131, 132, 133, 134, 135,
-		136, 137, 138, 139, 140, 141, 142, 143,
-		144, 145, 146, 147, 148, 149, 150, 151,
-		152, 153, 154, 155, 156, 157, 158, 159},
-	/* Bootrom looks in bytes 0 & 5 for bad blocks */
-	.oobfree = { {1, 4}, {6, 122},  }
+	.eccbytes = 0,
+	.eccpos = {},
+	/* HW ECC handles all ECC data and all spare area is free for OOB */
+	.oobfree = {{0,160} }
 };
 
 static struct nand_ecclayout ecc_layout_8KB_bch12bit = {

@@ -124,6 +124,7 @@
 #define G3_SETTINGS_0_REG                       0xa0044
 #define G3_SETTINGS_1_REG                       0xa0048
 #define G3_SETTINGS_3_REG                       0xa0450
+#define G3_SETTINGS_4_REG                       0xa0454
 #define VTHIMPCAL_CTRL_REG                      0xa0104
 #define REF_REG0                                0xa0134
 #define CAL_REG6                                0xa0168

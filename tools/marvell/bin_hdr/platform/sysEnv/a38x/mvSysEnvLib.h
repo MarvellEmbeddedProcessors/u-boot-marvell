@@ -112,6 +112,7 @@
 #define G1_SETTINGS_0_REG                       0xa0034
 #define G1_SETTINGS_1_REG                       0xa0038
 #define G1_SETTINGS_3_REG                       0xa0440
+#define G1_SETTINGS_4_REG                       0xa0444
 #define G2_SETTINGS_0_REG                       0xa003C
 #define G2_SETTINGS_1_REG                       0xa0040
 #define G2_SETTINGS_2_REG                       0xa00F8
@@ -129,6 +130,7 @@
 #define PCIE_REG3                               0xa0290
 #define LANE_CFG1_REG                           0xa0604
 #define LANE_CFG4_REG                           0xa0620
+#define LANE_CFG5_REG                           0xa0624
 #define GLOBAL_CLK_CTRL                         0xa0704
 #define GLOBAL_MISC_CTRL                        0xa0718
 #define GLOBAL_CLK_SRC_HI                       0xa0710

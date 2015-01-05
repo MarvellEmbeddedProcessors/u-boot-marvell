@@ -371,10 +371,9 @@ MV_OP_PARAMS usb3ElectricalConfigSerdesRev2Params[] =
 	{ LANE_CFG4_REG,			0x800,		0x80,		{ 0x80      },		0,			0	 	}, /* Spread Spectrum Clock Enable */
 	{ G2_SETTINGS_2_REG,		0x800,		0xFE40,		{ 0x4440    },		0,          0	 	}, /* G2_TX_SSC_AMP[6:0]=4.5kPPM and TX emphasis mode=mV */
 	{ G2_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3D2     },		0,          0	 	}, /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
-	{ SQUELCH_FFE_SETTING_REG,	0x800,		0xFF,		{ 0xEF      },		0,          0	 	}, /* FFE Setting Force, RES and CAP */
 	{ RX_REG2,				 	0x800,		0xF0,		{ 0x70      },		0,          0	 	}, /* Dtl Clamping disable and Dtl-clamping-Sel(6000ppm) */
-	{ CAL_REG6,		 			0x800,		0xFF00,		{ 0xD500    },		0,          0	 	}, /* cal_rxclkalign90_ext_en and cal_os_ph_ext */
 	{ REF_REG0,		 			0x800,		0x38,		{ 0x20      },		0,          0	 	}, /* vco_cal_vth_sel */
+    { LANE_CFG5_REG,			0x800,		0x4,		{ 0x4       },		0,			0	 	}, /* Spread Spectrum Clock Enable */
 };
 
 /* PEX and USB3 - TX config seq */

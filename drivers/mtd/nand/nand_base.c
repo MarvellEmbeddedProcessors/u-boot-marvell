@@ -2058,17 +2058,21 @@ static int nand_write(struct mtd_info *mtd, loff_t to, size_t len,
 
 		size_t oobsize = mtd->oobsize;
 		size_t datasize = mtd->writesize;
+		uint32_t ooboffset = mtd->ecclayout->oobfree[0].offset;
 
 		uint8_t oobtemp[oobsize];
 		datapages = len / (datasize);
-		oobtemp[0] = oobtemp[1] = 0xff;
+
+		/* Fill offset bytes before OOB with FF */
+		for (j = 0; j < ooboffset; j++)
+			*pbuf++ = 0xff;
 
 		/* Rewrite buffer with YAFFS2 image, which consists of sequential */
 		/* pages of data and OOB info, in such a way that, first, appears */
 		/* data of all pages without OOB and, then, OOB info from all pages. */
 		/* NOTE: this code is inefficient and will be optimized later */
 		for (i = 0; i < datapages; i++) {
-			memcpy((void *)oobtemp+2, (void *)(buf + datasize * (i + 1)), oobsize-2);
+			memcpy((void *)oobtemp+ooboffset, (void *)(buf + datasize * (i + 1)), oobsize-ooboffset);
 			memmove((void *)(buf + datasize * (i + 1)), (void *)(buf + datasize * (i + 1) + oobsize),
 				(datapages - (i + 1)) * (datasize) + (datapages - 1) * oobsize);
 			memcpy((void *)(buf + (datapages) * (datasize + oobsize) - oobsize),

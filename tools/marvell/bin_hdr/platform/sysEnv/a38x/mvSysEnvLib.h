@@ -130,6 +130,7 @@
 #define PCIE_REG3                               0xa0290
 #define LANE_CFG1_REG                           0xa0604
 #define LANE_CFG4_REG                           0xa0620
+#define LANE_CFG5_REG                           0xa0624
 #define GLOBAL_CLK_CTRL                         0xa0704
 #define GLOBAL_MISC_CTRL                        0xa0718
 #define GLOBAL_CLK_SRC_HI                       0xa0710

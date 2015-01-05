@@ -2920,8 +2920,8 @@ ident_done:
 				 *maf_id == NAND_MFR_HYNIX ||
 				 *maf_id == NAND_MFR_TOSHIBA ||
 				 *maf_id == NAND_MFR_AMD)) ||
-			(mtd->writesize == 2048 &&
-			 *maf_id == NAND_MFR_MICRON))
+			 (*maf_id == NAND_MFR_MICRON &&
+			 (mtd->writesize == 2048 || mtd->writesize == 8192)))
 		chip->options |= NAND_BBT_SCAN2NDPAGE;
 
 	/*

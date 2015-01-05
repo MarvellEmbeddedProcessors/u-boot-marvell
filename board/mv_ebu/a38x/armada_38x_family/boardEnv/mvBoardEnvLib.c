@@ -1000,6 +1000,10 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 
 
 	switch (mvBoardIdGet()) {
+	case DB_BP_6821_ID:
+		if (mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD))
+			mvModuleMppUpdate(4, nandOnBoard);
+		break;
 	case DB_68XX_ID:
 		if (mvBoardIsModuleConnected(MV_MODULE_MII))
 			mvModuleMppUpdate(3, miiModule);

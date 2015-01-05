@@ -2053,31 +2053,34 @@ static int nand_write(struct mtd_info *mtd, loff_t to, size_t len,
 #ifdef CONFIG_MTD_NAND_YAFFS2
 	int oldopsmode = 0;
 	if (mtd->rw_oob == 1) {
-		int i = 0;
-		int datapages = 0;
+		int i = 0, j = 0;
 
 		size_t oobsize = mtd->oobsize;
 		size_t datasize = mtd->writesize;
 		uint32_t ooboffset = mtd->ecclayout->oobfree[0].offset;
+		int datapages = len / (datasize);
+		uint8_t oobbuflocal[datapages * oobsize];
+		uint8_t *pbuf;
 
-		uint8_t oobtemp[oobsize];
-		datapages = len / (datasize);
-
+		/* Prepare separate buffers with OOB first and, then, with data: */
+		/* 1. First, copy OOB info from all pages to local buffer */
+		for (i = 0, pbuf = oobbuflocal; i < datapages; i++, pbuf += oobsize) {
 		/* Fill offset bytes before OOB with FF */
 		for (j = 0; j < ooboffset; j++)
 			*pbuf++ = 0xff;
-
-		/* Rewrite buffer with YAFFS2 image, which consists of sequential */
-		/* pages of data and OOB info, in such a way that, first, appears */
-		/* data of all pages without OOB and, then, OOB info from all pages. */
-		/* NOTE: this code is inefficient and will be optimized later */
-		for (i = 0; i < datapages; i++) {
-			memcpy((void *)oobtemp+ooboffset, (void *)(buf + datasize * (i + 1)), oobsize-ooboffset);
-			memmove((void *)(buf + datasize * (i + 1)), (void *)(buf + datasize * (i + 1) + oobsize),
-				(datapages - (i + 1)) * (datasize) + (datapages - 1) * oobsize);
-			memcpy((void *)(buf + (datapages) * (datasize + oobsize) - oobsize),
-				(void *)(oobtemp), oobsize);
+			/* Copy OOB info */
+			memcpy((void*)pbuf, (void*)(buf + datasize * (i + 1) + oobsize * i),
+					oobsize-ooboffset);
 		}
+
+		/* 2. Then, move data of all pages to overwrite wholes from OOB */
+		for (i = 1, pbuf = buf + datasize; i < datapages; i++, pbuf += datasize) {
+			memmove((void*)pbuf, (void*)(buf + (datasize + oobsize) * i),
+						datasize);
+		}
+
+		/* 3. Finally, copy all OOB after the data in the original buffer */
+		memcpy((void*)(buf + len), (void*)oobbuflocal, oobsize * datapages);
 	}
 #endif
 	/* Do not allow writes past end of device */

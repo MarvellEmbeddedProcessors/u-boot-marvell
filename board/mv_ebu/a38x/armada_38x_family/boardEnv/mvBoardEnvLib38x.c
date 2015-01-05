@@ -328,6 +328,9 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 
 		mvBoardIoExpanderUpdate();
 		mvBoardPcieModulesInfoUpdate();	/* if PCIe modules are configured (via 'SatR') */
+
+		/* Update MPP group types and values according to board configuration */
+		mvBoardMppIdUpdate();
 		mvBoardFlashDeviceUpdate();
 		break;
 	case DB_GP_68XX_ID:

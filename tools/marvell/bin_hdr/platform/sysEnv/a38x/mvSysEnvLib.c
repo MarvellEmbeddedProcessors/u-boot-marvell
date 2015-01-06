@@ -74,6 +74,34 @@
 #define mvPrintf    printf
 #endif
 
+#ifdef CONFIG_ARMADA_38X
+MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
+/*                     6820    6810     6811     6828     */
+/* PEX_UNIT_ID      */ { 4,     3,       3,       4},
+/* ETH_GIG_UNIT_ID  */ { 3,		2,       3,       3},
+/* USB3H_UNIT_ID    */ { 2,     2,       2,       2},
+/* USB3D_UNIT_ID    */ { 1,     1,       1,       1},
+/* SATA_UNIT_ID     */ { 2,     2,       2,       4},
+/* QSGMII_UNIT_ID   */ { 1,     0,       0,       1},
+/* XAUI_UNIT_ID     */ { 0,     0,       0,       0},
+/* RXAUI_UNIT_ID    */ { 0,     0,       0,       0}
+};
+#else  /* if (CONFIG_ARMADA_39X) */
+MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
+/*                      6920     6928     */
+/* PEX_UNIT_ID      */ { 4,       4},
+/* ETH_GIG_UNIT_ID  */ { 3,       4},
+/* USB3H_UNIT_ID    */ { 1,       2},
+/* USB3D_UNIT_ID    */ { 0,       1},
+/* SATA_UNIT_ID     */ { 0,       4},
+/* QSGMII_UNIT_ID   */ { 0,       1},
+/* XAUI_UNIT_ID     */ { 1,       1},
+/* RXAUI_UNIT_ID    */ { 1,		  1}
+};
+#endif
+
+
+
 MV_U32 gBoardId = -1;
 MV_U32 mvBoardIdGet(MV_VOID)
 {
@@ -213,6 +241,52 @@ MV_SUSPEND_WAKEUP_STATUS mvSysEnvSuspendWakeupCheck(void)
 
 	/* if GPIO is ON: wakeup from S2RAM indication detected */
 	return (reg & GPP_MASK(gpio)) ? MV_SUSPEND_WAKEUP_ENABLED_GPIO_DETECTED: MV_SUSPEND_WAKEUP_DISABLED;
+}
+
+/*******************************************************************************
+* mvCtrlDevIdIndexGet
+*
+* DESCRIPTION: return SOC device index
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*        return SOC device index
+*
+*******************************************************************************/
+MV_U32 mvSysEnvIdIndexGet(MV_U32 ctrlModel)
+{
+	switch (ctrlModel) {
+	case MV_6820_DEV_ID:
+		return MV_6820_INDEX;
+	case MV_6810_DEV_ID:
+		return MV_6810_INDEX;
+	case MV_6811_DEV_ID:
+		return MV_6811_INDEX;
+	case MV_6828_DEV_ID:
+		return MV_6828_INDEX;
+	case MV_6920_DEV_ID:
+		return MV_6920_INDEX;
+	case MV_6928_DEV_ID:
+		return MV_6928_INDEX;
+	default:
+		return MV_6820_INDEX;
+	}
+}
+
+MV_U32 mvSysEnvUnitMaxNumGet(MV_UNIT_ID unit)
+{
+	MV_U32 devIdIndex;
+
+	if (unit >= MAX_UNITS_ID) {
+		mvPrintf("%s: Error: Wrong unit type (%u)\n", __func__, unit);
+		return 0;
+	}
+
+	devIdIndex = mvSysEnvIdIndexGet(mvSysEnvModelGet());
+	return mvSysEnvSocUnitNums[unit][devIdIndex];
 }
 
 /************************************************************************************

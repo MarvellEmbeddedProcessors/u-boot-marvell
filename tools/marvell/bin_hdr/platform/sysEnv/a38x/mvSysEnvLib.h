@@ -313,7 +313,6 @@
 #define MV_6920_DEV_ID		0x6920
 #define MV_6928_DEV_ID		0x6928
 
-
 typedef enum _mvDeviceId {
 	MV_6810,
 	MV_6820,
@@ -324,6 +323,40 @@ typedef enum _mvDeviceId {
 	MV_6928,
 	MV_MAX_DEV_ID,
 } MV_DEVICE_ID;
+
+#define MV_6820_INDEX                         0
+#define MV_6810_INDEX                         1
+#define MV_6811_INDEX                         2
+#define MV_6828_INDEX                         3
+
+#define MV_6920_INDEX                         0
+#define MV_6928_INDEX                         1
+
+#ifdef CONFIG_ARMADA_38X
+#define MAX_DEV_ID_NUM                        4
+#else
+#define MAX_DEV_ID_NUM                        2
+#endif
+
+#define MV_6820_INDEX                         0
+#define MV_6810_INDEX                         1
+#define MV_6811_INDEX                         2
+#define MV_6828_INDEX                         3
+#define MV_6920_INDEX                         0
+#define MV_6928_INDEX                         1
+
+typedef enum _mvUnitId {
+            PEX_UNIT_ID ,
+            ETH_GIG_UNIT_ID,
+			USB3H_UNIT_ID,
+			USB3D_UNIT_ID,
+			SATA_UNIT_ID,
+            QSGMII_UNIT_ID,
+			XAUI_UNIT_ID,
+			RXAUI_UNIT_ID,
+			MAX_UNITS_ID
+} MV_UNIT_ID;
+
 
 typedef struct boardDeviceIdWoVal {
 	MV_DEVICE_ID devId;
@@ -433,6 +466,24 @@ MV_U32 mvBoardIdGet(MV_VOID);
 *
 *******************************************************************************/
 MV_U32 mvBoardIdIndexGet(MV_U32 boardId);
+
+/*******************************************************************************
+* mvSysEnvUnitMaxNumGet
+*
+* DESCRIPTION:
+*	returns max number of referenced type units that can be used
+*
+* INPUT:
+*       unit id
+*
+* OUTPUT:
+*       none
+*
+* RETURN:
+*        number of units
+*
+*******************************************************************************/
+MV_U32 mvSysEnvUnitMaxNumGet(MV_UNIT_ID unit);
 
 /**************************************************************************
  * mvHwsTwsiInitWrapper -

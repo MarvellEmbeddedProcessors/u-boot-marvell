@@ -109,6 +109,27 @@ static MV_VOID _MV_REG_WRITE(MV_U32 regAddr, MV_U32 regData)
 #define LINK_WAIT_CNTR  100
 #define LINK_WAIT_SLEEP 100
 
+#define MAX_UNIT_NUMB     4
+#define TOPOLOGY_TEST_OK           0
+#define WRONG_NUMBER_OF_UNITS      1
+#define SERDES_ALREADY_IN_USE      2
+#define UNIT_NUMBER_VIOLATION      3
+
+MV_U8 SerdesInUseMap[MAX_UNITS_ID][MAX_UNIT_NUMB] =
+{
+	/* 0    1    2    3     */
+	{  MV_FALSE, MV_FALSE, MV_FALSE, MV_FALSE   },  /* PEX *1  */
+	{  MV_FALSE, MV_FALSE, MV_FALSE, MV_FALSE   },  /* ETH_GIG */
+	{  MV_FALSE, MV_FALSE,   NA,      NA		},  /* USB3H   */
+	{  MV_FALSE, MV_FALSE, MV_FALSE,  NA		},  /* USB3D   */
+	{  MV_FALSE, MV_FALSE, MV_FALSE, MV_FALSE   },  /* SATA    */
+	{  MV_FALSE,   NA,		NA,		  NA		},  /* QSGMII  */
+	{  MV_FALSE,   NA,		NA,		  NA		},  /* XAUI    */
+	{  MV_FALSE,   NA,		NA,		  NA		}   /* RXAUI   */
+};
+
+MV_U8 serdesUnitCount[MAX_UNITS_ID] = {0};
+
 /* Selector mapping for A380-A0 and A390-Z1 */
 MV_U8 commonPhysSelectorsSerdesRev2Map[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 {
@@ -139,7 +160,6 @@ MV_U8 commonPhysSelectorsSerdesRev2Map[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 /* Selector mapping for PEX by 4 confiuration */
 MV_U8 commonPhysSelectorsPexBy4Lanes[] = { 0x1, 0x2, 0x2, 0x2 };
 
-#ifdef MV_DEBUG_INIT
 static const char *serdesTypeToString[] = {
 	"PCIe0",
 	"PCIe1",
@@ -162,7 +182,35 @@ static const char *serdesTypeToString[] = {
 	"DEFAULT SERDES",
 	"LAST_SERDES_TYPE"
 };
-#endif
+
+
+typedef struct serdesUnitData {
+	MV_U8 serdesUnitId;
+	MV_U8 serdesUnitNum;
+	MV_32 wo_reg_val1;
+} MV_SERDES_UNIT_P;
+
+static MV_SERDES_UNIT_P serdesTypeToUnitPar[] = {
+	{	PEX_UNIT_ID ,	0,	},
+	{	PEX_UNIT_ID ,	1,	},
+	{	PEX_UNIT_ID ,	2,	},
+	{	PEX_UNIT_ID ,	3,	},
+	{	SATA_UNIT_ID,	0,	},
+	{	SATA_UNIT_ID,	1,	},
+	{	SATA_UNIT_ID,	2,	},
+	{	SATA_UNIT_ID,	3,	},
+	{	ETH_GIG_UNIT_ID,0,	},
+	{	ETH_GIG_UNIT_ID,1,	},
+	{	ETH_GIG_UNIT_ID,2,	},
+	{	QSGMII_UNIT_ID,	0,	},
+	{	USB3H_UNIT_ID,	0,	},
+	{	USB3H_UNIT_ID,	1,	},
+	{	USB3D_UNIT_ID,	0,	},
+    {	ETH_GIG_UNIT_ID,3,	},
+    {	XAUI_UNIT_ID,	0,	},
+    {	RXAUI_UNIT_ID,	0,	},
+};
+
 
 /******************************** Sequences DB ********************************/
 
@@ -588,6 +636,58 @@ MV_U8 mvHwsCtrlSerdesRevGet(MV_VOID)
     /* for A39x-Z1, A38x-A0 */
     return MV_SERDES_REV_2_1;
 }
+
+MV_U32 mvHwsSerdesTopologyVerify(SERDES_TYPE serdesType, MV_U32 serdesId, SERDES_MODE serdesMode)
+{
+
+	MV_U32 testResult = 0;
+	MV_U8 serdMaxNumb, unitCount,unitNumb;
+	MV_UNIT_ID uId;
+
+	if (serdesType > RXAUI){
+		mvPrintf("%s: Warning: Wrong serdes type %s serdes#%d \n", __func__, serdesTypeToString[serdesType], serdesId);
+		return MV_FAIL;
+	}
+	uId = serdesTypeToUnitPar[serdesType].serdesUnitId;
+	unitNumb =serdesTypeToUnitPar[serdesType].serdesUnitNum;
+
+	if (SerdesInUseMap[uId][unitNumb] == MV_FALSE){
+		SerdesInUseMap[uId][unitNumb] = MV_TRUE;
+		serdMaxNumb = mvSysEnvUnitMaxNumGet(uId);
+		if (((serdesType <= PEX3)) && ((serdesMode == PEX_END_POINT_x4) || (serdesMode == PEX_ROOT_COMPLEX_x4)))
+			/* PEXx4 take place of 2 PEXx1 so serdes Unit count
+			should be increaesed twice */
+			unitCount = serdesUnitCount[PEX_UNIT_ID] + 2;
+		else
+			unitCount = ++serdesUnitCount[uId];
+
+		if (unitCount > serdMaxNumb)
+			testResult = WRONG_NUMBER_OF_UNITS;
+		else if (unitNumb >= serdMaxNumb)
+			testResult = UNIT_NUMBER_VIOLATION;
+		}
+	else
+		testResult = SERDES_ALREADY_IN_USE;
+		if (testResult == SERDES_ALREADY_IN_USE)
+	{
+			mvPrintf("%s: Error: serdes lane %d is configured to type %s: type already in use\n", __func__, serdesId, serdesTypeToString[serdesType]);
+			return MV_FAIL;
+	}
+	else if (testResult == WRONG_NUMBER_OF_UNITS)
+	{
+		mvPrintf("%s: Warning: serdes lane %d is set to type %s.\n", __func__, serdesId,serdesTypeToString[serdesType]);
+		mvPrintf("%s: Maximum supported lanes are already set to this type (limit = %d)\n", __func__, serdMaxNumb);
+		return MV_FAIL;
+	}
+
+	else if (testResult == UNIT_NUMBER_VIOLATION)
+	{
+		mvPrintf("%s: Warning: serdes lane %d type is %s: current device support only %d units of this type.\n", __func__, serdesId, serdesTypeToString[serdesType],serdMaxNumb );
+		return MV_FAIL;
+	}
+	return MV_OK;
+}
+
 
 
 MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID)
@@ -1528,7 +1628,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 /***************************************************************************/
 MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 {
-	MV_U32 laneData, serdesIdx, serdesLaneHwNum, regData = 0;
+	MV_U32 laneData, serdesIdx,serdesLaneHwNum, regData = 0;
 	SERDES_TYPE serdesType;
 	SERDES_MODE serdesMode;
 	MV_U8       selectBitOff;
@@ -1547,7 +1647,6 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 	for (serdesIdx = 0; serdesIdx < mvHwsSerdesGetMaxLane(); serdesIdx++) {
 		serdesType = serdesConfigMap[serdesIdx].serdesType;
 		serdesMode = serdesConfigMap[serdesIdx].serdesMode;
-
 		serdesLaneHwNum = mvHwsGetPhysicalSerdesNum(serdesIdx);
 
 		laneData = mvHwsSerdesGetPhySelectorVal(serdesLaneHwNum, serdesType);
@@ -1555,7 +1654,11 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 		if(serdesType == DEFAULT_SERDES) {
 			continue;
 		}
-
+		if (mvHwsSerdesTopologyVerify(serdesType,serdesIdx,serdesMode) != MV_OK){
+			serdesConfigMap[serdesIdx].serdesType = DEFAULT_SERDES;
+			mvPrintf("%s: SerDes lane #%d is  disabled\n",__func__, serdesLaneHwNum);
+			continue;
+		}
 		/* Checking if the board topology configuration includes PEXx4 - for the next step */
 		if ((serdesMode == PEX_END_POINT_x4) || (serdesMode == PEX_ROOT_COMPLEX_x4)) {
             /* update lane data to the 3 next SERDES lanes */

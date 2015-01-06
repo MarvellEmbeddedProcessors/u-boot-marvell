@@ -165,19 +165,20 @@ typedef enum _devGppBoardClass {
 } MV_BOARD_GPP_CLASS;
 
 typedef enum _mvModuleTypeID {
-	MV_MODULE_NO_MODULE		= 0x000,	/* MII board SLM 1362	*/
-	MV_MODULE_MII			= BIT0,	/* MII board SLM 1362	*/
-	MV_MODULE_SLIC_TDM_DEVICE	= BIT1,	/* TDM board SLM 1360	*/
-	MV_MODULE_I2S_DEVICE		= BIT2,	/* I2S board SLM 1360	*/
-	MV_MODULE_SPDIF_DEVICE		= BIT3,	/* SPDIF board SLM 1360	*/
-	MV_MODULE_NOR			= BIT4,	/* NOR board SLM 1361	*/
-	MV_MODULE_NAND			= BIT5,	/* NAND board SLM 1361	*/
-	MV_MODULE_SDIO			= BIT6,	/* SDIO board SLM 1361	*/
-	MV_MODULE_SGMII			= BIT7,	/* SGMII board SLM 1364	*/
-	MV_MODULE_DB381_SGMII		= BIT8,	/* DB-381 SGMII SLM 1426 */
-	MV_MODULE_NAND_ON_BOARD		= BIT9,	/* ON board nand detect */
-	MV_MODULE_TYPE_MAX_MODULE	= 9,
-	MV_MODULE_TYPE_MAX_OPTION	= 10
+	MV_MODULE_NO_MODULE			= 0x000,	/* MII board SLM 1362	*/
+	MV_MODULE_MII				= BIT0,	/* MII board SLM 1362	*/
+	MV_MODULE_SLIC_TDM_DEVICE		= BIT1,	/* TDM board SLM 1360	*/
+	MV_MODULE_I2S_DEVICE			= BIT2,	/* I2S board SLM 1360	*/
+	MV_MODULE_SPDIF_DEVICE			= BIT3,	/* SPDIF board SLM 1360	*/
+	MV_MODULE_NOR				= BIT4,	/* NOR board SLM 1361	*/
+	MV_MODULE_NAND				= BIT5,	/* NAND board SLM 1361	*/
+	MV_MODULE_SDIO				= BIT6,	/* SDIO board SLM 1361	*/
+	MV_MODULE_SGMII				= BIT7,	/* SGMII board SLM 1364	*/
+	MV_MODULE_DB381_SGMII			= BIT8,	/* DB-381 SGMII SLM 1426 */
+	MV_MODULE_NAND_ON_BOARD			= BIT9,	/* ON board nand - detected via S@R bootsrc */
+	MV_MODULE_DB381_MMC_8BIT_ON_BOARD	= BIT10,/* ON board MMC 8bit - detected via S@R bootsrc */
+	MV_MODULE_TYPE_MAX_MODULE		= 9,
+	MV_MODULE_TYPE_MAX_OPTION		= 10
 } MV_MODULE_TYPE_ID;
 
 typedef struct _devCsInfo {
@@ -420,6 +421,7 @@ struct _mvBoardMppModule {
 #define MPP_GP_MINI_PCIE0	{2, 0x11240011}
 #define MPP_GP_MINI_PCIE1	{2, 0x11204011}
 #define MPP_GP_MINI_PCIE0_PCIE1	{2, 0x11200011}
+#define MPP_MMC_DB381_MODULE	{3, 0x00044444}
 
 /* Boot device bus width */
 #define MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS          3
@@ -582,6 +584,7 @@ void mvBoardEepromValidSet(void);
 #endif /* CONFIG_CMD_BOARDCFG */
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
 MV_BOOL mvBoardisSdioConnected(void);
+MV_VOID mvBoardSdioConnectionSet(MV_BOOL status);
 MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
 
 #ifdef __cplusplus

@@ -913,7 +913,8 @@ static MV_VOID mvBoardModuleAutoDetect(MV_VOID)
 	bootSrc = mvBoardBootDeviceGroupSet();
 	if (MSAR_0_BOOT_NAND_NEW == bootSrc)
 		mvBoardModuleConfigSet(MV_MODULE_NAND_ON_BOARD);
-
+	else if (MSAR_0_BOOT_SDIO == bootSrc)
+		mvBoardModuleConfigSet(MV_MODULE_DB381_MMC_8BIT_ON_BOARD);
 }
 
 /*******************************************************************************
@@ -996,13 +997,15 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 	struct _mvBoardMppModule mini_pcie0_OnBoard = MPP_GP_MINI_PCIE0;
 	struct _mvBoardMppModule mini_pcie1_OnBoard = MPP_GP_MINI_PCIE1;
 	struct _mvBoardMppModule mini_pcie0_pcie1OnBoard = MPP_GP_MINI_PCIE0_PCIE1;
+	struct _mvBoardMppModule mmcOnDb381Board = MPP_MMC_DB381_MODULE;
 	MV_U8 miniPcie0_sata0_selector, miniPcie1_sata1_selector;
-
 
 	switch (mvBoardIdGet()) {
 	case DB_BP_6821_ID:
 		if (mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD))
 			mvModuleMppUpdate(4, nandOnBoard);
+		if (mvBoardIsModuleConnected(MV_MODULE_DB381_MMC_8BIT_ON_BOARD))
+			mvModuleMppUpdate(1, &mmcOnDb381Board);
 		break;
 	case DB_68XX_ID:
 		if (mvBoardIsModuleConnected(MV_MODULE_MII))
@@ -1141,7 +1144,6 @@ MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 {
 	MV_BOARD_BOOT_SRC bootSrc = mvBoardBootDeviceGet();
-
 	switch (bootSrc) {
 	case MSAR_0_BOOT_NOR_FLASH:
 		break;
@@ -1151,6 +1153,10 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 	case MSAR_0_BOOT_SPI_FLASH:
 		break;
 	case MSAR_0_BOOT_SPI1_FLASH:
+		break;
+	case MSAR_0_BOOT_SDIO:
+		if (mvBoardIdGet() == DB_BP_6821_ID)
+			mvBoardModuleConfigSet(MV_MODULE_DB381_MMC_8BIT_ON_BOARD);
 		break;
 	default:
 		return MV_ERROR;
@@ -3309,6 +3315,19 @@ MV_NAND_IF_MODE mvBoardNandIfGet()
 MV_BOOL mvBoardisSdioConnected(void)
 {
 	return board->isSdMmcConnected;
+}
+
+/*******************************************************************************
+* mvBoardSdioConnectionSet
+* DESCRIPTION: set SDIO connection status on board structures
+*
+* INPUT:  Boolean indicating requested SDIO state
+* OUTPUT: None.
+* RETURN: NONE
+*******************************************************************************/
+MV_VOID mvBoardSdioConnectionSet(MV_BOOL status)
+{
+	board->isSdMmcConnected = status;
 }
 /*******************************************************************************
 * mvBoardisSdio18vConnected

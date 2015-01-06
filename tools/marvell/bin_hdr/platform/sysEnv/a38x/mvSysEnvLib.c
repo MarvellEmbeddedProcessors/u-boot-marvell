@@ -906,7 +906,8 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 			}
 			else{
 				if( (boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_32BIT_ECC] !=0 ) ){
-					mvPrintf("DDR Topology Update: ECC PUP3 not valid for 32bit mode, force ECC in PUP4\n");
+					if(topologyUpdateInfo->mvECC == MV_TOPOLOGY_UPDATE_ECC_ON)
+						mvPrintf("DDR Topology Update: ECC PUP3 not valid for 32bit mode, force ECC in PUP4\n");
 					topologyUpdateInfo->mvUpdateECCPup3Mode = MV_TRUE;
 					topologyUpdateInfo->mvECCPupModeOffset = MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP4;
 				}
@@ -914,7 +915,8 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 		}
 		else{
 			if(boardEccModeArray[boardId][MV_TOPOLOGY_UPDATE_16BIT_ECC] != 0 ){
-				mvPrintf("DDR Topology Update: ECC on PUP3 not supported, force ECC on PUP4\n");
+				if(topologyUpdateInfo->mvECC == MV_TOPOLOGY_UPDATE_ECC_ON)
+					mvPrintf("DDR Topology Update: ECC on PUP3 not supported, force ECC on PUP4\n");
 				topologyUpdateInfo->mvUpdateECCPup3Mode = MV_TRUE;
 				topologyUpdateInfo->mvECCPupModeOffset = MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP4;
 			}

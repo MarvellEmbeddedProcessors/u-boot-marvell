@@ -326,6 +326,11 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		if ((mvBoardIsModuleConnected(MV_MODULE_DB381_SGMII)))
 			mvBoardPhyAddrSet(2, -1);
 
+		if ((mvBoardIsModuleConnected(MV_MODULE_DB381_MMC_8BIT_ON_BOARD)))
+			mvBoardSdioConnectionSet(MV_TRUE);
+		else
+			mvBoardSdioConnectionSet(MV_FALSE);
+
 		mvBoardIoExpanderUpdate();
 		mvBoardPcieModulesInfoUpdate();	/* if PCIe modules are configured (via 'SatR') */
 

@@ -156,7 +156,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /* PEX_UNIT_ID      */ { 4,	4},
 /* ETH_GIG_UNIT_ID  */ { 3,	2},
 /* USB_UNIT_ID      */ { 0,	1},
-/* USB3_UNIT_ID     */ { 1,	2},/* usb3 serdes lane  */
+/* USB3_UNIT_ID     */ { 1,	2},
 /* IDMA_UNIT_ID     */ { 0,	0},
 /* XOR_UNIT_ID      */ { 2,	2},
 /* SATA_UNIT_ID     */ { 0,	4},
@@ -494,8 +494,8 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 	mvCtrlSocUnitInfoNumSet(USB3_UNIT_ID, usbHIfCount);
 	mvCtrlSocUnitInfoNumSet(QSGMII_UNIT_ID, qsgmiiIfCount);
 #ifdef CONFIG_ARMADA_39X
-       /* if xauiIfCount(count of RXAUI serdes lanes) == 2 => RXAUI is connected to SerDes's
-	  if xauiIfCount(count of XAUI serdes lanes) == 4 => XAUI is connected to SerDes's */
+	/* if xauiIfCount(count of RXAUI serdes lanes) == 2 => RXAUI is connected to SerDes's
+	   if xauiIfCount(count of XAUI serdes lanes) == 4 => XAUI is connected to SerDes's */
 	if (xauiIfCount == 2 || xauiIfCount == 4) {
 		mvCtrlSocUnitInfoNumSet(XAUI_UNIT_ID, 1);
 		ethComPhy |= SERDES_RXAUI(1);
@@ -558,10 +558,12 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 #endif
 		mvBoardInfoUpdate();
 	}
-
+	/* NOR/NAND modules overrides RGMII-1 MPP's */
+	/* Armada 381/2 (device 6811) doesn't support GE1 unit */
 	if (!(mvBoardIsModuleConnected(MV_MODULE_NOR) ||
 	    mvBoardIsModuleConnected(MV_MODULE_NAND) ||
-	    mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD)))
+		mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD) ||
+		mvCtrlModelGet() == MV_6811_DEV_ID))
 		ethComPhy |= ON_BOARD_RGMII(1); /* NOR/NAND modules overides RGMII-1 MPP's */
 
 	mvCtrlSerdesConfigDetect();

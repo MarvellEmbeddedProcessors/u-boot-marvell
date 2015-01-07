@@ -316,6 +316,10 @@ MV_STATUS mvBoardPcieClockGet(MV_U8 *val);
 MV_STATUS mvBoardPcieClockSet(MV_U8 val);
 MV_STATUS mvBoardPllClockGet(MV_U8 *val);
 MV_STATUS mvBoardPllClockSet(MV_U8 val);
+MV_STATUS mvBoardAvsModeGet(MV_U8 *val);
+MV_STATUS mvBoardAvsModeSet(MV_U8 val);
+MV_STATUS mvBoardSmiI2c2AddrGet(MV_U8 *val);
+MV_STATUS mvBoardSmiI2c2AddrSet(MV_U8 val);
 MV_STATUS mvBoardSarBoardIdGet(MV_U8 *val);
 MV_STATUS mvBoardSarBoardIdSet(MV_U8 val);
 

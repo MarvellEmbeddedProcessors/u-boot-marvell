@@ -50,6 +50,8 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 #elif defined(CONFIG_ALLEYCAT3)
 	CMD_PCIE_CLOCK,
 	CMD_PLL_CLOCK,
+	CMD_AVS_MODE,
+	CMD_SLAVE_ADDR,
 	CMD_DEVICE_NUM,
 	CMD_BOARD_ID,
 	CMD_DDR_ECC_EN,
@@ -82,6 +84,8 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 						   3,	/* CPU/DDR clock */
 						   0,	/* PCIe clock */
 						   1,	/* PLL clock */
+						   1,	/* AVS Mode */
+						   1,	/* I2C/SMI Slave address */
 						   0,	/* Device number */
 						   0,	/* Board ID */
 						   0,	/* DDR ECC enable */
@@ -117,6 +121,10 @@ void SatR_usage(void);
 
 static int sar_cmd_get(const char *cmd)
 {
+#if defined CONFIG_ALLEYCAT3
+	MV_U32 revId = mvCtrlRevGet();
+#endif
+
 	if (strcmp(cmd, "coreclock") == 0)
 		return CMD_CORE_CLK_FREQ;
 	if (strcmp(cmd, "freq") == 0)
@@ -137,8 +145,15 @@ static int sar_cmd_get(const char *cmd)
 #elif defined CONFIG_ALLEYCAT3
 	if (strcmp(cmd, "pciclock") == 0)
 		return CMD_PCIE_CLOCK;
-	if (strcmp(cmd, "pllclock") == 0)
-		return CMD_PLL_CLOCK;
+	if (revId == MV_ALLEYCAT3_A0_ID) {
+		if (strcmp(cmd, "pllclock") == 0)
+			return CMD_PLL_CLOCK;
+	} else {
+		if (strcmp(cmd, "avsmode") == 0)
+			return CMD_AVS_MODE;
+	}
+	if (strcmp(cmd, "slaveaddr") == 0)
+		return CMD_SLAVE_ADDR;
 	if (strcmp(cmd, "devicenum") == 0)
 		return CMD_DEVICE_NUM;
 	if (strcmp(cmd, "boardid") == 0)
@@ -162,6 +177,9 @@ static int sar_cmd_get(const char *cmd)
 static int do_sar_list(int mode)
 {
 	int i;
+#if defined CONFIG_ALLEYCAT3
+	MV_U32 revId = mvCtrlRevGet();
+#endif
 
 	switch (mode) {
 	case CMD_CORE_CLK_FREQ:
@@ -254,12 +272,34 @@ static int do_sar_list(int mode)
 		printf("\t-------------------------------------------\n");
 		break;
 	case CMD_PLL_CLOCK:
-		printf("Determines the PLL VCO clock frequency:\n");
-		printf("\t| ID  | Clock freq (GHz) |\n");
-		printf("\t--------------------------\n");
-		printf("\t|  0  |          1       |\n");
-		printf("\t|  1  |         2.5      |\n");
-		printf("\t--------------------------\n");
+		if (revId == MV_ALLEYCAT3_A0_ID) {
+			printf("Determines the PLL VCO clock frequency:\n");
+			printf("\t| ID  | Clock freq (GHz) |\n");
+			printf("\t--------------------------\n");
+			printf("\t|  0  |          1       |\n");
+			printf("\t|  1  |         2.5      |\n");
+			printf("\t--------------------------\n");
+		} else
+			printf("The filed is not available on this SoC revision\n");
+		break;
+	case CMD_AVS_MODE:
+		if (revId != MV_ALLEYCAT3_A0_ID) {
+			printf("Determines the AVS operation mode:\n");
+			printf("\t| ID  |  Mode  |\n");
+			printf("\t----------------\n");
+			printf("\t|  0  | Slave  |\n");
+			printf("\t|  1  | Master |\n");
+			printf("\t----------------\n");
+		} else
+			printf("The filed is not available on this SoC revision\n");
+		break;
+	case CMD_SLAVE_ADDR:
+		printf("Determines the CPU I2C/SMI address:\n");
+		printf("\t| ID  | CPU_SMI_I2C_ADDR[2] |\n");
+		printf("\t-----------------------------\n");
+		printf("\t|  0  |          0          |\n");
+		printf("\t|  1  |          1          |\n");
+		printf("\t-----------------------------\n");
 		break;
 	case CMD_BOARD_ID:
 		printf("Determines the board ID (0-7)\n");
@@ -306,6 +346,9 @@ static int do_sar_list(int mode)
 static int do_sar_read(int mode)
 {
 	MV_U8 tmp, i;
+#if defined CONFIG_ALLEYCAT3
+	MV_U32 revId = mvCtrlRevGet();
+#endif
 
 	switch (mode) {
 	case CMD_CORE_CLK_FREQ:
@@ -383,11 +426,32 @@ static int do_sar_read(int mode)
 		break;
 
 	case CMD_PLL_CLOCK:
-		if (mvBoardPllClockGet(&tmp) == MV_OK)
-			printf("pllclock (PLL2 VCO)\t\t= %d ==>  %s\n", tmp, ((tmp == 0) ? "1GHz" : "2.5GHz"));
-		else
-			printf("pllclock (PLL2 VCO) Error: failed reading PLL VCO clock\n");
+		if (revId == MV_ALLEYCAT3_A0_ID) {
+			if (mvBoardPllClockGet(&tmp) == MV_OK)
+				printf("pllclock (PLL2 VCO)\t= %d ==>  %s\n", tmp, ((tmp == 0) ? "1GHz" : "2.5GHz"));
+			else
+				printf("pllclock (PLL2 VCO) Error: failed reading PLL VCO clock\n");
+		} else
+			printf("pllclock (PLL2 VCO)\t    ==>  <<Not available in this SoC revision>>\n");
 		break;
+
+	case CMD_AVS_MODE:
+		if (revId != MV_ALLEYCAT3_A0_ID) {
+			if (mvBoardAvsModeGet(&tmp) == MV_OK)
+				printf("avsmode \t\t= %d ==>  %s\n", tmp, ((tmp == 0) ? "Slave" : "Master"));
+			else
+				printf("avsmode Error: failed reading AVS mode\n");
+		} else
+			printf("avsmode \t\t    ==>  <<Not available on this SoC revision>>\n");
+		break;
+
+	case CMD_SLAVE_ADDR:
+		if (mvBoardSmiI2c2AddrGet(&tmp) == MV_OK)
+			printf("slaveaddr \t\t= %d ==>  CPU_SMI_I2C_ADDR[2]=%d\n", tmp, tmp);
+		else
+			printf("slaveaddr Error: failed reading CPU I2C/SMI Slave address\n");
+		break;
+
 	case CMD_DEVICE_NUM:
 		if (mvBoardDeviceNumGet(&tmp) == MV_OK)
 			printf("devicenum\t\t= %d \n", tmp);
@@ -442,6 +506,9 @@ static int do_sar_write(int mode, int value)
 {
 	MV_U8 tmp, i;
 	MV_STATUS rc = MV_OK;
+#if defined CONFIG_ALLEYCAT3
+	MV_U32 revId = mvCtrlRevGet();
+#endif
 
 	tmp = (MV_U8)value;
 	switch (mode) {
@@ -488,7 +555,15 @@ static int do_sar_write(int mode, int value)
 		rc = mvBoardPcieClockSet(tmp);
 		break;
 	case CMD_PLL_CLOCK:
-		rc = mvBoardPllClockSet(tmp);
+		if (revId == MV_ALLEYCAT3_A0_ID)
+			rc = mvBoardPllClockSet(tmp);
+		break;
+	case CMD_AVS_MODE:
+		if (revId != MV_ALLEYCAT3_A0_ID)
+			rc = mvBoardAvsModeSet(tmp);
+		break;
+	case CMD_SLAVE_ADDR:
+		rc = mvBoardSmiI2c2AddrSet(tmp);
 		break;
 	case CMD_BOARD_ID:
 		rc = mvBoardSarBoardIdSet(tmp);
@@ -593,12 +668,15 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "pciegen1                   - Force PCIe GEN1 on AMC RC connection\n"
 #elif defined CONFIG_ALLEYCAT3
 "pciclock                   - PCIe reference clock source\n"
-"pllclock                   - PLL2 VCO clock frequency\n"
+"avsmode                    - Adaptive Voltage Scaling mode. Not valid for rev.A0\n"
+"slaveaddr                  - I2C/SMI Slave Address\n"
 "devicenum                  - Devicenum\n"
 #endif
 "bootsrc                    - Boot source\n"
 "deviceid                   - Device ID\n"
 #ifdef CONFIG_ALLEYCAT3
+"\t----Legacy fileds----\n"
+"pllclock                   - PLL2 VCO clock frequency. Valid for rev.A0 only\n"
 "\n\tSW SatR fields\n"
 "\t--------------\n"
 "ddreccenable               - DDR ECC modes\n"

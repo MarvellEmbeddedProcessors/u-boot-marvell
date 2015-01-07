@@ -2031,7 +2031,10 @@ MV_STATUS mvBoardPcieClockSet(MV_U8 val)
 	return MV_OK;
 }
 
-/*******************************************************************************/
+/*********************************************************************************/
+/* Operates on the same fileds as mvBoardAvsModeGet(), but has different meaning */
+/* The Misc. PLL VCO clock configured by this field valid for AC3 rev. A0 only.  */
+/*********************************************************************************/
 MV_STATUS mvBoardPllClockGet(MV_U8 *val)
 {
 	MV_U8		sar;
@@ -2050,7 +2053,10 @@ MV_STATUS mvBoardPllClockGet(MV_U8 *val)
 	return MV_OK;
 }
 
-/*******************************************************************************/
+/*********************************************************************************/
+/* Operates on the same fileds as mvBoardAvsModeSet(), but has different meaning */
+/* The Misc. PLL VCO clock configured by this field valid for AC3 rev. A0 only.  */
+/*********************************************************************************/
 MV_STATUS mvBoardPllClockSet(MV_U8 val)
 {
 	MV_U8		sar;
@@ -2075,6 +2081,103 @@ MV_STATUS mvBoardPllClockSet(MV_U8 val)
 	DB(mvOsPrintf("Board: Write pcllclock S@R succeeded\n"));
 	return MV_OK;
 }
+
+/**********************************************************************************/
+/* Operates on the same fileds as mvBoardPllClockGet(), but has different meaning */
+/* The AVS mode configured by this field valid on AC3 platforms starting rev. A1  */
+/**********************************************************************************/
+MV_STATUS mvBoardAvsModeGet(MV_U8 *val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: BC2 controller family is not supported\n", __func__));
+		return MV_ERROR; /* Not supported on BC2 */
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+		return MV_ERROR;
+
+	*val = (sar & (0x1 << 3)) >> 3;
+
+	return MV_OK;
+}
+
+/**********************************************************************************/
+/* Operates on the same fileds as mvBoardPllClockSet(), but has different meaning */
+/* The AVS mode configured by this field valid on AC3 platforms starting rev. A1  */
+/**********************************************************************************/
+MV_STATUS mvBoardAvsModeSet(MV_U8 val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: BC2 controller family is not supported\n", __func__));
+		return MV_ERROR; /* Not supported on BC2 */
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+		return MV_ERROR;
+
+	sar &= ~(0x1 << 3);
+	sar |= (val & 0x1) << 3;
+
+	if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar)) {
+		DB(mvOsPrintf("Board: Write avsmode S@R fail\n"));
+		return MV_ERROR;
+	}
+
+	DB(mvOsPrintf("Board: Write avsmode S@R succeeded\n"));
+	return MV_OK;
+}
+
+/**********************************************************************************/
+MV_STATUS mvBoardSmiI2c2AddrGet(MV_U8 *val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: BC2 controller family is not supported\n", __func__));
+		return MV_ERROR; /* Not supported on BC2 */
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+		return MV_ERROR;
+
+	*val = (sar & (0x1 << 4)) >> 4;
+
+	return MV_OK;
+}
+
+/**********************************************************************************/
+MV_STATUS mvBoardSmiI2c2AddrSet(MV_U8 val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_ALLEYCAT3_DEV_ID) {
+		DB(mvOsPrintf("%s: BC2 controller family is not supported\n", __func__));
+		return MV_ERROR; /* Not supported on BC2 */
+	}
+
+	if (MV_ERROR == mvBoardTwsiSatRGet(3, 0, &sar))
+		return MV_ERROR;
+
+	sar &= ~(0x1 << 4);
+	sar |= (val & 0x1) << 4;
+
+	if (MV_OK != mvBoardTwsiSatRSet(3, 0, sar)) {
+		DB(mvOsPrintf("Board: Write slaveaddr S@R fail\n"));
+		return MV_ERROR;
+	}
+
+	DB(mvOsPrintf("Board: Write slaveaddr S@R succeeded\n"));
+	return MV_OK;
+}
+
 /*******************************************************************************/
 MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value)
 {

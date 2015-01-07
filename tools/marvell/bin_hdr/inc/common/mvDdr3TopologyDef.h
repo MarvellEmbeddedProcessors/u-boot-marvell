@@ -147,6 +147,7 @@ typedef enum
     DDR_FREQ_800,
     DDR_FREQ_933,
     DDR_FREQ_1066,
+	DDR_FREQ_900,
     DDR_FREQ_LIMIT
 }MV_HWS_DDR_FREQ;
 

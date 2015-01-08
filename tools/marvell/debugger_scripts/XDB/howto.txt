@@ -5,7 +5,8 @@ Assumptions:
 ------------
 
 - This documentation refers to XDB scripts located under <u_boot root dir>/tools/marvell/debugger_scripts/XDB/
-- This documentation refer to Armada XP, Armada 370, AvantaLP, Armada 375, Armada 38x and Armada 39x platforms
+- This documentation refer to Armada XP, Armada 370, AvantaLP, Armada 375, MSYS Alleycat3, MSYS Bobcat2, Armada 38x
+   and Armada 39x platforms
 
 The <u_boot root dir>/tools/marvell/debugger_scripts/XDB/ includes the following files:
 
@@ -18,37 +19,47 @@ Common startup script
 	  buttons creation and obtaining the target device ID.
 
 Dynamic DRAM initialization script
-	- bin_hdr_init.xdb - suitable for all the above SoC families
+	- bin_hdr_init.xdb - suitable for all above SoC families
 
 Static DRAM initialization scripts
-	- xxx_static.xdb - family-specific static DRAM initialization scripts. Not all SoC families are covered.
+	- xxx_static.xdb - family-specific static DRAM initialization scripts.
+			   Note that not all SoC families are covered.
 
 howto.txt
+	- This file.
 
-- A bin_hdr.elf file exist under:
+bin_hdr.elf
+	- A bin_hdr.elf file located at::
 	- <u_boot root directory>/tools/marvell/bin_hdr/
 	- <release directory>/binaries[release number][board name]/bin_hdr/bin_hdr.elf
 
-- A valid serial connection is configured between the host and target
-- XDB software version 5.7 or later is installed and running.
 
 XDB configuration steps to load U-Boot Image:
 --------------------------------------------------------
+Requirements:
+- A valid serial connection is configured between the host and target.
+- XDB software version 5.7 or later is installed and running.
 
 JTAG Connection:
 ----------------
 
-1.	Connect the Marvell JTAG POD to the target board.
+1.	Connect Marvell JTAG POD to the target board.
 
-2.	Copy the SoC configuration files (*.xsf) into configuration folder inside the XDB installation directory:
+2.	Copy SoC configuration files (*.xsf) into configuration folder inside the XDB installation directory:
 	<XDB_installation_directory>/xdb/configurations/jtag/SoC/ARMADA_3XX_XP
 	If the XDB 5.7 is installed through wine, the default installation directory is:
 		~/.wine/drive_c/Marvell/XDB5.7
 	For Windows the typical installation directory is:
 		C:/Marvell/XDB5.7
 
-3.	Open the copied configuration file (*.xsf) in a text editor. (Or change the settings from settings window)
-	a) Edit the u-boot working directory location.
+3.	Open the copied configuration file (*.xsf) with text editor or change the configuration
+	using "settings" window within the Marvell(R) eXtreme Debugger 5.7 "Start up" form.
+	When using the GUI application Marvell(R) eXtreme Debugger 5.7 "Start up" form,
+	first select the related  configuration file *.xsf (copied to ARMADA_3XX_XP directory as explained above)
+	Then press the "Setting" button above in the upper level
+	of the form.
+	a) Edit the "Working Directory" field to point to the U-Boot HOME directory.
+	   In case editing the XSF file manually, refer to "-W" argument:
 		For instance, the Linux work folder may be:
 			-W "/home/user/work/u-boot"
 		Example of Windows working directory:
@@ -58,27 +69,30 @@ JTAG Connection:
 			-L "tcp:127.0.0.1:3020:usb:"
 		Windows JTAG probe connection type:
 			-L "usb:"
-	c) Save your changes into configuration file
+	c) Update the correct number of cores available in your SoC device.
+	   Within the GUI form: "CS-JTAG" tabs and for the manual TXT mode:
+	   CS$2/ CS$3/ CS$4
+	d) Save your changes into configuration file
 
 4.	Start the XDB GUI.
-	In Linux use the command "startxdb gui&". Once the startup dialogbox appears on the screen,
+	In Linux use the command "startxdb gui&". Once the startup dialogue box appears on the screen,
 	select the required configuration file edited in previous step.
 	In Windows double-click the previously edited configuration file.
 
 5.	Make sure that "connection type" of the first core is set to "Reset SOC & stop".
 	The "connection type" is located under the most left "CS-JTAG" tab in the settings window
-	of the startup menu (it appears when "settings" button is pressed in the startup dialog box).
+	of the startup menu (it appears when "settings" button is pressed in the start-up dialogue box).
 	Please note that this is needed to be done only once.
 
-6.	In the startup dialog box Click the Start button for launching the main XDB window.
+6.	In the start-up dialogue box click the Start button for launching the main XDB window.
 
 7.	Wait for a connection to be established. The Command window in the main interface is shown by default
 	and provides a CLI to XDB core. The connection status will be shown in this window:
 
 	- If the connection was successful a "xdb>" prompt will appear at the bottom of the command window.
-	- If "xdb_InReset>" / "xdb_nocomm>" prompt appears at the bottom of the command window,
-	  this is an indication that an error happened. Make sure the board is powered, the POD is properly
-	  connected, and that you are using the correct .xsf script.
+	- If "xdb_HeldInReset>" / "xdb_nocomm>" prompt appears at the bottom of the command window,
+	  this is an indication that the system is in failure state. Make sure the board is powered,
+	  the POD is properly connected, and the correct .xsf script is used.
 
 Note: If a reset is not desired when connecting to a platform, choose the "Try Hot Connect & Stop"
 	  option at step 3. This mode assumes that the system has a valid running image.

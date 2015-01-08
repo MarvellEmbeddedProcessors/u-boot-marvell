@@ -63,6 +63,9 @@
 #include "mvHighSpeedTopologySpec.h"
 #include "config_marvell.h"
 #include "printf.h"
+#include "bin_hdr_twsi.h"
+
+#define MAX_NUMBER_OF_OOB_PORTS 2
 
 /*********************************** Globals **********************************/
 
@@ -120,8 +123,43 @@ SERDES_MAP* marvellBoardBc2SerdesTopology[] =
 };
 
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
-
 /*************************** Functions implementation *************************/
+#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
+MV_STATUS mvHwsSerdesUpdateTopology (SERDES_MAP* SerdesTopologyArr)
+{
+	MV_TWSI_SLAVE	twsiSlave;
+	MV_U8 oobConfig = 0;
+	MV_U8 port;
+	/* Initializing twsiSlave in order to read from the TWSI address */
+	twsiSlave.slaveAddr.address = 0x4c;
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.offset = 1;
+	twsiSlave.moreThen256 = MV_FALSE;
+
+	if (MV_ERROR == mvTwsiRead(0, &twsiSlave, &oobConfig, 1))
+		return MV_FAIL;
+
+	for (port = 0; port < MAX_NUMBER_OF_OOB_PORTS; port++) {
+		switch ((oobConfig >> (2 * port)) & 0x3)
+		{
+		case 0:
+			SerdesTopologyArr[port + 1].serdesNum = 20 + port;
+			break;
+		case 1:
+			SerdesTopologyArr[port + 1].serdesNum = port;
+			break;
+		case 2:
+			SerdesTopologyArr[port + 1].serdesType = DEFAULT_SERDES;
+			break;
+		default:
+			mvPrintf("mvHwsSerdesUpdateTopology: Unsupported value for OOB%d \n", port);
+			return MV_FAIL;
+		}
+	}
+	return MV_OK;
+}
+#endif
 
 SERDES_MAP* mvHwsSerdesTopologyGet(MV_U32 boardIdIndex)
 {
@@ -134,6 +172,12 @@ SERDES_MAP* mvHwsSerdesTopologyGet(MV_U32 boardIdIndex)
 #else
 	topologyArr = marvellBoardBc2SerdesTopology;
 	arrSize = sizeof(marvellBoardBc2SerdesTopology)/sizeof(SERDES_MAP*);
+
+		/*Update topology data*/
+	if(MV_OK != mvHwsSerdesUpdateTopology(topologyArr[boardIdIndex])){
+		mvPrintf("Failed update serdes Topology\n");
+		return NULL;
+	}
 #endif
 
 	if (boardIdIndex >= arrSize)
@@ -144,3 +188,5 @@ SERDES_MAP* mvHwsSerdesTopologyGet(MV_U32 boardIdIndex)
 
 	return topologyArr[boardIdIndex];
 }
+
+

@@ -1286,7 +1286,6 @@ U_BOOT_CMD(
  );
 
 #ifdef MV_DDR_TRAINING_CMD_NEW_TIP
-#ifdef CONFIG_DDR4
 
 #define WL_PHY_REG                        (0x0)
 #define WRITE_CENTRALIZATION_PHY_REG      (0x1)
@@ -1346,7 +1345,7 @@ int trainingStability_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const ar
 	/*Data print*/
 	for(interfaceId = 0; interfaceId < 1; interfaceId++)
 	{
-		printf("Data: %d,%d,",interfaceId,0);//add Junction Temperature
+		printf("Data: %d,%d,",interfaceId,mvCtrlGetJuncTemp());//add Junction Temperature
 		readData = MV_REG_READ(0x14C8);
 		printf("%d,%d,",((readData&0x3F0)>>4),((readData&0xFC00)>>10));
 		readData = MV_REG_READ(0x17C8);
@@ -1417,7 +1416,6 @@ U_BOOT_CMD(
 	 "training	- prints the results of the DDR3 Training.\n",""
  );
 
-#endif/*DDR4*/
 #endif/*NewTip*/
 
 #endif /* MV_TINY */

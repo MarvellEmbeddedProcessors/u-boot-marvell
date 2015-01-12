@@ -160,3 +160,9 @@ psci_vectors:
 	b	unhandled_exception	/* Lower EL Error (64b) */
 
 .popsection
+
+ENTRY(fixup_vectors)
+        adr     x0, psci_vectors
+        msr     vbar_el3, x0
+        ret
+ENDPROC(fixup_vectors)

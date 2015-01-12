@@ -77,8 +77,10 @@ void gic_init(void);
 void gic_send_sgi(unsigned long sgino);
 void wait_for_wakeup(void);
 void smp_kick_all_cpus(void);
-
 #ifdef CONFIG_ARMV8_PSCI
+void setup_psci(void);
+void fixup_vectors(void);
+void psci_arch_init(void);
 extern char __secure_start[];
 extern char __secure_end[];
 #endif

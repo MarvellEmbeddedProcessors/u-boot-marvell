@@ -23,9 +23,6 @@
 #include <asm/arch/regs-base.h>
 #include <config_cmd_default.h>
 
-/* High Level Configuration Options */
-#define CONFIG_MVEBU	/* an mvebu generic machine */
-
 /* Temp */
 #define CONFIG_ADEC
 

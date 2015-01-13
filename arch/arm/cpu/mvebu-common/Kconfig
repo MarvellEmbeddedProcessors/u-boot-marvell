@@ -1,6 +1,10 @@
 
-source "board/mvebu/armada8k/Kconfig"
-source "board/mvebu/armada38x/Kconfig"
+source "arch/arm/cpu/armv8/armada8k/Kconfig"
+source "arch/arm/cpu/armv7/armada38x/Kconfig"
+
+config MVEBU
+	bool "Support MVEBU devices"
+	default y
 
 menu "IO support"
 

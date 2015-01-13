@@ -4,8 +4,10 @@ use Cwd qw();
 
 sub HELP_MESSAGE
 {
-	print "\nUsage  : build -f \"Flash type\" -b \"board name\" [-v X.X.X] [-m \"DDR type\"] [-o \"Output file\"]\\\n";
-	print "              [-p] [-r \"UART baudrate\"] [-u \"UART port\"] [-g \"MPP configuration\"]\n\n";
+	print "\nUsage  : build -f \"Flash type\" -b \"board name\" [-v X.X.X] [-m \"DDR type\"] [-o \"Output file\"] \\\n";
+	print "              [-p] [-r \"UART baudrate\"] [-u \"UART port\"] [-g \"MPP configuration\"] \\\n";
+	print "              [-z \"Private RSA KAK key file\" -a \"Private RSA CSK key file\" -k \"CSK array index\" \\\n";
+	print "              -x \"BOX ID\" -l \"Flash ID\"] [-j \"JTAG delay\"]\n";
 	print "Example: ./build.pl -f spi -v 14T2 -b avanta_lp -i spi:nand -c\n";
 	print "\n";
 	print "Options:\n";
@@ -29,6 +31,18 @@ sub HELP_MESSAGE
 	print "\t-u\tChange the default BootROM UART debug port number. Suported ports 0 - 3\n";
 	print "\t-g\tSelect BootROM debug port MPPs configuration value = 0-7 (BootROM-specific)\n";
 	print "\n";
+	print "Secure boot options:\n";
+	print "\tNOTE: \tAll secure options except \"j\" are mandatory once one of them is selected\n";
+	print "\t\tSecure boot mode is availbale for Armada-3xx and Avanta-LP SoC families only!\n\n";
+	print "\t-z\tCreate image with RSA KAK block signature for secure boot mode\n";
+	print "\t\tIf the private key file name is \"@@\", the new RSA key pair will be generated and used\n";
+	print "\t-a\tCreate image with RSA CSK signature for secure boot mode\n";
+	print "\t\tIf the private key file name is \"@@\", the new RSA key pair will be generated and used\n";
+	print "\t-k\tCSK Array Index in range of 0 to 15\n";
+	print "\t-j\tEnable JTAG interface and delay boot execution by \" delay\" ms. Disabled if omitted\n";
+	print "\t-x\tBox ID (hex) - in range of 0 to 0xffffffff\n";
+	print "\t-l\tFlash ID (hex) - in range of to 0xffffffff\n";
+	print "\n";
 	print "Environment Variables:\n";
 	print "\tCROSS_COMPILE     Cross compiler to build U-BOOT\n";
 	print "\tCROSS_COMPILE_BH  Cross compiler to build bin hdr\n";
@@ -38,7 +52,7 @@ sub HELP_MESSAGE
 # Main
 use Getopt::Std;
 
-getopt('f:b:o:i:v:d:m:r:u:g:');
+getopt('f:b:o:i:v:d:m:r:u:g:z:a:k:j:x:l:');
 
 if((!defined $opt_b) or
 	(!defined $opt_f)) {
@@ -198,6 +212,70 @@ else
 	exit 1;
 }
 
+$bin_hdr_n = "bin_hdr.bin";
+
+if (($boardID eq "a38x") or
+	($boardID eq "a39x") or
+	($boardID eq "a375") or
+	($boardID eq "alp")) {
+
+	# Secure boot options
+	if ((defined $opt_z) or
+		(defined $opt_a) or
+		(defined $opt_k) or
+		(defined $opt_j) or
+		(defined $opt_x) or
+		(defined $opt_l)) {
+
+		# If defined one of secure options, all the rest except "j" become mandatory
+		if ((!defined $opt_z) or
+			(!defined $opt_a) or
+			(!defined $opt_k) or
+			(!defined $opt_x) or
+			(!defined $opt_l)) {
+			print "\n *** Error: In secure boot mode all options (except \"j\") are mandatory!\n\n";
+			exit 1;
+		}
+
+		# KAK RSA key
+		if ($opt_z eq "@@") {
+			print("Secure boot, generate new KAK RSA key\n");
+		} else {
+			printf("Secure boot, Use KAK RSA key from file \"$opt_z\"\n", );
+		}
+
+		# CSK RSA key
+		if ($opt_a eq "@@") {
+			print("Secure boot, generate new CSK RSA key ");
+		} else {
+			print("Secure boot, Use CSK RSA key from file \"$opt_z\" ");
+		}
+
+		# CSK array index
+		print("@ CSK array index $opt_k\n");
+		$rsa_opts = "-Z $opt_z -A $opt_a -K $opt_k ";
+
+		# JTAG enable/disable and delay
+		if(!defined $opt_j){
+			$id_opts = "-B $opt_x -F $opt_l ";
+		} else {
+			$id_opts = "-B $opt_x -F $opt_l -J $opt_j ";
+		}
+		printf("Secure boot, Additional options : %s\n", $id_opts);
+
+		$bin_hdr_n = "bin_hdr_sec.bin";
+
+	} else {
+
+		print("No secure boot option selected\n");
+		$rsa_opts = "";
+		$id_opts = "";
+	}
+
+}
+
+
+
 # Big endian place holder
 if(defined $opt_e) {
 	$endian = "be";
@@ -333,7 +411,7 @@ else {
 print "\n**** [Creating Image]\t*****\n\n";
 
 $failUart = system("./tools/marvell/doimage -T uart -D 0 -E 0 -G ./tools/marvell/bin_hdr/bin_hdr.uart.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name$targetBoard-uart.bin");
-$fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts $extra_opt -G ./tools/marvell/bin_hdr/bin_hdr.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name$targetBoard.bin");
+$fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts $rsa_opts $id_opts $extra_opt -G ./tools/marvell/bin_hdr/$bin_hdr_n u-boot.bin u-boot-$boardID-$opt_v-$flash_name$targetBoard.bin");
 
 if($fail){
 	print "\n *** Error: Doimage failed\n\n";

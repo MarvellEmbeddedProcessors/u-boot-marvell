@@ -77,15 +77,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "polarssl/sha2.h"
 #include "polarssl/rsa.h"
-#include "polarssl/aes.h"
+//#include "polarssl/aes.h"
 
-#define VERSION_NUMBER	"1.1"
+#define VERSION_NUMBER	"2.0"
 
 /* Security context */
-typedef struct secCtx_t
-{
+typedef struct secCtx_t {
 	rsa_context		rsa;
-	aes_context		aes;
+//	aes_context		aes;
 
 } secCtx_t;
 
@@ -138,7 +137,8 @@ void print_usage(char *myname)
 	printf("Usage: \n");
 	printf("%s [options] <file_name>\n\n", myname);
 	printf("Options: \n");
-	printf("-t      Test the header and image secure signatures\n");
+	printf("-t        Test secure signatures\n");
+	printf("-k <idx>  Use \"idx\" as CSK array index. Index range: 0 - 15\n");
 	printf("\n");
 }
 
@@ -193,10 +193,10 @@ int parse_main_header(pBHR_t	pHdr)
 		MAIN_HDR_GET_LEN(pHdr), MAIN_HDR_GET_LEN(pHdr));
 	if (pHdr->blockID == IBR_HDR_SATA_ID) {
 		fprintf(stdout, "[15:12]Source address (LBA):      0x%08X\n",
-			pHdr->sourceAddr, pHdr->sourceAddr);
+			pHdr->sourceAddr);
 	} else {
 		fprintf(stdout, "[15:12]Source address:            0x%08X\n",
-			pHdr->sourceAddr, pHdr->sourceAddr);
+			pHdr->sourceAddr);
 	}
 	fprintf(stdout, "[19:16]Destination address:       0x%08X\n",
 		pHdr->destinationAddr);
@@ -231,6 +231,9 @@ int parse_main_header(pBHR_t	pHdr)
 *******************************************************************************/
 int parse_sec_header(pSecExtBHR_T	pHdr)
 {
+
+	int 	cskKey;
+
 	fprintf(stdout, "-----------------------------------------------------\n");
 	fprintf(stdout, "             SECURITY HEADER @ %p\n", (void*)((char*)pHdr - buf_in));
 	fprintf(stdout, "-----------------------------------------------------\n");
@@ -245,7 +248,7 @@ int parse_sec_header(pSecExtBHR_T	pHdr)
 	fprintf(stdout, "[0007:0006]Reserved:              0x%04X\n",
 		pHdr->rsrvd1);
 	fprintf(stdout, "[0531:0008]Public Key:            %02X %02X %02X %02X ...\n",
-		pHdr->pubKey[0], pHdr->pubKey[1], pHdr->pubKey[2], pHdr->pubKey[3]);
+		((pHdr->pubKey).Key)[0], ((pHdr->pubKey).Key)[1], ((pHdr->pubKey).Key)[2], ((pHdr->pubKey).Key)[3]);
 	fprintf(stdout, "[0532:0532]JTAG enabled:          %s [%d]\n",
 		pHdr->jtagEn != 0 ? "YES" : "NOT", pHdr->jtagEn);
 	fprintf(stdout, "[0533:0533]Reserved:              0x%02X\n",
@@ -254,21 +257,25 @@ int parse_sec_header(pSecExtBHR_T	pHdr)
 		pHdr->rsrvd3);
 	fprintf(stdout, "[0539:0536]Box ID:                0x%08X\n",
 		pHdr->boxId);
-	fprintf(stdout, "[0541:0540]Flash ID:              0x%04X\n",
+	fprintf(stdout, "[0543:0540]Flash ID:              0x%08X\n",
 		pHdr->flashId);
-	fprintf(stdout, "[0543:0542]Reserved:              0x%04X\n",
-		pHdr->rsrvd4);
 	fprintf(stdout, "[0799:0544]Header signature:      %02X %02X %02X %02X ...\n",
 		pHdr->hdrSign[0], pHdr->hdrSign[1], pHdr->hdrSign[2], pHdr->hdrSign[3]);
 	fprintf(stdout, "[1055:0800]Image signature:       %02X %02X %02X %02X ...\n",
 		pHdr->imgSign[0], pHdr->imgSign[1], pHdr->imgSign[2], pHdr->imgSign[3]);
-	fprintf(stdout, "[1057:1056]More headers follow:   %s\n",
-		pHdr->tail.nextHdr != 0 ? "YES" : "NOT");
-	fprintf(stdout, "[1058:1058]Reserved:              0x%02X\n",
-		pHdr->tail.delay);
-	fprintf(stdout, "[1060:1059]Reserved:              0x%04X\n",
-		pHdr->tail.rsvd2);
-
+	for(cskKey = 0; cskKey < CSK_KEY_NUM; cskKey++) {
+		fprintf(stdout, "[%d:%d]CSK Key[%d]:           %s%02X %02X %02X %02X ...\n",
+				(1056 + 524*(cskKey+1) - 1), (1056 + 524*cskKey), cskKey,  cskKey > 9 ? "" :" ", ((pHdr->cskArray[cskKey]).Key)[0],
+				((pHdr->cskArray[cskKey]).Key)[1], ((pHdr->cskArray[cskKey]).Key)[2], ((pHdr->cskArray[cskKey]).Key)[3]);
+	}
+	fprintf(stdout, "[9695:9440]CSK signature:         %02X %02X %02X %02X ...\n",
+			pHdr->cskBlockSign[0], pHdr->cskBlockSign[1], pHdr->cskBlockSign[2], pHdr->cskBlockSign[3]);
+	fprintf(stdout, "[9696]More headers follow:        %s\n",
+			pHdr->tail.nextHdr != 0 ? "YES" : "NOT");
+	fprintf(stdout, "[9697]Reserved:                   0x%02X\n",
+			pHdr->tail.delay);
+	fprintf(stdout, "[9699:9698]Reserved:              0x%04X\n",
+			pHdr->tail.rsvd2);
 	return 0;
 }
 
@@ -277,9 +284,9 @@ int parse_sec_header(pSecExtBHR_T	pHdr)
 *******************************************************************************/
 int parse_bin_header(headExtBHR_t	*pHdr)
 {
-	tailExtBHR_t	*pTail = (tailExtBHR_t*)((MV_U8*)pHdr +
+	tailExtBHR_t	*pTail = (tailExtBHR_t *)((MV_U8 *)pHdr +
 			EXT_HDR_GET_LEN(pHdr) - sizeof(tailExtBHR_t));
-	MV_U8		*buf = (MV_U8*)(pHdr+1);
+	MV_U8		*buf = (MV_U8 *)(pHdr + 1);
 	int		code_bytes = (EXT_HDR_GET_LEN(pHdr) - EXT_HDR_BASE_SIZE - (*buf + 1)*4);
 
 	fprintf(stdout, "-----------------------------------------------------\n");
@@ -293,9 +300,9 @@ int parse_bin_header(headExtBHR_t	*pHdr)
 	fprintf(stdout, "[0004:0004]Number of parameters:  %d (0x%06X)\n",
 		*buf, *buf);
 	fprintf(stdout, "[0005:0005]Reserved:              0x%02X\n",
-		*(buf + 1), *(buf + 1));
+		*(buf + 1));
 	fprintf(stdout, "[0007:0005]Reserved:              0x%04X\n",
-		*(MV_U16*)(buf + 2), *(MV_U16*)(buf + 2));
+		*(MV_U16 *)(buf + 2));
 	if (*buf != 0)
 		fprintf(stdout, "[%04d:0008]Parameters\n", (7 + (*buf)*4));
 	fprintf(stdout, "[%04d:%04d]ARM Code link offset:  %p\n",
@@ -315,19 +322,19 @@ int parse_bin_header(headExtBHR_t	*pHdr)
 *******************************************************************************/
 int parse_reg_header(headExtBHR_t	*pHdr)
 {
-	tailExtBHR_t	*pTail = (tailExtBHR_t*)((MV_U8*)pHdr +
+	tailExtBHR_t	*pTail = (tailExtBHR_t *)((MV_U8 *)pHdr +
 				EXT_HDR_GET_LEN(pHdr) - sizeof(tailExtBHR_t));
 	int		num_elem = (EXT_HDR_GET_LEN(pHdr) - EXT_HDR_BASE_SIZE)/8;
 
 	fprintf(stdout, "-----------------------------------------------------\n");
-	fprintf(stdout, "             REGISTER HEADER @ %p\n", (void*)((char*)pHdr - buf_in));
+	fprintf(stdout, "             REGISTER HEADER @ %p\n", (void *)((char *)pHdr - buf_in));
 	fprintf(stdout, "-----------------------------------------------------\n");
 	fprintf(stdout, "[0000:0000]Header type:           0x%02X\n",
 		pHdr->type);
 	fprintf(stdout, "[0003:0001]Header length:         %d (0x%06X)\n",
 		EXT_HDR_GET_LEN(pHdr), EXT_HDR_GET_LEN(pHdr));
 	fprintf(stdout, "[%04d:0004]Num of ADDR-VAL pairs: %d (0x%02X)\n",
-		(num_elem*8 + 3), num_elem, num_elem);
+		(num_elem * 8 + 3), num_elem, num_elem);
 	num_elem = num_elem * 8 + 4;
 	fprintf(stdout, "[%04d:%04d]More headers follow:   %s\n",
 		num_elem, num_elem, pTail->nextHdr != 0 ? "YES" : "NOT");
@@ -356,12 +363,13 @@ int verify_rsa_signature (secCtx_t *pSecCtx, MV_U8 *start, MV_U32 len, MV_U8 *si
 /*******************************************************************************
 * verify_sec_header - check the secure header fields
 *******************************************************************************/
-int verify_sec_header (BHR_t *pHdr)
+int verify_sec_header (BHR_t *pHdr, int csk_idx)
 {
 	MV_U32		rsaKeyLen = 0;
-	int		rsaModLen, rsaExpLen;
+	int			rsaModLen, rsaExpLen;
 	secExtBHR_t	*pSecHdr = (secExtBHR_t *)(pHdr + 1);
 	secCtx_t 	secCtx;
+	secCtx_t 	secCtxCSK;
 	unsigned char	buf256[256];
 	unsigned char	buf32[32];
 	int		i;
@@ -373,30 +381,30 @@ int verify_sec_header (BHR_t *pHdr)
 	memset(buf32,  0, 32  * sizeof(unsigned char));
 
 	/* RSA public key should be in DER format with 2-bytes length field */
-	if ((pSecHdr->pubKey[0] != 0x30) ||
-	(pSecHdr->pubKey[1] != 0x82)) {
-		fprintf(stderr,"\nError: Bad RSA key!\n");
+	if ((((pSecHdr->pubKey).Key)[0] != 0x30) ||
+	(((pSecHdr->pubKey).Key)[1] != 0x82)) {
+		fprintf(stderr,"\nError: Bad RSA key (KAK)!\n");
 		return -1;
 	}
 
 	/* DER format fields verification */
-	rsaModLen = (pSecHdr->pubKey[6] << 8) + pSecHdr->pubKey[7];
+	rsaModLen = (((pSecHdr->pubKey).Key)[6] << 8) + ((pSecHdr->pubKey).Key)[7];
 	if (rsaModLen > RSA_MAX_KEY_LEN_BYTES) {
-		fprintf(stderr,"\nError: Bad RSA key Modulo length (%d)!\n", rsaModLen);
+		fprintf(stderr,"\nError: Bad RSA key Modulo length (%d) - KAK!\n", rsaModLen);
 		return -1;
 	}
 
-	rsaExpLen = (pSecHdr->pubKey[10 + rsaModLen] << 8) +
-		pSecHdr->pubKey[11 + rsaModLen];
+	rsaExpLen = (((pSecHdr->pubKey).Key)[10 + rsaModLen] << 8) +
+		((pSecHdr->pubKey).Key)[11 + rsaModLen];
 	if (rsaExpLen > RSA_MAX_KEY_LEN_BYTES) {
-		fprintf(stderr,"\nError: Bad RSA key Exponent length (%d)!\n", rsaExpLen);
+		fprintf(stderr,"\nError: Bad RSA key Exponent length (%d) - KAK!\n", rsaExpLen);
 		return -1;
 	}
 
 	/* Load the RSA public key */
 	rsa_init(&secCtx.rsa, RSA_PKCS_V15, 0, NULL, NULL);
-	if ((0 != mpi_read_binary(&secCtx.rsa.N, &pSecHdr->pubKey[8], rsaModLen)) ||
-	(0 != mpi_read_binary(&secCtx.rsa.E, &pSecHdr->pubKey[12 + rsaModLen], rsaExpLen))) {
+	if ((0 != mpi_read_binary(&secCtx.rsa.N, &((pSecHdr->pubKey).Key)[8], rsaModLen)) ||
+	(0 != mpi_read_binary(&secCtx.rsa.E, &((pSecHdr->pubKey).Key)[12 + rsaModLen], rsaExpLen))) {
 		fprintf(stderr,"\nError: RSA Library error!\n");
 		return -1;
 	}
@@ -404,9 +412,10 @@ int verify_sec_header (BHR_t *pHdr)
 	secCtx.rsa.len = (mpi_msb(&secCtx.rsa.N) + 7) >> 3; /* key lenght in bytes */
 
 	/* Key length should include 4 bytes of the data block header */
-	rsaKeyLen = (pSecHdr->pubKey[2] << 8) + pSecHdr->pubKey[3] + 4;
-	sha2((unsigned char *)pSecHdr->pubKey, rsaKeyLen, buf32, 0);
-	fprintf(stdout,"RSA key SHA256 digest for eFuse:\n  BE FULL: ");
+	rsaKeyLen = (((pSecHdr->pubKey).Key)[2] << 8) + ((pSecHdr->pubKey).Key)[3] + 4;
+	sha2((unsigned char *)((pSecHdr->pubKey).Key), rsaKeyLen, buf32, 0);
+	fprintf(stdout, "----------------------------------------------------------\n");
+	fprintf(stdout,"RSA key SHA256 digest for eFuse (KAK):\n  BE FULL: ");
 	for (i = 0; i < 32; i++) {
 		fprintf(stdout,"%02x ", buf32[i]);
 		if (i == 15)
@@ -419,24 +428,92 @@ int verify_sec_header (BHR_t *pHdr)
 			fprintf(stdout,"\n           ");
 	}
 	fprintf(stdout,"\n");
+	fprintf(stdout, "----------------------------------------------------------\n");
 
 	memset(buf32,  0, 32  * sizeof(unsigned char));
+
+	/* CSK array signature should be cleared in the header before verification */
+	memcpy(buf256, pSecHdr->cskBlockSign, 256);
+	memset(pSecHdr->cskBlockSign, 0, 256);
+
+	/* Verify the CSK array signature */
+	fprintf(stdout,"CSK array RSA signature verification - ");
+	if (verify_rsa_signature(&secCtx, (MV_U8 *)pHdr + sizeof(BHR_t) + CSK_BLOCK_OFFSET, CSK_BLOCK_SIZE, buf256) != 0) {
+		fprintf(stderr,"FAILED\n");
+		return -1;
+	}
+	fprintf(stdout,"PASSED\n");
+
+//// Work with CSK
+	memcpy(pSecHdr->cskBlockSign, buf256, 256); /* Restore CSK array signature */
+	memset(buf256, 0, 256 * sizeof(unsigned char));
+	memset(buf32,  0, 32  * sizeof(unsigned char));
+
+	/* RSA public key should be in DER format with 2-bytes length field */
+	if ((((pSecHdr->cskArray[csk_idx]).Key)[0] != 0x30) ||
+	(((pSecHdr->cskArray[csk_idx]).Key)[1] != 0x82)) {
+		fprintf(stderr,"\nError: Bad RSA key (CSK-%d)!\n", csk_idx);
+		return -1;
+	}
+
+	/* DER format fields verification */
+	rsaModLen = (((pSecHdr->cskArray[csk_idx]).Key)[6] << 8) + ((pSecHdr->cskArray[csk_idx]).Key)[7];
+	if (rsaModLen > RSA_MAX_KEY_LEN_BYTES) {
+		fprintf(stderr,"\nError: Bad RSA key Modulo length (%d) - CSK-%d!\n", rsaModLen, csk_idx);
+		return -1;
+	}
+
+	rsaExpLen = (((pSecHdr->cskArray[csk_idx]).Key)[10 + rsaModLen] << 8) +
+		((pSecHdr->cskArray[csk_idx]).Key)[11 + rsaModLen];
+	if (rsaExpLen > RSA_MAX_KEY_LEN_BYTES) {
+		fprintf(stderr,"\nError: Bad RSA key Exponent length (%d) - CSK-%d!\n", rsaExpLen, csk_idx);
+		return -1;
+	}
+
+	/* Load the RSA public key */
+	rsa_init(&secCtx.rsa, RSA_PKCS_V15, 0, NULL, NULL);
+	if ((0 != mpi_read_binary(&secCtx.rsa.N, &((pSecHdr->cskArray[csk_idx]).Key)[8], rsaModLen)) ||
+	(0 != mpi_read_binary(&secCtx.rsa.E, &((pSecHdr->cskArray[csk_idx]).Key)[12 + rsaModLen], rsaExpLen))) {
+		fprintf(stderr,"\nError: RSA Library error!\n");
+		return -1;
+	}
+
+	secCtx.rsa.len = (mpi_msb(&secCtx.rsa.N) + 7) >> 3; /* key length in bytes */
+
+	/* Key length should include 4 bytes of the data block header */
+	rsaKeyLen = (((pSecHdr->cskArray[csk_idx]).Key)[csk_idx] << 8) + ((pSecHdr->cskArray[csk_idx]).Key)[3] + 4;
+	sha2((unsigned char *)((pSecHdr->cskArray[csk_idx]).Key), rsaKeyLen, buf32, 0);
+	fprintf(stdout, "----------------------------------------------------------\n");
+	fprintf(stdout,"RSA key SHA256 digest for eFuse (CSK-%d):\n  BE FULL: ", csk_idx);
+	for (i = 0; i < 32; i++) {
+		fprintf(stdout,"%02x ", buf32[i]);
+		if (i == 15)
+			fprintf(stdout,"\n           ");
+	}
+	fprintf(stdout,"\n  LE REGS: ");
+	for (i = 0; i < 8; i++) {
+		fprintf(stdout,"[%d]%08x ", i, *(MV_U32*)(buf32 + i*4));
+		if (i == 3)
+			fprintf(stdout,"\n           ");
+	}
+	fprintf(stdout,"\n");
+	fprintf(stdout, "----------------------------------------------------------\n");
 
 	/* Header signature should be cleared in the header before verification */
 	memcpy(buf256, pSecHdr->hdrSign, 256);
 	memset(pSecHdr->hdrSign, 0, 256);
 
-	/* Verify the headers block signature */
-	fprintf(stdout,"Header RSA signature verification - ");
+	/* Verify the header block signature using CSK array key entry */
+	fprintf(stdout,"Headers block RSA signature verification - ");
 	if (verify_rsa_signature(&secCtx, (MV_U8 *)pHdr, MAIN_HDR_GET_LEN(pHdr), buf256) != 0) {
 		fprintf(stderr,"FAILED\n");
 		return -1;
 	}
 	fprintf(stdout,"PASSED\n");
 
-	fprintf(stdout,"Image  RSA signature verification - ");
-	if (verify_rsa_signature(&secCtx, buf_in + pHdr->sourceAddr,
-		pHdr->blockSize - 4, pSecHdr->imgSign) != 0) {
+	/* Verify image using CSK array key entry */
+	fprintf(stdout,"Boot image RSA signature verification - ");
+	if (verify_rsa_signature(&secCtx, buf_in + pHdr->sourceAddr, pHdr->blockSize - 4, pSecHdr->imgSign) != 0) {
 		fprintf(stderr,"FAILED\n");
 		return -1;
 	}
@@ -448,30 +525,34 @@ int verify_sec_header (BHR_t *pHdr)
 /*******************************************************************************
 *    main
 *******************************************************************************/
-int main (int argc, char** argv)
+int main(int argc, char **argv)
 {
-	int		i, rsa_verify = 0;
+	int			i, csk_idx=-1, rsa_verify = 0;
 	char		*fname;
-	int		fin;
+	int			fin;
 	struct stat	fs_stat;
-	int		error = 1;
+	int			error = 1;
 
-	int		optch; /* command-line option char */
-	static char	optstring[] = "t";
+	int			optch; /* command-line option char */
+	static char	optstring[] = "tk:";
 	pBHR_t		pHdr = NULL;
 	MV_U32		chksum, chksum2;
 
 	while ((optch = getopt(argc, argv, optstring)) != -1) {
-		char   *endptr = NULL;
+		char	*endptr = NULL;
 
 		switch (optch) {
-			case 't': /* test */
-				rsa_verify = 1;
-				break;
+		case 't': /* test */
+			rsa_verify = 1;
+			break;
 
-			default:
-				print_usage(argv[0]);
-				exit(EXIT_FAILURE);
+		case 'k': /* CSK index */
+			csk_idx = strtoul(optarg, &endptr, 10);
+			break;
+
+		default:
+			print_usage(argv[0]);
+			exit(EXIT_FAILURE);
 		}
 	} /* parse command-line options */
 
@@ -481,23 +562,23 @@ int main (int argc, char** argv)
 	}
 
 	if ((fin = open(fname, O_RDONLY)) < 0) {
-		fprintf(stderr,"Error opening %s file\n", fname);
+		fprintf(stderr,"\nError: Failed to open %s file\n", fname);
 		goto end;
 	}
 
 	if (0 != fstat(fin, &fs_stat)) {
-		fprintf(stderr,"Failed to get %s status\n", fname);
+		fprintf(stderr,"\n Error: Failed to get %s status\n", fname);
 		goto end;
 	}
 
 	buf_in = (char*)malloc(fs_stat.st_size);
 	if (buf_in == NULL) {
-		fprintf(stderr,"Error allocting buffer for %s file\n", fname);
+		fprintf(stderr,"\nError: Failed to allocate buffer for %s file\n", fname);
 		goto end;
 	}
 
 	if (read(fin, buf_in, fs_stat.st_size) != fs_stat.st_size) {
-		fprintf(stderr,"Error reading %s file\n", fname);
+		fprintf(stderr,"\nError: Failed to read %s file\n", fname);
 		goto end;
 	}
 
@@ -534,7 +615,7 @@ int main (int argc, char** argv)
 						goto end;
 					break;
 				default:
-					fprintf(stderr,"Unknown header type 0x%x\n", pHead->type);
+					fprintf(stderr,"\nError: Unknown header type 0x%x\n", pHead->type);
 					goto end;
 			}
 
@@ -549,22 +630,26 @@ int main (int argc, char** argv)
 	fprintf(stdout, "-----------------------------------------------------\n");
 	fprintf(stdout, "             BOOT IMAGE @ %p\n",
 	pHdr->blockID == IBR_HDR_SATA_ID ?
-		(void*)((char*)pHdr - buf_in + pHdr->sourceAddr * 512) :
-		(void*)((char*)pHdr - buf_in + pHdr->sourceAddr));
+		(void *)((char *)pHdr - buf_in + pHdr->sourceAddr * 512) :
+		(void *)((char *)pHdr - buf_in + pHdr->sourceAddr));
 	fprintf(stdout, "-----------------------------------------------------\n");
 
 	chksum = *(MV_U32*)(buf_in + fs_stat.st_size - 4);
 	if (pHdr->blockID == IBR_HDR_SATA_ID)
-		chksum2 = checksum32((void *)(buf_in + pHdr->sourceAddr * 512),  pHdr->blockSize - 4, 0);
+		chksum2 = checksum32((void *)(buf_in + pHdr->sourceAddr * 512), pHdr->blockSize - 4, 0);
 	else
-		chksum2 = checksum32((void *)(buf_in + pHdr->sourceAddr),  pHdr->blockSize - 4, 0);
+		chksum2 = checksum32((void *)(buf_in + pHdr->sourceAddr), pHdr->blockSize - 4, 0);
 
-	fprintf(stdout, "Binary image checksum = 0x%08X (%s)\n", chksum,
-	       chksum == chksum2 ? "GOOD" : "BAD");
+	fprintf(stdout, "Binary image checksum = 0x%08X (%s)\n", chksum, chksum == chksum2 ? "GOOD" : "BAD");
 
-	if (rsa_verify != 0)
-		error = verify_sec_header(pHdr);
-	else
+	if (rsa_verify != 0) {
+		if ((csk_idx < 0) || (csk_idx > 15)) {
+			fprintf(stderr,"\nError: Bad CSK array index (%d). 0 < idx < 15!\n", csk_idx);
+			error = 1;
+			goto end;
+		}
+		error = verify_sec_header(pHdr, csk_idx);
+	} else
 		error = 0;
 
 end:

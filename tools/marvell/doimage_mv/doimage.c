@@ -98,7 +98,7 @@ int 		f_out = -1;
 int 		f_header = -1;
 struct stat 	fs_stat;
 rsa_context	rsa;
-aes_context	aes;
+rsa_context	rsaCsk;
 unsigned char	IV[16] = {0};
 
 /*******************************************************************************
@@ -108,6 +108,7 @@ unsigned char	IV[16] = {0};
 *          input      memory buffer
 *          ilen       buffer length
 *          print_val  if not 0, print SHA-256 digest of the memory buffer (debug)
+*          kak        selector between kak key or csk key
 *    OUTPUT:
 *          signature  RSA-2048 signature
 *    RETURN:
@@ -115,14 +116,19 @@ unsigned char	IV[16] = {0};
 *******************************************************************************/
 int create_rsa_signature (
 			unsigned char	*input,
-			int 		ilen,
+			int		ilen,
 			unsigned char	*signature,
-			char		*print_val)
+			char		*print_val,
+			unsigned int	kak)
 {
 	unsigned char	sha_256[32];
 	int i;
+	rsa_context	*rsaCont = &rsaCsk;
 
 	memset(sha_256, 0, 32 * sizeof(unsigned char));
+
+	if (kak != 0)
+		rsaCont = &rsa;
 
 	/* compute SHA-256 digest */
 	sha2(input, ilen, sha_256, 0);
@@ -134,7 +140,7 @@ int create_rsa_signature (
 		printf("\n");
 	}
 
-	return rsa_pkcs1_sign(&rsa, RSA_PRIVATE, RSA_SHA256, 32, sha_256, signature);
+	return rsa_pkcs1_sign(rsaCont, RSA_PRIVATE, RSA_SHA256, 32, sha_256, signature);
 
 } /* end of create_rsa_signature() */
 
@@ -144,7 +150,8 @@ int create_rsa_signature (
 *    INPUT:
 *          input      memory buffer
 *          ilen       buffer length
-          signature  RSA-2048 signature
+*          signature  RSA-2048 signature
+*          kak        selector between kak key or csk key
 *    OUTPUT:
 *          none
 *    RETURN:
@@ -152,17 +159,22 @@ int create_rsa_signature (
 *******************************************************************************/
 int verify_rsa_signature (
 			unsigned char	*input,
-			int 		ilen,
-			unsigned char	*signature)
+			int		ilen,
+			unsigned char	*signature,
+			unsigned int	kak)
 {
 	unsigned char	sha_256[32];
+	rsa_context	*rsaCont = &rsaCsk;
 
 	memset(sha_256, 0, 32 * sizeof(unsigned char));
+
+	if (kak != 0)
+		rsaCont = &rsa;
 
 	/* compute SHA-256 digest */
 	sha2(input, ilen, sha_256, 0);
 
-	return rsa_pkcs1_verify(&rsa, RSA_PUBLIC, RSA_SHA256, 32, sha_256, signature);
+	return rsa_pkcs1_verify(rsaCont, RSA_PUBLIC, RSA_SHA256, 32, sha_256, signature);
 
 } /* end of create_rsa_signature() */
 
@@ -390,8 +402,8 @@ int build_bin_header (char *fname, MV_U8 *buffer, MV_U32 current_size)
 	if (i >= (max_bytes_to_write / 4)) {
 		fprintf(stderr,"Binary extention exeeds the maximum size "
 				"of %d bytes\n", max_bytes_to_write);
-	return 0;
-}
+		return 0;
+	}
 
 	/* Include extended header head and tail sizes */
 	tmp_len = EXT_HDR_BASE_SIZE + i * 4;
@@ -556,19 +568,6 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 	/* Create extension header(s) */
 	/* Security Header  - always single and always first after the Main header */
 	if (opt->flags & Z_OPTION_MASK) {
-		if (opt->flags & A_OPTION_MASK) {
-			int align16 = 0;
-
-			if (hdr->blockSize & 0xF)
-				align16 = 16 - hdr->blockSize & 0xF;
-			/* At this stage everything is 4-bytes aligned          */
-			/* For AES-128 the image should be aligned to 16 bytes  */
-			/* Additional 16 bytes are also required for IV storage */
-			hdr->blockSize        += align16 + 16;
-			opt->postpadding_size += align16;
-			opt->post_padding      = 1;
-		}
-
 		/* Allocate space for security header, but do not fill in it now */
 		secExtHdr = (secExtBHR_t *)(tmpHeader + header_size);
 		secExtHdr->head.type = EXT_HDR_TYP_SECURITY;
@@ -661,11 +660,11 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 				/* Insert required header into the output buffer */
 				hdr_len = build_hdr_func(fname, tmpHeader, header_size);
 				if (hdr_len <= 0)
-				goto header_error;
+					goto header_error;
 
 				header_size  += hdr_len;
-			tailExtHdr = (tailExtBHR_t *)(tmpHeader + header_size - sizeof(tailExtBHR_t));
-		}
+				tailExtHdr = (tailExtBHR_t *)(tmpHeader + header_size - sizeof(tailExtBHR_t));
+			}
 
 			fclose(f_list);
 		} /* if (fname_list) */
@@ -687,8 +686,8 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 	/* Setup the image source address */
 	if (opt->image_type == IMG_SATA) {
 		if ((opt->image_source) && (opt->image_source > header_size))
-		hdr->sourceAddr = opt->image_source;
-	else
+			hdr->sourceAddr = opt->image_source;
+		else
 			hdr->sourceAddr = header_size >> 9; /* Already aligned to 512 */
 	} else {
 		if ((opt->image_source) && (opt->image_source > header_size)) {
@@ -765,39 +764,41 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 		/* Security header has a constant length */
 		secExtHdr->head.lenLsb = sizeof(secExtBHR_t);
 
-		rsa_exp_len = (mpi_msb(&rsa.E) + 7) >> 3; /* exponent length in bytes */
+	/*CSK*/
+		rsa_exp_len = (mpi_msb(&rsaCsk.E) + 7) >> 3; /* exponent length in bytes */
 		/* Full RSA public key lengh in DER encoding includes:
 			- modulus (N) length
 			- exponent (E) length
 			- 4 bytes for each of the above components (type and length fields)
 			Four bytes for the data block header are not included in this calculation
 		*/
-		rsa_key_len = rsa.len + rsa_exp_len + 8;
+		rsa_key_len = rsaCsk.len + rsa_exp_len + 8;
 
-		/* First the RSA public key should be inserted into security header */
+		/* First the CSK RSA public key should be inserted into security header */
 		/* Use DER encoding and long length field form (3 bytes) */
-		secExtHdr->pubKey[0] = 0x30; /* Type field for entire block */
-		secExtHdr->pubKey[1] = 0x82; /* long form, 2 bytes length field */
-		secExtHdr->pubKey[2] = (rsa_key_len & 0xFF00) >> 8;
-		secExtHdr->pubKey[3] = rsa_key_len & 0x00FF;
-		secExtHdr->pubKey[4] = 0x02; /* modulus type (integer) */
-		secExtHdr->pubKey[5] = 0x82; /* long form, 2 bytes length field */
-		secExtHdr->pubKey[6] = (rsa.len & 0x0000FF00) >> 8;
-		secExtHdr->pubKey[7] = rsa.len; /*we support up to 256 bytes key length */
-		secExtHdr->pubKey[8 + rsa.len] = 0x02; /* exponent type (integer) */
-		secExtHdr->pubKey[9 + rsa.len] = 0x82; /* long form, 2 bytes length field */
-		secExtHdr->pubKey[10 + rsa.len] = (rsa_exp_len & 0x0000FF00) >> 8;
-		secExtHdr->pubKey[11 + rsa.len] = rsa_exp_len;
+		(((secExtHdr->cskArray)[opt->csk_index]).Key)[0] = 0x30; /*Type field for entire block */
+		(((secExtHdr->cskArray)[opt->csk_index]).Key)[1] = 0x82; /*long form, 2 bytes length field */
+		(((secExtHdr->cskArray)[opt->csk_index]).Key)[2] = (rsa_key_len & 0xFF00) >> 8;
+		(((secExtHdr->cskArray)[opt->csk_index]).Key)[3] = rsa_key_len & 0x00FF;
+		(((secExtHdr->cskArray)[opt->csk_index]).Key)[4] = 0x02; /*modulus type (integer) */
+		(((secExtHdr->cskArray)[opt->csk_index]).Key)[5] = 0x82; /*long form, 2 bytes length field */
+		(((secExtHdr->cskArray)[opt->csk_index]).Key)[6] = (rsaCsk.len & 0x0000FF00) >> 8;
+		(((secExtHdr->cskArray)[opt->csk_index]).Key)[7] = rsaCsk.len; /*we support up to 256 bytes key length */
+		(((secExtHdr->cskArray)[opt->csk_index]).Key)[8 + rsaCsk.len] = 0x02; /* exponent type (integer) */
+		(((secExtHdr->cskArray)[opt->csk_index]).Key)[9 + rsaCsk.len] = 0x82; /* long form, 2 bytes length field */
+		(((secExtHdr->cskArray)[opt->csk_index]).Key)[10 + rsaCsk.len] = (rsa_exp_len & 0x0000FF00) >> 8;
+		(((secExtHdr->cskArray)[opt->csk_index]).Key)[11 + rsaCsk.len] = rsa_exp_len;
 
-		if ((0 != mpi_write_binary(&rsa.N, &secExtHdr->pubKey[8], rsa.len)) ||
-			(0 != mpi_write_binary(&rsa.E, &secExtHdr->pubKey[12 + rsa.len], rsa_exp_len))) {
+		if ((0 != mpi_write_binary(&rsaCsk.N, &(((secExtHdr->cskArray)[opt->csk_index]).Key)[8], rsa.len)) ||
+			(0 != mpi_write_binary(&rsaCsk.E, &(((secExtHdr->cskArray)[opt->csk_index]).Key)[12 + rsa.len],
+								   rsa_exp_len))) {
 			fprintf(stderr, "Failed to write RSA key to security header\n");
 			goto header_error;
 		}
 
-		sha2((unsigned char *)secExtHdr->pubKey, rsa_key_len + 4, rsa_digest, 0);
-		if ((f_sha = fopen("./sha2_pub.txt", "w")) == NULL)
-			fprintf(stderr, "Error opening SHA-256 digest file ./sha2_pub.txt\n");
+		sha2((unsigned char *)(((secExtHdr->cskArray)[opt->csk_index]).Key), rsa_key_len + 4, rsa_digest, 0);
+		if ((f_sha = fopen("./sha2_pub_csk.txt", "w")) == NULL)
+			fprintf(stderr, "Error opening SHA-256 digest file ./sha2_pub_csk.txt\n");
 
 		fprintf(f_sha, "SHA256 = ");
 
@@ -810,36 +811,72 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 		DB(stdout, "Box ID = 0x%08X, Flash ID = 0x%04X, JTAG %s\n",
 				opt->boxId, opt->flashId, opt->jtagDelay == 0 ? "DISABLED" : "ENABLED");
 
-		/* Encrypt boot image using AES-128-CBC if required */
-		if (opt->flags & A_OPTION_MASK) {
-			MV_U32		chsum32 = 0;
+		/* the RSA signature is now can be created for the CSK Array using KAK */
+		error = create_rsa_signature(tmpHeader + sizeof(BHR_t) + CSK_BLOCK_OFFSET,
+									 CSK_BLOCK_SIZE, rsa_signature, "CSK ARRAY SHA256:", 1);
+		if (0 != error) {
+			fprintf(stderr, "Failed to create CSK array signature using KAK, error %d\n", error);
+			goto header_error;
+		}
 
-			secExtHdr->encrypt = 1;
+#if defined MV_MEMPOOL_STAT && defined NO_HEAP
+		fprintf(stdout, "CSK Header signature creation\n");
+		mpool_print_stat();
+		mpool_reset_stat();
+#endif
 
-			if ((opt->image_dest == 0xFFFFFFFF) &&
-				(opt->image_type == IMG_FLASH)) {
-				fprintf(stderr, "Wrong setup - Encrypted image with direct SPI boot!\n");
-				fprintf(stderr, "The image should be downloaded into RAM for decryption.\n");
-				fprintf(stderr, "Please define a valid destination address!\n");
-				goto header_error;
-			}
-			/* 16 bytes at tail - IV, followed by 4 bytes of CHKSUM */
-			chsum32 = checksum32((void*)(opt->image_buf), opt->image_sz - 20, 0);
-			fprintf(stdout, "The image (plain img. CHKSUM = %08X) is encrypted using AES-128.\n", chsum32);
+		/* Header signature MUST be checked when it's placeholder in the heqader is zeroed */
+		if (0 != verify_rsa_signature(tmpHeader + sizeof(BHR_t) + CSK_BLOCK_OFFSET,
+									  CSK_BLOCK_SIZE, rsa_signature, 1 /* KAK*/)) {
+			fprintf(stderr, "Failed to verify header CSK RSA signature\n");
+			goto header_error;
+		}
+		memcpy(secExtHdr->cskBlockSign, rsa_signature, rsa.len);
 
-			if ((opt->image_sz - 4) % 16) {
-				fprintf(stderr, "Total boot image size (%d) is not multiple of 16!\n",
-						opt->image_sz);
-				free(opt->image_buf);
-				goto header_error;
-			}
+	/*KAK*/
+		rsa_exp_len = (mpi_msb(&rsa.E) + 7) >> 3; /* exponent length in bytes */
+		/* Full RSA public key lengh in DER encoding includes:
+			- modulus (N) length
+			- exponent (E) length
+			- 4 bytes for each of the above components (type and length fields)
+			Four bytes for the data block header are not included in this calculation
+		*/
+		rsa_key_len = rsa.len + rsa_exp_len + 8;
 
-			aes_crypt_cbc(&aes, AES_ENCRYPT, opt->image_sz - 20, IV,
-							opt->image_buf, opt->image_buf);
-		} /* AES-128 encryption */
+		/* Next the KAK RSA public key should be inserted into security header */
+		/* Use DER encoding and long length field form (3 bytes) */
+		((secExtHdr->pubKey).Key)[0] = 0x30; /* Type field for entire block */
+		((secExtHdr->pubKey).Key)[1] = 0x82; /* long form, 2 bytes length field */
+		((secExtHdr->pubKey).Key)[2] = (rsa_key_len & 0xFF00) >> 8;
+		((secExtHdr->pubKey).Key)[3] = rsa_key_len & 0x00FF;
+		((secExtHdr->pubKey).Key)[4] = 0x02; /* modulus type (integer) */
+		((secExtHdr->pubKey).Key)[5] = 0x82; /* long form, 2 bytes length field */
+		((secExtHdr->pubKey).Key)[6] = (rsa.len & 0x0000FF00) >> 8;
+		((secExtHdr->pubKey).Key)[7] = rsa.len; /*we support up to 256 bytes key length */
+		((secExtHdr->pubKey).Key)[8 + rsa.len] = 0x02; /* exponent type (integer) */
+		((secExtHdr->pubKey).Key)[9 + rsa.len] = 0x82; /* long form, 2 bytes length field */
+		((secExtHdr->pubKey).Key)[10 + rsa.len] = (rsa_exp_len & 0x0000FF00) >> 8;
+		((secExtHdr->pubKey).Key)[11 + rsa.len] = rsa_exp_len;
 
-		/* Create RSA signature for the boot image file (checksum is not included) */
-		error = create_rsa_signature(opt->image_buf, opt->image_sz - 4, secExtHdr->imgSign, "IMG SHA256: ");
+		if ((0 != mpi_write_binary(&rsa.N, &((secExtHdr->pubKey).Key)[8], rsa.len)) ||
+			(0 != mpi_write_binary(&rsa.E, &((secExtHdr->pubKey).Key)[12 + rsa.len], rsa_exp_len))) {
+			fprintf(stderr, "Failed to write RSA key to security header\n");
+			goto header_error;
+		}
+		sha2((unsigned char *)((secExtHdr->pubKey).Key), rsa_key_len + 4, rsa_digest, 0);
+		if ((f_sha = fopen("./sha2_pub_kak.txt", "w")) == NULL)
+			fprintf(stderr, "Error opening SHA-256 digest file ./sha2_pub_kak.txt\n");
+
+		fprintf(f_sha, "SHA256 = ");
+
+		for (k = 0; k < 32; k++)
+			fprintf(f_sha, "%02X", rsa_digest[k]);
+
+		fprintf(f_sha, "\n");
+		fclose(f_sha);
+
+		/* Create RSA signature for the boot image file using CSK (checksum is not included) */
+		error = create_rsa_signature(opt->image_buf, opt->image_sz - 4, secExtHdr->imgSign, "IMG SHA256:", 0 /*CSK*/);
 		if (0 != error) {
 			fprintf(stderr, "Failed to create boot image RSA signature, error %d\n", error);
 			goto header_error;
@@ -850,7 +887,7 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 		mpool_print_stat();
 		mpool_reset_stat();
 #endif
-		error = verify_rsa_signature(opt->image_buf, opt->image_sz - 4, secExtHdr->imgSign);
+		error = verify_rsa_signature(opt->image_buf, opt->image_sz - 4, secExtHdr->imgSign, 0 /*CSK*/);
 		if (0 != error) {
 			fprintf(stderr, "Failed to verify boot image RSA signature, error %d\n", error);
 			goto header_error;
@@ -862,8 +899,8 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 		mpool_reset_stat();
 #endif
 
-		/* the RSA signature is now can be created for the entire headers block */
-		error = create_rsa_signature(tmpHeader, header_size, rsa_signature, "HDR SHA256: ");
+		/* the RSA signature is now can be created for the entire headers block using CSK */
+		error = create_rsa_signature(tmpHeader, header_size, rsa_signature, "HDR SHA256:", 0 /*CSK*/);
 		if (0 != error) {
 			fprintf(stderr, "Failed to create header RSA signature, error %d\n", error);
 			goto header_error;
@@ -876,7 +913,7 @@ int build_headers (USER_OPTIONS	*opt, char *buf_in)
 #endif
 
 		/* Header signature MUST be checked when it's placeholder in the heqader is zeroed */
-		error = verify_rsa_signature(tmpHeader, header_size, rsa_signature);
+		error = verify_rsa_signature(tmpHeader, header_size, rsa_signature, 0 /*CSK*/);
 		if (0 != error) {
 			fprintf(stderr, "Failed to verify header RSA signature, error %d\n", error);
 			goto header_error;
@@ -1250,7 +1287,7 @@ int build_bin_img (USER_OPTIONS	*opt, char *buf_in)
 bin_image_end:
 
 
-		if (tmpImg)
+	if (tmpImg)
 		free(tmpImg);
 
 	for (i = 0; i < files_num; i++) {
@@ -1273,7 +1310,7 @@ bin_image_end:
 *    RETURN:
 *          0 on success
 *******************************************************************************/
-int build_regular_img (USER_OPTIONS	*opt, char *buf_in)
+int build_regular_img (USER_OPTIONS *opt, char *buf_in)
 {
 	int	size_written = 0;
 	int	new_file_size = 0;
@@ -1313,35 +1350,40 @@ int build_regular_img (USER_OPTIONS	*opt, char *buf_in)
 
 /*******************************************************************************
 *    read_rsa_key
-*          read RSA key from file
+*          read RSA private key from file
 *    INPUT:
 *          fname      private key file name
 *          rsa        RSA context
+*          kak        Type of key to use (CSK or KAK)
 *    OUTPUT:
 *          rsa        RSA context
 *    RETURN:
 *          0 on success
 *******************************************************************************/
-int read_rsa_key(char *fname)
+int read_rsa_key(char *fname, char kak)
 {
-	FILE	*f_prkey;
-	int	ret;
+	FILE		*f_prkey;
+	int		ret;
+	rsa_context	*rsaCont = &rsaCsk;
 
 	if ((f_prkey = fopen(fname, "r")) == NULL) {
 		fprintf(stderr, "Error opening RSA private key file %s\n", fname);
 		return -1;
 	}
 
-	rsa_init(&rsa, RSA_PKCS_V15, 0, NULL, NULL);
+	if (kak != 0)
+		rsaCont = &rsa;
 
-	ret  = mpi_read_file(&rsa.N , 16, f_prkey);
-	ret += mpi_read_file(&rsa.E , 16, f_prkey);
-	ret += mpi_read_file(&rsa.D , 16, f_prkey);
-	ret += mpi_read_file(&rsa.P , 16, f_prkey);
-	ret += mpi_read_file(&rsa.Q , 16, f_prkey);
-	ret += mpi_read_file(&rsa.DP, 16, f_prkey);
-	ret += mpi_read_file(&rsa.DQ, 16, f_prkey);
-	ret += mpi_read_file(&rsa.QP, 16, f_prkey);
+	rsa_init(rsaCont, RSA_PKCS_V15, 0, NULL, NULL);
+
+	ret  = mpi_read_file(&rsaCont->N , 16, f_prkey);
+	ret += mpi_read_file(&rsaCont->E , 16, f_prkey);
+	ret += mpi_read_file(&rsaCont->D , 16, f_prkey);
+	ret += mpi_read_file(&rsaCont->P , 16, f_prkey);
+	ret += mpi_read_file(&rsaCont->Q , 16, f_prkey);
+	ret += mpi_read_file(&rsaCont->DP, 16, f_prkey);
+	ret += mpi_read_file(&rsaCont->DQ, 16, f_prkey);
+	ret += mpi_read_file(&rsaCont->QP, 16, f_prkey);
 
 	fclose(f_prkey);
 
@@ -1353,174 +1395,74 @@ int read_rsa_key(char *fname)
 *          generate RSA key pair and save new keys into text files
 *    INPUT:
 *          rsa        RSA context
+*          kak        Type of key to use (CSK or KAK)
 *    OUTPUT:
 *          rsa        RSA context
 *    RETURN:
 *          0 on success
 *******************************************************************************/
-int generate_rsa_key(void)
+int generate_rsa_key(char kak)
 {
 	int		ret;
 	havege_state	hs;
 	FILE		*fpub  = NULL;
 	FILE		*fpriv = NULL;
+	rsa_context	*rsaCont;
+	char		fname[80];
 
 	havege_init(&hs);
 
-	rsa_init(&rsa, RSA_PKCS_V15, 0, havege_rand, &hs);
+	if (kak != 0) {
+		rsaCont = &rsa;
+		sprintf(fname, "rsa_pub_kak.txt");
+	} else {
+		rsaCont = &rsaCsk;
+		sprintf(fname, "rsa_pub_csk.txt");
+	}
 
-	if (rsa_gen_key(&rsa, RSA_KEY_SIZE, RSA_EXPONENT) != 0) {
+	rsa_init(rsaCont, RSA_PKCS_V15, 0, havege_rand, &hs);
+
+	if (rsa_gen_key(rsaCont, RSA_KEY_SIZE, RSA_EXPONENT) != 0) {
 		fprintf(stderr, "Failed to generate RSA key\n");
 		return -1;
 	}
 
-	fpub = fopen("rsa_pub.txt", "w+");
+	fpub = fopen(fname, "w+");
 	if (fpub == NULL) {
-		fprintf(stderr, "Could not open rsa_pub.txt file for writing\n");
+		fprintf(stderr, "Could not open %s file for writing\n", fname);
 		return -1;
 	}
 
-	ret  = mpi_write_file("N = ", &rsa.N, 16, fpub);
-	ret += mpi_write_file("E = ", &rsa.E, 16, fpub);
+	ret  = mpi_write_file("N = ", &rsaCont->N, 16, fpub);
+	ret += mpi_write_file("E = ", &rsaCont->E, 16, fpub);
 	fclose(fpub);
 	if (ret != 0) {
-		fprintf(stderr, "Failed to write into rsa_pub.txt file!\n");
+		fprintf(stderr, "Failed to write into %s file!\n", fname);
 		return -1;
 	}
 
-	fpriv = fopen("rsa_priv.txt", "w+");
+	if (kak != 0)
+		sprintf(fname, "rsa_priv_kak.txt");
+	else
+		sprintf(fname, "rsa_priv_sck.txt");
+
+	fpriv = fopen(fname, "w+");
 	if (fpriv == NULL) {
-		fprintf(stderr, "Could not open rsa_priv.txt file for writing\n");
+		fprintf(stderr, "Could not open %s file for writing\n", fname);
 		return -1;
 	}
 
-	ret  = mpi_write_file("N = " , &rsa.N , 16, fpriv);
-	ret += mpi_write_file("E = " , &rsa.E , 16, fpriv);
-	ret += mpi_write_file("D = " , &rsa.D , 16, fpriv);
-	ret += mpi_write_file("P = " , &rsa.P , 16, fpriv);
-	ret += mpi_write_file("Q = " , &rsa.Q , 16, fpriv);
-	ret += mpi_write_file("DP = ", &rsa.DP, 16, fpriv);
-	ret += mpi_write_file("DQ = ", &rsa.DQ, 16, fpriv);
-	ret += mpi_write_file("QP = ", &rsa.QP, 16, fpriv);
+	ret  = mpi_write_file("N = " , &rsaCont->N , 16, fpriv);
+	ret += mpi_write_file("E = " , &rsaCont->E , 16, fpriv);
+	ret += mpi_write_file("D = " , &rsaCont->D , 16, fpriv);
+	ret += mpi_write_file("P = " , &rsaCont->P , 16, fpriv);
+	ret += mpi_write_file("Q = " , &rsaCont->Q , 16, fpriv);
+	ret += mpi_write_file("DP = ", &rsaCont->DP, 16, fpriv);
+	ret += mpi_write_file("DQ = ", &rsaCont->DQ, 16, fpriv);
+	ret += mpi_write_file("QP = ", &rsaCont->QP, 16, fpriv);
 	if (ret != 0)
 		fprintf(stderr, "Failed to write into rsa_priv.txt file!\n");
 
-	return ret;
-}
-
-/*******************************************************************************
-*    read_aes_key
-*          read AES key from file
-*    INPUT:
-*          fname      AES key file name
-*          aes_key    AES key
-*          init_vect  AES IV
-*    OUTPUT:
-*          aes_key    AES key
-*          init_vect  AES IV
-*    RETURN:
-*          0 on success
-*******************************************************************************/
-int read_aes_key(char *fname, unsigned char *aes_key, unsigned char *init_vect)
-{
-	int		ret = -1;
-	size_t		num;
-	FILE		*fkey = NULL;
-	char		line[120] = {0};
-	unsigned char	*curr_val = NULL;
-	char		*num_str = NULL;
-
-	fkey = fopen(fname, "r");
-	if (fkey == NULL) {
-		fprintf(stderr, "Could not open AES key file %s\n", fname);
-		return -1;
-	}
-
-	/* Read and parse every string in file */
-	while (fgets(line, 120, fkey) != NULL) {
-
-		if (strncmp("AES = ", line, 6) == 0) {
-			num_str = line + 6;
-			curr_val = aes_key;
-		} else if (strncmp("IV = ", line, 5) == 0) {
-			num_str = line + 5;
-			curr_val = init_vect;
-		} else
-			continue;
-
-		num = strlen(num_str);
-		if ((num_str[num - 1] == '\n') || (num_str[num - 1] == '\r')) {
-			num_str[num - 1] = '\0';
-			num--;
-		}
-
-		/* The row should contain 2 characters per key digit */
-		if (strlen(num_str) != (AES_KEY_SIZE >> 2)) {
-			fprintf(stderr, "Badly formed string [%s] in file %s\n", line, fname);
-			goto aes_read_end;
-		}
-
-		for (; num > 0; num -= 2) {
-			if (sscanf(num_str, "%02hhx", curr_val) == EOF) {
-				fprintf(stderr, "Conversion error starting %s\n", num_str);
-				goto aes_read_end;
-			}
-			curr_val++;
-			num_str += 2;
-		}
-
-	} /* for each line in file */
-
-	ret = 0;
-
-aes_read_end:
-
-	fclose(fkey);
-	return ret;
-}
-
-/*******************************************************************************
-*    generate_rsa_key
-*          generate AES key and IV and save them into text files
-*    INPUT:
-*          aes        AES context
-*    OUTPUT:
-*          aes        AES context
-*    RETURN:
-*          0 on success
-*******************************************************************************/
-int generate_aes_key(unsigned char *aes_key, unsigned char *init_vect)
-{
-	int		ret = 0, i, k;
-	havege_state	hs;
-	FILE		*fkey = NULL;
-	unsigned char	*curr_val = aes_key;
-	char		*rname[2] = {"AES", "IV"};
-
-	havege_init(&hs);
-
-	fkey = fopen("aes_key.txt", "w");
-	if (fkey == NULL) {
-		fprintf(stderr, "Could not open AES key file aes_key.txt\n");
-		return -1;
-	}
-
-	/* Fill AES key and IV with random numbers generated by HAVEGE */
-	for (i = 0; i < 2; i++) {
-
-		fprintf(fkey, "%s = ", rname[i]);
-
-		for (k = 0; k < 16; k++) {
-			curr_val[k] = (unsigned char)havege_rand(&hs);
-			fprintf(fkey, "%02X", curr_val[k]);
-		}
-
-		fprintf(fkey, "\n");
-
-		curr_val = init_vect;
-	}
-
-	fclose(fkey);
 	return ret;
 }
 
@@ -1558,7 +1500,7 @@ int process_image(USER_OPTIONS	*opt)
 					exit(0);
 				} else if ((c == 'Y')||(c == 'y')) {
 					/* additional read is needed for Enter key */
-				c = getc(stdin);
+					c = getc(stdin);
 				}
 				override[i] = 1;
 			}
@@ -1609,7 +1551,7 @@ int process_image(USER_OPTIONS	*opt)
 	if (f_out == -1) {
 		fprintf(stderr,"Error opening %s file \n", opt->fname.out);
 		goto end;
-    }
+	}
 
 	/* open the output header file */
 	if (opt->header_mode == HDR_IMG_TWO_FILES) {
@@ -1624,18 +1566,18 @@ int process_image(USER_OPTIONS	*opt)
 		}
 	}
 
-	/* secure boot support - read RSA private key */
+	/* secure boot support - read KAK RSA private key */
 	if (opt->flags & Z_OPTION_MASK) {
-
+	/* KAK */
 		if (strncmp(opt->fname_prkey, "@@", 2) != 0) { /* private key file supplied */
-			if (read_rsa_key(opt->fname_prkey) != 0) {
-				fprintf(stderr, "Cannot read RSA private key file %s\n\n", opt->fname_prkey);
+			if (read_rsa_key(opt->fname_prkey, 1) != 0) {
+				fprintf(stderr, "Cannot read KAK RSA private key file %s\n\n", opt->fname_prkey);
 				goto end;
 			}
 		} else { /* new key pair is required */
-			DB("Generating new RSA key pair...");
-			if (generate_rsa_key() != 0) {
-				fprintf(stderr, "Cannot generate RSA key pair\n\n");
+			DB("Generating new KAK RSA key pair...");
+			if (generate_rsa_key(1) != 0) {
+				fprintf(stderr, "Cannot generate KAK RSA key pair\n\n");
 				goto end;
 			}
 			DB("OK\n");
@@ -1649,30 +1591,33 @@ int process_image(USER_OPTIONS	*opt)
 					rsa.len, RSA_MAX_KEY_LEN_BYTES);
 			goto end;
 		} else
-			fprintf(stdout, "The RSA private key is %d bit long\n", rsa.len * 8);
+			fprintf(stdout, "KAK RSA private key is %d bit long\n", rsa.len * 8);
 
-		/* Use AES-128 encryption - read the key and generate IV vector */
-		if (opt->flags & A_OPTION_MASK) {
-			unsigned char	aes_key[16];
-
-			if (strncmp(opt->fname_aeskey, "@@", 2) != 0) { /* AES key file supplied */
-				if (read_aes_key(opt->fname_aeskey, aes_key, IV) != 0) {
-					fprintf(stderr, "Cannot read AES key file\n\n");
-					goto end;
-				}
-			} else { /* new key is required */
-				DB("Generating new AES key ...");
-				if (generate_aes_key(aes_key, IV) != 0) {
-					fprintf(stderr, "Cannot generate AES key\n\n");
-					goto end;
-				}
-				DB("OK\n");
+	/*CSK*/
+		/* secure boot support - read CSK RSA private key */
+		if (strncmp(opt->fname_prkeyCsk, "@@", 2) != 0) { /* private key file supplied */
+			if (read_rsa_key(opt->fname_prkeyCsk, 0) != 0) {
+				fprintf(stderr, "Cannot read CSK RSA private key file %s\n\n", opt->fname_prkey);
+				goto end;
 			}
+		} else { /* new key pair is required */
+			DB("Generating new CSK RSA key pair...");
+			if (generate_rsa_key(0) != 0) {
+				fprintf(stderr, "Cannot generate CSK RSA key pair\n\n");
+				goto end;
+			}
+			DB("OK\n");
+		}
 
-			aes_setkey_enc(&aes, aes_key, 128);
+		rsaCsk.len = (mpi_msb(&rsaCsk.N) + 7) >> 3; /* key lenght in bytes */
 
-		} /* AES-128 encryption */
-
+		if (RSA_MAX_KEY_LEN_BYTES < rsaCsk.len) {
+			fprintf(stderr, "Wrong RSA key length - %d bytes!"
+					" Supported RSA keys up to %d bytes\n",
+					rsaCsk.len, RSA_MAX_KEY_LEN_BYTES);
+			goto end;
+		} else
+			fprintf(stdout, "CSK RSA private key is %d bit long\n", rsaCsk.len * 8);
 	} /* secure boot options */
 
 	/* Image Header(s)  */
@@ -1709,7 +1654,7 @@ end:
 	if (f_header != -1)
 		close(f_header);
 
-    if (buf_in)
+	if (buf_in)
 		munmap((void*)buf_in, fs_stat.st_size);
 
 	if (f_in != -1)
@@ -1766,20 +1711,22 @@ void print_usage(void)
 	printf("\nSecure boot mode options - all options are mandatory once secure mode is selected by Z switch:\n");
 	printf("-----------------------------------------------------------------------------------------------\n\n");
 
-	printf("-Z [prv_key_file]: Create image with RSA signature for secure boot mode\n");
-	printf("                   If the private key file name is missing, a new key pair will be generated\n");
-	printf("                   and saved in files named rsa_prv.key and rsa_pub.key\n");
-	printf("                   A new file named sha2_pub.txt will be generated for a public key\n");
-	printf("-J jtag_delay:   Enable JTAG and delay boot execution by \"N\" ms\n");
+	printf("-Z [rsa_priv_kak_file]: Create image with RSA KAK block signature for secure boot mode\n");
+	printf("                 If the private key file name is \"@@\", a new key pair will be generated\n");
+	printf("                 and saved in files named rsa_priv_kak.key and rsa_pub_kak.key\n");
+	printf("                 A new file named sha2_pub_kak.txt will be generated for a public key\n");
+	printf("-A [rsa_priv_csk_file]: Create image with RSA CSK signature for secure boot mode\n");
+	printf("                 If the private key file name is \"@@\", a new key pair will be generated\n");
+	printf("                 and saved in files named rsa_priv_csk.key and rsa_pub_sck.key\n");
+	printf("                 A new file named sha2_pub_csk.txt will be generated for a public key\n");
+	printf("-K csk_index:    CSK Array Index in range of 0 to 15\n");
+	printf("-J jtag_delay:   Enable JTAG and delay boot execution by \"jtag_delay\" ms\n");
 	printf("-B hex_box_id:   Box ID (hex) - from 0 to 0xffffffff\n");
-	printf("-F hex_flash_id: Flash ID (hex) - from 0 to 0xffff \n\n");
+	printf("-F hex_flash_id: Flash ID (hex) - from 0 to 0xffffffff \n\n");
 
 	printf("\n[other_options] - optional and can be one or more of the following:\n");
 	printf("==============================================================================================\n\n");
 
-	printf("-A [aes_key_file]: Valid in secure mode only. Encrypt the boot image using AES-128 key\n");
-	printf("                   If the aes key file name is missing, a new AES-128 key will be generated\n");
-	printf("                   and saved in file named aes_key.txt suitable for eFuse storage\n");
 	printf("-G exec_file:    ascii file name that contains binary routine (ARM 5TE THUMB)\n");
 	printf("                 to run before the bootloader image execution.\n");
 	printf("                 The routine must contain an appropriate code for saving \n");
@@ -1847,9 +1794,9 @@ MV_U8 checksum8(void* start, MV_U32 len, MV_U8 csum)
 		sum += *(MV_U8*)startp;
 		startp++;
 
-    } while(--len);
+	} while(--len);
 
-    return (sum);
+	return (sum);
 
 } /* end of checksum8 */
 
@@ -1875,9 +1822,9 @@ MV_U32 checksum32(void* start, MV_U32 len, MV_U32 csum)
 		startp++;
 		len -= 4;
 
-    } while(len);
+	} while(len);
 
-    return (sum);
+	return (sum);
 
 } /* *end of checksum32() */
 
@@ -1946,8 +1893,8 @@ MV_U32 crc32(MV_U32 crc, volatile MV_U32 *buf, MV_U32 len)
 
 	if (len) {
 		do {
-		DO1(buf);
-	} while (--len);
+			DO1(buf);
+		} while (--len);
 	}
 
 	return crc ^ 0xffffffffL;
@@ -2001,8 +1948,9 @@ int main (int argc, char** argv)
 {
 	USER_OPTIONS	options;
 	int 		optch; /* command-line option char */
-	static char	optstring[] = "T:D:E:X:Y:S:P:W:H:R:M:Z:J:B:F:A:G:L:N:C:b:u:m:p";
+	static char	optstring[] = "T:D:E:X:Y:S:P:W:H:R:M:Z:K:J:B:F:A:G:L:N:C:b:u:m:p";
 	int		i, k;
+	unsigned long	secureOptions;
 
 	if (argc < 2) goto parse_error;
 
@@ -2124,7 +2072,7 @@ int main (int argc, char** argv)
 			if (options.flags & Z_OPTION_MASK)
 				goto parse_error;
 			options.flags |= Z_OPTION_MASK;
-			DB("RSA private Key file name %s\n", options.fname_prkey);
+			DB("KAK RSA private Key file name %s\n", options.fname_prkey);
 			break;
 
 		case 'J': /* JTAG Enabled */
@@ -2151,12 +2099,16 @@ int main (int argc, char** argv)
 			DB("Flash ID %#x\n", options.flashId);
 			break;
 
-		case 'A': /* secure boot - encrypt with AES-128 key */
-			options.fname_aeskey = optarg;
-			if (options.flags & A_OPTION_MASK)
-				goto parse_error;
+		case 'A': /* secure boot - CSK key */
+			options.fname_prkeyCsk = optarg;
 			options.flags |= A_OPTION_MASK;
-			DB("AES file name %s\n", options.fname_aeskey);
+			DB("CSK RSA private Key file name %s\n", options.fname_prkeyCsk);
+			break;
+
+		case 'K': /* secure boot - CSK Array Index*/
+			options.csk_index = strtoul(optarg, &endptr, 10);
+			options.flags |= K_OPTION_MASK;
+			DB("CSK Array Index %d\n", options.csk_index);
 			break;
 
 		case 'L': /* NAND block size */
@@ -2247,12 +2199,6 @@ int main (int argc, char** argv)
 	if (options.req_flags != (options.flags & options.req_flags))
 		goto parse_error;
 
-	if ((options.flags & F_OPTION_MASK) &&
-	    (options.flashId > 0xFFFF)) {
-		fprintf(stderr,"Error: Flash ID is too long!\n\n\n\n\n");
-		goto parse_error;
-	}
-
 	if ((options.flags & L_OPTION_MASK) &&
 	    ((options.nandBlkSize > 255) ||
 	    ((options.nandBlkSize == 0) && (options.nandPageSize != 512)))) {
@@ -2265,6 +2211,19 @@ int main (int argc, char** argv)
 	    (options.nandCellTech != 's') && (options.nandCellTech != 'm')) {
 		fprintf(stderr,"Error: Wrong NAND cell technology type!\n\n\n\n\n");
 		goto parse_error;
+	}
+
+	secureOptions = A_OPTION_MASK | Z_OPTION_MASK | K_OPTION_MASK |
+					B_OPTION_MASK | F_OPTION_MASK;
+	if (options.flags & secureOptions) {
+		if ((options.flags & secureOptions) != secureOptions) {
+			fprintf(stderr,"Error: All secure options are mandatory!\n\n\n\n\n");
+			goto parse_error;
+		}
+		if((options.csk_index < 0) || (options.csk_index > 16)) {
+			fprintf(stderr,"Error: Bad CSK Array Index - %d!\n\n\n\n\n", options.csk_index);
+			goto parse_error;
+		}
 	}
 
 	return process_image(&options);

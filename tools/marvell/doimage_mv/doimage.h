@@ -67,19 +67,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/types.h>
 
 /* use the same version as in "bootrom.inc" file */
-#define VERSION_NUMBER	"2.10"
-#define PRODUCT_SUPPORT "Marvell Armada and xCAT series"
+#define VERSION_NUMBER	"2.20"
+#define PRODUCT_SUPPORT "Marvell Armada-3xx series"
 
 #define RSA_KEY_SIZE	2048
 #define RSA_EXPONENT	65537
-#define AES_KEY_SIZE	128
 
-
-#define T_OPTION_MASK	0x1	/* image type */
-#define D_OPTION_MASK	0x2	/* image destination */
-#define E_OPTION_MASK	0x4	/* image execution address */
-#define S_OPTION_MASK	0x8	/* starting sector */
-#define R_OPTION_MASK	0x10    /* DRAM file */
+#define T_OPTION_MASK	0x1		/* image type */
+#define D_OPTION_MASK	0x2		/* image destination */
+#define E_OPTION_MASK	0x4		/* image execution address */
+#define S_OPTION_MASK	0x8		/* starting sector */
+#define R_OPTION_MASK	0x10	/* DRAM file */
 #define C_OPTION_MASK	0x20	/* headers definition file */
 #define P_OPTION_MASK	0x40	/* NAND Page size */
 #define M_OPTION_MASK	0x80	/* TWSI serial init file */
@@ -89,10 +87,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define Y_OPTION_MASK	0x800	/* Post padding */
 #define J_OPTION_MASK	0x1000	/* JTAG Enabled */
 #define B_OPTION_MASK	0x2000	/* Box ID */
-#define Z_OPTION_MASK	0x4000	/* secure boot mode - private key */
+#define Z_OPTION_MASK	0x4000	/* secure boot mode - KAK private key */
 #define F_OPTION_MASK	0x8000	/* Flash ID */
-#define A_OPTION_MASK	0x10000	/* AES encryption */
+#define A_OPTION_MASK	0x10000	/* secure boot mode - CSK private key */
 #define G_OPTION_MASK	0x20000	/* binary file */
+#define K_OPTION_MASK	0x40000	/* secure boot mode - CSK private key index */
 #define L_OPTION_MASK	0x80000	/* NAND block size (in 64K chunks) */
 #define N_OPTION_MASK	0x100000/* NAND cell technology MLC/SLC */
 #define p_OPTION_MASK	0x200000	/* Print enable */
@@ -144,46 +143,47 @@ typedef enum
 
 typedef enum
 {
-	HDR_IMG_ONE_FILE  	= 1,	/* Create one file with header and image */
-	HDR_IMG_TWO_FILES 	= 2,	/* Create seperate header and image files */
-	HDR_ONLY 		= 3,	/* Create only header */
-	IMG_ONLY 		= 4,	/* Create only image */
+	HDR_IMG_ONE_FILE	= 1,	/* Create one file with header and image */
+	HDR_IMG_TWO_FILES	= 2,	/* Create seperate header and image files */
+	HDR_ONLY 			= 3,	/* Create only header */
+	IMG_ONLY 			= 4,	/* Create only image */
 
 } HEADER_MODE;
 
 typedef struct
 {
 	IMG_TYPE	image_type;
-	char		*fname_dram; /* DRAM init file for "register" header */
-	char		*fname_twsi; /* TWSI serial init file */
-	char		*fname_bin;  /* binary code file for "binary" header */
-	char		*fname_prkey;/* RSA Private key file */
-	char		*fname_aeskey;/* AES-128 key file */
-	char		*fname_list; /* headers definition file */
-	u32			flags;       /* user-defined flags */
-	u32			req_flags;   /* mandatory flags */
-	u32			image_source;/* starting sector */
-	u32			image_dest;  /* image destination  */
-	u32			image_exec;  /* image execution  */
-	unsigned int 	hex_width;   /* HEX file width */
-	unsigned int 	header_mode; /* Header file mode */
-	int 		pre_padding;
-	int 		post_padding;
-	int			prepadding_size;
-	int			postpadding_size;
+	char		*fname_dram;	/* DRAM init file for "register" header */
+	char		*fname_twsi;	/* TWSI serial init file */
+	char		*fname_bin;		/* binary code file for "binary" header */
+	char		*fname_prkey;	/* KAK RSA Private key file */
+	char		*fname_prkeyCsk;/* CSK RSA Private key file */
+	char		*fname_list;	/* headers definition file */
+	u32			flags;			/* user-defined flags */
+	u32			req_flags;		/* mandatory flags */
+	u32			image_source;	/* starting sector */
+	u32			image_dest;		/* image destination  */
+	u32			image_exec;		/* image execution  */
+	unsigned int 	hex_width;	/* HEX file width */
+	unsigned int 	header_mode;/* Header file mode */
+	int				csk_index;
+	int				pre_padding;
+	int				post_padding;
+	int				prepadding_size;
+	int				postpadding_size;
 	unsigned int	bytesToAlign;
 	unsigned int	nandPageSize;
 	unsigned int	nandBlkSize;
-	char		nandCellTech;
-	u32			boxId;
-	u32			flashId;
-	u32			jtagDelay;
-	char		*image_buf;   /* image buffer for image pre-load */
-	u32			image_sz;	/* total size of pre-loaded image buffer including paddings */
-	u32			img_gap;   /* gap between header and image start point */
-	u32			baudRate;	/* debug print port baudrate */
-	u32			debugPortNum;	/* debug print port number */
-	u32			debugPortMpp;	/* debug print port MPP configuration */
+	char			nandCellTech;
+	u32				boxId;
+	u32				flashId;
+	u32				jtagDelay;
+	char			*image_buf;	/* image buffer for image pre-load */
+	u32				image_sz;	/* total size of pre-loaded image buffer including paddings */
+	u32				img_gap;	/* gap between header and image start point */
+	u32				baudRate;	/* debug print port baudrate */
+	u32				debugPortNum;	/* debug print port number */
+	u32				debugPortMpp;	/* debug print port MPP configuration */
 	union
 	{
 		char	*fname_arr[5];

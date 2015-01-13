@@ -68,22 +68,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_a38x_mc_static.h"
 #include "mvDdr3TopologyDef.h"
 
-/*Allow topolgy update from board TWSI device*/
-#if !defined(CONFIG_CUSTOMER_BOARD_SUPPORT) && defined(CONFIG_DDR3)
-#define MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI
-#endif
-
-#define ECC_SUPPORT
-
-/*Tune internal training params values*/
-#define MV_TUNE_TRAINING_PARAMS_CK_DELAY 		160
-#define MV_TUNE_TRAINING_PARAMS_CK_DELAY_16		160
-#define MV_TUNE_TRAINING_PARAMS_PFINGER			41
-#define MV_TUNE_TRAINING_PARAMS_NFINGER			43
-#define MV_TUNE_TRAINING_PARAMS_PHYREG3VAL		0xA
-
-#define MARVELL_BOARD MARVELL_BOARD_ID_BASE
-
 typedef struct __mvDramModes {
     char *mode_name;
     MV_U8 cpuFreq;

@@ -112,8 +112,8 @@ int mv_eth_initialize(bd_t *bis)
 		if (MV_FALSE == mvCtrlPwrClckGet(ETH_GIG_UNIT_ID, port))
 			continue;
 
-		/* AC3 GMAC over SGMII WA - needed for bringing the link on SFP UP */
-		if (family == MV_ALLEYCAT3_DEV_ID)
+		/* AC3/BC2 GMAC over SGMII WA - needed for bringing the link on SFP UP */
+		if ((family == MV_ALLEYCAT3_DEV_ID) || (family == MV_BOBCAT2_DEV_ID))
 			MV_REG_BIT_RESET(NETA_GMAC_SERIAL_REG(port), 1 << 5);
 
 		/* interface name */

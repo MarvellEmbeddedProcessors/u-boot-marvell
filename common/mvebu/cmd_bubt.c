@@ -26,6 +26,7 @@
 #include <asm/arch-mvebu/unit-info.h>
 
 #include <spi_flash.h>
+#include <spi.h>
 
 #include <nand.h>
 

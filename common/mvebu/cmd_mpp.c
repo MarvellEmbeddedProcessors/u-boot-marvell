@@ -90,7 +90,7 @@ static int cmd_mpp_read(char **mpp_desc, int start, int end)
 	printf("--------------------------\n");
 
 	for (pin = start; pin <= end; pin++) {
-		value = min(mpp_get_pin(pin), MAX_MPP_OPTS);
+		value = min(mpp_get_pin(pin), (u8)MAX_MPP_OPTS);
 		mpp_opt = *(mpp_desc + (pin * MAX_MPP_OPTS) + value);
 
 		printf("%02d  0x%x   %s\n", pin, value, mpp_opt);
@@ -111,7 +111,7 @@ static int cmd_mpp_write(char **mpp_desc, int pin, int value)
 	mpp_set_pin(pin, value);
 
 	/* Readback to verify */
-	value = min(mpp_get_pin(pin), MAX_MPP_OPTS);
+	value = min(mpp_get_pin(pin), (u8)MAX_MPP_OPTS);
 	mpp_opt = *(mpp_desc + (pin * MAX_MPP_OPTS) + value);
 	printf("%02d  0x%x   %s\n", pin, value, mpp_opt);
 

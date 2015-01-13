@@ -70,8 +70,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ddr3_hws_hw_training_def.h"
 
-/* Debug defines*/
-/*#define SUPPORT_STATIC_DUNIT_CONFIG*/
+/*Allow topolgy update from board TWSI device*/
+#if !defined(CONFIG_CUSTOMER_BOARD_SUPPORT)
+#define MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI
+#endif
+
+#define ECC_SUPPORT
+
+/*Tune internal training params values*/
+#define MV_TUNE_TRAINING_PARAMS_CK_DELAY 		160
+#define MV_TUNE_TRAINING_PARAMS_CK_DELAY_16		160
+#define MV_TUNE_TRAINING_PARAMS_PFINGER			41
+#define MV_TUNE_TRAINING_PARAMS_NFINGER			43
+#define MV_TUNE_TRAINING_PARAMS_PHYREG3VAL		0xA
+
+#define MARVELL_BOARD MARVELL_BOARD_ID_BASE
+
 
 #define REG_DEVICE_SAR1_ADDR                        0xE4204
 #define RST2_CPU_DDR_CLOCK_SELECT_IN_OFFSET         17

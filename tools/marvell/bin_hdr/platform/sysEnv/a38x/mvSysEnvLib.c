@@ -68,7 +68,11 @@
 #include "util.h"
 #include "mv_seq_exec.h"
 #include "printf.h"
-#include "ddr3_a38x.h"
+#ifdef MV88F69XX
+       #include "ddr3_a39x.h"
+#else
+       #include "ddr3_a38x.h"
+#endif
 
 #ifdef WIN32
 #define mvPrintf    printf
@@ -762,6 +766,7 @@ MV_U32 mvSysEnvConfigGet(MV_CONFIG_TYPE_ID configField)
 
 #endif /* CONFIG_CMD_BOARDCFG */
 
+#ifdef MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI
 /*******************************************************************************
 * mvSysEnvGetTopologyUpdateInfo
 *
@@ -775,6 +780,40 @@ MV_U32 mvSysEnvConfigGet(MV_CONFIG_TYPE_ID configField)
 *       Bit mask of changes topology features
 *
 *******************************************************************************/
+#ifdef MV88F69XX
+MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo)
+{
+	/*Set 16/32 bit configuration*/
+	topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
+	topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_32BIT;
+#ifdef CONFIG_DDR3
+	if( 1 == mvSysEnvConfigGet(MV_CONFIG_DDR_BUSWIDTH) ){
+		/*16bit*/
+		topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_16BIT;
+	}
+	else{
+		/*32bit*/
+		topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_32BIT;
+	}
+#endif
+
+	/*Set ECC/no ECC bit configuration*/
+	topologyUpdateInfo->mvUpdateECC = MV_TRUE;
+	if( 0 == mvSysEnvConfigGet(MV_CONFIG_DDR_ECC_EN) ){
+		/*NO ECC*/
+		topologyUpdateInfo->mvECC = MV_TOPOLOGY_UPDATE_ECC_OFF;
+	}
+	else{
+		/*ECC*/
+		topologyUpdateInfo->mvECC = MV_TOPOLOGY_UPDATE_ECC_ON;
+	}
+
+	topologyUpdateInfo->mvUpdateECCPup3Mode = MV_TRUE;
+	topologyUpdateInfo->mvECCPupModeOffset = MV_TOPOLOGY_UPDATE_ECC_OFFSET_PUP4;
+
+	return MV_OK;
+}
+#else /*MV88F68XX*/
 MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo)
 {
 	MV_U8	configVal;
@@ -877,4 +916,6 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 
 	return MV_OK;
 }
+#endif/*MV88F68XX*/
 
+#endif /*MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI*/

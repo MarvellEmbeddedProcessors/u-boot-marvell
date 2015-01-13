@@ -63,6 +63,9 @@ BOARD_OBJS-$(CONFIG_ARMADA_39X) += $(BOARD_ENV_DIR)/mvBoardEnvLib39x.o
 BOARD_OBJS-$(CONFIG_ARMADA_38X) += $(BOARD_ENV_DIR)/mvBoardEnvLib38x.o
 BOARD_OBJS += $(sort $(BOARD_OBJS-y))
 
+# SEE README.arm-unaligned-accesses
+$(BOARD_ENV_DIR)/mvBoardEnvLib.o: CFLAGS += $(PLATFORM_NO_UNALIGNED)
+
 HAL_IF_OBJS =	$(HAL_IF_DIR)/mvSysSpi.o	\
 		$(HAL_IF_DIR)/mvSysNfc.o	\
 		$(HAL_IF_DIR)/mvSysXor.o	\

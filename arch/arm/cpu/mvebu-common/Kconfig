@@ -4,6 +4,7 @@ source "arch/arm/cpu/armv7/armada38x/Kconfig"
 
 config MVEBU
 	bool "Support MVEBU devices"
+	depends on $SYS_VENDOR="mvebu"
 	default y
 
 menu "IO support"

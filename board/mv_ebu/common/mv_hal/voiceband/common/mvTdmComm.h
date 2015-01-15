@@ -87,7 +87,7 @@ typedef struct {
 typedef struct {
 	MV_U8 spiMode;
 	MV_U8 maxCs;
-	MV_U16 familyId;
+	MV_U32 familyId;
 	MV_U16 model;
 	MV_U16 ctrlRev;
 	MV_FRAME_TS frameTs;

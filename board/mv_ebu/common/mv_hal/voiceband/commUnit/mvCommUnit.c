@@ -92,7 +92,7 @@ static MV_TDM_MCDMA_RX_DESC *mcdmaRxDescPtr[TOTAL_CHAINS];
 static MV_TDM_MCDMA_TX_DESC *mcdmaTxDescPtr[TOTAL_CHAINS];
 static MV_ULONG mcdmaRxDescPhys[TOTAL_CHAINS], mcdmaTxDescPhys[TOTAL_CHAINS];
 static MV_TDM_DPRAM_ENTRY defDpramEntry = { 0, 0, 0x1, 0x1, 0, 0, 0x1, 0, 0, 0, 0 };
-static MV_U16 ctrlFamilyId;
+static MV_U32 ctrlFamilyId;
 static MV_U16 ctrlModel;
 static MV_U16 ctrlRev;
 
@@ -102,7 +102,7 @@ static MV_VOID mvCommUnitMcdmaMcscStart(MV_VOID);
 static MV_VOID mvCommUnitMcdmaStop(MV_VOID);
 static MV_VOID mvCommUnitMcdmaMcscAbort(MV_VOID);
 
-static MV_COMMUNIT_IP_VERSION_T mvCommUnitIpVerGet(MV_U16 ctrlFamilyId)
+static MV_COMMUNIT_IP_VERSION_T mvCommUnitIpVerGet(MV_U32 ctrlFamilyId)
 {
 	switch (ctrlFamilyId) {
 	case MV_65XX_DEV_ID:

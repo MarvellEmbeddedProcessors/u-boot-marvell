@@ -46,6 +46,7 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 	CMD_PTP_PLL,
 	CMD_OOB0_CON,
 	CMD_OOB1_CON,
+	CMD_PEX_GEN1,
 #elif defined(CONFIG_ALLEYCAT3)
 	CMD_PCIE_CLOCK,
 	CMD_PLL_CLOCK,
@@ -70,6 +71,7 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 						   0,	/* PTP PLL */
 						   0,	/* OOB0 connection */
 						   0,	/* OOB1 connection */
+						   0,	/* Force AMC RC GEN1 PCIe */
 						   1,	/* PCIe mode */
 						   3,	/* Boot source */
 						   0 };	/* Device ID */
@@ -130,6 +132,8 @@ static int sar_cmd_get(const char *cmd)
 		return CMD_OOB0_CON;
 	if (strcmp(cmd, "oob1con") == 0)
 		return CMD_OOB1_CON;
+	if (strcmp(cmd, "pciegen1") == 0)
+		return CMD_PEX_GEN1;
 #elif defined CONFIG_ALLEYCAT3
 	if (strcmp(cmd, "pciclock") == 0)
 		return CMD_PCIE_CLOCK;
@@ -223,6 +227,14 @@ static int do_sar_list(int mode)
 		printf("\t|  1  |    1     | 1 (front panel) |\n");
 		printf("\t|  2  |    1     | Not connected   |\n");
 		printf("\t-----------------------------------\n");
+		break;
+	case CMD_PEX_GEN1:
+		printf("Determines the PCIe GEN1 enforcement mode om AMC RC:\n");
+		printf("\t| ID  |   Force PCIe GEN1   |\n");
+		printf("\t----------------------------\n");
+		printf("\t|  0  |   Do not force      |\n");
+		printf("\t|  1  |   Force GEN1        |\n");
+		printf("\t----------------------------\n");
 		break;
 #elif defined CONFIG_ALLEYCAT3
 	case CMD_DDR_ECC_EN:
@@ -332,7 +344,7 @@ static int do_sar_read(int mode)
 			printf("ptppll \t\t= %d ==>  %s\n", tmp, ((tmp == 0) ? "20" : "21.875"));
 		else
 			printf("ptppll Error: failed reading PTP PLL multiplier\n");
-	break;
+		break;
 
 	case CMD_OOB0_CON:
 	case CMD_OOB1_CON:
@@ -344,7 +356,14 @@ static int do_sar_read(int mode)
 				printf("oob%dcon \t\t= %d ==>  Physical port %d\n", i, tmp, ((tmp == 1) ? i : (20 + i)));
 		} else
 			printf("oob%dcon Error: failed reading PTP PLL multiplier\n", i);
- break;
+		break;
+
+	case CMD_PEX_GEN1:
+		if (mvBoardForcePexGen1Get(&tmp) == MV_OK)
+			printf("pciegen1 \t\t= %d ==>  %s\n", tmp, ((tmp == 0) ? "Do not enforce GEN1" : "Force GEN1 connection"));
+		else
+			printf("pciegen1 Error: failed reading PCIe GEN1 enforcement mode\n");
+		break;
 
 #elif defined CONFIG_ALLEYCAT3
 	case CMD_DDR_ECC_EN:
@@ -458,6 +477,9 @@ static int do_sar_write(int mode, int value)
 	case CMD_OOB1_CON:
 		rc = mvBoardOobPortConnectionSet((mode == CMD_OOB0_CON ? 0 : 1), tmp);
 		break;
+	case CMD_PEX_GEN1:
+		rc = mvBoardForcePexGen1Set(tmp);
+		break;
 #elif defined CONFIG_ALLEYCAT3
 	case CMD_DDR_ECC_EN:
 		rc = mvBoardDdrEccEnableSet(tmp);
@@ -568,6 +590,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "ptppll                     - PTP PLL multiplier\n"
 "oob0con                    - OOB-0 to physical port connection\n"
 "oob1con                    - OOB-1 to physical port connection\n"
+"pciegen1                   - Force PCIe GEN1 on AMC RC connection\n"
 #elif defined CONFIG_ALLEYCAT3
 "pciclock                   - PCIe reference clock source\n"
 "pllclock                   - PLL2 VCO clock frequency\n"

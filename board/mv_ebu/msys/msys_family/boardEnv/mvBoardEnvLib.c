@@ -1754,6 +1754,56 @@ MV_STATUS mvBoardOobPortConnectionSet(MV_U8 port, MV_U8 val)
 	return MV_OK;
 }
 
+
+
+/*******************************************************************************/
+MV_STATUS mvBoardForcePexGen1Get(MV_U8 *value)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_BOBCAT2_DEV_ID) {
+		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
+		return MV_ERROR; /* AC3 */
+	}
+
+	/* BC2 */
+	if (MV_ERROR == mvBoardTwsiSatRGet(0, 1, &sar))
+		return MV_ERROR;
+
+	*value = (sar & 0x10) >> 4;
+
+	return MV_OK;
+}
+
+/*******************************************************************************/
+MV_STATUS mvBoardForcePexGen1Set(MV_U8 val)
+{
+	MV_U8		sar;
+	MV_U16		family = mvCtrlDevFamilyIdGet(0);
+
+	if (family != MV_BOBCAT2_DEV_ID) {
+		DB(mvOsPrintf("%s: AC3 controller family is not supported\n", __func__));
+		return MV_ERROR; /* AC3 */
+	}
+
+	/* BC2 */
+	if (MV_ERROR == mvBoardTwsiSatRGet(0, 1, &sar))
+		return MV_ERROR;
+
+	sar &= ~(0x10);
+	sar |= ((val & 0x1) << 4);
+
+	if (MV_OK != mvBoardTwsiSatRSet(0, 1, sar)) {
+		DB(mvOsPrintf("Board: Write Force PCIe GEN1 S@R fail\n"));
+		return MV_ERROR;
+	}
+
+	DB(mvOsPrintf("Board: Write Force PCIe GEN1 S@R succeeded\n"));
+	return MV_OK;
+}
+
+
 /*******************************************************************************/
 MV_STATUS mvBoardBootDevGet(MV_U8 *value)
 {

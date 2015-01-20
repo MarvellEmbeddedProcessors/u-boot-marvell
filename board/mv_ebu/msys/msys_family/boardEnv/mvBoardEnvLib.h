@@ -334,6 +334,8 @@ MV_STATUS mvBoardPtpPllGet(MV_U8 *value);
 MV_STATUS mvBoardPtpPllSet(MV_U8 val);
 MV_STATUS mvBoardOobPortConnectionGet(MV_U8 port, MV_U8 *value);
 MV_STATUS mvBoardOobPortConnectionSet(MV_U8 port, MV_U8 val);
+MV_STATUS mvBoardForcePexGen1Get(MV_U8 *value);
+MV_STATUS mvBoardForcePexGen1Set(MV_U8 val);
 MV_STATUS mvBoardCoreFreqSet(MV_U8 freqVal);
 MV_STATUS mvBoardDdrEccEnableGet(MV_U8 *val);
 MV_STATUS mvBoardDdrEccEnableSet(MV_U8 val);

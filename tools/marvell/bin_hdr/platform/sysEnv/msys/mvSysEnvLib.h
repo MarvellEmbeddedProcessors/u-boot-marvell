@@ -256,5 +256,19 @@ MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID);
 *******************************************************************************/
 MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo);
 
+/*******************************************************************************
+* mvSysEnvGetCSEnaFromReg
+*
+* DESCRIPTION: Get bit mask of enabled CS
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*       Bit mask of enabled CS, 1 if only CS0 enabled, 3 if both CS0 and CS1 enabled
+*
+*******************************************************************************/
+MV_U32 mvSysEnvGetCSEnaFromReg(void);
 #endif /* __INCmvBHboardEnvSpech */
 

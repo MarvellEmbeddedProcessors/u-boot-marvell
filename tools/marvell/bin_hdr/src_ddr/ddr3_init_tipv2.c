@@ -218,7 +218,7 @@ MV_STATUS ddr3GetTopologyMap(MV_HWS_TOPOLOGY_MAP** tMap)
 static MV_VOID ddr3RestoreAndSetFinalWindows(MV_U32 *auWinBackup)
 {
 	MV_U32 winCtrlReg, numOfWinRegs;
-	MV_U32 uiCsEna = ddr3GetCSEnaFromReg();
+	MV_U32 uiCsEna = mvSysEnvGetCSEnaFromReg();
 
 	winCtrlReg  = REG_XBAR_WIN_4_CTRL_ADDR;
 	numOfWinRegs = 16;
@@ -529,7 +529,7 @@ MV_U32 ddr3GetStaticDdrMode(void)
  */
 MV_U32 ddr3GetCSNumFromReg(void)
 {
-	MV_U32 uiCsEna = ddr3GetCSEnaFromReg();
+	MV_U32 uiCsEna = mvSysEnvGetCSEnaFromReg();
 	MV_U32 uiCsCount = 0;
 	MV_U32 uiCs;
 
@@ -538,18 +538,6 @@ MV_U32 ddr3GetCSNumFromReg(void)
 			uiCsCount++;
 
 	return uiCsCount;
-}
-
-/******************************************************************************
- * Name:     ddr3GetCSEnaFromReg
- * Desc:
- * Args:
- * Notes:
- * Returns:
- */
-MV_U32 ddr3GetCSEnaFromReg(void)
-{
-	return MV_REG_READ(REG_DDR3_RANK_CTRL_ADDR) & REG_DDR3_RANK_CTRL_CS_ENA_MASK;
 }
 
 /******************************************************************************
@@ -746,6 +734,11 @@ MV_STATUS ddr3CalcMemCsSize(MV_U32 uiCs, MV_U32* puiCsSize){
     MV_FLOAT uiCsMemSize;
 
     uiCsMemSize = ((ddr3GetBusWidth() / ddr3GetDeviceWidth(uiCs)) * ddr3GetDeviceSize(uiCs)) / 8;/*calculate in Gbyte*/;
+
+	/*Multiple controller bus width, 2x for 64 bit
+	(SoC controller may be 32 or 64 bit,
+	so bit 15 in 0x1400, that means if whole bus used or only half, have a differnt meaning*/
+	uiCsMemSize *= MV_DDR_CONTROLLER_BUS_WIDTH_MULTIPLIER;
 
 	if (uiCsMemSize == 0.125) {
         *puiCsSize = _128M;

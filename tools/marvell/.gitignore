@@ -7,7 +7,6 @@
 *.depend
 *libpolarssl.a
 *.a
-*.rej
 *.orig
 *.su
 setparams

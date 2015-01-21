@@ -77,6 +77,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define ECC_SUPPORT
 
+/*Controler bus divider 1 for 32 bit, 2 for 64 bit*/
+#define MV_DDR_CONTROLLER_BUS_WIDTH_MULTIPLIER		1
+
 /*Tune internal training params values*/
 #define MV_TUNE_TRAINING_PARAMS_CK_DELAY 		160
 #define MV_TUNE_TRAINING_PARAMS_CK_DELAY_16		160

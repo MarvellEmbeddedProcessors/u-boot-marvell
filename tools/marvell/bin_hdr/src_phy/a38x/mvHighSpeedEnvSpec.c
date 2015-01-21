@@ -115,19 +115,21 @@ static MV_VOID _MV_REG_WRITE(MV_U32 regAddr, MV_U32 regData)
 #define SERDES_ALREADY_IN_USE      2
 #define UNIT_NUMBER_VIOLATION      3
 
-MV_U8 SerdesInUseMap[MAX_UNITS_ID][MAX_UNIT_NUMB] =
+/* SerdesLaneInUseCount contains the exact amount of serdes lanes needed per type */
+MV_U8 SerdesLaneInUseCount[MAX_UNITS_ID][MAX_UNIT_NUMB] =
 {
-	/*    0	           1            2          3       */
-	{  MV_FALSE,    MV_FALSE,    MV_FALSE,	MV_FALSE},  /* PEX *1  */
-	{  MV_FALSE,    MV_FALSE,    MV_FALSE,	MV_FALSE},  /* ETH_GIG */
-	{  MV_FALSE,    MV_FALSE,    NA,         NA      },  /* USB3H   */
-	{  MV_FALSE,    MV_FALSE,    MV_FALSE,   NA      },  /* USB3D   */
-	{  MV_FALSE,    MV_FALSE,    MV_FALSE,   MV_FALSE},  /* SATA    */
-	{  MV_FALSE,    NA,          NA,         NA      },  /* QSGMII  */
-	{  MV_FALSE,    NA,          NA,         NA      },  /* XAUI    */
-	{  MV_FALSE,    NA,          NA,         NA      }   /* RXAUI   */
+	/* 0  1  2  3    */
+	{  1, 1, 1, 1 },  /* PEX     */
+	{  1, 1, 1, 1 },  /* ETH_GIG */
+	{  1, 1, 0, 0 },  /* USB3H   */
+	{  1, 1, 1, 0 },  /* USB3D   */
+	{  1, 1, 1, 1 },  /* SATA    */
+	{  1, 0, 0, 0 },  /* QSGMII  */
+	{  4, 0, 0, 0 },  /* XAUI    */
+	{  2, 0, 0, 0 }   /* RXAUI   */
 };
 
+/* serdesUnitCount count unit number. (i.e a single XAUI is counted as 1 unit) */
 MV_U8 serdesUnitCount[MAX_UNITS_ID] = {0};
 
 /* Selector mapping for A380-A0 and A390-Z1 */
@@ -640,7 +642,7 @@ MV_U32 mvHwsSerdesTopologyVerify(SERDES_TYPE serdesType, MV_U32 serdesId, SERDES
 {
 
 	MV_U32 testResult = 0;
-	MV_U8 serdMaxNumb, unitCount,unitNumb;
+	MV_U8 serdMaxNumb,unitNumb;
 	MV_UNIT_ID unitId;
 
 	if (serdesType > RXAUI){
@@ -649,45 +651,62 @@ MV_U32 mvHwsSerdesTopologyVerify(SERDES_TYPE serdesType, MV_U32 serdesId, SERDES
 	}
 	unitId = serdesTypeToUnitInfo[serdesType].serdesUnitId;
 	unitNumb =serdesTypeToUnitInfo[serdesType].serdesUnitNum;
+	serdMaxNumb = mvSysEnvUnitMaxNumGet(unitId);
 
-	if (SerdesInUseMap[unitId][unitNumb] == MV_FALSE){
-		SerdesInUseMap[unitId][unitNumb] = MV_TRUE;
-		serdMaxNumb = mvSysEnvUnitMaxNumGet(unitId);
+	if (SerdesLaneInUseCount[unitId][unitNumb] != 0) {		/* if didn't exceed amount of required Serdes lanes for current type */
+		SerdesLaneInUseCount[unitId][unitNumb]--;			/* update amount of required Serdes lanes for current type */
+
+		if (SerdesLaneInUseCount[unitId][unitNumb] == 0){	/* if reached the exact amount of required Serdes lanes for current type */
 		if (((serdesType <= PEX3)) && ((serdesMode == PEX_END_POINT_x4) || (serdesMode == PEX_ROOT_COMPLEX_x4)))
-			/* PEXx4 take place of 2 PEXx1 so serdes Unit count
-			should be increaesed twice */
-			unitCount = serdesUnitCount[PEX_UNIT_ID] + 2;
+			serdesUnitCount[PEX_UNIT_ID] +=2;				/* PCiex4 uses 2 SerDes */
 		else
-			unitCount = ++serdesUnitCount[unitId];
+			serdesUnitCount[unitId]++;
 
-		if (unitCount > serdMaxNumb)
+		if (serdesUnitCount[unitId] > serdMaxNumb)			/* test SoC unit count limitation */
 			testResult = WRONG_NUMBER_OF_UNITS;
-		else if (unitNumb >= serdMaxNumb)
+		else if (unitNumb >= serdMaxNumb)					/* test SoC unit number limitation */
 			testResult = UNIT_NUMBER_VIOLATION;
 		}
+	}
 	else
+	{
 		testResult = SERDES_ALREADY_IN_USE;
 		if (testResult == SERDES_ALREADY_IN_USE)
-	{
+		{
 			mvPrintf("%s: Error: serdes lane %d is configured to type %s: type already in use\n", __func__, serdesId, serdesTypeToString[serdesType]);
 			return MV_FAIL;
-	}
-	else if (testResult == WRONG_NUMBER_OF_UNITS)
-	{
-		mvPrintf("%s: Warning: serdes lane %d is set to type %s.\n", __func__, serdesId,serdesTypeToString[serdesType]);
-		mvPrintf("%s: Maximum supported lanes are already set to this type (limit = %d)\n", __func__, serdMaxNumb);
-		return MV_FAIL;
-	}
+		}
+		else if (testResult == WRONG_NUMBER_OF_UNITS)
+		{
+			mvPrintf("%s: Warning: serdes lane %d is set to type %s.\n", __func__, serdesId,serdesTypeToString[serdesType]);
+			mvPrintf("%s: Maximum supported lanes are already set to this type (limit = %d)\n", __func__, serdMaxNumb);
+			return MV_FAIL;
+		}
 
-	else if (testResult == UNIT_NUMBER_VIOLATION)
-	{
-		mvPrintf("%s: Warning: serdes lane %d type is %s: current device support only %d units of this type.\n", __func__, serdesId, serdesTypeToString[serdesType],serdMaxNumb );
-		return MV_FAIL;
+		else if (testResult == UNIT_NUMBER_VIOLATION)
+		{
+			mvPrintf("%s: Warning: serdes lane %d type is %s: current device support only %d units of this type.\n", __func__, serdesId, serdesTypeToString[serdesType],serdMaxNumb );
+			return MV_FAIL;
+		}
 	}
 	return MV_OK;
 }
 
+MV_VOID mvHwsSerdesXAUITopologyVerify(MV_VOID)
+{
+ if ((SerdesLaneInUseCount[XAUI_UNIT_ID][0] != 0) &&   (SerdesLaneInUseCount[XAUI_UNIT_ID][0] != 4)){ /* if  XAUI is in use - SerdesLaneInUseCount has to be = 0;
+																									     if it is not in use  hast be = 4 */
+ 	mvPrintf("%s: Warning: wrong number of lanes is set to XAUI - %d\n", __func__, SerdesLaneInUseCount[XAUI_UNIT_ID][0]);
+	mvPrintf("%s: XAUI has to be defined on 4 lanes\n", __func__);
+ }
 
+ if ((SerdesLaneInUseCount[RXAUI_UNIT_ID][0] != 0) &&   (SerdesLaneInUseCount[RXAUI_UNIT_ID][0] != 2)){/* if  RXAUI is in use - SerdesLaneInUseCount has to be = 0;
+																										  if it is not in use  hast be = 2 */
+	mvPrintf("%s: Warning: wrong number of lanes is set to RXAUI - %d\n", __func__, SerdesLaneInUseCount[RXAUI_UNIT_ID][0]);
+	mvPrintf("%s: RXAUI has to be defined on 2 lanes\n", __func__);
+ }
+
+}
 
 MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID)
 {
@@ -1676,6 +1695,9 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 		/* Updating the data that will be written to COMMON_PHYS_SELECTORS_REG */
 		regData |= (laneData << (selectBitOff * serdesLaneHwNum));
 	}
+
+	/* check that number of used lanes for XAUI and RXAUI (if used) is right */
+	mvHwsSerdesXAUITopologyVerify();
 
 	/* print topology */
 	if (updatedTopologyPrint)

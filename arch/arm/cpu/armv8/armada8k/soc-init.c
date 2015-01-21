@@ -39,7 +39,7 @@ int soc_get_rev(void)
 int soc_get_id(void)
 {
 	/* This should read the soc id from some register*/
-	return 8022;
+	return CONFIG_ARMADA_8K_SOC_ID;
 }
 
 struct mvebu_soc_family *soc_init(void)

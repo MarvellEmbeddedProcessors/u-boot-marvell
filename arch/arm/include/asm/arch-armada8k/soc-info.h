@@ -22,7 +22,7 @@
 
 /* General MPP definitions */
 #define MAX_MPP_OPTS		7
-#define MAX_MPP_ID		69
+#define MAX_MPP_ID		15
 
 #define MPP_BIT_CNT		4
 #define MPP_FIELD_MASK		0x7

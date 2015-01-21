@@ -120,7 +120,10 @@ void mpp_set_and_update(u32 *mpp_reg)
 		debug("Set mpp reg 0x%08x\n", mpp_reg[i]);
 
 		/* Write to register */
-		writel(mpp_reg[i], base + i);
+		if (soc_get_id() == CONFIG_ARMADA_8K_SOC_ID)
+			writel(mpp_reg[i], base - i);
+		else
+			writel(mpp_reg[i], base + i);
 	}
 }
 

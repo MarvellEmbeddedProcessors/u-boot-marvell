@@ -22,7 +22,7 @@
 
 #include <asm/arch/memory-map.h>
 
-#define MPP_REGS_BASE	(MVEBU_REGS_BASE + 0x1000)
+#define MPP_REGS_BASE	(MVEBU_REGS_BASE + 0x6F008C)
 
 /* List of register base for all units */
 #define MVEBU_ADEC_AP_BASE 	(MVEBU_REGS_BASE + 0x0)

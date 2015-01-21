@@ -142,11 +142,8 @@ int mvebu_board_init(void)
 	mvebu_devel_board_init(brd_fam);
 #endif
 
-#ifndef CONFIG_PALLADIUM
 	/* mpp_set */
 	mpp_set_and_update(brd->mpp_regs);
-#endif
-
 
 	return 0;
 }

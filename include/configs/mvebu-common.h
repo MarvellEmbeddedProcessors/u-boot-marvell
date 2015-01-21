@@ -34,6 +34,7 @@
 /* #define CONFIG_MV_DEBUG_PUTS */
 
 #define CONFIG_SYS_GENERIC_BOARD
+#define CONFIG_ARMADA_8K_SOC_ID		8022
 
 /* Global definitions */
 #ifndef CONFIG_SYS_TEXT_BASE

@@ -38,6 +38,7 @@ u16 a8021_rd_unit_disable[MAX_UNIT_ID] = {
 struct mvebu_board_info a8021_rd_info = {
 	.name = "RD-MV8021",
 	.id = ARMADA_8021_RD_ID,
+	.mpp_regs = {0x11111111, 0x00100001},
 	.unit_mask = a8021_rd_unit_disable,
 	.unit_update_mode = UNIT_INFO_DISABLE,
 	.configurable = 1,

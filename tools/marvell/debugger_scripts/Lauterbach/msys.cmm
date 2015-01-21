@@ -102,9 +102,9 @@ IF ("&runmode"=="ddr")
   IF ("&ddrbus"=="bootrom")
   (
 ;***************************************************************************************************************
-    ;Break 0x40000000 /Write 	; Stop on L2 SRAM access
-    ;GO					; Run the Bootrom
-    ;WAIT !RUN()
+    Break 0x4007FFF0 /Write 	; Stop on L2 SRAM access
+    GO					; Run the Bootrom
+    WAIT !RUN()
     PRINT "Please select the bin_hdr.elf file location"
     D.LOAD ../../bin_hdr/*
     ; The binary header is started by the following ASM code (bin_entry.s):

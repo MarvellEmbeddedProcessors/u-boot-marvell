@@ -197,13 +197,13 @@ SERDES_SPEED defaultSerdesSpeedMap[LAST_SERDES_TYPE] =
 SERDES_TYPE commonPhysType[MAX_SERDES_LANES][MAX_SELECTOR_VAL] =
 {
 /*	 0X0   0x1    0x2      0x3     0x4               0x5         0x6      0x7     0x8     0x9 */
-{ NA, PEX0, SATA0,          SGMII0, SGMII0,      NA,          NA,          NA,     NA,     NA     },  /* Lane 0 */
-{ NA, PEX0, PEX1,           SATA0,  SGMII0,      SGMII1,      USB3_HOST0,  QSGMII, SGMII0, SGMII1 },  /* Lane 1 */
-{ NA, PEX1, PEX2,           SATA1,  SGMII1,      SGMII1,      NA,          NA,     NA,     NA     },  /* Lane 2 */
-{ NA, PEX3, PEX3,           SATA3,  SGMII2,      USB3_HOST1,  USB3_DEVICE, SGMII2, XAUI,   NA     },  /* Lane 3 */
-{ NA, PEX1, DEFAULT_SERDES, SGMII1, USB3_HOST0,  USB3_DEVICE, SATA2,       PEX2,   SGMII3, XAUI   },  /* Lane 4 */
-{ NA, PEX2, SATA2,          SGMII2, USB3_HOST1,  USB3_DEVICE, SGMII2,      NA,     XAUI,   NA     },  /* Lane 5 */
-{ NA, PEX1, SGMII3,         NA,     XAUI,        NA,          NA,          NA,     NA,     NA     },  /* Lane 6 */
+{ DEFAULT_SERDES, PEX0, SATA0,          SGMII0, SGMII0,      NA,          NA,          NA,     NA,     NA     },  /* Lane 0 */
+{ DEFAULT_SERDES, PEX0, PEX1,           SATA0,  SGMII0,      SGMII1,      USB3_HOST0,  QSGMII, SGMII0, SGMII1 },  /* Lane 1 */
+{ DEFAULT_SERDES, PEX1, PEX2,           SATA1,  SGMII1,      SGMII1,      NA,          NA,     NA,     NA     },  /* Lane 2 */
+{ DEFAULT_SERDES, PEX3, PEX3,           SATA3,  SGMII2,      USB3_HOST1,  USB3_DEVICE, SGMII2, XAUI,   NA     },  /* Lane 3 */
+{ DEFAULT_SERDES, PEX1, DEFAULT_SERDES, SGMII1, USB3_HOST0,  USB3_DEVICE, SATA2,       PEX2,   SGMII3, XAUI   },  /* Lane 4 */
+{ DEFAULT_SERDES, PEX2, SATA2,          SGMII2, USB3_HOST1,  USB3_DEVICE, SGMII2,      NA,     XAUI,   NA     },  /* Lane 5 */
+{ DEFAULT_SERDES, PEX1, SGMII3,         NA,     XAUI,        NA,          NA,          NA,     NA,     NA     },  /* Lane 6 */
 };
 
 /*************************************/

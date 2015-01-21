@@ -148,6 +148,29 @@ MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
 	return boardId & (BOARD_ID_INDEX_MASK - 1);
 }
 
+/*******************************************************************************
+* mvSysEnvGetCSEnaFromReg
+*
+* DESCRIPTION: Get bit mask of enabled CS
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*       Bit mask of enabled CS, 1 if only CS0 enabled, 3 if both CS0 and CS1 enabled
+*
+*******************************************************************************/
+MV_U32 mvSysEnvGetCSEnaFromReg(void)
+{
+#if defined(CONFIG_ALLEYCAT3)
+	return MV_REG_READ(REG_DDR3_RANK_CTRL_ADDR) & REG_DDR3_RANK_CTRL_CS_ENA_MASK;
+#else
+	/*BC2 have a different indication for CS mask, TBD after DualCS in BC2 support*/
+	return 1;
+#endif
+}
+
 
 /*******************************************************************************/
 MV_U32 mvBoardTclkGet(MV_VOID)

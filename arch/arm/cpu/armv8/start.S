@@ -21,7 +21,7 @@
 .globl	_start
 _start:
 #ifdef CONFIG_PALLADIUM
-	bl	fixup_affinity
+	bl	enable_wa
 #endif
 	b	reset
 
@@ -179,54 +179,22 @@ ENTRY(c_runtime_cpu_setup)
 ENDPROC(c_runtime_cpu_setup)
 
 #ifdef CONFIG_PALLADIUM
-ENTRY(fixup_affinity)
+ENTRY(enable_wa)
+	/* This setup is temporary, eventually it should go into
+	 * the PSCI firmware */
 
-/*
- * Configure snoop affinity.
- * in UP each master snoops only itself
- * For cpu 0 set DVM affiinity with SMMU & self
- */
-	ldr	x0, =0xf0004210
-	ldr	w1, =0x2030003
-	str	w1, [x0]
-
-	ldr     x0, =0xf0004214
-	ldr	w1, =0x2030003
+	/* Activate Affinity between cpu0 and cpu1 */
+	ldr     x0, =0xf0004264
+	ldr     w1, =0x3
 	str     w1, [x0]
 
-	ldr     x0, =0xf0004218
-	ldr     w1, =0x4
-	str     w1, [x0]
-
-	ldr     x0, =0xf000421c
-	ldr     w1, =0x8
-	str     w1, [x0]
-
-	ldr     x0, =0xf0004220
-	ldr     w1, =0x0
-	str     w1, [x0]
-
-	ldr     x0, =0xf0004224
-	ldr     w1, =0x0
-	str     w1, [x0]
-
-	ldr     x0, =0xf0004228
-	ldr     w1, =0x0
-	str     w1, [x0]
-
-	ldr     x0, =0xf000422c
-	ldr     w1, =0x0
-	str     w1, [x0]
-
-	ldr     x0, =0xf0004230
-	ldr     w1, =0x0
-	str     w1, [x0]
-
-	ldr     x0, =0xf0004234
-	ldr     w1, =0x0
-	str     w1, [x0]
+	/* Activate Affinity in CA-57 configuration
+	 * Enable the SMPEN bit in CPUECTLR_EL1 */
+	mrs x0, S3_1_c15_c2_1
+	orr x0, x0, #0x40
+	msr S3_1_c15_c2_1, x0
 
 	ret
 
-ENDPROC(fixup_affinity)
+ENDPROC(enable_wa)
 #endif /* CONFIG_PALLADIUM */

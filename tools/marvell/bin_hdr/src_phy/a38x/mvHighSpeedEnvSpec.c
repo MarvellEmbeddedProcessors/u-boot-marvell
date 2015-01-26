@@ -326,28 +326,29 @@ MV_OP_PARAMS sataElectricalConfigSerdesRev1Params[] =
 	{ RX_REG2,							0x800,	    0xF0,		{ 0x70,		},   	0,			0		},  /* Dtl Clamping disable and Dtl clamping Sel(6000ppm) */
 };
 
+
 MV_OP_PARAMS sataElectricalConfigSerdesRev2Params[] =
 {
-	/* unitunitBaseReg					unitOffset	 mask		SATA data		waitTime    numOfLoops */
-	{ COMMON_PHY_CONFIGURATION4_REG,0x28,		0x400008,	{ 0x400000,},   	0,	0	},  /* enable SSC and DFE update enable */
-	{ G1_SETTINGS_0_REG,			0x800,		0xFFFF,	{ 0x8A32,},	0,	0	},  /* G1_TX SLEW, EMPH1 and AMP */
-	{ G1_SETTINGS_1_REG,			0x800,		0x3FF,	{ 0x3C9,},	0,	0	},  /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
-	{ G2_SETTINGS_0_REG,			0x800,		0xFFFF,	{ 0x8B5C,},	0,	0	},  /* G2_TX SLEW, EMPH1 and AMP */
-	{ G2_SETTINGS_1_REG,			0x800,		0x3FF,	{ 0x3D2,},	0,	0	},  /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
-	{ G3_SETTINGS_0_REG,			0x800,		0xFFFF,	{ 0xE6E,},	0,	0	},  /* G3_TX SLEW, EMPH1 and AMP */
-	{ G3_SETTINGS_1_REG,			0x800,		0x47FF,	{ 0x7D2,},	0,	0	},  /* G3_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI & DFE_En Gen3, DC wander calibration dis */
-//	{ CAL_REG6,						0x800,		0xFF00,	{ 0xDD00,},	0,	0	},  /* Cal rxclkalign90 ext enable and Cal os ph ext */
-	{ RX_REG2,						0x800,		0xF0,	{ 0x70,	},	0,	0	},  /* Dtl Clamping disable and Dtl clamping Sel(6000ppm) */
-	{ VTHIMPCAL_CTRL_REG,			0x800,		0xFF00,	{ 0x3000},	0,	0	}, /* tximpcal_th and rximpcal_th */
-	{ DFE_REG0,						0x800,		0x800F,	{ 0x800A},	0,	0	}, /* DFE_STEP_FINE_FX[3:0] =0xA */
-	{ DFE_REG3,						0x800,		0xC000,	{ 0x0	},	0,	0	}, /* DFE_EN and Dis Update control from pin disable */
-	{ G1_SETTINGS_3_REG,			0x800,		0xFF,	{ 0xCF	},	0,	0	}, /* FFE Force FFE_REs and cap settings for Gen1 */
-	{ G2_SETTINGS_3_REG,			0x800,		0xFF,	{ 0xBF	},	0,	0	}, /* FFE Force FFE_REs and cap settings for Gen2 */
-	{ G3_SETTINGS_3_REG,			0x800,		0xFF,	{ 0xCF	},	0,	0	}, /* FE Force FFE_REs=4 and cap settings for Gen3n */
-    { G3_SETTINGS_4_REG,			0x800,		0x300,	{ 0x300	},	0,	0	}, /* Set DFE Gen 3 Resolution to 3 */
+/* unitunitBaseReg			    unitOffset	  mask		SATA data	    waitTime numOfLoops */
+    { SQUELCH_FFE_SETTING_REG,			0x800,    0xF00,	{ 0x600		}, 	0,	    0	},  /* SQ_THRESH and FFE Setting */
+    { COMMON_PHY_CONFIGURATION4_REG,		0x28,	  0x400008,	{ 0x400000	}, 	0,	    0	},  /* enable SSC and DFE update enable */
+    { G1_SETTINGS_0_REG,			0x800,	  0xFFFF,	{ 0x8A32	},	0,	    0	},  /* G1_TX SLEW, EMPH1 and AMP */
+    { G1_SETTINGS_1_REG,			0x800,	  0x3FF,	{ 0x3C9		},	0,	    0	},  /* G1_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+    { G2_SETTINGS_0_REG,			0x800,	  0xFFFF,	{ 0x8B5C	},	0,	    0	},  /* G2_TX SLEW, EMPH1 and AMP */
+    { G2_SETTINGS_1_REG,			0x800,	  0x3FF,	{ 0x3D2		},	0,	    0	},  /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
+    { G3_SETTINGS_0_REG,			0x800,	  0xFFFF,	{ 0xE6E		},	0,	    0	},  /* G3_TX SLEW, EMPH1 and AMP */
+    { G3_SETTINGS_1_REG,			0x800,	  0x47FF,	{ 0x7D2		},	0,	    0	},  /* G3_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI & DFE_En Gen3, DC wander calibration dis */
+    { PCIE_REG0,        			0x800,    0x1000,	{ 0x0		},	0,	    0   },  /* Bit[12]=0x0 – idle_sync_en */
+    { RX_REG2,          			0x800,    0xF0,		{ 0x70,		},	0,	    0   },  /* Dtl Clamping disable and Dtl clamping Sel(6000ppm) */
+    { VTHIMPCAL_CTRL_REG,			0x800,	  0xFF00,	{ 0x3000	},	0,	    0	}, /* tximpcal_th and rximpcal_th */
+    { DFE_REG0,         			0x800,    0xA00F,	{ 0x800A	},	0,	    0   }, /* DFE_STEP_FINE_FX[3:0] =0xA */
+    { DFE_REG3,          			0x800,	  0xC000,	{ 0x0		},	0,	    0   }, /* DFE_EN and Dis Update control from pin disable */
+    { G1_SETTINGS_3_REG,			0x800,	  0xFF,		{ 0xCF		},	0,	    0	}, /* FFE Force FFE_REs and cap settings for Gen1 */
+    { G2_SETTINGS_3_REG,			0x800,	  0xFF,		{ 0xBF		},	0,	    0	}, /* FFE Force FFE_REs and cap settings for Gen2 */
+    { G3_SETTINGS_3_REG,			0x800,	  0xFF,		{ 0xCF		},	0,	    0	}, /* FE Force FFE_REs=4 and cap settings for Gen3n */
+    { G3_SETTINGS_4_REG,			0x800,	  0x300,	{ 0x300		},	0,	    0	}, /* Set DFE Gen 3 Resolution to 3 */
 
 };
-
 
 MV_OP_PARAMS sgmiiElectricalConfigSerdesRev1Params[] =
 {

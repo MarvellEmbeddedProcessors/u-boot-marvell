@@ -110,6 +110,7 @@
 #define MISC_REG                                0xa013C
 #define GLUE_REG                                0xa0140
 #define GENERATION_DIVIDER_FORCE_REG            0xa0144
+#define PCIE_REG0                               0xa0120
 #define LANE_ALIGN_REG0                         0xa0124
 #define SQUELCH_FFE_SETTING_REG                 0xa0018
 #define G1_SETTINGS_0_REG                       0xa0034

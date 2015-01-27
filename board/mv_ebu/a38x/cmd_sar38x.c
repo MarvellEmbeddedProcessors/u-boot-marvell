@@ -87,7 +87,7 @@ char *lane2Arr[4] = {	"Unconnected" ,
 char *devIdArr[4] = {
 			"6810 (A380)",
 			"6820 (A385)",
-			"6811 (A381/2)",
+			"N/A",
 			"6828 (A388)" };
 
 int do_sar_default(void)
@@ -170,7 +170,10 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		break;
 	case MV_SATR_CORE_CLK_SELECT:
 		mvOsPrintf("Determines the Core clock frequency:\n");
-		mvOsPrintf("\t0 = 250MHz\n");
+		if (mvCtrlModelGet() == MV_6811_DEV_ID)
+			mvOsPrintf("\t0 = 166MHz\n");	/* device 381/2 (6811/21) use 166MHz instead of 250MHz */
+		else
+			mvOsPrintf("\t0 = 250MHz\n");
 		mvOsPrintf("\t1 = 200MHz\n");
 		break;
 	case MV_SATR_CPU1_ENABLE:
@@ -293,6 +296,7 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 {
 	MV_U32 i, tmp;
+	char core_clk_value0[4];
 
 	if (mode != CMD_DUMP) {
 	    tmp = mvBoardSatRRead(satrInfo->satrId);
@@ -321,7 +325,9 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		}
 		break;
 	case MV_SATR_CORE_CLK_SELECT:
-		mvOsPrintf("\ncoreclock\t= %d  ==> %sMhz\n", tmp, (tmp == 0x0) ? "250" : "200");
+		/* device 381/2 (6811/21) use 166MHz instead of 250MHz */
+		sprintf(core_clk_value0, mvCtrlModelGet() == MV_6811_DEV_ID ? "166" : "250");
+		mvOsPrintf("\ncoreclock\t= %d  ==> %sMhz\n", tmp, (tmp == 0x0) ? core_clk_value0 : "200");
 		break;
 	case MV_SATR_CPU1_ENABLE:
 		mvOsPrintf("cpusnum\t\t= %d  ==> %s CPU\n", tmp, (tmp == 0) ? "Single" : "Dual");
@@ -458,8 +464,8 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 
 	/* verify requested entry is valid and map it's ID value */
 	if (satrInfo->satrId == MV_SATR_DEVICE_ID) {
-		if (value > ARRAY_SIZE(devIdArr)) {
-			printf("%s: Error: requested invalid DEVICE_ID value (%x)\n", __func__, value);
+		if (value > ARRAY_SIZE(devIdArr) || value == 2) { /* devid = 2 (6811/21) : not supported via SatR */
+			printf("%s: Error: requested invalid Device ID value (%x)\n", __func__, value);
 			return 1;
 		}
 	}

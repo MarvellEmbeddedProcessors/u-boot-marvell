@@ -78,6 +78,11 @@ void gic_send_sgi(unsigned long sgino);
 void wait_for_wakeup(void);
 void smp_kick_all_cpus(void);
 
+#ifdef CONFIG_ARMV8_PSCI
+extern char __secure_start[];
+extern char __secure_end[];
+#endif
+
 void flush_l3_cache(void);
 
 #endif	/* __ASSEMBLY__ */

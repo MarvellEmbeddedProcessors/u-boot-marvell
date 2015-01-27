@@ -8,15 +8,121 @@
 #include <libfdt.h>
 #include <fdt_support.h>
 
-#ifdef CONFIG_MP
+#ifdef CONFIG_ARMV8_PSCI
+
+static void psci_reserve_mem(void *fdt)
+{
+#ifndef CONFIG_ARMV8_SECURE_BASE
+	int nodeoff;
+	int na, ns;
+	int root;
+
+	root = fdt_path_offset(fdt, "/");
+	if (root < 0)
+		return;
+
+	na = fdt_address_cells(fdt, root);
+	ns = fdt_size_cells(fdt, root);
+
+	nodeoff = fdt_path_offset(fdt, "/reserved-memory");
+	if (nodeoff < 0) {
+		nodeoff = fdt_add_subnode(fdt, root, "reserved-memory");
+		if (nodeoff < 0)
+			return;
+	}
+	fdt_setprop_u32(fdt, nodeoff, "#address-cells", na);
+	fdt_setprop_u32(fdt, nodeoff, "#size-cells", ns);
+	fdt_setprop(fdt, nodeoff, "ranges", 0, 0);
+	nodeoff = fdt_add_subnode(fdt, nodeoff, "psci-area");
+	if (nodeoff < 0)
+		return;
+	fdt_setprop_u64(fdt, nodeoff, "reg", (unsigned long)__secure_start);
+	fdt_appendprop_u64(fdt, nodeoff, "reg",
+			   (unsigned long)__secure_end
+			   - (unsigned long)__secure_start);
+	fdt_setprop(fdt, nodeoff, "no-map", 0, 0);
+#endif
+}
+
+static int cpu_update_dt_psci(void *fdt)
+{
+	int nodeoff;
+	int tmp;
+
+	psci_reserve_mem(fdt);
+
+	nodeoff = fdt_path_offset(fdt, "/cpus");
+	if (nodeoff < 0) {
+		printf("couldn't find /cpus\n");
+		return nodeoff;
+	}
+
+	/* add 'enable-method = "psci"' to each cpu node */
+	for (tmp = fdt_first_subnode(fdt, nodeoff);
+	     tmp >= 0;
+	     tmp = fdt_next_subnode(fdt, tmp)) {
+		const struct fdt_property *prop;
+		int len;
+
+		prop = fdt_get_property(fdt, tmp, "device_type", &len);
+		if (!prop)
+			continue;
+		if (len < 4)
+			continue;
+		if (strcmp(prop->data, "cpu"))
+			continue;
+
+		/* Not checking rv here, our approach is to skip over errors in
+		 * individual cpu nodes, hopefully some of the nodes are
+		 * processed correctly and those will boot
+		 */
+		fdt_setprop_string(fdt, tmp, "enable-method", "psci");
+	}
+
+	/* The PSCI node might be called "/psci" or might be called something
+	 * else but contain either of the compatible strings
+	 * "arm,psci"/"arm,psci-0.2"
+	 */
+	nodeoff = fdt_path_offset(fdt, "/psci");
+	if (nodeoff >= 0)
+		goto init_psci_node;
+
+	nodeoff = fdt_node_offset_by_compatible(fdt, -1, "arm,psci");
+	if (nodeoff >= 0)
+		goto init_psci_node;
+
+	nodeoff = fdt_node_offset_by_compatible(fdt, -1, "arm,psci-0.2");
+	if (nodeoff >= 0)
+		goto init_psci2_node;
+
+	nodeoff = fdt_path_offset(fdt, "/");
+	if (nodeoff < 0)
+		return nodeoff;
+
+	nodeoff = fdt_add_subnode(fdt, nodeoff, "psci");
+	if (nodeoff < 0)
+		return nodeoff;
+
+init_psci_node:
+	tmp = fdt_setprop_string(fdt, nodeoff, "compatible", "arm,psci-0.2");
+	if (tmp)
+		return tmp;
+init_psci2_node:
+	tmp = fdt_setprop_string(fdt, nodeoff, "method", "smc");
+	if (tmp)
+		return tmp;
+
+	return 0;
+}
+#else
+
+__weak void arch_spin_table_reserve_mem(void *fdt)
+{
+}
 
 __weak u64 arch_get_release_addr(u64 cpu_id)
 {
 	return 0;
-}
-
-__weak void arch_spin_table_reserve_mem(void *fdt)
-{
 }
 
 static void cpu_update_dt_spin_table(void *blob)
@@ -57,7 +163,9 @@ static void cpu_update_dt_spin_table(void *blob)
 
 int cpu_update_dt(void *fdt)
 {
-#ifdef CONFIG_MP
+#ifdef CONFIG_ARMV8_PSCI
+	cpu_update_dt_psci(fdt);
+#else
 	cpu_update_dt_spin_table(fdt);
 #endif
 	return 0;

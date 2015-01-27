@@ -239,7 +239,10 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 
 	switch (value) {
 	case (0x0):
-		return MV_BOARD_TCLK_250MHZ;
+		if (mvSysEnvDeviceIdGet() == MV_6811)
+			return MV_BOARD_TCLK_166MHZ;	/* device 381/2 (6811/21) use 166MHz instead of 250MHz */
+		else
+			return MV_BOARD_TCLK_250MHZ;
 	case (0x1):
 		return MV_BOARD_TCLK_200MHZ;
 	default:

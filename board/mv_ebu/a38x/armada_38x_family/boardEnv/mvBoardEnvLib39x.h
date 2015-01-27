@@ -127,6 +127,7 @@ typedef enum {
 { MV_MODULE_NAND,		0x4,	0,	 0x1,	{ 0, 1 } }, \
 { MV_MODULE_SDIO,		0x4,	0,	 0x2,	{ 0, 1 } }, \
 { MV_MODULE_SGMII,		0x2,	0,	 0xF,	{ 0, 1 } }, \
+{ MV_MODULE_DB381_SGMII,	0x0,	0,	 0x2,	{ 0, 0 } }, \
 };
 
 typedef enum _mvSatRTypeID {

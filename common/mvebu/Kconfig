@@ -34,4 +34,10 @@ config CMD_MVEBU_BUBT
 	help
 	  bubt - Burn a u-boot image to flash
 
+config CMD_MVEBU_MSS_BOOT
+	bool "mss_boot"
+	depends on TARGET_ARMADA_8K
+	default y
+	help
+	  mss_boot - Loads MSS code into CM3 ID RAM and release from reset
 endmenu

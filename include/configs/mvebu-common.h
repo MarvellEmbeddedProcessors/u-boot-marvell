@@ -133,13 +133,6 @@
 #define CONFIG_CMD_BOOTI
 #endif
 
-/* MVEBU Generic commands */
-#define CONFIG_CMD_MVEBU_MAP
-#define CONFIG_CMD_MVEBU_MPP
-#define CONFIG_CMD_MVEBU_IR
-#define CONFIG_CMD_MVEBU_BUBT
-
-
 /* Flash env setup */
 #if !defined(MV_INCLUDE_NOR) && !defined(CONFIG_MVEBU_NAND_BOOT) && !defined(CONFIG_MVEBU_SPI_BOOT)
 	#undef CONFIG_CMD_FLASH
@@ -214,10 +207,6 @@
 
 /* I2C */
 #ifdef CONFIG_MVEBU_I2C
-	#ifdef CONFIG_MVEBU_DEVEL_BOARD
-		#define CONFIG_CMD_MVEBU_SAR
-		#define CONFIG_CMD_MVEBU_CONFIG
-	#endif
 	#define CONFIG_SYS_I2C
 	#define CONFIG_CMD_I2C
 	#define CONFIG_I2C_MULTI_BUS

@@ -313,4 +313,6 @@ config CMD_SETGETDCR
 
 endmenu
 
+source "common/mvebu/Kconfig"
+
 endmenu

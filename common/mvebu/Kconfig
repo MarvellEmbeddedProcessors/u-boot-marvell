@@ -1,0 +1,37 @@
+menu "MVEBU commands"
+
+config CMD_MVEBU_MISC
+	bool "map, remap, units, ir"
+	default y
+	help
+	  map   - Display address decode windows
+	  remap - Remap the output address of a window
+	  units	- Display and modify active units
+	  ir    - Reading and changing internal register values
+
+config CMD_MVEBU_SAR
+	bool "SatR"
+	default n
+	help
+	  SatR - Modify SOC's sample at reset (SAR) values
+
+config CMD_MVEBU_CONFIG
+	bool "config"
+	default n
+	help
+	  config - Modify SOC and board configuration
+
+config CMD_MVEBU_MPP
+	bool "mpp, mppbus"
+	default y
+	help
+	  mpp - Display or modify MPP values
+	  mppbus - Display or modify MPP bus info
+
+config CMD_MVEBU_BUBT
+	bool "bubt"
+	default y
+	help
+	  bubt - Burn a u-boot image to flash
+
+endmenu

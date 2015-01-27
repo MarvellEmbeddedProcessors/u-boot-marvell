@@ -98,8 +98,6 @@ U_BOOT_CMD(
 	"\tlist - Display current active units\n"
 );
 
-
-#ifdef CONFIG_CMD_MVEBU_IR
 int ir_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	u32 offset = 0x0;
@@ -185,5 +183,4 @@ U_BOOT_CMD(
 	"\tor by writing 0 or 1 in the required place.\n"
 	"\tPressing enter without any value keeps the value unchanged.\n"
 );
-#endif
 

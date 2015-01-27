@@ -21,6 +21,11 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+__weak int cpu_update_dt(void *fdt)
+{
+	return 0;
+}
+
 int arch_fixup_fdt(void *blob)
 {
 	bd_t *bd = gd->bd;
@@ -34,11 +39,11 @@ int arch_fixup_fdt(void *blob)
 	}
 
 	ret = fdt_fixup_memory_banks(blob, start, size, CONFIG_NR_DRAM_BANKS);
-#if defined(CONFIG_ARMV7_NONSEC) || defined(CONFIG_ARMV7_VIRT)
+
 	if (ret)
 		return ret;
 
-	ret = armv7_update_dt(blob);
-#endif
+	ret = cpu_update_dt(blob);
+
 	return ret;
 }

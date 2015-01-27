@@ -88,7 +88,7 @@ static int fdt_psci(void *fdt)
 	return 0;
 }
 
-int armv7_update_dt(void *fdt)
+static int armv7_update_dt(void *fdt)
 {
 	if (!armv7_boot_nonsec())
 		return 0;
@@ -99,4 +99,9 @@ int armv7_update_dt(void *fdt)
 #endif
 
 	return fdt_psci(fdt);
+}
+
+int cpu_update_dt(void *fdt)
+{
+	return armv7_update_dt(fdt);
 }

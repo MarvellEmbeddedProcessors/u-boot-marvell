@@ -540,6 +540,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "cpusnum                    - DB-381-BP only: number of CPU cores\n"
 "sscg                       - SSCG modes\n"
 "bootsrc                    - boot source\n"
+"devid			   - DB, DB-GP:      Device ID flavor\n"
 
 "\tSW SatR fields\n"
 "\t--------------\n"
@@ -554,7 +555,6 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 
 "\n\t Board Specific SW fields\n"
 "\t------------------------\n"
-"devid			- DB, DB-GP:	Device ID flavor\n"
 "gpserdes1		- DB-GP:	SerDes lane #1\n"
 "gpserdes2		- DB-GP:	SerDes lane #2\n"
 "gpserdes5		- DB-GP:	SerDes lane #5\n"

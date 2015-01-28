@@ -5,9 +5,12 @@
 	model = "Marvell Armada 385 Development Board";
 	compatible = "marvell,a385-db", "marvell,armada385", "marvell,armada38x";
 
+	#address-cells = <2>;
+	#size-cells = <1>;
+
 	memory {
 		device_type = "memory";
-		reg = <0x00000000 0x10000000>; /* 256 MB */
+		reg = <0 0x00000000 0x10000000>; /* 256 MB */
 	};
 
 	cpus {
@@ -27,23 +30,27 @@
 
 	soc {
 		compatible = "marvell,armada380-mbus", "simple-bus";
-		#address-cells = <2>;
-		#size-cells = <1>;
+		#address-cells = <1>;
+		#size-cells = <0>;
 
 		internal-regs {
 			compatible = "marvell,internal-regs";
 			#address-cells = <1>;
 			#size-cells = <1>;
-			ranges = <0xf1000000 0x100000>;
+			reg = <0xf1000000 0x4>;
+
+			tclk: tclk {
+				compatible = "marvell,tclk";
+				reg = <0x18600 0x4>;
+			};
 
 			spi0: spi@10600 {
 				compatible = "marvell,orion-spi";
 				reg = <0x10600 0x50>;
 				#address-cells = <1>;
 				#size-cells = <0>;
-				cell-index = <0>;
-				interrupts = <0 1 0x4>;
-				num-cs = <4>;
+				spi-max-frequency = <20971520>;
+				clock = <&tclk>;
 				status = "okay";
 			};
 
@@ -52,9 +59,6 @@
 				reg = <0x10680 0x50>;
 				#address-cells = <1>;
 				#size-cells = <0>;
-				cell-index = <1>;
-				interrupts = <0 63 0x4>;
-				num-cs = <4>;
 				status = "disabled";
 			};
 		};

@@ -21,18 +21,21 @@
 #include <malloc.h>
 #include <spi.h>
 #include <asm/io.h>
-#include <asm/arch/regs-base.h>
+#include <fdtdec.h>
+#include <asm/arch-mvebu/fdt.h>
+#include <asm/arch-mvebu/clock.h>
 
 /* Constants */
+#define CONFIG_MAX_SPI_NUM		8
+#define CONFIG_MIN_SPI_CLK		500000
 #define SPI_WAIT_RDY_MAX_LOOP		100000
-#define SPI_SERIAL_BAUDRATE		(20 << 20)
 
 /* Marvell Flash Device Controller Registers */
-#define SPI_IF_CTRL_REG(x)		(MVEBU_SPI_REGS_BASE(x) + 0x00)
-#define SPI_IF_CONFIG_REG(x)		(MVEBU_SPI_REGS_BASE(x) + 0x04)
-#define SPI_DATA_OUT_REG(x)		(MVEBU_SPI_REGS_BASE(x) + 0x08)
-#define SPI_DATA_IN_REG(x)		(MVEBU_SPI_REGS_BASE(x) + 0x0c)
-#define SPI_INT_CAUSE_REG(x)		(MVEBU_SPI_REGS_BASE(x) + 0x10)
+#define SPI_IF_CTRL_REG			(0x00)
+#define SPI_IF_CONFIG_REG		(0x04)
+#define SPI_DATA_OUT_REG		(0x08)
+#define SPI_DATA_IN_REG			(0x0c)
+#define SPI_INT_CAUSE_REG		(0x10)
 
 /* Serial Memory Interface Control Register Masks */
 #define SPI_CS_ENABLE_OFFSET		0		/* bit 0 */
@@ -59,6 +62,17 @@
 #define SPI_SPPR_HI_OFFSET		6
 #define SPI_SPPR_HI_MASK		(0x3 << SPI_SPPR_HI_OFFSET)
 
+DECLARE_GLOBAL_DATA_PTR;
+
+
+struct mvebu_spi_bus {
+	void *base_reg;
+	int bus_num;
+	u32 max_freq;
+};
+
+static struct mvebu_spi_bus spi_bus;
+
 void mv_spi_cs_set(u8 spi_id, u8 cs_id)
 {
 	u32	ctrl_reg;
@@ -67,10 +81,10 @@ void mv_spi_cs_set(u8 spi_id, u8 cs_id)
 	if (last_cs_id == cs_id)
 		return;
 
-	ctrl_reg = readl(SPI_IF_CTRL_REG(spi_id));
+	ctrl_reg = readl(spi_bus.base_reg + SPI_IF_CTRL_REG);
 	ctrl_reg &= ~SPI_CS_NUM_MASK;
 	ctrl_reg |= (cs_id << SPI_CS_NUM_OFFSET);
-	writel(ctrl_reg, SPI_IF_CTRL_REG(spi_id));
+	writel(ctrl_reg, spi_bus.base_reg + SPI_IF_CTRL_REG);
 
 	last_cs_id = cs_id;
 
@@ -79,7 +93,7 @@ void mv_spi_cs_set(u8 spi_id, u8 cs_id)
 
 /* the SPR together with the SPPR define the SPI clk frequency as
 ** follows: SPI actual frequency = core_clk / (SPR *(2^SPPR)); */
-u32 mv_spi_baud_rate_set(u8 spi_id, u32 cpu_clk)
+u32 mv_spi_baud_rate_set(u8 spi_id, u32 cpu_clk, u32 spi_max_freq)
 {
 	u32 spr, sppr, divider;
 	u32 best_spr = 0, best_sppr = 0, exact_match = 0;
@@ -91,11 +105,11 @@ u32 mv_spi_baud_rate_set(u8 spi_id, u32 cpu_clk)
 		for (sppr = 0; sppr <= 7; sppr++) {
 			divider = spr * (1 << sppr);
 			/* check for higher - irrelevent */
-			if ((cpu_clk / divider) > SPI_SERIAL_BAUDRATE)
+			if ((cpu_clk / divider) > spi_max_freq)
 				continue;
 
 			/* check for exact fit */
-			if ((cpu_clk / divider) == SPI_SERIAL_BAUDRATE) {
+			if ((cpu_clk / divider) == spi_max_freq) {
 				best_spr = spr;
 				best_sppr = sppr;
 				exact_match = 1;
@@ -103,8 +117,8 @@ u32 mv_spi_baud_rate_set(u8 spi_id, u32 cpu_clk)
 			}
 
 			/* check if this is better than the previous one */
-			if ((SPI_SERIAL_BAUDRATE - (cpu_clk / divider)) < min_baud_offset) {
-				min_baud_offset = (SPI_SERIAL_BAUDRATE - (cpu_clk / divider));
+			if ((spi_max_freq - (cpu_clk / divider)) < min_baud_offset) {
+				min_baud_offset = (spi_max_freq - (cpu_clk / divider));
 				best_spr = spr;
 				best_sppr = sppr;
 			}
@@ -120,12 +134,12 @@ u32 mv_spi_baud_rate_set(u8 spi_id, u32 cpu_clk)
 	}
 
 	/* configure the Prescale */
-	cfg_reg = readl(SPI_IF_CONFIG_REG(spi_id));
+	cfg_reg = readl(spi_bus.base_reg + SPI_IF_CONFIG_REG);
 	cfg_reg &= ~(SPI_SPR_MASK | SPI_SPPR_0_MASK | SPI_SPPR_HI_MASK);
 	cfg_reg |= ((best_spr << SPI_SPR_OFFSET) |
 			((best_sppr & 0x1) << SPI_SPPR_0_OFFSET) |
 			((best_sppr >> 1) << SPI_SPPR_HI_OFFSET));
-	writel(cfg_reg, SPI_IF_CONFIG_REG(spi_id));
+	writel(cfg_reg, spi_bus.base_reg + SPI_IF_CONFIG_REG);
 
 	return 0;
 }
@@ -134,37 +148,60 @@ void spi_init(void)
 {
 }
 
-struct spi_slave *mvebu_spi_setup_slave(unsigned int bus, unsigned int cs,
-				unsigned int max_hz, unsigned int mode, u32 cpu_clk)
+struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
+				unsigned int max_hz, unsigned int mode)
 {
 	struct spi_slave *slave;
-	u32 ctrl_reg;
+	u32 ctrl_reg, clock = -1;
+	int node_list[CONFIG_MAX_SPI_NUM], node;
+	u32 i, count;
 
-	if (!spi_cs_is_valid(bus, cs))
+	count = fdtdec_find_aliases_for_id(gd->fdt_blob, "spi",
+			COMPAT_MVEBU_SPI, node_list, CONFIG_MAX_SPI_NUM);
+
+	spi_bus.bus_num = -1;
+	for (i = 0; i < count ; i++) {
+		node = node_list[i];
+
+		if (node <= 0)
+			continue;
+		if (bus == i) {
+			spi_bus.bus_num = i;
+			spi_bus.base_reg = fdt_get_regs_offs(gd->fdt_blob, node, "reg");
+			spi_bus.max_freq = fdtdec_get_int(gd->fdt_blob, node, "spi-max-frequency", CONFIG_MIN_SPI_CLK);
+			clock = soc_clock_get(gd->fdt_blob, node);
+		}
+	}
+
+	/* if no spi bus found, return NULL */
+	if (spi_bus.bus_num == -1)
 		return NULL;
 
-	slave = spi_alloc_slave_base(bus, cs);
+	if (!spi_cs_is_valid(spi_bus.bus_num, cs))
+		return NULL;
+
+	slave = spi_alloc_slave_base(spi_bus.bus_num, cs);
 	if (!slave)
 		return NULL;
 
 	/* Configure the default SPI mode to be 16bit */
-	ctrl_reg = readl(SPI_IF_CONFIG_REG(slave->bus));
+	ctrl_reg = readl(spi_bus.base_reg + SPI_IF_CONFIG_REG);
 	ctrl_reg |= SPI_BYTE_LENGTH_MASK;
-	writel(ctrl_reg, SPI_IF_CONFIG_REG(slave->bus));
+	writel(ctrl_reg, spi_bus.base_reg + SPI_IF_CONFIG_REG);
 
 	/* Verify that the CS is deactivate */
 	spi_cs_deactivate(slave);
 
 	mv_spi_cs_set(slave->bus, 0);
 
-	mv_spi_baud_rate_set(slave->bus, cpu_clk);
+	mv_spi_baud_rate_set(slave->bus, clock, spi_bus.max_freq);
 
 	/* Set the SPI interface parameters */
-	ctrl_reg = readl(SPI_IF_CONFIG_REG(slave->bus));
+	ctrl_reg = readl(spi_bus.base_reg + SPI_IF_CONFIG_REG);
 	ctrl_reg &= ~(SPI_CPOL_MASK | SPI_CPHA_MASK | SPI_TXLSBF_MASK | SPI_RXLSBF_MASK);
 	ctrl_reg |= SPI_CPOL_MASK;
 	ctrl_reg |= SPI_CPHA_MASK;
-	writel(ctrl_reg, SPI_IF_CONFIG_REG(slave->bus));
+	writel(ctrl_reg, spi_bus.base_reg + SPI_IF_CONFIG_REG);
 
 	return slave;
 }
@@ -199,16 +236,16 @@ void spi_cs_activate(struct spi_slave *slave)
 {
 	u32 ctrl_reg;
 	mv_spi_cs_set(slave->bus, slave->cs);
-	ctrl_reg = readl(SPI_IF_CTRL_REG(slave->bus));
+	ctrl_reg = readl(spi_bus.base_reg + SPI_IF_CTRL_REG);
 	ctrl_reg |= SPI_CS_ENABLE_MASK;
-	writel(ctrl_reg, SPI_IF_CTRL_REG(slave->bus));
+	writel(ctrl_reg, spi_bus.base_reg + SPI_IF_CTRL_REG);
 }
 
 void spi_cs_deactivate(struct spi_slave *slave)
 {
-	u32 ctrl_reg = readl(SPI_IF_CTRL_REG(slave->bus));
+	u32 ctrl_reg = readl(spi_bus.base_reg + SPI_IF_CTRL_REG);
 	ctrl_reg &= ~SPI_CS_ENABLE_MASK;
-	writel(ctrl_reg, SPI_IF_CTRL_REG(slave->bus));
+	writel(ctrl_reg, spi_bus.base_reg + SPI_IF_CTRL_REG);
 }
 
 int spi_xfer(struct spi_slave *slave, unsigned int bitlen, const void *dout,
@@ -224,9 +261,9 @@ int spi_xfer(struct spi_slave *slave, unsigned int bitlen, const void *dout,
 		spi_cs_activate(slave);
 
 	/* Verify that the SPI mode is in 8bit mode */
-	ctrl_reg = readl(SPI_IF_CONFIG_REG(0));
+	ctrl_reg = readl(spi_bus.base_reg + SPI_IF_CONFIG_REG);
 	ctrl_reg &= ~SPI_BYTE_LENGTH_MASK;
-	writel(ctrl_reg, SPI_IF_CONFIG_REG(0));
+	writel(ctrl_reg, spi_bus.base_reg + SPI_IF_CONFIG_REG);
 
 	/* TX/RX in 8bit chunks */
 	while (bitlen > 0) {
@@ -235,15 +272,15 @@ int spi_xfer(struct spi_slave *slave, unsigned int bitlen, const void *dout,
 
 		/* Transmitted and wait for the transfer to be completed */
 		/* First clear the bit in the interrupt cause register */
-		writel(0x0, SPI_INT_CAUSE_REG(slave->bus));
+		writel(0x0, spi_bus.base_reg + SPI_INT_CAUSE_REG);
 		/* Transmit data */
-		writel(data_out, SPI_DATA_OUT_REG(slave->bus));
+		writel(data_out, spi_bus.base_reg + SPI_DATA_OUT_REG);
 
 		/* wait with timeout for memory ready */
 		for (i = 0; i < SPI_WAIT_RDY_MAX_LOOP; i++)
-			if (readl(SPI_INT_CAUSE_REG(slave->bus))) {
+			if (readl(spi_bus.base_reg + SPI_INT_CAUSE_REG)) {
 				/* check that the RX data is needed */
-				*pdin = readl(SPI_DATA_IN_REG(slave->bus));
+				*pdin = readl(spi_bus.base_reg + SPI_DATA_IN_REG);
 				/* increment the pointers */
 				if (pdin)
 					pdin++;

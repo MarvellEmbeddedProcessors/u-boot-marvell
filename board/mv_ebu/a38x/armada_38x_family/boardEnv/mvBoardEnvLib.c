@@ -1842,10 +1842,12 @@ MV_VOID mvBoardNetComplexConfigSet(MV_U32 ethConfig)
 *	satrClass - The SATR field to return the information for.
 *
 * OUTPUT:
-*       None.
+*	MV_BOARD_SATR_INFO struct with mask, offset and register number.
 *
 * RETURN:
-*	MV_BOARD_SATR_INFO struct with mask, offset and register number.
+*	MV_OK - If the field is active on current board
+*	MV_ERROR - If the field is not valid
+*	MV_BAD_VALUE - If the field is valid but not active on current board
 *
 *******************************************************************************/
 MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *satrInfo)
@@ -1872,7 +1874,7 @@ MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *s
 			if (satrInfoTable[i].isActiveForBoard[boardIdIndex])
 				return MV_OK;
 			else
-				return MV_ERROR;
+				return MV_BAD_VALUE;
 		}
 	}
 	DB(mvOsPrintf("%s: Error: requested MV_SATR_TYPE_ID was not found (%d)\n", __func__,satrClass));

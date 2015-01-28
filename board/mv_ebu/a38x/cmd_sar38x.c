@@ -27,7 +27,8 @@
 enum {
 	CMD_DUMP = MV_SATR_MAX_OPTION+1,
 	CMD_DEFAULT,
-	CMD_UNKNOWN
+	CMD_UNKNOWN,
+	CMD_NOT_ACTIVE	// Command that requests valid but not active field on current board 
 };
 
 MV_FREQ_MODE cpuDdrClkTbl[] = MV_SAR_FREQ_MODES;
@@ -128,14 +129,18 @@ int sar_cmd_get(const char *cmd)
 {
 	int i;
 	MV_BOARD_SATR_INFO satrInfo;
+	MV_STATUS readResult;
 
 	for (i = MV_SATR_CPU_DDR_L2_FREQ; i < MV_SATR_MAX_OPTION; i++) {
 		if (i == MV_SATR_BOOT2_DEVICE || i == MV_SATR_DEVICE_ID2)
 			continue;
-		if (mvBoardSatrInfoConfig(i, &satrInfo) != MV_OK)
-			continue;
-		if (strcmp(cmd, satrInfo.name) == 0)
-			return satrInfo.satrId;
+		readResult = mvBoardSatrInfoConfig(i, &satrInfo);
+		if (readResult != MV_ERROR && strcmp(cmd,satrInfo.name) == 0) {
+			if (readResult == MV_BAD_VALUE)
+				return CMD_NOT_ACTIVE;
+			else
+				return satrInfo.satrId;
+		}
 	}
 	if (strcmp(cmd, "dump") == 0)
 		return CMD_DUMP;
@@ -487,11 +492,12 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	if (mode == CMD_UNKNOWN)
 		goto usage;
 
-	if ((mode != CMD_DUMP)  && (mode != CMD_DEFAULT)) {
-		if (mvBoardSatrInfoConfig(mode, &satrInfo) != MV_OK)
-			goto usage;
+	if (mode == CMD_NOT_ACTIVE){
+		printf("\nRequested SatR field is not active on current board (type 'SatR' for valid options) \n");
+		return 1;
 	}
 
+	mvBoardSatrInfoConfig(mode, &satrInfo);
 	if (strcmp(cmd, "list") == 0)
 		return do_sar_list(&satrInfo);
 	else if ((strcmp(cmd, "write") == 0) && (mode == CMD_DEFAULT)) {

@@ -21,6 +21,7 @@ obj-y += unit-info.o
 obj-y += soc-init.o
 obj-y += misc.o
 obj-y += mpp.o
+obj-y += fdt.o
 obj-$(CONFIG_AURORA_TIMER) += timer_aurora.o
 obj-$(CONFIG_GENERIC_TIMER) += generic_timer.o
 obj-$(CONFIG_MVEBU_CA9) += platform.o

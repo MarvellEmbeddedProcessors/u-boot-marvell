@@ -51,6 +51,7 @@ struct arch_global_data {
 #ifdef CONFIG_MVEBU
 	void *soc_family;
 	void *board_family;
+	void *reg_base;
 #endif
 
 };

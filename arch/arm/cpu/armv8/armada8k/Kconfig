@@ -20,6 +20,10 @@ config SYS_CONFIG_NAME
 	string
 	default "armada8k"
 
+config ARMV8_PSCI
+	bool
+	default y
+
 config PALLADIUM
 	bool "Support palladium emulation"
 	default y

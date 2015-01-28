@@ -185,7 +185,7 @@ ENTRY(enable_wa)
 
 	/* Activate Affinity between cpu0 and cpu1 */
 	ldr     x0, =0xf0004264
-	ldr     w1, =0x3
+	ldr     w1, =0x1
 	str     w1, [x0]
 
 	/* Activate Affinity in CA-57 configuration

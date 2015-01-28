@@ -32,7 +32,7 @@ SECTIONS
 #endif
 
 	.__secure_start : {
-		. = ALIGN(0x1000);
+		. = ALIGN(0x10000);
 		*(.__secure_start)
 	}
 

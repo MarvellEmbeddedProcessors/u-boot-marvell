@@ -19,6 +19,12 @@
 
 .pushsection ._secure.text, "ax"
 
+/* WA reset adderrs - CPU reset vector address - must be alined to 0x10000 */
+ENTRY(armv8_psci_reset_addr)
+	b _armada8k_cpu_entry
+ENDPROC(armv8_psci_reset_addr)
+
+
 ENTRY(psci_0_2_cpu_suspend_64)
 ENTRY(psci_0_2_cpu_on_64)
 ENTRY(psci_0_2_affinity_info_64)
@@ -59,7 +65,7 @@ _psci_0_2_table:
 	stp	x23, x24, [sp, #-16]!
 	stp	x21, x22, [sp, #-16]!
 	stp	x19, x20, [sp, #-16]!
-        str     x18, [sp, #-8]!
+        str     x18, [sp, #-16]!
         mrs     x16, sp_el0
         mrs     x15, elr_el3
 	stp	x15, x16, [sp, #-16]!
@@ -79,7 +85,7 @@ _psci_0_2_table:
         ldp     x15, x16, [sp], #16
         msr     elr_el3, x15
         msr     sp_el0, x16
-        ldr     x18, [sp], #8
+        ldr     x18, [sp], #16
 	ldp	x19, x20, [sp], #16
 	ldp	x21, x22, [sp], #16
 	ldp	x23, x24, [sp], #16
@@ -117,15 +123,15 @@ ENTRY(unhandled_exception)
 ENDPROC(unhandled_exception)
 
 __handle_sync:
-	str 	x4, [sp, #-8]!
+	str 	x4, [sp, #-16]!
 	mrs	x4, esr_el3
 	ubfx	x4, x4, #26, #6
 	cmp	x4, #ESR_EC_SMC64
 	b.eq	smc_found
-	ldr	x4, [sp], #8
+	ldr	x4, [sp], #16
 	b	unhandled_exception
 smc_found:
-	ldr     x4, [sp], #8
+	ldr     x4, [sp], #16
 	b	_smc_psci
 
 /*

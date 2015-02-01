@@ -135,6 +135,9 @@ GT_STATUS ddr3TipA38xGetInitFreq
     GT_STATUS       devNum,
     MV_HWS_DDR_FREQ *freq
 );
+
+GT_U8    ddr3TipClockMode( GT_U32 frequency );
+
 #ifdef CONFIG_DDR3
 GT_STATUS ddr3TipA38xGetMediumFreq
 (
@@ -513,6 +516,7 @@ static GT_STATUS ddr3TipInitA38xSilicon
 	configFunc.tipSetFreqDividerFunc = ddr3TipA38xSetDivider;
 	configFunc.tipGetDeviceInfoFunc = ddr3TipA38xGetDeviceInfo;
 	configFunc.tipGetTemperature = ddr3CtrlGetJuncTemp;
+	configFunc.tipGetClockRatio = ddr3TipClockMode;
 
     mvHwsDdr3TipInitConfigFunc(devNum, &configFunc);
 
@@ -807,17 +811,24 @@ static GT_STATUS ddr3TipA38xSetDivider
 	/* clear cpupll_clkdiv_reset_mask */
 	CHECK_STATUS(ddr3TipA38xIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0xE4264, 0, 0xFF));
 
-	/* Dunit training clock + 1:1 mode */
-	if((frequency == DDR_FREQ_LOW_FREQ) || (freqVal[frequency] <= 400)) {
-		CHECK_STATUS(ddr3TipA38xIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0x18488, (1 << 16), (1 << 16)));
-		CHECK_STATUS(ddr3TipA38xIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0x1524, (0 << 15), (1 << 15)));
-	}
-	else {
-		CHECK_STATUS(ddr3TipA38xIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0x18488, 0, (1 << 16)));
-		CHECK_STATUS(ddr3TipA38xIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0x1524, (1 << 15), (1 << 15)));
-	}
+	/* Dunit training clock + 1:1/2:1 mode */
+	CHECK_STATUS(ddr3TipA38xIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0x18488, ((ddr3TipClockMode(frequency) & 0x1) << 16), (1 << 16)));
+	CHECK_STATUS(ddr3TipA38xIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0x1524, ((ddr3TipClockMode(frequency)-1) << 15), (1 << 15)));
 
 	return GT_OK;
+}
+
+/******************************************************************************
+* return 1 of core/DUNIT clock ration is 1 for given freq, 0 if clock ratios is 2:1
+*/
+GT_U8    ddr3TipClockMode( GT_U32 frequency )
+{
+	if((frequency == DDR_FREQ_LOW_FREQ) || (freqVal[frequency] <= 400)){
+		return 1;
+	}
+	else{
+		return 2;
+	}
 }
 
 

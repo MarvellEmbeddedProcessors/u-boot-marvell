@@ -559,7 +559,6 @@ GT_STATUS    mvHwsDdr3TipInitController
             DEBUG_TRAINING_IP(DEBUG_LEVEL_TRACE, ("memySize %d speedBinInd %d freq %d tREFI %d\n", memorySize,speedBinIndex, freq, tREFI));
             /* HCLK & CK CLK in 2:1 [ps]*/
             /* tCKCLK is external clock */
-            tCKCLK = (MEGA/freqVal[freq]);
             /* tHCLK is internal clock */
             tHCLK = 2*tCKCLK;
             refreshIntervalCnt = tREFI/tHCLK; /* no units */
@@ -1479,8 +1478,9 @@ GT_STATUS    ddr3TipFreqSet
 	/*moti TBD - need to insert loop on interface*/
     tREFI = (topologyMap->interfaceParams[interfaceId].interfaceTemp == MV_HWS_TEMP_HIGH) ? TREFI_HIGH:TREFI_LOW;
     tREFI *= 1000; /*psec */
+
     /* HCLK in [ps] */
-    tHCLK = MEGA/(freqVal[frequency]/2);
+    tHCLK = MEGA/(freqVal[frequency]/configFuncInfo[devNum].tipGetClockRatio(frequency));
     refreshIntervalCnt = tREFI/tHCLK; /* no units */
 
     dataValue = 0x4000  | refreshIntervalCnt;
@@ -1593,7 +1593,8 @@ GT_STATUS    ddr3TipFreqSet
 )
 {
     GT_U32 clValue = 0, cwlValue = 0, memMask = 0, dataValue = 0, busCnt = 0, tHCLK = 0, tWR = 0, refreshIntervalCnt = 0, cntId;
-    GT_U32 tREFI = 0, endIf, startIf;
+    GT_U32 endIf, startIf;
+    GT_U32 tREFI = 0;
     GT_U32 busIndex = 0;
 	GT_BOOL isDllOff = GT_FALSE;
     MV_HWS_SPEED_BIN      speedBinIndex = 0;
@@ -1712,10 +1713,11 @@ GT_STATUS    ddr3TipFreqSet
         /* PLL configuration End */
 
 		/* adjust tREFI to new frequency*/
-		tREFI = (topologyMap->interfaceParams[interfaceId].interfaceTemp == MV_HWS_TEMP_HIGH) ? TREFI_LOW:TREFI_HIGH;
+		tREFI = (topologyMap->interfaceParams[interfaceId].interfaceTemp == MV_HWS_TEMP_HIGH) ? TREFI_HIGH:TREFI_LOW;
         tREFI *= 1000; /*psec */
+
         /* HCLK in [ps] */
-        tHCLK = MEGA/(freqVal[frequency]/2);
+        tHCLK = MEGA/(freqVal[frequency]/configFuncInfo[devNum].tipGetClockRatio(frequency));
         refreshIntervalCnt = tREFI/tHCLK; /* no units */
         dataValue = 0x4000  | refreshIntervalCnt;
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, SDRAM_CONFIGURATION_REG, dataValue, 0x7FFF));

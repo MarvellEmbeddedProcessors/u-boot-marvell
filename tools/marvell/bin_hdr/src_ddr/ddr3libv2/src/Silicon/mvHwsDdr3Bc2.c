@@ -341,6 +341,8 @@ MV_HWS_TOPOLOGY_MAP bc2TopologyMap[] =
 };
 #endif
 
+GT_U8    ddr3TipClockMode( GT_U32 frequency );
+
 /************************** Server Access ******************************/
 
 GT_STATUS ddr3TipBc2ServerRegWrite
@@ -771,6 +773,7 @@ static GT_STATUS ddr3TipInitBc2Silicon
     configFunc.tipSetFreqDividerFunc = ddr3TipBc2SetDivider;
     configFunc.tipGetDeviceInfoFunc = ddr3TipBc2GetDeviceInfo;
 	configFunc.tipGetTemperature = NULL;
+	configFunc.tipGetClockRatio = ddr3TipClockMode;
 
     mvHwsDdr3TipInitConfigFunc(devNum, &configFunc);
 
@@ -1104,6 +1107,15 @@ GT_STATUS ddr3TipBc2SetDivider
 		}
 	}
 }
+
+/******************************************************************************
+* return 1 of core/DUNIT clock ration is 1 for given freq, 0 if clock ratios is 2:1
+*/
+GT_U8    ddr3TipClockMode( GT_U32 frequency )
+{
+		return 2;
+}
+
 
 /******************************************************************************
 * Name:     ddr3TipTmSetDivider.

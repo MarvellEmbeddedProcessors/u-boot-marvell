@@ -295,6 +295,11 @@ typedef GT_U32 (*MV_HWS_TRAINING_IP_GET_TEMP)
 	GT_U8    devNum
 );
 
+typedef GT_U8 (*MV_HWS_TRAINING_IP_GET_RATIO)
+(
+	GT_U32    freq
+);
+
 
 /******************************** Functions Strut ***************************************/
 typedef struct
@@ -307,6 +312,7 @@ typedef struct
     MV_HWS_SET_FREQ_DIVIDER_FUNC_PTR        tipSetFreqDividerFunc;
     MV_HWS_GET_CS_CONFIG_FUNC_PTR           tipGetCsConfigInfo;
 	MV_HWS_TRAINING_IP_GET_TEMP				tipGetTemperature;
+	MV_HWS_TRAINING_IP_GET_RATIO			tipGetClockRatio;
 } MV_HWS_TIP_CONFIG_FUNC_DB;
 
 

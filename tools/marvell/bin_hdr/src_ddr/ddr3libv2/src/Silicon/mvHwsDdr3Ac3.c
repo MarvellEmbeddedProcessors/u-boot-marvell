@@ -199,6 +199,9 @@ GT_STATUS ddr3TipAC3GetDeviceInfo
 	GT_U8      devNum,
 	MV_DDR3_DEVICE_INFO * infoPtr
 );
+
+GT_U8    ddr3TipClockMode( GT_U32 frequency );
+
 /************************** Server Access ******************************/
 
 GT_STATUS ddr3TipAc3ServerRegWrite
@@ -411,6 +414,7 @@ static GT_STATUS ddr3TipInitAc3Silicon
 	configFunc.tipSetFreqDividerFunc = ddr3TipAc3SetDivider;
 	configFunc.tipGetDeviceInfoFunc = ddr3TipAC3GetDeviceInfo;
 	configFunc.tipGetTemperature = NULL;
+	configFunc.tipGetClockRatio = ddr3TipClockMode;
 
     mvHwsDdr3TipInitConfigFunc(devNum, &configFunc);
 
@@ -571,23 +575,14 @@ static GT_STATUS ddr3TipAc3SetDivider
 	GT_U32 select = 0;
 	MV_HWS_TOPOLOGY_MAP* topologyMap = ddr3TipGetTopologyMap(devNum);
 
-	/* Dunit training clock + 1:1 mode */
-	if(frequency == DDR_FREQ_LOW_FREQ) {
-		divRatio = (1 << 30);
-		CHECK_STATUS(ddr3TipAc3ServerRegRead(devNum,  0xF8294,  &data, MASK_ALL_BITS ));
-		CHECK_STATUS(ddr3TipAc3ServerRegWrite(devNum, 0xF8294,  R_MOD_W(divRatio, data, (0x3 << 30))));
+	/* Dunit training clock + 1:1/2:1 mode */
+	divRatio = (ddr3TipClockMode(frequency) << 30);
+	CHECK_STATUS(ddr3TipAc3ServerRegRead(devNum,  0xF8294,  &data, MASK_ALL_BITS ));
+	CHECK_STATUS(ddr3TipAc3ServerRegWrite(devNum, 0xF8294,  R_MOD_W(divRatio, data, (0x3 << 30))));
 
-		CHECK_STATUS(ddr3TipAc3ServerRegRead(devNum,  0x1524,  &data, MASK_ALL_BITS ));
-		CHECK_STATUS(ddr3TipAc3ServerRegWrite(devNum, 0x1524,  R_MOD_W((0 << 15), data, (0 << 15) )));
-	}
-	else {
-		divRatio = (2 << 30);
-		CHECK_STATUS(ddr3TipAc3ServerRegRead(devNum,  0xF8294,  &data, MASK_ALL_BITS ));
-		CHECK_STATUS(ddr3TipAc3ServerRegWrite(devNum, 0xF8294,  R_MOD_W(divRatio, data, (0x3 << 30))));
+	CHECK_STATUS(ddr3TipAc3ServerRegRead(devNum,  0x1524,  &data, MASK_ALL_BITS ));
+	CHECK_STATUS(ddr3TipAc3ServerRegWrite(devNum, 0x1524,  R_MOD_W(((ddr3TipClockMode(frequency)-1) << 15), data, (0 << 15) )));
 
-		CHECK_STATUS(ddr3TipAc3ServerRegRead(devNum,  0x1524,  &data, MASK_ALL_BITS ));
-		CHECK_STATUS(ddr3TipAc3ServerRegWrite(devNum, 0x1524,  R_MOD_W((1 << 15), data, (0 << 15) )));
-	}
 	select = (frequency == topologyMap->interfaceParams[firstActiveIf].memoryFreq)?(0 << 29) : (1 << 29);//TF is the function mode so the selector have to be 0.
 	CHECK_STATUS(ddr3TipAc3ServerRegRead(devNum,  0xF8294,  &data, MASK_ALL_BITS ));
 	CHECK_STATUS(ddr3TipAc3ServerRegWrite(devNum, 0xF8294,  R_MOD_W(select, data, (0x1 << 29))));
@@ -637,6 +632,19 @@ static GT_STATUS ddr3TipAc3SetDivider
 	CHECK_STATUS(ddr3TipAc3ServerRegWrite(devNum, 0xF8260,  R_MOD_W(0x0, data, 0x2 )));
 
 	return GT_OK;
+}
+
+/******************************************************************************
+* return 1 of core/DUNIT clock ration is 1 for given freq, 0 if clock ratios is 2:1
+*/
+GT_U8    ddr3TipClockMode( GT_U32 frequency )
+{
+	if(frequency == DDR_FREQ_LOW_FREQ){
+		return 1;
+	}
+	else{
+		return 2;
+	}
 }
 
 /******************************************************************************

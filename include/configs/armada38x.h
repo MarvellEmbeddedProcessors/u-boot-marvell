@@ -44,7 +44,7 @@
 
 /* Platform */
 #define CONFIG_MVEBU_CA9
-#define CONFIG_AURORA_TIMER
+#define CONFIG_MVEBU_TIMER
 
 /*
 #define MV_INCLUDE_SDIO

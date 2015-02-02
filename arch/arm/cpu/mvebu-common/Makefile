@@ -23,7 +23,7 @@ obj-y += misc.o
 obj-y += mpp.o
 obj-y += fdt.o
 obj-y += clock.o
-obj-$(CONFIG_AURORA_TIMER) += timer_aurora.o
+obj-$(CONFIG_MVEBU_TIMER) += timer_mvebu.o
 obj-$(CONFIG_GENERIC_TIMER) += generic_timer.o
 obj-$(CONFIG_MVEBU_CA9) += platform.o
 ifeq "$(CONFIG_MVEBU_CA9)"  "y"

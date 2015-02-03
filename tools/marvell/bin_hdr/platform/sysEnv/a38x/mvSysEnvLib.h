@@ -91,6 +91,9 @@
 
 #define QSGMII_CONTROL_REG1                     0x18494
 
+#define DBG_PORT_CONFIG_REG			0x186c0
+#define DBG_PORT_CONFIG2_REG			0x186c4
+
 #define DEV_ID_REG_DEVICE_ID_OFFS               16
 #define DEV_ID_REG_DEVICE_ID_MASK               0xFFFF0000
 
@@ -110,6 +113,7 @@
 #define MISC_REG                                0xa013C
 #define GLUE_REG                                0xa0140
 #define GENERATION_DIVIDER_FORCE_REG            0xa0144
+#define PLLINTP_REG1                            0xa0150
 #define PCIE_REG0                               0xa0120
 #define LANE_ALIGN_REG0                         0xa0124
 #define SQUELCH_FFE_SETTING_REG                 0xa0018
@@ -133,10 +137,12 @@
 #define RX_REG3                                 0xa0188
 #define PCIE_REG1                               0xa0288
 #define PCIE_REG3                               0xa0290
+#define LANE_CFG0_REG                           0xa0600
 #define LANE_CFG1_REG                           0xa0604
 #define LANE_CFG4_REG                           0xa0620
 #define LANE_CFG5_REG                           0xa0624
 #define GLOBAL_CLK_CTRL                         0xa0704
+#define GLOBAL_TEST_CTRL                        0xa0708
 #define GLOBAL_MISC_CTRL                        0xa0718
 #define GLOBAL_CLK_SRC_HI                       0xa0710
 

@@ -21,7 +21,6 @@
 #define _MVEBU_COMMON_H_
 
 #include <asm/arch/regs-base.h>
-#include <config_cmd_default.h>
 
 /* Temp */
 #define CONFIG_ADEC
@@ -208,7 +207,6 @@
 /* I2C */
 #ifdef CONFIG_MVEBU_I2C
 	#define CONFIG_SYS_I2C
-	#define CONFIG_CMD_I2C
 	#define CONFIG_I2C_MULTI_BUS
 	#define CONFIG_SYS_I2C_SPEED            100000  /* I2C speed default */
 /*	#define CONFIG_CMD_EEPROM
@@ -253,7 +251,6 @@
 /* PCI-E */
 #ifdef CONFIG_MVEBU_PCI
 	#define CONFIG_PCI
-	#define CONFIG_CMD_PCI
 	#define CONFIG_PCI_PNP  /* Enable plug-and-play */
 	/*#define CONFIG_MVEBU_PCI_EP*/ /* Set PCI host as end point */
 
@@ -276,10 +273,6 @@
 
 /* General Networking */
 #ifdef CONFIG_MVEBU_NET
-	/* Commands */
-	#define CONFIG_CMD_NET
-	#define CONFIG_CMD_DHCP
-	#define CONFIG_CMD_PING
 
 	/* Environment */
 	#define CONFIG_IPADDR           10.4.50.154
@@ -349,7 +342,6 @@
 	#define CONFIG_NAND_PXA3XX
 	#define CONFIG_SYS_MAX_NAND_DEVICE 1
 	#define CONFIG_SYS_NAND_MAX_CHIPS 1
-	#define CONFIG_CMD_NAND
 	#define CONFIG_SYS_NAND_SELF_INIT
 	#define CONFIG_NAND_ECC_STRENGTH 4
 	#define CONFIG_NAND_ECC_STEP_SIZE 512
@@ -357,8 +349,6 @@
 
 /* SPI Flash */
 #ifdef CONFIG_MVEBU_SPI
-	#define CONFIG_CMD_SPI
-	#define CONFIG_CMD_SF
 	#define CONFIG_SPI_FLASH
 	#define CONFIG_SPI_FLASH_WINBOND
 	#define CONFIG_SPI_FLASH_STMICRO

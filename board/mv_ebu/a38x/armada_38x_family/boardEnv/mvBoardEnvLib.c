@@ -1388,8 +1388,9 @@ MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum)
 
 
 	if ((ethPortNum <= board->numBoardMacInfo) &&
-		(mvCtrlPortIsSerdesSgmii(ethPortNum) ||
-		(mvCtrlPortIsRgmii(ethPortNum) && mvBoardPhyAddrGet(ethPortNum) != -1)))
+		((mvCtrlPortIsSerdesSgmii(ethPortNum) ||
+		(mvCtrlPortIsRgmii(ethPortNum) && mvBoardPhyAddrGet(ethPortNum) != -1)) ||
+		(mvCtrlPortIsSerdesRxaui(ethPortNum) && mvBoardPhyAddrGet(ethPortNum) != -1)))
 		return MV_TRUE;
 
 	/* print error in case invalid MAC entry */

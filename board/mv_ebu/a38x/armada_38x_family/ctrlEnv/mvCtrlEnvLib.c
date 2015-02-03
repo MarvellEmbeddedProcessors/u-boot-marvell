@@ -180,16 +180,13 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 #endif
 
 /* ethComPhy: bit description for RGMII/SGMII/RXAUI/XAUI per MAC:
- * bits 0,1,2 : RGMII port 0,1,2 indication
- * bits 3,4,5 : SGMII port 0,1,2 indication
- * bits 6     : RXAUI port 0 indication
  * ethComPhy logic:
  *       1. mvCtrlEnvInit:            initialized according to SoC
  *       2. mvCtrlEnvInit:            updated according to NAND existance
  *       3. mvCtrlSerdesConfigDetect: updated according to SerDes status (Q/SGMII & R/XAUI). */
-#define ON_BOARD_RGMII(x)	(1 << x)
-#define SERDES_SGMII(x)		(8 << x)
-#define SERDES_RXAUI(x)		(64 << x)
+#define ON_BOARD_RGMII(x)	(0x1 << x)	/* bits 0,1,2,3 : RGMII port 0,1,2,3 indication */
+#define SERDES_SGMII(x)		(0x10 << x)	/* bits 4,5,6,7 : SGMII port 0,1,2,3 indication */
+#define SERDES_RXAUI(x)		(0x100 << x)	/* bits 8       : RXAUI port 0 indication */
 static MV_U32 ethComPhy;
 
 /* Only the first unit, only the second unit or both can be active on the specific board */
@@ -237,6 +234,30 @@ MV_BOOL mvCtrlPortIsRgmii(MV_U32 ethPort)
 		return MV_TRUE;
 	return MV_FALSE;
 }
+
+/*******************************************************************************
+* mvCtrlPortIsSerdesRxaui
+*
+* DESCRIPTION:
+*       Check if serdes configuration for input port is RXAUI
+*
+* INPUT:
+*	eth port.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE if SERDES configure for input port is RXAUI
+*******************************************************************************/
+MV_BOOL mvCtrlPortIsSerdesRxaui(MV_U32 ethPort)
+{
+	/* There's only one RXAUI, it described in bit 8 in ethComPhy */
+	if (ethComPhy & SERDES_RXAUI(ethPort))
+		return MV_TRUE;
+	return MV_FALSE;
+}
+
 /*******************************************************************************
 * mvCtrlGetCpuNum
 *
@@ -506,7 +527,9 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 	   if xauiIfCount(count of XAUI serdes lanes) == 4 => XAUI is connected to SerDes's */
 	if (xauiIfCount == 2 || xauiIfCount == 4) {
 		mvCtrlSocUnitInfoNumSet(XAUI_UNIT_ID, 1);
-		ethComPhy |= SERDES_RXAUI(1);
+		/* RXAUI is connected only via MAC0, no matter which lanes are used */
+		/* if RXAUI is connected, enable bit 8 in ethComPhy */
+		ethComPhy |= SERDES_RXAUI(0);
 	}
 	else
 		mvCtrlSocUnitInfoNumSet(XAUI_UNIT_ID, 0);

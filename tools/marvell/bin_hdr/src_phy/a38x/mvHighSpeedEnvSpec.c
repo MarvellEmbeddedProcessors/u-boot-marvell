@@ -419,14 +419,24 @@ MV_OP_PARAMS usb3ElectricalConfigSerdesRev1Params[] =
 
 MV_OP_PARAMS usb3ElectricalConfigSerdesRev2Params[] =
 {
-	{ LANE_CFG4_REG,			0x800,		0x80,		{ 0x80      },		0,			0	 	}, /* Spread Spectrum Clock Enable */
-	{ G2_SETTINGS_2_REG,		0x800,		0xFE40,		{ 0x4440    },		0,          0	 	}, /* G2_TX_SSC_AMP[6:0]=4.5kPPM and TX emphasis mode=mV */
-	{ G2_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3D2     },		0,          0	 	}, /* G2_RX SELMUFF, SELMUFI, SELMUPF and SELMUPI */
-	{ RX_REG2,				 	0x800,		0xF0,		{ 0x70      },		0,          0	 	}, /* Dtl Clamping disable and Dtl-clamping-Sel(6000ppm) */
-	{ REF_REG0,		 			0x800,		0x38,		{ 0x20      },		0,          0	 	}, /* vco_cal_vth_sel */
-    { LANE_CFG5_REG,			0x800,		0x4,		{ 0x4       },		0,			0	 	}, /* Spread Spectrum Clock Enable */
-};
+	{ LANE_CFG4_REG,		0x800,		0xC2,		{ 0xC0		},	0,	0 	}, /* Bit[7]=0x1 - Spread Spectrum Clock Enable,Bit[6]-0x1- CFG_DFE_OVERRIDE,Bit[1]-0x0-PIN_DFE_PAT_DIS, */
+	{ LANE_CFG5_REG,		0x800,		0x3,		{ 0x3		},		0,	0 	}, /* Bit[1]=0x1 - CFG_SQ_DET_SEL,Bit[0]=0x1-CFG_RX_INIT_SEL, */
+	{ G2_SETTINGS_2_REG,		0x800,		0xFE40,		{ 0x4440	},		0,      0 	}, /* Bits[15:9]= 0x22 -G2_TX_SSC_AMP[6:0]=4.5kPPM,Bits[6] = 0x1 - TX emphasis mode=mV */
+	{ G2_SETTINGS_3_REG,		0x800,		0xFF,		{ 0xEF		},		0,      0 	}, /* Bit[7] =0x1 – FFE Setting Force;Bits[6:4]=0x6 – FFE_RES;Bits[3:0] = 0xF – FFE_CAP; */
+	{ G2_SETTINGS_4_REG,		0x800,		0x300,		{ 0x300		},		0,      0 	}, /* Bits[9:8]=0x0 -  G2_DFE_RES[1:0]*/	
+	{ PLLINTP_REG1,	        	0x800,		0x300,		{ 0x300		},		0,      0 	}, /* Bits[9:8]=0x3 – HPF_Bw[1:0] */
+	{ VTHIMPCAL_CTRL_REG,		0x800,		0xFF00,		{ 0x3000	},		0,	0 	}, /* Bits[15:12]= 0x3 - tximpcal_th;Bits[11:8] = 0x0 - RXIMPCAL_TH */
+	{ LANE_CFG5_REG,		0x800,		0x3,		{ 0x3		},		0,	0 	}, /* Bit[1]=0x1 - CFG_SQ_DET_SEL,Bit[0]=0x1-CFG_RX_INIT_SEL, */
+	{ MISC_REG,	            	0x800,		0x42F,		{ 0x42A		},		0,      0 	}, /* Bit[10]=0x1 - REFCLK_SEL(=25Mhz);Bit[5]=0x1 – ICP_FORCE_En;Bits[3:0]=0xA – ICP=0xA(210uA); */
+	{ POWER_AND_PLL_CTRL_REG,	0x800,		0x1F,		{ 0x02		},		0,      0 	}, /* Bits[4:0] =0x2 - REF_FREF_SEL(=25Mhz) */
+	{ G2_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3D2		},		0,      0 	}, /* Bits[9:8]=0x3- G2_RX_SELMUFF;Bits[7:6]=0x3- G2_RX_SELMUFI;Bits[5:3]=0x2 – G2_RX_SELMUPF;Bits[2:0]=0x2 -  G2_RX_SELMUPI*/	
+	{ RX_REG2,			0x800,		0xF0,		{ 0x70		},		0,      0 	}, /* Dtl Clamping disable and Dtl-clamping-Sel(6000ppm) */
+	{ PCIE_REG1,			0x800,		0xF80,		{ 0xD00		},		0,      0 	}, /* Bits[11:7]=0x1a -  tx_amp_pipe_v0[4:0] */
+	{ REF_REG0,		 	0x800,		0x38,		{ 0x20		},		0,      0 	}, /* vco_cal_vth_sel */
+	{ LANE_CFG0_REG,		0x800,		0x1,		{ 0x1		},		0,	0 	}, /* Bit[0]=0x1- PRD_TXDEEMPH0 */
+	{ GLOBAL_TEST_CTRL,		0x800,		0x4,		{ 0x4		},		0,      0 	}, /* Bit[4]=0x1-MODE_MARGIN_OVERRIDE */
 
+};
 /* PEX and USB3 - TX config seq */
 
 /* For PEXx1: the pexAndUsb3TxConfigParams1/2/3 configurations should run
@@ -438,9 +448,9 @@ MV_OP_PARAMS pexAndUsb3TxConfigParams1[] =
     /* unitBaseReg    unitOffset    mask        PEX data    USB3 data   waitTime    numOfLoops */
     { GLOBAL_CLK_CTRL,  0x800,      0x1,        { 0x0,      0x0     },      0,          0       },
     { 0x0,              0x0,        0x0,        { 0x0,      0x0     },      10,         0       }, /* 10ms delay */
-    { RX_REG3,          0x800,      0xFF,       { 0xDC,     NO_DATA },      0,          0       }, /* os_ph_offset_force (align 90) */
-    { RX_REG3,          0x800,      0x100,      { 0x100,    NO_DATA },      0,          0       }, /* Set os_ph_valid */
-    { RX_REG3,          0x800,      0x100,      { 0x0,      NO_DATA },      0,          0       }, /* Unset os_ph_valid */
+    { RX_REG3,          0x800,      0xFF,       { 0xDC,     0xD8    },      0,          0       }, /* os_ph_offset_force (align 90) */
+    { RX_REG3,          0x800,      0x100,      { 0x100,    0x100   },      0,          0       }, /* Set os_ph_valid */
+    { RX_REG3,          0x800,      0x100,      { 0x0,      0x0     },      0,          0       }, /* Unset os_ph_valid */
 };
 
 MV_OP_PARAMS pexAndUsb3TxConfigParams2[] =

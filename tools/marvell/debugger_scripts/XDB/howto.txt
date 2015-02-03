@@ -129,6 +129,10 @@ DRAM Initialization:
 -	Wait until the download completed. The download progress is presented in percentage in the bottom right
 	corner (appears only when download in progress).
 
+Note: to load the symbols to spesific address(after u-boot relocation need to upload the symbols again), in load
+	window need to add "-sa <address>" in BD option.
+	for example the code relocated to 0x7fecd000, need to add "-sa 0x7fecd000"
+
 Running / Recovering u-Boot
 ----------------------------------
 To Recover/ burn a u-Boot image to the flash DRAM Initialization:

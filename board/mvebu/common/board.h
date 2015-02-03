@@ -28,7 +28,7 @@
 #include "sar.h"
 #include "config.h"
 
-#define MAX_BOARD_NAME		16
+#define MAX_BOARD_NAME		32
 
 /*
  * mvebu_board_config  - Describes board configuration features

@@ -1,0 +1,26 @@
+if TARGET_ARMADA_LP
+
+config SYS_CPU
+	string
+	default "armv7"
+
+config SYS_BOARD
+	string
+	default "armadalp"
+
+config SYS_VENDOR
+	string
+	default "mvebu"
+
+config SYS_SOC
+	string
+	default "armadalp"
+
+config SYS_CONFIG_NAME
+	string
+	default "armadalp"
+
+config PALLADIUM
+	bool "Support palladium emulation"
+	default y
+endif

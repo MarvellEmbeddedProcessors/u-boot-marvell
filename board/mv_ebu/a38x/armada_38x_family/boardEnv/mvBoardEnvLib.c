@@ -1904,7 +1904,7 @@ MV_BOOL mvBoardModuleTypeGet(MV_MODULE_TYPE_ID configClass, MV_MODULE_TYPE_INFO 
 
 	/* verify existence of requested config type, pull its data,
 	 * and check if field is relevant to current running board */
-	for (i = 0; i < MV_MODULE_TYPE_MAX_OPTION ; i++)
+	for (i = 0; i < MV_MODULE_TYPE_MAX_OPTION && i < ARRAY_SIZE(boardModuleTypesInfo); i++)
 		if (boardModuleTypesInfo[i].configId == configClass) {
 			*configInfo = boardModuleTypesInfo[i];
 			if (boardModuleTypesInfo[i].isActiveForBoard[boardId])

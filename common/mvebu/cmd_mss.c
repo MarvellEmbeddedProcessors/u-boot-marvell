@@ -24,6 +24,7 @@
 #define MSS_DMA_DSTBR (MVEBU_MSS_BASE + 0xC4)
 #define MSS_DMA_CTRLR (MVEBU_MSS_BASE + 0xC8)
 #define MSS_M3_RSTCR  (MVEBU_MSS_BASE + 0xFC)
+#define MSS_AEBR      (MVEBU_MSS_BASE + 0x160)
 
 #define MSS_DMA_CTRLR_SIZE_OFFSET		(0)
 #define MSS_DMA_CTRLR_SIZE_MASK		    (0xFF)
@@ -36,8 +37,11 @@
 #define MSS_M3_RSTCR_RST_OFFSET     (0)
 #define MSS_M3_RSTCR_RST_ON         (0)
 #define MSS_M3_RSTCR_RST_OFF        (1)
+#define MSS_AEBR_MASK				0xFFF
 
 #define MSS_DMA_TIMEOUT             1000
+#define MSS_EXTERNAL_SPACE          0x50000000
+#define MSS_EXTERNAL_ACCESS_BIT     28
 
 int mss_boot(u32 size, u32 srcAddr)
 {
@@ -48,9 +52,12 @@ int mss_boot(u32 size, u32 srcAddr)
 	/* load image to MSS RAM using DMA */
 	loop_num = (size / 128) + (((size & 127) == 0) ? 0 : 1);
 
+	/* set AXI External Address Bus extension */
+	writel(((srcAddr >> MSS_EXTERNAL_ACCESS_BIT) & MSS_AEBR_MASK), MSS_AEBR);
+
 	for (i = 0; i < loop_num; i++) {
 		/* write destination and source addresses */
-		writel((srcAddr + (i * 128)), MSS_DMA_SRCBR);
+		writel(MSS_EXTERNAL_SPACE | (srcAddr + (i * 128)), MSS_DMA_SRCBR);
 		writel((i * 128), MSS_DMA_DSTBR);
 
 		/* set the DMA control register */

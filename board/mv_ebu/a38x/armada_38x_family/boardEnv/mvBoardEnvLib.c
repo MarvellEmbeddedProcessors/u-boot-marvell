@@ -1234,6 +1234,35 @@ MV_U32 mvBoardBootAttrGet(MV_U32 satrBootDeviceValue, MV_U8 attrNum)
 }
 
 /*******************************************************************************
+* mvBoardSpiBusGet -  Get the SPI BUS number according tp boot source
+*
+* DESCRIPTION:
+*   If SPI is used as boot source, select it's bus number according to S@R configuration
+*
+* INPUT:  None.
+*
+* OUTPUT:  None.
+*
+* RETURN:
+*       the required bus number
+*
+*******************************************************************************/
+MV_U32 mvBoardSpiBusGet(void)
+{
+	switch (mvBoardBootDeviceGet()) {
+	case MSAR_0_BOOT_SPI_FLASH:
+		return 0;
+	case MSAR_0_BOOT_SPI1_FLASH:
+		return 1;
+	default:
+		if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX)
+			return 0;	/* default SPI bus for A38x is 0 */
+		else
+			return 1;	/* default SPI bus for A39x is 1 */
+	}
+}
+
+/*******************************************************************************
 * mvBoardIsInternalSwitchConnected
 *
 * DESCRIPTION:

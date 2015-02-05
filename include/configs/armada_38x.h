@@ -98,6 +98,7 @@
 #ifndef __ASSEMBLY__
 extern unsigned int mvSysClkGet(void);
 extern unsigned int mvTclkGet(void);
+extern unsigned int mvBoardSpiBusGet(void);
 	#define UBOOT_CNTR              0               /* counter to use for uboot timer */
 	#define MV_TCLK_CNTR            1               /* counter to use for uboot timer */
 	#define MV_REF_CLK_DEV_BIT      1000            /* Number of cycle to eanble timer */
@@ -278,11 +279,7 @@ extern unsigned int mvTclkGet(void);
 	#define CONFIG_SPI_FLASH_WINBOND
 	#define CONFIG_ENV_SPI_MAX_HZ           50000000
 	#define CONFIG_ENV_SPI_CS               0
-#ifdef CONFIG_ARMADA_39X
-	#define CONFIG_ENV_SPI_BUS              1
-#else
-	#define CONFIG_ENV_SPI_BUS              0
-#endif
+	#define CONFIG_ENV_SPI_BUS              mvBoardSpiBusGet()
 
 #ifndef CONFIG_SF_DEFAULT_SPEED
 # define CONFIG_SF_DEFAULT_SPEED        CONFIG_ENV_SPI_MAX_HZ

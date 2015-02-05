@@ -218,7 +218,7 @@ typedef struct
    /* Speed Bin Table*/
    MV_HWS_SPEED_BIN      speedBinIndex;
 
-   /* bus width of memory */
+   /* bus width of memory device*/
    MV_HWS_BUS_WIDTH   busWidth;
 
    /* Bus memory size (MBit) */
@@ -251,7 +251,7 @@ typedef struct
    /* BUS per interface (default is 4)*/
    MV_U8               numOfBusPerInterface;
 
-   /* Bit mask for active buses*/
+   /* Bit mask for active buses defined interface width and ECC configuration*/
    MV_U8               activeBusMask;
 
 } MV_HWS_TOPOLOGY_MAP;

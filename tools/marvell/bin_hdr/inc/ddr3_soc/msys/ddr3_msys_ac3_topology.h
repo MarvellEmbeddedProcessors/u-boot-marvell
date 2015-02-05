@@ -68,14 +68,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvDdr3LoggingDef.h"
 
 /*Bus mask variants*/
-#define BUS_MASK_32BIT				0xF
-#define BUS_MASK_32BIT_ECC			0x1F
-#define BUS_MASK_16BIT				0x3
-#define BUS_MASK_16BIT_ECC			0x13
-#define BUS_MASK_16BIT_ECC_PUP3		0xB
+#define INTERFACE_BUS_MASK_32BIT				0xF
+#define INTERFACE_BUS_MASK_32BIT_ECC			0x1F
+#define INTERFACE_BUS_MASK_16BIT				0x3
+#define INTERFACE_BUS_MASK_16BIT_ECC			0x13
+#define INTERFACE_BUS_MASK_16BIT_ECC_PUP3		0xB
 
 #define  DYNAMIC_CS_SIZE_CONFIG
 #define  MV_DEVICE_MAX_DRAM_ADDRESS_SIZE          ADDR_SIZE_2Gb
+
 
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 /************************************* Customer Boards Topology *************************************/
@@ -85,19 +86,19 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
 	/* ATTENTION - cs_mask and mirror  HAVE to be the same for all PUPs*/
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x3,0,0,0}, {0x3,0,0,0}, {0x0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
-    BUS_MASK_16BIT  /* Buses mask */
+    INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     },
     /* 2nd Customer board */
     {
     0x1, /* active interfaces */
 	/* ATTENTION - cs_mask and mirror  HAVE to be the same for all PUPs*/
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
-    BUS_MASK_16BIT  /* Buses mask */
+    INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     }
 };
 
@@ -109,46 +110,46 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
 	/* ATTENTION - cs_mask and mirror  HAVE to be the same for all PUPs*/
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x3,2,0,0}, {0x3,2,0,0},{0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
-    BUS_MASK_16BIT  /* Buses mask */
+    INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     },
 	/* 2rd Marvell board - RD_MTL_4XG  (BoardId = 0x1) */
     {
     0x1, /* active interfaces */
 	/* ATTENTION - cs_mask and mirror  HAVE to be the same for all PUPs*/
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0},{ 0x1,0,0,0},{0x1,0,0,0},{ 0x1,0,0,0},{ 0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
-    BUS_MASK_16BIT  /* Buses mask */
+    INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     },
 	/* 3rd Marvell board - RD_MTL_2XXG_2XG: No ECC (BoardId = 0x2) */
     {
     0x1, /* active interfaces */
 	/* ATTENTION - cs_mask and mirror  HAVE to be the same for all PUPs*/
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_width  mem_size     frequency  casL casWL      temperature */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
-    BUS_MASK_16BIT  /* Buses mask */
+    INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     },
     /* 4th Marvell board - DB_MISL_24G4G - No ECC (BoardId = 0x3) */
     {
     0x1, /* active interfaces */
 	/* ATTENTION - cs_mask and mirror  HAVE to be the same for all PUPs*/
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
-    BUS_MASK_16BIT  /* Buses mask */
+    INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     },
     /* 5th Marvell board - RD_MTL_24G - No ECC (BoardId = 0x4) */
     {
     0x1, /* active interfaces */
 	/* ATTENTION - cs_mask and mirror  HAVE to be the same for all PUPs*/
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_width  mem_size     frequency  casL casWL      temperature */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
     5, /* Num Of Bus Per Interface*/
-    BUS_MASK_16BIT  /* Buses mask */
+    INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     },
 };
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */

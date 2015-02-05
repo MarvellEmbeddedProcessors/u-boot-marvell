@@ -154,6 +154,9 @@ extern unsigned int mvBoardSpiBusGet(void);
 #define CONFIG_CMD_RCVR
 #define CONFIG_CMD_BOOT_MENU
 #define CONFIG_CMD_SYS_RESTORE
+/* Open this define for enabling Secure Boot Mode eFuses modification
+#define CONFIG_CMD_EFUSE
+*/
 #ifdef CONFIG_ARMADA_39X
 	#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
 		#define CONFIG_CMD_BOARDCFG

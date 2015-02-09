@@ -181,6 +181,16 @@ config CMD_SPI
 	help
 	  SPI utility command.
 
+config CMD_SF
+	bool "ssf"
+	help
+	  SF utility command.
+
+config CMD_PCI
+	bool "pci"
+	help
+	  PCI utility command.
+
 config CMD_I2C
 	bool "i2c"
 	help

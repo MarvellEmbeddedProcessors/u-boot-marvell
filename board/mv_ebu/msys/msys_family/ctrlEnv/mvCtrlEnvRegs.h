@@ -374,7 +374,7 @@ typedef struct {
 }
 
 #define MV_TM_CLK_TBL	{	\
-	{   0,   0, MV_TRUE},	\
+	{   0,   0, MV_FALSE},	\
 	{ 400, 800, MV_FALSE},	\
 	{ 466, 933, MV_FALSE},	\
 	{ 333, 667, MV_FALSE},	\

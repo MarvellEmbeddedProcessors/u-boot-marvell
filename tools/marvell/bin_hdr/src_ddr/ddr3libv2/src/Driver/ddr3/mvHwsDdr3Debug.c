@@ -308,6 +308,12 @@ static char* ConvertFreq(MV_HWS_DDR_FREQ freq)
 
         case DDR_FREQ_900:
             return "900";
+
+        case DDR_FREQ_360:
+            return "DDR_FREQ_360";
+
+        case DDR_FREQ_1000:
+            return "DDR_FREQ_1000";
 #endif
         default:
             return "Unknown Frequency";

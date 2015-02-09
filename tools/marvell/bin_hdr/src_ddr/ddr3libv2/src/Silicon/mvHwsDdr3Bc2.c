@@ -238,7 +238,8 @@ static GT_U8 bc2BwPerFreq[DDR_FREQ_LIMIT] =
     0x5, /*DDR_FREQ_850*/
     0x5,  /*DDR_FREQ_600*/
     0x3,  /*DDR_FREQ_300*/
-	0x5 /*DDR_FREQ_900*/
+	0x5, /*DDR_FREQ_900*/
+	0x3 /*DDR_FREQ_360*/
 };
 
 static GT_U8 bc2RatePerFreq[DDR_FREQ_LIMIT] =
@@ -256,7 +257,8 @@ static GT_U8 bc2RatePerFreq[DDR_FREQ_LIMIT] =
    0x2, /*DDR_FREQ_850*/
    0x2, /*DDR_FREQ_600*/
    0x1, /*DDR_FREQ_300*/
-   0x3  /*DDR_FREQ_900*/
+   0x3,  /*DDR_FREQ_900*/
+   0x1  /*DDR_FREQ_360*/
 };
 
 GT_U32 phy1ValTable[DDR_FREQ_LIMIT] =
@@ -274,7 +276,8 @@ GT_U32 phy1ValTable[DDR_FREQ_LIMIT] =
   0xc, /*DDR_FREQ_850*/
   0xf, /*DDR_FREQ_600*/
   0xf, /*DDR_FREQ_300*/
-  0x8  /*DDR_FREQ_900*/
+  0x8,  /*DDR_FREQ_900*/
+  0xf  /*DDR_FREQ_360*/
 };
 
 /* Bit mapping (for PBS) */

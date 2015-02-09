@@ -73,7 +73,8 @@ static GT_U16 freqVal[DDR_FREQ_LIMIT] =
     850,  /*DDR_FREQ_850,*/
     600,  /*DDR_FREQ_600,*/
     300,  /*DDR_FREQ_300,*/
-	900  /*DDR_FREQ_900*/
+	900,  /*DDR_FREQ_900*/
+	360  /*DDR_FREQ_360*/
 };
 
 static GT_U8 Ac3BwPerFreq[DDR_FREQ_LIMIT] =
@@ -91,7 +92,8 @@ static GT_U8 Ac3BwPerFreq[DDR_FREQ_LIMIT] =
     0x5,  /*DDR_FREQ_850,*/
     0x5,  /*DDR_FREQ_600,*/
     0x3,  /*DDR_FREQ_300,*/
-	0x5  /*DDR_FREQ_900*/
+	0x5,  /*DDR_FREQ_900*/
+	0x3  /*DDR_FREQ_360*/
 };
 
 static GT_U8 Ac3RatePerFreq[DDR_FREQ_LIMIT] =
@@ -110,7 +112,8 @@ static GT_U8 Ac3RatePerFreq[DDR_FREQ_LIMIT] =
     0x2,  /*DDR_FREQ_850,*/
     0x2,  /*DDR_FREQ_600,*/
     0x1,  /*DDR_FREQ_300,*/
-	0x3  /*DDR_FREQ_900*/
+	0x3,  /*DDR_FREQ_900*/
+	0x1  /*DDR_FREQ_360*/
 };
 
 static GT_U16 Ac3VcoFreqPerSar[] =

@@ -77,7 +77,9 @@ static GT_U16 freqVal[DDR_FREQ_LIMIT] =
     850, /*DDR_FREQ_850,*/
     600, /*DDR_FREQ_600,*/
     300, /*DDR_FREQ_300,*/
-	900  /*DDR_FREQ_900*/
+	900,  /*DDR_FREQ_900*/
+	360,  /*DDR_FREQ_360*/
+	1000  /*DDR_FREQ_1000*/
 };
 #else /* CONFIG_DDR4 */
 static GT_U16 freqVal[DDR_FREQ_LIMIT] =
@@ -86,7 +88,7 @@ static GT_U16 freqVal[DDR_FREQ_LIMIT] =
     666,    /* DDR_FREQ_667 */
     800,    /* DDR_FREQ_800 */
     933,    /* DDR_FREQ_933 */
-    1066 ,  /* DDR_FREQ_1066 */
+    1066,  /* DDR_FREQ_1066 */
 	900  	/*DDR_FREQ_900*/
 };
 #endif
@@ -183,7 +185,9 @@ static GT_U8 A38xBwPerFreq[DDR_FREQ_LIMIT] =
     0x5, /*DDR_FREQ_850*/
     0x5, /*DDR_FREQ_600*/
     0x3, /*DDR_FREQ_300*/
-	0x5  /*DDR_FREQ_900*/
+	0x5, /*DDR_FREQ_900*/
+	0x3,  /*DDR_FREQ_360*/
+	0x5  /*DDR_FREQ_1000*/
 #endif
 };
 
@@ -209,7 +213,9 @@ static GT_U8 A38xRatePerFreq[DDR_FREQ_LIMIT] =
     0x2, /*DDR_FREQ_850*/
     0x2, /*DDR_FREQ_600*/
     0x1, /*DDR_FREQ_300*/
-	0x2 /*DDR_FREQ_900*/
+	0x2, /*DDR_FREQ_900*/
+	0x1, /*DDR_FREQ_360*/
+	0x2 /*DDR_FREQ_1000*/
 #endif
 };
 
@@ -532,6 +538,7 @@ static GT_STATUS ddr3TipInitA38xSilicon
 						LOAD_PATTERN_MASK_BIT |
 						SET_MEDIUM_FREQ_MASK_BIT |
 						WRITE_LEVELING_MASK_BIT |
+//						LOAD_PATTERN_2_MASK_BIT |
 						WRITE_LEVELING_SUPP_MASK_BIT |
 						READ_LEVELING_MASK_BIT |
 						PBS_RX_MASK_BIT |
@@ -676,6 +683,9 @@ GT_STATUS ddr3TipA38xGetInitFreq
 	case 0x12:
         *freq = DDR_FREQ_900;
         break;
+	case 0x13:
+        *freq = DDR_FREQ_900;
+        break;
     default:
         *freq = 0;
 	    return MV_NOT_SUPPORTED;
@@ -719,6 +729,12 @@ GT_STATUS ddr3TipA38xGetMediumFreq
         break;
     case 0x6:
         *freq = DDR_FREQ_300;
+        break;
+	case 0x12:
+        *freq = DDR_FREQ_360;
+        break;
+	case 0x13:
+        *freq = DDR_FREQ_400;
         break;
     default:
         *freq = 0;
@@ -789,7 +805,6 @@ static GT_STATUS ddr3TipA38xSetDivider
 
 	/* clear cpupll_clkdiv_reset_mask */
 	CHECK_STATUS(ddr3TipA38xIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0xE4264, 0, 0xFF));
-
 
 	/* Dunit training clock + 1:1 mode */
 	if((frequency == DDR_FREQ_LOW_FREQ) || (freqVal[frequency] <= 400)) {

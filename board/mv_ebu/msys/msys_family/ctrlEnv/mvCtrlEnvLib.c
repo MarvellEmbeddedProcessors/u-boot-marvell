@@ -580,7 +580,7 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 
 	ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
 
-	switch (ctrlId) {
+	switch (ctrlId & ~DEVICE_FLAVOR_MASK) {
 	case MV_BOBCAT2_DEV_ID:
 	case MV_ALLEYCAT3_DEV_ID:
 		return ctrlId;

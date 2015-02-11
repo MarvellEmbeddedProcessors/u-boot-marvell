@@ -19,6 +19,7 @@
 *       $Revision: 58 $
 ******************************************************************************/
 
+
 #include "mvDdr3TrainingIpStatic.h"
 #include "mvDdr3TrainingIp.h"
 #include "mvDdr3TrainingIpFlow.h"
@@ -434,13 +435,27 @@ GT_STATUS    ddr3TipStaticPhyInitController
 
 #endif
 
+/*Design Guidelines parameters*/
+GT_U32 gZpriData = 123; //controller data - P drive strength
+GT_U32 gZnriData = 123; //controller data � N drive strength
+GT_U32 gZpriCtrl = 74; //controller C/A � P drive strength
+GT_U32 gZnriCtrl = 74; //controller C/A � N drive strength
 
-GT_U32 Pfinger = 41;
-GT_U32 Nfinger = 43;
-GT_U32 znriDataPhyVal = 0x79;
-GT_U32 zpriDataPhyVal = 0x7a;
-GT_U32 znriCtrlPhyVal = 0x79;
-GT_U32 zpriCtrlPhyVal = 0x7a;
+GT_U32 gZpodtData = 45; //controller data - P ODT
+GT_U32 gZnodtData = 45; //controller data - N ODT
+GT_U32 gZpodtCtrl = 45; //controller data - P ODT
+GT_U32 gZnodtCtrl = 45; //controller data - N ODT
+
+#if 0
+GT_U32 gDic = GT_TUNE_TRAINING_PARAMS_UNDEFINED; //memory drive strength
+GT_U32 uiODTConfig = GT_TUNE_TRAINING_PARAMS_UNDEFINED;
+GT_U32 gRttNom = GT_TUNE_TRAINING_PARAMS_UNDEFINED;
+#endif
+//GT_U32 gRttWr = GT_TUNE_TRAINING_PARAMS_UNDEFINED;
+
+GT_U32 uiODTConfig = 0x120012;
+GT_U32 gRttNom = 0x44;
+GT_U32 gDic = 0x2;
 
 /*****************************************************************************
 Configure phy ( called by static init controller)  for static flow
@@ -452,9 +467,11 @@ GT_STATUS    ddr3TipConfigurePhy
 {
     GT_U32 interfaceId, phyId;
 
-    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, PAD_ZRI_CALIB_PHY_REG, ((0x7f & zpriDataPhyVal) << 7 | (0x7f & znriDataPhyVal)))); 
-    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_CONTROL, PAD_ZRI_CALIB_PHY_REG, ((0x7f & zpriCtrlPhyVal) << 7 | (0x7f & znriCtrlPhyVal)))); 
-    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, PAD_ODT_CALIB_PHY_REG, ((0x3f & Pfinger) << 6 | (0x3f & Nfinger))));
+    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, PAD_ZRI_CALIB_PHY_REG, ((0x7f & gZpriData) << 7 | (0x7f & gZnriData))));
+    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_CONTROL, PAD_ZRI_CALIB_PHY_REG, ((0x7f & gZpriCtrl) << 7 | (0x7f & gZnriCtrl))));
+    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, PAD_ODT_CALIB_PHY_REG, ((0x3f & gZpodtData) << 6 | (0x3f & gZnodtData))));
+    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_CONTROL, PAD_ODT_CALIB_PHY_REG, ((0x3f & gZpodtCtrl) << 6 | (0x3f & gZnodtCtrl))));
+
     CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, PAD_PRE_DISABLE_PHY_REG, 0));
     CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, CMOS_CONFIG_PHY_REG, 0));
     CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_CONTROL, CMOS_CONFIG_PHY_REG, 0));

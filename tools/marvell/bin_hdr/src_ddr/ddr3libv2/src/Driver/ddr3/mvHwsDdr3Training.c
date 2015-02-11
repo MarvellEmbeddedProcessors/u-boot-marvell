@@ -74,14 +74,11 @@ GT_U32 odtConfig = 1;
 #if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined (CONFIG_ARMADA_39X)
 GT_U8  isPllBeforeInit = 0, isAdllCalibBeforeInit = 0, isDfsInInit = 0;
 GT_U32 dfsLowFreq = 130;
-GT_U8 isRzq6 = 1; /* 0-RZQ/7, 1 - RZQ/6 */
 #else
 GT_U8  isPllBeforeInit = 0, isAdllCalibBeforeInit = 1, isDfsInInit = 0;
 GT_U32 dfsLowFreq = 100;
-GT_U8 isRzq6 = 0; /* 0-RZQ/7, 1 - RZQ/6 */
 #endif
-GT_U32 gRttNomCS0,gRttNomCS1,gRttNomCS2,gRttNomCS3;
-GT_BOOL gRestoreRTTNom = GT_FALSE;
+GT_U32 gRttNomCS0, gRttNomCS1;
 GT_U8 calibrationUpdateControl; /*2 external only, 1 is internal only*/
 
 #if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
@@ -92,11 +89,7 @@ extern GT_U8 genericInitController;
 
 MV_HWS_RESULT trainingResult[MAX_STAGE_LIMIT][MAX_INTERFACE_NUM];
 AUTO_TUNE_STAGE trainingStage = INIT_CONTROLLER;
-/*Oferb - 31/10, global to store the value when enter DLL off mode*/
-GT_U32 RTT_Nom[MAX_INTERFACE_NUM] = {0};  
-GT_U32 RTT_WR[MAX_INTERFACE_NUM] = {0}; 
 GT_U32 LoadAtHigh = 1;
-GT_U32 DLLMode = 0;/* 0 is on, 1 is off */
 GT_U32 freqVal[DDR_FREQ_LIMIT];
 GT_U32 fingerTest = 0, pFingerStart = 11,  pFingerEnd = 64,  nFingerStart = 11, nFingerEnd = 64, pFingerStep = 3, nFingerStep = 3;
 GT_U32 clampTbl[] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
@@ -155,8 +148,6 @@ extern ClValuePerFreq casWriteLatencyTable[];
 extern GT_U8  debugTraining;
 extern GT_U8  debugCentralization ,debugTrainingIp, debugTrainingBist, debugPbs, debugTrainingStatic, debugLeveling;
 extern GT_U32  pipeMulticastMask;
-extern GT_U32 Pfinger;
-extern GT_U32 Nfinger;
 extern MV_HWS_TIP_CONFIG_FUNC_DB configFuncInfo[HWS_MAX_DEVICE_NUM];
 extern GT_U8 csMaskReg[];
 extern GT_U8 twrMaskTable[];
@@ -166,6 +157,21 @@ extern GT_U16 rfcTable[];
 extern GT_U32 speedBinTableTRc[];
 extern GT_U32 speedBinTableTRcdTRp[];
 extern GT_U32 ckDelay, ckDelay_16;
+extern GT_U32 gZpriData;
+extern GT_U32 gZnriData;
+extern GT_U32 gZpriCtrl;
+extern GT_U32 gZnriCtrl;
+
+extern GT_U32 gZpodtData;
+extern GT_U32 gZnodtData;
+extern GT_U32 gZpodtCtrl;
+extern GT_U32 gZnodtCtrl;
+
+extern GT_U32 gDic;
+extern GT_U32 uiODTConfig;
+extern GT_U32 gRttNom;
+
+
 /************************** pre-declarations ******************************/
 static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 ( 
@@ -337,7 +343,6 @@ GT_STATUS mvHwsDdr3TipRegisterFreqMask(GT_U32 devNum, GT_U32* freqMaskUsr)
     return GT_OK;
 }
 
-
 /*****************************************************************************
 Update global training parameters by data from user
 ******************************************************************************/
@@ -354,17 +359,11 @@ GT_STATUS ddr3TipTuneTrainingParams
 
 	if(params->ckDelay_16 != -1)
 		ckDelay_16 =  params->ckDelay_16;
-	if(params->Pfinger != -1)
-		Pfinger = params->Pfinger;
-	if(params->Nfinger != -1);
-		Nfinger = params->Nfinger;
 	if(params->PhyReg3Val != -1)
 		PhyReg3Val = params->PhyReg3Val;
 
 	return GT_OK;
 }
-
-
 
 /*****************************************************************************
 Configure CS
@@ -588,46 +587,17 @@ GT_STATUS    mvHwsDdr3TipInitController
 	            dataValue = ((clMaskTable[clValue] & 0x1) << 2) | ((clMaskTable[clValue] & 0xE)  <<  3);
 	            CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, MR0_REG, dataValue,(0x7 << 4) | (1 << 2)));
 				CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, MR0_REG, twrMaskTable[tWR + 1],0xE00));
-#if !defined(CONFIG_ARMADA_38X) && !defined(CONFIG_ALLEYCAT3) && !defined (CONFIG_ARMADA_39X)
-                if (isRzq6 == 1)
-                {
-	                /* MR1: DDR3 DLL Enable,  Zout = RZQ/6 , Rtt disable, output buffer enable, Write Leveling disable */
-	                CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, MR1_REG, 0, 0x246));
-                }
-                else
-                {
-	                /* MR1: DDR3 DLL Enable,  Zout = RZQ/7 , Rtt disable, output buffer enable, Write Leveling disable */
-	                CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, MR1_REG, 0x2, 0x246));
-                }
-#else
-                if (isRzq6 == 1)
-                {
-	                /* MR1: DDR3 DLL Enable,  Zout = RZQ/6 , Rtt disable, output buffer enable, Write Leveling disable */
-	                CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, MR1_REG, 0x44, 0x246));
-                }
-                else
-                {
-	                /* MR1: DDR3 DLL Enable,  Zout = RZQ/7 , Rtt disable, output buffer enable, Write Leveling disable */
-	                CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, MR1_REG, 0x46, 0x246));
-                }
-#endif
-	            /* MR2 \96 Part of the Generic code */
+
+				/* MR1: Set RTT and DIC Design GL values configured by user */
+				CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, MR1_REG, gDic | gRttNom, 0x266));
+
+	            /* MR2 - Part of the Generic code */
 	            /* The next configuration is done: 
 	            1)  SRT 
 	            2)CAS Write  Latency */
 	            dataValue = (cwlMaskTable[cwlVal] << 3);
-	            dataValue |= (1 << 9);
 	            dataValue |= ((topologyMap->interfaceParams[interfaceId].interfaceTemp == MV_HWS_TEMP_HIGH) ? (1 << 7) : 0);
 	            CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, MR2_REG, dataValue , (0x7<<3) | (0x1<<7) | (0x3<<9)));
-
-                /* store the RTT_Nom&WR data */
-#ifdef CONFIG_DDR3
-		        CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType,  interfaceId,  MR1_REG, RTT_Nom,  0x244));
-                CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType,  interfaceId,  MR2_REG, RTT_WR,   0x600));
-#else
-		        CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType,  interfaceId,  MR1_REG, RTT_Nom,  0x700));
-                CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType,  interfaceId,  MR2_REG, RTT_WR,   0x600));
-#endif
             }
 
 			ddr3TipWriteOdt(devNum,  accessType, interfaceId, clValue, cwlVal);
@@ -673,20 +643,13 @@ GT_STATUS    mvHwsDdr3TipInitController
 			dataValue = (dataRead[interfaceId] == 0) ? (1 << 11): 0;
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DUNIT_CONTROL_HIGH_REG, dataValue, (1 << 11)));
 
-	/*Set Active control for ODT write transactions*/
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x1494, 0x00030000, 0x00030000));
-#if defined(CONFIG_ARMADA_38X) || defined (CONFIG_ARMADA_39X)
-	/*Set RTT configuration*/
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x15D4, 0x46, 0x46));
-	/*Enable Address Select Mode */
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, SDRAM_ACCESS_CONTROL_REG, 0x30000, 0x30000));
-#endif
+			/*Set Active control for ODT write transactions*/
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x1494, uiODTConfig, MASK_ALL_BITS));
 #if defined (CONFIG_ALLEYCAT3)
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, 0x14a8, 0x900,0x900));
 			/*WA: Controls whether to float The Control pups outputs during Self Refresh*/
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, 0x16d0, 0,0x8000));
 #endif
-
         }
     }
     else
@@ -935,6 +898,7 @@ static GT_STATUS odtTest
 {
     GT_STATUS          retVal = GT_OK , retTune = GT_OK ;
     GT_STATUS pfingerVal = 0, nfingerVal;
+
     for (pfingerVal = pFingerStart; pfingerVal <= pFingerEnd; pfingerVal+=pFingerStep)
     {
         for (nfingerVal = nFingerStart; nfingerVal <= nFingerEnd; nfingerVal+=nFingerStep)
@@ -1431,13 +1395,9 @@ GT_STATUS    ddr3TipFreqSet
 	if(isDllOff == GT_TRUE)
     {
 #ifdef CONFIG_DDR3
-			CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType,  PARAM_NOT_CARE,  0x1874,  &gRttNomCS0,  MASK_ALL_BITS));
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1874, 0 , 0x244));
-			CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType,  PARAM_NOT_CARE,  0x1884,  &gRttNomCS1,  MASK_ALL_BITS));
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1884, 0 , 0x244));
-			CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType,  PARAM_NOT_CARE,  0x1894,  &gRttNomCS2,  MASK_ALL_BITS));
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1894, 0 , 0x244));
-			CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType,  PARAM_NOT_CARE,  0x18a4,  &gRttNomCS3,  MASK_ALL_BITS));
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x18a4, 0 , 0x244));
 #else /* CONFIG_DDR4 */
             CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType,  PARAM_NOT_CARE,  0x1974,  &gRttNomCS0,  MASK_ALL_BITS));
@@ -1479,13 +1439,13 @@ GT_STATUS    ddr3TipFreqSet
     CHECK_STATUS(AdllCalibration(devNum, accessType, interfaceId, frequency ));
 
 	/* Oferb - 31/10, restoring the RTT values if in DLL off mode*/
-	if(DLLMode == 1)
+	if(isDllOff == GT_TRUE)
     {
 #ifdef CONFIG_DDR3
-			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1874, gRttNomCS0 , 0x244));
-			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1884, gRttNomCS1 , 0x244));
-			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1894, gRttNomCS2 , 0x244));
-			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x18a4, gRttNomCS3 , 0x244));
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1874, gDic | gRttNom, 0x266));
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1884, gDic | gRttNom, 0x266));
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1894, gDic | gRttNom, 0x266));
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x18a4, gDic | gRttNom, 0x266));
 #else /* CONFIG_DDR4 */
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1974, gRttNomCS0 , (0x7 << 8)));
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1A74, gRttNomCS1 , (0x7 << 8)));
@@ -1551,14 +1511,6 @@ GT_STATUS    ddr3TipFreqSet
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, SDRAM_OPERATION_REG, 0x8, 0x1F));     /* MR2 Update Command */
     CHECK_STATUS(hwsOsExactDelayPtr((GT_U8)devNum, devNum, 10));
 
-	/*Ofer 31/10, save the DLL state*/
-	if(isDllOff == GT_TRUE)
-    {
-	   /* assumption: after low freq the next dfs will be high freq */
-		DLLMode = 1;/*1 is off ,for next DFS when going back to high freq*/
-	}
-
-/*    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, SDRAM_TIMING_HIGH_REG, 0x3E031F80, 0x3FFFFFFF));*/
     if (memMask != 0)
     {
         /*Disable MBus Retry */
@@ -1654,7 +1606,6 @@ GT_STATUS    ddr3TipFreqSet
 
 		/* dll state after exiting SR*/
         if (isDllOff == GT_TRUE) {
-            gRestoreRTTNom = GT_TRUE;
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, DFS_REG, 0x1 , 0x1));
 		}
 		else
@@ -1669,13 +1620,9 @@ GT_STATUS    ddr3TipFreqSet
 		/* disable ODT in case of dll off*/
         if (isDllOff == GT_TRUE) {
 #ifdef CONFIG_DDR3
-			CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType,  PARAM_NOT_CARE,  0x1874,  &gRttNomCS0,  MASK_ALL_BITS));
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1874, 0 , 0x244));
-			CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType,  PARAM_NOT_CARE,  0x1884,  &gRttNomCS1,  MASK_ALL_BITS));
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1884, 0 , 0x244));
-			CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType,  PARAM_NOT_CARE,  0x1894,  &gRttNomCS2,  MASK_ALL_BITS));
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1894, 0 , 0x244));
-			CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType,  PARAM_NOT_CARE,  0x18a4,  &gRttNomCS3,  MASK_ALL_BITS));
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x18a4, 0 , 0x244));
 #else /* CONFIG_DDR4 */
             CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType,  PARAM_NOT_CARE,  0x1974,  &gRttNomCS0,  MASK_ALL_BITS));
@@ -1719,17 +1666,16 @@ GT_STATUS    ddr3TipFreqSet
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, DFS_REG, (twrMaskTable[tWR+1] << 16) , 0x70000));
 	
         /* Restore original RTT values if returning from DLL OFF mode*/
-        if ((isDllOff == GT_FALSE) && (gRestoreRTTNom == GT_TRUE)) {
+        if(isDllOff == GT_TRUE) {
 #ifdef CONFIG_DDR3
-			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1874, gRttNomCS0 , 0x244));
-			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1884, gRttNomCS1 , 0x244));
-			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1894, gRttNomCS2 , 0x244));
-			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x18a4, gRttNomCS3 , 0x244));
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1874, gDic | gRttNom, 0x266));
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1884, gDic | gRttNom, 0x266));
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1894, gDic | gRttNom, 0x266));
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x18a4, gDic | gRttNom, 0x266));
 #else /* CONFIG_DDR4 */
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1974, gRttNomCS0 , (0x7 << 8)));
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1A74, gRttNomCS1 , (0x7 << 8)));
 #endif
-			gRestoreRTTNom = GT_FALSE;
 		}
         /* Reset Diver_b assert -> de-assert*/ 
         CHECK_STATUS (mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, SDRAM_CONFIGURATION_REG, 0, 0x10000000));
@@ -2267,6 +2213,7 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
             }
         }
     }
+
 #ifdef STATIC_ALGO_SUPPORT
     if (maskTuneFunc & STATIC_LEVELING_MASK_BIT)
     {

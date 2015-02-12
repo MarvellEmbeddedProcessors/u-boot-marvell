@@ -41,7 +41,6 @@
 #define GET_RD_SAMPLE_DELAY(data,cs) ((data >> rdSampleMask[cs]) & 0xf)
 #define GET_MAX(arg1,arg2) (arg1<arg2) ? (arg2) : (arg1);
 
-GT_U32 ckDelay = (GT_U32)-1, ckDelay_16 = (GT_U32)-1;
 GT_U32 caDelay;
 GT_BOOL	ddr3TipCentralizationSkipMinWindowCheck = GT_FALSE;
 GT_U8 currentVref[MAX_BUS_NUM][MAX_INTERFACE_NUM] ;
@@ -54,6 +53,7 @@ GT_U8 pupState[MAX_BUS_NUM][MAX_INTERFACE_NUM] ;
 GT_U8 vrefWindowSize[MAX_INTERFACE_NUM][MAX_BUS_NUM];
 GT_U8 vrefWindowSizeTh = 12;
 
+extern GT_U32 ckDelay, ckDelay_16;
 extern MV_HWS_TOPOLOGY_MAP *topologyMap;
 extern GT_U32 csMaskReg[];
 extern GT_U32 delayEnable;

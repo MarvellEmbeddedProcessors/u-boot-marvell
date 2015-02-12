@@ -448,9 +448,9 @@ static GT_STATUS ddr3TipInitAc3Silicon
 		maskTuneFunc &=	~WRITE_LEVELING_SUPP_MASK_BIT;
 	}
 
-	if( ckDelay == -1 )
+	if( ckDelay == MV_PARAMS_UNDEFINED )
 		ckDelay_16 = 200;
-	if( ckDelay == -1 )
+	if( ckDelay == MV_PARAMS_UNDEFINED )
 		ckDelay = 200;
 	delayEnable = 1;
 	caDelay = 0;

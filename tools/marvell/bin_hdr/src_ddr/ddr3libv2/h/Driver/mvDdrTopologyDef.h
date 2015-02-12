@@ -1,4 +1,5 @@
 
+
 /*******************************************************************************
 Copyright (C) Marvell International Ltd. and its affiliates
 
@@ -86,8 +87,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #define SDRAM_CS_SIZE							0xFFFFFFF
+#define MV_PARAMS_UNDEFINED 		0xFFFFFFFF
 /************************* Topology *******************************************/
-#define SDRAM_CS_SIZE							0xFFFFFFF
 
 /* bus width in bits */
 typedef enum
@@ -185,9 +186,19 @@ typedef struct
 {
 	GT_U32	ckDelay;
 	GT_U32	ckDelay_16;
-	GT_U32	Pfinger;
-	GT_U32	Nfinger;
 	GT_U32	PhyReg3Val;
+
+	GT_U32 gZpriData;
+	GT_U32 gZnriData;
+	GT_U32 gZpriCtrl;
+	GT_U32 gZnriCtrl;
+	GT_U32 gZpodtData;
+	GT_U32 gZnodtData;
+	GT_U32 gZpodtCtrl;
+	GT_U32 gZnodtCtrl;
+	GT_U32 gDic;
+	GT_U32 uiODTConfig;
+	GT_U32 gRttNom;
 } GT_TUNE_TRAINING_PARAMS;
 
 #endif /* _DDR_TOPOLOGY_CONFIG_H */

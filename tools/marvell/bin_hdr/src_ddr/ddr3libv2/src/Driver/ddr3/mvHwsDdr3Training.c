@@ -62,7 +62,7 @@ GT_U32  windowMemAddr = 0;
 GT_U32  PhyReg0Val = 0;
 GT_U32  PhyReg1Val = 8;
 GT_U32  PhyReg2Val = 0;
-GT_U32  PhyReg3Val = 0xA;
+GT_U32  PhyReg3Val = MV_PARAMS_UNDEFINED;
 MV_HWS_DDR_FREQ initFreq = DDR_FREQ_667;
 MV_HWS_DDR_FREQ lowFreq = DDR_FREQ_LOW_FREQ;
 MV_HWS_DDR_FREQ mediumFreq;
@@ -116,6 +116,24 @@ GT_U32 mvHwsmemSize[] = { ADDR_SIZE_512Mb, ADDR_SIZE_1Gb, ADDR_SIZE_2Gb, ADDR_SI
 #define  MV_DEVICE_MAX_DRAM_ADDRESS_SIZE          ADDR_SIZE_2Gb
 #endif
 
+GT_U32 vrefInitialValue = 0x4;
+GT_U32 ckDelay = MV_PARAMS_UNDEFINED, ckDelay_16 = MV_PARAMS_UNDEFINED;
+
+/*Design Guidelines parameters*/
+GT_U32 gZpriData = MV_PARAMS_UNDEFINED; //controller data - P drive strength
+GT_U32 gZnriData = MV_PARAMS_UNDEFINED; //controller data � N drive strength
+GT_U32 gZpriCtrl = MV_PARAMS_UNDEFINED; //controller C/A � P drive strength
+GT_U32 gZnriCtrl = MV_PARAMS_UNDEFINED; //controller C/A � N drive strength
+
+GT_U32 gZpodtData = MV_PARAMS_UNDEFINED; //controller data - P ODT
+GT_U32 gZnodtData = MV_PARAMS_UNDEFINED; //controller data - N ODT
+GT_U32 gZpodtCtrl = MV_PARAMS_UNDEFINED; //controller data - P ODT
+GT_U32 gZnodtCtrl = MV_PARAMS_UNDEFINED; //controller data - N ODT
+
+GT_U32 uiODTConfig = MV_PARAMS_UNDEFINED;
+GT_U32 gRttNom = MV_PARAMS_UNDEFINED;
+GT_U32 gDic = MV_PARAMS_UNDEFINED;
+
 /************************** globals ***************************************/
 
 GT_U32 effective_cs = 0;
@@ -156,20 +174,6 @@ extern GT_U8 cwlMaskTable[];
 extern GT_U16 rfcTable[];
 extern GT_U32 speedBinTableTRc[];
 extern GT_U32 speedBinTableTRcdTRp[];
-extern GT_U32 ckDelay, ckDelay_16;
-extern GT_U32 gZpriData;
-extern GT_U32 gZnriData;
-extern GT_U32 gZpriCtrl;
-extern GT_U32 gZnriCtrl;
-
-extern GT_U32 gZpodtData;
-extern GT_U32 gZnodtData;
-extern GT_U32 gZpodtCtrl;
-extern GT_U32 gZnodtCtrl;
-
-extern GT_U32 gDic;
-extern GT_U32 uiODTConfig;
-extern GT_U32 gRttNom;
 
 
 /************************** pre-declarations ******************************/
@@ -354,15 +358,77 @@ GT_STATUS ddr3TipTuneTrainingParams
 {
 	devNum = devNum; /* avoid warnings */
 
-	if(params->ckDelay != -1)
+	if(params->ckDelay != MV_PARAMS_UNDEFINED)
 		ckDelay = params->ckDelay;
 
-	if(params->ckDelay_16 != -1)
+	if(params->ckDelay_16 != MV_PARAMS_UNDEFINED)
 		ckDelay_16 =  params->ckDelay_16;
-	if(params->PhyReg3Val != -1)
+	if(params->PhyReg3Val != MV_PARAMS_UNDEFINED)
 		PhyReg3Val = params->PhyReg3Val;
 
+	if(params->gRttNom == MV_PARAMS_UNDEFINED) gRttNom = params->gRttNom;
+	if(params->gDic == MV_PARAMS_UNDEFINED) gDic = params->gDic;
+	if(params->uiODTConfig == MV_PARAMS_UNDEFINED) uiODTConfig = params->uiODTConfig;
+
+	if(params->gZpriData == MV_PARAMS_UNDEFINED) gZpriData = params->gZpriData;
+	if(params->gZnriData == MV_PARAMS_UNDEFINED) gZnriData = params->gZnriData;
+	if(params->gZpriCtrl == MV_PARAMS_UNDEFINED) gZpriCtrl = params->gZpriCtrl;
+	if(params->gZnriCtrl == MV_PARAMS_UNDEFINED) gZnriCtrl = params->gZnriCtrl;
+
+	if(params->gZpodtData == MV_PARAMS_UNDEFINED) gZpodtData = params->gZpodtData;
+	if(params->gZnodtData == MV_PARAMS_UNDEFINED) gZnodtData = params->gZnodtData;
+	if(params->gZpodtCtrl == MV_PARAMS_UNDEFINED) gZpodtCtrl = params->gZpodtCtrl;
+	if(params->gZnodtCtrl == MV_PARAMS_UNDEFINED) gZnodtCtrl = params->gZnodtCtrl;
+
+	DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("DGL params are 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X \n",
+				gZpriData, gZnriData, gZpriCtrl, gZnriCtrl,
+				gZpodtData, gZnodtData, gZpodtCtrl, gZnodtCtrl,
+				gRttNom, gDic, uiODTConfig));
+
 	return GT_OK;
+}
+
+/*****************************************************************************
+Configure phy ( called by static init controller)  for static flow
+******************************************************************************/
+GT_STATUS    ddr3TipConfigurePhy
+(
+    GT_U32    devNum
+)
+{
+    GT_U32 interfaceId, phyId;
+
+    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, PAD_ZRI_CALIB_PHY_REG, ((0x7f & gZpriData) << 7 | (0x7f & gZnriData))));
+    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_CONTROL, PAD_ZRI_CALIB_PHY_REG, ((0x7f & gZpriCtrl) << 7 | (0x7f & gZnriCtrl))));
+    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, PAD_ODT_CALIB_PHY_REG, ((0x3f & gZpodtData) << 6 | (0x3f & gZnodtData))));
+    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_CONTROL, PAD_ODT_CALIB_PHY_REG, ((0x3f & gZpodtCtrl) << 6 | (0x3f & gZnodtCtrl))));
+
+    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, PAD_PRE_DISABLE_PHY_REG, 0));
+    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, CMOS_CONFIG_PHY_REG, 0));
+    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_CONTROL, CMOS_CONFIG_PHY_REG, 0));
+    for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
+	{
+		/* check if the interface is enabled */
+        VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
+        for(phyId=0;phyId<topologyMap->numOfBusPerInterface; phyId++)
+        {
+   			VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, phyId)
+            /* Vref & clamp */
+            CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId,  phyId, DDR_PHY_DATA, PAD_CONFIG_PHY_REG,   ((clampTbl[interfaceId] << 4) | vrefInitialValue ), ((0x7 << 4) | 0x7) ));
+            /* clamp not relevant for control */
+            CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId,  phyId, DDR_PHY_CONTROL, PAD_CONFIG_PHY_REG,    0x4 , 0x7 ));
+        }
+    }
+
+#if defined(CONFIG_ARMADA_38X) || defined (CONFIG_ARMADA_39X)
+	CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, 0x90, 0x6002));
+#endif
+
+#ifdef CONFIG_DDR4
+    ddr4TipConfigurePhy(devNum);
+#endif
+
+   return GT_OK;
 }
 
 /*****************************************************************************

@@ -590,9 +590,9 @@ static GT_STATUS ddr3TipInitA38xSilicon
 	rlMidFreqWA = GT_FALSE;
 #endif
 
-	if( ckDelay == -1 )
+	if( ckDelay == MV_PARAMS_UNDEFINED )
 		ckDelay = 160;
-	if( ckDelay_16 == -1 )
+	if( ckDelay_16 == MV_PARAMS_UNDEFINED )
 		ckDelay_16 = 160;
 	caDelay = 0;
 	delayEnable = 1;

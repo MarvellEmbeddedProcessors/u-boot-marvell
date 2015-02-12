@@ -258,11 +258,21 @@ typedef struct
 
 typedef struct
 {
-   MV_U32              ckDelay;
-   MV_U32              ckDelay_16;
-   MV_U32              Pfinger;
-   MV_U32              Nfinger;
-   MV_U32              PhyReg3Val;
+	MV_U32	ckDelay;	/*the delay between clock to C/A for by8 devices*/
+	MV_U32	ckDelay_16;	/*the delay between clock to C/A for by16 devices*/
+	MV_U32	PhyReg3Val;	/*Initial value of RX centralization phy reg*/
+
+	MV_U32 gZpriData; 	/*Controller Data P drive strength*/
+	MV_U32 gZnriData; 	/*Controller Data N drive strength*/
+	MV_U32 gZpriCtrl; 	/*Controller C/A P drive strength*/
+	MV_U32 gZnriCtrl; 	/*Controller C/A N drive strength*/
+	MV_U32 gZpodtData; 	/*Controller Data P ODT at the receive*/
+	MV_U32 gZnodtData; 	/*Controller Data N ODT at the receive*/
+	MV_U32 gZpodtCtrl; 	/*Controller C/A P ODT at the receive*/
+	MV_U32 gZnodtCtrl; 	/*Controller C/A N ODT at the receive*/
+	MV_U32 gDic; 		/*Memory drive strength*/
+	MV_U32 uiODTConfig; /*ODT Pin Configuration*/
+	MV_U32 gRttNom; 	/*Memory ODT at the receive*/
 } MV_TUNE_TRAINING_PARAMS;
 
 #endif /* _DDR3_TOPOLOGY_CONFIG_H */

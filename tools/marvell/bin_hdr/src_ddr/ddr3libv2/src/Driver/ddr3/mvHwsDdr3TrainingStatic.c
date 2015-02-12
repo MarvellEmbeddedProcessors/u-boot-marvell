@@ -35,7 +35,6 @@
 
 extern MV_HWS_TOPOLOGY_MAP *topologyMap;
 extern GT_U32 clampTbl[MAX_INTERFACE_NUM];
-extern GT_U32 vref;
 
 #ifdef STATIC_ALGO_SUPPORT
 /************************** definitions ******************************/
@@ -65,7 +64,6 @@ GT_U32 silicon;
 
 GT_U32 readReadyDelayPhaseOffset[] = { 4, 4, 4, 4, 6, 6, 6, 6 };
 
-extern GT_U32 vref;
 extern ClValuePerFreq casLatencyTable[];
 extern GT_U32 targetFreq;
 extern MV_HWS_TIP_CONFIG_FUNC_DB configFuncInfo[HWS_MAX_DEVICE_NUM];
@@ -435,68 +433,4 @@ GT_STATUS    ddr3TipStaticPhyInitController
 
 #endif
 
-/*Design Guidelines parameters*/
-GT_U32 gZpriData = 123; //controller data - P drive strength
-GT_U32 gZnriData = 123; //controller data � N drive strength
-GT_U32 gZpriCtrl = 74; //controller C/A � P drive strength
-GT_U32 gZnriCtrl = 74; //controller C/A � N drive strength
-
-GT_U32 gZpodtData = 45; //controller data - P ODT
-GT_U32 gZnodtData = 45; //controller data - N ODT
-GT_U32 gZpodtCtrl = 45; //controller data - P ODT
-GT_U32 gZnodtCtrl = 45; //controller data - N ODT
-
-#if 0
-GT_U32 gDic = GT_TUNE_TRAINING_PARAMS_UNDEFINED; //memory drive strength
-GT_U32 uiODTConfig = GT_TUNE_TRAINING_PARAMS_UNDEFINED;
-GT_U32 gRttNom = GT_TUNE_TRAINING_PARAMS_UNDEFINED;
-#endif
-//GT_U32 gRttWr = GT_TUNE_TRAINING_PARAMS_UNDEFINED;
-
-GT_U32 uiODTConfig = 0x120012;
-GT_U32 gRttNom = 0x44;
-GT_U32 gDic = 0x2;
-
-/*****************************************************************************
-Configure phy ( called by static init controller)  for static flow
-******************************************************************************/
-GT_STATUS    ddr3TipConfigurePhy
-(
-    GT_U32    devNum
-)
-{
-    GT_U32 interfaceId, phyId;
-
-    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, PAD_ZRI_CALIB_PHY_REG, ((0x7f & gZpriData) << 7 | (0x7f & gZnriData))));
-    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_CONTROL, PAD_ZRI_CALIB_PHY_REG, ((0x7f & gZpriCtrl) << 7 | (0x7f & gZnriCtrl))));
-    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, PAD_ODT_CALIB_PHY_REG, ((0x3f & gZpodtData) << 6 | (0x3f & gZnodtData))));
-    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_CONTROL, PAD_ODT_CALIB_PHY_REG, ((0x3f & gZpodtCtrl) << 6 | (0x3f & gZnodtCtrl))));
-
-    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, PAD_PRE_DISABLE_PHY_REG, 0));
-    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, CMOS_CONFIG_PHY_REG, 0));
-    CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_CONTROL, CMOS_CONFIG_PHY_REG, 0));
-    for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
-	{
-		/* check if the interface is enabled */
-        VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-        for(phyId=0;phyId<topologyMap->numOfBusPerInterface; phyId++)
-        {
-   			VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, phyId)
-            /* Vref & clamp */
-            CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId,  phyId, DDR_PHY_DATA, PAD_CONFIG_PHY_REG,   ((clampTbl[interfaceId] << 4) | vref ), ((0x7 << 4) | 0x7) ));
-            /* clamp not relevant for control */
-            CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId,  phyId, DDR_PHY_CONTROL, PAD_CONFIG_PHY_REG,    0x4 , 0x7 ));
-        }
-    }
-
-#if defined(CONFIG_ARMADA_38X) || defined (CONFIG_ARMADA_39X)
-	CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, 0x90, 0x6002));
-#endif
-
-#ifdef CONFIG_DDR4
-    ddr4TipConfigurePhy(devNum);
-#endif
-
-   return GT_OK;
-}
 

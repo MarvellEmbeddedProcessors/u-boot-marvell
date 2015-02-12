@@ -777,7 +777,6 @@ GT_U8 isRlOld = 0;
 GT_U8 isFreqOld = 0;
 GT_U8 isDfsDisabled = 0;
 GT_U32 defaultCentrlizationValue = 0x12;
-GT_U32 vref = 0x4;
 GT_U32 activateSelectBeforeRunAlg= 1, activateDeselectAfterRunAlg = 1, rlTest = 0, resetReadFifo = 0;
 GT_BOOL debugAcc = GT_FALSE;
 GT_U32 ctrlSweepres[ADLL_LENGTH][MAX_INTERFACE_NUM][MAX_BUS_NUM];
@@ -1579,7 +1578,6 @@ GT_STATUS RunXsbTest(GT_U32 devNum, GT_U32 uiMemAddress, GT_U32 writeType, GT_U3
 
 #else /*EXCLUDE_SWITCH_DEBUG*/
 GT_U32 rlVersion = 1; /* 0 - old RL machine */
-GT_U32 vref = 0x4;
 GT_U32  startXsbOffset = 0;
 GT_U8 csMaskReg[]=
 {

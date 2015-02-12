@@ -812,9 +812,21 @@ static MV_STATUS ddr3HwsTuneTrainingParams(MV_U8 devNum)
 	/*NOTE: do not remove any field initilization*/
 	params.ckDelay = MV_TUNE_TRAINING_PARAMS_CK_DELAY;
 	params.ckDelay_16 = MV_TUNE_TRAINING_PARAMS_CK_DELAY_16;
-	params.Pfinger = MV_TUNE_TRAINING_PARAMS_PFINGER;
-	params.Nfinger = MV_TUNE_TRAINING_PARAMS_NFINGER;
 	params.PhyReg3Val = MV_TUNE_TRAINING_PARAMS_PHYREG3VAL;
+
+	params.gZpriData = MV_TUNE_TRAINING_PARAMS_PRI_DATA;
+	params.gZnriData = MV_TUNE_TRAINING_PARAMS_NRI_DATA;
+	params.gZpriCtrl = MV_TUNE_TRAINING_PARAMS_PRI_CTRL;
+	params.gZnriCtrl = MV_TUNE_TRAINING_PARAMS_NRI_CTRL;
+
+	params.gZpodtData = MV_TUNE_TRAINING_PARAMS_P_ODT_DATA;
+	params.gZnodtData = MV_TUNE_TRAINING_PARAMS_N_ODT_DATA;
+	params.gZpodtCtrl = MV_TUNE_TRAINING_PARAMS_P_ODT_CTRL;
+	params.gZnodtCtrl = MV_TUNE_TRAINING_PARAMS_N_ODT_CTRL;
+
+	params.gDic = MV_TUNE_TRAINING_PARAMS_DIC;
+	params.uiODTConfig = MV_TUNE_TRAINING_PARAMS_ODT_CONFIG;
+	params.gRttNom = MV_TUNE_TRAINING_PARAMS_RTT_NOM;
 
 	status = ddr3TipTuneTrainingParams(devNum, &params);
 	if (MV_OK != status) {

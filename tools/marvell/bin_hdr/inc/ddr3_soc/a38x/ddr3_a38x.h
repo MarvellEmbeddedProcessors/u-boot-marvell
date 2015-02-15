@@ -126,14 +126,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_TOPOLOGY_UPDATE_16BIT			2
 #define MV_TOPOLOGY_UPDATE_16BIT_ECC		3
 #define MV_TOPOLOGY_UPDATE_16BIT_ECC_PUP3	4
-/*	 32Bit, 32bit ECC, 	16bit, 	16bit ECC PUP4, 16bit ECC PUP3*/
+/*			 32Bit,		32bit ECC,	16bit, 		16bit ECC PUP4, 16bit ECC PUP3*/
 #define MV_TOPOLOGY_UPDATE  {\
-	{1, 	1, 			1, 		1, 				1}, \
-	{1, 	1, 			1, 		1, 				1}, \
-	{1, 	0, 			1, 		0, 				1}, \
-	{1, 	0, 			1, 		0, 				1}, \
-	{1, 	0, 			1, 		0, 				1}, \
-	{0, 	0, 			1, 		1, 				0}};
+/* RD_NAS_68XX_ID */	{1,		1,		1,		1,		1}, \
+/* DB_68XX_ID	  */	{1,		1,		1,		1,		1}, \
+/* RD_AP_68XX_ID  */	{1,		0,		1,		0,		1}, \
+/* DB_AP_68XX_ID  */	{1,		0,		1,		0,		1}, \
+/* DB_GP_68XX_ID  */	{1,		0,		1,		0,		1}, \
+/* DB_BP_6821_ID  */	{0,		0,		1,		1,		0}, \
+/* DB_AMC_6820_ID */	{1,		1,		1,		1,		1}};
 
 /********************/
 /* Registers offset */

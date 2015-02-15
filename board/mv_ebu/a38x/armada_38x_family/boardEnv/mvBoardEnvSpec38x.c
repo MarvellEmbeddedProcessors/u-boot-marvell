@@ -981,6 +981,104 @@ MV_BOARD_INFO db88f6821_board_info = {
 	.boardOptionsModule	= MV_MODULE_NO_MODULE
 };
 
+/*******************************************************************************
+ * A38X-AMC (DB-88F6820-AMC) board */
+/*******************************************************************************/
+MV_BOARD_MPP_INFO dbAmc88f68xxInfoBoardMppConfigValue[] = {
+	{ {
+		  DB_AMC_88F68XX_MPP0_7,
+		  DB_AMC_88F68XX_MPP8_15,
+		  DB_AMC_88F68XX_MPP16_23,
+		  DB_AMC_88F68XX_MPP24_31,
+		  DB_AMC_88F68XX_MPP32_39,
+		  DB_AMC_88F68XX_MPP40_47,
+		  DB_AMC_88F68XX_MPP48_55,
+		  DB_AMC_88F68XX_MPP56_63,
+	 } }
+};
+
+MV_BOARD_TWSI_INFO dbAmc88f68xxInfoBoardTwsiDev[] = {
+	/* {{devClass,		devClassId, twsiDevAddr, twsiDevAddrType, moreThen256}} */
+	{ BOARD_DEV_TWSI_SATR,		0,	0x57,	ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4c,	ADDR7_BIT, MV_FALSE},
+};
+MV_BOARD_MAC_INFO dbAmc88f68xxInfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x1, 0x1},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0},
+};
+
+MV_BOARD_USB_INFO dbAmc88f68xxInfoBoardUsbInfo[] = {
+/* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
+	{ USB_UNIT_ID, 1, MV_TRUE},
+};
+
+MV_DEV_CS_INFO dbAmc88f68xxInfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_TRUE },	/* NAND DEV */
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
+	{ SPI0_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS1,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_TRUE }	/* SPI0 DEV */
+};
+
+MV_BOARD_INFO dbAmc88f68xx_board_info = {
+	.boardName		= "DB-88F6820-AMC",
+	.compatibleDTName	= "a385-amc",
+	.numBoardNetComplexValue = 0,
+	.pBoardNetComplexInfo	= NULL,
+	.pBoardMppConfigValue	= dbAmc88f68xxInfoBoardMppConfigValue,
+	.intsGppMaskLow		= 0,
+	.intsGppMaskMid		= 0,
+	.intsGppMaskHigh	= 0,
+	.numBoardDeviceIf	= ARRSZ(dbAmc88f68xxInfoBoardDeCsInfo),
+	.pDevCsInfo		= dbAmc88f68xxInfoBoardDeCsInfo,
+	.numBoardTwsiDev	= ARRSZ(dbAmc88f68xxInfoBoardTwsiDev),
+	.pBoardTwsiDev		= dbAmc88f68xxInfoBoardTwsiDev,
+	.numBoardMacInfo	= ARRSZ(dbAmc88f68xxInfoBoardMacInfo),
+	.pBoardMacInfo		= dbAmc88f68xxInfoBoardMacInfo,
+	.numBoardGppInfo	= 0,
+	.pBoardGppInfo		= 0,
+	.activeLedsNumber	= 0,
+	.pLedGppPin		= NULL,
+	.ledsPolarity		= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity	= 0,
+	.pmuPwrUpDelay		= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow		= DB_AMC_88F68XX_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid		= DB_AMC_88F68XX_GPP_OUT_ENA_MID,
+	.gppOutValLow		= DB_AMC_88F68XX_GPP_OUT_VAL_LOW,
+	.gppOutValMid		= DB_AMC_88F68XX_GPP_OUT_VAL_MID,
+	.gppPolarityValLow	= DB_AMC_88F68XX_GPP_POL_LOW,
+	.gppPolarityValMid	= DB_AMC_88F68XX_GPP_POL_MID,
+
+	.pBoardUsbInfo		= dbAmc88f68xxInfoBoardUsbInfo,
+	.numBoardUsbInfo	= ARRSZ(db88f68xxInfoBoardUsbInfo),
+
+	.pBoardSpecInit		= NULL,
+
+	/* NAND init params */
+	.nandFlashReadParams	= DB_88F68XX_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams	= DB_88F68XX_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl	= DB_88F68XX_BOARD_NAND_CONTROL,
+	.nandIfMode		= NAND_IF_NFC,
+
+	.isSdMmcConnected	= MV_FALSE,
+	.isSdMmc_1_8v_Connected	= MV_FALSE,
+
+	/* NOR init params */
+	.norFlashReadParams	= DB_88F68XX_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams	= DB_88F68XX_BOARD_NOR_WRITE_PARAMS,
+
+	/* Enable modules auto-detection. */
+	.configAutoDetect	= MV_TRUE,
+	.numIoExp		= 0,
+	.pIoExp			= NULL,
+	.boardOptionsModule	= MV_MODULE_NO_MODULE
+};
 
 MV_BOARD_INFO *marvellBoardInfoTbl[] = {
 	&rdNas88f68XX_board_info,
@@ -989,4 +1087,5 @@ MV_BOARD_INFO *marvellBoardInfoTbl[] = {
 	&dbAP88f68xx_board_info,
 	&dbGP88f68XX_board_info,
 	&db88f6821_board_info,
+	&dbAmc88f68xx_board_info,
 };

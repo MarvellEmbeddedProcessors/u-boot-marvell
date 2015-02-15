@@ -193,6 +193,9 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray);
 /* loadTopologyDB381 - Loads the board topology for 381 DB-BP Board */
 MV_STATUS loadTopologyDB381(SERDES_MAP  *serdesMapArray);
 
+/* loadTopologyDBAMC - Loads the board topology for DB-AMC Board */
+MV_STATUS loadTopologyDBAMC(SERDES_MAP  *serdesMapArray);
+
 /**************************************************************************
 * mvHwsUpdateDeviceToplogy
 * DESCRIPTION: Update the default board topology for specific device Id
@@ -235,6 +238,7 @@ loadTopologyFuncPtr loadTopologyFuncArr[] =
 	loadTopologyDBAp,	/* DB AP */
 	loadTopologyDBGp,	/* DB GP */
 	loadTopologyDB381,	/* 6821 DB-BP (A381) */
+	loadTopologyDBAMC,	/* DB-AMC */
 };
 
 /*********************************** Globals **********************************/
@@ -384,6 +388,16 @@ SERDES_MAP DbGpConfigDefault[MAX_SERDES_LANES] =
 /* 3 */ { SATA3,		__3Gbps,		SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
 /* 4 */ { SATA2,		__3Gbps,		SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
 /* 5 */ { USB3_HOST1,   __5Gbps,		SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
+};
+
+SERDES_MAP DbAmcConfigDefault[MAX_SERDES_LANES] =
+{
+/* 0 */ { PEX0, 		__5Gbps,		PEX_ROOT_COMPLEX_x4,		MV_FALSE,	MV_FALSE },
+/* 1 */ { PEX1, 		__5Gbps,		PEX_ROOT_COMPLEX_x4,		MV_FALSE,	MV_FALSE },
+/* 2 */ { PEX2, 		__5Gbps,		PEX_ROOT_COMPLEX_x4,		MV_FALSE,	MV_FALSE },
+/* 3 */ { PEX3, 		__5Gbps,		PEX_ROOT_COMPLEX_x4,		MV_FALSE,	MV_FALSE },
+/* 4 */ { SGMII1,		__3_125Gbps,		SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+/* 5 */ { SGMII2,		__3_125Gbps,		SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
 };
 
 /*****************************************/
@@ -895,6 +909,34 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray)
 
 	return MV_OK;
 }
+
+MV_STATUS loadTopologyDBAMC(SERDES_MAP  *serdesMapArray)
+{
+	MV_U32 laneNum;
+	SERDES_MAP* topologyConfigPtr;
+
+	DEBUG_INIT_FULL_S("\n### loadTopologyDBAMC ###\n");
+
+	mvPrintf("\nInitialize DB-AMC board topology\n");
+	topologyConfigPtr = DbAmcConfigDefault;
+
+	/* Update the default board topology device flavours */
+	CHECK_STATUS(mvHwsUpdateDeviceToplogy(topologyConfigPtr, DB_CONFIG_DEFAULT));
+
+	/* Updating the topology map */
+	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
+		serdesMapArray[laneNum].serdesMode  = topologyConfigPtr[laneNum].serdesMode;
+		serdesMapArray[laneNum].serdesSpeed = topologyConfigPtr[laneNum].serdesSpeed;
+		serdesMapArray[laneNum].serdesType  = topologyConfigPtr[laneNum].serdesType;
+		serdesMapArray[laneNum].swapRx      = topologyConfigPtr[laneNum].swapRx;
+		serdesMapArray[laneNum].swapTx      = topologyConfigPtr[laneNum].swapTx;
+	}
+
+	updateTopologySgmiiSpeed(serdesMapArray);
+
+	return MV_OK;
+}
+
 
 /************************** Load topology - Marvell RD boards********************************/
 

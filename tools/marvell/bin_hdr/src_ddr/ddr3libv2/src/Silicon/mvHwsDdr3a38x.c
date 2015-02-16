@@ -683,9 +683,11 @@ GT_STATUS ddr3TipA38xGetInitFreq
 	case 0x12:
         *freq = DDR_FREQ_900;
         break;
+#ifdef CONFIG_DDR3
 	case 0x13:
-        *freq = DDR_FREQ_900;
+        *freq = DDR_FREQ_1000;
         break;
+#endif
     default:
         *freq = 0;
 	    return MV_NOT_SUPPORTED;

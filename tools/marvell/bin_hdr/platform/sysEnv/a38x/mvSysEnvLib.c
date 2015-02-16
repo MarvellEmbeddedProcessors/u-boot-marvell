@@ -380,16 +380,8 @@ MV_U8 mvSysEnvDeviceRevGet(MV_VOID)
 *******************************************************************************/
 MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID)
 {
-#ifdef MV88F69XX
-	return (&ddr3DlbConfigTable_A0[0]);
-#else
-	if (mvSysEnvDeviceRevGet() == MV_88F68XX_A0_ID)
-		return (&ddr3DlbConfigTable_A0[0]);
-	else
-		return (&ddr3DlbConfigTable[0]);
-#endif
+	return (&ddr3DlbConfigTable[0]);
 }
-
 
 #ifdef CONFIG_CMD_BOARDCFG
 MV_BOARD_CONFIG_TYPE_INFO boardConfigTypesInfo[] = MV_EEPROM_CONFIG_INFO;

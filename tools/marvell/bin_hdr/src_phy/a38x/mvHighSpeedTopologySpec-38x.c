@@ -604,8 +604,9 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray)
 
 		/* Lane #1 */
 		laneSelect = (configVal & SATR_DB_LANE1_CFG_MASK) >> SATR_DB_LANE1_CFG_OFFSET;
-		if (laneSelect > SATR_DB_LANE1_MAX_OPTIONS) {
+		if (laneSelect >= SATR_DB_LANE1_MAX_OPTIONS) {
 			mvPrintf("\n\%s: Error: invalid value for SatR field 'dbserdes1' (%x)\n", __func__, laneSelect);
+			mvPrintf("\tSkipping Topology update (run 'SatR write default')\n", __func__, laneSelect);
 			return MV_FAIL;
 		}
 		/* if modified default serdesType for lane#1, update topology and mark it as custom */
@@ -618,8 +619,9 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray)
 
 		/* Lane #2 */
 		laneSelect = (configVal & SATR_DB_LANE2_CFG_MASK) >> SATR_DB_LANE2_CFG_OFFSET;
-		if (laneSelect > SATR_DB_LANE2_MAX_OPTIONS) {
+		if (laneSelect >= SATR_DB_LANE2_MAX_OPTIONS) {
 			mvPrintf("\n\%s: Error: invalid value for SatR field 'dbserdes2' (%x)\n", __func__, laneSelect);
+			mvPrintf("\tSkipping Topology update (run 'SatR write default')\n", __func__, laneSelect);
 			return MV_FAIL;
 		}
 		/* if modified default serdesType for lane@2, update topology and mark it as custom */

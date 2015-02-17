@@ -90,6 +90,7 @@
 #ifndef __ASSEMBLY__
 extern unsigned int mvSysClkGet(void);
 extern unsigned int mvTclkGet(void);
+extern unsigned int mvUartPortGet(void);
 	#define UBOOT_CNTR              0               /* counter to use for uboot timer */
 	#define MV_TCLK_CNTR            1               /* counter to use for uboot timer */
 	#define MV_REF_CLK_DEV_BIT      1000            /* Number of cycle to eanble timer */

@@ -2938,19 +2938,6 @@ MV_BOOL mvBoardConfigAutoDetectEnabled()
 }
 
 /*******************************************************************************
-* mvBoardUartPortGet
-*
-* DESCRIPTION: Return the UART port
-* INPUT:  None.
-* OUTPUT: None.
-* RETURN: None.
-*******************************************************************************/
-MV_U32 mvBoardUartPortGet(void)
-{
-	return whoAmI();
-}
-
-/*******************************************************************************
 * mvBoardNandECCModeGet
 *
 * DESCRIPTION:

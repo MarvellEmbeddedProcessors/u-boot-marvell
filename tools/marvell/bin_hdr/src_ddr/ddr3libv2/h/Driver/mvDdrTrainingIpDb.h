@@ -68,9 +68,35 @@ typedef enum
     WriteLevelingSupp_ECCMode_ECCPup3
 }MV_HWS_WL_SUPP_MODE;
 
+typedef enum
+{
+    MV_ATTR_TIP_REV,
+    MV_ATTR_PLL_BEFORE_INIT,
+    MV_ATTR_TUNE_MASK,
+    MV_ATTR_INIT_FREQ,
+    MV_ATTR_MID_FREQ,
+    MV_ATTR_DFS_LOW_FREQ,
+    MV_ATTR_DFS_LOW_PHY,
+    MV_ATTR_DELAY_ENABLE,
+    MV_ATTR_CK_DELAY,
+    MV_ATTR_CK_DELAY_16,
+    MV_ATTR_CA_DELAY,
+    MV_ATTR_LAST
+} MV_DDR_DEV_ATTRIBUTE;
+
+typedef enum
+{
+    MV_TIP_REV_NA,
+    MV_TIP_REV_1, /* NP5 */
+    MV_TIP_REV_2, /* BC2 */
+    MV_TIP_REV_3, /* AC3 */
+    MV_TIP_REV_4, /* A-380/A-390 */
+    MV_TIP_REV_LAST
+} MV_DDR_TIP_REVISION;
 
 
 /************************* Declarations ***********************************************/
+
 GT_U32 speedBinTable
 (
     GT_U8 index,
@@ -84,6 +110,7 @@ INLINE GT_U32 patternTableGetWord
     GT_U8 index
 );
 
+/* Device topology functionality */
 MV_HWS_TOPOLOGY_MAP* ddr3TipGetTopologyMap
 (
     GT_U32  devNum
@@ -93,6 +120,20 @@ void ddr3TipSetTopologyMap
 (
     GT_U32  devNum,
     MV_HWS_TOPOLOGY_MAP* topology
+);
+
+/* Device attributes functionality */
+GT_U32    ddr3TipDevAttrGet
+(
+    GT_U32                  devNum,
+    MV_DDR_DEV_ATTRIBUTE    attrId
+);
+
+void    ddr3TipDevAttrSet
+(
+    GT_U32                  devNum,
+    MV_DDR_DEV_ATTRIBUTE    attrId,
+    GT_U32                  value
 );
 
 #endif /* _MV_DDR3_TRAININGIP_DB_H_ */

@@ -26,7 +26,10 @@
 #include "mvDdr3TrainingIpDef.h"
 
 /************************** Globals ******************************/
-MV_HWS_TOPOLOGY_MAP *topologyMapDb[HWS_MAX_DEVICE_NUM] = {NULL};
+
+MV_HWS_TOPOLOGY_MAP *topologyMapDb[HWS_MAX_DEVICE_NUM] = {NULL};          /* holds device DDR topology */
+MV_DDR_DEV_ATTRIBUTE ddrDevAttributes[HWS_MAX_DEVICE_NUM][MV_ATTR_LAST];  /* holds device attributes */
+GT_BOOL ddrDevAttrInitDone[HWS_MAX_DEVICE_NUM] = {0};                       /* described whether device attributes were initialized */
 
 /* list of allowed frequency listed in order of MV_HWS_DDR_FREQ */
 GT_U32 freqVal[DDR_FREQ_LIMIT] =
@@ -322,6 +325,7 @@ static  GT_U8 patternVrefPatternTableMap[] =
 	0xFE
 };
 
+/************************** functions ******************************/
 
 /*Return speed Bin value for selected index and t* element*/
 GT_U32 speedBinTable
@@ -612,7 +616,7 @@ INLINE GT_U32 patternTableGetWord
 }
 
 MV_HWS_TOPOLOGY_MAP*    ddr3TipGetTopologyMap
-( 
+(
     GT_U32  devNum
 )
 {
@@ -620,12 +624,57 @@ MV_HWS_TOPOLOGY_MAP*    ddr3TipGetTopologyMap
 }
 
 void    ddr3TipSetTopologyMap
-( 
+(
     GT_U32  devNum,
     MV_HWS_TOPOLOGY_MAP* topology
 )
 {
     topologyMapDb[devNum] = topology;
+}
+
+void    ddr3TipDevAttrInit
+(
+    GT_U32  devNum
+)
+{
+    GT_U32 attrId;
+
+    for(attrId = 0; attrId < MV_ATTR_LAST; attrId++)
+    {
+        ddrDevAttributes[devNum][attrId] = 0xFF;
+    }
+
+    ddrDevAttrInitDone[devNum] = GT_TRUE;
+}
+
+
+GT_U32    ddr3TipDevAttrGet
+(
+    GT_U32                  devNum,
+    MV_DDR_DEV_ATTRIBUTE    attrId
+)
+{
+    if(ddrDevAttrInitDone[devNum] == GT_FALSE)
+    {
+        ddr3TipDevAttrInit(devNum);
+    }
+
+    return ddrDevAttributes[devNum][attrId];
+}
+
+void    ddr3TipDevAttrSet
+(
+    GT_U32                  devNum,
+    MV_DDR_DEV_ATTRIBUTE    attrId,
+    GT_U32                  value
+)
+{
+    if(ddrDevAttrInitDone[devNum] == GT_FALSE)
+    {
+        ddr3TipDevAttrInit(devNum);
+    }
+
+    ddrDevAttributes[devNum][attrId] = value;
 }
 
 #endif /* CONFIG_DDR3 */

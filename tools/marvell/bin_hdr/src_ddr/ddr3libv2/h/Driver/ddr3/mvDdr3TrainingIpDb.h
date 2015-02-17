@@ -47,6 +47,8 @@
    {
 #endif
 
+/************************** enums ******************************/
+
 typedef enum
 {
    PATTERN_PBS1,
@@ -70,7 +72,7 @@ typedef enum
    PATTERN_FULL_SSO3,
    PATTERN_VREF,
    PATTERN_LIMIT
-}MV_HWS_PATTERN;
+} MV_HWS_PATTERN;
 
 #ifdef __cplusplus
    }

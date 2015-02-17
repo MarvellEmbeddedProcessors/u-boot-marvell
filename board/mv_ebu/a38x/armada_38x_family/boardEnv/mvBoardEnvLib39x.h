@@ -221,7 +221,7 @@ typedef enum _mvConfigTypeID {
 {MV_CONFIG_LANE2,	"serdes2",	"SerDes Lane #2",	6,						\
 	{"UnConnected", "PCI-e#1", "PCI-e#0-2", "SATA3 #1", "SGMII #1", "SGMII(v3) #1"} },			\
 {MV_CONFIG_LANE3,	"serdes3",	"SerDes Lane #3",	9,						\
-	{"UnConnected", "PCI-e#3", "PCI-e#0-3", "SATA3 #3", "SGMII #2", "USB3-Host #0", "USB-Device",		\
+	{"UnConnected", "PCI-e#3", "PCI-e#0-3", "SATA3 #3", "SGMII #2", "USB3-Host #1", "USB-Device",		\
 	"SGMII(v3) #2", "XAUI #3"} },										\
 {MV_CONFIG_LANE4,	"serdes4",	"SerDes Lane #4",	10,						\
 	{"UnConnected", "PCI-e#1", "UnConnected 1", "SGMII #3", "USB3-Host #0", "USB-Device", "SATA3 #2",	\

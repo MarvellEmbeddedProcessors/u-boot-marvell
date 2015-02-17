@@ -128,8 +128,9 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /*				6820	6810	6811	6828	*/
 /* DRAM_UNIT_ID     */		{ 1,	1,	1,	1},
 /* PEX_UNIT_ID      */		{ 4,	3,	3,	4},
-/* ETH_GIG_UNIT_ID        */	{ 3,	2,	2,	3}, /* total SoC MAC unit count (Not updated) */
-/* ETH_GIG_ACTIVE_UNIT_ID */	{ 3,	2,	2,	3}, /* active MAC unit count (updated by ethComPhy) */
+/* ETH_GIG_UNIT_ID  */		{ 3,	2,	2,	3},	/* total SoC MAC unit count (Not updated) */
+/* ETH_GIG_ACTIVE_UNIT_ID */	{ 3,	2,	2,	3},	/* active MAC unit count (updated by ethComPhy) */
+/* USB_UNIT_ID      */		{ 1,	1,	0,	1},
 /* USB3_UNIT_ID     */		{ 2,	2,	2,	2},
 /* IDMA_UNIT_ID     */		{ 0,	0,	0,	0},
 /* XOR_UNIT_ID      */		{ 2,	2,	2,	2},

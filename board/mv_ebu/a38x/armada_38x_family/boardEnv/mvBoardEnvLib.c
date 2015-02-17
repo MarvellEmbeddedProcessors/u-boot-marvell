@@ -2828,29 +2828,6 @@ MV_U8 mvBoardPICGpioGet(MV_U32 *picGpioMppInfo)
 }
 
 /*******************************************************************************
-* mvBoardUartPortGet
-*
-* DESCRIPTION:
-*       Return the UART port
-*
-* INPUT:
-*
-* OUTPUT:
-*       None.
-*
-* RETURN:
-*       return 1 if detect DB-AP-68xx board
-*
-*******************************************************************************/
-MV_U32 mvBoardUartPortGet()
-{
-	if (mvBoardIdGet() != DB_AP_68XX_ID)
-		return whoAmI();
-
-	return (whoAmI() == 0 ? 1 : 0); /* CPU0 uses UART1 on DB-AP */
-}
-
-/*******************************************************************************
 * mvBoardNandECCModeGet
 *
 * DESCRIPTION:

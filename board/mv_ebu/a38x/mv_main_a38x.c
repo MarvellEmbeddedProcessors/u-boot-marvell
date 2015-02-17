@@ -1094,6 +1094,17 @@ int misc_init_r(void)
 	return 0;
 }
 
+MV_U32 mvUartPortGet(void)
+{
+	#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
+	if (mvBoardIdGet() == DB_AP_68XX_ID)
+		return 1;
+
+	#endif
+
+	return CONFIG_SYS_DUART_CHAN;
+}
+
 MV_U32 mvTclkGet(void)
 {
 	DECLARE_GLOBAL_DATA_PTR;

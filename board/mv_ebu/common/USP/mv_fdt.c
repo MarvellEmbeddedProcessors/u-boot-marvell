@@ -1330,7 +1330,7 @@ static int mv_fdt_update_serial(void *fdt)
 	char propval[10];				/* property value */
 	const char *prop = "status";	/* property name */
 	char node[64];					/* node name */
-	int i, defaultSerialPort = mvBoardUartPortGet();
+	int i, defaultSerialPort = mvUartPortGet();
 
 	for (i = 0; i < MV_UART_MAX_CHAN; i++) {
 		if (i == defaultSerialPort)

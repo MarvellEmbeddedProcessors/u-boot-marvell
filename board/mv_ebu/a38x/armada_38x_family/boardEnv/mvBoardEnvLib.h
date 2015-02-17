@@ -543,7 +543,6 @@ MV_U32 mvBoardSatRRead(MV_SATR_TYPE_ID satrField);
 MV_STATUS mvBoardSatRWrite(MV_SATR_TYPE_ID satrWriteField, MV_U8 val);
 MV_STATUS mvBoardIoExpanderGet(MV_U8 addr, MV_U8 offs, MV_U8 *pVal);
 MV_STATUS mvBoardIoExpanderSet(MV_U8 addr, MV_U8 offs, MV_U8 val);
-MV_U32 mvBoardUartPortGet(MV_VOID);
 int mvBoardNorFlashConnect(void);
 MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
 MV_U8 mvBoardCompatibleNameGet(char *pNameBuff);

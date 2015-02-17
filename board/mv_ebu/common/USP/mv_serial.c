@@ -34,13 +34,13 @@ extern unsigned int whoAmI(void);
 
 extern void print_mvBanner(void);
 
-/* mvBoardUartPortGet:
+/* mvUartPortGet:
  * This routine can be overriden at board environment code.
  * required in case that UART port number is not aligned with CPU number. (e.g : CPU0 uses UART1)
  */
-__weak MV_U32 mvBoardUartPortGet(void)
+__weak MV_U32 mvUartPortGet(void)
 {
-	return whoAmI();
+	return CONFIG_SYS_DUART_CHAN;
 }
 
 int mv_serial_init (void)
@@ -50,7 +50,7 @@ int mv_serial_init (void)
 	int clock_divisor = (CONFIG_SYS_TCLK / 16)/gd->baudrate;
 
 	/* muti-core support, initiate each Uart to each cpu */
-	mvUartInit(whoAmI(), clock_divisor, mvUartBase(mvBoardUartPortGet()));
+	mvUartInit(whoAmI(), clock_divisor, mvUartBase(mvUartPortGet()));
 
 	console_init_f();
 
@@ -86,7 +86,7 @@ void mv_serial_setbrg (void)
 	int clock_divisor = (CONFIG_SYS_TCLK / 16)/gd->baudrate;
 
 	/* muti-core support, initiate each Uart to each cpu */
-	mvUartInit(whoAmI(), clock_divisor, mvUartBase(mvBoardUartPortGet()));
+	mvUartInit(whoAmI(), clock_divisor, mvUartBase(mvUartPortGet()));
 }
 
 void mv_serial_puts (const char *s)

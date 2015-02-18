@@ -629,8 +629,13 @@ static int ahci_device_data_io(struct ahci_probe_ent *probe_ent, u8 port,
 	ahci_fill_cmd_slot(pp, opts);
 
 	writel_with_flush(0x7FFFFFF, port_mmio + PORT_SCR_ERR);
-	writel_with_flush(0xffffffff, port_mmio + PORT_IRQ_STAT);
+
+	/* clearing IRQ status register on Read/Write operations */
+	if (fis[2] == ATA_CMD_READ_EXT || fis[2] == ATA_CMD_WRITE_EXT)
+		writel_with_flush(0xffffffff, port_mmio + PORT_IRQ_STAT);
+
 	writel_with_flush(0, port_mmio + PORT_FIS_ADDR);
+
 	ahci_dcache_flush_sata_cmd(pp);
 	ahci_dcache_flush_range((unsigned)buf, (unsigned)buf_len);
 

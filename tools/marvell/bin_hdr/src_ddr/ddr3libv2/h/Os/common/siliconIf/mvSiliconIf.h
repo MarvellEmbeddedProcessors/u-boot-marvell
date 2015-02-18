@@ -84,10 +84,10 @@ extern GT_STATUS gtStatus;
 #define ABS(val) ((val) < 0) ? -(val) : (val)
 
 /* max number of devices supported by driver */
-#ifdef CO_CPU_RUN
-#define HWS_MAX_DEVICE_NUM (1)
-#else
+#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
 #define HWS_MAX_DEVICE_NUM (16)
+#else
+#define HWS_MAX_DEVICE_NUM (1)
 #endif
 /* max number of SERDESes in one device */
 #define HWS_MAX_DEV_SERDES_NUM (96)

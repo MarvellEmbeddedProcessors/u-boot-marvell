@@ -156,19 +156,19 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 	switch (satrInfo->satrId) {
 	case MV_SATR_CPU_DDR_L2_FREQ:
 		mvOsPrintf("cpufreq options - Determines the frequency of CPU/DDR/L2:\n\n");
-		mvOsPrintf("| ID | CPU Freq (MHz) | L2 Freq (MHz)  | SDRAM Freq (MHz) |\n");
-		mvOsPrintf("|----|----------------|----------------|------------------|\n");
+		mvOsPrintf("| ID | CPU Freq (MHz) | L2 Freq (MHz)   | SDRAM Freq (MHz)  |\n");
+		mvOsPrintf("|----|----------------|-----------------|-------------------|\n");
 		for (i=0; i <= MV_SAR_FREQ_MODES_EOT; i++) {
 			if (cpuDdrClkTbl[i].id == MV_SAR_FREQ_MODES_EOT)
 				break;
 			if (cpuDdrClkTbl[i].isDisplay)
-				mvOsPrintf("| %2d |      %4d      |      %d       |      %d         | \n",
+				mvOsPrintf("| %2d |      %4d      |      %4d       |      %4d         | \n",
 					   cpuDdrClkTbl[i].id,
 					   cpuDdrClkTbl[i].cpuFreq,
 					   cpuDdrClkTbl[i].ddrFreq,
 					   cpuDdrClkTbl[i].l2Freq);
 		}
-		mvOsPrintf("-----------------------------------------------------------\n");
+		mvOsPrintf("-------------------------------------------------------------\n");
 		break;
 	case MV_SATR_CORE_CLK_SELECT:
 		mvOsPrintf("Determines the Core clock frequency:\n");
@@ -305,14 +305,14 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 				break;
 			if (cpuDdrClkTbl[i].id == tmp) {
 				mvOsPrintf("\nCurrent freq configuration:\n");
-				mvOsPrintf("| ID | CPU Freq (MHz) | L2 Freq (MHz)  | SDRAM Freq (MHz) |\n");
-				mvOsPrintf("|----|----------------|----------------|------------------|\n");
-				mvOsPrintf("| %2d |      %4d      |      %d       |      %d         |\n",
+				mvOsPrintf("| ID | CPU Freq (MHz) | L2 Freq (MHz)   | SDRAM Freq (MHz)  |\n");
+				mvOsPrintf("|----|----------------|-----------------|-------------------|\n");
+				mvOsPrintf("| %2d |      %4d      |      %4d       |      %4d         |\n",
 					   cpuDdrClkTbl[i].id,
 					   cpuDdrClkTbl[i].cpuFreq,
 					   cpuDdrClkTbl[i].ddrFreq,
 					   cpuDdrClkTbl[i].l2Freq);
-				mvOsPrintf("-----------------------------------------------------------\n");
+				mvOsPrintf("-------------------------------------------------------------\n");
 				break;
 			}
 		}

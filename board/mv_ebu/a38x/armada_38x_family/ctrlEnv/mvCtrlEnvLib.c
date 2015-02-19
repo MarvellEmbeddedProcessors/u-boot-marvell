@@ -2265,6 +2265,15 @@ MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive)
 			lane3Cfg == COMPHY_SELECT_LANE3_USB3_VAL)
 			return 1 - usbActive;
 	}
+#ifdef CONFIG_ARMADA_39X
+	/* temporery fix for A39x:
+	   In order to keep the same USB mapping for xHCI usage,
+	   nevermind if port is connected with SerDes lane, or without,
+	   return the same mapping for all xHCI/USB3.0 usage.
+	TODO: remove USB mapping and use USB board structre information */
+	if (usbUnitId == USB3_UNIT_ID)
+		return 1 - usbActive;
+#endif
 	/* If A39x or A38x A0 rev, but the no mapping needed:
 	 * - single USB#0 in use
 	 * - both USB units are in use */

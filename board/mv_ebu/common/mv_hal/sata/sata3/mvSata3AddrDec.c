@@ -220,6 +220,12 @@ MV_STATUS mvSata3WinWrite(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pAddrDecW
 	/* set attributes */
 	ctrlReg = (pAddrDecWin->attrib << MV_SATA3_WIN_ATTR_OFFSET);
 
+#ifdef MV88F68XX
+	/* Temp WA for A38x: set attribute with IOCC bit enabled:
+	 * When using Dual CS, disk detection fails without using IOCC bit enabled */
+	ctrlReg |= BIT12;
+#endif
+
 	/* set target ID */
 	ctrlReg &= ~MV_SATA3_WIN_TARGET_MASK;
 	ctrlReg |= (pAddrDecWin->targetId << MV_SATA3_WIN_TARGET_OFFSET);

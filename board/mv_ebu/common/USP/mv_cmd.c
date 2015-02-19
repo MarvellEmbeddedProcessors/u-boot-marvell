@@ -169,11 +169,19 @@ U_BOOT_CMD(
 
 int reset_count_cmd(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 {
-	MV_U32 resetCount;
+	MV_U32 resetCount, resetLimit;
 	char *bootcmd, *tmpStr = getenv("reset_count");
 	char countStr[10];
 
 	resetCount = tmpStr ? simple_strtoul(tmpStr, NULL, 16) : 0;
+
+	tmpStr = getenv("reset_limit");
+	resetLimit = tmpStr ? simple_strtoul(tmpStr, NULL, 10) : 0;
+
+	if( (resetLimit > 0) && (resetCount >= resetLimit)){
+		printf("Reset limit reached, Creset stopped.\n Reset reset_count or reset_limit to continue\n");
+		return 1;
+	}
 
 	/* in 1st time, save original boot command in 'bootcmd_Creset' env varialble */
 	if (resetCount == 0) {
@@ -207,6 +215,7 @@ U_BOOT_CMD(Creset, 2, 1, reset_count_cmd,
 	"    \t'Creset boot' - loop and count boot tries:\n\n"
 	"    \tto restart count, set count value to 1, save, and run boot:\n"
 	"    \t'setenv reset_count 1; saveenv; boot;'\n"
+	"    \t'to limit resets sequence set reset_limit to limit value'\n"
 );
 
 #if defined(MV_INCLUDE_PMU)

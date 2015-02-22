@@ -649,9 +649,17 @@ void misc_init_r_env(void)
 
 	/* Flatten Device Tree environment setup */
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-	fdt_env_setup("armada-38x.dtb", MV_FALSE); /* static setup: Skip DT update for customer -  */
+	#ifdef CONFIG_ARMADA_38X
+		fdt_env_setup("armada-38x.dtb", MV_FALSE); /* static setup: Skip DT update for customer */
+	#else
+		fdt_env_setup("armada-39x.dtb", MV_FALSE);
+	#endif
 #else
-	fdt_env_setup("armada-38x-modular.dtb", MV_TRUE); /* dynamic setup: run DT update for customer -  */
+	#ifdef CONFIG_ARMADA_38X
+		fdt_env_setup("armada-38x-modular.dtb", MV_TRUE); /* dynamic setup: run DT update */
+	#else
+		fdt_env_setup("armada-39x.dtb", MV_FALSE); /* static setup: Skip DT update */
+	#endif
 #endif
 
 #if (CONFIG_BOOTDELAY >= 0)

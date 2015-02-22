@@ -254,6 +254,13 @@ MV_BOARD_NET_COMPLEX_INFO db88f69xxInfoBoarNetComplexInfo[] = {
 	}
 };
 
+MV_BOARD_USB_INFO db88f69xxInfoBoardUsbInfo[] = {
+/* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
+	{ USB3_UNIT_ID, 0, MV_FALSE},
+	{ USB3_UNIT_ID, 1, MV_TRUE},
+	{ USB_UNIT_ID,  0, MV_FALSE},
+};
+
 MV_DEV_CS_INFO db88f69xxInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
 	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
@@ -297,6 +304,9 @@ MV_BOARD_INFO db88f69xx_board_info = {
 	.gppOutValMid		= DB_88F69XX_GPP_OUT_VAL_MID,
 	.gppPolarityValLow	= DB_88F69XX_GPP_POL_LOW,
 	.gppPolarityValMid	= DB_88F69XX_GPP_POL_MID,
+
+	.pBoardUsbInfo		= db88f69xxInfoBoardUsbInfo,
+	.numBoardUsbInfo	= ARRSZ(db88f69xxInfoBoardUsbInfo),
 
 	/* TDM */
 	.numBoardTdmInfo		= {1},

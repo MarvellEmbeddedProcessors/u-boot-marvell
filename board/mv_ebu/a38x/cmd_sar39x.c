@@ -45,12 +45,14 @@ typedef struct _boardSatrDefault {
 	MV_SATR_TYPE_ID satrId;
 	MV_U32 defauleValueForBoard[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_SATR_DEFAULT;
-#define MAX_DEFAULT_ENTRY	2
+#define MAX_DEFAULT_ENTRY	4
 
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 /* 	defauleValueForBoard[] = RD_69xx,	DB_68xx */
-{ MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		} },
-{ MV_SATR_CORE_CLK_SELECT,	{0,		0,		} },
+{MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		} },
+{MV_SATR_CORE_CLK_SELECT,	{0,		0,		} },
+{MV_SATR_BOOT_DEVICE,		{0,		0,		} },/* Dummy entry: default value taken from S@R register */
+{MV_SATR_BOOT2_DEVICE,		{0,		0,		} },/* Dummy entry: default value taken from S@R register */
 };
 
 typedef struct _deviceIdEntry {
@@ -82,11 +84,17 @@ int do_sar_default(void)
 	MV_U32 i, rc, defaultValue, boardId = mvBoardIdIndexGet(mvBoardIdGet());
 	MV_SATR_TYPE_ID satrClassId;
 	MV_BOARD_SATR_INFO satrInfo;
-
+	MV_U32 satrBootDeviceValue = mvCtrlbootSrcGet(), tmp;
 	for (i = 0; i < MAX_DEFAULT_ENTRY; i++) {
 		satrClassId = boardSatrDefault[i].satrId;
 		if (mvBoardSatrInfoConfig(satrClassId, &satrInfo) != MV_OK)
 			continue;
+		if (satrClassId == MV_SATR_BOOT_DEVICE)
+			boardSatrDefault[i].defauleValueForBoard[boardId] = satrBootDeviceValue & satrInfo.mask;
+		if (satrClassId == MV_SATR_BOOT2_DEVICE) {
+			tmp = satrBootDeviceValue >> MV_SATR_BOOT2_VALUE_OFFSET;
+			boardSatrDefault[i].defauleValueForBoard[boardId] = tmp & MV_SATR_BOOT2_VALUE_MASK;
+		}
 		defaultValue = boardSatrDefault[i].defauleValueForBoard[boardId];
 		rc = mvBoardSatRWrite(satrClassId, defaultValue);
 		if (rc == MV_ERROR) {

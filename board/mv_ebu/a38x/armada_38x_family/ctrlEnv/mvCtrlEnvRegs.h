@@ -389,14 +389,12 @@ typedef struct {
 #else
 #ifdef CONFIG_ARMADA_38X
 #define MV_SAR_FREQ_MODES { \
-		{ 0x0,   666,  333,  333,  MV_TRUE  }, \
-		{ 0x2,   800,  400,  400,  MV_TRUE  }, \
-		{ 0x4,   1066, 533,  533,  MV_TRUE  }, \
-		{ 0x6,   1200, 600,  600,  MV_TRUE  }, \
-		{ 0x8,   1332, 666,  666,  MV_TRUE  }, \
-		{ 0xC,   1600, 800,  800,  MV_TRUE  }, \
-		{ 0x12,  1800, 900,  800,  MV_TRUE  }, \
-		{ 0x13,  2000, 1000, 1000, MV_TRUE  }, \
+		{ 0x0,   666,  333, 333, MV_TRUE  }, \
+		{ 0x2,   800,  400, 400, MV_TRUE  }, \
+		{ 0x4,   1066, 533, 533, MV_TRUE  }, \
+		{ 0x6,   1200, 600, 600, MV_TRUE  }, \
+		{ 0x8,   1332, 666, 666, MV_TRUE  }, \
+		{ 0xC,   1600, 800, 800, MV_TRUE  }, \
 		{ MV_SAR_FREQ_MODES_EOT,  0,    0,   0, MV_FALSE } \
 };
 #else

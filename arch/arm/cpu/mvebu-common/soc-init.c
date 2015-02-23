@@ -120,9 +120,7 @@ int mvebu_soc_init()
 	update_soc_units(soc);
 
 	/* Initialize physical memory map */
-#ifndef CONFIG_PALLADIUM
 	adec_init(soc->memory_map);
-#endif
 
 	/* Soc specific init */
 	ret = soc_late_init();

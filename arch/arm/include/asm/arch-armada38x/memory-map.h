@@ -26,9 +26,11 @@
 /* 0xF1000000 - 0xF1100000 - INTERNAL_REG */
 /* 0xFD000000 - 0xFD100000 - NOR_CS */
 
+/* General */
 #define MVEBU_REGS_BASE			(0xF1000000)
 #define MVEBU_REGS_SIZE			(0x100000)
 
+/* Memory windows settings */
 #define MVEBU_PCIE_MEM_BASE(id)		(0xE0000000 + (id * 0x2000000))
 #define MVEBU_PCIE_MEM_SIZE(id)		(0x2000000)
 

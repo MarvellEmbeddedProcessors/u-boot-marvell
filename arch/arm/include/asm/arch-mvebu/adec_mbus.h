@@ -81,11 +81,6 @@ enum mbus_attribute {
 	NOT_VALID_ATTR		= 0xFF,
 };
 
-#define MAX_MBUS_WINS				19
-#define MAX_MBUS_REMAP_WINS			8
-#define INTERNAL_REG_WIN_NUM			20
-
-
 #define MBUS_WIN_CTRL_REG(win_num)		((win_num < MAX_MBUS_REMAP_WINS) ? \
 		(win_num * 0x10) : (0x90 + (win_num-8)*0x08))
 #define MBUS_CR_WIN_ENABLE			0x1

@@ -20,6 +20,11 @@
 #ifndef _SOC_INFO_H_
 #define _SOC_INFO_H_
 
+/* MBUS definitions*/
+#define MAX_MBUS_WINS			19 /* window #20 reserved for internal register */
+#define MAX_MBUS_REMAP_WINS		8
+#define INTERNAL_REG_WIN_NUM		20
+
 /* General MPP definitions */
 #define MAX_MPP_OPTS		7
 #define MAX_MPP_ID		59

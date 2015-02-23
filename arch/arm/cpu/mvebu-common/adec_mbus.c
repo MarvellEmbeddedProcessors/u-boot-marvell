@@ -24,6 +24,7 @@
 #include <asm/system.h>
 #include <asm/io.h>
 #include <asm/arch/regs-base.h>
+#include <asm/arch/soc-info.h>
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/adec.h>
 

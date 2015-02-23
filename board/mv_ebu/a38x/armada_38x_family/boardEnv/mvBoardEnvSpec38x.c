@@ -1007,19 +1007,19 @@ MV_BOARD_MAC_INFO dbAmc88f68xxInfoBoardMacInfo[] = {
 
 MV_BOARD_USB_INFO dbAmc88f68xxInfoBoardUsbInfo[] = {
 /* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
-	{ USB_UNIT_ID, 1, MV_TRUE},
+	{ USB_UNIT_ID, 0, MV_TRUE},
 };
 
 MV_DEV_CS_INFO dbAmc88f68xxInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
 	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_TRUE },	/* NAND DEV */
 	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
-	{ SPI0_CS1,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_TRUE }	/* SPI0 DEV */
+	{ SPI1_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_TRUE }	/* SPI0 DEV */
 };
 
 MV_BOARD_INFO dbAmc88f68xx_board_info = {
 	.boardName		= "DB-88F6820-AMC",
-	.compatibleDTName	= "a385-amc",
+	.compatibleDTName	= "a385-db-amc",
 	.numBoardNetComplexValue = 0,
 	.pBoardNetComplexInfo	= NULL,
 	.pBoardMppConfigValue	= dbAmc88f68xxInfoBoardMppConfigValue,

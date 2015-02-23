@@ -444,7 +444,8 @@ MV_BOARD_INFO db88f68xx_board_info = {
 	.configAutoDetect		= MV_TRUE,
 	.numIoExp			= 0,
 	.pIoExp				= NULL,
-	.boardOptionsModule		= MV_MODULE_NO_MODULE
+	.boardOptionsModule		= MV_MODULE_NO_MODULE,
+	.isAmc				= MV_FALSE
 };
 
 /*******************************************************************************
@@ -547,7 +548,8 @@ MV_BOARD_INFO rdNas88f68XX_board_info = {
 	.configAutoDetect		= MV_TRUE,
 	.numIoExp			= ARRSZ(ioExpNas),
 	.pIoExp				= ioExpNas,
-	.boardOptionsModule		= MV_MODULE_NO_MODULE
+	.boardOptionsModule		= MV_MODULE_NO_MODULE,
+	.isAmc			= MV_FALSE
 };
 /*******************************************************************************
  * A380 RD-WAP-88F68XX board */
@@ -630,7 +632,8 @@ MV_BOARD_INFO rdWAP88f68XX_board_info = {
 	.configAutoDetect		= MV_TRUE,
 	.numIoExp			= ARRSZ(ioExpWap),
 	.pIoExp				= ioExpWap,
-	.boardOptionsModule		= MV_MODULE_NO_MODULE
+	.boardOptionsModule		= MV_MODULE_NO_MODULE,
+	.isAmc			= MV_FALSE
 };
 
 /*******************************************************************************
@@ -746,7 +749,8 @@ MV_BOARD_INFO dbAP88f68xx_board_info = {
 	.configAutoDetect               = MV_FALSE,
 	.numIoExp                       = 0,
 	.pIoExp                         = NULL,
-	.boardOptionsModule             = MV_MODULE_NO_MODULE
+	.boardOptionsModule             = MV_MODULE_NO_MODULE,
+	.isAmc			= MV_FALSE
 };
 
 /*******************************************************************************
@@ -867,7 +871,8 @@ MV_BOARD_INFO dbGP88f68XX_board_info = {
 	.configAutoDetect		= MV_TRUE,
 	.numIoExp			= ARRSZ(dbGP88f68XXInfoBoardioExpValue),
 	.pIoExp				= dbGP88f68XXInfoBoardioExpValue,
-	.boardOptionsModule		= MV_MODULE_NO_MODULE
+	.boardOptionsModule		= MV_MODULE_NO_MODULE,
+	.isAmc				= MV_FALSE
 };
 
 /*******************************************************************************
@@ -974,7 +979,8 @@ MV_BOARD_INFO db88f6821_board_info = {
 	.configAutoDetect	= MV_TRUE,
 	.numIoExp		= ARRSZ(db88f6821InfoBoardioExpValue),
 	.pIoExp			= db88f6821InfoBoardioExpValue,
-	.boardOptionsModule	= MV_MODULE_NO_MODULE
+	.boardOptionsModule	= MV_MODULE_NO_MODULE,
+	.isAmc			= MV_FALSE
 };
 
 /*******************************************************************************
@@ -1072,7 +1078,8 @@ MV_BOARD_INFO dbAmc88f68xx_board_info = {
 	.configAutoDetect	= MV_TRUE,
 	.numIoExp		= 0,
 	.pIoExp			= NULL,
-	.boardOptionsModule	= MV_MODULE_NO_MODULE
+	.boardOptionsModule	= MV_MODULE_NO_MODULE,
+	.isAmc			= MV_TRUE	/* for DT update and switching services */
 };
 
 MV_BOARD_INFO *marvellBoardInfoTbl[] = {

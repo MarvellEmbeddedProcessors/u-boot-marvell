@@ -57,6 +57,7 @@
  */
 #ifdef CONFIG_ARMADA_38X
 	#define MV88F68XX
+	#define CONFIG_SWITCHING_SERVICES
 #endif
 #ifdef CONFIG_ARMADA_39X
 	#define MV88F69XX

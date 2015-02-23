@@ -109,7 +109,9 @@ static int mv_fdt_debug;
 #ifdef CONFIG_MV_SDHCI
 static int mv_fdt_update_sdhci(void *fdt);
 #endif
-
+#ifdef CONFIG_SWITCHING_SERVICES
+static int mv_fdt_update_prestera(void *fdt);
+#endif
 #if 0 /* not compiled, since this routine is currently not in use  */
 static int mv_fdt_remove_prop(void *fdt, const char *path,
 				const char *name, int nodeoff);
@@ -221,6 +223,12 @@ void ft_board_setup(void *blob, bd_t *bd)
 	if (err < 0)
 		goto bs_fail;
 #endif
+	#ifdef CONFIG_SWITCHING_SERVICES
+	/* Update prestera driver DT settings - for AMC board */
+	err = mv_fdt_update_prestera(blob);
+	if (err < 0)
+		goto bs_fail;
+	#endif
 
 	/* Get number of active flash devices and update DT */
 	err = mv_fdt_update_flash(blob);
@@ -479,6 +487,55 @@ static int mv_fdt_update_sdhci(void *fdt)
 		}
 		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
 	}
+
+	return 0;
+}
+#endif
+
+#ifdef CONFIG_SWITCHING_SERVICES
+/*******************************************************************************
+* mv_fdt_update_prestera
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
+static int mv_fdt_update_prestera(void *fdt)
+{
+	int err, nodeoffset;					/* nodeoffset: node offset from libfdt */
+	char propval[10];					/* property value */
+	const char *prop = "status";				/* property name */
+	const char *node = "prestera";				/* node name */
+	MV_BOOL isAmc;
+
+	isAmc = mvBoardisAmc();
+	if (isAmc)
+		sprintf(propval, "okay");
+	else
+		sprintf(propval, "disabled");
+
+	nodeoffset = mv_fdt_find_node(fdt, node);
+
+	if (nodeoffset < 0) {
+		mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+		return 0;
+	}
+
+	mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
+					propval, strlen(propval)+1));
+	if (err < 0) {
+		mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
+		return -1;
+	}
+	mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
 
 	return 0;
 }

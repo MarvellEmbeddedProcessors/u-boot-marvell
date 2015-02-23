@@ -27,8 +27,6 @@
 
 int soc_early_init_f(void)
 {
-	/* write base address for the window of the internal register */
-	writel(MVEBU_REGS_BASE, MVEBU_REGS_BASE + MBUS_WIN_INTEREG_REG);
 	return 0;
 }
 

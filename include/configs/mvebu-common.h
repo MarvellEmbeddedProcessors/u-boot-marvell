@@ -157,14 +157,14 @@
 #if defined(CONFIG_MVEBU_NAND_BOOT)
 	#define CONFIG_ENV_IS_IN_NAND
 	#define CONFIG_DOIMAGE_TYPE	"nand"
-	#define CONFIG_DOIMAGE_SUFFIX	"nand-flash"
+	#define CONFIG_DOIMAGE_SUFFIX	"nand"
 #endif /* CONFIG_MVEBU_NAND_BOOT */
 
 /* Boot from SPI settings */
 #if defined(CONFIG_MVEBU_SPI_BOOT)
 	#define CONFIG_ENV_IS_IN_SPI_FLASH
 	#define CONFIG_DOIMAGE_TYPE	"flash"
-	#define CONFIG_DOIMAGE_SUFFIX	"spi-flash"
+	#define CONFIG_DOIMAGE_SUFFIX	"spi"
 #endif /* CONFIG_MVEBU_SPI_BOOT */
 
 

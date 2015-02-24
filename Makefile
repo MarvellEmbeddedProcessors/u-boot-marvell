@@ -850,8 +850,8 @@ DOIMAGE_FLAGS 		:= -T $(CONFIG_DOIMAGE_TYPE) -D 0x0 -E 0x0 $(NAND_OPTS) -G $(BIN
 DOIMAGE_UART_FLGS	:= -T uart -D 0x0 -E 0x0 -G $(BIN_HDR_UART)
 
 doimage: $(obj)/u-boot.bin $(DOIMAGE) $(BIN_HDR) $(BIN_HDR_UART)
-		$(DOIMAGE) $(DOIMAGE_FLAGS)     u-boot.bin u-boot-$(CONFIG_DOIMAGE_SUFFIX).bin
-		$(DOIMAGE) $(DOIMAGE_UART_FLGS) u-boot.bin u-boot-$(CONFIG_DOIMAGE_SUFFIX)-uart.bin
+		$(DOIMAGE) $(DOIMAGE_FLAGS)     u-boot.bin u-boot-$(CONFIG_SYS_SOC)-$(CONFIG_DOIMAGE_SUFFIX).bin
+		$(DOIMAGE) $(DOIMAGE_UART_FLGS) u-boot.bin u-boot-$(CONFIG_SYS_SOC)-$(CONFIG_DOIMAGE_SUFFIX)-uart.bin
 
 bin2phex: $(obj)/u-boot.bin
 		$(BIN2PHEX) -i u-boot.bin -o u-boot.hex -b 0x0

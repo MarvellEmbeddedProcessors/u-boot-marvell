@@ -98,6 +98,8 @@ static int mv_fdt_update_cpus(void *fdt);
 static int mv_fdt_update_pex(void *fdt);
 static int mv_fdt_update_sata(void *fdt);
 static int mv_fdt_update_usb(void *fdt, MV_UNIT_ID unitType);
+static int mv_fdt_update_usb2(void *fdt);
+static int mv_fdt_update_usb3(void *fdt);
 static int mv_fdt_update_ethnum(void *fdt);
 static int mv_fdt_update_flash(void *fdt);
 static int mv_fdt_set_node_prop(void *fdt, const char *node, const char *prop, const char *prop_val);
@@ -116,6 +118,29 @@ static int mv_fdt_update_prestera(void *fdt);
 static int mv_fdt_remove_prop(void *fdt, const char *path,
 				const char *name, int nodeoff);
 #endif
+
+typedef int (update_fnc_t)(void *);
+update_fnc_t *update_sequence[] = {
+	mv_fdt_update_cpus,			/* Get number of CPUs and update dt */
+	mv_fdt_update_pex,			/* Get number of active PEX port and update DT */
+	mv_fdt_update_sata,			/* Get number of active SATA units and update DT */
+	mv_fdt_update_usb2,			/* Get number of active USB2.0 units and update DT */
+	mv_fdt_update_usb3,			/* Get number of active USB3.0 units and update DT */
+	mv_fdt_update_ethnum,			/* Get number of active ETH port and update DT */
+#ifdef CONFIG_MV_SDHCI
+	mv_fdt_update_sdhci,			/* Update SDHCI driver settings in DT */
+#endif
+#ifdef CONFIG_SWITCHING_SERVICES
+	mv_fdt_update_prestera,			/* Update prestera driver DT settings - for AMC board */
+#endif
+	mv_fdt_update_flash,			/* Get number of active flash devices and update DT */
+	mv_fdt_nand_mode_fixup,			/* Update NAND controller ECC settings in DT */
+	mv_fdt_update_pinctrl,			/* Update pinctrl driver settings in DT */
+	mv_fdt_board_compatible_name_update,	/* Update compatible (board name) in DT */
+	mv_fdt_update_serial,			/* Update serial/UART nodes in DT */
+	mv_fdt_update_pic_gpio,
+	NULL,
+};
 
 enum nfc_driver_type {
 	MV_FDT_NFC_PXA3XX,	/* mainline pxa3xx-nand */
@@ -156,8 +181,9 @@ enum nfc_driver_type {
 *******************************************************************************/
 void ft_board_setup(void *blob, bd_t *bd)
 {
-	int err;		/* error number */
-	char *env;		/* env value */
+	int err;			/* error number */
+	char *env;			/* env value */
+	update_fnc_t **update_fnc_ptr;
 
 	/* Debug information will be printed if variable enaFDTdebug=yes */
 	env = getenv("enaFDTdebug");
@@ -187,77 +213,12 @@ void ft_board_setup(void *blob, bd_t *bd)
 	fixup_memory_node(blob);
 	mv_fdt_dprintf("Memory node updated\n");
 
-	/* Get number of CPUs and update dt */
-	err = mv_fdt_update_cpus(blob);
-	if (err < 0)
-		goto bs_fail;
-
-	/* Get number of active PEX port and update DT */
-	err = mv_fdt_update_pex(blob);
-	if (err < 0)
-		goto bs_fail;
-
-	/* Get number of active SATA units and update DT */
-	err = mv_fdt_update_sata(blob);
-	if (err < 0)
-		goto bs_fail;
-
-	/* Get number of active USB2.0 units and update DT */
-	err = mv_fdt_update_usb(blob, USB_UNIT_ID);
-	if (err < 0)
-		goto bs_fail;
-
-	/* Get number of active USB3.0 units and update DT */
-	err = mv_fdt_update_usb(blob, USB3_UNIT_ID);
-	if (err < 0)
-		goto bs_fail;
-
-	/* Get number of active ETH port and update DT */
-	err = mv_fdt_update_ethnum(blob);
-	if (err < 0)
-		goto bs_fail;
-
-#ifdef CONFIG_MV_SDHCI
-	/* Update SDHCI driver settings in DT */
-	err = mv_fdt_update_sdhci(blob);
-	if (err < 0)
-		goto bs_fail;
-#endif
-	#ifdef CONFIG_SWITCHING_SERVICES
-	/* Update prestera driver DT settings - for AMC board */
-	err = mv_fdt_update_prestera(blob);
-	if (err < 0)
-		goto bs_fail;
-	#endif
-
-	/* Get number of active flash devices and update DT */
-	err = mv_fdt_update_flash(blob);
-	if (err < 0)
-		goto bs_fail;
-
-	/* Update NAND controller ECC settings in DT */
-	err = mv_fdt_nand_mode_fixup(blob);
-	if (err < 0)
-		goto bs_fail;
-
-	/* Update pinctrl driver settings in DT */
-	err = mv_fdt_update_pinctrl(blob);
-	if (err < 0)
-		goto bs_fail;
-
-	/* Update compatible (board name) in DT */
-	err = mv_fdt_board_compatible_name_update(blob);
-	if (err < 0)
-		goto bs_fail;
-
-	/* Update serial/UART nodes in DT */
-	err = mv_fdt_update_serial(blob);
-	if (err < 0)
-		goto bs_fail;
-
-	err = mv_fdt_update_pic_gpio(blob);
-	if (err < 0)
-		goto bs_fail;
+	/* Make updates of functions in update_sequence */
+	for (update_fnc_ptr = update_sequence; *update_fnc_ptr; ++update_fnc_ptr) {
+		err = (*update_fnc_ptr)(blob);
+		if (err < 0)
+			goto bs_fail;
+	}
 
 	printf("Updating device tree successful\n");
 	return;
@@ -645,6 +606,36 @@ static int mv_fdt_update_usb(void *fdt, MV_UNIT_ID unitType)
 	}
 
 	return 0;
+}
+
+/*******************************************************************************
+* mv_fdt_update_usb2
+*
+* DESCRIPTION: update USB2.0(eHCI) status, this function is wrapper function
+* to mv_fdt_update_usb, In order to add it to update_sequence array
+*
+* INPUT: fdt.
+* OUTPUT: None.
+* RETURN: -1 on error os 0 otherwise.
+*******************************************************************************/
+static int mv_fdt_update_usb2(void *fdt)
+{
+	return mv_fdt_update_usb(fdt, USB_UNIT_ID);
+}
+
+/*******************************************************************************
+* mv_fdt_update_usb3
+*
+* DESCRIPTION: update USB3.0(xHCI) status, this function is wrapper function
+* to mv_fdt_update_usb, In order to add it to update_sequence array
+*
+* INPUT: fdt.
+* OUTPUT: None.
+* RETURN: -1 on error os 0 otherwise.
+*******************************************************************************/
+static int mv_fdt_update_usb3(void *fdt)
+{
+	return mv_fdt_update_usb(fdt, USB3_UNIT_ID);
 }
 
 /*******************************************************************************

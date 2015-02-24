@@ -396,7 +396,7 @@ static int mv_fdt_update_sata(void *fdt)
 		sprintf(node, "sata@%x", mvCtrlSataRegBaseGet(i));
 		if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
 			mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
-			return -1;
+			return 0;
 		}
 	}
 
@@ -436,7 +436,7 @@ static int mv_fdt_update_sdhci(void *fdt)
 
 	if (nodeoffset < 0) {
 		mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
-		return -1;
+		return 0;
 	}
 
 	if (strncmp(fdt_get_name(fdt, nodeoffset, NULL), node, strlen(node)) == 0) {
@@ -444,7 +444,7 @@ static int mv_fdt_update_sdhci(void *fdt)
 						propval, strlen(propval)+1));
 		if (err < 0) {
 			mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
-			return -1;
+			return 0;
 		}
 		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
 	}
@@ -543,7 +543,7 @@ static int mv_fdt_update_pex(void *fdt)
 	nodeoffset = mv_fdt_find_node(fdt, node);
 	if (nodeoffset < 0) {
 		mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
-		return -1;
+		return 0;
 	}
 	while (strncmp(node, "pcie", 4) == 0) {
 		for (k = 0; k <= pexnum; k++)
@@ -560,7 +560,7 @@ pex_ok:
 		if (err < 0) {
 			mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n",
 				       prop, node);
-			return -1;
+			return 0;
 		}
 		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop,
 			       propval, node);
@@ -568,7 +568,7 @@ pex_ok:
 		if (nodeoffset < 0) {
 			mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n",
 				       prop, node);
-			return -1;
+			return 0;
 		}
 		node = fdt_get_name(fdt, nodeoffset, NULL);
 	}
@@ -601,7 +601,7 @@ static int mv_fdt_update_usb(void *fdt, MV_UNIT_ID unitType)
 		sprintf(node, "usb%s@%x", unitType == USB_UNIT_ID ? "" : "3", MV_USB2_USB3_REGS_OFFSET(unitType, i));
 		if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
 			mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
-			return -1;
+			return 0;
 		}
 	}
 
@@ -663,7 +663,7 @@ static int mv_fdt_update_pinctrl(void *fdt)
 	sprintf(propval, "marvell,mv88f%x-pinctrl", mvCtrlModelGet());
 	if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
 		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
-		return -1;
+		return 0;
 	}
 
 	return 0;
@@ -704,7 +704,7 @@ static int mv_fdt_update_ethnum(void *fdt)
 	aliasesoffset = mv_fdt_find_node(fdt, "aliases");
 	if (aliasesoffset < 0) {
 		mv_fdt_dprintf("Lack of 'aliases' node in device tree\n");
-		return -1;
+		return 0;
 	}
 
 	/* Walk trough all aliases and count Ethernet ports entries */
@@ -726,11 +726,11 @@ static int mv_fdt_update_ethnum(void *fdt)
 		node = fdt_getprop(fdt, aliasesoffset, prop, &len);
 		if (node == NULL) {
 			mv_fdt_dprintf("Lack of '%s' property in 'aliases' node\n", prop);
-			return -1;
+			return 0;
 		}
 		if (len == 0) {
 			mv_fdt_dprintf("Empty property value\n");
-			return -1;
+			return 0;
 		}
 		/* Alias points to the ETH port node using full DT path */
 		nodeoffset = fdt_path_offset(fdt, node);
@@ -751,12 +751,12 @@ static int mv_fdt_update_ethnum(void *fdt)
 			phandle = fdt_getprop(fdt, nodeoffset, "phy", &len);
 			if (len == 0) {
 				mv_fdt_dprintf("Empty \"phy\" property value\n");
-				return -1;
+				return 0;
 			}
 			phyoffset = fdt_node_offset_by_phandle(fdt, ntohl(*phandle));
 			if (phyoffset < 0) {
 				mv_fdt_dprintf("Failed to get PHY node by phandle %x\n", ntohl(*phandle));
-				return -1;
+				return 0;
 			}
 
 			/* Setup PHY address in DT in "reg" property of an appropriate PHY node.
@@ -767,7 +767,7 @@ static int mv_fdt_update_ethnum(void *fdt)
 			if (err < 0) {
 				mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n",
 							   prop, fdt_get_name(fdt, phyoffset, NULL));
-				return -1;
+				return 0;
 			}
 			mv_fdt_dprintf("Set property '%s' of node '%s' to %#010x\n",
 						   prop, fdt_get_name(fdt, phyoffset, NULL), ntohl(phyAddr));
@@ -783,7 +783,7 @@ static int mv_fdt_update_ethnum(void *fdt)
 				break;
 			default:
 				mv_fdt_dprintf("Bad port type received for interface %d\n", port);
-				return -1;
+				return 0;
 			}
 
 			/* Setup PHY connection type in DT */
@@ -791,7 +791,7 @@ static int mv_fdt_update_ethnum(void *fdt)
 			mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop, propval, strlen(propval)+1));
 			if (err < 0) {
 				mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
-				return -1;
+				return 0;
 			}
 			mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
 
@@ -803,7 +803,7 @@ static int mv_fdt_update_ethnum(void *fdt)
 		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop, propval, strlen(propval)+1));
 		if (err < 0) {
 			mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
-			return -1;
+			return 0;
 		}
 		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
 
@@ -867,7 +867,7 @@ static int mv_fdt_update_flash(void *fdt)
 		sprintf(node, "spi@%x", MV_SPI_REGS_OFFSET(unit));
 		if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
 			mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
-			return -1;
+			return 0;
 		}
 	} /* SPI units/buses */
 
@@ -890,7 +890,7 @@ static int mv_fdt_update_flash(void *fdt)
 	sprintf(node, "nand@%x", MV_NFC_REGS_OFFSET);
 	if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
 		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
-		return -1;
+		return 0;
 	}
 
 	/* handle NOR flashes - there is only one NOR unit, but different CS are possible */
@@ -924,7 +924,7 @@ static int mv_fdt_update_flash(void *fdt)
 
 		if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
 			mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
-			return -1;
+			return 0;
 		}
 	}
 
@@ -1294,7 +1294,7 @@ static int mv_fdt_nand_mode_fixup(void *fdt)
 		if (err < 0) {
 			mv_fdt_dprintf("NFC update: fail to modify '%s'\n",
 				       prop);
-			return -1;
+			return 0;
 		}
 		mv_fdt_dprintf("NFC update: set '%s' property to '%s'\n",
 			       prop, propval);
@@ -1351,7 +1351,7 @@ static int mv_fdt_board_compatible_name_update(void *fdt)
 		mv_fdt_modify(fdt, err, fdt_setprop(fdt,0 , prop, propval, len));
 	if (len <= 0 || err < 0) {
 		mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
-		return -1;
+		return 0;
 	}
 	mv_fdt_dprintf("Set '%s' property to Root node\n", prop);
 
@@ -1389,7 +1389,7 @@ static int mv_fdt_update_serial(void *fdt)
 		sprintf(node, "serial@%x", MV_UART_REGS_OFFSET(i));
 		if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
 			mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
-			return -1;
+			return 0;
 		}
 	}
 
@@ -1456,7 +1456,7 @@ static int mv_fdt_update_pic_gpio(void *fdt)
 	mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, marvell_pins_prop, propval, len));
 	if (err < 0) {
 		mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", marvell_pins_prop, picPinsNode);
-		return -1;
+		return 0;
 	}
 	mv_fdt_dprintf("Set '%s' property in '%s' node\n", marvell_pins_prop, picPinsNode);
 
@@ -1466,7 +1466,7 @@ static int mv_fdt_update_pic_gpio(void *fdt)
 	pinctrl_0_base = fdt_getprop(fdt, nodeoffset, "pinctrl-0", &len);
 	if (len == 0) {
 		printf("Empty property value\n");
-		return -1;
+		return 0;
 	}
 	/* Each GPIO is represented in 'ctrl-gpios' property with 3 values of 32 bits:
 	 * '<pinctrl-0_base + gpio_group_num   gpio_pin_num_in_group   ACTIVE_LOW>'
@@ -1490,7 +1490,7 @@ static int mv_fdt_update_pic_gpio(void *fdt)
 	mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, ctrl_gpios_prop, ctrl_gpios_prop_value, 4*gpioMaxNum*3));
 	if (err < 0) {
 		mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", ctrl_gpios_prop, pm_picNode);
-		return -1;
+		return 0;
 	}
 	mv_fdt_dprintf("Set '%s' property in '%s' node\n", ctrl_gpios_prop, pm_picNode);
 

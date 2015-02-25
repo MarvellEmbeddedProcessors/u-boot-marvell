@@ -128,6 +128,7 @@ typedef enum _mvSatRTypeID {
 	MV_SATR_DEVICE_ID2,
 	MV_SATR_GP_SERDES1_CFG,
 	MV_SATR_GP_SERDES2_CFG,
+	MV_SATR_FULL_FLAVOR,
 	MV_SATR_MAX_OPTION,
 } MV_SATR_TYPE_ID;
 
@@ -158,6 +159,7 @@ typedef enum _mvSatRTypeID {
 {"sgmiimode",	MV_SATR_SGMII_MODE,		0x40,	6,	0,	1,	{0, 1, 0, 0, 1, 1, 1}, 0},\
 {"devid",	MV_SATR_DEVICE_ID,		0x1,	0,	2,	0,	{0, 1, 0, 0, 0, 0, 0}, 0},\
 {"devid2",	MV_SATR_DEVICE_ID2,		0x10,	4,	3,	0,	{0, 1, 0, 0, 0, 0, 0}, 0},\
+{"flavor",	MV_SATR_FULL_FLAVOR,		0x10,	4,	0,	2,	{0, 0, 0, 0, 1, 1, 0}, 0},\
 {"max_option",	MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0, 0, 0, 0, 0}, 0},\
 };
 

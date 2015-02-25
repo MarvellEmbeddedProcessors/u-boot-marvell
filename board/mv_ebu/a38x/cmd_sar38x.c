@@ -46,7 +46,7 @@ typedef struct _boardSatrDefault {
 	MV_SATR_TYPE_ID satrId;
 	MV_U32 defauleValueForBoard[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_SATR_DEFAULT;
-#define MAX_DEFAULT_ENTRY	18
+#define MAX_DEFAULT_ENTRY	19
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 /* 	defauleValueForBoard[] = RD_NAS_68xx,	DB_BP_68xx,	RD_WAP_68xx,	DB_AP_68xx , DB_GP_68xx,  DB_BP_6821,	DB-AMC */
 { MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		0x0c,		0x0c,		0x0c,	  0x4,		0x0c}},
@@ -65,6 +65,7 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 { MV_SATR_DB_USB3_PORT1,	{0,		0,		0,		0,		0,	  0,		0}},
 { MV_SATR_DDR_ECC_ENABLE,	{0,		0,		0,		0,		0,	  0,		1}},
 { MV_SATR_DDR_ECC_PUP_SEL,	{0,		0,		0,		0,		0,	  0,		1}},
+{ MV_SATR_FULL_FLAVOR,		{0,		0,		0,		0,		1,	  1,		0} },
 {MV_SATR_BOOT_DEVICE,           {0,             0,              0,		0,		0,	  0,		0} },/* Dummy entry: default value taken from S@R register */
 {MV_SATR_BOOT2_DEVICE,          {0,             0,              0,		0,		0,	  0,		0} },/* Dummy entry: default value taken from S@R register */
 };
@@ -288,6 +289,11 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		for (i = 0; i < ARRAY_SIZE(devIdArr); i++)
 			mvOsPrintf("\t %d = %s\n", i, devIdArr[i]);
 		break;
+	case MV_SATR_FULL_FLAVOR:
+		mvOsPrintf("Determines whether to use full flavor capabilites:\n");
+		mvOsPrintf("\t0 = Reduced Flavor\n");
+		mvOsPrintf("\t1 = Full Flavor\n ");
+		break;
 	default:
 		mvOsPrintf("Usage: sar list [options] (see help)\n");
 		return 1;
@@ -387,6 +393,16 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 		break;
 	case MV_SATR_DEVICE_ID:
 		mvOsPrintf("devid\t\t= %d  ==> Device ID: %s\n", tmp, devIdArr[tmp]);
+		break;
+	case MV_SATR_FULL_FLAVOR:
+		mvOsPrintf("flavor\t\t= %d  ==> %s Flavor", tmp, (tmp == 0) ? "Reduced" : "Full");
+		if (!tmp) {
+			if (mvBoardIdGet() == DB_GP_68XX_ID)
+				mvOsPrintf(" (A384 on DB-GP)");
+			else if (mvBoardIdGet() == DB_BP_6821_ID)
+				mvOsPrintf(" (A383 on DB-88F6821-BP)");
+		}
+		mvOsPrintf("\n");
 		break;
 	case CMD_DUMP:
 		{
@@ -569,7 +585,8 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "dbserdes1		   - DB-GP, DB-88F6821-BP:	SerDes lane #1\n"
 "dbserdes2		   - DB-GP, DB-88F6821-BP:	SerDes lane #2\n"
 "usb3port0		   - DB-GP, DB-88F6821-BP:	USB3-Port0 mode\n"
-"usb3port1		   - DB-GP, DB-88F6821-BP:	USB3-Port1 mode\n\n"
+"usb3port1		   - DB-GP, DB-88F6821-BP:	USB3-Port1 mode\n"
+"flavor			   - DB-GP, DB-88F6821-BP: Is full flavor (for A383/4 simulation)\n\n"
 
 );
 #endif /*defined(CONFIG_CMD_SAR)*/

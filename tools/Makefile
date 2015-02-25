@@ -144,6 +144,7 @@ HOSTCFLAGS_ubsha1.o := -pedantic
 
 hostprogs-$(CONFIG_KIRKWOOD) += kwboot
 hostprogs-$(CONFIG_ARMADA_XP) += kwboot
+hostprogs-$(CONFIG_MVEBU) += doimage
 hostprogs-y += proftool
 hostprogs-$(CONFIG_STATIC_RELA) += relocate-rela
 

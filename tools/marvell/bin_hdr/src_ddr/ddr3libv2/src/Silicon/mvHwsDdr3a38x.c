@@ -89,7 +89,8 @@ static GT_U16 freqVal[DDR_FREQ_LIMIT] =
     800,    /* DDR_FREQ_800 */
     933,    /* DDR_FREQ_933 */
     1066,  /* DDR_FREQ_1066 */
-	900  	/*DDR_FREQ_900*/
+	900,  	/*DDR_FREQ_900*/
+	1000  	/*DDR_FREQ_1000*/
 };
 #endif
 extern MV_HWS_DDR_FREQ mediumFreq;
@@ -177,6 +178,7 @@ static GT_U8 A38xBwPerFreq[DDR_FREQ_LIMIT] =
     0x5, /*DDR_FREQ_1066*/
 #ifdef CONFIG_DDR4
 	0x5, /*DDR_FREQ_900*/
+	0x5, /*DDR_FREQ_1000*/
 #endif
 #ifdef CONFIG_DDR3
     0x3, /*DDR_FREQ_311*/
@@ -205,6 +207,7 @@ static GT_U8 A38xRatePerFreq[DDR_FREQ_LIMIT] =
     0x3, /*DDR_FREQ_1066*/
 #ifdef CONFIG_DDR4
 	0x2, /*DDR_FREQ_900*/
+	0x2, /*DDR_FREQ_1000*/
 #endif
 #ifdef CONFIG_DDR3
     0x1, /*DDR_FREQ_311*/
@@ -683,11 +686,9 @@ GT_STATUS ddr3TipA38xGetInitFreq
 	case 0x12:
         *freq = DDR_FREQ_900;
         break;
-#ifdef CONFIG_DDR3
 	case 0x13:
         *freq = DDR_FREQ_1000;
         break;
-#endif
     default:
         *freq = 0;
 	    return MV_NOT_SUPPORTED;

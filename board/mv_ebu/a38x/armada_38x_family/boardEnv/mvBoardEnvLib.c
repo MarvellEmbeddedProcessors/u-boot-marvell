@@ -1268,7 +1268,7 @@ MV_U32 mvBoardSpiBusGet(void)
 }
 
 /*******************************************************************************
-* mvBoardIsInternalSwitchConnected
+* mvBoardIsSwitchConnected
 *
 * DESCRIPTION:
 *       This routine returns port's connection status
@@ -1283,9 +1283,12 @@ MV_U32 mvBoardSpiBusGet(void)
 *       1 - if ethPortNum is connected to switch, 0 otherwise
 *
 *******************************************************************************/
-MV_STATUS mvBoardIsInternalSwitchConnected(void)
+MV_STATUS mvBoardIsSwitchConnected(void)
 {
-	return MV_FALSE;
+	if ((board == ((MV_BOARD_INFO *)-1)) || (board->switchInfoNum == 0) || (board->pSwitchInfo == NULL))
+		return MV_FALSE;
+
+	return board->pSwitchInfo[0].isEnabled;
 }
 
 /*******************************************************************************
@@ -2310,7 +2313,10 @@ MV_STATUS mvBoardTwsiMuxChannelSet(MV_U8 muxChNum)
 *******************************************************************************/
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
 {
-	return BOARD_ETH_SWITCH_SMI_SCAN_MODE;
+	if (!mvBoardIsSwitchConnected())
+		return -1;
+
+	return board->pSwitchInfo[switchIdx].smiScanMode;
 }
 
 /*******************************************************************************
@@ -2331,7 +2337,95 @@ MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx)
 *******************************************************************************/
 MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 {
-	return -1;
+	if (!mvBoardIsSwitchConnected())
+		return -1;
+
+	return board->pSwitchInfo[switchIdx].cpuPort;
+}
+
+/*******************************************************************************
+* mvBoardSwitchPhyAddrGet - Get the the Ethernet Switch PHY address
+*
+* DESCRIPTION:
+*	This routine returns the Switch PHY address, -1 else.
+*
+* INPUT:
+*	switchIdx - index of the switch. Only 0 is supported.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	the Switch PHY address, -1 if the switch is not connected.
+*
+*******************************************************************************/
+MV_32 mvBoardSwitchPhyAddrGet(MV_U32 switchIdx)
+{
+	if (!mvBoardIsSwitchConnected())
+		return -1;
+
+	return board->pSwitchInfo[switchIdx].quadPhyAddr;
+}
+
+/*******************************************************************************
+* mvBoardSwitchConnectedPortGet -
+*
+* DESCRIPTION:
+*       This routine returns the switch port connected to the ethPort
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*
+*******************************************************************************/
+MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort)
+{
+	if (!mvBoardIsSwitchConnected())
+		return -1;
+
+	return board->pSwitchInfo[0].connectedPort[ethPort];
+}
+
+/*******************************************************************************
+* mvBoardModuleSwitchInfoUpdate - Update Board information switch module structures
+*
+* DESCRIPTION:
+*	Update board information switch module structures according to switch detection
+*
+* INPUT:
+*	switchDetected - switch module is detected or not
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_VOID mvBoardModuleSwitchInfoUpdate(MV_BOOL switchDetected)
+{
+	int i = 0;
+
+	if ((board == ((MV_BOARD_INFO *)-1))) {
+		mvOsPrintf("%s %d:Board unknown.\n", __func__, __LINE__);
+		return;
+	}
+
+	if (switchDetected) {
+		for (i = 0; i < board->switchInfoNum; i++)
+			if (board->pSwitchInfo != NULL)
+				board->pSwitchInfo[i].isEnabled = MV_TRUE;
+	} else {
+		for (i = 0; i < board->switchInfoNum; i++)
+			if (board->pSwitchInfo != NULL)
+				board->pSwitchInfo[i].isEnabled = MV_FALSE;
+
+		board->switchInfoNum = 0;
+	}
 }
 
 /*******************************************************************************

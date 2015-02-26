@@ -1487,6 +1487,28 @@ MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx)
 }
 
 /*******************************************************************************
+* mvBoardIsSwitchConnected
+*
+* DESCRIPTION:
+*       This routine returns port's connection status, this route provide a unified inerface
+*       for other modules to call without care of the switch conntection mode - external or internal
+*       if the switch is connected
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       1 - if ethPortNum is connected to switch, 0 otherwise
+*
+*******************************************************************************/
+MV_STATUS mvBoardIsSwitchConnected(void)
+{
+	return mvBoardIsInternalSwitchConnected();
+}
+
+/*******************************************************************************
 * mvBoardFreqModesNumGet
 *
 * DESCRIPTION:

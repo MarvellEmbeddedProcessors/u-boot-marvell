@@ -405,6 +405,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 
 		mvBoardPcieModulesInfoUpdate();	/* if PCIe modules are configured (via 'SatR') */
 		mvBoardFlashDeviceUpdate();
+		mvBoardModuleSwitchInfoUpdate(mvBoardIsModuleConnected(MV_MODULE_SWITCH));
 		break;
 	case DB_AMC_6820_ID:
 		/* nothing to be updated at run-time for AMC board */
@@ -464,12 +465,13 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 		"SDIO 4bit",                                 \
 		"SGMII",                                 \
 		"DB-381 SLM-1426 (SGMII-2)",                        \
+		"SWITCH",			\
 	};
 	mvOsOutput("Board configuration detected:\n");
 
 	for (i = 0; i < MV_MODULE_TYPE_MAX_MODULE; i++) {
 		if (mvBoardIsModuleConnected(1 << i))
 			mvOsOutput("       %s module.\n", moduleStr[i]);
-
 	}
 }
+

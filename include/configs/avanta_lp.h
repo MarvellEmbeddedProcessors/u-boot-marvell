@@ -53,6 +53,12 @@
 
 #include "../../board/mv_ebu/alp/mvSysHwConfig.h"
 
+#ifdef MV_INCLUDE_SWITCH
+/*Avanta LP switch resgiters are accessed by CPU directly*/
+/*we provide name unified switch register access APIs with different implementations according to the access way*/
+#define MV_SWITCH_DIRECT_ACCESS
+#endif
+
 /* Version number passed to kernel */
 #define VER_NUM 0x11120000              /* 2011.12 */
 

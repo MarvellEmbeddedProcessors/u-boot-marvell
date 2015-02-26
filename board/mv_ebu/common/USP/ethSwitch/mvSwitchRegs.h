@@ -121,7 +121,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_E6171_ENABLED_PORTS					((1 << 0)|(1 << 1)|(1 << 2)|(1 << 3)|(1 << 4)|(1 << 6))
 #define E6171_PHY_TIMEOUT					    10000
 #define E6171_PHY_SMI_BUSY_BIT		    		15  /* Busy */
-#define E6171_PHY_SMI_BUSY_MASK		    		(1 << ETH_PHY_SMI_BUSY_BIT)
+#define E6171_PHY_SMI_BUSY_MASK				(1 << E6171_PHY_SMI_BUSY_BIT)
+
+/* E6172 related */
+#define MV_E6172_PRODUCT_NUM					0x172
+#define MV_E6172_CPU_PORT					0x6
+#define MV_E6172_PORTS_OFFSET					0x10
+#define MV_E6172_SWITCH_PHIYSICAL_CTRL_REG			0x1
+#define MV_E6172_SWITCH_PORT_CTRL_REG				0x4
+#define MV_E6172_SMI_PHY_COMMAND				0x18
+#define MV_E6172_SMI_PHY_DATA					0x19
+#define MV_E6172_GLOBAL_2_REG_DEV_ADDR				0x1C
+#define MV_E6172_MAX_PORTS_NUM					7
+#define MV_E6172_ENABLED_PORTS					((1 << 0)|(1 << 1)|(1 << 2)|(1 << 3)|(1 << 4)|(1 << 6))
+#define E6172_PHY_TIMEOUT					10000
+#define E6172_PHY_SMI_BUSY_BIT					15  /* Busy */
+#define E6172_PHY_SMI_BUSY_MASK					(1 << E6172_PHY_SMI_BUSY_BIT)
 
 /* Armada 370 internal related */
 #define MV_SW_CPU_PORT							0x6
@@ -154,5 +169,92 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* ALP internal related */
 #define MV_ALP_SW_PORTS_OFFSET					0x10
 #define MV_ALP_SW_MAX_PORTS_NUM					7
+
+/* Start address of ports related register.             */
+#define PORT_REGS_START_ADDR        0x8
+#define PORT_REGS_START_ADDR_8PORT    0x10
+
+#define QD_SMI_ACCESS_LOOP        1000
+#define QD_SMI_TIMEOUT            2
+
+/* Definition for Multi Address Mode */
+#define QD_REG_SMI_COMMAND        0x0
+#define QD_REG_SMI_DATA            0x1
+
+#define QD_REG_SWITCH_ID			0x3
+#define QD_REG_SWITCH_ID_PRODUCT_NUM_OFFSET	4
+
+#define QD_PHY_CONTROL_REG		0
+#define QD_PHY_SPEC_CONTROL_REG		16
+
+/* Bit Definition for QD_PHY_CONTROL_REG */
+#define QD_PHY_RESET            0x8000
+#define QD_PHY_LOOPBACK            0x4000
+#define QD_PHY_SPEED            0x2000
+#define QD_PHY_AUTONEGO            0x1000
+#define QD_PHY_POWER            0x800
+#define QD_PHY_ISOLATE            0x400
+#define QD_PHY_RESTART_AUTONEGO        0x200
+#define QD_PHY_DUPLEX            0x100
+#define QD_PHY_SPEED_MSB        0x40
+
+/* Bit Definition for QD_PHY_SPEC_CONTROL_REG */
+#define QD_PHY_MDI_CROSS_AUTO				0x60
+#define QD_PHY_ENERGY_DETECT_SENSE_PERIODIC_TX_NLP	0x300
+#define QD_PHY_DOWNSHIFT_COUNTER			0x3000
+
+/* Bit Definition for MV_SWITCH_PHYS_CONTROL_REG(switch port 1) */
+#define QD_PCS_RGMII_RX_TIMING_OFFSET			15
+#define QD_PCS_RGMII_TX_TIMING_OFFSET			14
+#define QD_PCS_FLOW_CONTROL_VALUE_OFFSET		7
+#define QD_PCS_FORCED_FLOW_CONTROL_OFFSET		6
+#define QD_PCS_LINK_VALUE_OFFSET			5
+#define QD_PCS_FORCED_LINK_OFFSET			4
+#define QD_PCS_DUPLEX_VALUE_OFFSET			3
+#define QD_PCS_FORCED_DUPLEX_OFFSET			2
+#define QD_PCS_FORCE_SPEED_OFFSET			0
+
+#define QD_PCS_RGMII_RX_TIMING_MASK			(1 << QD_PCS_RGMII_RX_TIMING_OFFSET)
+#define QD_PCS_RGMII_TX_TIMING_MASK			(1 << QD_PCS_RGMII_TX_TIMING_OFFSET)
+#define QD_PCS_FLOW_CONTROL_VALUE_MASK			(1 << QD_PCS_FLOW_CONTROL_VALUE_OFFSET)
+#define QD_PCS_FORCED_FLOW_CONTROL_MASK			(1 << QD_PCS_FORCED_FLOW_CONTROL_OFFSET)
+#define QD_PCS_LINK_VALUE_MASK				(1 << QD_PCS_LINK_VALUE_OFFSET)
+#define QD_PCS_FORCED_LINK_MASK				(1 << QD_PCS_FORCED_LINK_OFFSET)
+#define QD_PCS_DUPLEX_VALUE_MASK			(1 << QD_PCS_DUPLEX_VALUE_OFFSET)
+#define QD_PCS_FORCED_DUPLEX_MASK			(1 << QD_PCS_FORCED_DUPLEX_OFFSET)
+
+#define QD_PCS_FORCE_SPEED_1G				(2 << QD_PCS_FORCE_SPEED_OFFSET)
+#define QD_PCS_FORCE_SPEED_NOT_FORCED			(3 << QD_PCS_FORCE_SPEED_OFFSET)
+
+/* Bit Definition for MV_SWITCH_PORT_CONTROL_REG(switch port 4) */
+#define QD_PC_PORT_STATE_OFFSET				0
+#define QD_PC_EGRESS_FLOODS_OFFSET			2
+#define QD_PC_INITIAL_PRI_OFFSET			4
+#define QD_PC_VLAN_TUNNEL_OFFSET			7
+
+#define QD_PC_PORT_STATE_FORWARDING			(3 << QD_PC_PORT_STATE_OFFSET)
+#define QD_PC_EGRESS_FLOODS_ALL				(3 << QD_PC_EGRESS_FLOODS_OFFSET)
+#define QD_PC_INITIAL_PRI_IP				(2 << QD_PC_INITIAL_PRI_OFFSET)
+#define QD_PC_VLAN_TUNNEL_BY_PASS			(1 << QD_PC_VLAN_TUNNEL_OFFSET)
+
+
+
+
+/* Bit definition for QD_REG_SMI_COMMAND */
+#define QD_SMI_BUSY                0x8000
+#define QD_SMI_MODE                0x1000
+#define QD_SMI_MODE_BIT            12
+#define QD_SMI_OP_BIT            10
+#define QD_SMI_OP_SIZE            2
+#define QD_SMI_DEV_ADDR_BIT        5
+#define QD_SMI_DEV_ADDR_SIZE    5
+#define QD_SMI_REG_ADDR_BIT        0
+#define QD_SMI_REG_ADDR_SIZE    5
+
+#define QD_SMI_CLAUSE45            0
+#define QD_SMI_CLAUSE22            1
+
+#define QD_SMI_WRITE            0x01
+#define QD_SMI_READ                0x02
 
 #endif /* __INCethswitchregsh */

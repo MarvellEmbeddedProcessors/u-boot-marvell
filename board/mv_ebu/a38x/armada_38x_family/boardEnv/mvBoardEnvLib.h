@@ -175,10 +175,11 @@ typedef enum _mvModuleTypeID {
 	MV_MODULE_SDIO				= BIT6,	/* SDIO board SLM 1361	*/
 	MV_MODULE_SGMII				= BIT7,	/* SGMII board SLM 1364	*/
 	MV_MODULE_DB381_SGMII			= BIT8,	/* DB-381 SGMII SLM 1426 */
-	MV_MODULE_NAND_ON_BOARD			= BIT9,	/* ON board nand - detected via S@R bootsrc */
-	MV_MODULE_DB381_MMC_8BIT_ON_BOARD	= BIT10,/* ON board MMC 8bit - detected via S@R bootsrc */
-	MV_MODULE_TYPE_MAX_MODULE		= 9,
-	MV_MODULE_TYPE_MAX_OPTION		= 10
+	MV_MODULE_SWITCH			= BIT9,/* SWITCH board SLM 1375	*/
+	MV_MODULE_NAND_ON_BOARD			= BIT10,	/* ON board nand - detected via S@R bootsrc */
+	MV_MODULE_DB381_MMC_8BIT_ON_BOARD	= BIT11,/* ON board MMC 8bit - detected via S@R bootsrc */
+	MV_MODULE_TYPE_MAX_MODULE		= 10,
+	MV_MODULE_TYPE_MAX_OPTION		= 11
 } MV_MODULE_TYPE_ID;
 
 typedef struct _devCsInfo {
@@ -190,6 +191,17 @@ typedef struct _devCsInfo {
 	MV_U8 busNum;
 	MV_BOOL active;
 } MV_DEV_CS_INFO;
+
+struct MV_BOARD_SWITCH_INFO {
+	MV_BOOL isEnabled;
+	MV_32 switchIrq;
+	MV_32 switchPort[BOARD_ETH_SWITCH_PORT_NUM];
+	MV_32 cpuPort;
+	MV_32 connectedPort[MV_ETH_MAX_PORTS];
+	MV_32 smiScanMode;
+	MV_32 quadPhyAddr;
+	MV_U32 forceLinkMask; /* Bitmask of switch ports to have force link (1Gbps) */
+};
 
 typedef enum _SatRstatus {
 	SATR_READ_ONLY = 0x01,
@@ -389,6 +401,9 @@ typedef struct _boardInfo {
 	MV_BOOL isAmc;			/* AMC active: used for DT update & switching services */
 	MV_BOOL isAudioConnected;	/* indicates if SPDIF/I2S is connected */
 	MV_BOOL isTdmConnected;		/* indicates if TDM module is connected */
+	/* External Switch Configuration */
+	struct MV_BOARD_SWITCH_INFO *pSwitchInfo;
+	MV_U32 switchInfoNum;
 } MV_BOARD_INFO;
 
 struct _mvBoardMppModule {
@@ -437,6 +452,11 @@ struct _mvBoardMppModule {
 
 #define MSAR_0_SPI0                             0
 #define MSAR_0_SPI1                             1
+
+/* definition for switch device scan mode */
+#define MV_SWITCH_SMI_AUTO_SCAN_MODE         0    /* Scan 0 or 0x10 base address to find the QD */
+#define MV_SWITCH_SMI_MANUAL_MODE            1    /* Use QD located at manually defined base addr */
+#define MV_SWITCH_SMI_MULTI_ADDR_MODE        2    /* Use QD at base addr and use indirect access */
 
 MV_VOID mvBoardEnvInit(MV_VOID);
 MV_U16 mvBoardModelGet(MV_VOID);
@@ -511,7 +531,7 @@ MV_STATUS mvBoardTwsiGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regN
 MV_STATUS mvBoardTwsiSet(MV_BOARD_TWSI_CLASS twsiClass, MV_U8 devNum, MV_U8 regNum, MV_U8 *regVal, MV_U32 len);
 MV_U8 mvBoardCpuFreqGet(MV_VOID);
 MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal);
-MV_STATUS mvBoardIsInternalSwitchConnected(void);
+MV_STATUS mvBoardIsSwitchConnected(void);
 MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx);
 MV_U32 mvBoardFreqModesNumGet(void);
 MV_32 mvBoardSmiScanModeGet(MV_U32 switchIdx);
@@ -519,6 +539,9 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum);
 MV_VOID mvBoardMacSpeedSet(MV_U32 ethPortNum, MV_BOARD_MAC_SPEED speed);
 MV_VOID mvBoardMacSpeedSet(MV_U32 ethPortNum, MV_BOARD_MAC_SPEED macSpeed);
 MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx);
+MV_32 mvBoardSwitchPhyAddrGet(MV_U32 switchIdx);
+MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort);
+MV_VOID mvBoardModuleSwitchInfoUpdate(MV_BOOL switchDetected);
 MV_U32 mvBoardMacCpuPortGet(MV_VOID);
 MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum);
 MV_BOOL mvBoardIsEthActive(MV_U32 ethNum);

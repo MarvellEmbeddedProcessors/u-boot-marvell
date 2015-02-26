@@ -80,6 +80,7 @@
 #include "eth/gbe/mvEthRegs.h"
 #endif
 #include "mvSysEthPhyApi.h"
+#include "ethSwitch/mvSwitchRegs.h"
 #include "ethSwitch/mvSwitch.h"
 
 #if defined (MV88F66XX)
@@ -191,7 +192,9 @@ void mvBoardLedMatrixPhyInit(MV_U16 smiAddr, MV_BOOL internalPhy)
 *******************************************************************************/
 void mvBoardLedMatrixInit(void)
 {
+#ifdef MV_INCLUDE_SWITCH
 	MV_U8 i;
+#endif
 
 	if (mvCtrlDevFamilyIdGet(0) == MV_88F67X0)
 		/* Led matrix mode in 7Bit */
@@ -205,6 +208,7 @@ void mvBoardLedMatrixInit(void)
 		/* Use an internal device signal to drive the LED Matrix Control */
 		MV_REG_WRITE(LED_MATRIX_CONTROL_REG(2), BIT0 | BIT2 | BIT3 | BIT5);
 
+#ifdef MV_INCLUDE_SWITCH
 		/* initialize internal PHYs controlled by switch */
 		if (mvBoardIsInternalSwitchConnected() == MV_TRUE) {
 			for (i = 0; i < 4; i++) {
@@ -218,6 +222,7 @@ void mvBoardLedMatrixInit(void)
 				mvEthSwitchPhyRegWrite(0x0, i, 0x16, 0x0);
 			}
 		}
+#endif
 	}
 
 	/* initialize External RGMII-0 PHY (SMI controlled by MAC0 @address 0x1) */
@@ -286,6 +291,9 @@ void mvBoardEgigaPhyInit(void)
 	int i;
 	MV_STATUS   status;
 	MV_U32 phyAddr;
+#ifdef MV_INCLUDE_SWITCH
+	MV_U16 switchDeviceID;
+#endif
 
 	for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
 		if (MV_FALSE == mvCtrlPwrClckGet(ETH_GIG_UNIT_ID, i))
@@ -320,6 +328,25 @@ void mvBoardEgigaPhyInit(void)
 			 mvNetaPhyAddrPollingDisable(i);
 		}
 	}
+
+#ifdef MV_INCLUDE_SWITCH
+	switchDeviceID = mvEthSwitchGetDeviceID();
+	if (mvBoardIsSwitchConnected()) {
+		switchDeviceID >>= QD_REG_SWITCH_ID_PRODUCT_NUM_OFFSET;
+		for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
+			/*force the switch connected eth port link up and disable auto-neg, bit 15 must set to 1*/
+			if (mvBoardSwitchConnectedPortGet(i) != -1)
+				MV_REG_WRITE((NETA_GMAC_AN_CTRL_REG(i) + INTER_REGS_BASE),
+					(NETA_FORCE_LINK_PASS_MASK | NETA_SET_GMII_SPEED_1000_MASK |
+					NETA_SET_FLOW_CONTROL_MASK | NETA_FLOW_CONTROL_ADVERTISE_MASK |
+					NETA_SET_FULL_DUPLEX_MASK | BIT15)/*0x9342*/);
+		}
+
+		/*now only E6172 switch works for NETA, so here no other switch initialization is called*/
+		if (switchDeviceID == MV_E6172_PRODUCT_NUM)
+			mvEthE6172SwitchBasicInit(0);
+	}
+#endif
 
 #elif defined (MV88F66XX) /* Avanta-LP: dynamic PPv2 configuration */
         MV_U32 ethComplex = mvBoardEthComplexConfigGet();

@@ -194,7 +194,9 @@ MV_BOARD_INFO armada_39x_customer_board_0_info = {
 	.configAutoDetect		= MV_FALSE,
 	.numIoExp			= 0,
 	.pIoExp				= NULL,
-	.boardOptionsModule		= MV_MODULE_NO_MODULE
+	.boardOptionsModule		= MV_MODULE_NO_MODULE,
+	.pSwitchInfo			= NULL,
+	.switchInfoNum			= 0
 };
 
 /*
@@ -342,10 +344,11 @@ MV_BOARD_INFO db88f69xx_board_info = {
 	.numIoExp			= 0,
 	.pIoExp				= NULL,
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
-
 	/* Audio */
 	.isAudioConnected		= MV_FALSE,
-	.isTdmConnected			= MV_FALSE
+	.isTdmConnected			= MV_FALSE,
+	.pSwitchInfo			= NULL,
+	.switchInfoNum			= 0
 };
 
 MV_BOARD_INFO *marvellBoardInfoTbl[] = {

@@ -197,7 +197,9 @@ MV_BOARD_INFO armada_38x_customer_board_0_info = {
 	.configAutoDetect		= MV_FALSE,
 	.numIoExp			= ARRSZ(armada_38x_customer_0_IoExpanderInfo),
 	.pIoExp				= armada_38x_customer_0_IoExpanderInfo,
-	.boardOptionsModule		= MV_MODULE_NO_MODULE
+	.boardOptionsModule		= MV_MODULE_NO_MODULE,
+	.pSwitchInfo			= NULL,
+	.switchInfoNum			= 0
 };
 
 /*******************************************************************************
@@ -324,7 +326,9 @@ MV_BOARD_INFO armada_38x_customer_board_1_info = {
 	.configAutoDetect		= MV_FALSE,
 	.numIoExp			= ARRSZ(armada_38x_customer_1_IoExpanderInfo),
 	.pIoExp				= armada_38x_customer_1_IoExpanderInfo,
-	.boardOptionsModule		= MV_MODULE_NO_MODULE
+	.boardOptionsModule		= MV_MODULE_NO_MODULE,
+	.pSwitchInfo			= NULL,
+	.switchInfoNum			= 0
 };
 
 /*
@@ -401,6 +405,19 @@ MV_BOARD_TDM_INFO db88f68xxTdm880[] = { {0} };
 
 MV_BOARD_TDM_SPI_INFO db88f68xxTdmSpiInfo[] = { {1} };
 
+struct MV_BOARD_SWITCH_INFO db88f68xxSwitchInfo[] = {
+	{
+		.isEnabled = MV_FALSE,
+		.switchIrq = -1,	/* set to -1 for using PPU*/
+		.switchPort = {0, 1, 2, 3, 4, 5, 6},
+		.cpuPort = 6,
+		.connectedPort = {5, 6, -1},
+		.smiScanMode = MV_SWITCH_SMI_MULTI_ADDR_MODE,
+		.quadPhyAddr = 2,
+		.forceLinkMask = 0x60
+	}
+};
+
 MV_BOARD_INFO db88f68xx_board_info = {
 	.boardName		= "DB-88F6820-BP",
 	.compatibleDTName	= "a385-db",
@@ -469,7 +486,9 @@ MV_BOARD_INFO db88f68xx_board_info = {
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
 	.isAmc				= MV_FALSE,
 	.isAudioConnected		= MV_FALSE,
-	.isTdmConnected			= MV_FALSE
+	.isTdmConnected			= MV_FALSE,
+	.pSwitchInfo			= db88f68xxSwitchInfo,
+	.switchInfoNum			= ARRSZ(db88f68xxSwitchInfo)
 };
 
 /*******************************************************************************
@@ -575,7 +594,9 @@ MV_BOARD_INFO rdNas88f68XX_board_info = {
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
 	.isAmc				= MV_FALSE,
 	.isAudioConnected		= MV_FALSE,
-	.isTdmConnected			= MV_FALSE
+	.isTdmConnected			= MV_FALSE,
+	.pSwitchInfo			= NULL,
+	.switchInfoNum			= 0
 };
 /*******************************************************************************
  * A380 RD-WAP-88F68XX board */
@@ -661,7 +682,9 @@ MV_BOARD_INFO rdWAP88f68XX_board_info = {
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
 	.isAmc				= MV_FALSE,
 	.isAudioConnected		= MV_FALSE,
-	.isTdmConnected			= MV_FALSE
+	.isTdmConnected			= MV_FALSE,
+	.pSwitchInfo			= NULL,
+	.switchInfoNum			= 0
 };
 
 /*******************************************************************************
@@ -780,7 +803,9 @@ MV_BOARD_INFO dbAP88f68xx_board_info = {
 	.boardOptionsModule             = MV_MODULE_NO_MODULE,
 	.isAmc				= MV_FALSE,
 	.isAudioConnected		= MV_FALSE,
-	.isTdmConnected			= MV_FALSE
+	.isTdmConnected			= MV_FALSE,
+	.pSwitchInfo			= NULL,
+	.switchInfoNum			= 0
 };
 
 /*******************************************************************************
@@ -904,7 +929,9 @@ MV_BOARD_INFO dbGP88f68XX_board_info = {
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
 	.isAmc				= MV_FALSE,
 	.isAudioConnected		= MV_FALSE,
-	.isTdmConnected			= MV_FALSE
+	.isTdmConnected			= MV_FALSE,
+	.pSwitchInfo			= NULL,
+	.switchInfoNum			= 0
 };
 
 /*******************************************************************************
@@ -1014,7 +1041,9 @@ MV_BOARD_INFO db88f6821_board_info = {
 	.boardOptionsModule	= MV_MODULE_NO_MODULE,
 	.isAmc			= MV_FALSE,
 	.isAudioConnected	= MV_FALSE,
-	.isTdmConnected		= MV_FALSE
+	.isTdmConnected		= MV_FALSE,
+	.pSwitchInfo		= NULL,
+	.switchInfoNum		= 0
 };
 
 /*******************************************************************************
@@ -1115,7 +1144,9 @@ MV_BOARD_INFO dbAmc88f68xx_board_info = {
 	.boardOptionsModule	= MV_MODULE_NO_MODULE,
 	.isAmc			= MV_TRUE,	/* for DT update and switching services */
 	.isAudioConnected	= MV_FALSE,
-	.isTdmConnected		= MV_FALSE
+	.isTdmConnected		= MV_FALSE,
+	.pSwitchInfo		= NULL,
+	.switchInfoNum		= 0
 };
 
 MV_BOARD_INFO *marvellBoardInfoTbl[] = {

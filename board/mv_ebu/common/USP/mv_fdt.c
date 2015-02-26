@@ -27,6 +27,8 @@ disclaimer.
 #include "libfdt.h"
 #include "fdt_support.h"
 #include "mvBoardEnvLib.h"
+#include "ethSwitch/mvSwitchRegs.h"
+#include "ethSwitch/mvSwitch.h"
 
 /*******************************************************************************
 * fdt_env_setup
@@ -110,6 +112,9 @@ static int mv_fdt_update_pinctrl(void *fdt);
 #ifdef MV_INCLUDE_AUDIO
 static int mv_fdt_update_audio(void *fdt);
 #endif
+#ifdef MV_INCLUDE_SWITCH
+static int mv_fdt_update_switch(void *fdt);
+#endif
 static int mv_fdt_debug;
 #ifdef CONFIG_MV_SDHCI
 static int mv_fdt_update_sdhci(void *fdt);
@@ -150,6 +155,9 @@ update_fnc_t *update_sequence[] = {
 	mv_fdt_update_pic_gpio,
 #ifdef MV_INCLUDE_AUDIO
 	mv_fdt_update_audio,			/* Update audio-controller+sound nodes in DT */
+#endif
+#ifdef MV_INCLUDE_SWITCH
+	mv_fdt_update_switch,
 #endif
 	NULL,
 };
@@ -1606,4 +1614,127 @@ static int mv_fdt_update_pic_gpio(void *fdt)
 	return 0;
 }
 
+#ifdef MV_INCLUDE_SWITCH
+/*******************************************************************************
+* mv_fdt_update_switch
+*
+* DESCRIPTION:
+*  This routines updates switch node and ethernet-phy node on status and rgmii_(t)rx_timing_delay properties
+*  according to Switch existence and Device ID detection, this route also set ethernet-phy@i node on reg property
+*  if ethi is connected to switch
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
+static int mv_fdt_update_switch(void *fdt)
+{
+	char propval[10];				/* property value */
+	u32 propval_u32 = 0;
+	char prop[50];					/* property name */
+	char node[64];					/* node name */
+	MV_U16 switch_device_id;
+	int nodeoffset;					/* node offset from libfdt */
+	int err;
+
+	switch_device_id = mvEthSwitchGetDeviceID();
+
+	/*if switch module is connected and detect correct switch device ID, enable switch in fdt*/
+	if (switch_device_id > 0)
+		sprintf(propval, "okay");
+	else
+		sprintf(propval, "disabled");
+
+	sprintf(node, "switch");
+	sprintf(prop, "status");
+
+	if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
+		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+		return 0;
+	}
+
+	if (mvBoardIsSwitchConnected()) {
+		int i = 0;
+		switch_device_id >>= QD_REG_SWITCH_ID_PRODUCT_NUM_OFFSET;
+
+		for (i = 0; i < mvCtrlEthMaxPortGet(); i++) {
+			/*change the switch connected eth ports' phy to 999*/
+			/*999 mean that ethernet is not connected to phy*/
+			if (mvBoardSwitchConnectedPortGet(i) != -1) {
+				sprintf(node, "ethernet-phy@%d", i);
+				sprintf(prop, "reg");
+				propval_u32 = 999;
+
+				nodeoffset = mv_fdt_find_node(fdt, node);
+				if (nodeoffset < 0) {
+					mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+					return -1;
+				}
+
+				/* Setup PHY address in DT in "reg" property of an appropriate PHY node.
+				This value is HEX number, not a string, and uses network byte order */
+				propval_u32 = htonl(propval_u32);
+				mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
+					&propval_u32, sizeof(propval_u32)));
+				if (err < 0) {
+					mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
+					return -1;
+				}
+			}
+		}
+
+		/*for E6172 switch, rgmii_rx_timing_delay and rgmii_tx_timing_delay should be enabled*/
+		if (switch_device_id == MV_E6172_PRODUCT_NUM) {
+			/*set rgmii_rx_timing_delay and rgmii_tx_timing_delay to be enabled*/
+			sprintf(node, "switch");
+			sprintf(prop, "rgmii_rx_timing_delay");
+			/*enable delay to RXCLK for IND inputs when port is in RGMII mode*/
+			propval_u32 = 1;
+
+			nodeoffset = mv_fdt_find_node(fdt, node);
+			if (nodeoffset < 0) {
+				mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+				return -1;
+			}
+
+			/* Setup rgmii_rx_timing_delay in DT.
+			This value is HEX number, not a string, and uses network byte order */
+			propval_u32 = htonl(propval_u32);
+			mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop, &propval_u32, sizeof(propval_u32)));
+			if (err < 0) {
+				mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
+				return -1;
+			}
+
+			sprintf(node, "switch");
+			sprintf(prop, "rgmii_tx_timing_delay");
+			/*enable delay to GTXCLK for OUTD outputs when port is in RGMII mode*/
+			propval_u32 = 1;
+			nodeoffset = mv_fdt_find_node(fdt, node);
+			if (nodeoffset < 0) {
+				mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+				return -1;
+			}
+
+			/* Setup rgmii_tx_timing_delay in DT.
+			This value is HEX number, not a string, and uses network byte order */
+			propval_u32 = htonl(propval_u32);
+			mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop, &propval_u32, sizeof(propval_u32)));
+			if (err < 0) {
+				mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
+				return -1;
+			}
+		}
+	}
+
+	return 0;
+}
 #endif
+#endif
+

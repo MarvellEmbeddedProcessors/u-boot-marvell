@@ -41,6 +41,7 @@ disclaimer.
 #define MV_INCLUDE_RTC
 
 #define MV_INCLUDE_CLK_PWR_CNTRL
+#define MV_INCLUDE_SWITCH
 
 /*
  * Board devices

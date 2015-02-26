@@ -72,6 +72,12 @@
 #define CONFIG_CUSTOMER_BOARD_SUPPORT
 #endif
 
+#ifdef MV_INCLUDE_SWITCH
+/*ARMADA38x switch resgiters are accessed by SMI*/
+/*we provide name unified switch register access APIs with different implementations according to the access way*/
+#define MV_SWITCH_SMI_ACCESS
+#endif
+
 #define MV_USB
 #define MV_FS
 #define CONFIG_CMD_DATE

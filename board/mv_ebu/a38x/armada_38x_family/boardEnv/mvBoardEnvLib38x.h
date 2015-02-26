@@ -99,6 +99,7 @@ enum {
 { MV_MODULE_SDIO,		0x4,	0,	 0x2,	{ 0, 1, 0, 0, 0, 0, 0} }, \
 { MV_MODULE_SGMII,		0x2,	0,	 0xF,	{ 0, 1, 0, 0, 0, 0, 0} }, \
 { MV_MODULE_DB381_SGMII,	0x0,	0,	 0x2,	{ 0, 0, 0, 0, 0, 1, 0} }, \
+{ MV_MODULE_SWITCH,		0x5,	0,	 0xE,	{ 0, 1, 0, 0, 0, 0, 0} }, \
 };
 
 #define MPP_MII_MODULE		{ {0, 0x10111111}, {1, 0x11111111}, {2, 0x11211111} }

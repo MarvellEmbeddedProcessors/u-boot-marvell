@@ -17,6 +17,7 @@ MAKE_USB = yes
 MAKE_PPV2 = yes
 MAKE_GENERAL_U_BOOT_TOOLS = yes
 MAKE_SPI_NAND = yes
+MAKE_SWITCH = yes
 endif
 
 ifeq ($(BOARD),a375)
@@ -34,6 +35,7 @@ MAKE_GENERAL_U_BOOT_TOOLS = yes
 MAKE_SPI_NAND = yes
 MAKE_RTC2 = yes
 MAKE_SWITCH_SERVICES = yes
+MAKE_SWITCH = yes
 endif
 
 ifeq ($(BOARD),msys)
@@ -120,8 +122,6 @@ ETH_OBJS =	$(HAL_IF_DIR)/mvSysPp2.o 		\
 		$(HAL_PP2_CLS_DIR)/mvPp2Classifier.o	\
 		$(HAL_PP2_COMMON_DIR)/mvPp2Common.o	\
 		$(USP_DIR)/mv_egiga_pp2.o
-
-USP_OBJS +=	$(USP_ETH_SWITCH_DIR)/mvSwitch.o
 endif
 
 ifdef MAKE_SWITCH_SERVICES
@@ -139,6 +139,9 @@ ETH_OBJS =	$(HAL_IF_DIR)/mvSysNeta.o		\
 		$(USP_DIR)/mv_egiga_neta.o
 endif
 
+ifdef MAKE_SWITCH
+USP_OBJS +=	$(USP_ETH_SWITCH_DIR)/mvSwitch.o
+endif
 
 ifdef MAKE_USB
 HAL_IF_OBJS += 	$(HAL_IF_DIR)/mvSysUsb.o

@@ -67,6 +67,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mvTypes.h"
 
+/* definition for device scan mode */
+#define SMI_AUTO_SCAN_MODE        0    /* Scan 0 or 0x10 base address to find the QD */
+#define SMI_MANUAL_MODE            1    /* Use QD located at manually defined base addr */
+#define SMI_MULTI_ADDR_MODE        2    /* Use QD at base addr and use indirect access */
+
 MV_VOID	mvEthE6063SwitchBasicInit(MV_U32 ethPortNum);
 MV_VOID	mvEthE6065_61SwitchBasicInit(MV_U32 ethPortNum);
 MV_VOID	mvEthE6131SwitchBasicInit(MV_U32 ethPortNum);
@@ -76,9 +81,10 @@ void mvEthSwitchRegRead(MV_U32 ethPortNum, MV_U32 phyAddr, MV_U32 regOffs, MV_U1
 void mvEthSwitchRegWrite(MV_U32 ethPortNum, MV_U32 phyAddr, MV_U32 regOffs, MV_U16 data);
 void mvEthSwitchPhyRegRead(MV_U32 ethPortNum, MV_U16 prt, MV_U16 regOffs, MV_U16 *data);
 void mvEthSwitchPhyRegWrite(MV_U32 ethPortNum, MV_U16 prt, MV_U16 regOffs, MV_U16 data);
-
+MV_U16 mvEthSwitchGetDeviceID(void);
 #ifdef MV88F66XX
 MV_VOID mvAlpBoardSwitchBasicInit(MV_U32 enabledPorts);
 #endif
+MV_VOID	mvEthE6172SwitchBasicInit(MV_U32 ethPortNum);
 
 #endif /* __INCETHSWITCHH */

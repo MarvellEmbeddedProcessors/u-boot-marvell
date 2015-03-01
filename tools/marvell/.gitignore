@@ -29,6 +29,7 @@ setparams
 /gdb/gdbcont
 /gdb/gdbsend
 /bin_hdr/src_ddr/ddr3lib/
+/bin_hdr/src_ddr/ddr3libv2/
 doimage*
 linker.scr
 linker_sec.scr

@@ -135,7 +135,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /* IDMA_UNIT_ID     */		{ 0,	0,	0,	0},
 /* XOR_UNIT_ID      */		{ 2,	2,	2,	2},
 /* SATA_UNIT_ID     */		{ 2,	2,	2,	4},
-/* TDM_32CH_UNIT_ID */		{ 1,	1,	0,	1},
+/* TDM_UNIT_ID      */		{ 1,	1,	0,	1},
 /* UART_UNIT_ID     */		{ 4,	4,	4,	4},
 /* CESA_UNIT_ID     */		{ 2,	2,	2,	2},
 /* SPI_UNIT_ID      */		{ 2,	2,	2,	2},
@@ -649,6 +649,11 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 
 	/* Enable arbitration between device and NAND */
 	MV_REG_BIT_SET(SOC_DEV_MUX_REG, BIT27);
+
+#if defined(MV_INCLUDE_TDM)
+	mvCtrlTdmClkPllConfig();
+	mvCtrlTdmClkCtrlConfig();
+#endif
 
 	/* Disable MBUS Err Prop - inorder to avoid data aborts */
 	MV_REG_BIT_RESET(SOC_COHERENCY_FABRIC_CTRL_REG, BIT8);
@@ -1190,6 +1195,122 @@ MV_U32 mvCtrlSdioSupport(MV_VOID)
 
 #endif
 
+#if defined(MV_INCLUDE_TDM)
+/*******************************************************************************
+* mvCtrlTdmClkPllConfig - Set TDM APll output to 24.276MHz
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_VOID mvCtrlTdmClkPllConfig(MV_VOID)
+{
+	u32 reg_val;
+	u16 freq_offset = 0x22b0;
+	u8 tdm_postdiv = 0x6, fb_clk_div = 0x1d;
+
+	/* Set frequency offset value to not valid and enable PLL reset */
+	reg_val = MV_REG_READ(TDM_PLL_CONF_REG1);
+	reg_val &= ~TDM_PLL_FREQ_OFFSET_VALID;
+	reg_val &= ~TDM_PLL_SW_RESET;
+	MV_REG_WRITE(TDM_PLL_CONF_REG1, reg_val);
+
+	mvOsUDelay(1);
+
+	/* Update PLL parameters */
+	reg_val = MV_REG_READ(TDM_PLL_CONF_REG0);
+	reg_val &= ~TDM_PLL_FB_CLK_DIV_MASK;
+	reg_val |= (fb_clk_div << TDM_PLL_FB_CLK_DIV_OFFSET);
+	MV_REG_WRITE(TDM_PLL_CONF_REG0, reg_val);
+
+	reg_val = MV_REG_READ(TDM_PLL_CONF_REG2);
+	reg_val &= ~TDM_PLL_POSTDIV_MASK;
+	reg_val |= tdm_postdiv;
+	MV_REG_WRITE(TDM_PLL_CONF_REG2, reg_val);
+
+	reg_val = MV_REG_READ(TDM_PLL_CONF_REG1);
+	reg_val &= ~TDM_PLL_FREQ_OFFSET_MASK;
+	reg_val |= freq_offset;
+	MV_REG_WRITE(TDM_PLL_CONF_REG1, reg_val);
+
+	mvOsUDelay(1);
+
+	/* Disable reset */
+	reg_val |= TDM_PLL_SW_RESET;
+	MV_REG_WRITE(TDM_PLL_CONF_REG1, reg_val);
+
+	/* Wait 50us for PLL to lock */
+	mvOsUDelay(50);
+
+	/* Restore frequency offset value validity */
+	reg_val |= TDM_PLL_FREQ_OFFSET_VALID;
+	MV_REG_WRITE(TDM_PLL_CONF_REG1, reg_val);
+}
+
+/*******************************************************************************
+* mvCtrlTdmClkCtrlConfig - Set TDM Clock Out Divider Control register
+*
+* DESCRIPTION:
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_VOID mvCtrlTdmClkCtrlConfig(MV_VOID)
+{
+	MV_U32 reg_val, pcmClkFreq;
+
+#if defined(MV_TDM_PCM_CLK_8MHZ)
+	pcmClkFreq = DCO_CLK_DIV_RATIO_8M;
+#elif defined(MV_TDM_PCM_CLK_4MHZ)
+	pcmClkFreq = DCO_CLK_DIV_RATIO_4M;
+#elif defined(MV_TDM_PCM_CLK_2MHZ)
+	pcmClkFreq = DCO_CLK_DIV_RATIO_2M;
+#else
+	pcmClkFreq = DCO_CLK_DIV_RATIO_8M;
+#endif
+
+	/* Disable output clock */
+	reg_val = MV_REG_READ(CORE_DIVCLK_CTRL_REG);
+	MV_REG_WRITE(CORE_DIVCLK_CTRL_REG,
+		     MV_BIT_CLEAR(reg_val, DCO_CLK_DIV_RESET_OFFS));
+
+	/* Set DCO source ratio */
+	reg_val = MV_REG_READ(CORE_DIVCLK_CTRL_REG);
+	MV_REG_WRITE(CORE_DIVCLK_CTRL_REG,
+		     (reg_val & ~DCO_CLK_DIV_RATIO_MASK) | pcmClkFreq);
+
+	/* Reload new DCO source ratio */
+	reg_val = MV_REG_READ(CORE_DIVCLK_CTRL_REG);
+	MV_REG_WRITE(CORE_DIVCLK_CTRL_REG,
+		     MV_BIT_SET(reg_val, DCO_CLK_DIV_MOD_OFFS));
+	mvOsDelay(1);
+
+	reg_val = MV_REG_READ(CORE_DIVCLK_CTRL_REG);
+	MV_REG_WRITE(CORE_DIVCLK_CTRL_REG,
+		     MV_BIT_CLEAR(reg_val, DCO_CLK_DIV_MOD_OFFS));
+	mvOsDelay(1);
+
+	/* Enable output clock */
+	reg_val = MV_REG_READ(CORE_DIVCLK_CTRL_REG);
+	MV_REG_WRITE(CORE_DIVCLK_CTRL_REG,
+		     MV_BIT_SET(reg_val, DCO_CLK_DIV_RESET_OFFS));
+}
+
 /*******************************************************************************
 * mvCtrlTdmSupport - Return if this controller has integrated TDM flash support
 *
@@ -1249,7 +1370,7 @@ MV_U32 mvCtrlTdmMaxGet(MV_VOID)
 *******************************************************************************/
 MV_TDM_UNIT_TYPE mvCtrlTdmUnitTypeGet(MV_VOID)
 {
-	return TDM_UNIT_2CH;
+	return MV_TDM_UNIT_TDM2C;
 }
 
 
@@ -1273,6 +1394,7 @@ MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID)
 {
 	return MV_TDM_IRQ_NUM;
 }
+#endif /* MV_INCLUDE_TDM */
 
 /*******************************************************************************
 * mvCtrlModelGet - Get Marvell controller device model (Id)

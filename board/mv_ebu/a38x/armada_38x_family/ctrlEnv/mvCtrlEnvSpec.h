@@ -128,7 +128,7 @@ extern "C" {
 #define MV_CESA_REGS_OFFSET(chanNum)            (0x9D000 + (chanNum * 0x2000))
 #define MV_SATA_REGS_OFFSET                     (0xA0000)
 #define MV_SATA3_REGS_OFFSET(u)			((u == 0) ? 0xA8000 : 0xE0000) /* sata register per unit*/
-#define MV_COMM_UNIT_REGS_OFFSET                (0xB0000)
+#define MV_TDM_REGS_OFFSET			(0xB0000)
 #define MV_BM_REGS_OFFSET                       (0xC8000)
 #define MV_NFC_REGS_OFFSET                      (0xD0000)
 #define MV_SDMMC_REGS_OFFSET			(0xD8000)
@@ -278,8 +278,9 @@ typedef enum {
 } MV_SLIC_UNIT_TYPE;
 
 typedef enum {
-	TDM_UNIT_2CH,
-	TDM_UNIT_8CH
+	MV_TDM_UNIT_NONE,
+	MV_TDM_UNIT_TDM2C,
+	MV_TDM_UNIT_TDMMC
 } MV_TDM_UNIT_TYPE;
 
 typedef enum _mvUnitId {

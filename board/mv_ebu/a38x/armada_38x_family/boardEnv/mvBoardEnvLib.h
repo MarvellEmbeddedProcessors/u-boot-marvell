@@ -475,6 +475,8 @@ MV_U32 mvBoardSlicUnitTypeGet(MV_VOID);
 MV_VOID mvBoardSlicUnitTypeSet(MV_U32 slicType);
 MV_32 mvBoardMppGet(MV_U32 mppGroupNum);
 MV_VOID mvBoardMppSet(MV_U32 mppGroupNum, MV_U32 mppValue);
+MV_32 mvBoardTdmSpiModeGet(MV_VOID);
+MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId);
 MV_U8 mvBoardTdmSpiIdGet(MV_VOID);
 MV_VOID mvBoardConfigurationPrint(MV_VOID);
 MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum);

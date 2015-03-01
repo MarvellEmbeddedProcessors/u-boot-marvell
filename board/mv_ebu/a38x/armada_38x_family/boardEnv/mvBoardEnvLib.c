@@ -1365,6 +1365,81 @@ MV_VOID mvBoardConfigWrite(void)
 }
 
 /*******************************************************************************
+* mvBoardTdmSpiModeGet - return SLIC/DAA connection
+*
+* DESCRIPTION:
+*
+* INPUT:
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*
+*******************************************************************************/
+MV_32 mvBoardTdmSpiModeGet(MV_VOID)
+{
+	return 0;
+}
+
+/*******************************************************************************
+* mvBoardTdmSpiCsGet
+*
+* DESCRIPTION:
+*	Return the SPI Chip-select number for a given device.
+*
+* INPUT:
+*	devId	- The Slic device ID to get the SPI CS for.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	The SPI CS if found, -1 otherwise.
+*
+*******************************************************************************/
+MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId)
+{
+	MV_16 index;
+
+	index = board->boardTdmInfoIndex;
+	if (index == (MV_16)-1)
+		return 0;
+
+	if (devId >= board->numBoardTdmInfo[(MV_U8)index])
+		return -1;
+
+	return board->pBoardTdmInt2CsInfo[(MV_U8)index][devId].spiCs;
+}
+
+/*******************************************************************************
+* mvBoardTdmSpiIdGet
+*
+* DESCRIPTION:
+*	Return SPI port ID per board.
+*
+* INPUT:
+*	None
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	SPI port ID.
+*
+*******************************************************************************/
+MV_U8 mvBoardTdmSpiIdGet(MV_VOID)
+{
+	MV_16 index;
+
+	index = board->boardTdmInfoIndex;
+	if (index == (MV_16)-1)
+		return 0;
+
+	return board->pBoardTdmSpiInfo[(MV_U8)index].spiId;
+}
+
+/*******************************************************************************
 * mvBoardIsGbEPortConnected
 *
 * DESCRIPTION:

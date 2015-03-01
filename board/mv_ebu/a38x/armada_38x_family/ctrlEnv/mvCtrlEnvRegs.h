@@ -81,7 +81,7 @@ extern "C" {
 #define PCCRIR_REVID_MASK                       (0xff << PCCRIR_REVID_OFFS)
 
 /* Controler environment registers offsets */
-#define MV_TDM_IRQ_NUM                          56
+#define MV_TDM_IRQ_NUM				59
 
 /* CIB registers offsets */
 #define MV_CIB_CTRL_CFG_REG                     (MV_COHERENCY_FABRIC_OFFSET + 0x80)
@@ -230,6 +230,36 @@ extern "C" {
 
 /* USB3 registers */
 #define MV_USB3_WIN_BASE(dev)		(MV_USB3_REGS_BASE(dev) + 0x4000)
+
+/* Core DivClk Control Register */
+#define CORE_DIVCLK_CTRL_REG			0x18730
+
+/* DCO clock apply/reset bits */
+#define DCO_CLK_DIV_MOD_OFFS			24
+#define DCO_CLK_DIV_APPLY			(0x1 << DCO_CLK_DIV_MOD_OFFS)
+#define DCO_CLK_DIV_RESET_OFFS			25
+#define DCO_CLK_DIV_RESET			(0x1 << DCO_CLK_DIV_RESET_OFFS)
+
+/* DCO clock ratio is 24Mhz/x */
+#define DCO_CLK_DIV_RATIO_OFFS			26
+#define DCO_CLK_DIV_RATIO_MASK			(BIT26 | BIT27 | BIT28 | BIT29 | BIT30 | BIT31)
+#define DCO_CLK_DIV_RATIO_8M			(0x3 << DCO_CLK_DIV_RATIO_OFFS)
+#define DCO_CLK_DIV_RATIO_4M			(0x6 << DCO_CLK_DIV_RATIO_OFFS)
+#define DCO_CLK_DIV_RATIO_2M			(0xc << DCO_CLK_DIV_RATIO_OFFS)
+
+/* TDM PLL configuration registers */
+#define TDM_PLL_CONF_REG0			0x18400
+#define TDM_PLL_FB_CLK_DIV_OFFSET		10
+#define TDM_PLL_FB_CLK_DIV_MASK			0x7fc00
+
+#define TDM_PLL_CONF_REG1			0x18404
+#define TDM_PLL_FREQ_OFFSET_MASK		0xffff
+#define TDM_PLL_FREQ_OFFSET_VALID		BIT16
+#define TDM_PLL_SW_RESET			BIT31
+
+#define TDM_PLL_CONF_REG2			0x18408
+#define TDM_PLL_POSTDIV_MASK			0x7f
+
 
 /* Extract CPU, L2, DDR clocks SAR value from
 ** SAR bits 24-27

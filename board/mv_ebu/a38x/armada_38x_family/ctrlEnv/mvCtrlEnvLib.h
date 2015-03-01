@@ -259,10 +259,14 @@ MV_VOID mvCtrlUtmiPhySelectorSet(MV_U32 usbUnitId);
 #if defined(MV_INCLUDE_SDIO)
 MV_U32 mvCtrlSdioSupport(MV_VOID);
 #endif
+#if defined(MV_INCLUDE_TDM)
 MV_U32 mvCtrlTdmSupport(MV_VOID);
 MV_U32 mvCtrlTdmMaxGet(MV_VOID);
 MV_TDM_UNIT_TYPE mvCtrlTdmUnitTypeGet(MV_VOID);
 MV_U32 mvCtrlTdmUnitIrqGet(MV_VOID);
+MV_VOID mvCtrlTdmClkPllConfig(MV_VOID);
+MV_VOID mvCtrlTdmClkCtrlConfig(MV_VOID);
+#endif
 MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel);
 MV_U16 mvCtrlModelGet(MV_VOID);
 MV_U16 mvCtrlDeviceIdGet(MV_VOID);

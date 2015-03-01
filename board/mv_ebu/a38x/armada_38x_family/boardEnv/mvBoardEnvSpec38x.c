@@ -375,7 +375,7 @@ MV_DEV_CS_INFO db88f68xxInfoBoardDeCsInfo[] = {
 	{ SPI0_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_TRUE }	/* SPI0 DEV */
 };
 
-MV_BOARD_TDM_INFO db88f68xxTdm880[] = { {0} };
+MV_BOARD_TDM_INFO db88f68xxTdm3226[] = { {0} };
 
 MV_BOARD_TDM_SPI_INFO db88f68xxTdmSpiInfo[] = { {1} };
 
@@ -420,8 +420,9 @@ MV_BOARD_INFO db88f68xx_board_info = {
 
 	/* TDM */
 	.numBoardTdmInfo		= {1},
-	.pBoardTdmInt2CsInfo		= {db88f68xxTdm880},
+	.pBoardTdmInt2CsInfo		= {db88f68xxTdm3226},
 	.boardTdmInfoIndex		= 0,
+	.pBoardTdmSpiInfo		= db88f68xxTdmSpiInfo,
 
 	.pBoardSpecInit			= NULL,
 

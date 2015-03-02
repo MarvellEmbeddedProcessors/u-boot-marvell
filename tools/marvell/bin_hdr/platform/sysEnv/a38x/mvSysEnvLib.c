@@ -68,6 +68,8 @@
 #include "util.h"
 #include "mv_seq_exec.h"
 #include "printf.h"
+#include "generalInit.h"
+
 #ifdef MV88F69XX
        #include "ddr3_a39x.h"
 #else
@@ -80,15 +82,17 @@
 
 #ifdef CONFIG_ARMADA_38X
 MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
-/*                     6820    6810     6811     6828     */
-/* PEX_UNIT_ID      */ { 4,     3,       3,       4},
-/* ETH_GIG_UNIT_ID  */ { 3,		2,       3,       3},
-/* USB3H_UNIT_ID    */ { 2,     2,       2,       2},
-/* USB3D_UNIT_ID    */ { 1,     1,       1,       1},
-/* SATA_UNIT_ID     */ { 2,     2,       2,       4},
-/* QSGMII_UNIT_ID   */ { 1,     0,       0,       1},
-/* XAUI_UNIT_ID     */ { 0,     0,       0,       0},
-/* RXAUI_UNIT_ID    */ { 0,     0,       0,       0}
+/*                     6820    6810     6811     6828   6W22    6W23 */
+/*                     A385    A380     A381/2   A388   A383    A384 */
+/*                     ========= HW Flavors =========   == Virtual ==*/
+/* PEX_UNIT_ID      */ { 4,     3,       3,       4,	2,	2},
+/* ETH_GIG_UNIT_ID  */ { 3,	2,       3,       3,	2,	2},
+/* USB3H_UNIT_ID    */ { 2,     2,       2,       2,	1,	1},
+/* USB3D_UNIT_ID    */ { 1,     1,       1,       1,	0,	0},
+/* SATA_UNIT_ID     */ { 2,     2,       2,       4,	1,	1},
+/* QSGMII_UNIT_ID   */ { 1,     0,       0,       1,	0,	0},
+/* XAUI_UNIT_ID     */ { 0,     0,       0,       0,	0,	0},
+/* RXAUI_UNIT_ID    */ { 0,     0,       0,       0,	0,	0}
 };
 #else  /* if (CONFIG_ARMADA_39X) */
 MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
@@ -345,6 +349,7 @@ MV_SUSPEND_WAKEUP_STATUS mvSysEnvSuspendWakeupCheck(void)
 MV_U32 mvSysEnvIdIndexGet(MV_U32 ctrlModel)
 {
 	switch (ctrlModel) {
+	/* HW flavors - represented by devid bits in S@R @ 0x18600 */
 	case MV_6820_DEV_ID:
 		return MV_6820_INDEX;
 	case MV_6810_DEV_ID:
@@ -357,6 +362,11 @@ MV_U32 mvSysEnvIdIndexGet(MV_U32 ctrlModel)
 		return MV_6920_INDEX;
 	case MV_6928_DEV_ID:
 		return MV_6928_INDEX;
+	/* Virtual flavors - not represented by dev ID bits in S@R @ 0x18600 */
+	case MV_6W22_DEV_ID: /* 6W22=A383 */
+		return MV_6W22_INDEX;
+	case MV_6W23_DEV_ID: /* 6W23=A384 */
+		return MV_6W23_INDEX;
 	default:
 		return MV_6820_INDEX;
 	}
@@ -386,12 +396,16 @@ MV_U16 mvSysEnvModelGet(MV_VOID)
 	ctrlId = (ctrlId & (DEV_ID_REG_DEVICE_ID_MASK)) >> DEV_ID_REG_DEVICE_ID_OFFS;
 
 	switch (ctrlId) {
+	/* HW flavors - represented by devid bits in S@R @ 0x18600 */
 	case MV_6820_DEV_ID:
 	case MV_6810_DEV_ID:
 	case MV_6811_DEV_ID:
 	case MV_6828_DEV_ID:
 	case MV_6920_DEV_ID:
 	case MV_6928_DEV_ID:
+	/* Virtual flavors - not represented by dev ID bits in S@R @ 0x18600 */
+	case MV_6W22_DEV_ID: /* 6W22=A383 */
+	case MV_6W23_DEV_ID: /* 6W23=A384 */
 		return ctrlId;
 	default: /*Device ID Default for A38x: 6820 , for A39x: 6920 */
 	#ifdef MV88F68XX
@@ -403,25 +417,85 @@ MV_U16 mvSysEnvModelGet(MV_VOID)
 		return defaultCtrlId;
 	}
 }
+#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
+/************************************************************************************
+* mvSysEnvIsFlavourReduced
+* DESCRIPTION:		Reduced Flavor A383/A384 is simulated on
+*			DB-GP/DB-381/2. configured by SatR field 'flavor'
+ ***************************************************************************/
+MV_16 isFlavorReduced = -1;
+static MV_16 mvSysEnvIsFlavourReduced(MV_VOID)
+{
+	MV_TWSI_SLAVE twsiSlave;
+	MV_U8 reducedVal;
 
+	if (isFlavorReduced != -1)
+		return isFlavorReduced; /* read last value if already read from EEPROM */
+
+	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.moreThen256 = MV_TRUE;
+	twsiSlave.offset = 2;		/* SW EEPROM, register 2, bit 4 */
+
+	if (mvTwsiRead(0, &twsiSlave, &reducedVal, 1) != MV_OK) {
+		mvPrintf("%s: TWSI Read of 'flavor' failed\n", __func__);
+		return 0;
+	}
+	isFlavorReduced = !((reducedVal & SATR_DEVICE_FLAVOR_MASK) >> SATR_DEVICE_FLAVOR_OFFSET);
+
+
+	return isFlavorReduced;
+}
+#endif
 /************************************************************************************
 * mvSysEnvDeviceIdGet
-* DESCRIPTION:	 	Returns enum (0..7) index of the device model (ID)
+* DESCRIPTION:	Returns enum:
+*			(0..7) index of the device model (ID)
+*			(8..) index of the virtual device model (ID)
  ***************************************************************************/
 MV_U32 gDevId = -1;
 MV_U32 mvSysEnvDeviceIdGet(MV_VOID)
 {
-	char *deviceIdStr[7] = { "6810", "6820", "6811", "6828",
-				"NONE", "6920", "6928" };
+	char *deviceIdStr[10] = { "6810", "6820", "6811", "6828",
+				"NONE", "6920", "6928", "MAX_HW_DEV_ID",
+				"6W22", "6W23"}; /* 6W22=A383, 6W23=A384 */
+#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
+	MV_U32 boardId = mvBoardIdGet();
+#endif
 
 	if (gDevId != -1)
 		return gDevId;
 
+	/* read HW device ID value */
 	gDevId = MV_REG_READ(DEVICE_SAMPLE_AT_RESET1_REG);
 	gDevId = gDevId >> SAR_DEV_ID_OFFS & SAR_DEV_ID_MASK;
+	/* Virtual Reduced flavor Device IDs :
+		- Hardware Device ID's represented by index 0..7
+		- Virtual Device ID's represented by index 8..
+		- Customer boards: reduced flavor ID defined by REDUCED_FLAVOR value.
+		- Marvell boards: Reduced Flavor A383/A384 is simulated on DB-GP/DB-381/2
+		  only (configured by SatR field 'flavor').
+	 */
+#if defined(CONFIG_CUSTOMER_BOARD_SUPPORT)
+#ifdef REDUCED_FLAVOR
+	if (REDUCED_FLAVOR == 0x383)
+		gDevId = MV_6W22;
+	else if (REDUCED_FLAVOR == 0x384)
+		gDevId = MV_6W23;
+#endif
+#else
+	if (mvSysEnvIsFlavourReduced() == 1) {
+		if (boardId == DB_GP_68XX_ID)
+			gDevId = MV_6W23;
+		else if (boardId == DB_BP_6821_ID)
+			gDevId = MV_6W22;
+	}
+#endif
 	mvPrintf("Detected Device ID %s\n" ,deviceIdStr[gDevId]);
 	return gDevId;
 }
+
 
 /*******************************************************************************
 * mvSysEnvDeviceRevGet - Get Marvell controller device revision number

@@ -193,6 +193,9 @@
 #define DB_GET_MODE_SLM1364_ADDR                0x24
 #define DB381_GET_MODE_SLM1426_1427_ADDR	0x56
 
+#define SATR_DEVICE_FLAVOR_MASK			0x10 /* DB-GP & DB-381/2 boards : SatR field 'flavor'*/
+#define SATR_DEVICE_FLAVOR_OFFSET		4
+
 /* DB-BP Board 'SatR' mapping */
 #define SATR_DB_LANE1_MAX_OPTIONS		7
 #define SATR_DB_LANE1_CFG_MASK			0x7
@@ -318,31 +321,38 @@
 #define MV_6811_DEV_ID		0x6811
 #define MV_6820_DEV_ID		0x6820
 #define MV_6828_DEV_ID		0x6828
+#define MV_6W22_DEV_ID		0x6823 /* 6W22 - A383: using device ID value 0f 0x6823 */
+#define MV_6W23_DEV_ID		0x6824 /* 6W23 - A384: using device ID value 0f 0x6824 */
 /* Armada 39x Family */
 #define MV_6920_DEV_ID		0x6920
 #define MV_6928_DEV_ID		0x6928
 
 typedef enum _mvDeviceId {
-	MV_6810,
-	MV_6820,
-	MV_6811,
-	MV_6828,
-	MV_NONE,
-	MV_6920,
-	MV_6928,
-	MV_MAX_DEV_ID,
+/* 0 */	MV_6810,
+/* 1 */	MV_6820,
+/* 2 */	MV_6811,
+/* 3 */	MV_6828,
+/* 4 */	MV_NONE,
+/* 5 */	MV_6920,
+/* 6 */	MV_6928,
+/* 7 */	MV_MAX_HW_DEV_ID,	/* Dummy entry to indicate end of HW device ID's */
+/* 8 */	MV_6W22,		/* A383: Virtual Device ID - not represented by dev id in S@R @ 0x18600 */
+/* 9 */	MV_6W23,		/* A384: Virtual Device ID - not represented by dev id in S@R @ 0x18600 */
+/* 10*/	MV_MAX_DEV_ID,
 } MV_DEVICE_ID;
 
 #define MV_6820_INDEX                         0
 #define MV_6810_INDEX                         1
 #define MV_6811_INDEX                         2
 #define MV_6828_INDEX                         3
+#define MV_6W22_INDEX			      4 /* 6W22=A383 */
+#define MV_6W23_INDEX			      5 /* 6W23=A384 */
 
 #define MV_6920_INDEX                         0
 #define MV_6928_INDEX                         1
 
 #ifdef CONFIG_ARMADA_38X
-#define MAX_DEV_ID_NUM                        4
+#define MAX_DEV_ID_NUM                        6
 #else
 #define MAX_DEV_ID_NUM                        2
 #endif
@@ -384,6 +394,9 @@ typedef struct boardDeviceIdWoVal {
 /* NONE */ {MV_NONE,	0x0,			0x0,		0x0  },\
 /* A395 */ {MV_6920,	MV_6920_DEV_ID,		0x17fcff7,	0x00 },\
 /* A398 */ {MV_6928,	MV_6928_DEV_ID,		0x77ffff3,	0x00 },\
+/*MAX_HW_DEV_ID*/ {MV_MAX_HW_DEV_ID,	0x0,			0x0,		0x0  },\
+/* A383 */ {MV_6W22,	MV_6W22_DEV_ID,		0x77fffff,	0x00 },\
+/* A384 */ {MV_6W23,	MV_6W23_DEV_ID,		0x77fffff,	0x00 },\
 };
 
 typedef struct boardWakeupGPIO {

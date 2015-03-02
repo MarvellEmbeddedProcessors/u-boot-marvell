@@ -114,11 +114,16 @@ int do_sar_default(void)
 	}
 
 	/* set default Device ID - if MV_SATR_DEVICE_ID field is relevant on board */
-	if (mvBoardSatrInfoConfig(MV_SATR_DEVICE_ID, &satrInfo) == MV_OK) {
-		if (mvBoardSatRWrite(MV_SATR_DEVICE_ID, mvCtrlDevIdIndexGet(mvCtrlModelGet())) == MV_ERROR)
-			mvOsPrintf("Error writing default Device ID ('devid') =%d\n", i);
-	}
+	/* A383/A384 are virtual device ID's - not represented as HW device ID values in S@R@0x18600.
+	A383/A384 are configured in SW EEPROM with FULL_FLAVOR field: if false override device ID */
 
+	if (!(mvCtrlModelGet() == MV_6W22_DEV_ID
+			|| mvCtrlModelGet() ==  MV_6W23_DEV_ID)) { /* 6W22=A383, 6W23=A384 */
+		if (mvBoardSatrInfoConfig(MV_SATR_DEVICE_ID, &satrInfo) == MV_OK) {
+			if (mvBoardSatRWrite(MV_SATR_DEVICE_ID, mvCtrlDevIdIndexGet(mvCtrlModelGet())) == MV_ERROR)
+				mvOsPrintf("Error writing default Device ID ('devid') =%d\n", i);
+		}
+	}
 	printf("\nSample at Reset values were restored to default.\n");
 	return 0;
 }

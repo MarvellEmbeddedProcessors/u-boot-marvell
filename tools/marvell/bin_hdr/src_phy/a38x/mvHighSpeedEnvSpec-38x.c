@@ -128,19 +128,21 @@ MV_U32 mvHwsSerdesSiliconRefClockGet(MV_VOID)
 /***************************************************************************/
 MV_U32 mvHwsSerdesGetMaxLane(MV_VOID)
 {
-    switch (mvSysEnvDeviceIdGet()) {
-    case MV_6811: /* A381/A3282: 6811/6821: single/dual cpu */
-        return 4;
-    case MV_6810:
-        return 5;
-    case MV_6820:
-    case MV_6828:
-        return 6;
-    default:    /* not the right module */
-        mvPrintf("%s: Device ID Error, using 4 SerDes lanes\n", __func__);
-        return 4;
-        }
-    return 6;
+	switch (mvSysEnvDeviceIdGet()) {
+	case MV_6811: /* A381/A3282: 6811/6821: single/dual cpu */
+	case MV_6W22: /* 6W22=A383 */
+	case MV_6W23: /* 6W23=A384 */
+		return 4;
+	case MV_6810:
+		return 5;
+	case MV_6820:
+	case MV_6828:
+		return 6;
+	default:    /* not the right module */
+		mvPrintf("%s: Device ID Error, using 4 SerDes lanes\n", __func__);
+		return 4;
+	}
+	return 6;
 }
 
 /***************************************************************************/

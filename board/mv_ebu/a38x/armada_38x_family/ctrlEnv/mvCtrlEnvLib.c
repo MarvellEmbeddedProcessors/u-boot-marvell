@@ -117,39 +117,45 @@ static const MV_U8 serdesCfg[MV_SERDES_MAX_LANES][MV_SERDES_CFG_OPTIONS_CNT] = S
 #define MV_6810_INDEX		1
 #define MV_6811_INDEX		2
 #define MV_6828_INDEX		3
+#define MV_6W22_INDEX		4 /* 6W22=A383 */
+#define MV_6W23_INDEX		5 /* 6W23=A384 */
 
 #define MV_6920_INDEX		0
 #define MV_6928_INDEX		1
 
-#define MAX_DEV_ID_NUM		4
+#define MAX_DEV_ID_NUM		6
 
 #ifdef CONFIG_ARMADA_38X
 MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
-/*				6820	6810	6811	6828	*/
-/* DRAM_UNIT_ID     */		{ 1,	1,	1,	1},
-/* PEX_UNIT_ID      */		{ 4,	3,	3,	4},
-/* ETH_GIG_UNIT_ID  */		{ 3,	2,	2,	3},	/* total SoC MAC unit count (Not updated) */
-/* ETH_GIG_ACTIVE_UNIT_ID */	{ 3,	2,	2,	3},	/* active MAC unit count (updated by ethComPhy) */
-/* USB_UNIT_ID      */		{ 1,	1,	0,	1},
-/* USB3_UNIT_ID     */		{ 2,	2,	2,	2},
-/* IDMA_UNIT_ID     */		{ 0,	0,	0,	0},
-/* XOR_UNIT_ID      */		{ 2,	2,	2,	2},
-/* SATA_UNIT_ID     */		{ 2,	2,	2,	4},
-/* TDM_32CH_UNIT_ID */		{ 1,	1,	0,	1},
-/* UART_UNIT_ID     */		{ 4,	4,	4,	4},
-/* CESA_UNIT_ID     */		{ 2,	2,	2,	2},
-/* SPI_UNIT_ID      */		{ 2,	2,	2,	2},
-/* AUDIO_UNIT_ID    */		{ 1,	1,	0,	1},
-/* SDIO_UNIT_ID     */		{ 1,	1,	1,	1},
-/* TS_UNIT_ID       */		{ 0,	0,	0,	0},
-/* XPON_UNIT_ID     */		{ 0,	0,	0,	0},
-/* BM_UNIT_ID       */		{ 0,	0,	0,	0},
-/* PNC_UNIT_ID      */		{ 0,	0,	0,	0},
-/* I2C_UNIT_ID      */		{ 2,	2,	2,	2},
-/* QSGMII_UNIT_ID   */		{ 1,	0,	0,	1},
-/* XAUI_UNIT_ID     */		{ 0,	0,	0,	0},
-/* USB3_HOST_UNIT_ID*/		{ 2,	2,	2,	2},
-/* SERDES_UNIT_ID   */		{ 6,	5,	4,	6},
+/*				6820	6810	6811	6828	6W22	6W23 */
+/*				A385	A380	A381/2	A388	A383	A384 */
+/*				|======= HW Flavors =======|	|==Virtual==|*/
+/* DRAM_UNIT_ID     */		{ 1,	1,	1,	1,	1,	1},
+/* PEX_UNIT_ID      */		{ 4,	3,	3,	4,	2,	2},
+/* ETH_GIG_UNIT_ID  */		{ 3,	2,	2,	3,	2,	2},
+/*	ETH_GIG_UNIT_ID -> total SoC MAC unit count (Not updated) */
+/* ETH_GIG_ACTIVE_UNIT_ID */	{ 3,	2,	2,	3,	2,	2},
+/*	ETH_GIG_ACTIVE_UNIT_ID -> active MAC unit count (updated by ethComPhy) */
+/* USB_UNIT_ID      */		{ 1,	1,	0,	1,	1,	1},
+/* USB3_UNIT_ID     */		{ 2,	2,	2,	2,	1,	1},
+/* IDMA_UNIT_ID     */		{ 0,	0,	0,	0,	0,	0},
+/* XOR_UNIT_ID      */		{ 2,	2,	2,	2,	2,	2},
+/* SATA_UNIT_ID     */		{ 2,	2,	2,	4,	1,	1},
+/* TDM_32CH_UNIT_ID */		{ 1,	1,	0,	1,	0,	1},
+/* UART_UNIT_ID     */		{ 4,	4,	4,	4,	1,	1},
+/* CESA_UNIT_ID     */		{ 2,	2,	2,	2,	2,	2},
+/* SPI_UNIT_ID      */		{ 2,	2,	2,	2,	2,	2},
+/* AUDIO_UNIT_ID    */		{ 1,	1,	0,	1,	0,	1},
+/* SDIO_UNIT_ID     */		{ 1,	1,	1,	1,	1,	1},
+/* TS_UNIT_ID       */		{ 0,	0,	0,	0,	0,	0},
+/* XPON_UNIT_ID     */		{ 0,	0,	0,	0,	0,	0},
+/* BM_UNIT_ID       */		{ 0,	0,	0,	0,	0,	0},
+/* PNC_UNIT_ID      */		{ 0,	0,	0,	0,	0,	0},
+/* I2C_UNIT_ID      */		{ 2,	2,	2,	2,	1,	1},
+/* QSGMII_UNIT_ID   */		{ 1,	0,	0,	1,	0,	0},
+/* XAUI_UNIT_ID     */		{ 0,	0,	0,	0,	0,	0},
+/* USB3_HOST_UNIT_ID*/		{ 2,	2,	2,	2,	1,	1},
+/* SERDES_UNIT_ID   */		{ 6,	5,	4,	6,	4,	4},
 };
 #else  /* if (CONFIG_ARMADA_39X) */
 MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
@@ -302,6 +308,7 @@ MV_STATUS mvCtrlUpdatePexId(MV_VOID)
 MV_U32 mvCtrlDevIdIndexGet(MV_U32 ctrlModel)
 {
 	switch (ctrlModel) {
+	/* HW flavors */
 	case MV_6820_DEV_ID:
 		return MV_6820_INDEX;
 	case MV_6810_DEV_ID:
@@ -314,6 +321,11 @@ MV_U32 mvCtrlDevIdIndexGet(MV_U32 ctrlModel)
 		return MV_6920_INDEX;
 	case MV_6928_DEV_ID:
 		return MV_6928_INDEX;
+	/* Virtual flavors */
+	case MV_6W22_DEV_ID: /* 6W22=A383 */
+		return MV_6W22_INDEX;
+	case MV_6W23_DEV_ID: /* 6W23=A384 */
+		return MV_6W23_INDEX;
 	default:
 		return MV_6820_INDEX;
 	}
@@ -593,8 +605,10 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	if (!(mvBoardIsModuleConnected(MV_MODULE_NOR) ||
 	    mvBoardIsModuleConnected(MV_MODULE_NAND) ||
 		mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD) ||
-		mvCtrlModelGet() == MV_6811_DEV_ID))
-		ethComPhy |= ON_BOARD_RGMII(1); /* NOR/NAND modules overides RGMII-1 MPP's */
+		mvCtrlModelGet() == MV_6811_DEV_ID ||
+		(mvCtrlModelGet() == MV_6W22_DEV_ID && mvBoardIdGet() == DB_BP_6821_ID))) {
+			ethComPhy |= ON_BOARD_RGMII(1); /* NOR/NAND modules overides RGMII-1 MPP's */
+		}
 
 	mvCtrlSerdesConfigDetect();
 
@@ -1295,12 +1309,16 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 	MV_U32 defaultCtrlId, ctrlId = (MV_REG_READ(DEV_ID_REG) & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
 
 	switch (ctrlId) {
+	/* HW flavors */
 	case MV_6820_DEV_ID:
 	case MV_6810_DEV_ID:
 	case MV_6811_DEV_ID:
 	case MV_6828_DEV_ID:
 	case MV_6920_DEV_ID:
 	case MV_6928_DEV_ID:
+	/* Virtual flavors */
+	case MV_6W22_DEV_ID: /* 6W22=A383 */
+	case MV_6W23_DEV_ID: /* 6W23=A384 */
 		return ctrlId;
 	default:
 		/*Device ID Default for A38x: 6820 , for A39x: 6920 */
@@ -1331,6 +1349,7 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 MV_U16 mvCtrlDeviceIdGet(MV_VOID)
 {
 	switch (mvCtrlModelGet()) {
+	/* HW flavors */
 	case MV_6810_DEV_ID:
 		return 0x380;
 	case MV_6811_DEV_ID:
@@ -1339,6 +1358,11 @@ MV_U16 mvCtrlDeviceIdGet(MV_VOID)
 		return 0x385;
 	case MV_6828_DEV_ID:
 		return 0x388;
+	/* Virtual flavors */
+	case MV_6W22_DEV_ID: /* 6W22=A383 */
+		return 0x383;
+	case MV_6W23_DEV_ID: /* 6W23=A384 */
+		return 0x384;
 	default:
 		return 0x380;	/* use lower device as default in case of error */
 	}

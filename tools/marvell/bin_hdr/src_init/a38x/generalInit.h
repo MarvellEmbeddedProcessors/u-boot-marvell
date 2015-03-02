@@ -65,6 +65,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __INCmvGeneralInith
 #define __INCmvGeneralInith
 
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+/* Virtual Reduced flavor Device ID is defined by REDUCED_FLAVOR value */
+//#define REDUCED_FLAVOR 0x383 /* 0x383: A383 - 6W22 */
+//#define REDUCED_FLAVOR 0x384 /* 0x384: A384 - 6W23 */
+#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 #define GENERAL_VERION "1.0.0"
 
 #endif /* __INCmvGeneralInith */

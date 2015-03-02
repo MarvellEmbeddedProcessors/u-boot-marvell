@@ -701,8 +701,68 @@ MV_STATUS mvHwsUpdateDeviceToplogy(SERDES_MAP* topologyConfigPtr, TOPOLOGY_CONFI
 	MV_U32 DevId = mvSysEnvDeviceIdGet();
 	MV_U32 BoardId = mvBoardIdGet();
 
+	if (BoardId == DB_BP_6821_ID) {
+		switch (topologyMode) {
+		case DB_381_CONFIG_DEFAULT:
+			if (DevId != MV_6W22)
+				return MV_OK;
+			/* DB-88F6821-BP on 6W22: if lane1 is SATA0 or SGMII-1 or QSGMII set to default */
+			/* --> device only supports 1 SATA, 1 SGMII and no QSGMII interface */
+			if (topologyConfigPtr[1].serdesType == SGMII1) {
+				mvPrintf("Device 6W22 supports only one SGMII interface: SGMII-1 @ lane1 disabled\n");
+				topologyConfigPtr[1] = DefaultLane;
+			} else if  (topologyConfigPtr[1].serdesType == QSGMII) {
+				mvPrintf("Device 6W22 does not support QSGMII interface: QSGMII @ lane1 disabled\n");
+				topologyConfigPtr[1] = DefaultLane;
+			}
+			/* DB-88F6821-BP on 6W22: if lane1 is SATA1 or SGMII-1 or QSGMII set to default */
+			/* --> device only supports 1 SATA and 1 SGMII interface */
+			if (topologyConfigPtr[2].serdesType == SATA1) {
+				mvPrintf("Device 6W22 supports only one SATA ");
+				mvPrintf("interface: SATA Port 1 @ lane2 disabled\n");
+				topologyConfigPtr[2] = DefaultLane;
+			} else if (topologyConfigPtr[2].serdesType == SGMII1) {
+				mvPrintf("Device 6W22 supports only one SGMII ");
+				mvPrintf("interface: SGMII-1 @ lane2 disabled\n");
+				topologyConfigPtr[2] = DefaultLane;
+			}
+			/* DB-88F6821-BP: default for Lane3=USB3_HOST1 --> 6W22 supports only one USB3 Host*/
+			/* --> device only supports 1 SATA, SGMII and no QSGMII interface */
+			mvPrintf("Device 6W22 supports only one USB3 Host interface: USB3 Port 1 @ lane3 disabled\n");
+			topologyConfigPtr[3] = DefaultLane;
+			break;
+		case DB_CONFIG_SLM1427:
+			/* DB-88F6821-BP on 6W22: default for Lane2=SATA1,Lane3=USB3_HOST1 */
+			/* --> device supports only 1 SATA and 1 USB3 interface */
+			if (DevId == MV_6W22) {
+				mvPrintf("Device 6W22 supports only one SATA ");
+				mvPrintf("interface: SATA Port 1 @ lane2 disabled\n");
+				topologyConfigPtr[2] = DefaultLane;
+				mvPrintf("Device 6W22 supports only one USB3 ");
+				mvPrintf("interface: USB3 Port 1 @ lane3 disabled\n");
+				topologyConfigPtr[3] = DefaultLane;
+			}
+			break;
+		case DB_CONFIG_SLM1426:
+			/* DB-88F6821-BP on 6W22: default for Lane2=SATA1,Lane3=SGMII-2 */
+			/* --> device supports only 1 SATA and 1 SGMII interface */
+			if (DevId == MV_6W22) {
+				mvPrintf("Device 6W22 supports only one SATA ");
+				mvPrintf("interface: SATA Port 1 @ lane2 disabled\n");
+				topologyConfigPtr[2] = DefaultLane;
+				mvPrintf("Device 6W22 supports only one SGMII ");
+				mvPrintf("interface: SGMII-2 @ lane3 disabled\n");
+				topologyConfigPtr[3] = DefaultLane;
+			}
+			break;
+		default:
+			break;
+		}
+		return MV_OK;
+	}
 	switch(topologyMode) {
 	case DB_CONFIG_DEFAULT:
+	/* update for DB-GP, DB-AP, DB-AMC, And for DB with default topology */
 		switch(DevId) {
 		case MV_6810:
 			/* DB-AP : default for Lane3=SGMII2 --> 6810 supports only 2 SGMII interfaces: lane 3 disabled */
@@ -727,11 +787,27 @@ MV_STATUS mvHwsUpdateDeviceToplogy(SERDES_MAP* topologyConfigPtr, TOPOLOGY_CONFI
 				topologyConfigPtr[4] = DefaultLane;
 			}
 			break;
+		case MV_6W23:
+			/* DB-GP on 6W23: if lane 2 changed to SATA1 by SatR change to default
+			 * --> 6W23 supports only one SATA interface */
+			if (topologyConfigPtr[2].serdesType == SATA1) {
+				mvPrintf("Device 6W23 supports only one ");
+				mvPrintf("SATA interface: SATA Port 1 @ lane2 disabled\n");
+				topologyConfigPtr[2] = DefaultLane;
+			}
+			/* DB-GP on 6W23: default for Lane3=SATA3,Lane4=SATA2 --> 6W23 supports only 1 SATA interface */
+			/* default for Lane5=USB3_HOST1 --> 6W23 support only 4 SerDes lanes */
+			mvPrintf("Device 6W23 supports only one SATA interface: SATA Port 3 @ lane3 disabled\n");
+			topologyConfigPtr[3] = DefaultLane;
+			mvPrintf("Device 6W23 supports only one SATA interface: SATA Port 2 @ lane4 disabled\n");
+			topologyConfigPtr[4] = DefaultLane;
+			mvPrintf("Device 6W23 supports only 4 SerDes lanes: USB3-Host Port 1 @ lane5 disabled\n");
+			topologyConfigPtr[5] = DefaultLane;
+			break;
 		default:
 			break;
 		}
 		break;
-
 	default:
 		mvPrintf("mvSysEnvUpdateDeviceToplogy: selected topology is not supported by this routine\n");
 		break;
@@ -753,14 +829,17 @@ MV_STATUS loadTopologyDB381(SERDES_MAP  *serdesMapArray)
 	/* Getting the relevant topology mode (index) */
 	topologyMode = topologyConfigDB381ModeGet();
 	topologyConfigPtr = topologyConfigDB381[topologyMode];
-
+	/* if not detected any SerDes Site module, read 'SatR' lane setup */
+	if (topologyMode == DB_381_CONFIG_DEFAULT)
+		updateTopologySatR(topologyConfigPtr);
+	/* Update the default board topology device flavours */
+	CHECK_STATUS(mvHwsUpdateDeviceToplogy(topologyConfigPtr, topologyMode));
 	/* Read USB3.0 mode: HOST/DEVICE */
 	if (loadTopologyUSBModeGet(&twsiData) == MV_OK) {
 		usb3Host0OrDevice = (twsiData & 0x1);
 		if (usb3Host0OrDevice == 0) /* Only one USB3 device is enabled */
 			usb3Host1OrDevice = ((twsiData >> 1) & 0x1);
 	}
-
 	/* Updating the topology map */
 	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
 		serdesMapArray[laneNum].serdesMode  = topologyConfigPtr[laneNum].serdesMode;
@@ -768,17 +847,21 @@ MV_STATUS loadTopologyDB381(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[laneNum].serdesType  = topologyConfigPtr[laneNum].serdesType;
 		serdesMapArray[laneNum].swapRx      = topologyConfigPtr[laneNum].swapRx;
 		serdesMapArray[laneNum].swapTx      = topologyConfigPtr[laneNum].swapTx;
-
 		/* Update USB3 device if needed*/
-		if (usb3Host0OrDevice == 1 && serdesMapArray[laneNum].serdesType == USB3_HOST0)
-			serdesMapArray[laneNum].serdesType = USB3_DEVICE;
+		if (usb3Host0OrDevice == 1 && serdesMapArray[laneNum].serdesType == USB3_HOST0) {
+			if (mvSysEnvDeviceIdGet() != MV_6W22) {
+				serdesMapArray[laneNum].serdesType = USB3_DEVICE;
+			} else {
+				/* Device 6W22: Disable USB3-->device doesn't support device mode */
+				mvPrintf("Device 6W22 supports only USB3 Host ");
+				mvPrintf("mode: USB3 Port 0 @ lane%u disabled\n", laneNum);
+				serdesMapArray[laneNum] = DefaultLane;
+			}
+		}
 
 		if (usb3Host1OrDevice == 1 && serdesMapArray[laneNum].serdesType == USB3_HOST1)
 			serdesMapArray[laneNum].serdesType = USB3_DEVICE;
 	}
-	/* if not detected any SerDes Site module, read 'SatR' lane setup */
-	if (topologyMode == DB_381_CONFIG_DEFAULT)
-		updateTopologySatR(serdesMapArray);
 
 	/* update 'sgmiispeed' settings */
 	updateTopologySgmiiSpeed(serdesMapArray);
@@ -892,7 +975,8 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray)
 		topologyConfigPtr[5].serdesSpeed =  isSgmii ? __3_125Gbps : __5Gbps;;
 		topologyConfigPtr[5].serdesMode = SERDES_DEFAULT_MODE;
 	}
-
+	/* update 'gpserdes1/2' lane configuration */
+	updateTopologySatR(topologyConfigPtr);
 	/* Update the default board topology device flavours */
 	CHECK_STATUS(mvHwsUpdateDeviceToplogy(topologyConfigPtr, DB_CONFIG_DEFAULT));
 
@@ -905,8 +989,7 @@ MV_STATUS loadTopologyDBGp(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[laneNum].swapTx      = topologyConfigPtr[laneNum].swapTx;
 	}
 
-	/* update 'gpserdes1/2/3' lane configuration , and 'sgmiispeed' for SGMII lanes */
-	updateTopologySatR(serdesMapArray);
+	/* update 'sgmiispeed' for SGMII lanes */
 	updateTopologySgmiiSpeed(serdesMapArray);
 
 	return MV_OK;

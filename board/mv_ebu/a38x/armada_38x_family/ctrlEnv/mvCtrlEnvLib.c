@@ -149,6 +149,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /* QSGMII_UNIT_ID   */		{ 1,	0,	0,	1},
 /* XAUI_UNIT_ID     */		{ 0,	0,	0,	0},
 /* USB3_HOST_UNIT_ID*/		{ 2,	2,	2,	2},
+/* SERDES_UNIT_ID   */		{ 6,	5,	4,	6},
 };
 #else  /* if (CONFIG_ARMADA_39X) */
 MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
@@ -176,6 +177,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /* QSGMII_UNIT_ID		*/ { 0,	1},
 /* XAUI_UNIT_ID			*/ { 1,	1},
 /* USB3_HOST_UNIT_ID		*/ { 1,	2},
+/* SERDES_UNIT_ID		*/ { 7,	7},
 };
 #endif
 
@@ -412,7 +414,6 @@ MV_U32 mvCtrlGetPhysicalSerdesNum(MV_U32 serdesNum)
 	} else
 		return serdesNum;
 }
-
 /*******************************************************************************
 * mvCtrlSerdesConfigDetect
 *
@@ -440,9 +441,7 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 
 	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
 
-	maxSerdesLane = MV_SERDES_MAX_LANES;
-	if (MV_6810_DEV_ID == mvCtrlModelGet())
-		maxSerdesLane = MV_SERDES_MAX_LANES_6810;
+	maxSerdesLane = mvCtrlSocUnitInfoNumGet(SERDES_UNIT_ID);
 
 	memset(boardPexInfo, 0, sizeof(MV_BOARD_PEX_INFO));
 	commPhyCfgReg = MV_REG_READ(COMM_PHY_SELECTOR_REG);

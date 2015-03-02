@@ -306,6 +306,7 @@ typedef enum _mvUnitId {
 	QSGMII_UNIT_ID,
 	XAUI_UNIT_ID,
 	USB3_HOST_UNIT_ID,	/* USB3.0 HOST ports */
+	SERDES_UNIT_ID,
 	MAX_UNITS_ID
 } MV_UNIT_ID;
 

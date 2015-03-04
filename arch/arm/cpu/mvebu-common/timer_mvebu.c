@@ -45,7 +45,7 @@
 static ulong timestamp;
 static ulong lastdec;
 
-int timer_init_done;
+int timer_init_done = -1;
 
 int read_timer(void)
 {
@@ -56,7 +56,7 @@ int timer_init(void)
 {
 	unsigned int ctrl;
 
-	if (timer_init_done)
+	if (timer_init_done == 1)
 		return 0;
 
 	/* init the counter */
@@ -129,8 +129,8 @@ void __udelay(unsigned long usec)
 	uint current;
 	ulong delayticks;
 
-	/* In case udelay is called before timier was initialized */
-	if (!timer_init_done)
+	/* In case udelay is called before timer was initialized */
+	if (timer_init_done == -1)
 		timer_init();
 
 	delayticks = (usec * (MV_BOARD_REFCLK / 1000000));

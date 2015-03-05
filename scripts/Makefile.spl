@@ -80,6 +80,7 @@ libs-$(CONFIG_SPL_USB_HOST_SUPPORT) += drivers/usb/host/
 libs-$(CONFIG_OMAP_USB_PHY) += drivers/usb/phy/
 libs-$(CONFIG_SPL_SATA_SUPPORT) += drivers/block/
 libs-$(CONFIG_MVEBU_SPL_DDR_SUPPORT) += drivers/ddr/
+libs-$(CONFIG_OF_EMBED) += dts/
 
 head-y		:= $(addprefix $(obj)/,$(head-y))
 libs-y		:= $(addprefix $(obj)/,$(libs-y))

@@ -13,7 +13,6 @@ obj-$(CONFIG_LZO) += lzo/
 obj-$(CONFIG_ZLIB) += zlib/
 obj-$(CONFIG_BZIP2) += bzip2/
 obj-$(CONFIG_TIZEN) += tizen/
-obj-$(CONFIG_OF_LIBFDT) += libfdt/
 obj-$(CONFIG_FIT) += libfdt/
 
 obj-$(CONFIG_AES) += aes.o
@@ -22,8 +21,6 @@ obj-y += crc7.o
 obj-y += crc8.o
 obj-y += crc16.o
 obj-$(CONFIG_FIT) += fdtdec_common.o
-obj-$(CONFIG_OF_CONTROL) += fdtdec_common.o
-obj-$(CONFIG_OF_CONTROL) += fdtdec.o
 obj-$(CONFIG_TEST_FDTDEC) += fdtdec_test.o
 obj-$(CONFIG_GZIP) += gunzip.o
 obj-$(CONFIG_GZIP_COMPRESSED) += gzip.o
@@ -48,6 +45,11 @@ ifdef CONFIG_SPL_BUILD
 obj-$(CONFIG_SPL_YMODEM_SUPPORT) += crc16.o
 obj-$(CONFIG_SPL_NET_SUPPORT) += net_utils.o
 endif
+
+obj-$(CONFIG_OF_LIBFDT) += libfdt/
+obj-$(CONFIG_OF_CONTROL) += fdtdec_common.o
+obj-$(CONFIG_OF_CONTROL) += fdtdec.o
+
 obj-$(CONFIG_ADDR_MAP) += addr_map.o
 obj-y += hashtable.o
 obj-y += errno.o

@@ -18,16 +18,32 @@
 
 #include <common.h>
 #include <spl.h>
+#include <fdtdec.h>
+#include <asm/arch-mvebu/fdt.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
 extern void static_dram_init(void);
+
+static int setup_fdt(void)
+{
+#ifdef CONFIG_OF_CONTROL
+#ifdef CONFIG_OF_EMBED
+	/* Get a pointer to the FDT */
+	gd->fdt_blob = __dtb_dt_begin;
+#else
+	#error "Support only embedded FDT mode in SPL"
+#endif
+#endif
+	return 0;
+}
 
 void board_init_f(ulong bootflag)
 {
 	gd = &gdata;
 	gd->baudrate = CONFIG_BAUDRATE;
 
+	setup_fdt();
 	static_dram_init();
 	preloader_console_init();
 }

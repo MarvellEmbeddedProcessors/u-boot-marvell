@@ -680,6 +680,7 @@ extern unsigned int mvUartPortGet(void);
 #define BOARD_LATE_INIT
 #define CONFIG_BOARD_LATE_INIT
 #undef  CONFIG_USE_IRQ
+#define CONFIG_BZIP2
 
 #define CONFIG_STACKSIZE        (1 << 20)       /* regular stack - up to 4M (in case of exception)*/
 

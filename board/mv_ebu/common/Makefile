@@ -33,6 +33,7 @@ MAKE_NETA = yes
 MAKE_GENERAL_U_BOOT_TOOLS = yes
 MAKE_SPI_NAND = yes
 MAKE_RTC2 = yes
+MAKE_SWITCH_SERVICES = yes
 endif
 
 ifeq ($(BOARD),msys)
@@ -124,7 +125,10 @@ USP_OBJS +=	$(USP_ETH_SWITCH_DIR)/mvSwitch.o
 endif
 
 ifdef MAKE_SWITCH_SERVICES
-USP_OBJS +=     $(USP_DIR)/switchingServices/switchingServices.o
+USP_OBJS +=	$(USP_DIR)/switchingServices/switchingServices.o
+ifeq ($(BOARD),a38x)
+USP_OBJS +=	$(USP_DIR)/switchingServices/sar_bc2.o
+endif
 endif
 
 ifdef MAKE_NETA

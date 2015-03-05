@@ -248,7 +248,7 @@ MV_OP_PARAMS sataAndSgmiiPowerUpParams[] =
 	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,           0x90006,	{ 0x80002,		0x80002 }, 		0,          0       },  /* Power Up */
 	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,		    0x7800,		{ 0x6000,		0x6000  }, 		0,		    0       },  /* Unreset */
 	{ POWER_AND_PLL_CTRL_REG,	 	    0x800,		    0x0E0,		{ 0x0,			0x80    }, 		0,		    0       },  /* Phy Selector */
-    { MISC_REG,			 		        0x800,		    0x440,		{ 0x440,	    0x400	},      0,	        0	    }   /* Ref clock source select */ 
+    { MISC_REG,			 		        0x800,		    0x440,		{ 0x440,	    0x400	},      0,	        0	    }   /* Ref clock source select */
 };
 
 /* SATA and SGMII - speed config seq */
@@ -381,7 +381,7 @@ MV_OP_PARAMS pexAndUsb3PowerUpSerdesRev1Params[] =
 	{ COMMON_PHY_CONFIGURATION4_REG,    0x28,			0x3,			{ 0x1,		    0x1         },		0,          0	    },
 	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,			0x7800,			{ 0x6000,	    0xE000      },		0,          0	    },
 	{ GLOBAL_CLK_CTRL,				    0x800,			0xD,			{ 0x5,		    0x1         },		0,          0	    },
-	{ MISC_REG,	   					    0x800,          0x4C0,	     	{ 0x80,         0x4C0 	    }, 	    0,	        0       }  /* Ref clock source select */ 
+	{ MISC_REG,	   					    0x800,          0x4C0,	     	{ 0x80,         0x4C0 	    }, 	    0,	        0       }  /* Ref clock source select */
 };
 
 /* PEX and USB3 - power up seq for Serdes Rev 2.1 */
@@ -394,7 +394,7 @@ MV_OP_PARAMS pexAndUsb3PowerUpSerdesRev2Params[] =
 	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,			0x7800,			{ 0x6000,	    0xE000      },		0,          0	    },
 	{ GLOBAL_CLK_CTRL,				    0x800,			0xD,			{ 0x5,		    0x1         },		0,          0	    },
 	{ GLOBAL_MISC_CTRL,				    0x800,			0xC0,			{ 0x0,		    NO_DATA     },		0,          0	    },
-	{ MISC_REG,	   					    0x800,	    	0x4C0,	     	{ 0x80,         0x4C0 	    }, 	    0,	        0		}  /* Ref clock source select */ 
+	{ MISC_REG,	   					    0x800,	    	0x4C0,	     	{ 0x80,         0x4C0 	    }, 	    0,	        0		}  /* Ref clock source select */
 };
 
 /* PEX and USB3 - speed config seq */
@@ -423,13 +423,13 @@ MV_OP_PARAMS usb3ElectricalConfigSerdesRev2Params[] =
 	{ LANE_CFG5_REG,		0x800,		0x3,		{ 0x3		},		0,	0 	}, /* Bit[1]=0x1 - CFG_SQ_DET_SEL,Bit[0]=0x1-CFG_RX_INIT_SEL, */
 	{ G2_SETTINGS_2_REG,		0x800,		0xFE40,		{ 0x4440	},		0,      0 	}, /* Bits[15:9]= 0x22 -G2_TX_SSC_AMP[6:0]=4.5kPPM,Bits[6] = 0x1 - TX emphasis mode=mV */
 	{ G2_SETTINGS_3_REG,		0x800,		0xFF,		{ 0xEF		},		0,      0 	}, /* Bit[7] =0x1 – FFE Setting Force;Bits[6:4]=0x6 – FFE_RES;Bits[3:0] = 0xF – FFE_CAP; */
-	{ G2_SETTINGS_4_REG,		0x800,		0x300,		{ 0x300		},		0,      0 	}, /* Bits[9:8]=0x0 -  G2_DFE_RES[1:0]*/	
+	{ G2_SETTINGS_4_REG,		0x800,		0x300,		{ 0x300		},		0,      0 	}, /* Bits[9:8]=0x0 -  G2_DFE_RES[1:0]*/
 	{ PLLINTP_REG1,	        	0x800,		0x300,		{ 0x300		},		0,      0 	}, /* Bits[9:8]=0x3 – HPF_Bw[1:0] */
 	{ VTHIMPCAL_CTRL_REG,		0x800,		0xFF00,		{ 0x3000	},		0,	0 	}, /* Bits[15:12]= 0x3 - tximpcal_th;Bits[11:8] = 0x0 - RXIMPCAL_TH */
 	{ LANE_CFG5_REG,		0x800,		0x3,		{ 0x3		},		0,	0 	}, /* Bit[1]=0x1 - CFG_SQ_DET_SEL,Bit[0]=0x1-CFG_RX_INIT_SEL, */
 	{ MISC_REG,	            	0x800,		0x42F,		{ 0x42A		},		0,      0 	}, /* Bit[10]=0x1 - REFCLK_SEL(=25Mhz);Bit[5]=0x1 – ICP_FORCE_En;Bits[3:0]=0xA – ICP=0xA(210uA); */
 	{ POWER_AND_PLL_CTRL_REG,	0x800,		0x1F,		{ 0x02		},		0,      0 	}, /* Bits[4:0] =0x2 - REF_FREF_SEL(=25Mhz) */
-	{ G2_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3D2		},		0,      0 	}, /* Bits[9:8]=0x3- G2_RX_SELMUFF;Bits[7:6]=0x3- G2_RX_SELMUFI;Bits[5:3]=0x2 – G2_RX_SELMUPF;Bits[2:0]=0x2 -  G2_RX_SELMUPI*/	
+	{ G2_SETTINGS_1_REG,		0x800,		0x3FF,		{ 0x3D2		},		0,      0 	}, /* Bits[9:8]=0x3- G2_RX_SELMUFF;Bits[7:6]=0x3- G2_RX_SELMUFI;Bits[5:3]=0x2 – G2_RX_SELMUPF;Bits[2:0]=0x2 -  G2_RX_SELMUPI*/
 	{ RX_REG2,			0x800,		0xF0,		{ 0x70		},		0,      0 	}, /* Dtl Clamping disable and Dtl-clamping-Sel(6000ppm) */
 	{ PCIE_REG1,			0x800,		0xF80,		{ 0xD00		},		0,      0 	}, /* Bits[11:7]=0x1a -  tx_amp_pipe_v0[4:0] */
 	{ REF_REG0,		 	0x800,		0x38,		{ 0x20		},		0,      0 	}, /* vco_cal_vth_sel */
@@ -1401,6 +1401,7 @@ MV_STATUS mvSerdesPowerUpCtrl
 	SERDES_SEQ speedSeqId;
 	MV_U32 regData;
 	MV_BOOL isPexBy1;
+	MV_U32	boardId = mvBoardIdGet();
 
 	DEBUG_INIT_FULL_S("\n### mvSerdesPowerUpCtrl ###\n");
 
@@ -1437,33 +1438,38 @@ MV_STATUS mvSerdesPowerUpCtrl
 			{
 				/* For PEX by 4, init only the PEX 0 */
 				regData = MV_REG_READ(SOC_CONTROL_REG1);
-				if (isPexBy1 == MV_TRUE) {
+				if (isPexBy1 == MV_TRUE)
 					regData |= 0x4000;
-				}
-				else{
+				else
 					regData &= ~0x4000;
-				}
 				MV_REG_WRITE(SOC_CONTROL_REG1, regData);
 
-				regData = MV_REG_READ(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c));
+				/* Setup link width bit[9:4] */
+				regData = MV_REG_READ(PEX_LINK_CAPABILITIES_REG(pexIdx));
 				regData &= ~0x3F0;
-				if (isPexBy1 == MV_TRUE) {
+				if (isPexBy1 == MV_TRUE)
 					regData |= 0x10;
-				}
-				else {
+				else
 					regData |= 0x40;
-				}
-				MV_REG_WRITE(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c), regData);
+				MV_REG_WRITE(PEX_LINK_CAPABILITIES_REG(pexIdx), regData);
 
-				regData = MV_REG_READ(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c));
+				/* Setup maximum link speed bit[3:0] */
+				regData = MV_REG_READ(PEX_LINK_CAPABILITIES_REG(pexIdx));
 				regData &= ~0xF;
-				regData |= 0x2;
-				MV_REG_WRITE(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x6c), regData);
+				if ((boardId == DB_AMC_6820_ID) && (pexIdx == 0) &&
+					mvBoardForcePcieGen1Get()) {
+					/* The WA is required for BC2 A0, so SatR is coded accordingly */
+					mvPrintf("Forcing Link to GEN1 on PCIe-%d\n", pexIdx);
+					regData |= 0x1; /* GEN1, 2.5G */
+				} else
+					regData |= 0x2; /* GEN2, 5G */
+				MV_REG_WRITE(PEX_LINK_CAPABILITIES_REG(pexIdx), regData);
 
-				regData = MV_REG_READ(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x70));
+				/* Setup common clock configuration bit[6] */
+				regData = MV_REG_READ(PEX_LINK_CTRL_STATUS_REG(pexIdx));
 				regData &= ~0x40;
 				regData |= 0x40;
-				MV_REG_WRITE(((MV_PEX_IF_REGS_BASE(pexIdx)) + 0x70), regData);
+				MV_REG_WRITE(PEX_LINK_CTRL_STATUS_REG(pexIdx), regData);
 			}
 
             CHECK_STATUS(mvSeqExec(serdesNum, PEX_POWER_UP_SEQ));

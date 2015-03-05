@@ -303,6 +303,7 @@
 #define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
 #define GPP_DATA_OUT_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x00)
 #define GPP_DATA_OUT_EN_REG(grp)		(MV_GPP_REGS_BASE(grp) + 0x04)
+#define GPP_DATA_IN_POL_REG(grp)		(MV_GPP_REGS_BASE(grp) + 0x0C)
 #define GPP_DATA_IN_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x10)
 #define MV_GPP_REGS_BASE(unit) 			(0x18100 + ((unit) * 0x40))
 
@@ -553,11 +554,17 @@ MV_U16 mvSysEnvModelGet(MV_VOID);
 * mvSysEnvDlbConfigPtrGet
 * DESCRIPTION: defines pointer to to DLB COnfiguration table
 * INPUT: none
-* OUTPUT: 
+* OUTPUT:
 * RETURN:
 *       returns pointer to DLB COnfiguration table
 *******************************************************************************/
 MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID);
+
+#define MV_BOARD_BIOS0_ADDR				0x4C
+#define TWSI_CHANNEL_BC2				0
+#define MV_BOARD_CTRL_I2C_ADDR_BC2		0x0
+/* WA for bits 1,2 in 0x4c. Must be lower than 100000 -> 20000 */
+#define TWSI_SPEED_BC2					20000
 
 #ifdef CONFIG_CMD_BOARDCFG
 
@@ -649,6 +656,20 @@ MV_U32 mvSysEnvConfigGet(MV_CONFIG_TYPE_ID configField);
 
 #endif /* MV88F69XX */
 #endif /* CONFIG_CMD_BOARDCFG */
+
+/*******************************************************************************
+* mvBoardForcePcieGen1Get - read BC2 SatR bios0 bit[4] for PCIe GEN1/GEN2 mode
+*
+* DESCRIPTION:
+*
+* INPUT:
+*
+* OUTPUT:
+*       None.
+*
+* RETURN: TRUE if connected to BC2
+*******************************************************************************/
+MV_BOOL mvBoardForcePcieGen1Get(MV_VOID);
 
 /*******************************************************************************
 * mvSysEnvGetTopologyUpdateInfo

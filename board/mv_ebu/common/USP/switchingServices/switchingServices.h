@@ -143,10 +143,10 @@ typedef enum {	// special device enum
 		SILT_NP5,
 		SILT_BC2,
 		SILT_OTHER,
-		SLIC_NOT_DETECT = 0x5a5a
+		SILT_NOT_DETECT = 0x5a5a
 } SILICON_TYPE;
 
 SILICON_TYPE get_attached_silicon_type(void);
 int do_sar_bc2(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[]);
-
+void hwServicesLateInit(void);
 #endif

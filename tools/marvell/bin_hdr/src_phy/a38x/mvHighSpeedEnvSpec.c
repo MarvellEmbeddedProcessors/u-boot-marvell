@@ -398,13 +398,13 @@ MV_OP_PARAMS pexAndUsb3PowerUpSerdesRev1Params[] =
 MV_OP_PARAMS pexAndUsb3PowerUpSerdesRev2Params[] =
 {
 	/* unitunitBaseReg                  unitOffset      mask            PEX data        USB3 data       waitTime    numOfLoops */
-	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,		    0x3FC7F806,     { 0x4471804,    0x4479804   },      0,          0	    },
-	{ COMMON_PHY_CONFIGURATION2_REG,    0x28,			0x5C,		    { 0x58,		    0x58        },		0,          0	    },
-	{ COMMON_PHY_CONFIGURATION4_REG,    0x28,			0x3,			{ 0x1,		    0x1         },		0,          0	    },
-	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,			0x7800,			{ 0x6000,	    0xE000      },		0,          0	    },
-	{ GLOBAL_CLK_CTRL,				    0x800,			0xD,			{ 0x5,		    0x1         },		0,          0	    },
-	{ GLOBAL_MISC_CTRL,				    0x800,			0xC0,			{ 0x0,		    NO_DATA     },		0,          0	    },
-	{ MISC_REG,	   					    0x800,	    	0x4C0,	     	{ 0x80,         0x4C0 	    }, 	    0,	        0		}  /* Ref clock source select */
+	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,	0x3FC7F806,     { 0x4471804,    0x4479804   },		0,          0	    },
+	{ COMMON_PHY_CONFIGURATION2_REG,    0x28,	0x5C,		{ 0x58,		    0x58    },		0,          0	    },
+	{ COMMON_PHY_CONFIGURATION4_REG,    0x28,	0x3,		{ 0x1,		    0x1     },		0,          0	    },
+	{ COMMON_PHY_CONFIGURATION1_REG,    0x28,	0x7800,		{ 0x6000,	    0xE000  },		0,          0	    },
+	{ GLOBAL_CLK_CTRL,		    0x800,	0x3D,		{ 0x35,		    0x21    },		0,          0	    },
+	{ GLOBAL_MISC_CTRL,		    0x800,	0xC0,		{ 0x0,		    NO_DATA },		0,          0	    },
+	{ MISC_REG,	   		    0x800,   	0x4C0,		{ 0x80,		    0x4C0   },		0,	    0	    }  /* Ref clock source select */
 };
 
 /* PEX and USB3 - speed config seq */
@@ -458,9 +458,6 @@ MV_OP_PARAMS pexAndUsb3TxConfigParams1[] =
     /* unitBaseReg    unitOffset    mask        PEX data    USB3 data   waitTime    numOfLoops */
     { GLOBAL_CLK_CTRL,  0x800,      0x1,        { 0x0,      0x0     },      0,          0       },
     { 0x0,              0x0,        0x0,        { 0x0,      0x0     },      10,         0       }, /* 10ms delay */
-    { RX_REG3,          0x800,      0xFF,       { 0xDC,     0xD8    },      0,          0       }, /* os_ph_offset_force (align 90) */
-    { RX_REG3,          0x800,      0x100,      { 0x100,    0x100   },      0,          0       }, /* Set os_ph_valid */
-    { RX_REG3,          0x800,      0x100,      { 0x0,      0x0     },      0,          0       }, /* Unset os_ph_valid */
 };
 
 MV_OP_PARAMS pexAndUsb3TxConfigParams2[] =
@@ -472,18 +469,21 @@ MV_OP_PARAMS pexAndUsb3TxConfigParams2[] =
 MV_OP_PARAMS pexAndUsb3TxConfigParams3[] =
 {
 	/* unitBaseReg    unitOffset   	mask        PEX data    USB3 data   waitTime    numOfLoops */
-	{ RESET_DFE_REG,   	0x800,		0x401,      { 0x0,      0x0     }, 	    0,          0		}, /* Sft Reset pulse */
-	{ 0x0,		   		0x0,		0x0,	    { 0x0,      0x0     }, 	    10,	        0		}  /* 10ms delay */
+	{ RESET_DFE_REG,    0x800,	0x401,      { 0x0,      0x0     },	0,          0		}, /* Sft Reset pulse */
+	{ 0x0,		    0x0,	0x0,	    { 0x0,      0x0     }, 	10,	    0		}, /* 10ms delay */
+	{ RX_REG3,          0x800,      0xFF,       { 0xDC,     0xD8    },      0,          0           }, /* os_ph_offset_force (align 90) */
+	{ RX_REG3,          0x800,      0x100,      { 0x100,    0x100   },      0,          0           }, /* Set os_ph_valid */
+	{ RX_REG3,          0x800,      0x100,      { 0x0,      0x0     },      0,          0           }, /* Unset os_ph_valid */
 };
 
 /* PEX by 4 config seq */
 MV_OP_PARAMS pexBy4ConfigParams[] =
 {
 	/* unitunitBaseReg      unitOffset   mask           data                			waitTime   numOfLoops */
-	{ GLOBAL_CLK_SRC_HI,	0x800,       0x7,      { 0x5, 0x0, 0x0, 0x2 			},     	0,          0       },
-    { LANE_ALIGN_REG0,      0x800,       0x1000,   { 0x0, 0x0, 0x0, 0x0 			},     	0,	        0       }, /* Lane Alignement enable */
-	{ CALIBRATION_CTRL_REG,	0x800,       0x1000,   { 0x1000, 0x1000, 0x1000, 0x1000 },		0,	        0       }, /* Max PLL phy config */
-	{ LANE_CFG1_REG,		0x800,       0x600,    { 0x600, 0x600, 0x600, 0x600 	},		0,	        0       }, /* Max PLL pipe config */
+	{ GLOBAL_CLK_SRC_HI,	0x800,       0x7,      { 0x5, 0x0, 0x0, 0x2 			},     	0,		0       },
+	{ LANE_ALIGN_REG0,      0x800,       0x1000,   { 0x0, 0x0, 0x0, 0x0 			},     	0,		0       }, /* Lane Alignement enable */
+	{ CALIBRATION_CTRL_REG,	0x800,       0x1000,   { 0x1000, 0x1000, 0x1000, 0x1000		},	0,	        0       }, /* Max PLL phy config */
+	{ LANE_CFG1_REG,	0x800,       0x600,    { 0x600, 0x600, 0x600, 0x600 		},	0,	        0       }, /* Max PLL pipe config */
 };
 
 /* USB3 device donfig seq */

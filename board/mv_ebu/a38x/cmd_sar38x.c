@@ -23,12 +23,13 @@
 #include "ctrlEnv/mvCtrlEnvRegs.h"
 #include "ctrlEnv/mvCtrlEnvLib.h"
 #include "boardEnv/mvBoardEnvLib.h"
+#include "switchingServices/switchingServices.h"
 
 enum {
 	CMD_DUMP = MV_SATR_MAX_OPTION+1,
 	CMD_DEFAULT,
 	CMD_UNKNOWN,
-	CMD_NOT_ACTIVE	// Command that requests valid but not active field on current board 
+	CMD_NOT_ACTIVE	// Command that requests valid but not active field on current board
 };
 
 MV_FREQ_MODE cpuDdrClkTbl[] = MV_SAR_FREQ_MODES;
@@ -88,18 +89,6 @@ char *devIdArr[4] = {
 			"6820 (A385)",
 			"6811 (A381/2)",
 			"6828 (A388)" };
-
-MV_BOOL mvVerifyRequest(void)
-{
-	readline(" ");
-	if(strlen(console_buffer) == 0 || /* if pressed Enter */
-		strcmp(console_buffer,"n") == 0 ||
-		strcmp(console_buffer,"N") == 0 ) {
-		printf("\n");
-		return MV_FALSE;
-	}
-	return MV_TRUE;
-}
 
 int do_sar_default(void)
 {
@@ -484,7 +473,10 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 	if (MV_SATR_BOARD_ID == satrInfo->satrId) {
 		mvOsPrintf("\nBoard ID update requires new default environment variables.\n");
 		mvOsPrintf(" Reset environment for %s ? [y/N]" ,marvellBoardInfoTbl[value]->boardName);
-		if (mvVerifyRequest() == MV_TRUE)
+		readline(" ");
+		if(strlen(console_buffer) != 0 && /* if pressed Enter */
+			strcmp(console_buffer,"n") != 0 &&
+			strcmp(console_buffer,"N") != 0 )
 			run_command("resetenv", 0);
 	}
 	return 0;
@@ -503,6 +495,16 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	if (!(boardId >= MARVELL_BOARD_ID_BASE && boardId <= MV_MAX_MARVELL_BOARD_ID)) {
 		printf("\nError: S@R configuration is not supported on current board\n");
 		return 1;
+	}
+
+	/* Check if switch is connected to AMC board */
+	if (boardId == DB_AMC_6820_ID) {
+		static SILICON_TYPE silt = SILT_NOT_DETECT;
+
+		if (silt == SILT_NOT_DETECT)
+			silt = get_attached_silicon_type();
+		if (silt == SILT_BC2)
+			return do_sar_bc2(cmdtp, flag, argc, argv);
 	}
 
 	/* is requested 'SatR read' --> Dump all */

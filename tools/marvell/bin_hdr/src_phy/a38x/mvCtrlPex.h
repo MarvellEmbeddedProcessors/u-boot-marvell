@@ -89,6 +89,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MAX_PEX_BUSSES                          256
 
 #define PEX_CAPABILITIES_REG(pexIf)			    ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x60)
+#define PEX_LINK_CAPABILITIES_REG(pexIf)		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x6C)
+#define PEX_LINK_CTRL_STATUS_REG(pexIf) 		((MV_PEX_IF_REGS_BASE(pexIf)) + 0x70)
 #define PEX_LINK_CTRL_STATUS2_REG(pexIf)        ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x90)
 #define PEX_CTRL_REG(pexIf)                     ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A00)
 #define PEX_STATUS_REG(pexIf)                   ((MV_PEX_IF_REGS_BASE(pexIf)) + 0x1A04)

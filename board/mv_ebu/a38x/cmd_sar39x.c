@@ -67,18 +67,6 @@ MV_BOARD_SATR_DEVICE_ID devIdArr[2] = {
 { "6928 (A398)",	0x6928,		0x6 },
 };
 
-MV_BOOL mvVerifyRequest(void)
-{
-	readline(" ");
-	if(strlen(console_buffer) == 0 || /* if pressed Enter */
-		strcmp(console_buffer,"n") == 0 ||
-		strcmp(console_buffer,"N") == 0 ) {
-		printf("\n");
-		return MV_FALSE;
-	}
-	return MV_TRUE;
-}
-
 int do_sar_default(void)
 {
 	MV_U32 i, rc, defaultValue, boardId = mvBoardIdIndexGet(mvBoardIdGet());

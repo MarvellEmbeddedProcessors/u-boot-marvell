@@ -791,6 +791,7 @@ SILICON_TYPE get_attached_silicon_type(void)
 		return silt;
 }
 
+#ifdef MV_MSYS
 static int do_qsgmii_sel(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 
@@ -821,6 +822,7 @@ U_BOOT_CMD(
 		  " Select SFP or QSGMII modes on bc2.\n",
 		  " apply 16 bit array to select SFP or QSGMII modes"
 		  );
+#endif
 
 void hwServicesLateInit(void)
 {

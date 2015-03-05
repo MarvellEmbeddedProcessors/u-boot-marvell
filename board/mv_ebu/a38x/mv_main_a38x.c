@@ -103,6 +103,11 @@
 #include <sdhci.h>
 int mv_sdh_init(u32 regbase, u32 max_clk, u32 min_clk, u32 quirks);
 #endif
+
+#ifdef CONFIG_SWITCHING_SERVICES
+#include "switchingServices/switchingServices.h"
+#endif
+
 /* #define MV_DEBUG */
 #ifdef MV_DEBUG
 #define DB(x) x
@@ -935,6 +940,11 @@ int board_late_init(void)
 		kick_next();
 
 	mvBoardDebugLed(0);
+#ifdef CONFIG_SWITCHING_SERVICES
+	/* Some additional tasks maybe required for slave BC2 device, like QSGMII select */
+	if (mvBoardisAmc() && (get_attached_silicon_type() == SILT_BC2))
+		hwServicesLateInit();
+#endif
 	return 0;
 }
 

@@ -104,7 +104,80 @@ MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 };
 #endif
 
+static MV_VOID gppRegSet(MV_U32 group, MV_U32 regOffs, MV_U32 mask, MV_U32 value)
+{
+	MV_U32 gppData;
 
+	gppData = MV_REG_READ(regOffs);
+
+	gppData &= ~mask;
+
+	gppData |= (value & mask);
+
+	MV_REG_WRITE(regOffs, gppData);
+}
+
+static MV_VOID mvBoardDb6820AmcGpioConfig(MV_VOID)
+{
+	/* GPP configuration is required for enabling access to i2c channel 1
+	   Output from GPP-44 should set to be HIGH for enabling external
+	   i2c channel 1 buffer circuit
+	   The entire GPPs configuration is the same as in u-boot */
+	/* Set GPP Out value */
+	MV_REG_WRITE(GPP_DATA_OUT_REG(0), BIT29); /* GPIO29: QS_SMI_ENA = OUT VAL High */
+	MV_REG_WRITE(GPP_DATA_OUT_REG(1), 0); /* GPIO44: I2C_EXT_EN = OUT VAL Low */
+	MV_REG_WRITE(GPP_DATA_OUT_REG(2), 0);
+
+	/* set GPP polarity */
+	gppRegSet(0, GPP_DATA_IN_POL_REG(0), 0xFFFFFFFF, 0x0);
+	gppRegSet(1, GPP_DATA_IN_POL_REG(1), 0xFFFFFFFF, 0x0);
+	gppRegSet(2, GPP_DATA_IN_POL_REG(2), 0xFFFFFFFF, 0x0);
+
+	/* Set GPP Out Enable */
+	/* GPIO29: QS_SMI_ENA */
+	gppRegSet(0, GPP_DATA_OUT_EN_REG(0), 0xFFFFFFFF, ~(BIT29));
+	/* 44:I2C_EXT_EN, 49,50,52,53:Leds*/
+	gppRegSet(1, GPP_DATA_OUT_EN_REG(1), 0xFFFFFFFF, ~(BIT12 | BIT17 | BIT18 | BIT20 | BIT21));
+	gppRegSet(2, GPP_DATA_OUT_EN_REG(2), 0xFFFFFFFF, ~(0x0));
+}
+
+/*******************************************************************************
+* mvBoardForcePcieGen1Get - read MSYS BC2/AC3 SatR bios0 bit[4] for PCIe GEN1/GEN2 mode
+*
+* DESCRIPTION:
+*
+* INPUT:
+*
+* OUTPUT:
+*       None.
+*
+* RETURN: TRUE if GEN1 connection is enforced
+*******************************************************************************/
+MV_BOOL mvBoardForcePcieGen1Get(MV_VOID)
+{
+	MV_TWSI_SLAVE twsiSlave;
+	MV_TWSI_ADDR slave;
+	MV_U8 data;
+
+	/* TWSI init */
+	slave.address = MV_BOARD_CTRL_I2C_ADDR_BC2;
+	slave.type    = ADDR7_BIT;
+	mvTwsiInit(TWSI_CHANNEL_BC2, TWSI_SPEED_BC2, mvBoardTclkGet(), &slave, 0);
+
+	/* Read bit[4] in BC2 bios0 SW SatR (register 1) */
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.slaveAddr.address = MV_BOARD_BIOS0_ADDR;
+	twsiSlave.offset = 1; /* register 1, SW SatR fields */
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.moreThen256 = MV_FALSE;
+
+	if (MV_OK == mvTwsiRead(TWSI_CHANNEL_BC2, &twsiSlave, &data, 1)) {
+		if ((data >> 4) & 0x1)
+			return MV_TRUE;
+	}
+
+	return MV_FALSE;
+}
 
 MV_U32 gBoardId = -1;
 MV_U32 mvBoardIdGet(MV_VOID)
@@ -186,6 +259,7 @@ MV_STATUS mvHwsTwsiInitWrapper(MV_VOID)
 {
 	MV_TWSI_ADDR slave;
 	MV_U32 tClock;
+
 	if (flagTwsiInit == -1) {
 		DEBUG_INIT_FULL_S("\n### mvHwsTwsiInitWrapper ###\n");
 		slave.type = ADDR7_BIT;
@@ -198,6 +272,11 @@ MV_STATUS mvHwsTwsiInitWrapper(MV_VOID)
 
 		mvTwsiInit(0, TWSI_SPEED, tClock, &slave, 0);
 		flagTwsiInit = 1;
+
+		/* Enable slave i2c channel for AMC board */
+		/* It is required to detect PCIe GEN1/GEN2 enforcement settings */
+		if (mvBoardIdGet() == DB_AMC_6820_ID)
+			mvBoardDb6820AmcGpioConfig();
 	}
 	return MV_OK;
 }

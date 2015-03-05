@@ -68,6 +68,8 @@ ENTRY(_main)
 	mov	x0, #0
 	bl	board_init_f
 
+#if defined(CONFIG_MVEBU) && !defined(CONFIG_SPL_BUILD)
+
 /*
  * Set up intermediate environment (new sp and gd) and call
  * relocate_code(addr_moni). Trick here is that we'll return
@@ -109,5 +111,7 @@ clear_loop:
 	b	board_init_r			/* PC relative jump */
 
 	/* NOTREACHED - board_init_r() does not return */
+
+#endif /* defined(CONFIG_MVEBU) && !defined(CONFIG_SPL_BUILD) */
 
 ENDPROC(_main)

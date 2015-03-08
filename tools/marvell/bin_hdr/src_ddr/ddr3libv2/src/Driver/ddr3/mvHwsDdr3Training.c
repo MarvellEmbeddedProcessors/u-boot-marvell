@@ -2226,7 +2226,7 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 	GT_U32 interfaceId;
 	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet();
 
-#ifndef EXCLUDE_SWITCH_DEBUG
+#ifdef DDR_VIEWER_TOOL
 	if(debugTraining == DEBUG_LEVEL_TRACE)
 		CHECK_STATUS(printDeviceInfo((GT_U8)devNum));
 #endif

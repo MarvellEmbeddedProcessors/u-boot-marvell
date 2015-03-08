@@ -67,6 +67,13 @@
 #define CONFIG_ENV_OVERWRITE            /* allow to change env parameters */
 #undef  CONFIG_WATCHDOG                 /* watchdog disabled */
 
+/* SPL */
+/* Common defines for SPL */
+#define CONFIG_SPL_FRAMEWORK
+#define CONFIG_SPL_LIBCOMMON_SUPPORT
+#define CONFIG_SPL_LIBGENERIC_SUPPORT
+#define CONFIG_SPL_SERIAL_SUPPORT
+
 /* Cache */
 #define CONFIG_SYS_DCACHE_OFF
 #define CONFIG_SYS_CACHELINE_SIZE       32

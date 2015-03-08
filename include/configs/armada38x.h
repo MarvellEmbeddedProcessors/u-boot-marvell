@@ -101,6 +101,19 @@
 #define MV_DRAM_AUTO_SIZE
 #define CONFIG_SYS_DRAM_BANKS           1
 
+/* SPL */
+/* Defines for SPL */
+#define CONFIG_SPL_TEXT_BASE		0x40000040
+#define CONFIG_SPL_MAX_SIZE		(0x1ffc0)
+
+#define CONFIG_SPL_BSS_START_ADDR	(0x40020000)
+#define CONFIG_SPL_BSS_MAX_SIZE		(0x8000)
+
+#define CONFIG_SYS_SPL_MALLOC_START	(CONFIG_SPL_BSS_START_ADDR + \
+					 CONFIG_SPL_BSS_MAX_SIZE)
+#define CONFIG_SYS_SPL_MALLOC_SIZE	(0x4000)
+#define CONFIG_SPL_LDSCRIPT		"arch/arm/cpu/mvebu-common/u-boot-armv7-spl.lds"
+
 /* Include AFTER since it is affected by defines above */
 #include "mvebu-common.h"
 

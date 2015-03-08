@@ -107,6 +107,7 @@ config TARGET_ARMADA_8K
 
 config TARGET_ARMADA_38X
 	bool "Support Armada 38x"
+	select SUPPORT_SPL
 
 config TARGET_ARMADA_LP
 	bool "Support Armada LP"

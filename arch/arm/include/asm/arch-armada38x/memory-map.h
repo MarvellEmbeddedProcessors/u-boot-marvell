@@ -26,8 +26,11 @@
 /* 0xF1000000 - 0xF1100000 - INTERNAL_REG */
 /* 0xFD000000 - 0xFD100000 - NOR_CS */
 
-/* General */
+#ifndef CONFIG_SPL_BUILD
 #define MVEBU_REGS_BASE			(0xF1000000)
+#else
+#define MVEBU_REGS_BASE                 (0xD0000000)
+#endif
 #define MVEBU_REGS_SIZE			(0x100000)
 
 /* Memory windows settings */

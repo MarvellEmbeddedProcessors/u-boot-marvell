@@ -71,7 +71,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_hws_hw_training_def.h"
 
 /*Allow topolgy update from board TWSI device*/
-#if !defined(CONFIG_CUSTOMER_BOARD_SUPPORT)
+#if ( (!defined(CONFIG_CUSTOMER_BOARD_SUPPORT)) && defined(CONFIG_DDR3) )
+/*TBD - Currentry 16Bit mode not supported in DDR4, open this define after 16Bit mode validation*/
 #define MV_DDR_TOPOLOGY_UPDATE_FROM_TWSI
 #endif
 

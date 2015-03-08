@@ -597,7 +597,7 @@ GT_STATUS    ddr3TipPbsTx(GT_U32               uidevNum)
    return ddr3TipPbs(uidevNum, PBS_TX_MODE);
 }
 
-#ifndef EXCLUDE_SWITCH_DEBUG
+#ifdef DDR_VIEWER_TOOL
 /*****************************************************************************
 Print PBS Result
 ******************************************************************************/

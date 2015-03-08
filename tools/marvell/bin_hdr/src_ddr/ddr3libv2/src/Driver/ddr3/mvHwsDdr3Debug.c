@@ -32,10 +32,20 @@
 #include "mvDdrTrainingIpDb.h"
 
 
-#ifndef EXCLUDE_SWITCH_DEBUG
+#ifdef DDR_VIEWER_TOOL
 GT_STATUS printAdll(GT_U32 devNum, GT_U32 adll[MAX_INTERFACE_NUM*MAX_BUS_NUM]);
 static char* ConvertFreq(MV_HWS_DDR_FREQ freq);
+#if defined(EXCLUDE_SWITCH_DEBUG)
+extern MV_HWS_PATTERN sweepPattern;
+GT_U32 ctrlSweepres[ADLL_LENGTH][MAX_INTERFACE_NUM][MAX_BUS_NUM];
+GT_U32 ctrlADLL[MAX_CS_NUM*MAX_INTERFACE_NUM*MAX_BUS_NUM];
 #endif
+#endif
+GT_U8 csMaskReg[]=
+{
+    0, 4, 8, 12 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
 extern GT_U32 ckDelay;
 
 extern GT_STATUS ddr3TipRestoreDunitRegs
@@ -265,7 +275,7 @@ GT_STATUS    ddr3TipGetDeviceInfo
 }
 
 
-#ifndef EXCLUDE_SWITCH_DEBUG
+#ifdef DDR_VIEWER_TOOL
 /*****************************************************************************
 Convert freq to character string
 ******************************************************************************/
@@ -415,7 +425,7 @@ GT_STATUS ddr3TipPrintLog(GT_U32 devNum, GT_U32 memAddr)
     GT_U32 interfaceId = 0;
 	memAddr = memAddr;
 
-#ifndef EXCLUDE_SWITCH_DEBUG
+#ifdef DDR_VIEWER_TOOL
     if (( isValidateWindowPerIf != 0) || ( isValidateWindowPerPup != 0))
 
     {
@@ -740,8 +750,10 @@ extern GT_U8  isAdllCalibBeforeInit;
 extern GT_U8  isDfsInInit;
 extern GT_32 wlDebugDelay;
 extern GT_U32 siliconDelay[HWS_MAX_DEVICE_NUM];
+#ifdef ODT_TEST_SUPPORT
 extern GT_U32 Pfinger;
 extern GT_U32 Nfinger;
+#endif
 extern GT_U32 freqVal[DDR_FREQ_LIMIT];
 extern GT_U32 startPattern, endPattern;
 extern GT_U32  PhyReg0Val;
@@ -750,11 +762,6 @@ extern GT_U32  PhyReg2Val;
 extern GT_U32  PhyReg3Val;
 extern MV_HWS_PATTERN sweepPattern;
 extern MV_HWS_PATTERN pbsPattern;
-extern GT_U8 isRzq6;
-extern GT_U32 znriDataPhyVal;
-extern GT_U32 zpriDataPhyVal;
-extern GT_U32 znriCtrlPhyVal;
-extern GT_U32 zpriCtrlPhyVal;
 extern GT_U8  debugTrainingAccess;
 extern GT_U32 fingerTest, pFingerStart,  pFingerEnd,  nFingerStart, nFingerEnd, pFingerStep, nFingerStep;
 extern GT_U32 mode2T;
@@ -781,10 +788,6 @@ GT_U32 activateSelectBeforeRunAlg= 1, activateDeselectAfterRunAlg = 1, rlTest = 
 GT_BOOL debugAcc = GT_FALSE;
 GT_U32 ctrlSweepres[ADLL_LENGTH][MAX_INTERFACE_NUM][MAX_BUS_NUM];
 GT_U32 ctrlADLL[MAX_CS_NUM*MAX_INTERFACE_NUM*MAX_BUS_NUM];
-GT_U8 csMaskReg[]=
-{
-    0, 4, 8, 12 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
 GT_U32 xsbTestTable[][8] =
 {
     {0x00000000,         0x11111111,         0x22222222,         0x33333333,         0x44444444,         0x55555555,         0x66666666,         0x77777777},
@@ -979,7 +982,7 @@ static GT_STATUS  ddr3TipAccessAtr
    case 0x32:
        *ptr = (GT_U32*) &isDfsInInit;
        break;
-
+#ifdef ODT_TEST_SUPPORT
    case 0x33:
        *ptr = (GT_U32*) &Pfinger;
        break;
@@ -987,7 +990,7 @@ static GT_STATUS  ddr3TipAccessAtr
    case 0x34:
        *ptr = (GT_U32*) &Nfinger;
        break;
-
+#endif
    case 0x35:
        *ptr = (GT_U32*) &initFreq;
        break;
@@ -1029,17 +1032,6 @@ static GT_STATUS  ddr3TipAccessAtr
        *ptr = (GT_U32*) &(phy1ValTable[DDR_FREQ_LOW_FREQ]);
        break;
 */
-   case 0x50:
-       *ptr = (GT_U32*) &isRzq6;
-       break;
-
-   case 0x51:
-       *ptr = (GT_U32*) &znriDataPhyVal;
-       break;
-
-   case 0x52:
-       *ptr = (GT_U32*) &zpriDataPhyVal;
-       break;
 
    case 0x53:
        *ptr = (GT_U32*) &fingerTest;
@@ -1069,20 +1061,8 @@ static GT_STATUS  ddr3TipAccessAtr
        *ptr = (GT_U32*) &nFingerStep;
        break;
 
-   case 0x5A:
-       *ptr = (GT_U32*) &znriCtrlPhyVal;
-       break;
-
-   case 0x5B:
-       *ptr = (GT_U32*) &zpriCtrlPhyVal;
-       break;
-
    case 0x5C:
        *ptr = (GT_U32*) &isRegDump;
-       break;
-
-   case 0x5D:
-       *ptr = (GT_U32*) &vref;
        break;
 
    case 0x5E:
@@ -1264,14 +1244,14 @@ static GT_STATUS  ddr3TipAccessAtr
         }
         else
         {
-			DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("flagId out of boundary %d \n",flagId)); 				
+			DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("flagId out of boundary %d \n",flagId));
             return GT_BAD_PARAM;
         }
     }
-    return GT_OK; 
+    return GT_OK;
  }
-
-#ifndef EXCLUDE_SWITCH_DEBUG
+#endif /* #ifndef EXCLUDE_SWITCH_DEBUG */
+#ifdef DDR_VIEWER_TOOL
 /*****************************************************************************
 Print ADLL
 ******************************************************************************/
@@ -1294,8 +1274,9 @@ GT_STATUS printAdll(GT_U32 devNum, GT_U32 adll[MAX_INTERFACE_NUM*MAX_BUS_NUM])
 }
 #endif
 
+#ifndef EXCLUDE_SWITCH_DEBUG
 /* uiByteIndex - only byte 0,1,2, or 3, oxff - test all bytes */
-static 
+static
 GT_U32 ddr3TipCompare(GT_U32 interfaceId, GT_U32 *pSrc, GT_U32 *pDst, GT_U32 uiByteIndex)
 {
    GT_U32 burstCnt = 0, addrOffset,iId;
@@ -1304,7 +1285,7 @@ GT_U32 ddr3TipCompare(GT_U32 interfaceId, GT_U32 *pSrc, GT_U32 *pDst, GT_U32 uiB
    addrOffset = (uiByteIndex == 0xff) ? (GT_U32) 0xffffffff: (GT_U32) (0xff << (uiByteIndex*8));
    for(burstCnt = 0; burstCnt < EXT_ACCESS_BURST_LENGTH; burstCnt++)
    {
-      if ((pSrc[burstCnt] & addrOffset) != (pDst[burstCnt] & addrOffset)) 
+      if ((pSrc[burstCnt] & addrOffset) != (pDst[burstCnt] & addrOffset))
       {
           bIsFail = GT_TRUE;
       }
@@ -1386,8 +1367,8 @@ GT_STATUS    ddr3TipSweepTest(GT_U32   devNum, GT_U32 uiTestType, GT_U32 uiMemAd
 
     return GT_OK;
 }
-
-#ifndef EXCLUDE_SWITCH_DEBUG
+#endif /* EXCLUDE_SWITCH_DEBUG*/
+#if defined(DDR_VIEWER_TOOL)
 /*****************************************************************************
 Sweep validation
 ******************************************************************************/
@@ -1533,7 +1514,7 @@ void printTopology(MV_HWS_TOPOLOGY_MAP *pTopologyDB)
 	}
 }
 #endif
-
+#ifndef EXCLUDE_SWITCH_DEBUG
 /*****************************************************************************
 Execute XSB Test transaction (rd/wr/both)
 ******************************************************************************/
@@ -1575,11 +1556,6 @@ GT_STATUS RunXsbTest(GT_U32 devNum, GT_U32 uiMemAddress, GT_U32 writeType, GT_U3
 #else /*EXCLUDE_SWITCH_DEBUG*/
 GT_U32 rlVersion = 1; /* 0 - old RL machine */
 GT_U32  startXsbOffset = 0;
-GT_U8 csMaskReg[]=
-{
-    0, 4, 8, 12 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
-
 GT_STATUS RunXsbTest(GT_U32 devNum, GT_U32 uiMemAddress, GT_U32 writeType, GT_U32 readType, GT_U32 burstLength)
 {
 	return GT_OK;

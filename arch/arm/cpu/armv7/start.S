@@ -33,6 +33,7 @@
 	.globl	reset
 
 reset:
+#if defined(CONFIG_MVEBU) && !defined(CONFIG_SPL_BUILD)
 	bl	save_boot_params
 	/*
 	 * disable interrupts (FIQ and IRQ), also set the cpu to SVC32 mode,
@@ -45,6 +46,9 @@ reset:
 	orrne	r0, r0, #0x13		@ set SVC mode
 	orr	r0, r0, #0xc0		@ disable FIQ and IRQ
 	msr	cpsr,r0
+#else
+	stmfd	sp!, {r0 - r12, lr}     /* @ save registers on stack */
+#endif /* defined(CONFIG_MVEBU) && !defined(CONFIG_SPL_BUILD) */
 
 /*
  * Setup vector:
@@ -62,6 +66,7 @@ reset:
 	mcr	p15, 0, r0, c12, c0, 0	@Set VBAR
 #endif
 
+#if defined(CONFIG_MVEBU) && !defined(CONFIG_SPL_BUILD)
 	/* the mask ROM code should have PLL and others stable */
 #ifndef CONFIG_SKIP_LOWLEVEL_INIT
 	bl	cpu_init_cp15
@@ -69,6 +74,11 @@ reset:
 #endif
 
 	bl	_main
+#else
+	bl	board_init_f
+	mov	r0, #0x0                                /* @ return value: 0x0 NO_ERR */
+	ldmfd	sp!, {r0 - r12, pc}     /* @ restore regs and return */
+#endif /* defined(CONFIG_MVEBU) && !defined(CONFIG_SPL_BUILD) */
 
 /*------------------------------------------------------------------------------*/
 

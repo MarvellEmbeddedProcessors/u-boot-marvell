@@ -47,6 +47,7 @@ _bss_end_ofs:
 	.quad	__bss_end - _start
 
 reset:
+#if defined(CONFIG_MVEBU) && !defined(CONFIG_SPL_BUILD)
 	/*
 	 * Could be EL3/EL2/EL1, Initial State:
 	 * Little Endian, MMU Disabled, i/dCache Disabled
@@ -103,6 +104,22 @@ slave_cpu:
 	 */
 master_cpu:
 	bl	_main
+#else
+	stp	x19, x20,[sp, #-16]!	/* @ save registers on stack */
+	stp	x21, x22,[sp, #-16]!
+	stp	x23, x24,[sp, #-16]!
+	stp	x25, x26,[sp, #-16]!
+	stp	x27, x28,[sp, #-16]!
+	stp	x29, x30,[sp, #-16]!
+
+	bl	board_init_f
+	ldp	x29, x30,[sp], #16	/* @ restore regs and return */
+	ldp	x27, x28,[sp], #16
+	ldp	x25, x26,[sp], #16
+	ldp	x23, x24,[sp], #16
+	ldp	x21, x22,[sp], #16
+	ldp	x19, x20,[sp!, #16
+#endif /* defined(CONFIG_MVEBU) && !defined(CONFIG_SPL_BUILD) */
 
 /*-----------------------------------------------------------------------*/
 

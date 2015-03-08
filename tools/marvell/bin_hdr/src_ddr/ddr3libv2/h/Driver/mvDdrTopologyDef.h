@@ -78,13 +78,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /************************* Definitions *******************************************/
 
-#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ARMADA_39X)
-#define MAX_INTERFACE_NUM  		(1)
-#define MAX_BUS_NUM        		(5)
+#if defined(CONFIG_BOBCAT2)
+#define MAX_INTERFACE_NUM  		(5)
 #else
-#define MAX_INTERFACE_NUM  		(12)
-#define MAX_BUS_NUM        		(8)
+#define MAX_INTERFACE_NUM  		(1)
 #endif
+
+#define MAX_BUS_NUM        		(5)
 
 #define SDRAM_CS_SIZE							0xFFFFFFF
 #define MV_PARAMS_UNDEFINED 		0xFFFFFFFF

@@ -7,27 +7,6 @@ config MVEBU
 	bool "Support MVEBU devices"
 	depends on $SYS_VENDOR="mvebu"
 	default y
-	select CMD_BDI
-	select CMD_BOOTD
-	select CMD_ECHO
-	select CMD_EDITENV
-	select CMD_FPGA
-	select CMD_IMI
-	select CMD_ITEST
-	select CMD_IMLS
-	select CMD_LOADB
-	select CMD_LOADS
-	select CMD_MEMORY
-	select CMD_MISC
-	select CMD_FLASH
-	select CMD_NET
-	select CMD_DHCP
-	select CMD_PING
-	select CMD_NFS
-	select CMD_RUN
-	select CMD_SAVEENV
-	select CMD_SOURCE
-	select CMD_XIMG
 
 menu "IO support"
 
@@ -67,7 +46,6 @@ config MVEBU_PCI
 config MVEBU_UART
 	bool "UART support"
 	default n
-	select CMD_CONSOLE
 	help
 	  Choose this option to add support
 	  for UART driver, using COM1 NS16550
@@ -77,7 +55,6 @@ config MVEBU_UART
 config MVEBU_I2C
 	bool "I2C support"
 	default n
-	select CMD_I2C
 	help
 	  Choose this option to add support
 	  for I2C driver, using Marvell mvebu_i2c.c

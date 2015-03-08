@@ -185,7 +185,6 @@ DDR3 training global configuration parameters*/
 typedef struct
 {
 	GT_U32	ckDelay;
-	GT_U32	ckDelay_16;
 	GT_U32	PhyReg3Val;
 
 	GT_U32 gZpriData;

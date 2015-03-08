@@ -147,7 +147,7 @@ extern GT_U32  PhyReg1Val;
 extern GT_U32 isPllBeforeInit;
 extern GT_U32 useBroadcast;
 extern GT_U32 isCbeRequired;
-extern GT_U32 delayEnable, ckDelay, ckDelay_16,caDelay;
+extern GT_U32 delayEnable, ckDelay,caDelay;
 extern GT_U8 debugTrainingAccess;
 extern GT_U8 calibrationUpdateControl; /*2 external only, 1 is internal only*/
 
@@ -817,8 +817,6 @@ static GT_STATUS ddr3TipInitBc2Silicon
 	/* Delay Param */
 	if( ckDelay == MV_PARAMS_UNDEFINED )
 		ckDelay = 150;
-	if( ckDelay_16 == MV_PARAMS_UNDEFINED )
-		ckDelay_16 = 150;
 	delayEnable = 1;
 	caDelay = 0;
 

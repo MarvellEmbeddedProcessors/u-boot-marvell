@@ -53,7 +53,7 @@ GT_U8 pupState[MAX_BUS_NUM][MAX_INTERFACE_NUM] ;
 GT_U8 vrefWindowSize[MAX_INTERFACE_NUM][MAX_BUS_NUM];
 GT_U8 vrefWindowSizeTh = 12;
 
-extern GT_U32 ckDelay, ckDelay_16;
+extern GT_U32 ckDelay;
 extern MV_HWS_TOPOLOGY_MAP *topologyMap;
 extern GT_U32 csMaskReg[];
 extern GT_U32 delayEnable;
@@ -398,7 +398,7 @@ GT_STATUS    ddr3TipCmdAddrInitDelay
 	/* CA_delay is delaying the of the entire command & Address signals (include Clock signal � to overcome DGL error on the Clock versus the DQS). */
 	/*Calc ADLL Tap*/
 
-	if( (ckDelay == -1) || (ckDelay_16 == -1) )
+	if(ckDelay == -1)
 	{
 		DEBUG_TRAINING_HW_ALG(DEBUG_LEVEL_ERROR,("ERROR: One of ckDelay values not initialized!!!\n"));
 	}
@@ -407,15 +407,9 @@ GT_STATUS    ddr3TipCmdAddrInitDelay
 	{
 		VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
 		/*Calc Delay ps in ADLL tap*/
-		if (topologyMap->interfaceParams[interfaceId].busWidth == BUS_WIDTH_16)
-		{
-			ckNumADLLTap = ckDelay_16/adllTap;
-		}
-		else
-		{
-			ckNumADLLTap = ckDelay/adllTap;
-		}
+		ckNumADLLTap = ckDelay/adllTap;
 		caNumADLLTap = caDelay/adllTap;
+
 		data = (ckNumADLLTap & 0x3f) + ((caNumADLLTap & 0x3f) << 10);
 		/* Set the ADLL number to the CK ADLL for Interfaces for all Pup */
 		DEBUG_TRAINING_HW_ALG(DEBUG_LEVEL_TRACE,("ckNumADLLTap %d caNumADLLTap %d adllTap %d\n",ckNumADLLTap,caNumADLLTap,adllTap));

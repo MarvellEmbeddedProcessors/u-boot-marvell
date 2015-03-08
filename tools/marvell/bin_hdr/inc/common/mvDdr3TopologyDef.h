@@ -260,7 +260,6 @@ typedef struct
 typedef struct
 {
 	MV_U32	ckDelay;	/*the delay between clock to C/A for by8 devices*/
-	MV_U32	ckDelay_16;	/*the delay between clock to C/A for by16 devices*/
 	MV_U32	PhyReg3Val;	/*Initial value of RX centralization phy reg*/
 
 	MV_U32 gZpriData; 	/*Controller Data P drive strength*/

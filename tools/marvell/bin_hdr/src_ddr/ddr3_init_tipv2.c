@@ -811,7 +811,6 @@ static MV_STATUS ddr3HwsTuneTrainingParams(MV_U8 devNum)
 
 	/*NOTE: do not remove any field initilization*/
 	params.ckDelay = MV_TUNE_TRAINING_PARAMS_CK_DELAY;
-	params.ckDelay_16 = MV_TUNE_TRAINING_PARAMS_CK_DELAY_16;
 	params.PhyReg3Val = MV_TUNE_TRAINING_PARAMS_PHYREG3VAL;
 
 	params.gZpriData = MV_TUNE_TRAINING_PARAMS_PRI_DATA;

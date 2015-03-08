@@ -48,7 +48,7 @@
 extern MV_BOOL ddr3IfEccEnabled(void);
 extern GT_U32 maskTuneFunc;
 extern GT_U32 rlVersion;
-extern GT_U32 delayEnable, ckDelay, ckDelay_16, caDelay;
+extern GT_U32 delayEnable, ckDelay, caDelay;
 extern GT_U32 firstActiveIf;
 extern MV_HWS_DDR_FREQ initFreq;
 extern GT_U8  debugTrainingAccess;
@@ -448,8 +448,6 @@ static GT_STATUS ddr3TipInitAc3Silicon
 		maskTuneFunc &=	~WRITE_LEVELING_SUPP_MASK_BIT;
 	}
 
-	if( ckDelay == MV_PARAMS_UNDEFINED )
-		ckDelay_16 = 200;
 	if( ckDelay == MV_PARAMS_UNDEFINED )
 		ckDelay = 200;
 	delayEnable = 1;

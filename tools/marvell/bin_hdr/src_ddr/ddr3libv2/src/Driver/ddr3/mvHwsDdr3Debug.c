@@ -36,7 +36,7 @@
 GT_STATUS printAdll(GT_U32 devNum, GT_U32 adll[MAX_INTERFACE_NUM*MAX_BUS_NUM]);
 static char* ConvertFreq(MV_HWS_DDR_FREQ freq);
 #endif
-extern GT_U32 ckDelay, ckDelay_16;
+extern GT_U32 ckDelay;
 
 extern GT_STATUS ddr3TipRestoreDunitRegs
 (
@@ -1123,10 +1123,6 @@ static GT_STATUS  ddr3TipAccessAtr
 	   
    case 0x73:
        *ptr = (GT_U32*) &ckDelay;
-       break;
-
-   case 0x74:
-       *ptr = (GT_U32*) &ckDelay_16;
        break;
 
    case 0x75:

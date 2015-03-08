@@ -41,7 +41,7 @@ extern GT_U8  debugTrainingAccess;
 extern GT_U8  debugTrainingA38x;
 extern GT_U32 firstActiveIf;
 extern MV_HWS_DDR_FREQ initFreq;
-extern GT_U32 delayEnable, ckDelay, ckDelay_16, caDelay;
+extern GT_U32 delayEnable, ckDelay, caDelay;
 GT_U32  pipeMulticastMask;
 
 #define A38X_NUM_BYTES                  (3)
@@ -595,8 +595,6 @@ static GT_STATUS ddr3TipInitA38xSilicon
 
 	if( ckDelay == MV_PARAMS_UNDEFINED )
 		ckDelay = 160;
-	if( ckDelay_16 == MV_PARAMS_UNDEFINED )
-		ckDelay_16 = 160;
 	caDelay = 0;
 	delayEnable = 1;
 

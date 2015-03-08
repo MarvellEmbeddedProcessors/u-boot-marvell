@@ -117,7 +117,7 @@ GT_U32 mvHwsmemSize[] = { ADDR_SIZE_512Mb, ADDR_SIZE_1Gb, ADDR_SIZE_2Gb, ADDR_SI
 #endif
 
 GT_U32 vrefInitialValue = 0x4;
-GT_U32 ckDelay = MV_PARAMS_UNDEFINED, ckDelay_16 = MV_PARAMS_UNDEFINED;
+GT_U32 ckDelay = MV_PARAMS_UNDEFINED;
 
 /*Design Guidelines parameters*/
 GT_U32 gZpriData = MV_PARAMS_UNDEFINED; //controller data - P drive strength
@@ -361,8 +361,6 @@ GT_STATUS ddr3TipTuneTrainingParams
 	if(params->ckDelay != MV_PARAMS_UNDEFINED)
 		ckDelay = params->ckDelay;
 
-	if(params->ckDelay_16 != MV_PARAMS_UNDEFINED)
-		ckDelay_16 =  params->ckDelay_16;
 	if(params->PhyReg3Val != MV_PARAMS_UNDEFINED)
 		PhyReg3Val = params->PhyReg3Val;
 

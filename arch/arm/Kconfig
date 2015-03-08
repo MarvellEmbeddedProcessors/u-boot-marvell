@@ -104,6 +104,7 @@ config TARGET_VCMA9
 
 config TARGET_ARMADA_8K
 	bool "Support Armada 8K"
+	select SUPPORT_SPL
 
 config TARGET_ARMADA_38X
 	bool "Support Armada 38x"

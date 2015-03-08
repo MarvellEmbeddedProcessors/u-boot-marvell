@@ -49,6 +49,19 @@
 #define COUNTER_FREQUENCY	(46300)
 #define CONFIG_MSS_FREQUENCY	(125000)
 
+/* SPL */
+/* Defines for SPL */
+#define CONFIG_SPL_TEXT_BASE		0x0
+#define CONFIG_SPL_MAX_SIZE		(0x1ffc0)
+
+#define CONFIG_SPL_BSS_START_ADDR	(0x20000)
+#define CONFIG_SPL_BSS_MAX_SIZE		(0x8000)
+
+#define CONFIG_SYS_SPL_MALLOC_START	(CONFIG_SPL_BSS_START_ADDR + \
+					 CONFIG_SPL_BSS_MAX_SIZE)
+#define CONFIG_SYS_SPL_MALLOC_SIZE	(0x4000)
+#define CONFIG_SPL_LDSCRIPT		"arch/arm/cpu/mvebu-common/u-boot-armv8-spl.lds"
+
 /*
  * Include the generic MVEBU configuration file.
  * The generic file is affected by the defines above.

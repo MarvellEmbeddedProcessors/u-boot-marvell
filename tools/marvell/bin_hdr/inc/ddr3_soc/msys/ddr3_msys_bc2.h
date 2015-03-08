@@ -65,13 +65,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _DDR3_MSYS_BC2_H
 #define _DDR3_MSYS_BC2_H
 
-#define MAX_INTERFACE_NUM  		(12)
-#define MAX_BUS_NUM        		(8)
+#define MAX_INTERFACE_NUM  		(5)
+#define MAX_BUS_NUM        		(5)
 
 #include "ddr3_hws_hw_training_def.h"
 
-/*Controler bus divider 1 for 32 bit, 2 for 64 bit*/
-#define MV_DDR_CONTROLLER_BUS_WIDTH_MULTIPLIER		2
+/*Controler bus divider 1 for 32 bit, 2 for 64  bit */
+#define MV_DDR_CONTROLLER_BUS_WIDTH_MULTIPLIER         2
 
 /* MISC */
 #define INTER_REGS_BASE								0xD0000000

@@ -652,7 +652,7 @@ MV_U8 mvHwsCtrlSerdesRevGet(MV_VOID)
 MV_U32 mvHwsSerdesTopologyVerify(SERDES_TYPE serdesType, MV_U32 serdesId, SERDES_MODE serdesMode)
 {
 
-	MV_U32 testResult = 0;
+	MV_U32 testResult = TOPOLOGY_TEST_OK;
 	MV_U8 serdMaxNumb,unitNumb;
 	MV_UNIT_ID unitId;
 
@@ -664,7 +664,10 @@ MV_U32 mvHwsSerdesTopologyVerify(SERDES_TYPE serdesType, MV_U32 serdesId, SERDES
 	unitNumb =serdesTypeToUnitInfo[serdesType].serdesUnitNum;
 	serdMaxNumb = mvSysEnvUnitMaxNumGet(unitId);
 
-	if (SerdesLaneInUseCount[unitId][unitNumb] != 0) {		/* if didn't exceed amount of required Serdes lanes for current type */
+	if (SerdesLaneInUseCount[unitId][unitNumb] == 0) {
+		testResult = SERDES_ALREADY_IN_USE;
+	} else {
+	/* if didn't exceed amount of required Serdes lanes for current type */
 		SerdesLaneInUseCount[unitId][unitNumb]--;			/* update amount of required Serdes lanes for current type */
 
 		if (SerdesLaneInUseCount[unitId][unitNumb] == 0){	/* if reached the exact amount of required Serdes lanes for current type */
@@ -679,26 +682,24 @@ MV_U32 mvHwsSerdesTopologyVerify(SERDES_TYPE serdesType, MV_U32 serdesId, SERDES
 			testResult = UNIT_NUMBER_VIOLATION;
 		}
 	}
-	else
-	{
-		testResult = SERDES_ALREADY_IN_USE;
-		if (testResult == SERDES_ALREADY_IN_USE)
-		{
-			mvPrintf("%s: Error: serdes lane %d is configured to type %s: type already in use\n", __func__, serdesId, serdesTypeToString[serdesType]);
-			return MV_FAIL;
-		}
-		else if (testResult == WRONG_NUMBER_OF_UNITS)
-		{
-			mvPrintf("%s: Warning: serdes lane %d is set to type %s.\n", __func__, serdesId,serdesTypeToString[serdesType]);
-			mvPrintf("%s: Maximum supported lanes are already set to this type (limit = %d)\n", __func__, serdMaxNumb);
-			return MV_FAIL;
-		}
 
-		else if (testResult == UNIT_NUMBER_VIOLATION)
-		{
-			mvPrintf("%s: Warning: serdes lane %d type is %s: current device support only %d units of this type.\n", __func__, serdesId, serdesTypeToString[serdesType],serdMaxNumb );
-			return MV_FAIL;
-		}
+	if (testResult == SERDES_ALREADY_IN_USE) {
+		mvPrintf("%s: Error: serdes lane %d is configured ", __func__, serdesId);
+		mvPrintf("to type %s: type already in use\n", serdesTypeToString[serdesType]);
+		return MV_FAIL;
+	} else if (testResult == WRONG_NUMBER_OF_UNITS) {
+		mvPrintf("%s: Warning: serdes lane %d is ", __func__, serdesId);
+		mvPrintf("set to type %s.\n", serdesTypeToString[serdesType]);
+		mvPrintf("%s: Maximum supported lanes are ", __func__);
+		mvPrintf("already set to this type (limit = %d)\n", serdMaxNumb);
+		return MV_FAIL;
+	}
+
+	else if (testResult == UNIT_NUMBER_VIOLATION) {
+		mvPrintf("%s: Warning: serdes lane %d type is %s: ",
+				__func__, serdesId, serdesTypeToString[serdesType]);
+		mvPrintf("current device support only %d units of this type.\n", serdMaxNumb);
+		return MV_FAIL;
 	}
 	return MV_OK;
 }

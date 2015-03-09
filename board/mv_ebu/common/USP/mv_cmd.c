@@ -1053,6 +1053,8 @@ U_BOOT_CMD(
 #define REG_READ_DATA_SAMPLE_DELAYS_ADDR		0x1538
 #define REG_READ_DATA_READY_DELAYS_ADDR			0x153C
 #define REG_PHY_REGISTRY_FILE_ACCESS_ADDR		0x16A0
+#define REG_PHY_DATA		0
+#define REG_PHY_CTRL		1
 
 /******************************************************************************
 * Category     - DDR3 Training
@@ -1060,13 +1062,13 @@ U_BOOT_CMD(
 * Need modifications (Yes/No) - no
 *****************************************************************************/
 #ifdef MV_DDR_TRAINING_CMD_NEW_TIP
-unsigned int trainingReadPhyReg(int uiRegAddr, int uiPup)
+unsigned int trainingReadPhyReg(int uiRegAddr, int uiPup, int type)
 {
 	unsigned int uiReg;
     unsigned int addrLow = 0x3F & uiRegAddr;
     unsigned int addrHi = ((0xC0 & uiRegAddr) >> 6);
 
-	uiReg = (1 << 31) + (uiPup << 22) + (addrHi << 28) + (addrLow << 16);
+	uiReg = (1 << 31) + (uiPup << 22) + (type << 26) + (addrHi << 28) + (addrLow << 16);
 	MV_REG_WRITE(REG_PHY_REGISTRY_FILE_ACCESS_ADDR,uiReg&0x7FFFFFFF);
 	MV_REG_WRITE(REG_PHY_REGISTRY_FILE_ACCESS_ADDR,uiReg);
 
@@ -1096,7 +1098,7 @@ int training_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[] )
 			printf("CS: %d \n", uiCs);
 			for(uiPup = 0; uiPup < uiPupNum; uiPup++) {
 
-				uiReg = trainingReadPhyReg(0 + uiCs*4,uiPup);
+				uiReg = trainingReadPhyReg(0 + uiCs*4,uiPup, REG_PHY_DATA);
 				uiPhase = (uiReg >> 6) & 0x7;
 				uiDelay = uiReg & 0x1F;
 				printf("Write Leveling: PUP: %d, Phase: %d, Delay: %d\n",uiPup,uiPhase,uiDelay);
@@ -1104,7 +1106,7 @@ int training_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[] )
 
 			for (uiPup = 0; uiPup < uiPupNum; uiPup++) {
 
-				uiReg = trainingReadPhyReg(2 + uiCs*4,uiPup);
+				uiReg = trainingReadPhyReg(2 + uiCs*4,uiPup, REG_PHY_DATA);
 				uiPhase = (uiReg >> 6) & 0x7;
 				uiDelay = uiReg & 0x1F;
 				printf("Read Leveling: PUP: %d, Phase: %d, Delay: %d\n",uiPup, uiPhase, uiDelay);
@@ -1122,7 +1124,7 @@ int training_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[] )
 						if (uiDq == 9)
 							uiDq++;
 
-						uiReg = trainingReadPhyReg(0x10+uiDq+uiCs*0x12,uiPup);
+						uiReg = trainingReadPhyReg(0x10+uiDq+uiCs*0x12,uiPup, REG_PHY_DATA);
 						uiDelay = uiReg & 0x1F;
 
 						if (uiDq == 0)
@@ -1133,7 +1135,7 @@ int training_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[] )
 				}
 				for(uiPup=0; uiPup < uiPupNum; uiPup++) {
 					for(uiDq = 0; uiDq < 9; uiDq++) {
-						uiReg = trainingReadPhyReg(0x50+uiDq+uiCs*0x12,uiPup);
+						uiReg = trainingReadPhyReg(0x50+uiDq+uiCs*0x12,uiPup, REG_PHY_DATA);
 						uiDelay = uiReg & 0x1F;
 
 						if (uiDq == 0)
@@ -1147,7 +1149,7 @@ int training_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[] )
 			/*Read Centralization windows sizes for Scratch PHY registers*/
 			for(uiPup = 0; uiPup < uiPupNum; uiPup++)
 			{
-				uiReg = trainingReadPhyReg(0xC0+uiCs,uiPup);
+				uiReg = trainingReadPhyReg(0xC0+uiCs,uiPup, REG_PHY_DATA);
 				uiCentralRxRes = uiReg >> 5;
 				uiCentralTxRes = uiReg & 0x1F;
 				printf("Central window size for PUP %d is %d(RX) and %d(TX)\n", uiPup, uiCentralRxRes, uiCentralTxRes);
@@ -1308,11 +1310,31 @@ U_BOOT_CMD(
 * Functionality- The commands prints the row data of stability results for DDR3 Training
 * Need modifications (Yes/No) - no
 *****************************************************************************/
+MV_U32 dminPhyRegTable[20][2] = {
+					{0	,0xC0},
+					{0	,0xC1},
+					{0	,0xC2},
+					{0	,0xC3},
+					{0	,0xC4},
+					{1	,0xC0},
+					{1	,0xC1},
+					{1	,0xC2},
+					{1	,0xC3},
+					{1	,0xC4},
+					{2	,0xC0},
+					{2	,0xC1},
+					{2	,0xC2},
+					{2	,0xC3},
+					{2	,0xC4},
+					{0	,0xC5},
+					{1	,0xC5},
+					{2	,0xC5},
+					{0	,0xC6},
+					{1	,0xC6}};
 int trainingStability_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[] )
 {
-	MV_U32 uiCsEna, interfaceId=0,csindex = 0,busId=0,padIndex=0;
-	MV_U32 regData;
-	MV_U32 readData;
+	MV_U32 uiCsEna, interfaceId=0, csindex = 0,busId=0, padIndex=0;
+	MV_U32 regData, regData1;
 
 	uiCsEna = MV_REG_READ(REG_DDR3_RANK_CTRL_ADDR) & 0xF;
 
@@ -1355,12 +1377,12 @@ int trainingStability_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const ar
 	for(interfaceId = 0; interfaceId < 1; interfaceId++)
 	{
 		printf("Data: %d,%d,",interfaceId,mvCtrlGetJuncTemp());//add Junction Temperature
-		readData = MV_REG_READ(0x14C8);
-		printf("%d,%d,",((readData&0x3F0)>>4),((readData&0xFC00)>>10));
-		readData = MV_REG_READ(0x17C8);
-		printf("%d,%d,",((readData&0x3F0)>>4),((readData&0xFC00)>>10));
-		readData = MV_REG_READ(0x1DC8);
-		printf("%d,%d,",((readData&0x3F0000)>>16),((readData&0xFC00000)>>22));
+		regData = MV_REG_READ(0x14C8);
+		printf("%d,%d,",((regData&0x3F0)>>4),((regData&0xFC00)>>10));
+		regData = MV_REG_READ(0x17C8);
+		printf("%d,%d,",((regData&0x3F0)>>4),((regData&0xFC00)>>10));
+		regData = MV_REG_READ(0x1DC8);
+		printf("%d,%d,",((regData&0x3F0000)>>16),((regData&0xFC00000)>>22));
 		for(csindex = 0; csindex < 4; csindex++)
 		{
 			if (!(uiCsEna & (1 << csindex))) continue;
@@ -1368,48 +1390,52 @@ int trainingStability_cmd( cmd_tbl_t *cmdtp, int flag, int argc, char * const ar
 			for(busId = 0; busId <5; busId++)
 			{
 				#ifdef CONFIG_DDR3/*DDR3*/
-				regData = trainingReadPhyReg(RESULT_DB_PHY_REG_ADDR+csindex,busId);
+				regData = trainingReadPhyReg(RESULT_DB_PHY_REG_ADDR+csindex,busId, REG_PHY_DATA);
 				printf("%d,%d,",(regData&0x1F),((regData&0x3E0)>>5));
 				#else/*DDR4*/
-				regData = trainingReadPhyReg(RESULT_DB_PHY_REG_ADDR+csindex,busId);
-				printf("%d,%d,",(regData&0x1F)*4,2*((regData&0xFFE0)>>5));
-				regData = trainingReadPhyReg(RESULT_DB_PHY_REG_ADDR+csindex + 4,busId);
-				printf("%d,%d,",(regData&0x1F)*4,2*((regData&0xFFE0)>>5));
+				/*DminTx, areaTX*/
+				regData = trainingReadPhyReg(RESULT_DB_PHY_REG_ADDR+csindex,busId, REG_PHY_DATA);
+				regData1 = trainingReadPhyReg(dminPhyRegTable[csindex*5+busId][1],dminPhyRegTable[csindex*5+busId][0], REG_PHY_CTRL);
+				printf("%d,%d,",2*(regData1&0xFF),regData);
+				/*DminRx, areaRX*/
+				regData = trainingReadPhyReg(RESULT_DB_PHY_REG_ADDR+csindex+4,busId, REG_PHY_DATA);
+				regData1 = trainingReadPhyReg(dminPhyRegTable[csindex*5+busId][1],dminPhyRegTable[csindex*5+busId][0], REG_PHY_CTRL);
+				printf("%d,%d,",2*(regData1>>8),regData);
 				#endif
 				/*WL*/
-				regData = trainingReadPhyReg(WL_PHY_REG+csindex*4,busId);
+				regData = trainingReadPhyReg(WL_PHY_REG+csindex*4,busId, REG_PHY_DATA);
 				printf("%d,%d,%d,",(regData&0x1F)+((regData&0x1C0)>>6)*32,(regData&0x1F),(regData&0x1C0)>>6);
 				/*RL*/
-				readData = MV_REG_READ(REG_READ_DATA_SAMPLE_DELAYS_ADDR);
-				readData = (readData&(0xF<<(4*csindex))) >> (4*csindex);
-				regData = trainingReadPhyReg(RL_PHY_REG+csindex*4,busId);
-				printf("%d,%d,%d,%d,",(regData&0x1F)+((regData&0x1C0)>>6)*32 + readData*64,(regData&0x1F),((regData&0x1C0)>>6),readData);
+				regData1 = MV_REG_READ(REG_READ_DATA_SAMPLE_DELAYS_ADDR);
+				regData1 = (regData1&(0xF<<(4*csindex))) >> (4*csindex);
+				regData = trainingReadPhyReg(RL_PHY_REG+csindex*4,busId, REG_PHY_DATA);
+				printf("%d,%d,%d,%d,",(regData&0x1F)+((regData&0x1C0)>>6)*32 + regData1*64,(regData&0x1F),((regData&0x1C0)>>6),regData1);
 				/*Centralization*/
-				regData = trainingReadPhyReg(WRITE_CENTRALIZATION_PHY_REG+csindex*4,busId);
+				regData = trainingReadPhyReg(WRITE_CENTRALIZATION_PHY_REG+csindex*4,busId, REG_PHY_DATA);
 				printf("%d,",(regData&0x3F));
-				regData = trainingReadPhyReg(READ_CENTRALIZATION_PHY_REG+csindex*4,busId);
+				regData = trainingReadPhyReg(READ_CENTRALIZATION_PHY_REG+csindex*4,busId, REG_PHY_DATA);
 				printf("%d,",(regData&0x1F));
 				/*Vref */
-				regData = trainingReadPhyReg(PAD_CONFIG_PHY_REG+csindex,busId);
+				regData = trainingReadPhyReg(PAD_CONFIG_PHY_REG+csindex,busId, REG_PHY_DATA);
 				printf("%d,",(regData&0x7));
 				/*DQVref*/
 				/* Need to add the Read Function from device*/
 				printf("%d,",0);
 				#ifndef CONFIG_DDR3
-				for(padIndex = 0; padIndex < 10; padIndex++)
+				for(padIndex = 0; padIndex < 11; padIndex++)
 				{
-					regData = trainingReadPhyReg(0xD0+12*csindex+padIndex,busId);
+					regData = trainingReadPhyReg(0xD0+12*csindex+padIndex,busId, REG_PHY_DATA);
 					printf("%d,",(regData&0x3F));
 				}
 				#endif
-				for(padIndex = 0; padIndex < 10; padIndex++)
+				for(padIndex = 0; padIndex < 11; padIndex++)
 				{
-					regData = trainingReadPhyReg(0x10+16*csindex+padIndex,busId);
+					regData = trainingReadPhyReg(0x10+16*csindex+padIndex,busId, REG_PHY_DATA);
 					printf("%d,",(regData&0x3F));
 				}
-				for(padIndex = 0; padIndex < 10; padIndex++)
+				for(padIndex = 0; padIndex < 11; padIndex++)
 				{
-					regData = trainingReadPhyReg(0x50+16*csindex+padIndex,busId);
+					regData = trainingReadPhyReg(0x50+16*csindex+padIndex,busId, REG_PHY_DATA);
 					printf("%d,",(regData&0x3F));
 				}
 			}

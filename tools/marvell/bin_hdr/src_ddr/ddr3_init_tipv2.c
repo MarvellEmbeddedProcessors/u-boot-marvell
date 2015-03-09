@@ -148,7 +148,9 @@ MV_U32 ddr3GetDeviceWidth(MV_U32 uiCs);
 MV_U32 	mvBoardIdIndexGet(MV_U32 boardId);
 MV_U32 mvBoardIdGet(MV_VOID);
 MV_U32 ddr3GetBusWidth(void);
-
+#ifdef MV_RUN_WIN_VALIDATION_TEST
+extern MV_VOID mvHwsDdr3TipSweepTest(MV_BOOL enable);
+#endif
 extern MV_VOID ddr3SetLogLevel(MV_U32 nLogLevel);
 static MV_U32 gLogLevel = 0;
 static MV_STATUS ddr3HwsTuneTrainingParams(MV_U8 devNum);
@@ -409,7 +411,9 @@ MV_U32 ddr3Init(void)
 
 	/*Set log level for training lib*/
 	ddr3HwsSetLogLevel(MV_DEBUG_BLOCK_ALL, DEBUG_LEVEL_ERROR);
-
+#ifdef MV_RUN_WIN_VALIDATION_TEST /* to run DDR viewer tool (to display DDR training results) */
+	mvHwsDdr3TipSweepTest(MV_TRUE);
+#endif
 	/*Start New Training IP*/
 	status = ddr3HwsHwTraining();
 	if (MV_OK != status) {

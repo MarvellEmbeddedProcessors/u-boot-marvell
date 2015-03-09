@@ -93,7 +93,7 @@ TOBJ = $(TSRC:.c=.o)
 
 #############global flags enable/disable features to save footprint###########
 # exclude debug function not relevent for SoC( set by default)
-CFLAGS += -DEXCLUDE_SWITCH_DEBUG
+CFLAGS += -DEXCLUDE_SWITCH_DEBUG -DDDR_VIEWER_TOOL
 
 #remove all debug prints from training( unset by default)
 #CFLAGS += -DSILENT_LIB

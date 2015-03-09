@@ -732,9 +732,7 @@ ALL-$(CONFIG_REMAKE_ELF) += u-boot.elf
 # We can't do this yet due to the need for binary blobs
 # ALL-$(CONFIG_X86_RESET_VECTOR) += u-boot.rom
 
-ifneq ($(CONFIG_SPL), y)
-ALL-$(CONFIG_MVEBU_DOIMAGE) += doimage
-endif
+ALL-$(CONFIG_MVEBU) += doimage
 ALL-$(CONFIG_PALLADIUM) += bin2phex
 
 # enable combined SPL/u-boot/dtb rules for tegra
@@ -840,23 +838,33 @@ u-boot.ldr.hex u-boot.ldr.srec: u-boot.ldr FORCE
 	$(call if_changed,objcopy)
 
 ifdef CONFIG_MVEBU
-DOIMAGE :=  $(srctree)/tools/marvell/doimage
-BIN_HDR :=  $(srctree)/tools/marvell/bin_hdr
-BIN_HDR_UART :=  $(srctree)/tools/marvell/bin_hdr.uart
-BIN2PHEX := $(srctree)/scripts/bin2phex.pl
+SPLIMAGE	:= $(srctree)/spl/u-boot-spl.bin
+ifdef CONFIG_TARGET_ARMADA_8K
+DOIMAGE		:=  $(srctree)/tools/doimage
+BIN2PHEX	:= $(srctree)/scripts/bin2phex.pl
+DOIMAGE_FLAGS	:= -b $(SPLIMAGE)
+
+doimage: $(obj)/u-boot.bin $(DOIMAGE) $(SPLIMAGE)
+		$(DOIMAGE) $(DOIMAGE_FLAGS) u-boot.bin u-boot-$(CONFIG_SYS_SOC).bin
+
+bin2phex: doimage
+		$(BIN2PHEX) -w $(CONFIG_PHEX_WIDTH) -i u-boot-$(CONFIG_SYS_SOC).bin -o u-boot-$(CONFIG_SYS_SOC).hex -b 0x0
+
+else # CONFIG_TARGET_ARMADA_38X
+DOIMAGE		:= $(srctree)/tools/marvell/doimage
 
 ifdef CONFIG_MVEBU_NAND_BOOT
-NAND_OPTS := -P $(CONFIG_MVEBU_NAND_PAGE_SIZE) -L $(CONFIG_MVEBU_NAND_BLOCK_SIZE) -N $(CONFIG_MVEBU_NAND_CELL_TYPE)
+NAND_OPTS	:= -P $(CONFIG_MVEBU_NAND_PAGE_SIZE) -L $(CONFIG_MVEBU_NAND_BLOCK_SIZE) -N $(CONFIG_MVEBU_NAND_CELL_TYPE)
 endif
-DOIMAGE_FLAGS 		:= -T $(CONFIG_DOIMAGE_TYPE) -D 0x0 -E 0x0 $(NAND_OPTS) -G $(BIN_HDR)
-DOIMAGE_UART_FLGS	:= -T uart -D 0x0 -E 0x0 -G $(BIN_HDR_UART)
 
-doimage: $(obj)/u-boot.bin $(DOIMAGE) $(BIN_HDR) $(BIN_HDR_UART)
-		$(DOIMAGE) $(DOIMAGE_FLAGS)     u-boot.bin u-boot-$(CONFIG_SYS_SOC)-$(CONFIG_DOIMAGE_SUFFIX).bin
-		$(DOIMAGE) $(DOIMAGE_UART_FLGS) u-boot.bin u-boot-$(CONFIG_SYS_SOC)-$(CONFIG_DOIMAGE_SUFFIX)-uart.bin
+DOIMAGE_FLAGS	:= -T $(CONFIG_DOIMAGE_TYPE) -D 0x0 -E 0x0 $(NAND_OPTS) -G $(SPLIMAGE)
 
-bin2phex: $(obj)/u-boot.bin
-		$(BIN2PHEX) -i u-boot.bin -o u-boot.hex -b 0x0
+doimage: $(obj)/u-boot.bin $(DOIMAGE) $(SPLIMAGE)
+		cp spl/u-boot-spl.bin spl/u-boot-spl.bin.old; cat tools/marvell/params.raw > spl/u-boot-spl.bin;
+		cat spl/u-boot-spl.bin.old >> spl/u-boot-spl.bin;
+		$(DOIMAGE) $(DOIMAGE_FLAGS) u-boot.bin u-boot-$(CONFIG_SYS_SOC)-$(CONFIG_DOIMAGE_SUFFIX).bin
+
+endif # CONFIG_TARGET_ARMADA_8K
 endif # CONFIG_MVEBU
 
 #

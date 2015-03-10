@@ -324,7 +324,9 @@ U_BOOT_CMD(
 	""
 );
 
+#if defined(MV_INCLUDE_SPI)
 extern struct spi_flash *flash;
+#endif
 
 struct partitionInformation nandInfo = {
 	.defaultImage = "ubifs_arm_nand.image",
@@ -355,8 +357,11 @@ void flashWrite (MV_U32 destination, MV_U32 len, MV_U32 source, MV_BOOL isNand)
 		sprintf(cmdBuf, "nand write.trimffs %x %x %x\n", source, destination, len);
 		printf(cmdBuf);
 		run_command(cmdBuf, 0);
-	} else
+	}
+#if defined(MV_INCLUDE_SPI)
+	else
 		spi_flash_write(flash, destination, len, (const void *)source);
+#endif
 }
 
 void flashErase (MV_U32 destination, MV_U32 len, MV_BOOL isNand)
@@ -366,9 +371,11 @@ void flashErase (MV_U32 destination, MV_U32 len, MV_BOOL isNand)
 		sprintf(cmdBuf, "nand erase %x %x\n", destination, len);
 		printf(cmdBuf);
 		run_command(cmdBuf, 0);
-	} else
+	}
+#if defined(MV_INCLUDE_SPI)
+	else
 		spi_flash_erase(flash, destination, len);
-
+#endif
 }
 
 static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -451,12 +458,19 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (mvVerifyRequest() == MV_FALSE)
 		return 0;
 
-	if (isNand == MV_FALSE && !flash) {
-		flash = spi_flash_probe(0, 0, CONFIG_SF_DEFAULT_SPEED, CONFIG_SF_DEFAULT_MODE);
+	if (isNand == MV_FALSE) {
+#if defined(MV_INCLUDE_SPI)
 		if (!flash) {
-			printf("Failed to probe SPI Flash\n");
-			return 0;
+			flash = spi_flash_probe(0, 0, CONFIG_SF_DEFAULT_SPEED, CONFIG_SF_DEFAULT_MODE);
+			if (!flash) {
+				printf("Failed to probe SPI Flash\n");
+				return 0;
+			}
 		}
+#else
+		printf("SPI Flash is not supported\n");
+		return 0;
+#endif
 	}
 
 	/* Fetch requested file, filesize is needed for single image only */

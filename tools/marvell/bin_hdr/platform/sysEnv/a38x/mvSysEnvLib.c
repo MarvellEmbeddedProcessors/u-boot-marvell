@@ -237,13 +237,18 @@ MV_U32 mvBoardIdGet(MV_VOID)
 
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
-	MV_U32 value;
+	MV_U32 value, devId;
 
 	value = (MV_MEMIO_LE32_READ(INTER_REGS_BASE | DEVICE_SAMPLE_AT_RESET1_REG) >> 15) & 0x1;
 
 	switch (value) {
 	case (0x0):
-		if (mvSysEnvDeviceIdGet() == MV_6811)
+		/* Read HW device ID from S@R:
+		 * note: avoiding reading device ID here with mvSysEnvDeviceIdGet(), since it include
+		 * prints, and TWSI reads, which require Tclk value--> reading Tclk value straight from register */
+		devId = MV_REG_READ(DEVICE_SAMPLE_AT_RESET1_REG);
+		devId = devId >> SAR_DEV_ID_OFFS & SAR_DEV_ID_MASK;
+		if (devId == MV_6811)
 			return MV_BOARD_TCLK_166MHZ;	/* device 381/2 (6811/21) use 166MHz instead of 250MHz */
 		else
 			return MV_BOARD_TCLK_250MHZ;

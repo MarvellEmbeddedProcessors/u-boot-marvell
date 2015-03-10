@@ -40,7 +40,11 @@ extern void print_mvBanner(void);
  */
 __weak MV_U32 mvUartPortGet(void)
 {
+#ifdef CONFIG_AMP_SUPPORT
+	return whoAmI();
+#else
 	return CONFIG_SYS_DUART_CHAN;
+#endif
 }
 
 int mv_serial_init (void)
@@ -66,18 +70,18 @@ void mv_serial_putc(const char c)
 {
 	if (c == '\n')
 
-	mvUartPutc(whoAmI(), '\r');
-	mvUartPutc(whoAmI(), c);
+	mvUartPutc(mvUartPortGet(), '\r');
+	mvUartPutc(mvUartPortGet(), c);
 }
 
 int mv_serial_getc(void)
 {
-	return mvUartGetc(whoAmI());
+	return mvUartGetc(mvUartPortGet());
 }
 
 int mv_serial_tstc(void)
 {
-	return mvUartTstc(whoAmI());
+	return mvUartTstc(mvUartPortGet());
 }
 
 void mv_serial_setbrg (void)

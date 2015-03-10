@@ -330,7 +330,7 @@ disclaimer.
  */
 #define CONFIG_BAUDRATE         	115200   /* console baudrate = 115200    */
 #define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600 }
-#define CONFIG_SYS_DUART_CHAN		1		/* channel to use for console */
+#define CONFIG_SYS_DUART_CHAN		0		/* channel to use for console */
 
 
 #define CONFIG_SYS_INIT_CHAN1

@@ -217,6 +217,28 @@ MV_STATUS mvCtrlFreqModeGet(MV_U32 freqModeSatRValue, MV_FREQ_MODE *freqMode)
 
 	return MV_ERROR;
 }
+/******************************************************************************
+* mvCtrlIsUsbSerDesConnected
+*
+* DESCRIPTION:check if SerDes lane is connected to USB3 host.
+*
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:return true if SerDes lane is connected to USB3 host, false otherwise.
+*
+*
+*******************************************************************************/
+MV_BOOL mvCtrlIsUsbSerDesConnected(MV_U32 usbPort)
+{
+	int usb3HostNum = mvCtrlUsb3HostMaxGet();
+	int maxSerDesLanes = mvCtrlUsb3MaxGet();
+	if (usbPort >= maxSerDesLanes && usb3HostNum > maxSerDesLanes)
+		return MV_FALSE;
+	return MV_TRUE;
+}
 
 #ifdef MV_INCLUDE_PEX
 MV_STATUS mvCtrlUpdatePexId(MV_VOID)

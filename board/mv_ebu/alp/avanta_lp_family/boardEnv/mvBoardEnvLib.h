@@ -638,6 +638,7 @@ MV_U32 mvBoardSysConfigGet(MV_CONFIG_TYPE_ID configField);
 MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
 MV_STATUS mvBoardEepromWriteDefaultCfg(void);
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
+MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
 #ifdef __cplusplus
 }
 #endif  /* __cplusplus */

@@ -134,6 +134,24 @@ static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
 
 	return index;
 }
+/******************************************************************************
+* mvCtrlIsUsbSerDesConnected
+*
+* DESCRIPTION: check if SerDes lane is connected to USB3 host.
+*
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:return true if SerDes lane is connected to USB3 host, false otherwise.
+*
+*
+*******************************************************************************/
+MV_BOOL mvCtrlIsUsbSerDesConnected(MV_U32 usbPort)
+{
+	return MV_FALSE;/*return false because in msys there is no usb3*/
+}
 
 MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit)
 {

@@ -197,6 +197,10 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 #define SERDES_RXAUI(x)		(0x100 << x)	/* bits 8       : RXAUI port 0 indication */
 static MV_U32 ethComPhy;
 
+/* usbComPhy: bit description for USB port per SerDes Lane,
+   if SerDes lane connected to USB host #X, enable bit #X usbComPhy */
+static MV_U32 usbComPhy;
+
 /* Only the first unit, only the second unit or both can be active on the specific board */
 static MV_BOOL sataUnitActive[MV_SATA_MAX_UNIT] = {MV_FALSE, MV_FALSE};
 
@@ -426,6 +430,26 @@ MV_U32 mvCtrlGetPhysicalSerdesNum(MV_U32 serdesNum)
 	} else
 		return serdesNum;
 }
+/******************************************************************************
+* mvCtrlIsUsbSerDesConnected
+*
+* DESCRIPTION: check if SerDes lane is connected to USB3 host.
+*
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:return true if SerDes lane is connected to USB3 host, false otherwise.
+*
+*
+*******************************************************************************/
+MV_BOOL mvCtrlIsUsbSerDesConnected(MV_U32 usbPort)
+{
+	if (((usbComPhy >> usbPort) & 0X1) == 1)
+		return MV_TRUE;
+	return MV_FALSE;
+}
 /*******************************************************************************
 * mvCtrlSerdesConfigDetect
 *
@@ -454,7 +478,7 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 	MV_BOARD_PEX_INFO *boardPexInfo = mvBoardPexInfoGet();
 
 	maxSerdesLane = mvCtrlSocUnitInfoNumGet(SERDES_UNIT_ID);
-
+	usbComPhy = 0;
 	memset(boardPexInfo, 0, sizeof(MV_BOARD_PEX_INFO));
 	commPhyCfgReg = MV_REG_READ(COMM_PHY_SELECTOR_REG);
 	DB(printf("mvCtrlSerdesConfig: commPhyCfgReg=0x%x\n", commPhyCfgReg));
@@ -505,6 +529,7 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 			break;
 		case SERDES_UNIT_USB_H:
 			DB(printf("USB_H, if=%d\n", ifNo));
+			usbComPhy |= 0X1 << ifNo;
 			usbHIfCount++;
 			break;
 		case SERDES_UNIT_USB:
@@ -2250,66 +2275,21 @@ int mvCtrlNandClkSet(int nfc_clk_freq)
 * mvCtrlUsbMapGet
 *
 * DESCRIPTION:
-*       Get the map of USB ports if exists
+*	Controller USB mapping is not valid for A38x/a39x Port are mapped per board via mvBoardIsUsbPortConnected.
 *
 * INPUT:
 *	the current USB unit(USB3.0 or USB2.0)
 *	the current usbActive(not used, relevant for other SoC)
 *
 * OUTPUT:
-*       Mapped usbActive.
+*	Mapped usbActive.
 *
 * RETURN:
 *       None
 *******************************************************************************/
 MV_U32 mvCtrlUsbMapGet(MV_U32 usbUnitId, MV_U32 usbActive)
 {
-	MV_U32 lane5Cfg, lane3Cfg, phySelector;
-
-	/* On A39x and A38x A0 revision, there are 2 USB3.0 MACs, and the connectivity of the
-	   USB3.0 depends on the SerDes configuration:
-		2 SerDes lanes for USB3.0:
-		| usbActive	|  USB port		|
-		-----------------------------------------
-		|	0	| USB3.0 Host Port #0	|
-		|	1	| USB3.0 Host Port #1	|
-
-		single SerDes lane#5 Or single SerDes lane#3 for USB3.0
-		| usbActive	|  USB port				|
-		---------------------------------------------------------
-		|	0	| USB3.0 Host Port #1			|
-		|	1	| USB2.0 via USB3.0  Host Port #0	|
-
-		When only single USB3.0 Host port #1 is connected via SerDes Lane 3 or 5,
-		map the USB port #1 to be usbActive=0
-		*/
-
-	/* if a38x Z0 rev, return original mapping */
-	if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX && mvCtrlRevGet() == MV_88F68XX_Z1_ID)
-		return usbActive;
-
-	/* if only single USB3.0 SerDes, via Lane5 or via lane3 */
-	if (usbUnitId == USB3_UNIT_ID && mvCtrlUsb3MaxGet() == 1) {
-		phySelector = MV_REG_READ(COMM_PHY_SELECTOR_REG);
-		lane5Cfg = (phySelector & COMPHY_SELECT_MASK(5)) >> COMPHY_SELECT_OFFS(5);
-		lane3Cfg = (phySelector & COMPHY_SELECT_MASK(3)) >> COMPHY_SELECT_OFFS(3);
-		if (lane5Cfg == COMPHY_SELECT_LANE5_USB3_VAL ||
-			lane3Cfg == COMPHY_SELECT_LANE3_USB3_VAL)
-			return 1 - usbActive;
-	}
-#ifdef CONFIG_ARMADA_39X
-	/* temporery fix for A39x:
-	   In order to keep the same USB mapping for xHCI usage,
-	   nevermind if port is connected with SerDes lane, or without,
-	   return the same mapping for all xHCI/USB3.0 usage.
-	TODO: remove USB mapping and use USB board structre information */
-	if (usbUnitId == USB3_UNIT_ID)
-		return 1 - usbActive;
-#endif
-	/* If A39x or A38x A0 rev, but the no mapping needed:
-	 * - single USB#0 in use
-	 * - both USB units are in use */
-
+	/*No controller port mapping for a38x/a39x*/
 	return usbActive;
 }
 

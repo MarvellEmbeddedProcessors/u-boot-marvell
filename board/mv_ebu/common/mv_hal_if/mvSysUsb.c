@@ -68,7 +68,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "usb/mvUsb.h"
 #include "ctrlEnv/mvCtrlEnvAddrDec.h"
 #include "usb/mvUsbRegs.h"
-
+#include "boardEnv/mvBoardEnvLib.h"
+#include "ctrlEnv/mvCtrlEnvSpec.h"
 /*******************************************************************************
 * mvSysUsbHalInit - Initialize the USB subsystem
 *
@@ -88,7 +89,6 @@ MV_STATUS mvSysUsbInit(MV_VOID)
 	MV_STATUS status = MV_OK;
 	MV_U32 dev;
 	MV_UNIT_WIN_INFO addrWinMap[MAX_TARGETS + 1];
-
 	halData.ctrlModel = mvCtrlModelGet();
 	halData.ctrlRev = mvCtrlRevGet();
 	halData.ctrlFamily = mvCtrlDevFamilyIdGet(halData.ctrlModel);
@@ -104,7 +104,9 @@ MV_STATUS mvSysUsbInit(MV_VOID)
 		 MAC ID0 (usbActive =0) is connected to Physical MAC ID1 */
 		int id, mac_id[2] = {1, 0};
 
-		for (id = 0; id < mvCtrlUsbMaxGet(); id++) {
+		 for (id = 0; id < maxUsbPorts ; id++) {
+			if (mvBoardIsUsbPortConnected(USB_UNIT_ID,id) == MV_FALSE)
+				continue;
 			if (maxUsbPorts == 1 && (halData.ctrlFamily == MV_88F67X0 ||
 					(halData.ctrlRev == MV_88F66XX_A0_ID && halData.ctrlFamily == MV_88F66X0)))
 				dev = mac_id[id];
@@ -136,7 +138,9 @@ MV_STATUS mvSysUsbInit(MV_VOID)
 #endif
 #ifdef CONFIG_USB_XHCI
 		MV_U32 reg;
-		for (dev = 0; dev < mvCtrlUsb3HostMaxGet() ; dev++) {
+		for (dev = 0; dev < mvCtrlUsb3HostMaxGet(); dev++) {
+			if (mvBoardIsUsbPortConnected(USB3_UNIT_ID,dev) == MV_FALSE)
+				continue;
 			status = mvUsbUtmiPhyInit(dev, &halData);
 			if (halData.ctrlFamily == MV_88F66X0 || halData.ctrlFamily == MV_88F67X0) {
 				/* ALP/A375: Set UTMI PHY Selector:

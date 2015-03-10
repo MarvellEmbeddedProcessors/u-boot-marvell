@@ -364,7 +364,7 @@ MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
 MV_U32 mvBoardCpssBoardIdSet(MV_U8);
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
 MV_STATUS mvBoardOobPortCfgSet(MV_VOID);
-
+MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

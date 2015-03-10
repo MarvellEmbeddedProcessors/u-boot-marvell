@@ -120,6 +120,14 @@ MV_DEV_CS_INFO armada_39x_customer_0_BoardDeCsInfo[] = {
 	{ SPI1_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE }	/* SPI1 DEV */
 };
 
+MV_BOARD_USB_INFO armada_39x_customer_0_BoardUsbInfo[] = {
+/* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
+	{ USB3_UNIT_ID, 0, MV_FALSE},
+	{ USB3_UNIT_ID, 1, MV_TRUE},
+	{ USB_UNIT_ID,  0, MV_FALSE},
+};
+
+
 MV_BOARD_MPP_INFO armada_39x_customer_0_BoardMppConfigValue[] = {
 	{ {
 		A39X_CUSTOMER_BOARD_0_MPP0_7,
@@ -165,6 +173,8 @@ MV_BOARD_INFO armada_39x_customer_board_0_info = {
 	.gppPolarityValLow		= A39X_CUSTOMER_BOARD_0_GPP_POL_LOW,
 	.gppPolarityValMid		= A39X_CUSTOMER_BOARD_0_GPP_POL_MID,
 
+	.pBoardUsbInfo		= armada_39x_customer_0_BoardUsbInfo,
+	.numBoardUsbInfo	= ARRSZ(armada_39x_customer_0_BoardUsbInfo),
 	/* TDM */
 	.numBoardTdmInfo		= {},
 	.pBoardTdmInt2CsInfo		= {},

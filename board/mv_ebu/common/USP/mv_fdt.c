@@ -107,6 +107,9 @@ static int mv_fdt_remove_node(void *fdt, const char *path);
 static int mv_fdt_scan_and_set_alias(void *fdt, const char *name, const char *alias);
 static int mv_fdt_nand_mode_fixup(void *fdt);
 static int mv_fdt_update_pinctrl(void *fdt);
+#ifdef MV_INCLUDE_AUDIO
+static int mv_fdt_update_audio(void *fdt);
+#endif
 static int mv_fdt_debug;
 #ifdef CONFIG_MV_SDHCI
 static int mv_fdt_update_sdhci(void *fdt);
@@ -139,6 +142,9 @@ update_fnc_t *update_sequence[] = {
 	mv_fdt_board_compatible_name_update,	/* Update compatible (board name) in DT */
 	mv_fdt_update_serial,			/* Update serial/UART nodes in DT */
 	mv_fdt_update_pic_gpio,
+#ifdef MV_INCLUDE_AUDIO
+	mv_fdt_update_audio,			/* Update audio-controller+sound nodes in DT */
+#endif
 	NULL,
 };
 
@@ -447,6 +453,53 @@ static int mv_fdt_update_sdhci(void *fdt)
 			return 0;
 		}
 		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
+	}
+
+	return 0;
+}
+#endif
+
+#ifdef MV_INCLUDE_AUDIO
+/*******************************************************************************
+* mv_fdt_update_audio
+*
+* DESCRIPTION: update audio-controller and sound nodes (SPDIF/I2S)
+*
+* INPUT: fdt.
+* OUTPUT: None.
+* RETURN: -1 on error os 0 otherwise.
+*******************************************************************************/
+static int mv_fdt_update_audio(void *fdt)
+{
+	int err, nodeoffset, i;				/* nodeoffset: node offset from libfdt */
+	char propval[10];				/* property value */
+	const char *prop = "status";			/* property name */
+	char nodes[2][64];				/* node names */
+
+	if (mvBoardIsAudioConnected() == MV_TRUE)
+		sprintf(propval, "okay");
+	else
+		sprintf(propval, "disabled");
+
+	sprintf(nodes[0], "audio-controller@%x", MV_AUDIO_OFFSET);
+	sprintf(nodes[1], "sound");
+
+	for (i = 0; i < 2; ++i) {
+		nodeoffset = mv_fdt_find_node(fdt, nodes[i]);
+		if (nodeoffset < 0) {
+			mv_fdt_dprintf("Lack of '%s' node in device tree\n", nodes[i]);
+			return 0;
+		}
+
+		if (strncmp(fdt_get_name(fdt, nodeoffset, NULL), nodes[i], strlen(nodes[i])) == 0) {
+			mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
+							propval, strlen(propval)+1));
+			if (err < 0) {
+				mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, nodes[i]);
+				return 0;
+			}
+			mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, nodes[i]);
+		}
 	}
 
 	return 0;

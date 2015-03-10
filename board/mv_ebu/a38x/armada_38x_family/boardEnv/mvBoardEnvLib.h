@@ -387,6 +387,7 @@ typedef struct _boardInfo {
 	struct MV_BOARD_IO_EXPANDER *pIoExp;
 	MV_U32  boardOptionsModule;
 	MV_BOOL isAmc;			/* AMC active: used for DT update & switching services */
+	MV_BOOL isAudioConnected;	/* indicates if SPDIF/I2S is connected */
 } MV_BOARD_INFO;
 
 struct _mvBoardMppModule {
@@ -575,6 +576,9 @@ MV_BOOL mvBoardisSdioConnected(void);
 MV_VOID mvBoardSdioConnectionSet(MV_BOOL status);
 MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
 MV_BOARD_INFO *mvBoardInfoStructureGet(MV_VOID);
+MV_BOOL mvBoardIsAudioConnected(void);
+void mvBoardAudioConnectionSet(MV_BOOL isConnected);
+
 #ifdef CONFIG_SWITCHING_SERVICES
 MV_BOOL mvBoardisAmc(void);
 #endif

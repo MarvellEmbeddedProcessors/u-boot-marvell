@@ -133,6 +133,7 @@ extern "C" {
 #define MV_NFC_REGS_OFFSET                      (0xD0000)
 #define MV_SDMMC_REGS_OFFSET			(0xD8000)
 #define MV_SDMMC_WINDOWS_REGS_OFFSET		(0xDC000)
+#define MV_AUDIO_OFFSET				(0xE8000)
 
 #define SATA3_NUM_OF_PORTS			2
 #define SATA3_MAX_PORTS_PER_UNIT		2

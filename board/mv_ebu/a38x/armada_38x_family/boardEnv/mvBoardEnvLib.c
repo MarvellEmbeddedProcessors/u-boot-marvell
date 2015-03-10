@@ -3435,3 +3435,45 @@ MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber)
 
 	return MV_FALSE;
 }
+/*******************************************************************************
+* mvBoardAudioConnectionGet
+*
+* DESCRIPTION:
+*       This routine returns MV_TRUE if SPDIF/I2S is connected
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE - SPDIF/I2S is connected
+*       MV_FALSE - otherwise.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsAudioConnected()
+{
+	return board->isAudioConnected;
+}
+
+/*******************************************************************************
+* mvBoardAudioConnectionSet
+*
+* DESCRIPTION:
+*       This routine sets if SPDIF/I2S module is connected or not.
+*
+* INPUT:
+*	isConnected - indicated if SPDIF/I2S is connected.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+void mvBoardAudioConnectionSet(MV_BOOL isConnected)
+{
+	board->isAudioConnected = isConnected;
+}

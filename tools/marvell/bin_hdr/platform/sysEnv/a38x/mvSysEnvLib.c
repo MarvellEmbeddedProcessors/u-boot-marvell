@@ -491,8 +491,15 @@ MV_U32 mvSysEnvDeviceIdGet(MV_VOID)
 #endif
 #else
 	if (mvSysEnvIsFlavourReduced() == 1) {
-		if (boardId == DB_GP_68XX_ID)
-			gDevId = MV_6W23;
+		if (boardId == DB_GP_68XX_ID) {
+			if (gDevId != MV_6810) /* simulate 6W23(A384) only on 6820(A385) or 6828(A388) */
+				gDevId = MV_6W23;
+			else {
+				mvPrintf("%s: Error: A384 (6W23) can not run with device ", __func__);
+				mvPrintf("id A380 (6810)\nto set A384,run 'SatR ");
+				mvPrintf("write devid 3' OR 'SatR write devid 1'\n");
+			}
+		}
 		else if (boardId == DB_BP_6821_ID)
 			gDevId = MV_6W22;
 	}

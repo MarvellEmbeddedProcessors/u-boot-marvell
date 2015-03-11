@@ -231,6 +231,25 @@ MV_SUSPEND_WAKEUP_STATUS mvSysEnvSuspendWakeupCheck(void)
 	/* TBD */
 	return MV_SUSPEND_WAKEUP_DISABLED;
 }
+
+/*******************************************************************************
+* mvSysEnvCheckWakeupDramEnable
+*
+* DESCRIPTION: Check the magic wakeup enabled
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*       MV_SUSPEND_WAKEUP_ENABLED_MEM_DETECTED or MV_SUSPEND_WAKEUP_DISABLED
+*
+*******************************************************************************/
+MV_SUSPEND_WAKEUP_STATUS mvSysEnvCheckWakeupDramEnable(void)
+{
+	return MV_SUSPEND_WAKEUP_DISABLED;
+}
+
 /*******************************************************************************
 * mvSysEnvDlbConfigPtrGet
 * DESCRIPTION: defines pointer to to DLB COnfiguration table

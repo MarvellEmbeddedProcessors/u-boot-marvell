@@ -559,6 +559,7 @@ GT_STATUS    mvHwsDdr3TipInitController
             DEBUG_TRAINING_IP(DEBUG_LEVEL_TRACE, ("memySize %d speedBinInd %d freq %d tREFI %d\n", memorySize,speedBinIndex, freq, tREFI));
             /* HCLK & CK CLK in 2:1 [ps]*/
             /* tCKCLK is external clock */
+            tCKCLK = (MEGA/freqVal[freq]);
             /* tHCLK is internal clock */
             tHCLK = 2*tCKCLK;
             refreshIntervalCnt = tREFI/tHCLK; /* no units */

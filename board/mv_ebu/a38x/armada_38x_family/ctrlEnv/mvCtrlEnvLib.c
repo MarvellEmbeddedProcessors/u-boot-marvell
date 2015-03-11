@@ -1411,7 +1411,16 @@ MV_U8 mvCtrlRevGet(MV_VOID)
 *******************************************************************************/
 MV_STATUS mvCtrlNameGet(char *pNameBuff)
 {
-	mvOsSPrintf(pNameBuff, "%s%x", SOC_NAME_PREFIX, mvCtrlModelGet());
+	MV_U16 ctrlModel = mvCtrlModelGet();
+	/* Virtual Flavors has different ctrlModel values than
+	 * it's Controller names: 6W22: 0x6823 | 6W23: 0x6824 */
+	if (ctrlModel == MV_6W22_DEV_ID)
+		mvOsSPrintf(pNameBuff, "%s%s", SOC_NAME_PREFIX, MV_6W22_DEV_NAME);
+	else if (ctrlModel == MV_6W23_DEV_ID)
+		mvOsSPrintf(pNameBuff, "%s%s", SOC_NAME_PREFIX, MV_6W23_DEV_NAME);
+	else
+		mvOsSPrintf(pNameBuff, "%s%x", SOC_NAME_PREFIX, ctrlModel);
+
 	return MV_OK;
 }
 

@@ -1,6 +1,4 @@
 *.o
-src/Driver/ddr4/
-
 *.dep
 src/Driver/ddr4/
 

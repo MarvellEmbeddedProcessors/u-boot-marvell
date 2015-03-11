@@ -339,6 +339,34 @@ MV_SUSPEND_WAKEUP_STATUS mvSysEnvSuspendWakeupCheck(void)
 }
 
 /*******************************************************************************
+* mvSysEnvCheckWakeupDramEnable
+*
+* DESCRIPTION: Check the magic wakeup enabled
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*       MV_SUSPEND_WAKEUP_ENABLED_MEM_DETECTED or MV_SUSPEND_WAKEUP_DISABLED
+*
+*******************************************************************************/
+MV_SUSPEND_WAKEUP_STATUS mvSysEnvCheckWakeupDramEnable(void)
+{
+	int *boot_info = (int*)(BOOT_INFO_ADDR);
+	int  magic_word;
+
+	magic_word =  *(boot_info);
+
+	if(magic_word == SUSPEND_MAGIC_WORD) {
+		return MV_SUSPEND_WAKEUP_ENABLED_MEM_DETECTED;
+	}
+	else{
+		return MV_SUSPEND_WAKEUP_DISABLED;
+	}
+}
+
+/*******************************************************************************
 * mvCtrlDevIdIndexGet
 *
 * DESCRIPTION: return SOC device index

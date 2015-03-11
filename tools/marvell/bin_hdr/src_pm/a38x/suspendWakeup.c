@@ -82,9 +82,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * Notes:
 * Returns:	None.
 */
-#define BOOT_INFO_ADDR				(0x3000)
-#define SUSPEND_MAGIC_WORD			(0xDEADB002)
-#define REGISTER_LIST_END			(0xFFFFFFFF)
 MV_STATUS suspendWakeup(void)
 {
 	int *boot_info = (int*)(BOOT_INFO_ADDR);

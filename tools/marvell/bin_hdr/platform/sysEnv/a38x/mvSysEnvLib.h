@@ -408,7 +408,12 @@ typedef enum _mvSuspendWakeupStatus {
 	MV_SUSPEND_WAKEUP_DISABLED,
 	MV_SUSPEND_WAKEUP_ENABLED,
 	MV_SUSPEND_WAKEUP_ENABLED_GPIO_DETECTED,
+	MV_SUSPEND_WAKEUP_ENABLED_MEM_DETECTED,
 } MV_SUSPEND_WAKEUP_STATUS;
+
+#define BOOT_INFO_ADDR				(0x3000)
+#define SUSPEND_MAGIC_WORD			(0xDEADB002)
+#define REGISTER_LIST_END			(0xFFFFFFFF)
 
 
 /* GPIO status indication for Suspend Wakeup:
@@ -713,5 +718,20 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 *
 *******************************************************************************/
 MV_U32 mvSysEnvGetCSEnaFromReg(void);
+
+/*******************************************************************************
+* mvSysEnvCheckWakeupDramEnable
+*
+* DESCRIPTION: Check the magic wakeup enabled
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:
+*       MV_SUSPEND_WAKEUP_ENABLED_MEM_DETECTED or MV_SUSPEND_WAKEUP_DISABLED
+*
+*******************************************************************************/
+MV_SUSPEND_WAKEUP_STATUS mvSysEnvCheckWakeupDramEnable(void);
 #endif /* __INCmvSysEnvLibh */
 

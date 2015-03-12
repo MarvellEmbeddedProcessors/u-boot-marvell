@@ -651,6 +651,8 @@ MV_U8 mvHwsCtrlSerdesRevGet(MV_VOID)
 
 MV_U32 mvHwsSerdesTopologyVerify(SERDES_TYPE serdesType, MV_U32 serdesId, SERDES_MODE serdesMode)
 {
+	/* Temporary override this routine: opened JIRA #1657 */
+	return MV_OK;
 
 	MV_U32 testResult = TOPOLOGY_TEST_OK;
 	MV_U8 serdMaxNumb,unitNumb;

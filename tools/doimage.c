@@ -50,12 +50,12 @@ typedef struct _main_header {
 	uint16_t	uart_args;		/* 24-25 */
 	uint8_t		has_extension;		/*  26   */
 	uint8_t		flags;			/*  27   */
-	uint32_t	rsrvd0;			/* 28-31 */
-	uint32_t	io_arg_0;		/* 32-47 */
-	uint32_t	io_arg_1;		/* 32-47 */
-	uint32_t	io_arg_2;		/* 32-47 */
-	uint32_t	io_arg_3;		/* 32-47 */
-	uint32_t	prolog_checksum;	/* 48-51 */
+	uint32_t	io_arg_0;		/* 28-31 */
+	uint32_t	io_arg_1;		/* 32-35 */
+	uint32_t	io_arg_2;		/* 36-39 */
+	uint32_t	io_arg_3;		/* 40-43 */
+	uint32_t	prolog_checksum;	/* 44-47 */
+	uint32_t	rsrvd0;			/* 48-51 */
 	uint32_t	rsrvd1;			/* 52-53 */
 	uint32_t	rsrvd2;			/* 56-59 */
 	uint32_t	rsrvd3;			/* 60-63 */
@@ -203,12 +203,12 @@ int print_header(uint8_t *buf, int base)
 	print_field(main_hdr, header_t, uart_args, FMT_HEX, base);
 	print_field(main_hdr, header_t, has_extension, FMT_DEC, base);
 	print_field(main_hdr, header_t, flags, FMT_HEX, base);
-	print_field(main_hdr, header_t, rsrvd0, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_0, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_1, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_2, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_3, FMT_HEX, base);
 	print_field(main_hdr, header_t, prolog_checksum, FMT_HEX, base);
+	print_field(main_hdr, header_t, rsrvd0, FMT_HEX, base);
 	print_field(main_hdr, header_t, rsrvd1, FMT_HEX, base);
 	print_field(main_hdr, header_t, rsrvd2, FMT_HEX, base);
 	print_field(main_hdr, header_t, rsrvd3, FMT_HEX, base);
@@ -333,6 +333,7 @@ int format_bin_ext(char *filename, FILE *out_fd)
 	ext_header_t header;
 	FILE *in_fd;
 	int size, written;
+	int aligned_size, pad_bytes;
 	char c;
 
 	in_fd = fopen(filename, "rb");
@@ -347,9 +348,13 @@ int format_bin_ext(char *filename, FILE *out_fd)
 		return 1;
 	}
 
+	/* Align extension size to 8 bytes */
+	aligned_size = (size + 7) & (~7);
+	pad_bytes    = aligned_size - size;
+
 	header.type = EXT_TYPE_BINARY;
 	header.offset = 0;
-	header.size = size;
+	header.size = aligned_size;
 	header.reserved = 0;
 
 	/* Write header */
@@ -364,6 +369,9 @@ int format_bin_ext(char *filename, FILE *out_fd)
 		c = getc(in_fd);
 		fputc(c, out_fd);
 	}
+
+	while (pad_bytes--)
+		fputc(0, out_fd);
 
 	fclose(in_fd);
 
@@ -563,7 +571,6 @@ int main(int argc, char *argv[])
 			break;
 		case 'a':
 			opts.source_addr = strtoul(optarg, NULL, 0);
-			printf("src = 0x%x arg = %s\n", opts.source_addr, optarg);
 			break;
 		case 'b':
 			strncpy(opts.bin_ext_file, optarg, MAX_FILENAME);
@@ -581,6 +588,13 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 	}
+
+	/* Check validity of inputes */
+	if (opts.source_addr % 8)
+		usage_err("Source address must be 8 bytes aligned");
+
+	if (opts.load_addr % 8)
+		usage_err("Load address must be 8 bytes aligned");
 
 	/* The remaining arguments are the input
 	 * and potentially output file */

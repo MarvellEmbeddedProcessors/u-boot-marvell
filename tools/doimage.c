@@ -48,7 +48,7 @@ typedef struct _main_header {
 	uint32_t	load_addr;		/* 16-19 */
 	uint32_t	exec_addr;		/* 20-23 */
 	uint16_t	uart_args;		/* 24-25 */
-	uint8_t		has_extension;		/*  26   */
+	uint8_t		ext_count;		/*  26   */
 	uint8_t		flags;			/*  27   */
 	uint32_t	io_arg_0;		/* 28-31 */
 	uint32_t	io_arg_1;		/* 32-35 */
@@ -201,7 +201,7 @@ int print_header(uint8_t *buf, int base)
 	print_field(main_hdr, header_t, load_addr, FMT_HEX, base);
 	print_field(main_hdr, header_t, exec_addr, FMT_HEX, base);
 	print_field(main_hdr, header_t, uart_args, FMT_HEX, base);
-	print_field(main_hdr, header_t, has_extension, FMT_DEC, base);
+	print_field(main_hdr, header_t, ext_count, FMT_DEC, base);
 	print_field(main_hdr, header_t, flags, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_0, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_1, FMT_HEX, base);
@@ -216,18 +216,18 @@ int print_header(uint8_t *buf, int base)
 	return sizeof(header_t);
 }
 
-int print_extension(void *buf, int base, int ext_size)
+int print_extension(void *buf, int base, int count, int ext_size)
 {
 	ext_header_t *ext_hdr = buf;
-	int total_size = ext_size;
+	int pad = ext_size;
 
-	while (ext_size > 0) {
+	while (count--) {
 		if (ext_hdr->type == EXT_TYPE_BINARY)
-			printf("\n################ Binary extension ###################\n\n");
+			printf("\n################### Binary extension ###################\n\n");
 		else if (ext_hdr->type == EXT_TYPE_REGISTER)
-			printf("\n################ Register extension #################\n\n");
+			printf("\n################### Register extension #################\n\n");
 		else if (ext_hdr->type == EXT_TYPE_REGISTER)
-			printf("\n################ Secure extension ###################\n\n");
+			printf("\n################### Secure extension ###################\n\n");
 
 		print_field(ext_hdr, ext_header_t, type, FMT_HEX, base);
 		print_field(ext_hdr, ext_header_t, offset, FMT_HEX, base);
@@ -236,11 +236,16 @@ int print_extension(void *buf, int base, int ext_size)
 
 		do_print_field(0, "binary image", base + sizeof(ext_header_t), ext_hdr->size, FMT_NONE);
 
-		ext_size -= sizeof(ext_header_t) + ext_hdr->size;
-		base     += sizeof(ext_header_t) + ext_hdr->size;
+		base += sizeof(ext_header_t) + ext_hdr->size;
+		pad  -= sizeof(ext_header_t) + ext_hdr->size;
 	}
 
-	return total_size;
+	printf("\n################### Extension End ###################\n\n");
+
+	if (pad)
+		do_print_field(0, "padding", base, pad, FMT_NONE);
+
+	return ext_size;
 }
 
 int parse_image(FILE *in_fd, int size)
@@ -268,8 +273,9 @@ int parse_image(FILE *in_fd, int size)
 	main_hdr = (header_t *)buf;
 	base += print_header(buf, base);
 
-	if (main_hdr->has_extension)
-		base += print_extension(buf + base, base, main_hdr->prolog_size - sizeof(header_t));
+	if (main_hdr->ext_count)
+		base += print_extension(buf + base, base, main_hdr->ext_count,
+					main_hdr->prolog_size - sizeof(header_t));
 
 	prolog_size = base;
 
@@ -416,7 +422,7 @@ error:
  *
  * ****************************************/
 
-int write_prolog(int has_ext, char *ext_filename, int image_size, FILE *out_fd)
+int write_prolog(int ext_cnt, char *ext_filename, int image_size, FILE *out_fd)
 {
 	header_t header;
 	int main_hdr_size = sizeof(header_t);
@@ -428,22 +434,27 @@ int write_prolog(int has_ext, char *ext_filename, int image_size, FILE *out_fd)
 
 	memset(&header, 0, main_hdr_size);
 
-	if (has_ext)
+	if (ext_cnt)
 		prolog_size +=  get_file_size(ext_filename);
 
-	header.magic          = MAIN_HDR_MAGIC;
+	/* Always align prolog to 128 byte to enable
+	 * Transferring the prolog in 128 byte XMODEM packets */
+	prolog_size = ((prolog_size + 127) & (~127));
+
+	header.magic       = MAIN_HDR_MAGIC;
 	header.prolog_size = prolog_size;
 	header.source_addr = opts.source_addr;
 	header.load_addr   = opts.load_addr;
 	header.exec_addr   = opts.exec_addr;
-	header.has_extension = has_ext;
+	header.ext_count   = ext_cnt;
 	header.boot_image_size = (image_size + 3) & (~0x3);
 
 	/* TODO - fill these with something */
 	header.uart_args = 0;
 	header.flags     = 0;
 
-	buf = malloc(prolog_size);
+	/* Allocate a zeroed buffer to zero the padding bytes */
+	buf = calloc(prolog_size, 1);
 	if (buf == NULL) {
 		printf("Error: failed allocating checksum buffer\n");
 		return 1;
@@ -451,7 +462,7 @@ int write_prolog(int has_ext, char *ext_filename, int image_size, FILE *out_fd)
 
 	/* Populate buffer with main header and extensions */
 	memcpy(buf, &header, main_hdr_size);
-	if (has_ext) {
+	if (ext_cnt) {
 		ext_fd = fopen(ext_filename, "rb");
 		if (ext_fd == NULL) {
 			printf("Error: failed to open extensions file\n");
@@ -553,7 +564,7 @@ int main(int argc, char *argv[])
 	FILE *in_fd = NULL;
 	FILE *out_fd = NULL;
 	int parse = 0;
-	int has_ext = 0;
+	int ext_cnt = 0;
 	int opt;
 	int ret = 0;
 	int image_size;
@@ -574,11 +585,11 @@ int main(int argc, char *argv[])
 			break;
 		case 'b':
 			strncpy(opts.bin_ext_file, optarg, MAX_FILENAME);
-			has_ext = 1;
+			ext_cnt++;
 			break;
 		case 'r':
 			strncpy(opts.reg_ext_file, optarg, MAX_FILENAME);
-			has_ext = 1;
+			ext_cnt++;
 			break;
 		case 'p':
 			parse = 1;
@@ -626,7 +637,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* Create a blob file from all extensions */
-	if (has_ext) {
+	if (ext_cnt) {
 		ret = format_extensions(EXT_FILENAME);
 		if (ret)
 			goto main_exit;
@@ -638,7 +649,7 @@ int main(int argc, char *argv[])
 		goto main_exit;
 	}
 
-	ret = write_prolog(has_ext, EXT_FILENAME, image_size, out_fd);
+	ret = write_prolog(ext_cnt, EXT_FILENAME, image_size, out_fd);
 	if (ret)
 		goto main_exit;
 

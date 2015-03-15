@@ -177,6 +177,8 @@ MV_BOARD_INFO armada_39x_customer_board_0_info = {
 	.nandFlashWriteParams		= A39X_CUSTOMER_BOARD_0_NAND_WRITE_PARAMS,
 	.nandFlashControl		= A39X_CUSTOMER_BOARD_0_NAND_CONTROL,
 	.nandIfMode				= NAND_IF_NFC,
+
+	.isSdMmcConnected               = MV_FALSE,
 	/* NOR init params */
 	.norFlashReadParams		= A39X_CUSTOMER_BOARD_0_NOR_READ_PARAMS,
 	.norFlashWriteParams		= A39X_CUSTOMER_BOARD_0_NOR_WRITE_PARAMS,
@@ -322,6 +324,8 @@ MV_BOARD_INFO db88f69xx_board_info = {
 	.nandIfMode				= NAND_IF_NFC,
 
 	.pBoardTdmSpiInfo		= db88f69xxTdmSpiInfo,
+
+	 .isSdMmcConnected               = MV_FALSE,
 
 	/* NOR init params */
 	.norFlashReadParams		= DB_88F69XX_BOARD_NOR_READ_PARAMS,

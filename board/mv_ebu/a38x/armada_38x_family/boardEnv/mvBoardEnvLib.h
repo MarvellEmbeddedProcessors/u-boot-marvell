@@ -398,7 +398,7 @@ struct _mvBoardMppModule {
 
 
 #define MPP_MII_MODULE		{ {0, 0x10111111}, {1, 0x11111111}, {2, 0x11211111} }
-#define MPP_TDM_MODULE		{ {6, 0x45333333}, {7, 0x00004444} }
+#define MPP_TDM_MODULE		{ {6, 0x55333333}, {7, 0x00004444} }
 #define MPP_I2S_MODULE		{6, 0x55544554}
 #define MPP_SPDIF_MODULE	{6, 0x55444444}
 #define MPP_NOR_MODULE		{ {0, 0x55111111}, {1, 0x15555555}, {2, 0x55566011}, \

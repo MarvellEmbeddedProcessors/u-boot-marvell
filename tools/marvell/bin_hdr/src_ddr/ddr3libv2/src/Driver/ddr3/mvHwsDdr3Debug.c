@@ -47,6 +47,7 @@ GT_U8 csMaskReg[]=
 };
 
 extern GT_U32 ckDelay;
+extern GT_U32 dminPhyRegTable[MAX_BUS_NUM*MAX_CS_NUM][2];
 
 extern GT_STATUS ddr3TipRestoreDunitRegs
 (
@@ -562,6 +563,9 @@ GT_STATUS	ddr3TipPrintStabilityLog(GT_U32 devNum)
 	GT_U32 Ph = adllTap*32;
 	GT_U32 CC = Ph*2;*/
 	GT_U32 regData;
+#ifdef CONFIG_DDR4
+	GT_U32 regData1;
+#endif
 	GT_U32 readData[MAX_INTERFACE_NUM];
 	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet();
 
@@ -626,17 +630,21 @@ GT_STATUS	ddr3TipPrintStabilityLog(GT_U32 devNum)
 				mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, RESULT_DB_PHY_REG_ADDR+csindex, &regData);
 				mvPrintf("%d,%d,",(regData&0x1F),((regData&0x3E0)>>5));
 				#else/*DDR4*/
+				/*DminTx, areaTX*/
 				mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, RESULT_DB_PHY_REG_ADDR+csindex, &regData);
-				mvPrintf("%d,%d,",(regData&0x1F)*4,2*((regData&0xFFE0)>>5));
+				mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, dminPhyRegTable[csindex*5+busId][0], DDR_PHY_CONTROL, dminPhyRegTable[csindex*5+busId][1], &regData1);
+				mvPrintf("%d,%d,",2*(regData1&0xFF),regData);
+				/*DminRx, areaRX*/
 				mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, RESULT_DB_PHY_REG_ADDR+csindex + 4, &regData);
-				mvPrintf("%d,%d,",(regData&0x1F)*4,2*((regData&0xFFE0)>>5));
+				mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, dminPhyRegTable[csindex*5+busId][0], DDR_PHY_CONTROL, dminPhyRegTable[csindex*5+busId][1], &regData1);
+				mvPrintf("%d,%d,",2*(regData1>>8),regData);
 				#endif
 				/*WL*/
 				mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG+csindex*4, &regData);
 				mvPrintf("%d,%d,%d,",(regData&0x1F)+((regData&0x1C0)>>6)*32,(regData&0x1F),(regData&0x1C0)>>6);
 				/*RL*/
 				CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, READ_DATA_SAMPLE_DELAY, readData, MASK_ALL_BITS));
-				readData[interfaceId] = (readData[interfaceId]&(0xF<<(4*csindex))) >> (4*csindex);
+				readData[interfaceId] = (readData[interfaceId]&(0x1F<<(8*csindex))) >> (8*csindex);
 				mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, RL_PHY_REG+csindex*4, &regData);
 				mvPrintf("%d,%d,%d,%d,",(regData&0x1F)+((regData&0x1C0)>>6)*32 + readData[interfaceId]*64,(regData&0x1F),((regData&0x1C0)>>6),readData[interfaceId]);
 				/*Centralization*/

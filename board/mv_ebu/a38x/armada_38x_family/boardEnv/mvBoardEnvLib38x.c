@@ -373,10 +373,20 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		if ((mvBoardIsModuleConnected(MV_MODULE_MII)))	/* MII Module uses different PHY address */
 			mvBoardPhyAddrSet(0, 8);	/*set SMI address 8 for port 0*/
 
-		/* SPDIF and Audio have mpp's conflict --> disable Sdio when Audio is connected */
 		if (mvBoardIsModuleConnected(MV_MODULE_SPDIF_DEVICE) ||
 				mvBoardIsModuleConnected(MV_MODULE_I2S_DEVICE)) {
+			/* TDM, Audio and Sdio have mpp's conflict
+			 * --> disable Sdio and TDM when SPDIF is connected */
 			mvBoardAudioConnectionSet(MV_TRUE);
+			mvBoardSdioConnectionSet(MV_FALSE);
+			mvBoardTdmConnectionSet(MV_FALSE);
+		} else if (mvBoardSatRRead(MV_SATR_TDM_CONNECTED) == 0) {
+			/* if Audio modules detected, skip reading TDM from SatR */
+
+			/* TDM, Audio and Sdio have mpp's conflict
+			 * --> disable Audio and Sdio when TDM is connected */
+			mvBoardTdmConnectionSet(MV_TRUE);
+			mvBoardAudioConnectionSet(MV_FALSE);
 			mvBoardSdioConnectionSet(MV_FALSE);
 		}
 
@@ -516,6 +526,7 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 		if (mvBoardIsModuleConnected(MV_MODULE_SDIO))
 			mvModuleMppUpdate(4, sdioModule);
 
+		/* Microsemi LE88266DLC (VE880 series) */
 		if (mvBoardIsModuleConnected(MV_MODULE_SLIC_TDM_DEVICE))
 			mvModuleMppUpdate(2, tdmModule);
 
@@ -527,6 +538,10 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 
 		if (mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD))
 			mvModuleMppUpdate(4, nandOnBoard);
+
+		/* Sillab SI32261-F */
+		if (mvBoardIsTdmConnected() == MV_TRUE)
+			mvModuleMppUpdate(2, tdmModule);
 		break;
 	case DB_GP_68XX_ID:
 		miniPcie0_sata0_selector = mvBoardSatRRead(MV_SATR_GP_SERDES1_CFG); /* 0 = SATA0 , 1 = PCIe0 */

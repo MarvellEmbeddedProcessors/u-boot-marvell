@@ -102,7 +102,7 @@ enum {
 };
 
 #define MPP_MII_MODULE		{ {0, 0x10111111}, {1, 0x11111111}, {2, 0x11211111} }
-#define MPP_TDM_MODULE		{ {6, 0x45333333}, {7, 0x00004444} }
+#define MPP_TDM_MODULE		{ {6, 0x55333333}, {7, 0x00004444} }
 #define MPP_I2S_MODULE		{6, 0x55544554}
 #define MPP_SPDIF_MODULE	{6, 0x55444444}
 #define MPP_NOR_MODULE		{ {0, 0x55111111}, {1, 0x15555555}, {2, 0x55566011}, \
@@ -144,6 +144,8 @@ typedef enum _mvSatRTypeID {
 	MV_SATR_GP_SERDES1_CFG,
 	MV_SATR_GP_SERDES2_CFG,
 	MV_SATR_FULL_FLAVOR,
+	MV_SATR_TDM_CONNECTED,
+	MV_SATR_TDM_PLACE_HOLDER,
 	MV_SATR_MAX_OPTION,
 } MV_SATR_TYPE_ID;
 
@@ -175,8 +177,11 @@ typedef enum _mvSatRTypeID {
 {"devid",	MV_SATR_DEVICE_ID,		0x1,	0,	2,	0,	{0, 1, 0, 0, 0, 0, 0}, 0},\
 {"devid2",	MV_SATR_DEVICE_ID2,		0x10,	4,	3,	0,	{0, 1, 0, 0, 0, 0, 0}, 0},\
 {"flavor",	MV_SATR_FULL_FLAVOR,		0x10,	4,	0,	2,	{0, 0, 0, 0, 1, 1, 0}, 0},\
+{"tdm",		MV_SATR_TDM_CONNECTED,		0x20,	5,	0,	2,	{0, 1, 0, 0, 0, 0, 0}, 0},\
+{"tdmplaceholder",	MV_SATR_TDM_PLACE_HOLDER,	0x40,	6,	0,	2,	{0, 1, 0, 0, 0, 0, 0}, 0},\
 {"max_option",	MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0, 0, 0, 0, 0}, 0},\
 };
+/* tdm place holder is used for future support for multiple tdm devices */
 
 /* extra SAR table, for different board implementations:
  * in case a field is used on 2 boards with different i2c mapping */

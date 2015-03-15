@@ -196,7 +196,7 @@ SERDES_SPEED defaultSerdesSpeedMap[LAST_SERDES_TYPE] =
 /* Selector to Serdes type mapping */
 SERDES_TYPE commonPhysType[MAX_SERDES_LANES][MAX_SELECTOR_VAL] =
 {
-/*	 0X0   0x1    0x2      0x3     0x4               0x5         0x6      0x7     0x8     0x9 */
+/*	 0X0	   0x1   0x2		0x3     0x4          0x5         0x6	       0x7     0x8     0x9 */
 { DEFAULT_SERDES, PEX0, SATA0,          SGMII0, SGMII0,      NA,          NA,          NA,     NA,     NA     },  /* Lane 0 */
 { DEFAULT_SERDES, PEX0, PEX1,           SATA0,  SGMII0,      SGMII1,      USB3_HOST0,  QSGMII, SGMII0, SGMII1 },  /* Lane 1 */
 { DEFAULT_SERDES, PEX1, PEX2,           SATA1,  SGMII1,      SGMII1,      NA,          NA,     NA,     NA     },  /* Lane 2 */
@@ -317,7 +317,7 @@ MV_STATUS mvSysUpdateLaneConfig
 
 		serdesTopology[serdesNum].serdesType  = serdesType;
 		serdesTopology[serdesNum].serdesSpeed = defaultSerdesSpeedMap[serdesType];
-        serdesTopology[serdesNum].serdesMode  = SERDES_DEFAULT_MODE; /* set to default */
+		serdesTopology[serdesNum].serdesMode  = SERDES_DEFAULT_MODE; /* set to default */
 		serdesTopology[serdesNum].swapRx      = MV_FALSE;
 		serdesTopology[serdesNum].swapTx      = MV_FALSE;
 
@@ -327,10 +327,19 @@ MV_STATUS mvSysUpdateLaneConfig
 		   is PEXx4, otherwise it will be PEXx1 (this is done after all
 		   Serdes types are updated). */
         if(serdesTopology[serdesNum].serdesType <= PEX3) {
-            serdesTopology[serdesNum].serdesMode = (selectorVal == 0x2) ?
+            serdesTopology[serdesNum].serdesMode = (selectorVal == 0x2) ? /* for lanes 1,2,and 3 selector valaue has value=1 for PEXx1 and value=2 for PEXx4,
+									     for lane 0 - it is always 1, so serdesMode will be updated later , when lane 1 is handled */
                 PEX_ROOT_COMPLEX_x4 : PEX_ROOT_COMPLEX_x1;
         }
 
+	if ((serdesNum >= 1 ) && (serdesTopology[serdesNum].serdesMode == PEX_ROOT_COMPLEX_x4)){
+
+		if(serdesTopology[serdesNum].serdesType == PEX1)
+			/* set right mode for previous lane 0 too - see comment above */
+			serdesTopology[serdesNum-1].serdesMode = PEX_ROOT_COMPLEX_x4;
+		/* set serdes type for x4 lanes 1,2,3 - only PEX0 can be set as PEXx4  */
+		serdesTopology[serdesNum].serdesType = PEX0;
+	}
         /* The Selector mapping for lanes 5 and 6 can be either XAUI or RXAUI mode type
            and it is depends on previous lanes 4.
 		   If the Selector value for lanes 4 is 0x9, then the Serdes type for lanes

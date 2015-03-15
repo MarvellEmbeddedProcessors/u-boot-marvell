@@ -1018,7 +1018,7 @@ MV_U32 mvSysEnvConfigGet(MV_CONFIG_TYPE_ID configField)
 {
 	MV_BOARD_CONFIG_TYPE_INFO configInfo;
 
-	if (configField < MV_CONFIG_TYPE_MAX_OPTION &&
+	if (configField >=MV_CONFIG_TYPE_MAX_OPTION ||
 		mvSysEnvConfigTypeGet(configField, &configInfo) != MV_TRUE) {
 		DEBUG_INIT_S("mvSysEnvConfigGet: Error: Requested board config is invalid for this board\n");
 		return MV_ERROR;

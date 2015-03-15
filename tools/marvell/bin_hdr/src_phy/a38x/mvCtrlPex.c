@@ -177,7 +177,7 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 		if ((serdesType != PEX0) && (serdesType != PEX1) && (serdesType != PEX2) && (serdesType != PEX3))
 			continue;
 
-		if ((serdesType != PEX0) &&
+		if ((serdesIdx != 0) &&
 				((serdesMap[serdesIdx].serdesMode == PEX_ROOT_COMPLEX_x4) ||
 				 (serdesMap[serdesIdx].serdesMode == PEX_END_POINT_x4)))
 		{
@@ -197,7 +197,7 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 
 	for (serdesIdx = 0; serdesIdx < maxLaneNum; serdesIdx++) {
 		serdesType = serdesMap[serdesIdx].serdesType;
-		if ((serdesType != PEX0) &&
+		if ((serdesIdx != 0) &&
 				((serdesMap[serdesIdx].serdesMode == PEX_ROOT_COMPLEX_x4) ||
 				 (serdesMap[serdesIdx].serdesMode == PEX_END_POINT_x4)))
 		{
@@ -244,7 +244,7 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 		if ((serdesType != PEX0) && (serdesType != PEX1) && (serdesType != PEX2) && (serdesType != PEX3))
 			continue;
 
-		if ((serdesType != PEX0) &&
+		if ((serdesIdx != 0) &&
 				((serdesMap[serdesIdx].serdesMode == PEX_ROOT_COMPLEX_x4) ||
 				 (serdesMap[serdesIdx].serdesMode == PEX_END_POINT_x4)))
 		{
@@ -324,7 +324,7 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 		if ((serdesType != PEX0) && (serdesType != PEX1) && (serdesType != PEX2) && (serdesType != PEX3))
 			continue;
 
-		if ((serdesType != PEX0) &&
+		if ((serdesIdx != 0) &&
 				((serdesMap[serdesIdx].serdesMode == PEX_ROOT_COMPLEX_x4) ||
 				 (serdesMap[serdesIdx].serdesMode == PEX_END_POINT_x4)))
 		{

@@ -85,6 +85,7 @@ MV_STATUS mvEthPhyXsmiHalInit(MV_ETHPHY_XSMI_HAL_DATA *halData);
 MV_STATUS mvEthPhyXsmiSpeedSet(MV_XSMI_CLOCK_DIVISOR divisor);
 MV_STATUS mvEthPhyXsmiRegRead(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, MV_U16 *data);
 MV_STATUS mvEthPhyXsmiRegWrite(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, MV_U16 data);
+MV_STATUS mvEthPhyXsmiRegWriteMask(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, MV_U16 data, MV_U16 mask);
 MV_STATUS mvEthPhyXsmiRegReadModifyWrite(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, MV_U16 data);
 MV_STATUS mvEthPhyXsmiSeveralRegRead(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, MV_U16 *ptrData, MV_U32 count);
 

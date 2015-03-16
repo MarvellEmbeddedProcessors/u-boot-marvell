@@ -425,3 +425,14 @@ MV_STATUS mvEthPhyXsmiSeveralRegRead(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regA
 
 	return MV_OK;
 }
+
+MV_STATUS mvEthPhyXsmiRegWriteMask(MV_U32 phyAddr, MV_U32 devAddr, MV_U16 regAddr, MV_U16 data, MV_U16 mask)
+{
+	MV_U16 regVal;
+	if (mvEthPhyXsmiRegRead(phyAddr, devAddr, regAddr, &regVal) != MV_OK)
+		return MV_FAIL;
+	regVal &= ~mask;
+	regVal |= data;
+	return mvEthPhyXsmiRegWrite(phyAddr, devAddr, regAddr, regVal);
+}
+

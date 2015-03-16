@@ -74,13 +74,14 @@ extern "C" {
 
 typedef enum SGMII_MODE {
 	SGMII_1G_1G_MODE,
-	SGMII_2_5G_2_5G_MODE
-} SGMII_MODE;
+	SGMII_2_5G_2_5G_MODE,
+	PHY_10G_DEFAULT_MODE
+} PHY_10G_MODE;
 
 MV_STATUS mvEth10gPhyHalInit(MV_ETHPHY_HAL_DATA *halData);
-MV_STATUS mvEth10gPhyInit(MV_U32 ethPortNum, MV_BOOL eeeEnable);
+MV_STATUS mvEth10gPhyInit(MV_U32 ethPortNum, PHY_10G_MODE phyMode, MV_BOOL eeeEnable);
 MV_STATUS mvEthX2242PPhyBasicInit(MV_U32 ethPortNum);
-MV_STATUS initSgmiiMode(MV_U32 ethPortNum, SGMII_MODE mode);
+MV_STATUS initSgmiiMode(MV_U32 ethPortNum, PHY_10G_MODE mode);
 #ifdef __cplusplus
 }
 #endif

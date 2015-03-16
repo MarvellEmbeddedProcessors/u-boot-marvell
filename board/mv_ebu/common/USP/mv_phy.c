@@ -244,11 +244,25 @@ MV_STATUS mvBoard10GPhyInit(MV_U32 port)
 {
 #ifdef CONFIG_MV_ETH_10G
 	MV_U32 portType;
+	PHY_10G_MODE phyMode;
 
 	portType = mvBoardPortTypeGet(port);
-	if ((portType == MV_PORT_TYPE_RXAUI) || (portType == MV_PORT_TYPE_XAUI)) {
+	if ((portType == MV_PORT_TYPE_RXAUI) || (portType == MV_PORT_TYPE_XAUI)
+			|| ((portType == MV_PORT_TYPE_SGMII) && (mvBoardPhyNegotiationTypeGet(port) == XSMI))) {
+		/*
+		 * writing to the xsmi registers is not done directly
+		 * it's done through a certain a window, so it requires having the
+		 * window obtained, otherwise the writes would go to waste,
+		 * obtaining the window is done through selecting the NSS.
+		 */
 		mvNetComplexNssSelect(1);
-		if (MV_ERROR == mvEth10gPhyInit(port, MV_FALSE)) {
+		if ((portType == MV_PORT_TYPE_SGMII) && (mvBoardPhyNegotiationTypeGet(port) == XSMI))
+			phyMode = SGMII_1G_1G_MODE; /* it can also be
+						    SGMII_2_5G_2_5G_MODE */
+		else
+			phyMode = PHY_10G_DEFAULT_MODE;
+
+		if (MV_ERROR == mvEth10gPhyInit(port, phyMode, MV_FALSE)) {
 			mvNetComplexNssSelect(0);
 			mvCtrlPwrClckSet(ETH_GIG_UNIT_ID, port, MV_FALSE);
 			mvOsPrintf("PHY error - Failed to initialize 10G PHY (port %d).\n", port);
@@ -256,20 +270,6 @@ MV_STATUS mvBoard10GPhyInit(MV_U32 port)
 		}
 		mvNetComplexNssSelect(0);
 		return MV_OK;
-	}
-	if (portType ==  MV_PORT_TYPE_SGMII) {
-		if (mvBoardPhyNegotiationTypeGet(port) == XSMI) {
-			/*
-			 * writing to the xsmi registers is not done directly
-			 * it's done through a certain a window, so it requires having the
-			 * window obtained, otherwise the writes would go to waste,
-			 * obtaining the window is done through selecting the NSS.
-			 */
-			mvNetComplexNssSelect(1);
-			initSgmiiMode(port, SGMII_1G_1G_MODE);
-			mvNetComplexNssSelect(0);
-			return MV_OK;
-		}
 	}
 #endif	/* CONFIG_MV_ETH_10G */
 	return MV_NOT_SUPPORTED;

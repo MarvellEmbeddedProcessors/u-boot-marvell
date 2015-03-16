@@ -216,28 +216,70 @@ int print_header(uint8_t *buf, int base)
 	return sizeof(header_t);
 }
 
+int print_ext_hdr(ext_header_t *ext_hdr, int base)
+{
+	print_field(ext_hdr, ext_header_t, type, FMT_HEX, base);
+	print_field(ext_hdr, ext_header_t, offset, FMT_HEX, base);
+	print_field(ext_hdr, ext_header_t, reserved, FMT_HEX, base);
+	print_field(ext_hdr, ext_header_t, size, FMT_DEC, base);
+
+	return base + sizeof(ext_header_t);
+}
+
+void print_sec_ext(ext_header_t *ext_hdr, int base)
+{
+	printf("\n################### Secure extension ###################\n\n");
+
+	base = print_ext_hdr(ext_hdr, base);
+	/* TODO - Add secure header parsing */
+}
+
+void print_reg_ext(ext_header_t *ext_hdr, int base)
+{
+	uint32_t *reg_list;
+	int size = ext_hdr->size;
+	int i = 0;
+
+	printf("\n################### Register extension #################\n\n");
+
+	base = print_ext_hdr(ext_hdr, base);
+
+	reg_list = (uint32_t *)((uintptr_t)(ext_hdr) + sizeof(ext_header_t));
+	while (size) {
+		do_print_field(reg_list[i++], "address", base, 4, FMT_HEX);
+		do_print_field(reg_list[i++], "value  ", base + 4, 4, FMT_HEX);
+		base += 8;
+		size -= 8;
+	}
+}
+
+void print_bin_ext(ext_header_t *ext_hdr, int base)
+{
+	printf("\n################### Binary extension ###################\n\n");
+
+	base = print_ext_hdr(ext_hdr, base);
+	do_print_field(0, "binary image", base, ext_hdr->size, FMT_NONE);
+}
+
 int print_extension(void *buf, int base, int count, int ext_size)
 {
 	ext_header_t *ext_hdr = buf;
 	int pad = ext_size;
+	int curr_size;
 
 	while (count--) {
 		if (ext_hdr->type == EXT_TYPE_BINARY)
-			printf("\n################### Binary extension ###################\n\n");
+			print_bin_ext(ext_hdr, base);
 		else if (ext_hdr->type == EXT_TYPE_REGISTER)
-			printf("\n################### Register extension #################\n\n");
+			print_reg_ext(ext_hdr, base);
 		else if (ext_hdr->type == EXT_TYPE_REGISTER)
-			printf("\n################### Secure extension ###################\n\n");
+			print_sec_ext(ext_hdr, base);
 
-		print_field(ext_hdr, ext_header_t, type, FMT_HEX, base);
-		print_field(ext_hdr, ext_header_t, offset, FMT_HEX, base);
-		print_field(ext_hdr, ext_header_t, reserved, FMT_HEX, base);
-		print_field(ext_hdr, ext_header_t, size, FMT_DEC, base);
+		curr_size = sizeof(ext_header_t) + ext_hdr->size;
 
-		do_print_field(0, "binary image", base + sizeof(ext_header_t), ext_hdr->size, FMT_NONE);
-
-		base += sizeof(ext_header_t) + ext_hdr->size;
-		pad  -= sizeof(ext_header_t) + ext_hdr->size;
+		base += curr_size;
+		pad  -= curr_size;
+		ext_hdr = (ext_header_t *)((uintptr_t)ext_hdr + curr_size);
 	}
 
 	printf("\n################### Extension End ###################\n\n");
@@ -333,6 +375,74 @@ error:
 	return ret;
 }
 
+int format_reg_ext(char *filename, FILE *out_fd)
+{
+	ext_header_t header;
+	FILE *in_fd;
+	int size, written;
+	uint32_t *buf;
+	int line_id = 0, entry = 0, i;
+	char *addr, *value;
+	char line[256];
+
+	in_fd = fopen(filename, "rb");
+	if (in_fd == NULL) {
+		printf("failed to open reg extension file %s\n", filename);
+		return 1;
+	}
+
+	size = get_file_size(filename);
+	if (size <= 0) {
+		printf("reg extension file size is bad\n");
+		return 1;
+	}
+
+	buf = malloc(size);
+	while (fgets(line, sizeof(line), in_fd)) {
+		line_id++;
+		if (line[0] == '#' || line[0] == ' ')
+			continue;
+
+		if (strlen(line) <= 1)
+			continue;
+
+		if (line[0] != '0') {
+			printf("Bad register file format at line %d\n", line_id);
+			return 1;
+		}
+
+		addr = strtok(line, " \t");
+		value = strtok(NULL, " \t");
+		if ((addr == NULL) || (value == NULL)) {
+			printf("Bad register file format at line %d\n", line_id);
+			return 1;
+		}
+
+		buf[entry++]     = strtoul(addr, NULL, 0);
+		buf[entry++] = strtoul(value, NULL, 0);
+	}
+
+	header.type = EXT_TYPE_REGISTER;
+	header.offset = 0;
+	header.size = (entry * 4);
+	header.reserved = 0;
+
+	/* Write header */
+	written = fwrite(&header, sizeof(ext_header_t), 1, out_fd);
+	if (written != 1) {
+		printf("failed writing header to extension file\n");
+		return 1;
+	}
+
+	/* Write register */
+	for (i = 0; i < entry; i++)
+		fwrite(&buf[i], 4, 1, out_fd);
+
+	free(buf);
+	fclose(in_fd);
+	return 0;
+}
+
 
 int format_bin_ext(char *filename, FILE *out_fd)
 {
@@ -404,6 +514,12 @@ int format_extensions(char *ext_filename)
 
 	if (strncmp(opts.bin_ext_file, "NA", MAX_FILENAME)) {
 		if (format_bin_ext(opts.bin_ext_file, out_fd)) {
+			ret = 1;
+			goto error;
+		}
+	}
+	if (strncmp(opts.reg_ext_file, "NA", MAX_FILENAME)) {
+		if (format_reg_ext(opts.reg_ext_file, out_fd)) {
 			ret = 1;
 			goto error;
 		}
@@ -569,7 +685,7 @@ int main(int argc, char *argv[])
 	int ret = 0;
 	int image_size;
 
-	while ((opt = getopt(argc, argv, "hps:i:l:e:a:b:")) != -1) {
+	while ((opt = getopt(argc, argv, "hps:i:l:e:a:b:r:")) != -1) {
 		switch (opt) {
 		case 'h':
 			usage();

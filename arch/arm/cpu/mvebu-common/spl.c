@@ -40,10 +40,13 @@ static int setup_fdt(void)
 }
 #endif
 
-void board_init_f(ulong bootflag)
+void board_init_f(ulong silent)
 {
 	gd = &gdata;
 	gd->baudrate = CONFIG_BAUDRATE;
+
+	if (silent)
+		gd->flags |= GD_FLG_SILENT;
 
 #ifndef CONFIG_PALLADIUM
 	setup_fdt();

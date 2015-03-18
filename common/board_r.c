@@ -290,7 +290,7 @@ __weak int power_init_board(void)
 
 static int initr_announce(void)
 {
-	debug("Now running in RAM - U-Boot at: %08lx\n", gd->relocaddr);
+	printf("Now running in RAM - U-Boot at: %08lx\n", gd->relocaddr);
 	return 0;
 }
 

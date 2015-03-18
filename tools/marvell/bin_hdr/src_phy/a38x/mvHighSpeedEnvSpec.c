@@ -928,7 +928,7 @@ MV_STATUS mvHwsSerdesSeqDbInit(MV_VOID)
 		serdesSeqDb[USB3_ELECTRICAL_CONFIG_SEQ].opParamsPtr = usb3ElectricalConfigSerdesRev2Params;
 		serdesSeqDb[USB3_ELECTRICAL_CONFIG_SEQ].cfgSeqSize  = sizeof(usb3ElectricalConfigSerdesRev2Params) / sizeof(MV_OP_PARAMS);
 	}
-	serdesSeqDb[USB3_ELECTRICAL_CONFIG_SEQ].dataArrIdx = USB3;
+	serdesSeqDb[USB3_ELECTRICAL_CONFIG_SEQ].dataArrIdx = FIRST_CELL;
 
 	/* USB3_TX_CONFIG_SEQ sequence init */
 	serdesSeqDb[USB3_TX_CONFIG_SEQ1].opParamsPtr = pexAndUsb3TxConfigParams1;

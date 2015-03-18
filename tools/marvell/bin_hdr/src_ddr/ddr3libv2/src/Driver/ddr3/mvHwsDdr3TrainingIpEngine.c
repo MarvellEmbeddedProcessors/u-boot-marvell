@@ -77,114 +77,160 @@ GT_U16   maskResultsPupRegMapPup3ECC[] =
 {
     RESULT_CONTROL_BYTE_PUP_0_REG, RESULT_CONTROL_BYTE_PUP_1_REG, RESULT_CONTROL_BYTE_PUP_2_REG, RESULT_CONTROL_BYTE_PUP_4_REG, RESULT_CONTROL_BYTE_PUP_4_REG
 };
-	   
-PatternInfo patternTable_16[] = 
-{
-/* num tx phases  tx burst   delay between   rx pattern start_address   patternLen*/
-   {1,           1,          2,                 1,           0x0080,            2      }, /* PATTERN_PBS1*/            
-   {1,           1,          2,                 1,           0x00C0,            2      }, /* PATTERN_PBS2*/            
-   {1,           1,          2,                 1,           0x0100,            2      }, /* PATTERN_RL*/              
-   {0xf,       0x7,         2,               0x7,           0x0140,           16       }, /* PATTERN_STATIC_PBS*/      
-   {0xf,       0x7,         2,               0x7,           0x0190,           16       }, /* PATTERN_KILLER_DQ0*/      
-   {0xf,       0x7,         2,               0x7,           0x01D0,           16       }, /* PATTERN_KILLER_DQ1*/
-   {0xf,       0x7,         2,               0x7,           0x0210,           16       }, /* PATTERN_KILLER_DQ2*/
-   {0xf,       0x7,         2,               0x7,           0x0250,           16       }, /* PATTERN_KILLER_DQ3*/
-   {0xf,       0x7,         2,               0x7,           0x0290,           16       }, /* PATTERN_KILLER_DQ4*/
-   {0xf,       0x7,         2,               0x7,           0x02D0,           16       }, /* PATTERN_KILLER_DQ5*/
-   {0xf,       0x7,         2,               0x7,           0x0310,           16       }, /* PATTERN_KILLER_DQ6*/
-   {0xf,       0x7,         2,               0x7,           0x0350,           16       }, /* PATTERN_KILLER_DQ7*/
-   {1,           1,          2,                 1,           0x0380,            2      }, /* PATTERN_PBS3*/            
-   {1,           1,          2,                 1,           0x0000,            2      }, /* PATTERN_RL2*/             
-   {1,           1,          2,                 1,           0x0040,            2      }, /* PATTERN_TEST*/            
-   {0xf,       0x7,         2,               0x7,           0x03C0,           16       }, /* PATTERN_FULL_SSO_1T*/     
-   {0xf,       0x7,         2,               0x7,           0x0400,           16       }, /* PATTERN_FULL_SSO_2T*/     
-   {0xf,       0x7,         2,               0x7,           0x0440,           16       }, /* PATTERN_FULL_SSO_3T*/     
-   {0xf,       0x7,         2,               0x7,           0x0480,           16       }, /* PATTERN_FULL_SSO_4T*/     
-   {0xf,       0x7,         2,               0x7,           0x04C0,           16       }  /* PATTERN_VREF*/
-/*Note: actual start_address is <<3 of defined addess*/
-};   
 
 #ifdef CONFIG_DDR3
-PatternInfo patternTable_32[] = 
+PatternInfo patternTable_16[] =
 {
 /* num tx phases  tx burst   delay between   rx pattern start_address   patternLen*/
-   {3,           3,          2,                 3,           0x0080,            4       }, /* PATTERN_PBS1*/            
-   {3,           3,          2,                 3,           0x00C0,            4       }, /* PATTERN_PBS2*/            
-   {3,           3,          2,                 3,           0x0100,            4       }, /* PATTERN_RL*/              
-   {0x1f,       0xf,         2,               0xf,           0x0140,           32       }, /* PATTERN_STATIC_PBS*/      
-   {0x1f,       0xf,         2,               0xf,           0x0190,           32       }, /* PATTERN_KILLER_DQ0*/
-   {0x1f,       0xf,         2,               0xf,           0x01D0,           32       }, /* PATTERN_KILLER_DQ1*/
-   {0x1f,       0xf,         2,               0xf,           0x0210,           32       }, /* PATTERN_KILLER_DQ2*/
-   {0x1f,       0xf,         2,               0xf,           0x0250,           32       }, /* PATTERN_KILLER_DQ3*/
-   {0x1f,       0xf,         2,               0xf,           0x0290,           32       }, /* PATTERN_KILLER_DQ4*/
-   {0x1f,       0xf,         2,               0xf,           0x02D0,           32       }, /* PATTERN_KILLER_DQ5*/
-   {0x1f,       0xf,         2,               0xf,           0x0310,           32       }, /* PATTERN_KILLER_DQ6*/
-   {0x1f,       0xf,         2,               0xf,           0x0350,           32       }, /* PATTERN_KILLER_DQ7*/
-   {3,           3,          2,                 3,           0x0380,            4       }, /* PATTERN_PBS3*/            
-   {3,           3,          2,                 3,           0x0000,            4       }, /* PATTERN_RL2*/             
-   {3,           3,          2,                 3,           0x0040,            4       }, /* PATTERN_TEST*/            
-   {0x1f,       0xf,         2,               0xf,           0x03C0,           32       }, /* PATTERN_FULL_SSO_1T*/     
-   {0x1f,       0xf,         2,               0xf,           0x0400,           32       }, /* PATTERN_FULL_SSO_2T*/     
-   {0x1f,       0xf,         2,               0xf,           0x0440,           32       }, /* PATTERN_FULL_SSO_3T*/     
-   {0x1f,       0xf,         2,               0xf,           0x0480,           32       }, /* PATTERN_FULL_SSO_4T*/     
-   {0x1f,       0xf,         2,               0xf,           0x04C0,           32       }  /* PATTERN_VREF*/            
+   {0x1,	1,	2,  1, 0x0080,  2 },	/* PATTERN_PBS1*/
+   {0x1,	1,	2,  1, 0x00C0,  2 },	/* PATTERN_PBS2*/
+   {0x1,	1,	2,  1, 0x0100,  2 },	/* PATTERN_RL*/
+   {0xf,	7,  2,	7, 0x0140, 16  },	/* PATTERN_STATIC_PBS*/
+   {0xf,	7,  2,	7, 0x0190, 16  },	/* PATTERN_KILLER_DQ0*/
+   {0xf,  	7,  2,	7, 0x01D0, 16  },	/* PATTERN_KILLER_DQ1*/
+   {0xf,  	7,  2,	7, 0x0210, 16  },	/* PATTERN_KILLER_DQ2*/
+   {0xf,  	7,  2,	7, 0x0250, 16  },	/* PATTERN_KILLER_DQ3*/
+   {0xf,  	7,  2,	7, 0x0290, 16  },	/* PATTERN_KILLER_DQ4*/
+   {0xf,  	7,  2,	7, 0x02D0, 16  },	/* PATTERN_KILLER_DQ5*/
+   {0xf,  	7,  2,	7, 0x0310, 16  },	/* PATTERN_KILLER_DQ6*/
+   {0xf,  	7,  2,	7, 0x0350, 16  },	/* PATTERN_KILLER_DQ7*/
+   {0x1,	1,	2,  1, 0x0380,  2 },	/* PATTERN_PBS3*/
+   {0x1,	1,	2,  1, 0x0000,  2 },	/* PATTERN_RL2*/
+   {0x1,	1,	2,  1, 0x0040,  2 },	/* PATTERN_TEST*/
+   {0xf,  	7,  2,	7, 0x03C0, 16  },	/* PATTERN_FULL_SSO_1T*/
+   {0xf,  	7,  2,	7, 0x0400, 16  },	/* PATTERN_FULL_SSO_2T*/
+   {0xf,  	7,  2,	7, 0x0440, 16  },	/* PATTERN_FULL_SSO_3T*/
+   {0xf,  	7,  2,	7, 0x0480, 16  },	/* PATTERN_FULL_SSO_4T*/
+   {0xf,  	7,  2,	7, 0x04C0, 16  }	/* PATTERN_VREF*/
 /*Note: actual start_address is <<3 of defined addess*/
-};   
-#else
+};
+
 PatternInfo patternTable_32[] =
 {
 /* num tx phases  tx burst   delay between   rx pattern start_address   patternLen*/
-   {3,           3,          2,                 3,           0x0080,            4       }, /* PATTERN_PBS1*/            
-   {3,           3,          2,                 3,           0x00C0,            4       }, /* PATTERN_PBS2*/            
-   {3,           3,          2,                 3,           0x0100,            4       }, /* PATTERN_RL*/              
-   {0x1f,       0xf,         2,               0xf,           0x0140,           32       }, /* PATTERN_STATIC_PBS*/      
-   {0x1f,       0xf,         2,               0xf,           0x0180,           32       }, /* PATTERN_KILLER_DQ0*/      
-   {0x1f,       0xf,         2,               0xf,           0x01C0,           32       }, /* PATTERN_KILLER_DQ1*/      
-   {0x1f,       0xf,         2,               0xf,           0x0200,           32       }, /* PATTERN_KILLER_DQ2*/      
-   {0x1f,       0xf,         2,               0xf,           0x0240,           32       }, /* PATTERN_KILLER_DQ3*/      
-   {0x1f,       0xf,         2,               0xf,           0x0280,           32       }, /* PATTERN_KILLER_DQ4*/      
-   {0x1f,       0xf,         2,               0xf,           0x02C0,           32       }, /* PATTERN_KILLER_DQ5*/      
-   {0x1f,       0xf,         2,               0xf,           0x0300,           32       }, /* PATTERN_KILLER_DQ6*/      
-   {0x1f,       0xf,         2,               0xf,           0x0340,           32       }, /* PATTERN_KILLER_DQ7*/      
-   {0x1f,       0xf,         2,               0xf,           0x1180,           32       }, /* PATTERN_KILLER_DQ0_EXT*/      
-   {0x1f,       0xf,         2,               0xf,           0x11C0,           32       }, /* PATTERN_KILLER_DQ1_EXT*/      
-   {0x1f,       0xf,         2,               0xf,           0x1200,           32       }, /* PATTERN_KILLER_DQ2_EXT*/      
-   {0x1f,       0xf,         2,               0xf,           0x1240,           32       }, /* PATTERN_KILLER_DQ3_EXT*/      
-   {0x1f,       0xf,         2,               0xf,           0x1280,           32       }, /* PATTERN_KILLER_DQ4_EXT*/      
-   {0x1f,       0xf,         2,               0xf,           0x12C0,           32       }, /* PATTERN_KILLER_DQ5_EXT*/      
-   {0x1f,       0xf,         2,               0xf,           0x1300,           32       }, /* PATTERN_KILLER_DQ6_EXT*/      
-   {0x1f,       0xf,         2,               0xf,           0x1340,           32       }, /* PATTERN_KILLER_DQ7_EXT*/  
-   {0x1f,       0xf,         2,               0xf,           0x04C0,           32       }, /* PATTERN_VREF*/            
-   {0x1f,       0xf,         2,               0xf,           0x14C0,           32       }, /* PATTERN_VREF_INV*/            
-   {0x1f,       0xf,         2,               0xf,           0x1500,           32       }, /* PATTERN_RESONANCE_1T*/  
-   {0x1f,       0xf,         2,               0xf,           0x1540,           32       }, /* PATTERN_RESONANCE_2T*/  
-   {0x1f,       0xf,         2,               0xf,           0x1580,           32       }, /* PATTERN_RESONANCE_3T*/  
-   {0x1f,       0xf,         2,               0xf,           0x15C0,           32       }, /* PATTERN_RESONANCE_4T*/  
-   {0x1f,       0xf,         2,               0xf,           0x1600,           32       }, /* PATTERN_RESONANCE_5T*/  
-   {0x1f,       0xf,         2,               0xf,           0x1640,           32       }, /* PATTERN_RESONANCE_6T*/  
-   {0x1f,       0xf,         2,               0xf,           0x1680,           32       }, /* PATTERN_RESONANCE_7T*/  
-   {0x1f,       0xf,         2,               0xf,           0x16C0,           32       }, /* PATTERN_RESONANCE_8T*/  
-   {0x1f,       0xf,         2,               0xf,           0x1700,           32       }, /* PATTERN_RESONANCE_9T*/  
-   {3,           3,          2,                 3,           0x0380,            4       }, /* PATTERN_PBS3*/            
-   {3,           3,          2,                 3,           0x0000,            4       }, /* PATTERN_RL2*/             
-   {3,           3,          2,                 3,           0x0040,            4       }, /* PATTERN_TEST*/            
-   {0x1f,       0xf,         2,               0xf,           0x03C0,           32       }, /* PATTERN_FULL_SSO_1T*/     
-   {0x1f,       0xf,         2,               0xf,           0x0400,           32       }, /* PATTERN_FULL_SSO_2T*/     
-   {0x1f,       0xf,         2,               0xf,           0x0440,           32       }, /* PATTERN_FULL_SSO_3T*/     
-   {0x1f,       0xf,         2,               0xf,           0x0480,           32       }  /* PATTERN_FULL_SSO_4T*/     
+   {0x3, 	0x3,	2,  0x3, 0x0080,  4  }, /* PATTERN_PBS1*/
+   {0x3, 	0x3,	2,  0x3, 0x00C0,  4  }, /* PATTERN_PBS2*/
+   {0x3, 	0x3,	2,  0x3, 0x0100,  4  }, /* PATTERN_RL*/
+   {0x1f,  	0xf,    2,	0xf, 0x0140, 32  }, /* PATTERN_STATIC_PBS*/
+   {0x1f,  	0xf,    2,	0xf, 0x0190, 32  }, /* PATTERN_KILLER_DQ0*/
+   {0x1f,  	0xf,    2,	0xf, 0x01D0, 32  }, /* PATTERN_KILLER_DQ1*/
+   {0x1f,  	0xf,    2,	0xf, 0x0210, 32  }, /* PATTERN_KILLER_DQ2*/
+   {0x1f,  	0xf,    2,	0xf, 0x0250, 32  }, /* PATTERN_KILLER_DQ3*/
+   {0x1f,  	0xf,    2,	0xf, 0x0290, 32  }, /* PATTERN_KILLER_DQ4*/
+   {0x1f,  	0xf,    2,	0xf, 0x02D0, 32  }, /* PATTERN_KILLER_DQ5*/
+   {0x1f,  	0xf,    2,	0xf, 0x0310, 32  }, /* PATTERN_KILLER_DQ6*/
+   {0x1f,  	0xf,    2,	0xf, 0x0350, 32  }, /* PATTERN_KILLER_DQ7*/
+   {0x3, 	0x3,	2,  0x3, 0x0380,  4  }, /* PATTERN_PBS3*/
+   {0x3, 	0x3,	2,  0x3, 0x0000,  4  }, /* PATTERN_RL2*/
+   {0x3, 	0x3,	2,  0x3, 0x0040,  4  }, /* PATTERN_TEST*/
+   {0x1f,  	0xf,    2,	0xf, 0x03C0, 32  }, /* PATTERN_FULL_SSO_1T*/
+   {0x1f,  	0xf,    2,	0xf, 0x0400, 32  }, /* PATTERN_FULL_SSO_2T*/
+   {0x1f,  	0xf,    2,	0xf, 0x0440, 32  }, /* PATTERN_FULL_SSO_3T*/
+   {0x1f,  	0xf,    2,	0xf, 0x0480, 32  }, /* PATTERN_FULL_SSO_4T*/
+   {0x1f,  	0xf,    2,	0xf, 0x04C0, 32  }  /* PATTERN_VREF*/
 /*Note: actual start_address is <<3 of defined addess*/
 };
+#else
+
+PatternInfo patternTable_16[] =
+{
+/* num tx phases  tx burst   delay between   rx pattern start_address   patternLen*/
+   {0x1, 	0x1,    2,  0x1, 0x0080,  2  }, /* PATTERN_PBS1*/
+   {0x1, 	0x1,    2,  0x1, 0x00C0,  2  }, /* PATTERN_PBS2*/
+   {0x1, 	0x1,    2,  0x1, 0x0100,  2  }, /* PATTERN_RL*/
+   {0xf,  	0x7,    2,	0x7, 0x0140, 16  }, /* PATTERN_STATIC_PBS*/
+   {0xf,  	0x7,    2,	0x7, 0x0180, 16  }, /* PATTERN_KILLER_DQ0*/
+   {0xf,  	0x7,    2,	0x7, 0x01C0, 16  }, /* PATTERN_KILLER_DQ1*/
+   {0xf,  	0x7,    2,	0x7, 0x0200, 16  }, /* PATTERN_KILLER_DQ2*/
+   {0xf,  	0x7,    2,	0x7, 0x0240, 16  }, /* PATTERN_KILLER_DQ3*/
+   {0xf,  	0x7,    2,	0x7, 0x0280, 16  }, /* PATTERN_KILLER_DQ4*/
+   {0xf,  	0x7,    2,	0x7, 0x02C0, 16  }, /* PATTERN_KILLER_DQ5*/
+   {0xf,  	0x7,    2,	0x7, 0x0300, 16  }, /* PATTERN_KILLER_DQ6*/
+   {0xf,  	0x7,    2,	0x7, 0x0340, 16  }, /* PATTERN_KILLER_DQ7*/
+   {0xf,  	0x7,    2,	0x7, 0x1180, 16  }, /* PATTERN_KILLER_DQ0_EXT*/
+   {0xf,  	0x7,    2,	0x7, 0x11C0, 16  }, /* PATTERN_KILLER_DQ1_EXT*/
+   {0xf,  	0x7,    2,	0x7, 0x1200, 16  }, /* PATTERN_KILLER_DQ2_EXT*/
+   {0xf,  	0x7,    2,	0x7, 0x1240, 16  }, /* PATTERN_KILLER_DQ3_EXT*/
+   {0xf,  	0x7,    2,	0x7, 0x1280, 16  }, /* PATTERN_KILLER_DQ4_EXT*/
+   {0xf,  	0x7,    2,	0x7, 0x12C0, 16  }, /* PATTERN_KILLER_DQ5_EXT*/
+   {0xf,  	0x7,    2,	0x7, 0x1300, 16  }, /* PATTERN_KILLER_DQ6_EXT*/
+   {0xf,  	0x7,    2,	0x7, 0x1340, 16  }, /* PATTERN_KILLER_DQ7_EXT*/
+   {0xf,  	0x7,    2,	0x7, 0x04C0, 16  }, /* PATTERN_VREF*/
+   {0xf,  	0x7,    2,	0x7, 0x14C0, 16  }, /* PATTERN_VREF_INV*/
+   {0xf,  	0x7,    2,	0x7, 0x1500, 16  }, /* PATTERN_RESONANCE_1T*/
+   {0xf,  	0x7,    2,	0x7, 0x1540, 16  }, /* PATTERN_RESONANCE_2T*/
+   {0xf,  	0x7,    2,	0x7, 0x1580, 16  }, /* PATTERN_RESONANCE_3T*/
+   {0xf,  	0x7,    2,	0x7, 0x15C0, 16  }, /* PATTERN_RESONANCE_4T*/
+   {0xf,  	0x7,    2,	0x7, 0x1600, 16  }, /* PATTERN_RESONANCE_5T*/
+   {0xf,  	0x7,    2,	0x7, 0x1640, 16  }, /* PATTERN_RESONANCE_6T*/
+   {0xf,  	0x7,    2,	0x7, 0x1680, 16  }, /* PATTERN_RESONANCE_7T*/
+   {0xf,  	0x7,    2,	0x7, 0x16C0, 16  }, /* PATTERN_RESONANCE_8T*/
+   {0xf,  	0x7,    2,	0x7, 0x1700, 16  }, /* PATTERN_RESONANCE_9T*/
+   {0x3, 	0x1,    2,  0x1, 0x0380,  2  }, /* PATTERN_PBS3*/
+   {0x3, 	0x1,    2,  0x1, 0x0000,  2  }, /* PATTERN_RL2*/
+   {0x3, 	0x1,    2,  0x1, 0x0040,  2  }, /* PATTERN_TEST*/
+   {0x1f,  	0x7,   	2,	0x7, 0x03C0, 16  }, /* PATTERN_FULL_SSO_1T*/
+   {0x1f,  	0x7,   	2,	0x7, 0x0400, 16  }, /* PATTERN_FULL_SSO_2T*/
+   {0x1f,  	0x7,   	2,	0x7, 0x0440, 16  }, /* PATTERN_FULL_SSO_3T*/
+   {0x1f,  	0x7,   	2,	0x7, 0x0480, 16  }  /* PATTERN_FULL_SSO_4T*/
+/*Note: actual start_address is <<3 of defined addess*/
+};
+
+PatternInfo patternTable_32[] =
+{
+/* num tx phases  tx burst   delay between   rx pattern start_address   patternLen*/
+   {0x3, 	0x3,	2,  0x3, 0x0080,  4  }, /* PATTERN_PBS1*/
+   {0x3, 	0x3,	2,  0x3, 0x00C0,  4  }, /* PATTERN_PBS2*/
+   {0x3, 	0x3,	2,  0x3, 0x0100,  4  }, /* PATTERN_RL*/
+   {0x1f,  	0xf,    2,	0xf, 0x0140, 32  }, /* PATTERN_STATIC_PBS*/
+   {0x1f,  	0xf,    2,	0xf, 0x0180, 32  }, /* PATTERN_KILLER_DQ0*/
+   {0x1f,  	0xf,    2,	0xf, 0x01C0, 32  }, /* PATTERN_KILLER_DQ1*/
+   {0x1f,  	0xf,    2,	0xf, 0x0200, 32  }, /* PATTERN_KILLER_DQ2*/
+   {0x1f,  	0xf,    2,	0xf, 0x0240, 32  }, /* PATTERN_KILLER_DQ3*/
+   {0x1f,  	0xf,    2,	0xf, 0x0280, 32  }, /* PATTERN_KILLER_DQ4*/
+   {0x1f,  	0xf,    2,	0xf, 0x02C0, 32  }, /* PATTERN_KILLER_DQ5*/
+   {0x1f,  	0xf,    2,	0xf, 0x0300, 32  }, /* PATTERN_KILLER_DQ6*/
+   {0x1f,  	0xf,    2,	0xf, 0x0340, 32  }, /* PATTERN_KILLER_DQ7*/
+   {0x1f,  	0xf,    2,	0xf, 0x1180, 32  }, /* PATTERN_KILLER_DQ0_EXT*/
+   {0x1f,  	0xf,    2,	0xf, 0x11C0, 32  }, /* PATTERN_KILLER_DQ1_EXT*/
+   {0x1f,  	0xf,    2,	0xf, 0x1200, 32  }, /* PATTERN_KILLER_DQ2_EXT*/
+   {0x1f,  	0xf,    2,	0xf, 0x1240, 32  }, /* PATTERN_KILLER_DQ3_EXT*/
+   {0x1f,  	0xf,    2,	0xf, 0x1280, 32  }, /* PATTERN_KILLER_DQ4_EXT*/
+   {0x1f,  	0xf,    2,	0xf, 0x12C0, 32  }, /* PATTERN_KILLER_DQ5_EXT*/
+   {0x1f,  	0xf,    2,	0xf, 0x1300, 32  }, /* PATTERN_KILLER_DQ6_EXT*/
+   {0x1f,  	0xf,    2,	0xf, 0x1340, 32  }, /* PATTERN_KILLER_DQ7_EXT*/
+   {0x1f,  	0xf,    2,	0xf, 0x04C0, 32  }, /* PATTERN_VREF*/
+   {0x1f,  	0xf,    2,	0xf, 0x14C0, 32  }, /* PATTERN_VREF_INV*/
+   {0x1f,  	0xf,    2,	0xf, 0x1500, 32  }, /* PATTERN_RESONANCE_1T*/
+   {0x1f,  	0xf,    2,	0xf, 0x1540, 32  }, /* PATTERN_RESONANCE_2T*/
+   {0x1f,  	0xf,    2,	0xf, 0x1580, 32  }, /* PATTERN_RESONANCE_3T*/
+   {0x1f,  	0xf,    2,	0xf, 0x15C0, 32  }, /* PATTERN_RESONANCE_4T*/
+   {0x1f,  	0xf,    2,	0xf, 0x1600, 32  }, /* PATTERN_RESONANCE_5T*/
+   {0x1f,  	0xf,    2,	0xf, 0x1640, 32  }, /* PATTERN_RESONANCE_6T*/
+   {0x1f,  	0xf,    2,	0xf, 0x1680, 32  }, /* PATTERN_RESONANCE_7T*/
+   {0x1f,  	0xf,    2,	0xf, 0x16C0, 32  }, /* PATTERN_RESONANCE_8T*/
+   {0x1f,  	0xf,    2,	0xf, 0x1700, 32  }, /* PATTERN_RESONANCE_9T*/
+   {0x3, 	0x3,	2,  0x3, 0x0380,  4  }, /* PATTERN_PBS3*/
+   {0x3, 	0x3,	2,  0x3, 0x0000,  4  }, /* PATTERN_RL2*/
+   {0x3, 	0x3,	2,  0x3, 0x0040,  4  }, /* PATTERN_TEST*/
+   {0x1f,  	0xf,    2,	0xf, 0x03C0, 32  }, /* PATTERN_FULL_SSO_1T*/
+   {0x1f,  	0xf,    2,	0xf, 0x0400, 32  }, /* PATTERN_FULL_SSO_2T*/
+   {0x1f,  	0xf,    2,	0xf, 0x0440, 32  }, /* PATTERN_FULL_SSO_3T*/
+   {0x1f,  	0xf,    2,	0xf, 0x0480, 32  }  /* PATTERN_FULL_SSO_4T*/
+/*Note: actual start_address is <<3 of defined addess*/
+};
+
 #endif
 
 /*******************************************************************************/
 GT_U32                      trainDevNum;
 MV_HWS_DDR_CS               traintrainCsType;
-GT_U32                      trainPupNum; 
+GT_U32                      trainPupNum;
 MV_HWS_TRAINING_RESULT      trainResultType;
 MV_HWS_ControlElement       trainControlElement;
 MV_HWS_SearchDirection      traineSearchDir;
 MV_HWS_DIRECTION            trainDirection;
-GT_U32                      trainIfSelect; 
+GT_U32                      trainIfSelect;
 GT_U32                      trainInitValue;
 GT_U32                      trainNumberIterations;
 MV_HWS_PATTERN              trainPattern;

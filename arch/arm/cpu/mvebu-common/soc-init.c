@@ -119,8 +119,10 @@ int mvebu_soc_init()
 	/* Update SOC info according to family */
 	update_soc_units(soc);
 
+#ifndef CONFIG_PALLADIUM
 	/* Initialize physical memory map */
 	adec_init(soc->memory_map);
+#endif
 
 	/* Soc specific init */
 	ret = soc_late_init();

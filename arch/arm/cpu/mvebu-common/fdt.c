@@ -42,6 +42,6 @@ void *fdt_get_regs_base(void)
 		return gd->arch.reg_base;
 
 	node = fdt_node_offset_by_compatible(gd->fdt_blob, -1, "marvell,internal-regs");
-	gd->arch.reg_base = (void *)fdtdec_get_addr(gd->fdt_blob, node, "reg");
+	gd->arch.reg_base = (void *)((uintptr_t)fdtdec_get_addr(gd->fdt_blob, node, "reg"));
 	return gd->arch.reg_base;
 }

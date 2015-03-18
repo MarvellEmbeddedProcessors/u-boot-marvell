@@ -47,14 +47,15 @@ typedef struct _main_header {
 	uint32_t	source_addr;		/* 12-15 */
 	uint32_t	load_addr;		/* 16-19 */
 	uint32_t	exec_addr;		/* 20-23 */
-	uint16_t	uart_args;		/* 24-25 */
+	uint8_t		uart_cfg;		/*  24   */
+	uint8_t		baudrate;		/*  25   */
 	uint8_t		ext_count;		/*  26   */
-	uint8_t		flags;			/*  27   */
-	uint32_t	io_arg_0;		/* 28-31 */
-	uint32_t	io_arg_1;		/* 32-35 */
-	uint32_t	io_arg_2;		/* 36-39 */
-	uint32_t	io_arg_3;		/* 40-43 */
-	uint32_t	prolog_checksum;	/* 44-47 */
+	uint8_t		aux_flags;		/*  27   */
+	uint32_t	prolog_checksum;	/* 28-31 */
+	uint32_t	io_arg_0;		/* 32-35 */
+	uint32_t	io_arg_1;		/* 36-39 */
+	uint32_t	io_arg_2;		/* 40-43 */
+	uint32_t	io_arg_3;		/* 44-47 */
 	uint32_t	rsrvd0;			/* 48-51 */
 	uint32_t	rsrvd1;			/* 52-53 */
 	uint32_t	rsrvd2;			/* 56-59 */
@@ -76,6 +77,12 @@ typedef struct _reg_entry {
 
 /* A8K definitions end */
 
+/* UART argument bitfield */
+#define UART_MODE_UNMODIFIED	0x0
+#define UART_MODE_DISABLE	0x1
+#define UART_MODE_UPDATE	0x2
+
+#define uart_set_mode(arg, mode)	(arg |= (mode & 0x3))
 
 typedef struct _options {
 	char bin_ext_file[MAX_FILENAME];
@@ -83,6 +90,8 @@ typedef struct _options {
 	uint32_t  load_addr;
 	uint32_t  exec_addr;
 	uint32_t  source_addr;
+	uint32_t  baudrate;
+	uint8_t	  disable_print;
 
 } options_t;
 
@@ -121,6 +130,8 @@ void usage(void)
 	printf("            These values are written before the execution of the boot image.\n");
 	printf("            Currently supports only a single file.\n");
 	printf("  -p        Parse and display a pre-built boot image\n");
+	printf("  -d        Disable prints of bootrom and binary extension\n");
+	printf("  -m        UART baudrate used for bootrom prints\n");
 	printf("  -h        Dispalys this help message\n");
 
 	exit(-1);
@@ -135,6 +146,8 @@ options_t opts = {
 	.load_addr = 0x0,
 	.exec_addr = 0x0,
 	.source_addr = 0x0,
+	.disable_print = 0,
+	.baudrate = 0,
 };
 
 int get_file_size(char *filename)
@@ -200,14 +213,15 @@ int print_header(uint8_t *buf, int base)
 	print_field(main_hdr, header_t, source_addr, FMT_HEX, base);
 	print_field(main_hdr, header_t, load_addr, FMT_HEX, base);
 	print_field(main_hdr, header_t, exec_addr, FMT_HEX, base);
-	print_field(main_hdr, header_t, uart_args, FMT_HEX, base);
+	print_field(main_hdr, header_t, uart_cfg, FMT_HEX, base);
+	print_field(main_hdr, header_t, baudrate, FMT_HEX, base);
 	print_field(main_hdr, header_t, ext_count, FMT_DEC, base);
-	print_field(main_hdr, header_t, flags, FMT_HEX, base);
+	print_field(main_hdr, header_t, aux_flags, FMT_HEX, base);
+	print_field(main_hdr, header_t, prolog_checksum, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_0, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_1, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_2, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_3, FMT_HEX, base);
-	print_field(main_hdr, header_t, prolog_checksum, FMT_HEX, base);
 	print_field(main_hdr, header_t, rsrvd0, FMT_HEX, base);
 	print_field(main_hdr, header_t, rsrvd1, FMT_HEX, base);
 	print_field(main_hdr, header_t, rsrvd2, FMT_HEX, base);
@@ -531,6 +545,23 @@ error:
 	fclose(out_fd);
 	return ret;
 }
+
+void update_uart(header_t *header)
+{
+	header->uart_cfg = 0;
+	header->baudrate = 0;
+
+	if (opts.disable_print) {
+		uart_set_mode(header->uart_cfg, UART_MODE_DISABLE);
+		printf(" Disabling UART 0x%x\n", header->uart_cfg);
+	}
+
+	if (opts.baudrate) {
+		uart_set_mode(header->uart_cfg, UART_MODE_UPDATE);
+		header->baudrate = (opts.baudrate / 1200);
+	}
+}
+
 /* ****************************************
  *
  * Write the image prolog, i.e.
@@ -564,10 +595,9 @@ int write_prolog(int ext_cnt, char *ext_filename, int image_size, FILE *out_fd)
 	header.exec_addr   = opts.exec_addr;
 	header.ext_count   = ext_cnt;
 	header.boot_image_size = (image_size + 3) & (~0x3);
+	header.aux_flags     = 0;
 
-	/* TODO - fill these with something */
-	header.uart_args = 0;
-	header.flags     = 0;
+	update_uart(&header);
 
 	/* Allocate a zeroed buffer to zero the padding bytes */
 	buf = calloc(prolog_size, 1);
@@ -685,7 +715,7 @@ int main(int argc, char *argv[])
 	int ret = 0;
 	int image_size;
 
-	while ((opt = getopt(argc, argv, "hps:i:l:e:a:b:r:")) != -1) {
+	while ((opt = getopt(argc, argv, "hpms:i:l:e:a:b:r:u:")) != -1) {
 		switch (opt) {
 		case 'h':
 			usage();
@@ -698,6 +728,12 @@ int main(int argc, char *argv[])
 			break;
 		case 'a':
 			opts.source_addr = strtoul(optarg, NULL, 0);
+			break;
+		case 'm':
+			opts.disable_print = 1;
+			break;
+		case 'u':
+			opts.baudrate = strtoul(optarg, NULL, 0);
 			break;
 		case 'b':
 			strncpy(opts.bin_ext_file, optarg, MAX_FILENAME);

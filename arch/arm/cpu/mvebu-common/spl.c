@@ -25,7 +25,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 extern void static_dram_init(void);
 
-#ifndef CONFIG_PALLADIUM
 static int setup_fdt(void)
 {
 #ifdef CONFIG_OF_CONTROL
@@ -38,7 +37,6 @@ static int setup_fdt(void)
 #endif
 	return 0;
 }
-#endif
 
 void board_init_f(ulong silent)
 {
@@ -48,8 +46,8 @@ void board_init_f(ulong silent)
 	if (silent)
 		gd->flags |= GD_FLG_SILENT;
 
-#ifndef CONFIG_PALLADIUM
 	setup_fdt();
+#ifndef CONFIG_PALLADIUM
 	static_dram_init();
 #endif
 	preloader_console_init();

@@ -388,6 +388,7 @@ typedef struct _boardInfo {
 	MV_U32  boardOptionsModule;
 	MV_BOOL isAmc;			/* AMC active: used for DT update & switching services */
 	MV_BOOL isAudioConnected;	/* indicates if SPDIF/I2S is connected */
+	MV_BOOL isTdmConnected;		/* indicates if TDM module is connected */
 } MV_BOARD_INFO;
 
 struct _mvBoardMppModule {
@@ -571,6 +572,8 @@ MV_U32 mvBoardSysConfigGet(MV_CONFIG_TYPE_ID configField);
 MV_STATUS mvBoardSysConfigSet(MV_CONFIG_TYPE_ID configField, MV_U8 value);
 void mvBoardEepromValidSet(void);
 #endif /* CONFIG_CMD_BOARDCFG */
+MV_BOOL mvBoardIsTdmConnected(void);
+void mvBoardTdmConnectionSet(MV_BOOL isConnected);
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
 MV_BOOL mvBoardisSdioConnected(void);
 MV_VOID mvBoardSdioConnectionSet(MV_BOOL status);

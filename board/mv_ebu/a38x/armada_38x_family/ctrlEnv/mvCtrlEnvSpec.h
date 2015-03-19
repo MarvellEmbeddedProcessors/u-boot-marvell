@@ -118,6 +118,7 @@ extern "C" {
 						(MV_ETH_BASE_ADDR_PORT1_2 + (((p) - 1) * 0x4000)))
 #define MV_ETH_SGMII_PHY_REGS_OFFSET(p)		(MV_ETH_REGS_OFFSET(p)+0x2000)
 
+#define MV_TDM_OFFSET				(0xB0000)
 #define MV_PEX_IF_REGS_OFFSET(pexIf)            (((pexIf) == 0) ? 0x80000 : (0x40000 + ((pexIf-1) * 0x4000)))
 #define MV_USB_REGS_OFFSET(dev)                 (0x58000)
 #define MV_USB3_REGS_OFFSET(dev)                (0xF0000 + (dev * 0x8000))

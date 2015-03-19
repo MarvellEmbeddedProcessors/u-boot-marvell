@@ -344,7 +344,8 @@ MV_BOARD_INFO db88f69xx_board_info = {
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
 
 	/* Audio */
-	.isAudioConnected		= MV_FALSE
+	.isAudioConnected		= MV_FALSE,
+	.isTdmConnected			= MV_FALSE
 };
 
 MV_BOARD_INFO *marvellBoardInfoTbl[] = {

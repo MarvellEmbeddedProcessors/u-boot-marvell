@@ -3086,3 +3086,25 @@ MV_U8 mvBoardPICGpioGet(MV_U32 *picGpioMppInfo)
 
 	return board->numPicGpioInfo;
 }
+/*******************************************************************************
+* mvBoardIsTdmConnected
+*
+* DESCRIPTION:
+*       This routine returns MV_TRUE if TDM module is connected
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE - TDM is connected
+*       MV_FALSE - otherwise.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsTdmConnected()
+{
+	/* TDM is not supported on a375 */
+	return MV_FALSE;
+}

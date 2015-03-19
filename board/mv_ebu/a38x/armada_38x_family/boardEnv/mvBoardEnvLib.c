@@ -3367,7 +3367,48 @@ MV_NAND_IF_MODE mvBoardNandIfGet()
 		return board->nandIfMode;
 	}
 }
+/*******************************************************************************
+* mvBoardIsTdmConnected
+*
+* DESCRIPTION:
+*       This routine returns MV_TRUE if TDM module is connected
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_TRUE - TDM is connected
+*       MV_FALSE - otherwise.
+*
+*******************************************************************************/
+MV_BOOL mvBoardIsTdmConnected()
+{
+	return board->isTdmConnected;
+}
 
+/*******************************************************************************
+* mvBoardTdmConnectionSet
+*
+* DESCRIPTION:
+*       This routine sets if TDM module is connected or not.
+*
+* INPUT:
+*	isConnected - indicated if TDM module is connected.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+void mvBoardTdmConnectionSet(MV_BOOL isConnected)
+{
+	board->isTdmConnected = isConnected;
+}
 /*******************************************************************************
 * mvBoardisSdioConnected
 * DESCRIPTION: return true if SDIO connected on board

@@ -117,6 +117,9 @@ static int mv_fdt_update_sdhci(void *fdt);
 #ifdef CONFIG_SWITCHING_SERVICES
 static int mv_fdt_update_prestera(void *fdt);
 #endif
+#ifdef MV_INCLUDE_TDM
+static int mv_fdt_update_tdm(void *fdt);
+#endif
 #if 0 /* not compiled, since this routine is currently not in use  */
 static int mv_fdt_remove_prop(void *fdt, const char *path,
 				const char *name, int nodeoff);
@@ -135,6 +138,9 @@ update_fnc_t *update_sequence[] = {
 #endif
 #ifdef CONFIG_SWITCHING_SERVICES
 	mv_fdt_update_prestera,			/* Update prestera driver DT settings - for AMC board */
+#endif
+#ifdef MV_INCLUDE_TDM
+	mv_fdt_update_tdm,			/* Update tdm node in DT */
 #endif
 	mv_fdt_update_flash,			/* Get number of active flash devices and update DT */
 	mv_fdt_nand_mode_fixup,			/* Update NAND controller ECC settings in DT */
@@ -408,6 +414,56 @@ static int mv_fdt_update_sata(void *fdt)
 
 	return 0;
 }
+
+#ifdef MV_INCLUDE_TDM
+/*******************************************************************************
+* mv_fdt_update_tdm
+*
+* DESCRIPTION:
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
+static int mv_fdt_update_tdm(void *fdt)
+{
+	int err, nodeoffset;				/* nodeoffset: node offset from libfdt */
+	char propval[10];				/* property value */
+	const char *prop = "status";			/* property name */
+	char node[64];					/* node name */
+
+	if (mvBoardIsTdmConnected() == MV_TRUE)
+		sprintf(propval, "okay");
+	else
+		sprintf(propval, "disabled");
+
+	sprintf(node, "tdm@%x", MV_TDM_OFFSET);
+	nodeoffset = mv_fdt_find_node(fdt, node);
+
+	if (nodeoffset < 0) {
+		mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+		return 0;
+	}
+
+	if (strncmp(fdt_get_name(fdt, nodeoffset, NULL), node, strlen(node)) == 0) {
+		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
+						propval, strlen(propval)+1));
+		if (err < 0) {
+			mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
+			return 0;
+		}
+		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
+	}
+
+	return 0;
+}
+#endif
 
 #ifdef CONFIG_MV_SDHCI
 /*******************************************************************************

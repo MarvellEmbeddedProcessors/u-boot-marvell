@@ -520,6 +520,7 @@ MV_U8 mvBoardCompatibleNameGet(char *pNameBuff);
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
 MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
 MV_U8 mvBoardPICGpioGet(MV_U32 *picGpioMppInfo);
+MV_BOOL mvBoardIsTdmConnected(void);
 
 #ifdef __cplusplus
 }

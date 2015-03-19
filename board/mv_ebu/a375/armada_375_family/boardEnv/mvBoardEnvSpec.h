@@ -148,7 +148,7 @@
 #define DB_88F6720_GPP_POL_MID		0x0
 #define DB_88F6720_GPP_POL_HIGH		0x0
 
-
+#define MV_TDM_OFFSET				(0xB0000)
 #endif  /* MV_ASMLANGUAGE */
 
 #endif  /* __INCmvBoardEnvSpech */

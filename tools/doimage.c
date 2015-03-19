@@ -43,15 +43,15 @@
 typedef struct _main_header {
 	uint32_t	magic;			/*  0-3  */
 	uint32_t	prolog_size;		/*  4-7  */
-	uint32_t	boot_image_size;	/*  8-11 */
-	uint32_t	source_addr;		/* 12-15 */
-	uint32_t	load_addr;		/* 16-19 */
-	uint32_t	exec_addr;		/* 20-23 */
-	uint8_t		uart_cfg;		/*  24   */
-	uint8_t		baudrate;		/*  25   */
-	uint8_t		ext_count;		/*  26   */
-	uint8_t		aux_flags;		/*  27   */
-	uint32_t	prolog_checksum;	/* 28-31 */
+	uint32_t	prolog_checksum;	/*  8-11 */
+	uint32_t	boot_image_size;	/* 12-15 */
+	uint32_t	source_addr;		/* 16-19 */
+	uint32_t	load_addr;		/* 20-23 */
+	uint32_t	exec_addr;		/* 24-27 */
+	uint8_t		uart_cfg;		/*  28   */
+	uint8_t		baudrate;		/*  29   */
+	uint8_t		ext_count;		/*  30   */
+	uint8_t		aux_flags;		/*  31   */
 	uint32_t	io_arg_0;		/* 32-35 */
 	uint32_t	io_arg_1;		/* 36-39 */
 	uint32_t	io_arg_2;		/* 40-43 */
@@ -209,6 +209,7 @@ int print_header(uint8_t *buf, int base)
 	printf("################### Main header ######################\n\n");
 	print_field(main_hdr, header_t, magic, FMT_HEX, base);
 	print_field(main_hdr, header_t, prolog_size, FMT_DEC, base);
+	print_field(main_hdr, header_t, prolog_checksum, FMT_HEX, base);
 	print_field(main_hdr, header_t, boot_image_size, FMT_DEC, base);
 	print_field(main_hdr, header_t, source_addr, FMT_HEX, base);
 	print_field(main_hdr, header_t, load_addr, FMT_HEX, base);
@@ -217,7 +218,6 @@ int print_header(uint8_t *buf, int base)
 	print_field(main_hdr, header_t, baudrate, FMT_HEX, base);
 	print_field(main_hdr, header_t, ext_count, FMT_DEC, base);
 	print_field(main_hdr, header_t, aux_flags, FMT_HEX, base);
-	print_field(main_hdr, header_t, prolog_checksum, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_0, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_1, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_2, FMT_HEX, base);

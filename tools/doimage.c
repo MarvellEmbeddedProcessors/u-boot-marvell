@@ -551,15 +551,11 @@ void update_uart(header_t *header)
 	header->uart_cfg = 0;
 	header->baudrate = 0;
 
-	if (opts.disable_print) {
+	if (opts.disable_print)
 		uart_set_mode(header->uart_cfg, UART_MODE_DISABLE);
-		printf(" Disabling UART 0x%x\n", header->uart_cfg);
-	}
 
-	if (opts.baudrate) {
-		uart_set_mode(header->uart_cfg, UART_MODE_UPDATE);
+	if (opts.baudrate)
 		header->baudrate = (opts.baudrate / 1200);
-	}
 }
 
 /* ****************************************

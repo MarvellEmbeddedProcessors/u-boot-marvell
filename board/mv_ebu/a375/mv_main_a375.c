@@ -294,7 +294,6 @@ int board_init(void)
 			*(unsigned int*)(CONFIG_SYS_TEXT_BASE + i);
 
 	mvBoardDebugLed(4);
-	mv_print_map();
 	return 0;
 }
 
@@ -1024,6 +1023,7 @@ int misc_init_r(void)
 #endif
 	/* init the units decode windows */
 	misc_init_r_dec_win();
+	mv_print_map();
 	memset((void*)CONFIG_SYS_LOAD_ADDR, 0, CONFIG_SYS_MIN_HDR_DEL_SIZE);
 	mvBoardDebugLed(6);
 

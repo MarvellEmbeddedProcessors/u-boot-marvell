@@ -373,6 +373,13 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		if ((mvBoardIsModuleConnected(MV_MODULE_MII)))	/* MII Module uses different PHY address */
 			mvBoardPhyAddrSet(0, 8);	/*set SMI address 8 for port 0*/
 
+		/* SPDIF and Audio have mpp's conflict --> disable Sdio when Audio is connected */
+		if (mvBoardIsModuleConnected(MV_MODULE_SPDIF_DEVICE) ||
+				mvBoardIsModuleConnected(MV_MODULE_I2S_DEVICE)) {
+			mvBoardAudioConnectionSet(MV_TRUE);
+			mvBoardSdioConnectionSet(MV_FALSE);
+		}
+
 		/* Update MPP group types and values according to board configuration */
 		mvBoardMppIdUpdate();
 		/* board on test mode  */

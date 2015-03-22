@@ -904,7 +904,6 @@ static GT_STATUS  ddr3TipAccessAtr
 )
  {
     GT_U32 tmpVal = 0, interfaceId = 0, pupId = 0;
-    GT_U32 tempVar;
 
 	devNum = devNum;
 	*ptr = NULL;
@@ -921,13 +920,11 @@ static GT_STATUS  ddr3TipAccessAtr
         break;
 
     case 0x2:
-        tempVar = (GT_U32)lowFreq;
-        *ptr = &tempVar;
+        lowFreq = (MV_HWS_DDR_FREQ)value;
 	    break;
 
     case 0x3:
-        tempVar = (GT_U32)mediumFreq;
-        *ptr = &tempVar;
+        mediumFreq = (MV_HWS_DDR_FREQ)value;
 	    break;
 
     case 0x4:
@@ -1003,8 +1000,7 @@ static GT_STATUS  ddr3TipAccessAtr
        break;
 #endif
    case 0x35:
-       tempVar = (GT_U32)initFreq;
-       *ptr = &tempVar;
+       initFreq = (MV_HWS_DDR_FREQ)value;
        break;
 
    case 0x36:
@@ -1036,8 +1032,7 @@ static GT_STATUS  ddr3TipAccessAtr
        break;
 
    case 0x4e:
-       tempVar = (GT_U32)sweepPattern;
-       *ptr = &tempVar;
+       sweepPattern = (MV_HWS_PATTERN)value;
        break;
 /*
    case 0x4f:
@@ -1106,8 +1101,7 @@ static GT_STATUS  ddr3TipAccessAtr
        break;
 
    case 0x71:
-       tempVar = (GT_U32)pbsPattern;
-       *ptr = &tempVar;
+       pbsPattern = (MV_HWS_PATTERN)value;
        break;
 
    case 0x72:

@@ -77,6 +77,30 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define  DYNAMIC_CS_SIZE_CONFIG
 #define  DISABLE_L2_FILTERING_DURING_DDR_TRAINING
 
+#ifdef CONFIG_DDR3
+	#define SPEED_BIN_DDR_CUST_BOARD_1	SPEED_BIN_DDR_1866L
+	#define BUS_WIDTH_CUST_BOARD_1		BUS_WIDTH_8
+	#define SPEED_BIN_DDR_CUST_BOARD_2	SPEED_BIN_DDR_1866L
+	#define BUS_WIDTH_CUST_BOARD_2		BUS_WIDTH_8
+
+	#define SPEED_BIN_DDR_DB_68XX		SPEED_BIN_DDR_1866L
+	#define BUS_WIDTH_DB_68XX			BUS_WIDTH_8
+	#define SPEED_BIN_DDR_DB_BP_6821	SPEED_BIN_DDR_1866L
+	#define BUS_WIDTH_DB_BP_6821		BUS_WIDTH_8
+#else
+/*Elpida by 16 is 2400R Micron by 8 is 2133P Samsung by 16 is 2133P Hynux by16 is 2133P*/
+	#define SPEED_BIN_DDR_CUST_BOARD_1	SPEED_BIN_DDR_2400R
+	#define BUS_WIDTH_CUST_BOARD_1		BUS_WIDTH_16
+	#define SPEED_BIN_DDR_CUST_BOARD_2	SPEED_BIN_DDR_2400R
+	#define BUS_WIDTH_CUST_BOARD_2		BUS_WIDTH_16
+
+	#define SPEED_BIN_DDR_DB_68XX		SPEED_BIN_DDR_2400R
+	#define BUS_WIDTH_DB_68XX			BUS_WIDTH_16
+	#define SPEED_BIN_DDR_DB_BP_6821	SPEED_BIN_DDR_2400R
+	#define BUS_WIDTH_DB_BP_6821		BUS_WIDTH_16
+#endif
+
+
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 /************************************* Customer Boards Topology *************************************/
 MV_HWS_TOPOLOGY_MAP TopologyMap[] =
@@ -85,14 +109,14 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_CUST_BOARD_1, BUS_WIDTH_CUST_BOARD_1 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_32BIT  /* Buses mask */
     },
     /* 2nd Customer board */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_CUST_BOARD_2, BUS_WIDTH_CUST_BOARD_2 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_32BIT  /* Buses mask */
     }
 };
@@ -102,63 +126,49 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 /************************************* Marvell Boards Topology *************************************/
 MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 {
-    /* 1st Marvell board - RD_NAS */
+    /* Marvell board - Board_ID = RD_NAS_68XX_ID = 0*/
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_32BIT  /* Buses mask */
     },
-#ifdef CONFIG_DDR3
-    /* 2nd Marvell board - DB (DDR3) */
+    /* Marvell board - Board_ID = DB_68XX_ID = 1 (DDR3/4)*/
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}}, SPEED_BIN_DDR_DB_68XX, BUS_WIDTH_DB_68XX , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_32BIT  /* Buses mask */
     },
-#else
-    /* 2nd Marvell board - DB (DDR4) */
-    {
-    0x1, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
-/*Elpida by 16 is 2400R
-	Micron by 8 is 2133P
-	samsung by 16 is 2133P
-	Hynux by16 is 2133P*/
-    {{{{0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0}, {0x3,2 ,0,0}}, SPEED_BIN_DDR_2133P, BUS_WIDTH_16, MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    INTERFACE_BUS_MASK_32BIT  /* Buses mask */
-    },
-#endif
-    /* 3rd Marvell board - RD_AP */
+    /* Marvell board - Board_ID = RD_AP_68XX_ID = 2 */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_32BIT  /* Buses mask */
     },
-    /* 4rd Marvell board - DB_AP */
+    /* Marvell board - Board_ID = DB_AP_68XX_ID = 3 */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_32BIT  /* Buses mask */
     },
-    /* 5th Marvell board - DB_GP */
+    /* Marvell board - Board_ID = DB_GP_68XX_ID = 4 */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_32BIT  /* Buses mask */
     },
-    /* 6th Marvell board - A381/2 DB-BP */
+    /* Marvell board - Board_ID = DB_BP_6821_ID = 5 (DDR3/4) */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0x1,0,0}, {0x1,0x1,0,0}, {0x1,0x1,0,0}, {0x1,0x1,0,0}, {0x1,0x1,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0x1,0,0}, {0x1,0x1,0,0}, {0x1,0x1,0,0}, {0x1,0x1,0,0}, {0x1,0x1,0,0}}, SPEED_BIN_DDR_DB_BP_6821, BUS_WIDTH_DB_BP_6821, MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     },
-	/* 6th Marvell board - DB_AMC */
+	/* Marvell board - Board_ID = DB_AMC_6820_ID = 6 */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */

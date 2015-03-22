@@ -100,6 +100,33 @@ static MV_BOARD_INFO *board = (MV_BOARD_INFO *)-1;
 
 /* Locals */
 static MV_DEV_CS_INFO *mvBoardGetDevEntry(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
+/*******************************************************************************
+* mvBoardisUsbPortConnected
+*
+* DESCRIPTION:
+*	return True if requested USB type and port num exists on current board
+*
+* INPUT:
+*	usbTypeID       - requested USB type : USB3_UNIT_ID / USB_UNIT_ID
+*	usbPortNumbder  - requested USB port number (according to xHCI MAC port num)
+*
+* OUTPUT: None
+*
+* RETURN: MV_TRUE if requested port/type exist on board
+
+*******************************************************************************/
+MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber)
+{
+	MV_U16 family = mvCtrlDevFamilyIdGet(0);
+
+	if (family == MV_BOBCAT2_DEV_ID)
+		return MV_FALSE;/*BobCat2 SoC has no usb port*/
+
+	if (family == MV_ALLEYCAT3_DEV_ID && usbTypeID == USB_UNIT_ID && usbPortNumber == 0)
+		return MV_TRUE; /*AlleyCat3 SoC board has only one usb2 port */
+
+	return MV_FALSE;
+}
 
 /*******************************************************************************
 * mvBoardIdIndexGet

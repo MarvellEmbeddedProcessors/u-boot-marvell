@@ -162,11 +162,12 @@ MV_U32	mvCtrlPciMaxIfGet(MV_VOID);
 
 MV_U32	  mvCtrlEthMaxPortGet(MV_VOID);
 MV_U8	  mvCtrlEthMaxCPUsGet(MV_VOID);
-#if defined(MV_INCLUDE_USB)
 MV_U32 mvCtrlUsbMaxGet(MV_VOID);
+#if defined(MV_INCLUDE_USB)
 MV_U32 mvCtrlUsb3MaxGet(MV_VOID);
 MV_U32 mvCtrlUsb3HostMaxGet(MV_VOID);
 MV_VOID mvCtrlUtmiPhySelectorSet(MV_U32 usbUnitId);
+MV_BOOL mvCtrlIsUsbSerDesConnected(MV_U32 usbPort);
 #endif
 #if defined(MV_INCLUDE_XOR)
 MV_U32 mvCtrlXorMaxChanGet(MV_VOID);

@@ -3050,7 +3050,8 @@ MV_NAND_IF_MODE mvBoardNandIfGet()
 MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber)
 {
 	MV_U32 i;
-
+	if (usbPortNumber >= mvCtrlUsbMaxGet())
+		return MV_FALSE;
 	/* Go over existing USB ports in board structures: test existence of requested USB Type/port */
 	for (i = 0; i < board->numBoardUsbInfo; i++)
 		if (board->pBoardUsbInfo[i].isActive && board->pBoardUsbInfo[i].usbType == usbTypeID &&

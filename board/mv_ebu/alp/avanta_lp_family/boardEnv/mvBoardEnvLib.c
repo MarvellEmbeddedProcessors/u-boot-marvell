@@ -103,6 +103,32 @@ static MV_BOARD_INFO *board = (MV_BOARD_INFO *)-1;
 MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 
 /*******************************************************************************
+* mvBoardisUsbPortConnected
+*
+* DESCRIPTION:
+*       return True if requested USB type and port num exists on current board
+*
+* INPUT:
+*       usbTypeID       - requested USB type : USB3_UNIT_ID / USB_UNIT_ID
+*       usbPortNumbder  - requested USB port number (according to xHCI MAC port num)
+*
+* OUTPUT: None
+*
+* RETURN: MV_TRUE if requested port/type exist on board
+
+*******************************************************************************/
+MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber)
+{
+	/* USB Port board mapping is not supported by Avanta-LP
+	  Controller mapping is done via mvCtrlUsbMapGet.*/
+	if (usbPortNumber >= mvCtrlUsbMaxGet())
+		return MV_FALSE;
+	return MV_TRUE;
+}
+
+
+
+/*******************************************************************************
 * mvBoardIdIndexGet
 *
 * DESCRIPTION:

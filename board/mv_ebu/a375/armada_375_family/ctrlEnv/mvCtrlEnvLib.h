@@ -282,6 +282,7 @@ MV_VOID mvCtrlSatrInit(MV_U32 early);
 MV_VOID mvCtrlSysConfigInit(MV_VOID);
 MV_U32 mvCtrlSysConfigGet(MV_CONFIG_TYPE_ID configField);
 MV_U32 mvCtrlGetCpuNum(MV_VOID);
+MV_BOOL mvCtrlIsUsbSerDesConnected(MV_U32 usbPort);
 MV_U32 mvCtrlGetQuadNum(MV_VOID);
 MV_STATUS mvCtrlUpdatePexId(MV_VOID);
 MV_BOOL mvCtrlIsValidSatR(MV_VOID);

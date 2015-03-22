@@ -228,7 +228,30 @@ static MV_VOID mvCtrlPexConfig(MV_VOID)
 
 	boardPexInfo->boardPexIfNum = pexIfNum;
 }
-
+/******************************************************************************
+* mvCtrlIsUsbSerDesConnected
+*
+* DESCRIPTION:detect usb3 port if connected to serdes.
+*       check if SerDes lane is connected to USB3 host
+*
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:return true if usb physical port is connected , false otherwise.
+*
+*
+*******************************************************************************/
+MV_BOOL mvCtrlIsUsbSerDesConnected(MV_U32 usbPort)
+{
+        int usb3HostNum = mvCtrlUsb3HostMaxGet();
+        int maxSerDesLanes = mvCtrlUsb3MaxGet();
+        if (usbPort >= maxSerDesLanes && usb3HostNum > maxSerDesLanes){
+                return MV_FALSE;
+        }
+        return MV_TRUE;
+}
 
 MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_67xx_INDEX_MAX] = {
 /*                          6720 */

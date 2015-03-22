@@ -133,6 +133,13 @@ struct MV_BOARD_IO_EXPANDER armada_38x_customer_0_IoExpanderInfo[] = {
 	{1, 3, 0x00}  /* Output Data, register#1 */
 };
 
+MV_BOARD_USB_INFO armada_38x_customer_0_InfoBoardUsbInfo[] = {
+/* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
+	{ USB3_UNIT_ID, 0, MV_TRUE},
+	{ USB3_UNIT_ID, 1, MV_TRUE},
+	{ USB_UNIT_ID, 0, MV_TRUE},
+};
+
 MV_BOARD_INFO armada_38x_customer_board_0_info = {
 	.boardName			= "A38x-Customer-Board-0",
 	.numBoardNetComplexValue		= 0,
@@ -169,6 +176,9 @@ MV_BOARD_INFO armada_38x_customer_board_0_info = {
 	.numBoardTdmInfo		= {},
 	.pBoardTdmInt2CsInfo		= {},
 	.boardTdmInfoIndex		= -1,
+
+	.pBoardUsbInfo                  = armada_38x_customer_0_InfoBoardUsbInfo,
+	.numBoardUsbInfo                = ARRSZ(armada_38x_customer_0_InfoBoardUsbInfo),
 
 	.pBoardSpecInit			= NULL,
 
@@ -249,6 +259,14 @@ struct MV_BOARD_IO_EXPANDER armada_38x_customer_1_IoExpanderInfo[] = {
 	{1, 3, 0xC0}  /* Output Data, register#1 */
 };
 
+MV_BOARD_USB_INFO armada_38x_customer_1_InfoBoardUsbInfo[] = {
+/* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
+	{ USB3_UNIT_ID, 0, MV_TRUE},
+	{ USB3_UNIT_ID, 1, MV_TRUE},    /* xHCI port#1 connected only via USB2.0 UTMI (not via USB3.0 SerDes lane) */
+	{ USB_UNIT_ID,  0, MV_TRUE},
+};
+
+
 MV_BOARD_INFO armada_38x_customer_board_1_info = {
 	.boardName			= "A38x-Customer-Board-1",
 	.numBoardNetComplexValue	= 0,
@@ -287,6 +305,9 @@ MV_BOARD_INFO armada_38x_customer_board_1_info = {
 	.boardTdmInfoIndex		= -1,
 
 	.pBoardSpecInit			= NULL,
+
+	.pBoardUsbInfo			= armada_38x_customer_1_InfoBoardUsbInfo,
+	.numBoardUsbInfo		= ARRSZ(armada_38x_customer_1_InfoBoardUsbInfo),
 
 	/* NAND init params */
 	.nandFlashReadParams		= A38x_CUSTOMER_BOARD_0_NAND_READ_PARAMS,

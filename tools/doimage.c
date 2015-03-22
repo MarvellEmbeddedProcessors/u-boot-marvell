@@ -206,7 +206,7 @@ int print_header(uint8_t *buf, int base)
 
 	main_hdr = (header_t *)buf;
 
-	printf("################### Main header ######################\n\n");
+	printf("########### Header ##############\n");
 	print_field(main_hdr, header_t, magic, FMT_HEX, base);
 	print_field(main_hdr, header_t, prolog_size, FMT_DEC, base);
 	print_field(main_hdr, header_t, prolog_checksum, FMT_HEX, base);
@@ -242,7 +242,7 @@ int print_ext_hdr(ext_header_t *ext_hdr, int base)
 
 void print_sec_ext(ext_header_t *ext_hdr, int base)
 {
-	printf("\n################### Secure extension ###################\n\n");
+	printf("\n########### Secure extension ###########\n");
 
 	base = print_ext_hdr(ext_hdr, base);
 	/* TODO - Add secure header parsing */
@@ -254,7 +254,7 @@ void print_reg_ext(ext_header_t *ext_hdr, int base)
 	int size = ext_hdr->size;
 	int i = 0;
 
-	printf("\n################### Register extension #################\n\n");
+	printf("\n########### Register extension #########\n");
 
 	base = print_ext_hdr(ext_hdr, base);
 
@@ -269,8 +269,7 @@ void print_reg_ext(ext_header_t *ext_hdr, int base)
 
 void print_bin_ext(ext_header_t *ext_hdr, int base)
 {
-	printf("\n################### Binary extension ###################\n\n");
-
+	printf("\n########### Binary extension ###########\n");
 	base = print_ext_hdr(ext_hdr, base);
 	do_print_field(0, "binary image", base, ext_hdr->size, FMT_NONE);
 }
@@ -295,8 +294,6 @@ int print_extension(void *buf, int base, int count, int ext_size)
 		pad  -= curr_size;
 		ext_hdr = (ext_header_t *)((uintptr_t)ext_hdr + curr_size);
 	}
-
-	printf("\n################### Extension End ###################\n\n");
 
 	if (pad)
 		do_print_field(0, "padding", base, pad, FMT_NONE);
@@ -326,6 +323,7 @@ int parse_image(FILE *in_fd, int size)
 		goto error;
 	}
 
+	printf("################### Prolog Start ######################\n\n");
 	main_hdr = (header_t *)buf;
 	base += print_header(buf, base);
 
@@ -335,9 +333,16 @@ int parse_image(FILE *in_fd, int size)
 
 	prolog_size = base;
 
-	printf("\n#################### Boot image ######################\n\n");
+	if (base < main_hdr->prolog_size) {
+		printf("\n########### Padding ##############\n");
+		do_print_field(0, "prolog padding", base, main_hdr->prolog_size - base, FMT_HEX);
+		base = main_hdr->prolog_size;
+	}
+	printf("\n################### Prolog End ######################\n");
+
+	printf("\n################### Boot image ######################\n");
 	if (main_hdr->source_addr) {
-		do_print_field(0, "pre padding", base, main_hdr->source_addr, FMT_HEX);
+		do_print_field(0, "image padding", base, main_hdr->source_addr, FMT_HEX);
 		base += main_hdr->source_addr;
 	}
 
@@ -346,10 +351,10 @@ int parse_image(FILE *in_fd, int size)
 	boot_checksum = *((uint32_t *)(buf + size - 4));
 	do_print_field(boot_checksum, "checksum", base + main_hdr->boot_image_size, 4, FMT_HEX);
 
-	printf("\n################### Image end ########################\n\n");
+	printf("################### Image end ########################\n");
 
 	/* Check sanity for certain values */
-	printf("Checking values:\n");
+	printf("\nChecking values:\n");
 
 	if (main_hdr->magic == MAIN_HDR_MAGIC) {
 		printf("Headers magic:    OK!\n");
@@ -425,7 +430,7 @@ int format_reg_ext(char *filename, FILE *out_fd)
 			return 1;
 		}
 
-		addr = strtok(line, " \t");
+		addr = strtok(&line[0], " \t");
 		value = strtok(NULL, " \t");
 		if ((addr == NULL) || (value == NULL)) {
 			printf("Bad register file format at line %d\n", line_id);

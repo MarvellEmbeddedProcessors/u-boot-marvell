@@ -277,6 +277,7 @@ MV_BOARD_TDM_SPI_INFO db88f69xxTdmSpiInfo[] = { {1} };
 
 MV_BOARD_INFO db88f69xx_board_info = {
 	.boardName		= "DB-88F6920-BP",
+	.compatibleDTName	= "a390-db",
 	.numBoardNetComplexValue = ARRSZ(db88f69xxInfoBoarNetComplexInfo),
 	.pBoardNetComplexInfo	= db88f69xxInfoBoarNetComplexInfo,
 	.pBoardMppConfigValue	= db88f69xxInfoBoardMppConfigValue,

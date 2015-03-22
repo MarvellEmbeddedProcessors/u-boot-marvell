@@ -1470,6 +1470,7 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 *******************************************************************************/
 MV_U16 mvCtrlDeviceIdGet(MV_VOID)
 {
+	MV_U32 family = mvCtrlDevFamilyIdGet(0);
 	switch (mvCtrlModelGet()) {
 	/* HW flavors */
 	case MV_6810_DEV_ID:
@@ -1480,13 +1481,20 @@ MV_U16 mvCtrlDeviceIdGet(MV_VOID)
 		return 0x385;
 	case MV_6828_DEV_ID:
 		return 0x388;
+	case MV_6920_DEV_ID:
+		return 0x390;
+	case MV_6928_DEV_ID:
+		return 0x398;
 	/* Virtual flavors */
 	case MV_6W22_DEV_ID: /* 6W22=A383 */
 		return 0x383;
 	case MV_6W23_DEV_ID: /* 6W23=A384 */
 		return 0x384;
 	default:
-		return 0x380;	/* use lower device as default in case of error */
+		if (family == MV_88F69XX)
+			return 0x390;
+		else
+			return 0x380;	/* use lower device as default in case of error */
 	}
 }
 

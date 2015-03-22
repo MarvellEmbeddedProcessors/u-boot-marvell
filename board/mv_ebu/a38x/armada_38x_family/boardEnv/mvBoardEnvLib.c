@@ -3415,6 +3415,7 @@ MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
 MV_U8 mvBoardCompatibleNameGet(char *pNameBuff)
 {
 	MV_U8 len = 0;
+	MV_U32 family = mvCtrlDevFamilyIdGet(0);
 	/* i.e: "marvell,a388-db-gp", "marvell,armada388", "marvell,armada38x"; */
 	len = sprintf(pNameBuff, "marvell,%s", board->compatibleDTName) + 1;
 	/*
@@ -3423,7 +3424,12 @@ MV_U8 mvBoardCompatibleNameGet(char *pNameBuff)
 	 * strings in a property.
 	 */
 	len += sprintf(pNameBuff + len, "marvell,armada%x",  mvCtrlDeviceIdGet()) + 1;
-	len += sprintf(pNameBuff + len, "marvell,armada38x") + 1;
+	if (family == MV_88F68XX)
+		len += sprintf(pNameBuff + len, "marvell,armada38x") + 1;
+	/*LK-v3.14 relies on A380 compatible strings for A390 & A39x,
+	 as in most cases (except for network) A380 & A390 are identical*/
+	else if (family == MV_88F69XX)
+			len += sprintf(pNameBuff + len, "marvell,armada380") + 1;
 
 	return len;
 }

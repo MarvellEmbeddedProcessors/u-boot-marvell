@@ -848,7 +848,8 @@ doimage: $(obj)/u-boot.bin $(DOIMAGE) $(SPLIMAGE)
 		$(DOIMAGE) $(DOIMAGE_FLAGS) u-boot.bin u-boot-$(CONFIG_SYS_SOC).bin
 
 bin2phex: doimage
-		$(BIN2PHEX) -w $(CONFIG_PHEX_WIDTH) -i u-boot-$(CONFIG_SYS_SOC).bin -o u-boot-$(CONFIG_SYS_SOC).hex -b 0x0
+		$(BIN2PHEX) -w 1  -i u-boot-$(CONFIG_SYS_SOC).bin -o u-boot-$(CONFIG_SYS_SOC).hex -b 0x0
+		$(BIN2PHEX) -w 16 -i u-boot.bin -o u-boot.hex -b 0x0
 
 else # CONFIG_TARGET_ARMADA_38X
 DOIMAGE		:= $(srctree)/tools/marvell/doimage

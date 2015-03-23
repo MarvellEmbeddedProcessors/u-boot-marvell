@@ -113,14 +113,3 @@ config MVEBU_NOR_BOOT
 
 endchoice
 
-config PHEX_WIDTH
-	int "PHEX width for bin2phek script"
-	depends on PALLADIUM
-	default 16
-	help
-	  This config is Byte width of output
-	  file of script that convert binary
-	  file to Palladium HEX format.
-	  The value must be power of 2 (1,2,4,8...).
-	  Default value = 16 - used for memory load
-	  Value = 1 - used for SPI load

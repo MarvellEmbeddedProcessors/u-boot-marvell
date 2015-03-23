@@ -64,7 +64,6 @@ GT_U32 odtConfig;
 /************************** pre-declaration ******************************/
 /* Read 1st active interface */
 extern GT_U32 maskTuneFunc;
-extern GT_U32 rlVersion;
 extern MV_HWS_DDR_FREQ mediumFreq;
 extern MV_HWS_DDR_FREQ lowFreq;
 extern GT_U32 isPllBeforeInit;
@@ -900,8 +899,9 @@ GT_STATUS ddr3TipInitNp5Silicon
     MV_HWS_TIP_STATIC_CONFIG_INFO staticConfig;
     MV_HWS_TIP_CONFIG_FUNC_DB configFunc;
     MV_HWS_XSB_INFO         xsbInfo;
+	GT_U8 numOfBusPerInterface = 4;
 
-    GT_U32 boardOffset = boardId * NP5_NUMBER_OF_INTERFACES *np5TopologyMap[boardId].numOfBusPerInterface;
+    GT_U32 boardOffset = boardId * NP5_NUMBER_OF_INTERFACES *numOfBusPerInterface;
 
 	DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("register functions \n"));
 
@@ -917,6 +917,12 @@ GT_STATUS ddr3TipInitNp5Silicon
     configFunc.tipSetFreqDividerFunc = ddr3TipNp5SetFreq;
 
     mvHwsDdr3TipInitConfigFunc(devNum, &configFunc);
+
+	/*Set device attributes*/
+	ddr3TipDevAttrInit(devNum);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_TRAINING_CONTROLLER, MV_DDR_TRAINING_CONTROLLER_TIP);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_NEGATIVE);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, numOfBusPerInterface);
 
 #ifdef STATIC_ALGO_SUPPORT
     ddr3TipInitStaticConfigDb(devNum, &staticConfig);
@@ -944,7 +950,6 @@ GT_STATUS ddr3TipInitNp5Silicon
     lowFreq = DDR_FREQ_LOW_FREQ;
     mediumFreq = DDR_FREQ_667;
     isPllBeforeInit = 1;
-    rlVersion = 0;
     initFreq = DDR_FREQ_667;
 	debugTraining = DEBUG_LEVEL_INFO;
 	odtAdditional = 0;

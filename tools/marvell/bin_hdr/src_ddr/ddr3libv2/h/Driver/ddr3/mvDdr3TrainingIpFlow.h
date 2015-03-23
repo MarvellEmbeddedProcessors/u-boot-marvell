@@ -86,9 +86,8 @@
 #define PATTERN_MAXIMUM_LENGTH (64)
 #define EXT_ACCESS_BURST_LENGTH (8)
 #define  CHIP_ID                0
-#define IS_INTERFACE_ACTIVE( _uiInterfaceMask_ , _uiInterfaceId_ )   ( _uiInterfaceMask_ & ( 1 << _uiInterfaceId_ ) ) 
-#define IS_BUS_ACTIVE( _uiInterfaceMask_ , _uiInterfaceId_ )   ( _uiInterfaceMask_ & ( 1 << _uiInterfaceId_ ) ) 
-#define GET_TOPOLOGY_NUM_OF_BUSES(devNum)   (ddr3TipGetTopologyMap(devNum)->numOfBusPerInterface)
+#define IS_INTERFACE_ACTIVE( _uiInterfaceMask_ , _uiInterfaceId_ )   ( _uiInterfaceMask_ & ( 1 << _uiInterfaceId_ ) )
+#define IS_BUS_ACTIVE( _uiInterfaceMask_ , _uiInterfaceId_ )   ( _uiInterfaceMask_ & ( 1 << _uiInterfaceId_ ) )
 
 #define DDR3_IS_ECC_PUP3_MODE(_uiInterfaceMask_)	((_uiInterfaceMask_ == 0xB)?(GT_TRUE):(GT_FALSE))
 #define DDR3_IS_ECC_PUP4_MODE(_uiInterfaceMask_)	((((_uiInterfaceMask_ & 0x10) == 0))?(GT_FALSE):(GT_TRUE))
@@ -212,11 +211,11 @@ Address Bits   Value   Description
 
 #if defined(CONFIG_ARMADA_38X) || defined (CONFIG_ALLEYCAT3) || defined (CONFIG_ARMADA_39X)
 #define ODPG_BIST_DONE                    (0x186D4)
-#define ODPG_BIST_DONE_BIT_OFFS           (0)
-#define ODPG_BIST_DONE_BIT_VALUE          (0)
 #else
 #define ODPG_BIST_DONE                    (0x16FC)
 #endif
+#define ODPG_BIST_DONE_BIT_OFFS           (0)
+#define ODPG_BIST_DONE_BIT_VALUE          (0)
 
 #if defined(CONFIG_ARMADA_38X) || defined (CONFIG_ALLEYCAT3) || defined (CONFIG_ARMADA_39X)
 #define RESULT_CONTROL_BYTE_PUP_0_REG     (0x1830)
@@ -224,7 +223,7 @@ Address Bits   Value   Description
 #define RESULT_CONTROL_BYTE_PUP_2_REG     (0x1838)
 #define RESULT_CONTROL_BYTE_PUP_3_REG     (0x183C)
 #define RESULT_CONTROL_BYTE_PUP_4_REG     (0x18B0)
-										  
+
 #define RESULT_CONTROL_PUP_0_BIT_0_REG    (0x18B4)
 #define RESULT_CONTROL_PUP_0_BIT_1_REG    (0x18B8)
 #define RESULT_CONTROL_PUP_0_BIT_2_REG    (0x18BC)

@@ -299,8 +299,9 @@ GT_STATUS    ddr3TipIpTraining
 	PatternInfo *patternTable = ddr3TipGetPatternTable();
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
 	GT_U16 *maskResultsDqRegMap 	= ddr3TipGetMaskResultsDqReg();
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
-    if (pupNum >= topologyMap->numOfBusPerInterface)
+    if (pupNum >= octetsPerInterfaceNum)
     {
         DEBUG_TRAINING_IP_ENGINE(DEBUG_LEVEL_ERROR, ("pupNum %d not valid\n",pupNum));
     }
@@ -419,8 +420,8 @@ GT_STATUS    ddr3TipIpTraining
     regData |= (0x6 << 28);
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceNum, CALIB_OBJ_PRFA_REG, regData | (initValue << 8) , 0xff | (0xFFFF << 8)| (0xF << 24) | (GT_U32)(0xF << 28)));
 
-	maskDqNumOfRegs = topologyMap->numOfBusPerInterface * BUS_WIDTH_IN_BITS;
-	maskPupNumOfRegs = topologyMap->numOfBusPerInterface;
+	maskDqNumOfRegs = octetsPerInterfaceNum * BUS_WIDTH_IN_BITS;
+	maskPupNumOfRegs = octetsPerInterfaceNum;
 
     if (resultType == RESULT_PER_BIT)
     {
@@ -430,7 +431,7 @@ GT_STATUS    ddr3TipIpTraining
         }
 
 		/*Mask disabled buses*/
-        for(pupId = 0; pupId < topologyMap->numOfBusPerInterface ; pupId++)
+        for(pupId = 0; pupId < octetsPerInterfaceNum ; pupId++)
         {
 			if (IS_BUS_ACTIVE(topologyMap->activeBusMask, pupId) == GT_TRUE) continue;
 
@@ -707,6 +708,7 @@ GT_STATUS    ddr3TipReadTrainingResult
     GT_U32 readData[MAX_INTERFACE_NUM];
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
 	GT_U16 *maskResultsDqRegMap 	= ddr3TipGetMaskResultsDqReg();
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* Agreed assumption: all CS mask contain same number of bits, i.e. in multi CS, the number of CS per memory is the same for all pups */
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST,  interfaceId, CS_ENABLE_REG, (csNumType == 0) ? 1<<3 : 0, (1 << 3)));
@@ -717,7 +719,7 @@ GT_STATUS    ddr3TipReadTrainingResult
         DEBUG_TRAINING_IP_ENGINE(DEBUG_LEVEL_ERROR, ("ddr3TipReadTrainingResult loadRes = NULL"));
         return GT_FAIL;
     }
-    if (pupNum >= topologyMap->numOfBusPerInterface)
+    if (pupNum >= octetsPerInterfaceNum)
     {
         DEBUG_TRAINING_IP_ENGINE(DEBUG_LEVEL_ERROR, ("pupNum %d not valid\n",pupNum));
     }
@@ -741,7 +743,7 @@ GT_STATUS    ddr3TipReadTrainingResult
     else /*pupAccessType == ACCESS_TYPE_MULTICAST)*/
     {
         startPup = 0;
-        endPup = topologyMap->numOfBusPerInterface-1;
+        endPup = octetsPerInterfaceNum-1;
     } 
     for(pupCnt = startPup; pupCnt <= endPup ; pupCnt++)
     {
@@ -858,11 +860,7 @@ GT_STATUS isOdpgAccessDone
     {
         CHECK_STATUS(mvHwsDdr3TipIFRead(devNum,ACCESS_TYPE_UNICAST, interfaceId, ODPG_BIST_DONE, readData, MASK_ALL_BITS));
  		dataValue = readData[interfaceId];
-#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_39X)
         if (((dataValue >> ODPG_BIST_DONE_BIT_OFFS )& 0x1) == ODPG_BIST_DONE_BIT_VALUE)
-#else
-        if ((dataValue & 0x1) == 0x1)
-#endif
         {
             dataValue = dataValue & 0xfffffffe;
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ODPG_BIST_DONE, dataValue, MASK_ALL_BITS));
@@ -989,6 +987,7 @@ GT_STATUS    ddr3TipIpTrainingWrapperInt
     MV_HWS_SearchDirection searchDirId , startSearch, endSearch;
     MV_HWS_EdgeCompare     edgeCompUsed;
 	GT_U8 consTap = (direction == OPER_WRITE)?(64):(0);
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     if (trainStatus == NULL)
     {
@@ -1002,7 +1001,7 @@ GT_STATUS    ddr3TipIpTrainingWrapperInt
         (searchDir > MV_HWS_High2Low) ||
         (controlElement > MV_HWS_ControlElement_DQS_SKEW) ||
         (resultType > RESULT_PER_BYTE) ||
-        (pupNum >= topologyMap->numOfBusPerInterface) ||
+        (pupNum >= octetsPerInterfaceNum) ||
         (pupAccessType > ACCESS_TYPE_MULTICAST) ||
         (interfaceId > 11)||
         (accessType > ACCESS_TYPE_MULTICAST))
@@ -1091,8 +1090,9 @@ GT_STATUS    ddr3TipIpTrainingWrapper
 	GT_U8 consTap = (direction == OPER_WRITE)?(64):(0);
 	GT_U8 bitBitMask[MAX_BUS_NUM] = {0}, bitBitMaskActive = 0;
 	GT_U8 pupId;
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
-    if (pupNum >= topologyMap->numOfBusPerInterface)
+    if (pupNum >= octetsPerInterfaceNum)
     {
         DEBUG_TRAINING_IP_ENGINE(DEBUG_LEVEL_ERROR, ("pupNum %d not valid\n",pupNum));
     }
@@ -1118,7 +1118,7 @@ GT_STATUS    ddr3TipIpTrainingWrapper
     for(interfaceCnt = startIf; interfaceCnt <= endIf; interfaceCnt++)    
     {
         VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceCnt)
-        for(pupId = 0; pupId <= (topologyMap->numOfBusPerInterface-1) ; pupId++)
+        for(pupId = 0; pupId <= (octetsPerInterfaceNum-1) ; pupId++)
         {
 			VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pupId)
             if (resultType == RESULT_PER_BIT)
@@ -1169,7 +1169,7 @@ GT_STATUS    ddr3TipIpTrainingWrapper
                           MV_HWS_Low2High, direction, interfaceMask,
                           numIter/2, numIter/2, pattern, EDGE_FP, trainCsType, csNum,  trainStatus);
 
-		    for(pupId = 0; pupId <= (topologyMap->numOfBusPerInterface-1) ; pupId++)
+		    for(pupId = 0; pupId <= (octetsPerInterfaceNum-1) ; pupId++)
 		    {
 				VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pupId)
 
@@ -1192,7 +1192,7 @@ GT_STATUS    ddr3TipIpTrainingWrapper
                           MV_HWS_High2Low, direction, interfaceMask,
                           numIter/2, numIter/2, pattern, EDGE_FP, trainCsType, csNum,  trainStatus);
 
-		    for(pupId = 0; pupId <= (topologyMap->numOfBusPerInterface-1) ; pupId++)
+		    for(pupId = 0; pupId <= (octetsPerInterfaceNum-1) ; pupId++)
 		    {
 				VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pupId)
 
@@ -1221,11 +1221,12 @@ Load phy values
 GT_STATUS    ddr3TipLoadPhyValues(GT_BOOL bLoad)
 {
     GT_U32  busCnt = 0,  interfaceId,  devNum = 0;
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
         VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-        for(busCnt = 0; busCnt < GET_TOPOLOGY_NUM_OF_BUSES(devNum); busCnt++)
+        for(busCnt = 0; busCnt < octetsPerInterfaceNum; busCnt++)
         {
         	VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busCnt)
             if (bLoad == GT_TRUE)
@@ -1263,6 +1264,7 @@ GT_STATUS ddr3TipTrainingIpTest
     MV_HWS_TrainingIpStatus trainStatus[MAX_INTERFACE_NUM];
     GT_U32 *pRes = NULL;
     GT_U32 searchState = 0; 
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     ddr3TipLoadPhyValues(GT_TRUE);
 
@@ -1277,7 +1279,7 @@ GT_STATUS ddr3TipTrainingIpTest
             for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
             {
                 VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-                for(pupId = 0; pupId < topologyMap->numOfBusPerInterface ; pupId++)
+                for(pupId = 0; pupId < octetsPerInterfaceNum ; pupId++)
                 {
 					VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pupId)
                     CHECK_STATUS(ddr3TipReadTrainingResult(devNum, interfaceId, ACCESS_TYPE_UNICAST, 

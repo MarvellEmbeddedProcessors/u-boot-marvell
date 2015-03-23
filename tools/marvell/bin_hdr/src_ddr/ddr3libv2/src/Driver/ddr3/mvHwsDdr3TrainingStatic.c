@@ -151,10 +151,11 @@ GT_STATUS    ddr3TipStaticRoundTripArrBuild
     GT_U32 temp;
     GT_U32 boardTrace;
     TripDelayElement* pkgDelayPtr;
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     sign = (isWl) ? -1 : 1; /* in WL we calc the diff between Clock to DQs in RL we sum the round trip of Clock and DQs */
 
-    busPerInterface = GET_TOPOLOGY_NUM_OF_BUSES(devNum);
+    busPerInterface = octetsPerInterfaceNum;
 
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
@@ -195,12 +196,13 @@ GT_STATUS    ddr3TipWriteLevelingStaticConfig
     GT_U32 phase = 0;
     GT_U32 adll = 0, adll_cen, adll_inv, adll_final;
     GT_U32 adllPeriod = MEGA / freqVal[frequency] / 64;
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     DEBUG_TRAINING_STATIC_IP(DEBUG_LEVEL_TRACE, ("ddr3TipWriteLevelingStaticConfig\n"));
     DEBUG_TRAINING_STATIC_IP(DEBUG_LEVEL_TRACE, ("devNum 0x%x IF 0x%x freq %d (adllPeriod 0x%x)\n", devNum, interfaceId, frequency, adllPeriod));   
 
 
-	busPerInterface = GET_TOPOLOGY_NUM_OF_BUSES(devNum);
+	busPerInterface = octetsPerInterfaceNum;
 	busStartIndex = interfaceId * busPerInterface;
 	for(busIndex = busStartIndex; busIndex < (busStartIndex + busPerInterface); busIndex++)
 	{
@@ -246,8 +248,7 @@ GT_STATUS    ddr3TipReadLevelingStaticConfig(GT_U32             devNum,
 	MV_HWS_SPEED_BIN speedBinIndex;
 	GT_U32 rdSampleDly[MAX_CS_NUM] = { 0 };
 	GT_U32 rdReadyDel[MAX_CS_NUM]  = { 0 };
-	GT_U32  busPerInterface = GET_TOPOLOGY_NUM_OF_BUSES(devNum);
-
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     DEBUG_TRAINING_STATIC_IP(DEBUG_LEVEL_TRACE, ("ddr3TipReadLevelingStaticConfig\n"));
     DEBUG_TRAINING_STATIC_IP(DEBUG_LEVEL_TRACE, ("devNum 0x%x ifc 0x%x freq %d\n", devNum,interfaceId, frequency));   
@@ -265,9 +266,9 @@ GT_STATUS    ddr3TipReadLevelingStaticConfig(GT_U32             devNum,
     }
   
 
-    busStartIndex = interfaceId * busPerInterface;
+    busStartIndex = interfaceId * octetsPerInterfaceNum;
 
-    for(busIndex=busStartIndex; busIndex < (busStartIndex + busPerInterface); busIndex+=2)
+    for(busIndex=busStartIndex; busIndex < (busStartIndex + octetsPerInterfaceNum); busIndex+=2)
     {
    		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busIndex)
         cs = chipSelectMap[topologyMap->interfaceParams[interfaceId].asBusParams[(busIndex % 4)].csBitmask].csNum;
@@ -295,30 +296,11 @@ GT_STATUS    ddr3TipReadLevelingStaticConfig(GT_U32             devNum,
 		data0 =  ((phase0 << 6) + (adll0 & 0x1F));
 		data1 = ((phase1 << 6) + (adll1 & 0x1F));
 
-#if 0
-/*Check when this used in other projects*/
-		if (silicon == 0)
-		{
-			switch(topologyMap->boardId)
-			{
-				case DDR_BOARD_FUNCTIONAL:
-					data3 = functionRegValue;
-					break;
-
-				case DDR_BOARD_ETP:
-				case DDR_BOARD_CUSTOMER:
-				default:
-					data3 = s_uiMRegValue;
-					break;
-			}
-		}
-#endif
-
 		CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, (busIndex % 4), DDR_PHY_DATA, PHY_READ_DELAY(cs), data0,0x1DF));
 		CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ((busIndex + 1) % 4), DDR_PHY_DATA, PHY_READ_DELAY(cs), data1, 0x1DF));
 	}
 
-    for (busIndex = 0; busIndex < busPerInterface; busIndex++)
+    for (busIndex = 0; busIndex < octetsPerInterfaceNum; busIndex++)
     {
    		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busIndex)
         CHECK_STATUS(ddr3TipBusReadModifyWrite(  devNum, ACCESS_TYPE_UNICAST, interfaceId, busIndex, DDR_PHY_DATA, 0x3, data3, 0x1F));

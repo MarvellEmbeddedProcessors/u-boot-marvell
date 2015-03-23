@@ -135,7 +135,6 @@ DDR_IF_ASSIGNMENT ddr3GetSdramAssignment(GT_U8 devNum);
 /************************** Globals ******************************/
 
 extern GT_U32 maskTuneFunc;
-extern GT_U32 rlVersion;
 extern GT_U32 freqVal[];
 extern MV_HWS_DDR_FREQ mediumFreq;
 extern MV_HWS_TOPOLOGY_MAP *topologyMap;
@@ -743,6 +742,7 @@ static GT_STATUS ddr3TipInitBc2Silicon
 {
     MV_HWS_TIP_CONFIG_FUNC_DB configFunc;
 	MV_HWS_TOPOLOGY_MAP* topologyMap = ddr3TipGetTopologyMap(devNum);
+	GT_U8 numOfBusPerInterface = 4;
 
 	if(topologyMap == NULL)
 	{
@@ -754,7 +754,7 @@ static GT_STATUS ddr3TipInitBc2Silicon
 #ifdef STATIC_ALGO_SUPPORT
 	MV_HWS_TIP_STATIC_CONFIG_INFO staticConfig;
 
-    GT_U32 boardOffset = boardId * BC2_NUMBER_OF_INTERFACES *topologyMap->numOfBusPerInterface;
+    GT_U32 boardOffset = boardId * BC2_NUMBER_OF_INTERFACES *numOfBusPerInterface;
 
     staticConfig.siliconDelay = bc2SiliconDelayOffset[boardId];
     staticConfig.packageTraceArr = bc2PackageRoundTripDelayArray;
@@ -785,6 +785,7 @@ static GT_STATUS ddr3TipInitBc2Silicon
 	ddr3TipDevAttrInit(devNum);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_TRAINING_CONTROLLER, MV_DDR_TRAINING_CONTROLLER_TIP);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_NEGATIVE);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, numOfBusPerInterface);
 
 #if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
 		/* for TM interface, since DFS flow is different from MSYS DFS (which is not
@@ -825,7 +826,6 @@ static GT_STATUS ddr3TipInitBc2Silicon
     dfsLowFreq = 100;
     dfsLowPhy1 = PhyReg1Val;
     isPllBeforeInit = 0;
-    rlVersion = 1; /* new RL machine */
     useBroadcast = GT_FALSE; /* multicast */
     isCbeRequired = GT_TRUE;
 	calibrationUpdateControl = 2;

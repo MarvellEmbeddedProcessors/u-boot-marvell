@@ -50,7 +50,6 @@ WriteSuppResultStruct writeSuppResultTable[MAX_INTERFACE_NUM][MAX_BUS_NUM];
 
 extern MV_HWS_RESULT trainingResult[MAX_STAGE_LIMIT][MAX_INTERFACE_NUM];
 extern AUTO_TUNE_STAGE trainingStage;
-extern GT_U32 rlVersion; 
 extern MV_HWS_TOPOLOGY_MAP *topologyMap;
 extern ClValuePerFreq casLatencyTable[];
 extern GT_U32  startXsbOffset;
@@ -143,57 +142,7 @@ GT_STATUS    ddr3TipDynamicReadLeveling
 	GT_U8   RLValues[NUM_OF_CS][MAX_BUS_NUM][MAX_INTERFACE_NUM] ;
 	PatternInfo *patternTable = ddr3TipGetPatternTable();
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
-
-
-	/*DEBUG_LEVELING(DEBUG_LEVEL_INFO, ("===READ LEVELING==="));*/
-    if (rlVersion == 0)
-    {
-        /* OLD RL machine */
-        data = 0x40;
-        data |= (1<<20);
-        /* TBD multi CS */
-        CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, TRAINING_REG, data, 0x11FFFF));
-        CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, TRAINING_PATTERN_BASE_ADDRESS_REG, 0, 0xFFFFFFF8));
-        CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, TRAINING_REG, (GT_U32)(1 << 31), (GT_U32)(1 << 31)));
-        for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
-        {
-           VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-           trainingResult[trainingStage][interfaceId] = TEST_SUCCESS;
-           if (ddr3TipIfPolling(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0, (GT_U32)(1 << 31), TRAINING_REG, MAX_POLLING_ITERATIONS) != GT_OK)
-            {
-                DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("RL: DDR3 poll failed(1) IF %d\n", interfaceId));
-                trainingResult[trainingStage][interfaceId] = TEST_FAILED;
-                if (debugMode == GT_FALSE)
-                {
-                    return GT_FAIL;
-                }
-            }
-        }
-        /* read read-leveling result */
-        CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, TRAINING_REG, dataRead, 1<<30));
-        /* exit read leveling mode */
-        CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, TRAINING_SW_2_REG, 0x8, 0x9));
-        CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, TRAINING_SW_1_REG, 1<<16, 1<<16));
-        /* disable RL machine all Trn_CS[3:0] , [16:0] */
-
-        CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, TRAINING_REG,  0, 0xF1FFFF));
-
-        for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
-        {
-            VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-            if ((dataRead[interfaceId]&(1<<30)) == 0)
-            {
-                DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("\nRead Leveling failed for IF %d\n", interfaceId));
-                trainingResult[trainingStage][interfaceId] = TEST_FAILED;
-                if (debugMode == GT_FALSE)
-                {
-                    return GT_FAIL; 
-                }
-            }
-        }
-        return GT_OK;
-    }
-    /* NEW RL machine */
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
 	for(effective_cs = 0; effective_cs < NUM_OF_CS; effective_cs++)
 		for(busNum = 0; busNum < MAX_BUS_NUM; busNum++)
@@ -324,7 +273,7 @@ GT_STATUS    ddr3TipDynamicReadLeveling
 			VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
 			/* check training done */
 			isAnyPupFail = GT_FALSE;
-			for (busNum=0; busNum<topologyMap->numOfBusPerInterface; busNum++)
+			for (busNum=0; busNum<octetsPerInterfaceNum; busNum++)
 			{
        			VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busNum)
 				if (ddr3TipIfPolling(devNum, ACCESS_TYPE_UNICAST, interfaceId, (1 << 25), (1 << 25), maskResultsPupRegMap[busNum], MAX_POLLING_ITERATIONS) != GT_OK)
@@ -369,7 +318,7 @@ GT_STATUS    ddr3TipDynamicReadLeveling
 		for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
 		{
 			VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-			for (busNum=0; busNum<topologyMap->numOfBusPerInterface; busNum++)
+			for (busNum=0; busNum<octetsPerInterfaceNum; busNum++)
 			{
 				VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busNum)
 				/* read result per pup from arry */
@@ -494,11 +443,12 @@ GT_STATUS    ddr3TipDynamicPerBitReadLeveling
     GT_U32  data2Write[MAX_INTERFACE_NUM][MAX_BUS_NUM];
 	PatternInfo *patternTable = ddr3TipGetPatternTable();
 	GT_U16 *maskResultsDqRegMap 	= ddr3TipGetMaskResultsDqReg();
-    
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+
 	for(interfaceId = 0; interfaceId < MAX_INTERFACE_NUM; interfaceId++)
 	{
 		VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-        for(busNum = 0; busNum <=topologyMap->numOfBusPerInterface; busNum++)
+        for(busNum = 0; busNum <=octetsPerInterfaceNum; busNum++)
 		{
 				VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busNum)
 				perBitRLPupStatus[interfaceId][busNum] = 0;	
@@ -619,7 +569,7 @@ GT_STATUS    ddr3TipDynamicPerBitReadLeveling
 		{
 			VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
 			/* check training done */
-			for (busNum=0; busNum<topologyMap->numOfBusPerInterface; busNum++)
+			for (busNum=0; busNum<octetsPerInterfaceNum; busNum++)
 			{
 				VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busNum)
 				if (perBitRLPupStatus[interfaceId][busNum] == GT_FALSE)
@@ -662,7 +612,7 @@ GT_STATUS    ddr3TipDynamicPerBitReadLeveling
 			for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
 			{
 				VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-				for (busNum=0; busNum<topologyMap->numOfBusPerInterface; busNum++)
+				for (busNum=0; busNum<octetsPerInterfaceNum; busNum++)
 				{
 	   				VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busNum)
 					if (perBitRLPupStatus[interfaceId][busNum] != GT_TRUE)
@@ -684,7 +634,7 @@ GT_STATUS    ddr3TipDynamicPerBitReadLeveling
 	for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
 		VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-        for (busNum=0; busNum<topologyMap->numOfBusPerInterface; busNum++)
+        for (busNum=0; busNum<octetsPerInterfaceNum; busNum++)
         {
 	   		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busNum)
 			if (perBitRLPupStatus[interfaceId][busNum] == GT_TRUE)
@@ -747,6 +697,7 @@ GT_STATUS    ddr3TipCalcCsMask
 {
 	GT_U32 allBusCs = 0, sameBusCs;
 	GT_U32 busCnt;
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
 	devNum = devNum; /* avoid warnings */
 
@@ -758,7 +709,7 @@ GT_STATUS    ddr3TipCalcCsMask
 	   if they are they are not the same then it's mixed mode so all CS should be configured
 	   (when configuring the MRS)*/
 
-	for (busCnt=0; busCnt<topologyMap->numOfBusPerInterface; busCnt++)
+	for (busCnt=0; busCnt<octetsPerInterfaceNum; busCnt++)
 	{
 		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busCnt)
 
@@ -793,7 +744,7 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
 	GT_U32 csMask0[MAX_INTERFACE_NUM]={0};
 	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet();
-    /*DEBUG_LEVELING(DEBUG_LEVEL_INFO, ("===WRITE LEVELING==="));*/
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
@@ -918,7 +869,7 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 	#endif
 
 				/* check for training completion per bus */
-				for (busCnt=0; busCnt<topologyMap->numOfBusPerInterface; busCnt++)
+				for (busCnt=0; busCnt<octetsPerInterfaceNum; busCnt++)
 				{
        				VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busCnt)
 					/* training status */
@@ -927,7 +878,7 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 					DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("WL: IF %d BUS %d reg 0x%x\n", interfaceId, busCnt,regData));
 					if (regData == 0)
 					{
-						resValues[(interfaceId * topologyMap->numOfBusPerInterface) + busCnt] = GT_TRUE;
+						resValues[(interfaceId * octetsPerInterfaceNum) + busCnt] = GT_TRUE;
 					}
 					CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, maskResultsPupRegMap[busCnt], dataRead, 0xff));
 					WLValues[effective_cs][busCnt][interfaceId] = (GT_U8)dataRead[interfaceId]; /* save the read value that should be write to PHY register */
@@ -965,11 +916,11 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 		{
 			VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
 			testRes = 0;
-			for (busCnt=0; busCnt<topologyMap->numOfBusPerInterface; busCnt++)
+			for (busCnt=0; busCnt<octetsPerInterfaceNum; busCnt++)
 			{
 				VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busCnt)
 				/* check if result == pass */
-				if (resValues[(interfaceId * topologyMap->numOfBusPerInterface) + busCnt] == 0)
+				if (resValues[(interfaceId * octetsPerInterfaceNum) + busCnt] == 0)
 				{
 					/*read result control register according to pup */
 					regData = WLValues[effective_cs][busCnt][interfaceId];
@@ -1035,14 +986,13 @@ GT_STATUS    ddr3TipDynamicWriteLevelingSupp
     GT_32 adllOffset;
     GT_U32 interfaceId, busId, data, dataTmp;
     GT_BOOL isIfFail = GT_FALSE;
-
-    /*DEBUG_LEVELING(DEBUG_LEVEL_INFO, ("===WRITE LEVELING SUPPLEMENTARY==="));*/
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
         VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
         isIfFail = GT_FALSE;
-        for(busId = 0; busId < GET_TOPOLOGY_NUM_OF_BUSES(devNum); busId++)
+        for(busId = 0; busId < octetsPerInterfaceNum; busId++)
         {
        		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busId)
             writeSuppResultTable[interfaceId][busId].isPupFail = GT_TRUE;
@@ -1319,6 +1269,7 @@ static GT_STATUS    ddr3TipDynamicWriteLevelingSeq(GT_U32 devNum)
     GT_U32 busId, dqId;
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
 	GT_U16 *maskResultsDqRegMap 	= ddr3TipGetMaskResultsDqReg();
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE,  TRAINING_SW_2_REG, 0x1,      0x5));
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE,  TRAINING_WRITE_LEVELING_REG,  0x50,     0xFF));
@@ -1336,13 +1287,13 @@ static GT_STATUS    ddr3TipDynamicWriteLevelingSeq(GT_U32 devNum)
     }
 
 	/*Mask all results*/
-    for (busId=0; busId < topologyMap->numOfBusPerInterface; busId++)
+    for (busId=0; busId < octetsPerInterfaceNum; busId++)
     {
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE,  maskResultsPupRegMap[busId], 0x1<<24, 0x1<<24));
     }
 
 	/*Unmask only wanted*/
-    for (busId=0; busId < topologyMap->numOfBusPerInterface; busId++)
+    for (busId=0; busId < octetsPerInterfaceNum; busId++)
     {
        	VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busId)
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE,  maskResultsPupRegMap[busId], 0, 0x1<<24));
@@ -1362,6 +1313,7 @@ static GT_STATUS    ddr3TipDynamicReadLevelingSeq( GT_U32            devNum)
     GT_U32 busId, dqId;
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
 	GT_U16 *maskResultsDqRegMap 	= ddr3TipGetMaskResultsDqReg();
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* mask PBS */
     for (dqId=0; dqId<MAX_DQ_NUM; dqId++)
@@ -1370,13 +1322,13 @@ static GT_STATUS    ddr3TipDynamicReadLevelingSeq( GT_U32            devNum)
     }
 
 	/*Mask all results*/
-    for (busId=0; busId < topologyMap->numOfBusPerInterface; busId++)
+    for (busId=0; busId < octetsPerInterfaceNum; busId++)
     {
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE,  maskResultsPupRegMap[busId], 0x1<<24, 0x1<<24));
     }
 
 	/*Unmask only wanted*/
-    for (busId=0; busId<topologyMap->numOfBusPerInterface; busId++)
+    for (busId=0; busId<octetsPerInterfaceNum; busId++)
     {
        	VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busId)
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE,  maskResultsPupRegMap[busId], 0, 0x1<<24));
@@ -1393,6 +1345,7 @@ static GT_STATUS    ddr3TipDynamicPerBitReadLevelingSeq( GT_U32            devNu
     GT_U32 busId, dqId;
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
 	GT_U16 *maskResultsDqRegMap 	= ddr3TipGetMaskResultsDqReg();
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* mask PBS */
     for (dqId=0; dqId<MAX_DQ_NUM; dqId++)
@@ -1401,7 +1354,7 @@ static GT_STATUS    ddr3TipDynamicPerBitReadLevelingSeq( GT_U32            devNu
     }
 
 	/*Mask all results*/
-    for (busId=0; busId < topologyMap->numOfBusPerInterface; busId++)
+    for (busId=0; busId < octetsPerInterfaceNum; busId++)
     {
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE,  maskResultsPupRegMap[busId], 0x1<<24, 0x1<<24));
     }
@@ -1422,6 +1375,7 @@ Print write leveling supplementary Results
 GT_BOOL ddr3TipPrintWLSuppResult(GT_U32 devNum)
 {
     GT_U32 busId = 0,interfaceId = 0;
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     DEBUG_LEVELING(DEBUG_LEVEL_INFO,("I/F0 PUP0 Result[0 - success, 1-fail] ...\n"));
 
@@ -1430,7 +1384,7 @@ GT_BOOL ddr3TipPrintWLSuppResult(GT_U32 devNum)
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
         VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-         for(busId=0; busId<topologyMap->numOfBusPerInterface; busId++)
+         for(busId=0; busId<octetsPerInterfaceNum; busId++)
         {
 			VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busId)
             DEBUG_LEVELING(DEBUG_LEVEL_INFO,("%d ,", writeSuppResultTable[interfaceId][busId].isPupFail));
@@ -1440,7 +1394,7 @@ GT_BOOL ddr3TipPrintWLSuppResult(GT_U32 devNum)
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
         VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-         for(busId=0; busId<topologyMap->numOfBusPerInterface; busId++)
+         for(busId=0; busId<octetsPerInterfaceNum; busId++)
         {
 			VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busId)
             DEBUG_LEVELING(DEBUG_LEVEL_INFO,("%d ,", writeSuppResultTable[interfaceId][busId].stage));

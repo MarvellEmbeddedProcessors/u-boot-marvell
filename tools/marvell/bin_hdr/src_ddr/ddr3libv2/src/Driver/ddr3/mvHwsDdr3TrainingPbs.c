@@ -115,6 +115,7 @@ GT_STATUS    ddr3TipPbs
     GT_U32   csEnableRegVal[MAX_INTERFACE_NUM];
     GT_U16 *maskResultsDqRegMap 	= ddr3TipGetMaskResultsDqReg();
     GT_U8 temp = 0;
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* save current cs enable reg val */
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
@@ -135,7 +136,7 @@ GT_STATUS    ddr3TipPbs
                       SearchDirection, Direction, topologyMap->interfaceActiveMask, InitValue, NumberOfIterations, pbsPattern, SearchEDGE_, CS_SINGLE, csNum, trainStatus);
 
     validationVal = (pbsMode == PBS_RX_MODE) ? 0x1f : 0;
-	for( pup = 0 ; pup < topologyMap->numOfBusPerInterface ; pup++)
+	for( pup = 0 ; pup < octetsPerInterfaceNum ; pup++)
 	{
 		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pup)
 		for( interfaceId = 0 ; interfaceId <= MAX_INTERFACE_NUM-1 ; interfaceId++)
@@ -149,7 +150,7 @@ GT_STATUS    ddr3TipPbs
     }
 
     /* EBA */
-	for( pup = 0 ; pup < topologyMap->numOfBusPerInterface ; pup++)
+	for( pup = 0 ; pup < octetsPerInterfaceNum ; pup++)
 	{
 		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pup)
 		for( bit = 0 ; bit < BUS_WIDTH_IN_BITS ; bit++)
@@ -190,7 +191,7 @@ GT_STATUS    ddr3TipPbs
 	}
 
 	/* EEBA */
-	for( pup = 0 ; pup < topologyMap->numOfBusPerInterface ; pup++)
+	for( pup = 0 ; pup < octetsPerInterfaceNum ; pup++)
 	{
 		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pup)
         for( interfaceId = 0 ; interfaceId <= MAX_INTERFACE_NUM-1 ; interfaceId++)
@@ -255,7 +256,7 @@ GT_STATUS    ddr3TipPbs
 	}
 
 	/* Print Stage result */
-	for( pup = 0 ; pup < topologyMap->numOfBusPerInterface ; pup++)
+	for( pup = 0 ; pup < octetsPerInterfaceNum ; pup++)
 	{
 		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pup)
         for( interfaceId = 0 ; interfaceId <= MAX_INTERFACE_NUM-1 ; interfaceId++)
@@ -266,7 +267,7 @@ GT_STATUS    ddr3TipPbs
 	}
 
     DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,("Update ADLL Shift of all pups:\n"));
-	for( pup = 0 ; pup < topologyMap->numOfBusPerInterface ; pup++)
+	for( pup = 0 ; pup < octetsPerInterfaceNum ; pup++)
 	{
 		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pup)
         for( interfaceId = 0 ; interfaceId <= MAX_INTERFACE_NUM-1 ; interfaceId++)
@@ -281,7 +282,7 @@ GT_STATUS    ddr3TipPbs
 
     /* PBS EEBA&EBA */
 	/* Start the Per Bit Skew search */
-	for( pup = 0 ; pup < topologyMap->numOfBusPerInterface ; pup++)
+	for( pup = 0 ; pup < octetsPerInterfaceNum ; pup++)
 	{
 		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pup)
         for( interfaceId = 0 ; interfaceId <= MAX_INTERFACE_NUM-1 ; interfaceId++)
@@ -305,7 +306,7 @@ GT_STATUS    ddr3TipPbs
     ddr3TipIpTraining(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, RESULT_PER_BIT, MV_HWS_ControlElement_DQ_SKEW,
                       SearchDirection, Direction, topologyMap->interfaceActiveMask, InitValue, NumberOfIterations, pbsPattern, SearchEDGE_, CS_SINGLE, csNum, trainStatus);
 	
- 	for( pup = 0 ; pup < topologyMap->numOfBusPerInterface ; pup++)
+ 	for( pup = 0 ; pup < octetsPerInterfaceNum ; pup++)
 	{
 		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pup)
         for( interfaceId = 0 ; interfaceId <= MAX_INTERFACE_NUM-1 ; interfaceId++)
@@ -342,7 +343,7 @@ GT_STATUS    ddr3TipPbs
 
     /* Check all Pup lock */
 	AllLock = 1;
-	for( pup = 0 ; pup < topologyMap->numOfBusPerInterface ; pup++)
+	for( pup = 0 ; pup < octetsPerInterfaceNum ; pup++)
 	{
 		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pup)
         for( interfaceId = 0 ; interfaceId <= MAX_INTERFACE_NUM-1 ; interfaceId++)
@@ -359,7 +360,7 @@ GT_STATUS    ddr3TipPbs
 		/* ADLL shift for SBA */
 		SearchDirection = (pbsMode == PBS_RX_MODE) ? MV_HWS_Low2High : MV_HWS_High2Low; 
 		InitValue = (SearchDirection == MV_HWS_Low2High)?0:NumberOfIterations;
-		for( pup = 0 ; pup < topologyMap->numOfBusPerInterface ; pup++)
+		for( pup = 0 ; pup < octetsPerInterfaceNum ; pup++)
 		{
 			VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pup)
             for( interfaceId = 0 ; interfaceId <= MAX_INTERFACE_NUM-1 ; interfaceId++)
@@ -422,7 +423,7 @@ GT_STATUS    ddr3TipPbs
 	    ddr3TipIpTraining(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, RESULT_PER_BIT, MV_HWS_ControlElement_DQ_SKEW,
                       SearchDirection, Direction, topologyMap->interfaceActiveMask, InitValue, NumberOfIterations, pbsPattern, SearchEDGE_, CS_SINGLE, csNum, trainStatus);
 
-		for( pup = 0 ; pup < topologyMap->numOfBusPerInterface ; pup++)
+		for( pup = 0 ; pup < octetsPerInterfaceNum ; pup++)
 		{
 			VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pup)
             for( interfaceId = 0 ; interfaceId <= MAX_INTERFACE_NUM-1 ; interfaceId++)
@@ -456,14 +457,14 @@ GT_STATUS    ddr3TipPbs
 		}
 		/* Check all Pup state */
 		AllLock = 1;
-		for( pup = 0 ; pup < topologyMap->numOfBusPerInterface ; pup++)
+		for( pup = 0 ; pup < octetsPerInterfaceNum ; pup++)
 		{
           /*  DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,("PupState[%d][%d] = %d\n",interfaceId,pup,PupState[interfaceId][pup])); */
 		}
 	}
 	/* END OF SBA */
     /* Norm */
-	for( pup = 0 ; pup < topologyMap->numOfBusPerInterface ; pup++)
+	for( pup = 0 ; pup < octetsPerInterfaceNum ; pup++)
 	{
 		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pup)
 		for( bit = 0 ; bit < BUS_WIDTH_IN_BITS ; bit++)
@@ -502,7 +503,7 @@ GT_STATUS    ddr3TipPbs
     for( interfaceId = 0 ; interfaceId < MAX_INTERFACE_NUM ; interfaceId++)
     {
         VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-		for( pup = 0 ; pup <  topologyMap->numOfBusPerInterface ; pup++)
+		for( pup = 0 ; pup <  octetsPerInterfaceNum ; pup++)
 		{
 			VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pup)
 			/*if(ADLL_SHIFT_Lock[interfaceId][pup] != 1) { continue;}*/ /* if pup not lock continue to next pup */
@@ -515,7 +516,7 @@ GT_STATUS    ddr3TipPbs
                     DEBUG_PBS_ENGINE(DEBUG_LEVEL_ERROR,("dqMapTable not initializaed\n"));
 					return GT_FAIL;
 				 }
-				 PadNum = dqMapTable[bit+pup*BUS_WIDTH_IN_BITS + interfaceId*BUS_WIDTH_IN_BITS*topologyMap->numOfBusPerInterface];
+				 PadNum = dqMapTable[bit+pup*BUS_WIDTH_IN_BITS + interfaceId*BUS_WIDTH_IN_BITS*octetsPerInterfaceNum];
                  DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,("Result_MAT: %d " ,Result_MAT[interfaceId][pup][bit]));
                  regAddr = (pbsMode == PBS_RX_MODE) ? (PBS_RX_PHY_REG + effective_cs * 0x10) : (PBS_TX_PHY_REG + effective_cs * 0x10);
                  CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,  ACCESS_TYPE_UNICAST,   interfaceId, ACCESS_TYPE_UNICAST,  pup, DDR_PHY_DATA, regAddr+PadNum, Result_MAT[interfaceId][pup][bit]));
@@ -570,8 +571,6 @@ GT_STATUS    ddr3TipPbs
 
 
 }
-
-
 
 /******************************************************************************
 * Name:     ddr3TipPbsRx.
@@ -629,6 +628,8 @@ GT_STATUS    ddr3TipPrintPbsResult
 {
     GT_U32 dataValue = 0, bit = 0, interfaceId = 0, pup = 0;
     GT_U32 regAddr = (pbsMode == PBS_RX_MODE) ? (PBS_RX_PHY_REG + csNum * 0x10) : (PBS_TX_PHY_REG + csNum * 0x10);
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+
     mvPrintf("CS%d, %s ,PBS \n", csNum ,(pbsMode==PBS_RX_MODE)? "Rx" : "Tx");
     for( bit = 0 ; bit < BUS_WIDTH_IN_BITS ; bit++)
     {
@@ -637,7 +638,7 @@ GT_STATUS    ddr3TipPrintPbsResult
         {
             VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
 	    mvPrintf("%d ,PBS,,, ",bit);
-            for( pup=0; pup <=topologyMap->numOfBusPerInterface; pup++)
+            for( pup=0; pup <=octetsPerInterfaceNum; pup++)
             {
 		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pup)
                 CHECK_STATUS(mvHwsDdr3TipBUSRead(   devNum, interfaceId, ACCESS_TYPE_UNICAST, pup,  DDR_PHY_DATA,  regAddr+bit, &dataValue));
@@ -664,11 +665,12 @@ GT_STATUS    ddr3TipCleanPbsResult
 {
     GT_U32 interfaceId, pup, bit;
     GT_U32 regAddr = (pbsMode == PBS_RX_MODE) ? (PBS_RX_PHY_REG + effective_cs * 0x10) : (PBS_TX_PHY_REG + effective_cs * 0x10);
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for( interfaceId = 0 ; interfaceId <= MAX_INTERFACE_NUM-1 ; interfaceId++)
     {
         VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-        for( pup=0; pup <=topologyMap->numOfBusPerInterface; pup++)
+        for( pup=0; pup <=octetsPerInterfaceNum; pup++)
         {
 			for( bit = 0 ; bit <= BUS_WIDTH_IN_BITS+3; bit++)
 			{

@@ -784,7 +784,6 @@ static GT_STATUS ddr3TipInitBc2Silicon
 		/* for TM interface, since DFS flow is different from MSYS DFS (which is not
 		   functional) DFS is included in the flow */
 
-		   /* TBD - need to add PBS (PBS_RX_MASK_BIT | PBS_TX_MASK_BIT) */
 	maskTuneFunc = ( INIT_CONTROLLER_MASK_BIT |
                      SET_MEDIUM_FREQ_MASK_BIT |
                      WRITE_LEVELING_MASK_BIT |
@@ -799,12 +798,20 @@ static GT_STATUS ddr3TipInitBc2Silicon
                      CENTRALIZATION_RX_MASK_BIT |
                      CENTRALIZATION_TX_MASK_BIT);
 #else
-	maskTuneFunc = ( INIT_CONTROLLER_MASK_BIT |
-                     WRITE_LEVELING_MASK_BIT |
-                     LOAD_PATTERN_2_MASK_BIT |
-                     READ_LEVELING_MASK_BIT |
-                     CENTRALIZATION_RX_MASK_BIT |
-                     CENTRALIZATION_TX_MASK_BIT);
+	/*MSYS case*/
+	maskTuneFunc =(	INIT_CONTROLLER_MASK_BIT |
+					SET_MEDIUM_FREQ_MASK_BIT |
+					WRITE_LEVELING_MASK_BIT |
+					LOAD_PATTERN_2_MASK_BIT |
+					READ_LEVELING_MASK_BIT |
+					PBS_RX_MASK_BIT |
+					PBS_TX_MASK_BIT |
+					SET_TARGET_FREQ_MASK_BIT |
+					WRITE_LEVELING_TF_MASK_BIT |
+					READ_LEVELING_TF_MASK_BIT |
+					CENTRALIZATION_RX_MASK_BIT |
+					CENTRALIZATION_TX_MASK_BIT);
+
 #endif
 
     ddr3TipBc2GetMediumFreq(devNum, firstActiveIf, &mediumFreq);

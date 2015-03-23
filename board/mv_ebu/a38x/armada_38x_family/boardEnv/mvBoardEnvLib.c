@@ -994,8 +994,7 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 	struct _mvBoardMppModule nandModule[6] = MPP_NAND_MODULE;
 	struct _mvBoardMppModule sdioModule[4] = MPP_SDIO_MODULE;
 	struct _mvBoardMppModule tdmModule[2] = MPP_TDM_MODULE;
-	struct _mvBoardMppModule i2sModule = MPP_I2S_MODULE;
-	struct _mvBoardMppModule spdifModule = MPP_SPDIF_MODULE;
+	struct _mvBoardMppModule audioModule = MPP_AUDIO_MODULE;
 	struct _mvBoardMppModule nandOnBoard[4] = MPP_NAND_ON_BOARD;
 	struct _mvBoardMppModule mini_pcie0_OnBoard = MPP_GP_MINI_PCIE0;
 	struct _mvBoardMppModule mini_pcie1_OnBoard = MPP_GP_MINI_PCIE1;
@@ -1027,11 +1026,9 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 		if (mvBoardIsModuleConnected(MV_MODULE_SLIC_TDM_DEVICE))
 			mvModuleMppUpdate(2, tdmModule);
 
-		if (mvBoardIsModuleConnected(MV_MODULE_I2S_DEVICE))
-			mvModuleMppUpdate(1, &i2sModule);
-
-		if (mvBoardIsModuleConnected(MV_MODULE_SPDIF_DEVICE))
-			mvModuleMppUpdate(1, &spdifModule);
+		if (mvBoardIsModuleConnected(MV_MODULE_I2S_DEVICE) ||
+				mvBoardIsModuleConnected(MV_MODULE_SPDIF_DEVICE))
+			mvModuleMppUpdate(1, &audioModule);
 
 		if (mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD))
 			mvModuleMppUpdate(4, nandOnBoard);

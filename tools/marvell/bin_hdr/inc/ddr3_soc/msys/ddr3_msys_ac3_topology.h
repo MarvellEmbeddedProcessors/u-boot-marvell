@@ -88,7 +88,6 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 	/* ATTENTION - cs_mask and mirror  HAVE to be the same for all PUPs*/
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x3,0,0,0}, {0x3,0,0,0}, {0x0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
     INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     },
     /* 2nd Customer board */
@@ -97,7 +96,6 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 	/* ATTENTION - cs_mask and mirror  HAVE to be the same for all PUPs*/
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
     INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     }
 };
@@ -112,7 +110,6 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 	/* ATTENTION - cs_mask and mirror  HAVE to be the same for all PUPs*/
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x3,2,0,0}, {0x3,2,0,0},{0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
     INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     },
 	/* 2rd Marvell board - RD_MTL_4XG  (BoardId = 0x1) */
@@ -121,7 +118,6 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 	/* ATTENTION - cs_mask and mirror  HAVE to be the same for all PUPs*/
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0},{ 0x1,0,0,0},{0x1,0,0,0},{ 0x1,0,0,0},{ 0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
     INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     },
 	/* 3rd Marvell board - RD_MTL_2XXG_2XG: No ECC (BoardId = 0x2) */
@@ -130,7 +126,6 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 	/* ATTENTION - cs_mask and mirror  HAVE to be the same for all PUPs*/
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
     INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     },
     /* 4th Marvell board - DB_MISL_24G4G - No ECC (BoardId = 0x3) */
@@ -139,7 +134,6 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 	/* ATTENTION - cs_mask and mirror  HAVE to be the same for all PUPs*/
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
     INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     },
     /* 5th Marvell board - RD_MTL_24G - No ECC (BoardId = 0x4) */
@@ -148,7 +142,6 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 	/* ATTENTION - cs_mask and mirror  HAVE to be the same for all PUPs*/
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_400, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
     INTERFACE_BUS_MASK_16BIT  /* Buses mask */
     },
 };

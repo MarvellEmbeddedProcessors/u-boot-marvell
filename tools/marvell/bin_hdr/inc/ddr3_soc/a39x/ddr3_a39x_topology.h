@@ -86,7 +86,6 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
     INTERFACE_BUS_MASK_32BIT  /* Buses mask */
     },
     /* 2nd Customer board */
@@ -94,7 +93,6 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x2,1,0,0},{ 0x2,1,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
     INTERFACE_BUS_MASK_32BIT  /* Buses mask */
     }
 };
@@ -109,7 +107,6 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
     INTERFACE_BUS_MASK_32BIT  /* Buses mask */
     },
 #else
@@ -122,7 +119,6 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 	samsung by16 	is 2133P
 	Hynux 	by16 	is 2133P*/
     {{{{0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0}, {0x3,2 ,0,0}}, SPEED_BIN_DDR_2400R, BUS_WIDTH_16, MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    5, /* Num Of Bus Per Interface*/
     INTERFACE_BUS_MASK_32BIT_ECC  /* Buses mask */
     },
 #endif

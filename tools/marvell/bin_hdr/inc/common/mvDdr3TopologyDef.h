@@ -249,9 +249,6 @@ typedef struct
    /* Controller configuration per interface */
    InterfaceParams      interfaceParams[MAX_INTERFACE_NUM];
 
-   /* BUS per interface (default is 4)*/
-   MV_U8               numOfBusPerInterface;
-
    /* Bit mask for active buses defined interface width and ECC configuration*/
    MV_U8               activeBusMask;
 

@@ -42,6 +42,7 @@ extern GT_U8  debugTrainingA38x;
 extern GT_U32 firstActiveIf;
 extern MV_HWS_DDR_FREQ initFreq;
 extern GT_U32 delayEnable, ckDelay, caDelay;
+extern GT_U32 dfsLowFreq;
 GT_U32  pipeMulticastMask;
 
 #define A38X_NUM_BYTES                  (3)
@@ -522,6 +523,11 @@ static GT_STATUS ddr3TipInitA38xSilicon
 
 	ddr3TipRegisterDqTable(devNum, DQbitMap2Phypin);
 
+	/*Set device attributes*/
+	ddr3TipDevAttrInit(devNum);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_TRAINING_CONTROLLER, MV_DDR_TRAINING_CONTROLLER_CPU);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_POSITIVE);
+
 #ifdef STATIC_ALGO_SUPPORT
 	{
 		MV_HWS_TIP_STATIC_CONFIG_INFO staticConfig;
@@ -601,7 +607,7 @@ static GT_STATUS ddr3TipInitA38xSilicon
 		ckDelay = 160;
 	caDelay = 0;
 	delayEnable = 1;
-
+	dfsLowFreq = 130;
 	calibrationUpdateControl = 1;
 
 	initFreq = topologyMap->interfaceParams[firstActiveIf].memoryFreq;

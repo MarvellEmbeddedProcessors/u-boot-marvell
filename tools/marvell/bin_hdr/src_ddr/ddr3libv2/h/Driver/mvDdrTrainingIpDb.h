@@ -71,6 +71,8 @@ typedef enum
 typedef enum
 {
     MV_ATTR_TIP_REV,
+    MV_ATTR_TRAINING_CONTROLLER,
+    MV_ATTR_PHY_EDGE,
     MV_ATTR_PLL_BEFORE_INIT,
     MV_ATTR_TUNE_MASK,
     MV_ATTR_INIT_FREQ,
@@ -92,6 +94,18 @@ typedef enum
     MV_TIP_REV_4, /* A-380/A-390 */
     MV_TIP_REV_LAST
 } MV_DDR_TIP_REVISION;
+
+typedef enum
+{
+    MV_DDR_TRAINING_CONTROLLER_TIP,
+    MV_DDR_TRAINING_CONTROLLER_CPU
+} MV_DDR_TRAINING_CONTROLLER;
+
+typedef enum
+{
+    MV_DDR_PHY_EDGE_POSITIVE,
+    MV_DDR_PHY_EDGE_NEGATIVE
+} MV_DDR_PHY_EDGE;
 
 
 /************************* Declarations ***********************************************/
@@ -121,13 +135,38 @@ void ddr3TipSetTopologyMap
     MV_HWS_TOPOLOGY_MAP* topology
 );
 
-/* Device attributes functionality */
+/******************************************************************************
+* Name:     ddr3TipDevAttrInit.
+* Desc:     Init device attributes structures
+* Args:
+* Notes:
+* Returns:  none.
+*/
+void    ddr3TipDevAttrInit
+(
+    GT_U32  devNum
+);
+
+/******************************************************************************
+* Name:     ddr3TipDevAttrGet.
+* Desc:     get specified device attribute value
+* Args:
+* Notes:
+* Returns:  none.
+*/
 GT_U32    ddr3TipDevAttrGet
 (
     GT_U32                  devNum,
     MV_DDR_DEV_ATTRIBUTE    attrId
 );
 
+/******************************************************************************
+* Name:     ddr3TipDevAttrSet.
+* Desc:     set specified device attribute value
+* Args:
+* Notes:
+* Returns:  none.
+*/
 void    ddr3TipDevAttrSet
 (
     GT_U32                  devNum,

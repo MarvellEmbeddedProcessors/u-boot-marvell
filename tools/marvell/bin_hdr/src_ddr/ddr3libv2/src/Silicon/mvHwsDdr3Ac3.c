@@ -55,6 +55,7 @@ extern GT_U8  debugTrainingAccess;
 extern GT_U8  debugTrainingAc3;
 extern MV_HWS_DDR_FREQ mediumFreq;
 extern GT_U8 calibrationUpdateControl; /*2 external only, 1 is internal only*/
+extern GT_U32 dfsLowFreq;
 
 GT_U32  pipeMulticastMask;
 
@@ -420,6 +421,11 @@ static GT_STATUS ddr3TipInitAc3Silicon
 
 	ddr3TipRegisterDqTable(devNum, DQbitMap2Phypin);
 
+	/*Set device attributes*/
+	ddr3TipDevAttrInit(devNum);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_TRAINING_CONTROLLER, MV_DDR_TRAINING_CONTROLLER_CPU);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_NEGATIVE);
+
 #ifdef STATIC_ALGO_SUPPORT
     ddr3TipInitStaticConfigDb(devNum, &staticConfig);
 #endif
@@ -457,6 +463,7 @@ static GT_STATUS ddr3TipInitAc3Silicon
 	delayEnable = 1;
 	caDelay = 0;
 	calibrationUpdateControl = 1;
+	dfsLowFreq = 130;
 
 	initFreq = topologyMap->interfaceParams[interfaceId].memoryFreq;
 

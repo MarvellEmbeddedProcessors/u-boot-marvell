@@ -150,6 +150,7 @@ extern GT_U32 isCbeRequired;
 extern GT_U32 delayEnable, ckDelay,caDelay;
 extern GT_U8 debugTrainingAccess;
 extern GT_U8 calibrationUpdateControl; /*2 external only, 1 is internal only*/
+extern GT_U32 dfsLowFreq;
 
 GT_U32 debugBc2 = 0;
 GT_U32  pipeMulticastMask;
@@ -780,6 +781,11 @@ static GT_STATUS ddr3TipInitBc2Silicon
 	/* register bit mapping (for PBS) */
 	ddr3TipRegisterDqTable(devNum, bc2DQbitMap2Phypin);
 
+	/*Set device attributes*/
+	ddr3TipDevAttrInit(devNum);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_TRAINING_CONTROLLER, MV_DDR_TRAINING_CONTROLLER_TIP);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_NEGATIVE);
+
 #if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
 		/* for TM interface, since DFS flow is different from MSYS DFS (which is not
 		   functional) DFS is included in the flow */
@@ -829,6 +835,7 @@ static GT_STATUS ddr3TipInitBc2Silicon
 		ckDelay = 150;
 	delayEnable = 1;
 	caDelay = 0;
+	dfsLowFreq = 100;
 
     return GT_OK;
 }

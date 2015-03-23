@@ -140,7 +140,7 @@ Address Bits   Value   Description
 #define ODPG_TRAINING_STATUS_REG          (0x18488)
 #define ODPG_TRAINING_TRIGGER_REG         (0x1030)
 #define ODPG_STATUS_DONE_REG         	  (0x16FC)
-#define ODPG_ENABLE_REG                   (0x186D4)//KW28
+#define ODPG_ENABLE_REG                   (0x186D4)
 #define ODPG_ENABLE_OFFS                  (0)
 #define ODPG_DISABLE_OFFS                 (8)
 #else

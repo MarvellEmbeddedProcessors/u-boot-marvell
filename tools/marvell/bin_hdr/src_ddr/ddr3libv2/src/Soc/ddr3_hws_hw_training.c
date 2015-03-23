@@ -111,11 +111,10 @@ MV_STATUS ddr3PostAlgoConfig(void)
 
 MV_STATUS ddr3HwsHwTraining(void)
 {
-
 	MV_HWS_ALGO_TYPE algoMode = ALGO_TYPE_DYNAMIC;
 	MV_STATUS status;
 	InitCntrParam initParam;
-	
+
 	status = ddr3SiliconPreInit();
 	if (MV_OK != status) {
 		mvPrintf("DDR3 Pre silicon Config - FAILED 0x%x\n", status);
@@ -123,7 +122,7 @@ MV_STATUS ddr3HwsHwTraining(void)
 	}
 
 	initParam.doMrsPhy = GT_TRUE;
-#if defined(CONFIG_ARMADA_38X)  || defined(CONFIG_ARMADA_39X)
+#if defined (CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_38X) || defined(CONFIG_ARMADA_39X)
 	initParam.isCtrl64Bit = GT_FALSE;
 #else
 	initParam.isCtrl64Bit = GT_TRUE;

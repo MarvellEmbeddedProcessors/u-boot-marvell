@@ -71,13 +71,9 @@ GT_U32 odtAdditional = 1;
 GT_U32* dqMapTable = NULL;
 GT_U32 odtConfig = 1;
 
-#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined (CONFIG_ARMADA_39X)
-GT_U8  isPllBeforeInit = 0, isAdllCalibBeforeInit = 0, isDfsInInit = 0;
-GT_U32 dfsLowFreq = 130;
-#else
 GT_U8  isPllBeforeInit = 0, isAdllCalibBeforeInit = 1, isDfsInInit = 0;
-GT_U32 dfsLowFreq = 100;
-#endif
+GT_U32 dfsLowFreq;
+
 GT_U32 gRttNomCS0, gRttNomCS1;
 GT_U8 calibrationUpdateControl; /*2 external only, 1 is internal only*/
 
@@ -313,6 +309,7 @@ static RegData odpgDefaultValue[]=
     {0x16fc, 0x0,       MASK_ALL_BITS}     
 };
 
+
 /**************************** internal function header ************************/
 GT_STATUS ddr3TipEnableInitSequence(GT_U32 devNum);
 
@@ -418,9 +415,9 @@ GT_STATUS    ddr3TipConfigurePhy
         }
     }
 
-#if defined(CONFIG_ARMADA_38X) || defined (CONFIG_ARMADA_39X)
-	CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, 0x90, 0x6002));
-#endif
+	if(ddr3TipDevAttrGet(devNum, MV_ATTR_PHY_EDGE ) == MV_DDR_PHY_EDGE_POSITIVE){
+		CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, 0x90, 0x6002));
+	}
 
 #ifdef CONFIG_DDR4
     ddr4TipConfigurePhy(devNum);
@@ -525,7 +522,7 @@ GT_STATUS    mvHwsDdr3TipInitController
     GT_U32 clValue = 0, cwlVal = 0;
     GT_U32 refreshIntervalCnt = 0,  busCnt = 0, adllTap = 0;
     MV_HWS_ACCESS_TYPE	  accessType = ACCESS_TYPE_UNICAST;
-     GT_U32 dataRead[MAX_INTERFACE_NUM];
+    GT_U32 dataRead[MAX_INTERFACE_NUM];
 
     DEBUG_TRAINING_IP(DEBUG_LEVEL_TRACE, ("InitController, doMrsPhy=%d, isCtrl64Bit=%d\n", initCntrPrm->doMrsPhy, initCntrPrm->isCtrl64Bit));
 
@@ -770,8 +767,6 @@ GT_STATUS    mvHwsDdr3TipLoadTopologyMap
     MV_HWS_DDR_FREQ freq = DDR_FREQ_LIMIT;
     GT_U32 interfaceId = 0;
 
-
-    freqVal[DDR_FREQ_LOW_FREQ] = dfsLowFreq;
     /*osMemCpy(&topologyMap[devNum], (void*) topology,sizeof(MV_HWS_TOPOLOGY_MAP));*/
     ddr3TipSetTopologyMap(devNum, topologyMapPtr);
     topologyMap = ddr3TipGetTopologyMap(devNum);
@@ -1327,13 +1322,12 @@ GT_STATUS AdllCalibration
         CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum, accessType, interfaceId,  busCnt, DDR_PHY_DATA, BW_PHY_REG,   freqConfigInfo.bwPerFreq << 8 /*freqMask[devNum][frequency] << 8*/, 0x700));
         CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum, accessType, interfaceId,  busCnt, DDR_PHY_DATA,  RATE_PHY_REG,  freqConfigInfo.ratePerFreq , 0x7));
     }
-#if !defined(CONFIG_ARMADA_38X) && !defined(CONFIG_ARMADA_39X)
+
     for (busCnt = 0; busCnt < GET_TOPOLOGY_NUM_OF_BUSES(devNum); busCnt++)
     {
         CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId,  busCnt, DDR_PHY_CONTROL, BW_PHY_REG,   freqConfigInfo.bwPerFreq << 8 /*freqMask[devNum][frequency] << 8*/, 0x700));
         CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum, ACCESS_TYPE_UNICAST,  interfaceId,  busCnt, DDR_PHY_CONTROL,  RATE_PHY_REG,  freqConfigInfo.ratePerFreq , 0x7));
     }
-#endif
 
     /* DUnit to Phy drive post edge, ADLL reset  assert  de-assert*/ 
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, DRAM_PHY_CONFIGURATION, 0, (0x80000000  | 0x40000000)));
@@ -1391,6 +1385,7 @@ GT_STATUS    ddr3TipFreqSet
         endIf = interfaceId;
     }
 
+    freqVal[DDR_FREQ_LOW_FREQ] = dfsLowFreq;
 	/* calculate interface cs mask - Oferb 4/11*/
     /* speed bin can be different for each interface */
     for(interfaceIdx = 0; interfaceIdx <= MAX_INTERFACE_NUM-1; interfaceIdx++)
@@ -1620,6 +1615,7 @@ GT_STATUS    ddr3TipFreqSet
         endIf = interfaceId;
     }
 
+    freqVal[DDR_FREQ_LOW_FREQ] = dfsLowFreq;
 	/* calculate interface cs mask - Oferb 4/11*/
     /* speed bin can be different for each interface */
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)

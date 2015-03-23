@@ -18,7 +18,6 @@
 * FILE REVISION NUMBER:
 *       $Revision: 20 $
 ******************************************************************************/
-#ifdef CONFIG_DDR3
 
 #include "mvDdrTrainingIpDb.h"
 #include "mvDdr3TrainingIp.h"
@@ -26,10 +25,12 @@
 #include "mvDdr3TrainingIpDef.h"
 
 /************************** Globals ******************************/
-
-MV_HWS_TOPOLOGY_MAP *topologyMapDb[HWS_MAX_DEVICE_NUM] = {NULL};          /* holds device DDR topology */
+/*Device attributes structures*/
 MV_DDR_DEV_ATTRIBUTE ddrDevAttributes[HWS_MAX_DEVICE_NUM][MV_ATTR_LAST];  /* holds device attributes */
-GT_BOOL ddrDevAttrInitDone[HWS_MAX_DEVICE_NUM] = {0};                       /* described whether device attributes were initialized */
+GT_BOOL ddrDevAttrInitDone[HWS_MAX_DEVICE_NUM] = {0};	/* described whether device attributes were initialized */
+
+#ifdef CONFIG_DDR3
+MV_HWS_TOPOLOGY_MAP *topologyMapDb[HWS_MAX_DEVICE_NUM] = {NULL};          /* holds device DDR topology */
 
 /* list of allowed frequency listed in order of MV_HWS_DDR_FREQ */
 GT_U32 freqVal[DDR_FREQ_LIMIT] =
@@ -615,6 +616,7 @@ INLINE GT_U32 patternTableGetWord
 	return pattern;
 }
 
+
 MV_HWS_TOPOLOGY_MAP*    ddr3TipGetTopologyMap
 (
     GT_U32  devNum
@@ -632,6 +634,11 @@ void    ddr3TipSetTopologyMap
     topologyMapDb[devNum] = topology;
 }
 
+#endif /* CONFIG_DDR3 */
+
+/*****************************************************************************
+Device attributes functions
+******************************************************************************/
 void    ddr3TipDevAttrInit
 (
     GT_U32  devNum
@@ -646,7 +653,6 @@ void    ddr3TipDevAttrInit
 
     ddrDevAttrInitDone[devNum] = GT_TRUE;
 }
-
 
 GT_U32    ddr3TipDevAttrGet
 (
@@ -677,5 +683,5 @@ void    ddr3TipDevAttrSet
     ddrDevAttributes[devNum][attrId] = value;
 }
 
-#endif /* CONFIG_DDR3 */
+
 

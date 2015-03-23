@@ -74,6 +74,7 @@ extern GT_U32 odtAdditional;
 extern GT_U8  debugTraining;
 extern GT_U32 delayEnable, ckDelay, caDelay;
 extern GT_U8 calibrationUpdateControl; /*2 external only, 1 is internal only*/
+extern GT_U32 dfsLowFreq;
 
 extern GT_STATUS ddr3TipRegWrite
 (
@@ -953,6 +954,7 @@ GT_STATUS ddr3TipInitNp5Silicon
 		ckDelay = 150;
 	caDelay = 0;
 	calibrationUpdateControl = 1;
+	dfsLowFreq = 100;
 
     return GT_OK;
 }

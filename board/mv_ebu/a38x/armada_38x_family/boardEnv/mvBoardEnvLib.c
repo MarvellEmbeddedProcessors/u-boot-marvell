@@ -3391,6 +3391,11 @@ MV_STATUS mvBoardEepromWrite(MV_CONFIG_TYPE_ID configType, MV_U8 value)
 *******************************************************************************/
 MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
 {
+	/* Option 0xc (GbE v3 Port0) in SerDes Lane 6 is supported only in A0 */
+	if ((mvCtrlRevGet() != MV_88F69XX_A0_ID) && (field == MV_CONFIG_LANE6) && (writeVal == 0xc)) {
+		mvOsPrintf("Error: this option is not supported in Z stepping revision\n");
+		return MV_ERROR;
+	}
 	return MV_OK;
 }
 #endif /* CONFIG_CMD_BOARDCFG */

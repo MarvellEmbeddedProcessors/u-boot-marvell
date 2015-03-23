@@ -208,7 +208,7 @@ typedef enum _mvConfigTypeID {
 
 #define MV_BOARD_CONFIG_CMD_STR "serdes0, serdes1, serdes2, serdes3, serdes4, serdes5, serdes6, nss_en,\n"	\
 				"\tddr_buswidth, ddr_ecc, eepromEnable\n\n"
-#define MV_BOARD_CONFIG_CMD_MAX_OPTS 11
+#define MV_BOARD_CONFIG_CMD_MAX_OPTS 13
 
 /*MV_CMD_TYPE_ID,		command name,		Name,			numOfValues,	Possible Values */
 #define MV_BOARD_CONFIG_CMD_INFO {										\
@@ -229,8 +229,9 @@ typedef enum _mvConfigTypeID {
 {MV_CONFIG_LANE5,	"serdes5",	"SerDes Lane #5",	9,						\
 	{"UnConnected", "PCI-e#2", "SATA3 #2", "SGMII #2", "USB3-Host #1", "USB-Device", "SGMII(v3) #2",	\
 	"Reserved", "XAUI #1" } },										\
-{MV_CONFIG_LANE6,	"serdes6",	"SerDes Lane #6",	5,						\
-	{"UnConnected", "PCI-e#1", "SGMII(v3) #3", "Reserved", "XAUI #1"} },					\
+{MV_CONFIG_LANE6,	"serdes6",	"SerDes Lane #6",	13,						\
+	{"UnConnected", "PCI-e#1", "SGMII(v3) #3", "Reserved", "XAUI #1", "Reserved", "Reserved", "Reserved"	\
+	, "Reserved", "Reserved", "Reserved", "Reserved", "SGMII(v3) #0"} },					\
 {MV_CONFIG_NSS_EN,	"nss_en",	"NSS enable",		2,						\
 	{"Disable", "Enable"} },										\
 {MV_CONFIG_DDR_BUSWIDTH,	"ddr_buswidth",	"Buswidth enable",		2,				\

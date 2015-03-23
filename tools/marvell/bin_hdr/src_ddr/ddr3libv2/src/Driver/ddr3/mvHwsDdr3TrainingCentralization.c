@@ -128,6 +128,7 @@ static GT_STATUS    ddr3TipCentralization
 	GT_U32 pupWinLength = 0;
     MV_HWS_SearchDirection searchDirId;
 	GT_U8 consTap = (mode == CENTRAL_TX)?(64):(0);
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
@@ -154,7 +155,7 @@ static GT_STATUS    ddr3TipCentralization
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
         VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-        for(busId = 0; busId < topologyMap->numOfBusPerInterface ; busId++)
+        for(busId = 0; busId < octetsPerInterfaceNum ; busId++)
         {
         	VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busId)
             centralizationState[interfaceId][busId] = 0;
@@ -174,7 +175,7 @@ static GT_STATUS    ddr3TipCentralization
         for(interfaceId = startIf; interfaceId <= endIf; interfaceId++)
         {
             VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-            for(busId = 0; busId <= topologyMap->numOfBusPerInterface-1 ; busId++)
+            for(busId = 0; busId < octetsPerInterfaceNum ; busId++)
             {
         		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busId)
 
@@ -275,7 +276,7 @@ static GT_STATUS    ddr3TipCentralization
         }
         isIfFail = GT_FALSE;
         flowResult[interfaceId] = TEST_SUCCESS;
-        for(busId = 0; busId <= (topologyMap->numOfBusPerInterface-1) ; busId++)
+        for(busId = 0; busId < octetsPerInterfaceNum ; busId++)
         {
         	VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busId)
 
@@ -379,6 +380,7 @@ GT_STATUS    ddr3TipSpecialRx
    	GT_U32   csEnableRegVal[MAX_INTERFACE_NUM];
 	GT_U32 temp = 0;
     int PadNum = 0;
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
 	if( ddr3TipSpecialRxRunOnceFlag != 0 )
 		return GT_OK;
@@ -406,7 +408,7 @@ GT_STATUS    ddr3TipSpecialRx
     for(interfaceId = startIf; interfaceId <= endIf; interfaceId++)
     {
         VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-        for(pupId = 0; pupId <= topologyMap->numOfBusPerInterface ; pupId++)
+        for(pupId = 0; pupId <= octetsPerInterfaceNum; pupId++)
         {
 			VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pupId)
 
@@ -437,7 +439,7 @@ GT_STATUS    ddr3TipSpecialRx
 			{
 				for( bitId = 0 ; bitId < BUS_WIDTH_IN_BITS ; bitId++)
 				{
-					PadNum = dqMapTable[bitId+pupId*BUS_WIDTH_IN_BITS + interfaceId*BUS_WIDTH_IN_BITS*topologyMap->numOfBusPerInterface];
+					PadNum = dqMapTable[bitId+pupId*BUS_WIDTH_IN_BITS + interfaceId*BUS_WIDTH_IN_BITS*octetsPerInterfaceNum];
                		CHECK_STATUS(mvHwsDdr3TipBUSRead(  devNum, interfaceId, ACCESS_TYPE_UNICAST, pupId,  DDR_PHY_DATA,  PBS_RX_PHY_REG+PadNum, &temp));
 					temp = (temp + 0xA > 31)?(31):(temp + 0xA);
                		CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,ACCESS_TYPE_UNICAST,interfaceId, ACCESS_TYPE_UNICAST,pupId, DDR_PHY_DATA, PBS_RX_PHY_REG+PadNum, temp));
@@ -493,6 +495,7 @@ GT_STATUS    ddr3TipPrintCentralizationResult
 )
 {
     GT_U32 interfaceId = 0, busId = 0;
+	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
 	devNum = devNum;
 
@@ -501,7 +504,7 @@ GT_STATUS    ddr3TipPrintCentralizationResult
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
         VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-        for(busId = 0; busId < topologyMap->numOfBusPerInterface ; busId++)
+        for(busId = 0; busId < octetsPerInterfaceNum; busId++)
         {
         	VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busId)
             mvPrintf("%d ,\n",centralizationState[interfaceId][busId]);

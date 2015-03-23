@@ -47,7 +47,6 @@
 
 extern MV_BOOL ddr3IfEccEnabled(void);
 extern GT_U32 maskTuneFunc;
-extern GT_U32 rlVersion;
 extern GT_U32 delayEnable, ckDelay, caDelay;
 extern GT_U32 firstActiveIf;
 extern MV_HWS_DDR_FREQ initFreq;
@@ -400,8 +399,9 @@ static GT_STATUS ddr3TipInitAc3Silicon
 	MV_HWS_DDR_FREQ uiDdrFreq;
 	MV_STATUS status;
 	MV_HWS_TOPOLOGY_MAP* topologyMap = ddr3TipGetTopologyMap(devNum);
+	GT_U8 numOfBusPerInterface = 5;
 
-    GT_U32 boardOffset = boardId * AC3_NUMBER_OF_INTERFACES *topologyMap->numOfBusPerInterface;
+    GT_U32 boardOffset = boardId * AC3_NUMBER_OF_INTERFACES *numOfBusPerInterface;
 
     /* new read leveling version */
     staticConfig.siliconDelay = Ac3SiliconDelayOffset[boardId];
@@ -425,6 +425,7 @@ static GT_STATUS ddr3TipInitAc3Silicon
 	ddr3TipDevAttrInit(devNum);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_TRAINING_CONTROLLER, MV_DDR_TRAINING_CONTROLLER_CPU);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_NEGATIVE);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, numOfBusPerInterface);
 
 #ifdef STATIC_ALGO_SUPPORT
     ddr3TipInitStaticConfigDb(devNum, &staticConfig);
@@ -434,8 +435,6 @@ static GT_STATUS ddr3TipInitAc3Silicon
 		DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("DDR3 silicon get target frequency - FAILED 0x%x\n", status));
 		return status;
 	}
-
-    rlVersion = 1;
 
     maskTuneFunc =     (SET_MEDIUM_FREQ_MASK_BIT |
 						WRITE_LEVELING_MASK_BIT |

@@ -57,7 +57,6 @@ GT_U32  pipeMulticastMask;
 extern MV_BOOL ddr3IfEccEnabled(void);
 /************************** pre-declaration ******************************/
 extern GT_U32 maskTuneFunc;
-extern GT_U32 rlVersion;
 extern GT_BOOL rlMidFreqWA;
 extern GT_U8 calibrationUpdateControl; /*2 external only, 1 is internal only*/
 
@@ -508,6 +507,7 @@ static GT_STATUS ddr3TipInitA38xSilicon
 	MV_HWS_DDR_FREQ uiDdrFreq;
 	MV_STATUS status;
 	MV_HWS_TOPOLOGY_MAP* topologyMap = ddr3TipGetTopologyMap(devNum);
+	GT_U8 numOfBusPerInterface = 5;
 
     /* new read leveling version */
     configFunc.tipDunitReadFunc = ddr3TipA38xIFRead;
@@ -527,11 +527,12 @@ static GT_STATUS ddr3TipInitA38xSilicon
 	ddr3TipDevAttrInit(devNum);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_TRAINING_CONTROLLER, MV_DDR_TRAINING_CONTROLLER_CPU);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_POSITIVE);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, numOfBusPerInterface);
 
 #ifdef STATIC_ALGO_SUPPORT
 	{
 		MV_HWS_TIP_STATIC_CONFIG_INFO staticConfig;
-    	GT_U32 boardOffset = boardId * A38X_NUMBER_OF_INTERFACES *topologyMap->numOfBusPerInterface;
+    	GT_U32 boardOffset = boardId * A38X_NUMBER_OF_INTERFACES *numOfBusPerInterface;
 
 		staticConfig.siliconDelay = A38xSiliconDelayOffset[boardId];
 		staticConfig.packageTraceArr = A38xPackageRoundTripDelayArray;
@@ -545,13 +546,11 @@ static GT_STATUS ddr3TipInitA38xSilicon
 		return status;
 	}
 
-    rlVersion = 1;
 #ifdef CONFIG_DDR3
     maskTuneFunc =     (SET_LOW_FREQ_MASK_BIT |
 						LOAD_PATTERN_MASK_BIT |
 						SET_MEDIUM_FREQ_MASK_BIT |
 						WRITE_LEVELING_MASK_BIT |
-//						LOAD_PATTERN_2_MASK_BIT |
 						WRITE_LEVELING_SUPP_MASK_BIT |
 						READ_LEVELING_MASK_BIT |
 						PBS_RX_MASK_BIT |

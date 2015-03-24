@@ -377,6 +377,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 #ifdef CONFIG_CMD_BOARDCFG
 		mvBoardNetComplexInfoUpdate();
 #endif
+		mvBoardMppIdUpdate();
 
 		netComplex = mvBoardNetComplexConfigGet();
 		if (netComplex & (MV_NETCOMP_GE_MAC0_2_SGMII_L0 | MV_NETCOMP_GE_MAC0_2_SGMII_L1))
@@ -623,5 +624,35 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 			mvOsOutput("|     %#04x     |\n", (MV_U8)mvBoardPhyAddrGet(port));
 		else
 			mvOsOutput("|     In-Band  |\n");
+	}
+}
+
+/*******************************************************************************
+* mvBoardMppIdUpdate - Update MPP ID's according to modules auto-detection.
+*
+* DESCRIPTION:
+*	Update MPP ID's according to on-board modules as detected using TWSI bus.
+*	Update board information for changed mpp values
+	Must run AFTER mvBoardNetComplexInfoUpdate
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_VOID mvBoardMppIdUpdate(MV_VOID)
+{
+	struct _mvBoardMppModule spi0Boot[6] = MPP_SPI0_BOOT;
+	switch (mvBoardIdGet()) {
+	case A39X_DB_69XX_ID:
+		/* When boot from SPI 0, need to update the MPPs for SPI0, RGMII, and SDIO */
+		if (mvBoardSpiBusGet() == 0)
+			mvModuleMppUpdate(6, spi0Boot);
+		break;
 	}
 }

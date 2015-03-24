@@ -320,6 +320,85 @@ MV_VOID mvBoardPcieModulesInfoUpdate(MV_VOID)
 	if (mvBoardSatRRead(MV_SATR_DB_SERDES2_CFG) == 0x3) /* SGMII port 1 */
 		mvBoardPhyAddrSet(1, sgmiiPhyAddr);
 }
+
+/*******************************************************************************
+* mvBoardMppIdUpdate - Update MPP ID's according to modules auto-detection.
+*
+* DESCRIPTION:
+*	Update MPP ID's according to on-board modules as detected using TWSI bus.
+*	Update board information for changed mpp values
+	Must run AFTER mvBoardNetComplexInfoUpdate
+*
+* INPUT:
+*	None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_VOID mvBoardMppIdUpdate(MV_VOID)
+{
+	struct _mvBoardMppModule miiModule[3] = MPP_MII_MODULE;
+	struct _mvBoardMppModule norModule[6] = MPP_NOR_MODULE;
+	struct _mvBoardMppModule nandModule[6] = MPP_NAND_MODULE;
+	struct _mvBoardMppModule sdioModule[4] = MPP_SDIO_MODULE;
+	struct _mvBoardMppModule tdmModule[2] = MPP_TDM_MODULE;
+	struct _mvBoardMppModule i2sModule = MPP_I2S_MODULE;
+	struct _mvBoardMppModule spdifModule = MPP_SPDIF_MODULE;
+	struct _mvBoardMppModule nandOnBoard[4] = MPP_NAND_ON_BOARD;
+	struct _mvBoardMppModule mini_pcie0_OnBoard = MPP_GP_MINI_PCIE0;
+	struct _mvBoardMppModule mini_pcie1_OnBoard = MPP_GP_MINI_PCIE1;
+	struct _mvBoardMppModule mini_pcie0_pcie1OnBoard = MPP_GP_MINI_PCIE0_PCIE1;
+	struct _mvBoardMppModule mmcOnDb381Board = MPP_MMC_DB381_MODULE;
+	MV_U8 miniPcie0_sata0_selector, miniPcie1_sata1_selector;
+
+	switch (mvBoardIdGet()) {
+	case DB_BP_6821_ID:
+		if (mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD))
+			mvModuleMppUpdate(4, nandOnBoard);
+		if (mvBoardIsModuleConnected(MV_MODULE_DB381_MMC_8BIT_ON_BOARD))
+			mvModuleMppUpdate(1, &mmcOnDb381Board);
+		break;
+	case DB_68XX_ID:
+		if (mvBoardIsModuleConnected(MV_MODULE_MII))
+			mvModuleMppUpdate(3, miiModule);
+
+		if (mvBoardIsModuleConnected(MV_MODULE_NOR))
+			mvModuleMppUpdate(6, norModule);
+
+		if (mvBoardIsModuleConnected(MV_MODULE_NAND))
+			mvModuleMppUpdate(6, nandModule);
+
+		if (mvBoardIsModuleConnected(MV_MODULE_SDIO))
+			mvModuleMppUpdate(4, sdioModule);
+
+		if (mvBoardIsModuleConnected(MV_MODULE_SLIC_TDM_DEVICE))
+			mvModuleMppUpdate(2, tdmModule);
+
+		if (mvBoardIsModuleConnected(MV_MODULE_I2S_DEVICE))
+			mvModuleMppUpdate(1, &i2sModule);
+
+		if (mvBoardIsModuleConnected(MV_MODULE_SPDIF_DEVICE))
+			mvModuleMppUpdate(1, &spdifModule);
+
+		if (mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD))
+			mvModuleMppUpdate(4, nandOnBoard);
+		break;
+	case DB_GP_68XX_ID:
+		miniPcie0_sata0_selector = mvBoardSatRRead(MV_SATR_GP_SERDES1_CFG); /* 0 = SATA0 , 1 = PCIe0 */
+		miniPcie1_sata1_selector = mvBoardSatRRead(MV_SATR_GP_SERDES2_CFG); /* 0 = SATA1 , 1 = PCIe1 */
+		if (miniPcie0_sata0_selector == 1 && miniPcie1_sata1_selector == 1)
+			mvModuleMppUpdate(1, &mini_pcie0_pcie1OnBoard);
+		else if (miniPcie0_sata0_selector == 1)
+			mvModuleMppUpdate(1, &mini_pcie0_OnBoard);
+		else if (miniPcie1_sata1_selector == 1)
+			mvModuleMppUpdate(1, &mini_pcie1_OnBoard);
+		break;
+	}
+}
 /*******************************************************************************
 * mvBoardInfoUpdate - Update Board information structures according to auto-detection.
 *

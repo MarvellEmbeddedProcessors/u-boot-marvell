@@ -130,6 +130,11 @@ typedef enum {
 { MV_MODULE_DB381_SGMII,	0x0,	0,	 0x2,	{ 0, 0 } }, \
 };
 
+/* MPP_SPI0_BOOT: change MPPs of: SPI0 (booting from it), RGMII, SDIO
+		This MPPs changes disbale NAND/SPI1 */
+#define MPP_SPI0_BOOT		{ {2, 0x11866005}, {3, 0x88888011}, {4, 0x88800008}, \
+				  {5, 0x51132088}, {6, 0x55550555}, {7, 0x00005550} }
+
 typedef enum _mvSatRTypeID {
 /*  "Bios" Device  */
 	MV_SATR_CPU_DDR_L2_FREQ,

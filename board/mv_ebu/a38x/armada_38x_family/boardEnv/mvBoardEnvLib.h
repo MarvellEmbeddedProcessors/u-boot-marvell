@@ -395,22 +395,6 @@ struct _mvBoardMppModule {
 	MV_U32 mppValue;
 };
 
-
-#define MPP_MII_MODULE		{ {0, 0x10111111}, {1, 0x11111111}, {2, 0x11211111} }
-#define MPP_TDM_MODULE		{ {6, 0x45333333}, {7, 0x00004444} }
-#define MPP_I2S_MODULE		{6, 0x55544554}
-#define MPP_SPDIF_MODULE	{6, 0x55444444}
-#define MPP_NOR_MODULE		{ {0, 0x55111111}, {1, 0x15555555}, {2, 0x55566011}, \
-				  {3, 0x55555055}, {4, 0x55555555}, {5, 0x40045525 } }
-#define MPP_NAND_MODULE		{ {0, 0x55111111}, {1, 0x15555555}, {2, 0x55266011}, \
-				  {3, 0x25255051}, {4, 0x25555555}, {5, 0x40042555 } }
-#define MPP_SDIO_MODULE		{ {2, 0x11466011}, {3, 0x22242011}, {4, 0x44400002}, {5, 0x40042024 } }
-#define MPP_NAND_ON_BOARD	{ {2, 0x55266011}, {3, 0x25252051}, {4, 0x25255555}, {5, 0x40042565 } }
-#define MPP_GP_MINI_PCIE0	{2, 0x11240011}
-#define MPP_GP_MINI_PCIE1	{2, 0x11204011}
-#define MPP_GP_MINI_PCIE0_PCIE1	{2, 0x11200011}
-#define MPP_MMC_DB381_MODULE	{3, 0x00044444}
-
 /* Boot device bus width */
 #define MSAR_0_BOOT_DEV_BUS_WIDTH_OFFS          3
 /* Bus width field meaning for NOR/NAND */
@@ -476,6 +460,7 @@ MV_U32 mvBoardSlicUnitTypeGet(MV_VOID);
 MV_VOID mvBoardSlicUnitTypeSet(MV_U32 slicType);
 MV_32 mvBoardMppGet(MV_U32 mppGroupNum);
 MV_VOID mvBoardMppSet(MV_U32 mppGroupNum, MV_U32 mppValue);
+MV_VOID mvModuleMppUpdate(MV_U32 numGroup, struct _mvBoardMppModule *pMpp);
 MV_32 mvBoardTdmSpiModeGet(MV_VOID);
 MV_U8 mvBoardTdmSpiCsGet(MV_U8 devId);
 MV_U8 mvBoardTdmSpiIdGet(MV_VOID);

@@ -519,7 +519,8 @@ MV_U32 mvSysEnvDeviceIdGet(MV_VOID)
 #endif
 #else
 	if (mvSysEnvIsFlavourReduced() == 1) {
-		if (boardId == DB_GP_68XX_ID) {
+		if (boardId == DB_GP_68XX_ID || boardId == DB_68XX_ID
+				|| boardId == DB_AP_68XX_ID) {
 			if (gDevId != MV_6810) /* simulate 6W23(A384) only on 6820(A385) or 6828(A388) */
 				gDevId = MV_6W23;
 			else {

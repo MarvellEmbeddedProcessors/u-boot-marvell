@@ -265,20 +265,26 @@ extern unsigned int mvUartPortGet(void);
 #define CONFIG_SF_DEFAULT_BUS		CONFIG_ENV_SPI_BUS
 #endif
 
+#if defined(MV_SEC_64K)
+#define CONFIG_ENV_SECT_SIZE_SPI	0x10000
+#elif defined(MV_SEC_128K)
+#define CONFIG_ENV_SECT_SIZE_SPI	0x20000
+#elif defined(MV_SEC_256K)
+#define CONFIG_ENV_SECT_SIZE_SPI	0x40000
+#endif
+
+#define	CONFIG_ENV_OFFSET_SPI		0x100000
+#define	CONFIG_ENV_SIZE_SPI		CONFIG_ENV_SECT_SIZE_SPI
+
+
 /* Boot from SPI settings */
 	#if defined(MV_SPI_BOOT)
 		#define CONFIG_ENV_IS_IN_SPI_FLASH
 
-		#if defined(MV_SEC_64K)
-			#define CONFIG_ENV_SECT_SIZE            0x10000
-		#elif defined(MV_SEC_128K)
-			#define CONFIG_ENV_SECT_SIZE            0x20000
-		#elif defined(MV_SEC_256K)
-			#define CONFIG_ENV_SECT_SIZE            0x40000
-		#endif
+		#define CONFIG_ENV_SECT_SIZE			CONFIG_ENV_SECT_SIZE_SPI
 
-		#define CONFIG_ENV_SIZE                         CONFIG_ENV_SECT_SIZE    /* environment takes one sector */
-		#define CONFIG_ENV_OFFSET                       0x100000                /* (1MB For Image) environment starts here  */
+		#define CONFIG_ENV_SIZE                         CONFIG_ENV_SECT_SIZE_SPI    /* environment takes one sector */
+		#define CONFIG_ENV_OFFSET                       CONFIG_ENV_OFFSET_SPI   /* (1MB For Image) environment starts here  */
 		#define CONFIG_ENV_ADDR                         CONFIG_ENV_OFFSET
 		#define MONITOR_HEADER_LEN                      0x200
 		#define CONFIG_SYS_MONITOR_BASE                 0
@@ -301,6 +307,9 @@ extern unsigned int mvUartPortGet(void);
 /* NAND-FLASH stuff     */
 /************************/
 #ifdef MV_NAND
+	#ifndef __ASSEMBLY__
+extern int nand_get_env_offs(void);
+	#endif /* __ASSEMBLY__ */
 	#define MV_NAND_PIO_MODE
 	#define MV_NAND_1CS_MODE
 	/*
@@ -324,17 +333,21 @@ extern unsigned int mvUartPortGet(void);
 	#undef MV_NFC_DBG
 	#define CONFIG_JFFS2_NAND
 
+	#define	CONFIG_ENV_SIZE_NAND			0x80000
+	#define CONFIG_ENV_OFFSET_NAND			nand_get_env_offs()
+	#define	CONFIG_ENV_RANGE_NAND			CONFIG_ENV_SIZE_NAND * 8
+
 /* Boot from NAND settings */
 	#if defined(MV_NAND_BOOT)
 		#define CONFIG_ENV_IS_IN_NAND
 
-		#define CONFIG_ENV_SIZE                 0x80000                 /* environment takes one erase block */
-		#define CONFIG_ENV_OFFSET               nand_get_env_offs()     /* environment starts here  */
+		#define CONFIG_ENV_SIZE                 CONFIG_ENV_SIZE_NAND                 /* environment takes one erase block */
+		#define CONFIG_ENV_OFFSET               CONFIG_ENV_OFFSET_NAND     /* environment starts here  */
 		#define CONFIG_ENV_ADDR                 CONFIG_ENV_OFFSET
 		#define MONITOR_HEADER_LEN              0x200
 		#define CONFIG_SYS_MONITOR_BASE         0
 		#define CONFIG_SYS_MONITOR_LEN          0x80000           /* Reserve 512 kB for Monitor */
-		#define CONFIG_ENV_RANGE                CONFIG_ENV_SIZE * 8
+		#define CONFIG_ENV_RANGE                CONFIG_ENV_RANGE_NAND
 
 		#define MV_NBOOT_BASE                   0
 		#define MV_NBOOT_LEN                    (4 << 10)       /* Reserved 4KB for boot strap */

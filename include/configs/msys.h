@@ -580,6 +580,11 @@ disclaimer.
 	#define CONFIG_SYS_NAND_MAX_CHIPS 1
 
 #if defined(MV_NAND)
+
+	#ifndef __ASSEMBLY__
+extern int nand_get_env_offs(void);
+	#endif /* __ASSEMBLY__ */
+
 	#define MV_NAND_PIO_MODE
 	#define MV_NAND_1CS_MODE
 	#define MV_NAND_4BIT_MODE

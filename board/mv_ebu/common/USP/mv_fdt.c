@@ -222,8 +222,19 @@ void ft_board_setup(void *blob, bd_t *bd)
 	}
 	mv_fdt_dprintf("DT bootargs updated from commandline\n");
 
-	/* Update ethernet aliases with nodes' names and update mac addresses */
+	/* Update ethernet aliases with nodes' names and update mac addresses
+	   - PP3 driver uses 2 aliases:
+		 mac alias, to update PHY mode, MAC address
+		 nic@ alias, to update status.
+	   - Neta driver use 1 alias (ethernet@) to update PHY mode, MAC address, and status */
+#ifdef CONFIG_NET_COMPLEX
+	err = mv_fdt_scan_and_set_alias(blob, "mac", "mac");
+	if (err < 0)
+		goto bs_fail;
+	err = mv_fdt_scan_and_set_alias(blob, "nic@", "ethernet");
+#else
 	err = mv_fdt_scan_and_set_alias(blob, "ethernet@", "ethernet");
+#endif
 	if (err < 0)
 		goto bs_fail;
 	fdt_fixup_ethernet(blob);
@@ -232,7 +243,6 @@ void ft_board_setup(void *blob, bd_t *bd)
 	/* Update memory node */
 	fixup_memory_node(blob);
 	mv_fdt_dprintf("Memory node updated\n");
-
 	/* Make updates of functions in update_sequence */
 	for (update_fnc_ptr = update_sequence; *update_fnc_ptr; ++update_fnc_ptr) {
 		err = (*update_fnc_ptr)(blob);
@@ -830,7 +840,13 @@ static int mv_fdt_update_ethnum(void *fdt)
 	do {
 		nodeoffset = fdt_next_node(fdt, nodeoffset, &depth);
 		node = fdt_get_name(fdt, nodeoffset, NULL);
-		if (strncmp(node, "ethernet@", 9) == 0) /* Node name can be NULL, but it's OK */
+	/* For PP3 driver node name is 'nic@X', for neta driver node name is 'ethernet@X'
+	   Node name can be NULL, but it's OK */
+#ifdef CONFIG_NET_COMPLEX
+		if (strncmp(node, "nic@", 4) == 0)
+#else
+		if (strncmp(node, "ethernet@", 9) == 0)
+#endif
 			ethPortsNum++;
 	} while (node != NULL);
 	mv_fdt_dprintf("Number of ethernet nodes in DT = %d\n", ethPortsNum);
@@ -857,15 +873,20 @@ static int mv_fdt_update_ethnum(void *fdt)
 		if (mvBoardIsEthConnected(port) != MV_TRUE)
 			sprintf(propval, "disabled");
 		else {
-
 			/* Configure PHY address */
 			phyAddr = mvBoardPhyAddrGet(port);
 			if (phyAddr == -1)
 				phyAddr = 999; /* Inband management - see mv_netdev.c for details */
 
 			/* The ETH node we found contains a pointer (phandle) to its PHY
-			   The phandle is a unique numeric identifier of a specific node */
+			   The phandle is a unique numeric identifier of a specific node.
+			   For PP3 driver the phy address under 'emac-data' field
+			   For NETA driver the phy address under 'phy' field */
+#ifdef CONFIG_NET_COMPLEX
+			phandle = fdt_getprop(fdt, nodeoffset, "emac-data", &len);
+#else
 			phandle = fdt_getprop(fdt, nodeoffset, "phy", &len);
+#endif
 			if (len == 0) {
 				mv_fdt_dprintf("Empty \"phy\" property value\n");
 				return 0;
@@ -876,18 +897,23 @@ static int mv_fdt_update_ethnum(void *fdt)
 				return 0;
 			}
 
-			/* Setup PHY address in DT in "reg" property of an appropriate PHY node.
+			/* Setup PHY address in DT in "reg"/"phy-id" property of an appropriate PHY node for
+			   Neta/PP3 driver.
 			   This value is HEX number, not a string, and uses network byte order */
 			phyAddr = htonl(phyAddr);
+#ifdef CONFIG_NET_COMPLEX
+			sprintf(prop, "phy-id");
+#else
 			sprintf(prop, "reg");
+#endif
 			mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, &phyAddr, sizeof(phyAddr)));
 			if (err < 0) {
 				mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n",
-							   prop, fdt_get_name(fdt, phyoffset, NULL));
+							prop, fdt_get_name(fdt, phyoffset, NULL));
 				return 0;
 			}
 			mv_fdt_dprintf("Set property '%s' of node '%s' to %#010x\n",
-						   prop, fdt_get_name(fdt, phyoffset, NULL), ntohl(phyAddr));
+                                                   prop, fdt_get_name(fdt, phyoffset, NULL), ntohl(phyAddr));
 
 			/* Configure PHY mode */
 			switch (mvBoardPortTypeGet(port)) {
@@ -898,14 +924,28 @@ static int mv_fdt_update_ethnum(void *fdt)
 			case MV_PORT_TYPE_RGMII:
 				sprintf(propval, "rgmii");
 				break;
+#ifdef CONFIG_NET_COMPLEX
+			case MV_PORT_TYPE_RXAUI:
+				sprintf(propval, "rxaui");
+				break;
+			case MV_PORT_TYPE_XAUI:
+				sprintf(propval, "xaui");
+				break;
+#endif
 			default:
 				mv_fdt_dprintf("Bad port type received for interface %d\n", port);
 				return 0;
 			}
 
-			/* Setup PHY connection type in DT */
+			/* Setup PHY connection type in DT.
+			   PP3 driver update the type under 'mac' node (phyoffset point to the node)
+			   NETA driver update the type under 'ethernet@' node (nodeoffset, point to the node) */
 			sprintf(prop, "phy-mode");
+#ifdef CONFIG_NET_COMPLEX
+			mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, propval, strlen(propval)+1));
+#else
 			mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop, propval, strlen(propval)+1));
+#endif
 			if (err < 0) {
 				mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
 				return 0;
@@ -915,7 +955,6 @@ static int mv_fdt_update_ethnum(void *fdt)
 			/* Last property to set is the "status" - common for valid and non-valid ports */
 			sprintf(propval, "okay");
 		}
-
 		sprintf(prop, "status");
 		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop, propval, strlen(propval)+1));
 		if (err < 0) {

@@ -459,7 +459,13 @@ void fdt_fixup_ethernet(void *fdt)
 
 	i = 0;
 	while ((tmp = getenv(mac)) != NULL) {
+	/* For PP3 driver the node name of the network properties is 'macX'
+	       NETA driver the node name of the network properties is 'ethernetX' */
+#ifdef CONFIG_NET_COMPLEX
+		sprintf(enet, "mac%d", i);
+#else
 		sprintf(enet, "ethernet%d", i);
+#endif
 		path = fdt_getprop(fdt, node, enet, NULL);
 		if (!path) {
 			debug("No alias for %s\n", enet);

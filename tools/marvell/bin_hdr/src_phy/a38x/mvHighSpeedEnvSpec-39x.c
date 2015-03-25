@@ -230,7 +230,10 @@ MV_STATUS mvSerdesPowerUpCtrlExt
 
 		/* Executing power up, ref clock set, speed config and TX config */
 		switch (serdesType) {
-        case SGMII3:
+        case SGMIIv3_0:
+	case SGMIIv3_1:
+	case SGMIIv3_2:
+	case SGMIIv3_3:
 			CHECK_STATUS(mvSeqExec(serdesNum, SGMII_POWER_UP_SEQ));
 			CHECK_STATUS(mvHwsRefClockSet(serdesNum, serdesType, refClock));
 			CHECK_STATUS(mvSeqExec(serdesNum, speedSeqId));

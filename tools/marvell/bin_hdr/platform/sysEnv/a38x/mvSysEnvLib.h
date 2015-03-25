@@ -180,7 +180,6 @@
 #define REF_CLK_SELECTOR_VAL(regVal)            (regVal & 0x1)
 
 #define MAX_SELECTOR_VAL                        10
-
 /* TWSI addresses */
 /* starting from A38x A0, i2c address of EEPROM is 0x57 */
 #ifdef MV88F69XX
@@ -365,12 +364,12 @@ typedef enum _mvDeviceId {
 #define MV_6928_INDEX                         1
 
 typedef enum _mvUnitId {
-            PEX_UNIT_ID ,
-            ETH_GIG_UNIT_ID,
+			PEX_UNIT_ID ,
+			SGMII_UNIT_ID,
 			USB3H_UNIT_ID,
 			USB3D_UNIT_ID,
 			SATA_UNIT_ID,
-            QSGMII_UNIT_ID,
+			QSGMII_UNIT_ID,
 			XAUI_UNIT_ID,
 			RXAUI_UNIT_ID,
 			MAX_UNITS_ID

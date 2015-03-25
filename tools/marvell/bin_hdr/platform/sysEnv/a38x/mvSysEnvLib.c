@@ -86,7 +86,7 @@ MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /*                     A385    A380     A381/2   A388   A383    A384 */
 /*                     ========= HW Flavors =========   == Virtual ==*/
 /* PEX_UNIT_ID      */ { 4,     3,       3,       4,	2,	2},
-/* ETH_GIG_UNIT_ID  */ { 3,	2,       3,       3,	2,	2},
+/* SGMII_UNIT_ID*/     { 3,	2,       3,       3,	2,	2},
 /* USB3H_UNIT_ID    */ { 2,     2,       2,       2,	1,	1},
 /* USB3D_UNIT_ID    */ { 1,     1,       1,       1,	0,	0},
 /* SATA_UNIT_ID     */ { 2,     2,       2,       4,	1,	1},
@@ -96,15 +96,15 @@ MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 };
 #else  /* if (CONFIG_ARMADA_39X) */
 MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
-/*                      6920     6928     */
-/* PEX_UNIT_ID      */ { 4,       4},
-/* ETH_GIG_UNIT_ID  */ { 3,       4},
-/* USB3H_UNIT_ID    */ { 1,       2},
-/* USB3D_UNIT_ID    */ { 0,       1},
-/* SATA_UNIT_ID     */ { 0,       4},
-/* QSGMII_UNIT_ID   */ { 0,       1},
-/* XAUI_UNIT_ID     */ { 1,       1},
-/* RXAUI_UNIT_ID    */ { 1,		  1}
+/*				6920     6928     */
+/* PEX_UNIT_ID      */		{ 4,       4},
+/* SGMII_UNIT_ID    */		{ 3,       4},
+/* USB3H_UNIT_ID    */		{ 1,       2},
+/* USB3D_UNIT_ID    */		{ 0,       1},
+/* SATA_UNIT_ID     */		{ 0,       4},
+/* QSGMII_UNIT_ID   */		{ 0,       1},
+/* XAUI_UNIT_ID     */		{ 1,       1},
+/* RXAUI_UNIT_ID    */		{ 1,	   1}
 };
 #endif
 

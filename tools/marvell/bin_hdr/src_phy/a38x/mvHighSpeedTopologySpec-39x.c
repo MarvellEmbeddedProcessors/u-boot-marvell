@@ -188,7 +188,10 @@ SERDES_SPEED defaultSerdesSpeedMap[LAST_SERDES_TYPE] =
     __5Gbps,    /* USB3_HOST0 */
     __5Gbps,    /* USB3_HOST1 */
     __5Gbps,    /* USB3_DEVICE */
-    __1_25Gbps, /* SGMII3 */
+    __1_25Gbps, /* SGMIIv3_0 */
+    __1_25Gbps, /* SGMIIv3_1 */
+    __1_25Gbps, /* SGMIIv3_2 */
+    __1_25Gbps, /* SGMIIv3_03 */
     __3_125Gbps,/* XAUI */
     __6_25Gbps, /* RXAUI */
 };
@@ -196,14 +199,14 @@ SERDES_SPEED defaultSerdesSpeedMap[LAST_SERDES_TYPE] =
 /* Selector to Serdes type mapping */
 SERDES_TYPE commonPhysType[MAX_SERDES_LANES][MAX_SELECTOR_VAL] =
 {
-/*	 0X0	   0x1   0x2		0x3     0x4          0x5         0x6	       0x7     0x8     0x9 */
-{ DEFAULT_SERDES, PEX0, SATA0,          SGMII0, SGMII0,      NA,          NA,          NA,     NA,     NA     },  /* Lane 0 */
-{ DEFAULT_SERDES, PEX0, PEX1,           SATA0,  SGMII0,      SGMII1,      USB3_HOST0,  QSGMII, SGMII0, SGMII1 },  /* Lane 1 */
-{ DEFAULT_SERDES, PEX1, PEX2,           SATA1,  SGMII1,      SGMII1,      NA,          NA,     NA,     NA     },  /* Lane 2 */
-{ DEFAULT_SERDES, PEX3, PEX3,           SATA3,  SGMII2,      USB3_HOST1,  USB3_DEVICE, SGMII2, XAUI,   NA     },  /* Lane 3 */
-{ DEFAULT_SERDES, PEX1, DEFAULT_SERDES, SGMII1, USB3_HOST0,  USB3_DEVICE, SATA2,       PEX2,   SGMII3, XAUI   },  /* Lane 4 */
-{ DEFAULT_SERDES, PEX2, SATA2,          SGMII2, USB3_HOST1,  USB3_DEVICE, SGMII2,      NA,     XAUI,   NA     },  /* Lane 5 */
-{ DEFAULT_SERDES, PEX1, SGMII3,         NA,     XAUI,        NA,          NA,          NA,     NA,     NA     },  /* Lane 6 */
+/*	 0X0	   0x1   0x2		0x3     0x4          0x5         0x6	       0x7		0x8		0x9		*/
+{ DEFAULT_SERDES, PEX0, SATA0,          SGMII0, SGMIIv3_0,   NA,          NA,          NA,		NA,		NA,		},  /* Lane 0 */
+{ DEFAULT_SERDES, PEX0, PEX1,           SATA0,  SGMII0,      SGMII1,      USB3_HOST0,  QSGMII,		SGMIIv3_0,	SGMIIv3_1,	},  /* Lane 1 */
+{ DEFAULT_SERDES, PEX1, PEX2,           SATA1,  SGMII1,      SGMIIv3_1,   NA,          NA,		NA,		NA ,		},  /* Lane 2 */
+{ DEFAULT_SERDES, PEX3, PEX3,           SATA3,  SGMII2,      USB3_HOST1,  USB3_DEVICE, SGMIIv3_2,	XAUI,		NA,		},  /* Lane 3 */
+{ DEFAULT_SERDES, PEX1, DEFAULT_SERDES, SGMII1, USB3_HOST0,  USB3_DEVICE, SATA2,       PEX2,		SGMIIv3_3,	XAUI,		},  /* Lane 4 */
+{ DEFAULT_SERDES, PEX2, SATA2,          SGMII2, USB3_HOST1,  USB3_DEVICE, SGMIIv3_2,   NA,		XAUI,		NA,		},  /* Lane 5 */
+{ DEFAULT_SERDES, PEX1, SGMIIv3_0,      NA,     XAUI,        NA,          NA,          NA,		NA,		NA,		},  /* Lane 6 */
 };
 
 /*************************************/
@@ -219,7 +222,7 @@ SERDES_MAP DbConfigDefault[MAX_SERDES_LANES] =
 	{ SGMII2,       __1_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
 	{ PEX2,         __5Gbps,		   PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
 	{ RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
-    { RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
+	{ RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
 };
 
 /*************************** Functions implementation *************************/
@@ -303,6 +306,8 @@ MV_STATUS mvSysUpdateLaneConfig
         selectorVal = mvSysEnvConfigGet(configId);
         serdesType = commonPhysType[serdesNum][selectorVal];
 
+
+
         if (selectorVal > MAX_SELECTOR_VAL) {
             mvPrintf("mvSysUpdateLaneConfig: Error: Selector value %0x%x (Serdes %d) is bigger then max value (0x%x)\n",
 					 selectorVal, serdesNum, MAX_SELECTOR_VAL);
@@ -340,7 +345,7 @@ MV_STATUS mvSysUpdateLaneConfig
 		/* set serdes type for x4 lanes 1,2,3 - only PEX0 can be set as PEXx4  */
 		serdesTopology[serdesNum].serdesType = PEX0;
 	}
-        /* The Selector mapping for lanes 5 and 6 can be either XAUI or RXAUI mode type
+	/* The Selector mapping for lanes 5 and 6 can be either XAUI or RXAUI mode type
            and it is depends on previous lanes 4.
 		   If the Selector value for lanes 4 is 0x9, then the Serdes type for lanes
 		   5 and 6 is XAUI, otherwise the Serdes type for lanes 5 and 6 is RXAUI */

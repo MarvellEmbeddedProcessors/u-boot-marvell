@@ -121,7 +121,7 @@ void nand_init(void)
 	board_nand_select_device(nand_info[nand_curr_device].priv, nand_curr_device);
 #endif
 }
-#if defined(CONFIG_ENV_IS_IN_NAND)
+
 int nand_get_env_offs(void)
 {
 	size_t offset = 0;
@@ -145,7 +145,7 @@ int nand_get_env_offs(void)
                         offset = (i + 1) * blocksize;
                 }
                 i++;
-                if (sum >= CONFIG_ENV_RANGE)
+                if (sum >= CONFIG_ENV_RANGE_NAND)
                         break;
 
         }
@@ -166,11 +166,10 @@ int nand_get_env_range(void)
 	size_t env_size = 0;
 	size_t blocksize = nand_info[0].erasesize;
 
-	if (blocksize < CONFIG_ENV_SIZE) {
-		env_size = ((CONFIG_ENV_SIZE + (blocksize - 1)) & (~(blocksize-1)));
+	if (blocksize < CONFIG_ENV_SIZE_NAND) {
+		env_size = ((CONFIG_ENV_SIZE_NAND + (blocksize - 1)) & (~(blocksize-1)));
 		return env_size;
 	} else
 		return blocksize;
 }
-#endif
 

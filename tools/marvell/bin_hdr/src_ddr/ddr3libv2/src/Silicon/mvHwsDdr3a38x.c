@@ -92,6 +92,8 @@ static GT_U16 freqVal[DDR_FREQ_LIMIT] =
 	900,  	/*DDR_FREQ_900*/
 	1000  	/*DDR_FREQ_1000*/
 };
+
+extern GT_U8	VrefCalib_WA; //1 means SSTL & POD gets the same Vref and a WA is needed
 #endif
 extern MV_HWS_DDR_FREQ mediumFreq;
 
@@ -600,6 +602,11 @@ static GT_STATUS ddr3TipInitA38xSilicon
 		);
 
 	rlMidFreqWA = GT_FALSE;
+
+	/*detect if VrefCalib WA needed by device ID(a382 didn't need this WA)*/
+	if( (MV_REG_READ(DEVICE_ID_REG) & 0xFFFF0000 >> 16) == 0x6811){
+		VrefCalib_WA = 0;
+	}
 #endif
 
 	if( ckDelay == MV_PARAMS_UNDEFINED )

@@ -133,7 +133,7 @@ Address Bits   Value   Description
 #define  READ_XBAR_PORT1                  (0xC03F8073)
 #define  DISABLE_DDR_TUNING_DATA          (0x02294285)
 #define  ENABLE_DDR_TUNING_DATA           (0x12294285)
-
+#define  DEVICE_ID_REG					  (0x40000)
 
 #if defined(CONFIG_ARMADA_38X) || defined (CONFIG_ALLEYCAT3) || defined (CONFIG_ARMADA_39X)
 #define ODPG_TRAINING_STATUS_REG          (0x18488)

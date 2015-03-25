@@ -52,7 +52,7 @@
 #endif
 
 #ifdef CONFIG_DDR4
-#define DDR3_TIP_VERSION_STRING "DDR4 Training Sequence - Ver TIP-0.14."
+#define DDR3_TIP_VERSION_STRING "DDR4 Training Sequence - Ver TIP-0.15."
 #else
 #define DDR3_TIP_VERSION_STRING "DDR3 Training Sequence - Ver TIP-1.35."
 #endif

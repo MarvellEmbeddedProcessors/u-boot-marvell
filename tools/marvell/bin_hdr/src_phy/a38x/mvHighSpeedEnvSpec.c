@@ -122,7 +122,7 @@ MV_U8 SerdesLaneInUseCount[MAX_UNITS_ID][MAX_UNIT_NUMB] =
 	the value for PEX 0 is updated in mvHwsSerdesTopologyVerify function */
 	/* 0  1  2  3    */
 	{  4, 1, 1, 1 },  /* PEX     */
-	{  1, 1, 1, 1 },  /* ETH_GIG */
+	{  1, 1, 1, 1 },  /* ETH_SGMII */
 	{  1, 1, 0, 0 },  /* USB3H   */
 	{  1, 1, 1, 0 },  /* USB3D   */
 	{  1, 1, 1, 1 },  /* SATA    */
@@ -154,35 +154,41 @@ MV_U8 commonPhysSelectorsSerdesRev2Map[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 	{ NA,    NA,     NA,	 0x5,	 NA,	 0x4,    NA	},  /* USB3_HOST1 */
 	{ NA,    NA,     NA,	 0x6,	 0x5,	 0x5,    NA	},  /* USB3_DEVICE */
 #ifdef MV88F69XX
-	{ NA,    NA,     0x5,	 NA,	 0x8,	 NA,     0x2  },  /* SGMII3 */
+	{ 0x4,	 0x8,    NA,	 NA,	 NA,	 NA,     NA   },  /* SGMIIv3-0 */
+	{ NA,    0x9,    0x5,	 NA,	 NA,	 NA,     NA   },  /* SGMIIv3-1 */
+	{ NA,    NA,     NA,	 0x7,	 NA,	 0x6,    NA   },  /* SGMIIv3-2 */
+	{ NA,    NA,     NA,	 NA,	 0x8,	 NA,     0x2  },  /* SGMIIv3-3 */
 	{ NA,    NA,     NA,	 0x8,	 0x9,	 0x8,    0x4  },  /* XAUI */
 	{ NA,    NA,     NA,	 NA,	 NA,	 0x8,    0x4  },  /* RXAUI */
 #endif
-	{ 0x0,   0x0,    0x0,	 0x0,	 0x0,	 0x0,    NA	  }   /* DEFAULT_SERDES */
+	{ 0x0,   0x0,    0x0,	 0x0,	 0x0,	 0x0,    NA   }   /* DEFAULT_SERDES */
 };
 
 /* Selector mapping for PEX by 4 confiuration */
 MV_U8 commonPhysSelectorsPexBy4Lanes[] = { 0x1, 0x2, 0x2, 0x2 };
 
 static const char *serdesTypeToString[] = {
-	"PCIe0",
-	"PCIe1",
-	"PCIe2",
-	"PCIe3",
-	"SATA0",
-	"SATA1",
-	"SATA2",
-	"SATA3",
-	"SGMII0",
-	"SGMII1",
-	"SGMII2",
-	"QSGMII",
-	"USB3 HOST0",
-	"USB3 HOST1",
+	"PCIe0      ",
+	"PCIe1      ",
+	"PCIe2      ",
+	"PCIe3      ",
+	"SATA0      ",
+	"SATA1      ",
+	"SATA2      ",
+	"SATA3      ",
+	"SGMII0     ",
+	"SGMII1     ",
+	"SGMII2     ",
+	"QSGMII     ",
+	"USB3 HOST0 ",
+	"USB3 HOST1 ",
 	"USB3 DEVICE",
-	"SGMII3",
-	"XAUI",
-	"RXAUI",
+	"SGMIIv3-0  ",
+	"SGMIIv3-1  ",
+	"SGMIIv3-2  ",
+	"SGMIIv3-3  ",
+	"XAUI       ",
+	"RXAUI      ",
 	"DEFAULT SERDES",
 	"LAST_SERDES_TYPE"
 };
@@ -201,14 +207,17 @@ static MV_SERDES_UNIT_P serdesTypeToUnitInfo[] = {
 	{	SATA_UNIT_ID,	1,	},
 	{	SATA_UNIT_ID,	2,	},
 	{	SATA_UNIT_ID,	3,	},
-	{	ETH_GIG_UNIT_ID,0,	},
-	{	ETH_GIG_UNIT_ID,1,	},
-	{	ETH_GIG_UNIT_ID,2,	},
+	{	SGMII_UNIT_ID,0,	},
+	{	SGMII_UNIT_ID,1,	},
+	{	SGMII_UNIT_ID,2,	},
 	{	QSGMII_UNIT_ID,	0,	},
 	{	USB3H_UNIT_ID,	0,	},
 	{	USB3H_UNIT_ID,	1,	},
 	{	USB3D_UNIT_ID,	0,	},
-	{	ETH_GIG_UNIT_ID,3,	},
+	{	SGMII_UNIT_ID,0,	},
+	{	SGMII_UNIT_ID,1,	},
+	{	SGMII_UNIT_ID,2,	},
+	{	SGMII_UNIT_ID,3,	},
 	{	XAUI_UNIT_ID,	0,	},
 	{	RXAUI_UNIT_ID,	0,	},
 };
@@ -1047,7 +1056,10 @@ SERDES_SEQ serdesTypeAndSpeedToSpeedSeq
 	case SGMII1:
 	case SGMII2:
 #ifdef MV88F69XX
-    case SGMII3:
+    case SGMIIv3_0:
+    case SGMIIv3_1:
+    case SGMIIv3_2:
+    case SGMIIv3_3:
 #endif
         if (baudRate == __1_25Gbps)
 			seqId = SGMII__1_25_SPEED_CONFIG_SEQ;
@@ -1651,7 +1663,10 @@ MV_STATUS mvSerdesPowerUpCtrl
 			CHECK_STATUS(mvSeqExec(serdesNum, QSGMII_TX_CONFIG_SEQ1));
 			CHECK_STATUS(mvSeqExec(serdesNum, QSGMII_TX_CONFIG_SEQ2));
             break;
-		case SGMII3:
+		case SGMIIv3_0:
+		case SGMIIv3_1:
+		case SGMIIv3_2:
+		case SGMIIv3_3:
 		case XAUI:
         case RXAUI:
             CHECK_STATUS(mvSerdesPowerUpCtrlExt(serdesNum, serdesPowerUp, serdesType, baudRate, serdesMode, refClock));
@@ -1823,7 +1838,10 @@ MV_STATUS mvHwsRefClockSet
         }
         break;
 #ifdef MV88F69XX
-	case SGMII3:
+	case SGMIIv3_0:
+	case SGMIIv3_1:
+        case SGMIIv3_2:
+	case SGMIIv3_3:
 	case XAUI:
 	case RXAUI:
         if (refClock == REF_CLOCK__25MHz) {

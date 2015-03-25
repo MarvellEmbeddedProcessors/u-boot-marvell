@@ -24,10 +24,41 @@
 #include <asm/psci.h>
 #include <asm/macro.h>
 
+#define MVEBU_CCU_HTC_ASET_REG	0x4264
+#define MVEBU_PRIVATE_UID_REG	0x30
+
 .pushsection ._secure.text, "ax"
+
+enable_affinity:
+	/* get current CPU */
+	mrs 	x2, MPIDR_EL1   	/* get current CPU - Use affinity level 1 */
+	asr 	x2, x2, #8
+	and 	x2, x2, #0xff
+
+	/* Activate Affinity between current CPU */
+	mov	x0, #(MVEBU_REGS_BASE)
+	mov     x3, #(MVEBU_CCU_HTC_ASET_REG)
+	orr     x0, x3, x0
+	mov	x3, #0x1
+	lsl     x1, x3, x2
+	str     w1, [x0]
+
+	/* Activate Affinity in CA-57 configuration
+	 * Enable the SMPEN bit in CPUECTLR_EL1 */
+	mrs x0, S3_1_c15_c2_1
+	orr x0, x0, #0x40
+	msr S3_1_c15_c2_1, x0
+	ret
 
 .globl	psci_arch_init
 psci_arch_init:
+	add     x29, x30, 0 /* keep return address */
+	bl	enable_affinity
+	bl	psci_build_stack
+	ret	x29
+
+psci_build_stack:
+
 	mrs     x5, SCR_EL3
 	bic	x5, x5, #1	/* Secure mode */
 	msr	SCR_EL3, x5
@@ -46,7 +77,7 @@ psci_arch_init:
 	lsl	x5, x5, #12
 	sub	sp, x5, x4		/* here's our stack! */
 
-	 ret
+	ret
 
 	/* x1 = target CPU */
 	/* x2 = target PC */
@@ -64,7 +95,7 @@ psci_0_2_cpu_on_64:
 
 	/* set CPU private UID */
 	mov	x0, #(MVEBU_REGS_BASE)
-	add	x3, x0, #0x30
+	add	x3, x0, #(MVEBU_PRIVATE_UID_REG)
 	add     x2, x1, #0x4
 	str 	w2, [x3]
 
@@ -101,22 +132,11 @@ _armada8k_cpu_entry:
 
 	/* set CPU private UID */
 	mov	x0, #(MVEBU_REGS_BASE)
-	add	x3, x0, #0x30
+	add	x3, x0, #(MVEBU_PRIVATE_UID_REG)
 	add     x1, x2, #0x4
 	str 	w1, [x3]
 
-	/* Activate Affinity between cpu0 and cpu1 */
-	mov     x3, #0x4264
-	orr     x0, x3, x0
-	mov	x3, #0x1
-	lsl     x1, x3, x2
-	str     w1, [x0]
-
-	/* Activate Affinity in CA-57 configuration
-	 * Enable the SMPEN bit in CPUECTLR_EL1 */
-	mrs x0, S3_1_c15_c2_1
-	orr x0, x0, #0x40
-	msr S3_1_c15_c2_1, x0
+	bl	enable_affinity
 
 	isb
 
@@ -152,7 +172,7 @@ _armada8k_cpu_entry:
 	bl	gic_init_secure_percpu
 #endif
 
-	bl	psci_arch_init
+	bl	psci_build_stack
 
 	bl	armv8_switch_to_el2
 #ifdef CONFIG_ARMV8_SWITCH_TO_EL1

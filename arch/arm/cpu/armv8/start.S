@@ -37,9 +37,6 @@ _start:
 	ldp	x19, x20,[sp], #16
 	ret
 #else
-#ifdef CONFIG_PALLADIUM
-	bl	enable_wa
-#endif
 	b	reset
 
 	.align 3
@@ -195,24 +192,4 @@ ENTRY(c_runtime_cpu_setup)
 	ret
 ENDPROC(c_runtime_cpu_setup)
 
-#ifdef CONFIG_PALLADIUM
-ENTRY(enable_wa)
-	/* This setup is temporary, eventually it should go into
-	 * the PSCI firmware */
-
-	/* Activate Affinity between cpu0 and cpu1 */
-	ldr     x0, =0xf0004264
-	ldr     w1, =0x1
-	str     w1, [x0]
-
-	/* Activate Affinity in CA-57 configuration
-	 * Enable the SMPEN bit in CPUECTLR_EL1 */
-	mrs x0, S3_1_c15_c2_1
-	orr x0, x0, #0x40
-	msr S3_1_c15_c2_1, x0
-
-	ret
-
-ENDPROC(enable_wa)
-#endif /* CONFIG_PALLADIUM */
 #endif /* defined(CONFIG_MVEBU) && defined(CONFIG_SPL_BUILD) */

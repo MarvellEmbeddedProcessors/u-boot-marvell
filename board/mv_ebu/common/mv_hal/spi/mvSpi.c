@@ -453,6 +453,7 @@ MV_STATUS mvSpiTimingParamsSet(MV_U8 spiId, MV_SPI_TIMING_PARAMS *tmngParams)
 MV_STATUS mvSpiInit(MV_U8 spiId, MV_U32 serialBaudRate, MV_SPI_HAL_DATA *halData)
 {
 	MV_STATUS ret;
+	MV_U32 timingReg;
 
 	mvOsMemcpy(&spiHalData, halData, sizeof(MV_SPI_HAL_DATA));
 
@@ -474,7 +475,17 @@ MV_STATUS mvSpiInit(MV_U8 spiId, MV_U32 serialBaudRate, MV_SPI_HAL_DATA *halData
 		(spiHalData.ctrlModel == MV_6322_DEV_ID) ||
 		(spiHalData.ctrlModel == MV_6321_DEV_ID))
 			MV_SPI_REG_BIT_SET(MV_SPI_IF_CONFIG_REG(spiId), BIT14);
-
+	/* set relaxed SPI_TMISO_SAMPLE settings:
+	 * avoid AC3 timing violation with SCLK = 40/50Mhz on spi */
+	if (spiHalData.ctrlModel >= MV_ALLEYCAT3_DEV_ID
+			&& spiHalData.ctrlModel <= MV_ALLEYCAT3_MAX_DEV_ID) {
+		/* set TMISO_SAMPLE to 0x2:
+		 * MISO sample occurs 2 core_clk after SPI_CLK edge. */
+		timingReg = MV_REG_READ(MV_SPI_TMNG_PARAMS_REG(spiId));
+		timingReg &= ~MV_SPI_TMISO_SAMPLE_MASK;
+		timingReg |= (0x2) << MV_SPI_TMISO_SAMPLE_OFFSET;
+		MV_REG_WRITE(MV_SPI_TMNG_PARAMS_REG(spiId), timingReg);
+	}
     /* Verify that the CS is deasserted */
     mvSpiCsDeassert(spiId);
 

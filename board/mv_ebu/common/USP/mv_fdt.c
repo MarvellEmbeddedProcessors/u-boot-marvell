@@ -332,6 +332,9 @@ static int mv_fdt_find_node(void *fdt, const char *name)
 * mv_fdt_update_cpus
 *
 * DESCRIPTION:
+* target		: remove excessice cpu nodes.
+* node			: cpus
+* dependencies		: CPU core num in SOC_COHERENCY_FABRIC_CFG_REG.
 *
 * INPUT:
 *	fdt.
@@ -397,6 +400,9 @@ static int mv_fdt_update_cpus(void *fdt)
 * mv_fdt_update_sata
 *
 * DESCRIPTION:
+* target                : Update status field of SATA nodes.
+* node, properties      : -property status @ node SATA
+* dependencies          : sata unit status in sataUnitActive array.
 *
 * INPUT:
 *	fdt.
@@ -438,6 +444,9 @@ static int mv_fdt_update_sata(void *fdt)
 * mv_fdt_update_tdm
 *
 * DESCRIPTION:
+* target		: update status field of tdm@X node.
+* node, properties	: -property status @ node tdm@x.
+* dependencies		: isTdmConnected entry in board structure.
 *
 * INPUT:
 *	fdt.
@@ -488,6 +497,9 @@ static int mv_fdt_update_tdm(void *fdt)
 * mv_fdt_update_sdhci
 *
 * DESCRIPTION:
+* target		: update status field of MMC node.
+* node, properties	: -property status @ node sdhci@X.
+* dependencies		: status of MMC in isSdMmcConnected entry in board structure.
 *
 * INPUT:
 *	fdt.
@@ -585,6 +597,9 @@ static int mv_fdt_update_audio(void *fdt)
 * mv_fdt_update_prestera
 *
 * DESCRIPTION:
+* target		: update status field of prestera node by checking if the board is AMC.
+* node, properties	: -property status @ node prestera.
+* dependencies		: AMC status saved in isAmc entry in board structure
 *
 * INPUT:
 *	fdt.
@@ -633,6 +648,9 @@ static int mv_fdt_update_prestera(void *fdt)
 * mv_fdt_update_pex
 *
 * DESCRIPTION:
+* target		: update status fields of pcieX nodes.
+* node, properties	: -property status @ node pcieX.
+* dependencies		: boardPexInfo structure entry in board structure.
 *
 * INPUT:
 *	fdt.
@@ -769,6 +787,9 @@ static int mv_fdt_update_usb3(void *fdt)
 * mv_fdt_update_pinctrl
 *
 * DESCRIPTION:
+* target		: update compatible field of pinctrl node.
+* node, properties	: -property compatible @ node pinctrl.
+* dependencies		:DEV_ID_REG value "device model type".
 *
 * INPUT:
 *	fdt.
@@ -786,7 +807,7 @@ static int mv_fdt_update_pinctrl(void *fdt)
 	const char *prop = "compatible";		/* property name */
 	const char *node = "pinctrl";			/* node name */
 
-	/* update pinctrl driver 'compatible' propert, according to device model type */
+	/* update pinctrl driver 'compatible' property, according to device model type */
 	sprintf(propval, "marvell,mv88f%x-pinctrl", mvCtrlModelGet());
 	if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
 		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
@@ -800,6 +821,14 @@ static int mv_fdt_update_pinctrl(void *fdt)
 * mv_fdt_update_ethnum
 *
 * DESCRIPTION:
+* target		: update ethernet nodes for PP3/Neta drivers.
+* node, properties	: PP3 Driver	: -property status @ node nic@X.
+*					  -property phy-mode and phy-id @ node macX.
+*			  Neta Driver	: -property status and phy-mode @ node ethernet@X.
+*					  -property reg @ node ethernet-phy@X.
+* dependencies		: pBoardNetComplexInfo entry in board structure.
+*			  pBoardMacInfo entry in board structure.
+*	     		  For PP3/Neta driver we get ethernet nodes via "nic@/ethernet@" aliasses.
 *
 * INPUT:
 *	fdt.
@@ -1518,6 +1547,9 @@ static int mv_fdt_board_compatible_name_update(void *fdt)
 * mv_fdt_update_serial
 *
 * DESCRIPTION:
+* target		: Update status field of serial nodes.
+* node, properties:	: -property status @ node serial
+* dependencies		: checks if it is a active serial port via mvUartPortGet function.
 *
 * INPUT:
 *	fdt.

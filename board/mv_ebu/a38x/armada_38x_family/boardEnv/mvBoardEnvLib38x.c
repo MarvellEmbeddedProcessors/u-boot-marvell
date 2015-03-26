@@ -388,6 +388,8 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			mvBoardTdmConnectionSet(MV_TRUE);
 			mvBoardAudioConnectionSet(MV_FALSE);
 			mvBoardSdioConnectionSet(MV_FALSE);
+			/* update DT: used for Linux only */
+			mvBoardSetDevState(1, BOARD_DEV_SPI_FLASH, MV_TRUE);
 		}
 
 		/* Update MPP group types and values according to board configuration */

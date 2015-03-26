@@ -506,7 +506,25 @@ static int mv_fdt_update_tdm(void *fdt)
 #endif
 
 #ifdef MV_USB_VBUS_CYCLE
-
+/*******************************************************************************
+* mv_fdt_update_usb_vbus
+*
+* DESCRIPTION:
+* target		: update status field of usb3_phy and usb3-vbus-gpio/usb3-vbus-exp1 node.
+* node, properties	: -property status @ node usb3_phy and usb3-vbus-gpio/usb3-vbus-exp1 node.
+* dependencies		: BOARD_GPP_USB_VBUS entry in BoardGppInfo --> usb3-vbus-gpio node
+* 			  MV_IO_EXPANDER_USB_VBUS entry in BoardIoExpPinInfo --> usb3-vbus-exp1
+*
+* INPUT:
+*	fdt.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	-1 on error os 0 otherwise.
+*
+*******************************************************************************/
 static int mv_fdt_update_usb_vbus(void *fdt)
 {
 	int err, nodeoffset;				/* nodeoffset: node offset from libfdt */

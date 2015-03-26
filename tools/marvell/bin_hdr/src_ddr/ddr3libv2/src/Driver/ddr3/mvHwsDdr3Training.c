@@ -116,15 +116,15 @@ GT_U32 vrefInitialValue = 0x4;
 GT_U32 ckDelay = MV_PARAMS_UNDEFINED;
 
 /*Design Guidelines parameters*/
-GT_U32 gZpriData = MV_PARAMS_UNDEFINED; //controller data - P drive strength
-GT_U32 gZnriData = MV_PARAMS_UNDEFINED; //controller data � N drive strength
-GT_U32 gZpriCtrl = MV_PARAMS_UNDEFINED; //controller C/A � P drive strength
-GT_U32 gZnriCtrl = MV_PARAMS_UNDEFINED; //controller C/A � N drive strength
+GT_U32 gZpriData = MV_PARAMS_UNDEFINED; /* controller data - P drive strength */
+GT_U32 gZnriData = MV_PARAMS_UNDEFINED; /* controller data - N drive strength */
+GT_U32 gZpriCtrl = MV_PARAMS_UNDEFINED; /* controller C/A - P drive strength */
+GT_U32 gZnriCtrl = MV_PARAMS_UNDEFINED; /* controller C/A - N drive strength */
 
-GT_U32 gZpodtData = MV_PARAMS_UNDEFINED; //controller data - P ODT
-GT_U32 gZnodtData = MV_PARAMS_UNDEFINED; //controller data - N ODT
-GT_U32 gZpodtCtrl = MV_PARAMS_UNDEFINED; //controller data - P ODT
-GT_U32 gZnodtCtrl = MV_PARAMS_UNDEFINED; //controller data - N ODT
+GT_U32 gZpodtData = MV_PARAMS_UNDEFINED; /* controller data - P ODT */
+GT_U32 gZnodtData = MV_PARAMS_UNDEFINED; /* controller data - N ODT */
+GT_U32 gZpodtCtrl = MV_PARAMS_UNDEFINED; /* controller data - P ODT */
+GT_U32 gZnodtCtrl = MV_PARAMS_UNDEFINED; /* controller data - N ODT */
 
 GT_U32 uiODTConfig = MV_PARAMS_UNDEFINED;
 GT_U32 gRttNom = MV_PARAMS_UNDEFINED;

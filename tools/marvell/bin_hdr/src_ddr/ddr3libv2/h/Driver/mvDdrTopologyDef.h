@@ -78,7 +78,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /************************* Definitions *******************************************/
 
-#if defined(CONFIG_BOBCAT2)
+#if defined(CONFIG_BOBCAT2) || (defined(CHX_FAMILY) || defined(EXMXPM_FAMILY))
 #define MAX_INTERFACE_NUM  		(5)
 #else
 #define MAX_INTERFACE_NUM  		(1)
@@ -86,7 +86,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MAX_BUS_NUM        		(5)
 
-#define SDRAM_CS_SIZE							0xFFFFFFF
+#define SDRAM_CS_SIZE				0xFFFFFFF
 #define MV_PARAMS_UNDEFINED 		0xFFFFFFFF
 /************************* Topology *******************************************/
 

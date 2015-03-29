@@ -660,7 +660,7 @@ void misc_init_r_env(void)
 	#ifdef CONFIG_ARMADA_38X
 		fdt_env_setup("armada-38x-modular.dtb", MV_TRUE); /* dynamic setup: run DT update */
 	#else
-		fdt_env_setup("armada-39x.dtb", MV_FALSE); /* static setup: Skip DT update */
+		fdt_env_setup("armada-39x-modular.dtb", MV_TRUE); /* dynamic setup: run DT update */
 	#endif
 #endif
 

@@ -733,11 +733,10 @@ GT_STATUS    mvHwsDdr3TipInitController
 	    {
 	      CHECK_STATUS(ddr3TipPadInv(devNum, interfaceId));
 	    }
-    
 
-    /*Pad calibration control - disable*/
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, CALIB_MACHINE_CTRL_REG, 0x0, 0x1));
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, CALIB_MACHINE_CTRL_REG, calibrationUpdateControl<<3, 0x3<<3));
+        /*Pad calibration control - disable*/
+        CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, CALIB_MACHINE_CTRL_REG, 0x0, 0x1));
+        CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, CALIB_MACHINE_CTRL_REG, calibrationUpdateControl<<3, 0x3<<3));
     }
 #ifdef CONFIG_DDR4
 	CHECK_STATUS(ddr4TipCalibrationAdjust(devNum, ddr4TipConfigurePhyVrefTap,1,0));/*devNum,VrefTap,Vref_en,POD_Only*/
@@ -904,6 +903,52 @@ static GT_STATUS ddr3TipPadInv
 }
 
 /*****************************************************************************
+Algorithm parameters validation
+******************************************************************************/
+GT_BOOL mvHwsValidateAlgoVar(GT_U32 value, GT_U32 failValue, char* varName)
+{
+    if(value == failValue)
+    {
+        DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("Error: %s is not initialized (Algo Components Validation)\n", varName));
+        return GT_FALSE;
+    }
+
+    return GT_TRUE;
+}
+
+GT_STATUS mvHwsValidateAlgoComponents(GT_U8 devNum)
+{
+    GT_BOOL status = GT_TRUE;
+
+    /* check DGL parameters*/
+    status &= mvHwsValidateAlgoVar(ckDelay,     MV_PARAMS_UNDEFINED, "ckDelay");
+    status &= mvHwsValidateAlgoVar(PhyReg3Val,  MV_PARAMS_UNDEFINED, "PhyReg3Val");
+    status &= mvHwsValidateAlgoVar(gRttNom,     MV_PARAMS_UNDEFINED, "gRttNom");
+    status &= mvHwsValidateAlgoVar(gDic,        MV_PARAMS_UNDEFINED, "gDic");
+    status &= mvHwsValidateAlgoVar(uiODTConfig, MV_PARAMS_UNDEFINED, "uiODTConfig");
+    status &= mvHwsValidateAlgoVar(gZpriData,   MV_PARAMS_UNDEFINED, "gZpriData");
+    status &= mvHwsValidateAlgoVar(gZnriData,   MV_PARAMS_UNDEFINED, "gZnriData");
+    status &= mvHwsValidateAlgoVar(gZpriCtrl,   MV_PARAMS_UNDEFINED, "gZpriCtrl");
+    status &= mvHwsValidateAlgoVar(gZnriCtrl,   MV_PARAMS_UNDEFINED, "gZnriCtrl");
+    status &= mvHwsValidateAlgoVar(gZpodtData,  MV_PARAMS_UNDEFINED, "gZpodtData");
+    status &= mvHwsValidateAlgoVar(gZnodtData,  MV_PARAMS_UNDEFINED, "gZnodtData");
+    status &= mvHwsValidateAlgoVar(gZpodtCtrl,  MV_PARAMS_UNDEFINED, "gZpodtCtrl");
+    status &= mvHwsValidateAlgoVar(gZnodtCtrl,  MV_PARAMS_UNDEFINED, "gZnodtCtrl");
+
+    /* check functions pointers */
+    status &= mvHwsValidateAlgoVar((GT_U32)configFuncInfo[devNum].tipDunitMuxSelectFunc,    (GT_U32)NULL, "tipDunitMuxSelectFunc");
+    status &= mvHwsValidateAlgoVar((GT_U32)configFuncInfo[devNum].tipDunitWriteFunc,        (GT_U32)NULL, "tipDunitWriteFunc");
+    status &= mvHwsValidateAlgoVar((GT_U32)configFuncInfo[devNum].tipDunitReadFunc,         (GT_U32)NULL, "tipDunitReadFunc");
+    status &= mvHwsValidateAlgoVar((GT_U32)configFuncInfo[devNum].tipGetFreqConfigInfoFunc, (GT_U32)NULL, "tipGetFreqConfigInfoFunc");
+    status &= mvHwsValidateAlgoVar((GT_U32)configFuncInfo[devNum].tipSetFreqDividerFunc,    (GT_U32)NULL, "tipSetFreqDividerFunc");
+    status &= mvHwsValidateAlgoVar((GT_U32)configFuncInfo[devNum].tipGetClockRatio,         (GT_U32)NULL, "tipGetClockRatio");
+
+    status &= mvHwsValidateAlgoVar((GT_U32)dqMapTable, (GT_U32)NULL, "dqMapTable");
+
+    return (status == GT_TRUE) ? GT_OK : GT_NOT_INITIALIZED;
+}
+
+/*****************************************************************************
 Run Training Flow
 ******************************************************************************/
 GT_STATUS    mvHwsDdr3TipRunAlg
@@ -1003,11 +1048,7 @@ GT_STATUS    mvHwsDdr3TipSelectDdrController
     GT_BOOL  enable
 )
 {
-    if (configFuncInfo[devNum].tipDunitMuxSelectFunc != NULL)
-    {
-        return configFuncInfo[devNum].tipDunitMuxSelectFunc((GT_U8)devNum, enable);
-    }
-    return GT_FAIL;
+    return configFuncInfo[devNum].tipDunitMuxSelectFunc((GT_U8)devNum, enable);
 }
 
 
@@ -1024,11 +1065,7 @@ GT_STATUS    mvHwsDdr3TipIFWrite
     GT_U32                mask
 )
 {
-    if (configFuncInfo[devNum].tipDunitWriteFunc != NULL)
-    {
-        return configFuncInfo[devNum].tipDunitWriteFunc((GT_U8)devNum, interfaceAccess, interfaceId, regAddr, dataValue, mask);
-    }
-    return GT_FAIL;
+    return configFuncInfo[devNum].tipDunitWriteFunc((GT_U8)devNum, interfaceAccess, interfaceId, regAddr, dataValue, mask);
 }
 
 
@@ -1046,11 +1083,7 @@ GT_STATUS    mvHwsDdr3TipIFRead
     GT_U32                mask
 )
 {
-    if (configFuncInfo[devNum].tipDunitReadFunc != NULL)
-    {
-        return configFuncInfo[devNum].tipDunitReadFunc((GT_U8)devNum, interfaceAccess, interfaceId, regAddr, data, mask);
-    }
-    return GT_FAIL;
+    return configFuncInfo[devNum].tipDunitReadFunc((GT_U8)devNum, interfaceAccess, interfaceId, regAddr, data, mask);
 }
 
 /*****************************************************************************
@@ -1315,15 +1348,8 @@ GT_STATUS AdllCalibration
     CHECK_STATUS(hwsOsExactDelayPtr((GT_U8)devNum, devNum, 10));
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, SDRAM_CONFIGURATION_REG, 0x10000000, 0x10000000));
 
-    if (configFuncInfo[devNum].tipGetFreqConfigInfoFunc != NULL)
-    {
-        CHECK_STATUS(configFuncInfo[devNum].tipGetFreqConfigInfoFunc((GT_U8)devNum, frequency, &freqConfigInfo));
-    }
-	else
-	{
-		DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("tipGetFreqConfigInfoFunc is NULL"));
-		return GT_NOT_INITIALIZED;
-	}
+    CHECK_STATUS(configFuncInfo[devNum].tipGetFreqConfigInfoFunc((GT_U8)devNum, frequency, &freqConfigInfo));
+
 	for (busCnt = 0; busCnt < octetsPerInterfaceNum; busCnt++)
     {
    		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busCnt)
@@ -1492,16 +1518,13 @@ GT_STATUS    ddr3TipFreqSet
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, SDRAM_CONFIGURATION_REG, dataValue, 0x7FFF));
 
     /* PLL configuration */
-    if (configFuncInfo[devNum].tipSetFreqDividerFunc != NULL)
+    /* Ofer b 5/11- assert ADLL */
+    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, SDRAM_CONFIGURATION_REG, 0, 0x60000000));
+    /* configure pll devider*/
+    for(interfaceIdx = startIf; interfaceIdx <= endIf; interfaceIdx++)
     {
-		/* Ofer b 5/11- assert ADLL */
-		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, SDRAM_CONFIGURATION_REG, 0, 0x60000000));
-		/* configure pll devider*/
-		for(interfaceIdx = startIf; interfaceIdx <= endIf; interfaceIdx++)
-		{
-			VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceIdx)
-			configFuncInfo[devNum].tipSetFreqDividerFunc((GT_U8)devNum, interfaceIdx, frequency);
-		}
+        VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceIdx)
+        configFuncInfo[devNum].tipSetFreqDividerFunc((GT_U8)devNum, interfaceIdx, frequency);
     }
 
     /* PLL configuration End */
@@ -1703,7 +1726,7 @@ GT_STATUS    ddr3TipFreqSet
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1A74, 0 , (0x7 << 8)));
 #endif
 		}
-           
+
         /*DFS  - Enter Self-Refresh*/
 		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, DFS_REG, 0x4 , 0x4));
 		/* polling on self refresh entry */
@@ -1712,12 +1735,8 @@ GT_STATUS    ddr3TipFreqSet
             DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("FreqSet: DDR3 poll failed on SR entry\n"));
         }
 
-          /* PLL configuration */
-        if (configFuncInfo[devNum].tipSetFreqDividerFunc != NULL)
-        {
-            configFuncInfo[devNum].tipSetFreqDividerFunc(devNum, interfaceId, frequency);
-        }
-        /* PLL configuration End */
+        /* PLL configuration */
+        configFuncInfo[devNum].tipSetFreqDividerFunc(devNum, interfaceId, frequency);
 
 		/* adjust tREFI to new frequency*/
 		tREFI = (topologyMap->interfaceParams[interfaceId].interfaceTemp == MV_HWS_TEMP_HIGH) ? TREFI_HIGH:TREFI_LOW;
@@ -1750,16 +1769,14 @@ GT_STATUS    ddr3TipFreqSet
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, 0x1A74, gRttNomCS1 , (0x7 << 8)));
 #endif
 		}
-        /* Reset Diver_b assert -> de-assert*/ 
+        /* Reset Diver_b assert -> de-assert*/
         CHECK_STATUS (mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, SDRAM_CONFIGURATION_REG, 0, 0x10000000));
-        CHECK_STATUS(hwsOsExactDelayPtr((GT_U8)devNum, devNum, 10));  
+        CHECK_STATUS(hwsOsExactDelayPtr((GT_U8)devNum, devNum, 10));
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, SDRAM_CONFIGURATION_REG, 0x10000000, 0x10000000));
 
         /* Adll configuration function of process and Frequency*/
-        if (configFuncInfo[devNum].tipGetFreqConfigInfoFunc != NULL)
-        {
-			CHECK_STATUS(configFuncInfo[devNum].tipGetFreqConfigInfoFunc(devNum, frequency, &freqConfigInfo));
-        }
+        CHECK_STATUS(configFuncInfo[devNum].tipGetFreqConfigInfoFunc(devNum, frequency, &freqConfigInfo));
+
         /* TBD check milo5 using device ID ? */
         for (busCnt = 0; busCnt < octetsPerInterfaceNum; busCnt++)
         {
@@ -1767,7 +1784,7 @@ GT_STATUS    ddr3TipFreqSet
              CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum,ACCESS_TYPE_UNICAST, interfaceId,  busCnt, DDR_PHY_DATA, 0x92,   freqConfigInfo.bwPerFreq << 8 /*freqMask[devNum][frequency] << 8*/, 0x700));
              CHECK_STATUS(ddr3TipBusReadModifyWrite(devNum,ACCESS_TYPE_UNICAST,  interfaceId,  busCnt, DDR_PHY_DATA,  0x94,  freqConfigInfo.ratePerFreq , 0x7));
         }
-        /* DUnit to Phy drive post edge, ADLL reset  assert  de-assert*/ 
+        /* DUnit to Phy drive post edge, ADLL reset  assert  de-assert*/
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, DRAM_PHY_CONFIGURATION, 0, (0x80000000  | 0x40000000)));
         CHECK_STATUS(hwsOsExactDelayPtr((GT_U8)devNum, 0, 100/(freqVal[frequency]/freqVal[DDR_FREQ_LOW_FREQ])));
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, DRAM_PHY_CONFIGURATION, (0x80000000  | 0x40000000), (0x80000000  | 0x40000000)));

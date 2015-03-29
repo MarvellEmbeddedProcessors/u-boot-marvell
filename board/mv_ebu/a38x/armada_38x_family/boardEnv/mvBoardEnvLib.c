@@ -3617,3 +3617,30 @@ void mvBoardAudioConnectionSet(MV_BOOL isConnected)
 {
 	board->isAudioConnected = isConnected;
 }
+
+/*******************************************************************************
+* mvBoardUsbPortStatusSet
+*
+* DESCRIPTION:
+*       Set the status of USB port
+*
+* INPUT:
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+
+MV_VOID mvBoardUsbPortStatusSet(MV_UNIT_ID usbType, MV_U32 usbPort, MV_BOOL usbStatus)
+{
+	MV_U32 i;
+	/* Go over existing USB ports in board structures: update USB status
+	   via port usbPost when type is usbTye */
+	for (i = 0; i < board->numBoardUsbInfo; i++)
+		if (board->pBoardUsbInfo[i].usbType == usbType &&
+				board->pBoardUsbInfo[i].usbPortNum == usbPort)
+			board->pBoardUsbInfo[usbPort].isActive = usbStatus;
+}

@@ -377,6 +377,11 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 #ifdef CONFIG_CMD_BOARDCFG
 		mvBoardNetComplexInfoUpdate();
 #endif
+		/* if flavor is A390, update the status of USB3.0 Host #1 to
+		   FALSE, because flavor a390 support 1 USB3.0 Host (Host #0) */
+		if (mvCtrlModelGet() == MV_6920_DEV_ID)
+			mvBoardUsbPortStatusSet(USB3_UNIT_ID, 1, MV_FALSE);
+
 		mvBoardMppIdUpdate();
 
 		netComplex = mvBoardNetComplexConfigGet();

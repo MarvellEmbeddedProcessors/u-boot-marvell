@@ -355,25 +355,23 @@ GT_STATUS ddr3TipTuneTrainingParams
 {
 	devNum = devNum; /* avoid warnings */
 
-	if(params->ckDelay != MV_PARAMS_UNDEFINED)
-		ckDelay = params->ckDelay;
+	if(params->ckDelay != MV_PARAMS_UNDEFINED)     ckDelay = params->ckDelay;
 
-	if(params->PhyReg3Val != MV_PARAMS_UNDEFINED)
-		PhyReg3Val = params->PhyReg3Val;
+	if(params->PhyReg3Val != MV_PARAMS_UNDEFINED)  PhyReg3Val = params->PhyReg3Val;
 
-	if(params->gRttNom == MV_PARAMS_UNDEFINED) gRttNom = params->gRttNom;
-	if(params->gDic == MV_PARAMS_UNDEFINED) gDic = params->gDic;
-	if(params->uiODTConfig == MV_PARAMS_UNDEFINED) uiODTConfig = params->uiODTConfig;
+	if(params->gRttNom != MV_PARAMS_UNDEFINED)     gRttNom = params->gRttNom;
+	if(params->gDic != MV_PARAMS_UNDEFINED)        gDic = params->gDic;
+	if(params->uiODTConfig != MV_PARAMS_UNDEFINED) uiODTConfig = params->uiODTConfig;
 
-	if(params->gZpriData == MV_PARAMS_UNDEFINED) gZpriData = params->gZpriData;
-	if(params->gZnriData == MV_PARAMS_UNDEFINED) gZnriData = params->gZnriData;
-	if(params->gZpriCtrl == MV_PARAMS_UNDEFINED) gZpriCtrl = params->gZpriCtrl;
-	if(params->gZnriCtrl == MV_PARAMS_UNDEFINED) gZnriCtrl = params->gZnriCtrl;
+	if(params->gZpriData != MV_PARAMS_UNDEFINED) gZpriData = params->gZpriData;
+	if(params->gZnriData != MV_PARAMS_UNDEFINED) gZnriData = params->gZnriData;
+	if(params->gZpriCtrl != MV_PARAMS_UNDEFINED) gZpriCtrl = params->gZpriCtrl;
+	if(params->gZnriCtrl != MV_PARAMS_UNDEFINED) gZnriCtrl = params->gZnriCtrl;
 
-	if(params->gZpodtData == MV_PARAMS_UNDEFINED) gZpodtData = params->gZpodtData;
-	if(params->gZnodtData == MV_PARAMS_UNDEFINED) gZnodtData = params->gZnodtData;
-	if(params->gZpodtCtrl == MV_PARAMS_UNDEFINED) gZpodtCtrl = params->gZpodtCtrl;
-	if(params->gZnodtCtrl == MV_PARAMS_UNDEFINED) gZnodtCtrl = params->gZnodtCtrl;
+	if(params->gZpodtData != MV_PARAMS_UNDEFINED) gZpodtData = params->gZpodtData;
+	if(params->gZnodtData != MV_PARAMS_UNDEFINED) gZnodtData = params->gZnodtData;
+	if(params->gZpodtCtrl != MV_PARAMS_UNDEFINED) gZpodtCtrl = params->gZpodtCtrl;
+	if(params->gZnodtCtrl != MV_PARAMS_UNDEFINED) gZnodtCtrl = params->gZnodtCtrl;
 
 	DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("DGL params are 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X \n",
 				gZpriData, gZnriData, gZpriCtrl, gZnriCtrl,

@@ -179,7 +179,7 @@
 #define REF_CLK_SELECTOR_VAL_PEX3(regVal)       (regVal >> 31) & 0x1
 #define REF_CLK_SELECTOR_VAL(regVal)            (regVal & 0x1)
 
-#define MAX_SELECTOR_VAL                        10
+#define MAX_SELECTOR_VAL                        13
 /* TWSI addresses */
 /* starting from A38x A0, i2c address of EEPROM is 0x57 */
 #ifdef MV88F69XX
@@ -301,6 +301,7 @@
 #define MV_88F68XX_A0_ID		0x4
 /* A39x revisions */
 #define MV_88F69XX_Z1_ID		0x2
+#define MV_88F69XX_A0_ID		0x6
 
 #define MPP_CONTROL_REG(id)                     (0x18000 + (id * 4))
 #define GPP_DATA_OUT_REG(grp)			(MV_GPP_REGS_BASE(grp) + 0x00)

@@ -199,14 +199,14 @@ SERDES_SPEED defaultSerdesSpeedMap[LAST_SERDES_TYPE] =
 /* Selector to Serdes type mapping */
 SERDES_TYPE commonPhysType[MAX_SERDES_LANES][MAX_SELECTOR_VAL] =
 {
-/*	 0X0	   0x1   0x2		0x3     0x4          0x5         0x6	       0x7		0x8		0x9		*/
-{ DEFAULT_SERDES, PEX0, SATA0,          SGMII0, SGMIIv3_0,   NA,          NA,          NA,		NA,		NA,		},  /* Lane 0 */
-{ DEFAULT_SERDES, PEX0, PEX1,           SATA0,  SGMII0,      SGMII1,      USB3_HOST0,  QSGMII,		SGMIIv3_0,	SGMIIv3_1,	},  /* Lane 1 */
-{ DEFAULT_SERDES, PEX1, PEX2,           SATA1,  SGMII1,      SGMIIv3_1,   NA,          NA,		NA,		NA ,		},  /* Lane 2 */
-{ DEFAULT_SERDES, PEX3, PEX3,           SATA3,  SGMII2,      USB3_HOST1,  USB3_DEVICE, SGMIIv3_2,	XAUI,		NA,		},  /* Lane 3 */
-{ DEFAULT_SERDES, PEX1, DEFAULT_SERDES, SGMII1, USB3_HOST0,  USB3_DEVICE, SATA2,       PEX2,		SGMIIv3_3,	XAUI,		},  /* Lane 4 */
-{ DEFAULT_SERDES, PEX2, SATA2,          SGMII2, USB3_HOST1,  USB3_DEVICE, SGMIIv3_2,   NA,		XAUI,		NA,		},  /* Lane 5 */
-{ DEFAULT_SERDES, PEX1, SGMIIv3_0,      NA,     XAUI,        NA,          NA,          NA,		NA,		NA,		},  /* Lane 6 */
+/*	 0X0	   0x1   0x2		0x3     0x4          0x5         0x6	       0x7		0x8		0x9		10	11	12*/
+{ DEFAULT_SERDES, PEX0, SATA0,          SGMII0, SGMIIv3_0,   NA,          NA,          NA,		NA,		NA,		NA,	NA,	NA		},  /* Lane 0 */
+{ DEFAULT_SERDES, PEX0, PEX1,           SATA0,  SGMII0,      SGMII1,      USB3_HOST0,  QSGMII,		SGMIIv3_0,	SGMIIv3_1,	NA,	NA,	NA		},  /* Lane 1 */
+{ DEFAULT_SERDES, PEX1, PEX2,           SATA1,  SGMII1,      SGMIIv3_1,   NA,          NA,		NA,		NA ,		NA,	NA,	NA		},  /* Lane 2 */
+{ DEFAULT_SERDES, PEX3, PEX3,           SATA3,  SGMII2,      USB3_HOST1,  USB3_DEVICE, SGMIIv3_2,	XAUI,		NA,		NA,	NA,	NA		},  /* Lane 3 */
+{ DEFAULT_SERDES, PEX1, DEFAULT_SERDES, SGMII1, USB3_HOST0,  USB3_DEVICE, SATA2,       PEX2,		SGMIIv3_3,	XAUI,		NA,     NA,	NA		},  /* Lane 4 */
+{ DEFAULT_SERDES, PEX2, SATA2,          SGMII2, USB3_HOST1,  USB3_DEVICE, SGMIIv3_2,   NA,		XAUI,		NA,		NA,     NA,	NA		},  /* Lane 5 */
+{ DEFAULT_SERDES, PEX1, SGMIIv3_0,      NA,     XAUI,        NA,          NA,          NA,		NA,		NA,		NA,     NA,	SGMIIv3_0	},  /* Lane 6 */
 };
 
 /*************************************/
@@ -300,6 +300,8 @@ MV_STATUS mvSysUpdateLaneConfig
 		mvPrintf("loadTopologyDB: Error: mvSysEnvConfigInit failed (res = 0x%x)\n", res);
 		return MV_INIT_ERROR;
     }
+    if (mvSysEnvDeviceRevGet() != MV_88F69XX_A0_ID) /* only for A0 selector val 0xC -SGMII(v3)- may be defined on lane6 */
+	    commonPhysType[6][0xC] = NA;
 
     for (configId = MV_CONFIG_LANE0; configId <= MV_CONFIG_LANE6; configId++) {
         serdesNum = configId - MV_CONFIG_LANE0;

@@ -154,7 +154,7 @@ MV_U8 commonPhysSelectorsSerdesRev2Map[LAST_SERDES_TYPE][MAX_SERDES_LANES] =
 	{ NA,    NA,     NA,	 0x5,	 NA,	 0x4,    NA	},  /* USB3_HOST1 */
 	{ NA,    NA,     NA,	 0x6,	 0x5,	 0x5,    NA	},  /* USB3_DEVICE */
 #ifdef MV88F69XX
-	{ 0x4,	 0x8,    NA,	 NA,	 NA,	 NA,     NA   },  /* SGMIIv3-0 */
+	{ 0x4,	 0x8,    NA,	 NA,	 NA,	 NA,     0xC  },  /* SGMIIv3-0 */
 	{ NA,    0x9,    0x5,	 NA,	 NA,	 NA,     NA   },  /* SGMIIv3-1 */
 	{ NA,    NA,     NA,	 0x7,	 NA,	 0x6,    NA   },  /* SGMIIv3-2 */
 	{ NA,    NA,     NA,	 NA,	 0x8,	 NA,     0x2  },  /* SGMIIv3-3 */
@@ -1705,6 +1705,9 @@ MV_STATUS mvHwsUpdateSerdesPhySelectors(SERDES_MAP* serdesConfigMap)
 	} else {
 		selectBitOff = 4;
 	}
+	/* update selectors  for Z1*/
+	if ( mvSysEnvDeviceRevGet() == MV_88F69XX_Z1_ID) /* for Z1 SGMII(v3)_0  cannot be defined on lane6 */
+	   commonPhysSelectorsSerdesRev2Map[SGMIIv3_0][6] = NA;
 
 	/* Updating bits 0-17 in the COMMON PHYS SELECTORS register according to the serdes types */
 	for (serdesIdx = 0; serdesIdx < mvHwsSerdesGetMaxLane(); serdesIdx++) {

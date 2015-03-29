@@ -860,7 +860,11 @@ GT_STATUS isOdpgAccessDone
     {
         CHECK_STATUS(mvHwsDdr3TipIFRead(devNum,ACCESS_TYPE_UNICAST, interfaceId, ODPG_BIST_DONE, readData, MASK_ALL_BITS));
  		dataValue = readData[interfaceId];
+#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_39X)
         if (((dataValue >> ODPG_BIST_DONE_BIT_OFFS )& 0x1) == ODPG_BIST_DONE_BIT_VALUE)
+#else
+        if ((dataValue & 0x1) == 0x1)
+#endif
         {
             dataValue = dataValue & 0xfffffffe;
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ODPG_BIST_DONE, dataValue, MASK_ALL_BITS));

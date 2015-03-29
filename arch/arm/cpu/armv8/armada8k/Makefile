@@ -21,3 +21,4 @@ obj-y += soc-init.o
 obj-y += tables.o
 obj-y += clock.o
 obj-$(CONFIG_ARMV8_PSCI)	+= psci.o
+obj-$(CONFIG_ARMV8_PSCI)	+= cache_llc.o

@@ -436,10 +436,11 @@ static GT_STATUS ddr3TipInitAc3Silicon
 		return status;
 	}
 
-    maskTuneFunc =     (SET_MEDIUM_FREQ_MASK_BIT |
+    maskTuneFunc =     (SET_LOW_FREQ_MASK_BIT |
+						LOAD_PATTERN_MASK_BIT |
+						SET_MEDIUM_FREQ_MASK_BIT |
 						WRITE_LEVELING_MASK_BIT |
 						WRITE_LEVELING_SUPP_MASK_BIT |
-						LOAD_PATTERN_2_MASK_BIT |
 						READ_LEVELING_MASK_BIT |
 						PBS_RX_MASK_BIT |
 						PBS_TX_MASK_BIT |
@@ -579,6 +580,7 @@ static GT_STATUS ddr3TipAc3SetDivider
     GT_U32 sarVal;
 	GT_U32 data = 0;
 	GT_U32 select = 0;
+	GT_U8 value;
 	MV_HWS_TOPOLOGY_MAP* topologyMap = ddr3TipGetTopologyMap(devNum);
 
 	/* Dunit training clock + 1:1/2:1 mode */
@@ -586,8 +588,9 @@ static GT_STATUS ddr3TipAc3SetDivider
 	CHECK_STATUS(ddr3TipAc3ServerRegRead(devNum,  0xF8294,  &data, MASK_ALL_BITS ));
 	CHECK_STATUS(ddr3TipAc3ServerRegWrite(devNum, 0xF8294,  R_MOD_W(divRatio, data, (0x3 << 30))));
 
-	CHECK_STATUS(ddr3TipAc3ServerRegRead(devNum,  0x1524,  &data, MASK_ALL_BITS ));
-	CHECK_STATUS(ddr3TipAc3ServerRegWrite(devNum, 0x1524,  R_MOD_W(((ddr3TipClockMode(frequency)-1) << 15), data, (0 << 15) )));
+	/* Configure Dunit to 1:1 in case of DLL off mode else 2:1*/
+	value = (ddr3TipClockMode(frequency) == 1)? 0 : 1;
+	CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, interfaceId, 0x1524, (value << 15), (1 << 15)));
 
 	select = (frequency == topologyMap->interfaceParams[firstActiveIf].memoryFreq)?(0 << 29) : (1 << 29);//TF is the function mode so the selector have to be 0.
 	CHECK_STATUS(ddr3TipAc3ServerRegRead(devNum,  0xF8294,  &data, MASK_ALL_BITS ));

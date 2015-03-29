@@ -32,7 +32,6 @@
 
 /************************** definitions ******************************/
 #define BC2_NUM_BYTES                   (3)
-#define BC2_NUMBER_OF_INTERFACES		5
 
 #define BC2_CLIENT_FIELD(client)		(client << 15)
 #define BC2_GET_CLIENT_FIELD(interfaceAccess,interfaceId) ((interfaceAccess == ACCESS_TYPE_MULTICAST) ? BC2_CLIENT_FIELD(MULTICAST_ID):BC2_CLIENT_FIELD(interfaceId))
@@ -738,9 +737,9 @@ static GT_STATUS ddr3TipInitBc2Silicon
     GT_U32  boardId
 )
 {
-    MV_HWS_TIP_CONFIG_FUNC_DB configFunc;
-	MV_HWS_TOPOLOGY_MAP* topologyMap = ddr3TipGetTopologyMap(devNum);
-	GT_U8 numOfBusPerInterface = 4;
+    MV_HWS_TIP_CONFIG_FUNC_DB   configFunc;
+	MV_HWS_TOPOLOGY_MAP*        topologyMap = ddr3TipGetTopologyMap(devNum);
+    GT_TUNE_TRAINING_PARAMS     tuneParams;
 
 	if(topologyMap == NULL)
 	{
@@ -752,7 +751,7 @@ static GT_STATUS ddr3TipInitBc2Silicon
 #ifdef STATIC_ALGO_SUPPORT
 	MV_HWS_TIP_STATIC_CONFIG_INFO staticConfig;
 
-    GT_U32 boardOffset = boardId * BC2_NUMBER_OF_INTERFACES *numOfBusPerInterface;
+    GT_U32 boardOffset = boardId * BC2_NUMBER_OF_INTERFACES * BC2_NUMBER_OF_PUP;
 
     staticConfig.siliconDelay = bc2SiliconDelayOffset[boardId];
     staticConfig.packageTraceArr = bc2PackageRoundTripDelayArray;
@@ -783,7 +782,7 @@ static GT_STATUS ddr3TipInitBc2Silicon
 	ddr3TipDevAttrInit(devNum);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_TRAINING_CONTROLLER, MV_DDR_TRAINING_CONTROLLER_TIP);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_NEGATIVE);
-	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, numOfBusPerInterface);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, BC2_NUMBER_OF_PUP);
 
 	maskTuneFunc = ( INIT_CONTROLLER_MASK_BIT |
                      SET_MEDIUM_FREQ_MASK_BIT |
@@ -799,6 +798,29 @@ static GT_STATUS ddr3TipInitBc2Silicon
                      CENTRALIZATION_RX_MASK_BIT |
                      CENTRALIZATION_TX_MASK_BIT);
 
+    if( ckDelay == MV_PARAMS_UNDEFINED )
+        ckDelay = 150;
+    delayEnable = 1;
+    caDelay = 0;
+
+    /* update DGL parameters */
+    tuneParams.ckDelay = ckDelay;
+    tuneParams.PhyReg3Val = 0xA;
+    tuneParams.gRttNom = 0x44;
+    tuneParams.gDic = 0x2;
+    tuneParams.uiODTConfig = 0x120012;
+    tuneParams.gZpriData = 123;
+    tuneParams.gZnriData = 123;
+    tuneParams.gZpriCtrl = 74;
+    tuneParams.gZnriCtrl = 74;
+    tuneParams.gZpodtData = 45;
+    tuneParams.gZnodtData = 45;
+    tuneParams.gZpodtCtrl = 45;
+    tuneParams.gZnodtCtrl = 45;
+
+    CHECK_STATUS(ddr3TipTuneTrainingParams(devNum, &tuneParams));
+
+    /* frequency and general parameters */
     ddr3TipBc2GetMediumFreq(devNum, firstActiveIf, &mediumFreq);
     initFreq = topologyMap->interfaceParams[firstActiveIf].memoryFreq;
     dfsLowFreq = 100;
@@ -807,12 +829,6 @@ static GT_STATUS ddr3TipInitBc2Silicon
     useBroadcast = GT_FALSE; /* multicast */
     isCbeRequired = GT_TRUE;
 	calibrationUpdateControl = 2;
-
-	/* Delay Param */
-	if( ckDelay == MV_PARAMS_UNDEFINED )
-		ckDelay = 150;
-	delayEnable = 1;
-	caDelay = 0;
 
     return GT_OK;
 }

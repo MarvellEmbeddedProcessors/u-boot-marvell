@@ -51,21 +51,21 @@ extern "C" {
 
 /************************* Definitions ***********************************************/
 
-#define BC2_NUMBER_OF_INTERFACES		5
-#define BC2_NUMBER_OF_PUP				4
-#define BC2_NUMBER_OF_BOARDS			2
+#define BC2_NUMBER_OF_INTERFACES               (5)
+#define BC2_NUMBER_OF_PUP                      (4)
+#define BC2_NUMBER_OF_BOARDS                   (2)
 
-#define BC2_DEVICE_SAR1_REG_ADDR                        0xF8200
-#define BC2_DEVICE_SAR2_REG_ADDR                        0xF8204
+#define BC2_DEVICE_SAR1_REG_ADDR               0xF8200
+#define BC2_DEVICE_SAR2_REG_ADDR               0xF8204
 
 #define BC2_JTAG_DEV_ID_STATUS_REG_ADDR        0x000F8244
 #define BC2_DEV_GENERAL_STATUS_REG1_ADDR_A0    0x000F82B4
 #define BC2_DEV_GENERAL_STATUS_REG1_ADDR_B0    0x000F8C84
 
-#define BC2_JTAG_DEV_ID_STATUS_VERSION_OFFSET     28
+#define BC2_JTAG_DEV_ID_STATUS_VERSION_OFFSET  28
 
-#define BC2_DEVICE_SAR1_MSYS_TM_SDRAM_SEL_OFFSET    	11
-#define BC2_DEVICE_SAR1_MSYS_TM_SDRAM_SEL_MASK      	0x1
+#define BC2_DEVICE_SAR1_MSYS_TM_SDRAM_SEL_OFFSET   11
+#define BC2_DEVICE_SAR1_MSYS_TM_SDRAM_SEL_MASK     0x1
 
 /************************* Enums ***********************************************/
 

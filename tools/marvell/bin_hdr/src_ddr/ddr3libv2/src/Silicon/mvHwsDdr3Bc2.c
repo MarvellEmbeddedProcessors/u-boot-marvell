@@ -785,39 +785,19 @@ static GT_STATUS ddr3TipInitBc2Silicon
 	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_NEGATIVE);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, numOfBusPerInterface);
 
-#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
-		/* for TM interface, since DFS flow is different from MSYS DFS (which is not
-		   functional) DFS is included in the flow */
-
 	maskTuneFunc = ( INIT_CONTROLLER_MASK_BIT |
                      SET_MEDIUM_FREQ_MASK_BIT |
                      WRITE_LEVELING_MASK_BIT |
                      LOAD_PATTERN_2_MASK_BIT |
                      READ_LEVELING_MASK_BIT |
-					 PBS_RX_MASK_BIT |
-					 PBS_TX_MASK_BIT |
+                     PBS_RX_MASK_BIT |
+                     PBS_TX_MASK_BIT |
                      SET_TARGET_FREQ_MASK_BIT |
                      WRITE_LEVELING_TF_MASK_BIT |
                      READ_LEVELING_TF_MASK_BIT |
                      WRITE_LEVELING_SUPP_TF_MASK_BIT |
                      CENTRALIZATION_RX_MASK_BIT |
                      CENTRALIZATION_TX_MASK_BIT);
-#else
-	/*MSYS case*/
-	maskTuneFunc =(	INIT_CONTROLLER_MASK_BIT |
-					SET_MEDIUM_FREQ_MASK_BIT |
-					WRITE_LEVELING_MASK_BIT |
-					LOAD_PATTERN_2_MASK_BIT |
-					READ_LEVELING_MASK_BIT |
-					PBS_RX_MASK_BIT |
-					PBS_TX_MASK_BIT |
-					SET_TARGET_FREQ_MASK_BIT |
-					WRITE_LEVELING_TF_MASK_BIT |
-					READ_LEVELING_TF_MASK_BIT |
-					CENTRALIZATION_RX_MASK_BIT |
-					CENTRALIZATION_TX_MASK_BIT);
-
-#endif
 
     ddr3TipBc2GetMediumFreq(devNum, firstActiveIf, &mediumFreq);
     initFreq = topologyMap->interfaceParams[firstActiveIf].memoryFreq;
@@ -833,7 +813,6 @@ static GT_STATUS ddr3TipInitBc2Silicon
 		ckDelay = 150;
 	delayEnable = 1;
 	caDelay = 0;
-	dfsLowFreq = 100;
 
     return GT_OK;
 }

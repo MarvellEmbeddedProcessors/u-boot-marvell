@@ -944,6 +944,7 @@ GT_STATUS mvHwsValidateAlgoComponents(GT_U8 devNum)
     status &= mvHwsValidateAlgoVar((GT_U32)configFuncInfo[devNum].tipGetClockRatio,         (GT_U32)NULL, "tipGetClockRatio");
 
     status &= mvHwsValidateAlgoVar((GT_U32)dqMapTable, (GT_U32)NULL, "dqMapTable");
+    status &= mvHwsValidateAlgoVar(dfsLowFreq, 0, "dfsLowFreq");
 
     return (status == GT_TRUE) ? GT_OK : GT_NOT_INITIALIZED;
 }
@@ -1420,7 +1421,6 @@ GT_STATUS    ddr3TipFreqSet
         endIf = interfaceId;
     }
 
-    freqVal[DDR_FREQ_LOW_FREQ] = dfsLowFreq;
 	/* calculate interface cs mask - Oferb 4/11*/
     /* speed bin can be different for each interface */
     for(interfaceIdx = 0; interfaceIdx <= MAX_INTERFACE_NUM-1; interfaceIdx++)
@@ -1648,7 +1648,6 @@ GT_STATUS    ddr3TipFreqSet
         endIf = interfaceId;
     }
 
-    freqVal[DDR_FREQ_LOW_FREQ] = dfsLowFreq;
 	/* calculate interface cs mask - Oferb 4/11*/
     /* speed bin can be different for each interface */
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
@@ -2262,6 +2261,8 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 	effective_cs = 0;/*Set to 0 after each loop to avoid illegal value may be used*/
 
     freq = initFreq;
+    freqVal[DDR_FREQ_LOW_FREQ] = dfsLowFreq;
+
     if (isPllBeforeInit != 0 )
     {
 		for(interfaceId = 0; interfaceId < MAX_INTERFACE_NUM; interfaceId++) {

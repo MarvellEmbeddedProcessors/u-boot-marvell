@@ -410,30 +410,29 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		fileSizeFromRam = simple_strtoul(argv[6], NULL, 16);
 	case 6:/* arg#6 is flash destination, scanned previously --> fall to 5*/
 	case 5:
-		copy_filename (BootFile, argv[4], sizeof(BootFile));
+		if(strcmp(argv[4], "EXT2") == 0)
+			fsys = FS_TYPE_EXT;
 		/* fall to 4*/
 	case 4:
-		if(strcmp(argv[3], "EXT2") == 0)
-			fsys = FS_TYPE_EXT;
+		devPart = argv[3];
 		/* fall to 3*/
 	case 3:
-		devPart = argv[2];
-		/* fall to 2*/
-	case 2:
-		if(strcmp(argv[1], "usb") == 0)
+		if(strcmp(argv[2], "usb") == 0)
 			loadfrom = 1;
-		else if(strcmp(argv[1], "mmc") == 0)
+		else if(strcmp(argv[2], "mmc") == 0)
 			loadfrom = 2;
-		else if(strcmp(argv[1], "ram") == 0) {
+		else if(strcmp(argv[2], "ram") == 0) {
 			loadfrom = 3;
 			if (devPart != NULL)
 				addr = load_addr = (unsigned int)simple_strtoul(devPart, NULL, 16);
 		}
 		if ((loadfrom == 1 || loadfrom == 2) && devPart == NULL) /* if using USB/MMC, and not selected interface num */
 			devPart = "0";					 /* default interface number is 0 */
-		/* fall to 1*/
+		/* fall to 2*/
+	case 2:
+		copy_filename (BootFile, argv[1], sizeof(BootFile));
 	case 1:    /* no parameter all default */
-		if(argc < 4)
+		if (argc < 2)
 			copy_filename (BootFile, partitionInfo->defaultImage, sizeof(BootFile));
 		break;
 	default:
@@ -607,14 +606,15 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 U_BOOT_CMD(
 	mtdburn,      6,     1,      do_mtdburn,
 	"Burn a Linux image and Filesystem` on the NAND/SPI flash.\n",
-	"[interface [<dev[:part]>  [File system [filename]]]] [flash destination] [single file size on RAM]\n"
+	"[filename [interface [<dev[:part]> [File system]]]] [flash destination] [single file size on RAM]\n"
 	"\tinterface  : ram <load address>, tftp, or mmc/usb <interface_num> (default is tftp)\n"
 	"\tFile system: FAT or EXT2 (default is FAT).\n"
 	"\tNAND default file-name is ubifs_arm_nand.image.\n"
 	"\tSPI default file-name is jffs2_arm.image.\n"
 	"\tFlash Destination: nand or spi (default is nand). \n"
-	"\te.g. MMC: 'mtdburn mmc 0 FAT ubifs_arm_nand.image nand'\n"
-	"\te.g. RAM: 'mtdburn ram 5000000 nand'\n"
+	"\te.g. TFTP: 'mtdburn ubifs_arm_nand.image'\n"
+	"\te.g. MMC: 'mtdburn ubifs_arm_nand.image mmc 0 FAT nand'\n"
+	"\te.g. RAM: 'mtdburn ubifs_arm_nand.image ram 5000000 nand'\n"
 
 );
 

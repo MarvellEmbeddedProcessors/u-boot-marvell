@@ -46,21 +46,21 @@ typedef struct _main_header {
 	uint32_t	prolog_size;		/*  4-7  */
 	uint32_t	prolog_checksum;	/*  8-11 */
 	uint32_t	boot_image_size;	/* 12-15 */
-	uint32_t	source_addr;		/* 16-19 */
-	uint32_t	load_addr;		/* 20-23 */
-	uint32_t	exec_addr;		/* 24-27 */
-	uint8_t		uart_cfg;		/*  28   */
-	uint8_t		baudrate;		/*  29   */
-	uint8_t		ext_count;		/*  30   */
-	uint8_t		aux_flags;		/*  31   */
-	uint32_t	io_arg_0;		/* 32-35 */
-	uint32_t	io_arg_1;		/* 36-39 */
-	uint32_t	io_arg_2;		/* 40-43 */
-	uint32_t	io_arg_3;		/* 44-47 */
-	uint32_t	rsrvd0;			/* 48-51 */
-	uint32_t	rsrvd1;			/* 52-53 */
-	uint32_t	rsrvd2;			/* 56-59 */
-	uint32_t	rsrvd3;			/* 60-63 */
+	uint32_t	boot_image_checksum;	/* 16-19 */
+	uint32_t	source_addr;		/* 20-23 */
+	uint32_t	load_addr;		/* 24-27 */
+	uint32_t	exec_addr;		/* 28-31 */
+	uint8_t		uart_cfg;		/*  32   */
+	uint8_t		baudrate;		/*  33   */
+	uint8_t		ext_count;		/*  34   */
+	uint8_t		aux_flags;		/*  35   */
+	uint32_t	io_arg_0;		/* 36-39 */
+	uint32_t	io_arg_1;		/* 40-43 */
+	uint32_t	io_arg_2;		/* 43-47 */
+	uint32_t	io_arg_3;		/* 48-51 */
+	uint32_t	rsrvd0;			/* 52-55 */
+	uint32_t	rsrvd1;			/* 56-59 */
+	uint32_t	rsrvd2;			/* 60-63 */
 } header_t;
 
 typedef struct _ext_header {
@@ -183,7 +183,7 @@ uint32_t checksum32(uint32_t *start, uint32_t len)
 
 void do_print_field(unsigned int value, char *name, int start, int size, int format)
 {
-	printf("[0x%05x : 0x%05x]  %-18s", start, start + size - 1, name);
+	printf("[0x%05x : 0x%05x]  %-26s", start, start + size - 1, name);
 
 	switch (format) {
 	case FMT_HEX:
@@ -212,6 +212,7 @@ int print_header(uint8_t *buf, int base)
 	print_field(main_hdr, header_t, prolog_size, FMT_DEC, base);
 	print_field(main_hdr, header_t, prolog_checksum, FMT_HEX, base);
 	print_field(main_hdr, header_t, boot_image_size, FMT_DEC, base);
+	print_field(main_hdr, header_t, boot_image_checksum, FMT_HEX, base);
 	print_field(main_hdr, header_t, source_addr, FMT_HEX, base);
 	print_field(main_hdr, header_t, load_addr, FMT_HEX, base);
 	print_field(main_hdr, header_t, exec_addr, FMT_HEX, base);
@@ -226,7 +227,6 @@ int print_header(uint8_t *buf, int base)
 	print_field(main_hdr, header_t, rsrvd0, FMT_HEX, base);
 	print_field(main_hdr, header_t, rsrvd1, FMT_HEX, base);
 	print_field(main_hdr, header_t, rsrvd2, FMT_HEX, base);
-	print_field(main_hdr, header_t, rsrvd3, FMT_HEX, base);
 
 	return sizeof(header_t);
 }
@@ -302,27 +302,14 @@ int print_extension(void *buf, int base, int count, int ext_size)
 	return ext_size;
 }
 
-int parse_image(FILE *in_fd, int size)
+int parse_image(uint8_t *buf, int size)
 {
-	uint8_t *buf;
-	int read;
 	int base = 0;
 	int ret = 1;
 	int prolog_size;
 	header_t *main_hdr;
-	uint32_t checksum, boot_checksum, prolog_checksum;
+	uint32_t checksum, prolog_checksum;
 
-	buf = malloc(size);
-	if (buf == NULL) {
-		printf("Error: failed allocating parse buffer\n");
-		return 1;
-	}
-
-	read = fread(buf, size, 1, in_fd);
-	if (read != 1) {
-		printf("Error: failed to read boot image\n");
-		goto error;
-	}
 
 	printf("################### Prolog Start ######################\n\n");
 	main_hdr = (header_t *)buf;
@@ -348,9 +335,6 @@ int parse_image(FILE *in_fd, int size)
 	}
 
 	do_print_field(0, "boot image", base, size - base - 4, FMT_NONE);
-
-	boot_checksum = *((uint32_t *)(buf + size - 4));
-	do_print_field(boot_checksum, "checksum", base + main_hdr->boot_image_size, 4, FMT_HEX);
 
 	printf("################### Image end ########################\n");
 
@@ -380,18 +364,17 @@ int parse_image(FILE *in_fd, int size)
 
 	/* boot image checksum */
 	checksum = checksum32((uint32_t *)(buf + base), size - base - 4);
-	if (checksum == boot_checksum) {
+	if (checksum == main_hdr->boot_image_checksum) {
 		printf("Image checksum:   OK!\n");
 	} else {
 		printf("\n****** ERROR: BAD IMAGE CHECKSUM 0x%08x != 0x%08x ********\n",
-		       checksum, boot_checksum);
+		       checksum, main_hdr->boot_image_checksum);
 		goto error;
 	}
 
 
 	ret = 0;
 error:
-	free(buf);
 	return ret;
 }
 
@@ -571,7 +554,7 @@ void update_uart(header_t *header)
  *
  * ****************************************/
 
-int write_prolog(int ext_cnt, char *ext_filename, int image_size, FILE *out_fd)
+int write_prolog(int ext_cnt, char *ext_filename, uint8_t *image_buf, int image_size, FILE *out_fd)
 {
 	header_t header;
 	int main_hdr_size = sizeof(header_t);
@@ -596,8 +579,9 @@ int write_prolog(int ext_cnt, char *ext_filename, int image_size, FILE *out_fd)
 	header.load_addr   = opts.load_addr;
 	header.exec_addr   = opts.exec_addr;
 	header.ext_count   = ext_cnt;
-	header.boot_image_size = (image_size + 3) & (~0x3);
 	header.aux_flags     = 0;
+	header.boot_image_size = (image_size + 3) & (~0x3);
+	header.boot_image_checksum = checksum32((uint32_t *)image_buf, image_size);
 
 	update_uart(&header);
 
@@ -644,45 +628,28 @@ error:
 	return ret;
 }
 
-int write_boot_image(FILE *in_fd, int image_size, FILE *out_fd)
+int write_boot_image(uint8_t *buf, uint32_t image_size, FILE *out_fd)
 {
 	int aligned_size;
 	int post_pad;
 	int pre_pad;
 	uint8_t pad_val = 0;
-	int written, read;
-	uint8_t *buf;
-	uint32_t checksum;
+	int written;
 
 	/* Image size must be aligned to 4 bytes */
 	aligned_size = (image_size + 3) & (~0x3);
 	post_pad = aligned_size - image_size;
-	pre_pad =  opts.source_addr;
+	pre_pad  = opts.source_addr;
 
 	/* fill with zeros untill the boot image start address */
 	while (pre_pad--)
 		fputc(pad_val, out_fd);
-
-	/* Read entire file to buffer for checksum calculation */
-	buf = malloc(aligned_size);
-	if (buf == NULL) {
-		printf("Error: Failed to allocate boot image buffer\n");
-		return 1;
-	}
-
-	read = fread(buf, image_size, 1, in_fd);
-	if (read != 1) {
-		printf("Error: failed to read boot image\n");
-		goto error;
-	}
 
 	/* Pad the buffer to be 4 bytes aligned */
 	while (post_pad) {
 		buf[aligned_size - post_pad] = pad_val;
 		post_pad--;
 	}
-
-	checksum = checksum32((uint32_t *)buf, aligned_size);
 
 	/* Write the aligned buffer to file */
 	written = fwrite(buf, aligned_size, 1, out_fd);
@@ -691,17 +658,8 @@ int write_boot_image(FILE *in_fd, int image_size, FILE *out_fd)
 		goto error;
 	}
 
-	/* Finally write the checksum */
-	written = fwrite(&checksum, sizeof(uint32_t), 1, out_fd);
-	if (written != 1) {
-		printf("Error: Failed to write boot image checksum\n");
-		goto error;
-	}
-
-	free(buf);
 	return 0;
 error:
-	free(buf);
 	return 1;
 }
 
@@ -716,6 +674,8 @@ int main(int argc, char *argv[])
 	int opt;
 	int ret = 0;
 	int image_size;
+	uint8_t *image_buf = NULL;
+	int read;
 
 	while ((opt = getopt(argc, argv, "hpms:i:l:e:a:b:r:u:")) != -1) {
 		switch (opt) {
@@ -783,10 +743,24 @@ int main(int argc, char *argv[])
 		printf("Error: Failed to open input file %s\n", in_file);
 		goto main_exit;
 	}
-	image_size = get_file_size(in_file);
 
+	/* Read the input file to buffer */
+	image_size = get_file_size(in_file);
+	image_buf = malloc((image_size + 3) & (~3));
+	if (image_buf == NULL) {
+		printf("Error: failed allocating input buffer\n");
+		return 1;
+	}
+
+	read = fread(image_buf, image_size, 1, in_fd);
+	if (read != 1) {
+		printf("Error: failed to read input file\n");
+		goto main_exit;
+	}
+
+	/* Parse the input image and leave */
 	if (parse) {
-		ret = parse_image(in_fd, image_size);
+		ret = parse_image(image_buf, image_size);
 		goto main_exit;
 	}
 
@@ -803,14 +777,13 @@ int main(int argc, char *argv[])
 		goto main_exit;
 	}
 
-	ret = write_prolog(ext_cnt, EXT_FILENAME, image_size, out_fd);
+	ret = write_prolog(ext_cnt, EXT_FILENAME, image_buf, image_size, out_fd);
 	if (ret)
 		goto main_exit;
 
-	ret = write_boot_image(in_fd, image_size, out_fd);
+	ret = write_boot_image(image_buf, image_size, out_fd);
 	if (ret)
 		goto main_exit;
-
 
 main_exit:
 	if (in_fd)
@@ -818,6 +791,9 @@ main_exit:
 
 	if (out_fd)
 		fclose(out_fd);
+
+	if (image_buf)
+		free(image_buf);
 
 	exit(ret);
 }

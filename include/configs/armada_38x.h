@@ -489,6 +489,7 @@ extern unsigned int mvUartPortGet(void);
 
 	#define CONFIG_USB_HOST_ETHER
 	#define CONFIG_USB_ETHER_ASIX
+	#define CONFIG_USB_MAX_CONTROLLER_COUNT		2
 
 #if defined(CONFIG_USB_XHCI) || defined(CONFIG_USB_EHCI)
 	#define CONFIG_USB_XHCI_HCD /* set kernel define - for mv_hal/usb usage */

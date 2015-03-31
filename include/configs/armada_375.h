@@ -443,6 +443,7 @@ extern unsigned int mvUartPortGet(void);
 	#define ENV_USB0_MODE   "host"
 	#define ENV_USB_ACTIVE        "0"
 	#define ENV_USB_MODE          "3"	/* 3 = USB3.0 | 2 = USB2.0 */
+	#define CONFIG_USB_MAX_CONTROLLER_COUNT		1
 #if defined(CONFIG_USB_XHCI) || defined(CONFIG_USB_EHCI)
 	#define CONFIG_USB_XHCI_HCD /* set kernel define - for mv_hal/usb usage */
 #endif /* CONFIG_USB_XHCI */

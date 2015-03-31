@@ -398,6 +398,7 @@ disclaimer.
 	#define ENV_USB1_MODE   "host"
 	#define ENV_USB_ACTIVE        "0"
 	#define ENV_USB_MODE          "2" /* 3 = USB3.0 | 2 = USB2.0 */
+	#define CONFIG_USB_MAX_CONTROLLER_COUNT		1
 
 	#define CONFIG_USB_HOST_ETHER
 	#define CONFIG_USB_ETHER_ASIX

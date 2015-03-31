@@ -245,6 +245,20 @@ int usb_lowlevel_init(int index, void **controller)
 	mvOsPrintf("Port (usbActive) : %d\tInterface (usbType = %d) : ", usbActive,
                 ((usbType == 3) ? 3 : 2));
 
+	/* Make sure that usbActive never exeeds the configured max controllers count
+	   The CONFIG_USB_MAX_CONTROLLER_COUNT can be changed for different boards */
+	if (usbActive >= CONFIG_USB_MAX_CONTROLLER_COUNT) {
+		mvOsPrintf("usbActive=%d is out of supported range\n",usbActive);
+		return -1;
+	}
+
+	/* Marvell USB code supports only one active controller (USB0), while the actual host
+	   device is selected by usbActive environment variable */
+	if (index > 0) {
+		mvOsPrintf("\nOnly one active controller supported! Skipping USB%d initialization.\n", index);
+		return -1;
+	}
+
 	return hc->hc_usb_lowlevel_init(usbActive, controller);
 }
 
@@ -289,6 +303,20 @@ int usb_lowlevel_stop(int index)
 		break;
 	default:
 		return printUsbError (MV_TRUE,usbActive);
+	}
+
+	/* Make sure that usbActive never exeeds the configured max controllers count
+	   The CONFIG_USB_MAX_CONTROLLER_COUNT can be changed for different boards */
+	if (usbActive >= CONFIG_USB_MAX_CONTROLLER_COUNT) {
+		mvOsPrintf("usbActive=%d is out of supported range\n",usbActive);
+		return -1;
+	}
+
+	/* Marvell USB code supports only one active controller (USB0), while the actual host
+	   device is selected by usbActive environment variable */
+	if (index > 0) {
+		mvOsPrintf("\nOnly one active controller supported! Skipping USB%d stop.\n", index);
+		return -1;
 	}
 
 	return hc->hc_usb_lowlevel_stop(usbActive);

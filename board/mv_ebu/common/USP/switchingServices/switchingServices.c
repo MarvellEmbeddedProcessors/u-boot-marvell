@@ -380,7 +380,7 @@ void flashErase (MV_U32 destination, MV_U32 len, MV_BOOL isNand)
 
 static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	MV_U32 i, filesize, addr, src_addr, dest_addr;
+	MV_U32 i, addr, src_addr, dest_addr;
 	MV_U32 kernel_unc_len, rootfs_unc_len = 0, unc_len, src_len;
 	MV_U32 kernel_addr = CFG_DEF_KERNEL_DEST_ADDR;
 	MV_U32 rootfs_addr = CFG_DEF_ROOTFS_DEST_ADDR;
@@ -392,7 +392,7 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	MV_U32 fsys = FS_TYPE_FAT;				/* default FS = FAT */
 	MV_BOOL isNand = MV_TRUE;				/* default destination = NAND */
 	addr = load_addr = CFG_DEF_SOURCE_LOAD_ADDR;
-	int fileSizeFromRam = -1;
+	int filesize, fileSizeFromRam = -1;
 
 	/* scan for flash destination in arguments (allowing usage of only 'mtdburn spi') */
 	for (i = 1 ; i < argc ; i++) {

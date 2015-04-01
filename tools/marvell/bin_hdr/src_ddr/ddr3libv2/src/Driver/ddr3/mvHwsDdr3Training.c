@@ -916,6 +916,17 @@ GT_BOOL mvHwsValidateAlgoVar(GT_U32 value, GT_U32 failValue, char* varName)
     return GT_TRUE;
 }
 
+GT_BOOL mvHwsValidateAlgoPtr(GT_VOID* ptr, GT_VOID* failValue, char* ptrName)
+{
+    if(ptr == failValue)
+    {
+        DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("Error: %s is not initialized (Algo Components Validation)\n", ptrName));
+        return GT_FALSE;
+    }
+
+    return GT_TRUE;
+}
+
 GT_STATUS mvHwsValidateAlgoComponents(GT_U8 devNum)
 {
     GT_BOOL status = GT_TRUE;
@@ -936,14 +947,14 @@ GT_STATUS mvHwsValidateAlgoComponents(GT_U8 devNum)
     status &= mvHwsValidateAlgoVar(gZnodtCtrl,  MV_PARAMS_UNDEFINED, "gZnodtCtrl");
 
     /* check functions pointers */
-    status &= mvHwsValidateAlgoVar((GT_U32)configFuncInfo[devNum].tipDunitMuxSelectFunc,    (GT_U32)NULL, "tipDunitMuxSelectFunc");
-    status &= mvHwsValidateAlgoVar((GT_U32)configFuncInfo[devNum].tipDunitWriteFunc,        (GT_U32)NULL, "tipDunitWriteFunc");
-    status &= mvHwsValidateAlgoVar((GT_U32)configFuncInfo[devNum].tipDunitReadFunc,         (GT_U32)NULL, "tipDunitReadFunc");
-    status &= mvHwsValidateAlgoVar((GT_U32)configFuncInfo[devNum].tipGetFreqConfigInfoFunc, (GT_U32)NULL, "tipGetFreqConfigInfoFunc");
-    status &= mvHwsValidateAlgoVar((GT_U32)configFuncInfo[devNum].tipSetFreqDividerFunc,    (GT_U32)NULL, "tipSetFreqDividerFunc");
-    status &= mvHwsValidateAlgoVar((GT_U32)configFuncInfo[devNum].tipGetClockRatio,         (GT_U32)NULL, "tipGetClockRatio");
+    status &= mvHwsValidateAlgoPtr(configFuncInfo[devNum].tipDunitMuxSelectFunc,    NULL, "tipDunitMuxSelectFunc");
+    status &= mvHwsValidateAlgoPtr(configFuncInfo[devNum].tipDunitWriteFunc,        NULL, "tipDunitWriteFunc");
+    status &= mvHwsValidateAlgoPtr(configFuncInfo[devNum].tipDunitReadFunc,         NULL, "tipDunitReadFunc");
+    status &= mvHwsValidateAlgoPtr(configFuncInfo[devNum].tipGetFreqConfigInfoFunc, NULL, "tipGetFreqConfigInfoFunc");
+    status &= mvHwsValidateAlgoPtr(configFuncInfo[devNum].tipSetFreqDividerFunc,    NULL, "tipSetFreqDividerFunc");
+    status &= mvHwsValidateAlgoPtr(configFuncInfo[devNum].tipGetClockRatio,         NULL, "tipGetClockRatio");
 
-    status &= mvHwsValidateAlgoVar((GT_U32)dqMapTable, (GT_U32)NULL, "dqMapTable");
+    status &= mvHwsValidateAlgoPtr(dqMapTable, NULL, "dqMapTable");
     status &= mvHwsValidateAlgoVar(dfsLowFreq, 0, "dfsLowFreq");
 
     return (status == GT_TRUE) ? GT_OK : GT_NOT_INITIALIZED;

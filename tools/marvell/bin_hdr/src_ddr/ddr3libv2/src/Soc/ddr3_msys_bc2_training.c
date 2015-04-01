@@ -222,7 +222,6 @@ MV_STATUS ddr3SiliconInit(void) {
 	MV_STATUS status;
 
 	genericInitController = 1;
-	mvPrintf(">>> setting genericInitController = 1\n");
 
 	//status = ddr3TipInitBc2Silicon(0, 1);
 	status = ddr3TipInitBc2(0, 0);
@@ -353,8 +352,6 @@ MV_VOID configureServerWindows(void)
 	MV_REG_WRITE(REG_XBAR_WIN_5_CTRL_ADDR, 0xF0081);
 
 	serverBaseAddr = MV_REG_READ(REG_XBAR_WIN_5_BASE_ADDR);
-
-	mvPrintf("configureServerWindows: Server base is 0x%x\n", serverBaseAddr);
 
 	/* init server access */
 	hwsServerRegSetFuncPtr = serverRegSet; 

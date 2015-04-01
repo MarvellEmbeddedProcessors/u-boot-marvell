@@ -798,6 +798,16 @@ static GT_STATUS ddr3TipInitBc2Silicon
                      CENTRALIZATION_RX_MASK_BIT |
                      CENTRALIZATION_TX_MASK_BIT);
 
+	/*Skip mid freq stages for 400Mhz DDR speed*/
+	if( (topologyMap->interfaceParams[firstActiveIf].memoryFreq == DDR_FREQ_400) ){
+		maskTuneFunc = (INIT_CONTROLLER_MASK_BIT |
+		                WRITE_LEVELING_MASK_BIT |
+		                LOAD_PATTERN_2_MASK_BIT |
+		                READ_LEVELING_MASK_BIT |
+		                CENTRALIZATION_RX_MASK_BIT |
+		                CENTRALIZATION_TX_MASK_BIT);
+	}
+
     if( ckDelay == MV_PARAMS_UNDEFINED )
         ckDelay = 150;
     delayEnable = 1;
@@ -1247,10 +1257,12 @@ static GT_STATUS ddr3TipCpuSetDivider
     switch (divider)
     {
         case 1:
-            writeData = 0x2;
+			/*Not 800 is a 667 only*/
+            writeData = (sarFreq==DDR_FREQ_800)?(0x2):(0x1);
             break;
         case 2:
-            writeData = 0x3;
+			/*Not 800 is a 667 only*/
+            writeData = (sarFreq==DDR_FREQ_800)?(0x3):(0x2);
             break;
         default:
             DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("Error: Wrong divider %d\n", divider));
@@ -1501,6 +1513,11 @@ static GT_STATUS ddr3TipBc2GetMediumFreq
 
     switch(sarFreq)
     {
+        case DDR_FREQ_400:
+			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("No medium freq supported for 400Mhz\n"));
+            *freq = DDR_FREQ_400;
+            break;
+
         case DDR_FREQ_667:
 			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("Medium DDR_FREQ_333\n"));
             *freq = DDR_FREQ_333;

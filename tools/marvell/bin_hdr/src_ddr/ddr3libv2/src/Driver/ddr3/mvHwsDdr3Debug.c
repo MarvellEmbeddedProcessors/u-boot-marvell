@@ -1293,7 +1293,7 @@ GT_U32 ddr3TipCompare(GT_U32 interfaceId, GT_U32 *pSrc, GT_U32 *pDst, GT_U32 uiB
    addrOffset = (uiByteIndex == 0xff) ? (GT_U32) 0xffffffff: (GT_U32) (0xff << (uiByteIndex*8));
    for(burstCnt = 0; burstCnt < EXT_ACCESS_BURST_LENGTH; burstCnt++)
    {
-      if ((pSrc[burstCnt] & addrOffset) != (pDst[burstCnt] & addrOffset))
+      if ((pSrc[burstCnt] & addrOffset) != (pDst[interfaceId] & addrOffset))
       {
           bIsFail = GT_TRUE;
       }

@@ -768,6 +768,15 @@ MV_STATUS mvCtrlPexPolaritySet(MV_PCIE_POLARITY polarity)
 {
 	MV_TWSI_SLAVE	twsiSlave;
 
+	/* Polarity is relevant only for DB board:
+	 * PCIe Polarity inversion is relevant only for PCIe slots.
+	 * only AC3 DB board use PCIe with slot,
+	 * other boards use PCIe to connect dual MSYS cpus*/
+#if defined CONFIG_ALLEYCAT3
+	if (mvBoardIdGet() != DB_AC3_ID)
+		return MV_OK;
+#endif
+
 	/* Initializing twsiSlave in order to read from the TWSI address */
 	twsiSlave.slaveAddr.address = 0x18;	/* Address of AC3 CPLD */
 	twsiSlave.slaveAddr.type = ADDR7_BIT;

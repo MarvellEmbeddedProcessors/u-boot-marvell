@@ -282,16 +282,24 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 	MV_U8	configVal;
 	MV_TWSI_SLAVE twsiSlave;
 
-	/*Fix the topology for A380 by SatR values*/
+	/* on AC3, DDR configuration (i.e ECC) supported only for DB board */
+#if defined CONFIG_ALLEYCAT3
+	if (mvBoardIdGet() != DB_AC3_ID)
+		return 0;
+#endif
+
+	/*Fix the topology for msys by SatR values*/
 	twsiSlave.slaveAddr.address = 0x4D;
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.offset = 0;
 	twsiSlave.moreThen256 = MV_TRUE;
 
-	/* Reading board id */
+	/* Reading update DDR ECC Enable from device
+	 * address: 0x4D, register: 0 bits[0:1]
+	 */
 	if (mvTwsiRead(0, &twsiSlave, &configVal, 1) != MV_OK) {
-		DEBUG_INIT_S("mvHwsBoardIdGet: TWSI Read failed\n");
+		mvPrintf("%s: Twsi failed to read enable DDR ECC update\n", __func__);
 		return 0;
 	}
 

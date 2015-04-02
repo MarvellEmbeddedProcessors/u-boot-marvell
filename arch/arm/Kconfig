@@ -112,6 +112,7 @@ config TARGET_ARMADA_38X
 
 config TARGET_ARMADA_LP
 	bool "Support Armada LP"
+	select SUPPORT_SPL
 
 config TARGET_SMDK2410
 	bool "Support smdk2410"

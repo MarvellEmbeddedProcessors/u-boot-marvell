@@ -839,7 +839,7 @@ u-boot.ldr.hex u-boot.ldr.srec: u-boot.ldr FORCE
 
 ifdef CONFIG_MVEBU
 SPLIMAGE	:= $(srctree)/spl/u-boot-spl.bin
-ifdef CONFIG_TARGET_ARMADA_8K
+ifneq ($(CONFIG_TARGET_ARMADA_8K), $(CONFIG_TARGET_ARMADA_LP))
 DOIMAGE		:=  $(srctree)/tools/doimage
 BIN2PHEX	:= $(srctree)/scripts/bin2phex.pl
 DOIMAGE_FLAGS	:= -b $(SPLIMAGE)

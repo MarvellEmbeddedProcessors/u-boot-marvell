@@ -277,7 +277,8 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 	netComplex = mvBoardNetComplexConfigGet();
 	switch (ethPortNum) {
 	case 0:
-		if (netComplex & (MV_NETCOMP_GE_MAC0_2_SGMII_L0 | MV_NETCOMP_GE_MAC0_2_SGMII_L1))
+		if (netComplex & (MV_NETCOMP_GE_MAC0_2_SGMII_L0 | MV_NETCOMP_GE_MAC0_2_SGMII_L1 |
+					MV_NETCOMP_GE_MAC0_2_SGMII_L6))
 			return MV_TRUE;
 		return MV_FALSE;
 	case 1:
@@ -444,7 +445,7 @@ MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum)
 	case 0:
 		if (netComplex & (MV_NETCOMP_GE_MAC0_2_RXAUI | MV_NETCOMP_GE_MAC0_2_XAUI |
 					MV_NETCOMP_GE_MAC0_2_SGMII_L0 | MV_NETCOMP_GE_MAC0_2_SGMII_L1 |
-					MV_NETCOMP_GE_MAC0_2_QSGMII))
+					MV_NETCOMP_GE_MAC0_2_QSGMII | MV_NETCOMP_GE_MAC0_2_SGMII_L6))
 			isConnected = MV_TRUE;
 		break;
 	case 1:
@@ -537,6 +538,9 @@ MV_STATUS mvBoardNetComplexInfoUpdate(MV_VOID)
 	/* COMPHY6: 2 = GBE v3 port 3 */
 	if (sysConfig6 == 0x2)
 		netComplexOptions |= MV_NETCOMP_GE_MAC3_2_SGMII_L6;
+	/* COMPHY6: 0xC = GBE v3 port 0 */
+	else if (sysConfig == 0xc)
+		netComplexOptions |= MV_NETCOMP_GE_MAC0_2_SGMII_L6;
 
 	/* COMPHY3: 8 = XAUI, COMPHY4: 9 = XAUI, COMPHY5: 8 = XAUI, COMPHY6: 4 = XAUI */
 	if (sysConfig3 == 0x8 && sysConfig4 == 0x9 && sysConfig5 == 0x8 && sysConfig6 == 0x4)

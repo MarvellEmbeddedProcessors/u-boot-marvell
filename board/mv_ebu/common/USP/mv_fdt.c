@@ -1072,7 +1072,7 @@ static int mv_fdt_update_flash(void *fdt)
 	else
 		sprintf(propval, "disabled"); /* disable NAND interface if NOT found active devices */
 
-	sprintf(node, "nand@%x", MV_NFC_REGS_OFFSET);
+	sprintf(node, "%s%x", MV_NFC_FDT_NODE_NAME, MV_NFC_REGS_OFFSET);
 	if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
 		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
 		return 0;

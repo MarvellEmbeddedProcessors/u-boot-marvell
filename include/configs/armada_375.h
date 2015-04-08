@@ -467,6 +467,7 @@ extern unsigned int mvUartPortGet(void);
 /*
  * Linux boot and other
  */
+#define MV_NFC_FDT_NODE_NAME	"nand@"
 #define MV_BOOTARGS_END         ":10.4.50.254:255.255.255.0:Armada375:eth0:none"
 #define MV_BOOTARGS_END_SWITCH  ":::Armada375:eth0:none"
 #define RCVR_IP_ADDR            "169.254.100.100"

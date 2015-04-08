@@ -277,7 +277,7 @@ static int do_cpss_env( cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[]
 					 "console=${consoledev},${baudrate} ${othbootargs} ${linux_parts}; tftp ${linux_loadaddr} "
 					 "${image_name};bootm ${linux_loadaddr}");
 
-	sprintf(buf,"'spi_flash:%dm(spi_uboot)ro,%dm(spi_kernel),%dm(spi_rootfs),-(remainder)"
+	sprintf(buf,"'mtdparts=spi_flash:%dm(spi_uboot)ro,%dm(spi_kernel),%dm(spi_rootfs),-(remainder)"
 		";armada-nand:%dm(nand_kernel),-(nand_rootfs)'", CFG_APPL_FLASH_PART_UBOOT_SIZE / _1M,
 		CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE / _1M, CFG_APPL_SPI_FLASH_PART_ROOTFS_SIZE / _1M,
 		CFG_APPL_NAND_FLASH_PART_KERNEL_SIZE / _1M);
@@ -290,7 +290,7 @@ static int do_cpss_env( cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[]
 	sprintf(buf,
 		"sf probe; sf read ${loadaddr} 0x%x 0x%x; setenv bootargs ${console} "
 		"ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${netdev}:off "
-		"root=/dev/mtdblock2 rw init=/linuxrc rootfstype=jffs2 rootwait mtdparts=${mtdparts} "
+		"root=/dev/mtdblock2 rw init=/linuxrc rootfstype=jffs2 rootwait ${mtdparts} "
 		"${mvNetConfig}; bootm ${loadaddr} ",
 		CFG_APPL_SPI_FLASH_PART_KERNEL_START, CFG_APPL_SPI_FLASH_PART_KERNEL_SIZE);
 #ifndef MV_NAND
@@ -304,7 +304,7 @@ static int do_cpss_env( cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[]
 
 #ifdef MV_NAND
 	sprintf(buf,
-		"nand read ${loadaddr} 0x%x 0x%x; setenv bootargs ${console} mtdparts=${mtdparts} "
+		"nand read ${loadaddr} 0x%x 0x%x; setenv bootargs ${console} ${mtdparts} "
 		"ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${netdev}:off "
 		"ubi.mtd=5 root=ubi0:rootfs_nand ro rootfstype=ubifs ${mvNetConfig}; bootm 0x2000000;" ,
 		CFG_APPL_NAND_FLASH_PART_KERNEL_START,

@@ -1023,17 +1023,18 @@ static int mv_fdt_update_flash(void *fdt)
 	char propval[10];				/* property value */
 	const char *prop = "status";	/* property name */
 	char node[64];					/* node name */
-	MV_U32 flashNum;				/* number of flashes defined for beard */
 	MV_U32 unit, maxUnits;			/* number of interface controller units */
 	MV_U32 chipSel;
 	MV_BOOL interfaceIsActive;
 
 	/* start with SPI flashes */
-	flashNum = mvBoardGetDevicesNumber(BOARD_DEV_SPI_FLASH);
 	maxUnits = mvCtrlSocUnitInfoNumGet(SPI_UNIT_ID);
+	/* This loops assume that the board flash mapping is fully mapped.
+	   i.e.: if SoC has 2 SPI flash units, it's board mapping describe
+	   unit status for both. */
 	for (unit = 0; unit < maxUnits; unit++) {
 		interfaceIsActive = MV_FALSE;
-		for (device = 0; device < flashNum; device++) {
+		for (device = 0; device < maxUnits; device++) {
 			/* Only devices related to current bus/unit */
 			if (mvBoardGetDevBusNum(device, BOARD_DEV_SPI_FLASH) != unit)
 				continue;
@@ -1057,9 +1058,9 @@ static int mv_fdt_update_flash(void *fdt)
 	} /* SPI units/buses */
 
 	/* handle NAND flashes - there is only one NAND unit, but different CS are possible */
-	flashNum = mvBoardGetDevicesNumber(BOARD_DEV_NAND_FLASH);
+	maxUnits = mvCtrlSocUnitInfoNumGet(NAND_UNIT_ID);
 	interfaceIsActive = MV_FALSE;
-	for (device = 0; device < flashNum; device++) {
+	for (device = 0; device < maxUnits; device++) {
 		if (mvBoardGetDevState(device, BOARD_DEV_NAND_FLASH) == MV_TRUE) {
 			interfaceIsActive = MV_TRUE; /* One active device is enough */
 			/* Once a NAND node updated, there is no reason to search for other devices */
@@ -1079,9 +1080,9 @@ static int mv_fdt_update_flash(void *fdt)
 	}
 
 	/* handle NOR flashes - there is only one NOR unit, but different CS are possible */
-	flashNum = mvBoardGetDevicesNumber(BOARD_DEV_NOR_FLASH);
+	maxUnits = mvCtrlSocUnitInfoNumGet(DEVBUS_UNIT_ID);
 	chipSel = 0xFFFF;
-	for (device = 0;  device < flashNum; device++) {
+	for (device = 0;  device < maxUnits; device++) {
 		if (mvBoardGetDevState(device, BOARD_DEV_NOR_FLASH) != MV_TRUE)
 			continue;
 

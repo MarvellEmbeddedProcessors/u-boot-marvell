@@ -145,6 +145,8 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /* UART_UNIT_ID     */		{ 4,	4,	4,	4,	1,	1},
 /* CESA_UNIT_ID     */		{ 2,	2,	2,	2,	2,	2},
 /* SPI_UNIT_ID      */		{ 2,	2,	2,	2,	2,	2},
+/* NAND_UNIT_ID     */		{ 1,    1,      1,      1,      1,      1},
+/* DEVBUS_UNIT_ID   */		{ 1,    1,      1,      1,      1,      1}, /* NOR */
 /* AUDIO_UNIT_ID    */		{ 1,	1,	0,	1,	0,	1},
 /* SDIO_UNIT_ID     */		{ 1,	1,	1,	1,	1,	1},
 /* TS_UNIT_ID       */		{ 0,	0,	0,	0,	0,	0},
@@ -173,6 +175,8 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /* UART_UNIT_ID			*/ { 4,	4},
 /* CESA_UNIT_ID			*/ { 2,	2},
 /* SPI_UNIT_ID			*/ { 2,	2},
+/* NAND_UNIT_ID			*/ { 1, 1},
+/* DEVBUS_UNIT_ID		*/ { 1, 1}, /* NOR */
 /* AUDIO_UNIT_ID		*/ { 0,	1},
 /* SDIO_UNIT_ID			*/ { 1,	1},
 /* TS_UNIT_ID			*/ { 0,	0},

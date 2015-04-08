@@ -1609,6 +1609,9 @@ MV_U32 mvBoardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 *
 * DESCRIPTION:
 *	Return the device's bus number.
+*	This function assume that the board flash mapping is fully mapped.
+*	i.e.: if SoC has 2 SPI flash units, it's board mapping describe
+*	unit status for both.
 *
 * INPUT:
 *	devIndex - The device sequential number on the board
@@ -1637,6 +1640,9 @@ MV_U32 mvBoardGetDevBusNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 *
 * DESCRIPTION:
 *	Return the device's activity state.
+*       This function assume that the board flash mapping is fully mapped.
+*       i.e.: if SoC has 2 SPI flash units, it's board mapping describe
+*       unit status for both.
 *
 * INPUT:
 *	devIndex - The device sequential number on the board

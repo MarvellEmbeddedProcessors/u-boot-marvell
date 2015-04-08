@@ -267,6 +267,8 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_67xx_INDEX_MAX] = {
 /* UART_UNIT_ID         */ { 2, },
 /* CESA_UNIT_ID         */ { 2, },
 /* SPI_UNIT_ID          */ { 2, },
+/* NAND_UNIT_ID		*/ { 0, },
+/* DEVBUS_UNIT_ID	*/ { 0, },
 /* AUDIO_UNIT_ID        */ { 1, },
 /* SDIO_UNIT_ID         */ { 1, },
 /* TS_UNIT_ID           */ { 0, },

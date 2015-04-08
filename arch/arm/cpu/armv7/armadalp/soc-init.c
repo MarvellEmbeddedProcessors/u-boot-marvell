@@ -29,6 +29,15 @@ int soc_early_init_f(void)
 	return 0;
 }
 
+int soc_get_id(void)
+{
+	/* TO-DO, get soc ID from PCIe register */
+	/* in ArmadaLP, there is no device ID register, like A38x,
+	    it needs to be got from PCIe register, like A370 and AXP */
+	u32 id = 0x9991;
+	return id;
+}
+
 struct mvebu_soc_family *soc_init(void)
 {
 	/* Do early SOC specific init here */

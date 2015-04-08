@@ -164,7 +164,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /* PEX_UNIT_ID			*/ { 4,	4},
 /* ETH_GIG_UNIT_ID		*/ { 4,	4},	/* total SoC MAC unit count (Not updated) */
 /* ETH_GIG_ACTIVE_UNIT_ID	*/ { 4,	4},  /* active MAC unit count (updated by ethComPhy) */
-/* USB_UNIT_ID			*/ { 0,	1},
+/* USB_UNIT_ID			*/ { 1,	1},
 /* USB3_UNIT_ID			*/ { 1,	2},/* usb3 serdes lane  */
 /* IDMA_UNIT_ID			*/ { 0,	0},
 /* XOR_UNIT_ID			*/ { 2,	2},

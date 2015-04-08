@@ -391,7 +391,7 @@ typedef struct boardDeviceIdWoVal {
 /* A385 */ {MV_6811,	MV_6811_DEV_ID,		0x77fffff,	0x00 },\
 /* A388 */ {MV_6828,	MV_6828_DEV_ID,		0x77fffff,	0x00 },\
 /* NONE */ {MV_NONE,	0x0,			0x0,		0x0  },\
-/* A395 */ {MV_6920,	MV_6920_DEV_ID,		0x17fcfff,	0x00 },\
+/* A395 */ {MV_6920,	MV_6920_DEV_ID,		0x57fcfff,	0x00 },\
 /* A398 */ {MV_6928,	MV_6928_DEV_ID,		0x77fffff,	0x00 },\
 /*MAX_HW_DEV_ID*/ {MV_MAX_HW_DEV_ID,	0x0,			0x0,		0x0  },\
 /* A383 */ {MV_6W22,	MV_6W22_DEV_ID,		0x77fffff,	0x00 },\

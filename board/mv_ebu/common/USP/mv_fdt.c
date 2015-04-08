@@ -1197,8 +1197,8 @@ static int mv_fdt_scan_and_set_alias(void *fdt,
 	int err = 0;		/* error number */
 	int level = 0;		/* current fdt scanning depth */
 	char aliasname[128];	/* alias name to be stored in '/aliases' node */
-	char path[128] = "";	/* full path to current node */
-	char tmp[128];		/* auxiliary char array for extended node name*/
+	char path[256] = "";	/* full path to current node */
+	char tmp[256];		/* auxiliary char array for extended node name*/
 	char *cut;		/* auxiliary char pointer */
 	const char *node;	/* node name */
 	uint32_t tag;		/* device tree tag at given offset */

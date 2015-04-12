@@ -270,6 +270,7 @@ typedef struct
 	MV_U32 gDic; 		/*Memory drive strength*/
 	MV_U32 uiODTConfig; /*ODT Pin Configuration*/
 	MV_U32 gRttNom; 	/*Memory ODT at the receive*/
+	MV_U32 gRttWR; 		/*Memory ODT at the receive during write*/
 } MV_TUNE_TRAINING_PARAMS;
 
 #endif /* _DDR3_TOPOLOGY_CONFIG_H */

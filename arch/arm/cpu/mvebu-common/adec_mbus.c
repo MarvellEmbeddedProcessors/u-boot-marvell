@@ -177,6 +177,12 @@ int adec_init(struct adec_win *windows)
 
 int dram_init(void)
 {
+#ifdef CONFIG_PALLADIUM
+	/* NO DRAM init sequence in Pallaidum, so set static DRAM size of 256MB */
+	gd->bd->bi_dram[0].start = 0;
+	gd->bd->bi_dram[0].size = 0x10000000;
+	gd->ram_size = gd->bd->bi_dram[0].size;
+#else
 	int cs;
 	u32 ctrl, size, base;
 
@@ -204,6 +210,7 @@ int dram_init(void)
 		error("No DRAM banks detected");
 		return 1;
 	}
+#endif
 
 	return 0;
 }

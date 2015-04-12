@@ -1107,8 +1107,8 @@ MV_VOID printTopologyDetails(SERDES_MAP  *serdesMapArray)
 
 	mvPrintf("board SerDes lanes topology details:\n");
 
-	mvPrintf(" | Lane #  | Speed |    Type      |\n");
-	mvPrintf(" ---------------------------------\n");
+	mvPrintf(" | Lane # | Speed|    Type     |\n");
+	mvPrintf(" ------------------------------|\n");
 	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
 		if (serdesMapArray[laneNum].serdesType == DEFAULT_SERDES)
 		{
@@ -1116,16 +1116,15 @@ MV_VOID printTopologyDetails(SERDES_MAP  *serdesMapArray)
 		}
 		mvPrintf (" |   %d    |  %d   |  ",mvHwsGetPhysicalSerdesNum(laneNum),serdesMapArray[laneNum].serdesSpeed);
 		if ((serdesMapArray[laneNum].serdesMode == PEX_END_POINT_x4) || (serdesMapArray[laneNum].serdesMode == PEX_ROOT_COMPLEX_x4)){
-			mvPrintf ("PCIe0x4\t\t",pexBy4Lane++ );
+			mvPrintf ("PCIe0x4-%01d  ",pexBy4Lane++ );
 		}
 		else{
-			mvPrintf ("%s\t",serdesTypeToString[serdesMapArray[laneNum].serdesType]);
+			mvPrintf ("%s",serdesTypeToString[serdesMapArray[laneNum].serdesType]);
 		}
 		mvPrintf("|\n");
 	}
-	mvPrintf(" ---------------------------------\n");
+	mvPrintf(" -------------------------------\n");
 }
-
 
 
 /***************************************************************************/

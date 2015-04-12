@@ -1630,6 +1630,7 @@ MV_VOID mvCtrlRevNameGet(char *pNameBuff)
 	case MV_88F68XX_Z1_ID:
 	case MV_88F68XX_A0_ID:
 	case MV_88F69XX_Z1_ID:
+	case MV_88F69XX_A0_ID:
 			mvOsSPrintf(pNameBuff, " Rev %s", revArray[revId]);
 			return;
 	default:

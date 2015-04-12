@@ -128,6 +128,7 @@ GT_U32 gZnodtCtrl = MV_PARAMS_UNDEFINED; /* controller data - N ODT */
 
 GT_U32 uiODTConfig = MV_PARAMS_UNDEFINED;
 GT_U32 gRttNom = MV_PARAMS_UNDEFINED;
+GT_U32 gRttWR = MV_PARAMS_UNDEFINED;
 GT_U32 gDic = MV_PARAMS_UNDEFINED;
 
 /************************** globals ***************************************/
@@ -360,6 +361,7 @@ GT_STATUS ddr3TipTuneTrainingParams
 	if(params->PhyReg3Val != MV_PARAMS_UNDEFINED)  PhyReg3Val = params->PhyReg3Val;
 
 	if(params->gRttNom != MV_PARAMS_UNDEFINED)     gRttNom = params->gRttNom;
+	if(params->gRttWR != MV_PARAMS_UNDEFINED)     gRttWR = params->gRttWR;
 	if(params->gDic != MV_PARAMS_UNDEFINED)        gDic = params->gDic;
 	if(params->uiODTConfig != MV_PARAMS_UNDEFINED) uiODTConfig = params->uiODTConfig;
 
@@ -373,10 +375,10 @@ GT_STATUS ddr3TipTuneTrainingParams
 	if(params->gZpodtCtrl != MV_PARAMS_UNDEFINED) gZpodtCtrl = params->gZpodtCtrl;
 	if(params->gZnodtCtrl != MV_PARAMS_UNDEFINED) gZnodtCtrl = params->gZnodtCtrl;
 
-	DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("DGL params are 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X \n",
+	DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("DGL params are 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X\n",
 				gZpriData, gZnriData, gZpriCtrl, gZnriCtrl,
 				gZpodtData, gZnodtData, gZpodtCtrl, gZnodtCtrl,
-				gRttNom, gDic, uiODTConfig));
+				gRttNom, gDic, uiODTConfig, gRttWR));
 
 	return GT_OK;
 }

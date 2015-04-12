@@ -195,6 +195,7 @@ typedef struct
 	GT_U32 gDic;
 	GT_U32 uiODTConfig;
 	GT_U32 gRttNom;
+	GT_U32 gRttWR;
 } GT_TUNE_TRAINING_PARAMS;
 
 #endif /* _DDR_TOPOLOGY_CONFIG_H */

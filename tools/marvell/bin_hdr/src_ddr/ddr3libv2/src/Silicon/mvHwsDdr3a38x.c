@@ -262,6 +262,30 @@ static GT_U16 A38xVcoFreqPerSar[] =
 	800
 };
 
+GT_U16 A38xODTSlope[] =
+{
+	21443,
+	1452,
+	482,
+	240,
+	141,
+	90,
+	67,
+	52
+};
+
+GT_U16 A38xODTIntercept[] =
+{
+	1517,
+	328,
+	186,
+	131,
+	100,
+	80,
+	69,
+	61
+};
+
 #ifdef CONFIG_ARMADA_38X_Z1_OBSOLETE
 GT_U32 DQbitMap2Phypin[] =
 {

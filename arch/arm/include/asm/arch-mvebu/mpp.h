@@ -56,6 +56,18 @@ struct mpp_bus {
 	struct mpp_pin pin_data[MAX_BUS_OPTS][MAX_PINS_PER_BUS];
 };
 
+#ifndef CONFIG_MVEBU_MPP
+
+#define mpp_set_pin(mpp_id)
+#define mpp_get_pin(mpp_id)
+#define mpp_set_and_update(mpp_reg)
+#define mpp_is_bus_enabled(bus)
+#define mpp_is_bus_valid(bus)
+#define mpp_enable_bus(mpp_reg, bus_id, bus_alt)
+
+
+#else
+
 u8   mpp_get_pin(int mpp_id);
 void mpp_set_pin(int mpp_id, int value);
 int  mpp_enable_bus(u32 *mpp_reg, int bus_id, int bus_alt);
@@ -63,5 +75,7 @@ int  mpp_is_bus_valid(struct mpp_bus *bus);
 int  mpp_is_bus_enabled(struct mpp_bus *bus);
 void mpp_set_and_update(u32 *mpp_reg);
 struct mpp_bus *soc_get_mpp_bus(int bus_id);
+
+#endif /* CONFIG_MVEBU_MPP */
 
 #endif /* _MPP_H_ */

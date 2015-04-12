@@ -835,6 +835,14 @@ static MV_STATUS ddr3HwsTuneTrainingParams(MV_U8 devNum)
 	params.uiODTConfig = MV_TUNE_TRAINING_PARAMS_ODT_CONFIG;
 	params.gRttNom = MV_TUNE_TRAINING_PARAMS_RTT_NOM;
 
+#ifdef CONFIG_DDR4
+	params.gZpodtData = MV_TUNE_TRAINING_PARAMS_P_ODT_DATA_DDR4;
+	params.uiODTConfig = MV_TUNE_TRAINING_PARAMS_ODT_CONFIG_DDR4;
+	params.gRttNom = MV_TUNE_TRAINING_PARAMS_RTT_NOM_DDR4;
+	params.gDic = MV_TUNE_TRAINING_PARAMS_DIC_DDR4;
+	params.gRttWR =  MV_TUNE_TRAINING_PARAMS_RTT_WR_DDR4;
+#endif
+
 	status = ddr3TipTuneTrainingParams(devNum, &params);
 	if (MV_OK != status) {
 		mvPrintf("%s Training Sequence - FAILED\n", ddrType);

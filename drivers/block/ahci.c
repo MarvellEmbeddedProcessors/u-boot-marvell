@@ -1083,6 +1083,14 @@ static int ata_io_flush(struct ahci_probe_ent *probe_ent, u8 port)
 	fis[1] = 1 << 7;	 /* Command FIS. */
 	fis[2] = ATA_CMD_FLUSH_EXT;
 
+	/* Clear IRQ status register
+	 * before issuing the flush command to the controller, make
+	 * sure IRQ status register is flushed (in case a previous
+	 * transaction ended, without clearing it). ** Flush command
+	 * will not start/complete unless clearing IRQ **
+	 * */
+	writel_with_flush(0xffffffff, port_mmio + PORT_IRQ_STAT);
+
 	memcpy((unsigned char *)pp->cmd_tbl, fis, 20);
 	ahci_fill_cmd_slot(pp, cmd_fis_len);
 	writel_with_flush(1, port_mmio + PORT_CMD_ISSUE);

@@ -193,8 +193,7 @@
 /*********  IO Definitions **********/
 
 /* UART */
-#ifdef CONFIG_MVEBU_UART
-	#define CONFIG_SYS_NS16550
+#ifdef CONFIG_SYS_NS16550
 	#define CONFIG_SYS_NS16550_SERIAL
 	#define CONFIG_SYS_NS16550_MEM32
 	#define CONFIG_SYS_NS16550_REG_SIZE	(-4)
@@ -204,7 +203,7 @@
 	#define CONFIG_BAUDRATE			115200
 	#define CONFIG_SYS_LOADS_BAUD_CHANGE	/* allow baudrate changes */
 	/*#define CONFIG_SYS_DUART_CHAN		0*/
-#endif /* CONFIG_MVEBU_UART */
+#endif /* CONFIG_SYS_NS16550 */
 
 
 /* GPIO */

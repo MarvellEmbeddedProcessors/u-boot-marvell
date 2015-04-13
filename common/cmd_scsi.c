@@ -517,7 +517,7 @@ static ulong scsi_write(int device, lbaint_t blknr,
 		      __func__, start, smallblks, buf_addr);
 		if (scsi_exec(pccb) != TRUE) {
 			scsi_print_error(pccb);
-			blkcnt -= blks;
+			blkcnt -= (blks + smallblks);
 			break;
 		}
 		buf_addr += pccb->datalen;

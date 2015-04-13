@@ -1,0 +1,10 @@
+
+/dts-v1/;
+
+/ {
+	model = "Marvell Armada_LP Development Board";
+	compatible = "marvell,armada-lp-db", "marvell,armada-lp";
+
+	#address-cells = <2>;
+	#size-cells = <1>;
+};

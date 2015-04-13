@@ -52,6 +52,7 @@ dtb-$(CONFIG_AM33XX) += am335x-boneblack.dtb
 dtb-$(CONFIG_SOCFPGA) += socfpga_cyclone5_socrates.dtb
 
 dtb-$(CONFIG_MVEBU) += armada-385-db.dtb
+dtb-$(CONFIG_MVEBU) += armada-lp.dtb
 dtb-$(CONFIG_MVEBU) += armada-8k.dtb
 
 targets += $(dtb-y)

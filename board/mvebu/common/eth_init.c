@@ -20,6 +20,7 @@
 #include <common.h>
 #include <errno.h>
 #include <netdev.h>
+#include <spi.h>
 #include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/driver_interface.h>
 
@@ -31,6 +32,11 @@ int board_eth_init(bd_t *bis)
 
 #if defined(CONFIG_E1000)
 	e1000_initialize(bis);
+#endif
+
+#ifdef CONFIG_ENC28J60
+	printf("init enc28j60:\n");
+	enc28j60_initialize(0, 1, 1000, SPI_MODE_0);
 #endif
 
 #ifdef CONFIG_EEPRO100

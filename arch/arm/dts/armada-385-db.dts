@@ -52,6 +52,8 @@
 				spi-max-frequency = <20971520>;
 				clock = <&tclk>;
 				status = "okay";
+				cpol-cs-bitmap = <1>; /*bit i is set if the
+							cs-i SCK idles high */
 			};
 
 			spi1: spi@10680 {

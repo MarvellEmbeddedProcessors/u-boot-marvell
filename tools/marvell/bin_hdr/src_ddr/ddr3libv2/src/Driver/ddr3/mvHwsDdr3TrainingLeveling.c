@@ -94,7 +94,7 @@ static GT_STATUS    ddr3TipXsbCompareTest
 	GT_U32 devNum,
 	GT_U32 interfaceId,
 	GT_U32 busId,
-	GT_U32 edgeOffset,
+	GT_32  edgeOffset,
 	GT_U32 busIdDelta
 );
 
@@ -1131,11 +1131,12 @@ static GT_STATUS    ddr3TipXsbCompareTest
 	GT_U32 devNum,
 	GT_U32 interfaceId,
 	GT_U32 busId,
-	GT_U32  edgeOffset,
+	GT_32  edgeOffset,
 	GT_U32 busIdDelta
 )
 {
-    GT_U32 numOfSuccByteCompare, wordInPattern, absOffset;
+    GT_32  absOffset;
+    GT_U32 numOfSuccByteCompare, wordInPattern;
     GT_U32 wordOffset,i;
     GT_U32 readPattern[TEST_PATTERN_LENGTH*2];
 	PatternInfo *patternTable = ddr3TipGetPatternTable();

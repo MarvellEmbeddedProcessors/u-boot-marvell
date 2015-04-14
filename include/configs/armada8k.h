@@ -75,9 +75,6 @@
  */
 #ifdef CONFIG_PALLADIUM
 
-/* Disable I-CACHE for palladium */
-#define CONFIG_SYS_ICACHE_OFF
-
 #undef CONFIG_BOOTDELAY
 #define CONFIG_BOOTDELAY                -1
 

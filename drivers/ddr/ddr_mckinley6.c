@@ -30,7 +30,11 @@ void static_dram_init(void)
 	writel(0x00200000, 0xf0020314);
 	writel(0x00200000, 0xf0020318);
 	writel(0x00200000, 0xf002031c);
+#ifdef CONFIG_PALLADIUM
+	writel(0x000d0001, 0xf0020200); /* use 512MB CS */
+#else
 	writel(0x000e0001, 0xf0020200);
+#endif
 	writel(0x00000000, 0xf0020204);
 	writel(0x400e0001, 0xf0020208);
 	writel(0x00000000, 0xf002020c);
@@ -38,7 +42,11 @@ void static_dram_init(void)
 	writel(0x00000000, 0xf0020214);
 	writel(0xc00e0001, 0xf0020218);
 	writel(0x00000000, 0xf002021c);
+#ifdef CONFIG_PALLADIUM
+	writel(0x13010332, 0xf0020220); /* use 64 bit ls*/
+#else
 	writel(0x05000632, 0xf0020220);
+#endif
 	writel(0x05000632, 0xf0020224);
 	writel(0x05000632, 0xf0020228);
 	writel(0x05000632, 0xf002022c);
@@ -49,7 +57,11 @@ void static_dram_init(void)
 	writel(0x00000001, 0xf0020048);
 	writel(0x00010200, 0xf0020180);
 	writel(0x000000ff, 0xf0020050);
+#ifdef CONFIG_PALLADIUM
+	writel(0x00000000, 0xf002004c); /* Disable ECC */
+#else
 	writel(0x00000002, 0xf002004c);
+#endif
 	writel(0x00000480, 0xf0020054);
 	writel(0x0000080a, 0xf0020300);
 	writel(0x00000032, 0xf0020380);

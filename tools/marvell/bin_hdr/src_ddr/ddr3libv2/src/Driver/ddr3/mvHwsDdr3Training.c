@@ -2917,10 +2917,10 @@ static GT_STATUS    ddr3TipDDR3AutoTune
     }
     /* print log */
     CHECK_STATUS(ddr3TipPrintLog(devNum, windowMemAddr));
-
+#ifndef MV_HWS_EXCLUDE_DEBUG_PRINTS
 	if(retVal != GT_OK)
 		CHECK_STATUS(ddr3TipPrintStabilityLog(devNum));
-
+#endif
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
         isIfFail = GT_FALSE;

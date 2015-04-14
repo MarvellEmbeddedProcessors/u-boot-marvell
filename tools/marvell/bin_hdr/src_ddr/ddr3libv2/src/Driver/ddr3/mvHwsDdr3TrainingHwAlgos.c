@@ -91,8 +91,8 @@ GT_STATUS    ddr3TipWriteAdditionalOdtSetting
     GT_U32 dataValue;
     GT_U32 pupIndex;
     GT_32 maxPhase = MIN_VALUE, currentPhase;
-    MV_HWS_ACCESS_TYPE	    accessType = ACCESS_TYPE_UNICAST;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+    MV_HWS_ACCESS_TYPE  accessType = ACCESS_TYPE_UNICAST;
+    GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, DUNIT_ODT_CONTROL_REG, 0 << 8, 0x3 << 8));
     CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, accessType, interfaceId, READ_DATA_SAMPLE_DELAY, dataRead, MASK_ALL_BITS));
@@ -172,17 +172,18 @@ GT_STATUS ddr3TipVref
 	/*	The Vref register have non linear order. need to check what will be in futur  projects. */
 	GT_U32 vrefMap[8] = {1,2,3,4,5,6,7,0};
 	/*	state and parameter definitions */
-	GT_U32 initialStep = VREF_INITIAL_STEP;
-	GT_U32 secondStep = VREF_SECOND_STEP;/* need to be assign with minus ????? */
+	GT_U8  initialStep = VREF_INITIAL_STEP;
+	GT_U8  secondStep = VREF_SECOND_STEP;/* need to be assign with minus ????? */
 	GT_U32 algoRunFlag = 0, currrentVref = 0;
 	GT_U32 whileCount = 0;
-	GT_U32 pup = 0, interfaceId  = 0, numPup = 0, Rep = 0;
+	GT_U32 pup = 0, interfaceId  = 0, numPup = 0;
+    GT_U8  rep = 0;
 	GT_U32 dataValue = 0;
 	GT_U32 regAddr = 0xA8;
 	GT_U32 copyStartPattern, copyEndPattern;
     MV_HWS_RESULT* flowResult = ddr3TipGetResultPtr(trainingStage);
 	GT_U8 res[4];
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
 	CHECK_STATUS(ddr3TipSpecialRx(devNum));
 
@@ -223,7 +224,7 @@ GT_STATUS ddr3TipVref
 	{
 		whileCount++;
 
-		for(Rep = 1 ;  Rep < 4 ; Rep++)
+		for(rep = 1 ;  rep < 4 ; rep++)
 		{
 			ddr3TipCentralizationSkipMinWindowCheck = GT_TRUE;
 			ddr3TipCentralizationRx(devNum);
@@ -242,7 +243,7 @@ GT_STATUS ddr3TipVref
 						{
 							continue;
 						}
-						currentValidWindow[pup][interfaceId] = (currentValidWindow[pup][interfaceId]*(Rep-1) + 1000*res[pup])/Rep;
+						currentValidWindow[pup][interfaceId] = (currentValidWindow[pup][interfaceId]*(rep-1) + 1000*res[pup])/rep;
 					}
 				}
 			}

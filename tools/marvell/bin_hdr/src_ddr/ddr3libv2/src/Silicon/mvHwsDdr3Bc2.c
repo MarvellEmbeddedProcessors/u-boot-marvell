@@ -1128,9 +1128,11 @@ GT_STATUS ddr3TipBc2SetDivider
 /******************************************************************************
 * return 1 of core/DUNIT clock ration is 1 for given freq, 0 if clock ratios is 2:1
 */
-GT_U8    ddr3TipClockMode( GT_U32 frequency )
+GT_U8    ddr3TipClockMode(GT_U32 frequency)
 {
-		return 2;
+    frequency = frequency; /* avoid warnings */
+
+    return 2;
 }
 
 

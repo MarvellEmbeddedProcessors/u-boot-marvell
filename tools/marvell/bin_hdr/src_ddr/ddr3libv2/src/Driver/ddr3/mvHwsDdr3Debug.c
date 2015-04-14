@@ -171,7 +171,7 @@ GT_STATUS ddr3TipRegDump
 {
     GT_U32 interfaceId, regAddr, dataValue, busId;
 	GT_U32 readData[MAX_INTERFACE_NUM];
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
     mvPrintf("-- dunit registers --\n");
     for(regAddr = 0x1400; regAddr < 0x19F0; regAddr+=4)
     {
@@ -425,9 +425,12 @@ Print log info
 GT_STATUS ddr3TipPrintLog(GT_U32 devNum, GT_U32 memAddr)
 {
     GT_U32 interfaceId = 0;
-	memAddr = memAddr;
 
-#ifdef DDR_VIEWER_TOOL
+    memAddr = memAddr; /* avoid warnings */
+
+#ifndef DDR_VIEWER_TOOL
+    devNum = devNum; /* avoid warnings */
+#else
     if (( isValidateWindowPerIf != 0) || ( isValidateWindowPerPup != 0))
 
     {
@@ -611,7 +614,7 @@ GT_STATUS	ddr3TipPrintStabilityLog(GT_U32 devNum)
 	{
 		VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
 
-		mvPrintf("Data: %d,%d,",interfaceId, (configFuncInfo[devNum].tipGetTemperature != NULL)?(configFuncInfo[devNum].tipGetTemperature(devNum)):(0));
+		mvPrintf("Data: %d,%d,",interfaceId, (configFuncInfo[devNum].tipGetTemperature != NULL)?(configFuncInfo[devNum].tipGetTemperature((GT_U8)devNum)):(0));
 
 		CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0x14C8, readData, MASK_ALL_BITS));
 		mvPrintf("%d,%d,",((readData[interfaceId]&0x3F0)>>4),((readData[interfaceId]&0xFC00)>>10));
@@ -709,7 +712,7 @@ GT_BOOL readAdllValue(GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regAd
     GT_U32  dataValue;
     GT_U32 interfaceId = 0, busId = 0;
     GT_U32 devNum = 0;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* multi CS support - regAddr is calucalated in calling function with CS offset */
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
@@ -733,7 +736,7 @@ GT_BOOL writeAdllValue(GT_U32 PupValues[MAX_INTERFACE_NUM*MAX_BUS_NUM], int regA
 {
     GT_U32 interfaceId = 0, busId = 0;
     GT_U32 devNum = 0, data;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* multi CS support - regAddr is calucalated in calling function with CS offset */
 
@@ -824,7 +827,7 @@ static GT_STATUS  ddr3TipAccessAtr
 GT_STATUS    ddr3TipPrintAdll()
 {
     GT_U32  busCnt = 0,  interfaceId,  dataP1, dataP2, uiData3, devNum = 0;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {

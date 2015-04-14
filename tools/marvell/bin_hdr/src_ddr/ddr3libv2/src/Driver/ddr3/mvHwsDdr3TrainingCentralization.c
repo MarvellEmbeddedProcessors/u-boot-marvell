@@ -128,7 +128,7 @@ static GT_STATUS    ddr3TipCentralization
 	GT_U32 pupWinLength = 0;
     MV_HWS_SearchDirection searchDirId;
 	GT_U8 consTap = (mode == CENTRAL_TX)?(64):(0);
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
@@ -387,7 +387,7 @@ GT_STATUS    ddr3TipSpecialRx
    	GT_U32   csEnableRegVal[MAX_INTERFACE_NUM];
 	GT_U32 temp = 0;
     int PadNum = 0;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
 	if( ddr3TipSpecialRxRunOnceFlag != 0 )
 		return GT_OK;
@@ -502,7 +502,7 @@ GT_STATUS    ddr3TipPrintCentralizationResult
 )
 {
     GT_U32 interfaceId = 0, busId = 0;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
 	devNum = devNum;
 

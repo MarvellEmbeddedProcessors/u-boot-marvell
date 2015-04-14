@@ -299,7 +299,7 @@ GT_STATUS    ddr3TipIpTraining
 	PatternInfo *patternTable = ddr3TipGetPatternTable();
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
 	GT_U16 *maskResultsDqRegMap 	= ddr3TipGetMaskResultsDqReg();
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     if (pupNum >= octetsPerInterfaceNum)
     {
@@ -708,7 +708,7 @@ GT_STATUS    ddr3TipReadTrainingResult
     GT_U32 readData[MAX_INTERFACE_NUM];
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
 	GT_U16 *maskResultsDqRegMap 	= ddr3TipGetMaskResultsDqReg();
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* Agreed assumption: all CS mask contain same number of bits, i.e. in multi CS, the number of CS per memory is the same for all pups */
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST,  interfaceId, CS_ENABLE_REG, (csNumType == 0) ? 1<<3 : 0, (1 << 3)));
@@ -991,7 +991,7 @@ GT_STATUS    ddr3TipIpTrainingWrapperInt
     MV_HWS_SearchDirection searchDirId , startSearch, endSearch;
     MV_HWS_EdgeCompare     edgeCompUsed;
 	GT_U8 consTap = (direction == OPER_WRITE)?(64):(0);
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     if (trainStatus == NULL)
     {
@@ -1094,7 +1094,7 @@ GT_STATUS    ddr3TipIpTrainingWrapper
 	GT_U8 consTap = (direction == OPER_WRITE)?(64):(0);
 	GT_U8 bitBitMask[MAX_BUS_NUM] = {0}, bitBitMaskActive = 0;
 	GT_U8 pupId;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     if (pupNum >= octetsPerInterfaceNum)
     {
@@ -1225,7 +1225,7 @@ Load phy values
 GT_STATUS    ddr3TipLoadPhyValues(GT_BOOL bLoad)
 {
     GT_U32  busCnt = 0,  interfaceId,  devNum = 0;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
@@ -1268,7 +1268,7 @@ GT_STATUS ddr3TipTrainingIpTest
     MV_HWS_TrainingIpStatus trainStatus[MAX_INTERFACE_NUM];
     GT_U32 *pRes = NULL;
     GT_U32 searchState = 0; 
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     ddr3TipLoadPhyValues(GT_TRUE);
 

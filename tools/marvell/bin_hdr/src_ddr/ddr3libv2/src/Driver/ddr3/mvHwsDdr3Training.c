@@ -392,7 +392,7 @@ GT_STATUS    ddr3TipConfigurePhy
 )
 {
     GT_U32 interfaceId, phyId;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_DATA, PAD_ZRI_CALIB_PHY_REG, ((0x7f & gZpriData) << 7 | (0x7f & gZnriData))));
     CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, DDR_PHY_CONTROL, PAD_ZRI_CALIB_PHY_REG, ((0x7f & gZpriCtrl) << 7 | (0x7f & gZnriCtrl))));
@@ -480,7 +480,7 @@ GT_STATUS    mvCalcCsNum
 	GT_U32 csCount;
 	GT_U32 csBitmask;
 	GT_U32 currCsNum = 0;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
 	for(busCnt = 0; busCnt < octetsPerInterfaceNum; busCnt++)
 	{
@@ -526,7 +526,7 @@ GT_STATUS    mvHwsDdr3TipInitController
     GT_U32 refreshIntervalCnt = 0,  busCnt = 0, adllTap = 0;
     MV_HWS_ACCESS_TYPE	  accessType = ACCESS_TYPE_UNICAST;
     GT_U32 dataRead[MAX_INTERFACE_NUM];
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     DEBUG_TRAINING_IP(DEBUG_LEVEL_TRACE, ("InitController, doMrsPhy=%d, isCtrl64Bit=%d\n", initCntrPrm->doMrsPhy, initCntrPrm->isCtrl64Bit));
 
@@ -769,7 +769,7 @@ GT_STATUS    mvHwsDdr3TipLoadTopologyMap
     MV_HWS_SPEED_BIN speedBinIndex;
     MV_HWS_DDR_FREQ freq = DDR_FREQ_LIMIT;
     GT_U32 interfaceId = 0;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     ddr3TipSetTopologyMap(devNum, topologyMapPtr);
     topologyMap = ddr3TipGetTopologyMap(devNum);
@@ -808,7 +808,7 @@ RANK Control Flow
 static GT_STATUS ddr3TipRankControl(GT_U32 devNum, GT_U32 interfaceId)
 {
     GT_U32 dataValue = 0,  busCnt= 0;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(busCnt = 0; busCnt < octetsPerInterfaceNum; busCnt++)
     {
@@ -875,7 +875,7 @@ static GT_STATUS ddr3TipPadInv
 )
 {
     GT_U32 busCnt, dataValue, ckSwapPupCtrl;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(busCnt = 0; busCnt < octetsPerInterfaceNum; busCnt++)
     {
@@ -1183,7 +1183,7 @@ GT_STATUS    mvHwsDdr3TipBUSRead
 {
     GT_U32 busIndex = 0;
     GT_U32 dataRead[MAX_INTERFACE_NUM];
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
 	if (phyAccess == ACCESS_TYPE_MULTICAST)
 	{
@@ -1355,7 +1355,7 @@ GT_STATUS AdllCalibration
 {
     MV_HWS_TIP_FREQ_CONFIG_INFO		freqConfigInfo;
     GT_U32 busCnt = 0;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* Reset Diver_b assert -> de-assert*/
     CHECK_STATUS (mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, SDRAM_CONFIGURATION_REG, 0, 0x10000000));
@@ -1414,7 +1414,7 @@ GT_STATUS    ddr3TipFreqSet
     GT_U32 busIndex = 0, adllTap = 0;
     MV_HWS_SPEED_BIN      speedBinIndex = 0;
 	GT_U32   csMask[MAX_INTERFACE_NUM];
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     DEBUG_TRAINING_IP(DEBUG_LEVEL_TRACE, ("dev %d access %d IF %d freq %d\n",devNum , accessType , interfaceId , frequency));
 
@@ -2052,7 +2052,7 @@ GT_STATUS    ddr3TipWriteCsResult
 )
 {
     GT_U32 interfaceId,busNum, csBitmask, dataVal, csNum;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
@@ -2198,7 +2198,7 @@ GT_STATUS    ddr3TipDDR3ResetPhyRegs
 )
 {
     GT_U32 interfaceId, phyId,cs;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
@@ -2922,37 +2922,37 @@ GT_STATUS ddr3TipEnableInitSequence
     GT_U32 devNum
 )
 {
-   GT_BOOL isFail = GT_FALSE;
-   GT_U32 interfaceId = 0, memMask= 0 , busIndex = 0;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+    GT_BOOL isFail = GT_FALSE;
+    GT_U32 interfaceId = 0, memMask= 0 , busIndex = 0;
+    GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
-   /*Enable init sequence */
-   CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, SDRAM_INIT_CONTROL_REG, 0x1,0x1));
+    /*Enable init sequence */
+    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, SDRAM_INIT_CONTROL_REG, 0x1,0x1));
 
-   for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
-   {
-      VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
+    for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
+    {
+        VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
 
-      if (ddr3TipIfPolling(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0, 0x1, SDRAM_INIT_CONTROL_REG, MAX_POLLING_ITERATIONS) != GT_OK)
-      {
-         DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("polling failed IF %d \n",interfaceId)); 
-         isFail = GT_TRUE;
-         continue;
-      }
-      memMask = 0;
-      for(busIndex=0; busIndex < octetsPerInterfaceNum ; busIndex++)
-      {
-       		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busIndex)
-         	memMask |= topologyMap->interfaceParams[interfaceId].asBusParams[busIndex].mirrorEnableBitmask;
-      }
-      if (memMask != 0)
-      {
-          /*Disable MultiCS */
-         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,ACCESS_TYPE_MULTICAST, interfaceId, CS_ENABLE_REG, 1<<3, 1<<3));
-      }
+        if (ddr3TipIfPolling(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0, 0x1, SDRAM_INIT_CONTROL_REG, MAX_POLLING_ITERATIONS) != GT_OK)
+        {
+            DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("polling failed IF %d \n",interfaceId)); 
+            isFail = GT_TRUE;
+            continue;
+        }
+        memMask = 0;
+        for(busIndex=0; busIndex < octetsPerInterfaceNum ; busIndex++)
+        {
+            VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busIndex)
+            memMask |= topologyMap->interfaceParams[interfaceId].asBusParams[busIndex].mirrorEnableBitmask;
+        }
+        if (memMask != 0)
+        {
+            /*Disable MultiCS */
+            CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,ACCESS_TYPE_MULTICAST, interfaceId, CS_ENABLE_REG, 1<<3, 1<<3));
+        }
 
-   }
-   return (isFail == GT_FALSE)? GT_OK:GT_FAIL;
+    }
+    return (isFail == GT_FALSE)? GT_OK:GT_FAIL;
 }
 
 

@@ -115,7 +115,7 @@ GT_STATUS    ddr3TipPbs
     GT_U32   csEnableRegVal[MAX_INTERFACE_NUM];
     GT_U16 *maskResultsDqRegMap 	= ddr3TipGetMaskResultsDqReg();
     GT_U8 temp = 0;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* save current cs enable reg val */
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
@@ -665,7 +665,7 @@ GT_STATUS    ddr3TipCleanPbsResult
 {
     GT_U32 interfaceId, pup, bit;
     GT_U32 regAddr = (pbsMode == PBS_RX_MODE) ? (PBS_RX_PHY_REG + effective_cs * 0x10) : (PBS_TX_PHY_REG + effective_cs * 0x10);
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for( interfaceId = 0 ; interfaceId <= MAX_INTERFACE_NUM-1 ; interfaceId++)
     {

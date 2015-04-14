@@ -142,7 +142,7 @@ GT_STATUS    ddr3TipDynamicReadLeveling
 	GT_U8   RLValues[NUM_OF_CS][MAX_BUS_NUM][MAX_INTERFACE_NUM] ;
 	PatternInfo *patternTable = ddr3TipGetPatternTable();
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
 	for(effective_cs = 0; effective_cs < NUM_OF_CS; effective_cs++)
 		for(busNum = 0; busNum < MAX_BUS_NUM; busNum++)
@@ -443,7 +443,7 @@ GT_STATUS    ddr3TipDynamicPerBitReadLeveling
     GT_U32  data2Write[MAX_INTERFACE_NUM][MAX_BUS_NUM];
 	PatternInfo *patternTable = ddr3TipGetPatternTable();
 	GT_U16 *maskResultsDqRegMap 	= ddr3TipGetMaskResultsDqReg();
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
 	for(interfaceId = 0; interfaceId < MAX_INTERFACE_NUM; interfaceId++)
 	{
@@ -697,7 +697,7 @@ GT_STATUS    ddr3TipCalcCsMask
 {
 	GT_U32 allBusCs = 0, sameBusCs;
 	GT_U32 busCnt;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
 	devNum = devNum; /* avoid warnings */
 
@@ -744,7 +744,7 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
 	GT_U32 csMask0[MAX_INTERFACE_NUM]={0};
 	GT_U32 max_cs = mvHwsDdr3TipMaxCSGet();
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
@@ -986,7 +986,7 @@ GT_STATUS    ddr3TipDynamicWriteLevelingSupp
     GT_32 adllOffset;
     GT_U32 interfaceId, busId, data, dataTmp;
     GT_BOOL isIfFail = GT_FALSE;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
@@ -1060,7 +1060,7 @@ static GT_STATUS    ddr3TipWlSuppAlignPhaseShift
 	GT_U32 devNum,
 	GT_U32 interfaceId,
 	GT_U32 busId,
-	GT_U32  offset,
+	GT_U32 offset,
 	GT_U32 busIdDelta
 )
 {
@@ -1112,6 +1112,8 @@ static GT_STATUS    ddr3TipXsbCompareTest
     GT_U32 readPattern[TEST_PATTERN_LENGTH*2];
 	PatternInfo *patternTable = ddr3TipGetPatternTable();
 	GT_U32 patternTestPatternTable[8];
+
+    busIdDelta = busIdDelta; /* avoid warnings */
 
 	for(i = 0; i < 8; i++) {
 		patternTestPatternTable[i] = patternTableGetWord(devNum, PATTERN_TEST, (GT_U8)i);
@@ -1176,7 +1178,10 @@ static GT_STATUS    ddr3TipWlSuppOneClkErrShift
 {
     GT_32 phase,  adll;
     GT_U32 data;
+
     DEBUG_LEVELING(DEBUG_LEVEL_TRACE,  ("OneClkErrShift\n"));
+
+    busIdDelta = busIdDelta; /* avoid warnings */
 
     CHECK_STATUS(mvHwsDdr3TipBUSRead(   devNum, interfaceId,  ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG, &data));
     phase = ((data>>6) & 0x7);
@@ -1217,6 +1222,9 @@ static GT_STATUS    ddr3TipWlSuppAlignErrShift
 {
     GT_32 phase, adll;
     GT_U32 data;
+
+    busIdDelta = busIdDelta; /* avoid warnings */
+
     /* Shift WL result 1 phase back*/
     CHECK_STATUS(mvHwsDdr3TipBUSRead(   devNum, interfaceId,  ACCESS_TYPE_UNICAST, busId, DDR_PHY_DATA, WL_PHY_REG, &data));
     phase = ((data>>6) & 0x7);
@@ -1269,7 +1277,7 @@ static GT_STATUS    ddr3TipDynamicWriteLevelingSeq(GT_U32 devNum)
     GT_U32 busId, dqId;
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
 	GT_U16 *maskResultsDqRegMap 	= ddr3TipGetMaskResultsDqReg();
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE,  TRAINING_SW_2_REG, 0x1,      0x5));
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE,  TRAINING_WRITE_LEVELING_REG,  0x50,     0xFF));
@@ -1313,7 +1321,7 @@ static GT_STATUS    ddr3TipDynamicReadLevelingSeq( GT_U32            devNum)
     GT_U32 busId, dqId;
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
 	GT_U16 *maskResultsDqRegMap 	= ddr3TipGetMaskResultsDqReg();
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* mask PBS */
     for (dqId=0; dqId<MAX_DQ_NUM; dqId++)
@@ -1345,7 +1353,7 @@ static GT_STATUS    ddr3TipDynamicPerBitReadLevelingSeq( GT_U32            devNu
     GT_U32 busId, dqId;
 	GT_U16 *maskResultsPupRegMap = ddr3TipGetMaskResultsPupRegMap();
 	GT_U16 *maskResultsDqRegMap 	= ddr3TipGetMaskResultsDqReg();
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     /* mask PBS */
     for (dqId=0; dqId<MAX_DQ_NUM; dqId++)
@@ -1375,7 +1383,7 @@ Print write leveling supplementary Results
 GT_BOOL ddr3TipPrintWLSuppResult(GT_U32 devNum)
 {
     GT_U32 busId = 0,interfaceId = 0;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     DEBUG_LEVELING(DEBUG_LEVEL_INFO,("I/F0 PUP0 Result[0 - success, 1-fail] ...\n"));
 

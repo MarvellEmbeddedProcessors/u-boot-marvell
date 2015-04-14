@@ -52,7 +52,7 @@ GT_U8 MaxPBSPerPup[MAX_INTERFACE_NUM][MAX_BUS_NUM];
 GT_U8 MinPBSPerPup[MAX_INTERFACE_NUM][MAX_BUS_NUM];
 GT_U8 MaxADLLPerPup[MAX_INTERFACE_NUM][MAX_BUS_NUM];
 GT_U8 MinADLLPerPup[MAX_INTERFACE_NUM][MAX_BUS_NUM];
-GT_U32 pbsdelayPerPup[NUM_OF_PBS_MODES][MAX_INTERFACE_NUM][MAX_BUS_NUM];
+GT_U8 pbsDelayPerPup[NUM_OF_PBS_MODES][MAX_INTERFACE_NUM][MAX_BUS_NUM][MAX_CS_NUM];
 GT_U8 ADLL_SHIFT_Lock[MAX_INTERFACE_NUM][MAX_BUS_NUM] ;
 GT_U8 ADLL_SHIFT_val[MAX_INTERFACE_NUM][MAX_BUS_NUM] ;
 MV_HWS_PATTERN pbsPattern = PATTERN_VREF;
@@ -509,19 +509,24 @@ GT_STATUS    ddr3TipPbs
 			/*if(ADLL_SHIFT_Lock[interfaceId][pup] != 1) { continue;}*/ /* if pup not lock continue to next pup */
             DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,("Final Results: interfaceId %d, pup %d, Pup State: %d\n", interfaceId, pup, PupState[interfaceId][pup]));
 
-			for( bit = 0 ; bit < BUS_WIDTH_IN_BITS ; bit++)
-			{
-				 if (dqMapTable == NULL)
-				 {
-                    DEBUG_PBS_ENGINE(DEBUG_LEVEL_ERROR,("dqMapTable not initializaed\n"));
-					return GT_FAIL;
-				 }
-				 PadNum = dqMapTable[bit+pup*BUS_WIDTH_IN_BITS + interfaceId*BUS_WIDTH_IN_BITS*octetsPerInterfaceNum];
-                 DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,("Result_MAT: %d " ,Result_MAT[interfaceId][pup][bit]));
-                 regAddr = (pbsMode == PBS_RX_MODE) ? (PBS_RX_PHY_REG + effective_cs * 0x10) : (PBS_TX_PHY_REG + effective_cs * 0x10);
-                 CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,  ACCESS_TYPE_UNICAST,   interfaceId, ACCESS_TYPE_UNICAST,  pup, DDR_PHY_DATA, regAddr+PadNum, Result_MAT[interfaceId][pup][bit]));
-			}
-			pbsdelayPerPup[pbsMode][interfaceId][pup] = (MaxPBSPerPup[interfaceId][pup] == MinPBSPerPup[interfaceId][pup])?TYPICAL_PBS_VALUE :((MaxADLLPerPup[interfaceId][pup] - MinADLLPerPup[interfaceId][pup])*ADLLTap/(MaxPBSPerPup[interfaceId][pup] - MinPBSPerPup[interfaceId][pup]));
+		for( bit = 0 ; bit < BUS_WIDTH_IN_BITS ; bit++)
+		{
+			 if (dqMapTable == NULL)
+			 {
+				DEBUG_PBS_ENGINE(DEBUG_LEVEL_ERROR,("dqMapTable not initializaed\n"));
+				return GT_FAIL;
+			 }
+			PadNum = dqMapTable[bit+pup*BUS_WIDTH_IN_BITS + interfaceId*BUS_WIDTH_IN_BITS*octetsPerInterfaceNum];
+			DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,("Result_MAT: %d " ,Result_MAT[interfaceId][pup][bit]));
+			regAddr = (pbsMode == PBS_RX_MODE) ? (PBS_RX_PHY_REG + effective_cs * 0x10) : (PBS_TX_PHY_REG + effective_cs * 0x10);
+			CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,  ACCESS_TYPE_UNICAST,   interfaceId, ACCESS_TYPE_UNICAST,  pup, DDR_PHY_DATA, regAddr+PadNum, Result_MAT[interfaceId][pup][bit]));
+		}
+
+		temp = (MaxPBSPerPup[interfaceId][pup] == MinPBSPerPup[interfaceId][pup])?\
+			TYPICAL_PBS_VALUE :\
+			((MaxADLLPerPup[interfaceId][pup] - MinADLLPerPup[interfaceId][pup])*(GT_U8)(ADLLTap/(MaxPBSPerPup[interfaceId][pup]) - MinPBSPerPup[interfaceId][pup]));
+
+		pbsDelayPerPup[pbsMode][interfaceId][pup][effective_cs] = temp;
 
 			if( pbsMode == PBS_TX_MODE ){ /*RX results ready, write RX also*/
 				/*Write TX results*/
@@ -541,10 +546,9 @@ GT_STATUS    ddr3TipPbs
 				Result_MAT_RX_DQS[interfaceId][pup][effective_cs] = (MaxPBSPerPup[interfaceId][pup] - MinPBSPerPup[interfaceId][pup])/2;
 			}
 
-            DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,(", PBS tap=%d [psec] ==> skew observed = %d\n", pbsdelayPerPup[pbsMode][interfaceId][pup], ((MaxPBSPerPup[interfaceId][pup] - MinPBSPerPup[interfaceId][pup])*pbsdelayPerPup[pbsMode][interfaceId][pup])));
-		}
+		DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,(", PBS tap=%d [psec] ==> skew observed = %d\n", temp, ((MaxPBSPerPup[interfaceId][pup] - MinPBSPerPup[interfaceId][pup])*temp)));
 	}
-
+    }
     /*Write back to the phy the default values */
     regAddr = (pbsMode == PBS_RX_MODE) ? (READ_CENTRALIZATION_PHY_REG + effective_cs * 4) : (WRITE_CENTRALIZATION_PHY_REG + effective_cs * 4);
 	writeAdllValue(nominalAdll, regAddr);
@@ -610,8 +614,8 @@ GT_STATUS    ddr3TipPrintAllPbsResult
 
    for(currCs = 0; currCs < max_cs; currCs++)
    {
-	    ddr3TipPrintPbsResult(devNum, currCs,PBS_RX_MODE);
-	    ddr3TipPrintPbsResult(devNum, currCs,PBS_TX_MODE);
+	   ddr3TipPrintPbsResult(devNum, currCs,PBS_RX_MODE);
+	   ddr3TipPrintPbsResult(devNum, currCs,PBS_TX_MODE);
    }
    return GT_OK;
 }
@@ -628,9 +632,18 @@ GT_STATUS    ddr3TipPrintPbsResult
 {
     GT_U32 dataValue = 0, bit = 0, interfaceId = 0, pup = 0;
     GT_U32 regAddr = (pbsMode == PBS_RX_MODE) ? (PBS_RX_PHY_REG + csNum * 0x10) : (PBS_TX_PHY_REG + csNum * 0x10);
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+    GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
-    mvPrintf("CS%d, %s ,PBS \n", csNum ,(pbsMode==PBS_RX_MODE)? "Rx" : "Tx");
+    mvPrintf("%s,CS%d,PBS,ADLLRATIO,,,", (pbsMode == PBS_RX_MODE)?"Rx":"Tx", csNum);
+    for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
+    {
+        VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
+        for( pup=0; pup < octetsPerInterfaceNum; pup++)
+        {
+                mvPrintf("%d,",pbsDelayPerPup[pbsMode][interfaceId][pup][csNum]);
+        }
+	}
+    mvPrintf("\nCS%d, %s ,PBS \n", csNum ,(pbsMode==PBS_RX_MODE)? "Rx" : "Tx");
     for( bit = 0 ; bit < BUS_WIDTH_IN_BITS ; bit++)
     {
 	mvPrintf("%s, DQ",(pbsMode==PBS_RX_MODE)? "Rx" : "Tx");

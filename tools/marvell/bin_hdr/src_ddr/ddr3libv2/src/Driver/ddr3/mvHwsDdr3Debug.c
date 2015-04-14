@@ -555,7 +555,7 @@ GT_STATUS ddr3TipPrintLog(GT_U32 devNum, GT_U32 memAddr)
    }
     return GT_OK;
 }
-
+#ifndef MV_HWS_EXCLUDE_DEBUG_PRINTS
 /*****************************************************************************
 Print stability log info
 ******************************************************************************/
@@ -690,7 +690,7 @@ GT_STATUS	ddr3TipPrintStabilityLog(GT_U32 devNum)
 	return GT_OK;
 }
 
-
+#endif
 /*****************************************************************************
 Register XSB information
 ******************************************************************************/
@@ -1451,7 +1451,7 @@ GT_BOOL ddr3TipRunSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direction, GT
 			}
 		}
 	}
-	mvPrintf("Final,CS %d,%s,Sweep,Result,Adll,", uiCs,((direction==0) ? "TX":"RX"));
+	mvPrintf("Final,CS %d,%s,Sweep Result,Adll,", uiCs,((direction==0) ? "TX":"RX"));
 	for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
 	{
 		VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
@@ -1472,7 +1472,7 @@ GT_BOOL ddr3TipRunSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direction, GT
 	for(adll = 0 ; adll < ADLL_LENGTH ; adll++)
 	{
 		adllValue = (direction == 0) ? (adll*2):adll;
-		mvPrintf("Final,%s,Sweep,Result, %d ,",((direction==0) ? "TX":"RX"),adllValue);
+		mvPrintf("Final,%s,Sweep Result, %d ,",((direction==0) ? "TX":"RX"),adllValue);
 
 		for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++){
 			VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)

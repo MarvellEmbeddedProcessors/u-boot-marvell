@@ -74,7 +74,7 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 						   0,	/* OOB0 connection */
 						   0,	/* OOB1 connection */
 						   0,	/* Force AMC RC GEN1 PCIe */
-						   1,	/* PCIe mode */
+						   0,	/* PCIe mode */
 						   3,	/* Boot source */
 						   0 };	/* Device ID */
 	MV_U32 coreClockTbl[] = MV_CORE_CLK_TBL_BC2;

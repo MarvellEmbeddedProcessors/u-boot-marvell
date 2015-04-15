@@ -153,13 +153,6 @@ GT_U32 maskTuneFunc = (SET_MEDIUM_FREQ_MASK_BIT     |
                        CENTRALIZATION_RX_MASK_BIT   |
                        CENTRALIZATION_TX_MASK_BIT   );
 
-void ddr3PrintVersion()
-{
-	mvPrintf(DDR3_TIP_VERSION_STRING);
-}
-
-
-
 extern GT_U32 isPllOld;
 extern ClValuePerFreq casLatencyTable[];
 extern PatternInfo patternTable[] ;
@@ -314,7 +307,6 @@ static RegData odpgDefaultValue[]=
     {0x16fc, 0x0,       MASK_ALL_BITS}     
 };
 
-
 /**************************** internal function header ************************/
 GT_STATUS ddr3TipEnableInitSequence(GT_U32 devNum);
 
@@ -335,6 +327,21 @@ static GT_STATUS    ddr3TipBusAccess
 
 static GT_STATUS ddr3TipPadInv(GT_U32 devNum, GT_U32 interfaceId);
 static GT_STATUS ddr3TipRankControl(GT_U32 devNum, GT_U32 interfaceId);
+
+/*****************************************************************************
+Version
+******************************************************************************/
+
+const GT_CHAR* mvHwsDdr3TipVersionGet(void)
+{
+    return DDR3_TIP_VERSION_STRING;
+}
+
+void ddr3PrintVersion()
+{
+    mvPrintf(mvHwsDdr3TipVersionGet());
+    mvPrintf("\n");
+}
 
 /*****************************************************************************
 Register freq mask
@@ -2160,6 +2167,7 @@ GT_STATUS    ddr3TipDynamicOdt
         mr1Value = 0;
         mr2Value = 0x200;
     }
+
     /* MR1: set RttNom to RZQ/6 */
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, MR1_REG, mr1Value, 0x224));
     /* MR2: disable dynamic ODT*/

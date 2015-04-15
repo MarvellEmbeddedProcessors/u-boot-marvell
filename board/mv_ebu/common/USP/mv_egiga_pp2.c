@@ -233,7 +233,7 @@ static int mvEgigaLoad(int port, char *name, char *enet_addr)
 	egigaPriv *priv = NULL;
 
 	/* First disable GMAC */
-	mvGmacPortDisable(priv->port);
+	mvGmacPortDisable(port);
 
 	dev = malloc(sizeof(struct eth_device));
 	if (!dev) {

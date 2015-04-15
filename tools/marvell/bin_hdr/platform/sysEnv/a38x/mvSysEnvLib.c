@@ -98,7 +98,7 @@ MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /*				6920     6928     */
 /* PEX_UNIT_ID      */		{ 4,       4},
-/* SGMII_UNIT_ID    */		{ 3,       4},
+/* SGMII_UNIT_ID    */		{ 4,       4},
 /* USB3H_UNIT_ID    */		{ 1,       2},
 /* USB3D_UNIT_ID    */		{ 0,       1},
 /* SATA_UNIT_ID     */		{ 0,       4},

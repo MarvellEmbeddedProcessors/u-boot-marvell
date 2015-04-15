@@ -191,7 +191,7 @@ SERDES_SPEED defaultSerdesSpeedMap[LAST_SERDES_TYPE] =
     __1_25Gbps, /* SGMIIv3_0 */
     __1_25Gbps, /* SGMIIv3_1 */
     __1_25Gbps, /* SGMIIv3_2 */
-    __1_25Gbps, /* SGMIIv3_03 */
+    __1_25Gbps, /* SGMIIv3_3 */
     __3_125Gbps,/* XAUI */
     __6_25Gbps, /* RXAUI */
 };
@@ -206,7 +206,7 @@ SERDES_TYPE commonPhysType[MAX_SERDES_LANES][MAX_SELECTOR_VAL] =
 { DEFAULT_SERDES, PEX3, PEX3,           SATA3,  SGMII2,      USB3_HOST1,  USB3_DEVICE, SGMIIv3_2,	XAUI,		NA,		NA,	NA,	NA		},  /* Lane 3 */
 { DEFAULT_SERDES, PEX1, DEFAULT_SERDES, SGMII1, USB3_HOST0,  USB3_DEVICE, SATA2,       PEX2,		SGMIIv3_3,	XAUI,		NA,     NA,	NA		},  /* Lane 4 */
 { DEFAULT_SERDES, PEX2, SATA2,          SGMII2, USB3_HOST1,  USB3_DEVICE, SGMIIv3_2,   NA,		XAUI,		NA,		NA,     NA,	NA		},  /* Lane 5 */
-{ DEFAULT_SERDES, PEX1, SGMIIv3_0,      NA,     XAUI,        NA,          NA,          NA,		NA,		NA,		NA,     NA,	SGMIIv3_0	},  /* Lane 6 */
+{ DEFAULT_SERDES, PEX1, SGMIIv3_3,      NA,     XAUI,        NA,          NA,          NA,		NA,		NA,		NA,     NA,	SGMIIv3_0	},  /* Lane 6 */
 };
 
 /*************************************/

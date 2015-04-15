@@ -495,12 +495,17 @@ MV_VOID mvCtrlSerdesConfigDetect(MV_VOID)
 		ifNo = comPhyCfg & 0x0f;
 		switch (comPhyCfg & 0xF0) {
 		case SERDES_UNIT_PEX:
-			if ((ifNo == PEX0_IF) && (commPhyCfgReg & PCIE0_X4_EN_MASK))
-				boardPexInfo->pexUnitCfg[ifNo] = PEX_BUS_MODE_X4;
-			else
+			if ((ifNo == PEX0_IF) && (commPhyCfgReg & PCIE0_X4_EN_MASK)) {
+				if (serdesNum == 0) {
+					boardPexInfo->pexUnitCfg[ifNo] = PEX_BUS_MODE_X4;
+					boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = ifNo;
+					boardPexInfo->boardPexIfNum++;
+				}
+			} else {
 				boardPexInfo->pexUnitCfg[ifNo] = PEX_BUS_MODE_X1;
-			boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = ifNo;
-			boardPexInfo->boardPexIfNum++;
+				boardPexInfo->pexMapping[boardPexInfo->boardPexIfNum] = ifNo;
+				boardPexInfo->boardPexIfNum++;
+			}
 			DB(printf("PEX, if=%d\n", ifNo));
 			break;
 		case SERDES_UNIT_SATA:

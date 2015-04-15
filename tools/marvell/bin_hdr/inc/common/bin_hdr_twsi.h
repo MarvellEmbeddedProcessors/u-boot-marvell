@@ -110,7 +110,10 @@ extern MV_U32 mvBoardTclkGet(MV_VOID);
 /*
 ** Base address for TWSI registers.
 */
-#define MV_TWSI_SLAVE_REGS_BASE(unit)       (MV_TWSI_SLAVE_REGS_OFFSET(unit))
+#define MV_TWSI_SLAVE_REGS_BASE(unit)		(MV_TWSI_SLAVE_REGS_OFFSET(unit))
+#define TWSI_CONFIG_DEBUG_REG			(MV_TWSI_SLAVE_REGS_BASE(0) + 0x8c)
+#define TWSI_DEBUG_SLAVE_PORT0_EN		BIT18
+#define TWSI_DEBUG_SLAVE_PORT1_EN		BIT19
 
 /*
 ** Specific definition for Main CPU interrupt cause register.

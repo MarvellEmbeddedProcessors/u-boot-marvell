@@ -386,10 +386,13 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		mvBoardMppIdUpdate();
 
 		netComplex = mvBoardNetComplexConfigGet();
-		if (netComplex & (MV_NETCOMP_GE_MAC0_2_SGMII_L0 | MV_NETCOMP_GE_MAC0_2_SGMII_L1))
+		if (netComplex & (MV_NETCOMP_GE_MAC0_2_SGMII_L0 | MV_NETCOMP_GE_MAC0_2_SGMII_L1)) {
 			smiAddress = 0x4;
-		else if (netComplex & (MV_NETCOMP_GE_MAC0_2_RXAUI | MV_NETCOMP_GE_MAC0_2_XAUI))
+			mvBoardPhyNegotiationTypeSet(0, SMI);
+		} else if (netComplex & (MV_NETCOMP_GE_MAC0_2_RXAUI | MV_NETCOMP_GE_MAC0_2_XAUI)) {
 			smiAddress = 0x0;
+			mvBoardPhyNegotiationTypeSet(0, XSMI);
+		}
 		mvBoardPhyAddrSet(0, smiAddress);
 
 		smiAddress = -1;
@@ -585,7 +588,32 @@ MV_PHY_NEGOTIATION_PORT_TYPE mvBoardPhyNegotiationTypeGet(MV_U32 ethPortNum)
 
 	return board->pBoardMacInfo[ethPortNum].negType;
 }
-
+/*******************************************************************************
+* mvBoardPhyNegotiationTypeSet - Set the phy type
+*
+* DESCRIPTION:
+*	This routine sets the Phy type of a given ethernet port.
+*
+* INPUT:
+*	ethPortNum - Ethernet port number.
+*	negType    - requested phy type
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	None.
+*
+*******************************************************************************/
+MV_VOID mvBoardPhyNegotiationTypeSet(MV_U32 ethPortNum, MV_PHY_NEGOTIATION_PORT_TYPE negType)
+{
+	MV_BOARD_INFO *board = mvBoardInfoStructureGet();
+	if (!board || ethPortNum >= board->numBoardMacInfo) {
+		DB(mvOsPrintf("%s: Error: invalid ethPortNum (%d)\n", __func__, ethPortNum));
+		return;
+	}
+	board->pBoardMacInfo[ethPortNum].negType = negType;
+}
 /*******************************************************************************
 * mvBoardMppModuleTypePrint
 *

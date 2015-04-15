@@ -256,6 +256,7 @@ MV_BOOL mvBoardIsPortInQsgmii(MV_U32 ethPortNum);
 MV_U32 mvBoardNetComplexConfigGet(MV_VOID);
 MV_VOID mvBoardNetComplexConfigSet(MV_U32 ethConfig);
 MV_PHY_NEGOTIATION_PORT_TYPE mvBoardPhyNegotiationTypeGet(MV_U32 ethPortNum);
+MV_VOID mvBoardPhyNegotiationTypeSet(MV_U32 ethPortNum, MV_PHY_NEGOTIATION_PORT_TYPE negType);
 #ifdef __cplusplus
 }
 #endif  /* __cplusplus */

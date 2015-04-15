@@ -320,19 +320,32 @@ GT_STATUS    mvHwsDdr3TipLoadTopologyMap
 */
 
 GT_STATUS    mvHwsDdr3TipRunAlg
-( 
+(
     GT_U32              devNum,
     MV_HWS_ALGO_TYPE    algoType
 );
 
+/*****************************************************************************
+Get DDR version
+******************************************************************************/
+/******************************************************************************
+* Name:     mvHwsDdr3TipVersionGet
+* Desc:     Return DDR version string
+* Args:
+*
+*
+* Notes:
+* Returns:  OK if success, other error code if fail.
+*/
+const GT_CHAR* mvHwsDdr3TipVersionGet(void);
 
 /******************************************************************************
 * Name:     mvHwsDdr3TipModeRead.
 * Desc:     read Mode registers
-* Args:     devNum - channel ID 
+* Args:     devNum - Device number
 *           modeInfo - pointer to mode info struct
 *
-* Notes:    
+* Notes:
 * Returns:  OK if success, other error code if fail.
 */
 GT_STATUS    mvHwsDdr3TipModeRead
@@ -347,7 +360,7 @@ GT_STATUS    mvHwsDdr3TipModeRead
 * Args:     devNum
 *           result
 *
-* Notes:    
+* Notes:
 * Returns:  OK if success, other error code if fail.
 */
 

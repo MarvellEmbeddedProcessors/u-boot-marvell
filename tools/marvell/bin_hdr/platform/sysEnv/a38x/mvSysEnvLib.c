@@ -121,8 +121,18 @@ static MV_VOID gppRegSet(MV_U32 group, MV_U32 regOffs, MV_U32 mask, MV_U32 value
 	MV_REG_WRITE(regOffs, gppData);
 }
 
-static MV_VOID mvBoardDb6820AmcGpioConfig(MV_VOID)
+
+/* mvBoardDb6820AmcTwsiConfig:
+ * for AMC board, to allow detection of remote PCIe GEN1/GEN2 enforcement settings:
+ * 1. Enable external i2c channel for via GPIO
+ * 2. Disable I2C Slave Port0 of local AMC device, to avoid bus address contention
+ */
+static MV_VOID mvBoardDb6820AmcTwsiConfig(MV_VOID)
 {
+	/* Disable I2C Slave Ports of local AMC device, to avoid bus address contention*/
+	MV_REG_BIT_RESET(TWSI_CONFIG_DEBUG_REG, TWSI_DEBUG_SLAVE_PORT0_EN);
+	MV_REG_BIT_RESET(TWSI_CONFIG_DEBUG_REG, TWSI_DEBUG_SLAVE_PORT1_EN);
+
 	/* GPP configuration is required for enabling access to i2c channel 1
 	   Output from GPP-44 should set to be HIGH for enabling external
 	   i2c channel 1 buffer circuit
@@ -285,10 +295,11 @@ MV_STATUS mvHwsTwsiInitWrapper(MV_VOID)
 		mvTwsiInit(0, TWSI_SPEED, tClock, &slave, 0);
 		flagTwsiInit = 1;
 
-		/* Enable slave i2c channel for AMC board */
-		/* It is required to detect PCIe GEN1/GEN2 enforcement settings */
+		/* for AMC board, to allow detection of remote PCIe GEN1/GEN2 enforcement settings:
+		   1. Enable external i2c channel for via GPIO
+		   2. Disable I2C Slave Port0 of local AMC device, to avoid bus address contention */
 		if (mvBoardIdGet() == DB_AMC_6820_ID)
-			mvBoardDb6820AmcGpioConfig();
+			mvBoardDb6820AmcTwsiConfig();
 	}
 	return MV_OK;
 }

@@ -48,8 +48,8 @@ typedef struct _boardSatrDefault {
 #define MAX_DEFAULT_ENTRY	4
 
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
-/* 	defauleValueForBoard[] = RD_69xx,	DB_68xx */
-{MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		} },
+/* 	defauleValueForBoard[] = RD_69xx,	DB_69xx */
+{MV_SATR_CPU_DDR_L2_FREQ,	{0x12,		0x12,		} },
 {MV_SATR_CORE_CLK_SELECT,	{0,		0,		} },
 {MV_SATR_BOOT_DEVICE,		{0,		0,		} },/* Dummy entry: default value taken from S@R register */
 {MV_SATR_BOOT2_DEVICE,		{0,		0,		} },/* Dummy entry: default value taken from S@R register */

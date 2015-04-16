@@ -340,11 +340,13 @@ void misc_init_r_env(void)
 	env = getenv("mtdparts");
 	if (!env) {
 #if defined(MV_NAND) && defined(MV_INCLUDE_SPI)
-		setenv("mtdparts", "'mtdparts=armada-nand:8m(boot)ro,8m@8m(kernel),-(rootfs);mtdparts=spi_flash:4m(boot),-(spi-rootfs)'");
+		/* Since only AMC board supports both NAND and SPI, and it uses SPI1
+		 * "spi1.0" is used in mtdparts instead of "spi0.0" */
+		setenv("mtdparts", "'mtdparts=armada-nand:8m(boot)ro,8m@8m(kernel),-(rootfs);spi1.0:4m(boot),-(spi-rootfs)'");
 #elif defined(MV_NAND)
 		setenv("mtdparts", "mtdparts=armada-nand:8m(boot)ro,8m@8m(kernel),-(rootfs)");
 #elif defined(MV_INCLUDE_SPI)
-		setenv("mtdparts", "mtdparts=spi_flash:4m(boot),-(spi-rootfs)");
+		setenv("mtdparts", "mtdparts=spi0.0:4m(boot),-(spi-rootfs)");
 #endif
 	}
 

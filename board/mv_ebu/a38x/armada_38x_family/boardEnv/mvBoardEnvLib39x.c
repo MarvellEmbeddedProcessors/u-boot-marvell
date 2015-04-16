@@ -386,24 +386,40 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		mvBoardMppIdUpdate();
 
 		netComplex = mvBoardNetComplexConfigGet();
-		if (netComplex & (MV_NETCOMP_GE_MAC0_2_SGMII_L0 | MV_NETCOMP_GE_MAC0_2_SGMII_L1)) {
+		if (netComplex & MV_NETCOMP_GE_MAC0_2_SGMII_L1) {
 			smiAddress = 0x4;
 			mvBoardPhyNegotiationTypeSet(0, SMI);
 		} else if (netComplex & (MV_NETCOMP_GE_MAC0_2_RXAUI | MV_NETCOMP_GE_MAC0_2_XAUI)) {
 			smiAddress = 0x0;
 			mvBoardPhyNegotiationTypeSet(0, XSMI);
+			/*check if MAC0 connected to SGMII on lane0/6 via module*/
+		} else if (netComplex & (MV_NETCOMP_GE_MAC0_2_SGMII_L0 | MV_NETCOMP_GE_MAC0_2_SGMII_L6)) {
+			smiAddress = 0x10;
+			mvBoardPhyNegotiationTypeSet(0, SMI);
 		}
 		mvBoardPhyAddrSet(0, smiAddress);
 
 		smiAddress = -1;
-		if (netComplex & (MV_NETCOMP_GE_MAC1_2_SGMII_L1 | MV_NETCOMP_GE_MAC1_2_SGMII_L2))
+		if (netComplex & MV_NETCOMP_GE_MAC1_2_SGMII_L1)
 			smiAddress = 0x5;
 		else if (netComplex & (MV_NETCOMP_GE_MAC1_2_RGMII1))
 			smiAddress = 0x1;
+			/*check if MAC1 connected to SGMII on lane2/4 via module*/
+		else if (netComplex & (MV_NETCOMP_GE_MAC1_2_SGMII_L2 | MV_NETCOMP_GE_MAC1_2_SGMII_L4))
+			smiAddress = 0x11;
 		mvBoardPhyAddrSet(1, smiAddress);
 
 		smiAddress = -1;
-		if (netComplex & (MV_NETCOMP_GE_MAC3_2_SGMII_L6))
+
+		if (netComplex & MV_NETCOMP_GE_MAC2_2_SGMII_L3)
+			smiAddress = 0x5;
+			/*check if MAC2 connected to SGMII on lane5 via module*/
+		else if (netComplex & MV_NETCOMP_GE_MAC2_2_SGMII_L5)
+			smiAddress = 0x12;
+		mvBoardPhyAddrSet(2, smiAddress);
+
+		smiAddress = -1;
+		if (netComplex & (MV_NETCOMP_GE_MAC3_2_SGMII_L6)) {
 			/*
 			 * there is another option the is not supported anymore
 			 * which is to connect a bridge from the PCI to one of the
@@ -415,6 +431,12 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			 * it means that it's through the 10 gig phy
 			 */
 			smiAddress = 0x0;
+			mvBoardPhyNegotiationTypeSet(0, XSMI);
+			/*check if MAC3 connected to SGMII on lane4 via module*/
+		} else if (netComplex & MV_NETCOMP_GE_MAC3_2_SGMII_L4) {
+			smiAddress = 0x13;
+			mvBoardPhyNegotiationTypeSet(0, SMI);
+		}
 		mvBoardPhyAddrSet(3, smiAddress);
 
 		mvBoardFlashDeviceUpdate();

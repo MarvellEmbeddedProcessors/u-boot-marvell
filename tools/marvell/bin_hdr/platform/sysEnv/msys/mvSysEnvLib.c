@@ -155,6 +155,22 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 	return MV_BOARD_TCLK_200MHZ;
 }
 
+/* Use flagTwsiInit global flag to init the Twsi once */
+static int flagTwsiInit = -1;
+MV_STATUS mvHwsTwsiInitWrapper(MV_VOID)
+{
+	MV_TWSI_ADDR slave;
+
+	if (flagTwsiInit == -1) {
+		slave.type = ADDR7_BIT;
+		slave.address = 0;
+		mvTwsiInit(0, TWSI_SPEED, mvBoardTclkGet(), &slave, 0);
+		flagTwsiInit = 1;
+
+	}
+	return MV_OK;
+}
+
 /*******************************************************************************/
 /* The Board Id is taken from the first address-value pair of the EEPROM initialization sequence
  * In order to support normal TWSI init sequence flow, the first pair of DWORDS on EEPROM

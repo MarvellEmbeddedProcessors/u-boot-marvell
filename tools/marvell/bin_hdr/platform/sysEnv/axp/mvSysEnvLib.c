@@ -87,6 +87,7 @@ extern MV_BIN_SERDES_CFG *SerdesInfoTbl[];
 MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff);
 MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum);
 MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
+MV_STATUS mvSysEnvTimerIsRefClk25Mhz(MV_VOID);
 
 /***************************   defined ******************************/
 #if defined(DB_78X60_AMC)
@@ -1708,4 +1709,12 @@ MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum)
 	MV_REG_WRITE(PEX_STATUS_REG(pexIf), pexStatus);
 
 	return MV_OK;
+}
+
+/* mvSysEnvTimerIsRefClk25Mhz:
+ * AXP support 25Mhz as ref.clock for timer
+ */
+MV_BOOL mvSysEnvTimerIsRefClk25Mhz(void)
+{
+	return MV_TRUE;
 }

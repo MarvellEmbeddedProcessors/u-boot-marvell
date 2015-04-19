@@ -68,6 +68,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MAX_BUS_NUM        		(5)
 
 #include "ddr3_hws_hw_training_def.h"
+#include "mvSysEnvLib.h"
 
 /*Controler bus divider 1 for 32 bit, 2 for 64 bit */
 #define MV_DDR_CONTROLLER_BUS_WIDTH_MULTIPLIER         1
@@ -102,7 +103,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define	REG_SAMPLE_RESET_CPU_ARCH_OFFS			31
 #define	REG_SAMPLE_RESET_HIGH_CPU_FREQ_OFFS		20
 
-#define MV_BOARD_REFCLK			250000000
+#define MV_BOARD_REFCLK			mvBoardTclkGet()
 
 /* DDR3 Frequencies: */
 #define DDR_100									0

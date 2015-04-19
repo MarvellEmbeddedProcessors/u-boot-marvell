@@ -86,6 +86,7 @@ extern MV_BIN_SERDES_CFG *SerdesInfoTbl[];
 MV_U32 mvPexConfigRead(MV_U32 pexIf, MV_U32 bus, MV_U32 dev, MV_U32 func, MV_U32 regOff);
 MV_STATUS mvPexLocalBusNumSet(MV_U32 pexIf, MV_U32 busNum);
 MV_STATUS mvPexLocalDevNumSet(MV_U32 pexIf, MV_U32 devNum);
+MV_STATUS mvSysEnvTimerIsRefClk25Mhz(MV_VOID);
 
 /***************************   defined ******************************/
 #define mvBoardPexCapabilityGet(satr) 	(satr & 3)
@@ -1233,4 +1234,12 @@ MV_U32 mvCpuL2ClkGet(MV_VOID)
 		return l2FreqMhz * 1000000;
 	} else
 		return (MV_U32)-1;
+}
+
+/* mvSysEnvTimerIsRefClk25Mhz:
+ * A375 support 25Mhz as ref.clock for timer
+ */
+MV_BOOL mvSysEnvTimerIsRefClk25Mhz(void)
+{
+	return MV_TRUE;
 }

@@ -387,7 +387,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 
 		netComplex = mvBoardNetComplexConfigGet();
 		if (netComplex & MV_NETCOMP_GE_MAC0_2_SGMII_L1) {
-			smiAddress = 0x4;
+			smiAddress = 0x5;
 			mvBoardPhyNegotiationTypeSet(0, SMI);
 		} else if (netComplex & (MV_NETCOMP_GE_MAC0_2_RXAUI | MV_NETCOMP_GE_MAC0_2_XAUI)) {
 			smiAddress = 0x0;
@@ -412,7 +412,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		smiAddress = -1;
 
 		if (netComplex & MV_NETCOMP_GE_MAC2_2_SGMII_L3)
-			smiAddress = 0x5;
+			smiAddress = 0x4;
 			/*check if MAC2 connected to SGMII on lane5 via module*/
 		else if (netComplex & MV_NETCOMP_GE_MAC2_2_SGMII_L5)
 			smiAddress = 0x12;

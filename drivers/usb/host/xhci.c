@@ -119,7 +119,7 @@ static struct descriptor {
 	},
 };
 
-static struct xhci_ctrl xhcic[CONFIG_USB_MAX_CONTROLLER_COUNT];
+static struct xhci_ctrl xhcic[CONFIG_USB_MAX_CONTROLLER_HOST_COUNT];
 
 /**
  * Waits for as per specified amount of time

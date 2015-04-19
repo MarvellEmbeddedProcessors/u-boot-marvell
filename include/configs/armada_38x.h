@@ -510,7 +510,13 @@ extern int nand_get_env_offs(void);
 
 	#define CONFIG_USB_HOST_ETHER
 	#define CONFIG_USB_ETHER_ASIX
-	#define CONFIG_USB_MAX_CONTROLLER_COUNT		2
+	/* Marvell encapsulate it's USB usage with usbActive internal index,
+	 * the usb stack uses 1 controller simultaneously */
+	#define CONFIG_USB_MAX_CONTROLLER_COUNT		1
+	/* xHCI code relies on index receiving from that usbActive,
+	 * which could go up to 2. this requires xHCI arrays to be as big as
+	 * the actual USB host count */
+	#define CONFIG_USB_MAX_CONTROLLER_HOST_COUNT	2
 
 #if defined(CONFIG_USB_XHCI) || defined(CONFIG_USB_EHCI)
 	#define CONFIG_USB_XHCI_HCD /* set kernel define - for mv_hal/usb usage */

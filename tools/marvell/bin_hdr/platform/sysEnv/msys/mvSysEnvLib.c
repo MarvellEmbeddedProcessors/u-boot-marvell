@@ -340,4 +340,10 @@ MV_U32 mvSysEnvGetCSEnaFromReg(void)
 	return 1;
 #endif
 }
-
+/* mvSysEnvTimerIsRefClk25Mhz:
+ * MSYS Bobcat2 and AlleyCat3 doesn't support 25Mhz as ref.clock for timer
+ */
+MV_BOOL mvSysEnvTimerIsRefClk25Mhz(void)
+{
+	return MV_FALSE;
+}

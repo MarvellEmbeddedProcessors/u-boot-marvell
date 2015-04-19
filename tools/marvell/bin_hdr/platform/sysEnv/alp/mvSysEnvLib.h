@@ -298,5 +298,7 @@ MV_U32 mvBoardIdGet(MV_VOID);
 MV_U32 mvCpuL2ClkGet(MV_VOID);
 MV_U32 mvBoardFreqModesNumGet(MV_VOID);
 MV_U32 mvBoardIdIndexGet(MV_U32 boardId);
+MV_STATUS mvSysEnvTimerIsRefClk25Mhz(MV_VOID);
 
 #endif /* __INCmvBHboardEnvSpech */
+

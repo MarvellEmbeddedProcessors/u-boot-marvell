@@ -1210,3 +1210,11 @@ MV_U32 mvSysEnvGetCSEnaFromReg(void)
 {
 	return MV_REG_READ(REG_DDR3_RANK_CTRL_ADDR) & REG_DDR3_RANK_CTRL_CS_ENA_MASK;
 }
+
+/* mvSysEnvTimerIsRefClk25Mhz:
+ * A38x/A39x support 25Mhz as ref.clock for timer
+ */
+MV_BOOL mvSysEnvTimerIsRefClk25Mhz(void)
+{
+	return MV_TRUE;
+}

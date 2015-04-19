@@ -277,5 +277,15 @@ MV_U32 mvBoardTclkGet(MV_VOID);
 MV_STATUS mvBoardTwsiGet(MV_U32 address, MV_U8 devNum, MV_U8 regNum, MV_U8 *pData);
 MV_U32 mvBoardIdIndexGet(MV_U32 boardId);
 MV_U32 mvBoardIdGet(MV_VOID);
+/**************************************************************************
+ * mvSysEnvTimerIsRefClk25Mhz -
+ *
+ * DESCRIPTION:          Routine to indicate if 25Mhz ref clock for timer is supported
+ * INPUT:                None.
+ * OUTPUT:               None.
+ * RETURNS:              None.
+ ***************************************************************************/
+MV_STATUS mvSysEnvTimerIsRefClk25Mhz(MV_VOID);
 
 #endif /* __INCmvBHboardEnvSpech */
+

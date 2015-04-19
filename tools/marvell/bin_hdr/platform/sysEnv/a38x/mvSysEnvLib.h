@@ -732,5 +732,14 @@ MV_U32 mvSysEnvGetCSEnaFromReg(void);
 *
 *******************************************************************************/
 MV_SUSPEND_WAKEUP_STATUS mvSysEnvCheckWakeupDramEnable(void);
+/**************************************************************************
+ * mvSysEnvTimerIsRefClk25Mhz -
+ *
+ * DESCRIPTION:          Routine to indicate if 25Mhz ref clock for timer is supported
+ * INPUT:                None.
+ * OUTPUT:               None.
+ * RETURNS:              None.
+ ***************************************************************************/
+MV_STATUS mvSysEnvTimerIsRefClk25Mhz(MV_VOID);
 #endif /* __INCmvSysEnvLibh */
 

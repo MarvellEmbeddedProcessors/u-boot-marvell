@@ -63,6 +63,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 #include "config_marvell.h"     /* Required to identify SOC and Board */
 #include "mv_os.h"
+#include "mvSysEnvLib.h"
 #if defined(MV88F78X60)
 #include "ddr3_axp.h"
 #elif defined(MV88F6710)
@@ -87,7 +88,6 @@ extern MV_U32 mvCpuL2ClkGet(MV_VOID);
 #endif
 #define UBOOT_CNTR              0       /* counter to use for uboot timer  0,1 */
 
-
 void __udelay(unsigned long usec)
 {
     unsigned long delayticks;
@@ -104,7 +104,11 @@ void __udelay(unsigned long usec)
     cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
     cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
     cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
+
+	/* check if 25Mhz as ref clock is supported by SoC */
+	if (mvSysEnvTimerIsRefClk25Mhz())
+		cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
+
     MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
 
     while(MV_REG_READ(CNTMR_VAL_REG(UBOOT_CNTR)));

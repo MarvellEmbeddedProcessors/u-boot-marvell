@@ -370,3 +370,11 @@ MV_U32 mvBoardIdIndexGet(MV_U32 boardId)
 /* Marvell Boards use 0x10 as base for Board ID: mask MSB to receive index for board ID*/
 	return boardId & (MARVELL_BOARD_ID_BASE - 1);
 }
+
+/* mvSysEnvTimerIsRefClk25Mhz:
+ * ALP support 25Mhz as ref.clock for timer
+ */
+MV_BOOL mvSysEnvTimerIsRefClk25Mhz(void)
+{
+	return MV_TRUE;
+}

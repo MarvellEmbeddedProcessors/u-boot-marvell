@@ -307,3 +307,11 @@ MV_U8 mvCtrlRevisionGet(MV_VOID)
 	value = MV_REG_READ(DEV_VERSION_ID_REG);
 	return  ((value & (REVISON_ID_MASK) ) >> REVISON_ID_OFFS);
 }
+
+/* mvSysEnvTimerIsRefClk25Mhz:
+ * A375 support 25Mhz as ref.clock for timer
+ */
+MV_BOOL mvSysEnvTimerIsRefClk25Mhz(void)
+{
+	return MV_TRUE;
+}

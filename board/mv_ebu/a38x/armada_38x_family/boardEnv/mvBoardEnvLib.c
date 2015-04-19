@@ -916,8 +916,14 @@ static MV_VOID mvBoardModuleAutoDetect(MV_VOID)
 	bootSrc = mvBoardBootDeviceGroupSet();
 	if (MSAR_0_BOOT_NAND_NEW == bootSrc)
 		mvBoardModuleConfigSet(MV_MODULE_NAND_ON_BOARD);
-	else if (MSAR_0_BOOT_SDIO == bootSrc)
+	else if (MSAR_0_BOOT_SDIO == bootSrc) {
 		mvBoardModuleConfigSet(MV_MODULE_DB381_MMC_8BIT_ON_BOARD);
+		/* Enable NAND access if the SDIO is not using NAND MPPs.
+		   The SDIO MPPs overlap NAND ones in SDIO-8bit access mode,
+		   when boot attr2 == 40 */
+		if (mvBoardBootAttrGet(mvBoardBootDeviceGet(), 2) != 40)
+			mvBoardModuleConfigSet(MV_MODULE_NAND_ON_BOARD);
+	}
 }
 
 /*******************************************************************************

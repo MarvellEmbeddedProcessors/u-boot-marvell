@@ -371,55 +371,59 @@ MV_VOID mvBoardFlashDeviceUpdate(MV_VOID)
 *******************************************************************************/
 MV_VOID mvBoardInfoUpdate(MV_VOID)
 {
-	MV_U32 smiAddress = -1, netComplex;
+	MV_U32 smiAddress = -1, boardCfg;
 
 	switch (mvBoardIdGet()) {
 	case A39X_DB_69XX_ID:
 #ifdef CONFIG_CMD_BOARDCFG
 		mvBoardNetComplexInfoUpdate();
+		/* Enable USB3.0 port 0 if  SerDes is connected to USB Host #0 */
+		/* COMPHY1: 6 = USB_HOST#0 (connected via module) */
+		boardCfg = mvBoardSysConfigGet(MV_CONFIG_LANE1);
+		if (boardCfg == 0x6)
+			mvBoardUsbPortStatusSet(USB3_UNIT_ID, 0, MV_TRUE);
+		/* COMPHY4: 4 = USB_HOST#0 (connected via module) */
+		boardCfg = mvBoardSysConfigGet(MV_CONFIG_LANE4);
+		if (boardCfg == 0x4)
+			mvBoardUsbPortStatusSet(USB3_UNIT_ID, 0, MV_TRUE);
 #endif
-		/* if flavor is A390, update the status of USB3.0 Host #1 to
-		   FALSE, because flavor a390 support 1 USB3.0 Host (Host #0) */
-		if (mvCtrlModelGet() == MV_6920_DEV_ID)
-			mvBoardUsbPortStatusSet(USB3_UNIT_ID, 1, MV_FALSE);
-
 		mvBoardMppIdUpdate();
 
-		netComplex = mvBoardNetComplexConfigGet();
-		if (netComplex & MV_NETCOMP_GE_MAC0_2_SGMII_L1) {
+		boardCfg = mvBoardNetComplexConfigGet();
+		if (boardCfg & MV_NETCOMP_GE_MAC0_2_SGMII_L1) {
 			smiAddress = 0x5;
 			mvBoardPhyNegotiationTypeSet(0, SMI);
-		} else if (netComplex & (MV_NETCOMP_GE_MAC0_2_RXAUI | MV_NETCOMP_GE_MAC0_2_XAUI)) {
+		} else if (boardCfg & (MV_NETCOMP_GE_MAC0_2_RXAUI | MV_NETCOMP_GE_MAC0_2_XAUI)) {
 			smiAddress = 0x0;
 			mvBoardPhyNegotiationTypeSet(0, XSMI);
 			/*check if MAC0 connected to SGMII on lane0/6 via module*/
-		} else if (netComplex & (MV_NETCOMP_GE_MAC0_2_SGMII_L0 | MV_NETCOMP_GE_MAC0_2_SGMII_L6)) {
+		} else if (boardCfg & (MV_NETCOMP_GE_MAC0_2_SGMII_L0 | MV_NETCOMP_GE_MAC0_2_SGMII_L6)) {
 			smiAddress = 0x10;
 			mvBoardPhyNegotiationTypeSet(0, SMI);
 		}
 		mvBoardPhyAddrSet(0, smiAddress);
 
 		smiAddress = -1;
-		if (netComplex & MV_NETCOMP_GE_MAC1_2_SGMII_L1)
+		if (boardCfg & MV_NETCOMP_GE_MAC1_2_SGMII_L1)
 			smiAddress = 0x5;
-		else if (netComplex & (MV_NETCOMP_GE_MAC1_2_RGMII1))
+		else if (boardCfg & (MV_NETCOMP_GE_MAC1_2_RGMII1))
 			smiAddress = 0x1;
 			/*check if MAC1 connected to SGMII on lane2/4 via module*/
-		else if (netComplex & (MV_NETCOMP_GE_MAC1_2_SGMII_L2 | MV_NETCOMP_GE_MAC1_2_SGMII_L4))
+		else if (boardCfg & (MV_NETCOMP_GE_MAC1_2_SGMII_L2 | MV_NETCOMP_GE_MAC1_2_SGMII_L4))
 			smiAddress = 0x11;
 		mvBoardPhyAddrSet(1, smiAddress);
 
 		smiAddress = -1;
 
-		if (netComplex & MV_NETCOMP_GE_MAC2_2_SGMII_L3)
+		if (boardCfg & MV_NETCOMP_GE_MAC2_2_SGMII_L3)
 			smiAddress = 0x4;
 			/*check if MAC2 connected to SGMII on lane5 via module*/
-		else if (netComplex & MV_NETCOMP_GE_MAC2_2_SGMII_L5)
+		else if (boardCfg & MV_NETCOMP_GE_MAC2_2_SGMII_L5)
 			smiAddress = 0x12;
 		mvBoardPhyAddrSet(2, smiAddress);
 
 		smiAddress = -1;
-		if (netComplex & (MV_NETCOMP_GE_MAC3_2_SGMII_L6)) {
+		if (boardCfg & (MV_NETCOMP_GE_MAC3_2_SGMII_L6)) {
 			/*
 			 * there is another option the is not supported anymore
 			 * which is to connect a bridge from the PCI to one of the
@@ -433,7 +437,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			smiAddress = 0x0;
 			mvBoardPhyNegotiationTypeSet(0, XSMI);
 			/*check if MAC3 connected to SGMII on lane4 via module*/
-		} else if (netComplex & MV_NETCOMP_GE_MAC3_2_SGMII_L4) {
+		} else if (boardCfg & MV_NETCOMP_GE_MAC3_2_SGMII_L4) {
 			smiAddress = 0x13;
 			mvBoardPhyNegotiationTypeSet(0, SMI);
 		}

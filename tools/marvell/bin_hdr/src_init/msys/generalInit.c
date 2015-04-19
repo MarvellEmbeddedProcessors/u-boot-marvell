@@ -69,6 +69,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 #include "mvSiliconIf.h"
 #include "generalInit.h"
+#include "mvSysEnvLib.h"
 
 #if defined(MV_MSYS_AC3)
 #include "ddr3_msys_ac3.h"
@@ -172,6 +173,7 @@ MV_STATUS mvGeneralInit(void)
 	mvUartInit();
 	DEBUG_INIT_S("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
 #endif
+	mvHwsTwsiInitWrapper();
 
 	return MV_OK;
 }

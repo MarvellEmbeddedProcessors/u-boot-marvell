@@ -295,5 +295,14 @@ MV_SUSPEND_WAKEUP_STATUS mvSysEnvCheckWakeupDramEnable(void);
  * RETURNS:              None.
  ***************************************************************************/
 MV_STATUS mvSysEnvTimerIsRefClk25Mhz(MV_VOID);
+/**************************************************************************
+ * mvHwsTwsiInitWrapper -
+ *
+ * DESCRIPTION:          Wrapper for initializing the TWSI unit
+ * INPUT:                None.
+ * OUTPUT:               None.
+ * RETURNS:              None.
+ ***************************************************************************/
+MV_STATUS mvHwsTwsiInitWrapper(MV_VOID);
 #endif /* __INCmvBHboardEnvSpech */
 

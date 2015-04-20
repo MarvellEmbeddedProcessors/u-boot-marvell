@@ -1,0 +1,63 @@
+# AAPL CORE Revision: 2.1.0
+#
+# Copyright 2014 Avago Technologies. All rights reserved.
+#
+# This file is part of the AAPL CORE library.
+#
+# AAPL CORE is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# AAPL CORE is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with AAPL CORE.  If not, see http://www.gnu.org/licenses.
+
+
+# Example Makefile for AAPL core files.
+
+HEADERS = \
+        include/aapl.h \
+        include/system_includes.h \
+        include/aapl_library.h \
+        include/aapl_core.h \
+        include/sbus.h \
+        include/mdio.h \
+        include/gpio_mdio.h \
+        include/i2c.h \
+        include/spico.h \
+        include/asic_info.h \
+        include/serdes_core.h \
+        include/pmd.h \
+        include/logging.h
+
+
+SOURCES = \
+        library.c \
+        aapl_core.c \
+        aacs.c \
+        sbus.c \
+        mdio.c \
+        gpio_mdio.c \
+        i2c.c \
+        spico.c \
+        user_code.c \
+        serdes_core.c \
+        pmd.c \
+        logging.c
+
+
+OBJECTS = $(SOURCES:.c=.o)
+
+TARGET = libaapl-LGPL.so
+
+CFLAGS = -fPIC -Iinclude -DHAVE_UNISTD_H -g
+
+$(TARGET) : $(OBJECTS)
+	gcc -g -shared -o $(TARGET) $(OBJECTS)
+
+$(OBJECTS) : $(HEADERS)

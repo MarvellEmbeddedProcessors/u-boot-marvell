@@ -1,0 +1,26 @@
+
+## VIPS compilation environment #################
+ifeq (VIPS, $(HOME_ENV))
+
+#INCLUDE_PATH =
+#C_FILE_LIST  =
+#SUBDIRS      =
+#C_EXCLUDE_FILE_LIST =
+
+##################################################
+##################################################
+ROOT_DIR = $(subst \,/,$(SW_ROOT))
+include $(ROOT_DIR)/mainLabServices/gtBuild
+
+else
+
+## CPSS compilation environment #################
+INCLUDE_PATH += -I$(PROJ_BASE)/src/cpss/generic/labServices/port/gop/src/port/serdes/avago/aapl/include
+#C_FILE_LIST  =
+#SUBDIRS      =
+#C_EXCLUDE_FILE_LIST =
+
+##################################################
+##################################################
+include $(PROJ_BASE)/gtTopMake
+endif

@@ -295,7 +295,8 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 			return MV_TRUE;
 		return MV_FALSE;
 	}
-	return MV_FALSE;
+	/*if QSGMII module connected then every single MAC port is SGMII port*/
+	return mvBoardIsPortInQsgmii(ethPortNum);
 }
 
 /*******************************************************************************
@@ -372,6 +373,7 @@ MV_VOID mvBoardFlashDeviceUpdate(MV_VOID)
 MV_VOID mvBoardInfoUpdate(MV_VOID)
 {
 	MV_U32 smiAddress = -1, boardCfg;
+	MV_U32 smiQuadAddr = 0x8;
 
 	switch (mvBoardIdGet()) {
 	case A39X_DB_69XX_ID:
@@ -400,6 +402,10 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		} else if (boardCfg & (MV_NETCOMP_GE_MAC0_2_SGMII_L0 | MV_NETCOMP_GE_MAC0_2_SGMII_L6)) {
 			smiAddress = 0x10;
 			mvBoardPhyNegotiationTypeSet(0, SMI);
+		} else if (boardCfg & MV_NETCOMP_GE_MAC0_2_QSGMII) {
+			smiAddress = smiQuadAddr;
+			mvBoardPhyNegotiationTypeSet(0, SMI);
+			mvBoardQuadPhyAddr0Set(0, smiQuadAddr);
 		}
 		mvBoardPhyAddrSet(0, smiAddress);
 
@@ -411,6 +417,10 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			/*check if MAC1 connected to SGMII on lane2/4 via module*/
 		else if (boardCfg & (MV_NETCOMP_GE_MAC1_2_SGMII_L2 | MV_NETCOMP_GE_MAC1_2_SGMII_L4))
 			smiAddress = 0x11;
+		else if (boardCfg & MV_NETCOMP_GE_MAC1_2_QSGMII) {
+			smiAddress = smiQuadAddr + 1;
+			mvBoardQuadPhyAddr0Set(1, smiQuadAddr);
+		}
 		mvBoardPhyAddrSet(1, smiAddress);
 
 		smiAddress = -1;
@@ -420,6 +430,10 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			/*check if MAC2 connected to SGMII on lane5 via module*/
 		else if (boardCfg & MV_NETCOMP_GE_MAC2_2_SGMII_L5)
 			smiAddress = 0x12;
+		else if (boardCfg & MV_NETCOMP_GE_MAC2_2_QSGMII) {
+			smiAddress = smiQuadAddr + 2;
+			mvBoardQuadPhyAddr0Set(2, smiQuadAddr);
+		}
 		mvBoardPhyAddrSet(2, smiAddress);
 
 		smiAddress = -1;
@@ -439,7 +453,11 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			/*check if MAC3 connected to SGMII on lane4 via module*/
 		} else if (boardCfg & MV_NETCOMP_GE_MAC3_2_SGMII_L4) {
 			smiAddress = 0x13;
-			mvBoardPhyNegotiationTypeSet(0, SMI);
+			mvBoardPhyNegotiationTypeSet(3, SMI);
+		} else if (boardCfg & MV_NETCOMP_GE_MAC3_2_QSGMII) {
+			smiAddress = smiQuadAddr + 3;
+			mvBoardPhyNegotiationTypeSet(3, SMI);
+			mvBoardQuadPhyAddr0Set(3, smiQuadAddr);
 		}
 		mvBoardPhyAddrSet(3, smiAddress);
 

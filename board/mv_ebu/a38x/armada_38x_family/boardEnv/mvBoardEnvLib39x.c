@@ -596,9 +596,10 @@ MV_STATUS mvBoardNetComplexInfoUpdate(MV_VOID)
 	else if (sysConfig5 == 0x8 && sysConfig6 == 0x4)
 		netComplexOptions |= MV_NETCOMP_GE_MAC0_2_RXAUI;
 
-	/* If MAC1 is not connected to SGMII, connect MAC1 to RGMII1 */
-	if (!(netComplexOptions & (MV_NETCOMP_GE_MAC1_2_SGMII_L4 | MV_NETCOMP_GE_MAC1_2_SGMII_L2 |
+	/* If MAC1 is not connected to SGMII and no conflicts of RGMII1(vs NAND), connect MAC1 to RGMII1 */
+	if ((!(netComplexOptions & (MV_NETCOMP_GE_MAC1_2_SGMII_L4 | MV_NETCOMP_GE_MAC1_2_SGMII_L2 |
 					MV_NETCOMP_GE_MAC1_2_SGMII_L1 | MV_NETCOMP_GE_MAC1_2_QSGMII)))
+					&& mvCtrlPortIsRgmii(1))
 		netComplexOptions |= MV_NETCOMP_GE_MAC1_2_RGMII1;
 
 	mvBoardNetComplexConfigSet(netComplexOptions);

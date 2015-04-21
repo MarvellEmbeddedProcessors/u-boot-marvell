@@ -133,8 +133,8 @@ typedef enum {
 
 /* MPP_SPI0_BOOT: change MPPs of: SPI0 (booting from it), RGMII, SDIO
 		This MPPs changes disbale NAND/SPI1 */
-#define MPP_SPI0_BOOT		{ {2, 0x11866005}, {3, 0x88888011}, {4, 0x88800008}, \
-				  {5, 0x51132088}, {6, 0x55550555}, {7, 0x00005550} }
+#define MPP_SPI0_BOOT		{ {2, 0x11266005}, {3, 0x22222011}, {4, 0x22200002}, \
+				  {5, 0x51132022}, {6, 0x55550555}, {7, 0x00005550} }
 
 typedef enum _mvSatRTypeID {
 /*  "Bios" Device  */

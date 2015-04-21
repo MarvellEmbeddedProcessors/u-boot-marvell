@@ -924,6 +924,12 @@ static MV_VOID mvBoardModuleAutoDetect(MV_VOID)
 		if (mvBoardBootAttrGet(mvBoardBootDeviceGet(), 2) != 40)
 			mvBoardModuleConfigSet(MV_MODULE_NAND_ON_BOARD);
 	}
+#ifdef MV_NAND
+	/*check if boot from SPI1 flash and uboot compiled with
+	nand interface then set NAND module on board configuration*/
+	if (MSAR_0_BOOT_SPI1_FLASH == bootSrc)
+		mvBoardModuleConfigSet(MV_MODULE_NAND_ON_BOARD);
+#endif
 }
 
 /*******************************************************************************

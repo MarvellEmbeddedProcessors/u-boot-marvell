@@ -1398,10 +1398,11 @@ MV_VOID mvBoardConfigWrite(void)
 *******************************************************************************/
 MV_BOOL mvBoardIsGbEPortConnected(MV_U32 ethPortNum)
 {
-	/* port is connected, if it's identified as R/SGMII, and has a valid corresponding MAC info entry */
+	/* port is connected, if it's enabled, identified as R/SGMII, and has a valid corresponding MAC info entry */
 
 
 	if ((ethPortNum <= board->numBoardMacInfo) &&
+		(board->pBoardMacInfo[ethPortNum].boardMacEnabled == MV_TRUE) &&
 		((mvCtrlPortIsSerdesSgmii(ethPortNum) ||
 		(mvCtrlPortIsRgmii(ethPortNum) && mvBoardPhyAddrGet(ethPortNum) != -1)) ||
 		(mvCtrlPortIsSerdesRxaui(ethPortNum) && mvBoardPhyAddrGet(ethPortNum) != -1)))

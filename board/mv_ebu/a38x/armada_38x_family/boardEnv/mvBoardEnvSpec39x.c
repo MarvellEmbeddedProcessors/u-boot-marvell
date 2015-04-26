@@ -88,11 +88,11 @@ MV_BOARD_TWSI_INFO armada_39x_customer_0_BoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO armada_39x_customer_0_BoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr, MV_8
-	 * boardEthSmiAddr0, MV_PHY_PORT_TYPE portType}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI},
-	{ BOARD_MAC_SPEED_AUTO, 0x5, 0x5, SMI},
-	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4, SMI},
-	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI}
+	 * boardEthSmiAddr0, MV_PHY_PORT_TYPE portType, MV_BOOL boardMacEnabled;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI, MV_TRUE},
+	{ BOARD_MAC_SPEED_AUTO, 0x5, 0x5, SMI, MV_TRUE},
+	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4, SMI, MV_TRUE},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI, MV_TRUE}
 };
 
 MV_BOARD_NET_COMPLEX_INFO armada_39x_customer_0_InfoBoardNetComplexInfo[] = {
@@ -251,11 +251,11 @@ MV_BOARD_TWSI_INFO db88f69xxInfoBoardTwsiDev[] = {
 
 MV_BOARD_MAC_INFO db88f69xxInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr, MV_8
-	 * boardEthSmiAddr0, MV_PHY_PORT_TYPE portType}} */
-	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI},
-	{ BOARD_MAC_SPEED_AUTO, 0x5, 0x5, SMI},
-	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4, SMI},
-	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI}
+	 * boardEthSmiAddr0, MV_PHY_PORT_TYPE portType, MV_BOOL boardMacEnabled;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI, MV_TRUE},
+	{ BOARD_MAC_SPEED_AUTO, 0x5, 0x5, SMI, MV_TRUE},
+	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4, SMI, MV_TRUE},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI, MV_TRUE}
 };
 
 MV_BOARD_NET_COMPLEX_INFO db88f69xxInfoBoarNetComplexInfo[] = {

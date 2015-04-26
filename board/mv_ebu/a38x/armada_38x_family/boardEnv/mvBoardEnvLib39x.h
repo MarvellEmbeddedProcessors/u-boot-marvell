@@ -88,6 +88,7 @@ typedef struct _boardMacInfo {
 	MV_32 boardEthSmiAddr;
 	MV_32 boardEthSmiAddr0;
 	MV_PHY_NEGOTIATION_PORT_TYPE negType;
+	MV_BOOL boardMacEnabled;
 } MV_BOARD_MAC_INFO;
 
 typedef enum {

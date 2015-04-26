@@ -90,8 +90,17 @@ int rtc_get(struct rtc_time *tm)
 		rtc_init();
 
 	time = RTC_READ_REG(RTC_TIME_REG_OFFS);
-	/* WA for failing time read attempts. The HW ERRATA information should be added here */
-	/* if detected more than one second between two time reads, read once again */
+	/* Functional Errata Ref #: FE-3124064 -  WA for failing time read attempts.
+	 * Description:
+	 * 	The device supports CPU write and read access to the RTC Time register.
+	 * 	However, due to this erratum, Write to RTC TIME register may fail.
+	 * 	Read from RTC TIME register may fail.
+	 * Workaround:
+	 * 	After writing to RTC TIME register, issue a dummy write of 0x0 twice to RTC Status register.
+	 * 	RTC TIME register should be read twice, the second read will return a proper value.
+	 * Functional Impact After Workaround is applied:
+	 * 	No functional impact after WA is applied
+	 */
 	time_check = RTC_READ_REG(RTC_TIME_REG_OFFS);
 	if ((time_check - time) > 1)
 		time_check = RTC_READ_REG(RTC_TIME_REG_OFFS);
@@ -113,7 +122,17 @@ int rtc_set(struct rtc_time *tm)
 	time = mktime(tm->tm_year, tm->tm_mon,
 				  tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 
-	/* WA for failing time set attempts. The HW ERRATA information should be added here */
+	/* Functional Errata Ref #: FE-3124064 -  WA for failing time read attempts.
+	 * Description:
+	 * 	The device supports CPU write and read access to the RTC Time register.
+	 * 	However, due to this erratum, Write to RTC TIME register may fail.
+	 * 	Read from RTC TIME register may fail.
+	 * Workaround:
+	 * 	After writing to RTC TIME register, issue a dummy write of 0x0 twice to RTC Status register.
+	 * 	RTC TIME register should be read twice, the second read will return a proper value.
+	 * Functional Impact After Workaround is applied:
+	 * 	No functional impact after WA is applied
+	 */
 	RTC_WRITE_REG(0, RTC_STATUS_REG_OFFS);
 	mdelay(100);
 	/* End of SW WA */

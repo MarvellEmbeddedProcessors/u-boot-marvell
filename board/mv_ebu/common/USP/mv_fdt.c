@@ -84,6 +84,12 @@ void fdt_env_setup(char *fdtfile, MV_BOOL runUpdate)
 	env = getenv("bootcmd_fdt");
 	if (!env)
 		setenv("bootcmd_fdt",bootcmd_fdt);
+
+#if defined (CONFIG_OF_LIBFDT_IS_DEFAULT)
+	env = getenv("bootcmd");
+	if (!env)
+		setenv("bootcmd", bootcmd_fdt);
+#endif /* (CONFIG_OF_LIBFDT_IS_DEFAULT) */
 #endif
 }
 

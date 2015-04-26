@@ -613,11 +613,7 @@ void misc_init_r_env(void)
 	} else {
 		env = getenv("bootargs_end");
 		if (!env)
-#if defined(MV_INC_BOARD_QD_SWITCH)
-			setenv("bootargs_end", MV_BOOTARGS_END_SWITCH);
-#else
 			setenv("bootargs_end", MV_BOOTARGS_END);
-#endif
 	}
 
 	env = getenv("image_name");
@@ -671,44 +667,16 @@ void misc_init_r_env(void)
 #if (CONFIG_BOOTDELAY >= 0)
 	env = getenv("bootcmd");
 	if (!env)
-#if defined(CONFIG_OF_LIBFDT) && defined (CONFIG_OF_LIBFDT_IS_DEFAULT)
-		setenv("bootcmd",bootcmd_fdt);
-#elif defined(CONFIG_CMD_STAGE_BOOT)
-//		setenv("bootcmd","stage_boot $boot_order");
-// Temporary workaround till stage_boot gets stable.
 		setenv("bootcmd", "tftpboot 0x2000000 $image_name;"
 			   "setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
 			   "ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params "
 			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
-
-#elif defined(MV_INCLUDE_TDM) || defined(MV_INC_BOARD_QD_SWITCH)
-		setenv("bootcmd", "tftpboot 0x2000000 $image_name;"
-			   "setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
-			   "ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
-			   "clcd.lcd0_enable=$(lcd0_enable) clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
-#else
-		setenv("bootcmd", "tftpboot 0x2000000 $image_name;"
-			   "setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
-			   "ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params "
-			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
-#endif
 #endif  /* (CONFIG_BOOTDELAY >= 0) */
 
 	env = getenv("standalone");
 	if (!env)
-#if defined(MV_INCLUDE_TDM) && defined(MV_INC_BOARD_QD_SWITCH)
-		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts "
-			   "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end $mvNetConfig; bootm 0x2000000;");
-#elif defined(MV_INC_BOARD_QD_SWITCH)
-		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts "
-			   "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end $mvNetConfig; bootm 0x2000000;");
-#elif defined(MV_INCLUDE_TDM)
 		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts "
 			   "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
-#else
-		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts "
-			   "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
-#endif
 
 	/* Set boodelay to 3 sec, if Monitor extension are disabled */
 	if (!enaMonExt())

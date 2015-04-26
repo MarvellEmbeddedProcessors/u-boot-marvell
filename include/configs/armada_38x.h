@@ -583,14 +583,12 @@ extern int nand_get_env_offs(void);
    3.10 mainline. in 3.14 use flash instead of nand */
 #define MV_NFC_FDT_NODE_NAME	"nand@"
 #define MV_BOOTARGS_END         ":10.4.50.254:255.255.255.0:Armada38x:eth0:none"
-#define MV_BOOTARGS_END_SWITCH  ":::Armada38x:eth0:none"
 #define MV_DDR_L2_ALIGNMENT
 #elif defined CONFIG_ARMADA_39X
 /* the nand node name in Linux 3.14 mainline is different than node name in
    3.10 mainline. in 3.14 use flash instead of nand */
 #define MV_NFC_FDT_NODE_NAME	"flash@"
 #define MV_BOOTARGS_END         ":10.4.50.254:255.255.255.0:Armada39x:eth0:none"
-#define MV_BOOTARGS_END_SWITCH  ":::Armada39x:eth0:none"
 #endif
 #define RCVR_IP_ADDR            "169.254.100.100"
 	#define RCVR_LOAD_ADDR          "0x02000000"

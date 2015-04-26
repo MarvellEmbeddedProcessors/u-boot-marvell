@@ -610,6 +610,8 @@ typedef enum _mvConfigTypeID {
 	MV_CONFIG_DDR_ECC_EN,
 	MV_CONFIG_BOARDCFG_EN,
 	MV_CONFIG_BOARDCFG_VALID,
+	MV_CONFIG_SERDES5_MODE,
+        MV_CONFIG_SERDES6_MODE,
 	MV_CONFIG_TYPE_MAX_OPTION,
 	MV_CONFIG_TYPE_CMD_DUMP_ALL,
 	MV_CONFIG_TYPE_CMD_SET_DEFAULT
@@ -629,6 +631,8 @@ typedef enum _mvConfigTypeID {
 { MV_CONFIG_DDR_ECC_EN,		0x04,	2,	5,	{1, 1} }, \
 { MV_CONFIG_BOARDCFG_EN,	0x08,	3,	5,	{1, 1} }, \
 { MV_CONFIG_BOARDCFG_VALID,	0x03,	0,	6,	{1, 1} }, \
+{ MV_CONFIG_SERDES5_MODE,	0x10,	4,	5,	{1, 1} }, \
+{ MV_CONFIG_SERDES6_MODE,       0x20,   5,      5,      {1, 1} }, \
 };
 
 typedef struct _boardConfigTypesInfo {

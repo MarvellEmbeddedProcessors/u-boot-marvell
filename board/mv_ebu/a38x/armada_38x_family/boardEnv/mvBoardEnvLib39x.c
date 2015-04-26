@@ -374,6 +374,9 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 {
 	MV_U32 smiAddress = -1, boardCfg;
 	MV_U32 smiQuadAddr = 0x8;
+	/*default value for serdes5/6 mode is 1(XSMI) because that lane5/6
+		by default connected to RXUAI with XSMI mode*/
+	MV_U32 serdes5Mode = 1, serdes6Mode = 1;
 
 	switch (mvBoardIdGet()) {
 	case A39X_DB_69XX_ID:
@@ -388,6 +391,12 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		boardCfg = mvBoardSysConfigGet(MV_CONFIG_LANE4);
 		if (boardCfg == 0x4)
 			mvBoardUsbPortStatusSet(USB3_UNIT_ID, 0, MV_TRUE);
+		boardCfg = mvBoardSysConfigGet(MV_CONFIG_5_SMI_MODE);
+		if (!boardCfg)
+			serdes5Mode = 0;
+		boardCfg = mvBoardSysConfigGet(MV_CONFIG_6_SMI_MODE);
+		if (!boardCfg)
+			serdes6Mode = 0;
 #endif
 		mvBoardMppIdUpdate();
 
@@ -399,9 +408,17 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			smiAddress = 0x0;
 			mvBoardPhyNegotiationTypeSet(0, XSMI);
 			/*check if MAC0 connected to SGMII on lane0/6 via module*/
-		} else if (boardCfg & (MV_NETCOMP_GE_MAC0_2_SGMII_L0 | MV_NETCOMP_GE_MAC0_2_SGMII_L6)) {
+		} else if (boardCfg & MV_NETCOMP_GE_MAC0_2_SGMII_L0) {
 			smiAddress = 0x10;
 			mvBoardPhyNegotiationTypeSet(0, SMI);
+		} else if (boardCfg & MV_NETCOMP_GE_MAC0_2_SGMII_L6) {
+			if (serdes6Mode) {
+				smiAddress = 0x0;
+				mvBoardPhyNegotiationTypeSet(0, XSMI);
+			} else {
+				smiAddress = 0x10;
+				mvBoardPhyNegotiationTypeSet(0, SMI);
+			}
 		} else if (boardCfg & MV_NETCOMP_GE_MAC0_2_QSGMII) {
 			smiAddress = smiQuadAddr;
 			mvBoardPhyNegotiationTypeSet(0, SMI);
@@ -425,14 +442,22 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 
 		smiAddress = -1;
 
-		if (boardCfg & MV_NETCOMP_GE_MAC2_2_SGMII_L3)
+		if (boardCfg & MV_NETCOMP_GE_MAC2_2_SGMII_L3) {
 			smiAddress = 0x4;
+			mvBoardPhyNegotiationTypeSet(2, SMI);
 			/*check if MAC2 connected to SGMII on lane5 via module*/
-		else if (boardCfg & MV_NETCOMP_GE_MAC2_2_SGMII_L5)
-			smiAddress = 0x12;
-		else if (boardCfg & MV_NETCOMP_GE_MAC2_2_QSGMII) {
+		} else if (boardCfg & MV_NETCOMP_GE_MAC2_2_SGMII_L5) {
+			if (serdes5Mode) {
+				smiAddress = 0x0;
+				mvBoardPhyNegotiationTypeSet(2, XSMI);
+			} else {
+				smiAddress = 0x12;
+				mvBoardPhyNegotiationTypeSet(2, SMI);
+			}
+		} else if (boardCfg & MV_NETCOMP_GE_MAC2_2_QSGMII) {
 			smiAddress = smiQuadAddr + 2;
 			mvBoardQuadPhyAddr0Set(2, smiQuadAddr);
+			mvBoardPhyNegotiationTypeSet(2, SMI);
 		}
 		mvBoardPhyAddrSet(2, smiAddress);
 
@@ -445,11 +470,18 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			 * lane 6 with smiAddress = 0x6
 			 * changes that has been done:
 			 * smiAddress = 0x6; --> smiAddress = 0x0;
-			 * now when mac3 is connected with lane 6 with sgmii
+			 * now when mac3 is connected with lane 6 with sgmii(Mode XSMI)
 			 * it means that it's through the 10 gig phy
 			 */
-			smiAddress = 0x0;
-			mvBoardPhyNegotiationTypeSet(0, XSMI);
+			if (serdes6Mode) {
+				smiAddress = 0x0;
+				mvBoardPhyNegotiationTypeSet(3, XSMI);
+			} else {
+				/*check if mac3 connected with lane 6 with sgmii(Mode SMI)
+					then it's through external module*/
+				smiAddress = 0x13;
+				mvBoardPhyNegotiationTypeSet(3, SMI);
+			}
 			/*check if MAC3 connected to SGMII on lane4 via module*/
 		} else if (boardCfg & MV_NETCOMP_GE_MAC3_2_SGMII_L4) {
 			smiAddress = 0x13;

@@ -205,6 +205,8 @@ typedef enum _mvConfigTypeID {
 	MV_CONFIG_DDR_BUSWIDTH,
 	MV_CONFIG_DDR_ECC_EN,
 	MV_CONFIG_BOARDCFG_EN,
+	MV_CONFIG_5_SMI_MODE,
+	MV_CONFIG_6_SMI_MODE,
 	MV_CONFIG_TYPE_MAX_OPTION, /* limit for user read/write routines */
 	MV_CONFIG_BOARDCFG_VALID,
 	MV_CONFIG_TYPE_CMD_DUMP_ALL, /* limit for mvBoardConfigTypeGet routine */
@@ -226,12 +228,14 @@ typedef enum _mvConfigTypeID {
 { MV_CONFIG_DDR_ECC_EN,		0x04,	2,	5,	{1, 1} }, \
 { MV_CONFIG_BOARDCFG_EN,	0x08,	3,	5,	{1, 1} }, \
 { MV_CONFIG_BOARDCFG_VALID,	0x03,	0,	6,	{1, 1} }, \
+{ MV_CONFIG_5_SMI_MODE,       0x10,   4,      5,      {1, 1} }, \
+{ MV_CONFIG_6_SMI_MODE,       0x20,   5,      5,      {1, 1} }, \
 };
 
 
 #define MV_BOARD_CONFIG_CMD_STR "serdes0, serdes1, serdes2, serdes3, serdes4, serdes5, serdes6, nss_en,\n"	\
 				"\tddr_buswidth, ddr_ecc, eepromEnable\n\n"
-#define MV_BOARD_CONFIG_CMD_MAX_OPTS 13
+#define MV_BOARD_CONFIG_CMD_MAX_OPTS 15
 
 /*MV_CMD_TYPE_ID,		command name,		Name,			numOfValues,	Possible Values */
 #define MV_BOARD_CONFIG_CMD_INFO {										\
@@ -263,6 +267,8 @@ typedef enum _mvConfigTypeID {
 	{"Disable", "Enable"} },										\
 {MV_CONFIG_BOARDCFG_EN,	"eepromEnable",	"EEPROM enable",	2,					\
 	{"Disable", "Enable"} },										\
+{MV_CONFIG_5_SMI_MODE, "serdes5Mode", "SerDes Lane #5 SMI MODE", 2, {"SMI", "XSMI"} },			\
+{MV_CONFIG_6_SMI_MODE, "serdes6Mode", "SerDes Lane #6 SMI MODE", 2, {"SMI", "XSMI"} },			\
 };
 
 #endif /* CONFIG_CMD_BOARDCFG */

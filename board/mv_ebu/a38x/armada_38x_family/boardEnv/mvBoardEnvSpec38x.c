@@ -1034,7 +1034,7 @@ MV_BOARD_INFO db88f6821_board_info = {
 	.nandFlashControl	= DB_88F68XX_BOARD_NAND_CONTROL,
 	.nandIfMode		= NAND_IF_NFC,
 
-	.isSdMmcConnected	= MV_FALSE,
+	.isSdMmcConnected	= MV_TRUE,
 	.isSdMmc_1_8v_Connected	= MV_FALSE,
 
 	/* NOR init params */

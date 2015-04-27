@@ -220,12 +220,14 @@ endif
 endif
 
 CFLAGS   += -Wall $(INCLUDE) $(DEBUG_FLAGS) $(CPUOPTS) -msoft-float -mabi=aapcs
-ifeq ($(BOARD),a38x)
-CFLAGS   += -fdata-sections -ffunction-sections
-EXTRA_LD_FLAGS = -Wl,--gc-sections --entry=_start
-else
+
+ifeq ($(BOARD),msys_bc2)
 CFLAGS   += -fPIE -fno-zero-initialized-in-bss -fno-unwind-tables
+else
+CFLAGS   += -fdata-sections -ffunction-sections
 endif
+
+EXTRA_LD_FLAGS = -Wl,--gc-sections --entry=_start
 
 ifeq ($(DDRTYPE),ddr4)
 CFLAGS += -DCONFIG_DDR4

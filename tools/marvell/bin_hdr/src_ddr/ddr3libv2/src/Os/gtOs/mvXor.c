@@ -392,7 +392,7 @@ MV_VOID	ddr3NewTipEccScrub()
 {
 	MV_U32 cs_c,max_cs;
 	MV_U32 uiCsEna = 0;
-    mvPrintf("DDR3 Training Sequence - Start scrubbing \n");
+    mvPrintf("DDR Training Sequence - Start scrubbing \n");
 
 	max_cs = mvHwsDdr3TipMaxCSGet();
 	for (cs_c = 0; cs_c < max_cs; cs_c++)
@@ -411,7 +411,7 @@ MV_VOID	ddr3NewTipEccScrub()
     /* Return XOR State */
     mvSysXorFinish();
 
-    mvPrintf("DDR3 Training Sequence - End scrubbing \n");
+    mvPrintf("DDR Training Sequence - End scrubbing \n");
 }
 
 

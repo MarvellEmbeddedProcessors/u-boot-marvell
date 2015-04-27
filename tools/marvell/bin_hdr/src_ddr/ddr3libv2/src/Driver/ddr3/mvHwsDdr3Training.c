@@ -107,6 +107,10 @@ static GT_U32 freqMask[HWS_MAX_DEVICE_NUM][DDR_FREQ_LIMIT];
 GT_BOOL rlMidFreqWA = GT_FALSE;
 extern GT_U32 ddr4TipConfigurePhyVrefTap;
 
+#ifdef CONFIG_DDR4
+extern GT_U8	vrefCalibrationWA; /*1 means SSTL & POD gets the same Vref and a WA is needed*/
+#endif
+
 #if defined (CONFIG_ALLEYCAT3)
 GT_U32 mvHwsmemSize[] = { ADDR_SIZE_512Mb, ADDR_SIZE_1Gb, ADDR_SIZE_2Gb, ADDR_SIZE_4Gb ,ADDR_SIZE_8Gb };
 #define  MV_DEVICE_MAX_DRAM_ADDRESS_SIZE          ADDR_SIZE_2Gb
@@ -741,7 +745,12 @@ GT_STATUS    mvHwsDdr3TipInitController
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, CALIB_MACHINE_CTRL_REG, calibrationUpdateControl<<3, 0x3<<3));
     }
 #ifdef CONFIG_DDR4
-	CHECK_STATUS(ddr4TipCalibrationAdjust(devNum, ddr4TipConfigurePhyVrefTap,1,0));/*devNum,VrefTap,Vref_en,POD_Only*/
+	if(vrefCalibrationWA == 0){
+		CHECK_STATUS(ddr4TipCalibrationValidate(devNum));
+	}
+	else{
+		CHECK_STATUS(ddr4TipCalibrationAdjust(devNum, ddr4TipConfigurePhyVrefTap,1,0));/*devNum,VrefTap,Vref_en,POD_Only*/
+	}
     ddr4ModeRegsInit(devNum);
     ddr4SdramConfig(devNum);
 #endif
@@ -1561,7 +1570,7 @@ GT_STATUS    ddr3TipFreqSet
 
 	if (delayEnable != 0)
 	{
-		adllTap =  MEGA/(freqVal[frequency]*64);
+		adllTap =  (isDllOff == GT_TRUE)?(1000):(MEGA/(freqVal[frequency]*64));
 		ddr3TipCmdAddrInitDelay(devNum, adllTap);
 	}
 
@@ -1642,14 +1651,16 @@ GT_STATUS    ddr3TipFreqSet
     MV_HWS_TOPOLOGY_MAP *topologyMap = ddr3TipGetTopologyMap(devNum);
     MV_HWS_TIP_FREQ_CONFIG_INFO		freqConfigInfo;
     MV_HWS_RESULT* flowResult = trainingResult[trainingStage];
-	GT_U32 adllTap = 0;
+	GT_U32 adllTap = 0, uiT2t, csNum;
 	GT_U32   csMask[MAX_INTERFACE_NUM];
 	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     DEBUG_TRAINING_IP(DEBUG_LEVEL_TRACE, ("dev %d access %d IF %d freq %d\n",devNum , accessType , interfaceId , frequency));
+
 	if (frequency == DDR_FREQ_LOW_FREQ) {
 		isDllOff = GT_TRUE;
 	}
+
     if (accessType == ACCESS_TYPE_MULTICAST)
     {
         startIf = 0;
@@ -1747,8 +1758,27 @@ GT_STATUS    ddr3TipFreqSet
             DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("FreqSet: DDR3 poll failed on SR entry\n"));
         }
 
+		/*-----------Calculate 2T mode---------------*/
+		if (mode2T != 0xFF)
+		{
+			uiT2t = mode2T;
+		}
+		else
+		{
+			/* calculate number of CS (per interface)*/
+			CHECK_STATUS(mvCalcCsNum(devNum, interfaceId, &csNum));
+			uiT2t = (csNum == 1) ? 0 : 1;
+		}
+
+		/*If configured 1:1 Ratio, use 1T mode*/
+		if(configFuncInfo[devNum].tipGetClockRatio(frequency) == 1){
+			uiT2t = 0;
+		}
+		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DDR_CONTROL_LOW_REG, uiT2t << 3,0x3 << 3));
+
         /* PLL configuration */
         configFuncInfo[devNum].tipSetFreqDividerFunc(devNum, interfaceId, frequency);
+
 
 		/* adjust tREFI to new frequency*/
 		tREFI = (topologyMap->interfaceParams[interfaceId].interfaceTemp == MV_HWS_TEMP_HIGH) ? TREFI_HIGH:TREFI_LOW;
@@ -1814,7 +1844,7 @@ GT_STATUS    ddr3TipFreqSet
 		ddr3TipSetTiming(devNum, accessType, interfaceId, frequency);
 		if (delayEnable != 0)
 		{
-			adllTap =  MEGA/(freqVal[frequency]*64);
+			adllTap =  (isDllOff == GT_TRUE)?(1000):(MEGA/(freqVal[frequency]*64));
 			ddr3TipCmdAddrInitDelay(devNum, adllTap);
 		}
 
@@ -2735,7 +2765,7 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 		if (maskTuneFunc & RECEIVER_CALIBRATION_MASK_BIT)
 		{
 		   trainingStage = RECEIVER_CALIBRATION;
-		    DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("RECEIVER_CALIBRATION_MASK_BIT\n"));
+		    DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("RECEIVER_CALIBRATION_MASK_BIT #%d\n", effective_cs));
 		    retVal = ddr4TipReceiverCalibration(devNum);
 		    if (isRegDump != 0)
 		    {
@@ -2753,7 +2783,7 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 		if (maskTuneFunc & WL_PHASE_CORRECTION_MASK_BIT)
 		{
 		   trainingStage = WL_PHASE_CORRECTION;
-		    DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("WL_PHASE_CORRECTION_MASK_BIT\n"));
+		    DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("WL_PHASE_CORRECTION_MASK_BIT #%d\n", effective_cs));
 		    retVal = ddr4TipDynamicWriteLevelingSupp(devNum);
 		    if (isRegDump != 0)
 		    {
@@ -2771,7 +2801,7 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 		if (maskTuneFunc & DQ_VREF_CALIBRATION_MASK_BIT)
 		{
 		   trainingStage = DQ_VREF_CALIBRATION;
-		    DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("DQ_VREF_CALIBRATION_MASK_BIT\n"));
+		    DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("DQ_VREF_CALIBRATION_MASK_BIT #%d\n", effective_cs));
 		    retVal = ddr4TipDqVrefCalibration(devNum);
 		    if (isRegDump != 0)
 		    {

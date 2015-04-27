@@ -112,6 +112,14 @@ void scsi_scan(int mode)
 	lbaint_t capacity;
 	unsigned long blksz;
 	ccb* pccb=(ccb *)&tempccb;
+	static int scsi_detected = 0;
+
+	if (scsi_detected) {
+		printf("** scsi detection can run only once - please");
+		printf(" reset board before running detection again **\n");
+		return;
+	}
+	scsi_detected = 1;
 
 	if(mode==1) {
 		printf("scanning bus for devices...\n");

@@ -627,6 +627,16 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	ethComPhy = 0;
 #endif
 
+	/* NOR/NAND modules overrides RGMII-1 MPP's */
+	/* Armada 381/2 (device 6811) doesn't support GE1 unit */
+	/* For A39x ethComPhy must be initialized before mvBoardInfoUpdate */
+	if (!(mvBoardIsModuleConnected(MV_MODULE_NOR) ||
+				mvBoardIsModuleConnected(MV_MODULE_NAND) ||
+				mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD) ||
+				mvCtrlModelGet() == MV_6811_DEV_ID ||
+				(mvCtrlModelGet() == MV_6W22_DEV_ID && mvBoardIdGet() == DB_BP_6821_ID)))
+		ethComPhy |= ON_BOARD_RGMII(1); /* NOR/NAND modules overides RGMII-1 MPP's */
+
 	/* If set to Auto detect, read board config info, update MPP group types*/
 	if (mvBoardConfigAutoDetectEnabled()) {
 #ifdef CONFIG_CMD_BOARDCFG
@@ -634,15 +644,6 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 #endif
 		mvBoardInfoUpdate();
 	}
-	/* NOR/NAND modules overrides RGMII-1 MPP's */
-	/* Armada 381/2 (device 6811) doesn't support GE1 unit */
-	if (!(mvBoardIsModuleConnected(MV_MODULE_NOR) ||
-	    mvBoardIsModuleConnected(MV_MODULE_NAND) ||
-		mvBoardIsModuleConnected(MV_MODULE_NAND_ON_BOARD) ||
-		mvCtrlModelGet() == MV_6811_DEV_ID ||
-		(mvCtrlModelGet() == MV_6W22_DEV_ID && mvBoardIdGet() == DB_BP_6821_ID))) {
-			ethComPhy |= ON_BOARD_RGMII(1); /* NOR/NAND modules overides RGMII-1 MPP's */
-		}
 
 	mvCtrlSerdesConfigDetect();
 

@@ -50,5 +50,11 @@
 #define TSEN_STATUS_TEMP_OUT_OFFSET			0
 #define TSEN_STATUS_TEMP_OUT_MASK			(0x3FF << TSEN_STATUS_TEMP_OUT_OFFSET)
 
+/* device ID and revision */
+#define DEV_ID_REG					0x18238
+#define DEV_VERSION_ID_REG			0x1823C
+#define REVISON_ID_OFFS				8
+#define REVISON_ID_MASK				0xF00
+
 #endif /*__mvHwsDdr3_A38x_H*/
 

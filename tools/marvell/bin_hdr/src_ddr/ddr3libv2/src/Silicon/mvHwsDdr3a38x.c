@@ -64,7 +64,7 @@ extern GT_U8 calibrationUpdateControl; /*2 external only, 1 is internal only*/
 #ifdef CONFIG_DDR3
 static GT_U16 freqVal[DDR_FREQ_LIMIT] =
 {
-    130, /*DDR_FREQ_LOW_FREQ*/
+    120, /*DDR_FREQ_LOW_FREQ*/
     400, /*DDR_FREQ_400,*/
     533, /*DDR_FREQ_533,*/
     666, /*DDR_FREQ_667,*/
@@ -84,7 +84,7 @@ static GT_U16 freqVal[DDR_FREQ_LIMIT] =
 #else /* CONFIG_DDR4 */
 static GT_U16 freqVal[DDR_FREQ_LIMIT] =
 {
-    130,    /* DDR_FREQ_LOW_FREQ */
+    120,    /* DDR_FREQ_LOW_FREQ */
     666,    /* DDR_FREQ_667 */
     800,    /* DDR_FREQ_800 */
     933,    /* DDR_FREQ_933 */
@@ -93,7 +93,7 @@ static GT_U16 freqVal[DDR_FREQ_LIMIT] =
 	1000  	/*DDR_FREQ_1000*/
 };
 
-extern GT_U8	VrefCalib_WA; //1 means SSTL & POD gets the same Vref and a WA is needed
+extern GT_U8	vrefCalibrationWA; /*1 means SSTL & POD gets the same Vref and a WA is needed*/
 #endif
 extern MV_HWS_DDR_FREQ mediumFreq;
 
@@ -628,16 +628,26 @@ static GT_STATUS ddr3TipInitA38xSilicon
 	rlMidFreqWA = GT_FALSE;
 
 	/*detect if VrefCalib WA needed by device ID(a382 didn't need this WA)*/
-	if( (MV_REG_READ(DEVICE_ID_REG) & 0xFFFF0000 >> 16) == 0x6811){
-		VrefCalib_WA = 0;
+	if( ((MV_REG_READ(DEV_ID_REG) & 0xFFFF0000) >> 16) == 0x6811){
+		mvPrintf("vrefCalibrationWA disabled\n");
+		vrefCalibrationWA = 0;
 	}
+
+#if 0
+	/*detect if VrefCalib WA needed by revision ID(a390 A0 didn't need this WA)*/
+	if( ( ((MV_REG_READ(DEV_ID_REG) & 0xFFFF0000) >> 16) == 0x6920) &&
+		(((MV_REG_READ(DEV_VERSION_ID_REG) & REVISON_ID_MASK) >> REVISON_ID_OFFS) == 0x6) ){
+		mvPrintf("vrefCalibrationWA disabled\n");
+		vrefCalibrationWA = 0;
+	}
+#endif
 #endif
 
 	if( ckDelay == MV_PARAMS_UNDEFINED )
 		ckDelay = 160;
 	caDelay = 0;
 	delayEnable = 1;
-	dfsLowFreq = 130;
+	dfsLowFreq = 120;
 	calibrationUpdateControl = 1;
 
 	initFreq = topologyMap->interfaceParams[firstActiveIf].memoryFreq;

@@ -278,7 +278,7 @@ GT_STATUS    ddr3TipDynamicReadLeveling
        			VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busNum)
 				if (ddr3TipIfPolling(devNum, ACCESS_TYPE_UNICAST, interfaceId, (1 << 25), (1 << 25), maskResultsPupRegMap[busNum], MAX_POLLING_ITERATIONS) != GT_OK)
 				{
-					DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("\nRL: DDR3 poll failed(2) for bus %d", busNum));
+					DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("\nRL: DDR3 poll failed(2) for IF %d CS %d bus %d", interfaceId, effective_cs, busNum));
 					isAnyPupFail = GT_TRUE;
 				}
 				else
@@ -882,6 +882,34 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 					}
 					CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, maskResultsPupRegMap[busCnt], dataRead, 0xff));
 					WLValues[effective_cs][busCnt][interfaceId] = (GT_U8)dataRead[interfaceId]; /* save the read value that should be write to PHY register */
+				}
+			}
+		}
+
+		/************************************************************************/
+		/*     Phase 3.5: Validate result phase                                 */
+		/************************************************************************/
+		for(interfaceId = 0; interfaceId < MAX_INTERFACE_NUM; interfaceId++)
+		{
+			VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
+			for (busCnt=0; busCnt<octetsPerInterfaceNum; busCnt++){
+
+				VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busCnt)
+				/*read result control register according to pup */
+				regData = WLValues[effective_cs][busCnt][interfaceId] + 16 ;/*16 is half a phase*/
+				/* write into write leveling register ([4:0] ADLL, [8:6] Phase, [15:10] (centralization) ADLL + 0x10) */
+				regData = (regData & 0x1f) | (((regData & 0xE0) >> 5) << 6) | (((regData & 0x1f) + PhyReg1Val) << 10);
+				mvHwsDdr3TipBUSWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId,  ACCESS_TYPE_UNICAST, busCnt, DDR_PHY_DATA,
+									WL_PHY_REG + 0*CS_REGISTER_ADDR_OFFSET, regData);/*we always work with CS0 so the search is with WL-CS0 register in the phy*/
+
+				/*Check if data read from DRAM not changed, if so - fix the result*/
+				CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, TRAINING_WRITE_LEVELING_REG,
+									dataRead, MASK_ALL_BITS));
+				if((dataRead[interfaceId]&(1<<(20+busCnt)))>>(20+busCnt) == 0)
+				{
+					DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("WLValues was changed from 0x%X", WLValues[effective_cs][busCnt][interfaceId]));
+					WLValues[effective_cs][busCnt][interfaceId] = WLValues[effective_cs][busCnt][interfaceId] + 32;
+					DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("to 0x%X\n", WLValues[effective_cs][busCnt][interfaceId]));
 				}
 			}
 		}

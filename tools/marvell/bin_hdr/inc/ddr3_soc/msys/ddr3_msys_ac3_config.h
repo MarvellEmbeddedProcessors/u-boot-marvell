@@ -62,13 +62,9 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-
-
 #ifndef _DDR3_MSYS_AC3_CONFIG_H
 #define _DDR3_MSYS_AC3_CONFIG_H
 
-#define DDR3_FAST_PATH_EN			1
-#define SUPPORT_STATIC_DUNIT_CONFIG
-
 #endif /* _DDR3_MSYS_AC3_CONFIG_H */
+
 

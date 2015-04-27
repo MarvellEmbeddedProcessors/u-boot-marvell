@@ -68,7 +68,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MAX_BUS_NUM        		(5)
 
 #include "ddr3_hws_hw_training_def.h"
-#include "mvSysEnvLib.h"
 
 /*Controler bus divider 1 for 32 bit, 2 for 64 bit */
 #define MV_DDR_CONTROLLER_BUS_WIDTH_MULTIPLIER         1

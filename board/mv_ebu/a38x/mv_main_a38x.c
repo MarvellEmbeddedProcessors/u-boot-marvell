@@ -343,10 +343,14 @@ void misc_init_r_env(void)
 		/* Since only AMC board supports both NAND and SPI, and it uses SPI1
 		 * "spi1.0" is used in mtdparts instead of "spi0.0" */
 		setenv("mtdparts", "'mtdparts=armada-nand:8m(boot)ro,8m@8m(kernel),-(rootfs);spi1.0:4m(boot),-(spi-rootfs)'");
+		setenv("mtdparts_lgcy", "'mtdparts=armada-nand:8m(boot)ro,8m@8m(kernel),"
+				"-(rootfs);spi_flash:4m(boot),-(spi-rootfs)'");
 #elif defined(MV_NAND)
 		setenv("mtdparts", "mtdparts=armada-nand:8m(boot)ro,8m@8m(kernel),-(rootfs)");
+		setenv("mtdparts_lgcy", getenv("mtdparts"));
 #elif defined(MV_INCLUDE_SPI)
 		setenv("mtdparts", "mtdparts=spi0.0:4m(boot),-(spi-rootfs)");
+		setenv("mtdparts_lgcy", "mtdparts=spi_flash:4m(boot),-(spi-rootfs)");
 #endif
 	}
 
@@ -494,11 +498,11 @@ void misc_init_r_env(void)
 	env = getenv("bootargs_dflt");
 	if (!env)
 #if defined(CONFIG_ARMADA_39X)
-		setenv("bootargs_dflt", "$console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
+		setenv("bootargs_dflt", "$console $nandEcc $mtdparts_lgcy $bootargs_root nfsroot=$serverip:$rootpath "
 			   "ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
 			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel $nss_emac_map");
 #else
-		setenv("bootargs_dflt", "$console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
+		setenv("bootargs_dflt", "$console $nandEcc $mtdparts_lgcy $bootargs_root nfsroot=$serverip:$rootpath "
 			   "ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
 			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 #endif
@@ -668,14 +672,15 @@ void misc_init_r_env(void)
 	env = getenv("bootcmd");
 	if (!env)
 		setenv("bootcmd", "tftpboot 0x2000000 $image_name;"
-			   "setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
+			   "setenv bootargs $console $nandEcc $mtdparts_lgcy"
+			   " $bootargs_root nfsroot=$serverip:$rootpath "
 			   "ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params "
 			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
 #endif  /* (CONFIG_BOOTDELAY >= 0) */
 
 	env = getenv("standalone");
 	if (!env)
-		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts "
+		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts_lgcy "
 			   "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 
 	/* Set boodelay to 3 sec, if Monitor extension are disabled */

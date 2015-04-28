@@ -306,8 +306,8 @@ int usb_lowlevel_stop(int index)
 	}
 
 	/* Make sure that usbActive never exeeds the configured max controllers count
-	   The CONFIG_USB_MAX_CONTROLLER_COUNT can be changed for different boards */
-	if (usbActive >= CONFIG_USB_MAX_CONTROLLER_COUNT) {
+	   The CONFIG_USB_MAX_CONTROLLER_HOST_COUNT can be changed for different boards */
+	if (usbActive >= CONFIG_USB_MAX_CONTROLLER_HOST_COUNT) {
 		mvOsPrintf("usbActive=%d is out of supported range\n",usbActive);
 		return -1;
 	}

@@ -6,5 +6,24 @@
 	compatible = "marvell,armada-lp-db", "marvell,armada-lp";
 
 	#address-cells = <2>;
-	#size-cells = <1>;
+	#size-cells = <2>;
+
+	soc {
+	compatible = "marvell,armadalp-mbus";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+		internal-regs {
+			compatible = "marvell,internal-regs";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			reg = <0xf1000000 0x4>;
+
+			serial: serial@12000 {
+				compatible = "marvell,armadalp-uart";
+				reg = <0x12000 0x20>;
+				status = "okay";
+			};
+		};
+	};
 };

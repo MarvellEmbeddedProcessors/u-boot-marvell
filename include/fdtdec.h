@@ -122,6 +122,7 @@ enum fdt_compat_id {
 	COMPAT_INTEL_GMA,		/* Intel Graphics Media Accelerator */
 	COMPAT_AMS_AS3722,		/* AMS AS3722 PMIC */
 	COMPAT_MVEBU_SPI,
+	COMPAT_MVEBU_UART,
 	COMPAT_MVEBU_TCLOCK,
 
 	COMPAT_COUNT,

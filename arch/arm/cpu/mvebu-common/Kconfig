@@ -51,14 +51,14 @@ config MVEBU_MPP
 	  MPP driver, for example, ArmadaLP.
 	  base address is configured under MVEBU_MPP_BASE
 
-config MVEBU_UART
-	bool "UART support"
+config MVEBU_UART_ARLP
+	bool "UART support for ArmadaLP"
 	default n
 	help
 	  Choose this option to add support
-	  for UART driver, using COM1 NS16550
-	  driver.
-	  base address is configured under MVEBU_UART_BASE
+	  for UART driver on ArmadaLP, which
+	  is not using COM1 NS16550 driver.
+	  And base address is configured in FDT file.
 
 config MVEBU_I2C
 	bool "I2C support"

@@ -771,6 +771,7 @@ GT_STATUS ddr3TipA38xGetMediumFreq
     case 0x8:
 	case 0x11:
 	case 0x14:
+	case 0x10:
         *freq = DDR_FREQ_333;
         break;
 	case 0xC:

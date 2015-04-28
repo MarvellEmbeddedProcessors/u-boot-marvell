@@ -916,14 +916,17 @@ static MV_VOID mvBoardModuleAutoDetect(MV_VOID)
 	bootSrc = mvBoardBootDeviceGroupSet();
 	if (MSAR_0_BOOT_NAND_NEW == bootSrc)
 		mvBoardModuleConfigSet(MV_MODULE_NAND_ON_BOARD);
+#ifdef CONFIG_ARMADA_38X
 	else if (MSAR_0_BOOT_SDIO == bootSrc) {
 		mvBoardModuleConfigSet(MV_MODULE_DB381_MMC_8BIT_ON_BOARD);
-		/* Enable NAND access if the SDIO is not using NAND MPPs.
+		/* Enable NAND access if the SDIO is not using NAND MPPs. (i.e. SDIO 4bit)
 		   The SDIO MPPs overlap NAND ones in SDIO-8bit access mode,
 		   when boot attr2 == 40 */
 		if (mvBoardBootAttrGet(mvBoardBootDeviceGet(), 2) != 40)
 			mvBoardModuleConfigSet(MV_MODULE_NAND_ON_BOARD);
 	}
+#endif
+
 #ifdef MV_NAND
 	/*check if boot from SPI1 flash and uboot compiled with
 	nand interface then set NAND module on board configuration*/
@@ -1089,8 +1092,10 @@ MV_BOARD_BOOT_SRC mvBoardBootDeviceGroupSet()
 	case MSAR_0_BOOT_SPI1_FLASH:
 		break;
 	case MSAR_0_BOOT_SDIO:
+#ifdef CONFIG_ARMADA_38X
 		if (mvBoardIdGet() == DB_BP_6821_ID)
 			mvBoardModuleConfigSet(MV_MODULE_DB381_MMC_8BIT_ON_BOARD);
+#endif
 		break;
 	default:
 		return MV_ERROR;

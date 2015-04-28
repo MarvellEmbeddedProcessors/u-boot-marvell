@@ -120,6 +120,23 @@ typedef enum {
 	MV_NETCOMP_GE_MAC0_2_SGMII_L6	=	BIT16
 } MV_NET_COMPLEX_TOPOLOGY;
 
+typedef enum _mvModuleTypeID {
+	MV_MODULE_NO_MODULE                     = 0x000,/* MII board SLM 1362   */
+	MV_MODULE_MII                           = BIT0, /* MII board SLM 1362   */
+	MV_MODULE_SLIC_TDM_DEVICE               = BIT1, /* TDM board SLM 1360   */
+	MV_MODULE_I2S_DEVICE                    = BIT2, /* I2S board SLM 1360   */
+	MV_MODULE_SPDIF_DEVICE                  = BIT3, /* SPDIF board SLM 1360 */
+	MV_MODULE_NOR                           = BIT4, /* NOR board SLM 1361   */
+	MV_MODULE_NAND                          = BIT5, /* NAND board SLM 1361  */
+	MV_MODULE_SDIO                          = BIT6, /* SDIO board SLM 1361  */
+	MV_MODULE_SGMII                         = BIT7, /* SGMII board SLM 1364 */
+	MV_MODULE_SWITCH                        = BIT8, /* SWITCH board SLM 1375 */
+	MV_MODULE_NAND_ON_BOARD                 = BIT9,/* ON board nand - detected via S@R bootsrc */
+	MV_MODULE_TYPE_MAX_MODULE               = 0,	/* Max detected module - No module supported yet*/
+	MV_MODULE_TYPE_MAX_OPTION               = 9	/* Max module options */
+} MV_MODULE_TYPE_ID;
+
+
 #define MV_MODULE_INFO { \
 { MV_MODULE_MII,		0x1,	0,	 0x4,	{ 0, 1 } }, \
 { MV_MODULE_SLIC_TDM_DEVICE,	0x0,	0,	 0x1,	{ 0, 1 } }, \
@@ -129,7 +146,6 @@ typedef enum {
 { MV_MODULE_NAND,		0x4,	0,	 0x1,	{ 0, 1 } }, \
 { MV_MODULE_SDIO,		0x4,	0,	 0x2,	{ 0, 1 } }, \
 { MV_MODULE_SGMII,		0x2,	0,	 0xF,	{ 0, 1 } }, \
-{ MV_MODULE_DB381_SGMII,	0x0,	0,	 0x2,	{ 0, 0 } }, \
 };
 
 /* MPP_SPI0_BOOT: change MPPs of: SPI0 (booting from it), RGMII, SDIO

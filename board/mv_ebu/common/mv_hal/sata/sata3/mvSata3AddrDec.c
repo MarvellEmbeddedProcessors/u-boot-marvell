@@ -213,18 +213,13 @@ MV_STATUS mvSata3WinWrite(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pAddrDecW
 		return MV_ERROR;
 	}
 
-	baseReg = pAddrDecWin->addrWin.baseLow & MV_SATA3_WIN_BASE_MASK;
+	baseReg = (pAddrDecWin->addrWin.baseLow / MV_SATA3_WIN_SIZE_ALIGN);
+	baseReg = (baseReg << MV_SATA3_WIN_BASE_OFFSET) & MV_SATA3_WIN_BASE_MASK;
 	sizeReg = (pAddrDecWin->addrWin.size / MV_SATA3_WIN_SIZE_ALIGN) - 1;
 	sizeReg = sizeReg << MV_SATA3_WIN_SIZE_OFFSET;
 
 	/* set attributes */
 	ctrlReg = (pAddrDecWin->attrib << MV_SATA3_WIN_ATTR_OFFSET);
-
-#ifdef MV88F68XX
-	/* Temp WA for A38x: set attribute with IOCC bit enabled:
-	 * When using Dual CS, disk detection fails without using IOCC bit enabled */
-	ctrlReg |= BIT12;
-#endif
 
 	/* set target ID */
 	ctrlReg &= ~MV_SATA3_WIN_TARGET_MASK;
@@ -276,7 +271,8 @@ MV_STATUS mvSata3WinRead(MV_U32 dev, MV_U32 winNum, MV_UNIT_WIN_INFO *pAddrDecWi
 	/* Extract base address and size    */
 	sizeRegVal = (sizeReg & MV_SATA3_WIN_SIZE_MASK) >> MV_SATA3_WIN_SIZE_OFFSET;
 	pAddrDecWin->addrWin.size = (sizeRegVal + 1) * MV_SATA3_WIN_SIZE_ALIGN;
-	pAddrDecWin->addrWin.baseLow = baseReg & MV_SATA3_WIN_BASE_MASK;
+	pAddrDecWin->addrWin.baseLow = (baseReg & MV_SATA3_WIN_BASE_MASK) >> MV_SATA3_WIN_SIZE_OFFSET;
+	pAddrDecWin->addrWin.baseLow *= MV_SATA3_WIN_SIZE_ALIGN;
 	pAddrDecWin->addrWin.baseHigh = 0;
 
 	/* attrib and targetId              */

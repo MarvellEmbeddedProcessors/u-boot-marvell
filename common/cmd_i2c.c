@@ -1576,6 +1576,8 @@ static int do_i2c(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 /***************************************************/
 #ifdef CONFIG_SYS_LONGHELP
 static char i2c_help_text[] =
+	"address.[.0, .2] = Address length [byte, 2byte]"
+	"xx.[.b, .w, .l]  = Returned Data length [byte, 2byte, 4byte]"
 #if defined(CONFIG_I2C_MUX)
 	"bus [muxtype:muxaddr:muxchannel] - add a new bus reached over muxes\ni2c "
 #endif  /* CONFIG_I2C_MUX */
@@ -1588,9 +1590,9 @@ static char i2c_help_text[] =
 #endif  /* CONFIG_I2C_EDID */
 	"i2c loop chip address[.0, .1, .2] [# of objects] - looping read of device\n"
 	"i2c md chip address[.0, .1, .2] [# of objects] - read from I2C device\n"
-	"i2c mm chip address[.0, .1, .2] - write to I2C device (auto-incrementing)\n"
-	"i2c mw chip address[.0, .1, .2] value [count] - write to I2C device (fill)\n"
-	"i2c nm chip address[.0, .1, .2] - write to I2C device (constant address)\n"
+	"i2c mm[.b, .w, .l] chip address[.0, .1, .2] - write to I2C device (auto-incrementing)\n"
+	"i2c nm[.b, .w, .l] chip address[.0, .1, .2] - write to I2C device (constant address)\n"
+	"i2c mw chip address[.0, .1, .2] value [count] - write to I2C device (fill constant value)\n"
 	"i2c probe [address] - test for and show device(s) on the I2C bus\n"
 	"i2c read chip address[.0, .1, .2] length memaddress - read to memory \n"
 	"i2c write memaddress chip address[.0, .1, .2] length - write memory to i2c\n"

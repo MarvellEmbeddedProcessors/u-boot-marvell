@@ -957,6 +957,33 @@ MV_STATUS mvCpuIfLvdsPadsEnable(MV_BOOL enable)
 }
 
 /*******************************************************************************
+* mvCpuIfL2FilterSet
+*
+* DESCRIPTION:
+*	Set L2 Filter base - IO prioritization filter
+*
+* INPUT:
+*	L2 base value
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_VOID mvCpuIfL2FilterSet(MV_U32 base)
+{
+	/* 0.25GB reserved for IO - verify no collision with IO @ 3.75GB (0xf000000) */
+	if (base > 0xf0000000) {
+		mvOsPrintf("Error: Requested L2 base (%x) overlaps with IO at 3.75GB\n", base);
+		return;
+	}
+
+	MV_REG_WRITE(L2_FILTER_BASE_REG, base);
+}
+
+/*******************************************************************************
 * mvCpuIfMbusWindowSet
 *
 * DESCRIPTION:
@@ -975,6 +1002,9 @@ MV_STATUS mvCpuIfLvdsPadsEnable(MV_BOOL enable)
 MV_VOID mvCpuIfMbusWindowSet(MV_U32 base, MV_U32 size)
 {
 	MV_U32 reg;
+
+	/* Align L2 (IO) filter with MBUS base */
+	mvCpuIfL2FilterSet(base);
 
 	MV_REG_WRITE(MBUS_BRIDGE_WIN_BASE_REG, base);
 	/* Align window size to 64KB */

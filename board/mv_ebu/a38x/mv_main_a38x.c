@@ -323,6 +323,10 @@ void misc_init_r_env(void)
 	char tmp_buf[10];
 	unsigned int malloc_len;
 
+	env = getenv("limit_dram_size");
+	if (!env)
+		setenv("limit_dram_size", "yes");
+
 	env = getenv("console");
 	if (!env)
 		setenv("console", "console=ttyS0,115200");

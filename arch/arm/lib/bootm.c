@@ -91,13 +91,14 @@ void arch_lmb_reserve(struct lmb *lmb)
 }
 
 #if defined (CONFIG_OF_LIBFDT) || defined (MV_DDR_L2_ALIGNMENT)
-u64 l2_base = (_4G - _1G);	/* used for memory node update in Device tree or for memory tags */
+u64 l2_base = (_4G - _1G);	/* used for memory node update in Device tree, or for memory tags */
 #endif
 
 #ifdef CONFIG_OF_LIBFDT
 extern void mvCpuIfMbusWindowSet(u32 base, u32 size);
 int fixup_memory_node(void *blob)
 {
+	char *env;
 #ifndef CONFIG_MARVELL
 	bd_t	*bd = gd->bd;
 #endif
@@ -105,23 +106,30 @@ int fixup_memory_node(void *blob)
 	u64 start[CONFIG_NR_DRAM_BANKS];
 	u64 size[CONFIG_NR_DRAM_BANKS];
 
+	/* - Binary header prioritize IO memory space via L2 filtering at 3.0GB, in order
+	 *   to ensure 'hit' on internal registers IO access (located at 0xd0000000 by default)
+	 * - Although U-Boot updates internal register base to 0xf1000000 (3.75GB), Address
+	 *   decoding supports only windows size aligned to power of 2.
+	 */
+	env = getenv("limit_dram_size");
+	if (env && ((strcmp(env, "yes") == 0) ||  (strcmp(env, "Yes") == 0)))
+	{
+		printf("\nLimit DDR size at 3GB due to power of 2 requirement of Address decoding\n");
+		l2_base = (_4G - _1G);
+	} else
+		l2_base = (_4G - _256M);
 
 #ifdef CONFIG_MARVELL
 	for (bank = 0; bank < CONFIG_NR_DRAM_BANKS; bank++) {
 		start[bank] = gd->dram_hw_info[bank].start;
 		size[bank] = gd->dram_hw_info[bank].size;
 
-		/* - Binary header preserves IO memory space via L2 filtering at 3.25GB, in order
-		 *   to avoid conflict with internal registers IO located 0xd0000000.
-		 * - U-Boot updates internal register base to 0xf1000000 (3.75GB)
-		 * - if DRAM CS size reaches 4G --> also limit CS memory node to 3.75GB */
-
-		/* due to LSP issue with unaligned window sizes to power of 2 (3.75GB),
-		 * L2 is temporary set to 3GB: update DT memory node accordingly */
+		 /* - If memory size reached 4GB, limit last CS size according to highest power of 2.
+		 *   (when using 2x2GB, last CS will be limited to 1GB) */
 		if ((start[bank] + size[bank]) == _4G) {
 			size[bank] = (l2_base - start[bank]);
-			/* LSP is temporarily wrongly deriving DRAM windows limitation from MBus.
-			 * as a temp WA, align Mbus bridge with L2 base */
+			/* set IO area to higher priority than DRAM window, by aligning MBUS bridge with L2 base.
+			 * (Linux mainline MBUS driver uses MBUS configuration to derive L2 filtering) */
 			mvCpuIfMbusWindowSet(l2_base, _4G - l2_base);
 		}
 	}
@@ -221,15 +229,15 @@ static void setup_memory_tags(bd_t *bd)
 			if ((start - 1 + size) == 0xFFFFFFFF) {
 				params->u.mem.start = start;
 #ifdef MV_DDR_L2_ALIGNMENT
-/* - Binary header preserves IO memory space via L2 filtering at 3.25GB, in order
- *   to avoid conflict with internal registers IO located 0xd0000000.
- * - U-Boot updates internal register base to 0xf1000000 (3.75GB)
- * - if DRAM CS size reaches 4G --> also limit memory tags to 3.75GB */
-
-/* Temporary: due to LSP (3.10) issue with unaligned window sizes to power of 2 (3.75GB),
- * L2 is set to 3GB: update memory tags accordingly */
+			/* - Binary header prioritize IO memory space via L2 filtering at 3.0GB, in order
+			 *   to ensure 'hit' on internal registers IO access (located at 0xd0000000 by default)
+			 * - Although U-Boot updates internal register base to 0xf1000000 (3.75GB), Address
+			 *   decoding supports only windows size aligned to power of 2.
+			 * - If memory size reached 4GB, limit last CS size according to highest power of 2.
+			 *   (when using 2x2GB, last CS will be limited to 1GB) */
 				params->u.mem.size = (l2_base - start);
-/* align Mbus bridge with L2 base */
+
+				/* set IO area to higher priority than DRAM window, by aligning MBUS bridge with L2 base*/
 				mvCpuIfMbusWindowSet(l2_base, _4G - l2_base);
 #else
 				params->u.mem.size = (0xF0000000 - start);

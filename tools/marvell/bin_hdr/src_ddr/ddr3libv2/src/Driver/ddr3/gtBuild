@@ -22,6 +22,7 @@ else
 #SUBDIRS      =
 C_EXCLUDE_FILE_LIST = mvHwsDdr3TrainingStub.c
 
+CFLAGS += -DDDR_VIEWER_TOOL
 
 ##################################################
 ##################################################

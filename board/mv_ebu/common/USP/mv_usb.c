@@ -207,6 +207,10 @@ static int printUsbError(MV_BOOL mvBoardIsUsbPortConnected ,int port)
 *	  usbType = 3 -- > xHCI
 *	- Call usb_lowlevel_init from selected stack
 */
+
+/* mark detected usb port, to ensure proper 'stop'
+ * process before next detection request */
+int currentUsbActive = -1;
 int usb_lowlevel_init(int index, void **controller)
 {
 	int usb2HostNum, usb3HostNum, usbType, usbActive = 0;
@@ -259,68 +263,24 @@ int usb_lowlevel_init(int index, void **controller)
 		return -1;
 	}
 
+	currentUsbActive = usbActive;
 	return hc->hc_usb_lowlevel_init(usbActive, controller);
 }
 
 int usb_lowlevel_stop(int index)
 {
-	int usb2UnitNum, usb3UnitNum, usbType, usbActive = 0;
+	int usbActive = currentUsbActive, ret;
 
 	if (!hc) {
 		mvOsPrintf("%s: Error: run 'usb reset' to set host controller interface.\n", __func__);
 		return -1;
 	}
-	usbActive = simple_strtoul(getenv("usbActive"), NULL, 10);
-	usbType = simple_strtoul(getenv("usbType"), NULL, 10);
-	usb3UnitNum = mvCtrlUsb3HostMaxGet();
-	usb2UnitNum = mvCtrlUsbMaxGet();
-	switch (usbType) {
-	case 2:
-		if (hc != &hc_ehci) {
-			mvOsPrintf("Error - Please run \"usb stop\" before changing \"usbType\".\n");
-			return 0;
-		}
-		if (hc_ehci.interface_supported == MV_TRUE && usb2UnitNum > 0){
-			usbActive = mvCtrlUsbMapGet(USB_UNIT_ID, usbActive);
-			if (mvBoardIsUsbPortConnected(USB_UNIT_ID,usbActive) == MV_FALSE)
-				return printUsbError (MV_FALSE,usbActive);
-		}
-		else
-			return printUsbError (MV_TRUE,usbActive);
-		break;
-	case 3:
-		if (hc != &hc_xhci) {
-			mvOsPrintf("Error - Please run \"usb stop\" before changing \"usbType\".\n");
-			return 0;
-		}
-		if (hc_xhci.interface_supported == MV_TRUE && usb3UnitNum > 0){
-			usbActive = mvCtrlUsbMapGet(USB3_UNIT_ID, usbActive);
-			if (mvBoardIsUsbPortConnected(USB3_UNIT_ID, usbActive) == MV_FALSE)
-				return printUsbError (MV_FALSE,usbActive);
-		}
-		else
-			return printUsbError (MV_TRUE,usbActive);
-		break;
-	default:
-		return printUsbError (MV_TRUE,usbActive);
-	}
 
-	/* Make sure that usbActive never exeeds the configured max controllers count
-	   The CONFIG_USB_MAX_CONTROLLER_HOST_COUNT can be changed for different boards */
-	if (usbActive >= CONFIG_USB_MAX_CONTROLLER_HOST_COUNT) {
-		mvOsPrintf("usbActive=%d is out of supported range\n",usbActive);
-		return -1;
-	}
-
-	/* Marvell USB code supports only one active controller (USB0), while the actual host
-	   device is selected by usbActive environment variable */
-	if (index > 0) {
-		mvOsPrintf("\nOnly one active controller supported! Skipping USB%d stop.\n", index);
-		return -1;
-	}
-
-	return hc->hc_usb_lowlevel_stop(usbActive);
-
+	/* Mark that there is no current usbActive to stop */
+	currentUsbActive = -1;
+	ret = hc->hc_usb_lowlevel_stop(usbActive);
+	hc = NULL;
+	return ret;
 }
 
 int submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,

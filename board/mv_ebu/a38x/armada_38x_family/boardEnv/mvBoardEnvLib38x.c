@@ -404,6 +404,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		mvBoardPcieModulesInfoUpdate();	/* if PCIe modules are configured (via 'SatR') */
 		mvBoardFlashDeviceUpdate();
 		mvBoardModuleSwitchInfoUpdate(mvBoardIsModuleConnected(MV_MODULE_SWITCH));
+		mvBoardIoExpanderUpdate();
 		break;
 	case DB_AMC_6820_ID:
 		/* nothing to be updated at run-time for AMC board */

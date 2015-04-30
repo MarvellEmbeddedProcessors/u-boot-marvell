@@ -391,7 +391,7 @@ MV_BOARD_TWSI_INFO db88f68xxInfoBoardTwsiDev[] = {
 	{ BOARD_DEV_TWSI_SATR,		1,	0x4c,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_DEV_TWSI_SATR,		2,	0x4d,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_DEV_TWSI_SATR,		3,	0x4e,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_DEV_TWSI_SATR,		4,	0x21,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	0,	0x21,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_MODULE_DETECT,	0,	0x20,	   ADDR7_BIT, MV_FALSE},   /* modules */
 	{ BOARD_TWSI_MODULE_DETECT,	1,	0x23,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_MODULE_DETECT,	2,	0x24,	   ADDR7_BIT, MV_FALSE},
@@ -437,6 +437,13 @@ struct MV_BOARD_SWITCH_INFO db88f68xxSwitchInfo[] = {
 		.quadPhyAddr = 2,
 		.forceLinkMask = 0x60
 	}
+};
+
+struct MV_BOARD_IO_EXPANDER db88f68xxInfoBoardioExpValue[] = {
+	{0, 6, 0xFF}, /* Config reg#0: all bits as input (BIT on = Input) */
+	{0, 7, 0xFC}, /* Config reg#1: BIT0(USB3.0 current limit), BIT1(USB3.1 current limit)*/
+	{0, 2, 0xFF}, /* Output Data, reg#0  - no output bits*/
+	{0, 3, 0xFF}, /* Output Data, reg#1:  BIT0,USB3.0_CURRENT=1, BIT1,USB3.1_CURRENT=1 */
 };
 
 MV_BOARD_INFO db88f68xx_board_info = {
@@ -504,8 +511,8 @@ MV_BOARD_INFO db88f68xx_board_info = {
 
 	/* Enable modules auto-detection. */
 	.configAutoDetect		= MV_TRUE,
-	.numIoExp			= 0,
-	.pIoExp				= NULL,
+	.numIoExp			= ARRSZ(db88f68xxInfoBoardioExpValue),
+	.pIoExp				= db88f68xxInfoBoardioExpValue,
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
 	.isAmc				= MV_FALSE,
 	.isAudioConnected		= MV_FALSE,

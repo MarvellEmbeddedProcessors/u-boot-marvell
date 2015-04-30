@@ -399,6 +399,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			serdes6Mode = 0;
 #endif
 		mvBoardMppIdUpdate();
+		mvBoardIoExpanderUpdate();
 
 		boardCfg = mvBoardNetComplexConfigGet();
 		if (boardCfg & MV_NETCOMP_GE_MAC0_2_SGMII_L1) {

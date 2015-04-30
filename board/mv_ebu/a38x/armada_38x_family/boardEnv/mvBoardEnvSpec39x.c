@@ -120,6 +120,13 @@ MV_DEV_CS_INFO armada_39x_customer_0_BoardDeCsInfo[] = {
 	{ SPI1_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE }	/* SPI1 DEV */
 };
 
+struct MV_BOARD_IO_EXPANDER armada_39x_customer_0_InfoBoardioExpValue[] = {
+	{0, 6, 0xFF}, /* Config reg#0: all bits as input (BIT on = Input) */
+	{0, 7, 0x7d}, /* Config reg#1: BIT7(VDDOE), BIT1(USB3 current limit) as output (BIT on = Input) */
+	{0, 2, 0xFF}, /* Output Data, reg#0  - no output bits*/
+	{0, 3, 0x7b}, /* Output Data, reg#1:  BIT7,VDDOE=0, BIT1,USB3_CURRENT=1 */
+};
+
 MV_BOARD_USB_INFO armada_39x_customer_0_BoardUsbInfo[] = {
 /* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
 	{ USB3_UNIT_ID, 0, MV_FALSE},
@@ -194,8 +201,8 @@ MV_BOARD_INFO armada_39x_customer_board_0_info = {
 	.norFlashWriteParams		= A39X_CUSTOMER_BOARD_0_NOR_WRITE_PARAMS,
 	/* Enable modules auto-detection. */
 	.configAutoDetect		= MV_FALSE,
-	.numIoExp			= 0,
-	.pIoExp				= NULL,
+	.numIoExp			= ARRSZ(armada_39x_customer_0_InfoBoardioExpValue),
+	.pIoExp				= armada_39x_customer_0_InfoBoardioExpValue,
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
 	.pSwitchInfo			= NULL,
 	.switchInfoNum			= 0
@@ -242,7 +249,7 @@ MV_BOARD_TWSI_INFO db88f69xxInfoBoardTwsiDev[] = {
 	{ BOARD_DEV_TWSI_SATR,		1,	0x4c,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_DEV_TWSI_SATR,		2,	0x4d,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_DEV_TWSI_SATR,		3,	0x4e,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_DEV_TWSI_SATR,		4,	0x21,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	0,	0x21,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_MODULE_DETECT,	0,	0x20,	   ADDR7_BIT, MV_FALSE},   /* modules */
 	{ BOARD_TWSI_MODULE_DETECT,	1,	0x23,	   ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_MODULE_DETECT,	2,	0x24,	   ADDR7_BIT, MV_FALSE},
@@ -259,6 +266,14 @@ MV_BOARD_MAC_INFO db88f69xxInfoBoardMacInfo[] = {
 	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4, SMI, MV_TRUE},
 	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI, MV_TRUE}
 };
+
+struct MV_BOARD_IO_EXPANDER db88f69xxInfoBoardioExpValue[] = {
+	{0, 6, 0xFF}, /* Config reg#0: all bits as input (BIT on = Input) */
+	{0, 7, 0x7d}, /* Config reg#1: BIT7(VDDOE), BIT1(USB3 current limit) as output (BIT on = Input) */
+	{0, 2, 0xFF}, /* Output Data, reg#0  - no output bits*/
+	{0, 3, 0x7b}, /* Output Data, reg#1:  BIT7,VDDOE=0, BIT1,USB3_CURRENT=1 */
+};
+
 
 MV_BOARD_NET_COMPLEX_INFO db88f69xxInfoBoarNetComplexInfo[] = {
 	{
@@ -346,8 +361,8 @@ MV_BOARD_INFO db88f69xx_board_info = {
 
 	/* Enable modules auto-detection. */
 	.configAutoDetect		= MV_TRUE,
-	.numIoExp			= 0,
-	.pIoExp				= NULL,
+	.numIoExp			= ARRSZ(db88f69xxInfoBoardioExpValue),
+	.pIoExp				= db88f69xxInfoBoardioExpValue,
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
 	/* Audio */
 	.isAudioConnected		= MV_FALSE,

@@ -120,7 +120,132 @@ static MV_VOID gppRegSet(MV_U32 group, MV_U32 regOffs, MV_U32 mask, MV_U32 value
 
 	MV_REG_WRITE(regOffs, gppData);
 }
+/*******************************************************************************
+* mvSysEnvIoExpValSet - Set USB VBUS signal via GPIO
+*
+** INPUT:	gppNo - GPIO pin number.
+** OUTPUT:	None.
+** RETURN:	None.
+*******************************************************************************/
+MV_VOID mvSysEnvUsbVbusGppReset(int gppNo)
+{
+	MV_U32 regVal;
 
+	/* MPP Control Register - set mpp as GPP (value = 0)*/
+	regVal = MV_REG_READ(MPP_CONTROL_REG((unsigned int)(gppNo / 8)));
+	regVal &= ~(0xf << ((gppNo % 8) * 4));
+	MV_REG_WRITE(MPP_CONTROL_REG((unsigned int)(gppNo / 8)), regVal);
+
+	if (gppNo < 32) {
+		/* GPIO Data Out Enable Control Register - set to output */
+		MV_REG_WRITE(GPP_DATA_OUT_EN_REG(0), 0);
+		/* GPIO output Data Value Register - set as low */
+		MV_REG_WRITE(GPP_DATA_OUT_REG(0), 0);
+	} else {
+		/* GPIO Data Out Enable Control Register - set to output */
+		MV_REG_WRITE(GPP_DATA_OUT_EN_REG(1), 0);
+		/* GPIO output Data Value Register - set as low */
+		MV_REG_WRITE(GPP_DATA_OUT_REG(1), 0);
+	}
+}
+/*******************************************************************************
+* mvSysEnvIoExpValSet - Set USB VBUS signal for DB-GP board via IO expander
+*
+** INPUT:	None.
+** OUTPUT:	None.
+** RETURN:	None.
+*******************************************************************************/
+MV_STATUS mvSysEnvIoExpUsbVbusSet(MV_U8 value)
+{
+	MV_U8 readVal, configVal, offset = 7; /* Io Expander#1 (0x21), register#1, bit 7 */
+	MV_TWSI_SLAVE twsiSlave;
+
+	/* Read bit[4] in BC2 bios0 SW SatR (register 1) */
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.slaveAddr.address = MV_BOARD_IO_EXPANDER1_ADDR;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.moreThen256 = MV_FALSE;
+
+	twsiSlave.offset = 7;	/* direction reg #1 (register 7) for output/input setting */
+	if (MV_OK != mvTwsiRead(TWSI_CHANNEL_BC2, &twsiSlave, &configVal, 1)) {
+		mvPrintf("%s: Error: Read Configuration from IO Expander failed\n", __func__);
+		return MV_ERROR;
+	}
+
+	/* Modify direction (output/input) value of requested pin */
+	configVal &= ~(1 << offset);	/* output marked as 0: clean bit of old value  */
+
+	if (mvTwsiWrite(TWSI_CHANNEL_BC2, &twsiSlave, &configVal, 1) != MV_OK) {
+		/* Write again in case the controller is busy */
+		if (mvTwsiWrite(TWSI_CHANNEL_BC2, &twsiSlave, &configVal, 1) != MV_OK) {
+			mvPrintf("%s: Error: direction Write to IO Expander at 0x%x failed\n", __func__
+			   , MV_BOARD_IO_EXPANDER1_ADDR);
+			return MV_ERROR;
+		}
+	}
+
+	twsiSlave.offset = 3; 	/* Read Output Value */
+	if (MV_OK != mvTwsiRead(TWSI_CHANNEL_BC2, &twsiSlave, &readVal, 1)) {
+		mvPrintf("%s: Error: Read Configuration from IO Expander failed\n", __func__);
+		return MV_ERROR;
+	}
+
+	/* Modify */
+	readVal &= ~(1 << offset);	/* clean bit of old value  */
+	readVal |= (value << offset);
+
+	if (mvTwsiWrite(TWSI_CHANNEL_BC2, &twsiSlave, &readVal, 1) != MV_OK) {
+		/* Write again in case the controller is busy */
+		if (mvTwsiWrite(TWSI_CHANNEL_BC2, &twsiSlave, &readVal, 1) != MV_OK) {
+		mvPrintf("%s: Error: direction Write to IO Expander at 0x%x failed\n", __func__
+			   , MV_BOARD_IO_EXPANDER1_ADDR);
+			return MV_ERROR;
+		}
+	}
+
+	return MV_OK;
+}
+
+/*******************************************************************************
+* mvSysEnvUsbVbusReset - Set USB VBUS signal before detection
+*
+* DESCRIPTION:
+* this routine sets VBUS signal via GPIO or via I2C IO expander
+*
+** INPUT:	int  dev - USB Host number
+** OUTPUT:	None.
+** RETURN:	None.
+*******************************************************************************/
+MV_VOID mvSysEnvUsbVbusReset(MV_VOID)
+{
+	MV_32 i, gppNo;
+	MV_BOARD_USB_VBUS_GPIO boardUsbVbusGpio[] = MV_BOARD_USB_VBUS_GPIO_INFO;
+	MV_U32 boardIdIndex;
+
+	/* Some of Marvell boards control VBUS signal via I2C IO expander unit */
+#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
+	/* if VBUS signal is Controlled via I2C IO Expander on board*/
+	if (mvBoardIdGet() == DB_GP_68XX_ID) {
+		mvSysEnvIoExpUsbVbusSet(0);
+		return;
+	}
+#endif
+
+	boardIdIndex = mvBoardIdIndexGet(mvBoardIdGet());
+	if (!(sizeof(boardUsbVbusGpio)/sizeof(MV_BOARD_USB_VBUS_GPIO) > boardIdIndex)) {
+		mvPrintf("\nFailed loading USB VBUS GPIO information (invalid board ID)\n");
+		return;
+	}
+
+	for (i = 0; i < mvSysEnvUnitMaxNumGet(USB3H_UNIT_ID); i++) {
+		gppNo = boardUsbVbusGpio[boardIdIndex].usbVbusGpio[i];
+		/* if VBUS signal is Controlled via GPIO on board */
+		if (gppNo != MV_ERROR) {
+			mvSysEnvUsbVbusGppReset(gppNo);
+			continue;
+		}
+	}
+}
 
 /* mvBoardDb6820AmcTwsiConfig:
  * for AMC board, to allow detection of remote PCIe GEN1/GEN2 enforcement settings:

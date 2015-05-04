@@ -143,6 +143,8 @@ MV_STATUS mvGeneralInit(void)
 	if (mvSysEnvDeviceRevGet() != MV_88F68XX_Z1_ID)
 		mvDeviceIdConfig();
 
+	mvSysEnvUsbVbusReset();
+
 	return MV_OK;
 }
 

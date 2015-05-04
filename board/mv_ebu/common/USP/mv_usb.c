@@ -239,6 +239,11 @@ int usb_lowlevel_init(int index, void **controller)
 				mvOsPrintf("\n'usbActive' warning (%d): Invalid USB3.0 port (no valid SerDes)..", usbActive);
 				mvOsPrintf("Trying USB2.0 Host via USB3.0\n");
 			}
+#ifdef MV_USB_VBUS_CYCLE
+			/* VBUS signal is lowered prior to SerDes initialization sequence,
+			 * before initializing and detecting device, set VBUS enabled */
+			mvBoardUsbVbusSet(usbActive);
+#endif
 			hc = &hc_xhci; /* set Host Controller struct for function pointers  */
 		} else
 			return printUsbError(MV_TRUE, usbActive);

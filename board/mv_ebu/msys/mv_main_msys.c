@@ -706,7 +706,12 @@ int misc_init_r (void)
 	/* Init the PHY or Switch of the board */
 	mvBoardEgigaPhyInit();
 #endif /* #if defined(MV_INCLUDE_UNM_ETH) || defined(MV_INCLUDE_GIG_ETH) */
-
+#ifdef CONFIG_CMD_SOURCE
+	/* run saved script */
+	env = getenv("run_script");
+	if (env && strcmp(env, "yes") == 0)
+		run_command("mvsource run", 0);
+#endif
 	return 0;
 }
 

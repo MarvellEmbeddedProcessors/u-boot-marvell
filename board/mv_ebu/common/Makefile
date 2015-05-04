@@ -104,6 +104,7 @@ USP_OBJS =	$(USP_DIR)/mv_spi.o		\
 		$(USP_DIR)/mv_cmd.o		\
 		$(USP_DIR)/mv_dram.o		\
 		$(USP_DIR)/cmd_bubt.o		\
+		$(USP_DIR)/cmd_mvsource.o	\
 		$(USP_DIR)/cmd_resetenv.o	\
 		$(USP_DIR)/mvDramScrubbing.o	\
 		$(USP_DIR)/cmd_ddr.o		\

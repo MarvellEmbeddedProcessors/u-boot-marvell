@@ -649,7 +649,7 @@ MV_32 mvBoarGpioPinNumGet(MV_BOARD_GPP_CLASS gppClass, MV_U32 index)
 
 	for (i = 0; i < board->numBoardGppInfo; i++) {
 		if (board->pBoardGppInfo[i].devClass == gppClass) {
-			if (indexFound == index)
+			if (indexFound == index && (MV_U32)board->pBoardGppInfo[i].gppPinNum != -1)
 				return (MV_U32)board->pBoardGppInfo[i].gppPinNum;
 			else
 				indexFound++;
@@ -710,6 +710,112 @@ MV_32 mvBoardResetGpioPinGet(MV_VOID)
 	return mvBoarGpioPinNumGet(BOARD_GPP_RESET, 0);
 }
 
+#ifdef MV_USB_VBUS_CYCLE
+#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
+/*******************************************************************************
+* mvBoardIoExpanderTypeGet
+*
+* DESCRIPTION:
+*	Return the Config type fields information for a given Config type class.
+*
+* INPUT:
+*	configClass - The Config type field to return the information for.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*	MV_BOARD_CONFIG_TYPE_INFO struct with mask, offset and register number.
+*
+*******************************************************************************/
+MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass,
+		MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo)
+{
+	MV_U32 i;
+
+	/* verify existence of requested config type, pull its data */
+	for (i = 0; i < board->numBoardIoExpPinInfo; i++)
+		if (board->pBoardIoExpPinInfo[i].ioFieldid == ioClass) {
+			*ioInfo = board->pBoardIoExpPinInfo[i];
+			return MV_OK;
+		}
+
+	DB(mvOsPrintf("%s: Error: requested IO expander ID was not found (%d)\n",
+			__func__, ioClass));
+	return MV_ERROR;
+}
+
+/*******************************************************************************
+* mvBoardIoExpValSet - write a specified value to IO Expanders
+*
+* DESCRIPTION:
+*       This function writes specified value to IO Expanders
+*
+* INPUT:
+*       ioInfo  - relevant IO Expander information
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MV_U8  :return requested value , if TWSI read was succesfull, else 0xFF.
+*
+*******************************************************************************/
+MV_STATUS mvBoardIoExpValSet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo, MV_U8 value, MV_BOOL isOutput)
+{
+	MV_U8 readVal, configVal;
+
+	if (ioInfo == NULL) {
+		mvOsPrintf("%s: Error: Write to IO Expander failed (invalid Expander info)\n", __func__);
+		return MV_ERROR;
+	}
+
+	/* Read direction (output/input) Value */
+	if (mvBoardTwsiGet(BOARD_TWSI_IO_EXPANDER, ioInfo->expanderNum,
+					ioInfo->regNum + 4, &configVal, 1) != MV_OK) {
+		mvOsPrintf("%s: Error: Read Configuration from IO Expander failed\n", __func__);
+		return MV_ERROR;
+	}
+
+	/* Modify direction (output/input) value of requested pin */
+	if (isOutput)
+		configVal &= ~(1 << ioInfo->offset);	/* output marked as 0: clean bit of old value  */
+	else
+		configVal |= (1 << ioInfo->offset);	/* input marked as 1: set bit of old value  */
+	if (mvBoardTwsiSet(BOARD_TWSI_IO_EXPANDER, ioInfo->expanderNum,
+					ioInfo->regNum + 4, &configVal, 1) != MV_OK) {
+		mvOsPrintf("%s: Error: Enable Write to IO Expander at 0x%x failed\n", __func__
+			   , mvBoardTwsiAddrGet(BOARD_TWSI_IO_EXPANDER, ioInfo->expanderNum));
+		return MV_ERROR;
+	}
+
+	/* configure output value, only for output directed IO */
+	if (!isOutput)
+		return MV_OK;
+
+	/* Read Output Value */
+	if (mvBoardTwsiGet(BOARD_TWSI_IO_EXPANDER, ioInfo->expanderNum,
+					ioInfo->regNum, &readVal, 1) != MV_OK) {
+		mvOsPrintf("%s: Error: Read Output value from IO Expander failed\n", __func__);
+		return MV_ERROR;
+	}
+
+	/* Modify */
+	readVal &= ~(1 << ioInfo->offset);	/* clean bit of old value  */
+	readVal |= (value << ioInfo->offset);
+
+	/* Write output value*/
+	if (mvBoardTwsiSet(BOARD_TWSI_IO_EXPANDER, ioInfo->expanderNum,
+					ioInfo->regNum, &readVal, 1) != MV_OK) {
+		mvOsPrintf("%s: Error: Write to IO Expander at 0x%x failed\n", __func__
+			   , mvBoardTwsiAddrGet(BOARD_TWSI_IO_EXPANDER, ioInfo->expanderNum));
+		return MV_ERROR;
+	}
+
+	return MV_OK;
+}
+
+#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT*/
 /*******************************************************************************
 * mvBoardUSBVbusGpioPinGet - return Vbus input GPP
 *
@@ -731,24 +837,66 @@ MV_32 mvBoardUSBVbusGpioPinGet(MV_32 devId)
 }
 
 /*******************************************************************************
-* mvBoardUSBVbusEnGpioPinGet - return Vbus Enable output GPP
+* mvUsbVbusGppSet - SET USB VBUS signal via GPIO
 *
 * DESCRIPTION:
-*
-* INPUT:
-*		int  devNo.
-*
-* OUTPUT:
-*		None.
-*
-* RETURN:
-*       GPIO pin number. The function return -1 for bad parameters.
-*
+** INPUT:	gppNo - gpp pin Number.
+** OUTPUT:	None.
+** RETURN:	None.
 *******************************************************************************/
-MV_32 mvBoardUSBVbusEnGpioPinGet(MV_32 devId)
+MV_VOID mvUsbVbusGppSet(int gppNo)
 {
-	return mvBoarGpioPinNumGet(BOARD_GPP_USB_VBUS_EN, devId);
+	MV_U32 regVal;
+
+	/* MPP Control Register - set mpp as GPP (value = 0)*/
+	regVal = MV_REG_READ(mvCtrlMppRegGet((unsigned int)(gppNo / 8)));
+	regVal &= ~(0xf << ((gppNo % 8) * 4));
+	MV_REG_WRITE(mvCtrlMppRegGet((unsigned int)(gppNo / 8)), regVal);
+
+	if (gppNo < 32) {
+		/* GPIO Data Out Enable Control Register - set to output */
+		mvGppTypeSet(0, (1 << gppNo), MV_GPP_OUT & (1 << gppNo));
+		/* GPIO output Data Value Register - set as high */
+		mvGppValueSet(0, (1 << gppNo), (1 << gppNo));
+	} else {
+		/* GPIO Data Out Enable Control Register - set to output */
+		mvGppTypeSet(1, (1 << (gppNo - 32)), MV_GPP_OUT & (1 << (gppNo - 32)));
+		/* GPIO output Data Value Register - set as high */
+		mvGppValueSet(1, (1 << (gppNo - 32)), (1 << (gppNo - 32)));
+	}
 }
+
+/*******************************************************************************
+* mvBoardUsbVbusSet - Set USB VBUS signal before detection
+*
+* DESCRIPTION:
+* this routine sets VBUS signal via GPIO or via I2C IO expander
+*
+** INPUT:	int  dev - USB Host number
+** OUTPUT:	None.
+** RETURN:	None.
+*******************************************************************************/
+MV_VOID mvBoardUsbVbusSet(int dev)
+{
+	MV_32 gppNo = mvBoardUSBVbusGpioPinGet(dev);
+
+	/* Some of Marvell boards control VBUS signal via I2C IO expander unit */
+#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;
+
+	/* if VBUS signal is Controlled via I2C IO Expander on board*/
+	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_USB_VBUS, &ioInfo) != MV_ERROR) {
+		mvBoardIoExpValSet(&ioInfo, 1, MV_TRUE);
+		return;
+	}
+#endif
+
+	/* else if VBUS signal is Controlled via GPIO on board*/
+	if (gppNo != MV_ERROR)
+		mvUsbVbusGppSet(gppNo);
+
+}
+#endif /* MV_USB_VBUS_CYCLE */
 
 /*******************************************************************************
 * mvBoardGpioIntMaskGet - Get GPIO mask for interrupt pins

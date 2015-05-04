@@ -403,6 +403,12 @@ typedef struct boardWakeupGPIO {
 	MV_32 gpioNum;
 } MV_BOARD_WAKEUP_GPIO;
 
+
+typedef struct boardUsbVbusGPIO {
+	MV_U32 boardId;
+	MV_32 usbVbusGpio[2];
+} MV_BOARD_USB_VBUS_GPIO;
+
 typedef enum _mvSuspendWakeupStatus {
 	MV_SUSPEND_WAKEUP_DISABLED,
 	MV_SUSPEND_WAKEUP_ENABLED,
@@ -426,10 +432,20 @@ typedef enum _mvSuspendWakeupStatus {
 {A38X_CUSTOMER_BOARD_ID0,	-1 },\
 {A38X_CUSTOMER_BOARD_ID0,	-1 },\
 };
+
+#define MV_BOARD_USB_VBUS_GPIO_INFO {\
+{A38X_CUSTOMER_BOARD_ID0, {-1, -1} },\
+{A38X_CUSTOMER_BOARD_ID0, {-1, -1} },\
+};
 #else
 #define MV_BOARD_WAKEUP_GPIO_INFO {\
 {A39X_CUSTOMER_BOARD_ID0,	-1 },\
 {A39X_CUSTOMER_BOARD_ID0,	-1 },\
+};
+
+#define MV_BOARD_USB_VBUS_GPIO_INFO {\
+{A39X_CUSTOMER_BOARD_ID0, {-1, -1} },\
+{A39X_CUSTOMER_BOARD_ID0, {-1, -1} },\
 };
 #endif /* MV88F68XX */
 
@@ -445,10 +461,25 @@ typedef enum _mvSuspendWakeupStatus {
 {DB_BP_6821_ID,	 -2 },\
 {DB_AMC_6820_ID, -2 },\
 };
+
+#define MV_BOARD_USB_VBUS_GPIO_INFO {\
+{RD_NAS_68XX_ID, {-1, -1} },\
+{DB_68XX_ID,	 {-1, -1} },\
+{RD_AP_68XX_ID,	 {-1, -1} },\
+{DB_AP_68XX_ID,	 {44, -1} },\
+{DB_GP_68XX_ID,	 {-1, -1} },\
+{DB_BP_6821_ID,	 {-1, -1} },\
+{DB_AMC_6820_ID, {-1, -1} },\
+};
 #else
 #define MV_BOARD_WAKEUP_GPIO_INFO {\
 {A39X_RD_69XX_ID, -1 },\
 {A39X_DB_69XX_ID, -1 },\
+};
+
+#define MV_BOARD_USB_VBUS_GPIO_INFO {\
+{A39X_RD_69XX_ID, {-1, -1} },\
+{A39X_DB_69XX_ID, {-1, -1} },\
 };
 #endif /* MV88F68XX */
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
@@ -578,6 +609,7 @@ MV_U16 mvSysEnvModelGet(MV_VOID);
 MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID);
 
 #define MV_BOARD_BIOS0_ADDR				0x4C
+#define MV_BOARD_IO_EXPANDER1_ADDR			0x21
 #define TWSI_CHANNEL_BC2				0
 #define MV_BOARD_CTRL_I2C_ADDR_BC2		0x0
 /* WA for bits 1,2 in 0x4c. Must be lower than 100000 -> 20000 */
@@ -741,5 +773,14 @@ MV_SUSPEND_WAKEUP_STATUS mvSysEnvCheckWakeupDramEnable(void);
  * RETURNS:              None.
  ***************************************************************************/
 MV_STATUS mvSysEnvTimerIsRefClk25Mhz(MV_VOID);
+/**************************************************************************
+ * mvBoardUsbVbusReset -
+ *
+ * DESCRIPTION:          Routine to reset USB VBUS (via GPIO or I2C IO expander)
+ * INPUT:                None.
+ * OUTPUT:               None.
+ * RETURNS:              None.
+ ***************************************************************************/
+MV_VOID mvSysEnvUsbVbusReset(MV_VOID);
 #endif /* __INCmvSysEnvLibh */
 

@@ -134,6 +134,11 @@ struct MV_BOARD_IO_EXPANDER armada_38x_customer_0_IoExpanderInfo[] = {
 	{1, 3, 0x00}  /* Output Data, register#1 */
 };
 
+MV_BOARD_GPP_INFO armada_38x_customer_0_GppInfo[] = {
+	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
+/* USB_Host0 */ /* {BOARD_GPP_USB_VBUS,    44}, */ /* from MPP map */
+};
+
 MV_BOARD_USB_INFO armada_38x_customer_0_InfoBoardUsbInfo[] = {
 /* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOLEAN isActive} */
 	{ USB3_UNIT_ID, 0, MV_TRUE},
@@ -155,8 +160,10 @@ MV_BOARD_INFO armada_38x_customer_board_0_info = {
 	.pBoardTwsiDev			= armada_38x_customer_0_BoardTwsiDev,
 	.numBoardMacInfo		= ARRSZ(armada_38x_customer_0_BoardMacInfo),
 	.pBoardMacInfo			= armada_38x_customer_0_BoardMacInfo,
-	.numBoardGppInfo		= 0,
-	.pBoardGppInfo			= 0,
+	.numBoardGppInfo		= ARRSZ(armada_38x_customer_0_GppInfo),
+	.pBoardGppInfo			= armada_38x_customer_0_GppInfo,
+	.numBoardIoExpPinInfo		= 0,
+	.pBoardIoExpPinInfo		= 0,
 	.activeLedsNumber		= 0,
 	.pLedGppPin			= NULL,
 	.ledsPolarity			= 0,
@@ -263,6 +270,11 @@ struct MV_BOARD_IO_EXPANDER armada_38x_customer_1_IoExpanderInfo[] = {
 	{1, 3, 0xC0}  /* Output Data, register#1 */
 };
 
+MV_BOARD_GPP_INFO armada_38x_customer_1_GppInfo[] = {
+	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
+/* USB_Host0 *//* //{BOARD_GPP_USB_VBUS,    44},*/ /* from MPP map */
+};
+
 MV_BOARD_USB_INFO armada_38x_customer_1_InfoBoardUsbInfo[] = {
 /* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
 	{ USB3_UNIT_ID, 0, MV_TRUE},
@@ -270,6 +282,10 @@ MV_BOARD_USB_INFO armada_38x_customer_1_InfoBoardUsbInfo[] = {
 	{ USB_UNIT_ID,  0, MV_TRUE},
 };
 
+MV_BOARD_IO_EXPANDER_TYPE_INFO armada_38x_customer_1_ioExpPinInfo[] = {
+/*	{ IO Type enum,			bit offset, Io.exp num,		reg Num */
+	{ MV_IO_EXPANDER_USB_VBUS,	7,		1,		3} /* VBUS_EN: IO.exp#1 (0x21), reg #3, bit 7 */
+};
 
 MV_BOARD_INFO armada_38x_customer_board_1_info = {
 	.boardName			= "A38x-Customer-Board-1",
@@ -285,8 +301,10 @@ MV_BOARD_INFO armada_38x_customer_board_1_info = {
 	.pBoardTwsiDev			= armada_38x_customer_1_BoardTwsiDev,
 	.numBoardMacInfo		= ARRSZ(armada_38x_customer_1_BoardMacInfo),
 	.pBoardMacInfo			= armada_38x_customer_1_BoardMacInfo,
-	.numBoardGppInfo		= 0,
-	.pBoardGppInfo			= 0,
+	.numBoardGppInfo		= ARRSZ(armada_38x_customer_1_GppInfo),
+	.pBoardGppInfo			= armada_38x_customer_1_GppInfo,
+	.numBoardIoExpPinInfo		= ARRSZ(armada_38x_customer_1_ioExpPinInfo),
+	.pBoardIoExpPinInfo		= armada_38x_customer_1_ioExpPinInfo,
 	.activeLedsNumber		= 0,
 	.pLedGppPin			= NULL,
 	.ledsPolarity			= 0,
@@ -438,6 +456,8 @@ MV_BOARD_INFO db88f68xx_board_info = {
 	.pBoardMacInfo		= db88f68xxInfoBoardMacInfo,
 	.numBoardGppInfo	= 0,
 	.pBoardGppInfo		= 0,
+	.numBoardIoExpPinInfo	= 0,
+	.pBoardIoExpPinInfo	= 0,
 	.activeLedsNumber	= 0,
 	.pLedGppPin		= NULL,
 	.ledsPolarity		= 0,
@@ -556,6 +576,8 @@ MV_BOARD_INFO rdNas88f68XX_board_info = {
 	.pBoardMacInfo			= rd88F68XXInfoBoardMacInfo,
 	.numBoardGppInfo		= 0,
 	.pBoardGppInfo			= 0,
+	.numBoardIoExpPinInfo	= 0,
+	.pBoardIoExpPinInfo	= 0,
 	.activeLedsNumber		= 0,
 	.pLedGppPin			= NULL,
 	.ledsPolarity			= 0,
@@ -644,6 +666,8 @@ MV_BOARD_INFO rdWAP88f68XX_board_info = {
 	.pBoardMacInfo			= rd88F68XXInfoBoardMacInfo,
 	.numBoardGppInfo		= 0,
 	.pBoardGppInfo			= 0,
+	.numBoardIoExpPinInfo	= 0,
+	.pBoardIoExpPinInfo	= 0,
 	.activeLedsNumber		= 0,
 	.pLedGppPin			= NULL,
 	.ledsPolarity			= 0,
@@ -747,6 +771,11 @@ MV_DEV_CS_INFO dbAP88f68xxInfoBoardDeCsInfo[] = {
 	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE }	/* NOR DEV */
 };
 
+MV_BOARD_GPP_INFO dbAP88f68xxInfoBoardGppInfo[] = {
+	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
+/* USB_Host0 */	{BOARD_GPP_USB_VBUS,    44}, /* from MPP map */
+};
+
 MV_BOARD_TDM_INFO dbAP88f68xxTdm880[] = { {0} };
 
 MV_BOARD_TDM_SPI_INFO dbAP88f68xxTdmSpiInfo[] = { {1} };
@@ -768,8 +797,10 @@ MV_BOARD_INFO dbAP88f68xx_board_info = {
 	.pBoardTwsiDev          = dbAP88f68xxInfoBoardTwsiDev,
 	.numBoardMacInfo        = ARRSZ(dbAP88f68xxInfoBoardMacInfo),
 	.pBoardMacInfo          = dbAP88f68xxInfoBoardMacInfo,
-	.numBoardGppInfo        = 0,
-	.pBoardGppInfo          = 0,
+	.numBoardGppInfo	= ARRSZ(dbAP88f68xxInfoBoardGppInfo),
+	.pBoardGppInfo		= dbAP88f68xxInfoBoardGppInfo,
+	.numBoardIoExpPinInfo	= 0,
+	.pBoardIoExpPinInfo	= 0,
 	.activeLedsNumber       = 0,
 	.pLedGppPin             = NULL,
 	.ledsPolarity           = 0,	/* PMU Power */
@@ -865,7 +896,12 @@ struct MV_BOARD_IO_EXPANDER dbGP88f68XXInfoBoardioExpValue[] = {
 	{1, 6, 0xC3}, /* Configuration registers: Bit on --> Input bits  */
 	{1, 7, 0x31}, /* Configuration registers: Bit on --> Input bits  */
 	{1, 2, 0x08}, /* Output Data, register#0 */
-	{1, 3, 0xC0}  /* Output Data, register#1 */
+	{1, 3, 0x40}  /* Output Data, register#1 */
+};
+
+MV_BOARD_IO_EXPANDER_TYPE_INFO dbGP88f68XXInfoBoardioExpPinInfo[] = {
+/*	{ IO Type enum,			bit offset, Io.exp num,		reg Num */
+	{ MV_IO_EXPANDER_USB_VBUS,	7,		1,		3} /* VBUS_EN: IO.exp#1 (0x21), reg #3, bit 7 */
 };
 
 MV_U8 dbGP88f68XXInfoBoardPicGpio[] = {33, 34, 35};
@@ -887,6 +923,8 @@ MV_BOARD_INFO dbGP88f68XX_board_info = {
 	.pBoardMacInfo			= dbGP88F68XXInfoBoardMacInfo,
 	.numBoardGppInfo		= 0,
 	.pBoardGppInfo			= 0,
+	.numBoardIoExpPinInfo		= ARRSZ(dbGP88f68XXInfoBoardioExpPinInfo),
+	.pBoardIoExpPinInfo		= dbGP88f68XXInfoBoardioExpPinInfo,
 	.activeLedsNumber		= 0,
 	.pLedGppPin			= NULL,
 	.ledsPolarity			= 0,
@@ -1007,6 +1045,8 @@ MV_BOARD_INFO db88f6821_board_info = {
 	.pBoardMacInfo		= db88f6821InfoBoardMacInfo,
 	.numBoardGppInfo	= 0,
 	.pBoardGppInfo		= 0,
+	.numBoardIoExpPinInfo	= 0,
+	.pBoardIoExpPinInfo	= 0,
 	.activeLedsNumber	= 0,
 	.pLedGppPin		= NULL,
 	.ledsPolarity		= 0,
@@ -1111,6 +1151,8 @@ MV_BOARD_INFO dbAmc88f68xx_board_info = {
 	.pBoardMacInfo		= dbAmc88f68xxInfoBoardMacInfo,
 	.numBoardGppInfo	= 0,
 	.pBoardGppInfo		= 0,
+	.numBoardIoExpPinInfo	= 0,
+	.pBoardIoExpPinInfo	= 0,
 	.activeLedsNumber	= 0,
 	.pLedGppPin		= NULL,
 	.ledsPolarity		= 0,

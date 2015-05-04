@@ -219,6 +219,18 @@ typedef struct _boardGppInfo {
 	MV_U8 gppPinNum;
 } MV_BOARD_GPP_INFO;
 
+typedef enum _mvIoExpanderTypeID {
+	MV_IO_EXPANDER_USB_VBUS,
+	MV_IO_EXPANDER_MAX_OPTION
+} MV_IO_EXPANDER_TYPE_ID;
+
+typedef struct _boardIoExapnderTypesInfo {
+	MV_IO_EXPANDER_TYPE_ID ioFieldid;
+	MV_U32 offset;
+	MV_U32 expanderNum;
+	MV_U32 regNum;
+} MV_BOARD_IO_EXPANDER_TYPE_INFO;
+
 typedef struct _boardTwsiInfo {
 	MV_BOARD_TWSI_CLASS devClass;
 	MV_U8 devClassId;
@@ -336,6 +348,9 @@ typedef struct _boardInfo {
 	MV_BOARD_MAC_INFO *pBoardMacInfo;
 	MV_U8 numBoardGppInfo;
 	MV_BOARD_GPP_INFO *pBoardGppInfo;
+	MV_U8 numBoardIoExpPinInfo;
+	MV_BOARD_IO_EXPANDER_TYPE_INFO *pBoardIoExpPinInfo;
+
 	MV_U8 activeLedsNumber;
 	MV_U8 *pLedGppPin;
 	MV_U8 ledsPolarity;     /* '0' or '1' to turn on led */
@@ -488,8 +503,11 @@ MV_32 mvBoarGpioPinNumGet(MV_BOARD_GPP_CLASS class, MV_U32 index);
 MV_VOID mvBoardReset(MV_VOID);
 MV_BOARD_PEX_INFO *mvBoardPexInfoGet(void);
 MV_32 mvBoardResetGpioPinGet(MV_VOID);
+#ifdef MV_USB_VBUS_CYCLE
 MV_32 mvBoardUSBVbusGpioPinGet(MV_32 devId);
-MV_32 mvBoardUSBVbusEnGpioPinGet(MV_32 devId);
+MV_STATUS mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_TYPE_ID ioClass, MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo);
+MV_VOID mvBoardUsbVbusSet(int dev);
+#endif
 MV_BOOL mvBoardIsOurPciSlot(MV_U32 busNum, MV_U32 slotNum);
 MV_U32 mvBoardGpioIntMaskGet(MV_U32 gppGrp);
 MV_U32 mvBoardSlicUnitTypeGet(MV_VOID);

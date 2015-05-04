@@ -518,6 +518,8 @@ extern int nand_get_env_offs(void);
 	 * the actual USB host count */
 	#define CONFIG_USB_MAX_CONTROLLER_HOST_COUNT	2
 
+	#define MV_USB_VBUS_CYCLE
+
 #if defined(CONFIG_USB_XHCI) || defined(CONFIG_USB_EHCI)
 	#define CONFIG_USB_XHCI_HCD /* set kernel define - for mv_hal/usb usage */
 #endif /* CONFIG_USB_XHCI */

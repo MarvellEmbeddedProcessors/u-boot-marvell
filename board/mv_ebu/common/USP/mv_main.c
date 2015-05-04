@@ -392,6 +392,9 @@ void misc_init_r_env(void){
 	envSetDefault("bootcmd_lgcy", "tftpboot 0x2000000 $image_name; setenv bootargs $bootargs_dflt; bootm 0x2000000; ");
 #endif /* #if defined (CONFIG_CMD_STAGE_BOOT) */
 
+#ifdef CONFIG_CMD_SOURCE
+	envSetDefault("run_script", "no");
+#endif
 	/* netbsd boot arguments */
 	env = getenv("netbsd_en");
 	if( !env || ( ((strcmp(env,"no") == 0) || (strcmp(env,"No") == 0) ))) {
@@ -697,7 +700,12 @@ int misc_init_r (void)
 	/* Init the PHY or Switch of the board */
 	mvBoardEgigaPhyInit();
 #endif /* #if defined(MV_INCLUDE_UNM_ETH) || defined(MV_INCLUDE_GIG_ETH) */
-
+#ifdef CONFIG_CMD_SOURCE
+	/* run saved script */
+	env = getenv("run_script");
+	if (env && strcmp(env, "yes") == 0)
+		run_command("mvsource run", 0);
+#endif
 	return 0;
 }
 

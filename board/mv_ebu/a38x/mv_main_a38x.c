@@ -531,6 +531,12 @@ void misc_init_r_env(void)
 	if (!env)
 		setenv("initrd_name", "uInitrd");
 
+#ifdef CONFIG_CMD_SOURCE
+	env = getenv("run_script");
+	if (!env)
+		setenv("run_script", "no");
+#endif
+
 	/* netbsd boot arguments */
 	env = getenv("netbsd_en");
 	if ( !env || ( ((strcmp(env, "no") == 0) || (strcmp(env, "No") == 0) )))
@@ -1088,13 +1094,20 @@ int misc_init_r(void)
 
 	setenv("pcieTune", "no");
 
+
+
 #if defined(MV_INCLUDE_UNM_ETH) || defined(MV_INCLUDE_GIG_ETH)
 	mvBoardEgigaPhyInit();
 #endif
 #if defined(CONFIG_CMD_DATE)
 	rtc_init(); /* Ensure the bus bridge parameters are ready for RTC access */
 #endif
-
+#ifdef CONFIG_CMD_SOURCE
+	/* run saved script */
+	env = getenv("run_script");
+	if (env && strcmp(env, "yes") == 0)
+		run_command("mvsource run", 0);
+#endif
 	return 0;
 }
 

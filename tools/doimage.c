@@ -131,8 +131,8 @@ void usage(void)
 	printf("            These values are written before the execution of the boot image.\n");
 	printf("            Currently supports only a single file.\n");
 	printf("  -p        Parse and display a pre-built boot image\n");
-	printf("  -d        Disable prints of bootrom and binary extension\n");
-	printf("  -m        UART baudrate used for bootrom prints\n");
+	printf("  -m        Disable prints of bootrom and binary extension\n");
+	printf("  -u        UART baudrate used for bootrom prints. Must be multiple of 1200\n");
 	printf("  -h        Dispalys this help message\n");
 
 	exit(-1);
@@ -720,6 +720,9 @@ int main(int argc, char *argv[])
 
 	if (opts.load_addr % 8)
 		usage_err("Load address must be 8 bytes aligned");
+
+	if (opts.baudrate % 1200)
+		usage_err("Baudrate must be a multiple of 1200");
 
 	/* The remaining arguments are the input
 	 * and potentially output file */

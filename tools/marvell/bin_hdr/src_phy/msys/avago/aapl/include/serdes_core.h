@@ -67,6 +67,8 @@ EXT int avago_serdes_mem_rmw(Aapl_t *aapl, uint sbus_addr,
     EXT int avago_serdes_bits_to_width(uint bits);
 # endif
 
+EXT int avago_serdes_get_tx_user_data(Aapl_t *aapl, uint sbus_addr, long data[4]);
+EXT int avago_serdes_set_tx_user_data(Aapl_t *aapl, uint sbus_addr, long data[4]);
 
 /**< @brief The TX input data selections. */
 typedef enum

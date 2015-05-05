@@ -439,6 +439,60 @@ static int spico_int_02_retry(Aapl_t *aapl, uint addr, int data, int retry)
     return aapl_fail(aapl,__func__,__LINE__,"SBus %s, PRBS reconfigure timed out.\n",aapl_addr_to_str(addr));
 }
 
+/** @brief   Retrieves the 80-bit TX user data register. */
+/** @details Note: Only the first 20 bits of the pattern are returned */
+/**          as that is all that is readily available from the SerDes. */
+/**          These bits are then duplicated into the other bits. */
+/** @return  On success, returns 0. */
+/** @return  On error, decrements aapl->return_code and returns -1. */
+/** @see     avago_serdes_set_tx_user_data(). */
+EXT int avago_serdes_get_tx_user_data(
+    Aapl_t *aapl,               /**< [in] Pointer to Aapl_t structure. */
+    uint addr,                  /**< [in] Device address number. */
+    long user_data[4])          /**< [out] 80-bit user data (4 x 20). */
+{
+    int return_code = aapl->return_code;
+    int value = avago_serdes_mem_rd(aapl, addr, AVAGO_LSB, 0x002C);
+    value |= (avago_serdes_mem_rd(aapl, addr, AVAGO_LSB, 0x002D) & 0x0f) << 16;
+    user_data[0] =
+    user_data[1] =
+    user_data[2] =
+    user_data[3] = value & 0x000fffff;
+    AAPL_LOG_PRINT5(aapl,AVAGO_DEBUG5,__func__,__LINE__,"SBus %s, user_data=0x%05x\n",aapl_addr_to_str(addr),user_data[0]);
+    return return_code == aapl->return_code ? 0 : -1;
+}
+
+/** @brief   Loads the 80-bit value into the TX user data register */
+/**          and select it as the TX input. */
+/** @details The bit transmit order is from the least significant bit [0] of */
+/**          user_data[0] through bit [19] of user_data[3]. */
+/**          Each word holds 20 significant bits. */
+/** @return  On success, returns 0. */
+/** @return  On error, decrements aapl->return_code and returns -1. */
+/** @see     avago_serdes_get_tx_user_data(). */
+EXT int avago_serdes_set_tx_user_data(
+    Aapl_t *aapl,               /**< [in] Pointer to Aapl_t structure. */
+    uint addr,                  /**< [in] Device address number. */
+    long user_data[4])          /**< [in] 80-bit user data (4 x 20). */
+{
+    int i, rc;
+    AAPL_LOG_PRINT5(aapl,AVAGO_DEBUG5,__func__,__LINE__,"SBus %s, user_data=0x%05x,%05x,%05x,%05x\n",
+        aapl_addr_to_str(addr),user_data[0],user_data[1],user_data[2],user_data[3]);
+
+    rc = avago_spico_int(aapl, addr, 0x0018, 0x0000);
+    if( rc != 0x18 )
+        return aapl_fail(aapl,__func__,__LINE__,"SBus %s, spico_int(0x18,0) returned 0x%x\n",aapl_addr_to_str(addr),rc);
+    rc = 1;
+    for( i = 0; i < 4; i++ )
+    {
+        rc = rc && 0x19 == avago_spico_int(aapl, addr, 0x0019,  user_data[i] & 0x03ff)
+                && 0x19 == avago_spico_int(aapl, addr, 0x0019, (user_data[i] >> 10) & 0x03ff);
+    }
+    if( !rc )
+        return aapl_fail(aapl,__func__,__LINE__,"SBus %s, spico_int(0x19) returned 0x%x\n",aapl_addr_to_str(addr),rc);
+    return avago_serdes_set_tx_data_sel(aapl, addr, AVAGO_SERDES_TX_DATA_SEL_USER);
+}
+
 /** @brief   Gets the selected TX data source. */
 /** */
 /** @return  Returns the selected TX data source. */

@@ -1474,7 +1474,11 @@ void aapl_get_ip_info(
 
                 for( addr_struct.sbus = 1; addr_struct.sbus <= aapl->max_sbus_addr[chip][ring]; addr_struct.sbus++ )
                 {
-                    aapl->ip_type[chip][ring][addr_struct.sbus] = 0xff;
+                    /* Bug fix in AAPL LGPL package
+                       Fixed value of aapl->ip_type[chip][ring][addr_struct.sbus] ==0xFF
+                       Does not detect all Avago SERDES interfaces
+                    aapl->ip_type[chip][ring][addr_struct.sbus] = 0xff;*/
+                    aapl_set_ip_type(aapl,avago_struct_to_addr(&addr_struct));
                     aapl->spico_running[chip][ring][addr_struct.sbus] = 0;
                 }
 

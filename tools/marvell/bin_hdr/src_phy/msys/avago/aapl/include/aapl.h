@@ -51,17 +51,18 @@
 /*      cause compile failures. */
 
 #define AAPL_ALLOW_AACS                1  /**< Set to 0 to remove AVAGO_AACS_SBUS, AVAGO_AACS_MDIO, and AVAGO_AACS_I2C communication methods. */
-#define AAPL_ALLOW_GPIO_MDIO           1  /**< Set to 0 to remove the AVAGO_GPIO_MDIO communication method. */
-#define AAPL_ALLOW_OFFLINE_SBUS        1  /**< Set to 0 to remove the AVAGO_OFFLINE communication method. */
+#define AAPL_ALLOW_GPIO_MDIO           0  /**< Set to 0 to remove the AVAGO_GPIO_MDIO communication method. */
+#define AAPL_ALLOW_OFFLINE_SBUS        0  /**< Set to 0 to remove the AVAGO_OFFLINE communication method. */
 #define AAPL_ALLOW_SYSTEM_I2C          1  /**< Set to 0 to remove the AVAGO_SYSTEM_I2C communication method. */
 #define AAPL_ALLOW_SYSTEM_MDIO         0  /**< Set to 0 to remove the AVAGO_SYSTEM_MDIO communication method (not implemented). */
 #define AAPL_ALLOW_USER_SUPPLIED_I2C   1  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_I2C communication method. */
-#define AAPL_ALLOW_USER_SUPPLIED_MDIO  1  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_MDIO communication method. */
+#define AAPL_ALLOW_USER_SUPPLIED_MDIO  0  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_MDIO communication method. */
 #define AAPL_ALLOW_USER_SUPPLIED_SBUS  1  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_SBUS_DIRECT communication method. */
-#define AAPL_ENABLE_USER_SERDES_INT    1  /**< Set to 0 to remove support for using the user_supplied_serdes_interrupt_function() for SerDes interrupts */
+#define AAPL_ENABLE_USER_SERDES_INT    0  /**< Set to 0 to remove support for using the user_supplied_serdes_interrupt_function() for SerDes interrupts */
 
 
 /* Set value to 0 to disable corresponding feature support: */
+#define AAPL_ENABLE_AACS_SERVER        1  /**< Enable the AACS server. */
 #define AAPL_ENABLE_FILE_IO            1  /**< Enable use of file IO and the FILE type. */
 #define AAPL_ENABLE_C_LINKING          1  /**< Set to 0 if library and callers all are C++ compiled. */
 
@@ -103,7 +104,7 @@ typedef enum
 /** @brief The default value for Aapl_t::i2c_base_addr. */
 /** The base I2C address for Avago devices is usually 0x40. */
 /** Normally, this is set to the address of the first Avago device. */
-#define AAPL_DEFAULT_I2C_BASE_ADDR       0x40
+#define AAPL_DEFAULT_I2C_BASE_ADDR       0x48
 
 /** @brief The default value for Aapl_t::mdio_base_port_addr. */
 /** Normally, this is set to the address of the first Avago device. */
@@ -160,6 +161,7 @@ typedef enum
 /*#define AAPL_CHIP_ID_OVERRIDE1  "10101010101010101010101010101010" */
 /*.... */
 /*#define AAPL_CHIP_ID_OVERRIDE14 "10101010101010101010101010101010" */
+#define AAPL_CHIP_ID_OVERRIDE0 "00001001000100100101010101111111"
 /* */
 /* If both are given, the hex values will be used. */
 
@@ -167,12 +169,12 @@ typedef enum
 /** Maximum number of devices AAPL supports. */
 /** Reducing this value to that actually used will reduce the memory footprint of the Aapl_t struct. */
 /** Valid range: [1-15]. */
-#define AAPL_MAX_CHIPS 15
+#define AAPL_MAX_CHIPS 1
 
 /** Maximum number of SBus rings AAPL supports. */
 /** Reducing this value to that actually used will reduce the memory footprint of the Aapl_t struct. */
 /** Valid range: [1-15]. */
-#define AAPL_MAX_RINGS 15
+#define AAPL_MAX_RINGS 1
 
 /** Maximum number of AACS commands to queue before send. */
 /** Setting this to 0 disables command buffering. */
@@ -242,7 +244,7 @@ typedef enum
 /** @brief Default value for Aapl_t::enable_debug_logging. */
 /** This value also can be changed at run time. */
 /** */
-#define AAPL_DEFAULT_ENABLE_DEBUG_LOGGING    1
+#define AAPL_DEFAULT_ENABLE_DEBUG_LOGGING    0
 
 /** @brief Default value for Aapl_t::enable_stream_logging. */
 /** This value also can be changed at run time. */

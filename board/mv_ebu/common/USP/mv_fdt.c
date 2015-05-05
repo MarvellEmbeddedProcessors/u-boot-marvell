@@ -131,6 +131,10 @@ static int mv_fdt_update_prestera(void *fdt);
 #ifdef MV_INCLUDE_TDM
 static int mv_fdt_update_tdm(void *fdt);
 #endif
+#ifdef MV_USB_VBUS_CYCLE
+static int mv_fdt_update_usb_vbus(void *fdt);
+#endif
+
 #if 0 /* not compiled, since this routine is currently not in use  */
 static int mv_fdt_remove_prop(void *fdt, const char *path,
 				const char *name, int nodeoff);
@@ -152,6 +156,9 @@ update_fnc_t *update_sequence[] = {
 #endif
 #ifdef MV_INCLUDE_TDM
 	mv_fdt_update_tdm,			/* Update tdm node in DT */
+#endif
+#ifdef MV_USB_VBUS_CYCLE
+	mv_fdt_update_usb_vbus,
 #endif
 	mv_fdt_update_flash,			/* Get number of active flash devices and update DT */
 	mv_fdt_nand_mode_fixup,			/* Update NAND controller ECC settings in DT */
@@ -478,6 +485,66 @@ static int mv_fdt_update_tdm(void *fdt)
 	return 0;
 }
 #endif
+
+#ifdef MV_USB_VBUS_CYCLE
+
+static int mv_fdt_update_usb_vbus(void *fdt)
+{
+	int err, nodeoffset;				/* nodeoffset: node offset from libfdt */
+	char propval[10];				/* property value */
+	const char *prop = "status";			/* property name */
+	const char *node, *phy_node;			/* node name */
+	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;		/* empty stub - not to be used */
+
+	sprintf(propval, "okay");
+
+	if (mvBoardUSBVbusGpioPinGet(0) != MV_ERROR) {
+		node = "usb3-vbus-gpio";
+		phy_node = "usb3-phy-gpio";
+	}
+	else if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_USB_VBUS, &ioInfo) != MV_ERROR) {
+		node = "usb3-vbus-exp1";
+		phy_node = "usb3-phy-exp1";
+	}
+	else
+		return 0;
+
+	nodeoffset = mv_fdt_find_node(fdt, node);
+
+	if (nodeoffset < 0) {
+		mv_fdt_dprintf("Lack of '%s' node in device tree\n", node);
+		return 0;
+	}
+	if (strncmp(fdt_get_name(fdt, nodeoffset, NULL), node, strlen(node)) == 0) {
+		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
+						propval, strlen(propval)+1));
+		if (err < 0) {
+			mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, node);
+			return 0;
+		}
+		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
+	}
+
+	/* enable 'usb3_phy' node - for Linux regulator usage */
+	nodeoffset = mv_fdt_find_node(fdt, phy_node);
+
+	if (nodeoffset < 0) {
+		mv_fdt_dprintf("Lack of '%s' node in device tree\n", phy_node);
+		return 0;
+	}
+
+	if (strncmp(fdt_get_name(fdt, nodeoffset, NULL), phy_node, strlen(phy_node)) == 0) {
+		mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop,
+						propval, strlen(propval)+1));
+		if (err < 0) {
+			mv_fdt_dprintf("Modifying '%s' in '%s' node failed\n", prop, phy_node);
+			return 0;
+		}
+		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, phy_node);
+	}	return 0;
+	return 0;
+}
+#endif /* MV_USB_VBUS_CYCLE */
 
 #ifdef CONFIG_MV_SDHCI
 /*******************************************************************************

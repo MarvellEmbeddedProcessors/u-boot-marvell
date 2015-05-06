@@ -564,10 +564,11 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	}
 
 	/* Erase entire NAND flash - avoid invalid file system preparations */
-	printf("\nGoing to erase the entire NAND flash. ");
-	if (mvVerifyRequest() == MV_TRUE)
-		run_command("nand erase.chip", 0);
-
+	if (isNand == MV_TRUE) {
+		printf("\nGoing to erase the entire NAND flash. ");
+		if (mvVerifyRequest() == MV_TRUE)
+			run_command("nand erase.chip", 0);
+	}
 	printf("\nBurning %s on flash at 0x%08x, length=%dK\n",
 		(single_file) ? "single image" : "kernel",
 		partitionInfo->KERNEL_START, kernel_unc_len/_1K);

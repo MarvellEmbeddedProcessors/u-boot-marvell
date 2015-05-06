@@ -110,19 +110,24 @@ if(($opt_b eq "armada_xp_dbgp") or
 	($opt_b eq "ac3_customer1") )
 {
 	$board = $opt_b;
+	$ddr3LibBuild="yes";
 	if( (substr $board,7 , 3) eq "370" ) {
 		$boardID="a370";
 		$targetBoard = substr $board, 11;
+		$ddr3LibBuild="no";
 	}
 	elsif ( (substr $board,7 , 2) eq "xp" ) {
 		$boardID="axp";
 		$targetBoard = substr $board, 10;
+		$ddr3LibBuild="no";
 	}
 	elsif ( (substr $board,7 , 2) eq "lp" ) {
 		$boardID="alp";
+		$ddr3LibBuild="no";
 	}
 	elsif ( (substr $board,7 , 3) eq "375" ) {
 		$boardID="a375";
+		$ddr3LibBuild="no";
 	}
 	elsif ( (substr $board,7 , 3) eq "38x" ) {
 		$boardID="a38x";
@@ -342,6 +347,12 @@ if(defined $opt_i)
 		}
 	}
 	print "\n";
+}
+
+#by default -d 2 will be enabled for new TIP SoCs
+if( ($ddr3LibBuild eq "yes") and !($opt_m eq 4))
+{
+	$opt_d = 2;
 }
 
 if(defined $opt_d)

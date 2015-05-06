@@ -958,12 +958,16 @@ GT_STATUS mvHwsValidateAlgoComponents(GT_U8 devNum)
     status &= mvHwsValidateAlgoVar(gZnodtCtrl,  MV_PARAMS_UNDEFINED, "gZnodtCtrl");
 
     /* check functions pointers */
+#ifndef ASIC_SIMULATION
     status &= mvHwsValidateAlgoPtr(configFuncInfo[devNum].tipDunitMuxSelectFunc,    NULL, "tipDunitMuxSelectFunc");
     status &= mvHwsValidateAlgoPtr(configFuncInfo[devNum].tipDunitWriteFunc,        NULL, "tipDunitWriteFunc");
     status &= mvHwsValidateAlgoPtr(configFuncInfo[devNum].tipDunitReadFunc,         NULL, "tipDunitReadFunc");
     status &= mvHwsValidateAlgoPtr(configFuncInfo[devNum].tipGetFreqConfigInfoFunc, NULL, "tipGetFreqConfigInfoFunc");
     status &= mvHwsValidateAlgoPtr(configFuncInfo[devNum].tipSetFreqDividerFunc,    NULL, "tipSetFreqDividerFunc");
     status &= mvHwsValidateAlgoPtr(configFuncInfo[devNum].tipGetClockRatio,         NULL, "tipGetClockRatio");
+#else
+	devNum = devNum; /* avoid warnings */
+#endif
 
     status &= mvHwsValidateAlgoPtr(dqMapTable, NULL, "dqMapTable");
     status &= mvHwsValidateAlgoVar(dfsLowFreq, 0, "dfsLowFreq");

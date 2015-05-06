@@ -136,14 +136,14 @@ Address Bits   Value   Description
 
 #if defined(CONFIG_ARMADA_38X) || defined (CONFIG_ALLEYCAT3) || defined (CONFIG_ARMADA_39X)
 #define ODPG_TRAINING_STATUS_REG          (0x18488)
+#else
+#define ODPG_TRAINING_STATUS_REG          (0x1030)
+#endif
 #define ODPG_TRAINING_TRIGGER_REG         (0x1030)
 #define ODPG_STATUS_DONE_REG         	  (0x16FC)
 #define ODPG_ENABLE_REG                   (0x186D4)
 #define ODPG_ENABLE_OFFS                  (0)
 #define ODPG_DISABLE_OFFS                 (8)
-#else
-#define ODPG_TRAINING_STATUS_REG          (0x1030)
-#endif
 
 #define ODPG_TRAINING_CONTROL_REG         (0x1034)
 #define ODPG_OBJ1_OPCODE_REG              (0x103C)
@@ -214,7 +214,8 @@ Address Bits   Value   Description
 #define ODPG_BIST_DONE                    (0x16FC)
 #endif
 #define ODPG_BIST_DONE_BIT_OFFS           (0)
-#define ODPG_BIST_DONE_BIT_VALUE          (0)
+#define ODPG_BIST_DONE_BIT_VALUE_REV2          (1)
+#define ODPG_BIST_DONE_BIT_VALUE_REV3          (0)
 
 #if defined(CONFIG_ARMADA_38X) || defined (CONFIG_ALLEYCAT3) || defined (CONFIG_ARMADA_39X)
 #define RESULT_CONTROL_BYTE_PUP_0_REG     (0x1830)

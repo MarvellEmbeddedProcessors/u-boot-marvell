@@ -291,7 +291,7 @@ GT_STATUS    ddr3TipIpTraining
 )
 {
     
-    GT_U32 maskDqNumOfRegs, maskPupNumOfRegs, indexCnt,pollCnt, regData, pupId;
+    GT_U32 maskDqNumOfRegs, maskPupNumOfRegs, indexCnt,pollCnt, regData, pupId, triggerRegAddr;
     GT_U32 txBurstSize;
     GT_U32 delayBetweenBurst;
     GT_U32 rdMode;
@@ -460,48 +460,47 @@ GT_STATUS    ddr3TipIpTraining
     }
 
     /*Start Training Trigger */
-#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_39X)
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceNum, ODPG_TRAINING_TRIGGER_REG, 1, 1));
-#else
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceNum, ODPG_TRAINING_STATUS_REG, 1, 1));
-#endif
+	triggerRegAddr = (ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) >= MV_TIP_REV_3)?(ODPG_TRAINING_TRIGGER_REG):(ODPG_TRAINING_STATUS_REG);
+    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceNum, triggerRegAddr, 1, 1));
+
     /*wait for all RFU tests to finish (or timeout)*/
 	/*WA for 16 bit mode, more investigation needed*/
     hwsOsExactDelayPtr((GT_U8)devNum, devNum, 1); /* 1 mSec */
 
-#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_39X)
-    /* Training "Done ?" */
-    for(indexCnt=0; indexCnt < MAX_INTERFACE_NUM;indexCnt++)
+    /* Training "Done ?"  for CPU contolled TIP*/
+    if(ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) >= MV_TIP_REV_3)
     {
-        if (IS_INTERFACE_ACTIVE(topologyMap->interfaceActiveMask, indexCnt) ==  0)
-        {
-            continue;   
-        }
-        if (interfaceMask & (1<<indexCnt))
-        {
-            /*need to check results for this Dunit */
-            for(pollCnt=0;pollCnt < maxPollingForDone;pollCnt++)
-            {
-                CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, indexCnt, ODPG_TRAINING_STATUS_REG, &regData, MASK_ALL_BITS));
-                 if ((regData & 0x2) != 0)
-                {
-                    /*done */
-                	trainStatus[indexCnt] = MV_HWS_TrainingIpStatus_SUCCESS;
-                    break; 
-                }  
-            }
-            if (pollCnt == maxPollingForDone)
-            {
-                trainStatus[indexCnt] = MV_HWS_TrainingIpStatus_TIMEOUT;
-            }
-        }
-		/*Be sure that ODPG done*/
-        CHECK_STATUS(isOdpgAccessDone(devNum, indexCnt));
-    }
+		for(indexCnt=0; indexCnt < MAX_INTERFACE_NUM;indexCnt++)
+		{
+		    if (IS_INTERFACE_ACTIVE(topologyMap->interfaceActiveMask, indexCnt) ==  0)
+		    {
+		        continue;
+		    }
+		    if (interfaceMask & (1<<indexCnt))
+		    {
+		        /*need to check results for this Dunit */
+		        for(pollCnt=0;pollCnt < maxPollingForDone;pollCnt++)
+		        {
+		            CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, indexCnt, ODPG_TRAINING_STATUS_REG, &regData, MASK_ALL_BITS));
+		             if ((regData & 0x2) != 0)
+		            {
+		                /*done */
+						trainStatus[indexCnt] = MV_HWS_TrainingIpStatus_SUCCESS;
+		                break;
+		            }
+		        }
+		        if (pollCnt == maxPollingForDone)
+		        {
+		            trainStatus[indexCnt] = MV_HWS_TrainingIpStatus_TIMEOUT;
+		        }
+		    }
+			/*Be sure that ODPG done*/
+		    CHECK_STATUS(isOdpgAccessDone(devNum, indexCnt));
+		}
 
-	/*Write ODPG done in Dunit*/
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_STATUS_DONE_REG, 0, 0x1));
-#endif
+		/*Write ODPG done in Dunit*/
+		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_STATUS_DONE_REG, 0, 0x1));
+	}
 
     /*wait for all Dunit tests to finish (or timeout)*/
     /* Training "Done ?" */
@@ -510,18 +509,14 @@ GT_STATUS    ddr3TipIpTraining
     {
         if (IS_INTERFACE_ACTIVE(topologyMap->interfaceActiveMask, indexCnt) ==  0)
         {
-            continue;   
+            continue;
         }
         if (interfaceMask & (1<<indexCnt))
         {
             /*need to check results for this Dunit */
             for(pollCnt=0;pollCnt < maxPollingForDone;pollCnt++)
             {
-#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_39X)
-                CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, indexCnt, ODPG_TRAINING_TRIGGER_REG, readData, MASK_ALL_BITS));
-#else
-                CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, indexCnt, ODPG_TRAINING_STATUS_REG, readData, MASK_ALL_BITS));
-#endif
+                CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, indexCnt, triggerRegAddr, readData, MASK_ALL_BITS));
                 regData = readData[indexCnt];
                  if ((regData & 0x2) != 0)
                 {
@@ -532,10 +527,10 @@ GT_STATUS    ddr3TipIpTraining
                     }
                     else
                     {
-                        trainStatus[indexCnt] = MV_HWS_TrainingIpStatus_FAIL;
+						trainStatus[indexCnt] = MV_HWS_TrainingIpStatus_FAIL;
                     }
-                    break; 
-                }  
+                    break;
+                }
             }
             if (pollCnt == maxPollingForDone)
             {
@@ -853,18 +848,16 @@ GT_STATUS isOdpgAccessDone
     GT_U32 interfaceId
 )
 {
-    GT_U32 pollCnt = 0, dataValue;
+    GT_U32 pollCnt = 0, dataValue, expectedVal;
     GT_U32 readData[MAX_INTERFACE_NUM];
 
     for (pollCnt = 0; pollCnt < MAX_POLLING_ITERATIONS ; pollCnt++)
     {
         CHECK_STATUS(mvHwsDdr3TipIFRead(devNum,ACCESS_TYPE_UNICAST, interfaceId, ODPG_BIST_DONE, readData, MASK_ALL_BITS));
  		dataValue = readData[interfaceId];
-#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_39X)
-        if (((dataValue >> ODPG_BIST_DONE_BIT_OFFS )& 0x1) == ODPG_BIST_DONE_BIT_VALUE)
-#else
-        if ((dataValue & 0x1) == 0x1)
-#endif
+
+		expectedVal =  (ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) < MV_TIP_REV_3)?(ODPG_BIST_DONE_BIT_VALUE_REV2):(ODPG_BIST_DONE_BIT_VALUE_REV3);
+        if (((dataValue >> ODPG_BIST_DONE_BIT_OFFS )& 0x1) == expectedVal)
         {
             dataValue = dataValue & 0xfffffffe;
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ODPG_BIST_DONE, dataValue, MASK_ALL_BITS));
@@ -905,18 +898,20 @@ GT_STATUS    ddr3TipLoadPatternToMem
     /* load pattern to ODPG */
     ddr3TipLoadPatternToOdpg(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, pattern, patternTable[pattern].startAddr);
 
-#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_39X)
-    for(interfaceId = 0; interfaceId < MAX_INTERFACE_NUM ; interfaceId++)
-    {
-		if (IS_INTERFACE_ACTIVE(topologyMap->interfaceActiveMask, interfaceId) ==  0)
-             continue;
-		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0x1498, 0x3 , 0xf));
-    }
+	if(ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) >= MV_TIP_REV_3)
+	{
+		for(interfaceId = 0; interfaceId < MAX_INTERFACE_NUM ; interfaceId++)
+		{
+			if (IS_INTERFACE_ACTIVE(topologyMap->interfaceActiveMask, interfaceId) ==  0)
+		         continue;
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, SDRAM_ODT_CONTROL_HIGH_REG, 0x3 , 0xf));
+		}
 
-	CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_ENABLE_REG, 0x1 << ODPG_ENABLE_OFFS,  (0x1 << ODPG_ENABLE_OFFS)));
-#else
+		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_ENABLE_REG, 0x1 << ODPG_ENABLE_OFFS,  (0x1 << ODPG_ENABLE_OFFS)));
+	}
+	else {
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_DATA_CONTROL_REG, (GT_U32)(0x1 << 31),  (GT_U32)(0x1 << 31)));
-#endif
+	}
 
     hwsOsExactDelayPtr((GT_U8)devNum, devNum, 1); /* 1 mSec */
 
@@ -931,35 +926,15 @@ GT_STATUS    ddr3TipLoadPatternToMem
     /* return to default */
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_DATA_CONTROL_REG, 0, MASK_ALL_BITS));
 
-#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_39X)
-	/*disable odt0 for CS0 training - need to adjust for multy CS*/
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST,PARAM_NOT_CARE , 0x1498, 0x0 , 0xf));
-#endif
+	if(ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) >= MV_TIP_REV_3){
+		/*disable odt0 for CS0 training - need to adjust for multy CS*/
+		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST,PARAM_NOT_CARE , 0x1498, 0x0 , 0xf));
+	}
 
     /* temporary added */
     hwsOsExactDelayPtr((GT_U8)devNum, devNum, 1);
     return GT_OK;
 }
-
-/*****************************************************************************
-Load specific pattern to memory using CPU
-******************************************************************************/
-GT_STATUS    ddr3TipLoadPatternToMemByCpu
-(
-    GT_U32          devNum,
-    MV_HWS_PATTERN  pattern,
-    GT_U32          offset
-)
-{
-	/* avoid warnings */
-	devNum = devNum;
-	pattern = pattern;
-	offset = offset;
-
-    /* eranba - TBD */
-    return GT_OK;
-}
-
 
 /*****************************************************************************
 Training search routine

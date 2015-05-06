@@ -423,7 +423,7 @@ static GT_STATUS ddr3TipInitAc3Silicon
 
 	/*Set device attributes*/
 	ddr3TipDevAttrInit(devNum);
-	ddr3TipDevAttrSet(devNum, MV_ATTR_TRAINING_CONTROLLER, MV_DDR_TRAINING_CONTROLLER_CPU);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_TIP_REV, MV_TIP_REV_3);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_NEGATIVE);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, numOfBusPerInterface);
 

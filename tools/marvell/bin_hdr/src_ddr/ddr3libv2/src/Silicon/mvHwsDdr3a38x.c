@@ -286,16 +286,6 @@ GT_U16 A38xODTIntercept[] =
 	61
 };
 
-#ifdef CONFIG_ARMADA_38X_Z1_OBSOLETE
-GT_U32 DQbitMap2Phypin[] =
-{
-    1, 0,  2, 3,  6, 7, 8,  9, 	//0
-    0, 1, 10, 3,  6, 7, 8,  9,	//1
-    8, 1,  2, 0, 10, 9, 6,  7,	//2
-    0, 1,  2, 3,  7, 8, 6, 10,	//3
-    0, 1,  2, 3,  6, 7, 8,  9,	//4
-};
-#else
 GT_U32 DQbitMap2Phypin[] =
 {
 	1, 0, 2, 6, 9, 8, 3, 7,	//0
@@ -304,7 +294,6 @@ GT_U32 DQbitMap2Phypin[] =
 	1, 0, 6, 2, 8, 3, 7, 9,	//3
 	0, 1, 2, 9, 7, 8, 3, 6,	//4
 };
-#endif
 
 /**********************************************************************************/
 
@@ -551,7 +540,7 @@ static GT_STATUS ddr3TipInitA38xSilicon
 
 	/*Set device attributes*/
 	ddr3TipDevAttrInit(devNum);
-	ddr3TipDevAttrSet(devNum, MV_ATTR_TRAINING_CONTROLLER, MV_DDR_TRAINING_CONTROLLER_CPU);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_TIP_REV, MV_TIP_REV_4);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_POSITIVE);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, numOfBusPerInterface);
 

@@ -111,11 +111,6 @@ extern GT_U32 ddr4TipConfigurePhyVrefTap;
 extern GT_U8	vrefCalibrationWA; /*1 means SSTL & POD gets the same Vref and a WA is needed*/
 #endif
 
-#if defined (CONFIG_ALLEYCAT3)
-GT_U32 mvHwsmemSize[] = { ADDR_SIZE_512Mb, ADDR_SIZE_1Gb, ADDR_SIZE_2Gb, ADDR_SIZE_4Gb ,ADDR_SIZE_8Gb };
-#define  MV_DEVICE_MAX_DRAM_ADDRESS_SIZE          ADDR_SIZE_2Gb
-#endif
-
 GT_U32 vrefInitialValue = 0x4;
 GT_U32 ckDelay = MV_PARAMS_UNDEFINED;
 
@@ -168,7 +163,7 @@ extern GT_U8 cwlMaskTable[];
 extern GT_U16 rfcTable[];
 extern GT_U32 speedBinTableTRc[];
 extern GT_U32 speedBinTableTRcdTRp[];
-
+extern GT_U32 mvMemSize[];
 
 /************************** pre-declarations ******************************/
 static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
@@ -732,9 +727,7 @@ GT_STATUS    mvHwsDdr3TipInitController
     {
 #ifdef STATIC_ALGO_SUPPORT
         CHECK_STATUS(ddr3TipStaticInitController(devNum));
-#if defined(CONFIG_ARMADA_38X) || defined (CONFIG_ARMADA_39X)
 		CHECK_STATUS(ddr3TipStaticPhyInitController(devNum));
-#endif
 #endif/*STATIC_ALGO_SUPPORT*/
     }
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
@@ -3144,32 +3137,31 @@ GT_STATUS mvHwsDdr3CalcMemCsSize(GT_U32 interfaceId, GT_U32 uiCs, GT_U32* puiCsS
 
 GT_STATUS mvHwsDdr3CsBaseAdrCalc(GT_U32 interfaceId, GT_U32 uiCs, GT_U32 *csBaseAddr)
 {
-
-	GT_U32 uiCsMemSize = 0;
-
-#ifdef MV_DEVICE_MAX_DRAM_ADDRESS_SIZE
-	GT_U32 physicalMemSize;
-	GT_U32 maxMemSize = MV_DEVICE_MAX_DRAM_ADDRESS_SIZE;
-#endif
-
-	if (mvHwsDdr3CalcMemCsSize(interfaceId,uiCs, &uiCsMemSize) != GT_OK)
-		return GT_FAIL;
+       GT_U32 uiCsMemSize = 0;
 
 #ifdef MV_DEVICE_MAX_DRAM_ADDRESS_SIZE
-	/* if number of address pins doesn't allow to use max mem size that is defined in topology
-	 mem size is defined by MV_DEVICE_MAX_DRAM_ADDRESS_SIZE*/
-	physicalMemSize = mvHwsmemSize [topologyMap->interfaceParams[0].memorySize];
-
-	if (mvHwsDdr3GetDeviceWidth(uiCs) == 16)
-		maxMemSize = MV_DEVICE_MAX_DRAM_ADDRESS_SIZE * 2; /* 16bit mem device can be twice more - no need in less significant pin*/
-
-	if (physicalMemSize > maxMemSize ){
-		uiCsMemSize = maxMemSize * (mvHwsDdr3GetBusWidth() / mvHwsDdr3GetDeviceWidth(interfaceId)) ;
-		DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR,  ("Updated Physical Mem size is from 0x%x to %x\n", physicalMemSize, MV_DEVICE_MAX_DRAM_ADDRESS_SIZE));
-	}
+       GT_U32 physicalMemSize;
+       GT_U32 maxMemSize = MV_DEVICE_MAX_DRAM_ADDRESS_SIZE;
 #endif
-	/*calculate CS base addr  */
-	*csBaseAddr = ((uiCsMemSize) * uiCs) & 0xFFFF0000;
-	return GT_OK;
+
+       if (mvHwsDdr3CalcMemCsSize(interfaceId,uiCs, &uiCsMemSize) != GT_OK)
+               return GT_FAIL;
+
+#ifdef MV_DEVICE_MAX_DRAM_ADDRESS_SIZE
+       /* if number of address pins doesn't allow to use max mem size that is defined in topology
+        mem size is defined by MV_DEVICE_MAX_DRAM_ADDRESS_SIZE*/
+       physicalMemSize =  mvMemSize[topologyMap->interfaceParams[0].memorySize];
+
+       if (mvHwsDdr3GetDeviceWidth(uiCs) == 16)
+               maxMemSize = MV_DEVICE_MAX_DRAM_ADDRESS_SIZE * 2; /* 16bit mem device can be twice more - no need in less significant pin*/
+
+       if (physicalMemSize > maxMemSize ){
+               uiCsMemSize = maxMemSize * (mvHwsDdr3GetBusWidth() / mvHwsDdr3GetDeviceWidth(interfaceId)) ;
+               DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR,  ("Updated Physical Mem size is from 0x%x to %x\n", physicalMemSize, MV_DEVICE_MAX_DRAM_ADDRESS_SIZE));
+       }
+#endif
+       /*calculate CS base addr  */
+       *csBaseAddr = ((uiCsMemSize) * uiCs) & 0xFFFF0000;
+       return GT_OK;
 }
 

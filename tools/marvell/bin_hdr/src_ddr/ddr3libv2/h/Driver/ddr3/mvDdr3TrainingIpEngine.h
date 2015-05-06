@@ -121,21 +121,6 @@ GT_STATUS    ddr3TipLoadPatternToMem
 );
 
 /******************************************************************************
-* Name:     ddr3TipLoadPatternToMemByCpu.
-* Desc:     Load expected Pattern to external memory
-* Args:
-* Notes:
-* Returns:  OK if success, other error code if fail.
-*/
-GT_STATUS    ddr3TipLoadPatternToMemByCpu
-(
-    GT_U32          devNum,
-    MV_HWS_PATTERN  pattern,
-    GT_U32          offset
-);
-
-
-/******************************************************************************
 * load pattern to memory using ODPG
 */
 GT_STATUS    ddr3TipLoadAllPatternToMem

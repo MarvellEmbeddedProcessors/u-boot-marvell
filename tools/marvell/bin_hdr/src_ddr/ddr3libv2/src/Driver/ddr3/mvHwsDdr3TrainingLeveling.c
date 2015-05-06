@@ -235,38 +235,36 @@ GT_STATUS    ddr3TipDynamicReadLeveling
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, TRAINING_REG, (1 << 24) | (1 << 20), (1 << 24) | (1 << 20)));
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, TRAINING_REG, (GT_U32)(1 << 31), (GT_U32)(1 << 31)));
     /********* trigger training *******************/
-#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3)  || defined(CONFIG_ARMADA_39X) /* Trigger, poll on status and disable ODPG */
-/*    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_TRAINING_TRIGGER_REG, 0x1, 0x1)); */
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_TRAINING_TRIGGER_REG, 0x1, 0x1));
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_TRAINING_STATUS_REG, 0x1, 0x1));
+	if(ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) >= MV_TIP_REV_3){
+		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_TRAINING_TRIGGER_REG, 0x1, 0x1));
 
-	  /*check for training done + results pass*/
-	  if (ddr3TipIfPolling(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x2, 0x2, ODPG_TRAINING_STATUS_REG, MAX_POLLING_ITERATIONS) != GT_OK)
-		  {
-			  DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("Training Done Failed\n"));
-			  return GT_FAIL;
-		  }
-    for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
-    {
-        VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-	  CHECK_STATUS(mvHwsDdr3TipIFRead(  devNum, ACCESS_TYPE_UNICAST, interfaceId, ODPG_TRAINING_TRIGGER_REG,  dataRead, 0x4));
-	data = dataRead[interfaceId];
-	if(data != 0x0) {
-	  DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("Training Result Failed\n"));
-	  }
-    }
-	  /*disable ODPG - Back to functional mode*/
-	  CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_ENABLE_REG, 0x1 << ODPG_DISABLE_OFFS,  (0x1 << ODPG_DISABLE_OFFS)));
-	  if (ddr3TipIfPolling(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x0, 0x1, ODPG_ENABLE_REG, MAX_POLLING_ITERATIONS) != GT_OK)
+		  /*check for training done + results pass*/
+		  if (ddr3TipIfPolling(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x2, 0x2, ODPG_TRAINING_STATUS_REG, MAX_POLLING_ITERATIONS) != GT_OK)
 			  {
-				  DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("ODPG disable failed "));
+				  DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("Training Done Failed\n"));
 				  return GT_FAIL;
 			  }
-	  CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_DATA_CONTROL_REG, 0, MASK_ALL_BITS));
-#else /* Just trigger and go check for results */
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_TRAINING_STATUS_REG, 0x1, 0x1));
-#endif
-
+		for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
+		{
+		    VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
+		  CHECK_STATUS(mvHwsDdr3TipIFRead(  devNum, ACCESS_TYPE_UNICAST, interfaceId, ODPG_TRAINING_TRIGGER_REG,  dataRead, 0x4));
+		data = dataRead[interfaceId];
+		if(data != 0x0) {
+		  DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("Training Result Failed\n"));
+		  }
+		}
+		  /*disable ODPG - Back to functional mode*/
+		  CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_ENABLE_REG, 0x1 << ODPG_DISABLE_OFFS,  (0x1 << ODPG_DISABLE_OFFS)));
+		  if (ddr3TipIfPolling(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x0, 0x1, ODPG_ENABLE_REG, MAX_POLLING_ITERATIONS) != GT_OK)
+				  {
+					  DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("ODPG disable failed "));
+					  return GT_FAIL;
+				  }
+		  CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_DATA_CONTROL_REG, 0, MASK_ALL_BITS));
+	}
+	else {
+		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_TRAINING_STATUS_REG, 0x1, 0x1));
+	}
 		/************ double loop on bus, pup *********/
 		for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
 		{
@@ -532,37 +530,36 @@ GT_STATUS    ddr3TipDynamicPerBitReadLeveling
 		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, TRAINING_REG, (1 << 24) | (1 << 20), (1 << 24) | (1 << 20)));
 		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, TRAINING_REG, (GT_U32)(1 << 31), (GT_U32)(1 << 31)));
 		/********* trigger training *******************/
-#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ARMADA_39X) || defined(CONFIG_ALLEYCAT3) /* Trigger, poll on status and disable ODPG */
-/*    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_TRAINING_TRIGGER_REG, 0x1, 0x1)); */
-	    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_TRAINING_TRIGGER_REG, 0x1, 0x1));
-		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_TRAINING_STATUS_REG, 0x1, 0x1));
+		if(ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) >= MV_TIP_REV_3){
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_TRAINING_TRIGGER_REG, 0x1, 0x1));
 
-		/*check for training done + results pass*/
-		if (ddr3TipIfPolling(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x2, 0x2, ODPG_TRAINING_STATUS_REG, MAX_POLLING_ITERATIONS) != GT_OK)
+			/*check for training done + results pass*/
+			if (ddr3TipIfPolling(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x2, 0x2, ODPG_TRAINING_STATUS_REG, MAX_POLLING_ITERATIONS) != GT_OK)
+			{
+				 DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("Training Done Failed\n"));
+				 return GT_FAIL;
+			}
+		for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
 		{
-			 DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("Training Done Failed\n"));
-			 return GT_FAIL;
+		    VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
+			CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, ODPG_TRAINING_TRIGGER_REG,  dataRead, 0x4));
+			data = dataRead[interfaceId];
+			if(data != 0x0) {
+				DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("Training Result Failed\n"));
+			}
 		}
-    for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
-    {
-        VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-		CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, ODPG_TRAINING_TRIGGER_REG,  dataRead, 0x4));
-		data = dataRead[interfaceId];
-		if(data != 0x0) {
-			DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("Training Result Failed\n"));
+			/*disable ODPG - Back to functional mode*/
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_ENABLE_REG, 0x1 << ODPG_DISABLE_OFFS,  (0x1 << ODPG_DISABLE_OFFS)));
+			if (ddr3TipIfPolling(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x0, 0x1, ODPG_ENABLE_REG, MAX_POLLING_ITERATIONS) != GT_OK)
+			{
+				DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("ODPG disable failed "));
+				return GT_FAIL;
+			}
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_DATA_CONTROL_REG, 0, MASK_ALL_BITS));
 		}
-	}
-		/*disable ODPG - Back to functional mode*/
-		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_ENABLE_REG, 0x1 << ODPG_DISABLE_OFFS,  (0x1 << ODPG_DISABLE_OFFS)));
-		if (ddr3TipIfPolling(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x0, 0x1, ODPG_ENABLE_REG, MAX_POLLING_ITERATIONS) != GT_OK)
-		{
-			DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("ODPG disable failed "));
-			return GT_FAIL;
+		else {
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_TRAINING_STATUS_REG, 0x1, 0x1));
 		}
-		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_DATA_CONTROL_REG, 0, MASK_ALL_BITS));
-#else /* Just trigger and go check for results */
-		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_TRAINING_STATUS_REG, 0x1, 0x1));
-#endif
 
 		/************ double loop on bus, pup *********/
 		for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
@@ -732,7 +729,7 @@ Dynamic write leveling
 ******************************************************************************/
 GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 {
-    GT_U32   regData = 0, iter, interfaceId, busCnt;
+    GT_U32   regData = 0, iter, interfaceId, busCnt, triggerRegAddr;
 	GT_U32   csEnableRegVal[MAX_INTERFACE_NUM] = {0};
     GT_U32   csMask[MAX_INTERFACE_NUM];
     GT_U32   readDataSampleDelayVals[MAX_INTERFACE_NUM] = {0};
@@ -759,10 +756,11 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
         /* save current cs reg val */
         CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, CS_ENABLE_REG, csEnableRegVal, MASK_ALL_BITS));
 
-#if !defined(CONFIG_ARMADA_38X) && !defined(CONFIG_ALLEYCAT3)  && !defined(CONFIG_ARMADA_39X)
-        /* enable multi cs */
-        CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, CS_ENABLE_REG, 0, (1 << 3)));
-#endif
+		if(ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) < MV_TIP_REV_3)
+		{
+		    /* enable multi cs */
+		    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, CS_ENABLE_REG, 0, (1 << 3)));
+		}
     }
 
 	/************************************************************************/
@@ -800,16 +798,17 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 			ddr3TipCalcCsMask(devNum, interfaceId, effective_cs, &csMask[interfaceId]);
 		}
 
-	#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_39X)
-		/*Enable Output buffer to relevant CS - Q on , WL on*/
-		CHECK_STATUS(ddr3TipWriteMRSCmd(devNum, csMask, MRS1_CMD, 0x80, 0x1080));
+		if(ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) >= MV_TIP_REV_3)
+		{
+			/*Enable Output buffer to relevant CS - Q on , WL on*/
+			CHECK_STATUS(ddr3TipWriteMRSCmd(devNum, csMask, MRS1_CMD, 0x80, 0x1080));
 
-		/*enable odt for relevant CS*/
-		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x1498, (0x3<<(effective_cs*2)) , 0xf));
-
-	#else
-		CHECK_STATUS(ddr3TipWriteMRSCmd(devNum, csMask, MRS1_CMD, 0xC0, 0x12C4));
-	#endif
+			/*enable odt for relevant CS*/
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x1498, (0x3<<(effective_cs*2)) , 0xf));
+		}
+		else {
+			CHECK_STATUS(ddr3TipWriteMRSCmd(devNum, csMask, MRS1_CMD, 0xC0, 0x12C4)); /*FIXME should be same as _CPU case*/
+		}
 
 		/************************************************************************/
 		/*     Phase 2: Set training IP to write leveling mode                  */
@@ -819,14 +818,12 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 		/************************************************************************/
 		/*     Phase 3: Trigger training                                        */
 		/************************************************************************/
-	#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_39X)
-		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_TRAINING_TRIGGER_REG, 0x1, 0x1));
-	#else
-		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ODPG_TRAINING_STATUS_REG, 0x1, 0x1));
-	#endif
+		triggerRegAddr = (ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) < MV_TIP_REV_3)?(ODPG_TRAINING_STATUS_REG):(ODPG_TRAINING_TRIGGER_REG);
+		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, triggerRegAddr, 0x1, 0x1));
 
 
-	#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_39X)
+	if(ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) >= MV_TIP_REV_3)
+	{
 	   for(interfaceId = 0; interfaceId < MAX_INTERFACE_NUM; interfaceId++)
 		{
 			VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
@@ -836,7 +833,6 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 			{
 				DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("WL: DDR3 poll (4) failed (Data: 0x%x)\n", regData));
 			}
-	#if !defined(CONFIG_ARMADA_38X) /*Disabled. JIRA #1498*/
 			else
 			{
 				CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, ODPG_TRAINING_TRIGGER_REG, &regData, (1 << 2)));
@@ -845,10 +841,8 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 					DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("WL: WL failed IF %d regData=0x%x\n",interfaceId,regData));
 				}
 			}
-	#endif
 		}
-	#endif
-
+	}
 		for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
 		{
 			VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
@@ -859,14 +853,12 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 			}
 			else
 			{
-	#if !defined(CONFIG_ARMADA_38X) /*Disabled. JIRA #1498*/
 				CHECK_STATUS(mvHwsDdr3TipIFRead(devNum, ACCESS_TYPE_UNICAST, interfaceId, ODPG_TRAINING_STATUS_REG, dataRead, (1 << 2)));
 				regData = dataRead[interfaceId];
 				if (regData != 0)
 				{
 					DEBUG_LEVELING(DEBUG_LEVEL_ERROR, ("WL: WL failed IF %d regData=0x%x\n",interfaceId,regData));
 				}
-	#endif
 
 				/* check for training completion per bus */
 				for (busCnt=0; busCnt<octetsPerInterfaceNum; busCnt++)
@@ -921,11 +913,13 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
 		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE,  WR_LEVELING_DQS_PATTERN_REG, 0x0, 0x1));
 
 		/* Update MRS 1 (WL off) */
-	#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_39X)
-		CHECK_STATUS(ddr3TipWriteMRSCmd(devNum, csMask0, MRS1_CMD , 0x1000, 0x1080));  // nklein 24.10.13
-	#else
-		CHECK_STATUS(ddr3TipWriteMRSCmd(devNum, csMask0, MRS1_CMD, 0x1000, 0x12C4));
-	#endif
+		if(ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) >= MV_TIP_REV_3)
+		{
+			CHECK_STATUS(ddr3TipWriteMRSCmd(devNum, csMask0, MRS1_CMD , 0x1000, 0x1080));
+		}
+		else {
+			CHECK_STATUS(ddr3TipWriteMRSCmd(devNum, csMask0, MRS1_CMD, 0x1000, 0x12C4)); /*FIXME should be same as _CPU case*/
+		}
 
 		/* Update MRS 1 (return to functional mode - Q on , WL off) */
 		CHECK_STATUS(ddr3TipWriteMRSCmd(devNum, csMask0, MRS1_CMD, 0x0, 0x1080));
@@ -989,10 +983,10 @@ GT_STATUS    ddr3TipDynamicWriteLeveling(GT_U32    devNum)
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, CS_ENABLE_REG, csEnableRegVal[interfaceId], MASK_ALL_BITS));
     }
 
-#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_39X)
-	/*disable modt0 for CS0 training - need to adjust for multy CS*/
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x1498, 0x0 , 0xf));
-#endif
+	if(ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) >= MV_TIP_REV_3){
+		/*disable modt0 for CS0 training - need to adjust for multy CS*/
+		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x1498, 0x0 , 0xf));
+	}
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
     {
         VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)

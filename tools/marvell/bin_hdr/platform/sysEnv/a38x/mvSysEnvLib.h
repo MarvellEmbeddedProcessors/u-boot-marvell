@@ -610,7 +610,7 @@ MV_DRAM_DLB_CONFIG  *mvSysEnvDlbConfigPtrGet(MV_VOID);
 
 #define MV_BOARD_BIOS0_ADDR				0x4C
 #define MV_BOARD_IO_EXPANDER1_ADDR			0x21
-#define TWSI_CHANNEL_BC2				0
+#define TWSI_CHANNEL_A3XX				0
 #define MV_BOARD_CTRL_I2C_ADDR_BC2		0x0
 /* WA for bits 1,2 in 0x4c. Must be lower than 100000 -> 20000 */
 #define TWSI_SPEED_BC2					20000

@@ -20,7 +20,7 @@ sub HELP_MESSAGE
 	print "\t\t\t\t\tac3_db, ac3_rd, ac3_customer0, ac3_customer1\n";
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
-	print "\t-m\tDDR type(default: DDR3). Accepts: 3 for DDR3, 4 for DDR4\n";
+	print "\t-m\tDDR type(default: DDR4 for A39x, DDR3 for the rest). Accepts: 3 for DDR3, 4 for DDR4\n";
 	print "\t-i\tSupported interfaces, seperated by \":\" -  Accepts [spi:nor:nand]\n";
 	print "\t-v\tSW version (in file name: u-boot-alp-X.X.X-spi.bin, else using date by default)\n";
 	print "\t\tinterfaces. Supports spi, nor, nand. the boot \n";
@@ -348,17 +348,18 @@ if(defined $opt_d)
 	print "\n *** DDR3LIB = v$opt_d *********************************\n\n";
 }
 
-if( (defined $opt_m) && ($opt_m eq 4) )
-{
-	system("echo \"DDRTYPE = ddr$opt_m\" >> include/config.mk");
-	system("echo \"#define CONFIG_DDR4\" >> include/config.h");
-	print "** DDRTYPE = DDR$opt_m **\n";
+
+if ((!defined $opt_m) or (($opt_m ne 3) & ($opt_m ne 4))) {
+	if ($boardID eq "a39x") {
+		$opt_m = 4;
+	} else {
+		$opt_m = 3;
+	}
 }
-else {
-	system("echo \"DDRTYPE = ddr3\" >> include/config.mk");
-	system("echo \"#define CONFIG_DDR3\" >> include/config.h");
-	print "** DDRTYPE = DDR$opt_m **\n";
-}
+
+system("echo \"DDRTYPE = ddr$opt_m\" >> include/config.mk");
+system("echo \"#define CONFIG_DDR$opt_m\" >> include/config.h");
+print "** DDRTYPE = DDR$opt_m **\n";
 
 if($opt_z eq 1)
 {

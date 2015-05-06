@@ -692,7 +692,7 @@ Register XSB information
 ******************************************************************************/
 GT_STATUS ddr3TipRegisterXsbInfo
 (
-    GT_U32					devNum, 
+    GT_U32					devNum,
     MV_HWS_XSB_INFO         *xsbInfoTable
 )
 {
@@ -761,10 +761,13 @@ extern GT_U8  isAdllCalibBeforeInit;
 extern GT_U8  isDfsInInit;
 extern GT_32 wlDebugDelay;
 extern GT_U32 siliconDelay[HWS_MAX_DEVICE_NUM];
-#ifdef ODT_TEST_SUPPORT
-extern GT_U32 Pfinger;
-extern GT_U32 Nfinger;
-#endif
+extern 	GT_U32 vrefInitialValue;
+extern 	GT_U32 gZpriData;
+extern 	GT_U32 gZnriData;
+extern 	GT_U32 gZpriCtrl;
+extern 	GT_U32 gZnriCtrl;
+extern 	GT_U32 gZpodtData;
+extern 	GT_U32 gZnodtData;
 extern GT_U32 freqVal[DDR_FREQ_LIMIT];
 extern GT_U32 startPattern, endPattern;
 extern GT_U32  PhyReg0Val;
@@ -989,15 +992,14 @@ static GT_STATUS  ddr3TipAccessAtr
    case 0x32:
        *ptr = (GT_U32*) &isDfsInInit;
        break;
-#ifdef ODT_TEST_SUPPORT
    case 0x33:
-       *ptr = (GT_U32*) &Pfinger;
+       *ptr = (GT_U32*) &gZnodtData;
        break;
 
    case 0x34:
-       *ptr = (GT_U32*) &Nfinger;
+       *ptr = (GT_U32*) &gZpodtData;
        break;
-#endif
+
    case 0x35:
        initFreq = (MV_HWS_DDR_FREQ)value;
        break;
@@ -1038,6 +1040,13 @@ static GT_STATUS  ddr3TipAccessAtr
        *ptr = (GT_U32*) &(phy1ValTable[DDR_FREQ_LOW_FREQ]);
        break;
 */
+   case 0x51:
+       *ptr = (GT_U32*) &gZnriData;
+       break;
+
+   case 0x52:
+       *ptr = (GT_U32*) &gZpriData;
+       break;
 
    case 0x53:
        *ptr = (GT_U32*) &fingerTest;
@@ -1067,8 +1076,19 @@ static GT_STATUS  ddr3TipAccessAtr
        *ptr = (GT_U32*) &nFingerStep;
        break;
 
+   case 0x5A:
+       *ptr = (GT_U32*) &gZnriCtrl;
+       break;
+
+   case 0x5B:
+       *ptr = (GT_U32*) &gZpriCtrl;
+       break;
    case 0x5C:
        *ptr = (GT_U32*) &isRegDump;
+       break;
+
+   case 0x5D:
+       *ptr = (GT_U32*) &vrefInitialValue;
        break;
 
    case 0x5E:

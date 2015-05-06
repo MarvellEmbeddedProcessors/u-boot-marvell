@@ -167,7 +167,7 @@ MV_STATUS mvSysEnvIoExpUsbVbusSet(MV_U8 value)
 	twsiSlave.moreThen256 = MV_FALSE;
 
 	twsiSlave.offset = 7;	/* direction reg #1 (register 7) for output/input setting */
-	if (MV_OK != mvTwsiRead(TWSI_CHANNEL_BC2, &twsiSlave, &configVal, 1)) {
+	if (MV_OK != mvTwsiRead(TWSI_CHANNEL_A3XX, &twsiSlave, &configVal, 1)) {
 		mvPrintf("%s: Error: Read Configuration from IO Expander failed\n", __func__);
 		return MV_ERROR;
 	}
@@ -175,9 +175,9 @@ MV_STATUS mvSysEnvIoExpUsbVbusSet(MV_U8 value)
 	/* Modify direction (output/input) value of requested pin */
 	configVal &= ~(1 << offset);	/* output marked as 0: clean bit of old value  */
 
-	if (mvTwsiWrite(TWSI_CHANNEL_BC2, &twsiSlave, &configVal, 1) != MV_OK) {
+	if (mvTwsiWrite(TWSI_CHANNEL_A3XX, &twsiSlave, &configVal, 1) != MV_OK) {
 		/* Write again in case the controller is busy */
-		if (mvTwsiWrite(TWSI_CHANNEL_BC2, &twsiSlave, &configVal, 1) != MV_OK) {
+		if (mvTwsiWrite(TWSI_CHANNEL_A3XX, &twsiSlave, &configVal, 1) != MV_OK) {
 			mvPrintf("%s: Error: direction Write to IO Expander at 0x%x failed\n", __func__
 			   , MV_BOARD_IO_EXPANDER1_ADDR);
 			return MV_ERROR;
@@ -185,7 +185,7 @@ MV_STATUS mvSysEnvIoExpUsbVbusSet(MV_U8 value)
 	}
 
 	twsiSlave.offset = 3; 	/* Read Output Value */
-	if (MV_OK != mvTwsiRead(TWSI_CHANNEL_BC2, &twsiSlave, &readVal, 1)) {
+	if (MV_OK != mvTwsiRead(TWSI_CHANNEL_A3XX, &twsiSlave, &readVal, 1)) {
 		mvPrintf("%s: Error: Read Configuration from IO Expander failed\n", __func__);
 		return MV_ERROR;
 	}
@@ -194,9 +194,9 @@ MV_STATUS mvSysEnvIoExpUsbVbusSet(MV_U8 value)
 	readVal &= ~(1 << offset);	/* clean bit of old value  */
 	readVal |= (value << offset);
 
-	if (mvTwsiWrite(TWSI_CHANNEL_BC2, &twsiSlave, &readVal, 1) != MV_OK) {
+	if (mvTwsiWrite(TWSI_CHANNEL_A3XX, &twsiSlave, &readVal, 1) != MV_OK) {
 		/* Write again in case the controller is busy */
-		if (mvTwsiWrite(TWSI_CHANNEL_BC2, &twsiSlave, &readVal, 1) != MV_OK) {
+		if (mvTwsiWrite(TWSI_CHANNEL_A3XX, &twsiSlave, &readVal, 1) != MV_OK) {
 		mvPrintf("%s: Error: direction Write to IO Expander at 0x%x failed\n", __func__
 			   , MV_BOARD_IO_EXPANDER1_ADDR);
 			return MV_ERROR;
@@ -301,7 +301,7 @@ MV_BOOL mvBoardForcePcieGen1Get(MV_VOID)
 	/* TWSI init */
 	slave.address = MV_BOARD_CTRL_I2C_ADDR_BC2;
 	slave.type    = ADDR7_BIT;
-	mvTwsiInit(TWSI_CHANNEL_BC2, TWSI_SPEED_BC2, mvBoardTclkGet(), &slave, 0);
+	mvTwsiInit(TWSI_CHANNEL_A3XX, TWSI_SPEED_BC2, mvBoardTclkGet(), &slave, 0);
 
 	/* Read bit[4] in BC2 bios0 SW SatR (register 1) */
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
@@ -310,7 +310,7 @@ MV_BOOL mvBoardForcePcieGen1Get(MV_VOID)
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.moreThen256 = MV_FALSE;
 
-	if (MV_OK == mvTwsiRead(TWSI_CHANNEL_BC2, &twsiSlave, &data, 1)) {
+	if (MV_OK == mvTwsiRead(TWSI_CHANNEL_A3XX, &twsiSlave, &data, 1)) {
 		if ((data >> 4) & 0x1)
 			return MV_TRUE;
 	}

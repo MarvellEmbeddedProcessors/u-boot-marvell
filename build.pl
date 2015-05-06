@@ -109,6 +109,7 @@ if(($opt_b eq "armada_xp_dbgp") or
 	($opt_b eq "ac3_customer1") )
 {
 	$board = $opt_b;
+	$ddr3LibBuild="no";
 	if( (substr $board,7 , 3) eq "370" ) {
 		$boardID="a370";
 		$targetBoard = substr $board, 11;
@@ -125,17 +126,21 @@ if(($opt_b eq "armada_xp_dbgp") or
 	}
 	elsif ( (substr $board,7 , 3) eq "38x" ) {
 		$boardID="a38x";
+		$ddr3LibBuild="yes";
 	}
 	elsif ( (substr $board,7 , 3) eq "39x" ) {
 		$boardID="a39x";
+		$ddr3LibBuild="yes";
 	}
 	elsif ( (substr $board,0 , 7) eq "bobcat2" ) {
 		$boardID="msys-bc2";
 		$targetBoard = substr $board, 8;
+		$ddr3LibBuild="yes";
 	}
 	elsif ( (substr $board,0 , 3) eq "ac3" ) {
 		$boardID="msys-ac3";
 		$targetBoard = substr $board, 8;
+		$ddr3LibBuild="yes";
 	}
 	# if board string contains "customer", use customer define for binary_header
 	if (index($board, "customer") != -1){
@@ -340,6 +345,12 @@ if(defined $opt_i)
 		}
 	}
 	print "\n";
+}
+
+#by default -d 2 will be enabled for new TIP SoCs
+if( ($ddr3LibBuild eq "yes") and !($opt_m eq 4))
+{
+	$opt_d = 2;
 }
 
 if(defined $opt_d)

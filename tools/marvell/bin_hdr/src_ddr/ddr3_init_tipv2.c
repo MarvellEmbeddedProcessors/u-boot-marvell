@@ -104,7 +104,7 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #define MARVELL_BOARD	AC3_MARVELL_BOARD_ID_BASE
 #endif
 /* translates topology map definitions to real memory size in bits */
-MV_U32 mv_memSize[] = { ADDR_SIZE_512Mb, ADDR_SIZE_1Gb, ADDR_SIZE_2Gb, ADDR_SIZE_4Gb ,ADDR_SIZE_8Gb };
+MV_U32 mvMemSize[] = { ADDR_SIZE_512Mb, ADDR_SIZE_1Gb, ADDR_SIZE_2Gb, ADDR_SIZE_4Gb ,ADDR_SIZE_8Gb };
 
 MV_STATUS ddr3LoadTopologyMap(void);
 
@@ -652,7 +652,7 @@ MV_STATUS ddr3FastPathDynamicCsSizeConfig(MV_U32 uiCsEna) {
 			/* if number of address pins doesn't allow to use max mem size that is defined in topology
 			 mem size is defined by MV_DEVICE_MAX_DRAM_ADDRESS_SIZE*/
 			CHECK_STATUS(ddr3GetTopologyMap(&toplogyMap));
-			physicalMemSize = mv_memSize [toplogyMap->interfaceParams[0].memorySize];
+			physicalMemSize = mvMemSize [toplogyMap->interfaceParams[0].memorySize];
 
 			if (ddr3GetDeviceWidth(uiCs) == 16)
 				maxMemSize = MV_DEVICE_MAX_DRAM_ADDRESS_SIZE * 2; /* 16bit mem device can be twice more - no need in less significant pin*/

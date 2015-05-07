@@ -711,7 +711,6 @@ MV_32 mvBoardResetGpioPinGet(MV_VOID)
 }
 
 #ifdef MV_USB_VBUS_CYCLE
-#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
 /*******************************************************************************
 * mvBoardIoExpanderTypeGet
 *
@@ -815,7 +814,6 @@ MV_STATUS mvBoardIoExpValSet(MV_BOARD_IO_EXPANDER_TYPE_INFO *ioInfo, MV_U8 value
 	return MV_OK;
 }
 
-#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT*/
 /*******************************************************************************
 * mvBoardUSBVbusGpioPinGet - return Vbus input GPP
 *

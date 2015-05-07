@@ -68,6 +68,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <command.h>
 #include <rtc.h>
 #include "mv_rtc2.h"
+#include "ctrlEnv/mvCtrlEnvLib.h"
 
 #if defined(CONFIG_CMD_DATE)
 
@@ -77,7 +78,13 @@ static int rtc_ready = -1;
 void rtc_init(void)
 {
 	/* Update RTC-MBUS bridge timing parameters */
-	MV_REG_WRITE(MV_RTC2_SOC_OFFSET, 0xFD4D4CFA);
+	if (mvCtrlRevGet() == MV_88F69XX_A0_ID) {
+		/*"RTC Mbus Bridge Timing Control" registers was modified in
+		   A39x-A0, and now each step represents 2 core clock cycles*/
+		MV_REG_WRITE(MV_RTC2_SOC_OFFSET, 0xFD4CA4FA);
+	} else {
+		MV_REG_WRITE(MV_RTC2_SOC_OFFSET, 0xFD4D4CFA);
+	}
 	rtc_ready = 1;
 }
 

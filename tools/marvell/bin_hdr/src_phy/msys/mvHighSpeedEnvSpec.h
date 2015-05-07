@@ -78,9 +78,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LAST_LANE_NUM			21
 #endif
 
-#define MV_SERDES_28NM_REV_1	0x0
-#define MV_SERDES_28NM_REV_3	0x1
+#define MV_SERDES_28NM_REV_1				0x0
+#define MV_SERDES_28NM_REV_3				0x1
 
+
+#define CONF_ROOT_COMPLEX_OFFSET			1
+#define PEX_PHY_INDIRECT_ACC_REG			0x41b00
+#define PHY_ACCESS_MODE_OFFSET				31
+#define PHY_ADDRESS_OFFSET				16
+/* COMPHY_M_PIPE_R2P3_28HPM_REG_MIDAS_INTERNAL_PCIE001 registers -
+  with indirect access via PEX_PHY_INDIRECT_ACC_REG */
+#define G2_SETTING_0					0x00F
+#define PHYTST_REG0					0x015
+#define VTHIMPCAL_CTRL_REG				0x041
+#define CAL_REG3					0x057
+#define GLOB_CLK_CTRL					0x1C1
+
+#define TX_AND_RX_IMPEDANCE_THRESHIOLD			0x11
+
+#define IMPEDANCE_THRESHIOLD_OFFSET			8
+#define RX_CALIBRATION_OFFSET				7
+#define TX_CALIBRATION_OFFSET				14
+#define TX_SLEW_CNTRL_ENABLE_OFFSET			15
 /********************************* Enum ********************************/
 typedef enum {
 	PEX0,

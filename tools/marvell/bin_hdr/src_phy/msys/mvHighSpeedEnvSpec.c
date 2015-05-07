@@ -272,6 +272,67 @@ MV_OP_EXT_PARAMS sgmiiPowerDownCtrlParams[] =
 MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray);
 
 /*************************** Functions implementation *************************/
+/*********************************************************************************************
+mvHwsIndirectRegRead
+ *
+ * DESCRIPTION:         Indirect readfrom COMPHY_M_PIPE_R2P3_28HPM_REG_MIDAS_INTERNAL_PCIE001
+*			registers via PEX_PHY_INDIRECT_ACC_REG
+* INPUT:   		devNum    - device number
+*	                regAddr   - register address
+*			dataValue - pointer to read data
+*
+ * OUTPUT:              None.
+ * RETURNS:             MV_OK           -   for success
+ *			MV_FAIL         -   for failure
+ ***************************************************************************/
+MV_U32 mvHwsIndirectRegRead
+(
+    MV_U32              devNum,
+    MV_U32              regAddr,
+    MV_U32              *dataValue
+
+)
+{
+	MV_U32 data;
+
+	data = (1 << PHY_ACCESS_MODE_OFFSET) + (regAddr << PHY_ADDRESS_OFFSET) ;
+	MV_REG_WRITE(PEX_PHY_INDIRECT_ACC_REG,data);
+	*dataValue = MV_REG_READ (PEX_PHY_INDIRECT_ACC_REG);
+
+	return MV_OK;
+}
+
+/*********************************************************************************************
+mvHwsIndirectRegWrite
+ *
+ * DESCRIPTION:		Indirect write to COMPHY_M_PIPE_R2P3_28HPM_REG_MIDAS_INTERNAL_PCIE001
+*			registers via PEX_PHY_INDIRECT_ACC_REG
+* INPUT:   		devNum    - device number
+*	                regAddr   - register address
+*			dataValue - data to write
+*			mask	  - mask
+* OUTPUT:		None.
+* RETURNS:		MV_OK           -   for success
+*			MV_FAIL         -   for failure
+***************************************************************************/
+MV_U32 mvHwsIndirectRegWrite
+(
+    MV_U32              devNum,
+    MV_U32              regAddr,
+    MV_U32              dataValue,
+    MV_U32              mask
+
+)
+{
+	MV_U32 readData,data;
+
+	mvHwsIndirectRegRead (devNum,regAddr,&readData);
+	dataValue = ((readData & (~mask)) | (dataValue & mask)) & 0xFFFF;
+	data = (0 << PHY_ACCESS_MODE_OFFSET) + (regAddr << PHY_ADDRESS_OFFSET) +  dataValue;
+	MV_REG_WRITE(PEX_PHY_INDIRECT_ACC_REG,data);
+	return MV_OK;
+}
+
 
 /**************************************************************************
  * mvHwsSerdesLastLaneGet -
@@ -376,10 +437,47 @@ MV_STATUS mvSiliconInit(MV_VOID)
 }
 
 /****************************************************************************/
+/* AC3: set PCIe Comphy register optimizations after ETP */
+MV_VOID mvCtrlPexImpedanceCalibration(MV_VOID)
+{
+	MV_U32 uiReg = 0;
+
+	/* MAC soft reset */
+	/* Reg 0x41a60, Deassert soft_reset[20] to 0x0*/
+	uiReg = MV_REG_READ(PEX_DBG_CTRL_REG(0));
+	uiReg &= ~(0x1 << 20);
+	MV_REG_WRITE(PEX_DBG_CTRL_REG(0), uiReg);
+	/*Pipe reset */
+	mvHwsIndirectRegWrite (0,GLOB_CLK_CTRL,0x1,0x1);
+
+	/*Pex Tx and RX impedance adjust and recalibrate */
+	mvHwsIndirectRegWrite (0,VTHIMPCAL_CTRL_REG,(TX_AND_RX_IMPEDANCE_THRESHIOLD << IMPEDANCE_THRESHIOLD_OFFSET),(0xFF <<IMPEDANCE_THRESHIOLD_OFFSET)); /* set threshold */
+
+	mvHwsIndirectRegWrite (0,CAL_REG3,(0x1 << RX_CALIBRATION_OFFSET),(0x1 <<RX_CALIBRATION_OFFSET));  /* calibrate Rx */
+	mvHwsIndirectRegWrite (0,CAL_REG3,(0x0 << RX_CALIBRATION_OFFSET),(0x1 <<RX_CALIBRATION_OFFSET));
+	mvOsDelay(5);
+	mvHwsIndirectRegWrite (0,CAL_REG3,(0x1 << TX_CALIBRATION_OFFSET),(0x1 <<TX_CALIBRATION_OFFSET));/* calibrate Tx */
+	mvHwsIndirectRegWrite (0,CAL_REG3,(0x0 << TX_CALIBRATION_OFFSET),(0x1 <<TX_CALIBRATION_OFFSET));
+
+	/*Pex slew rate control disable */
+	mvHwsIndirectRegWrite (0,G2_SETTING_0,(0x0 << TX_SLEW_CNTRL_ENABLE_OFFSET),(0x1 << TX_SLEW_CNTRL_ENABLE_OFFSET));
+}
+/****************************************************************************/
 /* AC3: set PCIe mode as End Point */
 MV_STATUS mvCtrlPexEndPointConfig(MV_VOID)
 {
-	return MV_OK; /*no EP config for AC3*/
+	MV_U32 uiReg = 0;
+
+	/* Reg 0x41a00, Set ConfRoot_Complex to 0x0 to define end point mode*/
+	uiReg = MV_REG_READ(PEX_CTRL_REG(0));
+	uiReg &= ~(0x1 << CONF_ROOT_COMPLEX_OFFSET);
+
+	MV_REG_WRITE(PEX_CTRL_REG(0), uiReg);
+	mvCtrlPexImpedanceCalibration();
+	/* unreset - set bit 0 to 0 in GLOB_CLK_CTR */
+	mvHwsIndirectRegWrite (0,GLOB_CLK_CTRL,0x0,0x1);
+
+	return MV_OK;
 }
 
 /****************************************************************************/
@@ -388,10 +486,19 @@ MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
 {
 	MV_U32 uiReg = 0;
 	/* Reg 0x18204, Set PCIe0nEn[0] to 0x0*/
+
 	uiReg = MV_REG_READ(SOC_CTRL_REG);
 	uiReg &= ~(0x1 << 0);
 	uiReg |= (0x0 << 0);
 	MV_REG_WRITE(SOC_CTRL_REG, uiReg);
+
+	/* Reg 0x41a00, Set ConfRoot_Complex to 0x1 to define Root Complex mode*/
+	uiReg = MV_REG_READ(PEX_CTRL_REG(0));
+	uiReg &= ~(0x1 << CONF_ROOT_COMPLEX_OFFSET);
+	uiReg |= (0x1 << CONF_ROOT_COMPLEX_OFFSET);
+	MV_REG_WRITE(PEX_CTRL_REG(0), uiReg);
+
+	mvCtrlPexImpedanceCalibration();
 
 	/* Reg 0x40060, Set DevType[23:20] to 0x4(Root Complex)*/
 	uiReg = MV_REG_READ(PEX_CAPABILITIES_REG(0));
@@ -399,9 +506,13 @@ MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
 	uiReg |= (0x4 << 20);
 	MV_REG_WRITE(PEX_CAPABILITIES_REG(0), uiReg);
 
+	/* unreset - set bit 0 to 0 in GLOB_CLK_CTR */
+	mvHwsIndirectRegWrite (0,GLOB_CLK_CTRL,0x0,0x1);
+
 	/* Reg 0x41a60, Assert soft_reset[20] to 0x1,
-					Set DisLinkRestartRegRst[19] to 0x1,
-					Set ConfMskLnkRestart[16] to 0x1*/
+	   Set DisLinkRestartRegRst[19] to 0x1,
+	   Set ConfMskLnkRestart[16] to 0x1*/
+
 	uiReg = MV_REG_READ(PEX_DBG_CTRL_REG(0));
 	uiReg &= 0xFFE6FFFF;
 	uiReg |= 190000;
@@ -409,8 +520,8 @@ MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
 
 	/* Reg 0x41a00, Set ConfRoot_Complex to 0x1*/
 	uiReg = MV_REG_READ(PEX_CTRL_REG(0));
-	uiReg &= ~(0x1 << 1);
-	uiReg |= (0x1 << 1);
+	uiReg &= ~(0x1 << CONF_ROOT_COMPLEX_OFFSET);
+	uiReg |= (0x1 << CONF_ROOT_COMPLEX_OFFSET);
 	MV_REG_WRITE(PEX_CTRL_REG(0), uiReg);
 
 	/* Reg 0x41a60, Deassert soft_reset[20] to 0x0*/

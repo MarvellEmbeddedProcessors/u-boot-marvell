@@ -21,6 +21,7 @@ sub HELP_MESSAGE
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
 	print "\t-m\tDDR type(default: DDR4 for A39x, DDR3 for the rest). Accepts: 3 for DDR3, 4 for DDR4\n";
+	print "\t-d\tRebuild training lib, use '-d 2' to rebuild ddr3libv2 source\n";
 	print "\t-i\tSupported interfaces, seperated by \":\" -  Accepts [spi:nor:nand]\n";
 	print "\t-v\tSW version (in file name: u-boot-alp-X.X.X-spi.bin, else using date by default)\n";
 	print "\t\tinterfaces. Supports spi, nor, nand. the boot \n";
@@ -353,6 +354,13 @@ if ((!defined $opt_m) or (($opt_m ne 3) & ($opt_m ne 4))) {
 	} else {
 		$opt_m = 3;
 	}
+}
+
+if($opt_d eq 4)
+{
+	system("echo \"DDR4SUBLIB = yes\" >> include/config.mk");
+	print "** Rebuild DDR4 sublib **\n";
+	$opt_d = 2;
 }
 
 #by default -d 2 will be enabled for new TIP SoCs

@@ -104,11 +104,19 @@ ifeq ($(DDRTYPE),)
 DDRTYPE = ddr3
 endif
 
+ifeq ($(DDRTYPE),ddr4)
+	TLIBS = $(TLIB) $(TDDR4SUBLIB)
+else
+	TLIBS = $(TLIB)
+endif
+
 TLIB = ./src_ddr/lib/$(DDRTYPE)_training_$(LIBNAME).lib
+TDDR4SUBLIB = ./src_ddr/lib/$(DDRTYPE)_training_$(LIBNAME)sub.lib
 
 COMPONENT_SUBDIRS = platform src_phy src_ddr src_pm src_init
-HDR_COMPONENTS = $(LIB_PLAT) $(LIB_GENERAL_INIT) $(LIB_PHY) $(LIB_DDR) $(TLIB) $(LIB_SWUP)
-HDR_COMPONENTS_UART = $(LIB_PLAT_UART) $(LIB_GENERAL_INIT_UART) $(LIB_PHY_UART) $(LIB_DDR_UART) $(TLIB) $(LIB_SWUP_UART)
+
+HDR_COMPONENTS = $(LIB_PLAT) $(LIB_GENERAL_INIT) $(LIB_PHY) $(LIB_DDR) $(TLIBS) $(LIB_SWUP)
+HDR_COMPONENTS_UART = $(LIB_PLAT_UART) $(LIB_GENERAL_INIT_UART) $(LIB_PHY_UART) $(LIB_DDR_UART) $(TLIBS) $(LIB_SWUP_UART)
 
 #how to add new component to binary header:
 #EXAMPLE_COMPONENT=no

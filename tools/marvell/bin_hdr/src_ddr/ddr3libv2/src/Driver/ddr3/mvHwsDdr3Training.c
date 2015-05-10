@@ -332,10 +332,19 @@ const GT_CHAR* mvHwsDdr3TipVersionGet(void)
     return DDR3_TIP_VERSION_STRING;
 }
 
+#ifdef CONFIG_DDR4
+const GT_CHAR* mvHwsDdr4SubLibVersionGet(void)
+{
+    return DDR4_TIP_SUBVERSION_STRING;
+}
+#endif
+
 void ddr3PrintVersion()
 {
     mvPrintf(mvHwsDdr3TipVersionGet());
-    mvPrintf("\n");
+#ifdef CONFIG_DDR4
+    mvPrintf(mvHwsDdr4SubLibVersionGet());
+#endif
 }
 
 /*****************************************************************************

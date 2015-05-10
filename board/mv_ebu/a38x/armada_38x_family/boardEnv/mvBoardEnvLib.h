@@ -92,6 +92,7 @@ extern "C" {
 #define MV_BOARD_MPP_GROUPS_MAX_TYPES   8
 #define MV_BOARD_NAME_LEN               0x20
 #define MV_A38X_Z_REV_BOARDID_I2C_ADDR	0x50
+#define MV_A395_RD_I2C_ADDR		0x57
 
 typedef enum _devBoardOtherTypeClass {
 	MV_BOARD_NONE		= 0x00000000,

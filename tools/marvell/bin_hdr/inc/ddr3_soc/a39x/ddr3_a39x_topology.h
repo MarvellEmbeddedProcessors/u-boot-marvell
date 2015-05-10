@@ -81,7 +81,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /************************************* Customer Boards Topology *************************************/
 MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 {
- #ifdef CONFIG_DDR3
+#ifdef CONFIG_DDR3
     /* 1st Customer board - reference from DB */
     {
     0x1, /* active interfaces */
@@ -116,7 +116,7 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 	Micron 	by8 	is 2133P
 	samsung by16 	is 2133P
 	Hynux 	by16 	is 2133P*/
-    {{{{0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0}, {0x3,2 ,0,0}}, SPEED_BIN_DDR_2400R, BUS_WIDTH_16, MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+    {{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x1,0,0,0},{ 0x1,0,0,0}, {0x1,0 ,0,0}}, SPEED_BIN_DDR_2400R, BUS_WIDTH_16, MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_32BIT_ECC  /* Buses mask */
     },
 #endif
@@ -146,6 +146,14 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     {{{{0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0}, {0x3,2 ,0,0}}, SPEED_BIN_DDR_2400R, BUS_WIDTH_16, MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_32BIT_ECC  /* Buses mask */
     },
+/* 2nd Marvell board - EAP_10G RD (DDR4) */
+    {
+    0x1, /* active interfaces */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
+    {{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x1,0,0,0},{ 0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_2400R, BUS_WIDTH_16, MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+    INTERFACE_BUS_MASK_32BIT_ECC  /* Buses mask */
+    },
+
 #endif
 
 };

@@ -371,7 +371,98 @@ MV_BOARD_INFO db88f69xx_board_info = {
 	.switchInfoNum			= 0
 };
 
+/*******************************************************************************
+ * 39x DB-88F6925 EAP-10G  board */
+/*******************************************************************************/
+MV_BOARD_TWSI_INFO db88f6925_eap_10g_BoardTwsiDev[] = {
+	/* {{MV_BOARD_DEV_CLASS devClass,MV_U8 devClassId,MV_U8 twsiDevAddr,MV_U8 twsiDevAddrType}} */
+	{ BOARD_DEV_TWSI_SATR,          0,      0x57,   ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,          1,      0x4C,   ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,       0,      0x20,   ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,       1,      0x21,   ADDR7_BIT, MV_FALSE},
+};
+
+MV_BOARD_MPP_INFO db88f6925_eap_10g_BoardMppConfigValue[] = {
+	{ {
+		DB_88f6925_EAP_10G_MPP0_7,
+		DB_88f6925_EAP_10G_MPP8_15,
+		DB_88f6925_EAP_10G_MPP16_23,
+		DB_88f6925_EAP_10G_MPP24_31,
+		DB_88f6925_EAP_10G_MPP32_39,
+		DB_88f6925_EAP_10G_MPP40_47,
+		DB_88f6925_EAP_10G_MPP48_55,
+		DB_88f6925_EAP_10G_MPP56_63,
+	} }
+};
+
+MV_BOARD_INFO db88f6925_eap_10g_board_info = {
+	.boardName              = "DB-88F6925-EAP-10G",
+	.numBoardNetComplexValue = 0,
+	.pBoardNetComplexInfo   = NULL,
+	.pBoardMppConfigValue   = db88f6925_eap_10g_BoardMppConfigValue,
+	.intsGppMaskLow         = 0,
+	.intsGppMaskMid         = 0,
+	.intsGppMaskHigh        = 0,
+	.numBoardDeviceIf       = ARRSZ(db88f69xxInfoBoardDeCsInfo),
+	.pDevCsInfo             = db88f69xxInfoBoardDeCsInfo,
+	.numBoardTwsiDev        = ARRSZ(db88f6925_eap_10g_BoardTwsiDev),
+	.pBoardTwsiDev          = db88f6925_eap_10g_BoardTwsiDev,
+	.numBoardMacInfo        = 0,
+	.pBoardMacInfo          = NULL,
+	.numBoardGppInfo        = 0,
+	.pBoardGppInfo          = 0,
+	.activeLedsNumber       = 0,
+	.pLedGppPin             = NULL,
+	.ledsPolarity           = 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity       = 0,
+	.pmuPwrUpDelay          = 80000,
+
+	/* GPP values */
+	.gppOutEnValLow         = DB_88f6925_EAP_10G_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid         = DB_88f6925_EAP_10G_GPP_OUT_ENA_MID,
+	.gppOutValLow           = DB_88f6925_EAP_10G_GPP_OUT_VAL_LOW,
+	.gppOutValMid           = DB_88f6925_EAP_10G_GPP_OUT_VAL_MID,
+	.gppPolarityValLow      = DB_88f6925_EAP_10G_GPP_POL_LOW,
+	.gppPolarityValMid      = DB_88f6925_EAP_10G_GPP_POL_MID,
+
+	.pBoardUsbInfo          = db88f69xxInfoBoardUsbInfo,
+	.numBoardUsbInfo        = ARRSZ(db88f69xxInfoBoardUsbInfo),
+
+	/* TDM */
+	.numBoardTdmInfo                = {1},
+	.pBoardTdmInt2CsInfo            = {db88f69xxTdm880},
+	.boardTdmInfoIndex              = 0,
+
+	.pBoardSpecInit                 = NULL,
+
+	/* NAND init params */
+	.nandFlashReadParams            = DB_88F69XX_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams           = DB_88F69XX_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl               = DB_88F69XX_BOARD_NAND_CONTROL,
+	.nandIfMode                     = NAND_IF_NFC,
+
+	.pBoardTdmSpiInfo               = db88f69xxTdmSpiInfo,
+
+	/* NOR init params */
+	.norFlashReadParams             = DB_88F69XX_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams            = DB_88F69XX_BOARD_NOR_WRITE_PARAMS,
+
+	/* Enable modules auto-detection. */
+	.configAutoDetect               = MV_FALSE,
+	.numIoExp                       = 0,
+	.pIoExp                         = NULL,
+	.boardOptionsModule             = MV_MODULE_NO_MODULE,
+	/* Audio */
+	.isAudioConnected               = MV_FALSE,
+	.isTdmConnected                 = MV_FALSE,
+	.pSwitchInfo                    = NULL,
+	.switchInfoNum                  = 0
+};
+
+
 MV_BOARD_INFO *marvellBoardInfoTbl[] = {
 	&db88f69xx_board_info,
-	&db88f69xx_board_info,
+	&db88f6925_eap_10g_board_info,
 };

@@ -143,3 +143,23 @@
 #define DB_88F69XX_GPP_OUT_VAL_MID      0x0
 #define DB_88F69XX_GPP_POL_LOW          0x0
 #define DB_88F69XX_GPP_POL_MID          0x0
+
+/*******************************************************************************
+ * A395 DB88f6925_EAP_10G  - Based on DB
+ *******************************************************************************/
+
+#define DB_88f6925_EAP_10G_MPP0_7            0x77111111
+#define DB_88f6925_EAP_10G_MPP8_15           0x00660077
+#define DB_88f6925_EAP_10G_MPP16_23          0x55066000
+#define DB_88f6925_EAP_10G_MPP24_31          0x05050055
+#define DB_88f6925_EAP_10G_MPP32_39          0x05055555
+#define DB_88f6925_EAP_10G_MPP40_47          0x11100565
+#define DB_88f6925_EAP_10G_MPP48_55          0x55333333
+#define DB_88f6925_EAP_10G_MPP56_63          0x00005555
+
+#define DB_88f6925_EAP_10G_GPP_OUT_ENA_LOW         0xFFFFFFFF
+#define DB_88f6925_EAP_10G_GPP_OUT_ENA_MID         (~(0x8E))
+#define DB_88f6925_EAP_10G_GPP_OUT_VAL_LOW         0x0
+#define DB_88f6925_EAP_10G_GPP_OUT_VAL_MID         0x80
+#define DB_88f6925_EAP_10G_GPP_POL_LOW             0x0
+#define DB_88f6925_EAP_10G_GPP_POL_MID             0x0

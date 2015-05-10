@@ -184,6 +184,7 @@
 /* starting from A38x A0, i2c address of EEPROM is 0x57 */
 #ifdef MV88F69XX
 #define EEPROM_I2C_ADDR				0x50
+#define	EEPROM_I2C_ADDR_57			0x57
 #else
 #define EEPROM_I2C_ADDR				(mvSysEnvDeviceRevGet() == MV_88F68XX_Z1_ID ? 0x50 : 0x57)
 #endif
@@ -331,6 +332,7 @@
 #define MV_6W23_DEV_ID		0x6824 /* 6W23 - A384: using device ID value 0f 0x6824 */
 /* Armada 39x Family */
 #define MV_6920_DEV_ID		0x6920
+#define MV_6925_DEV_ID		0x6925
 #define MV_6928_DEV_ID		0x6928
 
 typedef enum _mvDeviceId {
@@ -341,10 +343,11 @@ typedef enum _mvDeviceId {
 /* 4 */	MV_NONE,
 /* 5 */	MV_6920,
 /* 6 */	MV_6928,
-/* 7 */	MV_MAX_HW_DEV_ID,	/* Dummy entry to indicate end of HW device ID's */
-/* 8 */	MV_6W22,		/* A383: Virtual Device ID - not represented by dev id in S@R @ 0x18600 */
-/* 9 */	MV_6W23,		/* A384: Virtual Device ID - not represented by dev id in S@R @ 0x18600 */
-/* 10*/	MV_MAX_DEV_ID,
+/* 7 */	MV_6925,
+/* 8 */	MV_MAX_HW_DEV_ID,	/* Dummy entry to indicate end of HW device ID's */
+/* 9 */	MV_6W22,		/* A383: Virtual Device ID - not represented by dev id in S@R @ 0x18600 */
+/* 10*/MV_6W23,		/* A384: Virtual Device ID - not represented by dev id in S@R @ 0x18600 */
+/* 11*/	MV_MAX_DEV_ID,
 } MV_DEVICE_ID;
 
 #define MV_6820_INDEX                         0
@@ -355,12 +358,13 @@ typedef enum _mvDeviceId {
 #define MV_6W23_INDEX			      5 /* 6W23=A384 */
 
 #define MV_6920_INDEX                         0
-#define MV_6928_INDEX                         1
+#define MV_6925_INDEX                         1
+#define MV_6928_INDEX                         2
 
 #ifdef CONFIG_ARMADA_38X
 #define MAX_DEV_ID_NUM                        6
 #else
-#define MAX_DEV_ID_NUM                        2
+#define MAX_DEV_ID_NUM                        3
 #endif
 
 #define MV_6820_INDEX                         0
@@ -368,7 +372,8 @@ typedef enum _mvDeviceId {
 #define MV_6811_INDEX                         2
 #define MV_6828_INDEX                         3
 #define MV_6920_INDEX                         0
-#define MV_6928_INDEX                         1
+#define MV_6925_INDEX                         1
+#define MV_6928_INDEX                         2
 
 typedef enum _mvUnitId {
 			PEX_UNIT_ID ,
@@ -398,8 +403,9 @@ typedef struct boardDeviceIdWoVal {
 /* A385 */ {MV_6811,	MV_6811_DEV_ID,		0x77fffff,	0x00 },\
 /* A388 */ {MV_6828,	MV_6828_DEV_ID,		0x77fffff,	0x00 },\
 /* NONE */ {MV_NONE,	0x0,			0x0,		0x0  },\
-/* A395 */ {MV_6920,	MV_6920_DEV_ID,		0x57fcfff,	0x00 },\
+/* A390 */ {MV_6920,	MV_6920_DEV_ID,		0x57fcfff,	0x00 },\
 /* A398 */ {MV_6928,	MV_6928_DEV_ID,		0x77fffff,	0x00 },\
+/* A395 */ {MV_6925,	MV_6925_DEV_ID,		0x77fdfff,	0x00 },\
 /*MAX_HW_DEV_ID*/ {MV_MAX_HW_DEV_ID,	0x0,			0x0,		0x0  },\
 /* A383 */ {MV_6W22,	MV_6W22_DEV_ID,		0x77fffff,	0x00 },\
 /* A384 */ {MV_6W23,	MV_6W23_DEV_ID,		0x77fffff,	0x00 },\
@@ -649,7 +655,7 @@ typedef enum _mvConfigTypeID {
 	MV_CONFIG_BOARDCFG_EN,
 	MV_CONFIG_BOARDCFG_VALID,
 	MV_CONFIG_SERDES5_MODE,
-        MV_CONFIG_SERDES6_MODE,
+	MV_CONFIG_SERDES6_MODE,
 	MV_CONFIG_TYPE_MAX_OPTION,
 	MV_CONFIG_TYPE_CMD_DUMP_ALL,
 	MV_CONFIG_TYPE_CMD_SET_DEFAULT

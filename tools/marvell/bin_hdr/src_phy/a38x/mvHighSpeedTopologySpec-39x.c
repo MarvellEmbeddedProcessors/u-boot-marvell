@@ -162,10 +162,24 @@ MV_STATUS mvSysUpdateLaneConfig(SERDES_MAP* serdesTopology);
  ***************************************************************************/
 MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray);
 
+/**************************************************************************
+ * loadTopologyEAP_10G -
+ *
+ * DESCRIPTION:          Loads the board topology for the A395_RD board
+ * INPUT:                serdesMapArray  -   The struct that will contain
+ *                                           the board topology map
+ * OUTPUT:               The board topology map.
+ * RETURNS:              MV_OK           -   for success
+ *                       MV_FAIL         -   for failure (a wrong
+ *                                           topology mode was read
+ *                                           from the board)
+ ***************************************************************************/
+MV_STATUS loadTopologyEAP_10G(SERDES_MAP  *serdesMapArray);
+
 loadTopologyFuncPtr loadTopologyFuncArr[] =
 {
 	loadTopologyDB,		/* DB */
-	loadTopologyDB,		/* DB */
+	loadTopologyEAP_10G,    /* A395RD */
 };
 
 /*********************************** Globals **********************************/
@@ -225,6 +239,23 @@ SERDES_MAP DbConfigDefault[MAX_SERDES_LANES] =
 	{ RXAUI,        __6_25Gbps,		   SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
 };
 
+/********************************************/
+/** Load topology - Marvell Armada395 - RD **/
+/********************************************/
+
+/* Configuration options */
+SERDES_MAP EAP_10G_ConfigDefault[MAX_SERDES_LANES] =
+{
+	{ SATA0,        __6Gbps,                   SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	{ USB3_HOST0,   __5Gbps,                   SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	{ PEX1,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
+	{ PEX3,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
+	{ SGMII1,       __1_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	{ RXAUI,        __6_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	{ RXAUI,        __6_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE }
+};
+
+
 /*************************** Functions implementation *************************/
 /***************************************************************************/
 
@@ -267,6 +298,27 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 
 	return res;
 }
+
+/************************** Load topology - Marvell 395 RD ********************************/
+/**************************************************************************************/
+MV_STATUS loadTopologyEAP_10G(SERDES_MAP  *serdesMapArray)
+{
+	MV_U32 laneNum;
+	SERDES_MAP* serdesTopology = EAP_10G_ConfigDefault;
+	MV_STATUS res = MV_OK;
+
+	/* Updating the topology map */
+	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
+		serdesMapArray[laneNum].serdesMode  =  serdesTopology[laneNum].serdesMode;
+		serdesMapArray[laneNum].serdesSpeed =  serdesTopology[laneNum].serdesSpeed;
+		serdesMapArray[laneNum].serdesType  =  serdesTopology[laneNum].serdesType;
+		serdesMapArray[laneNum].swapRx      =  serdesTopology[laneNum].swapRx;
+		serdesMapArray[laneNum].swapTx      =  serdesTopology[laneNum].swapTx;
+	}
+
+	return res;
+}
+
 
 #ifdef CONFIG_CMD_BOARDCFG
 /*******************************************************************************

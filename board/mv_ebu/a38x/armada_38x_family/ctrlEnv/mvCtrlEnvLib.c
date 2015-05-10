@@ -121,7 +121,8 @@ static const MV_U8 serdesCfg[MV_SERDES_MAX_LANES][MV_SERDES_CFG_OPTIONS_CNT] = S
 #define MV_6W23_INDEX		5 /* 6W23=A384 */
 
 #define MV_6920_INDEX		0
-#define MV_6928_INDEX		1
+#define MV_6925_INDEX		1
+#define MV_6928_INDEX		2
 
 #define MAX_DEV_ID_NUM		6
 
@@ -161,33 +162,33 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 };
 #else  /* if (CONFIG_ARMADA_39X) */
 MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
-/*				6920	6928	*/
-/* DRAM_UNIT_ID			*/ { 1,	1},
-/* PEX_UNIT_ID			*/ { 4,	4},
-/* ETH_GIG_UNIT_ID		*/ { 4,	4},	/* total SoC MAC unit count (Not updated) */
-/* ETH_GIG_ACTIVE_UNIT_ID	*/ { 4,	4},  /* active MAC unit count (updated by ethComPhy) */
-/* USB_UNIT_ID			*/ { 1,	1},
-/* USB3_UNIT_ID			*/ { 1,	2},/* usb3 serdes lane  */
-/* IDMA_UNIT_ID			*/ { 0,	0},
-/* XOR_UNIT_ID			*/ { 2,	2},
-/* SATA_UNIT_ID			*/ { 0,	4},
-/* TDM_32CH_UNIT_ID		*/ { 0,	1},
-/* UART_UNIT_ID			*/ { 4,	4},
-/* CESA_UNIT_ID			*/ { 2,	2},
-/* SPI_UNIT_ID			*/ { 2,	2},
-/* NAND_UNIT_ID			*/ { 1, 1},
-/* DEVBUS_UNIT_ID		*/ { 1, 1}, /* NOR */
-/* AUDIO_UNIT_ID		*/ { 0,	1},
-/* SDIO_UNIT_ID			*/ { 1,	1},
-/* TS_UNIT_ID			*/ { 0,	0},
-/* XPON_UNIT_ID			*/ { 0,	0},
-/* BM_UNIT_ID			*/ { 0,	0},
-/* PNC_UNIT_ID			*/ { 0,	0},
-/* I2C_UNIT_ID			*/ { 4,	4},
-/* QSGMII_UNIT_ID		*/ { 0,	1},
-/* XAUI_UNIT_ID			*/ { 1,	1},
-/* USB3_HOST_UNIT_ID		*/ { 1,	2},
-/* SERDES_UNIT_ID		*/ { 7,	7},
+/*                             6920  6925  6928        */
+/* DRAM_UNIT_ID			*/ { 1, 1, 1},
+/* PEX_UNIT_ID			*/ { 4, 4, 4},
+/* ETH_GIG_UNIT_ID		*/ { 4, 4, 4},  /* total SoC MAC unit count (Not updated) */
+/* ETH_GIG_ACTIVE_UNIT_ID	*/ { 4, 4, 4},  /* active MAC unit count (updated by ethComPhy) */
+/* USB_UNIT_ID			*/ { 1, 1, 1},
+/* USB3_UNIT_ID			*/ { 1, 2, 2},/* usb3 serdes lane  */
+/* IDMA_UNIT_ID			*/ { 0, 0, 0},
+/* XOR_UNIT_ID			*/ { 2, 2, 2},
+/* SATA_UNIT_ID			*/ { 0, 2, 4},
+/* TDM_32CH_UNIT_ID		*/ { 0, 1, 1},
+/* UART_UNIT_ID			*/ { 4, 4, 4},
+/* CESA_UNIT_ID			*/ { 2, 2, 2},
+/* SPI_UNIT_ID			*/ { 2, 2, 2},
+/* NAND_UNIT_ID			*/ { 1, 1, 1},
+/* DEVBUS_UNIT_ID		*/ { 1, 1, 1}, /* NOR */
+/* AUDIO_UNIT_ID		*/ { 0, 1, 1},
+/* SDIO_UNIT_ID			*/ { 1, 1, 1},
+/* TS_UNIT_ID			*/ { 0, 0, 0},
+/* XPON_UNIT_ID			*/ { 0, 0, 0},
+/* BM_UNIT_ID			*/ { 0, 0, 0},
+/* PNC_UNIT_ID			*/ { 0, 0, 0},
+/* I2C_UNIT_ID			*/ { 4, 4, 4},
+/* QSGMII_UNIT_ID		*/ { 0, 1, 1},
+/* XAUI_UNIT_ID			*/ { 1, 1, 1},
+/* USB3_HOST_UNIT_ID		*/ { 1, 2, 2},
+/* SERDES_UNIT_ID		*/ { 7, 7, 7},
 };
 #endif
 
@@ -327,6 +328,8 @@ MV_U32 mvCtrlDevIdIndexGet(MV_U32 ctrlModel)
 		return MV_6828_INDEX;
 	case MV_6920_DEV_ID:
 		return MV_6920_INDEX;
+	case MV_6925_DEV_ID:
+		return MV_6925_INDEX;
 	case MV_6928_DEV_ID:
 		return MV_6928_INDEX;
 	/* Virtual flavors */
@@ -1472,6 +1475,7 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 	case MV_6811_DEV_ID:
 	case MV_6828_DEV_ID:
 	case MV_6920_DEV_ID:
+	case MV_6925_DEV_ID:
 	case MV_6928_DEV_ID:
 	/* Virtual flavors */
 	case MV_6W22_DEV_ID: /* 6W22=A383 */
@@ -1518,6 +1522,8 @@ MV_U16 mvCtrlDeviceIdGet(MV_VOID)
 		return 0x388;
 	case MV_6920_DEV_ID:
 		return 0x390;
+	case MV_6925_DEV_ID:
+		return 0x398;
 	case MV_6928_DEV_ID:
 		return 0x398;
 	/* Virtual flavors */

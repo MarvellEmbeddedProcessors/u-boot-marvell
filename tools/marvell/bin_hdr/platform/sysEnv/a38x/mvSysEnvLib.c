@@ -96,15 +96,15 @@ MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 };
 #else  /* if (CONFIG_ARMADA_39X) */
 MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
-/*				6920     6928     */
-/* PEX_UNIT_ID      */		{ 4,       4},
-/* SGMII_UNIT_ID    */		{ 4,       4},
-/* USB3H_UNIT_ID    */		{ 1,       2},
-/* USB3D_UNIT_ID    */		{ 0,       1},
-/* SATA_UNIT_ID     */		{ 0,       4},
-/* QSGMII_UNIT_ID   */		{ 0,       1},
-/* XAUI_UNIT_ID     */		{ 1,       1},
-/* RXAUI_UNIT_ID    */		{ 1,	   1}
+/*                             6920    6925    6928     */
+/* PEX_UNIT_ID      */         { 4,    4,      4},
+/* SGMII_UNIT_ID    */         { 4,    4,      4},
+/* USB3H_UNIT_ID    */         { 1,    2,      2},
+/* USB3D_UNIT_ID    */         { 0,    1,      1},
+/* SATA_UNIT_ID     */         { 0,    2,      4},
+/* QSGMII_UNIT_ID   */         { 0,    1,      1},
+/* XAUI_UNIT_ID     */         { 1,    1,      1},
+/* RXAUI_UNIT_ID    */         { 1,    1,      1}
 };
 #endif
 
@@ -346,10 +346,20 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	/* Reading board id */
 	DEBUG_INIT_FULL_S("mvBoardIdGet: getting board id\n");
 	if (mvTwsiRead(0, &twsiSlave, &boardId, 1) != MV_OK) {
-		mvPrintf("\n\n%s: TWSI Read for Marvell Board ID failed (%x) \n", __func__, EEPROM_I2C_ADDR);
-		mvPrintf("\tUsing default board ID\n\n");
-		gBoardId = MV_DEFAULT_BOARD_ID;
-		return gBoardId;
+#ifdef MV88F69XX
+		/* in case of A395 EEPROM_I2C_ADDR is located at 0x57 and not 0x57.
+		 * To keep backwards compatibility with A390 DB boards where EEPROM_I2C_ADDR
+		 * is located at 0x50, both options are checked				*/
+		twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR_57;
+		if(mvTwsiRead(0, &twsiSlave, &boardId, 1) != MV_OK) {
+#endif
+			mvPrintf("\n\n%s: TWSI Read for Marvell Board ID failed (%x) \n", __func__, EEPROM_I2C_ADDR);
+			mvPrintf("\tUsing default board ID\n\n");
+			gBoardId = MV_DEFAULT_BOARD_ID;
+			return gBoardId;
+#ifdef MV88F69XX
+		}
+#endif
 	}
 
 	DEBUG_INIT_FULL_S("boardId from HW = 0x");
@@ -529,6 +539,8 @@ MV_U32 mvSysEnvIdIndexGet(MV_U32 ctrlModel)
 		return MV_6828_INDEX;
 	case MV_6920_DEV_ID:
 		return MV_6920_INDEX;
+	case MV_6925_DEV_ID:
+		return MV_6925_INDEX;
 	case MV_6928_DEV_ID:
 		return MV_6928_INDEX;
 	/* Virtual flavors - not represented by dev ID bits in S@R @ 0x18600 */
@@ -571,6 +583,7 @@ MV_U16 mvSysEnvModelGet(MV_VOID)
 	case MV_6811_DEV_ID:
 	case MV_6828_DEV_ID:
 	case MV_6920_DEV_ID:
+	case MV_6925_DEV_ID:
 	case MV_6928_DEV_ID:
 	/* Virtual flavors - not represented by dev ID bits in S@R @ 0x18600 */
 	case MV_6W22_DEV_ID: /* 6W22=A383 */
@@ -597,11 +610,17 @@ static MV_16 mvSysEnvIsFlavourReduced(MV_VOID)
 {
 	MV_TWSI_SLAVE twsiSlave;
 	MV_U8 reducedVal;
+	MV_U32 address = EEPROM_I2C_ADDR;
 
 	if (isFlavorReduced != -1)
 		return isFlavorReduced; /* read last value if already read from EEPROM */
 
-	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
+#ifdef MV88F69XX
+	/* Board A395-RD EEPROM_I2C_ADDR is 0x57, as oppossed to 0x50 in A390-DB */
+	if(mvBoardIdGet() == (MARVELL_BOARD_ID_BASE + 1))
+		address = EEPROM_I2C_ADDR_57;
+#endif
+	twsiSlave.slaveAddr.address = address;
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.moreThen256 = MV_TRUE;
@@ -626,8 +645,8 @@ static MV_16 mvSysEnvIsFlavourReduced(MV_VOID)
 MV_U32 gDevId = -1;
 MV_U32 mvSysEnvDeviceIdGet(MV_VOID)
 {
-	char *deviceIdStr[10] = { "6810", "6820", "6811", "6828",
-				"NONE", "6920", "6928", "MAX_HW_DEV_ID",
+	char *deviceIdStr[11] = { "6810", "6820", "6811", "6828",
+				"NONE", "6920", "6928", "6925", "MAX_HW_DEV_ID",
 				"6W22", "6W23"}; /* 6W22=A383, 6W23=A384 */
 #ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
 	MV_U32 boardId = mvBoardIdGet();

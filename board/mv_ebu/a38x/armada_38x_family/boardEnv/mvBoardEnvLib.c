@@ -2239,6 +2239,9 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX && mvCtrlRevGet() == MV_88F68XX_Z1_ID)
 		mvBoardTwsiAddrSet(BOARD_DEV_TWSI_SATR, 0, MV_A38X_Z_REV_BOARDID_I2C_ADDR);
 
+	if (mvCtrlModelGet() == MV_6925_DEV_ID)
+		mvBoardTwsiAddrSet(BOARD_DEV_TWSI_SATR, 0, MV_A395_RD_I2C_ADDR);
+
 	MV_U8 readValue;
 	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, 0, &readValue, 1) != MV_OK) {
 		mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);

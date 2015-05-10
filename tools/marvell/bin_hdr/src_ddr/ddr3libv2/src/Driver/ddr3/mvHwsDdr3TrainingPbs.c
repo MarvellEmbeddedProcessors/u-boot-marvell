@@ -509,24 +509,24 @@ GT_STATUS    ddr3TipPbs
 			/*if(ADLL_SHIFT_Lock[interfaceId][pup] != 1) { continue;}*/ /* if pup not lock continue to next pup */
             DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,("Final Results: interfaceId %d, pup %d, Pup State: %d\n", interfaceId, pup, PupState[interfaceId][pup]));
 
-		for( bit = 0 ; bit < BUS_WIDTH_IN_BITS ; bit++)
-		{
-			 if (dqMapTable == NULL)
-			 {
-				DEBUG_PBS_ENGINE(DEBUG_LEVEL_ERROR,("dqMapTable not initializaed\n"));
-				return GT_FAIL;
-			 }
-			PadNum = dqMapTable[bit+pup*BUS_WIDTH_IN_BITS + interfaceId*BUS_WIDTH_IN_BITS*octetsPerInterfaceNum];
-			DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,("Result_MAT: %d " ,Result_MAT[interfaceId][pup][bit]));
-			regAddr = (pbsMode == PBS_RX_MODE) ? (PBS_RX_PHY_REG + effective_cs * 0x10) : (PBS_TX_PHY_REG + effective_cs * 0x10);
-			CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,  ACCESS_TYPE_UNICAST,   interfaceId, ACCESS_TYPE_UNICAST,  pup, DDR_PHY_DATA, regAddr+PadNum, Result_MAT[interfaceId][pup][bit]));
-		}
+			for( bit = 0 ; bit < BUS_WIDTH_IN_BITS ; bit++)
+			{
+				 if (dqMapTable == NULL)
+				 {
+					DEBUG_PBS_ENGINE(DEBUG_LEVEL_ERROR,("dqMapTable not initializaed\n"));
+					return GT_FAIL;
+				 }
+				PadNum = dqMapTable[bit+pup*BUS_WIDTH_IN_BITS + interfaceId*BUS_WIDTH_IN_BITS*octetsPerInterfaceNum];
+				DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,("Result_MAT: %d " ,Result_MAT[interfaceId][pup][bit]));
+				regAddr = (pbsMode == PBS_RX_MODE) ? (PBS_RX_PHY_REG + effective_cs * 0x10) : (PBS_TX_PHY_REG + effective_cs * 0x10);
+				CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,  ACCESS_TYPE_UNICAST,   interfaceId, ACCESS_TYPE_UNICAST,  pup, DDR_PHY_DATA, regAddr+PadNum, Result_MAT[interfaceId][pup][bit]));
+			}
 
-		temp = (MaxPBSPerPup[interfaceId][pup] == MinPBSPerPup[interfaceId][pup])?\
-			TYPICAL_PBS_VALUE :\
-			((MaxADLLPerPup[interfaceId][pup] - MinADLLPerPup[interfaceId][pup])*(GT_U8)(ADLLTap/(MaxPBSPerPup[interfaceId][pup]) - MinPBSPerPup[interfaceId][pup]));
+			temp = (MaxPBSPerPup[interfaceId][pup] == MinPBSPerPup[interfaceId][pup])?\
+				TYPICAL_PBS_VALUE :\
+				((MaxADLLPerPup[interfaceId][pup] - MinADLLPerPup[interfaceId][pup])*ADLLTap/(MaxPBSPerPup[interfaceId][pup] - MinPBSPerPup[interfaceId][pup]));
 
-		pbsDelayPerPup[pbsMode][interfaceId][pup][effective_cs] = temp;
+			pbsDelayPerPup[pbsMode][interfaceId][pup][effective_cs] = temp;
 
 			if( pbsMode == PBS_TX_MODE ){ /*RX results ready, write RX also*/
 				/*Write TX results*/
@@ -546,8 +546,8 @@ GT_STATUS    ddr3TipPbs
 				Result_MAT_RX_DQS[interfaceId][pup][effective_cs] = (MaxPBSPerPup[interfaceId][pup] - MinPBSPerPup[interfaceId][pup])/2;
 			}
 
-		DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,(", PBS tap=%d [psec] ==> skew observed = %d\n", temp, ((MaxPBSPerPup[interfaceId][pup] - MinPBSPerPup[interfaceId][pup])*temp)));
-	}
+			DEBUG_PBS_ENGINE(DEBUG_LEVEL_INFO,(", PBS tap=%d [psec] ==> skew observed = %d\n", temp, ((MaxPBSPerPup[interfaceId][pup] - MinPBSPerPup[interfaceId][pup])*temp)));
+		}
     }
     /*Write back to the phy the default values */
     regAddr = (pbsMode == PBS_RX_MODE) ? (READ_CENTRALIZATION_PHY_REG + effective_cs * 4) : (WRITE_CENTRALIZATION_PHY_REG + effective_cs * 4);

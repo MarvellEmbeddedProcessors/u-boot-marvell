@@ -638,7 +638,7 @@ GT_STATUS    ddr3TipDynamicPerBitReadLeveling
         {
 	   		VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, busNum)
 			if (perBitRLPupStatus[interfaceId][busNum] == GT_TRUE)
-				mvHwsDdr3TipBUSWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, busNum, DDR_PHY_DATA, RL_PHY_REG + CS_REG_VALUE(effective_cs), data2Write[interfaceId][busNum]);
+				mvHwsDdr3TipBUSWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, busNum, DDR_PHY_DATA, RL_PHY_REG + CS_BYTE_GAP(effective_cs), data2Write[interfaceId][busNum]);
 			else
 				isAnyPupFail = GT_TRUE;
 		}

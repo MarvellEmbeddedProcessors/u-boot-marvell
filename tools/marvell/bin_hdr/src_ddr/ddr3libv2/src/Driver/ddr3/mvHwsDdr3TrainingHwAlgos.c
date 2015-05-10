@@ -114,7 +114,7 @@ GT_STATUS    ddr3TipWriteAdditionalOdtSetting
 			}
             for(pupIndex=0 ; pupIndex < octetsPerInterfaceNum; pupIndex++)
             {
-                CHECK_STATUS(mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, pupIndex, DDR_PHY_DATA, RL_PHY_REG + CS_REG_VALUE(csNum), &dataValue));
+                CHECK_STATUS(mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, pupIndex, DDR_PHY_DATA, RL_PHY_REG + CS_BYTE_GAP(csNum), &dataValue));
 				currentPhase = ((GT_32)dataValue&0xE0)>>6;
                 if ( currentPhase >= maxPhase )
                 {

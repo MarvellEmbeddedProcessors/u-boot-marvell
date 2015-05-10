@@ -866,6 +866,19 @@ static int device_parse(const char *const mtd_dev, const char **ret, struct mtd_
 	/* verify if we have a valid device specified */
 	if ((id = id_find_by_mtd_id(mtd_id, mtd_id_len - 1)) == NULL) {
 		printf("invalid mtd device '%.*s'\n", mtd_id_len - 1, mtd_id);
+		/* let 'p' point to the start of the next device in order
+		 * to try to parse it in the next iteration
+		 * example: mtdparts=spi_flash:4m(boot),-(spi-rootfs);armada-nand:8m...
+		 * when failing to recognize 'spi_flash', let 'p' point to the start
+		 * of 'armada-nand'
+		 * */
+		p = strchr(p, ';');
+		if (ret) {
+			if (p)
+				*ret = ++p;
+			else
+				*ret = NULL;
+		}
 		return 1;
 	}
 
@@ -928,7 +941,12 @@ static int device_parse(const char *const mtd_dev, const char **ret, struct mtd_
 		if (*p == ';') {
 			if (ret)
 				*ret = ++p;
-		} else if (*p == '\0') {
+		} else if (*p == '\0' || (*p == '\'' && *(p+1) == '\0')) {
+			/* ignore ' if it is the last character, in case 'mtdparts' is wrapped
+			 * with quotation marks.
+			 * example: mtdparts='mtdparts=spi_flash:4m(boot),-(spi-rootfs);armada-nand:8m...'
+			 * ignore the last character (quotation mark '), and don't print error message on it
+			 * */
 			if (ret)
 				*ret = p;
 		} else {
@@ -1551,6 +1569,14 @@ static int parse_mtdparts(const char *const mtdparts)
 	/* re-read 'mtdparts' variable, mtd_devices_init may be updating env */
 	p = getenv("mtdparts");
 
+	/* ignore ' if it is the first character, in case 'mtdparts' is wrapped
+	 * with quotation marks.
+	 * example: mtdparts='mtdparts=spi_flash:4m(boot),-(spi-rootfs);armada-nand:8m...'
+	 * ignore the first character (quotation mark '), and don't print error
+	 * */
+	if (*p == '\'')
+		p++;
+
 	if (strncmp(p, "mtdparts=", 9) != 0) {
 		printf("mtdparts variable doesn't start with 'mtdparts='\n");
 		return err;
@@ -1559,8 +1585,12 @@ static int parse_mtdparts(const char *const mtdparts)
 
 	while (p && (*p != '\0')) {
 		err = 1;
-		if ((device_parse(p, &p, &dev) != 0) || (!dev))
-			break;
+		if ((device_parse(p, &p, &dev) != 0) || (!dev)) {
+			/* try to parse next device if the current device fails
+			 * 'p' will point to the next device */
+			err = 0;
+			continue;
+		}
 
 		debug("+ device: %s\t%d\t%s\n", MTD_DEV_TYPE(dev->id->type),
 				dev->id->num, dev->id->mtd_id);
@@ -1619,8 +1649,17 @@ static int parse_mtdids(const char *const ids)
 
 		ret = 1;
 		/* parse 'nor'|'nand'|'onenand'<dev-num> */
-		if (mtd_id_parse(p, &p, &type, &num) != 0)
-			break;
+		if (mtd_id_parse(p, &p, &type, &num) != 0) {
+			/* let 'p' point to the next <idmap>, when the current <idmap> parsing fails.
+			 * example: mtdids=spi0=spi_flash,nand0=armada-nand
+			 * when failing to parse spi0, let 'p' point to the start of nand0=armada-nand
+			 */
+			p = strchr(p, ',');
+			if (p)
+				p++;
+			ret = 0;
+			continue;
+		}
 
 		if (*p != '=') {
 			printf("mtdids: incorrect <dev-num>\n");

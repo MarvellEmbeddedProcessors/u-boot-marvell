@@ -310,7 +310,7 @@ void misc_init_r_env(void)
 	env = getenv("mtdids");
 	if (!env) {
 #if defined(MV_NAND) && defined(MV_INCLUDE_SPI)
-		setenv("mtdids", "nand0=armada-nand;spi0=spi_flash");
+		setenv("mtdids", "nand0=armada-nand,spi0=spi_flash");
 #elif defined(MV_NAND)
 		setenv("mtdids", "nand0=armada-nand");
 #elif defined(MV_INCLUDE_SPI)

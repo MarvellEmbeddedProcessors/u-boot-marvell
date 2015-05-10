@@ -2101,8 +2101,8 @@ GT_STATUS    ddr3TipWriteCsResult
 			if(csBitmask != effective_cs)
 			{
                 csNum = GET_CS_FROM_MASK(csBitmask);
-				mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, busNum, DDR_PHY_DATA, offset + CS_REG_VALUE(effective_cs), &dataVal);
-    			mvHwsDdr3TipBUSWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, busNum, DDR_PHY_DATA, offset + CS_REG_VALUE(csNum), dataVal);
+				mvHwsDdr3TipBUSRead(devNum, interfaceId, ACCESS_TYPE_UNICAST, busNum, DDR_PHY_DATA, offset + CS_BYTE_GAP(effective_cs), &dataVal);
+			mvHwsDdr3TipBUSWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, busNum, DDR_PHY_DATA, offset + CS_BYTE_GAP(csNum), dataVal);
 			}					
 		}
 	}
@@ -2244,10 +2244,16 @@ GT_STATUS    ddr3TipDDR3ResetPhyRegs
         for (phyId=0; phyId<octetsPerInterfaceNum; phyId++)
         {
         	VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, phyId)
-			CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, WL_PHY_REG + CS_REG_VALUE(effective_cs), PhyReg0Val));
-            CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, RL_PHY_REG + CS_REG_VALUE(effective_cs), PhyReg2Val));
-            CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, READ_CENTRALIZATION_PHY_REG + CS_REG_VALUE(effective_cs), PhyReg3Val));
-            CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, WRITE_CENTRALIZATION_PHY_REG + CS_REG_VALUE(effective_cs), PhyReg3Val));
+			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, WL_PHY_REG + CS_BYTE_GAP(effective_cs), PhyReg0Val));
+            CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, RL_PHY_REG + CS_BYTE_GAP(effective_cs), PhyReg2Val));
+            CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, READ_CENTRALIZATION_PHY_REG + CS_BYTE_GAP(effective_cs), PhyReg3Val));
+            CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, WRITE_CENTRALIZATION_PHY_REG + CS_BYTE_GAP(effective_cs), PhyReg1Val));
+			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x1F + CS_PBS_GAP(effective_cs), 0));
+			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x5F + CS_PBS_GAP(effective_cs), 0));
+			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x14 + CS_PBS_GAP(effective_cs), 0));
+			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x54 + CS_PBS_GAP(effective_cs), 0));
+			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x15 + CS_PBS_GAP(effective_cs), 0));
+			CHECK_STATUS(mvHwsDdr3TipBUSWrite( devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, phyId, DDR_PHY_DATA, 0x55 + CS_PBS_GAP(effective_cs), 0));
 		}
     }
 
@@ -2419,7 +2425,6 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 	}
 	effective_cs = 0;/*Set to 0 after each loop to avoid illegal value may be used*/
 
-
     if (maskTuneFunc & SET_MEDIUM_FREQ_MASK_BIT)
     {
 	   trainingStage = SET_MEDIUM_FREQ;
@@ -2485,7 +2490,7 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 		}
 	}
 	effective_cs = 0;/*Set to 0 after each loop to avoid illegal value may be used*/
-	
+
     if (maskTuneFunc & READ_LEVELING_MASK_BIT)
     {
         trainingStage = READ_LEVELING;
@@ -2722,7 +2727,6 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 		}
 	}
 	effective_cs = 0;/*Set to 0 after each loop to avoid illegal value may be used*/
-
  	for(effective_cs = 0; effective_cs < max_cs; effective_cs++){
 	    if (maskTuneFunc & CENTRALIZATION_RX_MASK_BIT)
 		 {
@@ -2788,6 +2792,7 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 		        }
 		    }
 		}
+
 		if (maskTuneFunc & WL_PHASE_CORRECTION_MASK_BIT)
 		{
 		   trainingStage = WL_PHASE_CORRECTION;
@@ -2806,6 +2811,7 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 		        }
 		    }
 		}
+
 		if (maskTuneFunc & DQ_VREF_CALIBRATION_MASK_BIT)
 		{
 		   trainingStage = DQ_VREF_CALIBRATION;

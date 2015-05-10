@@ -375,7 +375,8 @@ Address Bits   Value   Description
 #define PHASE_REG_OFFSET   (32)
 #define NUM_BYTES_IN_BURST (31)
 #define NUM_OF_CS          (4)
-#define CS_REG_VALUE(csNum)   (csMaskReg[csNum])
+#define CS_BYTE_GAP(csNum)   (csNum*0x4)
+#define CS_PBS_GAP(csNum)   (csNum*0x10)
 #define ADLL_LENGTH (32)
 
 

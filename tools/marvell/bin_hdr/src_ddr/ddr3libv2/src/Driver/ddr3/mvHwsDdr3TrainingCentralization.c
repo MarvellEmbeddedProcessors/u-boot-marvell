@@ -389,9 +389,9 @@ GT_STATUS    ddr3TipSpecialRx
     int PadNum = 0;
 	GT_U8 octetsPerInterfaceNum = (GT_U8)ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
-	if( ddr3TipSpecialRxRunOnceFlag != 0 )
+	if( (ddr3TipSpecialRxRunOnceFlag&(1<<effective_cs)) == 1<<effective_cs )
 		return GT_OK;
-	ddr3TipSpecialRxRunOnceFlag = 1;
+	ddr3TipSpecialRxRunOnceFlag |= 1<<effective_cs;
 
     for(interfaceId = 0; interfaceId < MAX_INTERFACE_NUM; interfaceId++)
     {
@@ -408,10 +408,10 @@ GT_STATUS    ddr3TipSpecialRx
 
     /* start flow */
     ddr3TipIpTrainingWrapper(devNum, ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, ACCESS_TYPE_MULTICAST,
-                             PARAM_NOT_CARE, resultType, MV_HWS_ControlElement_ADLL,
-                             PARAM_NOT_CARE, direction, topologyMap->interfaceActiveMask,
-                             0x0, maxWinSize-1, maxWinSize-1, patternId, EDGE_FPF, CS_SINGLE,
-                             PARAM_NOT_CARE, trainingResult);
+				              PARAM_NOT_CARE, resultType, MV_HWS_ControlElement_ADLL,
+				             PARAM_NOT_CARE, direction, topologyMap->interfaceActiveMask,
+				             0x0, maxWinSize-1, maxWinSize-1, patternId, EDGE_FPF, CS_SINGLE,
+				             PARAM_NOT_CARE, trainingResult);
     for(interfaceId = startIf; interfaceId <= endIf; interfaceId++)
     {
         VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
@@ -421,21 +421,21 @@ GT_STATUS    ddr3TipSpecialRx
 
             for(searchDirId = MV_HWS_Low2High ; searchDirId <= MV_HWS_High2Low ; searchDirId++)
             {
-                CHECK_STATUS(ddr3TipReadTrainingResult(devNum, interfaceId, ACCESS_TYPE_UNICAST,
-                            pupId, ALL_BITS_PER_PUP, searchDirId,  direction,
-                            resultType, TrainingLoadOperation_UNLOAD,
-                            CS_SINGLE, &result[searchDirId] , GT_TRUE, 0, GT_FALSE));
-                DEBUG_CENTRALIZATION_ENGINE(DEBUG_LEVEL_INFO,("Special: pat %d IF %d pup %d Regs: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",patternId, interfaceId, pupId,  result[searchDirId][0],result[searchDirId][1],result[searchDirId][2],result[searchDirId][3],result[searchDirId][4],result[searchDirId][5],result[searchDirId][6],result[searchDirId][7]));
+				CHECK_STATUS(ddr3TipReadTrainingResult(devNum, interfaceId, ACCESS_TYPE_UNICAST,
+				             pupId, ALL_BITS_PER_PUP, searchDirId,  direction,
+				            resultType, TrainingLoadOperation_UNLOAD,
+				            CS_SINGLE, &result[searchDirId] , GT_TRUE, 0, GT_FALSE));
+				DEBUG_CENTRALIZATION_ENGINE(DEBUG_LEVEL_INFO,("Special: pat %d IF %d pup %d Regs: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",patternId, interfaceId, pupId,  result[searchDirId][0],result[searchDirId][1],result[searchDirId][2],result[searchDirId][3],result[searchDirId][4],result[searchDirId][5],result[searchDirId][6],result[searchDirId][7]));
             }
             for(bitId = 0; bitId < BUS_WIDTH_IN_BITS  ; bitId++)
             {
-                /* check if this code is valid for 2 edge, probably not :( */
-                currentStartWindow[bitId] = GET_TAP_RESULT(result[MV_HWS_Low2High][bitId], EDGE_1);
-                currentEndWindow[bitId] = GET_TAP_RESULT(result[MV_HWS_High2Low][bitId], EDGE_1);
+				/* check if this code is valid for 2 edge, probably not :( */
+				currentStartWindow[bitId] = GET_TAP_RESULT(result[MV_HWS_Low2High][bitId], EDGE_1);
+				currentEndWindow[bitId] = GET_TAP_RESULT(result[MV_HWS_High2Low][bitId], EDGE_1);
             }
             if( !((ddr3TipIsPupLock(result[MV_HWS_Low2High], resultType)) && (ddr3TipIsPupLock(result[MV_HWS_High2Low], resultType))))
             {
-                DEBUG_CENTRALIZATION_ENGINE(DEBUG_LEVEL_ERROR,("Special: Pup lock fail, pat %d IF %d pup %d \n",patternId, interfaceId, pupId));
+				DEBUG_CENTRALIZATION_ENGINE(DEBUG_LEVEL_ERROR,("Special: Pup lock fail, pat %d IF %d pup %d \n",patternId, interfaceId, pupId));
 				return GT_FAIL;
             }
 
@@ -447,21 +447,21 @@ GT_STATUS    ddr3TipSpecialRx
 				for( bitId = 0 ; bitId < BUS_WIDTH_IN_BITS ; bitId++)
 				{
 					PadNum = dqMapTable[bitId+pupId*BUS_WIDTH_IN_BITS + interfaceId*BUS_WIDTH_IN_BITS*octetsPerInterfaceNum];
-               		CHECK_STATUS(mvHwsDdr3TipBUSRead(  devNum, interfaceId, ACCESS_TYPE_UNICAST, pupId,  DDR_PHY_DATA,  PBS_RX_PHY_REG+PadNum, &temp));
+					CHECK_STATUS(mvHwsDdr3TipBUSRead(  devNum, interfaceId, ACCESS_TYPE_UNICAST, pupId,  DDR_PHY_DATA,  PBS_RX_PHY_REG+PadNum +  effective_cs * 0x10, &temp));
 					temp = (temp + 0xA > 31)?(31):(temp + 0xA);
-               		CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,ACCESS_TYPE_UNICAST,interfaceId, ACCESS_TYPE_UNICAST,pupId, DDR_PHY_DATA, PBS_RX_PHY_REG+PadNum, temp));
+					CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,ACCESS_TYPE_UNICAST,interfaceId, ACCESS_TYPE_UNICAST,pupId, DDR_PHY_DATA, PBS_RX_PHY_REG+PadNum + effective_cs * 0x10, temp));
 				}
 				DEBUG_CENTRALIZATION_ENGINE(DEBUG_LEVEL_INFO,("Special: PBS:: I/F# %d , Bus# %d fix align to the Left \n", interfaceId,pupId));
 			}
 
 			if( currentEndWindowMin > 30 )/*Align rigth*/
 			{
-               	CHECK_STATUS(mvHwsDdr3TipBUSRead(  devNum, interfaceId, ACCESS_TYPE_UNICAST, pupId,  DDR_PHY_DATA,  PBS_RX_PHY_REG+4, &temp));
+				CHECK_STATUS(mvHwsDdr3TipBUSRead(  devNum, interfaceId, ACCESS_TYPE_UNICAST, pupId,  DDR_PHY_DATA,  PBS_RX_PHY_REG+4 + effective_cs * 0x10, &temp));
 				temp += 0xA;
-           		CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,ACCESS_TYPE_UNICAST,interfaceId, ACCESS_TYPE_UNICAST,pupId, DDR_PHY_DATA, PBS_RX_PHY_REG+4, temp));
-               	CHECK_STATUS(mvHwsDdr3TipBUSRead(  devNum, interfaceId, ACCESS_TYPE_UNICAST, pupId,  DDR_PHY_DATA,  PBS_RX_PHY_REG+5, &temp));
+				CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,ACCESS_TYPE_UNICAST,interfaceId, ACCESS_TYPE_UNICAST,pupId, DDR_PHY_DATA, PBS_RX_PHY_REG+4 + effective_cs * 0x10, temp));
+				CHECK_STATUS(mvHwsDdr3TipBUSRead(  devNum, interfaceId, ACCESS_TYPE_UNICAST, pupId,  DDR_PHY_DATA,  PBS_RX_PHY_REG+5 + effective_cs * 0x10, &temp));
 				temp += 0xA;
-           		CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,ACCESS_TYPE_UNICAST,interfaceId, ACCESS_TYPE_UNICAST,pupId, DDR_PHY_DATA, PBS_RX_PHY_REG+5, temp));
+				CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,ACCESS_TYPE_UNICAST,interfaceId, ACCESS_TYPE_UNICAST,pupId, DDR_PHY_DATA, PBS_RX_PHY_REG+5 + effective_cs * 0x10, temp));
 				DEBUG_CENTRALIZATION_ENGINE(DEBUG_LEVEL_INFO,("Special: PBS:: I/F# %d , Bus# %d fix align to the right \n", interfaceId,pupId));
 			}
 

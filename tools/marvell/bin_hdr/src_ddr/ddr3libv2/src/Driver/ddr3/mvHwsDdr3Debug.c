@@ -41,10 +41,6 @@ GT_U32 ctrlSweepres[ADLL_LENGTH][MAX_INTERFACE_NUM][MAX_BUS_NUM];
 GT_U32 ctrlADLL[MAX_CS_NUM*MAX_INTERFACE_NUM*MAX_BUS_NUM];
 #endif
 #endif
-GT_U8 csMaskReg[]=
-{
-    0, 4, 8, 12 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
 
 extern GT_U32 ckDelay;
 extern GT_U32 dminPhyRegTable[MAX_BUS_NUM*MAX_CS_NUM][2];
@@ -1437,7 +1433,7 @@ GT_BOOL ddr3TipRunSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direction, GT
 		for(adll = 0 ; adll < ADLL_LENGTH ; adll++)
 		{
 			adllValue = (direction == 0) ? (adll*2):adll;
-			CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, 0, pupAccess, pup, DDR_PHY_DATA, reg + CS_REG_VALUE(uiCs), adllValue));
+			CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_MULTICAST, 0, pupAccess, pup, DDR_PHY_DATA, reg + CS_BYTE_GAP(uiCs), adllValue));
 			mvHwsDdr3RunBist(devNum, sweepPattern, res ,uiCs);
 			/*ddr3TipResetFifoPtr(devNum);*/
 			for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
@@ -1446,7 +1442,7 @@ GT_BOOL ddr3TipRunSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direction, GT
 				ctrlSweepres[adll][interfaceId][pup] = res[interfaceId];
 				if (mode == 1)
 				{
-					CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, pup, DDR_PHY_DATA, reg + CS_REG_VALUE(uiCs),  ctrlADLL[interfaceId*uiCs*octetsPerInterfaceNum+pup]));
+					CHECK_STATUS(mvHwsDdr3TipBUSWrite(  devNum, ACCESS_TYPE_UNICAST, interfaceId, ACCESS_TYPE_UNICAST, pup, DDR_PHY_DATA, reg + CS_BYTE_GAP(uiCs),  ctrlADLL[interfaceId*uiCs*octetsPerInterfaceNum+pup]));
 				}
 			}
 		}

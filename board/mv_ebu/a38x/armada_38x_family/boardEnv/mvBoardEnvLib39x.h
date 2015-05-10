@@ -186,11 +186,16 @@ typedef enum _mvSatRTypeID {
 #ifdef CONFIG_CMD_BOARDCFG
 #define MV_BOARD_CONFIG_MAX_BYTE_COUNT	8
 
-/* The defualt board configuration is -					*
-* Serdes	0	1	2	3	4	5	6	*
-* Type		PCIe0	SGMII1	PCIe1	SGMII2	PCIe2	RXAUI	RXAUI	*/
-
-#define MV_BOARD_CONFIG_DEFAULT_VALUE		{0x00, 0x51, 0x41, 0x87, 0x04, 0x00, 0x00, 0x00}
+#define MV_BOARD_CONFIG_DEFAULT_VALUE	\
+			{0x00,	/* boardId => 0 */				\
+			 0x51,	/* SerDes0 => PCIe0, SerDes1 => SGMII1 */	\
+			 0x41,	/* SerDes2 => PCIe1, SerDes3 => SGMII2 */	\
+			 0x87,	/* SerDes4 => PCIe2, SerDes5 => RXAUI */	\
+			 0x04,	/* SerDes6 => RXUAI */				\
+			 0x30,	/* NSSEnable => Disable, DDR BUSWIDTH => 32bit, Dram ECC => Disabled */	\
+				/* EEPROM => Disabled, Lane#5-SMIMODE => XSMI, Lane#6-SMIMODE => XSMI */\
+			 0x00,	/* BoardConfig valid => valid*/			\
+			 0x00}
 
 typedef enum _mvConfigTypeID {
 	MV_CONFIG_BOARDID,
@@ -234,7 +239,7 @@ typedef enum _mvConfigTypeID {
 
 
 #define MV_BOARD_CONFIG_CMD_STR "serdes0, serdes1, serdes2, serdes3, serdes4, serdes5, serdes6, nss_en,\n"	\
-				"\tddr_buswidth, ddr_ecc, eepromEnable\n\n"
+				"\tddr_buswidth, ddr_ecc, eepromEnable, serdes5Mode, serdes6Mode\n\n"
 #define MV_BOARD_CONFIG_CMD_MAX_OPTS 15
 
 /*MV_CMD_TYPE_ID,		command name,		Name,			numOfValues,	Possible Values */

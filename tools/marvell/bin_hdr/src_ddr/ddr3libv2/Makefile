@@ -72,7 +72,7 @@ INCLUDE = -I$(TIP_INC)/Os -I$(TIP_INC)/Os/gtOs -I$(TIP_INC)/Os/common/siliconIf 
 	      -I$(TIP_INC)/Driver -I$(TIP_INC)/Driver/ddr3  -I$(BH_ROOT_DIR)/inc/common -I$(BH_ROOT_DIR)/inc/ddr3_soc/$(BOARD) -I$(BH_ROOT_DIR)/inc/ddr3_soc/$(INCNAME) -I$(BH_ROOT_DIR)/src_ddr
 
 ifeq ($(DDRTYPE),ddr4)
-INCLUDE += -I$(BH_ROOT_DIR)/src_ddr/ddr3libv2/src/Driver/ddr4/h
+	INCLUDE += -I$(BH_ROOT_DIR)/src_ddr/ddr3libv2/src/Driver/ddr4/h
 endif
 
 TGT = ddr_$(LIBNAME).a
@@ -80,16 +80,25 @@ TGT_UART = ddr_$(LIBNAME).uart.a
 
 TLIB = ./$(DDRTYPE)_training_$(LIBNAME).lib
 
+TDDR4SUBLIB = ./$(DDRTYPE)_training_$(LIBNAME)sub.lib
+
 TSRC = $(wildcard ./src/Driver/ddr3/*.c)
 TSRC += ./src/Silicon/mvHwsDdr3$(SILNAME).c
 TSRC += ./src/Soc/ddr3_$(BOARDNAME)_training.c
 TSRC += ./src/Soc/ddr3_hws_hw_training.c
 TSRC += ./src/Os/gtOs/mvXor.c
-ifeq ($(DDRTYPE),ddr4)
-TSRC += $(wildcard ./src/Driver/ddr4/src/*.c)
-endif
+
+TSRCDDR4 = $(wildcard ./src/Driver/ddr4/src/*.c)
 
 TOBJ = $(TSRC:.c=.o)
+TOBJDDR4 = $(TSRCDDR4:.c=.o)
+
+ifeq ($(DDR4SUBLIB),yes)
+	TARGETS = $(TLIB) $(TDDR4SUBLIB)
+else
+	TARGETS = $(TLIB)
+endif
+
 
 #############global flags enable/disable features to save footprint###########
 # exclude debug function not relevent for SoC( set by default)
@@ -113,13 +122,17 @@ endif
 #############end of global flags #############################################
 
 
-all:   $(TLIB)
+all:   $(TARGETS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 %.uart.o: %.c
 	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) -c -o  $@ $<
+
+$(TDDR4SUBLIB): $(TOBJDDR4)
+	ar rcs $(TDDR4SUBLIB) $(TOBJDDR4)
+	$(CP) ./$@ ../lib
 
 $(TLIB): $(TOBJ)
 	ar rcs $(TLIB) $(TOBJ)

@@ -206,6 +206,7 @@ MV_BOARD_INFO armada_38x_customer_board_0_info = {
 	.numIoExp			= ARRSZ(armada_38x_customer_0_IoExpanderInfo),
 	.pIoExp				= armada_38x_customer_0_IoExpanderInfo,
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
+	.isAmc				= MV_FALSE,
 	.pSwitchInfo			= NULL,
 	.switchInfoNum			= 0
 };
@@ -347,6 +348,7 @@ MV_BOARD_INFO armada_38x_customer_board_1_info = {
 	.numIoExp			= ARRSZ(armada_38x_customer_1_IoExpanderInfo),
 	.pIoExp				= armada_38x_customer_1_IoExpanderInfo,
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
+	.isAmc				= MV_FALSE,
 	.pSwitchInfo			= NULL,
 	.switchInfoNum			= 0
 };

@@ -246,6 +246,19 @@ U_BOOT_CMD(
 	"\n    - print information for all SPI FLASH memory banks\n"
 );
 
+static int isSwitchingServicesSupported(void)
+{
+	MV_U32 family = mvCtrlDevFamilyIdGet(0);
+
+	/* enable command only for AC3 & BC2 & AMC boards  */
+	if (!((family >= MV_ALLEYCAT3_DEV_ID && family <= MV_ALLEYCAT3_MAX_DEV_ID)
+		|| family == MV_BOBCAT2_DEV_ID || mvBoardisAmc())) {
+		printf("Command not supported for this SoC/Board\n");
+		return 0;
+	}
+	return 1;
+}
+
 /*******************************************************************************
 * do_cpss_env - Save CPSS enviroment on flash
 *
@@ -262,6 +275,9 @@ U_BOOT_CMD(
 static int do_cpss_env( cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[] )
 {
 	char buf[1024];
+
+	if (!isSwitchingServicesSupported())
+		return 0;
 
 	printf("Saving cpss environment variable\n");
 	setenv("standalone", "");
@@ -393,6 +409,9 @@ static int do_mtdburn(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	MV_BOOL isNand = MV_TRUE;				/* default destination = NAND */
 	addr = load_addr = CFG_DEF_SOURCE_LOAD_ADDR;
 	int filesize, fileSizeFromRam = -1;
+
+	if (!isSwitchingServicesSupported())
+		return 0;
 
 	/* scan for flash destination in arguments (allowing usage of only 'mtdburn spi') */
 	for (i = 1 ; i < argc ; i++) {

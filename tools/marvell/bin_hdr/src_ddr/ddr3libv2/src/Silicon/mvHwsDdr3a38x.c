@@ -702,30 +702,35 @@ GT_STATUS ddr3TipA38xGetInitFreq
     uiReg = (MV_REG_READ(REG_DEVICE_SAR1_ADDR)>> RST2_CPU_DDR_CLOCK_SELECT_IN_OFFSET) & RST2_CPU_DDR_CLOCK_SELECT_IN_MASK;
     switch(uiReg) {
 #ifdef CONFIG_DDR3
-    case 0x0:
     case 0x1:
+		mvPrintf("Warning: Unsupported freq mode for 333Mhz configured(%d)\n", uiReg);
+    case 0x0:
         *freq = DDR_FREQ_333;
         break;
-    case 0x2:
     case 0x3:
+		mvPrintf("Warning: Unsupported freq mode for 400Mhz configured(%d)\n", uiReg);
+    case 0x2:
         *freq = DDR_FREQ_400;
         break;
-    case 0x4:
     case 0xd:
+		mvPrintf("Warning: Unsupported freq mode for 533Mhz configured(%d)\n", uiReg);
+    case 0x4:
         *freq = DDR_FREQ_533;
         break;
     case 0x6:
         *freq = DDR_FREQ_600;
         break;
 #endif
-    case 0x8:
 	case 0x11:
 	case 0x14:
+		mvPrintf("Warning: Unsupported freq mode for 667Mhz configured(%d)\n", uiReg);
+    case 0x8:
         *freq = DDR_FREQ_667;
         break;
-	case 0xC:
 	case 0x15:
 	case 0x1b:
+		mvPrintf("Warning: Unsupported freq mode for 800Mhz configured(%d)\n", uiReg);
+	case 0xC:
         *freq = DDR_FREQ_800;
         break;
 	case 0x10:
@@ -756,16 +761,16 @@ GT_STATUS ddr3TipA38xGetMediumFreq
     /* Read sample at reset setting */
     uiReg = (MV_REG_READ(REG_DEVICE_SAR1_ADDR)>> RST2_CPU_DDR_CLOCK_SELECT_IN_OFFSET) & RST2_CPU_DDR_CLOCK_SELECT_IN_MASK;
     switch(uiReg) {
-    case 0x0:
     case 0x1:
+    case 0x0:
         *freq = DDR_FREQ_333; /*Medium is same as TF to run PBS in this freq*/
         break;
-    case 0x2:
     case 0x3:
+    case 0x2:
         *freq = DDR_FREQ_400; /*Medium is same as TF to run PBS in this freq*/
         break;
-    case 0x4:
     case 0xd:
+    case 0x4:
         *freq = DDR_FREQ_533;
         break;
     case 0x8:
@@ -774,9 +779,9 @@ GT_STATUS ddr3TipA38xGetMediumFreq
 	case 0x10:
         *freq = DDR_FREQ_333;
         break;
-	case 0xC:
 	case 0x15:
 	case 0x1b:
+	case 0xC:
         *freq = DDR_FREQ_400;
         break;
     case 0x6:

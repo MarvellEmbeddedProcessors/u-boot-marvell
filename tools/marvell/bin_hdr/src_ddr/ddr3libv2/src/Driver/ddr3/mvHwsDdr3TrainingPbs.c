@@ -567,10 +567,16 @@ GT_STATUS    ddr3TipPbs
 
    for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
    {
-      /* if (trainingResult[trainingStage][interfaceId] == TEST_FAILED) */
-	  if ( PupState[interfaceId][pup] == 1) /* meaning that there is no VW exist at all (No lock at the EBA ADLL shift at EBS) */
-	   	 return GT_FAIL;
+        VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
+		for( pup = 0 ; pup <  octetsPerInterfaceNum ; pup++)
+		{
+			VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, pup)
+			/* if (trainingResult[trainingStage][interfaceId] == TEST_FAILED) */
+			if ( PupState[interfaceId][pup] == 1) /* meaning that there is no VW exist at all (No lock at the EBA ADLL shift at EBS) */
+			return GT_FAIL;
+		}
    }
+
    return GT_OK;
 
 

@@ -365,6 +365,7 @@ MV_U32 mvBoardCpssBoardIdSet(MV_U8);
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
 MV_STATUS mvBoardOobPortCfgSet(MV_VOID);
 MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
+MV_BOOL mvBoardisAmc(void);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

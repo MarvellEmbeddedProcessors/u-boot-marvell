@@ -2557,3 +2557,15 @@ MV_STATUS mvBoardOobPortCfgSet(MV_VOID)
 
 	return MV_OK;
 }
+/*******************************************************************************
+* mvBoardisAmc
+* DESCRIPTION: MSYS platform are not AMC compliant - return always false
+*
+* INPUT:  None
+* OUTPUT: None.
+* RETURN: MV_FALSE
+*******************************************************************************/
+MV_BOOL mvBoardisAmc(void)
+{
+	return MV_FALSE;
+}

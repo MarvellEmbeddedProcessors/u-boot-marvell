@@ -581,6 +581,7 @@ GT_STATUS    mvHwsDdr3TipInitController
 
 			/* Intrleave first command pre-charge enable (TBD) */
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, SDRAM_OPEN_PAGE_CONTROL_REG, (1 << 10), (1 << 10)));
+            CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, SDRAM_OPEN_PAGE_CONTROL_REG, 0x0, 0x3C0));
 
             /* PHY configuration*/
             /* Postamble Length = 1.5cc, Addresscntl to clk skew \BD, Preamble length normal, parralal ADLL enable*/
@@ -1774,9 +1775,16 @@ GT_STATUS    ddr3TipFreqSet
 			uiT2t = (csNum == 1) ? 0 : 1;
 		}
 
-		/*If configured 1:1 Ratio, use 1T mode*/
-		if(configFuncInfo[devNum].tipGetClockRatio(frequency) == 1){
-			uiT2t = 0;
+
+		if(ddr3TipDevAttrGet(devNum, MV_ATTR_INTERLEAVE_WA ) == GT_TRUE){
+			/*If configured 1:1 Ratio, use 1T mode*/
+			if(configFuncInfo[devNum].tipGetClockRatio(frequency) == 1){ /*Low freq*/
+				CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, SDRAM_OPEN_PAGE_CONTROL_REG, 0x0, 0x3C0));
+				uiT2t = 0;
+			}
+			else{/*medium or target FREQ*/
+				CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, SDRAM_OPEN_PAGE_CONTROL_REG, 0x3C0, 0x3C0));
+			}
 		}
 		CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DDR_CONTROL_LOW_REG, uiT2t << 3,0x3 << 3));
 
@@ -2594,6 +2602,7 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 			}
 		}
     }
+
     /*if (maskTuneFunc & ADJUST_DQS_MASK_BIT)
     {
         DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("ADJUST_DQS_MASK_BIT\n"));

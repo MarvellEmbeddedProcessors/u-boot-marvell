@@ -543,6 +543,11 @@ static GT_STATUS ddr3TipInitA38xSilicon
 	ddr3TipDevAttrSet(devNum, MV_ATTR_TIP_REV, MV_TIP_REV_4);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_POSITIVE);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, numOfBusPerInterface);
+#ifdef CONFIG_ARMADA_39X
+	ddr3TipDevAttrSet(devNum, MV_ATTR_INTERLEAVE_WA, GT_TRUE);
+#else
+	ddr3TipDevAttrSet(devNum, MV_ATTR_INTERLEAVE_WA, GT_FALSE);
+#endif
 
 #ifdef STATIC_ALGO_SUPPORT
 	{

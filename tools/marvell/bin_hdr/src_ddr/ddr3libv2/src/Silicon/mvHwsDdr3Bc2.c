@@ -783,6 +783,7 @@ static GT_STATUS ddr3TipInitBc2Silicon
 	ddr3TipDevAttrSet(devNum, MV_ATTR_TIP_REV, MV_TIP_REV_2);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_NEGATIVE);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, BC2_NUMBER_OF_PUP);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_INTERLEAVE_WA, GT_FALSE);
 
 	maskTuneFunc = ( INIT_CONTROLLER_MASK_BIT |
                      SET_MEDIUM_FREQ_MASK_BIT |

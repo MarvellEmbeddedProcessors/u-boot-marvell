@@ -923,6 +923,7 @@ GT_STATUS ddr3TipInitNp5Silicon
 	ddr3TipDevAttrSet(devNum, MV_ATTR_TIP_REV, MV_TIP_REV_1);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_NEGATIVE);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, numOfBusPerInterface);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_INTERLEAVE_WA, GT_FALSE);
 
 #ifdef STATIC_ALGO_SUPPORT
     ddr3TipInitStaticConfigDb(devNum, &staticConfig);

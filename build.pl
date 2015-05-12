@@ -347,19 +347,6 @@ if(defined $opt_i)
 	print "\n";
 }
 
-#by default -d 2 will be enabled for new TIP SoCs
-if( ($ddr3LibBuild eq "yes") and !($opt_m eq 4))
-{
-	$opt_d = 2;
-}
-
-if(defined $opt_d)
-{
-	system("echo \"DDR3LIB = $opt_d\" >> include/config.mk");
-	print "\n *** DDR3LIB = v$opt_d *********************************\n\n";
-}
-
-
 if ((!defined $opt_m) or (($opt_m ne 3) & ($opt_m ne 4))) {
 	if ($boardID eq "a39x") {
 		$opt_m = 4;
@@ -367,6 +354,17 @@ if ((!defined $opt_m) or (($opt_m ne 3) & ($opt_m ne 4))) {
 		$opt_m = 3;
 	}
 }
+
+#by default -d 2 will be enabled for new TIP SoCs
+if (($ddr3LibBuild eq "yes") and !($opt_m eq 4)) {
+	$opt_d = 2;
+}
+
+if (defined $opt_d) {
+	system("echo \"DDR3LIB = $opt_d\" >> include/config.mk");
+	print "\n *** DDR3LIB = v$opt_d *********************************\n\n";
+}
+
 
 system("echo \"DDRTYPE = ddr$opt_m\" >> include/config.mk");
 system("echo \"#define CONFIG_DDR$opt_m\" >> include/config.h");

@@ -280,20 +280,20 @@ MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 		if (netComplex & (MV_NETCOMP_GE_MAC0_2_SGMII_L0 | MV_NETCOMP_GE_MAC0_2_SGMII_L1 |
 					MV_NETCOMP_GE_MAC0_2_SGMII_L6))
 			return MV_TRUE;
-		return MV_FALSE;
+		break;
 	case 1:
 		if (netComplex & (MV_NETCOMP_GE_MAC1_2_SGMII_L1 | MV_NETCOMP_GE_MAC1_2_SGMII_L2 |
 					MV_NETCOMP_GE_MAC1_2_SGMII_L4))
 			return MV_TRUE;
-		return MV_FALSE;
+		break;
 	case 2:
 		if (netComplex & (MV_NETCOMP_GE_MAC2_2_SGMII_L3 | MV_NETCOMP_GE_MAC2_2_SGMII_L5))
 			return MV_TRUE;
-		return MV_FALSE;
+		break;
 	case 3:
 		if (netComplex & (MV_NETCOMP_GE_MAC3_2_SGMII_L4 | MV_NETCOMP_GE_MAC3_2_SGMII_L6))
 			return MV_TRUE;
-		return MV_FALSE;
+		break;
 	}
 	/*if QSGMII module connected then every single MAC port is SGMII port*/
 	return mvBoardIsPortInQsgmii(ethPortNum);

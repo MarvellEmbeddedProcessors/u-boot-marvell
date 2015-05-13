@@ -431,6 +431,7 @@ MV_BOARD_TDM_SPI_INFO db88f68xxTdmSpiInfo[] = { {1} };
 struct MV_BOARD_SWITCH_INFO db88f68xxSwitchInfo[] = {
 	{
 		.isEnabled = MV_FALSE,
+		.isCpuPortRgmii = MV_TRUE,
 		.switchIrq = -1,	/* set to -1 for using PPU*/
 		.switchPort = {0, 1, 2, 3, 4, 5, 6},
 		.cpuPort = 6,

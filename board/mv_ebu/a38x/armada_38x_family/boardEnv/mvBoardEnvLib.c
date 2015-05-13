@@ -2497,6 +2497,30 @@ MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx)
 }
 
 /*******************************************************************************
+* mvBoardSwitchIsRgmii - Check if the Switch connected to RGMII port
+*
+* DESCRIPTION:
+*       This routine returns if the switch connected to RGMII port
+*
+* INPUT:
+*       switchIdx - index of the switch. Only 0 is supported.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       Status of switch type
+*
+*******************************************************************************/
+MV_BOOL mvBoardSwitchCpuPortIsRgmii(MV_U32 switchIdx)
+{
+	if (!mvBoardIsSwitchConnected())
+		return MV_FALSE;
+
+	return board->pSwitchInfo[switchIdx].isCpuPortRgmii;
+}
+
+/*******************************************************************************
 * mvBoardSwitchPhyAddrGet - Get the the Ethernet Switch PHY address
 *
 * DESCRIPTION:

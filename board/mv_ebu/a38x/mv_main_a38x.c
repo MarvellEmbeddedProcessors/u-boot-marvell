@@ -993,6 +993,7 @@ int print_cpuinfo(void)
 int late_print_cpuinfo(void)
 {
 	char name[50];
+	int ddrType = 4;
 
 	mvCtrlUpdatePexId();
 
@@ -1013,9 +1014,12 @@ int late_print_cpuinfo(void)
 	printf("       CPU    @ %d [MHz]\n", mvCpuPclkGet()/1000000);
 	printf("       L2     @ %d [MHz]\n", mvCpuL2ClkGet()/1000000);
 	printf("       TClock @ %d [MHz]\n", mvTclkGet()/1000000);
-	printf("       DDR    @ %d [MHz]\n", CONFIG_SYS_BUS_CLK/1000000);
-	printf("       DDR %d Bit Width, %s Memory Access, DLB %s, ECC %s",
-			mvCtrlDDRBudWidth(),
+#ifdef CONFIG_DDR3/*DDR3*/
+	ddrType = 3;
+#endif
+	printf("       DDR%d    @ %d [MHz]\n", ddrType, CONFIG_SYS_BUS_CLK/1000000);
+	printf("       DDR%d %d Bit Width,%s Memory Access, DLB %s, ECC %s",
+			ddrType, mvCtrlDDRBudWidth(),
 			mvCtrlDDRThruXbar() ? "XBAR" : "FastPath",
 			mvCtrlIsDLBEnabled() ? "Enabled" : "Disabled",
 			mvCtrlDDRECC() ? "Enabled" : "Disabled");

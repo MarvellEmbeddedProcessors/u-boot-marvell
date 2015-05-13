@@ -345,6 +345,8 @@ void mvBoardEgigaPhyInit(void)
 		/*now only E6172 switch works for NETA, so here no other switch initialization is called*/
 		if (switchDeviceID == MV_E6172_PRODUCT_NUM)
 			mvEthE6172SwitchBasicInit(0);
+		if (switchDeviceID == MV_E6176_PRODUCT_NUM)
+			mvEthE6171SwitchBasicInit(0);
 	}
 #endif
 

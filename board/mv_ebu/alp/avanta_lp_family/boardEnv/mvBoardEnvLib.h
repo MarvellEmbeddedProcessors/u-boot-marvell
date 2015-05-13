@@ -613,6 +613,8 @@ MV_STATUS mvBoardEepromWrite(MV_CONFIG_TYPE_ID configType, MV_U8 value);
 MV_U8 mvBoardCpuFreqGet(MV_VOID);
 MV_STATUS mvBoardCpuFreqSet(MV_U8 freqVal);
 MV_STATUS mvBoardIsInternalSwitchConnected(void);
+MV_BOOL mvBoardSwitchCpuPortIsRgmii(MV_U32 switchIdx);
+MV_32 mvBoardSwitchPhyAddrGet(MV_U32 switchIdx);
 MV_U32 mvBoardSwitchPortForceLinkGet(MV_U32 switchIdx);
 MV_STATUS mvBoardIsSwitchConnected(void);
 MV_U32 mvBoardFreqModesNumGet(void);

@@ -547,31 +547,43 @@ MV_VOID mvAlpBoardSwitchBasicInit(MV_U32 enabledPorts)
 }
 #endif /* MV88F66XX */
 
+/* This initial function is valid for E6176 switch */
 MV_VOID	mvEthE6171SwitchBasicInit(MV_U32 ethPortNum)
 {
 
 	MV_U32 prt;
 	MV_U16 reg;
 	volatile MV_U32 timeout;
-	MV_32 cpuPort =  mvBoardSwitchCpuPortGet(0);
+	MV_U32 cpuPort =  mvBoardSwitchCpuPortGet(0);
+	MV_U32 swicthPhyAddr = mvBoardSwitchPhyAddrGet(0);
 	/* The 6171 needs a delay */
 	mvOsDelay(1000);
 
 	/* Init vlan of switch 1 and enable all ports */
-	switchVlanInit(ethPortNum, MV_E6171_CPU_PORT, MV_E6171_MAX_PORTS_NUM, MV_E6171_PORTS_OFFSET,
-				   MV_E6171_ENABLED_PORTS);
+	switchVlanInit(ethPortNum, cpuPort, MV_E6171_MAX_PORTS_NUM, swicthPhyAddr, MV_E6171_ENABLED_PORTS);
 
-	/* Enable RGMII delay on Tx and Rx for port 5 switch 1 */
-	mvEthSwitchRegRead(ethPortNum, MV_E6171_PORTS_OFFSET + cpuPort, MV_E6171_SWITCH_PHIYSICAL_CTRL_REG, &reg);
-	mvEthSwitchRegWrite(ethPortNum, MV_E6171_PORTS_OFFSET + cpuPort, MV_E6171_SWITCH_PHIYSICAL_CTRL_REG,
-						 (reg|0xC000));
+	if (mvBoardSwitchCpuPortIsRgmii(0)) {
+		/* Enable RGMII delay on Tx and Rx for port 5 switch 1 */
+		mvEthSwitchRegRead(ethPortNum, swicthPhyAddr + cpuPort, MV_E6171_SWITCH_PHIYSICAL_CTRL_REG, &reg);
+		mvEthSwitchRegWrite(ethPortNum, swicthPhyAddr + cpuPort, MV_E6171_SWITCH_PHIYSICAL_CTRL_REG,
+				(reg|0xC000));
+	} else {
+		/* If the CPU port is not connected to RGMII, so it connected
+		   to SGMII via SerDes lane, this code power-up the SerDes in switch */
+		/* Change to page #1 to access SerDes control register */
+		mvEthSwitchPhyRegWrite(ethPortNum, MV_E6171_SERDES_REG, MV_E6171_PAGE_REG, BIT0);
+		/* Read SerDes power down status of the switch */
+		mvEthSwitchPhyRegRead(ethPortNum, MV_E6171_SERDES_REG, MV_E6171_SERDES_CONTROL_REG, &reg);
+		/* Clear Bit 11 to power up the switch SerDes */
+		reg &= ~BIT11;
+		mvEthSwitchPhyRegWrite(ethPortNum, MV_E6171_SERDES_REG, MV_E6171_SERDES_CONTROL_REG, reg);
+	}
 
 	/* Power up PHYs */
 	for (prt = 0; prt < MV_E6171_MAX_PORTS_NUM - 2; prt++)	{
-		if (prt != MV_E6171_CPU_PORT) {
+		if (prt != cpuPort) {
 			/*Enable Phy power up for switch 1*/
-			mvEthSwitchRegWrite(ethPortNum, MV_E6171_GLOBAL_2_REG_DEV_ADDR,
-								MV_E6171_SMI_PHY_DATA, 0x3360);
+			mvEthSwitchRegWrite(ethPortNum, MV_E6171_GLOBAL_2_REG_DEV_ADDR, MV_E6171_SMI_PHY_DATA, 0x3360);
 			mvEthSwitchRegWrite(ethPortNum, MV_E6171_GLOBAL_2_REG_DEV_ADDR, MV_E6171_SMI_PHY_COMMAND,
 								(0x9410 | (prt << 5)));
 			/*Make sure SMIBusy bit cleared before another SMI operation can take place*/
@@ -583,12 +595,11 @@ MV_VOID	mvEthE6171SwitchBasicInit(MV_U32 ethPortNum)
 					mvOsPrintf("mvEthPhyRegRead: SMI busy timeout\n");
 					return;
 				}
-			} while (reg & E6171_PHY_SMI_BUSY_MASK); 
+			} while (reg & E6171_PHY_SMI_BUSY_MASK);
  
 			mvEthSwitchRegWrite(ethPortNum, MV_E6171_GLOBAL_2_REG_DEV_ADDR, MV_E6171_SMI_PHY_DATA,0x9140);
 			mvEthSwitchRegWrite(ethPortNum, MV_E6171_GLOBAL_2_REG_DEV_ADDR,
 								MV_E6171_SMI_PHY_COMMAND,(0x9400 | (prt << 5)));
-
 
 			/*Make sure SMIBusy bit cleared before another SMI operation can take place*/
 			timeout = E6171_PHY_TIMEOUT;
@@ -604,27 +615,27 @@ MV_VOID	mvEthE6171SwitchBasicInit(MV_U32 ethPortNum)
 		}
 	}
 
-	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET + cpuPort, 0x4, 0x7f);
-	
+	mvEthSwitchRegWrite(ethPortNum, swicthPhyAddr + cpuPort, 0x4, 0x7f);
+
 	/* Init LEDs on RD-6282 */
 	/* Move all LEDs to special */
-	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET, 0x16, (BIT15|0x67));
-	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET, 0x16, (BIT15|BIT12|0x32));
+	mvEthSwitchRegWrite(ethPortNum, swicthPhyAddr, MV_E6171_LED_CONTROL, (BIT15|0x67));
+	mvEthSwitchRegWrite(ethPortNum, swicthPhyAddr, MV_E6171_LED_CONTROL, (BIT15|BIT12|0x32));
 
 	/* Port 0 LED special activity link */
-	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET, 0x16, (BIT15|BIT14|BIT13|BIT12|BIT0));
+	mvEthSwitchRegWrite(ethPortNum, swicthPhyAddr, MV_E6171_LED_CONTROL, (BIT15|BIT14|BIT13|BIT12|BIT0));
 
 	/* Port 1 LED special activity link */
-	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET+1, 0x16, (BIT15|BIT14|BIT13|BIT12|BIT1));
+	mvEthSwitchRegWrite(ethPortNum, swicthPhyAddr + 1, MV_E6171_LED_CONTROL, (BIT15|BIT14|BIT13|BIT12|BIT1));
 
 	/* Port 2 LED special activity link */
-	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET+2, 0x16, (BIT15|BIT14|BIT13|BIT12|BIT2));
+	mvEthSwitchRegWrite(ethPortNum, swicthPhyAddr + 2, MV_E6171_LED_CONTROL, (BIT15|BIT14|BIT13|BIT12|BIT2));
 
 	/* Port 3 LED special activity link */
-	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET+3, 0x16, (BIT15|BIT14|BIT13|BIT12|BIT3));
+	mvEthSwitchRegWrite(ethPortNum, swicthPhyAddr + 3, MV_E6171_LED_CONTROL, (BIT15|BIT14|BIT13|BIT12|BIT3));
 
 #ifdef RD_88F6710
-	mvEthSwitchRegWrite(ethPortNum, MV_E6161_PORTS_OFFSET, 0x16, 0xf00f);
+	mvEthSwitchRegWrite(ethPortNum, swicthPhyAddr, MV_E6171_LED_CONTROL, 0xf00f);
 #endif
 
 }

@@ -177,6 +177,7 @@ typedef struct _devCsInfo {
 
 struct MV_BOARD_SWITCH_INFO {
 	MV_BOOL isEnabled;
+	MV_BOOL isCpuPortRgmii;
 	MV_32 switchIrq;
 	MV_32 switchPort[BOARD_ETH_SWITCH_PORT_NUM];
 	MV_32 cpuPort;
@@ -530,6 +531,7 @@ MV_VOID mvBoardMacSpeedSet(MV_U32 ethPortNum, MV_BOARD_MAC_SPEED macSpeed);
 MV_U32 mvBoardSwitchCpuPortGet(MV_U32 switchIdx);
 MV_32 mvBoardSwitchPhyAddrGet(MV_U32 switchIdx);
 MV_32 mvBoardSwitchConnectedPortGet(MV_U32 ethPort);
+MV_BOOL mvBoardSwitchCpuPortIsRgmii(MV_U32 switchIdx);
 MV_VOID mvBoardModuleSwitchInfoUpdate(MV_BOOL switchDetected);
 MV_U32 mvBoardMacCpuPortGet(MV_VOID);
 MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum);

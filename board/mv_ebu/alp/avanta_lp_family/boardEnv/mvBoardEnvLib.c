@@ -1751,6 +1751,17 @@ MV_STATUS mvBoardIsSwitchConnected(void)
 
 }
 
+/* this temporary functions to compile switch code.
+   mvEthE6171SwitchBasicInit is not used by alp code */
+MV_BOOL mvBoardSwitchCpuPortIsRgmii(MV_U32 switchIdx)
+{
+	return MV_FALSE;
+}
+MV_32 mvBoardSwitchPhyAddrGet(MV_U32 switchIdx)
+{
+	return -1;
+}
+
 /*******************************************************************************
 * mvBoardFreqModesNumGet
 *

@@ -395,10 +395,37 @@ MV_BOARD_MPP_INFO db88f6925_eap_10g_BoardMppConfigValue[] = {
 	} }
 };
 
+MV_BOARD_NET_COMPLEX_INFO db88f6925_eap_10g_InfoBoarNetComplexInfo[] = {
+	{
+		.netComplexOpt = MV_NETCOMP_GE_MAC0_2_RXAUI | MV_NETCOMP_GE_MAC1_2_SGMII_L4,
+	}
+};
+
+struct MV_BOARD_SWITCH_INFO db88f6925_eap_10g_SwitchInfo[] = {
+	{
+		.isEnabled = MV_TRUE,
+		.isCpuPortRgmii = MV_FALSE,
+		.switchIrq = -1,	/* set to -1 for using PPU*/
+		.switchPort = {0, 1, 2, 3, 4, 5, 6},
+		.cpuPort = 5,
+		.connectedPort = {5, -1},
+		.smiScanMode = MV_SWITCH_SMI_MULTI_ADDR_MODE,
+		.quadPhyAddr = 0x10,
+		.forceLinkMask = 0x60
+	}
+};
+
+MV_BOARD_MAC_INFO db88f6925_eap_10g_InfoBoardMacInfo[] = {
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI, MV_TRUE},
+	{ BOARD_MAC_SPEED_1000M, -1, -1, SMI, MV_TRUE},
+	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4, SMI, MV_FALSE},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI, MV_FALSE}
+};
+
 MV_BOARD_INFO db88f6925_eap_10g_board_info = {
 	.boardName              = "DB-88F6925-EAP-10G",
-	.numBoardNetComplexValue = 0,
-	.pBoardNetComplexInfo   = NULL,
+	.numBoardNetComplexValue = ARRSZ(db88f6925_eap_10g_InfoBoarNetComplexInfo),
+	.pBoardNetComplexInfo   = db88f6925_eap_10g_InfoBoarNetComplexInfo,
 	.pBoardMppConfigValue   = db88f6925_eap_10g_BoardMppConfigValue,
 	.intsGppMaskLow         = 0,
 	.intsGppMaskMid         = 0,
@@ -407,8 +434,8 @@ MV_BOARD_INFO db88f6925_eap_10g_board_info = {
 	.pDevCsInfo             = db88f69xxInfoBoardDeCsInfo,
 	.numBoardTwsiDev        = ARRSZ(db88f6925_eap_10g_BoardTwsiDev),
 	.pBoardTwsiDev          = db88f6925_eap_10g_BoardTwsiDev,
-	.numBoardMacInfo        = 0,
-	.pBoardMacInfo          = NULL,
+	.numBoardMacInfo        = ARRSZ(db88f6925_eap_10g_InfoBoardMacInfo),
+	.pBoardMacInfo          = db88f6925_eap_10g_InfoBoardMacInfo,
 	.numBoardGppInfo        = 0,
 	.pBoardGppInfo          = 0,
 	.activeLedsNumber       = 0,
@@ -457,8 +484,8 @@ MV_BOARD_INFO db88f6925_eap_10g_board_info = {
 	/* Audio */
 	.isAudioConnected               = MV_FALSE,
 	.isTdmConnected                 = MV_FALSE,
-	.pSwitchInfo                    = NULL,
-	.switchInfoNum                  = 0
+	.pSwitchInfo                    = db88f6925_eap_10g_SwitchInfo,
+	.switchInfoNum                  = ARRSZ(db88f6925_eap_10g_SwitchInfo),
 };
 
 

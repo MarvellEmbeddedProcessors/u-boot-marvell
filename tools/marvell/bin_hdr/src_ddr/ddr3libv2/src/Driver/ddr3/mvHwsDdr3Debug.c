@@ -1284,13 +1284,14 @@ Print ADLL
 GT_STATUS printAdll(GT_U32 devNum, GT_U32 adll[MAX_INTERFACE_NUM*MAX_BUS_NUM])
 {
     GT_U32 i,j;
+    GT_U32 octetsPerInterfaceNum;
 
-	devNum = devNum;
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+    devNum = devNum;
+    octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     for(j=0; j< octetsPerInterfaceNum; j++)
     {
-       	VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, j)
+        VALIDATE_BUS_ACTIVE(topologyMap->activeBusMask, j)
         for(i=0;i<MAX_INTERFACE_NUM; i++)
         {
             mvPrintf("%d ,",adll[i*octetsPerInterfaceNum+j]);
@@ -1410,7 +1411,7 @@ GT_BOOL ddr3TipRunSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direction, GT
     MV_HWS_ACCESS_TYPE  pupAccess;
     GT_U32 uiCs;
     GT_U32 maxCs = mvHwsDdr3TipMaxCSGet();
-	GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+    GT_U32 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     RepeatNum = RepeatNum;
 

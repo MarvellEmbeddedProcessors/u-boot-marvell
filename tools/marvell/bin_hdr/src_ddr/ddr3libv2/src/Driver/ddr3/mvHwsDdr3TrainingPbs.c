@@ -524,7 +524,7 @@ GT_STATUS    ddr3TipPbs
 
 			temp = (MaxPBSPerPup[interfaceId][pup] == MinPBSPerPup[interfaceId][pup])?\
 				TYPICAL_PBS_VALUE :\
-				((MaxADLLPerPup[interfaceId][pup] - MinADLLPerPup[interfaceId][pup])*ADLLTap/(MaxPBSPerPup[interfaceId][pup] - MinPBSPerPup[interfaceId][pup]));
+				((MaxADLLPerPup[interfaceId][pup] - MinADLLPerPup[interfaceId][pup]*(GT_U8)ADLLTap/(MaxPBSPerPup[interfaceId][pup]) - MinPBSPerPup[interfaceId][pup]));
 
 			pbsDelayPerPup[pbsMode][interfaceId][pup][effective_cs] = temp;
 
@@ -638,7 +638,7 @@ GT_STATUS    ddr3TipPrintPbsResult
 {
     GT_U32 dataValue = 0, bit = 0, interfaceId = 0, pup = 0;
     GT_U32 regAddr = (pbsMode == PBS_RX_MODE) ? (PBS_RX_PHY_REG + csNum * 0x10) : (PBS_TX_PHY_REG + csNum * 0x10);
-    GT_U8 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
+    GT_U32 octetsPerInterfaceNum = ddr3TipDevAttrGet(devNum, MV_ATTR_OCTET_PER_INTERFACE);
 
     mvPrintf("%s,CS%d,PBS,ADLLRATIO,,,", (pbsMode == PBS_RX_MODE)?"Rx":"Tx", csNum);
     for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)

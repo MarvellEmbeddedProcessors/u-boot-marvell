@@ -522,9 +522,9 @@ GT_STATUS    ddr3TipPbs
 				CHECK_STATUS(mvHwsDdr3TipBUSWrite(devNum,  ACCESS_TYPE_UNICAST,   interfaceId, ACCESS_TYPE_UNICAST,  pup, DDR_PHY_DATA, regAddr+PadNum, Result_MAT[interfaceId][pup][bit]));
 			}
 
-			temp = (MaxPBSPerPup[interfaceId][pup] == MinPBSPerPup[interfaceId][pup])?\
-				TYPICAL_PBS_VALUE :\
-				((MaxADLLPerPup[interfaceId][pup] - MinADLLPerPup[interfaceId][pup]*(GT_U8)ADLLTap/(MaxPBSPerPup[interfaceId][pup]) - MinPBSPerPup[interfaceId][pup]));
+            temp = (MaxPBSPerPup[interfaceId][pup] == MinPBSPerPup[interfaceId][pup]) ?\
+                TYPICAL_PBS_VALUE :\
+                ((MaxADLLPerPup[interfaceId][pup] - MinADLLPerPup[interfaceId][pup]) * (GT_U8)ADLLTap / (MaxPBSPerPup[interfaceId][pup] - MinPBSPerPup[interfaceId][pup]));
 
 			pbsDelayPerPup[pbsMode][interfaceId][pup][effective_cs] = temp;
 

@@ -25,6 +25,7 @@
 #include "ddr3_a38x_tip_training_static.h"
 #include "ddr3_hws_sil_training.h"
 #include "mvXor.h"
+#include "mvSysEnvLib.h"
 
 #include "mvHwsDdr3A38x.h"
 #include "mvSiliconIf.h"
@@ -59,42 +60,12 @@ extern MV_BOOL ddr3IfEccEnabled(void);
 extern GT_U32 maskTuneFunc;
 extern GT_BOOL rlMidFreqWA;
 extern GT_U8 calibrationUpdateControl; /*2 external only, 1 is internal only*/
+extern GT_U32 freqVal[];
 
-
-#ifdef CONFIG_DDR3
-static GT_U16 freqVal[DDR_FREQ_LIMIT] =
-{
-    120, /*DDR_FREQ_LOW_FREQ*/
-    400, /*DDR_FREQ_400,*/
-    533, /*DDR_FREQ_533,*/
-    666, /*DDR_FREQ_667,*/
-    800, /*DDR_FREQ_800,*/
-    933, /*DDR_FREQ_933,*/
-   1066, /*DDR_FREQ_1066,*/
-    311, /*DDR_FREQ_311,*/
-    333, /*DDR_FREQ_333,*/
-    467, /*DDR_FREQ_467,*/
-    850, /*DDR_FREQ_850,*/
-    600, /*DDR_FREQ_600,*/
-    300, /*DDR_FREQ_300,*/
-	900,  /*DDR_FREQ_900*/
-	360,  /*DDR_FREQ_360*/
-	1000  /*DDR_FREQ_1000*/
-};
-#else /* CONFIG_DDR4 */
-static GT_U16 freqVal[DDR_FREQ_LIMIT] =
-{
-    120,    /* DDR_FREQ_LOW_FREQ */
-    666,    /* DDR_FREQ_667 */
-    800,    /* DDR_FREQ_800 */
-    933,    /* DDR_FREQ_933 */
-    1066,  /* DDR_FREQ_1066 */
-	900,  	/*DDR_FREQ_900*/
-	1000  	/*DDR_FREQ_1000*/
-};
-
+#ifdef CONFIG_DDR4
 extern GT_U8	vrefCalibrationWA; /*1 means SSTL & POD gets the same Vref and a WA is needed*/
 #endif
+
 extern MV_HWS_DDR_FREQ mediumFreq;
 
 extern GT_STATUS ddr3TipRegWrite
@@ -200,7 +171,6 @@ static GT_U8 A38xBwPerFreq[DDR_FREQ_LIMIT] =
 
 static GT_U8 A38xRatePerFreq[DDR_FREQ_LIMIT] =
 {
-/*TBD*/
     0x1, /*DDR_FREQ_100*/
 #ifdef CONFIG_DDR3
     0x2, /*DDR_FREQ_400*/
@@ -227,7 +197,7 @@ static GT_U8 A38xRatePerFreq[DDR_FREQ_LIMIT] =
 #endif
 };
 
-static GT_U16 A38xVcoFreqPerSar[] =
+static GT_U16 A38xVcoFreqPerSarRefClk25Mhz[] =
 {
 	666, /*0*/
 	1332,
@@ -260,6 +230,41 @@ static GT_U16 A38xVcoFreqPerSar[] =
 	2500,
 	2500,
 	800
+};
+
+static GT_U16 A38xVcoFreqPerSarRefClk40Mhz[] =
+{
+	666, /*0*/
+	1332,
+	800,
+	800, /*0x3*/
+	1066,
+	1066, /*0x5*/
+	1200,
+	2400,
+	1332,
+	1332,
+	1500,/*10*/
+	1600, /*0xB*/
+	1600,
+	1600,
+	1700,
+	1560, /*0xF*/
+	1866,
+	1866,
+	1800,
+	2000,
+	2000,/*20*/
+	4000,
+	2132,
+	2132,
+	2300,
+	2300,
+	2400,
+	2400,
+	2500,
+	2500,
+	1800 /*30 - 0x1E*/
 };
 
 GT_U16 A38xODTSlope[] =
@@ -641,7 +646,7 @@ static GT_STATUS ddr3TipInitA38xSilicon
 		ckDelay = 160;
 	caDelay = 0;
 	delayEnable = 1;
-	dfsLowFreq = 120;
+	freqVal[DDR_FREQ_LOW_FREQ] = dfsLowFreq = 120;
 	calibrationUpdateControl = 1;
 
 	initFreq = topologyMap->interfaceParams[firstActiveIf].memoryFreq;
@@ -690,56 +695,82 @@ GT_STATUS ddr3TipA38xGetInitFreq
     MV_HWS_DDR_FREQ *freq
 )
 {
-	GT_U32 uiReg;
+	GT_U32 uiReg, refClkSatR;
 
     /* Read sample at reset setting */
     uiReg = (MV_REG_READ(REG_DEVICE_SAR1_ADDR)>> RST2_CPU_DDR_CLOCK_SELECT_IN_OFFSET) & RST2_CPU_DDR_CLOCK_SELECT_IN_MASK;
-    switch(uiReg) {
-#ifdef CONFIG_DDR3
-    case 0x1:
-		mvPrintf("Warning: Unsupported freq mode for 333Mhz configured(%d)\n", uiReg);
-    case 0x0:
-        *freq = DDR_FREQ_333;
-        break;
-    case 0x3:
-		mvPrintf("Warning: Unsupported freq mode for 400Mhz configured(%d)\n", uiReg);
-    case 0x2:
-        *freq = DDR_FREQ_400;
-        break;
-    case 0xd:
-		mvPrintf("Warning: Unsupported freq mode for 533Mhz configured(%d)\n", uiReg);
-    case 0x4:
-        *freq = DDR_FREQ_533;
-        break;
-    case 0x6:
-        *freq = DDR_FREQ_600;
-        break;
-#endif
-	case 0x11:
-	case 0x14:
-		mvPrintf("Warning: Unsupported freq mode for 667Mhz configured(%d)\n", uiReg);
-    case 0x8:
-        *freq = DDR_FREQ_667;
-        break;
-	case 0x15:
-	case 0x1b:
-		mvPrintf("Warning: Unsupported freq mode for 800Mhz configured(%d)\n", uiReg);
-	case 0xC:
-        *freq = DDR_FREQ_800;
-        break;
-	case 0x10:
-        *freq = DDR_FREQ_933;
-        break;
-	case 0x12:
-        *freq = DDR_FREQ_900;
-        break;
-	case 0x13:
-        *freq = DDR_FREQ_1000;
-        break;
-    default:
-        *freq = 0;
-	    return MV_NOT_SUPPORTED;
-    }
+
+	refClkSatR = MV_REG_READ(DEVICE_SAMPLE_AT_RESET2_REG);
+	if(((refClkSatR >> DEVICE_SAMPLE_AT_RESET2_REG_REFCLK_OFFSET) & 0x1) == DEVICE_SAMPLE_AT_RESET2_REG_REFCLK_25MHZ){
+		switch(uiReg) {
+	#ifdef CONFIG_DDR3
+		case 0x1:
+			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("Warning: Unsupported freq mode for 333Mhz configured(%d)\n", uiReg));
+		case 0x0:
+		    *freq = DDR_FREQ_333;
+		    break;
+		case 0x3:
+			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("Warning: Unsupported freq mode for 400Mhz configured(%d)\n", uiReg));
+		case 0x2:
+		    *freq = DDR_FREQ_400;
+		    break;
+		case 0xd:
+			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("Warning: Unsupported freq mode for 533Mhz configured(%d)\n", uiReg));
+		case 0x4:
+		    *freq = DDR_FREQ_533;
+		    break;
+		case 0x6:
+		    *freq = DDR_FREQ_600;
+		    break;
+	#endif
+		case 0x11:
+		case 0x14:
+			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("Warning: Unsupported freq mode for 667Mhz configured(%d)\n", uiReg));
+		case 0x8:
+		    *freq = DDR_FREQ_667;
+		    break;
+		case 0x15:
+		case 0x1b:
+			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("Warning: Unsupported freq mode for 800Mhz configured(%d)\n", uiReg));
+		case 0xC:
+		    *freq = DDR_FREQ_800;
+		    break;
+		case 0x10:
+		    *freq = DDR_FREQ_933;
+		    break;
+		case 0x12:
+		    *freq = DDR_FREQ_900;
+		    break;
+		case 0x13:
+		    *freq = DDR_FREQ_1000;
+			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("Warning: Unsupported freq mode for 1000Mhz configured(%d)\n", uiReg));
+		    break;
+		default:
+		    *freq = 0;
+			return MV_NOT_SUPPORTED;
+		}
+	}
+	else{ /*REFCLK 40 MHZ case*/
+		switch(uiReg) {
+	#ifdef CONFIG_DDR3
+		case 0x3:
+		    *freq = DDR_FREQ_400;
+		    break;
+		case 0x5:
+		    *freq = DDR_FREQ_533;
+		    break;
+	#endif
+		case 0xB:
+		    *freq = DDR_FREQ_800;
+		    break;
+		case 0x1E:
+		    *freq = DDR_FREQ_900;
+		    break;
+		default:
+		    *freq = 0;
+			return MV_NOT_SUPPORTED;
+    	}
+	}
     return GT_OK;
 }
 
@@ -750,50 +781,74 @@ GT_STATUS ddr3TipA38xGetMediumFreq
     MV_HWS_DDR_FREQ *freq
 )
 {
-	GT_U32 uiReg;
+	GT_U32 uiReg, refClkSatR;
 
     /* Read sample at reset setting */
     uiReg = (MV_REG_READ(REG_DEVICE_SAR1_ADDR)>> RST2_CPU_DDR_CLOCK_SELECT_IN_OFFSET) & RST2_CPU_DDR_CLOCK_SELECT_IN_MASK;
-    switch(uiReg) {
-    case 0x1:
-    case 0x0:
-        *freq = DDR_FREQ_333; /*Medium is same as TF to run PBS in this freq*/
-        break;
-    case 0x3:
-    case 0x2:
-        *freq = DDR_FREQ_400; /*Medium is same as TF to run PBS in this freq*/
-        break;
-    case 0xd:
-    case 0x4:
-        *freq = DDR_FREQ_533;
-        break;
-    case 0x8:
-	case 0x11:
-	case 0x14:
-	case 0x10:
-        *freq = DDR_FREQ_333;
-        break;
-	case 0x15:
-	case 0x1b:
-	case 0xC:
-        *freq = DDR_FREQ_400;
-        break;
-    case 0x6:
-        *freq = DDR_FREQ_300;
-        break;
-	case 0x12:
-        *freq = DDR_FREQ_360;
-        break;
-	case 0x13:
-        *freq = DDR_FREQ_400;
-        break;
-    default:
-        *freq = 0;
-	    return MV_NOT_SUPPORTED;
-    }
+
+	refClkSatR = MV_REG_READ(DEVICE_SAMPLE_AT_RESET2_REG);
+	if(((refClkSatR >> DEVICE_SAMPLE_AT_RESET2_REG_REFCLK_OFFSET) & 0x1) == DEVICE_SAMPLE_AT_RESET2_REG_REFCLK_25MHZ){
+		switch(uiReg) {
+		case 0x1:
+		case 0x0:
+		    *freq = DDR_FREQ_333; /*Medium is same as TF to run PBS in this freq*/
+		    break;
+		case 0x3:
+		case 0x2:
+		    *freq = DDR_FREQ_400; /*Medium is same as TF to run PBS in this freq*/
+		    break;
+		case 0xd:
+		case 0x4:
+		    *freq = DDR_FREQ_533;/*Medium is same as TF to run PBS in this freq*/
+		    break;
+		case 0x8:
+		case 0x11:
+		case 0x14:
+		case 0x10:
+		    *freq = DDR_FREQ_333;
+		    break;
+		case 0x15:
+		case 0x1b:
+		case 0xC:
+		    *freq = DDR_FREQ_400;
+		    break;
+		case 0x6:
+		    *freq = DDR_FREQ_300;
+		    break;
+		case 0x12:
+		    *freq = DDR_FREQ_360;
+		    break;
+		case 0x13:
+		    *freq = DDR_FREQ_400;
+		    break;
+		default:
+		    *freq = 0;
+			return MV_NOT_SUPPORTED;
+		}
+	}
+	else{ /*REFCLK 40 MHZ case*/
+		switch(uiReg) {
+		case 0x3:
+		    *freq = DDR_FREQ_400;/*Medium is same as TF to run PBS in this freq*/
+		    break;
+		case 0x5:
+		    *freq = DDR_FREQ_533;/*Medium is same as TF to run PBS in this freq*/
+		    break;
+		case 0xB:
+		    *freq = DDR_FREQ_400;
+		    break;
+		case 0x1E:
+		    *freq = DDR_FREQ_360;
+		    break;
+		default:
+		    *freq = 0;
+			return MV_NOT_SUPPORTED;
+		}
+	}
     return GT_OK;
 }
 #endif
+
 
 GT_U32 ddr3TipGetInitFreq()
 {
@@ -814,7 +869,7 @@ static GT_STATUS ddr3TipA38xSetDivider
 )
 {
 	GT_U32 divider = 0;
-    GT_U32 sarVal;
+    GT_U32 sarVal, refClkSatR;
 
 	if (interfaceId != 0) {
 		DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("A38x does not support interface 0x%x\n", interfaceId));
@@ -824,8 +879,13 @@ static GT_STATUS ddr3TipA38xSetDivider
 	/* get VCO freq index */
 	sarVal = (MV_REG_READ(REG_DEVICE_SAR1_ADDR)>> RST2_CPU_DDR_CLOCK_SELECT_IN_OFFSET) & RST2_CPU_DDR_CLOCK_SELECT_IN_MASK;
 
-    divider = A38xVcoFreqPerSar[sarVal]/freqVal[frequency];
-
+	refClkSatR = MV_REG_READ(DEVICE_SAMPLE_AT_RESET2_REG);
+	if(((refClkSatR >> DEVICE_SAMPLE_AT_RESET2_REG_REFCLK_OFFSET) & 0x1) == DEVICE_SAMPLE_AT_RESET2_REG_REFCLK_25MHZ){
+    	divider = A38xVcoFreqPerSarRefClk25Mhz[sarVal]/freqVal[frequency];
+	}
+	else{
+    	divider = A38xVcoFreqPerSarRefClk40Mhz[sarVal]/freqVal[frequency];
+	}
 	/*Set Sync mode*/
 	CHECK_STATUS(ddr3TipA38xIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0x20220, 0x0, 0x1000));
 	CHECK_STATUS(ddr3TipA38xIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0xE42F4, 0x0, 0x200));

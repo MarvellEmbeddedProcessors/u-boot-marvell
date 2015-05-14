@@ -55,27 +55,9 @@ extern GT_U8  debugTrainingAc3;
 extern MV_HWS_DDR_FREQ mediumFreq;
 extern GT_U8 calibrationUpdateControl; /*2 external only, 1 is internal only*/
 extern GT_U32 dfsLowFreq;
+extern GT_U32 freqVal[];
 
 GT_U32  pipeMulticastMask;
-
-static GT_U16 freqVal[DDR_FREQ_LIMIT] =
-{
-    130, /*DDR_FREQ_LOW_FREQ*/
-    400, /*DDR_FREQ_400,*/
-    533, /*DDR_FREQ_533,*/
-    666, /*DDR_FREQ_667,*/
-    800, /*DDR_FREQ_800,*/
-    933, /*DDR_FREQ_933,*/
-   1066, /*DDR_FREQ_1066,*/
-    311, /*DDR_FREQ_311,*/
-    333, /*DDR_FREQ_333,*/
-    467,  /*DDR_FREQ_467,*/
-    850,  /*DDR_FREQ_850,*/
-    600,  /*DDR_FREQ_600,*/
-    300,  /*DDR_FREQ_300,*/
-	900,  /*DDR_FREQ_900*/
-	360  /*DDR_FREQ_360*/
-};
 
 static GT_U8 Ac3BwPerFreq[DDR_FREQ_LIMIT] =
 {
@@ -464,7 +446,7 @@ static GT_STATUS ddr3TipInitAc3Silicon
 	delayEnable = 1;
 	caDelay = 0;
 	calibrationUpdateControl = 1;
-	dfsLowFreq = 130;
+	freqVal[DDR_FREQ_LOW_FREQ] = dfsLowFreq = 130;
 
 	initFreq = topologyMap->interfaceParams[interfaceId].memoryFreq;
 

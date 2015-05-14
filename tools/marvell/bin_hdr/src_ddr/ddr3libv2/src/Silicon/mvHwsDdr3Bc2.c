@@ -834,7 +834,7 @@ static GT_STATUS ddr3TipInitBc2Silicon
     /* frequency and general parameters */
     ddr3TipBc2GetMediumFreq(devNum, firstActiveIf, &mediumFreq);
     initFreq = topologyMap->interfaceParams[firstActiveIf].memoryFreq;
-    dfsLowFreq = 100;
+    freqVal[DDR_FREQ_LOW_FREQ] = dfsLowFreq = 100;
     dfsLowPhy1 = PhyReg1Val;
     isPllBeforeInit = 0;
     useBroadcast = GT_FALSE; /* multicast */

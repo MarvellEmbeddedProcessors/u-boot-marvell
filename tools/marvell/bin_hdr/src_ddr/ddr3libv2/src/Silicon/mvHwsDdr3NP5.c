@@ -960,7 +960,7 @@ GT_STATUS ddr3TipInitNp5Silicon
 		ckDelay = 150;
 	caDelay = 0;
 	calibrationUpdateControl = 1;
-	dfsLowFreq = 100;
+	freqVal[DDR_FREQ_LOW_FREQ] = dfsLowFreq = 100;
 
     return GT_OK;
 }

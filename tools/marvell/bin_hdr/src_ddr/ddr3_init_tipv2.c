@@ -411,9 +411,12 @@ MV_U32 ddr3Init(void)
 
 	/*Set log level for training lib*/
 	ddr3HwsSetLogLevel(MV_DEBUG_BLOCK_ALL, DEBUG_LEVEL_ERROR);
+	/*ddr3HwsSetLogLevel(MV_DEBUG_TRAINING_MAIN, DEBUG_LEVEL_TRACE);*/
+
 #ifdef MV_RUN_WIN_VALIDATION_TEST /* to run DDR viewer tool (to display DDR training results) */
 	mvHwsDdr3TipSweepTest(MV_TRUE);
 #endif
+
 	/*Start New Training IP*/
 	status = ddr3HwsHwTraining();
 	if (MV_OK != status) {

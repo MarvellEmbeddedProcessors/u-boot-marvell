@@ -86,6 +86,10 @@
 #define DEVICE_SAMPLE_AT_RESET2_REG             0x18604
 #define DEV_ID_REG                              0x18238
 
+#define DEVICE_SAMPLE_AT_RESET2_REG_REFCLK_OFFSET	0
+#define DEVICE_SAMPLE_AT_RESET2_REG_REFCLK_25MHZ	0
+#define DEVICE_SAMPLE_AT_RESET2_REG_REFCLK_40MHZ	1
+
 #define CORE_PLL_PARAMETERS_REG                 0xE42E0
 #define CORE_PLL_CONFIG_REG                     0xE42E4
 

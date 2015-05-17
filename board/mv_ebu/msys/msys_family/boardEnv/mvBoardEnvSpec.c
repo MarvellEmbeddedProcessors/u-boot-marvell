@@ -485,10 +485,15 @@ MV_BOARD_INFO rd_dx_bc2Info = {
 /*NAND care support for small page chips*/
 #define RD_MTL_BC2_BOARD_NAND_CONTROL			0x01c00543
 
+MV_BOARD_TWSI_INFO	bc2_rd_mtlInfoBoardTwsiDev[] = {
+/* {{MV_BOARD_DEV_CLASS	devClass, MV_U8	twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{BOARD_DEV_TWSI_PLD, 0x77, ADDR7_BIT},				/* Access to control PLD reg file */
+	{BOARD_DEV_TWSI_INIT_EPROM, 0x50, ADDR7_BIT},		/* Serial Ini EPROM	*/
+};
+
 MV_BOARD_MAC_INFO bc2_rd_mtlInfoBoardMacInfo[] = {
 	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr , MV_32 boardEthSmiAddr0;}} */
 	{BOARD_MAC_SPEED_1000M, 0x0, 0x0 },
-	{BOARD_MAC_SPEED_1000M, 0x1, 0x1 },
 };
 
 MV_BOARD_MODULE_TYPE_INFO bc2_rd_mtlInfoBoardModTypeInfo[] = {
@@ -515,24 +520,24 @@ MV_BOARD_MPP_INFO bc2_rd_mtlInfoBoardMppConfigValue[] = {
 };
 
 MV_BOARD_INFO bc2_rd_mtlInfo = {
-	.boardName			= "RD-BC2-MTL-PoE-2QSFP-6SFP",
+	.boardName					= "RD-MTL-BC2-48G-12XG2XLG",
 	.numBoardMppTypeValue		= ARRSZ(bc2_rd_mtlInfoBoardModTypeInfo),
-	.pBoardModTypeValue		= bc2_rd_mtlInfoBoardModTypeInfo,
+	.pBoardModTypeValue			= bc2_rd_mtlInfoBoardModTypeInfo,
 	.numBoardMppConfigValue		= ARRSZ(bc2_rd_mtlInfoBoardMppConfigValue),
 	.pBoardMppConfigValue		= bc2_rd_mtlInfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
 	.numBoardDeviceIf		= ARRSZ(bc2_rd_mtlInfoBoardDeCsInfo),
-	.pDevCsInfo			= bc2_rd_mtlInfoBoardDeCsInfo,
-	.numBoardTwsiDev		= 0,
-	.pBoardTwsiDev			= NULL,
+	.pDevCsInfo				= bc2_rd_mtlInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(bc2_rd_mtlInfoBoardTwsiDev),
+	.pBoardTwsiDev			= bc2_rd_mtlInfoBoardTwsiDev,
 	.numBoardMacInfo		= ARRSZ(bc2_rd_mtlInfoBoardMacInfo),
 	.pBoardMacInfo			= bc2_rd_mtlInfoBoardMacInfo,
 	.numBoardGppInfo		= 0,
 	.pBoardGppInfo			= NULL,
 	.activeLedsNumber		= 0,
-	.pLedGppPin			= NULL,
+	.pLedGppPin				= NULL,
 	.ledsPolarity			= 0,
 
 	/* GPP values */
@@ -551,8 +556,8 @@ MV_BOARD_INFO bc2_rd_mtlInfo = {
 	.switchInfoNum = 0,
 
 	/* NAND init params */
-	.nandFlashReadParams		= RD_MTL_BC2_BOARD_NAND_READ_PARAMS,
-	.nandFlashWriteParams		= RD_MTL_BC2_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashReadParams	= RD_MTL_BC2_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams	= RD_MTL_BC2_BOARD_NAND_WRITE_PARAMS,
 	.nandFlashControl		= RD_MTL_BC2_BOARD_NAND_CONTROL
 };
 

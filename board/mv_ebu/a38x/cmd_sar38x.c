@@ -461,6 +461,11 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 	}
 
 	if (satrInfo->satrId == MV_SATR_CPU_DDR_L2_FREQ) {
+		/* DB-6821-BP maximum CPU/DDR frequency mode is 8 : 1332/666 MHz */
+		if (boardId == DB_BP_6821_ID && value > 0x8) {
+			mvOsPrintf("Maximum supported CPU/DDR mode for DB-6821-BP is 0x8\n");
+			return 1;
+		}
 		freqValueInvalid = 1;
 		for (i=0; i <= MV_SAR_FREQ_MODES_EOT; i++) {
 			if (cpuDdrClkTbl[i].id == MV_SAR_FREQ_MODES_EOT)

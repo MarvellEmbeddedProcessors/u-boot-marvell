@@ -1206,55 +1206,51 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	if (gBoardId != -1)
 		return gBoardId;
 
-#if defined CONFIG_ALLEYCAT3
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 
-	#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	#if defined CONFIG_ALLEYCAT3
 		#ifdef CONFIG_CUSTOMER_BOARD_0
 			gBoardId = AC3_CUSTOMER_BOARD_ID0;
 		#elif CONFIG_CUSTOMER_BOARD_1
 			gBoardId = AC3_CUSTOMER_BOARD_ID1;
 		#endif
-	#else	/* !CONFIG_CUSTOMER_BOARD_SUPPORT */
-
-	/* For Marvell Boards: Temporarily set generic board struct pointer to
-	   use S@R TWSI address, and read board ID */
-	board = marvellAC3BoardInfoTbl[mvBoardIdIndexGet(DB_AC3_ID)];
-	gBoardId = DB_AC3_ID; /* Terporary for usage by mvCtrlDevFamilyIdGet */
-	MV_U8 readValue;
-
-	if (mvBoardSarBoardIdGet(&readValue) != MV_OK || readValue >= AC3_MARVELL_BOARD_NUM) {
-		mvOsPrintf("%s: Error obtaining Board ID from EEPROM (%d)\n", __func__, readValue);
-		mvOsPrintf("%s: Setting default board: DB-DXAC3-MM\n", __func__);
-		readValue = DB_AC3_ID - AC3_MARVELL_BOARD_ID_BASE;
-	}
-
-	gBoardId = AC3_MARVELL_BOARD_ID_BASE + readValue;
-	#endif	/* CONFIG_CUSTOMER_BOARD_SUPPORT */
-
-#else /* CONFIG_BOBCAT2 */
-
-	#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	#else /* BC2 */
 		#ifdef CONFIG_CUSTOMER_BOARD_0
 			gBoardId = BC2_CUSTOMER_BOARD_ID0;
 		#elif CONFIG_CUSTOMER_BOARD_1
 			gBoardId = BC2_CUSTOMER_BOARD_ID1;
 		#endif
-	#else	/* !CONFIG_CUSTOMER_BOARD_SUPPORT */
+	#endif
 
-		#if defined(DB_BOBCAT2)
-			gBoardId = DB_DX_BC2_ID;
-		#elif defined(RD_BOBCAT2)
-			gBoardId = RD_DX_BC2_ID;
-		#elif defined(RD_MTL_BOBCAT2)
-			gBoardId = RD_MTL_BC2;
-		#else
-			mvOsPrintf("%s: Board ID must be defined!\n", __func__);
-			while (1)
-				continue;
-		#endif
-	#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+#else	/* !CONFIG_CUSTOMER_BOARD_SUPPORT */
 
-#endif
+	MV_U8 readValue;
+	MV_BOARD_INFO **mvBoardInfoTbl =
+	#if defined CONFIG_ALLEYCAT3
+		marvellAC3BoardInfoTbl;
+	#else
+		marvellBC2BoardInfoTbl;
+	#endif
+
+	/* Temporarily set generic board struct pointer, to set/get EEPROM i2c address, and read board ID */
+	board = mvBoardInfoTbl[mvBoardIdIndexGet(MV_DEFAULT_BOARD_ID)];
+	gBoardId = MV_DEFAULT_BOARD_ID; /* Terporary for usage by mvCtrlDevFamilyIdGet */
+
+	if (mvBoardSarBoardIdGet(&readValue) != MV_OK) {
+		mvOsPrintf("%s: Error obtaining Board ID from EEPROM (%d)\n", __func__, readValue);
+		mvOsPrintf("%s: Setting default board to: %s\n", __func__, board->boardName);
+		return MV_DEFAULT_BOARD_ID;
+	}
+	readValue = readValue & (BOARD_ID_INDEX_MASK - 1);
+
+	if (readValue >= MV_MARVELL_BOARD_NUM) {
+		mvOsPrintf("%s: Error: read wrong board ID (%d)\n", __func__, readValue);
+		mvOsPrintf("%s: Setting default board to: %s\n", __func__, board->boardName);
+		return MV_DEFAULT_BOARD_ID;
+	}
+	gBoardId = MARVELL_BOARD_ID_BASE + readValue;
+
+#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 
 	return gBoardId;
 }
@@ -2209,12 +2205,6 @@ MV_STATUS mvBoardSmiI2c2AddrSet(MV_U8 val)
 MV_STATUS mvBoardSarBoardIdGet(MV_U8 *value)
 {
 	MV_U8		boardId;
-	MV_U16		family = mvCtrlDevFamilyIdGet(0);
-
-	if (family != MV_ALLEYCAT3_DEV_ID) {
-		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
-		return MV_ERROR;
-	}
 
 	/* The Board Id is taken from the first address-value pair of the EEPROM initialization sequence
 	   In order to support normal TWSI init sequence flow, the first pair of DWORDS on EEPROM
@@ -2235,14 +2225,16 @@ MV_STATUS mvBoardSarBoardIdSet(MV_U8 val)
 	MV_U8		boardId;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
-	if (family != MV_ALLEYCAT3_DEV_ID) {
-		DB(mvOsPrintf("%s: Controller family (0x%04x) is not supported\n", __func__, family));
-		return MV_ERROR;
-	}
-
-	if (val >= AC3_MARVELL_BOARD_NUM) {
-		mvOsPrintf("%s: Error: Unsupported board ID (%d)\n", __func__, val);
-		return MV_ERROR;
+	if (family == MV_ALLEYCAT3_DEV_ID) {
+		if (val >= AC3_MARVELL_BOARD_NUM) {
+			mvOsPrintf("%s: Error: Unsupported board ID (%d)\n", __func__, val);
+			return MV_ERROR;
+		}
+	} else {
+		if (val >= BC2_MARVELL_BOARD_NUM) {
+			mvOsPrintf("%s: Error: Unsupported board ID (%d)\n", __func__, val);
+			return MV_ERROR;
+		}
 	}
 
 	/* The Board Id is taken from the first address-value pair of the EEPROM initalization sequnce

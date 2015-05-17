@@ -87,41 +87,40 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	if (gBoardId != -1)
 		return gBoardId;
 
-/* Customer board ID's */
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-	#ifdef CONFIG_BOBCAT2
-	#ifdef CONFIG_CUSTOMER_BOARD_0
-			gBoardId = BC2_CUSTOMER_BOARD_ID0;
-		#elif CONFIG_CUSTOMER_BOARD_1
-			gBoardId = BC2_CUSTOMER_BOARD_ID1;
-		#endif
-	#elif defined CONFIG_ALLEYCAT3
+
+	#if defined CONFIG_ALLEYCAT3
 		#ifdef CONFIG_CUSTOMER_BOARD_0
 			gBoardId = AC3_CUSTOMER_BOARD_ID0;
 		#elif CONFIG_CUSTOMER_BOARD_1
 			gBoardId = AC3_CUSTOMER_BOARD_ID1;
 		#endif
+	#else /* BC2 */
+		#ifdef CONFIG_CUSTOMER_BOARD_0
+			gBoardId = BC2_CUSTOMER_BOARD_ID0;
+		#elif CONFIG_CUSTOMER_BOARD_1
+			gBoardId = BC2_CUSTOMER_BOARD_ID1;
+		#endif
 	#endif
-#else
-/* BobCat2 Board ID's */
-	#if defined(DB_BOBCAT2)
-		gBoardId = DB_DX_BC2_ID;
-	#elif defined(RD_BOBCAT2)
-		gBoardId = RD_DX_BC2_ID;
-	#elif defined(RD_MTL_BOBCAT2)
-		gBoardId = RD_MTL_BC2;
-	#else
-		MV_U8 readValue = 0;
-		/* AlleyCat3 Board ID's */
-		if (mvBoardSarBoardIdGet(&readValue) != MV_OK || readValue >= AC3_MARVELL_BOARD_NUM) {
-			mvPrintf("%s: Error obtaining Board ID from EEPROM (%d)\n", __func__, readValue);
-			mvPrintf("%s: Setting default board: DB-DXAC3-MM\n", __func__);
-			readValue = DB_AC3_ID - AC3_MARVELL_BOARD_ID_BASE;
-		}
 
-		gBoardId = AC3_MARVELL_BOARD_ID_BASE + readValue;
-	#endif
-#endif
+#else	/* !CONFIG_CUSTOMER_BOARD_SUPPORT */
+
+	MV_U8 readValue;
+
+	if (mvBoardSarBoardIdGet(&readValue) != MV_OK) {
+		mvPrintf("%s: Error obtaining Board ID from EEPROM (%d)\n", __func__, readValue);
+		mvPrintf("%s: Setting default board to: %d\n", __func__, MV_DEFAULT_BOARD_ID);
+		readValue = MV_DEFAULT_BOARD_ID;
+	}
+	readValue = readValue & (BOARD_ID_INDEX_MASK - 1);
+
+	if (readValue >= MV_MARVELL_BOARD_NUM) {
+		mvPrintf("%s: Error: read wrong board ID (%d)\n", __func__, readValue);
+		return INVALID_BOARD_ID;
+	}
+	gBoardId = MARVELL_BOARD_ID_BASE + readValue;
+
+#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 
 	return gBoardId;
 }

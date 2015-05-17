@@ -115,6 +115,7 @@ static int mv_fdt_remove_node(void *fdt, const char *path);
 static int mv_fdt_scan_and_set_alias(void *fdt, const char *name, const char *alias);
 static int mv_fdt_nand_mode_fixup(void *fdt);
 static int mv_fdt_update_pinctrl(void *fdt);
+static int mv_fdt_update_mpp_config(void *fdt);
 #ifdef MV_INCLUDE_AUDIO
 static int mv_fdt_update_audio(void *fdt);
 #endif
@@ -148,6 +149,7 @@ update_fnc_t *update_sequence[] = {
 	mv_fdt_update_usb2,			/* Get number of active USB2.0 units and update DT */
 	mv_fdt_update_usb3,			/* Get number of active USB3.0 units and update DT */
 	mv_fdt_update_ethnum,			/* Get number of active ETH port and update DT */
+	mv_fdt_update_mpp_config,		/*Update FDT entries related to mpp configuration*/
 #ifdef CONFIG_MV_SDHCI
 	mv_fdt_update_sdhci,			/* Update SDHCI driver settings in DT */
 #endif
@@ -1087,7 +1089,33 @@ static int mv_fdt_update_ethnum(void *fdt)
 
 	return 0;
 }
-
+/*******************************************************************************
+* mv_fdt_update_mpp_config
+*
+* DESCRIPTION:
+*   Update FDT entries related to mpp configuration , i.e: pinctrl-xxx
+*
+* INPUT:
+*       fdt             - FDT
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       -1 on error os 0 otherwise.
+*
+*******************************************************************************/
+static int mv_fdt_update_mpp_config(void *fdt)
+{
+#ifdef CONFIG_NET_COMPLEX
+	if (mvBoardPortTypeGet(1) != MV_PORT_TYPE_RGMII) {
+		/*By default we have the pin ctrl properties in fdt, if MAC1 not connected to RGMII we disable it*/
+		fdt_delprop(fdt, mv_fdt_find_node(fdt, "nss_complex"), "pinctrl-0");
+		fdt_delprop(fdt, mv_fdt_find_node(fdt, "nss_complex"), "pinctrl-names");
+	}
+#endif
+	return 0;
+}
 /*******************************************************************************
 * mv_fdt_update_flash
 *

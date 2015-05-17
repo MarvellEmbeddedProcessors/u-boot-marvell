@@ -29,10 +29,6 @@
 #include "mvDdr3TrainingIpPrvIf.h"
 #include "mvDdr3LoggingDef.h"
 
-#ifdef CONFIG_DDR4
-#include "mvHwsDdr4Training.h"
-#endif
-
 extern MV_HWS_TOPOLOGY_MAP *topologyMap;
 extern GT_U32 clampTbl[MAX_INTERFACE_NUM];
 

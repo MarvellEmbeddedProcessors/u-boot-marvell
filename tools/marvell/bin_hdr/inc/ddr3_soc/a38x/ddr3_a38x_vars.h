@@ -66,7 +66,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _INC_A38X_VARS_H
 
 #include "ddr3_a38x_mc_static.h"
-#include "mvDdr3TopologyDef.h"
+#include "mvDdrTopologyDef.h"
 
 /* to run DDR viewer tool (including BIST) uncomment the define
 #define MV_RUN_WIN_VALIDATION_TEST */

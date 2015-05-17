@@ -47,9 +47,6 @@
 
 #include "mvDdr3TrainingIp.h"
 #include "mvDdr3TrainingIpPbs.h"
-#ifdef CONFIG_DDR4
-#include "mvDdr4TrainingIpFlow.h"
-#endif
 
 #ifdef __cplusplus
    extern "C"
@@ -380,9 +377,23 @@ Address Bits   Value   Description
 #define CS_PBS_GAP(csNum)   (csNum*0x10)
 #define ADLL_LENGTH (32)
 
+#ifdef CONFIG_DDR4
+/* DDR4 MRS */
+#define MRS4_CMD (0x10)
+#define MRS5_CMD (0X11)
+#define MRS6_CMD (0X12)
 
-/************************* Enums ***********************************************/
-
+/* DDR4 Registers */
+#define DDR4_MR0_REG                      (0x1900)
+#define DDR4_MR1_REG                      (0x1904)
+#define DDR4_MR2_REG                      (0x1908)
+#define DDR4_MR3_REG                      (0x190C)
+#define DDR4_MR4_REG                      (0x1910)
+#define DDR4_MR5_REG                      (0x1914)
+#define DDR4_MR6_REG                      (0x1918)
+#define DDR4_MPR_WR_REG                   (0x19D0)
+#define DRAM_PINS_MUX_REG                 (0x19D4)
+#endif
 
 
 /************************* Structures ***********************************************/
@@ -403,6 +414,56 @@ typedef struct
       /* Mask used in register */
 }PageElement;
 
+#ifdef CONFIG_DDR4
+/******************************************************************************
+* Name:     ddr4TipDynamicWriteLevelingSupp
+* Desc:     Write leveling phase correction
+* Args:     devNum - device number
+*
+* Notes:
+* Returns:  OK if success, other error code if fail.
+*/
+GT_STATUS ddr4TipDynamicWriteLevelingSupp
+(
+	GT_U32 devNum
+);
+
+GT_STATUS    ddr4TipConfigurePhy
+(
+    GT_U32    devNum
+);
+
+GT_STATUS ddr4TipSetTiming
+(
+    GT_U32				    devNum,
+    MV_HWS_ACCESS_TYPE      accessType,
+    GT_U32					interfaceId,
+    MV_HWS_DDR_FREQ			frequency
+);
+
+GT_STATUS ddr4ModeRegsInit
+(
+    GT_U8 devNum
+);
+
+GT_STATUS ddr4SdramConfig
+(
+    GT_U32 devNum
+);
+
+GT_STATUS    ddr4TipCalibrationAdjust
+(
+    GT_U32		devNum,
+	GT_U8		Vref_en,
+	GT_U8		POD_Only
+);
+
+GT_STATUS ddr3TipDDR4Ddr4TrainingMainFlow
+(
+    GT_U32 devNum
+);
+
+#endif
 
 /******************************************************************************
 * Name:     ddr3TipWriteLevelingStaticConfig.

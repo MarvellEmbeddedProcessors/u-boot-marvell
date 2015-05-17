@@ -24,8 +24,13 @@
 #include "ctrlEnv/mvCtrlEnvLib.h"
 #include "boardEnv/mvBoardEnvLib.h"
 
-extern MV_BOARD_INFO *marvellAC3BoardInfoTbl[];
-
+#if defined CONFIG_ALLEYCAT3
+	extern MV_BOARD_INFO *marvellAC3BoardInfoTbl[];
+	MV_BOARD_INFO **mvMsysBoardInfoTbl = marvellAC3BoardInfoTbl;
+#else
+	extern MV_BOARD_INFO *marvellBC2BoardInfoTbl[];
+	MV_BOARD_INFO **mvMsysBoardInfoTbl = marvellBC2BoardInfoTbl;
+#endif
 /*
    bc2 sample and reset register
 #     4f       #     4e       #     4d       #      4c      #
@@ -53,9 +58,9 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 	CMD_AVS_MODE,
 	CMD_SLAVE_ADDR,
 	CMD_DEVICE_NUM,
-	CMD_BOARD_ID,
 	CMD_DDR_ECC_EN,
 #endif
+	CMD_BOARD_ID,
 	CMD_PCIE_MODE,
 	CMD_BOOTSRC,
 	CMD_DEVICE_ID,
@@ -74,6 +79,7 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 						   0,	/* OOB0 connection */
 						   0,	/* OOB1 connection */
 						   0,	/* Force AMC RC GEN1 PCIe */
+						   0,	/* Board ID */
 						   0,	/* PCIe mode */
 						   3,	/* Boot source */
 						   0 };	/* Device ID */
@@ -87,8 +93,8 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 						   1,	/* AVS Mode */
 						   1,	/* I2C/SMI Slave address */
 						   0,	/* Device number */
-						   0,	/* Board ID */
 						   0,	/* DDR ECC enable */
+						   0,	/* Board ID */
 						   0,	/* PCIe mode */
 						   3,	/* Boot source */
 						   0 };	/* Device ID */
@@ -156,11 +162,11 @@ static int sar_cmd_get(const char *cmd)
 		return CMD_SLAVE_ADDR;
 	if (strcmp(cmd, "devicenum") == 0)
 		return CMD_DEVICE_NUM;
-	if (strcmp(cmd, "boardid") == 0)
-		return CMD_BOARD_ID;
 	if (strcmp(cmd, "ddreccenable") == 0)
 		return CMD_DDR_ECC_EN;
 #endif
+	if (strcmp(cmd, "boardid") == 0)
+		return CMD_BOARD_ID;
 	if (strcmp(cmd, "pcimode") == 0)
 		return CMD_PCIE_MODE;
 	if (strcmp(cmd, "bootsrc") == 0)
@@ -301,18 +307,18 @@ static int do_sar_list(int mode)
 		printf("\t|  1  |          1          |\n");
 		printf("\t-----------------------------\n");
 		break;
-	case CMD_BOARD_ID:
-		printf("Determines the board ID (0-7)\n");
-		printf("\t| ID  |      Board               |\n");
-		printf("\t----------------------------------\n");
-		for (i = 0; i < AC3_MARVELL_BOARD_NUM ; i++)
-			printf("\t|  %d  |  %-22s  |\n", i, marvellAC3BoardInfoTbl[i]->boardName );
-		printf("\t----------------------------------\n");
-		break;
 	case CMD_DEVICE_NUM:
 		printf("Determines the device number (0-3)\n");
 		break;
 #endif
+	case CMD_BOARD_ID:
+		printf("Determines the board ID (0-7)\n");
+		printf("\t| ID  |      Board               |\n");
+		printf("\t----------------------------------\n");
+		for (i = 0; i < MV_MARVELL_BOARD_NUM ; i++)
+			printf("\t|  %d  |  %-22s  |\n", i, mvMsysBoardInfoTbl[i]->boardName );
+		printf("\t----------------------------------\n");
+		break;
 	case CMD_PCIE_MODE:
 		printf("Determines the PCI-E mode:\n");
 		printf("\t| ID  |       Mode     |\n");
@@ -459,14 +465,14 @@ static int do_sar_read(int mode)
 			printf("devicenum Error: failed reading devicenum\n");
 		break;
 
+#endif
 	case CMD_BOARD_ID:
 		if (mvBoardSarBoardIdGet(&tmp) == MV_OK)
-			printf("boardid\t\t\t= %d ==>  %s\n", tmp, marvellAC3BoardInfoTbl[tmp]->boardName);
+			printf("boardid\t\t\t= %d ==>  %s\n", tmp, mvMsysBoardInfoTbl[tmp]->boardName);
 		else
 			printf("boardid Error: failed reading boardid\n");
 		break;
 
-#endif
 	case CMD_PCIE_MODE:
 		if (mvBoardPcieModeGet(&tmp) == MV_OK)
 			printf("pcimode \t\t= %d ==>  %s\n", tmp, ((tmp == 0) ? "Endpoint" : "Root Complex"));
@@ -565,13 +571,13 @@ static int do_sar_write(int mode, int value)
 	case CMD_SLAVE_ADDR:
 		rc = mvBoardSmiI2c2AddrSet(tmp);
 		break;
-	case CMD_BOARD_ID:
-		rc = mvBoardSarBoardIdSet(tmp);
-		break;
 	case CMD_DEVICE_NUM:
 		rc = mvBoardDeviceNumSet(tmp);
 		break;
 #endif
+	case CMD_BOARD_ID:
+		rc = mvBoardSarBoardIdSet(tmp);
+		break;
 	case CMD_PCIE_MODE:
 		rc = mvBoardPcieModeSet(tmp);
 		break;
@@ -583,15 +589,13 @@ static int do_sar_write(int mode, int value)
 		break;
 	case CMD_DEFAULT:
 		for (i = 0 ; i < CMD_DUMP; i++) {
-#if defined CONFIG_ALLEYCAT3
 			if (i == CMD_BOARD_ID) {
 				MV_U32 brdId = mvBoardIdGet();
-				if ((brdId < AC3_MARVELL_BOARD_ID_BASE) || (brdId >= AC3_MARVELL_MAX_BOARD_ID))
+				if ((brdId < MARVELL_BOARD_ID_BASE) || (brdId >= MV_MAX_MARVELL_BOARD_ID))
 					mvOsPrintf("Bad Board ID returned - %d! Assigning default value!\n", brdId);
 				else
-					defaultValue[i] = brdId - AC3_MARVELL_BOARD_ID_BASE; /* Update default value with real board ID*/
+					defaultValue[i] = brdId - MARVELL_BOARD_ID_BASE; /* Update default value with real board ID*/
 			}
-#endif /* CONFIG_ALLEYCAT3 */
 			if (1 == do_sar_write(i, defaultValue[i]))
 				rc = MV_FALSE;
 			do_sar_read(i);
@@ -623,12 +627,10 @@ int do_sar(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 	cmd = argv[1];
 	mode = sar_cmd_get(argv[2]);
 
-#if defined CONFIG_ALLEYCAT3
-	if(mvBoardIdGet() != DB_AC3_ID && mode != CMD_BOARD_ID) {
+	if(mvBoardIdGet() != MV_DEFAULT_BOARD_ID && mode != CMD_BOARD_ID) {
 		mvOsPrintf("Error: Sample at reset supports modifying only 'boardid' field for current board\n\n");
 		goto usage;
 	}
-#endif
 
 	if (strcmp(cmd, "list") == 0)
 		return do_sar_list(mode);
@@ -674,13 +676,13 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 #endif
 "bootsrc                    - Boot source\n"
 "deviceid                   - Device ID\n"
-#ifdef CONFIG_ALLEYCAT3
-"\t----Legacy fileds----\n"
-"pllclock                   - PLL2 VCO clock frequency. Valid for rev.A0 only\n"
 "\n\tSW SatR fields\n"
 "\t--------------\n"
-"ddreccenable               - DDR ECC modes\n"
 "boardid                    - Board ID\n"
+#ifdef CONFIG_ALLEYCAT3
+"ddreccenable               - DDR ECC modes\n"
+"\t----Legacy fileds----\n"
+"pllclock                   - PLL2 VCO clock frequency. Valid for rev.A0 only\n"
 #endif
 );
 #endif /*defined(CONFIG_CMD_SAR)*/

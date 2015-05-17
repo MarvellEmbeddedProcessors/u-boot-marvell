@@ -364,7 +364,7 @@ if($opt_d eq 4)
 }
 
 #by default -d 2 will be enabled for new TIP SoCs
-if (($ddr3LibBuild eq "yes") and !($opt_m eq 4)) {
+if ($ddr3LibBuild eq "yes") {
 	$opt_d = 2;
 }
 

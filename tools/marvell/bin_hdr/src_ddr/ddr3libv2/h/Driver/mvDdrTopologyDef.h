@@ -69,9 +69,126 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvDdr3TrainingIpDef.h"
 
 #ifdef CONFIG_DDR3
-#include "mvDdr3TopologyDef.h"
+typedef enum
+{
+   SPEED_BIN_DDR_800D,
+   SPEED_BIN_DDR_800E,
+   SPEED_BIN_DDR_1066E,
+   SPEED_BIN_DDR_1066F,
+   SPEED_BIN_DDR_1066G,
+   SPEED_BIN_DDR_1333F,
+   SPEED_BIN_DDR_1333G,
+   SPEED_BIN_DDR_1333H,
+   SPEED_BIN_DDR_1333J,
+   SPEED_BIN_DDR_1600G,
+   SPEED_BIN_DDR_1600H,
+   SPEED_BIN_DDR_1600J,
+   SPEED_BIN_DDR_1600K,
+   SPEED_BIN_DDR_1866J,
+   SPEED_BIN_DDR_1866K,
+   SPEED_BIN_DDR_1866L,
+   SPEED_BIN_DDR_1866M,
+   SPEED_BIN_DDR_2133K,
+   SPEED_BIN_DDR_2133L,
+   SPEED_BIN_DDR_2133M,
+   SPEED_BIN_DDR_2133N,
+
+   SPEED_BIN_DDR_1333H_EXT,
+   SPEED_BIN_DDR_1600K_EXT,
+   SPEED_BIN_DDR_1866M_EXT
+}MV_HWS_SPEED_BIN;
+
+typedef enum
+{
+  DDR_FREQ_LOW_FREQ,
+  DDR_FREQ_400,
+  DDR_FREQ_533,
+  DDR_FREQ_667,
+  DDR_FREQ_800,
+  DDR_FREQ_933,
+  DDR_FREQ_1066,
+  DDR_FREQ_311,
+  DDR_FREQ_333,
+  DDR_FREQ_467,
+  DDR_FREQ_850,
+  DDR_FREQ_600,
+  DDR_FREQ_300,
+  DDR_FREQ_900,
+  DDR_FREQ_360,
+  DDR_FREQ_1000,
+   DDR_FREQ_LIMIT
+}MV_HWS_DDR_FREQ;
+
+typedef enum
+{
+    speedBinTableElements_tRCD,
+    speedBinTableElements_tRP,
+    speedBinTableElements_tRAS,
+    speedBinTableElements_tRC,
+    speedBinTableElements_tRRD1K,
+    speedBinTableElements_tRRD2K,
+    speedBinTableElements_tPD,
+    speedBinTableElements_tFAW1K,
+    speedBinTableElements_tFAW2K,
+    speedBinTableElements_tWTR,
+    speedBinTableElements_tRTP,
+    speedBinTableElements_tWR,
+    speedBinTableElements_tMOD
+}speedBinTableElements;
+
 #elif defined(CONFIG_DDR4)
-#include "mvDdr4TopologyDef.h"
+
+typedef enum
+{
+    SPEED_BIN_DDR_1600J,
+    SPEED_BIN_DDR_1600K,
+    SPEED_BIN_DDR_1600L,
+    SPEED_BIN_DDR_1866L,
+    SPEED_BIN_DDR_1866M,
+    SPEED_BIN_DDR_1866N,
+    SPEED_BIN_DDR_2133N,
+    SPEED_BIN_DDR_2133P,
+    SPEED_BIN_DDR_2133R,
+    SPEED_BIN_DDR_2400P,
+    SPEED_BIN_DDR_2400R,
+    SPEED_BIN_DDR_2400U,
+}MV_HWS_SPEED_BIN;
+
+typedef enum
+{
+    DDR_FREQ_LOW_FREQ,
+    DDR_FREQ_667,
+    DDR_FREQ_800,
+    DDR_FREQ_933,
+    DDR_FREQ_1066,
+	DDR_FREQ_900,
+	DDR_FREQ_1000,
+    DDR_FREQ_LIMIT
+}MV_HWS_DDR_FREQ;
+
+typedef enum
+{
+    speedBinTableElements_tRCD,
+    speedBinTableElements_tRP,
+    speedBinTableElements_tRAS,
+    speedBinTableElements_tRC,
+    speedBinTableElements_tRRD0_5K,
+    speedBinTableElements_tRRD1K,
+    speedBinTableElements_tRRD2K,
+    speedBinTableElements_tRRDL0_5K,
+    speedBinTableElements_tRRDL1K,
+    speedBinTableElements_tRRDL2K,
+    speedBinTableElements_tPD,
+    speedBinTableElements_tFAW0_5K,
+    speedBinTableElements_tFAW1K,
+    speedBinTableElements_tFAW2K,
+    speedBinTableElements_tWTR,
+    speedBinTableElements_tWTRL,
+    speedBinTableElements_tRTP,
+    speedBinTableElements_tWR,
+    speedBinTableElements_tMOD
+}speedBinTableElements;
+
 #else
 # error "CONFIG_DDR3 or CONFIG_DDR4 must be defined !!!"
 #endif

@@ -66,7 +66,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _INC_A39X_VARS_H
 
 #include "ddr3_a39x_mc_static.h"
-#include "mvDdr3TopologyDef.h"
+#include "mvDdrTopologyDef.h"
 
 typedef struct __mvDramModes {
     char *mode_name;

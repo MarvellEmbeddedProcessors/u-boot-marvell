@@ -31,10 +31,6 @@
 #include "mvDdr3TrainingIpPrvIf.h"
 #include "mvDdr3LoggingDef.h"
 
-#ifdef CONFIG_DDR4
-#include "mvHwsDdr4Training.h"
-#include "mvHwsDdr4MprPdaIf.h"
-#endif
 /************************** definitions ******************************/
 #ifdef FreeRTOS
 #define DFX_BAR1_BASE        (0x80000000)
@@ -49,7 +45,6 @@
 
 /*#define TIME_2_CLOCK_CYCLES(prm, clk)   ((prm-1)/clk)*/
 #define TIME_2_CLOCK_CYCLES             CEIL_DIVIDE
-
 
 #define GET_CS_FROM_MASK(mask) (csMask2Num[mask])
 #define CS_CBE_VALUE(csNum)   (csCbeReg[csNum])
@@ -105,11 +100,6 @@ GT_U32 debugMode = GT_FALSE;
 GT_U32 delayEnable = 0;
 static GT_U32 freqMask[HWS_MAX_DEVICE_NUM][DDR_FREQ_LIMIT];
 GT_BOOL rlMidFreqWA = GT_FALSE;
-extern GT_U32 ddr4TipConfigurePhyVrefTap;
-
-#ifdef CONFIG_DDR4
-extern GT_U8	vrefCalibrationWA; /*1 means SSTL & POD gets the same Vref and a WA is needed*/
-#endif
 
 GT_U32 vrefInitialValue = 0x4;
 GT_U32 ckDelay = MV_PARAMS_UNDEFINED;
@@ -332,12 +322,7 @@ const GT_CHAR* mvHwsDdr3TipVersionGet(void)
     return DDR3_TIP_VERSION_STRING;
 }
 
-#ifdef CONFIG_DDR4
-const GT_CHAR* mvHwsDdr4SubLibVersionGet(void)
-{
-    return DDR4_TIP_SUBVERSION_STRING;
-}
-#endif
+extern const GT_CHAR* mvHwsDdr4SubLibVersionGet(void);
 
 void ddr3PrintVersion()
 {
@@ -755,14 +740,7 @@ GT_STATUS    mvHwsDdr3TipInitController
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, CALIB_MACHINE_CTRL_REG, calibrationUpdateControl<<3, 0x3<<3));
     }
 #ifdef CONFIG_DDR4
-	if(vrefCalibrationWA == 0){
-		CHECK_STATUS(ddr4TipCalibrationValidate(devNum));
-	}
-	else{
-		CHECK_STATUS(ddr4TipCalibrationAdjust(devNum, ddr4TipConfigurePhyVrefTap,1,0));/*devNum,VrefTap,Vref_en,POD_Only*/
-	}
-    ddr4ModeRegsInit(devNum);
-    ddr4SdramConfig(devNum);
+	CHECK_STATUS(ddr4TipCalibrationAdjust(devNum, 1,0));/*devNum,VrefTap,Vref_en,POD_Only*/
 #endif
 
     CHECK_STATUS(ddr3TipEnableInitSequence(devNum));
@@ -2673,46 +2651,6 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
         }
     }
 
-#ifdef CONFIG_DDR4__NOT_USED
-	if (maskTuneFunc & PER_BIT_READ_LEVELING_TF_MASK_BIT)
-    {
-       trainingStage = PER_BIT_READ_LEVELING_TF;
-       DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("PER_BIT_READ_LEVELING_TF_MASK_BIT \n"));
-       retVal = ddr3TipDynamicPerBitReadLeveling(devNum, topologyMap->interfaceParams[firstActiveIf].memoryFreq);
-       if (isRegDump != 0)
-       {
-           ddr3TipRegDump(devNum);
-       }
-       if (retVal != GT_OK)
-       {
-            DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("ddr3TipDynamicPerBitReadLeveling TF failure \n")); 
-            if (debugMode == GT_FALSE)
-            {
-                return GT_FAIL; 
-            }
-       }
-    }
-
-    if (maskTuneFunc & SW_READ_LEVELING_MASK_BIT)
-    {
-        trainingStage = SW_READ_LEVELING;
-        DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("SW_READ_LEVELING_MASK_BIT\n"));
-		retVal = ddr4TipSoftwareReadLeveling(devNum, mediumFreq);
-        if (isRegDump != 0)
-        {
-           ddr3TipRegDump(devNum);
-        }
-        if (retVal != GT_OK)
-        {
-            DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("ddr4TipSoftwareReadLeveling failure \n"));
-            if (debugMode == GT_FALSE)
-            {
-                return GT_FAIL;
-            }
-        }
-    }
-#endif /* CONFIG_DDR4 */
-
 #ifdef CONFIG_DDR3
     if (maskTuneFunc & DM_PBS_TX_MASK_BIT)
     {
@@ -2789,81 +2727,7 @@ static GT_STATUS    ddr3TipDDR3Ddr3TrainingMainFlow
 
 #ifdef CONFIG_DDR4
 	for(effective_cs = 0; effective_cs < max_cs; effective_cs++){
-		if (maskTuneFunc & RECEIVER_CALIBRATION_MASK_BIT)
-		{
-		   trainingStage = RECEIVER_CALIBRATION;
-		    DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("RECEIVER_CALIBRATION_MASK_BIT #%d\n", effective_cs));
-		    retVal = ddr4TipReceiverCalibration(devNum);
-		    if (isRegDump != 0)
-		    {
-		       ddr3TipRegDump(devNum);
-		    }
-		    if (retVal != GT_OK)
-		    {
-		        DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("ddr4TipReceiverCalibration failure \n"));
-		        if (debugMode == GT_FALSE)
-		        {
-		            return GT_FAIL;
-		        }
-		    }
-		}
-
-		if (maskTuneFunc & WL_PHASE_CORRECTION_MASK_BIT)
-		{
-		   trainingStage = WL_PHASE_CORRECTION;
-		    DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("WL_PHASE_CORRECTION_MASK_BIT #%d\n", effective_cs));
-		    retVal = ddr4TipDynamicWriteLevelingSupp(devNum);
-		    if (isRegDump != 0)
-		    {
-		       ddr3TipRegDump(devNum);
-		    }
-		    if (retVal != GT_OK)
-		    {
-		        DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("ddr4TipDynamicWriteLevelingSupp failure\n"));
-		        if (debugMode == GT_FALSE)
-		        {
-		            return GT_FAIL;
-		        }
-		    }
-		}
-
-		if (maskTuneFunc & DQ_VREF_CALIBRATION_MASK_BIT)
-		{
-		   trainingStage = DQ_VREF_CALIBRATION;
-		    DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("DQ_VREF_CALIBRATION_MASK_BIT #%d\n", effective_cs));
-		    retVal = ddr4TipDqVrefCalibration(devNum);
-		    if (isRegDump != 0)
-		    {
-		       ddr3TipRegDump(devNum);
-		    }
-		    if (retVal != GT_OK)
-		    {
-		        DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("ddr4TipDqVrefCalibration failure\n"));
-		        if (debugMode == GT_FALSE)
-		        {
-		            return GT_FAIL;
-		        }
-		    }
-		}
-	}
-	effective_cs = 0;
-    if (maskTuneFunc & DQ_MAPPING_MASK_BIT)
-    {
-       trainingStage = DQ_MAPPING;
-        DEBUG_TRAINING_IP(DEBUG_LEVEL_INFO, ("DQ_MAPPING_MASK_BIT\n"));
-        retVal = ddr4DqPinsMapping(devNum);
-        if (isRegDump != 0)
-        {
-           ddr3TipRegDump(devNum);
-        }
-        if (retVal != GT_OK)
-        {
-            DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("ddr4DqPinsMapping failure\n"));
-            if (debugMode == GT_FALSE)
-            {
-                return GT_FAIL;
-            }
-        }
+	CHECK_STATUS(ddr3TipDDR4Ddr4TrainingMainFlow(devNum));
     }
 #endif
 

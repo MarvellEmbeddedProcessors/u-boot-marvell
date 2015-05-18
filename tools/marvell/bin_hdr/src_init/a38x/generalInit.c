@@ -121,12 +121,33 @@ MV_STATUS mvGeneralInit(void)
 	MV_U32 regData;
 
 	/* Update AVS debug control register */
-        MV_REG_WRITE(AVS_DEBUG_CNTR_REG, AVS_DEBUG_CNTR_DEFAULT_VALUE);
+    MV_REG_WRITE(AVS_DEBUG_CNTR_REG, AVS_DEBUG_CNTR_DEFAULT_VALUE);
+    MV_REG_WRITE(AVS_DEBUG_CNTR_REG, AVS_DEBUG_CNTR_DEFAULT_VALUE);
 
-        regData = MV_REG_READ(AVS_ENABLED_CONTROL);
-        regData &= ~(AVS_LOW_VDD_LIMIT_MASK | AVS_HIGH_VDD_LIMIT_MASK);
-	regData |= (AVS_LOW_VDD_LIMIT_VAL | AVS_HIGH_VDD_LIMIT_VAL);
-        MV_REG_WRITE(AVS_ENABLED_CONTROL, regData);
+    regData = MV_REG_READ(AVS_ENABLED_CONTROL);
+	regData &= ~(AVS_LOW_VDD_LIMIT_MASK | AVS_HIGH_VDD_LIMIT_MASK);
+#ifdef CONFIG_ARMADA_38X
+	/* 1. Armada38x was signed off for 1600/800 at 1.15V (AVS)
+	 * 2. Based on ATE/system correlation, in order to achieve higher speeds (1866MHz, 2000MHz),
+	 *    we need to overdrive the chip to 1.25V (AVS)
+	 * 3. Current U-Boot (in the absence of SVC) - must align with this requirement and select
+	 *    voltage between the two levels, based on S@R (CPU <= 1600MHz --> AVS@ 1.15V)
+	 */
+	{
+		MV_U32 satrFreq;
+		satrFreq = (MV_REG_READ(DEVICE_SAMPLE_AT_RESET1_REG) >> SAR_FREQ_OFFSET) & SAR_FREQ_MASK;
+
+		/*Set AVS value only for normative core freq(1600Mhz and less), for high freq leave default value*/
+		if(satrFreq <= 0xD){
+			regData |= ( (AVS_LIMIT_VAL_SLOW << AVS_LOW_VDD_LIMIT_OFFS) | (AVS_LIMIT_VAL_SLOW << AVS_HIGH_VDD_LIMIT_OFFS));
+			MV_REG_WRITE(AVS_ENABLED_CONTROL, regData);
+		}
+	}
+#else
+		regData |= ( (AVS_LIMIT_VAL << AVS_LOW_VDD_LIMIT_OFFS) | (AVS_LIMIT_VAL << AVS_HIGH_VDD_LIMIT_OFFS));
+		MV_REG_WRITE(AVS_ENABLED_CONTROL, regData);
+#endif
+
 
 	mvMppConfig();
 

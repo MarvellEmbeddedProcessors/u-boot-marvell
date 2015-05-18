@@ -160,7 +160,7 @@ int avago_i2c_read(
     (void)length;
     (void)*buffer;
 
-    return aapl_fail(aapl,__func__,__LINE__,"Implementation missing.\n");
+    return aapl_fail(aapl,__func__,__LINE__,"Implementation missing.\n",0);
 }
 
 /** */

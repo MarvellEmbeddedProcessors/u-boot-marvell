@@ -27,7 +27,7 @@
 /** @file */
 /** @brief Functions for PMD training. */
 
-
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /*============================================================================= */
 /* SERDES PMD CONFIG CONSTRUCTOR */
 /* */
@@ -61,6 +61,7 @@ void avago_serdes_pmd_config_destruct(
 {
     aapl_free(aapl, pmd_config, __func__);
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 
 static void serdes_pmd_cl91_lane_config(
     Aapl_t *aapl,

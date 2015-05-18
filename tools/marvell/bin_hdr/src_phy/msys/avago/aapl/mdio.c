@@ -147,7 +147,7 @@ uint avago_mdio(
     }
     #endif
 
-    aapl_fail(aapl,__func__,__LINE__,"Implementation missing.\n");
+    aapl_fail(aapl,__func__,__LINE__,"Implementation missing.\n",0);
     return ~0;
 }
 

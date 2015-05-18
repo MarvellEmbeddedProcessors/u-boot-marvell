@@ -28,7 +28,13 @@
 
 #define AAPL_ENABLE_INTERNAL_FUNCTIONS
 #include "aapl.h"
+int avago_pex_sbus(Aapl_t *aapl,
+    unsigned int sbus_addr, /**< [in] Address of the sbus device */
+    unsigned char reg_addr, /**< [in] Address of the register */
+    unsigned char command,  /**< [in] Type of command */
+    unsigned int sbus_data); /**< [in] Data to write for a <b>write</b> command */
 
+#ifndef MV_HWS_REDUCED_BUILD
 #if AAPL_ALLOW_OFFLINE_SBUS
 
 static int *sbus_reg = 0;
@@ -111,8 +117,20 @@ static uint offline_sbus(
     else if (command == 0x02) data = sbus_reg[index];
     return data;
 }
-
 #endif
+
+#endif /* MV_HWS_REDUCED_BUILD */
+
+/* Commnunication via PEX to replace I2C */
+int avago_pex_sbus(
+    Aapl_t *aapl,           /**< [in/out] Pointer to AAPL structure */
+    unsigned int sbus_addr, /**< [in] Address of the sbus device */
+    unsigned char reg_addr, /**< [in] Address of the register */
+    unsigned char command,  /**< [in] Type of command */
+    unsigned int sbus_data) /**< [in] Data to write for a <b>write</b> command */
+{
+    return 0;
+}
 
 /*============================================================================= */
 /* S B U S */
@@ -131,7 +149,9 @@ uint avago_sbus(
     uint sbus_data,         /**< [in] Data to write */
     int recv_data_back)     /**< [in] Allows AACS protocol optimization. */
 {
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     char sbus_cmd[AAPL_SBUS_CMD_LOG_BUF_SIZE+1];
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
     uint data = 0;
     Avago_addr_t addr_struct;
 
@@ -156,6 +176,7 @@ uint avago_sbus(
         return data;
     }
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     snprintf(sbus_cmd, AAPL_SBUS_CMD_LOG_BUF_SIZE, "sbus %x%x%02x %02x %02x 0x%08x",
         addr_struct.chip, addr_struct.ring, addr_struct.sbus & 0xff, reg_addr, command, sbus_data);
 
@@ -200,14 +221,20 @@ uint avago_sbus(
     }
     else
     {
-        aapl_fail(aapl,__func__,__LINE__,"Implementation missing.\n");
+        aapl_fail(aapl,__func__,__LINE__,"Implementation missing.\n",0);
         return -1;
     }
+#else
+    data = (uint)avago_pex_sbus(aapl, sbus_addr, reg_addr, command, sbus_data);
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     aapl_log_printf(aapl, AVAGO_DEBUG8, __func__, __LINE__, "%s -> 0x%08x\n", sbus_cmd, data);
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
     return data;
 }
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 int avago_sbus_open(Aapl_t *aapl)
 {
     int rc;
@@ -243,6 +270,7 @@ int avago_sbus_close(Aapl_t *aapl)
     aapl_log_printf(aapl, AVAGO_DEBUG8, __func__, __LINE__, "close status = %d\n", rc);
     return rc;
 }
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /*============================================================================= */
 /*  SBUS RD */
@@ -273,6 +301,7 @@ uint avago_sbus_wr(
     return avago_sbus(aapl, sbus_addr, reg_addr, 0x01, sbus_data, 0);
 }
 
+#ifndef MV_HWS_REDUCED_BUILD
 /*============================================================================= */
 /*  SBUS WR FLUSH */
 /* */
@@ -287,7 +316,7 @@ uint avago_sbus_wr_flush(
 {
     return avago_sbus(aapl, sbus_addr, reg_addr, 0x01, sbus_data, 1);
 }
-
+#endif /* MV_HWS_REDUCED_BUILD */
 /*============================================================================= */
 /*  SBUS RMW */
 /* */
@@ -323,6 +352,8 @@ void avago_sbus_reset(
 
     if( hard )
     {
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+
 #if AAPL_ALLOW_AACS
         if (aapl->capabilities & AACS_SERVER_SBUS_RESET)
         {
@@ -399,12 +430,18 @@ void avago_sbus_reset(
         else if(aapl_is_i2c_communication_method(aapl))
         {
             avago_i2c_sbus(aapl, sbus_addr_in, 0, 3, 0);
+#else
+            avago_pex_sbus(aapl, sbus_addr_in, 0, 3, 0);
+#endif /* MV_HWS_REDUCED_BUILD */
+
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
         }
         else if (!aapl_is_aacs_communication_method(aapl))
         {
-            aapl_log_printf(aapl, AVAGO_WARNING, __func__, __LINE__, "Hard reset not implemented, using soft SBus reset instead.\n");
+            aapl_log_printf(aapl, AVAGO_WARNING, __func__, __LINE__, "Hard reset not implemented, using soft SBus reset instead.\n", 0);
             hard = 0;
         }
+#endif /* MV_HWS_REDUCED_BUILD */
     }
 
     if(hard)
@@ -423,9 +460,12 @@ void avago_sbus_reset(
 
         if (!hard)
             avago_sbus(aapl, sbus_addr, 0x00, 0x00, 0x00, 1);
-
+#ifndef MV_HWS_REDUCED_BUILD
         if( aapl_check_ip_type(aapl, sbus_addr, __func__, __LINE__, FALSE, 1, AVAGO_SERDES) &&
             aapl_check_process(aapl, sbus_addr, __func__, __LINE__, FALSE, 2, AVAGO_PROCESS_B, AVAGO_PROCESS_F) )
+#else
+        if( aapl_check_ip_type(aapl, sbus_addr, __func__, __LINE__, FALSE, 1, AVAGO_SERDES))
+#endif /* MV_HWS_REDUCED_BUILD */
         {
             avago_sbus_wr(aapl, sbus_addr, 0x01, 0x20000000);
         }
@@ -468,9 +508,9 @@ BOOL avago_diag_sbus_rw_test(
         avago_sbus_wr(aapl, addr, 0x13, orig_val);
     }
     AAPL_SUPPRESS_ERRORS_POP(aapl);
-
+#ifndef MV_HWS_REDUCED_BUILD
     if (!result) aapl_fail(aapl, __func__, __LINE__, "SBus readback failed on loop %d. Expected 0x%02x, but got 0x%02x.\n", x, ran, data);
     else         aapl_log_printf(aapl, AVAGO_DEBUG1, __func__, __LINE__, "SBus R/W test passed on address %s after %d cycles.\n", aapl_addr_to_str(addr), cycles);
-
+#endif /* MV_HWS_REDUCED_BUILD */
     return result;
 }

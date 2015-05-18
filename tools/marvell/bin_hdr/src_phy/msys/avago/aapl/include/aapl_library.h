@@ -64,7 +64,7 @@ typedef unsigned int uint;
 
 /* Determine number of elements in a static array: */
 #define AAPL_ARRAY_LENGTH(a)   (int)(sizeof(a) / sizeof((a)[0]))
-
+#ifndef MV_HWS_REDUCED_BUILD
 /* Specify how to declare a 64 bit constant: */
 #ifdef __INT64_C
 #   define AAPL_CONST_INT64(x) __INT64_C(x)
@@ -77,22 +77,25 @@ typedef unsigned int uint;
 #else
 #   define AAPL_CONST_INT64(x) (x)
 #endif
+#endif /* MV_HWS_REDUCED_BUILD */
 
 #ifdef AAPL_ENABLE_INTERNAL_FUNCTIONS
 
 EXT void  ms_sleep(uint msec);
-
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /* Converts data to a 32 character ASCII encoded binary str with optional underscores every 8 bits */
 EXT char *aapl_hex_2_bin(char *str, uint data, int underscore_en, int bits);
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /* Portability utility functions: */
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 EXT int   aapl_strcasecmp(const char *s1, const char *s2);
 EXT int   aapl_strncasecmp(const char *s1, const char *s2, size_t len);
 EXT char *aapl_strdup(const char *string);
 EXT void  aapl_str_rep(char *str, char search, char replace);
 EXT char *aapl_strtok_r(char *str, const char *delim, char **saveptr);
 EXT size_t aapl_local_strftime(char *buf, size_t max, const char *format);
-
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 #endif
 
 #endif

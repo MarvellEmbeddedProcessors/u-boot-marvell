@@ -12,11 +12,11 @@
 /** @file */
 /** @brief Implementation of AACS Server functionality. */
 
+#define AAPL_ENABLE_INTERNAL_FUNCTIONS
+#include "aapl.h"
 #ifndef __MINGW32__
 #include <arpa/inet.h>
 #endif
-
-#include "aapl.h"
 
 #define BUFLEN 4096  /* for local I/O buffers. */
 
@@ -140,7 +140,6 @@ static void cmd_error(Aapl_t *aapl, char *result, const char *fmt, ...)
 
     /* Print to the aapl log */
     aapl_log_printf(aapl, AVAGO_WARNING, __func__, __LINE__, "%s\n", result);
-
     memmove(result+7, result, strlen(result)+1); /* move the string to the right by 7 */
     memcpy(result, "ERROR: ", 7);
     va_end(ap);
@@ -700,10 +699,8 @@ static void sbus_mode_command(Aapl_t * aapl, const char * cmd, const char * cp, 
 {
     const char *cp2;
     Aapl_comm_method_t comm_method;
-
     SKIPSPACE(cp);
     if (ISEOL(cp)) {snprintf(result, BUFLEN, "%s", aapl_comm_method_to_str(aapl->communication_method)); return;}
-
     cp2 = cp;
 
     if( aapl_str_to_comm_method(cp2,&comm_method) ) aapl->communication_method = comm_method;
@@ -921,7 +918,6 @@ EXT int avago_aacs_server(
         aapl_fail(aapl, __func__, __LINE__, "Cannot create PF_INET socket: %s.\n", strerror(errno));
         return 0;
     }
-
     aapl_log_printf(aapl, AVAGO_INFO, 0, 0, "AAPL AACS server version %s is now listening for TCP connections on port %d...\n", AAPL_VERSION, tcp_port);
 
 /* Set socket option to allow immediate reuse; otherwise it usually remains */
@@ -973,11 +969,10 @@ EXT int avago_aacs_server(
         }
         aapl_log_printf(aapl, AVAGO_DEBUG1, 0, 1, "Connection from %s on port %d.\n", inet_ntoa(client_IPaddr.sin_addr), tcp_port);
 
-
         aapl_connect(aapl, 0, 0);
         if( aapl->return_code < 0 )
         {
-            aapl_log_printf(aapl, AVAGO_WARNING, __func__, __LINE__, "aapl_connect failed.\n");
+            aapl_log_printf(aapl, AVAGO_WARNING, __func__, __LINE__, "aapl_connect failed.\n", 0);
             break;
         }
 
@@ -1043,7 +1038,6 @@ EXT int avago_aacs_server(
             cmd[read_len] = '\0';
 
             result = avago_aacs_process_cmd(aapl, cmd, &chip_num, &ring_num);
-
             aapl_log_printf(aapl, AVAGO_DEBUG2, __func__, __LINE__, "%s => %s\n", cmd, result);
 
             res_len = strlen(result);

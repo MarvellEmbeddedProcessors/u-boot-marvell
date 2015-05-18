@@ -26,10 +26,13 @@
 
 #define AAPL_ENABLE_INTERNAL_FUNCTIONS
 #include "aapl.h"
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #include "asic_info.h"
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 #define AAPL_3D_ARRAY_ADDR(addr) (addr).chip][(addr).ring][(addr).sbus
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /* Global default values: */
 const char *aapl_default_server = "localhost";
 const uint  aapl_default_port   = 90;
@@ -74,7 +77,21 @@ BOOL aapl_is_system_communication_method(Aapl_t *aapl)
     return aapl->communication_method == AVAGO_SYSTEM_I2C ||
            aapl->communication_method == AVAGO_SYSTEM_MDIO;
 }
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
+#ifdef MV_HWS_REDUCED_BUILD
+int  aapl_fail_reduce(Aapl_t *aapl)
+{
+    if( aapl->return_code > 0 )
+        aapl->return_code = 0;
+
+    aapl->return_code -= 1;
+    return -1;
+}
+#endif /* MV_HWS_REDUCED_BUILD */
+
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#ifndef MV_HWS_REDUCED_BUILD
 /** @brief   Sets the value of the async_cancel flag in Aapl_t. */
 /** @details The async_cancel flag is used to terminate long AAPL */
 /**          operations before they would otherwise return.  This is a */
@@ -96,6 +113,7 @@ int aapl_get_async_cancel_flag(Aapl_t *aapl)
 {
     return aapl->async_cancel;
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 
 /** @brief   Opens a connection to an Avago device. */
 /** @details If aacs_server is NULL, assumes that the aacs_server and tcp_port */
@@ -114,7 +132,7 @@ void aapl_connect(
         uint len;
         if (!aapl->aacs_server)
         {
-            aapl_fail(aapl, __func__, __LINE__, "aapl_connect() called using Aapl_t struct that wasn't initialized.\n");
+            aapl_fail(aapl, __func__, __LINE__, "aapl_connect() called using Aapl_t struct that wasn't initialized.\n", 0);
             return;
         }
         len = strlen(aacs_server)+1;
@@ -292,7 +310,7 @@ void aapl_destruct(
     if (aapl->aacs_server_buffer)   AAPL_FREE(aapl->aacs_server_buffer);
     AAPL_FREE(aapl);
 }
-
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 /*============================================================================= */
 /* AAPL GET RETURN CODE */
 /** */
@@ -333,6 +351,7 @@ uint aapl_get_max_sbus_addr(
     return aapl->max_sbus_addr[addr_struct.chip][addr_struct.ring];
 }
 
+#ifndef MV_HWS_REDUCED_BUILD
 /** @brief Get the JTAG idcode of the specified chip */
 /** @return JTAG idcode of the current sbus ring (specified by the sbus address) */
 uint aapl_get_jtag_idcode(
@@ -373,6 +392,7 @@ const char *aapl_get_chip_rev_str(
         return "";
     return aapl->chip_rev[addr_struct.chip];
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 
 
 
@@ -424,17 +444,21 @@ static int ip_rev(Aapl_t *aapl, uint sbus_addr)
             }
             return (ret_data >> 8) & 0xff;
         }
+#ifndef MV_HWS_REDUCED_BUILD
         else if( aapl_get_process_id(aapl, sbus_addr) == AVAGO_PROCESS_B )
         {
             int ret_data = avago_sbus_rd(aapl, sbus_addr, 0xfe);
             return (ret_data >> 8) & 0xff;
         }
+#endif /* MV_HWS_REDUCED_BUILD */
         return avago_sbus_rd(aapl, sbus_addr, 0xfe) & 0xff;
     }
     else if( aapl_check_ip_type(aapl, sbus_addr, __func__,__LINE__,FALSE,1,AVAGO_SPICO) ) return (avago_sbus_rd(aapl, sbus_addr, 0x0f) >> 12) & 0xf;
     else if( aapl_check_ip_type(aapl, sbus_addr, __func__,__LINE__,FALSE,1,AVAGO_SBUS_CONTROLLER) ) return avago_sbus_rd(aapl, sbus_addr, 0xfe);
+#ifndef MV_HWS_REDUCED_BUILD
     else if( aapl_check_ip_type(aapl, sbus_addr, __func__,__LINE__,FALSE,4,AVAGO_OPAL_RSFEC528,AVAGO_OPAL_RSFEC528_544,AVAGO_OPAL_HOST_ALIGNER,AVAGO_OPAL_MOD_ALIGNER) ) return avago_sbus_rd(aapl, sbus_addr, 0xfc);
     else if( aapl_check_ip_type(aapl, sbus_addr, __func__,__LINE__,FALSE,1,AVAGO_OPAL_CONTROL) ) return avago_sbus_rd(aapl, sbus_addr, 0xfc) >> 12;
+#endif /* MV_HWS_REDUCED_BUILD */
 
     return -1;
 }
@@ -498,7 +522,7 @@ int aapl_get_firmware_build(
     return aapl->firm_build[AAPL_3D_ARRAY_ADDR(addr_struct)];
 }
 
-
+#ifndef MV_HWS_REDUCED_BUILD
 /** @brief  Sets the client data pointer. */
 /** @return void */
 void aapl_bind_set(
@@ -515,6 +539,7 @@ void *aapl_bind_get(
 {
     return aapl->client_data;
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 
 /*============================================================================= */
 /* AAPL GET IP TYPE */
@@ -535,6 +560,7 @@ Avago_ip_type_t aapl_get_ip_type(
     return (Avago_ip_type_t)(aapl->ip_type[AAPL_3D_ARRAY_ADDR(addr_struct)]);
 }
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /** @brief Internal function that returns index from avago_chip_id array (from asic_info.h) */
 static int avago_find_chip_index(uint jtag, int jtag_mask)
 {
@@ -546,10 +572,12 @@ static int avago_find_chip_index(uint jtag, int jtag_mask)
     }
     return -1;
 }
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /** @brief Internal function that returns the process id of a device. Can be used as a check to see if SBus is working. */
 static Avago_process_id_t get_process_id(Aapl_t *aapl, uint chip)
 {
+#ifndef MV_HWS_REDUCED_BUILD
     int rc = aapl->return_code;
     Avago_process_id_t ret = AVAGO_UNKNOWN_PROCESS;
     uint data = avago_sbus_rd(aapl, avago_make_addr3(chip, 0, 0xfe), 0xfe);
@@ -580,6 +608,9 @@ static Avago_process_id_t get_process_id(Aapl_t *aapl, uint chip)
         }
     }
     return ret;
+#else
+    return AVAGO_PROCESS_F;
+#endif /* MV_HWS_REDUCED_BUILD */
 }
 
 Avago_process_id_t aapl_get_process_id(
@@ -650,6 +681,7 @@ BOOL aapl_set_spico_running_flag(
     return aapl->spico_running[addr_struct.chip][addr_struct.ring][addr_struct.sbus] = running;
 }
 
+#ifndef MV_HWS_REDUCED_BUILD
 /** @brief  Get a string representation of the Process ID of the specified chip */
 /**         and sbus ring */
 /** @return The Process ID string of the sbus device for the current chip and */
@@ -660,9 +692,6 @@ const char *aapl_get_process_id_str(
 {
     return aapl_process_id_to_str(aapl_get_process_id(aapl, addr));
 }
-
-
-
 
 /** @brief Sends and receives JTAG information. */
 /** @return Data received back from the JTAG command */
@@ -711,17 +740,25 @@ void avago_jtag_set_bit(
     aapl->data_char[(bits-1) - set_bit] = value;
     avago_jtag(aapl, opcode, bits, aapl->data_char);
 }
+#endif /* MV_HWS_REDUCED_BUILD*/
 
 /** @brief   Checks sbus_addr to see if it is a broadcast address (including the SerDes broadcast address) */
 /** @details Checks to see if sbus_addr is a chip broadcast address (0xfXXX), */
 /**          a ring broadcast address (0xXfXX), or the SerDes broadcast address (0xXXff) */
 /** @return  TRUE if sbus_addr belongs to any of the above broadcast addresses */
-BOOL aapl_check_broadcast_address(
+#ifndef MV_HWS_REDUCED_BUILD
+BOOL aapl_check_broadcast_address_full(
     Aapl_t *aapl,           /**< AAPL structure pointer. */
     uint sbus_addr,         /**< [in] SBus slice address. */
     const char *caller,     /**< Caller function, usually __func__. */
     int line,               /**< Caller line number, usually __LINE__. */
     int error_on_match)     /**< Whether to print error on match. */
+#else
+BOOL aapl_check_broadcast_address_reduce(
+    Aapl_t *aapl,           /**< AAPL structure pointer. */
+    uint sbus_addr,         /**< [in] SBus slice address. */
+    int error_on_match)     /**< Whether to print error on match. */
+#endif /* MV_HWS_REDUCED_BUILD */
 {
     BOOL match;
     Avago_addr_t addr_struct;
@@ -750,7 +787,8 @@ BOOL aapl_check_broadcast_address(
 /** </pre> */
 /** @return  TRUE if the firmware revision matches one of those listed, FALSE if not. */
 /** */
-BOOL aapl_check_firmware_rev(
+#ifndef MV_HWS_REDUCED_BUILD
+BOOL aapl_check_firmware_rev_full(
     Aapl_t *aapl,           /**< AAPL structure pointer. */
     uint sbus_addr,         /**< [in] SBus slice address. */
     const char *caller,     /**< Caller function, usually __func__. */
@@ -758,6 +796,14 @@ BOOL aapl_check_firmware_rev(
     int error_on_no_match,  /**< Whether to print error on no match. */
     int arg_count,          /**< The number of firmware revision arguments which follow. */
     ...)                    /**< List of valid firmware revisions. */
+#else
+BOOL aapl_check_firmware_rev_reduce(
+    Aapl_t *aapl,           /**< AAPL structure pointer. */
+    uint sbus_addr,         /**< [in] SBus slice address. */
+    int error_on_no_match,  /**< Whether to print error on no match. */
+    int arg_count,          /**< The number of firmware revision arguments which follow. */
+    ...)                    /**< List of valid firmware revisions. */
+#endif /* MV_HWS_REDUCED_BUILD */
 {
     BOOL match = FALSE;
     int firmware_rev;
@@ -797,6 +843,7 @@ BOOL aapl_check_firmware_rev(
     return match;
 }
 
+#ifndef MV_HWS_REDUCED_BUILD
 /** @brief   Checks sbus_addr against firmware build given in args list. */
 /** @details Checks if the device firmware build is >= what is in the list. */
 /**          If the build has bit 19 set (0x80000), it must match */
@@ -854,6 +901,7 @@ BOOL aapl_check_firmware_build(
 
     return match;
 }
+#endif /* MV_HWS_REDUCED_BUILD*/
 
 
 /** @brief   Checks sbus_addr against list of supported IP types. */
@@ -861,7 +909,8 @@ BOOL aapl_check_firmware_build(
 /**          for example: aapl_check_ip_type(aapl, sbus_addr, __FUNC__, __line__, TRUE, 2, AVAGO_SERDES, AVAGO_QPI); */
 /** @return  TRUE if the device is one of the listed types, FALSE if not. */
 /** */
-BOOL aapl_check_ip_type(
+#ifndef MV_HWS_REDUCED_BUILD
+BOOL aapl_check_ip_type_full(
     Aapl_t *aapl,           /**< AAPL structure pointer. */
     uint sbus_addr,         /**< [in] SBus slice address. */
     const char *caller,     /**< Caller function, usually __func__. */
@@ -869,11 +918,24 @@ BOOL aapl_check_ip_type(
     int error_on_no_match,  /**< Whether to print error on no match. */
     int arg_count,          /**< The number of ip_type arguments which follow. */
     ...)                    /**< List of valid IP types. */
+#else
+BOOL aapl_check_ip_type_reduce(
+    Aapl_t *aapl,           /**< AAPL structure pointer. */
+    uint sbus_addr,         /**< [in] SBus slice address. */
+    int error_on_no_match,  /**< Whether to print error on no match. */
+    int arg_count,          /**< The number of ip_type arguments which follow. */
+    ...)                    /**< List of valid IP types. */
+#endif /* MV_HWS_REDUCED_BUILD */
 {
     BOOL match = FALSE;
-    int i;
     Avago_addr_t addr_struct;
+    int i;
     va_list ip_types;
+
+#ifdef MV_HWS_REDUCED_BUILD
+    (((arg_count > 1) && (arg_count < 6)) ? (arg_count -= 1) : (arg_count));
+#endif /* MV_HWS_REDUCED_BUILD */
+
     va_start(ip_types, arg_count);
 
     avago_addr_to_struct(sbus_addr,&addr_struct);
@@ -917,6 +979,7 @@ BOOL aapl_check_ip_type(
     return match;
 }
 
+#ifndef MV_HWS_REDUCED_BUILD
 /** @brief   Checks sbus_addr against list of supported IP types. */
 /** @details Args is the number of arguments passed in for ip_type or process\n */
 /**          for example: aapl_check_ip_type(aapl, sbus_addr, __FUNC__, __line__, TRUE, 2, AVAGO_SERDES, AVAGO_QPI); */
@@ -974,7 +1037,7 @@ BOOL aapl_check_ip_type_exists(
 /** @details Example:  Call aapl_check_process(aapl, sbus_addr, __func__, __LINE__, TRUE, 1, AVAGO_PROCESS_F); */
 /**          to check that the device at sbus_addr is of type AVAGO_PROCESS_F. */
 /** @return  TRUE if the device is one of the listed types, FALSE if not. */
-BOOL aapl_check_process(
+BOOL aapl_check_process_full(
     Aapl_t *aapl,           /**< AAPL structure pointer. */
     uint sbus_addr,         /**< [in] SBus slice address. */
     const char *caller,     /**< Caller function, usually __func__. */
@@ -1016,7 +1079,9 @@ BOOL aapl_check_process(
 
     return match;
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /** @brief Internal function that returns the tap_gen from an HS1 */
 uint avago_get_tap_gen(Aapl_t *aapl)
 {
@@ -1026,7 +1091,6 @@ uint avago_get_tap_gen(Aapl_t *aapl)
 
     if(strstr(aapl->data_char, "AAPL AACS server")) avago_aacs_send_command(aapl, "send status");
     else                                            avago_aacs_send_command(aapl, "status");
-
     aapl_log_printf(aapl, AVAGO_DEBUG5, __func__, __LINE__, "The status command returned: \"%s\".\n", aapl->data_char);
 
     if( strlen(aapl->data_char) >= 1 )
@@ -1113,8 +1177,9 @@ void avago_system_chip_setup(
     int reset,      /**< [in] If set, send the "reset" command to the chip. */
     int chip)       /**< [in] The chip number. */
 {
-    char chip_cmd_buffer[16];
     BOOL rw;
+#ifndef MV_HWS_REDUCED_BUILD
+    char chip_cmd_buffer[16];
     sprintf(chip_cmd_buffer, "chipnum %d",chip);
     AAPL_SUPPRESS_ERRORS_PUSH(aapl);
     avago_aacs_send_command(aapl, chip_cmd_buffer);
@@ -1161,16 +1226,18 @@ void avago_system_chip_setup(
         }
         avago_mdio_wr(aapl, chip, AVSP_DEVAD, 32785, 0x0000);
     }
+#endif /* MV_HWS_REDUCED_BUILD */
 
     AAPL_SUPPRESS_ERRORS_PUSH(aapl);
     rw = avago_diag_sbus_rw_test(aapl, avago_make_addr3(chip, 0, 0xfe), 1);
     AAPL_SUPPRESS_ERRORS_POP(aapl);
-
+#ifndef MV_HWS_REDUCED_BUILD
     if (rw == FALSE)
     {
         set_hs1_reset_override(aapl, chip, 1);
         avago_diag_sbus_rw_test(aapl, avago_make_addr3(chip, 0, 0xfe), 1);
     }
+#endif /* MV_HWS_REDUCED_BUILD */
 
     if (reset) avago_sbus_reset(aapl, avago_make_addr3(chip, 0, AVAGO_BROADCAST), 1);
 }
@@ -1288,8 +1355,8 @@ static void get_chip_name(
     AAPL_SUPPRESS_ERRORS_PUSH(aapl);
     if (jtag_idcode == 0)
     {
-        char chip_cmd_buffer[16];
         int rc = aapl->return_code;
+        char chip_cmd_buffer[16];
         snprintf(chip_cmd_buffer, sizeof(chip_cmd_buffer), "chipnum %d", chip);
         avago_aacs_send_command(aapl, chip_cmd_buffer);
         avago_aacs_send_command(aapl, "jtag 32 02b6 0");
@@ -1365,7 +1432,6 @@ static void get_chip_name(
     aapl_log_printf(aapl, AVAGO_DEBUG2, __func__, __LINE__,  "IDCODE 0x%08x: %s %s\n", aapl->jtag_idcode[chip], aapl->chip_name[chip], aapl->chip_rev[chip]);
 }
 
-
 /* Query the AACS server for the number of die connected to it. */
 static int get_number_of_chips(
     Aapl_t *aapl)   /**< [in] Pointer to AAPL structure. */
@@ -1397,7 +1463,7 @@ static int get_number_of_chips(
         else
 #endif
         {
-            aapl_log_printf(aapl, AVAGO_WARNING, __func__, __LINE__, "AAPL is not using AACS (TCP) to communicate with devices and AAPL_NUMBER_OF_CHIPS_OVERRIDE has not been defined in aapl.h. Since AACS is the only method to auto-detect the number of devices present, AAPL is assuming there is 1 device.\n");
+            aapl_log_printf(aapl, AVAGO_WARNING, __func__, __LINE__, "AAPL is not using AACS (TCP) to communicate with devices and AAPL_NUMBER_OF_CHIPS_OVERRIDE has not been defined in aapl.h. Since AACS is the only method to auto-detect the number of devices present, AAPL is assuming there is 1 device.\n", 0);
             aapl->chips = 1;
         }
     }
@@ -1420,7 +1486,8 @@ void aapl_get_ip_info(
 {
     int chip, chips;
 
-    aapl_log_printf(aapl, AVAGO_DEBUG1, __func__, __LINE__, "AAPL Version " AAPL_VERSION ", " AAPL_COPYRIGHT "\n");
+    aapl_log_printf(aapl, AVAGO_DEBUG1, __func__, __LINE__, "AAPL Version " AAPL_VERSION ", " AAPL_COPYRIGHT "\n", 0);
+
     if( chip_reset ) avago_aacs_send_command(aapl, "reset");
 
     AAPL_SUPPRESS_ERRORS_PUSH(aapl);
@@ -1510,9 +1577,9 @@ void aapl_get_ip_info(
             }
         }
     }
-    aapl_log_printf(aapl, AVAGO_DEBUG2, __func__, __LINE__, "End of get_ip_info.\n");
+    aapl_log_printf(aapl, AVAGO_DEBUG2, __func__, __LINE__, "End of get_ip_info.\n", 0);
 }
-
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /** @brief Sets the ip_type, ip_rev, spico_running, firm_rev, and lsb_rev fields of aapl. */
 /** @param aapl Aapl_t struct */
@@ -1539,7 +1606,11 @@ void aapl_set_ip_type(
     aapl->lsb_rev      [AAPL_3D_ARRAY_ADDR(addr_struct)] = 0;
 
     data = avago_sbus_rd(aapl, sbus_addr, 0xff);
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     jtag_idcode = aapl->jtag_idcode[addr_struct.chip];
+#else
+    jtag_idcode = 0x0912557f;
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
     switch( data )
     {
@@ -1610,7 +1681,9 @@ void aapl_set_ip_type(
             avago_spico_wait_for_upload(aapl, sbus_addr);
             avago_sbus_wr(aapl, sbus_addr, 0x01, 0x20000000);
             break;
+#ifndef MV_HWS_REDUCED_BUILD
         case AVAGO_PROCESS_A:
+#endif /* MV_HWS_REDUCED_BUILD */
         default:
             aapl->firm_rev  [AAPL_3D_ARRAY_ADDR(addr_struct)] = 0xffff;
             aapl->firm_build[AAPL_3D_ARRAY_ADDR(addr_struct)] = 0xffff;
@@ -1625,9 +1698,11 @@ void aapl_set_ip_type(
             avago_spico_wait_for_upload(aapl, sbus_addr);
             aapl->lsb_rev[AAPL_3D_ARRAY_ADDR(addr_struct)] = 0xff;
             break;
+#ifndef MV_HWS_REDUCED_BUILD
         case AVAGO_PROCESS_A:
             aapl->lsb_rev[AAPL_3D_ARRAY_ADDR(addr_struct)] = 0xff;
             break;
+#endif /* MV_HWS_REDUCED_BUILD */
         default:
             aapl->firm_rev  [AAPL_3D_ARRAY_ADDR(addr_struct)] = 0xffff;
             aapl->firm_build[AAPL_3D_ARRAY_ADDR(addr_struct)] = 0xffff;
@@ -1649,6 +1724,7 @@ void aapl_set_ip_type(
     }
 }
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /** @brief  Converts an address number into a printable string. */
 /** @return A printable string is returned. */
 const char *aapl_addr_to_str(
@@ -1694,3 +1770,5 @@ const char *aapl_addr_to_str(
 #endif
     return buf;
 }
+#endif /* MV_HWS_REDUCED_BUILD */
+

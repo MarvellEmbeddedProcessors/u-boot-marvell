@@ -23,7 +23,7 @@
 
 #ifndef AVAGO_ASIC_INFO_H_
 #define AVAGO_ASIC_INFO_H_
-
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 typedef struct
 {
         uint jtag_idcode;
@@ -65,5 +65,6 @@ Avago_chip_id_t avago_chip_id[] =
 
     /* NOTE: Add new entries at the front of this list, NOT here. */
 };
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 #endif /* AVAGO_ASIC_INFO_H_ */

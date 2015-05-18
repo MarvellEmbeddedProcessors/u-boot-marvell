@@ -65,7 +65,7 @@ static void aapl_log_vprintf(
 
     if( size >= (AAPL_LOG_PRINTF_BUF_SIZE - 1) )
     {
-        aapl_log_printf(aapl, AVAGO_WARNING, 0, 0, "\n");
+        aapl_log_printf(aapl, AVAGO_WARNING, 0, 0, "\n", 0);
         aapl_log_printf(aapl, AVAGO_WARNING, __func__, __LINE__, "Call to aapl_log_printf from %s:%d (log_sel: %s) reached max buffer size (%d). Please increase this size.\n", caller, line, aapl_log_type_to_str(log_sel), AAPL_LOG_PRINTF_BUF_SIZE);
     }
 }
@@ -73,7 +73,7 @@ static void aapl_log_vprintf(
 /** @brief Prints the specified message and marks an error. */
 /** */
 /** @return aapl_fail() always returns -1 to indicate an error. */
-int aapl_fail(
+int aapl_fail_full(
     Aapl_t *aapl,           /**< AAPL structure pointer. */
     const char *caller,     /**< Caller function, usually __func__ */
     int line,               /**< Caller line number, usually __LINE__ */
@@ -108,7 +108,7 @@ static int check_debug_level(
 /**  logging only occurs if the aapl->debug field is greater than or equal */
 /**  to the log_sel value. */
 /** @return void */
-void aapl_log_printf(
+void aapl_log_printf_full(
     Aapl_t *aapl,               /**< [in] Pointer to Aapl_t structure. */
     Aapl_log_type_t log_sel,    /**< [in] Type of message logging. */
     const char *caller,         /**< [in] Caller's __func__ value, or 0. */
@@ -481,11 +481,15 @@ BOOL aapl_str_to_pll_clk(const char *name, Avago_serdes_tx_pll_clk_t *out)
 static Aapl_conv_table_t process_id_table[] =
 {
     { "PROCESS_B", AVAGO_PROCESS_B },
+#ifndef MV_HWS_REDUCED_BUILD
     { "PROCESS_G", AVAGO_PROCESS_G },
+#endif /* MV_HWS_REDUCED_BUILD */
     { "PROCESS_F", AVAGO_PROCESS_F },
+#ifndef MV_HWS_REDUCED_BUILD
     { "PROCESS_A", AVAGO_PROCESS_A },
     { "PROCESS_E", AVAGO_PROCESS_E },
     { "PROCESS_D", AVAGO_PROCESS_D },
+#endif /* MV_HWS_REDUCED_BUILD */
     { 0,         0 }
 };
 const char *aapl_process_id_to_str(Avago_process_id_t value)
@@ -501,10 +505,12 @@ static Aapl_conv_table_t dma_type_table[] =
     { "ESB_DIRECT",     AVAGO_ESB_DIRECT    },
     { "LSB",            AVAGO_LSB           },
     { "LSB_DIRECT",     AVAGO_LSB_DIRECT    },
+#ifndef MV_HWS_REDUCED_BUILD
     { "DMEM",           AVAGO_DMEM          },
     { "DMEM_PREHALTED", AVAGO_DMEM_PREHALTED},
     { "IMEM",           AVAGO_IMEM          },
     { "IMEM_PREHALTED", AVAGO_IMEM_PREHALTED},
+#endif /* MV_HWS_REDUCED_BUILD */
     { 0,            0 }
 };
 const char *aapl_mem_type_to_str(Avago_serdes_mem_type_t value)

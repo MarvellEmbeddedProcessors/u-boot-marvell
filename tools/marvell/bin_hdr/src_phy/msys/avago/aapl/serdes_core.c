@@ -23,10 +23,13 @@
 #define AAPL_ENABLE_INTERNAL_FUNCTIONS
 #include <aapl.h>
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #define AAPL_LOG_PRINT5 if(aapl->debug >= 5) aapl_log_printf
 #define AAPL_LOG_PRINT6 if(aapl->debug >= 6) aapl_log_printf
-
-
+#else
+#define AAPL_LOG_PRINT5 aapl_log_printf
+#define AAPL_LOG_PRINT6 aapl_log_printf
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /** @defgroup SerDes Generic SerDes API */
 /** @{ */
@@ -49,10 +52,12 @@ int avago_serdes_get_lsb_rev(
             rc = avago_serdes_mem_rd(aapl, addr, AVAGO_LSB_DIRECT, 0x026);
             rc = (rc >> 12) & 0xf;
         }
+#ifndef MV_HWS_REDUCED_BUILD
         else if (aapl_check_process(aapl, addr, __func__, __LINE__, FALSE, 1, AVAGO_PROCESS_A))
         {
             rc = (avago_sbus_rd(aapl, addr, 0x64) >> 28) & 0xf;
         }
+#endif /* MV_HWS_REDUCED_BUILD */
     }
 
     AAPL_LOG_PRINT5(aapl, AVAGO_DEBUG5, __func__, __LINE__, "SBus %s, ret = %d.\n", aapl_addr_to_str(addr), rc);
@@ -71,11 +76,13 @@ int avago_serdes_mem_rd(
     uint mem_addr)                  /**< [in] Memory address to access */
 {
     int ret = 0;
+#ifndef MV_HWS_REDUCED_BUILD
     if( (aapl_get_process_id(aapl,addr) == AVAGO_PROCESS_B) || (aapl_get_ip_type(aapl,addr) == AVAGO_M4) )
     {
         if(      type == AVAGO_ESB )        type = AVAGO_LSB;
         else if( type == AVAGO_ESB_DIRECT ) type = AVAGO_LSB_DIRECT;
     }
+#endif /* MV_HWS_REDUCED_BUILD */
     switch( type )
     {
     case AVAGO_LSB:
@@ -87,11 +94,14 @@ int avago_serdes_mem_rd(
         }
 
     case AVAGO_LSB_DIRECT:
+#ifndef MV_HWS_REDUCED_BUILD
         if( (aapl_get_process_id(aapl,addr) == AVAGO_PROCESS_B) || (aapl_get_ip_type(aapl,addr) == AVAGO_M4) )
         {
             avago_sbus_wr(aapl, addr, 0x01, (1<<30) | (mem_addr & 0x03ff));
             ret = (avago_sbus_rd(aapl, addr, 0x01) >> 12) & 0xFFFF;
-        } else {
+        } else
+#endif /* MV_HWS_REDUCED_BUILD */
+        {
             avago_sbus_wr(aapl, addr, 0x02, ((mem_addr & 0x1ff) << 16));
             ret = avago_sbus_rd(aapl, addr, 0x40) & 0xFFFF;
         }
@@ -132,7 +142,7 @@ int avago_serdes_mem_rd(
         avago_spico_resume(aapl, addr, spico_run_state);
         break;
     }
-
+#ifndef MV_HWS_REDUCED_BUILD
     case AVAGO_DMEM:
     case AVAGO_DMEM_PREHALTED:
     {
@@ -156,7 +166,7 @@ int avago_serdes_mem_rd(
         if (type == AVAGO_IMEM) avago_spico_resume(aapl, addr, spico_run_state);
         break;
     }
-
+#endif /* MV_HWS_REDUCED_BUILD */
     default:
         aapl_fail(aapl, __func__, __LINE__, "SBus %s, Invalid DMA type (%d).\n", aapl_addr_to_str(addr), type);
         return 0;
@@ -179,11 +189,13 @@ void avago_serdes_mem_wr(
 {
     AAPL_LOG_PRINT6(aapl,AVAGO_DEBUG6,__func__,__LINE__,"SBus %s, Write %s 0x%04x <- 0x%x\n",
         aapl_addr_to_str(addr), aapl_mem_type_to_str(type), mem_addr, data);
+#ifndef MV_HWS_REDUCED_BUILD
     if( (aapl_get_process_id(aapl,addr) == AVAGO_PROCESS_B) || (aapl_get_ip_type(aapl,addr) == AVAGO_M4) )
     {
         if(      type == AVAGO_ESB )        type = AVAGO_LSB;
         else if( type == AVAGO_ESB_DIRECT ) type = AVAGO_LSB_DIRECT;
     }
+#endif /* MV_HWS_REDUCED_BUILD */
     switch( type )
     {
     case AVAGO_LSB:
@@ -200,9 +212,18 @@ void avago_serdes_mem_wr(
             if(!( (aapl_get_process_id(aapl,addr) == AVAGO_PROCESS_B) || (aapl_get_ip_type(aapl,addr) == AVAGO_M4) ))
               avago_sbus_wr(aapl, addr, 0x02, (0<<31) | ((mem_addr & 0x1ff) << 16) | (data & 0xffff));
         }
+#ifndef MV_HWS_REDUCED_BUILD
         if( (aapl_get_process_id(aapl,addr) == AVAGO_PROCESS_B) || (aapl_get_ip_type(aapl,addr) == AVAGO_M4) )
             avago_sbus_wr(aapl, addr, 0x01, (1<<31) | ((data & 0xffff) << 12) | (mem_addr & 0x03ff));
+#endif /* MV_HWS_REDUCED_BUILD */
         else
+            avago_sbus_wr(aapl, addr, 0x02, (1<<31) | ((mem_addr & 0x1ff) << 16) | (data & 0xffff));
+        return;
+        if(aapl_get_lsb_rev(aapl,addr) >= 3)
+        {
+            if(!( (aapl_get_process_id(aapl,addr) == AVAGO_PROCESS_B) || (aapl_get_ip_type(aapl,addr) == AVAGO_M4) ))
+              avago_sbus_wr(aapl, addr, 0x02, (0<<31) | ((mem_addr & 0x1ff) << 16) | (data & 0xffff));
+        }
             avago_sbus_wr(aapl, addr, 0x02, (1<<31) | ((mem_addr & 0x1ff) << 16) | (data & 0xffff));
         return;
 
@@ -245,7 +266,7 @@ void avago_serdes_mem_wr(
         avago_spico_resume(aapl, addr, spico_run_state);
         return;
     }
-
+#ifndef MV_HWS_REDUCED_BUILD
     case AVAGO_DMEM:
     {
         int spico_run_state = avago_spico_halt(aapl, addr);
@@ -267,7 +288,7 @@ void avago_serdes_mem_wr(
         avago_spico_resume(aapl, addr, spico_run_state);
         return;
     }
-
+#endif /* MV_HWS_REDUCED_BUILD */
     default: ;
     }
 
@@ -311,9 +332,11 @@ static int serdes_get_int01_bits(Aapl_t *aapl, uint addr, uint mask)
         bits  |= 0x03 & avago_serdes_mem_rd(aapl, addr, AVAGO_LSB, 0x026);
     if( mask & 0x04 )
     {
+#ifndef MV_HWS_REDUCED_BUILD
         if( (aapl_get_process_id(aapl,addr) == AVAGO_PROCESS_B) || (aapl_get_ip_type(aapl,addr) == AVAGO_M4) )
             bits |= (0x01 & avago_serdes_mem_rd(aapl, addr, AVAGO_ESB, 0xdf)) << 2;
         else
+#endif /* MV_HWS_REDUCED_BUILD */
             bits |= (0x02 & avago_serdes_mem_rd(aapl, addr, AVAGO_ESB, 0x213)) << 1;
     }
     if( mask & 0x08 )
@@ -329,6 +352,7 @@ static int serdes_get_int01_bits(Aapl_t *aapl, uint addr, uint mask)
     return bits;
 }
 
+#ifndef MV_HWS_REDUCED_BUILD
 /** @brief   Gets the TX & RX ready states. */
 /** @details Returns if the TX and RX devices are initialized and ready */
 /**          for operation. */
@@ -349,6 +373,7 @@ int avago_serdes_get_tx_rx_ready(
                 aapl_addr_to_str(addr),aapl_enable_to_str(*tx),aapl_enable_to_str(*rx));
     return return_code == aapl->return_code ? 0 : -1;
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 /** @brief   Sets TX & RX enable states, and TX output values. */
 /** @details If enabling TX or RX, waits for the device to become ready. */
 /** @return  On success, returns 0. */
@@ -383,8 +408,10 @@ int avago_serdes_set_tx_rx_enable(
 
         if( (serdes_get_int01_bits(aapl, addr, mask) & mask) == mask )
         {
+#ifndef MV_HWS_REDUCED_BUILD
             if( loops > 0 )
                 AAPL_LOG_PRINT6(aapl,AVAGO_DEBUG6,__func__,__LINE__,"SBus %s, Int 0x01 loops: %d\n",aapl_addr_to_str(addr), loops);
+#endif /* MV_HWS_REDUCED_BUILD */
             return return_code == aapl->return_code ? 0 : -1;
         }
     }
@@ -478,7 +505,6 @@ EXT int avago_serdes_set_tx_user_data(
     int i, rc;
     AAPL_LOG_PRINT5(aapl,AVAGO_DEBUG5,__func__,__LINE__,"SBus %s, user_data=0x%05x,%05x,%05x,%05x\n",
         aapl_addr_to_str(addr),user_data[0],user_data[1],user_data[2],user_data[3]);
-
     rc = avago_spico_int(aapl, addr, 0x0018, 0x0000);
     if( rc != 0x18 )
         return aapl_fail(aapl,__func__,__LINE__,"SBus %s, spico_int(0x18,0) returned 0x%x\n",aapl_addr_to_str(addr),rc);
@@ -565,9 +591,11 @@ BOOL avago_serdes_get_tx_invert(
     uint addr)                  /**< [in] Device address number. */
 {
     int ret;
+#ifndef MV_HWS_REDUCED_BUILD
     if( (aapl_get_process_id(aapl,addr) == AVAGO_PROCESS_B) || (aapl_get_ip_type(aapl,addr) == AVAGO_M4) )
         ret = !!(avago_serdes_mem_rd(aapl,addr,AVAGO_ESB,0xdf) & 0x20);
     else
+#endif /* MV_HWS_REDUCED_BUILD */
         ret = !!(avago_serdes_mem_rd(aapl,addr,AVAGO_ESB,0x211) & 8);
     AAPL_LOG_PRINT5(aapl,AVAGO_DEBUG5,__func__,__LINE__,"SBus %s, tx_invert=%s\n",aapl_addr_to_str(addr),aapl_onoff_to_str(ret));
     return ret;
@@ -609,7 +637,7 @@ int avago_serdes_width_to_bits(int width)
     return -1;
 }
 /** @endcond */
-
+#ifndef MV_HWS_REDUCED_BUILD
 /** @brief   Sets the TX and RX data width. */
 /** @details Values of 10, 20 and 40 bits are supported. */
 /** @return  On success, returns 0. */
@@ -623,6 +651,7 @@ int avago_serdes_set_tx_rx_width(
 {
     return avago_serdes_set_tx_rx_width_pam(aapl, addr, tx, rx, AVAGO_SERDES_NRZ, AVAGO_SERDES_PAM2);
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 
 /** @brief   Sets the TX and RX data width. */
 /** @details Values of 10, 20 and 40 bits are supported. */
@@ -645,15 +674,18 @@ int avago_serdes_set_tx_rx_width_pam(
         return aapl_fail(aapl, __func__, __LINE__, "ERROR: SBus %s, invalid width(s) %d/%d requested.\n",aapl_addr_to_str(addr),tx,rx);
     if( (build_id & 2) == 0 )
         bits |= 0x8800;
+#ifndef MV_HWS_REDUCED_BUILD
     if( aapl_get_ip_type(aapl, addr) == AVAGO_M4 ) {
       if (tx_encoding == AVAGO_SERDES_PAM4) bits |= 0x08;
       if (rx_encoding == AVAGO_SERDES_PAM4) bits |= 0x80;
     }
     AAPL_LOG_PRINT5(aapl,AVAGO_DEBUG5,__func__,__LINE__,"SBus %s, tx/rx width mode %d/%d bits, mask=0x%x\n",aapl_addr_to_str(addr),tx,rx,bits);
+#endif /* MV_HWS_REDUCED_BUILD */
     avago_spico_int_check(aapl, __func__, __LINE__, addr, 0x14, bits);
     return return_code == aapl->return_code ? 0 : -1;
 }
 
+#ifndef MV_HWS_REDUCED_BUILD
 /** @brief  Initialize the structure to default values. */
 /** @return void */
 void avago_serdes_tx_eq_init(
@@ -661,7 +693,7 @@ void avago_serdes_tx_eq_init(
 {
     memset(ptr,0,sizeof(Avago_serdes_tx_eq_t));
 }
-
+#endif /* MV_HWS_REDUCED_BUILD */
 #define AAPL_HAVE_IP_INFO 0
 /** @brief   Sets the TX equalization values. */
 /** @details Set all values, if applicable. */
@@ -704,8 +736,10 @@ int avago_serdes_set_tx_eq(
     if( tx_eq->slew > 3 || tx_eq->slew < 0 )
         aapl_fail(aapl,__func__,__LINE__,
             "SBus %s, Invalid slew value: %d, valid range [0..3].\n", aapl_addr_to_str(addr), tx_eq->slew);
+#ifndef MV_HWS_REDUCED_BUILD
     else if( (aapl_get_process_id(aapl,addr) == AVAGO_PROCESS_B) || (aapl_get_ip_type(aapl,addr) == AVAGO_M4) )
         avago_serdes_mem_rmw(aapl, addr, AVAGO_ESB, 0xe5, tx_eq->slew, 3);
+#endif /* MV_HWS_REDUCED_BUILD */
     else
         avago_serdes_mem_rmw(aapl, addr, AVAGO_ESB, 0x240, tx_eq->slew, 3);
 
@@ -748,6 +782,7 @@ int avago_serdes_set_rx_cmp_data(
     return spico_int_02_retry(aapl, addr, int_data, 8);
 }
 
+#ifndef MV_HWS_REDUCED_BUILD
 /** @brief   Gets the RX termination. */
 /** */
 /** @return  One of AVAGO_SERDES_RX_TERM_AGND, AVAGO_SERDES_RX_TERM_AVDD, or */
@@ -821,6 +856,7 @@ int avago_serdes_set_rx_term(
     }
     return return_code == aapl->return_code ? 0 : -1;
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 
 /** @brief   Injects errors into the RX data. */
 /** @details RX error injection affects only the main data channel. */
@@ -840,7 +876,7 @@ int avago_serdes_rx_inject_error(
     if( aapl_get_lsb_rev(aapl,addr) < 3 )
     {
         return aapl_fail(aapl, __func__, __LINE__,
-            "ERROR: LSB revisions 01 & 02 don't support RX ERROR injection.\n");
+            "ERROR: LSB revisions 01 & 02 don't support RX ERROR injection.\n", 0);
     }
 
     AAPL_LOG_PRINT5(aapl,AVAGO_DEBUG5,__func__,__LINE__,"SBus %s, injecting %u errors.\n", aapl_addr_to_str(addr), num_bits);
@@ -904,9 +940,11 @@ BOOL avago_serdes_get_rx_invert(
     uint addr)                  /**< [in] Device address number. */
 {
     int reg;
+#ifndef MV_HWS_REDUCED_BUILD
     if( (aapl_get_process_id(aapl,addr) == AVAGO_PROCESS_B) || (aapl_get_ip_type(aapl,addr) == AVAGO_M4) )
         reg = !!(avago_serdes_mem_rd(aapl,addr,AVAGO_ESB,0x024) & 0x01);
     else
+#endif /* MV_HWS_REDUCED_BUILD */
         reg = !!(avago_serdes_mem_rd(aapl,addr,AVAGO_ESB,0x060) & 8);
     AAPL_LOG_PRINT5(aapl,AVAGO_DEBUG5,__func__,__LINE__,"SBus %s, rx_invert=%s\n", aapl_addr_to_str(addr), aapl_onoff_to_str(reg));
     return reg;
@@ -962,6 +1000,7 @@ int avago_serdes_set_rx_input_loopback(
     return 0;
 }
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /* Helper function to support Int 0x30 read-modify-write. */
 /* Gets the bits which are set in mask. */
 static int serdes_get_int30_bits(Aapl_t *aapl, uint addr, uint mask)
@@ -1036,6 +1075,7 @@ int avago_serdes_set_tx_pll_clk_src(
     avago_spico_int_check(aapl, __func__, __LINE__, addr, 0x30, mask);
     return return_code == aapl->return_code ? 0 : -1;
 }
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 
 /** @brief   Reads whether or not signal OK has been initialized. */
@@ -1049,11 +1089,14 @@ BOOL avago_serdes_get_signal_ok_enable(
     BOOL ret = FALSE;
     if( aapl_check_firmware_rev(aapl,addr, __func__, __LINE__, FALSE, 1, 0x1046) )
     {
+#ifndef MV_HWS_REDUCED_BUILD
         if( (aapl_get_process_id(aapl,addr) == AVAGO_PROCESS_B) || (aapl_get_ip_type(aapl,addr) == AVAGO_M4) )
         {
             int val = avago_serdes_mem_rd(aapl, addr, AVAGO_ESB, 0xc4);
             ret = ((val & 0x30)>>8) == 0x02;
-        } else {
+        } else
+#endif /* MV_HWS_REDUCED_BUILD */
+        {
             int val = avago_serdes_mem_rd(aapl, addr, AVAGO_ESB, 0x080);
             ret = (val & 0x03) == 0x02;
         }
@@ -1062,6 +1105,7 @@ BOOL avago_serdes_get_signal_ok_enable(
     return ret;
 }
 
+#ifndef MV_HWS_REDUCED_BUILD
 /** @brief   Checks for presence of electrical idle. */
 /** @return  Returns TRUE if electrical idle is detected, FALSE if a signal is */
 /**          detected. */
@@ -1074,6 +1118,7 @@ BOOL avago_serdes_get_electrical_idle(
     AAPL_LOG_PRINT5(aapl,AVAGO_DEBUG5,__func__,__LINE__,"SBus %s, elec_idle=%s\n", aapl_addr_to_str(addr), aapl_bool_to_str(ret));
     return ret;
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 
 /** @brief   Reads the signal OK threshold value. */
 /** @details Reads a sticky signal lost detector and returns whether any */
@@ -1091,10 +1136,14 @@ int avago_serdes_get_signal_ok_threshold(
     int threshold = 0;
     if( aapl_check_firmware_rev(aapl,addr, __func__, __LINE__, FALSE, 1, 0x1046) )
     {
+#ifndef MV_HWS_REDUCED_BUILD
         if (aapl_get_process_id(aapl,addr) == AVAGO_PROCESS_B) {
           threshold = avago_serdes_mem_rd(aapl, addr, AVAGO_ESB, 0xc4);
           threshold = (threshold >> 0) & 0x1f;
-        } else {
+        }
+         else
+#endif /* MV_HWS_REDUCED_BUILD */
+        {
           threshold = avago_serdes_mem_rd(aapl, addr, AVAGO_ESB, 0x080);
           threshold = (threshold >> 2) & 0x0f;
         }
@@ -1200,7 +1249,7 @@ uint avago_serdes_get_errors(
     AAPL_LOG_PRINT5(aapl, AVAGO_DEBUG5, __func__, __LINE__, "SBus %s, dma_type=%d, reset=%d, errors = %u.\n", aapl_addr_to_str(addr), type, reset, rc);
     return rc;
 }
-
+#ifndef MV_HWS_REDUCED_BUILD
 /** @brief   Slips (drops) bits on the Rx. */
 /** @details Slips up to 127 bits. */
 /** @return  On success, returns TRUE. */
@@ -1240,8 +1289,9 @@ BOOL avago_serdes_slip_tx_phase(
     int flags = remember ? 0x8000 : 0;
     return avago_spico_int_check(aapl, __func__, __LINE__, addr, 0x0d, (slips & 0x1f) | flags);
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 
-
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /** @brief   Allocates and initializes a Avago_serdes_init_config_t struct. */
 /** @details The return value should be released using */
 /**          avago_serdes_init_config_destruct() after use. */
@@ -1309,7 +1359,7 @@ int avago_serdes_init_quick(
     avago_serdes_init_config_destruct(aapl, config);
     return errors;
 }
-
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /** @brief   Configures and calibrates a SerDes. */
 /** @details Call this to initialize a SerDes. */
@@ -1363,7 +1413,7 @@ int avago_serdes_init(
     if( config->init_mode == AVAGO_INIT_ONLY )
     {
         avago_serdes_set_rx_input_loopback(aapl, addr, FALSE);
-        aapl_log_printf(aapl, AVAGO_DEBUG1, __func__, __LINE__, "\n");
+        aapl_log_printf(aapl, AVAGO_DEBUG1, __func__, __LINE__, "\n", 0);
         return 0;
     }
     avago_serdes_set_rx_input_loopback(aapl, addr, TRUE);
@@ -1395,6 +1445,7 @@ int avago_serdes_init(
     return errors;
 }
 
+#ifndef MV_HWS_REDUCED_BUILD
 
 /** @brief Initialize struct with default values */
 void avago_serdes_tune_init(
@@ -1411,6 +1462,7 @@ void avago_serdes_tune_init(
     control->value[2] =  0;
     control->value[3] = 15;
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 
 /** @brief  Performs SerDes tuning with a few options. */
 /** @note   Requires SerDes firmware revision 0x1046 or higher. */
@@ -1432,8 +1484,9 @@ void avago_serdes_tune(
     if (control->fixed[1]) { int_data |= 0x0100; avago_spico_int(aapl, addr, 0x26, (2 << 12) | (1 << 8) | (control->value[1] & 0xff)); }
     if (control->fixed[2]) { int_data |= 0x0200; avago_spico_int(aapl, addr, 0x26, (2 << 12) | (0 << 8) | (control->value[2] & 0xff)); }
 
-    if (aapl_check_firmware_rev(aapl, addr, __func__, __LINE__, FALSE, 1, 0x104D) &&
-        control->fixed[3]) { int_data |= 0x0400; avago_spico_int(aapl, addr, 0x26, (2 << 12) | (3 << 8) | (control->value[3] & 0xff)); }
+    if (aapl_check_firmware_rev(aapl, addr, __func__, __LINE__, FALSE, 1, 0x104D) && control->fixed[3]) {
+        int_data |= 0x0400;
+        avago_spico_int(aapl, addr, 0x26, (2 << 12) | (3 << 8) | (control->value[3] & 0xff)); }
 
     switch(control->tune_mode)
     {

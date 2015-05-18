@@ -44,8 +44,8 @@ typedef enum
 } Aapl_log_type_t;
 
 
-EXT int  aapl_fail(      Aapl_t *aapl, const char *caller, int line, const char *fmt, ...);
-EXT void aapl_log_printf(Aapl_t *aapl, Aapl_log_type_t log_sel, const char *caller, int line, const char * fmt, ...);
+EXT int  aapl_fail_full(      Aapl_t *aapl, const char *caller, int line, const char *fmt, ...);
+EXT void aapl_log_printf_full(Aapl_t *aapl, Aapl_log_type_t log_sel, const char *caller, int line, const char * fmt, ...);
 EXT void aapl_log_add(   Aapl_t *aapl, Aapl_log_type_t log_sel, const char *string, const char *caller, int line);
 
 /* Printf append to a dynamically growing buffer: */
@@ -55,7 +55,6 @@ EXT const char *aapl_log_get(Aapl_t *aapl);
 EXT void        aapl_log_clear(Aapl_t *aapl);
 
 /** @} */
-
 
 /*////////////////////////////////////////////////////////////////////// */
 /* Functions to convert types to strings, and strings to types. */

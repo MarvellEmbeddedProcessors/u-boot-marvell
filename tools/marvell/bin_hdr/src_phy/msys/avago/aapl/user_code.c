@@ -24,11 +24,12 @@
 /** Doxygen File Header */
 /** @file */
 /** @brief User-supplied fucntions. */
+
+#include "aapl.h"
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <gtOs/gtGenTypes.h>
-#include "aapl.h"
 
 #define I2C_SLAVE       0x0703
 

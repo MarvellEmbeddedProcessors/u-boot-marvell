@@ -31,11 +31,13 @@
 #ifndef AVAGO_SYSTEM_INCLUDES_H_
 #define AVAGO_SYSTEM_INCLUDES_H_
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #ifdef HAVE_CONFIG_H
 #   include <config.h>
 #else
 #   define STDC_HEADERS 1
 #endif
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 #define AAPL_COPYRIGHT "Copyright 2013-2014 Avago Technologies. All rights reserved."
 #undef AAPL_VERSION
@@ -45,6 +47,7 @@
 #  define AAPL_VERSION AAPL_VERSION_OVERRIDE
 #endif
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #if !(defined HAVE_READLINE_READLINE_H && defined(HAVE_NCURSES_H))
 #   undef AAPL_ENABLE_CONSOLE
 #   define AAPL_ENABLE_CONSOLE 0
@@ -125,6 +128,19 @@
 #   endif
 #endif
 
+#else
+#if defined(__cplusplus) && AAPL_ENABLE_C_LINKING
+#   define EXT extern "C"
+#else
+#   define EXT extern
+#endif
+
+#include <stdarg.h>
+#include <time.h>
+
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #if !(defined(HAVE_FCNTL_H) && defined(HAVE_LINUX_I2C_DEV_H) && defined(HAVE_SYS_IOCTL_H))
 #    undef AAPL_ALLOW_SYSTEM_I2C
 #    define AAPL_ALLOW_SYSTEM_I2C 0
@@ -145,5 +161,6 @@
 #    undef AAPL_ALLOW_GPIO_MDIO
 #    define AAPL_ALLOW_GPIO_MDIO 0
 #endif
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 #endif

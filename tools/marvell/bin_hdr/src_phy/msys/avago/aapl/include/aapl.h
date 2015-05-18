@@ -31,6 +31,28 @@
 #ifndef AAPL_H_
 #define AAPL_H_
 
+#define MV_HWS_REDUCED_BUILD
+/*#define MV_HWS_REDUCED_BUILD_EXT_CM3*/
+
+#ifdef MV_HWS_REDUCED_BUILD
+#define aapl_log_printf(aapl, type, function, line, msg, arg...)
+#define aapl_fail(aapl, function, line, msg, arg...) aapl_fail_reduce(aapl)
+#define aapl_check_ip_type(aapl, addr, function, line, error, args, arg...) aapl_check_ip_type_reduce(aapl, addr, error, args, arg)
+#define aapl_check_broadcast_address(aapl, addr, function, line, error_on_match) aapl_check_broadcast_address_reduce(aapl, addr, error_on_match)
+#define avago_spico_int_check(aapl, function, line, addr, int_num, param) avago_spico_int_check_reduce(aapl, addr, int_num, param)
+#define aapl_check_firmware_rev(aapl, addr, function, line, error, args, arg...) aapl_check_firmware_rev_reduce(aapl, addr,  error, args, arg)
+#define  aapl_check_process(aapl, addr, function, line, error, args, arg...)  (TRUE)
+#else
+#define aapl_log_printf(aapl, type, function, line, msg, arg...) aapl_log_printf_full(aapl, type, function, line, msg, arg)
+#define aapl_fail(aapl, function, line, msg, arg...) aapl_fail_full(aapl, function, line, msg, arg)
+#define aapl_check_ip_type(aapl, addr, function, line, error, args, arg...) aapl_check_ip_type_full(aapl, addr, function, line, error, args, arg)
+#define aapl_check_broadcast_address(aapl, addr, function, line, error_on_match) aapl_check_broadcast_address_full(aapl, addr, function, line, error_on_match)
+#define avago_spico_int_check(aapl, function, line, addr, int_num, param) avago_spico_int_check_full(aapl, function, line, addr, int_num, param)
+#define aapl_check_firmware_rev(aapl, addr, function, line, error, args, arg...) aapl_check_firmware_rev_full(aapl, addr, function, line, error, args, arg)
+#define  aapl_check_process(aapl, addr, function, line, error, args, arg...)  aapl_check_process_full(aapl, addr, function, line, error, args, arg)
+#endif  /* MV_HWS_REDUCED_BUILD */
+
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #ifndef AVAGO_FIRMWARE_PATH
 /** @brief This optional define provides a shortcut for accessing firmware */
 /**        by [fw_rev] and [build_id] rather than only by full path. */
@@ -59,14 +81,17 @@
 #define AAPL_ALLOW_USER_SUPPLIED_MDIO  0  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_MDIO communication method. */
 #define AAPL_ALLOW_USER_SUPPLIED_SBUS  1  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_SBUS_DIRECT communication method. */
 #define AAPL_ENABLE_USER_SERDES_INT    0  /**< Set to 0 to remove support for using the user_supplied_serdes_interrupt_function() for SerDes interrupts */
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
-
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /* Set value to 0 to disable corresponding feature support: */
 #define AAPL_ENABLE_AACS_SERVER        1  /**< Enable the AACS server. */
 #define AAPL_ENABLE_FILE_IO            1  /**< Enable use of file IO and the FILE type. */
+#else
+#define AAPL_ENABLE_AACS_SERVER        0  /**< Enable the AACS server. */
+#define AAPL_ENABLE_FILE_IO            0  /**< Enable use of file IO and the FILE type. */
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 #define AAPL_ENABLE_C_LINKING          1  /**< Set to 0 if library and callers all are C++ compiled. */
-
-
 
 /** @brief   Defines the available communication methods. */
 /** @details AAPL supports several methods for communicating with Avago IP. */
@@ -78,6 +103,7 @@
 /** */
 /**          Note also that several AAPL_ALLOW_* defines configure which */
 /**          methods are compiled into the library. */
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 typedef enum
 {
     AVAGO_AACS_SBUS,                /**< Use the AACS TCP protocol */
@@ -139,7 +165,7 @@ typedef enum
 
 #define AAPL_NUMBER_OF_RINGS_OVERRIDE 0
 
-
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 /* The AAPL_CHIP_ID_HEX_OVERRIDEn defines JTAG IDCODES for devices AAPL will be */
 /* communicating with. If AAPL is using an AVAGO_AACS_* communication method */
 /* these IDCODES will be auto-discovered. */
@@ -178,14 +204,16 @@ typedef enum
 
 /** Maximum number of AACS commands to queue before send. */
 /** Setting this to 0 disables command buffering. */
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #define AAPL_MAX_CMDS_BUFFERED      1000
 
 #define AAPL_SERDES_INT_TIMEOUT        500  /**< Maximum number of SBus reads to check for completion of SPICO interrupt command */
 #define AAPL_SBUS_MDIO_TIMEOUT         100  /**< Maximum number of reads of the SBUS_RESULT register in sbus-over-mdio mode */
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 #define AAPL_SERDES_INIT_RDY_TIMEOUT    20  /**< Maximum milliseconds for pll calibration */
 #define AAPL_SPICO_UPLOAD_WAIT_TIMEOUT 500  /**< Maximum milliseconds to wait for AAPL to wait for external SPICO upload to complete */
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #define AAPL_I2C_HARD_RESET_TIMEOUT    100  /**< Maximum number of commands to send after a hard I2C reset to wait for bus to come back up */
-
 
 /* */
 /* Logging defines: */
@@ -249,12 +277,12 @@ typedef enum
 /** @brief Default value for Aapl_t::enable_stream_logging. */
 /** This value also can be changed at run time. */
 /** */
-#define AAPL_DEFAULT_ENABLE_STREAM_LOGGING       1
+#define AAPL_DEFAULT_ENABLE_STREAM_LOGGING       0
 
 /** @brief Default value for Aapl_t::enable_stream_err_logging. */
 /** This value also can be changed at run time. */
 /** */
-#define AAPL_DEFAULT_ENABLE_STREAM_ERR_LOGGING   1
+#define AAPL_DEFAULT_ENABLE_STREAM_ERR_LOGGING   0
 
 /** @brief Default value for Aapl_t::serdes_core_port_interrupt */
 /** This value also can be changed at run time. */
@@ -289,6 +317,7 @@ typedef enum
 /** AAPL's AACS server can return up to AAPL_MAX_CMDS_BUFFERED * AAPL_SBUS_CMD_LOG_BUF_SIZE. */
 /** */
 #define AAPL_LOG_BUF_SIZE 1024
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /* Prototypes: */
 /*#define USER_SPECIFIED_LOGGING_FUNCTION(buffer,len) user_specified_logging_function(buffer,len) */
@@ -314,7 +343,7 @@ typedef enum
 
 /* Uncomment and edit if the default ms_sleep doesn't work for you. */
 /*#define MS_SLEEP(milliseconds) udelay(milliseconds*1000) */
-
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #define AAPL_EXIT(val)       exit(val)          /**< AAPL uses this for exit. */
 
 /* All malloc/realloc/free calls make use of these macros: */
@@ -331,7 +360,7 @@ typedef enum
 # define aapl_realloc(a,ptr,sz,c) AAPL_REALLOC(ptr,sz)
 # define aapl_free(a,ptr,c)       AAPL_FREE(ptr)
 #endif
-
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 
 /* AAPL required files: */
@@ -339,13 +368,16 @@ typedef enum
 #include "aapl_library.h"
 #include "aapl_core.h"
 #include "sbus.h"
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #include "mdio.h"
 #include "gpio_mdio.h"
 #include "i2c.h"
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 #include "spico.h"
 #include "serdes_core.h"
 #include "pmd.h"
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #include "logging.h"
-
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 #endif

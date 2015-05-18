@@ -85,7 +85,7 @@ void aapl_check_capabilities(
     if (no_cmd_buff && !strstr(aapl->data_char, "batching supported"))
     {
         aapl->max_cmds_buffered = 0;
-        aapl_log_printf(aapl, AVAGO_DEBUG1, __func__, __LINE__, "Command buffering disabled for aacs_server.pl, and older AAPL AACS servers.\n");
+        aapl_log_printf(aapl, AVAGO_DEBUG1, __func__, __LINE__, "Command buffering disabled for aacs_server.pl, and older AAPL AACS servers.\n",0);
     }
     else aapl_log_printf(aapl, AVAGO_DEBUG1, __func__, __LINE__, "Command buffering set to %d.\n", aapl->max_cmds_buffered);
 
@@ -152,7 +152,7 @@ void avago_aacs_open(Aapl_t *aapl)
     if( server == NULL )
     {
         if (aapl->aacs_server) aapl_fail(aapl, __func__, __LINE__, "aacs_server (%s) could not be found (%s).\n", aapl->aacs_server, aapl_tcp_strerr());
-        else                   aapl_fail(aapl, __func__, __LINE__, "aacs_server not specified.\n");
+        else                   aapl_fail(aapl, __func__, __LINE__, "aacs_server not specified.\n", 0);
         avago_aacs_close(aapl);
         return;
     }
@@ -198,7 +198,7 @@ static int reconnect(Aapl_t *aapl, const char * command)
     {
         aapl_fail(aapl, __func__, __LINE__, "The command \"%s\" was sent to a closed socket.\n", command);
         aapl->data = 0;
-        aapl_log_printf(aapl, AVAGO_DATA_CHAR, 0, 0, "");
+        aapl_log_printf(aapl, AVAGO_DATA_CHAR, 0, 0, "",0);
         return -1;
     }
     return 0;
@@ -394,7 +394,7 @@ const char *avago_aacs_send_command_options(
                 if( aapl->cmds_buffered > 1 )
                     aapl_log_printf(aapl, AVAGO_DEBUG9, __func__, __LINE__, "Sending %d batched commands (size: %d) %s", aapl->cmds_buffered, (int) LENGTH_CMD(), aapl->buf_cmd);
 
-                                bytes_sent = send(aapl->socket, aapl->buf_cmd, LENGTH_CMD(), flags);
+                bytes_sent = send(aapl->socket, aapl->buf_cmd, LENGTH_CMD(), flags);
                 if (bytes_sent) bytes_recv = aapl_recv(aapl);
 
                 if (bytes_recv <= 0 || bytes_sent <= 0)

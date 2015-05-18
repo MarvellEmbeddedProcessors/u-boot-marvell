@@ -85,6 +85,7 @@ uint avago_make_addr3(
     return avago_struct_to_addr(&addr_struct);
 }
 
+#ifndef MV_HWS_REDUCED_BUILD
 /** @brief  Modifies the addr_struct passed in to be all broadcast addresses (chip, ring, SBus, etc) */
 /** @return The address integer, and modifies the addr_struct passed in. */
 uint avago_addr_init_broadcast(Avago_addr_t *addr_struct)
@@ -95,8 +96,8 @@ uint avago_addr_init_broadcast(Avago_addr_t *addr_struct)
     addr_struct->sbus = AVAGO_BROADCAST;
     return avago_struct_to_addr(addr_struct);
 }
-
-
+#endif /* MV_HWS_REDUCED_BUILD */
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /** @brief  Returns the SBus Master address for the addressed chip and ring. */
 /** @return The SBus Master address corresponding to given input address. */
 uint avago_make_sbus_master_addr(
@@ -107,6 +108,7 @@ uint avago_make_sbus_master_addr(
     addr_struct.sbus = AVAGO_SBUS_MASTER_ADDRESS;
     return avago_struct_to_addr(&addr_struct);
 }
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /** @brief  Returns the SBus Controller address for the addressed chip and ring. */
 /** @return The SBus Controller address corresponding to given input address. */
@@ -227,6 +229,7 @@ void ms_sleep(
 #endif
 }
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #ifndef aapl_malloc
 /*============================================================================= */
 /* A A P L   M A L L O C */
@@ -284,7 +287,7 @@ void aapl_free(
     else if( description )
         aapl_fail(aapl, __func__, __LINE__, "Free NULL ptr for %s\n", description);
     else
-        aapl_fail(aapl, __func__, __LINE__, "Free NULL ptr for unknown.\n");
+        aapl_fail(aapl, __func__, __LINE__, "Free NULL ptr for unknown.\n",0);
 }
 #endif
 
@@ -355,6 +358,7 @@ void aapl_str_rep(char *str, char search, char replace)
     while( 0 != (ptr = strchr(ptr, search)) )
         *ptr++ = replace;
 }
+#ifndef MV_HWS_REDUCED_BUILD
 
 /** @details Provide function where it is missing */
 /** @details Same functionality as strtok_r */
@@ -370,6 +374,7 @@ EXT char *aapl_strtok_r(char *str, const char *delim, char **saveptr)
         *(*saveptr)++ = '\0';
     return len ? str : 0;
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 
 /** @brief Converts data to a 32 character ASCII encoded binary string with optional */
 /** underscores every 8 bits. */
@@ -416,6 +421,7 @@ size_t aapl_local_strftime(char *buf, size_t size_of_buf, const char *format)
     struct tm *tm_info = localtime(&t);
     return strftime(buf, size_of_buf, format, tm_info);
 }
+#ifndef MV_HWS_REDUCED_BUILD
 
 #if AAPL_ENABLE_FILE_IO
 /** @details Reads the file contents into memory. */
@@ -455,5 +461,7 @@ char *aapl_read_file(
     return data;
 }
 #endif
+#endif /* MV_HWS_REDUCED_BUILD */
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /** @endcond */

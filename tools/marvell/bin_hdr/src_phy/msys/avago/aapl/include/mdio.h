@@ -29,13 +29,11 @@
 
 #define AVSP_DEVAD 8
 
-
 #define AVAGO_MDIO_REG_STATUS      32777
 #define AVAGO_MDIO_REG_STAT_MISC1  32787
 #define AVAGO_MDIO_REG_RESET       32784
 #define AVAGO_MDIO_REG_CONTROL     0
 #define AVAGO_MDIO_REG_CONTROL2    7
-
 
 typedef enum
 {

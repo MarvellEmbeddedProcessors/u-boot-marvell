@@ -76,11 +76,12 @@ uint avago_spico_running(
                             running, aapl_addr_to_str(sbus_addr), pc, stepping, mem_bist, enable, error);
         }
         break;
-
+#ifndef MV_HWS_REDUCED_BUILD
     case AVAGO_PROCESS_A:
         if( !aapl_check_ip_type(aapl,sbus_addr, __func__, __LINE__, TRUE, 1, AVAGO_SPICO) ) return 0;
         if( avago_sbus_rd(aapl, sbus_addr, 0xa) != 0x2 ) running = 1;
         break;
+#endif /* MV_HWS_REDUCED_BUILD */
 
     default:
         aapl_fail(aapl, __func__, __LINE__, "SBus %s, IP type 0x%x, in process %s, is not supported.\n",
@@ -90,7 +91,7 @@ uint avago_spico_running(
     }
     return running;
 }
-
+#ifndef MV_HWS_REDUCED_BUILD
 /*============================================================================= */
 /* SPICO STATUS */
 /** */
@@ -146,6 +147,7 @@ int avago_spico_status(
     }
     return aapl->return_code;
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 
 /*============================================================================= */
 /* SerDes Interrupt Issue Routine */
@@ -159,12 +161,11 @@ static uint avago_serdes_spico_int(
 {
     int loops = 0;
     uint data = 0;
-    if (!aapl_check_ip_type(aapl,sbus_addr, __func__, __LINE__, TRUE, 3, AVAGO_SERDES_BROADCAST, AVAGO_SERDES, AVAGO_M4)) return 0;
-
+    if (!aapl_check_ip_type(aapl, sbus_addr, __func__, __LINE__, TRUE, 3, AVAGO_SERDES_BROADCAST, AVAGO_SERDES, AVAGO_M4)) return 0;
     param &= 0xffff;
 
+#ifndef MV_HWS_REDUCED_BUILD
 #if AAPL_ENABLE_USER_SERDES_INT
-
 
     if (aapl->enable_serdes_core_port_interrupt == 1)
         data = user_supplied_serdes_interrupt_function(aapl, sbus_addr, int_num, param);
@@ -194,6 +195,7 @@ static uint avago_serdes_spico_int(
         aapl_log_printf(aapl, AVAGO_DEBUG7, __func__, __LINE__, "SBus %s, loops: %d, int: 0x%02x 0x%04x -> 0x%04x.\n", aapl_addr_to_str(sbus_addr), loops, int_num, param, data);
     }
     else
+#endif /* MV_HWS_REDUCED_BUILD */
     {
         BOOL st;
         Avago_addr_t addr_struct, start, stop, next;
@@ -208,7 +210,7 @@ static uint avago_serdes_spico_int(
              st = aapl_broadcast_next(aapl, &next, &start, &stop) )
         {
             uint sbus_addr = avago_struct_to_addr(&next);
-            if (!aapl_check_ip_type(aapl, sbus_addr, __func__, __LINE__, TRUE, 2, AVAGO_M4, AVAGO_SERDES)) continue;
+            if (!aapl_check_ip_type(aapl, sbus_addr, __func__, __LINE__, TRUE, 2, AVAGO_SERDES, AVAGO_M4)) continue;
             for (loops = 0; loops < aapl->serdes_int_timeout; loops++)
             {
                 data = avago_sbus_rd(aapl, sbus_addr, 0x04);
@@ -238,11 +240,11 @@ static uint avago_serdes_spico_int(
 
         if( aapl_get_lsb_rev(aapl, sbus_addr) <= 2 ) data = avago_sbus_rd(aapl, sbus_addr, 0x04);
     }
-
     aapl_log_printf(aapl, AVAGO_DEBUG7, __func__, __LINE__, "SBus %s, loops: %d, int: 0x%02x 0x%04x -> 0x%04x.\n", aapl_addr_to_str(sbus_addr), loops, int_num, param, data);
     return (data & 0xffff);
 }
 
+#ifndef MV_HWS_REDUCED_BUILD
 static int spico_int_array_nobatch(Aapl_t *aapl, uint sbus_addr, int num_elements, Avago_spico_int_t *ints)
 {
     int i;
@@ -270,7 +272,6 @@ static int spico_int_array_batch(Aapl_t *aapl, uint sbus_addr, int num_elements,
 
     if (aapl->enable_serdes_core_port_interrupt)
         return spico_int_array_nobatch(aapl, sbus_addr, num_elements, ints);
-
     aapl_log_printf(aapl, AVAGO_DEBUG2, __func__, __LINE__, "num_elements = %d\n",num_elements);
     for( loops = 0; loops < aapl->serdes_int_timeout; loops++ )
     {
@@ -319,7 +320,6 @@ static int spico_int_array_batch(Aapl_t *aapl, uint sbus_addr, int num_elements,
     return aapl->return_code == return_code ? 0 : -1;
 }
 
-
 /** @cond INTERNAL */
 
 int avago_spico_int_array(Aapl_t *aapl, uint sbus_addr, int num_elements, Avago_spico_int_t *ints)
@@ -344,6 +344,7 @@ int avago_spico_int_array(Aapl_t *aapl, uint sbus_addr, int num_elements, Avago_
 
     return aapl->return_code;
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 
 /** @endcond */
 
@@ -362,14 +363,14 @@ static uint avago_sbm_spico_int(
     uint data = 0;
     param &= 0xffff;
 
-    if (!aapl_check_ip_type(aapl,sbus_addr, __func__, __LINE__, TRUE, 1, AVAGO_SPICO)) return 0;
+    if (!aapl_check_ip_type(aapl, sbus_addr, __func__, __LINE__, TRUE, 1, AVAGO_SPICO)) return 0;
 
     avago_sbus_wr(aapl, sbus_addr, 0x02, (param << 16) | int_num);
     int_data = avago_sbus_rd(aapl, sbus_addr, 0x07);
-
+#ifndef MV_HWS_REDUCED_BUILD
     if (aapl_check_process(aapl,sbus_addr, __func__, __LINE__, FALSE, 1, AVAGO_PROCESS_A))
         int_data = int_data | 0x02;
-
+#endif /* MV_HWS_REDUCED_BUILD */
     int_data = int_data | 0x01;
     avago_sbus_wr(aapl, sbus_addr, 0x07, int_data);
     int_data = int_data ^ 0x01;
@@ -406,7 +407,6 @@ static uint avago_sbm_spico_int(
     }
 
     data = avago_sbus_rd(aapl, sbus_addr, 0x08);
-
     aapl_log_printf(aapl, AVAGO_DEBUG6, __func__, __LINE__, "SBus %s, loops: %d, int: 0x%02x 0x%04x -> 0x%04x.\n", aapl_addr_to_str(sbus_addr), loops, int_num, param, (data >> 16) & 0xffff);
     if ((data & 0x7fff) == 1) return (data >> 16) & 0xffff;
     else                      return ((data >> 16) & 0xffff) | ((data & 0x7fff) << 16);
@@ -417,13 +417,21 @@ static uint avago_sbm_spico_int(
 /**         return value matches the interrupt number. */
 /** @return TRUE for pass */
 /** @return FALSE for fail */
-BOOL avago_spico_int_check(
+#ifndef MV_HWS_REDUCED_BUILD
+BOOL avago_spico_int_check_full(
     Aapl_t *aapl,           /**< [in] Pointer to AAPL structure */
     const char *caller,     /**< Caller function, usually __func__ */
     int line,               /**< Caller line number, usually __LINE__ */
     uint addr,              /**< [in] SBus address of SerDes */
     int int_num,            /**< [in] Interrupt code */
     int param)              /**< [in] Interrupt data */
+#else
+BOOL avago_spico_int_check_reduce(
+    Aapl_t *aapl,           /**< [in] Pointer to AAPL structure */
+    uint addr,              /**< [in] SBus address of SerDes */
+    int int_num,            /**< [in] Interrupt code */
+    int param)              /**< [in] Interrupt data */
+#endif /* MV_HWS_REDUCED_BUILD */
 {
     int rc = avago_spico_int(aapl, addr, int_num, param);
     if( rc != (int_num & 0xff) )
@@ -467,7 +475,7 @@ uint avago_spico_int(
             return 0;
         }
     }
-
+#ifndef MV_HWS_REDUCED_BUILD
     if (aapl->capabilities & AACS_SERVER_SPICO_INT)
     {
         char spico_cmd_buffer[64];
@@ -481,6 +489,7 @@ uint avago_spico_int(
     }
 
     aapl_log_printf(aapl, AVAGO_DEBUG6, __func__, __LINE__, "SBus %s, Executing interrupt 0x%02x,0x%04x\n", aapl_addr_to_str(sbus_addr), int_num, param);
+#endif /* MV_HWS_REDUCED_BUILD */
 
     switch( aapl_get_process_id(aapl, sbus_addr) )
     {
@@ -495,12 +504,12 @@ uint avago_spico_int(
         default: break;
         }
         break;
-
+#ifndef MV_HWS_REDUCED_BUILD
     case AVAGO_PROCESS_A:
         if( aapl_get_ip_type(aapl, sbus_addr) == AVAGO_SPICO )
             return avago_sbm_spico_int(aapl,sbus_addr,int_num,param);
         break;
-
+#endif /* MV_HWS_REDUCED_BUILD */
     default: break;
     }
     aapl_fail(aapl, __func__, __LINE__, "SBus %s, IP type 0x%x, in process %s, is not supported.\n",
@@ -509,7 +518,8 @@ uint avago_spico_int(
     return 0;
 }
 
-
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#ifndef MV_HWS_REDUCED_BUILD
 /* Executes the given SPICO interrupt on the supplied SBus addresses */
 /* For example: avago_spico_broadcast_int(aapl, 0x05, 2, 0x08, 0xaa); */
 /* SPICO interrupt 0x05 on SBus addresses 0x08, and 0xaa. */
@@ -530,7 +540,6 @@ uint avago_spico_broadcast_int(Aapl_t *aapl, int int_num, int param, int args, .
     va_end(sbus_rx_list);
     return aapl->return_code;
 }
-
 
 /* Executes the given SPICO interrupt on the supplied SBus addresses */
 /* For example: avago_spico_broadcast_int(aapl, 0x05, 2, 0x08, 0xaa); */
@@ -604,7 +613,7 @@ static void mdio_burst_upload(Aapl_t *aapl, Avago_addr_t addr_struct, int words,
     if (addr_struct.sbus == 0xfd) avago_mdio_wr(aapl, addr_struct.chip, AVSP_DEVAD, 32778, 0x0000);
     else                          avago_mdio_wr(aapl, addr_struct.chip, AVSP_DEVAD, 32780, 0x0000);
 }
-
+#endif /*  MV_HWS_REDUCED_BUILD */
 static void spico_burst_upload(Aapl_t *aapl, uint sbus, uint reg, uint rom_size, const int *rom)
 {
     uint word;
@@ -616,28 +625,27 @@ static void spico_burst_upload(Aapl_t *aapl, uint sbus, uint reg, uint rom_size,
     else if( rom_size - word == 1 )
         avago_sbus_wr(aapl, sbus, reg, 0x40000000 | rom[word]);
 }
-
 /** @brief   Internal function that uploads the ROM blindly to the sbus_addr. */
 /** @return  On success, returns 0. */
 /** @return  On error, decrements aapl->return_code and returns -1. */
 static int spico_upload_image(Aapl_t *aapl, uint sbus_addr, int words, const int rom[])
 {
     int return_code = aapl->return_code;
-
     if (aapl_check_process(aapl, sbus_addr, __func__, __LINE__, FALSE, 2, AVAGO_PROCESS_B, AVAGO_PROCESS_F))
     {
         Avago_addr_t addr_struct;
         avago_addr_to_struct(sbus_addr,&addr_struct);
-        if (aapl_check_ip_type(aapl,sbus_addr, __func__, __LINE__, FALSE, 3, AVAGO_SERDES, AVAGO_SERDES_BROADCAST, AVAGO_M4))
+        if (aapl_check_ip_type(aapl, sbus_addr, __func__, __LINE__, FALSE, 3, AVAGO_SERDES, AVAGO_SERDES_BROADCAST, AVAGO_M4))
         {
             avago_sbus_wr(aapl, sbus_addr, 0x07, 0x00000011);
             avago_sbus_wr(aapl, sbus_addr, 0x07, 0x00000010);
             avago_sbus_wr(aapl, sbus_addr, 0x08, 0x00000030);
             avago_sbus_wr(aapl, sbus_addr, 0x00, 0xc0000000);
-
+#ifndef MV_HWS_REDUCED_BUILD
             if( aapl_is_mdio_communication_method(aapl) )
                 mdio_burst_upload(aapl, addr_struct, words, rom);
             else
+#endif /* MV_HWS_REDUCED_BUILD */
             {
                 if( aapl_get_lsb_rev(aapl, sbus_addr) <= 2 )
                 {
@@ -654,15 +662,17 @@ static int spico_upload_image(Aapl_t *aapl, uint sbus_addr, int words, const int
             avago_sbus_wr(aapl, sbus_addr, 0x07, 0x00000002);
             avago_sbus_wr(aapl, sbus_addr, 0x08, 0x00000000);
         }
-        else if (aapl_check_ip_type(aapl,sbus_addr, __func__, __LINE__, TRUE, 2, AVAGO_SPICO, AVAGO_SPICO_BROADCAST))
+        else if (aapl_check_ip_type(aapl,sbus_addr, __func__, __LINE__, TRUE, 3/*2*/, AVAGO_SPICO, AVAGO_SPICO_BROADCAST, 0))
         {
             avago_sbus_wr(aapl, sbus_addr, 0x01, 0x000000c0);
             avago_sbus_wr(aapl, sbus_addr, 0x01, 0x00000040);
             avago_sbus_wr(aapl, sbus_addr, 0x01, 0x00000240);
 
+#ifndef MV_HWS_REDUCED_BUILD
             if( aapl_is_mdio_communication_method(aapl) )
                 mdio_burst_upload(aapl, addr_struct, words, rom);
             else
+#endif /* MV_HWS_REDUCED_BUILD */
             {
                 int rev = aapl_get_ip_rev(aapl, avago_make_sbus_controller_addr(sbus_addr));
                 if( rev >= 0xbe
@@ -685,6 +695,7 @@ static int spico_upload_image(Aapl_t *aapl, uint sbus_addr, int words, const int
             avago_sbus_wr(aapl, sbus_addr, 0x01, 0x00000140);
         }
     }
+#ifndef MV_HWS_REDUCED_BUILD
     else if (aapl_check_process(aapl, sbus_addr, __func__, __LINE__, TRUE, 1, AVAGO_PROCESS_A))
     {
         if (aapl_check_ip_type(aapl,sbus_addr, __func__, __LINE__, TRUE, 1, AVAGO_SPICO))
@@ -702,6 +713,8 @@ static int spico_upload_image(Aapl_t *aapl, uint sbus_addr, int words, const int
             avago_sbus_wr(aapl, sbus_addr, 0x07, 0x00000002);
         }
     }
+#endif /* MV_HWS_REDUCED_BUILD */
+
     return aapl->return_code == return_code ? 0 : -1;
 }
 
@@ -723,7 +736,6 @@ int avago_spico_upload_swap_image(
     if( !aapl_check_ip_type(aapl, sbus_addr_in, __func__, __LINE__, TRUE, 3, AVAGO_SERDES, AVAGO_SERDES_BROADCAST, AVAGO_M4) ||
         !aapl_check_process(aapl, sbus_addr_in, __func__, __LINE__, TRUE, 2, AVAGO_PROCESS_B, AVAGO_PROCESS_F) )
         return 0;
-
     avago_addr_to_struct(avago_make_sbus_master_addr(sbus_addr_in), &addr_struct);
 
     for( st = aapl_broadcast_first(aapl, &addr_struct, &start, &stop, &next);
@@ -741,16 +753,13 @@ int avago_spico_upload_swap_image(
             aapl_log_printf(aapl, AVAGO_WARNING, __func__, __LINE__, "Swap image can not be uploaded because the SPICO at address %s is not running.\n", aapl_addr_to_str(sbus_addr));
             continue;
         }
-
         aapl_log_printf(aapl, AVAGO_DEBUG1, __func__, __LINE__, "SBus %s, Uploading %d bytes of SerDes swap machine code.\n", aapl_addr_to_str(sbus_addr), words);
-
         avago_sbus_rmw(aapl, sbus_addr, 7, 0, 2);
 
         if( aapl_get_ip_rev(aapl, avago_make_sbus_controller_addr(sbus_addr)) >= 0x00be )
         {
             int base_addr = avago_spico_int(aapl, sbus_addr, 0x1C, 0);
             aapl_log_printf(aapl, AVAGO_DEBUG2, __func__, __LINE__, "SBus %s, Loading Swap Image to production SBM, base_addr=0x%x \n",aapl_addr_to_str(sbus_addr), base_addr);
-
             avago_sbus_wr( aapl, sbus_addr, 0x05, 0x01);
             avago_sbus_rmw(aapl, sbus_addr, 0x01, 0x0200, 0x0200);
             avago_sbus_wr(aapl, sbus_addr, 0x03, 0x00000000 | base_addr);
@@ -825,10 +834,9 @@ int avago_spico_upload(
     BOOL st;
     Avago_addr_t addr_struct, start, stop, next;
 
-    if( !aapl_check_ip_type(aapl, sbus_addr_in, __func__, __LINE__, TRUE, 6, AVAGO_SPICO, AVAGO_SERDES, AVAGO_SERDES_BROADCAST, AVAGO_SPICO_BROADCAST, AVAGO_M4, AVAGO_SERDES_M4_BROADCAST) ||
+    if( !aapl_check_ip_type(aapl, sbus_addr_in, __func__, __LINE__, TRUE, 5/*6*/, AVAGO_SPICO, AVAGO_SERDES, AVAGO_SERDES_BROADCAST, AVAGO_SPICO_BROADCAST, AVAGO_M4/*, AVAGO_SERDES_M4_BROADCAST*/) ||
         !aapl_check_process(aapl, sbus_addr_in, __func__, __LINE__, TRUE, 3, AVAGO_PROCESS_A, AVAGO_PROCESS_F, AVAGO_PROCESS_B) )
         return 0;
-
     avago_addr_to_struct(sbus_addr_in, &addr_struct);
 
     for( st = aapl_broadcast_first(aapl, &addr_struct, &start, &stop, &next);
@@ -926,7 +934,7 @@ int avago_firmware_upload(
                 avago_spico_upload_swap_image(aapl, addr, sdi_rom_size, sdi_rom);
             else
                 aapl_log_printf(aapl, AVAGO_WARNING, __func__,__LINE__,
-                    "Skipping swap/SDI ROM upload because SBus Master image already contains an SDI image.\n");
+                     "Skipping swap/SDI ROM upload because SBus Master image already contains an SDI image.\n", 0);
         }
         else
             avago_spico_upload_swap_image(aapl, addr, sdi_rom_size, sdi_rom);
@@ -1034,6 +1042,7 @@ int avago_spico_ram_bist(
     }
     return return_code == aapl->return_code ? 0 : -1;
 }
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /** @brief  Gets the revision of the firmware loaded into the SPICO processor. */
 /** @return  On success, returns the firmware revision. */
@@ -1047,14 +1056,16 @@ uint avago_firmware_get_rev(
     Avago_process_id_t process_id = aapl_get_process_id(aapl,addr);
     if( process_id == AVAGO_PROCESS_F || process_id == AVAGO_PROCESS_B )
     {
-        if( aapl_check_ip_type(aapl,addr, __func__, __LINE__, TRUE, 3, AVAGO_SPICO, AVAGO_SERDES, AVAGO_M4) )
+        if( aapl_check_ip_type(aapl, addr, __func__, __LINE__, TRUE, 3, AVAGO_SPICO, AVAGO_SERDES, AVAGO_M4) )
             rc = avago_spico_int(aapl, addr, 0, 0);
     }
+#ifndef MV_HWS_REDUCED_BUILD
     else if( process_id == AVAGO_PROCESS_A )
     {
         if( aapl_check_ip_type(aapl,addr, __func__, __LINE__, TRUE, 1, AVAGO_SPICO) )
             rc = avago_spico_int(aapl, addr, 1, 0);
     }
+#endif /* MV_HWS_REDUCED_BUILD */
     aapl_log_printf(aapl, AVAGO_DEBUG5, __func__, __LINE__, "SBus %s, fw_rev = 0x%04x.\n", aapl_addr_to_str(addr), rc);
     return rc;
 }
@@ -1071,7 +1082,7 @@ uint avago_firmware_get_build_id(
     Avago_process_id_t process_id = aapl_get_process_id(aapl,addr);
     if( process_id == AVAGO_PROCESS_F || process_id == AVAGO_PROCESS_B )
     {
-        if( aapl_check_ip_type(aapl,addr, __func__, __LINE__, TRUE, 3, AVAGO_SERDES, AVAGO_SPICO, AVAGO_M4) )
+        if( aapl_check_ip_type(aapl, addr, __func__, __LINE__, TRUE, 3, AVAGO_SERDES, AVAGO_SPICO, AVAGO_M4) )
         {
             if( aapl_check_ip_type(aapl,addr, __func__, __LINE__, FALSE, 2, AVAGO_SERDES, AVAGO_M4) )
                 rc = avago_spico_int(aapl, addr, 0x3f, 0);
@@ -1079,11 +1090,13 @@ uint avago_firmware_get_build_id(
                 rc = avago_spico_int(aapl, addr, 0x01, 0);
         }
     }
+#ifndef MV_HWS_REDUCED_BUILD
     else if( process_id == AVAGO_PROCESS_A )
     {
         if( aapl_check_ip_type(aapl,addr, __func__, __LINE__, TRUE, 1, AVAGO_SPICO) )
             rc = avago_spico_int(aapl, addr, 0x00, 0);
     }
+#endif /* MV_HWS_REDUCED_BUILD */
     aapl_log_printf(aapl, AVAGO_DEBUG5, __func__, __LINE__, "SBus %s, fw_build_id = %04x.\n", aapl_addr_to_str(addr), rc);
     return rc;
 }
@@ -1119,13 +1132,13 @@ uint avago_spico_crc(
             crc_status = crc == 1;
         }
         break;
-
+#ifndef MV_HWS_REDUCED_BUILD
     case AVAGO_PROCESS_A:
         if( !aapl_check_ip_type(aapl,sbus_addr, __func__, __LINE__, TRUE, 1, AVAGO_SPICO) ) return 0;
         crc = avago_spico_int(aapl, sbus_addr, 0x02, 0);
         crc_status = crc == 1;
         break;
-
+#endif /* MV_HWS_REDUCED_BUILD */
     default: break;
     }
 
@@ -1171,6 +1184,7 @@ int avago_spico_reset(
 
 #if AAPL_ENABLE_FILE_IO
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /** @brief   Load a valid Avago-supplied ROM image into memory. */
 /** @details Caller should call aapl_free(aapl, rom_ptr, __func__) */
 /**          when finished with the ROM image. */
@@ -1206,7 +1220,6 @@ int avago_load_rom_from_file(
         fclose(file);
         return -1;
     }
-
 
     while( fgets(mem_buffer, 6, file) )
     {
@@ -1334,7 +1347,7 @@ static int merge_sdi_files(
                 *sdi_rom_size = 0;
             }
             else
-                return aapl_fail(aapl,__func__,__LINE__,"SDI ROM cannot be uploaded because SBM already has an appended SDI.\n");
+                return aapl_fail(aapl,__func__,__LINE__,"SDI ROM cannot be uploaded because SBM already has an appended SDI.\n",0);
         }
 
         if( *sbm_rom_size > *swap_rom_size && *swap_rom_size > 0 )
@@ -1346,7 +1359,7 @@ static int merge_sdi_files(
                 *swap_rom_size = 0;
             }
             else
-                return aapl_fail(aapl,__func__,__LINE__,"SWAP ROM cannot be uploaded because SBM already has an appended SDI.\n");
+                return aapl_fail(aapl,__func__,__LINE__,"SWAP ROM cannot be uploaded because SBM already has an appended SDI.\n",0);
         }
     }
 
@@ -1366,7 +1379,7 @@ static int merge_sdi_files(
         *swap_rom_size = 0;
     }
     if( *swap_rom && *sdi_rom )
-        return aapl_fail(aapl,__func__,__LINE__,"SWAP and SDI ROM cannot both be uploaded!\n");
+        return aapl_fail(aapl,__func__,__LINE__,"SWAP and SDI ROM cannot both be uploaded!\n",0);
 
     return 0;
 }
@@ -1427,21 +1440,26 @@ int avago_firmware_upload_file(
     }
     return status;
 }
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 #endif
 
-
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /** @brief   Check to see if any uploads are in progress, and waits for them to complete */
 /** */
 void avago_twi_wait_for_complete(
     Aapl_t *aapl,    /**< Pointer to Aapl_t structure */
     uint sbus_addr)  /**< Sbus address of device to check for current upload */
 {
-    if( !aapl_check_process(aapl, sbus_addr, __func__, __LINE__, TRUE, 3, AVAGO_PROCESS_B, AVAGO_PROCESS_F, AVAGO_PROCESS_A) ||
-         aapl_check_broadcast_address(aapl, sbus_addr, __func__, __LINE__, TRUE) ||
-        !aapl_check_ip_type(aapl, sbus_addr, __func__, __LINE__, TRUE, 2, AVAGO_SBUS_CONTROLLER)  ) return;
+    if( !aapl_check_process(aapl, sbus_addr, __func__, __LINE__, TRUE, 3, AVAGO_PROCESS_B, AVAGO_PROCESS_F, AVAGO_PROCESS_A))
+        return;
+    if(aapl_check_broadcast_address(aapl, sbus_addr, __func__, __LINE__, TRUE) )
+        return;
+    if( !aapl_check_ip_type(aapl, sbus_addr, __func__, __LINE__, TRUE, 2, AVAGO_SBUS_CONTROLLER, 0/*dummy*/)  ) return;
 
+#ifndef MV_HWS_REDUCED_BUILD
     if (aapl_get_process_id(aapl, sbus_addr) == AVAGO_PROCESS_A) return;
+#endif /* MV_HWS_REDUCED_BUILD */
 
     if (avago_sbus_rd(aapl, sbus_addr, 0xfe) == 0xbf)
     {
@@ -1468,7 +1486,7 @@ void avago_twi_wait_for_complete(
             aapl_log_printf(aapl, AVAGO_DEBUG1, __func__, __LINE__, "TWI status indicates failure: 0x%08x.\n", twi_status);
     }
 }
-
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /** @brief   Check to see if any uploads are in progress, and waits for them to complete */
 /** */
@@ -1479,9 +1497,9 @@ void avago_spico_wait_for_upload(
     uint imem_cntl = 0;
     uint loops;
 
-    if( !aapl_check_process(aapl, sbus_addr, __func__, __LINE__, TRUE, 2, AVAGO_PROCESS_B, AVAGO_PROCESS_F) ||
-         aapl_check_broadcast_address(aapl, sbus_addr, __func__, __LINE__, TRUE) ||
-        !aapl_check_ip_type(aapl, sbus_addr, __func__, __LINE__, TRUE, 3, AVAGO_SERDES, AVAGO_SPICO, AVAGO_M4)  ) return;
+    if( !aapl_check_process(aapl, sbus_addr, __func__, __LINE__, TRUE, 2, AVAGO_PROCESS_B, AVAGO_PROCESS_F) ) return;
+    if(aapl_check_broadcast_address(aapl, sbus_addr, __func__, __LINE__, TRUE) ) return;
+    if( !aapl_check_ip_type(aapl, sbus_addr, __func__, __LINE__, TRUE, 3, AVAGO_SERDES, AVAGO_SPICO, AVAGO_M4)  ) return;
 
     if (aapl_check_ip_type(aapl, sbus_addr, __func__, __LINE__, FALSE, 2, AVAGO_SERDES, AVAGO_M4))
     {
@@ -1524,7 +1542,6 @@ void avago_spico_wait_for_upload(
         }
     }
 }
-
 
 static void serdes_spico_halt_fix(
     Aapl_t *aapl,   /**< [in] Pointer to Aapl_t structure. */

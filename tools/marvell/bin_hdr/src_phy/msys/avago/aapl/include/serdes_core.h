@@ -48,10 +48,12 @@ typedef enum
     AVAGO_ESB_DIRECT,     /**< ESB access using SBus instead of an interrupt. */
     AVAGO_LSB,            /**< Logical Sub-Block access. */
     AVAGO_LSB_DIRECT,     /**< LSB access using SBus instead of an interrupt. */
+#ifndef MV_HWS_REDUCED_BUILD
     AVAGO_DMEM,           /**< Data memory access. */
     AVAGO_DMEM_PREHALTED, /**< Data memory access, processor already halted. */
     AVAGO_IMEM,           /**< Instruction memory access. */
     AVAGO_IMEM_PREHALTED  /**< Instruction memory access, processor already halted. */
+#endif /* MV_HWS_REDUCED_BUILD */
 } Avago_serdes_mem_type_t;
 
 EXT int  avago_serdes_mem_rd(Aapl_t *aapl, uint sbus_addr,
@@ -108,10 +110,12 @@ typedef enum
     AVAGO_SERDES_PAM4 = 1     /**< Transmit using 4 levels of encoding */
 } Avago_serdes_encoding_mode_t;
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 EXT int  avago_serdes_get_tx_rx_width(Aapl_t *aapl, uint sbus_addr, int *tx_width, int *rx_width);
 EXT int  avago_serdes_set_tx_rx_width(Aapl_t *aapl, uint sbus_addr, int tx_width, int rx_width);
 EXT BOOL avago_serdes_get_tx_line_encoding (Aapl_t *aapl, uint addr);
 EXT BOOL avago_serdes_get_rx_line_encoding (Aapl_t *aapl, uint addr);
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 EXT int  avago_serdes_set_tx_rx_width_pam(Aapl_t *aapl, uint sbus_addr, int tx_width, int rx_width, Avago_serdes_encoding_mode_t tx_encoding, Avago_serdes_encoding_mode_t rx_encoding);
 
 
@@ -124,7 +128,9 @@ typedef struct
     short slew;           /**< Slew rate setting [0..3], 0 is fastest */
 } Avago_serdes_tx_eq_t;
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 EXT void avago_serdes_tx_eq_init(Avago_serdes_tx_eq_t *ptr);
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 EXT int avago_serdes_get_tx_eq(Aapl_t *aapl, uint sbus_addr, Avago_serdes_tx_eq_t *tx_eq);
 EXT int avago_serdes_set_tx_eq(Aapl_t *aapl, uint sbus_addr, Avago_serdes_tx_eq_t *tx_eq);
 
@@ -168,7 +174,7 @@ EXT Avago_serdes_rx_cmp_mode_t avago_serdes_get_rx_cmp_mode(Aapl_t *aapl, uint s
 EXT int                        avago_serdes_set_rx_cmp_mode(Aapl_t *aapl, uint sbus,
                                                             Avago_serdes_rx_cmp_mode_t mode);
 
-
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /** @brief Specify the RX termination value. */
 typedef enum
 {
@@ -197,6 +203,7 @@ EXT int                       avago_serdes_set_tx_pll_clk_src(Aapl_t *aapl, uint
                                                               Avago_serdes_tx_pll_clk_t src);
 
 EXT BOOL avago_serdes_get_electrical_idle(Aapl_t *aapl, uint sbus_addr);
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 EXT BOOL avago_serdes_get_signal_ok_enable(Aapl_t *aapl, uint sbus_addr);
 EXT int  avago_serdes_get_signal_ok_threshold(Aapl_t *aapl, uint sbus_addr);
 
@@ -206,9 +213,11 @@ EXT int avago_serdes_initialize_signal_ok(Aapl_t *aapl, uint sbus_addr, int thre
 EXT uint avago_serdes_get_errors(Aapl_t *aapl, uint sbus_addr,
                                  Avago_serdes_mem_type_t type, BOOL reset_count_after_get);
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 EXT BOOL avago_serdes_slip_bits(Aapl_t *aapl, uint sbus_addr, uint bits);
 EXT BOOL avago_serdes_slip_rx_phase(Aapl_t *aapl, uint sbus_addr, uint bits, BOOL apply_at_init);
 EXT BOOL avago_serdes_slip_tx_phase(Aapl_t *aapl, uint sbus_addr, uint bits, BOOL apply_at_init);
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /** @brief Initialize a SerDes slice. */
 typedef enum
@@ -244,10 +253,14 @@ typedef struct
     BOOL rx_inversion;  /**< Enable RX polarity inversion if ELB selected */
 } Avago_serdes_init_config_t;
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 EXT Avago_serdes_init_config_t *avago_serdes_init_config_construct(Aapl_t *aapl);
 EXT void avago_serdes_init_config_destruct(Aapl_t *aapl, Avago_serdes_init_config_t *config);
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 EXT int avago_serdes_init(Aapl_t *aapl, uint sbus_addr, Avago_serdes_init_config_t *config);
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 EXT int avago_serdes_init_quick(Aapl_t *aapl, uint sbus_addr, uint divider);
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /**@brief Controls what type of tuning to execute. */
 typedef enum
@@ -274,7 +287,9 @@ typedef struct
     Avago_serdes_dfe_tune_mode_t tune_mode; /**< Select tuning mode to execute. */
 
 } Avago_serdes_dfe_tune_t;
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 EXT void avago_serdes_tune_init(Aapl_t *aapl, Avago_serdes_dfe_tune_t *control);
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 EXT void avago_serdes_tune(Aapl_t *aapl, uint sbus_addr, Avago_serdes_dfe_tune_t *control);
 
 EXT uint avago_serdes_eye_get_simple_metric(Aapl_t *aapl, uint addr);

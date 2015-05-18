@@ -69,6 +69,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvDdr3LoggingDef.h"
 
 #define INTERFACE_BUS_MASK_32BIT       0xF
+#define DYNAMIC_CS_SIZE_CONFIG
 
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 /************************************* Customer Boards Topology *************************************/

@@ -97,7 +97,8 @@
 #define DEV_ID_REG_DEVICE_ID_OFFS               16
 #define DEV_ID_REG_DEVICE_ID_MASK               0xFFFF0000
 
-
+#define SAR_FREQ_OFFSET 						10
+#define SAR_FREQ_MASK  							0x1F
 #define SAR_DEV_ID_OFFS                         27
 #define SAR_DEV_ID_MASK                         0x7
 
@@ -222,7 +223,7 @@
 #define AVS_DEBUG_CNTR_DEFAULT_VALUE    0x08008073
 
 #ifdef CONFIG_ARMADA_38X
-	#define AVS_LIMIT_VAL	0x23	/*1.15V*/
+	#define AVS_LIMIT_VAL_SLOW	0x23	/*1.15V*/
 #else
 	#define AVS_LIMIT_VAL	0x27
 #endif
@@ -230,11 +231,10 @@
 #define AVS_ENABLED_CONTROL             0xE4130
 #define AVS_LOW_VDD_LIMIT_OFFS          4
 #define AVS_LOW_VDD_LIMIT_MASK          (0xff << AVS_LOW_VDD_LIMIT_OFFS)
-#define AVS_LOW_VDD_LIMIT_VAL           (AVS_LIMIT_VAL << AVS_LOW_VDD_LIMIT_OFFS)
 
 #define AVS_HIGH_VDD_LIMIT_OFFS         12
 #define AVS_HIGH_VDD_LIMIT_MASK         (0xff << AVS_HIGH_VDD_LIMIT_OFFS)
-#define AVS_HIGH_VDD_LIMIT_VAL          (AVS_LIMIT_VAL << AVS_HIGH_VDD_LIMIT_OFFS)
+
 
 /* Board ID numbers */
 #define MARVELL_BOARD_ID_MASK			0x10

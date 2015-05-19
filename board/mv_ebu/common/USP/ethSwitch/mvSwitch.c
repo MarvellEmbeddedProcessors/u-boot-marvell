@@ -617,6 +617,7 @@ MV_VOID	mvEthE6171SwitchBasicInit(MV_U32 ethPortNum)
 
 	mvEthSwitchRegWrite(ethPortNum, swicthPhyAddr + cpuPort, 0x4, 0x7f);
 
+#ifdef RD_88F6710
 	/* Init LEDs on RD-6282 */
 	/* Move all LEDs to special */
 	mvEthSwitchRegWrite(ethPortNum, swicthPhyAddr, MV_E6171_LED_CONTROL, (BIT15|0x67));
@@ -634,7 +635,6 @@ MV_VOID	mvEthE6171SwitchBasicInit(MV_U32 ethPortNum)
 	/* Port 3 LED special activity link */
 	mvEthSwitchRegWrite(ethPortNum, swicthPhyAddr + 3, MV_E6171_LED_CONTROL, (BIT15|BIT14|BIT13|BIT12|BIT3));
 
-#ifdef RD_88F6710
 	mvEthSwitchRegWrite(ethPortNum, swicthPhyAddr, MV_E6171_LED_CONTROL, 0xf00f);
 #endif
 

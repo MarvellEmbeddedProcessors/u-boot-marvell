@@ -47,7 +47,7 @@ typedef struct _boardSatrDefault {
 	MV_SATR_TYPE_ID satrId;
 	MV_U32 defauleValueForBoard[MV_MARVELL_BOARD_NUM];
 } MV_BOARD_SATR_DEFAULT;
-#define MAX_DEFAULT_ENTRY	21
+#define MAX_DEFAULT_ENTRY	22
 MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 /* 	defauleValueForBoard[] = RD_NAS_68xx,	DB_BP_68xx,	RD_WAP_68xx,	DB_AP_68xx , DB_GP_68xx,  DB_BP_6821,	DB-AMC */
 { MV_SATR_CPU_DDR_L2_FREQ,	{0x0c,		0x0c,		0x0c,		0x0c,		0x0c,	  0x4,		0x0c}},
@@ -69,6 +69,7 @@ MV_BOARD_SATR_DEFAULT boardSatrDefault[MAX_DEFAULT_ENTRY] = {
 { MV_SATR_FULL_FLAVOR,		{0,		1,		0,		1,		1,	  1,		0} },
 { MV_SATR_TDM_CONNECTED,	{0,		1,		0,		0,		0,	  0,		0} },
 { MV_SATR_TDM_PLACE_HOLDER,	{0,		1,		0,		0,		0,	  0,		0} },
+{ MV_SATR_BOARD_SPEED,		{0,		0x1,		0,		0x1,		0x1,	  0,		0x1} },
 {MV_SATR_BOOT_DEVICE,           {0,             0,              0,		0,		0,	  0,		0} },/* Dummy entry: default value taken from S@R register */
 {MV_SATR_BOOT2_DEVICE,          {0,             0,              0,		0,		0,	  0,		0} },/* Dummy entry: default value taken from S@R register */
 };
@@ -91,6 +92,50 @@ char *devIdArr[4] = {
 			"6820 (A385)",
 			"N/A",
 			"6828 (A388)" };
+
+static MV_U32 getBoardSpeed(MV_U32 boardspeed)
+{
+	switch (boardspeed) {
+	case 1:
+		return 2000;
+	case 2:
+		return 1866;
+	case 3:
+		return 1600;
+	default:
+		return 0;
+	}
+}
+/*
+ * when each CPU is checked, max CPU speed is determined for each board
+ * To enable the speed limitation for each board, the according value is written
+ * in SatR field 'boardspeed':
+ * -0x1 for max value 2000Mhz
+ * -0x2 for max value 1866MHz
+ * -0x3 for max value 1600MHz
+ *
+ * The function returns MV_TRUE if the cpuMode is not limited on this board
+ * by checking the 'boardspeed' field, otherwise returns MV_FALSE
+ */
+static MV_BOOL isCpuModeSupportedForBoard(int index, MV_BOOL printError)
+{
+	MV_U32 tmp;
+
+	if (cpuDdrClkTbl[index].isLimited == MV_TRUE) {
+		tmp = mvBoardSatRRead(MV_SATR_BOARD_SPEED);
+		if (tmp == MV_ERROR) {
+			mvOsPrintf("Failed reading 'boardspeed' SatR field\n");
+			return MV_FALSE;
+		}
+
+		if (cpuDdrClkTbl[index].cpuFreq > getBoardSpeed(tmp)) {
+			if (printError == MV_TRUE)
+				mvOsPrintf("Maximum supported CPU speed is %uMHz\n", getBoardSpeed(tmp));
+			return MV_FALSE;
+		}
+	}
+	return MV_TRUE;
+}
 
 int do_sar_default(void)
 {
@@ -166,7 +211,7 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		for (i=0; i <= MV_SAR_FREQ_MODES_EOT; i++) {
 			if (cpuDdrClkTbl[i].id == MV_SAR_FREQ_MODES_EOT)
 				break;
-			if (cpuDdrClkTbl[i].isDisplay)
+			if (cpuDdrClkTbl[i].isDisplay && isCpuModeSupportedForBoard(i, MV_FALSE) == MV_TRUE)
 				mvOsPrintf("| %2d |      %4d      |      %4d       |      %4d         | \n",
 					   cpuDdrClkTbl[i].id,
 					   cpuDdrClkTbl[i].cpuFreq,
@@ -298,6 +343,12 @@ int do_sar_list(MV_BOARD_SATR_INFO *satrInfo)
 		mvOsPrintf("\t0 = Connected\n");
 		mvOsPrintf("\t1 = Not connected\n ");
 		break;
+	case MV_SATR_BOARD_SPEED:
+		mvOsPrintf("Determines the max supported CPU speed:\n");
+		mvOsPrintf("\t1 = %uMHz\n", getBoardSpeed(1));
+		mvOsPrintf("\t2 = %uMHz\n", getBoardSpeed(2));
+		mvOsPrintf("\t3 = %uMHz\n", getBoardSpeed(3));
+		break;
 	default:
 		mvOsPrintf("Usage: sar list [options] (see help)\n");
 		return 1;
@@ -414,6 +465,9 @@ int do_sar_read(MV_U32 mode, MV_BOARD_SATR_INFO *satrInfo)
 	case MV_SATR_TDM_CONNECTED:
 		mvOsPrintf("tdm\t\t= %d  ==> TDM module is %s\n", tmp, (tmp == 0) ? "connected" : "not connected");
 		break;
+	case MV_SATR_BOARD_SPEED:
+		mvOsPrintf("boardspeed\t\t= %d  ==> Max CPU speed is %uMHz\n", tmp, getBoardSpeed(tmp));
+		break;
 	case CMD_DUMP:
 		{
 			MV_BOARD_SATR_INFO satrInfo;
@@ -480,6 +534,8 @@ int do_sar_write(MV_BOARD_SATR_INFO *satrInfo, int value)
 			mvOsPrintf("Write S@R failed!\n");
 			return 1;
 		}
+		if (isCpuModeSupportedForBoard(i, MV_TRUE) == MV_FALSE)
+			return 1;
 	}
 
 	/* verify requested entry is valid and map it's ID value */
@@ -604,6 +660,7 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "ddr4select		   - DB-88F6820-BP: DDR3/4		(read only)\n"
 "ecoversion		   - DB-88F6820-BP: ECO version	(read only)\n"
 "boardid			   - board ID		(read only)\n"
+"boardspeed			   - MAX validated CPU mode for current chip		(read only)\n"
 
 "\n\t Board Specific SW fields\n"
 "\t------------------------\n"

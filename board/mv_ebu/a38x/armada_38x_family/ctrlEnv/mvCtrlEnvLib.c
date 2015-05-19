@@ -649,6 +649,7 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	}
 
 	mvCtrlSerdesConfigDetect();
+	mvBoardIoExpanderDataSet();
 
 #ifdef CONFIG_ARMADA_39X
 	/* update MPP settings to NSS mode if required */

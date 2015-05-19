@@ -554,3 +554,67 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 		break;
 	}
 }
+
+/*******************************************************************************
+* mvBoardIoExpanderUpdate
+*
+* DESCRIPTION:
+*	Update IO expander data in board structures only
+*
+** INPUT:
+*	None.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_OK - on success,
+*	MV_ERROR - wriet to twsi failed.
+*
+*******************************************************************************/
+MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
+{
+	MV_U8 ioValue, ioValue2;
+	MV_U8 boardId = mvBoardIdGet();
+	MV_U32 serdesCfg = MV_ERROR;
+
+	/* - Verify existence of IO expander on board (reg#2 must be set: output data config for reg#0)
+	 * - fetch IO expander 2nd output config value to modify */
+	if (mvBoardIoExpanderStructGet(0, 2, &ioValue) == MV_ERROR)
+		return MV_OK;
+
+	/* update IO expander struct values before writing via I2C */
+	if (boardId == DB_GP_68XX_ID) {
+		/* fetch IO exp. 2nd value to modify - MV_ERROR: no IO expander struct entry to update*/
+		if (mvBoardIoExpanderStructGet(1, 6, &ioValue2) == MV_ERROR)
+			return MV_OK;
+
+		/* check SerDes lane 1,2,5 configuration ('gpserdes1/2/5') */
+		serdesCfg = mvBoardSatRRead(MV_SATR_GP_SERDES5_CFG);
+		if (serdesCfg != MV_ERROR) {
+			if (serdesCfg == 0) /* 0 = USB3.  1 = SGMII. */
+				ioValue |= 1 ;	/* Setting USB3.0 interface: configure IO as output '1' */
+			else {
+				ioValue &= ~1;		/* Setting SGMII interface:  configure IO as output '0' */
+				ioValue2 &= ~BIT5;	/* Set Tx disable for SGMII */
+			}
+			mvBoardIoExpanderStructSet(1, 6, ioValue2);
+		}
+
+		serdesCfg = mvBoardSatRRead(MV_SATR_GP_SERDES1_CFG);
+		if (serdesCfg == 1) { /* 0 = SATA0 , 1 = PCIe0 */
+			ioValue |= BIT1 ;	/* Setting PCIe0 (mini): PCIe0_SATA0_SEL(out) = 1 (PCIe)  */
+			ioValue &= ~BIT2;	/* disable SATA0 power: PWR_EN_SATA0(out) = 0 */
+		}
+
+		serdesCfg = mvBoardSatRRead(MV_SATR_GP_SERDES2_CFG);
+		if (serdesCfg == 1) { /* 0 = SATA1 , 1 = PCIe1 */
+			ioValue |= BIT6 ;	/* Setting PCIe1 (mini): PCIe1_SATA1_SEL(out) = 1 (PCIe)  */
+			ioValue &= ~BIT3;	/* disable SATA1 power: PWR_EN_SATA1(out) = 0 */
+		}
+
+		mvBoardIoExpanderStructSet(0, 2, ioValue);
+	}
+
+	return MV_OK;
+}

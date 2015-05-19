@@ -399,7 +399,6 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 			serdes6Mode = 0;
 #endif
 		mvBoardMppIdUpdate();
-		mvBoardIoExpanderUpdate();
 
 		boardCfg = mvBoardNetComplexConfigGet();
 		if (boardCfg & MV_NETCOMP_GE_MAC0_2_SGMII_L1) {
@@ -770,4 +769,26 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 			mvModuleMppUpdate(6, spi0Boot);
 		break;
 	}
+}
+
+/*******************************************************************************
+* mvBoardIoExpanderUpdate
+*
+* DESCRIPTION:
+*	Update IO expander data in board structures only
+*
+** INPUT:
+*	None.
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	MV_OK - on success,
+*	MV_ERROR - wriet to twsi failed.
+*
+*******************************************************************************/
+MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
+{
+	return MV_OK;
 }

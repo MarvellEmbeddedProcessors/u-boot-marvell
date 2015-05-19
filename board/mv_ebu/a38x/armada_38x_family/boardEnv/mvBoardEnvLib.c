@@ -1130,70 +1130,25 @@ void mvModuleMppUpdate(MV_U32 numGroup, struct _mvBoardMppModule *pMpp)
 }
 
 /*******************************************************************************
-* mvBoardIoExpanderUpdate
+* mvBoardIoExpanderDataSet
 *
 * DESCRIPTION:
-*	Update io expander via TWSI,
+*       Write IO expander DATA via TWSI
 *
-** INPUT:
-*	None.
+* INPUT:
+*       None.
 *
 * OUTPUT:
-*	None.
+*       None.
 *
 * RETURN:
-*	MV_OK - on success,
-*	MV_ERROR - wriet to twsi failed.
+*       MV_OK - on success,
+*       MV_ERROR - wriet to twsi failed.
 *
 *******************************************************************************/
-MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
+MV_STATUS mvBoardIoExpanderDataSet(MV_VOID)
 {
 	MV_U32 i = 0;
-
-#ifdef CONFIG_ARMADA_38X
-	MV_U8 ioValue, ioValue2;
-	MV_U8 boardId = mvBoardIdGet();
-	MV_U32 serdesCfg = MV_ERROR;
-
-	/* - Verify existence of IO expander on board (reg#2 must be set: output data config for reg#0)
-	 * - fetch IO expander 2nd output config value to modify */
-	if (mvBoardIoExpanderGet(0, 2, &ioValue) == MV_ERROR)
-		return MV_OK;
-
-	/* update IO expander struct values before writing via I2C */
-	if (boardId == DB_GP_68XX_ID) {
-		/* fetch IO exp. 2nd value to modify - MV_ERROR: no IO expander struct entry to update*/
-		if (mvBoardIoExpanderGet(1, 6, &ioValue2) == MV_ERROR)
-			return MV_OK;
-
-		/* check SerDes lane 1,2,5 configuration ('gpserdes1/2/5') */
-		serdesCfg = mvBoardSatRRead(MV_SATR_GP_SERDES5_CFG);
-		if (serdesCfg != MV_ERROR) {
-			if (serdesCfg == 0) /* 0 = USB3.  1 = SGMII. */
-				ioValue |= 1 ;	/* Setting USB3.0 interface: configure IO as output '1' */
-			else {
-				ioValue &= ~1;		/* Setting SGMII interface:  configure IO as output '0' */
-				ioValue2 &= ~BIT5;	/* Set Tx disable for SGMII */
-			}
-			mvBoardIoExpanderSet(1, 6, ioValue2);
-		}
-
-		serdesCfg = mvBoardSatRRead(MV_SATR_GP_SERDES1_CFG);
-		if (serdesCfg == 1) { /* 0 = SATA0 , 1 = PCIe0 */
-			ioValue |= BIT1 ;	/* Setting PCIe0 (mini): PCIe0_SATA0_SEL(out) = 1 (PCIe)  */
-			ioValue &= ~BIT2;	/* disable SATA0 power: PWR_EN_SATA0(out) = 0 */
-		}
-
-		serdesCfg = mvBoardSatRRead(MV_SATR_GP_SERDES2_CFG);
-		if (serdesCfg == 1) { /* 0 = SATA1 , 1 = PCIe1 */
-			ioValue |= BIT6 ;	/* Setting PCIe1 (mini): PCIe1_SATA1_SEL(out) = 1 (PCIe)  */
-			ioValue &= ~BIT3;	/* disable SATA1 power: PWR_EN_SATA1(out) = 0 */
-		}
-
-		mvBoardIoExpanderSet(0, 2, ioValue);
-	}
-#endif
-
 	for (i = 0; i < board->numIoExp; i++) {
 		if (MV_OK != mvBoardTwsiSet(BOARD_TWSI_IO_EXPANDER, board->pIoExp[i].addr,
 					    board->pIoExp[i].offset, &board->pIoExp[i].val, 1)) {
@@ -3026,10 +2981,10 @@ int mvBoardNorFlashConnect(void)
 	return MV_FALSE;
 }
 /****************************************************************************************
-* mvBoardIoExpanderGet
+* mvBoardIoExpanderStructGet
 *
 * DESCRIPTION:
-*	Return the IO Expander value for a given address and offset.
+*	Return the IO Expander value from board structures for a given address and offset
 *
 * INPUT:
 *	addr - IO expander address.
@@ -3044,7 +2999,7 @@ int mvBoardNorFlashConnect(void)
 *       else returns MV_ERROR
 *
 ****************************************************************************************/
-MV_STATUS mvBoardIoExpanderGet(MV_U8 addr, MV_U8 offs, MV_U8 *pVal)
+MV_STATUS mvBoardIoExpanderStructGet(MV_U8 addr, MV_U8 offs, MV_U8 *pVal)
 {
 	int i;
 
@@ -3061,10 +3016,10 @@ MV_STATUS mvBoardIoExpanderGet(MV_U8 addr, MV_U8 offs, MV_U8 *pVal)
 	return MV_ERROR;
 }
 /*******************************************************************************
-* mvBoardIoExpanderSet
+* mvBoardIoExpanderStructSet
 *
 * DESCRIPTION:
-*	Save the IO Expander value for a given index.
+*	Save the IO Expander value for a given index in board structures.
 *
 * INPUT:
 *	index	  - The IO expander index
@@ -3077,7 +3032,7 @@ MV_STATUS mvBoardIoExpanderGet(MV_U8 addr, MV_U8 offs, MV_U8 *pVal)
 *       if addr and offset are exist save the value and returns  MV_OK
 *       else returns MV_ERROR
 *******************************************************************************/
-MV_STATUS mvBoardIoExpanderSet(MV_U8 addr, MV_U8 offs, MV_U8 val)
+MV_STATUS mvBoardIoExpanderStructSet(MV_U8 addr, MV_U8 offs, MV_U8 val)
 {
 	int i;
 

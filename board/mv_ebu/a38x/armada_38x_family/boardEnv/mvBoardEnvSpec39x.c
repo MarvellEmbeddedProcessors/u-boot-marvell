@@ -565,6 +565,14 @@ MV_DEV_CS_INFO gpEap10g88f6925InfoBoardDeCsInfo[] = {
 	{ SPI1_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1, MV_FALSE }	/* SPI1 DEV */
 };
 
+struct MV_BOARD_IO_EXPANDER gpEap10g88f6925InfoBoardioExpValue[] = {
+	{0, 6, 0xAA}, /* Config reg#0: BIT0(SGMII select), BIT2(PCIe1_W disable),
+			 BIT4(PCIe2_W disable), BIT6(PCIe3_W disable) */
+	{0, 7, 0xF8}, /* Config reg#1: BIT0(PWR_EN_SATA0), BIT1(SDIO), BIT2(PWR_EN_Module) */
+	{0, 2, 0xFE}, /* Output Data, reg#0: BIT0, SGMII=0 */
+	{0, 3, 0xFD}, /* Output Data, reg#1: BIT1, SDIO=0 */
+};
+
 MV_BOARD_INFO gpEap10g88f6925_board_info = {
 	.boardName			= "DB-88F6925-GP",
 	.numBoardNetComplexValue	= ARRSZ(gpEap10g88f6925InfoBoarNetComplexInfo),
@@ -621,8 +629,8 @@ MV_BOARD_INFO gpEap10g88f6925_board_info = {
 
 	/* Enable modules auto-detection. */
 	.configAutoDetect		= MV_FALSE,
-	.numIoExp			= 0,
-	.pIoExp				= NULL,
+	.numIoExp			= ARRSZ(gpEap10g88f6925InfoBoardioExpValue),
+	.pIoExp				= gpEap10g88f6925InfoBoardioExpValue,
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
 	/* Audio */
 	.isAudioConnected		= MV_FALSE,

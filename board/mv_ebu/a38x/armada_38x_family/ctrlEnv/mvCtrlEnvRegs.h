@@ -399,6 +399,7 @@ typedef struct {
 	MV_U32 ddrFreq;
 	MV_U32 l2Freq;
 	MV_BOOL	isDisplay;
+	MV_BOOL isLimited;
 } MV_FREQ_MODE;
 
 /* End of Table indicator - Should be in the last line of the SAR Table */
@@ -411,20 +412,22 @@ typedef struct {
 
 #ifdef CONFIG_ARMADA_38X
 #define MV_SAR_FREQ_MODES { \
-	{ 0x6,   1200, 600,  600,  MV_TRUE  }, \
-	{ 0x8,   1332, 666,  666,  MV_TRUE  }, \
-	{ 0xC,   1600, 800,  800,  MV_TRUE  }, \
-	{ 0x10,  1866, 933,  933,  MV_TRUE  }, \
-	{ MV_SAR_FREQ_MODES_EOT,  0,    0,   0, MV_FALSE } \
+	/*ID,	 CPU,  DDR,  L@,  isDisaply?, isLimited? */\
+	{ 0x6,   1200, 600,  600,  MV_TRUE  , MV_FALSE}, \
+	{ 0x8,   1332, 666,  666,  MV_TRUE  , MV_FALSE}, \
+	{ 0xC,   1600, 800,  800,  MV_TRUE  , MV_FALSE}, \
+	{ 0x10,  1866, 933,  933,  MV_TRUE  , MV_TRUE}, \
+	{ MV_SAR_FREQ_MODES_EOT,  0,    0,   0, MV_FALSE, MV_FALSE } \
 };
 #else /* CONFIG_ARMADA_39x */
 #define MV_SAR_FREQ_MODES { \
-	{ 0x6,   1200, 600,  600,  MV_TRUE  }, \
-	{ 0x8,   1332, 666,  666,  MV_TRUE  }, \
-	{ 0xC,   1600, 800,  800,  MV_TRUE  }, \
-	{ 0x12,  1800, 900,  900,  MV_TRUE  }, \
-	{ 0x13,  2000, 1000, 1000, MV_TRUE  }, \
-	{ MV_SAR_FREQ_MODES_EOT,  0,    0,   0, MV_FALSE } \
+	/*ID,	 CPU,  DDR,  L@,  isDisaply?, isLimited? */\
+	{ 0x6,   1200, 600,  600,  MV_TRUE  , MV_FALSE}, \
+	{ 0x8,   1332, 666,  666,  MV_TRUE  , MV_FALSE}, \
+	{ 0xC,   1600, 800,  800,  MV_TRUE  , MV_FALSE}, \
+	{ 0x12,  1800, 900,  900,  MV_TRUE  , MV_FALSE}, \
+	{ 0x13,  2000, 1000, 1000, MV_TRUE  , MV_FALSE}, \
+	{ MV_SAR_FREQ_MODES_EOT,  0,    0,   0, MV_FALSE , MV_FALSE} \
 };
 #endif /* CONFIG_ARMADA_38x */
 
@@ -432,25 +435,27 @@ typedef struct {
 
 #ifdef CONFIG_ARMADA_38X
 #define MV_SAR_FREQ_MODES { \
-	{ 0x0,   666,  333,  333,  MV_TRUE  }, \
-	{ 0x2,   800,  400,  400,  MV_TRUE  }, \
-	{ 0x4,   1066, 533,  533,  MV_TRUE  }, \
-	{ 0x6,   1200, 600,  600,  MV_TRUE  }, \
-	{ 0x8,   1332, 666,  666,  MV_TRUE  }, \
-	{ 0xC,   1600, 800,  800,  MV_TRUE  }, \
-	{ 0x10,  1866, 933,  933,  MV_TRUE  }, \
-	{ MV_SAR_FREQ_MODES_EOT,  0,    0,   0, MV_FALSE } \
+	/*ID,	 CPU,  DDR,  L@,  isDisaply?, isLimited? */\
+	{ 0x0,   666,  333,  333,  MV_TRUE  , MV_FALSE}, \
+	{ 0x2,   800,  400,  400,  MV_TRUE  , MV_FALSE}, \
+	{ 0x4,   1066, 533,  533,  MV_TRUE  , MV_FALSE}, \
+	{ 0x6,   1200, 600,  600,  MV_TRUE  , MV_FALSE}, \
+	{ 0x8,   1332, 666,  666,  MV_TRUE  , MV_FALSE}, \
+	{ 0xC,   1600, 800,  800,  MV_TRUE  , MV_FALSE}, \
+	{ 0x10,  1866, 933,  933,  MV_TRUE  , MV_TRUE}, \
+	{ MV_SAR_FREQ_MODES_EOT,  0,    0,   0, MV_FALSE, MV_FALSE } \
 };
 #else /* CONFIG_ARMADA_39x */
 #define MV_SAR_FREQ_MODES { \
-	{ 0x0,   666,  333, 333, MV_TRUE  }, \
-	{ 0x2,   800,  400, 400, MV_TRUE  }, \
-	{ 0x4,   1066, 533, 533, MV_TRUE  }, \
-	{ 0x6,   1200, 600, 600, MV_TRUE  }, \
-	{ 0x8,   1332, 666, 666, MV_TRUE  }, \
-	{ 0xC,   1600, 800, 800, MV_TRUE  }, \
-	{ 0x12,  1800, 900, 900, MV_TRUE  }, \
-	{ MV_SAR_FREQ_MODES_EOT,  0,    0,   0, MV_FALSE } \
+	/*ID,	 CPU,  DDR,  L@, isDisaply?, isLimited? */\
+	{ 0x0,   666,  333,  333, MV_TRUE  , MV_FALSE}, \
+	{ 0x2,   800,  400,  400, MV_TRUE  , MV_FALSE}, \
+	{ 0x4,   1066, 533,  533, MV_TRUE  , MV_FALSE}, \
+	{ 0x6,   1200, 600,  600, MV_TRUE  , MV_FALSE}, \
+	{ 0x8,   1332, 666,  666, MV_TRUE  , MV_FALSE}, \
+	{ 0xC,   1600, 800,  800, MV_TRUE  , MV_FALSE}, \
+	{ 0x12,  1800, 900,  900, MV_TRUE  , MV_FALSE}, \
+	{ MV_SAR_FREQ_MODES_EOT,   0,    0,   0, MV_FALSE , MV_FALSE} \
 };
 #endif /* CONFIG_ARMADA_38x */
 

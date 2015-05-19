@@ -91,15 +91,34 @@
 #define A39X_CUSTOMER_BOARD_0_MPP48_55			0x00000000
 #define A39X_CUSTOMER_BOARD_0_MPP56_63			0x00004444
 
-#define A39X_CUSTOMER_BOARD_0_GPP_OUT_ENA_LOW	0xFFFFFFFF
-#define A39X_CUSTOMER_BOARD_0_GPP_OUT_ENA_MID	(~(0x0E))
-#define A39X_CUSTOMER_BOARD_0_GPP_OUT_VAL_LOW	0x0
-#define A39X_CUSTOMER_BOARD_0_GPP_OUT_VAL_MID	0x0
+#define A39X_CUSTOMER_BOARD_0_GPP_OUT_ENA_LOW		0xFFFFFFFF
+#define A39X_CUSTOMER_BOARD_0_GPP_OUT_ENA_MID		(~(0x0E))
+#define A39X_CUSTOMER_BOARD_0_GPP_OUT_VAL_LOW		0x0
+#define A39X_CUSTOMER_BOARD_0_GPP_OUT_VAL_MID		0x0
 #define A39X_CUSTOMER_BOARD_0_GPP_POL_LOW		0x0
 #define A39X_CUSTOMER_BOARD_0_GPP_POL_MID		0x0
 
-/******************************* Marvell Boards *******************************/
+/*******************************************************************************
+ * A39x Customer Board 1 - Based on RD
+ *******************************************************************************/
+#define A39X_CUSTOMER_BOARD_1_MPP0_7			0x77111111
+#define A39X_CUSTOMER_BOARD_1_MPP8_15			0x00660077
+#define A39X_CUSTOMER_BOARD_1_MPP16_23			0x55066000
+#define A39X_CUSTOMER_BOARD_1_MPP24_31			0x05050055
+#define A39X_CUSTOMER_BOARD_1_MPP32_39			0x05055555
+#define A39X_CUSTOMER_BOARD_1_MPP40_47			0x11100565
+#define A39X_CUSTOMER_BOARD_1_MPP48_55			0x55333333
+#define A39X_CUSTOMER_BOARD_1_MPP56_63			0x00005555
 
+#define A39X_CUSTOMER_BOARD_1_GPP_OUT_ENA_LOW		0xFFFFFFFF
+#define A39X_CUSTOMER_BOARD_1_GPP_OUT_ENA_MID		(~(0x8E))
+#define A39X_CUSTOMER_BOARD_1_GPP_OUT_VAL_LOW		0x0
+#define A39X_CUSTOMER_BOARD_1_GPP_OUT_VAL_MID		0x80
+#define A39X_CUSTOMER_BOARD_1_GPP_POL_LOW		0x0
+#define A39X_CUSTOMER_BOARD_1_GPP_POL_MID		0x0
+
+
+/******************************* Marvell Boards *******************************/
 /*******************************************************************************
  * A39x DB-88F6920 board */
 /******************************************************************************
@@ -128,38 +147,38 @@
 /*******************************************************************************
 * A39x DB-69xx board
 *******************************************************************************/
-#define DB_88F69XX_MPP0_7               0x77111111
-#define DB_88F69XX_MPP8_15              0x30777777
-#define DB_88F69XX_MPP16_23             0x55066005
-#define DB_88F69XX_MPP24_31             0x05050050
-#define DB_88F69XX_MPP32_39             0x05055555
-#define DB_88F69XX_MPP40_47             0x51132565
-#define DB_88F69XX_MPP48_55             0x00000000
-#define DB_88F69XX_MPP56_63             0x00004444
+#define DB_88F69XX_MPP0_7			0x77111111
+#define DB_88F69XX_MPP8_15			0x30777777
+#define DB_88F69XX_MPP16_23			0x55066005
+#define DB_88F69XX_MPP24_31			0x05050050
+#define DB_88F69XX_MPP32_39			0x05055555
+#define DB_88F69XX_MPP40_47			0x51132565
+#define DB_88F69XX_MPP48_55			0x00000000
+#define DB_88F69XX_MPP56_63			0x00004444
 
-#define DB_88F69XX_GPP_OUT_ENA_LOW      0xFFFFFFFF
-#define DB_88F69XX_GPP_OUT_ENA_MID      0xFFFFFFFF
-#define DB_88F69XX_GPP_OUT_VAL_LOW      0x0
-#define DB_88F69XX_GPP_OUT_VAL_MID      0x0
-#define DB_88F69XX_GPP_POL_LOW          0x0
-#define DB_88F69XX_GPP_POL_MID          0x0
+#define DB_88F69XX_GPP_OUT_ENA_LOW		0xFFFFFFFF
+#define DB_88F69XX_GPP_OUT_ENA_MID		0xFFFFFFFF
+#define DB_88F69XX_GPP_OUT_VAL_LOW		0x0
+#define DB_88F69XX_GPP_OUT_VAL_MID		0x0
+#define DB_88F69XX_GPP_POL_LOW			0x0
+#define DB_88F69XX_GPP_POL_MID			0x0
 
 /*******************************************************************************
- * A395 DB88f6925_EAP_10G  - Based on DB
+ * A395 GP-EAP-10G-88f6925
  *******************************************************************************/
+#define GP_EAP_10G_88f6925_MPP0_7		0x77111111
+#define GP_EAP_10G_88f6925_MPP8_15		0x40660077
+#define GP_EAP_10G_88f6925_MPP16_23		0x55066444
+#define GP_EAP_10G_88f6925_MPP24_31		0x05050050
+#define GP_EAP_10G_88f6925_MPP32_39		0x05055555
+#define GP_EAP_10G_88f6925_MPP40_47		0x11100565
+#define GP_EAP_10G_88f6925_MPP48_55		0x55333333
+#define GP_EAP_10G_88f6925_MPP56_63		0x00005555
 
-#define DB_88f6925_EAP_10G_MPP0_7            0x77111111
-#define DB_88f6925_EAP_10G_MPP8_15           0x00660077
-#define DB_88f6925_EAP_10G_MPP16_23          0x55066000
-#define DB_88f6925_EAP_10G_MPP24_31          0x05050055
-#define DB_88f6925_EAP_10G_MPP32_39          0x05055555
-#define DB_88f6925_EAP_10G_MPP40_47          0x11100565
-#define DB_88f6925_EAP_10G_MPP48_55          0x55333333
-#define DB_88f6925_EAP_10G_MPP56_63          0x00005555
+#define GP_EAP_10G_88f6925_GPP_OUT_ENA_LOW	0xFFFFFFFF
+#define GP_EAP_10G_88f6925_GPP_OUT_ENA_MID	(~(0x8E))
+#define GP_EAP_10G_88f6925_GPP_OUT_VAL_LOW	0x0
+#define GP_EAP_10G_88f6925_GPP_OUT_VAL_MID	0x80
+#define GP_EAP_10G_88f6925_GPP_POL_LOW		0x0
+#define GP_EAP_10G_88f6925_GPP_POL_MID		0x0
 
-#define DB_88f6925_EAP_10G_GPP_OUT_ENA_LOW         0xFFFFFFFF
-#define DB_88f6925_EAP_10G_GPP_OUT_ENA_MID         (~(0x8E))
-#define DB_88f6925_EAP_10G_GPP_OUT_VAL_LOW         0x0
-#define DB_88f6925_EAP_10G_GPP_OUT_VAL_MID         0x80
-#define DB_88f6925_EAP_10G_GPP_POL_LOW             0x0
-#define DB_88f6925_EAP_10G_GPP_POL_MID             0x0

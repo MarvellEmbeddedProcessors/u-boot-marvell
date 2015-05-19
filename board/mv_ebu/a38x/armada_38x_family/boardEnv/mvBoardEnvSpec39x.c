@@ -69,7 +69,7 @@
 
 /***************************************** Customer Boards *****************************************/
 /*******************************************************************************
- * A39x Customer Board 0 - Based on RD
+ * A39x Customer Board 0 - Based on DB board
  *******************************************************************************/
 #define A39X_CUSTOMER_BOARD_0_NAND_READ_PARAMS		0x000C0282
 #define A39X_CUSTOMER_BOARD_0_NAND_WRITE_PARAMS		0x00010305
@@ -80,8 +80,8 @@
 #define A39X_CUSTOMER_BOARD_0_NOR_WRITE_PARAMS		0x000F0F0F
 MV_BOARD_TWSI_INFO armada_39x_customer_0_BoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,	0,	0x50, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
-	{ BOARD_DEV_TWSI_SATR,	1,	0x4C, ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		0,	0x50, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4C, ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_IO_EXPANDER,	0,	0x20, ADDR7_BIT, MV_FALSE},
 	{ BOARD_TWSI_IO_EXPANDER,	1,	0x21, ADDR7_BIT, MV_FALSE},
 };
@@ -110,14 +110,14 @@ MV_DEV_CS_INFO armada_39x_customer_0_BoardDeCsInfo[] = {
 	{ DEVICE_CS2,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
 	{ DEVICE_CS3,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
 	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
-	{ SPI0_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
-	{ SPI0_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
-	{ SPI0_CS2,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
-	{ SPI0_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
-	{ SPI1_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_TRUE },	/* SPI1 DEV */
-	{ SPI1_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
-	{ SPI1_CS2,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
-	{ SPI1_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE }	/* SPI1 DEV */
+	{ SPI0_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS1,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS2,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS3,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI1_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_TRUE },	/* SPI1 DEV */
+	{ SPI1_CS1,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS2,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS3,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE }	/* SPI1 DEV */
 };
 
 struct MV_BOARD_IO_EXPANDER armada_39x_customer_0_InfoBoardioExpValue[] = {
@@ -180,8 +180,8 @@ MV_BOARD_INFO armada_39x_customer_board_0_info = {
 	.gppPolarityValLow		= A39X_CUSTOMER_BOARD_0_GPP_POL_LOW,
 	.gppPolarityValMid		= A39X_CUSTOMER_BOARD_0_GPP_POL_MID,
 
-	.pBoardUsbInfo		= armada_39x_customer_0_BoardUsbInfo,
-	.numBoardUsbInfo	= ARRSZ(armada_39x_customer_0_BoardUsbInfo),
+	.pBoardUsbInfo			= armada_39x_customer_0_BoardUsbInfo,
+	.numBoardUsbInfo		= ARRSZ(armada_39x_customer_0_BoardUsbInfo),
 	/* TDM */
 	.numBoardTdmInfo		= {},
 	.pBoardTdmInt2CsInfo		= {},
@@ -193,7 +193,7 @@ MV_BOARD_INFO armada_39x_customer_board_0_info = {
 	.nandFlashReadParams		= A39X_CUSTOMER_BOARD_0_NAND_READ_PARAMS,
 	.nandFlashWriteParams		= A39X_CUSTOMER_BOARD_0_NAND_WRITE_PARAMS,
 	.nandFlashControl		= A39X_CUSTOMER_BOARD_0_NAND_CONTROL,
-	.nandIfMode				= NAND_IF_NFC,
+	.nandIfMode			= NAND_IF_NFC,
 
 	.isSdMmcConnected               = MV_FALSE,
 	/* NOR init params */
@@ -208,17 +208,150 @@ MV_BOARD_INFO armada_39x_customer_board_0_info = {
 	.switchInfoNum			= 0
 };
 
+/*******************************************************************************
+ * A39x Customer Board 1 - Based on DB-88F6925-GP
+ *******************************************************************************/
+MV_BOARD_TWSI_INFO armada_39x_customer_1_BoardTwsiDev[] = {
+	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{ BOARD_DEV_TWSI_SATR,		0,	0x57,	ADDR7_BIT, MV_TRUE}, /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4C,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	0,	0x20,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	1,	0x21,	ADDR7_BIT, MV_FALSE},
+};
+
+MV_BOARD_MAC_INFO armada_39x_customer_1_BoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_8 boardEthSmiAddr, MV_8
+	 * boardEthSmiAddr0, MV_PHY_PORT_TYPE portType, MV_BOOL boardMacEnabled;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI, MV_TRUE},
+	{ BOARD_MAC_SPEED_1000M, -1, -1, SMI, MV_TRUE},
+	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4, SMI, MV_FALSE},
+	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI, MV_FALSE}
+};
+
+MV_BOARD_NET_COMPLEX_INFO armada_39x_customer_1_InfoBoardNetComplexInfo[] = {
+	{
+		.netComplexOpt = MV_NETCOMP_GE_MAC0_2_RXAUI | MV_NETCOMP_GE_MAC1_2_SGMII_L4,
+	}
+};
+
+MV_DEV_CS_INFO armada_39x_customer_1_BoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_TRUE },	/* NAND DEV */
+	{ DEVICE_CS1,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS2,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS3,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
+	{ SPI0_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS1,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS2,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS3,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI1_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS1,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS2,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS3,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE }	/* SPI1 DEV */
+};
+
+struct MV_BOARD_IO_EXPANDER armada_39x_customer_1_InfoBoardioExpValue[] = {
+	{0, 6, 0xFF}, /* Config reg#0: all bits as input (BIT on = Input) */
+	{0, 7, 0x7d}, /* Config reg#1: BIT7(VDDOE), BIT1(USB3 current limit) as output (BIT on = Input) */
+	{0, 2, 0xFF}, /* Output Data, reg#0  - no output bits*/
+	{0, 3, 0x7b}, /* Output Data, reg#1:  BIT7,VDDOE=0, BIT1,USB3_CURRENT=1 */
+};
+
+MV_BOARD_USB_INFO armada_39x_customer_1_BoardUsbInfo[] = {
+/* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
+	{ USB3_UNIT_ID, 0, MV_FALSE},
+	{ USB3_UNIT_ID, 1, MV_FALSE},
+	{ USB_UNIT_ID,  0, MV_TRUE},
+};
+
+MV_BOARD_MPP_INFO armada_39x_customer_1_BoardMppConfigValue[] = {
+	{ {
+		A39X_CUSTOMER_BOARD_1_MPP0_7,
+		A39X_CUSTOMER_BOARD_1_MPP8_15,
+		A39X_CUSTOMER_BOARD_1_MPP16_23,
+		A39X_CUSTOMER_BOARD_1_MPP24_31,
+		A39X_CUSTOMER_BOARD_1_MPP32_39,
+		A39X_CUSTOMER_BOARD_1_MPP40_47,
+		A39X_CUSTOMER_BOARD_1_MPP48_55,
+		A39X_CUSTOMER_BOARD_1_MPP56_63,
+	} }
+};
+
+MV_BOARD_TDM_INFO armada_39x_customer_1_Tdm880[] = { {0} };
+
+MV_BOARD_TDM_SPI_INFO armada_39x_customer_1_TdmSpiInfo[] = { {1} };
+
+MV_BOARD_INFO armada_39x_customer_board_1_info = {
+	.boardName			= "A39x-Customer-Board-1",
+	.numBoardNetComplexValue	= ARRSZ(armada_39x_customer_1_InfoBoardNetComplexInfo),
+	.pBoardNetComplexInfo		= armada_39x_customer_1_InfoBoardNetComplexInfo,
+	.pBoardMppConfigValue		= armada_39x_customer_1_BoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(armada_39x_customer_1_BoardDeCsInfo),
+	.pDevCsInfo			= armada_39x_customer_1_BoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(armada_39x_customer_1_BoardTwsiDev),
+	.pBoardTwsiDev			= armada_39x_customer_1_BoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(armada_39x_customer_1_BoardMacInfo),
+	.pBoardMacInfo			= armada_39x_customer_1_BoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= 0,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow			= A39X_CUSTOMER_BOARD_1_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= A39X_CUSTOMER_BOARD_1_GPP_OUT_ENA_MID,
+	.gppOutValLow			= A39X_CUSTOMER_BOARD_1_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= A39X_CUSTOMER_BOARD_1_GPP_OUT_VAL_MID,
+	.gppPolarityValLow		= A39X_CUSTOMER_BOARD_1_GPP_POL_LOW,
+	.gppPolarityValMid		= A39X_CUSTOMER_BOARD_1_GPP_POL_MID,
+
+	.pBoardUsbInfo			= armada_39x_customer_1_BoardUsbInfo,
+	.numBoardUsbInfo		= ARRSZ(armada_39x_customer_1_BoardUsbInfo),
+	/* TDM */
+	.numBoardTdmInfo		= {1},
+	.pBoardTdmInt2CsInfo		= {armada_39x_customer_1_Tdm880},
+	.boardTdmInfoIndex		= 0,
+
+	.pBoardSpecInit			= NULL,
+
+	/* NAND init params */
+	.nandFlashReadParams		= A39X_CUSTOMER_BOARD_0_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= A39X_CUSTOMER_BOARD_0_NAND_WRITE_PARAMS,
+	.nandFlashControl		= A39X_CUSTOMER_BOARD_0_NAND_CONTROL,
+	.nandIfMode			= NAND_IF_NFC,
+
+	.isSdMmcConnected               = MV_FALSE,
+	/* NOR init params */
+	.norFlashReadParams		= A39X_CUSTOMER_BOARD_0_NOR_READ_PARAMS,
+	.norFlashWriteParams		= A39X_CUSTOMER_BOARD_0_NOR_WRITE_PARAMS,
+	/* Enable modules auto-detection. */
+	.configAutoDetect		= MV_FALSE,
+	.numIoExp			= ARRSZ(armada_39x_customer_1_InfoBoardioExpValue),
+	.pIoExp				= armada_39x_customer_1_InfoBoardioExpValue,
+	.boardOptionsModule		= MV_MODULE_NO_MODULE,
+	.pSwitchInfo			= NULL,
+	.switchInfoNum			= 0
+};
+
 /*
  * All supported 390 boards
  */
 MV_BOARD_INFO *customerBoardInfoTbl[] = {
 	&armada_39x_customer_board_0_info,
-	&armada_39x_customer_board_0_info
+	&armada_39x_customer_board_1_info
 };
 
 
 /***************************************** Marvell Boards *****************************************/
-
 /*******************************************************************************
  * 39x DB-88F6660 board */
 /*******************************************************************************/
@@ -232,30 +365,30 @@ MV_BOARD_INFO *customerBoardInfoTbl[] = {
 
 MV_BOARD_MPP_INFO db88f69xxInfoBoardMppConfigValue[] = {
 	{ {
-		  DB_88F69XX_MPP0_7,
-		  DB_88F69XX_MPP8_15,
-		  DB_88F69XX_MPP16_23,
-		  DB_88F69XX_MPP24_31,
-		  DB_88F69XX_MPP32_39,
-		  DB_88F69XX_MPP40_47,
-		  DB_88F69XX_MPP48_55,
-		  DB_88F69XX_MPP56_63
+			DB_88F69XX_MPP0_7,
+			DB_88F69XX_MPP8_15,
+			DB_88F69XX_MPP16_23,
+			DB_88F69XX_MPP24_31,
+			DB_88F69XX_MPP32_39,
+			DB_88F69XX_MPP40_47,
+			DB_88F69XX_MPP48_55,
+			DB_88F69XX_MPP56_63
 	 } }
 };
 
 MV_BOARD_TWSI_INFO db88f69xxInfoBoardTwsiDev[] = {
 	/* {{devClass,		devClassId, twsiDevAddr, twsiDevAddrType, moreThen256}} */
-	{ BOARD_DEV_TWSI_SATR,		0,	0x50,	   ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
-	{ BOARD_DEV_TWSI_SATR,		1,	0x4c,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_DEV_TWSI_SATR,		2,	0x4d,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_DEV_TWSI_SATR,		3,	0x4e,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_IO_EXPANDER,	0,	0x21,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_MODULE_DETECT,	0,	0x20,	   ADDR7_BIT, MV_FALSE},   /* modules */
-	{ BOARD_TWSI_MODULE_DETECT,	1,	0x23,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_MODULE_DETECT,	2,	0x24,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_MODULE_DETECT,	3,	0x25,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_MODULE_DETECT,	4,	0x26,	   ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_MODULE_DETECT,	5,	0x27,	   ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		0,	0x50,	ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,		1,	0x4c,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		2,	0x4d,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		3,	0x4e,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	0,	0x21,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	0,	0x20,	ADDR7_BIT, MV_FALSE},   /* modules */
+	{ BOARD_TWSI_MODULE_DETECT,	1,	0x23,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	2,	0x24,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	3,	0x25,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	4,	0x26,	ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_MODULE_DETECT,	5,	0x27,	ADDR7_BIT, MV_FALSE},
 };
 
 MV_BOARD_MAC_INFO db88f69xxInfoBoardMacInfo[] = {
@@ -273,7 +406,6 @@ struct MV_BOARD_IO_EXPANDER db88f69xxInfoBoardioExpValue[] = {
 	{0, 2, 0xFF}, /* Output Data, reg#0  - no output bits*/
 	{0, 3, 0x7b}, /* Output Data, reg#1:  BIT7,VDDOE=0, BIT1,USB3_CURRENT=1 */
 };
-
 
 MV_BOARD_NET_COMPLEX_INFO db88f69xxInfoBoarNetComplexInfo[] = {
 	{
@@ -298,50 +430,46 @@ MV_DEV_CS_INFO db88f69xxInfoBoardDeCsInfo[] = {
 	{ SPI1_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_TRUE }	/* SPI1 DEV */
 };
 
-MV_BOARD_TDM_INFO db88f69xxTdm880[] = { {0} };
-
-MV_BOARD_TDM_SPI_INFO db88f69xxTdmSpiInfo[] = { {1} };
-
 MV_BOARD_INFO db88f69xx_board_info = {
-	.boardName		= "DB-88F6920-BP",
-	.compatibleDTName	= "a390-db",
-	.numBoardNetComplexValue = ARRSZ(db88f69xxInfoBoarNetComplexInfo),
-	.pBoardNetComplexInfo	= db88f69xxInfoBoarNetComplexInfo,
-	.pBoardMppConfigValue	= db88f69xxInfoBoardMppConfigValue,
-	.intsGppMaskLow		= 0,
-	.intsGppMaskMid		= 0,
-	.intsGppMaskHigh	= 0,
-	.numBoardDeviceIf	= ARRSZ(db88f69xxInfoBoardDeCsInfo),
-	.pDevCsInfo		= db88f69xxInfoBoardDeCsInfo,
-	.numBoardTwsiDev	= ARRSZ(db88f69xxInfoBoardTwsiDev),
-	.pBoardTwsiDev		= db88f69xxInfoBoardTwsiDev,
-	.numBoardMacInfo	= ARRSZ(db88f69xxInfoBoardMacInfo),
-	.pBoardMacInfo		= db88f69xxInfoBoardMacInfo,
-	.numBoardGppInfo	= 0,
-	.pBoardGppInfo		= 0,
-	.activeLedsNumber	= 0,
-	.pLedGppPin		= NULL,
-	.ledsPolarity		= 0,
+	.boardName			= "DB-88F6920-BP",
+	.compatibleDTName		= "a390-db",
+	.numBoardNetComplexValue	= ARRSZ(db88f69xxInfoBoarNetComplexInfo),
+	.pBoardNetComplexInfo		= db88f69xxInfoBoarNetComplexInfo,
+	.pBoardMppConfigValue		= db88f69xxInfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(db88f69xxInfoBoardDeCsInfo),
+	.pDevCsInfo			= db88f69xxInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(db88f69xxInfoBoardTwsiDev),
+	.pBoardTwsiDev			= db88f69xxInfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(db88f69xxInfoBoardMacInfo),
+	.pBoardMacInfo			= db88f69xxInfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= 0,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
 
 	/* PMU Power */
-	.pmuPwrUpPolarity	= 0,
-	.pmuPwrUpDelay		= 80000,
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 80000,
 
 	/* GPP values */
-	.gppOutEnValLow		= DB_88F69XX_GPP_OUT_ENA_LOW,
-	.gppOutEnValMid		= DB_88F69XX_GPP_OUT_ENA_MID,
-	.gppOutValLow		= DB_88F69XX_GPP_OUT_VAL_LOW,
-	.gppOutValMid		= DB_88F69XX_GPP_OUT_VAL_MID,
-	.gppPolarityValLow	= DB_88F69XX_GPP_POL_LOW,
-	.gppPolarityValMid	= DB_88F69XX_GPP_POL_MID,
+	.gppOutEnValLow			= DB_88F69XX_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= DB_88F69XX_GPP_OUT_ENA_MID,
+	.gppOutValLow			= DB_88F69XX_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= DB_88F69XX_GPP_OUT_VAL_MID,
+	.gppPolarityValLow		= DB_88F69XX_GPP_POL_LOW,
+	.gppPolarityValMid		= DB_88F69XX_GPP_POL_MID,
 
-	.pBoardUsbInfo		= db88f69xxInfoBoardUsbInfo,
-	.numBoardUsbInfo	= ARRSZ(db88f69xxInfoBoardUsbInfo),
+	.pBoardUsbInfo			= db88f69xxInfoBoardUsbInfo,
+	.numBoardUsbInfo		= ARRSZ(db88f69xxInfoBoardUsbInfo),
 
 	/* TDM */
-	.numBoardTdmInfo		= {1},
-	.pBoardTdmInt2CsInfo		= {db88f69xxTdm880},
-	.boardTdmInfoIndex		= 0,
+	.numBoardTdmInfo		= { },
+	.pBoardTdmInt2CsInfo		= { },
+	.boardTdmInfoIndex		= -1,
 
 	.pBoardSpecInit			= NULL,
 
@@ -349,11 +477,11 @@ MV_BOARD_INFO db88f69xx_board_info = {
 	.nandFlashReadParams		= DB_88F69XX_BOARD_NAND_READ_PARAMS,
 	.nandFlashWriteParams		= DB_88F69XX_BOARD_NAND_WRITE_PARAMS,
 	.nandFlashControl		= DB_88F69XX_BOARD_NAND_CONTROL,
-	.nandIfMode				= NAND_IF_NFC,
+	.nandIfMode			= NAND_IF_NFC,
 
-	.pBoardTdmSpiInfo		= db88f69xxTdmSpiInfo,
+	.pBoardTdmSpiInfo		= NULL,
 
-	 .isSdMmcConnected               = MV_FALSE,
+	 .isSdMmcConnected		= MV_FALSE,
 
 	/* NOR init params */
 	.norFlashReadParams		= DB_88F69XX_BOARD_NOR_READ_PARAMS,
@@ -372,36 +500,36 @@ MV_BOARD_INFO db88f69xx_board_info = {
 };
 
 /*******************************************************************************
- * 39x DB-88F6925 EAP-10G  board */
+ * 39x GP-EAP-10G-88F6925 board */
 /*******************************************************************************/
-MV_BOARD_TWSI_INFO db88f6925_eap_10g_BoardTwsiDev[] = {
+MV_BOARD_TWSI_INFO gpEap10g88f6925BoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass,MV_U8 devClassId,MV_U8 twsiDevAddr,MV_U8 twsiDevAddrType}} */
-	{ BOARD_DEV_TWSI_SATR,          0,      0x57,   ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
-	{ BOARD_DEV_TWSI_SATR,          1,      0x4C,   ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_IO_EXPANDER,       0,      0x20,   ADDR7_BIT, MV_FALSE},
-	{ BOARD_TWSI_IO_EXPANDER,       1,      0x21,   ADDR7_BIT, MV_FALSE},
+	{ BOARD_DEV_TWSI_SATR,		0, 0x57, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
+	{ BOARD_DEV_TWSI_SATR,		1, 0x4C, ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	0, 0x20, ADDR7_BIT, MV_FALSE},
+	{ BOARD_TWSI_IO_EXPANDER,	1, 0x21, ADDR7_BIT, MV_FALSE},
 };
 
-MV_BOARD_MPP_INFO db88f6925_eap_10g_BoardMppConfigValue[] = {
+MV_BOARD_MPP_INFO gpEap10g88f6925BoardMppConfigValue[] = {
 	{ {
-		DB_88f6925_EAP_10G_MPP0_7,
-		DB_88f6925_EAP_10G_MPP8_15,
-		DB_88f6925_EAP_10G_MPP16_23,
-		DB_88f6925_EAP_10G_MPP24_31,
-		DB_88f6925_EAP_10G_MPP32_39,
-		DB_88f6925_EAP_10G_MPP40_47,
-		DB_88f6925_EAP_10G_MPP48_55,
-		DB_88f6925_EAP_10G_MPP56_63,
+		GP_EAP_10G_88f6925_MPP0_7,
+		GP_EAP_10G_88f6925_MPP8_15,
+		GP_EAP_10G_88f6925_MPP16_23,
+		GP_EAP_10G_88f6925_MPP24_31,
+		GP_EAP_10G_88f6925_MPP32_39,
+		GP_EAP_10G_88f6925_MPP40_47,
+		GP_EAP_10G_88f6925_MPP48_55,
+		GP_EAP_10G_88f6925_MPP56_63,
 	} }
 };
 
-MV_BOARD_NET_COMPLEX_INFO db88f6925_eap_10g_InfoBoarNetComplexInfo[] = {
+MV_BOARD_NET_COMPLEX_INFO gpEap10g88f6925InfoBoarNetComplexInfo[] = {
 	{
 		.netComplexOpt = MV_NETCOMP_GE_MAC0_2_RXAUI | MV_NETCOMP_GE_MAC1_2_SGMII_L4,
 	}
 };
 
-struct MV_BOARD_SWITCH_INFO db88f6925_eap_10g_SwitchInfo[] = {
+struct MV_BOARD_SWITCH_INFO gpEap10g88f6925SwitchInfo[] = {
 	{
 		.isEnabled = MV_TRUE,
 		.isCpuPortRgmii = MV_FALSE,
@@ -415,81 +543,96 @@ struct MV_BOARD_SWITCH_INFO db88f6925_eap_10g_SwitchInfo[] = {
 	}
 };
 
-MV_BOARD_MAC_INFO db88f6925_eap_10g_InfoBoardMacInfo[] = {
+MV_BOARD_MAC_INFO gpEap10g88f6925InfoBoardMacInfo[] = {
 	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI, MV_TRUE},
 	{ BOARD_MAC_SPEED_1000M, -1, -1, SMI, MV_TRUE},
 	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4, SMI, MV_FALSE},
-	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI, MV_FALSE}
+	{ BOARD_MAC_SPEED_AUTO,	0x0, 0x0, XSMI, MV_FALSE}
 };
 
-MV_BOARD_INFO db88f6925_eap_10g_board_info = {
-	.boardName              = "DB-88F6925-EAP-10G",
-	.numBoardNetComplexValue = ARRSZ(db88f6925_eap_10g_InfoBoarNetComplexInfo),
-	.pBoardNetComplexInfo   = db88f6925_eap_10g_InfoBoarNetComplexInfo,
-	.pBoardMppConfigValue   = db88f6925_eap_10g_BoardMppConfigValue,
-	.intsGppMaskLow         = 0,
-	.intsGppMaskMid         = 0,
-	.intsGppMaskHigh        = 0,
-	.numBoardDeviceIf       = ARRSZ(db88f69xxInfoBoardDeCsInfo),
-	.pDevCsInfo             = db88f69xxInfoBoardDeCsInfo,
-	.numBoardTwsiDev        = ARRSZ(db88f6925_eap_10g_BoardTwsiDev),
-	.pBoardTwsiDev          = db88f6925_eap_10g_BoardTwsiDev,
-	.numBoardMacInfo        = ARRSZ(db88f6925_eap_10g_InfoBoardMacInfo),
-	.pBoardMacInfo          = db88f6925_eap_10g_InfoBoardMacInfo,
-	.numBoardGppInfo        = 0,
-	.pBoardGppInfo          = 0,
-	.activeLedsNumber       = 0,
-	.pLedGppPin             = NULL,
-	.ledsPolarity           = 0,
+MV_BOARD_USB_INFO gpEap10g88f6925InfoBoardUsbInfo[] = {
+/* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
+	{ USB3_UNIT_ID,	0, MV_TRUE},
+	{ USB3_UNIT_ID,	1, MV_FALSE},
+	{ USB_UNIT_ID,	0, MV_TRUE},
+};
+
+MV_DEV_CS_INFO gpEap10g88f6925InfoBoardDeCsInfo[] = {
+/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0, MV_TRUE },	/* NAND DEV */
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0, MV_FALSE },	/* NOR DEV */
+	{ SPI0_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0, MV_FALSE },	/* SPI0 DEV */
+	{ SPI1_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1, MV_FALSE }	/* SPI1 DEV */
+};
+
+MV_BOARD_INFO gpEap10g88f6925_board_info = {
+	.boardName			= "DB-88F6925-GP",
+	.numBoardNetComplexValue	= ARRSZ(gpEap10g88f6925InfoBoarNetComplexInfo),
+	.pBoardNetComplexInfo		= gpEap10g88f6925InfoBoarNetComplexInfo,
+	.pBoardMppConfigValue		= gpEap10g88f6925BoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(gpEap10g88f6925InfoBoardDeCsInfo),
+	.pDevCsInfo			= gpEap10g88f6925InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(gpEap10g88f6925BoardTwsiDev),
+	.pBoardTwsiDev			= gpEap10g88f6925BoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(gpEap10g88f6925InfoBoardMacInfo),
+	.pBoardMacInfo			= gpEap10g88f6925InfoBoardMacInfo,
+	.numBoardGppInfo		= 0,
+	.pBoardGppInfo			= 0,
+	.activeLedsNumber		= 0,
+	.pLedGppPin			= NULL,
+	.ledsPolarity			= 0,
 
 	/* PMU Power */
-	.pmuPwrUpPolarity       = 0,
-	.pmuPwrUpDelay          = 80000,
+	.pmuPwrUpPolarity		= 0,
+	.pmuPwrUpDelay			= 80000,
 
 	/* GPP values */
-	.gppOutEnValLow         = DB_88f6925_EAP_10G_GPP_OUT_ENA_LOW,
-	.gppOutEnValMid         = DB_88f6925_EAP_10G_GPP_OUT_ENA_MID,
-	.gppOutValLow           = DB_88f6925_EAP_10G_GPP_OUT_VAL_LOW,
-	.gppOutValMid           = DB_88f6925_EAP_10G_GPP_OUT_VAL_MID,
-	.gppPolarityValLow      = DB_88f6925_EAP_10G_GPP_POL_LOW,
-	.gppPolarityValMid      = DB_88f6925_EAP_10G_GPP_POL_MID,
+	.gppOutEnValLow			= GP_EAP_10G_88f6925_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= GP_EAP_10G_88f6925_GPP_OUT_ENA_MID,
+	.gppOutValLow			= GP_EAP_10G_88f6925_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= GP_EAP_10G_88f6925_GPP_OUT_VAL_MID,
+	.gppPolarityValLow		= GP_EAP_10G_88f6925_GPP_POL_LOW,
+	.gppPolarityValMid		= GP_EAP_10G_88f6925_GPP_POL_MID,
 
-	.pBoardUsbInfo          = db88f69xxInfoBoardUsbInfo,
-	.numBoardUsbInfo        = ARRSZ(db88f69xxInfoBoardUsbInfo),
+	.pBoardUsbInfo			= gpEap10g88f6925InfoBoardUsbInfo,
+	.numBoardUsbInfo		= ARRSZ(gpEap10g88f6925InfoBoardUsbInfo),
 
 	/* TDM */
-	.numBoardTdmInfo                = {1},
-	.pBoardTdmInt2CsInfo            = {db88f69xxTdm880},
-	.boardTdmInfoIndex              = 0,
+	.numBoardTdmInfo		= { },
+	.pBoardTdmInt2CsInfo		= { },
+	.boardTdmInfoIndex		= -1,
 
-	.pBoardSpecInit                 = NULL,
+	.pBoardSpecInit			= NULL,
 
 	/* NAND init params */
-	.nandFlashReadParams            = DB_88F69XX_BOARD_NAND_READ_PARAMS,
-	.nandFlashWriteParams           = DB_88F69XX_BOARD_NAND_WRITE_PARAMS,
-	.nandFlashControl               = DB_88F69XX_BOARD_NAND_CONTROL,
-	.nandIfMode                     = NAND_IF_NFC,
+	.nandFlashReadParams		= DB_88F69XX_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_88F69XX_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= DB_88F69XX_BOARD_NAND_CONTROL,
+	.nandIfMode			= NAND_IF_NFC,
 
-	.pBoardTdmSpiInfo               = db88f69xxTdmSpiInfo,
+	.pBoardTdmSpiInfo		= NULL,
 
 	/* NOR init params */
-	.norFlashReadParams             = DB_88F69XX_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams            = DB_88F69XX_BOARD_NOR_WRITE_PARAMS,
+	.norFlashReadParams		= DB_88F69XX_BOARD_NOR_READ_PARAMS,
+	.norFlashWriteParams		= DB_88F69XX_BOARD_NOR_WRITE_PARAMS,
 
 	/* Enable modules auto-detection. */
-	.configAutoDetect               = MV_FALSE,
-	.numIoExp                       = 0,
-	.pIoExp                         = NULL,
-	.boardOptionsModule             = MV_MODULE_NO_MODULE,
+	.configAutoDetect		= MV_FALSE,
+	.numIoExp			= 0,
+	.pIoExp				= NULL,
+	.boardOptionsModule		= MV_MODULE_NO_MODULE,
 	/* Audio */
-	.isAudioConnected               = MV_FALSE,
-	.isTdmConnected                 = MV_FALSE,
-	.pSwitchInfo                    = db88f6925_eap_10g_SwitchInfo,
-	.switchInfoNum                  = ARRSZ(db88f6925_eap_10g_SwitchInfo),
+	.isAudioConnected		= MV_FALSE,
+	.isTdmConnected			= MV_FALSE,
+	.pSwitchInfo			= gpEap10g88f6925SwitchInfo,
+	.switchInfoNum			= ARRSZ(gpEap10g88f6925SwitchInfo),
 };
 
 
 MV_BOARD_INFO *marvellBoardInfoTbl[] = {
 	&db88f69xx_board_info,
-	&db88f6925_eap_10g_board_info,
+	&gpEap10g88f6925_board_info,
 };

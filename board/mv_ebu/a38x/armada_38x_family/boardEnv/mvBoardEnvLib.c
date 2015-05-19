@@ -2064,6 +2064,10 @@ MV_STATUS mvBoardSatrInfoConfig(MV_SATR_TYPE_ID satrClass, MV_BOARD_SATR_INFO *s
 		satrClass == MV_SATR_SSCG_DISABLE || satrClass == MV_SATR_DEVICE_ID))
 		|| (boardId == DB_BP_6821_ID && satrClass == MV_SATR_CPU_DDR_L2_FREQ))
 			satrInfoTable = boardSatrInfo2;
+#else
+	/* A39x GP board has different I2C mapping for 'freq' S@R fields */
+	if (mvBoardIdGet() == A39X_RD_69XX_ID && satrClass == MV_SATR_CPU_DDR_L2_FREQ)
+			satrInfoTable = boardSatrInfo2;
 #endif
 
 	/* verify existence of requested SATR type, pull its data,

@@ -166,18 +166,19 @@ typedef enum _mvSatRTypeID {
 /*					bit	TWSI	Reg	board	*/
 /*   name		SATR-ID		Mask	offset	devID	num	active	*/
 #define MV_SAR_INFO { \
-{"freq",	MV_SATR_CPU_DDR_L2_FREQ, 0x1F,	0,	1,	0,	{1, 1}, 0},\
-{"coreclock",	MV_SATR_CORE_CLK_SELECT, 0x02,	1,	3,	0,	{1, 1}, 0},\
-{"bootsrc",	MV_SATR_BOOT_DEVICE,	 0x1F,	0,	2,	0,	{1, 1}, 0},\
-{"bootsrc2",	MV_SATR_BOOT2_DEVICE,	 0x01,	0,	3,	0,	{1, 1}, 0},\
-{"devid",	MV_SATR_DEVICE_ID,	 0x1C,	2,	3,	0,	{1, 1}, 0},\
-{ "max_option",	MV_SATR_MAX_OPTION,	 0x0,	0,	0,	0,	{0, 0}, 0},\
+{"freq",	MV_SATR_CPU_DDR_L2_FREQ, 0x1F,	0,	1,	0,	{1, 0}, 0},\
+{"coreclock",	MV_SATR_CORE_CLK_SELECT, 0x02,	1,	3,	0,	{1, 0}, 0},\
+{"bootsrc",	MV_SATR_BOOT_DEVICE,	 0x1F,	0,	2,	0,	{1, 0}, 0},\
+{"bootsrc2",	MV_SATR_BOOT2_DEVICE,	 0x01,	0,	3,	0,	{1, 0}, 0},\
+{"devid",	MV_SATR_DEVICE_ID,	 0x1C,	2,	3,	0,	{1, 0}, 0},\
+{"max_option",	MV_SATR_MAX_OPTION,	 0x0,	0,	0,	0,	{0, 0}, 0},\
 };
 
 /* extra SAR table, for different board implementations:
  * in case a field is used on 2 boards with different i2c mapping */
 #define MV_SAR_INFO2 { \
-{ "max_option",		MV_SATR_MAX_OPTION,		0x0,	0, 0, 0, {0, 0}, 0},\
+{"freq",	MV_SATR_CPU_DDR_L2_FREQ,	0x1F, 0, 1, 0, {0, 1}, SATR_SWAP_BIT},\
+{"max_option",	MV_SATR_MAX_OPTION,		0x0,  0, 0, 0, {0, 0}, 0},\
 };
 
 #define MV_SATR_BOOT2_VALUE_MASK		0x1

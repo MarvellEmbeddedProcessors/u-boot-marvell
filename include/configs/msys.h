@@ -678,6 +678,7 @@ extern int nand_get_env_offs(void);
 #define CONFIG_BOARD_LATE_INIT
 #undef CONFIG_USE_IRQ
 #define CONFIG_BZIP2
+#define MV_SWITCH_ADDRESS_COMPLETION
 
 /* for running from L2 SRAM
 #define CONFIG_STACKSIZE	(128 << 10)

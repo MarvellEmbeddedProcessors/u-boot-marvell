@@ -28,6 +28,7 @@ disclaimer.
 #include "ctrlEnv/mvCtrlEnvLib.h"
 #include "boardEnv/mvBoardEnvLib.h"
 #include "cpu/mvCpu.h"
+#include "ctrlEnv/sys/mvAhbToMbusRegs.h"
 
 #if defined(MV_INC_BOARD_NOR_FLASH)
 #include "norflash/mvFlash.h"
@@ -922,7 +923,6 @@ int phy_write_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	return 1;
 }
-
 U_BOOT_CMD(
 	phyWrite,      4,     4,      phy_write_cmd,
 	"phyWrite	- Write Phy register\n",
@@ -932,7 +932,6 @@ U_BOOT_CMD(
 
 #if defined(MV_INCLUDE_SWITCH)
 #include "ethSwitch/mvSwitch.h"
-
 int switch_read_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	MV_U16 phyReg;
@@ -968,6 +967,7 @@ U_BOOT_CMD(
 	" Port_number Phy_address Phy_offset value.\n"
 	"\tWrite to the switch register.\n"
 );
+
 
 int switch_phy_read_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
@@ -1045,7 +1045,144 @@ U_BOOT_CMD(
 	" MAC_Port. \n"
 	"\tRead the switch ports counters. \n"
 );
-#endif
+#elif defined(MV_SWITCH_ADDRESS_COMPLETION) /* MV_INCLUDE_SWITCH */
+
+#define SWITCH_REGS_BASE_ADDR_MASK		0xFC000000
+#define SWITCH_ADDR_COMPL_MSB_VAL(addr)	((addr >> 24) & 0xFF)
+#define SWITCH_ADDR_COMPL_SHIFT(addr)	(((addr >> 24) & 0x3) << 3)
+#define SWITCH_BUS_ADDR(addr)			((~SWITCH_REGS_BASE_ADDR_MASK & addr) |\
+							(SWITCH_WIN_BASE_ADDR_GET() & SWITCH_REGS_BASE_ADDR_MASK))
+
+/*******************************************************************************
+* SWITCH_WIN_BASE_ADDR_GET
+*
+* DESCRIPTION:
+* This function returns the base address of switch registers window
+*
+*
+* RETURN:
+*	base address of switch registers window
+*
+*******************************************************************************/
+static __inline MV_U32 SWITCH_WIN_BASE_ADDR_GET(MV_VOID)
+{
+	static MV_U32	baseAddr;
+	baseAddr = MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SWITCH_WIN_ID));
+	return baseAddr;
+}
+
+/*******************************************************************************
+* SWITCH_ADDR_COMPL_SET
+*
+* DESCRIPTION:
+* This function configures address completion register
+*
+* INPUT:
+*	addr	- the address to access indirectly
+*
+*******************************************************************************/
+static __inline MV_STATUS SWITCH_ADDR_COMPL_SET(MV_U32 addr)
+{
+	MV_U32	rVal;
+	/* Configure address completion region REG using SERDES memory window */
+	rVal  = MV_MEMIO32_READ(SWITCH_WIN_BASE_ADDR_GET());
+	rVal &= ~(0xFF << SWITCH_ADDR_COMPL_SHIFT(addr));
+	rVal |= SWITCH_ADDR_COMPL_MSB_VAL(addr) << SWITCH_ADDR_COMPL_SHIFT(addr);
+	MV_MEMIO32_WRITE(SWITCH_WIN_BASE_ADDR_GET(), rVal);
+	return MV_OK;
+}
+
+/*******************************************************************************
+* mvSwitchRegisterGet
+*
+* DESCRIPTION:
+* This function reads switch register with address completion
+*
+* INPUT:
+*	address		- the address to read indirectly
+*	mask		- mask of the read data
+*
+* OUTPUT:
+*	data		- the register's data value
+*
+*
+*******************************************************************************/
+void mvSwitchRegisterGet(MV_U32 address, MV_U32 *data, MV_U32 mask)
+{
+	SWITCH_ADDR_COMPL_SET(address); /* Only MSB is important, serdes number offset does not matter */
+	*data  = MV_MEMIO32_READ(SWITCH_BUS_ADDR(address)) & mask;
+}
+
+/*******************************************************************************
+* switchRegRead
+*
+* DESCRIPTION:
+* This command reads switch register with address completion
+*
+*******************************************************************************/
+int switch_read_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	MV_U32 regVal;
+
+	mvSwitchRegisterGet(simple_strtoul(argv[1], NULL, 16), &regVal, 0xFFFF);
+	printf ("0x%x\n", regVal);
+
+	return 1;
+}
+U_BOOT_CMD(
+	switchRegRead,      2,     2,      switch_read_cmd,
+"switchRegRead	- Read switch register, using Address completion\n",
+" Reg_offset. \n"
+"\tRead the switch register, using Address completion. \n"
+);
+
+/*******************************************************************************
+* mvSwitchRegisterSet
+*
+* DESCRIPTION:
+* This function writes to switch register with address completion
+*
+*	address		- the address to write to indirectly
+*	data		- the data to write
+*	mask		- mask of the write data
+*
+*******************************************************************************/
+void mvSwitchRegisterSet(MV_U32 address, MV_U32 data, MV_U32 mask)
+{
+	MV_U32 regData;
+
+	if ((mask & 0xFFFF) != 0xFFFF) { /* since switch registers are 16 bits - check only the relevant bits */
+		mvSwitchRegisterGet(address, &regData, ~mask);
+		regData |= (data & mask);
+	} else
+		regData = data;
+
+	SWITCH_ADDR_COMPL_SET(address); /* Only MSB is important, serdes number offset does not matter */
+
+	MV_MEMIO32_WRITE(SWITCH_BUS_ADDR(address), regData);
+}
+
+/*******************************************************************************
+* switchRegWrite
+*
+* DESCRIPTION:
+* This command writes to switch register with address completion
+*
+*******************************************************************************/
+int switch_write_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	mvSwitchRegisterSet(simple_strtoul(argv[1], NULL, 16), simple_strtoul(argv[2], NULL, 16), 0xFFFF);
+
+	return 1;
+}
+
+U_BOOT_CMD(
+	switchRegWrite,      3,     3,      switch_write_cmd,
+"switchRegWrite	- Write to switch register, using Address completion\n",
+" Reg_offset Reg_data. \n"
+"\tWrite to the switch register, using Address completion. \n"
+);
+#endif /* MV_SWITCH_ADDRESS_COMPLETION */
 #endif /* #if defined(MV_INCLUDE_GIG_ETH) */
 
 #define REG_SDRAM_CONFIG_ADDR					0x1400

@@ -1384,9 +1384,16 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 MV_U32 mvCtrlDDRBudWidth(MV_VOID)
 {
 	MV_U32 reg;
-	reg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
 
-	return (reg & (1 << REG_SDRAM_CONFIG_DDR_BUS_OFFS)) ? 32 : 16;
+	reg = MV_REG_READ(REG_SDRAM_CONFIG_ADDR);
+	reg = reg & (1 << REG_SDRAM_CONFIG_DDR_BUS_OFFS);
+
+	/* Bobcat2 have 64/16 DDR Bus width */
+	if (mvCtrlDevFamilyIdGet(0) == MV_BOBCAT2_DEV_ID)
+		return reg ? 64 : 32;
+	else	/* Alley-Cat3 have 32/16 DDR Bus width */
+		return reg ? 32 : 16;
+
 }
 MV_BOOL mvCtrlDDRThruXbar(MV_VOID)
 {

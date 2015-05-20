@@ -31,7 +31,6 @@
 #ifndef __INCmvSysHwConfigh
 #define __INCmvSysHwConfigh
 
-#include <config.h>
 
 /****************************************/
 /* Soc supporetd Units definitions	*/
@@ -48,6 +47,7 @@
 #define MV_INCLUDE_SDIO
 #define MV_INCLUDE_CLK_PWR_CNTRL
 
+#include <config.h>
 /*********************************************/
 /* Board Specific defines : On-Board devices */
 /*********************************************/

@@ -97,10 +97,10 @@ static MV_SPI_HAL_DATA	spiHalData;
 static MV_SPI_TYPE_INFO spiTypes[] = {
 	{
 		.en16Bit = MV_TRUE,
-		.clockPolLow = MV_TRUE,
+		.clockPolLow = MV_FALSE,
 		.byteCsAsrt = MV_FALSE,
 		.baudRate = (20 << 20), /*  20M */
-		.clkPhase = SPI_CLK_BEGIN_CYC
+		.clkPhase = SPI_CLK_HALF_CYC
 	},
 	{
 		.en16Bit = MV_FALSE,

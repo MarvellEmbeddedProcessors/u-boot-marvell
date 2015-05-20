@@ -119,6 +119,10 @@ MV_STATUS mvEthX2242PPhyBasicInit(MV_U32 ethPortNum)
 	mvEthPhyXsmiRegWrite(phyAddr, 0X1F, 0xF013, 0x0ff0);
 	mvEthPhyXsmiRegWrite(phyAddr, 0X1F, 0xF012, 0x0dbc);
 	mvEthPhyXsmiRegWrite(phyAddr, 0X1F, 0xF014, 0x0000);
+	/* Line Side Ports 1,2,3 shut down */
+	mvEthPhyXsmiRegWrite(phyAddr, 0X1F, 0xF400, 0x0008);
+	/* Host Side Ports 1,2,3 shut down */
+	mvEthPhyXsmiRegWrite(phyAddr, 0X1F, 0xF401, 0x0008);
 	mvEthPhyXsmiRegWrite(phyAddr, 0X1F, 0xF403, 0x0000);
 	mvEthPhyXsmiRegWrite(phyAddr, 0X1F, 0xF002, 0x7172);
 	mvEthPhyXsmiRegWrite(phyAddr, 0X1E, 0x9041, 0x0001);
@@ -159,6 +163,10 @@ MV_STATUS mvEthX2242PPhyBasicInit(MV_U32 ethPortNum)
 	mvEthPhyXsmiRegWrite(phyAddr, 0X1E, 0xB1E6, 0x3F9F);
 	mvEthPhyXsmiRegWrite(phyAddr, 0X1E, 0xB1E7, 0xC000);
 	mvEthPhyXsmiRegWrite(phyAddr, 0X1F, 0xF003, 0x8080);
+	/* Port 1/2/3 Line Side and host Side, Power down and Soft Reset */
+	mvEthPhyXsmiRegWrite(phyAddr + 1, 0X1F, 0xF003, 0xC0C0);
+	mvEthPhyXsmiRegWrite(phyAddr + 2, 0X1F, 0xF003, 0xC0C0);
+	mvEthPhyXsmiRegWrite(phyAddr + 3, 0X1F, 0xF003, 0xC0C0);
 	mvEthPhyXsmiRegWrite(phyAddr, 0X1F, 0xF012, 0x0CBC);
 
 	return MV_OK;

@@ -77,47 +77,40 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define  DYNAMIC_CS_SIZE_CONFIG
 #define  DISABLE_L2_FILTERING_DURING_DDR_TRAINING
 
+#ifdef CONFIG_DDR3
+	#define SPEED_BIN_DDR_CUST_BOARD_1	SPEED_BIN_DDR_1866L
+	#define BUS_WIDTH_CUST_BOARD_1		BUS_WIDTH_8
+	#define SPEED_BIN_DDR_BOARD_DB		SPEED_BIN_DDR_1866L
+	#define BUS_WIDTH_BOARD_DB			BUS_WIDTH_8
+#else
+/*Elpida by 16 is 2400R Micron by 8 is 2133P Samsung by 16 is 2133P Hynux by16 is 2133P*/
+	#define SPEED_BIN_DDR_CUST_BOARD_1	SPEED_BIN_DDR_2400R
+	#define BUS_WIDTH_CUST_BOARD_1		BUS_WIDTH_16
+	#define SPEED_BIN_DDR_CUST_BOARD_2	SPEED_BIN_DDR_2400R
+	#define BUS_WIDTH_CUST_BOARD_2		BUS_WIDTH_16
+	#define SPEED_BIN_DDR_BOARD_DB		SPEED_BIN_DDR_2400R
+	#define BUS_WIDTH_BOARD_DB			BUS_WIDTH_16
+#endif
+
+
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
 /************************************* Customer Boards Topology *************************************/
 MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 {
-#ifdef CONFIG_DDR3
     /* 1st Customer board - reference from DB */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0}, {0x3,2 ,0,0}}, SPEED_BIN_DDR_CUST_BOARD_1,BUS_WIDTH_CUST_BOARD_1 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_32BIT  /* Buses mask */
     },
-    /* 2st Customer board - reference from DB */
+#ifdef CONFIG_DDR4
+    /* 2st Customer board - reference from DB-GP */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_CUST_BOARD_2,BUS_WIDTH_CUST_BOARD_2 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_32BIT  /* Buses mask */
-    },
-#else
-    /* 1st Customer board - reference from DB */
-    {
-    0x1, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
-/*	Elpida 	by16 	is 2400R
-	Micron 	by8 	is 2133P
-	samsung by16 	is 2133P
-	Hynux 	by16 	is 2133P*/
-    {{{{0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0}, {0x3,2 ,0,0}}, SPEED_BIN_DDR_2400R, BUS_WIDTH_16, MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    INTERFACE_BUS_MASK_32BIT_ECC  /* Buses mask */
-    },
-    /* 2st Customer board - reference from DB */
-    {
-    0x1, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
-/*	Elpida 	by16 	is 2400R
-	Micron 	by8 	is 2133P
-	samsung by16 	is 2133P
-	Hynux 	by16 	is 2133P*/
-    {{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x1,0,0,0},{ 0x1,0,0,0}, {0x1,0 ,0,0}}, SPEED_BIN_DDR_2400R, BUS_WIDTH_16, MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    INTERFACE_BUS_MASK_32BIT_ECC  /* Buses mask */
     },
 #endif
 };
@@ -126,36 +119,22 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 /************************************* Marvell Boards Topology *************************************/
 MV_HWS_TOPOLOGY_MAP TopologyMap[] =
 {
- #ifdef CONFIG_DDR3
-    /* 1st Marvell board - RD_NAS */
-    {
-    0x1, /* active interfaces */
-    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                                     speed_bin        memory_device_width  mem_size     frequency  casL casWL      temperature */
-	{{{{0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}, {0x3,2,0,0}}, SPEED_BIN_DDR_1866L, BUS_WIDTH_8 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
-    INTERFACE_BUS_MASK_32BIT  /* Buses mask */
-    },
-#else
-    /* 2nd Marvell board - DB (DDR4) */
+    /* 1st Marvell board - DB (DDR4/3) */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
-/*	Elpida 	by16 	is 2400R
-	Micron 	by8 	is 2133P
-	samsung by16 	is 2133P
-	Hynux 	by16 	is 2133P*/
-    {{{{0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0}, {0x3,2 ,0,0}}, SPEED_BIN_DDR_2400R, BUS_WIDTH_16, MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+    {{{{0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0},{ 0x3,2,0,0}, {0x3,2 ,0,0}}, SPEED_BIN_DDR_BOARD_DB, BUS_WIDTH_BOARD_DB, MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_32BIT_ECC  /* Buses mask */
     },
-/* 2nd Marvell board - EAP_10G RD (DDR4) */
+#ifdef CONFIG_DDR4
+/* 2nd Marvell board - DB-GP (DDR4) */
     {
     0x1, /* active interfaces */
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
     {{{{0x1,0,0,0},{ 0x1,0,0,0},{ 0x1,0,0,0},{ 0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_2400R, BUS_WIDTH_16, MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_32BIT_ECC  /* Buses mask */
     },
-
 #endif
-
 };
 #endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 

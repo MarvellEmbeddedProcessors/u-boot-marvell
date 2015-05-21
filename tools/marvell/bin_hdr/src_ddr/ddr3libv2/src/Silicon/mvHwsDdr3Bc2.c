@@ -828,6 +828,7 @@ static GT_STATUS ddr3TipInitBc2Silicon
     tuneParams.gZnodtData = 45;
     tuneParams.gZpodtCtrl = 45;
     tuneParams.gZnodtCtrl = 45;
+    tuneParams.gRttWR = 0x200;
 
     CHECK_STATUS(ddr3TipTuneTrainingParams(devNum, &tuneParams));
 

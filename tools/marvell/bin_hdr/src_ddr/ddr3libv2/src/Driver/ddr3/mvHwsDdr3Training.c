@@ -663,6 +663,7 @@ GT_STATUS    mvHwsDdr3TipInitController
 	            2)CAS Write  Latency */
 	            dataValue = (cwlMaskTable[cwlVal] << 3);
 	            dataValue |= ((topologyMap->interfaceParams[interfaceId].interfaceTemp == MV_HWS_TEMP_HIGH) ? (1 << 7) : 0);
+				dataValue |= gRttWR;
 	            CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, MR2_REG, dataValue , (0x7<<3) | (0x1<<7) | (0x3<<9)));
             }
 
@@ -1591,12 +1592,8 @@ GT_STATUS    ddr3TipFreqSet
     dataValue = ((clMaskTable[clValue] & 0x1) << 2) | ((clMaskTable[clValue] & 0xE)  <<  3);
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, MR0_REG, dataValue, (0x7 << 4) | (1 << 2)));
     /*MR2:  CWL = 10 , Auto Self-Refresh - disable */
-    dataValue = (cwlMaskTable[cwlValue] << 3);
-    /*dataValue |= (1 << 9); removed by Ofer 31/10
-    dataValue |= ((topologyMap->interfaceParams[interfaceId].interfaceTemp == MV_HWS_TEMP_HIGH) ? (1 << 7) : 0);
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, MR2_REG, dataValue , (0x7<<3) | (0x1<<7) | (0x3<<9)));*/
-
-	CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, MR2_REG, dataValue , (0x7<<3)));
+    dataValue = (cwlMaskTable[cwlValue] << 3) | gRttWR;
+	CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, MR2_REG, dataValue , (0x7<<3) | (0x3 << 9)));
 
     ddr3TipWriteOdt(devNum, accessType, interfaceId, clValue, cwlValue);
 
@@ -1606,9 +1603,9 @@ GT_STATUS    ddr3TipFreqSet
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, MR0_REG, dataValue, (0x7 << 4) | (1 << 2)));
 
     /* re-write CWL */
-    dataValue = (cwlMaskTable[cwlValue] << 3);
-    CHECK_STATUS(ddr3TipWriteMRSCmd(devNum, csMask, MRS2_CMD, dataValue, (0x7 << 3) ));
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, MR2_REG, dataValue, (0x7 << 3)));
+    dataValue = (cwlMaskTable[cwlValue] << 3)  | gRttWR;
+    CHECK_STATUS(ddr3TipWriteMRSCmd(devNum, csMask, MRS2_CMD, dataValue, (0x7 << 3)  | (0x3 << 9)));
+    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, MR2_REG, dataValue, (0x7 << 3) | (0x3 << 9)));
 
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, SDRAM_OPERATION_REG, 0xC00, 0xF00)); /* CS0 & CS1*/
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, SDRAM_OPERATION_REG, 0x3, 0x1F));     /* MR0 Update Command */
@@ -1867,12 +1864,12 @@ GT_STATUS    ddr3TipFreqSet
         dataValue = ((clMaskTable[clValue] & 0x1) << 2) | ((clMaskTable[clValue] & 0xE)  <<  3);
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, MR0_REG, dataValue, (0x7 << 4) | (1 << 2)));
         /*MR2:  CWL = 10 , Auto Self-Refresh - disable */
-        dataValue = (cwlMaskTable[cwlValue] << 3);
+        dataValue = (cwlMaskTable[cwlValue] << 3)   | gRttWR;
 		/* nklein 24.10.13 - should not be here - leave value as set in
 		the init configuration dataValue |= (1 << 9); 
         dataValue |= ((topologyMap->interfaceParams[interfaceId].interfaceTemp == MV_HWS_TEMP_HIGH) ? (1 << 7) : 0);
         ****/
-        CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, MR2_REG, dataValue , (0x7<<3)));  /* nklein 24.10.13 - see above comment*/
+        CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, MR2_REG, dataValue , (0x7<<3) | (0x3 << 9)));  /* nklein 24.10.13 - see above comment*/
         /*ODT TIMING */
         dataValue = ((clValue-cwlValue+1) << 4) |  ((clValue-cwlValue+6) << 8) |  ((clValue-1) << 12) |  ((clValue+6) << 16);
         CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, ODT_TIMING_LOW, dataValue, 0xFFFF0));
@@ -1886,9 +1883,9 @@ GT_STATUS    ddr3TipFreqSet
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, MR0_REG, dataValue, (0x7 << 4) | (1 << 2)));
 
     /* re-write CWL */
-    dataValue = (cwlMaskTable[cwlValue] << 3);
-    CHECK_STATUS(ddr3TipWriteMRSCmd(devNum, csMask, MRS2_CMD, dataValue, (0x7 << 3) ));
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, MR2_REG, dataValue, (0x7 << 3)));
+    dataValue = (cwlMaskTable[cwlValue] << 3)  | gRttWR;
+    CHECK_STATUS(ddr3TipWriteMRSCmd(devNum, csMask, MRS2_CMD, dataValue, (0x7 << 3) | (0x3 << 9)));
+    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, MR2_REG, dataValue, (0x7 << 3) | (0x3 << 9)));
 
     /*    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,accessType, interfaceId, SDRAM_TIMING_HIGH_REG, 0x3E031F80, 0x3FFFFFFF));*/
         if (memMask != 0)
@@ -2136,60 +2133,6 @@ GT_STATUS    ddr3TipWriteMRSCmd
     }
     return GT_OK;
 }
-
-
-/*****************************************************************************
-Dynamic ODT
-******************************************************************************/
-GT_STATUS    ddr3TipDynamicOdt
-(
-    GT_U32    devNum,
-    GT_BOOL   bIsSet
-)                          
-{
-    GT_U32 mr1Value,mr2Value, interfaceId;
-
-    if (bIsSet == GT_TRUE)
-    {
-        mr1Value = 0x24;
-        mr2Value = 0;
-    }
-    else
-    {
-        mr1Value = 0;
-        mr2Value = 0x200;
-    }
-
-    /* MR1: set RttNom to RZQ/6 */
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, MR1_REG, mr1Value, 0x224));
-    /* MR2: disable dynamic ODT*/
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, MR2_REG, mr2Value, 0x600));
-    /*Operation command*/
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, SDRAM_OPERATION_REG, 0xC00, 0xF00));
-    /* MR1 Command */
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, SDRAM_OPERATION_REG, 0x4, 0x1F));
-    /* check controller back to normal */
-    for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
-    {
-        VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-        if (ddr3TipIfPolling(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0, 0x1F, SDRAM_OPERATION_REG, MAX_POLLING_ITERATIONS) != GT_OK)
-        {
-            DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("WL: DDR3 poll failed(1)"));
-        }
-    }
-    /* MR2 Command */
-    CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_MULTICAST, 0, SDRAM_OPERATION_REG, 0x8, 0x1F));
-    for(interfaceId = 0; interfaceId <= MAX_INTERFACE_NUM-1; interfaceId++)
-    {
-        VALIDATE_IF_ACTIVE(topologyMap->interfaceActiveMask, interfaceId)
-        if (ddr3TipIfPolling(devNum, ACCESS_TYPE_UNICAST, interfaceId, 0, 0x1F, SDRAM_OPERATION_REG, MAX_POLLING_ITERATIONS) != GT_OK)
-        {
-            DEBUG_TRAINING_IP(DEBUG_LEVEL_ERROR, ("WL: DDR3 poll failed(2)"));
-        }
-    }
-    return GT_OK;
-}
-
 
 
 /*****************************************************************************

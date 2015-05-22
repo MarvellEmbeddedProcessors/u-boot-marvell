@@ -194,6 +194,7 @@ extern "C" {
 #define MV_ETH_MAX_RXQ              		8
 #define MV_ETH_MAX_TXQ              		8
 #define MV_ETH_TX_CSUM_MAX_SIZE 		9800
+#define MV_ETH_TX_CSUM_MIN_SIZE			2048
 #define BOARD_ETH_SWITCH_PORT_NUM		2
 
 /* New GMAC module is used */

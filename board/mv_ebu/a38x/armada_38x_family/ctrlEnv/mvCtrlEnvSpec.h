@@ -241,6 +241,7 @@ extern "C" {
 #define MV_ETH_MAX_RXQ				8
 #define MV_ETH_MAX_TXQ				8
 #define MV_ETH_TX_CSUM_MAX_SIZE			9800
+#define MV_ETH_TX_CSUM_MIN_SIZE			2048
 #define MV_ETH_TX_CSUM_MAX_SIZE_SMALL		2048
 #define MV_PNC_TCAM_LINES			1024	/* TCAM num of entries */
 

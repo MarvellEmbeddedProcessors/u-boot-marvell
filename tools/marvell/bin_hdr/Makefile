@@ -85,6 +85,8 @@ CSRC = $(MAIN)/mvdispacher.c
 AOBJ = $(subst .s,.o,$(ASRC))
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
+CDEBUG_OBJ = $(subst .c,.debug.o,$(CSRC)) # debug object for mvdispatcher
+
 
 LIB_PHY = phy_$(BOARD).a
 LIB_DDR = ddr_$(BOARD).a
@@ -98,6 +100,8 @@ LIB_PLAT_UART = plat.uart.a
 LIB_SWUP_UART = suspendWUP.uart.a
 LIB_GENERAL_INIT_UART = generalInit.uart.a
 
+LIB_PLAT_DEBUG = plat.debug.a # specific platform library with bin header debug tool
+
 LIBGCC = $(MAIN)/libgcc.lib
 
 ifeq ($(DDRTYPE),)
@@ -109,6 +113,7 @@ TLIB = ./src_ddr/lib/$(DDRTYPE)_training_$(LIBNAME).lib
 COMPONENT_SUBDIRS = platform src_phy src_ddr src_pm src_init
 HDR_COMPONENTS = $(LIB_PLAT) $(LIB_GENERAL_INIT) $(LIB_PHY) $(LIB_DDR) $(TLIB) $(LIB_SWUP)
 HDR_COMPONENTS_UART = $(LIB_PLAT_UART) $(LIB_GENERAL_INIT_UART) $(LIB_PHY_UART) $(LIB_DDR_UART) $(TLIB) $(LIB_SWUP_UART)
+HDR_COMPONENTS_DEBUG = $(LIB_PLAT_DEBUG) $(LIB_GENERAL_INIT) $(LIB_PHY) $(LIB_DDR) $(TLIB) $(LIB_SWUP)
 
 #how to add new component to binary header:
 #EXAMPLE_COMPONENT=no
@@ -125,13 +130,16 @@ $(info ****** Warning: BIN_HDR_DEBUG is enabled. This image cannot be burnt on f
 $(info )
 endif
 
-all:   subdirs $(TGT).bin $(TGT)_sec.bin $(TGT).uart.bin  $(TGT).dis $(TGT)_sec.dis $(TGT).uart.dis $(TGT).srec $(TGT)_sec.srec $(TGT).uart.srec
+all:   subdirs $(TGT).bin $(TGT)_sec.bin $(TGT).uart.bin  $(TGT).dis $(TGT)_sec.dis $(TGT).uart.dis $(TGT).srec $(TGT)_sec.srec $(TGT).uart.srec $(TGT).debug.bin
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 %.uart.o: %.c
 	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) -c -o  $@ $<
+
+%.debug.o: %.c
+	$(CC) $(CFLAGS) -DMV_DEBUG_MODE $(CPPFLAGS) -c -o  $@ $<
 
 $(TGT).bin: $(TGT).elf
 	$(OBJCOPY) -S -O binary $< $(addsuffix .tmp, $@)
@@ -144,6 +152,11 @@ $(TGT)_sec.bin: $(TGT)_sec.elf
 	$(RM) $(addsuffix .tmp, $@)
 
 $(TGT).uart.bin: $(TGT).uart.elf
+	$(OBJCOPY) -S -O binary $< $(addsuffix .tmp, $@)
+	$(CAT) $(PARAMSFILE).raw $(addsuffix .tmp, $@) > $@
+	$(RM) $(addsuffix .tmp, $@)
+
+$(TGT).debug.bin: $(TGT).debug.elf
 	$(OBJCOPY) -S -O binary $< $(addsuffix .tmp, $@)
 	$(CAT) $(PARAMSFILE).raw $(addsuffix .tmp, $@) > $@
 	$(RM) $(addsuffix .tmp, $@)
@@ -175,6 +188,9 @@ $(TGT)_sec.elf: subdirs  $(AOBJ) $(COBJ) $(SETPARAM) $(LDSECSCRIPT)
 $(TGT).uart.elf: $(AOBJ) $(CUART_OBJ) subdirs
 	$(CC) $(LDFLAGSBIN) $(AOBJ) $(CUART_OBJ) $(HDR_COMPONENTS_UART) $(LIB_PLAT_UART) $(LIBGCC) -o $@
 
+$(TGT).debug.elf: $(AOBJ) $(CDEBUG_OBJ) subdirs
+	$(CC) $(LDFLAGSBIN) $(AOBJ) $(CDEBUG_OBJ) $(HDR_COMPONENTS_DEBUG) $(LIB_PLAT_DEBUG) $(LIBGCC) -o $@
+
 $(LDSCRIPT): $(SETPARAMS)
 	./$(SETPARAMS) -B $(BOARD) -P $(PARAMSFILE).txt -R $(DRAMREGS) -d $(DEBUG_MODE_FLAG) $(PARAMSFILE).raw $@
 
@@ -196,7 +212,7 @@ subdirs:
 	done
 
 clean:
-	$(RM) *.raw *.elf *.srec *.dis *.bin *.a *.uart.bin *.uart.elf ./src/*.o  $(LDSCRIPT) $(LDSECSCRIPT) $(SETPARAMS)
+	$(RM) *.raw *.elf *.srec *.dis *.bin *.a *.uart.bin *.uart.elf *.debug.bin ./src/*.o  $(LDSCRIPT) $(LDSECSCRIPT) $(SETPARAMS)
 	@for dir in $(COMPONENT_SUBDIRS) ; do \
 	    $(MAKE) clean -s -C $$dir || exit 1 ; \
 	done

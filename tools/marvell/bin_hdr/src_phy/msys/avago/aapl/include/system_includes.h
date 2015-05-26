@@ -36,6 +36,7 @@
 #   include <config.h>
 #else
 #   define STDC_HEADERS 1
+#   define HAVE_UNISTD_H 1 /* Marvell - defined here instead of cpss gtBuild */
 #endif
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 

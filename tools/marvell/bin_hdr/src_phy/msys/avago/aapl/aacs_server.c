@@ -12,11 +12,11 @@
 /** @file */
 /** @brief Implementation of AACS Server functionality. */
 
-#define AAPL_ENABLE_INTERNAL_FUNCTIONS
-#include "aapl.h"
 #ifndef __MINGW32__
 #include <arpa/inet.h>
 #endif
+#define AAPL_ENABLE_INTERNAL_FUNCTIONS
+#include "aapl.h"
 
 #define BUFLEN 4096  /* for local I/O buffers. */
 

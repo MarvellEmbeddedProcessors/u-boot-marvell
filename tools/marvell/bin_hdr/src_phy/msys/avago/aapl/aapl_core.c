@@ -1116,6 +1116,7 @@ uint avago_get_tap_gen(Aapl_t *aapl)
     return tap_gen;
 }
 
+#ifndef MV_HWS_REDUCED_BUILD
 static void set_hs1_reset_override(Aapl_t *aapl, uint chip, uint override)
 {
     if(!aapl_is_aacs_communication_method(aapl)) return;
@@ -1161,6 +1162,7 @@ static void set_hs1_reset_override(Aapl_t *aapl, uint chip, uint override)
 
     } AAPL_SUPPRESS_ERRORS_POP(aapl);
 }
+#endif /* MV_HWS_REDUCED_BUILD */
 
 /*============================================================================= */
 /* SYSTEM CHIP RESET */
@@ -1231,13 +1233,13 @@ void avago_system_chip_setup(
     AAPL_SUPPRESS_ERRORS_PUSH(aapl);
     rw = avago_diag_sbus_rw_test(aapl, avago_make_addr3(chip, 0, 0xfe), 1);
     AAPL_SUPPRESS_ERRORS_POP(aapl);
-#ifndef MV_HWS_REDUCED_BUILD
     if (rw == FALSE)
     {
+#ifndef MV_HWS_REDUCED_BUILD
         set_hs1_reset_override(aapl, chip, 1);
         avago_diag_sbus_rw_test(aapl, avago_make_addr3(chip, 0, 0xfe), 1);
-    }
 #endif /* MV_HWS_REDUCED_BUILD */
+    }
 
     if (reset) avago_sbus_reset(aapl, avago_make_addr3(chip, 0, AVAGO_BROADCAST), 1);
 }

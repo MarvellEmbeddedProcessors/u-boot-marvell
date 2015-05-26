@@ -103,7 +103,9 @@ typedef enum
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     AVAGO_MAX_RING_ADDRESS           = 0xdf,
     AVAGO_SERDES_P1_BROADCAST        = 0xed,
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
     AVAGO_SERDES_M4_BROADCAST        = 0xee,
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     AVAGO_SERDES_D6_BROADCAST        = 0xff,
     AVAGO_THERMAL_SENSOR_BROADCAST   = 0xef,
     AVAGO_DDR_STOP_BROADCAST         = 0xf0,
@@ -289,10 +291,10 @@ EXT BOOL aapl_check_ip_type_exists(Aapl_t *aapl, uint addr, const char *caller, 
 EXT BOOL aapl_check_firmware_build(Aapl_t *aapl, uint addr, const char *caller, int line, int error, int args, ...);
 #endif /* MV_HWS_REDUCED_BUILD */
 
-#ifndef MV_HWS_REDUCED_BUILD
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 EXT void avago_system_chip_setup(Aapl_t *aapl, int reset, int chip);
 EXT uint avago_get_tap_gen(Aapl_t *aapl);
-#endif /* MV_HWS_REDUCED_BUILD */
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 
 /* Setup AAPL's connection to a device. */

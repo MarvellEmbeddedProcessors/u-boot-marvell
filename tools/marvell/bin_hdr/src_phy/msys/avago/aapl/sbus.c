@@ -28,6 +28,7 @@
 
 #define AAPL_ENABLE_INTERNAL_FUNCTIONS
 #include "aapl.h"
+
 int avago_pex_sbus(Aapl_t *aapl,
     unsigned int sbus_addr, /**< [in] Address of the sbus device */
     unsigned char reg_addr, /**< [in] Address of the register */

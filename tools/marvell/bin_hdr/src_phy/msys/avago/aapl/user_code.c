@@ -25,11 +25,12 @@
 /** @file */
 /** @brief User-supplied fucntions. */
 
-#include "aapl.h"
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <gtOs/gtGenTypes.h>
+#include <gtOs/gtOsTimer.h>
+#include "aapl.h"
 
 #define I2C_SLAVE       0x0703
 
@@ -259,7 +260,7 @@ unsigned int user_supplied_i2c_write_function(
     /*  Write 'length' number of bytes to the device. */
     /* The function should return the number of bytes actually writen to the devivce */
 
-    if( bytes_written = write(avagoI2cFd,buffer,length)!= length )
+    if( (bytes_written = write(avagoI2cFd,buffer,length)) != length )
     {
         aapl_fail(aapl, __func__, __LINE__, "i2c w %04x %02x FAILED\n", device_addr, buffer[0]);
     }

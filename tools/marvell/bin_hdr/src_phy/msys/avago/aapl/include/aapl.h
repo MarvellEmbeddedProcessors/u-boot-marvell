@@ -380,4 +380,8 @@ typedef enum
 #include "logging.h"
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
+/* Clear warning */
+extern int snprintf(char *str, size_t size, const char *format, ...);
+extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
+
 #endif

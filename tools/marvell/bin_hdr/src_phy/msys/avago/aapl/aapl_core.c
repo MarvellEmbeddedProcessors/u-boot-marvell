@@ -932,10 +932,6 @@ BOOL aapl_check_ip_type_reduce(
     int i;
     va_list ip_types;
 
-#ifdef MV_HWS_REDUCED_BUILD
-    (((arg_count > 1) && (arg_count < 6)) ? (arg_count -= 1) : (arg_count));
-#endif /* MV_HWS_REDUCED_BUILD */
-
     va_start(ip_types, arg_count);
 
     avago_addr_to_struct(sbus_addr,&addr_struct);

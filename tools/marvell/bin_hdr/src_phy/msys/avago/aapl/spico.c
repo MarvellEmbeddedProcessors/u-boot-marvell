@@ -662,7 +662,7 @@ static int spico_upload_image(Aapl_t *aapl, uint sbus_addr, int words, const int
             avago_sbus_wr(aapl, sbus_addr, 0x07, 0x00000002);
             avago_sbus_wr(aapl, sbus_addr, 0x08, 0x00000000);
         }
-	 else if (aapl_check_ip_type(aapl,sbus_addr, __func__, __LINE__, TRUE, 3/*2*/, AVAGO_SPICO, AVAGO_SPICO_BROADCAST, 0))
+	 else if (aapl_check_ip_type(aapl,sbus_addr, __func__, __LINE__, TRUE, 2, AVAGO_SPICO, AVAGO_SPICO_BROADCAST))
         {
             avago_sbus_wr(aapl, sbus_addr, 0x01, 0x000000c0);
             avago_sbus_wr(aapl, sbus_addr, 0x01, 0x00000040);
@@ -834,7 +834,7 @@ int avago_spico_upload(
     BOOL st;
     Avago_addr_t addr_struct, start, stop, next;
 
-    if( !aapl_check_ip_type(aapl, sbus_addr_in, __func__, __LINE__, TRUE, 5/*6*/, AVAGO_SPICO, AVAGO_SERDES, AVAGO_SERDES_BROADCAST, AVAGO_SPICO_BROADCAST, AVAGO_M4/*, AVAGO_SERDES_M4_BROADCAST*/) ||
+    if( !aapl_check_ip_type(aapl, sbus_addr_in, __func__, __LINE__, TRUE, 6, AVAGO_SPICO, AVAGO_SERDES, AVAGO_SERDES_BROADCAST, AVAGO_SPICO_BROADCAST, AVAGO_M4, AVAGO_SERDES_M4_BROADCAST) ||
         !aapl_check_process(aapl, sbus_addr_in, __func__, __LINE__, TRUE, 3, AVAGO_PROCESS_A, AVAGO_PROCESS_F, AVAGO_PROCESS_B) )
         return 0;
     avago_addr_to_struct(sbus_addr_in, &addr_struct);
@@ -1455,7 +1455,7 @@ void avago_twi_wait_for_complete(
     if(aapl_check_broadcast_address(aapl, sbus_addr, __func__, __LINE__, TRUE) )
         return;
 
-    if( !aapl_check_ip_type(aapl, sbus_addr, __func__, __LINE__, TRUE, 2, AVAGO_SBUS_CONTROLLER, 0/*dummy*/)  ) return;
+    if( !aapl_check_ip_type(aapl, sbus_addr, __func__, __LINE__, TRUE, 1, AVAGO_SBUS_CONTROLLER)  ) return;
 #ifndef MV_HWS_REDUCED_BUILD
     if (aapl_get_process_id(aapl, sbus_addr) == AVAGO_PROCESS_A) return;
 #endif /* MV_HWS_REDUCED_BUILD */

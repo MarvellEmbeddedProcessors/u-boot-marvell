@@ -156,6 +156,7 @@ extern "C" {
 
 typedef struct s_MacAddr {
 	SK_U8	a[SK_MAC_ADDR_LEN];
+	SK_U16	DummyAlignWord; /* Dummy entry for 32bit alignment only. */
 } SK_MAC_ADDR;
 
 

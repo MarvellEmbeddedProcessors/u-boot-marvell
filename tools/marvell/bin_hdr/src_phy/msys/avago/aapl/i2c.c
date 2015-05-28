@@ -344,6 +344,8 @@ int avago_i2c_sbus(
     else if( command == 3 )
     {
         int rc_prev = aapl->return_code;
+        int retry;
+
         buffer[0] = CORE_SBUS_RESET;
         buffer[1] = 0;
         buffer[2] = 0;
@@ -353,7 +355,7 @@ int avago_i2c_sbus(
         buffer[6] = 0;
         rc = avago_i2c_write(aapl, i2c_address, 7, buffer);
         AAPL_SUPPRESS_ERRORS_PUSH(aapl);
-        int retry;
+
         for (retry = 0; retry <= AAPL_I2C_HARD_RESET_TIMEOUT; retry ++)
             if (avago_diag_sbus_rw_test(aapl, avago_make_sbus_controller_addr(sbus_addr), 2)) break;
         aapl->return_code = rc_prev;

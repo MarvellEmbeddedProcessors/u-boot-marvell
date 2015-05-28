@@ -12,7 +12,7 @@
 /** @file */
 /** @brief Implementation of AACS Server functionality. */
 
-#ifndef __MINGW32__
+#if !defined __MINGW32__ && !defined ASIC_SIMULATION
 #include <arpa/inet.h>
 #endif
 #define AAPL_ENABLE_INTERNAL_FUNCTIONS
@@ -901,8 +901,6 @@ EXT int avago_aacs_server(
 # ifdef WIN32
     WORD vers_req;
     WSADATA wsaData;
-    vers_req = MAKEWORD(2,2);
-    WSAStartup(vers_req,&wsaData);
 # endif
 
 /* INITIALIZE:  Open TCP socket to command client: */
@@ -912,6 +910,11 @@ EXT int avago_aacs_server(
     socklen_t          addr_len = sizeof(client_IPaddr);
     struct sockaddr_in sai;  /* INET socket info. */
     typedef struct sockaddr * sa_pt;
+
+# ifdef WIN32
+    vers_req = MAKEWORD(2,2);
+    WSAStartup(vers_req,&wsaData);
+# endif
 
     if( fd_socket < 0 )
     {

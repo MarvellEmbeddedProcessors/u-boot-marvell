@@ -25,7 +25,9 @@
 /** @file */
 /** @brief User-supplied fucntions. */
 
+#ifndef ASIC_SIMULATION
 #include <sys/ioctl.h>
+#endif
 #include <fcntl.h>
 #include <errno.h>
 #include <gtOs/gtGenTypes.h>
@@ -61,10 +63,15 @@ GT_STATUS mvHwsAvagoInitI2cDriver
     GT_VOID
 )
 {
+#ifdef ASIC_SIMULATION
+    avagoI2cFd = 0;
+#endif
+
     if (avagoI2cFd >= 0)
         return GT_OK;
 
-#if (defined CPU_MSYS)
+#ifndef ASIC_SIMULATION
+#ifdef CPU_MSYS
     /* Open i2c-0 file for MSYS handling */
     avagoI2cFd = open("/dev/i2c-0", O_RDWR);
 
@@ -72,7 +79,8 @@ GT_STATUS mvHwsAvagoInitI2cDriver
     /* Open i2c-1 file for ARMADA_XP handling */
     avagoI2cFd = open("/dev/i2c-1", O_RDWR);
 
-#endif
+#endif /* CPU_MSYS */
+#endif /* ASIC_SIMULATION */
 
     if (avagoI2cFd < 0)
     {
@@ -91,16 +99,22 @@ GT_STATUS mvHwsAvagoSetSlaveId
 	GT_U32 devSlvId
 )
 {
+#ifdef ASIC_SIMULATION
+    devSlvId = i2cAvagoSlaveId;
+#endif
+
     if(devSlvId == i2cAvagoSlaveId)
     {
         return GT_OK;
     }
 
+#ifndef ASIC_SIMULATION
     if (ioctl(avagoI2cFd, I2C_SLAVE, devSlvId) < 0)
     {
         fprintf(stderr, "Error: Could not set slave address: %s\n", strerror(errno));
         return GT_FAIL;
     }
+#endif
 
     i2cAvagoSlaveId = devSlvId;
     osTimerWkAfter(10); /* wait till OS DB is updated */
@@ -259,11 +273,13 @@ unsigned int user_supplied_i2c_write_function(
 
     /*  Write 'length' number of bytes to the device. */
     /* The function should return the number of bytes actually writen to the devivce */
-
+#ifndef ASIC_SIMULATION
     if( (bytes_written = write(avagoI2cFd,buffer,length)) != length )
     {
         aapl_fail(aapl, __func__, __LINE__, "i2c w %04x %02x FAILED\n", device_addr, buffer[0]);
     }
+#endif
+
     return bytes_written;
 }
 
@@ -283,9 +299,11 @@ unsigned int user_supplied_i2c_read_function(
     /* The function should return the number of bytes actually read (>0==success, 0==fail) */
     if(GT_OK != mvHwsAvagoSetSlaveId(device_addr))
        return 0;
-
+#ifndef ASIC_SIMULATION
     if ((bytes_read = read (avagoI2cFd,buffer,length)) != length)
          aapl_fail(aapl, __func__, __LINE__, "i2c r %04x %02x FAILED\n", device_addr, buffer[0]);
+#endif
+
    return bytes_read;
 }
 #endif

@@ -241,7 +241,7 @@ void ms_sleep(
 /** @return  On error, decrements aapl->return_code and returns NULL. */
 void *aapl_malloc(
     Aapl_t *aapl,           /**< [in] Pointer to Aapl_t structure. */
-    size_t bytes,           /**< [in] Size to allocate. */
+    const size_t bytes,     /**< [in] Size to allocate. */
     const char *description)/**< [in] Description of object for error reporting. */
 {
     void * memp = AAPL_MALLOC(bytes);
@@ -262,7 +262,7 @@ void *aapl_malloc(
 void *aapl_realloc(
     Aapl_t *aapl,           /**< [in] Pointer to Aapl_t structure. */
     void *ptr,              /**< [in] Pointer to memory reallocate to new bytes. */
-    size_t bytes,           /**< [in] Size of new space. */
+    const size_t bytes,     /**< [in] Size of new space. */
     const char *description)/**< [in] Description of object for error reporting. */
 {
     void *memp = AAPL_REALLOC(ptr,bytes);

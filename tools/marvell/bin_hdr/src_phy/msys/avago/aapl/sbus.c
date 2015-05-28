@@ -364,12 +364,15 @@ void avago_sbus_reset(
         }
         else if(aapl_is_aacs_communication_method(aapl))
         {
-            AAPL_SUPPRESS_ERRORS_PUSH(aapl);
             Aapl_comm_method_t comm_method;
             char hs1_mode[64];
             char set_sbus[32];
             uint set_sbus_bit = 47;
-            uint tap_gen = avago_get_tap_gen(aapl);
+            uint tap_gen;
+
+            AAPL_SUPPRESS_ERRORS_PUSH(aapl); /* can be done only after parameters declaration */
+
+            tap_gen = avago_get_tap_gen(aapl);
 
             snprintf (hs1_mode, 64, "sbus_mode %s", avago_aacs_send_command(aapl, "sbus_mode"));
             {

@@ -36,7 +36,9 @@
 #   include <config.h>
 #else
 #   define STDC_HEADERS 1
-#   define HAVE_UNISTD_H 1 /* Marvell - defined here instead of cpss gtBuild */
+#   ifndef ASIC_SIMULATION
+#       define HAVE_UNISTD_H 1 /* Marvell - defined here instead of cpss gtBuild */
+#   endif
 #endif
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
@@ -71,10 +73,16 @@
 #    define WIN32
 #endif
 
-#if defined __MINGW32__ || defined WIN32
+#if defined(WIN32) && !defined(ASIC_SIMULATION)
+#define ASIC_SIMULATION
+#endif
+
+#if defined __MINGW32__ || defined WIN32 || defined ASIC_SIMULATION
+#    pragma warning( disable : 4996)
 #    include <winsock2.h>
 #    include <windows.h>
 #    include <ws2tcpip.h>
+#    include <io.h>
 #    ifndef sleep
 #        define sleep(a) Sleep(a * 1000)
 #    endif
@@ -115,7 +123,7 @@
 #       include <string.h>
 #     endif
 #   endif
-#   if HAVE_UNISTD_H && !defined __MINGW32__
+#   if HAVE_UNISTD_H && !defined __MINGW32__ && !defined ASIC_SIMULATION
 #       include <unistd.h>
 #   endif
 #   if defined HAVE_SYS_TYPES_H && HAVE_SYS_TYPES_H

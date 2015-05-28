@@ -515,7 +515,11 @@ void misc_init_r_env(void)
 		setenv("bootcmd_auto", "stage_boot $boot_order");
 	env = getenv("bootcmd_lgcy");
 	if (!env)
-		setenv("bootcmd_lgcy", "tftpboot 0x2000000 $image_name; setenv bootargs $bootargs_dflt; bootm 0x2000000; ");
+		setenv("bootcmd_lgcy", "tftpboot 0x2000000 $image_name;"
+			   "setenv bootargs $console $nandEcc $mtdparts_lgcy"
+			   " $bootargs_root nfsroot=$serverip:$rootpath "
+			   "ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params "
+			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
 #endif
 	env = getenv("pxe_files_load");
 	if (!env)

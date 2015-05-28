@@ -520,20 +520,27 @@ static int mv_fdt_update_usb_vbus(void *fdt)
 	int err, nodeoffset;				/* nodeoffset: node offset from libfdt */
 	char propval[10];				/* property value */
 	const char *prop = "status";			/* property name */
-	const char *node, *phy_node;			/* node name */
+	const char *node = NULL, *phy_node = NULL;	/* node name */
 	MV_BOARD_IO_EXPANDER_TYPE_INFO ioInfo;		/* empty stub - not to be used */
 
 	sprintf(propval, "okay");
 
-	if (mvBoardUSBVbusGpioPinGet(0) != MV_ERROR) {
-		node = "usb3-vbus-gpio";
-		phy_node = "usb3-phy-gpio";
-	}
-	else if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_USB_VBUS, &ioInfo) != MV_ERROR) {
+	if (mvBoardIoExpanderTypeGet(MV_IO_EXPANDER_USB_VBUS, &ioInfo) != MV_ERROR) {
 		node = "usb3-vbus-exp1";
 		phy_node = "usb3-phy-exp1";
+	} else {
+		/* remove invalid i2c pins information, to avoid unexpected Linux behaviour*/
+		mv_fdt_remove_node(fdt, "i2c-pins-0");
 	}
-	else
+	if (mvBoardUSBVbusGpioPinGet(0) != MV_ERROR) {
+			node = "usb3-vbus-gpio";
+			phy_node = "usb3-phy-gpio";
+	} else {
+		/* remove invalid vbus gpio pins information, to avoid unexpected Linux behaviour*/
+		mv_fdt_remove_node(fdt, "xhci0-vbus-pins");
+	}
+
+	if (!node && !phy_node)
 		return 0;
 
 	nodeoffset = mv_fdt_find_node(fdt, node);

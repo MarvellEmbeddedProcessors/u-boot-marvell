@@ -679,11 +679,10 @@ void misc_init_r_env(void)
 #if (CONFIG_BOOTDELAY >= 0)
 	env = getenv("bootcmd");
 	if (!env)
-		setenv("bootcmd", "tftpboot 0x2000000 $image_name;"
-			   "setenv bootargs $console $nandEcc $mtdparts_lgcy"
-			   " $bootargs_root nfsroot=$serverip:$rootpath "
-			   "ip=$ipaddr:$serverip$bootargs_end  video=dovefb:lcd0:$lcd0_params "
-			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel;  bootm $loadaddr; ");
+		setenv("bootcmd", "tftpboot 0x2000000 $image_name;tftpboot $fdtaddr $fdtfile;"
+		"setenv bootargs $console $nandEcc $mtdparts $bootargs_root nfsroot=$serverip:$rootpath "
+		"ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
+		"clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel; bootz 0x2000000 - $fdtaddr;");
 #endif  /* (CONFIG_BOOTDELAY >= 0) */
 
 	env = getenv("standalone");

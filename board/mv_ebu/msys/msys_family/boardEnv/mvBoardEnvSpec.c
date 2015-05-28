@@ -783,7 +783,7 @@ MV_BOARD_INFO rd_mtl_2xxg_2xg_ac3Info = {
 
 /*********************************************************************************/
 /***********************************/
-/* ALLEYCAT3-DB-MISL-24G BOARD     */
+/* ALLEYCAT3-RD-MTL-2XXG-2XG BOARD */
 /***********************************/
 MV_BOARD_MPP_INFO db_misl_24G_46_ac3InfoBoardMppConfigValue[] = {
 	{ {
@@ -796,11 +796,11 @@ MV_BOARD_MPP_INFO db_misl_24G_46_ac3InfoBoardMppConfigValue[] = {
 };
 
 MV_BOARD_INFO db_misl_24G_4xg_ac3Info = {
-	.boardName				= "DB-XC3-24G-4G",
-	.numBoardMppTypeValue	= ARRSZ(db_dx_ac3InfoBoardModTypeInfo),
+	.boardName			= "DB-XC3-24G-4G",
+	.numBoardMppTypeValue		= ARRSZ(db_dx_ac3InfoBoardModTypeInfo),
 	.pBoardModTypeValue		= db_dx_ac3InfoBoardModTypeInfo,
-	.numBoardMppConfigValue	= ARRSZ(db_misl_24G_46_ac3InfoBoardMppConfigValue),
-	.pBoardMppConfigValue	= db_misl_24G_46_ac3InfoBoardMppConfigValue,
+	.numBoardMppConfigValue		= ARRSZ(db_misl_24G_46_ac3InfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= db_misl_24G_46_ac3InfoBoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
@@ -887,16 +887,16 @@ MV_BOARD_INFO rd_mtl_24G_ac3Info = {
 	.gppPolarityValHigh		= 0,
 
 	/* External Switch Configuration */
-	.pSwitchInfo			= NULL,
-	.switchInfoNum			= 0,
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
 
 	/* NAND init params */
-	.nandFlashReadParams	= DB_DX_AC3_BOARD_NAND_READ_PARAMS,
-	.nandFlashWriteParams	= DB_DX_AC3_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashReadParams		= DB_DX_AC3_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_DX_AC3_BOARD_NAND_WRITE_PARAMS,
 	.nandFlashControl		= DB_DX_AC3_BOARD_NAND_CONTROL,
 	/* NOR init params */
 	.norFlashReadParams		= DB_DX_AC3_BOARD_NOR_READ_PARAMS,
-	.norFlashWriteParams	= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS
+	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS
 };
 
 /*********************************************************************************/

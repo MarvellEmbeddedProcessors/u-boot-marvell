@@ -1,0 +1,46 @@
+Marvell Device Tree Binding
+===========================
+
+This document provides instructions for porting the Marvell U-Boot to
+customer board, this binding specifies what properties must be available
+in the device tree of Marvell Chip.
+
+In this section, we define device tree nodes to describe the system controller
+chip itself and each of the peripherals which it contains. Compatible string
+values for each node are prefixed with the string "marvell,", for Marvell Technology
+Group Ltd.
+
+1) General proporties "/":
+	This include the general proporties of
+	- model: name of the model of the chip
+		for example: model = "Marvell Armada 8k Development Board";
+	- compatible string: string identifying the compatibility identifiers of the board and the SoC.
+		for example: compatible = "marvell,a8k-db", "marvell,armada8k";
+
+2) /soc/ node:
+	The top-level soc node contains information about the interfaces in the SoC.
+
+	Properties:
+	- compatible: A string identifying the compatibility identifiers of the soc node.
+		for example: compatible = "marvell,armada8k-mbus";
+	- Configure the state of how many cells are in each field of child node:
+		#address-cells = <1>;
+		#size-cells = <0>;
+		Note: #address-cells is set to 1, and #size-cells is set to 0. This means that child
+		reg values are a single uint32 that represent the address with no size field.
+
+	2.1. /soc/internal-regs/ node:
+		Specify the interfaces of the SoC.
+		Properties:
+		- Compatible = "marvell,internal-regs";
+		- reg: property of internal-reg is the base address of the internal regs.
+			reg = <0xf0000000 0x4>;
+		- #address-cells = <1>;
+		- #size-cells = <1>;
+		Note: #address-cells is set to 1, and #size-cells is set to 1. This means that child
+		reg values are a 32bit.
+
+			2.1.1 /soc/internal-regs/spi/ node:
+				Specify the SPI interface, check doc/device-tree-bindings/spi/mvebu-spi.txt
+			2.1.2 /soc/internal-regs/tclock/ node:
+				Specify the clock interface, check doc/device-tree-bindings/clock/mvebu-clock.txt

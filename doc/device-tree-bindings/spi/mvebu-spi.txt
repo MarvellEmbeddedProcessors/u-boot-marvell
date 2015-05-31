@@ -1,0 +1,31 @@
+Marvell SPI bindings
+====================
+
+The node name is spi0 to show that it's SPI-0, for SPI-1 should be spi1.
+
+The SPI node requires the following properties:
+	- compatible = "marvell,orion-spi";
+	- reg = <0x510600 0x50>;
+		base address of SPI-0
+	- spi-max-frequency = <51200>;
+		This property used to calculate the SPI max bus frequency.
+		The value in Byte
+	- clock = <&tclk>;
+		This property points to the used clock for the SPI interface.
+		in this example the node point to the t-clock.
+	- cpol-cs-bitmap = <1>;
+		This property is bitmap that defined if SCK idles high for chip-select i by enable bit i.
+	- status = "okay";
+		Set if the SPI interface is enabled/disabled
+
+Example for SPI-0 node:
+	spi0: spi@10600 {
+		compatible = "marvell,orion-spi";
+		reg = <0x10600 0x50>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		spi-max-frequency = <20971520>;
+		clock = <&tclk>;
+		status = "okay";
+		cpol-cs-bitmap = <1>; /*bit i is set if the cs-i SCK idles high */
+	};

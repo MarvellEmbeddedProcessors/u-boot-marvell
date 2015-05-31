@@ -1,0 +1,9 @@
+Marvell Clock bindings
+======================
+
+The Clock nodes is under internal-regs node.
+
+tclk: define the T-Clock address in the SoC
+	- compatible = "marvell,tclk";
+	- reg = <0x18600 0x4>;
+		base address of sample at reset register.

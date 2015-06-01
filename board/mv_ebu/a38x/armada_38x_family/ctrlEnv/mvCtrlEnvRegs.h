@@ -385,13 +385,14 @@ typedef struct {
 		{ 0x8,   1332, 666,  666,  MV_TRUE  , MV_FALSE}, \
 		{ 0xC,   1600, 800,  800,  MV_TRUE  , MV_FALSE}, \
 		{ 0x10,  1866, 933,  933,  MV_TRUE  , MV_TRUE}, \
+		{ 0x13,  2000, 933,  1000,  MV_TRUE  , MV_TRUE}, \
 		{ MV_SAR_FREQ_MODES_EOT,  0,    0,   0, MV_FALSE, MV_FALSE } \
 };
 
 #else
 #ifdef CONFIG_ARMADA_38X
 #define MV_SAR_FREQ_MODES { \
-		/*ID,	 CPU,  DDR,  L@,  isDisaply?, isLimited? */\
+		/*ID,	 CPU,  DDR,  L2,  isDisaply?, isLimited? */\
 		{ 0x0,   666,  333,  333,  MV_TRUE  , MV_FALSE}, \
 		{ 0x2,   800,  400,  400,  MV_TRUE  , MV_FALSE}, \
 		{ 0x4,   1066, 533,  533,  MV_TRUE  , MV_FALSE}, \
@@ -399,6 +400,7 @@ typedef struct {
 		{ 0x8,   1332, 666,  666,  MV_TRUE  , MV_FALSE}, \
 		{ 0xC,   1600, 800,  800,  MV_TRUE  , MV_FALSE}, \
 		{ 0x10,  1866, 933,  933,  MV_TRUE  , MV_TRUE}, \
+		{ 0x13,  2000, 933,  1000,  MV_TRUE  , MV_TRUE}, \
 		{ MV_SAR_FREQ_MODES_EOT,  0,    0,   0, MV_FALSE, MV_FALSE } \
 };
 #else

@@ -1,0 +1,20 @@
+Marvell I2C bindings
+====================
+
+The I2C node requires the following properties:
+	- compatible = "marvell,mvebu-i2c";
+	- reg = <0x511000 0x4>;
+		base address of I2C-0
+	- clock = <&tclk>;
+		This property points to the used clock for the I2C interface.
+		in this example the node point to the t-clock.
+	- status = "okay";
+		Set if the I2C interface is enabled/disabled.
+
+Example for I2C-0 node:
+	i2c0: i2c@11000 {
+		compatible = "marvell,mvebu-i2c";
+		reg = <0x11000 0x4>;
+		clock = <&tclk>;
+		status = "okay";
+	};

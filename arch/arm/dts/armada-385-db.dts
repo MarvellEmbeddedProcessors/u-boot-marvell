@@ -44,6 +44,20 @@
 				reg = <0x18600 0x4>;
 			};
 
+			i2c0: i2c@11000 {
+				compatible = "marvell,mvebu-i2c";
+				reg = <0x11000 0x4>;
+				clock = <&tclk>;
+				status = "okay";
+			};
+
+			i2c1: i2c@11100 {
+				compatible = "marvell,mvebu-i2c";
+				reg = <0x11100 0x4>;
+				clock = <&tclk>;
+				status = "disable";
+			};
+
 			spi0: spi@10600 {
 				compatible = "marvell,orion-spi";
 				reg = <0x10600 0x50>;

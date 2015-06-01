@@ -44,3 +44,5 @@ Group Ltd.
 				Specify the SPI interface, check doc/device-tree-bindings/spi/mvebu-spi.txt
 			2.1.2 /soc/internal-regs/tclock/ node:
 				Specify the clock interface, check doc/device-tree-bindings/clock/mvebu-clock.txt
+			2.1.3 /soc/internal-regs/i2c/ node;
+				Specify the I2C interface, check doc/device-tree-bindings/i2c/mvebu-i2c.txt

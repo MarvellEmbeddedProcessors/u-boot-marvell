@@ -21,9 +21,11 @@
 #include <i2c.h>
 #include <asm/errno.h>
 #include <asm/io.h>
+#include <fdtdec.h>
 #include <asm/arch-mvebu/clock.h>
-#include <asm/arch-mvebu/mvebu.h>
+#include <asm/arch-mvebu/fdt.h>
 
+#define CONFIG_MAX_I2C_NUM			2
 #define I2C_TIMEOUT_VALUE			0x500
 #define I2C_MAX_RETRY_CNT			1000
 #define I2C_CMD_WRITE				0x0
@@ -65,11 +67,21 @@ struct  mvebu_i2c_regs {
 	u32 soft_reset;
 };
 
-static struct  mvebu_i2c_regs *i2c_reg;
+struct mvebu_i2c_bus {
+	struct  mvebu_i2c_regs *i2c_reg;
+	u32 clock;
+	bool status;
+};
+
+/* initialize i2c_bus to -1, because we use this struct before relocation */
+static struct mvebu_i2c_bus i2c_bus[CONFIG_MAX_I2C_NUM] = { { .i2c_reg = NULL, .clock = -1, .status = false},
+							{ .i2c_reg = NULL, .clock = -1, .status = false} };
+
+#define i2c_reg(x) (&i2c_bus[gd->cur_i2c_bus].i2c_reg->x)
 
 static int mvebu_i2c_lost_arbitration(u32 *status)
 {
-	*status = readl(&i2c_reg->status);
+	*status = readl(i2c_reg(status));
 	if ((I2C_STATUS_LOST_ARB_DATA_ADDR_TRANSFER == *status) || (I2C_STATUS_LOST_ARB_GENERAL_CALL == *status))
 		return -EAGAIN;
 	return 0;
@@ -81,9 +93,9 @@ static void mvebu_i2c_interrupt_clear(void)
 
 	/* Wait for 1 ms to prevent I2C register write after write issues */
 	udelay(1000);
-	reg = readl(&i2c_reg->control);
+	reg = readl(i2c_reg(control));
 	reg &= ~(I2C_CONTROL_IFLG);
-	writel(reg, &i2c_reg->control);
+	writel(reg, i2c_reg(control));
 	/* Wait for 1 ms for the clear to take effect */
 	udelay(1000);
 
@@ -95,7 +107,7 @@ static int mvebu_i2c_interrupt_get(void)
 	u32 reg;
 
 	/* get the interrupt flag bit */
-	reg = readl(&i2c_reg->control);
+	reg = readl(i2c_reg(control));
 	reg &= I2C_CONTROL_IFLG;
 	return reg && I2C_CONTROL_IFLG;
 }
@@ -119,7 +131,7 @@ static int mvebu_i2c_start_bit_set(void)
 		is_int_flag = 1;
 
 	/* set start bit */
-	writel(readl(&i2c_reg->control) | I2C_CONTROL_START, &i2c_reg->control);
+	writel(readl(i2c_reg(control)) | I2C_CONTROL_START, i2c_reg(control));
 
 	/* in case that the int flag was set before i.e. repeated start bit */
 	if (is_int_flag) {
@@ -133,7 +145,7 @@ static int mvebu_i2c_start_bit_set(void)
 	}
 
 	/* check that start bit went down */
-	if ((readl(&i2c_reg->control) & I2C_CONTROL_START) != 0) {
+	if ((readl(i2c_reg(control)) & I2C_CONTROL_START) != 0) {
 		error("Start bit didn't went down\n");
 		return -EPERM;
 	}
@@ -157,12 +169,12 @@ static int mvebu_i2c_stop_bit_set(void)
 	u32 status;
 
 	/* Generate stop bit */
-	writel(readl(&i2c_reg->control) | I2C_CONTROL_STOP, &i2c_reg->control);
+	writel(readl(i2c_reg(control)) | I2C_CONTROL_STOP, i2c_reg(control));
 	mvebu_i2c_interrupt_clear();
 
 	timeout = 0;
 	/* Read control register, check the control stop bit */
-	while ((readl(&i2c_reg->control) & I2C_CONTROL_STOP) && (timeout++ < I2C_TIMEOUT_VALUE))
+	while ((readl(i2c_reg(control)) & I2C_CONTROL_STOP) && (timeout++ < I2C_TIMEOUT_VALUE))
 		;
 	if (timeout >= I2C_TIMEOUT_VALUE) {
 		error("Stop bit didn't went down\n");
@@ -170,7 +182,7 @@ static int mvebu_i2c_stop_bit_set(void)
 	}
 
 	/* check that stop bit went down */
-	if ((readl(&i2c_reg->control) & I2C_CONTROL_STOP) != 0) {
+	if ((readl(i2c_reg(control)) & I2C_CONTROL_STOP) != 0) {
 		error("Stop bit didn't went down\n");
 		return -EPERM;
 	}
@@ -194,7 +206,7 @@ static int mvebu_i2c_address_set(u8 chain, int command)
 
 	reg = (chain << I2C_DATA_ADDR_7BIT_OFFS) & I2C_DATA_ADDR_7BIT_MASK;
 	reg |= command;
-	writel(reg, &i2c_reg->data);
+	writel(reg, i2c_reg(data));
 	udelay(1000);
 
 	mvebu_i2c_interrupt_clear();
@@ -232,9 +244,9 @@ static int mvebu_i2c_data_receive(u8 *p_block, u32 block_size)
 	}
 	while (block_size_read) {
 		if (block_size_read == 1) {
-			reg = readl(&i2c_reg->control);
+			reg = readl(i2c_reg(control));
 			reg &= ~(I2C_CONTROL_ACK);
-			writel(reg, &i2c_reg->control);
+			writel(reg, i2c_reg(control));
 		}
 		mvebu_i2c_interrupt_clear();
 
@@ -257,7 +269,7 @@ static int mvebu_i2c_data_receive(u8 *p_block, u32 block_size)
 		}
 
 		/* read the data */
-		*p_block = (u8) readl(&i2c_reg->data);
+		*p_block = (u8) readl(i2c_reg(data));
 		debug("%s: place %d read %x\n", __func__, block_size - block_size_read, *p_block);
 		p_block++;
 		block_size_read--;
@@ -277,7 +289,7 @@ static int mvebu_i2c_data_transmit(u8 *p_block, u32 block_size)
 
 	while (block_size_write) {
 		/* write the data */
-		writel((u32) *p_block, &i2c_reg->data);
+		writel((u32) *p_block, i2c_reg(data));
 		debug("%s: index = %d, data = %x\n", __func__, block_size - block_size_write, *p_block);
 		p_block++;
 		block_size_write--;
@@ -325,11 +337,11 @@ static unsigned int mvebu_i2c_bus_speed_set(struct i2c_adapter *adap, unsigned i
 	unsigned int n, m, freq, margin, min_margin = 0xffffffff;
 	unsigned int actual_freq = 0, actual_n = 0, actual_m = 0;
 
-	debug("%s: Tclock = 0x%x, freq = 0x%x\n", __func__, soc_tclk_get(), requested_speed);
+	debug("%s: clock = 0x%x, freq = 0x%x\n", __func__, i2c_bus[gd->cur_i2c_bus].clock, requested_speed);
 	/* Calucalte N and M for the TWSI clock baud rate */
 	for (n = 0; n < 8; n++) {
 		for (m = 0; m < 16; m++) {
-			freq = soc_tclk_get() / (10 * (m + 1) * (2 << n));
+			freq = i2c_bus[gd->cur_i2c_bus].clock / (10 * (m + 1) * (2 << n));
 			margin = abs(requested_speed - freq);
 
 			if ((freq <= requested_speed) && (margin < min_margin)) {
@@ -342,30 +354,54 @@ static unsigned int mvebu_i2c_bus_speed_set(struct i2c_adapter *adap, unsigned i
 	}
 	debug("%s: actual_n = 0x%x, actual_m = 0x%x, actual_freq = 0x%x\n", __func__, actual_n, actual_m, actual_freq);
 	/* Set the baud rate */
-	writel((actual_m << 3) | actual_n, &i2c_reg->baudrate);
+	writel((actual_m << 3) | actual_n, i2c_reg(baudrate));
 
 	return 0;
 }
 
 static void mvebu_i2c_init(struct i2c_adapter *adap, int speed, int slaveaddr)
 {
-	i2c_reg = (struct  mvebu_i2c_regs *)MVEBU_I2C_BASE(gd->cur_i2c_bus);
+	int node_list[CONFIG_MAX_I2C_NUM], node;
+	u32 i;
+
+	if (i2c_bus[gd->cur_i2c_bus].status)
+		return;
+
+	/* update the node_list with the active I2C nodes */
+	fdtdec_find_aliases_for_id(gd->fdt_blob, "i2c", COMPAT_MVEBU_I2C, node_list, CONFIG_MAX_I2C_NUM);
+
+	for (i = 0; i < CONFIG_MAX_I2C_NUM ; i++) {
+		node = node_list[i];
+
+		if (node <= 0)
+			continue;
+
+		if (gd->cur_i2c_bus == i) {
+			i2c_bus[gd->cur_i2c_bus].i2c_reg =
+				(struct  mvebu_i2c_regs *)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
+			i2c_bus[gd->cur_i2c_bus].clock = soc_clock_get(gd->fdt_blob, node);
+			i2c_bus[gd->cur_i2c_bus].status = true;
+		}
+	}
+	if (!i2c_bus[gd->cur_i2c_bus].status)
+		error("i2c %d device not found in device tree blob\n", gd->cur_i2c_bus);
+
 	/* Reset the I2C logic */
-	writel(0, &i2c_reg->soft_reset);
+	writel(0, i2c_reg(soft_reset));
 
 	udelay(2000);
 
 	mvebu_i2c_bus_speed_set(adap, speed);
 
 	/* Enable the I2C and slave */
-	writel(I2C_CONTROL_TWSIEN | I2C_CONTROL_ACK, &i2c_reg->control);
+	writel(I2C_CONTROL_TWSIEN | I2C_CONTROL_ACK, i2c_reg(control));
 
 	/* set the I2C slave address */
-	writel(0, &i2c_reg->xtnd_slave_addr);
-	writel(slaveaddr, &i2c_reg->slave_address);
+	writel(0, i2c_reg(xtnd_slave_addr));
+	writel(slaveaddr, i2c_reg(slave_address));
 
 	/* unmask I2C interrupt */
-	writel(readl(&i2c_reg->control) | I2C_CONTROL_INTEN, &i2c_reg->control);
+	writel(readl(i2c_reg(control)) | I2C_CONTROL_INTEN, i2c_reg(control));
 
 	udelay(1000);
 }
@@ -445,7 +481,7 @@ static int mvebu_i2c_read(struct i2c_adapter *adap, uchar chip, uint addr,
 	if (counter == I2C_MAX_RETRY_CNT)
 		error("I2C transactions failed, got EAGAIN %d times\n", I2C_MAX_RETRY_CNT);
 
-	writel(readl(&i2c_reg->control) | I2C_CONTROL_ACK, &i2c_reg->control);
+	writel(readl(i2c_reg(control)) | I2C_CONTROL_ACK, i2c_reg(control));
 
 	udelay(1000);
 
@@ -507,4 +543,4 @@ U_BOOT_I2C_ADAP_COMPLETE(mvebu0, mvebu_i2c_init, mvebu_i2c_probe,
 U_BOOT_I2C_ADAP_COMPLETE(mvebu1, mvebu_i2c_init, mvebu_i2c_probe,
 			 mvebu_i2c_read, mvebu_i2c_write,
 			 mvebu_i2c_bus_speed_set,
-			 CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE, 0)
+			 CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE, 1)

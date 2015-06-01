@@ -80,7 +80,7 @@ BIN_HDR_DEBUG = $(UTILS)/debug
 CSRC_DRV = $(DRV)/mv_uart.c $(DRV)/mv_twsi.c $(DRV)/mv_time.c
 CSRC_UTILS = $(UTILS)/utils.c $(UTILS)/printf.c $(UTILS)/mvHwsSiliconIf.c
 CSRC_SYS_ENV = $(SYS_ENV)/mvSysEnvLib.c
-CSRC_BIN_HDR_DEBUG = $(BIN_HDR_DEBUG)/debug.c
+CSRC_BIN_HDR_DEBUG = $(BIN_HDR_DEBUG)/debug.c $(BIN_HDR_DEBUG)/lib_utils.c
 
 ifeq "$(LIBNAME)"  "msys_bobk"
   CSRC_UTILS += $(UTILS)/mv_seq_exec_ext.c

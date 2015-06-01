@@ -70,6 +70,7 @@ BOARDFLAG = $(filter -DCONFIG_%, $(CFLAGS))
 
 TGT = plat.a
 TGT_UART = plat.uart.a
+TGT_DEBUG = plat.debug.a
 
 DRV = drivers
 UTILS = utils
@@ -105,8 +106,10 @@ CSRC = $(CSRC_DRV) $(CSRC_UTILS) $(CSRC_SYS_ENV)
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
+CDEBUG_OBJ = $(subst .c,.debug.o,$(CSRC))
 
-all:   $(TGT) $(TGT_UART)
+
+all:   $(TGT) $(TGT_UART) $(TGT_DEBUG)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
@@ -114,12 +117,19 @@ all:   $(TGT) $(TGT_UART)
 %.uart.o: %.c
 	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) -c -o  $@ $<
 
+%.debug.o: %.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o  $@ $<
+
 $(TGT): $(COBJ)
 	ar rcs $(TGT)  $(COBJ)
 	$(CP) ./$@ ../
 
 $(TGT_UART): $(CUART_OBJ)
 	ar rcs $(TGT_UART)  $(CUART_OBJ)
+	$(CP) ./$@ ../
+
+$(TGT_DEBUG): $(CDEBUG_OBJ)
+	ar rcs $(TGT_DEBUG)  $(CDEBUG_OBJ)
 	$(CP) ./$@ ../
 
 setparams:

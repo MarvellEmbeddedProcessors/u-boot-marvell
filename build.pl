@@ -445,6 +445,7 @@ else {
 print "\n**** [Creating Image]\t*****\n\n";
 
 $failUart = system("./tools/marvell/doimage -T uart -D 0 -E 0 -G ./tools/marvell/bin_hdr/bin_hdr.uart.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name$targetBoard-uart.bin");
+$failDebug = system("./tools/marvell/doimage -T uart -D 0 -E 0 -H 3 -G ./tools/marvell/bin_hdr/bin_hdr.debug.bin u-boot.bin u-boot-$boardID-$opt_v-$flash_name$targetBoard-debug.bin");
 $fail = system("./tools/marvell/doimage -T $img_type -D 0x0 -E 0x0 $img_opts $rsa_opts $id_opts $extra_opt -G ./tools/marvell/bin_hdr/$bin_hdr_n u-boot.bin u-boot-$boardID-$opt_v-$flash_name$targetBoard.bin");
 
 if($fail){
@@ -453,6 +454,10 @@ if($fail){
 }
 if($failUart){
 	print "\n *** Error: Doimage for uart image failed\n\n";
+	exit 1;
+}
+if($failDebug){
+	print "\n *** Error: Doimage for debug image failed\n\n";
 	exit 1;
 }
 

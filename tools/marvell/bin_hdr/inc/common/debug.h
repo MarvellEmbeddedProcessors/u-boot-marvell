@@ -42,12 +42,12 @@ are permitted provided that the following conditions are met:
 	    this list of conditions and the following disclaimer.
 
     *   Redistributions in binary form must reproduce the above copyright
-		notice, this list of conditions and the following disclaimer in the
-		documentation and/or other materials provided with the distribution.
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
 
     *   Neither the name of Marvell nor the names of its contributors may be
-		used to endorse or promote products derived from this software without
-		specific prior written permission.
+	used to endorse or promote products derived from this software without
+	specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -61,82 +61,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#include "config_marvell.h"  	/* Required to identify SOC and Board */
-#include "mv_os.h"
-#include "mvUart.h"
-#include "mvBinHdrComponents.h"
-#include "printf.h"
 
-#ifdef MV_DEBUG_MODE
-#include "debug.h"
-#endif
+#define MV_UART_XMODEM_ACK_CHAR 0x6
 
-MV_BINARY_HEADER_COMPONENTS componentTable[]={ BIN_HEADER_COMPONENT_TABLE};
-
-#ifdef MV_DEBUG_MODE
-static void print_menu() {
-	mvPrintf("\nPlease choose one of the following commands:\n");
-	mvPrintf("\t1.SERDES initialization\n");
-	mvPrintf("\t2.DRAM initialization\n");
-	mvPrintf("\t3.Suspend wake up\n");
-	mvPrintf("\t4.Prompt mode\n");
-	mvPrintf("\t\tSelected command number:");
-}
-#endif
-
-int mvBinHdrDispatcher(void)
-{
-	MV_BINARY_HEADER_COMPONENTS *pComponent= componentTable;
-	MV_STATUS rc;
-#ifdef MV_DEBUG_MODE
-	int i;
-	char c;
-#endif
-
-#ifndef MV_DEBUG_MODE
-    while (pComponent->ComponentFunc){
-		rc = pComponent->ComponentFunc();
-		if (rc != MV_OK)
-		{
-			mvUartInit();
-			DEBUG_INIT_S("\n\n **********          ");
-			DEBUG_INIT_S(pComponent->ComponentName);
-			DEBUG_INIT_S(" failed!   ********\n");
-			while(1);
-		}
-		pComponent++;
-	}
-#else
-	/* Run GeneralInit component
-	 * needed for genereal MPP's (i.e UART, I2C, etc.) */
-	if (pComponent->ComponentFunc)
-		pComponent->ComponentFunc();
-	/* send ACKs to the sender to finish sx-at91 protocol running
-	 * and start using UART for prints
-	 * 3 ACKS are required to finish transaction */
-	for (i = 0; i < 3; ++i)
-		mvUartPutc(MV_UART_XMODEM_ACK_CHAR);
-	/* get the last char sent by the protocol (EOT) */
-	mvUartGetc();
-
-	while (1) {
-		print_menu();
-		c = mvUartGetc();
-
-		if (c >= '1' && c <= '3') {
-			pComponent = componentTable + (c - '0');
-			if (pComponent->ComponentFunc) {
-				rc = pComponent->ComponentFunc();
-				if (rc != MV_OK)
-					mvPrintf("\n\n ********** %s failed! **********", pComponent->ComponentName);
-			}
-		} else if (c == '4') {
-			rc = mvBinHeaderDebugPrompt();
-			if (rc != MV_OK)
-				mvPrintf("\n\n ********** Binary Header Debug Prompt failed! **********");
-		} else
-			mvPrintf("\n\nInvalid command number\n");
-	}
-#endif
-	return 0;
-}
+MV_STATUS mvBinHeaderDebugPrompt(void);

@@ -158,6 +158,13 @@ GT_BOOL ddr3TipRunSweepTest
     GT_U32 mode
 );
 
+GT_BOOL ddr3TipRunLevelingSweepTest
+(
+    GT_32 devNum,
+    GT_U32 RepeatNum,
+    GT_U32 direction,
+    GT_U32 mode
+);
 /******************************************************************************
 * Name:     ddr3TipPrintRegs.
 * Desc:     Print Specified Dunit/Pup Registers

@@ -442,6 +442,85 @@ INLINE static GT_U32 patternTableGetSsoWord( GT_U8 sso, GT_U8 index)
 	}
 }
 
+inline static GT_U32 patternTableGetSsoFullXtalkWord( GT_U8 bit, GT_U8 index)
+{
+	GT_U8 byte = (1 << bit);
+
+	if( 1 == (index&1) ){
+		byte = ~byte;
+	}
+
+	return (byte || (byte<<8) || (byte<<16) || (byte<<24));
+}
+
+inline static GT_U32 patternTableGetSsoXtalkFreeWord( GT_U8 bit, GT_U8 index)
+{
+	GT_U8 byte = (1 << bit);
+
+	if( 1 == (index&1) ){
+		byte = 0;
+	}
+
+	return (byte || (byte<<8) || (byte<<16) || (byte<<24));
+}
+
+inline static GT_U32 patternTableGetISIWord( GT_U8 index)
+{
+	GT_U8 I0 =  index%32;
+	GT_U8 I1 =  index%8;
+	GT_U32	Word;
+
+	if(I0 > 15)
+	{
+		Word =  ((I1 ==5)|(I1==7))?0xFFFFFFFF:0x0;
+	}else{
+		Word =  (I1 ==6)?0xFFFFFFFF:0x0;
+	}
+
+	Word = ((I0%16)>7)?~Word:Word;
+	return Word;
+}
+
+inline static GT_U32 patternTableGetSsoFullXtalkWord_16( GT_U8 bit, GT_U8 index)
+{
+	GT_U8 byte = (1 << bit);
+
+	if( 1 == (index&1) ){
+		byte = ~byte;
+	}
+
+	return (byte || (byte<<8) || ((~byte)<<16) || ((~byte)<<24));
+}
+
+inline static GT_U32 patternTableGetSsoXtalkFreeWord_16( GT_U8 bit, GT_U8 index)
+{
+	GT_U8 byte = (1 << bit);
+
+	if( 0 == ((index)&1) ){
+		return ((byte<<16) || (byte<<24));
+	}
+	else{
+		return (byte || (byte<<8));
+	}
+
+}
+inline static GT_U32 patternTableGetISIWord_16( GT_U8 index)
+{
+	GT_U8 I0 =  index%16;
+	GT_U8 I1 =  index%4;
+	GT_U32	Word;
+
+	if(I0 > 7)
+	{
+ 		Word = ( I1>1)?0x0000FFFF:0x0;
+	}else{
+		Word =  (I1 ==3)?0xFFFF0000:0x0;
+	}
+
+	Word = ((I0%8)>3)?~Word:Word;
+	return Word;
+}
+
 INLINE static GT_U32 patternTableGetVrefWord(GT_U8 index)
 {
 	if( 0 == ((patternVrefPatternTableMap[index/8] >> (index%8))&1) ){
@@ -551,13 +630,36 @@ INLINE GT_U32 patternTableGetWord
 		case PATTERN_VREF:
 			pattern = patternTableGetVrefWord(index);
 			break;
+		case PATTERN_SSO_FULL_XTALK_DQ0:
+		case PATTERN_SSO_FULL_XTALK_DQ1:
+		case PATTERN_SSO_FULL_XTALK_DQ2:
+		case PATTERN_SSO_FULL_XTALK_DQ3:
+		case PATTERN_SSO_FULL_XTALK_DQ4:
+		case PATTERN_SSO_FULL_XTALK_DQ5:
+		case PATTERN_SSO_FULL_XTALK_DQ6:
+		case PATTERN_SSO_FULL_XTALK_DQ7:
+			pattern = patternTableGetSsoFullXtalkWord(type - PATTERN_SSO_FULL_XTALK_DQ0, index);
+			break;
+		case PATTERN_SSO_XTALK_FREE_DQ0:
+		case PATTERN_SSO_XTALK_FREE_DQ1:
+		case PATTERN_SSO_XTALK_FREE_DQ2:
+		case PATTERN_SSO_XTALK_FREE_DQ3:
+		case PATTERN_SSO_XTALK_FREE_DQ4:
+		case PATTERN_SSO_XTALK_FREE_DQ5:
+		case PATTERN_SSO_XTALK_FREE_DQ6:
+		case PATTERN_SSO_XTALK_FREE_DQ7:
+			pattern = patternTableGetSsoXtalkFreeWord(type - PATTERN_SSO_XTALK_FREE_DQ0, index);
+			break;
+		case PATTERN_ISI_XTALK_FREE:
+			pattern = patternTableGetISIWord( index);
+			break;
 		default:
 			pattern = 0;
 			break;
 		}
 	}
 	else{
-	/*16bit patterns*/	
+	/*16bit patterns*/
 		switch(type){
 		case PATTERN_PBS1:
 		case PATTERN_PBS2:
@@ -606,6 +708,29 @@ INLINE GT_U32 patternTableGetWord
 			break;
 		case PATTERN_VREF:
 			pattern = patternTableGetVrefWord16(index);
+			break;
+		case PATTERN_SSO_FULL_XTALK_DQ0:
+		case PATTERN_SSO_FULL_XTALK_DQ1:
+		case PATTERN_SSO_FULL_XTALK_DQ2:
+		case PATTERN_SSO_FULL_XTALK_DQ3:
+		case PATTERN_SSO_FULL_XTALK_DQ4:
+		case PATTERN_SSO_FULL_XTALK_DQ5:
+		case PATTERN_SSO_FULL_XTALK_DQ6:
+		case PATTERN_SSO_FULL_XTALK_DQ7:
+			pattern = patternTableGetSsoFullXtalkWord_16(type - PATTERN_SSO_FULL_XTALK_DQ0, index);
+			break;
+		case PATTERN_SSO_XTALK_FREE_DQ0:
+		case PATTERN_SSO_XTALK_FREE_DQ1:
+		case PATTERN_SSO_XTALK_FREE_DQ2:
+		case PATTERN_SSO_XTALK_FREE_DQ3:
+		case PATTERN_SSO_XTALK_FREE_DQ4:
+		case PATTERN_SSO_XTALK_FREE_DQ5:
+		case PATTERN_SSO_XTALK_FREE_DQ6:
+		case PATTERN_SSO_XTALK_FREE_DQ7:
+			pattern = patternTableGetSsoXtalkFreeWord_16(type - PATTERN_SSO_XTALK_FREE_DQ0, index);
+			break;
+		case PATTERN_ISI_XTALK_FREE:
+			pattern = patternTableGetISIWord_16( index);
 			break;
 		default:
 			pattern = 0;

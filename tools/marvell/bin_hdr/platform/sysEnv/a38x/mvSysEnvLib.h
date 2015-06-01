@@ -228,6 +228,18 @@
 	#define AVS_LIMIT_VAL	0x27
 #endif
 
+/* DFX Server general registers mapping (on top of internal registers) */
+#define DFX_REG_BASE			0xE4000
+#define DFX_PIPE_SEL_PIPE0_ACTIVE_VAL	0x1
+
+#define RTC_MEMORY_CTRL_REG_BASE		0xE6000
+#define RTC_MEMORY_WRAPPER_COUNT		8
+#define RTC_MEMORY_WRAPPER_REG(i)		(RTC_MEMORY_CTRL_REG_BASE + (i * 0x40))
+#define RTC_MEMORY_CTRL_RTC_FIELD_OFFS		3
+#define RTC_MEMORY_CTRL_PDLVMC_FIELD_OFFS	6
+#define RTC_MEMORY_WRAPPER_CTRL_VAL	        (0x1 << RTC_MEMORY_CTRL_RTC_FIELD_OFFS \
+							| 0x1 << RTC_MEMORY_CTRL_PDLVMC_FIELD_OFFS)
+
 #define AVS_ENABLED_CONTROL             0xE4130
 #define AVS_LOW_VDD_LIMIT_OFFS          4
 #define AVS_LOW_VDD_LIMIT_MASK          (0xff << AVS_LOW_VDD_LIMIT_OFFS)

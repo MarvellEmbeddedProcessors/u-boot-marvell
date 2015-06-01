@@ -75,10 +75,12 @@ TGT_DEBUG = plat.debug.a
 DRV = drivers
 UTILS = utils
 SYS_ENV = sysEnv/$(BOARD)
+BIN_HDR_DEBUG = $(UTILS)/debug
 
 CSRC_DRV = $(DRV)/mv_uart.c $(DRV)/mv_twsi.c $(DRV)/mv_time.c
 CSRC_UTILS = $(UTILS)/utils.c $(UTILS)/printf.c $(UTILS)/mvHwsSiliconIf.c
 CSRC_SYS_ENV = $(SYS_ENV)/mvSysEnvLib.c
+CSRC_BIN_HDR_DEBUG = $(BIN_HDR_DEBUG)/debug.c
 
 ifeq "$(LIBNAME)"  "msys_bobk"
   CSRC_UTILS += $(UTILS)/mv_seq_exec_ext.c
@@ -103,10 +105,11 @@ else ifeq "$(LIBNAME)"  "a39x"
 endif
 
 CSRC = $(CSRC_DRV) $(CSRC_UTILS) $(CSRC_SYS_ENV)
+CSRC_DEBUG = $(CSRC) $(CSRC_BIN_HDR_DEBUG)
 
 COBJ = $(subst .c,.o,$(CSRC))
 CUART_OBJ = $(subst .c,.uart.o,$(CSRC))
-CDEBUG_OBJ = $(subst .c,.debug.o,$(CSRC))
+CDEBUG_OBJ = $(subst .c,.debug.o,$(CSRC_DEBUG))
 
 
 all:   $(TGT) $(TGT_UART) $(TGT_DEBUG)

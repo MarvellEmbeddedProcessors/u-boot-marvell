@@ -116,6 +116,24 @@ static inline MV_VOID mvMppConfig()
         MV_REG_WRITE(MPP_CONTROL_REG(2), regData);
 }
 
+/* update RTC (Read Timing Control) values of PCIe memory wrappers.
+ * use slower memory Read Timing, to allow more efficient energy consumption, in order to lower
+ * the minimum VDD of the memory.
+ * This will lead to more robust memory when voltage drop occurs (VDDSEG)
+ */
+MV_VOID mvRtcConfig()
+{
+	MV_U32 i;
+
+	/* Activate pipe0 for read/write transaction */
+	MV_REG_WRITE(DFX_REG_BASE, DFX_PIPE_SEL_PIPE0_ACTIVE_VAL);
+
+	/* Set new RTC value for all memory wrappers */
+	for (i = 0; i < RTC_MEMORY_WRAPPER_COUNT; i++)
+		MV_REG_WRITE(RTC_MEMORY_WRAPPER_REG(i), RTC_MEMORY_WRAPPER_CTRL_VAL);
+
+}
+
 MV_STATUS mvGeneralInit(void)
 {
 	MV_U32 regData;
@@ -148,7 +166,7 @@ MV_STATUS mvGeneralInit(void)
 		MV_REG_WRITE(AVS_ENABLED_CONTROL, regData);
 #endif
 
-
+	mvRtcConfig(); /* update RTC (Read Timing Control) values of PCIe memory wrappers*/
 	mvMppConfig();
 
 	/* - Init the TWSI before all I2C transaction */

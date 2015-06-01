@@ -453,7 +453,6 @@ MV_STATUS mvSpiTimingParamsSet(MV_U8 spiId, MV_SPI_TIMING_PARAMS *tmngParams)
 MV_STATUS mvSpiInit(MV_U8 spiId, MV_U32 serialBaudRate, MV_SPI_HAL_DATA *halData)
 {
 	MV_STATUS ret;
-	MV_U32 timingReg;
 
 	mvOsMemcpy(&spiHalData, halData, sizeof(MV_SPI_HAL_DATA));
 
@@ -475,17 +474,26 @@ MV_STATUS mvSpiInit(MV_U8 spiId, MV_U32 serialBaudRate, MV_SPI_HAL_DATA *halData
 		(spiHalData.ctrlModel == MV_6322_DEV_ID) ||
 		(spiHalData.ctrlModel == MV_6321_DEV_ID))
 			MV_SPI_REG_BIT_SET(MV_SPI_IF_CONFIG_REG(spiId), BIT14);
-	/* set relaxed SPI_TMISO_SAMPLE settings:
-	 * avoid AC3 timing violation with SCLK = 40/50Mhz on spi */
-	if (spiHalData.ctrlModel >= MV_ALLEYCAT3_DEV_ID
-			&& spiHalData.ctrlModel <= MV_ALLEYCAT3_MAX_DEV_ID) {
-		/* set TMISO_SAMPLE to 0x2:
-		 * MISO sample occurs 2 core_clk after SPI_CLK edge. */
-		timingReg = MV_REG_READ(MV_SPI_TMNG_PARAMS_REG(spiId));
-		timingReg &= ~MV_SPI_TMISO_SAMPLE_MASK;
-		timingReg |= (0x2) << MV_SPI_TMISO_SAMPLE_OFFSET;
-		MV_REG_WRITE(MV_SPI_TMNG_PARAMS_REG(spiId), timingReg);
-	}
+
+	/* set relaxed SPI_TMISO_SAMPLE settings, in 1 of the following:
+	 * 1. Armada 38x/39x: ERRATA FE-9144572: Tclock @ 250MHz & SPI clock @ 50MHz & clkPhase=clockPolLow=1
+	 * 2. Alley-Cat3: always, to avoid timing violation with SCLK = 40/50Mhz*/
+#if defined(CONFIG_ARMADA_38X) || defined(CONFIG_ARMADA_39X) || defined(CONFIG_ALLEYCAT3)
+		MV_U32 timingReg;
+#ifndef CONFIG_ALLEYCAT3
+		if (spiHalData.tclk == MV_BOARD_TCLK_250MHZ && serialBaudRate == _50MHz
+			&& spiTypes[SPI_TYPE_FLASH].clockPolLow == 1
+			&& spiTypes[SPI_TYPE_FLASH].clkPhase == 1)
+#endif /* ifndef CONFIG_ALLEYCAT3 */
+			{
+		/* set TMISO_SAMPLE to 0x2: MISO sample occurs 2 core_clk after SPI_CLK edge */
+			timingReg = MV_REG_READ(MV_SPI_TMNG_PARAMS_REG(spiId));
+			timingReg &= ~MV_SPI_TMISO_SAMPLE_MASK;
+			timingReg |= (0x2) << MV_SPI_TMISO_SAMPLE_OFFSET;
+			MV_REG_WRITE(MV_SPI_TMNG_PARAMS_REG(spiId), timingReg);
+			}
+#endif /* CONFIG_ARMADA_38X || CONFIG_ARMADA_39X || CONFIG_ALLEYCAT3 */
+
     /* Verify that the CS is deasserted */
     mvSpiCsDeassert(spiId);
 

@@ -62,25 +62,30 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-/* includes */
 #include "mv_os.h"
-#include "config_marvell.h"  	/* Required to identify SOC and Board */
 #include "mvUart.h"
-#include "printf.h"
-#include "mvSysEnvLib.h"
-#include "command.h"
-#include "lib_utils.h"
 
-MV_STATUS mvBinHeaderDebugPrompt(void)
-{
-	putstring("\nPrompt mode\n");
-	while (1) {
-		readline("Marvell_Debug>> ");
-		if (strcmp(console_buffer, "q") == 0)
-			break;
+#define CONFIG_SYS_MAXARGS 8
 
-		run_command(console_buffer, 0);
-	}
-	return MV_OK;
-}
+struct cmd_tbl_s {
+	char		*name;		/* Command Name			*/
+	int		maxargs;	/* maximum number of arguments	*/
+					/* Implementation function	*/
+	int		(*cmd)(struct cmd_tbl_s *, int, int, char * const []);
+	char		*usage;		/* Usage message	(short)	*/
+	char		*help;		/* Usage message	(long)	*/
+};
+
+enum command_ret_t {
+	CMD_RET_SUCCESS,	/* 0 = Success */
+	CMD_RET_FAILURE,	/* 1 = Failure */
+	CMD_RET_USAGE = -1,	/* Failure, please report 'usage' error */
+};
+
+typedef struct cmd_tbl_s cmd_tbl_t;
+
+int cmd_get_data_size(char *arg, int default_size);
+
+void run_command(const char *cmd, int flag);
+
 

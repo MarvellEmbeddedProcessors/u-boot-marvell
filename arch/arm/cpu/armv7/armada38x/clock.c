@@ -54,7 +54,7 @@ u32 get_fdt_tclk(const void *blob, int node)
 	void *reg;
 
 	if (node == -1)
-		node = fdt_node_offset_by_compatible(blob, -1, "marvell,t-clock");
+		node = fdt_node_offset_by_compatible(blob, -1, "marvell,tclk");
 
 	reg = fdt_get_regs_offs(blob, node, "reg");
 

@@ -36,6 +36,15 @@
 
 #define MAIN_HDR_MAGIC		0xB105B002
 
+/* PROLOG alignment considerations:
+**  128B: To allow supporting XMODEM protocol.
+**  8KB: To align the boot image to the largest NAND page size, and simplify
+**  the read operations from NAND.
+**  We choose the largest page size, in order to use a single image for all
+**  NAND page sizes.
+*/
+#define PROLOG_ALIGNMENT	(8 << 10)
+
 /* UART argument bitfield */
 #define UART_MODE_UNMODIFIED	0x0
 #define UART_MODE_DISABLE	0x1
@@ -565,9 +574,7 @@ int write_prolog(int ext_cnt, char *ext_filename, uint8_t *image_buf, int image_
 	if (ext_cnt)
 		prolog_size +=  get_file_size(ext_filename);
 
-	/* Always align prolog to 128 byte to enable
-	 * Transferring the prolog in 128 byte XMODEM packets */
-	prolog_size = ((prolog_size + 127) & (~127));
+	prolog_size = ((prolog_size + PROLOG_ALIGNMENT) & (~(PROLOG_ALIGNMENT-1)));
 
 	header.magic       = MAIN_HDR_MAGIC;
 	header.prolog_size = prolog_size;

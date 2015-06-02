@@ -842,7 +842,10 @@ SPLIMAGE	:= $(srctree)/spl/u-boot-spl.bin
 ifneq ($(CONFIG_TARGET_ARMADA_8K), $(CONFIG_TARGET_ARMADA_LP))
 DOIMAGE		:=  $(srctree)/tools/doimage
 BIN2PHEX	:= $(srctree)/scripts/bin2phex.pl
-DOIMAGE_FLAGS	:= -b $(SPLIMAGE)
+ifdef CONFIG_MVEBU_NAND_BLOCK_SIZE
+NAND_DOIMAGE_FLAGS := -t $(CONFIG_MVEBU_NAND_CELL_TYPE) -n $(CONFIG_MVEBU_NAND_BLOCK_SIZE)
+endif
+DOIMAGE_FLAGS	:= -b $(SPLIMAGE) $(NAND_DOIMAGE_FLAGS)
 
 doimage: $(obj)/u-boot.bin $(DOIMAGE) $(SPLIMAGE)
 		$(DOIMAGE) $(DOIMAGE_FLAGS) u-boot.bin u-boot-$(CONFIG_SYS_SOC).bin

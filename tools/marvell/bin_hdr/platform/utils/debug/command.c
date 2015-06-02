@@ -69,6 +69,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "printf.h"
 
 int do_help(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int do_mem_md(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int do_mem_mw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int do_mem_mm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int do_mem_cmp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int do_mem_cp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int ir_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int training_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int do_mem_mtest(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 
 /* Commands Table
  * Every new command is added here, Thus it must be declared in
@@ -78,7 +86,15 @@ int do_help(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
  *	{ "hello", 2, hello_world, "prints hello world", ""}
  */
 cmd_tbl_t commands[] = {
-	{ "?", 2, do_help, "prints help message of command", "command-name"}
+	{ "?", 2, do_help, "prints help message of command", "command-name"},
+	{ "md", 3, do_mem_md, "memory display", "[.b, .w, .l] address [# of objects]"},
+	{ "mw",	4, do_mem_mw, "memory write (fill)", "[.b, .w, .l] address value [count]"},
+	{ "mm",	2, do_mem_mm, "memory modify (auto-incrementing address)", "[.b, .w, .l] address"},
+	{ "cmp", 4, do_mem_cmp, "memory compare", "[.b, .w, .l] addr1 addr2 count"},
+	{ "cp", 4, do_mem_cp, "memory copy", "[.b, .w, .l] source target count"},
+	{ "ir", 2, ir_cmd, "ir	- reading and changing MV internal register values.\n", "address"},
+	{ "training", 1, training_cmd, "training	- prints the results of the DDR3 Training.\n"},
+	{ "mtest", 5, do_mem_mtest, "simple RAM read/write test", "[start [end [pattern [iterations]]]]"}
 };
 
 /* local functions definitions */
@@ -109,6 +125,14 @@ int do_help(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return 0;
 }
 
+int do_mem_md(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int do_mem_mw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int do_mem_mm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int do_mem_cmp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int do_mem_cp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int ir_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int training_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+int do_mem_mtest(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 
 /*******************************************************************************
 * cmd_get_data_size

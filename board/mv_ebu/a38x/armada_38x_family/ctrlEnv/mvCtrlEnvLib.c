@@ -1524,7 +1524,7 @@ MV_U16 mvCtrlDeviceIdGet(MV_VOID)
 	case MV_6920_DEV_ID:
 		return 0x390;
 	case MV_6925_DEV_ID:
-		return 0x398;
+		return 0x395;
 	case MV_6928_DEV_ID:
 		return 0x398;
 	/* Virtual flavors */

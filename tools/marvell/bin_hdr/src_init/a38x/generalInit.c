@@ -123,10 +123,12 @@ static inline MV_VOID mvMppConfig()
  */
 MV_VOID mvRtcConfig()
 {
-	MV_U32 i;
+	MV_U32 i, pipeSelectVal;
 
-	/* Activate pipe0 for read/write transaction */
-	MV_REG_WRITE(DFX_REG_BASE, DFX_PIPE_SEL_PIPE0_ACTIVE_VAL);
+	/* Activate pipe0 for read/write transaction, and set XBAR client number #1 */
+	pipeSelectVal = 0x1 << DFX_PIPE_SELECT_PIPE0_ACTIVE_OFFS \
+			| 0x1 << DFX_PIPE_SELECT_XBAR_CLIENT_SEL_OFFS;
+	MV_REG_WRITE(DFX_REG_BASE, pipeSelectVal);
 
 	/* Set new RTC value for all memory wrappers */
 	for (i = 0; i < RTC_MEMORY_WRAPPER_COUNT; i++)

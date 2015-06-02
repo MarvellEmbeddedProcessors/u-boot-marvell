@@ -229,8 +229,11 @@
 #endif
 
 /* DFX Server general registers mapping (on top of internal registers) */
-#define DFX_REG_BASE			0xE4000
-#define DFX_PIPE_SEL_PIPE0_ACTIVE_VAL	0x1
+#define DFX_REG_BASE				0xE4000
+#define DFX_PIPE_SELECT_PIPE0_ACTIVE_OFFS	0
+#define DFX_PIPE_SELECT_XBAR_CLIENT_SEL_OFFS	8
+#define DFX_PIPE_SELECT_VAL	        	(0x1 << DFX_PIPE_SELECT_PIPE0_ACTIVE_OFFS \
+							| 0x1 << DFX_PIPE_SELECT_XBAR_CLIENT_SEL_OFFS)
 
 #define RTC_MEMORY_CTRL_REG_BASE		0xE6000
 #define RTC_MEMORY_WRAPPER_COUNT		8

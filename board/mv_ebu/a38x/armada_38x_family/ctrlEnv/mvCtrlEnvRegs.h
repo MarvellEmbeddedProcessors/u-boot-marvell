@@ -417,6 +417,7 @@ typedef struct {
 	{ 0x8,   1332, 666,  666,  MV_TRUE  , MV_FALSE}, \
 	{ 0xC,   1600, 800,  800,  MV_TRUE  , MV_FALSE}, \
 	{ 0x10,  1866, 933,  933,  MV_TRUE  , MV_TRUE}, \
+	{ 0x13,  2000, 933,  1000,  MV_TRUE  , MV_TRUE}, \
 	{ MV_SAR_FREQ_MODES_EOT,  0,    0,   0, MV_FALSE, MV_FALSE } \
 };
 #else /* CONFIG_ARMADA_39x */
@@ -443,6 +444,7 @@ typedef struct {
 	{ 0x8,   1332, 666,  666,  MV_TRUE  , MV_FALSE}, \
 	{ 0xC,   1600, 800,  800,  MV_TRUE  , MV_FALSE}, \
 	{ 0x10,  1866, 933,  933,  MV_TRUE  , MV_TRUE}, \
+	{ 0x13,  2000, 933,  1000,  MV_TRUE  , MV_TRUE}, \
 	{ MV_SAR_FREQ_MODES_EOT,  0,    0,   0, MV_FALSE, MV_FALSE } \
 };
 #else /* CONFIG_ARMADA_39x */

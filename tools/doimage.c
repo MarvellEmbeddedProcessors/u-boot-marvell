@@ -93,7 +93,7 @@ typedef struct _options {
 	uint32_t  source_addr;
 	uint32_t  baudrate;
 	uint8_t	  disable_print;
-
+	uint32_t  nfc_io_args;
 } options_t;
 
 void usage_err(char *msg)
@@ -134,6 +134,9 @@ void usage(void)
 	printf("  -m        Disable prints of bootrom and binary extension\n");
 	printf("  -u        UART baudrate used for bootrom prints. Must be multiple of 1200\n");
 	printf("  -h        Dispalys this help message\n");
+	printf(" IO-ROM NFC-NAND boot parameters:\n");
+	printf("  -n        NAND device block size (in KB) [Default is 64KB].\n");
+	printf("  -t        NAND cell technology (SLC or MLC) [Default is SLC].\n");
 
 	exit(-1);
 }
@@ -578,6 +581,7 @@ int write_prolog(int ext_cnt, char *ext_filename, uint8_t *image_buf, int image_
 	header.source_addr = opts.source_addr;
 	header.load_addr   = opts.load_addr;
 	header.exec_addr   = opts.exec_addr;
+	header.io_arg_0    = opts.nfc_io_args;
 	header.ext_count   = ext_cnt;
 	header.aux_flags     = 0;
 	header.boot_image_size = (image_size + 3) & (~0x3);
@@ -676,8 +680,9 @@ int main(int argc, char *argv[])
 	int image_size;
 	uint8_t *image_buf = NULL;
 	int read;
+	uint32_t nand_block_size_kb, mlc_nand;
 
-	while ((opt = getopt(argc, argv, "hpms:i:l:e:a:b:r:u:")) != -1) {
+	while ((opt = getopt(argc, argv, "hpms:i:l:e:a:b:r:u:n:t:")) != -1) {
 		switch (opt) {
 		case 'h':
 			usage();
@@ -707,6 +712,16 @@ int main(int argc, char *argv[])
 			break;
 		case 'p':
 			parse = 1;
+			break;
+		case 'n':
+			nand_block_size_kb = strtoul(optarg, NULL, 0);
+			opts.nfc_io_args |= (nand_block_size_kb / 64);
+			break;
+		case 't':
+			mlc_nand = 0;
+			if (!strncmp("MLC", optarg, 3))
+				mlc_nand = 1;
+			opts.nfc_io_args |= (mlc_nand << 8);
 			break;
 		default: /* '?' */
 			usage_err("Unknown argument");

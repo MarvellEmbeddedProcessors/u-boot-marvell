@@ -39,6 +39,6 @@
 /*
  * Version
  */
-#define CONFIG_IDENT_STRING	" Marvell version: 2015_T1.0p9"
+#define CONFIG_IDENT_STRING	" Marvell version: 2015_T1.0p10"
 
 #endif /* __MV_VERSION_H */

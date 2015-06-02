@@ -47,7 +47,7 @@ typedef struct _main_header {
 	uint32_t	prolog_checksum;	/*  8-11 */
 	uint32_t	boot_image_size;	/* 12-15 */
 	uint32_t	boot_image_checksum;	/* 16-19 */
-	uint32_t	source_addr;		/* 20-23 */
+	uint32_t	rsrvd0;			/* 20-23 */
 	uint32_t	load_addr;		/* 24-27 */
 	uint32_t	exec_addr;		/* 28-31 */
 	uint8_t		uart_cfg;		/*  32   */
@@ -58,9 +58,9 @@ typedef struct _main_header {
 	uint32_t	io_arg_1;		/* 40-43 */
 	uint32_t	io_arg_2;		/* 43-47 */
 	uint32_t	io_arg_3;		/* 48-51 */
-	uint32_t	rsrvd0;			/* 52-55 */
-	uint32_t	rsrvd1;			/* 56-59 */
-	uint32_t	rsrvd2;			/* 60-63 */
+	uint32_t	rsrvd1;			/* 52-55 */
+	uint32_t	rsrvd2;			/* 56-59 */
+	uint32_t	rsrvd3;			/* 60-63 */
 } header_t;
 
 typedef struct _ext_header {
@@ -90,7 +90,6 @@ typedef struct _options {
 	char reg_ext_file[MAX_FILENAME];
 	uint32_t  load_addr;
 	uint32_t  exec_addr;
-	uint32_t  source_addr;
 	uint32_t  baudrate;
 	uint8_t	  disable_print;
 	uint32_t  nfc_io_args;
@@ -121,7 +120,6 @@ void usage(void)
 	printf("            This affects certain parameters coded in the image header\n");
 	printf("  -l        boot image load address. default is 0x0\n");
 	printf("  -e        boot image entry address. default is 0x0\n");
-	printf("  -a        boot image source address. default is 0x0\n");
 	printf("  -b        binary extension image file.\n");
 	printf("            This image is executed before the boot image. this is typically\n");
 	printf("            used to initiliaze the memory controller.\n");
@@ -149,7 +147,6 @@ options_t opts = {
 	.reg_ext_file = "NA",
 	.load_addr = 0x0,
 	.exec_addr = 0x0,
-	.source_addr = 0x0,
 	.disable_print = 0,
 	.baudrate = 0,
 };
@@ -216,7 +213,7 @@ int print_header(uint8_t *buf, int base)
 	print_field(main_hdr, header_t, prolog_checksum, FMT_HEX, base);
 	print_field(main_hdr, header_t, boot_image_size, FMT_DEC, base);
 	print_field(main_hdr, header_t, boot_image_checksum, FMT_HEX, base);
-	print_field(main_hdr, header_t, source_addr, FMT_HEX, base);
+	print_field(main_hdr, header_t, rsrvd0, FMT_HEX, base);
 	print_field(main_hdr, header_t, load_addr, FMT_HEX, base);
 	print_field(main_hdr, header_t, exec_addr, FMT_HEX, base);
 	print_field(main_hdr, header_t, uart_cfg, FMT_HEX, base);
@@ -227,9 +224,9 @@ int print_header(uint8_t *buf, int base)
 	print_field(main_hdr, header_t, io_arg_1, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_2, FMT_HEX, base);
 	print_field(main_hdr, header_t, io_arg_3, FMT_HEX, base);
-	print_field(main_hdr, header_t, rsrvd0, FMT_HEX, base);
 	print_field(main_hdr, header_t, rsrvd1, FMT_HEX, base);
 	print_field(main_hdr, header_t, rsrvd2, FMT_HEX, base);
+	print_field(main_hdr, header_t, rsrvd3, FMT_HEX, base);
 
 	return sizeof(header_t);
 }
@@ -332,10 +329,6 @@ int parse_image(uint8_t *buf, int size)
 	printf("\n################### Prolog End ######################\n");
 
 	printf("\n################### Boot image ######################\n");
-	if (main_hdr->source_addr) {
-		do_print_field(0, "image padding", base, main_hdr->source_addr, FMT_HEX);
-		base += main_hdr->source_addr;
-	}
 
 	do_print_field(0, "boot image", base, size - base - 4, FMT_NONE);
 
@@ -578,7 +571,6 @@ int write_prolog(int ext_cnt, char *ext_filename, uint8_t *image_buf, int image_
 
 	header.magic       = MAIN_HDR_MAGIC;
 	header.prolog_size = prolog_size;
-	header.source_addr = opts.source_addr;
 	header.load_addr   = opts.load_addr;
 	header.exec_addr   = opts.exec_addr;
 	header.io_arg_0    = opts.nfc_io_args;
@@ -636,18 +628,12 @@ int write_boot_image(uint8_t *buf, uint32_t image_size, FILE *out_fd)
 {
 	int aligned_size;
 	int post_pad;
-	int pre_pad;
 	uint8_t pad_val = 0;
 	int written;
 
 	/* Image size must be aligned to 4 bytes */
 	aligned_size = (image_size + 3) & (~0x3);
 	post_pad = aligned_size - image_size;
-	pre_pad  = opts.source_addr;
-
-	/* fill with zeros untill the boot image start address */
-	while (pre_pad--)
-		fputc(pad_val, out_fd);
 
 	/* Pad the buffer to be 4 bytes aligned */
 	while (post_pad) {
@@ -693,9 +679,6 @@ int main(int argc, char *argv[])
 		case 'e':
 			opts.exec_addr = strtoul(optarg, NULL, 0);
 			break;
-		case 'a':
-			opts.source_addr = strtoul(optarg, NULL, 0);
-			break;
 		case 'm':
 			opts.disable_print = 1;
 			break;
@@ -730,9 +713,6 @@ int main(int argc, char *argv[])
 	}
 
 	/* Check validity of inputes */
-	if (opts.source_addr % 8)
-		usage_err("Source address must be 8 bytes aligned");
-
 	if (opts.load_addr % 8)
 		usage_err("Load address must be 8 bytes aligned");
 

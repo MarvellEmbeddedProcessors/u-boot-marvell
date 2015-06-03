@@ -101,7 +101,7 @@ MV_UNIT_ID mvSysEnvSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /* SGMII_UNIT_ID    */         { 4,    4,      4},
 /* USB3H_UNIT_ID    */         { 1,    2,      2},
 /* USB3D_UNIT_ID    */         { 0,    1,      1},
-/* SATA_UNIT_ID     */         { 0,    2,      4},
+/* SATA_UNIT_ID     */         { 0,    4,      4},
 /* QSGMII_UNIT_ID   */         { 0,    1,      1},
 /* XAUI_UNIT_ID     */         { 1,    1,      1},
 /* RXAUI_UNIT_ID    */         { 1,    1,      1}

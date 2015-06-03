@@ -171,7 +171,7 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MAX_DEV_ID_NUM] = {
 /* USB3_UNIT_ID			*/ { 1, 2, 2},/* usb3 serdes lane  */
 /* IDMA_UNIT_ID			*/ { 0, 0, 0},
 /* XOR_UNIT_ID			*/ { 2, 2, 2},
-/* SATA_UNIT_ID			*/ { 0, 2, 4},
+/* SATA_UNIT_ID			*/ { 0, 4, 4},
 /* TDM_32CH_UNIT_ID		*/ { 0, 1, 1},
 /* UART_UNIT_ID			*/ { 4, 4, 4},
 /* CESA_UNIT_ID			*/ { 2, 2, 2},

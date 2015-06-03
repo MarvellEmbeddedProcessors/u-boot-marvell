@@ -337,7 +337,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 
 	DEBUG_INIT_FULL_S("\n### mvBoardIdGet ###\n");
 
-	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
+	twsiSlave.slaveAddr.address = mvSysEnvi2cAddrGet();
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.offset = 0;
@@ -350,10 +350,10 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		/* in case of A395 EEPROM_I2C_ADDR is located at 0x57 and not 0x57.
 		 * To keep backwards compatibility with A390 DB boards where EEPROM_I2C_ADDR
 		 * is located at 0x50, both options are checked				*/
-		twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR_57;
+		twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR_SECONDARY;
 		if(mvTwsiRead(0, &twsiSlave, &boardId, 1) != MV_OK) {
 #endif
-			mvPrintf("\n\n%s: TWSI Read for Marvell Board ID failed (%x) \n", __func__, EEPROM_I2C_ADDR);
+			mvPrintf("\n\n%s: TWSI Read for Marvell Board ID failed (%x) \n", __func__, mvSysEnvi2cAddrGet());
 			mvPrintf("\tUsing default board ID\n\n");
 			gBoardId = MV_DEFAULT_BOARD_ID;
 			return gBoardId;
@@ -437,6 +437,21 @@ MV_STATUS mvHwsTwsiInitWrapper(MV_VOID)
 			mvBoardDb6820AmcTwsiConfig();
 	}
 	return MV_OK;
+}
+
+MV_U32 mvSysEnvi2cAddrGet(MV_VOID)
+{
+#ifdef MV88F69XX
+	/* in case of A395-GP EEPROM_I2C_ADDR is located at 0x57 and not 0x50.
+	 * First check for eeprom should be at address 0x50. (for DB board read
+	 * will success, for RD board read will fail)
+	 * gBoardId is not initialize at the first read */
+	if (gBoardId == -1)
+		return 0x50;
+	return (mvBoardIdGet() == A39X_DB_69XX_ID ? 0x50 : 0x57);
+#else
+	return (mvSysEnvDeviceRevGet() == MV_88F68XX_Z1_ID ? 0x50 : 0x57);
+#endif
 }
 
 /*******************************************************************************
@@ -610,17 +625,11 @@ static MV_16 mvSysEnvIsFlavourReduced(MV_VOID)
 {
 	MV_TWSI_SLAVE twsiSlave;
 	MV_U8 reducedVal;
-	MV_U32 address = EEPROM_I2C_ADDR;
 
 	if (isFlavorReduced != -1)
 		return isFlavorReduced; /* read last value if already read from EEPROM */
 
-#ifdef MV88F69XX
-	/* Board A395-RD EEPROM_I2C_ADDR is 0x57, as oppossed to 0x50 in A390-DB */
-	if(mvBoardIdGet() == (MARVELL_BOARD_ID_BASE + 1))
-		address = EEPROM_I2C_ADDR_57;
-#endif
-	twsiSlave.slaveAddr.address = address;
+	twsiSlave.slaveAddr.address = mvSysEnvi2cAddrGet();
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.moreThen256 = MV_TRUE;
@@ -921,7 +930,7 @@ static MV_STATUS mvSysEnvTwsiProbe(MV_U32 chip)
 *******************************************************************************/
 static MV_BOOL mvSysEnvIsEepromEnabled(void)
 {
-	MV_U8 addr = EEPROM_I2C_ADDR;
+	MV_U8 addr = mvSysEnvi2cAddrGet();
 
 	DEBUG_INIT_FULL_S("mvSysEnvIsEepromEnabled probing for i2c chip 0x");
 	DEBUG_INIT_FULL_D(addr, 2);
@@ -955,14 +964,14 @@ static MV_STATUS mvSysEnvEpromReset(void)
 	MV_U8 pattern[MV_BOARD_CONFIG_PATTERN_BYTES_NUM] = EEPROM_VERIFICATION_PATTERN;
 
 	if (mvSysEnvEpromWrite(MV_BOARD_CONFIG_EEPROM_OFFSET, data, MV_BOARD_CONFIG_MAX_BYTE_COUNT,
-		EEPROM_I2C_ADDR) != MV_OK) {
+		mvSysEnvi2cAddrGet()) != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvEpromReset: Error: Write default configuration to EEPROM failed\n");
 		return MV_FAIL;
 	}
 
 	/* write magic pattern to the EEPROM */
 	if (mvSysEnvEpromWrite(MV_BOARD_CONFIG_PATTERN_OFFSET, pattern, MV_BOARD_CONFIG_PATTERN_BYTES_NUM,
-		EEPROM_I2C_ADDR) != MV_OK) {
+		mvSysEnvi2cAddrGet()) != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvEpromReset: failed to write magic pattern to EEPROM\n");
 		return MV_FAIL;
 	}
@@ -1004,7 +1013,7 @@ static MV_STATUS mvSysEnvEepromInit(void)
 
 	/* check for EEPROM pattern to see if this is the board's first boot */
 	if (mvSysEnvEpromRead(MV_BOARD_CONFIG_PATTERN_OFFSET, data,
-			MV_BOARD_CONFIG_PATTERN_BYTES_NUM, EEPROM_I2C_ADDR) != MV_OK) {
+			MV_BOARD_CONFIG_PATTERN_BYTES_NUM, mvSysEnvi2cAddrGet()) != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvEepromInit: Error: read pattern from EEPROM failed.\n");
 		return MV_FAIL;
 	}
@@ -1025,7 +1034,7 @@ static MV_STATUS mvSysEnvEepromInit(void)
 		return MV_FAIL;
 
 	/* check if board auto configuration is enabled */
-	if (mvSysEnvEpromRead(enableConfigInfo.byteNum, data, 1, EEPROM_I2C_ADDR) != MV_OK) {
+	if (mvSysEnvEpromRead(enableConfigInfo.byteNum, data, 1, mvSysEnvi2cAddrGet()) != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvEepromInit: Error: read data from EEPROM failed.\n");
 		return MV_FAIL;
 	}
@@ -1043,7 +1052,7 @@ static MV_STATUS mvSysEnvEepromInit(void)
 	/* bits 0&1 in offset 11 in the EEPROM are used as counters for board configuration validation.
 	   each load of the board by EEPROM configuration, the counter is incremented, and when
 	   it reaches 3 times, the configuration is set to default */
-	if (mvSysEnvEpromRead(validConfigInfo.byteNum, data, 1, EEPROM_I2C_ADDR) != MV_OK) {
+	if (mvSysEnvEpromRead(validConfigInfo.byteNum, data, 1, mvSysEnvi2cAddrGet()) != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvEepromInit: Error: read data from EEPROM failed.");
 		return MV_FAIL;
 	}
@@ -1057,17 +1066,17 @@ static MV_STATUS mvSysEnvEepromInit(void)
 
 		/* reset the valid counter to 0 */
 		data[0] &= ~validConfigInfo.mask;
-		if (mvSysEnvEpromWrite(validConfigInfo.byteNum, data, 1, EEPROM_I2C_ADDR) != MV_OK)
+		if (mvSysEnvEpromWrite(validConfigInfo.byteNum, data, 1, mvSysEnvi2cAddrGet()) != MV_OK)
 			DEBUG_INIT_S("mvSysEnvEepromInit: write data to EEPROM failed.\n");
 
-		if (mvSysEnvEpromRead(enableConfigInfo.byteNum, data, 1, EEPROM_I2C_ADDR) != MV_OK) {
+		if (mvSysEnvEpromRead(enableConfigInfo.byteNum, data, 1, mvSysEnvi2cAddrGet()) != MV_OK) {
 			DEBUG_INIT_S("mvSysEnvEepromInit: Error: read data from EEPROM failed.");
 			return MV_FAIL;
 		}
 
 		/* disable the board auto config */
 		data[0] &= ~enableConfigInfo.mask;
-		if (mvSysEnvEpromWrite(enableConfigInfo.byteNum, data, 1, EEPROM_I2C_ADDR) != MV_OK)
+		if (mvSysEnvEpromWrite(enableConfigInfo.byteNum, data, 1, mvSysEnvi2cAddrGet()) != MV_OK)
 			DEBUG_INIT_S("mvSysEnvEepromInit: write data to EEPROM failed.\n");
 
 		return MV_FAIL;
@@ -1078,7 +1087,7 @@ static MV_STATUS mvSysEnvEepromInit(void)
 	data[0] &= ~validConfigInfo.mask;
 	data[0] |= (validCount) << validConfigInfo.offset;
 
-	if (mvSysEnvEpromWrite(validConfigInfo.byteNum, data, 1, EEPROM_I2C_ADDR) != MV_OK) {
+	if (mvSysEnvEpromWrite(validConfigInfo.byteNum, data, 1, mvSysEnvi2cAddrGet()) != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvEepromInit: write data to EEPROM failed.\n");
 		return MV_FAIL;
 	}
@@ -1122,7 +1131,7 @@ MV_STATUS mvSysEnvConfigInit(void)
 	if (res == MV_OK) {
 		/* Read configuration data: 1st 8 bytes in  EEPROM */
 		if (mvSysEnvEpromRead(MV_BOARD_CONFIG_EEPROM_OFFSET, configVal,
-				MV_BOARD_CONFIG_MAX_BYTE_COUNT, EEPROM_I2C_ADDR) != MV_OK) {
+				MV_BOARD_CONFIG_MAX_BYTE_COUNT, mvSysEnvi2cAddrGet()) != MV_OK) {
 			DEBUG_INIT_S("mvSysEnvConfigInit: Error: Read board configuration from EEPROM failed\n");
 			readFlagError = MV_FALSE;
 		}
@@ -1242,7 +1251,7 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 	boardId = mvBoardIdIndexGet(boardId);
 
 	/*Fix the topology for A380 by SatR values*/
-	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
+	twsiSlave.slaveAddr.address = mvSysEnvi2cAddrGet();
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.offset = 0;

@@ -185,14 +185,12 @@
 #define REF_CLK_SELECTOR_VAL(regVal)            (regVal & 0x1)
 
 #define MAX_SELECTOR_VAL                        13
-/* TWSI addresses */
-/* starting from A38x A0, i2c address of EEPROM is 0x57 */
+
 #ifdef MV88F69XX
-#define EEPROM_I2C_ADDR				0x50
-#define	EEPROM_I2C_ADDR_57			0x57
-#else
-#define EEPROM_I2C_ADDR				(mvSysEnvDeviceRevGet() == MV_88F68XX_Z1_ID ? 0x50 : 0x57)
+/* For RD board, i2c address of EEPROM is 0x57 */
+#define EEPROM_I2C_ADDR_SECONDARY		0x57
 #endif
+
 #define RD_GET_MODE_ADDR                        0x4C
 #define DB_GET_MODE_SLM1363_ADDR                0x25
 #define DB_GET_MODE_SLM1364_ADDR                0x24
@@ -625,6 +623,15 @@ MV_U8 mvSysEnvDeviceRevGet(MV_VOID);
 * RRETURNS:	MV_U32 with Device ID
  ***************************************************************************/
 MV_U32 mvSysEnvDeviceIdGet(MV_VOID);
+/************************************************************************************
+* mvSysEnvDeviceIdGet
+* DESCRIPTION:          Returns I2C address of the board
+* INPUT:                None.
+* OUTPUT:
+* RRETURNS:		MV_U32 with I2C address
+***************************************************************************/
+MV_U32 mvSysEnvi2cAddrGet(MV_VOID);
+
 /************************************************************************************
 * mvSysEnvDeviceIdGet
 * DESCRIPTION:	 	returns 16bit describing the device model (id)

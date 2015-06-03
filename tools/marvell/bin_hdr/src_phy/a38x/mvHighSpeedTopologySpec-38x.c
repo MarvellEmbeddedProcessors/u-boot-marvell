@@ -551,7 +551,7 @@ MV_STATUS updateTopologySgmiiSpeed(SERDES_MAP  *serdesMapArray)
 	MV_U8 configVal;
 	MV_TWSI_SLAVE twsiSlave;
 
-	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
+	twsiSlave.slaveAddr.address = mvSysEnvi2cAddrGet();
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.moreThen256 = MV_TRUE;
@@ -588,7 +588,7 @@ MV_STATUS updateTopologySatR(SERDES_MAP  *serdesMapArray)
 	MV_TWSI_SLAVE twsiSlave;
 	MV_U32 boardId = mvBoardIdGet();
 
-	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
+	twsiSlave.slaveAddr.address = mvSysEnvi2cAddrGet();
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.moreThen256 = MV_TRUE;
@@ -1095,7 +1095,7 @@ MV_STATUS loadTopologyRD(SERDES_MAP  *serdesMapArray)
 	DEBUG_INIT_S("\nInit RD board ");
 
 	/* Initializing twsiSlave in order to read from the TWSI address */
-	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
+	twsiSlave.slaveAddr.address = mvSysEnvi2cAddrGet();
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.offset = 0;
@@ -1294,7 +1294,7 @@ MV_STATUS loadTopologyUSBModeGet(MV_U8 *twsiData)
 	MV_TWSI_SLAVE twsiSlave;
 
 	/* Read SatR 'usb3port0' & 'usb3port1' values */
-	twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR;
+	twsiSlave.slaveAddr.address = mvSysEnvi2cAddrGet();
 	twsiSlave.slaveAddr.type = ADDR7_BIT;
 	twsiSlave.validOffset = MV_TRUE;
 	twsiSlave.offset = 2;

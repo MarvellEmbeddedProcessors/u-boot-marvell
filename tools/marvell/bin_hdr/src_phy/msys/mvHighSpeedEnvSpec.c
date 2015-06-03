@@ -113,6 +113,8 @@ MV_OP_EXT_PARAMS usb2PowerUpParams[] =
 	{ USB_REG_UNIT,    0x50804,     0x3,        { 0x2        }, 0,        0 }, /* Phy offset 0x1 - PLL_CONTROL1  */
 	{ USB_REG_UNIT,    0x5080C,     0x3000000,  { 0x2000000  }, 0,        0 }, /* Phy offset 0x3 - TX Channel control 0  */
 	{ USB_REG_UNIT,    0x50800,     0x1FF007F,  { 0x600005   }, 0,        0 }, /* Phy offset 0x0 - PLL_CONTROL0  */
+	{ USB_REG_UNIT,    0x5080C,     0x000F000,  { 0x0001000  }, 0,        0 }, /* DRV_EN_LS  0x1 - TX Channel control 0  */
+	{ USB_REG_UNIT,    0x50814,     0x000000F,  { 0x000000D  }, 0,        0 }, /* SQ_THRESH  0xD - TX Channel control 0  */
 	{ USB_REG_UNIT,    0x5080C,     0x3000000,  { 0x3000000  }, 0,        0 }, /* Phy offset 0x3 - TX Channel control 0  */
 	{ USB_REG_UNIT,    0x50804,     0x3,        { 0x3        }, 0,        0 }, /* Phy offset 0x1 - PLL_CONTROL1  */
 	{ USB_REG_UNIT,    0x50808,     0x80800000, { 0x80800000 }, 1,     1000 }, /* check PLLCAL_DONE is set and IMPCAL_DONE is set*/

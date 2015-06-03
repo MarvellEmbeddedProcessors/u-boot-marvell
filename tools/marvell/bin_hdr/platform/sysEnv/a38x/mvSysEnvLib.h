@@ -231,7 +231,10 @@
 /* DFX Server general registers mapping (on top of internal registers) */
 #define DFX_REG_BASE				0xE4000
 #define DFX_PIPE_SELECT_PIPE0_ACTIVE_OFFS	0
-#define DFX_PIPE_SELECT_XBAR_CLIENT_SEL_OFFS	8
+/* DFX_PIPE_SELECT_XBAR_CLIENT_SEL_OFFS:
+ * Since address completion in 14bit address mode, and given that [14:8] => [19:13],
+ * the 2 lower bits [9:8] => [14:13] are dismissed. hence field offset is also shifted to 10 */
+#define DFX_PIPE_SELECT_XBAR_CLIENT_SEL_OFFS	10
 #define DFX_PIPE_SELECT_VAL	        	(0x1 << DFX_PIPE_SELECT_PIPE0_ACTIVE_OFFS \
 							| 0x1 << DFX_PIPE_SELECT_XBAR_CLIENT_SEL_OFFS)
 

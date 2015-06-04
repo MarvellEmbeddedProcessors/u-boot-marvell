@@ -3149,28 +3149,16 @@ MV_U32 boardOptionsConfig[MV_CONFIG_TYPE_MAX_OPTION];
 MV_STATUS mvBoardEepromWriteDefaultCfg(void)
 {
 	MV_U8 i;
-	MV_BOARD_CONFIG_TYPE_INFO configInfo;
 	MV_U32 defaultValue[MV_BOARD_CONFIG_MAX_BYTE_COUNT] = MV_BOARD_CONFIG_DEFAULT_VALUE;
 
 	/* write default board configuration, chunk of 4 bytes*/
-	for (i = 0; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT; i++) {
+	/* Start from the second chunk (first chunk is the boardID, and we should not change it */
+	for (i = 1; i < MV_BOARD_CONFIG_MAX_BYTE_COUNT; i++) {
 		if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, 0, i, (MV_U8 *)&defaultValue[i], 1) != MV_OK) {
 			mvOsPrintf("%s: Error: Set default configuration to EEPROM failed\n", __func__);
 			return MV_ERROR;
 		}
 	}
-
-	if (mvBoardConfigTypeGet(MV_CONFIG_BOARDCFG_VALID, &configInfo) != MV_TRUE)
-		DB(printf("failed reading board config valid data\n"));
-
-	/* reset the valid counter */
-	defaultValue[0] = 0;
-	if (mvBoardTwsiSet(BOARD_DEV_TWSI_SATR, 0, configInfo.offset, (MV_U8 *)&defaultValue[0], 1) != MV_OK) {
-		mvOsPrintf("%s: Error: Set default configuration to EEPROM failed\n", __func__);
-		return MV_ERROR;
-	}
-
-
 	return MV_OK;
 }
 
@@ -3320,10 +3308,9 @@ MV_VOID mvBoardSysConfigInit(void)
 	/* Save values Locally in configVal[] */
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
 		/* Get board configuration field information (Mask, offset, etc..) */
-		if (mvBoardConfigTypeGet(i, &configInfo) != MV_TRUE) {
-			mvOsPrintf("\nfailed getting board donfig for %d", i);
+
+		if (mvBoardConfigTypeGet(i, &configInfo) != MV_TRUE)
 			continue;
-		}
 
 		readValue = ((MV_U8)configVal[configInfo.byteNum] & configInfo.mask) >> configInfo.offset;
 
@@ -3353,10 +3340,8 @@ MV_U32 mvBoardDefaultValueGet(int option)
 	MV_BOARD_CONFIG_TYPE_INFO configInfo;
 	MV_U32 defaultVal[MV_BOARD_CONFIG_MAX_BYTE_COUNT] = MV_BOARD_CONFIG_DEFAULT_VALUE;
 	/* Get board configuration field information (Mask, offset, etc..) */
-	if (mvBoardConfigTypeGet(option, &configInfo) != MV_TRUE) {
-		mvOsPrintf("\nfailed getting board donfig for %d", option);
+	if (mvBoardConfigTypeGet(option, &configInfo) != MV_TRUE)
 		return -1;
-	}
 
 	return (defaultVal[configInfo.byteNum] & configInfo.mask) >> configInfo.offset;
 }
@@ -3419,8 +3404,10 @@ MV_BOOL mvBoardConfigTypeGet(MV_CONFIG_TYPE_ID configClass, MV_BOARD_CONFIG_TYPE
 			*configInfo = boardConfigTypesInfo[i];
 			if (boardConfigTypesInfo[i].isActiveForBoard[boardId])
 				return MV_TRUE;
-			else
+			else {
+				DB(mvOsPrintf("failed getting board config for %d\n", i));
 				return MV_FALSE;
+			}
 		}
 
 	mvOsPrintf("%s: Error: requested MV_CONFIG_TYPE_ID was not found (%d)\n", __func__, configClass);

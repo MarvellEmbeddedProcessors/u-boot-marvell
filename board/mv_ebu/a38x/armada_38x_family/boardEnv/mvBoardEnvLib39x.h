@@ -221,7 +221,7 @@ typedef enum _mvConfigTypeID {
 
 /* {{MV_CONFIG_TYPE_ID ConfigID, MV_U32 Mask,  Offset, byteNum,    isActiveForBoard[]}} */
 #define MV_EEPROM_CONFIG_INFO { \
-{ MV_CONFIG_BOARDID,		0xFF,	0,	0,	{1, 1} }, \
+{ MV_CONFIG_BOARDID,		0xFF,	0,	0,	{0, 0} }, \
 { MV_CONFIG_LANE0,		0x0F,	0,	1,	{1, 1} }, \
 { MV_CONFIG_LANE1,		0xF0,	4,	1,	{1, 1} }, \
 { MV_CONFIG_LANE2,		0x0F,	0,	2,	{1, 1} }, \

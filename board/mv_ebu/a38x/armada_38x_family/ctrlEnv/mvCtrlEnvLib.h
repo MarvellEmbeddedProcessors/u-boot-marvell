@@ -164,7 +164,8 @@ typedef enum {
 	      SERDES_UNIT_XAUI | 1,	SERDES_UNIT_NA,		   SERDES_UNIT_NA},	\
 /* Lane 6 */ {SERDES_UNIT_NA,		SERDES_UNIT_PEX | PEX1_IF, SERDES_UNIT_GBE | 3,       SERDES_UNIT_NA,\
 	      SERDES_UNIT_XAUI | 0,	SERDES_UNIT_NA,            SERDES_UNIT_NA,            SERDES_UNIT_NA,\
-	      SERDES_UNIT_NA,		SERDES_UNIT_NA,            SERDES_UNIT_NA},     \
+	      SERDES_UNIT_NA,		SERDES_UNIT_NA,            SERDES_UNIT_NA,            SERDES_UNIT_NA,\
+	      SERDES_UNIT_GBE | 0}, \
 }
 #endif
 

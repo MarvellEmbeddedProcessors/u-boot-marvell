@@ -155,7 +155,7 @@ extern "C" {
 #define MV_SERDES_CFG_OPTIONS_CNT		11
 #elif defined CONFIG_ARMADA_39X
 #define MV_SERDES_MAX_LANES                     7
-#define MV_SERDES_CFG_OPTIONS_CNT		11
+#define MV_SERDES_CFG_OPTIONS_CNT		13
 #endif
 #define MV_SERDES_MAX_LANES_6810		5
 

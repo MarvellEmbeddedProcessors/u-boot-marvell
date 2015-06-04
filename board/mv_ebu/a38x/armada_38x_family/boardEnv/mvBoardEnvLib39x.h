@@ -193,8 +193,8 @@ typedef enum _mvSatRTypeID {
 			 0x41,	/* SerDes2 => PCIe1, SerDes3 => SGMII2 */	\
 			 0x87,	/* SerDes4 => PCIe2, SerDes5 => RXAUI */	\
 			 0x04,	/* SerDes6 => RXUAI */				\
-			 0x30,	/* NSSEnable => Disable, DDR BUSWIDTH => 32bit, Dram ECC => Disabled */	\
-				/* EEPROM => Disabled, Lane#5-SMIMODE => XSMI, Lane#6-SMIMODE => XSMI */\
+			 0x38,	/* NSSEnable => Disable, DDR BUSWIDTH => 32bit, Dram ECC => Disabled */	\
+				/* EEPROM => Enable, Lane#5-SMIMODE => XSMI, Lane#6-SMIMODE => XSMI */\
 			 0x00,	/* BoardConfig valid => valid*/			\
 			 0x00}
 

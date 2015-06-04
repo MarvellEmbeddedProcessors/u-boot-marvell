@@ -502,7 +502,7 @@ MV_BOARD_INFO db88f69xx_board_info = {
 /*******************************************************************************
  * 39x GP-EAP-10G-88F6925 board */
 /*******************************************************************************/
-MV_BOARD_TWSI_INFO gpEap10g88f6925BoardTwsiDev[] = {
+MV_BOARD_TWSI_INFO gp88f6925BoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass,MV_U8 devClassId,MV_U8 twsiDevAddr,MV_U8 twsiDevAddrType}} */
 	{ BOARD_DEV_TWSI_SATR,		0, 0x57, ADDR7_BIT, MV_TRUE},  /* read only for HW configuration */
 	{ BOARD_DEV_TWSI_SATR,		1, 0x4C, ADDR7_BIT, MV_FALSE},
@@ -510,7 +510,7 @@ MV_BOARD_TWSI_INFO gpEap10g88f6925BoardTwsiDev[] = {
 	{ BOARD_TWSI_IO_EXPANDER,	1, 0x21, ADDR7_BIT, MV_FALSE},
 };
 
-MV_BOARD_MPP_INFO gpEap10g88f6925BoardMppConfigValue[] = {
+MV_BOARD_MPP_INFO gp88f6925BoardMppConfigValue[] = {
 	{ {
 		GP_EAP_10G_88f6925_MPP0_7,
 		GP_EAP_10G_88f6925_MPP8_15,
@@ -523,13 +523,13 @@ MV_BOARD_MPP_INFO gpEap10g88f6925BoardMppConfigValue[] = {
 	} }
 };
 
-MV_BOARD_NET_COMPLEX_INFO gpEap10g88f6925InfoBoarNetComplexInfo[] = {
+MV_BOARD_NET_COMPLEX_INFO gp88f6925InfoBoarNetComplexInfo[] = {
 	{
 		.netComplexOpt = MV_NETCOMP_GE_MAC0_2_RXAUI | MV_NETCOMP_GE_MAC1_2_SGMII_L4,
 	}
 };
 
-struct MV_BOARD_SWITCH_INFO gpEap10g88f6925SwitchInfo[] = {
+struct MV_BOARD_SWITCH_INFO gp88f6925SwitchInfo[] = {
 	{
 		.isEnabled = MV_TRUE,
 		.isCpuPortRgmii = MV_FALSE,
@@ -543,21 +543,21 @@ struct MV_BOARD_SWITCH_INFO gpEap10g88f6925SwitchInfo[] = {
 	}
 };
 
-MV_BOARD_MAC_INFO gpEap10g88f6925InfoBoardMacInfo[] = {
+MV_BOARD_MAC_INFO gp88f6925InfoBoardMacInfo[] = {
 	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI, MV_TRUE},
 	{ BOARD_MAC_SPEED_1000M, -1, -1, SMI, MV_TRUE},
 	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4, SMI, MV_FALSE},
 	{ BOARD_MAC_SPEED_AUTO,	0x0, 0x0, XSMI, MV_FALSE}
 };
 
-MV_BOARD_USB_INFO gpEap10g88f6925InfoBoardUsbInfo[] = {
+MV_BOARD_USB_INFO gp88f6925InfoBoardUsbInfo[] = {
 /* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOL isActive} */
 	{ USB3_UNIT_ID,	0, MV_TRUE},
 	{ USB3_UNIT_ID,	1, MV_FALSE},
 	{ USB_UNIT_ID,	0, MV_TRUE},
 };
 
-MV_DEV_CS_INFO gpEap10g88f6925InfoBoardDeCsInfo[] = {
+MV_DEV_CS_INFO gp88f6925InfoBoardDeCsInfo[] = {
 /*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
 	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0, MV_TRUE },	/* NAND DEV */
 	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0, MV_FALSE },	/* NOR DEV */
@@ -565,7 +565,7 @@ MV_DEV_CS_INFO gpEap10g88f6925InfoBoardDeCsInfo[] = {
 	{ SPI1_CS0,	N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1, MV_FALSE }	/* SPI1 DEV */
 };
 
-struct MV_BOARD_IO_EXPANDER gpEap10g88f6925InfoBoardioExpValue[] = {
+struct MV_BOARD_IO_EXPANDER gp88f6925InfoBoardioExpValue[] = {
 	{0, 6, 0xAA}, /* Config reg#0: BIT0(SGMII select), BIT2(PCIe1_W disable),
 			 BIT4(PCIe2_W disable), BIT6(PCIe3_W disable) */
 	{0, 7, 0xF8}, /* Config reg#1: BIT0(PWR_EN_SATA0), BIT1(SDIO), BIT2(PWR_EN_Module) */
@@ -573,20 +573,20 @@ struct MV_BOARD_IO_EXPANDER gpEap10g88f6925InfoBoardioExpValue[] = {
 	{0, 3, 0xFD}, /* Output Data, reg#1: BIT1, SDIO=0 */
 };
 
-MV_BOARD_INFO gpEap10g88f6925_board_info = {
+MV_BOARD_INFO gp88f6925_board_info = {
 	.boardName			= "DB-88F6925-GP",
-	.numBoardNetComplexValue	= ARRSZ(gpEap10g88f6925InfoBoarNetComplexInfo),
-	.pBoardNetComplexInfo		= gpEap10g88f6925InfoBoarNetComplexInfo,
-	.pBoardMppConfigValue		= gpEap10g88f6925BoardMppConfigValue,
+	.numBoardNetComplexValue	= ARRSZ(gp88f6925InfoBoarNetComplexInfo),
+	.pBoardNetComplexInfo		= gp88f6925InfoBoarNetComplexInfo,
+	.pBoardMppConfigValue		= gp88f6925BoardMppConfigValue,
 	.intsGppMaskLow			= 0,
 	.intsGppMaskMid			= 0,
 	.intsGppMaskHigh		= 0,
-	.numBoardDeviceIf		= ARRSZ(gpEap10g88f6925InfoBoardDeCsInfo),
-	.pDevCsInfo			= gpEap10g88f6925InfoBoardDeCsInfo,
-	.numBoardTwsiDev		= ARRSZ(gpEap10g88f6925BoardTwsiDev),
-	.pBoardTwsiDev			= gpEap10g88f6925BoardTwsiDev,
-	.numBoardMacInfo		= ARRSZ(gpEap10g88f6925InfoBoardMacInfo),
-	.pBoardMacInfo			= gpEap10g88f6925InfoBoardMacInfo,
+	.numBoardDeviceIf		= ARRSZ(gp88f6925InfoBoardDeCsInfo),
+	.pDevCsInfo			= gp88f6925InfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(gp88f6925BoardTwsiDev),
+	.pBoardTwsiDev			= gp88f6925BoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(gp88f6925InfoBoardMacInfo),
+	.pBoardMacInfo			= gp88f6925InfoBoardMacInfo,
 	.numBoardGppInfo		= 0,
 	.pBoardGppInfo			= 0,
 	.activeLedsNumber		= 0,
@@ -605,8 +605,8 @@ MV_BOARD_INFO gpEap10g88f6925_board_info = {
 	.gppPolarityValLow		= GP_EAP_10G_88f6925_GPP_POL_LOW,
 	.gppPolarityValMid		= GP_EAP_10G_88f6925_GPP_POL_MID,
 
-	.pBoardUsbInfo			= gpEap10g88f6925InfoBoardUsbInfo,
-	.numBoardUsbInfo		= ARRSZ(gpEap10g88f6925InfoBoardUsbInfo),
+	.pBoardUsbInfo			= gp88f6925InfoBoardUsbInfo,
+	.numBoardUsbInfo		= ARRSZ(gp88f6925InfoBoardUsbInfo),
 
 	/* TDM */
 	.numBoardTdmInfo		= { },
@@ -629,18 +629,18 @@ MV_BOARD_INFO gpEap10g88f6925_board_info = {
 
 	/* Enable modules auto-detection. */
 	.configAutoDetect		= MV_FALSE,
-	.numIoExp			= ARRSZ(gpEap10g88f6925InfoBoardioExpValue),
-	.pIoExp				= gpEap10g88f6925InfoBoardioExpValue,
+	.numIoExp			= ARRSZ(gp88f6925InfoBoardioExpValue),
+	.pIoExp				= gp88f6925InfoBoardioExpValue,
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,
 	/* Audio */
 	.isAudioConnected		= MV_FALSE,
 	.isTdmConnected			= MV_FALSE,
-	.pSwitchInfo			= gpEap10g88f6925SwitchInfo,
-	.switchInfoNum			= ARRSZ(gpEap10g88f6925SwitchInfo),
+	.pSwitchInfo			= gp88f6925SwitchInfo,
+	.switchInfoNum			= ARRSZ(gp88f6925SwitchInfo),
 };
 
 
 MV_BOARD_INFO *marvellBoardInfoTbl[] = {
 	&db88f69xx_board_info,
-	&gpEap10g88f6925_board_info,
+	&gp88f6925_board_info,
 };

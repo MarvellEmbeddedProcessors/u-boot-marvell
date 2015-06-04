@@ -12,6 +12,9 @@
 			serial: serial@12000 {
 				status = "okay";
 			};
+			spi0: spi@10600 {
+				status = "okay";
+			};
 		};
 	};
 };

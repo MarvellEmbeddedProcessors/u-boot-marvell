@@ -1,0 +1,22 @@
+Marvell ArmadaLP SPI bindings
+====================
+
+This SPI driver supports Marvell ArmadaLP SoC, which implements the SPI core operations.
+The node name is spi0 to show that it's SPI-0, for SPI-1 should be spi1.
+
+The SPI node for ArmadaLP requires the following properties:
+	- compatible
+		should be "marvell,armadalp-spi".
+	- reg: the base address of the SPI unit.
+	- spi-max-frequency: SPI max bus frequency.
+	- clock-frequency: the input clock for the SPI interface.
+
+Example for SPI-0 node:
+	spi0: spi@10600 {
+		compatible = "marvell,armadalp-spi";
+		reg = <0x10600 0x50>;
+		#clock-cells = <0>;
+		clock-frequency = <160000>;
+		spi-max-frequency = <40000>;
+		status = "disabled";
+	};

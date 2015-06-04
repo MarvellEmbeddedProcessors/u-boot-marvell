@@ -14,6 +14,9 @@
 				baudrate = <300>;
 				status = "okay";
 			};
+			spi0: spi@10600 {
+				status = "okay";
+			};
 		};
 	};
 };

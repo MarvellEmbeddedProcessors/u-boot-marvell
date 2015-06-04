@@ -25,6 +25,14 @@
 				baudrate = <115200>;
 				status = "disabled";
 			};
-		};
+			spi0: spi@10600 {
+				compatible = "marvell,armadalp-spi";
+				reg = <0x10600 0x50>;
+				#clock-cells = <0>;
+				clock-frequency = <160000>;
+				spi-max-frequency = <40000>;
+				status = "disabled";
+			};
+};
 	};
 };

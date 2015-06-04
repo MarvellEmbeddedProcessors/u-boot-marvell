@@ -59,6 +59,17 @@
 #define MV_DRAM_AUTO_SIZE
 #define CONFIG_SYS_DRAM_BANKS           1
 
+/* SPI flash for Palladium */
+#ifdef CONFIG_MVEBU_SPI
+
+#define CONFIG_MVEBU_SPI_ARLP
+
+#ifdef CONFIG_PALLADIUM
+#define CONFIG_SPI_FLASH_SPANSION
+#endif /* CONFIG_PALLADIUM */
+
+#endif /* CONFIG_MVEBU_SPI */
+
 /*
  * Include the generic MVEBU configuration file.
  * The generic file is affected by the defines above.
@@ -89,6 +100,5 @@
 					"fdt_addr=0x1000000\0"		\
 					"fdt_high=0xa0000000\0"
 #endif /*CONFIG_PALLADIUM*/
-
 
 #endif /* __ARMADA_LP_H */

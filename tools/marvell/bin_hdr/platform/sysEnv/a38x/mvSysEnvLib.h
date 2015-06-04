@@ -685,10 +685,18 @@ typedef enum _mvConfigTypeID {
 	MV_CONFIG_BOARDCFG_VALID,
 	MV_CONFIG_SERDES5_MODE,
 	MV_CONFIG_SERDES6_MODE,
+	MV_CONFIG_GP_CONFIG,
 	MV_CONFIG_TYPE_MAX_OPTION,
 	MV_CONFIG_TYPE_CMD_DUMP_ALL,
 	MV_CONFIG_TYPE_CMD_SET_DEFAULT
 } MV_CONFIG_TYPE_ID;
+
+typedef enum _mvGpConfig {
+	MV_GP_CONFIG_EAP_10G,
+	MV_GP_CONFIG_HGW_AP_10G,
+	MV_GP_CONFIG_HGW_AP_2_5G,
+	MV_GP_CONFIG_HGW_AP_2_5G_SATA
+} MV_GP_CONFIG;
 
 #define MV_EEPROM_CONFIG_INFO { \
 { MV_CONFIG_BOARDID,		0xFF,	0,	0,	{1, 1} }, \
@@ -706,6 +714,7 @@ typedef enum _mvConfigTypeID {
 { MV_CONFIG_BOARDCFG_VALID,	0x03,	0,	6,	{1, 1} }, \
 { MV_CONFIG_SERDES5_MODE,	0x10,	4,	5,	{1, 1} }, \
 { MV_CONFIG_SERDES6_MODE,       0x20,   5,      5,      {1, 1} }, \
+{ MV_CONFIG_GP_CONFIG,		0xC0,	6,	5,	{1, 1} }, \
 };
 
 typedef struct _boardConfigTypesInfo {

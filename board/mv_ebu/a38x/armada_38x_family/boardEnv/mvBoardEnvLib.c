@@ -507,6 +507,57 @@ MV_VOID mvBoardMacSpeedSet(MV_U32 ethPortNum, MV_BOARD_MAC_SPEED ethSpeed)
 }
 
 /*******************************************************************************
+* mvBoardMacStatusSet - Set the Mac status
+*
+* DESCRIPTION:
+*       This routine SET the Mac status for a given ethernet port.
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*       status. - MV_TRUE if mac is enabled, MV_FALSE otherwise
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       None.
+*
+*******************************************************************************/
+MV_VOID mvBoardMacStatusSet(MV_U32 ethPortNum, MV_BOOL status)
+{
+	if (ethPortNum >= board->numBoardMacInfo) {
+		mvOsPrintf("%s: Error: wrong eth port (%d)\n", __func__, ethPortNum);
+		return;
+	}
+	board->pBoardMacInfo[ethPortNum].boardMacEnabled = status;
+}
+
+/*******************************************************************************
+* mvBoardMacStatusGet - Get the Mac status
+*
+* DESCRIPTION:
+*       This routine returns the Mac status for a given ethernet port.
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       MAC status.
+*
+*******************************************************************************/
+MV_BOOL mvBoardMacStatusGet(MV_U32 ethPortNum)
+{
+	if (ethPortNum >= board->numBoardMacInfo) {
+		mvOsPrintf("%s: Error: wrong eth port (%d)\n", __func__, ethPortNum);
+		return MV_FALSE;
+	}
+	return board->pBoardMacInfo[ethPortNum].boardMacEnabled;
+}
+
+/*******************************************************************************
 * mvBoardIsPortLoopback -
 *
 * DESCRIPTION:
@@ -3308,7 +3359,6 @@ MV_VOID mvBoardSysConfigInit(void)
 	/* Save values Locally in configVal[] */
 	for (i = 0; i < MV_CONFIG_TYPE_MAX_OPTION; i++) {
 		/* Get board configuration field information (Mask, offset, etc..) */
-
 		if (mvBoardConfigTypeGet(i, &configInfo) != MV_TRUE)
 			continue;
 

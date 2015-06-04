@@ -372,15 +372,47 @@ MV_VOID mvBoardFlashDeviceUpdate(MV_VOID)
 *******************************************************************************/
 MV_VOID mvBoardInfoUpdate(MV_VOID)
 {
+#ifdef CONFIG_CMD_BOARDCFG
 	MV_U32 smiAddress = -1, boardCfg;
 	MV_U32 smiQuadAddr = 0x8;
+	MV_U32 netComplexOptions = 0x0;
+	MV_U32 defaultNetComplex = (MV_NETCOMP_GE_MAC0_2_RXAUI | MV_NETCOMP_GE_MAC1_2_SGMII_L4);
 	/*default value for serdes5/6 mode is 1(XSMI) because that lane5/6
 		by default connected to RXUAI with XSMI mode*/
 	MV_U32 serdes5Mode = 1, serdes6Mode = 1;
 
 	switch (mvBoardIdGet()) {
+	case A39X_RD_69XX_ID:
+		/*each case describes one configuration for db-gp 395 board*/
+		switch (mvBoardSysConfigGet(MV_CONFIG_GP_CONFIG)) {
+		case MV_GP_CONFIG_EAP_10G:
+		case MV_GP_CONFIG_HGW_AP_10G:
+			/*options 0+1: MAC0=>SerDeses 5+6 using RAXUAI
+				       MAC1=>SerDes 4 using switch*/
+			netComplexOptions |= defaultNetComplex;
+			break;
+		case MV_GP_CONFIG_HGW_AP_2_5G:
+		case MV_GP_CONFIG_HGW_AP_2_5G_SATA:
+			/*options 2+3: MAC0=>SerDes 6 using SFP or 2.5G PHY on modules
+				       MAC2=>SerDes 5 using switch on board*/
+			netComplexOptions |= (MV_NETCOMP_GE_MAC0_2_SGMII_L6 |
+				MV_NETCOMP_GE_MAC2_2_SGMII_L5);
+			mvBoardMacStatusSet(2, MV_TRUE);
+			mvBoardMacStatusSet(1, MV_FALSE);
+			mvBoardPhyAddrSet(0, -1);
+			mvBoardQuadPhyAddr0Set(0, -1);
+			mvBoardPhyNegotiationTypeSet(0, SMI);
+			break;
+		default:
+			mvOsPrintf("%s: Error: Invalid GP config value," , __func__);
+			mvOsPrintf("Update netComplexOptions with default value.\n");
+			netComplexOptions |= defaultNetComplex;
+		}
+		mvBoardNetComplexConfigSet(netComplexOptions);
+		mvBoardIoExpanderUpdate();
+		mvBoardMppIdUpdate();
+		break;
 	case A39X_DB_69XX_ID:
-#ifdef CONFIG_CMD_BOARDCFG
 		mvBoardNetComplexInfoUpdate();
 		/* Enable USB3.0 port 0 if  SerDes is connected to USB Host #0 */
 		/* COMPHY1: 6 = USB_HOST#0 (connected via module) */
@@ -397,7 +429,6 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		boardCfg = mvBoardSysConfigGet(MV_CONFIG_6_SMI_MODE);
 		if (!boardCfg)
 			serdes6Mode = 0;
-#endif
 		mvBoardMppIdUpdate();
 
 		boardCfg = mvBoardNetComplexConfigGet();
@@ -498,6 +529,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 	default:
 		mvOsPrintf("%s: Error: Auto detection update sequence is not supported by current board.\n" , __func__);
 	}
+#endif /* CONFIG_CMD_BOARDCFG */
 }
 
 /*******************************************************************************
@@ -761,14 +793,34 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 *******************************************************************************/
 MV_VOID mvBoardMppIdUpdate(MV_VOID)
 {
+#ifdef CONFIG_CMD_BOARDCFG
 	struct _mvBoardMppModule spi0Boot[6] = MPP_SPI0_BOOT;
+	struct _mvBoardMppModule sdioSpi0[7] = MPP_SDIO_SPI0;
+	struct _mvBoardMppModule sdio[4] = MPP_SDIO;
+
 	switch (mvBoardIdGet()) {
+	case A39X_RD_69XX_ID:
+		switch (mvBoardSysConfigGet(MV_CONFIG_GP_CONFIG)) {
+		case MV_GP_CONFIG_EAP_10G:
+			break;
+		case MV_GP_CONFIG_HGW_AP_2_5G:
+			mvModuleMppUpdate(7, sdioSpi0);
+			break;
+		case MV_GP_CONFIG_HGW_AP_10G:
+		case MV_GP_CONFIG_HGW_AP_2_5G_SATA:
+			mvModuleMppUpdate(4, sdio);
+			break;
+		default:
+			mvOsPrintf("%s: Error: Invalid GP config value.\n" , __func__);
+		}
+		break;
 	case A39X_DB_69XX_ID:
 		/* When boot from SPI 0, need to update the MPPs for SPI0, RGMII, and SDIO */
 		if (mvBoardSpiBusGet() == 0)
 			mvModuleMppUpdate(6, spi0Boot);
 		break;
 	}
+#endif /* CONFIG_CMD_BOARDCFG */
 }
 
 /*******************************************************************************
@@ -790,5 +842,43 @@ MV_VOID mvBoardMppIdUpdate(MV_VOID)
 *******************************************************************************/
 MV_STATUS mvBoardIoExpanderUpdate(MV_VOID)
 {
+#ifdef CONFIG_CMD_BOARDCFG
+	MV_U32 gpConfig = mvBoardSysConfigGet(MV_CONFIG_GP_CONFIG);
+
+	/* Config reg#2: The below bits are configured as output:
+		BIT0: 0x0 - SGMII3 select, 0x1 - PCIe2 on SerDes 4
+		BIT2: 0x1 - PCIe1_W disable (always 0x1)
+		BIT4: 0x1 - PCIe2_W disable (always 0x1)
+		BIT6: 0x1 - PCIe3_W disable (always 0x1) */
+	/* Config reg#3: The below bits are configured as output:
+		BIT0: 0x0 - disable power for SATA, 0x1 - enable power for SATA
+		BIT1: 0x0 - disable SDIO, 0x1 - enable SDIO
+		BIT2: 0x1 - PWR_EN_Module (always 0x1) */
+	mvBoardIoExpanderStructSet(0, 6, 0xAA);
+	mvBoardIoExpanderStructSet(0, 7, 0xF8);
+	switch (gpConfig) {
+	case MV_GP_CONFIG_EAP_10G:
+		/* SGMII3 enable & SDIO disabled */
+		mvBoardIoExpanderStructSet(0, 2, 0xFE);
+		mvBoardIoExpanderStructSet(0, 3, 0xFD);
+		break;
+	case MV_GP_CONFIG_HGW_AP_10G:
+		/* SGMII3 enable & SDIO enable */
+		mvBoardIoExpanderStructSet(0, 2, 0xFE);
+		mvBoardIoExpanderStructSet(0, 3, 0xFF);
+		break;
+	case MV_GP_CONFIG_HGW_AP_2_5G:
+	case MV_GP_CONFIG_HGW_AP_2_5G_SATA:
+		/* PCIe2 enable & SDIO enable */
+		mvBoardIoExpanderStructSet(0, 2, 0xFF);
+		mvBoardIoExpanderStructSet(0, 3, 0xFF);
+		break;
+	default:
+		/* SGMII3 enable & SDIO disabled */
+		mvBoardIoExpanderStructSet(0, 2, 0xFE);
+		mvBoardIoExpanderStructSet(0, 3, 0xFD);
+		mvOsPrintf("%s: Error: Invalid GP config value.\n" , __func__);
+	}
+#endif /* CONFIG_CMD_BOARDCFG */
 	return MV_OK;
 }

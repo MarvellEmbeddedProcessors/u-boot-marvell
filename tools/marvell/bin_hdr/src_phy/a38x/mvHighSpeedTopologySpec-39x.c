@@ -174,12 +174,12 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray);
  *                                           topology mode was read
  *                                           from the board)
  ***************************************************************************/
-MV_STATUS loadTopologyEAP_10G(SERDES_MAP  *serdesMapArray);
+MV_STATUS loadTopologyDB_GP(SERDES_MAP  *serdesMapArray);
 
 loadTopologyFuncPtr loadTopologyFuncArr[] =
 {
 	loadTopologyDB,		/* DB */
-	loadTopologyEAP_10G,    /* A395RD */
+	loadTopologyDB_GP,    /* A395RD */
 };
 
 /*********************************** Globals **********************************/
@@ -255,6 +255,38 @@ SERDES_MAP EAP_10G_ConfigDefault[MAX_SERDES_LANES] =
 	{ RXAUI,        __6_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE }
 };
 
+SERDES_MAP HGW_AP_10G_ConfigDefault[MAX_SERDES_LANES] =
+{
+	 { SATA0,        __6Gbps,                   SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	 { USB3_HOST0,   __5Gbps,                   SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	 { PEX1,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
+	 { PEX3,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
+	 { PEX2,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
+	 { RXAUI,        __6_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	 { RXAUI,        __6_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE }
+};
+
+SERDES_MAP HGW_AP_2G_ConfigDefault[MAX_SERDES_LANES] =
+{
+	 { SATA0,        __6Gbps,                   SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	 { USB3_HOST0,   __5Gbps,                   SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	 { PEX1,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
+	 { PEX3,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
+	 { PEX2,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
+	 { SGMII2,       __1_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	 { SGMIIv3_0,    __1_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+};
+
+SERDES_MAP HGW_AP_2_5G_SATA_ConfigDefault[MAX_SERDES_LANES] =
+{
+	 { SATA0,        __6Gbps,                   SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	 { USB3_HOST0,   __5Gbps,                   SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	 { PEX1,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
+	 { PEX3,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
+	 { SATA2,        __6Gbps,                   SERDES_DEFAULT_MODE,         MV_TRUE,        MV_FALSE },
+	 { SGMII2,       __1_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	 { SGMIIv3_0,    __1_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE }
+};
 
 /*************************** Functions implementation *************************/
 /***************************************************************************/
@@ -301,12 +333,31 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 
 /************************** Load topology - Marvell 395 RD ********************************/
 /**************************************************************************************/
-MV_STATUS loadTopologyEAP_10G(SERDES_MAP  *serdesMapArray)
+MV_STATUS loadTopologyDB_GP(SERDES_MAP  *serdesMapArray)
 {
 	MV_U32 laneNum;
-	SERDES_MAP* serdesTopology = EAP_10G_ConfigDefault;
-	MV_STATUS res = MV_OK;
+	SERDES_MAP* serdesTopology;
+        MV_STATUS res = MV_OK;
+	res = mvSysEnvConfigInit();
 
+	switch (mvSysEnvConfigGet(MV_CONFIG_GP_CONFIG)) {
+		case MV_GP_CONFIG_EAP_10G:
+			serdesTopology = EAP_10G_ConfigDefault;
+			break;
+		case MV_GP_CONFIG_HGW_AP_10G:
+			serdesTopology = HGW_AP_10G_ConfigDefault;
+			break;
+		case MV_GP_CONFIG_HGW_AP_2_5G:
+			serdesTopology = HGW_AP_2G_ConfigDefault;
+			break;
+		case MV_GP_CONFIG_HGW_AP_2_5G_SATA:
+			serdesTopology = HGW_AP_2_5G_SATA_ConfigDefault;
+			break;
+		default:
+			serdesTopology = EAP_10G_ConfigDefault;
+			mvPrintf("loadTopologyGP: Invalid GP-CONFIG value\n");
+			mvPrintf("loading EAP_10G Topology\n");
+	}
 	/* Updating the topology map */
 	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
 		serdesMapArray[laneNum].serdesMode  =  serdesTopology[laneNum].serdesMode;

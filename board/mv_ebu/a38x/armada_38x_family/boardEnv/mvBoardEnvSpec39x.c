@@ -546,8 +546,8 @@ struct MV_BOARD_SWITCH_INFO gp88f6925SwitchInfo[] = {
 MV_BOARD_MAC_INFO gp88f6925InfoBoardMacInfo[] = {
 	{ BOARD_MAC_SPEED_AUTO, 0x0, 0x0, XSMI, MV_TRUE},
 	{ BOARD_MAC_SPEED_1000M, -1, -1, SMI, MV_TRUE},
-	{ BOARD_MAC_SPEED_AUTO, 0x4, 0x4, SMI, MV_FALSE},
-	{ BOARD_MAC_SPEED_AUTO,	0x0, 0x0, XSMI, MV_FALSE}
+	{ BOARD_MAC_SPEED_1000M, -1, -1, SMI, MV_FALSE},
+	{ BOARD_MAC_SPEED_1000M, -1, -1, SMI, MV_FALSE}
 };
 
 MV_BOARD_USB_INFO gp88f6925InfoBoardUsbInfo[] = {
@@ -628,7 +628,7 @@ MV_BOARD_INFO gp88f6925_board_info = {
 	.norFlashWriteParams		= DB_88F69XX_BOARD_NOR_WRITE_PARAMS,
 
 	/* Enable modules auto-detection. */
-	.configAutoDetect		= MV_FALSE,
+	.configAutoDetect		= MV_TRUE,
 	.numIoExp			= ARRSZ(gp88f6925InfoBoardioExpValue),
 	.pIoExp				= gp88f6925InfoBoardioExpValue,
 	.boardOptionsModule		= MV_MODULE_NO_MODULE,

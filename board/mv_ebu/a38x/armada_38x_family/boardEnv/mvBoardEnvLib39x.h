@@ -83,6 +83,13 @@ typedef enum _eth_negotiation_port_type {
 	XSMI
 } MV_PHY_NEGOTIATION_PORT_TYPE;
 
+typedef enum _mvGpConfig {
+	MV_GP_CONFIG_EAP_10G,
+	MV_GP_CONFIG_HGW_AP_10G,
+	MV_GP_CONFIG_HGW_AP_2_5G,
+	MV_GP_CONFIG_HGW_AP_2_5G_SATA
+} MV_GP_CONFIG;
+
 typedef struct _boardMacInfo {
 	MV_BOARD_MAC_SPEED boardMacSpeed;
 	MV_32 boardEthSmiAddr;
@@ -153,6 +160,21 @@ typedef enum _mvModuleTypeID {
 #define MPP_SPI0_BOOT		{ {2, 0x11266005}, {3, 0x22222011}, {4, 0x22200002}, \
 				  {5, 0x51132022}, {6, 0x55550555}, {7, 0x00005550} }
 
+
+/*enabled: SDIO
+  disabled: TDM, SPI0
+	SDIO MPP's conflicts with TDM MPP's,
+	so TDM must be disabled; SPI0 is not in used without TDM, so disable also SPI MPP's*/
+#define MPP_SDIO		{ {1, 0x00660077}, {2, 0x55066000}, {6, 0x55000500}, \
+				  {7, 0x00005550} }
+
+/*enabled: SPI0, SDIO
+  disabled: TDM, NAND
+	SDIO MPP's conflicts with TDM MPP's, so TDM must be disabled; SPI0 used instead of NAND */
+#define MPP_SDIO_SPI0		{ {1, 0x00660077}, {2, 0x11066000}, {3, 0x00000011}, \
+				  {4, 0x00000000}, {5, 0x11100000}, {6, 0x55000500}, \
+				  {7, 0x00005550} }
+
 typedef enum _mvSatRTypeID {
 /*  "Bios" Device  */
 	MV_SATR_CPU_DDR_L2_FREQ,
@@ -213,6 +235,7 @@ typedef enum _mvConfigTypeID {
 	MV_CONFIG_BOARDCFG_EN,
 	MV_CONFIG_5_SMI_MODE,
 	MV_CONFIG_6_SMI_MODE,
+	MV_CONFIG_GP_CONFIG,
 	MV_CONFIG_TYPE_MAX_OPTION, /* limit for user read/write routines */
 	MV_CONFIG_BOARDCFG_VALID,
 	MV_CONFIG_TYPE_CMD_DUMP_ALL, /* limit for mvBoardConfigTypeGet routine */
@@ -234,18 +257,19 @@ typedef enum _mvConfigTypeID {
 { MV_CONFIG_DDR_ECC_EN,		0x04,	2,	5,	{1, 1} }, \
 { MV_CONFIG_BOARDCFG_EN,	0x08,	3,	5,	{1, 1} }, \
 { MV_CONFIG_BOARDCFG_VALID,	0x03,	0,	6,	{1, 1} }, \
-{ MV_CONFIG_5_SMI_MODE,       0x10,   4,      5,      {1, 1} }, \
-{ MV_CONFIG_6_SMI_MODE,       0x20,   5,      5,      {1, 1} }, \
+{ MV_CONFIG_5_SMI_MODE,		0x10,	4,      5,      {1, 1} }, \
+{ MV_CONFIG_6_SMI_MODE,		0x20,	5,      5,      {1, 1} }, \
+{ MV_CONFIG_GP_CONFIG,		0xC0,	6,      5,      {1, 1} }, \
 };
 
 
 #define MV_BOARD_CONFIG_CMD_STR "serdes0, serdes1, serdes2, serdes3, serdes4, serdes5, serdes6, nss_en,\n"	\
-				"\tddr_buswidth, ddr_ecc, eepromEnable, serdes5Mode, serdes6Mode\n\n"
+				"\tddr_buswidth, ddr_ecc, eepromEnable, serdes5Mode, serdes6Mode, gpConfig\n\n"
 #define MV_BOARD_CONFIG_CMD_MAX_OPTS 15
 
 /*MV_CMD_TYPE_ID,		command name,		Name,			numOfValues,	Possible Values */
 #define MV_BOARD_CONFIG_CMD_INFO {										\
-{MV_CONFIG_BOARDID, "boardid",	"Board ID",			1,	{"DB Board"} },	\
+{MV_CONFIG_BOARDID, "boardid",	"Board ID",			1,	{"DB Board"} },				\
 {MV_CONFIG_LANE0,	"serdes0",	"SerDes Lane #0",	5,						\
 	{"UnConnected", "PCI-e#0", "SATA3 #0", "SGMII #0", "SGMII(v3) #0"} },					\
 {MV_CONFIG_LANE1,	"serdes1",	"SerDes Lane #1",	10,						\
@@ -271,10 +295,13 @@ typedef enum _mvConfigTypeID {
 	{"32bit", "16bit"} },											\
 {MV_CONFIG_DDR_ECC_EN,	"ddr_ecc",	"Dram ECC enable",		2,					\
 	{"Disable", "Enable"} },										\
-{MV_CONFIG_BOARDCFG_EN,	"eepromEnable",	"EEPROM enable",	2,					\
+{MV_CONFIG_BOARDCFG_EN,	"eepromEnable",	"EEPROM enable",	2,						\
 	{"Disable", "Enable"} },										\
-{MV_CONFIG_5_SMI_MODE, "serdes5Mode", "SerDes Lane #5 SMI MODE", 2, {"SMI", "XSMI"} },			\
-{MV_CONFIG_6_SMI_MODE, "serdes6Mode", "SerDes Lane #6 SMI MODE", 2, {"SMI", "XSMI"} },			\
+{MV_CONFIG_5_SMI_MODE, "serdes5Mode", "SerDes Lane #5 SMI MODE", 2, {"SMI", "XSMI"} },				\
+{MV_CONFIG_6_SMI_MODE, "serdes6Mode", "SerDes Lane #6 SMI MODE", 2, {"SMI", "XSMI"} },				\
+{MV_CONFIG_GP_CONFIG, "gpConfig", "GP configurations", 4, {"10G EAP (On board switch)",				\
+	"10G HGW/AP (External Switch-Peridot,3x PCIe)", "2.5G HGWI/AP (On board switch, 3x PCIe)",		\
+	"2.5G HGW/AP (On board switch, 2x PCIe, 1 mSATA)"} },							\
 };
 
 #endif /* CONFIG_CMD_BOARDCFG */

@@ -1,9 +1,7 @@
 
-/dts-v1/;
-
 / {
 	model = "Marvell Armada_LP Development Board";
-	compatible = "marvell,armada-lp-db", "marvell,armada-lp";
+	compatible = "marvell,armada-lp";
 
 	#address-cells = <2>;
 	#size-cells = <2>;
@@ -22,7 +20,7 @@
 			serial: serial@12000 {
 				compatible = "marvell,armadalp-uart";
 				reg = <0x12000 0x20>;
-				status = "okay";
+				status = "disabled";
 			};
 		};
 	};

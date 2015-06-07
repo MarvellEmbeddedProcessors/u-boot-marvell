@@ -1720,7 +1720,7 @@ static int mv_fdt_update_serial(void *fdt)
 * 1. pinctrl/pic-pins-0/marvell,pins = "mpp33", "mpp34";
 * 2. pm_pic/ctrl-gpios = <0x0000000c 0x00000001 0x00000001 0x0000000c 0x00000002 0x00000001>;
 *    Each GPIO is represented in 'ctrl-gpios' property with 3 values of 32 bits:
-*    '<pinctrl-0_base + gpio_group_num   gpio_pin_num_in_group   ACTIVE_LOW>'
+*    '<gpios_phandle[gpio_group_num]   gpio_pin_num_in_group   ACTIVE_LOW>'
 *    i.e : for mpp 33, and given pinctrl-0 = <0x0000000b> :
 *    gpio_group_num	= 33/32 = 1
 *    gpio_pin_num_in_group= 33%32 = 1
@@ -1744,11 +1744,13 @@ static int mv_fdt_update_pic_gpio(void *fdt)
 	const char *marvell_pins_prop 	= "marvell,pins";
 	const char *pm_picNode  	= "pm_pic";
 	const char *ctrl_gpios_prop 	= "ctrl-gpios";
-	const void *pinctrl_0_base;
-	MV_U32 pinctrl_0_base_val, picGpioInfo[MAX_GPIO_NUM];
+	MV_U32 picGpioInfo[MAX_GPIO_NUM];
 	MV_U32 ctrl_gpios_prop_value[3*MAX_GPIO_NUM]; /* 3*32bit is required per GPIO */
 	char propval[256] = "";
 	int err, len = 0, nodeoffset, i, gpioMaxNum = mvBoardPICGpioGet(picGpioInfo);
+	MV_U32 gpios_phandle[2];	/* phandle values of gpio nodes */
+	MV_U32 gpio_offset;
+	char gpio_node[30] = "";
 
 	/* if board has no dedicated PIC MPP Pins: remove 'pm_pic' & 'pinctrl/pic-pins-0' */
 	if (gpioMaxNum <= 0) {
@@ -1758,6 +1760,21 @@ static int mv_fdt_update_pic_gpio(void *fdt)
 		if (mv_fdt_remove_node(fdt, pm_picNode))
 			mv_fdt_dprintf("Failed to remove %s\n", pm_picNode);
 		return 0;
+	}
+
+	/* fetch gpio nodes' phandle.
+	 * every GPIO group have GPIO node id DT
+	 * and for each GPIO pin, an entry is added to the ctrl-gpios,
+	 * in order to link between the entry and the relevant gpio node for the relevant
+	 * group, the phandle of the gpio node is added to the entry */
+	for (i = 0; i < 2; ++i) {
+		sprintf(gpio_node, "gpio@%X", MV_GPP_REGS_OFFSET(i));
+		gpio_offset = mv_fdt_find_node(fdt, gpio_node);
+		gpios_phandle[i] = fdt_get_phandle(fdt, gpio_offset);
+		if (!gpios_phandle[i]) {
+			mvOsPrintf("Failed updating suspend-resume GPIO pin settings in DT\n");
+			return 0;
+		}
 	}
 
 	/* set pinctrl/pic-pins-0/marvell,pins property as concatenated strings.
@@ -1778,22 +1795,21 @@ static int mv_fdt_update_pic_gpio(void *fdt)
 
 	/* set pm_pic/ctrl-gpios property: */
 	nodeoffset = mv_fdt_find_node(fdt, pm_picNode); 	/* find 'pm_pic' node */
-	pinctrl_0_base = fdt_getprop(fdt, nodeoffset, "pinctrl-0", &len);
+
 	if (len == 0) {
 		printf("Empty property value\n");
 		return 0;
 	}
 	/* Each GPIO is represented in 'ctrl-gpios' property with 3 values of 32 bits:
-	 * '<pinctrl-0_base + gpio_group_num   gpio_pin_num_in_group   ACTIVE_LOW>'
+	 * '<gpios_phandle[gpio_group_num]   gpio_pin_num_in_group   ACTIVE_LOW>'
 	 * i.e : for mpp 33, and given pinctrl-0 = <0x0000000b> :
 	 * gpio_group_num	= 33/32 = 1
 	 * gpio_pin_num_in_group= 33%32 = 1
 	 * ACTIVE_LOW = 1
 	 * DT entry is : '<0x0000000c 0x00000001 0x00000001>'; */
-	pinctrl_0_base_val = ntohl(*((unsigned int*)pinctrl_0_base));	/* DT integer values are in BE format */
 	for (i = 0 ; i < gpioMaxNum ; i++) {
 		/* pinctrl_0_base +gpio Group num */
-		ctrl_gpios_prop_value[3*i] = htonl(pinctrl_0_base_val + picGpioInfo[i] / 32);
+		ctrl_gpios_prop_value[3*i] = htonl(gpios_phandle[picGpioInfo[i] / 32]);
 
 		/* 32 pins in each group */
 		ctrl_gpios_prop_value[3*i + 1] = htonl(picGpioInfo[i] % 32);

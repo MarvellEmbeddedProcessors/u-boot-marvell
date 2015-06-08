@@ -1076,8 +1076,6 @@ MV_STATUS loadTopologyDBAMC(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[laneNum].swapTx      = topologyConfigPtr[laneNum].swapTx;
 	}
 
-	updateTopologySgmiiSpeed(serdesMapArray);
-
 	return MV_OK;
 }
 

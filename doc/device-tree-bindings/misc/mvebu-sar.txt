@@ -1,0 +1,57 @@
+Marvell SAR bindings
+====================
+
+The SAR node include describtion about the sample at reset command, and all the options that the
+board support.
+
+The SAR node requires the following properties:
+	- compatible = "marvell,sample-at-reset";
+	- chip_count: The number of the Sample at reset I2C chips
+	- reg: The addresses list of the Sample at reset I2C chips
+	- bit_width: The bit width in every I2C chip of the Sample at reset
+	- The options of the sample at reset discribed with the child nodes of sar node:
+		for example CPU frequency: /sar/cpufreq/
+		The option node requires the following proporties:
+		- key: The key name of the option, should be the same as subnode name
+		- description : The describtion of the option
+		- start-bit: Start bit in the I2C chip from the start of the first I2C chip
+				for example: 6 means the 1st bit in the 2nd chip (if bit width=5)
+		- bit-length: Bit length of the option in the I2C chip
+		- option-cnt: The count of the options in this sample at reset node
+		- options: Describe the options list by setting the "value", "describtion of the value"
+		- default: What is the value of default options
+		- status: Set if the Sample at reset option is enabled/disabled
+
+Example:
+sar {
+	compatible = "marvell,sample-at-reset";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	reg = <0x4c 0x4d 0x4e>;
+	chip_count = <3>;
+	bit_width = <5>;
+
+	cpufreq {
+		key = "cpufreq";
+		description = "CPU frequency";
+		start-bit = <0>;
+		bit-length = <4>;
+		option-cnt = <2>;
+		options = "0x0", "1800/900",
+			  "0x1", "1600/800";
+		default = <0x1>;
+		status = "okay";
+	};
+	bootsrc {
+		key = "bootsrc";
+		description = "Boot source options";
+		start-bit = <5>;
+		bit-length = <4>;
+		option-cnt = <3>;
+		options = "0x0", "NAND",
+			  "0x1", "SPI",
+			  "0x2", "NOR";
+		default = <0x1>;
+		status = "okay";
+	};
+};

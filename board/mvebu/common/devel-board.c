@@ -24,30 +24,25 @@
 #include <asm/arch-mvebu/soc.h>
 #include "devel-board.h"
 
+#include "sar.h"
+
 int mvebu_devel_board_init(struct mvebu_board_family *brd_fam)
 {
 	struct mvebu_board_info *brd = brd_fam->curr_board;
-	int sar_id, cfg_id, idx;
+	int cfg_id, idx;
 
 	/* Update SAR and CFG for board */
 	if (brd->configurable) {
 		struct mvebu_board_config *brd_cfg = brd->config_data;
 
-		/* Deactivate all SAR entries */
-		for (sar_id = 0; sar_id < MAX_SAR; sar_id++)
-			brd_fam->sar->sar_lookup[sar_id].active = 0;
-
-		/* Activate board entries */
-		for (idx = 0; idx < brd_cfg->sar_cnt; idx++)
-			brd_fam->sar->sar_lookup[brd_cfg->active_sar[idx]].active = 1;
-
 		/* Deactivate all CFG entries */
 		for (cfg_id = 0; cfg_id < MAX_CFG; cfg_id++)
-			brd_fam->sar->sar_lookup[cfg_id].active = 0;
-
+			brd_fam->cfg->cfg_lookup[cfg_id].active = 0;
 		/* Activate board entries */
-		for (idx = 0; idx < brd_cfg->cfg_cnt; idx++)
-			brd_fam->sar->sar_lookup[brd_cfg->active_cfg[idx]].active = 1;
+		for (idx = 0; idx < brd_cfg->sar_cnt; idx++)
+			brd_fam->cfg->cfg_lookup[brd_cfg->active_sar[idx]].active = 1;
+		/* Initialize sample at reset structs for the SatR command */
+		sar_init();
 	}
 
 	/* Update MPP configurations */

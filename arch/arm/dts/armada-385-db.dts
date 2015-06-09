@@ -79,4 +79,37 @@
 			};
 		};
 	};
+
+	sar {
+		compatible = "marvell,sample-at-reset";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x40 0x44 0x48>;
+		chip_count = <3>;
+		bit_width = <5>;
+
+		cpufreq {
+			key = "cpufreq";
+			description = "CPU frequency";
+			start-bit = <0>;
+			bit-length = <4>;
+			option-cnt = <2>;
+			options = "0x0", "1800/900",
+				"0x1", "1600/800";
+			default = <0x1>;
+			status = "okay";
+		};
+		bootsrc {
+			key = "bootsrc";
+			description = "Boot source options";
+			start-bit = <4>;
+			bit-length = <4>;
+			option-cnt = <3>;
+			options = "0x0", "NAND",
+				"0x1", "SPI",
+				"0x2", "NOR";
+			default = <0x1>;
+			status = "okay";
+		};
+	};
 };

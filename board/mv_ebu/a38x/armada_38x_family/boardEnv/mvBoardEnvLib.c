@@ -3612,6 +3612,13 @@ MV_STATUS mvBoardConfigVerify(MV_CONFIG_TYPE_ID field, MV_U8 writeVal)
 		mvOsPrintf("Error: this option is not supported in Z stepping revision\n");
 		return MV_ERROR;
 	}
+	if ((mvBoardIdGet() == A39X_RD_69XX_ID) && (field == MV_CONFIG_GP_CONFIG)) {
+		if ((writeVal == 0x0) || (writeVal == 0x1))
+			mvOsPrintf("Warning: switch is available only if DPR14/15/16/17 is 1-2\n");
+		if ((writeVal == 0x2) || (writeVal == 0x3))
+			mvOsPrintf("Warning: switch is available only if DPR14/15/16/17 is 3-2,");
+			mvOsPrintf("and slm1456 module connected to the board\n");
+	}
 	return MV_OK;
 }
 #endif /* CONFIG_CMD_BOARDCFG */

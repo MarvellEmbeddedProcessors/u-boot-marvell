@@ -92,7 +92,6 @@ struct mvebu_board_family {
 	struct mvebu_board_info **boards_info;
 
 	/* Only for development boards */
-	struct sar_data *sar;
 	struct cfg_data *cfg;
 };
 

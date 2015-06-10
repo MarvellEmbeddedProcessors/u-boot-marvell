@@ -33,6 +33,10 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+struct sar_data sar_board;
+#define board_get_sar() (&sar_board)
+#define board_get_sar_table() (sar_board.sar_lookup)
+
 #define I2C_DUMMY_BASE ((int)0x3000000)
 
 /* I2C interface commands */

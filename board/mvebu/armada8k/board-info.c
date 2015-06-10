@@ -24,10 +24,6 @@
 
 #define SATR_EEPROM0_ADDR	0x22
 
-/* Define all SAR variables available for SOC */
-/* Define general SAR information */
-struct sar_data a8k_sar;
-
 /* Define all board configuration variables */
 /* Assuming their location is equal on all boards */
 struct cfg_var a8k_cfg_lookup[MAX_CFG] = {
@@ -65,7 +61,6 @@ struct mvebu_board_family a8k_board_family = {
 	.default_id = ARMADA_8021_DB_ID,
 	.board_cnt = MAX_BOARD_ID,
 	.boards_info = a8k_board_lookup,
-	.sar = &a8k_sar,
 	.cfg = &a8k_cfg,
 };
 

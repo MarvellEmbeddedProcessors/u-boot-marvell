@@ -23,10 +23,6 @@
 
 #define SATR_EEPROM0_ADDR	0x22
 
-/* Define all SAR variables available for SOC */
-/* Define general SAR information */
-struct sar_data armadalp_sar;
-
 /* Define all board configuration variables */
 /* Assuming their location is equal on all boards */
 struct cfg_var armadalp_cfg_lookup[MAX_CFG] = {
@@ -61,7 +57,6 @@ struct mvebu_board_family armadalp_board_family = {
 	.default_id = ARMADA_LP_DB0_ID,
 	.board_cnt = MAX_BOARD_ID,
 	.boards_info = armadalp_board_lookup,
-	.sar = &armadalp_sar,
 	.cfg = &armadalp_cfg,
 };
 

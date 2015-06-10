@@ -24,9 +24,6 @@
 
 #define SATR_EEPROM0_ADDR	0x22
 
-/* Define general SAR information */
-struct sar_data a38x_sar;
-
 /* Define all board configuration variables */
 /* Assuming their location is equal on all boards */
 struct cfg_var a38x_cfg_lookup[MAX_CFG] = {
@@ -61,7 +58,6 @@ struct mvebu_board_family a38x_board_family = {
 	.default_id = ARMADA_38X_DB_ID,
 	.board_cnt = MAX_BOARD_ID,
 	.boards_info = a38x_board_lookup,
-	.sar = &a38x_sar,
 	.cfg = &a38x_cfg,
 };
 

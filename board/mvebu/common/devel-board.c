@@ -52,28 +52,6 @@ int mvebu_devel_board_init(struct mvebu_board_family *brd_fam)
 	return 0;
 }
 
-struct sar_data *board_get_sar(void)
-{
-	struct mvebu_board_family *brd_fam = get_board_family();
-
-	if (brd_fam->curr_board->configurable &&
-	    brd_fam->curr_board->config_data->sar_cnt)
-		return brd_fam->sar;
-	else
-		return NULL;
-}
-
-struct sar_var *board_get_sar_table(void)
-{
-	struct mvebu_board_family *brd_fam = get_board_family();
-
-	if (brd_fam->curr_board->configurable &&
-	    brd_fam->curr_board->config_data->sar_cnt)
-		return brd_fam->sar->sar_lookup;
-	else
-		return NULL;
-}
-
 struct cfg_data *board_get_cfg(void)
 {
 	struct mvebu_board_family *brd_fam = get_board_family();

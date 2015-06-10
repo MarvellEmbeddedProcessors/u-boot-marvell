@@ -17,42 +17,19 @@
  * ***************************************************************************
  */
 
-#define DEBUG
-
 #include <common.h>
 #include <errno.h>
 #include <asm/io.h>
-#include <asm/bitops.h>
-#include <linux/compiler.h>
+#include <i2c.h>
+#include <fdtdec.h>
 #include "devel-board.h"
 #include "sar.h"
-
-#include <fdtdec.h>
-#include <asm/arch-mvebu/fdt.h>
-#include <malloc.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
 struct sar_data sar_board;
 #define board_get_sar() (&sar_board)
 #define board_get_sar_table() (sar_board.sar_lookup)
-
-#define I2C_DUMMY_BASE ((int)0x3000000)
-
-/* I2C interface commands */
-static int i2c_write_dummy(uchar chip, uint addr, int alen, uchar *buffer, int len)
-{
-	uintptr_t reg = (uintptr_t)(I2C_DUMMY_BASE) + chip;
-	writeb(*buffer, reg);
-	return 0;
-}
-
-static int i2c_read_dummy(uchar chip, uint addr, int alen, uchar *buffer, int len)
-{
-	uintptr_t reg = (uintptr_t)(I2C_DUMMY_BASE) + chip;
-	(*buffer) = (uchar)readb(reg);
-	return 0;
-}
 
 static int sar_read_reg(u32 *reg)
 {
@@ -64,8 +41,7 @@ static int sar_read_reg(u32 *reg)
 	u8  reg_mask = (1 << reg_width) - 1;
 
 	for (chip = 0; chip  < sar->chip_count; chip++) {
-		/*ret = i2c_read(var->chip_addr, var->reg_offset, 1, &byte, 1);*/
-		ret = i2c_read_dummy(sar->chip_addr[chip], 0, 1, &byte, 1);
+		ret = i2c_read(sar->chip_addr[chip], 0, 1, &byte, 1);
 		if (ret) {
 			printf("Error: %s: Failed reading from chip 0x%x\n",
 			       __func__, sar->chip_addr[chip]);
@@ -88,9 +64,8 @@ int sar_write_reg(u32 sar_reg)
 	u8  reg_mask = (1 << reg_width) - 1;
 
 	for (chip = 0; chip  < sar->chip_count; chip++) {
-		/*ret = i2c_write(uchar chip, uint addr, int alen, uchar *buffer, int len)*/
 		byte = (sar_reg >> (chip * reg_width)) & reg_mask;
-		ret = i2c_write_dummy(sar->chip_addr[chip], 0, 1, &byte, 1);
+		ret = i2c_write(sar->chip_addr[chip], 0, 1, &byte, 1);
 		if (ret) {
 			printf("Error: %s: Failed writing to chip 0x%x\n",
 			       __func__, sar->chip_addr[chip]);

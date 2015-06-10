@@ -195,7 +195,7 @@ typedef enum
 
 /************************* Definitions *******************************************/
 
-#if defined(CONFIG_BOBCAT2) || (defined(CHX_FAMILY) || defined(EXMXPM_FAMILY))
+#if defined(CONFIG_BOBK) || defined(CONFIG_BOBCAT2) || (defined(CHX_FAMILY) || defined(EXMXPM_FAMILY))
 #define MAX_INTERFACE_NUM  		(5)
 #else
 #define MAX_INTERFACE_NUM  		(1)

@@ -347,10 +347,10 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	DEBUG_INIT_FULL_S("mvBoardIdGet: getting board id\n");
 	if (mvTwsiRead(0, &twsiSlave, &boardId, 1) != MV_OK) {
 #ifdef MV88F69XX
-		/* in case of A395 EEPROM_I2C_ADDR is located at 0x57 and not 0x57.
-		 * To keep backwards compatibility with A390 DB boards where EEPROM_I2C_ADDR
-		 * is located at 0x50, both options are checked				*/
-		twsiSlave.slaveAddr.address = EEPROM_I2C_ADDR_SECONDARY;
+		/* In case of A395 BOARD_DEV_TWSI_SATR is located at 0x57 and not 0x50.
+		 * First check if address 0x57 (in DB board it's not valid, and RD board the read will success)
+		 * If the read from 0x57 fail, will try to read from EEPROM again with address 0x50 */
+		twsiSlave.slaveAddr.address = 0x50;
 		if(mvTwsiRead(0, &twsiSlave, &boardId, 1) != MV_OK) {
 #endif
 			mvPrintf("\n\n%s: TWSI Read for Marvell Board ID failed (%x) \n", __func__, mvSysEnvi2cAddrGet());
@@ -442,12 +442,12 @@ MV_STATUS mvHwsTwsiInitWrapper(MV_VOID)
 MV_U32 mvSysEnvi2cAddrGet(MV_VOID)
 {
 #ifdef MV88F69XX
-	/* in case of A395-GP EEPROM_I2C_ADDR is located at 0x57 and not 0x50.
-	 * First check for eeprom should be at address 0x50. (for DB board read
-	 * will success, for RD board read will fail)
+	/* In case of A395 BOARD_DEV_TWSI_SATR is located at 0x57 and not 0x50.
+	 * First check if address 0x57 (in DB board it's not valid, and RD board the read will success)
+	 * If the read from 0x57 fail, will try to read from EEPROM again with address 0x50
 	 * gBoardId is not initialize at the first read */
 	if (gBoardId == -1)
-		return 0x50;
+		return 0x57;
 	return (mvBoardIdGet() == A39X_DB_69XX_ID ? 0x50 : 0x57);
 #else
 	return (mvSysEnvDeviceRevGet() == MV_88F68XX_Z1_ID ? 0x50 : 0x57);

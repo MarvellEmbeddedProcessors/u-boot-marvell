@@ -2247,13 +2247,23 @@ MV_U32 mvBoardIdGet(MV_VOID)
 	 * starting from A0 rev, the EEPROM address is shifted to 0x57.
 	 * if running A38x Z rev, use the old address = 0x50*/
 	if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX && mvCtrlRevGet() == MV_88F68XX_Z1_ID)
-		mvBoardTwsiAddrSet(BOARD_DEV_TWSI_SATR, 0, MV_A38X_Z_REV_BOARDID_I2C_ADDR);
+		mvBoardTwsiAddrSet(BOARD_DEV_TWSI_SATR, 0, MV_BOARDID_I2C_ADDR_50);
 
-	if (mvCtrlModelGet() == MV_6925_DEV_ID)
-		mvBoardTwsiAddrSet(BOARD_DEV_TWSI_SATR, 0, MV_A395_RD_I2C_ADDR);
-
-	MV_U8 readValue;
+	MV_U8 readValue, readFailed = -1;
 	if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, 0, &readValue, 1) != MV_OK) {
+		if (mvCtrlDevFamilyIdGet(0) == MV_88F68XX)
+			readFailed = 1;
+		else {
+			/* In case of A395 BOARD_DEV_TWSI_SATR is located at 0x57 and not 0x50.
+			 * First check if address 0x57 (in DB board it's not valid, and RD board
+			 the read will success). If the read from 0x57 fail, will update the of
+			 the DB struct to 0x50 and read from EEPROM again */
+			mvBoardTwsiAddrSet(BOARD_DEV_TWSI_SATR, 0, MV_BOARDID_I2C_ADDR_50);
+			if (mvBoardTwsiGet(BOARD_DEV_TWSI_SATR, 0, 0, &readValue, 1) != MV_OK)
+				readFailed = 1;
+		}
+	}
+	if (readFailed == 1) {
 		mvOsPrintf("%s: Error: Read from TWSI failed\n", __func__);
 		mvOsPrintf("%s: Set default board ID to %s\n", __func__, board->boardName);
 		readValue = MV_DEFAULT_BOARD_ID;

@@ -186,11 +186,6 @@
 
 #define MAX_SELECTOR_VAL                        13
 
-#ifdef MV88F69XX
-/* For RD board, i2c address of EEPROM is 0x57 */
-#define EEPROM_I2C_ADDR_SECONDARY		0x57
-#endif
-
 #define RD_GET_MODE_ADDR                        0x4C
 #define DB_GET_MODE_SLM1363_ADDR                0x25
 #define DB_GET_MODE_SLM1364_ADDR                0x24

@@ -373,22 +373,26 @@ MV_VOID mvBoardFlashDeviceUpdate(MV_VOID)
 MV_VOID mvBoardInfoUpdate(MV_VOID)
 {
 #ifdef CONFIG_CMD_BOARDCFG
-	MV_U32 smiAddress = -1, boardCfg;
+	MV_U32 smiAddress = -1, boardCfg, gpConfig;
 	MV_U32 smiQuadAddr = 0x8;
 	MV_U32 netComplexOptions = 0x0;
 	MV_U32 defaultNetComplex = (MV_NETCOMP_GE_MAC0_2_RXAUI | MV_NETCOMP_GE_MAC1_2_SGMII_L4);
 	/*default value for serdes5/6 mode is 1(XSMI) because that lane5/6
 		by default connected to RXUAI with XSMI mode*/
 	MV_U32 serdes5Mode = 1, serdes6Mode = 1;
+	MV_BOARD_INFO *board = mvBoardInfoStructureGet();
+	const char *boardNameArr[4] = {"DB-88F6925-GP-EAP", "DB-88F6925-GP-HGW-10G",
+				"DB-88F6925-GP-HGW-2.5G", "DB-88F6925-GP-HGW-2.5-mSATA"};
 
 	switch (mvBoardIdGet()) {
 	case A39X_RD_69XX_ID:
+		gpConfig = mvBoardSysConfigGet(MV_CONFIG_GP_CONFIG);
 		/*each case describes one configuration for db-gp 395 board*/
-		switch (mvBoardSysConfigGet(MV_CONFIG_GP_CONFIG)) {
+		switch (gpConfig) {
 		case MV_GP_CONFIG_EAP_10G:
 			mvBoardSdioConnectionSet(MV_FALSE);
 		case MV_GP_CONFIG_HGW_AP_10G:
-			/*options 0+1: MAC0=>SerDeses 5+6 using RAXUAI
+			/*option 0+1: MAC0=>SerDeses 5+6 using RAXUAI
 				       MAC1=>SerDes 4 using switch*/
 			netComplexOptions |= defaultNetComplex;
 			break;
@@ -407,8 +411,10 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		default:
 			mvOsPrintf("%s: Error: Invalid GP config value," , __func__);
 			mvOsPrintf("Update netComplexOptions with default value.\n");
+			gpConfig = 0;
 			netComplexOptions |= defaultNetComplex;
 		}
+		strcpy(board->boardName, boardNameArr[gpConfig]);
 		mvBoardNetComplexConfigSet(netComplexOptions);
 		mvBoardIoExpanderUpdate();
 		mvBoardMppIdUpdate();

@@ -300,8 +300,8 @@ typedef enum _mvConfigTypeID {
 {MV_CONFIG_5_SMI_MODE, "serdes5Mode", "SerDes Lane #5 SMI MODE", 2, {"SMI", "XSMI"} },				\
 {MV_CONFIG_6_SMI_MODE, "serdes6Mode", "SerDes Lane #6 SMI MODE", 2, {"SMI", "XSMI"} },				\
 {MV_CONFIG_GP_CONFIG, "gpConfig", "GP configurations", 4, {"10G EAP (On board switch)",				\
-	"10G HGW/AP (External Switch-Peridot,3x PCIe)", "2.5G HGWI/AP (On board switch, 3x PCIe)",		\
-	"2.5G HGW/AP (On board switch, 2x PCIe, 1 mSATA)"} },							\
+	"HGW 10G (External Switch-Peridot,3x PCIe)", "HGW 2.5G (On board switch, 3x PCIe)",		\
+	"HGW 2.5G (On board switch, 2x PCIe, 1 mSATA)"} },							\
 };
 
 #endif /* CONFIG_CMD_BOARDCFG */

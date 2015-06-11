@@ -623,6 +623,8 @@ MV_BOARD_INFO gp88f6925_board_info = {
 
 	.pBoardTdmSpiInfo		= NULL,
 
+	.isSdMmcConnected		= MV_TRUE,
+
 	/* NOR init params */
 	.norFlashReadParams		= DB_88F69XX_BOARD_NOR_READ_PARAMS,
 	.norFlashWriteParams		= DB_88F69XX_BOARD_NOR_WRITE_PARAMS,

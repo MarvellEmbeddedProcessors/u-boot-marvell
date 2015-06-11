@@ -386,6 +386,7 @@ MV_VOID mvBoardInfoUpdate(MV_VOID)
 		/*each case describes one configuration for db-gp 395 board*/
 		switch (mvBoardSysConfigGet(MV_CONFIG_GP_CONFIG)) {
 		case MV_GP_CONFIG_EAP_10G:
+			mvBoardSdioConnectionSet(MV_FALSE);
 		case MV_GP_CONFIG_HGW_AP_10G:
 			/*options 0+1: MAC0=>SerDeses 5+6 using RAXUAI
 				       MAC1=>SerDes 4 using switch*/

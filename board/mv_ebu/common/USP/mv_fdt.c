@@ -980,6 +980,28 @@ static int mv_fdt_update_ethnum(void *fdt)
 	} while (node != NULL);
 	mv_fdt_dprintf("Number of ethernet nodes in DT = %d\n", ethPortsNum);
 
+#if defined(CONFIG_ARMADA_39X) && defined(CONFIG_CMD_BOARDCFG)
+	/* This temporary fix for a39x device tree blob,
+	   MAC#3 is working with NSS mode only (MAC#0,#1,#2 works with both modes),
+	   and U-Boot doesn't support NSS mode.
+	   U-Boot: in EAP configuration SerDes Lane #4 is connected to MAC#1.
+	   Linux: change Lane#4 connectivity to use MAC#3 (NSS mode).
+	   1. This fix sets MAC#3 settings for linux, accoding to MAC#1 configuration in U-Boot.
+	   2. Added force link for MAC#2/MAC#3 node
+	   (due to partial switch support in PP3 driver in linux, regarding fetching DT settings)
+	*/
+	MV_U32 gpConfig = mvBoardSysConfigGet(MV_CONFIG_GP_CONFIG);
+	MV_U32 boardId = mvBoardIdGet();
+	if (boardId == A39X_RD_69XX_ID && (gpConfig == 0 || gpConfig == 1)) {
+		MV_U32 netComplex = 0;
+		netComplex |= MV_NETCOMP_GE_MAC3_2_SGMII_L4;
+		netComplex |= MV_NETCOMP_GE_MAC0_2_RXAUI;
+		mvBoardNetComplexConfigSet(netComplex);
+		mvBoardMacStatusSet(1, MV_FALSE);
+		mvBoardMacStatusSet(3, MV_TRUE);
+        }
+#endif
+
 		/* Get path to ethernet node from property value */
 	for (port = 0; port < ethPortsNum; port++) {
 
@@ -1060,7 +1082,7 @@ static int mv_fdt_update_ethnum(void *fdt)
 			case MV_PORT_TYPE_XAUI:
 				sprintf(propval, "xaui");
 				break;
-#endif
+#endif /*CONFIG_NET_COMPLEX*/
 			default:
 				mv_fdt_dprintf("Bad port type received for interface %d\n", port);
 				return 0;
@@ -1081,6 +1103,20 @@ static int mv_fdt_update_ethnum(void *fdt)
 			}
 			mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
 
+#if defined(CONFIG_ARMADA_39X) && defined(CONFIG_CMD_BOARDCFG)
+			/* Temporary fix for A39x, see description in the begining of the func */
+			if (boardId == A39X_RD_69XX_ID) {
+				if ((port == 3) && (gpConfig == 0 || gpConfig == 1)) {
+					sprintf(prop, "force-link");
+					sprintf(propval, "yes");
+					mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, propval, strlen(propval)+1));
+				} else if ((port == 2) && (gpConfig == 2 || gpConfig == 3)) {
+					sprintf(prop, "force-link");
+					sprintf(propval, "yes");
+					mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, propval, strlen(propval)+1));
+				}
+			}
+#endif
 			/* Last property to set is the "status" - common for valid and non-valid ports */
 			sprintf(propval, "okay");
 		}

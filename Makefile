@@ -842,12 +842,40 @@ SPLIMAGE	:= $(srctree)/spl/u-boot-spl.bin
 ifneq ($(CONFIG_TARGET_ARMADA_8K), $(CONFIG_TARGET_ARMADA_LP))
 DOIMAGE		:=  $(srctree)/tools/doimage
 BIN2PHEX	:= $(srctree)/scripts/bin2phex.pl
+DOIMAGE_SEC	:= $(srctree)/tools/secure/sec_img.cfg
+
+ifdef CONFIG_MVEBU_SECURE_BOOT
+DOIMAGE_SEC_FLAGS := -c $(DOIMAGE_SEC)
+DOIMAGE_LIBS_CHECK = \
+	if ! [ -d "/usr/include/polarssl" ]; then \
+			echo "****************************************" >&2; \
+			echo "Missing PolarSSL installation! " >&2; \
+			echo "Please download it from \"tls.mbed.org\"" >&2; \
+			echo "Make sure to use version 1.3.11 or later" >&2; \
+			echo "****************************************" >&2; \
+		exit 1; \
+	else if ! [ -f "/usr/include/libconfig.h" ]; then \
+			echo "********************************************************" >&2; \
+			echo "Missing Libconfig installation!" >&2; \
+			echo "Please download it from \"www.hyperrealm.com/libconfig/\"" >&2; \
+			echo "Alternatively on Debian/Ubuntu system install packages" >&2; \
+			echo "\"libconfig8\" and \"libconfig8-dev\"" >&2; \
+			echo "********************************************************" >&2; \
+		exit 1; \
+	fi \
+	fi
+else
+DOIMAGE_LIBS_CHECK =
+DOIMAGE_SEC_FLAGS =
+endif
+
 ifdef CONFIG_MVEBU_NAND_BLOCK_SIZE
 NAND_DOIMAGE_FLAGS := -t $(CONFIG_MVEBU_NAND_CELL_TYPE) -n $(CONFIG_MVEBU_NAND_BLOCK_SIZE)
 endif
-DOIMAGE_FLAGS	:= -b $(SPLIMAGE) $(NAND_DOIMAGE_FLAGS)
+DOIMAGE_FLAGS	:= -b $(SPLIMAGE) $(NAND_DOIMAGE_FLAGS) $(DOIMAGE_SEC_FLAGS)
 
 doimage: $(obj)/u-boot.bin $(DOIMAGE) $(SPLIMAGE)
+		@$(DOIMAGE_LIBS_CHECK)
 		$(DOIMAGE) $(DOIMAGE_FLAGS) u-boot.bin u-boot-$(CONFIG_SYS_SOC).bin
 
 bin2phex: doimage

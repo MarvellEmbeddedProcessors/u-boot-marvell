@@ -8,6 +8,21 @@ config MVEBU
 	depends on $SYS_VENDOR="mvebu"
 	default y
 
+config MVEBU_SECURE_BOOT
+	bool "Trusted Boot Image format"
+	depends on MVEBU
+	default n
+	help
+	  Instructs the u-boot to create a trusted
+	  boot image for MVEBU device. The trusted
+	  boot image will boot normally on devices
+	  that have secure mode option turned OFF
+	  in their eFUSE. Once the secure boot mode
+	  is selected by eFuse, the trusted boot
+	  image will be verified according to secure
+	  boot flow algorithm described in details
+	  in appropriate device specification.
+
 menu "IO support"
 
 config MVEBU_NAND

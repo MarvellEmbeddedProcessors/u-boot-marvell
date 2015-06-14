@@ -1151,7 +1151,7 @@ static int mv_fdt_update_ethnum(void *fdt)
 static int mv_fdt_update_mpp_config(void *fdt)
 {
 #ifdef CONFIG_NET_COMPLEX
-	if (mvBoardPortTypeGet(1) != MV_PORT_TYPE_RGMII) {
+	if ((!mvBoardIsEthConnected(1)) || (mvBoardPortTypeGet(1) != MV_PORT_TYPE_RGMII)) {
 		/*By default we have the pin ctrl properties in fdt, if MAC1 not connected to RGMII we disable it*/
 		fdt_delprop(fdt, mv_fdt_find_node(fdt, "pp3_platform"), "pinctrl-0");
 		fdt_delprop(fdt, mv_fdt_find_node(fdt, "pp3_platform"), "pinctrl-names");

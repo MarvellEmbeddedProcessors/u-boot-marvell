@@ -4,3 +4,12 @@ config DM_GPIO
 	help
 	  If you want to use driver model for GPIO drivers, say Y.
 	  To use legacy GPIO drivers, say N.
+
+config MVEBU_PINCTL
+	bool "MVEBU Pin control support"
+	default n
+	help
+	  Choose this option to add support
+	  for pinctl driver. This drive implements
+	  the lowlevel control that allows changing
+	  the function of a multi purpose pin

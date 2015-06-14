@@ -26,6 +26,7 @@
 #include <linux/compiler.h>
 #include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/soc.h>
+#include <asm/arch-mvebu/pinctl.h>
 #include "board.h"
 #ifdef CONFIG_MVEBU_DEVEL_BOARD
 #include "devel-board.h"
@@ -143,7 +144,10 @@ int mvebu_board_init(void)
 #endif
 
 	/* mpp_set */
-	mpp_set_and_update(brd->mpp_regs);
+
+#ifdef CONFIG_MVEBU_PINCTL
+	mvebu_pinctl_probe();
+#endif
 
 	return 0;
 }

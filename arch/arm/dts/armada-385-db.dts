@@ -58,6 +58,14 @@
 				status = "disable";
 			};
 
+			pinctl: pinctl@18000 {
+				compatible = "marvell,mvebu-pinctl";
+				bank-name ="armada-380";
+				reg = <0x18000 0x24>;
+				pin-count = <64>;
+				max-func = <7>;
+			};
+
 			spi0: spi@10600 {
 				compatible = "marvell,orion-spi";
 				reg = <0x10600 0x50>;
@@ -113,3 +121,15 @@
 		};
 	};
 };
+
+&pinctl {
+	          /* 0 1 2 3 4 5 6 7 8 9 */
+	pin-func = < 1 1 1 1 1 1 1 1 1 1
+		     1 1 1 1 1 1 1 1 0 6
+		     6 2 1 1 1 1 0 2 2 2
+		     2 2 2 0 0 0 0 2 2 2
+		     2 2 0 2 4 0 0 4 5 5
+		     5 0 5 5 5 5 0 5 5 5
+		     0 0 0 0>;
+};
+

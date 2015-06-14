@@ -1,0 +1,38 @@
+Marvell pinctl bindings
+=======================
+
+The mvebu-pinctl driver enables changing the function
+of multi purpose pins and controlling GPIOs. each dt
+entry describes a single pinctl bank. an SOC may
+have several pinctl banks.
+
+The mvebu-pinctl requires the following proprties:
+	- compatible
+	  	should be "marvell, mvebu-pinctl"
+	- bank-name
+	  	a unique name identifying the bank
+	- reg
+		description of the mpp register base and size
+	- pin-count
+	  	the amount of pins controlled by this bank
+	- max-func
+		the maximum function number supported by this bank
+	- pin-func
+		an array specifying the function per pin
+
+
+Example of a pinctl bank node:
+	pinctl@18000 {
+		compatible = "marvell,mvebu-pinctl";
+		bank-name ="armada-380";
+		reg = <0x18000 0x24>;
+		pin-count = <64>;
+		max-func = <7>;
+		pin-func = < 1 1 1 1 1 1 1 1 1 1
+			     1 1 1 1 1 1 1 1 0 6
+			     6 2 1 1 1 1 0 2 2 2
+			     2 2 2 0 0 0 0 2 2 2
+			     2 2 0 2 4 0 0 4 5 5
+			     5 0 5 5 5 5 0 5 5 5
+			     0 0 0 0>;
+	};

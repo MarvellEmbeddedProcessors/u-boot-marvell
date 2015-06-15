@@ -1,18 +1,18 @@
 /*
  * ***************************************************************************
- * Copyright (C) Marvell International Ltd. and its affiliates
+ * Copyright (C) 2015 Marvell International Ltd.
  * ***************************************************************************
- * Marvell GPL License Option
- * If you received this File from Marvell, you may opt to use, redistribute
- * and/or modify this File in accordance with the terms and conditions of the
- * General Public License Version 2, June 1991 (the "GPL License"), a copy of
- * which is available along with the File in the license.txt file or by writing
- * to the Free Software Foundation, Inc.
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 2 of the License, or any later version.
  *
- * THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE
- * EXPRESSLY DISCLAIMED. The GPL License provides additional details about this
- * warranty disclaimer.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * ***************************************************************************
  */
 

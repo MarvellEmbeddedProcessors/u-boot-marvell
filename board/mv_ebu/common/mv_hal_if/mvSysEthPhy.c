@@ -156,10 +156,19 @@ MV_STATUS mvSysEthPhyXsmiInit(void)
 MV_STATUS mvSysEth10gPhyInit(void)
 {
 	MV_ETHPHY_HAL_DATA halData;
-	MV_U32 port;
+	MV_U32 port, netComplex;
 
 	/* Init the XSMI interface, which is required for the 10G PHY */
 	mvSysEthPhyXsmiInit();
+#ifdef CONFIG_ARMADA_39X
+	netComplex = mvBoardNetComplexConfigGet();
+
+	if (netComplex & MV_NETCOMP_GE_MAC2_2_SGMII_L5)
+		/* SerDes 5 is conneted to XSMI PHY Lane1 on the external Phy */
+		halData.xsmiPhyLaneNum = 1;
+	else	/* SerDes 6 is conneted to XSMI PHY Lane0 by default */
+#endif
+		halData.xsmiPhyLaneNum = 0;
 
 	for (port=0; port < mvCtrlEthMaxPortGet(); port++) {
 		halData.phyAddr[port] = mvBoardPhyAddrGet(port);

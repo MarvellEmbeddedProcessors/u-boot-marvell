@@ -250,6 +250,24 @@ MV_STATUS mvEthX2242PPhy1GInit(MV_U32 ethPortNum)
 	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0x81D4, 0x0006);
 	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0x8194, 0x0600);
 
+	/* check if  EthX2242 phy is connected to XSMI PHY lane1 on the board*/
+	if (eth10gPhyHalData.xsmiPhyLaneNum == 1) {
+		/* power up PCS of secondary lane(lane1, host side) */
+		mvEthPhyXsmiRegWrite(phyAddr, 0x4, 0x2200, 0x1140);
+		/* Power down PCS of primary lane(lane0, host side) */
+		mvEthPhyXsmiRegWrite(phyAddr, 0x4, 0x2000, 0x1940);
+		/* Power up secondary port0 (line side) */
+		mvEthPhyXsmiRegWrite(phyAddr, 0x1f, 0xf403, 0xEFE);
+		/* configure PCS SGMII for secondary port */
+		mvEthPhyXsmiRegWrite(phyAddr, 0x1f, 0xf004, 0x7F);
+		/* connect source N0(line side) to source M0(secondary lane, host side) */
+		mvEthPhyXsmiRegWrite(phyAddr, 0x1f, 0xf400, 0x00C);
+		/* disable all primary lanes(line side) */
+		mvEthPhyXsmiRegWrite(phyAddr, 0x1f, 0xf401, 0x000);
+		/* connect source M0(secondary) to N0 */
+		mvEthPhyXsmiRegWrite(phyAddr, 0x1f, 0xf402, 0x008);
+	}
+
 	initSgmiiModeLineSide(phyAddr);
 
 	mvEthPhyXsmiRegWrite(phyAddr, 0x1E, 0xB1AA, 0x0);

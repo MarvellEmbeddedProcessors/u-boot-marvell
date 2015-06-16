@@ -20,7 +20,7 @@
 obj-y += unit-info.o
 obj-y += soc-init.o
 obj-y += misc.o
-obj-$(CONFIG_MVEBU_MPP) += mpp.o
+obj-$(CONFIG_MVEBU_MPP_BUS) += mpp-bus.o
 obj-y += fdt.o
 obj-y += clock.o
 obj-$(CONFIG_MVEBU_TIMER) += timer_mvebu.o

@@ -37,11 +37,13 @@ int board_get_id(void)
 
 int db_a38x_configure_mpp(void)
 {
+#ifdef CONFIG_MVEBU_MPP_BUS
 #ifdef CONFIG_MVEBU_NAND_BOOT
-	mpp_enable_bus(a38x_db_info.mpp_regs, NAND_0_MPP_BUS, 0);
+	mpp_enable_bus("nand");
 #endif
 #ifdef CONFIG_MVEBU_SPI_BOOT
-	mpp_enable_bus(a38x_db_info.mpp_regs, SPI_0_MPP_BUS, 0);
+	mpp_enable_bus("spi0");
+#endif
 #endif
 	return 0;
 }

@@ -1,0 +1,32 @@
+Marvell mpp-bus bindings
+========================
+
+The mvebu-mpp-bus driver enables controlling buses
+of Multi Purpose Pins(MPP). each dt entry describes a
+single MPP bus. an SOC may have several MPP buses.
+
+The mvebu-mpp-bus requires the following proprties:
+	- compatible
+	  	should be "marvell, mvebu-mpp-bus"
+	- bus-name
+	  	a unique name identifying the bus. this
+		identifier is used to identify the bus
+		when calling mpp bus services
+	- bank-name
+	  	the name of the mpp bank of this bus.
+		see mvebu-pinctl driver.
+	- pin-count
+	  	the amount of pins in this bus.
+	- pins
+		an integer array of pin ids and functions.
+		the first value is the pin id followed by
+		the pin function.
+
+Example of a mpp-bus node:
+	mpp-bus0 {
+		compatible = "marvell,mvebu-mpp-bus";
+		bus-name = "spi0";
+		bank-name = "armada-380";
+		pin-count = <4>;
+		pins = <22 1  23 1  24 1  25 1>;
+	};

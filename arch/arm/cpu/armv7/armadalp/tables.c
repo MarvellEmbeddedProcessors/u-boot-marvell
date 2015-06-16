@@ -67,23 +67,6 @@ char *armadalp_mpp_desc[MAX_MPP_ID + 1][MAX_MPP_OPTS] = {
 /* 3 */	{"GPIO_3", "NF_IO_5", "PTP_TRIG_GEN",	"P3_LED",	"AU_I2S_MCLK",	"ND_IO_5", "SPI_1_MISO"}, /* 1  */
 };
 
-/* Describe the available MPP buses */
-struct mpp_bus armadalp_mpp_buses[MAX_MPP_BUS] = {
-	/* the following entries are temporary examples only -  referenced from A38x */
-	[UART_0_MPP_BUS] = {"UART 0", 2, 1, {{{0, 0x1 }, {0, 0x1} } } },
-	[UART_1_MPP_BUS] = {"UART 1", 2, 2, {{{4, 0x2}, {5, 0x2} }, {{19, 0x6}, {20, 0x6} } } },
-	[I2C_0_MPP_BUS] = {"I2C 0", 2, 1, {{{2, 0x1}, {3, 0x1} } } },
-	[GE_0_MPP_BUS] = {"GE 0", 14, 1, {{{4, 0x1}, {5, 0x1}, {6, 0x1}, {7, 0x1}, {8, 0x1}, {9, 0x1}, {10, 0x1}, {11, 0x1}, \
-										{12, 0x1}, {13, 0x1}, {14, 0x1}, {15, 0x1}, {16, 0x1}, {17, 0x1} } } },
-	[GE_1_MPP_BUS] = {"GE 1", 12, 1, {{{21, 0x2}, {27, 0x2}, {28, 0x2}, {29, 0x2}, {30, 0x2}, {31, 0x2}, {32, 0x2}, {37, 0x2}, {38, 0x2}, {39, 0x2}, {40, 0x2}, {41, 0x2} } } },
-	[SPI_0_MPP_BUS]  = {"SPI 0", 4, 1, {{{22, 0x1}, {23, 0x1}, {24, 0x1}, {25, 0x1} } } },
-	[M_VTT_0_MPP_BUS]  = {"M_VTT_CTRL", 1, 1, {{{43, 0x2} } } },
-	[SDIO_0_MPP_BUS]  = {"SDIO 0", 10, 1, {{{48, 0x5}, {49, 0x5}, {50, 0x5}, {52, 0x5}, {53, 0x5}, {54, 0x5}, {55, 0x5}, {57, 0x5}, {58, 0x5}, {59, 0x5} } } },
-	[NAND_0_MPP_BUS] = {"NAND 0", 14, 1, {{{22, 0x5}, {23, 0x5}, {25, 0x5}, {28, 0x5}, {30, 0x5}, {32, 0x5},
-						{33, 0x5}, {34, 0x5}, {35, 0x5}, {36, 0x5}, {38, 0x5}, {40, 0x5},
-						{41, 0x6}, {42, 0x5} } } },
-};
-
 struct mvebu_soc_info armadalp_soc_info[] = {
 	/* Armada LP A */
 	{
@@ -110,5 +93,4 @@ struct mvebu_soc_family armadalp_family_info = {
 	.base_unit_info = base_unit_mask_table,
 	.soc_table = armadalp_soc_info,
 	.mpp_desc  = (char **)armadalp_mpp_desc,
-	.mpp_buses = armadalp_mpp_buses,
 };

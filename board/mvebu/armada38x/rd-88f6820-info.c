@@ -38,8 +38,10 @@ u16 a38x_rd_unit_disable[MAX_UNIT_ID] = {
 
 int rd_a38x_configure_mpp(void)
 {
+#ifdef CONFIG_MVEBU_MPP_BUS
 #ifdef CONFIG_MVEBU_SPI_BOOT
-	mpp_enable_bus(a38x_rd_info.mpp_regs, SPI_0_MPP_BUS, 0);
+	mpp_enable_bus("spi0");
+#endif
 #endif
 	return 0;
 }

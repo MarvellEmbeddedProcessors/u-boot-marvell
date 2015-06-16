@@ -42,35 +42,6 @@ u16 *soc_get_unit_mask_table(void)
 	return soc_family->base_unit_info;
 }
 
-char **soc_get_mpp_desc_table(void)
-{
-	struct mvebu_soc_family *soc_family = get_soc_family();
-	return soc_family->mpp_desc;
-}
-
-u32 *soc_get_mpp_update_mask(void)
-{
-	struct mvebu_soc_family *soc_family = get_soc_family();
-	return soc_family->mpp_mask;
-}
-u32 *soc_get_mpp_update_val(void)
-{
-	struct mvebu_soc_family *soc_family = get_soc_family();
-	return soc_family->mpp_update;
-}
-u32 *soc_get_mpp_protect_mask(void)
-{
-	struct mvebu_soc_family *soc_family = get_soc_family();
-	return soc_family->mpp_protect;
-}
-
-struct mpp_bus *soc_get_mpp_bus(int bus_id)
-{
-	struct mvebu_soc_family *soc_family = get_soc_family();
-	return soc_family->mpp_buses + bus_id;
-}
-
-
 static int update_soc_units(struct mvebu_soc_info *soc)
 {
 	u16 *unit_mask = soc_get_unit_mask_table();

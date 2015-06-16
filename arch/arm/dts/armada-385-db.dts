@@ -120,6 +120,26 @@
 			status = "okay";
 		};
 	};
+
+	/* This should go only into devel boards */
+	mpp-buses {
+		mpp-bus0 {
+			compatible = "marvell,mvebu-mpp-bus";
+			bus-name = "spi0";
+			bank-name = "armada-380";
+			pin-count = <4>;
+			pins = <22 1  23 1  24 1  25 1>;
+		};
+		mpp-bus1 {
+			compatible = "marvell,mvebu-mpp-bus";
+			bus-name = "nand";
+			bank-name = "armada-380";
+			pin-count = <14>;
+			pins = <22 5  23 5  25 5  28 5 30 5
+				32 5  33 5  34 5  35 5 36 5
+				38 5  40 5  41 6  42 5>;
+		};
+	};
 };
 
 &pinctl {

@@ -29,33 +29,6 @@
 
 char **mpp_get_desc_table(void);
 
-enum mpp_bus_id {
-	UART_0_MPP_BUS,
-	UART_1_MPP_BUS,
-	SPI_0_MPP_BUS,
-	SPI_1_MPP_BUS,
-	NAND_0_MPP_BUS,
-	RGMII_0_MPP_BUS,
-	I2C_0_MPP_BUS,
-	GE_0_MPP_BUS,
-	GE_1_MPP_BUS,
-	M_VTT_0_MPP_BUS,
-	SDIO_0_MPP_BUS,
-	MAX_MPP_BUS
-};
-
-struct mpp_pin {
-	u8 id;
-	u8 val;
-};
-
-struct mpp_bus {
-	char name[MAX_BUS_NAME];
-	int pin_cnt;
-	int bus_cnt;
-	struct mpp_pin pin_data[MAX_BUS_OPTS][MAX_PINS_PER_BUS];
-};
-
 #ifndef CONFIG_MVEBU_MPP
 
 #define mpp_set_pin(mpp_id)
@@ -67,14 +40,13 @@ struct mpp_bus {
 
 
 #else
+int mpp_bus_probe(void);
 
 u8   mpp_get_pin(int mpp_id);
 void mpp_set_pin(int mpp_id, int value);
-int  mpp_enable_bus(u32 *mpp_reg, int bus_id, int bus_alt);
-int  mpp_is_bus_valid(struct mpp_bus *bus);
-int  mpp_is_bus_enabled(struct mpp_bus *bus);
-void mpp_set_and_update(u32 *mpp_reg);
-struct mpp_bus *soc_get_mpp_bus(int bus_id);
+int mpp_enable_bus(char *name);
+int  mpp_is_bus_valid(char *name);
+int  mpp_is_bus_enabled(char *name);
 
 #endif /* CONFIG_MVEBU_MPP */
 

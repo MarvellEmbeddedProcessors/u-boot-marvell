@@ -66,6 +66,16 @@ config MVEBU_MPP
 	  MPP driver, for example, ArmadaLP.
 	  base address is configured under MVEBU_MPP_BASE
 
+config MVEBU_MPP_BUS
+	bool "MPP bus support"
+	depends on MVEBU_PINCTL
+	default n
+	help
+	  Choose this option to add support
+	  for the mpp-bus driver. This driver
+	  is used for enabling or disabling mpp
+	  buses at runtime
+
 config MVEBU_UART_ARLP
 	bool "UART support for ArmadaLP"
 	default n

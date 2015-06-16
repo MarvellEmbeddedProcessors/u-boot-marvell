@@ -27,6 +27,7 @@
 #include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/pinctl.h>
+#include <asm/arch-mvebu/mpp.h>
 #include "board.h"
 #ifdef CONFIG_MVEBU_DEVEL_BOARD
 #include "devel-board.h"
@@ -114,6 +115,10 @@ int mvebu_board_init(void)
 
 	debug("Initializing board\n");
 
+#ifdef CONFIG_MVEBU_PINCTL
+	mvebu_pinctl_probe();
+#endif
+
 	brd_fam = board_init_family();
 	if (!brd_fam) {
 		error("Failed to get board family structure");
@@ -139,14 +144,12 @@ int mvebu_board_init(void)
 	if (brd->unit_mask)
 		update_unit_info(unit_mask, brd->unit_mask, brd->unit_update_mode);
 
-#ifdef CONFIG_MVEBU_DEVEL_BOARD
-	mvebu_devel_board_init(brd_fam);
+#ifdef CONFIG_MVEBU_MPP_BUS
+	mpp_bus_probe();
 #endif
 
-	/* mpp_set */
-
-#ifdef CONFIG_MVEBU_PINCTL
-	mvebu_pinctl_probe();
+#ifdef CONFIG_MVEBU_DEVEL_BOARD
+	mvebu_devel_board_init(brd_fam);
 #endif
 
 	return 0;

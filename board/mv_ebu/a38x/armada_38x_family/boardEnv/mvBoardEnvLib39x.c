@@ -625,3 +625,18 @@ MV_VOID mvBoardMppModuleTypePrint(MV_VOID)
 			mvOsOutput("|     In-Band  |\n");
 	}
 }
+
+/*******************************************************************************
+* mvBoardIsUsb3PortDevice
+* DESCRIPTION: return true USB3 port is in device mode
+*
+* INPUT:  port		- port number
+* OUTPUT: None.
+* RETURN: MV_TRUE: if port is set to device mode
+*         MV_FALSE: otherwise
+*******************************************************************************/
+MV_BOOL mvBoardIsUsb3PortDevice(MV_U32 port)
+{
+	/* Since usb3 device is not supported on current board return false */
+	return MV_FALSE;
+}

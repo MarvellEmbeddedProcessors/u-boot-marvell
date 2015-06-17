@@ -274,7 +274,7 @@ SERDES_MAP HGW_AP_2G_ConfigDefault[MAX_SERDES_LANES] =
 	 { PEX3,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
 	 { PEX2,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
 	 { SGMII2,       __1_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
-	 { SGMIIv3_0,    __1_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
+	 { SGMIIv3_0,    __3_125Gbps,               SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
 };
 
 SERDES_MAP HGW_AP_2_5G_SATA_ConfigDefault[MAX_SERDES_LANES] =
@@ -285,7 +285,7 @@ SERDES_MAP HGW_AP_2_5G_SATA_ConfigDefault[MAX_SERDES_LANES] =
 	 { PEX3,         __5Gbps,                   PEX_ROOT_COMPLEX_x1,         MV_FALSE,       MV_FALSE },
 	 { SATA2,        __6Gbps,                   SERDES_DEFAULT_MODE,         MV_TRUE,        MV_FALSE },
 	 { SGMII2,       __1_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE },
-	 { SGMIIv3_0,    __1_25Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE }
+	 { SGMIIv3_0,    __3_125Gbps,                SERDES_DEFAULT_MODE,         MV_FALSE,       MV_FALSE }
 };
 
 /*************************** Functions implementation *************************/

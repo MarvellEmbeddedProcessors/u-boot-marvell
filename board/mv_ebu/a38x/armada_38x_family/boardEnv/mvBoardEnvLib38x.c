@@ -119,6 +119,27 @@ MV_BOOL mvBoardisAmc(void)
 	return MV_FALSE;
 }
 #endif
+
+/*******************************************************************************
+* mvBoardIsUsb3PortDevice
+* DESCRIPTION: return true USB3 port is in device mode
+*
+* INPUT:  port		- port number
+* OUTPUT: None.
+* RETURN: MV_TRUE: if port is set to device mode
+*         MV_FALSE: otherwise
+*******************************************************************************/
+MV_BOOL mvBoardIsUsb3PortDevice(MV_U32 port)
+{
+	if (port < 0 || port >= MV_USB3_MAX_HOST_PORTS)
+		return MV_FALSE;
+
+	if (mvBoardSatRRead((MV_U32)MV_SATR_DB_USB3_PORT0 + port))
+		return MV_TRUE;
+
+	return MV_FALSE;
+}
+
 /*******************************************************************************
 * mvBoardIsPortInSgmii -
 *

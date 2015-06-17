@@ -595,6 +595,7 @@ MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);
 MV_BOARD_INFO *mvBoardInfoStructureGet(MV_VOID);
 MV_BOOL mvBoardIsAudioConnected(void);
 void mvBoardAudioConnectionSet(MV_BOOL isConnected);
+MV_BOOL mvBoardIsUsb3PortDevice(MV_U32 port);
 MV_VOID mvBoardUsbPortStatusSet(MV_UNIT_ID usbType, MV_U32 usbPort, MV_BOOL usbStatus);
 
 #ifdef CONFIG_SWITCHING_SERVICES

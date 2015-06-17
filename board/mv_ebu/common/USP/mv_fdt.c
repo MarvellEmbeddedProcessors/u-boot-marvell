@@ -135,6 +135,7 @@ static int mv_fdt_update_tdm(void *fdt);
 #ifdef MV_USB_VBUS_CYCLE
 static int mv_fdt_update_usb_vbus(void *fdt);
 #endif
+static int mv_fdt_update_usb_device(void *fdt);
 
 #if 0 /* not compiled, since this routine is currently not in use  */
 static int mv_fdt_remove_prop(void *fdt, const char *path,
@@ -174,6 +175,7 @@ update_fnc_t *update_sequence[] = {
 #ifdef MV_INCLUDE_SWITCH
 	mv_fdt_update_switch,
 #endif
+	mv_fdt_update_usb_device,
 	NULL,
 };
 
@@ -881,6 +883,58 @@ static int mv_fdt_update_usb2(void *fdt)
 static int mv_fdt_update_usb3(void *fdt)
 {
 	return mv_fdt_update_usb(fdt, USB3_UNIT_ID);
+}
+
+/*******************************************************************************
+* mv_fdt_update_usb_device
+*
+* DESCRIPTION: usb3 device status
+* target		: update status field of u3d and udc nodes.
+* node, properties	: property status @ nodes usb3@X, udc@X and udc@X.
+* dependencies		: S@R field 'usb3port0' or 'usb3port1'.
+*
+* INPUT: fdt.
+* OUTPUT: None.
+* RETURN: -1 on error os 0 otherwise.
+*******************************************************************************/
+static int mv_fdt_update_usb_device(void *fdt)
+{
+	char propval[10];				/* property value */
+	const char *prop = "status";			/* property name */
+	char node[64];					/* node name */
+	int i;
+	MV_BOOL isDevice = MV_FALSE;
+
+	/* disable usb3 nodes */
+	for (i = 0; i < MV_USB3_MAX_HOST_PORTS; i++) {
+		if (mvBoardIsUsb3PortDevice(i)) {
+			/* if Port is Device, disable corresponding Host node */
+			sprintf(propval, "disabled");
+			isDevice = MV_TRUE;
+			break;
+		}
+	}
+
+	if (isDevice == MV_FALSE)
+		return 0;
+
+	sprintf(node, "usb3@%x", MV_USB2_USB3_REGS_OFFSET(USB3_UNIT_ID, i));
+	if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0)
+		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+
+	/* enable 'u3d' and 'udc' nodes */
+	sprintf(propval, "okay");
+	sprintf(node, "u3d@%x", MV_USB3_DEVICE_REGS_OFFSET);
+	if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
+		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+		return 0;
+	}
+	sprintf(node, "udc@%x", MV_USB3_DEVICE_USB2_REGS_OFFSET);
+	if (mv_fdt_set_node_prop(fdt, node, prop, propval) < 0) {
+		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
+		return 0;
+	}
+	return 0;
 }
 
 /*******************************************************************************

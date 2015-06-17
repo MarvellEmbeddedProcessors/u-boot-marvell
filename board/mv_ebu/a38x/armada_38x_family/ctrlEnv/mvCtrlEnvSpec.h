@@ -124,6 +124,8 @@ extern "C" {
 #define MV_USB3_REGS_OFFSET(dev)                (0xF0000 + (dev * 0x8000))
 #define MV_USB2_USB3_REGS_OFFSET(unitType, dev) (unitType == USB_UNIT_ID ? \
 							MV_USB_REGS_OFFSET(dev) : MV_USB3_REGS_OFFSET(dev))
+#define MV_USB3_DEVICE_REGS_OFFSET		(0x50000)
+#define MV_USB3_DEVICE_USB2_REGS_OFFSET		(0x54100)
 #define MV_XOR_REGS_OFFSET(unit)                (0x60800 + (unit)*0x100)
 #define MV_CESA_TDMA_REGS_OFFSET(chanNum)       (0x90000 + (chanNum * 0x2000))
 #define MV_CESA_REGS_OFFSET(chanNum)            (0x9D000 + (chanNum * 0x2000))

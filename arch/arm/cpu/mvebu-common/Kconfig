@@ -68,7 +68,7 @@ config MVEBU_MPP
 
 config MVEBU_MPP_BUS
 	bool "MPP bus support"
-	depends on MVEBU_PINCTL
+	depends on (DEVEL_BOARD && MVEBU_PINCTL)
 	default n
 	help
 	  Choose this option to add support

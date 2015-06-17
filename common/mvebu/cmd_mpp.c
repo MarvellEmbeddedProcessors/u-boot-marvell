@@ -23,21 +23,20 @@
 #include <vsprintf.h>
 #include <errno.h>
 #include "asm/arch-mvebu/mpp.h"
-#include "asm/arch/soc-info.h"
 
-static int set_range(int *start, int *end)
+static int set_range(int *start, int *end, int max_pin)
 {
 	/* Print full range */
 	if (*start < 0) {
 		*start = 0;
-		*end = MAX_MPP_ID;
+		*end = max_pin;
 	}
 	/* Print single MPP */
 	if ((*start >= 0) && (*end < 0))
 		*end = *start;
 
 	/* clip end to MAX_MPP_ID */
-	*end = min(*end, MAX_MPP_ID);
+	*end = min(*end, max_pin);
 
 	/* Error checking on range */
 	if (*start > *end) {
@@ -48,109 +47,117 @@ static int set_range(int *start, int *end)
 	return 0;
 }
 
-static int cmd_mpp_list(char **mpp_desc, int start, int end)
+static int cmd_mpp_list(void)
 {
-	int i, pin, ret;
-	char *mpp_opt;
+	int id, pins;
+	const char *name;
 
-	ret = set_range(&start, &end);
-	if (ret)
-		return ret;
+	printf("\n id  name           pins\n");
+	printf("------------------------\n");
 
-	/* Print table head */
-	printf("No  ");
-	for (i = 0; i < MAX_MPP_OPTS; i++)
-		printf("0x%-12x", i);
-	printf("\n-----------------------------------------------------------------------------\n");
+	for (id = 0; id <= 10; id++) {
+		name = mpp_get_bank_name(id);
+		if (name == NULL)
+			continue;
 
-	for (pin = start; pin <= end; pin++) {
-		printf("%02d  ", pin);
-		for (i = 0; i < MAX_MPP_OPTS; i++) {
-			mpp_opt = *(mpp_desc + (pin * MAX_MPP_OPTS) + i);
-			printf("%-14s", mpp_opt);
-		}
-		printf("\n");
+		pins = mpp_get_bank_pins(id);
+		printf(" %d   %-15s %d\n", id, name, pins);
 	}
 
 	printf("\n");
 	return 0;
 }
 
-static int cmd_mpp_read(char **mpp_desc, int start, int end)
+static int cmd_mpp_read(int bank_id, int start, int end)
 {
-	u8 value;
 	int pin, ret;
-	char *mpp_opt;
 
-	ret = set_range(&start, &end);
+	ret = set_range(&start, &end, mpp_get_bank_pins(bank_id) - 1);
 	if (ret)
 		return ret;
 
-	printf("No  Value  Name\n");
-	printf("--------------------------\n");
+	printf("\n mpp bank: %s\n", mpp_get_bank_name(bank_id));
 
-	for (pin = start; pin <= end; pin++) {
-		value = min(mpp_get_pin(pin), (u8)MAX_MPP_OPTS);
-		mpp_opt = *(mpp_desc + (pin * MAX_MPP_OPTS) + value);
+	printf("\n id  function\n");
+	printf("--------------\n");
 
-		printf("%02d  0x%x   %s\n", pin, value, mpp_opt);
-	}
+	for (pin = start; pin <= end; pin++)
+		printf("  %-2d     %-2d\n", pin, mpp_get_pin_func(bank_id, pin));
 
 	return 0;
 }
 
-static int cmd_mpp_write(char **mpp_desc, int pin, int value)
+static int cmd_mpp_write(int bank_id, int pin, int func)
 {
-	char *mpp_opt;
+	int ret;
+	int max_pin_id;
 
-	if ((pin < 0) || (pin > MAX_MPP_ID)) {
-		printf("Error: Pin No %d out of range [%d, %d]\n", pin, 0, MAX_MPP_ID);
+	max_pin_id = mpp_get_bank_pins(bank_id);
+	if (max_pin_id <= 0) {
+		printf("Error: bad bank id %d\n", bank_id);
 		return -EINVAL;
 	}
 
-	mpp_set_pin(pin, value);
+	if ((pin < 0) || (pin > max_pin_id)) {
+		printf("Error: pin %d out of range [%d, %d]\n", pin, 0, max_pin_id);
+		return -EINVAL;
+	}
+
+	ret = mpp_set_pin_func(bank_id, pin, func);
+	if (ret)
+		return ret;
 
 	/* Readback to verify */
-	value = min(mpp_get_pin(pin), (u8)MAX_MPP_OPTS);
-	mpp_opt = *(mpp_desc + (pin * MAX_MPP_OPTS) + value);
-	printf("%02d  0x%x   %s\n", pin, value, mpp_opt);
+	printf("Readback: %02d  0x%x\n", pin, mpp_get_pin_func(bank_id, pin));
 
 	return 0;
 }
 
 
-int do_mpp_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
-			char * const argv[])
+int do_mpp_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	const char *cmd = argv[1];
-	char  **mpp_desc;
-	int value = 0;
+	int func = 0;
 	int start_pin = -1;
 	int end_pin = -1;
+	int bank_id = -1;
 
-	if ((strcmp(cmd, "write") == 0) && (argc < 4)) {
-		printf("Error: Please specify MPP number and value\n");
+
+	if (argc < 2) {
+		printf("Error: Please specify command type list|read|write\n");
 		return 1;
 	}
 
-	mpp_desc = mpp_get_desc_table();
-
-	if (argc > 2)
-		start_pin = (int)simple_strtoul(argv[2], NULL, 10);
-
-	if (argc > 3) {
-		value = (int)simple_strtoul(argv[3], NULL, 16);
-		end_pin = (int)simple_strtoul(argv[3], NULL, 10);
+	if ((strcmp(cmd, "read") == 0) && (argc < 3)) {
+		printf("Error: read requires a bank id\n");
+		return 1;
 	}
 
-	if ((strcmp(cmd, "list") == 0) || (argc < 2)) {
-		if (cmd_mpp_list(mpp_desc, start_pin, end_pin))
+	if ((strcmp(cmd, "write") == 0) && (argc < 5)) {
+		printf("Error: Please specify bank, pin, and function\n");
+		return 1;
+	}
+
+
+	if (argc > 2)
+		bank_id = (int)simple_strtoul(argv[2], NULL, 10);
+
+	if (argc > 3)
+		start_pin = (int)simple_strtoul(argv[3], NULL, 10);
+
+	if (argc > 4) {
+		func = (int)simple_strtoul(argv[4], NULL, 16);
+		end_pin = (int)simple_strtoul(argv[4], NULL, 10);
+	}
+
+	if (strcmp(cmd, "list") == 0) {
+		if (cmd_mpp_list())
 			return -EINVAL;
 	} else if (strcmp(cmd, "read") == 0) {
-		if (cmd_mpp_read(mpp_desc, start_pin, end_pin))
+		if (cmd_mpp_read(bank_id, start_pin, end_pin))
 			return -EINVAL;
 	} else if (strcmp(cmd, "write") == 0) {
-		if (cmd_mpp_write(mpp_desc, start_pin, value))
+		if (cmd_mpp_write(bank_id, start_pin, func))
 			return -EINVAL;
 	} else {
 		printf("ERROR: unknown command to mpp: \"%s\"\n", cmd);
@@ -165,73 +172,61 @@ U_BOOT_CMD(
 	"mpp - Display or modify MPP values\n",
 	"\n"
 	"Display or modify MPP values\n"
-	"\tlist		- Display MPP pins and their options\n"
-	"\tlist <x>	- Display available option of MPP x\n"
-	"\tlist <x> <y>	- Display available option of MPP x to y\n"
-	"\tread		- Read all MPP values\n"
-	"\tread <x>	- Read MPP x value\n"
-	"\tread <x> <y>	- Read MPP x to y values\n"
-	"\twrite x y	- Write y to MPP x\n"
+	"\tlist			- List all MPP banks\n"
+	"\tread <bank>		- Read all MPP values on bank\n"
+	"\tread <bank> <pin>	- Read MPP function\n"
+	"\tread <bank> <x> <y>  - Read MPP values of pin x to y\n"
+	"\twrite <bank> <pin> <func> - Modify the function of an MPP\n"
 );
 
 
-
-static int cmd_mppbus_enable(char **mpp_desc, int bus_id)
+static int cmd_mppbus_enable(int bus_id)
 {
-	struct mpp_bus *bus = soc_get_mpp_bus(bus_id);
-	int pin;
-	int bus_alt = 0;
+	struct mpp_bus *bus = mpp_get_bus(bus_id);
 
-	if (bus_alt > (bus->bus_cnt - 1)) {
-		error("Bus alternative %d not exist on bus %s", bus_alt, bus->name);
-		return -EINVAL;
-	}
+	printf("Enabling MPP bus %s\n", bus->name);
+	mpp_enable_bus(bus->name);
 
-	printf("Enabling bus %s Alternative %d\n", bus->name, bus_alt);
-	for (pin = 0; pin < bus->pin_cnt; pin++) {
-		u8 id = bus->pin_data[bus_alt][pin].id;
-		u8 val = bus->pin_data[bus_alt][pin].val;
-		mpp_set_pin(id, val);
-	}
 	return 0;
 }
 
-static int cmd_mppbus_list(char **mpp_desc, int bus_id)
+static int cmd_mppbus_list(int bus_id)
 {
-	int id, opt, start, end, pin;
+	int id, start, end, i;
 	struct mpp_bus *bus;
+	struct mpp_pin *pin;
+	u32 curr;
 
 	start = bus_id;
 	end = bus_id + 1;
 
 	if (bus_id < 0) {
 		start = 0;
-		end = MAX_MPP_BUS;
+		end = MAX_MPP_BUSES;
 	}
 
-	printf("Id  Name            Pins  Status\n");
+	printf("\nId  Name            Pins  Status\n");
 	printf("----------------------------------\n");
+
 	for (id = start; id < end; id++) {
-		bus = soc_get_mpp_bus(id);
-		if (!mpp_is_bus_valid(bus))
+		bus = mpp_get_bus(id);
+		if (bus == NULL)
 			continue;
-		if (mpp_is_bus_enabled(bus))
-			printf("%02d  %-15s %d     %s\n", id, bus->name, bus->pin_cnt, "Enabled");
-		else
-			printf("%02d  %-15s %d     %s\n", id, bus->name, bus->pin_cnt, "Disabled");
+
+		printf("%02d  %-15s %-2d     %s\n", id, bus->name, bus->pin_cnt,
+		       mpp_is_bus_enabled(bus->name) ? "Enabled" : "Disabled");
 	}
 
+	/* For single bus call, list the bus pins */
 	if (bus_id >= 0) {
-		bus = soc_get_mpp_bus(bus_id);
-		for (opt = 0; opt < bus->bus_cnt; opt++) {
-			printf("\nAlternative %d\n", opt);
-			for (pin = 0; pin < bus->pin_cnt; pin++) {
-				u8 id = bus->pin_data[opt][pin].id;
-				u8 val = bus->pin_data[opt][pin].val;
-				char *pin_name = *(mpp_desc + (id * MAX_MPP_OPTS) + val);
-
-				printf("MPP %d  0x%x %s\n", id, val, pin_name);
-			}
+		printf("\npin  func  curr  status\n");
+		printf("-----------------------\n");
+		bus = mpp_get_bus(bus_id);
+		for (i = 0; i < bus->pin_cnt; i++) {
+			pin = &bus->pins[i];
+			curr = mpp_get_pin_func(bus->bank_id, pin->id);
+			printf(" %d    %d    %d     %s\n", pin->id, pin->func, curr,
+				pin->func == curr ? "set" : "unset");
 		}
 	}
 	return 0;
@@ -241,7 +236,6 @@ int do_mppbus_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])
 {
 	const char *cmd = argv[1];
-	char  **mpp_desc;
 	int bus_id = -1;
 
 	if ((strcmp(cmd, "enable") == 0) && (argc < 3)) {
@@ -249,21 +243,19 @@ int do_mppbus_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 		return 1;
 	}
 
-	mpp_desc = mpp_get_desc_table();
-
 	if (argc > 2)
 		bus_id = (int)simple_strtoul(argv[2], NULL, 10);
 
-	if (bus_id > MAX_MPP_BUS) {
-		error("MPP bus id exceeds maximum of %d\n", MAX_MPP_BUS);
+	if (bus_id > MAX_MPP_BUSES) {
+		error("MPP bus id exceeds maximum of %d\n", MAX_MPP_BUSES);
 		return -EINVAL;
 	}
 
 	if ((strcmp(cmd, "list") == 0) || (argc < 2)) {
-		if (cmd_mppbus_list(mpp_desc, bus_id))
+		if (cmd_mppbus_list(bus_id))
 			return -EINVAL;
 	} else if (strcmp(cmd, "enable") == 0) {
-		if (cmd_mppbus_enable(mpp_desc, bus_id))
+		if (cmd_mppbus_enable(bus_id))
 			return -EINVAL;
 	} else {
 		error("unknown command to mppbus: \"%s\"\n", cmd);

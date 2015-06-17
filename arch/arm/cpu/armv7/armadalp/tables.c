@@ -22,7 +22,6 @@
 #include <asm/arch-mvebu/adec.h>
 #include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/soc.h>
-#include <asm/arch-mvebu/mpp.h>
 
 struct adec_win memory_map[] = {
 #ifndef CONFIG_PALLADIUM
@@ -57,16 +56,6 @@ u16 armadalp_B_unit_disable[MAX_UNIT_ID] = {
 	[USB3_UNIT_ID]		= id_to_mask(1)
 };
 
-/* MPP description table. Informative only */
-char *armadalp_mpp_desc[MAX_MPP_ID + 1][MAX_MPP_OPTS] = {
-/*	0x0        0x1         0x2              0x3             0x4             0x5             0x6 */
-	/* the following entries are temporary examples only -  referenced from A38x */
-/* 0 */	{"GPIO_0", "NF_IO_2", "SPI_0_CSn",	"SPI_1_CSn",	"NA",           "ND_IO_2", "NA"},	/* 0  */
-/* 1 */	{"GPIO_1", "NF_IO_3", "SPI_0_MOSI",	"SPI_1_MOSI",	"NA",	        "ND_IO_3", "NA"},	 /* 1  */
-/* 2 */	{"GPIO_2", "NF_IO_4", "PTP_EVENT_REQ",  "C0_LED",	"AU_I2S_DI",	"ND_IO_4", "SPI_1_MOSI"}, /* 2  */
-/* 3 */	{"GPIO_3", "NF_IO_5", "PTP_TRIG_GEN",	"P3_LED",	"AU_I2S_MCLK",	"ND_IO_5", "SPI_1_MISO"}, /* 1  */
-};
-
 struct mvebu_soc_info armadalp_soc_info[] = {
 	/* Armada LP A */
 	{
@@ -92,5 +81,4 @@ struct mvebu_soc_family armadalp_family_info = {
 	.rev_name = {"Z1", "A0"},
 	.base_unit_info = base_unit_mask_table,
 	.soc_table = armadalp_soc_info,
-	.mpp_desc  = (char **)armadalp_mpp_desc,
 };

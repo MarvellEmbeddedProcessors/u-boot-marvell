@@ -22,7 +22,6 @@
 
 #include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/adec.h>
-#include <asm/arch-mvebu/mpp.h>
 #include <asm/arch/soc-info.h>
 
 #define MAX_SOC_NAME	32
@@ -41,11 +40,9 @@ struct mvebu_soc_family {
 	char	name[MAX_SOC_NAME];
 	char	rev_name[MAX_SOC_REVS][MAX_REV_NAME];
 	u16	*base_unit_info;
-	char	**mpp_desc;
 	struct	mvebu_soc_info *soc_table;
 	struct	mvebu_soc_info *curr_soc;
 
-	struct mpp_bus *mpp_buses;
 	u32 mpp_protect[MAX_MPP_REGS];
 	u32 mpp_update[MAX_MPP_REGS];
 	u32 mpp_mask[MAX_MPP_REGS];

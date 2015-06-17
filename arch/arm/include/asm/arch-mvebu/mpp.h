@@ -17,37 +17,32 @@
  * ***************************************************************************
  */
 
-#ifndef _MPP_H_
-#define _MPP_H_
+#ifndef _MPP_BUS_H_
+#define _MPP_BUS_H_
 
-#include  <asm/arch/soc-info.h>
+#define MAX_MPP_BUSES	10
 
-#define		MAX_MPP_NAME		32
-#define		MAX_BUS_NAME		32
-#define		MAX_PINS_PER_BUS	14
-#define		MAX_BUS_OPTS		2
+struct mpp_pin {
+	u32 id;
+	u32 func;
+};
 
-char **mpp_get_desc_table(void);
+struct mpp_bus {
+	const char *name;
+	int pin_cnt;
+	int bank_id;
+	struct mpp_pin *pins;
+	int valid;
+};
 
-#ifndef CONFIG_MVEBU_MPP
+int  mpp_bus_probe(void);
+int  mpp_enable_bus(const char *name);
+int  mpp_is_bus_enabled(const char *name);
+struct mpp_bus *mpp_get_bus(int id);
 
-#define mpp_set_pin(mpp_id)
-#define mpp_get_pin(mpp_id)
-#define mpp_set_and_update(mpp_reg)
-#define mpp_is_bus_enabled(bus)
-#define mpp_is_bus_valid(bus)
-#define mpp_enable_bus(mpp_reg, bus_id, bus_alt)
+u32 mpp_get_pin_func(int bank_id, u32 pin_id);
+int mpp_set_pin_func(int bank_id, u32 pin_id, u32 func);
+int mpp_get_bank_pins(int bank_id);
+const char *mpp_get_bank_name(int bank_id);
 
-
-#else
-int mpp_bus_probe(void);
-
-u8   mpp_get_pin(int mpp_id);
-void mpp_set_pin(int mpp_id, int value);
-int mpp_enable_bus(char *name);
-int  mpp_is_bus_valid(char *name);
-int  mpp_is_bus_enabled(char *name);
-
-#endif /* CONFIG_MVEBU_MPP */
-
-#endif /* _MPP_H_ */
+#endif /* _MPP_BUS_H_ */

@@ -92,6 +92,11 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_msys_ac3_config.h"
 #include "ddr3_msys_ac3_vars.h"
 #include "ddr3_msys_ac3_topology.h"
+#elif defined(MV_MSYS_BOBK)
+#include "ddr3_msys_bobk.h"
+#include "ddr3_msys_bobk_config.h"
+#include "ddr3_msys_bobk_vars.h"
+#include "ddr3_msys_bobk_topology.h"
 #endif
 
 #include "bootstrap_os.h"
@@ -102,6 +107,8 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #define MARVELL_BOARD	BC2_MARVELL_BOARD_ID_BASE
 #elif defined(MV_MSYS_AC3)
 #define MARVELL_BOARD	AC3_MARVELL_BOARD_ID_BASE
+#elif defined(MV_MSYS_BOBK)
+#define MARVELL_BOARD	BOBK_MARVELL_BOARD_ID_BASE
 #endif
 /* translates topology map definitions to real memory size in bits */
 MV_U32 mvMemSize[] = { ADDR_SIZE_512Mb, ADDR_SIZE_1Gb, ADDR_SIZE_2Gb, ADDR_SIZE_4Gb ,ADDR_SIZE_8Gb };

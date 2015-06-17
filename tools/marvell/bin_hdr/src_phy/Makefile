@@ -70,26 +70,31 @@ TGT_UART = phy_$(BOARD).uart.a
 
 CSRC = $(BOARD)/mvHighSpeedEnvSpec.c
 
-ifeq "$(CONFIG_ARMADA_38X)"  "y"
+ifeq "$(LIBNAME)"  "a38x"
   CSRC += $(BOARD)/mvCtrlPex.c
   CSRC += $(BOARD)/mvHighSpeedEnvSpec-38x.c
   CSRC += $(BOARD)/mvHighSpeedTopologySpec-38x.c
 endif
 
-ifeq "$(CONFIG_ARMADA_39X)"  "y"
+ifeq "$(LIBNAME)"  "a39x"
   CSRC += $(BOARD)/mvCtrlPex.c
   CSRC += $(BOARD)/mvHighSpeedEnvSpec-39x.c
   CSRC += $(BOARD)/mvHighSpeedTopologySpec-39x.c
 endif
 
-ifeq "$(CONFIG_BOBCAT2)"  "y"
+ifeq "$(LIBNAME)"  "msys_bc2"
   CSRC += $(BOARD)/mvCtrlPex.c
   CSRC += $(BOARD)/mvHighSpeedTopologySpec-bc2.c
 endif
 
-ifeq "$(CONFIG_ALLEYCAT3)"  "y"
+ifeq "$(LIBNAME)"  "msys_ac3"
   CSRC += $(BOARD)/mvCtrlPex.c
   CSRC += $(BOARD)/mvHighSpeedTopologySpec-ac3.c
+endif
+
+ifeq "$(LIBNAME)"  "msys_bobk"
+  CSRC += $(BOARD)/mvCtrlPex.c
+  CSRC += $(BOARD)/mvHighSpeedTopologySpec-bobk.c
 endif
 
 COBJ = $(subst .c,.o,$(CSRC))

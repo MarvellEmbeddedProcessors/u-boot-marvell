@@ -18,6 +18,7 @@ sub HELP_MESSAGE
 	print "\t\t\t\t\tarmada_375, armada_375_customer0, armada_375_customer1\n";
 	print "\t\t\t\t\tbobcat2_db, bobcat2_rd, bobcat2_customer0, bobcat2_customer1\n";
 	print "\t\t\t\t\tac3_db, ac3_rd, ac3_customer0, ac3_customer1\n";
+	print "\t\t\t\t\tbobk, bobk_customer0, bobk_customer1\n";
 	print "\t-o\tOutput dir/file. The image will be copied into this dir/file\n";
 	print "\t-e\tBig Endian. If not specified Little endian is used\n";
 	print "\t-m\tDDR type(default: DDR4 for A39x, DDR3 for the rest). Accepts: 3 for DDR3, 4 for DDR4\n";
@@ -104,6 +105,9 @@ if(($opt_b eq "armada_xp_dbgp") or
 	($opt_b eq "bobcat2_rd") or
 	($opt_b eq "bobcat2_customer0") or
 	($opt_b eq "bobcat2_customer1") or
+	($opt_b eq "bobk") or
+	($opt_b eq "bobk_customer0") or
+	($opt_b eq "bobk_customer1") or
 	($opt_b eq "ac3_db") or
 	($opt_b eq "ac3_rd") or
 	($opt_b eq "ac3_customer0") or
@@ -138,6 +142,11 @@ if(($opt_b eq "armada_xp_dbgp") or
 		$targetBoard = substr $board, 8;
 		$ddr3LibBuild="yes";
 	}
+	elsif ( (substr $board,0 , 4) eq "bobk" ) {
+		$boardID="msys-bobk";
+		$targetBoard = substr $board, 5;
+		$ddr3LibBuild="yes";
+	}
 	elsif ( (substr $board,0 , 3) eq "ac3" ) {
 		$boardID="msys-ac3";
 		$targetBoard = substr $board, 8;
@@ -166,7 +175,7 @@ print "\n**** [Cleaning Make]\t*****\n\n";
 
 my $path = Cwd::cwd();
 chdir  ("./tools/marvell");
-if( ($boardID eq "msys-ac3") or ($boardID eq "msys-bc2")) {
+if( ($boardID eq "msys-ac3") or ($boardID eq "msys-bc2") or ($boardID eq "msys-bobk")) {
 	system("make clean BOARD=msys -s");
 } else {
 	system("make clean BOARD=$boardID -s");

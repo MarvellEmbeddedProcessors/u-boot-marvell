@@ -24,7 +24,7 @@ modify this File in accordance with the terms and conditions of the General
 Public License Version 2, June 1991 (the "GPL License"), a copy of which is
 available along with the File in the license.txt file or by writing to the Free
 Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
-on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
+on the worldwide web_http://www.gnu.org/licenses/gpl.txt.
 
 THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
 WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
@@ -61,96 +61,47 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#include "config_marvell.h"     /* Required to identify SOC and Board */
-#include "mv_os.h"
-#include "mvSysEnvLib.h"
-#if defined(MV88F78X60)
-#include "ddr3_axp.h"
-#elif defined(MV88F6710)
-#include "ddr3_a370.h"
-extern MV_U32 mvCpuL2ClkGet(MV_VOID);
-#elif defined(MV88F68XX)
-#include "ddr3_a38x.h"
-#elif defined(MV88F69XX)
-#include "ddr3_a39x.h"
-#elif defined(MV88F66XX)
-#include "ddr3_alp.h"
-extern MV_U32 mvCpuL2ClkGet(MV_VOID);
-#elif defined(MV88F672X)
-#include "ddr3_a375.h"
-extern MV_U32 mvCpuL2ClkGet(MV_VOID);
-#elif defined(MV_MSYS_BC2)
-#include "ddr3_msys_bc2.h"
-#elif defined(MV_MSYS_BOBK)
-#include "ddr3_msys_bobk.h"
-#elif defined(MV_MSYS_AC3)
-#include "ddr3_msys_ac3.h"
-#else
-#error "No SOC define for uart in binary header."
-#endif
-#define UBOOT_CNTR              0       /* counter to use for uboot timer  0,1 */
 
-void __udelay(unsigned long usec)
-{
-    unsigned long delayticks;
-    unsigned int cntmrCtrl;
+#ifndef _INC_MSYS_BOBK_TOPOLOGY_H
+#define _INC_MSYS_BOBK_TOPOLOGY_H
 
-    /* In case udelay is called before timier was initialized */
-    delayticks = (usec * (MV_BOARD_REFCLK / 1000000));
-    /* init the counter */
-    MV_REG_WRITE(CNTMR_RELOAD_REG(UBOOT_CNTR),delayticks);
-    MV_REG_WRITE(CNTMR_VAL_REG(UBOOT_CNTR),delayticks);
+#include "ddr3_msys_bobk_config.h"
+#include "mvDdr3LoggingDef.h"
 
-    /* set control for timer \ cunter and enable */
-    /* read control register */
-    cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
-    cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
+#define INTERFACE_BUS_MASK_32BIT	0xF
+#define DYNAMIC_CS_SIZE_CONFIG
 
-	/* check if 25Mhz as ref clock is supported by SoC */
-	if (mvSysEnvTimerIsRefClk25Mhz())
-		cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+/************************************* Customer Boards Topology *************************************/
+MV_HWS_TOPOLOGY_MAP TopologyMap[]=  {{
+    /* 1st Customer board */
+    0x10, /* active interfaces */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                             speed_bin      mem_dev_width mem_size frequency   casL casWL     temperature */
+ {  {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH}} ,
+    INTERFACE_BUS_MASK_32BIT  /* Buses mask */
+    },
+ };
 
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
+#else /* CONFIG_CUSTOMER_BOARD_SUPPORT */
+/************************************* Marvell Boards Topology *************************************/
+MV_HWS_TOPOLOGY_MAP TopologyMap[] =  {{
+    /* 1st Marvell board */
+    0x10, /* active interfaces */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                                         speed_bin           memory_device_width  mem_size  frequency  casL casWL      temperature */
+ {  {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH} ,
+    {{{0x1,1,0,0}, {0x1,1,0,0}, {0x2,0,0,0}, {0x2,0,0,0}, {0,0,0,0}}, SPEED_BIN_DDR_1866M, BUS_WIDTH_16, MEM_4G, DDR_FREQ_667, 0 ,   0 , MV_HWS_TEMP_HIGH}} ,
+    INTERFACE_BUS_MASK_32BIT  /* Buses mask */
+    },
+ };
 
-    while(MV_REG_READ(CNTMR_VAL_REG(UBOOT_CNTR)));
+#endif /* CONFIG_CUSTOMER_BOARD_SUPPORT */
 
-    /* disable times*/
-    cntmrCtrl &= ~CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-}
-void __timerSet(unsigned long usec)
-{
-    unsigned int cntmrCtrl;
-    unsigned long startTicks;
+#endif /* _INC_MSYS_BOBK_TOPOLOGY_H */
 
-    /* In case udelay is called before timier was initialized */
-    startTicks = (usec * (MV_BOARD_REFCLK / 1000000));
-    /* init the counter */
-    MV_REG_WRITE(CNTMR_RELOAD_REG(UBOOT_CNTR),startTicks);
-    MV_REG_WRITE(CNTMR_VAL_REG(UBOOT_CNTR),startTicks);
-
-    /* set control for timer \ cunter and enable */
-    /* read control register */
-    cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
-    cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-
-}
-MV_U32 __timerGet(void)
-{
-    return MV_REG_READ(CNTMR_VAL_REG(UBOOT_CNTR));
-}
-
-void __timerDisable(void)
-{
-    unsigned int cntmrCtrl;
-    cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
-    cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
-    /* disable times*/
-    cntmrCtrl &= ~CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-}

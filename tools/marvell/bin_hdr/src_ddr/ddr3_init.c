@@ -98,6 +98,7 @@ Copyright (C) Marvell International Ltd. and its affiliates
 #include "ddr3_msys_bc2_config.h"
 #include "ddr3_msys_bc2_vars.h"
 #include "ddr3_msys_bc2_topology.h"
+
 #elif defined(MV_MSYS_AC3)
 #include "ddr3_msys_ac3.h"
 #include "ddr3_msys_ac3_config.h"

@@ -79,6 +79,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_a39x.h"
 #elif defined(MV_MSYS_BC2)
 #include "ddr3_msys_bc2.h"
+#elif defined(MV_MSYS_BOBK)
+#include "ddr3_msys_bobk.h"
 #elif defined(MV_MSYS_AC3)
 #include "ddr3_msys_ac3.h"
 #else

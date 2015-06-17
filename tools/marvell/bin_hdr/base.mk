@@ -177,6 +177,15 @@ ifeq "$(CONFIG_ALLEYCAT3)"  "y"
   CFLAGS += -DCONFIG_ALLEYCAT3
 endif
 
+# BobK
+ifeq "$(CONFIG_BOBK)"  "y"
+  NEW_TIP = yes
+  SILNAME = BobK
+  LIBNAME = msys_bobk
+  BOARDNAME = msys_bobk
+  CFLAGS += -DCONFIG_BOBK
+endif
+
 CROSS    = $(CROSS_COMPILE_BH)
 LD       = $(CROSS)ld
 CC       = $(CROSS)gcc

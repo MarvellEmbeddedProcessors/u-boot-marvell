@@ -162,6 +162,11 @@
 /*********************************/
 #elif defined(CONFIG_ALLEYCAT3) /* general define for customer compilation */
 	#define MV_MSYS_AC3
+/*********************************/
+/* defines for BOBK        */
+/*********************************/
+#elif defined(CONFIG_BOBK) /* general define for customer compilation */
+    #define MV_MSYS_BOBK
 #endif
 
 #endif  /* __CONFIG_MARVELL_H */

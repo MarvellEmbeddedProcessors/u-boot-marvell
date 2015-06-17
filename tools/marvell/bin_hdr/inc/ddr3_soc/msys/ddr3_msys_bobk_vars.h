@@ -24,7 +24,7 @@ modify this File in accordance with the terms and conditions of the General
 Public License Version 2, June 1991 (the "GPL License"), a copy of which is
 available along with the File in the license.txt file or by writing to the Free
 Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 or
-on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
+on the worldwide web_http://www.gnu.org/licenses/gpl.txt.
 
 THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE IMPLIED
 WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY
@@ -61,96 +61,67 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-#include "config_marvell.h"     /* Required to identify SOC and Board */
-#include "mv_os.h"
-#include "mvSysEnvLib.h"
-#if defined(MV88F78X60)
-#include "ddr3_axp.h"
-#elif defined(MV88F6710)
-#include "ddr3_a370.h"
-extern MV_U32 mvCpuL2ClkGet(MV_VOID);
-#elif defined(MV88F68XX)
-#include "ddr3_a38x.h"
-#elif defined(MV88F69XX)
-#include "ddr3_a39x.h"
-#elif defined(MV88F66XX)
-#include "ddr3_alp.h"
-extern MV_U32 mvCpuL2ClkGet(MV_VOID);
-#elif defined(MV88F672X)
-#include "ddr3_a375.h"
-extern MV_U32 mvCpuL2ClkGet(MV_VOID);
-#elif defined(MV_MSYS_BC2)
-#include "ddr3_msys_bc2.h"
-#elif defined(MV_MSYS_BOBK)
-#include "ddr3_msys_bobk.h"
-#elif defined(MV_MSYS_AC3)
-#include "ddr3_msys_ac3.h"
-#else
-#error "No SOC define for uart in binary header."
-#endif
-#define UBOOT_CNTR              0       /* counter to use for uboot timer  0,1 */
 
-void __udelay(unsigned long usec)
+#ifndef _INC_MSYS_BOBK_VARS_H
+#define _INC_MSYS_BOBK_VARS_H
+
+#include "ddr3_msys_bobk_config.h"
+#include "mvDdr3TopologyDef.h"
+
+/*Tune internal training params values*/
+#define MV_TUNE_TRAINING_PARAMS_CK_DELAY 		150
+#define MV_TUNE_TRAINING_PARAMS_PHYREG3VAL		0xA
+
+#define MV_TUNE_TRAINING_PARAMS_PRI_DATA	123
+#define MV_TUNE_TRAINING_PARAMS_NRI_DATA	123
+#define MV_TUNE_TRAINING_PARAMS_PRI_CTRL	74
+#define MV_TUNE_TRAINING_PARAMS_NRI_CTRL	74
+
+#define MV_TUNE_TRAINING_PARAMS_P_ODT_DATA	45
+#define MV_TUNE_TRAINING_PARAMS_N_ODT_DATA	45
+#define MV_TUNE_TRAINING_PARAMS_P_ODT_CTRL	45
+#define MV_TUNE_TRAINING_PARAMS_N_ODT_CTRL	45
+
+#define MV_TUNE_TRAINING_PARAMS_DIC			0x2
+#define MV_TUNE_TRAINING_PARAMS_ODT_CONFIG	0x120012
+#define MV_TUNE_TRAINING_PARAMS_RTT_NOM		0x44
+#define MV_TUNE_TRAINING_PARAMS_RTT_WR		0x0 /*off*/
+
+
+typedef struct __mvDramMcInit {
+	MV_U32 reg_addr;
+	MV_U32 reg_value;
+	MV_U32 reg_mask;
+} MV_DRAM_MC_INIT;
+
+typedef struct __mvDramModes {
+    char *mode_name;
+    MV_U8 cpuFreq;
+    MV_U8 fabFreq;
+    MV_U8 chipId;
+    MV_U8 chipBoardRev;
+    MV_DRAM_MC_INIT *regs;
+} MV_DRAM_MODES;
+
+MV_DRAM_MODES ddr_modes[] =
 {
-    unsigned long delayticks;
-    unsigned int cntmrCtrl;
+    /*  Conf name     CPUFreq    	FabFreq  Chip ID   Chip/Board          MC regs*/
+};
 
-    /* In case udelay is called before timier was initialized */
-    delayticks = (usec * (MV_BOARD_REFCLK / 1000000));
-    /* init the counter */
-    MV_REG_WRITE(CNTMR_RELOAD_REG(UBOOT_CNTR),delayticks);
-    MV_REG_WRITE(CNTMR_VAL_REG(UBOOT_CNTR),delayticks);
-
-    /* set control for timer \ cunter and enable */
-    /* read control register */
-    cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
-    cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-
-	/* check if 25Mhz as ref clock is supported by SoC */
-	if (mvSysEnvTimerIsRefClk25Mhz())
-		cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
-
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-
-    while(MV_REG_READ(CNTMR_VAL_REG(UBOOT_CNTR)));
-
-    /* disable times*/
-    cntmrCtrl &= ~CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-}
-void __timerSet(unsigned long usec)
+MV_DRAM_DLB_CONFIG ddr3DlbConfigTable[] = /* TBD !!!!! */
 {
-    unsigned int cntmrCtrl;
-    unsigned long startTicks;
+	{REG_STATIC_DRAM_DLB_CONTROL, 		0x2000005C},
+	{DLB_BUS_OPTIMIZATION_WEIGHTS_REG, 	0x0008C19E},
+	{DLB_AGING_REGISTER, 				0x0F7F007F},
+	{DLB_EVICTION_CONTROL_REG, 			0x00000209},
+	{DLB_EVICTION_TIMERS_REGISTER_REG, 	0x00FF0000},
+	{DLB_USER_COMMAND_REG, 				0x00000000},
+	{MBUS_UNITS_PRIORITY_CONTROL_REG, 	0x55555555},
+	{FABRIC_UNITS_PRIORITY_CONTROL_REG, 0xA},
+	{MBUS_UNITS_PREFETCH_CONTROL_REG, 	0xffff},
+	{FABRIC_UNITS_PREFETCH_CONTROL_REG, 0xf0f},
+	{0x0, 0x0}
+};
 
-    /* In case udelay is called before timier was initialized */
-    startTicks = (usec * (MV_BOARD_REFCLK / 1000000));
-    /* init the counter */
-    MV_REG_WRITE(CNTMR_RELOAD_REG(UBOOT_CNTR),startTicks);
-    MV_REG_WRITE(CNTMR_VAL_REG(UBOOT_CNTR),startTicks);
+#endif /* _INC_MSYS_BOBK_VARS_H */
 
-    /* set control for timer \ cunter and enable */
-    /* read control register */
-    cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
-    cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-
-}
-MV_U32 __timerGet(void)
-{
-    return MV_REG_READ(CNTMR_VAL_REG(UBOOT_CNTR));
-}
-
-void __timerDisable(void)
-{
-    unsigned int cntmrCtrl;
-    cntmrCtrl = MV_REG_READ(CNTMR_CTRL_REG(UBOOT_CNTR));
-    cntmrCtrl &= ~CTCR_ARM_TIMER_AUTO_EN(UBOOT_CNTR);
-    cntmrCtrl |= CTCR_ARM_TIMER_25MhzFRQ_EN(UBOOT_CNTR);
-    /* disable times*/
-    cntmrCtrl &= ~CTCR_ARM_TIMER_EN(UBOOT_CNTR);
-    MV_REG_WRITE(CNTMR_CTRL_REG(UBOOT_CNTR),cntmrCtrl);
-}

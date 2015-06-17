@@ -27,6 +27,9 @@
 #if defined(MV_MSYS_BC2)
 #include "ddr3_msys_bc2.h"
 #include "ddr3_msys_bc2_config.h"
+#if defined(MV_MSYS_BOBK)
+#include "ddr3_msys_bobk.h"
+#include "ddr3_msys_bobk_config.h"
 #elif defined(MV_MSYS_AC3)
 #include "ddr3_msys_ac3.h"
 #include "ddr3_msys_ac3_config.h"

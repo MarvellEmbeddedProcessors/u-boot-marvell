@@ -73,6 +73,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(MV_MSYS_BC2)
 #include "ddr3_msys_bc2.h"
 #include "ddr3_msys_bc2_config.h"
+#elif defined(MV_MSYS_BOBK)
+#include "ddr3_msys_bobk.h"
+#include "ddr3_msys_bobk_config.h"
 #elif defined(MV_MSYS_AC3)
 #include "ddr3_msys_ac3.h"
 #include "ddr3_msys_ac3_config.h"
@@ -122,6 +125,7 @@ MV_OP_EXT_PARAMS usb2PowerUpParams[] =
 	{ USB_REG_UNIT,    0x50800,     0x80000000, { 0x80000000 }, 1,     1000 }  /* check PLL_READY  is set*/
 };
 
+#ifdef MV_HWS_COM_PHY_SERDES
 /******************/
 /*    SGMII       */
 /******************/
@@ -264,7 +268,7 @@ MV_OP_EXT_PARAMS sgmiiPowerDownCtrlParams[] =
 	{ SERDES_UNIT,  0x0,   0x1802,  { 0x0 },   0,      0 },
 	{ SERDES_UNIT,  0x4,   0x4000,  { 0x0 },   0,      0 }
 };
-
+#endif
 /**************************************************************************************/
 
 /*********************************** Enums ************************************/
@@ -390,14 +394,18 @@ MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray)
 	return MV_OK;
 }
 
-#if defined MV_MSYS_AC3
-
+#if defined (MV_MSYS_AC3) || defined (MV_MSYS_BOBK)
 /*AC3: check S@R for PCIe mode (EP/RC) ****************************************/
 MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
 {
 	MV_U32 uiReg = 0;
+#ifdef MV_MSYS_AC3
 	/*Read AC3 SatR configuration SAR0[14]*/
 	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, REG_DEVICE_SAR0_ADDR, &uiReg, BIT14));
+#else
+    /*Read BOBK SatR configuration TBD*/
+    mvPrintf("%s: TBD- Read BOBK SatR config... \n", __func__);
+#endif
 	return  (uiReg == 0);
 }
 
@@ -695,7 +703,8 @@ MV_VOID mvSerdesSeqInit(MV_VOID)
 	serdesSeqDb[USB2_POWER_UP_SEQ].cfgSeqSize  = sizeof(usb2PowerUpParams) / sizeof(MV_OP_EXT_PARAMS);
 	serdesSeqDb[USB2_POWER_UP_SEQ].dataArrIdx  = 0; /* Only USB2 uses these configurations */
 
-	/* SGMII_INT_SPEED_CONFIG_SEQ sequence init */
+#ifdef MV_HWS_COM_PHY_SERDES
+    /* SGMII_INT_SPEED_CONFIG_SEQ sequence init */
 	serdesSeqDb[SGMII_INT_SPEED_CONFIG_SEQ].opParamsPtr = sgmiiSpeedIntConfigParams;
 	serdesSeqDb[SGMII_INT_SPEED_CONFIG_SEQ].cfgSeqSize  = sizeof(sgmiiSpeedIntConfigParams) / sizeof(MV_OP_EXT_PARAMS);
 	serdesSeqDb[SGMII_INT_SPEED_CONFIG_SEQ].dataArrIdx  = 0 /* speed */;
@@ -754,6 +763,7 @@ MV_VOID mvSerdesSeqInit(MV_VOID)
 	serdesSeqDb[SGMII_POWER_DOWN_SEQ].opParamsPtr = sgmiiPowerDownCtrlParams;
 	serdesSeqDb[SGMII_POWER_DOWN_SEQ].cfgSeqSize  = sizeof(sgmiiPowerDownCtrlParams) / sizeof(MV_OP_EXT_PARAMS);
 	serdesSeqDb[SGMII_POWER_DOWN_SEQ].dataArrIdx  = 0;
+#endif
 }
 
 /****************************************************************************/
@@ -916,7 +926,6 @@ MV_STATUS mvSerdesPowerUpCtrl(
 	MV_BOOL			swapTx
 )
 {
-
 	DEBUG_INIT_FULL_S("\n### mvSerdesPowerUpCtrl ###\n");
 
 	DEBUG_INIT_FULL_C("serdes num = ", serdesNum, 2);
@@ -930,6 +939,7 @@ MV_STATUS mvSerdesPowerUpCtrl(
 			/* in BC2-A0 there is no MSYS Serdes support so it is skipped */
 			return MV_OK;
 		}
+#ifdef MV_HWS_COM_PHY_SERDES
 
 		DEBUG_INIT_FULL_C("== Init SGMII\n", (serdesType == SGMII0 ? 0 :1), 1);
 		CHECK_STATUS(mvHwsComH28nmSerdesPowerCtrl(serdesNum, serdesPowerUp));
@@ -937,6 +947,7 @@ MV_STATUS mvSerdesPowerUpCtrl(
 		CHECK_STATUS(mvHwsComH28nmSerdesPolaritySwap(serdesNum, MV_FALSE, swapTx));
 		return mvHwsComH28nmSerdesTxIfSelect(serdesNum);
 
+#endif
 	case PEX0:
 		DEBUG_INIT_FULL_S("== Init PEX0\n");
 		if(mvCtrlIsPexEndPointMode() == MV_TRUE) {

@@ -71,9 +71,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "generalInit.h"
 #include "mvSysEnvLib.h"
 
-#if defined(MV_MSYS_AC3)
-#include "ddr3_msys_ac3.h"
-#endif
+
 
 #define SWITCH_MBUS_WIN_CTRL_VAL			((0x3FF << 16) | (0x3 << 4) | 0x1) /* 64MB window, Target = Switching core */
 #define SWITCH_MBUS_WIN_BASE_VAL			0xA8000000
@@ -104,7 +102,7 @@ static inline MV_VOID mvMbusWinConfig()
 	}
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(SWITCH_WIN_ID),  SWITCH_MBUS_WIN_CTRL_VAL);
 
-#if defined(MV_MSYS_AC3)
+#ifdef MV_USB_UNIT
 	/* Configure memory window for USB registers access */
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_BASE_REG(USB_WIN_ID),  USB_MBUS_WIN_BASE_VAL);
 	if (AHB_TO_MBUS_WIN_REMAP_LOW_REG(USB_WIN_ID)) {
@@ -144,7 +142,7 @@ static inline MV_VOID mvMbusWinConfig()
 		mmuTableEntryAddr +=  4;
 	}
 
-#if defined(MV_MSYS_AC3)
+#ifdef MV_USB_UNIT
 	/* Fill in single descriptor for 1MB USB window */
 	mmuTableEntryAddr = mmuTableBase + (USB_MBUS_WIN_BASE_VAL >> 18); /* Should be inside the Reserved2 region */
 	mmuTableEntry = MV_MEMIO_LE32_READ(mmuTableEntryAddr);

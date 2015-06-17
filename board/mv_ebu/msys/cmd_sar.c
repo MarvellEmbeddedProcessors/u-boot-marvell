@@ -27,7 +27,11 @@
 #if defined CONFIG_ALLEYCAT3
 	extern MV_BOARD_INFO *marvellAC3BoardInfoTbl[];
 	MV_BOARD_INFO **mvMsysBoardInfoTbl = marvellAC3BoardInfoTbl;
-#else
+#elif defined CONFIG_BOBCAT2
+	extern MV_BOARD_INFO *marvellBC2BoardInfoTbl[];
+	MV_BOARD_INFO **mvMsysBoardInfoTbl = marvellBC2BoardInfoTbl;
+#elif defined CONFIG_BOBK
+	/* TODO -use the BC2 settings for compilation */
 	extern MV_BOARD_INFO *marvellBC2BoardInfoTbl[];
 	MV_BOARD_INFO **mvMsysBoardInfoTbl = marvellBC2BoardInfoTbl;
 #endif
@@ -52,6 +56,8 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 	CMD_OOB0_CON,
 	CMD_OOB1_CON,
 	CMD_PEX_GEN1,
+#elif defined(CONFIG_BOBK)
+	/* TODO */
 #elif defined(CONFIG_ALLEYCAT3)
 	CMD_PCIE_CLOCK,
 	CMD_PLL_CLOCK,
@@ -79,6 +85,16 @@ enum { /* Update defaultValue[] if any change to this enum has made!*/
 						   0,	/* OOB0 connection */
 						   0,	/* OOB1 connection */
 						   0,	/* Force AMC RC GEN1 PCIe */
+						   0,	/* Board ID */
+						   0,	/* PCIe mode */
+						   3,	/* Boot source */
+						   0 };	/* Device ID */
+	MV_U32 coreClockTbl[] = MV_CORE_CLK_TBL_BC2;
+	MV_CPUDDR_MODE cpuDdrClkTbl[] = MV_CPU_DDR_CLK_TBL_BC2;
+#elif defined(CONFIG_BOBK)
+	/* TODO */
+	int defaultValue[] = { 0,	/* Core clock */
+						   3,	/* CPU/DDR clock */
 						   0,	/* Board ID */
 						   0,	/* PCIe mode */
 						   3,	/* Boot source */
@@ -148,6 +164,8 @@ static int sar_cmd_get(const char *cmd)
 		return CMD_OOB1_CON;
 	if (strcmp(cmd, "pciegen1") == 0)
 		return CMD_PEX_GEN1;
+#elif defined CONFIG_BOBK
+	/* TODO */
 #elif defined CONFIG_ALLEYCAT3
 	if (strcmp(cmd, "pciclock") == 0)
 		return CMD_PCIE_CLOCK;
@@ -260,6 +278,8 @@ static int do_sar_list(int mode)
 		printf("\t|  1  |   Force GEN1        |\n");
 		printf("\t----------------------------\n");
 		break;
+#elif defined CONFIG_BOBK
+	/* TODO */
 #elif defined CONFIG_ALLEYCAT3
 	case CMD_DDR_ECC_EN:
 		printf("Determines the DDR ECC status:\n");
@@ -414,6 +434,9 @@ static int do_sar_read(int mode)
 			printf("pciegen1 Error: failed reading PCIe GEN1 enforcement mode\n");
 		break;
 
+#elif defined CONFIG_BOBK
+	/* TODO */
+
 #elif defined CONFIG_ALLEYCAT3
 	case CMD_DDR_ECC_EN:
 		if (mvBoardDdrEccEnableGet(&tmp) == MV_OK)
@@ -553,6 +576,9 @@ static int do_sar_write(int mode, int value)
 	case CMD_PEX_GEN1:
 		rc = mvBoardForcePexGen1Set(tmp);
 		break;
+#elif defined CONFIG_BOBK
+	/* TODO */
+
 #elif defined CONFIG_ALLEYCAT3
 	case CMD_DDR_ECC_EN:
 		rc = mvBoardDdrEccEnableSet(tmp);
@@ -668,6 +694,8 @@ U_BOOT_CMD(SatR, 6, 1, do_sar,
 "oob0con                    - OOB-0 to physical port connection\n"
 "oob1con                    - OOB-1 to physical port connection\n"
 "pciegen1                   - Force PCIe GEN1 on AMC RC connection\n"
+#elif defined CONFIG_BOBK
+	/* TODO */
 #elif defined CONFIG_ALLEYCAT3
 "pciclock                   - PCIe reference clock source\n"
 "avsmode                    - Adaptive Voltage Scaling mode. Not valid for rev.A0\n"

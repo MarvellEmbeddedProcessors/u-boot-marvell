@@ -79,19 +79,23 @@ CSRC_DRV = $(DRV)/mv_uart.c $(DRV)/mv_twsi.c $(DRV)/mv_time.c
 CSRC_UTILS = $(UTILS)/utils.c $(UTILS)/printf.c $(UTILS)/mvHwsSiliconIf.c
 CSRC_SYS_ENV = $(SYS_ENV)/mvSysEnvLib.c
 
-ifeq "$(CONFIG_ALLEYCAT3)"  "y"
+ifeq "$(LIBNAME)"  "msys_bobk"
+  CSRC_UTILS += $(UTILS)/mv_seq_exec_ext.c
+  #BOBK bin header has 192KB (this sets linker script structure)
+  CPPFLAGS += -DTIP_BUILD_LD_192KB
+else ifeq "$(LIBNAME)"  "msys_ac3"
   CSRC_UTILS += $(UTILS)/mv_seq_exec_ext.c
   #AC3 bin header has 100KB (this sets linker script structure)
   CPPFLAGS += -DTIP_BUILD_LD_100KB
-else ifeq "$(CONFIG_BOBCAT2)"  "y"
+else ifeq "$(LIBNAME)"  "msys_bc2"
   CSRC_UTILS += $(UTILS)/mv_seq_exec_ext.c
   #BC2 bin header has 100KB (this sets linker script structure)
   CPPFLAGS += -DTIP_BUILD_LD_100KB
-else ifeq "$(CONFIG_ARMADA_38X)"  "y"
+else ifeq "$(LIBNAME)"  "a38x"
   CSRC_UTILS += $(UTILS)/mv_seq_exec.c
   #A-380 bin header has 128KB (this sets linker script structure)
   CPPFLAGS += -DTIP_BUILD_LD_128KB
-else ifeq "$(CONFIG_ARMADA_39X)"  "y"
+else ifeq "$(LIBNAME)"  "a39x"
   CSRC_UTILS += $(UTILS)/mv_seq_exec.c
   #A-390 bin header has 128KB (this sets linker script structure)
   CPPFLAGS += -DTIP_BUILD_LD_128KB

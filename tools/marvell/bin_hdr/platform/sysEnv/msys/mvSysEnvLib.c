@@ -74,6 +74,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif defined(MV_MSYS_AC3)
 #include "ddr3_msys_ac3.h"
 #include "ddr3_msys_ac3_config.h"
+#elif defined(MV_MSYS_BOBK)
+#include "ddr3_msys_bobk.h"
+#include "ddr3_msys_bobk_config.h"
 #endif
 
 #include "bin_hdr_twsi.h"
@@ -95,7 +98,7 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		#elif CONFIG_CUSTOMER_BOARD_1
 			gBoardId = AC3_CUSTOMER_BOARD_ID1;
 		#endif
-	#else /* BC2 */
+	#elif defined (CONFIG_BOBCAT)/* BC2 */
 		#ifdef CONFIG_CUSTOMER_BOARD_0
 			gBoardId = BC2_CUSTOMER_BOARD_ID0;
 		#elif CONFIG_CUSTOMER_BOARD_1
@@ -227,7 +230,8 @@ MV_U8 mvSysEnvDeviceRevGet(MV_VOID)
 
 	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, BC2_JTAG_DEV_ID_STATUS_REG_ADDR, &uiRegData, MV_ALL_BITS_MASK));
 	return ((uiRegData >> BC2_JTAG_DEV_ID_STATUS_VERSION_OFFSET) & BC2_REVISON_ID_MASK) ;
-
+#elif defined MV_MSYS_BOBK
+	return MV_MSYS_BOBK_A0_ID;
 #else
 	#error "Un-defined silicon"
 #endif
@@ -301,6 +305,8 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 #if defined CONFIG_ALLEYCAT3
 	if (mvBoardIdGet() != DB_AC3_ID)
 		return 0;
+#elif defined CONFIG_BOBK
+	return 0;
 #endif
 
 	/*Fix the topology for msys by SatR values*/

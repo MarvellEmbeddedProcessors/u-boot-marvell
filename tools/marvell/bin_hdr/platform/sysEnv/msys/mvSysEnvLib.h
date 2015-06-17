@@ -66,6 +66,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __INCmvBHboardEnvSpech
 #define __INCmvBHboardEnvSpech
 #include "ddr3_hws_hw_training.h"
+
+/* define units per card */
+#if defined CONFIG_ALLEYCAT3
+#define MV_USB_UNIT                   /* define USB unit for AC3 */
+#define MV_HWS_COM_PHY_SERDES
+#elif defined CONFIG_BOBK
+#define MV_USB_UNIT                   /* define USB unit for BOBK */
+#define MV_HWS_AVAGO_SERDES
+#else /*CONFIG_BOBCAT2 */
+#define MV_HWS_COM_PHY_SERDES
+#endif
 /* Board specific configuration */
 /* ============================ */
 /* Bobcat2 Customer Boards */
@@ -101,6 +112,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define AC3_MARVELL_MAX_BOARD_ID	(AC3_MARVELL_BOARD_ID_BASE + 5)
 #define AC3_MARVELL_BOARD_NUM		(AC3_MARVELL_MAX_BOARD_ID - AC3_MARVELL_BOARD_ID_BASE)
 
+/* BobK Customer Boards */
+#define BOBK_CUSTOMER_BOARD_ID_BASE	0x40
+#define BOBK_CUSTOMER_BOARD_ID0		(BOBK_CUSTOMER_BOARD_ID_BASE + 0)
+#define BOBK_CUSTOMER_BOARD_ID1		(BOBK_CUSTOMER_BOARD_ID_BASE + 1)
+#define BOBK_CUSTOMER_MAX_BOARD_ID	(BOBK_CUSTOMER_BOARD_ID_BASE + 2)
+#define BOBK_CUSTOMER_BOARD_NUM		(BOBK_CUSTOMER_MAX_BOARD_ID - BOBK3_CUSTOMER_BOARD_ID_BASE)
+
+/* BobK Marvell Boards */
+#define BOBK_MARVELL_BOARD_ID_BASE	0x50
+#define DB_BOBK_ID				    (BOBK_MARVELL_BOARD_ID_BASE + 0)
+#define RD_BOBK_ID				    (BOBK_MARVELL_BOARD_ID_BASE + 1)
+#define BOBK_MARVELL_MAX_BOARD_ID	(BOBK_MARVELL_BOARD_ID_BASE + 2)
+#define BOBK_MARVELL_BOARD_NUM		(BOBK_MARVELL_MAX_BOARD_ID - BOBK_MARVELL_BOARD_ID_BASE)
+
 #define INVALID_BOARD_ID			0xFFFF
 #define BOARD_ID_INDEX_MASK			0x10	/* Mask used to return board index via board Id */
 
@@ -109,13 +134,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	#define MV_MAX_MARVELL_BOARD_ID		AC3_MARVELL_MAX_BOARD_ID
 	#define MV_MARVELL_BOARD_NUM		AC3_MARVELL_BOARD_NUM
 	#define MV_DEFAULT_BOARD_ID			DB_AC3_ID
-#else
+#elif  defined CONFIG_BOBCAT2
 	#define MARVELL_BOARD_ID_BASE		BC2_MARVELL_BOARD_ID_BASE
 	#define MV_MAX_MARVELL_BOARD_ID		BC2_MARVELL_MAX_BOARD_ID
 	#define MV_MARVELL_BOARD_NUM		BC2_MARVELL_BOARD_NUM
 	#define MV_DEFAULT_BOARD_ID			DB_DX_BC2_ID
-#endif
+#else
+/* BobK Marvell boards  TBD!!!!*/
+	#define MARVELL_BOARD_ID_BASE		BOBK_MARVELL_BOARD_ID_BASE
+	#define MV_MAX_MARVELL_BOARD_ID		BOBK_MARVELL_MAX_BOARD_ID
+	#define MV_MARVELL_BOARD_NUM		BOBK_MARVELL_BOARD_NUM
+	#define MV_DEFAULT_BOARD_ID			DB_BOBK_ID
 
+#endif
 
 /* Bobcat2 device revision */
 #define BC2_DEV_VERSION_ID_REG		           0xF8240	/* under server space */
@@ -128,6 +159,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* Alleycat3 device revision */
 #define MV_MSYS_AC3_A0_ID			0x0
+
+/* BobK device revision TBD !!!*/
+#define MV_MSYS_BOBK_A0_ID			0x0
 
 typedef enum _mvSuspendWakeupStatus {
 	MV_SUSPEND_WAKEUP_DISABLED,

@@ -262,7 +262,7 @@
 	/*#define CONFIG_MVEBU_PCI_EP*/ /* Set PCI host as end point */
 
 	/* Enable PCIE NIC for devel boards */
-	#ifdef CONFIG_MVEBU_DEVEL_BOARD
+	#ifdef CONFIG_DEVEL_BOARD
 		#define CONFIG_EEPRO100
 		#define CONFIG_E1000
 		#define CONFIG_MVEBU_NET

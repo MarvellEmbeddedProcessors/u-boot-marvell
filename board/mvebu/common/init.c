@@ -29,7 +29,7 @@
 #include <asm/arch-mvebu/pinctl.h>
 #include <asm/arch-mvebu/mpp.h>
 #include "board.h"
-#ifdef CONFIG_MVEBU_DEVEL_BOARD
+#ifdef CONFIG_DEVEL_BOARD
 #include "devel-board.h"
 #endif
 
@@ -148,7 +148,7 @@ int mvebu_board_init(void)
 	mpp_bus_probe();
 #endif
 
-#ifdef CONFIG_MVEBU_DEVEL_BOARD
+#ifdef CONFIG_DEVEL_BOARD
 	mvebu_devel_board_init(brd_fam);
 #endif
 

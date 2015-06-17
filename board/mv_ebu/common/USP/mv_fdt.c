@@ -992,7 +992,7 @@ static int mv_fdt_update_ethnum(void *fdt)
 	*/
 	MV_U32 gpConfig = mvBoardSysConfigGet(MV_CONFIG_GP_CONFIG);
 	MV_U32 boardId = mvBoardIdGet();
-	if (boardId == A39X_RD_69XX_ID && (gpConfig == 0 || gpConfig == 1)) {
+	if (boardId == A39X_RD_69XX_ID && (gpConfig == MV_GP_CONFIG_EAP_10G || gpConfig == MV_GP_CONFIG_HGW_AP_10G)) {
 		MV_U32 netComplex = 0;
 		netComplex |= MV_NETCOMP_GE_MAC3_2_SGMII_L4;
 		netComplex |= MV_NETCOMP_GE_MAC0_2_RXAUI;
@@ -1104,13 +1104,22 @@ static int mv_fdt_update_ethnum(void *fdt)
 			mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
 
 #if defined(CONFIG_ARMADA_39X) && defined(CONFIG_CMD_BOARDCFG)
+			u32 phySpeed = htonl(2500);
 			/* Temporary fix for A39x, see description in the begining of the func */
 			if (boardId == A39X_RD_69XX_ID) {
-				if ((port == 3) && (gpConfig == 0 || gpConfig == 1)) {
+				/* In HGW 2.5G configurations for 395 board, phy speed is 2.5Gb,
+				   update phy-speed entry in mac0 node to 2500 */
+				if ((port == 0) && (gpConfig == MV_GP_CONFIG_HGW_AP_2_5G ||
+						gpConfig == MV_GP_CONFIG_HGW_AP_2_5G_SATA)) {
+					sprintf(prop, "phy-speed");
+					mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, &phySpeed, sizeof(phySpeed)));
+				}
+				if ((port == 3) && (gpConfig == MV_GP_CONFIG_EAP_10G || gpConfig == MV_GP_CONFIG_HGW_AP_10G)) {
 					sprintf(prop, "force-link");
 					sprintf(propval, "yes");
 					mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, propval, strlen(propval)+1));
-				} else if ((port == 2) && (gpConfig == 2 || gpConfig == 3)) {
+				} else if ((port == 2) && (gpConfig == MV_GP_CONFIG_HGW_AP_2_5G ||
+						gpConfig == MV_GP_CONFIG_HGW_AP_2_5G_SATA)) {
 					sprintf(prop, "force-link");
 					sprintf(propval, "yes");
 					mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, propval, strlen(propval)+1));

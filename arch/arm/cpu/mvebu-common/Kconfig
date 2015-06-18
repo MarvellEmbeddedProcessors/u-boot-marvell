@@ -57,15 +57,6 @@ config MVEBU_PCI
 	  driver.
 	  base address is configured under MVEBU_PCI_BASE
 
-config MVEBU_MPP
-	bool "MPP support"
-	default n
-	help
-	  Choose this option to add support
-	  for MPP driver. Some Soc has got no
-	  MPP driver, for example, ArmadaLP.
-	  base address is configured under MVEBU_MPP_BASE
-
 config MVEBU_MPP_BUS
 	bool "MPP bus support"
 	depends on (DEVEL_BOARD && MVEBU_PINCTL)

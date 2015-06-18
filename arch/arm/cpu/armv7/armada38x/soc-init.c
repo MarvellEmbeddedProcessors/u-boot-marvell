@@ -34,5 +34,10 @@ struct mvebu_soc_family *soc_init(void)
 {
 	/* Do early SOC specific init here */
 
+	/* Disable I/O error propogation. Error propogation
+	 * causes exception when scanning a PCIe port with
+	 * no device attached */
+	writel(0, MVEBU_IO_ERR_CTL_REG);
+
 	return &a38x_family_info;
 }

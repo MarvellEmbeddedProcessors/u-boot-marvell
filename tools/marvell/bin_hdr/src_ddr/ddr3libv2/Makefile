@@ -133,10 +133,12 @@ all:   $(TARGETS)
 	$(CC) $(CFLAGS) -DNOT_USE_UART -DMV_NO_INPUT -DMV_NO_PRINT  $(CPPFLAGS) -c -o  $@ $<
 
 $(TDDR4SUBLIB): $(TOBJDDR4)
+	$(RM) ./$@
 	ar rcs $(TDDR4SUBLIB) $(TOBJDDR4)
 	$(CP) ./$@ ../lib
 
 $(TLIB): $(TOBJ)
+	$(RM) ./$@
 	ar rcs $(TLIB) $(TOBJ)
 	$(CP) ./$@ ../lib
 

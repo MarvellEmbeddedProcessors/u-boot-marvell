@@ -604,4 +604,13 @@ MV_U32 mvHwsGetPhysicalSerdesNum(MV_U32 serdesNum);
 * RETURNS:              True if lane is active
 ***************************************************************************/
 MV_BOOL mvHwsIsSerdesActive(MV_U8 laneNum);
+
+/**************************************************************************
+* updateUsb3DeviceConfig
+* DESCRIPTION: Update USB3 configuration register if USB3 device is enabled
+* INPUT:
+*	topologyConfigPtr - pointer to the Serdes mapping
+*
+***************************************************************************/
+void updateUsb3DeviceConfig(SERDES_MAP *serdesMapArray);
 #endif /* _MV_HIGHSPEED_ENV_SPEC_H */

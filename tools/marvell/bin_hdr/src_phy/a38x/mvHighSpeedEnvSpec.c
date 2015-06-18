@@ -1301,6 +1301,32 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 	return mvHwsCtrlHighSpeedSerdesPhyConfig(); // stub
 }
 
+/**************************************************************************
+* updateUsb3DeviceConfig
+* DESCRIPTION: Update USB3 configuration register if USB3 device is enabled
+* INPUT:
+*	topologyConfigPtr - pointer to the Serdes mapping
+*
+***************************************************************************/
+void updateUsb3DeviceConfig(SERDES_MAP *serdesMapArray)
+{
+	MV_U32 laneNum;
+	for (laneNum = 0; laneNum < mvHwsSerdesGetMaxLane(); laneNum++) {
+		if (serdesMapArray[laneNum].serdesType == USB3_DEVICE) {
+			/* write 0x1 to USB3_CONFIG_REG[0:1]
+			 * BIT0 (USB3 Device UTMI En)	0 : USB3 Device disabled.
+			 *				    (USB2 on UTMI0, and USB3 Host1 on UTMI2)
+			 *			     -> 1 : USB3 Device enabled
+			 *
+			 * BIT1 (USB3 Device UTMI Mux)	-> 0 : UTMI2: USB3 Device is on UTMI2
+			 *				   1 : UTMI0: USB3 Device is on UTMI0 */
+			MV_REG_BIT_RESET(USB3_CONFIG_REG, BIT1);
+			MV_REG_BIT_SET(USB3_CONFIG_REG, BIT0);
+			return;
+		}
+	}
+}
+
 /***************************************************************************/
 static MV_STATUS mvSerdesPexUsb3PipeDelayWA(MV_U32 serdesNum, MV_U8 serdesType)
 {

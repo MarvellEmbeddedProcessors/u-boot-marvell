@@ -113,6 +113,7 @@ MV_STATUS loadTopologyCustomer(SERDES_MAP  *serdesMapArray)
 		serdesMapArray[laneNum].swapTx      =  CustomerBoardTopologyConfig[boardIdIndex][laneNum].swapTx;
 	}
 
+	updateUsb3DeviceConfig(serdesMapArray);
 	return MV_OK;
 }
 
@@ -920,6 +921,8 @@ MV_STATUS loadTopologyDB381(SERDES_MAP  *serdesMapArray)
 
 	/* update 'sgmiispeed' settings */
 	updateTopologySgmiiSpeed(serdesMapArray);
+	/* update USB3 config register */
+	updateUsb3DeviceConfig(serdesMapArray);
 
 	return MV_OK;
 }
@@ -932,7 +935,6 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 	SERDES_MAP* topologyConfigPtr;
 	MV_U8 twsiData;
 	MV_U8 usb3Host0OrDevice = 0, usb3Host1OrDevice = 0;
-
 	mvPrintf("\nInitialize DB-88F6820-BP board topology\n");
 
 	/* Getting the relevant topology mode (index) */
@@ -983,6 +985,8 @@ MV_STATUS loadTopologyDB(SERDES_MAP  *serdesMapArray)
 
 	/* update 'sgmiispeed' settings */
 	updateTopologySgmiiSpeed(serdesMapArray);
+	/* update USB3 config register */
+	updateUsb3DeviceConfig(serdesMapArray);
 
 	return MV_OK;
 }

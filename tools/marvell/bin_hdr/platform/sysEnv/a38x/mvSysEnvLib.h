@@ -95,6 +95,8 @@
 
 #define QSGMII_CONTROL_REG1                     0x18494
 
+#define USB3_CONFIG_REG				0x18420
+
 #define DBG_PORT_CONFIG_REG			0x186c0
 #define DBG_PORT_CONFIG2_REG			0x186c4
 

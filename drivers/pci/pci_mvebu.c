@@ -232,48 +232,6 @@ static void mvebu_pcie_hw_init(int host_id, int first_busno)
 	writew(cmd, PCIE_CMD_OFF(host_id));
 }
 
-/* TODO - consider removing this when testing IDE */
-#if CONFIG_CMD_IDE
-static void mvebu_setup_ide(struct pci_controller *hose,
-			 pci_dev_t dev, struct pci_config_table *entry)
-{
-	static const int ide_bar[] = { 8, 4, 8, 4, 16, 1024 };
-	u32 bar_response, bar_value;
-	int bar;
-
-	for (bar = 0; bar < 6; bar++) {
-		unsigned int offset = (bar < 2) ? bar * 8 : 0x100 + (bar - 2) * 8;
-
-		pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + offset, 0x0);
-		pci_read_config_dword(dev, PCI_BASE_ADDRESS_0 + offset, &bar_response);
-
-		pciauto_region_allocate(bar_response & PCI_BASE_ADDRESS_SPACE_IO ?
-					hose->pci_io : hose->pci_mem, ide_bar[bar], &bar_value);
-
-		pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, bar_value);
-	}
-}
-
-static void mvebu_setup_host(struct pci_controller *hose,
-			  pci_dev_t dev, struct pci_config_table *entry)
-{
-	/* No need to configure host */
-	return;
-}
-
-
-struct pci_config_table mvebu_config_table[] = {
-	/* Storage controllers */
-	{ PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_STORAGE_IDE,
-	  PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID, mvebu_setup_ide },
-
-	/* Storage controllers */
-	{ PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
-	  PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID, mvebu_setup_host },
-	{}
-};
-#endif
-
 /*
  * We dont use a host bridge so don't let the
  * stack skip CFG cycle for dev = 0 func = 0

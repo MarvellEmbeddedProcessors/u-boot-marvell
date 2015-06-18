@@ -290,59 +290,39 @@
 
 #endif /* CONFIG_MVEBU_NET */
 
-/* IDE / SATA */
-#ifdef MV_INCLUDE_SATA
-	#define __io
+/* SATA AHCI over PCIe */
+#if defined(CONFIG_DEVEL_BOARD) && defined(CONFIG_MVEBU_PCI)
 
 	#define CONFIG_CMD_SCSI
 	#define CONFIG_CMD_EXT2
 	#define CONFIG_CMD_EXT4
-	#define CONFIG_FS_EXT4
 	#define CONFIG_CMD_EXT4_WRITE
-	#define CONFIG_EXT4_WRITE
 	#define CONFIG_CMD_JFFS2
 	#define CONFIG_CMD_FAT
+
+	#define CONFIG_EXT4_WRITE
 	#define CONFIG_FS_FAT
+	#define CONFIG_FS_EXT4
 	#define CONFIG_SUPPORT_VFAT
-	#define CONFIG_CMD_IDE
-
-	#define CONFIG_SYS_ATA_BASE_ADDR        0x20000000
-	#define CONFIG_SYS_ATA_REG_OFFSET       0x0000          /* Offset for normal register accesses*/
-	#define CONFIG_SYS_ATA_DATA_OFFSET      0x0000          /* Offset for data I/O */
-
-	#undef CONFIG_IDE_8xx_PCCARD		/* Use IDE with PC Card	Adapter	*/
-
-	#undef	CONFIG_IDE_8xx_DIRECT		/* Direct IDE    not supported	*/
-	#undef	CONFIG_IDE_LED			/* LED   for ide not supported	*/
-	#undef	CONFIG_IDE_RESET		/* reset for ide not supported	*/
-
-	#define CONFIG_SYS_IDE_MAXBUS		4				/* max. 1 IDE bus		*/
-	#define CONFIG_SYS_IDE_MAXDEVICE	CONFIG_SYS_IDE_MAXBUS * 8	/* max. 1 drive per IDE bus	*/
-
-	#define CONFIG_SYS_ATA_IDE0_OFFSET	0x0000
 
 	#undef CONFIG_MAC_PARTITION
 	#define CONFIG_DOS_PARTITION
 	#define CONFIG_EFI_PARTITION
 
-	#define CONFIG_SYS_64BIT_LBA			/*    Support disk over 2TB        */
-
+	#define CONFIG_SYS_64BIT_LBA	/* Support disk over 2TB */
 	#define CONFIG_LBA48
-	/* #define CONFIG_SCSI_AHCI */
-	#ifdef CONFIG_SCSI_AHCI
-		#define CONFIG_SATA_6121
-		#define CONFIG_SYS_SCSI_MAX_SCSI_ID	4
-		#define CONFIG_SYS_SCSI_MAX_LUN	1
-		#define CONFIG_SYS_SCSI_MAX_DEVICE	(CONFIG_SYS_SCSI_MAX_SCSI_ID * CONFIG_SYS_SCSI_MAX_LUN)
-	#endif /* CONFIG_SCSI_AHCI */
 
-	#define CONFIG_SCSI_MV94XX
-	#ifdef CONFIG_SCSI_MV94XX
-		#define CONFIG_SYS_SCSI_MAX_SCSI_ID	40 /*8 PM * 5 sata port*/
-		#define CONFIG_SYS_SCSI_MAX_LUN	1
-		#define CONFIG_SYS_SCSI_MAX_DEVICE	(CONFIG_SYS_SCSI_MAX_SCSI_ID * CONFIG_SYS_SCSI_MAX_LUN)
-	#endif /* CONFIG_SCSI_AHCI */
-#endif /* MV_INCLUDE_SATA */
+	#define __io
+	#define CONFIG_LIBATA
+	#define CONFIG_SCSI_AHCI
+	#define CONFIG_SCSI_MAX_CONTROLLERS	2
+	#define CONFIG_SYS_SCSI_MAX_SCSI_ID	(4 * CONFIG_SCSI_MAX_CONTROLLERS)
+	#define CONFIG_SYS_SCSI_MAX_LUN		1
+	#define CONFIG_SYS_SCSI_MAX_DEVICE	(CONFIG_SYS_SCSI_MAX_SCSI_ID * CONFIG_SYS_SCSI_MAX_LUN)
+
+	/* Add support for Magni 9215 and Magni 9235 */
+	#define CONFIG_SCSI_DEV_LIST		{ 0x1B4B, 0x9215 }, { 0x1B4B, 0x9235 }, { 0, 0 }
+#endif
 
 /* NAND */
 #ifdef CONFIG_MVEBU_NAND

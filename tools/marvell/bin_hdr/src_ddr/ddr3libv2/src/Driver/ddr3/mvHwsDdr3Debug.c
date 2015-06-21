@@ -447,11 +447,12 @@ GT_STATUS ddr3TipPrintLog(GT_U32 devNum, GT_U32 memAddr)
         ddr3TipRunSweepTest(devNum, sweepCnt, 1 , isPupLog);
         ddr3TipRunSweepTest(devNum, sweepCnt, 0 , isPupLog);
 
+#if defined(EXCLUDE_SWITCH_DEBUG)
 		if( isRunLevelingSweepTests == 1 ){
 			ddr3TipRunLevelingSweepTest(devNum, sweepCnt, 0 , isPupLog);
 			ddr3TipRunLevelingSweepTest(devNum, sweepCnt, 1 , isPupLog);
 		}
-
+#endif
 		ddr3TipPrintAllPbsResult(devNum);
 		ddr3TipPrintWLSuppResult(devNum);
 		mvPrintf("===VALIDATE WINDOW LOG END ===\n");
@@ -1538,7 +1539,7 @@ GT_BOOL ddr3TipRunSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direction, GT
     return 0;
 }
 
-
+#if defined(EXCLUDE_SWITCH_DEBUG)
 GT_BOOL ddr3TipRunLevelingSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direction, GT_U32 mode)
 {
     GT_U32  pup = 0, startPup = 0, endPup = 0, startAdll = 0;
@@ -1708,7 +1709,7 @@ GT_BOOL ddr3TipRunLevelingSweepTest(GT_32 devNum, GT_U32 RepeatNum, GT_U32 direc
     ddr3TipResetFifoPtr(devNum);
     return 0;
 }
-
+#endif
 
 
 void printTopology(MV_HWS_TOPOLOGY_MAP *pTopologyDB)

@@ -1157,7 +1157,7 @@ static GT_STATUS    ddr3TipXsbCompareTest
     for(wordInPattern = startXsbOffset; wordInPattern < (TEST_PATTERN_LENGTH*2) ; wordInPattern++)
     {
         wordOffset = wordInPattern + edgeOffset;
-        if ((wordOffset > (TEST_PATTERN_LENGTH*2 - 1))||(wordOffset < 0))
+        if ( wordOffset > (TEST_PATTERN_LENGTH*2 - 1) )
             continue;
         if ((readPattern[wordInPattern] & pupMaskTable[busId]) == (patternTestPatternTable[wordOffset] & pupMaskTable[busId]))
         {

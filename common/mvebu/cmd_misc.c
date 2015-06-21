@@ -31,6 +31,9 @@
 #ifdef CONFIG_MVEBU_RFU
 #include <asm/arch-mvebu/rfu.h>
 #endif
+#ifdef CONFIG_MVEBU_IOB
+#include <asm/arch-mvebu/iob.h>
+#endif
 #ifdef CONFIG_MVEBU_MBUS
 #include <asm/arch-mvebu/mbus.h>
 #endif
@@ -43,6 +46,9 @@ int do_map_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 #endif
 #ifdef CONFIG_MVEBU_RFU
 	dump_rfu();
+#endif
+#ifdef CONFIG_MVEBU_IOB
+	dump_iob();
 #endif
 #ifdef CONFIG_MVEBU_MBUS
 	dump_mbus();

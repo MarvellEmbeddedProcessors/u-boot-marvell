@@ -7,6 +7,15 @@ config MVEBU_CCU
 	  This driver initialize the CCU windows
 	  only.
 
+config MVEBU_IOB
+	bool "IOB address decoding driver"
+	default n
+	help
+	  Choose this option to add support
+	  for IOB address decoding driver.
+	  This driver initialize the IOB windows
+	  only.
+
 config MVEBU_RFU
 	bool "RFU address decoding driver"
 	default n

@@ -401,7 +401,7 @@ GT_STATUS    ddr3TipCmdAddrInitDelay
 	/* CA_delay is delaying the of the entire command & Address signals (include Clock signal � to overcome DGL error on the Clock versus the DQS). */
 	/*Calc ADLL Tap*/
 
-	if(ckDelay == -1)
+	if(ckDelay == MV_PARAMS_UNDEFINED)
 	{
 		DEBUG_TRAINING_HW_ALG(DEBUG_LEVEL_ERROR,("ERROR: One of ckDelay values not initialized!!!\n"));
 	}

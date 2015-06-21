@@ -442,7 +442,7 @@ INLINE static GT_U32 patternTableGetSsoWord( GT_U8 sso, GT_U8 index)
 	}
 }
 
-inline static GT_U32 patternTableGetSsoFullXtalkWord( GT_U8 bit, GT_U8 index)
+INLINE static GT_U32 patternTableGetSsoFullXtalkWord( GT_U8 bit, GT_U8 index)
 {
 	GT_U8 byte = (1 << bit);
 
@@ -453,7 +453,7 @@ inline static GT_U32 patternTableGetSsoFullXtalkWord( GT_U8 bit, GT_U8 index)
 	return (byte || (byte<<8) || (byte<<16) || (byte<<24));
 }
 
-inline static GT_U32 patternTableGetSsoXtalkFreeWord( GT_U8 bit, GT_U8 index)
+INLINE static GT_U32 patternTableGetSsoXtalkFreeWord( GT_U8 bit, GT_U8 index)
 {
 	GT_U8 byte = (1 << bit);
 
@@ -464,7 +464,7 @@ inline static GT_U32 patternTableGetSsoXtalkFreeWord( GT_U8 bit, GT_U8 index)
 	return (byte || (byte<<8) || (byte<<16) || (byte<<24));
 }
 
-inline static GT_U32 patternTableGetISIWord( GT_U8 index)
+INLINE static GT_U32 patternTableGetISIWord( GT_U8 index)
 {
 	GT_U8 I0 =  index%32;
 	GT_U8 I1 =  index%8;
@@ -481,7 +481,7 @@ inline static GT_U32 patternTableGetISIWord( GT_U8 index)
 	return Word;
 }
 
-inline static GT_U32 patternTableGetSsoFullXtalkWord_16( GT_U8 bit, GT_U8 index)
+INLINE static GT_U32 patternTableGetSsoFullXtalkWord_16( GT_U8 bit, GT_U8 index)
 {
 	GT_U8 byte = (1 << bit);
 
@@ -492,7 +492,7 @@ inline static GT_U32 patternTableGetSsoFullXtalkWord_16( GT_U8 bit, GT_U8 index)
 	return (byte || (byte<<8) || ((~byte)<<16) || ((~byte)<<24));
 }
 
-inline static GT_U32 patternTableGetSsoXtalkFreeWord_16( GT_U8 bit, GT_U8 index)
+INLINE static GT_U32 patternTableGetSsoXtalkFreeWord_16( GT_U8 bit, GT_U8 index)
 {
 	GT_U8 byte = (1 << bit);
 
@@ -504,7 +504,7 @@ inline static GT_U32 patternTableGetSsoXtalkFreeWord_16( GT_U8 bit, GT_U8 index)
 	}
 
 }
-inline static GT_U32 patternTableGetISIWord_16( GT_U8 index)
+INLINE static GT_U32 patternTableGetISIWord_16( GT_U8 index)
 {
 	GT_U8 I0 =  index%16;
 	GT_U8 I1 =  index%4;

@@ -25,6 +25,9 @@
 #include <asm/io.h>
 #include <asm/arch-mvebu/unit-info.h>
 
+#ifdef CONFIG_MVEBU_CCU
+#include <asm/arch-mvebu/ccu.h>
+#endif
 #ifdef CONFIG_MVEBU_MBUS
 #include <asm/arch-mvebu/mbus.h>
 #endif
@@ -32,6 +35,9 @@
 int do_map_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])
 {
+#ifdef CONFIG_MVEBU_CCU
+	dump_ccu();
+#endif
 #ifdef CONFIG_MVEBU_MBUS
 	dump_mbus();
 #endif

@@ -53,6 +53,12 @@
 				clock = <&tclk>;
 				status = "okay";
 			};
+			ccu {
+				compatible = "marvell,mvebu-ccu";
+				reg = <0x4000 0x50>;
+				max-win = <8>;
+				windows = <0xf8000000 0x2000000 0x00 /* IO window */>;
+			};
 		};
 	};
 };

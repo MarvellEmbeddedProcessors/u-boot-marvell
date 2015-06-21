@@ -27,6 +27,9 @@
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/tables.h>
 
+#ifdef CONFIG_MVEBU_CCU
+#include <asm/arch-mvebu/ccu.h>
+#endif
 #ifdef CONFIG_MVEBU_MBUS
 #include <asm/arch-mvebu/mbus.h>
 #endif
@@ -93,6 +96,9 @@ int mvebu_soc_init()
 	update_soc_units(soc);
 
 	/* Initialize physical memory map */
+#ifdef CONFIG_MVEBU_CCU
+	init_ccu();
+#endif
 #ifdef CONFIG_MVEBU_MBUS
 	init_mbus();
 #endif

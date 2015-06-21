@@ -40,6 +40,7 @@ struct pinctl_data {
 	u8	*base_reg;
 	u32	pin_cnt;
 	u32	max_func;
+	int	reg_direction;
 	const char    *bank_name;
 };
 struct pinctl_data __attribute__((section(".data"))) bank_data[CONFIG_MAX_PINCTL_BANKS];
@@ -62,7 +63,7 @@ int pinctl_set_pin_func(int bank, int pin_id, int func)
 	}
 
 	/* Calculate register address and bit in register */
-	reg_offset   = 4 * (pin_id >> (PIN_REG_SHIFT));
+	reg_offset   = pinctl->reg_direction * 4 * (pin_id >> (PIN_REG_SHIFT));
 	field_offset = (BITS_PER_PIN) * (pin_id & PIN_FIELD_MASK);
 	mask = ~(PIN_FUNC_MASK << field_offset);
 
@@ -88,7 +89,7 @@ int pinctl_get_pin_func(int bank, int pin_id)
 		return -1;
 	}
 
-	reg_offset   = 4 * (pin_id >> (PIN_REG_SHIFT));
+	reg_offset   = pinctl->reg_direction * 4 * (pin_id >> (PIN_REG_SHIFT));
 	field_offset = (BITS_PER_PIN) * (pin_id & PIN_FIELD_MASK);
 
 	func = (readl(pinctl->base_reg + reg_offset)  >> field_offset) & PIN_FUNC_MASK;
@@ -157,6 +158,10 @@ int mvebu_pinctl_probe(void)
 		pinctl->pin_cnt  = fdtdec_get_int(blob, node, "pin-count", CONFIG_MAX_PINS_PER_BANK);
 		pinctl->max_func  = fdtdec_get_int(blob, node, "max-func", CONFIG_MAX_FUNC);
 		pinctl->bank_name = fdt_getprop(blob, node, "bank-name", NULL);
+
+		pinctl->reg_direction = 1;
+		if (fdtdec_get_bool(blob, node, "reverse-reg"))
+			pinctl->reg_direction = -1;
 
 		pin_func = malloc(pinctl->pin_cnt * sizeof(u32));
 		if (pin_func == NULL) {

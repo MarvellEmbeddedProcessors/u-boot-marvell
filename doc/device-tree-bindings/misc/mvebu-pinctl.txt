@@ -19,7 +19,9 @@ The mvebu-pinctl requires the following proprties:
 		the maximum function number supported by this bank
 	- pin-func
 		an array specifying the function per pin
-
+	- reverse_reg
+		a boolean specifying the reigster order is reversed, meaning
+		pin x is controlled in register (base - x/8) instead of (base + x/8)
 
 Example of a pinctl bank node:
 	pinctl@18000 {

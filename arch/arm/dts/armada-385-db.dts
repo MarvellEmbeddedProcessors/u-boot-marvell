@@ -49,6 +49,7 @@
 				compatible = "marvell,mvebu-i2c";
 				reg = <0x11000 0x4>;
 				clock = <&tclk>;
+				support-256-offset;
 				status = "okay";
 			};
 

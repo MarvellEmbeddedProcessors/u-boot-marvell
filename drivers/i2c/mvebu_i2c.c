@@ -70,6 +70,7 @@ struct  mvebu_i2c_regs {
 struct mvebu_i2c_bus {
 	struct  mvebu_i2c_regs *i2c_reg;
 	u32 clock;
+	bool offset256;
 	bool status;
 };
 
@@ -320,7 +321,7 @@ static int mvebu_i2c_target_offset_set(int alen, uint addr)
 	u8 off_block[2];
 	u32 off_size;
 
-	if (alen == 2) {
+	if (i2c_bus[gd->cur_i2c_bus].offset256) {
 		off_block[0] = (addr >> 8) & 0xff;
 		off_block[1] = addr & 0xff;
 		off_size = 2;
@@ -380,6 +381,9 @@ static void mvebu_i2c_init(struct i2c_adapter *adap, int speed, int slaveaddr)
 			i2c_bus[gd->cur_i2c_bus].i2c_reg =
 				(struct  mvebu_i2c_regs *)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
 			i2c_bus[gd->cur_i2c_bus].clock = soc_clock_get(gd->fdt_blob, node);
+			i2c_bus[gd->cur_i2c_bus].offset256 = false;
+			if (fdtdec_get_bool(gd->fdt_blob, node, "support-256-offset"))
+				i2c_bus[gd->cur_i2c_bus].offset256 = true;
 			i2c_bus[gd->cur_i2c_bus].status = true;
 		}
 	}

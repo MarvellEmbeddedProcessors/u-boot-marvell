@@ -21,7 +21,6 @@
 #define _SOC_H_
 
 #include <asm/arch-mvebu/unit-info.h>
-#include <asm/arch-mvebu/adec.h>
 #include <asm/arch/soc-info.h>
 
 #define MAX_SOC_NAME	32
@@ -32,7 +31,6 @@ struct mvebu_soc_info {
 	char	name[MAX_SOC_NAME];
 	int	id;
 	u16	*unit_disable;
-	struct adec_win *memory_map;
 };
 
 struct mvebu_soc_family {
@@ -47,7 +45,6 @@ struct mvebu_soc_family {
 	u32 mpp_update[MAX_MPP_REGS];
 	u32 mpp_mask[MAX_MPP_REGS];
 };
-
 
 int common_soc_init(struct mvebu_soc_family *soc_family_info);
 

@@ -24,7 +24,6 @@
 #include <asm/bitops.h>
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/unit-info.h>
-#include <asm/arch-mvebu/adec.h>
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/tables.h>
 
@@ -92,7 +91,6 @@ int mvebu_soc_init()
 
 #ifndef CONFIG_PALLADIUM
 	/* Initialize physical memory map */
-	adec_init(soc->memory_map);
 #endif
 
 	/* Soc specific init */

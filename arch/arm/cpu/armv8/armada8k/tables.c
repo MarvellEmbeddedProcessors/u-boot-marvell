@@ -19,21 +19,8 @@
 
 #include <common.h>
 #include <asm/io.h>
-#include <asm/arch-mvebu/adec.h>
 #include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/soc.h>
-
-struct adec_win memory_map[] = {
-#ifndef CONFIG_PALLADIUM
-	{DRAM_0_TID,	DRAM_0_BASE_ADDR,	DRAM_0_SIZE,	ADEC_AP_WIN,	1},
-	{IO_0_TID,	IO_0_BASE_ADDR,		IO_0_SIZE,	ADEC_AP_WIN,	1},
-	{PEX0_TID,	PEX_BASE_ADDR(0),	PEX_SIZE(0),	ADEC_IOB_WIN,	1},
-	{PEX1_TID,	PEX_BASE_ADDR(1),	PEX_SIZE(1),	ADEC_IOB_WIN,	1},
-	{NSS_TID,	NSS_BASE_ADDR,		NSS_SIZE,	ADEC_IOB_WIN,	1},
-#endif
-	/* Delimiter */
-	{INVALID_TID,	0x0,			0x0,		0x0,		0},
-};
 
 /* List the maximum amount of units for all devices and boards */
 u16 base_unit_mask_table[MAX_UNIT_ID] = {
@@ -67,14 +54,12 @@ struct mvebu_soc_info a8k_soc_info[] = {
 		.name = "MV-8021",
 		.id = 8021,
 		.unit_disable = armada8021_unit_disable,
-		.memory_map = memory_map
 	},
 	/* Armda 8022 */
 	{
 		.name = "MV-8022",
 		.id = 8022,
 		.unit_disable = armada8022_unit_disable,
-		.memory_map = memory_map
 	},
 	/* Delimiter */
 	{.id = 0}

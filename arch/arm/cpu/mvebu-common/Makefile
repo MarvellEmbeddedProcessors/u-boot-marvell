@@ -27,8 +27,3 @@ obj-$(CONFIG_MVEBU_TIMER) += timer_mvebu.o
 obj-$(CONFIG_GENERIC_TIMER) += generic_timer.o
 obj-$(CONFIG_MVEBU_CA9) += platform.o
 obj-$(CONFIG_SPL_BUILD) += spl.o
-ifeq "$(CONFIG_MVEBU_CA9)"  "y"
-obj-$(CONFIG_ADEC) += adec_mbus.o
-else
-obj-$(CONFIG_ADEC) += adec_ccu.o
-endif

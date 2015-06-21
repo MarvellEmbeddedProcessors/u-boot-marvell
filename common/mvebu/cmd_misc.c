@@ -23,13 +23,11 @@
 #include <cli.h>
 
 #include <asm/io.h>
-#include <asm/arch-mvebu/adec.h>
 #include <asm/arch-mvebu/unit-info.h>
 
 int do_map_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])
 {
-	adec_dump();
 	return 0;
 }
 
@@ -58,6 +56,7 @@ int do_remap_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 		printf("Error: Failed to remap 0x%08x->0x%08x\n", (uint)input, (uint)output);
 		return 1;
 	}
+#endif
 
 	printf("Remapped address 0x%08x t0 0x%08x\n", (uint)input, (uint)output);
 	return 0;

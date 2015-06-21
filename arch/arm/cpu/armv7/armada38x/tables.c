@@ -20,18 +20,8 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch/regs-base.h>
-#include <asm/arch-mvebu/adec.h>
 #include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/soc.h>
-
-struct adec_win memory_map[] = {
-	{PEX_0_TARGET_ID,	MVEBU_PCIE_MEM_BASE(0),	MVEBU_PCIE_MEM_SIZE(0), PCI_0_MEM_ATTR, 1, 1},
-	{PEX_1_3_TARGET_ID,	MVEBU_PCIE_MEM_BASE(1),	MVEBU_PCIE_MEM_SIZE(1), PCI_1_MEM_ATTR, 1, 1},
-	{PEX_1_3_TARGET_ID,	MVEBU_PCIE_MEM_BASE(2),	MVEBU_PCIE_MEM_SIZE(2), PCI_2_MEM_ATTR, 1, 1},
-	{PEX_1_3_TARGET_ID,	MVEBU_PCIE_MEM_BASE(3),	MVEBU_PCIE_MEM_SIZE(3), PCI_3_MEM_ATTR, 1, 1},
-	{DEV_TARGET_ID,		NOR_CS_BASE,		NOR_CS_SIZE,	 BOOT_CS_ATTR,   0, 1},
-	{TBL_TERM, TBL_TERM, TBL_TERM, TBL_TERM, TBL_TERM, TBL_TERM},
-};
 
 /* List the maximum amount of units for all devices and boards */
 u16 base_unit_mask_table[MAX_UNIT_ID] = {
@@ -64,21 +54,18 @@ struct mvebu_soc_info a38x_soc_info[] = {
 		.name = "MV-6280",
 		.id = 0x6820,
 		.unit_disable = armada6280_unit_disable,
-		.memory_map = memory_map
 	},
 	/* Armda 385 */
 	{
 		.name = "MV-6285",
 		.id = 0x6825,
 		.unit_disable = armada6285_unit_disable,
-		.memory_map = memory_map
 	},
 	/* Armda 388 */
 	{
 		.name = "MV-6288",
 		.id = 0x6828,
 		.unit_disable = armada6280_unit_disable,
-		.memory_map = memory_map
 	},
 	/* Delimiter */
 	{.id = 0}

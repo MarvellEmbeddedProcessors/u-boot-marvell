@@ -1,5 +1,6 @@
 
 /dts-v1/;
+#define ATTR(remapped, target, attributes) (((remapped) << 12) | ((target) << 8) | (attributes))
 
 / {
 	model = "Marvell Armada 385 Development Board";
@@ -84,6 +85,18 @@
 				#address-cells = <1>;
 				#size-cells = <0>;
 				status = "disabled";
+			};
+			mbus {
+				compatible = "marvell,mvebu-mbus";
+				reg = <0x20000 0x50>;
+				max-win = <19>;
+				max-remap = <8>;
+				internal-win = <20>;
+				windows = <0xE0000000 0x2000000 ATTR(0x1, 0x8, 0xE8)
+					0xE2000000 0x2000000 ATTR(0x1, 0x4, 0xE8)
+					0xE4000000 0x2000000 ATTR(0x1, 0x4, 0xD8)
+					0xE6000000 0x2000000 ATTR(0x1, 0x4, 0xB8)
+					0xfd000000 0x1000000 ATTR(0x0, 0x1, 0x2F)>;
 			};
 		};
 	};

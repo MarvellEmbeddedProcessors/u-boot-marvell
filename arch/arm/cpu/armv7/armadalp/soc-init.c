@@ -44,3 +44,43 @@ struct mvebu_soc_family *soc_init(void)
 
 	return &armadalp_family_info;
 }
+
+int dram_init(void)
+{
+#ifdef CONFIG_PALLADIUM
+	/* NO DRAM init sequence in Pallaidum, so set static DRAM size of 256MB */
+	gd->bd->bi_dram[0].start = 0;
+	gd->bd->bi_dram[0].size = 0x10000000;
+	gd->ram_size = gd->bd->bi_dram[0].size;
+#else
+	int cs;
+	u32 ctrl, size, base;
+
+	gd->ram_size = 0;
+	/*
+	* We assume the DDR training code has configured
+	* The SDRAM adec windows so we pull our info from there
+	*/
+
+	for (cs = 0; cs < CONFIG_NR_DRAM_BANKS; cs++) {
+		ctrl = readl(MBUS_SDRAM_CTRL_REG(cs));
+		if (ctrl & MBUS_SDRAM_WIN_ENABLE) {
+			base = readl(MBUS_SDRAM_BASE_REG(cs));
+			size = (ctrl & MBUS_SDRAM_SIZE_MASK) + MBUS_SDRAM_SIZE_ALIGN;
+			gd->bd->bi_dram[cs].start = base;
+			gd->bd->bi_dram[cs].size = size;
+
+			gd->ram_size += size;
+
+			debug("DRAM bank %d base 0x%08x size 0x%x ", cs, base, size);
+		}
+	}
+
+	if (gd->ram_size == 0) {
+		error("No DRAM banks detected");
+		return 1;
+	}
+#endif
+
+	return 0;
+}

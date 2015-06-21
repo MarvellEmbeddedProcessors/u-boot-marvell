@@ -1,3 +1,4 @@
+#define ATTR(remapped, target, attributes) (((remapped) << 12) | ((target) << 8) | (attributes))
 
 / {
 	model = "Marvell Armada_LP Development Board";

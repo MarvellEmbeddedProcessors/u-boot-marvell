@@ -64,4 +64,11 @@
 #define debug_exit()
 #endif
 
+/* Macro for testing alignment. Positive if number is NOT aligned */
+#define IS_NOT_ALIGN(number, align)	((number) & ((align) - 1))
+
+/* Macro for alignment up. For example, ALIGN_UP(0x0330, 0x20) = 0x0340 */
+#define ALIGN_UP(number, align) (((number) & ((align) - 1)) ? \
+		(((number) + (align)) & ~((align)-1)) : (number))
+
 #endif	/* MVEBU_H */

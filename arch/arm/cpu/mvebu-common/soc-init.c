@@ -27,6 +27,9 @@
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/tables.h>
 
+#ifdef CONFIG_MVEBU_MBUS
+#include <asm/arch-mvebu/mbus.h>
+#endif
 
 /* Weak function for boards who need specific init seqeunce */
 int __soc_late_init(void)
@@ -89,8 +92,9 @@ int mvebu_soc_init()
 	/* Update SOC info according to family */
 	update_soc_units(soc);
 
-#ifndef CONFIG_PALLADIUM
 	/* Initialize physical memory map */
+#ifdef CONFIG_MVEBU_MBUS
+	init_mbus();
 #endif
 
 	/* Soc specific init */

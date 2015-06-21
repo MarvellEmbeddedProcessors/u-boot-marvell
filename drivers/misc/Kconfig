@@ -1,0 +1,8 @@
+config MVEBU_MBUS
+	bool "MBUS address decoding driver"
+	default n
+	help
+	  Choose this option to add support
+	  for MBUS address decoding driver.
+	  This driver initialize the MBUS windows
+	  only.

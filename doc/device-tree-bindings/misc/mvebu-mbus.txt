@@ -1,0 +1,83 @@
+Marvell MBUS address decoding bindings
+=====================================
+
+The MBUS node include describtion about the address decoding configuration.
+
+The MBUS node requires the following properties:
+	- compatible
+		should be "marvell,mvebu-mbus"
+	- reg: the base address of the MBUS unit
+	- max-win: number of the max mbus windows
+	- max-remap: number of the max remap windows
+	- internal-win: number of the internal register window
+	- windows: entry that include the configuration of the windows
+	  every window should have 3 parameters:
+	  - base address of the window
+	  - size of the window
+	  - ATTR: attributes + target-ID + remmap flag (build by bitmask:
+		(((remapped) << 12) | ((target) << 8) | (attributes))
+
+Target ID options:
+	0 = DRAM interface
+	1 = Device port, BootROM, SPI
+	4 = PCI Express 1 and 3
+	8 = PCI Express 0 and 2
+	10 = Crypto Engine SRAM
+	12 = PNC + BM Unit
+
+Attribute options:
+	/* Memory chip select */
+	0x0E = MEM_CS_0_ATTR
+	0x0D = MEM_CS_1_ATTR
+	0x0B = MEM_CS_2_ATTR
+	0x07 = MEM_CS_3_ATTR
+	0x0F = CS_DEC_BY_ATTR
+	/* Device bus interface */
+	0x1E = SPI0_CS0_ATTR
+	0x5E = SPI0_CS1_ATTR
+	0x9E = SPI0_CS2_ATTR
+	0xDE = SPI0_CS3_ATTR
+	0x1A = SPI1_CS0_ATTR
+	0x5A = SPI1_CS1_ATTR
+	0x9A = SPI1_CS2_ATTR
+	0xDA = SPI1_CS3_ATTR
+	0x3E = DEVICE_CS0_ATTR
+	0x3D = DEVICE_CS1_ATTR
+	0x3B = DEVICE_CS2_ATTR
+	0x37 = DEVICE_CS3_ATTR
+	0x2F = BOOT_CS_ATTR
+	0x1D = BOOTROM_ATTR
+	/* PCI Express interface */
+	0xE0 = PCI_0_IO_ATTR
+	0xE8 = PCI_0_MEM_ATTR
+	0xE0 = PCI_1_IO_ATTR
+	0xE8 = PCI_1_MEM_ATTR
+	0xD0 = PCI_2_IO_ATTR
+	0xD8 = PCI_2_MEM_ATTR
+	0xB0 = PCI_3_IO_ATTR
+	0xB8 = PCI_3_MEM_ATTR
+	/* Security Accelerator SRAM */
+	0x04 = ENGINE_0_BYTES_ATTR
+	0x05 = ENGINE_0_NOS_ATTR
+	0x06 = ENGINE_0_BYTE_WORDS_ATTR
+	0x07 = ENGINE_0_WORDS_ATTR
+	0x08 = ENGINE_1_BYTES_ATTR
+	0x09 = ENGINE_1_NOS_ATTR
+	0x0A = ENGINE_1_BYTE_WORDS_ATTR
+	0x0B = ENGINE_1_WORDS_ATTR
+
+
+Example:
+	mbus {
+		compatible = "marvell,mvebu-mbus";
+		reg = <0x20000 0x50>;
+		max-win = <19>;
+		max-remap = <8>;
+		internal-win = <20>;
+		windows = <0xE0000000 0x2000000 ATTR(0x1, 0x8, 0xE8)
+			0xE2000000 0x2000000 ATTR(0x1, 0x4, 0xE8)
+			0xE4000000 0x2000000 ATTR(0x1, 0x4, 0xD8)
+			0xE6000000 0x2000000 ATTR(0x1, 0x4, 0xB8)
+			0xfd000000 0x1000000 ATTR(0x0, 0x1, 0x2F)>;
+	};
+

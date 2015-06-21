@@ -25,9 +25,16 @@
 #include <asm/io.h>
 #include <asm/arch-mvebu/unit-info.h>
 
+#ifdef CONFIG_MVEBU_MBUS
+#include <asm/arch-mvebu/mbus.h>
+#endif
+
 int do_map_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])
 {
+#ifdef CONFIG_MVEBU_MBUS
+	dump_mbus();
+#endif
 	return 0;
 }
 
@@ -52,7 +59,8 @@ int do_remap_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 	input = simple_strtoul(argv[1], NULL, 16);
 	output = simple_strtoul(argv[2], NULL, 16);
 
-	if (adec_remap(input, output)) {
+#ifdef CONFIG_MVEBU_MBUS
+	if (remap_mbus(input, output)) {
 		printf("Error: Failed to remap 0x%08x->0x%08x\n", (uint)input, (uint)output);
 		return 1;
 	}

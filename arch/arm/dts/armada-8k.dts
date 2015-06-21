@@ -59,6 +59,12 @@
 				max-win = <8>;
 				windows = <0xf8000000 0x2000000 0x00 /* IO window */>;
 			};
+			rfu {
+				compatible = "marvell,mvebu-rfu";
+				reg = <0x6f0000 0x50>;
+				windows = <0xf2000000 0x4000000 0x05 /* PCIe window */
+					0xf6000000 0x2000000 0x02 /* PCI-REG window */>;
+			};
 		};
 	};
 };

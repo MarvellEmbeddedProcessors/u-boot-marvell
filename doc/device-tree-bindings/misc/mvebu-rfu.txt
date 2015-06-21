@@ -1,0 +1,31 @@
+Marvell RFU address decoding bindings
+=====================================
+
+The RFU node include describtion about the address decoding configuration.
+Transactions that are decoded by CCU windows as IO peripheral, have an additional
+layer of decoding, this additional address decoding layer defines one of the
+following targets:
+	0x0 = BootRom
+	0x1 = STM (Serial Trace Macro-cell, a programmer’s port into trace stream)
+	0x2 = SPI direct access
+	0x3 = PCIe registers
+	0x4 = IHB Port
+	0x5 = PCIe port
+
+The RFU node requires the following properties:
+	- compatible: the compatible of the driver
+	- reg: the base address of the RFU window
+	- max-win: number of the max mbus windows
+	- windows: entry that include the configuration of the windows
+	  every window should have 3 parameters:
+	  - base address of the window
+	  - size of the window
+	  - target-id of the window
+
+Example:
+	rfu {
+		compatible = "marvell,mvebu-rfu";
+		reg = <0x6f0000 0x50>;
+		windows = <0xf2000000 0x40000000 0x05 /* PCIe window */
+			0xf6000000 0x20000000 0x02 /* SPI window */>;
+	};

@@ -89,6 +89,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr2_3/mvDramIfRegs.h"
 
 #include "twsi/mvTwsiSpec.h"
+#include "device/mvDevice.h"
+#include "mvDeviceId.h"
 
 /* defines  */
 #undef MV_DEBUG
@@ -128,6 +130,29 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_MSYS_AXP_INDEX_MAX] = {
 /* BM_UNIT_ID		*/ { 0,		0,		1,},
 /* PNC_UNIT_ID		*/ { 0,		0,		1,},
 };
+
+MV_U32  mvDev2CpuMapTable[16][2] = {
+/*	Dev ID			cores#   */
+	{MV_BOBCAT2_DEV_ID,		2},
+	{MV_ALLEYCAT3_98DX3336_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX3335_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX3334_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX3333_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX1233_DEV_ID,	1},
+	{MV_ALLEYCAT3_98DX1235_DEV_ID,	1},
+	{MV_ALLEYCAT3_98DX3236_DEV_ID,	1},
+	{MV_ALLEYCAT3_98DX3235_DEV_ID,	1},
+	{MV_ALLEYCAT3_98DX3234_DEV_ID,	1},
+	{MV_ALLEYCAT3_98DX3233_DEV_ID,	1},
+	{MV_ALLEYCAT3_98DXH333_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX1333_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX1335_DEV_ID,	2},
+	{MV_ALLEYCAT3_98DX1336_DEV_ID,	2},
+	{MV_MAX_DEV_ID,			0},
+};
+
+
+
 
 static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
 {
@@ -180,11 +205,34 @@ MV_U32 mvCtrlSocUnitInfoNumGet(MV_UNIT_ID unit)
 	devIdIndex = mvCtrlDevIdIndexGet(mvCtrlModelGet());
 	return mvCtrlSocUnitNums[unit][devIdIndex];
 }
-
-MV_U32 mvCtrlGetCpuNum(MV_VOID)
+/******************************************************************************
+* mvCtrlGetCpuNum
+*
+* DESCRIPTION: Get the number of CPU cores
+*
+*
+* INPUT: None
+*
+* OUTPUT: None
+*
+* RETURN:cpu cores number or 0 if the deviceID not found in device IDs table
+*
+*
+*******************************************************************************/
+MV_U32  mvCtrlGetCpuNum(MV_VOID)
 {
+	MV_U32	table_index = 0;
+	MV_U32	deviceId = mvCtrlModelGet();
+
+	while (mvDev2CpuMapTable[table_index][0] != MV_MAX_DEV_ID) {
+		if (deviceId == mvDev2CpuMapTable[table_index][0])
+			return mvDev2CpuMapTable[table_index][1];
+		table_index++;
+	}
+	mvOsPrintf("%s: Error: DevID (%#X) is not found in CPU cores count per device table!\n", __func__, deviceId);
 	return 0;
 }
+
 MV_BOOL mvCtrlIsValidSatR(MV_VOID)
 {
 	return MV_TRUE;

@@ -35,8 +35,8 @@ int do_active_units(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	/*   CPU	*/
 	cpuNum = mvCtrlGetCpuNum();
-	for (i = 0; i <= cpuNum; i++) {
-		if (i)
+	for (i = 1; i <= cpuNum; i++) {
+		if (i > 1)
 			printf(", ");
 		printf("cpu%d", i);
 	}

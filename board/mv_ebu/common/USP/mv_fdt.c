@@ -391,7 +391,7 @@ static int mv_fdt_update_cpus(void *fdt)
 	int depth = 2;
 
 	/* Get CPUs number and remove unnecessary nodes */
-	cpusnum = mvCtrlGetCpuNum() + 1;
+	cpusnum = mvCtrlGetCpuNum();
 	mv_fdt_dprintf("Number of CPUs detected: %d\n", cpusnum);
 	/* Find cpus node */
 	node = "cpus";

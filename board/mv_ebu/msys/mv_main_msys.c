@@ -646,7 +646,7 @@ int late_print_cpuinfo(void)
 	mvCtrlModelRevNameGet(name);
 	printf("\nSoC:   %s\n", name);
 	if (mvCtrlGetCpuNum())
-		printf("       running %d CPUs\n", mvCtrlGetCpuNum()+1);
+		printf("       running %d CPUs\n", mvCtrlGetCpuNum());
 	if (!mvCtrlIsValidSatR())
 		printf("       Custom configuration\n");
 	mvCpuNameGet(name);

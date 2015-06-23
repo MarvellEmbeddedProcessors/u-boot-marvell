@@ -536,6 +536,16 @@ void misc_init_r_env(void)
 	if (!env)
 		setenv("run_script", "no");
 #endif
+	env = getenv("sd_detection_dat3");
+	if (!env) {
+		/* by default DB-GP is the only marvell board with DAT3 detection method support.
+			This support was added in ECO 1.5 and above, so added env.
+			variable to control detection method according to ECO ver. */
+		if (mvBoardIdGet() == DB_GP_68XX_ID)
+			setenv("sd_detection_dat3", "yes");
+		else
+			setenv("sd_detection_dat3", "no");
+	}
 
 	/* netbsd boot arguments */
 	env = getenv("netbsd_en");

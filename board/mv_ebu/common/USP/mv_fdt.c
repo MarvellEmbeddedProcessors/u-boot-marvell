@@ -599,8 +599,8 @@ static int mv_fdt_update_usb_vbus(void *fdt)
 * mv_fdt_update_sdhci
 *
 * DESCRIPTION:
-* target		: update status field of MMC node.
-* node, properties	: -property status @ node sdhci@X.
+* target		: update status and dat3-cd fields of MMC node.
+* node, properties	: -property status and dat3-cd @ node sdhci@X.
 * dependencies		: status of MMC in isSdMmcConnected entry in board structure.
 *
 * INPUT:
@@ -619,6 +619,7 @@ static int mv_fdt_update_sdhci(void *fdt)
 	char propval[10];				/* property value */
 	const char *prop = "status";			/* property name */
 	char node[64];					/* node name */
+	char *env;
 
 	if (mvBoardisSdioConnected())
 		sprintf(propval, "okay");
@@ -642,6 +643,18 @@ static int mv_fdt_update_sdhci(void *fdt)
 		}
 		mv_fdt_dprintf("Set '%s' property to '%s' in '%s' node\n", prop, propval, node);
 	}
+
+	/* add DAT3 detection */
+	env = getenv("sd_detection_dat3");
+
+	if (!env || strcmp(env, "yes") != 0)
+		return 0;
+
+	prop = "dat3-cd";
+
+	/* add empty property 'dat3-cd' */
+	if (fdt_appendprop(fdt, nodeoffset, prop, NULL, 0) < 0)
+		mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n", prop, node);
 
 	return 0;
 }

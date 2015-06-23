@@ -5,8 +5,6 @@
 #
 # Normal rules
 #
-omri.pl
-comri.pl
 .gitignore
 *.rej
 *.orig

@@ -56,6 +56,7 @@ U_BOOT_CMD(
 	"\tDisplay address decode windows\n"
 );
 
+#ifdef CONFIG_MVEBU_MBUS
 int do_remap_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])
 {
@@ -71,12 +72,10 @@ int do_remap_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 	input = simple_strtoul(argv[1], NULL, 16);
 	output = simple_strtoul(argv[2], NULL, 16);
 
-#ifdef CONFIG_MVEBU_MBUS
 	if (remap_mbus(input, output)) {
 		printf("Error: Failed to remap 0x%08x->0x%08x\n", (uint)input, (uint)output);
 		return 1;
 	}
-#endif
 
 	printf("Remapped address 0x%08x t0 0x%08x\n", (uint)input, (uint)output);
 	return 0;
@@ -94,6 +93,7 @@ U_BOOT_CMD(
 	"Remapping the PCI window enables the PCI host to change the ouput\n"
 	"address on the PCI bus and so to access different PCI BARs\n"
 );
+#endif
 
 
 int do_units_cmd(cmd_tbl_t *cmdtp, int flag, int argc,

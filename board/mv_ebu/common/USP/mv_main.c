@@ -98,7 +98,7 @@ disclaimer.
 #else
 #define DB(x)
 #endif
-
+extern void fdt_env_setup(char *fdtfile, MV_BOOL runUpdate);
 extern int display_dram_config(int print);
 int late_print_cpuinfo(void);
 /* CPU address decode table. */
@@ -463,6 +463,13 @@ void misc_init_r_env(void){
 #ifdef CONFIG_ARM_LPAE
 	/* LPAE support */
 	envSetDefault("enaLPAE", "no");;
+#endif
+
+	/* Flatten Device Tree environment setup */
+#ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
+	fdt_env_setup("msys.dtb", MV_FALSE); /* static setup: Skip DT update for customer */
+#else
+	fdt_env_setup("msys.dtb", MV_FALSE); /* dynamic setup: run DT update (false since not supported yet) */
 #endif
 
 #if (CONFIG_BOOTDELAY >= 0)

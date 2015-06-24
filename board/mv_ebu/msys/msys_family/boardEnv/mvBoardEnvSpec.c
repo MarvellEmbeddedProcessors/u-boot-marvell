@@ -109,12 +109,12 @@ MV_BOARD_MODULE_TYPE_INFO bobcat2_customer_board_0_InfoBoardModTypeInfo[] = {
 };
 
 MV_DEV_CS_INFO bobcat2_customer_board_0_InfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
 #if defined(MV_INCLUDE_SPI)
-	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
 #endif
 #if defined(MV_INCLUDE_NOR)
-	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16} /* NOR DEV */
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
 #endif
 };
 
@@ -218,12 +218,12 @@ MV_BOARD_MODULE_TYPE_INFO alleycat3_customer_board_0_InfoBoardModTypeInfo[] = {
 };
 
 MV_DEV_CS_INFO alleycat3_customer_board_0_InfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
 #if defined(MV_INCLUDE_SPI)
-	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
 #endif
 #if defined(MV_INCLUDE_NOR)
-	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16} /* NOR DEV */
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
 #endif
 };
 
@@ -327,12 +327,12 @@ MV_BOARD_MODULE_TYPE_INFO db_dx_bc2InfoBoardModTypeInfo[] = {
 };
 
 MV_DEV_CS_INFO db_dx_bc2InfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
 #if defined(MV_INCLUDE_SPI)
-	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
 #endif
 #if defined(MV_INCLUDE_NOR)
-	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 8, 8} /* NOR DEV */
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 8, 8, 0, MV_TRUE} /* NOR DEV */
 #endif
 };
 
@@ -418,9 +418,9 @@ MV_BOARD_MODULE_TYPE_INFO rd_dx_bc2InfoBoardModTypeInfo[] = {
 };
 
 MV_DEV_CS_INFO rd_dx_bc2InfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth}*/
+	/*{deviceCS, params, devType, devWidth, busNum, active}*/
 #if defined(MV_INCLUDE_SPI)
-	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8} /* SPI DEV */
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 0, MV_TRUE} /* SPI DEV */
 #endif
 };
 
@@ -503,9 +503,9 @@ MV_BOARD_MODULE_TYPE_INFO bc2_rd_mtlInfoBoardModTypeInfo[] = {
 };
 
 MV_DEV_CS_INFO bc2_rd_mtlInfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth}*/
+	/*{deviceCS, params, devType, devWidth, busNum, active}*/
 #if defined(MV_INCLUDE_SPI)
-	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8} /* SPI DEV */
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 0, MV_TRUE} /* SPI DEV */
 #endif
 };
 
@@ -600,12 +600,12 @@ MV_BOARD_MODULE_TYPE_INFO db_dx_ac3InfoBoardModTypeInfo[] = {
 };
 
 MV_DEV_CS_INFO db_dx_ac3InfoBoardDeCsInfo[] = {
-	/*{deviceCS, params, devType, devWidth, busWidth }*/
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
 #if defined(MV_INCLUDE_SPI)
-	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8, 0, MV_TRUE}, /* SPI DEV */
 #endif
 #if defined(MV_INCLUDE_NOR)
-	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16} /* NOR DEV */
+	{DEV_BOOCS, N_A, BOARD_DEV_NOR_FLASH, 16, 16, 0, MV_TRUE} /* NOR DEV */
 #endif
 };
 

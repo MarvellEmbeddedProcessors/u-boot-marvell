@@ -82,6 +82,7 @@
 #define MV_FS
 #define CONFIG_CMD_DATE
 #define CONFIG_BOARD_EARLY_INIT_F
+#define CONFIG_PIC_GPIO 		/*  support GPIO signals for PIC (programmable interface circuit) */
 
 #define MV_DDR_TRAINING_CMD_NEW_TIP
 
@@ -499,6 +500,7 @@ extern int nand_get_env_offs(void);
 	#define CONFIG_USB_XHCI
 	#define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS  1
 	#define MV_INCLUDE_USB
+	#define MV_INCLUDE_USB_DEVICE
 	#define CONFIG_CMD_USB
 	#define CONFIG_USB_STORAGE
 	#define CONFIG_EHCI_IS_TDI

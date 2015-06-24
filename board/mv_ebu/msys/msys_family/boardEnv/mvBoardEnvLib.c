@@ -377,6 +377,30 @@ MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum)
 }
 
 /*******************************************************************************
+* mvBoardPortTypeGet
+*
+* DESCRIPTION:
+*       This routine returns port type
+*
+* INPUT:
+*       ethPortNum - Ethernet port number.
+*
+* OUTPUT:
+*       None
+*
+* RETURN:
+*       Mode of the port
+*
+*******************************************************************************/
+MV_U32 mvBoardPortTypeGet(MV_U32 ethPortNum)
+{
+	if (mvBoardIsPortInSgmii(ethPortNum))
+		return MV_PORT_TYPE_SGMII;
+	else
+		return MV_PORT_TYPE_RGMII;
+}
+
+/*******************************************************************************
 * mvBoardIsPortInMii
 *
 * DESCRIPTION:
@@ -1039,6 +1063,92 @@ MV_U32 mvBoardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
 		return devEntry->deviceCS;
 
 	return 0xFFFFFFFF;
+}
+
+/*******************************************************************************
+* mvBoardGetDevBusNum
+*
+* DESCRIPTION:
+*	Return the device's bus number.
+*
+* INPUT:
+*	devIndex - The device sequential number on the board
+*	devType - The device type ( Flash,RTC , etc .. )
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	If the device is found on the board the then the functions returns the
+*	dev bus number else the function returns 0xFFFFFFFF
+*
+*******************************************************************************/
+MV_U32 mvBoardGetDevBusNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
+{
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
+
+	if (devEntry)
+		return devEntry->busNum;
+
+	return 0xFFFFFFFF;
+}
+
+/*******************************************************************************
+* mvBoardGetDevState
+*
+* DESCRIPTION:
+*	Return the device's activity state.
+*
+* INPUT:
+*	devIndex - The device sequential number on the board
+*	devType - The device type ( Flash,RTC , etc .. )
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	If the device is found on the board the then the functions returns the
+*	dev activity state else the function returns 0xFFFFFFFF
+*
+*******************************************************************************/
+MV_BOOL mvBoardGetDevState(MV_32 devNum, MV_BOARD_DEV_CLASS devClass)
+{
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
+
+	if (devEntry)
+		return devEntry->active;
+
+	return 0xFFFFFFFF;
+}
+
+/*******************************************************************************
+* mvBoardSetDevState
+*
+* DESCRIPTION:
+*	Sets the device's activity state.
+*
+* INPUT:
+*	devIndex - The device sequential number on the board
+*   devType - The device type ( Flash,RTC , etc .. )
+*   newState - requested deevice state
+*
+* OUTPUT:
+*	None.
+*
+* RETURN:
+*	If the device is found on the board the then the functions returns
+*	MV_OK else MV_ERROR
+*
+*******************************************************************************/
+MV_STATUS mvBoardSetDevState(MV_32 devNum, MV_BOARD_DEV_CLASS devClass, MV_BOOL newState)
+{
+	MV_DEV_CS_INFO *devEntry = mvBoardGetDevEntry(devNum, devClass);
+
+	if (devEntry) {
+		devEntry->active = newState;
+		return MV_OK;
+	} else
+		return MV_ERROR;
 }
 
 /*******************************************************************************
@@ -2485,6 +2595,34 @@ MV_NFC_ECC_MODE mvBoardNandECCModeGet()
 #else
 	return MV_NFC_ECC_DISABLE;
 #endif
+}
+/*******************************************************************************
+* mvBoardCompatibleNameGet
+*
+* DESCRIPTION: return string containing 'compatible' property value
+*		needed for Device Tree auto-update parsing sequence
+*
+* INPUT:  None
+* OUTPUT: None.
+*
+* RETURN: length of returned string (including special delimiters)
+*
+*******************************************************************************/
+MV_U8 mvBoardCompatibleNameGet(char *pNameBuff)
+{
+	MV_U8 len = 0;
+	/* i.e: compatible = "marvell,msys", "marvell,msys-bc2", "marvell,msys-bc2-db", "marvell,armada-370-xp"; */
+	len = sprintf(pNameBuff, "marvell,msys") + 1;
+	/*
+	 * append next strings after the NULL character that the previous
+	 * sprintf wrote.  This is how a device tree stores multiple
+	 * strings in a property.
+	 */
+	len += sprintf(pNameBuff + len, "marvell,msys-bc2") + 1;
+	len += sprintf(pNameBuff + len, "marvell,msys-bc2-db") + 1;
+	len += sprintf(pNameBuff + len, "marvell,armada-370-xp") + 1;
+
+	return len;
 }
 
 MV_NAND_IF_MODE mvBoardNandIfGet()

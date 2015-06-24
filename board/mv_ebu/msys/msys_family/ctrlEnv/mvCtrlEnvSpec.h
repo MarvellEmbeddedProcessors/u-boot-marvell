@@ -114,6 +114,7 @@ extern "C" {
 			(pexIf < 8 ? (0x40000 + ((pexIf) / 4) * 0x40000 + ((pexIf) % 4) * 0x4000)\
 	: (0X42000 + ((pexIf) % 8) * 0x40000))
 #define MV_USB_REGS_OFFSET(dev)			(0x50000 + (dev * 0x1000))
+#define MV_USB2_USB3_REGS_OFFSET(unitType, dev) (MV_USB_REGS_OFFSET(dev))
 #define MV_XOR_REGS_OFFSET(unit)		(0xF0800)
 #if defined(MV_INCLUDE_IDMA)
 #define MV_IDMA_REGS_OFFSET			(0x60800)
@@ -185,6 +186,12 @@ extern "C" {
 /* This define describes the maximum number of supported PCI Interfaces 	*/
 #define MV_DEVICE_MAX_CS      			4
 
+#ifdef CONFIG_ALLEYCAT3
+#define MV_USB_MAX_PORTS 1
+#else /* BC2 no USB ports */
+#define MV_USB_MAX_PORTS 0
+#endif
+#define MV_USB3_MAX_HOST_PORTS 0
 
 /* This define describes the maximum number of supported Ethernet ports */
 /* TODO - verify all these numbers */

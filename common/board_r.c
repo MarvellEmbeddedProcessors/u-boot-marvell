@@ -291,6 +291,9 @@ __weak int power_init_board(void)
 static int initr_announce(void)
 {
 	printf("Now running in RAM - U-Boot at: %08lx\n", gd->relocaddr);
+#ifdef CONFIG_OF_CONTROL
+	printf("U-Boot DT blob at : %p\n", gd->fdt_blob);
+#endif
 	return 0;
 }
 

@@ -30,6 +30,8 @@ void *fdt_get_regs_offs(const void *blob, int node, const char *prop_name)
 
 	base = fdt_get_regs_base();
 	reg = fdtdec_get_addr(blob, node, prop_name);
+	if (reg == FDT_ADDR_T_NONE)
+		return NULL;
 
 	return base + reg;
 }

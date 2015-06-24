@@ -27,6 +27,8 @@ DECLARE_GLOBAL_DATA_PTR;
 
 /* to use global variables before u-boot relocation, initialize it to something !=0 */
 unsigned int mvebu_uart_reg_base = 100;
+unsigned int mvebu_uart_clock_frequency = 100;
+unsigned int mvebu_uart_baudrate = 100;
 
 #define MVEBU_UART_BASE(x)	mvebu_uart_reg_base
 
@@ -60,14 +62,13 @@ unsigned int mvebu_uart_reg_base = 100;
 
 static void mvebu_serial_setbrg(void)
 {
-	/* No Operation */;
-#ifdef CONFIG_PALLADIUM
-	/* following are all temporary settings for Palladium, will be removed later */
-	/* for palladium, we use 300 brg */
-	UART_REG_WRITE(UART_BAUD_REG, 0x1);
-	UART_REG_WRITE(UART_POSSR_REG, 0x0);
-
-#endif
+	/*
+	 * calculate divider.
+	 * baudrate = clock / 16 / divider
+	 */
+	UART_REG_WRITE(UART_BAUD_REG, (mvebu_uart_clock_frequency / mvebu_uart_baudrate / 16));
+	/* set Programmable Oversampling Stack to 0, UART defaults to 16X scheme */
+	UART_REG_WRITE(UART_POSSR_REG, 0);
 }
 
 /*
@@ -123,6 +124,8 @@ static int mvebu_serial_init(void)
 			continue;
 
 		mvebu_uart_reg_base = (unsigned int)fdt_get_regs_offs(gd->fdt_blob, node, "reg");
+		mvebu_uart_clock_frequency = (unsigned int)fdtdec_get_int(gd->fdt_blob, node, "clock_frequency", 0);
+		mvebu_uart_baudrate = (unsigned int)fdtdec_get_int(gd->fdt_blob, node, "baudrate", 0);
 	}
 
 	/* 115200KBps fixed Baud rate  */

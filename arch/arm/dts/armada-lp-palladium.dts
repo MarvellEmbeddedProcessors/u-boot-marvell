@@ -10,6 +10,8 @@
 	soc {
 		internal-regs {
 			serial: serial@12000 {
+				clock_frequency = <4800>;
+				baudrate = <300>;
 				status = "okay";
 			};
 		};

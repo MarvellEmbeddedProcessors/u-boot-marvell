@@ -51,6 +51,8 @@ Group Ltd.
 				DRIVER = ccu/iob/rfu/mbus
 			2.1.5 /soc/internal-regs/comphy:
 				Specify the COMPHY interface, check doc/device-tree-bindings/comphy/mvebu_comphy.txt
+			2.1.6 /soc/internal-regs/serial/ node;
+				Specify the UART interface for armadaLP, check doc/device-tree-bindings/serial/mvebu-serial.txt
 
 3) /sar/ node:
 	Specify the sample at reset database, check

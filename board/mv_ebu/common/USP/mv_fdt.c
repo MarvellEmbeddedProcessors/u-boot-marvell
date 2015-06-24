@@ -101,13 +101,19 @@ void fdt_env_setup(char *fdtfile, MV_BOOL runUpdate)
 static int mv_fdt_find_node(void *fdt, const char *name);
 static int mv_fdt_board_compatible_name_update(void *fdt);
 static int mv_fdt_update_serial(void *fdt);
+#ifdef CONFIG_PIC_GPIO
 static int mv_fdt_update_pic_gpio(void *fdt);
+#endif
 static int mv_fdt_update_cpus(void *fdt);
 static int mv_fdt_update_pex(void *fdt);
+#ifdef MV_INCLUDE_SATA
 static int mv_fdt_update_sata(void *fdt);
+#endif
+#ifdef MV_INCLUDE_USB
 static int mv_fdt_update_usb(void *fdt, MV_UNIT_ID unitType);
 static int mv_fdt_update_usb2(void *fdt);
 static int mv_fdt_update_usb3(void *fdt);
+#endif
 static int mv_fdt_update_ethnum(void *fdt);
 static int mv_fdt_update_flash(void *fdt);
 static int mv_fdt_set_node_prop(void *fdt, const char *node, const char *prop, const char *prop_val);
@@ -135,7 +141,9 @@ static int mv_fdt_update_tdm(void *fdt);
 #ifdef MV_USB_VBUS_CYCLE
 static int mv_fdt_update_usb_vbus(void *fdt);
 #endif
+#ifdef MV_INCLUDE_USB_DEVICE
 static int mv_fdt_update_usb_device(void *fdt);
+#endif
 
 #if 0 /* not compiled, since this routine is currently not in use  */
 static int mv_fdt_remove_prop(void *fdt, const char *path,
@@ -146,9 +154,13 @@ typedef int (update_fnc_t)(void *);
 update_fnc_t *update_sequence[] = {
 	mv_fdt_update_cpus,			/* Get number of CPUs and update dt */
 	mv_fdt_update_pex,			/* Get number of active PEX port and update DT */
+#ifdef MV_INCLUDE_SATA
 	mv_fdt_update_sata,			/* Get number of active SATA units and update DT */
+#endif
+#ifdef MV_INCLUDE_USB
 	mv_fdt_update_usb2,			/* Get number of active USB2.0 units and update DT */
 	mv_fdt_update_usb3,			/* Get number of active USB3.0 units and update DT */
+#endif
 	mv_fdt_update_ethnum,			/* Get number of active ETH port and update DT */
 	mv_fdt_update_mpp_config,		/*Update FDT entries related to mpp configuration*/
 #ifdef CONFIG_MV_SDHCI
@@ -168,14 +180,18 @@ update_fnc_t *update_sequence[] = {
 	mv_fdt_update_pinctrl,			/* Update pinctrl driver settings in DT */
 	mv_fdt_board_compatible_name_update,	/* Update compatible (board name) in DT */
 	mv_fdt_update_serial,			/* Update serial/UART nodes in DT */
+#ifdef CONFIG_PIC_GPIO
 	mv_fdt_update_pic_gpio,
+#endif
 #ifdef MV_INCLUDE_AUDIO
 	mv_fdt_update_audio,			/* Update audio-controller+sound nodes in DT */
 #endif
 #ifdef MV_INCLUDE_SWITCH
 	mv_fdt_update_switch,
 #endif
+#ifdef MV_INCLUDE_USB_DEVICE
 	mv_fdt_update_usb_device,
+#endif
 	NULL,
 };
 
@@ -413,6 +429,7 @@ static int mv_fdt_update_cpus(void *fdt)
 	return 0;
 }
 
+#ifdef MV_INCLUDE_SATA
 /*******************************************************************************
 * mv_fdt_update_sata
 *
@@ -455,6 +472,7 @@ static int mv_fdt_update_sata(void *fdt)
 
 	return 0;
 }
+#endif /* MV_INCLUDE_SATA */
 
 #ifdef MV_INCLUDE_TDM
 /*******************************************************************************
@@ -834,7 +852,7 @@ pex_ok:
 	}
 	return 0;
 }
-
+#ifdef MV_INCLUDE_USB
 /*******************************************************************************
 * mv_fdt_update_usb
 *
@@ -897,7 +915,9 @@ static int mv_fdt_update_usb3(void *fdt)
 {
 	return mv_fdt_update_usb(fdt, USB3_UNIT_ID);
 }
+#endif /* MV_INCLUDE_USB */
 
+#ifdef MV_INCLUDE_USB_DEVICE
 /*******************************************************************************
 * mv_fdt_update_usb_device
 *
@@ -949,7 +969,7 @@ static int mv_fdt_update_usb_device(void *fdt)
 	}
 	return 0;
 }
-
+#endif /* MV_INCLUDE_USB_DEVICE */
 /*******************************************************************************
 * mv_fdt_update_pinctrl
 *
@@ -1351,7 +1371,6 @@ static int mv_fdt_update_flash(void *fdt)
 			return 0;
 		}
 	}
-
 	return 0;
 }
 
@@ -1822,7 +1841,7 @@ static int mv_fdt_update_serial(void *fdt)
 
 	return 0;
 }
-
+#ifdef CONFIG_PIC_GPIO
 /*******************************************************************************
 * mv_fdt_update_pic_gpio
 *
@@ -1938,8 +1957,9 @@ static int mv_fdt_update_pic_gpio(void *fdt)
 	mv_fdt_dprintf("Set '%s' property in '%s' node\n", ctrl_gpios_prop, pm_picNode);
 
 	return 0;
-}
 
+}
+#endif /* CONFIG_PIC_GPIO */
 #ifdef MV_INCLUDE_SWITCH
 /*******************************************************************************
 * mv_fdt_update_switch

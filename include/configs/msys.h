@@ -114,6 +114,7 @@ disclaimer.
 #ifndef __ASSEMBLY__
 	extern unsigned int mvCpuDdrClkGet(void);
 	extern unsigned int mvTclkGet(void);
+	extern unsigned int mvUartPortGet(void);
 	#define UBOOT_CNTR		0		/* counter to use for uboot timer */
 	#define MV_TCLK_CNTR		1		/* counter to use for uboot timer */
 	#define MV_REF_CLK_DEV_BIT	1000		/* Number of cycle to eanble timer */
@@ -203,6 +204,11 @@ disclaimer.
 #define CONFIG_MENU
 #define CONFIG_BOOTP_PXE_CLIENTARCH	0x100
 #define CONFIG_BOOTP_VCI_STRING		"U-boot.armv7.armada_xp"
+
+/* Flattened Device Tree (FDT) support */
+#define CONFIG_OF_LIBFDT               1
+#define CONFIG_OF_BOARD_SETUP
+#undef CONFIG_OF_LIBFDT_IS_DEFAULT   /* dft is the default for bootcmd */
 
 /* FS supported */
 #define CONFIG_CMD_EXT2
@@ -426,6 +432,7 @@ disclaimer.
 /***************************************/
 /* LINUX BOOT and other ENV PARAMETERS */
 /***************************************/
+#define MV_NFC_FDT_NODE_NAME	"nand@"
 #define MV_BOOTARGS_END		":10.4.50.254:255.255.255.0:DSMP:eth0:none"
 #define RCVR_IP_ADDR		"169.254.100.100"
 #define	RCVR_LOAD_ADDR		"0x02000000"

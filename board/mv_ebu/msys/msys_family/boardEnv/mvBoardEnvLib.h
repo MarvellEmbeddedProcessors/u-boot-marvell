@@ -84,6 +84,13 @@ extern "C" {
 #define MV_BOARD_MAX_MPP		9	/* number of MPP conf registers */
 #define MV_BOARD_NAME_LEN  		0x20
 
+enum {
+	MV_PORT_TYPE_SGMII,
+	MV_PORT_TYPE_QSGMII,
+	MV_PORT_TYPE_RGMII,
+	MV_PORT_TYPE_UNKNOWN = -1,
+};
+
 typedef enum _devBoardMppTypeClass {
 	MV_BOARD_AUTO = 0,
 	MV_BOARD_MII_GMII,
@@ -153,6 +160,8 @@ typedef struct _devCsInfo {
 	MV_U32 devClass;	/* MV_BOARD_DEV_CLASS */
 	MV_U8 devWidth;
 	MV_U8 busWidth;
+	MV_U8 busNum;
+	MV_BOOL active;
 } MV_DEV_CS_INFO;
 
 typedef struct _boardSwitchInfo {
@@ -266,6 +275,7 @@ MV_BOOL mvBoardIsEthConnected(MV_U32 ethNum);
 MV_BOOL mvBoardIsEthActive(MV_U32 ethNum);
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInGmii(MV_U32 ethPortNum);
+MV_U32 mvBoardPortTypeGet(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInMii(MV_U32 ethPortNum);
 MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum);
 MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum);
@@ -289,6 +299,9 @@ MV_32 mvBoardGetDeviceBusWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_32 mvBoardGetDeviceWidth(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_32 mvBoardGetDeviceWinSize(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
 MV_U32 mvBoardGetDevCSNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
+MV_U32 mvBoardGetDevBusNum(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
+MV_BOOL mvBoardGetDevState(MV_32 devNum, MV_BOARD_DEV_CLASS devClass);
+MV_STATUS mvBoardSetDevState(MV_32 devNum, MV_BOARD_DEV_CLASS devClass, MV_BOOL newState);
 MV_U8 mvBoardTwsiAddrTypeGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_U8 mvBoardTwsiAddrGet(MV_BOARD_TWSI_CLASS twsiClass, MV_U32 index);
 MV_32 mvBoardNandWidthGet(void);
@@ -362,6 +375,7 @@ MV_STATUS mvBoardPexModeSet(MV_U16 conf);
 MV_VOID mvBoardDebugLed(MV_U32 hexNum);
 MV_NFC_ECC_MODE mvBoardNandECCModeGet(void);
 MV_U32 mvBoardCpssBoardIdSet(MV_U8);
+MV_U8 mvBoardCompatibleNameGet(char *pNameBuff);
 MV_NAND_IF_MODE mvBoardNandIfGet(void);
 MV_STATUS mvBoardOobPortCfgSet(MV_VOID);
 MV_BOOL mvBoardIsUsbPortConnected(MV_UNIT_ID usbTypeID, MV_U8 usbPortNumber);

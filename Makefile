@@ -876,10 +876,10 @@ DOIMAGE_FLAGS	:= -b $(SPLIMAGE) $(NAND_DOIMAGE_FLAGS) $(DOIMAGE_SEC_FLAGS)
 
 doimage: $(obj)/u-boot.bin $(DOIMAGE) $(SPLIMAGE)
 		@$(DOIMAGE_LIBS_CHECK)
-		$(DOIMAGE) $(DOIMAGE_FLAGS) u-boot.bin u-boot-$(CONFIG_SYS_SOC).bin
+		$(DOIMAGE) $(DOIMAGE_FLAGS) u-boot.bin u-boot-spl.bin
 
 bin2phex: doimage
-		$(BIN2PHEX) -w 1  -i u-boot-$(CONFIG_SYS_SOC).bin -o u-boot-$(CONFIG_SYS_SOC).hex -b 0x0
+		$(BIN2PHEX) -w 1  -i u-boot-spl.bin -o u-boot-spl.hex -b 0x0
 		$(BIN2PHEX) -w 16 -i u-boot.bin -o u-boot.hex -b 0x0
 
 else # CONFIG_TARGET_ARMADA_38X
@@ -894,7 +894,7 @@ DOIMAGE_FLAGS	:= -T $(CONFIG_DOIMAGE_TYPE) -D 0x0 -E 0x0 $(NAND_OPTS) -G $(SPLIM
 doimage: $(obj)/u-boot.bin $(DOIMAGE) $(SPLIMAGE)
 		cp spl/u-boot-spl.bin spl/u-boot-spl.bin.old; cat tools/marvell/params.raw > spl/u-boot-spl.bin;
 		cat spl/u-boot-spl.bin.old >> spl/u-boot-spl.bin;
-		$(DOIMAGE) $(DOIMAGE_FLAGS) u-boot.bin u-boot-$(CONFIG_SYS_SOC)-$(CONFIG_DOIMAGE_SUFFIX).bin
+		$(DOIMAGE) $(DOIMAGE_FLAGS) u-boot.bin u-boot-spl.bin
 
 endif # CONFIG_TARGET_ARMADA_8K
 endif # CONFIG_MVEBU

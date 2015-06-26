@@ -33,7 +33,8 @@
 /* Physical address of the base of the window = {Addr[19:0],20`h0} */
 #define ADDRESS_SHIFT			(20 - 4)
 #define ADDRESS_MASK			(0xFFFFFFF0)
-#define RFU_WIN_ALIGNMENT		(0x100000)
+#define RFU_WIN_ALIGNMENT_1M		(0x100000)
+#define RFU_WIN_ALIGNMENT_64K		(0x10000)
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -57,17 +58,23 @@ enum rfu_target_ids {
 
 static void rfu_win_check(struct rfu_win *win, u32 win_num)
 {
+	u32 alignment_value = RFU_WIN_ALIGNMENT_1M;
+	/* for RFU The base is always 1M aligned */
 	/* check if address is aligned to 1M */
-	if (IS_NOT_ALIGN(win->base_addr, RFU_WIN_ALIGNMENT)) {
-		win->base_addr = ALIGN_UP(win->base_addr, RFU_WIN_ALIGNMENT);
-		error("Window %d: base address unaligned to 0x%x\n", win_num, RFU_WIN_ALIGNMENT);
+	if (IS_NOT_ALIGN(win->base_addr, RFU_WIN_ALIGNMENT_1M)) {
+		win->base_addr = ALIGN_UP(win->base_addr, RFU_WIN_ALIGNMENT_1M);
+		error("Window %d: base address unaligned to 0x%x\n", win_num, RFU_WIN_ALIGNMENT_1M);
 		printf("Align up the base address to 0x%x\n", win->base_addr);
 	}
 
+	/* targets that have AHR must have size aligned to 1M.
+	   targets with no AHR (pcie-reg, bootrom) have a fixed size of 64k */
+	if (win->target_id == BOOTROM_TID || win->target_id == PCIE_REGS_TID)
+		alignment_value = RFU_WIN_ALIGNMENT_64K;
 	/* size parameter validity check */
-	if (IS_NOT_ALIGN(win->win_size, RFU_WIN_ALIGNMENT)) {
-		win->win_size = ALIGN_UP(win->win_size, RFU_WIN_ALIGNMENT);
-		error("Window %d: window size unaligned to 0x%x\n", win_num, RFU_WIN_ALIGNMENT);
+	if (IS_NOT_ALIGN(win->win_size, alignment_value)) {
+		win->win_size = ALIGN_UP(win->win_size, alignment_value);
+		error("Window %d: window size unaligned to 0x%x\n", win_num, alignment_value);
 		printf("Aligning size to 0x%x\n", win->win_size);
 	}
 }

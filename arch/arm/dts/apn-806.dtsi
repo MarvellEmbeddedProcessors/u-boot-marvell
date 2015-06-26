@@ -52,6 +52,40 @@
 				clock = <&tclk>;
 				status = "okay";
 			};
+
+			pinctl: pinctl@6F008C {
+				compatible = "marvell,mvebu-pinctl";
+				bank-name ="apn-806";
+				reg = <0x6F008c 0x10>;
+				pin-count = <16>;
+				max-func = <1>;
+				reverse-reg;
+			};
+		};
+	};
+	/* This should go only into devel boards */
+	mpp-buses {
+		mpp-bus0 {
+			compatible = "marvell,mvebu-mpp-bus";
+			bus-name = "spi0";
+			bank-name = "apn-806";
+			pin-count = <5>;
+			pins = <4 1  5 1  6 1  7 1  8 1>;
+		};
+		mpp-bus1 {
+			compatible = "marvell,mvebu-mpp-bus";
+			bus-name = "i2c";
+			bank-name = "apn-806";
+			pin-count = <2>;
+			pins = <0 1  1 1>;
+		};
+		mpp-bus2 {
+			/* the RX pin is directly connected to uart1 */
+			compatible = "marvell,mvebu-mpp-bus";
+			bus-name = "uart1";
+			bank-name = "apn-806";
+			pin-count = <1>;
+			pins = <13 1>;
 		};
 	};
 };

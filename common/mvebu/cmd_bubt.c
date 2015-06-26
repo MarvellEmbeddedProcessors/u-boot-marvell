@@ -29,6 +29,31 @@
 
 #include <nand.h>
 
+#if defined(CONFIG_TARGET_ARMADA_8K)
+#define MAIN_HDR_MAGIC		B105B002
+
+struct mvebu_image_header {
+	uint32_t	magic;			/*  0-3  */
+	uint32_t	prolog_size;		/*  4-7  */
+	uint32_t	prolog_checksum;	/*  8-11 */
+	uint32_t	boot_image_size;	/* 12-15 */
+	uint32_t	boot_image_checksum;	/* 16-19 */
+	uint32_t	rsrvd0;			/* 20-23 */
+	uint32_t	load_addr;		/* 24-27 */
+	uint32_t	exec_addr;		/* 28-31 */
+	uint8_t		uart_cfg;		/*  32   */
+	uint8_t		baudrate;		/*  33   */
+	uint8_t		ext_count;		/*  34   */
+	uint8_t		aux_flags;		/*  35   */
+	uint32_t	io_arg_0;		/* 36-39 */
+	uint32_t	io_arg_1;		/* 40-43 */
+	uint32_t	io_arg_2;		/* 43-47 */
+	uint32_t	io_arg_3;		/* 48-51 */
+	uint32_t	rsrvd1;			/* 52-55 */
+	uint32_t	rsrvd2;			/* 56-59 */
+	uint32_t	rsrvd3;			/* 60-63 */
+};
+#else /* A38x */
 struct mvebu_image_header {
 	u8	block_id;		/* 0 */
 	u8	rsvd1;			/* 1 */
@@ -48,6 +73,7 @@ struct mvebu_image_header {
 	u8	ext;			/* 30 */
 	u8	checksum;		/* 31 */
 };
+#endif
 
 struct bubt_dev {
 	char name[8];
@@ -276,6 +302,53 @@ static int bubt_write_file(struct bubt_dev *dst, int image_size)
 	return dst->write(image_size);
 }
 
+#if defined(CONFIG_TARGET_ARMADA_8K)
+uint32_t do_checksum32(uint32_t *start, uint32_t len)
+{
+	uint32_t sum = 0;
+	uint32_t *startp = start;
+
+	do {
+		sum += *startp;
+		startp++;
+		len -= 4;
+	} while (len > 0);
+
+	return sum;
+}
+
+static int check_image_header(void)
+{
+	struct mvebu_image_header *hdr = (struct mvebu_image_header *)get_load_addr();
+	uint32_t header_len = hdr->prolog_size;
+	uint32_t checksum;
+	uint32_t checksum_ref = hdr->prolog_checksum;
+
+	/*
+	 * For now compare checksum, and magic. Later we can
+	 * verify more stuff on the header like interface type, etc
+	 */
+	if (hdr->magic != MAIN_HDR_MAGIC) {
+		printf("ERROR: Bad MAGIC 0x%08x != 0x%08x\n", hdr->magic, MAIN_HDR_MAGIC);
+		return -ENOEXEC;
+	}
+
+	/* The checksum value is discarded from checksum calculation */
+	hdr->prolog_checksum = 0;
+
+	checksum = do_checksum32((uint32_t *)hdr, header_len);
+	if (checksum != checksum_ref) {
+		printf("Error: Bad Image checksum. 0x%x != 0x%x\n", checksum, checksum_ref);
+		return -ENOEXEC;
+	}
+
+	/* Restore the checksum before writing */
+	hdr->prolog_checksum = checksum_ref;
+	printf("Image checksum...OK!\n");
+
+	return 0;
+}
+#else /* A38x */
 u8 do_checksum8(void *start, u32 len, u8 csum)
 {
 	register u8 sum = csum;
@@ -317,6 +390,7 @@ static int check_image_header(void)
 
 	return 0;
 }
+#endif
 
 static int bubt_verify(int image_size)
 {

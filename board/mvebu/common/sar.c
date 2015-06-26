@@ -30,6 +30,21 @@ struct sar_data sar_board;
 #define board_get_sar() (&sar_board)
 #define board_get_sar_table() (sar_board.sar_lookup)
 
+static u32 swap_value(u32 val, u32 bit_length)
+{
+	u32 var_mask = (1 << bit_length) - 1;
+
+	val = (val & 0xFFFF0000) >> 16 | (val & 0x0000FFFF) << 16;
+	val = (val & 0xFF00FF00) >> 8 | (val & 0x00FF00FF) << 8;
+	val = (val & 0xF0F0F0F0) >> 4 | (val & 0x0F0F0F0F) << 4;
+	val = (val & 0xCCCCCCCC) >> 2 | (val & 0x33333333) << 2;
+	val = (val & 0xAAAAAAAA) >> 1 | (val & 0x55555555) << 1;
+	val = (val >> (32 - bit_length)) & var_mask;
+	debug("value is swaped, new value = 0x%x\n", val);
+
+	return val;
+}
+
 static int sar_read_reg(u32 *reg)
 {
 	uchar byte = 0;
@@ -86,6 +101,9 @@ int sar_read_var(struct sar_var *var, int *val)
 		return -1;
 
 	(*val) = (sar_reg >> var->start_bit) & var_mask;
+	if (var->swap_bit)
+		(*val) = swap_value(*val, var->bit_length);
+
 
 	debug("var offet = %d len = %d val = 0x%x\n", var->start_bit, var->bit_length, (*val));
 
@@ -101,6 +119,8 @@ int sar_write_var(struct sar_var *var, int val)
 		return -1;
 
 	/* Update the bitfield inside the sar register */
+	if (var->swap_bit)
+		val = swap_value(val, var->bit_length);
 	val &= var_mask;
 	sar_reg &= ~(var_mask << var->start_bit);
 	sar_reg |= (val << var->start_bit);
@@ -363,8 +383,10 @@ static void sar_dump(void)
 			continue;
 		printf("\t\tID = %d, ", i);
 		printf("Key = %s, ", sar->sar_lookup[i].key);
-		printf("Desc. = %s\n", sar->sar_lookup[i].desc);
-		printf("\t\tStart bit = 0x%x, ", sar->sar_lookup[i].start_bit);
+		printf("Desc. = %s", sar->sar_lookup[i].desc);
+		if (sar->sar_lookup[i].swap_bit)
+			printf(", BIT is swapped");
+		printf("\n\t\tStart bit = 0x%x, ", sar->sar_lookup[i].start_bit);
 		printf("Bit length = %d\n", sar->sar_lookup[i].bit_length);
 		printf("\t\tThis variable had %d options:\n", sar->sar_lookup[i].option_cnt);
 		for (id = 0; id < sar->sar_lookup[i].option_cnt; id++) {
@@ -421,6 +443,7 @@ void sar_init(void)
 		sar->sar_lookup[id].start_bit = fdtdec_get_int(gd->fdt_blob, var, "start-bit", 0);
 		sar->sar_lookup[id].bit_length = fdtdec_get_int(gd->fdt_blob, var, "bit-length", 0);
 		sar->sar_lookup[id].option_cnt = fdtdec_get_int(gd->fdt_blob, var, "option-cnt", 0);
+		sar->sar_lookup[id].swap_bit = fdtdec_get_bool(gd->fdt_blob, var, "swap-bit");
 		/* Get the options list */
 		len = fdt_count_strings(gd->fdt_blob, var, "options");
 		if ((len < 0) || (sar->sar_lookup[id].option_cnt*2 != len)) {

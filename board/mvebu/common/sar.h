@@ -46,6 +46,7 @@ struct sar_var {
 	u8 bit_length;
 	u8 option_cnt;
 	u8 active;
+	bool swap_bit;
 	char *desc;
 	char *key;
 	struct var_opts option_desc[MAX_VAR_OPTIONS];

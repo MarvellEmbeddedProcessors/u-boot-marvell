@@ -138,6 +138,7 @@
 			options = "0x0", "1800/900",
 				"0x1", "1600/800";
 			default = <0x1>;
+			swap-bit;
 			status = "okay";
 		};
 		bootsrc {

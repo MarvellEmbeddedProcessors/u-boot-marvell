@@ -20,6 +20,7 @@ The SAR node requires the following properties:
 		- option-cnt: The count of the options in this sample at reset node
 		- options: Describe the options list by setting the "value", "describtion of the value"
 		- default: What is the value of default options
+		- swap-bit: Boolean set if the bit is swapped in this option
 		- status: Set if the Sample at reset option is enabled/disabled
 
 Example:
@@ -40,6 +41,7 @@ sar {
 		options = "0x0", "1800/900",
 			  "0x1", "1600/800";
 		default = <0x1>;
+		swap-bit;
 		status = "okay";
 	};
 	bootsrc {

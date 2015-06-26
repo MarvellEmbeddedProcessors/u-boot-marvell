@@ -371,6 +371,7 @@ static void sar_dump(void)
 {
 #ifdef DEBUG
 	struct sar_data *sar = board_get_sar();
+	struct sar_var *sar_var;
 	int i, id;
 	printf("Sample at reset Dumper:\n");
 	printf("\tSatR had %d chip addresses: ", sar->chip_count);
@@ -378,21 +379,21 @@ static void sar_dump(void)
 		printf("0x%x ", sar->chip_addr[i]);
 	printf("\n\tBit width for the I2C chip is: 0x%x\n", sar->bit_width);
 	printf("\tAll SatR variables thet available:\n");
-	for (i = 0; i < MAX_SAR; i++) {
-		if (sar->sar_lookup[i].active == 0)
+	for (i = 0, sar_var = sar->sar_lookup; i < MAX_SAR; i++, sar_var++) {
+		if (sar_var->active == 0)
 			continue;
 		printf("\t\tID = %d, ", i);
-		printf("Key = %s, ", sar->sar_lookup[i].key);
-		printf("Desc. = %s", sar->sar_lookup[i].desc);
-		if (sar->sar_lookup[i].swap_bit)
+		printf("Key = %s, ", sar_var->key);
+		printf("Desc. = %s", sar_var->desc);
+		if (sar_var->swap_bit)
 			printf(", BIT is swapped");
-		printf("\n\t\tStart bit = 0x%x, ", sar->sar_lookup[i].start_bit);
-		printf("Bit length = %d\n", sar->sar_lookup[i].bit_length);
-		printf("\t\tThis variable had %d options:\n", sar->sar_lookup[i].option_cnt);
-		for (id = 0; id < sar->sar_lookup[i].option_cnt; id++) {
-			printf("\t\t\tValue = 0x%x, ", sar->sar_lookup[i].option_desc[id].value);
-			printf("Desc. = %s, ", sar->sar_lookup[i].option_desc[id].desc);
-			printf("Is Default = %d\n", sar->sar_lookup[i].option_desc[id].flags);
+		printf("\n\t\tStart bit = 0x%x, ", sar_var->start_bit);
+		printf("Bit length = %d\n", sar_var->bit_length);
+		printf("\t\tThis variable had %d options:\n", sar_var->option_cnt);
+		for (id = 0; id < sar_var->option_cnt; id++) {
+			printf("\t\t\tValue = 0x%x, ", sar_var->option_desc[id].value);
+			printf("Desc. = %s, ", sar_var->option_desc[id].desc);
+			printf("Is Default = %d\n", sar_var->option_desc[id].flags);
 		}
 	}
 #endif
@@ -401,68 +402,70 @@ static void sar_dump(void)
 void sar_init(void)
 {
 	int i, var_default;
-	int node, var, id, len;
+	int node, var, len;
 	const char *str;
+	const void *blob = gd->fdt_blob;
+	struct sar_var *sar_var;
 	struct sar_data *sar = board_get_sar();
 
 	debug_enter();
 	/* Get sar node from the FDT blob */
-	node = fdt_node_offset_by_compatible(gd->fdt_blob, -1, fdtdec_get_compatible(COMPAT_MVEBU_SAR));
+	node = fdt_node_offset_by_compatible(blob, -1, fdtdec_get_compatible(COMPAT_MVEBU_SAR));
 	if (node < 0) {
 		debug("No sar node found in FDT blob\n");
 		return;
 	}
 
 	/* Get the bit width of the sapmple at reset i2c register */
-	sar->bit_width = fdtdec_get_int(gd->fdt_blob, node, "bit_width", 1);
+	sar->bit_width = fdtdec_get_int(blob, node, "bit_width", 1);
 	/* Get the address count of sample at reset i2c */
-	sar->chip_count = fdtdec_get_int(gd->fdt_blob, node, "chip_count", 1);
+	sar->chip_count = fdtdec_get_int(blob, node, "chip_count", 1);
 	/* get the address in array */
-	if (fdtdec_get_int_array(gd->fdt_blob, node, "reg", sar->chip_addr, sar->chip_count) != 0) {
+	if (fdtdec_get_int_array(blob, node, "reg", sar->chip_addr, sar->chip_count) != 0) {
 		error("No sample at reset addresses found in FDT blob\n");
 		return;
 	}
 	/* Get the fisrt variable in sample at reset */
-	var = fdt_first_subnode(gd->fdt_blob, node);
+	var = fdt_first_subnode(blob, node);
 	if (!var) {
 		error("No sample at reset variables found in FDT\n");
 		return;
 	}
-	id = 0;
+	sar_var = sar->sar_lookup;
 	/* Find the variables under sample at reset node */
 	do {
 		/* if the variable is disabled skip it */
-		if (!fdtdec_get_is_enabled(gd->fdt_blob, var))
+		if (!fdtdec_get_is_enabled(blob, var))
 			continue;
 		/* Get the key of the var option */
-		fdt_get_string(gd->fdt_blob, var, "key", (const char **)&sar->sar_lookup[id].key);
+		fdt_get_string(blob, var, "key", (const char **)&sar_var->key);
 		/* Get the descrition of the var */
-		fdt_get_string(gd->fdt_blob, var, "description", (const char **)&sar->sar_lookup[id].desc);
+		fdt_get_string(blob, var, "description", (const char **)&sar_var->desc);
 		/* set the different options of the var */
-		sar->sar_lookup[id].active = 1;
-		sar->sar_lookup[id].start_bit = fdtdec_get_int(gd->fdt_blob, var, "start-bit", 0);
-		sar->sar_lookup[id].bit_length = fdtdec_get_int(gd->fdt_blob, var, "bit-length", 0);
-		sar->sar_lookup[id].option_cnt = fdtdec_get_int(gd->fdt_blob, var, "option-cnt", 0);
-		sar->sar_lookup[id].swap_bit = fdtdec_get_bool(gd->fdt_blob, var, "swap-bit");
+		sar_var->active = 1;
+		sar_var->start_bit = fdtdec_get_int(blob, var, "start-bit", 0);
+		sar_var->bit_length = fdtdec_get_int(blob, var, "bit-length", 0);
+		sar_var->option_cnt = fdtdec_get_int(blob, var, "option-cnt", 0);
+		sar_var->swap_bit = fdtdec_get_bool(blob, var, "swap-bit");
 		/* Get the options list */
-		len = fdt_count_strings(gd->fdt_blob, var, "options");
-		if ((len < 0) || (sar->sar_lookup[id].option_cnt*2 != len)) {
+		len = fdt_count_strings(blob, var, "options");
+		if ((len < 0) || (sar_var->option_cnt * 2 != len)) {
 			error("%s: failed to parse the \"options\" property", __func__);
 			return;
 		}
-		var_default = fdtdec_get_int(gd->fdt_blob, var, "default", 0);
+		var_default = fdtdec_get_int(blob, var, "default", 0);
 		/* Fill the struct with the options from the FDT */
 		for (i = 0; i < len; i += 2) {
-			fdt_get_string_index(gd->fdt_blob, var, "options", i, &str);
-			sar->sar_lookup[id].option_desc[i/2].value = simple_strtoul(str, NULL, 16);
-			fdt_get_string_index(gd->fdt_blob, var, "options", i + 1, (const char **)
-					&sar->sar_lookup[id].option_desc[i/2].desc);
-			if (sar->sar_lookup[id].option_desc[i/2].value == var_default)
-				sar->sar_lookup[id].option_desc[i/2].flags = var_default;
+			fdt_get_string_index(blob, var, "options", i, &str);
+			sar_var->option_desc[i/2].value = simple_strtoul(str, NULL, 16);
+			fdt_get_string_index(blob, var, "options", i + 1, (const char **)
+					&sar_var->option_desc[i/2].desc);
+			if (sar_var->option_desc[i/2].value == var_default)
+				sar_var->option_desc[i/2].flags = var_default;
 		}
 		/* Get the offset of the next subnode */
-		var = fdt_next_subnode(gd->fdt_blob, var);
-		id++;
+		var = fdt_next_subnode(blob, var);
+		sar_var++;
 	} while (var > 0);
 
 	sar_dump();

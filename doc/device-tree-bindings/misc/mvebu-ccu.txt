@@ -9,16 +9,23 @@ The CCU node requires the following properties:
 	- reg: the base address of the CCU unit
 	- max-win: number of the max mbus windows
 	- windows: entry that include the configuration of the windows
-	  every window should have 3 parameters:
-	  - base address of the window
+	  every window should have 4 parameters:
+	  - high base address of the window
+	  - low base address of the window
 	  - size of the window
 	  - target-id of the window
+
+Note: if the base address is more than 32bit, it divided into high and low,
+	Example:
+		base address: 0x10f0000000 should divided into:
+		base address high: 0x10
+		base address low: 0xf0000000
 
 Example:
 	map-ccu {
 		compatible = "marvell,mvebu-ccu";
 		reg = <0x0 0x50>;
 		max-win = <8>;
-		windows = <0xf8000000 0x2000000 0x00 /* IO window */>;
+		windows = <0x0 0xf8000000 0x2000000 0x00 /* IO window */>;
 	};
 

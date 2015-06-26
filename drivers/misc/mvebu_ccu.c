@@ -62,7 +62,8 @@ struct ccu_configuration __attribute__((section(".data")))ccu_config;
 struct ccu_configuration __attribute__((section(".data")))*ccu_info = &ccu_config;
 
 struct ccu_win {
-	u32 base_addr;
+	u32 base_addr_high;
+	u32 base_addr_low;
 	u32 win_size;
 	u32 target_id;
 };
@@ -107,11 +108,15 @@ static char *ccu_target_name_get(enum ccu_target_ids trgt_id)
 
 static void ccu_win_check(struct ccu_win *win, u32 win_num)
 {
+	u64 start_addr;
 	/* check if address is aligned to 1M */
-	if (IS_NOT_ALIGN(win->base_addr, CCU_WIN_ALIGNMENT)) {
-		win->base_addr = ALIGN_UP(win->base_addr, CCU_WIN_ALIGNMENT);
+	start_addr = ((u64)win->base_addr_high << 32) + win->base_addr_low;
+	if (IS_NOT_ALIGN(start_addr, CCU_WIN_ALIGNMENT)) {
+		start_addr = ALIGN_UP(start_addr, CCU_WIN_ALIGNMENT);
 		error("Window %d: base address unaligned to 0x%x\n", win_num, CCU_WIN_ALIGNMENT);
-		printf("Align up the base address to 0x%x\n", win->base_addr);
+		printf("Align up the base address to 0x%llx\n", start_addr);
+		win->base_addr_high = (u32)(start_addr >> 32);
+		win->base_addr_low = (u32)(start_addr);
 	}
 
 	/* size parameter validity check */
@@ -126,14 +131,15 @@ static void ccu_enable_win(struct ccu_win *win, u32 win_id)
 {
 	u32 ccu_win_reg;
 	u32 alr, ahr;
-	uintptr_t end_addr;
+	u64 start_addr, end_addr;
 
 	ccu_win_reg = WIN_ENABLE_BIT;
 	ccu_win_reg |= (win->target_id & CCU_TARGET_ID_MASK) << CCU_TARGET_ID_OFFSET;
 	writel(ccu_win_reg, CCU_WIN_CR_OFFSET(win_id));
 
-	end_addr = (win->base_addr + win->win_size - 1);
-	alr = (u32)((win->base_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
+	start_addr = ((u64)win->base_addr_high << 32) + win->base_addr_low;
+	end_addr = (start_addr + (u64)win->win_size - 1);
+	alr = (u32)((start_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
 	ahr = (u32)((end_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
 
 	writel(alr, CCU_WIN_ALR_OFFSET(win_id));
@@ -144,7 +150,7 @@ void dump_ccu(void)
 {
 	u32 win_id, win_cr, alr, ahr;
 	u8 target_id;
-	uintptr_t start, end;
+	u64 start, end;
 
 	/* Dump all AP windows */
 	printf("bank  id target   start              end\n");
@@ -155,9 +161,9 @@ void dump_ccu(void)
 			target_id = (win_cr >> CCU_TARGET_ID_OFFSET) & CCU_TARGET_ID_MASK;
 			alr = readl(CCU_WIN_ALR_OFFSET(win_id));
 			ahr = readl(CCU_WIN_AHR_OFFSET(win_id));
-			start = (uintptr_t)(alr << ADDRESS_SHIFT);
-			end = (uintptr_t)((ahr + 0x10) << ADDRESS_SHIFT);
-			printf("ccu   %02x %s  0x%016lx 0x%016lx\n"
+			start = ((u64)alr << ADDRESS_SHIFT);
+			end = (((u64)ahr + 0x10) << ADDRESS_SHIFT);
+			printf("ccu   %02x %s  0x%016llx 0x%016llx\n"
 				, win_id, ccu_target_name_get(target_id), start, end);
 		}
 	}
@@ -201,12 +207,12 @@ int init_ccu(void)
 	}
 
 	/* Get the array of the windows and fill the map data */
-	win_count = fdtdec_get_int_array_count(blob, node, "windows", (u32 *)memory_map, ccu_info->max_win * 3);
+	win_count = fdtdec_get_int_array_count(blob, node, "windows", (u32 *)memory_map, ccu_info->max_win * 4);
 	if (win_count <= 0) {
 		debug("no windows configurations found\n");
 		return 0;
 	}
-	win_count = win_count/3; /* every window had 3 variables in FDT (base, size, target id) */
+	win_count = win_count/4; /* every window had 3 variables in FDT (base, size, target id) */
 
 	/* Set the default target ID to DRAM 0 */
 	win_reg = (DRAM_0_TID & CCU_GCR_TARGET_MASK) << CCU_GCR_TARGET_OFFSET;

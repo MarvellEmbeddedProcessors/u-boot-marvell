@@ -570,8 +570,15 @@ static void fsl_ifc_cmdfunc(struct mtd_info *mtd, unsigned int command,
 
 		fsl_ifc_run_command(mtd);
 
-		/* Chip sometimes reporting write protect even when it's not */
-		out_8(ctrl->addr, in_8(ctrl->addr) | NAND_STATUS_WP);
+		/*
+		 * The chip always seems to report that it is
+		 * write-protected, even when it is not.
+		 */
+		if (chip->options & NAND_BUSWIDTH_16)
+			ifc_out16(ctrl->addr,
+				  ifc_in16(ctrl->addr) | NAND_STATUS_WP);
+		else
+			out_8(ctrl->addr, in_8(ctrl->addr) | NAND_STATUS_WP);
 		return;
 
 	case NAND_CMD_RESET:
@@ -611,7 +618,7 @@ static void fsl_ifc_write_buf(struct mtd_info *mtd, const u8 *buf, int len)
 		len = bufsize - ctrl->index;
 	}
 
-	memcpy_toio(&ctrl->addr[ctrl->index], buf, len);
+	memcpy_toio(ctrl->addr + ctrl->index, buf, len);
 	ctrl->index += len;
 }
 
@@ -624,11 +631,16 @@ static u8 fsl_ifc_read_byte(struct mtd_info *mtd)
 	struct nand_chip *chip = mtd->priv;
 	struct fsl_ifc_mtd *priv = chip->priv;
 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
+	unsigned int offset;
 
-	/* If there are still bytes in the IFC buffer, then use the
-	 * next byte. */
-	if (ctrl->index < ctrl->read_bytes)
-		return in_8(&ctrl->addr[ctrl->index++]);
+	/*
+	 * If there are still bytes in the IFC buffer, then use the
+	 * next byte.
+	 */
+	if (ctrl->index < ctrl->read_bytes) {
+		offset = ctrl->index++;
+		return in_8(ctrl->addr + offset);
+	}
 
 	printf("%s beyond end of buffer\n", __func__);
 	return ERR_BYTE;
@@ -650,8 +662,7 @@ static uint8_t fsl_ifc_read_byte16(struct mtd_info *mtd)
 	 * next byte.
 	 */
 	if (ctrl->index < ctrl->read_bytes) {
-		data = ifc_in16((uint16_t *)&ctrl->
-				 addr[ctrl->index]);
+		data = ifc_in16(ctrl->addr + ctrl->index);
 		ctrl->index += 2;
 		return (uint8_t)data;
 	}
@@ -674,7 +685,7 @@ static void fsl_ifc_read_buf(struct mtd_info *mtd, u8 *buf, int len)
 		return;
 
 	avail = min((unsigned int)len, ctrl->read_bytes - ctrl->index);
-	memcpy_fromio(buf, &ctrl->addr[ctrl->index], avail);
+	memcpy_fromio(buf, ctrl->addr + ctrl->index, avail);
 	ctrl->index += avail;
 
 	if (len > avail)

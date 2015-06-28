@@ -23,6 +23,7 @@
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-armada8k/armada8k.h>
+#include <asm/arch/regs-base.h>
 
 #define ADDRESS_SHIFT			(20)
 #define MAX_CCU_WINDOWS			(8)
@@ -50,8 +51,36 @@ int soc_get_id(void)
 	return CONFIG_ARMADA_8K_SOC_ID;
 }
 
+#ifdef CONFIG_MVEBU_PCIE
+static void soc_pcie_init(void)
+{
+	u32 reg;
+
+	reg = readl(MVEBU_PCIE_MAC_CTL);
+
+	/* Set PCIe transactions towards A2 as:
+	 * - read allocate
+	 * - write non alocate
+	 * - outer sharable */
+	reg &= ~(0xF << 8);
+	reg |= (0x7 << 8);
+
+	/* Set the Port x4 */
+	reg |= (1 << 14);
+
+	/* Enable PCIe unit */
+	reg = 1;
+
+	writel(reg, MVEBU_PCIE_MAC_CTL);
+}
+#endif
+
 struct mvebu_soc_family *soc_init(void)
 {
+#ifdef CONFIG_MVEBU_PCIE
+	soc_pcie_init();
+#endif
+
 	return &a8k_family_info;
 }
 

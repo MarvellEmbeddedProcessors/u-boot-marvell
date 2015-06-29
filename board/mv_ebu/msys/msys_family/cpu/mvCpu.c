@@ -180,7 +180,12 @@ MV_U32 mvCpuPllClkGet(MV_VOID)
 	MV_CPUDDR_MODE	bc2ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BC2;
 	MV_CPUDDR_MODE	ac3ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_AC3;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
-	MV_U32		sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
+	MV_U32		sar2;
+
+	if (family == MV_78460_DEV_ID)
+		return AXP_PLL_IN_CLK;
+
+	sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
 
 	idx = MSAR_CPU_DDR_CLK(0, sar2);
 	switch (family) {

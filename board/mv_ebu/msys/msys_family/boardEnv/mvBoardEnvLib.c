@@ -546,7 +546,15 @@ MV_BOARD_MAC_SPEED mvBoardMacSpeedGet(MV_U32 ethPortNum)
 *******************************************************************************/
 MV_U32 mvBoardTclkGet(MV_VOID)
 {
-	return 200000000; /* constant Tclock @ 200MHz (not Sampled@Reset)  */
+	if (mvCtrlDevFamilyIdGet(0) != MV_78460_DEV_ID)
+		/* constant Tclock @ 200MHz (not Sampled@Reset) */
+		return MV_BOARD_TCLK_200MHZ;
+
+	if ((MV_REG_READ(MPP_SAMPLE_AT_RESET(0)) & MSAR_TCLK_MASK) != 0)
+		return MV_BOARD_TCLK_200MHZ;
+	else
+		return MV_BOARD_TCLK_250MHZ;
+
 }
 
 /*******************************************************************************

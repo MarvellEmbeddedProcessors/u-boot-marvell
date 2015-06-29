@@ -70,6 +70,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ctrlEnv/sys/mvCpuIfRegs.h"
 
+#define MAX_TARGETS	(mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID ? \
+			 MAX_TARGETS_AXP : MAX_TARGETS_MSYS)
 
 #ifdef __cplusplus
 extern "C" {
@@ -321,8 +323,56 @@ typedef enum _mvTarget {
 	DEV_BOOCS,	/* 23 DEV_BOOCS			*/
 	USB_REGS,	/* 24 USB Internal registers	*/
 	DRAGONITE,	/* 25 Dragonite co-processor	*/
-	MAX_TARGETS
+	MAX_TARGETS_MSYS
 } MV_TARGET;
+
+enum _mvTarget_axp {
+	SDRAM_CS0_AXP,	/*0 SDRAM chip select 0		*/
+	SDRAM_CS1_AXP,	/*1 SDRAM chip select 1		*/
+	SDRAM_CS2_AXP,	/*2 SDRAM chip select 2		*/
+	SDRAM_CS3_AXP,	/*3 SDRAM chip select 3		*/
+	DEVICE_CS0_AXP,	/*4 Device chip select 0	*/
+	DEVICE_CS1_AXP,	/*5 Device chip select 1	*/
+	DEVICE_CS2_AXP,	/*6 Device chip select 2	*/
+	DEVICE_CS3_AXP,	/*7 Device chip select 3	*/
+	PEX0_MEM_AXP,	/*8 PCI Express 0 Memory	*/
+	PEX0_IO_AXP,	/*9 PCI Express 0 IO		*/
+	PEX1_MEM,	/*10 PCI Express 1 Memory	*/
+	PEX1_IO,	/*11 PCI Express 1 IO		*/
+	PEX2_MEM,	/*12 PCI Express 2 Memory	*/
+	PEX2_IO,	/*13 PCI Express 2 IO		*/
+	PEX3_MEM,	/*14 PCI Express 3 Memory	*/
+	PEX3_IO,	/*15 PCI Express 3 IO		*/
+	PEX4_MEM,	/*16 PCI Express 4 Memory	*/
+	PEX4_IO,	/*17 PCI Express 4 IO		*/
+	PEX5_MEM,	/*18 PCI Express 5 Memory	*/
+	PEX5_IO,	/*19 PCI Express 5 IO		*/
+	PEX6_MEM,	/*20 PCI Express 6 Memory	*/
+	PEX6_IO,	/*21 PCI Express 6 IO		*/
+	PEX7_MEM,	/*22 PCI Express 7 Memory	*/
+	PEX7_IO,	/*23 PCI Express 7 IO		*/
+	PEX8_MEM,	/*24 PCI Express 8 Memory	*/
+	PEX8_IO,	/*25 PCI Express 8 IO		*/
+	PEX9_MEM,	/*26 PCI Express 9 Memory	*/
+	PEX9_IO,	/*27 PCI Express 9 IO		*/
+	INTER_REGS_AXP,	/*28 Internal registers		*/
+	DMA_UART_AXP,	/*29 DMA based UART request	*/
+	SPI_CS0_AXP,	/*30 SPI_CS0			*/
+	SPI_CS1_AXP,	/*31 SPI_CS1			*/
+	SPI_CS2_AXP,	/*32 SPI_CS2			*/
+	SPI_CS3_AXP,	/*33 SPI_CS3			*/
+	SPI_CS4_AXP,	/*34 SPI_CS4			*/
+	SPI_CS5_AXP,	/*35 SPI_CS5			*/
+	SPI_CS6_AXP,	/*36 SPI_CS6			*/
+	SPI_CS7_AXP,	/*37 SPI_CS7			*/
+	BOOT_ROM_CS_AXP, /*38 BOOT_ROM_CS		*/
+	DEV_BOOCS_AXP,	/*39 DEV_BOOCS			*/
+	PMU_SCRATCHPAD,	/*40 PMU Scratchpad		*/
+	CRYPT0_ENG,	/* 41 Crypto0 Engine		*/
+	CRYPT1_ENG,	/* 42 Crypto1 Engine		*/
+	PNC_BM,		/* 43 PNC + BM			*/
+	MAX_TARGETS_AXP
+};
 
 #ifdef AURORA_IO_CACHE_COHERENCY
 #define DRAM_CS0_ATTR		0x1E
@@ -396,6 +446,100 @@ typedef enum _mvTarget {
 
 
 
+
+#define TARGETS_DEF_ARRAY_AXP	{			\
+	{DRAM_CS0_ATTR, DRAM_TARGET_ID	}, /* SDRAM_CS0 */	\
+	{DRAM_CS1_ATTR, DRAM_TARGET_ID	}, /* SDRAM_CS1 */	\
+	{DRAM_CS2_ATTR, DRAM_TARGET_ID	}, /* SDRAM_CS0 */	\
+	{DRAM_CS3_ATTR, DRAM_TARGET_ID	}, /* SDRAM_CS1 */	\
+	{0x3E, DEV_TARGET_ID	}, /* DEVICE_CS0 */	\
+	{0x3D, DEV_TARGET_ID	}, /* DEVICE_CS1 */	\
+	{0x3B, DEV_TARGET_ID	}, /* DEVICE_CS2 */	\
+	{0x37, DEV_TARGET_ID	}, /* DEVICE_CS3 */	\
+	{0xE8, PEX0_TARGET_ID	}, /* PEX0_LANE0_MEM */	\
+	{0xE0, PEX0_TARGET_ID	}, /* PEX0_LANE0_IO */	\
+	{0xD8, PEX0_TARGET_ID	}, /* PEX0_LANE1_MEM */	\
+	{0xD0, PEX0_TARGET_ID	}, /* PEX0_LANE1_IO */	\
+	{0xB8, PEX0_TARGET_ID	}, /* PEX0_LANE2_MEM */	\
+	{0xB0, PEX0_TARGET_ID	}, /* PEX0_LANE2_IO */	\
+	{0x78, PEX0_TARGET_ID	}, /* PEX0_LANE3_MEM */	\
+	{0x70, PEX0_TARGET_ID	}, /* PEX0_LANE3_IO */	\
+	{0xE8, DFX_TARGET_ID	}, /* PEX1_LANE0_MEM */	\
+	{0xE0, DFX_TARGET_ID	}, /* PEX1_LANE0_IO */	\
+	{0xD8, DFX_TARGET_ID	}, /* PEX1_LANE1_MEM */	\
+	{0xD0, DFX_TARGET_ID	}, /* PEX1_LANE1_IO */	\
+	{0xB8, DFX_TARGET_ID	}, /* PEX1_LANE2_MEM */	\
+	{0xB0, DFX_TARGET_ID	}, /* PEX1_LANE2_IO */	\
+	{0x78, DFX_TARGET_ID	}, /* PEX1_LANE3_MEM */	\
+	{0x70, DFX_TARGET_ID	}, /* PEX1_LANE3_IO */	\
+	{0xF8, PEX0_TARGET_ID	}, /* PEX2_LANE0_MEM */	\
+	{0xF0, PEX0_TARGET_ID	}, /* PEX2_LANE0_IO */	\
+	{0xF8, DFX_TARGET_ID	}, /* PEX3_LANE0_MEM */	\
+	{0xF0, DFX_TARGET_ID	}, /* PEX3_LANE0_IO */	\
+	{0xFF, 0xFF		}, /* INTER_REGS */	\
+	{0x01, DEV_TARGET_ID	}, /* DMA_UART */	\
+	{0x1E, DEV_TARGET_ID	}, /* SPI_CS0 */	\
+	{0x5E, DEV_TARGET_ID	}, /* SPI_CS1 */	\
+	{0x9E, DEV_TARGET_ID	}, /* SPI_CS2 */	\
+	{0xDE, DEV_TARGET_ID	}, /* SPI_CS3 */	\
+	{0x1F, DEV_TARGET_ID	}, /* SPI_CS4 */	\
+	{0x5F, DEV_TARGET_ID	}, /* SPI_CS5 */	\
+	{0x9F, DEV_TARGET_ID	}, /* SPI_CS6 */	\
+	{0xDF, DEV_TARGET_ID	}, /* SPI_CS7 */	\
+	{0x1D, DEV_TARGET_ID	}, /* Main Boot device */	\
+	{0x2F, DEV_TARGET_ID	}, /* Secondary Boot device, */	\
+	{0x2D, DEV_TARGET_ID	}, /* PMU_SCRATCHPAD */	\
+	{0x09, CRYPT_TARGET_ID	}, /* CRYPT_ENG0 */	\
+	{0x05, CRYPT_TARGET_ID	}, /* CRYPT_ENG1 */     \
+	{0x00, PNC_BM_TARGET_ID	}, /* PNC_BM */		\
+}
+
+#define TARGETS_NAME_ARRAY_AXP	{		\
+	"SDRAM_CS0",	/* SDRAM_CS0 */		\
+	"SDRAM_CS1",	/* SDRAM_CS1 */		\
+	"SDRAM_CS2",	/* SDRAM_CS1 */		\
+	"SDRAM_CS3",	/* SDRAM_CS1 */		\
+	"DEVICE_CS0",	/* DEVICE_CS0 */	\
+	"DEVICE_CS1",	/* DEVICE_CS1 */	\
+	"DEVICE_CS2",	/* DEVICE_CS2 */	\
+	"DEVICE_CS3",	/* DEVICE_CS3 */	\
+	"PEX0_MEM",	/* PEX0_MEM */		\
+	"PEX0_IO",	/* PEX0_IO */		\
+	"PEX1_MEM",	/* PEX1_MEM */		\
+	"PEX1_IO",	/* PEX1_IO */		\
+	"PEX2_MEM",	/* PEX2_MEM */		\
+	"PEX2_IO",	/* PEX2_IO */		\
+	"PEX3_MEM",	/* PEX3_MEM */		\
+	"PEX3_IO",	/* PEX3_IO */		\
+	"PEX4_MEM",	/* PEX4_MEM */		\
+	"PEX4_IO",	/* PEX4_IO */		\
+	"PEX5_MEM",	/* PEX5_MEM */		\
+	"PEX5_IO",	/* PEX5_IO */		\
+	"PEX6_MEM",	/* PEX6_MEM */		\
+	"PEX6_IO",	/* PEX6_IO */		\
+	"PEX7_MEM",	/* PEX7_MEM */		\
+	"PEX7_IO",	/* PEX7_IO */		\
+	"PEX8_MEM",	/* PEX8_MEM */		\
+	"PEX8_IO",	/* PEX8_IO */		\
+	"PEX9_MEM",	/* PEX9_MEM */		\
+	"PEX9_IO",	/* PEX9_IO */		\
+	"INTER_REGS",	/* INTER_REGS */	\
+	"DMA_UART",	/* DMA_UART */		\
+	"SPI_CS0",	/* SPI_CS0 */		\
+	"SPI_CS1",	/* SPI_CS1 */		\
+	"SPI_CS2",	/* SPI_CS2 */		\
+	"SPI_CS3",	/* SPI_CS3 */		\
+	"SPI_CS4",	/* SPI_CS4 */		\
+	"SPI_CS5",	/* SPI_CS5 */		\
+	"SPI_CS6",	/* SPI_CS6 */		\
+	"SPI_CS7",	/* SPI_CS7 */		\
+	"BOOT_ROM_CS",	/* BOOT_ROM_CS */	\
+	"DEV_BOOTCS",	/* DEV_BOOCS */		\
+	"PMU_SCRATCHPAD",/* PMU_SCRATCHPAD */	\
+	"CRYPT1_ENG",	/* CRYPT1_ENG */	\
+	"CRYPT2_ENG",	/* CRYPT2_ENG */	\
+	"PNC_BM"	/* PNC_BM */		\
+}
 
 #endif /* MV_ASMLANGUAGE */
 

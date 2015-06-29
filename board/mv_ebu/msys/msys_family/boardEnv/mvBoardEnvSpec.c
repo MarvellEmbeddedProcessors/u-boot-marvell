@@ -934,7 +934,7 @@ MV_BOARD_GPP_INFO db78X60amcInfoBoardGppInfo[] = {
 MV_DEV_CS_INFO db78X60amcInfoBoardDeCsInfo[] = {
 	/*{deviceCS, params, devType, devWidth}*/
 #if defined(MV_INCLUDE_SPI)
-	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
+	{SPI_CS0_AXP, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
 #endif
 };
 

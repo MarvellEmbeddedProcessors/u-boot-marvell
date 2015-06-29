@@ -1776,6 +1776,53 @@ void mvCtrlGetPexActive(MV_BOOL *pPexActive, int size)
 }
 
 /*******************************************************************************
+* mvCtrlNandClkSetAxp
+*
+* DESCRIPTION:
+*	Set the division ratio of ECC Clock for AXP
+*
+*******************************************************************************/
+static int mvCtrlNandClkSetAxp(int nfc_clk_freq, MV_U32 pll_clk)
+{
+	int divider;
+
+	/* Set the division ratio of ECC Clock 0x00018748[13:8] (by default it's
+	 * double of core clock)
+	 */
+	MV_U32 nVal = MV_REG_READ(AXP_CORE_DIV_CLK_CTRL(1));
+
+	/* Calculate nand divider for requested nfc_clk_freq. If integer divider
+	 * cannot be achieved, it will be rounded-up, which will result in
+	 * setting the closest lower frequency.
+	 * ECC engine clock = (PLL frequency / divider)
+	 * NFC clock = ECC clock / 2
+	 */
+	divider = DIV_ROUND_UP(pll_clk, (2 * nfc_clk_freq));
+	DB(mvOsPrintf("%s: divider %d\n", __func__, divider));
+
+	nVal &= ~(AXP_NAND_ECC_DIVCLK_RATIO_MASK);
+	nVal |= (divider << AXP_NAND_ECC_DIVCLK_RATIO_OFFS);
+	MV_REG_WRITE(AXP_CORE_DIV_CLK_CTRL(1), nVal);
+
+	/* Set reload force of ECC clock 0x00018740[7:0] to 0x2 (meaning you
+	 * will force only the ECC clock)
+	 */
+	nVal = MV_REG_READ(AXP_CORE_DIV_CLK_CTRL(0));
+	nVal &= ~(AXP_CORE_DIVCLK_RELOAD_FORCE_MASK);
+	nVal |= AXP_CORE_DIVCLK_RELOAD_FORCE_VAL;
+	MV_REG_WRITE(AXP_CORE_DIV_CLK_CTRL(0), nVal);
+
+	/* Set reload ratio bit 0x00018740[8] to 1'b1 */
+	MV_REG_BIT_SET(AXP_CORE_DIV_CLK_CTRL(0), AXP_CORE_DIVCLK_RELOAD_RATIO_MASK);
+	mvOsDelay(1); /*  msec */
+	/* Set reload ratio bit 0x00018740[8] to 0'b1 */
+	MV_REG_BIT_RESET(AXP_CORE_DIV_CLK_CTRL(0), AXP_CORE_DIVCLK_RELOAD_RATIO_MASK);
+
+	/* Return calculated nand clock frequency */
+	return (pll_clk)/(2 * divider);
+}
+
+/*******************************************************************************
 * mvCtrlNandClkSet
 *
 * DESCRIPTION:
@@ -1793,8 +1840,13 @@ void mvCtrlGetPexActive(MV_BOOL *pPexActive, int size)
 int mvCtrlNandClkSet(int nfc_clk_freq)
 {
 	int divider;
-	MV_U32 nVal = MV_DFX_REG_READ(CORE_DIV_CLK_CTRL(2));
+	MV_U32 nVal;
 	MV_U32 pll_clk = mvCpuPllClkGet();
+
+	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+		return mvCtrlNandClkSetAxp(nfc_clk_freq, pll_clk);
+
+	nVal = MV_DFX_REG_READ(CORE_DIV_CLK_CTRL(2));
 
 	/*
 	 * Calculate nand divider for requested nfc_clk_freq. If integer divider

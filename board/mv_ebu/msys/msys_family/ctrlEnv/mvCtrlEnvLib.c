@@ -268,6 +268,8 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	MV_U32 mppGroup;
 	MV_U32 mppVal;
 	MV_U32 i, gppMask;
+	int maxGroup = mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID ?
+		MV_MPP_MAX_GROUP_AXP : MV_MPP_MAX_GROUP;
 
 
 	/* Disable MBus Error Propagation */
@@ -280,23 +282,23 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	mvBoardMppModulesScan();
 
 	/* Read MPP config values from board level and write MPP options to HW */
-	for (mppGroup = 0; mppGroup < MV_MPP_MAX_GROUP; mppGroup++) {
+	for (mppGroup = 0; mppGroup < maxGroup; mppGroup++) {
 		mppVal = mvBoardMppGet(mppGroup);	/* get pre-defined values */
 		MV_REG_WRITE(mvCtrlMppRegGet(mppGroup), mppVal);
 	}
 
 	/* disable all GPIO interrupts */
-	for (i = 0; i < MV_GPP_MAX_GROUP; i++) {
+	for (i = 0; i < maxGroup; i++) {
 		MV_REG_WRITE(GPP_INT_MASK_REG(i), 0x0);
 		MV_REG_WRITE(GPP_INT_LVL_REG(i), 0x0);
 	}
 
 	/* clear all int */
-	for (i = 0; i < MV_GPP_MAX_GROUP; i++)
+	for (i = 0; i < maxGroup; i++)
 		MV_REG_WRITE(GPP_INT_CAUSE_REG(i), 0x0);
 
 	/* Set gpp interrupts as needed */
-	for (i = 0; i < MV_GPP_MAX_GROUP; i++) {
+	for (i = 0; i < maxGroup; i++) {
 		gppMask = mvBoardGpioIntMaskGet(i);
 		mvGppTypeSet(i, gppMask , (MV_GPP_IN & gppMask));
 		mvGppPolaritySet(i, gppMask , (MV_GPP_IN_INVERT & gppMask));
@@ -309,12 +311,14 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 	if (MV_OK != mvCtrlSerdesPhyConfig())
 		mvOsPrintf("mvCtrlEnvInit: Can't init some or all SERDES lanes\n");
 
-	mvCtrlDevBusInit();
+	if (mvCtrlDevFamilyIdGet(0) != MV_78460_DEV_ID) {
+		mvCtrlDevBusInit();
 
 #ifdef ERRATA_GL_5956802
 		/* SW WA for ERRATA 5956802 - disable the external i2c debugger access */
 		MV_REG_BIT_RESET(TWSI_CONFIG_DEBUG_REG, TWSI_DEBUG_SLAVE_PORT0_EN);
 #endif
+	}
 
 	mvOsDelay(100);
 
@@ -651,7 +655,11 @@ MV_U8 mvCtrlRevGet(MV_VOID)
 *******************************************************************************/
 MV_STATUS mvCtrlNameGet(char *pNameBuff)
 {
-	mvOsSPrintf(pNameBuff, "%s", SOC_NAME_PREFIX);
+	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+		mvOsSPrintf(pNameBuff, "%s", "");
+	else
+		mvOsSPrintf(pNameBuff, "%s", SOC_NAME_PREFIX);
+
 	return MV_OK;
 }
 
@@ -721,7 +729,17 @@ MV_VOID mvCtrlRevNameGet(char *pNameBuff)
 			mvOsSPrintf(pNameBuff, " Rev %s", revArrayAC3[revId]);
 			return;
 		}
-
+	} else if (ctrlFamily == MV_78460_DEV_ID) {
+		switch (mvCtrlModelRevGet()) {
+		case MV_78460_A0_ID:
+			mvOsSPrintf(pNameBuff, "%s", MV_78460_A0_NAME);
+			return;
+		case MV_78460_B0_ID:
+			mvOsSPrintf(pNameBuff, "%s", MV_78460_B0_NAME);
+			return;
+		default:
+			break;
+		}
 	} else
 		mvOsPrintf("%s: Error: Wrong controller model %#x\n", __func__, ctrlFamily);
 

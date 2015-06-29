@@ -203,6 +203,12 @@ MV_VOID mvBoardEnvInit(MV_VOID)
 	mvGppTypeSet(0, 0xFFFFFFFF, board->gppOutEnValLow);
 	mvGppTypeSet(1, 0xFFFFFFFF, board->gppOutEnValMid);
 
+	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID) {
+		MV_REG_WRITE(GPP_DATA_OUT_REG(2), board->gppOutValHigh);
+		mvGppPolaritySet(2, 0xFFFFFFFF, board->gppPolarityValHigh);
+		mvGppTypeSet(2, 0xFFFFFFFF, board->gppOutEnValHigh);
+	}
+
 #ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
 	mvBoardOobPortCfgSet();
 #endif
@@ -544,6 +550,44 @@ MV_U32 mvBoardTclkGet(MV_VOID)
 }
 
 /*******************************************************************************
+* mvBoardSysClkGetAxp - Get the board SysClk of AXP (CPU bus clock , i.e. DDR clock)
+*
+* DESCRIPTION:
+*       This routine extract the CPU bus clock.
+*
+* INPUT:
+*       countNum - Counter number.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       32bit clock cycles in Hertz.
+*
+*******************************************************************************/
+MV_U32 mvBoardSysClkGetAxp(MV_VOID)
+{
+	MV_U32 idx;
+	MV_U32 cpuFreqMhz, ddrFreqMhz;
+	MV_CPU_ARM_CLK_RATIO clockRatioTbl[] = MV_DDR_L2_CLK_RATIO_TBL_AXP;
+
+	idx = MSAR_DDR_L2_CLK_RATIO_IDX(MV_REG_READ(MPP_SAMPLE_AT_RESET(0)),
+					MV_REG_READ(MPP_SAMPLE_AT_RESET(1)));
+
+	if (clockRatioTbl[idx].vco2cpu != 0) {			/* valid ratio ? */
+		cpuFreqMhz = mvCpuPclkGet() / 1000000;		/* obtain CPU freq */
+		cpuFreqMhz *= clockRatioTbl[idx].vco2cpu;	/* compute VCO freq */
+		ddrFreqMhz = cpuFreqMhz / clockRatioTbl[idx].vco2ddr;
+		/* round up to integer MHz */
+		if (((cpuFreqMhz % clockRatioTbl[idx].vco2ddr) * 10 / clockRatioTbl[idx].vco2ddr) >= 5)
+			ddrFreqMhz++;
+
+		return ddrFreqMhz * 1000000;
+	} else
+		return 0xFFFFFFFF;
+}
+
+/*******************************************************************************
 * mvBoardSysClkGet - Get the board SysClk (CPU bus clock , i.e. DDR clock)
 *
 * DESCRIPTION:
@@ -566,6 +610,8 @@ MV_U32 mvBoardSysClkGet(MV_VOID)
 	MV_U32		freq_tbl_ac3[] = MV_CORE_CLK_TBL_AC3;
 	MV_U16		family = mvCtrlDevFamilyIdGet(0);
 
+	if (family == MV_78460_DEV_ID)
+		return mvBoardSysClkGetAxp();
 	idx = MSAR_CORE_CLK(MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(0)), MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1)));
 
 	if (idx >= 7)

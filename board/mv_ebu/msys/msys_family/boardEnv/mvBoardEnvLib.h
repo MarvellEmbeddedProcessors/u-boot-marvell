@@ -384,5 +384,6 @@ MV_BOOL mvBoardisAmc(void);
 }
 #endif /* __cplusplus */
 
+extern MV_BOARD_INFO *marvellAXPboardInfoTbl[];
 
 #endif /* __INCmvBoardEnvLibh */

@@ -158,6 +158,9 @@ extern "C" {
 
 #define MPP_CONTROL_REG(id)			(0x18000 + (id * 4))
 
+/* Sample at Reset - AXP only */
+#define MPP_SAMPLE_AT_RESET(id)			(0x18230 + (id * 4))
+
 /* Dragonite Register */
 #define DRAGONITE_CTRL_REG			0x1c
 #define DRAGONITE_POE_CAUSE_IRQ_REG		0x64
@@ -270,12 +273,48 @@ extern "C" {
 #define REVISON_ID_MASK			0xF0000000
 
 /* Extract CPU, L2, DDR clocks SAR value from
-** SAR bits 24-27
-*/
+ * SAR bits 24-27 - AXP only
+ */
+#define MSAR_CPU_CLK_IDX(sar0, sar1)		((((sar0) >> 21) & 0x7) + ((((sar1) >> 20) & 1) << 3))
+#define MSAR_CPU_CLK_TWSI(sar0, sar1)		((((sar0) >> 2)  & 0x7) + (((sar1) & 1) << 3))
+#define MSAR_DDR_L2_CLK_RATIO_IDX(sar0, sar1)	((((sar0) >> 24) & 0xF) + ((((sar1) >> 19) & 1) << 4))
+#define MSAR_DDR_L2_CLK_RATIO_TWSI(sar0)	(((sar0) >> 1)  & 0xF)
 
+/* SAR TCLK bit - AXP only */
+#define MSAR_TCLK_OFFS				28
+#define MSAR_TCLK_MASK				(0x1 << MSAR_TCLK_OFFS)
 
 #ifndef MV_ASMLANGUAGE
 
+#define MV_CPU_CLK_TBL_AXP { 1000, 1066, 1200, 1333, 1500, 1666, 1800, 2000,\
+			      600,  667,  800, 1600, 2133, 2200, 2400, 0 }
+
+/*		cpu	l2c	hclk	ddr	*/
+#define MV_DDR_L2_CLK_RATIO_TBL_AXP { \
+/*00*/	{	1,	1,	4,	2	},\
+/*01*/	{	1,	2,	2,	2	},\
+/*02*/	{	2,	2,	6,	3	},\
+/*03*/	{	2,	2,	3,	3	},\
+/*04*/	{	1,	2,	3,	3	},\
+/*05*/	{	1,	2,	4,	2	},\
+/*06*/	{	1,	1,	2,	2	},\
+/*07*/	{	2,	3,	6,	6	},\
+/*08*/	{	2,	3,	5,	5	},\
+/*09*/	{	1,	2,	6,	3	},\
+/*10*/	{	2,	4,	10,	5	},\
+/*11*/	{	1,	3,	6,	6	},\
+/*12*/	{	1,	2,	4,	4	},\
+/*13*/	{	1,	3,	6,	3	},\
+/*14*/	{	1,	2,	5,	5	},\
+/*15*/	{	2,	2,	5,	5	},\
+/*16*/	{	1,	1,	3,	3	},\
+/*17*/	{	2,	5,	10,	10	},\
+/*18*/	{	1,	3,	8,	4	},\
+/*19*/	{	1,	1,	2,	1	},\
+/*20*/	{	2,	3,	6,	3	},\
+/*21*/	{	1,	2,	8,	4	},\
+/*22*/	{	2,	5,	10,	5	} \
+}
 
 /* These macros help units to identify a target Mport Arbiter group */
 #define MV_TARGET_IS_DRAM(target)   \

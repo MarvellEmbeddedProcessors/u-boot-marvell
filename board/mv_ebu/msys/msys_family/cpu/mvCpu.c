@@ -96,10 +96,19 @@ MV_U32 mvCpuPclkGet(MV_VOID)
 {
 	MV_U32			idx;
 	MV_U32			freqMhz;
+	MV_U32			cpuClk[] = MV_CPU_CLK_TBL_AXP;
 	MV_CPUDDR_MODE	bc2ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_BC2;
 	MV_CPUDDR_MODE	ac3ClockRatioTbl[8] = MV_CPU_DDR_CLK_TBL_AC3;
 	MV_U16			family = mvCtrlDevFamilyIdGet(0);
-	MV_U32			sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
+	MV_U32			sar2;
+
+	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID) {
+		idx = MSAR_CPU_CLK_IDX(MV_REG_READ(MPP_SAMPLE_AT_RESET(0)),
+				       MV_REG_READ(MPP_SAMPLE_AT_RESET(1)));
+		return cpuClk[idx] * 1000000;
+	}
+
+	sar2 = MV_DFX_REG_READ(DFX_DEVICE_SAR_REG(1));
 
 	idx = MSAR_CPU_DDR_CLK(0, sar2);
 	if (family == MV_BOBCAT2_DEV_ID)
@@ -200,6 +209,10 @@ MV_U32 mvCpuPllClkGet(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCpuL2ClkGet(MV_VOID)
 {
+	MV_U32 idx;
+	MV_U32 freqMhz, l2FreqMhz;
+	MV_CPU_ARM_CLK_RATIO clockRatioTbl[] = MV_DDR_L2_CLK_RATIO_TBL_AXP;
+
 /*	MV_U32 idx;
 	MV_U32 freqMhz;
 	MV_CPUDDR_MODE clockRatioTbl[8] = MV_CPU_DDR_CLK_TBL;
@@ -207,7 +220,24 @@ MV_U32 mvCpuL2ClkGet(MV_VOID)
 
 	idx = MSAR_CPU_DDR_CLK(0, sar2);
 	freqMhz = clockRatioTbl[idx].cpuFreq * 1000000; */
-	return 200000000;
+	if (mvCtrlDevFamilyIdGet(0) != MV_78460_DEV_ID)
+		return 200000000;
+
+	idx = MSAR_DDR_L2_CLK_RATIO_IDX(MV_REG_READ(MPP_SAMPLE_AT_RESET(0)),
+					MV_REG_READ(MPP_SAMPLE_AT_RESET(1)));
+
+	if (clockRatioTbl[idx].vco2cpu != 0) {
+		freqMhz = mvCpuPclkGet() / 1000000;	/* CPU freq */
+		freqMhz *= clockRatioTbl[idx].vco2cpu;	/* VCO freq */
+		l2FreqMhz = freqMhz / clockRatioTbl[idx].vco2l2c;
+		/* round up to integer MHz */
+		if (((freqMhz % clockRatioTbl[idx].vco2l2c) * 10 / clockRatioTbl[idx].vco2l2c) >= 5)
+			l2FreqMhz++;
+
+		return l2FreqMhz * 1000000;
+	} else {
+		return (MV_U32)-1;
+	}
 }
 
 /*******************************************************************************

@@ -149,8 +149,8 @@ int sdhci_send_command(struct mmc *mmc, struct mmc_cmd *cmd,
 	int trans_bytes = 0, is_aligned = 1;
 	u32 mask, flags, mode;
 	unsigned int time = 0, start_addr = 0;
-	unsigned int retry = 10000;
 	int mmc_dev = mmc->block_dev.dev;
+	unsigned start = get_timer(0);
 
 	/* Timeout unit - ms */
 	static unsigned int cmd_timeout = CONFIG_SDHCI_CMD_DEFAULT_TIMEOUT;
@@ -236,6 +236,7 @@ int sdhci_send_command(struct mmc *mmc, struct mmc_cmd *cmd,
 	flush_cache(start_addr, trans_bytes);
 #endif
 	sdhci_writew(host, SDHCI_MAKE_CMD(cmd->cmdidx, flags), SDHCI_COMMAND);
+	start = get_timer(0);
 	do {
 		stat = sdhci_readl(host, SDHCI_INT_STATUS);
 		if (stat & SDHCI_INT_ERROR)
@@ -247,11 +248,10 @@ int sdhci_send_command(struct mmc *mmc, struct mmc_cmd *cmd,
 			cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
 			udelay(5);
 #endif
-		if (--retry == 0)
-			break;
-	} while ((stat & mask) != mask);
+	} while (((stat & mask) != mask) &&
+		 (get_timer(start) < CONFIG_SDHCI_CMD_DEFAULT_TIMEOUT));
 
-	if (retry == 0) {
+	if (get_timer(start) >= CONFIG_SDHCI_CMD_DEFAULT_TIMEOUT) {
 		if (host->quirks & SDHCI_QUIRK_BROKEN_R1B)
 			return 0;
 		else {

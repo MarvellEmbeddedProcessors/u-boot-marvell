@@ -348,6 +348,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CPU_ARM_TO_HOST_DRBL_REG(cpu)		(MV_CPUIF_REGS_BASE(cpu) + 0x70)
 #define CPU_ARM_TO_HOST_MASK_REG(cpu)		(MV_CPUIF_REGS_BASE(cpu) + 0x74)
 
+/*******************************************/
+/* CLOCK Complex Registers Map - AXP only  */
+/*******************************************/
+
+#define CPU_DIV_CLK_CTRL0_REG			(MV_CLK_CMPLX_REGS_OFFSET)
+#define CPU_DIV_CLK_CTRL0_RESET_MASK_OFFS	8
+#define CPU_DIV_CLK_CTRL2_RATIO_FULL0_REG	(MV_CLK_CMPLX_REGS_OFFSET + 0x8)
+#define CPU_DIV_CLK_CTRL2_NB_RATIO_OFFS		16
+#define CPU_DIV_CLK_CTRL3_RATIO_FULL1_REG	(MV_CLK_CMPLX_REGS_OFFSET + 0xC)
+#define CPU_DIV_CLK_CTRL3_CPU_RATIO_OFFS	8
+
 /* CPU control register map */
 /* Set bits means value is about to change according to new value */
 #define CPU_CONFIG_DEFAULT_MASK         	(CCR_VEC_INIT_LOC_MASK)

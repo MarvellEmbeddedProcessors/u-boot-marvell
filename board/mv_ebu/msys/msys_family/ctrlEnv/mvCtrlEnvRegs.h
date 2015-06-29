@@ -405,8 +405,26 @@ extern "C" {
 
 #define MV_TARGET_IS_PEX0(target)   \
 		((target >= PEX0_MEM) && (target <= PEX0_IO))
+#define MV_TARGET_IS_PEX1(target)   \
+		((target >= (MV_8)PEX1_MEM) && (target <= (MV_8)PEX1_IO))
+#define MV_TARGET_IS_PEX2(target)   \
+		((target >= (MV_8)PEX2_MEM) && (target <= (MV_8)PEX2_IO))
+#define MV_TARGET_IS_PEX3(target)   \
+		((target >= (MV_8)PEX3_MEM) && (target <= (MV_8)PEX3_IO))
+#define MV_TARGET_IS_PEX4(target)   \
+		((target >= (MV_8)PEX4_MEM) && (target <= (MV_8)PEX4_IO))
+#define MV_TARGET_IS_PEX5(target)   \
+		((target >= (MV_8)PEX5_MEM) && (target <= (MV_8)PEX5_IO))
+#define MV_TARGET_IS_PEX6(target)   \
+		((target >= (MV_8)PEX6_MEM) && (target <= (MV_8)PEX6_IO))
+#define MV_TARGET_IS_PEX7(target)   \
+		((target >= (MV_8)PEX7_MEM) && (target <= (MV_8)PEX7_IO))
+#define MV_TARGET_IS_PEX8(target)   \
+		((target >= (MV_8)PEX8_MEM) && (target <= (MV_8)PEX8_IO))
+#define MV_TARGET_IS_PEX9(target)   \
+		((target >= (MV_8)PEX9_MEM) && (target <= (MV_8)PEX9_IO))
 
-#define MV_TARGET_IS_PEX(target)	MV_TARGET_IS_PEX0(target)
+#define MV_TARGET_IS_PEX(target)	((target >= PEX0_MEM) && (target <= (MV_8)PEX9_IO))
 
 #define MV_TARGET_IS_DEVICE(target)	((target >= DEVICE_CS0) && (target <= DEVICE_CS3))
 

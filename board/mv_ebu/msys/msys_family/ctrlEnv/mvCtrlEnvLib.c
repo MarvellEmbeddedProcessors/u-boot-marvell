@@ -115,6 +115,8 @@ MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_MSYS_INDEX_MAX] = {
 /* I2C_UNIT_ID          */ { 2,		2, },
 /* USB_UNIT_ID          */ { 0,		1, },
 /* USB3_UNIT_ID         */ { 0,		0, },
+/* NAND_UNIT_ID	        */ { 1,		1, },
+/* DEVBUS_UNIT_ID       */ { 0,		0, },
 };
 
 static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)

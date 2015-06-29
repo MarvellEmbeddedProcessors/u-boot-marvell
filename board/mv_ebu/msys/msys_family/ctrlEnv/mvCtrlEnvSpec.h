@@ -242,6 +242,8 @@ typedef enum _mvUnitId {
 	I2C_UNIT_ID,
 	USB_UNIT_ID,
 	USB3_UNIT_ID,
+	NAND_UNIT_ID,
+	DEVBUS_UNIT_ID,
 	MAX_UNITS_ID
 } MV_UNIT_ID;
 

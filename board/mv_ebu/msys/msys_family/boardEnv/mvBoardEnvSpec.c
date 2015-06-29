@@ -899,6 +899,102 @@ MV_BOARD_INFO rd_mtl_24G_ac3Info = {
 	.norFlashWriteParams		= DB_DX_AC3_BOARD_NOR_WRITE_PARAMS
 };
 
+/***************************************************************************************/
+/* ARMADA-XP AMC BOARD -  only for Linux usage (AXP family is shared with MSYS in LSP) */
+/***************************************************************************************/
+#define DB_78X60_AMC_BOARD_NAND_READ_PARAMS		0x000C0282
+#define DB_78X60_AMC_BOARD_NAND_WRITE_PARAMS		0x00010305
+/*NAND care support for small page chips*/
+#define DB_78X60_AMC_BOARD_NAND_CONTROL			0x01c00543
+
+MV_U8	db78X60amcInfoBoardDebugLedIf[] = {53, 54, 55, 56}; /* 7 segment MPPs*/
+
+MV_BOARD_TWSI_INFO	db78X60amcInfoBoardTwsiDev[] = {
+	/* No TWSI devices on board*/
+};
+
+MV_BOARD_MAC_INFO db78X60amcInfoBoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED	boardMacSpeed, MV_U8 boardEthSmiAddr}} */
+	{BOARD_MAC_SPEED_AUTO, 0x1, 0x0},
+	{BOARD_MAC_SPEED_AUTO, 0xD, 0x0},
+	{BOARD_MAC_SPEED_AUTO, 0xC, 0x0},
+	{BOARD_MAC_SPEED_AUTO, 0x0, 0x0}
+};
+
+
+MV_BOARD_MODULE_TYPE_INFO db78X60amcInfoBoardModTypeInfo[] = {
+	/* No Modules */
+};
+
+MV_BOARD_GPP_INFO db78X60amcInfoBoardGppInfo[] = {
+	/* {{MV_BOARD_GPP_CLASS	devClass, MV_U8	gppPinNum}} */
+	{BOARD_GPP_USB_VBUS,    46} /* from MPP map */
+};
+
+MV_DEV_CS_INFO db78X60amcInfoBoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth}*/
+#if defined(MV_INCLUDE_SPI)
+	{SPI_CS0, N_A, BOARD_DEV_SPI_FLASH, 8, 8}, /* SPI DEV */
+#endif
+};
+
+MV_BOARD_MPP_INFO db78X60amcInfoBoardMppConfigValue[] = {
+	{ {
+		DB_78X60_AMC_MPP0_7,
+		DB_78X60_AMC_MPP8_15,
+		DB_78X60_AMC_MPP16_23,
+		DB_78X60_AMC_MPP24_31,
+		DB_78X60_AMC_MPP32_39,
+		DB_78X60_AMC_MPP40_47,
+		DB_78X60_AMC_MPP48_55,
+		DB_78X60_AMC_MPP56_63,
+		DB_78X60_AMC_MPP64_67,
+	} }
+};
+
+MV_BOARD_INFO db78X60amcInfo = {
+	.boardName			= "DB-78460-AMC",
+	.numBoardMppTypeValue		= ARRSZ(db78X60amcInfoBoardModTypeInfo),
+	.pBoardModTypeValue		= db78X60amcInfoBoardModTypeInfo,
+	.numBoardMppConfigValue		= ARRSZ(db78X60amcInfoBoardMppConfigValue),
+	.pBoardMppConfigValue		= db78X60amcInfoBoardMppConfigValue,
+	.intsGppMaskLow			= 0,
+	.intsGppMaskMid			= 0,
+	.intsGppMaskHigh		= 0,
+	.numBoardDeviceIf		= ARRSZ(db78X60amcInfoBoardDeCsInfo),
+	.pDevCsInfo			= db78X60amcInfoBoardDeCsInfo,
+	.numBoardTwsiDev		= ARRSZ(db78X60amcInfoBoardTwsiDev),
+	.pBoardTwsiDev			= db78X60amcInfoBoardTwsiDev,
+	.numBoardMacInfo		= ARRSZ(db78X60amcInfoBoardMacInfo),
+	.pBoardMacInfo			= db78X60amcInfoBoardMacInfo,
+	.numBoardGppInfo		= ARRSZ(db78X60amcInfoBoardGppInfo),
+	.pBoardGppInfo			= db78X60amcInfoBoardGppInfo,
+	.activeLedsNumber		= ARRSZ(db78X60amcInfoBoardDebugLedIf),
+	.pLedGppPin			= db78X60amcInfoBoardDebugLedIf,
+	.ledsPolarity			= 0,
+
+	/* GPP values */
+	.gppOutEnValLow			= DB_78X60_AMC_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid			= DB_78X60_AMC_GPP_OUT_ENA_MID,
+	.gppOutEnValHigh		= DB_78X60_AMC_GPP_OUT_ENA_HIGH,
+	.gppOutValLow			= DB_78X60_AMC_GPP_OUT_VAL_LOW,
+	.gppOutValMid			= DB_78X60_AMC_GPP_OUT_VAL_MID,
+	.gppOutValHigh			= DB_78X60_AMC_GPP_OUT_VAL_HIGH,
+	.gppPolarityValLow		= DB_78X60_AMC_GPP_POL_LOW,
+	.gppPolarityValMid		= DB_78X60_AMC_GPP_POL_MID,
+	.gppPolarityValHigh		= DB_78X60_AMC_GPP_POL_HIGH,
+
+	/* External Switch Configuration */
+	.pSwitchInfo = NULL,
+	.switchInfoNum = 0,
+
+	/* NAND init params */
+	.nandFlashReadParams		= DB_78X60_AMC_BOARD_NAND_READ_PARAMS,
+	.nandFlashWriteParams		= DB_78X60_AMC_BOARD_NAND_WRITE_PARAMS,
+	.nandFlashControl		= DB_78X60_AMC_BOARD_NAND_CONTROL
+};
+
+
 /*********************************************************************************/
 
 MV_BOARD_INFO *marvellBC2BoardInfoTbl[] = {
@@ -913,4 +1009,9 @@ MV_BOARD_INFO *marvellAC3BoardInfoTbl[] = {
 	&rd_mtl_2xxg_2xg_ac3Info,
 	&db_misl_24G_4xg_ac3Info,
 	&rd_mtl_24G_ac3Info
+};
+
+/* only for Linux usage (AXP family is shared with MSYS in LSP) */
+MV_BOARD_INFO *marvellAXPboardInfoTbl[] = {
+	&db78X60amcInfo
 };

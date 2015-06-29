@@ -1287,6 +1287,13 @@ MV_VOID mvBoardSet(MV_U32 boardId)
 	} else if (boardId >= AC3_CUSTOMER_BOARD_ID_BASE && boardId < AC3_CUSTOMER_MAX_BOARD_ID) { /* Customer Board */
 		board = customerAC3BoardInfoTbl[mvBoardIdIndexGet(boardId)];
 		gBoardId = boardId;
+	/* Marvell AXP-AMC Board */
+	} else if (boardId == DB_78X60_AMC_ID) {
+		/* This case should enter only for LSP 3.2/3.4 flow:
+		 * This board ID is passed from AXP-AMC U-Boot 2011.12, and shared here only
+		 * for Linux usage (AXP family is shared with MSYS family in LSP) */
+		board = marvellAXPboardInfoTbl[0];
+		gBoardId = boardId;
 	} else {
 		mvOsPrintf("%s: Error: wrong board Id (%d)\n", __func__, boardId);
 #ifdef CONFIG_ALLEYCAT3

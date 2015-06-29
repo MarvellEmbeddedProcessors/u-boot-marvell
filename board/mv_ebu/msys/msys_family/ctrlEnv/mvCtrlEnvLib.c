@@ -769,7 +769,9 @@ MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel)
 {
 	MV_U32	boardId = mvBoardIdGet();
 
-	if ((boardId >= BC2_CUSTOMER_BOARD_ID_BASE) && (boardId < BC2_MARVELL_MAX_BOARD_ID))
+	if (boardId == DB_78X60_AMC_ID)
+		return MV_78460_DEV_ID;
+	else if ((boardId >= BC2_CUSTOMER_BOARD_ID_BASE) && (boardId < BC2_MARVELL_MAX_BOARD_ID))
 		return MV_BOBCAT2_DEV_ID;
 	else if ((boardId >= AC3_CUSTOMER_BOARD_ID_BASE) && (boardId < AC3_MARVELL_MAX_BOARD_ID))
 		return MV_ALLEYCAT3_DEV_ID;

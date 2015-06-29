@@ -101,22 +101,32 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* MSYS family linear id */
 #define MV_MSYS_BC2_INDEX		0
 #define MV_MSYS_AC3_INDEX		1
-#define MV_MSYS_INDEX_MAX		2
+#define MV_78460_INDEX			2
+#define MV_MSYS_AXP_INDEX_MAX		3
 
-MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_MSYS_INDEX_MAX] = {
-/*			    BC2		AC3 */
-/* DRAM_UNIT_ID         */ { 1,		1, },
-/* PEX_UNIT_ID          */ { 1,		1, },
-/* ETH_GIG_UNIT_ID      */ { 2,		2, },
-/* XOR_UNIT_ID          */ { 1,		1, },
-/* UART_UNIT_ID         */ { 2,		2, },
-/* SPI_UNIT_ID          */ { 2,		1, },
-/* SDIO_UNIT_ID         */ { 1,		1, },
-/* I2C_UNIT_ID          */ { 2,		2, },
-/* USB_UNIT_ID          */ { 0,		1, },
-/* USB3_UNIT_ID         */ { 0,		0, },
-/* NAND_UNIT_ID	        */ { 1,		1, },
-/* DEVBUS_UNIT_ID       */ { 0,		0, },
+MV_UNIT_ID mvCtrlSocUnitNums[MAX_UNITS_ID][MV_MSYS_AXP_INDEX_MAX] = {
+/*			     BC2	AC3		78460*/
+/* DRAM_UNIT_ID		*/ { 1,		1,		1,},
+/* PEX_UNIT_ID		*/ { 1,		1,		4,},
+/* ETH_GIG_UNIT_ID	*/ { 2,		2,		4,},
+/* XOR_UNIT_ID		*/ { 1,		1,		4,},
+/* UART_UNIT_ID		*/ { 2,		2,		4,},
+/* SPI_UNIT_ID		*/ { 2,		1,		2,},
+/* SDIO_UNIT_ID		*/ { 1,		1,		1,},
+/* I2C_UNIT_ID		*/ { 2,		2,		2,},
+/* USB_UNIT_ID		*/ { 0,		1,		3,},
+/* USB3_UNIT_ID		*/ { 0,		0,		0,},
+/* NAND_UNIT_ID		*/ { 1,		1,		1 },
+/* DEVBUS_UNIT_ID	*/ { 0,		0,		0 },
+/* IDMA_UNIT_ID		*/ { 0,		0,		4,},
+/* SATA_UNIT_ID		*/ { 0,		0,		2,},
+/* TDM_UNIT_ID		*/ { 0,		0,		1,},
+/* CESA_UNIT_ID		*/ { 0,		0,		2,},
+/* AUDIO_UNIT_ID	*/ { 0,		0,		0,},
+/* TS_UNIT_ID		*/ { 0,		0,		0,},
+/* XPON_UNIT_ID		*/ { 0,		0,		0,},
+/* BM_UNIT_ID		*/ { 0,		0,		1,},
+/* PNC_UNIT_ID		*/ { 0,		0,		1,},
 };
 
 static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
@@ -129,6 +139,9 @@ static MV_U32 mvCtrlDevIdIndexGet(MV_U32 devId)
 		break;
 	case MV_ALLEYCAT3_DEV_ID:
 		index = MV_MSYS_AC3_INDEX;
+		break;
+	case MV_78460_DEV_ID:
+		index = MV_78460_INDEX;
 		break;
 	default:
 		index = MV_MSYS_AC3_INDEX;
@@ -372,6 +385,8 @@ MV_U32 mvCtrlMppRegGet(MV_U32 mppGroup)
 *******************************************************************************/
 MV_U32 mvCtrlPexMaxIfGet(MV_VOID)
 {
+	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+		return MV_PEX_MAX_IF_AXP;
 	return mvCtrlSocUnitInfoNumGet(PEX_UNIT_ID);
 }
 
@@ -461,6 +476,8 @@ MV_U32 mvCtrlEthMaxPortGet(MV_VOID)
 *******************************************************************************/
 MV_U8 mvCtrlEthMaxCPUsGet(MV_VOID)
 {
+	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+		return mvCtrlEthMaxPortGet();
 	return 2;
 }
 
@@ -582,6 +599,64 @@ MV_U32 mvCtrlSdioSupport(MV_VOID)
 #endif
 
 /*******************************************************************************
+* mvCtrlModelGetAxp - Get Marvell controller device model (Id) for AXP devices
+*
+* DESCRIPTION:
+*       This function returns 16bit describing the device model (ID) as defined
+*       in PCI Device and Vendor ID configuration register offset 0x0.
+*
+* INPUT:
+*       None.
+*
+* OUTPUT:
+*       None.
+*
+* RETURN:
+*       16bit desscribing Marvell controller ID
+*
+*******************************************************************************/
+MV_U16 mvCtrlModelGetAxp(MV_VOID)
+{
+#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
+	MV_U32 pexPower;
+#endif
+	MV_U32 devId;
+	MV_U16 model = 0;
+	MV_U32 reg, reg2;
+	static MV_U16 modelId = 0xffff;
+
+	if (modelId != 0xffff)
+		return modelId;
+
+	/* if PEX0 clocks are disabled - enabled it to read */
+#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
+	/* Check pex power state */
+	pexPower = mvCtrlPwrClckGet(PEX_UNIT_ID, 0);
+	if (pexPower == MV_FALSE)
+		mvCtrlPwrClckSet(PEX_UNIT_ID, 0, MV_TRUE);
+#endif
+	reg = MV_REG_READ(POWER_MNG_CTRL_REG);
+	if ((reg & AXP_PMC_PEXSTOPCLOCK_MASK(0)) == AXP_PMC_PEXSTOPCLOCK_STOP(0)) {
+		reg2 = ((reg & ~AXP_PMC_PEXSTOPCLOCK_MASK(0)) | AXP_PMC_PEXSTOPCLOCK_EN(0));
+		MV_REG_WRITE(POWER_MNG_CTRL_REG, reg2);
+	}
+
+	devId = MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PEX_DEVICE_AND_VENDOR_ID));
+
+	/* Reset the original value of the PEX0 clock */
+#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
+	/* Return to power off state */
+	if (pexPower == MV_FALSE)
+		mvCtrlPwrClckSet(PEX_UNIT_ID, 0, MV_FALSE);
+#endif
+
+	model = (MV_U16) ((devId >> 16) & 0xFFFF);
+
+	modelId = model;
+	return model;
+}
+
+/*******************************************************************************
 * mvCtrlModelGet - Get Marvell controller device model (Id)
 *
 * DESCRIPTION:
@@ -601,6 +676,9 @@ MV_U32 mvCtrlSdioSupport(MV_VOID)
 MV_U16 mvCtrlModelGet(MV_VOID)
 {
 	MV_U32	ctrlId = MV_REG_READ(DEV_ID_REG);
+
+	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+		return mvCtrlModelGetAxp();
 
 	ctrlId = (ctrlId & (DEVICE_ID_MASK)) >> DEVICE_ID_OFFS;
 
@@ -633,8 +711,30 @@ MV_U16 mvCtrlModelGet(MV_VOID)
 *******************************************************************************/
 MV_U8 mvCtrlRevGet(MV_VOID)
 {
-	MV_U32 value = MV_DFX_REG_READ(DEV_REV_ID_REG);
-	return (value & (REVISON_ID_MASK)) >> REVISON_ID_OFFS;
+#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
+	MV_U32 pexPower;
+#endif
+	MV_U32 value;
+	MV_U8 revNum;
+
+	if (mvCtrlDevFamilyIdGet(0) != MV_78460_DEV_ID) {
+		value = MV_DFX_REG_READ(DEV_REV_ID_REG);
+		return (value & (REVISON_ID_MASK)) >> REVISON_ID_OFFS;
+	}
+
+#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
+	/* Check pex power state */
+	pexPower = mvCtrlPwrClckGet(PEX_UNIT_ID, 0);
+	if (pexPower == MV_FALSE)
+		mvCtrlPwrClckSet(PEX_UNIT_ID, 0, MV_TRUE);
+#endif
+	revNum = (MV_U8)MV_REG_READ(PEX_CFG_DIRECT_ACCESS(0, PCI_CLASS_CODE_AND_REVISION_ID));
+#if defined(MV_INCLUDE_CLK_PWR_CNTRL)
+	/* Return to power off state */
+	if (pexPower == MV_FALSE)
+		mvCtrlPwrClckSet(PEX_UNIT_ID, 0, MV_FALSE);
+#endif
+	return (revNum & PCCRIR_REVID_MASK) >> PCCRIR_REVID_OFFS;
 }
 
 /*******************************************************************************
@@ -1306,32 +1406,66 @@ MV_BOOL mvCtrlIsDLBEnabled(MV_VOID)
 *******************************************************************************/
 MV_VOID mvCtrlPwrClckSet(MV_UNIT_ID unitId, MV_U32 index, MV_BOOL enable)
 {
+	MV_U32 mask;
 
 	switch (unitId) {
 #if defined(MV_INCLUDE_PEX)
 	case PEX_UNIT_ID:
-		if (enable == MV_FALSE)
-			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_PEXSTOPCLOCK_MASK);
+		if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+			mask = AXP_PMC_PEXSTOPCLOCK_MASK(index);
 		else
-			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_PEXSTOPCLOCK_MASK);
+			mask = PMC_PEXSTOPCLOCK_MASK;
+
+		if (enable == MV_FALSE)
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, mask);
+		else
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, mask);
 
 		break;
 #endif
 #if defined(MV_INCLUDE_GIG_ETH)
 	case ETH_GIG_UNIT_ID:
-		if (enable == MV_FALSE)
-			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_GESTOPCLOCK_MASK(index));
+		if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+			mask = AXP_PMC_GESTOPCLOCK_MASK(index);
 		else
-			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_GESTOPCLOCK_MASK(index));
+			mask = PMC_GESTOPCLOCK_MASK(index);
+
+		if (enable == MV_FALSE)
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, mask);
+		else
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, mask);
 
 		break;
 #endif
 #if defined(MV_INCLUDE_SDIO)
 	case SDIO_UNIT_ID:
-		if (enable == MV_FALSE)
-			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, PMC_SDIOSTOPCLOCK_MASK);
+		if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+			mask = AXP_PMC_SDIOSTOPCLOCK_MASK;
 		else
-			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, PMC_SDIOSTOPCLOCK_MASK);
+			mask = PMC_SDIOSTOPCLOCK_MASK;
+
+		if (enable == MV_FALSE)
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, mask);
+		else
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, mask);
+
+		break;
+#endif
+#if defined(MV_INCLUDE_CESA)
+	case CESA_UNIT_ID:
+		if (enable == MV_FALSE)
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, AXP_PMC_CESASTOPCLOCK_MASK);
+		else
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, AXP_PMC_CESASTOPCLOCK_MASK);
+
+		break;
+#endif
+#if defined(MV_INCLUDE_USB)
+	case USB_UNIT_ID:
+		if (enable == MV_FALSE)
+			MV_REG_BIT_RESET(POWER_MNG_CTRL_REG, AXP_PMC_USBSTOPCLOCK_MASK(index));
+		else
+			MV_REG_BIT_SET(POWER_MNG_CTRL_REG, AXP_PMC_USBSTOPCLOCK_MASK(index));
 
 		break;
 #endif
@@ -1355,13 +1489,22 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 {
 #if defined(MV_INCLUDE_PEX) || defined(MV_INCLUDE_PEX) || defined(MV_INCLUDE_GIG_ETH) || defined(MV_INCLUDE_SDIO)
 	MV_U32 reg = MV_REG_READ(POWER_MNG_CTRL_REG);
+	MV_U32 mask, stop;
 #endif
 	MV_BOOL state = MV_TRUE;
 
 	switch (unitId) {
 #if defined(MV_INCLUDE_PEX)
 	case PEX_UNIT_ID:
-		if ((reg & PMC_PEXSTOPCLOCK_MASK) == PMC_PEXSTOPCLOCK_STOP)
+		if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID) {
+			mask = AXP_PMC_PEXSTOPCLOCK_MASK(index);
+			stop = AXP_PMC_PEXSTOPCLOCK_STOP(index);
+		} else {
+			mask = PMC_PEXSTOPCLOCK_MASK;
+			stop = PMC_PEXSTOPCLOCK_STOP;
+		}
+
+		if ((reg & mask) == stop)
 			state = MV_FALSE;
 		else
 			state = MV_TRUE;
@@ -1369,7 +1512,15 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 #endif
 #if defined(MV_INCLUDE_GIG_ETH)
 	case ETH_GIG_UNIT_ID:
-		if ((reg & PMC_GESTOPCLOCK_MASK(index)) == PMC_GESTOPCLOCK_STOP(index))
+		if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID) {
+			mask = AXP_PMC_GESTOPCLOCK_MASK(index);
+			stop = AXP_PMC_GESTOPCLOCK_STOP(index);
+		} else {
+			mask = PMC_GESTOPCLOCK_MASK(index);
+			stop = PMC_GESTOPCLOCK_STOP(index);
+		}
+
+		if ((reg & mask) == stop)
 			state = MV_FALSE;
 		else
 			state = MV_TRUE;
@@ -1377,7 +1528,33 @@ MV_BOOL mvCtrlPwrClckGet(MV_UNIT_ID unitId, MV_U32 index)
 #endif
 #if defined(MV_INCLUDE_SDIO)
 	case SDIO_UNIT_ID:
-		if ((reg & PMC_SDIOSTOPCLOCK_MASK) == PMC_SDIOSTOPCLOCK_STOP)
+		if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID) {
+			mask = AXP_PMC_SDIOSTOPCLOCK_MASK;
+			stop = AXP_PMC_SDIOSTOPCLOCK_STOP;
+		} else {
+			mask = PMC_SDIOSTOPCLOCK_MASK;
+			stop = PMC_SDIOSTOPCLOCK_STOP;
+		}
+
+		if ((reg & mask) == stop)
+			state = MV_FALSE;
+		else
+			state = MV_TRUE;
+		break;
+#endif
+#if defined(MV_INCLUDE_CESA)
+	case CESA_UNIT_ID:
+		if ((reg & AXP_PMC_CESASTOPCLOCK_MASK) == AXP_PMC_CESASTOPCLOCK_STOP)
+			state = MV_FALSE;
+		else
+			state = MV_TRUE;
+		break;
+#endif
+#if defined(MV_INCLUDE_USB)
+	case USB_UNIT_ID:
+		if (mvCtrlDevFamilyIdGet(0) != MV_78460_DEV_ID)
+			state = MV_TRUE;
+		else if ((reg & AXP_PMC_USBSTOPCLOCK_MASK(index)) == AXP_PMC_USBSTOPCLOCK_STOP(index))
 			state = MV_FALSE;
 		else
 			state = MV_TRUE;

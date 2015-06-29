@@ -360,9 +360,14 @@ MV_STATUS mvCtrlEnvInit(MV_VOID)
 *******************************************************************************/
 MV_U32 mvCtrlMppRegGet(MV_U32 mppGroup)
 {
-	MV_U32 ret;
+	MV_U32 ret, maxGroup;
 
-	if (mppGroup >= MV_MPP_MAX_GROUP)
+	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+		maxGroup = MV_MPP_MAX_GROUP_AXP;
+	else
+		maxGroup = MV_MPP_MAX_GROUP;
+
+	if (mppGroup >= maxGroup)
 		mppGroup = 0;
 
 	ret = MPP_CONTROL_REG(mppGroup);

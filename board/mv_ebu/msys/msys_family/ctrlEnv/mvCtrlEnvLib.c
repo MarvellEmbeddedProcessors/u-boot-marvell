@@ -901,7 +901,8 @@ MV_U32 mvCtrlDevFamilyIdGet(MV_U16 ctrlModel)
 	}
 }
 
-static const char *cntrlName[] = TARGETS_NAME_ARRAY;
+static const char * const cntrlNameMsys[] = TARGETS_NAME_ARRAY;
+static const char * const cntrlNameAxp[] = TARGETS_NAME_ARRAY_AXP;
 
 /*******************************************************************************
 * mvCtrlTargetNameGet - Get Marvell controller target name
@@ -923,7 +924,10 @@ const MV_8 *mvCtrlTargetNameGet(MV_TARGET target)
 	if (target >= MAX_TARGETS)
 		return "target unknown";
 
-	return cntrlName[target];
+	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+		return cntrlNameAxp[target];
+	else
+		return cntrlNameMsys[target];
 }
 
 #if defined(MV_INCLUDE_PEX)

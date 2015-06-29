@@ -255,7 +255,10 @@ MV_STATUS mvAhbToMbusWinGet(MV_U32 winNum, MV_AHB_TO_MBUS_DEC_WIN *pAddrDecWin)
 
 	if (winNum == MV_AHB_TO_MBUS_INTREG_WIN) {
 		pAddrDecWin->addrWin.size = INTER_REGS_SIZE;
-		pAddrDecWin->target = INTER_REGS;
+		if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+			pAddrDecWin->target = (MV_U8)INTER_REGS_AXP;
+		else
+			pAddrDecWin->target = INTER_REGS;
 		pAddrDecWin->enable = MV_TRUE;
 
 		return MV_OK;
@@ -301,7 +304,7 @@ MV_U32 mvAhbToMbusWinTargetGet(MV_TARGET target)
 		return 0xffffffff;
 	}
 
-	if (INTER_REGS == target)
+	if (INTER_REGS == target || (MV_U8)INTER_REGS_AXP == target)
 		return MV_AHB_TO_MBUS_INTREG_WIN;
 
 	for (winNum = 0; winNum < MAX_AHB_TO_MBUS_WINS; winNum++) {

@@ -91,7 +91,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 /* Default Attributes array */
-MV_TARGET_ATTRIB mvTargetDefaultsArray[] = TARGETS_DEF_ARRAY;
+MV_TARGET_ATTRIB mvTargetDefaultsArrayMsys[] = TARGETS_DEF_ARRAY;
+MV_TARGET_ATTRIB mvTargetDefaultsArrayAxp[] = TARGETS_DEF_ARRAY_AXP;
 
 /*******************************************************************************
 * mvCtrlAttribGet -
@@ -107,6 +108,13 @@ MV_TARGET_ATTRIB mvTargetDefaultsArray[] = TARGETS_DEF_ARRAY;
 *******************************************************************************/
 MV_STATUS mvCtrlAttribGet(MV_TARGET target, MV_TARGET_ATTRIB *targetAttrib)
 {
+	MV_TARGET_ATTRIB *mvTargetDefaultsArray;
+
+	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+		mvTargetDefaultsArray = mvTargetDefaultsArrayAxp;
+	else
+		mvTargetDefaultsArray = mvTargetDefaultsArrayMsys;
+
 	targetAttrib->attrib = mvTargetDefaultsArray[MV_CHANGE_BOOT_CS(target)].attrib;
 	targetAttrib->targetId = mvTargetDefaultsArray[MV_CHANGE_BOOT_CS(target)].targetId;
 
@@ -115,6 +123,13 @@ MV_STATUS mvCtrlAttribGet(MV_TARGET target, MV_TARGET_ATTRIB *targetAttrib)
 /*******************************************************************************/
 MV_STATUS mvCtrlAttribSet(MV_TARGET target, MV_TARGET_ATTRIB *targetAttrib)
 {
+	MV_TARGET_ATTRIB *mvTargetDefaultsArray;
+
+	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+		mvTargetDefaultsArray = mvTargetDefaultsArrayAxp;
+	else
+		mvTargetDefaultsArray = mvTargetDefaultsArrayMsys;
+
 	mvTargetDefaultsArray[MV_CHANGE_BOOT_CS(target)].attrib  = targetAttrib->attrib;
 	mvTargetDefaultsArray[MV_CHANGE_BOOT_CS(target)].targetId= targetAttrib->targetId;
 
@@ -137,6 +152,13 @@ MV_TARGET mvCtrlTargetGet(MV_TARGET_ATTRIB *targetAttrib)
 {
 	MV_TARGET target;
 	MV_TARGET x;
+	MV_TARGET_ATTRIB *mvTargetDefaultsArray;
+
+	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+		mvTargetDefaultsArray = mvTargetDefaultsArrayAxp;
+	else
+		mvTargetDefaultsArray = mvTargetDefaultsArrayMsys;
+
 	for (target = SDRAM_CS0; target < MAX_TARGETS; target++) {
 		x = MV_CHANGE_BOOT_CS(target);
 		if ((mvTargetDefaultsArray[x].attrib == targetAttrib->attrib) &&
@@ -165,6 +187,13 @@ MV_TARGET mvCtrlTargetByWinInfoGet(MV_UNIT_WIN_INFO *unitWinInfo)
 {
 	MV_TARGET target;
 	MV_TARGET x;
+	MV_TARGET_ATTRIB *mvTargetDefaultsArray;
+
+	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+		mvTargetDefaultsArray = mvTargetDefaultsArrayAxp;
+	else
+		mvTargetDefaultsArray = mvTargetDefaultsArrayMsys;
+
 	for (target = SDRAM_CS0; target < MAX_TARGETS; target++) {
 		x = MV_CHANGE_BOOT_CS(target);
 		if ((mvTargetDefaultsArray[x].attrib == unitWinInfo->attrib) &&

@@ -76,6 +76,8 @@ static INLINE MV_U32 DEV_BANK_PARAM_REG(int num)
 	switch (num) {
 	case (DEV_BOOCS):
 		return MV_DEV_BUS_REGS_OFFSET + 0x00;
+	case (DEV_BOOCS_AXP):
+		return MV_DEV_BUS_REGS_OFFSET + 0x00;
 	case (DEVICE_CS0):
 		return MV_DEV_BUS_REGS_OFFSET + 0x08;
 	case (DEVICE_CS1):

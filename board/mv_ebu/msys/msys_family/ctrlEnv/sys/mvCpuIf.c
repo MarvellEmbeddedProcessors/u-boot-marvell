@@ -721,9 +721,23 @@ MV_U32 mvCpuIfPexRemap(MV_TARGET pexTarget, MV_ADDR_WIN *pAddrDecWin)
 	MV_U32 winNum;
 
 	/* Check parameters */
-	if (!MV_TARGET_IS_PEX0(pexTarget)) {
-		mvOsPrintf("mvCpuIfPexRemap: target %d is illegal\n", pexTarget);
-		return 0xffffffff;
+	if (mvCtrlPexMaxIfGet() > 1) {
+		if ((!MV_TARGET_IS_PEX0(pexTarget)) &&
+			(!MV_TARGET_IS_PEX1(pexTarget)) &&
+			(!MV_TARGET_IS_PEX2(pexTarget)) &&
+			(!MV_TARGET_IS_PEX3(pexTarget)) &&
+			(!MV_TARGET_IS_PEX4(pexTarget)) &&
+			(!MV_TARGET_IS_PEX5(pexTarget)) &&
+			(!MV_TARGET_IS_PEX6(pexTarget)) &&
+			(!MV_TARGET_IS_PEX7(pexTarget)) &&
+			(!MV_TARGET_IS_PEX8(pexTarget)) &&
+			(!MV_TARGET_IS_PEX9(pexTarget))) {
+			mvOsPrintf("mvCpuIfPexRemap: target %d is illegal\n", pexTarget);
+			return 0xffffffff;
+		}
+	} else if (!MV_TARGET_IS_PEX0(pexTarget)) {
+			mvOsPrintf("mvCpuIfPexRemap: target %d is illegal\n", pexTarget);
+			return 0xffffffff;
 	}
 
 	/* get the Window number associated with this target */

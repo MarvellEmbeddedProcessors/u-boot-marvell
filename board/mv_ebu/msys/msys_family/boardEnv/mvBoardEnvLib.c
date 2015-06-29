@@ -357,6 +357,10 @@ MV_BOOL mvBoardIsEthActive(MV_U32 ethNum)
 *******************************************************************************/
 MV_BOOL mvBoardIsPortInSgmii(MV_U32 ethPortNum)
 {
+	MV_U32 boardId = mvBoardIdGet();
+
+	if (boardId == DB_78X60_AMC_ID && ethPortNum == 0)
+		return MV_FALSE;
 	return MV_TRUE;
 }
 /*******************************************************************************
@@ -475,6 +479,8 @@ MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum)
 
 MV_BOOL mvBoardIsPortInRgmii(MV_U32 ethPortNum)
 {
+	if (mvCtrlDevFamilyIdGet(0) == MV_78460_DEV_ID)
+		return !mvBoardIsPortInGmii(ethPortNum);
 	return !mvBoardIsPortInGmii(ethPortNum) && !mvBoardIsPortInSgmii(ethPortNum);
 }
 /*******************************************************************************

@@ -228,6 +228,10 @@ extern "C" {
 /* Sample at Reset - AXP only */
 #define MPP_SAMPLE_AT_RESET(id)			(0x18230 + (id * 4))
 
+/* Controller environment and SERDERS registers - AXP only */
+#define SERDES_LINE_MUX_REG_0_7			0x18270
+#define GEN_PURP_RES_2_REG			0x182F8
+
 /* Dragonite Register */
 #define DRAGONITE_CTRL_REG			0x1c
 #define DRAGONITE_POE_CAUSE_IRQ_REG		0x64
@@ -399,6 +403,30 @@ extern "C" {
 /*22*/	{	2,	5,	10,	5	} \
 }
 
+/* This structure refrect registers:
+ * Serdes 0-7 selectors		0x18270
+ * and Serdes 8-15 selectors	0x18274
+ * AXP only
+ */
+
+#define SERDES_CFG_AXP { \
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 0 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 1 */	\
+	{0, 1, -1 ,  2, -1, -1, -1, -1}, /* Lane 2 */	\
+	{0, 1, -1 , -1,  2, -1, -1,  3}, /* Lane 3 */	\
+	{0, 1,  2 , -1, -1,  3, -1, -1}, /* Lane 4 */	\
+	{0, 1,  2 , -1,  3, -1, -1,  4}, /* Lane 5 */	\
+	{0, 1,  2 ,  4, -1,  3, -1, -1}, /* Lane 6 */	\
+	{0, 1, -1 ,  2, -1, -1,  3, -1}, /* Lane 7 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 8 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 9 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 10 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 11 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 12 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 13 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}, /* Lane 14 */	\
+	{0, 1, -1 , -1, -1, -1, -1, -1}	 /* Lane 15 */	\
+}
 /* These macros help units to identify a target Mport Arbiter group */
 #define MV_TARGET_IS_DRAM(target)   \
 		((target >= SDRAM_CS0) && (target <= SDRAM_CS3))

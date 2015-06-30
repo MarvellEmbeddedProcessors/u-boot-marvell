@@ -79,8 +79,8 @@
 			rfu {
 				compatible = "marvell,mvebu-rfu";
 				reg = <0x6f0000 0x50>;
-				windows = <0xfe000000 0x1f00000 0x05 /* PCIe window 31Mb for PCIe port*/
-					0xffe00000 0x100000 0x03 /* PCI-REG window 64Kb for PCIe-reg*/>;
+				windows = <0x0 0xfe000000 0x0 0x1f00000 0x05 /* PCIe window 31Mb for PCIe port*/
+					0x0 0xffe00000 0x0 0x100000 0x03 /* PCI-REG window 64Kb for PCIe-reg*/>;
 			};
 		};
 		pcie-controller {

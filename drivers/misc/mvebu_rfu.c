@@ -41,8 +41,10 @@ DECLARE_GLOBAL_DATA_PTR;
 void __iomem *rfu_base;
 
 struct rfu_win {
-	u32 base_addr;
-	u32 win_size;
+	u32 base_addr_high;
+	u32 base_addr_low;
+	u32 win_size_high;
+	u32 win_size_low;
 	u32 target_id;
 };
 
@@ -58,13 +60,17 @@ enum rfu_target_ids {
 
 static void rfu_win_check(struct rfu_win *win, u32 win_num)
 {
+	u64 base_addr, win_size;
 	u32 alignment_value = RFU_WIN_ALIGNMENT_1M;
 	/* for RFU The base is always 1M aligned */
 	/* check if address is aligned to 1M */
-	if (IS_NOT_ALIGN(win->base_addr, RFU_WIN_ALIGNMENT_1M)) {
-		win->base_addr = ALIGN_UP(win->base_addr, RFU_WIN_ALIGNMENT_1M);
+	base_addr = ((u64)win->base_addr_high << 32) + win->base_addr_low;
+	if (IS_NOT_ALIGN(base_addr, RFU_WIN_ALIGNMENT_1M)) {
+		base_addr = ALIGN_UP(base_addr, RFU_WIN_ALIGNMENT_1M);
 		error("Window %d: base address unaligned to 0x%x\n", win_num, RFU_WIN_ALIGNMENT_1M);
-		printf("Align up the base address to 0x%x\n", win->base_addr);
+		printf("Align up the base address to 0x%llx\n", base_addr);
+		win->base_addr_high = (u32)(base_addr >> 32);
+		win->base_addr_low = (u32)(base_addr);
 	}
 
 	/* targets that have AHR must have size aligned to 1M.
@@ -72,10 +78,13 @@ static void rfu_win_check(struct rfu_win *win, u32 win_num)
 	if (win->target_id == BOOTROM_TID || win->target_id == PCIE_REGS_TID)
 		alignment_value = RFU_WIN_ALIGNMENT_64K;
 	/* size parameter validity check */
-	if (IS_NOT_ALIGN(win->win_size, alignment_value)) {
-		win->win_size = ALIGN_UP(win->win_size, alignment_value);
+	win_size = ((u64)win->win_size_high << 32) + win->win_size_low;
+	if (IS_NOT_ALIGN(win_size, alignment_value)) {
+		win_size = ALIGN_UP(win_size, alignment_value);
 		error("Window %d: window size unaligned to 0x%x\n", win_num, alignment_value);
-		printf("Aligning size to 0x%x\n", win->win_size);
+		printf("Aligning size to 0x%llx\n", win_size);
+		win->win_size_high = (u32)(win_size >> 32);
+		win->win_size_low = (u32)(win_size);
 	}
 }
 
@@ -104,10 +113,11 @@ static void *rfu_ahr_offset_get(u32 trgt_id)
 static void rfu_enable_win(struct rfu_win *win, u32 trgt_id)
 {
 	u32 alr, ahr;
-	uintptr_t end_addr;
+	u64 start_addr, end_addr;
 
-	end_addr = (win->base_addr + win->win_size - 1);
-	alr = (u32)((win->base_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
+	start_addr = ((u64)win->base_addr_high << 32) + win->base_addr_low;
+	end_addr = (start_addr + (((u64)win->win_size_high << 32) + win->win_size_low) - 1);
+	alr = (u32)((start_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
 	alr |= WIN_ENABLE_BIT;
 	writel(alr, rfu_alr_offset_get(trgt_id));
 
@@ -123,7 +133,7 @@ void dump_rfu(void)
 {
 	u32 trgt_id;
 	u32 alr, ahr;
-	uintptr_t start, end;
+	u64 start, end;
 	char *rfu_target_name[RFU_MAX_TID] = {"BootRoom ", "STM      ", "SPI      ",
 					"PCIe-reg ", "IHB-Port ", "PCIe-Port"};
 
@@ -134,10 +144,13 @@ void dump_rfu(void)
 		alr = readl(rfu_alr_offset_get(trgt_id));
 		if (alr & WIN_ENABLE_BIT) {
 			alr &= ~WIN_ENABLE_BIT;
-			ahr = readl(rfu_ahr_offset_get(trgt_id));
-			start = (uintptr_t)(alr << ADDRESS_SHIFT);
-			end = (uintptr_t)((ahr + 0x10) << ADDRESS_SHIFT);
-			printf("rfu   %s  0x%016lx 0x%016lx\n", rfu_target_name[trgt_id], start, end);
+			if (trgt_id == BOOTROM_TID || trgt_id == PCIE_REGS_TID)
+				ahr = alr;
+			else
+				ahr = readl(rfu_ahr_offset_get(trgt_id));
+			start = ((u64)alr << ADDRESS_SHIFT);
+			end = (((u64)ahr + 0x10) << ADDRESS_SHIFT);
+			printf("rfu   %s  0x%016llx 0x%016llx\n", rfu_target_name[trgt_id], start, end);
 		}
 	}
 	printf("rfu   PIDI-port  - all other IO transactions\n");
@@ -171,12 +184,13 @@ int init_rfu(void)
 	}
 
 	/* Get the array of the windows and fill the map data */
-	win_count = fdtdec_get_int_array_count(blob, node, "windows", (u32 *)memory_map, RFU_MAX_TID * 3);
+	win_count = fdtdec_get_int_array_count(blob, node, "windows", (u32 *)memory_map, RFU_MAX_TID * 5);
 	if (win_count <= 0) {
 		debug("no windows configurations found\n");
 		return 0;
 	}
-	win_count = win_count/3; /* every window had 3 variables in FDT (base, size, target id) */
+	win_count = win_count/5; /* every window had 5 variables in FDT:
+				    base high, base low, size high, size low, target id) */
 
 	/* disable all RFU windows */
 	for (trgt_id = 0; trgt_id < RFU_MAX_TID; trgt_id++) {

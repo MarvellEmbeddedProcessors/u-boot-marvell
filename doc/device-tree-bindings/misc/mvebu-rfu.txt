@@ -13,19 +13,33 @@ following targets:
 	0x5 = PCIe port
 
 The RFU node requires the following properties:
-	- compatible: the compatible of the driver
+	- compatible
+		should be "marvell,mvebu-rfu"
 	- reg: the base address of the RFU window
 	- max-win: number of the max mbus windows
 	- windows: entry that include the configuration of the windows
-	  every window should have 3 parameters:
-	  - base address of the window
-	  - size of the window
+	  every window should have 5 parameters:
+	  - high base address of the window
+	  - low base address of the window
+	  - high size of the window
+	  - low size of the window
 	  - target-id of the window
+
+Note: if the base address is more than 32bit, it divided into high and low,
+	same for size field, if it more that 32bit, it divided for high and low.
+	Base example:
+		base address: 0x10f0000000 should divided into:
+		base address high: 0x10
+		base address low: 0xf0000000
+	Size example:
+		size: 0x1E00F00000 should divided into:
+		size high: 0x1E
+		size low: 0x00F00000
 
 Example:
 	rfu {
 		compatible = "marvell,mvebu-rfu";
 		reg = <0x6f0000 0x50>;
-		windows = <0xf2000000 0x40000000 0x05 /* PCIe window */
-			0xf6000000 0x20000000 0x02 /* SPI window */>;
+		windows = <0x0 0xf2000000 0x0 0x40000000 0x05 /* PCIe window */
+			0x0 0xf6000000 0x0 0x20000000 0x02 /* SPI window */>;
 	};

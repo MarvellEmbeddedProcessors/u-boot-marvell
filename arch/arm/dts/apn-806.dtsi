@@ -73,7 +73,7 @@
 				compatible = "marvell,mvebu-ccu";
 				reg = <0x4000 0x50>;
 				max-win = <8>;
-				windows = <0x0 0xf2000000 0xe000000 0x00 /* IO window */>;
+				windows = <0x0 0xf2000000 0x0 0xe000000 0x00 /* IO window */>;
 			};
 
 			rfu {

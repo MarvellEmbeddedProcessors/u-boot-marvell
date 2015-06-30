@@ -64,7 +64,8 @@ struct ccu_configuration __attribute__((section(".data")))*ccu_info = &ccu_confi
 struct ccu_win {
 	u32 base_addr_high;
 	u32 base_addr_low;
-	u32 win_size;
+	u32 win_size_high;
+	u32 win_size_low;
 	u32 target_id;
 };
 
@@ -108,7 +109,7 @@ static char *ccu_target_name_get(enum ccu_target_ids trgt_id)
 
 static void ccu_win_check(struct ccu_win *win, u32 win_num)
 {
-	u64 start_addr;
+	u64 start_addr, win_size;
 	/* check if address is aligned to 1M */
 	start_addr = ((u64)win->base_addr_high << 32) + win->base_addr_low;
 	if (IS_NOT_ALIGN(start_addr, CCU_WIN_ALIGNMENT)) {
@@ -120,10 +121,13 @@ static void ccu_win_check(struct ccu_win *win, u32 win_num)
 	}
 
 	/* size parameter validity check */
-	if (IS_NOT_ALIGN(win->win_size, CCU_WIN_ALIGNMENT)) {
-		win->win_size = ALIGN_UP(win->win_size, CCU_WIN_ALIGNMENT);
+	win_size = ((u64)win->win_size_high << 32) + win->win_size_low;
+	if (IS_NOT_ALIGN(win_size, CCU_WIN_ALIGNMENT)) {
+		win_size = ALIGN_UP(win_size, CCU_WIN_ALIGNMENT);
 		error("Window %d: window size unaligned to 0x%x\n", win_num, CCU_WIN_ALIGNMENT);
-		printf("Aligning size to 0x%x\n", win->win_size);
+		printf("Aligning size to 0x%llx\n", win_size);
+		win->win_size_high = (u32)(win_size >> 32);
+		win->win_size_low = (u32)(win_size);
 	}
 }
 
@@ -138,7 +142,7 @@ static void ccu_enable_win(struct ccu_win *win, u32 win_id)
 	writel(ccu_win_reg, CCU_WIN_CR_OFFSET(win_id));
 
 	start_addr = ((u64)win->base_addr_high << 32) + win->base_addr_low;
-	end_addr = (start_addr + (u64)win->win_size - 1);
+	end_addr = (start_addr + (((u64)win->win_size_high << 32) + win->win_size_low) - 1);
 	alr = (u32)((start_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
 	ahr = (u32)((end_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
 
@@ -207,12 +211,13 @@ int init_ccu(void)
 	}
 
 	/* Get the array of the windows and fill the map data */
-	win_count = fdtdec_get_int_array_count(blob, node, "windows", (u32 *)memory_map, ccu_info->max_win * 4);
+	win_count = fdtdec_get_int_array_count(blob, node, "windows", (u32 *)memory_map, ccu_info->max_win * 5);
 	if (win_count <= 0) {
 		debug("no windows configurations found\n");
 		return 0;
 	}
-	win_count = win_count/4; /* every window had 3 variables in FDT (base, size, target id) */
+	win_count = win_count/5; /* every window had 5 variables in FDT:
+				    base high, base low, size high, size low, target id) */
 
 	/* Set the default target ID to DRAM 0 */
 	win_reg = (DRAM_0_TID & CCU_GCR_TARGET_MASK) << CCU_GCR_TARGET_OFFSET;

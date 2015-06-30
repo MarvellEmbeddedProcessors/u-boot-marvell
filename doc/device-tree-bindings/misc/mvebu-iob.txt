@@ -14,9 +14,11 @@ The IOB node requires the following properties:
 	- reg: the base address of the IOB unit
 	- max-win: number of the max mbus windows
 	- windows: entry that include the configuration of the windows
-	  every window should have 3 parameters:
-	  - base address of the window
-	  - size of the window
+	  every window should have 5 parameters:
+	  - high base address of the window
+	  - low base address of the window
+	  - high size of the window
+	  - low size of the window
 	  - target-id of the window
 
 Target ID options:
@@ -29,12 +31,23 @@ Target ID options:
 	- 0x6 = RUNIT (NOR/SPI/BootRoom)
 	- 0x7 = IHB1
 
+Note: if the base address is more than 32bit, it divided into high and low,
+	same for size field, if it more that 32bit, it divided for high and low.
+	Base example:
+		base address: 0x10f0000000 should divided into:
+		base address high: 0x10
+		base address low: 0xf0000000
+	Size example:
+		size: 0x1E00F00000 should divided into:
+		size high: 0x1E
+		size low: 0x00F00000
+
 Example:
 	map-iob {
 		compatible = "marvell,mvebu-iob";
 		reg = <0x190000 0x50>;
 		max-win = <24>;
-		windows = <0xf8000000 0x1000000 0x2 /* PEX1_X1 window */
-				0xf9000000 0x1000000 0x5 /* NAND window */>;
+		windows = <0x0 0xf8000000 0x0 0x1000000 0x2 /* PEX1_X1 window */
+			0x0 0xf9000000 0x0 0x1000000 0x5 /* NAND window */>;
 	};
 

@@ -61,8 +61,10 @@ struct iob_configuration __attribute__((section(".data")))iob_config;
 struct iob_configuration __attribute__((section(".data")))*iob_info = &iob_config;
 
 struct iob_win {
-	u32 base_addr;
-	u32 win_size;
+	u32 base_addr_high;
+	u32 base_addr_low;
+	u32 win_size_high;
+	u32 win_size_low;
 	u32 target_id;
 };
 
@@ -80,18 +82,25 @@ enum target_ids_iob {
 
 static void iob_win_check(struct iob_win *win, u32 win_num)
 {
+	u64 base_addr, win_size;
 	/* check if address is aligned to the size */
-	if (IS_NOT_ALIGN(win->base_addr, IOB_WIN_ALIGNMENT)) {
-		win->base_addr = ALIGN_UP(win->base_addr, IOB_WIN_ALIGNMENT);
+	base_addr = ((u64)win->base_addr_high << 32) + win->base_addr_low;
+	if (IS_NOT_ALIGN(base_addr, IOB_WIN_ALIGNMENT)) {
+		base_addr = ALIGN_UP(base_addr, IOB_WIN_ALIGNMENT);
 		error("Window %d: base address unaligned to 0x%x\n", win_num, IOB_WIN_ALIGNMENT);
-		printf("Align up the base address to 0x%x\n", win->base_addr);
+		printf("Align up the base address to 0x%llx\n", base_addr);
+		win->base_addr_high = (u32)(base_addr >> 32);
+		win->base_addr_low = (u32)(base_addr);
 	}
 
 	/* size parameter validity check */
-	if (IS_NOT_ALIGN(win->win_size, IOB_WIN_ALIGNMENT)) {
-		win->win_size = ALIGN_UP(win->win_size, IOB_WIN_ALIGNMENT);
+	win_size = ((u64)win->win_size_high << 32) + win->win_size_low;
+	if (IS_NOT_ALIGN(win_size, IOB_WIN_ALIGNMENT)) {
+		win_size = ALIGN_UP(win_size, IOB_WIN_ALIGNMENT);
 		error("Window %d: window size unaligned to 0x%x\n", win_num, IOB_WIN_ALIGNMENT);
-		printf("Aligning size to 0x%x\n", win->win_size);
+		printf("Aligning size to 0x%llx\n", win_size);
+		win->win_size_high = (u32)(win_size >> 32);
+		win->win_size_low = (u32)(win_size);
 	}
 }
 
@@ -99,14 +108,15 @@ static void iob_enable_win(struct iob_win *win, u32 win_id)
 {
 	u32 iob_win_reg;
 	u32 alr, ahr;
-	uintptr_t end_addr;
+	u64 start_addr, end_addr;
 
 	iob_win_reg = WIN_ENABLE_BIT;
 	iob_win_reg |= (win->target_id & IOB_TARGET_ID_MASK) << IOB_TARGET_ID_OFFSET;
 	writel(iob_win_reg, IOB_WIN_CR_OFFSET(win_id));
 
-	end_addr = (win->base_addr + win->win_size - 1);
-	alr = (u32)((win->base_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
+	start_addr = ((u64)win->base_addr_high << 32) + win->base_addr_low;
+	end_addr = (start_addr + (((u64)win->win_size_high << 32) + win->win_size_low) - 1);
+	alr = (u32)((start_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
 	ahr = (u32)((end_addr >> ADDRESS_SHIFT) & ADDRESS_MASK);
 
 	writel(alr, IOB_WIN_ALR_OFFSET(win_id));
@@ -117,7 +127,7 @@ void dump_iob(void)
 {
 	u32 win_id, win_cr, alr, ahr;
 	u8 target_id;
-	uintptr_t start, end;
+	u64 start, end;
 	char *iob_target_name[IOB_MAX_TID] = {"IHB0 ", "PEX1 ", "PEX2 ", "PEX0 ",
 						"NAND ", "RUNIT", "IHB1 "};
 
@@ -130,9 +140,9 @@ void dump_iob(void)
 			target_id = (win_cr >> IOB_TARGET_ID_OFFSET) & IOB_TARGET_ID_MASK;
 			alr = readl(IOB_WIN_ALR_OFFSET(win_id));
 			ahr = readl(IOB_WIN_AHR_OFFSET(win_id));
-			start = (uintptr_t)(alr << ADDRESS_SHIFT);
-			end = (uintptr_t)((ahr + 0x10) << ADDRESS_SHIFT);
-			printf("iob   %02d %s   0x%016lx 0x%016lx\n"
+			start = ((u64)alr << ADDRESS_SHIFT);
+			end = (((u64)ahr + 0x10) << ADDRESS_SHIFT);
+			printf("iob   %02d %s   0x%016llx 0x%016llx\n"
 					, win_id, iob_target_name[target_id], start, end);
 		}
 	}
@@ -173,12 +183,13 @@ int init_iob(void)
 	}
 
 	/* Get the array of the windows and fill the map data */
-	win_count = fdtdec_get_int_array_count(blob, node, "windows", (u32 *)memory_map, iob_info->max_win * 3);
+	win_count = fdtdec_get_int_array_count(blob, node, "windows", (u32 *)memory_map, iob_info->max_win * 5);
 	if (win_count <= 0) {
 		debug("no windows configurations found\n");
 		return 0;
 	}
-	win_count = win_count/3; /* every window had 3 variables in FDT (base, size, target id) */
+	win_count = win_count/5; /* every window had 5 variables in FDT:
+				    base high, base low, size high, size low, target id) */
 
 	/* disable all IOB windows, start from win_id = 1 because can't disable internal register window */
 	for (win_id = 1; win_id < iob_info->max_win; win_id++) {

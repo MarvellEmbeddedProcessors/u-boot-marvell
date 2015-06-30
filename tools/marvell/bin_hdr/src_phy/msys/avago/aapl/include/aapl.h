@@ -35,21 +35,21 @@
 /*#define MV_HWS_REDUCED_BUILD_EXT_CM3*/
 
 #ifdef MV_HWS_REDUCED_BUILD
-#define aapl_log_printf(aapl, type, function, line, msg, arg, ...)
-#define aapl_fail(aapl, function, line, msg, arg, ...) aapl_fail_reduce(aapl)
-#define aapl_check_ip_type(aapl, addr, function, line, error, args, arg, ...) aapl_check_ip_type_reduce(aapl, addr, error, args, arg)
+#define aapl_log_printf(aapl, type, function, line, msg, arg...)
+#define aapl_fail(aapl, function, line, msg, arg...) aapl_fail_reduce(aapl)
+#define aapl_check_ip_type(aapl, addr, function, line, error, args, arg...) aapl_check_ip_type_reduce(aapl, addr, error, args, arg)
 #define aapl_check_broadcast_address(aapl, addr, function, line, error_on_match) aapl_check_broadcast_address_reduce(aapl, addr, error_on_match)
 #define avago_spico_int_check(aapl, function, line, addr, int_num, param) avago_spico_int_check_reduce(aapl, addr, int_num, param)
-#define aapl_check_firmware_rev(aapl, addr, function, line, error, args, arg, ...) aapl_check_firmware_rev_reduce(aapl, addr,  error, args, arg)
-#define  aapl_check_process(aapl, addr, function, line, error, args, arg, ...)  (TRUE)
+#define aapl_check_firmware_rev(aapl, addr, function, line, error, args, arg...) aapl_check_firmware_rev_reduce(aapl, addr,  error, args, arg)
+#define  aapl_check_process(aapl, addr, function, line, error, args, arg...)  (TRUE)
 #else
-#define aapl_log_printf(aapl, type, function, line, msg, arg, ...) aapl_log_printf_full(aapl, type, function, line, msg, arg)
-#define aapl_fail(aapl, function, line, msg, arg, ...) aapl_fail_full(aapl, function, line, msg, arg)
-#define aapl_check_ip_type(aapl, addr, function, line, error, args, arg, ...) aapl_check_ip_type_full(aapl, addr, function, line, error, args, arg)
+#define aapl_log_printf(aapl, type, function, line, msg, arg...) aapl_log_printf_full(aapl, type, function, line, msg, arg)
+#define aapl_fail(aapl, function, line, msg, arg...) aapl_fail_full(aapl, function, line, msg, arg)
+#define aapl_check_ip_type(aapl, addr, function, line, error, args, arg...) aapl_check_ip_type_full(aapl, addr, function, line, error, args, arg)
 #define aapl_check_broadcast_address(aapl, addr, function, line, error_on_match) aapl_check_broadcast_address_full(aapl, addr, function, line, error_on_match)
 #define avago_spico_int_check(aapl, function, line, addr, int_num, param) avago_spico_int_check_full(aapl, function, line, addr, int_num, param)
-#define aapl_check_firmware_rev(aapl, addr, function, line, error, args, arg, ...) aapl_check_firmware_rev_full(aapl, addr, function, line, error, args, arg)
-#define  aapl_check_process(aapl, addr, function, line, error, args, arg, ...)  aapl_check_process_full(aapl, addr, function, line, error, args, arg)
+#define aapl_check_firmware_rev(aapl, addr, function, line, error, args, arg...) aapl_check_firmware_rev_full(aapl, addr, function, line, error, args, arg)
+#define  aapl_check_process(aapl, addr, function, line, error, args, arg...)  aapl_check_process_full(aapl, addr, function, line, error, args, arg)
 #endif  /* MV_HWS_REDUCED_BUILD */
 
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3

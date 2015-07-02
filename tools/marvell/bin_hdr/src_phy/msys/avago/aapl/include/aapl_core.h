@@ -155,15 +155,13 @@ typedef struct
     int serdes_int_timeout;                   /**< 28nm SerDes SPICO interrupt maximum number of tries */
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     int sbus_mdio_timeout;                    /**< sbus-over-mdio SBUS_RESULT polling maximum number of tries */
-
     Aapl_comm_method_t communication_method;  /**< Method for communicating with Avago devices. */
-
     uint enable_serdes_core_port_interrupt;   /**< When == 0: Sends SerDes interrupts via the SBus */
                                               /**< When == 1: calls the user_supplied_serdes_interrupt_function() for SerDes interrupts. */
                                               /**<            (must have AAPL_ENABLE_USER_SERDES_INT defined) */
                                               /**< When == 2: uses the Avago LE block (only available on some Avago test chips) to send SerDes */
                                               /**<            interrupts to the SerDes' core interrupt interface */
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3*/
 
     uint chips;                               /**< number of die this struct points to */
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
@@ -177,7 +175,7 @@ typedef struct
     int cmds_buffered;                        /**< number of commands in buf_cmd (which are bufferred AACS commands) */
 
     uint capabilities;                        /**< Bitmask of the remote AACS Server's capabilities */
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3*/
 
 # ifndef SWIG
 
@@ -225,9 +223,9 @@ typedef struct
 #endif /* MV_HWS_REDUCED_BUILD */
 } Aapl_t;
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /* Create a pointer to a new AAPL struct */
 EXT Aapl_t *aapl_construct(void);
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 EXT void    aapl_destruct(Aapl_t *aapl);
 EXT int aapl_get_async_cancel_flag(Aapl_t *aapl);
 EXT int aapl_set_async_cancel_flag(Aapl_t *aapl, int new_value);
@@ -362,7 +360,7 @@ EXT uint avago_addr_init_broadcast(Avago_addr_t *addr_struct);
 EXT BOOL avago_addr_to_struct(uint addr, Avago_addr_t *addr_struct);
 EXT uint avago_struct_to_addr(Avago_addr_t *addr);
 EXT uint avago_make_addr3(int chip, int ring, int sbus);
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 EXT uint avago_make_sbus_master_addr(uint addr);
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 EXT uint avago_make_sbus_controller_addr(uint addr);

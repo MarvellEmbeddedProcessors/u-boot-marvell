@@ -32,6 +32,10 @@
 
 #define AAPL_3D_ARRAY_ADDR(addr) (addr).chip][(addr).ring][(addr).sbus
 
+#ifdef MV_HWS_BIN_HEADER
+Aapl_t aapl_struct_bh;
+#endif
+
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /* Global default values: */
 const char *aapl_default_server = "localhost";
@@ -205,7 +209,6 @@ void aapl_close_connection(
     AAPL_SUPPRESS_ERRORS_POP(aapl);
     aapl_close_connection2(aapl);
 }
-
 /** @brief Checks the socket status of aapl->socket */
 /** */
 /** @return 0 if the socket is still connected, -1 if it is closed */
@@ -269,14 +272,11 @@ Aapl_t *aapl_construct()
     aapl->data_char_end  = aapl->data_char;
     aapl->data_char_size = AAPL_LOG_BUF_SIZE;
     *aapl->data_char     = '\0';
-
     aapl->debug = 0;
-
     aapl->enable_debug_logging      = AAPL_DEFAULT_ENABLE_DEBUG_LOGGING;
     aapl->enable_stream_logging     = AAPL_DEFAULT_ENABLE_STREAM_LOGGING;
     aapl->enable_stream_err_logging = AAPL_DEFAULT_ENABLE_STREAM_ERR_LOGGING;
     aapl->enable_serdes_core_port_interrupt = AAPL_DEFAULT_SERDES_CORE_PORT_INT;
-
     aapl->chips                 = AAPL_NUMBER_OF_CHIPS_OVERRIDE;
     aapl->sbus_rings            = AAPL_NUMBER_OF_RINGS_OVERRIDE;
 
@@ -310,7 +310,19 @@ void aapl_destruct(
     if (aapl->aacs_server_buffer)   AAPL_FREE(aapl->aacs_server_buffer);
     AAPL_FREE(aapl);
 }
+#elif defined MV_HWS_BIN_HEADER
+Aapl_t *aapl_construct()
+{
+    Aapl_t* aapl = &aapl_struct_bh;
+    memset(aapl, 0, sizeof(Aapl_t));
+
+    aapl->chips                 = AAPL_NUMBER_OF_CHIPS_OVERRIDE;
+    aapl->serdes_int_timeout    = AAPL_SERDES_INT_TIMEOUT;
+
+    return aapl;
+}
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+
 /*============================================================================= */
 /* AAPL GET RETURN CODE */
 /** */

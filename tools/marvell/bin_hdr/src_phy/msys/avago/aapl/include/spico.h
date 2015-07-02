@@ -58,7 +58,7 @@ EXT int  avago_spico_reset(  Aapl_t *aapl, uint sbus_addr);
 /* uploads SPICO machine code. Returns number of words uploaded */
 #ifndef SWIG
 /* disabling this routine from SWIG access to avoid supporting an unbounded array argument */
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 EXT int avago_spico_upload_swap_image(Aapl_t *aapl, uint sbus_addr, int words, const short rom[]);
 EXT int avago_spico_upload(Aapl_t *aapl, uint sbus_addr, BOOL ram_bist, int words, const short rom[]);
 EXT int avago_firmware_upload(Aapl_t *aapl, uint addr,
@@ -115,7 +115,7 @@ EXT int  avago_spico_int_array(Aapl_t *aapl, uint sbus_addr, int num_elements, A
 EXT uint avago_firmware_get_rev(     Aapl_t *aapl, uint sbus_addr);
 EXT uint avago_firmware_get_build_id(Aapl_t *aapl, uint sbus_addr);
 EXT uint avago_spico_crc(            Aapl_t *aapl, uint sbus_addr);
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 /* TBD write code for sram_reset */
 EXT int avago_spico_ram_bist( Aapl_t *aapl, uint sbus_addr);
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */

@@ -31,6 +31,13 @@
 #ifndef AVAGO_SYSTEM_INCLUDES_H_
 #define AVAGO_SYSTEM_INCLUDES_H_
 
+
+#ifdef MV_HWS_BIN_HEADER
+#include "util.h"
+#include "mv_os.h"
+#endif
+
+
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #ifdef HAVE_CONFIG_H
 #   include <config.h>

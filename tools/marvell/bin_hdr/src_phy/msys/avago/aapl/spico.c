@@ -518,7 +518,7 @@ uint avago_spico_int(
     return 0;
 }
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 #ifndef MV_HWS_REDUCED_BUILD
 /* Executes the given SPICO interrupt on the supplied SBus addresses */
 /* For example: avago_spico_broadcast_int(aapl, 0x05, 2, 0x08, 0xaa); */
@@ -902,7 +902,7 @@ int avago_spico_upload(
     return return_code == aapl->return_code ? 0 : -1;
 }
 
-
+#ifndef MV_HWS_BIN_HEADER
 /** @brief   Resets and uploads all the Avago firmware for the device. */
 /** @details Makes the device ready for additional configuration by performing */
 /**          soft resets and sequencing the uploads for correct operation. */
@@ -953,7 +953,7 @@ int avago_firmware_upload(
 
     return return_code == aapl->return_code ? 0 : -1;
 }
-
+#endif
 /** @brief   Runs RAM BIST on given SBus address. */
 /** @details Works for broadcast and individual addresses. */
 /** @return  On success, returns 0. */
@@ -1195,7 +1195,7 @@ int avago_spico_reset(
 
 #if AAPL_ENABLE_FILE_IO
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 /** @brief   Load a valid Avago-supplied ROM image into memory. */
 /** @details Caller should call aapl_free(aapl, rom_ptr, __func__) */
 /**          when finished with the ROM image. */

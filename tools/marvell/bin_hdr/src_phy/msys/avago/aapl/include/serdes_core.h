@@ -253,7 +253,7 @@ typedef struct
     BOOL rx_inversion;  /**< Enable RX polarity inversion if ELB selected */
 } Avago_serdes_init_config_t;
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 EXT Avago_serdes_init_config_t *avago_serdes_init_config_construct(Aapl_t *aapl);
 EXT void avago_serdes_init_config_destruct(Aapl_t *aapl, Avago_serdes_init_config_t *config);
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */

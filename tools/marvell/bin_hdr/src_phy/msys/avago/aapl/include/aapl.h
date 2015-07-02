@@ -92,7 +92,7 @@
 #define AAPL_ALLOW_SYSTEM_MDIO         0  /**< Set to 0 to remove the AVAGO_SYSTEM_MDIO communication method (not implemented). */
 #define AAPL_ALLOW_USER_SUPPLIED_I2C   1  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_I2C communication method. */
 #define AAPL_ALLOW_USER_SUPPLIED_MDIO  0  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_MDIO communication method. */
-#define AAPL_ALLOW_USER_SUPPLIED_SBUS  1  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_SBUS_DIRECT communication method. */
+#define AAPL_ALLOW_USER_SUPPLIED_SBUS  0  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_SBUS_DIRECT communication method. */
 #define AAPL_ENABLE_USER_SERDES_INT    0  /**< Set to 0 to remove support for using the user_supplied_serdes_interrupt_function() for SerDes interrupts */
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
@@ -149,7 +149,7 @@ typedef enum
 /** Normally, this is set to the address of the first Avago device. */
 #define AAPL_DEFAULT_MDIO_BASE_PORT_ADDR    0
 
-
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 /* AAPL_PROCESS_ID_OVERRIDE allows the user to override the process ID. */
 /* If AAPL is not using AACS to communicate with the device, you should */
 /* specify this here, otherwise AAPL will assume the process type */
@@ -178,7 +178,6 @@ typedef enum
 
 #define AAPL_NUMBER_OF_RINGS_OVERRIDE 0
 
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 /* The AAPL_CHIP_ID_HEX_OVERRIDEn defines JTAG IDCODES for devices AAPL will be */
 /* communicating with. If AAPL is using an AVAGO_AACS_* communication method */
 /* these IDCODES will be auto-discovered. */
@@ -219,10 +218,9 @@ typedef enum
 /** Setting this to 0 disables command buffering. */
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 #define AAPL_MAX_CMDS_BUFFERED      1000
-
-#define AAPL_SERDES_INT_TIMEOUT        500  /**< Maximum number of SBus reads to check for completion of SPICO interrupt command */
 #define AAPL_SBUS_MDIO_TIMEOUT         100  /**< Maximum number of reads of the SBUS_RESULT register in sbus-over-mdio mode */
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+#define AAPL_SERDES_INT_TIMEOUT        500  /**< Maximum number of SBus reads to check for completion of SPICO interrupt command */
 #define AAPL_SERDES_INIT_RDY_TIMEOUT    20  /**< Maximum milliseconds for pll calibration */
 #define AAPL_SPICO_UPLOAD_WAIT_TIMEOUT 500  /**< Maximum milliseconds to wait for AAPL to wait for external SPICO upload to complete */
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3

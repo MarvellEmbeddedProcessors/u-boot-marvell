@@ -30,7 +30,9 @@
 #define AAPL_LOG_PRINT5 aapl_log_printf
 #define AAPL_LOG_PRINT6 aapl_log_printf
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
-
+#ifdef MV_HWS_BIN_HEADER
+Avago_serdes_init_config_t avagoSerdesInitStruct;
+#endif
 /** @defgroup SerDes Generic SerDes API */
 /** @{ */
 
@@ -1306,7 +1308,7 @@ BOOL avago_serdes_slip_tx_phase(
 }
 #endif /* MV_HWS_REDUCED_BUILD */
 
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 /** @brief   Allocates and initializes a Avago_serdes_init_config_t struct. */
 /** @details The return value should be released using */
 /**          avago_serdes_init_config_destruct() after use. */
@@ -1316,11 +1318,14 @@ BOOL avago_serdes_slip_tx_phase(
 Avago_serdes_init_config_t *avago_serdes_init_config_construct(
     Aapl_t *aapl)       /**< [in] Pointer to Aapl_t structure. */
 {
-    size_t bytes = sizeof(Avago_serdes_init_config_t);
     Avago_serdes_init_config_t *config;
-
+#ifdef MV_HWS_BIN_HEADER
+    config = &avagoSerdesInitStruct;
+#else
+    size_t bytes = sizeof(Avago_serdes_init_config_t);
     if( ! (config = (Avago_serdes_init_config_t *) aapl_malloc(aapl, bytes, "Avago_serdes_init_config_t struct")) )
         return NULL;
+#endif
     memset(config, 0, sizeof(*config));
 
     config->sbus_reset   = TRUE;
@@ -1350,7 +1355,9 @@ void avago_serdes_init_config_destruct(
     Aapl_t *aapl,                       /**< [in] Pointer to Aapl_t structure. */
     Avago_serdes_init_config_t *config) /**< [in] Pointer to struct to release. */
 {
+#ifndef MV_HWS_BIN_HEADER
     aapl_free(aapl, config, "Avago_serdes_init_config_t struct");
+#endif
 }
 
 /** @brief   Initializes a SerDes device to the given divider. */

@@ -25,7 +25,6 @@
 
 #define AAPL_ENABLE_INTERNAL_FUNCTIONS
 #include "aapl.h"
-
 /** @defgroup Address IP Addressing Functions */
 /** @{ */
 
@@ -97,7 +96,7 @@ uint avago_addr_init_broadcast(Avago_addr_t *addr_struct)
     return avago_struct_to_addr(addr_struct);
 }
 #endif /* MV_HWS_REDUCED_BUILD */
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 /** @brief  Returns the SBus Master address for the addressed chip and ring. */
 /** @return The SBus Master address corresponding to given input address. */
 uint avago_make_sbus_master_addr(
@@ -192,7 +191,9 @@ BOOL aapl_broadcast_next(
 void ms_sleep(
     uint ms_delay)  /**< [in] The number of milliseconds to wait before returning. */
 {
-#ifdef MS_SLEEP
+#ifdef MV_HWS_BIN_HEADER
+    mvOsDelay(ms_delay);
+#elif MS_SLEEP
 
     MS_SLEEP(ms_delay);
 

@@ -10,8 +10,8 @@ const char *serdesSwapFileName = NULL;
 #include "serdes.0x104A_0045.h"
 #include "sbus_master.0x100F_8001.h"
 
-const int *sbusMasterFwPtr = sbusMaster01x100F_8001Data;
-const int *serdesFwPtr = serdes0x104A_0045Data;
+const short *sbusMasterFwPtr = sbusMaster01x100F_8001Data;
+const short *serdesFwPtr = serdes0x104A_0045Data;
 
 #ifdef AVAGO_FW_SWAP_IMAGE_EXIST
 GT_U32 *serdesFwDataSwapPtr;

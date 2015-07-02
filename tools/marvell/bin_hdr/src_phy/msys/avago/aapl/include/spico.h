@@ -59,12 +59,12 @@ EXT int  avago_spico_reset(  Aapl_t *aapl, uint sbus_addr);
 #ifndef SWIG
 /* disabling this routine from SWIG access to avoid supporting an unbounded array argument */
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
-EXT int avago_spico_upload_swap_image(Aapl_t *aapl, uint sbus_addr, int words, const int rom[]);
-EXT int avago_spico_upload(Aapl_t *aapl, uint sbus_addr, BOOL ram_bist, int words, const int rom[]);
+EXT int avago_spico_upload_swap_image(Aapl_t *aapl, uint sbus_addr, int words, const short rom[]);
+EXT int avago_spico_upload(Aapl_t *aapl, uint sbus_addr, BOOL ram_bist, int words, const short rom[]);
 EXT int avago_firmware_upload(Aapl_t *aapl, uint addr,
-                              int serdes_rom_size, const int *serdes_rom,
-                              int sbm_rom_size,    const int *sbm_rom,
-                              int sdi_rom_size,    const int *sdi_rom);
+                              int serdes_rom_size, const short *serdes_rom,
+                              int sbm_rom_size,    const short *sbm_rom,
+                              int sdi_rom_size,    const short *sdi_rom);
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 #endif
@@ -73,7 +73,7 @@ EXT void avago_spico_wait_for_upload(Aapl_t *aapl, uint sbus_addr);
 EXT void avago_twi_wait_for_complete(Aapl_t *aapl, uint sbus_addr);
 
 #if AAPL_ENABLE_FILE_IO
-EXT int avago_load_rom_from_file(Aapl_t *aapl, const char *filename, int *rom_size, int **rom);
+EXT int avago_load_rom_from_file(Aapl_t *aapl, const char *filename, int *rom_size, short **rom);
 EXT int avago_firmware_upload_file(Aapl_t *aapl, uint addr,
                               const char *serdes_rom_file,
                               const char *sbm_rom_file,
@@ -131,7 +131,7 @@ EXT int avago_spico_ram_bist( Aapl_t *aapl, uint sbus_addr);
 
 # ifdef AAPL_ENABLE_INTERNAL_FUNCTIONS
     EXT void aapl_crc_one_byte(int *crc_ptr, int value);
-    EXT int aapl_crc_rom(int *memory, int length);
+    EXT int aapl_crc_rom(short *memory, int length);
 
     EXT int avago_spico_halt(Aapl_t *aapl, uint addr);
     EXT int avago_spico_resume(Aapl_t *aapl, uint addr, int spico_run_state);

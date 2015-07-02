@@ -614,12 +614,19 @@ static void mdio_burst_upload(Aapl_t *aapl, Avago_addr_t addr_struct, int words,
     else                          avago_mdio_wr(aapl, addr_struct.chip, AVSP_DEVAD, 32780, 0x0000);
 }
 #endif /*  MV_HWS_REDUCED_BUILD */
-static void spico_burst_upload(Aapl_t *aapl, uint sbus, uint reg, uint rom_size, const int *rom)
+static void spico_burst_upload(Aapl_t *aapl, uint sbus, uint reg, uint rom_size, const short *rom)
 {
     uint word;
+    int data_to_write[3];
     aapl_log_printf(aapl,AVAGO_DEBUG7,__func__,__LINE__,"sbus=0x%02x, reg=0x%x, rom_size=%u\n",sbus,reg,rom_size);
     for( word=0; word < rom_size-2; word += 3 )
-        avago_sbus_wr(aapl, sbus, reg, 0xc0000000 | rom[word] | (rom[word+1] << 10) | (rom[word+2] << 20));
+    {
+        data_to_write[0] = rom[word];
+        data_to_write[1] = rom[word + 1];
+        data_to_write[2] = rom[word + 2];
+
+        avago_sbus_wr(aapl, sbus, reg, 0xc0000000 |data_to_write[0] | (data_to_write[1] << 10) | (data_to_write[2] << 20));
+    }
     if( rom_size - word == 2 )
         avago_sbus_wr(aapl, sbus, reg, 0x80000000 | rom[word] | (rom[word+1] << 10));
     else if( rom_size - word == 1 )
@@ -628,9 +635,10 @@ static void spico_burst_upload(Aapl_t *aapl, uint sbus, uint reg, uint rom_size,
 /** @brief   Internal function that uploads the ROM blindly to the sbus_addr. */
 /** @return  On success, returns 0. */
 /** @return  On error, decrements aapl->return_code and returns -1. */
-static int spico_upload_image(Aapl_t *aapl, uint sbus_addr, int words, const int rom[])
+static int spico_upload_image(Aapl_t *aapl, uint sbus_addr, int words, const short rom[])
 {
     int return_code = aapl->return_code;
+    int data_to_write;
     if (aapl_check_process(aapl, sbus_addr, __func__, __LINE__, FALSE, 2, AVAGO_PROCESS_B, AVAGO_PROCESS_F))
     {
         Avago_addr_t addr_struct;
@@ -651,7 +659,10 @@ static int spico_upload_image(Aapl_t *aapl, uint sbus_addr, int words, const int
                 {
                     int word;
                     for (word=0; word < words; word++)
-                        avago_sbus_wr(aapl, sbus_addr, 0x00, 0xc0000000 | (rom[word] << 16) | word);
+                    {
+                        data_to_write = rom[word];
+                        avago_sbus_wr(aapl, sbus_addr, 0x00, 0xc0000000 | (data_to_write << 16) | word);
+                    }
                 }
                 else
                     spico_burst_upload(aapl, sbus_addr, 0x0a, words, rom);
@@ -727,7 +738,7 @@ int avago_spico_upload_swap_image(
     Aapl_t *aapl,       /**< [in] Pointer to AAPL structure */
     uint sbus_addr_in,  /**< [in] SBus address of SerDes */
     int words,          /**< [in] Number of elements in rom */
-    const int *rom)     /**< [in] Swap image to upload */
+    const short *rom)     /**< [in] Swap image to upload */
 {
     int crc = 0;
     BOOL st;
@@ -808,7 +819,7 @@ void aapl_crc_one_byte(int *crc_ptr, int value)
     *crc_ptr = crc;
 }
 
-int aapl_crc_rom(int *memory, int length)
+int aapl_crc_rom(short *memory, int length)
 {
     int i, crc = 0;
     for (i = 0; i < length; i++)
@@ -828,7 +839,7 @@ int avago_spico_upload(
     uint sbus_addr_in,  /**< Sbus address */
     BOOL ram_bist,      /**< If TRUE, perform spico_ram_bist prior to upload */
     int words,          /**< Length of ROM image */
-    const int *rom)     /**< Avago-supplied ROM image */
+    const short *rom)     /**< Avago-supplied ROM image */
 {
     int return_code = aapl->return_code;
     BOOL st;
@@ -911,14 +922,14 @@ int avago_spico_upload(
 /** @return  On error, decrements aapl->return_code and returns -1. */
 /** @see     avago_firmware_upload_file(). */
 int avago_firmware_upload(
-    Aapl_t    *aapl,            /**< Pointer to Aapl_t structure. */
-    uint       addr,            /**< SerDes/chip/ring addresses targeted. */
-    int        serdes_rom_size, /**< Size of SerDes ROM image. */
-    const int *serdes_rom,      /**< Pointer to SerDes ROM image. */
-    int        sbm_rom_size,    /**< Size of SBM ROM image. */
-    const int *sbm_rom,         /**< Pointer to SBM ROM image. */
-    int        sdi_rom_size,    /**< Size of sdi (swap) ROM image. */
-    const int *sdi_rom)         /**< Pointer to sdi (swap) ROM image. */
+    Aapl_t      *aapl,            /**< Pointer to Aapl_t structure. */
+    uint        addr,            /**< SerDes/chip/ring addresses targeted. */
+    int         serdes_rom_size, /**< Size of SerDes ROM image. */
+    const short *serdes_rom,      /**< Pointer to SerDes ROM image. */
+    int         sbm_rom_size,    /**< Size of SBM ROM image. */
+    const short *sbm_rom,         /**< Pointer to SBM ROM image. */
+    int         sdi_rom_size,    /**< Size of sdi (swap) ROM image. */
+    const short *sdi_rom)         /**< Pointer to sdi (swap) ROM image. */
 {
     int return_code = aapl->return_code;
     uint sbm_addr = avago_make_sbus_master_addr(addr);
@@ -1195,9 +1206,10 @@ int avago_load_rom_from_file(
     Aapl_t *aapl,           /**< Pointer to Aapl_t structure */
     const char *filename,   /**< Full path to a valid Avago-supplied ROM image */
     int *rom_size,          /**< [out] Address to receive length of image */
-    int **rom_ptr)          /**< [out] Address to receive ROM image */
+    short **rom_ptr)          /**< [out] Address to receive ROM image */
 {
-    int *rom, addr = 0;
+    short *rom;
+    int addr = 0;
     FILE *file = fopen(filename, "r");
     char mem_buffer[6];
 
@@ -1214,7 +1226,7 @@ int avago_load_rom_from_file(
         return aapl_fail(aapl, __func__, __LINE__, "## ERROR: invalid file: %s\n",filename);
     }
 
-    rom = (int*) aapl_malloc(aapl, sizeof(int) * (*rom_size + 2), filename);
+    rom = aapl_malloc(aapl, sizeof(int) * (*rom_size + 2), filename);
     if( !rom )
     {
         fclose(file);
@@ -1224,7 +1236,7 @@ int avago_load_rom_from_file(
     while( fgets(mem_buffer, 6, file) )
     {
         char *ptr;
-        rom[addr] = strtol(mem_buffer, &ptr, 16);
+        rom[addr] = (short)strtol(mem_buffer, &ptr, 16);
         if( ptr != mem_buffer+3 && (ptr != mem_buffer+4 || mem_buffer[3] != '\r') )
         {
             fclose(file);
@@ -1281,7 +1293,8 @@ int avago_spico_upload_file(
     const char *filename)   /**< Full path to a valid Avago-supplied ROM image */
 {
     int return_code = aapl->return_code;
-    int rom_size = -1, *rom;
+    int rom_size = -1;
+    short *rom;
 
     if( avago_load_rom_from_file(aapl, filename, &rom_size, &rom) == 0 )
     {
@@ -1291,7 +1304,8 @@ int avago_spico_upload_file(
             char *swap_file = avago_find_swap_file(aapl, filename);
             if( swap_file )
             {
-                int swap_size, *swap;
+                int swap_size;
+                short *swap;
                 if( avago_load_rom_from_file(aapl, swap_file, &swap_size, &swap) == 0 )
                 {
                     aapl_log_printf(aapl, AVAGO_DEBUG5, __func__, __LINE__, "Uploading swap image: %s\n", swap_file);
@@ -1309,10 +1323,10 @@ int avago_spico_upload_file(
 
 /** @brief   Verifies the CRC on a single ROM image. */
 /** @return  TRUE if the CRC is valid, FALSE if not valid. */
-static BOOL aapl_verify_rom_crc(int rom_size, int *rom)
+static BOOL aapl_verify_rom_crc(int rom_size, short *rom)
 {
     int crc = aapl_crc_rom(rom,rom_size-4);
-    int *ptr = rom + rom_size - 5;
+    short *ptr = rom + rom_size - 5;
     return  ptr[0] == 0x4e
          && ptr[1] == ((crc >>  0) & 0xff)
          && ptr[2] == ((crc >>  8) & 0xff)
@@ -1320,7 +1334,7 @@ static BOOL aapl_verify_rom_crc(int rom_size, int *rom)
          && ptr[4] == ((crc >> 24) & 0xff);
 }
 
-static BOOL aapl_sbm_rom_has_sdi(int sbm_rom_size, int *sbm_rom)
+static BOOL aapl_sbm_rom_has_sdi(int sbm_rom_size, short *sbm_rom)
 {
     return !aapl_verify_rom_crc(sbm_rom_size, sbm_rom);
 }
@@ -1331,9 +1345,9 @@ static BOOL aapl_sbm_rom_has_sdi(int sbm_rom_size, int *sbm_rom)
 /** @return -1 and decrement aapl->return_code if conflicting swap images or tables were given. */
 static int merge_sdi_files(
     Aapl_t *aapl,
-    int *sbm_rom_size, int **sbm_rom,
-    int *sdi_rom_size, int **sdi_rom,
-    int *swap_rom_size, int **swap_rom)
+    int *sbm_rom_size, short **sbm_rom,
+    int *sdi_rom_size, short **sdi_rom,
+    int *swap_rom_size, short **swap_rom)
 {
 
     if( (*sdi_rom_size > 0 || *swap_rom_size > 0) && aapl_sbm_rom_has_sdi(*sbm_rom_size, *sbm_rom) )
@@ -1408,15 +1422,19 @@ int avago_firmware_upload_file(
     const char *sbm_rom_file,       /**< Path name of SBus Master .rom file. */
     const char *sdi_rom_file)       /**< Path name of SDI file, or NULL. */
 {
-    int status = -1, serdes_rom_size, *serdes_rom;
+    int status = -1, serdes_rom_size;
+    short *serdes_rom;
     if( 0 == avago_load_rom_from_file(aapl, serdes_rom_file, &serdes_rom_size, &serdes_rom) )
     {
-        int sbm_rom_size, *sbm_rom;
+        int sbm_rom_size;
+        short *sbm_rom;
         if( 0 == avago_load_rom_from_file(aapl, sbm_rom_file, &sbm_rom_size, &sbm_rom) )
         {
             char *swap_file = avago_find_swap_file(aapl, serdes_rom_file);
-            int swap_rom_size = 0, *swap_rom = 0;
-            int sdi_rom_size = 0, *sdi_rom = 0;
+            int swap_rom_size = 0;
+            int sdi_rom_size = 0;
+            short *swap_rom = 0;
+            short *sdi_rom = 0;
 
             if( (!sdi_rom_file || 0 == avago_load_rom_from_file(aapl, sdi_rom_file, &sdi_rom_size, &sdi_rom))
                 && (!swap_file || 0 == avago_load_rom_from_file(aapl, swap_file, &swap_rom_size, &swap_rom)) )

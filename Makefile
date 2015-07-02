@@ -839,12 +839,15 @@ u-boot.ldr.hex u-boot.ldr.srec: u-boot.ldr FORCE
 
 ifdef CONFIG_MVEBU
 SPLIMAGE	:= $(srctree)/spl/u-boot-spl.bin
-ifneq ($(CONFIG_TARGET_ARMADA_8K), $(CONFIG_TARGET_ARMADA_LP))
+
+ifeq ($(CONFIG_TARGET_ARMADA_8K), y)
+
 DOIMAGE		:=  $(srctree)/tools/doimage
 BIN2PHEX	:= $(srctree)/scripts/bin2phex.pl
 DOIMAGE_SEC	:= $(srctree)/tools/secure/sec_img.cfg
 
 ifdef CONFIG_MVEBU_SECURE_BOOT
+
 DOIMAGE_SEC_FLAGS := -c $(DOIMAGE_SEC)
 DOIMAGE_LIBS_CHECK = \
 	if ! [ -d "/usr/include/polarssl" ]; then \
@@ -867,7 +870,8 @@ DOIMAGE_LIBS_CHECK = \
 else
 DOIMAGE_LIBS_CHECK =
 DOIMAGE_SEC_FLAGS =
-endif
+
+endif #CONFIG_MVEBU_SECURE_BOOT
 
 ifdef CONFIG_MVEBU_NAND_BLOCK_SIZE
 NAND_DOIMAGE_FLAGS := -t $(CONFIG_MVEBU_NAND_CELL_TYPE) -n $(CONFIG_MVEBU_NAND_BLOCK_SIZE)
@@ -882,7 +886,43 @@ bin2phex: doimage
 		$(BIN2PHEX) -w 1  -i u-boot-spl.bin -o u-boot-spl.hex -b 0x0
 		$(BIN2PHEX) -w 16 -i u-boot.bin -o u-boot.hex -b 0x0
 
+else ifeq ($(CONFIG_TARGET_ARMADA_LP), y)
+
+BIN2PHEX	:= $(srctree)/scripts/bin2phex.pl
+ifdef CONFIG_MVEBU_SECURE_BOOT
+DOIMAGE		:= $(shell which tbb_linux.exe)
+DOIMAGE_CFG	:= $(srctree)/tools/wtp/u-boot-tim.txt
+else #CONFIG_MVEBU_SECURE_BOOT
+DOIMAGE		:= $(shell which ntbb_linux.exe)
+DOIMAGE_CFG	:= $(srctree)/tools/wtp/u-boot-ntim.txt
+endif #CONFIG_MVEBU_SECURE_BOOT
+TIM_IMAGE	:= $(shell grep "Image Filename:" -m 1 $(DOIMAGE_CFG) | cut -c 17-)
+
+DOIMAGE_FLAGS := -r $(DOIMAGE_CFG)
+DOIMAGE_LIBS_CHECK = \
+	if [ -z "$(DOIMAGE)" ]; then \
+		echo "**********************************************************************" >&2; \
+		echo "The Marvell Wireless Trusted Platform Package installation is missing!" >&2; \
+		echo "Please install the WTPTP binary tools to the folder pointed by PATH" >&2; \
+		echo "This build required WTPTP version 3.3.11 or later" >&2; \
+		echo "**********************************************************************" >&2; \
+		exit 1; \
+	else \
+		echo "DOIMAGE=$(DOIMAGE)" >&1; \
+	fi
+
+doimage: $(obj)/u-boot.bin $(SPLIMAGE)
+		@$(DOIMAGE_LIBS_CHECK)
+		$(DOIMAGE) $(DOIMAGE_FLAGS)
+		mv u-boot_h.bin u-boot-$(CONFIG_SYS_SOC).bin
+
+bin2phex: doimage
+		$(BIN2PHEX) -w 1  -i $(TIM_IMAGE) -o $(basename $(TIM_IMAGE)).hex -b 0x0
+		$(BIN2PHEX) -w 1  -i u-boot-$(CONFIG_SYS_SOC).bin -o u-boot-$(CONFIG_SYS_SOC).hex -b 0x0
+		$(BIN2PHEX) -w 16 -i u-boot.bin -o u-boot.hex -b 0x0
+
 else # CONFIG_TARGET_ARMADA_38X
+
 DOIMAGE		:= $(srctree)/tools/marvell/doimage
 
 ifdef CONFIG_MVEBU_NAND_BOOT
@@ -896,7 +936,7 @@ doimage: $(obj)/u-boot.bin $(DOIMAGE) $(SPLIMAGE)
 		cat spl/u-boot-spl.bin.old >> spl/u-boot-spl.bin;
 		$(DOIMAGE) $(DOIMAGE_FLAGS) u-boot.bin u-boot-spl.bin
 
-endif # CONFIG_TARGET_ARMADA_8K
+endif # CONFIG_TARGET_ARMADA_8K/CONFIG_TARGET_ARMADA_LP/CONFIG_TARGET_ARMADA_38X
 endif # CONFIG_MVEBU
 
 #

@@ -77,7 +77,8 @@
 #define ASIC_SIMULATION
 #endif
 
-#if defined __MINGW32__ || defined WIN32 || defined ASIC_SIMULATION
+#ifndef ASIC_SIMULATION
+#if (defined __MINGW32__ || defined WIN32)
 #    pragma warning( disable : 4996)
 #    include <winsock2.h>
 #    include <windows.h>
@@ -94,6 +95,7 @@
 #        include <netdb.h>
 #   endif
 #endif
+#endif /* ASIC_SIMULATION */
 
 #if defined(__cplusplus) && AAPL_ENABLE_C_LINKING
 #   define EXT extern "C"

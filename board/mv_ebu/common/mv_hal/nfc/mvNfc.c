@@ -274,6 +274,78 @@ typedef enum {
 
 /* Defined Flash Types */
 MV_NFC_FLASH_INFO flashDeviceInfo[] = {
+	{                       /* Toshiba 32Gb - TH58NVG5S0FTAK0*/
+	.tADL = 17,             /* tADL, Address to write data delay, tADL = tALH + tALS*/
+	.tCH = 5,               /* tCH, Enable signal hold time */
+	.tCS = 20,              /* tCS, Enable signal setup time */
+	.tWC = 25,              /* tWC, ND_nWE cycle duration */
+	.tWH = 10,              /* tWH, ND_nWE high duration */
+	.tWP = 12,              /* tWP, ND_nWE pulse time */
+	.tRC = 25,              /* tRC, ND_nRE cycle duration */
+	.tRH = 10,              /* tRH, ND_nRE high duration */
+	.tRP = 12,              /* tRP, ND_nRE pulse width */
+	.tR = 30000,            /* tR = tR+tRR+tWB+1, ND_nWE high to ND_nRE low for read - 25000+20+100+1 */
+	.tWHR = 60,             /* tWHR, ND_nWE high to ND_nRE low delay for status read */
+	.tAR = 10,              /* tAR, ND_ALE low to ND_nRE low delay */
+	.tRHW = 60,             /* tRHW, ND_nRE high to ND_nWE low delay */
+	.pgPrBlk = 64,          /* Pages per block - detected */
+	.pgSz = 4096,           /* Page size */
+	.oobSz = 64,            /* Spare size */
+	.blkNum = 16384,        /* Number of blocks/sectors in the flash */
+	.id = 54680,            /* Device ID 0xDevice,Vendor */
+	.model = "Toshiba 32Gb 4bit",
+	.bb_page = 63,          /* Manufacturer Bad block marking page in block */
+	.flags = NFC_CLOCK_UPSCALE_200M
+	},
+
+	{                       /* MXIO 256MB - 2Gb - MX30LF2G18AC*/
+	.tADL = 15,             /* tADL, Address to write data delay, tADL = tALH + tALS*/
+	.tCH = 5,               /* tCH, Enable signal hold time */
+	.tCS = 15,              /* tCS, Enable signal setup time */
+	.tWC = 20,              /* tWC, ND_nWE cycle duration */
+	.tWH = 7,               /* tWH, ND_nWE high duration */
+	.tWP = 10,              /* tWP, ND_nWE pulse time */
+	.tRC = 20,              /* tRC, ND_nRE cycle duration */
+	.tRH = 7,               /* tRH, ND_nRE high duration */
+	.tRP = 10,              /* tRP, ND_nRE pulse width */
+	.tR = 25000,            /* tR = tR+tRR+tWB+1, ND_nWE high to ND_nRE low for read - 25000+20+100+1 */
+	.tWHR = 60,             /* tWHR, ND_nWE high to ND_nRE low delay for status read */
+	.tAR = 10,              /* tAR, ND_ALE low to ND_nRE low delay */
+	.tRHW = 60,             /* tRHW, ND_nRE high to ND_nWE low delay */
+	.pgPrBlk = 64,          /* Pages per block - detected */
+	.pgSz = 2048,           /* Page size */
+	.oobSz = 64,            /* Spare size */
+	.blkNum = 2048,         /* Number of blocks/sectors in the flash */
+	.id = 56002,            /* Device ID 0xDevice,Vendor */
+	.model = "MXIO 256MB 4bit",
+	.bb_page = 63,          /* Manufacturer Bad block marking page in block */
+	.flags = NFC_CLOCK_UPSCALE_200M
+	},
+
+	{                       /* MXIO 512MB - 4Gb - MX30LF4G28AB*/
+	.tADL = 15,             /* tADL, Address to write data delay, tADL = tALH + tALS*/
+	.tCH = 5,               /* tCH, Enable signal hold time */
+	.tCS = 15,              /* tCS, Enable signal setup time */
+	.tWC = 20,              /* tWC, ND_nWE cycle duration */
+	.tWH = 7,               /* tWH, ND_nWE high duration */
+	.tWP = 10,              /* tWP, ND_nWE pulse time */
+	.tRC = 20,              /* tRC, ND_nRE cycle duration */
+	.tRH = 7,               /* tRH, ND_nRE high duration */
+	.tRP = 10,              /* tRP, ND_nRE pulse width */
+	.tR = 25000,            /* tR = tR+tRR+tWB+1, ND_nWE high to ND_nRE low for read - 25000+20+100+1 */
+	.tWHR = 60,             /* tWHR, ND_nWE high to ND_nRE low delay for status read */
+	.tAR = 10,              /* tAR, ND_ALE low to ND_nRE low delay */
+	.tRHW = 60,             /* tRHW, ND_nRE high to ND_nWE low delay */
+	.pgPrBlk = 64,          /* Pages per block - detected */
+	.pgSz = 2048,           /* Page size */
+	.oobSz = 112,           /* Spare size */
+	.blkNum = 4096,         /* Number of blocks/sectors in the flash */
+	.id = 56514,            /* Device ID 0xDevice,Vendor */
+	.model = "MXIO 512MB 8bit",
+	.bb_page = 63,          /* Manufacturer Bad block marking page in block */
+	.flags = NFC_CLOCK_UPSCALE_200M
+	},
+
 	{			/* Micron 4Gb */
 	.tADL = 70,		/* tADL, Address to write data delay */
 	.tCH = 5,		/* tCH, Enable signal hold time */
@@ -346,7 +418,7 @@ MV_NFC_FLASH_INFO flashDeviceInfo[] = {
 	 .flags = NFC_CLOCK_UPSCALE_200M
 	 },
 	{			/* ST 4Gb */
-	 .tADL = 70,		/* tADL, Address to write data delay */
+	 .tADL = 70,		/* tADL, Address to write data delay tADL = tALH + tALS */
 	 .tCH = 5,		/* tCH, Enable signal hold time */
 	 .tCS = 20,		/* tCS, Enable signal setup time */
 	 .tWC = 22,		/* tWC, ND_nWE cycle duration */

@@ -26,6 +26,7 @@
 
 #define MVEBU_CCU_HTC_ASET_REG	0x4264
 #define MVEBU_PRIVATE_UID_REG	0x30
+#define MVEBU_IO_AFFINITY	0xF00
 
 .pushsection ._secure.text, "ax"
 
@@ -41,6 +42,7 @@ enable_affinity:
 	orr     x0, x3, x0
 	mov	x3, #0x1
 	lsl     x1, x3, x2
+	orr	x1, x1, #(MVEBU_IO_AFFINITY)
 	str     w1, [x0]
 
 	/* Activate Affinity in CA-57 configuration

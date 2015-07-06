@@ -15,8 +15,7 @@ include $(ROOT_DIR)/mainLabServices/gtBuild
 else
 
 ## CPSS compilation environment #################
-INCLUDE_PATH += -I$(PROJ_BASE)/src/cpss/generic/labServices/port/gop/src/port/serdes/avago/aapl/include\
-		-I$(PROJ_BASE)/src/cpss/generic/labServices/port/gop/src/port/serdes/avago/aapl/marvell
+INCLUDE_PATH += -I$(PROJ_BASE)/src/cpss/generic/labServices/port/gop/src/port/serdes/avago/aapl/include
 #C_FILE_LIST  =
 #SUBDIRS      =
 #C_EXCLUDE_FILE_LIST =

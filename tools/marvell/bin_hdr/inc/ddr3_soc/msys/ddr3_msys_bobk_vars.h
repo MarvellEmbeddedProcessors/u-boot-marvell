@@ -66,7 +66,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _INC_MSYS_BOBK_VARS_H
 
 #include "ddr3_msys_bobk_config.h"
-#include "mvDdr3TopologyDef.h"
+#include "mvDdrTopologyDef.h"
 
 /*Tune internal training params values*/
 #define MV_TUNE_TRAINING_PARAMS_CK_DELAY 		150

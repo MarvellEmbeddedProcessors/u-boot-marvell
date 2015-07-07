@@ -70,6 +70,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "generalInit.h"
 #include "printf.h"
 #include "mvSysEnvLib.h"
+#include "soc_spec.h"
 
 /******************************************************************************************
 * mvDeviceIdConfig - set SoC Unit configuration and device ID according to detected flavour
@@ -136,9 +137,126 @@ MV_VOID mvRtcConfig()
 
 }
 
+#ifdef CONFIG_ARMADA_38X
+/*******************************************************************************
+* mvGetAvsValFromEfuse
+*
+* DESCRIPTION:
+*	read AVS value written to eFuse that corresponds to satrFreq
+*	there are 3 AVS values written in eFuse that corresponds to the frequencies
+*	that lower or equal to 1600MHz, 1866MHz and 2000MHz.
+*	Bit mapping of EFUSE_AVS_AND_BIN_REG:
+*	+-------+-----+--------------+------------------+----------------+
+*	| Field | Bin | AVS_Val 2GHz | AVS_Val 1.866GHz | AVS_Val 1.6GHz |
+*	+-------+-----+--------------+------------------+----------------+
+*	| bits  | 4-5 | 6-13         | 14-21            | 22-29          |
+*	+-------+-----+--------------+------------------+----------------+
+*
+*	Bit mapping of EFUSE_AVS_VERSION_REG:
+*	+-------+---------+
+*	| Field | Version |
+*	+-------+---------+
+*	| bits  | 26-29   |
+*	+-------+---------+
+* INPUT:
+*	satrFreq	- controller CPU frequency
+*
+* OUTPUT:
+*	avsVal		- AVS value in eFuse corresponding to satrFreq
+*
+* RETURN:
+*	MV_TRUE, if AVS value exits in eFuse (if version is not equal 0).
+*	MV_FALSE, otherwise.
+*
+*******************************************************************************/
+MV_BOOL mvGetAvsValFromEfuse(MV_U32 satrFreq, MV_U32 *avsVal)
+{
+	MV_U32 versionVal, binVal, avsRegControlVal;
+	MV_BOARD_AVS_EFUSE_MAP efuse_freq_val[] = EFUSE_FREQ_VAL_INFO;
+	int i;
+
+	/* Set Memory I/O window */
+	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(EFUSE_WIN_ID), EFUSE_WIN_CTRL_VAL);
+	MV_REG_WRITE(AHB_TO_MBUS_WIN_BASE_REG(EFUSE_WIN_ID), EFUSE_WIN_BASE_VAL);
+	MV_REG_WRITE(AHB_TO_MBUS_WIN_REMAP_LOW_REG(EFUSE_WIN_ID), 0);
+	MV_REG_WRITE(AHB_TO_MBUS_WIN_REMAP_HIGH_REG(EFUSE_WIN_ID), 0);
+
+	/* check version value
+	 * if it is equal to 0 then AVS value does not exist */
+	versionVal = (MV_EFUSE_REG_READ(EFUSE_AVS_VERSION_REG) &
+			(EFUSE_AVS_VERSION_MASK << EFUSE_AVS_VERSION_OFFSET)) >> EFUSE_AVS_VERSION_OFFSET;
+	if (versionVal == 0) {
+		mvPrintf("AVS from eFuse version is not supported\n");
+		return MV_FALSE;
+	}
+
+	/* read Bin value
+	 * bin value indicates highest frequency the device meets:
+	 * - 0x3: 1600MHz
+	 * - 0x2: 1866MHz
+	 * - 0x1: 2000MHz */
+	binVal = (MV_EFUSE_REG_READ(EFUSE_AVS_AND_BIN_REG) &
+			(EFUSE_AVS_BIN_MASK << EFUSE_AVS_BIN_OFFSET)) >> EFUSE_AVS_BIN_OFFSET;
+
+	/* fetch AVS_Val according to frequency
+	 * check if selected S@R value that corresponds to frequency 1866,2000,
+	 * or below 1600MHz (1st cell is 1600) */
+	for (i = 0; i < EFUSE_FREQ_VAL_SIZE; ++i) {
+		/* check that S@R freq mode is permitted on chip:
+		 * check if Bin val from eFuse is lower/equal than the bin value
+		 * corresponding with this S@R freq */
+		if (satrFreq == efuse_freq_val[i].cpu_freq_mode
+				|| (i == 0 && satrFreq < efuse_freq_val[i].cpu_freq_mode)) {
+			if (binVal > efuse_freq_val[i].avs_bin_value) {
+				/* for security check, S@R frequency is not allowed by Bin field
+				 * write default value of AVS 1.25V, and halt the CPU (empty infinite loop)
+				 */
+				mvPrintf("ERROR: AVS from EFUSE does not support current CPU frequncy (%u MHz)\n",
+						efuse_freq_val[i].cpu_freq);
+				mvPrintf("Please configure lower frequency mode in S@R\n");
+				avsRegControlVal = MV_REG_READ(AVS_ENABLED_CONTROL);
+				avsRegControlVal |= ((MV_AVS_DEFAULT_VALUE << AVS_LOW_VDD_LIMIT_OFFS)
+							| (MV_AVS_DEFAULT_VALUE << AVS_HIGH_VDD_LIMIT_OFFS));
+				MV_REG_WRITE(AVS_ENABLED_CONTROL, avsRegControlVal);
+				/* halt the CPU */
+				while (1)
+					;
+			}
+			/* if Bin value permits selected frequency mode,
+			 * read it's corresponding AVS value from EFUSE */
+			*avsVal = (MV_EFUSE_REG_READ(EFUSE_AVS_AND_BIN_REG) &
+					(EFUSE_AVS_VAL_MASK << EFUSE_AVS_VAL_OFFSET_AT_IND(i))) >>
+								EFUSE_AVS_VAL_OFFSET_AT_IND(i);
+		}
+	}
+	if (i == EFUSE_FREQ_VAL_SIZE && satrFreq > efuse_freq_val[0].cpu_freq_mode) {
+		mvPrintf("ERROR: selected CPU frequency (mode 0x%X) is not supported\n", satrFreq);
+		return MV_FALSE;
+	}
+	mvPrintf("Selected AVS value from eFuse: 0x%X\n", *avsVal);
+	return MV_TRUE;
+}
+#endif /* CONFIG_ARMADA_38X */
+
 MV_STATUS mvGeneralInit(void)
 {
 	MV_U32 regData;
+#ifdef CONFIG_ARMADA_38X
+	MV_U32 avsVal;
+#endif
+	mvMppConfig(); /* MPP must be configured prior to UART/I2C access */
+
+	/* - Init the TWSI before all I2C transaction */
+	DEBUG_INIT_FULL_S("mvGeneralInit: Init TWSI interface.\n");
+	/* I2C/TWSI unit must be initialized before mvUartInit is called,
+	 * since UART port is selected according to board ID
+	 * (read Board ID from EEPROM via I2C) */
+	mvHwsTwsiInitWrapper();
+
+#if !defined(MV_NO_PRINT)
+	mvUartInit();
+	mvPrintf("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
+#endif
 
 	/* Update AVS debug control register */
     MV_REG_WRITE(AVS_DEBUG_CNTR_REG, AVS_DEBUG_CNTR_DEFAULT_VALUE);
@@ -150,17 +268,32 @@ MV_STATUS mvGeneralInit(void)
 	/* 1. Armada38x was signed off for 1600/800 at 1.15V (AVS)
 	 * 2. Based on ATE/system correlation, in order to achieve higher speeds (1866MHz, 2000MHz),
 	 *    we need to overdrive the chip to 1.25V (AVS)
-	 * 3. Current U-Boot (in the absence of SVC) - must align with this requirement and select
-	 *    voltage between the two levels, based on S@R (CPU <= 1600MHz --> AVS@ 1.15V)
+	 *  3.1. If AVS values are not written on eFuse, The write to AVS is
+	 *      based on S@R (CPU <= 1600MHz --> AVS@ 1.15V)
+	 *  3.2. If AVS values are written to eFuse (version field is different than zero)
+	 *      This means that every frequency have corresponding AVS value written to eFuse,
+	 *      (corresponds to frequency below 1600MHz, equals 1866MHz or equals 2000MHz)
+	 *      Then write the corresponding AVS value.
+	 *      For security check, Bin value is burnt, that tells which is the maximum
+	 *      allowed frequency. If the S@R frequency higher than the maximum, the chip is
+	 *      halted (empty infinite loop), and 1.25V is written to AVS
 	 */
 	{
 		MV_U32 satrFreq;
 		satrFreq = (MV_REG_READ(DEVICE_SAMPLE_AT_RESET1_REG) >> SAR_FREQ_OFFSET) & SAR_FREQ_MASK;
 
-		/*Set AVS value only for normative core freq(1600Mhz and less), for high freq leave default value*/
-		if(satrFreq <= 0xD){
-			regData |= ( (AVS_LIMIT_VAL_SLOW << AVS_LOW_VDD_LIMIT_OFFS) | (AVS_LIMIT_VAL_SLOW << AVS_HIGH_VDD_LIMIT_OFFS));
+		if (mvGetAvsValFromEfuse(satrFreq, &avsVal) == MV_TRUE) {
+			regData |= ((avsVal << AVS_LOW_VDD_LIMIT_OFFS) | (avsVal << AVS_HIGH_VDD_LIMIT_OFFS));
 			MV_REG_WRITE(AVS_ENABLED_CONTROL, regData);
+		} else {
+			/*Set AVS value only for normative core freq(1600Mhz and less),
+			 * for high freq leave default value*/
+			if (satrFreq <= 0xD) {
+				regData |= ((AVS_LIMIT_VAL_SLOW << AVS_LOW_VDD_LIMIT_OFFS) |
+						(AVS_LIMIT_VAL_SLOW << AVS_HIGH_VDD_LIMIT_OFFS));
+				MV_REG_WRITE(AVS_ENABLED_CONTROL, regData);
+				mvPrintf("Overriding default AVS value to: 0x%X\n", AVS_LIMIT_VAL_SLOW);
+			}
 		}
 	}
 #else
@@ -169,16 +302,6 @@ MV_STATUS mvGeneralInit(void)
 #endif
 
 	mvRtcConfig(); /* update RTC (Read Timing Control) values of PCIe memory wrappers*/
-	mvMppConfig();
-
-	/* - Init the TWSI before all I2C transaction */
-	DEBUG_INIT_FULL_S("mvGeneralInit: Init TWSI interface.\n");
-	mvHwsTwsiInitWrapper();
-
-#if !defined(MV_NO_PRINT)
-	mvUartInit();
-	mvPrintf("\n\nGeneral initialization - Version: " GENERAL_VERION "\n");
-#endif
 
 	/* Device general configuration was not supported on a38x Z0 revision */
 	if (mvSysEnvDeviceRevGet() != MV_88F68XX_Z1_ID)

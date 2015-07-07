@@ -1213,7 +1213,7 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 	/*Set 16/32 bit configuration*/
 	topologyUpdateInfo->mvUpdateWidth = MV_TRUE;
 	topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_32BIT;
-#ifdef CONFIG_DDR3
+
 	if( 1 == mvSysEnvConfigGet(MV_CONFIG_DDR_BUSWIDTH) ){
 		/*16bit*/
 		topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_16BIT;
@@ -1222,7 +1222,6 @@ MV_U32 mvSysEnvGetTopologyUpdateInfo(MV_TOPOLOGY_UPDATE_INFO *topologyUpdateInfo
 		/*32bit*/
 		topologyUpdateInfo->mvWidth = MV_TOPOLOGY_UPDATE_WIDTH_32BIT;
 	}
-#endif
 
 	/*Set ECC/no ECC bit configuration*/
 	topologyUpdateInfo->mvUpdateECC = MV_TRUE;

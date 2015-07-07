@@ -2,7 +2,7 @@
 
 sub bin2hex
 {
-	my ($in_file, $out_file, $base_addr, $width) = @_;
+	my ($in_file, $out_file, $base_addr, $width, $page_size) = @_;
 
 	# Convert base address to 16 byte resolution
 	my $addr = sprintf("%d", hex($base_addr));
@@ -45,6 +45,24 @@ sub bin2hex
 		$addr++;
 		$idx += $width;
 		$size -= $width;
+
+		# Fill spare size with FF
+		if(defined($page_size) and (($idx % $page_size) == 0)) {
+			my $spare = $page_size;
+			while ($spare > 0) {
+				my $addr_str = sprintf("@%07x",$addr);
+				print $dst "$addr_str\n";
+
+				$byte = 0;
+				while ($byte < $width) {
+					print $dst "ff";
+					$byte++;
+				}
+				print $dst "\n";
+				$addr++;
+				$spare -= $width;
+			}
+		}
 	}
 
 	close($dst);
@@ -66,6 +84,7 @@ sub usage
 	print "\t-b\tBase address of the image in hex\n";
 	print "\t-w\tByte width of output file upto 16.\n";
 	print "\t  \tMust be power of 2 (1,2,4,8...). Default = 16\n";
+	print "\t-p\tNand page size. Can be 2048, 4096, or 8192\n";
 	print "\n";
 }
 
@@ -74,9 +93,9 @@ use strict;
 use warnings;
 use Getopt::Std;
 
-use vars qw($opt_o $opt_b $opt_h $opt_i $opt_w);
+use vars qw($opt_o $opt_b $opt_h $opt_i $opt_w $opt_p);
 
-getopt('o:i:b:w');
+getopt('o:i:b:w:p');
 
 if ($opt_h)
 {
@@ -119,7 +138,15 @@ if ($opt_w) {
 	$opt_w = 16;
 }
 
-if(bin2hex($opt_i, $opt_o, $opt_b, $opt_w)) {
+if ($opt_p) {
+	unless (($opt_p == 2048) or ($opt_p == 4096) or ($opt_w == 8192)) {
+		printf "\nError: Bad page size $opt_p\n";
+		usage();
+		exit 1;
+	}
+}
+
+if(bin2hex($opt_i, $opt_o, $opt_b, $opt_w, $opt_p)) {
 	printf "\nError: Failed converting image\n\n";
 	exit 1;
 }

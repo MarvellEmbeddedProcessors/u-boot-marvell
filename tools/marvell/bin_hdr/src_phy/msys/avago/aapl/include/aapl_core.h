@@ -379,6 +379,9 @@ EXT void *aapl_realloc(Aapl_t *aapl, void *ptr, const size_t bytes, const char *
 EXT void  aapl_free(Aapl_t *aapl, void *ptr, const char *description);
 #endif
 
+/* MRVL taken LGPL aapl-2.2.1 */
+EXT BOOL avago_serdes_error_reset(Aapl_t *aapl, uint addr);
+
 
 /*////////////////////////////////////////////////////////////////////// */
 /* AACS Functions and Globals */

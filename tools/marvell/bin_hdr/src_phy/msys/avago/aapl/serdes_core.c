@@ -1249,6 +1249,21 @@ uint avago_serdes_get_errors(
     AAPL_LOG_PRINT5(aapl, AVAGO_DEBUG5, __func__, __LINE__, "SBus %s, dma_type=%d, reset=%d, errors = %u.\n", aapl_addr_to_str(addr), type, reset, rc);
     return rc;
 }
+
+/* MRVL taken LGPL aapl-2.2.1 */
+/** @brief   Resets the error counter. */
+/** @see     avago_serdes_get_errors(). */
+/** @return  On success, returns TRUE. */
+/** @return  On failure, returns FALSE and decrements aapl->return_code. */
+BOOL avago_serdes_error_reset(
+    Aapl_t *aapl,   /**< [in] Pointer to Aapl_t structure. */
+    uint addr)      /**< [in] Device address number. */
+{
+    BOOL rc = avago_spico_int_check(aapl, __func__, __LINE__, addr, 0x17, 0);
+    AAPL_LOG_PRINT5(aapl, AVAGO_DEBUG5, __func__, __LINE__, "SBus %s; rc = %s.\n", aapl_addr_to_str(addr), aapl_bool_to_str(rc));
+    return rc;
+}
+
 #ifndef MV_HWS_REDUCED_BUILD
 /** @brief   Slips (drops) bits on the Rx. */
 /** @details Slips up to 127 bits. */
@@ -1445,8 +1460,6 @@ int avago_serdes_init(
     return errors;
 }
 
-#ifndef MV_HWS_REDUCED_BUILD
-
 /** @brief Initialize struct with default values */
 void avago_serdes_tune_init(
     Aapl_t *aapl,                       /**< [in] Pointer to Aapl_t structure. */
@@ -1462,7 +1475,6 @@ void avago_serdes_tune_init(
     control->value[2] =  0;
     control->value[3] = 15;
 }
-#endif /* MV_HWS_REDUCED_BUILD */
 
 /** @brief  Performs SerDes tuning with a few options. */
 /** @note   Requires SerDes firmware revision 0x1046 or higher. */

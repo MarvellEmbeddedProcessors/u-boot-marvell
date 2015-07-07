@@ -223,11 +223,42 @@
 #define AVS_DEBUG_CNTR_DEFAULT_VALUE    0x08008073
 
 #ifdef CONFIG_ARMADA_38X
-	#define AVS_LIMIT_VAL_SLOW	0x23	/*1.15V*/
-#else
-	#define AVS_LIMIT_VAL	0x27
-#endif
+	#define AVS_LIMIT_VAL_SLOW		0x23	/*1.15V*/
+	#define EFUSE_WIN_CTRL_VAL		((0xF << 16) | (0x0A << 8) | (0xE << 4) | 0x1)
+	#define EFUSE_WIN_BASE_VAL		0xB0000000
+	#define MV_EFUSE_REG_READ(offset)	\
+		MV_MEMIO_LE32_READ(EFUSE_WIN_BASE_VAL | (offset))
+	#define EFUSE_WIN_ID				5
 
+	#define EFUSE_REG_BASE			0xF8F00
+	#define EFUSE_AVS_AND_BIN_REG		(EFUSE_REG_BASE + 0xC)
+	#define EFUSE_AVS_VAL_BASE		6
+	#define EFUSE_AVS_VAL_OFFSET		8
+	#define EFUSE_AVS_VAL_MASK		0xFF
+	#define EFUSE_AVS_VERSION_REG		(EFUSE_REG_BASE + 0x4)
+	#define EFUSE_AVS_VERSION_OFFSET	26
+	#define EFUSE_AVS_VERSION_MASK		0xF
+	#define EFUSE_AVS_BIN_OFFSET		4
+	#define EFUSE_AVS_BIN_MASK		0x3
+	#define MV_AVS_DEFAULT_VALUE		0x27	/* 1.25V */
+	typedef struct boardAvsFromEfuseMap {
+		MV_32 cpu_freq_mode;
+		MV_32 cpu_freq;
+		MV_32 avs_bin_value;
+	} MV_BOARD_AVS_EFUSE_MAP;
+	/* predefined values for FUNCTION_ENABLE_CONTROL per flavour */
+	#define EFUSE_FREQ_VAL_SIZE		3
+	#define EFUSE_AVS_VAL_OFFSET_AT_IND(index) (EFUSE_AVS_VAL_BASE + \
+						   (EFUSE_FREQ_VAL_SIZE - (index+1))*EFUSE_AVS_VAL_OFFSET)
+	#define EFUSE_FREQ_VAL_INFO {\
+	/*		CPU frequency mode,	CPU Frequecny,	AVS_BIN_VALUE */\
+	/* 1600MHz */	{0xC,			1600,		0x3},\
+	/* 1866MHZ */	{0x10,			1866,		0x2},\
+	/* 2000MHZ */	{0x13,			2000,		0x1},\
+	};
+#else
+	#define AVS_LIMIT_VAL			0x27
+#endif
 /* DFX Server general registers mapping (on top of internal registers) */
 #define DFX_REG_BASE				0xE4000
 #define DFX_PIPE_SELECT_PIPE0_ACTIVE_OFFS	0

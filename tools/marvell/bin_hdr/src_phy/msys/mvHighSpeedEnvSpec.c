@@ -76,6 +76,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif defined(MV_MSYS_BOBK)
 #include "ddr3_msys_bobk.h"
 #include "ddr3_msys_bobk_config.h"
+#include "mv_hws_avago_if.h"
 #elif defined(MV_MSYS_AC3)
 #include "ddr3_msys_ac3.h"
 #include "ddr3_msys_ac3_config.h"
@@ -125,7 +126,7 @@ MV_OP_EXT_PARAMS usb2PowerUpParams[] =
 	{ USB_REG_UNIT,    0x50800,     0x80000000, { 0x80000000 }, 1,     1000 }  /* check PLL_READY  is set*/
 };
 
-#ifdef MV_HWS_COM_PHY_SERDES
+#if defined MV_HWS_COM_PHY_SERDES
 /******************/
 /*    SGMII       */
 /******************/
@@ -393,61 +394,8 @@ MV_STATUS boardTopologyLoad(SERDES_MAP  *serdesMapArray)
 
 	return MV_OK;
 }
-
-#if defined (MV_MSYS_AC3) || defined (MV_MSYS_BOBK)
-/*AC3: check S@R for PCIe mode (EP/RC) ****************************************/
-MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
-{
-	MV_U32 uiReg = 0;
-#ifdef MV_MSYS_AC3
-	/*Read AC3 SatR configuration SAR0[14]*/
-	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, REG_DEVICE_SAR0_ADDR, &uiReg, BIT14));
-#else
-    /*Read BOBK SatR configuration TBD*/
-    mvPrintf("%s: TBD- Read BOBK SatR config... \n", __func__);
-#endif
-	return  (uiReg == 0);
-}
-
-/* AC3: Get the Serdes revision number **************************************/
-MV_U8 mvHwsSerdesRevGet(MV_VOID)
-{
-	return MV_SERDES_28NM_REV_3;
-}
-
-/* AC3: init silicon related configurations *********************************/
-MV_STATUS mvSiliconInit(MV_VOID)
-{
-	MV_TWSI_ADDR slave;
-	MV_U32 tClock;
-
-	/* Prepare data to be used by access functions for various SOC regions */
-	mvUnitInfoSet(INTERNAL_REG_UNIT,	INTER_REGS_BASE,		MV_INTERNAL_OFFSET);
-	mvUnitInfoSet(MG_UNIT,				0,						MV_INTERNAL_OFFSET);
-	mvUnitInfoSet(SERDES_UNIT,			MV_SERDES_BASE,			MV_SERDES_OFFSET);
-	mvUnitInfoSet(SERDES_PHY_UNIT,		MV_SERDES_PHY_BASE,		MV_SERDES_OFFSET);
-	mvUnitInfoSet(USB_REG_UNIT,			MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(USB_WIN_ID)) & 0xFFFF0000,		0);
-	mvUnitInfoSet(SERVER_REG_UNIT,		MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID)) & 0xFFFF0000,	0);
-
-	/* Set legacy mode address completion */
-	mvGenUnitRegisterSet(MG_UNIT, 0, 0x140, (1 << 16), (1 << 16));
-	/* TWSI init */
-	DEBUG_INIT_FULL_S("mvSiliconInit: Init TWSI interface.\n");
-	slave.type = ADDR7_BIT;
-	slave.address = 0;
-	tClock = mvBoardTclkGet();
-	if (tClock == MV_BOARD_TCLK_ERROR) {
-		DEBUG_INIT_FULL_S("mvSiliconInit: TClk read from the board is not supported\n");
-		return MV_NOT_SUPPORTED;
-	}
-
-	mvTwsiInit(0, TWSI_SPEED, tClock, &slave, 0);
-
-	return MV_OK;
-}
-
 /****************************************************************************/
-/* AC3: set PCIe Comphy register optimizations after ETP */
+/* set PCIe Comphy register optimizations after ETP */
 MV_VOID mvCtrlPexImpedanceCalibration(MV_VOID)
 {
 	MV_U32 uiReg = 0;
@@ -472,8 +420,9 @@ MV_VOID mvCtrlPexImpedanceCalibration(MV_VOID)
 	/*Pex slew rate control disable */
 	mvHwsIndirectRegWrite (0,G2_SETTING_0,(0x0 << TX_SLEW_CNTRL_ENABLE_OFFSET),(0x1 << TX_SLEW_CNTRL_ENABLE_OFFSET));
 }
+#if defined (MV_MSYS_AC3) || defined (MV_MSYS_BOBK)
 /****************************************************************************/
-/* AC3: set PCIe mode as End Point */
+/* set PCIe mode as End Point */
 MV_STATUS mvCtrlPexEndPointConfig(MV_VOID)
 {
 	MV_U32 uiReg = 0;
@@ -491,7 +440,7 @@ MV_STATUS mvCtrlPexEndPointConfig(MV_VOID)
 }
 
 /****************************************************************************/
-/* AC3: set PCIe mode as Root Complex */
+/*  set PCIe mode as Root Complex */
 MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
 {
 	MV_U32 uiReg = 0;
@@ -547,6 +496,53 @@ MV_STATUS mvCtrlPexRootComplexConfig(MV_VOID)
 
 	return mvHwsPexConfig();
 }
+#endif
+#if defined (MV_MSYS_AC3)
+/*AC3: check S@R for PCIe mode (EP/RC) ****************************************/
+MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
+{
+	MV_U32 uiReg = 0;
+	/*Read AC3 SatR configuration SAR0[14]*/
+	CHECK_STATUS(mvGenUnitRegisterGet(SERVER_REG_UNIT, 0, REG_DEVICE_SAR0_ADDR, &uiReg, BIT14));
+	return  (uiReg == 0);
+}
+
+/* AC3: Get the Serdes revision number **************************************/
+MV_U8 mvHwsSerdesRevGet(MV_VOID)
+{
+	return MV_SERDES_28NM_REV_3;
+}
+
+/* AC3: init silicon related configurations *********************************/
+MV_STATUS mvSiliconInit(MV_VOID)
+{
+	MV_TWSI_ADDR slave;
+	MV_U32 tClock;
+
+	/* Prepare data to be used by access functions for various SOC regions */
+	mvUnitInfoSet(INTERNAL_REG_UNIT,	INTER_REGS_BASE,		MV_INTERNAL_OFFSET);
+	mvUnitInfoSet(MG_UNIT,				0,						MV_INTERNAL_OFFSET);
+	mvUnitInfoSet(SERDES_UNIT,			MV_SERDES_BASE,			MV_SERDES_OFFSET);
+	mvUnitInfoSet(SERDES_PHY_UNIT,		MV_SERDES_PHY_BASE,		MV_SERDES_OFFSET);
+	mvUnitInfoSet(USB_REG_UNIT,			MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(USB_WIN_ID)) & 0xFFFF0000,		0);
+	mvUnitInfoSet(SERVER_REG_UNIT,		MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID)) & 0xFFFF0000,	0);
+
+	/* Set legacy mode address completion */
+	mvGenUnitRegisterSet(MG_UNIT, 0, 0x140, (1 << 16), (1 << 16));
+	/* TWSI init */
+	DEBUG_INIT_FULL_S("mvSiliconInit: Init TWSI interface.\n");
+	slave.type = ADDR7_BIT;
+	slave.address = 0;
+	tClock = mvBoardTclkGet();
+	if (tClock == MV_BOARD_TCLK_ERROR) {
+		DEBUG_INIT_FULL_S("mvSiliconInit: TClk read from the board is not supported\n");
+		return MV_NOT_SUPPORTED;
+	}
+
+	mvTwsiInit(0, TWSI_SPEED, tClock, &slave, 0);
+
+	return MV_OK;
+}
 
 /*AC3: initialize USB2.0 UTMI PHY**********************************************/
 MV_STATUS mvCtrlUsb2Config(MV_VOID)
@@ -557,7 +553,7 @@ MV_STATUS mvCtrlUsb2Config(MV_VOID)
 
 	return MV_OK;
 }
-
+/*AC3: Serdes TX IF select**********************************************/
 MV_STATUS mvHwsComH28nmSerdesTxIfSelect(MV_U32 serdesNum)
 {
 	MV_U8	serdesTxIfNum = (serdesNum == 10) ? 3 : 1; /* OOB port MSYS0/MSYS1 */
@@ -572,6 +568,94 @@ MV_STATUS mvHwsComH28nmSerdesTxIfSelect(MV_U32 serdesNum)
 MV_STATUS mvHwsRefClockGet (MV_U32 serdesNum ,MV_U8 *refClockSource)
 {
 	*refClockSource = PRIMARY; /* in AC3 all serdes has to use the same reference clock = PRIMARY */
+
+	return MV_OK;
+}
+	/* Reference clock source */
+#elif defined (MV_MSYS_BOBK)
+/*BOBK: check S@R for PCIe mode (EP/RC) ****************************************/
+MV_BOOL mvCtrlIsPexEndPointMode(MV_VOID)
+{
+
+    /*Read BOBK SatR configuration TBD*/
+    mvPrintf("%s: TBD- Read BOBK SatR config... \n", __func__);
+	return  (0);
+}
+
+/* BOBK: Get the Serdes revision number **************************************/
+MV_U8 mvHwsSerdesRevGet(MV_VOID)
+{
+
+    return MV_SERDES_AVAGO_REV_0;
+}
+
+/* BOBK: init silicon related configurations *********************************/
+MV_STATUS mvSiliconInit(MV_VOID)
+{
+	MV_TWSI_ADDR slave;
+	MV_U32 tClock;
+
+	/* Prepare data to be used by access functions for various SOC regions */
+	mvUnitInfoSet(INTERNAL_REG_UNIT,	INTER_REGS_BASE,		MV_INTERNAL_OFFSET);
+	mvUnitInfoSet(MG_UNIT,				0,						MV_INTERNAL_OFFSET);
+	mvUnitInfoSet(SERDES_UNIT,			MV_SERDES_BASE,			MV_SERDES_OFFSET);
+	mvUnitInfoSet(SERDES_PHY_UNIT,		MV_SERDES_PHY_BASE,		MV_SERDES_OFFSET);
+	mvUnitInfoSet(USB_REG_UNIT,			MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(USB_WIN_ID)) & 0xFFFF0000,		0);
+	mvUnitInfoSet(SERVER_REG_UNIT,		MV_REG_READ(AHB_TO_MBUS_WIN_BASE_REG(SERVER_WIN_ID)) & 0xFFFF0000,	0);
+
+	/* Set legacy mode address completion */
+	mvGenUnitRegisterSet(MG_UNIT, 0, 0x140, (1 << 16), (1 << 16));
+	/* TWSI init */
+	DEBUG_INIT_FULL_S("mvSiliconInit: Init TWSI interface.\n");
+	slave.type = ADDR7_BIT;
+	slave.address = 0;
+	tClock = mvBoardTclkGet();
+	if (tClock == MV_BOARD_TCLK_ERROR) {
+		DEBUG_INIT_FULL_S("mvSiliconInit: TClk read from the board is not supported\n");
+		return MV_NOT_SUPPORTED;
+	}
+
+	mvTwsiInit(0, TWSI_SPEED, tClock, &slave, 0);
+
+	return MV_OK;
+}
+
+
+/*BOBK: initialize USB2.0 UTMI PHY**********************************************/
+MV_STATUS mvCtrlUsb2Config(MV_VOID)
+{
+	/* USB2 configuration */
+	DEBUG_INIT_FULL_S("init USB2 PHYs\n");
+	CHECK_STATUS(mvSeqExecExt(0 /* not relevant */, USB2_POWER_UP_SEQ));
+
+	return MV_OK;
+}
+/*BOBK: Serdes TX IF select**********************************************/
+MV_STATUS mvHwsAvagoSerdesTxIfSelect(MV_U32 serdesNum)
+{
+
+    if (serdesNum == 20)
+    {
+        /* MV_U32	msys2sdShift =  14;  20 is connected by bit 14 of REG_DEVICE_SERVER_CONTROL_14 */
+
+        /* set RF_QSGMII_PORT_TO_CPU_EN bit in DFX */
+	    /* CHECK_STATUS(mvGenUnitRegisterSet(SERVER_REG_UNIT, 0, REG_DEVICE_SERVER_CONTROL_14, 1 << msys2sdShift , 1 << msys2sdShift));*/
+	    /* Configure TX SERDES interface number - for BOBK????? - always 1*/
+	    CHECK_STATUS(mvGenUnitRegisterSet(SERDES_UNIT, serdesNum, 0xC, 1, 0x7));
+
+	    return MV_OK;
+    }
+    else
+    {
+        DEBUG_INIT_S("mvHwsAvagoSerdesTxIfSelect: wrong serdesNum\n");
+		return MV_BAD_PARAM;
+    }
+}
+
+/*BOBK: Set Ref Clock**********************************************/
+MV_STATUS mvHwsRefClockGet (MV_U32 serdesNum ,MV_U8 *refClockSource)
+{
+	*refClockSource = PRIMARY; /* in BOBK all serdes has to use the same reference clock = PRIMARY */
 
 	return MV_OK;
 }
@@ -667,7 +751,7 @@ MV_STATUS mvCtrlUsb2Config(MV_VOID)
 	/* no USB2 in BC2 */
 	return MV_OK;
 }
-
+/*BC2: Serdes TX IF select**********************************************/
 MV_STATUS mvHwsComH28nmSerdesTxIfSelect(MV_U32 serdesNum)
 {
 
@@ -680,6 +764,7 @@ MV_STATUS mvHwsComH28nmSerdesTxIfSelect(MV_U32 serdesNum)
 
 	return MV_OK;
 }
+/*BC2: get reference clock**********************************************/
 MV_STATUS mvHwsRefClockGet (MV_U32 serdesNum ,MV_U8 *refClockSource)
 {
 	*refClockSource = (serdesNum >= 20) ? SECONDARY : PRIMARY;
@@ -693,7 +778,7 @@ MV_STATUS mvHwsRefClockGet (MV_U32 serdesNum ,MV_U8 *refClockSource)
 
 #endif
 
-/* Init serdes sequences DB ********************************************/
+/*AC3:BC2:BOBK: Init serdes sequences DB ********************************************/
 MV_VOID mvSerdesSeqInit(MV_VOID)
 {
 	DEBUG_INIT_FULL_S("\n### serdesSeqInit ###\n");
@@ -765,7 +850,7 @@ MV_VOID mvSerdesSeqInit(MV_VOID)
 	serdesSeqDb[SGMII_POWER_DOWN_SEQ].dataArrIdx  = 0;
 #endif
 }
-
+#ifdef MV_HWS_COM_PHY_SERDES /* AC3 and BC2*/
 /****************************************************************************/
 MV_STATUS mvSerdesReset(
 	MV_U32 serdesNum,
@@ -787,7 +872,7 @@ MV_STATUS mvSerdesReset(
 	return MV_OK;
 }
 
-/****************************************************************************/
+/*AC3:BC2:Serdes core reset****************************************************************************/
 MV_STATUS mvSerdesCoreReset(MV_U32 serdesNum, MV_BOOL coreReset)
 {
 	MV_U8 seqId;
@@ -797,7 +882,7 @@ MV_STATUS mvSerdesCoreReset(MV_U32 serdesNum, MV_BOOL coreReset)
 
 	return MV_OK;
 }
-/****************************************************************************/
+/*AC3:BC2:Serdes Polarity swap ***************************************************************************/
 MV_STATUS mvHwsComH28nmSerdesPolaritySwap(MV_U32 serdesNum, MV_BOOL isRx, MV_BOOL doSwap)
 {
 	/* bit[10] swaps TX polarity, bit[11] - RX polarity */
@@ -809,7 +894,7 @@ MV_STATUS mvHwsComH28nmSerdesPolaritySwap(MV_U32 serdesNum, MV_BOOL isRx, MV_BOO
 	return MV_OK;
 }
 
-/****************************************************************************/
+/*AC3:BC2:Serdes Power COntrol***************************************************************************/
 MV_STATUS mvHwsComH28nmSerdesPowerCtrl
 (
 	MV_U32	serdesNum,
@@ -885,8 +970,8 @@ MV_STATUS mvHwsComH28nmSerdesPowerCtrl
 
 	return MV_OK;
 }
-
-/***************************************************************************/
+#endif /* MV_HWS_COM_PHY_SERDES */
+/*AC3:BC2:BOBK: PEX polarity set**************************************************************************/
 MV_STATUS mvCtrlPexPolaritySet(MV_PCIE_POLARITY polarity)
 {
 	MV_TWSI_SLAVE	twsiSlave;
@@ -914,7 +999,7 @@ MV_STATUS mvCtrlPexPolaritySet(MV_PCIE_POLARITY polarity)
 	return MV_OK;
 }
 
-/***************************************************************************/
+/*AC3:BC2:BOBK: Serdes power up control**************************************************************************/
 MV_STATUS mvSerdesPowerUpCtrl(
 	MV_U32			serdesNum,
 	MV_BOOL			serdesPowerUp,
@@ -926,7 +1011,10 @@ MV_STATUS mvSerdesPowerUpCtrl(
 	MV_BOOL			swapTx
 )
 {
-	DEBUG_INIT_FULL_S("\n### mvSerdesPowerUpCtrl ###\n");
+#ifdef MV_HWS_AVAGO_SERDES
+    MV_U8 refClockSource;
+#endif
+    DEBUG_INIT_FULL_S("\n### mvSerdesPowerUpCtrl ###\n");
 
 	DEBUG_INIT_FULL_C("serdes num = ", serdesNum, 2);
 	DEBUG_INIT_FULL_C("serdes type = ", serdesType, 2);
@@ -934,19 +1022,26 @@ MV_STATUS mvSerdesPowerUpCtrl(
 	/* Executing power up, ref clock set, speed config and TX config */
 	switch (serdesType) {
 	case SGMII0:
-	case SGMII1:
-		if (mvHwsSerdesRevGet() == MV_SERDES_28NM_REV_1) {
+    case SGMII1:
+#if defined (MV_HWS_COM_PHY_SERDES)
+        if (mvHwsSerdesRevGet() == MV_SERDES_28NM_REV_1) {
 			/* in BC2-A0 there is no MSYS Serdes support so it is skipped */
 			return MV_OK;
 		}
-#ifdef MV_HWS_COM_PHY_SERDES
-
-		DEBUG_INIT_FULL_C("== Init SGMII\n", (serdesType == SGMII0 ? 0 :1), 1);
+        DEBUG_INIT_FULL_C("== Init SGMII\n", (serdesType == SGMII0 ? 0 :1), 1);
 		CHECK_STATUS(mvHwsComH28nmSerdesPowerCtrl(serdesNum, serdesPowerUp));
 		CHECK_STATUS(mvHwsComH28nmSerdesPolaritySwap(serdesNum, MV_TRUE, swapRx));
 		CHECK_STATUS(mvHwsComH28nmSerdesPolaritySwap(serdesNum, MV_FALSE, swapTx));
 		return mvHwsComH28nmSerdesTxIfSelect(serdesNum);
 
+#elif defined (MV_HWS_AVAGO_SERDES)
+        /* Power up Avago serdes */
+        CHECK_STATUS(mvHwsRefClockGet (serdesNum,&refClockSource));
+        CHECK_STATUS(mvHwsAvagoSerdesPowerCtrlImpl(0, /* devNum = 0 */
+                                                   0, /* portGroup = 0 */
+                                                   serdesNum, MV_TRUE,AVAGO_1_25G_BAUDRATE_DIVIDER_VALUE,refClock,refClockSource,XAUI_MEDIA,_10BIT_ON ));
+        mvHwsAvagoSerdesPolarityConfigImpl(0,0,serdesNum,swapTx,swapRx);
+        mvHwsAvagoSerdesTxIfSelect(serdesNum);
 #endif
 	case PEX0:
 		DEBUG_INIT_FULL_S("== Init PEX0\n");
@@ -967,7 +1062,7 @@ MV_STATUS mvSerdesPowerUpCtrl(
 	return MV_OK;
 }
 
-/***************************************************************************/
+/*AC3:BC2:BOBK: Serdes Lanes power up**************************************************************************/
 MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 {
 	MV_U32			serdesId;
@@ -1019,7 +1114,7 @@ MV_STATUS powerUpSerdesLanes(SERDES_MAP  *serdesConfigMap)
 	return MV_OK;
 }
 
-/****************************************************************************/
+/*AC3:BC2:BOBK: Serdes configuration***************************************************************************/
 MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 {
 	SERDES_MAP serdesConfigurationMap[MAX_SERDES_LANES];
@@ -1028,7 +1123,10 @@ MV_STATUS mvCtrlHighSpeedSerdesPhyConfig(MV_VOID)
 
 	/* init silicon related configurations */
 	mvSiliconInit();
-
+#ifdef MV_HWS_AVAGO_SERDES
+    /* load Avago FW and init AVAGO serdes*/
+     CHECK_STATUS(mvHwsAvagoSerdesInit(0)); /* devNum = 0 */
+#endif
 	/* Init serdes sequences DB */
 	mvSerdesSeqInit();
 

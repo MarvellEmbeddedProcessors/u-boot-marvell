@@ -80,7 +80,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MV_SERDES_28NM_REV_1				0x0
 #define MV_SERDES_28NM_REV_3				0x1
-
+#define MV_SERDES_AVAGO_REV_0				0x2
 
 #define CONF_ROOT_COMPLEX_OFFSET			1
 #define PEX_PHY_INDIRECT_ACC_REG			0x41b00
@@ -100,6 +100,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define RX_CALIBRATION_OFFSET				7
 #define TX_CALIBRATION_OFFSET				14
 #define TX_SLEW_CNTRL_ENABLE_OFFSET			15
+
+#define  AVAGO_1_25G_BAUDRATE_DIVIDER_VALUE 8
+
 /********************************* Enum ********************************/
 typedef enum {
 	PEX0,
@@ -157,6 +160,34 @@ typedef enum
     PRIMARY,
     SECONDARY
 }MV_HWS_REF_CLOCK_SRC;
+typedef enum
+{
+    _10BIT_ON,
+    _10BIT_OFF,
+    _10BIT_NA,
+    _20BIT_ON,
+    _40BIT_ON
+
+}MV_HWS_SERDES_10B_MODE;
+
+typedef enum
+{
+    XAUI_MEDIA,
+    RXAUI_MEDIA
+
+}MV_HWS_SERDES_MEDIA;
+enum{ EXTERNAL_REG, INTERNAL_REG};
+
+/********* Addresses for TABLE SD_Regs.cfg ********/
+enum
+{
+    SERDES_EXTERNAL_CONFIGURATION_0 = 0x0,
+    SERDES_EXTERNAL_CONFIGURATION_1 = 0x4,
+    SERDES_EXTERNAL_CONFIGURATION_2 = 0x8,
+    SERDES_EXTERNAL_CONFIGURATION_3 = 0xc
+
+}SERDES_EXTERNAL_CONFIG;
+
 
 /************************************ structures ******************************/
 typedef struct {

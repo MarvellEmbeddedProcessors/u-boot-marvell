@@ -80,6 +80,8 @@ do { \
 	} \
 } while(0)
 
+#define hwsSerdesRegSetFuncPtr(devNum,portGroup, regType,serdesNum,regAddr,data,mask) (mvGenUnitRegisterSet(SERDES_UNIT,serdesNum,regAddr,data,mask))
+
 typedef enum
 {
 	INTERNAL_REG_UNIT,

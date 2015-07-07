@@ -95,6 +95,7 @@ endif
 ifeq "$(LIBNAME)"  "msys_bobk"
   CSRC += $(BOARD)/mvCtrlPex.c
   CSRC += $(BOARD)/mvHighSpeedTopologySpec-bobk.c
+  include $(BOARD)/avago/aapl/avago.mk
 endif
 
 COBJ = $(subst .c,.o,$(CSRC))
@@ -118,3 +119,4 @@ $(TGT_UART): $(CUART_OBJ)
 
 clean:
 	$(RM) $(BOARD)/*.o  ./*.a
+

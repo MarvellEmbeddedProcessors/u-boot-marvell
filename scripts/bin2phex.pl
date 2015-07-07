@@ -4,10 +4,6 @@ sub bin2hex
 {
 	my ($in_file, $out_file, $base_addr, $width, $page_size) = @_;
 
-	# Convert base address to 16 byte resolution
-	my $addr = sprintf("%d", hex($base_addr));
-	$addr = $addr / $width;
-
 	unless(open ($src, "<$in_file"))
 	{
 		print ("Failed to open input file $in_file\n");
@@ -21,6 +17,11 @@ sub bin2hex
 		goto ERROR;
 	}
 
+	# Convert base address to 16 byte resolution
+	my $addr = sprintf("%d", hex($base_addr));
+	my $addr_str = sprintf("@%07x",$addr / $width);
+	print $dst "$addr_str\n";
+
 	my @bin;
 	while (<$src>)
 	{
@@ -31,9 +32,6 @@ sub bin2hex
 	my $size = scalar(@bin);
 	my $idx = 0;
 	while ($size > 0) {
-		# Print address line
-		my $addr_str = sprintf("@%07x",$addr);
-		print $dst "$addr_str\n";
 
 		$byte = 0;
 		while ($byte < $width) {
@@ -42,7 +40,6 @@ sub bin2hex
 		}
 
 		print $dst "\n";
-		$addr++;
 		$idx += $width;
 		$size -= $width;
 
@@ -50,16 +47,12 @@ sub bin2hex
 		if(defined($page_size) and (($idx % $page_size) == 0)) {
 			my $spare = $page_size;
 			while ($spare > 0) {
-				my $addr_str = sprintf("@%07x",$addr);
-				print $dst "$addr_str\n";
-
 				$byte = 0;
 				while ($byte < $width) {
 					print $dst "ff";
 					$byte++;
 				}
 				print $dst "\n";
-				$addr++;
 				$spare -= $width;
 			}
 		}

@@ -19,6 +19,8 @@
 #ifndef _COMPHY_H_
 #define _COMPHY_H_
 
+#include <fdtdec.h>
+
 #define MAX_LANE_OPTIONS 10
 
 enum phy_speed {
@@ -57,22 +59,37 @@ enum phy_type {
 	INVALID_TYPE = 0xff
 };
 
+struct comphy_mux_options {
+	enum phy_type type;
+	u32 mux_value;
+};
+
+struct comphy_mux_data {
+	u32 max_lane_values;
+	struct comphy_mux_options mux_values[MAX_LANE_OPTIONS];
+};
+
 struct comphy_map {
 	enum phy_type type;
 	enum phy_speed speed;
 };
 
-u32 comphy_init(const void *blob);
+struct chip_serdes_phy_config {
+	enum fdt_compat_id compat;
+	struct comphy_mux_data *mux_data;
+	int (*ptr_comphy_chip_init)(struct chip_serdes_phy_config *, struct comphy_map *);
+	u32 comphy_base_addr;
+	u32 hpipe3_base_addr;
+	u32 comphy_lanes_count;
+	u32 comphy_mux_bitcount;
+};
 
-#ifdef CONFIG_TARGET_ARMADA_38X
-struct comphy_mux_data *get_a38x_comphy_mux_data(void);
-#endif
-#ifdef CONFIG_TARGET_ARMADA_8K
-struct comphy_mux_data *get_ap806_comphy_mux_data(void);
-#endif
-#ifdef CONFIG_TARGET_CP110
-struct comphy_mux_data *get_cp110_comphy_mux_data(void);
-#endif
+void reg_set(u32 addr, u32 mask, u32 data);
+u32 comphy_init(const void *blob);
+int comphy_a38x_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *comphy_map_data);
+void comphy_pcie_config_set(u32 comphy_max_count, struct comphy_map *serdes_map);
+void comphy_pcie_config_detect(u32 comphy_max_count, struct comphy_map *serdes_map);
+void comphy_pcie_unit_general_config(u32 pex_index);
 
 #endif /* _COMPHY_H_ */
 

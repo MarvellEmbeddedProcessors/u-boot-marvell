@@ -204,6 +204,20 @@ int fdtdec_next_alias(const void *blob, const char *name,
 enum fdt_compat_id fdtdec_lookup(const void *blob, int node);
 
 /**
+ * Find the second comaptible ID for a given node.
+ *
+ * Generally each node has at least one compatible string attached to it.
+ * This function looks through our list of known compatible strings and
+ * returns the corresponding ID which matches the compatible string, that
+ * different than the first compatible in the node
+ * @param blob          FDT blob to use
+ * @param node          Node containing compatible string to find
+ * @param compat        compatible ID of the first compatible
+ * @return compatible ID, or COMPAT_UNKNOWN if we cannot find a match
+ */
+enum fdt_compat_id fdtdec_next_lookup(const void *blob, int node, enum fdt_compat_id compat);
+
+/**
  * Find the next compatible node for a peripheral.
  *
  * Do the first call with node = 0. This function will return a pointer to

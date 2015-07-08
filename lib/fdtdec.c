@@ -180,6 +180,19 @@ enum fdt_compat_id fdtdec_lookup(const void *blob, int node)
 	return COMPAT_UNKNOWN;
 }
 
+enum fdt_compat_id fdtdec_next_lookup(const void *blob, int node, enum fdt_compat_id compat)
+{
+	enum fdt_compat_id id;
+
+	for (id = COMPAT_UNKNOWN; id < COMPAT_COUNT; id++) {
+		if (id == compat)
+			continue;
+		if (0 == fdt_node_check_compatible(blob, node, compat_names[id]))
+			return id;
+	}
+	return COMPAT_UNKNOWN;
+}
+
 int fdtdec_next_compatible(const void *blob, int node,
 		enum fdt_compat_id id)
 {
@@ -194,8 +207,7 @@ int fdtdec_next_compatible_subnode(const void *blob, int node,
 	} while (*depthp > 1);
 
 	/* If this is a direct subnode, and compatible, return it */
-	if (*depthp == 1 && 0 == fdt_node_check_compatible(
-						blob, node, compat_names[id]))
+	if (*depthp == 1 && 0 == fdt_node_check_compatible(blob, node, compat_names[id]))
 		return node;
 
 	return -FDT_ERR_NOTFOUND;

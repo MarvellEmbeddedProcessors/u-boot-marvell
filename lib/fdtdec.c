@@ -95,6 +95,8 @@ static const char * const compat_names[COMPAT_COUNT] = {
 	COMPAT(MVEBU_RFU, "marvell,mvebu-rfu"),
 	COMPAT(MVEBU_IOB, "marvell,mvebu-iob"),
 	COMPAT(MVEBU_PCIE, "marvell,mvebu-pcie"),
+	COMPAT(MVEBU_COMPHY, "marvell,mvebu-comphy"),
+	COMPAT(COMPHY_ARMADA_38X, "marvell,comphy-armada38x"),
 };
 
 const char *fdtdec_get_compatible(enum fdt_compat_id id)

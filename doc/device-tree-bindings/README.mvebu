@@ -49,6 +49,8 @@ Group Ltd.
 			2.1.4 /soc/internal-regs/map-<DRIVER>:
 				Specify the address decoding interface, check doc/device-tree-bindings/misc/mvebu-bus-DRIVER.txt
 				DRIVER = ccu/iob/rfu/mbus
+			2.1.5 /soc/internal-regs/comphy:
+				Specify the COMPHY interface, check doc/device-tree-bindings/comphy/mvebu_comphy.txt
 
 3) /sar/ node:
 	Specify the sample at reset database, check

@@ -1,0 +1,43 @@
+Marvell COMPHY SerDes lane bindings
+=====================================
+
+The COMPHY node include description about the COMPHY SerDes lane configuration.
+The comphy driver initialize the MUX of the SerDes lanes, and power up the serdes
+by dependencies on the FDT blob configurations
+
+The COMPHY node requires the following properties:
+	- compatible:
+		the compatible should include "marvell,mvebu-comphy"
+		and the COMPHY per chip compatible:
+		"marvell,comphy-armada38x" for Armada-38x
+		the COMPHY per chip used to set which MUX configuration to use, and COMPHY power-up revision
+	- reg-comphy: the base address of the COMPHY units
+	- reg-hpipe3: the base address of the hpipe3 units
+	- max-lanes: maximum number of comphy lanes
+	- mux-bitcount: number of bits that allocated for every mux in the comphy-selector register
+	- phy: entry that include the configuration of the phy
+	  every phy should have the below parameters:
+	  - phy-type: the PHY type (SGMII0/SATA1/PEX2...), the posible modes under include/dt-bindings/comphy/comphy_data.h
+	  - phy-speed: the PHY speed (1G/1.5G...), the posible speeds under include/dt-bindings/comphy/comphy_data.h
+
+Example:
+	comphy {
+		compatible = "marvell,mvebu-comphy", "marvell,comphy-armada38x";
+		mux-bitcount = <4>;
+		max-comphy = <6>;
+		reg-comphy = <0x18300 0x100>;
+		reg-hpipe3 = <0xa0000 0x800>;
+		phy0 {
+			phy-type = <PHY_TYPE_SATA0>;
+			phy-speed = <PHY_SPEED_1_25G>;
+		};
+		phy1 {
+			phy-type = <PHY_TYPE_PEX0>;
+			phy-speed = <PHY_SPEED_5G>;
+		};
+		phy2 {
+			phy-type = <PHY_TYPE_PEX1>;
+			phy-speed = <PHY_SPEED_5G>;
+		};
+	};
+

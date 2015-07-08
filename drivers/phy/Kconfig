@@ -1,0 +1,10 @@
+config MVEBU_COMPHY_SUPPORT
+	bool "ComPhy SerDes driver"
+	depends on SPL
+	default n
+	help
+	  Choose this option to add support
+	  for Comphy driver.
+	  This driver passes over the lanes
+	  and initialize the lane depends on the
+	  type and speed.

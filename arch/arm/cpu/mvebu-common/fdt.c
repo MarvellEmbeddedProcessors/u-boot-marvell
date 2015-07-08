@@ -43,6 +43,10 @@ void *fdt_get_regs_base(void)
 		return gd->arch.reg_base;
 
 	node = fdt_node_offset_by_compatible(gd->fdt_blob, -1, "marvell,internal-regs");
+#ifdef CONFIG_SPL_BUILD
+	gd->arch.reg_base = (void *)((uintptr_t)fdtdec_get_addr(gd->fdt_blob, node, "reg-spl"));
+#else
 	gd->arch.reg_base = (void *)((uintptr_t)fdtdec_get_addr(gd->fdt_blob, node, "reg"));
+#endif
 	return gd->arch.reg_base;
 }

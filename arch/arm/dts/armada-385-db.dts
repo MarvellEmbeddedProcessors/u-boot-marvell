@@ -1,5 +1,7 @@
 
 /dts-v1/;
+
+#include <dt-bindings/comphy/comphy_data.h>
 #define ATTR(remapped, target, attributes) (((remapped) << 12) | ((target) << 8) | (attributes))
 
 / {
@@ -87,6 +89,26 @@
 				#address-cells = <1>;
 				#size-cells = <0>;
 				status = "disabled";
+			};
+
+			comphy {
+				compatible = "marvell,mvebu-comphy", "marvell,comphy-armada38x";
+				mux-bitcount = <4>;
+				max-lanes = <6>;
+				reg-comphy = <0x18300 0x8>;
+				reg-hpipe3 = <0xa0000 0x8>;
+				phy0 {
+					phy-type = <PHY_TYPE_SATA0>;
+					phy-speed = <PHY_SPEED_1_25G>;
+				};
+				phy1 {
+					phy-type = <PHY_TYPE_PEX0>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
+				phy2 {
+					phy-type = <PHY_TYPE_PEX1>;
+					phy-speed = <PHY_SPEED_5G>;
+				};
 			};
 			mbus {
 				compatible = "marvell,mvebu-mbus";

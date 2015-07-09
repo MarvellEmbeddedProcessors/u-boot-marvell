@@ -2363,8 +2363,9 @@ MV_U32 mvCtrlGetJuncTemp(MV_VOID)
 	reg = MV_REG_READ(TSEN_STATUS_REG);
 	reg = (reg & TSEN_STATUS_TEMP_OUT_MASK) >> TSEN_STATUS_TEMP_OUT_OFFSET;
 
-	return ((((10000 * reg) / 21445) * 1000) - 272674) / 1000;
+	return ((4761 * reg) - 2791000) / 10000;
 }
+
 /*******************************************************************************
 * mvCtrlNandClkSet
 *

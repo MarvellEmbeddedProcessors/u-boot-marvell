@@ -23,7 +23,6 @@
 #include <errno.h>
 #include <asm/io.h>
 #include <linux/compiler.h>
-#include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/pinctl.h>
 #include <asm/arch-mvebu/mpp.h>
@@ -110,7 +109,6 @@ int mvebu_board_init(void)
 	int board_id;
 	struct mvebu_board_family *brd_fam;
 	struct mvebu_board_info *brd;
-	u16 *unit_mask = soc_get_unit_mask_table();
 
 	debug("Initializing board\n");
 
@@ -138,10 +136,6 @@ int mvebu_board_init(void)
 	brd = brd_fam->curr_board;
 
 	mvebu_print_info(brd->name);
-
-	/* Update active units list for board */
-	if (brd->unit_mask)
-		update_unit_info(unit_mask, brd->unit_mask, brd->unit_update_mode);
 
 #ifdef CONFIG_MVEBU_MPP_BUS
 	mpp_bus_probe();

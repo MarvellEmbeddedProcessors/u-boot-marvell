@@ -21,7 +21,6 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch-mvebu/soc.h>
-#include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-armada38x/armada38x.h>
 
 #define MBUS_SDRAM_WIN_ENABLE			0x1

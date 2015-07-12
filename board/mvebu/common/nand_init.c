@@ -20,13 +20,12 @@
 #include <nand.h>
 
 #include <asm/arch-mvebu/clock.h>
-#include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/driver_interface.h>
 
 void board_nand_init(void)
 {
-	if (unit_info_is_active(NAND_UNIT_ID, 0)) {
-		debug("Activating NAND\n");
-		pxa3xx_nand_init();
-	}
+#ifdef CONFIG_NAND_PXA3XX
+	debug("Activating NAND\n");
+	pxa3xx_nand_init();
+#endif
 }

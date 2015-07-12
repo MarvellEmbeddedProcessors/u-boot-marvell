@@ -20,7 +20,6 @@
 #include <errno.h>
 #include <netdev.h>
 #include <spi.h>
-#include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/driver_interface.h>
 
 int board_eth_init(bd_t *bis)

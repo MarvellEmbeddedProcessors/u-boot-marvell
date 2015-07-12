@@ -19,7 +19,6 @@
 #ifndef _SOC_H_
 #define _SOC_H_
 
-#include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch/soc-info.h>
 
 #define MAX_SOC_NAME	32
@@ -29,14 +28,12 @@
 struct mvebu_soc_info {
 	char	name[MAX_SOC_NAME];
 	int	id;
-	u16	*unit_disable;
 };
 
 struct mvebu_soc_family {
 	int	id;
 	char	name[MAX_SOC_NAME];
 	char	rev_name[MAX_SOC_REVS][MAX_REV_NAME];
-	u16	*base_unit_info;
 	struct	mvebu_soc_info *soc_table;
 	struct	mvebu_soc_info *curr_soc;
 
@@ -55,8 +52,6 @@ struct mvebu_soc_family *soc_init(void);
 /* Common SOC API */
 int mvebu_soc_init(void);
 void mvebu_print_soc_info(void);
-
-u16 *soc_get_unit_mask_table(void);
 
 /* MPP API */
 char **soc_get_mpp_desc_table(void);

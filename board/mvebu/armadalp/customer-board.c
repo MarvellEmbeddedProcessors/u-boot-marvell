@@ -18,20 +18,11 @@
 
 #include <common.h>
 #include <linux/compiler.h>
-#include <asm/arch-mvebu/unit-info.h>
 #include "board-info.h"
-
-/* Optionaly define which units to disable */
-u16 armadalp_customer_unit_disable[MAX_UNIT_ID] = {
-	[NAND_UNIT_ID] = id_to_mask(0),
-	[SDIO_UNIT_ID] = id_to_mask(0)
-};
 
 struct mvebu_board_info armadalp_customer_info = {
 	.name = "CUSTOMER-BOARD0-MV-ARMADA-LP",
 	.id = ARMADA_LP_CUSTOMER0_ID,
-	.unit_mask = armadalp_customer_unit_disable,
-	.unit_update_mode = UNIT_INFO_DISABLE,
 	.mpp_regs = {0x11111111, 0x00100001},
 	.configurable = 0,
 };

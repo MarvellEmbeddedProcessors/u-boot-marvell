@@ -22,7 +22,6 @@
 #include <cli.h>
 
 #include <asm/io.h>
-#include <asm/arch-mvebu/unit-info.h>
 
 #ifdef CONFIG_MVEBU_CCU
 #include <asm/arch-mvebu/ccu.h>
@@ -99,28 +98,6 @@ U_BOOT_CMD(
 	"address on the PCI bus and so to access different PCI BARs\n"
 );
 #endif
-
-
-int do_units_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
-			char * const argv[])
-{
-	const char *cmd = argv[1];
-
-	if (strcmp(cmd, "list") == 0)
-		dump_unit_info();
-	else
-		printf("ERROR: unknown command to units: \"%s\"\n", cmd);
-
-	return 0;
-}
-
-U_BOOT_CMD(
-	units,      2,     1,      do_units_cmd,
-	"units	- Display and modify active units\n",
-	"\n"
-	"Display and modufy units in current setup\n"
-	"\tlist - Display current active units\n"
-);
 
 int ir_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {

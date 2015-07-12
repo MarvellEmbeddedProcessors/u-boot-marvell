@@ -22,7 +22,6 @@
 #include <asm/system.h>
 #include <asm/bitops.h>
 #include <asm/arch-mvebu/mvebu.h>
-#include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/soc.h>
 #include <asm/arch-mvebu/tables.h>
 
@@ -45,22 +44,6 @@ int __soc_late_init(void)
 	return 0;
 }
 int soc_late_init(void) __attribute__((weak, alias("__soc_late_init")));
-
-u16 *soc_get_unit_mask_table(void)
-{
-	struct mvebu_soc_family *soc_family = get_soc_family();
-	return soc_family->base_unit_info;
-}
-
-static int update_soc_units(struct mvebu_soc_info *soc)
-{
-	u16 *unit_mask = soc_get_unit_mask_table();
-
-	if (soc->unit_disable)
-		update_unit_info(unit_mask, soc->unit_disable, UNIT_INFO_DISABLE);
-
-	return 0;
-}
 
 int mvebu_soc_init()
 {
@@ -96,9 +79,6 @@ int mvebu_soc_init()
 
 	/* Store global variable to SOC */
 	debug("Current device name = %s %s\n", soc->name, soc_family->rev_name[soc_rev]);
-
-	/* Update SOC info according to family */
-	update_soc_units(soc);
 
 	/* Initialize physical memory map */
 #ifdef CONFIG_MVEBU_CCU

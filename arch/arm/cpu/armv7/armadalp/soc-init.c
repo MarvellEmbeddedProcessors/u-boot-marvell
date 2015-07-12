@@ -21,7 +21,6 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch-mvebu/soc.h>
-#include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-armadalp/armadalp.h>
 
 int soc_early_init_f(void)

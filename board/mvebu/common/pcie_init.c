@@ -19,7 +19,6 @@
 #include <common.h>
 #include <errno.h>
 #include <pci.h>
-#include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/driver_interface.h>
 
 void pci_init_board(void)

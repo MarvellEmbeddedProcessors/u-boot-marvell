@@ -18,7 +18,6 @@
 
 #include <common.h>
 #include <linux/compiler.h>
-#include <asm/arch-mvebu/unit-info.h>
 #include "board-info.h"
 
 struct mvebu_board_config db_a8021_config = {

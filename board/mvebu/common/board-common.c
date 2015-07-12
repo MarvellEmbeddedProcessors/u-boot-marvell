@@ -24,7 +24,6 @@
 #include <netdev.h>
 #include <asm/io.h>
 #include <linux/compiler.h>
-#include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/soc.h>
 #include "board.h"
 

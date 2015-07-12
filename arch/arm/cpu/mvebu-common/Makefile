@@ -16,7 +16,6 @@
 # ***************************************************************************
 #
 
-obj-y += unit-info.o
 obj-y += soc-init.o
 obj-y += misc.o
 obj-$(CONFIG_MVEBU_MPP_BUS) += mpp-bus.o

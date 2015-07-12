@@ -22,8 +22,6 @@
 #include <vsprintf.h>
 #include <errno.h>
 
-#include <asm/arch-mvebu/unit-info.h>
-
 #include <spi_flash.h>
 #include <spi.h>
 
@@ -142,10 +140,6 @@ error:
 
 int is_spi_active(void)
 {
-	if (unit_info_get_count(SPI_UNIT_ID) == 0) {
-		printf("Error: SPI unit is inactive or doesn't exist\n");
-		return 0;
-	}
 	return 1;
 }
 #else
@@ -194,10 +188,6 @@ error:
 
 int is_nand_active(void)
 {
-	if (unit_info_get_count(NAND_UNIT_ID) == 0) {
-		printf("Error: NAND unit is inactive or doesn't exist\n");
-		return 0;
-	}
 	return 1;
 }
 #else
@@ -213,10 +203,6 @@ static int nor_burn_image(int image_size)
 
 int is_nor_active(void)
 {
-	if (unit_info_get_count(DEVICE_BUS_UNIT_ID) == 0) {
-		printf("Error: Device bus unit is inactive or doesn't exist\n");
-		return 0;
-	}
 	return 1;
 }
 #else
@@ -252,14 +238,6 @@ static int usb_read_file(const char *file_name)
 
 int is_usb_active(void)
 {
-	int unit_cnt;
-
-	unit_cnt  = unit_info_get_count(USB_UNIT_ID);
-	unit_cnt += unit_info_get_count(USB3_UNIT_ID);
-	if (!unit_cnt) {
-		printf("Error: USB unit is inactive or doesn't exist\n");
-		return 0;
-	}
 	return 1;
 }
 #else

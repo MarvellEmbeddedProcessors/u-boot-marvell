@@ -21,7 +21,6 @@
 
 #include <common.h>
 #include <asm/arch-mvebu/mvebu.h>
-#include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch/soc-info.h>
 #include <linux/compiler.h>
 #include "sar.h"
@@ -62,8 +61,6 @@ struct mvebu_board_config {
 struct mvebu_board_info {
 	char name[MAX_BOARD_NAME];
 	u32  id;
-	u16  *unit_mask;
-	enum unit_update_mode unit_update_mode;
 	/* Default MPP configurations */
 	u32 mpp_regs[MAX_MPP_REGS];
 

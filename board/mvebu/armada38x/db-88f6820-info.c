@@ -18,7 +18,6 @@
 
 #include <common.h>
 #include <linux/compiler.h>
-#include <asm/arch-mvebu/unit-info.h>
 #include <asm/arch-mvebu/mpp.h>
 #include "board-info.h"
 

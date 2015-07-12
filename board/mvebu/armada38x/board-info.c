@@ -18,7 +18,6 @@
 
 #include <common.h>
 #include <linux/compiler.h>
-#include <asm/arch-mvebu/unit-info.h>
 #include "board-info.h"
 
 #define SATR_EEPROM0_ADDR	0x22

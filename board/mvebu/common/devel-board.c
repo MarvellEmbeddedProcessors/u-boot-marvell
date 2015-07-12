@@ -28,21 +28,15 @@
 int mvebu_devel_board_init(struct mvebu_board_family *brd_fam)
 {
 	struct mvebu_board_info *brd = brd_fam->curr_board;
-	int cfg_id, idx;
+	int cfg_id;
 
 	/* Update SAR and CFG for board */
 	if (brd->configurable) {
-		struct mvebu_board_config *brd_cfg = brd->config_data;
-
 		/* Deactivate all CFG entries */
 		for (cfg_id = 0; cfg_id < MAX_CFG; cfg_id++)
 			brd_fam->cfg->cfg_lookup[cfg_id].active = 0;
-		/* Activate board entries */
-		for (idx = 0; idx < brd_cfg->sar_cnt; idx++)
-			brd_fam->cfg->cfg_lookup[brd_cfg->active_sar[idx]].active = 1;
-		/* Initialize sample at reset structs for the SatR command */
-		sar_init();
 	}
+	sar_init();
 
 	/* Update MPP configurations */
 	if (brd->configure_mpp)

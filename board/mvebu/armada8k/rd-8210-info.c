@@ -20,18 +20,9 @@
 #include <linux/compiler.h>
 #include "board-info.h"
 
-
-struct mvebu_board_config rd_a8021_config = {
-	.sar_cnt = 1,
-	.active_sar = {CPUS_NUM_SAR},
-	.cfg_cnt = 1,
-	.active_cfg = {BOARD_ID_CFG}
-};
-
 struct mvebu_board_info a8021_rd_info = {
 	.name = "RD-MV8021",
 	.id = ARMADA_8021_RD_ID,
 	.configurable = 1,
-	.config_data = &rd_a8021_config,
 };
 

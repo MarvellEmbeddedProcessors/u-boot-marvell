@@ -21,14 +21,6 @@
 #include <asm/arch-mvebu/mpp.h>
 #include "board-info.h"
 
-
-struct mvebu_board_config rd_a38x_config = {
-	.sar_cnt = 1,
-	.active_sar = {CPUS_NUM_SAR},
-	.cfg_cnt = 1,
-	.active_cfg = {BOARD_ID_CFG}
-};
-
 int rd_a38x_configure_mpp(void)
 {
 #ifdef CONFIG_MVEBU_MPP_BUS
@@ -44,5 +36,4 @@ struct mvebu_board_info a38x_rd_info = {
 	.id = ARMADA_38X_RD_ID,
 	.configure_mpp = &rd_a38x_configure_mpp,
 	.configurable = 1,
-	.config_data = &rd_a38x_config,
 };

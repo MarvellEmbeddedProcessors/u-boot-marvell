@@ -20,17 +20,9 @@
 #include <linux/compiler.h>
 #include "board-info.h"
 
-struct mvebu_board_config db0_armadalp_config = {
-	.sar_cnt = 2,
-	.active_sar = {BOOT_SRC_SAR, CPUS_NUM_SAR},
-	.cfg_cnt = 2,
-	.active_cfg = {BOARD_ID_CFG, SERDES_0_CFG}
-};
-
 struct mvebu_board_info db0_armadalp_info = {
 	.name = "DB0-MV-ARMADALP",
 	.id = ARMADA_LP_DB0_ID,
 	.configurable = 1,
-	.config_data = &db0_armadalp_config,
 };
 

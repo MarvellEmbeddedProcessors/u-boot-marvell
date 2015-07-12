@@ -31,7 +31,9 @@
 #ifndef AAPL_H_
 #define AAPL_H_
 
+#ifndef MV_HWS_REDUCED_BUILD
 #define MV_HWS_REDUCED_BUILD
+#endif /* MV_HWS_REDUCED_BUILD */
 /*#define MV_HWS_REDUCED_BUILD_EXT_CM3*/
 
 #ifdef MV_HWS_REDUCED_BUILD

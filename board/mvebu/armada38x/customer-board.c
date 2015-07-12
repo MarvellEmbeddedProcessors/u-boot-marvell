@@ -23,8 +23,6 @@
 struct mvebu_board_info a38x_customer_info = {
 	.name = "CUSTOMER-BOARD",
 	.id = ARMADA_38X_CUSTOMER_ID,
-	.mpp_regs = {0x11111111, 0x11111111, 0x55266011, 0x25252051,
-		     0x25255555, 0x40042565, 0x55550555, 0x00005550},
 	.configurable = 0,
 };
 

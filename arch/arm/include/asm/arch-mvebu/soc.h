@@ -36,10 +36,6 @@ struct mvebu_soc_family {
 	char	rev_name[MAX_SOC_REVS][MAX_REV_NAME];
 	struct	mvebu_soc_info *soc_table;
 	struct	mvebu_soc_info *curr_soc;
-
-	u32 mpp_protect[MAX_MPP_REGS];
-	u32 mpp_update[MAX_MPP_REGS];
-	u32 mpp_mask[MAX_MPP_REGS];
 };
 
 int common_soc_init(struct mvebu_soc_family *soc_family_info);
@@ -52,12 +48,6 @@ struct mvebu_soc_family *soc_init(void);
 /* Common SOC API */
 int mvebu_soc_init(void);
 void mvebu_print_soc_info(void);
-
-/* MPP API */
-char **soc_get_mpp_desc_table(void);
-u32 *soc_get_mpp_update_mask(void);
-u32 *soc_get_mpp_update_val(void);
-u32 *soc_get_mpp_protect_mask(void);
 
 DECLARE_GLOBAL_DATA_PTR;
 #define get_soc_family()  (struct mvebu_soc_family *)(gd->arch.soc_family)

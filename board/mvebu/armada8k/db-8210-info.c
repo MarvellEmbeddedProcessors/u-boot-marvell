@@ -30,7 +30,6 @@ struct mvebu_board_config db_a8021_config = {
 struct mvebu_board_info a8021_db_info = {
 	.name = "DB-MV8021",
 	.id = ARMADA_8021_DB_ID,
-	.mpp_regs = {0x11111111, 0x00100001},
 	.configurable = 1,
 	.config_data = &db_a8021_config,
 };

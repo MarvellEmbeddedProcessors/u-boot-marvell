@@ -49,8 +49,6 @@ int db_a38x_configure_mpp(void)
 struct mvebu_board_info a38x_db_info = {
 	.name = "DB-88F6820-BP",
 	.id = ARMADA_38X_DB_ID,
-	.mpp_regs = {0x11111111, 0x11111111, 0x11266011, 0x22222011,
-		     0x22200002, 0x40042022, 0x55550555, 0x00005550},
 	.configure_mpp = &db_a38x_configure_mpp,
 	.configurable = 1,
 	.config_data = &db_a38x_config,

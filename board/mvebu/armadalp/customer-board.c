@@ -23,7 +23,6 @@
 struct mvebu_board_info armadalp_customer_info = {
 	.name = "CUSTOMER-BOARD0-MV-ARMADA-LP",
 	.id = ARMADA_LP_CUSTOMER0_ID,
-	.mpp_regs = {0x11111111, 0x00100001},
 	.configurable = 0,
 };
 

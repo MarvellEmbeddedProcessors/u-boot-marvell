@@ -61,8 +61,6 @@ struct mvebu_board_config {
 struct mvebu_board_info {
 	char name[MAX_BOARD_NAME];
 	u32  id;
-	/* Default MPP configurations */
-	u32 mpp_regs[MAX_MPP_REGS];
 
 	/* Only for development boards */
 	bool configurable;

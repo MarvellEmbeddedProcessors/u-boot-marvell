@@ -1155,8 +1155,12 @@ static int mv_fdt_update_ethnum(void *fdt)
 
 			/* Configure PHY mode */
 			switch (mvBoardPortTypeGet(port)) {
-			case MV_PORT_TYPE_SGMII: /* regardless the fact that qsgmii is supported by kernel DT,*/
-			case MV_PORT_TYPE_QSGMII:/* the ETH driver does not make use of this connection mode */
+			case MV_PORT_TYPE_QSGMII:
+#ifdef CONFIG_NET_COMPLEX
+				sprintf(propval, "qsgmii");
+				break;
+#endif
+			case MV_PORT_TYPE_SGMII:/* the ETH driver in Linux expect QSGMII to init the ports */
 				sprintf(propval, "sgmii");
 				break;
 			case MV_PORT_TYPE_RGMII:

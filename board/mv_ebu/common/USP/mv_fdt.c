@@ -1029,7 +1029,7 @@ static int mv_fdt_update_pinctrl(void *fdt)
 * DESCRIPTION:
 * target		: update ethernet nodes for PP3/Neta drivers.
 * node, properties	: PP3 Driver	: -property status @ node nic@X.
-*					  -property phy-mode and phy-id @ node macX.
+*					  -property phy-mode @ node macX and reg @ node phy @ node macX.
 *			  Neta Driver	: -property status and phy-mode @ node ethernet@X.
 *					  -property reg @ node ethernet-phy@X.
 *					  -property phy @ node ethernet@X (if PP SMI is used)
@@ -1057,12 +1057,16 @@ static int mv_fdt_update_ethnum(void *fdt)
 	int nodeoffset;			/* node offset from libfdt */
 	int aliasesoffset;		/* aliases node offset from libfdt */
 	int phyoffset;
+#ifdef CONFIG_NET_COMPLEX
+	int emacoffset;
+#endif
 	const uint32_t *phandle;
 	char prop[20];			/* property name */
 	char propval[20];		/* property value */
 	const char *node;		/* node name */
 	int depth = 1;
 	int err;
+
 
 	/* Get number of ethernet nodes */
 	aliasesoffset = mv_fdt_find_node(fdt, "aliases");
@@ -1137,16 +1141,31 @@ static int mv_fdt_update_ethnum(void *fdt)
 #endif
 			/* The ETH node we found contains a pointer (phandle) to its PHY
 			   The phandle is a unique numeric identifier of a specific node.
-			   For PP3 driver the phy address under 'emac-data' field
+			   For PP3 driver the phy address under 'phy' field of 'mac' node
 			   For NETA driver the phy address under 'phy' field */
 #ifdef CONFIG_NET_COMPLEX
 			phandle = fdt_getprop(fdt, nodeoffset, "emac-data", &len);
+			if (phandle == NULL || len == 0) {
+				mv_fdt_dprintf("Empty \"emac-data\" property value\n");
+				return 0;
+			}
+			emacoffset = fdt_node_offset_by_phandle(fdt, ntohl(*phandle));
+			if (emacoffset < 0) {
+				mv_fdt_dprintf("Failed to get PHY node by phandle %x\n", ntohl(*phandle));
+				return 0;
+			}
+			phandle = fdt_getprop(fdt, emacoffset, "phy", &len);
 #else
 			phandle = fdt_getprop(fdt, nodeoffset, "phy", &len);
 #endif
-			if (len == 0) {
-				mv_fdt_dprintf("Empty \"phy\" property value\n");
+			if (phandle == NULL || len == 0) {
+				mv_fdt_dprintf("Empty \"phy\" property value for port %d\n", port);
+#ifdef CONFIG_NET_COMPLEX
+				/*nic0 has no SMI phy but XSMI phy, there is no phy property for nic0*/
+				continue;
+#else
 				return 0;
+#endif
 			}
 			phyoffset = fdt_node_offset_by_phandle(fdt, ntohl(*phandle));
 			if (phyoffset < 0) {
@@ -1154,15 +1173,12 @@ static int mv_fdt_update_ethnum(void *fdt)
 				return 0;
 			}
 
-			/* Setup PHY address in DT in "reg"/"phy-id" property of an appropriate PHY node for
+			/* Setup PHY address in DT in "reg" property of an appropriate PHY node for
 			   Neta/PP3 driver.
 			   This value is HEX number, not a string, and uses network byte order */
 			phyAddr = htonl(phyAddr);
-#ifdef CONFIG_NET_COMPLEX
-			sprintf(prop, "phy-id");
-#else
 			sprintf(prop, "reg");
-#endif
+
 			mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, &phyAddr, sizeof(phyAddr)));
 			if (err < 0) {
 				mv_fdt_dprintf("Failed to set property '%s' of node '%s' in device tree\n",
@@ -1199,11 +1215,11 @@ static int mv_fdt_update_ethnum(void *fdt)
 			}
 
 			/* Setup PHY connection type in DT.
-			   PP3 driver update the type under 'mac' node (phyoffset point to the node)
+			   PP3 driver update the type under 'mac' node (emacoffset point to the node)
 			   NETA driver update the type under 'ethernet@' node (nodeoffset, point to the node) */
 			sprintf(prop, "phy-mode");
 #ifdef CONFIG_NET_COMPLEX
-			mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, propval, strlen(propval)+1));
+			mv_fdt_modify(fdt, err, fdt_setprop(fdt, emacoffset, prop, propval, strlen(propval)+1));
 #else
 			mv_fdt_modify(fdt, err, fdt_setprop(fdt, nodeoffset, prop, propval, strlen(propval)+1));
 #endif
@@ -1223,17 +1239,20 @@ static int mv_fdt_update_ethnum(void *fdt)
 				if ((port == 0) && (gpConfig == MV_GP_CONFIG_HGW_AP_2_5G ||
 						gpConfig == MV_GP_CONFIG_HGW_AP_2_5G_SATA)) {
 					sprintf(prop, "phy-speed");
-					mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, &phySpeed, sizeof(phySpeed)));
+					mv_fdt_modify(fdt, err,
+						fdt_setprop(fdt, emacoffset, prop, &phySpeed, sizeof(phySpeed)));
 				}
 				if ((port == 3) && (gpConfig == MV_GP_CONFIG_EAP_10G || gpConfig == MV_GP_CONFIG_EAP_1G)) {
 					sprintf(prop, "force-link");
 					sprintf(propval, "yes");
-					mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, propval, strlen(propval)+1));
+					mv_fdt_modify(fdt, err,
+						fdt_setprop(fdt, emacoffset, prop, propval, strlen(propval)+1));
 				} else if ((port == 2) && (gpConfig == MV_GP_CONFIG_HGW_AP_2_5G ||
 						gpConfig == MV_GP_CONFIG_HGW_AP_2_5G_SATA)) {
 					sprintf(prop, "force-link");
 					sprintf(propval, "yes");
-					mv_fdt_modify(fdt, err, fdt_setprop(fdt, phyoffset, prop, propval, strlen(propval)+1));
+					mv_fdt_modify(fdt, err,
+						fdt_setprop(fdt, emacoffset, prop, propval, strlen(propval)+1));
 				}
 			}
 #endif

@@ -172,11 +172,10 @@ static GT_U32 csCbeReg[]=
 static MV_DFX_ACCESS interfaceMap[] =
 {
 	/* Pipe	Client*/
-	{   0,	 17 },
-	{   1,	 6	},
+	{   0,	 16 },
+	{   3,	 18	},
 	{   1,	 10 },
-	{   0,	 3	},
-	{   1,	 18 }
+	{   3,	 1	}
 };
 
 static GT_U8 bobKBwPerFreq[DDR_FREQ_LIMIT] =

@@ -20,6 +20,7 @@
 #include <spl.h>
 #include <fdtdec.h>
 #include <asm/arch-mvebu/fdt.h>
+#include <asm/arch-mvebu/comphy.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -47,8 +48,12 @@ void board_init_f(ulong silent)
 		gd->flags |= GD_FLG_SILENT;
 
 	setup_fdt();
+	preloader_console_init();
+#if CONFIG_MVEBU_COMPHY_SUPPORT
+	if (comphy_init(gd->fdt_blob))
+		error("COMPHY initialization failed\n");
+#endif
 #ifndef CONFIG_PALLADIUM
 	static_dram_init();
 #endif
-	preloader_console_init();
 }

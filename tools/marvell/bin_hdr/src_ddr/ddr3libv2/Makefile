@@ -69,7 +69,7 @@ TIP_INC = $(BH_ROOT_DIR)/src_ddr/ddr3libv2/h
 
 INCLUDE = -I$(TIP_INC)/Os -I$(TIP_INC)/Os/gtOs -I$(TIP_INC)/Os/common/siliconIf \
 	  -I$(TIP_INC)/SoC -I$(TIP_INC)/Silicon -I$(TIP_INC)/Os/common/configElementDb \
-	  -I$(TIP_INC)/Driver -I$(TIP_INC)/Driver/ddr3  -I$(BH_ROOT_DIR)/inc/common \
+	  -I$(TIP_INC)/Driver -I$(TIP_INC)/Driver/ddr3  -I$(BH_ROOT_DIR)/inc/common -I$(BH_ROOT_DIR)/inc/common/gtOs\
 	  -I$(BH_ROOT_DIR)/inc/ddr3_soc/$(BOARD) -I$(BH_ROOT_DIR)/inc/ddr3_soc/$(INCNAME) \
 	  -I$(BH_ROOT_DIR)/src_ddr  -I$(BH_ROOT_DIR)/platform/sysEnv/$(BOARD)
 

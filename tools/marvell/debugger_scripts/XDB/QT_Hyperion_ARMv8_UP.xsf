@@ -13,4 +13,4 @@ Template=true
 Version=2:2
 [SETTINGS]
 Global=
-CS=-L "usb:" -target scanchain=FPGA_ARMV8_UP tckoverwrite=100kHz hotdebug device=mjc override=ap:1,debug:0x80030000,cti:0x80038000 option=0x20
+CS=-L "tcp:127.0.0.1:3020:usb:" -target scanchain=FPGA_ARMV8_UP tckoverwrite=100kHz hotdebug device=mjc override=ap:1,debug:0x80030000,cti:0x80038000 option=0x20

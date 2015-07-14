@@ -23,16 +23,22 @@
 
 /** Doxygen File Header */
 /** @file */
-/** @brief User-supplied fucntions. */
+/** @brief User-supplied functions. */
 
 #ifndef ASIC_SIMULATION
 #include <sys/ioctl.h>
 #endif
 #include <fcntl.h>
 #include <errno.h>
+#include "aapl.h"
+
+#if defined(CHX_FAMILY) || defined(EXMXPM_FAMILY)
+#include <common/siliconIf/mvSiliconIf.h>
+#else
 #include <gtOs/gtGenTypes.h>
 #include <gtOs/gtOsTimer.h>
-#include "aapl.h"
+#define hwsOsTimerWkFuncPtr osTimerWkAfter
+#endif
 
 #define I2C_SLAVE       0x0703
 
@@ -117,7 +123,7 @@ GT_STATUS mvHwsAvagoSetSlaveId
 #endif
 
     i2cAvagoSlaveId = devSlvId;
-    osTimerWkAfter(10); /* wait till OS DB is updated */
+    hwsOsTimerWkFuncPtr(10); /* wait till OS DB is updated */
 
     return GT_OK;
 }

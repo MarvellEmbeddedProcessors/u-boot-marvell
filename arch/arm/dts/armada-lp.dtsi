@@ -16,7 +16,7 @@
 			compatible = "marvell,internal-regs";
 			#address-cells = <1>;
 			#size-cells = <1>;
-			reg = <0xf1000000 0x4>;
+			reg = <0xd0000000 0x4>;
 
 			serial: serial@12000 {
 				compatible = "marvell,armadalp-uart";

@@ -44,8 +44,10 @@ void board_init_f(ulong silent)
 	gd = &gdata;
 	gd->baudrate = CONFIG_BAUDRATE;
 
+#ifndef CONFIG_TARGET_ARMADA_38X
 	if (silent)
 		gd->flags |= GD_FLG_SILENT;
+#endif
 
 	setup_fdt();
 	preloader_console_init();

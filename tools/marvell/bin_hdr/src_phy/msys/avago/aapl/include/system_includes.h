@@ -73,8 +73,12 @@
 #    define WIN32
 #endif
 
+#ifdef WIN32
+#    include <ws2tcpip.h>
+#endif
+
 #if defined(WIN32) && !defined(ASIC_SIMULATION)
-#define ASIC_SIMULATION
+#    define ASIC_SIMULATION
 #endif
 
 #ifndef ASIC_SIMULATION
@@ -82,7 +86,6 @@
 #    pragma warning( disable : 4996)
 #    include <winsock2.h>
 #    include <windows.h>
-#    include <ws2tcpip.h>
 #    include <io.h>
 #    ifndef sleep
 #        define sleep(a) Sleep(a * 1000)

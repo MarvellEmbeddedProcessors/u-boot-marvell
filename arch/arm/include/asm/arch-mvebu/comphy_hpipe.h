@@ -43,6 +43,7 @@
 #define HPIPE_G1_SETTINGS_4_REG                 0x444
 #define HPIPE_G2_SETTINGS_3_REG                 0x448
 #define HPIPE_G2_SETTINGS_4_REG                 0x44C
+#define HPIPE_LANE_STATUS0_REG			0x60C
 #define HPIPE_LANE_CFG4_REG                     0x620
 #define HPIPE_GLOBAL_CLK_CTRL                   0x704
 #define HPIPE_GLOBAL_MISC_CTRL                  0x718

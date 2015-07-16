@@ -130,7 +130,7 @@ static void comphy_mux_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct 
 	debug_exit();
 }
 
-static int comphy_pcie_power_up(u32 lane, u32 pex_index, u32 comphy_addr, u32 hpipe_addr)
+static int comphy_pcie_power_up(u32 pex_index, u32 comphy_addr, u32 hpipe_addr)
 {
 	debug_enter();
 
@@ -190,14 +190,14 @@ static int comphy_pcie_power_up(u32 lane, u32 pex_index, u32 comphy_addr, u32 hp
 	udelay(20000);
 
 	debug_exit();
-	return 0;
+	return readl(hpipe_addr + HPIPE_LANE_STATUS0_REG) & 0x1;
 }
 
 int comphy_a38x_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *serdes_map)
 {
 	struct comphy_map *ptr_comphy_map;
 	u32 comphy_base_addr, hpipe3_base_addr;
-	u32 comphy_max_count, lane;
+	u32 comphy_max_count, lane, ret = 0;
 	bool is_pex_enabled = false;
 
 	debug_enter();
@@ -216,21 +216,21 @@ int comphy_a38x_init(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_
 		switch (ptr_comphy_map->type) {
 		case UNCONNECTED:
 			continue;
-			break;
 		case PEX0:
 		case PEX1:
 		case PEX2:
 		case PEX3:
 			is_pex_enabled = true;
 			/* TODO: add support for PEX by4 initialization */
-			comphy_pcie_power_up(lane, ptr_comphy_map->type - PEX0,
+			ret = comphy_pcie_power_up(ptr_comphy_map->type - PEX0,
 					comphy_base_addr + 0x28 * lane, hpipe3_base_addr + 0x800 * lane);
-			udelay(20);
 			break;
 		default:
 			debug("Unknown SerDes type, skip initialize SerDes %d\n", lane);
-			break;
+			continue;
 		}
+		if (ret == 0)
+			printf("PLL is not locked - Failed to initialize lane %d\n", lane);
 	}
 
 	if (is_pex_enabled) {

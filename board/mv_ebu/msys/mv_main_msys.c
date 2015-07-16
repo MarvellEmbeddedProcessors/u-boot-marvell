@@ -130,6 +130,7 @@ char* strToLower(char * st);
 void envVerifyAndSet(char* envName, char* value1, char* value2, int defaultValue);
 void envSetDefault(char* envName, char* defaultValue);
 int mv_get_arch_number(void);
+char* mv_get_default_dtb_name(void);
 void setBoardEnv(void);
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -474,9 +475,9 @@ void misc_init_r_env(void){
 
 	/* Flatten Device Tree environment setup */
 #ifdef CONFIG_CUSTOMER_BOARD_SUPPORT
-	fdt_env_setup("msys.dtb", MV_FALSE); /* static setup: Skip DT update for customer */
+	fdt_env_setup(mv_get_default_dtb_name(), MV_FALSE); /* static setup: Skip DT update for customer */
 #else
-	fdt_env_setup("msys.dtb", MV_FALSE); /* dynamic setup: run DT update (false since not supported yet) */
+	fdt_env_setup(mv_get_default_dtb_name(), MV_FALSE); /* dynamic setup: run DT update (false since not supported yet) */
 #endif
 
 #if (CONFIG_BOOTDELAY >= 0)
@@ -815,6 +816,28 @@ int mv_get_arch_number(void)
 	default:
 		mvOsPrintf("%s: Error: wrong board Id (%d)\n", __func__, mvBoardIdGet());
 		return 3035;
+	}
+}
+
+char* mv_get_default_dtb_name(void)
+{
+	switch (mvBoardIdGet()) {
+	case RD_DX_BC2_ID:
+	case DB_DX_BC2_ID:
+	case RD_MTL_BC2:
+	case BC2_CUSTOMER_BOARD_ID0:
+	case BC2_CUSTOMER_BOARD_ID1:
+		return "msys_bc2.dtb";
+	case DB_AC3_ID:
+	case RD_MTL_4XG_AC3_ID:
+	case RD_MTL_2XXG_2XG_AC3_ID:
+	case DB_MISL_24G4G_AC3_ID:
+	case RD_MTL_24G_AC3_ID:
+	case AC3_CUSTOMER_BOARD_ID0:
+	case AC3_CUSTOMER_BOARD_ID1:
+		return "msys_ac3.dtb";
+	default:
+		return "msys.dtb";
 	}
 }
 

@@ -19,11 +19,12 @@
 
 .pushsection ._secure.text, "ax"
 
+#ifdef CONFIG_TARGET_ARMADA_8K
 /* WA reset adderrs - CPU reset vector address - must be alined to 0x10000 */
 ENTRY(armv8_psci_reset_addr)
 	b _armada8k_cpu_entry
 ENDPROC(armv8_psci_reset_addr)
-
+#endif
 
 ENTRY(psci_0_2_cpu_suspend_64)
 ENTRY(psci_0_2_cpu_on_64)

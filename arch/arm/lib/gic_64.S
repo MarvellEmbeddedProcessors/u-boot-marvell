@@ -56,6 +56,8 @@ ENTRY(gic_init_secure)
 	ret
 ENDPROC(gic_init_secure)
 
+/* insert gic_init_secure_percpu function to secure section - part of the PSCI FW */
+.pushsection ._secure.text, "ax"
 
 /*************************************************************************
  * For Gicv2:

@@ -11,6 +11,9 @@
 #include <linux/linkage.h>
 #include <asm/macro.h>
 
+/* insert functions to secure section - part of the PSCI FW */
+.pushsection ._secure.text, "ax"
+
 ENTRY(armv8_switch_to_el2)
 	switch_el x0, 1f, 0f, 0f
 0:	ret

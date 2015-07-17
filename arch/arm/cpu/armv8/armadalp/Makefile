@@ -19,4 +19,3 @@
 obj-y += soc-init.o
 obj-y += clock.o
 obj-$(CONFIG_ARMV8_PSCI)	+= psci.o
-

@@ -185,16 +185,15 @@ int mvHwsAvagoSerdesPolarityConfigGetImpl
 *       Power up SERDES list.
 *
 * INPUTS:
-*       devNum    - system device number
+*       devNum    - device number
 *       portGroup - port group (core) number
-*       numOfSer  - number of SERDESes to configure
-*       serdesArr - collection of SERDESes to configure
-*       powerUp   - true for power UP
-*       baudRate  -
+*       serdesNum - SERDES number
+*       powerUp   - True for PowerUP, False for PowerDown
+*       divider   - divider of Serdes speed
 *       refClock  - ref clock value
 *       refClockSource - ref clock source (primary line or secondary)
 *       media     - RXAUI or XAUI
-*       mode      - 10BIT mode (enable/disable)
+*       mode      - Serdes bus modes: 10Bits/20Bits/40Bits
 *
 * OUTPUTS:
 *       None.
@@ -206,11 +205,16 @@ int mvHwsAvagoSerdesPolarityConfigGetImpl
 *******************************************************************************/
 int mvHwsAvagoSerdesPowerCtrlImpl
 (
-    unsigned char               devNum,
-    unsigned int                serdesNum,
-    unsigned int                divider
+    unsigned char       devNum,
+    unsigned int        portGroup,
+    unsigned int        serdesNum,
+    unsigned char       powerUp,
+    unsigned int        divider,
+    unsigned char       refClock,
+    unsigned char       refClockSource,
+    unsigned char       media,
+    unsigned char       mode
 );
-
 
 #ifdef __cplusplus
 }

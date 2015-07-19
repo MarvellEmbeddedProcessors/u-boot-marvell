@@ -414,9 +414,16 @@ static int mvHwsAvagoSerdesInit(unsigned char devNum)
 *       Power up SERDES list.
 *
 * INPUTS:
-*       devNum    -  system device number
-*       serdesNum  - SERDES number
-*       baudRate  -  baudrate
+*       devNum    - device number
+*       portGroup - port group (core) number
+*       serdesNum - SERDES number
+*       powerUp   - True for PowerUP, False for PowerDown
+*       divider   - divider of Serdes speed
+*       refClock  - ref clock value
+*       refClockSource - ref clock source (primary line or secondary)
+*       media     - RXAUI or XAUI
+*       mode      - Serdes bus modes: 10Bits/20Bits/40Bits
+*
 * OUTPUTS:
 *       None.
 *
@@ -427,23 +434,42 @@ static int mvHwsAvagoSerdesInit(unsigned char devNum)
 *******************************************************************************/
 int mvHwsAvagoSerdesPowerCtrlImpl
 (
-    unsigned char               devNum,
-    unsigned int                serdesNum,
-    unsigned int                divider
+    unsigned char       devNum,
+    unsigned int        portGroup,
+    unsigned int        serdesNum,
+    unsigned char       powerUp,
+    unsigned int        divider,
+    unsigned char       refClock,
+    unsigned char       refClockSource,
+    unsigned char       media,
+    unsigned char       mode
 )
 {
     Avago_serdes_init_config_t *config;
     unsigned int sbus_addr;
     unsigned int errors;
+    unsigned int data;
 
     CHECK_STATUS(mvHwsAvagoConvertSerdesToSbusAddr(devNum, serdesNum, &sbus_addr));
     if (sbus_addr == AVAGO_INVALID_SBUS_ADDR)
     {
         osPrintf("Invalid HW configuration !!!\n");
-        return (GT_OK);
+        return GT_OK;
     }
 
-    /*avago_serdes_init_quick(aaplSerdesDb[devNum], sbus_addr, divider);*/
+    /* for Serdes PowerDown */
+    if (powerUp == GT_FALSE)
+    {
+        /* Rx, Tx, Output = disable */
+        CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x1, 0));
+
+        /* Serdes Digital UnReset */
+        CHECK_STATUS(mvHwsAvagoSerdesReset(devNum, portGroup, serdesNum, GT_FALSE, GT_FALSE, GT_FALSE));
+
+        return GT_OK;
+    }
+
+    /* for Serdes PowerUp */
 #if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
     /* Initialize the SerDes slice */
     config = avago_serdes_init_config_construct(aaplSerdesDb[devNum]);
@@ -452,8 +478,16 @@ int mvHwsAvagoSerdesPowerCtrlImpl
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
     /* Change the config struct values from their defaults: */
-    if (divider != NA_VALUE)
-        config->tx_divider = config->rx_divider = divider;
+    if (divider != NA_VALUE) config->tx_divider = config->rx_divider = divider;
+
+    /* initializes the Avago_serdes_init_config_t struct */
+    config->sbus_reset = TRUE;
+    config->signal_ok_threshold = 10;
+
+    /* Select the Rx & Tx data path width */
+    if (mode == _10BIT_ON) config->rx_width = config->tx_width = 10;
+    else if (mode == _20BIT_ON) config->rx_width = config->tx_width = 20;
+    else if (mode == _40BIT_ON) config->rx_width = config->tx_width = 40;
 
     if (mvAvagoDb)
     {
@@ -479,15 +513,25 @@ int mvHwsAvagoSerdesPowerCtrlImpl
     AVAGO_DBG(("   signal_ok_en = %x \n",config->signal_ok_en));
     AVAGO_DBG(("   signal_ok_threshold= %x \n",config->signal_ok_threshold));
 
+    /* Serdes Analog Un Reset*/
+    CHECK_STATUS(mvHwsAvagoSerdesReset(devNum, portGroup, serdesNum, GT_FALSE, GT_TRUE, GT_TRUE));
+
+    /* config media */
+    data = (media == RXAUI_MEDIA) ? (1 << 2) : 0;
+    CHECK_STATUS(hwsSerdesRegSetFuncPtr(devNum, portGroup, EXTERNAL_REG, serdesNum, SERDES_EXTERNAL_CONFIGURATION_0, data, (1 << 2)));
+
+    /* Reference clock source */
+    data = ((refClockSource == PRIMARY) ? 0 : 1) << 8;
+    CHECK_STATUS(hwsSerdesRegSetFuncPtr(devNum, portGroup, EXTERNAL_REG, serdesNum, SERDES_EXTERNAL_CONFIGURATION_0, data, (1 << 8)));
     errors = avago_serdes_init(aaplSerdesDb[devNum], sbus_addr, config);
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     /* Releases a Avago_serdes_init_config_t struct */
     avago_serdes_init_config_destruct(aaplSerdesDb[devNum], config);
 #else
-    /* Initialize the SerDes slice in CM3 */
+   /* Initialize the SerDes slice in CM3 */
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
     CHECK_AVAGO_RET_CODE();
-    if(errors > 0)
+    if (errors > 0)
     {
 #ifndef MV_HWS_REDUCED_BUILD
         osPrintf("SerDes init complete for SerDes at addr %s; Errors in ILB: %d. \n", aapl_addr_to_str(sbus_addr), errors);
@@ -495,7 +539,7 @@ int mvHwsAvagoSerdesPowerCtrlImpl
         osPrintf("SerDes init complete for SerDes at addr 0x%x; Errors in ILB: %d. \n", sbus_addr, errors);
 #endif /* MV_HWS_REDUCED_BUILD */
     }
-    if(errors == 0 && aapl_get_return_code(aaplSerdesDb[devNum]) == 0)
+    if (errors == 0 && aapl_get_return_code(aaplSerdesDb[devNum]) == 0)
     {
 #ifndef MV_HWS_REDUCED_BUILD
         osPrintf("The SerDes at address %s is initialized.\n", aapl_addr_to_str(sbus_addr));
@@ -503,6 +547,9 @@ int mvHwsAvagoSerdesPowerCtrlImpl
         osPrintf("The SerDes at address 0x%x is initialized.\n", sbus_addr);
 #endif /* MV_HWS_REDUCED_BUILD */
     }
+
+    /* Serdes Digital UnReset */
+    CHECK_STATUS(mvHwsAvagoSerdesReset(devNum, portGroup, serdesNum, GT_FALSE, GT_FALSE, GT_FALSE));
 
     return GT_OK;
 }

@@ -240,7 +240,7 @@ GT_U32 phy1ValTable[DDR_FREQ_LIMIT] =
 /* Bit mapping (for PBS) */
 GT_U32 bobKDQbitMap2Phypin[] =
 {
-/*#warning "DQ mapping not updated!" !!!*/
+#warning "DQ mapping not updated!" !!!
 	/* Interface 0 */
 	8, 1, 0, 7, 9, 2, 3, 6 , /* dq[0:7]   */
 	8, 1, 6, 3, 9, 7, 2, 0 , /* dq[8:15]  */
@@ -761,18 +761,6 @@ GT_STATUS    ddr3TipBobKSelectCPUDdrController
     GT_BOOL  enable
 )
 {
-    GT_U32 uiReg;
-	uiReg = MV_REG_READ(CS_ENABLE_REG);
-
-    if (enable)
-    {
-    uiReg |= (1 << 6);
-    }
-    else
-    {
-	uiReg &= ~(1 << 6);
-    }
-	MV_REG_WRITE(CS_ENABLE_REG, uiReg);
     return GT_OK;
 }
 
@@ -792,6 +780,7 @@ static GT_STATUS ddr3TipInitBobKSilicon
     MV_HWS_TIP_CONFIG_FUNC_DB   configFunc;
 	MV_HWS_TOPOLOGY_MAP*        topologyMap = ddr3TipGetTopologyMap(devNum);
     GT_TUNE_TRAINING_PARAMS     tuneParams;
+	GT_U8 numOfBusPerInterface = 5;
 
 	if(topologyMap == NULL)
 	{
@@ -826,29 +815,30 @@ static GT_STATUS ddr3TipInitBobKSilicon
 
 	/*Set device attributes*/
 	ddr3TipDevAttrInit(devNum);
-	ddr3TipDevAttrSet(devNum, MV_ATTR_TIP_REV, MV_TIP_REV_2);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_TIP_REV, MV_TIP_REV_3);
 	ddr3TipDevAttrSet(devNum, MV_ATTR_PHY_EDGE, MV_DDR_PHY_EDGE_NEGATIVE);
-	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, NUMBER_OF_PUP);
-	/*ddr3TipDevAttrSet(devNum, MV_ATTR_INTERLEAVE_WA, GT_FALSE);*/
+	ddr3TipDevAttrSet(devNum, MV_ATTR_OCTET_PER_INTERFACE, numOfBusPerInterface);
+	ddr3TipDevAttrSet(devNum, MV_ATTR_INTERLEAVE_WA, GT_FALSE);
 
-	maskTuneFunc = ( INIT_CONTROLLER_MASK_BIT |
-                     SET_MEDIUM_FREQ_MASK_BIT |
-                     WRITE_LEVELING_MASK_BIT |
-                     LOAD_PATTERN_2_MASK_BIT |
-                     READ_LEVELING_MASK_BIT |
-                     PBS_RX_MASK_BIT |
-                     PBS_TX_MASK_BIT |
-                     SET_TARGET_FREQ_MASK_BIT |
-                     WRITE_LEVELING_TF_MASK_BIT |
-                     READ_LEVELING_TF_MASK_BIT |
-                     WRITE_LEVELING_SUPP_TF_MASK_BIT |
-                     CENTRALIZATION_RX_MASK_BIT |
-                     CENTRALIZATION_TX_MASK_BIT);
+    maskTuneFunc =     (SET_LOW_FREQ_MASK_BIT |
+						LOAD_PATTERN_MASK_BIT |
+						SET_MEDIUM_FREQ_MASK_BIT |
+						WRITE_LEVELING_MASK_BIT |
+						WRITE_LEVELING_SUPP_MASK_BIT |
+						READ_LEVELING_MASK_BIT |
+						PBS_RX_MASK_BIT |
+						PBS_TX_MASK_BIT |
+						SET_TARGET_FREQ_MASK_BIT |
+						WRITE_LEVELING_TF_MASK_BIT |
+						WRITE_LEVELING_SUPP_TF_MASK_BIT |
+						READ_LEVELING_TF_MASK_BIT |
+						CENTRALIZATION_RX_MASK_BIT |
+						CENTRALIZATION_TX_MASK_BIT
+						);
 
 	/*Skip mid freq stages for 400Mhz DDR speed*/
 	if( (topologyMap->interfaceParams[firstActiveIf].memoryFreq == DDR_FREQ_400) ){
-		maskTuneFunc = (INIT_CONTROLLER_MASK_BIT |
-		                WRITE_LEVELING_MASK_BIT |
+		maskTuneFunc = ( WRITE_LEVELING_MASK_BIT |
 		                LOAD_PATTERN_2_MASK_BIT |
 		                READ_LEVELING_MASK_BIT |
 		                CENTRALIZATION_RX_MASK_BIT |
@@ -874,18 +864,16 @@ static GT_STATUS ddr3TipInitBobKSilicon
     tuneParams.gZnodtData = 45;
     tuneParams.gZpodtCtrl = 45;
     tuneParams.gZnodtCtrl = 45;
+    tuneParams.gRttWR = 0x0;
 
     CHECK_STATUS(ddr3TipTuneTrainingParams(devNum, &tuneParams));
 
     /* frequency and general parameters */
     ddr3TipBobKGetMediumFreq(devNum, firstActiveIf, &mediumFreq);
     initFreq = topologyMap->interfaceParams[firstActiveIf].memoryFreq;
-    dfsLowFreq = 100;
+	freqVal[DDR_FREQ_LOW_FREQ] = dfsLowFreq = 130;
     dfsLowPhy1 = PhyReg1Val;
-    isPllBeforeInit = 0;
-    useBroadcast = GT_FALSE; /* multicast */
-    isCbeRequired = GT_TRUE;
-	calibrationUpdateControl = 2;
+	calibrationUpdateControl = 1;
 
     return GT_OK;
 }
@@ -1429,38 +1417,37 @@ static GT_STATUS ddr3TipCpuGetInitFreq
     MV_HWS_DDR_FREQ *freq
 )
 {
-    GT_U32 data;
+	GT_U32 data;
 
     /* calc SAR */
-    CHECK_STATUS(ddr3TipBobKRead(devNum, 0x000F8204 ,  &data, MASK_ALL_BITS ));
-    data = (data >> 18) & 0x7;
-#ifdef ASIC_SIMULATION
-    data = 3;
-#endif
+    CHECK_STATUS(ddr3TipBobKServerRegRead(devNum, REG_DEVICE_SAR1_ADDR,  &data, MASK_ALL_BITS ));
+	mvPrintf("SAR1 is 0x%X\n", data);
+    data = (data >> PLL1_CNFIG_OFFSET) & PLL1_CNFIG_MASK;
 
     switch(data)
     {
         case 0:
-			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("MSYS DDR_FREQ_400\n"));
+		case 5:
+			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("DDR_FREQ_400\n"));
             *freq = DDR_FREQ_400;
             break;
-
+        case 1:
+			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("DDR_FREQ_533\n"));
+            *freq = DDR_FREQ_533;
+            break;
         case 2:
-			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("MSYS DDR_FREQ_667\n"));
+			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("DDR_FREQ_667\n"));
             *freq = DDR_FREQ_667;
             break;
-
         case 3:
-			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("MSYS DDR_FREQ_800\n"));
+			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("DDR_FREQ_800\n"));
             *freq = DDR_FREQ_800;
             break;
-
         default:
-            DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("Error: ddr3TipCpuGetInitFreq: Unknown SAR value 0x%x\n", data));
+            DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("Freq SAR Unknown\n"));
             *freq = DDR_FREQ_LIMIT;
             return GT_BAD_PARAM;
     }
-
     return GT_OK;
 }
 
@@ -1478,35 +1465,28 @@ static GT_STATUS ddr3TipBobKGetMediumFreq
 	MV_HWS_DDR_FREQ *freq
 )
 {
-    GT_U32 sarFreq;
+	GT_U32 data;
 
-	CHECK_STATUS(ddr3TipBobKRead((GT_U8)devNum, interfaceId, &sarFreq, MASK_ALL_BITS));
+    /* calc SAR */
+    CHECK_STATUS(ddr3TipBobKRead(devNum, REG_DEVICE_SAR1_ADDR,  &data, MASK_ALL_BITS ));
+    data = (data >> PLL1_CNFIG_OFFSET) & PLL1_CNFIG_MASK;
 
-    switch(sarFreq)
+    switch(data)
     {
-        case DDR_FREQ_400:
-			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("No medium freq supported for 400Mhz\n"));
+        case 0:
+		case 5:
             *freq = DDR_FREQ_400;
             break;
-
-        case DDR_FREQ_667:
-			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("Medium DDR_FREQ_333\n"));
+        case 2:
             *freq = DDR_FREQ_333;
             break;
-
-        case DDR_FREQ_800:
-			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("Medium DDR_FREQ_400\n"));
+        case 3:
             *freq = DDR_FREQ_400;
             break;
-
-        case DDR_FREQ_933:
-			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_TRACE, ("Medium DDR_FREQ_311\n"));
-            *freq = DDR_FREQ_311;
-            break;
-
         default:
-			DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_ERROR, ("Error: ddr3TipBobKGetMediumFreq: Freq %d is not supported\n", sarFreq));
-            return GT_FAIL;
+            DEBUG_TRAINING_ACCESS(DEBUG_LEVEL_INFO, ("Freq SAR Unknown\n"));
+            *freq = DDR_FREQ_LIMIT;
+            return GT_BAD_PARAM;
     }
     return GT_OK;
 }

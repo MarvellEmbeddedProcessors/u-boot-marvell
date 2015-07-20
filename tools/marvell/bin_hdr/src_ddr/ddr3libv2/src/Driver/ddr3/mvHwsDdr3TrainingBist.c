@@ -123,19 +123,20 @@ GT_STATUS    ddr3TipBistActivate
                 {
                     CHECK_STATUS(mvHwsDdr3TipIFRead(devNum,ACCESS_TYPE_UNICAST, ifNum, ODPG_BIST_DONE, readData, MASK_ALL_BITS));
 					dataValue = readData[interfaceNum];
-#if defined(CONFIG_ARMADA_38X) || defined (CONFIG_ALLEYCAT3) || defined (CONFIG_ARMADA_39X)
-					if ((dataValue & 0x1) == 0x0)/*in SOC type devices this bit is self clear so, if it was cleared all good*/
-                        break;
-#else
-					if ((dataValue & 0x1) == 0x1)
-                    {
-                        if (isBistResetBit != 0)
-                        {
-                            CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,ACCESS_TYPE_UNICAST, ifNum, ODPG_BIST_DONE, (dataValue & 0xFFFFFFFE), MASK_ALL_BITS));
-                        }
-                        break;
-                    }
-#endif
+					if (ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) >= MV_TIP_REV_3){
+						if ((dataValue & 0x1) == 0x0)/*in SOC type devices this bit is self clear so, if it was cleared all good*/
+		                    break;
+					}
+					else{
+						if ((dataValue & 0x1) == 0x1)
+		                {
+		                    if (isBistResetBit != 0)
+		                    {
+		                        CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,ACCESS_TYPE_UNICAST, ifNum, ODPG_BIST_DONE, (dataValue & 0xFFFFFFFE), MASK_ALL_BITS));
+		                    }
+		                    break;
+		                }
+					}
                 }
                 if (pollCnt >= MaxPoll)
                 {
@@ -262,19 +263,21 @@ GT_STATUS    ddr3TipBistOperation
 
    if (operType == BIST_STOP)
    {
-#if defined(CONFIG_ARMADA_38X) || defined (CONFIG_ALLEYCAT3) || defined (CONFIG_ARMADA_39X)
-	   CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,  accessType, interfaceId,  ODPG_BIST_DONE,  (1 << 8), (1 << 8)));
-#else
-	   CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,  accessType, interfaceId,  ODPG_DATA_CONTROL_REG,  (1 << 30)  , (GT_U32)(0x3 << 30)));
-#endif
+		if (ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) >= MV_TIP_REV_3){
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,  accessType, interfaceId,  ODPG_BIST_DONE,  (1 << 8), (1 << 8)));
+		}
+		else{
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,  accessType, interfaceId,  ODPG_DATA_CONTROL_REG,  (1 << 30)  , (GT_U32)(0x3 << 30)));
+		}
    }
    else
    {
-#if defined(CONFIG_ARMADA_38X) || defined (CONFIG_ALLEYCAT3) || defined (CONFIG_ARMADA_39X)
-       CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,  accessType, interfaceId,  ODPG_BIST_DONE,  1, 1));
-#else
-	   CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,  accessType, interfaceId,  ODPG_DATA_CONTROL_REG,  (GT_U32)(1 << 31), (GT_U32)(1 << 31)));
-#endif
+		if (ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) >= MV_TIP_REV_3){
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,  accessType, interfaceId,  ODPG_BIST_DONE,  1, 1));
+		}
+		else{
+			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,  accessType, interfaceId,  ODPG_DATA_CONTROL_REG,  (GT_U32)(1 << 31), (GT_U32)(1 << 31)));
+		}
    }
    return GT_OK;
 }

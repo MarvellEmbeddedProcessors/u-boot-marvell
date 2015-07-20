@@ -30,10 +30,8 @@
 
 /************************** globals ***************************************/
 
-#if 0
 extern MV_SERVER_REG_ACCESS_SET hwsServerRegSetFuncPtr;
 extern MV_SERVER_REG_ACCESS_GET hwsServerRegGetFuncPtr;
-#endif
 
 GT_U32 serverBaseAddr = 0;
 /* the following global variables are set in ddr3TipDynamicReadLeveling */
@@ -105,7 +103,6 @@ GT_STATUS    ddr3TipBobKSelectCPUDdrController
 
 /***************************************************************************/
 
-#if 0
 /******************************************************************************
 * Name:     serverRegSet.
 * Desc:     definition of server write prototype
@@ -156,17 +153,13 @@ GT_STATUS serverRegGet
 	return GT_OK;
 }
 
-#endif
-
 MV_STATUS ddr3SiliconPreInit(void)
 {
     MV_STATUS status;
 	MV_U8 devNum = 0;
 
-#if 0
 	/* initialize window to server */
 	configureServerWindows();
-#endif
 
 	if (ddr3GetSdramAssignment(devNum) == TM_EN) {
 		mvPrintf("Error: DDR3 interface is used by Traffic Manager\n", 0);
@@ -187,31 +180,11 @@ MV_STATUS ddr3SiliconPreInit(void)
 		return status;
 	}
 
-    CHECK_STATUS(ddr3TipBobKSelectCPUDdrController(0, GT_FALSE)); // set mux to msys
-
-	/* configure Dunit */
-	status = ddr3DunitAccessInit(0, 1);
-	if (MV_OK != status) {
-		mvPrintf("DDR3 Dunit Access Init - FAILED 0x%x\n", status);
-		return status;
-	}
 	return MV_OK;
 }
 
-MV_STATUS ddr3SiliconPostInit(void) 
+MV_STATUS ddr3SiliconPostInit(void)
 {
-    MV_STATUS status;	
-
-
-	status = ddr3SiliconInit();
-	if (MV_OK != status) {
-		mvPrintf("DDR3 silicon init - FAILED 0x%x\n", status);
-		return status;
-	}
-
-
-  	CHECK_STATUS(ddr3TipBobKSelectCPUDdrController(0, GT_TRUE)); // set mux to tip                    
-
 	return MV_OK;
 }
 
@@ -352,11 +325,9 @@ MV_VOID configureServerWindows(void)
 
 	serverBaseAddr = MV_REG_READ(REG_XBAR_WIN_5_BASE_ADDR);
 
-#if 0
 	/* init server access */
 	hwsServerRegSetFuncPtr = serverRegSet; 
 	hwsServerRegGetFuncPtr = serverRegGet;
-#endif
 
 	configDone = MV_TRUE;
 }

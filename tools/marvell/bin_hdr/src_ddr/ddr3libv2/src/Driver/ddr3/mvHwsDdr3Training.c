@@ -597,11 +597,13 @@ GT_STATUS    mvHwsDdr3TipInitController
 
             /*Pad calibration control - enable*/
             CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, CALIB_MACHINE_CTRL_REG, 0x1, 0x1));
-#if !defined(CONFIG_ARMADA_38X) && !defined(CONFIG_ALLEYCAT3) && !defined (CONFIG_ARMADA_39X)
-            /* DDR3_Rank_Control \96 Part of the Generic code */
-            /*: CS1 Mirroring enable + w/a for JIRA DUNIT-14581 */ 
-            CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, RANK_CTRL_REG, 0x27, MASK_ALL_BITS));
-#endif
+
+			if (ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) < MV_TIP_REV_3){
+		        /* DDR3_Rank_Control \96 Part of the Generic code */
+		        /*: CS1 Mirroring enable + w/a for JIRA DUNIT-14581 */
+		        CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, RANK_CTRL_REG, 0x27, MASK_ALL_BITS));
+			}
+
             csMask = 0;
             dataValue = 0x7;
             /* Address ctrl \96 Part of the Generic code 
@@ -670,12 +672,14 @@ GT_STATUS    mvHwsDdr3TipInitController
 			ddr3TipWriteOdt(devNum,  accessType, interfaceId, clValue, cwlVal);
             ddr3TipSetTiming(devNum, accessType, interfaceId, freq);
 
-#if !defined(CONFIG_ARMADA_38X) && !defined(CONFIG_ALLEYCAT3) && !defined (CONFIG_ARMADA_39X)
-			/*WrBuff, RdBuff*/
-			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DUNIT_CONTROL_HIGH_REG, 0x1000119,0x100017F));
-#else
-			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DUNIT_CONTROL_HIGH_REG, 0x177,0x1000177));
-#endif
+			if (ddr3TipDevAttrGet(devNum, MV_ATTR_TIP_REV) < MV_TIP_REV_3){
+				/*WrBuff, RdBuff*/
+				CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DUNIT_CONTROL_HIGH_REG, 0x1000119,0x100017F));
+			}
+			else{
+				CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, DUNIT_CONTROL_HIGH_REG, 0x177,0x1000177));
+			}
+
 		    if (initCntrPrm->isCtrl64Bit)
 	      	{
 	        /* disable 0.25 cc delay */
@@ -712,7 +716,7 @@ GT_STATUS    mvHwsDdr3TipInitController
 
 			/*Set Active control for ODT write transactions*/
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum,ACCESS_TYPE_MULTICAST, PARAM_NOT_CARE, 0x1494, uiODTConfig, MASK_ALL_BITS));
-#if defined (CONFIG_ALLEYCAT3)
+#if defined (CONFIG_ALLEYCAT3) || defined(CONFIG_BOBK)
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, 0x14a8, 0x900,0x900));
 			/*WA: Controls whether to float The Control pups outputs during Self Refresh*/
 			CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, accessType, interfaceId, 0x16d0, 0,0x8000));
@@ -802,7 +806,7 @@ GT_STATUS    mvHwsDdr3TipLoadTopologyMap
 /*****************************************************************************
 RANK Control Flow
 ******************************************************************************/
-#if !defined(CONFIG_ARMADA_38X) &&  !defined (CONFIG_ARMADA_39X) && !defined(CONFIG_ALLEYCAT3)
+#if defined(CONFIG_BOBCAT2)
 static GT_STATUS ddr3TipRankControl(GT_U32 devNum, GT_U32 interfaceId)
 {
     GT_U32 dataValue = 0,  busCnt= 0;
@@ -834,10 +838,7 @@ static GT_STATUS ddr3TipRankControl(GT_U32 devNum, GT_U32 interfaceId)
             }
         }
     }
-#if !defined(CONFIG_ALLEYCAT3)
-    /* jirra CS2 exist */
-    dataValue |= (1 << CS2_EXIST_BIT);
-#endif
+
     CHECK_STATUS(mvHwsDdr3TipIFWrite(devNum, ACCESS_TYPE_UNICAST, interfaceId, RANK_CTRL_REG, dataValue, 0xFF));
      
     return GT_OK;

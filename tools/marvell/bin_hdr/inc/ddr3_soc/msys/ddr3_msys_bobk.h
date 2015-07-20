@@ -71,17 +71,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ddr3_hws_hw_training_def.h"
 
 /*Controler bus divider 1 for 32 bit, 2 for 64 bit*/
-#define MV_DDR_CONTROLLER_BUS_WIDTH_MULTIPLIER		2
+#define MV_DDR_CONTROLLER_BUS_WIDTH_MULTIPLIER		1
 
 /* MISC */
 #define INTER_REGS_BASE								0xD0000000
 
-#define REG_DEVICE_SAR1_ADDR                        0xF8200
-#define REG_DEVICE_SAR2_ADDR                        0xF8204
-#define REG_DEVICE_SERVER_CONTROL_0                 0xF8250
-#define REG_DEVICE_SERVER_CONTROL_14                0xF8288
-#define REG_DEVICE_SAR1_MSYS_TM_SDRAM_SEL_OFFSET    11
-#define REG_DEVICE_SAR1_MSYS_TM_SDRAM_SEL_MASK      0x1
+#define REG_DEVICE_SAR0_ADDR                        0xF8200
+#define REG_DEVICE_SAR1_ADDR                        0xF8204
+#define PLL0_CNFIG_OFFSET         					21
+#define PLL0_CNFIG_MASK           					0x7
+#define PLL1_CNFIG_OFFSET         					18
+#define PLL1_CNFIG_MASK           					0x7
 
 
 /* DRAM Windows */

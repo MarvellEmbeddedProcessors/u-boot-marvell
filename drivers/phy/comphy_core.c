@@ -73,6 +73,18 @@ static char *get_type_string(enum phy_type type)
 	return type_strings[type];
 }
 
+void reg_set(u32 addr, u32 mask, u32 data)
+{
+	u32 reg_data;
+	debug("Write to address = %#010x, data = %#010x (mask = %#010x) - ", addr, data, mask);
+	debug("old value = %#010x ==> ", readl(addr));
+	reg_data = readl(addr);
+	reg_data &= ~mask;
+	reg_data |= data;
+	writel(reg_data, addr);
+	debug("new value %#010x\n", readl(addr));
+}
+
 void comphy_print(struct chip_serdes_phy_config *ptr_chip_cfg, struct comphy_map *comphy_map_data)
 {
 	u32 lane;

@@ -40,18 +40,6 @@ struct comphy_mux_data a38x_comphy_mux_data[] = {
 		{USB3_DEVICE, 0x5} } },
 };
 
-void reg_set(u32 addr, u32 mask, u32 data)
-{
-	u32 reg_data;
-	debug("Write to address = %#010x, data = %#010x (mask = %#010x) - ", addr, data, mask);
-	debug("old value = %#010x ==> ", readl(addr));
-	reg_data = readl(addr);
-	reg_data &= ~mask;
-	reg_data |= data;
-	writel(reg_data, addr);
-	debug("new value %#010x\n", readl(addr));
-}
-
 /* comphy_mux_check_config
  * description: this function passes over the COMPHY lanes and check if the type
  *              is valid for specific lane. If the type is not valid, the function
@@ -142,7 +130,7 @@ static int comphy_pcie_power_up(u32 pex_index, u32 comphy_addr, u32 hpipe_addr)
 	reg_set(comphy_addr + COMMON_PHY_CONFIGURATION2_REG, 0x5C, 0x58);
 	reg_set(comphy_addr + COMMON_PHY_CONFIGURATION4_REG, 0x3, 0x1);
 	reg_set(comphy_addr + COMMON_PHY_CONFIGURATION1_REG, 0x7800, 0x6000);
-	reg_set(hpipe_addr + HPIPE_GLOBAL_CLK_CTRL, 0x3D, 0x35);
+	reg_set(hpipe_addr + HPIPE_RST_CLK_CTRL_REG, 0x3D, 0x35);
 	reg_set(hpipe_addr + HPIPE_GLOBAL_MISC_CTRL, 0xC0, 0x0);
 	reg_set(hpipe_addr + HPIPE_MISC_REG, 0x4C0, 0x80);
 	udelay(20);
@@ -150,7 +138,7 @@ static int comphy_pcie_power_up(u32 pex_index, u32 comphy_addr, u32 hpipe_addr)
 	/* TODO: Add configuration for 20Mhz */
 	/* configuration seq for REF_CLOCK_100MHz */
 	debug("**** start of PCIe comphy ref clock configuration ****\n");
-	reg_set(hpipe_addr + HPIPE_POWER_AND_PLL_CTRL_REG, 0x1F, 0x0);
+	reg_set(hpipe_addr + HPIPE_PWR_PLL_REG, 0x1F, 0x0);
 	reg_set(hpipe_addr + HPIPE_MISC_REG, 0x400, 0x0);
 	reg_set(hpipe_addr + HPIPE_GLOBAL_PM_CTRL, 0xFF, 0x1E);
 	reg_set(hpipe_addr + HPIPE_INTERFACE_REG, 0xC00, 0x400);
@@ -173,12 +161,12 @@ static int comphy_pcie_power_up(u32 pex_index, u32 comphy_addr, u32 hpipe_addr)
 
 	/* PEX - TX configuration sequence 2 */
 	debug("**** start of PCIe TX configuration sequence 2 ****\n");
-	reg_set(hpipe_addr + HPIPE_RESET_DFE_REG, 0x401, 0x401);
+	reg_set(hpipe_addr + HPIPE_PWR_CTR_REG, 0x401, 0x401);
 	udelay(20);
 
 	/* PEX - TX configuration sequence 3 */
 	debug("**** start of PCIe TX configuration sequence 3 ****\n");
-	reg_set(hpipe_addr + HPIPE_RESET_DFE_REG, 0x401, 0x0);
+	reg_set(hpipe_addr + HPIPE_PWR_CTR_REG, 0x401, 0x0);
 	udelay(20000);
 	reg_set(hpipe_addr + HPIPE_RX_REG3, 0xFF, 0xDC);
 	reg_set(hpipe_addr + HPIPE_RX_REG3, 0x100, 0x100);
@@ -186,7 +174,7 @@ static int comphy_pcie_power_up(u32 pex_index, u32 comphy_addr, u32 hpipe_addr)
 
 	/* PEX - TX configuration sequence 1 */
 	debug("**** start of PCIe TX configuration sequence 1 ****\n");
-	reg_set(hpipe_addr + HPIPE_GLOBAL_CLK_CTRL, 0x1, 0x0);
+	reg_set(hpipe_addr + HPIPE_RST_CLK_CTRL_REG, 0x1, 0x0);
 	udelay(20000);
 
 	debug_exit();

@@ -125,6 +125,64 @@ int mvHwsAvagoSerdesInit
 );
 #endif
 
+/*******************************************************************************
+* mvHwsAvagoSerdesSpicoInterrupt
+*
+* DESCRIPTION:
+*       Issue the interrupt to the Spico processor.
+*       The return value is the interrupt number.
+*
+* INPUTS:
+*       devNum    - system device number
+*       portGroup - port group (core) number
+*       serdesNum - physical serdes number
+*       interruptCode - Code of interrupt
+*       interruptData - Data to write
+*
+* OUTPUTS:
+*       result - spico interrupt return value
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+int mvHwsAvagoSerdesSpicoInterrupt
+(
+    unsigned char   devNum,
+    unsigned int    portGroup,
+    unsigned int    serdesNum,
+    unsigned int    interruptCode,
+    unsigned int    interruptData,
+    unsigned int    *result
+);
+
+/*******************************************************************************
+* mvHwsAvagoSerdesTemperatureGet
+*
+* DESCRIPTION:
+*       Get the Temperature (in C) from Avago Serdes
+*
+* INPUTS:
+*       devNum    - system device number
+*       portGroup - port group (core) number
+*       serdesNum - physical serdes number
+*
+* OUTPUTS:
+*       temperature - Serdes temperature degree value
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+int mvHwsAvagoSerdesTemperatureGet
+(
+    unsigned char   devNum,
+    unsigned int    portGroup,
+    unsigned int    serdesNum,
+    int             *temperature
+);
 
 /*******************************************************************************
 * mvHwsAvagoSerdesPolarityConfigImpl

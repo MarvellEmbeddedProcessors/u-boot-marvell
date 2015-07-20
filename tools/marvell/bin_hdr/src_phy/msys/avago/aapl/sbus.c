@@ -460,7 +460,6 @@ void avago_sbus_reset(
     }
 }
 
-#ifndef MV_HWS_BIN_HEADER
 /*============================================================================= */
 /* GET TEMP DATA */
 /** @brief  Gets the temperature data from a given AVAGO_THERMAL_SENSOR sensor */
@@ -499,7 +498,6 @@ int avago_sbm_get_temperature(
     }
     return invalid_data;  /* Temperature not valid */
 }
-#endif /* MV_HWS_BIN_HEADER */
 
 /** @brief   Performs a read-write test to the SBus Controller. */
 /** @details Communication with the SBus Controller (sbus address 0xfd) is */

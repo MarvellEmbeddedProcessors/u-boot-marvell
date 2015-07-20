@@ -55,7 +55,8 @@
 #include "mv_hws_avago_if.h"
 /* Avago include */
 #include "aapl.h"
-
+#include "aapl_core.h"
+#include "sbus.h"
 
 #if !defined(ASIC_SIMULATION) && !defined(MV_HWS_REDUCED_BUILD_EXT_CM3)
 #   if AAPL_ENABLE_AACS_SERVER
@@ -542,6 +543,235 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
 
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
+#ifndef ASIC_SIMULATION
+/*******************************************************************************
+* mvHwsAvagoSerdesSpicoInterrupt
+*
+* DESCRIPTION:
+*       Issue the interrupt to the Spico processor.
+*       The return value is the interrupt number.
+*
+* INPUTS:
+*       devNum    - system device number
+*       portGroup - port group (core) number
+*       serdesNum - physical serdes number
+*       interruptCode - Code of interrupt
+*       interruptData - Data to write
+*
+* OUTPUTS:
+*       result - spico interrupt return value
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+int mvHwsAvagoSerdesSpicoInterrupt
+(
+    unsigned char   devNum,
+    unsigned int    portGroup,
+    unsigned int    serdesNum,
+    unsigned int    interruptCode,
+    unsigned int    interruptData,
+    unsigned int    *result
+)
+{
+    unsigned int  sbus_addr;
+
+    CHECK_STATUS(mvHwsAvagoConvertSerdesToSbusAddr(devNum, serdesNum, &sbus_addr));
+
+    if (result == NULL)
+    {
+        avago_spico_int(aaplSerdesDb[devNum], sbus_addr, interruptCode, interruptData);
+    }
+    else
+    {
+        *result = avago_spico_int(aaplSerdesDb[devNum], sbus_addr, interruptCode, interruptData);
+    }
+
+    CHECK_AVAGO_RET_CODE();
+
+    return GT_OK;
+}
+
+/*******************************************************************************
+* mvHwsAvagoSerdesTemperatureGet
+*
+* DESCRIPTION:
+*       Get the Temperature (in C) from Avago Serdes
+*
+* INPUTS:
+*       devNum    - system device number
+*       portGroup - port group (core) number
+*       serdesNum - physical serdes number
+*
+* OUTPUTS:
+*       temperature - Serdes temperature degree value
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+int mvHwsAvagoSerdesTemperatureGet
+(
+    unsigned char   devNum,
+    unsigned int    portGroup,
+    unsigned int    serdesNum,
+    int             *temperature
+)
+{
+    unsigned int  sbus_addr;
+
+    if ((serdesNum != 20) && ((serdesNum < 24) || (serdesNum > 27)))
+    {
+        return GT_BAD_PARAM;
+    }
+
+    CHECK_STATUS(mvHwsAvagoConvertSerdesToSbusAddr(devNum, serdesNum, &sbus_addr));
+
+    /* get the Serdes Temperature in degrees */
+    *temperature = (avago_sbm_get_temperature(aaplSerdesDb[devNum], 9, sbus_addr));
+    CHECK_AVAGO_RET_CODE();
+
+    return GT_OK;
+}
+
+/*******************************************************************************
+* mvHwsAvagoSerdesCalCodeSet
+*
+* DESCRIPTION:
+*       Set the calibration code(value) for Rx or Tx
+*
+* INPUTS:
+*       devNum    - device number
+*       portGroup - port group (core) number
+*       serdesNum - SERDES number
+*       calCode   - Rx or Tx calibration code
+*       mode      - True for Rx mode, False for Tx mode
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+unsigned int mvHwsAvagoSerdesCalCodeSet(int devNum, int portGroup, int serdesNum, int calCode, BOOL mode)
+{
+    /* set calibration code */
+    CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x28, 0x480 | calCode | (mode<<15), NULL));
+
+    return GT_OK;
+}
+
+/*******************************************************************************
+* mvHwsAvagoSerdesCalCodeGet
+*
+* DESCRIPTION:
+*       Get the calibration code(value) for Rx or Tx
+*
+* INPUTS:
+*       devNum    - device number
+*       portGroup - port group (core) number
+*       serdesNum - SERDES number
+*       mode      - True for Rx mode, False for Tx mode
+*
+* OUTPUTS:
+*       None
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+unsigned int mvHwsAvagoSerdesCalCodeGet(int devNum, int portGroup, int serdesNum, BOOL mode)
+{
+    unsigned int data;
+
+    /* get the calibration code */
+    mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x28, 0x4480 | (mode << 15), &data);
+
+    /* cf code are only bits 0..6 */
+    return data & 0x7F;
+}
+
+/*******************************************************************************
+* mvHwsAvagoSerdesVcoConfig
+*
+* DESCRIPTION:
+*       Compensate the VCO calibration value according to Temperature in order
+*       to enable Itemp operation
+*
+* INPUTS:
+*       devNum    - device number
+*       portGroup - port group (core) number
+*       serdesNum - SERDES number
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+unsigned int mvHwsAvagoSerdesVcoConfig
+(
+    unsigned char       devNum,
+    unsigned int        portGroup,
+    unsigned int        serdesNum
+)
+{
+    int temperature, res;
+    unsigned int rxCalCode = mvHwsAvagoSerdesCalCodeGet(devNum, portGroup, serdesNum, TRUE);
+    unsigned int txCalCode = mvHwsAvagoSerdesCalCodeGet(devNum, portGroup, serdesNum, FALSE);
+
+    /* get the Temperature from Serdes #20 */
+    CHECK_STATUS(mvHwsAvagoSerdesTemperatureGet(devNum, portGroup, 20, &temperature));
+
+    if (temperature < -20)
+    {
+        rxCalCode += 2;
+        txCalCode += 2;
+    }
+    else if ((temperature >= -20) && (temperature <= 0))
+    {
+        rxCalCode += 1;
+        txCalCode += 1;
+    }
+    else if ((temperature > 30) && (temperature <= 75))
+    {
+        rxCalCode -= 1;
+        txCalCode -= 1;
+    }
+    else if ((temperature > 75) && (temperature <= 125))
+    {
+        rxCalCode -= 2;
+        txCalCode -= 2;
+    }
+
+    /* Set the calibration code for Rx */
+    res = mvHwsAvagoSerdesCalCodeSet(devNum, portGroup, serdesNum, rxCalCode, TRUE);
+    if (res != GT_OK)
+    {
+        osPrintf("mvHwsAvagoSerdesCalCodeSet failed (%d)\n", res);
+        return GT_FAIL;
+    }
+
+    /* Set the calibration code for Tx */
+    res = mvHwsAvagoSerdesCalCodeSet(devNum, portGroup, serdesNum, txCalCode, FALSE);
+    if (res != GT_OK)
+    {
+        osPrintf("mvHwsAvagoSerdesCalCodeSet failed (%d)\n", res);
+        return GT_FAIL;
+    }
+
+    return GT_OK;
+}
+#endif /* ASIC_SIMULATION */
+
 /*******************************************************************************
 * mvHwsAvagoSerdesPowerCtrlImpl
 *
@@ -586,6 +816,7 @@ int mvHwsAvagoSerdesPowerCtrlImpl
     unsigned int sbus_addr;
     unsigned int errors;
     unsigned int data;
+    int res;
 
     CHECK_STATUS(mvHwsAvagoConvertSerdesToSbusAddr(devNum, serdesNum, &sbus_addr));
     if (sbus_addr == AVAGO_INVALID_SBUS_ADDR)
@@ -678,6 +909,16 @@ int mvHwsAvagoSerdesPowerCtrlImpl
         AVAGO_DBG(("The SerDes at address 0x%x is initialized.\n", sbus_addr));
 #endif /* MV_HWS_REDUCED_BUILD */
     }
+
+#ifndef ASIC_SIMULATION
+    /* Compensate the VCO calibration value according to Temperature */
+    res = mvHwsAvagoSerdesVcoConfig(devNum, portGroup, serdesNum);
+    if(res != GT_OK)
+    {
+        osPrintf("mvHwsAvagoSerdesVcoConfig failed (%d)\n", res);
+        return GT_FAIL;
+    }
+#endif /* ASIC_SIMULATION */
 
 #ifndef MV_HWS_BIN_HEADER
     /* for ICAL: disable the one-shot pCal, send SPICO interrupt before iCal is enabled */

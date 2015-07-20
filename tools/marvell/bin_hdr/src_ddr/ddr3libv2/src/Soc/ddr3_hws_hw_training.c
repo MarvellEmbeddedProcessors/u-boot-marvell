@@ -122,12 +122,12 @@ MV_STATUS ddr3HwsHwTraining(void)
 	}
 
 	initParam.doMrsPhy = GT_TRUE;
-#if defined (CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_38X) || defined(CONFIG_ARMADA_39X)
+#if !defined (CONFIG_BOBCAT2)
 	initParam.isCtrl64Bit = GT_FALSE;
 #else
 	initParam.isCtrl64Bit = GT_TRUE;
 #endif
-#if defined (CONFIG_ALLEYCAT3) || defined(CONFIG_ARMADA_38X) || defined(CONFIG_ARMADA_39X)
+#if !defined (CONFIG_BOBCAT2)
     initParam.initPhy = GT_TRUE;
 #else
     initParam.initPhy = GT_FALSE;

@@ -1,6 +1,7 @@
 config MVEBU_CCU
 	bool "CCU address decoding driver"
 	default n
+	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 	help
 	  Choose this option to add support
 	  for CCU address decoding driver.
@@ -19,6 +20,7 @@ config MVEBU_IOB
 config MVEBU_RFU
 	bool "RFU address decoding driver"
 	default n
+	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 	help
 	  Choose this option to add support
 	  for RFU address decoding driver.
@@ -27,6 +29,7 @@ config MVEBU_RFU
 
 config MVEBU_MBUS
 	bool "MBUS address decoding driver"
+	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT
 	default n
 	help
 	  Choose this option to add support

@@ -85,6 +85,17 @@ config MVEBU_I2C
 	  driver.
 	  base address is configured under MVEBU_I2C_BASE
 
+config MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+	bool "DDR over PCIE support in SPL"
+	depends on SPL
+	default n
+	select MVEBU_PCI
+	help
+	  To add this option need to edit the defconfig and add the following line:
+	  +S:CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT=y
+	  Choose this option to add support
+	  for DDR over PCIE support
+
 menu "DDR support"
 
 config MVEBU_SPL_DDR_SUPPORT

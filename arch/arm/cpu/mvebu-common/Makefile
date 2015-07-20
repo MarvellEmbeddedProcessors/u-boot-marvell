@@ -25,3 +25,4 @@ obj-$(CONFIG_MVEBU_TIMER) += timer_mvebu.o
 obj-$(CONFIG_GENERIC_TIMER) += generic_timer.o
 obj-$(CONFIG_MVEBU_CA9) += platform.o
 obj-$(CONFIG_SPL_BUILD) += spl.o
+obj-$(CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT) += dram_over_pci.o

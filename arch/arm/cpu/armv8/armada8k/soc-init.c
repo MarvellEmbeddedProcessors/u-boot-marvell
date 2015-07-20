@@ -85,7 +85,10 @@ struct mvebu_soc_family *soc_init(void)
 
 int dram_init(void)
 {
-#ifdef CONFIG_PALLADIUM
+#ifdef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+	/* set static dram size 256MB*/
+	gd->ram_size = 0x10000000;
+#elif defined(CONFIG_PALLADIUM)
 	gd->ram_size = 0x20000000;
 #else
 	u32 alr, ahr;

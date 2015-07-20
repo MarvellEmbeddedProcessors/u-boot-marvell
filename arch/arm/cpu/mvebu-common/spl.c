@@ -21,6 +21,9 @@
 #include <fdtdec.h>
 #include <asm/arch-mvebu/fdt.h>
 #include <asm/arch-mvebu/comphy.h>
+#ifdef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+#include <asm/arch-mvebu/dram_over_pci.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -51,6 +54,11 @@ void board_init_f(ulong silent)
 
 	setup_fdt();
 	preloader_console_init();
+
+#ifndef CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT
+/* when DDR over PCIE is enabled, add delay before and after the comphy_init
+   to verify that the PCIE card init done, before setting the comphy to avoid
+   collisions. and no ddr init require */
 #if CONFIG_MVEBU_COMPHY_SUPPORT
 	if (comphy_init(gd->fdt_blob))
 		error("COMPHY initialization failed\n");
@@ -58,4 +66,7 @@ void board_init_f(ulong silent)
 #ifndef CONFIG_PALLADIUM
 	static_dram_init();
 #endif
+#else
+	dram_over_pci_init(gd->fdt_blob);
+#endif /* CONFIG_MVEBU_SPL_DDR_OVER_PCI_SUPPORT */
 }

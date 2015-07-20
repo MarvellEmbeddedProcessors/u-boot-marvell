@@ -60,18 +60,32 @@ unsigned int mvAvagoDb = 1;
 #else
 unsigned int mvAvagoDb = 0;
 #endif /* MARVELL_AVAGO_DB_BOARD */
-
+#ifndef ASIC_SIMULATION
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+#if AAPL_ENABLE_AACS_SERVER
+#include <aacs_server.h>
+/* This define is for internal Avago AAPL debug process
+   It should be trmoved, once process it created by CPSS */
+/*#define MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG*/
+#endif /* AAPL_ENABLE_AACS_SERVER */
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+#endif /* ASIC_SIMULATION */
 
 /************************* Globals *******************************************************/
 unsigned int avagoConnection = AVAGO_I2C_CONNECTION;
 char avagoSerdesNum2SbusAddr[MAX_AVAGO_SERDES_NUMBER];
+#ifdef MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG
+/* Avago server process Id */
+static GT_U32 avagoAACS_ServerTid;
+#endif
+
 /************************* * Pre-Declarations *******************************************************/
+#ifndef ASIC_SIMULATION
 
 Aapl_t* aaplSerdesDb[HWS_MAX_DEVICE_NUM] = {0};
 
 extern GT_STATUS mvHwsAvagoInitI2cDriver(GT_VOID);
-extern GT_STATUS mvHwsAvagoEthDriverInit(GT_U8 devNum);
-
+#endif /* ASIC_SIMULATION */
 /***************************************************************************************************/
 
 int mvHwsAvagoCheckSerdesAccess
@@ -100,6 +114,116 @@ int mvHwsAvagoConvertSerdesToSbusAddr
 
     return GT_OK;
 }
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+/*******************************************************************************
+* mvHwsAvagoEthDriverInit
+*
+* DESCRIPTION:
+*       Initialize Avago related configurations
+*
+* INPUTS:
+*       devNum    - system device number
+*
+* OUTPUTS:
+*       None
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+unsigned int mvHwsAvagoEthDriverInit(unsigned char devNum)
+{
+#ifndef ASIC_SIMULATION
+    /* Set default values: */
+
+    char ip_address[] = "10.5.32.124";
+    int     tcp_port     = 90; /* Default port for Avago HS1/PS1 */
+
+    aapl_connect(aaplSerdesDb[devNum], ip_address, tcp_port);
+    if(aaplSerdesDb[devNum]->return_code < 0)
+    {
+        osPrintf("aapl_connect failed (return code 0x%x)\n", aaplSerdesDb[devNum]->return_code);
+        return GT_INIT_ERROR;
+    }
+
+#endif /* ASIC_SIMULATION */
+    return GT_OK;
+}
+
+#if AAPL_ENABLE_AACS_SERVER
+
+#ifdef MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG
+
+extern unsigned int osTaskCreate(const char *name, unsigned int prio, unsigned int stack,
+    unsigned (__TASKCONV *start_addr)(void*), void *arglist, unsigned int *tid);
+
+/*******************************************************************************
+* mvHwsAvagoSerdesDebugInit
+*
+* DESCRIPTION:
+*       Create Avago AACS Server Process
+*
+* INPUTS:
+*       task name   - AACS server process identifier
+*       taskRoutine - AACS server process entry point
+*       devNum        - system device number
+*
+* OUTPUTS:
+*       None
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+GT_STATUS mvHwsAvagoSerdesDebugInit
+(
+    char *name,
+    unsigned (__TASKCONV *taskRoutine)(GT_VOID*),
+    unsigned char devNum
+)
+{
+    unsigned int params = devNum;
+
+    if((osTaskCreate(name, 250, _8KB, taskRoutine, (void*)params, &avagoAACS_ServerTid)) != GT_OK)
+    {
+        return GT_FAIL;
+    }
+
+    return GT_OK;
+}
+
+/*******************************************************************************
+* avagoAACS_ServerRoutine
+*
+* DESCRIPTION:
+*       Initialize Avago AACS Server
+*
+* INPUTS:
+*       None
+*
+* OUTPUTS:
+*       None
+*
+* RETURNS:
+*       0  - on success
+*******************************************************************************/
+static unsigned __TASKCONV avagoAACS_ServerRoutine
+(
+    IN GT_VOID * param
+)
+{
+    unsigned int devNum = (GT_U32)param;
+    unsigned int tcpPort = 90;
+
+    avago_aacs_server(aaplSerdesDb[0], tcpPort);
+
+    return GT_OK;
+}
+#endif /* MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG */
+#endif /* AAPL_ENABLE_AACS_SERVER */
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 #if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
 /*******************************************************************************

@@ -186,7 +186,7 @@ MV_BOOL mvGetAvsValFromEfuse(MV_U32 satrFreq, MV_U32 *avsVal)
 	versionVal = (MV_EFUSE_REG_READ(EFUSE_AVS_VERSION_REG) &
 			(EFUSE_AVS_VERSION_MASK << EFUSE_AVS_VERSION_OFFSET)) >> EFUSE_AVS_VERSION_OFFSET;
 	if (versionVal == 0) {
-		mvPrintf("AVS from eFuse version is not supported\n");
+		mvPrintf("AVS from eFuse version is not supported (%u)\n", versionVal);
 		return MV_FALSE;
 	}
 
@@ -227,13 +227,18 @@ MV_BOOL mvGetAvsValFromEfuse(MV_U32 satrFreq, MV_U32 *avsVal)
 			*avsVal = (MV_EFUSE_REG_READ(EFUSE_AVS_AND_BIN_REG) &
 					(EFUSE_AVS_VAL_MASK << EFUSE_AVS_VAL_OFFSET_AT_IND(i))) >>
 								EFUSE_AVS_VAL_OFFSET_AT_IND(i);
+			break;
 		}
 	}
 	if (i == EFUSE_FREQ_VAL_SIZE && satrFreq > efuse_freq_val[0].cpu_freq_mode) {
+		/* check if chip is configured to CPU frequency
+		 * that is unsupported by AVS @ EFUSE mapping */
 		mvPrintf("ERROR: selected CPU frequency (mode 0x%X) is not supported\n", satrFreq);
 		return MV_FALSE;
 	}
-	mvPrintf("Selected AVS value from eFuse: 0x%X\n", *avsVal);
+	mvPrintf("Selected AVS value from eFuse: 0x%X (corresponding to frequency %uMHz) ",
+			*avsVal, efuse_freq_val[i].cpu_freq);
+	mvPrintf("version %u\n", versionVal);
 	return MV_TRUE;
 }
 #endif /* CONFIG_ARMADA_38X */

@@ -88,6 +88,8 @@ EXT const char *aapl_pll_clk_to_str       (Avago_serdes_tx_pll_clk_t     val);
 EXT const char *aapl_process_id_to_str    (Avago_process_id_t            val);
 EXT const char *aapl_term_to_str          (Avago_serdes_rx_term_t        val);
 
+/* ported from aapl 2.2.3 for AACS Server integration */
+EXT BOOL aapl_str_to_addr         (const char *name, char **endptr, uint *addr);
 EXT BOOL aapl_str_to_cmp_data     (const char *name, Avago_serdes_rx_cmp_data_t *out);
 EXT BOOL aapl_str_to_cmp_mode     (const char *name, Avago_serdes_rx_cmp_mode_t *out);
 EXT BOOL aapl_str_to_comm_method  (const char *name, Aapl_comm_method_t *out);

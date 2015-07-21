@@ -1768,5 +1768,79 @@ const char *aapl_addr_to_str(
 #endif
     return buf;
 }
+
+/* ported from aapl 2.2.3 for AACS Server integration */
+/** @brief  Converts a string representation of an address into a number.
+** @return Returns TRUE on successful parsing, FALSE otherwise.
+** @return If parsing fails, *addr is set to 0.
+**/
+BOOL aapl_str_to_addr(
+    const char *str,    /**< [in]  String representation of address. */
+    char **endptr,      /**< [out] Pointer to the end of the processed string. */
+    uint *addr)         /**< [out] Address number. */
+{
+#if 1
+    char *ptr = 0;
+    Avago_addr_t addr_struct;
+    avago_addr_init(&addr_struct);
+    while (str[0] == ' ') str++;
+    if( 0 == strchr(str,':') )
+    {
+        addr_struct.sbus = strtol(str,&ptr,0);
+        if( addr_struct.sbus & ~0x00ff )
+            return (*addr = 0), FALSE;
+    }
+    else
+        addr_struct.sbus = strtol(str,&ptr,16);
+    if( str == ptr && *ptr == '*' )
+    {
+        ptr++;
+        addr_struct.sbus = AVAGO_ADDR_BROADCAST;
+    }
+    if( *ptr == ':' )
+    {
+        ptr++;
+        addr_struct.ring = addr_struct.sbus;
+        if( *ptr == '*' )
+        {
+            ptr++;
+            addr_struct.sbus = AVAGO_ADDR_BROADCAST;
+        }
+        else
+            addr_struct.sbus = strtol(ptr,&ptr,16);
+        if( *ptr == ':' )
+        {
+            ptr++;
+            addr_struct.chip = addr_struct.ring;
+            addr_struct.ring = addr_struct.sbus;
+            if( *ptr == '*' )
+            {
+                ptr++;
+                addr_struct.sbus = AVAGO_ADDR_BROADCAST;
+            }
+            else
+                addr_struct.sbus = strtol(ptr,&ptr,16);
+       }
+    }
+    if( *ptr == '.' )
+    {
+        ptr++;
+        if(      *ptr == '*'                ) addr_struct.lane = AVAGO_ADDR_QUAD_ALL;
+        else if( *ptr == 'l' || *ptr == 'L' ) addr_struct.lane = AVAGO_ADDR_QUAD_LOW;
+        else if( *ptr == 'h' || *ptr == 'H' ) addr_struct.lane = AVAGO_ADDR_QUAD_HIGH;
+        else if( *ptr >= '0' && *ptr <= '7' ) addr_struct.lane = *ptr - '0';
+        else                                  addr_struct.lane = AVAGO_ADDR_IGNORE_LANE;
+        ptr++;
+    }
+    *addr = avago_struct_to_addr(&addr_struct);
+    if (endptr) *endptr = ptr;
+    return ptr > str;
+#else
+    char *ptr;
+    *addr = strtol(str,&ptr,0);
+    return ptr > str;
+#endif
+}
+
 #endif /* MV_HWS_REDUCED_BUILD */
 

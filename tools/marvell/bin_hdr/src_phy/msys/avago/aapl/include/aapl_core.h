@@ -337,6 +337,16 @@ typedef struct Avago_addr_t
 } Avago_addr_t;
 
 /** @} */
+/* ported from aapl 2.2.3 for AACS Server integration */
+/** @brief AAPL addressing constants. */
+typedef enum
+{
+    AVAGO_ADDR_BROADCAST      = 0xff,
+    AVAGO_ADDR_IGNORE_LANE    = 0xf0,
+    AVAGO_ADDR_QUAD_LOW       = 0xf1,
+    AVAGO_ADDR_QUAD_HIGH      = 0xf2,
+    AVAGO_ADDR_QUAD_ALL       = 0xf3
+} Aapl_broadcast_control_t;
 
 #define AVAGO_BROADCAST                (0xff)
 #define AVAGO_INVALID_ADDR             (0xbad)

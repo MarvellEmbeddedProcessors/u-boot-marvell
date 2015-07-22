@@ -125,6 +125,27 @@ static void serdes_pmd_16gfc_lane_config(
     avago_spico_int(aapl,sbus_addr,0x3D,0x1000|int_data);
 }
 
+/* ported from aapl 2.2.3 for PMD Training Status  */
+/** @brief  Returns PMD training status.
+** @return Returns 1 if training completed successfully.
+** @return Returns 2 if training is in progress.
+** @return Returns 0 if training ran and failed.
+** @return Returns -1 if training hasn't been initiated.
+**/
+int avago_serdes_pmd_status(Aapl_t *aapl, uint addr)
+{
+#if 0 /* Ported from aapl 2.2.3 */
+    int reg_serdes_status = (aapl_get_sdrev(aapl,addr) == AAPL_SDREV_P1) ? 0xef : 0x27;
+#else
+    int reg_serdes_status = 0x27;
+#endif
+    int status = avago_serdes_mem_rd(aapl, addr, AVAGO_LSB, reg_serdes_status);
+    if( status & (1 << 1) ) return 2;
+    if( (status & 7) == 4 ) return 1;
+    if( status & (1 << 0) ) return 0;
+    return -1;
+}
+
 /*============================================================================= */
 /* SERDES PMD TUNE */
 /*============================================================================= */

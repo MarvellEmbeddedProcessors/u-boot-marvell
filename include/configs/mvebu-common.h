@@ -255,7 +255,7 @@
 #endif
 
 /* PCI-E */
-#ifdef CONFIG_MVEBU_PCI
+#if defined(CONFIG_MVEBU_PCI) || defined(CONFIG_MVEBU_DW_PCIE_)
 	#define CONFIG_PCI
 	#define CONFIG_PCI_PNP  /* Enable plug-and-play */
 	/*#define CONFIG_MVEBU_PCI_EP*/ /* Set PCI host as end point */
@@ -290,7 +290,7 @@
 #endif /* CONFIG_MVEBU_NET */
 
 /* SATA AHCI over PCIe */
-#if defined(CONFIG_DEVEL_BOARD) && defined(CONFIG_MVEBU_PCI)
+#if defined(CONFIG_DEVEL_BOARD) && (defined(CONFIG_MVEBU_PCI) || defined(CONFIG_MVEBU_DW_PCIE_))
 
 	#define CONFIG_CMD_SCSI
 	#define CONFIG_CMD_EXT2

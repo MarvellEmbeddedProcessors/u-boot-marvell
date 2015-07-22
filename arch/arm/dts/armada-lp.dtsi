@@ -25,6 +25,7 @@
 				baudrate = <115200>;
 				status = "disabled";
 			};
+
 			spi0: spi@10600 {
 				compatible = "marvell,armadalp-spi";
 				reg = <0x10600 0x50>;
@@ -33,6 +34,20 @@
 				spi-max-frequency = <40000>;
 				status = "disabled";
 			};
-};
+
+			mbus {
+				compatible = "marvell,mvebu-mbus";
+				reg = <0xcf00 0xf0>;
+				max-win = <5>;
+				max-remap = <5>;
+				remap-size = <32>;
+				internal-win = <6>;
+				windows = <0x0 0x80000000 ATTR(0x1, 0x0, 0x0)
+					0xE0000000 0x8000000 ATTR(0x1, 0x5, 0x0)
+					0xE8000000 0x8000000 ATTR(0x1, 0x2, 0x0)
+					0xF0000000 0x20000 ATTR(0x1, 0x7, 0x0)
+					0x80000000 0x10000000 ATTR(0x1, 0x3, 0x0)>;
+			};
+		};
 	};
 };

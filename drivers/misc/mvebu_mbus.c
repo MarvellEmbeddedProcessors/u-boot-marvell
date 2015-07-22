@@ -25,13 +25,18 @@
 #include <asm/arch-mvebu/mvebu.h>
 #include <asm/arch-mvebu/mbus.h>
 #include <asm/arch-mvebu/fdt.h>
+#include <asm/arch/mbus_reg.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+
+#define MBUS_REMAP_SIZE_64	64
+#define MBUS_TARGET_DRAM_NUM	0
 
 struct mbus_configuration {
 	void __iomem *mbus_base;
 	u32 max_win;
 	u32 max_remap;
+	u32 remap_size;
 	u32 internal_win;
 };
 struct mbus_configuration __attribute__((section(".data")))mbus_config;
@@ -52,34 +57,6 @@ struct mbus_win {
 	u32 enabled;
 };
 
-#define MBUS_WIN_CTRL_REG(win_num)		((win_num < mbus_info->max_remap) ? \
-		(win_num * 0x10) : (0x90 + (win_num-8)*0x08))
-#define MBUS_CR_WIN_ENABLE			0x1
-#define MBUS_CR_WIN_TARGET_OFFS			4
-#define MBUS_CR_WIN_TARGET_MASK			(0xf << MBUS_CR_WIN_TARGET_OFFS)
-#define MBUS_CR_WIN_ATTR_OFFS			8
-#define MBUS_CR_WIN_ATTR_MASK			(0xff << MBUS_CR_WIN_ATTR_OFFS)
-#define MBUS_CR_WIN_SIZE_OFFS			16
-#define MBUS_CR_WIN_SIZE_MASK			(0xffff << MBUS_CR_WIN_SIZE_OFFS)
-#define MBUS_CR_WIN_SIZE_ALIGNMENT		0x10000
-
-#define MBUS_WIN_BASE_REG(win_num)		((win_num < mbus_info->max_remap) ? \
-		(0x4 + win_num*0x10) :	(0x94 + (win_num-8)*0x08))
-#define MBUS_BR_BASE_OFFS			16
-#define MBUS_BR_BASE_MASK			(0xffff <<  MBUS_BR_BASE_OFFS)
-
-#define MBUS_WIN_REMAP_LOW_REG(win_num)		((win_num < mbus_info->max_remap) ? \
-		(0x8 + win_num*0x10) : (0))
-#define MBUS_RLR_REMAP_LOW_OFFS			16
-#define MBUS_RLR_REMAP_LOW_MASK			(0xffff << MBUS_RLR_REMAP_LOW_OFFS)
-
-#define MBUS_WIN_REMAP_HIGH_REG(win_num)	((win_num < mbus_info->max_remap) ? \
-		(0xC + win_num*0x10) : (0))
-#define MBUS_RHR_REMAP_HIGH_OFFS		0
-#define MBUS_RHR_REMAP_HIGH_MASK		(0xffffffff << MBUS_RHR_REMAP_HIGH_OFFS)
-
-#define MBUS_WIN_INTEREG_REG			(0x80)
-
 static void mbus_win_check(struct mbus_win *win, u32 win_num)
 {
 	/* check if address is aligned to the size */
@@ -98,23 +75,29 @@ static void mbus_win_check(struct mbus_win *win, u32 win_num)
 
 static void mbus_win_set(struct mbus_win *win, u32 win_num)
 {
-	u32 base_reg, ctrl_reg, size_to_reg, remap_low;
+	u32 base_reg, ctrl_reg, size_reg, win_size, remap_low;
 
 	base_reg = (win->base_addr & MBUS_BR_BASE_MASK);
-	size_to_reg = (win->win_size / MBUS_CR_WIN_SIZE_ALIGNMENT) - 1;
+	win_size = (win->win_size / MBUS_CR_WIN_SIZE_ALIGNMENT) - 1;
 
-	ctrl_reg = (size_to_reg << MBUS_CR_WIN_SIZE_OFFS);
+	size_reg = (win_size << MBUS_CR_WIN_SIZE_OFFS);
+	writel(size_reg, mbus_info->mbus_base + MBUS_WIN_SIZE_REG(win_num));
+
+	ctrl_reg = readl(mbus_info->mbus_base + MBUS_WIN_CTRL_REG(win_num));
+	ctrl_reg &= ~(MBUS_CR_WIN_TARGET_MASK & MBUS_CR_WIN_ATTR_MASK);
 	ctrl_reg |= MBUS_CR_WIN_ENABLE;
 	ctrl_reg |= win->attribute << MBUS_CR_WIN_ATTR_OFFS;
 	ctrl_reg |= win->target << MBUS_CR_WIN_TARGET_OFFS;
-
 	writel(ctrl_reg, mbus_info->mbus_base + MBUS_WIN_CTRL_REG(win_num));
+
 	writel(base_reg, mbus_info->mbus_base + MBUS_WIN_BASE_REG(win_num));
 
 	if (win->remapped) {
 		remap_low = win->base_addr & MBUS_RLR_REMAP_LOW_MASK;
 		writel(remap_low, mbus_info->mbus_base + MBUS_WIN_REMAP_LOW_REG(win_num));
-		writel(0x0, mbus_info->mbus_base + MBUS_WIN_REMAP_HIGH_REG(win_num));
+
+		if (MBUS_REMAP_SIZE_64 == mbus_info->remap_size)
+			writel(0x0, mbus_info->mbus_base + MBUS_WIN_REMAP_HIGH_REG(win_num));
 	}
 	return;
 }
@@ -134,6 +117,7 @@ void dump_mbus(void)
 		if (mbus_win_cr & MBUS_CR_WIN_ENABLE) {
 			target_id = (mbus_win_cr & MBUS_CR_WIN_TARGET_MASK) >> MBUS_CR_WIN_TARGET_OFFS;
 			attribute = (mbus_win_cr & MBUS_CR_WIN_ATTR_MASK) >> MBUS_CR_WIN_ATTR_OFFS;
+			mbus_win_cr = readl(mbus_info->mbus_base + MBUS_WIN_SIZE_REG(win_id));
 			size = (mbus_win_cr & MBUS_CR_WIN_SIZE_MASK) >> MBUS_CR_WIN_SIZE_OFFS;
 			mbus_win_br = readl(mbus_info->mbus_base + MBUS_WIN_BASE_REG(win_id));
 			size = (size + 1) * MBUS_CR_WIN_SIZE_ALIGNMENT;
@@ -164,7 +148,9 @@ int remap_mbus(phys_addr_t input, phys_addr_t output)
 				return 1;
 			}
 			writel(output & MBUS_RLR_REMAP_LOW_MASK, mbus_info->mbus_base + MBUS_WIN_REMAP_LOW_REG(win));
-			writel(0x0, mbus_info->mbus_base + MBUS_WIN_REMAP_HIGH_REG(win));
+
+			if (MBUS_REMAP_SIZE_64 == mbus_info->remap_size)
+				writel(0x0, mbus_info->mbus_base + MBUS_WIN_REMAP_HIGH_REG(win));
 			return 0;
 		}
 	}
@@ -175,7 +161,7 @@ int remap_mbus(phys_addr_t input, phys_addr_t output)
 
 int init_mbus(void)
 {
-	u32 win_id, index, mbus_win, count, node;
+	u32 win_id, index, mbus_win, count, node, start_win_id = 0;
 	struct mbus_fdt_info *fdt_info;
 	struct mbus_win *memory_map, *win;
 	const void *blob = gd->fdt_blob;
@@ -201,6 +187,11 @@ int init_mbus(void)
 	mbus_info->max_remap = fdtdec_get_int(blob, node, "max-remap", 0);
 	if (mbus_info->max_remap == 0)
 		error("failed reading max remap windows number\n");
+
+	/* Get the MBUS remap size */
+	mbus_info->remap_size = fdtdec_get_int(blob, node, "remap-size", 0);
+	if (mbus_info->remap_size == 0)
+		error("failed reading MBUS remap size\n");
 
 	/* Get the internal register window number */
 	mbus_info->internal_win = fdtdec_get_int(blob, node, "internal-win", 0);
@@ -233,37 +224,42 @@ int init_mbus(void)
 	}
 	win->enabled = -1;
 
+#ifdef CONFIG_MVEBU_MBUS_SKIP_DRAM_WIN
+	/* for some Soc, like ArmadaLP, DRAM window has to be at the begining,
+	     and could not be configured by anyway (keep the default value),
+	     In this case, need to skip DRAM window configuration */
+	for (start_win_id = 0, win = memory_map; start_win_id < count; start_win_id++, win++)
+		if (MBUS_TARGET_DRAM_NUM != win->target)
+			break;
+#endif
 	/* disable all windows */
-	for (win_id = 0; win_id < mbus_info->max_win; win_id++) {
+	for (win_id = start_win_id; win_id < mbus_info->max_win; win_id++) {
 		mbus_win = readl(mbus_info->mbus_base + MBUS_WIN_CTRL_REG(win_id));
 		mbus_win &= ~MBUS_CR_WIN_ENABLE;
 		writel(mbus_win, mbus_info->mbus_base + MBUS_WIN_CTRL_REG(win_id));
 	}
 
 	/* enable the remapped windows first, the remap windows is at the first 8 windows */
-	for (win_id = 0, win = memory_map; win->enabled != -1; win++) {
+	for (win_id = start_win_id, win = ++memory_map; win_id < mbus_info->max_win; win_id++, win++) {
 		if ((win->win_size == 0) || (win->enabled == 0) || (win->remapped == 0))
 			continue;
-
 		mbus_win_check(win, win_id);
 		debug("set window %d: target %d, base = 0x%lx, size = 0x%lx, attribute = 0x%x, remapped\n",
-		      win_id, win->target, win->base_addr, win->win_size, win->attribute);
+			win_id, win->target, win->base_addr, win->win_size, win->attribute);
 
 		mbus_win_set(win, win_id);
-		win_id++;
 	}
 
 	/* enable the rest of the windows */
-	for (win = memory_map; win->enabled != -1; win++) {
+	for (win_id = start_win_id, win = memory_map; win_id < mbus_info->max_win; win_id++, win++) {
 		if ((win->win_size == 0) || (win->enabled == 0) || (win->remapped))
 			continue;
 
 		mbus_win_check(win, win_id);
 		debug("set window %d: target = %d, base = 0x%lx, size = 0x%lx, attribute = 0x%x\n",
-		      win_id, win->target, win->base_addr, win->win_size, win->attribute);
+			win_id, win->target, win->base_addr, win->win_size, win->attribute);
 
 		mbus_win_set(win, win_id);
-		win_id++;
 	}
 
 	debug("Done MBUS address decoding initializing\n");

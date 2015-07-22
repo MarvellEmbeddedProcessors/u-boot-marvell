@@ -39,6 +39,17 @@ config MVEBU_MBUS
 	  This driver initialize the MBUS windows
 	  only.
 
+config MVEBU_MBUS_SKIP_DRAM_WIN
+	bool "skip DRAM window configuration in MBUS driver"
+	depends on MVEBU_MBUS
+	default n
+	help
+	  Choose this option to skip DRAM window
+	  configuration in MBUS driver.
+	  For some Soc, DRAM MBUS window has to
+	  be at the beginning, and could not be
+	  configured by anyway (keep the default value).
+
 config MVEBU_FLC
 	bool "MBUS Final Level Cache driver"
 	depends on !MVEBU_SPL_DDR_OVER_PCI_SUPPORT

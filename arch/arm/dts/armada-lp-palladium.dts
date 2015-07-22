@@ -1,0 +1,17 @@
+
+/dts-v1/;
+
+#include "armada-lp.dtsi"
+
+/ {
+	model = "Marvell Armada_LP Palladium";
+	compatible = "marvell,armada-lp-palladium", "marvell,armada-lp";
+
+	soc {
+		internal-regs {
+			serial: serial@12000 {
+				status = "okay";
+			};
+		};
+	};
+};

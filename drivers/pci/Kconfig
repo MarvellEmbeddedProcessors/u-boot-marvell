@@ -1,0 +1,6 @@
+config DW_PCIE
+	bool "Enable DesignWare PCIe 3 driver"
+	help
+	  If you want to use driver model for serial drivers, say Y.
+	  To use legacy serial drivers, say N.
+

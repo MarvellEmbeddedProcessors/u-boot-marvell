@@ -74,6 +74,9 @@ unsigned int mvAvagoDb = 0;
 /************************* Globals *******************************************************/
 unsigned int avagoConnection = AVAGO_I2C_CONNECTION;
 char avagoSerdesNum2SbusAddr[MAX_AVAGO_SERDES_NUMBER];
+
+Aapl_t* aaplSerdesDb[HWS_MAX_DEVICE_NUM] = {0};
+
 #ifdef MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG
 /* Avago server process Id */
 static GT_U32 avagoAACS_ServerTid;
@@ -81,9 +84,6 @@ static GT_U32 avagoAACS_ServerTid;
 
 /************************* * Pre-Declarations *******************************************************/
 #ifndef ASIC_SIMULATION
-
-Aapl_t* aaplSerdesDb[HWS_MAX_DEVICE_NUM] = {0};
-
 extern GT_STATUS mvHwsAvagoInitI2cDriver(GT_VOID);
 #endif /* ASIC_SIMULATION */
 /***************************************************************************************************/

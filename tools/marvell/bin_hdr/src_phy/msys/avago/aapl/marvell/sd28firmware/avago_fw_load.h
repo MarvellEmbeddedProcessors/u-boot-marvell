@@ -7,14 +7,11 @@ const char *sbusMasterFileName = "/usr/bin/sbus_master.0x100F_8001.rom";
 const char *serdesSwapFileName = NULL;
 #else
 
-#include "serdes.0x104A_0045.h"
+#include "serdes.0x1055_0041.h"
 #include "sbus_master.0x100F_8001.h"
 
-const short *sbusMasterFwPtr = sbusMaster01x100F_8001Data;
-const short *serdesFwPtr = serdes0x104A_0045Data;
-
 #ifdef AVAGO_FW_SWAP_IMAGE_EXIST
-GT_U32 *serdesFwDataSwapPtr;
+#include "serdes.0x1055_0045swap.h"
 #endif /*AVAGO_FW_SWAP_IMAGE_EXIST*/
 
 #endif /*FW_DOWNLOAD_FROM_SERVER*/

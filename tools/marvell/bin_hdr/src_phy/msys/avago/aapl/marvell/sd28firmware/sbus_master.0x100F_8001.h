@@ -2942,4 +2942,7 @@ const short sbusMaster01x100F_8001Data[AVAGO_SBUS_MASTER_FW_IMAGE_SIZE] = {
 0x0d9,
 0x0b0
 };
+
+const short *sbusMasterFwPtr = sbusMaster01x100F_8001Data;
+
 #endif /*AVAGO_SBUS_MASTER_0x10F_8001Data_H_*/

@@ -167,6 +167,7 @@ typedef enum _mvSatRTypeID {
 	MV_SATR_TDM_CONNECTED,
 	MV_SATR_TDM_PLACE_HOLDER,
 	MV_SATR_BOARD_SPEED,
+	MV_SATR_AVS_SKIP,
 	MV_SATR_MAX_OPTION,
 } MV_SATR_TYPE_ID;
 
@@ -200,10 +201,13 @@ typedef enum _mvSatRTypeID {
 {"flavor",	MV_SATR_FULL_FLAVOR,		0x10,	4,	0,	2,	{0, 1, 0, 1, 1, 1, 0}, 0},\
 {"tdm",		MV_SATR_TDM_CONNECTED,		0x20,	5,	0,	2,	{0, 1, 0, 0, 0, 0, 0}, 0},\
 {"tdmplaceholder",	MV_SATR_TDM_PLACE_HOLDER,	0x40,	6,	0,	2,	{0, 0, 0, 0, 0, 0, 0}, 0},\
+{"avsskip",	MV_SATR_AVS_SKIP,		0x80,	7,	0,	2,	{0, 1, 0, 1, 1, 1, 1}, 0},\
 {"boardspeed",	MV_SATR_BOARD_SPEED,		0x3,	0,	0,	3,	{0, 1, 0, 1, 1, 0, 1}, SATR_READ_ONLY},\
 {"max_option",	MV_SATR_MAX_OPTION,		0x0,	0,	0,	0,	{0, 0, 0, 0, 0, 0, 0}, 0},\
 };
 /* tdm place holder is used for future support for multiple tdm devices */
+/* avsskip is used to skip selecting AVS from EFUSE:
+ *	- used in binary header by Marvell boards only*/
 
 /* extra SAR table, for different board implementations:
  * in case a field is used on 2 boards with different i2c mapping */

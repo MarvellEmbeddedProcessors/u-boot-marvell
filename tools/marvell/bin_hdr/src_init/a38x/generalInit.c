@@ -71,6 +71,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "printf.h"
 #include "mvSysEnvLib.h"
 #include "soc_spec.h"
+#include "bin_hdr_twsi.h"
 
 /******************************************************************************************
 * mvDeviceIdConfig - set SoC Unit configuration and device ID according to detected flavour
@@ -138,6 +139,41 @@ MV_VOID mvRtcConfig()
 }
 
 #ifdef CONFIG_ARMADA_38X
+
+/*******************************************************************************
+* isSkippingAVSFromEfuse
+*
+* DESCRIPTION:
+*	read 'avsskip' field in EEPROM to detect whether to skip AVS
+*	selection from EFUSE, in order to add option to skip AVS selection
+*	with problematic AVS values in EEPROM
+* RETURN:
+*	MV_TRUE, if avsskip is 1
+*	MV_FALSE, otherwise.
+*
+*******************************************************************************/
+MV_BOOL isSkippingAVSFromEfuse()
+{
+	MV_TWSI_SLAVE twsiSlave;
+	MV_U8 data;
+
+	twsiSlave.slaveAddr.address = mvSysEnvi2cAddrGet();
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.moreThen256 = MV_TRUE;
+	twsiSlave.offset = 2;		/* SW EEPROM, register 2, bit 7 */
+
+	if (mvTwsiRead(0, &twsiSlave, &data, 1) != MV_OK) {
+		mvPrintf("%s: TWSI Read of 'avsskip' failed\n", __func__);
+		return MV_TRUE; /* skip AVS from EFUSE in case of error */
+	}
+	data >>= 7; /* BIT 7 */
+	if (data == 1)
+		return MV_TRUE;
+	else
+		return MV_FALSE;
+}
+
 /*******************************************************************************
 * mvGetAvsValFromEfuse
 *
@@ -174,7 +210,16 @@ MV_BOOL mvGetAvsValFromEfuse(MV_U32 satrFreq, MV_U32 *avsVal)
 	MV_U32 versionVal, binVal, avsRegControlVal;
 	MV_BOARD_AVS_EFUSE_MAP efuse_freq_val[] = EFUSE_FREQ_VAL_INFO;
 	int i;
-
+#ifndef CONFIG_CUSTOMER_BOARD_SUPPORT
+	/* For Marvell boards only:
+	 * AVS configuration from EFUSE can be skipped for Marvell boards, for:
+		- Already existing SoCs which EFUSE was not pre-burnt with AVS values
+		- SoCs with invalid AVS EFUSE values */
+	if (isSkippingAVSFromEfuse() == MV_TRUE) {
+		mvPrintf("Skipping AVS selection from EFUSE (SatR field 'avsskip' = Yes)\n");
+		return MV_FALSE;
+	}
+#endif
 	/* Set Memory I/O window */
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_CTRL_REG(EFUSE_WIN_ID), EFUSE_WIN_CTRL_VAL);
 	MV_REG_WRITE(AHB_TO_MBUS_WIN_BASE_REG(EFUSE_WIN_ID), EFUSE_WIN_BASE_VAL);
@@ -238,7 +283,7 @@ MV_BOOL mvGetAvsValFromEfuse(MV_U32 satrFreq, MV_U32 *avsVal)
 	}
 	mvPrintf("Selected AVS value from eFuse: 0x%X (corresponding to frequency %uMHz) ",
 			*avsVal, efuse_freq_val[i].cpu_freq);
-	mvPrintf("version %u\n", versionVal);
+	mvPrintf("EFUSE version %u\n", versionVal);
 	return MV_TRUE;
 }
 #endif /* CONFIG_ARMADA_38X */
@@ -264,11 +309,12 @@ MV_STATUS mvGeneralInit(void)
 #endif
 
 	/* Update AVS debug control register */
-    MV_REG_WRITE(AVS_DEBUG_CNTR_REG, AVS_DEBUG_CNTR_DEFAULT_VALUE);
-    MV_REG_WRITE(AVS_DEBUG_CNTR_REG, AVS_DEBUG_CNTR_DEFAULT_VALUE);
+	MV_REG_WRITE(AVS_DEBUG_CNTR_REG, AVS_DEBUG_CNTR_DEFAULT_VALUE);
+	MV_REG_WRITE(AVS_DEBUG_CNTR_REG, AVS_DEBUG_CNTR_DEFAULT_VALUE);
 
-    regData = MV_REG_READ(AVS_ENABLED_CONTROL);
+	regData = MV_REG_READ(AVS_ENABLED_CONTROL);
 	regData &= ~(AVS_LOW_VDD_LIMIT_MASK | AVS_HIGH_VDD_LIMIT_MASK);
+
 #ifdef CONFIG_ARMADA_38X
 	/* 1. Armada38x was signed off for 1600/800 at 1.15V (AVS)
 	 * 2. Based on ATE/system correlation, in order to achieve higher speeds (1866MHz, 2000MHz),
@@ -311,7 +357,6 @@ MV_STATUS mvGeneralInit(void)
 	/* Device general configuration was not supported on a38x Z0 revision */
 	if (mvSysEnvDeviceRevGet() != MV_88F68XX_Z1_ID)
 		mvDeviceIdConfig();
-
 	mvSysEnvUsbVbusReset();
 
 	return MV_OK;

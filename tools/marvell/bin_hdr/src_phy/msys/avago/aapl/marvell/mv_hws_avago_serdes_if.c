@@ -55,23 +55,20 @@
 /* Avago include */
 #include "aapl.h"
 
-#ifdef MARVELL_AVAGO_DB_BOARD
-unsigned int mvAvagoDb = 1;
-#else
-unsigned int mvAvagoDb = 0;
-#endif /* MARVELL_AVAGO_DB_BOARD */
-#ifndef ASIC_SIMULATION
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
-#if AAPL_ENABLE_AACS_SERVER
-#include <aacs_server.h>
-/* This define is for internal Avago AAPL debug process
-   It should be trmoved, once process it created by CPSS */
-/*#define MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG*/
-#endif /* AAPL_ENABLE_AACS_SERVER */
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
-#endif /* ASIC_SIMULATION */
+
+#if !defined(ASIC_SIMULATION) && !defined(MV_HWS_REDUCED_BUILD_EXT_CM3)
+#   if AAPL_ENABLE_AACS_SERVER
+#   include <aacs_server.h>
+
+    /* This define is for internal Avago AAPL debug process
+       It should be removed, once process it created by CPSS */
+    /*#define MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG*/
+
+#   endif /* AAPL_ENABLE_AACS_SERVER */
+#endif /* !defined(ASIC_SIMULATION) && !defined(MV_HWS_REDUCED_BUILD_EXT_CM3) */
 
 /************************* Globals *******************************************************/
+
 unsigned int avagoConnection = AVAGO_I2C_CONNECTION;
 char avagoSerdesNum2SbusAddr[MAX_AVAGO_SERDES_NUMBER];
 
@@ -81,6 +78,12 @@ Aapl_t* aaplSerdesDb[HWS_MAX_DEVICE_NUM] = {0};
 /* Avago server process Id */
 static GT_U32 avagoAACS_ServerTid;
 #endif
+
+#ifdef MARVELL_AVAGO_DB_BOARD
+unsigned int mvAvagoDb = 1;
+#else
+unsigned int mvAvagoDb = 0;
+#endif /* MARVELL_AVAGO_DB_BOARD */
 
 /************************* * Pre-Declarations *******************************************************/
 #ifndef ASIC_SIMULATION

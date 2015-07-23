@@ -78,9 +78,7 @@ extern "C" {
 #define HWS_MAX_DEVICE_NUM 1
 #define osPrintf     mvPrintf
 
-
 #endif
-
 /************************* Globals *******************************************************/
 int mvHwsAvagoCheckSerdesAccess
 (
@@ -176,6 +174,38 @@ int mvHwsAvagoSerdesPolarityConfigGetImpl
     unsigned int     serdesNum,
     unsigned int     *invertTx,
     unsigned int     *invertRx
+);
+
+/*******************************************************************************
+* mvHwsAvagoSerdesResetImpl
+*
+* DESCRIPTION:
+*       Per SERDES Clear the serdes registers (back to defaults.
+*
+* INPUTS:
+*       devNum    - system device number
+*       portGroup - port group (core) number
+*       serdesNum - serdes number
+*       analogReset - Analog Reset (On/Off
+*       digitalReset - digital Reset (On/Off)
+*       syncEReset - SyncE Reset (On/Off)
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+unsigned int mvHwsAvagoSerdesResetImpl
+(
+    unsigned char    devNum,
+    unsigned int     portGroup,
+    unsigned int     serdesNum,
+    unsigned int     analogReset,
+    unsigned int     digitalReset,
+    unsigned int     syncEReset
 );
 
 /*******************************************************************************

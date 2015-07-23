@@ -41,6 +41,7 @@
 #ifdef MV_HWS_BIN_HEADER
 #include "mvSiliconIf.h"
 #include <gtGenTypes.h>
+#include "mvHighSpeedEnvSpec.h"
 #else
 #include <common/siliconIf/mvSiliconIf.h>
 #include <common/siliconIf/siliconAddress.h>
@@ -66,7 +67,6 @@
 
 #   endif /* AAPL_ENABLE_AACS_SERVER */
 #endif /* !defined(ASIC_SIMULATION) && !defined(MV_HWS_REDUCED_BUILD_EXT_CM3) */
-
 /************************* Globals *******************************************************/
 
 unsigned int avagoConnection = AVAGO_I2C_CONNECTION;
@@ -331,7 +331,7 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
             CHECK_STATUS(avago_spico_upload(aaplSerdesDb[devNum], sbus_addr , FALSE, AVAGO_SERDES_FW_IMAGE_SIZE,serdesFwPtr));
 
 #ifdef AVAGO_FW_SWAP_IMAGE_EXIST
-            CHECK_STATUS(avago_spico_upload_swap_image(aaplSerdesDb[devNum], sbus_addr, FW_SWAP_IMAGE_SIZE, serdesFwDataSwapPtr));
+            CHECK_STATUS(avago_spico_upload_swap_image(aaplSerdesDb[devNum], sbus_addr, AVAGO_SERDES_FW_SWAP_IMAGE_SIZE, serdesFwDataSwapPtr));
 #endif /* AVAGO_FW_SWAP_IMAGE_EXIST */
 #endif /* FW_DOWNLOAD_FROM_SERVER */
         }
@@ -460,6 +460,7 @@ int mvHwsAvagoSerdesPowerCtrlImpl
         return GT_OK;
     }
 
+#ifndef MV_HWS_BIN_HEADER
     /* for Serdes PowerDown */
     if (powerUp == GT_FALSE)
     {
@@ -467,11 +468,11 @@ int mvHwsAvagoSerdesPowerCtrlImpl
         CHECK_STATUS(mvHwsAvagoSerdesSpicoInterrupt(devNum, portGroup, serdesNum, 0x1, 0));
 
         /* Serdes Digital UnReset */
-        CHECK_STATUS(mvHwsAvagoSerdesReset(devNum, portGroup, serdesNum, GT_FALSE, GT_FALSE, GT_FALSE));
+        CHECK_STATUS(mvHwsAvagoSerdesResetImpl(devNum, portGroup, serdesNum, GT_FALSE, GT_FALSE, GT_FALSE));
 
         return GT_OK;
     }
-
+#endif
     /* for Serdes PowerUp */
 #if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
     /* Initialize the SerDes slice */
@@ -517,7 +518,7 @@ int mvHwsAvagoSerdesPowerCtrlImpl
     AVAGO_DBG(("   signal_ok_threshold= %x \n",config->signal_ok_threshold));
 
     /* Serdes Analog Un Reset*/
-    CHECK_STATUS(mvHwsAvagoSerdesReset(devNum, portGroup, serdesNum, GT_FALSE, GT_TRUE, GT_TRUE));
+    CHECK_STATUS(mvHwsAvagoSerdesResetImpl(devNum, portGroup, serdesNum, GT_FALSE, GT_TRUE, GT_TRUE));
 
     /* config media */
     data = (media == RXAUI_MEDIA) ? (1 << 2) : 0;
@@ -552,8 +553,66 @@ int mvHwsAvagoSerdesPowerCtrlImpl
     }
 
     /* Serdes Digital UnReset */
-    CHECK_STATUS(mvHwsAvagoSerdesReset(devNum, portGroup, serdesNum, GT_FALSE, GT_FALSE, GT_FALSE));
+    CHECK_STATUS(mvHwsAvagoSerdesResetImpl(devNum, portGroup, serdesNum, GT_FALSE, GT_FALSE, GT_FALSE));
 
+    return GT_OK;
+}
+
+/*******************************************************************************
+* mvHwsAvagoSerdesResetImpl
+*
+* DESCRIPTION:
+*       Per SERDES Clear the serdes registers (back to defaults.
+*
+* INPUTS:
+*       devNum    - system device number
+*       portGroup - port group (core) number
+*       serdesNum - serdes number
+*       analogReset - Analog Reset (On/Off)
+*       digitalReset - digital Reset (On/Off)
+*       syncEReset - SyncE Reset (On/Off)
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+unsigned int mvHwsAvagoSerdesResetImpl
+(
+    unsigned char    devNum,
+    unsigned int     portGroup,
+    unsigned int     serdesNum,
+    unsigned int     analogReset,
+    unsigned int     digitalReset,
+    unsigned int     syncEReset
+)
+{
+#ifndef ASIC_SIMULATION
+    GT_U32  data;
+
+    /* SERDES SD RESET/UNRESET init */
+    data = (analogReset == GT_TRUE) ? 0 : 1;
+    CHECK_STATUS(hwsSerdesRegSetFuncPtr(devNum, portGroup, EXTERNAL_REG, serdesNum, SERDES_EXTERNAL_CONFIGURATION_1, (data << 2), (1 << 2)));
+
+    /* SERDES RF RESET/UNRESET init */
+    data = (digitalReset == GT_TRUE) ? 0 : 1;
+    CHECK_STATUS(hwsSerdesRegSetFuncPtr(devNum, portGroup, EXTERNAL_REG, serdesNum, SERDES_EXTERNAL_CONFIGURATION_1, (data << 3), (1 << 3)));
+
+    /* SERDES SYNCE RESET init */
+    if(syncEReset == GT_TRUE)
+    {
+        CHECK_STATUS(hwsSerdesRegSetFuncPtr(devNum, portGroup, EXTERNAL_REG, serdesNum, SERDES_EXTERNAL_CONFIGURATION_0, 0, (1 << 6)));
+    }
+    else /* SERDES SYNCE UNRESET init */
+    {
+        CHECK_STATUS(hwsSerdesRegSetFuncPtr(devNum, portGroup, EXTERNAL_REG, serdesNum, SERDES_EXTERNAL_CONFIGURATION_0, (1 << 6), (1 << 6)));
+        CHECK_STATUS(hwsSerdesRegSetFuncPtr(devNum, portGroup, EXTERNAL_REG, serdesNum, SERDES_EXTERNAL_CONFIGURATION_1, 0xDD00, 0xFF00));
+    }
+
+#endif /* ASIC_SIMULATION */
     return GT_OK;
 }
 

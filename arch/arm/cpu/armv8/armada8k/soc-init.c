@@ -74,13 +74,12 @@ static void soc_pcie_init(void)
 }
 #endif
 
-struct mvebu_soc_family *soc_init(void)
+void soc_init(void)
 {
 #ifdef CONFIG_MVEBU_PCIE
 	soc_pcie_init();
 #endif
-
-	return &a8k_family_info;
+	return;
 }
 
 int dram_init(void)

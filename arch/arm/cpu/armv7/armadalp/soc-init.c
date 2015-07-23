@@ -37,11 +37,11 @@ int soc_get_id(void)
 	return id;
 }
 
-struct mvebu_soc_family *soc_init(void)
+void soc_init(void)
 {
 	/* Do early SOC specific init here */
 
-	return &armadalp_family_info;
+	return;
 }
 
 int dram_init(void)

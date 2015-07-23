@@ -17,5 +17,4 @@
 #
 
 obj-y += soc-init.o
-obj-y += tables.o
 obj-y += clock.o

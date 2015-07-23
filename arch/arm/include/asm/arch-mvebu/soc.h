@@ -25,33 +25,15 @@
 #define MAX_SOC_REVS	8
 #define MAX_REV_NAME	4
 
-struct mvebu_soc_info {
-	char	name[MAX_SOC_NAME];
-	int	id;
-};
-
-struct mvebu_soc_family {
-	int	id;
-	char	name[MAX_SOC_NAME];
-	char	rev_name[MAX_SOC_REVS][MAX_REV_NAME];
-	struct	mvebu_soc_info *soc_table;
-	struct	mvebu_soc_info *curr_soc;
-};
-
-int common_soc_init(struct mvebu_soc_family *soc_family_info);
-
 /* API required from all SOCs */
 int soc_get_rev(void);
 int soc_get_id(void);
-struct mvebu_soc_family *soc_init(void);
+void soc_init(void);
 
 /* Common SOC API */
 int mvebu_soc_init(void);
 void mvebu_print_soc_info(void);
 
 DECLARE_GLOBAL_DATA_PTR;
-#define get_soc_family()  (struct mvebu_soc_family *)(gd->arch.soc_family)
-#define set_soc_family(x) (gd->arch.soc_family = (struct mvebu_soc_family *)(x))
-#define get_soc_info()  (struct mvebu_soc_info *)(gd->arch.soc_family->curr_soc)
 
 #endif /* _SOC_H_ */

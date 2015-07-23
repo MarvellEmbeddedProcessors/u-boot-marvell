@@ -34,7 +34,7 @@ int soc_early_init_f(void)
 	return 0;
 }
 
-struct mvebu_soc_family *soc_init(void)
+void soc_init(void)
 {
 	/* Do early SOC specific init here */
 
@@ -43,7 +43,7 @@ struct mvebu_soc_family *soc_init(void)
 	 * no device attached */
 	writel(0, MVEBU_IO_ERR_CTL_REG);
 
-	return &a38x_family_info;
+	return;
 }
 
 int dram_init(void)

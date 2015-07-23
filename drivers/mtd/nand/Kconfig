@@ -14,8 +14,6 @@ config MVEBU_NAND
 	  Choose this option to add support
 	  for MVEBU NAND driver
 
-if !SPL_BUILD
-
 config NAND_DENALI
 	bool "Support Denali NAND controller"
 	select SYS_NAND_SELF_INIT
@@ -42,7 +40,14 @@ config NAND_DENALI_SPARE_AREA_SKIP_BYTES
 	  of OOB area before last ECC sector data starts.  This is potentially
 	  used to preserve the bad block marker in the OOB area.
 
-endif
+config NAND_PXA3XX
+	bool "Support for NAND on PXA3xx and Armada 370/XP/38x"
+	select SYS_NAND_SELF_INIT
+	help
+	  This enables the driver for the NAND flash device found on
+	  PXA3xx processors (NFCv1) and also on Armada 370/XP (NFCv2).
+
+comment "Generic NAND options"
 
 if SPL_BUILD
 

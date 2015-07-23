@@ -492,7 +492,7 @@ int mvHwsAvagoSerdesPowerCtrlImpl
 
     /* initializes the Avago_serdes_init_config_t struct */
     config->sbus_reset = TRUE;
-    config->signal_ok_threshold = 10;
+    config->signal_ok_threshold = 2;
 
     /* Select the Rx & Tx data path width */
     if (mode == _10BIT_ON) config->rx_width = config->tx_width = 10;

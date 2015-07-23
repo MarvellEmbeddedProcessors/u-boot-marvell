@@ -52,7 +52,9 @@ extern "C" {
 /************************* definition *****************************************************/
 #define  AVAGO_ETH_CONNECTION         1
 #define  AVAGO_I2C_CONNECTION         2
+#define  AVAGO_SBUS_CONNECTION        3
 #define  MAX_AVAGO_SERDES_NUMBER      64
+#define  MAX_AVAGO_SERDES_ADDRESS     255
 #define  NA_VALUE                     0
 #define  AVAGO_INVALID_SBUS_ADDR      (-1)
 

@@ -92,7 +92,7 @@
 #define AAPL_ALLOW_SYSTEM_MDIO         0  /**< Set to 0 to remove the AVAGO_SYSTEM_MDIO communication method (not implemented). */
 #define AAPL_ALLOW_USER_SUPPLIED_I2C   1  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_I2C communication method. */
 #define AAPL_ALLOW_USER_SUPPLIED_MDIO  0  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_MDIO communication method. */
-#define AAPL_ALLOW_USER_SUPPLIED_SBUS  0  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_SBUS_DIRECT communication method. */
+#define AAPL_ALLOW_USER_SUPPLIED_SBUS  1  /**< Set to 0 to remove the AVAGO_USER_SUPPLIED_SBUS_DIRECT communication method. */
 #define AAPL_ENABLE_USER_SERDES_INT    0  /**< Set to 0 to remove support for using the user_supplied_serdes_interrupt_function() for SerDes interrupts */
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 

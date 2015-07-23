@@ -53,4 +53,6 @@ EXT BOOL avago_diag_sbus_rw_test(Aapl_t *aapl, uint sbus_addr, int cycles);
         int recv_data_back);
 # endif
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+
+void user_supplied_sbus_soft_reset(Aapl_t *aapl);
 #endif

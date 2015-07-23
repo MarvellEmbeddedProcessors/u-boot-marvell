@@ -139,6 +139,8 @@ typedef enum
 /** Use functions provided to get and set information in this structure. */
 typedef struct
 {
+    uint devNum;
+    uint portGroup;
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
     uint debug;                               /**< global debug level */
     uint verbose;                             /**< global verbosity level */

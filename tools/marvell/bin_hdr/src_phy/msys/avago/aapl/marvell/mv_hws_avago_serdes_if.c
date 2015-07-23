@@ -69,9 +69,9 @@
 #endif /* !defined(ASIC_SIMULATION) && !defined(MV_HWS_REDUCED_BUILD_EXT_CM3) */
 /************************* Globals *******************************************************/
 
-unsigned int avagoConnection = AVAGO_I2C_CONNECTION;
+unsigned int avagoConnection = AVAGO_I2C_CONNECTION; /* Replace to AVAGO_SBUS_CONNECTION for BOBK */
 char avagoSerdesNum2SbusAddr[MAX_AVAGO_SERDES_NUMBER];
-
+char avagoSerdesSbusAddr2Num[MAX_AVAGO_SERDES_ADDRESS];
 Aapl_t* aaplSerdesDb[HWS_MAX_DEVICE_NUM] = {0};
 
 #ifdef MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG
@@ -256,6 +256,7 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
     unsigned int curr_serdes=0;
     unsigned int chip=devNum;
     unsigned int ring =0; /*we have only one ring*/
+    unsigned int serdes_num=0x1;
     Avago_addr_t addr_struct;
 #ifndef AVAGO_AAPL_LGPL
     unsigned int addr = avago_make_addr3(AVAGO_BROADCAST, AVAGO_BROADCAST, AVAGO_BROADCAST);
@@ -270,9 +271,16 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
 
     /* Initialize SBUS address Array */
     memset(avagoSerdesNum2SbusAddr, AVAGO_INVALID_SBUS_ADDR, MAX_AVAGO_SERDES_NUMBER);
+    memset(avagoSerdesSbusAddr2Num, AVAGO_INVALID_SBUS_ADDR, MAX_AVAGO_SERDES_ADDRESS);
 
     /* Construct AAPL structure */
     aaplSerdesDb[devNum] = aapl_construct();
+    aaplSerdesDb[devNum]->devNum    = devNum;
+    aaplSerdesDb[devNum]->portGroup = 0;
+
+    /*Take Avago device out of reset */
+    user_supplied_sbus_soft_reset(aaplSerdesDb[devNum]);
+
 #ifndef MV_HWS_BIN_HEADER
     if (avagoConnection == AVAGO_ETH_CONNECTION)
     {
@@ -283,6 +291,10 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
     {
         aaplSerdesDb[devNum]->communication_method = AVAGO_USER_SUPPLIED_I2C;
         CHECK_STATUS(mvHwsAvagoInitI2cDriver());
+    }
+    else if (avagoConnection == AVAGO_SBUS_CONNECTION)
+    {
+        aaplSerdesDb[devNum]->communication_method = AVAGO_USER_SUPPLIED_SBUS_DIRECT;
     }
     else
     {
@@ -319,6 +331,9 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
 
             /* save sbus_addr in avagoSerdesNum2SbusAddr */
             avagoSerdesNum2SbusAddr[curr_serdes++] = curr_adr;
+            /* save serdes_num in avagoSerdesSbusAddr2Num */
+            avagoSerdesSbusAddr2Num[curr_adr] = serdes_num;
+            serdes_num++;
 
 #ifdef FW_DOWNLOAD_FROM_SERVER
             AVAGO_DBG(("Loading file: %s to SBus address %x chip %d, ring %x sbus %x data[0]=%x\n",

@@ -73,6 +73,8 @@ unsigned int avagoConnection = AVAGO_SBUS_CONNECTION;
 char avagoSerdesNum2SbusAddr[MAX_AVAGO_SERDES_NUMBER];
 char avagoSerdesSbusAddr2Num[MAX_AVAGO_SERDES_ADDRESS];
 Aapl_t* aaplSerdesDb[HWS_MAX_DEVICE_NUM] = {0};
+Aapl_t  aaplSerdesDbDef[HWS_MAX_DEVICE_NUM];
+
 
 #ifdef MV_HWS_ENABLE_INTERNAL_AAPL_DEBUG
 /* Avago server process Id */
@@ -274,7 +276,9 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
     memset(avagoSerdesSbusAddr2Num, AVAGO_INVALID_SBUS_ADDR, MAX_AVAGO_SERDES_ADDRESS);
 
     /* Construct AAPL structure */
-    aaplSerdesDb[devNum] = aapl_construct();
+    aapl_init(&(aaplSerdesDbDef[devNum]));
+    aaplSerdesDb[devNum] = &(aaplSerdesDbDef[devNum]);
+
     aaplSerdesDb[devNum]->devNum    = devNum;
     aaplSerdesDb[devNum]->portGroup = 0;
 
@@ -470,6 +474,8 @@ int mvHwsAvagoSerdesPowerCtrlImpl
 )
 {
     Avago_serdes_init_config_t *config;
+    Avago_serdes_init_config_t configDef;
+
     unsigned int sbus_addr;
     unsigned int errors;
     unsigned int data;
@@ -495,12 +501,9 @@ int mvHwsAvagoSerdesPowerCtrlImpl
     }
 #endif
     /* for Serdes PowerUp */
-#if !defined MV_HWS_REDUCED_BUILD_EXT_CM3 || defined MV_HWS_BIN_HEADER
     /* Initialize the SerDes slice */
-    config = avago_serdes_init_config_construct(aaplSerdesDb[devNum]);
-#else
-    /* Initialize the SerDes slice in CM3 */
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+    avago_serdes_init_config(&configDef);
+    config = &configDef;
 
     /* Change the config struct values from their defaults: */
     if (divider != NA_VALUE) config->tx_divider = config->rx_divider = divider;
@@ -549,12 +552,7 @@ int mvHwsAvagoSerdesPowerCtrlImpl
     data = ((refClockSource == PRIMARY) ? 0 : 1) << 8;
     CHECK_STATUS(hwsSerdesRegSetFuncPtr(devNum, portGroup, EXTERNAL_REG, serdesNum, SERDES_EXTERNAL_CONFIGURATION_0, data, (1 << 8)));
     errors = avago_serdes_init(aaplSerdesDb[devNum], sbus_addr, config);
-#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
-    /* Releases a Avago_serdes_init_config_t struct */
-    avago_serdes_init_config_destruct(aaplSerdesDb[devNum], config);
-#else
-   /* Initialize the SerDes slice in CM3 */
-#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+
     CHECK_AVAGO_RET_CODE();
     if (errors > 0)
     {

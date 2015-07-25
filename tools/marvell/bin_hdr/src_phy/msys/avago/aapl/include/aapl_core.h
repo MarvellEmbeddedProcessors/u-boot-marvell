@@ -226,6 +226,7 @@ typedef struct
 } Aapl_t;
 
 /* Create a pointer to a new AAPL struct */
+EXT void aapl_init(Aapl_t *aapl);
 EXT Aapl_t *aapl_construct(void);
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 EXT void    aapl_destruct(Aapl_t *aapl);

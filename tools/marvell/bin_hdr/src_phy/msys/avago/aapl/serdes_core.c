@@ -1383,6 +1383,34 @@ int avago_serdes_init_quick(
 }
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
+
+/** @brief   Allocates and initializes a Avago_serdes_init_config_t struct. */
+/** @details The return value should be released using */
+/**          avago_serdes_init_config_destruct() after use. */
+/** @return  On success, returns a pointer to the initialized structure. */
+/** @return  On failure, returns NULL. */
+/** @see     avago_serdes_init_config_destruct(), avago_serdes_init(). */
+void avago_serdes_init_config(Avago_serdes_init_config_t *config)
+{
+    memset(config, 0, sizeof(Avago_serdes_init_config_t));
+
+    config->sbus_reset   = TRUE;
+    config->init_mode    = AVAGO_PRBS31_ILB;
+
+    config->init_tx      = TRUE;
+    config->tx_divider   = 10;
+    config->tx_width     = 20;
+    config->tx_phase_cal = FALSE;
+    config->refclk_sync_master = TRUE;
+    config->tx_output_en = TRUE;
+
+    config->init_rx      = TRUE;
+    config->rx_divider   = 10;
+    config->rx_width     = 20;
+    config->signal_ok_en = TRUE;
+    config->signal_ok_threshold = 0x0;
+}
+
 /** @brief   Configures and calibrates a SerDes. */
 /** @details Call this to initialize a SerDes. */
 /** @return  0 on success, aapl->return_code (< 0) on error. */

@@ -257,6 +257,7 @@ typedef struct
 EXT Avago_serdes_init_config_t *avago_serdes_init_config_construct(Aapl_t *aapl);
 EXT void avago_serdes_init_config_destruct(Aapl_t *aapl, Avago_serdes_init_config_t *config);
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+void avago_serdes_init_config(Avago_serdes_init_config_t *config);
 EXT int avago_serdes_init(Aapl_t *aapl, uint sbus_addr, Avago_serdes_init_config_t *config);
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 EXT int avago_serdes_init_quick(Aapl_t *aapl, uint sbus_addr, uint divider);

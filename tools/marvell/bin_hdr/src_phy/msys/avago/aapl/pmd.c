@@ -149,6 +149,15 @@ int avago_serdes_pmd_status(Aapl_t *aapl, uint addr)
 /*============================================================================= */
 /* SERDES PMD TUNE */
 /*============================================================================= */
+/** @brief Initialize struct with default values */
+EXT void avago_serdes_pmd_init(Aapl_t *aapl, Avago_serdes_pmd_config_t *pmd_config)
+{
+    memset(pmd_config, 0, sizeof(Avago_serdes_pmd_config_t));
+
+    pmd_config->train_mode = AVAGO_PMD_TRAIN;
+    pmd_config->clause     = AVAGO_PMD_CL72;
+}
+
 /** @brief  Launches and halts PMD link training procedure */
 /** @return void */
 void avago_serdes_pmd_train(

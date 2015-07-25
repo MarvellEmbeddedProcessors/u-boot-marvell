@@ -71,6 +71,7 @@ typedef struct
 EXT Avago_serdes_pmd_config_t *avago_serdes_pmd_config_construct(Aapl_t *aapl);
 EXT void avago_serdes_pmd_config_destruct( Aapl_t *aapl, Avago_serdes_pmd_config_t *pmd_config);
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
+EXT void avago_serdes_pmd_init(Aapl_t *aapl, Avago_serdes_pmd_config_t *pmd_config);
 EXT void avago_serdes_pmd_train(Aapl_t *aapl, Avago_serdes_pmd_config_t *mode_control);
 
 

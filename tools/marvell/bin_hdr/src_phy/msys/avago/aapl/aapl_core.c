@@ -32,10 +32,6 @@
 
 #define AAPL_3D_ARRAY_ADDR(addr) (addr).chip][(addr).ring][(addr).sbus
 
-#ifdef MV_HWS_BIN_HEADER
-Aapl_t aapl_struct_bh;
-#endif
-
 #ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
 /* Global default values: */
 const char *aapl_default_server = "localhost";
@@ -310,17 +306,6 @@ void aapl_destruct(
     if (aapl->aacs_server_buffer)   AAPL_FREE(aapl->aacs_server_buffer);
     AAPL_FREE(aapl);
 }
-#elif defined MV_HWS_BIN_HEADER
-Aapl_t *aapl_construct()
-{
-    Aapl_t* aapl = &aapl_struct_bh;
-    memset(aapl, 0, sizeof(Aapl_t));
-
-    aapl->chips                 = AAPL_NUMBER_OF_CHIPS_OVERRIDE;
-    aapl->serdes_int_timeout    = AAPL_SERDES_INT_TIMEOUT;
-
-    return aapl;
-}
 #endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /*============================================================================= */
@@ -339,6 +324,62 @@ int aapl_get_return_code(
     return x;
 }
 
+#ifndef MV_HWS_REDUCED_BUILD_EXT_CM3
+/*============================================================================= */
+/* AAPL INIT */
+/** @brief Constructs the Aapl_t structure.and sets default values. */
+/** @warning Generally the user should not read or modify any elements of this struct. */
+/** Use functions provided to get and set information in this structure. */
+void aapl_init(Aapl_t *aapl)
+{
+    int i;
+
+    memset(aapl, 0, sizeof(Aapl_t));
+
+    for( i = 0; i < AAPL_MAX_CHIPS; i++ )
+        aapl->chip_name[i] = aapl->chip_rev[i] = "";
+
+#ifndef MV_HWS_BIN_HEADER
+    aapl->log            = (char *) AAPL_MALLOC(AAPL_LOG_BUF_SIZE);
+    aapl->log_end        = aapl->log;
+    aapl->log_size       = 0;
+    *aapl->log           = '\0';
+
+    aapl->socket         = -1;
+    aapl->aacs_server    = aapl_strdup(aapl_default_server);
+
+    aapl->tcp_port       = aapl_default_port;
+
+    aapl->data_char      = (char *) AAPL_MALLOC(AAPL_LOG_BUF_SIZE);
+    aapl->data_char_end  = aapl->data_char;
+    aapl->data_char_size = 0;
+    *aapl->data_char     = '\0';
+    aapl->debug = 0;
+    aapl->enable_debug_logging      = AAPL_DEFAULT_ENABLE_DEBUG_LOGGING;
+    aapl->enable_stream_logging     = AAPL_DEFAULT_ENABLE_STREAM_LOGGING;
+    aapl->enable_stream_err_logging = AAPL_DEFAULT_ENABLE_STREAM_ERR_LOGGING;
+    aapl->enable_serdes_core_port_interrupt = AAPL_DEFAULT_SERDES_CORE_PORT_INT;
+#endif /* MV_HWS_BIN_HEADER */
+
+    aapl->chips                 = AAPL_NUMBER_OF_CHIPS_OVERRIDE;
+#ifndef MV_HWS_BIN_HEADER
+    aapl->sbus_rings            = AAPL_NUMBER_OF_RINGS_OVERRIDE;
+
+# ifdef AAPL_LOG_TIME_STAMPS
+    aapl->log_time_stamps       = AAPL_LOG_TIME_STAMPS;
+# endif
+#endif /* MV_HWS_BIN_HEADER */
+
+    aapl->serdes_int_timeout    = AAPL_SERDES_INT_TIMEOUT;
+#ifndef MV_HWS_BIN_HEADER
+    aapl->sbus_mdio_timeout     = AAPL_SBUS_MDIO_TIMEOUT;
+    aapl->max_cmds_buffered     = AAPL_MAX_CMDS_BUFFERED;
+    aapl->communication_method  = AAPL_DEFAULT_COMM_METHOD;
+    aapl->i2c_base_addr         = AAPL_DEFAULT_I2C_BASE_ADDR;
+    aapl->mdio_base_port_addr   = AAPL_DEFAULT_MDIO_BASE_PORT_ADDR;
+#endif /* MV_HWS_BIN_HEADER */
+}
+#endif /* MV_HWS_REDUCED_BUILD_EXT_CM3 */
 
 /* The following functions return information from the AAPL struct. addr is used to return specific information for that element. */
 

@@ -89,6 +89,9 @@ unsigned int mvAvagoDb = 0;
 #ifndef ASIC_SIMULATION
 extern GT_STATUS mvHwsAvagoInitI2cDriver(GT_VOID);
 #endif /* ASIC_SIMULATION */
+
+void mvHwsAvagoAccessValidate(unsigned char devNum, uint sbus_addr);
+
 /***************************************************************************************************/
 
 int mvHwsAvagoCheckSerdesAccess
@@ -287,6 +290,9 @@ int mvHwsAvagoSerdesInit(unsigned char devNum)
                           aaplSerdesDb[devNum]->communication_method);
         return GT_INIT_ERROR;
     }
+
+    /* Validate access to Avago device */
+    mvHwsAvagoAccessValidate(devNum, 0);
 
     /* Initialize AAPL structure */
     aapl_get_ip_info(aaplSerdesDb[devNum],1);
@@ -708,3 +714,36 @@ int mvHwsAvagoSerdesPolarityConfigGetImpl
 #endif /* ASIC_SIMULATION */
     return GT_OK;
 }
+
+/*******************************************************************************
+* mvHwsAvagoAccessValidate
+*
+* DESCRIPTION:
+*       Validate access to Avago device
+*
+* INPUTS:
+*       unsigned char devNum
+*       uint sbus_addr
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       None.
+*
+*******************************************************************************/
+void mvHwsAvagoAccessValidate(unsigned char devNum, uint sbus_addr)
+{
+    osPrintf("Validate SBUS access, address 0x%x - ");
+    if (avago_diag_sbus_rw_test(aaplSerdesDb[devNum], avago_make_sbus_controller_addr(sbus_addr), 2) == TRUE)
+    {
+        osPrintf("Access Verified\n");
+    }
+    else
+    {
+        osPrintf("Access Failed\n");
+    }
+}
+
+
+

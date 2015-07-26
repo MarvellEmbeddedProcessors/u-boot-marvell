@@ -1375,3 +1375,31 @@ MV_BOOL mvSysEnvTimerIsRefClk25Mhz(void)
 {
 	return MV_TRUE;
 }
+/*******************************************************************************
+* Description: Read GEN1 Force Settings from SW EEPROM
+* Bit mapping for field from SatR ForceGen1: SW EEPROM (0x57), reg#3, bit2
+********************************************************************************/
+MV_STATUS mvSysEnvReadPcieGenSetting(MV_BOOL *isForceGen1)
+{
+	MV_TWSI_SLAVE twsiSlave;
+    MV_U8 data = 0;
+	/* Read SatR  */
+	twsiSlave.slaveAddr.address = mvSysEnvi2cAddrGet();
+	twsiSlave.slaveAddr.type = ADDR7_BIT;
+	twsiSlave.validOffset = MV_TRUE;
+	twsiSlave.offset = 0x3;
+	twsiSlave.moreThen256 = MV_TRUE;
+	if (mvTwsiRead(0, &twsiSlave, &data, 1) == MV_OK)
+    {
+        data = data & 0x4;
+        if (!data)
+          *isForceGen1 = MV_TRUE;
+        else
+          *isForceGen1 = MV_FALSE;
+
+        return MV_OK;
+    }
+    mvPrintf("%s: TWSI Read of SatR field 'isForceGen1 failed\n", __func__);
+    return MV_ERROR;
+}
+

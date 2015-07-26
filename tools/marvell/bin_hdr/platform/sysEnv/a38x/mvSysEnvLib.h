@@ -867,5 +867,12 @@ MV_STATUS mvSysEnvTimerIsRefClk25Mhz(MV_VOID);
  * RETURNS:              None.
  ***************************************************************************/
 MV_VOID mvSysEnvUsbVbusReset(MV_VOID);
+
+/*******************************************************************************
+* Description: Read GEN1 Force Settings from SW EEPROM
+* Bit mapping for field from SatR ForceGen1: SW EEPROM (0x57), reg#3, bit2
+********************************************************************************/
+MV_STATUS mvSysEnvReadPcieGenSetting(MV_BOOL *isForceGen1);
+
 #endif /* __INCmvSysEnvLibh */
 

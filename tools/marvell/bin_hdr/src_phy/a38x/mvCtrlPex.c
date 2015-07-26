@@ -67,6 +67,7 @@
 #include "mvUart.h"
 #include "util.h"
 #include "mvCtrlPex.h"
+#include "printf.h"
 
 #ifdef REGISTER_TRACE_DEBUG
 static MV_U32 _MV_REG_READ(MV_U32 regAddr)
@@ -167,6 +168,7 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 	MV_U32 pexIdx, tmp, next_busno, first_busno, tempPexReg, tempReg, addr, devId, ctrlMode;
 	SERDES_TYPE serdesType;
 	MV_U32 serdesIdx, maxLaneNum;
+    MV_BOOL isForceGen1;
 
 	DEBUG_INIT_FULL_S("\n### mvHwsPexConfig ###\n");
 
@@ -259,7 +261,17 @@ MV_STATUS mvHwsPexConfig(SERDES_MAP *serdesMap)
 		if ((tmp & 0x7f) == 0x7E) {
 			next_busno++;
 			tempPexReg = MV_REG_READ((PEX_CFG_DIRECT_ACCESS(pexIdx, PEX_LINK_CAPABILITY_REG)));
-			tempPexReg &= (0xF);
+
+            /* check if PEX is allowed to move to GEN2*/
+            if ((mvSysEnvReadPcieGenSetting(&isForceGen1) == MV_OK) && isForceGen1)
+            {
+                /* cancell the capability to move to GEN2 */
+                tempPexReg &= (0xFFFFFFFD);
+                MV_REG_WRITE(PEX_CFG_DIRECT_ACCESS(pexIdx,PEX_LINK_CAPABILITY_REG),tempPexReg);
+                mvPrintf("PEX%d is forced to GEN1\n", pexIdx);
+            }
+
+            tempPexReg &= (0xF);
 			if (tempPexReg == 0x2) {
 				tempReg = (MV_REG_READ(PEX_CFG_DIRECT_ACCESS(pexIdx, PEX_LINK_CTRL_STAT_REG)) & 0xF0000) >> 16;
 

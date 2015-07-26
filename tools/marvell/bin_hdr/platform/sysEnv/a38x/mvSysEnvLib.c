@@ -963,7 +963,12 @@ static MV_STATUS mvSysEnvEpromReset(void)
 	MV_U8 data[MV_BOARD_CONFIG_MAX_BYTE_COUNT] = MV_BOARD_CONFIG_DEFAULT_VALUE;
 	MV_U8 pattern[MV_BOARD_CONFIG_PATTERN_BYTES_NUM] = EEPROM_VERIFICATION_PATTERN;
 
+#ifdef MV_BOARD_CONFIG_SKIP_FIRST_BYTE
+	/* Start from the second element in data (first element is the boardID, and we should not change it) */
+	if (mvSysEnvEpromWrite(MV_BOARD_CONFIG_EEPROM_OFFSET + 1, data + 1, MV_BOARD_CONFIG_MAX_BYTE_COUNT - 1,
+#else
 	if (mvSysEnvEpromWrite(MV_BOARD_CONFIG_EEPROM_OFFSET, data, MV_BOARD_CONFIG_MAX_BYTE_COUNT,
+#endif
 		mvSysEnvi2cAddrGet()) != MV_OK) {
 		DEBUG_INIT_S("mvSysEnvEpromReset: Error: Write default configuration to EEPROM failed\n");
 		return MV_FAIL;

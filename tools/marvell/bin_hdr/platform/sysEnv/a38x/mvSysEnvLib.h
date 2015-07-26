@@ -726,6 +726,8 @@ typedef enum _mvGpConfig {
 	MV_GP_CONFIG_HGW_AP_2_5G_SATA
 } MV_GP_CONFIG;
 
+#define MV_BOARD_CONFIG_SKIP_FIRST_BYTE
+
 #define MV_EEPROM_CONFIG_INFO { \
 { MV_CONFIG_BOARDID,		0xFF,	0,	0,	{1, 1} }, \
 { MV_CONFIG_LANE0,		0x0F,	0,	1,	{1, 1} }, \

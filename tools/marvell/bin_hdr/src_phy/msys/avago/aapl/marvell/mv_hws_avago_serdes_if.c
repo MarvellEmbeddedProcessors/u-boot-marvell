@@ -69,7 +69,7 @@
 #endif /* !defined(ASIC_SIMULATION) && !defined(MV_HWS_REDUCED_BUILD_EXT_CM3) */
 /************************* Globals *******************************************************/
 
-unsigned int avagoConnection = AVAGO_I2C_CONNECTION; /* Replace to AVAGO_SBUS_CONNECTION for BOBK */
+unsigned int avagoConnection = AVAGO_SBUS_CONNECTION;
 char avagoSerdesNum2SbusAddr[MAX_AVAGO_SERDES_NUMBER];
 char avagoSerdesSbusAddr2Num[MAX_AVAGO_SERDES_ADDRESS];
 Aapl_t* aaplSerdesDb[HWS_MAX_DEVICE_NUM] = {0};

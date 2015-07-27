@@ -31,7 +31,7 @@ ELSE
       ELSE
         IF @soc_id == 0xFC00 THEN
           PRINT "%s" "Running on Bobcat2\n"
-          SET VAL @breakp = 0x40004000
+          SET VAL @breakp = 0x4007FFF0
           ! Currently BC3 static DDR init is not suported
           !define macro /button StaticInitDDR "batch \"./tools/marvell/debugger_scripts/XDB/bc2_static.xdb\"\n"
         ELSE

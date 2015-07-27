@@ -234,6 +234,56 @@ MV_STATUS mvGenUnitRegisterGet
 	MV_U32			mask
 );
 
+/*******************************************************************************
+* genSwitchRegisterGet
+*
+* DESCRIPTION:
+*       Read access to device registers.
+*
+* INPUTS:
+*       address
+*       mask
+*
+* OUTPUTS:
+*       data      - read data
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+MV_STATUS genSwitchRegisterGet
+(
+	MV_U32			address,
+	MV_U32			*data,
+	MV_U32			mask
+);
+
+/*******************************************************************************
+* genSwitchRegisterSet
+*
+* DESCRIPTION:
+*       Implement write access to device registers.
+*
+* INPUTS:
+*       address   - address to access
+*       data      - data to write
+*       mask
+*
+* OUTPUTS:
+*       None.
+*
+* RETURNS:
+*       0  - on success
+*       1  - on error
+*
+*******************************************************************************/
+MV_STATUS genSwitchRegisterSet
+(
+	MV_U32			address,
+	MV_U32			data,
+	MV_U32			mask
+);
 
 #ifdef __cplusplus
 }

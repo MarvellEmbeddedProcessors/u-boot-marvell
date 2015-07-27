@@ -1,0 +1,39 @@
+! Set breakpoint to the first access to stack area and allow BootROM to run until it.
+! The memory in L2 cache should be ready when the execution terminated
+SET BREAKPOINT AT (@first_breakp) HARD
+RUN
+DELETE BREAKPOINT /ALL
+
+! Once the memory region in L2 cache is ready, load the BIN header and execute it
+PRINT /DBVAR=cmd "LOAD /SEGMENT /DEBUG /GLOBAL /INIT=\"\" OF \"./spl/u-boot-spl\""
+set val @ret_val = @exec(@cmd)
+IF @ret_val == -1 THEN
+	print "Error: Missing SPL file ./spl/u-boot-spl\n"
+	GOTO SPL_INIT_END
+END
+
+! Break at the end of BIN header execution before jumping back top BootROM
+SET BREAKPOINT AT (@second_breakp) HARD
+RUN
+DELETE BREAKPOINT /ALL
+
+! DRAM should be ready now.
+! Disable MMU before loading the u-boot image.
+IF (@strcmp(@SOC, "ARMv7") == 0) THEN
+	SET SYSREGISTER /"COPROCESSOR_1" ARM_CONTROL=0xC53078
+ELSE
+	IF (@strcmp(@SOC, "ARMv8") == 0) THEN
+		SET REG SCTLR_EL3=0xC50838
+	END
+END
+
+! For loading and execution of u-boot, uncomment the following lines:
+!PRINT /DBVAR=cmd "LOAD /SEGMENT /DEBUG /GLOBAL /INIT=\"\" OF \"./u-boot\""
+!set val @ret_val = @exec(@cmd)
+!IF @ret_val == -1 THEN
+!	print "Error: Can't find ./u-boot file\n"
+!	GOTO SPL_INIT_END
+!END
+!RUN
+
+SPL_INIT_END:

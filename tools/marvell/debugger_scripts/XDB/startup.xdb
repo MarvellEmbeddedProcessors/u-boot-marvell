@@ -1,0 +1,48 @@
+DEFINE SYMBOL /ADDRESS=0xF06F8240 device_id_a8k
+DEFINE SYMBOL /ADDRESS=0xD0018238 device_id_a3xx
+SET VAL @dev_id_3xx = -1
+SET VAL @dev_id_8k = -1
+SET VAL @first_breakp = 0x0
+SET VAL @second_breakp = 0x0
+
+! Check if working on ARMv8, if not set ARMv7
+SET OPTION /outputtrace=on
+SHOW CPU
+IF @strfind(@OUTPUTTRACE, "ARMV8") != -1 THEN
+	PRINT /DBVAR=SOC "ARMv8"
+ELSE
+	PRINT /DBVAR=SOC "ARMv7"
+END
+DEL outputtrace
+SET OPTION /outputtrace=off
+
+! Read the device ID from the relevant address
+IF (@strcmp(@SOC, "ARMv7") == 0) THEN
+	SET VAL @dev_id_3xx = (device_id_a3xx & 0xFFFF0000) >> 16
+ELSE
+	IF (@strcmp(@SOC, "ARMv8") == 0) THEN
+		SET VAL @dev_id_8k = (device_id_a8k & 0xFFFF0000) >> 16
+	END
+END
+
+SET VAL @dev_id = @dev_id_3xx
+IF @dev_id == 0x6820 || @dev_id == 0x6810 || @dev_id == 0x6828 || @dev_id == 0x6811 THEN
+	PRINT "%s" "Running on Armada 38x\n"
+	define macro /button static_ddr_init "batch \"NO STATIC DRAM\"\n"
+	SET VAL @first_breakp = 0x40000040
+	SET VAL @second_breakp = 0x400000BC
+ELSE
+	SET VAL @dev_id = @dev_id_8k
+	IF @dev_id == 0x0 || @dev_id == 0x800 || @dev_id == 0x10 || @dev_id == 0x810 THEN
+		PRINT "%s" "Running on APN 806\n"
+		define macro /button static_ddr_init "batch \"NO STATIC DRAM\"\n"
+		SET VAL @first_breakp = 0xFFE1C048
+		SET VAL @second_breakp = 0xFFE1C07C
+	ELSE
+		PRINT "Unknown device ID %x\n" @dev_id
+	END
+END
+
+define macro /button dynamic_ddr_init "batch \"./tools/marvell/debugger_scripts/XDB/spl_init.xdb\"\n"
+
+STARTUP_END:
